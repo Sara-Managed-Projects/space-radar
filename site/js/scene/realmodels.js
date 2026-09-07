@@ -32,19 +32,35 @@ const BASE = new URL('../../models/', import.meta.url);
  * A key that is not here simply keeps its procedural model, which is the normal case.
  */
 export const REAL_MODELS = {
+  /**
+   * By catalogue number. `catalogue` is the name CelesTrak returns for that number and is not
+   * decoration: `scripts/check-model-ids.sh` fetches each one and fails if the live name does not
+   * match, which is the check that should have existed before this map shipped.
+   *
+   * TWO OF THESE WERE WRONG IN PRODUCTION, and the way they were wrong is the point. 27424 was
+   * mapped to Chandra; 27424 is AQUA, and Chandra is 25867. 39174 was mapped to Landsat 8; 39174
+   * is a BREEZE-M DEBRIS TANK, and Landsat 8 is 39084. So the app drew a space telescope on an
+   * Earth-observing satellite and a Landsat on a piece of debris -- confidently, with nothing on
+   * screen saying so. The `named:` route has a class gate for exactly this reason; an id was
+   * assumed not to need one because an id is exact. The id was exact. It was also wrong.
+   */
   norad: {
-    25544: { file: 'iss.glb', colour: 'station', name: 'International Space Station' },
-    20580: { file: 'hubble.glb', colour: 'telescope', name: 'Hubble Space Telescope' },
-    25682: { file: 'landsat.glb', colour: 'satellite', name: 'Landsat 7' },
-    39174: { file: 'landsat.glb', colour: 'satellite', name: 'Landsat 8' },
-    27424: { file: 'chandra.glb', colour: 'telescope', name: 'Chandra X-ray Observatory' },
+    25544: { file: 'iss.glb', colour: 'station', name: 'International Space Station', catalogue: 'ISS (ZARYA)' },
+    20580: { file: 'hubble.glb', colour: 'telescope', name: 'Hubble Space Telescope', catalogue: 'HST' },
+    25682: { file: 'landsat.glb', colour: 'satellite', name: 'Landsat 7', catalogue: 'LANDSAT 7' },
+    39084: { file: 'landsat.glb', colour: 'satellite', name: 'Landsat 8', catalogue: 'LANDSAT 8' },
+    49260: { file: 'landsat.glb', colour: 'satellite', name: 'Landsat 9', catalogue: 'LANDSAT 9', generic: true },
+    25867: { file: 'chandra.glb', colour: 'telescope', name: 'Chandra X-ray Observatory', catalogue: 'CXO' },
+    28485: { file: 'swift.glb', colour: 'telescope', name: 'Swift', catalogue: 'SWIFT' },
+    43435: { file: 'tess.glb', colour: 'telescope', name: 'TESS', catalogue: 'TESS' },
+    36395: { file: 'sdo.glb', colour: 'telescope', name: 'Solar Dynamics Observatory', catalogue: 'SDO' },
+    37849: { file: 'suomi.glb', colour: 'satellite', name: 'Suomi NPP', catalogue: 'SUOMI NPP' },
   },
   horizons: {
     '-31': { file: 'voyager.glb', colour: 'probe', name: 'Voyager 1' },
     '-32': { file: 'voyager.glb', colour: 'probe', name: 'Voyager 2' },
     '-61': { file: 'juno.glb', colour: 'probe', name: 'Juno' },
     '-96': { file: 'parker.glb', colour: 'probe', name: 'Parker Solar Probe' },
-    '-227': { file: 'kepler.glb', colour: 'telescope', name: 'Kepler' },
     '-170': { file: 'jwst.glb', colour: 'telescope', name: 'James Webb Space Telescope' },
     '-21': { file: 'soho.glb', colour: 'telescope', name: 'SOHO' },
     '-74': { file: 'mro.glb', colour: 'probe', name: 'Mars Reconnaissance Orbiter' },
