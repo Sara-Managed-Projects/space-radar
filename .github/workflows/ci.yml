@@ -1,0 +1,29 @@
+name: ci
+
+# Spec 0018. What this refuses is the contract; a check that never fails is a check that is
+# not doing anything, so every refusal here has a test that breaks it on purpose.
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  registry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # PyYAML is the only dependency. Every other one is a thing between a contributor and a
+      # green check on a documentation change.
+      - run: pip install --disable-pip-version-check pyyaml
+      - name: Registries validate
+        run: python3 scripts/check_registry.py
+      - name: A new world is a registry row
+        run: python3 tests/test_growth.py
+      - name: The validator actually refuses
+        run: python3 tests/test_refusals.py

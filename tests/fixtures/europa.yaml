@@ -1,0 +1,44 @@
+# The growth fixture (spec 0002 § 6, requirement 3). Adding a world, a layer of things around
+# it, and a site on its surface must be THIS FILE and nothing under app/.
+#
+# Europa is chosen because nothing in stage 1 anticipates it: it orbits Jupiter rather than the
+# Sun, it needs a frame that composes two levels up, and it has no textures in the tree yet.
+worlds:
+  - id: europa
+    display: Europa
+    parent: jupiter
+    radius_km: 1560.8
+    unit_km: 100
+    ephemeris: {propagator: body, body: Jupiter}   # placeholder until a moon ephemeris exists
+    rotation: {kind: sidereal, period_h: 85.228}
+    frames: [inertial, fixed]
+    look: {textures: europa}
+
+textures:
+  - {id: europa, source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures (c) Solar System Scope, CC BY 4.0", tiers: [2048]}
+
+sources:
+  - id: horizons-europa-orbiters
+    url: https://ssd.jpl.nasa.gov/api/horizons.api
+    auth: none
+    cadence: 24h
+    freshness_max: 168h
+    parser: horizons
+    list: harvest/lists/horizons-ids.yaml
+    outputs: [europa-orbiters.json]
+    attribution: "Ephemerides: JPL Horizons"
+
+layers:
+  - id: europa-orbiters
+    display: Spacecraft at Europa
+    moments: {wonder: on, now: off, next: off}
+    source: horizons-europa-orbiters
+    propagator: sampled
+    frame: europa-inertial
+    style: {kind: model, model: probe-generic, glyph: probe, colour: probe, near_km: 50000}
+    card: probe
+    select: {all: true}
+    budget: {max_items: 10}
+
+sites:
+  - {id: conamara, display: "Conamara Chaos", class: surface, world: europa, lat: 9.5, lon: 274.0, doing: "A jumble of broken ice rafts, evidence of an ocean under the crust."}

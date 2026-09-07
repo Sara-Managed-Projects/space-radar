@@ -1,0 +1,71 @@
+name: readme-shots
+
+# Takes the pictures the README uses, on a runner, against the real app and live data.
+# Dispatch it by hand, download the artifact, and commit the PNGs to assets/readme/.
+#
+# Not on every push: it drives live APIs, and a README image that changes on every commit is noise
+# in every diff. The pictures are committed files, refreshed deliberately.
+
+on:
+  workflow_dispatch:
+    inputs:
+      scale:
+        description: "Device scale factor (2 = retina)"
+        required: false
+        default: "2"
+
+permissions:
+  contents: read
+
+jobs:
+  shots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Serve site/
+        run: |
+          set -euo pipefail
+          nohup python3 -m http.server 8177 --directory site --bind 127.0.0.1 >/tmp/serve.log 2>&1 &
+          for _ in $(seq 1 40); do
+            curl -fsS -o /dev/null http://127.0.0.1:8177/index.html && { echo serving; exit 0; }
+            sleep 0.25
+          done
+          echo "::error::the static server never came up"; cat /tmp/serve.log; exit 1
+
+      # --network host so the container reaches the runner's server; HOME because `-u 1001` has no
+      # passwd entry, so $HOME is `/` and npm cannot create /.npm.
+      - name: Take the shots
+        env:
+          # Evaluated by Actions BEFORE bash sees the script, so the expression never has to
+          # survive shell quoting -- which is exactly what broke the first version of this step.
+          SCALE: ${{ inputs.scale || '2' }}
+        run: |
+          set -euo pipefail
+          # The image ships the BROWSERS (at $PLAYWRIGHT_BROWSERS_PATH) but not the npm package,
+          # so `import { chromium } from 'playwright'` has nothing to resolve. Installing just the
+          # JS package takes seconds and downloads no browsers, because the binaries are there.
+          docker run --rm --network host \
+            -u "$(id -u):$(id -g)" -e HOME=/tmp \
+            -e PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+            -e "SCALE=$SCALE" \
+            -v "$PWD:/work" -w /work \
+            mcr.microsoft.com/playwright:v1.49.1-jammy \
+            bash -c 'set -euo pipefail
+              npm install --no-save --no-audit --no-fund playwright@1.49.1
+              node scripts/shots.mjs --base=http://127.0.0.1:8177 --out=assets/readme --scale="$SCALE"'
+
+      - name: They are real pictures, not empty files
+        run: |
+          set -euo pipefail
+          for f in assets/readme/*.png; do
+            size=$(stat -c%s "$f")
+            [ "$size" -gt 20000 ] || { echo "::error::$f is only $size bytes"; exit 1; }
+            echo "$f  $size bytes"
+          done
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: readme-shots
+          path: assets/readme/*.png
+          if-no-files-found: error

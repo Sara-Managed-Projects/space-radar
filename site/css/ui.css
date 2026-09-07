@@ -1,0 +1,939 @@
+/* ui.css -- the card, the controls and the status panel.
+ *
+ * Owned by the UI modules (ui/cards.js, ui/controls.js, ui/status.js). css/site.css is the
+ * integrator's and this file does not touch it; link this one after it:
+ *
+ *   <link rel="stylesheet" href="css/ui.css">
+ *
+ * Tokens are docs/design-language.md's palette, verbatim. No red anywhere, in any state:
+ * a stale source is gold and an unread one is slate, because red would make space feel
+ * dangerous, which is both wrong and the opposite of the product. No purple gradients --
+ * `probe` lavender is a flat class colour and never a fill.
+ *
+ * v1 uses the system font stack; the three self-hosted faces arrive with spec 0007.
+ * `tabular-nums` is on every number that ticks, via .sr-num.
+ *
+ * Mobile first at 390 px: controls at the top, status at the foot, the card a bottom
+ * sheet over both. Desktop from 900 px: a left rail of controls above status, and the
+ * card as a right rail.
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* Palette -- docs/design-language.md */
+  --sr-space: #0b0e14;
+  --sr-space-edge: #05070a;
+  --sr-earth-ocean: #1b4f8a;
+  --sr-atmosphere: #6ec3ff;
+  --sr-night-lights: #ffc98a;
+  --sr-ember: #ff9f43; /* the ONLY interactive colour */
+  --sr-text: #e8ecf2;
+  --sr-text-dim: #9aa4b2;
+
+  /* Class colours */
+  --sr-station: #f2f4f7;
+  --sr-satellite: #7fd1ff;
+  --sr-debris: #7a8494;
+  --sr-rocket: #ffd166;
+  --sr-launch: #ffd166;
+  --sr-probe: #c3a6ff;
+  --sr-telescope: #9ef0d8;
+  --sr-asteroid: #b8926a;
+  --sr-comet: #d9f3ff;
+  --sr-site: #f58f7c;
+  --sr-world: #e8ecf2;
+  --sr-unknown: #9aa4b2;
+
+  /* Surfaces derived from the palette, never invented hues */
+  --sr-panel: rgba(11, 14, 20, 0.88);
+  --sr-panel-solid: #0b0e14;
+  --sr-raise: rgba(232, 236, 242, 0.06);
+  --sr-line: rgba(232, 236, 242, 0.14);
+  --sr-line-strong: rgba(232, 236, 242, 0.26);
+  --sr-ink: #14100a; /* text on ember */
+
+  /* Status hues. Semantic red is not in the set. */
+  --sr-ok: #9ef0d8;
+  --sr-stale: #ffd166;
+  --sr-unread: #7a8494;
+
+  --sr-radius: 14px;
+  --sr-radius-sm: 8px;
+  --sr-gap: 10px;
+  --sr-pad: 14px;
+  --sr-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --sr-fast: 160ms;
+  --sr-slow: 260ms;
+
+  --sr-z-status: 20;
+  --sr-z-controls: 30;
+  --sr-z-card: 40;
+
+  --sr-font:
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    sans-serif;
+  --sr-font-mono:
+    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+}
+
+/* ------------------------------------------------------------------------------------ */
+/* Shared                                                                                */
+/* ------------------------------------------------------------------------------------ */
+
+.sr-card,
+.sr-controls,
+.sr-status {
+  box-sizing: border-box;
+  font-family: var(--sr-font);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--sr-text);
+  background: var(--sr-panel);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--sr-line);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.sr-card *,
+.sr-controls *,
+.sr-status * {
+  box-sizing: border-box;
+}
+
+.sr-num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+.sr-panel__title,
+.sr-status__title,
+.sr-status__subtitle,
+.sr-card__label {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--sr-text-dim);
+}
+
+.sr-status__title {
+  font-size: 15px;
+  color: var(--sr-text);
+}
+
+/* Buttons ---------------------------------------------------------------------------- */
+
+.sr-btn {
+  appearance: none;
+  min-height: 40px;
+  padding: 0 14px;
+  font: inherit;
+  font-weight: 500;
+  color: var(--sr-text);
+  background: transparent;
+  border: 1px solid var(--sr-line-strong);
+  border-radius: var(--sr-radius-sm);
+  cursor: pointer;
+  transition:
+    border-color var(--sr-fast) var(--sr-ease),
+    background-color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-btn:hover:not(:disabled) {
+  border-color: var(--sr-ember);
+}
+
+.sr-btn:focus-visible {
+  outline: 2px solid var(--sr-ember);
+  outline-offset: 2px;
+}
+
+.sr-btn--primary {
+  color: var(--sr-ink);
+  background: var(--sr-ember);
+  border-color: var(--sr-ember);
+  font-weight: 600;
+}
+
+/* Fixed width so the label swapping between Play and Pause does not shift the row. */
+.sr-btn--icon {
+  min-width: 84px;
+}
+
+.sr-btn--quiet {
+  color: var(--sr-text-dim);
+  border-color: var(--sr-line);
+}
+
+.sr-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Class swatches and glyphs ----------------------------------------------------------- */
+
+.sr-swatch,
+.sr-glyph {
+  flex: 0 0 auto;
+  display: inline-block;
+  border-radius: 50%;
+  background: var(--sr-unknown);
+}
+
+.sr-swatch {
+  width: 9px;
+  height: 9px;
+}
+
+.sr-glyph {
+  width: 13px;
+  height: 13px;
+  box-shadow: 0 0 0 3px rgba(232, 236, 242, 0.08);
+}
+
+.sr-glyph--station,
+.sr-swatch--station {
+  background: var(--sr-station);
+}
+.sr-glyph--satellite,
+.sr-swatch--satellite {
+  background: var(--sr-satellite);
+}
+.sr-glyph--debris,
+.sr-swatch--debris {
+  background: var(--sr-debris);
+}
+.sr-glyph--rocket,
+.sr-swatch--rocket,
+.sr-swatch--launch {
+  background: var(--sr-rocket);
+}
+.sr-glyph--probe,
+.sr-swatch--probe {
+  background: var(--sr-probe);
+}
+.sr-glyph--telescope,
+.sr-swatch--telescope {
+  background: var(--sr-telescope);
+}
+.sr-glyph--asteroid,
+.sr-swatch--asteroid {
+  background: var(--sr-asteroid);
+}
+.sr-glyph--comet,
+.sr-swatch--comet {
+  background: var(--sr-comet);
+}
+.sr-glyph--site,
+.sr-swatch--site {
+  background: var(--sr-site);
+}
+.sr-glyph--world,
+.sr-swatch--world {
+  background: var(--sr-world);
+}
+
+/* ------------------------------------------------------------------------------------ */
+/* The card -- a bottom sheet on a phone                                                  */
+/* ------------------------------------------------------------------------------------ */
+
+.sr-card {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--sr-z-card);
+  max-height: 72vh;
+  padding: var(--sr-pad);
+  padding-bottom: calc(var(--sr-pad) + env(safe-area-inset-bottom, 0px));
+  border-width: 1px 0 0;
+  border-radius: var(--sr-radius) var(--sr-radius) 0 0;
+  box-shadow: 0 -18px 40px rgba(5, 7, 10, 0.55);
+  transform: translateY(0);
+  transition: transform var(--sr-slow) var(--sr-ease);
+}
+
+.sr-card[hidden] {
+  display: none;
+}
+
+/* Sample and illustrative data are marked here as they are in the scene: never mistaken
+   for a live position. */
+.sr-card[data-cls='sample'],
+.sr-card[data-cls='illustrative'] {
+  border-top-style: dashed;
+  border-top-color: var(--sr-line-strong);
+}
+
+.sr-card__header {
+  display: flex;
+  gap: var(--sr-gap);
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--sr-line);
+}
+
+.sr-card__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.sr-card__klass {
+  flex: 0 0 auto;
+  padding: 2px 8px;
+  font-size: 11px;
+  color: var(--sr-text-dim);
+  border: 1px solid var(--sr-line);
+  border-radius: 999px;
+}
+
+.sr-card__close {
+  flex: 0 0 auto;
+  appearance: none;
+  min-width: 40px;
+  min-height: 40px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--sr-text-dim);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.sr-card__close:hover {
+  color: var(--sr-ember);
+}
+
+.sr-card__sentence {
+  margin: 12px 0;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+/* Comparison chips -- at most three, scale first ------------------------------------- */
+
+.sr-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+.sr-chip {
+  padding: 4px 10px;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text);
+  background: var(--sr-raise);
+  border: 1px solid var(--sr-line);
+  border-radius: 999px;
+}
+
+/* Right now, and see it from here ------------------------------------------------------ */
+
+.sr-card__block {
+  margin: 0 0 14px;
+}
+
+.sr-rows {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 4px 12px;
+  margin: 0;
+}
+
+.sr-rows__key {
+  margin: 0;
+  font-size: 13px;
+  color: var(--sr-text-dim);
+}
+
+.sr-rows__val {
+  margin: 0;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.sr-card__seeline {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 14px;
+  background: var(--sr-raise);
+  border-left: 2px solid var(--sr-ember);
+  border-radius: 0 var(--sr-radius-sm) var(--sr-radius-sm) 0;
+}
+
+/* Actions ------------------------------------------------------------------------------ */
+
+.sr-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.sr-card__actions .sr-btn {
+  flex: 1 1 auto;
+}
+
+.sr-card__why {
+  margin: 0 0 12px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--sr-text-dim);
+}
+
+/* The class line and the source line, in that order ------------------------------------ */
+
+.sr-card__foot {
+  padding-top: 10px;
+  border-top: 1px solid var(--sr-line);
+}
+
+.sr-card__cls,
+.sr-card__source {
+  margin: 0 0 4px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--sr-text-dim);
+}
+
+.sr-card__cls {
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text);
+}
+
+/* ------------------------------------------------------------------------------------ */
+/* The controls                                                                           */
+/* ------------------------------------------------------------------------------------ */
+
+.sr-controls {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: var(--sr-z-controls);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sr-gap);
+  max-height: 46vh;
+  padding: var(--sr-pad);
+  padding-top: calc(var(--sr-pad) + env(safe-area-inset-top, 0px));
+  border-width: 0 0 1px;
+}
+
+.sr-panel {
+  margin: 0;
+}
+
+/* Three equal doors ------------------------------------------------------------------- */
+
+.sr-doors {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.sr-door {
+  appearance: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 52px;
+  padding: 8px 6px;
+  font: inherit;
+  text-align: left;
+  color: var(--sr-text-dim);
+  background: var(--sr-raise);
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius-sm);
+  cursor: pointer;
+  transition:
+    color var(--sr-fast) var(--sr-ease),
+    border-color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-door__label {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.sr-door__hint {
+  font-size: 10.5px;
+  line-height: 1.3;
+  color: var(--sr-text-dim);
+}
+
+.sr-door.is-on {
+  color: var(--sr-text);
+  border-color: var(--sr-ember);
+  box-shadow: inset 0 -2px 0 var(--sr-ember);
+}
+
+.sr-door:focus-visible {
+  outline: 2px solid var(--sr-ember);
+  outline-offset: 2px;
+}
+
+/* Layers with live counts -------------------------------------------------------------- */
+
+.sr-layers__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sr-layers__empty,
+.sr-kind--empty,
+.sr-source--empty,
+.sr-credit--empty {
+  padding: 6px 0;
+  font-size: 12.5px;
+  color: var(--sr-text-dim);
+}
+
+.sr-layer__label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 34px;
+  cursor: pointer;
+}
+
+.sr-layer__box {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--sr-ember);
+  cursor: pointer;
+}
+
+.sr-layer__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 13.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sr-layer__count {
+  flex: 0 0 auto;
+  font-size: 12.5px;
+  color: var(--sr-text-dim);
+}
+
+.sr-layer__count.is-empty {
+  opacity: 0.6;
+}
+
+/* The clock ---------------------------------------------------------------------------- */
+
+.sr-clock__readout {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.sr-clock__line {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.sr-clock__tag {
+  flex: 0 0 46px;
+  font-size: 10.5px;
+  color: var(--sr-text-dim);
+}
+
+.sr-clock__time {
+  font-family: var(--sr-font-mono);
+  font-size: 17px;
+  letter-spacing: 0.01em;
+}
+
+.sr-clock__date {
+  font-size: 11.5px;
+  color: var(--sr-text-dim);
+}
+
+.sr-clock__transport {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.sr-clock__mode {
+  font-size: 11.5px;
+  color: var(--sr-text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-clock__mode.is-live {
+  color: var(--sr-ok);
+}
+
+.sr-speeds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.sr-speed {
+  appearance: none;
+  min-width: 46px;
+  min-height: 32px;
+  padding: 0 8px;
+  font: inherit;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+  background: transparent;
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius-sm);
+  cursor: pointer;
+}
+
+.sr-speed.is-on {
+  color: var(--sr-ember);
+  border-color: var(--sr-ember);
+}
+
+.sr-speed:focus-visible {
+  outline: 2px solid var(--sr-ember);
+  outline-offset: 2px;
+}
+
+/* Scrubbing has to be obvious: the whole clock lights up while it happens. */
+.sr-scrub {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.sr-scrub__range {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 28px;
+  accent-color: var(--sr-ember);
+  cursor: ew-resize;
+}
+
+.sr-scrub__offset {
+  flex: 0 0 auto;
+  min-width: 84px;
+  font-size: 11.5px;
+  text-align: right;
+  color: var(--sr-text-dim);
+}
+
+.sr-controls.is-scrubbing .sr-clock {
+  outline: 1px solid var(--sr-ember);
+  outline-offset: 6px;
+  border-radius: var(--sr-radius-sm);
+}
+
+.sr-controls.is-scrubbing .sr-scrub__offset,
+.sr-controls.is-scrubbing .sr-clock__mode {
+  color: var(--sr-ember);
+  font-weight: 600;
+}
+
+/* Where you are ------------------------------------------------------------------------ */
+
+.sr-place__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sr-place__input {
+  flex: 1 1 140px;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 10px;
+  font: inherit;
+  color: var(--sr-text);
+  background: var(--sr-raise);
+  border: 1px solid var(--sr-line-strong);
+  border-radius: var(--sr-radius-sm);
+}
+
+.sr-place__input::placeholder {
+  color: var(--sr-text-dim);
+}
+
+.sr-place__input:focus-visible {
+  outline: 2px solid var(--sr-ember);
+  outline-offset: 1px;
+}
+
+.sr-place__current {
+  margin: 8px 0 2px;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+}
+
+.sr-place__current.is-set {
+  color: var(--sr-text);
+}
+
+.sr-place__note {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--sr-text-dim);
+}
+
+/* A warning is gold, never red. */
+.sr-place__note.is-warning {
+  padding-left: 8px;
+  color: var(--sr-text);
+  border-left: 2px solid var(--sr-stale);
+}
+
+/* ------------------------------------------------------------------------------------ */
+/* The status panel                                                                       */
+/* ------------------------------------------------------------------------------------ */
+
+.sr-status {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--sr-z-status);
+  max-height: 34vh;
+  padding: var(--sr-pad);
+  padding-bottom: calc(var(--sr-pad) + env(safe-area-inset-bottom, 0px));
+  border-width: 1px 0 0;
+}
+
+.sr-status__intro {
+  margin: 0 0 10px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--sr-text-dim);
+}
+
+.sr-status__block {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--sr-line);
+}
+
+.sr-status__sources,
+.sr-status__kinds,
+.sr-status__credits {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sr-source {
+  padding: 7px 0;
+  border-bottom: 1px solid var(--sr-line);
+}
+
+.sr-source:last-child {
+  border-bottom: 0;
+}
+
+.sr-source__head {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.sr-source__label {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sr-source__age {
+  margin: 2px 0 0;
+  font-size: 11.5px;
+  color: var(--sr-text-dim);
+}
+
+.sr-source__error {
+  margin: 3px 0 0;
+  font-size: 11.5px;
+  line-height: 1.35;
+  color: var(--sr-text-dim);
+  overflow-wrap: anywhere;
+}
+
+/* Three states, and the third is not a decoration on the other two. */
+.sr-state {
+  flex: 0 0 auto;
+  padding: 2px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border: 1px solid currentcolor;
+  border-radius: 999px;
+}
+
+.sr-state--ok {
+  color: var(--sr-ok);
+}
+
+.sr-state--stale {
+  color: var(--sr-stale);
+}
+
+/* Never read: slate and dashed, so it reads as absence rather than as health. */
+.sr-state--unknown {
+  color: var(--sr-unread);
+  border-style: dashed;
+}
+
+.sr-source.is-unknown .sr-source__label {
+  color: var(--sr-text-dim);
+}
+
+.sr-kind {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  padding: 5px 0;
+}
+
+.sr-kind__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sr-kind__state {
+  flex: 0 0 auto;
+  font-size: 11px;
+  color: var(--sr-text-dim);
+}
+
+.sr-kind.is-live .sr-kind__state {
+  color: var(--sr-ok);
+}
+
+.sr-kind.is-sample .sr-kind__state,
+.sr-kind.is-mixed .sr-kind__state,
+.sr-kind.is-illustrative .sr-kind__state {
+  color: var(--sr-stale);
+}
+
+.sr-kind__count {
+  flex: 0 0 auto;
+  min-width: 74px;
+  font-size: 11.5px;
+  text-align: right;
+  color: var(--sr-text-dim);
+}
+
+.sr-credit {
+  padding: 3px 0;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--sr-text-dim);
+}
+
+/* ------------------------------------------------------------------------------------ */
+/* Desktop, from 900 px, designed at 1440                                                 */
+/* ------------------------------------------------------------------------------------ */
+
+@media (min-width: 900px) {
+  .sr-controls {
+    top: 16px;
+    right: auto;
+    left: 16px;
+    width: 328px;
+    max-height: calc(62vh);
+    border-width: 1px;
+    border-radius: var(--sr-radius);
+    padding-top: var(--sr-pad);
+  }
+
+  .sr-status {
+    right: auto;
+    bottom: 16px;
+    left: 16px;
+    width: 328px;
+    max-height: calc(34vh);
+    border-width: 1px;
+    border-radius: var(--sr-radius);
+    padding-bottom: var(--sr-pad);
+  }
+
+  .sr-card {
+    top: 16px;
+    right: 16px;
+    bottom: 16px;
+    left: auto;
+    width: 384px;
+    max-height: none;
+    border-width: 1px;
+    border-radius: var(--sr-radius);
+    padding-bottom: var(--sr-pad);
+  }
+
+  .sr-card__sentence {
+    font-size: 17px;
+  }
+
+  .sr-door {
+    min-height: 58px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .sr-controls,
+  .sr-status {
+    width: 352px;
+  }
+
+  .sr-card {
+    width: 412px;
+  }
+}
+
+/* ------------------------------------------------------------------------------------ */
+/* prefers-reduced-motion: the scrub stays, because it is a control, not decoration.       */
+/* ------------------------------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-card,
+  .sr-controls,
+  .sr-status,
+  .sr-btn,
+  .sr-door {
+    transition: none;
+  }
+}
+
+.sr-controls.is-reduced-motion .sr-door,
+.sr-controls.is-reduced-motion .sr-btn {
+  transition: none;
+}

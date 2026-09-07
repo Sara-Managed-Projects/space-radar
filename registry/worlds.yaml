@@ -1,0 +1,116 @@
+# Worlds. A body is a ROW: adding Mars, Europa or a lunar stage touches this file and nothing
+# under app/. A world is a row: id, parent, radius, ephemeris, rotation model, textures.
+#
+# parent      the world this one orbits; `sun` is the root and has none.
+# unit_km     scene units when this world is the active stage (spec 0005 floating origin).
+# ephemeris   how its position is computed. `body` = astronomy-engine, no fetch, no network.
+# rotation    how its fixed frame turns, for anything sitting on the surface.
+# look        texture set and atmosphere treatment (spec 0006).
+# enabled     absent means on. Switching a world off removes it from the map, the stage list and
+#             the fly-to menu at once, because they all read this row.
+version: 1
+
+worlds:
+  - id: sun
+    display: The Sun
+    parent: ""
+    radius_km: 696340.0
+    unit_km: 1000000
+    ephemeris: {propagator: body, body: Sun}
+    frames: [inertial]
+    look: {textures: sun, corona: true}
+
+  - id: earth
+    display: Earth
+    parent: sun
+    radius_km: 6371.0
+    unit_km: 1000
+    ephemeris: {propagator: body, body: Earth}
+    rotation: {kind: earth-gmst}
+    frames: [inertial, fixed]
+    look: {textures: earth-realistic, atmosphere: true, clouds: true, night_lights: true}
+
+  - id: moon
+    display: The Moon
+    parent: earth
+    radius_km: 1737.4
+    unit_km: 1000
+    ephemeris: {propagator: body, body: Moon}
+    # Libration comes from astronomy-engine rather than a rotation model, because the Moon's
+    # is the one case where the simple model is visibly wrong to anyone who looks.
+    rotation: {kind: moon-libration}
+    frames: [inertial, fixed]
+    look: {textures: moon}
+
+  # The planets are rows from day one so that growing outward is a camera flight rather than a
+  # rewrite. They render as textured spheres at true direction and scaled distance until the
+  # camera makes one of them the stage.
+  - id: mercury
+    display: Mercury
+    parent: sun
+    radius_km: 2439.7
+    unit_km: 1000
+    ephemeris: {propagator: body, body: Mercury}
+    rotation: {kind: sidereal, period_h: 1407.6}
+    frames: [inertial, fixed]
+    look: {textures: mercury}
+
+  - id: venus
+    display: Venus
+    parent: sun
+    radius_km: 6051.8
+    unit_km: 1000
+    ephemeris: {propagator: body, body: Venus}
+    rotation: {kind: sidereal, period_h: -5832.5}
+    frames: [inertial, fixed]
+    look: {textures: venus, atmosphere: thick}
+
+  - id: mars
+    display: Mars
+    parent: sun
+    radius_km: 3389.5
+    unit_km: 1000
+    ephemeris: {propagator: body, body: Mars}
+    rotation: {kind: sidereal, period_h: 24.6229}
+    frames: [inertial, fixed]
+    look: {textures: mars, atmosphere: thin}
+
+  - id: jupiter
+    display: Jupiter
+    parent: sun
+    radius_km: 69911.0
+    unit_km: 10000
+    ephemeris: {propagator: body, body: Jupiter}
+    rotation: {kind: sidereal, period_h: 9.925}
+    frames: [inertial, fixed]
+    look: {textures: jupiter, atmosphere: thick}
+
+  - id: saturn
+    display: Saturn
+    parent: sun
+    radius_km: 58232.0
+    unit_km: 10000
+    ephemeris: {propagator: body, body: Saturn}
+    rotation: {kind: sidereal, period_h: 10.656}
+    frames: [inertial, fixed]
+    look: {textures: saturn, ring: {inner_km: 74500, outer_km: 140220, texture: saturn-ring}}
+
+  - id: uranus
+    display: Uranus
+    parent: sun
+    radius_km: 25362.0
+    unit_km: 10000
+    ephemeris: {propagator: body, body: Uranus}
+    rotation: {kind: sidereal, period_h: -17.24}
+    frames: [inertial, fixed]
+    look: {textures: uranus}
+
+  - id: neptune
+    display: Neptune
+    parent: sun
+    radius_km: 24622.0
+    unit_km: 10000
+    ephemeris: {propagator: body, body: Neptune}
+    rotation: {kind: sidereal, period_h: 16.11}
+    frames: [inertial, fixed]
+    look: {textures: neptune}

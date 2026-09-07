@@ -1,0 +1,38 @@
+# Terms a card may use. A term used on a card that is NOT here fails CI (spec 0013): the check
+# is what stops jargon leaking back in one word at a time. Two lines each, written for a
+# curious 14-year-old and read aloud to a 9-year-old.
+version: 1
+
+terms:
+  - {term: orbit, say: "A path around something, held by gravity. Fast enough sideways and you keep falling past the Earth instead of into it."}
+  - {term: low Earth orbit, say: "The busy shell from about 200 to 2000 km up. The station, most satellites and nearly all the debris are here."}
+  - {term: geostationary, say: "An orbit 35 786 km up where one lap takes exactly one day, so the satellite seems to hang over one spot."}
+  - {term: polar orbit, say: "An orbit over the poles. The Earth turns underneath, so the satellite eventually sees every part of it."}
+  - {term: elements, say: "Six numbers plus a date that describe an orbit. Feed them to the right maths and you get a position."}
+  - {term: epoch, say: "The moment a set of orbital elements was true. The further you are from it, the less exact the answer."}
+  - {term: apogee, say: "The high point of an orbit around Earth."}
+  - {term: perigee, say: "The low point of an orbit around Earth."}
+  - {term: perihelion, say: "The point where something orbiting the Sun comes closest to it."}
+  - {term: inclination, say: "How tilted an orbit is compared with the equator. Ninety degrees goes over the poles."}
+  - {term: propagated, say: "Worked forward from an older measurement. Not a fresh observation, and it drifts."}
+  - {term: lunar distance, say: "The distance from Earth to the Moon, about 384 000 km. A handy ruler for asteroid passes."}
+  - {term: astronomical unit, say: "The distance from Earth to the Sun, about 150 million km."}
+  - {term: light-time, say: "How long light takes to cross a distance. It is also how long a radio message takes."}
+  - {term: magnitude, say: "How bright something looks. The scale runs backwards: smaller numbers are brighter."}
+  - {term: azimuth, say: "A compass direction in degrees. Zero is north, 90 is east."}
+  - {term: elevation, say: "How high something is above the horizon, in degrees. Ninety is straight up."}
+  - {term: terminator, say: "The line between day and night on a world."}
+  - {term: twilight, say: "The time after sunset when the sky is not yet fully dark. Satellites are easiest to see then."}
+  - {term: sunlit, say: "Still catching sunlight even though the ground below is dark. That is what makes a satellite visible."}
+  - {term: radiant, say: "The point in the sky a meteor shower seems to come from."}
+  - {term: ZHR, say: "Roughly how many meteors an hour you would see under a perfect dark sky with the radiant overhead. Usually you see fewer."}
+  - {term: close approach, say: "When an asteroid passes near Earth. Near in astronomy usually means further than the Moon."}
+  - {term: near-Earth object, say: "An asteroid or comet whose orbit brings it close to Earth's."}
+  - {term: reentry, say: "When something falls back into the atmosphere. Most of it burns up on the way down."}
+  - {term: debris, say: "Dead satellites, spent rocket stages and fragments. Tens of thousands of pieces are tracked."}
+  - {term: constellation, say: "A pattern of stars people named long ago. The stars in one are usually nowhere near each other."}
+  - {term: L1, say: "A balance point between the Earth and the Sun, about 1.5 million km sunward. Good for watching the Sun."}
+  - {term: L2, say: "A balance point 1.5 million km away from the Sun, where a telescope can keep the Earth and Sun behind it and stay cold."}
+  - {term: transit, say: "When one thing passes in front of another as seen from where you stand."}
+  - {term: conjunction, say: "When two things appear close together in the sky. They are not close in space."}
+  - {term: ephemeris, say: "A table of where something will be, worked out in advance."}

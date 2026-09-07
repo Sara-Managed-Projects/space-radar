@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 132" width="880" height="132" role="img" aria-label="The stack: three.js, satellite.js, astronomy-engine, plain ES modules, S3 and CloudFront">
+  <title>The stack</title>
+  <rect width="880" height="132" rx="14" fill="#0B0E14"/>
+  <style>
+    .n { font: 600 12.5px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: #E8ECF2; }
+    .v { font: 400 10.5px ui-monospace, SFMono-Regular, Menlo, monospace; fill: #7FD1FF; }
+    .r { font: 400 10.5px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: #9AA4B2; }
+    .h { font: 600 12px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: #9AA4B2; letter-spacing:.08em; }
+    .c { fill: #121722; stroke: #223046; stroke-width: 1; }
+  </style>
+  <text class="h" x="28" y="30">EVERYTHING IS VENDORED. NOTHING IS FETCHED FROM A CDN AT RUNTIME.</text>
+  <g>
+    <rect class="c" x="28"  y="46" width="196" height="62" rx="9"/>
+    <text class="n" x="44" y="70">three.js</text><text class="v" x="106" y="70">r185</text>
+    <text class="r" x="44" y="90">WebGL2 · MIT · 87 kB gzip</text>
+
+    <rect class="c" x="240" y="46" width="196" height="62" rx="9"/>
+    <text class="n" x="256" y="70">satellite.js</text><text class="v" x="330" y="70">7.1.0</text>
+    <text class="r" x="256" y="90">SGP4/SDP4 · MIT</text>
+
+    <rect class="c" x="452" y="46" width="196" height="62" rx="9"/>
+    <text class="n" x="468" y="70">astronomy-engine</text>
+    <text class="v" x="468" y="88">2.1.19</text><text class="r" x="516" y="88">planets, eclipses · MIT</text>
+
+    <rect class="c" x="664" y="46" width="188" height="62" rx="9"/>
+    <text class="n" x="680" y="70">Plain ES modules</text>
+    <text class="r" x="680" y="90">no bundler · no npm · no build</text>
+  </g>
+</svg>

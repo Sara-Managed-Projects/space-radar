@@ -1,0 +1,43 @@
+name: auto-merge
+
+# Squash-merge same-repo PRs into main after ci.yml is green.
+# Hold: draft PR, or labels `no-auto-merge` / `hold`.
+
+on:
+  workflow_run:
+    workflows: [ci]
+    types: [completed]
+
+jobs:
+  merge:
+    if: >
+      github.event.workflow_run.conclusion == 'success'
+      && github.event.workflow_run.event == 'pull_request'
+      && github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Squash-merge into main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          PR=$(gh api "repos/${REPO}/commits/${SHA}/pulls" \
+            --jq '[.[] | select(.base.ref=="main" and .draft==false and .state=="open")] | .[0].number // empty')
+          if [ -z "$PR" ]; then
+            echo "no open non-draft PR into main for $SHA"
+            exit 0
+          fi
+          LABELS=$(gh pr view "$PR" --repo "$REPO" --json labels --jq '[.labels[].name] | join(",")')
+          case ",${LABELS}," in
+            *,no-auto-merge,*|*,hold,*)
+              echo "PR #$PR held by label"
+              exit 0
+              ;;
+          esac
+          gh pr merge "$PR" --repo "$REPO" --squash --delete-branch
+          echo "merged #$PR"

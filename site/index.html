@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Space Radar</title>
+<meta name="description" content="A living 3D map of everything in motion around Earth: satellites, stations, rockets, probes and the ground sites that talk to them, at their real positions.">
+<meta name="color-scheme" content="dark">
+<link rel="stylesheet" href="css/site.css">
+<link rel="stylesheet" href="css/ui.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='9' fill='%231B4F8A'/><circle cx='16' cy='16' r='13' fill='none' stroke='%23FF9F43' stroke-width='1.5' stroke-dasharray='3 4'/></svg>">
+</head>
+<body>
+
+<canvas id="stage"></canvas>
+
+<!-- Boot state. Replaced the moment the first frame draws; if it is still visible, something
+     failed and the message says what, because a black screen explains nothing. -->
+<div id="boot" class="boot">
+  <div class="boot-inner">
+    <div class="boot-mark" aria-hidden="true"></div>
+    <p class="boot-line" id="boot-line">Starting the clock…</p>
+    <p class="boot-sub" id="boot-sub"></p>
+  </div>
+</div>
+
+<noscript>
+  <div class="boot"><div class="boot-inner">
+    <p class="boot-line">Space Radar needs JavaScript.</p>
+    <p class="boot-sub">It computes every satellite position in your browser, so there is nothing to show without it.</p>
+  </div></div>
+</noscript>
+
+<!-- The UI modules build and append their own roots (#sr-controls, #sr-status, #sr-card).
+     Only the label layer is declared here, because the scene writes into it every frame. -->
+<div id="labels" class="labels" aria-hidden="true"></div>
+
+<script type="module">
+  // Anything that throws before main.js takes over would otherwise leave a black screen with no
+  // explanation. Report it in the boot panel instead -- a failure that names itself is worth
+  // more than a spinner.
+  const line = document.getElementById('boot-line');
+  const sub = document.getElementById('boot-sub');
+  const fail = (what, err) => {
+    line.textContent = what;
+    sub.textContent = (err && (err.message || String(err))) || '';
+    document.getElementById('boot').classList.add('boot-failed');
+    console.error(what, err);
+  };
+  window.addEventListener('error', (e) => fail('Something broke while loading.', e.error || e.message));
+  window.addEventListener('unhandledrejection', (e) => fail('Something broke while loading.', e.reason));
+  try {
+    const { boot } = await import('./js/main.js');
+    await boot({ setStatus: (t, s) => { line.textContent = t; if (s !== undefined) sub.textContent = s; } });
+  } catch (err) {
+    fail('Space Radar could not start.', err);
+  }
+</script>
+
+</body>
+</html>

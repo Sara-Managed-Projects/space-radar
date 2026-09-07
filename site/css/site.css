@@ -1,0 +1,170 @@
+/* Base layer: the page, the canvas, the boot state. Component styles live in ui.css. */
+
+:root {
+  --space: #0B0E14;
+  --space-edge: #05070A;
+  --ember: #FF9F43;
+  --text: #E8ECF2;
+  --text-dim: #9AA4B2;
+  --atmosphere: #6EC3FF;
+  --night-lights: #FFC98A;
+
+  --station: #F2F4F7;
+  --satellite: #7FD1FF;
+  --debris: #7A8494;
+  --rocket: #FFD166;
+  --probe: #C3A6FF;
+  --telescope: #9EF0D8;
+  --asteroid: #B8926A;
+  --comet: #D9F3FF;
+  --site: #F58F7C;
+
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --radius: 14px;
+  --pad: 16px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--space);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+/* The canvas is the page. Everything else floats over it. */
+#stage {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;   /* the camera rig handles gestures itself */
+}
+
+/* Numbers that tick must not reflow the layout under them. */
+.num, .clockbar, .card time, .card .chip { font-variant-numeric: tabular-nums; }
+
+/* --- boot ------------------------------------------------------------------ */
+
+.boot {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(120% 90% at 50% 40%, #0E1421 0%, var(--space) 55%, var(--space-edge) 100%);
+  z-index: 100;
+  transition: opacity 600ms ease;
+  padding: 24px;
+}
+.boot.gone { opacity: 0; pointer-events: none; }
+.boot-inner { text-align: center; max-width: 34ch; }
+
+/* One drawn thing: an orbit around a world. It says what the app is before a word is read. */
+.boot-mark {
+  width: 64px; height: 64px;
+  margin: 0 auto 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 32%, #2E6FB8, #123255 70%, #0C2036);
+  box-shadow: 0 0 0 1px rgba(110,195,255,.28), 0 0 34px rgba(110,195,255,.20);
+  position: relative;
+}
+.boot-mark::after {
+  content: "";
+  position: absolute;
+  inset: -16px;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(255,159,67,.75);
+  animation: spin 9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.boot-line { margin: 0; font-size: 16px; color: var(--text); }
+.boot-sub { margin: 8px 0 0; font-size: 13px; color: var(--text-dim); }
+.boot-failed .boot-mark::after { border-color: rgba(154,164,178,.5); animation: none; }
+.boot-failed .boot-line { color: var(--text); }
+
+@media (prefers-reduced-motion: reduce) {
+  .boot-mark::after { animation: none; }
+  .boot { transition: none; }
+}
+
+/* --- labels over the scene -------------------------------------------------- */
+
+.labels { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+.labels .label {
+  position: absolute;
+  transform: translate(-50%, -140%);
+  font-size: 12.5px;
+  color: var(--text);
+  text-shadow: 0 0 3px var(--space), 0 0 6px var(--space);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.labels .label .dot { opacity: .8; margin-right: 5px; }
+
+/* --- phone drawers (see js/ui/mobile.js) -------------------------------------
+   The panels are desktop-first and always open. On a phone the sky is the product, so they
+   become sheets that slide up from a bar and start closed. */
+
+.sr-mobilebar {
+  position: fixed;
+  left: 0; right: 0;
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px calc(8px + var(--safe-bottom));
+  background: linear-gradient(to top, rgba(5,7,10,.96), rgba(5,7,10,.72) 70%, transparent);
+}
+.sr-mobilebar button {
+  flex: 1;
+  min-height: 44px;               /* a real tap target */
+  border-radius: 12px;
+  border: 1px solid rgba(232,236,242,.18);
+  background: rgba(11,14,20,.82);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+}
+.sr-mobilebar button.is-on {
+  border-color: var(--ember);
+  color: var(--ember);
+}
+
+html.sr-phone #sr-controls,
+html.sr-phone #sr-status {
+  position: fixed;
+  left: 0; right: 0;
+  bottom: 0;
+  top: auto;
+  max-height: 62vh;
+  overflow-y: auto;
+  z-index: 45;
+  border-radius: 16px 16px 0 0;
+  padding-bottom: calc(64px + var(--safe-bottom));
+  transform: translateY(102%);
+  transition: transform 260ms cubic-bezier(.2,.8,.2,1);
+  will-change: transform;
+}
+html.sr-phone #sr-controls.sr-drawer-open,
+html.sr-phone #sr-status.sr-drawer-open { transform: translateY(0); }
+
+/* The card is its own sheet and must sit above the drawers. */
+html.sr-phone #sr-card { z-index: 50; }
+
+@media (prefers-reduced-motion: reduce) {
+  html.sr-phone #sr-controls,
+  html.sr-phone #sr-status { transition: none; }
+}

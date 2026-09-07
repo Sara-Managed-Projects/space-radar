@@ -1,0 +1,188 @@
+# Every upstream the harvester reads. A source is a ROW plus one parser function in
+# harvest/parsers/<parser>.py. The harvester iterates this file and knows no source names.
+# Every cadence and limit below was measured against the live API, not assumed. The two that
+# decide the design: CelesTrak allows one fetch per file per two hours and firewalls clients that
+# retry a 403, and Launch Library 2's free tier is fifteen requests an hour per IP.
+#
+# cadence         never fetched more often than this.
+# freshness_max   after this the app shows a stale stamp. It still renders (spec 0001 rule 6).
+# auth            `none`, or `secret:NAME` — a missing secret SKIPS the source and reports it,
+#                 it never fails the run for the free sources.
+version: 1
+
+sources:
+  # --- Earth orbit -------------------------------------------------------------------
+  # MEASURED: CelesTrak updates GP data every 2 h and allows ONE download per file per
+  # 2-hour cycle; an early re-fetch returns 403 with "GP data has not updated since your
+  # last successful download", and 50 errors in 2 h gets the client firewalled. 3 h is
+  # that limit with a margin, and a 403 is recorded as `not yet updated`, never retried.
+  - id: celestrak-stations
+    url: https://celestrak.org/NORAD/elements/gp.php?GROUP=stations&FORMAT=json
+    auth: none
+    cadence: 3h
+    freshness_max: 48h
+    parser: celestrak_gp
+    outputs: [stations.json]
+    attribution: "Orbital data: CelesTrak (T. S. Kelso)"
+
+  - id: celestrak-active
+    url: https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=json
+    auth: none
+    cadence: 6h
+    freshness_max: 72h
+    parser: celestrak_gp
+    outputs: [active.json]
+    attribution: "Orbital data: CelesTrak (T. S. Kelso)"
+
+  # Supplemental files are the OPERATORS' own ephemerides and are hours fresher than the
+  # tracked catalogue -- which is exactly what a three-day-old Starlink train needs.
+  - id: celestrak-supplemental-starlink
+    url: https://celestrak.org/NORAD/elements/supplemental/sup-gp.php?FILE=starlink&FORMAT=json
+    auth: none
+    cadence: 3h
+    freshness_max: 24h
+    parser: celestrak_gp
+    outputs: [starlink-sup.json]
+    attribution: "Orbital data: CelesTrak (T. S. Kelso)"
+
+  - id: celestrak-satcat
+    url: https://celestrak.org/pub/satcat.csv
+    auth: none
+    cadence: 24h
+    freshness_max: 168h
+    parser: celestrak_satcat
+    outputs: [satcat.json]
+    attribution: "Orbital data: CelesTrak (T. S. Kelso)"
+
+  # --- Launches and events -----------------------------------------------------------
+  # MEASURED live from the API's own throttle endpoint: 15 requests per hour per IP. A
+  # runner's IP is shared and rotating, so the budget is not even reliably ours. Three
+  # calls every two hours is 36 a day against a limit of 360.
+  - id: ll2-upcoming
+    url: https://ll.thespacedevs.com/2.3.0/launches/upcoming/?limit=50&mode=detailed
+    auth: none
+    cadence: 2h
+    freshness_max: 12h
+    parser: ll2
+    outputs: [launches.json, sites-pads.json]
+    attribution: "Launch data by The Space Devs"
+
+  - id: ll2-events
+    url: https://ll.thespacedevs.com/2.3.0/events/upcoming/?limit=30
+    auth: none
+    cadence: 2h
+    freshness_max: 24h
+    parser: ll2_events
+    outputs: [events-ll2.json]
+    attribution: "Launch data by The Space Devs"
+
+  # --- Small bodies --------------------------------------------------------------------
+  # MEASURED: no Access-Control-Allow-Origin on any JPL endpoint, so these could not be
+  # called from the page even if the rate limits allowed it.
+  - id: jpl-sbdb-neo
+    url: https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name,spkid,e,a,q,i,om,w,ma,epoch,H,diameter,class&sb-kind=a&sb-group=neo
+    auth: none
+    cadence: 24h
+    freshness_max: 168h
+    parser: jpl_sbdb
+    outputs: [neo-elements.json]
+    attribution: "Orbits: NASA/JPL Small-Body Database"
+
+  - id: jpl-cad
+    url: https://ssd-api.jpl.nasa.gov/cad.api?dist-max=10LD&date-min=now&date-max=%2B60&sort=date&diameter=true&fullname=true
+    auth: none
+    cadence: 24h
+    freshness_max: 72h
+    parser: jpl_cad
+    outputs: [close-approaches.json]
+    attribution: "Close approaches: NASA/JPL CNEOS"
+
+  - id: esa-neocc-close
+    url: https://neo.ssa.esa.int/PSDB-portlet/download?file=esa_upcoming_close_app
+    auth: none
+    cadence: 24h
+    freshness_max: 168h
+    parser: esa_neocc
+    outputs: [close-approaches-esa.json]
+    # The second opinion. Where ESA and JPL disagree by more than 10% the card shows both
+    # and names them; two sources disagreeing is information, not an error to hide.
+    attribution: "Close approaches: ESA NEOCC"
+
+  - id: mpc-comets
+    url: https://minorplanetcenter.net/iau/MPCORB/CometEls.txt
+    auth: none
+    cadence: 24h
+    freshness_max: 168h
+    parser: mpc_comets
+    outputs: [comets.json]
+    attribution: "Comet elements: IAU Minor Planet Center"
+
+  # --- Deep space ----------------------------------------------------------------------
+  - id: horizons-deep-space
+    url: https://ssd.jpl.nasa.gov/api/horizons.api
+    auth: none
+    cadence: 24h
+    freshness_max: 168h
+    parser: horizons
+    # One request per craft in the list; the list is the data, the URL is the endpoint.
+    list: harvest/lists/horizons-ids.yaml
+    outputs: [deep-space.json]
+    attribution: "Ephemerides: JPL Horizons"
+
+  # MEASURED: this feed's `spacecraftID` is the same negative id Horizons uses, so the
+  # dish-to-spacecraft line needs no name matching. Unofficial feed behind a public page:
+  # the parser fails soft and lines older than 30 min are not drawn.
+  - id: dsn-now
+    url: https://eyes.nasa.gov/dsn/data/dsn.xml
+    auth: none
+    cadence: 5m
+    freshness_max: 30m
+    parser: dsn_now
+    outputs: [dsn.json]
+    attribution: "NASA Deep Space Network"
+
+  # --- Sky and weather -------------------------------------------------------------------
+  - id: swpc-kp
+    url: https://services.swpc.noaa.gov/products/noaa-planetary-k-index-forecast.json
+    auth: none
+    cadence: 15m
+    freshness_max: 6h
+    parser: swpc
+    outputs: [space-weather.json]
+    attribution: "Space weather: NOAA SWPC"
+
+  # ~900 kB of JSON for what the app needs as one small texture; the parser downsamples.
+  - id: swpc-ovation
+    url: https://services.swpc.noaa.gov/json/ovation_aurora_latest.json
+    auth: none
+    cadence: 15m
+    freshness_max: 3h
+    parser: swpc_ovation
+    outputs: [aurora.png, aurora-summary.json]
+    attribution: "Aurora forecast: NOAA SWPC"
+
+  # --- Ground ------------------------------------------------------------------------------
+  # A descriptive User-Agent is REQUIRED here; anonymous scripts are refused. Everything
+  # is CC0, so the attribution below is courtesy rather than law.
+  - id: wikidata-observatories
+    url: https://query.wikidata.org/sparql
+    auth: none
+    cadence: 168h
+    freshness_max: 720h
+    parser: wikidata
+    query: harvest/queries/observatories.rq
+    outputs: [sites-observatories.json]
+    attribution: "Observatory locations: Wikidata (CC0)"
+
+  # --- Registration-gated, and skipped until the secret exists -------------------------------
+  # The ONLY public source of reentry windows. Absent the secret this source is `skipped`
+  # with a reason and the reentry cards say the window is not available -- they do not guess.
+  - id: space-track-tip
+    url: https://www.space-track.org/basicspacedata/query/class/tip/format/json
+    auth: secret:SPACE_TRACK_PASSWORD
+    cadence: 6h
+    freshness_max: 48h
+    parser: space_track_tip
+    outputs: [reentries.json]
+    enabled: false
+    attribution: "Reentry predictions: 18 SDS via Space-Track.org"

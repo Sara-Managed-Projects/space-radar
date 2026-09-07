@@ -1,0 +1,72 @@
+# Every visual asset, where it came from, and under what licence.
+#
+# A row without a licence line FAILS CI. That check is necessary and it is not sufficient: it
+# proves a string is present, not that the string is TRUE. An audit before this repository went
+# public found three claims here that were false of the shipped tree, and they are corrected below.
+# CREDITS.md is the human-readable record and takes precedence over this file if they ever differ.
+#
+# WHAT CHANGED, AND WHY IT MATTERS
+#   * The `models:` rows described nineteen .glb files. There is no `models/` directory and nothing
+#     loads glTF: `site/js/scene/models.js` builds every shape from three.js primitives. Five of
+#     those rows credited NASA 3D Resources for ISS, Hubble, JWST and Voyager geometry that this
+#     project does not ship. Crediting someone for work you did not use is its own kind of wrong,
+#     so the rows now describe the procedural geometry that does ship.
+#   * `earth-night` was credited "Public domain (NASA)". The shipped 2k_earth_nightmap.jpg is a
+#     Solar System Scope file under CC BY 4.0. A public-domain claim does not discharge CC BY's
+#     attribution requirement, so this one mattered.
+#   * `starfield` carried a NASA SVS / Gaia DR2 credit line. The shipped 2k_stars_milky_way.jpg is
+#     also Solar System Scope, CC BY 4.0.
+version: 1
+
+# Procedural geometry. `file: ""` is the point: these are built in code, not loaded, which is why
+# a satellite reads as its CLASS rather than as one particular spacecraft. Swapping in real glTF
+# later changes site/js/scene/models.js and nothing else.
+models:
+  - {id: satellite-generic,  file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1500, for: {layer: notable}}
+  - {id: satellite-comms,    file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1500, for: {family: comms}}
+  - {id: satellite-weather,  file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1500, for: {family: weather}}
+  - {id: satellite-flat,     file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 900,  for: {family: flat-packed}}
+  - {id: station-generic,    file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 4000, for: {layer: stations}}
+  - {id: debris-shard,       file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 200,  for: {layer: debris-notable}}
+  - {id: rocket-upper-stage, file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 800,  for: {layer: launches}}
+  - {id: probe-generic,      file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1500, for: {layer: deep-space}}
+  - {id: telescope-generic,  file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1500, for: {family: telescope}}
+  - {id: asteroid-generic,   file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 700,  for: {layer: asteroids}}
+  - {id: comet-generic,      file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 600,  for: {layer: comets}}
+  - {id: pad-generic,        file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 400,  for: {site_class: pad}}
+  - {id: dish-generic,       file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 400,  for: {site_class: dish}}
+  - {id: dome-generic,       file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 400,  for: {site_class: observatory}}
+  - {id: rover-generic,      file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 500,  for: {site_class: surface}}
+
+# All fourteen shipped textures are from the same Solar System Scope pack, CC BY 4.0. The credit
+# line below is the one that must appear wherever they are shown; the app puts it on the world
+# cards and CREDITS.md carries the full licence.
+#
+# NOT byte-verified: the source site refuses scripted downloads, so provenance rests on exact
+# filename and dimension matches against their published 2k pack. `2k_uranus.jpg` and
+# `2k_neptune.jpg` carry no embedded metadata at all and are the least certain of the fourteen.
+textures:
+  - {id: earth-day,     file: 2k_earth_daymap.jpg,        source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
+  - {id: earth-night,   file: 2k_earth_nightmap.jpg,      source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
+  - {id: earth-clouds,  file: 2k_earth_clouds.jpg,        source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
+  - {id: earth-realistic, file: 2k_earth_daymap.jpg,      source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
+  - {id: moon,          file: 2k_moon.jpg,                source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
+  - {id: sun,           file: 2k_sun.jpg,                 source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
+  - {id: mercury,       file: 2k_mercury.jpg,             source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
+  - {id: venus,         file: 2k_venus_atmosphere.jpg,    source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
+  - {id: mars,          file: 2k_mars.jpg,                source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
+  - {id: jupiter,       file: 2k_jupiter.jpg,             source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
+  - {id: saturn,        file: 2k_saturn.jpg,              source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
+  - {id: saturn-ring,   file: 2k_saturn_ring_alpha.png,   source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
+  - {id: uranus,        file: 2k_uranus.jpg,              source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
+  - {id: neptune,       file: 2k_neptune.jpg,             source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
+  - {id: starfield,     file: 2k_stars_milky_way.jpg,     source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
+
+# `stars.bin` is a DERIVATIVE work: d3-celestial's stars.6.json repacked to 5 044 Float32
+# quadruples (ra, dec, mag, bv). BSD-3-Clause governs it as a binary-form redistribution, which is
+# why CREDITS.md reproduces the copyright notice -- that notice is the licence condition, not a
+# courtesy.
+data:
+  - {id: stars,          file: site/data/stars.bin,                  source: "https://github.com/ofrohn/d3-celestial (data/stars.6.json, repacked)", licence: "BSD-3-Clause", credit: "Star catalogue: d3-celestial (Olaf Frohn)"}
+  - {id: constellations, file: site/data/constellations.lines.json,  source: "https://github.com/ofrohn/d3-celestial", licence: "BSD-3-Clause", credit: "Constellation lines: d3-celestial (Olaf Frohn)"}
+  - {id: constellation-names, file: site/data/constellation-names.json, source: "https://github.com/ofrohn/d3-celestial (constellations.json, fields extracted)", licence: "BSD-3-Clause", credit: "Constellation names: d3-celestial (Olaf Frohn)"}

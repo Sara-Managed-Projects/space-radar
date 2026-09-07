@@ -1,0 +1,154 @@
+# A class of thing on the map. Adding one is a ROW naming a source, a propagator, a style, a
+# card and a budget. A new PROPAGATOR is the only case that needs code, and the six in
+# the six propagators cover everything this app draws.
+#
+# moments   which of the three moments (spec 0001) show this layer by default.
+# select    the selection rule, as data. `all`, a list file, a name prefix, an age, or an
+#           orbital band -- each is a small predicate in app/select/.
+# style     `glyph` far, `model` near. near_km is where the model fades in.
+# enabled   absent means on. Off removes the layer from the map, the Next view and the
+#           subscription form at once, because all three read this row.
+version: 1
+
+layers:
+  - id: stations
+    display: Crewed stations
+    moments: {wonder: on, now: on, next: off}
+    source: celestrak-stations
+    propagator: sgp4
+    frame: earth-inertial
+    style: {kind: model, model: station-generic, glyph: station, colour: station, near_km: 20000}
+    card: station
+    select: {all: true}
+    budget: {max_items: 20}
+
+  - id: notable
+    display: Satellites worth knowing
+    moments: {wonder: on, now: on, next: off}
+    source: celestrak-active
+    propagator: sgp4
+    frame: earth-inertial
+    style: {kind: model, model: satellite-generic, glyph: satellite, colour: satellite, near_km: 8000}
+    card: satellite
+    # A hand-kept list, every row carrying a reason a reviewer can argue with.
+    select: {list: registry/lists/notable.yaml}
+    budget: {max_items: 80}
+
+  - id: starlink-trains
+    display: Fresh Starlink trains
+    moments: {wonder: on, now: on, next: on}
+    source: celestrak-supplemental-starlink
+    propagator: sgp4
+    frame: earth-inertial
+    style: {kind: glyph, glyph: train, colour: satellite}
+    card: satellite
+    # A train is one card with N members, not N cards: it is what a beginner sees in the sky.
+    select: {name_prefix: STARLINK, launched_within_days: 10, group_by: intl_designator_launch}
+    budget: {max_items: 400}
+
+  - id: just-launched
+    display: Launched in the last two weeks
+    moments: {wonder: on, now: on, next: off}
+    source: celestrak-active
+    propagator: sgp4
+    frame: earth-inertial
+    style: {kind: glyph, glyph: just-launched, colour: launch}
+    card: satellite
+    # "That dot launched three hours ago" is the sentence beginners repeat.
+    select: {launched_within_days: 14}
+    budget: {max_items: 200}
+
+  - id: active
+    display: Everything active
+    # Off in Wonder by default and one tap away with its count on the control: the calm
+    # default is the main lesson from the trackers that came before: correct and overwhelming.
+    moments: {wonder: off, now: off, next: off}
+    source: celestrak-active
+    propagator: sgp4
+    frame: earth-inertial
+    style: {kind: glyph, glyph: satellite, colour: satellite}
+    card: satellite
+    select: {all: true}
+    budget: {max_items: 15000}
+
+  - id: geo-ring
+    display: The geostationary ring
+    moments: {wonder: off, now: off, next: off}
+    source: celestrak-active
+    propagator: sgp4
+    frame: earth-inertial
+    style: {kind: glyph, glyph: satellite, colour: satellite, opacity: 0.5}
+    card: satellite
+    select: {mean_motion_between: [0.99, 1.01], ecc_below: 0.02, incl_below: 15}
+    budget: {max_items: 900}
+
+  - id: debris-notable
+    display: Famous debris
+    moments: {wonder: off, now: off, next: off}
+    source: celestrak-active
+    propagator: sgp4
+    frame: earth-inertial
+    style: {kind: glyph, glyph: debris, colour: debris, opacity: 0.5, draw_under: true}
+    card: debris
+    select: {list: registry/lists/debris.yaml}
+    budget: {max_items: 40}
+
+  - id: launches
+    display: Rockets on their way up
+    moments: {wonder: on, now: on, next: on}
+    source: ll2-upcoming
+    # ALWAYS illustrative. The real track is not published; the orbit field is a class, not
+    # elements, so an ascent arc is a DRAWING and is always classed illustrative.
+    propagator: ascent
+    frame: earth-fixed
+    style: {kind: model, model: rocket-upper-stage, glyph: rocket, colour: rocket, near_km: 2000, dashed: true}
+    card: launch
+    select: {all: true}
+    budget: {max_items: 30}
+
+  - id: asteroids
+    display: Asteroids passing by
+    moments: {wonder: on, now: off, next: on}
+    source: jpl-sbdb-neo
+    propagator: kepler
+    frame: sun-inertial
+    style: {kind: model, model: asteroid-generic, glyph: asteroid, colour: asteroid, near_km: 500000}
+    card: asteroid
+    select: {close_approach_within_days: 60, or_list: registry/lists/small-bodies.yaml}
+    budget: {max_items: 300}
+    enabled: false   # stage B
+
+  - id: comets
+    display: Comets
+    moments: {wonder: on, now: off, next: on}
+    source: mpc-comets
+    propagator: kepler
+    frame: sun-inertial
+    style: {kind: model, model: comet-generic, glyph: comet, colour: comet, near_km: 2000000}
+    card: comet
+    select: {perihelion_within_days: 365, or_brighter_than_mag: 8}
+    budget: {max_items: 60}
+    enabled: false   # stage B
+
+  - id: deep-space
+    display: Probes and telescopes
+    moments: {wonder: on, now: off, next: off}
+    source: horizons-deep-space
+    propagator: sampled
+    frame: sun-inertial
+    style: {kind: model, model: probe-generic, glyph: probe, colour: probe, near_km: 1000000}
+    card: probe
+    select: {all: true}
+    budget: {max_items: 40}
+    enabled: false   # stage B
+
+  - id: ground-sites
+    display: Pads, dishes and observatories
+    moments: {wonder: on, now: on, next: on}
+    source: ll2-upcoming
+    propagator: fixed
+    frame: earth-fixed
+    style: {kind: model, model: pad-generic, glyph: site, colour: site, near_km: 800}
+    card: site
+    select: {all: true}
+    budget: {max_items: 400}

@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 300" width="880" height="300" role="img" aria-label="How Space Radar works: the browser fetches public APIs and computes positions itself">
+  <title>How it works</title>
+  <rect width="880" height="300" rx="14" fill="#0B0E14"/>
+  <style>
+    .t  { font: 600 13px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: #E8ECF2; }
+    .s  { font: 400 11px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: #9AA4B2; }
+    .h  { font: 600 12px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: #9AA4B2; letter-spacing:.08em; }
+    .box{ fill: #121722; stroke: #223046; stroke-width: 1; }
+    .em { fill: #17202f; stroke: #FF9F43; stroke-width: 1.3; }
+  </style>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#4A5A75"/>
+    </marker>
+  </defs>
+
+  <text class="h" x="28" y="32">NO SERVER. NO DATABASE. NO BUILD STEP.</text>
+
+  <!-- public APIs -->
+  <rect class="box" x="28" y="52" width="196" height="150" rx="10"/>
+  <text class="t" x="44" y="76">Public APIs</text>
+  <text class="s" x="44" y="98">CelesTrak — orbital elements</text>
+  <text class="s" x="44" y="116">Launch Library 2 — launches</text>
+  <text class="s" x="44" y="134">NASA DSN — live dish links</text>
+  <text class="s" x="44" y="152">NOAA SWPC — space weather</text>
+  <text class="s" x="44" y="170">Minor Planet Center — comets</text>
+  <text class="s" x="44" y="190" fill="#7A8494">cached in the browser, per source</text>
+
+  <!-- static host -->
+  <rect class="box" x="268" y="52" width="180" height="150" rx="10"/>
+  <text class="t" x="284" y="76">S3 + CloudFront</text>
+  <text class="s" x="284" y="98">the app, 8 MB</text>
+  <text class="s" x="284" y="116">textures, star catalogue</text>
+  <text class="s" x="284" y="134">private bucket, HTTPS</text>
+  <text class="s" x="284" y="160" fill="#7A8494">serves files.</text>
+  <text class="s" x="284" y="176" fill="#7A8494">computes nothing.</text>
+
+  <!-- browser -->
+  <rect class="em" x="492" y="52" width="360" height="150" rx="10"/>
+  <text class="t" x="510" y="76">Your browser does the physics</text>
+  <text class="s" x="510" y="100">SGP4 for every satellite, in a loop over 17 000 objects</text>
+  <text class="s" x="510" y="120">Kepler for asteroids and comets</text>
+  <text class="s" x="510" y="140">Sun, Moon, planets and eclipses computed offline</text>
+  <text class="s" x="510" y="160">alt-azimuth from where you stand, for the sky view</text>
+  <text class="s" x="510" y="184" fill="#FF9F43">11 draw calls · WebGL2 · one clock drives every position</text>
+
+  <path d="M224 128 L262 128" stroke="#4A5A75" stroke-width="1.4" marker-end="url(#a)" fill="none"/>
+  <path d="M448 128 L486 128" stroke="#4A5A75" stroke-width="1.4" marker-end="url(#a)" fill="none"/>
+
+  <!-- honesty strip -->
+  <rect class="box" x="28" y="224" width="824" height="52" rx="10"/>
+  <text class="h" x="44" y="248">EVERY POSITION ON SCREEN SAYS WHERE IT CAME FROM</text>
+  <g transform="translate(44,262)">
+    <circle cx="5" cy="-3" r="5" fill="#7FD1FF"/><text class="s" x="16" y="1">measured</text>
+    <circle cx="105" cy="-3" r="5" fill="#7FD1FF" opacity=".62"/><text class="s" x="116" y="1">propagated from elements N hours old</text>
+    <circle cx="365" cy="-3" r="5" fill="#FFD166" opacity=".62"/><text class="s" x="376" y="1">illustrative — a drawing, the real track is not public</text>
+    <circle cx="672" cy="-3" r="5" fill="#7FD1FF" opacity=".4"/>
+    <circle cx="672" cy="-3" r="8" fill="none" stroke="#9AA4B2" stroke-width="1" stroke-dasharray="2 2"/>
+    <text class="s" x="686" y="1">sample data, bundled</text>
+  </g>
+</svg>

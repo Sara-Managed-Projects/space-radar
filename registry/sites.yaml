@@ -1,0 +1,23 @@
+# Ground objects that are NOT harvested: the hand-kept ones. Pads come from Launch Library 2
+# and observatories from Wikidata (see sources.yaml); these are the rows nothing publishes as
+# an API, and the surface sites on other worlds -- which are the visible proof of spec 0002's
+# claim that a new world is a row. Jezero is a row.
+version: 1
+
+sites:
+  # --- Deep Space Network: three complexes, the big dishes ---------------------------
+  - {id: dss-14, display: "Goldstone DSS-14", class: dish, world: earth, lat: 35.4260, lon: -116.8900, alt_m: 1001, diameter_m: 70, doing: "The 70-metre dish at Goldstone, California."}
+  - {id: dss-25, display: "Goldstone DSS-25", class: dish, world: earth, lat: 35.3376, lon: -116.8747, alt_m: 960, diameter_m: 34, doing: "A 34-metre dish at Goldstone."}
+  - {id: dss-43, display: "Canberra DSS-43", class: dish, world: earth, lat: -35.4022, lon: 148.9812, alt_m: 689, diameter_m: 70, doing: "The only dish that can still send commands to Voyager 2."}
+  - {id: dss-63, display: "Madrid DSS-63", class: dish, world: earth, lat: 40.2414, lon: -4.2480, alt_m: 865, diameter_m: 70, doing: "The 70-metre dish outside Madrid."}
+
+  # --- On the Moon --------------------------------------------------------------------
+  - {id: apollo-11, display: "Apollo 11 landing site", class: surface, world: moon, lat: 0.6741, lon: 23.4730, doing: "Where people first stood on another world, in July 1969. The descent stage is still there."}
+  - {id: apollo-17, display: "Apollo 17 landing site", class: surface, world: moon, lat: 20.1908, lon: 30.7717, doing: "The last place people have stood on another world, in December 1972."}
+  - {id: change-4, display: "Chang'e 4", class: surface, world: moon, lat: -45.4446, lon: 177.5991, doing: "The first landing on the far side of the Moon, in 2019."}
+
+  # --- On Mars ------------------------------------------------------------------------
+  - {id: jezero, display: "Perseverance, Jezero crater", class: surface, world: mars, lat: 18.4447, lon: 77.4508, doing: "A rover the size of a car, collecting rock samples in a crater that was once a river delta."}
+  - {id: gale, display: "Curiosity, Gale crater", class: surface, world: mars, lat: -4.5895, lon: 137.4417, doing: "Driving up a mountain of layered rock since 2012."}
+  - {id: elysium, display: "InSight, Elysium Planitia", class: surface, world: mars, lat: 4.5024, lon: 135.6234, doing: "Listened to marsquakes until its solar panels were covered in dust in 2022."}
+  - {id: utopia, display: "Zhurong, Utopia Planitia", class: surface, world: mars, lat: 25.066, lon: 109.926, doing: "China's first Mars rover, landed in 2021."}

@@ -1,0 +1,121 @@
+# Event types. A row here feeds three things at once: the Next view, the .ics feeds and the
+# subscription form. Adding a type is this row plus a copy template.
+#
+# lead_times          what a subscriber may choose. Existing apps offer a fixed set and are
+#                     criticised for it in every app-store review of every competitor.
+# location_dependent  true means the browser computes the local answer; the snapshot carries
+#                     only the global event and no per-person data is ever stored.
+# prominence          editorial priority, 1 = lead with it. A number a human edits, not a
+#                     model's opinion. Rare and visual before routine.
+version: 1
+
+events:
+  - id: launch
+    display: Rocket launch
+    source: ll2-upcoming
+    location_dependent: true      # visible from within ~800 km of the pad, after dark
+    lead_times: [same-day, 1d, 1w, on-confirm]
+    prominence: 3
+    copy: launch
+    ics: launches.ics
+
+  - id: meteor-shower
+    display: Meteor shower peak
+    source: registry/showers.yaml
+    location_dependent: true      # radiant altitude and moonlight decide whether it is worth it
+    lead_times: [same-day, 1d, 1w]
+    prominence: 2
+    copy: shower
+    ics: showers.ics
+
+  - id: close-approach
+    display: Asteroid passes Earth
+    source: jpl-cad
+    location_dependent: false
+    lead_times: [same-day, 1d, 1w]
+    prominence: 2
+    copy: close-approach
+    ics: close-approaches.ics
+
+  - id: solar-eclipse
+    display: Solar eclipse
+    source: computed            # astronomy-engine, no fetch, as far ahead as anyone wants
+    location_dependent: true
+    lead_times: [same-day, 1d, 1w]
+    prominence: 1
+    copy: eclipse
+    ics: eclipses.ics
+
+  - id: lunar-eclipse
+    display: Lunar eclipse
+    source: computed
+    location_dependent: true
+    lead_times: [same-day, 1d, 1w]
+    prominence: 1
+    copy: eclipse
+    ics: eclipses.ics
+
+  - id: station-pass
+    display: The station passes over you
+    source: celestrak-stations
+    location_dependent: true
+    lead_times: [same-day, 1h]
+    prominence: 2
+    copy: pass
+    ics: ""                     # per-person by nature; the calendar feed cannot express it
+    default_on: false
+
+  - id: starlink-train
+    display: A fresh Starlink train
+    source: celestrak-supplemental-starlink
+    location_dependent: true
+    lead_times: [same-day, 1d]
+    prominence: 3
+    copy: train
+    ics: ""
+
+  - id: reentry
+    display: Something comes down
+    source: space-track-tip
+    location_dependent: true
+    lead_times: [same-day, 1d]
+    prominence: 2
+    copy: reentry
+    ics: reentries.ics
+    enabled: false              # until the Space-Track secret exists
+
+  - id: aurora
+    display: Aurora likely
+    source: swpc-kp
+    location_dependent: true
+    lead_times: [same-day]
+    prominence: 2
+    copy: aurora
+    ics: ""
+
+  - id: conjunction
+    display: Two planets meet
+    source: computed
+    location_dependent: true
+    lead_times: [same-day, 1d, 1w]
+    prominence: 3
+    copy: conjunction
+    ics: sky.ics
+
+  - id: mission-milestone
+    display: A spacecraft arrives somewhere
+    source: ll2-events
+    location_dependent: false
+    lead_times: [same-day, 1d, 1w]
+    prominence: 1
+    copy: milestone
+    ics: missions.ics
+
+  - id: decay
+    display: Something came down
+    source: celestrak-satcat
+    location_dependent: false
+    lead_times: []              # it already happened; it appears in Next as a note
+    prominence: 4
+    copy: decay
+    ics: ""

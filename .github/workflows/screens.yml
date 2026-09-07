@@ -1,0 +1,108 @@
+name: screens
+
+# Doc 20's rule, unchanged: HQ may know about a browser. It may not run one. This job is the
+# browser, on a GitHub-hosted runner.
+#
+# WHY THIS SERVES OVER HTTP AND ASSERTS A SELECTOR
+# ------------------------------------------------
+# The first version screenshotted `file:///work/site/index.html`. It went green and captured a
+# picture of the app's own failure panel reading "Failed to fetch dynamically imported module",
+# because a browser refuses ES module imports over file://. The artifact was a photograph of a
+# broken page and the check said nothing was wrong.
+#
+# That is the exact shape this project keeps writing specs about: a guard that REPORTS wrongly is
+# indistinguishable from one that BEHAVES wrongly and is harder to notice. So:
+#
+#   1. the page is served over http, which is how it is actually deployed; and
+#   2. the shot waits for `#sr-controls` -- an element that exists only if the app booted, built
+#      its UI and got as far as drawing. If it never appears the command fails and so does the job.
+#
+# The selector is deliberately NOT something data-dependent. CI would then depend on CelesTrak
+# being up, and a red build for somebody else's outage is how a team learns to ignore red builds.
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  pull_request:
+    paths:
+      - "site/**"
+
+permissions:
+  contents: read
+
+jobs:
+  shots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Is there a page to shoot?
+        id: page
+        run: |
+          set -euo pipefail
+          if [ -f site/index.html ]; then
+            echo "found=1" >>"$GITHUB_OUTPUT"
+          else
+            echo "found=0" >>"$GITHUB_OUTPUT"
+            echo "no site/index.html; nothing to screenshot"
+          fi
+
+      # Serve it the way the bucket does. `site/` is served as-is with no build step, so a plain
+      # static server is an accurate stand-in for S3.
+      - name: Serve site/
+        if: steps.page.outputs.found == '1'
+        run: |
+          set -euo pipefail
+          nohup python3 -m http.server 8177 --directory site --bind 127.0.0.1 >/tmp/serve.log 2>&1 &
+          for _ in $(seq 1 40); do
+            if curl -fsS -o /dev/null http://127.0.0.1:8177/index.html; then
+              echo "serving"; exit 0
+            fi
+            sleep 0.25
+          done
+          echo "::error::the static server never came up"; cat /tmp/serve.log; exit 1
+
+      # `--network host` so the container can reach the runner's server on 127.0.0.1.
+      # HOME is set because `-u 1001` is a uid with no passwd entry, so $HOME resolves to `/`,
+      # so $HOME is `/` and the first thing npx does is fail to create `/.npm`.
+      - name: Screenshot
+        if: steps.page.outputs.found == '1'
+        run: |
+          set -euo pipefail
+          mkdir -p .ci-screens
+          shoot() {
+            local size="$1" out="$2"
+            docker run --rm --network host \
+              -u "$(id -u):$(id -g)" -e HOME=/tmp \
+              -v "$PWD:/work" -w /work \
+              mcr.microsoft.com/playwright:v1.49.1-jammy \
+              npx --yes playwright@1.49.1 screenshot \
+                --viewport-size="$size" \
+                --wait-for-selector="#sr-controls" \
+                --timeout=60000 \
+                "http://127.0.0.1:8177/index.html" ".ci-screens/${out}.png"
+          }
+          shoot "1280,800" desktop
+          shoot "390,844" mobile
+
+      # A shot that exists but is a picture of a failure panel is the thing this job used to
+      # produce. The selector wait above is the real guard; this only catches an empty file.
+      - name: The shots are not empty
+        if: steps.page.outputs.found == '1'
+        run: |
+          set -euo pipefail
+          for f in .ci-screens/desktop.png .ci-screens/mobile.png; do
+            [ -s "$f" ] || { echo "::error::$f is empty"; exit 1; }
+            echo "$f $(stat -c%s "$f") bytes"
+          done
+
+      # `include-hidden-files`: `.ci-screens` starts with a dot and v4 skips hidden paths by
+      # default, so without it the upload reports "No files were found" while the runner holds the
+      # screenshots -- indistinguishable from the page looking like nothing.
+      - uses: actions/upload-artifact@v4
+        if: steps.page.outputs.found == '1'
+        with:
+          name: sara-screenshots
+          include-hidden-files: true
+          path: .ci-screens/*.png
+          if-no-files-found: error

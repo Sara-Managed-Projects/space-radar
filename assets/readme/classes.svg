@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 250" width="880" height="250" role="img" aria-label="The nine object classes and their colours">
+  <title>The nine object classes</title>
+  <rect width="880" height="250" rx="14" fill="#0B0E14"/>
+  <style>
+    .n { font: 500 13px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: #E8ECF2; }
+    .d { font: 400 11.5px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: #9AA4B2; }
+    .h { font: 600 13px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: #9AA4B2; letter-spacing: .08em; }
+  </style>
+  <text class="h" x="28" y="34">NINE SILHOUETTES, LEARNED ONCE</text>
+
+  <!-- row 1 -->
+  <g transform="translate(28,64)">
+    <rect x="0" y="0" width="18" height="18" rx="5" fill="#F2F4F7"/><circle cx="9" cy="9" r="3" fill="#0B0E14"/>
+    <text class="n" x="30" y="9">Station</text><text class="d" x="30" y="25">crewed, big panels</text>
+  </g>
+  <g transform="translate(208,64)">
+    <circle cx="9" cy="9" r="8" fill="#7FD1FF"/>
+    <text class="n" x="30" y="9">Satellite</text><text class="d" x="30" y="25">working, in orbit</text>
+  </g>
+  <g transform="translate(388,64)">
+    <path d="M2 15 L9 1 L17 13 L10 17 Z" fill="#7A8494"/>
+    <text class="n" x="30" y="9">Debris</text><text class="d" x="30" y="25">dead, drawn underneath</text>
+  </g>
+  <g transform="translate(608,64)">
+    <circle cx="9" cy="9" r="7" fill="#FFD166"/><rect x="16" y="8" width="10" height="2" rx="1" fill="#FFD166" opacity=".7"/>
+    <text class="n" x="34" y="9">Rocket</text><text class="d" x="34" y="25">on its way up</text>
+  </g>
+
+  <!-- row 2 -->
+  <g transform="translate(28,132)">
+    <circle cx="9" cy="9" r="6" fill="#C3A6FF"/>
+    <path d="M9 0 L9 18 M0 9 L18 9" stroke="#C3A6FF" stroke-width="1.2" opacity=".85"/>
+    <text class="n" x="30" y="9">Probe</text><text class="d" x="30" y="25">outbound, far away</text>
+  </g>
+  <g transform="translate(208,132)">
+    <circle cx="9" cy="9" r="9" fill="#9EF0D8" opacity=".22"/><circle cx="9" cy="9" r="6" fill="#9EF0D8"/>
+    <text class="n" x="30" y="9">Telescope</text><text class="d" x="30" y="25">looking outward</text>
+  </g>
+  <g transform="translate(388,132)">
+    <path d="M3 8 Q2 3 7 2 Q13 0 16 5 Q19 11 14 15 Q8 19 5 14 Z" fill="#B8926A"/>
+    <text class="n" x="30" y="9">Asteroid</text><text class="d" x="30" y="25">rock, passing by</text>
+  </g>
+  <g transform="translate(608,132)">
+    <circle cx="9" cy="9" r="6" fill="#D9F3FF"/>
+    <path d="M14 7 L30 2 M14 11 L30 15" stroke="#D9F3FF" stroke-width="1.6" opacity=".55" stroke-linecap="round"/>
+    <text class="n" x="38" y="9">Comet</text><text class="d" x="38" y="25">ice, tail from the Sun</text>
+  </g>
+
+  <!-- row 3 -->
+  <g transform="translate(28,200)">
+    <path d="M9 0 C3 0 0 4 0 8 C0 13 9 20 9 20 C9 20 18 13 18 8 C18 4 15 0 9 0 Z" fill="#F58F7C"/>
+    <text class="n" x="30" y="9">Ground site</text><text class="d" x="30" y="25">pads, dishes, observatories</text>
+  </g>
+  <g transform="translate(288,200)">
+    <circle cx="9" cy="9" r="8" fill="none" stroke="#FF9F43" stroke-width="2"/>
+    <circle cx="9" cy="9" r="3" fill="#FF9F43"/>
+    <text class="n" x="30" y="9">Selected</text><text class="d" x="30" y="25">the one interactive colour</text>
+  </g>
+  <g transform="translate(568,200)">
+    <circle cx="9" cy="9" r="7" fill="#7FD1FF" opacity=".45"/>
+    <circle cx="9" cy="9" r="10" fill="none" stroke="#9AA4B2" stroke-width="1.2" stroke-dasharray="2.5 2.5"/>
+    <text class="n" x="30" y="9">Sample data</text><text class="d" x="30" y="25">bundled, not a live position</text>
+  </g>
+</svg>

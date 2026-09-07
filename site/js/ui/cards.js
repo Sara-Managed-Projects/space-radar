@@ -1,0 +1,893 @@
+// ui/cards.js -- the card that opens when anything is tapped.
+//
+// A bottom sheet on a phone, a right rail on a desktop (css/ui.css does the placement).
+// Pure DOM, no framework. Every string comes from copy/en.js; every value is written with
+// textContent, never innerHTML, so a name from an upstream feed cannot become markup.
+//
+// The order of the blocks is FIXED (spec 0013 design, "Anatomy"):
+//   1. name and class glyph
+//   2. ONE plain sentence: what it is and why it matters now
+//   3. up to three comparison chips, scale first
+//   4. "right now"
+//   5. "see it from here"
+//   6. up to three actions
+//   7. the class-and-age line
+//   8. the source line
+//
+// Contract exports: showCard(record, ctx), hideCard().
+
+import {
+  COPY,
+  compare,
+  t,
+  fmt,
+  timeText,
+  compassWords,
+  fistsWords,
+  inWords,
+  UNITS,
+} from '../copy/en.js';
+import { propagate } from '../propagate/index.js';
+import { gmst, eciToEcef, ecefToGeodetic } from '../propagate/frames.js';
+import { predictPasses } from '../sky/passes.js';
+
+const MAX_FIRST_SENTENCE = 160; // spec 0013 requirement 10, enforced by check_copy.py
+const MAX_COMPARISONS = 3; // spec 0013 requirement 2
+const MAX_ACTIONS = 3; // spec 0013 requirement 8
+const MAX_NAME = 72; // keeps the first sentence inside its limit whatever a feed sends
+const PASS_WINDOW_HOURS = 24;
+const REFRESH_MS = 250; // a UI throttle on re-render, not a source of drawn state
+const DEG = 180 / Math.PI;
+
+const HOST_ID = 'sr-card';
+
+let host = null;
+let bodyEl = null;
+let current = null; // { record, ctx }
+let subscribed = false;
+let lastPaint = 0;
+
+// ---------------------------------------------------------------------------------------
+// DOM helpers. Nothing here ever touches innerHTML.
+// ---------------------------------------------------------------------------------------
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined && text !== null && text !== '') node.textContent = String(text);
+  return node;
+}
+
+function ensureHost() {
+  if (host && host.isConnected) return host;
+  host = document.getElementById(HOST_ID);
+  if (!host) {
+    host = el('aside', 'sr-card');
+    host.id = HOST_ID;
+    document.body.appendChild(host);
+  }
+  host.classList.add('sr-card');
+  host.setAttribute('role', 'dialog');
+  host.setAttribute('aria-live', 'polite');
+  host.hidden = true;
+  return host;
+}
+
+function clear(node) {
+  while (node.firstChild) node.removeChild(node.firstChild);
+}
+
+// ---------------------------------------------------------------------------------------
+// Reading the record without trusting it
+// ---------------------------------------------------------------------------------------
+
+function meta(record) {
+  return (record && record.meta) || {};
+}
+
+/** First defined, non-empty value among the given meta keys. Upstream names vary. */
+function pick(source, ...keys) {
+  for (const key of keys) {
+    const v = source[key];
+    if (v !== undefined && v !== null && v !== '') return v;
+  }
+  return null;
+}
+
+function pickNumber(source, ...keys) {
+  const v = pick(source, ...keys);
+  // Number(null) is 0, so the null has to be caught before the cast: a missing number
+  // must stay missing. Without this the card writes a comparison nobody sourced.
+  if (v === null || typeof v === 'boolean') return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+/** A time in ms from whatever an upstream called it: ms number, seconds, or ISO string. */
+function pickTime(source, ...keys) {
+  const v = pick(source, ...keys);
+  if (v === null) return null;
+  if (typeof v === 'number' && Number.isFinite(v)) return v > 1e11 ? v : v * 1000;
+  const parsed = Date.parse(String(v));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function displayName(record) {
+  const name = record && record.name ? String(record.name).trim() : '';
+  if (!name) return COPY.card.unknownName;
+  if (name.length <= MAX_NAME) return name;
+  return name.slice(0, MAX_NAME - 1).trimEnd() + COPY.punctuation.ellipsis;
+}
+
+function klassOf(record) {
+  const k = record && record.klass ? String(record.klass) : '';
+  return Object.prototype.hasOwnProperty.call(COPY.klass, k) ? k : 'unknown';
+}
+
+function isEarthFrame(frame) {
+  return frame === 'earth-inertial' || frame === 'earth-fixed';
+}
+
+// ---------------------------------------------------------------------------------------
+// Measurement: everything the "right now" block shows, worked out from the one clock.
+// Every call into another module is wrapped: a propagator that throws produces
+// "could not work this out", never a blank card and never a made-up number.
+// ---------------------------------------------------------------------------------------
+
+function positionAt(record, tMs) {
+  try {
+    const p = propagate(record, tMs);
+    if (!p || !Number.isFinite(p.x) || !Number.isFinite(p.y) || !Number.isFinite(p.z)) return null;
+    return p;
+  } catch {
+    return null;
+  }
+}
+
+function measure(record, ctx) {
+  const out = {
+    ok: false,
+    tMs: null,
+    posKm: null,
+    frame: record ? record.frame : null,
+    cls: record ? record.cls : null,
+    altKm: null,
+    speedKmh: null,
+    latDeg: null,
+    lonDeg: null,
+    distEarthKm: null,
+    distSunKm: null,
+    lightMinutes: null,
+  };
+  let tMs;
+  try {
+    tMs = ctx.clock.now();
+  } catch {
+    return out;
+  }
+  out.tMs = tMs;
+
+  const p = positionAt(record, tMs);
+  if (!p) return out;
+  out.ok = true;
+  out.posKm = p;
+  out.frame = p.frame || record.frame;
+  out.cls = p.cls || record.cls;
+
+  // Speed by central difference over one second of clock time.
+  const before = positionAt(record, tMs - 500);
+  const after = positionAt(record, tMs + 500);
+  if (before && after) {
+    const kmPerSecond = Math.hypot(after.x - before.x, after.y - before.y, after.z - before.z);
+    if (Number.isFinite(kmPerSecond)) out.speedKmh = kmPerSecond * 3600;
+  }
+
+  if (isEarthFrame(out.frame)) {
+    try {
+      const ecef =
+        out.frame === 'earth-fixed' ? p : eciToEcef(p, gmst(new Date(tMs)));
+      const gd = ecefToGeodetic(ecef);
+      if (gd && Number.isFinite(gd.altKm)) {
+        out.altKm = gd.altKm;
+        out.latDeg = gd.latRad * DEG;
+        out.lonDeg = gd.lonRad * DEG;
+      }
+    } catch {
+      /* altitude stays null and the row says so */
+    }
+  } else if (out.frame === 'sun-inertial') {
+    const r = Math.hypot(p.x, p.y, p.z);
+    if (Number.isFinite(r)) out.distSunKm = r;
+    const earth = heliocentricEarth(ctx, tMs);
+    if (earth) {
+      const d = Math.hypot(p.x - earth.x, p.y - earth.y, p.z - earth.z);
+      if (Number.isFinite(d)) {
+        out.distEarthKm = d;
+        out.lightMinutes = d / UNITS.LIGHT_MINUTE_KM;
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * Earth's heliocentric position, if worlds.js can give one that is plausibly heliocentric.
+ * The contract does not fix the frame of positionOf(), so the answer is sanity-checked
+ * against the known Earth-Sun distance and dropped if it does not pass.
+ */
+function heliocentricEarth(ctx, tMs) {
+  try {
+    const v = ctx.worlds && ctx.worlds.positionOf ? ctx.worlds.positionOf('earth', tMs) : null;
+    if (!v || !Number.isFinite(v.x)) return null;
+    const r = Math.hypot(v.x, v.y, v.z);
+    if (r < 0.9 * UNITS.AU_KM || r > 1.1 * UNITS.AU_KM) return null;
+    return v;
+  } catch {
+    return null;
+  }
+}
+
+const PASS_NO_OBSERVER = 'no-observer';
+const PASS_NOT_APPLICABLE = 'not-applicable';
+const PASS_NONE = 'none';
+const PASS_ERROR = 'error';
+const PASS_OK = 'ok';
+
+function nextPass(record, ctx, m) {
+  if (!isEarthFrame(m.frame) || klassOf(record) === 'site' || klassOf(record) === 'world') {
+    return { state: PASS_NOT_APPLICABLE, pass: null };
+  }
+  // No position, no promise about the sky.
+  if (!m.ok) return { state: PASS_ERROR, pass: null };
+  const observer = ctx && ctx.observer;
+  if (!observer || !Number.isFinite(observer.latRad) || !Number.isFinite(observer.lonRad)) {
+    return { state: PASS_NO_OBSERVER, pass: null };
+  }
+  try {
+    const passes = predictPasses([record], observer, m.tMs, PASS_WINDOW_HOURS);
+    if (!Array.isArray(passes)) return { state: PASS_ERROR, pass: null };
+    if (passes.length === 0) return { state: PASS_NONE, pass: null };
+    const sorted = passes.slice().sort((a, b) => a.startMs - b.startMs);
+    return { state: PASS_OK, pass: sorted[0] };
+  } catch {
+    return { state: PASS_ERROR, pass: null };
+  }
+}
+
+// ---------------------------------------------------------------------------------------
+// Block 2: the one plain sentence, per class template.
+// Clauses are added in priority order while the sentence stays under 160 characters.
+// A clause with no number behind it is never written.
+// ---------------------------------------------------------------------------------------
+
+function buildSentence(lead, clauses) {
+  let out = lead;
+  for (const clause of clauses) {
+    if (!clause) continue;
+    const next = out + COPY.punctuation.listJoin + clause;
+    if (next.length + COPY.punctuation.dot.length > MAX_FIRST_SENTENCE) continue;
+    out = next;
+  }
+  return out + COPY.punctuation.dot;
+}
+
+function passTimeClause(passInfo) {
+  if (!passInfo || passInfo.state !== PASS_OK) return null;
+  return timeText.hhmm(passInfo.pass.startMs);
+}
+
+function daysSince(ms, nowMs) {
+  if (!Number.isFinite(ms)) return null;
+  return Math.floor((nowMs - ms) / 86400000);
+}
+
+const TEMPLATES = {
+  station(record, ctx, m, passInfo, T) {
+    const md = meta(record);
+    const time = passTimeClause(passInfo);
+    const crew = pickNumber(md, 'crew', 'crewCount', 'people');
+    const periodMin = pickNumber(md, 'periodMinutes', 'periodMin', 'period');
+    return buildSentence(t(T.lead, { name: displayName(record) }), [
+      time ? t(T.whyPass, { time }) : null,
+      crew !== null && crew > 0 ? t(T.crew, { crew: fmt.int(crew) }) : null,
+      m.altKm !== null ? t(T.altitude, { alt: fmt.int(m.altKm) }) : null,
+      periodMin !== null ? t(T.speed, { period: fmt.int(periodMin) }) : null,
+    ]);
+  },
+
+  satellite(record, ctx, m, passInfo, T) {
+    const md = meta(record);
+    const launchMs = pickTime(md, 'launchMs', 'launchDate', 'launched', 'launch');
+    const days = launchMs !== null ? daysSince(launchMs, m.tMs || launchMs) : null;
+    let launchClause = null;
+    if (days !== null && days >= 0 && days <= 400) {
+      launchClause = t(T.whyLaunchedDays, { n: fmt.int(days) });
+    } else if (launchMs !== null) {
+      launchClause = t(T.whyLaunchedYear, { year: new Date(launchMs).getUTCFullYear() });
+    }
+    const operator = pick(md, 'operator', 'owner', 'country');
+    const purpose = pick(md, 'purpose', 'does', 'role');
+    const time = passTimeClause(passInfo);
+    return buildSentence(t(T.lead, { name: displayName(record) }), [
+      launchClause,
+      operator ? t(T.operator, { operator: String(operator) }) : null,
+      purpose ? t(T.purpose, { purpose: String(purpose) }) : null,
+      time ? t(T.whyPass, { time }) : null,
+      m.altKm !== null ? t(T.altitude, { alt: fmt.int(m.altKm) }) : null,
+    ]);
+  },
+
+  debris(record, ctx, m, passInfo, T) {
+    const md = meta(record);
+    const origin = pick(md, 'origin', 'parent', 'wasPartOf');
+    const breakupMs = pickTime(md, 'breakupMs', 'breakupDate', 'breakup');
+    const decayMs = pickTime(md, 'decayMs', 'decayDate', 'reentryMs', 'reentryDate');
+    return buildSentence(t(T.lead, { name: displayName(record) }), [
+      origin ? t(T.origin, { origin: String(origin) }) : null,
+      breakupMs !== null ? t(T.brokeUp, { year: new Date(breakupMs).getUTCFullYear() }) : null,
+      decayMs !== null ? t(T.decay, { date: timeText.localDate(decayMs) }) : null,
+      m.altKm !== null ? t(T.altitude, { alt: fmt.int(m.altKm) }) : null,
+      T.burnsUp,
+    ]);
+  },
+
+  rocket(record, ctx, m, passInfo, T) {
+    const md = meta(record);
+    // The contract's ascent block carries t0Ms and the pad, so it is read before meta.
+    const ascent = (record && record.ascent) || {};
+    const pad = pick(md, 'pad', 'padName', 'site', 'launchSite');
+    const t0 =
+      pickTime(ascent, 't0Ms') ??
+      pickTime(md, 't0Ms', 'net', 'liftoffMs', 'launchMs', 'launchDate');
+    const when = t0 !== null && m.tMs !== null ? inWords(t0 - m.tMs) : null;
+    const upcoming = t0 !== null && m.tMs !== null && t0 >= m.tMs;
+    const destination =
+      pick(md, 'destination', 'orbitName', 'goesTo') || pick(ascent, 'orbitClass');
+    const payload = pick(md, 'payload', 'mission');
+    const lead = pad
+      ? t(T.leadWithPad, { name: displayName(record), pad: String(pad) })
+      : t(T.lead, { name: displayName(record) });
+    return buildSentence(lead, [
+      when ? t(upcoming ? T.whyCountdown : T.whyFlown, { when }) : null,
+      destination ? t(T.destination, { destination: String(destination) }) : null,
+      payload ? t(T.payload, { payload: String(payload) }) : null,
+    ]);
+  },
+
+  probe(record, ctx, m, passInfo, T) {
+    const md = meta(record);
+    const destination = pick(md, 'destination', 'target', 'goingTo');
+    const milestone = pick(md, 'milestone', 'nextEvent');
+    const milestoneMs = pickTime(md, 'milestoneMs', 'nextEventMs', 'milestoneDate');
+    const au = m.distSunKm !== null ? m.distSunKm / UNITS.AU_KM : null;
+    return buildSentence(t(T.lead, { name: displayName(record) }), [
+      destination ? t(T.destination, { destination: String(destination) }) : null,
+      m.lightMinutes !== null
+        ? t(T.lightTime, { mins: fmt.smart(m.lightMinutes) })
+        : null,
+      au !== null ? t(T.distanceSun, { au: fmt.smart(au) }) : null,
+      milestone && milestoneMs !== null
+        ? t(T.milestone, { milestone: String(milestone), date: timeText.localDate(milestoneMs) })
+        : null,
+    ]);
+  },
+
+  telescope(record, ctx, m, passInfo, T) {
+    const md = meta(record);
+    const target = pick(md, 'observing', 'target', 'lookingAt');
+    const station = pick(md, 'station', 'parkedAt', 'lagrange');
+    const band = pick(md, 'band', 'wavelength');
+    return buildSentence(t(T.lead, { name: displayName(record) }), [
+      target ? t(T.observing, { target: String(target) }) : null,
+      station ? t(T.station, { station: String(station) }) : null,
+      band ? t(T.sees, { band: String(band) }) : null,
+      m.altKm !== null ? t(T.altitude, { alt: fmt.int(m.altKm) }) : null,
+    ]);
+  },
+
+  asteroid(record, ctx, m, passInfo, T) {
+    const md = meta(record);
+    const caMs = pickTime(md, 'closeApproachMs', 'closeApproachDate', 'caDate');
+    const missKm = pickNumber(md, 'missDistanceKm', 'missKm', 'distKm');
+    const missLd = pickNumber(md, 'missDistanceLd', 'missLd');
+    const ld = missLd !== null ? missLd : missKm !== null ? missKm / UNITS.LUNAR_DISTANCE_KM : null;
+    const sizeM = pickNumber(md, 'sizeM', 'diameterM');
+    const sizeSay = compare('sizeM', sizeM);
+    // Spec 0013 requirement 6: only written when a named source classified it. The word
+    // "danger" appears nowhere, because no sourced risk field exists in v1.
+    const sourcedNoImpact = md.impactRisk === 'none' || md.noImpact === true;
+    return buildSentence(t(T.lead, { name: displayName(record) }), [
+      caMs !== null && ld !== null
+        ? t(T.whyApproach, { date: timeText.localDate(caMs), ld: fmt.smart(ld) })
+        : null,
+      sizeSay ? t(T.size, { size: sizeSay }) : null,
+      sourcedNoImpact ? T.willNotHit : null,
+    ]);
+  },
+
+  comet(record, ctx, m, passInfo, T) {
+    const md = meta(record);
+    const periMs = pickTime(md, 'perihelionMs', 'perihelionDate', 'tp');
+    const mag = pickNumber(md, 'magnitude', 'mag', 'h');
+    const au = m.distSunKm !== null ? m.distSunKm / UNITS.AU_KM : null;
+    let brightness = null;
+    if (mag !== null) brightness = mag <= 6 ? T.nakedEye : T.faint;
+    return buildSentence(t(T.lead, { name: displayName(record) }), [
+      periMs !== null ? t(T.whyPerihelion, { date: timeText.localDate(periMs) }) : null,
+      brightness,
+      au !== null ? t(T.distanceSun, { au: fmt.smart(au) }) : null,
+    ]);
+  },
+
+  site(record, ctx, m, passInfo, T) {
+    const md = meta(record);
+    const kindKey = String(pick(md, 'kind', 'siteKind') || '');
+    const kindWord = Object.prototype.hasOwnProperty.call(T.kinds, kindKey)
+      ? T.kinds[kindKey]
+      : null;
+    const where = pick(md, 'where', 'locality', 'country', 'region');
+    const spacecraft = pick(md, 'talkingTo', 'spacecraft', 'dsnTarget');
+    const launch = pick(md, 'nextLaunch', 'launchName');
+    const launchMs = pickTime(md, 'nextLaunchMs', 'nextLaunchDate');
+    const when = launchMs !== null && m.tMs !== null ? inWords(launchMs - m.tMs) : null;
+    const lead = kindWord
+      ? t(T.leadKind, { name: displayName(record), kind: kindWord })
+      : t(T.lead, { name: displayName(record) });
+    return buildSentence(lead, [
+      spacecraft ? t(T.whyDsn, { spacecraft: String(spacecraft) }) : null,
+      launch && when ? t(T.whyLaunch, { launch: String(launch), when }) : null,
+      where ? t(T.where, { where: String(where) }) : null,
+    ]);
+  },
+
+  world(record, ctx, m, passInfo, T) {
+    const md = meta(record);
+    const isMoon = String(record.id || '').toLowerCase() === 'moon';
+    const phase = pick(md, 'phase', 'phaseName');
+    const riseMs = pickTime(md, 'riseMs', 'riseTime');
+    const explicitDiameter = pickNumber(md, 'diameterKm');
+    const radiusKm = pickNumber(md, 'radiusKm');
+    const diameterKm =
+      explicitDiameter !== null ? explicitDiameter : radiusKm !== null ? radiusKm * 2 : null;
+    const distanceSay = compare(
+      'distanceKm',
+      m.distEarthKm !== null ? m.distEarthKm : m.altKm,
+    );
+    const lead = isMoon
+      ? t(T.leadMoon, { name: displayName(record) })
+      : t(T.lead, { name: displayName(record) });
+    return buildSentence(lead, [
+      phase ? t(T.whyPhase, { phase: String(phase) }) : null,
+      riseMs !== null ? t(T.whyRise, { time: timeText.hhmm(riseMs) }) : null,
+      distanceSay ? t(T.distance, { distance: distanceSay }) : null,
+      diameterKm !== null ? t(T.diameter, { n: fmt.int(diameterKm) }) : null,
+    ]);
+  },
+};
+
+function firstSentence(record, ctx, m, passInfo) {
+  const klass = klassOf(record);
+  const builder = TEMPLATES[klass];
+  const template = COPY.templates[klass];
+  if (!builder || !template) {
+    // No template for this class: say what it is and stop. Never invent.
+    return buildSentence(
+      t(COPY.templates.satellite.lead, { name: displayName(record) }),
+      [],
+    );
+  }
+  const sentence = builder(record, ctx, m, passInfo, template);
+  return sentence.length > MAX_FIRST_SENTENCE
+    ? sentence.slice(0, MAX_FIRST_SENTENCE - 1).trimEnd() + COPY.punctuation.ellipsis
+    : sentence;
+}
+
+// ---------------------------------------------------------------------------------------
+// Block 3: comparison chips. Scale first, then distance, speed, brightness. At most three.
+// ---------------------------------------------------------------------------------------
+
+function comparisons(record, m) {
+  const md = meta(record);
+  const onTheGround = klassOf(record) === 'site';
+  // Never the heliocentric distance: "8 light-minutes away" for an asteroid one AU from
+  // the SUN is false, because the asteroid may be on the far side of it. A distance chip
+  // is only written when the distance from the observer's own world is known.
+  const distanceKm = onTheGround ? null : m.altKm !== null ? m.altKm : m.distEarthKm;
+  const candidates = [
+    compare('sizeM', pickNumber(md, 'sizeM', 'diameterM', 'lengthM')),
+    compare('distanceKm', distanceKm),
+    compare('speedKmh', m.speedKmh),
+    compare('magnitude', pickNumber(md, 'magnitude', 'mag')),
+  ];
+  const out = [];
+  for (const c of candidates) {
+    if (c && !out.includes(c)) out.push(c);
+    if (out.length === MAX_COMPARISONS) break;
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------------------------------
+// Block 4: "right now"
+// ---------------------------------------------------------------------------------------
+
+function latText(latDeg) {
+  const v = Math.abs(latDeg);
+  return t(latDeg >= 0 ? COPY.card.values.north : COPY.card.values.south, { n: fmt.num(v, 1) });
+}
+
+function lonText(lonDeg) {
+  const v = Math.abs(lonDeg);
+  return t(lonDeg >= 0 ? COPY.card.values.east : COPY.card.values.west, { n: fmt.num(v, 1) });
+}
+
+function rightNowRows(record, m, passInfo) {
+  const R = COPY.card.rows;
+  const V = COPY.card.values;
+  const rows = [];
+  if (!m.ok) {
+    rows.push([R.altitude, COPY.card.couldNotLook]);
+    return rows;
+  }
+  if (isEarthFrame(m.frame)) {
+    rows.push([
+      R.altitude,
+      m.altKm !== null ? t(V.km, { n: fmt.int(m.altKm) }) : COPY.card.couldNotLook,
+    ]);
+    if (m.speedKmh !== null && m.speedKmh > 0.5) {
+      rows.push([R.speed, t(V.kmh, { n: fmt.int(m.speedKmh) })]);
+    }
+    if (m.latDeg !== null && m.lonDeg !== null) {
+      const label = klassOf(record) === 'site' ? R.location : R.groundPoint;
+      rows.push([label, t(V.latLon, { lat: latText(m.latDeg), lon: lonText(m.lonDeg) })]);
+    }
+  } else {
+    rows.push([
+      R.distanceFromSun,
+      m.distSunKm !== null
+        ? t(V.au, { n: fmt.smart(m.distSunKm / UNITS.AU_KM) })
+        : COPY.card.couldNotLook,
+    ]);
+    rows.push([
+      R.distanceFromEarth,
+      m.distEarthKm !== null
+        ? t(V.au, { n: fmt.smart(m.distEarthKm / UNITS.AU_KM) })
+        : COPY.card.couldNotLook,
+    ]);
+    if (m.lightMinutes !== null) {
+      rows.push([R.lightTime, t(V.minutes, { n: fmt.smart(m.lightMinutes) })]);
+    }
+    if (m.speedKmh !== null && m.speedKmh > 0.5) {
+      rows.push([R.speed, t(V.kmh, { n: fmt.int(m.speedKmh) })]);
+    }
+  }
+
+  if (passInfo.state === PASS_OK) {
+    const p = passInfo.pass;
+    const fists = fistsWords(p.peakEl * DEG);
+    rows.push([
+      R.nextPass,
+      timeText.dayAndTime(p.startMs) + (fists ? COPY.punctuation.comma + fists : ''),
+    ]);
+  } else if (passInfo.state === PASS_NO_OBSERVER) {
+    rows.push([R.nextPass, COPY.sky.noObserver]);
+  } else if (passInfo.state === PASS_NONE) {
+    rows.push([R.nextPass, COPY.sky.noPass]);
+  } else if (passInfo.state === PASS_ERROR) {
+    rows.push([R.nextPass, COPY.sky.couldNotLook]);
+  }
+  return rows;
+}
+
+// ---------------------------------------------------------------------------------------
+// Block 5: "see it from here" -- the copy pattern that is the actual feature
+// ---------------------------------------------------------------------------------------
+
+function seeItLine(record, ctx, m, passInfo) {
+  const klass = klassOf(record);
+  if (klass === 'site') return COPY.sky.onTheGround;
+  if (klass === 'world') {
+    const riseMs = pickTime(meta(record), 'riseMs', 'riseTime');
+    return riseMs !== null
+      ? t(COPY.sky.worldRise, { time: timeText.hhmm(riseMs) })
+      : COPY.sky.worldNoRise;
+  }
+  if (!isEarthFrame(m.frame)) return COPY.sky.notVisibleFromGround;
+  switch (passInfo.state) {
+    case PASS_NO_OBSERVER:
+      return COPY.sky.noObserver;
+    case PASS_NONE:
+      return COPY.sky.noPass;
+    case PASS_ERROR:
+      return COPY.sky.couldNotLook;
+    case PASS_NOT_APPLICABLE:
+      return ctx && ctx.observer ? COPY.sky.notVisibleFromGround : COPY.sky.noObserver;
+    default:
+      break;
+  }
+  const p = passInfo.pass;
+  const dir = compassWords(p.startAz * DEG);
+  const fists = fistsWords(p.peakEl * DEG);
+  const time = timeText.hhmm(p.startMs);
+  const minutes = Number.isFinite(p.endMs - p.startMs)
+    ? Math.max(1, Math.round((p.endMs - p.startMs) / 60000))
+    : null;
+  const line =
+    minutes !== null
+      ? t(COPY.sky.lookLine, { dir, fists, time, mins: fmt.int(minutes) })
+      : t(COPY.sky.lookLineNoDuration, { dir, fists, time });
+  if (p.sunlit === true) return line + ' ' + COPY.sky.sunlit;
+  if (p.sunlit === false) return line + ' ' + COPY.sky.notSunlit;
+  return line;
+}
+
+// ---------------------------------------------------------------------------------------
+// Block 7: the class-and-age line. Spec 0001 principle 2, made visible.
+// ---------------------------------------------------------------------------------------
+
+function ageParts(ageMs) {
+  const minutes = ageMs / 60000;
+  if (minutes < 90) {
+    const n = Math.max(0, Math.round(minutes));
+    return { n: fmt.int(n), unit: fmt.plural(n, COPY.cls.minuteWord, COPY.cls.minutesWord) };
+  }
+  const hours = minutes / 60;
+  if (hours < 48) {
+    const n = Math.round(hours);
+    return { n: fmt.int(n), unit: fmt.plural(n, COPY.cls.hourWord, COPY.cls.hoursWord) };
+  }
+  const days = Math.round(hours / 24);
+  return { n: fmt.int(days), unit: fmt.plural(days, COPY.cls.dayWord, COPY.cls.daysWord) };
+}
+
+function classLine(record, m) {
+  const cls = m.cls || (record && record.cls) || '';
+  switch (cls) {
+    case 'measured':
+      return COPY.cls.measured;
+    case 'inferred': {
+      const epoch = record ? record.epoch : null;
+      if (!Number.isFinite(epoch) || !Number.isFinite(m.tMs)) return COPY.cls.inferredUnknownAge;
+      return t(COPY.cls.inferred, ageParts(Math.max(0, m.tMs - epoch)));
+    }
+    case 'illustrative':
+      return COPY.cls.illustrative;
+    case 'sample': {
+      const why = pick(meta(record), 'why');
+      return COPY.cls.sample + (why ? COPY.punctuation.dash + String(why) : '');
+    }
+    default:
+      return COPY.cls.unknown;
+  }
+}
+
+// ---------------------------------------------------------------------------------------
+// Block 8: the source line. On the card, always -- not in a footer (spec 0013 req 5).
+// ---------------------------------------------------------------------------------------
+
+function sourceRow(record, ctx) {
+  const id = record && record.source ? String(record.source) : null;
+  if (!id) return { label: null, attribution: null };
+  try {
+    const table = ctx && ctx.sources ? ctx.sources.SOURCES : null;
+    if (table && table[id]) {
+      return { label: table[id].label || id, attribution: table[id].attribution || null };
+    }
+    const list = ctx && ctx.sources && ctx.sources.status ? ctx.sources.status() : null;
+    if (Array.isArray(list)) {
+      const row = list.find((r) => r && r.id === id);
+      if (row) return { label: row.label || id, attribution: row.attribution || null };
+    }
+  } catch {
+    /* fall through to the bare id, which is still true */
+  }
+  return { label: id, attribution: null };
+}
+
+// ---------------------------------------------------------------------------------------
+// Actions
+// ---------------------------------------------------------------------------------------
+
+function flyTo(record, ctx, m) {
+  if (!m.ok || !ctx || !ctx.cameraRig || !ctx.stage) return;
+  try {
+    const targetScene = ctx.stage.toScene(m.posKm, m.frame);
+    if (!targetScene) return;
+    const distance = targetScene.length ? Math.max(targetScene.length() * 0.02, 0.05) : 1;
+    ctx.cameraRig.flyTo({ targetScene, distance, ms: 800 });
+    if (ctx.cameraRig.follow) {
+      ctx.cameraRig.follow(() => {
+        const p = positionAt(record, ctx.clock.now());
+        return p ? ctx.stage.toScene(p, p.frame || record.frame) : null;
+      });
+    }
+  } catch {
+    /* a camera that will not fly is not worth breaking the card over */
+  }
+}
+
+function seeFromHere(record, ctx) {
+  try {
+    if (ctx && ctx.setMoment) ctx.setMoment(COPY.moments.now.id);
+    // main.js spells it `skyView`; accept both rather than silently do nothing.
+    const sky = ctx && (ctx.skyview || ctx.skyView);
+    if (sky && sky.enter && ctx.observer) sky.enter(ctx.observer);
+  } catch {
+    /* the moment switcher is the fallback and it is always on screen */
+  }
+}
+
+function actionButtons(record, ctx, m) {
+  const A = COPY.card.actions;
+  const buttons = [];
+
+  const fly = el('button', 'sr-btn sr-btn--primary', A.flyTo);
+  fly.type = 'button';
+  fly.title = A.flyToTitle;
+  fly.disabled = !m.ok;
+  fly.addEventListener('click', () => flyTo(record, ctx, m));
+  buttons.push(fly);
+
+  const see = el('button', 'sr-btn', A.seeFromHere);
+  see.type = 'button';
+  see.title = A.seeFromHereTitle;
+  see.disabled = !isEarthFrame(m.frame) && klassOf(record) !== 'world';
+  see.addEventListener('click', () => seeFromHere(record, ctx));
+  buttons.push(see);
+
+  // Off in v1, with an honest reason rather than a button that does nothing.
+  const tell = el('button', 'sr-btn', A.tellMeBefore);
+  tell.type = 'button';
+  tell.disabled = true;
+  tell.title = A.tellMeBeforeDisabled;
+  tell.setAttribute('aria-describedby', 'sr-card-tell-why');
+  buttons.push(tell);
+
+  return buttons.slice(0, MAX_ACTIONS);
+}
+
+// ---------------------------------------------------------------------------------------
+// Render
+// ---------------------------------------------------------------------------------------
+
+function section(className, labelText) {
+  const wrap = el('section', className);
+  if (labelText) wrap.appendChild(el('h3', 'sr-card__label', labelText));
+  return wrap;
+}
+
+function render(record, ctx) {
+  const node = ensureHost();
+  const klass = klassOf(record);
+  const m = measure(record, ctx);
+  const passInfo = nextPass(record, ctx, m);
+
+  clear(node);
+  node.dataset.klass = klass;
+  node.dataset.cls = String(m.cls || record.cls || '');
+
+  // 1. name and class glyph
+  const header = el('header', 'sr-card__header');
+  const glyph = el('span', `sr-glyph sr-glyph--${klass}`);
+  glyph.setAttribute('aria-hidden', 'true');
+  header.appendChild(glyph);
+  header.appendChild(el('h2', 'sr-card__name', displayName(record)));
+  header.appendChild(el('span', 'sr-card__klass', COPY.klass[klass]));
+  const close = el('button', 'sr-card__close', COPY.card.close);
+  close.type = 'button';
+  close.title = COPY.card.closeTitle;
+  close.addEventListener('click', hideCard);
+  header.appendChild(close);
+  node.appendChild(header);
+
+  const body = el('div', 'sr-card__body');
+  bodyEl = body;
+  node.appendChild(body);
+
+  // 2. one plain sentence
+  body.appendChild(el('p', 'sr-card__sentence', firstSentence(record, ctx, m, passInfo)));
+
+  // 3. comparison chips, at most three
+  const chips = comparisons(record, m);
+  if (chips.length) {
+    const wrap = el('ul', 'sr-chips');
+    wrap.setAttribute('aria-label', COPY.card.comparisonsLabel);
+    for (const chip of chips) wrap.appendChild(el('li', 'sr-chip', chip));
+    body.appendChild(wrap);
+  }
+
+  // 4. right now
+  const rows = rightNowRows(record, m, passInfo);
+  if (rows.length) {
+    const wrap = section('sr-card__block sr-card__now', COPY.card.rightNowLabel);
+    const dl = el('dl', 'sr-rows');
+    for (const [label, value] of rows) {
+      dl.appendChild(el('dt', 'sr-rows__key', label));
+      dl.appendChild(el('dd', 'sr-rows__val', value));
+    }
+    wrap.appendChild(dl);
+    body.appendChild(wrap);
+  }
+
+  // 5. see it from here
+  const see = section('sr-card__block sr-card__see', COPY.card.seeItLabel);
+  see.appendChild(el('p', 'sr-card__seeline', seeItLine(record, ctx, m, passInfo)));
+  body.appendChild(see);
+
+  // 6. actions
+  const actions = el('div', 'sr-card__actions');
+  actions.setAttribute('aria-label', COPY.card.actionsLabel);
+  for (const b of actionButtons(record, ctx, m)) actions.appendChild(b);
+  const why = el('p', 'sr-card__why', COPY.card.actions.tellMeBeforeDisabled);
+  why.id = 'sr-card-tell-why';
+  body.appendChild(actions);
+  body.appendChild(why);
+
+  // 7. the class-and-age line
+  const foot = el('footer', 'sr-card__foot');
+  foot.appendChild(el('p', 'sr-card__cls', classLine(record, m)));
+
+  // 8. the source line
+  const src = sourceRow(record, ctx);
+  if (src.label) {
+    const parts = [COPY.source.prefix + COPY.punctuation.colon + src.label];
+    if (src.attribution) parts.push(src.attribution);
+    foot.appendChild(el('p', 'sr-card__source', parts.join(COPY.punctuation.separator)));
+  } else {
+    foot.appendChild(el('p', 'sr-card__source', COPY.source.unknown));
+  }
+  node.appendChild(foot);
+
+  node.hidden = false;
+  node.classList.add('is-open');
+}
+
+function subscribe(ctx) {
+  if (subscribed || !ctx || !ctx.clock || !ctx.clock.onChange) return;
+  subscribed = true;
+  try {
+    ctx.clock.onChange(() => {
+      if (!current) return;
+      // A wall-clock throttle on repainting the DOM. It is not a source of any drawn
+      // value: every number in the card comes from ctx.clock.now().
+      const wall = typeof performance !== 'undefined' ? performance.now() : 0;
+      if (wall - lastPaint < REFRESH_MS) return;
+      lastPaint = wall;
+      try {
+        render(current.record, current.ctx);
+      } catch {
+        /* keep the last good card rather than blanking it */
+      }
+    });
+  } catch {
+    subscribed = false;
+  }
+}
+
+// ---------------------------------------------------------------------------------------
+// Contract exports
+// ---------------------------------------------------------------------------------------
+
+export function showCard(record, ctx) {
+  if (!record) {
+    hideCard();
+    return;
+  }
+  current = { record, ctx };
+  subscribe(ctx);
+  render(record, ctx);
+}
+
+export function hideCard() {
+  current = null;
+  if (!host) return;
+  host.classList.remove('is-open');
+  host.hidden = true;
+  if (bodyEl) clear(bodyEl);
+}
+
+if (typeof document !== 'undefined') {
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && current) hideCard();
+  });
+}

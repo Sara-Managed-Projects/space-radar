@@ -1,0 +1,19 @@
+# Meteor showers. A hand-kept table, not an API, because the IMO calendar is a PDF and peak
+# dates are calendar facts that move by hours between years. Reviewed each December against
+# that calendar; the review is a PR a human reads.
+#
+# The useful sentence on the card is never the ZHR. It is "the radiant is highest after 02:00
+# and the Moon sets at 23:40" -- both computed for the visitor by astronomy-engine.
+version: 1
+reviewed_against: "IMO Meteor Shower Calendar 2026"
+reviewed_on: 2026-09-06
+
+showers:
+  - {id: quadrantids,   display: Quadrantids,   peak: "01-03", zhr: 110, ra_h: 15.33, dec: 49.5, parent: "asteroid 2003 EH1", note: "A sharp peak only a few hours wide, so the date matters more than for any other shower."}
+  - {id: lyrids,        display: Lyrids,        peak: "04-22", zhr: 18,  ra_h: 18.17, dec: 34.0, parent: "comet Thatcher",     note: "Modest most years, with occasional outbursts nobody predicts."}
+  - {id: eta-aquariids, display: Eta Aquariids, peak: "05-06", zhr: 50,  ra_h: 22.50, dec: -1.0, parent: "comet Halley",       note: "Dust from Halley's comet. Much better from the southern hemisphere."}
+  - {id: perseids,      display: Perseids,      peak: "08-12", zhr: 100, ra_h: 3.22,  dec: 58.0, parent: "comet Swift-Tuttle", note: "The one most people have heard of, and warm enough in the north to sit outside for."}
+  - {id: orionids,      display: Orionids,      peak: "10-21", zhr: 20,  ra_h: 6.35,  dec: 16.0, parent: "comet Halley",       note: "Halley's dust again, from the other side of its orbit."}
+  - {id: leonids,       display: Leonids,       peak: "11-17", zhr: 15,  ra_h: 10.28, dec: 21.0, parent: "comet Tempel-Tuttle", note: "Quiet now, but it produces a storm roughly every 33 years."}
+  - {id: geminids,      display: Geminids,      peak: "12-14", zhr: 150, ra_h: 7.47,  dec: 33.0, parent: "asteroid 3200 Phaethon", note: "The best of the year, and the only major shower whose parent is an asteroid rather than a comet."}
+  - {id: ursids,        display: Ursids,        peak: "12-22", zhr: 10,  ra_h: 14.60, dec: 76.0, parent: "comet Tuttle",       note: "Small, and circumpolar from the north, so the radiant never sets."}
