@@ -45,13 +45,69 @@ export const REAL_MODELS = {
     '-61': { file: 'juno.glb', colour: 'probe', name: 'Juno' },
     '-96': { file: 'parker.glb', colour: 'probe', name: 'Parker Solar Probe' },
     '-227': { file: 'kepler.glb', colour: 'telescope', name: 'Kepler' },
+    '-170': { file: 'jwst.glb', colour: 'telescope', name: 'James Webb Space Telescope' },
+    '-21': { file: 'soho.glb', colour: 'telescope', name: 'SOHO' },
+    '-74': { file: 'mro.glb', colour: 'probe', name: 'Mars Reconnaissance Orbiter' },
   },
-  // By name, for objects whose catalogue id varies or that stand in for a whole class.
+  /**
+   * Matched on the catalogue NAME rather than a catalogue number, deliberately.
+   *
+   * A wrong NORAD id shows the wrong spacecraft, confidently, and nothing on screen would say so
+   * -- which is the one failure this project is organised against. Catalogue names are noisy but
+   * self-correcting: a name that stops matching shows the generic model, which is honest.
+   * Keys are lower-cased substrings of the catalogue name.
+   */
   named: {
-    bennu: { file: 'asteroid-bennu.glb', colour: 'asteroid', name: '101955 Bennu' },
-    tdrs: { file: 'tdrs.glb', colour: 'satellite', name: 'Tracking and Data Relay Satellite' },
+    bennu: { file: 'asteroid-bennu.glb', colour: 'asteroid', name: '101955 Bennu', klass: ['asteroid'] },
+    tdrs: { file: 'tdrs.glb', colour: 'satellite', name: 'Tracking and Data Relay Satellite', klass: ['satellite'] },
+    swift: { file: 'swift.glb', colour: 'telescope', name: 'Swift', klass: ['satellite', 'telescope'] },
+    tess: { file: 'tess.glb', colour: 'telescope', name: 'TESS', klass: ['satellite', 'telescope'] },
+    sdo: { file: 'sdo.glb', colour: 'telescope', name: 'Solar Dynamics Observatory', klass: ['satellite', 'telescope'] },
+    dscovr: { file: 'dscovr.glb', colour: 'satellite', name: 'DSCOVR', klass: ['satellite'] },
+    'suomi npp': { file: 'suomi.glb', colour: 'satellite', name: 'Suomi NPP', klass: ['satellite'] },
+    goes: { file: 'goes.glb', colour: 'satellite', name: 'GOES weather satellite', klass: ['satellite'] },
+    mms: { file: 'mms.glb', colour: 'satellite', name: 'Magnetospheric Multiscale', klass: ['satellite'] },
+  },
+  /**
+   * A default for a whole LAYER. This is the highest-value entry in the file: the geostationary
+   * ring is several hundred unnamed commercial communications satellites, and most of them really
+   * are a box bus with a big dish and two long wings. One 81 kB model makes the whole ring read as
+   * what it is instead of as identical grey boxes.
+   *
+   * The card still says "drawn as a generic satellite", because that is what it is.
+   */
+  byLayer: {
+    'geo-ring': { file: 'bus-ssl1300.glb', colour: 'satellite', name: 'a communications satellite', generic: true },
+  },
+  /** A default for a class of ground site. The app already draws the live dish-to-spacecraft links. */
+  bySiteClass: {
+    dish: { file: 'dsn70.glb', colour: 'site', name: 'a Deep Space Network antenna', generic: true },
+  },
+  /** Named surface sites, where the thing that landed is the thing worth drawing. */
+  bySite: {
+    jezero: { file: 'perseverance.glb', colour: 'site', name: 'Perseverance' },
+    'apollo-11': { file: 'lunar-module.glb', colour: 'site', name: 'Apollo 11 lunar module' },
+    'apollo-17': { file: 'lunar-module.glb', colour: 'site', name: 'Apollo 17 lunar module' },
   },
 };
+
+/**
+ * Does `haystack` contain `needle` as a whole word (or words)? Catalogue names are full of
+ * parentheses, hyphens and designators, so the boundary is "not a letter or digit" rather than
+ * \b, which would let `tess` match `tessera`.
+ */
+function wordMatch(haystack, needle) {
+  let from = 0;
+  for (;;) {
+    const i = haystack.indexOf(needle, from);
+    if (i < 0) return false;
+    const before = i === 0 ? '' : haystack[i - 1];
+    const after = haystack[i + needle.length] || '';
+    const isWordChar = (c) => c !== '' && /[a-z0-9]/.test(c);
+    if (!isWordChar(before) && !isWordChar(after)) return true;
+    from = i + 1;
+  }
+}
 
 const cache = new Map(); // file -> Promise<Object3D | null>
 let loader = null;
@@ -72,15 +128,38 @@ function gltfLoader() {
 export function realModelFor(record) {
   if (!record) return null;
   const meta = record.meta || {};
+
   const norad = meta.noradId ?? meta.catalogueNumber;
-  if (norad != null && REAL_MODELS.norad[norad]) return REAL_MODELS.norad[norad];
+  if (norad != null && Object.prototype.hasOwnProperty.call(REAL_MODELS.norad, norad)) {
+    return REAL_MODELS.norad[norad];
+  }
   const horizons = meta.horizonsId;
-  if (horizons != null && REAL_MODELS.horizons[String(horizons)]) {
+  if (horizons != null && Object.prototype.hasOwnProperty.call(REAL_MODELS.horizons, String(horizons))) {
     return REAL_MODELS.horizons[String(horizons)];
+  }
+  // A specific site before its class: Jezero gets the rover, any other dish gets a dish.
+  if (Object.prototype.hasOwnProperty.call(REAL_MODELS.bySite, record.id)) {
+    return REAL_MODELS.bySite[record.id];
+  }
+  const siteClass = meta.siteKind || meta.siteClass || record.siteClass;
+  if (siteClass && Object.prototype.hasOwnProperty.call(REAL_MODELS.bySiteClass, siteClass)) {
+    return REAL_MODELS.bySiteClass[siteClass];
   }
   const name = String(record.name || '').toLowerCase();
   for (const [key, entry] of Object.entries(REAL_MODELS.named)) {
-    if (name.includes(key)) return entry;
+    // The class gate and the word boundary are both here because of one real miss: a plain
+    // substring match put the TESS SPACECRAFT's model on `C/2019 M4 (TESS)`, a comet that
+    // telescope discovered. Attaching the wrong object's geometry, confidently, with nothing on
+    // screen saying so, is the single failure this whole project is organised against -- so a
+    // name match now has to agree about what KIND of thing it is, and match a whole word.
+    if (entry.klass && !entry.klass.includes(record.klass)) continue;
+    if (!wordMatch(name, key)) continue;
+    return entry;
+  }
+  // Last: a default for the whole layer, so an unnamed member of a known population still gets
+  // geometry that looks like what it is.
+  if (Object.prototype.hasOwnProperty.call(REAL_MODELS.byLayer, record.layer)) {
+    return REAL_MODELS.byLayer[record.layer];
   }
   return null;
 }

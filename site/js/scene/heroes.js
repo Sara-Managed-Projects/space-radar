@@ -46,6 +46,9 @@ export function createHeroes(scene, ctx) {
   /** id -> {obj, record, fadeStart} */
   const live = new Map();
 
+  /** Records not drawn this frame because they sit inside another model (docked vehicles). */
+  let lastHidden = [];
+
   function acquire(record) {
     const existing = live.get(record.id);
     if (existing) return existing;
@@ -130,7 +133,34 @@ export function createHeroes(scene, ctx) {
     }
 
     out.sort((a, b) => (b.forced ? 1 : 0) - (a.forced ? 1 : 0) || a.d - b.d);
-    return out.slice(0, POOL);
+
+    // DOCKED VEHICLES. A Dragon, two Progresses and a Cygnus berthed to the station really are at
+    // the station's position -- the catalogue is right and so is the propagation. Drawing each of
+    // them as its own model puts five overlapping spacecraft at one point, which reads as a
+    // rendering bug and was reported as one.
+    //
+    // So a candidate inside an already-accepted model's drawn radius is skipped. At this scale it
+    // would be *inside* that model, and a shape you cannot see is not worth a draw call. The
+    // selection is never skipped: if you asked for the Dragon, you get the Dragon.
+    const f = camera.projectionMatrix.elements[5];
+    const h = (ctx.renderer && ctx.renderer.domElement && ctx.renderer.domElement.clientHeight) || 800;
+    const kept = [];
+    const hidden = [];
+    for (const c of out) {
+      const px = c.forced ? SELECTED_PX : TARGET_PX;
+      c.drawnRadius = (px * c.d) / (h * f); // half the drawn size, in world units
+      const swallowedBy = c.forced ? null : kept.find((k) => k.pos.distanceTo(c.pos) < k.drawnRadius);
+      if (swallowedBy) {
+        hidden.push({ record: c.record, insideOf: swallowedBy.record });
+        continue;
+      }
+      kept.push(c);
+      if (kept.length >= POOL) break;
+    }
+    // What was hidden is worth knowing rather than silently dropping: the card layer can say
+    // "4 vehicles are docked here" from this, and today it at least makes the behaviour findable.
+    lastHidden = hidden;
+    return kept;
   }
 
   function update(tMs) {
@@ -194,6 +224,8 @@ export function createHeroes(scene, ctx) {
   return {
     update,
     count: () => live.size,
+    /** [{record, insideOf}] -- vehicles docked to something that is drawn. */
+    hidden: () => lastHidden,
     setVisible(b) { root.visible = !!b; },
     dispose() {
       for (const id of [...live.keys()]) release(id);
