@@ -614,6 +614,361 @@ for (const file of allFiles) {
   }
 }
 
+// 3i. the camera contract a guided trip needs. Six additions and one live bug, and every one of
+// them is a promise about a CALLBACK or about the shape of a move -- which is to say, exactly the
+// class of thing that looks right in the source and is wrong in the browser.
+//
+// The three that matter most, and why each is here rather than in a comment:
+//
+//   * A FLIGHT ENDS EXACTLY ONCE AND SAYS HOW. flyTo used to drop a superseded flight's onArrive,
+//     and a pointer drag used to drop the live one's, both silently. Anything driven by arrivals
+//     therefore hangs forever the first time somebody touches the canvas -- and there is no input
+//     lockout to stop them touching it.
+//   * ms: 0 MEANS INSTANT. It did not: `opts.ms > 0` sent zero to the 750 ms default, and
+//     main.js:80 has been asking for an instant set at boot and silently getting a flight.
+//   * A COMPLETION CALLBACK NEVER RUNS INSIDE ANOTHER ONE. Under prefers-reduced-motion a flight
+//     arrives synchronously, so the obvious `onArrive: () => flyTo(next)` is a recursive chain
+//     that runs a whole itinerary in one tick and overflows the stack if it loops. It fails only
+//     for the people the flag protects, which is why it needs a test and not a warning.
+{
+  const failed = (msg) => problems.push(`CAMERA   ${msg}`);
+  const near = (got, want, tol, what) => {
+    if (!Number.isFinite(got) || Math.abs(got - want) > tol) {
+      failed(`${what}: expected ${want} +/- ${tol}, got ${got}`);
+      return false;
+    }
+    return true;
+  };
+  /** A canvas that records its listeners, so a synthetic drag can reach the rig. */
+  const stubElement = () => {
+    const on = new Map();
+    return {
+      style: {},
+      clientWidth: 800,
+      clientHeight: 600,
+      addEventListener(kind, fn) {
+        if (!on.has(kind)) on.set(kind, []);
+        on.get(kind).push(fn);
+      },
+      removeEventListener() {},
+      dispatchEvent() { return true; },
+      setPointerCapture() {},
+      releasePointerCapture() {},
+      fire(kind, event) { for (const fn of on.get(kind) || []) fn(event); },
+    };
+  };
+
+  try {
+    const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
+    const { createCameraRig, CAMERA_EASES } = await import(join(JS, 'scene/camera.js'));
+    const DEG = Math.PI / 180;
+    const rigOf = (dom = null) => {
+      const camera = new THREE.PerspectiveCamera(50, 1.5, 0.1, 1e9);
+      camera.position.set(0, 0, 10);
+      // worldRadius 0: no clearance sphere, so every distance below is the one that was asked for.
+      return createCameraRig(camera, dom, { worldRadius: 0 });
+    };
+    // Every step is 0.1 s because update() clamps a single step to 0.25 s.
+    const run = (rig, seconds) => { for (let i = 0; i < Math.round(seconds / 0.1); i += 1) rig.update(0.1); };
+
+    // --- the named curves ------------------------------------------------------------------
+    for (const [name, fn] of Object.entries(CAMERA_EASES)) {
+      if (fn(0) !== 0 || Math.abs(fn(1) - 1) > 1e-9) failed(`ease '${name}' does not run 0 -> 1`);
+      let last = -1;
+      for (let i = 0; i <= 20; i += 1) {
+        const v = fn(i / 20);
+        if (v < last - 1e-9) { failed(`ease '${name}' is not monotonic at ${i / 20}`); break; }
+        last = v;
+      }
+    }
+    near(CAMERA_EASES.linear(0.5), 0.5, 1e-9, "ease 'linear' is linear");
+    // Trapezoidal 15/70/15: by the end of the acceleration ramp it has covered v*a/2 of the move.
+    near(CAMERA_EASES.cruise(0.15), 0.0882, 0.001, "ease 'cruise' covers 8.8% during its ramp-in");
+    if (!(CAMERA_EASES.cruise(0.15) > CAMERA_EASES.inout(0.15))) {
+      failed("ease 'cruise' is not moving sooner than 'inout'; that is the whole reason it exists");
+    }
+
+    // --- the default flight is unchanged --------------------------------------------------
+    {
+      const rig = rigOf();
+      let reasons = [];
+      rig.flyTo({ distance: 40, ms: 800, onArrive: (r) => reasons.push(r) });
+      if (!rig.state.flying) failed('a normal flyTo did not start a flight');
+      run(rig, 0.4);
+      if (!(rig.state.distance > 10 && rig.state.distance < 40)) {
+        failed(`half way through an 800 ms flight the distance is ${rig.state.distance}`);
+      }
+      if (reasons.length) failed(`onArrive fired ${reasons[0]} half way through the flight`);
+      run(rig, 0.5);
+      if (rig.state.flying) failed('an 800 ms flight was still flying after 900 ms');
+      if (reasons.join() !== 'done') failed(`arrival reported [${reasons}], expected [done]`);
+      near(rig.state.distance, 40, 1e-6, 'a completed flight is at the distance it was given');
+    }
+
+    // --- ms: 0 is instant, and it is the bug at main.js:80 --------------------------------
+    {
+      const rig = rigOf();
+      const seen = [];
+      rig.flyTo({ distance: 22, ms: 0, onArrive: (r) => seen.push(r) });
+      if (rig.state.flying) failed('ms: 0 started a flight; it means instant');
+      near(rig.state.distance, 22, 1e-9, 'ms: 0 sets the distance before it returns');
+      if (seen.join() !== 'done') failed(`ms: 0 reported [${seen}] before returning, expected [done]`);
+      run(rig, 1.0);
+      if (seen.length !== 1) failed(`ms: 0 fired its arrival ${seen.length} times`);
+    }
+
+    // --- a superseded flight is told, never dropped ---------------------------------------
+    {
+      const rig = rigOf();
+      const first = [];
+      rig.flyTo({ distance: 40, ms: 800, onArrive: (r) => first.push(r) });
+      run(rig, 0.2);
+      rig.flyTo({ distance: 60, ms: 800 });
+      if (first.join() !== 'replaced') failed(`a superseded flight reported [${first}], expected [replaced]`);
+
+      const rig2 = rigOf();
+      const arrive = [];
+      const cancel = [];
+      rig2.flyTo({ distance: 40, ms: 800, onArrive: (r) => arrive.push(r), onCancel: (r) => cancel.push(r) });
+      run(rig2, 0.2);
+      rig2.flyTo({ distance: 60, ms: 800 });
+      if (cancel.join() !== 'replaced') failed(`onCancel got [${cancel}], expected [replaced]`);
+      if (arrive.length) failed(`onArrive also fired [${arrive}] for a cancelled flight; exactly one callback runs`);
+    }
+
+    // --- a drag cancels the flight AND says so --------------------------------------------
+    // The bug this replaces is the one that hangs a tour permanently the first time a user
+    // touches the canvas, with no lockout to stop them.
+    {
+      const dom = stubElement();
+      const rig = rigOf(dom);
+      const seen = [];
+      rig.flyTo({ distance: 40, ms: 800, onArrive: (r) => seen.push(r) });
+      run(rig, 0.2);
+      dom.fire('pointerdown', { pointerId: 1, clientX: 100, clientY: 100 });
+      dom.fire('pointermove', { pointerId: 1, clientX: 140, clientY: 120, buttons: 1 });
+      if (rig.state.flying) failed('a drag did not end the flight');
+      if (seen.join() !== 'cancelled') failed(`a drag reported [${seen}], expected [cancelled]`);
+      run(rig, 1.0);
+      if (seen.length !== 1) failed(`a cancelled flight reported ${seen.length} times`);
+    }
+
+    // --- finishFlight(): a seek, not a fifth half-finished sweep ---------------------------
+    {
+      const want = rigOf();
+      want.flyTo({ distance: 40, azimuth: 1.1, polar: 1.3, ms: 800 });
+      run(want, 1.0);
+
+      const rig = rigOf();
+      const seen = [];
+      rig.flyTo({ distance: 40, azimuth: 1.1, polar: 1.3, ms: 800, onArrive: (r) => seen.push(r) });
+      run(rig, 0.3);
+      if (rig.finishFlight() !== true) failed('finishFlight() during a flight returned false');
+      if (rig.state.flying) failed('finishFlight() left the rig flying');
+      if (seen.join() !== 'skipped') failed(`finishFlight() reported [${seen}], expected [skipped]`);
+      near(rig.state.distance, want.state.distance, 1e-6, 'finishFlight() lands at the flight distance');
+      near(rig.state.azimuth, want.state.azimuth, 1e-6, 'finishFlight() lands at the flight azimuth');
+      near(rig.state.target.distanceTo(want.state.target), 0, 1e-6, 'finishFlight() lands at the flight look-at');
+      if (rig.finishFlight() !== false) failed('finishFlight() with no flight returned true');
+      if (seen.length !== 1) failed(`finishFlight() reported ${seen.length} times`);
+    }
+
+    // --- opts.targetDelay ------------------------------------------------------------------
+    // The lag is not a bug to remove -- it is what keeps the world you are leaving in shot -- but
+    // at close framing the subject walks off screen and back, so it has to be a parameter.
+    {
+      const held = rigOf();
+      held.flyTo({ targetScene: { x: 100, y: 0, z: 0 }, distance: 10, ms: 1000 });
+      run(held, 0.3); // inside the default 0.34 delay
+      near(held.state.target.length(), 0, 1e-9, 'the default targetDelay holds the look-at for the first third');
+
+      const eager = rigOf();
+      eager.flyTo({ targetScene: { x: 100, y: 0, z: 0 }, distance: 10, ms: 1000, targetDelay: 0 });
+      run(eager, 0.3);
+      if (!(eager.state.target.length() > 1)) {
+        failed(`targetDelay: 0 still froze the look-at (${eager.state.target.length()})`);
+      }
+    }
+
+    // --- opts.ease -------------------------------------------------------------------------
+    {
+      const lin = rigOf();
+      lin.flyTo({ distance: 1000, ms: 1000, ease: 'linear' });
+      run(lin, 0.5);
+      // Distance is interpolated in LOG space, so half way is the geometric mean, not the mean.
+      near(lin.state.distance, Math.sqrt(10 * 1000), 0.5, "ease 'linear' is linear in log distance");
+      const ui = rigOf();
+      ui.flyTo({ distance: 1000, ms: 1000 });
+      run(ui, 0.5);
+      if (Math.abs(ui.state.distance - lin.state.distance) < 1) {
+        failed('the default ease and linear agree half way through; opts.ease is not reaching the flight');
+      }
+    }
+
+    // --- opts.apex -------------------------------------------------------------------------
+    // Two stops far apart laterally otherwise sweep across at close range. This is the pull-back.
+    {
+      const rig = rigOf();
+      rig.flyTo({
+        targetScene: { x: 500, y: 0, z: 0 },
+        distance: 10,
+        ms: 1000,
+        ease: 'linear',
+        apex: { distance: 1000, at: 0.5 },
+      });
+      run(rig, 0.5);
+      near(rig.state.distance, 1000, 1, 'the apex distance is reached at its own fraction');
+      run(rig, 0.5);
+      near(rig.state.distance, 10, 1e-6, 'a flight with an apex still arrives at its own distance');
+
+      const flat = rigOf();
+      flat.flyTo({ targetScene: { x: 500, y: 0, z: 0 }, distance: 10, ms: 1000, ease: 'linear' });
+      run(flat, 0.5);
+      if (flat.state.distance > 11) failed('a flight with no apex pulled back anyway');
+    }
+
+    // --- orbit(): the constant turn flyTo cannot do -----------------------------------------
+    {
+      const rig = rigOf();
+      const az0 = rig.state.azimuth;
+      const seen = [];
+      if (rig.orbit({ deg: 540, degPerSec: 90, onDone: (r) => seen.push(r) }) !== true) {
+        failed('orbit() refused a plain drift');
+      }
+      if (!rig.state.orbiting) failed('orbit() did not set state.orbiting');
+      run(rig, 1.0);
+      near((rig.state.azimuth - az0) / DEG, 90, 0.5, 'orbit() turns at the rate it was given');
+      run(rig, 5.1);
+      // Unwrapped: a flight runs its azimuth through shortestAngle and can never turn more than
+      // half a circle, which is why chaining flights was never going to be the orbit.
+      near((rig.state.azimuth - az0) / DEG, 540, 0.01, 'orbit() turns a signed, unwrapped 540 degrees');
+      if (seen.join() !== 'done') failed(`orbit() reported [${seen}], expected [done]`);
+      if (rig.state.orbiting) failed('orbit() left state.orbiting set after it finished');
+
+      const back = rigOf();
+      const bz = back.state.azimuth;
+      back.orbit({ deg: -34, degPerSec: 6 });
+      run(back, 6.0);
+      near((back.state.azimuth - bz) / DEG, -34, 0.01, 'orbit() takes a signed delta');
+
+      // And the half-circle limit it exists to route around, measured rather than asserted.
+      const flight = rigOf();
+      const fz = flight.state.azimuth;
+      flight.flyTo({ azimuth: fz + 3 * Math.PI, polar: flight.state.polar, ms: 200 });
+      run(flight, 0.4);
+      if (Math.abs(flight.state.azimuth - fz) > Math.PI + 1e-6) {
+        failed('flyTo turned more than half a circle; shortestAngle is gone and orbit()’s reason with it');
+      }
+    }
+
+    // --- orbit() never fights a flight, and never calls back synchronously ------------------
+    {
+      const rig = rigOf();
+      rig.flyTo({ distance: 40, ms: 800 });
+      const seen = [];
+      if (rig.orbit({ deg: 34, onDone: (r) => seen.push(r) }) !== false) {
+        failed('orbit() started while a flight was running');
+      }
+      if (seen.length) failed(`orbit() called back synchronously: [${seen}]`);
+      rig.update(0.1);
+      if (seen.join() !== 'refused') failed(`a refused orbit reported [${seen}] on the next frame`);
+
+      const rig2 = rigOf();
+      const done2 = [];
+      rig2.orbit({ deg: 0, onDone: (r) => done2.push(r) });
+      if (done2.length) failed('orbit({deg: 0}) called back before it returned');
+      rig2.update(0.1);
+      if (done2.join() !== 'done') failed(`orbit({deg: 0}) reported [${done2}]`);
+
+      const rig3 = rigOf();
+      const done3 = [];
+      rig3.orbit({ deg: 34, degPerSec: 6, onDone: (r) => done3.push(r) });
+      rig3.update(0.1);
+      rig3.flyTo({ distance: 40, ms: 800 });
+      if (rig3.state.orbiting) failed('a flight did not stop the drift');
+      rig3.update(0.1);
+      if (done3.join() !== 'replaced') failed(`a drift ended by a flight reported [${done3}]`);
+
+      const dom = stubElement();
+      const rig4 = rigOf(dom);
+      const done4 = [];
+      rig4.orbit({ deg: 34, degPerSec: 6, onDone: (r) => done4.push(r) });
+      rig4.update(0.1);
+      dom.fire('pointerdown', { pointerId: 1, clientX: 10, clientY: 10 });
+      dom.fire('pointermove', { pointerId: 1, clientX: 30, clientY: 10, buttons: 1 });
+      rig4.update(0.1);
+      if (done4.join() !== 'cancelled') failed(`a drift a user interrupted reported [${done4}]`);
+    }
+
+    // --- prefers-reduced-motion: the cut, and the recursion that is not possible -------------
+    const hadMatchMedia = Object.prototype.hasOwnProperty.call(globalThis, 'matchMedia');
+    const savedMatchMedia = globalThis.matchMedia;
+    globalThis.matchMedia = () => ({ matches: true, addEventListener() {}, removeEventListener() {} });
+    try {
+      const rig = rigOf();
+      const fades = [];
+      rig.onFade((ms) => fades.push(ms));
+      let sync = false;
+      rig.flyTo({ distance: 40, ms: 800, onArrive: () => { sync = true; } });
+      if (rig.state.flying) failed('reduced motion started a flight instead of cutting');
+      near(rig.state.distance, 40, 1e-9, 'a reduced-motion flight sets the distance');
+      if (!sync) failed('reduced motion did not arrive before flyTo returned; the trap has moved, and every caller was written for it');
+      if (fades.join() !== '220') failed(`reduced motion emitted fades [${fades}], expected [220]`);
+
+      // THE ONE THAT MATTERS. The naive itinerary -- advance from inside onArrive -- against the
+      // synchronous arrival above. If a completion callback could run inside another, this is a
+      // recursive chain: no frame drawn, and a stack overflow the moment a trip loops. Here it
+      // must advance at most one stop per update() and never re-enter itself.
+      const chain = rigOf();
+      const STOPS = 200;
+      let depth = 0;
+      let maxDepth = 0;
+      let arrived = 0;
+      const step = () => {
+        depth += 1;
+        maxDepth = Math.max(maxDepth, depth);
+        arrived += 1;
+        if (arrived < STOPS) chain.flyTo({ distance: 10 + arrived, ms: 800, onArrive: step });
+        depth -= 1;
+      };
+      chain.flyTo({ distance: 10, ms: 800, onArrive: step });
+      for (let i = 0; i < STOPS + 20 && arrived < STOPS; i += 1) chain.update(0.016);
+      if (maxDepth !== 1) failed(`a chained itinerary re-entered its own callback ${maxDepth} deep under reduced motion`);
+      if (arrived !== STOPS) failed(`a chained itinerary reached ${arrived} of ${STOPS} stops`);
+
+      // A cut is not a fast move: the drift does not run at all, and it says which happened.
+      const still = rigOf();
+      const az0 = still.state.azimuth;
+      const seen = [];
+      if (still.orbit({ deg: 34, onDone: (r) => seen.push(r) }) !== false) {
+        failed('orbit() drifted under reduced motion');
+      }
+      if (seen.length) failed(`a drift refused for reduced motion called back before returning: [${seen}]`);
+      still.update(0.5);
+      near(still.state.azimuth, az0, 1e-9, 'reduced motion leaves the camera still');
+      if (seen.join() !== 'reduced-motion') failed(`a refused drift reported [${seen}]`);
+      notes.push(
+        `camera: reduced motion cuts and fades 220 ms; ${STOPS} chained stops ran at callback ` +
+          `depth ${maxDepth}`
+      );
+    } finally {
+      if (hadMatchMedia) globalThis.matchMedia = savedMatchMedia;
+      else delete globalThis.matchMedia;
+    }
+
+    // --- disposing a rig does not leave a caller waiting ------------------------------------
+    {
+      const rig = rigOf();
+      const seen = [];
+      rig.flyTo({ distance: 40, ms: 800, onArrive: (r) => seen.push(r) });
+      rig.dispose();
+      if (seen.join() !== 'cancelled') failed(`dispose() reported [${seen}], expected [cancelled]`);
+    }
+  } catch (e) {
+    failed(`could not check the camera contract: ${String(e && e.stack ? e.stack.split('\n').slice(0, 3).join(' | ') : e)}`);
+  }
+}
+
 // 4. report
 if (notes.length) {
   console.log('notes:');
