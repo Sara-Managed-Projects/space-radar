@@ -113,10 +113,17 @@ function skyQuaternion(out = new THREE.Quaternion()) {
     const toTeme = (v) => {
       try { return frames.j2000ToTeme(v, tMs); } catch { return v; }
     };
-    const o = new THREE.Vector3().copy(st.toScene({ x: 0, y: 0, z: 0 }, EQUATORIAL));
-    const ax = new THREE.Vector3().copy(st.toScene(toTeme({ x: BIG_KM, y: 0, z: 0 }), EQUATORIAL)).sub(o);
-    const ay = new THREE.Vector3().copy(st.toScene(toTeme({ x: 0, y: BIG_KM, z: 0 }), EQUATORIAL)).sub(o);
-    const az = new THREE.Vector3().copy(st.toScene(toTeme({ x: 0, y: 0, z: BIG_KM }), EQUATORIAL)).sub(o);
+    // stage.js returns null for a frame it cannot express. earth-inertial always converts, but
+    // asserting that here rather than assuming it is the difference between a wrong sky and none.
+    const oKm = st.toScene({ x: 0, y: 0, z: 0 }, EQUATORIAL);
+    const axKm = st.toScene(toTeme({ x: BIG_KM, y: 0, z: 0 }), EQUATORIAL);
+    const ayKm = st.toScene(toTeme({ x: 0, y: BIG_KM, z: 0 }), EQUATORIAL);
+    const azKm = st.toScene(toTeme({ x: 0, y: 0, z: BIG_KM }), EQUATORIAL);
+    if (!oKm || !axKm || !ayKm || !azKm) return out.identity();
+    const o = new THREE.Vector3().copy(oKm);
+    const ax = new THREE.Vector3().copy(axKm).sub(o);
+    const ay = new THREE.Vector3().copy(ayKm).sub(o);
+    const az = new THREE.Vector3().copy(azKm).sub(o);
     if (ax.lengthSq() < 1e-12 || ay.lengthSq() < 1e-12 || az.lengthSq() < 1e-12) return out.identity();
     return out.setFromRotationMatrix(
       new THREE.Matrix4().makeBasis(ax.normalize(), ay.normalize(), az.normalize())

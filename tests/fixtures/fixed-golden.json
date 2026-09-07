@@ -1,0 +1,187 @@
+{
+  "note": "The BEFORE picture of propagate/fixed.js, taken at the pinned epoch. An Earth row must stay byte-identical forever; a non-Earth row was wrong when this was taken and must have moved. tests/test_contract.mjs enforces both. Regenerate with tests/dump_fixed_golden.mjs.",
+  "epochIso": "2026-03-15T12:00:00.000Z",
+  "takenAtCommit": "ed8a1f0",
+  "rows": [
+    {
+      "id": "apollo-11",
+      "layer": "hand-kept-sites",
+      "declaredFrame": "moon-fixed",
+      "pos": {
+        "x": 5849.9304420305125,
+        "y": 2540.3449158831686,
+        "z": 74.53643426368153,
+        "frame": "earth-fixed",
+        "cls": "measured"
+      }
+    },
+    {
+      "id": "apollo-17",
+      "layer": "hand-kept-sites",
+      "declaredFrame": "moon-fixed",
+      "pos": {
+        "x": 5145.463151552021,
+        "y": 3063.868027854455,
+        "z": 2187.5334791886094,
+        "frame": "earth-fixed",
+        "cls": "measured"
+      }
+    },
+    {
+      "id": "change-4",
+      "layer": "hand-kept-sites",
+      "declaredFrame": "moon-fixed",
+      "pos": {
+        "x": -4478.581854319217,
+        "y": 187.77866793310986,
+        "z": -4522.151436538001,
+        "frame": "earth-fixed",
+        "cls": "measured"
+      }
+    },
+    {
+      "id": "dss-14",
+      "layer": "hand-kept-sites",
+      "declaredFrame": "earth-fixed",
+      "pos": {
+        "x": -2353.6557999943284,
+        "y": -4641.3165311978555,
+        "z": 3677.0610551395584,
+        "frame": "earth-fixed",
+        "cls": "measured"
+      }
+    },
+    {
+      "id": "dss-25",
+      "layer": "hand-kept-sites",
+      "declaredFrame": "earth-fixed",
+      "pos": {
+        "x": -2354.9687069133915,
+        "y": -4646.981414496577,
+        "z": 3669.0396953934214,
+        "frame": "earth-fixed",
+        "cls": "measured"
+      }
+    },
+    {
+      "id": "dss-43",
+      "layer": "hand-kept-sites",
+      "declaredFrame": "earth-fixed",
+      "pos": {
+        "x": -4460.904211176552,
+        "y": 2682.3742310910884,
+        "z": -3674.727948037888,
+        "frame": "earth-fixed",
+        "cls": "measured"
+      }
+    },
+    {
+      "id": "dss-63",
+      "layer": "hand-kept-sites",
+      "declaredFrame": "earth-fixed",
+      "pos": {
+        "x": 4862.699441626252,
+        "y": -361.1903125649689,
+        "z": 4099.041314335841,
+        "frame": "earth-fixed",
+        "cls": "measured"
+      }
+    },
+    {
+      "id": "elysium",
+      "layer": "hand-kept-sites",
+      "declaredFrame": "mars-fixed",
+      "pos": {
+        "x": -4544.852207724999,
+        "y": 4447.013409075361,
+        "z": 497.34765914334105,
+        "frame": "earth-fixed",
+        "cls": "measured"
+      }
+    },
+    {
+      "id": "gale",
+      "layer": "hand-kept-sites",
+      "declaredFrame": "mars-fixed",
+      "pos": {
+        "x": -4683.105179270357,
+        "y": 4300.049786338006,
+        "z": -506.9489849953872,
+        "frame": "earth-fixed",
+        "cls": "measured"
+      }
+    },
+    {
+      "id": "jezero",
+      "layer": "hand-kept-sites",
+      "declaredFrame": "mars-fixed",
+      "pos": {
+        "x": 1315.078069465941,
+        "y": 5907.9210928336415,
+        "z": 2005.1366497823292,
+        "frame": "earth-fixed",
+        "cls": "measured"
+      }
+    },
+    {
+      "id": "pad-ll2-80",
+      "layer": "ground-sites",
+      "declaredFrame": "earth-fixed",
+      "pos": {
+        "x": 917.8259276626063,
+        "y": -5530.572024594024,
+        "z": 3031.3479719713455,
+        "frame": "earth-fixed",
+        "cls": "measured"
+      }
+    },
+    {
+      "id": "reentry-cz-5b-y2",
+      "layer": "reentries",
+      "declaredFrame": "earth-fixed",
+      "pos": {
+        "x": 1943.157465493416,
+        "y": 6151.674944945507,
+        "z": 296.61824607545657,
+        "frame": "earth-fixed",
+        "cls": "sample"
+      }
+    },
+    {
+      "id": "reentry-skylab",
+      "layer": "reentries",
+      "declaredFrame": "earth-fixed",
+      "pos": {
+        "x": -2835.5229206891863,
+        "y": 4555.458075450652,
+        "z": -3581.864956623631,
+        "frame": "earth-fixed",
+        "cls": "sample"
+      }
+    },
+    {
+      "id": "reentry-tiangong-1",
+      "layer": "reentries",
+      "declaredFrame": "earth-fixed",
+      "pos": {
+        "x": -6043.976075408349,
+        "y": -1698.885055931923,
+        "z": -1508.81574381773,
+        "frame": "earth-fixed",
+        "cls": "sample"
+      }
+    },
+    {
+      "id": "utopia",
+      "layer": "hand-kept-sites",
+      "declaredFrame": "mars-fixed",
+      "pos": {
+        "x": -1970.1735797802044,
+        "y": 5434.837450225772,
+        "z": 2685.698737046955,
+        "frame": "earth-fixed",
+        "cls": "measured"
+      }
+    }
+  ]
+}

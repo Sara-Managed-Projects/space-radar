@@ -4,6 +4,13 @@
 //   earth-inertial  TEME/ECI, km, Earth-centred.  What SGP4 returns.
 //   earth-fixed     ECEF, km, rotates with Earth. Ground sites and the observer live here.
 //   sun-inertial    Heliocentric ecliptic J2000, km.
+//   <world>-fixed   Body-fixed, km, turning with that world. Landing sites and rovers live here.
+//   <world>-inertial  That world's centre, ecliptic J2000 axes (Earth's are TEME -- see below).
+//
+// A world's fixed frame turns by the IAU pole and prime meridian astronomy-engine reports, which
+// is the same model scene/worlds.js uses to point the Moon's near side at us -- one rotation, two
+// readers. Earth is the exception and keeps GMST, because SGP4, the WGS84 ellipsoid and every
+// ground site already agree on it, and a second model for the same rotation is a second answer.
 //
 // A note that matters, and that costs a fifth of a degree if it is ignored: satellite.js calls its
 // output "ECI", but SGP4 returns TEME -- the true equator, mean equinox *of date*. It is not
@@ -139,6 +146,116 @@ export function ecefToGeodetic(v, opts = {}) {
     Math.abs(cosLat) > 0.1 ? p / cosLat - n : v.z / sinLat - n * (1 - WGS84_E2);
 
   return { latRad, lonRad, altKm };
+}
+
+// ---------------------------------------------------------------------------
+// other worlds: radii, and the sphere they are drawn as
+//
+// Earth is an ellipsoid here because WGS84 is what its coordinates were surveyed against. Every
+// other world in this app is a sphere -- scene/worlds.js draws spheres, the textures are mapped
+// to spheres, and the published lat/lon of a landing site is planetocentric on a mean radius. A
+// flattening term nobody applies to the mesh would put the marker off the surface it is drawn on.
+
+/** Mean radii, km. THE table -- propagate/body.js re-exports this one rather than keeping a copy. */
+export const WORLD_RADIUS_KM = {
+  sun: 695700,
+  mercury: 2439.7,
+  venus: 6051.8,
+  earth: 6371.0,
+  moon: 1737.4,
+  mars: 3389.5,
+  jupiter: 69911,
+  saturn: 58232,
+  uranus: 25362,
+  neptune: 24622,
+  pluto: 1188.3,
+};
+
+/** A world's mean radius in km, or null. Null is an answer: it refuses rather than guessing. */
+export function worldRadiusKm(worldId) {
+  const r = WORLD_RADIUS_KM[String(worldId || '').toLowerCase()];
+  return Number.isFinite(r) ? r : null;
+}
+
+/** Planetocentric lat/lon (radians) + height km on a sphere of `radiusKm` -> body-fixed km. */
+export function sphericalToBodyFixed(latRad, lonRad, altKm, radiusKm) {
+  if (!Number.isFinite(radiusKm) || !Number.isFinite(latRad) || !Number.isFinite(lonRad)) return null;
+  const r = radiusKm + (Number.isFinite(altKm) ? altKm : 0);
+  const c = Math.cos(latRad);
+  return { x: r * c * Math.cos(lonRad), y: r * c * Math.sin(lonRad), z: r * Math.sin(latRad) };
+}
+
+/** The inverse. Longitude comes back in (-pi, pi], `altKm` measured from the sphere. */
+export function bodyFixedToSpherical(v, radiusKm) {
+  if (!v || !Number.isFinite(v.x) || !Number.isFinite(radiusKm)) return null;
+  const p = Math.hypot(v.x, v.y);
+  const r = Math.hypot(p, v.z);
+  return {
+    latRad: Math.atan2(v.z, p),
+    lonRad: p < 1e-9 ? 0 : Math.atan2(v.y, v.x),
+    altKm: r - radiusKm,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// body-fixed <-> that world's inertial axes
+//
+// Body-fixed -> EQJ is  Rz(alpha0 + 90) . Rx(90 - delta0) . Rz(W), the IAU convention, and the
+// same composition scene/worlds.js applies to the meshes. If these two ever disagree, a landing
+// site slides across the texture it is standing on, so they are written the same way on purpose.
+
+function rotX(v, a) {
+  const c = Math.cos(a);
+  const s = Math.sin(a);
+  return { x: v.x, y: v.y * c - v.z * s, z: v.y * s + v.z * c };
+}
+
+/** {ra, dec, spin} in radians for a world at a time, or null if there is no rotation model. */
+function iauAngles(world, tMs) {
+  const body = bodyForWorld(world);
+  if (!body) return null;
+  const date = toDate(tMs);
+  if (!date) return null;
+  let axis;
+  try {
+    axis = Astronomy.RotationAxis(body, date);
+  } catch (err) {
+    return null;
+  }
+  if (!axis || !Number.isFinite(axis.ra) || !Number.isFinite(axis.spin)) return null;
+  return { ra: axis.ra * 15 * DEG, dec: axis.dec * DEG, spin: axis.spin * DEG };
+}
+
+/**
+ * Body-fixed km -> that world's inertial axes, km. Earth keeps GMST; every other world uses the
+ * IAU model and lands in ecliptic J2000 axes, which is what `<world>-inertial` means here.
+ * Returns null for a world astronomy-engine has no rotation model for -- a third answer.
+ */
+export function bodyFixedToInertial(v, world, tMs) {
+  const w = String(world || '').toLowerCase();
+  if (!v || !Number.isFinite(v.x)) return null;
+  if (w === 'earth') {
+    if (!Number.isFinite(tMs)) return null;
+    return ecefToEci(v, gmst(tMs));
+  }
+  const a = iauAngles(w, tMs);
+  if (!a) return null;
+  const eqj = rotZ(rotX(rotZ(v, a.spin), Math.PI / 2 - a.dec), a.ra + Math.PI / 2);
+  return equatorialToEcliptic(eqj);
+}
+
+/** The inverse of bodyFixedToInertial. Null when the world has no rotation model. */
+export function inertialToBodyFixed(v, world, tMs) {
+  const w = String(world || '').toLowerCase();
+  if (!v || !Number.isFinite(v.x)) return null;
+  if (w === 'earth') {
+    if (!Number.isFinite(tMs)) return null;
+    return eciToEcef(v, gmst(tMs));
+  }
+  const a = iauAngles(w, tMs);
+  if (!a) return null;
+  const eqj = eclipticToEquatorial(v);
+  return rotZ(rotX(rotZ(eqj, -(a.ra + Math.PI / 2)), -(Math.PI / 2 - a.dec)), -a.spin);
 }
 
 /** Accepts {latRad,lonRad,altKm} or satellite.js's {latitude,longitude,height}. */
@@ -342,9 +459,9 @@ function toSunInertialKm(pos, from, tMs) {
 
   let local = pos;
   if (from.kind === 'fixed') {
-    if (from.world !== 'earth') return null; // no rotation model for other worlds in v1
     if (!Number.isFinite(tMs)) return null;
-    local = ecefToEci(pos, gmst(tMs));
+    local = bodyFixedToInertial(pos, from.world, tMs);
+    if (!local) return null; // a world with no rotation model: refuse, do not place it on Earth
   }
   const ecl = inertialToEclAxes(local, from.world, tMs);
   const origin = worldHelioEclKm(from.world, tMs);
@@ -360,9 +477,8 @@ function fromSunInertialKm(pos, to, tMs) {
   const rel = { x: pos.x - origin.x, y: pos.y - origin.y, z: pos.z - origin.z };
   const inertial = eclAxesToInertial(rel, to.world, tMs);
   if (to.kind === 'inertial') return inertial;
-  if (to.world !== 'earth') return null;
   if (!Number.isFinite(tMs)) return null;
-  return eciToEcef(inertial, gmst(tMs));
+  return inertialToBodyFixed(inertial, to.world, tMs);
 }
 
 /**
@@ -375,7 +491,9 @@ function fromSunInertialKm(pos, to, tMs) {
  * (The contract's three-argument signature has no time in it; this is the one place that hurts,
  * so the integrator should set stage.tMs once per frame.)
  *
- * Returns null if the conversion is not defined (e.g. moon-fixed, which has no v1 rotation model).
+ * Returns null if the conversion is not defined -- a world with no ephemeris, a world with no
+ * rotation model, or a cross-world conversion with no time. Null is the honest answer and the
+ * caller must draw nothing; the one thing it must never do is fall back to Earth.
  */
 export function toStage(record, posKm, stage, tMs) {
   if (!posKm || !Number.isFinite(posKm.x)) return null;
@@ -395,10 +513,10 @@ export function toStage(record, posKm, stage, tMs) {
 
   // Same world, different kind: rotate, do not go via the Sun.
   if (source.world === target.world) {
-    if (source.world !== 'earth') return null;
     if (!Number.isFinite(t)) return null;
-    const g = gmst(t);
-    return source.kind === 'fixed' ? ecefToEci(posKm, g) : eciToEcef(posKm, g);
+    return source.kind === 'fixed'
+      ? bodyFixedToInertial(posKm, source.world, t)
+      : inertialToBodyFixed(posKm, source.world, t);
   }
 
   if (!Number.isFinite(t)) return null;

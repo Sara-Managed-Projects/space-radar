@@ -209,6 +209,7 @@ const _m4b = new THREE.Matrix4();
  * One place, so the remap (x, z, -y) appears here and in stage.js and nowhere else.
  */
 function sunDirFrom(toKm, fromKm, out) {
+  if (!toKm || !fromKm) return out; // an unconvertible frame: keep the last direction, not NaN
   const dx = toKm.x - fromKm.x;
   const dy = toKm.y - fromKm.y;
   const dz = toKm.z - fromKm.z;
@@ -355,7 +356,9 @@ export function createWorlds(scene, opts = {}) {
         mesh.scale.setScalar(trueRadiusUnits);
         viewState.set(w.id, describe(w, 0, 0));
       } else {
-        stage.toSceneInto(p, p.frame, _pos, tMs);
+        // A null here is stage.js refusing a frame it cannot convert. Drawing the world at the
+        // last position it happened to have is exactly the silent lie this refusal exists for.
+        if (!stage.toSceneInto(p, p.frame, _pos, tMs)) { mesh.visible = false; continue; }
         const trueDistKm = _pos.length() * stage.unitKm;
         if (w.view === VIEW_COMPRESSED && !sameSystem(w.id, stage.worldId) && trueDistKm > 0) {
           const drawnKm = drawnDistanceKm(trueDistKm);
