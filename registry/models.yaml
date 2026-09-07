@@ -70,3 +70,30 @@ data:
   - {id: stars,          file: site/data/stars.bin,                  source: "https://github.com/ofrohn/d3-celestial (data/stars.6.json, repacked)", licence: "BSD-3-Clause", credit: "Star catalogue: d3-celestial (Olaf Frohn)"}
   - {id: constellations, file: site/data/constellations.lines.json,  source: "https://github.com/ofrohn/d3-celestial", licence: "BSD-3-Clause", credit: "Constellation lines: d3-celestial (Olaf Frohn)"}
   - {id: constellation-names, file: site/data/constellation-names.json, source: "https://github.com/ofrohn/d3-celestial (constellations.json, fields extracted)", licence: "BSD-3-Clause", credit: "Constellation names: d3-celestial (Olaf Frohn)"}
+
+# REAL GEOMETRY, from NASA's own public-domain glTF models.
+#
+# NASA publishes these under its media usage guidelines: created by NASA, not copyrighted, free
+# to use. The NASA insignia and logos are the exception and none of these carry one. Full terms
+# and the credit line are in CREDITS.md.
+#
+# WHAT WAS CHANGED, because a derivative has to say so: every file was re-encoded from
+# KHR_draco_mesh_compression to EXT_meshopt_compression and simplified with gltf-transform. That
+# was not cosmetic -- Draco needs a ~300 kB WebAssembly decoder in the browser and meshopt needs
+# 29 kB, and the meshopt files came out SMALLER anyway (Hubble: 1 655 kB -> 163 kB). At runtime
+# the shading is replaced with this project's toon material, so the GEOMETRY is NASA's and the
+# look is ours.
+#
+# They are loaded ON DEMAND, one file per object, only when the camera is near it. Nobody
+# downloads all of them.
+real_models:
+  - {id: iss, file: site/models/iss.glb, kb: 34, class: station, used_for: "NORAD 25544", source: "https://github.com/nasa/NASA-3D-Resources — 3D Models/International Space Station (ISS) (A)", licence: "Public domain (NASA media usage guidelines)", credit: "3D model: NASA", modified: "re-encoded Draco -> meshopt, simplified, retextured with this project's toon material"}
+  - {id: hubble, file: site/models/hubble.glb, kb: 163, class: telescope, used_for: "NORAD 20580", source: "https://github.com/nasa/NASA-3D-Resources — 3D Models/Hubble Space Telescope (A)", licence: "Public domain (NASA media usage guidelines)", credit: "3D model: NASA", modified: "re-encoded Draco -> meshopt, simplified, retextured with this project's toon material"}
+  - {id: chandra, file: site/models/chandra.glb, kb: 195, class: telescope, used_for: "NORAD 27424", source: "https://github.com/nasa/NASA-3D-Resources — 3D Models/Chandra X-ray Observatory", licence: "Public domain (NASA media usage guidelines)", credit: "3D model: NASA", modified: "re-encoded Draco -> meshopt, simplified, retextured with this project's toon material"}
+  - {id: landsat, file: site/models/landsat.glb, kb: 68, class: satellite, used_for: "NORAD 25682, 39174", source: "https://github.com/nasa/NASA-3D-Resources — 3D Models/Landsat 7", licence: "Public domain (NASA media usage guidelines)", credit: "3D model: NASA", modified: "re-encoded Draco -> meshopt, simplified, retextured with this project's toon material"}
+  - {id: tdrs, file: site/models/tdrs.glb, kb: 10, class: satellite, used_for: "the TDRS family", source: "https://github.com/nasa/NASA-3D-Resources — 3D Models/Tracking and Data Relay Satellites (TDRS) (A)", licence: "Public domain (NASA media usage guidelines)", credit: "3D model: NASA", modified: "re-encoded Draco -> meshopt, simplified, retextured with this project's toon material"}
+  - {id: kepler, file: site/models/kepler.glb, kb: 7, class: telescope, used_for: "Horizons -227", source: "https://github.com/nasa/NASA-3D-Resources — 3D Models/Kepler (B)", licence: "Public domain (NASA media usage guidelines)", credit: "3D model: NASA", modified: "re-encoded Draco -> meshopt, simplified, retextured with this project's toon material"}
+  - {id: voyager, file: site/models/voyager.glb, kb: 288, class: probe, used_for: "Horizons -31, -32", source: "https://github.com/nasa/NASA-3D-Resources — 3D Models/Voyager Probe (A)", licence: "Public domain (NASA media usage guidelines)", credit: "3D model: NASA", modified: "re-encoded Draco -> meshopt, simplified, retextured with this project's toon material"}
+  - {id: juno, file: site/models/juno.glb, kb: 254, class: probe, used_for: "Horizons -61", source: "https://github.com/nasa/NASA-3D-Resources — 3D Models/Juno (B)", licence: "Public domain (NASA media usage guidelines)", credit: "3D model: NASA", modified: "re-encoded Draco -> meshopt, simplified, retextured with this project's toon material"}
+  - {id: parker, file: site/models/parker.glb, kb: 247, class: probe, used_for: "Horizons -96", source: "https://github.com/nasa/NASA-3D-Resources — 3D Models/Parker Solar Probe", licence: "Public domain (NASA media usage guidelines)", credit: "3D model: NASA", modified: "re-encoded Draco -> meshopt, simplified, retextured with this project's toon material"}
+  - {id: asteroid-bennu, file: site/models/asteroid-bennu.glb, kb: 23, class: asteroid, used_for: "Bennu, and the asteroid class", source: "https://github.com/nasa/NASA-3D-Resources — 3D Models/1999 RQ36 asteroid", licence: "Public domain (NASA media usage guidelines)", credit: "3D model: NASA", modified: "re-encoded Draco -> meshopt, simplified, retextured with this project's toon material"}

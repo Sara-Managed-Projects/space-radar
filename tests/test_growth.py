@@ -49,6 +49,15 @@ def main() -> int:
         work = Path(tmp) / "repo"
         shutil.copytree(ROOT / "registry", work / "registry")
         shutil.copytree(ROOT / "scripts", work / "scripts")
+        # The validator checks that every asset a registry row names is really in the tree, so the
+        # tree it validates has to contain them. Copying the names rather than the bytes keeps this
+        # test fast -- it is asking whether the REGISTRY grows cleanly, not whether a GLB is valid.
+        for src in ("site/models", "site/textures", "site/data"):
+            d = work / src
+            d.mkdir(parents=True, exist_ok=True)
+            for f in (ROOT / src).glob("*"):
+                if f.is_file():
+                    (d / f.name).touch()
 
         apply_fixture(work / "registry", fixture)
 

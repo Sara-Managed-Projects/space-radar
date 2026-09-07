@@ -1,6 +1,6 @@
 // data/parsers.js — upstream payloads in, Records out.
 //
-// CONTRACT (site/js/CONTRACT.md):
+// CONTRACT (tests/test_contract.mjs):
 //   export function parseCelestrakGP(json, opts): Record[]
 //   export function parseLaunches(json): {launches: Record[], pads: Record[], events: EventRow[]}
 //   export function parseComets(text): Record[]
@@ -281,13 +281,13 @@ export function parseLaunches(json) {
           windowEndMs: parseUtc(r.window_end),
           durationS: ASCENT_SECONDS,
           pad: { latRad: lat * DEG, lonRad: lon * DEG, altKm: 0 },
-          // CONTRACT.md's own spelling of the pad, alongside the radians above.
+          // the module contract's own spelling of the pad, alongside the radians above.
           padLatDeg: lat,
           padLonDeg: lon,
           targetAltKm: profile.altKm,
           targetInclRad: inclDeg == null ? null : inclDeg * DEG,
           orbitAbbrev,
-          // CONTRACT.md names this field `orbitClass`; propagate/ascent.js resolves the LL2
+          // the module contract names this field `orbitClass`; propagate/ascent.js resolves the LL2
           // abbrev through its own alias table.
           orbitClass: orbitAbbrev,
           // Which of the two azimuth solutions the pad flies. sin(az) = cos(i)/cos(lat) has a

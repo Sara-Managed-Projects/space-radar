@@ -1,6 +1,6 @@
 // sky/passes.js — when is it over my head, and will I actually see it.
 //
-// Contract (site/js/CONTRACT.md):
+// Contract (tests/test_contract.mjs):
 //   predictPasses(records, observer, fromMs, hours) -> Pass[]
 //   Pass: {record, startMs, peakMs, endMs, peakEl, startAz, endAz, sunlit, magnitude|null}
 //

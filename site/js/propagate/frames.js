@@ -1,6 +1,6 @@
 // propagate/frames.js -- coordinate frames, and the composition between them.
 //
-// Frames (CONTRACT.md):
+// Frames (the module contract):
 //   earth-inertial  TEME/ECI, km, Earth-centred.  What SGP4 returns.
 //   earth-fixed     ECEF, km, rotates with Earth. Ground sites and the observer live here.
 //   sun-inertial    Heliocentric ecliptic J2000, km.

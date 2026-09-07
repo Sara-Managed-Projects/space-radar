@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Check every module in site/js against site/js/CONTRACT.md.
+// Check every module in site/js against tests/test_contract.mjs.
 //
 // Six agents wrote these modules concurrently against one written contract. The failure mode that
 // costs the most is not a bad algorithm -- it is two modules that disagree about a name, which is

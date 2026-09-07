@@ -242,7 +242,7 @@ export function ascentGeometry(record) {
   // The pad, in whichever of the three spellings reached us:
   //   {pad:{latDeg,lonDeg}} / {lat,lon}   -- a registry row
   //   {pad:{latRad,lonRad,altKm}}         -- what data/parsers.js emits (hard rule 6: radians)
-  //   {padLatDeg, padLonDeg}              -- CONTRACT.md's own `ascent` field
+  //   {padLatDeg, padLonDeg}              -- the module contract's own `ascent` field
   // Reading only the first meant every launch record propagated to null, silently.
   const pad = a.pad || a;
   let latDeg = Number.isFinite(pad.latDeg) ? pad.latDeg : pad.lat;

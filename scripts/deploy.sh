@@ -76,7 +76,7 @@ fi
 
 if [ "$WHAT" != "assets" ]; then
   echo "==> the app"
-  # --exclude '*.md': CONTRACT.md documents the modules for whoever edits them. It is not code
+  # --exclude '*.md': the module contract documents the modules for whoever edits them. It is not code
   # and has no business being served as JavaScript.
   "${SYNC[@]}" "$SITE/js"  "s3://$BUCKET/js" \
     --cache-control "no-cache" --content-type "text/javascript; charset=utf-8" \

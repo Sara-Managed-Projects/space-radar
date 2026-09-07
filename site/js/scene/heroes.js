@@ -16,12 +16,16 @@
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { modelFor, updateModelAttitude, setSunDirection, disposeModels } from './models.js';
+import { realModelFor, loadRealModel } from './realmodels.js';
 import { propagate } from '../propagate/index.js';
 import { stage } from './stage.js';
 
 /** How many pixels tall a hero model should read as. Big enough to see it is a thing with parts. */
 const TARGET_PX = 84;
-const SELECTED_PX = 130;
+// The selected object is the one you flew across the solar system to look at, and now that the
+// geometry is real there is something to look AT -- the station's trusses and radiators, Hubble's
+// door, Voyager's dish and boom. 130 px showed a shape; 260 shows a machine.
+const SELECTED_PX = 260;
 
 /** How many models may exist at once. Each is a few draw calls; this is the phone budget. */
 const POOL = 8;
@@ -49,8 +53,36 @@ export function createHeroes(scene, ctx) {
     obj.userData.recordId = record.id;
     obj.visible = false;
     root.add(obj);
-    const entry = { obj, record, fadeStart: null };
+    const entry = { obj, record, fadeStart: null, upgraded: false };
     live.set(record.id, entry);
+
+    // If NASA publishes this exact object, fetch it and swap it in when it arrives. The procedural
+    // model is on screen in the meantime, so nothing waits and nothing pops into an empty orbit.
+    const real = realModelFor(record);
+    if (real) {
+      entry.upgrading = true;
+      loadRealModel(real).then((loaded) => {
+        entry.upgrading = false;
+        // The camera may have moved on while the file was in flight; if this entry was released,
+        // throw the clone away rather than adding an orphan to the scene.
+        if (!loaded || live.get(record.id) !== entry) return;
+        const clone = loaded.clone(true);
+        clone.userData.recordId = record.id;
+        clone.userData.realModel = true;
+        clone.position.copy(entry.obj.position);
+        clone.scale.copy(entry.obj.scale);
+        clone.quaternion.copy(entry.obj.quaternion);
+        clone.visible = entry.obj.visible;
+        root.remove(entry.obj);
+        disposeModels(entry.obj);
+        root.add(clone);
+        entry.obj = clone;
+        entry.upgraded = true;
+        window.dispatchEvent(new CustomEvent('sr:model-upgraded', {
+          detail: { id: record.id, name: real.name },
+        }));
+      });
+    }
     return entry;
   }
 

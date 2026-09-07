@@ -1,6 +1,6 @@
 // sky/skyview.js — the same scene, a different camera position.
 //
-// Contract (site/js/CONTRACT.md):
+// Contract (tests/test_contract.mjs):
 //   createSkyView(ctx) -> { enter(observer), exit(), update(tMs), active }
 //
 // Spec 0014 requirement 1: this is NOT a second engine. Every record is already in the right

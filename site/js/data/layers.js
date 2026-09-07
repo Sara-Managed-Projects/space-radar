@@ -1,6 +1,6 @@
 // data/layers.js — registry/layers.yaml expressed in JS, with the selection rules as real code.
 //
-// CONTRACT (site/js/CONTRACT.md):
+// CONTRACT (tests/test_contract.mjs):
 //   export const LAYERS: Array<{id, display, klass, source, propagator, frame,
 //                               moments:{wonder,now,next}, select(records), budget,
 //                               defaultOn, colour, glyph, nearKm, card}>
@@ -528,7 +528,7 @@ export async function loadLayer(layer, nowMs) {
 }
 
 /**
- * Not in CONTRACT.md. Same work as loadLayer, but hands back the source result too, so the
+ * Not in the module contract. Same work as loadLayer, but hands back the source result too, so the
  * control's count can say "80 of them, from a copy four hours old" instead of just a number.
  * @returns {Promise<{records: Array<Object>, source: Object|null, error: string|null}>}
  */

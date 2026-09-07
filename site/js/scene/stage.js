@@ -12,7 +12,7 @@
 //    nothing is farther than the Moon (~4e5 km -> 400 units at unit_km 1000), which float32 holds
 //    to well under a metre.
 //
-// 2. THE AXIS REMAP. The frames in CONTRACT.md are the ones astronomy uses: +Z is the pole,
+// 2. THE AXIS REMAP. The frames in the module contract are the ones astronomy uses: +Z is the pole,
 //    +X is the vernal equinox (or, for sun-inertial, the ecliptic's). Three.js scenes are
 //    Y-up by every convention every camera control assumes. So:
 //
@@ -93,7 +93,7 @@ export const stage = {
   /**
    * The scene's time. Everything downstream (Earth's rotation, the frame conversions) reads
    * this, so calling it once per frame is what makes a screenshot at a given clock value
-   * reproducible. CONTRACT.md's toScene(posKm, frame) has no time argument; this is where the
+   * reproducible. the module contract's toScene(posKm, frame) has no time argument; this is where the
    * time it needs lives.
    */
   setTime(tMs) {
@@ -168,7 +168,7 @@ export const stage = {
   },
 
   /**
-   * CONTRACT.md's one required entry point. km in a named frame -> a THREE.Vector3 in scene units.
+   * the module contract's one required entry point. km in a named frame -> a THREE.Vector3 in scene units.
    */
   toScene(posKm, frame, tMs) {
     return this.toSceneInto(posKm, frame, new THREE.Vector3(), tMs);
