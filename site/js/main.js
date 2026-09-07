@@ -23,6 +23,7 @@ import { showCard, hideCard } from './ui/cards.js';
 import { createControls } from './ui/controls.js';
 import { createStatus } from './ui/status.js';
 import { createMobileUI } from './ui/mobile.js';
+import { createTrip } from './ui/trip.js';
 
 const MOMENTS = ['wonder', 'now', 'next'];
 
@@ -68,6 +69,10 @@ export async function boot({ setStatus } = {}) {
 
   ctx.skyView = createSkyView(ctx);
   const heroes = createHeroes(scene, ctx);
+  // Constructed BEFORE the layers load, because the trip counts which layers have landed by
+  // listening for `sr:layer` -- and a layer that landed before anybody was listening is a layer
+  // the trip would then wait eight seconds for.
+  ctx.trip = createTrip(ctx);
 
   say('Placing Earth…');
   // One frame before any data: the world, the stars, the light.
@@ -130,12 +135,20 @@ export async function boot({ setStatus } = {}) {
     return null;
   }
 
-  function select(record) {
+  /**
+   * @param {Object} record
+   * @param {{fly?: boolean}} [opts]  `fly: false` keeps everything else -- the card, the glyph
+   *   highlight, `follow`, and the real `sr:select` that ui/mobile.js uses to close the phone
+   *   drawers -- and suppresses only the 900 ms flight. A guided trip is already on its way to
+   *   this object with a flight of its own, and two flights fighting over the camera is what
+   *   selecting from inside one used to look like.
+   */
+  function select(record, opts = {}) {
     selected = record;
     for (const gl of glyphLayers.values()) if (gl.setSelected) gl.setSelected(record ? record.id : null);
     showCard(record, ctx);
     const pos = positionOfRecord(record);
-    if (pos) cameraRig.flyTo({ targetScene: pos, distance: arrivalDistance(record), ms: 900 });
+    if (pos && opts.fly !== false) cameraRig.flyTo({ targetScene: pos, distance: arrivalDistance(record), ms: 900 });
     cameraRig.follow(() => positionOfRecord(record));
     window.dispatchEvent(new CustomEvent('sr:select', { detail: record }));
   }

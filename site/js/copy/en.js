@@ -672,6 +672,22 @@ export const COPY = {
     mount: 'where we hang it on the model is our own arrangement, and it is drawn far bigger than it is — at true size it would be too small to see',
   },
 
+  // A GUIDED TRIP. The stop's own words are NOT here -- they live in registry/tours.yaml, with
+  // the stop they belong to, because a trip is a row and copy that lived in this file would make
+  // adding one two edits in two languages of file. What is here is the CHROME: the language-
+  // specific furniture that never changes when somebody adds a trip.
+  trip: {
+    // The count is stated AFTER the stops are resolved, so it is a fact and not a hope. This is
+    // what a row says when the trip cannot reach its own floor: greyed with its reason, never
+    // hidden -- a missing feature and a broken one look identical when you hide one.
+    notEnoughStops:
+      'Only {count} of the stops on this trip can be found right now, and it needs {min}.',
+    // A stop that resolved and then stopped having a position. It never advances on its own: a
+    // failure that scrolls past is a failure nobody can report.
+    heldBody: 'We could not find this one just now. Everything else on the trip still works.',
+    stopOf: '{n} of {count}',
+  },
+
   source: {
     prefix: 'Source',
     unknown: 'Source not recorded',

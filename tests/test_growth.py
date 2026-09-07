@@ -38,10 +38,15 @@ ALLOWED_PREFIXES = ("registry/", "harvest/lists/", "harvest/queries/")
 # TWO of them now. registry/oddities.yaml is mirrored the same way and for the same reason, and
 # `gen_oddities_js.py --check` fails CI until it is regenerated and committed. Both are build
 # outputs, not second places a human edits.
+# THREE of them now: registry/tours.yaml is mirrored the same way and for the same reason, and
+# `gen_tours_js.py --check` fails CI until it is regenerated and committed. All three are build
+# outputs, not second places a human edits.
 GENERATED = "site/js/data/rockets.js"
 GENERATED_ODDITIES = "site/js/data/oddities.js"
+GENERATED_TOURS = "site/js/data/tours.js"
 MIRRORS = ((GENERATED, "scripts/gen_rockets_js.py", "rockets"),
-           (GENERATED_ODDITIES, "scripts/gen_oddities_js.py", "oddities"))
+           (GENERATED_ODDITIES, "scripts/gen_oddities_js.py", "oddities"),
+           (GENERATED_TOURS, "scripts/gen_tours_js.py", "tours"))
 
 
 def snapshot(root: Path) -> dict[str, str]:
@@ -69,6 +74,9 @@ def apply_fixture(registry: Path, fixture: dict) -> None:
         # Spec: adding an odd thing is a row plus the generated mirror. `shape: {build: generic}`
         # is always legal, so a row can ship before anybody writes it a shape.
         "oddities": ("oddities.yaml", "oddities"),
+        # Spec: adding a guided trip is a row here plus the generated mirror. The state machine
+        # in site/js/ui/trip.js reads the mirror and has never heard of a particular trip.
+        "tours": ("tours.yaml", "tours"),
     }
     for section, rows in fixture.items():
         filename, key = targets[section]
@@ -161,9 +169,9 @@ def main() -> int:
         print(result.stdout.strip())
 
     print("\nPASS: a new world, a new source, a new layer, a new texture, a new surface site, "
-          "two new launch vehicles, a new odd thing on that new world and a new thing bolted to "
-          "a spacecraft are rows. Nothing under site/js/ was needed but the two generated "
-          "mirrors, which no human edits.")
+          "two new launch vehicles, a new odd thing on that new world, a new thing bolted to a "
+          "spacecraft and a new guided trip that visits all of them are rows. Nothing under "
+          "site/js/ was needed but the three generated mirrors, which no human edits.")
     return 0
 
 
