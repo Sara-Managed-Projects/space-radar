@@ -221,6 +221,28 @@ def main() -> int:
         if not e.get("copy"):
             fail(where, "no copy template")
 
+    # --- real models: NASA geometry, so the licence fields are not optional ---------
+    # A row here credits somebody else's work and points at a file we redistribute. Both halves
+    # have to be true, so this checks the file EXISTS as well as that the row claims a licence --
+    # an audit before this repo went public found nineteen rows describing files that did not.
+    real_models = rows(models_doc, "real_models", "models.yaml") if "real_models" in models_doc else []
+    for m in real_models:
+        mid = m.get("id")
+        where = f"models.yaml[real_models/{mid}]"
+        if not mid:
+            fail("models.yaml", "a real_models row has no id")
+            continue
+        path = m.get("file")
+        if not path:
+            fail(where, "no file")
+        elif not (ROOT / path).exists():
+            fail(where, f"file `{path}` does not exist -- a row describing a file we do not ship is worse than no row")
+        for key in ("licence", "source", "credit"):
+            if not m.get(key):
+                fail(where, f"no {key}; this row redistributes somebody else's work")
+        if not m.get("modified"):
+            fail(where, "no `modified:` -- say what was changed, or the credit implies it is untouched")
+
     # --- models ------------------------------------------------------------------
     for m in models + textures + rows(models_doc, "data", "models.yaml"):
         mid = m.get("id")
@@ -273,7 +295,7 @@ def main() -> int:
         return 1
     print(
         f"registry ok: {len(worlds)} worlds, {len(sources)} sources, {len(layers)} layers, "
-        f"{len(events)} event types, {len(models)} models, {len(sites)} sites, "
+        f"{len(events)} event types, {len(models)} models, {len(real_models)} real models, {len(sites)} sites, "
         f"{len(terms)} glossary terms, {len(showers)} showers"
     )
     return 0

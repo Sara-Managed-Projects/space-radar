@@ -19,6 +19,8 @@ the tree is what the browser runs.
 | Item | Version | Licence | Credit line | Link |
 |---|---|---|---|---|
 | three.js | 0.185.1 | MIT | © 2010–2026 three.js authors | <https://threejs.org> |
+| three.js addons | r185 | MIT | GLTFLoader, BufferGeometryUtils, SkeletonUtils — vendored from the same release |
+| meshopt decoder | r185 bundle | MIT | `meshopt_decoder.module.js`, © 2016-2024 Arseny Kapoulkine |
 | satellite.js | 7.1.0 | MIT | © 2013 Shashwat Kandadai, UCSC Jack Baskin School of Engineering | <https://github.com/shashwatak/satellite-js> |
 | astronomy-engine | 2.1.17–2.1.19 (see note) | MIT | © 2019–2023 Don Cross <cosinekitty@gmail.com> | <https://github.com/cosinekitty/astronomy> |
 
@@ -149,6 +151,49 @@ Passing those along:
   positions by Olaf Frohn.
 - All data converted to GeoJSON at epoch J2000.
 
+## 3b. 3D models — NASA, public domain
+
+Ten spacecraft models ship in `site/models/`, all from **NASA 3D Resources**
+(<https://github.com/nasa/NASA-3D-Resources>, mirrored from <https://science.nasa.gov/3d-resources/>).
+
+NASA's media usage guidelines: material created by NASA is generally **not protected by copyright**
+and may be used without permission. The exceptions are the NASA insignia, logo and seal, which may
+not be used to imply endorsement — **none of these models contains one**, and this project does not
+use NASA branding anywhere. NASA does not endorse Space Radar.
+
+| file | NASA model | used for | size |
+|---|---|---|---|
+| `iss.glb` | International Space Station (ISS) (A) | NORAD 25544 | 34 KB |
+| `hubble.glb` | Hubble Space Telescope (A) | NORAD 20580 | 163 KB |
+| `chandra.glb` | Chandra X-ray Observatory | NORAD 27424 | 195 KB |
+| `landsat.glb` | Landsat 7 | NORAD 25682, 39174 | 68 KB |
+| `tdrs.glb` | Tracking and Data Relay Satellites (TDRS) (A) | the TDRS family | 10 KB |
+| `kepler.glb` | Kepler (B) | Horizons −227 | 7 KB |
+| `voyager.glb` | Voyager Probe (A) | Horizons −31, −32 | 288 KB |
+| `juno.glb` | Juno (B) | Horizons −61 | 254 KB |
+| `parker.glb` | Parker Solar Probe | Horizons −96 | 247 KB |
+| `asteroid-bennu.glb` | 1999 RQ36 asteroid | Bennu, and the asteroid class | 23 KB |
+
+**Credit line:** `3D model: NASA`
+
+### What was changed
+
+These are derivatives and say so, because a credit that implies an untouched file is a wrong
+credit:
+
+1. **Re-encoded from Draco to meshopt.** NASA ships them with
+   `KHR_draco_mesh_compression`, which needs a ~300 KB WebAssembly decoder in the browser.
+   Re-encoding to `EXT_meshopt_compression` needs a 29 KB one **and made the files smaller** —
+   Hubble went from 1 655 KB to 163 KB. Done once with `@gltf-transform/cli`, never at runtime.
+2. **Simplified**, at a 0.001 error tolerance, since these are CAD models with far more detail than
+   an object a few hundred pixels across can show.
+3. **Retextured at runtime.** The original PBR materials are replaced with this project's toon
+   material. The *geometry* is NASA's; the *look* is ours. That is the brief — cartoon objects on a
+   realistic setting — and it is why a real Hubble still reads as part of the same drawn world.
+
+They are loaded **on demand**, one file per object, only when the camera is near it. Nobody
+downloads all ten; the largest single download is 288 KB.
+
 ## 4. Runtime data sources
 
 The app calls these from the visitor's browser. Nothing here is redistributed in this repository —
@@ -260,11 +305,17 @@ files, that condition attaches to your copy too.
 row *has* a licence string — not that the row describes a file that exists. Three things in it are
 not true of the shipped tree, recorded here so the public repo does not carry a wrong claim:
 
-1. **The 19 `models:` rows describe files that do not exist.** There is no `models/` directory and
-   nothing in `site/js` loads a `.glb`. `site/js/scene/models.js` builds every object from three.js
-   primitives. That includes the five rows claiming ISS, Hubble, JWST and Voyager geometry
-   "decimated from" NASA 3D Resources — **no NASA-derived model ships in this repository**, so the
-   public-domain claim attached to them credits an asset that is not here.
+1. **The 19 `models:` rows described files that did not exist.** At the time of the audit there was
+   no `models/` directory and nothing loaded a `.glb`; `site/js/scene/models.js` built every object
+   from three.js primitives, and five rows nonetheless claimed ISS, Hubble, JWST and Voyager
+   geometry "decimated from" NASA 3D Resources. Those rows now describe the procedural geometry
+   that actually ships.
+
+   **This has since changed, and section 3b is the current record.** Ten real NASA models were added
+   afterwards and they *are* in the tree, under `site/models/`, correctly credited and with their
+   modifications stated. The `real_models:` section of the registry describes them, and
+   `scripts/check_registry.py` now refuses a row there whose file is missing — which is the check
+   that would have caught this audit's finding in the first place.
 2. **`earth-night` is credited to NASA Earth Observatory.** The shipped `2k_earth_nightmap.jpg` is a
    Solar System Scope file. CC BY 4.0, not public domain — and CC BY has an attribution obligation
    that "Public domain (NASA)" does not discharge.

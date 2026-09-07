@@ -154,7 +154,6 @@ right instruction for whichever names you attached.
 ```
 site/                 the entire app, served as-is
   index.html          the shell; reports a failed boot in words, never a black screen
-  js/CONTRACT.md      the module contract every file obeys — read this first
   js/propagate/       frames and the six propagators, one signature between them
   js/data/            fetching, caching, parsing, and the bundled sample data
   js/scene/           renderer, stage, worlds, Earth shader, starfield, glyphs, models

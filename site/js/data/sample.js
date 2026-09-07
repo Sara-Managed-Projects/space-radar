@@ -1,6 +1,6 @@
 // data/sample.js — bundled stand-ins for the sources a browser cannot call.
 //
-// CONTRACT (site/js/CONTRACT.md):
+// CONTRACT (tests/test_contract.mjs):
 //   export function sampleAsteroids(): Record[]
 //   export function sampleDeepSpace(): Record[]
 //   export function sampleReentries(): Record[]

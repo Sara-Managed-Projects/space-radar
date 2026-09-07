@@ -1,6 +1,6 @@
 // data/sources.js — every upstream the browser is allowed to call, and the cache in front of it.
 //
-// CONTRACT (site/js/CONTRACT.md):
+// CONTRACT (tests/test_contract.mjs):
 //   export const SOURCES
 //   export async function load(id)
 //   export function status()
@@ -462,7 +462,7 @@ export function status() {
 
 /**
  * Called with (id, LoadResult) whenever a background revalidation finishes, succeed or fail.
- * Not in CONTRACT.md; without it a background refresh is invisible until the next load().
+ * Not in the module contract; without it a background refresh is invisible until the next load().
  * @param {(id: string, result: LoadResult) => void} fn
  * @returns {() => void} unsubscribe
  */
@@ -472,7 +472,7 @@ export function onUpdate(fn) {
   return () => listeners.delete(fn);
 }
 
-/** Drop one cached copy. Not in CONTRACT.md; the status panel's retry needs it. */
+/** Drop one cached copy. Not in the module contract; the status panel's retry needs it. */
 export function forget(id) {
   memory.delete(id);
   const s = storage();

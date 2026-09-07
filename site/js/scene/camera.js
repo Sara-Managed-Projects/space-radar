@@ -1,6 +1,6 @@
 // scene/camera.js — damped orbit controls + eased flights.
 //
-// Contract (site/js/CONTRACT.md):
+// Contract (tests/test_contract.mjs):
 //   createCameraRig(camera, domElement) -> { update(dt), flyTo({targetScene, distance, ms}),
 //                                            follow(getPosFn), stopFollow(), onUserInput(fn), state }
 //

@@ -9,7 +9,7 @@
 // 24 px. Raycasting tens of thousands of instances is the thing this exists to avoid.
 //
 // A record whose cls is 'sample' also draws a dashed halo ring, so bundled demonstration data can
-// never be mistaken for a live position (CONTRACT.md rule 5).
+// never be mistaken for a live position (the module contract rule 5).
 
 import * as THREE from '../../vendor/three.module.min.js';
 import * as propagateMod from '../propagate/index.js';
@@ -287,7 +287,7 @@ export function createGlyphLayer(scene, layer = {}) {
 
   function setRecords(next) {
     records = Array.isArray(next) ? next : [];
-    // data/layers.js writes `budget: {maxItems, rank}`; CONTRACT.md's LAYERS shape says a plain
+    // data/layers.js writes `budget: {maxItems, rank}`; the module contract's LAYERS shape says a plain
     // number. Accept both -- comparing a length against the object silently produced NaN, so this
     // guard never fired at all. (loadLayer applies the same cap, so this is the second line of
     // defence for a caller that hands over an unfiltered array.)

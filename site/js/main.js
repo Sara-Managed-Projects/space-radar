@@ -1,5 +1,5 @@
 // Boot and the render loop. This file owns the order things happen in and nothing else:
-// every piece of behaviour lives in a module named by site/js/CONTRACT.md.
+// every piece of behaviour lives in a module named by tests/test_contract.mjs.
 //
 // The order matters and is deliberate. The world draws BEFORE any network call finishes, because
 // a visitor on a slow phone should see Earth in the first second and watch the satellites arrive,

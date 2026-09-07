@@ -1,6 +1,6 @@
 // scene/starfield.js — the real sky behind everything.
 //
-// Three parts, all built in the equatorial J2000 frame (CONTRACT.md's `earth-inertial` axes):
+// Three parts, all built in the equatorial J2000 frame (the module contract's `earth-inertial` axes):
 //   1. the Milky Way on an inside-out sphere,
 //   2. 5 044 real stars from data/stars.bin as one Points, sized and coloured by magnitude and B-V,
 //   3. the 89 constellation figures as LineSegments at 25 % opacity, plus their names as a list the
