@@ -14,6 +14,7 @@
 
 import { COPY, CITIES, t, fmt, timeText, inWords } from '../copy/en.js';
 import { createSearch } from './search.js';
+import { shapeLine } from './tripframe.js';
 
 const HOST_ID = 'sr-controls';
 const MOMENTS = [COPY.moments.wonder, COPY.moments.now, COPY.moments.next];
@@ -178,6 +179,76 @@ function applyLayerEnabled(ctx, layer, on) {
     );
   } catch {
     /* older browsers: the direct call above already did the work */
+  }
+}
+
+// ---------------------------------------------------------------------------------------
+// 0. Trips -- the one place a guided trip is offered
+//
+// A ROW STATES ITS COUNT AND ITS LENGTH ONLY AFTER THE STOPS HAVE BEEN RESOLVED. Before that it
+// says it is working it out. A count printed before resolution is a guess wearing a fact's
+// clothes, and "5 stops, about two minutes" has to be a sentence the browser will actually keep.
+//
+// A trip that cannot fill its own floor is GREYED WITH ITS REASON and never hidden: a missing
+// feature and a broken one look identical when you hide one, and the visitor cannot tell which
+// they are looking at.
+// ---------------------------------------------------------------------------------------
+
+function buildTrips(ctx, state) {
+  const wrap = el('section', 'sr-panel sr-trips');
+  const trip = ctx && ctx.trip;
+  const tours = trip && typeof trip.tours === 'function' ? trip.tours() : [];
+  if (!tours.length) return wrap;
+
+  wrap.appendChild(el('h2', 'sr-panel__title', COPY.trip.sectionTitle));
+  wrap.appendChild(el('p', 'sr-trips__hint', COPY.trip.sectionHint));
+  const list = el('ul', 'sr-trips__list');
+  state.tripRows = new Map();
+
+  for (const tour of tours) {
+    const row = el('li', 'sr-trips__row');
+    const start = button('sr-trips__start', null, COPY.trip.startTitle);
+    start.dataset.trip = tour.id;
+    start.appendChild(el('span', 'sr-trips__title', tour.title));
+    start.appendChild(el('span', 'sr-trips__blurb', tour.blurb));
+    const shape = el('span', 'sr-trips__shape', COPY.trip.planning);
+    start.appendChild(shape);
+    start.addEventListener('click', () => {
+      try {
+        trip.start(tour.id);
+      } catch {
+        /* the row stays as it was rather than the panel dying with it */
+      }
+    });
+    row.appendChild(start);
+    list.appendChild(row);
+    state.tripRows.set(tour.id, { start, shape });
+  }
+  wrap.appendChild(list);
+  return wrap;
+}
+
+/** Resolve every trip once the layers have landed, and print what is actually on offer. */
+function planTrips(ctx, state) {
+  const trip = ctx && ctx.trip;
+  if (!trip || !state.tripRows) return;
+  for (const [id, row] of state.tripRows) {
+    Promise.resolve(trip.plan(id))
+      .then((plan) => {
+        if (!plan) return;
+        if (plan.offerable) {
+          row.shape.textContent = shapeLine(plan.count, plan.estimateMs);
+          row.start.disabled = false;
+          row.start.classList.remove('is-off');
+          return;
+        }
+        row.shape.textContent = plan.reason || '';
+        row.start.disabled = true;
+        row.start.classList.add('is-off');
+      })
+      .catch(() => {
+        row.shape.textContent = '';
+      });
   }
 }
 
@@ -742,6 +813,7 @@ export function createControls(ctx) {
     doors: null,
     layerList: null,
     layerRows: null,
+    tripRows: null,
     clockEls: null,
   };
 
@@ -751,6 +823,9 @@ export function createControls(ctx) {
     state.anchorMs = 0;
   }
 
+  // Trips sit at the top: it is the one control that answers "I do not know what to look at",
+  // which is the state a first-time visitor is actually in.
+  node.appendChild(buildTrips(ctx, state));
   node.appendChild(buildMoments(ctx, state));
   node.appendChild(buildLayers(ctx, state));
   node.appendChild(buildClock(ctx, state));
@@ -797,6 +872,10 @@ export function createControls(ctx) {
       node.classList.toggle('is-reduced-motion', reduceMotion.matches);
     });
   }
+
+  // The trips are resolved once the data has landed, and not before: their counts are the one
+  // thing in this panel that must not be a guess.
+  window.addEventListener('sr:layers-ready', () => planTrips(ctx, state), { once: true });
 
   startLoop(ctx, state);
 }

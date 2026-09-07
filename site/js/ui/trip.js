@@ -1,7 +1,8 @@
 // ui/trip.js -- the guided trip: a chain of shots the camera flies, one card per stop.
 //
-// Contract exports: createTrip(ctx) -> { start(id), stop(reason), next(), back(), replay(),
-//                                        pause(reason), resume(), plan(id), tours(), state }
+// Contract exports: createTrip(ctx) -> { start(id), play(), stop(reason), next(), back(),
+//                                        replay(), pause(reason), resume(), plan(id), tours(),
+//                                        onChange(fn), dwellFraction(), currentRecordId(), state }
 //
 // The trips themselves are DATA: registry/tours.yaml, mirrored into data/tours.js by
 // scripts/gen_tours_js.py. Nothing in this file knows about any particular trip, and adding one
@@ -41,11 +42,12 @@
 // a reader's time. Somebody who asked for less motion often needs MORE time, not less.
 //
 // ---------------------------------------------------------------------------------------------
-// WHAT THIS FILE IS NOT. The cinematic frame -- the letterbox, `html.sr-trip`, the panel going
-// `inert`, the controls, the progress row, the ARIA live region, the keyboard bindings and the
-// Trips section of the left panel -- is the next spec. This is the machine underneath it, and
-// everything the frame needs is on `state` or returned by `plan()`. The one piece of chrome here
-// is the card, because a stop with no words is a camera move and not a stop.
+// WHERE THE FRAME IS. The letterbox, `html.sr-trip`, the panel going `inert`, the controls, the
+// progress row, the ARIA live region and the keyboard bindings are ui/tripframe.js. This file is
+// the machine; that one is what a visitor sees of it. The seam between them is deliberately
+// narrow: `state`, `onChange(fn)`, and the same methods a console can call. The frame reads and
+// never writes, so a browser check can drive the trip with the frame absent -- which is how every
+// measurement in this file's history was taken.
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { TOURS } from '../data/tours.js';
@@ -86,6 +88,15 @@ const APEX_SCALE = 0.9;
 
 const SETTLE_MS = 150;
 const DRIFT_LEAD_MS = 400;
+// The stop's TITLE arrives six tenths of the way through the flight and its body only once the
+// camera is at rest. The title answers "where am I going?" and takes the loss-of-control feeling
+// out of a four-second move; the body waits because reading during camera motion is both hard and
+// a vestibular problem. Under reduced motion there is no flight to be six tenths of the way
+// through, and the two arrive together.
+const TITLE_AT = 0.6;
+// The same number scripts/gen_tours_js.py uses to compute `estimate_ms`, and it has to be, or the
+// length a row promises and the length the generator wrote into the mirror are two numbers.
+const FLIGHT_ESTIMATE_MS = 3200;
 // A tab switch is not a signal about the trip, which is why this one resumes on its own and a
 // pause caused by the visitor's own hand does not.
 const HIDDEN_RESUME_MS = 600;
@@ -141,17 +152,39 @@ export function createTrip(ctx) {
   const state = {
     phase: 'idle',
     tourId: null,
+    tourTitle: null,
     stopId: null,
+    stopTitle: null,
     index: -1,
     count: 0,
+    estimateMs: 0,
     generation: 0,
     pausedBy: null,
     pacing: 'auto',
     reducedMotion: false,
+    clockClamped: false,
     dropped: [],
     held: null,
     reason: null,
   };
+
+  // The frame subscribes; so can a browser check. Every phase change ends in notify(), so nothing
+  // that draws the trip has to poll for one -- the segment fill is the only thing that does, and
+  // it polls a number rather than a state.
+  const listeners = new Set();
+  function onChange(fn) {
+    if (typeof fn === 'function') listeners.add(fn);
+    return () => listeners.delete(fn);
+  }
+  function notify() {
+    for (const fn of [...listeners]) {
+      try {
+        fn(state);
+      } catch {
+        /* a listener must never stop the trip */
+      }
+    }
+  }
 
   let gen = 0;
   let run = null;
@@ -195,8 +228,10 @@ export function createTrip(ctx) {
   // --- wall-clock timers ------------------------------------------------------------------
 
   function after(ms, fn) {
-    timers.push({ dueAt: now() + ms, fn, gen, remaining: null });
+    const timer = { dueAt: now() + ms, fn, gen, remaining: null };
+    timers.push(timer);
     startTicking();
+    return timer;
   }
 
   // Wall clock, and only wall clock. Never an accumulated per-frame dt: requestAnimationFrame
@@ -374,6 +409,18 @@ export function createTrip(ctx) {
   }
 
   /**
+   * How long the trip that is actually going to run will take, over the stops that actually
+   * resolved -- which is the only number a visitor may be shown, because the trip they are
+   * offered is not always the trip the file describes.
+   */
+  function estimateOf(stops) {
+    return stops.reduce(
+      (sum, entry) => sum + entry.stop.dwell_ms + SETTLE_MS + FLIGHT_ESTIMATE_MS,
+      0,
+    );
+  }
+
+  /**
    * What a trip would do if you started it now: the resolved stops, what was dropped and why, and
    * whether it can be offered at all. The panel prints this; so does a browser check.
    */
@@ -383,10 +430,7 @@ export function createTrip(ctx) {
     const resolved = await resolveTour(tour);
     const count = resolved.stops.length;
     const enough = count >= (tour.min_stops || 3);
-    const estimate = resolved.stops.reduce(
-      (sum, entry) => sum + entry.stop.dwell_ms + SETTLE_MS + FLIGHT_BASE_MS * 2,
-      0,
-    );
+    const estimate = estimateOf(resolved.stops);
     return {
       id: tour.id,
       title: tour.title,
@@ -569,9 +613,20 @@ export function createTrip(ctx) {
 
   // --- the card ---------------------------------------------------------------------------
 
-  function paintCard(entry) {
+  /**
+   * @param {object} entry the resolved stop
+   * @param {boolean} [titleOnly] mid-flight: the stop's TITLE and nothing else, rendered through
+   *   the same lead-only path a place-stop uses. Not the whole card with its body hidden by CSS
+   *   -- a body a screen reader can read while the camera is still moving is exactly the thing
+   *   the k=0.6 rule exists to prevent, and hiding it visually would not hide it from a reader.
+   */
+  function paintCard(entry, titleOnly) {
     const card = entry.stop.card || {};
-    const lead = { title: card.title, body: card.body };
+    const lead = { title: card.title, body: titleOnly ? null : card.body };
+    if (titleOnly) {
+      showCard(null, ctx, { lead });
+      return;
+    }
     const record = entry.subject && entry.subject.record;
     if (record) {
       // The real select: the glyph highlights, `follow` is installed, `sr:select` fires (which is
@@ -618,15 +673,21 @@ export function createTrip(ctx) {
     const c = ctx.clock;
     if (tour.clock === 'live') {
       c.live();
-      return;
+      return false;
     }
     if (tour.clock === 'freeze') {
       c.setPaused(true);
-      return;
+      return false;
     }
     // `as-found`, with the one clamp the design argues for: at anything above a minute a second
-    // the subject whips around the planet while `follow` holds the camera on it.
-    if (c.rate > CLOCK_RATE_CEILING) c.setRate(1);
+    // the subject whips around the planet while `follow` holds the camera on it. It is said out
+    // loud on the intro card, because silently changing something a visitor set is the same
+    // defect as a control that lies about its own state.
+    if (c.rate > CLOCK_RATE_CEILING) {
+      c.setRate(1);
+      return true;
+    }
+    return false;
   }
 
   function setLayer(id, on) {
@@ -657,18 +718,35 @@ export function createTrip(ctx) {
       savedSelection: ctx.selected ? ctx.selected() : null,
     };
     for (const id of resolved.layers) if (setLayer(id, true)) run.flipped.push(id);
-    applyClock(tour);
+    state.clockClamped = applyClock(tour);
 
     state.tourId = tour.id;
+    state.tourTitle = tour.title;
     state.count = resolved.stops.length;
+    state.estimateMs = estimateOf(resolved.stops);
     state.dropped = resolved.dropped;
     state.pacing = pacingFor(tour);
     state.reducedMotion = reducedMotion();
     state.reason = null;
     state.held = null;
+    state.index = -1;
+    state.stopId = null;
+    state.stopTitle = null;
+
+    // THE INTRO IS A PHASE, not a courtesy. It makes the trip a decision rather than an ambush,
+    // it states a count that has already been resolved, and -- the reason it is here rather than
+    // in the frame -- it is where the mode furniture goes up, so the button a visitor presses to
+    // start is inside the frame and not inside the panel that is about to go `inert` under them.
+    state.phase = 'intro';
+    notify();
+    return plannedShape(resolved);
+  }
+
+  /** Leave the intro card. The only way into the first flight. */
+  function play() {
+    if (!run || state.phase !== 'intro') return;
     startTicking();
     goTo(0);
-    return plannedShape(resolved);
   }
 
   function plannedShape(resolved) {
@@ -676,6 +754,7 @@ export function createTrip(ctx) {
       id: resolved.tour.id,
       title: resolved.tour.title,
       count: resolved.stops.length,
+      estimateMs: estimateOf(resolved.stops),
       dropped: resolved.dropped,
     };
   }
@@ -704,8 +783,11 @@ export function createTrip(ctx) {
     const entry = run.stops[index];
     state.index = index;
     state.stopId = entry.stop.id;
+    state.stopTitle = (entry.stop.card || {}).title || entry.stop.id;
     state.generation = gen;
     state.held = null;
+    run.dwellTimer = null;
+    run.dwellMs = 0;
 
     if (entry.held) {
       holdAt(entry);
@@ -736,6 +818,19 @@ export function createTrip(ctx) {
       // trip; this exists so the rig never has to drop a callback silently.
       onCancel: guarded(() => {}),
     });
+
+    // The title, six tenths of the way in. Skipped under reduced motion and for a cut, where the
+    // arrival above has already happened -- synchronously, before flyTo returned -- and the card
+    // is painted whole. A wall-clock timer rather than a camera callback, so it pauses and
+    // resumes with everything else the trip is holding.
+    if (!reducedMotion() && shot.ms > 0) {
+      after(shot.ms * TITLE_AT, () => {
+        if (!run || state.phase !== 'flight' || state.index !== index) return;
+        paintCard(entry, true);
+        notify();
+      });
+    }
+    notify();
   }
 
   function holdAt(entry) {
@@ -751,7 +846,11 @@ export function createTrip(ctx) {
       const pos = world.position(tMs);
       if (pos) rig.flyTo({ targetScene: pos, distance: rig.state.distance, ms: FLIGHT_MIN_MS });
     }
+    // The card says what happened, in the stop's own place in the trip. A blank card here would
+    // be indistinguishable from the app having stopped.
+    showCard(null, ctx, { lead: { title: state.held.title, body: state.held.why } });
     // NEVER auto-advance out of a held stop. The visitor presses Next.
+    notify();
   }
 
   function arrived(index, reason) {
@@ -760,6 +859,7 @@ export function createTrip(ctx) {
     state.phase = 'settle';
     paintCard(run.stops[index]);
     after(SETTLE_MS, () => dwell(index));
+    notify();
   }
 
   function dwell(index) {
@@ -789,7 +889,26 @@ export function createTrip(ctx) {
         });
       });
     }
-    if (state.pacing === 'auto') after(stop.dwell_ms, () => advance());
+    if (state.pacing === 'auto') {
+      // Held so the frame can fill one segment over exactly this long, and so that the fill is
+      // read from the timer that actually decides when the stop ends rather than from a second
+      // clock that would drift away from it the first time somebody paused.
+      run.dwellMs = stop.dwell_ms;
+      run.dwellTimer = after(stop.dwell_ms, () => advance());
+    }
+    notify();
+  }
+
+  /**
+   * How far through the current dwell we are, 0..1, or null when nothing is counting down --
+   * which is every reader-paced stop, every flight, and every held stop. Read from the timer that
+   * ends the stop, so a pause freezes it for the same reason the stop does not end.
+   */
+  function dwellFraction() {
+    const timer = run && run.dwellTimer;
+    if (!timer || !run.dwellMs) return null;
+    const left = timer.remaining !== null ? timer.remaining : timer.dueAt - now();
+    return clamp(1 - left / run.dwellMs, 0, 1);
   }
 
   function advance() {
@@ -811,7 +930,9 @@ export function createTrip(ctx) {
     clearTimers();
     rig.stopOrbit('done');
     driftRun = null;
+    run.dwellTimer = null;
     state.phase = 'outro';
+    notify();
   }
 
   // --- controls ---------------------------------------------------------------------------
@@ -853,8 +974,13 @@ export function createTrip(ctx) {
     jump(state.index);
   }
 
+  const PAUSABLE = ['flight', 'settle', 'dwell', 'held'];
+
   function pause(reason) {
-    if (!run || state.phase === 'paused' || state.phase === 'idle') return;
+    // The intro and the end card are not paused, they are WAITED ON: nothing is counting down and
+    // nothing is moving, so a hand on the camera during either is just a visitor looking around,
+    // and answering it with a "Trip paused" chip would be a control lying about the state.
+    if (!run || PAUSABLE.indexOf(state.phase) === -1) return;
     pausedDuring = state.phase;
     state.pausedBy = reason || 'input';
     holdTimers();
@@ -882,6 +1008,7 @@ export function createTrip(ctx) {
     }
     rig.stopOrbit('cancelled');
     state.phase = 'paused';
+    notify();
   }
 
   function resume() {
@@ -896,6 +1023,19 @@ export function createTrip(ctx) {
     }
     state.phase = was || 'dwell';
     releaseTimers();
+    // MEASURED IN A BROWSER: the most likely pause is a visitor tapping something else, and that
+    // tap replaces the card with that object's own. Resuming a dwell used to leave it there, so
+    // the trip counted down to the next stop while the card on screen was about something else
+    // entirely and the stop's words were never read. Resume means "back to the stop", and this is
+    // the half of that promise a dwell was not keeping. A flight or a held stop already re-flies.
+    const entry = run.stops[state.index];
+    if (entry && !entry.held) {
+      const wanted = entry.subject && entry.subject.record;
+      const sel = typeof ctx.selected === 'function' ? ctx.selected() : null;
+      const astray = wanted ? !sel || sel.id !== wanted.id : !!sel;
+      if (astray) paintCard(entry);
+    }
+    notify();
     if (driftRun) {
       const remaining = driftRun;
       driftRun = { ...remaining, at: now() };
@@ -912,6 +1052,7 @@ export function createTrip(ctx) {
   function stop(reason) {
     if (!run) {
       state.phase = 'idle';
+      notify();
       return;
     }
     gen += 1;
@@ -932,9 +1073,13 @@ export function createTrip(ctx) {
     ticking = false;
     state.phase = 'idle';
     state.tourId = null;
+    state.tourTitle = null;
     state.stopId = null;
+    state.stopTitle = null;
     state.index = -1;
     state.count = 0;
+    state.estimateMs = 0;
+    state.clockClamped = false;
     state.pausedBy = null;
     state.held = null;
     state.reason = reason || null;
@@ -944,6 +1089,7 @@ export function createTrip(ctx) {
     // arrived here" rather than "I lost something".
     if (record) ctx.select(record, { fly: false });
     else hideCard();
+    notify();
   }
 
   function start(id) {
@@ -968,6 +1114,8 @@ export function createTrip(ctx) {
     state.generation = gen;
     state.phase = 'resolving';
     state.tourId = tour.id;
+    state.tourTitle = tour.title;
+    notify();
     const mine = gen;
     return resolveTour(tour).then((resolved) => {
       if (mine !== gen) return null;
@@ -979,6 +1127,7 @@ export function createTrip(ctx) {
           min: tour.min_stops || 3,
           title: tour.title,
         });
+        notify();
         return { id: tour.id, count: resolved.stops.length, offerable: false, reason: state.reason };
       }
       return begin(resolved);
@@ -1054,8 +1203,18 @@ export function createTrip(ctx) {
     }
   }
 
+  /** The record the current stop is about, so a select of something else can be told apart from
+   * the trip's own select and treated as the visitor finding the thing they actually wanted. */
+  function currentRecordId() {
+    if (!run || state.index < 0) return null;
+    const entry = run.stops[state.index];
+    const record = entry && entry.subject && entry.subject.record;
+    return record ? record.id : null;
+  }
+
   return {
     start,
+    play,
     stop,
     next,
     back,
@@ -1063,6 +1222,9 @@ export function createTrip(ctx) {
     pause,
     resume,
     plan,
+    onChange,
+    dwellFraction,
+    currentRecordId,
     tours: () => TOURS,
     state,
     dispose,
