@@ -193,6 +193,56 @@ for (const file of allFiles) {
   }
 }
 
+// 3c. a launch may never claim a shape it did not match. `stands_for: variant` on a row is a
+// claim about ONE vehicle; nine such rows also list a family string, so a launch whose full_name
+// nobody has listed yet lands on one of them and the card would say "drawn from published
+// dimensions for Angara 1.2" about an Angara A5. The cap lives in data/parsers.js, and this is
+// the assertion that it is still there -- the feed produces new spellings under old families
+// every few weeks ("Ariane 62 Block 2", "Starship V3"), so this fires the day it matters.
+{
+  try {
+    const { parseLaunches } = await import(join(JS, 'data/parsers.js'));
+    const launch = (full_name, families, provider) => ({
+      id: `t-${full_name}`,
+      net: '2026-10-01T00:00:00Z',
+      rocket: { configuration: { full_name, families: families.map((name) => ({ name })) } },
+      launch_service_provider: { name: provider },
+      pad: { latitude: '28.5', longitude: '-80.5', name: 'p', location: { name: 'l' } },
+    });
+    const metaOf = (r) => parseLaunches({ results: [r] }).launches[0].meta;
+
+    const exact = metaOf(launch('Falcon 9 Block 5', ['Falcon', 'Falcon 9'], 'SpaceX'));
+    if (exact.drawsAs !== 'variant' || exact.drawnVia !== 'full_name') {
+      problems.push(`HONESTY  a full_name match should still say variant; got ${exact.drawsAs}/${exact.drawnVia}`);
+    }
+    const byFamily = metaOf(launch('Falcon 9 Block 6', ['Falcon', 'Falcon 9'], 'SpaceX'));
+    if (byFamily.drawnVia !== 'family') {
+      problems.push(`HONESTY  'Falcon 9 Block 6' should match by family; got ${byFamily.drawnVia}`);
+    } else if (byFamily.drawsAs === 'variant') {
+      problems.push(
+        `HONESTY  a family match claims "drawn from published dimensions for ${byFamily.drawnName}"`
+      );
+    }
+    const byProvider = metaOf(launch('Orbex Prime', [], 'Orbex'));
+    if (byProvider.drawnVia !== 'provider') {
+      problems.push(`HONESTY  'Orbex Prime' should match by provider; got ${byProvider.drawnVia}`);
+    } else {
+      if (byProvider.drawsAs === 'variant') problems.push('HONESTY  a provider match claims an exact vehicle');
+      // Its row's own source reads "NOT this vehicle: no source was read for Prime...".
+      if (byProvider.sizeM !== null) {
+        problems.push(`HONESTY  the provider stand-in states a height (${byProvider.sizeM} m) for a vehicle it says it cannot size`);
+      }
+    }
+    const generic = metaOf(launch('Nova', ['Nova'], 'Firefly Aerospace'));
+    if (generic.drawsAs !== 'generic' || generic.sizeM !== null) {
+      problems.push(`HONESTY  an unmatched launch should be generic with no height; got ${generic.drawsAs}/${generic.sizeM}`);
+    }
+    notes.push('drawsAs is capped by the match level: full_name -> variant, family/provider -> family');
+  } catch (e) {
+    problems.push(`HONESTY  could not check the drawn claim: ${String(e && e.message)}`);
+  }
+}
+
 // 4. report
 if (notes.length) {
   console.log('notes:');

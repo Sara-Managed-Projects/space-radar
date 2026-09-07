@@ -45,7 +45,7 @@ FIELDS = (
     "boosters",
     "engines",
     "livery",
-    "disputed",
+    "disputed_height",
     "class",
 )
 

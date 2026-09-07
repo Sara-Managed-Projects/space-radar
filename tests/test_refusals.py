@@ -76,8 +76,8 @@ CASES: list[tuple[str, str, str, str]] = [
      "rockets.yaml", "dia_m: 1.2, len_m: 2.5}\n    boosters: {shape: none, count: 0}",
      "dia_m: 1.2, len_m: 2.5}\n    boosters: {shape: none, count: 4}"),
     ("a booster shape with no diameter, which is the whole silhouette",
-     "rockets.yaml", "{shape: solid_fat, count: 4, dia_m: 3.4, len_m: 22.0}",
-     "{shape: solid_fat, count: 4, len_m: 22.0}"),
+     "rockets.yaml", "{shape: solid_fat, count: 4, dia_m: 3.4, len_m: 13.5}",
+     "{shape: solid_fat, count: 4, len_m: 13.5}"),
     ("something on top that is not a fairing, a capsule, a ship or nothing",
      "rockets.yaml", "    top: {kind: integrated_ship}", "    top: {kind: nosecone}"),
     ("a body taper the builder cannot draw",
@@ -89,8 +89,8 @@ CASES: list[tuple[str, str, str, str]] = [
      "    taper: hammerhead\n    top: {kind: fairing, dia_m: 4.2}\n    boosters: {shape: none, count: 0}\n    engines: {count: 7, pattern: unknown}\n",
      "    taper: hammerhead\n    top: {kind: fairing}\n    boosters: {shape: none, count: 0}\n    engines: {count: 7, pattern: unknown}\n"),
     ("an engine arrangement the builder cannot draw",
-     "rockets.yaml", "    engines: {count: 27, pattern: octaweb}",
-     "    engines: {count: 27, pattern: swirl}"),
+     "rockets.yaml", "    engines: {count: 13, pattern: unknown}",
+     "    engines: {count: 13, pattern: swirl}"),
     ("a first stage with no engines on it",
      "rockets.yaml", "    engines: {count: 33, pattern: dense_ring}",
      "    engines: {count: 0, pattern: dense_ring}"),
@@ -109,6 +109,40 @@ CASES: list[tuple[str, str, str, str]] = [
      "    livery: greenish\n"),
     ("the feed evidence has no date on it",
      "rockets.yaml", "observed_on: 2026-09-07", "# observed_on: removed"),
+
+    # The OPTIONAL dimensions. These were the gap: height_m, core_dia_m and boosters.dia_m were
+    # guarded from the first day and `top.len_m: "long"` sailed through into NaN geometry, drawn
+    # under a card still saying "drawn from published dimensions".
+    ("a fairing length that is not a number, which draws NaN geometry",
+     "rockets.yaml", "    top: {kind: fairing, dia_m: 5.2, len_m: 13.2}",
+     '    top: {kind: fairing, dia_m: 5.2, len_m: "long"}'),
+    ("a fairing longer than the whole rocket",
+     "rockets.yaml", "    top: {kind: fairing, dia_m: 5.2, len_m: 13.2}",
+     "    top: {kind: fairing, dia_m: 5.2, len_m: 400}"),
+    ("a negative fairing length",
+     "rockets.yaml", "    top: {kind: fairing, dia_m: 5.2, len_m: 13.2}",
+     "    top: {kind: fairing, dia_m: 5.2, len_m: -5}"),
+    ("a fairing diameter that is not a number",
+     "rockets.yaml", "    top: {kind: fairing, dia_m: 5.2, len_m: 13.2}",
+     '    top: {kind: fairing, dia_m: "wide", len_m: 13.2}'),
+    ("a booster length that is not a number",
+     "rockets.yaml", "{shape: liquid_conical, count: 4, dia_m: 2.68, len_m: 19.6}",
+     '{shape: liquid_conical, count: 4, dia_m: 2.68, len_m: "tall"}'),
+    ("a booster wider than the rocket it straps to",
+     "rockets.yaml", "{shape: liquid_conical, count: 4, dia_m: 2.68, len_m: 19.6}",
+     "{shape: liquid_conical, count: 4, dia_m: 900, len_m: 19.6}"),
+    ("a section length that is not a number",
+     "rockets.yaml", "    sections: [{dia_m: 3.5}, {dia_m: 2.6}]",
+     '    sections: [{dia_m: 3.5, len_m: "some"}, {dia_m: 2.6}]'),
+
+    # The card prints `disputed_height` inside "sources disagree on its HEIGHT (...)", so a row
+    # cannot flag a disagreement about something else and cannot flag one with nothing in it.
+    ("a height disagreement flagged under the old name, which said nothing about WHAT",
+     "rockets.yaml", '    disputed_height: "ESA 28 m; ArianeGroup 30 m standing on its legs"',
+     '    disputed: "ESA 28 m; ArianeGroup 30 m standing on its legs"'),
+    ("a height flagged as disputed with nothing to show for it",
+     "rockets.yaml", '    disputed_height: "ESA 28 m; ArianeGroup 30 m standing on its legs"',
+     "    disputed_height: true"),
 ]
 
 
@@ -125,6 +159,9 @@ def main() -> int:
             work.mkdir()
             shutil.copytree(pristine, work / "registry")
             shutil.copytree(ROOT / "scripts", work / "scripts")
+            # The validator cross-checks registry/models.yaml against CREDITS.md, so a tree
+            # without it fails for a reason that has nothing to do with the case under test.
+            shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")
 
             path = work / "registry" / filename
             text = path.read_text(encoding="utf-8")

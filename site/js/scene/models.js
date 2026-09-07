@@ -372,7 +372,7 @@ const BOOSTER_SEG = 12;
 const BELL_SEG = 8;
 
 /**
- * Which colour goes on which zone. A row with `livery: unknown` -- 14 of the families here, and
+ * Which colour goes on which zone. A row with `livery: unknown` -- 34 of the 49 rows here, and
  * that is a real gap and not a soft one -- gets the neutral default everywhere, and the card
  * says NOTHING about colour. We do not write "colour unknown" on a card; we never claim one.
  */
@@ -1024,7 +1024,9 @@ const BUILDERS = {
  * @param {string} klass station|satellite|debris|rocket|probe|telescope|asteroid|comet|site|world
  * @param {string} [variant] a key of that class's row, or any string for the seeded shapes
  * @returns {THREE.Object3D} always an Object3D; unknown classes fall back to a generic satellite
- *   and set userData.generic, which is what the card means by "drawn as a generic satellite".
+ *   and set userData.generic. NOTHING READS THAT FLAG YET: the card's "what you are looking at"
+ *   line (COPY.drawing) is written from a launch's registry row in data/parsers.js and is not
+ *   printed for any other class, so a generic satellite is drawn without the card saying so.
  */
 export function modelFor(klass, variant) {
   // Own-property lookups only: a record whose klass or variant happened to be "constructor" or
@@ -1048,8 +1050,9 @@ export function modelFor(klass, variant) {
   obj.name = `model:${klass}${variant ? `:${variant}` : ''}`;
   obj.userData.klass = generic ? 'satellite' : klass;
   obj.userData.variant = variant || 'default';
-  // "generic" means the card may not name the shape: an unknown class, or a variant that was
-  // asked for and does not exist. Asking for NO variant gets the class's own default model, which
+  // "generic" means the shape may not be named as the object: an unknown class, or a variant that
+  // was asked for and does not exist. (The card does not print this yet -- see above.)
+  // Asking for NO variant gets the class's own default model, which
   // is not generic -- and heroes.js passes no variant for almost every record, so the old
   // `!use[variant]` marked every model in the app generic.
   obj.userData.generic = generic || (variant != null && !named);

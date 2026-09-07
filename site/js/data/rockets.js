@@ -71,7 +71,7 @@ export const ROCKETS = [
       "dia_m": 3.66
     },
     "engines": {
-      "count": 27,
+      "count": 9,
       "pattern": "octaweb"
     },
     "livery": {
@@ -102,7 +102,7 @@ export const ROCKETS = [
       "shape": "solid_fat",
       "count": 2,
       "dia_m": 3.4,
-      "len_m": 22.0
+      "len_m": 13.5
     },
     "engines": {
       "count": 1,
@@ -136,7 +136,7 @@ export const ROCKETS = [
       "shape": "solid_fat",
       "count": 4,
       "dia_m": 3.4,
-      "len_m": 22.0
+      "len_m": 13.5
     },
     "engines": {
       "count": 1,
@@ -170,7 +170,7 @@ export const ROCKETS = [
       "shape": "solid_fat",
       "count": 2,
       "dia_m": 3.4,
-      "len_m": 22.0
+      "len_m": 13.5
     },
     "engines": {
       "count": 1,
@@ -241,7 +241,7 @@ export const ROCKETS = [
       "body": "#22262B",
       "class": "inferred"
     },
-    "disputed": "Wikipedia 42.8 m; Rocket Lab quotes a 7 m diameter and 40 m length for the tapered composite structure",
+    "disputed_height": "Wikipedia 42.8 m; Rocket Lab quotes 40 m of length for the tapered composite structure",
     "class": "measured"
   },
   {
@@ -331,7 +331,7 @@ export const ROCKETS = [
       "len_m": 19.6
     },
     "engines": {
-      "count": 20,
+      "count": 4,
       "pattern": "quad"
     },
     "livery": {
@@ -546,7 +546,7 @@ export const ROCKETS = [
   },
   {
     "id": "atlas-v",
-    "display": "an Atlas V",
+    "display": "Atlas V N22",
     "match": {
       "full_name": [
         "Atlas V N22"
@@ -556,8 +556,8 @@ export const ROCKETS = [
         "Atlas"
       ]
     },
-    "stands_for": "family",
-    "height_m": 58.3,
+    "stands_for": "variant",
+    "height_m": 52.4,
     "core_dia_m": 3.8,
     "taper": "tube",
     "top": {
@@ -575,7 +575,7 @@ export const ROCKETS = [
       "pattern": "twin"
     },
     "livery": "unknown",
-    "class": "inferred"
+    "class": "measured"
   },
   {
     "id": "h3",
@@ -712,7 +712,7 @@ export const ROCKETS = [
       ]
     },
     "stands_for": "variant",
-    "height_m": 29.48,
+    "height_m": 31.7,
     "core_dia_m": 2.2,
     "taper": "tube",
     "top": {
@@ -925,7 +925,7 @@ export const ROCKETS = [
       "len_m": 15.33
     },
     "engines": {
-      "count": 8,
+      "count": 4,
       "pattern": "quad"
     },
     "livery": "unknown",
@@ -1041,7 +1041,7 @@ export const ROCKETS = [
       "dia_m": 5.0
     },
     "engines": {
-      "count": 21,
+      "count": 7,
       "pattern": "unknown"
     },
     "livery": "unknown",
@@ -1075,7 +1075,7 @@ export const ROCKETS = [
       "pattern": "unknown"
     },
     "livery": "unknown",
-    "disputed": "Wikipedia about 69 m with the 4.2 m fairing; SpaceNews 70.4 m",
+    "disputed_height": "Wikipedia about 69 m with the 4.2 m fairing; SpaceNews 70.4 m",
     "class": "measured"
   },
   {
@@ -1113,7 +1113,6 @@ export const ROCKETS = [
       "pattern": "unknown"
     },
     "livery": "unknown",
-    "disputed": "Wikipedia 3.5 m first stage; Gunter's Space Page 3.3 m",
     "class": "measured"
   },
   {
@@ -1140,7 +1139,7 @@ export const ROCKETS = [
       "pattern": "single"
     },
     "livery": "unknown",
-    "disputed": "ESA 28 m; ArianeGroup 30 m standing on its legs",
+    "disputed_height": "ESA 28 m; ArianeGroup 30 m standing on its legs",
     "class": "measured"
   },
   {
@@ -1257,7 +1256,7 @@ export const ROCKETS = [
       "len_m": 40.8
     },
     "engines": {
-      "count": 3,
+      "count": 1,
       "pattern": "single"
     },
     "livery": {
@@ -1315,7 +1314,7 @@ export const ROCKETS = [
       "dia_m": 2.9
     },
     "engines": {
-      "count": 5,
+      "count": 1,
       "pattern": "single"
     },
     "livery": "unknown",

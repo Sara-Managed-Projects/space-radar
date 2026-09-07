@@ -101,7 +101,11 @@ export const REAL_MODELS = {
    * are a box bus with a big dish and two long wings. One 81 kB model makes the whole ring read as
    * what it is instead of as identical grey boxes.
    *
-   * The card still says "drawn as a generic satellite", because that is what it is.
+   * `generic: true` marks it as a stand-in. The card does NOT say so today: the "what you are
+   * looking at" line is written from a launch's registry row in data/parsers.js and covers
+   * launches only, so this bus, the DSN dish, the pad and grace.glb (which is GRACE-FO 1 drawn
+   * as its sister ship) are all undisclosed stand-ins. That is a gap, and saying it here is
+   * better than a comment claiming a line the card never prints.
    */
   byLayer: {
     'geo-ring': { file: 'bus-ssl1300.glb', colour: 'satellite', name: 'a communications satellite', generic: true },

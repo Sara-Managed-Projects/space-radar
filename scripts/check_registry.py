@@ -55,6 +55,30 @@ MATCH_KINDS = {"full_name", "family", "provider"}
 MIN_HEIGHT_M, MAX_HEIGHT_M = 5, 150
 HEX = re.compile(r"^#[0-9A-Fa-f]{6}$")
 
+
+def dimension(where: str, holder: dict, key: str, label: str, ceiling: float) -> None:
+    """An OPTIONAL length or diameter, if it is written at all, is a positive number in metres.
+
+    height_m, core_dia_m and boosters.dia_m were checked from the first day and these were not,
+    which meant `top.len_m: "long"` validated and then reached scene/models.js, where every
+    arithmetic on it is NaN: measured in the browser, a mutated row built 6 meshes of NaN
+    geometry against the good row's 304 triangles -- a rocket drawn as nothing at all, while the
+    card went on saying "drawn from published dimensions". A guard that validates the required
+    fields and waves the optional ones through is the shape of gap this file exists to close.
+
+    `ceiling` bounds it against the row's own height or core diameter, because a fairing longer
+    than the rocket it sits on is a typo and not a fairing.
+    """
+    if key not in holder:
+        return
+    v = holder.get(key)
+    if not isinstance(v, (int, float)) or isinstance(v, bool) or v <= 0:
+        fail(where, f"{label} is {v!r}; it must be a positive number of metres or be left out "
+                    f"(absent is a real answer here -- the builder falls back to a proportion)")
+    elif v > ceiling:
+        fail(where, f"{label} is {v}, over the {ceiling:g} m this row can support -- "
+                    f"a unit mistake, or a number written into the wrong field")
+
 errors: list[str] = []
 
 
@@ -272,6 +296,27 @@ def main() -> int:
         if not m.get("modified"):
             fail(where, "no `modified:` -- say what was changed, or the credit implies it is untouched")
 
+    # ...and CREDITS.md is the document that actually discharges the obligation, so it has to
+    # name the same files. It said "Ten spacecraft models ship" while 29 did, and still listed a
+    # kepler.glb that had been removed: the count drifted twice in the file whose whole job is
+    # not to drift. Both directions are checked, because a credit for a file we do not ship is
+    # the same defect as a shipped file with no credit.
+    credits_path = ROOT / "CREDITS.md"
+    if not credits_path.exists():
+        fail("CREDITS.md", "missing -- every real model row redistributes somebody else's work "
+                           "and this is the file that says under what terms")
+    else:
+        credits = credits_path.read_text(encoding="utf-8")
+        shipped = {Path(str(m.get("file") or "")).name for m in real_models} - {""}
+        for name in sorted(shipped):
+            if name not in credits:
+                fail("CREDITS.md", f"`{name}` ships and models.yaml credits it, but CREDITS.md "
+                                   f"never names it -- 19 files were missing when this was written")
+        for name in sorted(set(re.findall(r"[A-Za-z0-9_.-]+\.glb", credits))):
+            if name not in shipped:
+                fail("CREDITS.md", f"credits `{name}`, which has no models.yaml real_models row "
+                                   f"and does not ship -- a credit for work that is not here")
+
     # --- models ------------------------------------------------------------------
     for m in models + textures + rows(models_doc, "data", "models.yaml"):
         mid = m.get("id")
@@ -375,6 +420,11 @@ def main() -> int:
         d = r.get("core_dia_m")
         if not isinstance(d, (int, float)) or isinstance(d, bool) or d <= 0:
             fail(where, "core_dia_m must be a number in metres")
+        # What the optional dimensions below are measured against. A part of this rocket cannot
+        # be longer than the rocket, and nothing on it is four times the core across -- Proton's
+        # 7.4 m over a 4.1 m body is the widest ratio in the file, at 1.8.
+        len_ceiling = h if isinstance(h, (int, float)) and not isinstance(h, bool) else MAX_HEIGHT_M
+        dim_ceiling = 4 * d if isinstance(d, (int, float)) and not isinstance(d, bool) and d > 0 else 40
 
         # 7. the strap-ons: the strongest discriminator at 40 px, so the enum is closed
         b = r.get("boosters")
@@ -394,6 +444,9 @@ def main() -> int:
             if shape and shape != "none" and not isinstance(b.get("dia_m"), (int, float)):
                 fail(where, f"booster shape {shape!r} needs `dia_m` -- the booster's width "
                             f"against the core is what the silhouette is")
+            elif shape and shape != "none":
+                dimension(where, b, "dia_m", "boosters.dia_m", dim_ceiling)
+            dimension(where, b, "len_m", "boosters.len_m", len_ceiling)
 
         # 8. what sits on top, and how the body steps
         top = r.get("top")
@@ -412,6 +465,11 @@ def main() -> int:
                 for sec in sections:
                     if not isinstance(sec, dict) or not isinstance(sec.get("dia_m"), (int, float)):
                         fail(where, f"section {sec!r} has no dia_m")
+                    else:
+                        dimension(where, sec, "dia_m", "sections[].dia_m", dim_ceiling)
+                        dimension(where, sec, "len_m", "sections[].len_m", len_ceiling)
+        dimension(where, top, "dia_m", "top.dia_m", dim_ceiling)
+        dimension(where, top, "len_m", "top.len_m", len_ceiling)
         if taper == "hammerhead" and not isinstance(top.get("dia_m"), (int, float)):
             fail(where, "`taper: hammerhead` claims the fairing is WIDER than the body, so it "
                         "needs `top.dia_m` to say by how much")
@@ -434,6 +492,17 @@ def main() -> int:
                         f"say whether the numbers were read or worked out")
         if not r.get("source"):
             fail(where, "no source -- a shape with no evidence behind it is a guess with a hex colour")
+        # The card prints this verbatim inside "sources disagree on its HEIGHT (...)", so the
+        # field is named for the quantity it is about. It was called `disputed:` and the nuri row
+        # used it for a DIAMETER disagreement, which the card then read out as a height dispute
+        # on a height both sources agree on.
+        if "disputed" in r:
+            fail(where, "`disputed:` says nothing about WHAT is disputed and the card only knows "
+                        "how to print a height; the field is `disputed_height:`")
+        dh = r.get("disputed_height")
+        if "disputed_height" in r and not (isinstance(dh, str) and dh.strip()):
+            fail(where, f"disputed_height is {dh!r}; write the two figures as a sentence, or "
+                        f"leave it out -- the card prints it inside 'sources disagree on its height'")
         livery = r.get("livery")
         if livery == "unknown":
             pass
@@ -474,7 +543,11 @@ def main() -> int:
         f"registry ok: {len(worlds)} worlds, {len(sources)} sources, {len(layers)} layers, "
         f"{len(events)} event types, {len(models)} models, {len(real_models)} real models, {len(sites)} sites, "
         f"{len(terms)} glossary terms, {len(showers)} showers, {len(rockets)} rockets "
-        f"({len(observed)} feed values observed {rockets_doc.get('observed_on')})"
+        f"({len(observed)} feed values observed {rockets_doc.get('observed_on')}; "
+        # Printed, not asserted. Three files quote this number in prose and it was wrong by 20;
+        # a figure a human copies out of a comment drifts, and a figure the check prints does not.
+        f"{sum(1 for r in rockets if r.get('livery') == 'unknown')} of {len(rockets)} "
+        f"with no sourced livery)"
     )
     return 0
 

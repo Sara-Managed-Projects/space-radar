@@ -663,12 +663,19 @@ function classLine(record, m) {
 
 /**
  * Block 7b: what the drawn shape actually is. Three states, and the record already knows which:
- * `meta.drawsAs` is written at parse time from the matched registry/rockets.yaml row, so this
- * function never learns what three.js is.
+ * `meta.drawsAs` is written at parse time from the matched registry/rockets.yaml row AND the level
+ * it matched at, so this function never learns what three.js is. The level matters: a row that
+ * says `stands_for: variant` about itself still only gets the family sentence when the launch
+ * reached it through a family or provider string, because a family match cannot honestly name an
+ * exact vehicle. data/parsers.js caps it; tests/test_contract.mjs asserts the cap.
+ *
+ * The family sentence covers the HEIGHT as well as the shape, because the size chip beside it is
+ * that same row's height_m.
  *
  * Returns null for everything that is not a launch, which is every other class in the app --
  * their shapes are class stand-ins the card has never claimed otherwise about, and inventing a
- * line for them here is a different change.
+ * line for them here is a different change. scene/realmodels.js names the ones that leaves
+ * undisclosed.
  */
 function drawingLine(record) {
   const md = meta(record);

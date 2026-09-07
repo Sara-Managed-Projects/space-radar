@@ -24,15 +24,24 @@
 #                   Ariane's 3.4 m against a 5.4 m core is the whole silhouette.
 #   boosters.len_m  optional -- absent draws a booster 62% of the core's length.
 #
-# `engines.count` is every nozzle that lights on the pad, across all bodies (Falcon Heavy 27,
-# Soyuz 20, Delta IV Heavy 3). `engines.pattern` is how the CORE's engines are arranged.
+# `engines.count` is the nozzles on the CORE, and only the core -- the same body `engines.pattern`
+# arranges. Strap-on bells come from `boosters.count`, so a whole-vehicle total here would be
+# counted twice. Falcon Heavy is 9 (its three bodies are 9 each), Soyuz-2 is 4 (the RD-108A's four
+# chambers), Delta IV Heavy is 1. Six rows counted every body's nozzles and eleven counted only
+# the core's, from one sentence that said the first and one builder that did the second; the six
+# have been restated, because this is the meaning the drawing has always used.
+# The single exception is `shape: flared_base` -- Proton, and only Proton, whose six outboard
+# tanks each carry an engine and whose core carries none. The builder draws no bells under a
+# flared_base booster for exactly that reason, so its six go here and are not counted twice.
 # `pattern: unknown` is the honest degradation where the count is sourced and the arrangement is
 # not: an engine skirt is drawn with no individual bells.
 #
-# COLOUR. 14 of the families here have no documented livery -- colour is almost never in a spec
-# document, it lives in photography. Those rows carry `livery: unknown`, draw in the neutral
-# default, and the card says NOTHING about colour. The absence is the honest statement. Two
-# colour claims that are widely repeated and that no source supports are called out in the rows
+# COLOUR. 34 of the 49 rows here have no documented livery -- colour is almost never in a spec
+# document, it lives in photography. (This said 14 in three places, which is the INVERSE: 15
+# rows DO have a colour. check_registry.py now prints the live figure, so it cannot drift again.)
+# Those rows carry `livery: unknown`, draw in the neutral default, and the card says NOTHING
+# about colour. The absence is the honest statement. Two colour claims that are widely
+# repeated and that no source supports are called out in the rows
 # that would carry them: Soyuz is not grey-green (that is a photographic artefact), and nobody
 # can source orange-brown Ariane 6 boosters (that is Ariane 5's EAPs).
 #
@@ -84,10 +93,10 @@ rockets:
     taper: tube
     top: {kind: fairing, dia_m: 5.2, len_m: 13.2}
     boosters: {shape: liquid_core_clone, count: 2, dia_m: 3.66}
-    engines: {count: 27, pattern: octaweb}
+    engines: {count: 9, pattern: octaweb}
     livery: {body: "#EEF2F7", interstage: "#1B1D21", class: measured}
     class: measured
-    source: "SpaceX Falcon User's Guide rev. 8, May 2025; Wikipedia Falcon Heavy for the 12.2 m span across three cores"
+    source: "SpaceX Falcon User's Guide rev. 8, May 2025 (nine Merlin per body); Wikipedia Falcon Heavy for the 12.2 m span across three cores"
     note: "the side boosters are externally identical to the centre core, which is what liquid_core_clone means. Booster length is not published separately and is not written down."
 
   # ---- keyed on full_name, because the family merges two different outlines ------------
@@ -101,11 +110,11 @@ rockets:
     core_dia_m: 5.4
     taper: tube
     top: {kind: fairing, dia_m: 5.4}
-    boosters: {shape: solid_fat, count: 2, dia_m: 3.4, len_m: 22.0}
+    boosters: {shape: solid_fat, count: 2, dia_m: 3.4, len_m: 13.5}
     engines: {count: 1, pattern: single}
     livery: {body: "#F4F6F8", boosters: unknown, class: measured}
     class: measured
-    source: "ESA Ariane 6 overview (63 m); ArianeGroup: white is functional -- it reflects sunlight and gives a background for visual anomaly detection. P120C 22 m x 3.4 m"
+    source: "ESA Ariane 6 overview (63 m); ESA/Wikipedia P120C: 13.5 m x 3.4 m, 142 t of propellant. ArianeGroup: white is functional -- it reflects sunlight and gives a background for visual anomaly detection"
     note: "the fairing is 14 m or 20 m depending on the flight, so its length is not written down. Booster colour could not be sourced; the orange-brown often claimed is Ariane 5's EAPs."
 
   - id: ariane-64
@@ -116,11 +125,11 @@ rockets:
     core_dia_m: 5.4
     taper: tube
     top: {kind: fairing, dia_m: 5.4}
-    boosters: {shape: solid_fat, count: 4, dia_m: 3.4, len_m: 22.0}
+    boosters: {shape: solid_fat, count: 4, dia_m: 3.4, len_m: 13.5}
     engines: {count: 1, pattern: single}
     livery: {body: "#F4F6F8", boosters: unknown, class: measured}
     class: measured
-    source: "ESA Ariane 6 overview; ArianeGroup on the white and on P120C 22 m x 3.4 m. A62 and A64 are the same 63 m: height tracks the fairing, not the boosters"
+    source: "ESA Ariane 6 overview; ESA/Wikipedia P120C 13.5 m x 3.4 m; ArianeGroup on the white. A62 and A64 are the same 63 m: height tracks the fairing, not the boosters"
 
   - id: ariane-6
     display: "an Ariane 6"
@@ -130,11 +139,11 @@ rockets:
     core_dia_m: 5.4
     taper: tube
     top: {kind: fairing, dia_m: 5.4}
-    boosters: {shape: solid_fat, count: 2, dia_m: 3.4, len_m: 22.0}
+    boosters: {shape: solid_fat, count: 2, dia_m: 3.4, len_m: 13.5}
     engines: {count: 1, pattern: single}
     livery: {body: "#F4F6F8", boosters: unknown, class: measured}
     class: measured
-    source: "ESA Ariane 6 overview; ArianeGroup"
+    source: "ESA Ariane 6 overview; ESA/Wikipedia P120C 13.5 m x 3.4 m; ArianeGroup"
     note: "the bare `Ariane 6` configuration does not say how many boosters, so it is drawn as the two-booster A62 and the card says the drawing is the family."
 
   # ---- keyed on full_name because LL2 gives Rocket Lab no family at all ----------------
@@ -166,7 +175,7 @@ rockets:
     engines: {count: 9, pattern: unknown}
     livery: {body: "#22262B", class: inferred}
     class: measured
-    disputed: "Wikipedia 42.8 m; Rocket Lab quotes a 7 m diameter and 40 m length for the tapered composite structure"
+    disputed_height: "Wikipedia 42.8 m; Rocket Lab quotes 40 m of length for the tapered composite structure"
     source: "Wikipedia Rocket Lab Neutron; Rocket Lab's Neutron architecture reveal -- tapered wide base, no landing legs, hinged 'Hungry Hippo' fairing that stays with the first stage"
     note: "has not flown; NET Q4 2026. Black is inferred from the carbon composite, which is sourced. The nine Archimedes engines are sourced; their arrangement is not."
 
@@ -210,7 +219,7 @@ rockets:
     taper: tube
     top: {kind: fairing, dia_m: 4.11, len_m: 11.4}
     boosters: {shape: liquid_conical, count: 4, dia_m: 2.68, len_m: 19.6}
-    engines: {count: 20, pattern: quad}
+    engines: {count: 4, pattern: quad}
     livery: {body: "#9AA3AD", nose: "#EEF2F7", tail: "#D2743A", class: measured}
     class: measured
     source: "Wikipedia Soyuz-2 and RD-107 (46.3 m, 2.95 m, 4 boosters 19.6 m x 2.68 m, RD-108A four main chambers); Arianespace ST fairing 4.11 x 11.4 m; collectSPACE and Space Daily on the 2021 livery change"
@@ -318,19 +327,19 @@ rockets:
     note: "covers Vega-E, whose changes are to the upper stage and do not show in the outline."
 
   - id: atlas-v
-    display: "an Atlas V"
+    display: "Atlas V N22"
     match: {full_name: ["Atlas V N22"], family: ["Atlas V", "Atlas"]}
-    stands_for: family
-    height_m: 58.3
+    stands_for: variant
+    height_m: 52.4
     core_dia_m: 3.8
     taper: tube
     top: {kind: capsule, dia_m: 4.56}
     boosters: {shape: solid_slim, count: 2, dia_m: 1.6, len_m: 17.0}
     engines: {count: 2, pattern: twin}
     livery: unknown
-    class: inferred
-    source: "Wikipedia Atlas V ('Up to 58.3 m', 3.8 m core, N22 = 2 AJ-60A and NO fairing, one RD-180); Wikipedia AJ-60A (1.6 m x 17.0 m); Wikipedia Boeing Starliner (4.56 m capsule)"
-    note: "58.3 m is the TALLEST Atlas V. Every Atlas V left flies as the N22 for Starliner, which carries the capsule instead of a fairing and is shorter; the N22 stack height could not be sourced, so the row is inferred and stands for the family. The RD-180 is one engine with two thrust chambers, which is why the base has two nozzles."
+    class: measured
+    source: "ULA on the Atlas V Starliner missions: the stack 'stands 172 feet tall' (52.4 m). Wikipedia Atlas V (3.8 m core, N22 = 2 AJ-60A and NO fairing, one RD-180); Wikipedia AJ-60A (1.6 m x 17.0 m); Wikipedia Boeing Starliner (4.56 m capsule)"
+    note: "Wikipedia's 'up to 58.3 m' is the 551 with the long fairing, a configuration that no longer flies; this row used to carry it and drew every remaining Atlas V 11% too tall. Every Atlas V left flies as the N22 for Starliner, which carries the capsule instead of a fairing. Now `stands_for: variant`, because the 52.4 m and the capsule-instead-of-fairing ARE the N22 and the full_name says N22. A bare `Atlas V` or `Atlas` family match still lands here and still gets the family sentence -- the match level caps the claim, in data/parsers.js. The RD-180 is one engine with two thrust chambers, which is why the base has two nozzles."
 
   - id: h3
     display: "an H3"
@@ -345,7 +354,7 @@ rockets:
     livery: {body: "#D2743A", boosters: "#EEF2F7", class: measured}
     class: measured
     source: "JAXA H3 Launch Vehicle (H3-24L is 63 m); Wikipedia H3 (5.27 m core, SRB-3 2.5 m x 14.6 m); Spaceflight Now on H3 TF-1 for the orange foam insulation on the first stage"
-    note: "the first stage is ORANGE foam insulation, not white -- the same visual family as SLS and Delta IV. H3-30S has no boosters at all; this row draws the two-booster configuration."
+    note: "the first stage is ORANGE foam insulation, not white -- the same visual family as SLS and Delta IV. H3-30S has no boosters at all; this row draws the two-booster configuration. The 63 m is the L or W fairing; with the S fairing an H3 is 57 m, and LL2's `H3-22` does not say which it flies, so the 57 m is NOT written into a row. The card says the height is the family's."
 
   - id: h3-24
     display: "H3-24"
@@ -374,7 +383,7 @@ rockets:
     livery: {body: "#D2743A", boosters: "#EEF2F7", class: measured}
     class: measured
     source: "Wikipedia Space Launch System: Block 1 with Orion is 98 m, 8.4 m core, two five-segment boosters 3.7 m x 54 m, four RS-25, orange foam core and white boosters"
-    note: "Block 1B is taller than Block 1; one row draws both and the card says the drawing is the family. What sits on top is Orion and its launch-abort tower -- a spike, not a fairing."
+    note: "Block 1B is taller than Block 1; one row draws both and the card says the drawing, and the height, are the family's. NASA publishes Block 1B as 364 ft (111 m) CREWED and 327 ft (99.7 m) as CARGO; LL2's `Space Launch System Block 1B` does not say which, so neither figure is written into a row -- picking one would be the app asserting a configuration nobody stated. What sits on top is Orion and its launch-abort tower -- a spike, not a fairing."
 
   - id: new-glenn
     display: "New Glenn"
@@ -395,7 +404,7 @@ rockets:
     display: "Firefly Alpha Block 2"
     match: {full_name: ["Firefly Alpha Block 2"]}
     stands_for: variant
-    height_m: 29.48
+    height_m: 31.7
     core_dia_m: 2.2
     taper: tube
     top: {kind: fairing, dia_m: 2.2, len_m: 5.0}
@@ -403,8 +412,8 @@ rockets:
     engines: {count: 4, pattern: quad}
     livery: {body: "#EEF2F7", class: measured}
     class: measured
-    source: "Firefly Aerospace Alpha Payload User's Guide 5.2, Table 1: 29.48 m (96.7 ft), 2.2 m max, four Reaver; NASASpaceflight, Aug 2026, on Block 2 going WHITE as part of an upgraded thermal protection system"
-    note: "Block 1 was black carbon fibre with a phoenix motif. Block 2 is white, and every Alpha in the feed is a Block 2. Wikipedia's 1.82 m is the tank body, not the 2.2 m maximum."
+    source: "Firefly Aerospace, Alpha Block II announcement for Flight 8 (13 Jan 2026): the length increases 'from approximately 97 feet to 104 feet'. 31.7 m is 104 ft. Alpha PUG 5.2, Table 1, for the 2.2 m maximum diameter and the four Reaver; NASASpaceflight, Aug 2026, on Block 2 going WHITE as part of an upgraded thermal protection system"
+    note: "PUG 5.2's 29.48 m (96.7 ft) is BLOCK 1 and is the number this row used to carry -- 2.2 m short, and across the size band the card reads out. The 7 ft stretch is the first stage; the 2.2 m maximum diameter is unchanged. Block 1 was black carbon fibre with a phoenix motif; Block 2 is white, and every Alpha in the feed is a Block 2. Wikipedia's 1.82 m is the tank body, not the 2.2 m maximum."
 
   - id: terran-r
     display: "Terran R"
@@ -506,7 +515,7 @@ rockets:
     taper: tube
     top: {kind: capsule_tower}
     boosters: {shape: liquid_cylindrical, count: 4, dia_m: 2.25, len_m: 15.33}
-    engines: {count: 8, pattern: quad}
+    engines: {count: 4, pattern: quad}
     livery: unknown
     class: measured
     source: "Wikipedia Long March 2F: 58.34 m, 3.35 m core, four 2.25 m x 15.33 m liquid strap-ons, four YF-20B on the core plus one per booster, Shenzhou and its escape tower on top"
@@ -564,7 +573,7 @@ rockets:
     taper: tube
     top: {kind: capsule_tower, dia_m: 5.0}
     boosters: {shape: liquid_core_clone, count: 2, dia_m: 5.0}
-    engines: {count: 21, pattern: unknown}
+    engines: {count: 7, pattern: unknown}
     livery: unknown
     class: measured
     source: "Wikipedia Long March 10: 92.5 m, 5 m core, two side boosters identical to the core, seven YF-100K per body, three stages, crew escape tower"
@@ -582,7 +591,7 @@ rockets:
     engines: {count: 7, pattern: unknown}
     livery: unknown
     class: measured
-    disputed: "Wikipedia about 69 m with the 4.2 m fairing; SpaceNews 70.4 m"
+    disputed_height: "Wikipedia about 69 m with the 4.2 m fairing; SpaceNews 70.4 m"
     source: "Wikipedia Long March 12A; SpaceNews on the first reusable landing attempt, 23 Dec 2025 (failed, about 2 km off)"
     note: "the engine count is disputed too: Wikipedia says seven Longyun-70+, SpaceNews reports the same flight with no count. No individual bells are drawn."
 
@@ -599,9 +608,8 @@ rockets:
     engines: {count: 4, pattern: unknown}
     livery: unknown
     class: measured
-    disputed: "Wikipedia 3.5 m first stage; Gunter's Space Page 3.3 m"
     source: "Wikipedia Nuri (47.2 m, four KRE-075 on stage 1); Gunter's Space Page KSLV-2 for the per-stage diameters -- both sources agree stages 2 and 3 are 2.6 m"
-    note: "the step from 3.5 m to 2.6 m is real whichever first-stage figure wins, which is why it is drawn and the height is flagged disputed. Section lengths are not published."
+    note: "the step from 3.5 m to 2.6 m is real whichever first-stage figure wins, which is why it is drawn. The two sources AGREE on the 47.2 m height and differ only on the first stage diameter (Wikipedia 3.5 m, Gunter's 3.3 m), so there is no `disputed_height:` here -- the card would have read that disagreement out as a height dispute. Section lengths are not published."
 
   - id: themis
     display: "the Themis demonstrator"
@@ -615,7 +623,7 @@ rockets:
     engines: {count: 1, pattern: single}
     livery: unknown
     class: measured
-    disputed: "ESA 28 m; ArianeGroup 30 m standing on its legs"
+    disputed_height: "ESA 28 m; ArianeGroup 30 m standing on its legs"
     source: "ESA Themis; Wikipedia Themis programme: one Prometheus methalox engine, stainless steel tanks, hop tests at Esrange"
     note: "NOT an orbital launch vehicle. A single-engine hop-test article with no fairing, no payload and no upper stage -- which is why `top: none`. Drawing a fairing on it would be the app asserting a rocket that does not exist."
 
@@ -673,7 +681,7 @@ rockets:
     taper: tube
     top: {kind: fairing, dia_m: 5.0, len_m: 12.0}
     boosters: {shape: liquid_core_clone, count: 2, dia_m: 5.1, len_m: 40.8}
-    engines: {count: 3, pattern: single}
+    engines: {count: 1, pattern: single}
     livery: {body: "#C96A2E", class: measured}
     class: measured
     source: "Wikipedia Delta IV Heavy: 70.7 m, 15.3 m across, three RS-68A one per common booster core, orange foam insulation"
@@ -704,7 +712,7 @@ rockets:
     taper: tube
     top: {kind: fairing}
     boosters: {shape: liquid_core_clone, count: 4, dia_m: 2.9}
-    engines: {count: 5, pattern: single}
+    engines: {count: 1, pattern: single}
     livery: unknown
     class: measured
     source: "Wikipedia Angara (rocket family): 55.4 m, 8.86 m span, four URM-1 modules identical to the core, one RD-191 each"
