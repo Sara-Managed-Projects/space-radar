@@ -61,6 +61,22 @@ SITE="$(cd "$(dirname "$0")/.." && pwd)/site"
 SYNC=(aws s3 sync --region "$REGION")
 [ "$DRY_RUN" = "1" ] && SYNC+=(--dryrun)
 
+# EVERY directory under site/ must be listed below, or the deploy is silently partial. That is not
+# hypothetical: `site/models/` was added for the NASA spacecraft and this script did not know about
+# it, so the first deploy after that shipped an app whose models 403'd. The app degraded correctly
+# and nobody would have noticed for a while, which is exactly what makes it worth a check.
+KNOWN="textures data vendor js css models"
+MISSING=""
+for d in "$SITE"/*/; do
+  name=$(basename "$d")
+  case " $KNOWN " in *" $name "*) ;; *) MISSING="$MISSING $name" ;; esac
+done
+if [ -n "$MISSING" ]; then
+  echo "error: site/ has directories this script does not deploy:$MISSING" >&2
+  echo "       add them to KNOWN and to the sync block below, or the site ships incomplete." >&2
+  exit 1
+fi
+
 echo "==> $SITE  ->  s3://$BUCKET  ($REGION)"
 [ "$DRY_RUN" = "1" ] && echo "    (dry run)"
 
@@ -72,6 +88,10 @@ if [ "$WHAT" != "app" ]; then
   "${SYNC[@]}" "$SITE/textures" "s3://$BUCKET/textures" --cache-control "$LONG" --delete
   "${SYNC[@]}" "$SITE/data"     "s3://$BUCKET/data"     --cache-control "$LONG" --delete
   "${SYNC[@]}" "$SITE/vendor"   "s3://$BUCKET/vendor"   --cache-control "$LONG" --delete
+  # The spacecraft models. Content type matters: CloudFront will not compress an octet-stream, and
+  # a .glb served as one is a few hundred KB that could have been fewer.
+  "${SYNC[@]}" "$SITE/models"   "s3://$BUCKET/models"   --cache-control "$LONG" \
+    --content-type "model/gltf-binary" --delete
 fi
 
 if [ "$WHAT" != "assets" ]; then
@@ -100,7 +120,7 @@ if [ -n "$DISTRIBUTION" ] && [ "$DRY_RUN" != "1" ]; then
     echo "    NOTE: textures, data and vendor were uploaded but NOT invalidated -- their names are"
     echo "    not content-hashed, so nothing expires them early. If you changed one, run:"
     echo "      aws cloudfront create-invalidation --distribution-id $DISTRIBUTION \\"
-    echo "        --paths '/textures/*' '/data/*' '/vendor/*'"
+    echo "        --paths '/textures/*' '/data/*' '/vendor/*' '/models/*'"
   fi
 fi
 
