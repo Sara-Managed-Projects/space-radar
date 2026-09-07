@@ -9,6 +9,8 @@
 //   2. ONE plain sentence: what it is and why it matters now
 //   3. up to three comparison chips, scale first
 //   4. "right now"
+//   4b. "often said" -- the myth block, against the facts it corrects
+//   4c. "also aboard" / "riding on" -- the link between a spacecraft and what is bolted to it
 //   5. "see it from here"
 //   6. up to three actions
 //   7. the class-and-age line
@@ -38,6 +40,7 @@ import {
   toStage,
 } from '../propagate/frames.js';
 import { predictPasses } from '../sky/passes.js';
+import { attachedOdditiesFor, attachedOddityRecord } from '../data/attached.js';
 
 const MAX_FIRST_SENTENCE = 160; // spec 0013 requirement 10, enforced by check_copy.py
 const MAX_COMPARISONS = 3; // spec 0013 requirement 2
@@ -831,6 +834,13 @@ function honestyClause(record) {
     return parts.length ? parts.join(' ') : null;
   }
 
+  // Bolted to something else. The class line above printed the CARRIER's class, because the
+  // carrier's propagator and elements are what produced the number; this says whose position it
+  // was. It comes before the precision cases because an attached row has neither an anchor nor
+  // an observation arc of its own -- it has a spacecraft.
+  const carrier = pick(md, 'attachedToName');
+  if (carrier) return t(C.aboard, { carrier: String(carrier) });
+
   const objectM = pick(md, 'objectPrecisionM');
   const how = pick(md, 'objectHow');
   const howWords = how && Object.prototype.hasOwnProperty.call(C.how, how) ? C.how[how] : null;
@@ -896,6 +906,61 @@ function mythSection(record) {
 }
 
 /**
+ * Block 4c: the two ends of "this thing is bolted to that thing".
+ *
+ * ON A CARRIER'S CARD it is "Also aboard", one button per row riding on it. The Golden Record has
+ * no dot of its own -- data/attached.js says at length why a second dot under Voyager's would be
+ * a bug rather than a feature -- so this list is the only way to reach it, and the note under it
+ * says so rather than leaving a visitor hunting for something they can see on the model.
+ *
+ * ON THE ATTACHED CARD it is "Riding on", one button back to the spacecraft. Without it the card
+ * is a dead end: the object has no dot, so there is nothing on the map to tap to get back.
+ *
+ * NEITHER BUTTON CHANGES THE SELECTION. It calls showCard() and nothing else, so the map goes on
+ * drawing one object where there is one object and the camera stays where the visitor put it.
+ * Selecting an attached record would ask heroes.js to draw a second spacecraft at the first one's
+ * exact position, which is the failure the whole `attached` kind exists to avoid.
+ *
+ * Returns null for every record that neither carries anything nor rides on anything, which is
+ * all but three of them.
+ */
+function aboardSection(record, ctx) {
+  const md = meta(record);
+  const byId = ctx && typeof ctx.recordById === 'function' ? ctx.recordById : null;
+
+  const carrierId = pick(md, 'attachedTo');
+  if (carrierId) {
+    const carrier = byId ? byId(carrierId) : null;
+    if (!carrier) return null; // the carrier's layer is not loaded: no link rather than a dead one
+    const wrap = section('sr-card__block sr-card__aboard', COPY.aboard.ridingLabel);
+    wrap.appendChild(aboardButton(carrier.name, COPY.aboard.backTitle, () => showCard(carrier, ctx)));
+    return wrap;
+  }
+
+  const riding = attachedOdditiesFor(record && record.id);
+  if (!riding.length) return null;
+  const wrap = section('sr-card__block sr-card__aboard', COPY.aboard.label);
+  let wrote = 0;
+  for (const entry of riding) {
+    const derived = attachedOddityRecord(entry, record);
+    if (!derived) continue;
+    wrap.appendChild(aboardButton(entry.display, COPY.aboard.openTitle, () => showCard(derived, ctx)));
+    wrote += 1;
+  }
+  if (!wrote) return null;
+  wrap.appendChild(el('p', 'sr-card__aboardnote', COPY.aboard.note));
+  return wrap;
+}
+
+function aboardButton(label, title, onClick) {
+  const b = el('button', 'sr-card__aboardrow', String(label || ''));
+  b.type = 'button';
+  b.title = title;
+  b.addEventListener('click', onClick);
+  return b;
+}
+
+/**
  * Block 7b: what the drawn shape actually is. Three states, and the record already knows which:
  * `meta.drawsAs` is written at parse time from the matched registry/rockets.yaml row AND the level
  * it matched at, so this function never learns what three.js is. The level matters: a row that
@@ -943,6 +1008,11 @@ export function drawingLine(record) {
   // that says it, not this file, because only the row knows what its builder exaggerated.
   const departure = pick(md, 'departure');
   if (departure) line += COPY.punctuation.separator + String(departure);
+  // And for a thing bolted to another thing, where we hung it. The row carries
+  // `mount_class: illustrative` and the registry refuses any other value, so this sentence is
+  // printed for exactly the rows that admit the mount is an arrangement rather than a
+  // measurement -- which, by that refusal, is all of them.
+  if (pick(md, 'mountClass')) line += COPY.punctuation.separator + T.mount;
   return line;
 }
 
@@ -1104,6 +1174,12 @@ function render(record, ctx) {
   // any record carrying myths and nothing at all for the rest.
   const myths = mythSection(record);
   if (myths) body.appendChild(myths);
+
+  // 4c. what is riding on this, or what this is riding on. Below the facts because it is a way
+  // OUT of this card rather than a fact about the object, and above "see it from here" because
+  // it is still about the object and not about the visitor.
+  const aboard = aboardSection(record, ctx);
+  if (aboard) body.appendChild(aboard);
 
   // 5. see it from here
   const see = section('sr-card__block sr-card__see', COPY.card.seeItLabel);

@@ -447,6 +447,36 @@
   margin-bottom: 0;
 }
 
+/* "Also aboard" / "Riding on" -- the link between a spacecraft and the thing bolted to it.
+   Rows here open another card and change nothing else, so they are quieter than an action
+   button and louder than body text: this is a way through the map, not a thing to do. */
+.sr-card__aboardrow {
+  display: block;
+  width: 100%;
+  margin: 0 0 6px;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  color: var(--sr-text);
+  background: var(--sr-raise);
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius-sm);
+  cursor: pointer;
+}
+
+.sr-card__aboardrow:hover,
+.sr-card__aboardrow:focus-visible {
+  border-color: var(--sr-ember);
+}
+
+.sr-card__aboardnote {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--sr-text-dim);
+}
+
 /* ------------------------------------------------------------------------------------ */
 /* The controls                                                                           */
 /* ------------------------------------------------------------------------------------ */

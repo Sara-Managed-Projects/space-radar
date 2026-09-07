@@ -21,6 +21,7 @@ import { CLASS_COLOURS, PALETTE } from './glyphatlas.js';
 // A data TABLE, not a data source: the rows a rocket is composed from, generated from
 // registry/rockets.yaml. Same direction glyphatlas.js is already imported in.
 import { ROCKET_BY_ID, GENERIC_ROCKET } from '../data/rocketmatch.js';
+import { attachedOdditiesFor } from '../data/attached.js';
 
 // ------------------------------------------------------------------ the one toon material family
 
@@ -1704,6 +1705,47 @@ export function modelFor(klass, variant) {
   obj.userData.generic = generic || (variant != null && !named);
   obj.userData.attitude = DEFAULT_ATTITUDE[klass] || 'fixed';
   return obj;
+}
+
+/**
+ * Hang whatever rides on this record onto its model, as children.
+ *
+ * The Golden Record and Juno's three LEGO figures are not objects in space; they are parts of
+ * objects in space. Drawing them as their own records would put a second dot under the first
+ * (data/attached.js says why at length), so they are children of the carrier's model instead:
+ * one dot in the sky, one tap, one card, and the part is there when you get close enough to see
+ * the machine it is bolted to.
+ *
+ * THE CHILD IS IN THE CARRIER'S UNITS AND THE CARRIER OWNS EVERYTHING ELSE. Every model this app
+ * draws -- procedural or a normalised glTF -- is about one unit across, and scene/heroes.js
+ * writes the world scale, the position and the attitude onto the ROOT. A child inherits all
+ * three, so this function sets a local offset and a local scale and nothing more. That is also
+ * why it is safe to call twice: heroes.js calls it once on the procedural model and again on the
+ * real one when NASA's file arrives, and the second call is on a different object.
+ *
+ * Both numbers are the registry's, both are drawing choices, and `mount_class: illustrative` on
+ * the row is what makes the card say so.
+ *
+ * @param {THREE.Object3D} carrierObj the model from modelFor() or realmodels.js
+ * @param {string} recordId the CARRIER's record id
+ * @returns {THREE.Object3D[]} the children added, for a test to measure. Empty for almost
+ *   everything, which is the normal case.
+ */
+export function attachOddityModels(carrierObj, recordId) {
+  if (!carrierObj) return [];
+  const made = [];
+  for (const entry of attachedOdditiesFor(recordId)) {
+    const child = modelFor('oddity', entry.build);
+    child.position.set(entry.mount.x, entry.mount.y, entry.mount.z);
+    child.scale.setScalar(entry.mount.scale);
+    // Read by nothing that draws. It is here so a scene graph in a debugger, or a test, can say
+    // which registry row a piece of geometry came from.
+    child.userData.attachedOddity = entry.id;
+    child.userData.carrierId = recordId;
+    carrierObj.add(child);
+    made.push(child);
+  }
+  return made;
 }
 
 /** The classes and variants modelFor() knows, for a test page or a registry check. */
