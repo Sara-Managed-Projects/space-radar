@@ -18,7 +18,7 @@
 
 import { load } from './sources.js';
 import { parseCelestrakGP, parseLaunches, parseComets } from './parsers.js';
-import { sampleAsteroids, sampleDeepSpace, sampleReentries } from './sample.js';
+import { sampleAsteroids, sampleDeepSpace, sampleReentries, handKeptSites } from './sample.js';
 
 const DAY_MS = 86400000;
 
@@ -422,6 +422,27 @@ export const LAYERS = [
     nearKm: 800,
     card: 'site',
     sentence: 'The places things leave from.',
+  },
+  {
+    id: 'hand-kept-sites',
+    display: 'Dishes, landers and rovers',
+    klass: 'site',
+    // No source: nothing serves these as an API. The Deep Space Network's antennas, the Apollo
+    // landing sites and the rovers on Mars are published coordinates that do not change, kept in
+    // registry/sites.yaml and ported to data/sample.js for the browser.
+    source: null,
+    sample: handKeptSites,
+    propagator: 'fixed',
+    frame: 'earth-fixed',
+    moments: { wonder: true, now: true, next: false },
+    defaultOn: true,
+    select: all,
+    budget: { maxItems: 40 },
+    colour: C.site,
+    glyph: 'site',
+    nearKm: 900,
+    card: 'site',
+    priority: 30,
   },
   {
     id: 'comets',
