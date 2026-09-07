@@ -28,7 +28,8 @@ const CONTRACT = {
   'propagate/index.js': ['propagate', 'PROPAGATORS'],
   'data/sources.js': ['SOURCES', 'load', 'status'],
   'data/parsers.js': ['parseCelestrakGP', 'parseLaunches', 'parseComets', 'parseDsn'],
-  'data/sample.js': ['sampleAsteroids', 'sampleDeepSpace'],
+  'data/sample.js': ['sampleAsteroids', 'sampleDeepSpace', 'sampleOddities'],
+  'data/oddities.js': ['ODDITIES', 'ODDITIES_OBSERVED_ON'],
   'data/layers.js': ['LAYERS', 'loadLayer'],
   'scene/renderer.js': ['createRenderer'],
   'scene/stage.js': ['stage'],
@@ -255,14 +256,16 @@ for (const file of allFiles) {
     const { dumpRows } = await import(join(ROOT, 'tests/dump_fixed_golden.mjs'));
     const now = new Map((await dumpRows()).map((r) => [r.id, r]));
 
-    if (now.size !== golden.rows.length) {
-      problems.push(
-        `GOLDEN   the fixture has ${golden.rows.length} fixed records and the code now produces ` +
-          `${now.size}; regenerate tests/fixtures/fixed-golden.json deliberately`
-      );
-    }
+    // A `fixed` record ADDED since the picture was taken is not a regression, and the fixture
+    // must not be regenerated to accommodate one: regenerating writes today's corrected numbers
+    // into the "before" column and turns the whole check into a tautology, which is exactly what
+    // it caught its own author doing. So the fixture stays the authority for the rows it holds,
+    // and a new row is held to the REQUIREMENT instead of to a stored vector -- it must answer in
+    // the frame it declares, and a body-fixed one must be on that body's surface.
+    const knownIds = new Set(golden.rows.map((r) => r.id));
     let earthRows = 0;
     let movedRows = 0;
+    let newRows = 0;
     for (const was of golden.rows) {
       const is = now.get(was.id);
       if (!is) { problems.push(`GOLDEN   ${was.id} is gone from the fixed records`); continue; }
@@ -291,7 +294,33 @@ for (const file of allFiles) {
         movedRows += 1;
       }
     }
-    notes.push(`golden master: ${earthRows} Earth rows unchanged, ${movedRows} off-Earth rows corrected`);
+    const { WORLD_RADIUS_KM: RADII } = await import(join(JS, 'propagate/frames.js'));
+    for (const [id, row] of now) {
+      if (knownIds.has(id)) continue;
+      newRows += 1;
+      if (!row.pos) { problems.push(`GOLDEN   new fixed record ${id} has no position at all`); continue; }
+      if (row.pos.frame !== row.declaredFrame) {
+        problems.push(
+          `GOLDEN   new fixed record ${id} declares ${row.declaredFrame} and answers in ${row.pos.frame}`
+        );
+        continue;
+      }
+      const world = String(row.declaredFrame || '').split('-')[0];
+      const wantKm = world === 'earth' ? 6371 : RADII[world];
+      const gotKm = Math.hypot(row.pos.x, row.pos.y, row.pos.z);
+      // Earth is an ellipsoid and a dish can be a kilometre up, so this is a sanity band, not the
+      // metre-level assertion the Moon and Mars cases below make.
+      if (!Number.isFinite(wantKm) || Math.abs(gotKm - wantKm) > 25) {
+        problems.push(
+          `GOLDEN   new fixed record ${id} is ${gotKm.toFixed(1)} km from the centre of ${world}, ` +
+            `whose radius is ${wantKm}`
+        );
+      }
+    }
+    notes.push(
+      `golden master: ${earthRows} Earth rows unchanged, ${movedRows} off-Earth rows corrected, ` +
+        `${newRows} fixed record(s) added since and held to the requirement`
+    );
   } catch (e) {
     problems.push(`GOLDEN   could not check the golden master: ${String(e && e.message)}`);
   }
@@ -433,6 +462,155 @@ for (const file of allFiles) {
     notes.push('the card names the world a surface site is on, and only Earth sites get an Earth lat/lon');
   } catch (e) {
     problems.push(`CARD     could not check the card rows: ${String(e && e.message)}`);
+  }
+}
+
+// 3h. registry/oddities.yaml -> records -> the card. Five claims, and each of them is one this
+// feature could get wrong quietly:
+//
+//   * THE TWO EPOCHS. record.epoch is when anybody last LOOKED, not the osculating epoch the
+//     propagator integrates from. Get this wrong and the card says "elements 0 days old" about a
+//     trajectory nobody has observed since March 2018 -- true of the arithmetic, a lie about the
+//     knowledge. The next reader will want to "fix" it, so this is the assertion that stops them.
+//   * A ROW NOBODY CAN PLACE DRAWS NOTHING. Not a dot somewhere vague: propagate() must return
+//     null, because the glyph layer, heroes.js and the camera all key off that.
+//   * A SURFACE ODDITY IS ON THAT SURFACE, in that world's frame, at that world's radius.
+//   * THE CARD SAYS BOTH PRECISIONS. One number would have to choose between 0.4 m and 40 m.
+//   * NO RECORD IS `sample`. These are hand-kept, which is provenance and not uncertainty; a
+//     `sample` record draws a dashed halo meaning "not a live position", which would be false.
+{
+  try {
+    const { sampleOddities, attachedOddityCount } = await import(join(JS, 'data/sample.js'));
+    const { ODDITIES } = await import(join(JS, 'data/oddities.js'));
+    const { propagate } = await import(join(JS, 'propagate/index.js'));
+    const { WORLD_RADIUS_KM } = await import(join(JS, 'propagate/frames.js'));
+    const { rightNowFor } = await import(join(JS, 'ui/cards.js'));
+    const { LAYERS } = await import(join(JS, 'data/layers.js'));
+
+    const tMs = Date.parse('2026-03-15T12:00:00.000Z');
+    const records = sampleOddities();
+    const byId = new Map(records.map((r) => [r.id, r]));
+    const ctx = { clock: { now: () => tMs } };
+
+    // The mirror and the emitter agree about which rows become records. `attached` rows are
+    // deliberately not records -- they are drawn on their carrier -- and the layer's count line
+    // is the only thing that says so, so the arithmetic behind it is checked here.
+    const attached = ODDITIES.filter((r) => r.where && r.where.kind === 'attached');
+    if (attachedOddityCount() !== attached.length) {
+      problems.push(`ODDITY   attachedOddityCount() says ${attachedOddityCount()} and the registry has ${attached.length}`);
+    }
+    if (records.length + attached.length !== ODDITIES.length) {
+      problems.push(
+        `ODDITY   ${ODDITIES.length} rows became ${records.length} records plus ${attached.length} ` +
+          `attached; some row is neither drawn nor accounted for`
+      );
+    }
+    for (const r of records) {
+      if (r.cls === 'sample') {
+        problems.push(`ODDITY   ${r.id} is classed 'sample'; these rows stand in for nothing`);
+      }
+      if (r.layer !== 'oddities' || r.klass !== 'oddity') {
+        problems.push(`ODDITY   ${r.id} is layer ${r.layer} / klass ${r.klass}`);
+      }
+    }
+
+    // The two epochs.
+    const roadster = byId.get('tesla-roadster');
+    if (!roadster) {
+      problems.push('ODDITY   the Roadster is not among the emitted records');
+    } else {
+      const evidence = Date.parse('2018-03-19');
+      if (roadster.epoch !== evidence) {
+        problems.push(
+          `ODDITY   record.epoch is ${new Date(roadster.epoch).toISOString()}; it must be the ` +
+            `evidence epoch 2018-03-19, because the card prints its AGE and 374 observations ` +
+            `stopped that day`
+        );
+      }
+      if (!(roadster.elements.epochMs > evidence)) {
+        problems.push('ODDITY   the osculating epoch is not later than the evidence epoch; the two-epoch rule has collapsed into one');
+      }
+      // The published phase reaches the propagator. Horizons gives true anomaly 209.5408787708 deg
+      // at the osculating epoch; if tp_jd were dropped or misread, this lands somewhere else.
+      const at = propagate(roadster, roadster.elements.epochMs);
+      const rAu = at ? Math.hypot(at.x, at.y, at.z) / 149597870.7 : NaN;
+      if (!(Math.abs(rAu - 1.593237) < 0.0005)) {
+        problems.push(
+          `ODDITY   at its own osculating epoch the Roadster is ${rAu} au from the Sun; Horizons' ` +
+            `own elements put it at 1.593237 au. The published phase is not reaching the propagator`
+        );
+      }
+      if (at && at.cls !== 'inferred') {
+        problems.push(`ODDITY   the Roadster's position is classed ${at.cls}; nobody has observed it since 2018`);
+      }
+    }
+
+    // A row nobody can place draws nothing at all.
+    const pin = byId.get('bean-astronaut-pin');
+    if (!pin) {
+      problems.push('ODDITY   the unplaceable row is not a record, so search cannot find it');
+    } else {
+      if (propagate(pin, tMs) !== null) {
+        problems.push('ODDITY   an object nobody can place has a position. A dot on this map is a claim');
+      }
+      const rows = rightNowFor(pin, ctx).map(([k, v]) => `${k}: ${v}`).join(' | ');
+      if (/Could not work this out/.test(rows)) {
+        problems.push(`ODDITY   the card says the arithmetic failed for something never known: ${rows}`);
+      }
+      if (!/Nobody knows/.test(rows)) {
+        problems.push(`ODDITY   the card does not say nobody knows where it is: ${rows}`);
+      }
+      if (/Height above the ground/.test(rows)) {
+        problems.push(`ODDITY   a card with no position still offers a height row: ${rows}`);
+      }
+    }
+
+    // A surface oddity is on that surface, in that world's frame.
+    for (const id of ['shepard-golf-balls', 'duke-family-photo', 'beresheet-lunar-library']) {
+      const rec = byId.get(id);
+      const p = rec ? propagate(rec, tMs) : null;
+      if (!p) { problems.push(`ODDITY   ${id} has no position`); continue; }
+      if (p.frame !== 'moon-fixed') {
+        problems.push(`ODDITY   ${id} answers in ${p.frame}, not moon-fixed`);
+      }
+      const km = Math.hypot(p.x, p.y, p.z);
+      if (Math.abs(km - WORLD_RADIUS_KM.moon) > 0.5) {
+        problems.push(`ODDITY   ${id} is ${km.toFixed(1)} km from the centre of the Moon, not ${WORLD_RADIUS_KM.moon}`);
+      }
+      const rows = rightNowFor(rec, ctx).map(([k, v]) => `${k}: ${v}`).join(' | ');
+      if (!/Moon/.test(rows) || /Height above the ground/.test(rows)) {
+        problems.push(`ODDITY   ${id}'s card does not read as a place on the Moon: ${rows}`);
+      }
+    }
+
+    // The layer draws dots and nothing else, until the builders land. Without `noModel` a tap on
+    // the golf balls puts a comms satellite on the Moon, because modelFor() falls back to one.
+    const layer = LAYERS.find((l) => l.id === 'oddities');
+    if (!layer) {
+      problems.push('ODDITY   data/layers.js has no oddities layer, so registry/layers.yaml has drifted again');
+    } else {
+      if (!layer.noModel) {
+        problems.push('ODDITY   the oddities layer has no builders and no `noModel`, so heroes.js will draw a satellite for a golf ball');
+      }
+      const parts = layer.counts(records);
+      const onMap = parts.find((p) => p.key === 'onMap');
+      const unplaceable = parts.find((p) => p.key === 'unplaceable');
+      const riding = parts.find((p) => p.key === 'riding');
+      if (!onMap || !unplaceable || !riding) {
+        problems.push('ODDITY   the layer count line does not name all three states');
+      } else if (onMap.n + unplaceable.n !== records.length || riding.n !== attached.length) {
+        problems.push(
+          `ODDITY   the count line says ${onMap.n} + ${riding.n} + ${unplaceable.n} against ` +
+            `${records.length} records and ${attached.length} attached rows`
+        );
+        }
+      notes.push(
+        `oddities: ${onMap ? onMap.n : '?'} on the map, ${riding ? riding.n : '?'} riding on ` +
+          `something else, ${unplaceable ? unplaceable.n : '?'} nobody can place`
+      );
+    }
+  } catch (e) {
+    problems.push(`ODDITY   could not check the oddities layer: ${String(e && e.message)}`);
   }
 }
 

@@ -35,7 +35,13 @@ ALLOWED_PREFIXES = ("registry/", "harvest/lists/", "harvest/queries/")
 # cannot parse YAML and nobody hand-keeps fifty rows. It is GENERATED -- `scripts/
 # gen_rockets_js.py` writes it and CI refuses a stale one -- so it is a build output and not a
 # second place a human edits. Anything else appearing here is the regression this test is for.
+# TWO of them now. registry/oddities.yaml is mirrored the same way and for the same reason, and
+# `gen_oddities_js.py --check` fails CI until it is regenerated and committed. Both are build
+# outputs, not second places a human edits.
 GENERATED = "site/js/data/rockets.js"
+GENERATED_ODDITIES = "site/js/data/oddities.js"
+MIRRORS = ((GENERATED, "scripts/gen_rockets_js.py", "rockets"),
+           (GENERATED_ODDITIES, "scripts/gen_oddities_js.py", "oddities"))
 
 
 def snapshot(root: Path) -> dict[str, str]:
@@ -60,6 +66,9 @@ def apply_fixture(registry: Path, fixture: dict) -> None:
         # fire. Nothing under site/js/ -- the builder composes from these fields.
         "rockets": ("rockets.yaml", "rockets"),
         "observed": ("rockets.yaml", "observed"),
+        # Spec: adding an odd thing is a row plus the generated mirror. `shape: {build: generic}`
+        # is always legal, so a row can ship before anybody writes it a shape.
+        "oddities": ("oddities.yaml", "oddities"),
     }
     for section, rows in fixture.items():
         filename, key = targets[section]
@@ -89,7 +98,8 @@ def main() -> int:
         # registry/models.yaml, and the mirror check is a byte comparison.
         shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")
         (work / "site/js/data").mkdir(parents=True, exist_ok=True)
-        shutil.copy2(ROOT / GENERATED, work / GENERATED)
+        for mirror, _, _ in MIRRORS:
+            shutil.copy2(ROOT / mirror, work / mirror)
 
         before = snapshot(work)
         apply_fixture(work / "registry", fixture)
@@ -103,53 +113,56 @@ def main() -> int:
             print(result.stdout or result.stderr)
             return 1
 
-        # The mirror is a real dependency, so it must NOTICE. A --check that passed here would mean
-        # the browser was still loading the old fifty rows and the new rocket drew as generic.
-        stale = subprocess.run(
-            [sys.executable, "scripts/gen_rockets_js.py", "--check"],
-            cwd=work, capture_output=True, text=True,
-        )
-        if stale.returncode == 0:
-            print(f"FAIL: two rocket rows were added and {GENERATED} still says it is current. "
-                  f"The mirror check is not checking anything.")
-            return 1
-        wrote = subprocess.run(
-            [sys.executable, "scripts/gen_rockets_js.py"],
-            cwd=work, capture_output=True, text=True,
-        )
-        if wrote.returncode != 0:
-            print("FAIL: the mirror cannot be regenerated from the grown registry.\n")
-            print(wrote.stdout or wrote.stderr)
-            return 1
+        # A mirror is a real dependency, so it must NOTICE. A --check that passed here would mean
+        # the browser was still loading the old rows and the new one drew as nothing. Both mirrors
+        # are asserted, because a growth claim checked against only one of them is a growth claim
+        # that goes on printing PASS after the second one stops working.
+        for mirror, generator, section in MIRRORS:
+            stale = subprocess.run(
+                [sys.executable, generator, "--check"], cwd=work, capture_output=True, text=True,
+            )
+            if stale.returncode == 0:
+                print(f"FAIL: {section} rows were added and {mirror} still says it is current. "
+                      f"The mirror check is not checking anything.")
+                return 1
+            wrote = subprocess.run(
+                [sys.executable, generator], cwd=work, capture_output=True, text=True,
+            )
+            if wrote.returncode != 0:
+                print(f"FAIL: {mirror} cannot be regenerated from the grown registry.\n")
+                print(wrote.stdout or wrote.stderr)
+                return 1
 
         # The claim is not only that it validates -- it is that nothing else had to change. This is
         # now measured against the tree rather than against the fixture's own key names.
         after = snapshot(work)
         changed = sorted(k for k in set(before) | set(after) if before.get(k) != after.get(k))
+        generated = {m for m, _, _ in MIRRORS}
         outside = [f for f in changed
-                   if not f.startswith(ALLOWED_PREFIXES) and f != GENERATED]
+                   if not f.startswith(ALLOWED_PREFIXES) and f not in generated]
         if outside:
             print("FAIL: growing the registry changed files outside it: " + ", ".join(outside))
             return 1
-        if GENERATED not in changed:
-            print(f"FAIL: {GENERATED} did not change, so the two new rockets never reached the "
-                  f"browser's copy of the registry.")
-            return 1
-
-        mirror = (work / GENERATED).read_text(encoding="utf-8")
-        for rid in [r["id"] for r in fixture.get("rockets", [])]:
-            if f'"{rid}"' not in mirror:
-                print(f"FAIL: rocket row {rid!r} validates but is not in the mirror the browser "
-                      f"loads, so nothing would ever draw it.")
+        for mirror, _, section in MIRRORS:
+            if mirror not in changed:
+                print(f"FAIL: {mirror} did not change, so the new {section} rows never reached "
+                      f"the browser's copy of the registry.")
                 return 1
+            text = (work / mirror).read_text(encoding="utf-8")
+            for rid in [r["id"] for r in fixture.get(section, [])]:
+                if f'"{rid}"' not in text:
+                    print(f"FAIL: {section} row {rid!r} validates but is not in the mirror the "
+                          f"browser loads, so nothing would ever draw it.")
+                    return 1
 
         print("registry sections the fixture touched:", ", ".join(sorted(fixture)))
-        print("files changed outside registry/:", GENERATED, "(generated, and CI regenerates it)")
+        print("files changed outside registry/:", ", ".join(sorted(generated)),
+              "(generated, and CI regenerates them)")
         print(result.stdout.strip())
 
-    print("\nPASS: a new world, a new source, a new layer, a new texture, a new surface site "
-          "and two new launch vehicles are rows. Nothing under site/js/ was needed but the "
-          f"generated {GENERATED}, which no human edits.")
+    print("\nPASS: a new world, a new source, a new layer, a new texture, a new surface site, "
+          "two new launch vehicles and a new odd thing on that new world are rows. Nothing under "
+          "site/js/ was needed but the two generated mirrors, which no human edits.")
     return 0
 
 
