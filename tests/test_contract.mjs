@@ -436,7 +436,7 @@ for (const file of allFiles) {
 // lunar site. This asserts the rows the card actually renders.
 {
   try {
-    const { rightNowFor } = await import(join(JS, 'ui/cards.js'));
+    const { rightNowFor, drawingLine } = await import(join(JS, 'ui/cards.js'));
     const { handKeptSites } = await import(join(JS, 'data/sample.js'));
     const sites = new Map(handKeptSites().map((r) => [r.id, r]));
     const tMs = Date.parse('2026-03-15T12:00:00.000Z');
@@ -484,7 +484,7 @@ for (const file of allFiles) {
     const { ODDITIES } = await import(join(JS, 'data/oddities.js'));
     const { propagate } = await import(join(JS, 'propagate/index.js'));
     const { WORLD_RADIUS_KM } = await import(join(JS, 'propagate/frames.js'));
-    const { rightNowFor } = await import(join(JS, 'ui/cards.js'));
+    const { rightNowFor, drawingLine } = await import(join(JS, 'ui/cards.js'));
     const { LAYERS } = await import(join(JS, 'data/layers.js'));
 
     const tMs = Date.parse('2026-03-15T12:00:00.000Z');
@@ -583,14 +583,21 @@ for (const file of allFiles) {
       }
     }
 
-    // The layer draws dots and nothing else, until the builders land. Without `noModel` a tap on
-    // the golf balls puts a comms satellite on the Moon, because modelFor() falls back to one.
+    // THE GEOMETRY, MEASURED. registry/oddities.yaml names a builder per row and
+    // scene/models.js ODDITY_BUILDERS has one -- two files that were related by discipline
+    // alone until this block. Everything below is measured rather than asserted: every shape is
+    // built, its triangles counted against BOTH budgets it has to satisfy, and the two sets of
+    // names compared in both directions, because a builder nobody names is as much a defect as
+    // a name nobody builds.
     const layer = LAYERS.find((l) => l.id === 'oddities');
     if (!layer) {
       problems.push('ODDITY   data/layers.js has no oddities layer, so registry/layers.yaml has drifted again');
     } else {
-      if (!layer.noModel) {
-        problems.push('ODDITY   the oddities layer has no builders and no `noModel`, so heroes.js will draw a satellite for a golf ball');
+      if (layer.noModel) {
+        problems.push('ODDITY   the oddities layer still declares `noModel`, so the builders are never reached');
+      }
+      if (!(layer.nearKm > 0)) {
+        problems.push(`ODDITY   the oddities layer's nearKm is ${layer.nearKm}; no unselected oddity would ever be drawn`);
       }
       const parts = layer.counts(records);
       const onMap = parts.find((p) => p.key === 'onMap');
@@ -608,6 +615,122 @@ for (const file of allFiles) {
         `oddities: ${onMap ? onMap.n : '?'} on the map, ${riding ? riding.n : '?'} riding on ` +
           `something else, ${unplaceable ? unplaceable.n : '?'} nobody can place`
       );
+    }
+
+    const { modelFor, modelVariants, disposeModels } = await import(join(JS, 'scene/models.js'));
+    const builders = modelVariants().oddity || [];
+    const yaml = readFileSync(join(ROOT, 'registry/models.yaml'), 'utf8');
+    const layerCapLine = yaml.split('\n').find((l) => l.includes('id: oddity-generic')) || '';
+    const layerCap = Number((layerCapLine.match(/budget_tris:\s*(\d+)/) || [])[1] || 0);
+    if (!layerCap) {
+      problems.push('ODDITY   registry/models.yaml has no budget_tris for oddity-generic');
+    }
+    const named = new Set(ODDITIES.map((r) => (r.shape || {}).build).filter(Boolean));
+    for (const build of named) {
+      if (!builders.includes(build)) {
+        problems.push(`ODDITY   registry/oddities.yaml names shape.build \`${build}\` and scene/models.js has no builder for it`);
+      }
+    }
+    // The other direction: a builder nobody names is geometry nobody sees, and the two lists
+    // drifting apart is exactly how registry/models.yaml and BUILDERS drifted before.
+    for (const build of builders) {
+      if (build === 'default' || build === 'generic') continue;
+      if (!named.has(build)) {
+        problems.push(`ODDITY   scene/models.js builds \`${build}\` and no registry/oddities.yaml row names it`);
+      }
+    }
+
+    let worstOddity = { id: null, frac: 0, tris: 0, budget: 0 };
+    for (const row of ODDITIES) {
+      const build = (row.shape || {}).build;
+      const budget = (row.shape || {}).budget_tris;
+      if (!build || !builders.includes(build)) continue;
+      const obj = modelFor('oddity', build);
+      let tris = 0;
+      let meshes = 0;
+      obj.traverse((n) => {
+        if (!n.geometry) return;
+        meshes += 1;
+        const g = n.geometry;
+        tris += (g.index ? g.index.count : g.attributes.position.count) / 3;
+      });
+      if (tris > budget) {
+        problems.push(`ODDITY   ${row.id} draws ${build} at ${Math.round(tris)} tris, over its row's budget_tris ${budget}`);
+      }
+      if (layerCap && tris > layerCap) {
+        problems.push(`ODDITY   ${row.id} draws ${build} at ${Math.round(tris)} tris, over the layer cap ${layerCap}`);
+      }
+      if (meshes > 40) {
+        problems.push(`ODDITY   ${row.id} draws ${build} as ${meshes} meshes; the hero pool budget is ~30`);
+      }
+      // A builder that answered with nothing would pass every budget above.
+      if (tris < 4) {
+        problems.push(`ODDITY   ${row.id} draws ${build} as ${Math.round(tris)} triangles, which is not a shape`);
+      }
+      // modelFor() flags a fallback. A named build must never be one, or the card would name a
+      // shape while a comms satellite was on the screen.
+      if (obj.userData.generic) {
+        problems.push(`ODDITY   modelFor('oddity', '${build}') fell back to a generic model`);
+      }
+      if (budget && tris / budget > worstOddity.frac) {
+        worstOddity = { id: row.id, frac: tris / budget, tris, budget };
+      }
+      disposeModels(obj);
+    }
+    notes.push(
+      `${builders.length - 1} oddity shapes build; tightest is ${worstOddity.id} at ` +
+        `${Math.round(worstOddity.tris)} of ${worstOddity.budget} tris`
+    );
+
+    // The wiring, end to end: the record heroes.js will hand to modelFor() must name a builder,
+    // and the record nobody can place must name none -- there is no geometry for a row that has
+    // no position, and `meta.modelVariant` is what heroes.js reads.
+    for (const r of records) {
+      const v = r.meta && r.meta.modelVariant;
+      if (r.meta && r.meta.unplaceable) {
+        if (v) problems.push(`ODDITY   ${r.id} cannot be placed and still asks for the \`${v}\` model`);
+        continue;
+      }
+      if (!v || !builders.includes(v)) {
+        problems.push(`ODDITY   ${r.id} asks heroes.js for modelVariant ${JSON.stringify(v)}, which is not a builder`);
+      }
+      // Which way the shape points. A thing on a surface stands on it -- that one is measured
+      // and the emitter, not the row, decides it; anything else takes the row's own choice, and
+      // absent means scene/models.js's seeded constant, which is what an unaimable object gets.
+      const row = ODDITIES.find((o) => o.id === r.id) || {};
+      const grounded = ['on_surface', 'came_home'].includes((row.where || {}).kind);
+      const want = grounded ? 'up' : (row.shape || {}).attitude || null;
+      if ((r.meta.attitude || null) !== want) {
+        problems.push(`ODDITY   ${r.id} is drawn with attitude ${JSON.stringify(r.meta.attitude || null)}; the registry says ${JSON.stringify(want)}`);
+      }
+    }
+
+    // THE CARD'S CLAIM ABOUT ITS OWN DRAWING. The three original strings say "rocket" out loud;
+    // an oddity must take the class-neutral triple, and a row that told the registry its drawing
+    // departs from the object must print that departure rather than stopping at "drawn as".
+    for (const r of records) {
+      const line = drawingLine(r);
+      if (r.meta && r.meta.unplaceable) {
+        if (line !== null) {
+          problems.push(`ODDITY   nothing is drawn for ${r.id} and its card still says "${line}"`);
+        }
+        continue;
+      }
+      if (!line) {
+        problems.push(`ODDITY   ${r.id} is drawn as a ${r.meta.modelVariant} and the card says nothing about it`);
+        continue;
+      }
+      if (/rocket/i.test(line)) {
+        problems.push(`ODDITY   ${r.id}'s drawing line calls it a rocket: ${line}`);
+      }
+      if (!line.includes(r.meta.drawnName)) {
+        problems.push(`ODDITY   ${r.id}'s drawing line does not name the shape drawn: ${line}`);
+      }
+      const row = ODDITIES.find((o) => o.id === r.id);
+      const departure = (row.shape || {}).departure;
+      if (departure && !line.includes(departure)) {
+        problems.push(`ODDITY   ${r.id} tells the registry how its drawing differs and the card does not print it: ${line}`);
+      }
     }
   } catch (e) {
     problems.push(`ODDITY   could not check the oddities layer: ${String(e && e.message)}`);

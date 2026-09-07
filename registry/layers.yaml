@@ -167,15 +167,22 @@ layers:
   #                        value here would be true of at most half the layer. (`deep-space` has
   #                        the same shape and states `sampled`, which its own records contradict.)
   #
-  # No `model:` yet: nothing here has geometry. The layer draws dots, and data/layers.js carries
-  # `noModel: true` so a near camera does not fall back to a generic satellite for a golf ball.
+  #   model: oddity-generic  ONE models.yaml row for eight shapes, exactly as rocket-upper-stage
+  #                        is one row for fifty. WHICH shape a record gets is its own
+  #                        registry/oddities.yaml `shape.build`, and every one of them is measured
+  #                        against its budget in tests/test_contract.mjs.
   - id: oddities
     display: Odd things we sent
     moments: {wonder: on, now: off, next: off}
     source: bundled
     propagator: per-record
     frame: per-record
-    style: {kind: glyph, glyph: oddity, colour: probe}
+    # Geometry now, one builder per row: registry/oddities.yaml `shape.build` picks it and
+    # site/js/scene/models.js ODDITY_BUILDERS draws it. `near_km` is ONE number across three
+    # frames -- a lunar surface, a museum in Texas and a heliocentric orbit -- so it is set for
+    # the surface case, which is the only one a visitor arrives at by flying. The Roadster is
+    # drawn because it was SELECTED, which heroes.js honours at any distance.
+    style: {kind: model, model: oddity-generic, glyph: oddity, colour: probe, near_km: 4000}
     card: oddity
     select: {all: true}      # the curation IS the record list; a second filter would be theatre
     budget: {max_items: 60}

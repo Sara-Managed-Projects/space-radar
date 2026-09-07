@@ -636,12 +636,11 @@ export const COPY = {
     // the only class that has ever printed them and wrong for a lapel pin. These are the same
     // three claims with the vehicle taken out of the words.
     //
-    // NOT PRINTED YET, deliberately. drawingLine() picks a string from `meta.drawsAs`, which is
-    // written today only by data/parsers.js for a launch. The layer these were written for draws
-    // no geometry at all yet -- it is dots -- and "drawn from published dimensions for the
-    // Graflex flash handle" printed under a violet dot would describe a shape that is not on the
-    // screen. They start printing in the pull request that adds the builders, which is also the
-    // one line drawingLine() needs: pick this triple when the record is not a launch.
+    // PRINTED, since the builders landed: data/sample.js writes `meta.drawsAs` from each
+    // registry/oddities.yaml row's own `shape.stands_for`, and drawingLine() picks this triple
+    // for any record that is not a launch. The sentence a row's `shape.departure:` adds after it
+    // is the row's own words, not a string here -- only the row knows what its builder
+    // exaggerated to make the object read at 40 pixels.
     objectVariant: 'drawn from published dimensions for {name}',
     objectFamily: 'drawn as {name} — the kind of thing, not this exact one',
     objectGeneric: 'drawn as a generic object; we have no shape for {name}',

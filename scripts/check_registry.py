@@ -86,7 +86,27 @@ PRECISION_UNKNOWN = "unknown"
 # real ones at all, because the geometry is the next pull request and a row may not claim a shape
 # that does not exist.
 ODDITY_PLACEHOLDER_SHAPES = {"generic"}
-ODDITY_SHAPES = set() | ODDITY_PLACEHOLDER_SHAPES
+# The builders that now exist. This set and the ODDITY_BUILDERS table in site/js/scene/models.js
+# are the two edits, and they are held together by MEASUREMENT rather than by discipline:
+# tests/test_contract.mjs builds every name in the shipped data against modelVariants().oddity and
+# fails on a name either side does not have. A frozen set that nobody measures is a comment.
+ODDITY_REAL_SHAPES = {
+    "golden-record",
+    "wrapped-photo",
+    "disc-stack",
+    "golf-balls",
+    "minifigures",
+    "roadster",
+    "flash-handle",
+}
+ODDITY_SHAPES = ODDITY_REAL_SHAPES | ODDITY_PLACEHOLDER_SHAPES
+# Which way a drawn shape points. Only two are offered, and neither is a measurement: `fixed` is
+# scene/models.js's constant seeded from the record id -- what an object whose attitude nobody
+# knows gets by default -- and `nadir` turns the shape's flank to the world, which is where the
+# camera arrives from. A row states one when the drawing is only legible one way up. Surface rows
+# may not: they stand on the ground because they are on the ground, and that IS a measurement.
+ODDITY_ATTITUDES = {"fixed", "nadir"}
+ODDITY_GROUNDED_KINDS = {"on_surface", "came_home"}
 ODDITY_MAX_TRIS = 2000
 # The card's own cap (site/js/ui/cards.js MAX_FIRST_SENTENCE), enforced where the string is
 # WRITTEN rather than where it is read, because truncating a sentence at 160 characters is how a
@@ -436,6 +456,41 @@ def check_oddities(doc: dict, world_ids: set, sites: list) -> None:
         if not shape.get("drawn_name"):
             fail(where, "shape has no `drawn_name:` -- the card names the shape it drew, so the "
                         "name is data")
+        # NOTHING IS DRAWN FOR A ROW NOBODY CAN PLACE. data/sample.js gives an `unknown` row no
+        # propagator, so the glyph layer, heroes.js and the camera all skip it -- and a row that
+        # names a builder whose output never reaches the screen is a claim about a drawing that
+        # does not exist. `generic` is the only legal build here, and the emitter writes no
+        # `drawsAs` for it either, so the card says nothing about a shape instead of something.
+        if kind == "unknown" and build not in ODDITY_PLACEHOLDER_SHAPES:
+            fail(where, f"shape.build is `{build}` on a row whose position is unknown. Nothing is "
+                        f"drawn for it at all, so the only honest build is "
+                        f"{sorted(ODDITY_PLACEHOLDER_SHAPES)}")
+        # `departure:` is the one place a row admits the drawing differs from the object on
+        # purpose -- an oversized starburst, two balls drawn side by side, a blank print. It is
+        # OPTIONAL, because a builder may have nothing to confess, and it is refused on a
+        # placeholder: "we have no shape for this" and "here is how our shape differs" cannot both
+        # be true of the same drawing.
+        att = shape.get("attitude")
+        if att is not None:
+            if att not in ODDITY_ATTITUDES:
+                fail(where, f"shape.attitude {att!r} is not one of {sorted(ODDITY_ATTITUDES)}")
+            if kind in ODDITY_GROUNDED_KINDS:
+                fail(where, f"shape.attitude on a `{kind}` row. A thing lying on a surface is "
+                            f"drawn standing on that surface because it IS on it -- that one is "
+                            f"measured, and a row must not be able to override it")
+            if build in ODDITY_PLACEHOLDER_SHAPES:
+                fail(where, f"shape.attitude on a `{build}` build: there is no shape to aim")
+        dep = shape.get("departure")
+        if dep is not None:
+            if not isinstance(dep, str) or not dep.strip():
+                fail(where, f"shape.departure {dep!r} is not a sentence. Leave it out if the "
+                            f"drawing has nothing to confess")
+            elif len(dep) > MAX_SENTENCE:
+                fail(where, f"shape.departure is {len(dep)} characters, over the card's "
+                            f"{MAX_SENTENCE}")
+            if build in ODDITY_PLACEHOLDER_SHAPES:
+                fail(where, f"shape.departure on a `{build}` build. A placeholder already says it "
+                            f"is not the object; a departure from it is a departure from nothing")
 
 
 errors: list[str] = []

@@ -992,6 +992,651 @@ function buildSiteRover() {
   return g;
 }
 
+// ------------------------------------------------------------------------- odd things we sent
+
+// registry/oddities.yaml gives every row a `shape.build`, and this is where the eight names in
+// that set become geometry. Adding a ninth is a row there and a function here -- the same two
+// edits `stands_for` already documents -- and check_registry.py refuses a row naming a build this
+// table does not have, because a card that names a shape nobody drew is the defect this layer
+// exists to prevent.
+//
+// ONE DETAIL PER OBJECT, and it is the detail rather than the object that carries the recognition
+// at 40 px: the fourteen-ray pulsar starburst on the record's cover, the warp in Duke's print,
+// the six-iron head lashed to a sample scoop, the tardigrade's reversed rear leg pair, Starman's
+// elbow out of the window. Every one of them is drawn here on purpose and named in the row's
+// `shape.departure:` where the drawing knowingly differs from the object.
+//
+// NO TEXTURES ANYWHERE IN THIS FILE, and that is not an oversight: tests/test_contract.mjs
+// imports this module in node to measure every shape against its budget, so a builder that
+// touched `document` or loaded an image could not be measured at all. Everything below is
+// primitives and the one shared toon material family.
+
+// Every colour here is INFERRED. No hex is published for the Golden Record's gold plating, the
+// Roadster's "midnight cherry", Starman's suit, the milled aluminium of the Juno figures or
+// Beresheet's nickel -- so these are ours, the card never states a colour, and registry/
+// rockets.yaml applies exactly this rule to the 34 rows with no sourced livery.
+const GOLD = '#D4AF37';
+const ALUMINIUM = '#C8CCD0';
+const ENGRAVED = '#7C838F';
+const NICKEL = '#C6C9CC';
+const REGOLITH = '#8A8A85';
+const BALL_WHITE = '#F2F2EF';
+const PRINT_WHITE = '#E9E4D8';
+const SUIT_WHITE = '#EDEFF2';
+const VISOR = '#20242C';
+const CHERRY = '#8C1220';
+const TYRE = '#2A2D33';
+
+/** A flat filled circle facing +Z. */
+function discFlat(r, seg, colour, kind, name) {
+  return mesh(new THREE.CircleGeometry(r, seg), colour, kind, name);
+}
+/** A flat annulus facing +Z: the cheapest way to draw an engraved circle. */
+function ringFlat(rInner, rOuter, seg, colour, kind, name) {
+  return mesh(new THREE.RingGeometry(rInner, rOuter, seg), colour, kind, name);
+}
+/** A flat rectangle facing +Z. Two triangles, and it is how every engraved bar here is drawn. */
+function plate(w, h, colour, kind, name) {
+  return mesh(new THREE.PlaneGeometry(w, h), colour, kind, name);
+}
+/** An open-ended cylinder: a band round something, with no caps to pay for. */
+function band(r, h, seg, colour, kind, name) {
+  return mesh(new THREE.CylinderGeometry(r, r, h, seg, 1, true), colour, kind, name);
+}
+
+/**
+ * THE detail on the Golden Record: the fourteen-ray pulsar map, the same diagram as the Pioneer
+ * plaques. Each ray is one triangle from a shared hub, and the lengths differ because the real
+ * ones do -- seeded by the ray index, so the same starburst appears on every machine.
+ *
+ * It is GEOMETRY and not a texture on purpose. A texture detail dies at distance; an extruded one
+ * survives, and this asterisk is the most legible mark on the whole object.
+ */
+function starburst(rays, rMax, colour, name) {
+  const pos = [];
+  const half = 0.055; // half the angular width of a ray at the hub
+  for (let i = 0; i < rays; i++) {
+    const a = (i / rays) * Math.PI * 2;
+    const len = rMax * (0.5 + 0.5 * hash01(i + 1));
+    pos.push(0, 0, 0);
+    pos.push(Math.cos(a - half) * len, Math.sin(a - half) * len, 0);
+    pos.push(Math.cos(a + half) * len, Math.sin(a + half) * len, 0);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.computeVertexNormals();
+  return mesh(g, colour, 'panel', name);
+}
+
+/** A disc of ground, so a thing lying on the Moon reads as lying on something. */
+function regolith(r, colour, seg) {
+  const d = discFlat(r, seg || 16, colour || REGOLITH, 'body', 'ground');
+  d.rotation.x = -Math.PI / 2;
+  d.position.y = 0.002; // the tangent plane touches the sphere exactly at the origin
+  return d;
+}
+
+// 1. The Voyager Golden Record -- 30 cm gold-plated copper disc, aluminium cover engraved in four
+// quadrants. The cover diagram's layout is published corner by corner; the starburst's SIZE is
+// ours, drawn two to three times over, which is what the row's `departure:` says out loud.
+function buildGoldenRecord() {
+  const g = new THREE.Group();
+  g.userData.realSizeM = 0.3;
+
+  const record = new THREE.Group();
+  record.name = 'record';
+  const face = cyl(0.34, 0.34, 0.012, 32, GOLD, 'panel', 'disc');
+  face.rotation.x = Math.PI / 2; // the axis is +Z, so the face looks at the camera
+  record.add(face);
+  const grooves = ringFlat(0.13, 0.30, 20, '#C09A2E', 'panel', 'grooves');
+  grooves.position.z = 0.007;
+  record.add(grooves);
+  const spindle = discFlat(0.022, 10, '#6E5A18', 'body', 'spindle');
+  spindle.position.z = 0.008;
+  record.add(spindle);
+  record.position.x = -0.30;
+  g.add(record);
+
+  // The cover, hinged open beside it so both faces of the object are visible at once.
+  const cover = new THREE.Group();
+  cover.name = 'cover';
+  const coverPlate = box(0.74, 0.74, 0.014, ALUMINIUM, 'panel', 'cover-plate');
+  cover.add(coverPlate);
+
+  // upper left: the record and its stylus, in the starting position
+  const mini = ringFlat(0.045, 0.075, 12, ENGRAVED, 'panel', 'diagram-record');
+  mini.position.set(-0.18, 0.18, 0.008);
+  cover.add(mini);
+  const stylus = plate(0.11, 0.012, ENGRAVED, 'panel', 'diagram-stylus');
+  stylus.position.set(-0.12, 0.22, 0.008);
+  stylus.rotation.z = -0.5;
+  cover.add(stylus);
+
+  // upper right: how to build a picture from the signal -- the scan lines
+  for (let i = 0; i < 3; i++) {
+    const line = plate(0.17, 0.012, ENGRAVED, 'panel', 'diagram-scan');
+    line.position.set(0.18, 0.24 - i * 0.055, 0.008);
+    cover.add(line);
+  }
+
+  // lower left: THE detail
+  const burst = starburst(14, 0.20, ENGRAVED, 'diagram-pulsars');
+  burst.position.set(-0.18, -0.17, 0.009);
+  cover.add(burst);
+
+  // lower right: the hydrogen atom in its two lowest states
+  // Two circles, one above the other and clearly separate: side by side with a bar between them
+  // they read as a second record-and-stylus, which is the upper-left quadrant's mark.
+  for (const dy of [-0.062, 0.062]) {
+    const atom = ringFlat(0.030, 0.044, 10, ENGRAVED, 'panel', 'diagram-hydrogen');
+    atom.position.set(0.19, -0.17 + dy, 0.008);
+    cover.add(atom);
+  }
+  const bond = plate(0.010, 0.038, ENGRAVED, 'panel', 'diagram-bond');
+  bond.position.set(0.19, -0.17, 0.008);
+  cover.add(bond);
+
+  cover.position.set(0.30, 0, -0.06);
+  cover.rotation.y = -0.52; // about 30 degrees, hinged open
+  g.add(cover);
+  return g;
+}
+
+// 2. Charlie Duke's family photograph -- a 3 x 5 inch print sealed in clear plastic, lying face-up
+// in the dust at Descartes. THE detail is the warp: sources describe it as crumpled from riding in
+// a suit pocket, and a flat quad reads as a texture swatch where a warped one reads as an object.
+//
+// The picture itself is not drawn. It is the Duke family's photograph, of four people who did not
+// publish it for this, and the row's `departure:` says the print is blank on purpose.
+function buildWrappedPhoto() {
+  const g = new THREE.Group();
+  g.userData.realSizeM = 0.127;
+
+  const printGeom = new THREE.PlaneGeometry(0.68, 0.42, 4, 3);
+  warpS(printGeom, 0.022);
+  const print = mesh(printGeom, PRINT_WHITE, 'panel', 'print');
+  print.rotation.x = -Math.PI / 2;
+  print.position.y = 0.012;
+  g.add(print);
+
+  // THE SAME segmentation and THE SAME amplitude as the print, or the two warped surfaces are
+  // sampled differently and the inset pokes through the card in jagged steps -- which is exactly
+  // what it did in the browser at 2 x 2.
+  const imageGeom = new THREE.PlaneGeometry(0.56, 0.32, 4, 3);
+  warpS(imageGeom, 0.022);
+  const image = mesh(imageGeom, '#B9A98F', 'body', 'image-area');
+  image.rotation.x = -Math.PI / 2;
+  image.position.y = 0.019;
+  g.add(image);
+
+  // The specular streak off the plastic. One white highlight does more work than any picture
+  // content would at this size.
+  const glint = plate(0.34, 0.026, '#FFFFFF', 'panel', 'glint');
+  glint.rotation.x = -Math.PI / 2;
+  glint.rotation.z = 0.55;
+  glint.position.set(-0.13, 0.03, -0.07);
+  g.add(glint);
+
+  g.add(regolith(0.45, null, 12));
+  return g;
+}
+
+/** Displace a plane's interior rows in a shallow S, so it reads as crumpled rather than flat. */
+function warpS(geometry, amp) {
+  const p = geometry.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i);
+    const y = p.getY(i);
+    p.setZ(i, Math.sin(x * 6.0) * amp + Math.cos(y * 4.5) * amp * 0.6);
+  }
+  p.needsUpdate = true;
+  geometry.computeVertexNormals();
+}
+
+// 3. The Beresheet lunar library and a tardigrade. Two objects, one card: 25 nickel discs 120 mm
+// across and 1 mm thick, and the dried tuns of the animals laid between them.
+//
+// TWO deliberate departures, both in the row: a 120:1 disc drawn at 120:1 has an invisible edge,
+// so the stack is thickened and the lamination is drawn as four bands rather than twenty-five;
+// and a half-millimetre animal beside a 12 cm disc would be four pixels, so it is not to scale.
+// THE detail is the tardigrade's rear leg pair, which points BACKWARDS while the first three
+// point down. That is the anatomical tell and it survives to a very small size.
+function buildDiscStack() {
+  const g = new THREE.Group();
+  g.userData.realSizeM = 0.12;
+
+  const stack = new THREE.Group();
+  stack.name = 'stack';
+  const body = cyl(0.30, 0.30, 0.075, 24, NICKEL, 'panel', 'discs');
+  body.position.y = 0.038;
+  stack.add(body);
+  for (let i = 0; i < 4; i++) {
+    const b = band(0.306, 0.008, 16, '#9AA0A6', 'body', 'lamination');
+    b.position.y = 0.014 + i * 0.019;
+    stack.add(b);
+  }
+  stack.position.x = -0.22;
+  g.add(stack);
+
+  const t = new THREE.Group();
+  t.name = 'tardigrade';
+  const barrel = mesh(new THREE.CapsuleGeometry(0.085, 0.20, 3, 10), '#E6E2D6', 'body', 'barrel');
+  barrel.rotation.z = Math.PI / 2; // the body runs along X, head at +X
+  barrel.position.y = 0.085;
+  t.add(barrel);
+  for (const x of [0.055, 0.0, -0.055]) {
+    const ridge = band(0.088, 0.012, 10, '#D4CFC0', 'body', 'ridge');
+    ridge.rotation.z = Math.PI / 2;
+    ridge.position.set(x, 0.085, 0);
+    t.add(ridge);
+  }
+  const snout = cyl(0.028, 0.055, 0.06, 7, '#DED9CA', 'body', 'snout');
+  snout.rotation.z = -Math.PI / 2;
+  snout.position.set(0.175, 0.085, 0);
+  t.add(snout);
+  // Eight stubby legs. The first three pairs point down; THE REAR PAIR POINTS BACKWARDS.
+  for (const [x, back] of [[0.10, false], [0.035, false], [-0.03, false], [-0.115, true]]) {
+    for (const z of [-0.058, 0.058]) {
+      const leg = box(0.03, 0.075, 0.03, '#DED9CA', 'body', back ? 'leg-rear' : 'leg');
+      leg.position.set(x, 0.05, z);
+      if (back) {
+        leg.position.set(x - 0.03, 0.07, z);
+        leg.rotation.z = 0.95; // swung back along the body, which is the tell
+      }
+      t.add(leg);
+    }
+  }
+  t.position.set(0.30, 0, 0);
+  t.scale.setScalar(0.85);
+  g.add(t);
+
+  g.add(regolith(0.48));
+  return g;
+}
+
+// 4. Alan Shepard's two golf balls, and the six-iron head he screwed to a contingency sample
+// scoop. Two white spheres are two white spheres; THE detail is the club, because a golf club
+// head bolted to a geology tool is the actual story and it is unmistakable.
+//
+// The balls really are 24 and 40 yards apart. At map scale that is smaller than a pixel, so they
+// are drawn side by side and the row's `departure:` says so.
+function buildGolfBalls() {
+  const g = new THREE.Group();
+  // The conforming golf ball, 42.67 mm. The club's length is not published anywhere reached, so
+  // the size claim is the ball's and only the ball's.
+  g.userData.realSizeM = 0.0427;
+
+  for (const [x, z] of [[-0.24, 0.15], [-0.09, -0.19]]) {
+    const ball = mesh(new THREE.SphereGeometry(0.115, 12, 8), BALL_WHITE, 'panel', 'ball');
+    ball.position.set(x, 0.115, z);
+    g.add(ball);
+  }
+
+  const club = new THREE.Group();
+  club.name = 'club';
+  // Bigger than scale and darker than the dust on purpose: at 0.16 x 0.10 the head vanished
+  // behind a golf ball in the browser, and the head is the entire story.
+  const head = box(0.26, 0.15, 0.07, '#77808E', 'panel', 'iron-head');
+  head.rotation.z = 0.30; // the loft of a six iron, which is what makes it read as an iron
+  head.position.set(0.0, 0.075, 0);
+  club.add(head);
+  const hosel = cyl(0.022, 0.022, 0.10, 6, '#77808E', 'body', 'hosel');
+  hosel.position.set(0.11, 0.15, 0);
+  hosel.rotation.z = -0.35;
+  club.add(hosel);
+  const handle = cyl(0.018, 0.024, 0.50, 8, '#D8D2C4', 'body', 'scoop-handle');
+  handle.position.set(0.23, 0.32, 0);
+  handle.rotation.z = -0.35;
+  club.add(handle);
+  // the lashing: he screwed the head onto the handle, and it was famously not a tidy job
+  for (const t of [0.0, 0.05]) {
+    const lash = band(0.028, 0.025, 6, '#3C424C', 'body', 'lashing');
+    lash.position.set(0.135 + t * 0.35, 0.20 + t, 0);
+    lash.rotation.z = -0.35;
+    club.add(lash);
+  }
+  club.position.set(0.16, 0, 0.16);
+  club.rotation.y = -0.75;
+  g.add(club);
+
+  // A SMALL disc: selected in the browser at 260 px, a 0.5 ground read as a grey blob with two
+  // dots on it. The dust is context for the objects, not the object.
+  g.add(regolith(0.38));
+  return g;
+}
+
+// 5. The three aluminium figures bolted to Juno's deck: Galileo, Jupiter, and Juno. Milled from
+// solid aluminium, 4 cm tall, unpainted.
+//
+// THE detail is the props, because three identical bodies differ ONLY by what is in the hand:
+// Juno's magnifying glass, Jupiter's lightning bolt, Galileo's telescope and globe. They are
+// drawn at about twice scale or the group is three silver blobs, and the row says so.
+//
+// The bodies are deliberately blocky and low-detail: the minifigure SHAPE is a registered
+// trademark independent of any model's copyright, so this draws the idea and never the wordmark.
+function buildMinifigures() {
+  const g = new THREE.Group();
+  g.userData.realSizeM = 0.04;
+
+  const deck = box(0.9, 0.03, 0.34, '#9AA3B0', 'panel', 'deck');
+  deck.position.y = -0.015;
+  g.add(deck);
+
+  const props = ['glass', 'bolt', 'telescope'];
+  for (let i = 0; i < 3; i++) {
+    const f = new THREE.Group();
+    f.name = `figure-${props[i]}`;
+    const legs = box(0.13, 0.14, 0.09, '#B8BCC0', 'panel', 'legs');
+    legs.position.y = 0.07;
+    f.add(legs);
+    const torso = box(0.15, 0.15, 0.085, '#B8BCC0', 'panel', 'torso');
+    torso.position.y = 0.215;
+    f.add(torso);
+    const head = cyl(0.05, 0.05, 0.09, 6, '#C4C8CC', 'panel', 'head');
+    head.position.y = 0.335;
+    f.add(head);
+    const stud = cyl(0.022, 0.022, 0.022, 6, '#C4C8CC', 'body', 'stud');
+    stud.position.y = 0.39;
+    f.add(stud);
+    for (const s of [-1, 1]) {
+      const arm = box(0.045, 0.13, 0.05, '#B8BCC0', 'panel', 'arm');
+      arm.position.set(s * 0.095, 0.225, 0.01);
+      arm.rotation.z = s * 0.28;
+      f.add(arm);
+      const hand = band(0.026, 0.03, 6, '#C4C8CC', 'body', 'hand');
+      hand.position.set(s * 0.125, 0.155, 0.02);
+      f.add(hand);
+    }
+    f.add(buildFigureProp(props[i]));
+    f.position.set(-0.3 + i * 0.3, 0, 0);
+    f.scale.setScalar(0.92);
+    g.add(f);
+  }
+  return g;
+}
+
+/** One prop per figure, drawn at about twice scale so the three are told apart at all. */
+function buildFigureProp(which) {
+  const p = new THREE.Group();
+  p.name = `prop-${which}`;
+  if (which === 'glass') {
+    const lens = ringFlat(0.05, 0.072, 10, '#DCE3EC', 'panel', 'lens-rim');
+    lens.position.set(0.17, 0.30, 0.02);
+    p.add(lens);
+    const grip = box(0.022, 0.11, 0.022, '#C4C8CC', 'body', 'grip');
+    grip.position.set(0.145, 0.20, 0.02);
+    grip.rotation.z = 0.3;
+    p.add(grip);
+  } else if (which === 'bolt') {
+    const strokes = [
+      [0.15, 0.30, 0.55, 0.13, 0.05],
+      [0.19, 0.21, -0.7, 0.12, 0.05],
+      [0.15, 0.12, 0.55, 0.11, 0.05],
+    ];
+    for (const [x, y, rot, len, w] of strokes) {
+      const s = box(w, len, 0.028, '#DFE6F0', 'panel', 'bolt');
+      s.position.set(x, y, 0.02);
+      s.rotation.z = rot;
+      p.add(s);
+    }
+  } else {
+    const tube = cyl(0.026, 0.036, 0.20, 6, '#C4C8CC', 'panel', 'telescope');
+    tube.position.set(0.16, 0.26, 0.02);
+    tube.rotation.z = -0.6;
+    p.add(tube);
+    // Held forward rather than out to the side: at x = -0.16 the globe sat between two figures
+    // and read as the neighbour's prop.
+    const globe = mesh(new THREE.SphereGeometry(0.05, 6, 4), '#B8BCC0', 'body', 'globe');
+    globe.position.set(-0.13, 0.17, 0.16);
+    p.add(globe);
+  }
+  return p;
+}
+
+// 6. The Roadster, and the man in it. The car is 3 946 x 1 873 x 1 127 mm on a 2 352 mm wheelbase
+// -- a very short wheelbase for that width, which is half the recognition -- and every one of
+// those numbers is published.
+//
+// THE detail is not the car. Starman's pose is documented: right hand on the wheel, LEFT ELBOW
+// RESTING ON THE OPEN WINDOW SILL. At 40 px the read is a white head and shoulders sticking out
+// of a low red wedge, and if the elbow is not out it is a car with a doll in it.
+function buildRoadster() {
+  const g = new THREE.Group();
+  g.userData.realSizeM = 3.946;
+
+  // Everything below is in METRES and divided once at the end, exactly as buildRocket() does, so
+  // the published dimensions stay readable in the source: 3 946 long, 1 873 wide, 1 127 tall, on
+  // a 2 352 mm wheelbase. That wheelbase is very short for that width and it is half the read.
+  const m = new THREE.Group();
+  m.name = 'metres';
+
+  // The side profile: nose at +X, tail at -X, and THE COCKPIT IS AN OPENING IN THE OUTLINE rather
+  // than a dark box dropped on top of a solid wedge. That matters -- the silhouette has to be
+  // open-topped, or the white head and shoulders above it read as a doll glued to a car.
+  const side = new THREE.Shape();
+  side.moveTo(1.973, 0.30);
+  side.lineTo(1.973, 0.46);   // nose
+  side.lineTo(1.55, 0.60);
+  side.lineTo(0.62, 0.645);   // the long bonnet
+  side.lineTo(0.30, 1.00);    // windscreen, raked hard back
+  side.lineTo(0.14, 1.00);
+  side.lineTo(0.08, 0.66);    // down into the footwell: the cockpit opening starts here
+  side.lineTo(-0.58, 0.62);
+  side.lineTo(-0.74, 0.88);   // the hump behind the seats
+  side.lineTo(-1.12, 0.74);
+  side.lineTo(-1.90, 0.56);
+  side.lineTo(-1.973, 0.34);  // tail
+  side.lineTo(-1.973, 0.16);
+  side.lineTo(-0.95, 0.10);
+  side.lineTo(0.95, 0.10);
+  side.lineTo(1.90, 0.16);
+  side.closePath();
+  // 1 450 across the body, so the wheels stand proud of it and the whole car measures the
+  // published 1 873 across the tyres. At 1 720 the wheels were INSIDE the bodywork and the two
+  // surfaces z-fought, which is what a browser check is for.
+  const bodyGeom = new THREE.ExtrudeGeometry(side, {
+    depth: 1.45,
+    bevelEnabled: true,
+    bevelSize: 0.075,
+    bevelThickness: 0.06,
+    bevelSegments: 2,
+    curveSegments: 1,
+  });
+  bodyGeom.translate(0, 0, -0.725); // extruded along +Z; centre it on the car's own axis
+  const body = mesh(bodyGeom, CHERRY, 'panel', 'body');
+  m.add(body);
+
+  // The sills, riding on the outer edges of the cockpit notch. The LEFT one is load-bearing:
+  // it is the window sill Starman's elbow rests on, and without it the elbow rests on air.
+  for (const z of [-0.715, 0.715]) {
+    const sill = box(1.14, 0.15, 0.15, CHERRY, 'panel', 'sill');
+    sill.position.set(-0.28, 0.70, z);
+    m.add(sill);
+  }
+  // The floor of the well, dark, so the opening reads as a hole and not as a gap in the mesh.
+  const floor = box(1.05, 0.06, 1.35, '#3A1116', 'body', 'cockpit-floor');
+  floor.position.set(-0.28, 0.58, 0);
+  m.add(floor);
+
+  // No separate windscreen mesh: the raked face between (0.62, 0.645) and (0.30, 1.00) in the
+  // profile above IS the screen, and a box laid over it was buried inside the body.
+
+  // Four wheels at the corners of the 2 352 mm wheelbase.
+  for (const x of [-1.176, 1.176]) {
+    for (const z of [-0.815, 0.815]) {
+      const wheel = cyl(0.335, 0.335, 0.24, 16, TYRE, 'body', 'wheel');
+      wheel.rotation.x = Math.PI / 2;
+      wheel.position.set(x, 0.335, z);
+      m.add(wheel);
+      const hub = discFlat(0.17, 10, '#9AA3B0', 'panel', 'hub');
+      hub.position.set(x, 0.335, z + Math.sign(z) * 0.125);
+      hub.rotation.y = z > 0 ? 0 : Math.PI;
+      m.add(hub);
+    }
+  }
+
+  // Lamps, lying on the sloped bonnet and the tail the way the donor Elise's do. They tell the
+  // front from the back at a glance, which a symmetrical wedge otherwise does not, and they sit
+  // ON the surface rather than inside it -- the first pass buried them in the nose.
+  for (const [x, y, colour] of [[1.63, 0.615, '#F2EEDF'], [-1.66, 0.60, '#8E1B1B']]) {
+    for (const z of [-0.40, 0.40]) {
+      const lamp = box(0.26, 0.05, 0.22, colour, 'panel', 'lamp');
+      lamp.position.set(x, y, z);
+      lamp.rotation.z = x > 0 ? -0.08 : 0.16;
+      m.add(lamp);
+    }
+  }
+
+  // The sign on the dash. THE WORDS ARE NOT DRAWN: a blank plate is what this is, and the row's
+  // `departure:` says so rather than letting two bars of geometry stand in for two words.
+  const sign = box(0.02, 0.15, 0.30, '#E8E4DA', 'panel', 'dash-sign');
+  sign.position.set(0.16, 0.82, 0.16);
+  sign.rotation.z = 0.5;
+  m.add(sign);
+
+  // The steering wheel, in front of the driver -- who sits on the LEFT, at -Z.
+  const rim = ringFlat(0.13, 0.175, 12, '#2A2D33', 'body', 'steering-wheel');
+  rim.position.set(0.02, 0.88, -0.40);
+  rim.rotation.set(0, Math.PI / 2, 0);
+  rim.rotateX(-0.95);
+  m.add(rim);
+
+  m.add(buildStarman());
+
+  m.scale.setScalar(1 / 3.946); // ONE division: the whole car becomes 1 unit
+  m.position.y = -0.14;
+  g.add(m);
+  return g;
+}
+
+/**
+ * The figure in the driving seat, in metres, in the car's frame: nose at +X, up at +Y, and the
+ * driver's own left hand side at -Z.
+ *
+ * THE POSE IS THE OBJECT. It is documented -- right hand on the wheel, left elbow resting on the
+ * open window sill -- and at 40 px the read is a white head and shoulders out of a low red wedge
+ * with one arm hooked over the side. Get the pose, not the panel gaps.
+ */
+function buildStarman() {
+  const s = new THREE.Group();
+  s.name = 'starman';
+  const Z = -0.36; // the driver's seat, left of centre
+
+  const torso = mesh(new THREE.CapsuleGeometry(0.20, 0.34, 3, 10), SUIT_WHITE, 'panel', 'torso');
+  torso.position.set(-0.34, 1.02, Z);
+  torso.rotation.z = -0.16;
+  s.add(torso);
+
+  const head = mesh(new THREE.SphereGeometry(0.175, 12, 8), SUIT_WHITE, 'panel', 'helmet');
+  head.position.set(-0.29, 1.42, Z);
+  s.add(head);
+  // The visor: a cap of the same sphere, turned to face forward and down the road.
+  // 0.182 against the helmet's 0.175: a visor drawn SMALLER than the helmet is a visor inside
+  // the helmet, which is what the first browser check showed -- a plain white ball.
+  const visor = mesh(
+    new THREE.SphereGeometry(0.182, 10, 6, 0, Math.PI * 0.95, 0.62, 1.05), VISOR, 'panel', 'visor'
+  );
+  visor.position.copy(head.position);
+  visor.rotation.y = -1.05; // looking down the road, which is +X
+  s.add(visor);
+
+  for (const z of [Z - 0.19, Z + 0.19]) {
+    const sh = box(0.20, 0.13, 0.14, '#2C3038', 'panel', 'shoulder');
+    sh.position.set(-0.33, 1.20, z);
+    s.add(sh);
+  }
+
+  // RIGHT HAND ON THE WHEEL. Upper arm down and forward, forearm across to the rim.
+  const upperR = cyl(0.062, 0.062, 0.32, 8, SUIT_WHITE, 'panel', 'arm-r-upper');
+  upperR.position.set(-0.24, 1.02, Z + 0.16);
+  upperR.rotation.set(0, 0, -0.75);
+  s.add(upperR);
+  const foreR = cyl(0.055, 0.055, 0.34, 8, SUIT_WHITE, 'panel', 'arm-r-fore');
+  foreR.position.set(-0.05, 0.92, Z + 0.06);
+  foreR.rotation.set(0.35, 0, -1.30);
+  s.add(foreR);
+  const handR = mesh(new THREE.SphereGeometry(0.07, 6, 4), SUIT_WHITE, 'panel', 'hand-r');
+  handR.position.set(0.06, 0.88, Z);
+  s.add(handR);
+
+  // LEFT ELBOW OUT OF THE WINDOW, resting on the sill. This is the silhouette everybody on Earth
+  // already has in their head, and it is the one thing here that must not be got wrong.
+  const upperL = cyl(0.062, 0.062, 0.34, 8, SUIT_WHITE, 'panel', 'arm-l-upper');
+  upperL.position.set(-0.37, 1.00, Z - 0.27);
+  upperL.rotation.set(1.15, 0, 0.20);
+  s.add(upperL);
+  const elbow = mesh(new THREE.SphereGeometry(0.09, 6, 4), '#2C3038', 'panel', 'elbow');
+  elbow.position.set(-0.40, 0.80, Z - 0.50); // past the sill at 0.715: what "out" means
+  s.add(elbow);
+  const foreL = cyl(0.055, 0.055, 0.36, 8, SUIT_WHITE, 'panel', 'arm-l-fore');
+  foreL.position.set(-0.22, 0.78, Z - 0.50);
+  foreL.rotation.set(0, 0, -1.35);
+  s.add(foreL);
+
+  return s;
+}
+
+// 7. The Graflex 3-cell press-camera flash handle the Return of the Jedi prop was built on.
+//
+// THE detail is that it must read as a camera part and NOT as a lightsaber: the ribbed grip and
+// the clamp, no emitter and no blade. The hilt's design, the name and the object are not ours to
+// draw, and the row says that in its `departure:` rather than leaving a visitor to wonder why the
+// famous shape is missing.
+function buildFlashHandle() {
+  const g = new THREE.Group();
+  // No published length for a 3-cell Graflex handle was reached, so this model states no size.
+  // The field is a real measurement here or it is absent.
+
+  const grip = cyl(0.10, 0.10, 0.62, 12, '#AEB5BE', 'panel', 'grip');
+  g.add(grip);
+  for (let i = 0; i < 6; i++) {
+    const rib = band(0.116, 0.028, 8, '#8E97A2', 'body', 'rib');
+    rib.position.y = -0.20 + i * 0.08;
+    g.add(rib);
+  }
+  const base = cyl(0.115, 0.125, 0.06, 12, '#8E97A2', 'panel', 'base');
+  base.position.y = -0.34;
+  g.add(base);
+  // The clamp: the part that held it to a press camera, and the reason this is not a hilt.
+  const jaw = box(0.09, 0.10, 0.20, '#C8CCD0', 'panel', 'clamp');
+  jaw.position.set(0.13, 0.26, 0);
+  g.add(jaw);
+  const screw = cyl(0.02, 0.02, 0.10, 6, '#8E97A2', 'body', 'clamp-screw');
+  screw.rotation.z = Math.PI / 2;
+  screw.position.set(0.19, 0.22, 0);
+  g.add(screw);
+  return g;
+}
+
+// 8. The placeholder, and it is deliberately not a thing. A row may always say `build: generic`;
+// it draws this and the card says, in words, that we have no shape for the object. Anything
+// prettier here would be a guess wearing a shape.
+function buildOddityGeneric() {
+  const g = new THREE.Group();
+  const core = mesh(new THREE.OctahedronGeometry(0.34, 0), '#8E93A8', 'body', 'placeholder');
+  g.add(core);
+  return g;
+}
+
+/**
+ * One BUILDERS key per `shape.build` value registry/oddities.yaml allows, exactly as
+ * rocketVariants() does for the rockets: a row naming a shape this table does not have would be
+ * drawn `generic` by modelFor() with nothing on the card saying so, and check_registry.py refuses
+ * that row instead. `default` is the placeholder, because a class that must always answer should
+ * answer with the honest shape rather than a plausible one.
+ */
+const ODDITY_BUILDERS = {
+  default: buildOddityGeneric,
+  generic: buildOddityGeneric,
+  'golden-record': buildGoldenRecord,
+  'wrapped-photo': buildWrappedPhoto,
+  'disc-stack': buildDiscStack,
+  'golf-balls': buildGolfBalls,
+  minifigures: buildMinifigures,
+  roadster: buildRoadster,
+  'flash-handle': buildFlashHandle,
+};
+
 // ------------------------------------------------------------------------------------- registry
 
 // One row per model. Adding a shape is a row here, not a change to modelFor().
@@ -1016,6 +1661,7 @@ const BUILDERS = {
     dome: buildSiteDome,
     rover: buildSiteRover,
   },
+  oddity: ODDITY_BUILDERS,
   world: { default: () => new THREE.Group() }, // worlds.js owns the worlds; this keeps modelFor total
 };
 
@@ -1079,6 +1725,10 @@ const DEFAULT_ATTITUDE = {
   asteroid: 'fixed',
   comet: 'anti-sun',
   site: 'up',
+  // An oddity answers for itself: a photograph lying in lunar dust and a museum case both stand
+  // on a surface (`meta.attitude: 'up'`, written by the emitter), while a car in heliocentric
+  // orbit points nowhere in particular and gets the seeded constant below.
+  oddity: 'fixed',
   world: 'fixed',
 };
 
