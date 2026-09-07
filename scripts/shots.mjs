@@ -38,7 +38,17 @@ const BLOCK = arg('block', '');
 
 /** Wait until the app has booted AND has real objects, not just a canvas. */
 async function ready(page, min = MIN_RECORDS, layer = null, layersReady = false) {
-  await page.waitForSelector('#sr-controls', { timeout: 90_000 });
+  // ATTACHED, NOT VISIBLE, AND THE DISTINCTION IS THE WHOLE POINT ON A PHONE. Below 600 px
+  // ui/mobile.js turns this panel into a drawer that starts CLOSED, and a closed drawer is now
+  // `visibility: hidden` so a keyboard user cannot tab into 34 controls sitting off the bottom
+  // of the screen. Waiting for it to be visible therefore waited for something that is correctly
+  // never going to happen, and the mobile shot timed out after 60 s against a perfectly healthy
+  // page. What this check is actually for is "ui/controls.js has built its host", which is
+  // `attached`. Above 600 px the panel IS always open, so the stronger assertion still runs
+  // there -- the check is not weakened, it is asked per regime.
+  await page.waitForSelector('#sr-controls', { state: 'attached', timeout: 90_000 });
+  const wide = await page.evaluate(() => !window.matchMedia('(max-width: 600px)').matches);
+  if (wide) await page.waitForSelector('#sr-controls', { state: 'visible', timeout: 90_000 });
   await page.waitForFunction(
     (n) => window.spaceRadar && window.spaceRadar.records().length >= n,
     min,
