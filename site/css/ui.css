@@ -937,3 +937,187 @@
 .sr-controls.is-reduced-motion .sr-btn {
   transition: none;
 }
+
+/* ------------------------------------------------------------------------------------ */
+/* Find an object (js/ui/search.js)                                                       */
+/*                                                                                        */
+/* The dropdown is IN FLOW, not an absolutely positioned popup. `.sr-controls` is a scroll */
+/* container, and on a phone it is a 62vh drawer (see site.css), so an absolute popup      */
+/* would be clipped by the panel that contains it. In flow it cannot be, at any width.     */
+/* ------------------------------------------------------------------------------------ */
+
+.sr-search__row {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.sr-search__input {
+  flex: 1 1 140px;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 10px;
+  font: inherit;
+  color: var(--sr-text);
+  background: var(--sr-raise);
+  border: 1px solid var(--sr-line-strong);
+  border-radius: var(--sr-radius-sm);
+}
+
+.sr-search__input::placeholder {
+  color: var(--sr-text-dim);
+}
+
+.sr-search__input:focus-visible {
+  outline: 2px solid var(--sr-ember);
+  outline-offset: 1px;
+}
+
+.sr-search__fly {
+  flex: 0 0 auto;
+}
+
+/* The dropdown -------------------------------------------------------------------------- */
+
+.sr-search__pop {
+  margin-top: 6px;
+  background: var(--sr-panel-solid);
+  border: 1px solid var(--sr-line-strong);
+  border-radius: var(--sr-radius-sm);
+  overflow: hidden;
+}
+
+.sr-search__pop[hidden] {
+  display: none;
+}
+
+.sr-search__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /* Twelve rows at most, and the panel scrolls the rest rather than growing past the drawer. */
+  max-height: 264px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.sr-search__option {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 40px; /* a real tap target, the same 40 px as the buttons */
+  padding: 4px 10px;
+  cursor: pointer;
+  border-left: 2px solid transparent;
+}
+
+.sr-search__option + .sr-search__option {
+  border-top: 1px solid var(--sr-line);
+}
+
+.sr-search__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 13.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The quiet right-hand label: what kind of thing this is. Never competes with the name. */
+.sr-search__where {
+  flex: 0 1 auto;
+  max-width: 42%;
+  font-size: 11px;
+  color: var(--sr-text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The matched letters. `mark` arrives yellow-on-black from the browser, which is neither in
+   the palette nor legible on this panel; ember is the one interactive colour, so it is ember. */
+.sr-search__hit {
+  color: var(--sr-ember);
+  background: transparent;
+  font-weight: 600;
+}
+
+.sr-search__option:hover,
+.sr-search__option.is-active {
+  background: var(--sr-raise);
+  border-left-color: var(--sr-ember);
+}
+
+.sr-search__option.is-active .sr-search__name {
+  color: var(--sr-text);
+}
+
+/* The footer: what the list could not show, and what the index could not see. */
+.sr-search__foot {
+  margin: 0;
+  padding: 7px 10px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--sr-text-dim);
+  border-top: 1px solid var(--sr-line);
+}
+
+.sr-search__foot[hidden] {
+  display: none;
+}
+
+.sr-search__note {
+  margin: 8px 0 0;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--sr-text-dim);
+}
+
+/* A gap in what is being searched is a warning, and a warning is gold. Never red. */
+.sr-search__note.is-warning {
+  padding-left: 8px;
+  color: var(--sr-text);
+  border-left: 2px solid var(--sr-stale);
+}
+
+/* Phones: the drawer is 62vh with its own scroll, so the list takes a share of it rather than
+   a fixed height, and the button drops under the field instead of squeezing it to nothing. */
+@media (max-width: 600px) {
+  .sr-search__row {
+    flex-wrap: wrap;
+  }
+
+  .sr-search__input {
+    flex: 1 1 100%;
+  }
+
+  .sr-search__fly {
+    flex: 1 1 auto;
+  }
+
+  .sr-search__list {
+    max-height: 34vh;
+  }
+
+  .sr-search__where {
+    max-width: 38%;
+  }
+}
+
+/* The one thing that animates is the row highlight, and it is a control, not decoration. */
+.sr-search__option {
+  transition:
+    background-color var(--sr-fast) var(--sr-ease),
+    border-color var(--sr-fast) var(--sr-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-search__option {
+    transition: none;
+  }
+}
+
+.sr-search.is-reduced-motion .sr-search__option {
+  transition: none;
+}
