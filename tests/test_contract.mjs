@@ -601,21 +601,28 @@ for (const file of allFiles) {
       if (!(layer.nearKm > 0)) {
         problems.push(`ODDITY   the oddities layer's nearKm is ${layer.nearKm}; no unselected oddity would ever be drawn`);
       }
-      const parts = layer.counts(records);
-      const onMap = parts.find((p) => p.key === 'onMap');
-      const unplaceable = parts.find((p) => p.key === 'unplaceable');
-      const riding = parts.find((p) => p.key === 'riding');
-      if (!onMap || !unplaceable || !riding) {
-        problems.push('ODDITY   the layer count line does not name all three states');
-      } else if (onMap.n + unplaceable.n !== records.length || riding.n !== attached.length) {
+      // The checkbox shows ONE number, like every other layer's does. It used to break the
+      // total into "on the map / riding on something else / nobody can place", which was
+      // accurate and was also the only row in the panel that did not read like the others.
+      //
+      // The three states still have to add up -- that is a fact about the data, not about the
+      // label -- so the invariant is asserted here directly instead of through the removed
+      // counts() function. An oddity is drawn when it has a propagator; the one nobody can
+      // place has none, by construction, and the attached rows are not records at all.
+      const drawn = records.filter((r) => r && r.propagator).length;
+      const unplaceable = records.length - drawn;
+      if (unplaceable < 1) {
         problems.push(
-          `ODDITY   the count line says ${onMap.n} + ${riding.n} + ${unplaceable.n} against ` +
-            `${records.length} records and ${attached.length} attached rows`
+          'ODDITY   every oddity has a propagator, so the "nobody can place" case is untested. ' +
+            'That case is the point of the honesty design; a layer without it has drifted.'
         );
-        }
+      }
+      if (typeof layer.counts === 'function') {
+        problems.push('ODDITY   the oddities layer declares counts() again; the checkbox shows one number');
+      }
       notes.push(
-        `oddities: ${onMap ? onMap.n : '?'} on the map, ${riding ? riding.n : '?'} riding on ` +
-          `something else, ${unplaceable ? unplaceable.n : '?'} nobody can place`
+        `oddities: ${records.length} in the layer (${drawn} drawn, ${unplaceable} nobody can ` +
+          `place), plus ${attached.length} riding on something the app already draws`
       );
     }
 

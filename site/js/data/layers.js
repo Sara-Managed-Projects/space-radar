@@ -24,7 +24,6 @@ import {
   sampleReentries,
   handKeptSites,
   sampleOddities,
-  attachedOddityCount,
 } from './sample.js';
 
 const DAY_MS = 86400000;
@@ -208,29 +207,6 @@ const cometsWorthDrawing = (records, nowMs) => {
     const bright = Number.isFinite(m.absoluteMagnitude) && m.absoluteMagnitude <= 8;
     return near || bright;
   });
-};
-
-/**
- * The count beside a checkbox, as DATA rather than as a number.
- *
- * Every other layer's tick is "how many of these are there", and one number is the whole truth.
- * This layer's members are in three different states and one number would have to hide two of
- * them: five carry their own dot, two ride on a spacecraft the app draws elsewhere, and one is
- * an object nobody can place, which is drawn nowhere at all and is still in the layer. Saying
- * "8" would claim eight dots; saying "5" would quietly drop the other three.
- *
- * So a layer may declare `counts(records)` and ui/controls.js renders the parts it returns, each
- * against a copy key, dropping the zeroes. That is the feature explaining itself in the filter
- * panel before anybody has tapped anything.
- */
-const oddityCounts = (records) => {
-  const list = Array.isArray(records) ? records : [];
-  const drawn = list.filter((r) => r && r.propagator).length;
-  return [
-    { key: 'onMap', n: drawn },
-    { key: 'riding', n: attachedOddityCount() },
-    { key: 'unplaceable', n: list.length - drawn },
-  ];
 };
 
 // Ranking used only when a layer overflows its budget, so the cut is deterministic and
@@ -496,7 +472,6 @@ export const LAYERS = [
     defaultOn: true,
     select: all,
     budget: { maxItems: 60 },
-    counts: oddityCounts,
     colour: C.probe,
     glyph: 'oddity',
     // GEOMETRY. `noModel` and its `nearKm: 0` are gone together: scene/models.js now has an
