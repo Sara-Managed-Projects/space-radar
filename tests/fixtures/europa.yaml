@@ -128,3 +128,43 @@ oddities:
            something to a probe without touching a line of JavaScript."
     cite: "tests/fixtures/europa.yaml"
     source: "This row is part of tests/fixtures/europa.yaml and describes nothing that exists."
+
+# AND A TRIP MUST BE A ROW (registry/tours.yaml). The third trip is this section plus
+# `python3 scripts/gen_tours_js.py`, and nothing under site/js/ -- the state machine in
+# ui/trip.js reads the mirror and has never heard of any particular trip.
+#
+# It visits the world, the layer, the site and the oddity the sections above just added, which is
+# the point: a trip is written against the OTHER registries, so if growing them left a target
+# form that no longer resolves, this is where it shows up.
+tours:
+  - id: europa-tour
+    title: "The ice, and what is under it"
+    blurb: "A fixture trip that visits everything this fixture added."
+    requires: [europa-orbiters]
+    stops:
+      - id: the-world
+        target: {world: europa}
+        frame_radii: 5.0
+        card:
+          title: "Europa"
+          body: >-
+            A moon of Jupiter with a shell of ice over an ocean of salt water. A fixture row, and
+            not a fact about the world.
+
+      - id: the-chaos
+        target: {site: conamara}
+        distance_km: 400
+        card:
+          title: "Conamara Chaos"
+          body: >-
+            A jumble of broken ice rafts. A fixture row, and not a fact about the world, written
+            so that the growth test has a surface site to fly to.
+
+      - id: the-drill-bit
+        target: {record: conamara-drill-bit}
+        distance_km: 400
+        card:
+          title: "A drill bit in the ice"
+          body: >-
+            There is no lander at Europa and there is no drill bit. This stop exists so the growth
+            test can add a trip without touching a line of JavaScript.

@@ -34,6 +34,12 @@ jobs:
       # subset. A stale mirror means the browser is drawing the previous set of claims.
       - name: The oddities mirror matches the registry
         run: python3 scripts/gen_oddities_js.py --check
+      # Same rule, third registry -- which is why the machinery behind all three of these is now
+      # scripts/_genmirror.py. registry/tours.yaml also carries the COMPUTED numbers: every dwell
+      # is derived from its own card's word count and the stated length is the sum of them, so a
+      # stale mirror is a trip promising a visitor a length it does not spend.
+      - name: The tours mirror matches the registry
+        run: python3 scripts/gen_tours_js.py --check
       # Every user-visible string lives in site/js/copy/en.js. Three files cited this check by name
       # before it existed; on the first run it was ever given it found three real leaks in
       # ui/mobile.js, which is the argument for it in one line.

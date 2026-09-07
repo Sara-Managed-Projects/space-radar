@@ -1,0 +1,252 @@
+# A TRIP is a chain of shots the camera flies, one card per stop. Adding a trip is a ROW here
+# plus a row per stop, and nothing under site/js/. The browser cannot parse YAML, so
+# scripts/gen_tours_js.py mirrors this into site/js/data/tours.js and CI refuses a stale mirror --
+# the same arrangement registry/rockets.yaml and registry/oddities.yaml have, for the same reason.
+#
+# A TRIP MAY NOT PROMISE A STOP IT WILL NOT DELIVER. That is the one rule, and every refusal in
+# scripts/check_registry.py is it in different clothes. A stop that cannot resolve is dropped
+# BEFORE the count is shown, so "5 stops, about two minutes" is a true sentence rather than a
+# hope; and a stop that could never resolve -- a target nobody can place, or a thing that is not
+# a record at all -- is refused here, at the point somebody writes it, rather than found as a
+# stop that quietly is not there.
+#
+# ---------------------------------------------------------------------------------------------
+# HOW A STOP NAMES ITS TARGET. Exactly one key, out of four:
+#
+#     target: {record: tesla-roadster}                 a record id, in any layer
+#     target: {layer: stations, catalog: "25544"}      a NORAD number within a layer
+#     target: {layer: stations, query: {name_contains: TIANGONG}, pick: first}
+#     target: {world: earth}                           a registry/worlds.yaml row
+#     target: {site: apollo-11}                        a registry/sites.yaml row
+#
+# Zero keys or two keys is refused. Ambiguity is the failure mode: a row with both `record:` and
+# `layer:` resolves to SOMETHING PLAUSIBLE, which is exactly what this file's validator exists to
+# prevent.
+#
+# `group:` (frame several objects at once) and `view:` (a non-camera stop, such as "the next time
+# it crosses your sky") are DESIGNED AND NOT SHIPPED. Between them they served two stops of the
+# five in the design, and neither trip below needs one. They arrive with the trip that needs them.
+#
+# ---------------------------------------------------------------------------------------------
+# THERE IS NO STOP-LEVEL `class:`, AND THAT IS ON PURPOSE. The design this file implements gave
+# each stop `class: measured | inferred | illustrative | sample`, hand-authored. A hand-authored
+# class can only ever do one of two things: repeat what the record already knows, or contradict
+# it. A stop could be written `measured` about a record the registry classes `inferred` and the
+# validator would have passed it -- a field whose only power is to state a falsehood the app
+# already knows better than. The card prints the RECORD's own `cls`, as it already does for every
+# other card in the app. `class:` anywhere in this file is refused, with that reason.
+#
+# ---------------------------------------------------------------------------------------------
+# THE FIELDS
+#
+#   id            unique here, AND not equal to any registry/layers.yaml id. `oddities` is a
+#                 layer; the trip that visits it is `strangest-things`. Two registries sharing a
+#                 word is how a cross-reference by bare id ends up resolving to the wrong thing.
+#   title         what a visitor reads on the row and on the intro card. <= 60 characters.
+#   blurb         one sentence under the title. The LENGTH is not written here: the generator
+#                 computes it from the flights and the dwells, so the number a visitor is
+#                 promised and the number the browser runs are the same number.
+#   pacing        `auto` plays; `reader` waits for Next. prefers-reduced-motion FORCES reader.
+#   requires      layer ids that must be enabled AND loaded before the trip is offered.
+#   min_stops     below this the trip is offered GREYED WITH ITS REASON, never hidden: a missing
+#                 feature and a broken one look identical when you hide one. Floor of 3 -- below
+#                 three stops it is a link, not a trip.
+#   stage         `earth` only. The rig is told its world radius once, at boot (main.js), and
+#                 nothing subscribes to `sr:stage`, so a trip crossing stages would fly with its
+#                 clearance sphere in the wrong place and its distances wrong by 1000x. When a
+#                 spec teaches the rig about `sr:stage` this field grows values; until then the
+#                 validator refuses anything else, because "not yet" is a better answer than a
+#                 smear.
+#   clock         as-found | live | freeze. `freeze` pauses time, which flips the clock from live
+#                 to scrub, which drops glyph re-propagation from every 100 ms to EVERY FRAME
+#                 (main.js) -- so a trip that freezes may not require the `active` layer, which
+#                 is eleven thousand objects. The validator enforces exactly that.
+#
+# PER STOP
+#   id            unique within its trip.
+#   target        above.
+#   needs_layer   this stop's own layer requirement, when it differs from the trip's. The trip
+#                 switches it on for the duration and switches it back on the way out.
+#   distance_km   how far the camera sits from the subject. It does NOT change how big the
+#                 subject looks: scene/heroes.js draws every model at a constant ANGULAR size, so
+#                 this number decides how much WORLD is in frame behind it, and nothing else.
+#   frame_radii   the same thing said in radii, for a `world:` target, which is the only target
+#                 that has a radius. Celestia's `goto` default is 5.0 and it is a good one.
+#                 Refused below 1.02, which is inside the camera's own world-clearance floor:
+#                 the rig would push the camera back out and the framing would be silently
+#                 ignored.
+#   drift_deg     ONE arc, never a lap. A lap slow enough to read is sixty seconds, at which
+#                 point the turn has stopped being a camera move and become a wait. Refused if it
+#                 cannot finish inside its own dwell with the 0.4 s lead and the 1.5 s tail --
+#                 which caps it by what the shot can hold rather than at an arbitrary number.
+#   on_unresolved `drop` (default) removes the stop before the count is shown. `hold` keeps it,
+#                 flies to the parent world instead, shows the honest failure, and NEVER
+#                 auto-advances: a failure that scrolls past is a failure nobody can report.
+#                 `fallback` is designed and not shipped -- the one stop that needed it was the
+#                 `view:` stop, which is not shipped either.
+#   card.title    <= 60 characters.
+#   card.body     the words. The first sentence is capped at 160 characters, which is the cap
+#                 site/js/ui/cards.js already measures; capping it where it is WRITTEN is what
+#                 stops a card saying half of something. The dwell is computed from the word
+#                 count and never from the flight duration, so nothing about the camera can
+#                 quietly shorten a reader's time.
+version: 1
+
+defaults:
+  pacing: auto
+  stage: earth
+  clock: as-found
+  min_stops: 3
+  frame_radii: 5.0
+  drift_deg: 34
+  drift_rate_deg_s: 6
+  drift: toward-light       # toward-light | away | none
+  key_light_deg: 125        # three-quarter back light; 0 would be flat, 180 a silhouette
+  ease: auto                # auto = `inout` under 3 s, `cruise` over. Or name one.
+  on_unresolved: drop
+
+tours:
+
+  # =============================================================================================
+  # Everything this trip needs is loaded in the first seconds of a first visit, which is why it
+  # is the one to offer a stranger. It ends on the Earth rather than on a station because the
+  # thing worth remembering is not either station: it is that there are two of them and nothing
+  # else, on a planet with eight billion people on it.
+  # =============================================================================================
+  # The trip id may not be a layer id -- `stations` is a row in registry/layers.yaml, and the
+  # validator refuses the collision. It caught this one on the first run.
+  - id: people-in-space
+    title: "Where people are living in space right now"
+    blurb: "The only two places above you tonight with people inside them."
+    requires: [stations]
+    clock: as-found
+    stops:
+      - id: far
+        target: {layer: stations, catalog: "25544"}
+        # Far enough back that the planet reads as a planet: at 32 000 km the Earth is about
+        # half the frame, which is the shot that makes "above your head" mean something.
+        distance_km: 32000
+        drift_deg: 20
+        card:
+          title: "Two places, and only two"
+          body: >-
+            Right now there are exactly two homes above your head with people inside them.
+            Everything else up here is a machine.
+
+      - id: iss
+        target: {layer: stations, catalog: "25544"}
+        distance_km: 3000
+        card:
+          title: "The International Space Station"
+          body: >-
+            About the size of a football pitch, and moving at eight kilometres a second. It goes
+            all the way round the Earth every ninety minutes, so the crew see sixteen sunrises a
+            day.
+
+      - id: tiangong
+        # MEASURED IN A BROWSER, 2026-09-07, and the design had it wrong: CelesTrak's stations
+        # group has no object called TIANGONG. The core module is `CSS (TIANHE)`, and the three
+        # CSS modules are three separate rows. Querying for TIANGONG resolved to nothing and the
+        # stop was dropped -- correctly and silently, which is the point of checking.
+        target: {layer: stations, query: {name_contains: TIANHE}, pick: first}
+        # DELIBERATELY IDENTICAL to the stop above. The comparison is honest only if the framing
+        # is, and a closer shot of the smaller station would be flattering it.
+        distance_km: 3000
+        card:
+          title: "Tiangong"
+          body: >-
+            China's station, about a fifth the size, and newer. Three people live here at a time,
+            in the same low Earth orbit a few hundred kilometres up.
+
+      - id: both
+        target: {world: earth}
+        frame_radii: 5.0
+        drift_deg: 20
+        card:
+          title: "Two specks, on opposite sides of a planet"
+          body: >-
+            They are never near each other. Two specks on opposite sides of one planet, and that
+            is the whole of humanity that does not live on the ground.
+
+  # =============================================================================================
+  # THE ID IS `strangest-things` AND NOT `oddities`, because `oddities` is the layer. Every stop
+  # below is bundled data checked into this repository, so this trip needs no network at all and
+  # nothing in it can fail to resolve for a reason outside the tree -- which makes it the SAFEST
+  # trip in the set rather than the riskiest.
+  #
+  # THE ORDER IS BACKWARDS FROM THE ENDING. The last thing anyone sees is what they remember, so
+  # the ending is chosen first and the fragile stops sit at the tail: drop the last two and it
+  # still ends on a lunar surface, which is also a good ending.
+  #
+  # THE GOLDEN RECORD STOP FLIES TO VOYAGER 1, not to the record. The record is drawn as a child
+  # of Voyager's model and is not a record in the app's sense at all, so `recordById` would
+  # return null for it and the best stop in the trip would be dropped without a word. Flying to
+  # the carrier is also where the object physically is. check_registry.py refuses the mistake by
+  # name.
+  # =============================================================================================
+  - id: strangest-things
+    title: "The strangest things we have ever sent"
+    blurb: "A family photograph, two golf balls, a library, a record and a car."
+    requires: [oddities]
+    min_stops: 3
+    clock: as-found
+    stops:
+      - id: duke-photo
+        target: {record: duke-family-photo}
+        # A surface stop: close enough that the Moon is the ground and not a ball.
+        distance_km: 900
+        card:
+          title: "A photograph lying in the dust"
+          body: >-
+            Charlie Duke left a picture of his wife and two sons face-up on the Moon, took a
+            photograph of it, and walked away. The plastic and the paper are still there.
+
+      - id: golf-balls
+        target: {record: shepard-golf-balls}
+        distance_km: 900
+        card:
+          title: "Two golf balls, forty yards apart"
+          body: >-
+            Alan Shepard smuggled a six-iron head to the Moon in a sock and hit two balls
+            one-handed. They went twenty-four and forty yards, not the miles everybody repeats.
+
+      - id: beresheet
+        target: {record: beresheet-lunar-library}
+        distance_km: 900
+        card:
+          title: "Thirty million pages, and some tardigrades"
+          body: >-
+            An Israeli lander crashed here carrying a stack of nickel discs with thirty million
+            pages on them, and dried tardigrades set in resin between the layers.
+
+      - id: golden-record
+        target: {record: deep-voyager-1}
+        needs_layer: deep-space
+        drift_deg: 20
+        card:
+          title: "A gold record, further away than anything"
+          body: >-
+            Bolted to the side of this spacecraft is a gold-plated record. It carries whale song,
+            greetings in fifty-five languages, and one woman's heartbeat, recorded two days after
+            she decided to get married.
+
+      - id: roadster
+        target: {record: tesla-roadster}
+        card:
+          title: "A car, going round the Sun"
+          body: >-
+            A cherry-red sports car with a dummy at the wheel, launched on a test flight and now
+            looping between the Earth and Mars. Nobody has actually looked at it since 2018.
+
+      - id: pull-back
+        target: {world: earth}
+        # Two million kilometres. At this fov the Earth is about three pixels across, which is
+        # the whole of the shot: the number was chosen for what it makes the planet LOOK like,
+        # and it is the one place in this file where that is the honest reason.
+        distance_km: 2000000
+        drift_deg: 0
+        card:
+          title: "And this is where all of it came from"
+          body: >-
+            Every one of those things was made by people standing on that. From out here you
+            cannot pick it out of the dark.

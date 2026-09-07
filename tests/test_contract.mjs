@@ -30,6 +30,7 @@ const CONTRACT = {
   'data/parsers.js': ['parseCelestrakGP', 'parseLaunches', 'parseComets', 'parseDsn'],
   'data/sample.js': ['sampleAsteroids', 'sampleDeepSpace', 'sampleOddities'],
   'data/oddities.js': ['ODDITIES', 'ODDITIES_OBSERVED_ON'],
+  'data/tours.js': ['TOURS', 'TOUR_DEFAULTS'],
   'data/layers.js': ['LAYERS', 'loadLayer'],
   'scene/renderer.js': ['createRenderer'],
   'scene/stage.js': ['stage'],
@@ -43,6 +44,7 @@ const CONTRACT = {
   'sky/skyview.js': ['createSkyView'],
   'ui/cards.js': ['showCard', 'hideCard'],
   'ui/controls.js': ['createControls'],
+  'ui/trip.js': ['createTrip'],
   'ui/status.js': ['createStatus'],
   'copy/en.js': ['COPY', 'compare'],
 };
@@ -1234,6 +1236,79 @@ for (const file of allFiles) {
     }
   } catch (e) {
     failed(`could not check the camera contract: ${String(e && e.stack ? e.stack.split('\n').slice(0, 3).join(' | ') : e)}`);
+  }
+}
+
+// --- every stop in registry/tours.yaml names something that exists ------------------------
+//
+// THE VALIDATOR CANNOT ANSWER THIS AND THIS CAN. scripts/check_registry.py knows what is in the
+// registries; it does not know what site/js/data/sample.js actually EMITS, and a stop is resolved
+// in the browser through ctx.recordById(). A trip stop naming `deep-voyager-1` is right or wrong
+// depending on a hand-written emitter in another file, and the failure is silent: the stop is
+// dropped and the count is printed afterwards, so a six-stop trip quietly becomes a five-stop one
+// and nothing anywhere says which stop went or why.
+//
+// Also checked: the `ease:` a registry row asks for is one the camera rig actually has. That is
+// two registries and one module having to agree about a name, which is the failure this whole
+// harness was written for.
+{
+  try {
+    const { TOURS } = await import(join(JS, 'data/tours.js'));
+    const { sampleOddities, sampleDeepSpace, handKeptSites } = await import(join(JS, 'data/sample.js'));
+    const { LAYERS } = await import(join(JS, 'data/layers.js'));
+    const { WORLDS } = await import(join(JS, 'scene/worlds.js'));
+    const { CAMERA_EASES } = await import(join(JS, 'scene/camera.js'));
+
+    const bundled = new Set([
+      ...sampleOddities().map((r) => r.id),
+      ...sampleDeepSpace().map((r) => r.id),
+      ...handKeptSites().map((r) => r.id),
+    ]);
+    const layerIds = new Set(LAYERS.map((l) => l.id));
+    const worldIds = new Set(WORLDS.map((w) => w.id));
+    const eases = new Set([...Object.keys(CAMERA_EASES), 'auto']);
+
+    let stops = 0;
+    let resolvable = 0;
+    for (const tour of TOURS) {
+      // Two registries, one word, two meanings: the layer is `oddities` and the trip that visits
+      // it is `strangest-things`. check_registry.py refuses the collision; this is the browser's
+      // half of the same claim, because LAYERS is the list the app actually reads.
+      if (layerIds.has(tour.id)) {
+        problems.push(`TOUR     trip '${tour.id}' has the same id as a layer the app loads`);
+      }
+      for (const stop of tour.stops) {
+        stops += 1;
+        if (!eases.has(stop.ease)) {
+          problems.push(`TOUR     ${tour.id}/${stop.id}: ease '${stop.ease}' is not one the rig has`);
+        }
+        if (!(stop.dwell_ms >= 8000)) {
+          problems.push(`TOUR     ${tour.id}/${stop.id}: dwell ${stop.dwell_ms} ms is under the 8 s floor`);
+        }
+        const target = stop.target || {};
+        if (target.world !== undefined) {
+          if (worldIds.has(target.world)) resolvable += 1;
+          else problems.push(`TOUR     ${tour.id}/${stop.id}: world '${target.world}' is not in WORLDS`);
+        } else if (target.layer !== undefined) {
+          // A live-feed member: which record it picks depends on a network the runner does not
+          // have, so the checkable half is that the LAYER exists and is one the app loads.
+          if (layerIds.has(target.layer)) resolvable += 1;
+          else problems.push(`TOUR     ${tour.id}/${stop.id}: layer '${target.layer}' is not in LAYERS`);
+        } else {
+          const id = target.record ?? target.site;
+          if (bundled.has(id)) resolvable += 1;
+          else {
+            problems.push(
+              `TOUR     ${tour.id}/${stop.id}: '${id}' is not emitted by data/sample.js, so ` +
+                `recordById() returns null and this stop is silently dropped`
+            );
+          }
+        }
+      }
+    }
+    notes.push(`tours: ${TOURS.length} trips, ${stops} stops, ${resolvable} resolvable without a network`);
+  } catch (e) {
+    problems.push(`TOUR     could not check registry/tours.yaml against the app: ${String(e)}`);
   }
 }
 

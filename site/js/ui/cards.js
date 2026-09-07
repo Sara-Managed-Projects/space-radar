@@ -5,6 +5,9 @@
 // textContent, never innerHTML, so a name from an upstream feed cannot become markup.
 //
 // The order of the blocks is FIXED (spec 0013 design, "Anatomy"):
+//   0. the LEAD, and only during a guided trip: the stop's own title and words. It renders above
+//      block 1 and reorders nothing below it, so everything the card knows -- the freshness
+//      stamp, the provenance class, the myth block -- stays exactly where it was.
 //   1. name and class glyph
 //   2. ONE plain sentence: what it is and why it matters now
 //   3. up to three comparison chips, scale first
@@ -16,7 +19,12 @@
 //   7. the class-and-age line
 //   8. the source line
 //
-// Contract exports: showCard(record, ctx), hideCard().
+// Contract exports: showCard(record, ctx, opts), hideCard().
+//
+// `opts.lead` is the trip card, and it is the ordinary card restyled rather than a fork. A stop
+// that is a PLACE and not an object -- "pull back until the Earth is a dot" -- has no record at
+// all, so `showCard(null, ctx, { lead })` renders the lead alone. A null record with no lead is
+// still hideCard(): the card has nothing to say and says nothing.
 
 import {
   COPY,
@@ -54,7 +62,7 @@ const HOST_ID = 'sr-card';
 
 let host = null;
 let bodyEl = null;
-let current = null; // { record, ctx }
+let current = null; // { record, ctx, opts }
 let subscribed = false;
 let lastPaint = 0;
 
@@ -1111,13 +1119,45 @@ function actionButtons(record, ctx, m) {
 // Render
 // ---------------------------------------------------------------------------------------
 
+/**
+ * Block 0. The stop's own title and words during a guided trip.
+ *
+ * It carries no provenance of its own and it never could: the words are written in
+ * registry/tours.yaml by a human, and what the app KNOWS about the object is block 7, which is
+ * still printed underneath and is still the record's own class. A lead that stated a class would
+ * be a hand-written claim standing in front of a measured one.
+ */
+function leadBlock(lead) {
+  const wrap = el('section', 'sr-card__lead');
+  if (lead.title) wrap.appendChild(el('h2', 'sr-card__leadtitle', lead.title));
+  if (lead.body) wrap.appendChild(el('p', 'sr-card__leadbody', lead.body));
+  return wrap;
+}
+
+/** A stop with no object behind it: the lead is the whole card. */
+function renderLeadOnly(lead) {
+  const node = ensureHost();
+  clear(node);
+  node.dataset.klass = 'world';
+  node.dataset.cls = '';
+  node.appendChild(leadBlock(lead));
+  bodyEl = null;
+  node.hidden = false;
+  node.classList.add('is-open');
+}
+
 function section(className, labelText) {
   const wrap = el('section', className);
   if (labelText) wrap.appendChild(el('h3', 'sr-card__label', labelText));
   return wrap;
 }
 
-function render(record, ctx) {
+function render(record, ctx, opts = {}) {
+  const lead = opts.lead;
+  if (!record) {
+    renderLeadOnly(lead);
+    return;
+  }
   const node = ensureHost();
   const klass = klassOf(record);
   const m = measure(record, ctx);
@@ -1126,6 +1166,9 @@ function render(record, ctx) {
   clear(node);
   node.dataset.klass = klass;
   node.dataset.cls = String(m.cls || record.cls || '');
+
+  // 0. the trip's own words, above everything and reordering nothing.
+  if (lead) node.appendChild(leadBlock(lead));
 
   // 1. name and class glyph
   const header = el('header', 'sr-card__header');
@@ -1233,7 +1276,7 @@ function subscribe(ctx) {
       if (wall - lastPaint < REFRESH_MS) return;
       lastPaint = wall;
       try {
-        render(current.record, current.ctx);
+        render(current.record, current.ctx, current.opts);
       } catch {
         /* keep the last good card rather than blanking it */
       }
@@ -1247,14 +1290,14 @@ function subscribe(ctx) {
 // Contract exports
 // ---------------------------------------------------------------------------------------
 
-export function showCard(record, ctx) {
-  if (!record) {
+export function showCard(record, ctx, opts = {}) {
+  if (!record && !opts.lead) {
     hideCard();
     return;
   }
-  current = { record, ctx };
+  current = { record, ctx, opts };
   subscribe(ctx);
-  render(record, ctx);
+  render(record, ctx, opts);
 }
 
 export function hideCard() {

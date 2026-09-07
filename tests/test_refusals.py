@@ -388,40 +388,78 @@ COPY_CASES: list[tuple[str, str, str, str]] = [
 
 
 # ---------------------------------------------------------------------------------------
-# registry/tours.yaml -- a guard written before the file it guards.
+# registry/tours.yaml -- a trip may not promise a stop it will not deliver.
 #
-# A cinematic tour resolves each stop through ctx.recordById(). Two of the eight rows in
-# registry/oddities.yaml deliberately do not answer to it: an `attached` row is drawn on its
-# carrier's model and is not a record, and an `unknown` row has no position to fly to. Both
-# mistakes look right in YAML and fail as a stop that quietly is not there, so they are refused.
+# THESE MUTATE THE REAL FILE, like every case above. The first version of this block wrote a
+# synthetic two-line tours.yaml, because there was no real one: the guard was written before the
+# file it guards. A synthetic fixture stops proving anything the moment the real file exists,
+# because it exercises the validator against rows nobody ships.
 #
-# The last case is the one that keeps the other two honest: the CORRECT tour -- the same stop
-# aimed at the carrier -- must be ACCEPTED. A guard that refuses everything would pass the two
-# cases above and be useless.
-TOUR_CASES: list[tuple[str, str, bool]] = [
-    ("a stop that flies to something drawn on its carrier rather than to the carrier",
-     "voyager-golden-record", True),
-    ("a stop that flies to an object nobody can place",
-     "bean-astronaut-pin", True),
-    ("a stop that flies to the carrier, which is where the object actually is",
-     "deep-voyager-1", False),
-]
+# THE LAST CASE IS THE ONE THAT KEEPS THE REST HONEST: the file as it stands must be ACCEPTED. A
+# guard that refuses everything would pass all nineteen cases above and be useless.
+LONG_SENTENCE = (
+    "It is very old and it is very far away and it has been going for a long time and it will "
+    "go on for a long time after everybody reading this has stopped, which is the sort of "
+    "sentence that runs past what a card can print."
+)
 
-TOURS_YAML = """version: 1
-tours:
-  - id: strangest-things
-    display: The strangest things we sent
-    stops:
-      - target: {{record: {rid}}}
-        body: A stop written to exercise scripts/check_registry.py, and nothing else.
-"""
+TOUR_CASES: list[tuple[str, str, str]] = [
+    # (name, find, replace)
+    ("a stop that flies to something drawn on its carrier rather than to the carrier",
+     "        target: {record: deep-voyager-1}", "        target: {record: voyager-golden-record}"),
+    ("a stop that flies to an object nobody can place",
+     "        target: {record: tesla-roadster}", "        target: {record: bean-astronaut-pin}"),
+    ("a trip id that is also a layer id",
+     "  - id: people-in-space", "  - id: stations"),
+    ("a target that names two things at once",
+     "        target: {record: duke-family-photo}",
+     "        target: {record: duke-family-photo, world: earth}"),
+    ("a target that names a layer and not which member of it",
+     '        target: {layer: stations, catalog: "25544"}', "        target: {layer: stations}"),
+    ("a stop that hand-writes the class the record already knows",
+     "      - id: roadster\n", "      - id: roadster\n        class: measured\n"),
+    ("a stop aimed at a world with no worlds.yaml row",
+     "        target: {world: earth}", "        target: {world: europa}"),
+    ("a stop aimed at a site with no sites.yaml row",
+     "        target: {record: beresheet-lunar-library}", "        target: {site: apollo-18}"),
+    ("a trip requiring a layer nothing declares",
+     "requires: [oddities]", "requires: [oddballs]"),
+    ("a stop whose own layer requirement does not exist",
+     "needs_layer: deep-space", "needs_layer: deep-nothing"),
+    ("a framing inside the camera's own world-clearance floor",
+     "        frame_radii: 5.0\n", "        frame_radii: 0.9\n"),
+    ("a drift that cannot finish inside its own dwell",
+     "        drift_deg: 20\n", "        drift_deg: 340\n"),
+    ("a card sentence longer than the card can print",
+     "            Charlie Duke left a picture of his wife and two sons face-up on the Moon, took a\n"
+     "            photograph of it, and walked away.",
+     "            " + LONG_SENTENCE),
+    ("a card that uses jargon registry/glossary.yaml cannot explain",
+     "looping between the Earth and Mars", "looping around its own semi-major axis"),
+    ("a trip with fewer stops than its own floor",
+     "    min_stops: 3\n", "    min_stops: 8\n"),
+    ("a stage the rig has never been taught to fly",
+     "  stage: earth\n", "  stage: mars\n"),
+    ("a frozen clock on a trip that wants eleven thousand objects",
+     "    requires: [stations]\n    clock: as-found",
+     "    requires: [stations, active]\n    clock: freeze"),
+    ("an `on_unresolved` the state machine would quietly treat as a drop",
+     "  on_unresolved: drop\n", "  on_unresolved: fallback\n"),
+    ("two stops in one trip sharing an id",
+     "      - id: golf-balls", "      - id: duke-photo"),
+    ("a dwell written well below what its own words need",
+     "      - id: beresheet\n", "      - id: beresheet\n        dwell_ms: 1200\n"),
+    ("a stop on the `launches` layer, whose track is a drawing, claiming certainty",
+     '        target: {layer: stations, catalog: "25544"}\n        # Far enough back',
+     '        target: {layer: launches, catalog: "25544"}\n        # Far enough back'),
+]
 
 
 def check_tour_refusals() -> int:
-    """Write a tours.yaml that does not exist yet, and assert the validator reads it correctly."""
+    """Break each registry/tours.yaml rule on purpose, then assert the real file is accepted."""
     failures = 0
     with tempfile.TemporaryDirectory() as tmp:
-        for name, rid, want_refused in TOUR_CASES:
+        for name, find, replace in TOUR_CASES + [("the file as it stands", "", "")]:
             work = Path(tmp) / "work"
             if work.exists():
                 shutil.rmtree(work)
@@ -429,18 +467,26 @@ def check_tour_refusals() -> int:
             shutil.copytree(ROOT / "registry", work / "registry")
             shutil.copytree(ROOT / "scripts", work / "scripts")
             shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")
-            # A COMPLETE tree, unlike the mutation harness above, because one case here asserts
-            # the validator ACCEPTS a correctly written stop -- and an accept case cannot be run
-            # in a tree the validator already rejects for missing model files. Names, not bytes:
-            # the question is whether the row is refused, not whether a GLB parses.
+            # A COMPLETE tree, unlike the mutation harness above, because the last case asserts
+            # the validator ACCEPTS the file -- and an accept case cannot be run in a tree the
+            # validator already rejects for missing model files. Names, not bytes: the question is
+            # whether a row is refused, not whether a GLB parses.
             for src in ("site/models", "site/textures", "site/data"):
                 d = work / src
                 d.mkdir(parents=True, exist_ok=True)
                 for f in (ROOT / src).glob("*"):
                     if f.is_file():
                         (d / f.name).touch()
-            (work / "registry" / "tours.yaml").write_text(
-                TOURS_YAML.format(rid=rid), encoding="utf-8")
+
+            path = work / "registry" / "tours.yaml"
+            want_refused = bool(find)
+            if want_refused:
+                text = path.read_text(encoding="utf-8")
+                if find not in text:
+                    print(f"BROKEN TEST: {name!r} -- the string it mutates is not in tours.yaml")
+                    failures += 1
+                    continue
+                path.write_text(text.replace(find, replace, 1), encoding="utf-8")
 
             result = subprocess.run(
                 [sys.executable, "scripts/check_registry.py"],
@@ -457,8 +503,10 @@ def check_tour_refusals() -> int:
                 print(f"  ** {name}: {why}")
                 failures += 1
             else:
-                print(f"  ** {name}: was refused, and it is the correct way to write the stop")
-                print("     " + out.strip().splitlines()[-1] if out.strip() else "")
+                print(f"  ** {name}: the shipped registry/tours.yaml does not validate, so every "
+                      f"case above is a tautology")
+                for line in out.strip().splitlines():
+                    print("     " + line)
                 failures += 1
     return failures
 
@@ -554,9 +602,9 @@ def main() -> int:
     if failures:
         print(f"\n{failures} guard(s) do not do what they claim")
         return 1
-    refusals = len(CASES) + len(COPY_CASES) + sum(1 for c in TOUR_CASES if c[2])
-    print(f"\nall {refusals} refusals fire and each names its file, and the one correctly "
-          f"written tour stop is accepted")
+    refusals = len(CASES) + len(COPY_CASES) + len(TOUR_CASES)
+    print(f"\nall {refusals} refusals fire and each names its file, and registry/tours.yaml "
+          f"as it stands is accepted")
     return 0
 
 

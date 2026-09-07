@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Mirror registry/oddities.yaml into site/js/data/oddities.js, and refuse if it has drifted.
 
-Copied from scripts/gen_rockets_js.py, for the same reason and with the same discipline: the
-browser never parses YAML, so a registry a human edits needs a mirror a browser reads, and a
-hand-kept mirror drifts. registry/models.yaml and the BUILDERS table in scene/models.js already
-did, with nothing checking them.
+The mechanism -- read the YAML, whitelist, write `export const`, refuse a stale file -- moved to
+scripts/_genmirror.py when registry/tours.yaml became the third registry needing it. What stays
+here is everything that is about ODDITIES: the header a reader finds at the top of the mirror, the
+whitelist, and the one transform that strips a reviewer's citations out of `where:`.
 
 WHAT IS AND IS NOT SHIPPED. `FIELDS` is a whitelist, so a field added to the YAML reaches a phone
 only when somebody decides it should:
@@ -32,15 +32,12 @@ Run:  python3 scripts/gen_oddities_js.py           # write it
 
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 
-import yaml
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-ROOT = Path(__file__).resolve().parent.parent
-SOURCE = ROOT / "registry" / "oddities.yaml"
-TARGET = ROOT / "site" / "js" / "data" / "oddities.js"
+from _genmirror import Mirror, drop, pick  # noqa: E402
 
 FIELDS = (
     "id",
@@ -74,27 +71,11 @@ HEADER = """// GENERATED from registry/oddities.yaml by scripts/gen_oddities_js.
 // source was used -- stays in the YAML and is not shipped. `cite` is the one line the card prints.
 //
 // The records these rows become are built hand-written next door in data/sample.js.
-
 """
 
 
-def render() -> str:
-    doc = yaml.safe_load(SOURCE.read_text(encoding="utf-8")) or {}
-    rows = doc.get("oddities") or []
-    out = [row_of(r) for r in rows]
-    body = json.dumps(out, indent=2, ensure_ascii=False, default=str)
-    observed_on = str(doc.get("observed_on") or "")
-    return (
-        HEADER
-        + "/** When registry/oddities.yaml was last checked against its sources. */\n"
-        + f"export const ODDITIES_OBSERVED_ON = {json.dumps(observed_on)};\n\n"
-        + "/** Every odd thing we sent, and the evidence for where it is now. */\n"
-        + f"export const ODDITIES = {body};\n"
-    )
-
-
 def row_of(r: dict) -> dict:
-    out = {k: r[k] for k in FIELDS if k in r}
+    out = pick(r, FIELDS)
     where = out.get("where")
     if isinstance(where, dict):
         out["where"] = strip_sources(where)
@@ -102,32 +83,37 @@ def row_of(r: dict) -> dict:
 
 
 def strip_sources(where: dict) -> dict:
-    clean = {k: v for k, v in where.items() if k not in WHERE_DROP}
+    clean = drop(where, WHERE_DROP)
     for key in ("anchor", "object"):
         block = clean.get(key)
         if isinstance(block, dict):
-            clean[key] = {k: v for k, v in block.items() if k not in WHERE_DROP}
+            clean[key] = drop(block, WHERE_DROP)
     return clean
 
 
-def main(argv: list[str]) -> int:
-    want = render()
-    if "--check" in argv:
-        have = TARGET.read_text(encoding="utf-8") if TARGET.exists() else ""
-        if have == want:
-            print(f"oddities.js is current ({want.count(chr(10))} lines from registry/oddities.yaml)")
-            return 0
-        print(
-            "site/js/data/oddities.js is STALE.\n\n"
-            "  registry/oddities.yaml has changed and the mirror the browser loads has not.\n"
-            "  Run: python3 scripts/gen_oddities_js.py"
-        )
-        return 1
-    TARGET.parent.mkdir(parents=True, exist_ok=True)
-    TARGET.write_text(want, encoding="utf-8")
-    print(f"wrote {TARGET.relative_to(ROOT)}")
-    return 0
+def render(doc: dict) -> list[tuple[str, str, object]]:
+    return [
+        (
+            "When registry/oddities.yaml was last checked against its sources.",
+            "ODDITIES_OBSERVED_ON",
+            str(doc.get("observed_on") or ""),
+        ),
+        (
+            "Every odd thing we sent, and the evidence for where it is now.",
+            "ODDITIES",
+            [row_of(r) for r in (doc.get("oddities") or [])],
+        ),
+    ]
+
+
+MIRROR = Mirror(
+    source="registry/oddities.yaml",
+    target="site/js/data/oddities.js",
+    header=HEADER,
+    render=render,
+    what="oddities.js",
+)
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    sys.exit(MIRROR.main(sys.argv[1:]))

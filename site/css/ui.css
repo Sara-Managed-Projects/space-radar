@@ -325,6 +325,36 @@
   line-height: 1.45;
 }
 
+/* The trip lead -- block 0, and only during a guided trip ----------------------------
+ *
+ * Enough type to be legible the day it ships, and no more. The cinematic frame around it --
+ * the letterbox, the panel going inert, the "More about this" disclosure that folds the
+ * ordinary card away behind this one -- is the next spec, and this block is deliberately
+ * styled so that it reads correctly WITHOUT any of that: the stop's words on top, the object's
+ * own card underneath, which is exactly what it is.
+ */
+
+.sr-card__lead {
+  padding-bottom: 12px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--sr-line);
+}
+
+.sr-card__leadtitle {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.sr-card__leadbody {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--sr-text);
+}
+
 /* Comparison chips -- at most three, scale first ------------------------------------- */
 
 .sr-chips {

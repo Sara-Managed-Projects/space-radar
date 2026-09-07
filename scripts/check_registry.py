@@ -165,23 +165,119 @@ def time_relative(text: str) -> str | None:
     return None
 
 
-def check_tour_targets(oddities_doc: dict) -> None:
-    """registry/tours.yaml, when it exists: a stop may not fly to something that is not on the map.
+TOUR_TARGET_KEYS = ("record", "layer", "world", "site")
+TOUR_PACING = {"auto", "reader"}
+TOUR_CLOCKS = {"as-found", "live", "freeze"}
+TOUR_DRIFTS = {"toward-light", "away", "none"}
+TOUR_EASES = {"auto", "ui", "inout", "cruise", "linear"}
+# `fallback` is in the design and is not shipped: the one stop that needed it was the `view:`
+# stop, which is not shipped either. Refusing it by name is better than accepting a value the
+# state machine would silently treat as `drop`.
+TOUR_ON_UNRESOLVED = {"drop", "hold"}
+TOUR_STAGES = {"earth"}
+TOUR_MAX_TITLE = 60
+TOUR_MIN_STOPS_FLOOR = 3
+# The camera's own world-clearance floor (scene/camera.js WORLD_CLEARANCE). Below it the rig
+# pushes the camera back out and the framing this row asked for is silently ignored.
+TOUR_MIN_FRAME_RADII = 1.02
 
-    THIS GUARD IS WRITTEN BEFORE THE FILE IT GUARDS, and that is the point. A cinematic tour
-    resolves each stop through `ctx.recordById(...)`, and two of the eight rows in
-    registry/oddities.yaml deliberately do not answer to it:
+# The dwell, and it is computed from the WORD COUNT and never from the flight duration --
+# scripts/gen_tours_js.py writes the same three numbers into the mirror. A drift that cannot
+# finish inside its own dwell, with the 0.4 s lead before it starts and the 1.5 s tail that lets
+# the shot settle before the cut, is a drift the shot cannot hold.
+TOUR_DWELL_BASE_MS = 2500
+TOUR_DWELL_PER_WORD_MS = 333
+TOUR_DWELL_MIN_MS = 8000
+TOUR_DWELL_MAX_MS = 20000
+TOUR_DRIFT_MARGIN_S = 1.9
+# A human may lengthen a dwell freely and may not rush a reader: a written dwell more than this
+# far below the computed one is refused.
+TOUR_DWELL_SLACK = 0.30
+
+# The layers whose records are ALWAYS a drawing. registry/layers.yaml says it in `launches`'s own
+# row: the real ascent track is not published, so the arc is illustrative and the card prints
+# that. A stop there may not write copy that claims otherwise. This is what survives of the
+# design's hand-authored `class:` field, which is refused below -- the intent was right and the
+# mechanism was a field a human could use to contradict the record.
+TOUR_ILLUSTRATIVE_LAYERS = {"launches"}
+TOUR_CERTAINTY_WORDS = ("exactly", "precisely", "measured", "to the metre", "confirmed")
+
+# Jargon a beginner's card may not use unless registry/glossary.yaml can explain it. THE CHECK IS
+# THE PAIR, not the list: a word here that IS in the glossary passes, because the app can say what
+# it means. Every word below is genuinely absent from the glossary today, which is what gives the
+# guard teeth -- a stoplist whose every entry is already covered would never fire.
+#
+# Trip copy is the most naive surface in the product, written for somebody who has never used it,
+# and jargon re-enters through exactly this door one word at a time.
+TOUR_JARGON = (
+    "delta-v",
+    "sun-synchronous",
+    "apoapsis",
+    "periapsis",
+    "true anomaly",
+    "argument of perigee",
+    "osculating",
+    "barycentre",
+    "libration",
+    "station-keeping",
+    "insertion burn",
+    "right ascension",
+    "semi-major axis",
+)
+
+
+def tour_dwell_ms(body: str) -> int:
+    n = len(str(body or "").split())
+    return max(
+        TOUR_DWELL_MIN_MS,
+        min(TOUR_DWELL_MAX_MS, TOUR_DWELL_BASE_MS + n * TOUR_DWELL_PER_WORD_MS),
+    )
+
+
+def unreachable_oddities(oddities_doc: dict) -> dict:
+    """The rows a `target: {record: ...}` may never name, each with the reason a stop can act on.
+
+    A cinematic tour resolves each stop through `ctx.recordById(...)`, and two of the eight rows
+    in registry/oddities.yaml deliberately do not answer to it:
 
       * an `attached` row is drawn as a child of its carrier's model and is not a record at all,
-        so `recordById('voyager-golden-record')` is null. A tour that names it loses its best
-        stop silently, because an unresolved stop is dropped and the count is printed after.
-        Target the CARRIER instead -- which is also where the object physically is.
+        so `recordById('voyager-golden-record')` is null. A tour that names it loses its best stop
+        SILENTLY, because an unresolved stop is dropped and the count is printed after. Target the
+        CARRIER instead -- which is also where the object physically is.
       * an `unknown` row has no propagator by construction, so there is nowhere to fly to. A
         camera move to a record with no position is a camera move to the origin.
 
     Both are one-line mistakes that look right in YAML and fail as a stop that quietly is not
-    there, so they are refused at the point the file is written rather than found in a browser.
-    When registry/tours.yaml does not exist -- which is today -- this does nothing at all.
+    there, which is why they are refused at the point the file is written.
+    """
+    out = {}
+    for r in (oddities_doc.get("oddities") or []):
+        kind = (r.get("where") or {}).get("kind")
+        if kind == "attached":
+            carrier = (r.get("where") or {}).get("to")
+            out[r.get("id")] = (
+                f"it is not a record -- it is drawn on its carrier's model. "
+                f"Target `{carrier}` instead, which is where the object actually is"
+            )
+        elif kind == "unknown":
+            out[r.get("id")] = (
+                "nobody knows where it is, so it has no position and there is nowhere to fly to"
+            )
+    return out
+
+
+def check_tours(oddities_doc: dict, layer_ids: set, world_ids: set, site_ids: set,
+                glossary: set) -> None:
+    """registry/tours.yaml: a trip may not promise a stop it will not deliver.
+
+    That is the whole file, and every refusal below is it in different clothes. Two of them exist
+    because two REGISTRIES can lie about each other -- a trip naming an oddity that is not a
+    record, and a trip id colliding with a layer id -- and those are the ones a reviewer should
+    read hardest, because nothing else in the repository would notice.
+
+    tests/test_refusals.py breaks each rule on purpose. When registry/tours.yaml does not exist
+    this does nothing at all: the guard predates the file it guards and outlived being the only
+    thing in it.
     """
     path = REG / "tours.yaml"
     if not path.exists():
@@ -192,32 +288,237 @@ def check_tour_targets(oddities_doc: dict) -> None:
         fail("tours.yaml", f"will not parse: {exc}")
         return
 
-    unreachable = {}
-    for r in (oddities_doc.get("oddities") or []):
-        kind = (r.get("where") or {}).get("kind")
-        if kind == "attached":
-            carrier = (r.get("where") or {}).get("to")
-            unreachable[r.get("id")] = (
-                f"it is not a record -- it is drawn on its carrier's model. "
-                f"Target `{carrier}` instead, which is where the object actually is"
-            )
-        elif kind == "unknown":
-            unreachable[r.get("id")] = (
-                "nobody knows where it is, so it has no position and there is nowhere to fly to"
-            )
+    unreachable = unreachable_oddities(oddities_doc)
+    defaults = doc.get("defaults") or {}
+    tours = doc.get("tours")
+    if not isinstance(tours, list):
+        fail("tours.yaml", "no `tours:` list")
+        return
 
-    for tour in (doc.get("tours") or []):
+    seen_trips: set[str] = set()
+    for tour in tours:
         if not isinstance(tour, dict):
+            fail("tours.yaml", f"a trip is not a mapping: {tour!r}")
             continue
         tid = tour.get("id")
-        for n, stop in enumerate(tour.get("stops") or [], start=1):
-            if not isinstance(stop, dict):
-                continue
-            target = stop.get("target")
-            rid = target.get("record") if isinstance(target, dict) else None
-            if rid in unreachable:
-                fail(f"tours.yaml[{tid}] stop {n}",
-                     f"targets `{rid}` and {unreachable[rid]}")
+        where = f"tours.yaml[{tid}]"
+        if not tid:
+            fail("tours.yaml", "a trip has no id")
+            continue
+        if tid in seen_trips:
+            fail(where, "duplicate trip id")
+        seen_trips.add(tid)
+
+        # TWO REGISTRIES, ONE WORD, TWO MEANINGS. `oddities` is a layer; the trip that visits it
+        # is `strangest-things`. Cheap to refuse, and it prevents the whole class of bug where
+        # somebody cross-references by bare id and gets the other registry's row.
+        if tid in layer_ids:
+            fail(where, f"a trip id may not be a layer id: `{tid}` is a row in layers.yaml, and a "
+                        f"cross-reference by bare id would resolve to the wrong registry")
+
+        title = tour.get("title")
+        if not title:
+            fail(where, "no `title:` -- it is what a visitor reads before deciding")
+        elif len(str(title)) > TOUR_MAX_TITLE:
+            fail(where, f"title is {len(str(title))} characters, over {TOUR_MAX_TITLE}")
+        if not tour.get("blurb"):
+            fail(where, "no `blurb:` -- one sentence saying what this is")
+
+        pacing = tour.get("pacing", defaults.get("pacing"))
+        if pacing not in TOUR_PACING:
+            fail(where, f"pacing `{pacing}` is not one of {sorted(TOUR_PACING)}")
+
+        stage = tour.get("stage", defaults.get("stage"))
+        if stage not in TOUR_STAGES:
+            fail(where, f"stage `{stage}` is not supported. The rig is told its world radius once, "
+                        f"at boot, and nothing subscribes to `sr:stage`, so a trip crossing stages "
+                        f"would fly with its clearance sphere in the wrong place and its distances "
+                        f"wrong by 1000x. `earth` is the only honest value today")
+
+        clock = tour.get("clock", defaults.get("clock"))
+        if clock not in TOUR_CLOCKS:
+            fail(where, f"clock `{clock}` is not one of {sorted(TOUR_CLOCKS)}")
+
+        requires = tour.get("requires") or []
+        if not isinstance(requires, list):
+            fail(where, "`requires:` must be a list of layer ids")
+            requires = []
+        for lid in requires:
+            if lid not in layer_ids:
+                fail(where, f"requires layer `{lid}`, which has no layers.yaml row")
+
+        # Freezing the clock flips it from live to scrub, which drops glyph re-propagation from
+        # every 100 ms to EVERY FRAME (site/js/main.js). With `active` on that is eleven thousand
+        # SGP4 propagations per frame.
+        if clock == "freeze" and "active" in requires:
+            fail(where, "`clock: freeze` on a trip that requires `active`: freezing flips the "
+                        "clock to scrub, which re-propagates every object every frame instead of "
+                        "every 100 ms, and `active` is eleven thousand of them")
+
+        min_stops = tour.get("min_stops", defaults.get("min_stops", TOUR_MIN_STOPS_FLOOR))
+        if not isinstance(min_stops, int) or min_stops < TOUR_MIN_STOPS_FLOOR:
+            fail(where, f"`min_stops: {min_stops!r}` -- below {TOUR_MIN_STOPS_FLOOR} it is a link, "
+                        f"not a trip")
+            min_stops = TOUR_MIN_STOPS_FLOOR
+
+        stops = tour.get("stops")
+        if not isinstance(stops, list) or not stops:
+            fail(where, "no `stops:` list")
+            continue
+        if len(stops) < min_stops:
+            fail(where, f"{len(stops)} stops, below its own `min_stops: {min_stops}` -- a trip that "
+                        f"cannot reach its own floor on a perfect day will never reach it")
+
+        seen_stops: set[str] = set()
+        for n, stop in enumerate(stops, start=1):
+            check_tour_stop(tour, stop, n, seen_stops, defaults, unreachable,
+                            layer_ids, world_ids, site_ids, glossary)
+
+
+def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: dict,
+                    unreachable: dict, layer_ids: set, world_ids: set, site_ids: set,
+                    glossary: set) -> None:
+    tid = tour.get("id")
+    where = f"tours.yaml[{tid}] stop {n}"
+    if not isinstance(stop, dict):
+        fail(where, f"is not a mapping: {stop!r}")
+        return
+    sid = stop.get("id")
+    if not sid:
+        fail(where, "no `id:` -- a stop is addressable and needs a name")
+    elif sid in seen_stops:
+        fail(where, f"duplicate stop id `{sid}` within this trip")
+    else:
+        seen_stops.add(sid)
+    where = f"tours.yaml[{tid}] stop {n} ({sid})" if sid else where
+
+    # THE FIELD THAT DOES NOT EXIST. The design gave each stop a hand-authored
+    # `class: measured | inferred | illustrative | sample`. A hand-authored class can only repeat
+    # what the record already knows or contradict it, and the validator would have passed the
+    # contradiction -- a field whose only power is to state a falsehood the app knows better than.
+    if "class" in stop:
+        fail(where, "`class:` is not a field here. The card prints the RECORD's own class; a "
+                    "hand-written one can only contradict it, and the validator could not tell "
+                    "which of the two was right")
+
+    target = stop.get("target")
+    if not isinstance(target, dict):
+        fail(where, "no `target:` mapping")
+        return
+    named = [k for k in TOUR_TARGET_KEYS if k in target]
+    if len(named) != 1:
+        fail(where, f"`target:` names {len(named)} of {list(TOUR_TARGET_KEYS)} "
+                    f"({', '.join(named) or 'none'}); it must name exactly one. A target with two "
+                    f"keys resolves to something plausible, which is the failure this file exists "
+                    f"to prevent")
+        return
+    kind = named[0]
+    value = target[kind]
+
+    if kind == "record":
+        if value in unreachable:
+            fail(where, f"targets `{value}` and {unreachable[value]}")
+    elif kind == "world":
+        if value not in world_ids:
+            fail(where, f"targets world `{value}`, which has no worlds.yaml row")
+    elif kind == "site":
+        if value not in site_ids:
+            fail(where, f"targets site `{value}`, which has no sites.yaml row")
+    elif kind == "layer":
+        if value not in layer_ids:
+            fail(where, f"targets layer `{value}`, which has no layers.yaml row")
+        if "catalog" not in target and "query" not in target:
+            fail(where, f"targets layer `{value}` and says nothing about WHICH member. Add "
+                        f"`catalog:` (a NORAD number) or `query:`; a layer on its own is not a "
+                        f"place the camera can go")
+        if value in TOUR_ILLUSTRATIVE_LAYERS:
+            body = str((stop.get("card") or {}).get("body") or "").lower()
+            for word in TOUR_CERTAINTY_WORDS:
+                if word in body:
+                    fail(where, f"is on the `{value}` layer, whose own layers.yaml row says the "
+                                f"track is a DRAWING, and its card says \"{word}\". A stop there "
+                                f"may not write copy that claims certainty the layer cannot back")
+
+    needs = stop.get("needs_layer")
+    if needs is not None and needs not in layer_ids:
+        fail(where, f"`needs_layer: {needs}` has no layers.yaml row")
+
+    on_unresolved = stop.get("on_unresolved", defaults.get("on_unresolved", "drop"))
+    if on_unresolved not in TOUR_ON_UNRESOLVED:
+        fail(where, f"`on_unresolved: {on_unresolved}` is not one of "
+                    f"{sorted(TOUR_ON_UNRESOLVED)}. `fallback` is designed and not shipped, and a "
+                    f"value the state machine would quietly treat as `drop` is worse than a "
+                    f"refusal")
+
+    drift = stop.get("drift", defaults.get("drift", "toward-light"))
+    if drift not in TOUR_DRIFTS:
+        fail(where, f"`drift: {drift}` is not one of {sorted(TOUR_DRIFTS)}")
+    ease = stop.get("ease", defaults.get("ease", "auto"))
+    if ease not in TOUR_EASES:
+        fail(where, f"`ease: {ease}` is not one of {sorted(TOUR_EASES)}")
+
+    frame_radii = stop.get("frame_radii", defaults.get("frame_radii"))
+    if frame_radii is not None:
+        if not is_number(frame_radii):
+            fail(where, f"`frame_radii: {frame_radii!r}` must be a number")
+        elif frame_radii < TOUR_MIN_FRAME_RADII:
+            fail(where, f"`frame_radii: {frame_radii}` is inside the camera's own world-clearance "
+                        f"floor of {TOUR_MIN_FRAME_RADII}: the rig would push the camera straight "
+                        f"back out and this framing would be silently ignored")
+    distance_km = stop.get("distance_km")
+    if distance_km is not None and (not is_number(distance_km) or distance_km <= 0):
+        fail(where, f"`distance_km: {distance_km!r}` must be a positive number of kilometres")
+
+    card = stop.get("card")
+    if not isinstance(card, dict):
+        fail(where, "no `card:` -- a stop with no words is a camera move, not a stop")
+        return
+    title = card.get("title")
+    body = card.get("body")
+    if not title:
+        fail(where, "the card has no `title:`")
+    elif len(str(title)) > TOUR_MAX_TITLE:
+        fail(where, f"card title is {len(str(title))} characters, over {TOUR_MAX_TITLE}")
+    if not body:
+        fail(where, "the card has no `body:`")
+        return
+    first = str(body).split(". ")[0]
+    if len(first) > MAX_SENTENCE:
+        fail(where, f"the card's first sentence is {len(first)} characters, over {MAX_SENTENCE} "
+                    f"-- which is where ui/cards.js would truncate it, and half a sentence is how "
+                    f"a card ends up saying half of something")
+    low = str(body).lower() + " " + str(title or "").lower()
+    for word in TOUR_JARGON:
+        if word in low and word not in glossary:
+            fail(where, f"the card says \"{word}\" and registry/glossary.yaml has no entry for it. "
+                        f"Either add the term there -- two lines, written for a curious "
+                        f"fourteen-year-old -- or say it in words a beginner already has")
+
+    dwell = stop.get("dwell_ms")
+    computed = tour_dwell_ms(body)
+    if dwell is not None:
+        if not is_number(dwell):
+            fail(where, f"`dwell_ms: {dwell!r}` must be a number of milliseconds")
+        elif dwell < computed * (1 - TOUR_DWELL_SLACK):
+            fail(where, f"`dwell_ms: {dwell}` is more than "
+                        f"{int(TOUR_DWELL_SLACK * 100)}% below the {computed} ms this card's "
+                        f"{len(str(body).split())} words need. A human may lengthen a dwell freely "
+                        f"and may not rush a reader")
+        else:
+            computed = dwell
+
+    drift_deg = stop.get("drift_deg", defaults.get("drift_deg", 0))
+    rate = stop.get("drift_rate_deg_s", defaults.get("drift_rate_deg_s", 6))
+    if not is_number(drift_deg) or drift_deg < 0:
+        fail(where, f"`drift_deg: {drift_deg!r}` must be a number of degrees, zero or more")
+    elif not is_number(rate) or rate <= 0:
+        fail(where, f"`drift_rate_deg_s: {rate!r}` must be a positive number")
+    elif drift_deg / rate > computed / 1000 - TOUR_DRIFT_MARGIN_S:
+        fail(where, f"a {drift_deg} degree drift at {rate} deg/s takes "
+                    f"{drift_deg / rate:.1f} s and this stop dwells for {computed / 1000:.1f} s. "
+                    f"It must finish inside its own dwell with the 0.4 s lead and the 1.5 s tail "
+                    f"that let the shot settle before the cut -- lengthen the card or slow the "
+                    f"turn")
 
 
 def check_oddities(doc: dict, world_ids: set, sites: list) -> None:
@@ -850,7 +1151,8 @@ def main() -> int:
             fail(where, "no `doing:` line -- a site card with nothing to say is a dot")
 
     check_oddities(oddities_doc, world_ids, sites)
-    check_tour_targets(oddities_doc)
+    check_tours(oddities_doc, layer_ids, world_ids, {s.get('id') for s in sites},
+                {str(t.get('term') or '').lower() for t in terms})
 
     # --- rockets -------------------------------------------------------------------
     # A row here decides what a launch is DRAWN as, and the card repeats the row's own claim
