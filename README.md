@@ -56,7 +56,8 @@ Escape leaves at any moment without moving the view.
 
 <div align="center">
 <img src="assets/readme/mobile.png" alt="Space Radar on a phone" width="300"><br>
-<sub><b>On a phone the sky is the product.</b> Two buttons; everything else is a drawer.</sub>
+<sub><b>On a phone the sky is the product.</b> Two buttons; everything else is a drawer, and every
+drawer closes — from its own Close row, from Escape, or by tapping the sky.</sub>
 </div>
 
 ---
@@ -266,7 +267,8 @@ site/                 the entire app, served as-is
   js/data/            fetching, caching, parsing, and the bundled sample data
   js/scene/           renderer, stage, worlds, Earth shader, starfield, glyphs, models
   js/sky/             pass prediction and the ground-up view
-  js/ui/              cards, controls, the sources panel, and the trip
+  js/ui/              cards, controls, the sources panel, the phone drawers, the trip, and the
+                      GitHub link in the corner
   vendor/             three.js, satellite.js, astronomy-engine
   models/             twenty-nine NASA models, loaded one at a time when you get close
   textures/ data/     planet textures and the star catalogue
@@ -370,6 +372,12 @@ node scripts/shots.mjs --base=http://127.0.0.1:8177 --out=assets/readme
 
 The project's own code is [MIT](LICENSE). Vendored libraries, textures and catalogues keep their
 own licences — all of them are listed in [CREDITS.md](CREDITS.md), and all of them permit this use.
+
+One thing in the page is neither ours nor licensed to us: the **GitHub mark** in the top corner is
+GitHub's trademark, drawn from GitHub's own published file, **unmodified**, because that is the
+condition on which their brand guidelines allow it to link to GitHub. `CREDITS.md` §4.6 says where
+it came from and how that was checked, and `scripts/check_registry.py` refuses a `marks` row that
+claims the glyph was changed.
 
 <div align="center">
 <sub>Built with real orbital mechanics and a lot of respect for the people who publish the data for free.</sub>

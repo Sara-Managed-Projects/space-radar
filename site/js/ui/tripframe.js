@@ -92,7 +92,10 @@ const PHASE_ATTR = 'data-trip-phase';
 
 // The panels that must not be reachable while the picture is the point. `inert` and not merely
 // `opacity: 0` -- see setChromeHidden().
-const CHROME = ['sr-controls', 'sr-status'];
+// Everything the cinematic mode takes away. ADDING A PIECE OF CHROME IS A ROW HERE -- the
+// GitHub mark was the third, and a mark left sitting in the corner of a full-screen flight
+// is exactly the kind of thing that gets noticed only in a screenshot.
+const CHROME = ['sr-controls', 'sr-status', 'sr-mark'];
 const MOBILE_BAR = '.sr-mobilebar';
 
 const MINUTE_MS = 60000;

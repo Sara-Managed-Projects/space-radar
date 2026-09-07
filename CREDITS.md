@@ -356,8 +356,34 @@ files, that condition attaches to your copy too.
 ## 4.6 Third-party trademarks the app names or draws
 
 None of the marks below is licensed to this project and none is used as a badge of origin. They are
-named because naming what a thing actually is, is the point of the card it appears on. No wordmark,
-logo or typeface belonging to any of them is reproduced.
+named because naming what a thing actually is, is the point of the card it appears on. With the one
+exception recorded first, no wordmark, logo or typeface belonging to any of them is reproduced.
+
+### The GitHub logo — the one third-party logo this app draws
+
+The link in the top corner of the page draws **GitHub's own mark** (the "Invertocat").
+**GitHub logo © GitHub, Inc.** It is a trademark of GitHub, Inc., it is **not licensed to this
+project**, and it is not a badge of origin: it marks a link to this project's repository on
+GitHub, which is the use GitHub's brand guidelines permit.
+
+* **What ships.** An inline SVG `path` in `site/js/ui/github.js`, and nothing else — no image file
+  is added to the tree. The `registry/models.yaml` row is `marks[github-invertocat]`.
+* **Where it came from, measured.** `icons/mark-github-24.svg` in GitHub's own
+  [primer/octicons](https://github.com/primer/octicons), git blob
+  `81949e7b460a7bbf1cb2431462f6bd947e32f0ce`, fetched 2026-09-07. The `d` attribute in
+  `github.js` was compared byte for byte against that file's and is identical. The blob sha was
+  read back from GitHub's contents API for the same path, so the file the hash describes is the
+  file upstream serves — not a hash of something recalled.
+* **It is unmodified, and that is the condition.** The path data is untouched. The only thing
+  applied to it is `fill: currentColor`, which is how the published file already asks to be
+  coloured — it carries no fill of its own — so the app's dim-text token tints the glyph without
+  altering the shape. Nothing is drawn beside it, nothing is lettered next to it, and the glyph is
+  not restyled. `scripts/check_registry.py` refuses a `marks` row whose `modified` field is
+  anything but empty, because a modified logo is a logo used outside the permission.
+* **What this is not.** It is not original work of this project, it is not covered by this
+  project's MIT licence, and a fork that keeps it is using GitHub's mark under GitHub's terms, not
+  under ours. octicons' own code is MIT; the trademark in the drawing is not, and MIT on the
+  repository does not license the mark.
 
 * **LEGO** is a trademark of the LEGO Group, and in the EU the *minifigure shape itself* is a
   registered three-dimensional mark, independent of any copyright in a model. The `oddities` layer

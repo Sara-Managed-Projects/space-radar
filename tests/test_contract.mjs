@@ -47,6 +47,7 @@ const CONTRACT = {
   'ui/trip.js': ['createTrip'],
   'ui/tripframe.js': ['createTripFrame', 'shapeLine'],
   'ui/status.js': ['createStatus'],
+  'ui/github.js': ['createGitHubMark'],
   'copy/en.js': ['COPY', 'compare'],
 };
 

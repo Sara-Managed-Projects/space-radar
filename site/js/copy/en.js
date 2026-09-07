@@ -910,10 +910,27 @@ export const COPY = {
 
   // The phone's bottom bar. It lives in ui/mobile.js, which wrote these three strings itself
   // until scripts/check_copy.py was finally written and found them on its first run.
+  //
+  // `close` / `closeTitle` are the sticky Close row at the top of each drawer. The drawer is 62%
+  // of a phone screen and z-orders OVER the bar that opened it, so before this row the only way
+  // out was to reload: tapping where "Layers" is drawn hit a layer checkbox underneath and
+  // silently turned a layer off. `closeTitle` takes the panel's own label so that adding a
+  // drawer stays one row in ui/mobile.js's PANELS table.
   mobile: {
     barLabel: 'Panels',
     layers: 'Layers',
     sources: 'Sources',
+    close: 'Close',
+    closeTitle: 'Close {panel}',
+  },
+
+  // The GitHub mark in the top corner. `href` is here rather than in ui/github.js for the same
+  // reason the words are: it is the one line a human edits when the repository moves, and it
+  // should not be hunted for inside a module.
+  mark: {
+    label: 'Source on GitHub',
+    title: 'Space Radar source code on GitHub',
+    href: 'https://github.com/Sara-Managed-Projects/space-radar',
   },
 
   glossary: {

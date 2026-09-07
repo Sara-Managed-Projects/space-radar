@@ -96,13 +96,19 @@ fi
 
 if [ "$WHAT" != "assets" ]; then
   echo "==> the app"
+  # CSS FIRST, AND THE ORDER IS THE POINT. Between the two syncs there is a window in which a
+  # visitor can load one half of a release, and the two halves are not equally safe: old JS with
+  # new CSS is a stylesheet with a few unused rules in it, while new JS with old CSS is markup
+  # nothing styles -- which is exactly what a phone was served once, and the trip rows came back
+  # as centred grey bullets with their three lines run together. Uploading js first guaranteed
+  # the wrong half of that window. Do not swap these back.
+  "${SYNC[@]}" "$SITE/css" "s3://$BUCKET/css" \
+    --cache-control "no-cache" --content-type "text/css; charset=utf-8" --delete
   # --exclude '*.md': the module contract documents the modules for whoever edits them. It is not code
   # and has no business being served as JavaScript.
   "${SYNC[@]}" "$SITE/js"  "s3://$BUCKET/js" \
     --cache-control "no-cache" --content-type "text/javascript; charset=utf-8" \
     --exclude "*.md" --delete
-  "${SYNC[@]}" "$SITE/css" "s3://$BUCKET/css" \
-    --cache-control "no-cache" --content-type "text/css; charset=utf-8" --delete
   if [ "$DRY_RUN" = "1" ]; then
     echo "  would upload index.html"
   else
