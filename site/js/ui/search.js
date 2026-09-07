@@ -13,12 +13,17 @@
 //
 //  1. THE INDEX IS FLAT. Records arrive over several seconds and there can be 17 579 of them.
 //     Parallel arrays of already-lower-cased strings, built once per layer-load burst, so a
-//     keystroke is one linear pass of indexOf and nothing else. MEASURED on 17 579 synthetic
-//     records with real names (node 24, M-series Mac): building the whole index takes 3.7-7.9 ms,
-//     and one query -- the 17 579 indexOf calls PLUS the sort and the de-duplication -- has a
-//     median of 0.4-0.5 ms for a query a person types ("iss", "dragon", "25544") and a worst case
-//     of 2.1 ms on "st", which matches 12 001 objects. A keystroke costs a fraction of a frame,
-//     so neither a worker nor an incremental structure is worth its weight.
+//     keystroke is one linear pass of indexOf and nothing else.
+//
+//     MEASURED IN THE BROWSER, on the live catalogue -- 17 537 real records, Chrome on an
+//     M-series Mac, not a bench in node: building the whole index takes 19.8 ms, and ONE QUERY
+//     (17 537 indexOf calls plus the sort and the de-duplication) has a median of 0.4-0.9 ms for
+//     the queries a person types -- "iss" 0.6, "25544" 0.7, "dragon" 0.4, "noaa" 0.4. The worst
+//     case is a two-letter prefix of the biggest constellation: "st" matches 11 384 objects and
+//     costs a median of 3.9 ms, 7.8 ms at its worst, nearly all of it the sort. That is inside
+//     one 60 Hz frame, and the input is debounced besides, so neither a worker nor an
+//     incremental structure earns its weight. (The same code in node 24 is 3-4x faster; the
+//     browser number is the one that matters, so the browser number is the one written down.)
 //
 //  2. THE DROPDOWN IS IN FLOW, not absolutely positioned. `.sr-controls` is a scroll container
 //     (`overflow-y: auto`, and on a phone it is a 62vh drawer), so an absolutely positioned
