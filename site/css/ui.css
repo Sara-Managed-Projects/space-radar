@@ -403,6 +403,7 @@
 }
 
 .sr-card__cls,
+.sr-card__drawn,
 .sr-card__source {
   margin: 0 0 4px;
   font-size: 11.5px;
@@ -412,6 +413,11 @@
 
 .sr-card__cls {
   font-variant-numeric: tabular-nums;
+  color: var(--sr-text);
+}
+
+/* "What you are looking at": the shape's own claim about itself, beside the position class. */
+.sr-card__drawn {
   color: var(--sr-text);
 }
 

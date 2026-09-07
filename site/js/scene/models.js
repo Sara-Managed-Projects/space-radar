@@ -18,6 +18,9 @@
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { CLASS_COLOURS, PALETTE } from './glyphatlas.js';
+// A data TABLE, not a data source: the rows a rocket is composed from, generated from
+// registry/rockets.yaml. Same direction glyphatlas.js is already imported in.
+import { ROCKET_BY_ID, GENERIC_ROCKET } from '../data/rocketmatch.js';
 
 // ------------------------------------------------------------------ the one toon material family
 
@@ -346,45 +349,369 @@ function buildDebris(variant) {
 }
 
 // -------------------------------------------------------------------------------------- rocket
+//
+// A rocket is not a shape in this file any more: it is a row in registry/rockets.yaml, mirrored
+// into data/rockets.js and matched to a launch in data/rocketmatch.js. buildRocket(variant) reads
+// that row and composes it, so adding a rocket is a row and never a change here.
+//
+// THE ONE IDEA: everything below is built in METRES -- real fairing diameters, real booster
+// lengths, a real 18 m Electron next to a real 121 m Starship -- and normalised by a single
+// `1 / height_m` at the end. That is why the proportions come out right with nothing tuned per
+// family, and it is most of what "realistic" reads as at 84 px.
+//
+// The shading stays a lie everyone can see: the same three-tone toon ramp, the same rim light.
+// The silhouette is the truth claim; the card says whether it is this vehicle, its family, or a
+// stand-in with no dimensions behind it at all.
 
-function buildRocket() {
+const ROCKET_BODY = '#EEF2F7'; // the neutral white a `livery: unknown` row draws in
+const ROCKET_FOIL = '#9BA6B4';
+const ROCKET_NOZZLE = '#A9825C';
+
+const CORE_SEG = 16;
+const BOOSTER_SEG = 12;
+const BELL_SEG = 8;
+
+/**
+ * Which colour goes on which zone. A row with `livery: unknown` -- 14 of the families here, and
+ * that is a real gap and not a soft one -- gets the neutral default everywhere, and the card
+ * says NOTHING about colour. We do not write "colour unknown" on a card; we never claim one.
+ */
+function liveryOf(s) {
+  const l = s.livery && typeof s.livery === 'object' ? s.livery : {};
+  const hex = (v) => (typeof v === 'string' && v.charAt(0) === '#' ? v : null);
+  const body = hex(l.body) || ROCKET_BODY;
+  return {
+    body,
+    nose: hex(l.nose) || body,
+    tail: hex(l.tail),
+    interstage: hex(l.interstage) || ROCKET_FOIL,
+    boosters: hex(l.boosters) || body,
+  };
+}
+
+/** A nose cone of `len` metres sitting on top of `y`, radius `r`. */
+function coneUp(r, len, seg, colour, name) {
+  const c = cyl(0.02 * r, r, len, seg, colour, 'body', name);
+  return c;
+}
+
+/**
+ * What sits on top. Returns the metres it consumed, so the core knows where to stop.
+ * `top.dia_m` absent means the fairing is flush with the body, which is the common case; only
+ * `taper: hammerhead` is the claim that it is wider, and the registry refuses that claim without
+ * a diameter. `top.len_m` absent draws a class-typical 2.2:1 nose rather than inventing a figure.
+ */
+function addTop(m, s, paint, H) {
+  const kind = (s.top && s.top.kind) || 'fairing';
+  if (kind === 'none') return 0;
+  const dia = (s.top && s.top.dia_m) || s.core_dia_m;
+  const r = dia / 2;
+
+  if (kind === 'integrated_ship') {
+    // No fairing at all: the upper stage IS the spacecraft, and it is the whole point of the
+    // silhouette. 42% of the stack, from Starship's 52 m ship on a 121 m vehicle.
+    const len = H * 0.42;
+    const barrel = len * 0.62;
+    const body = cyl(r, r, barrel, CORE_SEG, paint.nose, 'body', 'ship');
+    body.position.y = H - len + barrel / 2;
+    m.add(body);
+    const nose = coneUp(r, len - barrel, CORE_SEG, paint.nose, 'ship-nose');
+    nose.position.y = H - (len - barrel) / 2;
+    m.add(nose);
+    for (const side of [-1, 1]) {
+      const flap = box(r * 0.9, len * 0.16, r * 0.16, paint.nose, 'body', 'flap');
+      flap.position.set(side * r * 0.95, H - len * 0.1, 0);
+      m.add(flap);
+    }
+    return len;
+  }
+
+  if (kind === 'capsule' || kind === 'capsule_tower') {
+    // A crew capsule, not a fairing. Drawing a fairing on an Atlas V N22 or an SLS would be the
+    // app asserting a configuration that does not fly.
+    const capLen = (s.top && s.top.len_m) || dia * 1.15;
+    const cap = cyl(r * 0.55, r, capLen, CORE_SEG, paint.nose, 'body', 'capsule');
+    cap.position.y = H - capLen / 2 - (kind === 'capsule_tower' ? dia * 1.4 : 0);
+    m.add(cap);
+    if (kind !== 'capsule_tower') return capLen;
+    const tower = cyl(r * 0.1, r * 0.16, dia * 1.4, BELL_SEG, paint.interstage, 'foil', 'abort-tower');
+    tower.position.y = H - (dia * 1.4) / 2;
+    m.add(tower);
+    return capLen + dia * 1.4;
+  }
+
+  // a payload fairing: a barrel and an ogive nose
+  const len = Math.min((s.top && s.top.len_m) || dia * 2.2, H * 0.5);
+  const barrel = len * 0.55;
+  const shell = cyl(r, r, barrel, CORE_SEG, paint.nose, 'body', 'fairing');
+  shell.position.y = H - len + barrel / 2;
+  m.add(shell);
+  const nose = coneUp(r, len - barrel, CORE_SEG, paint.nose, 'nose');
+  nose.position.y = H - (len - barrel) / 2;
+  m.add(nose);
+  return len;
+}
+
+/** The body, from the pad to wherever the top starts. Returns the core's length in metres. */
+function addCore(m, s, paint, coreLen) {
+  const r = s.core_dia_m / 2;
+
+  if (s.taper === 'stepped' && Array.isArray(s.sections) && s.sections.length > 1) {
+    // A real step in the body, bottom section first -- Nuri's 3.5 m first stage under a 2.6 m
+    // upper. Section lengths are almost never published, so absent ones share the core evenly.
+    const stated = s.sections.reduce((a, sec) => a + (sec.len_m || 0), 0);
+    const blank = s.sections.filter((sec) => !sec.len_m).length;
+    const each = blank ? Math.max(0, coreLen - stated) / blank : 0;
+    let y = 0;
+    s.sections.forEach((sec, i) => {
+      const len = sec.len_m || each;
+      const seg = cyl(sec.dia_m / 2, sec.dia_m / 2, len, CORE_SEG, paint.body, 'body', `stage-${i + 1}`);
+      seg.position.y = y + len / 2;
+      m.add(seg);
+      y += len;
+    });
+  } else if (s.taper === 'tapered') {
+    // Neutron: one continuous cone, widest at the base, which is what it lands on.
+    const body = cyl(r * 0.55, r, coreLen, CORE_SEG, paint.body, 'body', 'body');
+    body.position.y = coreLen / 2;
+    m.add(body);
+  } else {
+    const body = cyl(r, r, coreLen, CORE_SEG, paint.body, 'body', 'body');
+    body.position.y = coreLen / 2;
+    m.add(body);
+    // The interstage band. On a Falcon 9 it is black carbon composite and it is the one piece of
+    // livery that reads at this size; everywhere else it is the neutral foil ring.
+    const band = cyl(r * 1.02, r * 1.02, coreLen * 0.045, CORE_SEG, paint.interstage, 'foil', 'interstage');
+    band.position.y = coreLen * 0.62;
+    m.add(band);
+  }
+
+  if (paint.tail) {
+    // Soyuz, and only Soyuz: a documented orange tail section under a grey body.
+    const tail = cyl(r * 1.01, r * 1.01, coreLen * 0.12, CORE_SEG, paint.tail, 'body', 'tail');
+    tail.position.y = coreLen * 0.06;
+    m.add(tail);
+  }
+  return coreLen;
+}
+
+/**
+ * The strap-ons: the strongest discriminator at 40 px, and the reason the enum is closed. Soyuz's
+ * four cones, Ariane's two fat solids against a wider core, Falcon Heavy's three bodies and
+ * Proton's flared six-lobed base are all this one switch.
+ */
+function addBoosters(m, s, paint, coreLen) {
+  const b = s.boosters || {};
+  const n = b.shape && b.shape !== 'none' ? Math.max(0, Math.min(8, b.count || 0)) : 0;
+  if (!n || !b.dia_m) return;
+
+  const coreR = s.core_dia_m / 2;
+  const br = b.dia_m / 2;
+  const len = b.len_m || coreLen * 0.62;
+  const ring = coreR + br * 0.94; // just touching the core, not floating beside it
+  const bells = [];
+
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2;
+    const x = Math.cos(a) * ring;
+    const z = Math.sin(a) * ring;
+    let bodyLen = len;
+    let noseLen = 0;
+    let parts = [];
+
+    switch (b.shape) {
+      case 'liquid_conical': {
+        // Soyuz. Tapered OUTWARD at the base, with a long cone above: the one silhouette in the
+        // world nobody confuses with anything else.
+        bodyLen = len * 0.62;
+        noseLen = len - bodyLen;
+        parts.push(cyl(br * 0.42, br, bodyLen, BOOSTER_SEG, paint.boosters, 'body', 'booster'));
+        parts.push(cyl(br * 0.03, br * 0.42, noseLen, BOOSTER_SEG, paint.nose, 'body', 'booster-nose'));
+        break;
+      }
+      case 'liquid_core_clone': {
+        // Falcon Heavy, Angara A5, Delta IV Heavy: full-size copies of the centre core.
+        bodyLen = len * 0.9;
+        noseLen = len - bodyLen;
+        parts.push(cyl(br, br, bodyLen, BOOSTER_SEG, paint.boosters, 'body', 'booster'));
+        parts.push(cyl(br * 0.04, br, noseLen, BOOSTER_SEG, paint.boosters, 'body', 'booster-nose'));
+        break;
+      }
+      case 'flared_base': {
+        // Proton, and only Proton: six outboard tanks that make the base wider than everything
+        // above it. They stop low; there is nothing beside the upper body.
+        bodyLen = coreLen * 0.42;
+        parts.push(cyl(br, br * 1.06, bodyLen, BOOSTER_SEG, paint.boosters, 'body', 'outboard-tank'));
+        break;
+      }
+      case 'solid_clustered': {
+        bodyLen = len * 0.82;
+        noseLen = len - bodyLen;
+        parts.push(cyl(br, br, bodyLen, BOOSTER_SEG, paint.boosters, 'body', 'booster'));
+        parts.push(cyl(br * 0.05, br, noseLen, BOOSTER_SEG, paint.boosters, 'body', 'booster-nose'));
+        break;
+      }
+      default: {
+        // solid_slim, solid_fat, liquid_cylindrical: a cylinder and a nose cap. The only thing
+        // separating a Vulcan's 1.6 m GEM from an Ariane's 3.4 m P120C is dia_m from the row,
+        // which is exactly the point -- no per-family tuning.
+        bodyLen = len * 0.86;
+        noseLen = len - bodyLen;
+        parts.push(cyl(br, br, bodyLen, BOOSTER_SEG, paint.boosters, 'body', 'booster'));
+        parts.push(cyl(br * 0.06, br, noseLen, BOOSTER_SEG, paint.boosters, 'body', 'booster-nose'));
+      }
+    }
+
+    parts[0].position.set(x, bodyLen / 2, z);
+    m.add(parts[0]);
+    if (parts[1]) {
+      parts[1].position.set(x, bodyLen + noseLen / 2, z);
+      m.add(parts[1]);
+    }
+    bells.push([x, z, br]);
+  }
+
+  // One bell per strap-on, while there are few enough for them to read as separate objects.
+  if (n <= 6 && b.shape !== 'flared_base') {
+    for (const [x, z, r] of bells) {
+      const bell = cyl(r * 0.5, r * 0.78, r * 1.3, BELL_SEG, ROCKET_NOZZLE, 'foil', 'booster-nozzle');
+      bell.position.set(x, -r * 0.65, z);
+      m.add(bell);
+    }
+  }
+}
+
+/**
+ * NOZZLE PATTERNS. The drawn count is a silhouette and the true count goes in the row: at 84 px
+ * nine bells already merge into a cluster and thirty-three would be mush, so `dense_ring` draws
+ * 25 of Super Heavy's 33 and says nothing about it on the card.
+ *
+ * `unknown` is the honest degradation where the count is sourced and the ARRANGEMENT is not --
+ * Long March 2D, Long March 12A, Nuri, New Glenn, Neutron, Terran R. It draws an engine skirt
+ * with no individual bells rather than inventing a geometry.
+ */
+function nozzlePositions(pattern) {
+  const ring = (n, rad, phase = 0) =>
+    Array.from({ length: n }, (_, i) => {
+      const a = phase + (i / n) * Math.PI * 2;
+      return [Math.cos(a) * rad, Math.sin(a) * rad];
+    });
+  switch (pattern) {
+    case 'twin':
+      return { r: 0.36, at: [[-0.42, 0], [0.42, 0]] };
+    case 'quad':
+      return { r: 0.3, at: [[-0.4, -0.4], [0.4, -0.4], [-0.4, 0.4], [0.4, 0.4]] };
+    case 'octaweb':
+      return { r: 0.21, at: [[0, 0], ...ring(8, 0.6)] };
+    case 'ring':
+      return { r: 0.16, at: ring(10, 0.66) };
+    case 'dense_ring':
+      return { r: 0.13, at: [...ring(3, 0.16), ...ring(10, 0.45), ...ring(12, 0.78)] };
+    case 'single':
+      return { r: 0.42, at: [[0, 0]] };
+    default:
+      return null; // 'unknown'
+  }
+}
+
+function addNozzles(m, s, paint) {
+  const eng = s.engines || {};
+  const coreR = s.core_dia_m / 2;
+  const pat = nozzlePositions(eng.pattern);
+  if (!pat) {
+    const skirt = cyl(coreR, coreR * 1.04, s.height_m * 0.022, CORE_SEG, paint.interstage, 'foil', 'engine-skirt');
+    skirt.position.y = -s.height_m * 0.011;
+    m.add(skirt);
+    return;
+  }
+  const br = coreR * pat.r;
+  const len = br * 2.4;
+  for (const [x, z] of pat.at) {
+    const bell = cyl(br * 0.6, br, len, BELL_SEG, ROCKET_NOZZLE, 'foil', 'nozzle');
+    bell.position.set(x * coreR, -len / 2, z * coreR);
+    m.add(bell);
+  }
+}
+
+/**
+ * The exhaust. Hidden until the propagator says the vehicle is in its ascent phase, and it grows
+ * with altitude because that is what a vacuum-expanding exhaust does. Illustrative, and it sits
+ * inside an arc the card already calls illustrative.
+ *
+ * A pivot group at the nozzle plane, so scaling it grows the plume DOWNWARD instead of sliding it.
+ */
+function buildPlume(s) {
+  const pivot = new THREE.Group();
+  pivot.name = 'plume';
+  const coreR = s.core_dia_m / 2;
+  const n = (s.engines && s.engines.count) || 1;
+  const r = coreR * (0.62 + 0.34 * Math.min(1, n / 9));
+  const len = s.height_m * 0.4;
+  const material = new THREE.MeshBasicMaterial({
+    color: PALETTE.nightLights,
+    transparent: true,
+    opacity: 0.55,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    side: THREE.DoubleSide,
+    toneMapped: false,
+  });
+  // This material never went through toonMaterial(), so it is not in the model's pool and
+  // disposeModels() would leave it behind -- one leaked material per launch record, every time
+  // the camera moved away. `perModel` is the flag that check reads.
+  material.userData.perModel = true;
+  // ...and the fade-in loop multiplies by this instead of overwriting it, so a faded-in rocket
+  // keeps the 0.55 it was designed with rather than being stamped to a hard 1.
+  material.userData.baseOpacity = 0.55;
+  const cone = new THREE.Mesh(new THREE.ConeGeometry(r, len, BELL_SEG * 2, 1, true), material);
+  cone.name = 'plume-cone';
+  cone.rotation.z = Math.PI; // taper away from the nozzles
+  cone.position.y = -len / 2;
+  pivot.add(cone);
+  pivot.visible = false;
+  return pivot;
+}
+
+/**
+ * A launch vehicle, from its registry row.
+ * @param {string} [variant] a registry/rockets.yaml row id. Anything else draws the generic
+ *   rocket, which is what a launch with no matching row gets and what the card calls it.
+ */
+function buildRocket(variant) {
+  const s = (typeof variant === 'string' && ROCKET_BY_ID[variant]) || GENERIC_ROCKET;
   const g = new THREE.Group();
-  g.userData.realSizeM = 70;
-  // the body runs along +Y, which updateModelAttitude points along the flight direction
-  const body = cyl(0.09, 0.09, 0.62, 16, '#EEF2F7', 'body', 'body');
-  body.position.y = 0.06;
-  g.add(body);
-  const interstage = cyl(0.09, 0.095, 0.06, 16, '#9BA6B4', 'foil', 'interstage');
-  interstage.position.y = -0.28;
-  g.add(interstage);
-  const nose = cyl(0.005, 0.09, 0.18, 16, '#EEF2F7', 'body', 'nose');
-  nose.position.y = 0.46;
-  g.add(nose);
-  const bell = cyl(0.045, 0.085, 0.11, 16, '#A9825C', 'foil', 'nozzle');
-  bell.position.y = -0.37;
-  g.add(bell);
-  // the plume exists but is only shown while the record says it is burning
-  const plumeGeo = new THREE.ConeGeometry(0.075, 0.34, 16, 1, true);
-  const plume = new THREE.Mesh(
-    plumeGeo,
-    new THREE.MeshBasicMaterial({
-      color: PALETTE.nightLights,
-      transparent: true,
-      opacity: 0.55,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-      side: THREE.DoubleSide,
-      toneMapped: false,
-    })
-  );
-  plume.name = 'plume';
-  plume.rotation.z = Math.PI; // taper away from the nozzle
-  plume.position.y = -0.6;
-  plume.visible = false;
-  g.add(plume);
-  g.userData.plume = plume;
+  g.userData.realSizeM = s.height_m; // finally a true number, and finally read
+  g.userData.shapeId = s.id;
+  g.userData.drawsAs = s.stands_for;
+
+  const m = new THREE.Group(); // everything below is in METRES
+  m.name = 'metres';
+  const paint = liveryOf(s);
+  const topLen = addTop(m, s, paint, s.height_m);
+  const coreLen = Math.max(s.height_m * 0.2, s.height_m - topLen);
+  addCore(m, s, paint, coreLen);
+  addBoosters(m, s, paint, coreLen);
+  addNozzles(m, s, paint);
+  m.add(buildPlume(s));
+
+  m.scale.setScalar(1 / s.height_m); // ONE division: the whole vehicle becomes 1 unit
+  m.position.y = -0.5; // base at -0.5, nose at +0.5, +Y is up
+  g.add(m);
+  g.userData.plume = m.getObjectByName('plume');
   return g;
 }
+
+/**
+ * One BUILDERS key per registry row, so modelFor()'s honesty check keeps working unchanged: a
+ * known rocket is correctly not `generic`, and a variant that is not a row -- a typo, or a row
+ * somebody deleted -- correctly is.
+ */
+function rocketVariants() {
+  const row = { default: buildRocket };
+  for (const id of Object.keys(ROCKET_BY_ID)) row[id] = buildRocket;
+  return row;
+}
+
 
 // --------------------------------------------------------------------------------------- probe
 
@@ -677,7 +1004,7 @@ const BUILDERS = {
     flat: buildSatelliteFlat,
   },
   debris: { default: buildDebris },
-  rocket: { default: buildRocket },
+  rocket: rocketVariants(),
   probe: { default: buildProbe },
   telescope: { default: buildTelescope, tube: buildTelescope, hex: buildTelescope },
   asteroid: { default: buildAsteroid },
@@ -872,8 +1199,22 @@ export function updateModelAttitude(obj, record, sunDirScene, nadirScene) {
     for (const p of pivots) p.rotation.x = angle;
   }
 
-  // the plume exists only while it is burning
-  if (obj.userData.plume) obj.userData.plume.visible = !!meta.burning;
+  // THE PLUME. It exists only while the vehicle is actually climbing, and it grows with
+  // altitude, because a vacuum-expanding exhaust does. `userData.burn` is written each frame by
+  // heroes.js from the propagator's own `phase` and `f` -- the signal ascent() has computed
+  // since the day it was written and that nothing ever read. `meta.burning` still works.
+  const plume = obj.userData.plume;
+  if (plume) {
+    const burn = obj.userData.burn;
+    const on = burn ? !!burn.on : !!meta.burning;
+    plume.visible = on;
+    if (on) {
+      const f = burn && Number.isFinite(burn.f) ? Math.min(1, Math.max(0, burn.f)) : 0;
+      // Illustrative, and it sits inside an arc the card already calls illustrative: a tight
+      // bright column low down, blooming wide by insertion.
+      plume.scale.set(1 + 1.6 * f, 1 + 2.2 * f, 1 + 1.6 * f);
+    }
+  }
 
   // comet tails: already anti-sunward from the basis above; scale with heliocentric distance
   if (obj.userData.tails) {

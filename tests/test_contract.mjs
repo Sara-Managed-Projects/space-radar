@@ -141,6 +141,58 @@ for (const file of allFiles) {
   }
 }
 
+// 3b. every rocket shape the registry offers actually builds, and fits its triangle budget.
+//
+// registry/models.yaml has a `budget_tris` for rocket-upper-stage and NOTHING has ever checked
+// it -- that row and the BUILDERS table were related by discipline alone. A rocket went from 5
+// meshes to about 25 in this change, and Vulcan VC6L (six boosters), Soyuz (four cones and its
+// own bells) and Super Heavy's engine ring are the three that could blow it. So this builds
+// EVERY row and measures. A budget nobody measures is a comment.
+{
+  const yaml = readFileSync(join(ROOT, 'registry/models.yaml'), 'utf8');
+  const line = yaml.split('\n').find((l) => l.includes('id: rocket-upper-stage')) || '';
+  const budget = Number((line.match(/budget_tris:\s*(\d+)/) || [])[1] || 0);
+  if (!budget) {
+    problems.push('BUDGET   registry/models.yaml has no budget_tris for rocket-upper-stage');
+  } else {
+    try {
+      const { modelFor, modelVariants, disposeModels } = await import(
+        join(JS, 'scene/models.js')
+      );
+      const variants = modelVariants().rocket;
+      if (variants.length < 2) {
+        problems.push(
+          `BUDGET   BUILDERS.rocket has ${variants.length} variant(s); the registry rows are not wired in`
+        );
+      }
+      let worst = { id: null, tris: 0 };
+      for (const id of variants) {
+        const obj = modelFor('rocket', id);
+        let tris = 0;
+        let meshes = 0;
+        obj.traverse((n) => {
+          if (!n.geometry) return;
+          meshes += 1;
+          const g = n.geometry;
+          tris += (g.index ? g.index.count : g.attributes.position.count) / 3;
+        });
+        if (tris > budget) {
+          problems.push(`BUDGET   rocket:${id} is ${Math.round(tris)} tris, over budget_tris ${budget}`);
+        }
+        if (meshes > 40) problems.push(`BUDGET   rocket:${id} is ${meshes} meshes; the pool budget is ~30`);
+        if (tris > worst.tris) worst = { id, tris };
+        disposeModels(obj);
+      }
+      notes.push(
+        `${variants.length} rocket shapes build; worst is ${worst.id} at ` +
+          `${Math.round(worst.tris)} of ${budget} tris`
+      );
+    } catch (e) {
+      problems.push(`BUDGET   could not build the rocket shapes: ${String(e && e.message)}`);
+    }
+  }
+}
+
 // 4. report
 if (notes.length) {
   console.log('notes:');

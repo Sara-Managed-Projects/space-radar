@@ -42,3 +42,40 @@ layers:
 
 sites:
   - {id: conamara, display: "Conamara Chaos", class: surface, world: europa, lat: 9.5, lon: 274.0, doing: "A jumble of broken ice rafts, evidence of an ocean under the crust."}
+
+# A rocket must be a row too (registry/rockets.yaml). Two rows, because there are two ways a row
+# earns its keys: `pslv-xl` refines an existing family stand-in with a full_name the live feed
+# really returns, and `ariane-5` is a vehicle the feed CANNOT return, which is legal only because
+# it says `not_in_feed:` and why. If either needed a change to scene/models.js, the parser or the
+# card, the architecture regressed -- the drawing composes from these fields and nothing else.
+# (A row keyed on a string the feed has not yet returned adds an `observed:` row alongside it;
+# that section is a growth target too.)
+rockets:
+  - id: pslv-xl
+    display: "PSLV-XL"
+    match: {full_name: ["PSLV XL"]}
+    stands_for: variant
+    height_m: 44.0
+    core_dia_m: 2.8
+    taper: tube
+    top: {kind: fairing, dia_m: 3.2}
+    boosters: {shape: solid_slim, count: 6, dia_m: 1.0, len_m: 12.0}
+    engines: {count: 1, pattern: single}
+    livery: unknown
+    class: measured
+    source: "Wikipedia PSLV: 44 m, 2.8 m core, 3.2 m fairing; the XL carries six extended-length PSOM strap-ons of 1 m x 12 m"
+
+  - id: ariane-5
+    display: "Ariane 5"
+    match: {full_name: ["Ariane 5"]}
+    not_in_feed: "retired; the final flight was 2023-07-05. Here so the registry is complete, not so it draws."
+    stands_for: family
+    height_m: 52.0
+    core_dia_m: 5.4
+    taper: tube
+    top: {kind: fairing, dia_m: 5.4}
+    boosters: {shape: solid_fat, count: 2, dia_m: 3.06, len_m: 31.6}
+    engines: {count: 1, pattern: single}
+    livery: unknown
+    class: measured
+    source: "Wikipedia Ariane 5: 46-52 m depending on configuration, 5.4 m core stage and fairing, two EAP boosters of 3.06 m x 31.6 m, one Vulcain 2"

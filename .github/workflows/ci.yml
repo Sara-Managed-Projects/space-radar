@@ -23,7 +23,26 @@ jobs:
       - run: pip install --disable-pip-version-check pyyaml
       - name: Registries validate
         run: python3 scripts/check_registry.py
+      # The browser never parses YAML, so registry/rockets.yaml is mirrored into JS. Fifty rows
+      # is past where a hand-kept mirror holds -- registry/models.yaml and the BUILDERS table
+      # have already drifted apart with nothing checking them -- so the mirror is generated and
+      # this is the check that it is current.
+      - name: The rocket mirror matches the registry
+        run: python3 scripts/gen_rockets_js.py --check
       - name: A new world is a registry row
         run: python3 tests/test_growth.py
       - name: The validator actually refuses
         run: python3 tests/test_refusals.py
+
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      # Modules agree about names, every relative import resolves, and every rocket shape the
+      # registry offers builds inside the triangle budget its models.yaml row claims. That
+      # budget was a comment until this job ran: nothing had ever measured it.
+      - name: Modules agree, and every drawn shape fits its budget
+        run: node tests/test_contract.mjs

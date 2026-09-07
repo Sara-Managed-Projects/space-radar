@@ -27,6 +27,32 @@ const TARGET_PX = 84;
 // door, Voyager's dish and boom. 130 px showed a shape; 260 shows a machine.
 const SELECTED_PX = 260;
 
+/**
+ * SIZE ON SCREEN, for launches only.
+ *
+ * Every hero is 84 px today whatever it is, which is the deliberate decision the header states.
+ * For a rocket that throws away the one comparison a beginner can actually feel: an 18 m Electron
+ * and a 121 m Starship are 6.7x apart, and drawing them identically is its own small untruth.
+ *
+ * Drawn true, one of them is unreadable -- Electron becomes a 12 px smudge, or Starship becomes
+ * 560 px and swallows half the viewport and, through the docked-vehicle test below, every
+ * neighbour with it. So the ratio is COMPRESSED by a square root and clamped: a true 6.7x range
+ * becomes a drawn 2.3x. Starship is visibly the biggest thing in the sky and an Electron is still
+ * an object with parts.
+ *
+ * The square root is a compression, not a measurement, and the precise claim goes where it
+ * belongs: the card's size chip carries the true metres. A record with no `meta.sizeM` -- every
+ * station, satellite, probe and telescope, and any launch drawn as a generic rocket -- returns
+ * exactly the constant it returns today, so nothing but the launches layer changes.
+ */
+const REF_M = 60; // roughly the Falcon 9 / Ariane 6 median
+function heroPixels(record, selected) {
+  const base = selected ? SELECTED_PX : TARGET_PX;
+  const m = record && record.meta && record.meta.sizeM;
+  if (!Number.isFinite(m)) return base;
+  return base * Math.min(1.45, Math.max(0.62, Math.sqrt(m / REF_M)));
+}
+
 /** How many models may exist at once. Each is a few draw calls; this is the phone budget. */
 const POOL = 8;
 
@@ -118,7 +144,7 @@ export function createHeroes(scene, ctx) {
       const nearUnits = ((layer && layer.nearKm) || 2000) / stage.unitKm;
       if (!forced && d > nearUnits) return;
       seen.add(record.id);
-      out.push({ record, pos, d, forced });
+      out.push({ record, pos, d, forced, p });
     };
 
     if (selected) consider(selected, true);
@@ -147,7 +173,9 @@ export function createHeroes(scene, ctx) {
     const kept = [];
     const hidden = [];
     for (const c of out) {
-      const px = c.forced ? SELECTED_PX : TARGET_PX;
+      // The SAME heroPixels() as the scale below, or a big Starship is drawn large and still
+      // swallows its neighbours as though it were small. One function, two call sites.
+      const px = heroPixels(c.record, c.forced);
       c.drawnRadius = (px * c.d) / (h * f); // half the drawn size, in world units
       const swallowedBy = c.forced ? null : kept.find((k) => k.pos.distanceTo(c.pos) < k.drawnRadius);
       if (swallowedBy) {
@@ -193,9 +221,15 @@ export function createHeroes(scene, ctx) {
       const obj = entry.obj;
       obj.position.copy(c.pos);
 
-      const px = c.record.id === selectedId ? SELECTED_PX : TARGET_PX;
+      const px = heroPixels(c.record, c.record.id === selectedId);
       const size = (px * 2 * c.d) / (h * f);
       obj.scale.setScalar(size);
+
+      // The burn signal. propagate() already returned `phase` and `f` for this record a few
+      // lines ago in candidates(); ascent() has computed both since it was written and nothing
+      // has ever read them, so a rocket's plume has never once been visible. This is that wire.
+      // It is per-frame state, which is why it goes on the object and not into parse-time meta.
+      if (c.p && c.p.phase) obj.userData.burn = { on: c.p.phase === 'ascent', f: c.p.f };
 
       // Attitude wants the nadir direction: from the object toward the world's centre, which in
       // the stage frame is the origin.
@@ -212,8 +246,13 @@ export function createHeroes(scene, ctx) {
         const k = Math.min(1, Math.abs(tMs - entry.fadeStart) / FADE_MS);
         obj.traverse((n) => {
           if (n.material && n.material.transparent !== undefined) {
-            n.material.transparent = k < 1;
-            n.material.opacity = k;
+            // A material that was DESIGNED translucent -- the additive plume at 0.55 -- keeps
+            // its own opacity as the ceiling. Writing k straight in stamped that 0.55 to a hard
+            // 1 the moment the fade finished, and turned its transparency off with it.
+            const ceiling = n.material.userData && n.material.userData.baseOpacity;
+            const top = Number.isFinite(ceiling) ? ceiling : 1;
+            n.material.transparent = k < 1 || top < 1;
+            n.material.opacity = k * top;
           }
         });
         if (k >= 1) entry.fadeStart = null;

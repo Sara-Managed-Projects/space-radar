@@ -1,0 +1,965 @@
+# Every launch vehicle the app can draw, and the evidence that it draws it.
+#
+# A row here is a SILHOUETTE, never a photograph. Four fields carry recognition at 40 px:
+# strap-on shape, what sits on top, nozzle pattern, and body taper. Height tracks the FAIRING,
+# not the booster count -- Ariane 62 and 64 are both 63 m -- so height is stated per row and
+# never derived.
+#
+# `class:` is the provenance of the NUMBERS: `measured` (a source was read) or `inferred` (a
+# number derived from a sourced fact -- arithmetic, or a family figure standing in for a variant
+# the sources do not size separately). There is no third value. A number nobody could source is
+# NOT WRITTEN DOWN: the field is left out and the builder falls back to a class-typical
+# proportion, or the whole row is omitted and the launch falls through to the generic rocket,
+# which the card says out loud.
+#
+# WHAT IS REQUIRED AND WHAT IS OPTIONAL, and why
+#   height_m, core_dia_m, taper, top.kind, boosters.shape, engines.count, engines.pattern,
+#   stands_for, class and source are required on every row.
+#   top.dia_m       optional -- absent means the fairing is flush with the body, which is the
+#                   common case. Required only when `taper: hammerhead`, which is the claim that
+#                   the fairing is WIDER than the body (Zhuque-2E, Gravity-1, Long March 12A).
+#   top.len_m       optional -- absent draws a class-typical nose of 2.2 x its diameter. Fairing
+#                   lengths are published for perhaps a third of the fleet.
+#   boosters.dia_m  REQUIRED for every shape but `none`. It is the dominant discriminator:
+#                   Ariane's 3.4 m against a 5.4 m core is the whole silhouette.
+#   boosters.len_m  optional -- absent draws a booster 62% of the core's length.
+#
+# `engines.count` is every nozzle that lights on the pad, across all bodies (Falcon Heavy 27,
+# Soyuz 20, Delta IV Heavy 3). `engines.pattern` is how the CORE's engines are arranged.
+# `pattern: unknown` is the honest degradation where the count is sourced and the arrangement is
+# not: an engine skirt is drawn with no individual bells.
+#
+# COLOUR. 14 of the families here have no documented livery -- colour is almost never in a spec
+# document, it lives in photography. Those rows carry `livery: unknown`, draw in the neutral
+# default, and the card says NOTHING about colour. The absence is the honest statement. Two
+# colour claims that are widely repeated and that no source supports are called out in the rows
+# that would carry them: Soyuz is not grey-green (that is a photographic artefact), and nobody
+# can source orange-brown Ariane 6 boosters (that is Ariane 5's EAPs).
+#
+# MATCHING is exact string comparison, trimmed and case-folded. There is no normaliser: a regex
+# in a builder is the opposite of "behaviour is data a human edits", and listing
+# ["Ariane 64", "Ariane 64 Block 2"] is one more array element and completely legible.
+# Resolution order, most specific first:
+#   1. match.full_name  against rocket.configuration.full_name   (0% null, 72 distinct)
+#   2. match.family     walking `families` from most specific to root
+#   3. match.provider   against launch_service_provider.name     (0% null, 38 distinct)
+#   4. no row -> the generic rocket, and the card says so.
+#
+# DELIBERATELY NOT MATCHED, because one drawing would be a lie:
+#   * family "GSLV" -- Mk II and LVM-3 look nothing alike. Two full_name rows instead.
+#   * family "Long March" and "Long March 2" -- 2D/YZ-3 is a bare tube, 2F/G is crewed, 5 has
+#     four liquid strap-ons and 10 has two full-size cores. Named variants only.
+#   * family "Falcon" -- its root covers Falcon 9 and Falcon Heavy. Falcon Heavy is matched by
+#     full_name; an unlisted Falcon variant falls to generic rather than to a wrong core count.
+#
+# `observed:` at the foot of this file is the measured distinct-value list from the live LL2
+# 2.3.0 upcoming feed, with counts. CI cannot phone LL2, so the evidence is checked in: a row
+# whose match string is not in that list is refused unless it says `not_in_feed:` and why.
+version: 1
+observed_on: 2026-09-07     # all 359 upcoming launches read, in four pages of 100
+
+rockets:
+  # ---- keyed on the most specific family; the family IS the vehicle -------------------
+  - id: falcon-9
+    display: "Falcon 9 Block 5"
+    match: {full_name: ["Falcon 9 Block 5"], family: ["Falcon 9"]}
+    stands_for: variant
+    height_m: 70.0
+    core_dia_m: 3.66
+    taper: tube
+    top: {kind: fairing, dia_m: 5.2, len_m: 13.2}
+    boosters: {shape: none, count: 0}
+    engines: {count: 9, pattern: octaweb}
+    livery: {body: "#EEF2F7", interstage: "#1B1D21", class: measured}
+    class: measured
+    source: "SpaceX Falcon User's Guide rev. 8, May 2025, Table 2-1: 70.0 m, 3.66 m, 5.2 x 13.2 m fairing, 'eight engines surrounding a center engine'"
+    note: "the black interstage is carbon composite. Flown boosters are soot-streaked; that is a decal claim per flight and is not drawn."
+
+  - id: falcon-heavy
+    display: "Falcon Heavy"
+    match: {full_name: ["Falcon Heavy"]}
+    stands_for: variant
+    height_m: 70.0
+    core_dia_m: 3.66
+    taper: tube
+    top: {kind: fairing, dia_m: 5.2, len_m: 13.2}
+    boosters: {shape: liquid_core_clone, count: 2, dia_m: 3.66}
+    engines: {count: 27, pattern: octaweb}
+    livery: {body: "#EEF2F7", interstage: "#1B1D21", class: measured}
+    class: measured
+    source: "SpaceX Falcon User's Guide rev. 8, May 2025; Wikipedia Falcon Heavy for the 12.2 m span across three cores"
+    note: "the side boosters are externally identical to the centre core, which is what liquid_core_clone means. Booster length is not published separately and is not written down."
+
+  # ---- keyed on full_name, because the family merges two different outlines ------------
+  #      families[-1] is "Ariane 6" for BOTH 62 and 64. Two boosters or four is the whole
+  #      point of the silhouette, so the variant rows win before the family row is reached.
+  - id: ariane-62
+    display: "Ariane 62"
+    match: {full_name: ["Ariane 62", "Ariane 62 Block 2"]}
+    stands_for: variant
+    height_m: 63.0
+    core_dia_m: 5.4
+    taper: tube
+    top: {kind: fairing, dia_m: 5.4}
+    boosters: {shape: solid_fat, count: 2, dia_m: 3.4, len_m: 22.0}
+    engines: {count: 1, pattern: single}
+    livery: {body: "#F4F6F8", boosters: unknown, class: measured}
+    class: measured
+    source: "ESA Ariane 6 overview (63 m); ArianeGroup: white is functional -- it reflects sunlight and gives a background for visual anomaly detection. P120C 22 m x 3.4 m"
+    note: "the fairing is 14 m or 20 m depending on the flight, so its length is not written down. Booster colour could not be sourced; the orange-brown often claimed is Ariane 5's EAPs."
+
+  - id: ariane-64
+    display: "Ariane 64"
+    match: {full_name: ["Ariane 64", "Ariane 64 Block 2"]}
+    stands_for: variant
+    height_m: 63.0
+    core_dia_m: 5.4
+    taper: tube
+    top: {kind: fairing, dia_m: 5.4}
+    boosters: {shape: solid_fat, count: 4, dia_m: 3.4, len_m: 22.0}
+    engines: {count: 1, pattern: single}
+    livery: {body: "#F4F6F8", boosters: unknown, class: measured}
+    class: measured
+    source: "ESA Ariane 6 overview; ArianeGroup on the white and on P120C 22 m x 3.4 m. A62 and A64 are the same 63 m: height tracks the fairing, not the boosters"
+
+  - id: ariane-6
+    display: "an Ariane 6"
+    match: {family: ["Ariane 6", "Ariane"]}
+    stands_for: family
+    height_m: 63.0
+    core_dia_m: 5.4
+    taper: tube
+    top: {kind: fairing, dia_m: 5.4}
+    boosters: {shape: solid_fat, count: 2, dia_m: 3.4, len_m: 22.0}
+    engines: {count: 1, pattern: single}
+    livery: {body: "#F4F6F8", boosters: unknown, class: measured}
+    class: measured
+    source: "ESA Ariane 6 overview; ArianeGroup"
+    note: "the bare `Ariane 6` configuration does not say how many boosters, so it is drawn as the two-booster A62 and the card says the drawing is the family."
+
+  # ---- keyed on full_name because LL2 gives Rocket Lab no family at all ----------------
+  #      Electron is the #2 vehicle in the feed and 41 of the 71 family-less launches.
+  - id: electron
+    display: "Electron"
+    match: {full_name: ["Electron"]}
+    stands_for: variant
+    height_m: 18.0
+    core_dia_m: 1.2
+    taper: tube
+    top: {kind: fairing, dia_m: 1.2, len_m: 2.5}
+    boosters: {shape: none, count: 0}
+    engines: {count: 9, pattern: octaweb}
+    livery: {body: "#22262B", class: inferred}
+    class: measured
+    source: "Wikipedia Rocket Lab Electron and Rutherford, reporting the payload user's guide (the PUG itself returns 403): 18 m, 1.2 m, 'eight engines surrounding a central ninth'"
+    note: "black is INFERRED from the carbon-composite airframe, which is sourced. Recovery is by parachute and ship retrieval, and most flights are expendable; nothing about recovery is drawn."
+
+  - id: neutron
+    display: "Neutron"
+    match: {full_name: ["Neutron"]}
+    stands_for: variant
+    height_m: 42.8
+    core_dia_m: 7.0
+    taper: tapered
+    top: {kind: fairing}
+    boosters: {shape: none, count: 0}
+    engines: {count: 9, pattern: unknown}
+    livery: {body: "#22262B", class: inferred}
+    class: measured
+    disputed: "Wikipedia 42.8 m; Rocket Lab quotes a 7 m diameter and 40 m length for the tapered composite structure"
+    source: "Wikipedia Rocket Lab Neutron; Rocket Lab's Neutron architecture reveal -- tapered wide base, no landing legs, hinged 'Hungry Hippo' fairing that stays with the first stage"
+    note: "has not flown; NET Q4 2026. Black is inferred from the carbon composite, which is sourced. The nine Archimedes engines are sourced; their arrangement is not."
+
+  - id: spectrum
+    display: "Spectrum"
+    match: {full_name: ["Spectrum"]}
+    stands_for: variant
+    height_m: 28.0
+    core_dia_m: 2.0
+    taper: tube
+    top: {kind: fairing}
+    boosters: {shape: none, count: 0}
+    engines: {count: 9, pattern: unknown}
+    livery: {body: "#22262B", class: inferred}
+    class: measured
+    source: "Wikipedia Isar Aerospace Spectrum: 28 m, 2 m, two stages, nine Aquila engines, a single-part carbon composite structure"
+    note: "black is inferred from the carbon composite, the same reasoning as Electron. The arrangement of the nine engines is not sourced."
+
+  - id: starship
+    display: "a Starship"
+    match: {full_name: ["Starship", "Starship V3"], family: ["Starship"]}
+    stands_for: family
+    height_m: 121.3
+    core_dia_m: 9.0
+    taper: tube
+    top: {kind: integrated_ship}
+    boosters: {shape: none, count: 0}
+    engines: {count: 33, pattern: dense_ring}
+    livery: {body: "#C6CBD1", class: measured}
+    class: measured
+    source: "Wikipedia SpaceX Starship: 121.3 m (Block 1), 9.0 m, bare stainless steel, 33 Raptors as 3 centre + 10 inner ring + 20 outer ring"
+    note: "one row for Block 1 and V3, which are 121.3 m and 124.4 m. The ship's windward face carries ~18,000 black tiles; a two-tone ship is a decal claim and is not drawn."
+
+  # ---- a family stand-in: one drawing for several real variants -----------------------
+  - id: soyuz-2
+    display: "a Soyuz-2"
+    match: {family: ["Soyuz 2", "Soyuz"]}
+    stands_for: family
+    height_m: 46.3
+    core_dia_m: 2.95
+    taper: tube
+    top: {kind: fairing, dia_m: 4.11, len_m: 11.4}
+    boosters: {shape: liquid_conical, count: 4, dia_m: 2.68, len_m: 19.6}
+    engines: {count: 20, pattern: quad}
+    livery: {body: "#9AA3AD", nose: "#EEF2F7", tail: "#D2743A", class: measured}
+    class: measured
+    source: "Wikipedia Soyuz-2 and RD-107 (46.3 m, 2.95 m, 4 boosters 19.6 m x 2.68 m, RD-108A four main chambers); Arianespace ST fairing 4.11 x 11.4 m; collectSPACE and Space Daily on the 2021 livery change"
+    note: "traditional scheme since 1966: white nose, grey transition, orange tail. It is NOT grey-green -- the green in photographs is a photographic artefact. GK Launch Services has flown a blue-and-white scheme since Mar 2021, which this row does not draw."
+
+  - id: vulcan
+    display: "a Vulcan Centaur"
+    match: {family: ["Vulcan"]}
+    stands_for: family
+    height_m: 61.6
+    core_dia_m: 5.4
+    taper: tube
+    top: {kind: fairing, dia_m: 5.4}
+    boosters: {shape: solid_slim, count: 2, dia_m: 1.6, len_m: 21.9}
+    engines: {count: 2, pattern: twin}
+    livery: unknown
+    class: measured
+    source: "Wikipedia Vulcan Centaur and ULA's Vulcan Centaur rocket card: VCxS 61.6 m, VCxL 67.3 m, 5.4 m core, GEM 63XL 1.6 m x 21.9 m, two BE-4"
+    note: "a bare `Vulcan` config name does not say how many boosters. Drawn as the two-booster short-fairing vehicle; the named VC2S/VC4S/VC4L/VC6L rows win before this one."
+
+  - id: vulcan-vc2s
+    display: "Vulcan VC2S"
+    match: {full_name: ["Vulcan VC2S"]}
+    stands_for: variant
+    height_m: 61.6
+    core_dia_m: 5.4
+    taper: tube
+    top: {kind: fairing, dia_m: 5.4}
+    boosters: {shape: solid_slim, count: 2, dia_m: 1.6, len_m: 21.9}
+    engines: {count: 2, pattern: twin}
+    livery: unknown
+    class: measured
+    source: "Wikipedia Vulcan Centaur; ULA rocket card. VC2S = 2 GEM 63XL, Short fairing"
+
+  - id: vulcan-vc4s
+    display: "Vulcan VC4S"
+    match: {full_name: ["Vulcan VC4S"]}
+    stands_for: variant
+    height_m: 61.6
+    core_dia_m: 5.4
+    taper: tube
+    top: {kind: fairing, dia_m: 5.4}
+    boosters: {shape: solid_slim, count: 4, dia_m: 1.6, len_m: 21.9}
+    engines: {count: 2, pattern: twin}
+    livery: unknown
+    class: measured
+    source: "Wikipedia Vulcan Centaur; ULA rocket card. VC4S = 4 GEM 63XL, Short fairing"
+
+  - id: vulcan-vc4l
+    display: "Vulcan VC4L"
+    match: {full_name: ["Vulcan VC4L"]}
+    stands_for: variant
+    height_m: 67.3
+    core_dia_m: 5.4
+    taper: tube
+    top: {kind: fairing, dia_m: 5.4, len_m: 21.3}
+    boosters: {shape: solid_slim, count: 4, dia_m: 1.6, len_m: 21.9}
+    engines: {count: 2, pattern: twin}
+    livery: unknown
+    class: measured
+    source: "Wikipedia Vulcan Centaur; ULA rocket card. VC4L = 4 GEM 63XL, Long 21.3 m fairing"
+
+  - id: vulcan-vc6l
+    display: "Vulcan VC6L"
+    match: {full_name: ["Vulcan VC6L"]}
+    stands_for: variant
+    height_m: 67.3
+    core_dia_m: 5.4
+    taper: tube
+    top: {kind: fairing, dia_m: 5.4, len_m: 21.3}
+    boosters: {shape: solid_slim, count: 6, dia_m: 1.6, len_m: 21.9}
+    engines: {count: 2, pattern: twin}
+    livery: unknown
+    class: measured
+    source: "Wikipedia Vulcan Centaur; Space.com on GEM 63XL; ULA rocket card. VC6L is the tallest and most powerful configuration"
+
+  - id: vega-c
+    display: "Vega-C"
+    match: {full_name: ["Vega-C", "Vega-C Block 2"]}
+    stands_for: variant
+    height_m: 34.8
+    core_dia_m: 3.4
+    taper: tube
+    top: {kind: fairing, dia_m: 3.3}
+    boosters: {shape: none, count: 0}
+    engines: {count: 1, pattern: single}
+    livery: unknown
+    class: measured
+    source: "ESA Vega-C ('nearly 35 metres'); Wikipedia Vega-C: P120C first stage 3.4 m, single body, one nozzle"
+    note: "a single body with no strap-ons at all, which is most of what distinguishes it at a glance."
+
+  - id: vega
+    display: "a Vega"
+    match: {family: ["Vega"]}
+    stands_for: family
+    height_m: 34.8
+    core_dia_m: 3.4
+    taper: tube
+    top: {kind: fairing, dia_m: 3.3}
+    boosters: {shape: none, count: 0}
+    engines: {count: 1, pattern: single}
+    livery: unknown
+    class: measured
+    source: "ESA Vega-C; Wikipedia Vega-C"
+    note: "covers Vega-E, whose changes are to the upper stage and do not show in the outline."
+
+  - id: atlas-v
+    display: "an Atlas V"
+    match: {full_name: ["Atlas V N22"], family: ["Atlas V", "Atlas"]}
+    stands_for: family
+    height_m: 58.3
+    core_dia_m: 3.8
+    taper: tube
+    top: {kind: capsule, dia_m: 4.56}
+    boosters: {shape: solid_slim, count: 2, dia_m: 1.6, len_m: 17.0}
+    engines: {count: 2, pattern: twin}
+    livery: unknown
+    class: inferred
+    source: "Wikipedia Atlas V ('Up to 58.3 m', 3.8 m core, N22 = 2 AJ-60A and NO fairing, one RD-180); Wikipedia AJ-60A (1.6 m x 17.0 m); Wikipedia Boeing Starliner (4.56 m capsule)"
+    note: "58.3 m is the TALLEST Atlas V. Every Atlas V left flies as the N22 for Starliner, which carries the capsule instead of a fairing and is shorter; the N22 stack height could not be sourced, so the row is inferred and stands for the family. The RD-180 is one engine with two thrust chambers, which is why the base has two nozzles."
+
+  - id: h3
+    display: "an H3"
+    match: {family: ["H3"]}
+    stands_for: family
+    height_m: 63.0
+    core_dia_m: 5.27
+    taper: tube
+    top: {kind: fairing}
+    boosters: {shape: solid_slim, count: 2, dia_m: 2.5, len_m: 14.6}
+    engines: {count: 2, pattern: twin}
+    livery: {body: "#D2743A", boosters: "#EEF2F7", class: measured}
+    class: measured
+    source: "JAXA H3 Launch Vehicle (H3-24L is 63 m); Wikipedia H3 (5.27 m core, SRB-3 2.5 m x 14.6 m); Spaceflight Now on H3 TF-1 for the orange foam insulation on the first stage"
+    note: "the first stage is ORANGE foam insulation, not white -- the same visual family as SLS and Delta IV. H3-30S has no boosters at all; this row draws the two-booster configuration."
+
+  - id: h3-24
+    display: "H3-24"
+    match: {full_name: ["H3-24"]}
+    stands_for: variant
+    height_m: 63.0
+    core_dia_m: 5.27
+    taper: tube
+    top: {kind: fairing}
+    boosters: {shape: solid_slim, count: 4, dia_m: 2.5, len_m: 14.6}
+    engines: {count: 2, pattern: twin}
+    livery: {body: "#D2743A", boosters: "#EEF2F7", class: measured}
+    class: measured
+    source: "JAXA H3 Launch Vehicle: H3-24 is two LE-9 and four SRB-3; H3-24L is 63 m. Wikipedia H3 for SRB-3 dimensions; Spaceflight Now for the orange foam"
+
+  - id: sls
+    display: "the Space Launch System"
+    match: {family: ["Space Launch System"]}
+    stands_for: family
+    height_m: 98.0
+    core_dia_m: 8.4
+    taper: tube
+    top: {kind: capsule_tower, dia_m: 5.0}
+    boosters: {shape: solid_fat, count: 2, dia_m: 3.7, len_m: 54.0}
+    engines: {count: 4, pattern: quad}
+    livery: {body: "#D2743A", boosters: "#EEF2F7", class: measured}
+    class: measured
+    source: "Wikipedia Space Launch System: Block 1 with Orion is 98 m, 8.4 m core, two five-segment boosters 3.7 m x 54 m, four RS-25, orange foam core and white boosters"
+    note: "Block 1B is taller than Block 1; one row draws both and the card says the drawing is the family. What sits on top is Orion and its launch-abort tower -- a spike, not a fairing."
+
+  - id: new-glenn
+    display: "New Glenn"
+    match: {full_name: ["New Glenn"], family: ["New Glenn"]}
+    stands_for: variant
+    height_m: 98.0
+    core_dia_m: 7.0
+    taper: tube
+    top: {kind: fairing}
+    boosters: {shape: none, count: 0}
+    engines: {count: 7, pattern: unknown}
+    livery: unknown
+    class: measured
+    source: "Wikipedia New Glenn: 98 m, 7.0 m both stages, 7 m fairing, seven BE-4 on the first stage; NASASpaceflight on NG-2 landing the booster, 13 Nov 2025"
+    note: "the seven BE-4 are sourced; their arrangement is not, so no bells are drawn."
+
+  - id: firefly-alpha
+    display: "Firefly Alpha Block 2"
+    match: {full_name: ["Firefly Alpha Block 2"]}
+    stands_for: variant
+    height_m: 29.48
+    core_dia_m: 2.2
+    taper: tube
+    top: {kind: fairing, dia_m: 2.2, len_m: 5.0}
+    boosters: {shape: none, count: 0}
+    engines: {count: 4, pattern: quad}
+    livery: {body: "#EEF2F7", class: measured}
+    class: measured
+    source: "Firefly Aerospace Alpha Payload User's Guide 5.2, Table 1: 29.48 m (96.7 ft), 2.2 m max, four Reaver; NASASpaceflight, Aug 2026, on Block 2 going WHITE as part of an upgraded thermal protection system"
+    note: "Block 1 was black carbon fibre with a phoenix motif. Block 2 is white, and every Alpha in the feed is a Block 2. Wikipedia's 1.82 m is the tank body, not the 2.2 m maximum."
+
+  - id: terran-r
+    display: "Terran R"
+    match: {full_name: ["Terran R"], family: ["Terran"]}
+    stands_for: variant
+    height_m: 87.0
+    core_dia_m: 5.4
+    taper: tube
+    top: {kind: fairing}
+    boosters: {shape: none, count: 0}
+    engines: {count: 13, pattern: unknown}
+    livery: unknown
+    class: measured
+    source: "Wikipedia Terran R: 87 m, 5.4 m, two stages, thirteen Aeon R on the first stage"
+    note: "has not flown. The thirteen engines are sourced; their arrangement is not."
+
+  - id: pslv
+    display: "a PSLV"
+    match: {family: ["PSLV"]}
+    stands_for: family
+    height_m: 44.0
+    core_dia_m: 2.8
+    taper: tube
+    top: {kind: fairing, dia_m: 3.2}
+    boosters: {shape: solid_slim, count: 6, dia_m: 1.0, len_m: 12.0}
+    engines: {count: 1, pattern: single}
+    livery: unknown
+    class: measured
+    source: "Wikipedia PSLV: 44 m, 2.8 m core, 3.2 m fairing, PSOM strap-ons 1 m x 12 m; XL carries six, QL four, DL two, CA none"
+    note: "drawn as the six-booster XL, which is the workhorse. PSLV-CA has its own row because a PSLV with no strap-ons is a different outline."
+
+  - id: pslv-ca
+    display: "PSLV-CA"
+    match: {full_name: ["PSLV-CA"]}
+    stands_for: variant
+    height_m: 44.0
+    core_dia_m: 2.8
+    taper: tube
+    top: {kind: fairing, dia_m: 3.2}
+    boosters: {shape: none, count: 0}
+    engines: {count: 1, pattern: single}
+    livery: unknown
+    class: measured
+    source: "Wikipedia PSLV: the CA (core alone) configuration carries no strap-on boosters"
+
+  # ---- GSLV is NOT matched at the family level: Mk II and LVM-3 are different rockets --
+  - id: gslv-mk2
+    display: "GSLV Mk II"
+    match: {full_name: ["GSLV Mk. II"]}
+    stands_for: variant
+    height_m: 49.13
+    core_dia_m: 2.8
+    taper: tube
+    top: {kind: fairing, dia_m: 3.4}
+    boosters: {shape: liquid_cylindrical, count: 4, dia_m: 2.1}
+    engines: {count: 1, pattern: single}
+    livery: unknown
+    class: measured
+    source: "Wikipedia GSLV: 49.13 m, 2.8 m S139 solid core, four L40H LIQUID strap-ons of 2.1 m, 3.4 m fairing"
+    note: "unusual: liquid strap-ons around a solid core. Strap-on length is not published and is not written down."
+
+  - id: lvm3
+    display: "LVM3"
+    match: {full_name: ["Launch Vehicle Mark-3 (GSLV Mk III)"]}
+    stands_for: variant
+    height_m: 43.43
+    core_dia_m: 4.0
+    taper: tube
+    top: {kind: fairing, dia_m: 5.0, len_m: 10.75}
+    boosters: {shape: solid_fat, count: 2, dia_m: 3.2, len_m: 25.0}
+    engines: {count: 2, pattern: twin}
+    livery: unknown
+    class: measured
+    source: "Wikipedia LVM3: 43.43 m, 4.0 m L110 core with two Vikas, two S200 boosters of 3.2 m x 25 m, 5 m x 10.75 m fairing"
+    note: "short and stubby, and the boosters are LARGER than the core stage -- they dominate the outline."
+
+  # ---- Long March: named variants only, because the family spans four different shapes --
+  - id: long-march-2d
+    display: "Long March 2D"
+    match: {full_name: ["Long March 2D/YZ-3"]}
+    stands_for: variant
+    height_m: 41.056
+    core_dia_m: 3.35
+    taper: tube
+    top: {kind: fairing}
+    boosters: {shape: none, count: 0}
+    engines: {count: 4, pattern: unknown}
+    livery: unknown
+    class: measured
+    source: "Wikipedia Long March 2D: 41.056 m, 3.35 m, YF-21C (four YF-20C chambers)"
+    note: "the fairing diameter could not be sourced. LM-2D is widely reported with a fairing NARROWER than its body, which would be a real silhouette feature; without a source it is drawn flush."
+
+  - id: long-march-2f
+    display: "Long March 2F"
+    match: {full_name: ["Long March 2F/G"]}
+    stands_for: variant
+    height_m: 58.34
+    core_dia_m: 3.35
+    taper: tube
+    top: {kind: capsule_tower}
+    boosters: {shape: liquid_cylindrical, count: 4, dia_m: 2.25, len_m: 15.33}
+    engines: {count: 8, pattern: quad}
+    livery: unknown
+    class: measured
+    source: "Wikipedia Long March 2F: 58.34 m, 3.35 m core, four 2.25 m x 15.33 m liquid strap-ons, four YF-20B on the core plus one per booster, Shenzhou and its escape tower on top"
+    note: "the crewed vehicle: a capsule and an escape tower, not a fairing. It is the reason there is no `Long March 2` family row -- 2D is a bare tube."
+
+  - id: long-march-5
+    display: "Long March 5"
+    match: {full_name: ["Long March 5"]}
+    stands_for: variant
+    height_m: 56.97
+    core_dia_m: 5.0
+    taper: tube
+    top: {kind: fairing}
+    boosters: {shape: liquid_cylindrical, count: 4, dia_m: 3.35, len_m: 27.6}
+    engines: {count: 2, pattern: twin}
+    livery: unknown
+    class: measured
+    source: "Wikipedia Long March 5: 56.97 m, 5 m core, four 3.35 m x 27.6 m boosters, two YF-77"
+
+  - id: long-march-5b
+    display: "Long March 5B"
+    match: {full_name: ["Long March 5B"]}
+    stands_for: variant
+    height_m: 53.66
+    core_dia_m: 5.0
+    taper: tube
+    top: {kind: fairing}
+    boosters: {shape: liquid_cylindrical, count: 4, dia_m: 3.35, len_m: 27.6}
+    engines: {count: 2, pattern: twin}
+    livery: unknown
+    class: measured
+    source: "Wikipedia Long March 5: the 5B is 53.66 m and drops the second stage; same core and boosters"
+
+  - id: long-march-8a
+    display: "Long March 8A"
+    match: {full_name: ["Long March 8A"], family: ["Long March 8"]}
+    stands_for: variant
+    height_m: 50.5
+    core_dia_m: 3.35
+    taper: tube
+    top: {kind: fairing, dia_m: 5.2}
+    boosters: {shape: liquid_cylindrical, count: 2, dia_m: 2.25, len_m: 26.9}
+    engines: {count: 2, pattern: twin}
+    livery: unknown
+    class: measured
+    source: "Wikipedia Long March 8: 50.5 m, 3.35 m core, two 2.25 m x 26.9 m boosters with one YF-100 each, 5.2 m fairing option"
+    note: "a 5.2 m fairing over a 3.35 m body: a pronounced hammerhead."
+
+  - id: long-march-10
+    display: "Long March 10"
+    match: {full_name: ["Long March 10"]}
+    stands_for: variant
+    height_m: 92.5
+    core_dia_m: 5.0
+    taper: tube
+    top: {kind: capsule_tower, dia_m: 5.0}
+    boosters: {shape: liquid_core_clone, count: 2, dia_m: 5.0}
+    engines: {count: 21, pattern: unknown}
+    livery: unknown
+    class: measured
+    source: "Wikipedia Long March 10: 92.5 m, 5 m core, two side boosters identical to the core, seven YF-100K per body, three stages, crew escape tower"
+    note: "Long March 10A is the single-stick variant with no boosters; its height could not be sourced, so it has no row and falls to the generic rocket."
+
+  - id: long-march-12a
+    display: "Long March 12A"
+    match: {full_name: ["Long March 12A"], family: ["Long March 12"]}
+    stands_for: variant
+    height_m: 69.0
+    core_dia_m: 3.8
+    taper: hammerhead
+    top: {kind: fairing, dia_m: 4.2}
+    boosters: {shape: none, count: 0}
+    engines: {count: 7, pattern: unknown}
+    livery: unknown
+    class: measured
+    disputed: "Wikipedia about 69 m with the 4.2 m fairing; SpaceNews 70.4 m"
+    source: "Wikipedia Long March 12A; SpaceNews on the first reusable landing attempt, 23 Dec 2025 (failed, about 2 km off)"
+    note: "the engine count is disputed too: Wikipedia says seven Longyun-70+, SpaceNews reports the same flight with no count. No individual bells are drawn."
+
+  - id: nuri
+    display: "Nuri"
+    match: {full_name: ["KSLV-2 Nuri"], family: ["KSLV"]}
+    stands_for: variant
+    height_m: 47.2
+    core_dia_m: 3.5
+    taper: stepped
+    sections: [{dia_m: 3.5}, {dia_m: 2.6}]
+    top: {kind: fairing}
+    boosters: {shape: none, count: 0}
+    engines: {count: 4, pattern: unknown}
+    livery: unknown
+    class: measured
+    disputed: "Wikipedia 3.5 m first stage; Gunter's Space Page 3.3 m"
+    source: "Wikipedia Nuri (47.2 m, four KRE-075 on stage 1); Gunter's Space Page KSLV-2 for the per-stage diameters -- both sources agree stages 2 and 3 are 2.6 m"
+    note: "the step from 3.5 m to 2.6 m is real whichever first-stage figure wins, which is why it is drawn and the height is flagged disputed. Section lengths are not published."
+
+  - id: themis
+    display: "the Themis demonstrator"
+    match: {full_name: ["Themis Demonstrator"]}
+    stands_for: variant
+    height_m: 28.0
+    core_dia_m: 3.5
+    taper: tube
+    top: {kind: none}
+    boosters: {shape: none, count: 0}
+    engines: {count: 1, pattern: single}
+    livery: unknown
+    class: measured
+    disputed: "ESA 28 m; ArianeGroup 30 m standing on its legs"
+    source: "ESA Themis; Wikipedia Themis programme: one Prometheus methalox engine, stainless steel tanks, hop tests at Esrange"
+    note: "NOT an orbital launch vehicle. A single-engine hop-test article with no fairing, no payload and no upper stage -- which is why `top: none`. Drawing a fairing on it would be the app asserting a rocket that does not exist."
+
+  - id: hanbit-nano
+    display: "HANBIT-Nano"
+    match: {full_name: ["HANBIT-Nano"], family: ["HANBIT"]}
+    stands_for: variant
+    height_m: 21.8
+    core_dia_m: 1.4
+    taper: tube
+    top: {kind: fairing, dia_m: 1.4}
+    boosters: {shape: none, count: 0}
+    engines: {count: 1, pattern: single}
+    livery: unknown
+    class: measured
+    source: "Wikipedia Innospace HANBIT-NANO: 21.8 m, 1.4 m, one 25-tf hybrid engine (paraffin grain plus LOX), carbon-composite fairing"
+    note: "hybrid propulsion, which almost nothing else flying uses."
+
+  - id: angara-12
+    display: "Angara 1.2"
+    match: {full_name: ["Angara 1.2"], family: ["Angara 1.2", "Angara"]}
+    stands_for: variant
+    height_m: 41.5
+    core_dia_m: 2.9
+    taper: tube
+    top: {kind: fairing}
+    boosters: {shape: none, count: 0}
+    engines: {count: 1, pattern: single}
+    livery: unknown
+    class: measured
+    source: "Wikipedia Angara (rocket family): Angara 1.2 is 41.5 m on one 2.9 m URM-1 with a single RD-191"
+
+  - id: minotaur-iv
+    display: "Minotaur IV"
+    match: {full_name: ["Minotaur IV"], family: ["Minotaur"]}
+    stands_for: variant
+    height_m: 23.88
+    core_dia_m: 2.34
+    taper: tube
+    top: {kind: fairing, dia_m: 2.34}
+    boosters: {shape: none, count: 0}
+    engines: {count: 1, pattern: single}
+    livery: unknown
+    class: measured
+    source: "Wikipedia Minotaur IV: 23.88 m, 2.34 m, four all-solid stages (Peacekeeper SR-118/SR-119/SR-120 plus Orion 38), 2.34 m carbon fairing"
+
+  # ---- in the registry for completeness, and declared as absent from the feed ----------
+  - id: delta-iv-heavy
+    display: "Delta IV Heavy"
+    match: {full_name: ["Delta IV Heavy"]}
+    not_in_feed: "retired; final flight 2024-04-09. Here so the registry is complete, not so it draws."
+    stands_for: variant
+    height_m: 70.7
+    core_dia_m: 5.1
+    taper: tube
+    top: {kind: fairing, dia_m: 5.0, len_m: 12.0}
+    boosters: {shape: liquid_core_clone, count: 2, dia_m: 5.1, len_m: 40.8}
+    engines: {count: 3, pattern: single}
+    livery: {body: "#C96A2E", class: measured}
+    class: measured
+    source: "Wikipedia Delta IV Heavy: 70.7 m, 15.3 m across, three RS-68A one per common booster core, orange foam insulation"
+
+  - id: proton-m
+    display: "Proton-M"
+    match: {full_name: ["Proton-M"]}
+    not_in_feed: "no Proton in the 359 upcoming launches read on 2026-09-07; retirement is expected around 2029."
+    stands_for: variant
+    height_m: 58.2
+    core_dia_m: 4.1
+    taper: tube
+    top: {kind: fairing, dia_m: 4.35}
+    boosters: {shape: flared_base, count: 6, dia_m: 1.65}
+    engines: {count: 6, pattern: ring}
+    livery: unknown
+    class: inferred
+    source: "Wikipedia Proton-M: 58.2 m, 4.1 m upper body, 7.4 m maximum diameter, six outboard tanks each with its own RD-275M, 4.35 m fairing"
+    note: "the outboard tank diameter is not published; 1.65 m is arithmetic from the 7.4 m maximum across and the 4.1 m body, which is why the row is inferred. The flared six-lobed base is unique to Proton."
+
+  - id: angara-a5
+    display: "Angara A5"
+    match: {full_name: ["Angara A5"]}
+    not_in_feed: "no Angara A5 in the upcoming feed on 2026-09-07; only the single-module Angara 1.2."
+    stands_for: variant
+    height_m: 55.4
+    core_dia_m: 2.9
+    taper: tube
+    top: {kind: fairing}
+    boosters: {shape: liquid_core_clone, count: 4, dia_m: 2.9}
+    engines: {count: 5, pattern: single}
+    livery: unknown
+    class: measured
+    source: "Wikipedia Angara (rocket family): 55.4 m, 8.86 m span, four URM-1 modules identical to the core, one RD-191 each"
+
+  - id: zhuque-2e
+    display: "Zhuque-2E"
+    match: {full_name: ["Zhuque-2E"]}
+    not_in_feed: "no LandSpace launch in the upcoming feed on 2026-09-07."
+    stands_for: variant
+    height_m: 55.9
+    core_dia_m: 3.35
+    taper: hammerhead
+    top: {kind: fairing, dia_m: 4.2}
+    boosters: {shape: none, count: 0}
+    engines: {count: 4, pattern: unknown}
+    livery: unknown
+    class: measured
+    source: "Wikipedia Zhuque-2: the 2E is 55.9 m on a 3.35 m body with a 4.2 m fairing and four TQ-12A methalox engines"
+
+  - id: gravity-1
+    display: "Gravity-1"
+    match: {full_name: ["Gravity-1"]}
+    not_in_feed: "the feed carries Gravity-2, which is a different and larger vehicle this registry cannot size."
+    stands_for: variant
+    height_m: 29.4
+    core_dia_m: 2.65
+    taper: hammerhead
+    top: {kind: fairing, dia_m: 4.2}
+    boosters: {shape: solid_clustered, count: 4, dia_m: 1.4}
+    engines: {count: 1, pattern: single}
+    livery: unknown
+    class: inferred
+    source: "Wikipedia Gravity-1: 29.4 m, 2.65 m core, four ground-lit solid strap-ons, 4.2 m fairing, sea-launched from the Yellow Sea"
+    note: "the strap-on diameter is not published; 1.4 m is inferred from the 2.65 m core inside the 4.2 m fairing envelope, which is why the row is inferred."
+
+  - id: kinetica-1
+    display: "Kinetica-1"
+    match: {full_name: ["Kinetica-1"]}
+    not_in_feed: "no CAS Space launch in the upcoming feed on 2026-09-07."
+    stands_for: variant
+    height_m: 29.7
+    core_dia_m: 2.65
+    taper: tube
+    top: {kind: fairing}
+    boosters: {shape: none, count: 0}
+    engines: {count: 1, pattern: single}
+    livery: unknown
+    class: measured
+    source: "Wikipedia Kinetica 1: 29.7 m, 2.65 m, four all-solid stages"
+    note: "near-identical in height and diameter to Gravity-1. The four strap-ons are the only reliable discriminator, which is exactly why both rows exist."
+
+  - id: kuaizhou-1a
+    display: "Kuaizhou-1A"
+    match: {full_name: ["Kuaizhou-1A"]}
+    not_in_feed: "no Kuaizhou in the upcoming feed on 2026-09-07."
+    stands_for: variant
+    height_m: 19.4
+    core_dia_m: 1.4
+    taper: tube
+    top: {kind: fairing, dia_m: 1.4}
+    boosters: {shape: none, count: 0}
+    engines: {count: 1, pattern: single}
+    livery: unknown
+    class: measured
+    source: "Wikipedia Kuaizhou: the 1A is 19.4 m on 1.4 m, three solid stages and a liquid fourth, launched from a road-mobile transporter-erector"
+    note: "Kuaizhou-11 has no row: its overall height is absent from the source that covers the rest of the family."
+
+  - id: minotaur-i
+    display: "Minotaur I"
+    match: {full_name: ["Minotaur I"]}
+    not_in_feed: "no Minotaur I in the upcoming feed on 2026-09-07; only Minotaur IV."
+    stands_for: variant
+    height_m: 19.21
+    core_dia_m: 1.67
+    taper: tube
+    top: {kind: fairing, dia_m: 1.67}
+    boosters: {shape: none, count: 0}
+    engines: {count: 1, pattern: single}
+    livery: unknown
+    class: measured
+    source: "Wikipedia Minotaur I: 19.21 m, 1.67 m, Minuteman II M55A1 and SR19 under Orion 50XL and Orion 38"
+
+  # ---- last resort before generic: a provider whose vehicles we cannot name ------------
+  - id: small-commercial-orbital
+    display: "a small commercial launcher"
+    match: {provider: ["Orbex", "Skyrora", "HyImpulse", "Latitude", "Gilmour Space Technologies",
+                       "Rocket Factory Augsburg", "Interstellar Technologies",
+                       "Agency for Defense Development"]}
+    stands_for: family
+    height_m: 20.0
+    core_dia_m: 1.5
+    taper: tube
+    top: {kind: fairing, dia_m: 1.5}
+    boosters: {shape: none, count: 0}
+    engines: {count: 1, pattern: unknown}
+    livery: unknown
+    class: inferred
+    source: "class-typical dimensions for a small commercial orbital launcher. NOT this vehicle: no source was read for Prime, Skyrora XL, SL1, Zephyr, RFA One or ZERO"
+    note: "the card says this is a family shape, so a reader is told the drawing is a class and not the rocket. Providers whose vehicles are not small -- Stoke Space, i-Space, Orienspace, Relativity, MaiaSpace -- are deliberately absent and fall to the generic rocket."
+
+# Every distinct value the live LL2 2.3.0 upcoming feed returned on 2026-09-07, with the number
+# of launches carrying it. All 359 launches were read, in four pages of 100. This is the evidence
+# for `match:`, because CI cannot phone LL2: a row whose match string is not here is refused
+# unless it says `not_in_feed:` and why. Refreshing it is a scripted read of the feed and a diff.
+#
+# Note the two shapes of gap it makes visible. `families` is EMPTY on 71 of the 359 launches
+# (19.8%), because LL2 only creates a family record for a manufacturer with more than one
+# launcher -- so Electron, the second most frequent vehicle in the feed, has no family at all and
+# must be matched by full_name. And the root family is too coarse in both directions: "Falcon"
+# covers Falcon 9 and Falcon Heavy, "GSLV" covers two rockets that look nothing alike.
+observed:
+  - {seen: "Falcon", as: family, n: 122}
+  - {seen: "Falcon 9", as: family, n: 109}
+  - {seen: "Vulcan", as: family, n: 30}
+  - {seen: "Ariane", as: family, n: 27}
+  - {seen: "Ariane 6", as: family, n: 27}
+  - {seen: "Vega", as: family, n: 24}
+  - {seen: "GSLV", as: family, n: 12}
+  - {seen: "Long March", as: family, n: 9}
+  - {seen: "H3", as: family, n: 8}
+  - {seen: "Firefly Alpha", as: family, n: 7}
+  - {seen: "Atlas", as: family, n: 6}
+  - {seen: "Atlas V", as: family, n: 6}
+  - {seen: "New Glenn", as: family, n: 6}
+  - {seen: "Soyuz", as: family, n: 6}
+  - {seen: "Soyuz 2", as: family, n: 6}
+  - {seen: "PSLV", as: family, n: 5}
+  - {seen: "Space Launch System", as: family, n: 5}
+  - {seen: "Starship", as: family, n: 4}
+  - {seen: "Terran", as: family, n: 4}
+  - {seen: "Long March 5", as: family, n: 3}
+  - {seen: "Epsilon", as: family, n: 2}
+  - {seen: "KSLV", as: family, n: 2}
+  - {seen: "Long March 10", as: family, n: 2}
+  - {seen: "Long March 2", as: family, n: 2}
+  - {seen: "Miura", as: family, n: 2}
+  - {seen: "Angara", as: family, n: 1}
+  - {seen: "Angara 1.2", as: family, n: 1}
+  - {seen: "Astra Rocket", as: family, n: 1}
+  - {seen: "Eris", as: family, n: 1}
+  - {seen: "HANBIT", as: family, n: 1}
+  - {seen: "Long March 12", as: family, n: 1}
+  - {seen: "Long March 8", as: family, n: 1}
+  - {seen: "Minotaur", as: family, n: 1}
+  - {seen: "Mir", as: family, n: 1}
+  - {seen: "Nova", as: family, n: 1}
+
+  - {seen: "Falcon 9 Block 5", as: full_name, n: 109}
+  - {seen: "Electron", as: full_name, n: 41}
+  - {seen: "Vulcan", as: full_name, n: 25}
+  - {seen: "Vega-C", as: full_name, n: 22}
+  - {seen: "Falcon Heavy", as: full_name, n: 13}
+  - {seen: "Ariane 64", as: full_name, n: 12}
+  - {seen: "Spectrum", as: full_name, n: 9}
+  - {seen: "Ariane 62", as: full_name, n: 8}
+  - {seen: "Firefly Alpha Block 2", as: full_name, n: 7}
+  - {seen: "Launch Vehicle Mark-3 (GSLV Mk III)", as: full_name, n: 7}
+  - {seen: "Atlas V N22", as: full_name, n: 6}
+  - {seen: "New Glenn", as: full_name, n: 6}
+  - {seen: "Ariane 6", as: full_name, n: 5}
+  - {seen: "GSLV Mk. II", as: full_name, n: 5}
+  - {seen: "H3-24", as: full_name, n: 5}
+  - {seen: "Space Launch System Block 1B", as: full_name, n: 4}
+  - {seen: "Terran R", as: full_name, n: 4}
+  - {seen: "Neutron", as: full_name, n: 3}
+  - {seen: "PSLV", as: full_name, n: 3}
+  - {seen: "Starship", as: full_name, n: 3}
+  - {seen: "Epsilon S", as: full_name, n: 2}
+  - {seen: "H3-22", as: full_name, n: 2}
+  - {seen: "KSLV-2 Nuri", as: full_name, n: 2}
+  - {seen: "Long March 5", as: full_name, n: 2}
+  - {seen: "Maia", as: full_name, n: 2}
+  - {seen: "Miura 5", as: full_name, n: 2}
+  - {seen: "Soyuz 2.1b", as: full_name, n: 2}
+  - {seen: "Soyuz 2.1b Fregat-M", as: full_name, n: 2}
+  - {seen: "Unknown Launch Vehicle", as: full_name, n: 2}
+  - {seen: "Vulcan VC4L", as: full_name, n: 2}
+  - {seen: "Angara 1.2", as: full_name, n: 1}
+  - {seen: "Ariane 62 Block 2", as: full_name, n: 1}
+  - {seen: "Ariane 64 Block 2", as: full_name, n: 1}
+  - {seen: "Astra Rocket 4", as: full_name, n: 1}
+  - {seen: "Callisto", as: full_name, n: 1}
+  - {seen: "Eris Block 1", as: full_name, n: 1}
+  - {seen: "Gaganyaan Abort Test Booster", as: full_name, n: 1}
+  - {seen: "Gravity-2", as: full_name, n: 1}
+  - {seen: "H3", as: full_name, n: 1}
+  - {seen: "HANBIT-Nano", as: full_name, n: 1}
+  - {seen: "Hyperbola-3", as: full_name, n: 1}
+  - {seen: "Long March 10", as: full_name, n: 1}
+  - {seen: "Long March 10A", as: full_name, n: 1}
+  - {seen: "Long March 12A", as: full_name, n: 1}
+  - {seen: "Long March 2D/YZ-3", as: full_name, n: 1}
+  - {seen: "Long March 2F/G", as: full_name, n: 1}
+  - {seen: "Long March 5B", as: full_name, n: 1}
+  - {seen: "Long March 8A", as: full_name, n: 1}
+  - {seen: "Minotaur IV", as: full_name, n: 1}
+  - {seen: "Mir", as: full_name, n: 1}
+  - {seen: "Nebula-1", as: full_name, n: 1}
+  - {seen: "Nova", as: full_name, n: 1}
+  - {seen: "Orbex Prime", as: full_name, n: 1}
+  - {seen: "PSLV XL", as: full_name, n: 1}
+  - {seen: "PSLV-CA", as: full_name, n: 1}
+  - {seen: "RFA One", as: full_name, n: 1}
+  - {seen: "SL1", as: full_name, n: 1}
+  - {seen: "SSLV", as: full_name, n: 1}
+  - {seen: "Skyrora XL", as: full_name, n: 1}
+  - {seen: "Soyuz 2.1a", as: full_name, n: 1}
+  - {seen: "Soyuz 2.1a Fregat-M", as: full_name, n: 1}
+  - {seen: "Space Launch System Block 1", as: full_name, n: 1}
+  - {seen: "SpaceShipTwo", as: full_name, n: 1}
+  - {seen: "Starship V3", as: full_name, n: 1}
+  - {seen: "Themis Demonstrator", as: full_name, n: 1}
+  - {seen: "Vega-C Block 2", as: full_name, n: 1}
+  - {seen: "Vega-E", as: full_name, n: 1}
+  - {seen: "Vulcan VC2S", as: full_name, n: 1}
+  - {seen: "Vulcan VC4S", as: full_name, n: 1}
+  - {seen: "Vulcan VC6L", as: full_name, n: 1}
+  - {seen: "ZERO", as: full_name, n: 1}
+  - {seen: "Zéphyr", as: full_name, n: 1}
+
+  - {seen: "SpaceX", as: provider, n: 126}
+  - {seen: "Rocket Lab", as: provider, n: 44}
+  - {seen: "United Launch Alliance", as: provider, n: 36}
+  - {seen: "Arianespace", as: provider, n: 27}
+  - {seen: "Avio S.p.A", as: provider, n: 24}
+  - {seen: "Indian Space Research Organization", as: provider, n: 19}
+  - {seen: "China Aerospace Science and Technology Corporation", as: provider, n: 9}
+  - {seen: "Isar Aerospace", as: provider, n: 9}
+  - {seen: "Mitsubishi Heavy Industries", as: provider, n: 8}
+  - {seen: "Firefly Aerospace", as: provider, n: 7}
+  - {seen: "Blue Origin", as: provider, n: 6}
+  - {seen: "Russian Federal Space Agency (ROSCOSMOS)", as: provider, n: 6}
+  - {seen: "National Aeronautics and Space Administration", as: provider, n: 5}
+  - {seen: "Relativity Space", as: provider, n: 4}
+  - {seen: "Japan Aerospace Exploration Agency", as: provider, n: 2}
+  - {seen: "Korea Aerospace Research Institute", as: provider, n: 2}
+  - {seen: "MaiaSpace", as: provider, n: 2}
+  - {seen: "Payload Aerospace S.L.", as: provider, n: 2}
+  - {seen: "Unknown", as: provider, n: 2}
+  - {seen: "Agency for Defense Development", as: provider, n: 1}
+  - {seen: "Astra Space", as: provider, n: 1}
+  - {seen: "Deep Blue Aerospace", as: provider, n: 1}
+  - {seen: "European Space Agency", as: provider, n: 1}
+  - {seen: "Gilmour Space Technologies", as: provider, n: 1}
+  - {seen: "HyImpulse", as: provider, n: 1}
+  - {seen: "Innospace", as: provider, n: 1}
+  - {seen: "Interstellar Technologies", as: provider, n: 1}
+  - {seen: "Latitude", as: provider, n: 1}
+  - {seen: "National Center of Space Research", as: provider, n: 1}
+  - {seen: "Northrop Grumman Space Systems", as: provider, n: 1}
+  - {seen: "Orbex", as: provider, n: 1}
+  - {seen: "Orienspace Technology", as: provider, n: 1}
+  - {seen: "Rocket Factory Augsburg", as: provider, n: 1}
+  - {seen: "Russian Space Forces", as: provider, n: 1}
+  - {seen: "Skyrora", as: provider, n: 1}
+  - {seen: "Stoke Space", as: provider, n: 1}
+  - {seen: "Virgin Galactic", as: provider, n: 1}
+  - {seen: "i-Space", as: provider, n: 1}

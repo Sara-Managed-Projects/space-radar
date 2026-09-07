@@ -33,6 +33,10 @@ def apply_fixture(registry: Path, fixture: dict) -> None:
         "sites": ("sites.yaml", "sites"),
         "textures": ("models.yaml", "textures"),
         "models": ("models.yaml", "models"),
+        # Spec: adding a launch vehicle is a row here, plus the feed evidence that it can ever
+        # fire. Nothing under site/js/ -- the builder composes from these fields.
+        "rockets": ("rockets.yaml", "rockets"),
+        "observed": ("rockets.yaml", "observed"),
     }
     for section, rows in fixture.items():
         filename, key = targets[section]
@@ -80,13 +84,14 @@ def main() -> int:
 
     # Second half: prove the allow-list is real by checking what the fixture is allowed to be.
     for section in fixture:
-        if section not in {"worlds", "sources", "layers", "sites", "textures", "models"}:
+        if section not in {"worlds", "sources", "layers", "sites", "textures", "models",
+                           "rockets", "observed"}:
             print(f"FAIL: fixture section {section!r} is not a registry section, so this "
                   f"test would be passing while the architecture regressed")
             return 1
 
-    print("\nPASS: a new world, a new source, a new layer, a new texture and a new surface "
-          "site are rows. Nothing under app/ was needed.")
+    print("\nPASS: a new world, a new source, a new layer, a new texture, a new surface site "
+          "and two new launch vehicles are rows. Nothing under app/ was needed.")
     return 0
 
 
