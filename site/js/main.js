@@ -24,6 +24,7 @@ import { createControls } from './ui/controls.js';
 import { createStatus } from './ui/status.js';
 import { createMobileUI } from './ui/mobile.js';
 import { createTrip } from './ui/trip.js';
+import { createTripFrame } from './ui/tripframe.js';
 
 const MOMENTS = ['wonder', 'now', 'next'];
 
@@ -90,6 +91,9 @@ export async function boot({ setStatus } = {}) {
   createControls(ctx);
   createStatus(ctx);
   ctx.mobile = createMobileUI();
+  // The cinematic frame, after the panels and the mobile bar exist: it hides all three, and it
+  // reads ctx.mobile to close a phone drawer that is standing open when a trip starts.
+  ctx.tripFrame = createTripFrame(ctx);
   setMoment(moment, { silent: true });
 
   // Data arrives in the background, layer by layer, slowest last. Nothing here is awaited by the

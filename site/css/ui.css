@@ -1228,3 +1228,515 @@
 .sr-search.is-reduced-motion .sr-search__option {
   transition: none;
 }
+
+/* ------------------------------------------------------------------------------------ */
+/* The cinematic frame (js/ui/tripframe.js)                                               */
+/*                                                                                        */
+/* A mode is a class on <html>, exactly as ui/mobile.js does it with `sr-phone`: one class */
+/* add, one class remove, no DOM surgery in another module's tree, and it restores exactly.*/
+/* `html[data-trip-phase]` carries the phase, so the few things that differ between a      */
+/* flight and a dwell are one selector each rather than a branch in JS.                    */
+/*                                                                                        */
+/* THE LETTERBOX IS WHERE THE CONTROLS LIVE. The picture keeps its full width and loses    */
+/* about an eighth of its height to furniture that is supposed to be there -- which is why */
+/* the controls cost nothing from the shot.                                                */
+/* ------------------------------------------------------------------------------------ */
+
+:root {
+  --sr-z-trip: 60;
+  --sr-z-tripfade: 8; /* over the canvas and the labels, under every panel and the card */
+  --sr-letterbox: min(6.5vh, 64px);
+}
+
+/* The panel, the status rail and the phone bar go away together. `inert` is set in JS and is
+   what removes them from the tab order and the accessibility tree; this is only the picture. */
+html.sr-trip #sr-controls,
+html.sr-trip #sr-status {
+  opacity: 0;
+  transform: translateX(-110%);
+  pointer-events: none;
+  transition:
+    opacity var(--sr-slow) var(--sr-ease),
+    transform 400ms var(--sr-ease);
+}
+
+/* The phone drawers are already translated on their own axis, so they leave downwards -- and
+   this selector has to out-specify site.css's `html.sr-phone #sr-controls`. */
+html.sr-trip.sr-phone #sr-controls,
+html.sr-trip.sr-phone #sr-status {
+  transform: translateY(102%);
+}
+
+/* ui/mobile.js appends this to document.body, NOT to #sr-controls, so hiding the panel alone
+   leaves it sitting over the picture. It is the single easiest thing here to get wrong. */
+html.sr-trip .sr-mobilebar {
+  opacity: 0;
+  transform: translateY(110%);
+  pointer-events: none;
+  transition:
+    opacity var(--sr-slow) var(--sr-ease),
+    transform 400ms var(--sr-ease);
+}
+
+/* The scene's own labels: gone while the camera is moving, back at a whisper once it is not.
+   The subject's own label stays off either way, because the card names it. */
+html.sr-trip #labels {
+  opacity: 0;
+  transition: opacity var(--sr-slow) var(--sr-ease);
+}
+
+html.sr-trip[data-trip-phase='dwell'] #labels,
+html.sr-trip[data-trip-phase='paused'] #labels {
+  opacity: 0.6;
+}
+
+.sr-trip {
+  position: fixed;
+  inset: 0;
+  z-index: var(--sr-z-trip);
+  font-family: var(--sr-font);
+  /* The frame is a frame: the scene under it stays draggable, and only the bars take input. */
+  pointer-events: none;
+}
+
+.sr-trip__bar {
+  position: fixed;
+  right: 0;
+  left: 0;
+  display: flex;
+  gap: var(--sr-gap);
+  align-items: center;
+  padding: 0 var(--sr-pad);
+  color: var(--sr-text);
+  background: var(--sr-space-edge);
+  pointer-events: auto;
+  transition: transform 400ms var(--sr-ease);
+}
+
+.sr-trip__bar--top {
+  top: 0;
+  min-height: var(--sr-letterbox);
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.sr-trip__bar--bottom {
+  bottom: 0;
+  min-height: var(--sr-letterbox);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  flex-wrap: wrap;
+}
+
+.sr-trip__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* `display: flex` on any of these beats the user-agent's `[hidden] { display: none }`, so the
+   attribute the JS sets has to be answered here or a hidden row stays on screen. Measured: the
+   intro card shipped for about ten minutes with the pause chip visible behind it. */
+.sr-trip__controls[hidden],
+.sr-trip__progress[hidden],
+.sr-trip__chip[hidden],
+.sr-trip__panel[hidden] {
+  display: none;
+}
+
+.sr-trip__controls {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 6px;
+  align-items: center;
+}
+
+.sr-trip__btn {
+  appearance: none;
+  min-height: 34px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--sr-text);
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid var(--sr-line);
+  border-radius: 999px;
+}
+
+.sr-trip__btn:hover:not(:disabled) {
+  color: var(--sr-ember);
+  border-color: var(--sr-ember);
+}
+
+.sr-trip__btn:disabled {
+  color: var(--sr-text-dim);
+  cursor: default;
+  opacity: 0.5;
+}
+
+.sr-trip__btn--ember {
+  color: var(--sr-ink);
+  background: var(--sr-ember);
+  border-color: var(--sr-ember);
+}
+
+.sr-trip__btn--leave,
+.sr-trip__btn--pause {
+  flex: 0 0 auto;
+}
+
+/* Progress: text AND segments. Dots alone are unreadable to a screen reader and illegible past
+   about eight, so the counter beside them is the one that is announced. */
+.sr-trip__progress {
+  display: flex;
+  flex: 1 1 200px;
+  gap: var(--sr-gap);
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.sr-trip__count {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: var(--sr-text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-trip__segs {
+  display: flex;
+  flex: 0 1 220px;
+  gap: 4px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.sr-trip__seg {
+  position: relative;
+  flex: 1 1 0;
+  height: 3px;
+  overflow: hidden;
+  background: var(--sr-line);
+  border-radius: 2px;
+}
+
+.sr-trip__seg.is-done::after,
+.sr-trip__seg.is-here::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  background: var(--sr-ember);
+  transform-origin: left center;
+}
+
+.sr-trip__seg.is-done::after {
+  transform: scaleX(1);
+}
+
+/* The dwell made visible. The most common complaint about anything that advances on its own is
+   not knowing how long you have; --sr-fill is written each frame from the SAME timer that ends
+   the stop, so a pause freezes the bar for the same reason the stop does not end. */
+.sr-trip__seg.is-here::after {
+  transform: scaleX(var(--sr-fill, 0));
+  background: var(--sr-ember);
+}
+
+.sr-trip__chip {
+  display: flex;
+  flex: 1 1 auto;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.sr-trip__chiptext {
+  font-size: 12px;
+  color: var(--sr-stale);
+}
+
+/* The stop's position and title for a screen reader. The CARD is the accessible representation
+   of the stop, so the body is not repeated here. */
+.sr-trip__live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.sr-trip__stopname {
+  margin: 0;
+  font-size: 12px;
+}
+
+/* The intro and the end card. Centred, over the scene, and the only thing on screen that asks
+   for a decision. */
+.sr-trip__panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  width: min(420px, calc(100vw - 32px));
+  padding: 20px;
+  color: var(--sr-text);
+  pointer-events: auto;
+  background: var(--sr-panel);
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius);
+  transform: translate(-50%, -50%);
+  backdrop-filter: blur(8px);
+}
+
+.sr-trip__paneltitle {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.sr-trip__panelshape {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--sr-text-dim);
+}
+
+.sr-trip__panelnote {
+  margin: 0 0 12px;
+  font-size: 12.5px;
+  color: var(--sr-text-dim);
+}
+
+.sr-trip__panelrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* The reduced-motion cross-fade: over the CANVAS, never over the card, or the scene appears to
+   teleport underneath stationary text. Nothing listens to `camera-fade` but this. */
+.sr-trip__fade {
+  position: fixed;
+  inset: 0;
+  z-index: var(--sr-z-tripfade);
+  pointer-events: none;
+  background: var(--sr-space-edge);
+  opacity: 0;
+}
+
+.sr-trip__fade.is-on {
+  opacity: 1;
+}
+
+/* The card during a trip -------------------------------------------------------------- */
+
+/* Phone: a bottom sheet that sits ABOVE the bottom letterbox rather than under it. */
+html.sr-trip #sr-card {
+  bottom: calc(var(--sr-letterbox) + 8px);
+  max-height: 38vh;
+}
+
+/* While the camera is moving the stop's TITLE is all there is -- ui/trip.js renders the lead
+   alone, so there is no body here to hide. This only takes the chrome off it. */
+html.sr-trip[data-trip-phase='flight'] #sr-card {
+  border-color: transparent;
+  box-shadow: none;
+  background: transparent;
+  backdrop-filter: none;
+}
+
+/* The body arrives at rest: opacity, and 8 px of rise that reduced motion drops. */
+html.sr-trip #sr-card .sr-card__leadbody,
+html.sr-trip #sr-card .sr-card__body,
+html.sr-trip #sr-card .sr-card__foot {
+  animation: sr-trip-rise 200ms var(--sr-ease) both;
+}
+
+@keyframes sr-trip-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Collapsed: the stop's words stay, everything the object's own card knows folds away. The card
+   is also made `inert` in JS, so what is on screen and what a reader can reach agree. */
+html.sr-trip-collapsed #sr-card .sr-card__header,
+html.sr-trip-collapsed #sr-card .sr-card__body,
+html.sr-trip-collapsed #sr-card .sr-card__foot {
+  display: none;
+}
+
+html.sr-trip-collapsed #sr-card .sr-card__lead {
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border-bottom: 0;
+}
+
+@media (min-width: 900px) {
+  /* Desktop: a right rail, vertically centred, deliberately shorter and narrower than the
+     ordinary card -- the scene is the point and the card covers it. */
+  html.sr-trip #sr-card {
+    top: 50%;
+    right: 24px;
+    bottom: auto;
+    left: auto;
+    width: 360px;
+    max-height: 44vh;
+    overflow-y: auto;
+    transform: translateY(-50%);
+  }
+
+  .sr-trip__title {
+    font-size: 15px;
+  }
+}
+
+/* Phones: 4vh of letterbox would be 32 px, which is not a tap target, so the bottom bar is
+   sized by its controls instead and the top bar stays thin. */
+@media (max-width: 600px) {
+  :root {
+    --sr-letterbox: 40px;
+  }
+
+  .sr-trip__bar--bottom {
+    gap: 8px;
+    padding: 8px var(--sr-pad);
+  }
+
+  .sr-trip__controls {
+    flex: 1 1 100%;
+    justify-content: space-between;
+  }
+
+  .sr-trip__btn {
+    padding: 0 10px;
+    min-height: 40px;
+    font-size: 12.5px;
+  }
+
+  .sr-trip__progress {
+    flex: 1 1 100%;
+    justify-content: space-between;
+  }
+
+  html.sr-trip #sr-card {
+    bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    max-height: 38vh;
+    overflow-y: auto;
+  }
+}
+
+/* REDUCED MOTION IS A CUT, NEVER A SHORTER MOVE: compressing a four-second sweep into one raises
+   the angular velocity fourfold, and the trigger scales with rate rather than duration. So the
+   letterbox does not slide, the card does not rise, and the frame cross-fades instead. The DWELL
+   is untouched -- somebody who asked for less motion often needs more time, not less, and
+   ui/trip.js derives it from word count so this file cannot shorten it even by accident. */
+@media (prefers-reduced-motion: reduce) {
+  html.sr-trip #sr-controls,
+  html.sr-trip #sr-status,
+  html.sr-trip .sr-mobilebar,
+  html.sr-trip #labels,
+  .sr-trip__bar {
+    transition: none;
+  }
+
+  html.sr-trip #sr-card .sr-card__leadbody,
+  html.sr-trip #sr-card .sr-card__body,
+  html.sr-trip #sr-card .sr-card__foot {
+    animation-name: sr-trip-fade;
+  }
+}
+
+@keyframes sr-trip-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* The Trips section of the panel (js/ui/controls.js) ---------------------------------- */
+
+.sr-trips__hint {
+  margin: 0 0 8px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--sr-text-dim);
+}
+
+.sr-trips__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.sr-trips__start {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  font: inherit;
+  color: var(--sr-text);
+  text-align: left;
+  cursor: pointer;
+  background: var(--sr-raise);
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius-sm);
+}
+
+.sr-trips__start:hover:not(:disabled) {
+  border-color: var(--sr-ember);
+}
+
+/* Greyed WITH ITS REASON, and still readable: the reason is the point of not hiding it. */
+.sr-trips__start.is-off {
+  cursor: default;
+  background: transparent;
+  opacity: 1;
+}
+
+.sr-trips__start.is-off .sr-trips__title,
+.sr-trips__start.is-off .sr-trips__blurb {
+  color: var(--sr-text-dim);
+}
+
+.sr-trips__start.is-off .sr-trips__shape {
+  padding-left: 8px;
+  color: var(--sr-text);
+  border-left: 2px solid var(--sr-stale);
+}
+
+.sr-trips__title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sr-trips__blurb {
+  font-size: 12px;
+  color: var(--sr-text-dim);
+}
+
+.sr-trips__shape {
+  font-size: 11.5px;
+  color: var(--sr-text-dim);
+}

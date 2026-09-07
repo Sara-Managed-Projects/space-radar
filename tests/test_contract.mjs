@@ -45,6 +45,7 @@ const CONTRACT = {
   'ui/cards.js': ['showCard', 'hideCard'],
   'ui/controls.js': ['createControls'],
   'ui/trip.js': ['createTrip'],
+  'ui/tripframe.js': ['createTripFrame', 'shapeLine'],
   'ui/status.js': ['createStatus'],
   'copy/en.js': ['COPY', 'compare'],
 };
@@ -1316,6 +1317,68 @@ for (const file of allFiles) {
     notes.push(`tours: ${TOURS.length} trips, ${stops} stops, ${resolvable} resolvable without a network`);
   } catch (e) {
     problems.push(`TOUR     could not check registry/tours.yaml against the app: ${String(e)}`);
+  }
+}
+
+// --- the length a trip promises is the length two files computed ---------------------------
+//
+// The intro card and the panel row both say "5 stops, about two minutes". That sentence is built
+// from `estimate_ms`, which scripts/gen_tours_js.py writes into the mirror -- and from the same
+// arithmetic done again in site/js/ui/trip.js over the stops that actually RESOLVED, because the
+// trip on offer is not always the trip the file describes.
+//
+// Two files computing one promise is exactly the kind of agreement that rots silently: change the
+// per-flight allowance in one and the number a visitor is shown quietly stops being the number
+// anybody computed. Nothing in the browser would notice, which is why this is here.
+{
+  try {
+    const gen = readFileSync(join(ROOT, 'scripts/gen_tours_js.py'), 'utf8');
+    const trip = readFileSync(join(JS, 'ui/trip.js'), 'utf8');
+    const num = (src, name, re) => {
+      const m = src.match(re);
+      if (!m) {
+        problems.push(`TRIP     could not find ${name}; the two halves of the promise cannot be compared`);
+        return null;
+      }
+      return Number(m[1]);
+    };
+    const genFlight = num(gen, 'FLIGHT_ESTIMATE_MS in the generator', /FLIGHT_ESTIMATE_MS\s*=\s*(\d+)/);
+    const genSettle = num(gen, 'SETTLE_MS in the generator', /SETTLE_MS\s*=\s*(\d+)/);
+    const tripFlight = num(trip, 'FLIGHT_ESTIMATE_MS in ui/trip.js', /FLIGHT_ESTIMATE_MS\s*=\s*(\d+)/);
+    const tripSettle = num(trip, 'SETTLE_MS in ui/trip.js', /const SETTLE_MS\s*=\s*(\d+)/);
+    if (genFlight !== null && tripFlight !== null && genFlight !== tripFlight) {
+      problems.push(
+        `TRIP     the per-flight allowance is ${genFlight} ms in the generator and ${tripFlight} ms ` +
+          `in ui/trip.js, so the length on the row and the length in the mirror are two numbers`
+      );
+    }
+    if (genSettle !== null && tripSettle !== null && genSettle !== tripSettle) {
+      problems.push(`TRIP     SETTLE_MS is ${genSettle} in the generator and ${tripSettle} in ui/trip.js`);
+    }
+
+    // And the sentence itself never promises LESS time than it was given. Understating is the
+    // direction that breaks a promise; overstating only ends the trip early.
+    const { shapeLine } = await import(join(JS, 'ui/tripframe.js'));
+    const { TOURS } = await import(join(JS, 'data/tours.js'));
+    for (const tour of TOURS) {
+      const line = shapeLine(tour.stops.length, tour.estimate_ms);
+      const mins = Number((line.match(/about (\d+) minutes/) || [])[1]);
+      if (Number.isFinite(mins) && mins * 60000 < tour.estimate_ms) {
+        problems.push(`TRIP     '${tour.id}' is offered as ${line} but runs ${tour.estimate_ms} ms`);
+      }
+      if (!Number.isFinite(mins) && tour.estimate_ms > 90000) {
+        problems.push(`TRIP     '${tour.id}' runs ${tour.estimate_ms} ms and is offered as "${line}"`);
+      }
+      if (!line.includes(String(tour.stops.length))) {
+        problems.push(`TRIP     '${tour.id}' is offered as "${line}", which does not state its stop count`);
+      }
+    }
+    notes.push(
+      `trips: the flight allowance is ${tripFlight} ms in both halves; ` +
+        `${TOURS.map((x) => shapeLine(x.stops.length, x.estimate_ms)).join('; ')}`
+    );
+  } catch (e) {
+    problems.push(`TRIP     could not check the promised length: ${String(e)}`);
   }
 }
 

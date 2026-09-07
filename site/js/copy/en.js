@@ -685,7 +685,69 @@ export const COPY = {
     // A stop that resolved and then stopped having a position. It never advances on its own: a
     // failure that scrolls past is a failure nobody can report.
     heldBody: 'We could not find this one just now. Everything else on the trip still works.',
+    heldTitle: 'We could not find this one',
     stopOf: '{n} of {count}',
+
+    // --- the row in the left panel -------------------------------------------------------
+    sectionTitle: 'Trips',
+    sectionHint: 'The camera flies it for you. Escape leaves at any time, and the view stays.',
+    // Stated only AFTER the stops have been resolved. Before that the row says it is still
+    // working it out, because a count printed before resolution is a guess wearing a fact's
+    // clothes -- and this app's whole argument is that those are different things.
+    planning: 'Working out what can be shown…',
+    shape: '{count} stops · about {mins} minutes',
+    shapeOneMinute: '{count} stops · about a minute',
+    startTitle: 'Fly this trip',
+
+    // --- the intro card ------------------------------------------------------------------
+    // It sets the expectation, it makes the trip a decision rather than an ambush, and it gives
+    // the scene a beat to settle before the first flight.
+    introStart: 'Start',
+    introSkip: 'Not now',
+    droppedOne: 'One stop cannot be shown today and is not counted above.',
+    droppedMany: '{n} stops cannot be shown today and are not counted above.',
+    clockClamped: 'Time has been set back to normal speed for this trip.',
+
+    // --- the letterbox -------------------------------------------------------------------
+    frameLabel: 'guided trip',
+    stopRole: 'stop',
+    liveLabel: '{n} of {count}: {title}',
+    pause: 'Pause',
+    pauseTitle: 'Pause the trip',
+    play: 'Play',
+    playTitle: 'Carry on with the trip',
+    back: 'Back',
+    backTitle: 'The stop before this one',
+    next: 'Next',
+    nextTitle: 'The next stop',
+    replay: 'Replay',
+    replayTitle: 'Fly this move again',
+    collapse: 'Hide card',
+    collapseTitle: 'Fold the card away and watch (c)',
+    expand: 'Show card',
+    expandTitle: 'Bring the card back (c)',
+    leave: 'Leave',
+    leaveTitle: 'Leave the trip. The camera stays exactly where it is. (Escape)',
+    progressLabel: 'How far through the trip you are',
+    controlsLabel: 'Trip controls',
+
+    // The chip that replaces the progress row when a hand lands on the camera. Not a modal: a
+    // modal is what makes people feel caught, and the whole point is that grabbing the camera
+    // never ends the trip.
+    pausedChip: 'Trip paused',
+    resume: 'Resume',
+    resumeTitle: 'Fly back to the stop and carry on',
+
+    // --- the end card --------------------------------------------------------------------
+    // An unmarked ending is indistinguishable from a crash. Three offers, and not a menu.
+    endTitle: 'That is the end of the trip.',
+    endBody: 'The camera stays where it is. Nothing here goes back.',
+    endExplore: 'Explore from here',
+    endExploreTitle: 'Keep this view and carry on by yourself',
+    endReplay: 'Watch it again',
+    endNext: 'Next: {title}',
+
+    docTitle: 'Space Radar — {title} — {n} of {count}',
   },
 
   source: {
