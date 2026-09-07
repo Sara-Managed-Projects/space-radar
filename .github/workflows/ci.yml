@@ -29,6 +29,16 @@ jobs:
       # this is the check that it is current.
       - name: The rocket mirror matches the registry
         run: python3 scripts/gen_rockets_js.py --check
+      # Same rule, second registry. registry/oddities.yaml holds the evidence a reviewer reads --
+      # Horizons headers, element dumps, why a secondary source was used -- and ships a whitelisted
+      # subset. A stale mirror means the browser is drawing the previous set of claims.
+      - name: The oddities mirror matches the registry
+        run: python3 scripts/gen_oddities_js.py --check
+      # Every user-visible string lives in site/js/copy/en.js. Three files cited this check by name
+      # before it existed; on the first run it was ever given it found three real leaks in
+      # ui/mobile.js, which is the argument for it in one line.
+      - name: No user-visible string outside copy/en.js
+        run: python3 scripts/check_copy.py
       - name: A new world is a registry row
         run: python3 tests/test_growth.py
       - name: The validator actually refuses

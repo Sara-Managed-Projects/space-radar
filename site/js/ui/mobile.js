@@ -7,6 +7,8 @@
 // This lives in its own file, and adds rather than edits, so `ui/controls.js` and `ui/status.js`
 // stay the single description of what those panels contain. It attaches nothing above 600 px.
 
+import { COPY } from '../copy/en.js';
+
 const PHONE = '(max-width: 600px)';
 
 export function createMobileUI() {
@@ -15,8 +17,8 @@ export function createMobileUI() {
   let openId = null;
 
   const PANELS = [
-    { id: 'sr-controls', label: 'Layers' },
-    { id: 'sr-status', label: 'Sources' },
+    { id: 'sr-controls', label: COPY.mobile.layers },
+    { id: 'sr-status', label: COPY.mobile.sources },
   ];
 
   function panel(id) {
@@ -42,7 +44,7 @@ export function createMobileUI() {
     if (bar) return;
     bar = document.createElement('nav');
     bar.className = 'sr-mobilebar';
-    bar.setAttribute('aria-label', 'Panels');
+    bar.setAttribute('aria-label', COPY.mobile.barLabel);
     for (const p of PANELS) {
       const btn = document.createElement('button');
       btn.type = 'button';

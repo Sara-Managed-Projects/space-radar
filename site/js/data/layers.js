@@ -18,7 +18,14 @@
 
 import { load } from './sources.js';
 import { parseCelestrakGP, parseLaunches, parseComets } from './parsers.js';
-import { sampleAsteroids, sampleDeepSpace, sampleReentries, handKeptSites } from './sample.js';
+import {
+  sampleAsteroids,
+  sampleDeepSpace,
+  sampleReentries,
+  handKeptSites,
+  sampleOddities,
+  attachedOddityCount,
+} from './sample.js';
 
 const DAY_MS = 86400000;
 
@@ -201,6 +208,29 @@ const cometsWorthDrawing = (records, nowMs) => {
     const bright = Number.isFinite(m.absoluteMagnitude) && m.absoluteMagnitude <= 8;
     return near || bright;
   });
+};
+
+/**
+ * The count beside a checkbox, as DATA rather than as a number.
+ *
+ * Every other layer's tick is "how many of these are there", and one number is the whole truth.
+ * This layer's members are in three different states and one number would have to hide two of
+ * them: five carry their own dot, two ride on a spacecraft the app draws elsewhere, and one is
+ * an object nobody can place, which is drawn nowhere at all and is still in the layer. Saying
+ * "8" would claim eight dots; saying "5" would quietly drop the other three.
+ *
+ * So a layer may declare `counts(records)` and ui/controls.js renders the parts it returns, each
+ * against a copy key, dropping the zeroes. That is the feature explaining itself in the filter
+ * panel before anybody has tapped anything.
+ */
+const oddityCounts = (records) => {
+  const list = Array.isArray(records) ? records : [];
+  const drawn = list.filter((r) => r && r.propagator).length;
+  return [
+    { key: 'onMap', n: drawn },
+    { key: 'riding', n: attachedOddityCount() },
+    { key: 'unplaceable', n: list.length - drawn },
+  ];
 };
 
 // Ranking used only when a layer overflows its budget, so the cut is deterministic and
@@ -443,6 +473,43 @@ export const LAYERS = [
     nearKm: 900,
     card: 'site',
     priority: 30,
+  },
+  {
+    // registry/layers.yaml carries the reviewable copy of this row. It sits immediately after
+    // hand-kept-sites and before comets because these two are siblings -- things people put
+    // places -- and a beginner's first scan should find the space station and their second the
+    // golf balls.
+    id: 'oddities',
+    display: 'Odd things we sent',
+    klass: 'oddity',
+    // No source: these are checked into this repository, which is what `source: bundled` says in
+    // the registry copy. Not `sample`: they are not standing in for a feed, they are the thing.
+    source: null,
+    sample: sampleOddities,
+    // Per RECORD, not per layer: a heliocentric car is `kepler`, a lunar photograph is `fixed` in
+    // moon-fixed, a museum case is `fixed` in earth-fixed, and one row has no propagator at all.
+    // These two fields are what the app falls back to and neither is ever reached, because every
+    // record here declares its own.
+    propagator: 'fixed',
+    frame: 'earth-fixed',
+    moments: { wonder: true, now: false, next: false },
+    defaultOn: true,
+    select: all,
+    budget: { maxItems: 60 },
+    counts: oddityCounts,
+    colour: C.probe,
+    glyph: 'oddity',
+    // NO GEOMETRY YET, and `noModel` is how the layer says so. scene/heroes.js draws a model for
+    // any record inside its layer's nearKm and for the selection whatever the distance, and
+    // modelFor() falls back to a comms satellite for a class it does not know -- so without this
+    // flag, tapping the golf balls would draw a satellite bus on the Moon. The builders and this
+    // line are removed together in the next pull request.
+    noModel: true,
+    nearKm: 0,
+    card: 'oddity',
+    // Nothing to fetch, so it is nearly free and should be on screen early.
+    priority: 25,
+    sentence: 'Things people sent off the planet that were never part of the mission.',
   },
   {
     id: 'comets',

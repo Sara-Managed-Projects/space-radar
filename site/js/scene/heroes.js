@@ -136,6 +136,14 @@ export function createHeroes(scene, ctx) {
 
     const consider = (record, forced) => {
       if (!record || seen.has(record.id)) return;
+      // A LAYER MAY DECLINE TO HAVE GEOMETRY, and this is the only honest way to say so.
+      // modelFor() falls back to a comms satellite for a class it has never heard of and sets
+      // userData.generic, which nothing reads -- so a record whose class has no builder would be
+      // drawn as a satellite with the card saying nothing about it. Checked before the distance
+      // test AND before `forced`, because the selection is exactly when it would be seen: tapping
+      // Alan Shepard's golf balls would otherwise put a satellite bus on the Moon.
+      const own = ctx.layers.find((l) => l.id === record.layer);
+      if (own && own.noModel) return;
       const p = propagate(record, tMs);
       if (!p) return;
       const pos = stage.toScene(p, p.frame, tMs);

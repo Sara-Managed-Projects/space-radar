@@ -152,3 +152,30 @@ layers:
     card: site
     select: {all: true}
     budget: {max_items: 400}
+
+  # Wonder, and only Wonder. This layer is what Wonder is FOR -- it is not news and it is not a
+  # thing you plan around, so `now` and `next` are off and it is one tap away in both.
+  #
+  # THREE RESERVED LITERALS, and each replaces a sentence that would have been false.
+  #   source: bundled      the records are checked into this repository. There is no upstream, and
+  #                        a sources.yaml row demands url, parser, cadence, freshness_max, outputs
+  #                        and attribution -- inventing those is a lie in the file whose whole job
+  #                        is evidence.
+  #   propagator/frame:    per-record. A heliocentric car is `kepler`, a lunar photograph is
+  #                        `fixed` in moon-fixed, a museum case is `fixed` in earth-fixed, and one
+  #                        row has no propagator at all because nobody knows where it is. A single
+  #                        value here would be true of at most half the layer. (`deep-space` has
+  #                        the same shape and states `sampled`, which its own records contradict.)
+  #
+  # No `model:` yet: nothing here has geometry. The layer draws dots, and data/layers.js carries
+  # `noModel: true` so a near camera does not fall back to a generic satellite for a golf ball.
+  - id: oddities
+    display: Odd things we sent
+    moments: {wonder: on, now: off, next: off}
+    source: bundled
+    propagator: per-record
+    frame: per-record
+    style: {kind: glyph, glyph: oddity, colour: probe}
+    card: oddity
+    select: {all: true}      # the curation IS the record list; a second filter would be theatre
+    budget: {max_items: 60}

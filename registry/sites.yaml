@@ -13,6 +13,12 @@ sites:
 
   # --- On the Moon --------------------------------------------------------------------
   - {id: apollo-11, display: "Apollo 11 landing site", class: surface, world: moon, lat: 0.6741, lon: 23.4730, doing: "Where people first stood on another world, in July 1969. The descent stage is still there."}
+  # Apollo 14 and 16 are here because registry/oddities.yaml anchors on them BY ID: a surveyed
+  # coordinate lives in exactly one place, and an oddity that copied the numbers into its own row
+  # would be a second place for them to drift. Both are LROC spacecraft coordinates and both
+  # carry a published uncertainty the oddity rows quote -- 0.4 m and 3.0 m.
+  - {id: apollo-14, display: "Apollo 14 landing site", class: surface, world: moon, lat: -3.64589, lon: 342.52806, doing: "Fra Mauro, February 1971. Alan Shepard hit two golf balls here and they are still lying where they stopped."}
+  - {id: apollo-16, display: "Apollo 16 landing site", class: surface, world: moon, lat: -8.9734, lon: 15.5011, doing: "Descartes, April 1972. Charlie Duke left a photograph of his family face-up in the dust beside the lander."}
   - {id: apollo-17, display: "Apollo 17 landing site", class: surface, world: moon, lat: 20.1908, lon: 30.7717, doing: "The last place people have stood on another world, in December 1972."}
   - {id: change-4, display: "Chang'e 4", class: surface, world: moon, lat: -45.4446, lon: 177.5991, doing: "The first landing on the far side of the Moon, in 2019."}
 

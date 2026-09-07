@@ -1,0 +1,377 @@
+# Every odd, funny or human thing people have sent off the planet, and the evidence for where it
+# is now. A row here is a CLAIM ABOUT A PLACE, and the card repeats the row's own claim about
+# itself -- so every refusal in scripts/check_registry.py is one refusal in different clothes: a
+# row must not be able to say something it cannot support.
+#
+# TWO CLASSES, AND THEY ARE NOT THE SAME CLASS. This is the whole argument of the file.
+#   where.kind      WHAT KIND of answer "where is it?" has: in_orbit | on_surface | attached |
+#                   came_home | unknown. It decides the propagator and the shape of the payload.
+#   position_class  HOW WELL WE KNOW IT: measured | inferred | illustrative | inherit. It decides
+#                   what the card says about certainty.
+# The Roadster is `in_orbit` AND `inferred` -- a real orbit nobody has looked at since 2018.
+# Beresheet is `on_surface` AND `measured`, with a published 20 x 8 m error ellipse. Collapsing
+# these two fields into one loses the entire honesty argument, which is why they are two fields.
+#
+# `sample` is NOT a value here. It means "a bundled stand-in for a live feed we cannot call", and
+# these rows are not stand-ins for anything: they are the thing. A curated row is hand-kept, which
+# is a statement about provenance, never about certainty -- the same distinction data/sample.js
+# makes about the Goldstone dish.
+#
+# A SURFACE ROW SAYS WHERE IT IS IN EXACTLY ONE OF TWO WAYS, and both carry a precision.
+#   (a) `object: {lat, lon, precision_m, how}` -- THIS OBJECT was located. Beresheet: LROC
+#       photographed the impact smudge and published the 95% confidence interval.
+#   (b) `anchor: {lat, lon, uncertainty_m, of}` + `object: {precision_m, how}` -- we draw at a
+#       surveyed point NEAR it, and the object's own position is a different, worse number.
+#       "The golf balls are at the Apollo 14 site (+/- 0.4 m)" is false. "The golf balls are
+#       within tens of metres of a point known to +/- 0.4 m" is true.
+#   A row carrying both is refused: two positions, and the card can only draw one.
+#
+# `object.precision_m: unknown` is the reserved literal, exactly as `livery: unknown` is in
+# registry/rockets.yaml. It means nobody has ever measured THIS object's own position, and the
+# card says so in those words. It is not a synonym for a big number: Charlie Duke's photograph
+# has never been surveyed at all, and inventing "about 100 m" for it would be the one thing this
+# file exists to prevent.
+#
+# `anchor.id` names a registry/sites.yaml row and the coordinates are copied from it, so a
+# surveyed coordinate lives in exactly one place. A row anchoring on a site that does not exist
+# is refused; adding a site is a row (spec 0002), which is why apollo-14 and apollo-16 are now in
+# sites.yaml.
+#
+# A ROW MAY DECLINE TO DRAW. `shape.build: generic` is always legal and always available, and it
+# draws a labelled placeholder while the card says "drawn as a generic object; we have no shape
+# for this one." That is what makes the eleventh object a ROW: you write the row, it ships that
+# afternoon telling the truth about its own drawing, and somebody adds a builder later if it
+# deserves one. A row naming a builder we do not have would be refused instead -- which is why
+# `generic` exists. (No builder exists yet at all: this layer draws dots. See the layer row.)
+#
+# `as_of:` is required on any row whose `fact`, `note` or a myth contains a time-relative claim.
+# Juno's status is the reason: "no end-of-mission has been announced" is true on a date and not
+# forever.
+#
+# TWO SOURCE FIELDS, AND THEY ARE FOR TWO READERS.
+#   source:  the full evidence, for a reviewer reading this file. NOT shipped to the browser.
+#   cite:    the one line the card prints under "Source". Shipped, and capped at 160 characters.
+# The design that preceded this file shipped neither and still drew a source line on its own
+# example card; a card that cannot say where a fact came from is not this project's card.
+version: 1
+observed_on: 2026-09-07     # JPL Horizons read live; LROC coordinate tables read
+
+# Every record id an `attached:` row may name. MEASURED, not assumed: this is the output of
+#   node -e "import('./site/js/data/sample.js').then(m=>console.log(m.sampleDeepSpace().map(r=>r.id)))"
+# on 2026-09-07. Same discipline as rockets.yaml's `observed:` block -- CI cannot run the browser,
+# so the evidence is checked in, and a row attaching to something the app does not draw is
+# refused.
+attachable:
+  - {id: deep-voyager-1,     horizons_id: "-31", emitted_by: "sample.js sampleDeepSpace(), CRUISING_CRAFT"}
+  - {id: deep-voyager-2,     horizons_id: "-32", emitted_by: "sample.js sampleDeepSpace(), CRUISING_CRAFT"}
+  - {id: deep-new-horizons,  horizons_id: "-98", emitted_by: "sample.js sampleDeepSpace(), CRUISING_CRAFT"}
+  - {id: deep-juno,          horizons_id: "-61", emitted_by: "sample.js sampleDeepSpace(), ANCHORED_CRAFT"}
+  - {id: deep-parker,        horizons_id: "-96", emitted_by: "sample.js sampleDeepSpace(), ELLIPTIC_CRAFT"}
+  - {id: deep-jwst,          horizons_id: "-170", emitted_by: "sample.js sampleDeepSpace(), ANCHORED_CRAFT"}
+  - {id: deep-soho,          horizons_id: "-21", emitted_by: "sample.js sampleDeepSpace(), ANCHORED_CRAFT"}
+  - {id: deep-mro,           horizons_id: "-74", emitted_by: "sample.js sampleDeepSpace(), ANCHORED_CRAFT"}
+
+oddities:
+
+  # ---- in_orbit: real elements, and nobody has looked at it in eight years -----------------
+  - id: tesla-roadster
+    display: "Tesla Roadster (Starman)"
+    klass: oddity
+    where:
+      kind: in_orbit
+      frame: sun-inertial
+      horizons_id: "-143205"
+      # Osculating heliocentric ecliptic J2000, Sun-centred. Human units; data/sample.js converts
+      # with the same DEG / AU_KM helpers sampleAsteroids() already uses.
+      elements:
+        epoch_jd: 2461290.5          # 2026-Sep-07.0 TDB -- correct for PROPAGATION
+        a_au:     1.325285903087775
+        e:        0.2559399569483128
+        i_deg:    1.074796068637285
+        node_deg: 316.8731402746523
+        argp_deg: 177.7855717204305
+        tp_jd:    2461496.674258765  # perihelion is PUBLISHED, so the phase is real, not a placeholder
+      # THE FIELD THAT MAKES THE CARD HONEST, and it is not epoch_jd. The card's `inferred` line
+      # prints the age of the EVIDENCE, and the evidence is 374 observations that stopped in 2018.
+      # Propagating from a 2026 osculating epoch would print "0 days old", which is true of the
+      # arithmetic and a lie about the knowledge. data/sample.js sets record.epoch from this.
+      evidence_epoch: 2018-03-19
+    position_class: inferred
+    orbit_provenance:
+      solution: "JPL solution #11, revised 2025-01-03"
+      obs_count: 374
+      arc: "2018-02-08 to 2018-03-19"
+      caveat: "JPL warns the trajectory error may grow faster than the formal statistics say,
+               from unmodelled thermal re-radiation"
+    shape: {build: generic, budget_tris: 1800, stands_for: generic,
+            drawn_name: "the first-generation Tesla Roadster"}
+    fact: "A cherry-red sports car with a dummy at the wheel, launched on the first Falcon Heavy
+           and now looping round the Sun between Earth and Mars."
+    myths:
+      - claim: "it is heading for the asteroid belt"
+        correction: "its furthest point from the Sun is 1.66 au and the belt starts near 2.1 au.
+                     It will never reach Mars either."
+        source: "CNBC and Space.com, 8 February 2018, correcting the launch-day statement"
+      - claim: "it is tracked"
+        correction: "nobody has observed it since March 2018. Everything shown here is a
+                     calculation from elements fitted to 374 old photographs."
+        source: "JPL Horizons object header for -143205"
+    cite: "JPL Horizons, target −143205, read 2026-09-07"
+    source: "JPL Horizons, target -143205 'Tesla Roadster (AKA: Starman, 2018-017A)', solution
+             #11 revised 2025-Jan-03, queried 2026-09-07: EC 0.2559399569483128,
+             A 1.325285903087775 au, QR 0.9860922861072841 au, AD 1.664479520068266 au,
+             IN 1.074796068637285 deg, OM 316.8731402746523, W 177.7855717204305,
+             MA 226.8092243501503, Tp JD 2461496.674258764833, PR 557.2663181310187 d.
+             Header: 374 ground-based optical astrometric measurements spanning 2018 Feb 8.2 to
+             March 19.1."
+    note: "Also aboard, all too small to draw and all good card copy: a towel and a paper copy of
+           Hitchhiker's in the glovebox, the Foundation trilogy on a 5D quartz disc (NOT a paper
+           book -- that myth is everywhere), a Hot Wheels Roadster with a mini-Starman glued to
+           the dash, and a circuit board reading 'Made on Earth by humans'. Paint is called
+           'midnight cherry'; no hex is published anywhere, so a drawn colour would be ours and
+           the card never states one -- the same rule registry/rockets.yaml applies to livery."
+
+  # ---- on_surface (b): the row that forced the two-precision split -------------------------
+  - id: shepard-golf-balls
+    display: "Alan Shepard's golf balls"
+    klass: oddity
+    where:
+      kind: on_surface
+      world: moon
+      anchor:
+        id: apollo-14
+        lat: -3.64589
+        lon: 342.52806
+        uncertainty_m: 0.4
+        of: "the Apollo 14 lunar module Antares"
+        source: "LROC lunar spacecraft coordinates table"
+      object:
+        precision_m: 40
+        how: photogrammetric
+        source: "Andy Saunders, 2021, reported by Astronomy and Space.com"
+    position_class: inferred          # the ANCHOR is measured; the object is not, and the card says both
+    shape: {build: generic, budget_tris: 520, stands_for: generic,
+            drawn_name: "two golf balls and the six-iron head"}
+    fact: "Alan Shepard smuggled a six-iron head to the Moon in a sock, screwed it to a sample
+           scoop handle, and hit two balls one-handed. They are still lying there."
+    myths:
+      - claim: "the second ball went 200 yards, or miles and miles and miles"
+        correction: "measured from the film in 2021: 24 yards and 40 yards. The most-repeated
+                     fact about golf on the Moon is about five times too big."
+        source: "Andy Saunders, 2021, via Astronomy and Space.com"
+    cite: "LROC spacecraft coordinates · Andy Saunders, 2021, from Hasselblad stills and 16 mm film"
+    source: "LROC lunar spacecraft coordinates (lroc.im-ldi.com/images/938): Apollo 14 LM Antares
+             3.64589 S, 342.52806 E, +/- 0.4 m. Ball positions: Andy Saunders' 2021 analysis of
+             enhanced Hasselblad stills and 16 mm film cross-referenced to LRO orbital imagery,
+             reported by Astronomy and Space.com -- 24 yards and 40 yards. The USGA's own
+             write-up returned HTTP 403, so the primary is not reachable; two independent
+             secondaries quoting Saunders carry the numbers."
+    note: "The brand is genuinely unknown -- Shepard never said, deliberately, so that nobody
+           could profit. Do not put a brand on the card; the not-knowing is the punchline.
+           Ball 1 sits in Javelin Crater, named for Ed Mitchell throwing the solar-wind staff
+           like a javelin about a minute later. The two balls are 24 and 40 yards apart, which is
+           sub-pixel at map scale: one dot, one card."
+
+  # ---- on_surface (b): the row where the object's own precision does not exist -------------
+  - id: duke-family-photo
+    display: "Charlie Duke's family photo"
+    klass: oddity
+    where:
+      kind: on_surface
+      world: moon
+      anchor:
+        id: apollo-16
+        lat: -8.9734
+        lon: 15.5011
+        uncertainty_m: 3.0
+        of: "the Apollo 16 lunar module Orion"
+        source: "LROC lunar spacecraft coordinates table"
+      object:
+        precision_m: unknown
+        how: unsurveyed
+        source: "no source gives the photograph's own coordinates; NASA image AS16-117-18841
+                 shows it lying in the dust and nothing has imaged it since"
+    position_class: inferred
+    shape: {build: generic, budget_tris: 70, stands_for: generic,
+            drawn_name: "a shrink-wrapped family snapshot lying in the dust"}
+    fact: "Charlie Duke left a photograph of his wife and two sons face-up in the lunar dust,
+           took a picture of it, and walked away."
+    myths:
+      - claim: "the photograph is still there to be seen"
+        correction: "the plastic and the paper are still at Descartes; the image is not. Surface
+                     temperature at the site reaches about 120 °C in daylight."
+        source: "NASA image AS16-117-18841; Charlie Duke interview, Fox News, Apollo 16 at 50"
+    cite: "LROC spacecraft coordinates · NASA image AS16-117-18841"
+    source: "LROC lunar spacecraft coordinates: Apollo 16 LM Orion 8.9734 S, 15.5011 E,
+             +/- 3.0 m. The photograph itself was never surveyed. NASA image AS16-117-18841
+             (nasa.gov/gallery/charles-m-duke-jr) is the only picture of it, taken 23 April 1972
+             during EVA-3."
+    note: "The back of the print reads 'This is the family of astronaut Duke from planet Earth.
+           Landed on the Moon, April 1972.' It was crumpled from riding in a suit pocket, which
+           is why the eventual builder warps the quad rather than drawing a flat swatch."
+
+  # ---- on_surface (a): the object itself was located, with a published error ellipse --------
+  - id: beresheet-lunar-library
+    display: "The Beresheet lunar library"
+    klass: oddity
+    where:
+      kind: on_surface
+      world: moon
+      object:
+        lat: 32.5956
+        lon: 19.3496
+        precision_m: 20
+        how: orbital_imaging
+        source: "LROC post 1101: the darkest pixel of the impact smudge, 20 m (latitude) by
+                 8 m (longitude) 95% confidence interval"
+    position_class: measured
+    shape: {build: generic, budget_tris: 620, stands_for: generic,
+            drawn_name: "a stack of nickel discs and a tardigrade"}
+    fact: "An Israeli lander crashed here carrying 25 nickel discs holding thirty million pages,
+           with dried tardigrades and human DNA set in resin between the layers."
+    myths:
+      - claim: "tardigrades are living on the Moon"
+        correction: "they were dehydrated tuns encased in epoxy. Cryptobiosis is a pause button,
+                     not life support, and this mare has no accessible water."
+        source: "EarthSky, on the Beresheet lunar library"
+      - claim: "the library survived the crash intact"
+        correction: "that is the payload owner's own claim, from orbital imagery that cannot
+                     resolve a 100-gram stack of discs."
+        source: "Arch Mission Foundation; LROC post 1101"
+    cite: "LROC post 1101, the Beresheet impact site · NASA"
+    source: "LROC post 1101 (lroc.sese.asu.edu/posts/1101) and NASA's Beresheet impact-site
+             release: darkest pixel at 32.5956 N, 19.3496 E, 95% CI 20 m in latitude by 8 m in
+             longitude, elevation about 2613 m; the smudge is about 10 m across and the
+             spacecraft struck the rim of a small crater from the north. Impact 11 April 2019,
+             SpaceIL/IAI Beresheet, Mare Serenitatis."
+    note: "The disc stack's own position inside the debris is not known and LRO cannot resolve
+           it, which is why the drawn point is the smudge and the second myth exists. Hypervelocity
+           work puts the tardigrade impact-survival threshold near 900 m/s, right at Beresheet's
+           crash speed, so even 'did they survive the impact' is genuinely open."
+
+  # ---- attached: the position is the parent's, and the mount is our drawing -----------------
+  - id: voyager-golden-record
+    display: "The Voyager Golden Record"
+    klass: oddity
+    where:
+      kind: attached
+      to: deep-voyager-1
+      also_on: [deep-voyager-2]       # one card, two carriers; drawn on both, counted once
+      # WHERE ON THE MODEL we hang it. Not a measurement -- our arrangement, in the parent
+      # model's own units, and classed accordingly so the card can say so.
+      mount: {x: 0.0, y: -0.35, z: 0.62, face: bus_side}
+      mount_class: illustrative
+    position_class: inherit           # never better than the parent's; the emitter copies it
+    shape: {build: generic, budget_tris: 340, stands_for: generic,
+            drawn_name: "the Golden Record and its cover"}
+    fact: "Two gold-plated records bolted to the outside of two spacecraft carry whale song,
+           greetings in 55 languages, and an hour of a woman's brainwaves."
+    myths:
+      - claim: "EMI blocked the Beatles' Here Comes the Sun from the record"
+        correction: "disputed by Timothy Ferris, who produced it and says it was never seriously
+                     considered. Contested, not settled."
+        contested: true
+        source: "Timothy Ferris, via the Planetary Society"
+    cite: "The Planetary Society, The Voyager Golden Records · NASA"
+    source: "The Planetary Society, 'The Voyager Golden Records'; Popular Science on the record's
+             contents; NASA science.nasa.gov Golden Record cover diagram. Voyager 1 measured from
+             JPL Horizons target -31 on 2026-09-07 at r = 171.673 au; Voyager 2 (-32) at
+             143.870 au."
+    note: "Ann Druyan's EEG and heartbeat were recorded at Bellevue on 3 June 1977, two days
+           after she and Carl Sagan decided to marry, and compressed to one minute. The cover
+           carries a uranium-238 source electroplated over 2 cm as a radioactive clock."
+
+  - id: juno-lego-figures
+    display: "The three LEGO figures on Juno"
+    klass: oddity
+    where:
+      kind: attached
+      to: deep-juno
+      mount: {x: 0.0, y: 0.18, z: 0.44, face: deck}
+      mount_class: illustrative
+    position_class: inherit
+    shape: {build: generic, budget_tris: 560, stands_for: generic,
+            drawn_name: "three aluminium minifigures and their props"}
+    fact: "Three tiny aluminium LEGO people have been riding through Jupiter's radiation belts
+           since 2011: Galileo, Jupiter, and his wife Juno."
+    myths:
+      - claim: "Juno is dead, so the figures are gone"
+        correction: "neither is established. The mission's funding lapsed on 30 September 2025,
+                     but JPL's reconstructed ephemeris runs to 24 August 2026."
+        source: "JPL Horizons trajectory segments for -61; Space.com on Juno's uncertain end"
+    cite: "JPL Horizons target −61 · Space.com on Juno's uncertain end"
+    source: "Horizons target -61 read 2026-09-07: a RECONSTRUCTED kernel spk_rec_110805_...260824
+             running to 2026-Aug-24, then juno_pred_orbit to 2026-Nov-16, then a reference kernel
+             to 2028-Sep-30. A reconstructed ephemeris to late August 2026 means JPL navigation
+             was still fitting tracking data two weeks before this row was written -- inferred
+             from ephemeris metadata, not from an announcement. Space.com: the last funded
+             extension expired 30 September 2025 and no end-of-mission has been confirmed."
+    as_of: 2026-09-07
+    note: "In Roman myth Juno saw through the clouds Jupiter drew around himself; the figurine
+           holds a magnifying glass because that is exactly what the spacecraft does. THE LEGO
+           MINIFIGURE SHAPE IS A REGISTERED TRADEMARK in the EU, independent of any model's
+           copyright. Ivan's call before a builder draws one: keep it cartoon and low-detail,
+           never use the wordmark. Today this row draws no shape at all."
+
+  # ---- came_home: not in space, and here is the case you can walk into ---------------------
+  - id: rotj-lightsaber
+    display: "Luke Skywalker's lightsaber"
+    klass: oddity
+    where:
+      kind: came_home
+      world: earth
+      lat: 29.5518
+      lon: -95.0982
+      where_kept: "Space Center Houston, Texas"
+      left_space: 2007-11-07
+      source: "Space Center Houston displays the prop returned after STS-120"
+    position_class: measured
+    # DELIBERATELY NOT THE PROP. The hilt design and name are Lucasfilm/Disney; every model
+    # claiming CC BY over it is a claim its uploader has no standing to make. What a builder will
+    # draw is the real-world donor part the prop was built on -- a Graflex 3-cell press-camera
+    # flash handle -- and the card will say exactly that. Duller and true.
+    shape: {build: generic, budget_tris: 260, stands_for: generic,
+            drawn_name: "the Graflex 3-cell flash handle the prop was built on"}
+    fact: "The lightsaber prop from Return of the Jedi spent fourteen days in orbit sealed in
+           foam, and never once came out of its box."
+    myths:
+      - claim: "the lightsaber is in space"
+        correction: "it flew up and back on STS-120 in October 2007, stowed where no astronaut
+                     could reach it, and was handed back to Lucasfilm."
+        source: "Space.com, on the STS-120 lightsaber"
+    cite: "Space.com and collectSPACE on STS-120 · Space Center Houston"
+    source: "Space.com (space.com/4283) and collectSPACE on STS-120, Discovery, launched
+             23 October 2007, 14 days in orbit, returned and handed back to Lucasfilm; displayed
+             at Space Center Houston. The lat/lon is the museum campus, good to a few hundred
+             metres -- it is a building's map reference, not a survey."
+    note: "At the handover on 28 August 2007 at Oakland airport, Chewbacca presented it to NASA
+           officials in person. It flew in an inaccessible compartment, so nobody ever held it in
+           zero-g."
+
+  # ---- unknown: no coordinates, no dot, and the card says why -------------------------------
+  - id: bean-astronaut-pin
+    display: "Alan Bean's silver astronaut pin"
+    klass: oddity
+    where:
+      kind: unknown
+      last_known: "somewhere near the Apollo 12 landing site, in an unidentified crater"
+      why_unknown: "Bean threw it as hard as he could. No source names the crater and no orbital
+                    image has ever resolved a lapel pin."
+      would_need: "an LROC targeted observation, and it would not resolve it anyway"
+    position_class: inferred
+    # A NASA insignia design. Any builder draws a generic silver lapel pin instead and the card
+    # says so, for the same reason the lightsaber is a flash handle.
+    shape: {build: generic, budget_tris: 180, stands_for: generic,
+            drawn_name: "a lapel pin"}
+    fact: "You wear the silver astronaut pin until your first spaceflight. Alan Bean had worn his
+           for six years, so on the Moon he threw it into a crater."
+    cite: "Astronomical Returns, The astronaut pin and the lone star on the Moon"
+    source: "Astronomical Returns, 'The astronaut pin and the lone star on the Moon',
+             astronomicalreturns.com, on Apollo 12, 19-20 November 1969. The crater is not
+             identified in any source reached, and no orbital image resolves an object that size."
+    as_of: 2026-09-07
+    note: "This is the row the whole scheme is for. It carries no latitude, no longitude, no
+           elements and no carrier, the emitter gives it no propagator, and the map draws nothing
+           at all -- it is reachable from search and named on the layer's own count line. The
+           design that preceded this file put it in a 3D display cabinet; the reconciliation cut
+           the cabinet and kept the refusal, which is the part that was load-bearing."

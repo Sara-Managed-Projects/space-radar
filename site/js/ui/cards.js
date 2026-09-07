@@ -288,7 +288,13 @@ const PASS_ERROR = 'error';
 const PASS_OK = 'ok';
 
 function nextPass(record, ctx, m) {
-  if (!isEarthFrame(m.frame) || klassOf(record) === 'site' || klassOf(record) === 'world') {
+  // `fixed` is the propagator for things that do not move: pads, dishes, landing sites, and now a
+  // museum case in Houston. Asking predictPasses() when the next pass over you is right there is
+  // not a bug in the maths, it is a question with no meaning -- and until this line the historic
+  // reentries were asking it too.
+  const doesNotMove = record && record.propagator === 'fixed';
+  if (!isEarthFrame(m.frame) || doesNotMove ||
+      klassOf(record) === 'site' || klassOf(record) === 'world') {
     return { state: PASS_NOT_APPLICABLE, pass: null };
   }
   // No position, no promise about the sky.
@@ -473,6 +479,17 @@ const TEMPLATES = {
     ]);
   },
 
+  // An oddity's sentence IS the registry row's `fact:`. There is nothing to compose: the row was
+  // written as one sentence, the validator holds it to the card's own 160 characters, and a
+  // clause bolted on here would be this file inventing copy about an object it knows nothing
+  // about. The fallback is never reached with a valid registry and is here so that an invalid one
+  // degrades to a true sentence instead of an empty one.
+  oddity(record, ctx, m, passInfo, T) {
+    const fact = pick(meta(record), 'fact');
+    if (fact) return String(fact);
+    return t(T.fallback, { name: displayName(record) }) + COPY.punctuation.dot;
+  },
+
   site(record, ctx, m, passInfo, T) {
     const md = meta(record);
     const kindKey = String(pick(md, 'kind', 'siteKind') || '');
@@ -593,20 +610,37 @@ function rightNowRows(record, m, passInfo) {
   const R = COPY.card.rows;
   const V = COPY.card.values;
   const rows = [];
+  // An object nobody can place. NOT "could not work this out": that says the arithmetic failed,
+  // and the truth is that the fact has never existed. There is no height row, because there is no
+  // height to fail at.
+  const md = meta(record);
+  if (pick(md, 'unplaceable')) {
+    rows.push([R.whereabouts, COPY.card.nobodyKnows]);
+    const lastKnown = pick(md, 'lastKnown');
+    if (lastKnown) rows.push([R.lastSeen, String(lastKnown)]);
+    return rows;
+  }
   if (!m.ok) {
     rows.push([R.altitude, COPY.card.couldNotLook]);
     return rows;
   }
   if (isEarthFrame(m.frame)) {
-    rows.push([
-      R.altitude,
-      m.altKm !== null ? t(V.km, { n: fmt.int(m.altKm) }) : COPY.card.couldNotLook,
-    ]);
+    // A record whose propagator is `fixed` is standing on the ground, whatever class it is: a
+    // dish, a landing site, or a lightsaber in a case in Houston. It does not PASS OVER the place
+    // it is at, and "height above the ground" of a museum standing on that ground is 0 km, which
+    // is a row that costs a line and says nothing.
+    const stands = (record && record.propagator === 'fixed') || klassOf(record) === 'site';
+    if (!(stands && m.altKm !== null && Math.abs(m.altKm) < 0.05)) {
+      rows.push([
+        R.altitude,
+        m.altKm !== null ? t(V.km, { n: fmt.int(m.altKm) }) : COPY.card.couldNotLook,
+      ]);
+    }
     if (m.speedKmh !== null && m.speedKmh > 0.5) {
       rows.push([R.speed, t(V.kmh, { n: fmt.int(m.speedKmh) })]);
     }
     if (m.latDeg !== null && m.lonDeg !== null) {
-      const label = klassOf(record) === 'site' ? R.location : R.groundPoint;
+      const label = stands ? R.location : R.groundPoint;
       rows.push([label, t(V.latLon, { lat: latText(m.latDeg), lon: lonText(m.lonDeg) })]);
     }
   } else if (m.worldId && m.worldId !== 'sun') {
@@ -674,7 +708,10 @@ function rightNowRows(record, m, passInfo) {
 
 function seeItLine(record, ctx, m, passInfo) {
   const klass = klassOf(record);
-  if (klass === 'site') {
+  if (pick(meta(record), 'unplaceable')) return COPY.sky.nowhereToLook;
+  // `fixed` means it does not move, whatever class it is: a dish, a landing site, or a lightsaber
+  // in a case in Houston. Without this a museum exhibit got "too far away to pick out by eye".
+  if (klass === 'site' || (record && record.propagator === 'fixed')) {
     if (isEarthFrame(m.frame) || !m.worldId || m.worldId === 'earth') return COPY.sky.onTheGround;
     const world = worldName(m.worldId);
     return world ? t(COPY.sky.onAnotherWorld, { world }) : COPY.sky.notVisibleFromGround;
@@ -730,16 +767,28 @@ function ageParts(ageMs) {
     return { n: fmt.int(n), unit: fmt.plural(n, COPY.cls.hourWord, COPY.cls.hoursWord) };
   }
   const days = Math.round(hours / 24);
-  return { n: fmt.int(days), unit: fmt.plural(days, COPY.cls.dayWord, COPY.cls.daysWord) };
+  if (days < 730) {
+    return { n: fmt.int(days), unit: fmt.plural(days, COPY.cls.dayWord, COPY.cls.daysWord) };
+  }
+  // Past two years, days stop being a quantity a reader can feel. The Roadster's evidence is
+  // 3 094 days old, which is a number; it is 8 years old, which is a sentence.
+  const years = Math.round(days / 365.25);
+  return { n: fmt.int(years), unit: fmt.plural(years, COPY.cls.yearWord, COPY.cls.yearsWord) };
 }
 
 function classLine(record, m) {
+  // Before the class, the absence. A record with no propagator has no position to have a class
+  // ABOUT, and "position propagated from elements of unknown age" would be a sentence about
+  // elements that do not exist.
+  if (pick(meta(record), 'unplaceable')) return COPY.cls.unplaced;
   const cls = m.cls || (record && record.cls) || '';
   switch (cls) {
     case 'measured':
       return COPY.cls.measured;
     case 'inferred': {
       const epoch = record ? record.epoch : null;
+      // "Elements" is a claim about HOW the position was worked out, and a fixed record has none.
+      if (!record || !record.elements) return COPY.cls.inferredNoElements;
       if (!Number.isFinite(epoch) || !Number.isFinite(m.tMs)) return COPY.cls.inferredUnknownAge;
       return t(COPY.cls.inferred, ageParts(Math.max(0, m.tMs - epoch)));
     }
@@ -752,6 +801,98 @@ function classLine(record, m) {
     default:
       return COPY.cls.unknown;
   }
+}
+
+/**
+ * Block 7a: the second half of the honesty line, when there is one.
+ *
+ * Three cases, and each replaces a sentence the class line alone would get wrong:
+ *
+ *  * A SURFACE OBJECT NEAR A SURVEYED POINT. Two numbers for two things. `classLine` can only
+ *    say "inferred"; this says which part is measured to 0.4 m and which part is not, and when
+ *    the object's own precision does not exist it says THAT rather than inventing a metre figure.
+ *  * AN ORBIT NOBODY HAS LOOKED AT. `classLine` prints the age of `record.epoch`, which the
+ *    emitter sets to the last observation and not to the osculating epoch. This adds the date
+ *    and JPL's own caveat, so the card says why the number may be worse than it looks.
+ *  * A RECORD WITH NO POSITION. Says why, and what it would take to find out.
+ *
+ * Returns null when the record has nothing extra to admit, which is most of them.
+ */
+function honestyClause(record) {
+  const md = meta(record);
+  const C = COPY.cls;
+
+  if (pick(md, 'unplaceable')) {
+    const why = pick(md, 'whyUnknown');
+    const would = pick(md, 'wouldNeed');
+    const parts = [];
+    if (why) parts.push(t(COPY.unplaced.why, { whyUnknown: String(why) }));
+    if (would) parts.push(t(COPY.card.wouldNeed, { wouldNeed: String(would) }));
+    return parts.length ? parts.join(' ') : null;
+  }
+
+  const objectM = pick(md, 'objectPrecisionM');
+  const how = pick(md, 'objectHow');
+  const howWords = how && Object.prototype.hasOwnProperty.call(C.how, how) ? C.how[how] : null;
+  const anchorName = pick(md, 'anchorName');
+  const anchorM = pickNumber(md, 'anchorUncertaintyM');
+  if (anchorName && anchorM !== null) {
+    // `unknown` is the registry's reserved literal and the only non-numeric value it allows here.
+    if (typeof objectM === 'number') {
+      return t(C.precisionSplit, {
+        anchorName: String(anchorName),
+        anchorM: fmt.metres(anchorM),
+        how: howWords || '',
+        objectM: fmt.metres(objectM),
+      });
+    }
+    return t(C.precisionSplitUnknown, {
+      anchorName: String(anchorName),
+      anchorM: fmt.metres(anchorM),
+    });
+  }
+  if (typeof objectM === 'number' && howWords) {
+    return t(C.precisionOwn, { objectM: fmt.metres(objectM), how: howWords });
+  }
+
+  const arcEnd = pick(md, 'arcEnd');
+  const caveat = pick(md, 'orbitCaveat');
+  if (arcEnd && caveat) {
+    return t(C.inferredArc, {
+      date: timeText.longDate(Date.parse(String(arcEnd))),
+      caveat: String(caveat),
+    });
+  }
+  return null;
+}
+
+/**
+ * Block 7c: "Often said". One claim, one correction, one source, per myth on the record.
+ *
+ * On this subject the debunk is reliably the better story -- the most-repeated fact about golf on
+ * the Moon is five times too big -- so this is a section of its own rather than a footnote. It
+ * renders nothing at all for a record with no myths, which is every record outside this layer.
+ */
+function mythSection(record) {
+  const myths = meta(record).myths;
+  if (!Array.isArray(myths) || !myths.length) return null;
+  const wrap = section('sr-card__block sr-card__myths', COPY.myth.label);
+  let wrote = 0;
+  for (const myth of myths) {
+    if (!myth || !myth.claim || !myth.correction) continue;
+    const template = myth.contested ? COPY.myth.contested : COPY.myth.line;
+    const line = el('p', 'sr-card__myth', t(template, {
+      claim: String(myth.claim),
+      correction: String(myth.correction),
+    }));
+    wrap.appendChild(line);
+    if (myth.source) {
+      wrap.appendChild(el('p', 'sr-card__mythsource',
+        COPY.source.prefix + COPY.punctuation.colon + String(myth.source)));
+    }
+    wrote += 1;
+  }
+  return wrote ? wrap : null;
 }
 
 /**
@@ -794,6 +935,12 @@ function drawingLine(record) {
 // ---------------------------------------------------------------------------------------
 
 function sourceRow(record, ctx) {
+  // A record may carry its own one-line citation. registry/oddities.yaml keeps the full evidence
+  // -- Horizons headers, element dumps, why a secondary was used -- for a reviewer and ships this
+  // one line for the card, because "Source: registry/oddities.yaml" tells a visitor nothing about
+  // where a coordinate came from.
+  const cite = pick(meta(record), 'cite');
+  if (cite) return { label: String(cite), attribution: null };
   const id = record && record.source ? String(record.source) : null;
   if (!id) return { label: null, attribution: null };
   try {
@@ -937,6 +1084,11 @@ function render(record, ctx) {
     body.appendChild(wrap);
   }
 
+  // 4b. "Often said" -- the myth block, immediately after the facts it corrects. It renders for
+  // any record carrying myths and nothing at all for the rest.
+  const myths = mythSection(record);
+  if (myths) body.appendChild(myths);
+
   // 5. see it from here
   const see = section('sr-card__block sr-card__see', COPY.card.seeItLabel);
   see.appendChild(el('p', 'sr-card__seeline', seeItLine(record, ctx, m, passInfo)));
@@ -953,7 +1105,9 @@ function render(record, ctx) {
 
   // 7. the class-and-age line
   const foot = el('footer', 'sr-card__foot');
-  foot.appendChild(el('p', 'sr-card__cls', classLine(record, m)));
+  const honesty = honestyClause(record);
+  foot.appendChild(el('p', 'sr-card__cls',
+    classLine(record, m) + (honesty ? COPY.punctuation.dash + honesty : '')));
 
   // 7b. what the drawn shape is. Between this and the line above it, the card states that
   // neither the shape nor the path is a measurement of this particular flight.

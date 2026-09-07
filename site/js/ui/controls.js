@@ -282,7 +282,7 @@ function buildLayers(ctx, state) {
     label.appendChild(count);
     row.appendChild(label);
     list.appendChild(row);
-    state.layerRows.set(layer.id, { box, count, layer });
+    state.layerRows.set(layer.id, { box, count, label, layer });
   }
   return wrap;
 }
@@ -304,12 +304,51 @@ function paintLayers(ctx, state) {
     const on = state.enabled.get(id) === true;
     if (row.box.checked !== on) row.box.checked = on;
     const n = counts.get(id);
-    row.count.textContent =
-      n === undefined || n === 0
-        ? COPY.controls.layerCountEmpty
-        : t(COPY.controls.layerCount, { n: fmt.int(n) });
+    const text = n === undefined || n === 0 ? COPY.controls.layerCountEmpty : countText(row.layer, ctx, n);
+    row.count.textContent = text;
     row.count.classList.toggle('is-empty', !n);
+    // A sentence does not fit in a column sized for "157". MEASURED in the browser: the oddities
+    // line is 360 px in a 335 px panel and pushed the whole row off the edge, because the count is
+    // `flex: 0 0 auto` and never shrinks. When it is a sentence it wraps onto its own line under
+    // the name instead; the class goes on both nodes so this does not depend on CSS `:has()`.
+    const split = text.includes(COPY.punctuation.separator.trim());
+    row.count.classList.toggle('is-split', split);
+    row.label.classList.toggle('is-split', split);
   }
+}
+
+/**
+ * One number, or several when one number would hide something.
+ *
+ * Every layer's tick is "how many of these are there", and for thirteen of the fourteen that is
+ * the whole truth. `oddities` has members in three states -- carrying their own dot, riding on a
+ * spacecraft drawn by another layer, and one object nobody can place, which is drawn nowhere and
+ * is still in the layer. A single number would either claim dots that are not there or quietly
+ * drop the rows that have none.
+ *
+ * So the LAYER decides, in data/layers.js, by declaring `counts(records)`; this renders whatever
+ * parts it returns against copy keys and drops the zeroes. A layer that grows out of a state
+ * stops mentioning it with no change here.
+ */
+function countText(layer, ctx, n) {
+  const parts = layer && typeof layer.counts === 'function' ? layer.counts(recordsFor(ctx, layer.id)) : null;
+  if (Array.isArray(parts)) {
+    const text = parts
+      .filter((p) => p && p.n > 0 && COPY.controls.layerCountParts[p.key])
+      .map((p) => t(COPY.controls.layerCountParts[p.key], { n: fmt.int(p.n) }))
+      .join(COPY.punctuation.separator);
+    if (text) return text;
+  }
+  return t(COPY.controls.layerCount, { n: fmt.int(n) });
+}
+
+function recordsFor(ctx, id) {
+  try {
+    if (ctx && typeof ctx.recordsFor === 'function') return ctx.recordsFor(id) || [];
+  } catch {
+    /* a count is not worth breaking the panel over */
+  }
+  return [];
 }
 
 // ---------------------------------------------------------------------------------------

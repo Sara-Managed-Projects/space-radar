@@ -79,3 +79,33 @@ rockets:
     livery: unknown
     class: measured
     source: "Wikipedia Ariane 5: 46-52 m depending on configuration, 5.4 m core stage and fairing, two EAP boosters of 3.06 m x 31.6 m, one Vulcain 2"
+
+# And an oddity must be a row (registry/oddities.yaml). The eleventh odd thing is one row plus
+# `python3 scripts/gen_oddities_js.py`; it ships that afternoon drawing a labelled placeholder
+# and saying so on its own card. This one is `on_surface` on the world the fixture just added,
+# which is the case with the most moving parts: it anchors on the site row two sections up, so it
+# proves that a surveyed coordinate still lives in exactly one place after the registry grows.
+oddities:
+  - id: conamara-drill-bit
+    display: "A drill bit at Conamara Chaos"
+    klass: oddity
+    where:
+      kind: on_surface
+      world: europa
+      anchor:
+        id: conamara
+        lat: 9.5
+        lon: 274.0
+        uncertainty_m: 25
+        of: "the Conamara Chaos landing ellipse"
+        source: "the growth fixture; there is no lander at Europa and this row is a test"
+      object:
+        precision_m: unknown
+        how: unsurveyed
+        source: "the growth fixture"
+    position_class: inferred
+    shape: {build: generic, budget_tris: 200, stands_for: generic, drawn_name: "a drill bit"}
+    fact: "A fixture row, not a fact about the world: it exists so the growth test can add an odd
+           thing without touching a line of JavaScript."
+    cite: "tests/fixtures/europa.yaml"
+    source: "This row is part of tests/fixtures/europa.yaml and describes nothing that exists."

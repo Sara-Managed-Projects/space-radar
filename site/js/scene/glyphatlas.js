@@ -63,6 +63,10 @@ export const GLYPH_CLASSES = Object.keys(CELL_OF);
 // here, not a tenth shape, because a train of satellites is still a satellite.
 export const GLYPH_ALIASES = {
   train: 'satellite',
+  // The atlas is a 4x4 grid and HALO_BIAS = 16 consumes the upper half, so there is no eleventh
+  // cell to paint. That is what this table is for. `probe` violet reads as "a made thing, out
+  // there", is distinct from satellites, and does not carry debris grey's implication of junk.
+  oddity: 'probe',
   'just-launched': 'rocket',
   'upper-stage': 'rocket',
   stage: 'rocket',

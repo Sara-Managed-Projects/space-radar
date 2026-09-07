@@ -63,9 +63,25 @@ function smart(value) {
   return num(value, 3);
 }
 
+/**
+ * A length in metres, written the way a person writes one.
+ *
+ * `smart` is tuned for astronomical units and pads to three significant figures below 1, which
+ * turned a lander surveyed to 0.4 m into "0.400 m" and a 20 m error ellipse into "20.0 m". A
+ * precision is a rounded quantity already; trailing zeroes on it claim digits nobody measured.
+ */
+function metres(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '';
+  if (Math.abs(n) >= 10) return num(n, 0);
+  if (Math.abs(n) >= 1) return num(n, Number.isInteger(n) ? 0 : 1);
+  return num(n, 1);
+}
+
 export const fmt = {
   num,
   smart,
+  metres,
   int: (v) => num(v, 0),
   nbsp: NBSP,
   /** "4 minutes" / "1 minute" */
@@ -339,6 +355,14 @@ const localDateFmt = new Intl.DateTimeFormat('en-GB', {
   month: 'short',
   day: '2-digit',
 });
+// A date whose YEAR is the point. `localDate` is "Mon 19 Mar", which is right for a pass tonight
+// and wrong for the last time anybody photographed the Tesla Roadster: measured in the browser it
+// printed "the last time anybody saw it was Mon 19 Mar" about March 2018.
+const longDateFmt = new Intl.DateTimeFormat('en-GB', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
 const clockFmt = new Intl.DateTimeFormat('en-GB', {
   hour: '2-digit',
   minute: '2-digit',
@@ -350,6 +374,8 @@ export const timeText = {
   utcDate: (ms) => utcDateFmt.format(new Date(ms)),
   localTime: (ms) => localTimeFmt.format(new Date(ms)),
   localDate: (ms) => localDateFmt.format(new Date(ms)),
+  /** "19 March 2018" -- for a date far enough away that the year carries the meaning. */
+  longDate: (ms) => longDateFmt.format(new Date(ms)),
   /** "21:14" -- the form used inside a sentence. */
   hhmm: (ms) => clockFmt.format(new Date(ms)),
   /** "Fri 12 Sep, 21:14" */
@@ -412,6 +438,9 @@ export const COPY = {
     comet: 'Comet',
     site: 'Ground site',
     world: 'World',
+    // Not a physical class -- a curatorial one. A golf ball, a car and a photograph have nothing
+    // in common except that somebody sent them and nobody had to.
+    oddity: 'Oddity',
     unknown: 'Object',
   },
 
@@ -466,6 +495,11 @@ export const COPY = {
       liftoff: 'Lift-off',
       pad: 'From',
       destination: 'Heading for',
+      // For a record with no position at all. "Height above the ground: could not work this out"
+      // would say we tried and failed at arithmetic; the truth is that nobody has ever known.
+      whereabouts: 'Where it is',
+      lastSeen: 'Last known',
+      toFindOut: 'To find out',
     },
 
     values: {
@@ -490,6 +524,9 @@ export const COPY = {
 
     // "I could not look" is a third answer, and it is not "fine".
     couldNotLook: 'Could not work this out',
+    nobodyKnows: 'Nobody knows',
+    wouldNeed: 'It would take {wouldNeed}.',
+    oftenSaidLabel: 'Often said',
     notApplicable: 'Not something this object has',
     noPosition: 'There is no position for this object right now.',
 
@@ -511,15 +548,63 @@ export const COPY = {
     measured: 'measured position',
     inferred: 'position propagated from elements {n} {unit} old',
     inferredUnknownAge: 'position propagated from elements of unknown age',
+    // For a record with NO elements at all: a surface object drawn at a surveyed point near it.
+    // "Position propagated from elements of unknown age" was printed under Alan Shepard's golf
+    // balls, which have no elements and were never propagated from anything.
+    inferredNoElements: 'position worked out rather than measured',
     illustrative: 'drawn to show where it goes; the real track is not public',
     sample: 'bundled sample data, not a live position',
     unknown: 'we cannot say how this position was worked out',
+    // A record with no position at all -- not a failed calculation, an absent fact. It reads
+    // where the class line reads for everything else, so the card never has an empty honesty slot.
+    unplaced: 'nobody knows where this is, so nothing is drawn for it',
+    // The ADDITION to the inferred line, for a set of elements whose last observation is much
+    // older than the epoch they are integrated from. The Roadster's elements are stated at a 2026
+    // epoch and rest on 374 photographs that stopped in March 2018.
+    inferredArc: 'the last time anybody saw it was {date}, and {caveat}',
+    // Two numbers for two things. "The golf balls are at the Apollo 14 site (+/- 0.4 m)" is
+    // false; this is the sentence that is true.
+    precisionSplit:
+      "{anchorName} is measured to {anchorM} m; this was {how} and is placed to within {objectM} m",
+    precisionSplitUnknown:
+      '{anchorName} is measured to {anchorM} m; this object itself has never been surveyed',
+    precisionOwn: 'located to within {objectM} m, {how}',
+    how: {
+      surveyed: 'surveyed from orbit',
+      photogrammetric: 'found in photographs',
+      orbital_imaging: 'found in orbital images',
+      unsurveyed: 'never surveyed',
+      map_reference: 'taken from a map',
+    },
     hourWord: 'hour',
     hoursWord: 'hours',
     dayWord: 'day',
     daysWord: 'days',
     minuteWord: 'minute',
     minutesWord: 'minutes',
+    yearWord: 'year',
+    yearsWord: 'years',
+  },
+
+  // The myth block. On this subject the debunk is reliably the better story: Alan Shepard's golf
+  // shot was 40 yards and not 200, the Roadster never goes near the asteroid belt, and the
+  // tardigrades on the Moon are dehydrated tuns in epoxy. Every correction in the registry
+  // carries a source, because a debunk with no source is a rumour going the other way.
+  myth: {
+    label: 'Often said',
+    line: '{claim} — {correction}',
+    // For a myth that is not settled. The Beatles story is disputed by the man who produced the
+    // Golden Record; saying "wrong" would be making the same mistake in the other direction.
+    contested: 'Often said, and genuinely disputed: {claim} — {correction}',
+  },
+
+  // For a record with no position. It is reachable from search and it opens a card; what it does
+  // not have is a dot, because a dot on this map is a claim and every other layer honours that.
+  // The class line above already says nothing is drawn for it, so this only says WHY -- measured
+  // in the browser, the two together read "Nobody knows where this is, so it is not on the map.
+  // Nobody knows where this is, so it is not on the map."
+  unplaced: {
+    why: '{whyUnknown}',
   },
 
   // WHAT YOU ARE LOOKING AT. It sits in the footer beside the position class, because "the
@@ -546,6 +631,23 @@ export const COPY = {
     generic: 'drawn as a generic rocket; we have no dimensions for {name}',
     genericUnnamed: 'drawn as a generic rocket; we have no dimensions for this vehicle',
     disputed: 'sources disagree on its height ({disputed})',
+
+    // THE CLASS-NEUTRAL TRIPLE. The three keys above say "rocket" out loud, which is right for
+    // the only class that has ever printed them and wrong for a lapel pin. These are the same
+    // three claims with the vehicle taken out of the words.
+    //
+    // NOT PRINTED YET, deliberately. drawingLine() picks a string from `meta.drawsAs`, which is
+    // written today only by data/parsers.js for a launch. The layer these were written for draws
+    // no geometry at all yet -- it is dots -- and "drawn from published dimensions for the
+    // Graflex flash handle" printed under a violet dot would describe a shape that is not on the
+    // screen. They start printing in the pull request that adds the builders, which is also the
+    // one line drawingLine() needs: pick this triple when the record is not a launch.
+    objectVariant: 'drawn from published dimensions for {name}',
+    objectFamily: 'drawn as {name} — the kind of thing, not this exact one',
+    objectGeneric: 'drawn as a generic object; we have no shape for {name}',
+    // Where an attached object sits on its carrier's model is our arrangement. The disc really is
+    // bolted to the side of the bus; the centimetre we chose is ours.
+    mount: 'where we hang it on the model is our own arrangement, not a measurement',
   },
 
   source: {
@@ -576,6 +678,7 @@ export const COPY = {
     worldNoRise:
       'You can see this one with your own eyes. Working out when it rises from your place is not in this version yet.',
     couldNotLook: 'Could not work out a pass from here.',
+    nowhereToLook: 'Nobody knows where this one is, so there is nowhere to look.',
   },
 
   controls: {
@@ -584,6 +687,13 @@ export const COPY = {
     layerCount: '{n}',
     layerCountLoading: 'counting',
     layerCountEmpty: 'nothing loaded',
+    // A layer whose members are in more than one state says so on its own tick. Zero parts are
+    // dropped, so a layer that grows out of a state stops mentioning it without a code change.
+    layerCountParts: {
+      onMap: '{n} on the map',
+      riding: '{n} riding on something else',
+      unplaceable: '{n} we cannot place',
+    },
     layersEmpty: 'No layers are loaded yet.',
     clockTitle: 'Time',
     play: 'Play',
@@ -692,6 +802,14 @@ export const COPY = {
     ago: '{d} ago',
   },
 
+  // The phone's bottom bar. It lives in ui/mobile.js, which wrote these three strings itself
+  // until scripts/check_copy.py was finally written and found them on its first run.
+  mobile: {
+    barLabel: 'Panels',
+    layers: 'Layers',
+    sources: 'Sources',
+  },
+
   glossary: {
     title: 'Words on this page',
     hint: 'Tap a term for a plain sentence.',
@@ -763,6 +881,14 @@ export const COPY = {
       nakedEye: 'bright enough to find without a telescope',
       faint: 'too faint to see without a telescope',
       distanceSun: '{au} astronomical units out',
+    },
+    // The one plain sentence for an oddity is the registry row's own `fact:`, capped at the
+    // card's 160 characters where it is WRITTEN (scripts/check_registry.py) rather than truncated
+    // here where it is read. `fallback` is for a row with no fact, which the validator refuses --
+    // it exists so the card degrades to a true sentence rather than to an empty one.
+    oddity: {
+      lead: '{fact}',
+      fallback: '{name} is one of the odd things people have sent off the planet',
     },
     site: {
       lead: '{name} is a place on the ground that works with spacecraft',

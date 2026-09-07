@@ -846,6 +846,48 @@ export function handKeptSites() {
     },
   },
   {
+    id: 'apollo-14',
+    name: 'Apollo 14 landing site',
+    klass: 'site',
+    layer: 'hand-kept-sites',
+    propagator: 'fixed',
+    frame: 'moon-fixed',
+    // MEASURED, not sample: a dish does not move and its coordinates are published. It is
+    // hand-kept because no API serves it, which is a different thing from being uncertain.
+    cls: 'measured',
+    epoch: null,
+    source: 'registry/sites.yaml',
+    fixed: { latDeg: -3.64589, lonDeg: 342.52806, altKm: 0.000 },
+    meta: {
+      siteKind: 'surface',
+      world: 'moon',
+      doing: 'Fra Mauro, February 1971. Alan Shepard hit two golf balls here and they are still lying where they stopped.',
+      latDeg: -3.64589,
+      lonDeg: 342.52806,
+    },
+  },
+  {
+    id: 'apollo-16',
+    name: 'Apollo 16 landing site',
+    klass: 'site',
+    layer: 'hand-kept-sites',
+    propagator: 'fixed',
+    frame: 'moon-fixed',
+    // MEASURED, not sample: a dish does not move and its coordinates are published. It is
+    // hand-kept because no API serves it, which is a different thing from being uncertain.
+    cls: 'measured',
+    epoch: null,
+    source: 'registry/sites.yaml',
+    fixed: { latDeg: -8.9734, lonDeg: 15.5011, altKm: 0.000 },
+    meta: {
+      siteKind: 'surface',
+      world: 'moon',
+      doing: 'Descartes, April 1972. Charlie Duke left a photograph of his family face-up in the dust beside the lander.',
+      latDeg: -8.9734,
+      lonDeg: 15.5011,
+    },
+  },
+  {
     id: 'apollo-17',
     name: 'Apollo 17 landing site',
     klass: 'site',
@@ -972,4 +1014,203 @@ export function handKeptSites() {
     },
   },
   ];
+}
+
+// =================================================================================================
+// Odd things we sent
+// =================================================================================================
+//
+// registry/oddities.yaml -> records, hand-written here for the same reason data/rocketmatch.js is
+// hand-written next to the generated data/rockets.js: generated data and code never share a file,
+// so `gen_oddities_js.py --check` is a plain comparison with nothing to preserve.
+//
+// THESE ARE NOT `sample` RECORDS. `sample` means a bundled stand-in for a live feed a browser
+// cannot call, and it draws with a dashed halo saying "not a live position". These rows are not
+// standing in for anything -- they ARE the thing, the same distinction handKeptSites() makes about
+// the Goldstone dish. Each record carries the row's own `position_class` as its cls.
+//
+// THREE THINGS THIS EMITTER DOES THAT THE NEXT READER WILL WANT TO "FIX":
+//
+//  1. THE TWO EPOCHS. `record.epoch` is the row's `evidence_epoch` -- when anybody last LOOKED --
+//     and `elements.epochMs` is the osculating epoch the propagator integrates from. For the
+//     Roadster they are eight and a half years apart. cards.js prints the age of record.epoch, so
+//     setting it to the osculating epoch would print "elements 0 days old", which is true of the
+//     arithmetic and a lie about the knowledge. check_registry.py refuses an in_orbit row with no
+//     evidence_epoch for exactly this reason.
+//
+//  2. AN `attached` ROW IS NOT A RECORD. The Golden Record at Voyager 1's exact position would be
+//     a second dot under the first: ambiguous to tap (main.js takes the first hit in layer order)
+//     and, if it carried a horizons_id, a second Voyager drawn beside the first
+//     (scene/realmodels.js matches on that id). It is drawn as a child of its carrier's model
+//     instead -- the next pull request -- and until then it is a row nothing emits. The layer's
+//     count line says how many those are rather than quietly omitting them.
+//
+//  3. AN `unknown` ROW GETS NO PROPAGATOR AT ALL. `propagate()` returns null for a record whose
+//     propagator is not in its table, so the glyph layer skips it, heroes.js skips it and the
+//     camera has nothing to fly to -- which is the point. It is still a record, so search finds
+//     it and the card opens and says, in words, that nobody knows where it is. A dot would have
+//     been a guess, and every other layer on this map has taught the visitor that a dot is a claim.
+
+import { ODDITIES } from './oddities.js';
+
+/** JD -> ms. 2440587.5 is the Julian Date of the Unix epoch. */
+function jdToMs(jd) {
+  return (jd - 2440587.5) * DAY_MS;
+}
+
+/** The evidence date as ms, or null. `2018-03-19` is a YAML date and arrives as a string. */
+function evidenceMs(value) {
+  if (!value) return null;
+  const parsed = Date.parse(String(value));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+/** Everything the card needs that is true of every row, whatever kind of place it is in. */
+function commonMeta(row) {
+  const shape = row.shape || {};
+  return {
+    fact: row.fact,
+    myths: Array.isArray(row.myths) ? row.myths : [],
+    cite: row.cite || null,
+    asOf: row.as_of || null,
+    whereKind: row.where ? row.where.kind : null,
+    drawnName: shape.drawn_name || null,
+    // NOT `drawsAs`. Nothing here has geometry yet, and "drawn from published dimensions for the
+    // Graflex flash handle" printed under a violet dot would be the card describing a shape that
+    // is not on the screen. The builders and this field arrive together in the next pull request.
+  };
+}
+
+/**
+ * The layer's records. Six of the eight rows; see note 2 above for the two that are not here.
+ * @returns {Array<Object>}
+ */
+export function sampleOddities() {
+  const out = [];
+  for (const row of ODDITIES) {
+    const w = row.where || {};
+    const base = {
+      id: row.id,
+      name: row.display,
+      layer: 'oddities',
+      klass: row.klass || 'oddity',
+      source: 'registry/oddities.yaml',
+      epoch: null,
+      meta: commonMeta(row),
+    };
+
+    if (w.kind === 'in_orbit') {
+      const el = w.elements || {};
+      const aKm = el.a_au * AU_KM;
+      const prov = row.orbit_provenance || {};
+      out.push({
+        ...base,
+        propagator: 'kepler',
+        frame: w.frame || 'sun-inertial',
+        cls: row.position_class,
+        // (1) above: the age the card prints is the age of the EVIDENCE.
+        epoch: evidenceMs(w.evidence_epoch),
+        elements: {
+          qKm: aKm * (1 - el.e),
+          e: el.e,
+          aKm,
+          iRad: el.i_deg * DEG,
+          omRad: el.node_deg * DEG,
+          wRad: el.argp_deg * DEG,
+          // The phase is PUBLISHED for this one, so it is real and not the placeholder honesty
+          // rule 3 describes: no `approx` flag and no "drawn at perihelion" apology.
+          tpMs: jdToMs(el.tp_jd),
+          epochMs: jdToMs(el.epoch_jd),
+          muKm3S2: MU_SUN,
+        },
+        meta: {
+          ...base.meta,
+          horizonsId: w.horizons_id || null,
+          aAu: el.a_au,
+          eccentricity: el.e,
+          inclinationDeg: el.i_deg,
+          periodDays: periodDays(aKm),
+          arcEnd: w.evidence_epoch ? String(w.evidence_epoch) : null,
+          obsCount: prov.obs_count ?? null,
+          arc: prov.arc || null,
+          orbitCaveat: prov.caveat || null,
+          solution: prov.solution || null,
+        },
+      });
+      continue;
+    }
+
+    if (w.kind === 'on_surface') {
+      const obj = w.object || {};
+      const anchor = w.anchor || null;
+      const latDeg = anchor ? anchor.lat : obj.lat;
+      const lonDeg = anchor ? anchor.lon : obj.lon;
+      out.push({
+        ...base,
+        propagator: 'fixed',
+        frame: `${w.world}-fixed`,
+        cls: row.position_class,
+        fixed: { latDeg, lonDeg, altKm: 0 },
+        meta: {
+          ...base.meta,
+          world: w.world,
+          latDeg,
+          lonDeg,
+          // The two numbers, kept apart all the way to the card. One field would have to choose
+          // between 0.4 m and 40 m, and either choice is false.
+          anchorName: anchor ? anchor.of : null,
+          anchorUncertaintyM: anchor ? anchor.uncertainty_m : null,
+          objectPrecisionM: obj.precision_m ?? null,
+          objectHow: obj.how || null,
+        },
+      });
+      continue;
+    }
+
+    if (w.kind === 'came_home') {
+      out.push({
+        ...base,
+        propagator: 'fixed',
+        frame: 'earth-fixed',
+        cls: row.position_class,
+        fixed: { latDeg: w.lat, lonDeg: w.lon, altKm: 0 },
+        meta: {
+          ...base.meta,
+          world: 'earth',
+          latDeg: w.lat,
+          lonDeg: w.lon,
+          whereKept: w.where_kept || null,
+          leftSpace: w.left_space ? String(w.left_space) : null,
+        },
+      });
+      continue;
+    }
+
+    if (w.kind === 'unknown') {
+      out.push({
+        ...base,
+        // (3) above. No propagator, so propagate() answers null and nothing is drawn.
+        propagator: null,
+        frame: null,
+        cls: row.position_class,
+        meta: {
+          ...base.meta,
+          unplaceable: true,
+          lastKnown: w.last_known || null,
+          whyUnknown: w.why_unknown || null,
+          wouldNeed: w.would_need || null,
+        },
+      });
+      continue;
+    }
+
+    // `attached` falls through deliberately -- see note 2. Any other kind is refused by
+    // check_registry.py before it reaches here, so there is nothing to guess about.
+  }
+  return out;
+}
+
+/** How many rows are riding on a spacecraft the app draws rather than carrying their own dot. */
+export function attachedOddityCount() {
+  return ODDITIES.filter((row) => row.where && row.where.kind === 'attached').length;
 }

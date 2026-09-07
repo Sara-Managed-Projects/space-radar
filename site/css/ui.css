@@ -235,6 +235,13 @@
 .sr-swatch--world {
   background: var(--sr-world);
 }
+/* An oddity is not a class of object, it is a class of story, and it borrows probe violet: "a
+   made thing, out there". scene/glyphatlas.js aliases the 3D glyph to `probe` for the same
+   reason -- the atlas is a 4x4 grid with no eleventh cell to paint. */
+.sr-glyph--oddity,
+.sr-swatch--oddity {
+  background: var(--sr-probe);
+}
 
 /* ------------------------------------------------------------------------------------ */
 /* The card -- a bottom sheet on a phone                                                  */
@@ -421,6 +428,25 @@
   color: var(--sr-text);
 }
 
+/* "Often said" -- the myth block. It sits in the body, immediately after the facts it corrects,
+   and each correction carries its own source line because a debunk with no source is a rumour
+   going the other way. */
+.sr-card__myth {
+  margin: 0 0 4px;
+  line-height: 1.45;
+}
+
+.sr-card__mythsource {
+  margin: 0 0 10px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--sr-text-dim);
+}
+
+.sr-card__myths .sr-card__mythsource:last-child {
+  margin-bottom: 0;
+}
+
 /* ------------------------------------------------------------------------------------ */
 /* The controls                                                                           */
 /* ------------------------------------------------------------------------------------ */
@@ -543,6 +569,21 @@
 
 .sr-layer__count.is-empty {
   opacity: 0.6;
+}
+
+/* A layer whose members are in more than one state needs a sentence, not a number: "5 on the map
+   · 2 riding on something else · 1 we cannot place". It wraps to its own line under the name,
+   lined up past the checkbox and the swatch. Without this it is 360 px in a 335 px panel. */
+.sr-layer__label.is-split {
+  flex-wrap: wrap;
+  padding-bottom: 4px;
+}
+
+.sr-layer__count.is-split {
+  flex: 1 0 100%;
+  padding-left: 24px;
+  margin-top: -6px;
+  line-height: 1.35;
 }
 
 /* The clock ---------------------------------------------------------------------------- */
