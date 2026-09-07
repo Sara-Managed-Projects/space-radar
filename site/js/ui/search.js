@@ -13,12 +13,17 @@
 //
 //  1. THE INDEX IS FLAT. Records arrive over several seconds and there can be 17 579 of them.
 //     Parallel arrays of already-lower-cased strings, built once per layer-load burst, so a
-//     keystroke is one linear pass of indexOf and nothing else. MEASURED on 17 579 synthetic
-//     records with real names (node 24, M-series Mac): building the whole index takes 3.7-7.9 ms,
-//     and one query -- the 17 579 indexOf calls PLUS the sort and the de-duplication -- has a
-//     median of 0.4-0.5 ms for a query a person types ("iss", "dragon", "25544") and a worst case
-//     of 2.1 ms on "st", which matches 12 001 objects. A keystroke costs a fraction of a frame,
-//     so neither a worker nor an incremental structure is worth its weight.
+//     keystroke is one linear pass of indexOf and nothing else.
+//
+//     MEASURED IN THE BROWSER, on the live catalogue -- 17 537 real records, Chrome on an
+//     M-series Mac, not a bench in node: building the whole index takes 19.8 ms, and ONE QUERY
+//     (17 537 indexOf calls plus the sort and the de-duplication) has a median of 0.4-0.9 ms for
+//     the queries a person types -- "iss" 0.6, "25544" 0.7, "dragon" 0.4, "noaa" 0.4. The worst
+//     case is a two-letter prefix of the biggest constellation: "st" matches 11 384 objects and
+//     costs a median of 3.9 ms, 7.8 ms at its worst, nearly all of it the sort. That is inside
+//     one 60 Hz frame, and the input is debounced besides, so neither a worker nor an
+//     incremental structure earns its weight. (The same code in node 24 is 3-4x faster; the
+//     browser number is the one that matters, so the browser number is the one written down.)
 //
 //  2. THE DROPDOWN IS IN FLOW, not absolutely positioned. `.sr-controls` is a scroll container
 //     (`overflow-y: auto`, and on a phone it is a 62vh drawer), so an absolutely positioned
@@ -29,10 +34,16 @@
 
 import { COPY, t, fmt } from '../copy/en.js';
 
-const LIST_ID = 'sr-search-list';
-const OPTION_ID = 'sr-search-option-';
+// Ids are per instance, not per module. aria-controls and aria-activedescendant are id
+// REFERENCES, so two panels sharing one id silently point a screen reader at the other panel's
+// list. There is one panel today, so this changes nothing visible; it removes a way for a second
+// one to be wrong. (This was fixed once already and lost when PR #7 squashed -- MEASURED: two
+// instances both took the id `sr-search-list`.)
+let instances = 0;
 
 const MIN_QUERY = 2; // one letter matches thousands of things and helps nobody
+/** Added to an alias's own score so the canonical object outranks anything merely named alike. */
+const ALIAS_BONUS = 10000;
 const MAX_RESULTS = 12;
 const INPUT_DEBOUNCE_MS = 120;
 // `sr:layer` fires once per layer, ~15 times over several seconds. Rebuilding 17 000 entries on
@@ -241,14 +252,6 @@ const ALIASES = {
   'international space station': 'iss',
 };
 
-/** Does anything match at all? Stops after the first hit, so the alias check is nearly free. */
-function anyMatch(index, q) {
-  if (!index || !index.n) return false;
-  const numeric = /^[0-9]+$/.test(q);
-  for (let i = 0; i < index.n; i += 1) if (scoreOne(index, i, q, numeric) > 0) return true;
-  return false;
-}
-
 /**
  * The whole ranking, pure and DOM-free.
  *
@@ -258,19 +261,40 @@ function anyMatch(index, q) {
  * @returns {{hits: Array<Object>, total: number, query: string}}
  */
 export function findMatches(index, query, limit = MAX_RESULTS) {
-  let q = norm(query);
-  // Try the alias only when the query as typed finds nothing, so a real catalogue name always
-  // wins over a nickname that happens to contain it.
-  if (q && ALIASES[q] && !anyMatch(index, q)) q = ALIASES[q];
+  const q = norm(query);
+  // An alias is searched ALONGSIDE the query, never instead of it.
+  //
+  // The first version only fell back to the alias when the query as typed found nothing. That
+  // read as conservative and was wrong on the real catalogue: typing "hubble" returned HUBBLE 6,
+  // HUBBLE 7 and LEMUR-2-HUBBLE-4 -- Spire names its satellites after people -- so the query DID
+  // match, the fallback never fired, and the Hubble Space Telescope was nowhere in the list.
+  // Somebody typing "hubble" means the telescope; the satellites named after it sit underneath.
+  //
+  // hasOwnProperty, not a bare lookup. `ALIASES.constructor` and `ALIASES.__proto__` are
+  // inherited and truthy, so a bare lookup replaced the query with a function or with
+  // Object.prototype. MEASURED: findMatches(index, 'constructor').query was a FUNCTION, which
+  // breaks the `{hits, total, query: string}` this function documents.
+  const alias = Object.prototype.hasOwnProperty.call(ALIASES, q) ? ALIASES[q] : '';
   const out = { hits: [], total: 0, query: q };
   if (!index || !index.n || q.length < MIN_QUERY) return out;
 
   const numeric = /^[0-9]+$/.test(q);
+  const aliasNumeric = alias ? /^[0-9]+$/.test(alias) : false;
   // The score is kept from the scan rather than recomputed in the comparator: scoring twice was
   // the difference between one pass and one pass plus a sort's worth of indexOf.
   const found = [];
   for (let i = 0; i < index.n; i += 1) {
-    const score = scoreOne(index, i, q, numeric);
+    let score = scoreOne(index, i, q, numeric);
+    if (alias) {
+      // The alias must land at the START OF A WORD, which is what WORD_PREFIX and better mean.
+      // Two measurements set that line. Requiring an exact name match was too strict: the
+      // catalogue writes the station "ISS (ZARYA)" and China's "CSS (TIANHE)", so an
+      // exact-only gate made every alias but `hubble` dead on arrival. Accepting a plain
+      // contains was too loose: "hst" is inside "Republic of KazaHSTan", so "hubble" offered a
+      // Baikonur launch pad.
+      const aliasScore = scoreOne(index, i, alias, aliasNumeric);
+      if (aliasScore >= WORD_PREFIX) score = Math.max(score, ALIAS_BONUS + aliasScore);
+    }
     if (score > 0) found.push({ i, score });
   }
   out.total = found.length;
@@ -316,15 +340,23 @@ export function findMatches(index, query, limit = MAX_RESULTS) {
 
   for (const hit of unique) {
     const i = hit.i;
+    const shown = index.record[i].name || COPY.card.unknownName;
     out.hits.push({
       record: index.record[i],
-      name: index.record[i].name || COPY.card.unknownName,
+      name: shown,
       where: index.where[i],
       klass: index.record[i].klass || 'unknown',
       score: hit.score,
       // Where the query lands in the displayed name, for the highlight. -1 when the match came
       // from the catalogue number, the designator or the operator instead.
-      at: index.name[i].indexOf(q),
+      //
+      // Measured against the STRING THAT IS DRAWN, not against the index entry. norm() collapses
+      // inner runs of whitespace, so an offset taken from index.name points at the wrong letters
+      // of any name that has them: MEASURED, "NOAA  20  (JPSS-1)" searched for "jpss" gave
+      // at = 9, and the row highlighted " (JP". The same mismatch hit a record with no `name`
+      // but a `meta.objectName`, where the index holds the object name and the row draws
+      // "Unnamed object". Not landing at all is -1, and the row then draws without a mark.
+      at: shown.toLowerCase().indexOf(q),
       length: q.length,
     });
   }
@@ -352,6 +384,11 @@ export function createSearch(ctx, host) {
   };
 
   // --- structure ------------------------------------------------------------------------
+
+  instances += 1;
+  const suffix = instances === 1 ? '' : `-${instances}`;
+  const LIST_ID = `sr-search-list${suffix}`;
+  const OPTION_ID = `sr-search-option${suffix}-`;
 
   const wrap = el('section', 'sr-panel sr-search');
   wrap.appendChild(el('h2', 'sr-panel__title', COPY.search.title));
