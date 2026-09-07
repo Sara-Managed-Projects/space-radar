@@ -14,11 +14,24 @@ name: screens
 # indistinguishable from one that BEHAVES wrongly and is harder to notice. So:
 #
 #   1. the page is served over http, which is how it is actually deployed; and
-#   2. the shot waits for `#sr-controls` -- an element that exists only if the app booted, built
-#      its UI and got as far as drawing. If it never appears the command fails and so does the job.
+#   2. the shot waits for an element that exists only if the app booted, built its UI and got as
+#      far as drawing. If it never appears the command fails and so does the job.
 #
 # The selector is deliberately NOT something data-dependent. CI would then depend on CelesTrak
 # being up, and a red build for somebody else's outage is how a team learns to ignore red builds.
+#
+# EACH SHOT ASSERTS ITS OWN REGIME, AND THAT IS NOT A LOOSENING.
+# Both shots used to wait for `#sr-controls`. That was only ever true of the desktop layout: below
+# 600 px ui/mobile.js turns that panel into a drawer that starts CLOSED, so the mobile shot was
+# asserting a desktop-shaped fact and passing on a technicality -- the closed drawer was still
+# "visible" to Playwright because it was merely translated off screen. The moment a closed drawer
+# became `visibility: hidden` (so a keyboard user cannot tab into 34 controls sitting below the
+# fold) the technicality ran out and the job timed out for 60 s against a perfectly healthy page.
+#
+# So the phone shot now waits for `.sr-mobilebar`, which ui/mobile.js appends ONLY after it has
+# attached, which happens only after ui/controls.js and ui/status.js have built their panels. It
+# proves strictly more than the old selector did: that the app booted AND that the phone UI is the
+# one on screen. Desktop keeps `#sr-controls`, where the panel really is always open.
 
 on:
   workflow_dispatch:
@@ -70,20 +83,21 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p .ci-screens
+          # $3 is the "the app is up" selector for THAT viewport -- see the note at the top.
           shoot() {
-            local size="$1" out="$2"
+            local size="$1" out="$2" selector="$3"
             docker run --rm --network host \
               -u "$(id -u):$(id -g)" -e HOME=/tmp \
               -v "$PWD:/work" -w /work \
               mcr.microsoft.com/playwright:v1.49.1-jammy \
               npx --yes playwright@1.49.1 screenshot \
                 --viewport-size="$size" \
-                --wait-for-selector="#sr-controls" \
+                --wait-for-selector="$selector" \
                 --timeout=60000 \
                 "http://127.0.0.1:8177/index.html" ".ci-screens/${out}.png"
           }
-          shoot "1280,800" desktop
-          shoot "390,844" mobile
+          shoot "1280,800" desktop "#sr-controls"
+          shoot "390,844"  mobile  ".sr-mobilebar"
 
       # A shot that exists but is a picture of a failure panel is the thing this job used to
       # produce. The selector wait above is the real guard; this only catches an empty file.
