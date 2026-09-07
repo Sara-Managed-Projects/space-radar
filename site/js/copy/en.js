@@ -573,6 +573,25 @@ export const COPY = {
     locationHint: 'A rough position is enough. It is only used in your browser.',
   },
 
+  // ui/search.js. The footer strings are the honest ones: a layer nobody has read has no size,
+  // so the search says how many objects it IS looking at and refuses to guess at the rest.
+  search: {
+    title: 'Find an object',
+    placeholder: 'Type a name or a catalogue number',
+    inputLabel: 'Search for an object by name or catalogue number',
+    listLabel: 'Matching objects',
+    fly: 'Fly to it',
+    flyTitle: 'Move the camera to the highlighted object and open its card',
+    hint: 'Two letters is enough. Enter picks the top one.',
+    noMatch: 'Nothing that has loaded matches that.',
+    more: '{n} more match. Type a little more to narrow it.',
+    searching: 'Searching {n} objects.',
+    searchingOne: 'Searching one object.',
+    empty: 'Nothing has loaded yet, so there is nothing to search.',
+    notLoaded: 'Not loaded, so not searched: {layers}.',
+    notLoadedCount: 'How many objects that leaves out cannot be known until they load.',
+  },
+
   status: {
     title: 'What the app could and could not read',
     intro:

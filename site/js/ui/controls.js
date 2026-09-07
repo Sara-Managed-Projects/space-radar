@@ -13,6 +13,7 @@
 // ctx.clock.now() while the clock is live, remembered as the scrub anchor.
 
 import { COPY, CITIES, t, fmt, timeText, inWords } from '../copy/en.js';
+import { createSearch } from './search.js';
 
 const HOST_ID = 'sr-controls';
 const MOMENTS = [COPY.moments.wonder, COPY.moments.now, COPY.moments.next];
@@ -715,10 +716,25 @@ export function createControls(ctx) {
   node.appendChild(buildLayers(ctx, state));
   node.appendChild(buildClock(ctx, state));
   node.appendChild(buildLocation(ctx, state));
+  // Search sits under "where you are" because both answer the same question -- which thing do I
+  // mean -- and neither belongs in a top bar over the sky.
+  state.search = createSearch(ctx, node);
 
   // setMoment seeds and applies the layer defaults on its first call; doing it here too
   // fired every toggle twice on load.
   setMoment(ctx, state, state.moment);
+
+  // Search can switch a layer on, because selecting an object whose layer is off flies the camera
+  // to empty sky. This panel paints its checkboxes from its own `state.enabled` map, so without
+  // this the row would keep reading "off" while the objects were plainly on screen -- a control
+  // lying about the state it controls, which is the same defect the moment doors had.
+  document.addEventListener('sr:layer-toggle', (e) => {
+    const d = e && e.detail;
+    if (!d || !d.from) return;            // our own toggles already painted themselves
+    if (state.enabled.get(d.id) === d.on) return;
+    state.enabled.set(d.id, d.on);
+    paintLayers(ctx, state);
+  });
 
   // The moment can change from outside this module -- a card's "See it from here", a hash change,
   // the console. Without this the doors keep showing the last one somebody clicked, which is a
