@@ -13,6 +13,7 @@ green check on a documentation change.
 
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
@@ -28,6 +29,31 @@ POSITION_CLASSES = {"measured", "inferred", "illustrative"}
 MOMENTS = {"wonder", "now", "next"}
 STYLE_KINDS = {"glyph", "model"}
 CADENCE_SUFFIXES = ("m", "h")
+
+# --- registry/rockets.yaml, the whole vocabulary a row may use -----------------------------
+# Frozen here on purpose. A shape the builder cannot draw must stop the build, because the
+# alternative is a rocket silently drawn as something it is not -- which is the one failure this
+# feature exists to prevent. Adding a value is two edits: this set and site/js/scene/models.js.
+BOOSTER_SHAPES = {
+    "none",
+    "liquid_core_clone",
+    "liquid_conical",
+    "liquid_cylindrical",
+    "solid_slim",
+    "solid_fat",
+    "solid_clustered",
+    "flared_base",
+}
+TOP_KINDS = {"fairing", "capsule", "capsule_tower", "integrated_ship", "none"}
+TAPERS = {"tube", "stepped", "hammerhead", "tapered"}
+ENGINE_PATTERNS = {"single", "twin", "quad", "octaweb", "ring", "dense_ring", "unknown"}
+STANDS_FOR = {"variant", "family"}
+EVIDENCE_CLASSES = {"measured", "inferred"}
+MATCH_KINDS = {"full_name", "family", "provider"}
+# Nothing flying is shorter than a Kuaizhou or taller than a Starship. A row outside this is a
+# unit mistake -- feet for metres, or a booster length written into height_m -- not a rocket.
+MIN_HEIGHT_M, MAX_HEIGHT_M = 5, 150
+HEX = re.compile(r"^#[0-9A-Fa-f]{6}$")
 
 errors: list[str] = []
 
@@ -74,6 +100,7 @@ def main() -> int:
     sites_doc = load("sites.yaml")
     glossary_doc = load("glossary.yaml")
     showers_doc = load("showers.yaml")
+    rockets_doc = load("rockets.yaml")
 
     worlds = rows(worlds_doc, "worlds", "worlds.yaml")
     sources = rows(sources_doc, "sources", "sources.yaml")
@@ -84,6 +111,8 @@ def main() -> int:
     sites = rows(sites_doc, "sites", "sites.yaml")
     terms = rows(glossary_doc, "terms", "glossary.yaml")
     showers = rows(showers_doc, "showers", "showers.yaml")
+    rockets = rows(rockets_doc, "rockets", "rockets.yaml")
+    observed = rows(rockets_doc, "observed", "rockets.yaml")
 
     world_ids = {w.get("id") for w in worlds}
     source_ids = {s.get("id") for s in sources}
@@ -272,6 +301,154 @@ def main() -> int:
         if not s.get("doing"):
             fail(where, "no `doing:` line -- a site card with nothing to say is a dot")
 
+
+    # --- rockets -------------------------------------------------------------------
+    # A row here decides what a launch is DRAWN as, and the card repeats the row's own claim
+    # about itself. So the refusals below are all one refusal in different clothes: a row must
+    # not be able to say something it cannot support, and it must not be able to draw nothing.
+    seen_observed: dict[str, set[str]] = {k: set() for k in MATCH_KINDS}
+    for o in observed:
+        if not isinstance(o, dict):
+            fail("rockets.yaml", f"observed row {o!r} is not a map")
+            continue
+        kind = o.get("as")
+        what = o.get("seen")
+        if kind not in MATCH_KINDS:
+            fail("rockets.yaml", f"observed row {what!r} has `as: {kind!r}`, not one of {sorted(MATCH_KINDS)}")
+            continue
+        if not isinstance(what, str) or not what.strip():
+            fail("rockets.yaml", f"an observed `{kind}` row has no `seen:` string")
+            continue
+        if not isinstance(o.get("n"), int):
+            fail("rockets.yaml", f"observed {what!r} has no launch count `n:`")
+        seen_observed[kind].add(what.strip().casefold())
+    if not rockets_doc.get("observed_on"):
+        fail("rockets.yaml", "no `observed_on:` date -- `observed:` is evidence, and evidence "
+                             "with no date is a claim about a feed nobody can check")
+
+    claimed: dict[tuple[str, str], str] = {}
+    seen = set()
+    for r in rockets:
+        rid = r.get("id")
+        where = f"rockets.yaml[{rid}]"
+        if not rid:
+            fail("rockets.yaml", "a row has no id")
+            continue
+        if rid in seen:
+            fail(where, "duplicate id")
+        seen.add(rid)
+        if not r.get("display"):
+            fail(where, "no `display:` -- the card names the shape it drew, so the name is data")
+
+        # 2. a row nothing can match is a row that never draws
+        match = r.get("match")
+        if not isinstance(match, dict) or not match:
+            fail(where, "no match keys -- a row nothing can match is a row that never draws")
+            match = {}
+        for kind, values in match.items():
+            if kind not in MATCH_KINDS:
+                fail(where, f"match kind {kind!r} is not one of {sorted(MATCH_KINDS)}")
+                continue
+            if not isinstance(values, list) or not values:
+                fail(where, f"match.{kind} must be a non-empty list of exact strings")
+                continue
+            for v in values:
+                if not isinstance(v, str) or not v.strip():
+                    fail(where, f"match.{kind} contains {v!r}, which is not a string to compare")
+                    continue
+                key = (kind, v.strip().casefold())
+                # 3. two rows cannot claim the same string: the second would never be reached
+                if key in claimed and claimed[key] != rid:
+                    fail(where, f"match.{kind} {v!r} is also claimed by {claimed[key]}")
+                else:
+                    claimed[key] = rid
+                # 4. the evidence that this row can ever fire
+                if not r.get("not_in_feed") and key[1] not in seen_observed[kind]:
+                    fail(where, f"{kind} {v!r} was never seen in the feed; add it to observed: "
+                                f"or say why with not_in_feed:")
+
+        # 5 and 6. the two numbers everything else is drawn relative to
+        h = r.get("height_m")
+        if not isinstance(h, (int, float)) or isinstance(h, bool) or not (MIN_HEIGHT_M <= h <= MAX_HEIGHT_M):
+            fail(where, f"height_m must be a number in metres ({MIN_HEIGHT_M}-{MAX_HEIGHT_M}); "
+                        f"height tracks the fairing and is never derived")
+        d = r.get("core_dia_m")
+        if not isinstance(d, (int, float)) or isinstance(d, bool) or d <= 0:
+            fail(where, "core_dia_m must be a number in metres")
+
+        # 7. the strap-ons: the strongest discriminator at 40 px, so the enum is closed
+        b = r.get("boosters")
+        if not isinstance(b, dict):
+            fail(where, "no `boosters:` (write `{shape: none, count: 0}` rather than leaving it out)")
+        else:
+            shape = b.get("shape")
+            count = b.get("count")
+            if shape not in BOOSTER_SHAPES:
+                fail(where, f"booster shape {shape!r} is not one of {sorted(BOOSTER_SHAPES)}")
+            if not isinstance(count, int) or isinstance(count, bool) or count < 0:
+                fail(where, "boosters.count must be an integer")
+            elif shape == "none" and count:
+                fail(where, f"booster shape is `none` but count is {count}")
+            elif shape in BOOSTER_SHAPES and shape != "none" and count == 0:
+                fail(where, f"booster shape is {shape!r} but count is 0 -- write `shape: none`")
+            if shape and shape != "none" and not isinstance(b.get("dia_m"), (int, float)):
+                fail(where, f"booster shape {shape!r} needs `dia_m` -- the booster's width "
+                            f"against the core is what the silhouette is")
+
+        # 8. what sits on top, and how the body steps
+        top = r.get("top")
+        if not isinstance(top, dict) or top.get("kind") not in TOP_KINDS:
+            fail(where, f"top.kind {(top or {}).get('kind')!r} is not one of {sorted(TOP_KINDS)}")
+            top = top if isinstance(top, dict) else {}
+        taper = r.get("taper")
+        if taper not in TAPERS:
+            fail(where, f"taper {taper!r} is not one of {sorted(TAPERS)}")
+        if taper == "stepped":
+            sections = r.get("sections")
+            if not isinstance(sections, list) or len(sections) < 2:
+                fail(where, "`taper: stepped` needs `sections:` with at least two diameters -- "
+                            "the step IS the claim")
+            else:
+                for sec in sections:
+                    if not isinstance(sec, dict) or not isinstance(sec.get("dia_m"), (int, float)):
+                        fail(where, f"section {sec!r} has no dia_m")
+        if taper == "hammerhead" and not isinstance(top.get("dia_m"), (int, float)):
+            fail(where, "`taper: hammerhead` claims the fairing is WIDER than the body, so it "
+                        "needs `top.dia_m` to say by how much")
+
+        # 9. engines
+        eng = r.get("engines")
+        if not isinstance(eng, dict):
+            fail(where, "no `engines:`")
+        else:
+            if not isinstance(eng.get("count"), int) or isinstance(eng.get("count"), bool) or eng.get("count", 0) < 1:
+                fail(where, "engines.count must be an integer of 1 or more")
+            if eng.get("pattern") not in ENGINE_PATTERNS:
+                fail(where, f"engines.pattern {eng.get('pattern')!r} is not one of {sorted(ENGINE_PATTERNS)}")
+
+        # 10. provenance: what the card is allowed to say about this row
+        if r.get("stands_for") not in STANDS_FOR:
+            fail(where, f"stands_for {r.get('stands_for')!r} must be one of {sorted(STANDS_FOR)}")
+        if r.get("class") not in EVIDENCE_CLASSES:
+            fail(where, f"class {r.get('class')!r} must be one of {sorted(EVIDENCE_CLASSES)} -- "
+                        f"say whether the numbers were read or worked out")
+        if not r.get("source"):
+            fail(where, "no source -- a shape with no evidence behind it is a guess with a hex colour")
+        livery = r.get("livery")
+        if livery == "unknown":
+            pass
+        elif isinstance(livery, dict):
+            if livery.get("class") not in EVIDENCE_CLASSES:
+                fail(where, "livery has a colour but no class -- say measured or inferred, or "
+                            "write livery: unknown")
+            for zone, value in livery.items():
+                if zone == "class":
+                    continue
+                if value != "unknown" and not (isinstance(value, str) and HEX.match(value)):
+                    fail(where, f"livery.{zone} is {value!r}; write a #RRGGBB hex or `unknown`")
+        else:
+            fail(where, f"livery {livery!r} must be a map of zones or the literal `unknown`")
+
     # --- glossary and showers ------------------------------------------------------
     if len(terms) < 20:
         fail("glossary.yaml", f"only {len(terms)} terms; cards may not use a word that is not here")
@@ -296,7 +473,8 @@ def main() -> int:
     print(
         f"registry ok: {len(worlds)} worlds, {len(sources)} sources, {len(layers)} layers, "
         f"{len(events)} event types, {len(models)} models, {len(real_models)} real models, {len(sites)} sites, "
-        f"{len(terms)} glossary terms, {len(showers)} showers"
+        f"{len(terms)} glossary terms, {len(showers)} showers, {len(rockets)} rockets "
+        f"({len(observed)} feed values observed {rockets_doc.get('observed_on')})"
     )
     return 0
 

@@ -661,6 +661,34 @@ function classLine(record, m) {
   }
 }
 
+/**
+ * Block 7b: what the drawn shape actually is. Three states, and the record already knows which:
+ * `meta.drawsAs` is written at parse time from the matched registry/rockets.yaml row, so this
+ * function never learns what three.js is.
+ *
+ * Returns null for everything that is not a launch, which is every other class in the app --
+ * their shapes are class stand-ins the card has never claimed otherwise about, and inventing a
+ * line for them here is a different change.
+ */
+function drawingLine(record) {
+  const md = meta(record);
+  const drawsAs = pick(md, 'drawsAs');
+  if (!drawsAs) return null;
+  const T = COPY.drawing;
+  const name = pick(md, 'drawnName') || pick(md, 'rocket');
+  let line;
+  if (drawsAs === 'generic') {
+    line = name ? t(T.generic, { name: String(name) }) : T.genericUnnamed;
+  } else if (drawsAs === 'family') {
+    line = t(T.family, { name: String(name || '') });
+  } else {
+    line = t(T.variant, { name: String(name || '') });
+  }
+  const disputed = pick(md, 'disputedHeight');
+  if (disputed) line += COPY.punctuation.separator + t(T.disputed, { disputed: String(disputed) });
+  return line;
+}
+
 // ---------------------------------------------------------------------------------------
 // Block 8: the source line. On the card, always -- not in a footer (spec 0013 req 5).
 // ---------------------------------------------------------------------------------------
@@ -826,6 +854,11 @@ function render(record, ctx) {
   // 7. the class-and-age line
   const foot = el('footer', 'sr-card__foot');
   foot.appendChild(el('p', 'sr-card__cls', classLine(record, m)));
+
+  // 7b. what the drawn shape is. Between this and the line above it, the card states that
+  // neither the shape nor the path is a measurement of this particular flight.
+  const drawn = drawingLine(record);
+  if (drawn) foot.appendChild(el('p', 'sr-card__drawn', drawn));
 
   // 8. the source line
   const src = sourceRow(record, ctx);

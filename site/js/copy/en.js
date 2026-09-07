@@ -502,6 +502,22 @@ export const COPY = {
     minutesWord: 'minutes',
   },
 
+  // WHAT YOU ARE LOOKING AT. Two comments in the scene code -- scene/models.js and
+  // scene/realmodels.js -- describe "the card means by 'drawn as a generic satellite'". The card
+  // never said it. This is that line, and it sits in the footer beside the position class,
+  // because "the shape is a stand-in" is the same category of claim as "the track is a sketch".
+  //
+  // Colour is deliberately absent. 14 of the families in registry/rockets.yaml have no sourced
+  // livery; they draw in the neutral default and the card says nothing at all about colour. We
+  // do not write "colour unknown" -- we simply never claim one.
+  drawing: {
+    variant: 'drawn from published dimensions for {name}',
+    family: 'drawn as {name} — the family shape, not this exact version',
+    generic: 'drawn as a generic rocket; we have no dimensions for {name}',
+    genericUnnamed: 'drawn as a generic rocket; we have no dimensions for this vehicle',
+    disputed: 'sources disagree on its height ({disputed})',
+  },
+
   source: {
     prefix: 'Source',
     unknown: 'Source not recorded',

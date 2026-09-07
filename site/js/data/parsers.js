@@ -15,6 +15,7 @@
 // take the whole page down with it.
 
 import * as satellite from '../../vendor/satellite.esm.js';
+import { rocketRowFor } from './rocketmatch.js';
 
 const DEG = Math.PI / 180;
 const AU_KM = 149597870.7;
@@ -221,6 +222,25 @@ const ASCENT_DEFAULT = { altKm: 400, inclDeg: null };
 const ASCENT_SECONDS = 540;
 
 /**
+ * The rocket's family names, ROOT FIRST. LL2 2.3.0 nests them as `configuration.families`, a
+ * list whose first entry has `parent: null` and whose last is the most specific -- measured on
+ * the live feed: 23 of 23 detailed configurations that carry a family put the root first, depth
+ * never exceeds 2, and the list is EMPTY on 19.8% of launches (Rocket Lab, Isar and every other
+ * single-vehicle operator, because LL2 only creates a family when a manufacturer has more than
+ * one launcher). Returns [] rather than null so callers can just iterate.
+ */
+function rocketFamilies(r) {
+  const list = r && r.rocket && r.rocket.configuration && r.rocket.configuration.families;
+  if (!Array.isArray(list)) return [];
+  const out = [];
+  for (const f of list) {
+    const name = f && typeof f.name === 'string' ? f.name.trim() : '';
+    if (name) out.push(name);
+  }
+  return out;
+}
+
+/**
  * @param {Object|string} json  the LL2 /launches/upcoming/ payload
  * @returns {{launches: Array<Object>, pads: Array<Object>, events: Array<Object>}}
  */
@@ -256,7 +276,18 @@ export function parseLaunches(json) {
     const rocketName =
       (r.rocket && r.rocket.configuration &&
         (r.rocket.configuration.full_name || r.rocket.configuration.name)) || null;
+    // LL2 2.3.0 has NO `configuration.family`. It has `families`, a list of 0-2 objects, root
+    // first: [{name: "Falcon"}, {name: "Falcon 9"}]. Reading the 2.2.0 spelling made
+    // meta.rocketFamily null on 100% of launches -- measured against the live endpoint, and the
+    // reason every registry lookup below would have matched nothing. The most specific name is
+    // the useful one (it is what separates Falcon 9 from Falcon Heavy); the whole path is kept
+    // so the match can walk out to the root.
+    const familyPath = rocketFamilies(r);
     const provider = (r.launch_service_provider && r.launch_service_provider.name) || null;
+    // Which drawn shape this launch gets, and how sure we are of it. The chain lives in
+    // data/rocketmatch.js over rows generated from registry/rockets.yaml; adding a rocket is a
+    // row there and nothing here.
+    const drawn = rocketRowFor({ rocket: rocketName, rocketFamilyPath: familyPath, provider });
     const webcast = pickWebcast(r.vid_urls);
     const padName = padDisplayName(pad);
     const padId = pad.id != null ? `pad-ll2-${pad.id}` : hasPad ? `pad-${lat.toFixed(4)}-${lon.toFixed(4)}` : null;
@@ -310,8 +341,20 @@ export function parseLaunches(json) {
           weatherConcerns: r.weather_concerns || null,
           provider,
           rocket: rocketName,
-          rocketFamily:
-            (r.rocket && r.rocket.configuration && r.rocket.configuration.family) || null,
+          rocketFamily: familyPath.length ? familyPath[familyPath.length - 1] : null,
+          rocketFamilyPath: familyPath,
+          // What scene/models.js will build, and what the card is allowed to say about it.
+          // `drawsAs` is the honesty field: 'variant' means the drawing is this vehicle,
+          // 'family' means it is the family's shape, 'generic' means we have no dimensions at
+          // all and the card says so rather than letting the picture imply otherwise.
+          modelVariant: drawn.row ? drawn.row.id : null,
+          drawsAs: drawn.row ? drawn.row.stands_for : 'generic',
+          drawnName: drawn.row ? drawn.row.display : null,
+          drawnVia: drawn.via,
+          // The card's size chip, and the only place the app states a rocket's real height.
+          // Absent for a generic match, so a missing chip is truthful rather than a wrong number.
+          sizeM: drawn.row ? drawn.row.height_m : null,
+          disputedHeight: (drawn.row && drawn.row.disputed) || null,
           missionName: (r.mission && r.mission.name) || null,
           missionType: (r.mission && r.mission.type) || null,
           missionDescription: (r.mission && r.mission.description) || null,

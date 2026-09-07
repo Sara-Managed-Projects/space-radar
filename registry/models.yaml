@@ -28,7 +28,11 @@ models:
   - {id: satellite-flat,     file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 900,  for: {family: flat-packed}}
   - {id: station-generic,    file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 4000, for: {layer: stations}}
   - {id: debris-shard,       file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 200,  for: {layer: debris-notable}}
-  - {id: rocket-upper-stage, file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 800,  for: {layer: launches}}
+  # ONE row for every launch vehicle, because all fifty shapes are the same procedural source
+  # file under the same licence. Which shape a launch gets is registry/rockets.yaml; the budget
+  # here is per drawn vehicle and tests/test_contract.mjs now measures every one of them against
+  # it. It was 800 when a rocket was five meshes; the worst case is Vulcan VC6L at 1104.
+  - {id: rocket-upper-stage, file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1600, for: {layer: launches}}
   - {id: probe-generic,      file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1500, for: {layer: deep-space}}
   - {id: telescope-generic,  file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1500, for: {family: telescope}}
   - {id: asteroid-generic,   file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 700,  for: {layer: asteroids}}
