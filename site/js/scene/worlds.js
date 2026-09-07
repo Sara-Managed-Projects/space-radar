@@ -33,7 +33,7 @@
 import * as THREE from '../../vendor/three.module.min.js';
 import * as Astronomy from '../../vendor/astronomy.js';
 import { stage, SUN_INERTIAL, EARTH_INERTIAL } from './stage.js';
-import { j2000ToTeme } from '../propagate/frames.js';
+import { j2000ToTeme, rotateDir, stageFrame } from '../propagate/frames.js';
 import { createEarth, updateEarth } from './earth.js';
 
 const KM_PER_AU = Astronomy.KM_PER_AU;
@@ -202,7 +202,6 @@ const _pos = new THREE.Vector3();
 const _sunScene = new THREE.Vector3(1, 0, 0);
 const _sunHere = new THREE.Vector3(1, 0, 0);
 const _m4 = new THREE.Matrix4();
-const _m4b = new THREE.Matrix4();
 
 /**
  * Unit vector from `fromKm` to `toKm`, both in the stage's frame, expressed in SCENE axes.
@@ -217,15 +216,6 @@ function sunDirFrom(toKm, fromKm, out) {
   if (len === 0) return out; // the stage IS the Sun: keep the last direction rather than NaN
   return out.set(dx / len, dz / len, -dy / len);
 }
-
-/** The axis remap as a matrix: frame (x,y,z) -> scene (x, z, -y). See stage.js. */
-const REMAP = new THREE.Matrix4().set(
-  1, 0, 0, 0,
-  0, 0, 1, 0,
-  0, -1, 0, 0,
-  0, 0, 0, 1,
-);
-const REMAP_T = REMAP.clone().transpose();
 
 export function createWorlds(scene, opts = {}) {
   const base = opts.textureBase === undefined ? 'textures/' : opts.textureBase;
@@ -382,7 +372,7 @@ export function createWorlds(scene, opts = {}) {
       if (w.look.earth) {
         updateEarth(mesh, sunDirHere, tMs);
       } else {
-        if (w.rotation === 'iau') applyIauOrientation(mesh, w.body, tMs);
+        if (w.rotation === 'iau') applyIauOrientation(mesh, w.body, tMs, w.id);
         if (mesh.material && mesh.material.uniforms && mesh.material.uniforms.uSunDir) {
           mesh.material.uniforms.uSunDir.value.copy(sunDirHere);
         }
@@ -398,6 +388,43 @@ export function createWorlds(scene, opts = {}) {
 
   function meshFor(id) { return meshes.get(id) || null; }
 
+  const _adjCentre = new THREE.Vector3();
+
+  /**
+   * Put a body-fixed record on the globe it is standing on, even when that globe is drawn
+   * somewhere else.
+   *
+   * A compressed world is drawn at `drawnDistanceKm` along its true direction and at
+   * `drawnRadiusKm` instead of its real radius. A rover's position converts truthfully into the
+   * scene and therefore lands nowhere near the drawn planet -- 268.8 million km away for Jezero,
+   * measured. The same two numbers that moved the planet move what stands on it:
+   *
+   *     drawn = meshCentre + (true - trueCentre) * drawnRadius / trueRadius
+   *
+   * and the true centre is recoverable exactly, because the compression preserved the direction:
+   * trueCentre = meshCentre / distanceFactor.
+   *
+   * ONLY `<world>-fixed`. An inertial frame is an orbit, not a surface, and `sun-inertial` is
+   * every asteroid and every deep-space probe on the map -- correcting those to a "drawn Sun"
+   * would move the whole solar system. The card still has to say the world is drawn closer than
+   * it is; `viewScale(id).note` is the sentence, and it is unchanged.
+   */
+  function viewAdjust(out, frame) {
+    const name = String(frame || '');
+    const cut = name.lastIndexOf('-');
+    if (cut < 0 || name.slice(cut + 1) !== 'fixed') return out;
+    const id = name.slice(0, cut);
+    if (id === stage.worldId) return out;
+    const st = viewState.get(id);
+    if (!st || !st.exaggerated) return out;
+    const mesh = meshes.get(id);
+    if (!mesh || !(st.distanceFactor > 0) || !(st.trueRadiusKm > 0)) return out;
+    _adjCentre.copy(mesh.position).multiplyScalar(1 / st.distanceFactor);
+    return out.sub(_adjCentre).multiplyScalar(st.drawnRadiusKm / st.trueRadiusKm)
+      .add(mesh.position);
+  }
+  stage.setViewAdjust(viewAdjust);
+
   /**
    * What the card must say when the view is exaggerated. Never silent: a world drawn at a
    * compressed distance reports exactly how much.
@@ -405,6 +432,7 @@ export function createWorlds(scene, opts = {}) {
   function viewScale(id) { return viewState.get(id) || null; }
 
   function dispose() {
+    if (stage.viewAdjust === viewAdjust) stage.setViewAdjust(null);
     for (const mesh of meshes.values()) {
       mesh.traverse((o) => {
         if (o.geometry) o.geometry.dispose();
@@ -532,41 +560,50 @@ function sameSystem(a, b) {
   return (a === 'earth' && b === 'moon') || (a === 'moon' && b === 'earth');
 }
 
+const _bx = new THREE.Vector3();
+const _by = new THREE.Vector3();
+const _bz = new THREE.Vector3();
+
 /**
- * Orient a world from the IAU pole and prime meridian that astronomy-engine reports.
+ * Orient a world's mesh by asking propagate/frames.js where that world's own axes point.
  *
- * Body-fixed -> EQJ is  Rz(alpha0 + 90) . Rx(90 - delta0) . Rz(W).
- * The mesh's local axes are the body-fixed axes AFTER the scene remap (the same alignment
- * argument as Earth's in earth.js: +Y is the pole, +X is longitude 0 on the equator), so the
- * mesh's rotation is  R . F . R^T  where R is the remap. For Earth this reduces to Ry(GMST),
- * which is a useful check that the two files agree.
+ * THE MESH AND THE MARKER MUST USE THE SAME ROTATION, and for six months they did not. This
+ * function used to build its own matrix from the IAU angles -- Rz(ra+90).Rx(90-dec).Rz(W), an
+ * EQJ orientation -- and apply it in scene axes. But a body-fixed MARKER reaches the scene
+ * through frames.js, which on the Earth stage ends in j2000ToTeme, so the marker was precessed
+ * and the mesh was not. Measured in Chrome: recovering Apollo 11's coordinates back through the
+ * Moon mesh's own quaternion gave 0.6835 N / 23.846 E against registry/sites.yaml's 0.6741 N /
+ * 23.4730 E -- a constant +0.373 degrees of longitude, 11.3 km of lunar surface, on all six
+ * lunar rows. Earth was the control and showed zero error, because scene/earth.js builds its
+ * mesh from frames.geodeticToEcef and cannot disagree with itself.
  *
- * This is also what puts the Moon's near side towards us, libration included -- the one case
- * where the simple model is visibly wrong to anyone who looks.
+ * So: three basis vectors, one formula, nothing written twice. The mesh's local axes are the
+ * body-fixed axes after the scene remap (the same alignment argument as Earth's in earth.js:
+ * +Y is the pole, +X is longitude 0 on the equator), which makes the three columns
+ * remap(Rx), remap(Rz) and -remap(Ry).
+ *
+ * This is also what puts the Moon's near side towards us, libration included.
+ *
+ * @returns {boolean} false when the world has no rotation model -- leave the mesh unrotated
+ *   rather than turn it by a guess.
  */
-function applyIauOrientation(mesh, bodyName, tMs) {
+function applyIauOrientation(mesh, bodyName, tMs, worldId) {
   const body = Astronomy.Body[bodyName];
-  if (body === undefined) return;
-  let axis;
-  try {
-    axis = Astronomy.RotationAxis(body, new Date(tMs));
-  } catch (err) {
-    return; // a body astronomy-engine has no rotation model for: leave it unrotated
-  }
-  const ra = axis.ra * 15 * DEG;      // sidereal hours -> radians
-  const dec = axis.dec * DEG;
-  const spin = axis.spin * DEG;
-
-  _m4.makeRotationZ(ra + Math.PI / 2);
-  _m4b.makeRotationX(Math.PI / 2 - dec);
-  _m4.multiply(_m4b);
-  _m4b.makeRotationZ(spin);
-  _m4.multiply(_m4b);
-
-  // R . F . R^T
-  _m4.premultiply(REMAP);
-  _m4.multiply(REMAP_T);
+  if (body === undefined) return false;
+  const from = `${worldId}-fixed`;
+  const to = stageFrame(stage);
+  const bx = rotateDir({ x: 1, y: 0, z: 0 }, from, to, tMs);
+  const by = rotateDir({ x: 0, y: 1, z: 0 }, from, to, tMs);
+  const bz = rotateDir({ x: 0, y: 0, z: 1 }, from, to, tMs);
+  if (!bx || !by || !bz) return false;
+  // The remap, (x, y, z) -> (x, z, -y), written out rather than multiplied in: this is the one
+  // place three vectors go through it and a matrix product would hide which column is which.
+  _bx.set(bx.x, bx.z, -bx.y).normalize();
+  _by.set(-by.x, -by.z, by.y).normalize();
+  _bz.set(bz.x, bz.z, -bz.y).normalize();
+  _m4.makeBasis(_bx, _bz, _by);
   mesh.quaternion.setFromRotationMatrix(_m4);
+  return true;
 }
 
 /** A warm bloom for the Sun. No lens flare (docs/design-language.md is explicit). */

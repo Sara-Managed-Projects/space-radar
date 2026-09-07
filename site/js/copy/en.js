@@ -568,6 +568,12 @@ export const COPY = {
       "{anchorName} is measured to {anchorM} m; this was {how} and is placed to within {objectM} m",
     precisionSplitUnknown:
       '{anchorName} is measured to {anchorM} m; this object itself has never been surveyed',
+    // The THIRD case, and the golf balls are the reason. Somebody did find them -- Saunders, in
+    // enhanced film -- and nobody published how closely. "never been surveyed" throws away the
+    // finding; a metre figure invents the error bar. This says both halves and neither more.
+    precisionSplitHowOnly:
+      '{anchorName} is measured to {anchorM} m; this object was {how}, and nobody has published '
+      + 'how closely',
     precisionOwn: 'located to within {objectM} m, {how}',
     // For a thing that is bolted to another thing. It has no position of its own and never will:
     // the class line above already printed the CARRIER's class, because the carrier's fields are

@@ -353,6 +353,26 @@ the source is clearly specified**. This app fetches it live and never mirrors it
 status panel both name the Minor Planet Center. If you add a harvester that caches or re-serves MPC
 files, that condition attaches to your copy too.
 
+## 4.6 Third-party trademarks the app names or draws
+
+None of the marks below is licensed to this project and none is used as a badge of origin. They are
+named because naming what a thing actually is, is the point of the card it appears on. No wordmark,
+logo or typeface belonging to any of them is reproduced.
+
+* **LEGO** is a trademark of the LEGO Group, and in the EU the *minifigure shape itself* is a
+  registered three-dimensional mark, independent of any copyright in a model. The `oddities` layer
+  draws three aluminium minifigures riding Juno, low-detail and in the project's own toon material.
+  **The decision to draw that silhouette at all is Ivan's and has not been recorded**; the note on
+  the `juno-lego-figures` row in `registry/oddities.yaml` says the same thing, and blunting the
+  head-stud and the ring hands is one builder and one row if the answer is no.
+* **Star Wars**, **Return of the Jedi** and the lightsaber hilt design are trademarks of
+  Lucasfilm Ltd. / The Walt Disney Company. The app names the prop and deliberately does **not**
+  draw it: what the `rotj-lightsaber` row draws is the real-world donor part the prop was built
+  from, a Graflex 3-cell press-camera flash handle, and the card says exactly that.
+* **Tesla** and **Roadster** are trademarks of Tesla, Inc. The `tesla-roadster` row draws a
+  first-generation Roadster in the project's own geometry; no Tesla badge, wordmark or published
+  paint colour is reproduced, and the card says the red is ours.
+
 ## 5. Corrections to `registry/models.yaml`
 
 `registry/models.yaml` is the project's own record of asset provenance, and CI only checks that each

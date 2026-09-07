@@ -425,6 +425,46 @@ export function parseFrame(frame) {
   return { world, kind };
 }
 
+/**
+ * Rotate a DIRECTION from one frame's axes into another's. Rotations only: no world origins are
+ * added or subtracted, so this is exact where a position conversion is not -- a moon-fixed
+ * position reaches the Earth stage by way of two 1.5e8 km heliocentric vectors, and float64
+ * cancellation there costs about a kilometre, which is fine for a dot and useless for an axis.
+ *
+ * WHY IT EXISTS. scene/worlds.js orients a world's mesh, and it used to do that from its own
+ * copy of the IAU formula: Rz(ra+90).Rx(90-dec).Rz(spin), an EQJ orientation, applied straight
+ * in scene axes. The scene's axes on the Earth stage are TEME, and a marker's position gets
+ * there through j2000ToTeme -- so the mesh was short exactly one precession, and every lunar
+ * landing site was drawn 0.373 degrees of longitude, 11.3 km of lunar surface, east of where the
+ * Moon's own texture put it. Two formulas written to agree cannot be checked against each other;
+ * one formula, asked for three basis vectors, has nothing to disagree with.
+ *
+ * @returns {{x:number,y:number,z:number}|null} null where a position conversion would also be
+ *   null: a world with no rotation model, or a cross-world conversion with no time.
+ */
+export function rotateDir(vec, fromFrame, toFrame, tMs) {
+  const from = parseFrame(fromFrame);
+  const to = parseFrame(toFrame);
+  if (!from || !to || !vec || !Number.isFinite(vec.x)) return null;
+  if (from.world === to.world && from.kind === to.kind) return { x: vec.x, y: vec.y, z: vec.z };
+  if (!Number.isFinite(tMs) && (from.kind === 'fixed' || to.kind === 'fixed'
+      || from.world !== to.world)) {
+    return null;
+  }
+  let v = vec;
+  if (from.kind === 'fixed') {
+    v = bodyFixedToInertial(v, from.world, tMs);
+    if (!v) return null;
+  }
+  v = inertialToEclAxes(v, from.world, tMs);
+  v = eclAxesToInertial(v, to.world, tMs);
+  if (to.kind === 'fixed') {
+    v = inertialToBodyFixed(v, to.world, tMs);
+    if (!v) return null;
+  }
+  return v;
+}
+
 /** The frame the scene draws in, for a given stage. */
 export function stageFrame(stage) {
   if (!stage) return 'earth-inertial';

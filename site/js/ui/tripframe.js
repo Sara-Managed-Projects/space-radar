@@ -78,7 +78,15 @@
 import { COPY, t } from '../copy/en.js';
 
 const HOST_ID = 'sr-trip';
-const MODE_CLASS = 'sr-trip';
+// NOT 'sr-trip'. The host div carries `.sr-trip`, and `.sr-trip` in ui.css sets
+// `position: fixed; inset: 0; pointer-events: none` so the scene under the frame stays
+// draggable. Putting the same class on <html> gave the ROOT those declarations, so nothing on
+// the page was hit-testable: measured in Chrome, a real wheel over the canvas landed on
+// HTML.sr-trip, the rig distance did not move, the trip did not pause, and two thirds of every
+// stop's card (scrollHeight 708 against clientHeight 301) could not be scrolled or clicked.
+// Both of the traps the frame was designed to avoid -- a locked camera and a captive visitor --
+// were live because one class did two jobs.
+const MODE_CLASS = 'sr-trip-mode';
 const COLLAPSED_CLASS = 'sr-trip-collapsed';
 const PHASE_ATTR = 'data-trip-phase';
 
@@ -135,6 +143,9 @@ export function createTripFrame(ctx) {
   // moves to the stop heading on a jump the VISITOR asked for, and never on an auto-advance:
   // stealing focus mid-sentence interrupts a screen reader and yanks the arrow keys away.
   let userJumped = false;
+  // Bumped whenever an end card is rendered, so a plan() that resolves late cannot append a
+  // button to a panel that has been rebuilt or torn down since it was asked.
+  let outroToken = 0;
   let lastIndex = -1;
 
   // ------------------------------------------------------------------------------------ DOM
@@ -387,9 +398,10 @@ export function createTripFrame(ctx) {
     else if (dropped > 1) p.appendChild(el('p', 'sr-trip__panelnote', t(COPY.trip.droppedMany, { n: dropped })));
     if (st.clockClamped) p.appendChild(el('p', 'sr-trip__panelnote', COPY.trip.clockClamped));
     const row = el('div', 'sr-trip__panelrow');
-    const start = button('sr-trip__btn sr-trip__btn--ember', COPY.trip.introStart, COPY.trip.startTitle, () =>
-      trip.play(),
-    );
+    const start = button('sr-trip__btn sr-trip__btn--ember', COPY.trip.introStart, COPY.trip.startTitle, () => {
+      userJumped = true;
+      trip.play();
+    });
     row.appendChild(start);
     row.appendChild(button('sr-trip__btn', COPY.trip.introSkip, null, leave));
     p.appendChild(row);
@@ -406,21 +418,47 @@ export function createTripFrame(ctx) {
     const explore = button('sr-trip__btn sr-trip__btn--ember', COPY.trip.endExplore, COPY.trip.endExploreTitle, leave);
     row.appendChild(explore);
     row.appendChild(button('sr-trip__btn', COPY.trip.endReplay, null, () => trip.start(st.tourId)));
-    // ONE named next trip, never a picker: a menu at the end of a trip is a decision nobody asked
-    // for, and the name is the whole invitation.
-    const all = trip.tours();
-    const here = all.findIndex((tour) => tour.id === st.tourId);
-    const nextTour = all.length > 1 ? all[(here + 1) % all.length] : null;
-    if (nextTour) {
-      row.appendChild(
-        button('sr-trip__btn', t(COPY.trip.endNext, { title: nextTour.title }), null, () =>
-          trip.start(nextTour.id),
-        ),
-      );
-    }
     p.appendChild(row);
     p.hidden = false;
     explore.focus();
+
+    // ONE named next trip, never a picker: a menu at the end of a trip is a decision nobody asked
+    // for, and the name is the whole invitation. But it was picked positionally out of tours()
+    // with nothing asked about it, so with CelesTrak unreachable the end card offered "Where
+    // people are living in space right now" -- a trip plan() greys out in the Trips panel with
+    // its reason -- and pressing it tore the frame down and showed the refusal to nobody. The
+    // button is appended only once a plan says the trip can actually run.
+    const all = trip.tours();
+    const here = all.findIndex((tour) => tour.id === st.tourId);
+    const candidates = all.filter((tour) => tour.id !== st.tourId);
+    const ordered = here < 0 ? candidates : all.slice(here + 1).concat(all.slice(0, here));
+    offerNext(ordered, row, st.tourId);
+  }
+
+  /**
+   * Walk the other trips in order and append a button for the first one that can be offered.
+   * Asynchronous because plan() resolves layers, and guarded by `outroToken` so an answer that
+   * arrives after the visitor left, replayed, or started something else lands nowhere.
+   */
+  function offerNext(ordered, row, fromId) {
+    const mine = ++outroToken;
+    const tryOne = (i) => {
+      if (i >= ordered.length) return;
+      const tour = ordered[i];
+      Promise.resolve(trip.plan(tour.id))
+        .catch(() => null)
+        .then((plan) => {
+          if (mine !== outroToken || !parts || !row.isConnected) return;
+          if (trip.state.phase !== 'outro' || trip.state.tourId !== fromId) return;
+          if (!plan || !plan.offerable) { tryOne(i + 1); return; }
+          row.appendChild(
+            button('sr-trip__btn', t(COPY.trip.endNext, { title: tour.title }), null, () =>
+              trip.start(tour.id),
+            ),
+          );
+        });
+    };
+    tryOne(0);
   }
 
   // ---------------------------------------------------------------------------- the render
@@ -484,8 +522,12 @@ export function createTripFrame(ctx) {
     if (st.index !== lastIndex) {
       lastIndex = st.index;
       document.title = t(COPY.trip.docTitle, { title: st.tourTitle, n, count: st.count });
-      if (userJumped) parts.heading.focus();
     }
+    // OUTSIDE the index check, because the two moves that orphaned keyboard focus do not change
+    // the index. Resume destroys the pause chip the Resume button lives in, and Start destroys
+    // the intro panel the Start button lives in; both left `document.activeElement` on BODY, and
+    // a keyboard visitor had to tab in from the top of the document to reach the controls again.
+    if (userJumped) parts.heading.focus();
     userJumped = false;
   }
 

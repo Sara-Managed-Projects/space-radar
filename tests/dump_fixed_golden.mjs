@@ -55,10 +55,17 @@ const LL2_SAMPLE = {
 
 /** Every bundled record whose propagator is `fixed`, in a stable order. */
 export async function fixedRecords() {
-  const { handKeptSites, sampleReentries } = await import(join(ROOT, 'site/js/data/sample.js'));
+  const { handKeptSites, sampleReentries, sampleOddities } = await import(
+    join(ROOT, 'site/js/data/sample.js')
+  );
   const { parseLaunches } = await import(join(ROOT, 'site/js/data/parsers.js'));
   const pads = parseLaunches(LL2_SAMPLE).pads || [];
-  const all = [...handKeptSites(), ...sampleReentries(), ...pads];
+  // sampleOddities() emits four `fixed` records -- three moon-fixed and rotj-lightsaber, which is
+  // an EARTH-frame ground record of exactly the class this fixture was written to guard -- and
+  // none of them was in this list, so none was held to anything. They arrive through the new-row
+  // branch in test_contract.mjs: frame declared must equal frame answered, and a body-fixed row
+  // must be on that body's surface. The fixture needs no regeneration for them.
+  const all = [...handKeptSites(), ...sampleReentries(), ...sampleOddities(), ...pads];
   return all
     .filter((r) => r && r.propagator === 'fixed')
     .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));

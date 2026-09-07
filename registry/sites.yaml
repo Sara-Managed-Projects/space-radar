@@ -21,6 +21,14 @@ sites:
   - {id: apollo-16, display: "Apollo 16 landing site", class: surface, world: moon, lat: -8.9734, lon: 15.5011, doing: "Descartes, April 1972. Charlie Duke left a photograph of his family face-up in the dust beside the lander."}
   - {id: apollo-17, display: "Apollo 17 landing site", class: surface, world: moon, lat: 20.1908, lon: 30.7717, doing: "The last place people have stood on another world, in December 1972."}
   - {id: change-4, display: "Chang'e 4", class: surface, world: moon, lat: -45.4446, lon: 177.5991, doing: "The first landing on the far side of the Moon, in 2019."}
+  # The crash smudge, not the lander and not the library inside it: LROC published the darkest
+  # pixel with a 20 m by 8 m 95% confidence interval, and registry/oddities.yaml anchors the
+  # lunar library on it BY ID, so the coordinate lives in exactly one place. This row is the
+  # coordinate and NOT a record: sample.js's handKeptSites() does not mirror it, because every
+  # `surface` site outside realmodels.js's `bySite` table is drawn as a launch pad -- true of
+  # change-4, gale, elysium and utopia today -- and a launch pad at a crash site would be a
+  # stand-in that says nothing, which is the one thing this layer may not ship.
+  - {id: beresheet, display: "Beresheet impact site", class: surface, world: moon, lat: 32.5956, lon: 19.3496, doing: "Where an Israeli lander hit Mare Serenitatis in April 2019, carrying a stack of nickel discs."}
 
   # --- On Mars ------------------------------------------------------------------------
   - {id: jezero, display: "Perseverance, Jezero crater", class: surface, world: mars, lat: 18.4447, lon: 77.4508, doing: "A rover the size of a car, collecting rock samples in a crater that was once a river delta."}

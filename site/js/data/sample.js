@@ -89,7 +89,8 @@ const ASTEROIDS = [
     iDeg: 10.83,
     nodeDeg: 304.3,
     argpDeg: 178.8,
-    // VERIFIED from JPL SBDB on 2026-09-06 and recorded in docs/data-sources.md.
+    // VERIFIED from JPL SBDB on 2026-09-06. The evidence is this comment: this repo is code
+    // only, so a row that points at a docs/ file points at nothing a reader can open.
     hMag: 10.4,
     diameterKm: 16.84,
     neo: true,
@@ -374,9 +375,12 @@ const CRUISING_CRAFT = [
     name: 'Voyager 1',
     klass: 'probe',
     horizonsId: -31,
-    // 168 au was measured against JPL Horizons on 2026-09-06 and is recorded in
-    // docs/data-sources.md, so it is the one number here that is not from memory.
-    distanceAu: 168,
+    // MEASURED, and the evidence is here because this repo is code only and has no docs/ to
+    // point at. JPL Horizons, COMMAND='-31', CENTER='500@10', 2026-09-07 00:00 TDB:
+    // X=-32.13433, Y=-136.63593, Z=+98.85895 au -> r = 171.68 au. The row said 168 and cited a
+    // check on 2026-09-06; 3.7 au is about a year of Voyager 1's travel, so the number was a
+    // reading roughly a year older than the date beside it.
+    distanceAu: 171.7,
     distanceMeasured: true,
     speedKmS: 17.0,
     lonDeg: 255,
@@ -389,8 +393,9 @@ const CRUISING_CRAFT = [
     name: 'Voyager 2',
     klass: 'probe',
     horizonsId: -32,
-    distanceAu: 140,
-    distanceMeasured: false,
+    // Same query, COMMAND='-32': X=+39.83201, Y=-105.33488, Z=-89.54645 au -> r = 143.88 au.
+    distanceAu: 143.9,
+    distanceMeasured: true,
     speedKmS: 15.4,
     lonDeg: 290,
     latDeg: -34,
@@ -402,8 +407,9 @@ const CRUISING_CRAFT = [
     name: 'New Horizons',
     klass: 'probe',
     horizonsId: -98,
-    distanceAu: 62,
-    distanceMeasured: false,
+    // Same query, COMMAND='-98': X=+20.77359, Y=-62.10272, Z=+2.28371 au -> r = 65.52 au.
+    distanceAu: 65.5,
+    distanceMeasured: true,
     speedKmS: 13.6,
     lonDeg: 293,
     latDeg: -2,
@@ -541,7 +547,7 @@ export function sampleDeepSpace() {
           c.distanceAu +
           ' au from the Sun' +
           (c.distanceMeasured
-            ? ' (checked against JPL Horizons on 6 September 2026)'
+            ? ' (checked against JPL Horizons on 7 September 2026)'
             : ' (the published figure, rounded)') +
           ', ' +
           c.speedKmS +
