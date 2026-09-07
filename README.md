@@ -35,6 +35,10 @@ There are three things you can do, and the interface knows which one you are doi
 | 🔭 **Now** | What is above my head *this minute*, from where I am standing? |
 | 🚀 **Next** | Tell me before the next launch, meteor peak or close approach. |
 
+And if you would rather not fly it yourself, there are
+**[trips](#trips--the-camera-flies-it-for-you)**: the camera does it, one stop at a time, and
+Escape leaves at any moment without moving the view.
+
 ---
 
 ## What it looks like
@@ -76,12 +80,116 @@ small scheduled job; until then the app says so on the object rather than preten
 
 ---
 
+## The odd things we sent
+
+Between the satellites and the probes there is a third kind of thing: what went up because
+somebody smuggled it aboard, bolted it on, or simply left it where it fell. A family photograph
+lying in the dust at Descartes. Two golf balls. Thirty million pages on nickel discs, at the
+bottom of a crater a lander made. A gold record eight years past Pluto. A car.
+
+![The Tesla Roadster and Starman, with the card open beside them](assets/readme/oddities.png)
+
+They live in `registry/oddities.yaml`, eight rows, and every row has to say **two separate things
+about itself** before it is allowed on the map — because one field cannot say both:
+
+| | |
+|---|---|
+| **where it is** | `in_orbit` · `on_surface` · `attached` to something the app already draws · `came_home` · `unknown` |
+| **how well anyone knows** | `measured` · `inferred` · `illustrative` · `inherit`, which is the carrier's and never better than it |
+
+That split decides everything downstream. **Five get a dot and a model.** **Two are not objects in
+space, they are parts of objects in space** — the Voyager Golden Record, and the three aluminium
+figures riding Juno — so they are drawn as children of their carrier's model, and a trip that
+visits one flies the camera to the carrier, which is where the thing actually is. And **one is
+drawn nowhere at all.** Alan Bean's silver astronaut pin is somewhere near the Apollo 12 site in
+an unidentified crater and nobody knows which; it gets no propagator, no geometry and no dot. It
+is still a record — search finds it, the card opens — and the card says nobody knows. A dot on
+this map is a claim, and for that one there is no claim to make.
+
+<table>
+<tr>
+<td width="45%"><img src="assets/readme/oddity-card.png" alt="The lightsaber's card: a measured position, a myth corrected with its source, and what the drawing gets wrong"><br><b>The one that came home.</b> The <i>Return of the Jedi</i> prop spent fourteen days on STS-120 sealed in foam and never came out of its box, and it stands in Houston now. Every claim on this card says where it came from — including the last one, which admits that what is drawn is a Graflex flash handle: the kind of thing, not this exact one.</td>
+<td width="55%"><img src="assets/readme/oddities-layer.png" alt="The layer list, with Odd things we sent among the others"><br><b>One row among the others.</b> Adding an odd thing is a row in the registry and nothing at all under <code>site/js/</code>: a generator mirrors the file into the browser copy, and CI refuses a stale mirror.<br><br>They get no tenth colour and no tenth silhouette. They borrow the probe's, because this is not a tenth kind of object — it is a reason for going up.</td>
+</tr>
+</table>
+
+**“Often said.”** Half of these objects are famous for something that is not true, so the card
+has a block for it, and every correction carries the source of the correction. Shepard's second golf
+ball did not go 200 yards — the film was measured in 2021 and it went 40. The Roadster is not
+heading for the asteroid belt; it crosses Mars's orbit and will never meet the planet. The
+tardigrades on the Moon are not living there. It is the most distinctive thing in the app, and it
+is one twenty-one-line function in `cards.js`.
+
+**The drawings are drawings, and they say so.** Seven builders, one deliberate detail each: the
+fourteen-ray pulsar map on the record cover, the warp in the wrapped photograph, the tardigrade's
+rearmost pair of legs pointing backwards the way a real one's do, Starman's elbow out of the
+window. Each is measured against a triangle budget written in its own registry row, and each
+carries a line on the card naming what the drawing knowingly gets wrong. The pulsar map is two to
+three times oversized. The nickel stack is laminated in four bands, not twenty-five. Nobody knows
+which way the Roadster points, so it is drawn level, and the red is ours.
+
+---
+
+## Trips — the camera flies it for you
+
+A **trip** is a chain of shots with a card at each one, and the camera flies between them. Two ship
+today: *Where people are living in space right now*, and *The strangest things we have ever sent*,
+which visits the objects above.
+
+<table>
+<tr>
+<td width="50%"><img src="assets/readme/trip-intro.png" alt="The intro card: six stops, about two minutes"><br><b>It tells you the price first.</b> “6 stops · about 2 minutes” is computed from the flights and the dwells by the generator, not typed in by a person — so the number a visitor is promised and the number the browser runs are the same number.</td>
+<td width="50%"><img src="assets/readme/trip.png" alt="A stop on the trip: Voyager 1, with the Golden Record's card"><br><b>Everything lives in the letterbox.</b> The controls sit inside the two black bars, so they cost nothing from the picture. This stop's card is about the Golden Record; the camera is at Voyager 1, because that is where the record is.</td>
+</tr>
+</table>
+
+A still cannot show the part that matters, so: the camera does not simply teleport. For each stop
+it searches a hundred and eight standing points and takes one where the subject is actually lit,
+times the flight from how far it has to go in log space, arcs out over an apex and back when the
+two stops are far apart sideways, and then **keeps drifting while you read** — one signed arc of
+up to thirty-four degrees, never a lap. How far it drifts is a number in the stop's own row, and
+one stop sets it to zero, because the last shot of that trip wants to be still.
+
+The rule the whole feature is built on is that **a trip may not promise a stop it will not
+deliver.** A stop that cannot be found today is dropped *before* the count is shown. A trip that
+falls below its own minimum is offered greyed out **with its reason**, never quietly hidden —
+a missing feature and a broken one look identical when you hide one.
+
+The other half is that leaving has to be free, or nobody will start:
+
+- **Touching the camera pauses the trip. It never throws you out.** Nudge the view, take your time,
+  press Resume and it flies back to the stop it left.
+- **Escape leaves immediately, with no confirmation, and the camera does not move** — you keep the
+  view you were looking at, and the card stays open on the stop you were on.
+- **`prefers-reduced-motion` turns every flight into a cut**, not into a faster flight —
+  compressing a four-second sweep into one second makes the trigger worse, not better. It also
+  stops the auto-advance, and the reading time comes from the card's own word count, so nothing
+  about the camera can shorten it.
+- The layers a trip switched on, and the clock speed it clamped, are put back exactly as they were.
+
+Adding a trip is a row in `registry/tours.yaml` and a row per stop, and nothing under `site/js/`.
+Twenty-one refusals guard that file; the one that forbids a trip id from colliding with a layer id
+caught a real collision the first time it ran.
+
+---
+
 ## Nine silhouettes, learned once
 
 ![The nine object classes and their colours](assets/readme/classes.svg)
 
 Size on screen encodes *class*, never true size — at true scale every one of these is invisible.
 The real size lives on the card as something you can picture instead.
+
+**Rockets are the exception, and they are drawn per family.** Every launch used to be the same
+white tube. `registry/rockets.yaml` now holds **forty-nine launch vehicles**, and four fields carry
+the recognition at forty pixels: the shape of the strap-ons, what sits on top, the nozzle pattern,
+and the taper of the body. A number nobody could source is not written down — the field is left
+out and the builder falls back to a class-typical proportion, or the row is omitted entirely and
+the launch falls through to the generic rocket, which the card says out loud. **Thirty-four of the
+forty-nine have no documented livery**, because colour lives in photography and not in
+specifications; those rows draw in the neutral default and their cards say nothing at all about
+colour. Two widely repeated colour claims that no source supports are called out in the rows that
+would have carried them.
 
 ---
 
@@ -158,13 +266,17 @@ site/                 the entire app, served as-is
   js/data/            fetching, caching, parsing, and the bundled sample data
   js/scene/           renderer, stage, worlds, Earth shader, starfield, glyphs, models
   js/sky/             pass prediction and the ground-up view
-  js/ui/              cards, controls, and the sources panel
+  js/ui/              cards, controls, the sources panel, and the trip
   vendor/             three.js, satellite.js, astronomy-engine
+  models/             twenty-nine NASA models, loaded one at a time when you get close
   textures/ data/     planet textures and the star catalogue
-registry/             seven YAML files. Adding a world, an object class, a data source or an
-                      event type is a ROW here — not a code change. CI enforces it.
-scripts/              provision, deploy, and the README screenshot script
-tests/                registry validation, the module contract, and a growth test
+registry/             eleven YAML files. Adding a world, an object class, a data source, an event
+                      type, a launch vehicle, an odd thing or a whole trip is a ROW here — not a
+                      code change. CI enforces it, and refuses a stale generated mirror.
+scripts/              provision, deploy, the validator, the three mirror generators, and the
+                      README screenshot script
+tests/                registry validation, the module contract, a growth test, and a refusal test
+                      that breaks every rule on purpose to prove the validator still says no
 ```
 
 **The registry is the architecture.** `tests/test_growth.py` adds Europa — a moon two levels down
@@ -221,19 +333,35 @@ Issues and pull requests are welcome. The things most worth doing, roughly in or
 1. **The scheduled harvester.** Move the API calls out of the browser into a small cron job that
    writes JSON snapshots. It is what turns the three `sample` classes into live ones, and it is the
    single biggest improvement available.
-2. **Real 3D models.** Everything is procedural geometry today, so a satellite reads as its class
-   rather than as that particular spacecraft. NASA publishes public-domain models.
-3. **Frame rate on real phones.** The budgets in the code are targets, not measurements. Numbers
+2. **More real 3D models.** Twenty-nine ship, from NASA's public-domain library, and they cover the
+   famous objects. Everything else is still procedural geometry and reads as its class rather than
+   as that particular spacecraft.
+3. **More trips.** Two ship. The registry supports four target forms; `group:` (frame several
+   objects at once) and `view:` (“the next time it crosses your sky”) are designed and not built,
+   and each of them unlocks a trip that wants it.
+4. **Frame rate on real phones.** The budgets in the code are targets, not measurements. Numbers
    from an actual mid-range Android would be genuinely useful.
-4. **Copy.** Every card should be readable by a curious twelve-year-old. Some are not yet.
+5. **Copy.** Every card should be readable by a curious twelve-year-old. Some are not yet.
 
 Before opening a PR, run what CI runs:
 
 ```bash
-python3 scripts/check_registry.py   # the seven registries validate
-python3 tests/test_growth.py        # adding a world is still just a registry row
-python3 tests/test_refusals.py      # the validator still refuses what it claims to
-node     tests/test_contract.mjs    # every cross-module import resolves
+python3 scripts/check_registry.py        # the eleven registries validate
+python3 scripts/gen_rockets_js.py --check   # the browser's copy of the registry is current
+python3 scripts/gen_oddities_js.py --check  #   "
+python3 scripts/gen_tours_js.py --check     #   "
+python3 scripts/check_copy.py            # no user-visible string outside copy/en.js
+python3 tests/test_growth.py             # adding a world is still just a registry row
+python3 tests/test_refusals.py           # the validator still refuses what it claims to
+node     tests/test_contract.mjs         # imports resolve, and every drawn shape fits its budget
+```
+
+Screenshots for this file come from the real app, in a browser, against live data:
+
+```bash
+python3 -m http.server 8177 --directory site &
+node scripts/shots.mjs --base=http://127.0.0.1:8177 --out=assets/readme
+#   --only=trip,oddities   to retake one or two rather than all of them
 ```
 
 ---
