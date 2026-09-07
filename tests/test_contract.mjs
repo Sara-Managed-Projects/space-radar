@@ -412,6 +412,191 @@ for (const file of allFiles) {
   }
 }
 
+// 3e2. THE MESH AND THE MARKER MUST USE THE SAME ROTATION.
+//
+// A landing site is placed by propagate/frames.js and the globe under it is oriented by
+// scene/worlds.js, and until this test existed those were two formulas written to match. They did
+// not: worlds.js built an EQJ orientation and applied it in TEME scene axes, so every lunar row
+// was drawn 0.373 degrees of longitude -- 11.3 km of lunar surface -- east of where the Moon's own
+// texture put it. The old assertions could not see it: a 0.5 km radial band and a hemisphere sign
+// are both blind to a tangential slide.
+//
+// So this recovers a site's latitude and longitude BACK through the mesh's own quaternion and
+// requires the registry row within a kilometre. It is the check that would have caught it.
+{
+  try {
+    const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
+    const { stage } = await import(join(JS, 'scene/stage.js'));
+    const { createWorlds } = await import(join(JS, 'scene/worlds.js'));
+    const { propagate } = await import(join(JS, 'propagate/index.js'));
+    const { handKeptSites } = await import(join(JS, 'data/sample.js'));
+    const { WORLD_RADIUS_KM } = await import(join(JS, 'propagate/frames.js'));
+
+    const tMs = Date.parse('2026-03-15T12:00:00.000Z');
+    stage.setWorld('earth');
+    stage.setTime(tMs);
+    const scene = new THREE.Scene();
+    const worlds = createWorlds(scene, { textureBase: null });
+    worlds.update(tMs);
+
+    const byId = new Map(handKeptSites().map((r) => [r.id, r]));
+    const local = new THREE.Vector3();
+    let checked = 0;
+    let worst = 0;
+    for (const [world, ids] of [['moon', ['apollo-11', 'apollo-14', 'apollo-16', 'apollo-17', 'change-4']]]) {
+      const mesh = worlds.meshFor(world);
+      if (!mesh) { problems.push(`MESH     no ${world} mesh to check`); continue; }
+      mesh.updateMatrixWorld(true);
+      const radiusKm = WORLD_RADIUS_KM[world];
+      for (const id of ids) {
+        const rec = byId.get(id);
+        if (!rec) { problems.push(`MESH     ${id} is not a hand-kept site any more`); continue; }
+        const p = propagate(rec, tMs);
+        const scenePos = p && stage.toScene(p, p.frame, tMs);
+        if (!scenePos) { problems.push(`MESH     ${id} has no scene position`); continue; }
+        // Into the mesh's own local space, then undo the scene axis remap (x, y, z) -> (x, z, -y).
+        local.copy(scenePos);
+        mesh.worldToLocal(local);
+        const bf = { x: local.x, y: -local.z, z: local.y };
+        const n = Math.hypot(bf.x, bf.y, bf.z);
+        if (!(n > 0)) { problems.push(`MESH     ${id} recovered a zero vector`); continue; }
+        const lat = (Math.asin(bf.z / n) * 180) / Math.PI;
+        let lon = (Math.atan2(bf.y, bf.x) * 180) / Math.PI;
+        if (lon < 0) lon += 360;
+        let wantLon = rec.fixed.lonDeg;
+        if (wantLon < 0) wantLon += 360;
+        let dLon = Math.abs(lon - wantLon);
+        if (dLon > 180) dLon = 360 - dLon;
+        // Great-circle metres, not degrees: a degree of longitude is worth less near the poles and
+        // the number that matters is how far across the ground the marker slid.
+        const kmLat = ((lat - rec.fixed.latDeg) * Math.PI / 180) * radiusKm;
+        const kmLon = ((dLon * Math.PI) / 180) * radiusKm * Math.cos((rec.fixed.latDeg * Math.PI) / 180);
+        const slideKm = Math.hypot(kmLat, kmLon);
+        worst = Math.max(worst, slideKm);
+        checked += 1;
+        if (!(slideKm < 1.0)) {
+          problems.push(
+            `MESH     ${id} lands ${slideKm.toFixed(2)} km from where the ${world}'s own texture ` +
+              `puts it (recovered ${lat.toFixed(4)} / ${lon.toFixed(4)}, ` +
+              `registry ${rec.fixed.latDeg} / ${wantLon.toFixed(4)})`
+          );
+        }
+      }
+    }
+    if (!checked) problems.push('MESH     nothing was checked, so this test proves nothing');
+    else notes.push(`the drawn globe and the marker agree: ${checked} lunar rows, worst ${(worst * 1000).toFixed(0)} m`);
+    worlds.dispose();
+  } catch (e) {
+    problems.push(`MESH     could not check the mesh orientation: ${String(e && e.message)}`);
+  }
+}
+
+// 3e3. LEAVING A TRIP ENDS THE FLIGHT.
+//
+// `stop()` and `finish()` restored the layers, the clock and the world and never touched the
+// camera, so the rig flew on with the frame gone: measured in Chrome, Leave pressed 0.8 s into a
+// flight left `flying` true and the distance ran from 25.7 to 70 995 scene units over the next
+// 2.5 s -- 71 million kilometres of camera travel after the trip was over -- while the end card
+// said "the camera stays where it is". `jump()` and `pause()` both collapsed the flight already;
+// the two EXITS did not, which is why only the exits are asserted here.
+{
+  try {
+    const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
+    const { createCameraRig } = await import(join(JS, 'scene/camera.js'));
+    const { createTrip } = await import(join(JS, 'ui/trip.js'));
+    const { TOURS } = await import(join(JS, 'data/tours.js'));
+    const { sampleOddities } = await import(join(JS, 'data/sample.js'));
+
+    // rAF as a queue we drain by hand: the whole machine is built on schedule(), and a test that
+    // waits on a real frame is a test that waits.
+    const frames = [];
+    const prevRaf = globalThis.requestAnimationFrame;
+    globalThis.requestAnimationFrame = (fn) => { frames.push(fn); return frames.length; };
+    const pump = (n = 12) => {
+      for (let i = 0; i < n; i += 1) {
+        const due = frames.splice(0, frames.length);
+        for (const fn of due) { try { fn(Date.now()); } catch { /* not what is under test */ } }
+      }
+    };
+
+    const tMs = Date.parse('2026-03-15T12:00:00.000Z');
+    const records = sampleOddities();
+    const camera = new THREE.PerspectiveCamera(50, 1.5, 0.1, 1e9);
+    camera.position.set(0, 0, 10);
+    const rig = createCameraRig(camera, null, { worldRadius: 0 });
+    const ctx = {
+      camera,
+      cameraRig: rig,
+      clock: { mode: 'live', rate: 1, paused: false, now: () => tMs, goTo() {}, setRate() {}, setPaused() {}, live() {} },
+      layers: [{ id: 'oddities', nearKm: 2000 }],
+      recordsFor: (id) => (id === 'oddities' ? records : []),
+      recordById: (id) => records.find((r) => r.id === id) || null,
+      isLayerOn: () => true,
+      setLayerOn() {},
+      select() {},
+      deselect() {},
+      selected: () => null,
+    };
+    const trip = createTrip(ctx);
+    // The trip that needs no network. TOURS[0] is `people-in-space`, which resolves to one stop
+    // with no CelesTrak and therefore never begins -- and a `stop()` with nothing running returns
+    // before it reaches the camera, so picking it would have made this whole block a tautology.
+    let tourId = null;
+    for (const tour of TOURS) {
+      const p = await trip.plan(tour.id);
+      if (p && p.offerable) { tourId = tour.id; break; }
+    }
+
+    const exercise = async (label, exit) => {
+      await trip.start(tourId);
+      pump();
+      if (trip.state.phase === 'idle') {
+        problems.push(`TRIPEND  ${label}: the trip never started, so nothing below is a test`);
+        return;
+      }
+      trip.play();
+      pump(2);
+      // A flight of our own, so the assertion is about the exit and not about the trip's timing.
+      rig.flyTo({ distance: 4000, ms: 8000 });
+      rig.update(0.1);
+      if (!rig.state.flying) { problems.push(`TRIPEND  ${label}: nothing was flying to begin with`); return; }
+      exit();
+      pump(2);
+      if (rig.state.flying) {
+        problems.push(`TRIPEND  ${label} left the camera flying; it must end where it is`);
+        return;
+      }
+      const was = rig.state.distance;
+      for (let i = 0; i < 25; i += 1) rig.update(0.1);
+      if (Math.abs(rig.state.distance - was) > 1e-6) {
+        problems.push(
+          `TRIPEND  ${label}: the camera moved ${(rig.state.distance - was).toFixed(3)} units ` +
+            'in the 2.5 s after the trip ended'
+        );
+      }
+    };
+
+    if (!tourId) {
+      problems.push('TRIPEND  no trip resolves without a network, so this proves nothing');
+    } else {
+      const before = problems.length;
+      await exercise('trip.stop()', () => trip.stop('left'));
+      // The last stop's Next runs finish(), which is the other exit and the one the end card
+      // makes a promise about.
+      await exercise('finish()', () => { for (let i = 0; i < 20; i += 1) { trip.next(); pump(1); } });
+      if (problems.length === before) {
+        notes.push('leaving a trip and finishing one both end the flight where it is');
+      }
+    }
+    trip.dispose();
+    rig.dispose();
+    if (prevRaf) globalThis.requestAnimationFrame = prevRaf;
+    else delete globalThis.requestAnimationFrame;
+  } catch (e) {
+    problems.push(`TRIPEND  could not check the trip exits: ${String(e && e.message)}`);
+  }
+}
+
 // 3f. stage.js must REFUSE a vector it cannot convert, not pass it through unchanged. Passing it
 // through is how a lunar landing site was drawn in Africa for months without a single warning
 // anybody read.

@@ -126,6 +126,13 @@ export const REAL_MODELS = {
     // the two antennas do not look alike and the card names the size.
     'dss-25': { file: 'dsn34.glb', colour: 'site', name: 'a 34-metre Deep Space Network antenna' },
     'apollo-11': { file: 'lunar-module.glb', colour: 'site', name: 'Apollo 11 lunar module' },
+    // 14 and 16 arrived with the odd-things layer -- registry/oddities.yaml anchors the golf
+    // balls and Duke's photograph on them -- and fell through to BUILDERS.site.default, which is
+    // NASA's mobile launcher platform. A launch pad with a tower and a swing arm was standing at
+    // Fra Mauro and at Descartes, under a card that said only "measured position". Every Apollo
+    // descent stage is the same vehicle, so this is the model, not a stand-in.
+    'apollo-14': { file: 'lunar-module.glb', colour: 'site', name: 'Apollo 14 lunar module Antares' },
+    'apollo-16': { file: 'lunar-module.glb', colour: 'site', name: 'Apollo 16 lunar module Orion' },
     'apollo-17': { file: 'lunar-module.glb', colour: 'site', name: 'Apollo 17 lunar module' },
   },
 };

@@ -659,25 +659,39 @@ export function createTrip(ctx) {
     return { mode: c.mode, rate: c.rate, paused: c.paused, t: c.now() };
   }
 
-  function restoreClock(saved) {
+  /**
+   * Put the clock back the way the trip found it -- and ONLY the parts the trip changed.
+   *
+   * `movedInstant` is the whole point. `as-found` at a rate the trip did not clamp changes
+   * nothing at all, so calling `goTo(saved.t)` on the way out rewinds the app clock by the length
+   * of the trip: measured in Chrome at rate 10, scrubbing, the clock advanced 90 012 ms during
+   * twelve seconds of trip and then jumped back 89 841 ms the instant Leave was pressed, taking
+   * every propagated position on screen with it. Mode, rate and paused are restored either way;
+   * the INSTANT is only restored when the trip is the reason it is where it is.
+   */
+  function restoreClock(saved, movedInstant) {
     if (!saved) return;
     const c = ctx.clock;
     // ORDER MATTERS, because setRate and setPaused both flip live to scrub on the way past.
-    c.goTo(saved.t);
+    if (movedInstant) c.goTo(saved.t);
     c.setRate(saved.rate);
     c.setPaused(saved.paused);
     if (saved.mode === 'live') c.live();
   }
 
-  function applyClock(tour) {
+  /** @returns {{clamped: boolean, movedInstant: boolean}} what the trip actually changed. */
+  function applyClock(tour, saved) {
     const c = ctx.clock;
     if (tour.clock === 'live') {
       c.live();
-      return false;
+      // Only a jump if the visitor was not already live -- live() sets the instant to now.
+      return { clamped: false, movedInstant: saved.mode !== 'live' };
     }
     if (tour.clock === 'freeze') {
       c.setPaused(true);
-      return false;
+      // A frozen clock is exactly where the trip found it, so putting it back is a no-op and
+      // stays true whatever the visitor does next.
+      return { clamped: false, movedInstant: !saved.paused };
     }
     // `as-found`, with the one clamp the design argues for: at anything above a minute a second
     // the subject whips around the planet while `follow` holds the camera on it. It is said out
@@ -685,9 +699,10 @@ export function createTrip(ctx) {
     // defect as a control that lies about its own state.
     if (c.rate > CLOCK_RATE_CEILING) {
       c.setRate(1);
-      return true;
+      return { clamped: true, movedInstant: true };
     }
-    return false;
+    // The trip touched nothing. The clock is the visitor's, and it stays theirs.
+    return { clamped: false, movedInstant: false };
   }
 
   function setLayer(id, on) {
@@ -718,7 +733,9 @@ export function createTrip(ctx) {
       savedSelection: ctx.selected ? ctx.selected() : null,
     };
     for (const id of resolved.layers) if (setLayer(id, true)) run.flipped.push(id);
-    state.clockClamped = applyClock(tour);
+    const clockChange = applyClock(tour, run.savedClock);
+    run.clockMovedInstant = clockChange.movedInstant;
+    state.clockClamped = clockChange.clamped;
 
     state.tourId = tour.id;
     state.tourTitle = tour.title;
@@ -926,8 +943,10 @@ export function createTrip(ctx) {
   function finish() {
     // The camera does NOT move at the end. Returning home throws away what the trip just spent two
     // minutes earning and is a fourth unrequested camera move after the visitor stopped asking
-    // for camera moves.
+    // for camera moves. It also does not KEEP moving: Next on the last stop lands here mid-sweep,
+    // and the end card said "the camera stays where it is" while it flew on.
     clearTimers();
+    freezeFlight();
     rig.stopOrbit('done');
     driftRun = null;
     run.dwellTimer = null;
@@ -976,6 +995,29 @@ export function createTrip(ctx) {
 
   const PAUSABLE = ['flight', 'settle', 'dwell', 'held'];
 
+  /**
+   * END THE RUNNING FLIGHT WHERE IT IS, in one frame and going nowhere.
+   *
+   * A flight to exactly the present pose, instantly: it supersedes the running flight -- which is
+   * told 'replaced' rather than dropped -- and moves the camera not at all, which is the
+   * difference between this and finishFlight(). Every exit from a stop needs it, and until this
+   * was a function only pause() had it: measured in Chrome, pressing Leave 0.8 s into a flight
+   * left `rig.state.flying` true and the camera ran on from 25.7 to 70 995 scene units over the
+   * next 2.5 s -- 71 million kilometres of travel after the trip was gone, under an end card
+   * that says "the camera stays where it is".
+   */
+  function freezeFlight() {
+    if (!rig.state.flying) return false;
+    rig.flyTo({
+      targetScene: rig.state.target.clone(),
+      distance: rig.state.distance,
+      azimuth: rig.state.azimuth,
+      polar: rig.state.polar,
+      ms: 0,
+    });
+    return true;
+  }
+
   function pause(reason) {
     // The intro and the end card are not paused, they are WAITED ON: nothing is counting down and
     // nothing is moving, so a hand on the camera during either is just a visitor looking around,
@@ -992,15 +1034,7 @@ export function createTrip(ctx) {
     // A flight to exactly the present pose, instantly. It supersedes the running flight -- which
     // is told 'replaced' rather than dropped -- and moves the camera nowhere, which is the
     // difference between this and finishFlight(): the visitor asked to stop, not to arrive.
-    if (pausedDuring === 'flight' && rig.state.flying) {
-      rig.flyTo({
-        targetScene: rig.state.target.clone(),
-        distance: rig.state.distance,
-        azimuth: rig.state.azimuth,
-        polar: rig.state.polar,
-        ms: 0,
-      });
-    }
+    if (pausedDuring === 'flight') freezeFlight();
     if (driftRun) {
       const doneDeg = ((now() - driftRun.at) / 1000) * driftRun.rate;
       const left = Math.max(0, Math.abs(driftRun.deg) - doneDeg);
@@ -1058,11 +1092,14 @@ export function createTrip(ctx) {
     gen += 1;
     state.generation = gen;
     clearTimers();
+    // BEFORE anything else, and before `run` is thrown away: leaving must leave the camera where
+    // it is, and a flight nobody stopped goes on flying with the frame gone.
+    freezeFlight();
     rig.stopOrbit('cancelled');
     driftRun = null;
 
     for (const id of run.flipped) setLayer(id, false);
-    restoreClock(run.savedClock);
+    restoreClock(run.savedClock, run.clockMovedInstant);
     if (run.savedWorld) {
       rig.setWorldRadius(run.savedWorld.radius);
       rig.setWorldCentre(run.savedWorld.centre);
@@ -1102,11 +1139,27 @@ export function createTrip(ctx) {
       return Promise.resolve(plannedShape({ tour, stops: run.stops, dropped: state.dropped }));
     }
     if (run) {
-      // A different trip: tear the first one down fully, then start the second on the NEXT frame.
-      // Never synchronously -- reduced-motion teardown is synchronous and the two would interleave.
-      stop('replaced');
-      return new Promise((resolve) => {
-        schedule(() => resolve(start(id)));
+      // A different trip. RESOLVE IT FIRST: tearing the running trip down and then discovering
+      // the new one cannot make its minimum destroyed a trip in progress to start one that does
+      // not exist -- measured, with CelesTrak unreachable, from the end card's own "Next" button.
+      // A refusal now leaves the running trip exactly as it was and says why.
+      return resolveTour(tour).then((resolved) => {
+        if (!run || run.tour.id === id) return start(id);
+        if (resolved.stops.length < (tour.min_stops || 3)) {
+          state.reason = t(COPY.trip.notEnoughStops, {
+            count: resolved.stops.length,
+            min: tour.min_stops || 3,
+            title: tour.title,
+          });
+          notify();
+          return { id: tour.id, count: resolved.stops.length, offerable: false, reason: state.reason };
+        }
+        // Tear the first one down fully, then start the second on the NEXT frame. Never
+        // synchronously -- reduced-motion teardown is synchronous and the two would interleave.
+        stop('replaced');
+        return new Promise((resolve) => {
+          schedule(() => resolve(start(id)));
+        });
       });
     }
 

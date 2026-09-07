@@ -163,7 +163,8 @@ CASES: list[tuple[str, str, str, str]] = [
 
     # A surface row states its position ONE way, and both ways carry a precision
     ("a surface row carrying both its own coordinates and an anchor",
-     "oddities.yaml", "        precision_m: 40\n", "        lat: -3.6\n        precision_m: 40\n"),
+     "oddities.yaml", "        precision_m: unknown\n        how: photogrammetric",
+     "        lat: -3.6\n        precision_m: unknown\n        how: photogrammetric"),
     ("a surface row that says it is on a surface and will not say where",
      "oddities.yaml", "        lat: 32.5956\n        lon: 19.3496\n", ""),
     ("an oddity anchored on a landing site that is not in sites.yaml",
@@ -175,12 +176,15 @@ CASES: list[tuple[str, str, str, str]] = [
     ("an anchor that will not say whose position was surveyed",
      "oddities.yaml", '        of: "the Apollo 14 lunar module Antares"\n', ""),
     ("an object precision that is prose rather than metres or the literal `unknown`",
-     "oddities.yaml", "        precision_m: 40", "        precision_m: about forty metres"),
+     "oddities.yaml", "        precision_m: unknown", "        precision_m: about forty metres"),
     ("a way of knowing a position that is not one of the five",
      "oddities.yaml", "        how: photogrammetric", "        how: eyeballed"),
-    ("`precision_m: unknown` on a row that claims it was measured somehow after all",
-     "oddities.yaml", "        precision_m: unknown\n        how: unsurveyed",
-     "        precision_m: unknown\n        how: photogrammetric"),
+    # `unknown` pairs with `unsurveyed` (nobody looked) and with a locating `how` (somebody
+    # looked and published no error bar -- the golf balls). It cannot pair with `surveyed`,
+    # because a survey is a number, and this is the case that says so.
+    ("`precision_m: unknown` on a row that says the object was surveyed, which is a number",
+     "oddities.yaml", "        precision_m: unknown\n        how: photogrammetric",
+     "        precision_m: unknown\n        how: surveyed"),
     ("a latitude off the world",
      "oddities.yaml", "        lat: 32.5956", "        lat: 132.5956"),
     ("a surface row on a world with no worlds.yaml row",

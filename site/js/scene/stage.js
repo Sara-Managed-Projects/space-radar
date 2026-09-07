@@ -91,6 +91,30 @@ export const stage = {
   _helioKm: { x: 0, y: 0, z: 0 },
 
   /**
+   * A DRAWN-VIEW CORRECTION, installed by scene/worlds.js and null until it is.
+   *
+   * The planets are not drawn where they are: Mars sits at a compressed distance and an
+   * exaggerated size so a beginner can find it, and worlds.js publishes exactly how much through
+   * viewScale(). Nothing applied that to the things STANDING on those planets, so Jezero, Gale,
+   * Elysium and Utopia were converted truthfully into a scene where their planet was not --
+   * measured in Chrome, Jezero landed 268 807 scene units, 268.8 million km, from the Mars mesh
+   * it is supposed to be standing on, and the card said "measured position ... on Mars" over an
+   * empty patch of sky.
+   *
+   * It lives here rather than in each caller because glyphs, heroes, labels and the trip camera
+   * all reach the scene through this one function, and a correction applied in three of the four
+   * is a fourth bug. `dirToScene` deliberately does NOT use it: a direction has no position to
+   * correct.
+   */
+  viewAdjust: null,
+
+  /** @param {?function(THREE.Vector3, string): THREE.Vector3} fn */
+  setViewAdjust(fn) {
+    this.viewAdjust = typeof fn === 'function' ? fn : null;
+    return this;
+  },
+
+  /**
    * The scene's time. Everything downstream (Earth's rotation, the frame conversions) reads
    * this, so calling it once per frame is what makes a screenshot at a given clock value
    * reproducible. the module contract's toScene(posKm, frame) has no time argument; this is where the
@@ -184,7 +208,8 @@ export const stage = {
     const dx = (v.x - this.originKm.x) / u;
     const dy = (v.y - this.originKm.y) / u;
     const dz = (v.z - this.originKm.z) / u;
-    return out.set(dx, dz, -dy); // the axis remap, and the only place it happens
+    out.set(dx, dz, -dy); // the axis remap, and the only place it happens
+    return this.viewAdjust ? this.viewAdjust(out, frame || this.frame) : out;
   },
 
   /**

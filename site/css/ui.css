@@ -1250,8 +1250,8 @@
 
 /* The panel, the status rail and the phone bar go away together. `inert` is set in JS and is
    what removes them from the tab order and the accessibility tree; this is only the picture. */
-html.sr-trip #sr-controls,
-html.sr-trip #sr-status {
+html.sr-trip-mode #sr-controls,
+html.sr-trip-mode #sr-status {
   opacity: 0;
   transform: translateX(-110%);
   pointer-events: none;
@@ -1262,14 +1262,14 @@ html.sr-trip #sr-status {
 
 /* The phone drawers are already translated on their own axis, so they leave downwards -- and
    this selector has to out-specify site.css's `html.sr-phone #sr-controls`. */
-html.sr-trip.sr-phone #sr-controls,
-html.sr-trip.sr-phone #sr-status {
+html.sr-trip-mode.sr-phone #sr-controls,
+html.sr-trip-mode.sr-phone #sr-status {
   transform: translateY(102%);
 }
 
 /* ui/mobile.js appends this to document.body, NOT to #sr-controls, so hiding the panel alone
    leaves it sitting over the picture. It is the single easiest thing here to get wrong. */
-html.sr-trip .sr-mobilebar {
+html.sr-trip-mode .sr-mobilebar {
   opacity: 0;
   transform: translateY(110%);
   pointer-events: none;
@@ -1280,13 +1280,13 @@ html.sr-trip .sr-mobilebar {
 
 /* The scene's own labels: gone while the camera is moving, back at a whisper once it is not.
    The subject's own label stays off either way, because the card names it. */
-html.sr-trip #labels {
+html.sr-trip-mode #labels {
   opacity: 0;
   transition: opacity var(--sr-slow) var(--sr-ease);
 }
 
-html.sr-trip[data-trip-phase='dwell'] #labels,
-html.sr-trip[data-trip-phase='paused'] #labels {
+html.sr-trip-mode[data-trip-phase='dwell'] #labels,
+html.sr-trip-mode[data-trip-phase='paused'] #labels {
   opacity: 0.6;
 }
 
@@ -1538,14 +1538,14 @@ html.sr-trip[data-trip-phase='paused'] #labels {
 /* The card during a trip -------------------------------------------------------------- */
 
 /* Phone: a bottom sheet that sits ABOVE the bottom letterbox rather than under it. */
-html.sr-trip #sr-card {
+html.sr-trip-mode #sr-card {
   bottom: calc(var(--sr-letterbox) + 8px);
   max-height: 38vh;
 }
 
 /* While the camera is moving the stop's TITLE is all there is -- ui/trip.js renders the lead
    alone, so there is no body here to hide. This only takes the chrome off it. */
-html.sr-trip[data-trip-phase='flight'] #sr-card {
+html.sr-trip-mode[data-trip-phase='flight'] #sr-card {
   border-color: transparent;
   box-shadow: none;
   background: transparent;
@@ -1553,9 +1553,9 @@ html.sr-trip[data-trip-phase='flight'] #sr-card {
 }
 
 /* The body arrives at rest: opacity, and 8 px of rise that reduced motion drops. */
-html.sr-trip #sr-card .sr-card__leadbody,
-html.sr-trip #sr-card .sr-card__body,
-html.sr-trip #sr-card .sr-card__foot {
+html.sr-trip-mode #sr-card .sr-card__leadbody,
+html.sr-trip-mode #sr-card .sr-card__body,
+html.sr-trip-mode #sr-card .sr-card__foot {
   animation: sr-trip-rise 200ms var(--sr-ease) both;
 }
 
@@ -1588,7 +1588,7 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
 @media (min-width: 900px) {
   /* Desktop: a right rail, vertically centred, deliberately shorter and narrower than the
      ordinary card -- the scene is the point and the card covers it. */
-  html.sr-trip #sr-card {
+  html.sr-trip-mode #sr-card {
     top: 50%;
     right: 24px;
     bottom: auto;
@@ -1632,7 +1632,7 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
     justify-content: space-between;
   }
 
-  html.sr-trip #sr-card {
+  html.sr-trip-mode #sr-card {
     bottom: calc(96px + env(safe-area-inset-bottom, 0px));
     max-height: 38vh;
     overflow-y: auto;
@@ -1645,17 +1645,17 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
    is untouched -- somebody who asked for less motion often needs more time, not less, and
    ui/trip.js derives it from word count so this file cannot shorten it even by accident. */
 @media (prefers-reduced-motion: reduce) {
-  html.sr-trip #sr-controls,
-  html.sr-trip #sr-status,
-  html.sr-trip .sr-mobilebar,
-  html.sr-trip #labels,
+  html.sr-trip-mode #sr-controls,
+  html.sr-trip-mode #sr-status,
+  html.sr-trip-mode .sr-mobilebar,
+  html.sr-trip-mode #labels,
   .sr-trip__bar {
     transition: none;
   }
 
-  html.sr-trip #sr-card .sr-card__leadbody,
-  html.sr-trip #sr-card .sr-card__body,
-  html.sr-trip #sr-card .sr-card__foot {
+  html.sr-trip-mode #sr-card .sr-card__leadbody,
+  html.sr-trip-mode #sr-card .sr-card__body,
+  html.sr-trip-mode #sr-card .sr-card__foot {
     animation-name: sr-trip-fade;
   }
 }

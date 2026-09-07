@@ -44,7 +44,7 @@ const NO_CORS_REASON =
  * @property {string}  url
  * @property {number}  cadenceMs        never fetched again before this has passed
  * @property {number}  freshnessMaxMs   older than this and the app shows a stale stamp
- * @property {boolean} cors             MEASURED 2026-09-06, see docs/data-sources.md
+ * @property {boolean} cors             MEASURED 2026-09-06 by fetching each host from a browser
  * @property {string}  attribution      the credit line the card must carry
  * @property {string}  kind             'json' | 'text' | 'xml'
  * @property {string}  [registryId]     the row in registry/sources.yaml this implements

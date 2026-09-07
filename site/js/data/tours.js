@@ -162,7 +162,7 @@ export const TOURS = [
         },
         "distance_km": 900,
         "card": {
-          "title": "Two golf balls, forty yards apart",
+          "title": "Two golf balls, twenty-four and forty yards out",
           "body": "Alan Shepard smuggled a six-iron head to the Moon in a sock and hit two balls one-handed. They went twenty-four and forty yards, not the miles everybody repeats."
         },
         "frame_radii": 5.0,

@@ -56,7 +56,7 @@ export const ODDITIES = [
     "myths": [
       {
         "claim": "it is heading for the asteroid belt",
-        "correction": "its furthest point from the Sun is 1.66 au and the belt starts near 2.1 au. It will never reach Mars either.",
+        "correction": "its furthest point from the Sun is 1.66 au and the belt starts near 2.1 au. It does cross Mars's orbit, but it will never meet the planet.",
         "source": "CNBC and Space.com, 8 February 2018, correcting the launch-day statement"
       },
       {
@@ -82,7 +82,7 @@ export const ODDITIES = [
         "of": "the Apollo 14 lunar module Antares"
       },
       "object": {
-        "precision_m": 40,
+        "precision_m": "unknown",
         "how": "photogrammetric"
       }
     },
@@ -92,7 +92,7 @@ export const ODDITIES = [
       "budget_tris": 520,
       "stands_for": "family",
       "drawn_name": "two golf balls and the six-iron head",
-      "departure": "the balls really lie 24 and 40 yards apart, which is smaller than one pixel here, so they are drawn side by side"
+      "departure": "the two balls came to rest tens of metres apart at most, which is far smaller than one pixel here, so they are drawn side by side"
     },
     "fact": "Alan Shepard smuggled a six-iron head to the Moon in a sock, screwed it to a sample scoop handle, and hit two balls one-handed. They are still lying there.",
     "myths": [
@@ -135,8 +135,9 @@ export const ODDITIES = [
     "myths": [
       {
         "claim": "the photograph is still there to be seen",
-        "correction": "the plastic and the paper are still at Descartes; the image is not. Surface temperature at the site reaches about 120 °C in daylight.",
-        "source": "NASA image AS16-117-18841; Charlie Duke interview, Fox News, Apollo 16 at 50"
+        "contested": true,
+        "correction": "Charlie Duke assumes it bleached white years ago, since the site reaches about 120 °C in daylight, but nothing has been able to look.",
+        "source": "Charlie Duke interview, Fox News, Apollo 16 at 50; NASA image AS16-117-18841"
       }
     ],
     "cite": "LROC spacecraft coordinates · NASA image AS16-117-18841"
@@ -148,14 +149,19 @@ export const ODDITIES = [
     "where": {
       "kind": "on_surface",
       "world": "moon",
-      "object": {
+      "anchor": {
+        "id": "beresheet",
         "lat": 32.5956,
         "lon": 19.3496,
-        "precision_m": 20,
-        "how": "orbital_imaging"
+        "uncertainty_m": 20,
+        "of": "the Beresheet impact site"
+      },
+      "object": {
+        "precision_m": "unknown",
+        "how": "unsurveyed"
       }
     },
-    "position_class": "measured",
+    "position_class": "inferred",
     "shape": {
       "build": "disc-stack",
       "budget_tris": 620,

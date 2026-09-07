@@ -74,12 +74,16 @@ WHERE_KINDS = {"in_orbit", "on_surface", "attached", "came_home", "unknown"}
 # `inherit` is not a certainty, it is an instruction: take the carrier's, never better.
 ODDITY_POSITION_CLASSES = {"measured", "inferred", "illustrative", "inherit"}
 ODDITY_STANDS_FOR = {"variant", "family", "generic"}
-# How an object's own position came to be known. `unsurveyed` is a real answer and the only one
-# that pairs with `precision_m: unknown`.
+# How an object's own position came to be known. `unsurveyed` is a real answer.
 ODDITY_HOW = {"surveyed", "photogrammetric", "orbital_imaging", "unsurveyed", "map_reference"}
 # The reserved literal, exactly as `livery: unknown` is in rockets.yaml. It means nobody has ever
-# measured THIS object's own position -- not "a big number we would rather not write".
+# published a number for THIS object's own position -- not "a big number we would rather not
+# write". It pairs with `unsurveyed` (nobody looked) and with a LOCATING `how` (somebody looked,
+# and published no error bar) -- the golf balls are the second, and writing 40 there because the
+# second shot went 40 yards is exactly the invented decimal point this literal exists to prevent.
+# It cannot pair with `surveyed`, because a survey is a number.
 PRECISION_UNKNOWN = "unknown"
+PRECISION_UNKNOWN_FORBIDDEN_HOW = {"surveyed"}
 # Shapes a builder can draw. `generic` is ALWAYS legal: it is what makes the eleventh object a row
 # rather than a blocked pull request, and the card says "we have no shape for this one" out loud.
 # Adding a real one is two edits, this set and site/js/scene/models.js -- and today there are no
@@ -651,9 +655,11 @@ def check_oddities(doc: dict, world_ids: set, sites: list) -> None:
             how = obj.get("how")
             if how not in ODDITY_HOW:
                 fail(where, f"object.how {how!r} is not one of {sorted(ODDITY_HOW)}")
-            if obj.get("precision_m") == PRECISION_UNKNOWN and how != "unsurveyed":
+            if (obj.get("precision_m") == PRECISION_UNKNOWN
+                    and how in PRECISION_UNKNOWN_FORBIDDEN_HOW):
                 fail(where, f"object.precision_m is `{PRECISION_UNKNOWN}` but how is {how!r}. "
-                            f"`{PRECISION_UNKNOWN}` means nobody measured it, which is `unsurveyed`")
+                            f"A survey is a number; either publish it or say how it was really "
+                            f"found")
             for holder, key, limit in ((obj, "lat", 90), (obj, "lon", 360),
                                        (anchor if isinstance(anchor, dict) else {}, "lat", 90),
                                        (anchor if isinstance(anchor, dict) else {}, "lon", 360)):

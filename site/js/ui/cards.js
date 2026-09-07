@@ -512,9 +512,16 @@ const TEMPLATES = {
     const launch = pick(md, 'nextLaunch', 'launchName');
     const launchMs = pickTime(md, 'nextLaunchMs', 'nextLaunchDate');
     const when = launchMs !== null && m.tMs !== null ? inWords(launchMs - m.tMs) : null;
-    const lead = kindWord
-      ? t(T.leadKind, { name: displayName(record), kind: kindWord })
-      : t(T.lead, { name: displayName(record) });
+    // THE ROW'S OWN SENTENCE FIRST. registry/sites.yaml writes `doing:` for every hand-kept row
+    // and the card never printed it, so nine site cards opened with the ground-station template
+    // -- including three Apollo landing sites, which are not places that "work with spacecraft"
+    // and have not for fifty years. The template is what a row with no sentence falls back to.
+    const doing = pick(md, 'doing');
+    const lead = doing
+      ? String(doing).trim().replace(/\.\s*$/, '')
+      : kindWord
+        ? t(T.leadKind, { name: displayName(record), kind: kindWord })
+        : t(T.lead, { name: displayName(record) });
     return buildSentence(lead, [
       spacecraft ? t(T.whyDsn, { spacecraft: String(spacecraft) }) : null,
       launch && when ? t(T.whyLaunch, { launch: String(launch), when }) : null,
@@ -862,6 +869,15 @@ function honestyClause(record) {
         anchorM: fmt.metres(anchorM),
         how: howWords || '',
         objectM: fmt.metres(objectM),
+      });
+    }
+    // Located, but with no published precision: say who looked and stop. `unsurveyed` means
+    // nobody looked at all and keeps the older sentence, which is the stronger admission.
+    if (howWords && how !== 'unsurveyed') {
+      return t(C.precisionSplitHowOnly, {
+        anchorName: String(anchorName),
+        anchorM: fmt.metres(anchorM),
+        how: howWords,
       });
     }
     return t(C.precisionSplitUnknown, {

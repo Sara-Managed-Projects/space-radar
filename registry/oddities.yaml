@@ -85,6 +85,12 @@ attachable:
   - {id: deep-jwst,          horizons_id: "-170", emitted_by: "sample.js sampleDeepSpace(), ANCHORED_CRAFT"}
   - {id: deep-soho,          horizons_id: "-21", emitted_by: "sample.js sampleDeepSpace(), ANCHORED_CRAFT"}
   - {id: deep-mro,           horizons_id: "-74", emitted_by: "sample.js sampleDeepSpace(), ANCHORED_CRAFT"}
+  # These two have no Horizons id in sample.js -- they are drawn from an anchor and from elements
+  # respectively -- and they were missing from this block while it claimed to be the command's
+  # output. A guard that reports wrongly is worse than none: check_registry.py refused a row
+  # attaching to Gaia with the sentence "the app does not draw it", and the app draws it.
+  - {id: deep-gaia,          horizons_id: null,  emitted_by: "sample.js sampleDeepSpace(), ANCHORED_CRAFT"}
+  - {id: deep-solar-orbiter, horizons_id: null,  emitted_by: "sample.js sampleDeepSpace(), ELLIPTIC_CRAFT"}
 
 oddities:
 
@@ -143,7 +149,7 @@ oddities:
     myths:
       - claim: "it is heading for the asteroid belt"
         correction: "its furthest point from the Sun is 1.66 au and the belt starts near 2.1 au.
-                     It will never reach Mars either."
+                     It does cross Mars's orbit, but it will never meet the planet."
         source: "CNBC and Space.com, 8 February 2018, correcting the launch-day statement"
       - claim: "it is tracked"
         correction: "nobody has observed it since March 2018. Everything shown here is a
@@ -179,17 +185,23 @@ oddities:
         of: "the Apollo 14 lunar module Antares"
         source: "LROC lunar spacecraft coordinates table"
       object:
-        precision_m: 40
+        # NOT 40. That is how far the second ball TRAVELLED, and reading it as a position
+        # uncertainty is how an unsourced number gets a decimal point. Saunders found the two
+        # balls in enhanced film; no source reached here publishes a location uncertainty for
+        # them, so this is the reserved literal and the card says photographs found them, and
+        # that nobody has published how closely, and stops.
+        precision_m: unknown
         how: photogrammetric
-        source: "Andy Saunders, 2021, reported by Astronomy and Space.com"
+        source: "Andy Saunders, 2021, reported by Astronomy and Space.com -- he published the two
+                 SHOT distances, 24 and 40 yards, and no positional uncertainty for the balls"
     position_class: inferred          # the ANCHOR is measured; the object is not, and the card says both
     shape:
       build: golf-balls
       budget_tris: 520
       stands_for: family
       drawn_name: "two golf balls and the six-iron head"
-      departure: "the balls really lie 24 and 40 yards apart, which is smaller than one pixel
-                  here, so they are drawn side by side"
+      departure: "the two balls came to rest tens of metres apart at most, which is far smaller
+                  than one pixel here, so they are drawn side by side"
     fact: "Alan Shepard smuggled a six-iron head to the Moon in a sock, screwed it to a sample
            scoop handle, and hit two balls one-handed. They are still lying there."
     myths:
@@ -207,8 +219,9 @@ oddities:
     note: "The brand is genuinely unknown -- Shepard never said, deliberately, so that nobody
            could profit. Do not put a brand on the card; the not-knowing is the punchline.
            Ball 1 sits in Javelin Crater, named for Ed Mitchell throwing the solar-wind staff
-           like a javelin about a minute later. The two balls are 24 and 40 yards apart, which is
-           sub-pixel at map scale: one dot, one card."
+           like a javelin about a minute later. 24 and 40 yards are how far each ball TRAVELLED
+           from one stance, not the gap between them: the two lie tens of metres apart at most,
+           which is sub-pixel at map scale. One dot, one card."
 
   # ---- on_surface (b): the row where the object's own precision does not exist -------------
   - id: duke-family-photo
@@ -241,9 +254,14 @@ oddities:
            took a picture of it, and walked away."
     myths:
       - claim: "the photograph is still there to be seen"
-        correction: "the plastic and the paper are still at Descartes; the image is not. Surface
-                     temperature at the site reaches about 120 °C in daylight."
-        source: "NASA image AS16-117-18841; Charlie Duke interview, Fox News, Apollo 16 at 50"
+        # CONTESTED, not settled. The only witness is Duke himself saying he imagines it faded,
+        # and nothing has ever imaged it -- it is far too small for any lunar orbiter. Stating
+        # the bleaching as a finding is the same over-claim this layer exists to correct, aimed
+        # the other way, on the one card that already admits the object was never surveyed.
+        contested: true
+        correction: "Charlie Duke assumes it bleached white years ago, since the site reaches
+                     about 120 °C in daylight, but nothing has been able to look."
+        source: "Charlie Duke interview, Fox News, Apollo 16 at 50; NASA image AS16-117-18841"
     cite: "LROC spacecraft coordinates · NASA image AS16-117-18841"
     source: "LROC lunar spacecraft coordinates: Apollo 16 LM Orion 8.9734 S, 15.5011 E,
              +/- 3.0 m. The photograph itself was never surveyed. NASA image AS16-117-18841
@@ -253,21 +271,30 @@ oddities:
            Landed on the Moon, April 1972.' It was crumpled from riding in a suit pocket, which
            is why the eventual builder warps the quad rather than drawing a flat swatch."
 
-  # ---- on_surface (a): the object itself was located, with a published error ellipse --------
+  # ---- on_surface (b): the ANCHOR is the best-measured point in this layer, and it is not the
+  # ---- object. LROC imaged a 10 m impact smudge; the 100-gram disc stack inside it has never
+  # ---- been resolved by anything, which is what the row's own second myth says. Form (a) would
+  # ---- have this row claim the library was located, and `measured` would have the card say so.
   - id: beresheet-lunar-library
     display: "The Beresheet lunar library"
     klass: oddity
     where:
       kind: on_surface
       world: moon
-      object:
+      anchor:
+        id: beresheet
         lat: 32.5956
         lon: 19.3496
-        precision_m: 20
-        how: orbital_imaging
+        uncertainty_m: 20
+        of: "the Beresheet impact site"
         source: "LROC post 1101: the darkest pixel of the impact smudge, 20 m (latitude) by
                  8 m (longitude) 95% confidence interval"
-    position_class: measured
+      object:
+        precision_m: unknown
+        how: unsurveyed
+        source: "no source gives the disc stack's own position. LRO cannot resolve a 100-gram
+                 stack of discs, which is the row's second myth stated as a coordinate"
+    position_class: inferred
     shape:
       build: disc-stack
       budget_tris: 620
@@ -379,7 +406,11 @@ oddities:
            holds a magnifying glass because that is exactly what the spacecraft does. THE LEGO
            MINIFIGURE SHAPE IS A REGISTERED TRADEMARK in the EU, independent of any model's
            copyright. Ivan's call before a builder draws one: keep it cartoon and low-detail,
-           never use the wordmark. Today this row draws no shape at all."
+           never use the wordmark. STILL OPEN, and this row now DOES draw a shape -- `minifigures`
+           in site/js/scene/models.js since c0066a3, with a cylindrical head, a stud on top of it
+           and ring hands, which are the three features the mark is registered on. No wordmark is
+           drawn and CREDITS.md names the mark, but the call itself has not been made; blunting
+           those three features is one builder and one row if the answer is no."
 
   # ---- came_home: not in space, and here is the case you can walk into ---------------------
   - id: rotj-lightsaber
