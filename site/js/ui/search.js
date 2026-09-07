@@ -29,8 +29,10 @@
 
 import { COPY, t, fmt } from '../copy/en.js';
 
-const LIST_ID = 'sr-search-list';
-const OPTION_ID = 'sr-search-option-';
+// Ids are per instance, not per module. aria-controls and aria-activedescendant are id
+// references, so two panels sharing one id silently point a screen reader at the wrong list --
+// which is what happened while testing this, with a second instance created from the console.
+let instances = 0;
 
 const MIN_QUERY = 2; // one letter matches thousands of things and helps nobody
 const MAX_RESULTS = 12;
@@ -352,6 +354,11 @@ export function createSearch(ctx, host) {
   };
 
   // --- structure ------------------------------------------------------------------------
+
+  instances += 1;
+  const suffix = instances === 1 ? '' : `-${instances}`;
+  const LIST_ID = `sr-search-list${suffix}`;
+  const OPTION_ID = `sr-search-option${suffix}-`;
 
   const wrap = el('section', 'sr-panel sr-search');
   wrap.appendChild(el('h2', 'sr-panel__title', COPY.search.title));
