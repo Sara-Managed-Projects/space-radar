@@ -21,20 +21,10 @@ import {
   parseFrame,
 } from './frames.js';
 
-/** Mean radii, km. Used by whoever sizes the spheres; kept here so there is one table. */
-export const WORLD_RADIUS_KM = {
-  sun: 695700,
-  mercury: 2439.7,
-  venus: 6051.8,
-  earth: 6371.0,
-  moon: 1737.4,
-  mars: 3389.5,
-  jupiter: 69911,
-  saturn: 58232,
-  uranus: 25362,
-  neptune: 24622,
-  pluto: 1188.3,
-};
+// Mean radii, km. The table moved to frames.js, which is where the geometry that needs it lives
+// (a body-fixed surface point is a radius plus two angles). Re-exported so this module's contract
+// is unchanged and there is still exactly one table.
+export { WORLD_RADIUS_KM } from './frames.js';
 
 function nameOf(record) {
   if (!record) return null;

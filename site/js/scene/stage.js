@@ -164,6 +164,7 @@ export const stage = {
   toStageFrame(posKm, frame, tMs) {
     const t = tMs === undefined ? this.tMs : tMs;
     const v = compose(read(posKm, _a), frame || this.frame, t, this);
+    if (!v) return null;
     return { x: v.x, y: v.y, z: v.z, frame: this.frame };
   },
 
@@ -178,6 +179,7 @@ export const stage = {
   toSceneInto(posKm, frame, out, tMs) {
     const t = tMs === undefined ? this.tMs : tMs;
     const v = compose(read(posKm, _a), frame || this.frame, t, this);
+    if (!v) return null;
     const u = this.unitKm;
     const dx = (v.x - this.originKm.x) / u;
     const dy = (v.y - this.originKm.y) / u;
@@ -195,8 +197,10 @@ export const stage = {
     const t = tMs === undefined ? this.tMs : tMs;
     const from = frame || this.frame;
     const tip = compose(read(vec, _a), from, t, this);
+    if (!tip) return null;
     const tx = tip.x, ty = tip.y, tz = tip.z;
     const zero = compose(read(ZERO, _a), from, t, this);
+    if (!zero) return null;
     const o = out || new THREE.Vector3();
     const dx = tx - zero.x, dy = ty - zero.y, dz = tz - zero.z;
     return o.set(dx, dz, -dy).normalize();
@@ -222,26 +226,36 @@ const ZERO = { x: 0, y: 0, z: 0 };
 const _posArg = { x: 0, y: 0, z: 0, frame: '' };
 
 /**
- * Express `v` (km, in frame `from`) in the stage's frame, km.
+ * Express `v` (km, in frame `from`) in the stage's frame, km. NULL when it cannot be expressed.
  *
  * frames.js owns this: toStage() knows about TEME versus J2000 (they differ by precession, which
  * is 0.36 degrees in 2026 -- a fifth of the Sun's width on the terminator, and the reason not to
  * hand-roll it here) and about which conversions are not defined at all. It returns null when it
  * cannot answer, and only then does the local fallback below run, so a null from frames.js
  * degrades to a slightly-less-precise answer rather than to nothing on screen.
+ *
+ * WHY NULL AND NOT THE VECTOR BACK. This used to console.warn and return `v` unchanged, which
+ * means a position in a frame nobody could convert was drawn AS IF it were already in the stage's
+ * frame. That is how seven landing sites and rovers were drawn on Earth's surface for months:
+ * there was no wrong pixel to notice, only a right-looking one in the wrong place, and the one
+ * warning went to a console nobody had open. An unconvertible vector is now a refusal, and every
+ * caller draws nothing rather than something false.
  */
 function compose(v, from, tMs, st) {
   if (from === st.frame) return v;
   _posArg.x = v.x; _posArg.y = v.y; _posArg.z = v.z; _posArg.frame = from;
   const r = toStage(null, _posArg, st, tMs);
   if (r && Number.isFinite(r.x)) return r;
-  return convert(v, from, st.frame, tMs, st);
+  const local = convert(v, from, st.frame, tMs, st);
+  return local && Number.isFinite(local.x) ? local : null;
 }
 
 /**
- * The fallback. Six ordered pairs, written out rather than looked up, because the whole point of
- * this file is that someone can read it and check it. It ignores precession, so it is right to
- * about 0.4 degrees and no better.
+ * The fallback, for the three Earth-and-Sun frames only. Six ordered pairs, written out rather
+ * than looked up, because the whole point of this file is that someone can read it and check it.
+ * It ignores precession, so it is right to about 0.4 degrees and no better. Anything else -- any
+ * other world's fixed or inertial frame -- belongs to frames.js, and if frames.js could not
+ * answer, neither can this: it returns null.
  */
 function convert(v, from, to, tMs, st, isDirection) {
   if (from === to) return v;
@@ -276,6 +290,6 @@ function convert(v, from, to, tMs, st, isDirection) {
     if (to === EARTH_FIXED) return eciToEcef(q, st.gmstRad(tMs));
   }
 
-  console.warn(`stage: no conversion from "${from}" to "${to}"`);
-  return v;
+  // No conversion. Not a warning and a shrug: a refusal. See compose() above.
+  return null;
 }

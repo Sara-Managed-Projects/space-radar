@@ -139,6 +139,7 @@ export function createHeroes(scene, ctx) {
       const p = propagate(record, tMs);
       if (!p) return;
       const pos = stage.toScene(p, p.frame, tMs);
+      if (!pos) return; // stage.js could not express this frame: no model, no glyph, no guess
       const d = pos.distanceTo(_camPos);
       const layer = ctx.layers.find((l) => l.id === record.layer);
       const nearUnits = ((layer && layer.nearKm) || 2000) / stage.unitKm;

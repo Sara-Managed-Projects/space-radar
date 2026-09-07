@@ -243,6 +243,199 @@ for (const file of allFiles) {
   }
 }
 
+// 3d. the golden master for propagate/fixed.js.
+//
+// `fixed` positions every dish, every pad, every landing site and every historic reentry, and
+// most of them were correct only because the propagator hard-coded 'earth-fixed'. So the fix for
+// the ones that were wrong is exactly the change that can move the ones that were right. This is
+// the whole safety net: tests/fixtures/fixed-golden.json is the before picture.
+{
+  try {
+    const golden = JSON.parse(readFileSync(join(ROOT, 'tests/fixtures/fixed-golden.json'), 'utf8'));
+    const { dumpRows } = await import(join(ROOT, 'tests/dump_fixed_golden.mjs'));
+    const now = new Map((await dumpRows()).map((r) => [r.id, r]));
+
+    if (now.size !== golden.rows.length) {
+      problems.push(
+        `GOLDEN   the fixture has ${golden.rows.length} fixed records and the code now produces ` +
+          `${now.size}; regenerate tests/fixtures/fixed-golden.json deliberately`
+      );
+    }
+    let earthRows = 0;
+    let movedRows = 0;
+    for (const was of golden.rows) {
+      const is = now.get(was.id);
+      if (!is) { problems.push(`GOLDEN   ${was.id} is gone from the fixed records`); continue; }
+      const onEarth = was.declaredFrame === 'earth-fixed' || was.declaredFrame === 'earth-inertial';
+      if (onEarth) {
+        earthRows += 1;
+        // Byte-identical. Not "close": a metre of drift here is a bug in the ellipsoid maths.
+        if (JSON.stringify(is.pos) !== JSON.stringify(was.pos)) {
+          problems.push(
+            `GOLDEN   ${was.id} (${was.declaredFrame}) MOVED: ` +
+              `${JSON.stringify(was.pos)} -> ${JSON.stringify(is.pos)}`
+          );
+        }
+      } else {
+        // These were being drawn on Earth's surface. They must not still be.
+        if (!is.pos) { problems.push(`GOLDEN   ${was.id} now has no position at all`); continue; }
+        if (is.pos.frame !== was.declaredFrame) {
+          problems.push(
+            `GOLDEN   ${was.id} declares ${was.declaredFrame} but propagate() answers in ` +
+              `${is.pos.frame}`
+          );
+        }
+        if (JSON.stringify(is.pos) === JSON.stringify(was.pos)) {
+          problems.push(`GOLDEN   ${was.id} is still where the bug put it: ${JSON.stringify(was.pos)}`);
+        }
+        movedRows += 1;
+      }
+    }
+    notes.push(`golden master: ${earthRows} Earth rows unchanged, ${movedRows} off-Earth rows corrected`);
+  } catch (e) {
+    problems.push(`GOLDEN   could not check the golden master: ${String(e && e.message)}`);
+  }
+}
+
+// 3e. a body-fixed record is ON THAT BODY. The requirement, not the implementation: whatever
+// `fixed()` does internally, Apollo 11 is 1737 km from the centre of the Moon and Jezero is 3390
+// km from the centre of Mars, and the near side is the side facing Earth.
+{
+  const near = (got, want, tol, what) => {
+    if (!Number.isFinite(got) || Math.abs(got - want) > tol) {
+      problems.push(`FRAME    ${what}: expected ${want} +/- ${tol}, got ${got}`);
+      return false;
+    }
+    return true;
+  };
+  try {
+    const { propagate } = await import(join(JS, 'propagate/index.js'));
+    const { toStage } = await import(join(JS, 'propagate/frames.js'));
+    const { worldPositionKm, WORLD_RADIUS_KM } = await import(join(JS, 'propagate/body.js'));
+    const { handKeptSites } = await import(join(JS, 'data/sample.js'));
+    const sites = new Map(handKeptSites().map((r) => [r.id, r]));
+    const tMs = Date.parse('2026-03-15T12:00:00.000Z');
+    const mag = (p) => (p ? Math.hypot(p.x, p.y, p.z) : NaN);
+
+    const a11 = propagate(sites.get('apollo-11'), tMs);
+    near(mag(a11), WORLD_RADIUS_KM.moon, 0.5, 'Apollo 11 is on the surface of the Moon');
+    if (a11 && a11.frame !== 'moon-fixed') {
+      problems.push(`FRAME    Apollo 11 answers in ${a11.frame}, not moon-fixed`);
+    }
+    const jez = propagate(sites.get('jezero'), tMs);
+    near(mag(jez), WORLD_RADIUS_KM.mars, 0.5, 'Jezero is on the surface of Mars');
+    if (jez && jez.frame !== 'mars-fixed') {
+      problems.push(`FRAME    Jezero answers in ${jez.frame}, not mars-fixed`);
+    }
+
+    // The near side / far side check. A rotation that is transposed, or off by the sign of the
+    // spin angle, still gives the right |r| -- this is the test that notices. Apollo 11 sits at
+    // 23 deg E and is visible from Earth every clear night; Chang'e 4 is the far side, and its
+    // whole point is that Earth cannot see it.
+    const moonKm = worldPositionKm('moon', tMs, 'earth-inertial');
+    const toEarthInertial = (rec) => {
+      const p = propagate(rec, tMs);
+      if (!p) return null;
+      return toStage(rec, p, { worldId: 'earth', frame: 'earth-inertial', tMs }, tMs);
+    };
+    const facing = (id) => {
+      const g = toEarthInertial(sites.get(id));
+      if (!g || !moonKm) return NaN;
+      // The site, seen from the Moon's centre, dotted with the direction to Earth.
+      const s = { x: g.x - moonKm.x, y: g.y - moonKm.y, z: g.z - moonKm.z };
+      const rs = Math.hypot(s.x, s.y, s.z);
+      const rm = Math.hypot(moonKm.x, moonKm.y, moonKm.z);
+      if (!(rs > 0) || !(rm > 0)) return NaN;
+      return -(s.x * moonKm.x + s.y * moonKm.y + s.z * moonKm.z) / (rs * rm);
+    };
+    const a11Facing = facing('apollo-11');
+    const ce4Facing = facing('change-4');
+    if (!(a11Facing > 0.5)) {
+      problems.push(
+        `FRAME    Apollo 11 should be on the near side of the Moon (cos to Earth > 0.5); got ${a11Facing}`
+      );
+    }
+    if (!(ce4Facing < -0.5)) {
+      problems.push(
+        `FRAME    Chang'e 4 should be on the FAR side (cos to Earth < -0.5); got ${ce4Facing}`
+      );
+    }
+    // And the distance from the Moon's centre survives the trip to Earth's frame.
+    const g11 = toEarthInertial(sites.get('apollo-11'));
+    if (g11 && moonKm) {
+      near(
+        Math.hypot(g11.x - moonKm.x, g11.y - moonKm.y, g11.z - moonKm.z),
+        WORLD_RADIUS_KM.moon,
+        1.0,
+        'Apollo 11 converted into Earth’s frame is still on the Moon',
+      );
+    } else {
+      problems.push('FRAME    moon-fixed -> earth-inertial is not convertible at all');
+    }
+    notes.push(
+      `Apollo 11 faces Earth (cos ${a11Facing.toFixed(2)}), Chang'e 4 faces away (cos ${ce4Facing.toFixed(2)})`
+    );
+  } catch (e) {
+    problems.push(`FRAME    could not check the body-fixed frames: ${String(e && e.message)}`);
+  }
+}
+
+// 3f. stage.js must REFUSE a vector it cannot convert, not pass it through unchanged. Passing it
+// through is how a lunar landing site was drawn in Africa for months without a single warning
+// anybody read.
+{
+  try {
+    const { stage } = await import(join(JS, 'scene/stage.js'));
+    stage.setWorld('earth');
+    const out = stage.toStageFrame({ x: 1000, y: 0, z: 0 }, 'europa-fixed', Date.parse('2026-03-15T12:00:00Z'));
+    if (out && Number.isFinite(out.x)) {
+      problems.push(
+        `STAGE    an unconvertible frame came back as ${JSON.stringify(out)} instead of null`
+      );
+    }
+    const ok = stage.toStageFrame({ x: 1000, y: 0, z: 0 }, 'earth-fixed', Date.parse('2026-03-15T12:00:00Z'));
+    if (!ok || !Number.isFinite(ok.x)) {
+      problems.push('STAGE    a convertible frame (earth-fixed) now returns null; the refusal is too wide');
+    }
+  } catch (e) {
+    problems.push(`STAGE    could not check the refusal: ${String(e && e.message)}`);
+  }
+}
+
+// 3g. THE CARD, not just the vector. `cards.js` runs ecefToGeodetic on anything it thinks is an
+// Earth frame, so a fixed propagator with an unfixed card still prints a latitude in Africa for a
+// lunar site. This asserts the rows the card actually renders.
+{
+  try {
+    const { rightNowFor } = await import(join(JS, 'ui/cards.js'));
+    const { handKeptSites } = await import(join(JS, 'data/sample.js'));
+    const sites = new Map(handKeptSites().map((r) => [r.id, r]));
+    const tMs = Date.parse('2026-03-15T12:00:00.000Z');
+    const ctx = { clock: { now: () => tMs } };
+    const rowsFor = (id) => rightNowFor(sites.get(id), ctx).map(([k, v]) => `${k}: ${v}`);
+
+    const lunar = rowsFor('apollo-11').join(' | ');
+    // 0.67 N / 23.5 E is the Moon. The same numbers on Earth are the Central African Republic,
+    // and that is exactly what the card used to print.
+    if (/Height above the ground/.test(lunar)) {
+      problems.push(`CARD     a lunar site claims a height above THE ground: ${lunar}`);
+    }
+    if (/Passing over/.test(lunar)) {
+      problems.push(`CARD     a lunar site claims to be passing over somewhere on Earth: ${lunar}`);
+    }
+    if (!/Moon/.test(lunar)) {
+      problems.push(`CARD     a lunar site's card never says which world it is on: ${lunar}`);
+    }
+    const dish = rowsFor('dss-14').join(' | ');
+    if (!/35\.4. N/.test(dish) || !/116\.9. W/.test(dish)) {
+      problems.push(`CARD     Goldstone lost its Earth latitude and longitude: ${dish}`);
+    }
+    notes.push('the card names the world a surface site is on, and only Earth sites get an Earth lat/lon');
+  } catch (e) {
+    problems.push(`CARD     could not check the card rows: ${String(e && e.message)}`);
+  }
+}
+
 // 4. report
 if (notes.length) {
   console.log('notes:');

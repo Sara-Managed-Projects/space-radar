@@ -28,7 +28,15 @@ import {
   UNITS,
 } from '../copy/en.js';
 import { propagate } from '../propagate/index.js';
-import { gmst, eciToEcef, ecefToGeodetic } from '../propagate/frames.js';
+import {
+  gmst,
+  eciToEcef,
+  ecefToGeodetic,
+  parseFrame,
+  bodyFixedToSpherical,
+  worldRadiusKm,
+  toStage,
+} from '../propagate/frames.js';
 import { predictPasses } from '../sky/passes.js';
 
 const MAX_FIRST_SENTENCE = 160; // spec 0013 requirement 10, enforced by check_copy.py
@@ -128,6 +136,23 @@ function isEarthFrame(frame) {
   return frame === 'earth-inertial' || frame === 'earth-fixed';
 }
 
+/**
+ * The world a frame belongs to, or null. `ecefToGeodetic` is Earth's ellipsoid and nothing else's,
+ * so everything below this line asks WHICH world before it prints a latitude. A lunar site used to
+ * arrive here claiming 'earth-fixed' and got an Earth latitude that read as the Central African
+ * Republic; the propagator no longer lies about the frame, and the card no longer assumes it.
+ */
+function frameWorld(frame) {
+  const f = parseFrame(frame);
+  return f ? f.world : null;
+}
+
+/** 'the Moon', 'Mars'... or null if the app has no name for it. Null is a printable answer. */
+function worldName(worldId) {
+  if (!worldId) return null;
+  return Object.prototype.hasOwnProperty.call(COPY.worlds, worldId) ? COPY.worlds[worldId] : null;
+}
+
 // ---------------------------------------------------------------------------------------
 // Measurement: everything the "right now" block shows, worked out from the one clock.
 // Every call into another module is wrapped: a propagator that throws produces
@@ -155,6 +180,7 @@ function measure(record, ctx) {
     speedKmh: null,
     latDeg: null,
     lonDeg: null,
+    worldId: null,
     distEarthKm: null,
     distSunKm: null,
     lightMinutes: null,
@@ -204,6 +230,34 @@ function measure(record, ctx) {
       if (Number.isFinite(d)) {
         out.distEarthKm = d;
         out.lightMinutes = d / UNITS.LIGHT_MINUTE_KM;
+      }
+    }
+  } else {
+    // Another world's frame: a landing site, a rover, anything body-fixed off Earth.
+    const world = frameWorld(out.frame);
+    out.worldId = world;
+    if (world) {
+      if (out.frame === `${world}-fixed`) {
+        // Planetocentric, on that world's sphere -- the datum its published coordinates use and
+        // the shape scene/worlds.js actually draws. NOT the WGS84 ellipsoid.
+        const sph = bodyFixedToSpherical(p, worldRadiusKm(world));
+        if (sph && Number.isFinite(sph.latRad)) {
+          out.latDeg = sph.latRad * DEG;
+          out.lonDeg = sph.lonRad * DEG;
+          out.altKm = sph.altKm;
+        }
+      }
+      try {
+        const geo = toStage(record, p, { worldId: 'earth', frame: 'earth-inertial', tMs }, tMs);
+        if (geo && Number.isFinite(geo.x)) {
+          const d = Math.hypot(geo.x, geo.y, geo.z);
+          if (Number.isFinite(d)) {
+            out.distEarthKm = d;
+            out.lightMinutes = d / UNITS.LIGHT_MINUTE_KM;
+          }
+        }
+      } catch {
+        /* the distance row says "could not work this out", which is a real answer */
       }
     }
   }
@@ -521,6 +575,20 @@ function lonText(lonDeg) {
   return t(lonDeg >= 0 ? COPY.card.values.east : COPY.card.values.west, { n: fmt.num(v, 1) });
 }
 
+/**
+ * The "right now" rows the card will render, as [label, value] pairs, with no DOM anywhere.
+ *
+ * Exported so a test can assert what the CARD says and not only what the propagator returns.
+ * Those are two different claims: a correct vector with an unfixed card still printed an Earth
+ * latitude for a lunar landing site, because the geodetic conversion was applied on the strength
+ * of a frame string the propagator had already got wrong.
+ */
+export function rightNowFor(record, ctx) {
+  if (!record || !ctx) return [];
+  const m = measure(record, ctx);
+  return rightNowRows(record, m, nextPass(record, ctx, m));
+}
+
 function rightNowRows(record, m, passInfo) {
   const R = COPY.card.rows;
   const V = COPY.card.values;
@@ -540,6 +608,27 @@ function rightNowRows(record, m, passInfo) {
     if (m.latDeg !== null && m.lonDeg !== null) {
       const label = klassOf(record) === 'site' ? R.location : R.groundPoint;
       rows.push([label, t(V.latLon, { lat: latText(m.latDeg), lon: lonText(m.lonDeg) })]);
+    }
+  } else if (m.worldId && m.worldId !== 'sun') {
+    // On, or around, another world. No Earth latitude, no "height above the ground": the ground
+    // in question is not Earth's, and saying so is the whole point of this block.
+    const world = worldName(m.worldId);
+    if (m.latDeg !== null && m.lonDeg !== null) {
+      rows.push([
+        R.location,
+        world
+          ? t(V.latLonOn, { lat: latText(m.latDeg), lon: lonText(m.lonDeg), world })
+          : t(V.latLon, { lat: latText(m.latDeg), lon: lonText(m.lonDeg) }),
+      ]);
+    } else if (world) {
+      rows.push([R.onWorld, world]);
+    }
+    rows.push([
+      R.distanceFromEarth,
+      m.distEarthKm !== null ? t(V.km, { n: fmt.int(m.distEarthKm) }) : COPY.card.couldNotLook,
+    ]);
+    if (m.speedKmh !== null && m.speedKmh > 0.5) {
+      rows.push([R.speed, t(V.kmh, { n: fmt.int(m.speedKmh) })]);
     }
   } else {
     rows.push([
@@ -585,7 +674,11 @@ function rightNowRows(record, m, passInfo) {
 
 function seeItLine(record, ctx, m, passInfo) {
   const klass = klassOf(record);
-  if (klass === 'site') return COPY.sky.onTheGround;
+  if (klass === 'site') {
+    if (isEarthFrame(m.frame) || !m.worldId || m.worldId === 'earth') return COPY.sky.onTheGround;
+    const world = worldName(m.worldId);
+    return world ? t(COPY.sky.onAnotherWorld, { world }) : COPY.sky.notVisibleFromGround;
+  }
   if (klass === 'world') {
     const riseMs = pickTime(meta(record), 'riseMs', 'riseTime');
     return riseMs !== null

@@ -385,6 +385,22 @@ export const COPY = {
   },
 
   // The visual class of a record, in words. Record.klass -> a badge on the card.
+  // The worlds, by the id every registry row and every frame name uses. A card that names the
+  // world a rover is standing on reads this; there is no second list.
+  worlds: {
+    sun: 'the Sun',
+    mercury: 'Mercury',
+    venus: 'Venus',
+    earth: 'Earth',
+    moon: 'the Moon',
+    mars: 'Mars',
+    jupiter: 'Jupiter',
+    saturn: 'Saturn',
+    uranus: 'Uranus',
+    neptune: 'Neptune',
+    pluto: 'Pluto',
+  },
+
   klass: {
     station: 'Station',
     satellite: 'Satellite',
@@ -441,6 +457,7 @@ export const COPY = {
       launched: 'Launched',
       period: 'One lap takes',
       location: 'Where it stands',
+      onWorld: 'Standing on',
       closestApproach: 'Closest to Earth',
       missDistance: 'Miss distance',
       perihelion: 'Closest to the Sun',
@@ -462,6 +479,9 @@ export const COPY = {
       degrees: '{n}°',
       people: '{n}',
       latLon: '{lat}, {lon}',
+      // A latitude on another world. The plain `latLon` is Earth's, and printing it for a lunar
+      // site is exactly the bug that put Tranquility Base in the Central African Republic.
+      latLonOn: '{lat}, {lon} on {world}',
       north: '{n}° N',
       south: '{n}° S',
       east: '{n}° E',
@@ -548,6 +568,8 @@ export const COPY = {
     noPass: 'It does not come above your horizon in the next 24 hours.',
     notVisibleFromGround: 'This one is too far away to pick out by eye.',
     onTheGround: 'This one stands on the ground, so there is nothing to look up for.',
+    onAnotherWorld:
+      'This one is standing on {world}. You will not pick it out by eye from here, however clear the night.',
     worldRise: 'From where you are it comes up at {time}.',
     // Rise and set for a world needs 0014's sky maths. Say that, rather than imply it is
     // invisible: the Moon and the planets are the easiest things in the sky to find.
