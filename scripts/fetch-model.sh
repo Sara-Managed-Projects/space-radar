@@ -112,9 +112,32 @@ head -c 4 "$RAW" | grep -q glTF || die "that is not a GLB (a GLB starts with the
 BEFORE=$(wc -c < "$RAW")
 
 echo "==> re-encoding (meshopt, simplify error $ERROR)"
-npx --yes @gltf-transform/cli@4.5.0 optimize "$RAW" "$OUT" \
-  --compress meshopt --simplify-error "$ERROR" --texture-compress webp >/dev/null 2>&1 \
-  || die "gltf-transform failed on this file"
+# Keep stderr. Throwing it away turned every distinct failure into one unhelpful line -- and
+# some of these files fail for reasons worth reading: NASA's Terra.glb, for instance, references
+# its textures by external Windows paths (`..\Terra.fbm\solarpanels.tga`) that do not exist in
+# the GLB, so the optimizer cannot open it at all.
+LOG="$CACHE/$AS.optimize.log"
+if ! npx --yes @gltf-transform/cli@4.5.0 optimize "$RAW" "$OUT" \
+     --compress meshopt --simplify-error "$ERROR" --texture-compress webp >"$LOG" 2>&1; then
+  echo "gltf-transform failed. Its last words:" >&2
+  tail -12 "$LOG" >&2
+  if grep -qi "\.fbm\|no such file\|ENOENT" "$LOG"; then
+    echo >&2
+    echo "That is a model naming textures it does not contain -- an FBX export that kept its" >&2
+    echo "authoring machine's file paths. Stripping those references and retrying; this app" >&2
+    echo "replaces every material with its own toon shader anyway, so nothing is lost:" >&2
+    python3 "$ROOT/scripts/_strip_external_images.py" "$RAW" >&2 || die "could not strip the references"
+    if npx --yes @gltf-transform/cli@4.5.0 optimize "$RAW" "$OUT" \
+       --compress meshopt --simplify-error "$ERROR" >"$LOG" 2>&1; then
+      echo "    that worked." >&2
+    else
+      tail -6 "$LOG" >&2
+      die "still failed; this one needs a hand"
+    fi
+  else
+    die "see the log above: $LOG"
+  fi
+fi
 [ -s "$OUT" ] || die "gltf-transform produced nothing"
 AFTER=$(wc -c < "$OUT")
 [ "$KEEP_RAW" = "1" ] || rm -f "$RAW"

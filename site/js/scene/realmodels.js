@@ -55,6 +55,17 @@ export const REAL_MODELS = {
     43435: { file: 'tess.glb', colour: 'telescope', name: 'TESS', catalogue: 'TESS' },
     36395: { file: 'sdo.glb', colour: 'telescope', name: 'Solar Dynamics Observatory', catalogue: 'SDO' },
     37849: { file: 'suomi.glb', colour: 'satellite', name: 'Suomi NPP', catalogue: 'SUOMI NPP' },
+    // NOAA 20 is the same Ball BCP-2000 build as Suomi NPP -- same bus, same instruments -- so it
+    // shares the file and is labelled as its own spacecraft. NOAA 21 is NOT here on purpose: it is
+    // a Northrop Grumman LEOStar-3, a different bus wearing the same instruments, and calling it a
+    // sister ship would be a claim that is not true.
+    43013: { file: 'suomi.glb', colour: 'satellite', name: 'NOAA 20 (JPSS-1)', catalogue: 'NOAA 20 (JPSS-1)' },
+    25994: { file: 'terra.glb', colour: 'satellite', name: 'Terra', catalogue: 'TERRA' },
+    27424: { file: 'aqua.glb', colour: 'satellite', name: 'Aqua', catalogue: 'AQUA' },
+    28376: { file: 'aura.glb', colour: 'satellite', name: 'Aura', catalogue: 'AURA' },
+    // GRACE-FO reuses the GRACE trapezoid-wedge outline. Labelled as what it is, and `generic`
+    // so the card can say the drawing is of the sister ship.
+    43476: { file: 'grace.glb', colour: 'satellite', name: 'a GRACE-series gravity mapper', catalogue: 'GRACE-FO 1', generic: true },
   },
   horizons: {
     '-31': { file: 'voyager.glb', colour: 'probe', name: 'Voyager 1' },
@@ -98,10 +109,18 @@ export const REAL_MODELS = {
   /** A default for a class of ground site. The app already draws the live dish-to-spacecraft links. */
   bySiteClass: {
     dish: { file: 'dsn70.glb', colour: 'site', name: 'a Deep Space Network antenna', generic: true },
+    // Every launch pad the app draws -- 17 today and more with each Launch Library refresh -- was
+    // a procedural block. NASA's mobile launcher platform is a steel deck on posts with a flame
+    // opening: it reads as "launch platform" rather than as one particular pad, which is what a
+    // default has to do. (The *assembled* variant was rejected: its tower is unmistakably LC-39B.)
+    pad: { file: 'pad.glb', colour: 'site', name: 'a launch pad', generic: true },
   },
   /** Named surface sites, where the thing that landed is the thing worth drawing. */
   bySite: {
     jezero: { file: 'perseverance.glb', colour: 'site', name: 'Perseverance' },
+    // DSS-25 is a 34-metre dish and was being drawn with the 70-metre model. A correctness fix:
+    // the two antennas do not look alike and the card names the size.
+    'dss-25': { file: 'dsn34.glb', colour: 'site', name: 'a 34-metre Deep Space Network antenna' },
     'apollo-11': { file: 'lunar-module.glb', colour: 'site', name: 'Apollo 11 lunar module' },
     'apollo-17': { file: 'lunar-module.glb', colour: 'site', name: 'Apollo 17 lunar module' },
   },
