@@ -3,7 +3,15 @@
 
 Spec 0002 requirement 3 and its acceptance test. This applies `tests/fixtures/europa.yaml`
 into the registry, asserts the validator still passes, and asserts that making it work
-required NO file outside `registry/` and `harvest/lists/`.
+required NO file outside `registry/` and the generated mirror.
+
+The headline assertion used to be a tautology. It printed "files changed outside registry/:\nnone (the fixture has no other section)" and then checked that the fixture's own key names were
+in a hardcoded set -- a set the fixture author controls. It never wrote a file, so it would
+have gone on printing PASS if adding a rocket had come to need three hand-edited JS files. It
+ALREADY needed one: `site/js/data/rockets.js` is generated from registry/rockets.yaml, and CI
+fails until it is regenerated and committed. So this now DOES the growth in a temp tree and
+diffs the tree, and the mirror is named as the one allowed exception rather than hidden by a
+check that never looked.
 
 If this fails, the fix is the architecture, not the test -- whatever feature caused it.
 Run: python3 tests/test_growth.py
@@ -12,6 +20,7 @@ Run: python3 tests/test_growth.py
 from __future__ import annotations
 
 import copy
+import hashlib
 import subprocess
 import sys
 import shutil
@@ -22,6 +31,20 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 ALLOWED_PREFIXES = ("registry/", "harvest/lists/", "harvest/queries/")
+# The one file outside registry/ that adding a rocket is allowed to change, because a browser
+# cannot parse YAML and nobody hand-keeps fifty rows. It is GENERATED -- `scripts/
+# gen_rockets_js.py` writes it and CI refuses a stale one -- so it is a build output and not a
+# second place a human edits. Anything else appearing here is the regression this test is for.
+GENERATED = "site/js/data/rockets.js"
+
+
+def snapshot(root: Path) -> dict[str, str]:
+    """Every file in the tree, by repo-relative path, hashed."""
+    out = {}
+    for f in sorted(root.rglob("*")):
+        if f.is_file() and "__pycache__" not in f.parts:
+            out[str(f.relative_to(root))] = hashlib.sha256(f.read_bytes()).hexdigest()
+    return out
 
 
 def apply_fixture(registry: Path, fixture: dict) -> None:
@@ -62,7 +85,13 @@ def main() -> int:
             for f in (ROOT / src).glob("*"):
                 if f.is_file():
                     (d / f.name).touch()
+        # Real bytes, both of them: the validator cross-checks CREDITS.md against
+        # registry/models.yaml, and the mirror check is a byte comparison.
+        shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")
+        (work / "site/js/data").mkdir(parents=True, exist_ok=True)
+        shutil.copy2(ROOT / GENERATED, work / GENERATED)
 
+        before = snapshot(work)
         apply_fixture(work / "registry", fixture)
 
         result = subprocess.run(
@@ -74,24 +103,53 @@ def main() -> int:
             print(result.stdout or result.stderr)
             return 1
 
-        # The claim is not only that it validates -- it is that nothing else had to change.
-        touched = {
-            section for section in fixture
-        }
-        print("adding Europa touched these registry sections:", ", ".join(sorted(touched)))
-        print("files changed outside registry/: none (the fixture has no other section)")
-        print(result.stdout.strip())
-
-    # Second half: prove the allow-list is real by checking what the fixture is allowed to be.
-    for section in fixture:
-        if section not in {"worlds", "sources", "layers", "sites", "textures", "models",
-                           "rockets", "observed"}:
-            print(f"FAIL: fixture section {section!r} is not a registry section, so this "
-                  f"test would be passing while the architecture regressed")
+        # The mirror is a real dependency, so it must NOTICE. A --check that passed here would mean
+        # the browser was still loading the old fifty rows and the new rocket drew as generic.
+        stale = subprocess.run(
+            [sys.executable, "scripts/gen_rockets_js.py", "--check"],
+            cwd=work, capture_output=True, text=True,
+        )
+        if stale.returncode == 0:
+            print(f"FAIL: two rocket rows were added and {GENERATED} still says it is current. "
+                  f"The mirror check is not checking anything.")
+            return 1
+        wrote = subprocess.run(
+            [sys.executable, "scripts/gen_rockets_js.py"],
+            cwd=work, capture_output=True, text=True,
+        )
+        if wrote.returncode != 0:
+            print("FAIL: the mirror cannot be regenerated from the grown registry.\n")
+            print(wrote.stdout or wrote.stderr)
             return 1
 
+        # The claim is not only that it validates -- it is that nothing else had to change. This is
+        # now measured against the tree rather than against the fixture's own key names.
+        after = snapshot(work)
+        changed = sorted(k for k in set(before) | set(after) if before.get(k) != after.get(k))
+        outside = [f for f in changed
+                   if not f.startswith(ALLOWED_PREFIXES) and f != GENERATED]
+        if outside:
+            print("FAIL: growing the registry changed files outside it: " + ", ".join(outside))
+            return 1
+        if GENERATED not in changed:
+            print(f"FAIL: {GENERATED} did not change, so the two new rockets never reached the "
+                  f"browser's copy of the registry.")
+            return 1
+
+        mirror = (work / GENERATED).read_text(encoding="utf-8")
+        for rid in [r["id"] for r in fixture.get("rockets", [])]:
+            if f'"{rid}"' not in mirror:
+                print(f"FAIL: rocket row {rid!r} validates but is not in the mirror the browser "
+                      f"loads, so nothing would ever draw it.")
+                return 1
+
+        print("registry sections the fixture touched:", ", ".join(sorted(fixture)))
+        print("files changed outside registry/:", GENERATED, "(generated, and CI regenerates it)")
+        print(result.stdout.strip())
+
     print("\nPASS: a new world, a new source, a new layer, a new texture, a new surface site "
-          "and two new launch vehicles are rows. Nothing under app/ was needed.")
+          "and two new launch vehicles are rows. Nothing under site/js/ was needed but the "
+          f"generated {GENERATED}, which no human edits.")
     return 0
 
 

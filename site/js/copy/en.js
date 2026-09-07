@@ -502,17 +502,27 @@ export const COPY = {
     minutesWord: 'minutes',
   },
 
-  // WHAT YOU ARE LOOKING AT. Two comments in the scene code -- scene/models.js and
-  // scene/realmodels.js -- describe "the card means by 'drawn as a generic satellite'". The card
-  // never said it. This is that line, and it sits in the footer beside the position class,
-  // because "the shape is a stand-in" is the same category of claim as "the track is a sketch".
+  // WHAT YOU ARE LOOKING AT. It sits in the footer beside the position class, because "the
+  // shape is a stand-in" is the same category of claim as "the track is a sketch".
   //
-  // Colour is deliberately absent. 14 of the families in registry/rockets.yaml have no sourced
+  // SCOPED TO LAUNCHES, and that is a gap and not a finished feature. Two comments in the
+  // scene code used to describe a line "the card says" for satellites and sites; the card has
+  // never said it, and those comments now say so instead of asserting it. A GEO record drawn
+  // with the SSL-1300 bus and a pad drawn with NASA's mobile launcher are stand-ins the card
+  // is still silent about. Covering them needs the stand-in's name to reach the card's meta,
+  // which is resolved in the scene today -- a different change, not a copy key.
+  //
+  // Colour is deliberately absent. 34 of the 49 rows in registry/rockets.yaml have no sourced
   // livery; they draw in the neutral default and the card says nothing at all about colour. We
-  // do not write "colour unknown" -- we simply never claim one.
+  // do not write "colour unknown" -- we simply never claim one. (This read 14 in three places,
+  // which was the inverse: 15 rows DO have a colour. check_registry.py prints the live figure.)
   drawing: {
     variant: 'drawn from published dimensions for {name}',
-    family: 'drawn as {name} — the family shape, not this exact version',
+    // "and height": the size chip beside this line is the matched row's height_m, and on a
+    // family match that is the family's figure -- 63 m for an H3 that may be flying the 57 m
+    // S fairing, 98 m for an SLS Block 1B. One sentence has to cover both or the drawing is
+    // hedged and the number beside it is not.
+    family: 'drawn as {name} — the family shape and height, not this exact version',
     generic: 'drawn as a generic rocket; we have no dimensions for {name}',
     genericUnnamed: 'drawn as a generic rocket; we have no dimensions for this vehicle',
     disputed: 'sources disagree on its height ({disputed})',

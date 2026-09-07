@@ -7,7 +7,7 @@ and what you have to keep if you redistribute it.
 **How this was checked.** Every version below was measured from the file in the tree — hashed and
 byte-compared against the published upstream artifact — and every licence was read from the
 upstream `LICENSE` file or the publisher's own terms page, not recalled. Where a claim could *not*
-be verified that way, it says so in plain words. Checked 2026-09-06.
+be verified that way, it says so in plain words. Checked 2026-09-07.
 
 ---
 
@@ -153,26 +153,80 @@ Passing those along:
 
 ## 3b. 3D models — NASA, public domain
 
-Ten spacecraft models ship in `site/models/`, all from **NASA 3D Resources**
-(<https://github.com/nasa/NASA-3D-Resources>, mirrored from <https://science.nasa.gov/3d-resources/>).
+Twenty-nine spacecraft, spacecraft-bus, antenna and surface models ship in `site/models/`, all
+from **NASA 3D Resources** (<https://github.com/nasa/NASA-3D-Resources>, mirrored from
+<https://science.nasa.gov/3d-resources/>), 7.3 MB in total.
 
 NASA's media usage guidelines: material created by NASA is generally **not protected by copyright**
 and may be used without permission. The exceptions are the NASA insignia, logo and seal, which may
 not be used to imply endorsement — **none of these models contains one**, and this project does not
 use NASA branding anywhere. NASA does not endorse Space Radar.
 
+This table is the same set of rows as `real_models:` in `registry/models.yaml`, and
+`scripts/check_registry.py` refuses the tree if the two disagree in either direction — a shipped
+file this file does not name, or a file named here that does not ship. It listed ten models and a
+Kepler model that had been removed while nineteen shipped uncredited, which is the same defect as
+the nineteen phantom rows in section 5 with the sign flipped, so the count is now checked rather
+than counted by hand.
+
+**Stations**
+
 | file | NASA model | used for | size |
 |---|---|---|---|
 | `iss.glb` | International Space Station (ISS) (A) | NORAD 25544 | 34 KB |
+
+**Telescopes and observatories**
+
+| file | NASA model | used for | size |
+|---|---|---|---|
+| `chandra.glb` | Chandra X-ray Observatory | NORAD 25867 (CXO) | 195 KB |
 | `hubble.glb` | Hubble Space Telescope (A) | NORAD 20580 | 163 KB |
-| `chandra.glb` | Chandra X-ray Observatory | NORAD 27424 | 195 KB |
-| `landsat.glb` | Landsat 7 | NORAD 25682, 39174 | 68 KB |
-| `tdrs.glb` | Tracking and Data Relay Satellites (TDRS) (A) | the TDRS family | 10 KB |
-| `kepler.glb` | Kepler (B) | Horizons −227 | 7 KB |
-| `voyager.glb` | Voyager Probe (A) | Horizons −31, −32 | 288 KB |
-| `juno.glb` | Juno (B) | Horizons −61 | 254 KB |
-| `parker.glb` | Parker Solar Probe | Horizons −96 | 247 KB |
+| `jwst.glb` | James Webb Space Telescope (B) | Horizons -170 | 891 KB |
+| `sdo.glb` | Solar Dynamics Observatory | NORAD 36395 (SDO) | 142 KB |
+| `soho.glb` | Solar and Heliospheric Observatory | Horizons -21 | 29 KB |
+| `swift.glb` | Swift | NORAD 28485 (SWIFT) | 238 KB |
+| `tess.glb` | Transiting Exoplanet Survey Satellite (TESS) (A) | NORAD 43435 (TESS) | 162 KB |
+
+**Satellites**
+
+| file | NASA model | used for | size |
+|---|---|---|---|
+| `aqua.glb` | Aqua (B) | NORAD 27424 (AQUA) | 158 KB |
+| `aura.glb` | Aura (A) | NORAD 28376 (AURA) | 74 KB |
+| `bus-ssl1300.glb` | Space Systems Loral (SSL-1300) | DEFAULT for the geostationary ring -- several hundred unnamed commercial satellites | 81 KB |
+| `dscovr.glb` | Deep Space Climate Observatory (DSCOVR) (Triana) | catalogue names containing DSCOVR | 95 KB |
+| `goes.glb` | Geostationary Operational Environmental Satellites | catalogue names containing GOES | 313 KB |
+| `grace.glb` | Gravity Recovery and Climate Experiment (GRACE) (B) | NORAD 43476 (GRACE-FO 1), drawn as its sister ship | 135 KB |
+| `landsat.glb` | Landsat 7 | NORAD 25682, 39084, 49260 (Landsat 7, 8, 9) | 68 KB |
+| `mms.glb` | Magnetospheric Multiscale (MMS) (A) | catalogue names containing MMS | 121 KB |
+| `suomi.glb` | Suomi National Polar-orbiting Partnership (Suomi NPP) | NORAD 37849 (SUOMI NPP) | 152 KB |
+| `tdrs.glb` | Tracking and Data Relay Satellites (TDRS) (A) | catalogue names containing TDRS | 10 KB |
+| `terra.glb` | Terra | NORAD 25994 (TERRA) | 20 KB |
+
+**Probes**
+
+| file | NASA model | used for | size |
+|---|---|---|---|
+| `juno.glb` | Juno (B) | Horizons -61 | 254 KB |
+| `mro.glb` | Mars Reconnaissance Orbiter (MRO) (B) | Horizons -74 | 11 KB |
+| `parker.glb` | Parker Solar Probe | Horizons -96 | 247 KB |
+| `voyager.glb` | Voyager Probe (A) | Horizons -31, -32 | 288 KB |
+
+**Small bodies**
+
+| file | NASA model | used for | size |
+|---|---|---|---|
 | `asteroid-bennu.glb` | 1999 RQ36 asteroid | Bennu, and the asteroid class | 23 KB |
+
+**Places on a surface**
+
+| file | NASA model | used for | size |
+|---|---|---|---|
+| `dsn34.glb` | Deep Space Network 34-meter | the dss-25 antenna, which is 34 m and was wrongly drawn with the 70 m model | 757 KB |
+| `dsn70.glb` | Deep Space Network 70-meter | DEFAULT for ground sites of class `dish` | 502 KB |
+| `lunar-module.glb` | Apollo Lunar Module | the Apollo 11 and 17 landing sites | 554 KB |
+| `pad.glb` | Mobile Launcher | DEFAULT for every launch pad -- 17 today, more with each Launch Library refresh | 117 KB |
+| `perseverance.glb` | Mars 2020 Perseverance Rover | Jezero crater on Mars | 1494 KB |
 
 **Credit line:** `3D model: NASA`
 
@@ -192,7 +246,7 @@ credit:
    realistic setting — and it is why a real Hubble still reads as part of the same drawn world.
 
 They are loaded **on demand**, one file per object, only when the camera is near it. Nobody
-downloads all ten; the largest single download is 288 KB.
+downloads all twenty-nine; the largest single download is `perseverance.glb` at 1 494 KB.
 
 ## 4. Runtime data sources
 
@@ -311,9 +365,9 @@ not true of the shipped tree, recorded here so the public repo does not carry a 
    geometry "decimated from" NASA 3D Resources. Those rows now describe the procedural geometry
    that actually ships.
 
-   **This has since changed, and section 3b is the current record.** Ten real NASA models were added
-   afterwards and they *are* in the tree, under `site/models/`, correctly credited and with their
-   modifications stated. The `real_models:` section of the registry describes them, and
+   **This has since changed, and section 3b is the current record.** Twenty-nine real NASA models
+   were added afterwards and they *are* in the tree, under `site/models/`, correctly credited and
+   with their modifications stated. The `real_models:` section of the registry describes them, and
    `scripts/check_registry.py` now refuses a row there whose file is missing — which is the check
    that would have caught this audit's finding in the first place.
 2. **`earth-night` is credited to NASA Earth Observatory.** The shipped `2k_earth_nightmap.jpg` is a

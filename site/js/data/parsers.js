@@ -347,14 +347,30 @@ export function parseLaunches(json) {
           // `drawsAs` is the honesty field: 'variant' means the drawing is this vehicle,
           // 'family' means it is the family's shape, 'generic' means we have no dimensions at
           // all and the card says so rather than letting the picture imply otherwise.
+          //
+          // It is capped by the MATCH LEVEL and not taken from the row alone. Nine
+          // `stands_for: variant` rows also claim a family string, and a launch whose full_name
+          // nobody has listed yet lands on one of them: "drawn from published dimensions for
+          // Angara 1.2" for an Angara A5 is a claim about a different rocket. A family- or
+          // provider-level match can never honestly say "this exact vehicle", whatever the row
+          // it landed on says about itself. The feed produces new spellings under existing
+          // families routinely -- "Ariane 62 Block 2", "Vega-C Block 2", "Firefly Alpha Block 2"
+          // and "Starship V3" are all in the checked-in observed list.
           modelVariant: drawn.row ? drawn.row.id : null,
-          drawsAs: drawn.row ? drawn.row.stands_for : 'generic',
+          drawsAs: drawn.row ? (drawn.via === 'full_name' ? drawn.row.stands_for : 'family') : 'generic',
           drawnName: drawn.row ? drawn.row.display : null,
           drawnVia: drawn.via,
           // The card's size chip, and the only place the app states a rocket's real height.
-          // Absent for a generic match, so a missing chip is truthful rather than a wrong number.
-          sizeM: drawn.row ? drawn.row.height_m : null,
-          disputedHeight: (drawn.row && drawn.row.disputed) || null,
+          //
+          // Absent for a generic match, so a missing chip is truthful rather than a wrong number
+          // -- and absent for a PROVIDER match for the same reason. The provider row is a class
+          // stand-in whose own source reads "NOT this vehicle: no source was read for Prime,
+          // Skyrora XL, SL1, Zephyr, RFA One or ZERO"; a row that says it has no dimensions for
+          // a vehicle must not hand the card a height for it. A family match keeps its number,
+          // because the family's height IS a sourced height -- and COPY.drawing.family says out
+          // loud that the height is the family's and not this exact version's.
+          sizeM: drawn.row && drawn.via !== 'provider' ? drawn.row.height_m : null,
+          disputedHeight: (drawn.row && drawn.row.disputed_height) || null,
           missionName: (r.mission && r.mission.name) || null,
           missionType: (r.mission && r.mission.type) || null,
           missionDescription: (r.mission && r.mission.description) || null,
