@@ -499,13 +499,15 @@ export const LAYERS = [
     counts: oddityCounts,
     colour: C.probe,
     glyph: 'oddity',
-    // NO GEOMETRY YET, and `noModel` is how the layer says so. scene/heroes.js draws a model for
-    // any record inside its layer's nearKm and for the selection whatever the distance, and
-    // modelFor() falls back to a comms satellite for a class it does not know -- so without this
-    // flag, tapping the golf balls would draw a satellite bus on the Moon. The builders and this
-    // line are removed together in the next pull request.
-    noModel: true,
-    nearKm: 0,
+    // GEOMETRY. `noModel` and its `nearKm: 0` are gone together: scene/models.js now has an
+    // ODDITY_BUILDERS row per `shape.build` value registry/oddities.yaml allows, so modelFor()
+    // no longer falls back to a comms satellite and tapping the golf balls no longer puts a
+    // satellite bus on the Moon. The record carries the builder's name in `meta.modelVariant`.
+    //
+    // ONE nearKm across three frames -- a lunar surface, a museum in Texas and a heliocentric
+    // orbit -- so it is set for the case a visitor flies to. The Roadster and the museum piece
+    // are drawn because they were SELECTED, which heroes.js honours at any distance.
+    nearKm: 4000,
     card: 'oddity',
     // Nothing to fetch, so it is nearly free and should be on screen early.
     priority: 25,

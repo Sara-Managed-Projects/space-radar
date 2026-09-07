@@ -140,8 +140,11 @@ export function createHeroes(scene, ctx) {
       // modelFor() falls back to a comms satellite for a class it has never heard of and sets
       // userData.generic, which nothing reads -- so a record whose class has no builder would be
       // drawn as a satellite with the card saying nothing about it. Checked before the distance
-      // test AND before `forced`, because the selection is exactly when it would be seen: tapping
-      // Alan Shepard's golf balls would otherwise put a satellite bus on the Moon.
+      // test AND before `forced`, because the selection is exactly when it would be seen.
+      //
+      // NO LAYER SETS IT TODAY: `oddities`, which it was written for, now has a builder per row.
+      // It stays because the next layer to arrive without geometry needs it on the day it lands,
+      // and the alternative -- a satellite bus drawn on the Moon -- is what it prevented once.
       const own = ctx.layers.find((l) => l.id === record.layer);
       if (own && own.noModel) return;
       const p = propagate(record, tMs);

@@ -906,27 +906,43 @@ function mythSection(record) {
  * The family sentence covers the HEIGHT as well as the shape, because the size chip beside it is
  * that same row's height_m.
  *
- * Returns null for everything that is not a launch, which is every other class in the app --
- * their shapes are class stand-ins the card has never claimed otherwise about, and inventing a
- * line for them here is a different change. scene/realmodels.js names the ones that leaves
- * undisclosed.
+ * Returns null for anything with no `meta.drawsAs`, which is still every class but two: the
+ * launches, and now the oddities, whose emitter writes it from registry/oddities.yaml's own
+ * `shape.stands_for`. Everything else is a class stand-in the card has never claimed otherwise
+ * about; scene/realmodels.js names the ones that leaves undisclosed.
+ *
+ * TWO SETS OF STRINGS, ONE SWITCH. The three sentences above say "rocket" out loud, which is
+ * right for the only class that has ever printed them and wrong for a lapel pin, so a record
+ * carrying no matched rocket takes copy/en.js's class-neutral triple instead. That is the whole
+ * generalisation: the block ordering, the disputed-height clause and the callers are unchanged.
+ *
+ * Exported for tests/test_contract.mjs, exactly as rightNowFor() is: the sentence a card prints
+ * about its own drawing is a claim, and a claim nobody measures is a comment.
  */
-function drawingLine(record) {
+export function drawingLine(record) {
   const md = meta(record);
   const drawsAs = pick(md, 'drawsAs');
   if (!drawsAs) return null;
   const T = COPY.drawing;
-  const name = pick(md, 'drawnName') || pick(md, 'rocket');
+  const rocket = pick(md, 'rocket');
+  const name = pick(md, 'drawnName') || rocket;
+  const isLaunch = rocket != null;
   let line;
   if (drawsAs === 'generic') {
-    line = name ? t(T.generic, { name: String(name) }) : T.genericUnnamed;
+    const generic = isLaunch ? T.generic : T.objectGeneric;
+    line = name ? t(generic, { name: String(name) }) : T.genericUnnamed;
   } else if (drawsAs === 'family') {
-    line = t(T.family, { name: String(name || '') });
+    line = t(isLaunch ? T.family : T.objectFamily, { name: String(name || '') });
   } else {
-    line = t(T.variant, { name: String(name || '') });
+    line = t(isLaunch ? T.variant : T.objectVariant, { name: String(name || '') });
   }
   const disputed = pick(md, 'disputedHeight');
   if (disputed) line += COPY.punctuation.separator + t(T.disputed, { disputed: String(disputed) });
+  // Where the drawing knowingly differs from the object, in the registry row's own words: an
+  // oversized starburst, two golf balls drawn side by side, a print left blank. It is the row
+  // that says it, not this file, because only the row knows what its builder exaggerated.
+  const departure = pick(md, 'departure');
+  if (departure) line += COPY.punctuation.separator + String(departure);
   return line;
 }
 

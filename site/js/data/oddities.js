@@ -45,10 +45,12 @@ export const ODDITIES = [
       "caveat": "JPL warns the trajectory error may grow faster than the formal statistics say, from unmodelled thermal re-radiation"
     },
     "shape": {
-      "build": "generic",
+      "build": "roadster",
       "budget_tris": 1800,
-      "stands_for": "generic",
-      "drawn_name": "the first-generation Tesla Roadster"
+      "stands_for": "variant",
+      "drawn_name": "the first-generation Tesla Roadster",
+      "attitude": "nadir",
+      "departure": "nobody knows which way it points, so it is drawn level; the red is ours and the sign on the dash is blank, because neither is published"
     },
     "fact": "A cherry-red sports car with a dummy at the wheel, launched on the first Falcon Heavy and now looping round the Sun between Earth and Mars.",
     "myths": [
@@ -86,10 +88,11 @@ export const ODDITIES = [
     },
     "position_class": "inferred",
     "shape": {
-      "build": "generic",
+      "build": "golf-balls",
       "budget_tris": 520,
-      "stands_for": "generic",
-      "drawn_name": "two golf balls and the six-iron head"
+      "stands_for": "family",
+      "drawn_name": "two golf balls and the six-iron head",
+      "departure": "the balls really lie 24 and 40 yards apart, which is smaller than one pixel here, so they are drawn side by side"
     },
     "fact": "Alan Shepard smuggled a six-iron head to the Moon in a sock, screwed it to a sample scoop handle, and hit two balls one-handed. They are still lying there.",
     "myths": [
@@ -122,10 +125,11 @@ export const ODDITIES = [
     },
     "position_class": "inferred",
     "shape": {
-      "build": "generic",
+      "build": "wrapped-photo",
       "budget_tris": 70,
-      "stands_for": "generic",
-      "drawn_name": "a shrink-wrapped family snapshot lying in the dust"
+      "stands_for": "family",
+      "drawn_name": "a shrink-wrapped family snapshot lying in the dust",
+      "departure": "the print is drawn blank. The photograph on it is the Duke family's and this map does not reproduce it"
     },
     "fact": "Charlie Duke left a photograph of his wife and two sons face-up in the lunar dust, took a picture of it, and walked away.",
     "myths": [
@@ -153,10 +157,11 @@ export const ODDITIES = [
     },
     "position_class": "measured",
     "shape": {
-      "build": "generic",
+      "build": "disc-stack",
       "budget_tris": 620,
-      "stands_for": "generic",
-      "drawn_name": "a stack of nickel discs and a tardigrade"
+      "stands_for": "variant",
+      "drawn_name": "the stack of nickel discs and a tardigrade beside it",
+      "departure": "the 1 mm stack is thickened and laminated in four bands, not twenty-five, and the half-millimetre tardigrade is nothing like to scale"
     },
     "fact": "An Israeli lander crashed here carrying 25 nickel discs holding thirty million pages, with dried tardigrades and human DNA set in resin between the layers.",
     "myths": [
@@ -193,10 +198,11 @@ export const ODDITIES = [
     },
     "position_class": "inherit",
     "shape": {
-      "build": "generic",
+      "build": "golden-record",
       "budget_tris": 340,
-      "stands_for": "generic",
-      "drawn_name": "the Golden Record and its cover"
+      "stands_for": "variant",
+      "drawn_name": "the Golden Record and its cover",
+      "departure": "the fourteen-ray pulsar map is drawn two to three times oversized, because it is the one mark on the cover that still reads at a distance"
     },
     "fact": "Two gold-plated records bolted to the outside of two spacecraft carry whale song, greetings in 55 languages, and an hour of a woman's brainwaves.",
     "myths": [
@@ -226,10 +232,11 @@ export const ODDITIES = [
     },
     "position_class": "inherit",
     "shape": {
-      "build": "generic",
+      "build": "minifigures",
       "budget_tris": 560,
-      "stands_for": "generic",
-      "drawn_name": "three aluminium minifigures and their props"
+      "stands_for": "family",
+      "drawn_name": "three aluminium minifigures and their props",
+      "departure": "the props are drawn at about twice scale: three identical 4 cm bodies differ only by what is in the hand"
     },
     "fact": "Three tiny aluminium LEGO people have been riding through Jupiter's radiation belts since 2011: Galileo, Jupiter, and his wife Juno.",
     "myths": [
@@ -256,10 +263,11 @@ export const ODDITIES = [
     },
     "position_class": "measured",
     "shape": {
-      "build": "generic",
+      "build": "flash-handle",
       "budget_tris": 260,
-      "stands_for": "generic",
-      "drawn_name": "the Graflex 3-cell flash handle the prop was built on"
+      "stands_for": "family",
+      "drawn_name": "the Graflex 3-cell flash handle the prop was built on",
+      "departure": "this is the camera part the prop was built from, not the prop: the hilt's design is not ours to draw"
     },
     "fact": "The lightsaber prop from Return of the Jedi spent fourteen days in orbit sealed in foam, and never once came out of its box.",
     "myths": [

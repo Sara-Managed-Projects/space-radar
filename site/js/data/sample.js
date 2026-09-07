@@ -1068,16 +1068,32 @@ function evidenceMs(value) {
 /** Everything the card needs that is true of every row, whatever kind of place it is in. */
 function commonMeta(row) {
   const shape = row.shape || {};
+  const kind = row.where ? row.where.kind : null;
+  // A ROW NOBODY CAN PLACE IS NOT DRAWN, so it says nothing about a drawing. `unknown` gets no
+  // propagator (note 3 above), which means no dot, no model and nothing for the card to describe
+  // -- and "drawn as a generic object; we have no shape for a lapel pin" under a card with no
+  // position would be the card describing a shape that is not on the screen. The registry refuses
+  // any build but `generic` on such a row; this is the other half of the same rule.
+  const drawn = kind !== 'unknown';
   return {
     fact: row.fact,
     myths: Array.isArray(row.myths) ? row.myths : [],
     cite: row.cite || null,
     asOf: row.as_of || null,
-    whereKind: row.where ? row.where.kind : null,
+    whereKind: kind,
     drawnName: shape.drawn_name || null,
-    // NOT `drawsAs`. Nothing here has geometry yet, and "drawn from published dimensions for the
-    // Graflex flash handle" printed under a violet dot would be the card describing a shape that
-    // is not on the screen. The builders and this field arrive together in the next pull request.
+    // Which ODDITY_BUILDERS row scene/models.js draws, and what the card is allowed to claim
+    // about it. `drawsAs` is the row's own `stands_for`, so the card repeats the registry rather
+    // than guessing: `variant` published dimensions, `family` the kind of thing, `generic` we
+    // have no shape. `departure` is where the drawing knowingly differs and says so.
+    modelVariant: drawn ? shape.build || 'generic' : null,
+    drawsAs: drawn ? shape.stands_for || 'generic' : null,
+    departure: drawn ? shape.departure || null : null,
+    // Which way the shape points, when the row says. Absent is the default and reproduces what
+    // scene/models.js does today: a constant seeded from the record id. The surface branches
+    // below overwrite this with `up`, and check_registry.py refuses the field on those rows so
+    // the two can never disagree.
+    attitude: drawn ? shape.attitude || null : null,
   };
 }
 
@@ -1156,6 +1172,11 @@ export function sampleOddities() {
           world: w.world,
           latDeg,
           lonDeg,
+          // A photograph lying in lunar dust stands on a surface, so the model does too.
+          // scene/models.js updateModelAttitude() reads this and puts +Y away from the centre;
+          // without it an oddity would take the class default, which is the seeded constant a
+          // tumbling car wants and a print lying flat does not.
+          attitude: 'up',
           // The two numbers, kept apart all the way to the card. One field would have to choose
           // between 0.4 m and 40 m, and either choice is false.
           anchorName: anchor ? anchor.of : null,
@@ -1179,6 +1200,7 @@ export function sampleOddities() {
           world: 'earth',
           latDeg: w.lat,
           lonDeg: w.lon,
+          attitude: 'up',   // a museum case stands on the ground, like every other fixed record
           whereKept: w.where_kept || null,
           leftSpace: w.left_space ? String(w.left_space) : null,
         },

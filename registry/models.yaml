@@ -41,6 +41,11 @@ models:
   - {id: dish-generic,       file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 400,  for: {site_class: dish}}
   - {id: dome-generic,       file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 400,  for: {site_class: observatory}}
   - {id: rover-generic,      file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 500,  for: {site_class: surface}}
+  # ONE row for eight shapes, exactly as rocket-upper-stage is one row for fifty: they are the
+  # same procedural source file under the same licence, and WHICH shape a row gets is
+  # registry/oddities.yaml `shape.build`. The budget here is the layer cap; each row also carries
+  # its own tighter `budget_tris`, and tests/test_contract.mjs measures every builder against BOTH.
+  - {id: oddity-generic,     file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 2000, for: {layer: oddities}}
 
 # All fourteen shipped textures are from the same Solar System Scope pack, CC BY 4.0. The credit
 # line below is the one that must appear wherever they are shown; the app puts it on the world

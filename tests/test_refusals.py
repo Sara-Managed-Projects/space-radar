@@ -266,22 +266,61 @@ CASES: list[tuple[str, str, str, str]] = [
     ("a claim that is true on a day and not forever, with no date on it",
      "oddities.yaml", "    as_of: 2026-09-07\n", ""),
 
-    # The drawing. A row may DECLINE to draw; it may not claim a shape we do not have.
+    # The drawing. A row may DECLINE to draw; it may not claim a shape we do not have, and it
+    # may not claim a shape for something that is never drawn at all.
     ("a shape no builder in scene/models.js can draw",
-     "oddities.yaml", "shape: {build: generic, budget_tris: 1800", "shape: {build: roadster, budget_tris: 1800"),
+     "oddities.yaml", "      build: roadster\n", "      build: hovercar\n"),
     ("a triangle budget nobody wrote, which is a budget nobody can measure",
-     "oddities.yaml", "shape: {build: generic, budget_tris: 1800, ", "shape: {build: generic, "),
+     "oddities.yaml", "      budget_tris: 1800\n", ""),
     ("a triangle budget over the layer cap",
      "oddities.yaml", "budget_tris: 1800", "budget_tris: 18000"),
     ("a row that will not say whether it draws the object or its kind",
-     "oddities.yaml", "budget_tris: 1800, stands_for: generic", "budget_tris: 1800, stands_for: probably"),
+     "oddities.yaml", "      stands_for: variant\n      drawn_name: \"the first-generation",
+     "      stands_for: probably\n      drawn_name: \"the first-generation"),
     ("a placeholder claiming to be the exact object",
-     "oddities.yaml", "budget_tris: 1800, stands_for: generic", "budget_tris: 1800, stands_for: variant"),
+     "oddities.yaml", "budget_tris: 180, stands_for: generic", "budget_tris: 180, stands_for: variant"),
     ("a shape with no name for the card to print",
      "oddities.yaml",
      '    shape: {build: generic, budget_tris: 180, stands_for: generic,\n'
      '            drawn_name: "a lapel pin"}',
      "    shape: {build: generic, budget_tris: 180, stands_for: generic}"),
+    # Nothing is drawn for a row nobody can place, so a builder on one is a claim about a shape
+    # that never reaches a screen -- and data/sample.js writes it no `drawsAs` either.
+    ("a builder on the one row that is never drawn at all",
+     "oddities.yaml", "    shape: {build: generic, budget_tris: 180", "    shape: {build: roadster, budget_tris: 180"),
+    # `departure:` is how a builder confesses an exaggeration. A placeholder has nothing to
+    # confess -- "we have no shape for this" and "here is how our shape differs" cannot both be
+    # true of one drawing -- and the confession is printed on the card, so it takes the card's cap.
+    ("a departure from a shape we said we did not have",
+     "oddities.yaml",
+     '    shape: {build: generic, budget_tris: 180, stands_for: generic,\n'
+     '            drawn_name: "a lapel pin"}',
+     '    shape: {build: generic, budget_tris: 180, stands_for: generic,\n'
+     '            drawn_name: "a lapel pin", departure: "the pin is drawn a little large"}'),
+    ("a departure too long for the card that prints it",
+     "oddities.yaml",
+     '      departure: "this is the camera part the prop was built from, not the prop: the hilt\'s\n'
+     '                  design is not ours to draw"',
+     '      departure: "this is the camera part the prop was built from and not the prop itself,\n'
+     '                  because the design of the hilt, its name and the object are not ours to\n'
+     '                  draw under any reading of the licences its uploaders claim to grant"'),
+    # `attitude:` is the one drawing property a row may choose, and only where the choice is
+    # between two unmeasured drawings. A thing lying on a surface is not such a case.
+    ("an attitude the renderer cannot aim",
+     "oddities.yaml", "      attitude: nadir\n", "      attitude: sideways\n"),
+    ("an attitude on a row that is lying on a surface, where standing up is measured",
+     "oddities.yaml", "      build: golf-balls\n", "      build: golf-balls\n      attitude: nadir\n"),
+    ("an attitude on a placeholder, which has no shape to aim",
+     "oddities.yaml",
+     '    shape: {build: generic, budget_tris: 180, stands_for: generic,\n'
+     '            drawn_name: "a lapel pin"}',
+     '    shape: {build: generic, budget_tris: 180, stands_for: generic,\n'
+     '            drawn_name: "a lapel pin", attitude: nadir}'),
+    ("a departure that is not a sentence",
+     "oddities.yaml",
+     '      departure: "the props are drawn at about twice scale: three identical 4 cm bodies differ\n'
+     '                  only by what is in the hand"',
+     '      departure: ""'),
 
     # The row itself
     ("two oddity rows share an id",

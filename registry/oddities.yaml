@@ -103,8 +103,26 @@ oddities:
       arc: "2018-02-08 to 2018-03-19"
       caveat: "JPL warns the trajectory error may grow faster than the formal statistics say,
                from unmodelled thermal re-radiation"
-    shape: {build: generic, budget_tris: 1800, stands_for: generic,
-            drawn_name: "the first-generation Tesla Roadster"}
+    shape:
+      build: roadster
+      budget_tris: 1800
+      stands_for: variant
+      drawn_name: "the first-generation Tesla Roadster"
+      # WHICH WAY IT POINTS IS A DRAWING CHOICE AND THIS ROW MAKES IT ON PURPOSE. With no
+      # `attitude:` scene/models.js gives an object it cannot aim a constant seeded from the
+      # record id -- the right answer for a debris shard and, for this id, a car lying on its
+      # roof. Orientation has never been something this app claims (the card says nothing about
+      # it either way), so the choice is between two equally unmeasured drawings and the legible
+      # one wins: the elbow out of the window IS the recognition, and it is invisible upside
+      # down. `nadir` points the car's flank at the world, which is where the camera arrives
+      # from. The card says so in the departure below.
+      attitude: nadir
+      # `departure:` is where the drawing knowingly differs from the object, in the row's own
+      # words, printed on the card straight after the "drawn as" line. Three of these seven
+      # builders exaggerate something on purpose so it reads at 40 px, and a card that says
+      # "drawn from published dimensions" and stops would be telling four fifths of the truth.
+      departure: "nobody knows which way it points, so it is drawn level; the red is ours and the
+                  sign on the dash is blank, because neither is published"
     fact: "A cherry-red sports car with a dummy at the wheel, launched on the first Falcon Heavy
            and now looping round the Sun between Earth and Mars."
     myths:
@@ -150,8 +168,13 @@ oddities:
         how: photogrammetric
         source: "Andy Saunders, 2021, reported by Astronomy and Space.com"
     position_class: inferred          # the ANCHOR is measured; the object is not, and the card says both
-    shape: {build: generic, budget_tris: 520, stands_for: generic,
-            drawn_name: "two golf balls and the six-iron head"}
+    shape:
+      build: golf-balls
+      budget_tris: 520
+      stands_for: family
+      drawn_name: "two golf balls and the six-iron head"
+      departure: "the balls really lie 24 and 40 yards apart, which is smaller than one pixel
+                  here, so they are drawn side by side"
     fact: "Alan Shepard smuggled a six-iron head to the Moon in a sock, screwed it to a sample
            scoop handle, and hit two balls one-handed. They are still lying there."
     myths:
@@ -192,8 +215,13 @@ oddities:
         source: "no source gives the photograph's own coordinates; NASA image AS16-117-18841
                  shows it lying in the dust and nothing has imaged it since"
     position_class: inferred
-    shape: {build: generic, budget_tris: 70, stands_for: generic,
-            drawn_name: "a shrink-wrapped family snapshot lying in the dust"}
+    shape:
+      build: wrapped-photo
+      budget_tris: 70
+      stands_for: family
+      drawn_name: "a shrink-wrapped family snapshot lying in the dust"
+      departure: "the print is drawn blank. The photograph on it is the Duke family's and this
+                  map does not reproduce it"
     fact: "Charlie Duke left a photograph of his wife and two sons face-up in the lunar dust,
            took a picture of it, and walked away."
     myths:
@@ -225,8 +253,13 @@ oddities:
         source: "LROC post 1101: the darkest pixel of the impact smudge, 20 m (latitude) by
                  8 m (longitude) 95% confidence interval"
     position_class: measured
-    shape: {build: generic, budget_tris: 620, stands_for: generic,
-            drawn_name: "a stack of nickel discs and a tardigrade"}
+    shape:
+      build: disc-stack
+      budget_tris: 620
+      stands_for: variant
+      drawn_name: "the stack of nickel discs and a tardigrade beside it"
+      departure: "the 1 mm stack is thickened and laminated in four bands, not twenty-five, and
+                  the half-millimetre tardigrade is nothing like to scale"
     fact: "An Israeli lander crashed here carrying 25 nickel discs holding thirty million pages,
            with dried tardigrades and human DNA set in resin between the layers."
     myths:
@@ -262,8 +295,13 @@ oddities:
       mount: {x: 0.0, y: -0.35, z: 0.62, face: bus_side}
       mount_class: illustrative
     position_class: inherit           # never better than the parent's; the emitter copies it
-    shape: {build: generic, budget_tris: 340, stands_for: generic,
-            drawn_name: "the Golden Record and its cover"}
+    shape:
+      build: golden-record
+      budget_tris: 340
+      stands_for: variant
+      drawn_name: "the Golden Record and its cover"
+      departure: "the fourteen-ray pulsar map is drawn two to three times oversized, because it
+                  is the one mark on the cover that still reads at a distance"
     fact: "Two gold-plated records bolted to the outside of two spacecraft carry whale song,
            greetings in 55 languages, and an hour of a woman's brainwaves."
     myths:
@@ -290,8 +328,13 @@ oddities:
       mount: {x: 0.0, y: 0.18, z: 0.44, face: deck}
       mount_class: illustrative
     position_class: inherit
-    shape: {build: generic, budget_tris: 560, stands_for: generic,
-            drawn_name: "three aluminium minifigures and their props"}
+    shape:
+      build: minifigures
+      budget_tris: 560
+      stands_for: family
+      drawn_name: "three aluminium minifigures and their props"
+      departure: "the props are drawn at about twice scale: three identical 4 cm bodies differ
+                  only by what is in the hand"
     fact: "Three tiny aluminium LEGO people have been riding through Jupiter's radiation belts
            since 2011: Galileo, Jupiter, and his wife Juno."
     myths:
@@ -330,8 +373,13 @@ oddities:
     # claiming CC BY over it is a claim its uploader has no standing to make. What a builder will
     # draw is the real-world donor part the prop was built on -- a Graflex 3-cell press-camera
     # flash handle -- and the card will say exactly that. Duller and true.
-    shape: {build: generic, budget_tris: 260, stands_for: generic,
-            drawn_name: "the Graflex 3-cell flash handle the prop was built on"}
+    shape:
+      build: flash-handle
+      budget_tris: 260
+      stands_for: family
+      drawn_name: "the Graflex 3-cell flash handle the prop was built on"
+      departure: "this is the camera part the prop was built from, not the prop: the hilt's
+                  design is not ours to draw"
     fact: "The lightsaber prop from Return of the Jedi spent fourteen days in orbit sealed in
            foam, and never once came out of its box."
     myths:
@@ -361,6 +409,9 @@ oddities:
     position_class: inferred
     # A NASA insignia design. Any builder draws a generic silver lapel pin instead and the card
     # says so, for the same reason the lightsaber is a flash handle.
+    # `build: generic` is not a stopgap on this row, it is the only legal value: nothing is drawn
+    # for a row nobody can place, so claiming a builder would be claiming a shape that never
+    # reaches the screen. check_registry.py refuses any other build here.
     shape: {build: generic, budget_tris: 180, stands_for: generic,
             drawn_name: "a lapel pin"}
     fact: "You wear the silver astronaut pin until your first spaceflight. Alan Bean had worn his
