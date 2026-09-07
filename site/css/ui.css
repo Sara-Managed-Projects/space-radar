@@ -972,6 +972,13 @@
 /* ------------------------------------------------------------------------------------ */
 
 @media (min-width: 900px) {
+  /* The card's rail width is a token because TWO things measure from it: the card itself, and
+     the GitHub mark, which sits just clear of the rail's left edge so it never lands on the
+     card's own header. One number, edited once. */
+  :root {
+    --sr-card-w: 384px;
+  }
+
   .sr-controls {
     top: 16px;
     right: auto;
@@ -999,7 +1006,7 @@
     right: 16px;
     bottom: 16px;
     left: auto;
-    width: 384px;
+    width: var(--sr-card-w);
     max-height: none;
     border-width: 1px;
     border-radius: var(--sr-radius);
@@ -1016,14 +1023,71 @@
 }
 
 @media (min-width: 1440px) {
+  :root {
+    --sr-card-w: 412px;
+  }
+
   .sr-controls,
   .sr-status {
     width: 352px;
   }
+}
 
-  .sr-card {
-    width: 412px;
+/* ------------------------------------------------------------------------------------ */
+/* The GitHub mark (js/ui/github.js)                                                      */
+/*                                                                                        */
+/* WHERE IT SITS, MEASURED RATHER THAN GUESSED. Three regimes, and the corner is not free  */
+/* in all of them:                                                                        */
+/*   phone (<= 600 px)  the panels are bottom drawers and the card is a bottom sheet, so   */
+/*                      the top right is open sky -- measured, elementFromPoint(355, 32)   */
+/*                      returns the canvas.                                                */
+/*   601-899 px         .sr-controls is a full-width panel across the top and the card is  */
+/*                      still a bottom sheet. The mark rides over the panel's blank top     */
+/*                      right, above it in z so the panel never swallows it.               */
+/*   >= 900 px          .sr-card is a right rail from top 16 to bottom 16, so the corner    */
+/*                      IS the card. The mark steps in by the rail's width and clears its   */
+/*                      left edge by 8 px at every width -- 1440: mark 960-1004, card from  */
+/*                      1012.                                                              */
+/* ------------------------------------------------------------------------------------ */
+
+.sr-mark {
+  position: fixed;
+  top: calc(8px + env(safe-area-inset-top, 0px));
+  right: 8px;
+  z-index: 55; /* over the panels and the card, under the trip frame at 60 */
+  display: grid;
+  place-items: center;
+  width: 44px;  /* the tap target, not the glyph: the mark inside it is 22 px */
+  height: 44px;
+  color: var(--sr-text-dim);
+  border-radius: 50%;
+  transition: color var(--sr-fast) var(--sr-ease);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sr-mark:hover {
+  color: var(--sr-ember);
+}
+
+.sr-mark:focus-visible {
+  color: var(--sr-ember);
+  outline: 2px solid var(--sr-ember);
+  outline-offset: 2px;
+}
+
+@media (min-width: 900px) {
+  .sr-mark {
+    top: 16px;
+    right: calc(var(--sr-card-w) + 24px);
   }
+}
+
+/* The cinematic mode takes the chrome away; the mark goes with it. `inert` is set in JS
+   (ui/tripframe.js CHROME) and is what removes it from the tab order; this is the picture. */
+html.sr-trip-mode .sr-mark {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--sr-slow) var(--sr-ease);
 }
 
 /* ------------------------------------------------------------------------------------ */
@@ -1679,12 +1743,23 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
   color: var(--sr-text-dim);
 }
 
+/* WHY THE MARKER SUPPRESSION IS WRITTEN TWICE.
+   A phone was sent a page whose ui.css did not contain this block, and the rows came back as
+   grey centred bullets with the three lines run together. That was a stale stylesheet, not an
+   engine -- but it showed that these rows have no floor beneath their CSS. `list-style: none` on
+   the row as well as the list is one line and removes the inheritance as the only thing standing
+   between the reader and a bulleted list. `role="list"` in ui/controls.js is the other half:
+   WebKit stops announcing a <ul> as a list once its markers are removed. */
 .sr-trips__list {
   display: flex;
   flex-direction: column;
   gap: 6px;
   padding: 0;
   margin: 0;
+  list-style: none;
+}
+
+.sr-trips__row {
   list-style: none;
 }
 
@@ -1704,6 +1779,22 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
   border-radius: var(--sr-radius-sm);
 }
 
+/* THE SAME STACK, STATED TWICE, ON PURPOSE.
+   `flex-direction: column` on the button is what spaces these lines; `display: block` on the
+   children is what STACKS them, and it keeps working in an engine that declines to make a
+   <button> a flex container -- the historical Blink/Gecko/WebKit gap that made this the first
+   suspect. It is two declarations, it changes nothing about how the row renders today (a flex
+   item is already blockified), and it turns "unreadable" into "correct but unspaced" in the one
+   case the rule is for. `.sr-door__label` / `.sr-door__hint` get it for the same reason: the
+   moment switcher is the only other <button> in this codebase that is a flex container. */
+.sr-trips__title,
+.sr-trips__blurb,
+.sr-trips__shape,
+.sr-door__label,
+.sr-door__hint {
+  display: block;
+}
+
 .sr-trips__start:hover:not(:disabled) {
   border-color: var(--sr-ember);
 }
@@ -1720,7 +1811,8 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
   color: var(--sr-text-dim);
 }
 
-.sr-trips__start.is-off .sr-trips__shape {
+/* The reason line is a SIBLING of the button now, so `is-off` is carried by the row. */
+.sr-trips__row.is-off .sr-trips__shape {
   padding-left: 8px;
   color: var(--sr-text);
   border-left: 2px solid var(--sr-stale);
@@ -1736,7 +1828,17 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
   color: var(--sr-text-dim);
 }
 
+/* Outside the button (see the note in ui/controls.js buildTrips): a <p> stacks with no CSS at
+   all, the button's accessible name stops changing under the reader as trips resolve, and the
+   reason a trip is unofferable survives `disabled` taking the button out of the tab order. */
 .sr-trips__shape {
+  margin: 2px 0 0;
+  padding: 0 12px;
   font-size: 11.5px;
+  line-height: 1.4;
   color: var(--sr-text-dim);
+}
+
+.sr-trips__shape:empty {
+  display: none;
 }

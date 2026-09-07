@@ -203,6 +203,9 @@ function buildTrips(ctx, state) {
   wrap.appendChild(el('h2', 'sr-panel__title', COPY.trip.sectionTitle));
   wrap.appendChild(el('p', 'sr-trips__hint', COPY.trip.sectionHint));
   const list = el('ul', 'sr-trips__list');
+  // WebKit stops announcing a <ul> as a list once `list-style: none` removes its markers, and
+  // ui.css removes them. One attribute puts the list back.
+  list.setAttribute('role', 'list');
   state.tripRows = new Map();
 
   for (const tour of tours) {
@@ -211,8 +214,15 @@ function buildTrips(ctx, state) {
     start.dataset.trip = tour.id;
     start.appendChild(el('span', 'sr-trips__title', tour.title));
     start.appendChild(el('span', 'sr-trips__blurb', tour.blurb));
-    const shape = el('span', 'sr-trips__shape', COPY.trip.planning);
-    start.appendChild(shape);
+    // THE SHAPE LINE IS A SIBLING OF THE BUTTON, NOT ITS THIRD CHILD. Three things were wrong
+    // with it inside: planTrips() rewrites it after the panel is built, so the BUTTON'S
+    // ACCESSIBLE NAME changed under the reader as the trips resolved; a trip that cannot be
+    // offered sets `start.disabled`, which takes the button out of the tab order AND took the
+    // reason with it, defeating "greyed WITH ITS REASON and never hidden"; and a <p> stacks
+    // under the row with no CSS at all, which is the half of the reported phone rendering that
+    // looked worst. `aria-live="polite"` announces the resolution when it lands.
+    const shape = el('p', 'sr-trips__shape', COPY.trip.planning);
+    shape.setAttribute('aria-live', 'polite');
     start.addEventListener('click', () => {
       try {
         trip.start(tour.id);
@@ -221,8 +231,9 @@ function buildTrips(ctx, state) {
       }
     });
     row.appendChild(start);
+    row.appendChild(shape);
     list.appendChild(row);
-    state.tripRows.set(tour.id, { start, shape });
+    state.tripRows.set(tour.id, { row, start, shape });
   }
   wrap.appendChild(list);
   return wrap;
@@ -240,11 +251,13 @@ function planTrips(ctx, state) {
           row.shape.textContent = shapeLine(plan.count, plan.estimateMs);
           row.start.disabled = false;
           row.start.classList.remove('is-off');
+          if (row.row) row.row.classList.remove('is-off');
           return;
         }
         row.shape.textContent = plan.reason || '';
         row.start.disabled = true;
         row.start.classList.add('is-off');
+        if (row.row) row.row.classList.add('is-off');
       })
       .catch(() => {
         row.shape.textContent = '';

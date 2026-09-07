@@ -1127,6 +1127,33 @@ def main() -> int:
                 fail("CREDITS.md", f"credits `{name}`, which has no models.yaml real_models row "
                                    f"and does not ship -- a credit for work that is not here")
 
+    # --- marks: somebody else's LOGO, which is the strictest case in the file ---------
+    # A logo is a trademark as well as a drawing, and the permission to use one is conditional on
+    # not changing it. So this asks for more than a licence string: it asks the row to say WHERE
+    # the glyph came from, that CREDITS.md carries the credit line verbatim, and that `modified`
+    # is present and EMPTY -- a mark with modifications is a mark used outside its permission,
+    # and the row going quiet about it is exactly the shape of this repo's old licence audit.
+    marks = rows(models_doc, "marks", "models.yaml")
+    for m in marks:
+        mid = m.get("id")
+        where = f"models.yaml[marks/{mid}]"
+        if not mid:
+            fail("models.yaml", "a marks row has no id")
+            continue
+        for key in ("file", "source", "licence", "credit"):
+            if not m.get(key):
+                fail(where, f"no {key}; this row draws somebody else's mark")
+        if "modified" not in m:
+            fail(where, "no `modified:` key -- an unmodified mark has to SAY it is unmodified")
+        elif m.get("modified"):
+            fail(where, f"claims the mark was modified ({m['modified']!r}). Permission to use a "
+                        f"logo is permission to use it AS PUBLISHED; ship it unmodified or do "
+                        f"not ship it")
+        credit = m.get("credit")
+        if credit and credits_path.exists() and credit not in credits:
+            fail("CREDITS.md", f"models.yaml credits the `{mid}` mark as {credit!r}, and CREDITS.md "
+                               f"does not carry that line")
+
     # --- models ------------------------------------------------------------------
     for m in models + textures + rows(models_doc, "data", "models.yaml"):
         mid = m.get("id")
@@ -1354,7 +1381,8 @@ def main() -> int:
         return 1
     print(
         f"registry ok: {len(worlds)} worlds, {len(sources)} sources, {len(layers)} layers, "
-        f"{len(events)} event types, {len(models)} models, {len(real_models)} real models, {len(sites)} sites, "
+        f"{len(events)} event types, {len(models)} models, {len(real_models)} real models, "
+        f"{len(marks)} third-party marks, {len(sites)} sites, "
         f"{len(terms)} glossary terms, {len(showers)} showers, "
         f"{len(oddities_doc.get('oddities') or [])} oddities "
         f"({sum(1 for o in (oddities_doc.get('oddities') or []) if (o.get('where') or {}).get('kind') == 'unknown')} "

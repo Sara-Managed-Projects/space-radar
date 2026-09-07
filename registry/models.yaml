@@ -80,6 +80,15 @@ data:
   - {id: constellations, file: site/data/constellations.lines.json,  source: "https://github.com/ofrohn/d3-celestial", licence: "BSD-3-Clause", credit: "Constellation lines: d3-celestial (Olaf Frohn)"}
   - {id: constellation-names, file: site/data/constellation-names.json, source: "https://github.com/ofrohn/d3-celestial (constellations.json, fields extracted)", licence: "BSD-3-Clause", credit: "Constellation names: d3-celestial (Olaf Frohn)"}
 
+# THIRD-PARTY MARKS DRAWN IN THE UI, as opposed to in the scene.
+#
+# One row today. A logo is the asset class with the sharpest teeth: it is a trademark as well as
+# a drawing, and permission to use it is conditional on NOT CHANGING IT. So the row records what
+# the file was and how it was verified, and CREDITS.md 4.6 carries the terms. `modified: ""` is
+# the load-bearing field here -- if it ever stops being empty, the permission stops applying.
+marks:
+  - {id: github-invertocat, file: "site/js/ui/github.js (inline SVG path)", kind: inline-svg, source: "https://github.com/primer/octicons — icons/mark-github-24.svg, git blob 81949e7b460a7bbf1cb2431462f6bd947e32f0ce, fetched 2026-09-07", licence: "GitHub logo — trademark of GitHub, Inc. Used unmodified to link to GitHub, per GitHub's brand guidelines. Not licensed to this project.", credit: "GitHub logo © GitHub, Inc.", modified: ""}
+
 # REAL GEOMETRY, from NASA's own public-domain glTF models.
 #
 # NASA publishes these under its media usage guidelines: created by NASA, not copyrighted, free

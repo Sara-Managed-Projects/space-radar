@@ -161,10 +161,73 @@ html.sr-phone #sr-status {
 html.sr-phone #sr-controls.sr-drawer-open,
 html.sr-phone #sr-status.sr-drawer-open { transform: translateY(0); }
 
+/* A CLOSED DRAWER IS OUT OF THE TAB ORDER, not merely off screen.
+   Measured: with both drawers closed, #sr-controls still held 34 focusable descendants and the
+   first of them focused at y 826 -- a keyboard or switch user walked into a sheet nobody could
+   see. `visibility` and not `inert`: ui/tripframe.js already owns `.inert` on these two nodes,
+   and a second writer would have trip teardown put those 34 controls straight back. One owner
+   per mechanism. The 0s-delayed visibility keeps the slide-out animation visible on the way. */
+html.sr-phone #sr-controls,
+html.sr-phone #sr-status {
+  visibility: hidden;
+  transition:
+    transform 260ms cubic-bezier(.2,.8,.2,1),
+    visibility 0s 260ms;
+}
+html.sr-phone #sr-controls.sr-drawer-open,
+html.sr-phone #sr-status.sr-drawer-open {
+  visibility: visible;
+  transition:
+    transform 260ms cubic-bezier(.2,.8,.2,1),
+    visibility 0s;
+}
+
+/* The drawer's own Close row (js/ui/mobile.js).
+   STICKY, because the layers drawer scrolls 1639 px inside a 502 px window and a Close that
+   scrolls away is a Close you cannot reach from the bottom of the list. The negative margins let
+   it span the panel's 14 px padding, so it sits flush against the drawer's rounded top edge. */
+html.sr-phone .sr-drawer__head {
+  position: sticky;
+  top: calc(-1 * var(--sr-pad));
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sr-gap);
+  margin: calc(-1 * var(--sr-pad)) calc(-1 * var(--sr-pad)) 0;
+  padding: 2px var(--sr-pad);
+  background: var(--sr-panel-solid);
+  border-bottom: 1px solid var(--sr-line);
+}
+html.sr-phone .sr-drawer__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+html.sr-phone .sr-drawer__close {
+  flex: 0 0 auto;
+  appearance: none;
+  min-width: 44px;
+  min-height: 44px;   /* the floor .sr-mobilebar button already meets; the card's 40 is the outlier */
+  font: inherit;
+  font-size: 12px;
+  color: var(--text-dim);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+html.sr-phone .sr-drawer__close:hover { color: var(--ember); }
+html.sr-phone .sr-drawer__close:focus-visible {
+  outline: 2px solid var(--ember);
+  outline-offset: 2px;
+}
+
 /* The card is its own sheet and must sit above the drawers. */
 html.sr-phone #sr-card { z-index: 50; }
 
 @media (prefers-reduced-motion: reduce) {
   html.sr-phone #sr-controls,
-  html.sr-phone #sr-status { transition: none; }
+  html.sr-phone #sr-status { transition: visibility 0s 0s; }
+  html.sr-phone #sr-controls.sr-drawer-open,
+  html.sr-phone #sr-status.sr-drawer-open { transition: visibility 0s; }
 }

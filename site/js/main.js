@@ -23,6 +23,7 @@ import { showCard, hideCard } from './ui/cards.js';
 import { createControls } from './ui/controls.js';
 import { createStatus } from './ui/status.js';
 import { createMobileUI } from './ui/mobile.js';
+import { createGitHubMark } from './ui/github.js';
 import { createTrip } from './ui/trip.js';
 import { createTripFrame } from './ui/tripframe.js';
 
@@ -91,6 +92,7 @@ export async function boot({ setStatus } = {}) {
   createControls(ctx);
   createStatus(ctx);
   ctx.mobile = createMobileUI();
+  createGitHubMark();
   // The cinematic frame, after the panels and the mobile bar exist: it hides all three, and it
   // reads ctx.mobile to close a phone drawer that is standing open when a trip starts.
   ctx.tripFrame = createTripFrame(ctx);
