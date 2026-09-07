@@ -1041,9 +1041,10 @@ export function handKeptSites() {
 //  2. AN `attached` ROW IS NOT A RECORD. The Golden Record at Voyager 1's exact position would be
 //     a second dot under the first: ambiguous to tap (main.js takes the first hit in layer order)
 //     and, if it carried a horizons_id, a second Voyager drawn beside the first
-//     (scene/realmodels.js matches on that id). It is drawn as a child of its carrier's model
-//     instead -- the next pull request -- and until then it is a row nothing emits. The layer's
-//     count line says how many those are rather than quietly omitting them.
+//     (scene/realmodels.js matches on that id). It is drawn as a CHILD of its carrier's model
+//     instead, and reached from the carrier's card; data/attached.js owns that, including the
+//     rule that its position is the carrier's copied verbatim. The layer's count line says how
+//     many rows those are rather than quietly omitting them.
 //
 //  3. AN `unknown` ROW GETS NO PROPAGATOR AT ALL. `propagate()` returns null for a record whose
 //     propagator is not in its table, so the glyph layer skips it, heroes.js skips it and the
@@ -1232,7 +1233,7 @@ export function sampleOddities() {
   return out;
 }
 
-/** How many rows are riding on a spacecraft the app draws rather than carrying their own dot. */
-export function attachedOddityCount() {
-  return ODDITIES.filter((row) => row.where && row.where.kind === 'attached').length;
-}
+// How many rows are riding on a spacecraft the app draws rather than carrying their own dot.
+// Re-exported rather than recomputed: data/attached.js owns the attached rows now that they are
+// drawn, and two filters over the same registry would be two places to forget a kind.
+export { attachedOddityCount } from './attached.js';

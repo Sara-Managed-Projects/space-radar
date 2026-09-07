@@ -15,7 +15,7 @@
 // position, to the metre. Only its apparent size is chosen.
 
 import * as THREE from '../../vendor/three.module.min.js';
-import { modelFor, updateModelAttitude, setSunDirection, disposeModels } from './models.js';
+import { modelFor, updateModelAttitude, setSunDirection, disposeModels, attachOddityModels } from './models.js';
 import { realModelFor, loadRealModel } from './realmodels.js';
 import { propagate } from '../propagate/index.js';
 import { stage } from './stage.js';
@@ -81,6 +81,11 @@ export function createHeroes(scene, ctx) {
     const obj = modelFor(record.klass, record.meta && record.meta.modelVariant);
     obj.userData.recordId = record.id;
     obj.visible = false;
+    // Whatever rides on this thing, as children of it. Two records in the app carry anything at
+    // all, so this is a no-op for the rest -- but it is here rather than in the upgrade branch
+    // below because a visitor on a slow connection should see the Golden Record on the
+    // procedural Voyager too, not only on the one that finished downloading.
+    attachOddityModels(obj, record.id);
     root.add(obj);
     const entry = { obj, record, fadeStart: null, upgraded: false };
     live.set(record.id, entry);
@@ -107,6 +112,11 @@ export function createHeroes(scene, ctx) {
         root.add(clone);
         entry.obj = clone;
         entry.upgraded = true;
+        // Again, on the new object. The children went with the old one -- root.remove and
+        // disposeModels take the whole subtree -- and `loaded` is the CACHED parse that every
+        // Voyager clone comes from, so attaching to it instead would put the Golden Record on
+        // Voyager 2 as a side effect of Voyager 1 being drawn.
+        attachOddityModels(clone, record.id);
         window.dispatchEvent(new CustomEvent('sr:model-upgraded', {
           detail: { id: record.id, name: real.name },
         }));

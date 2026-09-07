@@ -156,12 +156,68 @@ def is_number(v) -> bool:
     return isinstance(v, (int, float)) and not isinstance(v, bool)
 
 
+
 def time_relative(text: str) -> str | None:
     low = str(text or "").lower()
     for phrase in TIME_RELATIVE:
         if phrase in low:
             return phrase
     return None
+
+
+def check_tour_targets(oddities_doc: dict) -> None:
+    """registry/tours.yaml, when it exists: a stop may not fly to something that is not on the map.
+
+    THIS GUARD IS WRITTEN BEFORE THE FILE IT GUARDS, and that is the point. A cinematic tour
+    resolves each stop through `ctx.recordById(...)`, and two of the eight rows in
+    registry/oddities.yaml deliberately do not answer to it:
+
+      * an `attached` row is drawn as a child of its carrier's model and is not a record at all,
+        so `recordById('voyager-golden-record')` is null. A tour that names it loses its best
+        stop silently, because an unresolved stop is dropped and the count is printed after.
+        Target the CARRIER instead -- which is also where the object physically is.
+      * an `unknown` row has no propagator by construction, so there is nowhere to fly to. A
+        camera move to a record with no position is a camera move to the origin.
+
+    Both are one-line mistakes that look right in YAML and fail as a stop that quietly is not
+    there, so they are refused at the point the file is written rather than found in a browser.
+    When registry/tours.yaml does not exist -- which is today -- this does nothing at all.
+    """
+    path = REG / "tours.yaml"
+    if not path.exists():
+        return
+    try:
+        doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as exc:
+        fail("tours.yaml", f"will not parse: {exc}")
+        return
+
+    unreachable = {}
+    for r in (oddities_doc.get("oddities") or []):
+        kind = (r.get("where") or {}).get("kind")
+        if kind == "attached":
+            carrier = (r.get("where") or {}).get("to")
+            unreachable[r.get("id")] = (
+                f"it is not a record -- it is drawn on its carrier's model. "
+                f"Target `{carrier}` instead, which is where the object actually is"
+            )
+        elif kind == "unknown":
+            unreachable[r.get("id")] = (
+                "nobody knows where it is, so it has no position and there is nowhere to fly to"
+            )
+
+    for tour in (doc.get("tours") or []):
+        if not isinstance(tour, dict):
+            continue
+        tid = tour.get("id")
+        for n, stop in enumerate(tour.get("stops") or [], start=1):
+            if not isinstance(stop, dict):
+                continue
+            target = stop.get("target")
+            rid = target.get("record") if isinstance(target, dict) else None
+            if rid in unreachable:
+                fail(f"tours.yaml[{tid}] stop {n}",
+                     f"targets `{rid}` and {unreachable[rid]}")
 
 
 def check_oddities(doc: dict, world_ids: set, sites: list) -> None:
@@ -345,6 +401,32 @@ def check_oddities(doc: dict, world_ids: set, sites: list) -> None:
                 fail(where, "an `attached` row needs `mount_class: illustrative` -- where we hang "
                             "it on the model is our arrangement, never a measurement, and the card "
                             "says so")
+            # THE MOUNT IS THE DRAWING. scene/models.js attachOddityModels() reads exactly these
+            # five numbers and nothing else, so a row that gets one of them wrong hangs an object
+            # in empty space beside its carrier, or draws a Golden Record the size of Voyager,
+            # and the card goes on saying "drawn from published dimensions" underneath.
+            mount = w.get("mount")
+            if not isinstance(mount, dict):
+                fail(where, "an `attached` row needs a `mount:` block -- it is drawn as a child of "
+                            "its carrier's model and this is where on that model it hangs")
+                mount = {}
+            for axis in ("x", "y", "z"):
+                v = mount.get(axis)
+                if not is_number(v):
+                    fail(where, f"mount.{axis} is {v!r}; it must be a number in the carrier "
+                                f"model's own units")
+                elif abs(v) > 1:
+                    fail(where, f"mount.{axis} is {v}, outside the carrier's own model -- every "
+                                f"model this app draws is normalised to a unit box, so this would "
+                                f"hang the object in space beside the spacecraft rather than on it")
+            scale = mount.get("scale")
+            if not is_number(scale) or scale <= 0:
+                fail(where, f"mount.scale is {scale!r}; an attached row must say how big it is "
+                            f"drawn against its carrier, because true scale is a pixel and the "
+                            f"card's `departure:` sentence is what admits the difference")
+            elif scale > 1:
+                fail(where, f"mount.scale is {scale}, so the part would be drawn bigger than the "
+                            f"spacecraft carrying it")
             # scene/realmodels.js matches on meta.horizonsId, so an attached row carrying one would
             # draw a SECOND Voyager beside the first.
             if "horizons_id" in w:
@@ -768,6 +850,7 @@ def main() -> int:
             fail(where, "no `doing:` line -- a site card with nothing to say is a dot")
 
     check_oddities(oddities_doc, world_ids, sites)
+    check_tour_targets(oddities_doc)
 
     # --- rockets -------------------------------------------------------------------
     # A row here decides what a launch is DRAWN as, and the card repeats the row's own claim

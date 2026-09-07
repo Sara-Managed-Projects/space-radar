@@ -161,8 +161,9 @@ def main() -> int:
         print(result.stdout.strip())
 
     print("\nPASS: a new world, a new source, a new layer, a new texture, a new surface site, "
-          "two new launch vehicles and a new odd thing on that new world are rows. Nothing under "
-          "site/js/ was needed but the two generated mirrors, which no human edits.")
+          "two new launch vehicles, a new odd thing on that new world and a new thing bolted to "
+          "a spacecraft are rows. Nothing under site/js/ was needed but the two generated "
+          "mirrors, which no human edits.")
     return 0
 
 

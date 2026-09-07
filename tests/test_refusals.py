@@ -212,6 +212,18 @@ CASES: list[tuple[str, str, str, str]] = [
      '      to: deep-voyager-1\n      horizons_id: "-31"\n'),
     ("an attached row claiming to know its position better than its carrier does",
      "oddities.yaml", "    position_class: inherit", "    position_class: measured"),
+    # THE MOUNT IS THE DRAWING, and scene/models.js reads these five numbers and nothing else.
+    ("an attached row with no mount block at all, so nothing knows where to hang it",
+     "oddities.yaml", "      mount: {x: 0.085, y: -0.130, z: 0.020, scale: 0.075, face: bus_side}\n", ""),
+    ("an attached row that does not say how big it is drawn against its carrier",
+     "oddities.yaml", "mount: {x: 0.085, y: -0.130, z: 0.020, scale: 0.075, face: bus_side}",
+     "mount: {x: 0.055, y: -0.020, z: 0.030, face: bus_side}"),
+    ("a part drawn bigger than the spacecraft carrying it",
+     "oddities.yaml", "z: 0.020, scale: 0.075, face: bus_side}", "z: 0.020, scale: 1.4, face: bus_side}"),
+    ("a mount point outside the carrier's own model, hanging the object in space beside it",
+     "oddities.yaml", "mount: {x: 0.085,", "mount: {x: 5.5,"),
+    ("a mount coordinate that is not a number, so the child is drawn at NaN",
+     "oddities.yaml", "mount: {x: 0.085,", "mount: {x: outside,"),
     ("`position_class: inherit` on a row with nothing to inherit from",
      "oddities.yaml", "    position_class: inferred\n    orbit_provenance:",
      "    position_class: inherit\n    orbit_provenance:"),
@@ -375,6 +387,82 @@ COPY_CASES: list[tuple[str, str, str, str]] = [
 ]
 
 
+# ---------------------------------------------------------------------------------------
+# registry/tours.yaml -- a guard written before the file it guards.
+#
+# A cinematic tour resolves each stop through ctx.recordById(). Two of the eight rows in
+# registry/oddities.yaml deliberately do not answer to it: an `attached` row is drawn on its
+# carrier's model and is not a record, and an `unknown` row has no position to fly to. Both
+# mistakes look right in YAML and fail as a stop that quietly is not there, so they are refused.
+#
+# The last case is the one that keeps the other two honest: the CORRECT tour -- the same stop
+# aimed at the carrier -- must be ACCEPTED. A guard that refuses everything would pass the two
+# cases above and be useless.
+TOUR_CASES: list[tuple[str, str, bool]] = [
+    ("a stop that flies to something drawn on its carrier rather than to the carrier",
+     "voyager-golden-record", True),
+    ("a stop that flies to an object nobody can place",
+     "bean-astronaut-pin", True),
+    ("a stop that flies to the carrier, which is where the object actually is",
+     "deep-voyager-1", False),
+]
+
+TOURS_YAML = """version: 1
+tours:
+  - id: strangest-things
+    display: The strangest things we sent
+    stops:
+      - target: {{record: {rid}}}
+        body: A stop written to exercise scripts/check_registry.py, and nothing else.
+"""
+
+
+def check_tour_refusals() -> int:
+    """Write a tours.yaml that does not exist yet, and assert the validator reads it correctly."""
+    failures = 0
+    with tempfile.TemporaryDirectory() as tmp:
+        for name, rid, want_refused in TOUR_CASES:
+            work = Path(tmp) / "work"
+            if work.exists():
+                shutil.rmtree(work)
+            work.mkdir()
+            shutil.copytree(ROOT / "registry", work / "registry")
+            shutil.copytree(ROOT / "scripts", work / "scripts")
+            shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")
+            # A COMPLETE tree, unlike the mutation harness above, because one case here asserts
+            # the validator ACCEPTS a correctly written stop -- and an accept case cannot be run
+            # in a tree the validator already rejects for missing model files. Names, not bytes:
+            # the question is whether the row is refused, not whether a GLB parses.
+            for src in ("site/models", "site/textures", "site/data"):
+                d = work / src
+                d.mkdir(parents=True, exist_ok=True)
+                for f in (ROOT / src).glob("*"):
+                    if f.is_file():
+                        (d / f.name).touch()
+            (work / "registry" / "tours.yaml").write_text(
+                TOURS_YAML.format(rid=rid), encoding="utf-8")
+
+            result = subprocess.run(
+                [sys.executable, "scripts/check_registry.py"],
+                cwd=work, capture_output=True, text=True,
+            )
+            out = result.stdout + result.stderr
+            refused = result.returncode != 0
+            if want_refused and refused and "tours.yaml" in out:
+                print(f"  refused: {name}")
+            elif not want_refused and not refused:
+                print(f"  accepted: {name}")
+            elif want_refused:
+                why = "was accepted" if not refused else "refused without naming tours.yaml"
+                print(f"  ** {name}: {why}")
+                failures += 1
+            else:
+                print(f"  ** {name}: was refused, and it is the correct way to write the stop")
+                print("     " + out.strip().splitlines()[-1] if out.strip() else "")
+                failures += 1
+    return failures
+
+
 def check_copy_refuses() -> int:
     """Break the no-literals rule five ways and assert check_copy.py says which line and which file."""
     failures = 0
@@ -458,12 +546,17 @@ def main() -> int:
                 failures += 1
 
     print("")
+    failures += check_tour_refusals()
+
+    print("")
     failures += check_copy_refuses()
 
     if failures:
         print(f"\n{failures} guard(s) do not do what they claim")
         return 1
-    print(f"\nall {len(CASES) + len(COPY_CASES)} refusals fire and each names its file")
+    refusals = len(CASES) + len(COPY_CASES) + sum(1 for c in TOUR_CASES if c[2])
+    print(f"\nall {refusals} refusals fire and each names its file, and the one correctly "
+          f"written tour stop is accepted")
     return 0
 
 

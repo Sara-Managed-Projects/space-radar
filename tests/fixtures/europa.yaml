@@ -109,3 +109,22 @@ oddities:
            thing without touching a line of JavaScript."
     cite: "tests/fixtures/europa.yaml"
     source: "This row is part of tests/fixtures/europa.yaml and describes nothing that exists."
+
+  # And the other half of the growth claim: a thing bolted to a spacecraft the app already draws
+  # is also just a row. It gets no dot and no id anything resolves -- scene/models.js hangs it on
+  # New Horizons' model from `mount:` and ui/cards.js reaches it from New Horizons' card -- so
+  # adding one touches registry/oddities.yaml and the generated mirror, and nothing else.
+  - id: new-horizons-fixture-plaque
+    display: "A fixture plaque on New Horizons"
+    klass: oddity
+    where:
+      kind: attached
+      to: deep-new-horizons
+      mount: {x: 0.0, y: 0.04, z: 0.0, scale: 0.06, face: deck}
+      mount_class: illustrative
+    position_class: inherit
+    shape: {build: generic, budget_tris: 200, stands_for: generic, drawn_name: "a plaque"}
+    fact: "A fixture row, not a fact about the spacecraft: it exists so the growth test can bolt
+           something to a probe without touching a line of JavaScript."
+    cite: "tests/fixtures/europa.yaml"
+    source: "This row is part of tests/fixtures/europa.yaml and describes nothing that exists."

@@ -737,7 +737,152 @@ for (const file of allFiles) {
   }
 }
 
-// 3i. the camera contract a guided trip needs. Six additions and one live bug, and every one of
+// 3i. the two rows that are not objects in space, but parts of objects in space.
+//
+// The Voyager Golden Record and Juno's three LEGO figures are `where.kind: attached`. That word
+// is a claim with four consequences, and each one below is a way this feature fails QUIETLY --
+// with the card still confidently printing a position -- rather than loudly.
+//
+//   * THE CARRIER IS REAL. `attachable:` in the registry is the checked-in evidence of what
+//     data/sample.js emits, and CI cannot run a browser. This checks it against the emitter.
+//   * THERE IS NO SECOND DOT. An attached row must not become a record: two dots at one point
+//     are ambiguous to tap, and main.js takes the first hit in layer order.
+//   * THE POSITION IS THE CARRIER'S, VERBATIM. Not close to it -- the same vector, the same
+//     frame, the same class, at the same instant. If it drifted by a kilometre the card would be
+//     making a claim about a place nobody has measured.
+//   * THERE IS NO SECOND SPACECRAFT. scene/realmodels.js matches a NASA glTF on meta.horizonsId,
+//     so a derived record carrying the carrier's id would draw a second Voyager beside the first.
+{
+  try {
+    const { sampleOddities, sampleDeepSpace } = await import(join(JS, 'data/sample.js'));
+    const { ATTACHED_ODDITIES, attachedOdditiesFor, attachedOddityRecord, attachedOddityCount } =
+      await import(join(JS, 'data/attached.js'));
+    const { ODDITIES: ROWS } = await import(join(JS, 'data/oddities.js'));
+    const { propagate } = await import(join(JS, 'propagate/index.js'));
+    const { realModelFor } = await import(join(JS, 'scene/realmodels.js'));
+    const { modelFor, attachOddityModels, disposeModels } = await import(join(JS, 'scene/models.js'));
+    const { drawingLine, rightNowFor } = await import(join(JS, 'ui/cards.js'));
+    const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
+
+    const tMs = Date.parse('2026-03-15T12:00:00.000Z');
+    const ctx = { clock: { now: () => tMs } };
+    const deep = new Map(sampleDeepSpace().map((r) => [r.id, r]));
+    const oddityIds = new Set(sampleOddities().map((r) => r.id));
+
+    if (!ATTACHED_ODDITIES.length) {
+      problems.push('ATTACH   no attached rows at all, so everything below is a tautology');
+    }
+    if (attachedOddityCount() !== ATTACHED_ODDITIES.length) {
+      problems.push('ATTACH   the layer count line and the attached list disagree');
+    }
+
+    let attachedChildren = 0;
+    for (const entry of ATTACHED_ODDITIES) {
+      // No dot. This is the whole reason the kind exists.
+      if (oddityIds.has(entry.id)) {
+        problems.push(`ATTACH   ${entry.id} is emitted as a record, so it has a dot of its own`);
+      }
+      if (!entry.carriers.length) {
+        problems.push(`ATTACH   ${entry.id} names no carrier, so nothing would ever draw it`);
+      }
+      for (const carrierId of entry.carriers) {
+        const carrier = deep.get(carrierId);
+        if (!carrier) {
+          problems.push(`ATTACH   ${entry.id} rides on \`${carrierId}\`, which data/sample.js does not emit`);
+          continue;
+        }
+        if (!attachedOdditiesFor(carrierId).some((a) => a.id === entry.id)) {
+          problems.push(`ATTACH   ${carrierId} carries ${entry.id} and does not answer for it`);
+        }
+
+        // THE POSITION IS THE CARRIER'S. Same vector, same frame, same class.
+        const derived = attachedOddityRecord(entry, carrier);
+        const a = propagate(derived, tMs);
+        const b = propagate(carrier, tMs);
+        if (!a || !b) {
+          problems.push(`ATTACH   ${entry.id} on ${carrierId} has no position at ${new Date(tMs).toISOString()}`);
+        } else {
+          const d = Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
+          if (d !== 0 || a.frame !== b.frame || a.cls !== b.cls) {
+            problems.push(
+              `ATTACH   ${entry.id} is drawn ${d} km from ${carrierId} in ${a.frame}/${a.cls} against ` +
+                `${b.frame}/${b.cls}; an attached row inherits its carrier's position, it does not approximate it`
+            );
+          }
+        }
+        // ... and the card says the same numbers, which is the claim a visitor actually reads.
+        const same = JSON.stringify(rightNowFor(derived, ctx)) === JSON.stringify(rightNowFor(carrier, ctx));
+        if (!same) {
+          problems.push(`ATTACH   ${entry.id}'s card gives different numbers from ${carrierId}'s`);
+        }
+        // No second spacecraft: the carrier's identifiers are not copied.
+        if (derived.meta.horizonsId != null) {
+          problems.push(`ATTACH   ${entry.id} carries a horizons id, so scene/realmodels.js would draw a second ${carrierId}`);
+        }
+        if (realModelFor(derived)) {
+          problems.push(`ATTACH   ${entry.id} matches a real spacecraft model, which would draw a second ${carrierId}`);
+        }
+        if (derived.cls !== carrier.cls) {
+          problems.push(`ATTACH   ${entry.id} is classed ${derived.cls} and ${carrierId} is ${carrier.cls}`);
+        }
+
+        // THE CARD ADMITS THE MOUNT. Where we hang it and how big we draw it are both ours.
+        const line = drawingLine(derived);
+        if (!line || !line.includes('our own arrangement')) {
+          problems.push(`ATTACH   ${entry.id}'s card does not say the mount is our arrangement: ${line}`);
+        }
+
+        // THE DRAWING. A child of the carrier's model, at the registry's offset and size, and
+        // INSIDE the carrier's own unit box -- a mount that missed would hang the Golden Record
+        // in space beside Voyager, which looks exactly like a rendering bug and is one.
+        const parent = modelFor('probe');
+        const made = attachOddityModels(parent, carrierId);
+        const child = made.find((c) => c.userData.attachedOddity === entry.id);
+        if (!child) {
+          problems.push(`ATTACH   nothing was hung on ${carrierId}'s model for ${entry.id}`);
+        } else {
+          attachedChildren += 1;
+          if (child.parent !== parent) {
+            problems.push(`ATTACH   ${entry.id} is not a child of ${carrierId}'s model`);
+          }
+          // Against the REGISTRY ROW, not against `entry.mount`. Comparing the drawing to the
+          // list it was built from is a comparison of a value with itself: it passed while
+          // data/attached.js was mutated to ignore the registry and draw everything at 0.9.
+          const want = ((ROWS.find((r) => r.id === entry.id) || {}).where || {}).mount || {};
+          if (child.position.x !== want.x || child.position.y !== want.y || child.position.z !== want.z) {
+            problems.push(`ATTACH   ${entry.id} is drawn at ${child.position.toArray()} and the registry says ${[want.x, want.y, want.z]}`);
+          }
+          if (child.scale.x !== want.scale) {
+            problems.push(`ATTACH   ${entry.id} is drawn at scale ${child.scale.x} and the registry says ${want.scale}`);
+          }
+          const sphere = new THREE.Box3().setFromObject(child).getBoundingSphere(new THREE.Sphere());
+          if (!(sphere.center.length() + sphere.radius <= 1)) {
+            problems.push(
+              `ATTACH   ${entry.id} reaches ${(sphere.center.length() + sphere.radius).toFixed(2)} units from ` +
+                `${carrierId}'s centre; every model here is a unit box, so this hangs it in space beside the spacecraft`
+            );
+          }
+        }
+        disposeModels(parent);
+      }
+    }
+    if (attachedChildren < 3) {
+      problems.push(`ATTACH   only ${attachedChildren} attached model(s) were drawn; two Voyagers and Juno carry three`);
+    }
+
+    // And the ordinary case: everything else in the app carries nothing and pays nothing.
+    const plain = modelFor('probe');
+    if (attachOddityModels(plain, 'deep-parker').length || plain.children.length !== modelFor('probe').children.length) {
+      problems.push('ATTACH   a spacecraft that carries nothing was given children anyway');
+    }
+
+    notes.push(`${ATTACHED_ODDITIES.length} attached row(s) drawn as ${attachedChildren} children of their carriers`);
+  } catch (e) {
+    problems.push(`ATTACH   could not check the attached oddities: ${String(e && e.stack || e)}`);
+  }
+}
+
+// 3j. the camera contract a guided trip needs. Six additions and one live bug, and every one of
 // them is a promise about a CALLBACK or about the shape of a move -- which is to say, exactly the
 // class of thing that looks right in the source and is wrong in the browser.
 //

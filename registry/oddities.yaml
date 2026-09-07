@@ -42,7 +42,22 @@
 # for this one." That is what makes the eleventh object a ROW: you write the row, it ships that
 # afternoon telling the truth about its own drawing, and somebody adds a builder later if it
 # deserves one. A row naming a builder we do not have would be refused instead -- which is why
-# `generic` exists. (No builder exists yet at all: this layer draws dots. See the layer row.)
+# `generic` exists.
+#
+# AN `attached` ROW IS NOT A DOT. It is drawn as a CHILD of its carrier's model, so the map has
+# one dot where there is one object, and `where.mount` is the whole of that drawing:
+#   x, y, z  where on the carrier's model it hangs, in the carrier model's own units. Every model
+#            this app draws is normalised to a unit box, so these are roughly -0.5 .. 0.5 and a
+#            number outside that range would hang the object in space beside its carrier.
+#   scale    HOW BIG IT IS DRAWN against that carrier, and it is deliberately not true. A 30 cm
+#            record on a 13 m Voyager is 2% of it, which is about two pixels at the size a hero
+#            model is drawn, and three 4 cm figures on a 20 m Juno are a fifth of one -- so both
+#            are drawn far larger, and both were sized by looking at them in a browser. That admission is the same sentence for every attached row, so it
+#            lives in copy/en.js COPY.drawing.mount and the card prints it under every one of
+#            them, rather than in a `departure:` each row would have to remember. A `scale` above
+#            1 would be a child bigger than the thing carrying it, and is refused.
+# `mount_class: illustrative` is required and cannot be anything else: the disc really is bolted
+# to the side of the bus, and the centimetre we chose is ours.
 #
 # `as_of:` is required on any row whose `fact`, `note` or a myth contains a time-relative claim.
 # Juno's status is the reason: "no end-of-mission has been announced" is true on a date and not
@@ -290,9 +305,15 @@ oddities:
       kind: attached
       to: deep-voyager-1
       also_on: [deep-voyager-2]       # one card, two carriers; drawn on both, counted once
-      # WHERE ON THE MODEL we hang it. Not a measurement -- our arrangement, in the parent
-      # model's own units, and classed accordingly so the card can say so.
-      mount: {x: 0.0, y: -0.35, z: 0.62, face: bus_side}
+      # WHERE ON THE MODEL we hang it. Not a measurement -- our arrangement, in the carrier
+      # model's own units, and classed accordingly so the card can say so. The real disc is
+      # bolted to the side of the ten-sided bus, below the dish, facing outwards. In NASA's
+      # voyager.glb, normalised, that bus occupies x +/-0.038 and y -0.206..-0.061 around
+      # z = 0.02 (scanned in a browser on 2026-09-07), so this hangs the disc against its +x
+      # face at mid-height. It was then LOOKED AT from two angles, which is the only check that
+      # catches the first version of this row: it read as bolted on from the front and was
+      # floating in clear space beside the spacecraft from the side.
+      mount: {x: 0.085, y: -0.130, z: 0.020, scale: 0.075, face: bus_side}
       mount_class: illustrative
     position_class: inherit           # never better than the parent's; the emitter copies it
     shape:
@@ -325,7 +346,11 @@ oddities:
     where:
       kind: attached
       to: deep-juno
-      mount: {x: 0.0, y: 0.18, z: 0.44, face: deck}
+      # The three figures really ride on the top deck of the hexagonal bus, under the solar
+      # panels. In NASA's juno.glb, normalised, the material within 0.12 of the spin axis stops
+      # at about y = 0.03, and the minifigure builder puts its origin at the figures' feet -- so
+      # this stands them on that deck rather than sinking them into it.
+      mount: {x: 0.0, y: 0.030, z: 0.0, scale: 0.110, face: deck}
       mount_class: illustrative
     position_class: inherit
     shape:

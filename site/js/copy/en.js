@@ -569,6 +569,11 @@ export const COPY = {
     precisionSplitUnknown:
       '{anchorName} is measured to {anchorM} m; this object itself has never been surveyed',
     precisionOwn: 'located to within {objectM} m, {how}',
+    // For a thing that is bolted to another thing. It has no position of its own and never will:
+    // the class line above already printed the CARRIER's class, because the carrier's fields are
+    // what was propagated. This says whose position that was, so the card is never surer of
+    // itself than the spacecraft it is riding on.
+    aboard: 'this is {carrier}’s own position, because the object is bolted to the outside of it and goes where it goes',
     how: {
       surveyed: 'surveyed from orbit',
       photogrammetric: 'found in photographs',
@@ -584,6 +589,20 @@ export const COPY = {
     minutesWord: 'minutes',
     yearWord: 'year',
     yearsWord: 'years',
+  },
+
+  // Things that ride on other things. Two rows in registry/oddities.yaml are `attached`: they
+  // are not objects in space, they are parts of objects in space, so they have no dot of their
+  // own and are reached from the carrier's card instead. These two blocks are the two ends of
+  // that link -- "also aboard" on the spacecraft, "riding on" on the part.
+  aboard: {
+    label: 'Also aboard',
+    openTitle: 'Open the card for this',
+    // Said once, on the carrier's card, because it is true of every row in the list and the
+    // alternative is a visitor wondering why they cannot tap the thing they can see.
+    note: 'These have no dot of their own. They are exactly where this spacecraft is, because they are bolted to it.',
+    ridingLabel: 'Riding on',
+    backTitle: 'Open the card for the spacecraft carrying this',
   },
 
   // The myth block. On this subject the debunk is reliably the better story: Alan Shepard's golf
@@ -644,9 +663,13 @@ export const COPY = {
     objectVariant: 'drawn from published dimensions for {name}',
     objectFamily: 'drawn as {name} — the kind of thing, not this exact one',
     objectGeneric: 'drawn as a generic object; we have no shape for {name}',
-    // Where an attached object sits on its carrier's model is our arrangement. The disc really is
-    // bolted to the side of the bus; the centimetre we chose is ours.
-    mount: 'where we hang it on the model is our own arrangement, not a measurement',
+    // Where an attached object sits on its carrier's model is our arrangement, AND SO IS HOW BIG
+    // IT IS. The disc really is bolted to the side of the bus; the centimetre we chose is ours,
+    // and so is the size -- a 30 cm record on a 13 m spacecraft is one or two pixels at the size
+    // a model is drawn here, and three 4 cm figures on Juno are less than one. Both are drawn
+    // far larger, and the sentence that says so has to cover both, so it belongs here rather
+    // than in either registry row's `departure:`.
+    mount: 'where we hang it on the model is our own arrangement, and it is drawn far bigger than it is — at true size it would be too small to see',
   },
 
   source: {

@@ -189,9 +189,10 @@ export const ODDITIES = [
         "deep-voyager-2"
       ],
       "mount": {
-        "x": 0.0,
-        "y": -0.35,
-        "z": 0.62,
+        "x": 0.085,
+        "y": -0.13,
+        "z": 0.02,
+        "scale": 0.075,
         "face": "bus_side"
       },
       "mount_class": "illustrative"
@@ -224,8 +225,9 @@ export const ODDITIES = [
       "to": "deep-juno",
       "mount": {
         "x": 0.0,
-        "y": 0.18,
-        "z": 0.44,
+        "y": 0.03,
+        "z": 0.0,
+        "scale": 0.11,
         "face": "deck"
       },
       "mount_class": "illustrative"
