@@ -133,9 +133,9 @@ which way the Roadster points, so it is drawn level, and the red is ours.
 
 ## Trips — the camera flies it for you
 
-A **trip** is a chain of shots with a card at each one, and the camera flies between them. Two ship
-today: *Where people are living in space right now*, and *The strangest things we have ever sent*,
-which visits the objects above.
+A **trip** is a chain of shots with a card at each one, and the camera flies between them. Three
+ship today: *Where people are living in space right now*, *The strangest things we have ever sent*,
+which visits the objects above, and *To the edge of what we know*, which leaves the Solar System.
 
 <table>
 <tr>
@@ -171,6 +171,45 @@ The other half is that leaving has to be free, or nobody will start:
 Adding a trip is a row in `registry/tours.yaml` and a row per stop, and nothing under `site/js/`.
 Twenty-one refusals guard that file; the one that forbids a trip id from colliding with a layer id
 caught a real collision the first time it ran.
+
+---
+
+## Beyond the Solar System — the scale ladder
+
+Near the Earth one scene unit is a thousand kilometres, which is right for a satellite and useless
+for a star: Proxima Centauri would be forty billion units away, past what a GPU can hold. So the
+map has **rungs**: stages where one unit is a light-year, a kiloparsec, or a million light-years,
+centred on the Sun. Select a star, a nebula or a black hole and the map climbs to the rung it lives
+on; the sky-sphere you see from Earth — which is only true from inside the Solar System — fades out,
+and the same stars come back as places.
+
+What is out there, and where every number came from:
+
+- **109 389 stars** with a measured distance, from the HYG Stellar Database (Gaia and Hipparcos),
+  sized on the GPU by how bright they would look from wherever the camera is. The 10 224 stars whose
+  distance nobody has measured are counted and **not drawn** on an invented shell.
+- **Every confirmed planet around another star** (6 332 as of the catalogue copy's date), from the
+  NASA Exoplanet Archive, drawn *at its star* — the orbit is far below a pixel at any zoom — with
+  its size and mass in Earths, its year, and how it was found.
+- **The 110 Messier objects and the Large Magellanic Cloud** at sourced distances. OpenNGC has
+  positions for 13 372 deep-sky objects and no distances, so the other 13 261 are not placed as
+  places, and the file says so.
+- **The Milky Way** as a point cloud built from published measurements — Reid et al. 2019's fitted
+  spiral arms and the distance to the centre, the disc's measured size, the debated bar at the
+  middle of its range — and called an *illustration* everywhere it appears. Nobody has seen our
+  galaxy from outside.
+- **Ten black holes and pulsars** with a fact sheet each: position, distance, mass or spin exactly
+  as the source prints them, and the page it was read from, on the card.
+
+Picking is fair to the small thing: a tap scores by distance to an object's *edge*, and the smaller
+thing wins when both are within reach — a satellite drawn over Earth is what the finger means. A
+long press on a crowded spot lists what is under it. Planets are objects like everything else:
+searchable (*Luna*, *the Red Planet*), listed with a count, tappable, with a card that says how much
+nearer than true they are drawn and offers to make them the centre of the map.
+
+Under the layers, **How far** is a breadcrumb — Moon, Sun, Neptune, Proxima, the Pleiades, the
+galactic centre, Andromeda, M87's black hole — and under it the honesty line: how much of the known
+sky this map draws, with sources.
 
 ---
 
@@ -321,6 +360,11 @@ the full list with licence texts and required attribution lines.
 | [Minor Planet Center](https://minorplanetcenter.net) | comet orbital elements | IAU Minor Planet Center |
 | [Solar System Scope](https://www.solarsystemscope.com/textures/) | planet and Milky Way textures | CC BY 4.0 |
 | [d3-celestial](https://github.com/ofrohn/d3-celestial) | star catalogue and constellation lines | Olaf Frohn, BSD-3-Clause |
+| [HYG Stellar Database](https://codeberg.org/astronexus/hyg) | 119 614 stars with distances, names, colours (v4.4) | David Nash, CC BY-SA 4.0 |
+| [NASA Exoplanet Archive](https://exoplanetarchive.ipac.caltech.edu) | every confirmed exoplanet (pscomppars) | Caltech/IPAC for NASA, DOI 10.26133/NEA13 |
+| [OpenNGC](https://github.com/mattiaverga/OpenNGC) | positions, types and sizes of the Messier objects | Mattia Verga, CC BY-SA 4.0 |
+| Wikipedia | Messier distances; the Magellanic Clouds; black-hole and pulsar fact sheets | facts, each row cites its page |
+| Reid et al. 2019, ApJ 885:131 | the Milky Way's spiral arms and the distance to its centre | the illustrative galaxy model |
 
 **If you fork this, read CelesTrak's usage policy.** It allows one download per file per two hours
 and firewalls clients that retry a rejection. The app already honours it with a per-source cache;
