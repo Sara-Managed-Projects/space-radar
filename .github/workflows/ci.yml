@@ -109,3 +109,5 @@ jobs:
         run: node tests/test_exotics.mjs
       - name: every rung of the breadcrumb and every stop of the edge trip names something that exists (spec 0028 step 8)
         run: node tests/test_ladder_ui.mjs
+      - name: labels name the selection, its train and the nearest notable things, never the catalogue (spec 0026 req 5)
+        run: node tests/test_labels.mjs
