@@ -14,6 +14,7 @@
 import * as THREE from '../../vendor/three.module.min.js';
 import * as propagateMod from '../propagate/index.js';
 import * as stageMod from './stage.js';
+import { inEarthShadow, sunAndEarthScene, orbitsEarth } from './shadow.js';
 import {
   getGlyphAtlas,
   glyphCell,
@@ -52,6 +53,7 @@ attribute vec3 iOffset;
 attribute vec3 iColour;
 attribute float iSize;
 attribute float iOpacity;
+attribute float iLit;      // 1 in sunlight, 0 in Earth's shadow (scene/shadow.js)
 attribute float iCell;
 
 uniform float uPxScale;   // world units per CSS pixel, per unit of view depth
@@ -62,6 +64,7 @@ varying vec2 vUv;
 varying vec3 vColour;
 varying float vOpacity;
 varying float vHalo;
+varying float vLit;
 varying vec2 vCell0;
 
 #include <common>
@@ -71,6 +74,7 @@ void main() {
   vUv = uv;
   vColour = iColour;
   vOpacity = iOpacity;
+  vLit = iLit;
 
   float cells = uGrid * uGrid;
   float cell = iCell;
@@ -100,6 +104,7 @@ varying vec2 vUv;
 varying vec3 vColour;
 varying float vOpacity;
 varying float vHalo;
+varying float vLit;
 varying vec2 vCell0;
 
 #include <common>
@@ -112,7 +117,9 @@ void main() {
   vec4 t = texture2D( uAtlas, vCell0 + q / uGrid );
 
   // red channel 0 = the 1.5 px dark keyline, 1 = the class colour
-  vec3 rgb = mix( uOutline, vColour, t.r );
+  // In Earth's shadow the dot goes to a dim version of its colour: still there, still its class,
+  // visibly not catching the Sun (spec 0026 req 12). The keyline is untouched so it stays readable.
+  vec3 rgb = mix( uOutline, mix( vColour * 0.38, vColour, vLit ), t.r );
   float a = t.a * vOpacity;
 
   if ( vHalo > 0.5 ) {
@@ -216,6 +223,7 @@ export function createGlyphLayer(scene, layer = {}) {
   let livePos = new Float32Array(0); // scene units, xyz per live instance
   let attrOffset = null;
   let attrColour = null;
+  let attrLit = null;
   // A colour key (spec 0026 req 11): a function of the record, or null for the class colours.
   let colourFn = null;
   let currentRecords = [];
@@ -247,7 +255,8 @@ export function createGlyphLayer(scene, layer = {}) {
     attrSize = new THREE.InstancedBufferAttribute(new Float32Array(capacity), 1);
     attrOpacity = new THREE.InstancedBufferAttribute(new Float32Array(capacity), 1);
     attrCell = new THREE.InstancedBufferAttribute(new Float32Array(capacity), 1);
-    for (const a of [attrOffset, attrColour, attrSize, attrOpacity, attrCell]) {
+    attrLit = new THREE.InstancedBufferAttribute(new Float32Array(capacity).fill(1), 1);
+    for (const a of [attrOffset, attrColour, attrSize, attrOpacity, attrCell, attrLit]) {
       a.setUsage(THREE.DynamicDrawUsage);
     }
     geometry.setAttribute('iOffset', attrOffset);
@@ -255,6 +264,7 @@ export function createGlyphLayer(scene, layer = {}) {
     geometry.setAttribute('iSize', attrSize);
     geometry.setAttribute('iOpacity', attrOpacity);
     geometry.setAttribute('iCell', attrCell);
+    geometry.setAttribute('iLit', attrLit);
     geometry.instanceCount = 0;
     // The quad is expanded in view space, so three's bounds are meaningless here.
     geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(), Infinity);
@@ -340,6 +350,7 @@ export function createGlyphLayer(scene, layer = {}) {
   }
 
   function update(tMs, camera) {
+    const shadowRef = layer.frame === 'earth-inertial' || layer.frame === 'earth-fixed' || layer.frame === undefined ? sunAndEarthScene(tMs) : null;
     if (!geometry) return;
     if (camera) {
       lastCamera = camera;
@@ -386,6 +397,8 @@ export function createGlyphLayer(scene, layer = {}) {
         attrColour.array[o + 1] = recColour[i * 3 + 1];
         attrColour.array[o + 2] = recColour[i * 3 + 2];
       }
+      // Sunlit or in Earth's shadow, for the things that go round the Earth; everything else is lit.
+      attrLit.array[k] = shadowRef && orbitsEarth(rec) && inEarthShadow(v, shadowRef.earth, shadowRef.sun, shadowRef.radius) ? 0 : 1;
       attrSize.array[k] = selected ? recSize[i] * 1.35 : recSize[i];
       attrOpacity.array[k] = selected ? 1 : recOpacity[i];
       attrCell.array[k] = recCell[i];
@@ -400,6 +413,7 @@ export function createGlyphLayer(scene, layer = {}) {
     attrSize.needsUpdate = true;
     attrOpacity.needsUpdate = true;
     attrCell.needsUpdate = true;
+    attrLit.needsUpdate = true;
     if (!material.uniforms.uAtlas.value) {
       const a = getGlyphAtlas();
       if (a) material.uniforms.uAtlas.value = a;

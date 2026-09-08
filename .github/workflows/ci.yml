@@ -125,3 +125,5 @@ jobs:
         run: node tests/test_layers_registry.mjs
       - name: colour keys bucket records by fields they hold and count the unknown (spec 0026 req 11)
         run: node tests/test_colorkeys.mjs
+      - name: a satellite behind the Earth is in its shadow, one in front is lit (spec 0026 req 12)
+        run: node tests/test_shadow.mjs
