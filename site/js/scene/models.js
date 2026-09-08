@@ -440,6 +440,36 @@ function buildSoyuzFamily(variant) {
   return g;
 }
 
+// -------------------------------------------------------------------------------------- iridium
+
+/**
+ * An Iridium satellite, as a family shape. The NEXT generation (Thales Alenia ELiTeBus, 66 in
+ * service plus spares) is a box bus 3.1 x 2.4 x 1.5 m, two wings across 9.4 m, and the thing that
+ * makes it an Iridium: a large flat main mission antenna hung off the Earth-facing side. Published
+ * dimensions from Iridium's own fact sheet. The first-generation birds that are still up shared
+ * the plan (a triangular bus with two wings), so one shape serves the family and the card says so.
+ */
+function buildIridium() {
+  const g = new THREE.Group();
+  g.userData.realSizeM = 9.4;
+  const S = 1 / 9.4;
+  const body = 'body';
+  const bus = box(2.4 * S, 1.5 * S, 3.1 * S, FOIL, 'foil', 'bus');
+  g.add(bus);
+  // The main mission antenna: a broad thin plate angled down toward the Earth (-Y here).
+  const mma = box(1.6 * S, 0.06 * S, 3.0 * S, '#C7CCD3', body, 'antenna');
+  mma.position.set(0, -1.0 * S, 0.2 * S);
+  mma.rotation.x = 0.25;
+  g.add(mma);
+  for (const side of [-1, 1]) {
+    const w = panelWing(3.5 * S, 1.5 * S, METAL, side > 0 ? 'wing+' : 'wing-');
+    w.rotation.y = side > 0 ? -Math.PI / 2 : Math.PI / 2;
+    w.position.set(side * (1.2 * S + 1.75 * S), 0.2 * S, -0.6 * S);
+    g.add(w);
+  }
+  return g;
+}
+
 // --------------------------------------------------------------------------------------- dragon
 
 /**
@@ -1894,6 +1924,7 @@ const BUILDERS = {
     comms: buildSatelliteComms,
     weather: buildSatelliteWeather,
     flat: buildSatelliteFlat,
+    iridium: buildIridium,
   },
   debris: { default: buildDebris },
   rocket: rocketVariants(),

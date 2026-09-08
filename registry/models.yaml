@@ -22,6 +22,7 @@ version: 1
 # a satellite reads as its CLASS rather than as one particular spacecraft. Swapping in real glTF
 # later changes site/js/scene/models.js and nothing else.
 models:
+  - {id: satellite-iridium,  file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 900, for: {variant: iridium}}
   - {id: satellite-generic,  file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1500, for: {layer: notable}}
   - {id: satellite-comms,    file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1500, for: {family: comms}}
   - {id: satellite-weather,  file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1500, for: {family: weather}}

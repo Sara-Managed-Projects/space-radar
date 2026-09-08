@@ -123,6 +123,9 @@ export const REAL_MODELS = {
     tianzhou: { build: 'tianzhou', colour: 'station', name: 'a Tianzhou cargo ship', klass: ['station', 'satellite'], generic: true },
     // Dragon 2, crew or cargo: CelesTrak names them CREW DRAGON n and DRAGON CRS-n. Both keys, so
     // a bare `dragon` never catches anything else. A CC BY model is on Ivan's list (spec 0027).
+    // Iridium: 66 NEXT satellites in service and the first generation's survivors, all one plan.
+    // Klass satellite only, so IRIDIUM 33 DEB and the rest of that collision keep the debris shape.
+    iridium: { build: 'iridium', colour: 'satellite', name: 'an Iridium satellite', klass: ['satellite'], generic: true },
     'crew dragon': { build: 'dragon', colour: 'station', name: 'a Dragon spacecraft', klass: ['station', 'satellite'], generic: true },
     'dragon crs': { build: 'dragon', colour: 'station', name: 'a Dragon spacecraft', klass: ['station', 'satellite'], generic: true },
     soyuz: { build: 'soyuz', colour: 'station', name: 'a Soyuz spacecraft', klass: ['station', 'satellite'], generic: true },
