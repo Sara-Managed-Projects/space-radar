@@ -14,5 +14,12 @@ export const LOD_RULES = [
     "fade": "out",
     "from_km": 75000000000,
     "to_km": 750000000000
+  },
+  {
+    "id": "stars-in-three-dimensions",
+    "what": "stars-3d",
+    "fade": "in",
+    "from_km": 75000000000,
+    "to_km": 750000000000
   }
 ];

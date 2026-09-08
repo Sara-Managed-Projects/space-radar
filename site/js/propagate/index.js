@@ -1,4 +1,4 @@
-// propagate/index.js -- one signature, six implementations, and the extension point.
+// propagate/index.js -- one signature, seven implementations, and the extension point.
 //
 // Every propagator is (record, tMs) -> {x, y, z, frame, cls} | null. Adding a seventh is a file
 // under propagate/ and a row in PROPAGATORS. Nothing else in the app learns its name.
@@ -16,11 +16,12 @@ import { sampled } from './sampled.js';
 import { body } from './body.js';
 import { fixed } from './fixed.js';
 import { ascent } from './ascent.js';
+import { staticPos } from './static.js';
 
-export { sgp4, kepler, sampled, body, fixed, ascent };
+export { sgp4, kepler, sampled, body, fixed, ascent, staticPos };
 
 /** The registry. Key = record.propagator. */
-export const PROPAGATORS = { sgp4, kepler, sampled, body, fixed, ascent };
+export const PROPAGATORS = { sgp4, kepler, sampled, body, fixed, ascent, static: staticPos };
 
 // Strictest first. A propagator may only move a record down this list, never up.
 const CLASS_ORDER = ['measured', 'inferred', 'illustrative', 'sample'];

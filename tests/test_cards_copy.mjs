@@ -30,6 +30,8 @@ check(has(drawingLine(apollo), 'lunar module'), `a site with a real model says w
 const dish = { id: 'dss-14', name: 'Goldstone DSS-14', klass: 'site', layer: 'hand-kept-sites', siteClass: 'dish', meta: { siteKind: 'dish' } };
 check(has(drawingLine(dish), 'Deep Space Network antenna') && has(drawingLine(dish), 'not this exact one'), `a class-default site model admits it: ${drawingLine(dish)}`);
 check(drawingLine(world) === null, 'a world has no drawing line');
+const star = { id: 'hip-32349', name: 'Sirius', klass: 'star', layer: 'stars', propagator: 'static', frame: 'sun-inertial', pos: { x: 1, y: 0, z: 0 }, meta: { distLy: 8.6 } };
+check(has(drawingLine(star), 'point of light'), `a star says it is a point of light sized by brightness: ${drawingLine(star)}`);
 check(has(drawingLine({ klass: 'rocket', meta: { drawsAs: 'generic', rocket: 'Nova' } }), 'generic rocket'), 'a record with its own drawsAs keeps the launch wording');
 
 // --- the class line names the age of the elements --------------------------------------------

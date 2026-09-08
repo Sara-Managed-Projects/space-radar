@@ -355,7 +355,10 @@ function paintLayers(ctx, state) {
   for (const [id, row] of state.layerRows) {
     const on = state.enabled.get(id) === true;
     if (row.box.checked !== on) row.box.checked = on;
-    const n = counts.get(id);
+    // A layer whose marks are not its records (the stars: 109 389 drawn, ~3 400 named) states its
+    // own number; everything else is counted from the records it loaded.
+    const own = typeof row.layer.count === 'function' ? row.layer.count() : undefined;
+    const n = Number.isFinite(own) ? own : counts.get(id);
     const text = n === undefined || n === 0 ? COPY.controls.layerCountEmpty : countText(row.layer, ctx, n);
     row.count.textContent = text;
     row.count.classList.toggle('is-empty', !n);

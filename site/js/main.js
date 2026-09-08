@@ -31,6 +31,8 @@ import { createTrip } from './ui/trip.js';
 import { createTripFrame } from './ui/tripframe.js';
 import { rankPick, rankAll } from './scene/pickrank.js';
 import { createLod } from './scene/lod.js';
+import { createStars3d } from './scene/stars3d.js';
+import { isLadderStage } from './scene/stage.js';
 import { SUN_INERTIAL, STAGES } from './scene/stage.js';
 import { showChooser, hideChooser } from './ui/chooser.js';
 
@@ -77,7 +79,13 @@ export async function boot({ setStatus } = {}) {
   };
 
   // The scale ladder's level of detail (spec 0028 req 10): a table in registry/lod.yaml, hooks here.
-  const lod = createLod({ 'sky-panorama': (k) => starfield.setSkyOpacity && starfield.setSkyOpacity(k) });
+  const stars3d = createStars3d(scene);
+  ctx.stars3d = stars3d;
+  const lod = createLod({
+    'sky-panorama': (k) => starfield.setSkyOpacity && starfield.setSkyOpacity(k),
+    'stars-3d': (k) => stars3d.setOpacity(k),
+  });
+  window.addEventListener('sr:stage', () => stars3d.rebuild());
   ctx.lod = lod;
   ctx.skyView = createSkyView(ctx);
   const heroes = createHeroes(scene, ctx);
@@ -156,6 +164,9 @@ export async function boot({ setStatus } = {}) {
       if (!gl || !gl.pickAll) continue;
       for (const c of gl.pickAll(ndcX, ndcY, 6)) glyphs.push(c);
     }
+    if (isLayerOn('stars') && ctx.stars3d) {
+      for (const c of ctx.stars3d.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height }, 6)) glyphs.push(c);
+    }
     const discs = isLayerOn('worlds') && worlds.pickAll
       ? worlds.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height })
       : [];
@@ -179,6 +190,9 @@ export async function boot({ setStatus } = {}) {
    *   selecting from inside one used to look like.
    */
   function select(record, opts = {}) {
+    // A star is a place on the stellar rung: from a world stage its true position is past the far
+    // plane, so selecting one recentres on the Sun at one unit = one light-year first.
+    if (record && record.klass === 'star' && !isLadderStage(stage.worldId) && opts.fly !== false) ctx.setStage('stellar');
     selected = record;
     for (const gl of glyphLayers.values()) if (gl.setSelected) gl.setSelected(record ? record.id : null);
     showCard(record, ctx);
@@ -210,6 +224,7 @@ export async function boot({ setStatus } = {}) {
 
   function arrivalDistance(record) {
     if (record && record.klass === 'world') return Math.max(0.05, worlds.drawnRadiusUnits(record.id) * 3.5);
+    if (record && record.klass === 'star') return 0.4; // a point of light: close, but not inside it
     const layer = LAYERS.find((l) => l.id === record.layer);
     const nearKm = (layer && layer.nearKm) || 2000;
     return Math.max(0.05, (nearKm * 0.35) / stage.unitKm);
@@ -228,6 +243,7 @@ export async function boot({ setStatus } = {}) {
     const gl = glyphLayers.get(id);
     if (gl) gl.setVisible(on);
     if (id === 'worlds') worlds.setVisible(on);
+    if (id === 'stars' && ctx.stars3d) ctx.stars3d.setVisible(on);
   };
 
   /**
@@ -318,6 +334,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
 
     if (heroes) heroes.update(t);
     if (starfield && starfield.update) starfield.update(ctx.camera);
+    if (ctx.stars3d) ctx.stars3d.update(ctx.camera, ctx.renderer);
     if (ctx.skyView.active) ctx.skyView.update(t);
     render();
   }
@@ -368,8 +385,13 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
   async function one(layer) {
     const gl = glyphLayers.get(layer.id);
     try {
-      const records = await loadLayer(layer, clock.now());
+      const records = layer.draw === 'stars3d' ? await ctx.stars3d.load() : await loadLayer(layer, clock.now());
       layerRecords.set(layer.id, records || []);
+      if (layer.draw === 'stars3d') {
+        // The panel's count is the number DRAWN, not the number of named records.
+        layer.count = () => ctx.stars3d.count() ?? (records || []).length;
+        ctx.stars3d.setVisible(ctx.isLayerOn(layer.id));
+      }
       if (gl) {
         gl.setRecords(records || []);
         gl.setVisible(ctx.isLayerOn(layer.id));

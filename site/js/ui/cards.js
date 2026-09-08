@@ -540,6 +540,25 @@ const TEMPLATES = {
     ]);
   },
 
+  star(record, ctx, m, passInfo, T) {
+    const md = meta(record);
+    const distLy = pickNumber(md, 'distLy');
+    const spect = String(pick(md, 'spect') || '');
+    const letter = spect.charAt(0).toUpperCase();
+    const colour = T.colours && Object.prototype.hasOwnProperty.call(T.colours, letter) ? T.colours[letter] : null;
+    const lum = pickNumber(md, 'lum');
+    const lead = distLy !== null
+      ? t(distLy < 20 ? T.leadNear : T.lead, { name: displayName(record), dist: fmt.smart(distLy) })
+      : t(COPY.templates.satellite.lead, { name: displayName(record) });
+    return buildSentence(lead, [
+      colour ? t(T.colour, { colour }) : null,
+      distLy !== null && distLy >= 1.5 ? t(T.seenAs, { n: fmt.int(distLy) }) : null,
+      distLy !== null && distLy < 1.5 ? t(T.seenAsMonths, { n: fmt.int(distLy * 12) }) : null,
+      lum !== null && lum >= 1.5 ? t(T.luminosity, { n: fmt.int(lum) }) : null,
+      lum !== null && lum > 0 && lum < 0.5 ? t(T.dimmer, { n: `${fmt.smart(lum * 100)}%` }) : null,
+    ]);
+  },
+
   world(record, ctx, m, passInfo, T) {
     const md = meta(record);
     const isMoon = String(record.id || '').toLowerCase() === 'moon';
@@ -592,7 +611,9 @@ function comparisons(record, m) {
   // Never the heliocentric distance: "8 light-minutes away" for an asteroid one AU from
   // the SUN is false, because the asteroid may be on the far side of it. A distance chip
   // is only written when the distance from the observer's own world is known.
-  const distanceKm = onTheGround ? null : m.altKm !== null ? m.altKm : m.distEarthKm;
+  // A star's distance is light-years and has its own rows; "x the Moon's distance" for Sirius is
+  // a true number that means nothing.
+  const distanceKm = onTheGround || klassOf(record) === 'star' ? null : m.altKm !== null ? m.altKm : m.distEarthKm;
   const candidates = [
     compare('sizeM', pickNumber(md, 'sizeM', 'diameterM', 'lengthM')),
     compare('distanceKm', distanceKm),
@@ -693,6 +714,21 @@ function rightNowRows(record, m, passInfo) {
     if (m.speedKmh !== null && m.speedKmh > 0.5) {
       rows.push([R.speed, t(V.kmh, { n: fmt.int(m.speedKmh) })]);
     }
+  } else if (klassOf(record) === 'star') {
+    // Light-years, not astronomical units: 268 000 au for Proxima is a number nobody can hold.
+    const distLy = pickNumber(md, 'distLy');
+    rows.push([R.distanceFromSun, distLy !== null ? t(V.lightYears, { n: fmt.smart(distLy) }) : COPY.card.couldNotLook]);
+    if (distLy !== null) {
+      rows.push([R.lightLeft, distLy >= 1.5 ? t(V.yearsAgo, { n: fmt.int(distLy) }) : t(V.monthsAgo, { n: fmt.int(distLy * 12) })]);
+    }
+    const spect = pick(md, 'spect');
+    if (spect) rows.push([R.spectralType, String(spect)]);
+    const mag = pickNumber(md, 'mag');
+    if (mag !== null) rows.push([R.brightness, t(V.magnitude, { n: fmt.smart(mag) })]);
+    const lum = pickNumber(md, 'lum');
+    if (lum !== null && lum > 0) rows.push([R.luminosity, t(V.suns, { n: fmt.smart(lum) })]);
+    const hip = pick(md, 'hip');
+    if (hip) rows.push([R.catalogue, `HIP ${hip}`]);
   } else {
     rows.push([
       R.distanceFromSun,

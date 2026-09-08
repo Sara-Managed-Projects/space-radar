@@ -151,6 +151,28 @@ Passing those along:
   positions by Olaf Frohn.
 - All data converted to GeoJSON at epoch J2000.
 
+## 3c. Stars in three dimensions — HYG, CC BY-SA 4.0
+
+`site/data/stars3d.bin` and `site/data/stars3d.names.json` are repacked from the **HYG Stellar
+Database v4.4** by David Nash (<https://codeberg.org/astronexus/hyg>; previously
+<https://github.com/astronexus/HYG-Database>), licensed **CC BY-SA 4.0**. `scripts/build-stars3d.py`
+is the repack and says exactly what was kept: 119 614 rows in, 109 389 stars with a measured distance
+out, positions rotated from HYG's equatorial axes to the ecliptic axes this app's `sun-inertial`
+frame uses and written in light-years; 10 224 rows with no measured distance are counted and not
+drawn. Names (549 proper, Bayer and Flamsteed designations, Hipparcos numbers) and spectral types
+are HYG's; the colour of each point is derived from its B−V index with the same two formulas the
+sky sphere uses (§3).
+
+| Item | File | Licence | Credit line | Link |
+|---|---|---|---|---|
+| Star positions, magnitudes, colours (repacked) | `stars3d.bin` | CC BY-SA 4.0 | Star data from the HYG Stellar Database v4.4, © David Nash | <https://codeberg.org/astronexus/hyg> |
+| Star names and spectral types (extracted) | `stars3d.names.json` | CC BY-SA 4.0 | as above | as above |
+
+**ShareAlike.** The two files are derivative works and are themselves offered under CC BY-SA 4.0
+(§6). Nothing else in the repository is affected: the licence attaches to the data files, not to the
+code that reads them. HYG's own upstream: Hipparcos (ESA 1997), Yale Bright Star Catalog 5th ed.,
+Gliese Catalog 3rd ed., and Gaia DR3 distances via the AT-HYG work.
+
 ## 3b. 3D models — NASA, public domain
 
 Thirty-seven spacecraft, spacecraft-bus, antenna, rocket-stage and surface models ship in `site/models/`, all
@@ -572,6 +594,21 @@ You may use, adapt, and share these textures for any purpose, even commercially.
 
 The full CC BY 4.0 legal code is at <https://creativecommons.org/licenses/by/4.0/legalcode>. It is
 not reproduced here; the licence itself requires a link or a copy, and the link above is that link.
+
+### HYG Stellar Database — CC BY-SA 4.0
+
+Applies to `site/data/stars3d.bin` and `site/data/stars3d.names.json`, which are derivative works
+and are offered under the same licence.
+
+```
+Star data from the HYG Stellar Database v4.4, © David Nash — https://codeberg.org/astronexus/hyg
+Licensed under the Creative Commons Attribution-ShareAlike 4.0 International License
+https://creativecommons.org/licenses/by-sa/4.0/
+Modified: rows without a measured distance removed; coordinates rotated to ecliptic J2000 and
+converted to light-years; fields reduced to position, magnitudes, colour index, names, spectral type.
+```
+
+The full CC BY-SA 4.0 legal code is at <https://creativecommons.org/licenses/by-sa/4.0/legalcode>.
 
 ## 7. Build and CI only
 

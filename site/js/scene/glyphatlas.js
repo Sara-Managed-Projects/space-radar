@@ -41,6 +41,7 @@ export const CLASS_COLOURS = {
   comet: '#D9F3FF',
   site: '#F58F7C',
   world: '#E8ECF2',
+  star: '#FFF3C4', // warm white: a point of light, not a made thing
 };
 
 // cell index by class name. Order is the design language's class table.
@@ -55,6 +56,7 @@ export const CELL_OF = {
   comet: 7,
   site: 8,
   world: 9,
+  star: 10, // cells 10..15 of the 4x4 grid were free; HALO_BIAS only encodes the halo bit
 };
 
 export const GLYPH_CLASSES = Object.keys(CELL_OF);
@@ -172,6 +174,16 @@ const SHAPES = {
   station(ctx, cx, cy, R) {
     paint(ctx, annulus(cx, cy, R * 1.0, R * 0.82), R * 0.7);
     paint(ctx, roundedSquare(cx, cy, R * 0.55, R * 0.2), R);
+  },
+  // a four-point sparkle -- what a child draws when asked for a star, which is the brief
+  star(ctx, cx, cy, R) {
+    const pts = [];
+    for (let i = 0; i < 8; i++) {
+      const a = -Math.PI / 2 + (i * Math.PI) / 4;
+      const r = i % 2 === 0 ? R * 0.95 : R * 0.3;
+      pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]);
+    }
+    paint(ctx, polygon(pts), R);
   },
   // a plain disc
   satellite(ctx, cx, cy, R) {
