@@ -357,8 +357,10 @@ def test_package(tmp: Path) -> int:
     shutil.copytree(ROOT / "registry", tree / "registry")
     # The generator inlines harvest/lists/horizons-ids.yaml into sources.json, so the tree
     # needs the list even when it has no harvest/ package (the placeholder case).
-    if (ROOT / "harvest" / "lists").is_dir():
-        shutil.copytree(ROOT / "harvest" / "lists", tree / "harvest" / "lists")
+    # ... and the SPARQL query file. Both are registry DATA the harvester carries, not code.
+    for data_dir in ("lists", "queries"):
+        if (ROOT / "harvest" / data_dir).is_dir():
+            shutil.copytree(ROOT / "harvest" / data_dir, tree / "harvest" / data_dir)
     fake = Fake(tmp, "absent")
 
     proc = fake.run(str(tree / "scripts/package-harvester.sh"), "--out", str(tmp / "dry.zip"), "--dry-run", cwd=tree)
@@ -397,7 +399,7 @@ def test_package(tmp: Path) -> int:
 
     # The real path: a stub package. Its sources.json must be regenerated, its caches left out.
     real = tree / "harvest"
-    real.mkdir()
+    real.mkdir(exist_ok=True)  # harvest/lists and harvest/queries were copied in above
     (real / "__init__.py").write_text("")
     (real / "lambda_handler.py").write_text("def handler(event, context):\n    return 'real'\n")
     (real / "sources.json").write_text("stale\n")
@@ -407,7 +409,10 @@ def test_package(tmp: Path) -> int:
     if proc.returncode != 0 or "PLACEHOLDER" in proc.stdout:
         return fail("package with harvest/ present failed or claimed a placeholder", proc)
     with zipfile.ZipFile(tmp / "real.zip") as z:
-        if z.namelist() != ["harvest/__init__.py", "harvest/lambda_handler.py", "harvest/sources.json"]:
+        # The real package carries its data too: the id list and the SPARQL query are read at runtime.
+        if z.namelist() != ["harvest/__init__.py", "harvest/lambda_handler.py",
+                            "harvest/lists/horizons-ids.yaml", "harvest/queries/observatories.rq",
+                            "harvest/sources.json"]:
             return fail(f"real zip holds {z.namelist()}")
         if z.read("harvest/sources.json") == b"stale\n":
             return fail("a stale checked-in sources.json was shipped instead of the registry")
