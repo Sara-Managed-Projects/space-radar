@@ -106,7 +106,7 @@ export const WE_SHOW = [
   },
   {
     "what": "black holes, pulsars, a magnetar and two doomed stars with a fact sheet",
-    "n": 14,
+    "n": 18,
     "of": "dozens known; a hand-kept list",
     "source": "registry/exotics.yaml"
   }

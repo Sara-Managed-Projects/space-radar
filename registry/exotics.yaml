@@ -170,3 +170,50 @@ exotics:
     why: "The red shoulder of Orion, a supergiant so large it would swallow Mars. It dimmed in 2019-20 after coughing out a cloud of dust; one day it will go supernova."
     aliases: [α Orionis, Alpha Orionis, α Ori]
     source: "https://en.wikipedia.org/wiki/Betelgeuse (infobox, read 2026-09-08)"
+
+  - id: ss-433
+    name: SS 433
+    kind: blackhole
+    ra: 19h 11m 49.56s
+    dec: +04° 58′ 57.8″
+    dist_ly: 18000
+    mass_msun: 10.9
+    distance_note: "18 000 +/- 700 light-years (5 500 +/- 200 parsecs)"
+    why: "The first microquasar: a black hole in a binary firing two jets at a quarter of the speed of light, which wobble round once every 162 days."
+    aliases: [V1343 Aquilae, SS433]
+    source: "https://en.wikipedia.org/wiki/SS_433 (infobox, read 2026-09-09)"
+
+  - id: grs-1915-105
+    name: GRS 1915+105
+    kind: blackhole
+    ra: 19h 15m 11.6s
+    dec: +10° 56′ 44″
+    dist_ly: 28000
+    mass_msun: 12.4
+    distance_note: "8 600 +2 000/-1 600 parsecs; 28 000 light-years is the infobox's round figure"
+    why: "The heaviest stellar black hole in our galaxy known for years, and the first object seen to throw out matter faster than light seems to move -- a trick of geometry called superluminal motion."
+    aliases: [V1487 Aquilae]
+    source: "https://en.wikipedia.org/wiki/GRS_1915%2B105 (infobox, read 2026-09-09)"
+
+  - id: psr-j1748-2446ad
+    name: PSR J1748-2446ad
+    kind: pulsar
+    ra: 17h 48m 04.9s
+    dec: -24° 46′ 04″
+    dist_ly: 18000
+    period_s: 0.00139595482
+    why: "The fastest-spinning pulsar known: 716 turns a second, its equator moving at a quarter of the speed of light, inside the globular cluster Terzan 5."
+    aliases: [Terzan 5ad, fastest pulsar]
+    source: "https://en.wikipedia.org/wiki/PSR_J1748%E2%88%922446ad (infobox, read 2026-09-09)"
+
+  - id: hulse-taylor
+    name: Hulse-Taylor pulsar
+    kind: pulsar
+    ra: 19h 13m 12.4655s
+    dec: +16° 01′ 08.189″
+    dist_ly: 21000
+    period_s: 0.059030003217813
+    mass_msun: 1.441
+    why: "Two neutron stars circling each other every 7.75 hours, spiralling inward exactly as Einstein's gravitational waves demand -- the 1993 Nobel Prize, twenty years before the waves were heard directly."
+    aliases: [PSR B1913+16, PSR J1915+1606]
+    source: "https://en.wikipedia.org/wiki/Hulse%E2%80%93Taylor_pulsar (infobox, read 2026-09-09)"

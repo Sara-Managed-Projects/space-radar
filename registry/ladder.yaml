@@ -87,6 +87,6 @@ we_show:
     of: "13 372 in OpenNGC that have no measured distance written down; the rest of the Local Group waits for sourced rows"
     source: "OpenNGC; Wikipedia Messier distances"
   - what: "black holes, pulsars, a magnetar and two doomed stars with a fact sheet"
-    n: 14
+    n: 18
     of: "dozens known; a hand-kept list"
     source: "registry/exotics.yaml"

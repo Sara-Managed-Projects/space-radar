@@ -198,7 +198,7 @@ What is out there, and where every number came from:
   spiral arms and the distance to the centre, the disc's measured size, the debated bar at the
   middle of its range — and called an *illustration* everywhere it appears. Nobody has seen our
   galaxy from outside.
-- **Fourteen extremes** — black holes, pulsars, a magnetar, Eta Carinae and Betelgeuse — with a fact sheet each: position, distance, mass or spin exactly
+- **Eighteen extremes** — black holes, pulsars, a magnetar, Eta Carinae and Betelgeuse — with a fact sheet each: position, distance, mass or spin exactly
   as the source prints them, and the page it was read from, on the card.
 
 Picking is fair to the small thing: a tap scores by distance to an object's *edge*, and the smaller
