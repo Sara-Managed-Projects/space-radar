@@ -65,6 +65,10 @@ export const REAL_MODELS = {
     28376: { file: 'aura.glb', colour: 'satellite', name: 'Aura', catalogue: 'AURA' },
     // GRACE-FO reuses the GRACE trapezoid-wedge outline. Labelled as what it is, and `generic`
     // so the card can say the drawing is of the sister ship.
+    // Sentinel-6 Michael Freilich is a NASA/ESA build and NASA published the model of it, so this
+    // one is the spacecraft itself, not a sister ship. Jason-3 (41240) is NOT routed here: it is
+    // a Proteus bus, a different shape, and gets its own file.
+    46984: { file: 'sentinel6.glb', colour: 'satellite', name: 'Sentinel-6 Michael Freilich', catalogue: 'SENTINEL-6A' },
     43476: { file: 'grace.glb', colour: 'satellite', name: 'a GRACE-series gravity mapper', catalogue: 'GRACE-FO 1', generic: true },
   },
   horizons: {
