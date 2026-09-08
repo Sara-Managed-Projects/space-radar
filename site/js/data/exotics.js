@@ -171,6 +171,7 @@ export const EXOTICS = [
     ],
     "source": "https://en.wikipedia.org/wiki/Geminga (infobox, read 2026-09-08)",
     "distance_note": "about 815 light-years; the parallax has a wide error bar (250 +120/-62 parsecs)",
+    "vmag": 25.5,
     "raDeg": 98.475625,
     "decDeg": 17.77025,
     "distLy": 815,
@@ -187,6 +188,7 @@ export const EXOTICS = [
       "Eta Car"
     ],
     "source": "https://en.wikipedia.org/wiki/Eta_Carinae (infobox: distance 7 500 ly / 2 300 pc, mass ~100 Suns, read 2026-09-08)",
+    "vmag": 4.2,
     "raDeg": 161.264962,
     "decDeg": -59.684517,
     "distLy": 7500,
@@ -204,6 +206,7 @@ export const EXOTICS = [
     ],
     "source": "https://en.wikipedia.org/wiki/Betelgeuse (infobox, read 2026-09-08)",
     "distance_note": "two published distances, 408 and 548 light-years; the star's boiling surface makes its parallax hard to pin down",
+    "vmag": 0.5,
     "raDeg": 88.792939,
     "decDeg": 7.407064,
     "distLyLow": 408,

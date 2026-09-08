@@ -296,6 +296,7 @@ function exoticRecords() {
         distLyLow: x.distLyLow ?? null,
         distLyHigh: x.distLyHigh ?? null,
         distanceNote: x.distance_note || null,
+        mag: x.vmag ?? null, // the card's see-it-from-here line reads `mag`, as it does for a star
         massMsun: x.massMsun ?? null,
         massMsunLow: x.massMsunLow ?? null,
         massMsunHigh: x.massMsunHigh ?? null,

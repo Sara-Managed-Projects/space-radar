@@ -12,7 +12,8 @@ const { LAYERS } = await import(join(JS, 'data/layers.js'));
 const { propagate } = await import(join(JS, 'propagate/index.js'));
 const { stage } = await import(join(JS, 'scene/stage.js'));
 const { buildIndex, findMatches } = await import(join(JS, 'ui/search.js'));
-const { drawingLine } = await import(join(JS, 'ui/cards.js'));
+const { drawingLine, seeItLine } = await import(join(JS, 'ui/cards.js'));
+const { COPY } = await import(join(JS, 'copy/en.js'));
 const LY = 9460730472580.8;
 
 check(EXOTICS.length === 14, `fourteen fact sheets (${EXOTICS.length})`);
@@ -64,6 +65,12 @@ check(findMatches(index, 'sagittarius a').hits[0]?.record.id === 'exotic-sgr-a-s
 check(findMatches(index, 'powehi').hits[0]?.record.id === 'exotic-m87-star', '"powehi" finds M87* by alias');
 check(findMatches(index, 'lgm').hits[0]?.record.id === 'exotic-psr-b1919-21', '"lgm" finds the first pulsar');
 check(typeof drawingLine(sgrRec) === 'string' && drawingLine(sgrRec).includes('ring'), `an extreme object says it is drawn as a ring: ${drawingLine(sgrRec)}`);
+// Betelgeuse is a star a person can see: the card must not call it too faint (found live 2026-09-09)
+const betRec = recs.find((r) => r.id === 'exotic-betelgeuse');
+const m0 = { frame: 'sun-inertial', worldId: 'earth' };
+check(betRec && betRec.meta.mag === 0.5 && seeItLine(betRec, null, m0, {}) === COPY.sky.nakedEye, `Betelgeuse (mag 0.5) is bright enough for the eye: ${betRec && seeItLine(betRec, null, m0, {})}`);
+check(seeItLine(sgrRec, null, m0, {}) === COPY.sky.needsTelescope, 'Sgr A*, with no magnitude, still needs a telescope');
+check(drawingLine(betRec).includes('point at this scale') && !drawingLine(betRec).includes('black hole'), `a star among the extremes is drawn as a ring for its own reason: ${drawingLine(betRec)}`);
 
 if (problems.length) { console.error('exotics FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('exotics ok: fourteen fact sheets with sources; Sgr A* on the galaxy\'s centre, M87* on M87, Cygnus X-1 7 300 ly out; found by name and alias');

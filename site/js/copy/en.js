@@ -838,6 +838,7 @@ export const COPY = {
       exoplanet: 'a mark at its star -- the orbit itself is far too small to draw',
       dso: 'a soft mark at its measured distance; its true shape is not drawn',
       exotic: 'a ring at its measured distance; a black hole has no shape to draw and a pulsar is far too small',
+      exoticStar: 'a ring at its measured distance; the star itself is a point at this scale',
     },
     // Where an attached object sits on its carrier's model is our arrangement, AND SO IS HOW BIG
     // IT IS. The disc really is bolted to the side of the bus; the centimetre we chose is ours,

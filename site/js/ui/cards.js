@@ -900,7 +900,8 @@ function rightNowRows(record, m, passInfo) {
 // Block 5: "see it from here" -- the copy pattern that is the actual feature
 // ---------------------------------------------------------------------------------------
 
-function seeItLine(record, ctx, m, passInfo) {
+/** The see-it-from-here sentence. Exported for the tests. */
+export function seeItLine(record, ctx, m, passInfo) {
   const klass = klassOf(record);
   if (pick(meta(record), 'unplaceable')) return COPY.sky.nowhereToLook;
   // `fixed` means it does not move, whatever class it is: a dish, a landing site, or a lightsaber
@@ -1219,7 +1220,10 @@ function derivedDrawingLine(record, T) {
       ? t(T.objectFamily, { name: String(entry.name) })
       : t(T.objectVariant, { name: String(entry.name) });
   }
-  const shape = T.classShape && Object.prototype.hasOwnProperty.call(T.classShape, klass) ? T.classShape[klass] : null;
+  // An extreme object that is a star (Betelgeuse) is drawn like the others, but the reason is
+  // different: it has a shape, it is just a point at this scale.
+  const key = klass === 'exotic' && pick(meta(record), 'kind') === 'star' && T.classShape && T.classShape.exoticStar ? 'exoticStar' : klass;
+  const shape = T.classShape && Object.prototype.hasOwnProperty.call(T.classShape, key) ? T.classShape[key] : null;
   return shape ? t(T.objectFamily, { name: shape }) : null;
 }
 
