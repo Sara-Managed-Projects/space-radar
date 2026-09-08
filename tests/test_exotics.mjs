@@ -16,7 +16,9 @@ const { drawingLine, seeItLine } = await import(join(JS, 'ui/cards.js'));
 const { COPY } = await import(join(JS, 'copy/en.js'));
 const LY = 9460730472580.8;
 
-check(EXOTICS.length === 14, `fourteen fact sheets (${EXOTICS.length})`);
+check(EXOTICS.length === 18, `eighteen fact sheets (${EXOTICS.length})`);
+const fast = EXOTICS.find((x) => x.id === 'psr-j1748-2446ad');
+check(fast && Math.abs(1 / fast.periodS - 716.36) < 0.01, `the fastest pulsar turns 716 times a second (${fast && (1 / fast.periodS).toFixed(2)})`);
 const bet = EXOTICS.find((x) => x.id === 'betelgeuse');
 check(bet && bet.kind === 'star' && bet.distLyLow === 408 && bet.distLyHigh === 548 && bet.massMsun === 14 && bet.distance_note, 'Betelgeuse: a star with two published distances kept as a range, and a note saying why');
 const mag = EXOTICS.find((x) => x.id === 'sgr-1806-20');
@@ -35,7 +37,7 @@ check(ton.distance_note && ton.distance_note.includes('light-travel'), 'TON 618 
 const row = LAYERS.find((l) => l.id === 'exotics');
 check(!!row && row.noModel === true && row.klass === 'exotic' && typeof row.sample === 'function', 'the exotics layer row exists, no hero model');
 const recs = row.sample();
-check(recs.length === 14 && recs.every((r) => r.propagator === 'static' && r.frame === 'sun-inertial' && r.meta.source), 'fourteen static records carrying their sources');
+check(recs.length === 18 && recs.every((r) => r.propagator === 'static' && r.frame === 'sun-inertial' && r.meta.source), 'eighteen static records carrying their sources');
 
 // Sgr A* sits where the galaxy record put the centre, and M87* where the deep-sky layer put M87
 const galaxyRow = LAYERS.find((l) => l.id === 'galaxy');
@@ -73,4 +75,4 @@ check(seeItLine(sgrRec, null, m0, {}) === COPY.sky.needsTelescope, 'Sgr A*, with
 check(drawingLine(betRec).includes('point at this scale') && !drawingLine(betRec).includes('black hole'), `a star among the extremes is drawn as a ring for its own reason: ${drawingLine(betRec)}`);
 
 if (problems.length) { console.error('exotics FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
-console.log('exotics ok: fourteen fact sheets with sources; Sgr A* on the galaxy\'s centre, M87* on M87, Cygnus X-1 7 300 ly out; found by name and alias');
+console.log('exotics ok: eighteen fact sheets with sources; Sgr A* on the galaxy\'s centre, M87* on M87, Cygnus X-1 7 300 ly out; found by name and alias');

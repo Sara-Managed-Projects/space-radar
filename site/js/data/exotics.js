@@ -213,5 +213,67 @@ export const EXOTICS = [
     "distLyHigh": 548,
     "distLy": 478.0,
     "massMsun": 14
+  },
+  {
+    "id": "ss-433",
+    "name": "SS 433",
+    "kind": "blackhole",
+    "why": "The first microquasar: a black hole in a binary firing two jets at a quarter of the speed of light, which wobble round once every 162 days.",
+    "aliases": [
+      "V1343 Aquilae",
+      "SS433"
+    ],
+    "source": "https://en.wikipedia.org/wiki/SS_433 (infobox, read 2026-09-09)",
+    "distance_note": "18 000 +/- 700 light-years (5 500 +/- 200 parsecs)",
+    "raDeg": 287.9565,
+    "decDeg": 4.982722,
+    "distLy": 18000,
+    "massMsun": 10.9
+  },
+  {
+    "id": "grs-1915-105",
+    "name": "GRS 1915+105",
+    "kind": "blackhole",
+    "why": "The heaviest stellar black hole in our galaxy known for years, and the first object seen to throw out matter faster than light seems to move -- a trick of geometry called superluminal motion.",
+    "aliases": [
+      "V1487 Aquilae"
+    ],
+    "source": "https://en.wikipedia.org/wiki/GRS_1915%2B105 (infobox, read 2026-09-09)",
+    "distance_note": "8 600 +2 000/-1 600 parsecs; 28 000 light-years is the infobox's round figure",
+    "raDeg": 288.798333,
+    "decDeg": 10.945556,
+    "distLy": 28000,
+    "massMsun": 12.4
+  },
+  {
+    "id": "psr-j1748-2446ad",
+    "name": "PSR J1748-2446ad",
+    "kind": "pulsar",
+    "why": "The fastest-spinning pulsar known: 716 turns a second, its equator moving at a quarter of the speed of light, inside the globular cluster Terzan 5.",
+    "aliases": [
+      "Terzan 5ad",
+      "fastest pulsar"
+    ],
+    "source": "https://en.wikipedia.org/wiki/PSR_J1748%E2%88%922446ad (infobox, read 2026-09-09)",
+    "raDeg": 267.020417,
+    "decDeg": -24.767778,
+    "distLy": 18000,
+    "periodS": 0.00139595482
+  },
+  {
+    "id": "hulse-taylor",
+    "name": "Hulse-Taylor pulsar",
+    "kind": "pulsar",
+    "why": "Two neutron stars circling each other every 7.75 hours, spiralling inward exactly as Einstein's gravitational waves demand -- the 1993 Nobel Prize, twenty years before the waves were heard directly.",
+    "aliases": [
+      "PSR B1913+16",
+      "PSR J1915+1606"
+    ],
+    "source": "https://en.wikipedia.org/wiki/Hulse%E2%80%93Taylor_pulsar (infobox, read 2026-09-09)",
+    "raDeg": 288.30194,
+    "decDeg": 16.018941,
+    "distLy": 21000,
+    "massMsun": 1.441,
+    "periodS": 0.059030003217813
   }
 ];
