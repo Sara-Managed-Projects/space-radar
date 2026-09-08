@@ -547,6 +547,7 @@ export const COPY = {
     couldNotLook: 'Space weather: could not look — {why}',
     couldNotLook0: 'Space weather: could not look.',
     justNow: 'just now',
+    currentBin: 'for the current three-hour period',
     minutesAgo: '{n} minutes ago',
     hoursAgo: '{n} hours ago',
     daysAgo: '{n} days ago',

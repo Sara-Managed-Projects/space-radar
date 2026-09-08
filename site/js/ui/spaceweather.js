@@ -33,7 +33,10 @@ export function kpWords(kp) {
 
 function agoText(ms) {
   const T = COPY.spaceWeather;
-  if (!Number.isFinite(ms) || ms < 0) return T.justNow;
+  if (!Number.isFinite(ms)) return T.ageUnknown;
+  // NOAA stamps its rows with the three-hour bin they belong to, so a stamp that is still in the
+  // future is not "just now": it is the bin we are inside of, and the reading is provisional for it.
+  if (ms < 0) return T.currentBin;
   if (ms < 90e3) return T.justNow;
   if (ms < 3600e3) return t(T.minutesAgo, { n: Math.round(ms / 60e3) });
   if (ms < 48 * 3600e3) return t(T.hoursAgo, { n: Math.round(ms / 3600e3) });
