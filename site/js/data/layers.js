@@ -471,7 +471,7 @@ export const LAYERS = [
     nearKm: 0,
     card: 'exotic',
     priority: 64,
-    sentence: 'Black holes and pulsars with a fact sheet each, and the page every number came from.',
+    sentence: 'Black holes, pulsars, a magnetar and two doomed stars with a fact sheet each, and the page every number came from.',
   },
   {
     id: 'stations',

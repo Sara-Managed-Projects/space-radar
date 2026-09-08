@@ -15,7 +15,11 @@ const { buildIndex, findMatches } = await import(join(JS, 'ui/search.js'));
 const { drawingLine } = await import(join(JS, 'ui/cards.js'));
 const LY = 9460730472580.8;
 
-check(EXOTICS.length === 10, `ten fact sheets (${EXOTICS.length})`);
+check(EXOTICS.length === 14, `fourteen fact sheets (${EXOTICS.length})`);
+const bet = EXOTICS.find((x) => x.id === 'betelgeuse');
+check(bet && bet.kind === 'star' && bet.distLyLow === 408 && bet.distLyHigh === 548 && bet.massMsun === 14 && bet.distance_note, 'Betelgeuse: a star with two published distances kept as a range, and a note saying why');
+const mag = EXOTICS.find((x) => x.id === 'sgr-1806-20');
+check(mag && mag.kind === 'magnetar' && Math.abs(mag.periodS - 7.55592) < 1e-9 && mag.distLy === 42000, 'SGR 1806-20: the first magnetar row, with its 7.56 s period');
 check(EXOTICS.every((x) => x.source && x.why && Number.isFinite(x.raDeg) && Number.isFinite(x.decDeg) && x.distLy > 0), 'every row has a source, a why, a position and a distance');
 const sgr = EXOTICS.find((x) => x.id === 'sgr-a-star');
 check(sgr && Math.abs(sgr.raDeg - 266.41684) < 0.001 && Math.abs(sgr.decDeg + 29.00781) < 0.001, `Sgr A* converts to RA 266.4168 Dec -29.0078 (${sgr && sgr.raDeg}, ${sgr && sgr.decDeg})`);
@@ -30,7 +34,7 @@ check(ton.distance_note && ton.distance_note.includes('light-travel'), 'TON 618 
 const row = LAYERS.find((l) => l.id === 'exotics');
 check(!!row && row.noModel === true && row.klass === 'exotic' && typeof row.sample === 'function', 'the exotics layer row exists, no hero model');
 const recs = row.sample();
-check(recs.length === 10 && recs.every((r) => r.propagator === 'static' && r.frame === 'sun-inertial' && r.meta.source), 'ten static records carrying their sources');
+check(recs.length === 14 && recs.every((r) => r.propagator === 'static' && r.frame === 'sun-inertial' && r.meta.source), 'fourteen static records carrying their sources');
 
 // Sgr A* sits where the galaxy record put the centre, and M87* where the deep-sky layer put M87
 const galaxyRow = LAYERS.find((l) => l.id === 'galaxy');
@@ -62,4 +66,4 @@ check(findMatches(index, 'lgm').hits[0]?.record.id === 'exotic-psr-b1919-21', '"
 check(typeof drawingLine(sgrRec) === 'string' && drawingLine(sgrRec).includes('ring'), `an extreme object says it is drawn as a ring: ${drawingLine(sgrRec)}`);
 
 if (problems.length) { console.error('exotics FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
-console.log('exotics ok: ten fact sheets with sources; Sgr A* on the galaxy\'s centre, M87* on M87, Cygnus X-1 7 300 ly out; found by name and alias');
+console.log('exotics ok: fourteen fact sheets with sources; Sgr A* on the galaxy\'s centre, M87* on M87, Cygnus X-1 7 300 ly out; found by name and alias');

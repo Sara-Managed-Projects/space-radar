@@ -105,8 +105,8 @@ export const WE_SHOW = [
     "source": "OpenNGC; Wikipedia Messier distances"
   },
   {
-    "what": "black holes and pulsars with a fact sheet",
-    "n": 10,
+    "what": "black holes, pulsars, a magnetar and two doomed stars with a fact sheet",
+    "n": 14,
     "of": "dozens known; a hand-kept list",
     "source": "registry/exotics.yaml"
   }
