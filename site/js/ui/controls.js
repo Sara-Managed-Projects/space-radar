@@ -17,6 +17,7 @@ import { COPY, CITIES, t, fmt, timeText, inWords, compassWords, fistsWords } fro
 import { predictPasses } from '../sky/passes.js';
 import { createSearch } from './search.js';
 import { LADDER_RUNGS, WE_SHOW } from '../data/ladder.js';
+import { createNext } from './next.js';
 import { shapeLine } from './tripframe.js';
 
 const HOST_ID = 'sr-controls';
@@ -270,6 +271,7 @@ function setMoment(ctx, state, moment) {
     /* the panel still reflects the choice */
   }
   paintMoments(state);
+  if (state.next) state.next.setMoment(moment);
   // The calm default is per moment, so the layer rows are reseeded when it changes --
   // and only then, or a second tap on the same door would undo the visitor's choices.
   if (changed) {
@@ -975,6 +977,9 @@ export function createControls(ctx) {
   // which is the state a first-time visitor is actually in.
   node.appendChild(buildTrips(ctx, state));
   node.appendChild(buildMoments(ctx, state));
+  // The Next moment's list, right under its door: hidden on the other two moments.
+  state.next = createNext(ctx);
+  node.appendChild(state.next.root);
   node.appendChild(buildLayers(ctx, state));
   node.appendChild(buildLadder(ctx, state));
   node.appendChild(buildClock(ctx, state));
