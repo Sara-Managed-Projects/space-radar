@@ -105,14 +105,18 @@ html, body {
 .labels { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
 .labels .label {
   position: absolute;
-  transform: translate(-50%, -140%);
+  left: 0;
+  top: 0;
+  will-change: transform;
   font-size: 12.5px;
   color: var(--text);
   text-shadow: 0 0 3px var(--space), 0 0 6px var(--space);
   white-space: nowrap;
   pointer-events: none;
 }
-.labels .label .dot { opacity: .8; margin-right: 5px; }
+.labels .label .dot { opacity: .8; margin-right: 5px; display: inline-block; width: 7px; height: 7px; border-radius: 50%; vertical-align: middle; }
+.labels .label[data-kind='selection'] { font-weight: 600; }
+.labels .label[data-kind='notable'] { opacity: .8; }
 
 /* --- phone drawers (see js/ui/mobile.js) -------------------------------------
    The panels are desktop-first and always open. On a phone the sky is the product, so they
