@@ -70,6 +70,9 @@ export const REAL_MODELS = {
     // a Proteus bus, a different shape, and gets its own file.
     46984: { file: 'sentinel6.glb', colour: 'satellite', name: 'Sentinel-6 Michael Freilich', catalogue: 'SENTINEL-6A' },
     43613: { file: 'icesat2.glb', colour: 'satellite', name: 'ICESat-2', catalogue: 'ICESAT-2' },
+    // Jason-3 is a rebuild of OSTM/Jason-2 -- same Proteus bus, same instruments -- and NASA only
+    // published the Jason-2 model, so this is the sister ship and `generic` lets the card say so.
+    41240: { file: 'jason.glb', colour: 'satellite', name: 'a Jason-series ocean altimeter', catalogue: 'JASON-3', generic: true },
     43476: { file: 'grace.glb', colour: 'satellite', name: 'a GRACE-series gravity mapper', catalogue: 'GRACE-FO 1', generic: true },
   },
   horizons: {
