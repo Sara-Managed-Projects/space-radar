@@ -852,6 +852,11 @@ export const COPY = {
     noObserver: 'Set where you are and this line will tell you where to look.',
     noPass: 'It does not come above your horizon in the next 24 hours.',
     notVisibleFromGround: 'This one is too far away to pick out by eye.',
+    // Stars, nebulae, galaxies: the question is brightness, not distance. Magnitude 6.5 is the
+    // usual naked-eye limit from a dark site.
+    nakedEye: 'Bright enough to see with your own eyes from a dark place.',
+    needsTelescope: 'Too faint for the eye; a telescope, or a long photograph, shows it.',
+    starOnly: 'Only its star can be seen, and only through a telescope; the planet itself is far too faint.',
     onTheGround: 'This one stands on the ground, so there is nothing to look up for.',
     onAnotherWorld:
       'This one is standing on {world}. You will not pick it out by eye from here, however clear the night.',
@@ -1067,6 +1072,7 @@ export const COPY = {
       kinds: { blackhole: 'black hole', pulsar: 'pulsar', magnetar: 'magnetar', star: 'star' },
     },
     dso: {
+      leadHome: '{name} is the galaxy we live in; its centre is {dist} light-years away',
       lead: '{name} is a {type} {dist} light-years away',
       leadRange: '{name} is a {type} somewhere between {lo} and {hi} light-years away',
       leadUntyped: '{name} is {dist} light-years away',

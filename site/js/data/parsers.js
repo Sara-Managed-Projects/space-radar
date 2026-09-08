@@ -1326,6 +1326,7 @@ export function parseExoplanets(text, opts = {}) {
         aliases: host ? [host] : [],
         asOf,
         drawnAtStar: true,
+        cite: asOf ? `NASA Exoplanet Archive (pscomppars), copy as of ${asOf}` : 'NASA Exoplanet Archive (pscomppars)',
       },
     });
   }
@@ -1377,6 +1378,7 @@ export function parseDso(doc) {
         mag: o.vmag ?? null,
         why: o.why || null,
         distanceSource: o.distanceSource || null,
+        cite: `Position: OpenNGC (CC BY-SA 4.0); distance: ${o.distanceSource || 'as the row says'}`,
         aliases,
       },
     });

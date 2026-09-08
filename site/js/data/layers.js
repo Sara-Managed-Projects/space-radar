@@ -254,6 +254,8 @@ function milkyWayRecords() {
     pos,
     cls: 'measured',
     meta: {
+      home: true,
+      cite: 'Centre distance: Reid et al. 2019 (R0 = 8.15 kpc); disc size: Wikipedia, Milky Way',
       kind: 'galaxy',
       typeText: 'Barred spiral galaxy — the one we live in',
       hubble: 'SBbc',
@@ -299,6 +301,7 @@ function exoticRecords() {
         periodS: x.periodS ?? null,
         why: x.why,
         source: x.source,
+        cite: x.source,
         aliases: Array.isArray(x.aliases) ? x.aliases.slice() : [],
       },
     };

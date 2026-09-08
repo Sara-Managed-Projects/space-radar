@@ -134,7 +134,7 @@ function starRecord(idx, name, ly, meta) {
     frame: SUN_INERTIAL,
     pos: { x: ly.x * LY_KM, y: ly.y * LY_KM, z: ly.z * LY_KM },
     cls: 'measured',
-    meta: { starIndex: idx, ...meta },
+    meta: { starIndex: idx, cite: 'HYG Stellar Database v4.4 (CC BY-SA 4.0), Gaia and Hipparcos distances', ...meta },
   };
 }
 
