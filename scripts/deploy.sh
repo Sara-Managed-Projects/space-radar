@@ -10,7 +10,7 @@
 #   --distribution ID     optional. Without it nothing is invalidated, so a deploy can take up to
 #                         the cache lifetime to appear.
 #   --profile NAME        an AWS CLI profile. Default: whatever your environment already uses.
-#   --assets-only         skip the app files; push textures, data and vendor only.
+#   --assets-only         skip the app files; push textures, data, vendor and models only.
 #   --app-only            skip the big assets; push HTML, CSS and JS only. The usual case.
 #   --dry-run             print what would be uploaded and change nothing.
 #
@@ -18,7 +18,9 @@
 # There is no build step, so nothing here is content-hashed. The app files must revalidate on
 # every load or a deploy is invisible; the textures and libraries must not, or every visit
 # re-downloads six megabytes. One sync cannot say both, so there are several, each with its own
-# Cache-Control.
+# Cache-Control. The data files sit between: they keep their names but change with a PR (a new
+# deep-sky row, a fresh exoplanet table), so they get an hour and are invalidated on every push --
+# a returning visitor held the old dso.json for a month before that was true (2026-09-09).
 #
 # `immutable` is deliberately NOT used. It promises a URL's bytes will never change, and
 # `2k_earth_daymap.jpg` keeps its name when the file behind it changes. A browser that believed
@@ -82,13 +84,16 @@ echo "==> $SITE  ->  s3://$BUCKET  ($REGION)"
 
 # Long-lived, but not immutable -- see the header. A month, and invalidate on the rare change.
 LONG="public, max-age=2592000"
+# The bundled data: an hour, then a revalidation (a 304 unless a PR changed the file), and the
+# invalidation below expires the edge copy the moment it is pushed.
+DATA="public, max-age=3600"
 
 if [ "$WHAT" != "app" ]; then
   echo "==> textures, data, vendored libraries"
   "${SYNC[@]}" "$SITE/textures" "s3://$BUCKET/textures" --cache-control "$LONG" --delete
   # data/v1/ is the harvester's (spec 0003 amendment 1): it is never in site/, and --delete would
   # otherwise remove every snapshot on each deploy. The filter keeps it out of the upload too.
-  "${SYNC[@]}" "$SITE/data"     "s3://$BUCKET/data"     --cache-control "$LONG" --delete --exclude "v1/*"
+  "${SYNC[@]}" "$SITE/data"     "s3://$BUCKET/data"     --cache-control "$DATA" --delete --exclude "v1/*"
   "${SYNC[@]}" "$SITE/vendor"   "s3://$BUCKET/vendor"   --cache-control "$LONG" --delete
   # The spacecraft models. Content type matters: CloudFront will not compress an octet-stream, and
   # a .glb served as one is a few hundred KB that could have been fewer.
@@ -120,15 +125,22 @@ if [ "$WHAT" != "assets" ]; then
 fi
 
 if [ -n "$DISTRIBUTION" ] && [ "$DRY_RUN" != "1" ]; then
-  echo "==> invalidating the app (assets keep their cache)"
+  PATHS=("/" "/index.html" "/js/*" "/css/*")
+  if [ "$WHAT" != "app" ]; then
+    # The data files were just pushed and keep their names: expire the edge copies now.
+    PATHS+=("/data/*")
+    echo "==> invalidating the app and the data (textures, vendor and models keep their cache)"
+  else
+    echo "==> invalidating the app (assets keep their cache)"
+  fi
   aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION" \
-    --paths "/" "/index.html" "/js/*" "/css/*" \
+    --paths "${PATHS[@]}" \
     --output text --query 'Invalidation.Id'
   if [ "$WHAT" != "app" ]; then
-    echo "    NOTE: textures, data and vendor were uploaded but NOT invalidated -- their names are"
+    echo "    NOTE: textures, vendor and models were uploaded but NOT invalidated -- their names are"
     echo "    not content-hashed, so nothing expires them early. If you changed one, run:"
     echo "      aws cloudfront create-invalidation --distribution-id $DISTRIBUTION \\"
-    echo "        --paths '/textures/*' '/data/*' '/vendor/*' '/models/*'"
+    echo "        --paths '/textures/*' '/vendor/*' '/models/*'"
   fi
 fi
 
