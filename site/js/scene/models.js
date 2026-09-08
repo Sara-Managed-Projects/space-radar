@@ -440,6 +440,53 @@ function buildSoyuzFamily(variant) {
   return g;
 }
 
+// --------------------------------------------------------------------------------------- dragon
+
+/**
+ * SpaceX's Dragon 2, crew or cargo, as a family shape: a blunt capsule on a trunk, and no wings at
+ * all -- the solar cells are on the trunk's skin, which is the one thing that tells it from every
+ * other visitor. Published dimensions (SpaceX): 4.0 m across, 8.1 m tall with the trunk, the
+ * trunk 3.7 m across. A CC BY model exists on Sketchfab (spec 0027, Ivan's list); this is the honest
+ * shape until it is downloaded.
+ */
+function buildDragon() {
+  const g = new THREE.Group();
+  g.userData.realSizeM = 8.1;
+  const S = 1 / 8.1;
+  const body = 'body';
+  // Capsule: a truncated cone, wide at the heat shield, with a rounded nose cap.
+  const capsule = cyl(1.3 * S, 2.0 * S, 3.2 * S, 20, '#F1F3F6', body, 'capsule');
+  capsule.rotation.x = Math.PI / 2;
+  capsule.position.z = 2.4 * S;
+  g.add(capsule);
+  const nose = new THREE.Mesh(new THREE.SphereGeometry(1.3 * S, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2), toonMaterial('#F1F3F6', body));
+  nose.name = 'nose';
+  nose.rotation.x = Math.PI / 2;
+  nose.position.z = 4.0 * S;
+  g.add(nose);
+  const shield = cyl(2.0 * S, 1.9 * S, 0.3 * S, 20, '#3B2F2A', 'foil', 'heatshield');
+  shield.rotation.x = Math.PI / 2;
+  shield.position.z = 0.65 * S;
+  g.add(shield);
+  // Trunk: a cylinder, half white, half dark blue solar cells, with four small fins.
+  const trunk = cyl(1.85 * S, 1.85 * S, 3.7 * S, 20, '#E9EDF2', body, 'trunk');
+  trunk.rotation.x = Math.PI / 2;
+  trunk.position.z = -1.35 * S;
+  g.add(trunk);
+  // Half the trunk's skin is cells: an open half-cylinder, a hair outside the trunk so it reads.
+  const cells = mesh(new THREE.CylinderGeometry(1.87 * S, 1.87 * S, 3.5 * S, 20, 1, true, Math.PI, Math.PI), '#1F3A5F', 'panel', 'solar');
+  cells.rotation.x = Math.PI / 2;
+  cells.position.z = -1.35 * S;
+  g.add(cells);
+  for (const a of [0.25, 0.75, 1.25, 1.75]) {
+    const fin = box(0.05 * S, 0.9 * S, 1.6 * S, '#B9BFC7', 'foil', 'fin');
+    fin.position.set(Math.cos(a * Math.PI) * 2.2 * S, Math.sin(a * Math.PI) * 2.2 * S, -2.3 * S);
+    fin.rotation.z = a * Math.PI;
+    g.add(fin);
+  }
+  return g;
+}
+
 // --------------------------------------------------------------------------------------- cygnus
 
 /**
@@ -1841,7 +1888,7 @@ const ODDITY_BUILDERS = {
 
 // One row per model. Adding a shape is a row here, not a change to modelFor().
 const BUILDERS = {
-  station: { default: buildStation, iss: buildStation, soyuz: buildSoyuzFamily, progress: buildSoyuzFamily, shenzhou: buildSoyuzFamily, tianzhou: buildSoyuzFamily, cygnus: buildCygnus, tiangong: buildTiangong, 'tiangong-module': buildTiangong },
+  station: { default: buildStation, iss: buildStation, soyuz: buildSoyuzFamily, progress: buildSoyuzFamily, shenzhou: buildSoyuzFamily, tianzhou: buildSoyuzFamily, cygnus: buildCygnus, dragon: buildDragon, tiangong: buildTiangong, 'tiangong-module': buildTiangong },
   satellite: {
     default: buildSatelliteComms,
     comms: buildSatelliteComms,

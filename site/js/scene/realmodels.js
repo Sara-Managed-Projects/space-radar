@@ -121,6 +121,10 @@ export const REAL_MODELS = {
     // of a Shenzhou. CC BY models exist for both (spec 0027, Ivan's list); procedural until then.
     shenzhou: { build: 'shenzhou', colour: 'station', name: 'a Shenzhou spacecraft', klass: ['station', 'satellite'], generic: true },
     tianzhou: { build: 'tianzhou', colour: 'station', name: 'a Tianzhou cargo ship', klass: ['station', 'satellite'], generic: true },
+    // Dragon 2, crew or cargo: CelesTrak names them CREW DRAGON n and DRAGON CRS-n. Both keys, so
+    // a bare `dragon` never catches anything else. A CC BY model is on Ivan's list (spec 0027).
+    'crew dragon': { build: 'dragon', colour: 'station', name: 'a Dragon spacecraft', klass: ['station', 'satellite'], generic: true },
+    'dragon crs': { build: 'dragon', colour: 'station', name: 'a Dragon spacecraft', klass: ['station', 'satellite'], generic: true },
     soyuz: { build: 'soyuz', colour: 'station', name: 'a Soyuz spacecraft', klass: ['station', 'satellite'], generic: true },
     // Cygnus: the round UltraFlex fans are the recognition; nothing free exists (spec 0027), so
     // procedural. Klass-gated so the Cygnus Loop and anything else named Cygnus stay untouched.
