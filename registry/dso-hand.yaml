@@ -214,6 +214,205 @@ objects:
     source: "https://en.wikipedia.org/wiki/Wolf–Lundmark–Melotte (infobox, read 2026-09-08)"
     why: "An isolated dwarf at the edge of the Local Group that has lived its whole life alone."
 
+  - id: sagittarius-dwarf
+    name: Sagittarius Dwarf Spheroidal
+    type: G
+    what: dwarf spheroidal galaxy
+    hubble: "dSph(t)"
+    ra_deg: 283.8313        # 18h 55m 19.5s
+    dec_deg: -30.5453       # -30 deg 32 min 43 s
+    dist_kly: 80.4          # 24.645 +/- 0.490 kpc
+    vmag: 4.5
+    maj_ax_arcmin: 450
+    con: Sagittarius
+    source: "https://en.wikipedia.org/wiki/Sagittarius_Dwarf_Spheroidal_Galaxy (infobox, read 2026-09-09)"
+    why: "On the far side of the Milky Way's centre and being torn apart by it: its stars now trail right round our galaxy in a stream."
+
+  - id: ngc-147
+    name: NGC 147
+    designation: NGC 147
+    type: G
+    what: dwarf spheroidal galaxy
+    hubble: "dSph/dE5"
+    ra_deg: 8.3004          # 00h 33m 12.1s
+    dec_deg: 48.5089        # +48 deg 30 min 32 s
+    dist_kly: 2530          # 2.53 +/- 0.11 Mly
+    vmag: 10.5
+    maj_ax_arcmin: 13.2
+    con: Cassiopeia
+    source: "https://en.wikipedia.org/wiki/NGC_147 (infobox, read 2026-09-09)"
+    why: "A satellite of Andromeda, paired on the sky with NGC 185, and a bridge of stars runs between the two."
+
+  - id: ngc-185
+    name: NGC 185
+    designation: NGC 185
+    type: G
+    what: dwarf spheroidal galaxy
+    hubble: "dSph/dE3"
+    ra_deg: 9.7415          # 00h 38m 57.97s
+    dec_deg: 48.3374        # +48 deg 20 min 14.6 s
+    dist_kly: 2050          # 2.05 +/- 0.13 Mly
+    vmag: 10.1
+    maj_ax_arcmin: 11.7
+    con: Cassiopeia
+    source: "https://en.wikipedia.org/wiki/NGC_185 (infobox, read 2026-09-09)"
+    why: "Andromeda's satellite with a faint active nucleus -- the nearest Seyfert galaxy, and a dwarf at that."
+
+  - id: sextans-a
+    name: Sextans A
+    type: G
+    what: dwarf irregular galaxy
+    hubble: "IBm"
+    ra_deg: 152.7533        # 10h 11m 00.8s
+    dec_deg: -4.6928        # -04 deg 41 min 34.2 s
+    dist_kly: 4586          # 1.406 +/- 0.038 Mpc
+    vmag: 11.9
+    maj_ax_arcmin: 5.9
+    con: Sextans
+    source: "https://en.wikipedia.org/wiki/Sextans_A (infobox, read 2026-09-09)"
+    why: "A square-looking dwarf at the very edge of the Local Group, its shape carved by supernova blasts."
+
+  - id: sextans-b
+    name: Sextans B
+    type: G
+    what: dwarf irregular galaxy
+    hubble: "ImIV-V"
+    ra_deg: 150.0004        # 10h 00m 00.1s
+    dec_deg: 5.3322         # +05 deg 19 min 56 s
+    dist_kly: 4440          # 4.44 +/- 0.23 Mly
+    vmag: 11.9
+    maj_ax_arcmin: 5.1
+    con: Sextans
+    source: "https://en.wikipedia.org/wiki/Sextans_B (infobox, read 2026-09-09)"
+    why: "Sextans A's neighbour, one of the most distant members still counted in the Local Group."
+
+  - id: leo-a
+    name: Leo A
+    type: G
+    what: dwarf irregular galaxy
+    hubble: "IBm"
+    ra_deg: 149.86          # 09h 59m 26.4s
+    dec_deg: 30.7464        # +30 deg 44 min 47 s
+    dist_kly: 2600          # 2.6 +/- 0.1 Mly
+    vmag: 12.9
+    maj_ax_arcmin: 5.1
+    con: Leo
+    source: "https://en.wikipedia.org/wiki/Leo_A (infobox, read 2026-09-09)"
+    why: "An isolated dwarf that made most of its stars late, long after the rest of the Local Group had settled down."
+
+  - id: pegasus-dwarf
+    name: Pegasus Dwarf Irregular
+    type: G
+    what: transition dwarf galaxy, part irregular, part spheroidal
+    hubble: "dIrr/dSph"
+    ra_deg: 352.1508        # 23h 28m 36.2s
+    dec_deg: 14.7431        # +14 deg 44 min 35 s
+    dist_kly: 3000          # 3.0 +/- 0.1 Mly
+    vmag: 13.2
+    maj_ax_arcmin: 5.0
+    con: Pegasus
+    source: "https://en.wikipedia.org/wiki/Pegasus_Dwarf_Irregular_Galaxy (infobox, read 2026-09-09)"
+    why: "A distant companion of Andromeda caught between two kinds: still a little gas, hardly any new stars."
+
+  - id: phoenix-dwarf
+    name: Phoenix Dwarf
+    type: G
+    what: dwarf irregular galaxy
+    hubble: "IAm"
+    ra_deg: 27.7763         # 01h 51m 06.3s
+    dec_deg: -44.4447       # -44 deg 26 min 41 s
+    dist_kly: 1440          # 1.44 +/- 0.07 Mly
+    vmag: 13.1
+    maj_ax_arcmin: 4.9
+    con: Phoenix
+    source: "https://en.wikipedia.org/wiki/Phoenix_Dwarf (infobox, read 2026-09-09)"
+    why: "Found in 1976 and taken for a globular cluster at first; a small galaxy with a cloud of gas drifting away from it."
+
+  - id: tucana-dwarf
+    name: Tucana Dwarf
+    type: G
+    what: dwarf spheroidal galaxy
+    hubble: "dE4"
+    ra_deg: 340.4542        # 22h 41m 49.0s
+    dec_deg: -64.42         # -64 deg 25 min 12 s
+    dist_kly: 3200          # 3.2 Mly
+    vmag: 15.7
+    maj_ax_arcmin: 2.9
+    con: Tucana
+    source: "https://en.wikipedia.org/wiki/Tucana_Dwarf (infobox, read 2026-09-09)"
+    why: "A lonely dwarf on the opposite side of the Local Group from Andromeda, far from any big galaxy."
+
+  - id: cetus-dwarf
+    name: Cetus Dwarf
+    type: G
+    what: dwarf spheroidal galaxy
+    hubble: "dSph"
+    ra_deg: 6.5458          # 00h 26m 11.0s
+    dec_deg: -11.0444       # -11 deg 02 min 40 s
+    dist_kly: 2460          # 2.46 +/- 0.08 Mly
+    vmag: 14.4
+    maj_ax_arcmin: 5.0
+    con: Cetus
+    source: "https://en.wikipedia.org/wiki/Cetus_Dwarf (infobox, read 2026-09-09)"
+    why: "An isolated spheroidal dwarf found in 1999; most of its kind cling to a big galaxy, this one does not."
+
+  - id: aquarius-dwarf
+    name: Aquarius Dwarf
+    type: G
+    what: dwarf irregular galaxy
+    hubble: "IB(s)m"
+    ra_deg: 311.7158        # 20h 46m 51.8s
+    dec_deg: -12.8481       # -12 deg 50 min 53 s
+    dist_kly: 3200          # 3.2 +/- 0.2 Mly
+    vmag: 14.0
+    maj_ax_arcmin: 2.2
+    con: Aquarius
+    source: "https://en.wikipedia.org/wiki/Aquarius_Dwarf (infobox, read 2026-09-09)"
+    why: "A faint irregular dwarf so isolated that it is used to test how galaxies grow with nothing disturbing them."
+
+  - id: sagdig
+    name: Sagittarius Dwarf Irregular
+    designation: SagDIG
+    type: G
+    what: dwarf irregular galaxy
+    hubble: "IB(s)m"
+    ra_deg: 292.4958        # 19h 29m 59.0s
+    dec_deg: -17.6781       # -17 deg 40 min 41 s
+    dist_kly: 3390          # 3.39 +/- 0.23 Mly
+    vmag: 15.5
+    maj_ax_arcmin: 2.9
+    con: Sagittarius
+    source: "https://en.wikipedia.org/wiki/Sagittarius_Dwarf_Irregular_Galaxy (infobox, read 2026-09-09)"
+    why: "Not the Sagittarius Dwarf being eaten by the Milky Way: a separate, far more distant irregular dwarf in the same constellation."
+
+  - id: antlia-dwarf
+    name: Antlia Dwarf
+    type: G
+    what: dwarf spheroidal galaxy
+    hubble: "dE3.5"
+    ra_deg: 151.0163        # 10h 04m 03.9s
+    dec_deg: -27.3319       # -27 deg 19 min 55 s
+    dist_kly: 4305          # 1.32 +/- 0.06 Mpc; also 1.33 and 1.31 published
+    vmag: 15.67
+    maj_ax_arcmin: 2.0
+    con: Antlia
+    source: "https://en.wikipedia.org/wiki/Antlia_Dwarf (infobox, read 2026-09-09)"
+    why: "Found only in 1997, a companion of NGC 3109 at the Local Group's edge -- proof that the neighbourhood still has galaxies to find."
+
+  - id: andromeda-ii
+    name: Andromeda II
+    type: G
+    what: dwarf spheroidal galaxy
+    hubble: "dSph"
+    ra_deg: 19.1242         # 01h 16m 29.8s
+    dec_deg: 33.4192        # +33 deg 25 min 09 s
+    dist_kly: 2220          # 2.22 +/- 0.07 Mly
+    vmag: 13.5
+    maj_ax_arcmin: 3.6
+    con: Pisces
+    source: "https://en.wikipedia.org/wiki/Andromeda_II (infobox, read 2026-09-09)"
+    why: "One of Andromeda's small spheroidal companions, found in 1970 on photographic plates."
+
 messier_distances:
   # Thousands of light-years, from the table in https://en.wikipedia.org/wiki/List_of_Messier_objects
   # (read 2026-09-08). A range is written as [low, high]; the card prints both. Positions come from

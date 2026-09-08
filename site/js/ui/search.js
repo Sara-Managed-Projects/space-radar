@@ -171,6 +171,7 @@ export function buildIndex(records, layers) {
     rank: [], // layer position; smaller comes first
     len: [], // name length, a tie-break
     picked: [], // on the hand-kept list; a tie-break, see below
+    mag: [], // apparent magnitude where the record has one, else Infinity; brighter first, see below
     where: [], // the layer's display name, for the quiet right-hand label
     layers: displayOf,
   };
@@ -201,6 +202,12 @@ export function buildIndex(records, layers) {
     // ISS (NAUKA): MEASURED on the live page, both are "iss" name-prefix hits in the same layer
     // with names of the same length, so without it the alphabet decides and the module wins.
     index.picked.push(meta.why ? 1 : 0);
+    // Deep-sky rows added by hand carry `why` too, which made the tie-break promote Andromeda II
+    // (a 13th-magnitude dwarf with a `why`) above the Andromeda Galaxy (a Messier row without one)
+    // for "andromeda" -- MEASURED in tests/test_dso.mjs when the Local Group rows went in. Among
+    // equal matches the brighter thing is the one a person means, so brightness decides first.
+    const mag = Number.isFinite(meta.vmag) ? meta.vmag : Number.isFinite(meta.mag) ? meta.mag : Infinity;
+    index.mag.push(mag);
     index.where.push(displayOf.get(record.layer) || '');
     index.n += 1;
   }
@@ -312,6 +319,8 @@ export function findMatches(index, query, limit = MAX_RESULTS) {
   found.sort((a, b) => {
     if (a.score !== b.score) return b.score - a.score;
     if (index.rank[a.i] !== index.rank[b.i]) return index.rank[a.i] - index.rank[b.i];
+    // Brighter first, when both have a magnitude: "andromeda" means the galaxy, not Andromeda II.
+    if (index.mag[a.i] !== index.mag[b.i] && Number.isFinite(index.mag[a.i]) && Number.isFinite(index.mag[b.i])) return index.mag[a.i] - index.mag[b.i];
     // The hand-kept list, before the name length. MEASURED on the live page: "iss" returns
     // ISS (NAUKA) and ISS (ZARYA), same score, same layer, names of the same length -- so
     // without this line the alphabet decides and a module of the station outranks the station.

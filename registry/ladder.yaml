@@ -83,7 +83,7 @@ we_show:
     of: "every confirmed one, as of the catalogue copy's date"
     source: "NASA Exoplanet Archive pscomppars"
   - what: "nebulae, clusters and galaxies placed"
-    n: 124
+    n: 138
     of: "13 372 in OpenNGC that have no measured distance written down; the rest of the Local Group waits for sourced rows"
     source: "OpenNGC; Wikipedia Messier distances"
   - what: "black holes, pulsars, a magnetar and two doomed stars with a fact sheet"
