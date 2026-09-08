@@ -94,6 +94,15 @@ export const REAL_MODELS = {
     'r/b': { file: 'rocket-body.glb', colour: 'rocket', name: 'a spent rocket stage', klass: ['rocket'], generic: true },
     'rocket body': { file: 'rocket-body.glb', colour: 'rocket', name: 'a spent rocket stage', klass: ['rocket'], generic: true },
     'upper stage': { file: 'rocket-body.glb', colour: 'rocket', name: 'a spent rocket stage', klass: ['rocket'], generic: true },
+    // NOAA 15, 18 and 19 are the Advanced TIROS-N / POES bus and among the brightest things a
+    // person can see pass over. Matched on the full name, whole words, klass satellite: "NOAA 15"
+    // yes, "NOAA 15 DEB" no (klass debris), NOAA 20 no (a JPSS bus, already mapped by id to the
+    // Suomi model), NOAA 21 no (JPSS-2, a different bus; it keeps the generic shape and says so).
+    // By name rather than by catalogue number because a number that cannot be checked live today
+    // is a number that shipped wrong once before.
+    'noaa 15': { file: 'poes.glb', colour: 'satellite', name: 'NOAA 15', klass: ['satellite'] },
+    'noaa 18': { file: 'poes.glb', colour: 'satellite', name: 'NOAA 18', klass: ['satellite'] },
+    'noaa 19': { file: 'poes.glb', colour: 'satellite', name: 'NOAA 19', klass: ['satellite'] },
     bennu: { file: 'asteroid-bennu.glb', colour: 'asteroid', name: '101955 Bennu', klass: ['asteroid'] },
     tdrs: { file: 'tdrs.glb', colour: 'satellite', name: 'Tracking and Data Relay Satellite', klass: ['satellite'] },
     swift: { file: 'swift.glb', colour: 'telescope', name: 'Swift', klass: ['satellite', 'telescope'] },
