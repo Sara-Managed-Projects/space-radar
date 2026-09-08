@@ -27,7 +27,7 @@ const CONTRACT = {
   'propagate/frames.js': ['gmst', 'eciToEcef', 'ecefToEci', 'geodeticToEcef', 'ecefToGeodetic', 'lookAngles', 'toStage'],
   'propagate/index.js': ['propagate', 'PROPAGATORS'],
   'data/sources.js': ['SOURCES', 'load', 'status'],
-  'data/parsers.js': ['parseCelestrakGP', 'parseLaunches', 'parseComets', 'parseDsn'],
+  'data/parsers.js': ['parseCelestrakGP', 'parseLaunches', 'parseComets', 'parseDsn', 'horizonsSamples', 'parseHorizonsVectors', 'parseNeoApproaches'],
   'data/sample.js': ['sampleAsteroids', 'sampleDeepSpace', 'sampleOddities'],
   'data/oddities.js': ['ODDITIES', 'ODDITIES_OBSERVED_ON'],
   'data/tours.js': ['TOURS', 'TOUR_DEFAULTS'],
