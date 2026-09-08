@@ -197,7 +197,8 @@ layers:
     card: asteroid
     select: {close_approach_within_days: 60, or_list: registry/lists/small-bodies.yaml}
     budget: {max_items: 300}
-    enabled: false   # stage B
+    # enabled: absent means on. Stage B shipped 2026-09-06; the `enabled: false` these rows carried
+    # until 2026-09-08 was never read by the browser, which is exactly what spec 0026 req 8 fixes.
 
   - id: comets
     display: Comets
@@ -209,7 +210,6 @@ layers:
     card: comet
     select: {perihelion_within_days: 365, or_brighter_than_mag: 8}
     budget: {max_items: 60}
-    enabled: false   # stage B
 
   - id: deep-space
     display: Probes and telescopes
@@ -221,7 +221,20 @@ layers:
     card: probe
     select: {all: true}
     budget: {max_items: 40}
-    enabled: false   # stage B
+
+  # Bright enough to see: CelesTrak's `visual` group, 65 kB for the ~160 objects a person can see with
+  # their eyes. NOT in the first registry -- data/layers.js added it on 2026-09-06 and the reviewable
+  # copy is written here on 2026-09-08 (spec 0026 req 8: the mirror is checked both ways now).
+  - id: visual
+    display: Bright enough to see
+    moments: {wonder: on, now: on, next: off}
+    source: celestrak-visual
+    propagator: sgp4
+    frame: earth-inertial
+    style: {kind: glyph, glyph: satellite, colour: satellite}
+    card: satellite
+    select: {all: true}
+    budget: {max_items: 200}
 
   - id: ground-sites
     display: Pads, dishes and observatories
@@ -252,6 +265,32 @@ layers:
   #                        is one row for fifty. WHICH shape a record gets is its own
   #                        registry/oddities.yaml `shape.build`, and every one of them is measured
   #                        against its budget in tests/test_contract.mjs.
+  # The DSN antennas, the Apollo sites and the rovers: published coordinates that do not change,
+  # kept in registry/sites.yaml and ported to data/sample.js. `bundled`: nothing serves them.
+  - id: hand-kept-sites
+    display: Dishes, landers and rovers
+    moments: {wonder: on, now: on, next: off}
+    source: bundled
+    propagator: fixed
+    frame: earth-fixed
+    style: {kind: model, model: dish-generic, glyph: site, colour: site, near_km: 900}
+    card: site
+    select: {all: true}
+    budget: {max_items: 40}
+
+  # Things that came down. Space-Track needs a login nobody has registered, so this is the bundled
+  # stand-in always (cls sample, every card saying so) until that changes.
+  - id: reentries
+    display: Things that came down
+    moments: {wonder: off, now: off, next: on}
+    source: space-track-tip
+    propagator: fixed
+    frame: earth-fixed
+    style: {kind: glyph, glyph: debris, colour: debris}
+    card: debris
+    select: {all: true}
+    budget: {max_items: 10}
+
   - id: oddities
     display: Odd things we sent
     moments: {wonder: on, now: off, next: off}

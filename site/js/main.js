@@ -383,7 +383,8 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
 async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
   // Cheapest and most interesting first: the station is fifteen objects and it is what people
   // came for. The eleven-thousand-object catalogue is last and off by default.
-  const ordered = [...LAYERS].sort((a, b) => (a.priority || 50) - (b.priority || 50));
+  // The registry's `enabled: false` (spec 0026 req 8): the layer is not created, not loaded, not listed.
+  const ordered = [...LAYERS].filter((l) => l.enabled !== false).sort((a, b) => (a.priority || 50) - (b.priority || 50));
 
   // The glyph layers are created up front, in priority order, so the scene's draw order is the
   // priority order whatever order the network answers in. Each one starts empty and fills when

@@ -4,6 +4,17 @@
   "generated_by": "scripts/gen_sources_json.py",
   "sources": [
     {
+      "id": "celestrak-visual",
+      "url": "https://celestrak.org/NORAD/elements/gp.php?GROUP=visual&FORMAT=json",
+      "auth": "none",
+      "refresh": "3h",
+      "freshness_max": "48h",
+      "parser": "celestrak_gp",
+      "outputs": [
+        "visual.json"
+      ]
+    },
+    {
       "id": "celestrak-stations",
       "url": "https://celestrak.org/NORAD/elements/gp.php?GROUP=stations&FORMAT=json",
       "auth": "none",
