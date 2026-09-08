@@ -127,3 +127,5 @@ jobs:
         run: node tests/test_colorkeys.mjs
       - name: a satellite behind the Earth is in its shadow, one in front is lit (spec 0026 req 12)
         run: node tests/test_shadow.mjs
+      - name: the trajectory chart samples the record's own path and breaks at the date line (spec 0026 req 14)
+        run: node tests/test_trajectory.mjs

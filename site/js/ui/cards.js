@@ -50,6 +50,7 @@ import {
   toStage,
 } from '../propagate/frames.js';
 import { predictPasses } from '../sky/passes.js';
+import { trajectorySection } from './trajectory.js';
 import { attachedOdditiesFor, attachedOddityRecord } from '../data/attached.js';
 
 const MAX_FIRST_SENTENCE = 160; // spec 0013 requirement 10, enforced by check_copy.py
@@ -1450,6 +1451,10 @@ function render(record, ctx, opts = {}) {
     wrap.appendChild(dl);
     body.appendChild(wrap);
   }
+
+  // 4a. its path: height and ground track over the next lap and a half (spec 0026 req 14)
+  const traj = trajectorySection(record, m.tMs);
+  if (traj) body.appendChild(traj);
 
   // 4b. "Often said" -- the myth block, immediately after the facts it corrects. It renders for
   // any record carrying myths and nothing at all for the rest.
