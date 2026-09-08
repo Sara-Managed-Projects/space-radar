@@ -38,6 +38,7 @@ import {
   UNITS,
 } from '../copy/en.js';
 import { propagate } from '../propagate/index.js';
+import { realModelFor } from '../scene/realmodels.js';
 import {
   gmst,
   eciToEcef,
@@ -132,7 +133,17 @@ function pickTime(source, ...keys) {
 }
 
 function displayName(record) {
-  const name = record && record.name ? String(record.name).trim() : '';
+  // A name a person uses before the catalogue's string: "International Space Station" before
+  // "ISS (ZARYA)". The real-model table already holds one for every object it draws by id, and a
+  // record may carry its own. A class-default model (generic: true) names the class, not the
+  // object, so it does not rename anything.
+  let name = record && record.meta && record.meta.displayName ? String(record.meta.displayName).trim() : '';
+  if (!name) {
+    let entry = null;
+    try { entry = realModelFor(record); } catch { entry = null; }
+    if (entry && !entry.generic && entry.name) name = String(entry.name).trim();
+  }
+  if (!name) name = record && record.name ? String(record.name).trim() : '';
   if (!name) return COPY.card.unknownName;
   if (name.length <= MAX_NAME) return name;
   return name.slice(0, MAX_NAME - 1).trimEnd() + COPY.punctuation.ellipsis;
@@ -794,7 +805,7 @@ function ageParts(ageMs) {
   return { n: fmt.int(years), unit: fmt.plural(years, COPY.cls.yearWord, COPY.cls.yearsWord) };
 }
 
-function classLine(record, m) {
+export function classLine(record, m) {
   // Before the class, the absence. A record with no propagator has no position to have a class
   // ABOUT, and "position propagated from elements of unknown age" would be a sentence about
   // elements that do not exist.
@@ -806,7 +817,10 @@ function classLine(record, m) {
     case 'inferred': {
       const epoch = record ? record.epoch : null;
       // "Elements" is a claim about HOW the position was worked out, and a fixed record has none.
-      if (!record || !record.elements) return COPY.cls.inferredNoElements;
+      // GP records carry `satrec` (an SGP4 element set), not `elements`; both are elements in
+      // the sense this sentence means. MEASURED 2026-09-08: every satellite card said
+      // "worked out rather than measured" with no age, the ISS included, on 19-hour-old data.
+      if (!record || !(record.elements || record.satrec)) return COPY.cls.inferredNoElements;
       if (!Number.isFinite(epoch) || !Number.isFinite(m.tMs)) return COPY.cls.inferredUnknownAge;
       return t(COPY.cls.inferred, ageParts(Math.max(0, m.tMs - epoch)));
     }
@@ -1008,11 +1022,32 @@ function aboardButton(label, title, onClick) {
  * Exported for tests/test_contract.mjs, exactly as rightNowFor() is: the sentence a card prints
  * about its own drawing is a claim, and a claim nobody measures is a comment.
  */
+/**
+ * The "drawn as" line for every class that never carried `meta.drawsAs` -- which was every
+ * satellite, station, probe, site and comet. Derived from what the scene already knows: a
+ * real model of THIS object (NASA's Hubble), a class default (one communications bus for the
+ * whole geostationary ring), or the procedural shape for the class. A stand-in must say so, and
+ * until this every one of those cards was silent about it.
+ */
+function derivedDrawingLine(record, T) {
+  const klass = record && record.klass ? String(record.klass) : '';
+  if (!klass || klass === 'world') return null;
+  let entry = null;
+  try { entry = realModelFor(record); } catch { entry = null; }
+  if (entry && entry.name) {
+    return entry.generic
+      ? t(T.objectFamily, { name: String(entry.name) })
+      : t(T.objectVariant, { name: String(entry.name) });
+  }
+  const shape = T.classShape && Object.prototype.hasOwnProperty.call(T.classShape, klass) ? T.classShape[klass] : null;
+  return shape ? t(T.objectFamily, { name: shape }) : null;
+}
+
 export function drawingLine(record) {
   const md = meta(record);
   const drawsAs = pick(md, 'drawsAs');
-  if (!drawsAs) return null;
   const T = COPY.drawing;
+  if (!drawsAs) return derivedDrawingLine(record, T);
   const rocket = pick(md, 'rocket');
   const name = pick(md, 'drawnName') || rocket;
   const isLaunch = rocket != null;
@@ -1120,13 +1155,8 @@ function actionButtons(record, ctx, m) {
   see.addEventListener('click', () => seeFromHere(record, ctx));
   buttons.push(see);
 
-  // Off in v1, with an honest reason rather than a button that does nothing.
-  const tell = el('button', 'sr-btn', A.tellMeBefore);
-  tell.type = 'button';
-  tell.disabled = true;
-  tell.title = A.tellMeBeforeDisabled;
-  tell.setAttribute('aria-describedby', 'sr-card-tell-why');
-  buttons.push(tell);
+  // "Tell me before" returns with spec 0015. A disabled button with an apology under it was
+  // honest and was also clutter on every card; the review measured it as such.
 
   return buttons.slice(0, MAX_ACTIONS);
 }
@@ -1249,10 +1279,7 @@ function render(record, ctx, opts = {}) {
   const actions = el('div', 'sr-card__actions');
   actions.setAttribute('aria-label', COPY.card.actionsLabel);
   for (const b of actionButtons(record, ctx, m)) actions.appendChild(b);
-  const why = el('p', 'sr-card__why', COPY.card.actions.tellMeBeforeDisabled);
-  why.id = 'sr-card-tell-why';
   body.appendChild(actions);
-  body.appendChild(why);
 
   // 7. the class-and-age line
   const foot = el('footer', 'sr-card__foot');

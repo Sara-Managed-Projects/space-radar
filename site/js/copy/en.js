@@ -111,7 +111,13 @@ const SIZE_BANDS = [
   { upto: 5, say: 'about the size of a car' },
   { upto: 12, say: 'about the size of a bus' },
   { upto: 30, say: 'about the size of a house' },
+  // MEASURED 2026-09-08: a 46 m Soyuz and a 70 m Falcon 9 both read "a football field", which
+  // is a length lying on the ground for a thing that stands up. Storeys are what a person
+  // sees a tall thing as; a storey is about three metres.
+  { upto: 50, say: 'about as tall as a 15-storey building' },
+  { upto: 75, say: 'about as tall as a 25-storey building' },
   { upto: 110, say: 'about the size of a football field' },
+  { upto: 130, say: 'about as tall as a 40-storey tower' },
   { upto: 350, say: 'about the size of a cruise ship' },
   { upto: 900, say: 'about as tall as the tallest building on Earth' },
   { upto: 5000, say: 'about the size of a small mountain' },
@@ -157,7 +163,9 @@ function ratio(v) {
 }
 
 function compareDistance(km) {
-  if (!(km > 0)) return null;
+  // Below a kilometre there is nothing to compare: MEASURED, a launch pad at 0 km printed
+  // "0 km up, about 1 hour of driving if the road went straight up".
+  if (!(km >= 1)) return null;
   if (km < 2000) {
     // Spec 0013's row reads "a two-hour drive, straight up". Two hours is only true near
     // 200 km, so the hours are derived at 100 km/h rather than fixed: a wrong number a
@@ -669,6 +677,19 @@ export const COPY = {
     objectVariant: 'drawn from published dimensions for {name}',
     objectFamily: 'drawn as {name} — the kind of thing, not this exact one',
     objectGeneric: 'drawn as a generic object; we have no shape for {name}',
+    // The procedural shape a class falls back to when nothing more specific is known. Used
+    // with objectFamily: "drawn as a generic satellite -- the kind of thing, not this exact one".
+    classShape: {
+      satellite: 'a generic satellite',
+      station: 'a generic space station',
+      debris: 'a piece of debris',
+      rocket: 'a generic rocket',
+      probe: 'a generic probe',
+      telescope: 'a generic telescope',
+      asteroid: 'a generic asteroid',
+      comet: 'a generic comet',
+      site: 'a generic ground site',
+    },
     // Where an attached object sits on its carrier's model is our arrangement, AND SO IS HOW BIG
     // IT IS. The disc really is bolted to the side of the bus; the centimetre we chose is ours,
     // and so is the size -- a 30 cm record on a 13 m spacecraft is one or two pixels at the size
