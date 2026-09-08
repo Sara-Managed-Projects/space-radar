@@ -251,5 +251,182 @@ export const TOURS = [
       }
     ],
     "estimate_ms": 92043
+  },
+  {
+    "id": "to-the-edge",
+    "title": "To the edge of what we know",
+    "blurb": "From the Sun to the first black hole anyone photographed, in eight steps. Leaving brings you back to Earth.",
+    "requires": [
+      "stars",
+      "deep-sky",
+      "exotics",
+      "galaxy"
+    ],
+    "stage": "stellar",
+    "clock": "as-found",
+    "pacing": "auto",
+    "min_stops": 3,
+    "stops": [
+      {
+        "id": "sun",
+        "target": {
+          "world": "sun"
+        },
+        "distance_km": 9460730472580.8,
+        "drift_deg": 15,
+        "card": {
+          "title": "The Sun, from one light-year",
+          "body": "From here the whole Solar System is smaller than a pixel. Light from the Sun takes a year to reach this spot; the fastest spacecraft we have built would take twenty thousand."
+        },
+        "frame_radii": 5.0,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 13156
+      },
+      {
+        "id": "proxima",
+        "target": {
+          "record": "hip-70890"
+        },
+        "needs_layer": "stars",
+        "distance_km": 4730365236290.4,
+        "card": {
+          "title": "Proxima Centauri",
+          "body": "The nearest star to the Sun, a dim red one a fifth of the Sun's mass. It has at least one planet. Everything you can see with your eyes at night is farther than this."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 14155
+      },
+      {
+        "id": "sirius",
+        "target": {
+          "record": "hip-32349"
+        },
+        "needs_layer": "stars",
+        "distance_km": 9460730472580.8,
+        "card": {
+          "title": "Sirius",
+          "body": "The brightest star in our sky, eight and a half light-years out and twenty-five times as bright as the Sun. The light reaching your eye tonight left it eight years ago."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 12823
+      },
+      {
+        "id": "pleiades",
+        "target": {
+          "record": "dso-m45"
+        },
+        "needs_layer": "deep-sky",
+        "distance_km": 946073047258080,
+        "card": {
+          "title": "The Pleiades",
+          "body": "A few hundred young stars, a hundred million years old, about four hundred and forty light-years away. Their light left when Shakespeare was alive."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 10492
+      },
+      {
+        "id": "centre",
+        "target": {
+          "record": "exotic-sgr-a-star"
+        },
+        "needs_layer": "exotics",
+        "distance_km": 47303652362904000,
+        "card": {
+          "title": "The centre of the galaxy",
+          "body": "Twenty-seven thousand light-years from home, a black hole of four million Suns that the whole Milky Way turns around. The disc, bar and arms drawn around you are a model built from measurements; the stars are the measured part."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 15487
+      },
+      {
+        "id": "galaxy",
+        "target": {
+          "record": "dso-milky-way"
+        },
+        "needs_layer": "galaxy",
+        "distance_km": 567643828354848000,
+        "card": {
+          "title": "The Milky Way",
+          "body": "Our galaxy, about ninety thousand light-years across, seen from sixty thousand light-years above its disc -- a view nobody has had. The shape is an illustration of what has been measured."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 12823
+      },
+      {
+        "id": "andromeda",
+        "target": {
+          "record": "dso-m31"
+        },
+        "needs_layer": "deep-sky",
+        "distance_km": 2838219141774240000,
+        "card": {
+          "title": "Andromeda",
+          "body": "The nearest big galaxy, two and a half million light-years away and coming our way. Its light left when the first humans were learning to use tools."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 11491
+      },
+      {
+        "id": "edge",
+        "target": {
+          "record": "exotic-m87-star"
+        },
+        "needs_layer": "exotics",
+        "distance_km": 47303652362904000000,
+        "card": {
+          "title": "The edge of this map",
+          "body": "Fifty-three million light-years: the black hole in M87, the first one ever photographed. This is as far as this map draws places. It shows 109 389 stars of the 1.8 billion Gaia has measured, 111 of OpenNGC's 13 372 deep-sky objects, and every confirmed planet around another star. The rest is out there; we have not drawn what we cannot place."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 20000
+      }
+    ],
+    "estimate_ms": 137227
   }
 ];

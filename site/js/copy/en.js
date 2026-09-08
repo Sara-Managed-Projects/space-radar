@@ -481,6 +481,15 @@ export const COPY = {
     unnamed: 'An unnamed star (HYG {n})',
     notPlaced: '{n} more have no measured distance and are not drawn.',
   },
+  // The scale ladder's breadcrumb (spec 0028 req 11): eight places, each further out, and the
+  // honesty line under them.
+  ladder: {
+    title: 'How far',
+    intro: 'Each step is farther than the last. Tap one to go there.',
+    notLoaded: 'still loading',
+    weShowTitle: 'What this map draws of what is known',
+    weShowRow: '{n} {what} — of {of}',
+  },
   chooser: {
     label: 'Things under your finger',
     hint: '{n} here. Tap one, or tap the sky to close.',

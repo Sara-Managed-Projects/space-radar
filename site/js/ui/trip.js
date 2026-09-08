@@ -742,6 +742,14 @@ export function createTrip(ctx) {
       savedCamera: rig.saveState ? rig.saveState() : null,
       savedSelection: ctx.selected ? ctx.selected() : null,
     };
+    // A trip may live on another stage (spec 0028 step 8): the stellar rung for a trip to the stars.
+    // The stage is saved and switched BEFORE the layers are flipped and the first stop composed, so
+    // every distance below is derived in the right unit, and it is put back on leave.
+    run.savedStage = stage.worldId;
+    if (tour.stage && tour.stage !== stage.worldId && typeof ctx.setStage === 'function') {
+      ctx.setStage(tour.stage);
+      run.stageChanged = true;
+    }
     for (const id of resolved.layers) if (setLayer(id, true)) run.flipped.push(id);
     const clockChange = applyClock(tour, run.savedClock);
     run.clockMovedInstant = clockChange.movedInstant;
@@ -1110,7 +1118,12 @@ export function createTrip(ctx) {
 
     for (const id of run.flipped) setLayer(id, false);
     restoreClock(run.savedClock, run.clockMovedInstant);
-    if (run.savedWorld) {
+    if (run.stageChanged && run.savedStage && typeof ctx.setStage === 'function') {
+      // Back to the stage the visitor was on. The camera cannot "stay where it is" across a stage
+      // change -- the unit changed under it -- so this is the one leave that moves it, and the
+      // trip's blurb says so.
+      ctx.setStage(run.savedStage);
+    } else if (run.savedWorld) {
       rig.setWorldRadius(run.savedWorld.radius);
       rig.setWorldCentre(run.savedWorld.centre);
     }

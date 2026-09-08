@@ -16,6 +16,7 @@ import { readMoment, writeMoment } from './urlstate.js';
 import { COPY, CITIES, t, fmt, timeText, inWords, compassWords, fistsWords } from '../copy/en.js';
 import { predictPasses } from '../sky/passes.js';
 import { createSearch } from './search.js';
+import { LADDER_RUNGS, WE_SHOW } from '../data/ladder.js';
 import { shapeLine } from './tripframe.js';
 
 const HOST_ID = 'sr-controls';
@@ -286,6 +287,72 @@ function paintMoments(state) {
     const on = door.dataset.moment === state.moment;
     door.classList.toggle('is-on', on);
     door.setAttribute('aria-selected', on ? 'true' : 'false');
+  }
+}
+
+// ---------------------------------------------------------------------------------------
+// 1b. The scale ladder (spec 0028 req 11): eight places in order of distance, and the honesty line
+//
+// The rows are registry/ladder.yaml through its mirror. Each is a button: a world is selected by
+// its record (the worlds layer makes one), a record by id once its layer has loaded -- until then
+// the row is disabled and says so, because a button that flies to nothing is a broken promise.
+// ---------------------------------------------------------------------------------------
+
+function buildLadder(ctx, state) {
+  const wrap = el('section', 'sr-panel sr-ladder');
+  wrap.appendChild(el('h2', 'sr-panel__title', COPY.ladder.title));
+  wrap.appendChild(el('p', 'sr-ladder__intro', COPY.ladder.intro));
+  const list = el('ol', 'sr-ladder__list');
+  state.ladderRows = [];
+  for (const rung of LADDER_RUNGS) {
+    const li = el('li', 'sr-ladder__rung');
+    const btn = el('button', 'sr-ladder__btn');
+    btn.type = 'button';
+    btn.appendChild(el('span', 'sr-ladder__label', rung.label));
+    btn.appendChild(el('span', 'sr-ladder__dist sr-num', rung.distance));
+    btn.title = rung.why;
+    btn.addEventListener('click', () => {
+      const rec = ladderRecord(ctx, rung);
+      if (rec && typeof ctx.select === 'function') {
+        if (rec.layer && typeof ctx.isLayerOn === 'function' && !ctx.isLayerOn(rec.layer) && typeof ctx.setLayerOn === 'function') ctx.setLayerOn(rec.layer, true);
+        ctx.select(rec);
+      }
+    });
+    li.appendChild(btn);
+    li.appendChild(el('p', 'sr-ladder__why', rung.why));
+    list.appendChild(li);
+    state.ladderRows.push({ rung, btn });
+  }
+  wrap.appendChild(list);
+  const show = el('div', 'sr-ladder__show');
+  show.appendChild(el('h3', 'sr-card__label', COPY.ladder.weShowTitle));
+  const ul = el('ul', 'sr-ladder__showlist');
+  for (const row of WE_SHOW) {
+    const li = el('li', 'sr-ladder__showrow', t(COPY.ladder.weShowRow, { n: fmt.int(row.n), what: row.what, of: row.of }));
+    li.title = row.source;
+    ul.appendChild(li);
+  }
+  show.appendChild(ul);
+  wrap.appendChild(show);
+  paintLadder(ctx, state);
+  return wrap;
+}
+
+function ladderRecord(ctx, rung) {
+  try {
+    if (rung.target && rung.target.world) return ctx.recordById(rung.target.world);
+    if (rung.target && rung.target.record) return ctx.recordById(rung.target.record);
+  } catch { /* not loaded yet */ }
+  return null;
+}
+
+function paintLadder(ctx, state) {
+  if (!state.ladderRows) return;
+  for (const { rung, btn } of state.ladderRows) {
+    const ok = !!ladderRecord(ctx, rung);
+    btn.disabled = !ok;
+    btn.classList.toggle('is-pending', !ok);
+    btn.setAttribute('aria-label', ok ? `${rung.label}, ${rung.distance}` : `${rung.label}, ${COPY.ladder.notLoaded}`);
   }
 }
 
@@ -909,6 +976,7 @@ export function createControls(ctx) {
   node.appendChild(buildTrips(ctx, state));
   node.appendChild(buildMoments(ctx, state));
   node.appendChild(buildLayers(ctx, state));
+  node.appendChild(buildLadder(ctx, state));
   node.appendChild(buildClock(ctx, state));
   node.appendChild(buildLocation(ctx, state));
   // Search sits under "where you are" because both answer the same question -- which thing do I
@@ -923,6 +991,7 @@ export function createControls(ctx) {
   // to empty sky. This panel paints its checkboxes from its own `state.enabled` map, so without
   // this the row would keep reading "off" while the objects were plainly on screen -- a control
   // lying about the state it controls, which is the same defect the moment doors had.
+  window.addEventListener('sr:layer', () => paintLadder(ctx, state));
   document.addEventListener('sr:layer-toggle', (e) => {
     const d = e && e.detail;
     if (!d || !d.from) return;            // our own toggles already painted themselves
