@@ -1,0 +1,32 @@
+# Deep-sky objects that OpenNGC does not place (spec 0028 step 5), and the distances OpenNGC never
+# had. Every row names its source; scripts/check_registry.py refuses one without.
+#
+# OpenNGC (CC BY-SA 4.0) has positions, sizes and magnitudes for 13 970 NGC/IC objects and NO
+# distance column. A nebula in our own galaxy and a galaxy fifty million light-years away cannot
+# share an invented shell, so an object is placed on the ladder ONLY when a sourced distance is
+# written down here or in the Messier table scripts/build-dso.py reads. Everything else stays a
+# direction on the sky, which is what OpenNGC actually knows.
+#
+# dist_kly     distance in thousands of light-years; where the source gives a range, low and high.
+# ra / dec     J2000, degrees, for an object OpenNGC has no row for (the LMC is not an NGC object).
+version: 1
+
+objects:
+  - id: lmc
+    name: Large Magellanic Cloud
+    type: G
+    hubble: SB(s)m
+    ra_deg: 80.8917         # 05h 23m 34s
+    dec_deg: -69.7567       # -69 deg 45.4 min
+    dist_kly: 163
+    vmag: 0.13
+    maj_ax_arcmin: 645      # 10.75 deg
+    source: "https://en.wikipedia.org/wiki/Large_Magellanic_Cloud (infobox, read 2026-09-08)"
+    why: "The nearest big galaxy, a naked-eye cloud from the southern hemisphere, and the reason the ladder has a local-group rung at all."
+
+messier_distances:
+  # Thousands of light-years, from the table in https://en.wikipedia.org/wiki/List_of_Messier_objects
+  # (read 2026-09-08). A range is written as [low, high]; the card prints both. Positions come from
+  # OpenNGC by the NGC/IC number, and M40/M45 from OpenNGC's addendum.
+  source: "https://en.wikipedia.org/wiki/List_of_Messier_objects"
+  table: scripts/data/messier-distances.txt

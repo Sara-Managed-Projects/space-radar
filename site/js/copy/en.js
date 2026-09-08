@@ -448,6 +448,7 @@ export const COPY = {
     world: 'World',
     star: 'Star',
     exoplanet: 'Planet of another star',
+    dso: 'Deep-sky object',
     // Not a physical class -- a curatorial one. A golf ball, a car and a photograph have nothing
     // in common except that somebody sent them and nobody had to.
     oddity: 'Oddity',
@@ -503,6 +504,10 @@ export const COPY = {
       distanceFromSun: 'Distance from the Sun',
       lightLeft: 'Its light left it',
       hostStar: 'Its star',
+      across: 'Across',
+      objectType: 'What it is',
+      constellation: 'Constellation',
+      distanceRange: 'Distance, best estimates',
       planetRadius: 'Width, in Earths',
       planetMass: 'Mass, in Earths',
       yearLength: 'One year there',
@@ -545,6 +550,8 @@ export const COPY = {
       monthsAgo: '{n} months ago',
       suns: '{n}× the Sun',
       earths: '{n}× Earth',
+      lightYearsRange: '{lo} to {hi} light-years',
+      millionYearsAgo: '{n} million years ago',
       days: '{n} days',
       hours: '{n} hours',
       yearByMethod: '{year}, {method}',
@@ -726,6 +733,7 @@ export const COPY = {
       site: 'a generic ground site',
       star: 'a point of light, sized by how bright it looks from where you are',
       exoplanet: 'a mark at its star -- the orbit itself is far too small to draw',
+      dso: 'a soft mark at its measured distance; its true shape is not drawn',
     },
     // Where an attached object sits on its carrier's model is our arrangement, AND SO IS HOW BIG
     // IT IS. The disc really is bolted to the side of the bus; the centimetre we chose is ours,
@@ -1033,6 +1041,17 @@ export const COPY = {
   // The "why now" clause is first in every list, per spec 0013's template table.
   // ------------------------------------------------------------------------------------
   templates: {
+    dso: {
+      lead: '{name} is a {type} {dist} light-years away',
+      leadRange: '{name} is a {type} somewhere between {lo} and {hi} light-years away',
+      leadUntyped: '{name} is {dist} light-years away',
+      size: 'about {n} light-years across',
+      seenAs: 'the light you see left it {n} years ago',
+      seenAsMillions: 'the light you see left it {n} million years ago',
+      constellation: 'in {con}',
+      // OpenNGC type codes -> words, for the sentence. The card's row prints the source's own words.
+      kinds: { galaxy: 'galaxy', nebula: 'nebula', cluster: 'star cluster', other: 'deep-sky object' },
+    },
     exoplanet: {
       lead: '{name} is a planet around the star {host}, {dist} light-years away',
       leadNoHost: '{name} is a planet around another star, {dist} light-years away',

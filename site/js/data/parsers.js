@@ -1331,3 +1331,55 @@ export function parseExoplanets(text, opts = {}) {
   }
   return out;
 }
+
+
+// =================================================================================================
+// Deep-sky objects (spec 0028 step 5): site/data/dso.json from scripts/build-dso.py
+// =================================================================================================
+
+/**
+ * One `static` record per object that has a SOURCED distance. The file already holds positions in
+ * light-years on the sun-inertial axes; this only turns them into km and hangs the card's facts
+ * on `meta`. A size in light-years is derived from the apparent major axis and the distance --
+ * small-angle, which for a 3 degree galaxy is good to a part in a thousand.
+ */
+export function parseDso(doc) {
+  const list = doc && Array.isArray(doc.objects) ? doc.objects : [];
+  const out = [];
+  for (const o of list) {
+    if (!o || !Array.isArray(o.posLy) || !Number.isFinite(o.posLy[0]) || !(o.distLy > 0)) continue;
+    const sizeLy = Number.isFinite(o.majAxArcmin) ? Math.round(o.distLy * (o.majAxArcmin / 60) * (Math.PI / 180) * 10) / 10 : null;
+    const aliases = [];
+    if (o.messier != null) aliases.push(`M${o.messier}`, `Messier ${o.messier}`);
+    if (o.designation) aliases.push(o.designation, o.designation.replace(/\s+/g, ''));
+    if (o.common && o.name !== o.common) aliases.push(o.common);
+    out.push({
+      id: `dso-${o.id}`,
+      name: o.common || o.name,
+      klass: 'dso',
+      layer: 'deep-sky',
+      propagator: 'static',
+      frame: 'sun-inertial',
+      pos: { x: o.posLy[0] * LY_KM_EXO, y: o.posLy[1] * LY_KM_EXO, z: o.posLy[2] * LY_KM_EXO },
+      cls: 'measured',
+      meta: {
+        messier: o.messier ?? null,
+        designation: o.designation || null,
+        kind: o.kind || 'other',
+        typeText: o.typeText || null,
+        hubble: o.hubble || null,
+        con: o.con || null,
+        distLy: o.distLy,
+        distLyLow: o.distLyLow ?? null,
+        distLyHigh: o.distLyHigh ?? null,
+        sizeLy,
+        majAxArcmin: o.majAxArcmin ?? null,
+        mag: o.vmag ?? null,
+        why: o.why || null,
+        distanceSource: o.distanceSource || null,
+        aliases,
+      },
+    });
+  }
+  return out;
+}
