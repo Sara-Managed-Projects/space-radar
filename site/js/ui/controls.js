@@ -18,6 +18,7 @@ import { predictPasses } from '../sky/passes.js';
 import { createSearch } from './search.js';
 import { LADDER_RUNGS, WE_SHOW } from '../data/ladder.js';
 import { createNext } from './next.js';
+import { createColorKey } from './colorkey.js';
 import { shapeLine } from './tripframe.js';
 
 const HOST_ID = 'sr-controls';
@@ -981,6 +982,9 @@ export function createControls(ctx) {
   state.next = createNext(ctx);
   node.appendChild(state.next.root);
   node.appendChild(buildLayers(ctx, state));
+  // Colour by (spec 0026 req 11): under the layer list, because it recolours those dots.
+  state.colourKey = createColorKey(ctx);
+  node.appendChild(state.colourKey.root);
   node.appendChild(buildLadder(ctx, state));
   node.appendChild(buildClock(ctx, state));
   node.appendChild(buildLocation(ctx, state));

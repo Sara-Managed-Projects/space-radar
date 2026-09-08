@@ -1,0 +1,53 @@
+# Colour keys (spec 0026 requirement 11, from the satellitemap.space study): one click recolours
+# every dot by a fact the records already hold, and the legend says how many are in each bucket.
+#
+# A key names the FIELD it reads (`by`) and its buckets in order; a record whose field is missing
+# falls in the `unknown` bucket, which is always drawn grey and always counted, because "we do not
+# know its height" is a fact too. Bounds are [min, max) in the field's unit. Nothing here fetches:
+# perigee, inclination and the launch year all come from the GP record the app already parsed.
+#
+# scripts/gen_colorkeys_js.py mirrors this into site/js/data/colorkeys.js; check_registry.py refuses
+# a key with overlapping or gapped buckets, a colour that is not a hex, or no `why`.
+version: 1
+
+keys:
+  - id: class
+    label: What it is
+    by: klass
+    why: "The default: the nine classes in the design language's colours. Every card names its class."
+
+  - id: altitude
+    label: How high it flies
+    by: perigee_km
+    unit: km
+    why: "Height decides everything a beginner asks: how fast it goes round, how long before it comes down, whether it holds still over one place."
+    buckets:
+      - {id: very-low, label: "under 400 km — drag brings these down within years", min: 0, max: 400, colour: "#FF9F43"}
+      - {id: low, label: "400–1 000 km — where most satellites live", min: 400, max: 1000, colour: "#7FD1FF"}
+      - {id: upper-leo, label: "1 000–2 000 km — above the crowd", min: 1000, max: 2000, colour: "#9EF0D8"}
+      - {id: medium, label: "2 000–35 000 km — navigation satellites live here", min: 2000, max: 35000, colour: "#C3A6FF"}
+      - {id: geo, label: "35 000 km and beyond — holding still over one spot", min: 35000, max: 1000000000, colour: "#FFD166"}
+
+  - id: inclination
+    label: How tilted its orbit is
+    by: inclination_deg
+    unit: deg
+    why: "The tilt says where on Earth it can ever be overhead: an equatorial orbit never sees Europe, a polar one sees everywhere."
+    buckets:
+      - {id: equatorial, label: "under 20° — round the equator", min: 0, max: 20, colour: "#FFD166"}
+      - {id: mid, label: "20–60° — the crewed stations and most of the crowd", min: 20, max: 60, colour: "#7FD1FF"}
+      - {id: high, label: "60–85° — sees the high latitudes", min: 60, max: 85, colour: "#9EF0D8"}
+      - {id: polar, label: "85–95° — over both poles every lap", min: 85, max: 95, colour: "#F2F4F7"}
+      - {id: retrograde, label: "over 95° — against the Earth's spin, the sun-synchronous ones", min: 95, max: 181, colour: "#FF8FA3"}
+
+  - id: launch-age
+    label: How long it has been up
+    by: launch_year
+    unit: year
+    why: "Age is the story of the sky filling up: most of what is up there was launched in the last five years."
+    buckets:
+      - {id: this-year, label: "launched this year", min: 2026, max: 2100, colour: "#FF9F43"}
+      - {id: recent, label: "launched 2021–2025", min: 2021, max: 2026, colour: "#7FD1FF"}
+      - {id: teens, label: "launched 2010–2020", min: 2010, max: 2021, colour: "#9EF0D8"}
+      - {id: noughties, label: "launched 2000–2009", min: 2000, max: 2010, colour: "#C3A6FF"}
+      - {id: old, label: "launched before 2000", min: 1957, max: 2000, colour: "#7A8494"}

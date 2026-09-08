@@ -2025,3 +2025,25 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
 }
 
 .sr-next__row:hover { border-color: var(--sr-line-strong); }
+
+/* Colour by (spec 0026 req 11) -------------------------------------------------------------- */
+
+.sr-colourkey__select {
+  width: 100%;
+  min-height: 36px;
+  margin: 0 0 8px;
+  padding: 0 8px;
+  font: inherit;
+  color: var(--sr-text);
+  background: var(--sr-raise);
+  border: 1px solid var(--sr-line-strong);
+  border-radius: var(--sr-radius-sm);
+}
+
+.sr-colourkey__legend { margin: 0; padding: 0; list-style: none; }
+
+.sr-colourkey__row { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: 12px; }
+
+.sr-colourkey__label { flex: 1 1 auto; color: var(--sr-text-dim); }
+
+.sr-colourkey__count { flex: 0 0 auto; }

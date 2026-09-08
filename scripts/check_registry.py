@@ -791,6 +791,67 @@ def check_aliases() -> list:
     return rows_
 
 
+COLORKEY_FIELDS = {"klass", "perigee_km", "inclination_deg", "launch_year"}
+
+
+def check_colorkeys() -> list:
+    """registry/colorkeys.yaml: a key reads a field the browser knows how to read; its buckets tile a range."""
+    path = REG / "colorkeys.yaml"
+    if not path.exists():
+        return []
+    try:
+        doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as exc:
+        fail("colorkeys.yaml", f"will not parse: {exc}")
+        return []
+    keys = doc.get("keys")
+    if not isinstance(keys, list) or not keys:
+        fail("colorkeys.yaml", "no `keys:` list")
+        return []
+    if keys[0].get("id") != "class":
+        fail("colorkeys.yaml", "the first key must be `class`: it is the default and the way back to the class colours")
+    seen = set()
+    for k in keys:
+        if not isinstance(k, dict):
+            fail("colorkeys.yaml", "a key is not a mapping")
+            continue
+        kid = k.get("id")
+        where = f"colorkeys.yaml[{kid}]"
+        if not kid:
+            fail("colorkeys.yaml", "a key has no id")
+            continue
+        if kid in seen:
+            fail(where, "duplicate id")
+        seen.add(kid)
+        if k.get("by") not in COLORKEY_FIELDS:
+            fail(where, f"`by: {k.get('by')}` is not a field data/colorkeyrules.js reads {sorted(COLORKEY_FIELDS)}")
+        if not k.get("label") or not k.get("why"):
+            fail(where, "needs `label:` and `why:`")
+        if k.get("by") == "klass":
+            continue
+        buckets = k.get("buckets")
+        if not isinstance(buckets, list) or not buckets:
+            fail(where, "a numeric key needs `buckets:`")
+            continue
+        prev_max = None
+        # Registry order is DISPLAY order (newest first for launch age); tiling is checked by value.
+        ordered = sorted((b for b in buckets if isinstance(b, dict)), key=lambda b: (b.get('min') if isinstance(b.get('min'), (int, float)) else 0))
+        for b in ordered:
+            bw = f"{where}.{b.get('id')}"
+            if not b.get("id") or not b.get("label"):
+                fail(bw, "a bucket needs `id:` and `label:`")
+            if not re.match(r"^#[0-9A-Fa-f]{6}$", str(b.get("colour") or "")):
+                fail(bw, f"`colour` must be a six-digit hex, not {b.get('colour')!r}")
+            lo, hi = b.get("min"), b.get("max")
+            if not isinstance(lo, (int, float)) or not isinstance(hi, (int, float)) or not lo < hi:
+                fail(bw, "`min` and `max` must be numbers with min < max")
+                continue
+            if prev_max is not None and lo != prev_max:
+                fail(bw, f"buckets must tile the range: this one starts at {lo}, the one before ended at {prev_max}")
+            prev_max = hi
+    return keys
+
+
 def check_lod() -> list:
     """registry/lod.yaml: a rule must name a hook that exists and a range that is a range."""
     path = REG / "lod.yaml"
@@ -1514,6 +1575,7 @@ def main() -> int:
     ladder_rungs = check_ladder(world_ids, layer_ids)
     exotics = check_exotics()
     aliases = check_aliases()
+    colorkeys = check_colorkeys()
     TOUR_STAGES.update(world_ids)
     TOUR_STAGES.update(st.get('id') for st in ladder if isinstance(st, dict) and st.get('id'))
     check_tours(oddities_doc, layer_ids, world_ids, {s.get('id') for s in sites},
@@ -1713,7 +1775,7 @@ def main() -> int:
         return 1
     print(
         f"registry ok: {len(worlds)} worlds, {len(ladder)} ladder rungs, {len(lod_rules)} lod rules, "
-        f"{len(dso_hand)} hand-placed deep-sky objects, {len(exotics)} exotics, {len(ladder_rungs)} breadcrumb rungs, {len(aliases)} aliases, "
+        f"{len(dso_hand)} hand-placed deep-sky objects, {len(exotics)} exotics, {len(ladder_rungs)} breadcrumb rungs, {len(aliases)} aliases, {len(colorkeys)} colour keys, "
         f"{len(sources)} sources, {len(layers)} layers, "
         f"{len(events)} event types, {len(models)} models, {len(real_models)} real models, "
         f"{len(marks)} third-party marks, {len(sites)} sites, "
