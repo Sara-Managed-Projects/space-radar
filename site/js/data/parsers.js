@@ -1384,7 +1384,11 @@ export function parseDso(doc) {
         mag: o.vmag ?? null,
         why: o.why || null,
         distanceSource: o.distanceSource || null,
-        cite: `Position: OpenNGC (CC BY-SA 4.0); distance: ${o.distanceSource || 'as the row says'}`,
+        // A Messier row's position is OpenNGC's and its distance the table's; a hand row took both from
+        // the one page it names, and must not credit OpenNGC for a position it did not use.
+        cite: o.positionSource && o.positionSource !== 'OpenNGC'
+          ? `Position and distance: ${o.positionSource}`
+          : `Position: OpenNGC (CC BY-SA 4.0); distance: ${o.distanceSource || 'as the row says'}`,
         aliases,
       },
     });
