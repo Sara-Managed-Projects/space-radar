@@ -128,7 +128,9 @@ const MAGNITUDE_BANDS = [
   { upto: -11, say: 'as bright as the full Moon' },
   { upto: -6, say: 'brighter than any star or planet' },
   { upto: -3.5, say: 'as bright as Venus' },
-  { upto: 0, say: 'as bright as the brightest stars' },
+  // The twenty-odd first-magnitude stars run to about 1.5 (Regulus 1.35); Betelgeuse at 0.5 was being
+  // called an ordinary star (live, 2026-09-09).
+  { upto: 1.5, say: 'as bright as the brightest stars' },
   { upto: 3, say: 'as bright as an ordinary star' },
   { upto: 6, say: 'just visible from a dark place' },
   { upto: Infinity, say: 'too faint to see without a telescope' },
