@@ -993,8 +993,17 @@ def main() -> int:
         seen.add(sid)
         if not s.get("url"):
             fail(where, "no url")
-        if not s.get("parser"):
+        parser = s.get("parser")
+        if not parser:
             fail(where, "no parser")
+        elif not (ROOT / "harvest" / "parsers" / f"{parser}.py").exists():
+            fail(where, f"parser `{parser}` has no module harvest/parsers/{parser}.py -- "
+                        f"a source is a row plus one parser module, and the harvester finds it by this name")
+        # `list:` and `query:` name files the harvester's mirror inlines at package time. A path that
+        # is not in the tree would be found by the Lambda at three in the morning; find it here.
+        for key in ("list", "query"):
+            if s.get(key) and not (ROOT / str(s[key])).is_file():
+                fail(where, f"`{key}: {s[key]}` names a file that is not in the tree")
         auth = s.get("auth")
         if auth is None:
             fail(where, "no `auth:` (write `none` rather than leaving it out)")

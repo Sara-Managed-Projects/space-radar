@@ -1,0 +1,60 @@
+{
+  "_": "Where each fixture came from. Every one is the real upstream's answer, trimmed only where said.",
+  "captured_on": "2026-09-08",
+  "celestrak_gp.json": {
+    "url": "https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=json",
+    "note": "verbatim; one object (the ISS) so the capture did not spend the stations file's one-per-2h download"
+  },
+  "celestrak_satcat.csv": {
+    "url": "https://celestrak.org/pub/satcat.csv",
+    "note": "header + first 15 rows of 6 730 475 bytes (Range request)"
+  },
+  "ll2.json": {
+    "url": "https://ll.thespacedevs.com/2.3.0/launches/upcoming/?limit=2&mode=detailed",
+    "note": "verbatim; limit=2 instead of the row's 50"
+  },
+  "ll2_events.json": {
+    "url": "https://ll.thespacedevs.com/2.3.0/events/upcoming/?limit=2",
+    "note": "verbatim; limit=2 instead of the row's 30"
+  },
+  "jpl_sbdb.json": {
+    "url": "https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name,spkid,e,a,q,i,om,w,ma,epoch,H,diameter,class&sb-kind=a&sb-group=neo&limit=3",
+    "note": "verbatim; limit=3. Its `count` says 42293 -- the parser counts rows, not that field"
+  },
+  "jpl_cad.json": {
+    "url": "https://ssd-api.jpl.nasa.gov/cad.api?dist-max=10LD&date-min=now&date-max=%2B60&sort=date&diameter=true&fullname=true",
+    "note": "verbatim, 15 approaches"
+  },
+  "esa_neocc.txt": {
+    "url": "https://neo.ssa.esa.int/PSDB-portlet/download?file=esa_upcoming_close_app",
+    "note": "first 12 lines of 179: the 4-line header block and 8 rows"
+  },
+  "mpc_comets.txt": {
+    "url": "https://minorplanetcenter.net/iau/MPCORB/CometEls.txt",
+    "note": "first 5 of 961 lines"
+  },
+  "horizons.json": {
+    "url": "https://ssd.jpl.nasa.gov/api/horizons.api?format=json&COMMAND='-170'&EPHEM_TYPE=VECTORS&CENTER='500@10'&START_TIME='2026-09-07'&STOP_TIME='2026-09-08'&STEP_SIZE='6 h'&VEC_TABLE='2'&OUT_UNITS='KM-S'&CSV_FORMAT='YES'",
+    "note": "the `result` texts of two real answers: JWST over one day (5 rows), and COMMAND='-999999', which Horizons answers 'No such record'"
+  },
+  "dsn_now.xml": {
+    "url": "https://eyes.nasa.gov/dsn/data/dsn.xml",
+    "note": "verbatim"
+  },
+  "swpc.json": {
+    "url": "https://services.swpc.noaa.gov/products/noaa-planetary-k-index-forecast.json",
+    "note": "verbatim"
+  },
+  "swpc_ovation.json": {
+    "url": "https://services.swpc.noaa.gov/json/ovation_aurora_latest.json",
+    "note": "header keys verbatim; `coordinates` cut from 65 160 cells to the first 10"
+  },
+  "wikidata.json": {
+    "url": "https://query.wikidata.org/sparql (harvest/queries/observatories.rq + LIMIT 3)",
+    "note": "verbatim"
+  },
+  "space_track_tip.json": {
+    "url": null,
+    "note": "NOT captured: Space-Track needs a login nobody here holds. The shape is from its documentation; the test marks it as such"
+  }
+}

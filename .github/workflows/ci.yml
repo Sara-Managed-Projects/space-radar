@@ -40,6 +40,18 @@ jobs:
       # stale mirror is a trip promising a visitor a length it does not spend.
       - name: The tours mirror matches the registry
         run: python3 scripts/gen_tours_js.py --check
+      # Same rule, fourth registry, other direction: the harvester (spec 0003) runs on the standard
+      # library alone, so registry/sources.yaml is mirrored into harvest/sources.json -- with its
+      # `list:` and `query:` files inlined -- and a stale mirror is a Lambda fetching last month's
+      # list of spacecraft.
+      - name: The harvester's source mirror matches the registry
+        run: python3 scripts/gen_sources_json.py --check
+      # Every parser against what its source really sends (captured fixtures), the never-worse
+      # guard at 0 / 49 % / 50 %, CelesTrak's "has not updated since" as not-modified, a missing
+      # secret as a skip, and one whole run into a directory. No network: CelesTrak allows one
+      # download per file per two hours, and a suite that spent it could not be run twice.
+      - name: The harvester counts, guards and writes what the contract says
+        run: python3 tests/test_harvest.py
       # Every user-visible string lives in site/js/copy/en.js. Three files cited this check by name
       # before it existed; on the first run it was ever given it found three real leaks in
       # ui/mobile.js, which is the argument for it in one line.

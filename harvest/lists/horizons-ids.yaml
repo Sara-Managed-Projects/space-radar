@@ -1,0 +1,39 @@
+# The spacecraft the deep-space layer draws, and the Horizons request that fetches each one.
+# registry/sources.yaml[horizons-deep-space] points here. The list is the data; the URL is the
+# endpoint; the harvester makes one request per id, in order, with `pause_s` between them, and
+# writes ONE snapshot whose body maps id -> the Horizons response text.
+#
+# Every id below is one site/js/data/sample.js sampleDeepSpace() or scene/realmodels.js `horizons:`
+# names today. -170 and -31 were VERIFIED by fetch on 2026-09-06 (docs/data-sources.md §4); the
+# rest were confirmed against Horizons' own object header on 2026-09-08 when this list was written.
+#
+# `params` is the query string, with three placeholders the harvester fills: {id}, {start}, {stop}.
+# Horizons wants its string values single-quoted, hence the quotes inside the quotes.
+# `window` is the sample span around the run time: propagate/sampled.js interpolates inside a
+# record's range and stops answering 7 days outside it, so a daily fetch with a day behind and
+# thirty ahead is never on the edge.
+
+params:
+  format: json
+  EPHEM_TYPE: VECTORS
+  CENTER: "'500@10'"        # heliocentric, the frame the deep-space layer draws in
+  STEP_SIZE: "'6 h'"
+  VEC_TABLE: "'2'"          # position and velocity, which cubic Hermite needs
+  OUT_UNITS: "'KM-S'"
+  CSV_FORMAT: "'YES'"
+  COMMAND: "'{id}'"
+  START_TIME: "'{start}'"
+  STOP_TIME: "'{stop}'"
+
+window: {before: 1d, after: 30d}
+pause_s: 0.5
+
+ids:
+  - {id: "-170", name: "James Webb Space Telescope", app_id: deep-jwst}
+  - {id: "-21",  name: "SOHO",                       app_id: deep-soho}
+  - {id: "-74",  name: "Mars Reconnaissance Orbiter", app_id: deep-mro}
+  - {id: "-61",  name: "Juno",                       app_id: deep-juno}
+  - {id: "-31",  name: "Voyager 1",                  app_id: deep-voyager-1}
+  - {id: "-32",  name: "Voyager 2",                  app_id: deep-voyager-2}
+  - {id: "-98",  name: "New Horizons",               app_id: deep-new-horizons}
+  - {id: "-96",  name: "Parker Solar Probe",         app_id: deep-parker}

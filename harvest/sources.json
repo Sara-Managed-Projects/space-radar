@@ -1,0 +1,248 @@
+{
+  "schema": 1,
+  "generated_from": "registry/sources.yaml",
+  "generated_by": "scripts/gen_sources_json.py",
+  "sources": [
+    {
+      "id": "celestrak-stations",
+      "url": "https://celestrak.org/NORAD/elements/gp.php?GROUP=stations&FORMAT=json",
+      "auth": "none",
+      "refresh": "3h",
+      "freshness_max": "48h",
+      "parser": "celestrak_gp",
+      "outputs": [
+        "stations.json"
+      ]
+    },
+    {
+      "id": "celestrak-active",
+      "url": "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=json",
+      "auth": "none",
+      "refresh": "6h",
+      "freshness_max": "72h",
+      "parser": "celestrak_gp",
+      "outputs": [
+        "active.json"
+      ]
+    },
+    {
+      "id": "celestrak-supplemental-starlink",
+      "url": "https://celestrak.org/NORAD/elements/supplemental/sup-gp.php?FILE=starlink&FORMAT=json",
+      "auth": "none",
+      "refresh": "3h",
+      "freshness_max": "24h",
+      "parser": "celestrak_gp",
+      "outputs": [
+        "starlink-sup.json"
+      ]
+    },
+    {
+      "id": "celestrak-satcat",
+      "url": "https://celestrak.org/pub/satcat.csv",
+      "auth": "none",
+      "refresh": "24h",
+      "freshness_max": "168h",
+      "parser": "celestrak_satcat",
+      "outputs": [
+        "satcat.json"
+      ]
+    },
+    {
+      "id": "ll2-upcoming",
+      "url": "https://ll.thespacedevs.com/2.3.0/launches/upcoming/?limit=50&mode=detailed",
+      "auth": "none",
+      "refresh": "2h",
+      "freshness_max": "12h",
+      "parser": "ll2",
+      "outputs": [
+        "launches.json",
+        "sites-pads.json"
+      ]
+    },
+    {
+      "id": "ll2-events",
+      "url": "https://ll.thespacedevs.com/2.3.0/events/upcoming/?limit=30",
+      "auth": "none",
+      "refresh": "2h",
+      "freshness_max": "24h",
+      "parser": "ll2_events",
+      "outputs": [
+        "events-ll2.json"
+      ]
+    },
+    {
+      "id": "jpl-sbdb-neo",
+      "url": "https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name,spkid,e,a,q,i,om,w,ma,epoch,H,diameter,class&sb-kind=a&sb-group=neo",
+      "auth": "none",
+      "refresh": "24h",
+      "freshness_max": "168h",
+      "parser": "jpl_sbdb",
+      "outputs": [
+        "neo-elements.json"
+      ]
+    },
+    {
+      "id": "jpl-cad",
+      "url": "https://ssd-api.jpl.nasa.gov/cad.api?dist-max=10LD&date-min=now&date-max=%2B60&sort=date&diameter=true&fullname=true",
+      "auth": "none",
+      "refresh": "24h",
+      "freshness_max": "72h",
+      "parser": "jpl_cad",
+      "outputs": [
+        "close-approaches.json"
+      ]
+    },
+    {
+      "id": "esa-neocc-close",
+      "url": "https://neo.ssa.esa.int/PSDB-portlet/download?file=esa_upcoming_close_app",
+      "auth": "none",
+      "refresh": "24h",
+      "freshness_max": "168h",
+      "parser": "esa_neocc",
+      "outputs": [
+        "close-approaches-esa.json"
+      ]
+    },
+    {
+      "id": "mpc-comets",
+      "url": "https://minorplanetcenter.net/iau/MPCORB/CometEls.txt",
+      "auth": "none",
+      "refresh": "24h",
+      "freshness_max": "168h",
+      "parser": "mpc_comets",
+      "outputs": [
+        "comets.json"
+      ]
+    },
+    {
+      "id": "horizons-deep-space",
+      "url": "https://ssd.jpl.nasa.gov/api/horizons.api",
+      "auth": "none",
+      "refresh": "24h",
+      "freshness_max": "168h",
+      "parser": "horizons",
+      "outputs": [
+        "deep-space.json"
+      ],
+      "list": {
+        "params": {
+          "format": "json",
+          "EPHEM_TYPE": "VECTORS",
+          "CENTER": "'500@10'",
+          "STEP_SIZE": "'6 h'",
+          "VEC_TABLE": "'2'",
+          "OUT_UNITS": "'KM-S'",
+          "CSV_FORMAT": "'YES'",
+          "COMMAND": "'{id}'",
+          "START_TIME": "'{start}'",
+          "STOP_TIME": "'{stop}'"
+        },
+        "window": {
+          "before": "1d",
+          "after": "30d"
+        },
+        "pause_s": 0.5,
+        "ids": [
+          {
+            "id": "-170",
+            "name": "James Webb Space Telescope",
+            "app_id": "deep-jwst"
+          },
+          {
+            "id": "-21",
+            "name": "SOHO",
+            "app_id": "deep-soho"
+          },
+          {
+            "id": "-74",
+            "name": "Mars Reconnaissance Orbiter",
+            "app_id": "deep-mro"
+          },
+          {
+            "id": "-61",
+            "name": "Juno",
+            "app_id": "deep-juno"
+          },
+          {
+            "id": "-31",
+            "name": "Voyager 1",
+            "app_id": "deep-voyager-1"
+          },
+          {
+            "id": "-32",
+            "name": "Voyager 2",
+            "app_id": "deep-voyager-2"
+          },
+          {
+            "id": "-98",
+            "name": "New Horizons",
+            "app_id": "deep-new-horizons"
+          },
+          {
+            "id": "-96",
+            "name": "Parker Solar Probe",
+            "app_id": "deep-parker"
+          }
+        ]
+      }
+    },
+    {
+      "id": "dsn-now",
+      "url": "https://eyes.nasa.gov/dsn/data/dsn.xml",
+      "auth": "none",
+      "refresh": "5m",
+      "freshness_max": "30m",
+      "parser": "dsn_now",
+      "outputs": [
+        "dsn.json"
+      ]
+    },
+    {
+      "id": "swpc-kp",
+      "url": "https://services.swpc.noaa.gov/products/noaa-planetary-k-index-forecast.json",
+      "auth": "none",
+      "refresh": "15m",
+      "freshness_max": "6h",
+      "parser": "swpc",
+      "outputs": [
+        "space-weather.json"
+      ]
+    },
+    {
+      "id": "swpc-ovation",
+      "url": "https://services.swpc.noaa.gov/json/ovation_aurora_latest.json",
+      "auth": "none",
+      "refresh": "15m",
+      "freshness_max": "3h",
+      "parser": "swpc_ovation",
+      "outputs": [
+        "aurora.png",
+        "aurora-summary.json"
+      ]
+    },
+    {
+      "id": "wikidata-observatories",
+      "url": "https://query.wikidata.org/sparql",
+      "auth": "none",
+      "refresh": "168h",
+      "freshness_max": "720h",
+      "parser": "wikidata",
+      "outputs": [
+        "sites-observatories.json"
+      ],
+      "query": "SELECT ?item ?itemLabel ?coord ?countryLabel ?inception ?website WHERE {\n  ?item wdt:P31/wdt:P279* wd:Q62832 ; wdt:P625 ?coord .\n  MINUS { ?item wdt:P576 ?dissolved }\n  ?item wikibase:sitelinks ?sl . FILTER(?sl > 3)\n  OPTIONAL { ?item wdt:P17 ?country }\n  OPTIONAL { ?item wdt:P571 ?inception }\n  OPTIONAL { ?item wdt:P856 ?website }\n  SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". }\n}\n"
+    },
+    {
+      "id": "space-track-tip",
+      "url": "https://www.space-track.org/basicspacedata/query/class/tip/format/json",
+      "auth": "secret:SPACE_TRACK_PASSWORD",
+      "refresh": "6h",
+      "freshness_max": "48h",
+      "parser": "space_track_tip",
+      "outputs": [
+        "reentries.json"
+      ],
+      "enabled": false
+    }
+  ]
+}

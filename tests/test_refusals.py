@@ -37,6 +37,13 @@ CASES: list[tuple[str, str, str, str]] = [
      "sources.yaml", "cadence: 3h", "cadence: sometimes"),
     ("source's auth is neither none nor a secret",
      "sources.yaml", "auth: none", "auth: apikey"),
+    # The harvester (spec 0003) finds a source's parser by the row's `parser:` name. A name with
+    # no module behind it would be found by the Lambda, at night, as an `error` on one source;
+    # the validator finds it in CI, by name.
+    ("source names a parser with no module behind it",
+     "sources.yaml", "parser: celestrak_satcat", "parser: celestrak_catalogue"),
+    ("source names a list file that is not in the tree",
+     "sources.yaml", "list: harvest/lists/horizons-ids.yaml", "list: harvest/lists/nowhere.yaml"),
     ("model has no licence",
      "models.yaml", 'licence: "MIT (this project)", budget_tris: 1500', "budget_tris: 1500"),
     ("event type has no lead times",
@@ -471,6 +478,8 @@ def check_tour_refusals() -> int:
             shutil.copytree(ROOT / "registry", work / "registry")
             shutil.copytree(ROOT / "scripts", work / "scripts")
             shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")
+            shutil.copytree(ROOT / "harvest", work / "harvest",
+                            ignore=shutil.ignore_patterns("__pycache__"))
             # A COMPLETE tree, unlike the mutation harness above, because the last case asserts
             # the validator ACCEPTS the file -- and an accept case cannot be run in a tree the
             # validator already rejects for missing model files. Names, not bytes: the question is
@@ -574,6 +583,9 @@ def main() -> int:
             # The validator cross-checks registry/models.yaml against CREDITS.md, so a tree
             # without it fails for a reason that has nothing to do with the case under test.
             shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")
+            # ...and registry/sources.yaml against harvest/parsers/ and the list/query files.
+            shutil.copytree(ROOT / "harvest", work / "harvest",
+                            ignore=shutil.ignore_patterns("__pycache__"))
 
             path = work / "registry" / filename
             text = path.read_text(encoding="utf-8")
