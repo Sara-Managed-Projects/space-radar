@@ -26,6 +26,11 @@ check(typeof line === 'string' && line.startsWith('Space weather: Kp '), `a line
 check(line.includes('NOAA SWPC'), 'it names the source');
 if (observedRows.length) check(line.includes('measured') && line.includes('minutes ago'), `an observed reading says measured and how old (${line})`);
 else check(line.includes('forecast, not a measurement'), 'a forecast-only feed says so');
+// a row stamped for the bin we are still inside of is not "just now"
+const early = spaceWeatherLine(parsed, { fetchedAt: readingMs - 60e3, via: 'live', stale: false }, readingMs - 60e3);
+if (observedRows.length) check(early.includes('measured for the current three-hour period'), `a stamp still ahead of the clock names the bin (${early})`);
+const late = spaceWeatherLine(parsed, { fetchedAt: readingMs + 5 * 3600e3, via: 'live', stale: false }, readingMs + 5 * 3600e3);
+if (observedRows.length) check(late.includes('5 hours ago'), `five hours on it says hours (${late})`);
 // stale is said
 const staleLine = spaceWeatherLine(parsed, { fetchedAt: now, via: 'snapshot', stale: true }, now);
 check(staleLine.includes('older than NOAA promises') && staleLine.includes('from our copy'), 'a stale snapshot reading says both');
