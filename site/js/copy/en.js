@@ -447,6 +447,7 @@ export const COPY = {
     site: 'Ground site',
     world: 'World',
     star: 'Star',
+    exoplanet: 'Planet of another star',
     // Not a physical class -- a curatorial one. A golf ball, a car and a photograph have nothing
     // in common except that somebody sent them and nobody had to.
     oddity: 'Oddity',
@@ -501,6 +502,12 @@ export const COPY = {
       distanceFromEarth: 'Distance from Earth',
       distanceFromSun: 'Distance from the Sun',
       lightLeft: 'Its light left it',
+      hostStar: 'Its star',
+      planetRadius: 'Width, in Earths',
+      planetMass: 'Mass, in Earths',
+      yearLength: 'One year there',
+      found: 'Found',
+      catalogueCopy: 'Catalogue copy',
       spectralType: 'Type of star',
       brightness: 'How bright it looks',
       luminosity: 'Light output',
@@ -537,6 +544,11 @@ export const COPY = {
       yearsAgo: '{n} years ago',
       monthsAgo: '{n} months ago',
       suns: '{n}× the Sun',
+      earths: '{n}× Earth',
+      days: '{n} days',
+      hours: '{n} hours',
+      yearByMethod: '{year}, {method}',
+      asOf: 'as of {date}',
       magnitude: 'magnitude {n}',
       lunar: "{n}× the Moon's distance",
       minutes: '{n} minutes',
@@ -713,6 +725,7 @@ export const COPY = {
       comet: 'a generic comet',
       site: 'a generic ground site',
       star: 'a point of light, sized by how bright it looks from where you are',
+      exoplanet: 'a mark at its star -- the orbit itself is far too small to draw',
     },
     // Where an attached object sits on its carrier's model is our arrangement, AND SO IS HOW BIG
     // IT IS. The disc really is bolted to the side of the bus; the centimetre we chose is ours,
@@ -1020,6 +1033,18 @@ export const COPY = {
   // The "why now" clause is first in every list, per spec 0013's template table.
   // ------------------------------------------------------------------------------------
   templates: {
+    exoplanet: {
+      lead: '{name} is a planet around the star {host}, {dist} light-years away',
+      leadNoHost: '{name} is a planet around another star, {dist} light-years away',
+      size: 'about {n} times as wide as Earth',
+      sizeSmaller: 'about {n} of Earth’s width',
+      mass: '{n} times Earth’s mass',
+      year: 'its year lasts {n} days',
+      yearHours: 'its year lasts {n} hours',
+      found: 'found in {year} by the {method} method',
+      foundYear: 'found in {year}',
+      asOf: 'from a copy of the catalogue as of {date}',
+    },
     star: {
       lead: '{name} is a star {dist} light-years away',
       leadNear: '{name} is a star {dist} light-years away, one of the nearest there are',

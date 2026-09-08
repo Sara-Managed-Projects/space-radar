@@ -192,7 +192,7 @@ export async function boot({ setStatus } = {}) {
   function select(record, opts = {}) {
     // A star is a place on the stellar rung: from a world stage its true position is past the far
     // plane, so selecting one recentres on the Sun at one unit = one light-year first.
-    if (record && record.klass === 'star' && !isLadderStage(stage.worldId) && opts.fly !== false) ctx.setStage('stellar');
+    if (record && (record.klass === 'star' || record.klass === 'exoplanet') && !isLadderStage(stage.worldId) && opts.fly !== false) ctx.setStage('stellar');
     selected = record;
     for (const gl of glyphLayers.values()) if (gl.setSelected) gl.setSelected(record ? record.id : null);
     showCard(record, ctx);
@@ -225,6 +225,7 @@ export async function boot({ setStatus } = {}) {
   function arrivalDistance(record) {
     if (record && record.klass === 'world') return Math.max(0.05, worlds.drawnRadiusUnits(record.id) * 3.5);
     if (record && record.klass === 'star') return 0.4; // a point of light: close, but not inside it
+    if (record && record.klass === 'exoplanet') return 0.4;
     const layer = LAYERS.find((l) => l.id === record.layer);
     const nearKm = (layer && layer.nearKm) || 2000;
     return Math.max(0.05, (nearKm * 0.35) / stage.unitKm);

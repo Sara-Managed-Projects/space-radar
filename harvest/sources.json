@@ -82,6 +82,17 @@
       ]
     },
     {
+      "id": "nasa-exoplanet-archive",
+      "url": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+pl_name,hostname,ra,dec,sy_dist,pl_rade,pl_bmasse,pl_orbper,disc_year,discoverymethod,st_teff,st_rad,st_spectype+from+pscomppars&format=csv",
+      "auth": "none",
+      "refresh": "168h",
+      "freshness_max": "720h",
+      "parser": "nasa_exoplanet_archive",
+      "outputs": [
+        "exoplanets.json"
+      ]
+    },
+    {
       "id": "jpl-cad",
       "url": "https://ssd-api.jpl.nasa.gov/cad.api?dist-max=10LD&date-min=now&date-max=%2B60&sort=date&diameter=true&fullname=true",
       "auth": "none",

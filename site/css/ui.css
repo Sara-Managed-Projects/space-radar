@@ -44,6 +44,7 @@
   --sr-site: #f58f7c;
   --sr-world: #e8ecf2;
   --sr-star: #fff3c4;
+  --sr-exoplanet: #8ee3a8;
   --sr-unknown: #9aa4b2;
 
   /* Surfaces derived from the palette, never invented hues */
@@ -239,6 +240,10 @@
 .sr-glyph--star,
 .sr-swatch--star {
   background: var(--sr-star);
+}
+.sr-glyph--exoplanet,
+.sr-swatch--exoplanet {
+  background: var(--sr-exoplanet);
 }
 /* An oddity is not a class of object, it is a class of story, and it borrows probe violet: "a
    made thing, out there". scene/glyphatlas.js aliases the 3D glyph to `probe` for the same

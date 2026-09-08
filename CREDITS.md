@@ -393,6 +393,20 @@ the source is clearly specified**. This app fetches it live and never mirrors it
 status panel both name the Minor Planet Center. If you add a harvester that caches or re-serves MPC
 files, that condition attaches to your copy too.
 
+### 4.7 NASA Exoplanet Archive — confirmed planets
+
+`registry/sources.yaml` row `nasa-exoplanet-archive`; the browser reads the harvester's snapshot, and
+`site/data/exoplanets.csv` is a dated, slimmed copy of the same query (`scripts/build-exoplanets.py`)
+that stands in until the first snapshot lands, every record saying *as of* its date.
+
+- Source: the **Planetary Systems Composite Parameters** table (`pscomppars`), NASA Exoplanet Archive,
+  operated by the California Institute of Technology under contract with NASA's Exoplanet Exploration
+  Program. Table DOI **10.26133/NEA13**; the archive asks users to cite Christiansen et al. 2025.
+- Terms: the archive's data are publicly available; its documentation asks for the DOI to be cited,
+  which this file and the `attribution:` on the row do. No licence text is asserted by the archive.
+- Used unmodified in the snapshot; in the bundled copy, columns reduced to thirteen and numbers
+  rounded to the precision the card prints (`scripts/build-exoplanets.py` says which).
+
 ## 4.6 Third-party trademarks the app names or draws
 
 None of the marks below is licensed to this project and none is used as a badge of origin. They are

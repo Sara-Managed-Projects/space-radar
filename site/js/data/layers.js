@@ -17,7 +17,7 @@
 // says out loud what it selects. Adding a layer is a row here plus, at most, one predicate.
 
 import { load } from './sources.js';
-import { parseCelestrakGP, parseLaunches, parseComets, parseHorizonsVectors, parseNeoApproaches } from './parsers.js';
+import { parseCelestrakGP, parseLaunches, parseComets, parseHorizonsVectors, parseNeoApproaches, parseExoplanets } from './parsers.js';
 import {
   sampleAsteroids,
   sampleDeepSpace,
@@ -31,6 +31,7 @@ const DAY_MS = 86400000;
 
 // Class colours, verbatim from docs/design-language.md. No red. No purple gradients.
 const C = {
+  exoplanet: '#8EE3A8',
   star: '#FFF3C4',
   world: '#E8ECF2',
   station: '#F2F4F7',
@@ -280,6 +281,36 @@ export const LAYERS = [
     card: 'star',
     priority: 60,
     sentence: 'Every star with a measured distance, where it really is. From here they are the sky; from a light-year out they are places.',
+  },
+  {
+    // Planets around other stars (spec 0028 step 4). Mirrors registry/layers.yaml `exoplanets`.
+    // Snapshot of the NASA Exoplanet Archive first; the dated copy in site/data/exoplanets.csv
+    // when there is none (`bundledText`), and every record then carries `asOf`. Each planet is a
+    // `static` record AT ITS STAR: the orbit is sub-pixel at any zoom we draw, and the card says
+    // so. Plain glyphs (klass exoplanet, atlas cell 11); from a world stage they are past the far
+    // plane and simply not there, which is the truth of it -- select one and you are taken to the
+    // stellar rung, where they are.
+    id: 'exoplanets',
+    display: 'Planets around other stars',
+    klass: 'exoplanet',
+    source: 'nasa-exoplanet-archive',
+    parse: 'exoplanets',
+    sample: () => [],
+    bundledText: 'data/exoplanets.csv',
+    bundledAsOf: '2026-09-08',
+    propagator: 'static',
+    frame: 'sun-inertial',
+    moments: { wonder: true, now: false, next: false },
+    defaultOn: true,
+    noModel: true,
+    select: all,
+    budget: { maxItems: 8000 },
+    colour: C.exoplanet,
+    glyph: 'exoplanet',
+    nearKm: 0,
+    card: 'exoplanet',
+    priority: 61,
+    sentence: 'Every confirmed planet around another star, drawn at its star.',
   },
   {
     id: 'stations',
@@ -680,7 +711,24 @@ export async function loadLayerDetailed(layer, nowMs) {
         result = results[0];
         if (results.every((r) => r && r.data != null)) bodies = results.map((r) => r.data);
       }
-      parsed = bodies ? parseFor(layer, bodies.length === 1 ? bodies[0] : bodies) : layer.sample();
+      if (!bodies && layer.bundledText) {
+        // A dated copy checked into the repository (spec 0028 step 4): the same columns the
+        // snapshot carries, so the same parser reads it, and every record says "as of <date>".
+        // Same origin, so it is a plain fetch; a failure falls through to the stand-in.
+        try {
+          const r = await fetch(layer.bundledText);
+          if (r.ok) {
+            const text = await r.text();
+            layer.lastBodyWasBundled = true;
+            parsed = parseFor(layer, text);
+            result = { id: 'bundled', data: text, error: null, bundled: true, fetchedAt: layer.bundledAsOf ? Date.parse(layer.bundledAsOf) : null };
+          }
+        } catch { /* the stand-in below */ }
+      }
+      if (!parsed.length) {
+        layer.lastBodyWasBundled = false;
+        parsed = bodies ? parseFor(layer, bodies.length === 1 ? bodies[0] : bodies) : layer.sample();
+      }
     } else {
       result = await load(layer.source);
       if (result.data == null) {
@@ -735,6 +783,8 @@ function parseFor(layer, data) {
       // The stand-in records are the metadata base: names, ids the trips and models refer to,
       // and the Horizons id each one carries. Only positions change.
       return parseHorizonsVectors(data, typeof layer.sample === 'function' ? layer.sample() : []);
+    case 'exoplanets':
+      return parseExoplanets(data, { asOf: layer.bundledAsOf && layer.lastBodyWasBundled ? layer.bundledAsOf : undefined });
     case 'neo-approaches':
       // Two snapshots: the close-approach table says WHICH bodies, the SBDB says their orbits.
       return Array.isArray(data) ? parseNeoApproaches(data[0], data[1]) : [];

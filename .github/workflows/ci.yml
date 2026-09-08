@@ -95,3 +95,5 @@ jobs:
         run: node tests/test_ladder.mjs
       - name: the stars are places (spec 0028 step 3)
         run: node tests/test_stars3d.mjs
+      - name: planets around other stars sit on their stars (spec 0028 step 4)
+        run: node tests/test_exoplanets.mjs
