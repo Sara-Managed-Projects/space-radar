@@ -54,6 +54,19 @@ layers:
     select: {all: true}
     budget: {max_items: 8000}
 
+  # Deep-sky objects with a sourced distance (spec 0028 step 5): Messier + registry/dso-hand.yaml,
+  # built into site/data/dso.json by scripts/build-dso.py. `bundled`: nothing to harvest.
+  - id: deep-sky
+    display: Nebulae, clusters and galaxies
+    moments: {wonder: on, now: off, next: off}
+    source: bundled
+    propagator: static
+    frame: sun-inertial
+    style: {kind: glyph, glyph: dso, colour: dso}
+    card: dso
+    select: {all: true}
+    budget: {max_items: 2000}
+
   - id: stations
     display: Crewed stations
     moments: {wonder: on, now: on, next: off}

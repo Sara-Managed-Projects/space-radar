@@ -17,7 +17,7 @@
 // says out loud what it selects. Adding a layer is a row here plus, at most, one predicate.
 
 import { load } from './sources.js';
-import { parseCelestrakGP, parseLaunches, parseComets, parseHorizonsVectors, parseNeoApproaches, parseExoplanets } from './parsers.js';
+import { parseCelestrakGP, parseLaunches, parseComets, parseHorizonsVectors, parseNeoApproaches, parseExoplanets, parseDso } from './parsers.js';
 import {
   sampleAsteroids,
   sampleDeepSpace,
@@ -31,6 +31,7 @@ const DAY_MS = 86400000;
 
 // Class colours, verbatim from docs/design-language.md. No red. No purple gradients.
 const C = {
+  dso: '#D8B4FF',
   exoplanet: '#8EE3A8',
   star: '#FFF3C4',
   world: '#E8ECF2',
@@ -311,6 +312,33 @@ export const LAYERS = [
     card: 'exoplanet',
     priority: 61,
     sentence: 'Every confirmed planet around another star, drawn at its star.',
+  },
+  {
+    // Deep-sky objects with a sourced distance (spec 0028 step 5). Mirrors registry/layers.yaml
+    // `deep-sky`. OpenNGC has positions for 13 372 objects and no distances, so this layer holds
+    // only what a source placed: the 110 Messier objects (Wikipedia's distance table) and the hand
+    // rows in registry/dso-hand.yaml (the LMC). One class `dso`, the type on the card. Bundled JSON
+    // through the same `bundledText` path exoplanets use; nothing to harvest.
+    id: 'deep-sky',
+    display: 'Nebulae, clusters and galaxies',
+    klass: 'dso',
+    source: 'bundled',
+    parse: 'dso',
+    sample: () => [],
+    bundledText: 'data/dso.json',
+    propagator: 'static',
+    frame: 'sun-inertial',
+    moments: { wonder: true, now: false, next: false },
+    defaultOn: true,
+    noModel: true,
+    select: all,
+    budget: { maxItems: 2000 },
+    colour: C.dso,
+    glyph: 'dso',
+    nearKm: 0,
+    card: 'dso',
+    priority: 62,
+    sentence: 'The Messier objects and the Magellanic Clouds, at their measured distances. The rest of the sky\'s deep-sky catalogue has no distances written down, so it is not drawn as places.',
   },
   {
     id: 'stations',
@@ -697,7 +725,9 @@ export async function loadLayerDetailed(layer, nowMs) {
   let result = null;
 
   try {
-    const ids = Array.isArray(layer.sources) ? layer.sources : layer.source ? [layer.source] : [];
+    // `bundled` is the registry's reserved literal for records that live in this repository; it is
+    // not a source to fetch, so it is not an id here and the bundledText path below is what runs.
+    const ids = (Array.isArray(layer.sources) ? layer.sources : layer.source ? [layer.source] : []).filter((id) => id !== 'bundled');
     if (typeof layer.sample === 'function') {
       // A source a browser cannot call. The harvester (spec 0003 amendment 1 §4) writes it to
       // /data/v1/ and load() reads that snapshot -- for a `browser: false` row it never goes
@@ -711,7 +741,7 @@ export async function loadLayerDetailed(layer, nowMs) {
         result = results[0];
         if (results.every((r) => r && r.data != null)) bodies = results.map((r) => r.data);
       }
-      if (!bodies && layer.bundledText) {
+      if (!bodies && layer.bundledText && (layer.parse)) {
         // A dated copy checked into the repository (spec 0028 step 4): the same columns the
         // snapshot carries, so the same parser reads it, and every record says "as of <date>".
         // Same origin, so it is a plain fetch; a failure falls through to the stand-in.
@@ -783,6 +813,8 @@ function parseFor(layer, data) {
       // The stand-in records are the metadata base: names, ids the trips and models refer to,
       // and the Horizons id each one carries. Only positions change.
       return parseHorizonsVectors(data, typeof layer.sample === 'function' ? layer.sample() : []);
+    case 'dso':
+      return parseDso(typeof data === 'string' ? JSON.parse(data) : data);
     case 'exoplanets':
       return parseExoplanets(data, { asOf: layer.bundledAsOf && layer.lastBodyWasBundled ? layer.bundledAsOf : undefined });
     case 'neo-approaches':

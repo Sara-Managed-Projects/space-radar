@@ -601,6 +601,58 @@ def check_stages(world_ids: set) -> list:
     return stages
 
 
+def check_dso_hand() -> list:
+    """registry/dso-hand.yaml: an object we place by hand names its source and has a distance."""
+    path = REG / "dso-hand.yaml"
+    if not path.exists():
+        return []
+    try:
+        doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as exc:
+        fail("dso-hand.yaml", f"will not parse: {exc}")
+        return []
+    md = doc.get("messier_distances") or {}
+    if not md.get("source") or not md.get("table"):
+        fail("dso-hand.yaml", "`messier_distances` needs `source:` and `table:`")
+    elif not (ROOT / str(md["table"])).exists():
+        fail("dso-hand.yaml", f"`messier_distances.table: {md['table']}` names a file that is not in the tree")
+    objects = doc.get("objects")
+    if objects is None:
+        objects = []
+    if not isinstance(objects, list):
+        fail("dso-hand.yaml", "`objects:` must be a list")
+        return []
+    seen = set()
+    for o in objects:
+        if not isinstance(o, dict):
+            fail("dso-hand.yaml", "an object row is not a mapping")
+            continue
+        oid = o.get("id")
+        where = f"dso-hand.yaml[{oid}]"
+        if not oid:
+            fail("dso-hand.yaml", "an object row has no id")
+            continue
+        if oid in seen:
+            fail(where, "duplicate id")
+        seen.add(oid)
+        if not o.get("source"):
+            fail(where, "no `source:` -- a distance nobody can check is a distance nobody should draw")
+        d = o.get("dist_kly")
+        if isinstance(d, list):
+            ok = len(d) == 2 and all(isinstance(v, (int, float)) and v > 0 for v in d) and d[0] < d[1]
+        else:
+            ok = isinstance(d, (int, float)) and d > 0
+        if not ok:
+            fail(where, "`dist_kly` must be a positive number or a [low, high] range in thousands of light-years")
+        for key, lo, hi in (("ra_deg", 0, 360), ("dec_deg", -90, 90)):
+            v = o.get(key)
+            if not isinstance(v, (int, float)) or not (lo <= v <= hi):
+                fail(where, f"`{key}` must be a number in [{lo}, {hi}]")
+        if not o.get("name") or not o.get("type"):
+            fail(where, "needs `name:` and an OpenNGC `type:` code")
+    return objects
+
+
 def check_lod() -> list:
     """registry/lod.yaml: a rule must name a hook that exists and a range that is a range."""
     path = REG / "lod.yaml"
@@ -1320,6 +1372,7 @@ def main() -> int:
     check_oddities(oddities_doc, world_ids, sites)
     ladder = check_stages(world_ids)
     lod_rules = check_lod()
+    dso_hand = check_dso_hand()
     check_tours(oddities_doc, layer_ids, world_ids, {s.get('id') for s in sites},
                 {str(t.get('term') or '').lower() for t in terms})
 
@@ -1517,6 +1570,7 @@ def main() -> int:
         return 1
     print(
         f"registry ok: {len(worlds)} worlds, {len(ladder)} ladder rungs, {len(lod_rules)} lod rules, "
+        f"{len(dso_hand)} hand-placed deep-sky objects, "
         f"{len(sources)} sources, {len(layers)} layers, "
         f"{len(events)} event types, {len(models)} models, {len(real_models)} real models, "
         f"{len(marks)} third-party marks, {len(sites)} sites, "

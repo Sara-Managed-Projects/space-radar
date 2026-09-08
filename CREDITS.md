@@ -173,6 +173,23 @@ sky sphere uses (§3).
 code that reads them. HYG's own upstream: Hipparcos (ESA 1997), Yale Bright Star Catalog 5th ed.,
 Gliese Catalog 3rd ed., and Gaia DR3 distances via the AT-HYG work.
 
+## 3d. Deep-sky objects — OpenNGC, CC BY-SA 4.0, and the distances Wikipedia's editors collected
+
+`site/data/dso.json` is built by `scripts/build-dso.py` from two inputs:
+
+| Item | Source | Licence | Credit line |
+|---|---|---|---|
+| Positions, types, sizes, magnitudes, Messier numbers, common names of 110 Messier objects | **OpenNGC** by Mattia Verga, `NGC.csv` + `addendum.csv` (<https://github.com/mattiaverga/OpenNGC>) | CC BY-SA 4.0 | Object data from OpenNGC, © Mattia Verga |
+| Distances of the 110 Messier objects (`scripts/data/messier-distances.txt`) | the distance column of Wikipedia's *List of Messier objects*, read 2026-09-08 | facts; the page text is CC BY-SA 4.0 | Distances as compiled in Wikipedia's List of Messier objects |
+| The Large Magellanic Cloud (`registry/dso-hand.yaml`) | Wikipedia's *Large Magellanic Cloud* infobox, read 2026-09-08 | facts | as the row says |
+
+**What OpenNGC does not have.** It carries **no distance column** (parallaxes and redshifts for a
+few). A nebula in our galaxy and a galaxy fifty million light-years away cannot share an invented
+shell, so the app places only the 111 objects whose distance a source wrote down; the other 13 261
+real OpenNGC objects are not drawn as places, and `dso.json` says how many they are.
+
+**ShareAlike.** `dso.json` is a derivative of OpenNGC and is offered under CC BY-SA 4.0 (§6).
+
 ## 3b. 3D models — NASA, public domain
 
 Thirty-seven spacecraft, spacecraft-bus, antenna, rocket-stage and surface models ship in `site/models/`, all
@@ -623,6 +640,18 @@ converted to light-years; fields reduced to position, magnitudes, colour index, 
 ```
 
 The full CC BY-SA 4.0 legal code is at <https://creativecommons.org/licenses/by-sa/4.0/legalcode>.
+
+### OpenNGC — CC BY-SA 4.0
+
+Applies to `site/data/dso.json`, a derivative work offered under the same licence.
+
+```
+Deep-sky object data from OpenNGC, © Mattia Verga — https://github.com/mattiaverga/OpenNGC
+Licensed under the Creative Commons Attribution-ShareAlike 4.0 International License
+https://creativecommons.org/licenses/by-sa/4.0/
+Modified: reduced to the 110 Messier objects; coordinates converted to degrees and to positions in
+light-years using distances from the sources each row names; fields reduced to those the card prints.
+```
 
 ## 7. Build and CI only
 

@@ -97,3 +97,5 @@ jobs:
         run: node tests/test_stars3d.mjs
       - name: planets around other stars sit on their stars (spec 0028 step 4)
         run: node tests/test_exoplanets.mjs
+      - name: deep-sky objects sit at sourced distances (spec 0028 step 5)
+        run: node tests/test_dso.mjs

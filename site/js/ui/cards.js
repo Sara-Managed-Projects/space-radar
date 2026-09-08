@@ -540,6 +540,28 @@ const TEMPLATES = {
     ]);
   },
 
+  dso(record, ctx, m, passInfo, T) {
+    const md = meta(record);
+    const distLy = pickNumber(md, 'distLy');
+    const lo = pickNumber(md, 'distLyLow');
+    const hi = pickNumber(md, 'distLyHigh');
+    const kind = String(pick(md, 'kind') || 'other');
+    const type = pick(md, 'typeText') ? String(pick(md, 'typeText')).toLowerCase() : (T.kinds[kind] || T.kinds.other);
+    const sizeLy = pickNumber(md, 'sizeLy');
+    const con = pick(md, 'con');
+    const name = displayName(record);
+    let lead;
+    if (lo !== null && hi !== null) lead = t(T.leadRange, { name, type, lo: fmt.int(lo), hi: fmt.int(hi) });
+    else if (distLy !== null) lead = t(T.lead, { name, type, dist: fmt.int(distLy) });
+    else lead = t(T.leadUntyped, { name, dist: '?' });
+    return buildSentence(lead, [
+      con ? t(T.constellation, { con: String(con) }) : null,
+      sizeLy !== null && sizeLy >= 1 ? t(T.size, { n: fmt.int(sizeLy) }) : null,
+      distLy !== null && distLy >= 1e6 ? t(T.seenAsMillions, { n: fmt.smart(distLy / 1e6) }) : null,
+      distLy !== null && distLy < 1e6 ? t(T.seenAs, { n: fmt.int(distLy) }) : null,
+    ]);
+  },
+
   exoplanet(record, ctx, m, passInfo, T) {
     const md = meta(record);
     const distLy = pickNumber(md, 'distLy');
@@ -633,7 +655,7 @@ function comparisons(record, m) {
   // is only written when the distance from the observer's own world is known.
   // A star's distance is light-years and has its own rows; "x the Moon's distance" for Sirius is
   // a true number that means nothing.
-  const distanceKm = onTheGround || klassOf(record) === 'star' || klassOf(record) === 'exoplanet' ? null : m.altKm !== null ? m.altKm : m.distEarthKm;
+  const distanceKm = onTheGround || ['star', 'exoplanet', 'dso'].includes(klassOf(record)) ? null : m.altKm !== null ? m.altKm : m.distEarthKm;
   const candidates = [
     compare('sizeM', pickNumber(md, 'sizeM', 'diameterM', 'lengthM')),
     compare('distanceKm', distanceKm),
@@ -734,6 +756,24 @@ function rightNowRows(record, m, passInfo) {
     if (m.speedKmh !== null && m.speedKmh > 0.5) {
       rows.push([R.speed, t(V.kmh, { n: fmt.int(m.speedKmh) })]);
     }
+  } else if (klassOf(record) === 'dso') {
+    const distLy = pickNumber(md, 'distLy');
+    const lo = pickNumber(md, 'distLyLow');
+    const hi = pickNumber(md, 'distLyHigh');
+    if (lo !== null && hi !== null) rows.push([R.distanceRange, t(V.lightYearsRange, { lo: fmt.int(lo), hi: fmt.int(hi) })]);
+    else rows.push([R.distanceFromSun, distLy !== null ? t(V.lightYears, { n: fmt.int(distLy) }) : COPY.card.couldNotLook]);
+    if (distLy !== null) rows.push([R.lightLeft, distLy >= 1e6 ? t(V.millionYearsAgo, { n: fmt.smart(distLy / 1e6) }) : t(V.yearsAgo, { n: fmt.int(distLy) })]);
+    const type = pick(md, 'typeText');
+    if (type) rows.push([R.objectType, String(type) + (pick(md, 'hubble') ? ` (${pick(md, 'hubble')})` : '')]);
+    const sizeLy = pickNumber(md, 'sizeLy');
+    if (sizeLy !== null && sizeLy >= 1) rows.push([R.across, t(V.lightYears, { n: fmt.int(sizeLy) })]);
+    const con = pick(md, 'con');
+    if (con) rows.push([R.constellation, String(con)]);
+    const desig = pick(md, 'designation');
+    const messier = pickNumber(md, 'messier');
+    if (desig || messier !== null) rows.push([R.catalogue, [messier !== null ? `M${fmt.int(messier)}` : null, desig].filter(Boolean).join(COPY.punctuation.separator)]);
+    const mag = pickNumber(md, 'mag');
+    if (mag !== null) rows.push([R.brightness, t(V.magnitude, { n: fmt.smart(mag) })]);
   } else if (klassOf(record) === 'exoplanet') {
     const distLy = pickNumber(md, 'distLy');
     rows.push([R.distanceFromSun, distLy !== null ? t(V.lightYears, { n: fmt.smart(distLy) }) : COPY.card.couldNotLook]);
