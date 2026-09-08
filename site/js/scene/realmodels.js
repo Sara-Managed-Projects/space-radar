@@ -113,6 +113,7 @@ export const REAL_MODELS = {
     'oco 2': { file: 'oco2.glb', colour: 'satellite', name: 'Orbiting Carbon Observatory-2', klass: ['satellite'] },
     'oco-2': { file: 'oco2.glb', colour: 'satellite', name: 'Orbiting Carbon Observatory-2', klass: ['satellite'] },
     cloudsat: { file: 'cloudsat.glb', colour: 'satellite', name: 'CloudSat', klass: ['satellite'] },
+    calipso: { file: 'calipso.glb', colour: 'satellite', name: 'CALIPSO', klass: ['satellite'] },
     'noaa 15': { file: 'poes.glb', colour: 'satellite', name: 'NOAA 15', klass: ['satellite'] },
     'noaa 18': { file: 'poes.glb', colour: 'satellite', name: 'NOAA 18', klass: ['satellite'] },
     'noaa 19': { file: 'poes.glb', colour: 'satellite', name: 'NOAA 19', klass: ['satellite'] },
