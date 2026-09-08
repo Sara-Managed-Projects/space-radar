@@ -8,6 +8,8 @@
 # dist_ly     light-years. A range is [low, high]. For TON 618 the LIGHT-TRAVEL distance is used and
 #             the row says so: at redshift 2.2 "distance" needs a word beside it.
 # mass_msun   solar masses, where the object has one worth saying. period_s for a pulsar.
+# vmag        visual magnitude, where the source prints one; a `kind: star` row must have it, because
+#             the card decides from it whether a person can see the thing (Betelgeuse can be).
 # why         one sentence a visitor reads first. What is remarkable, in plain words.
 # source      where every number above was read, and when.
 version: 1
@@ -138,6 +140,7 @@ exotics:
     dec: +17° 46′ 12.9″
     dist_ly: 815
     period_s: 0.237
+    vmag: 25.5
     distance_note: "about 815 light-years; the parallax has a wide error bar (250 +120/-62 parsecs)"
     why: "A pulsar found by its gamma rays alone, in 1972, and unidentified for twenty years. Its name is Milanese for 'it is not there'."
     aliases: [PSR B0633+17, PSR J0633+1746]
@@ -150,6 +153,7 @@ exotics:
     dec: -59° 41′ 04.26″
     dist_ly: 7500
     mass_msun: 100
+    vmag: 4.2                 # 2018; it has ranged from -1.0 to about 7.6
     why: "A star of about a hundred Suns that erupted in the 1840s, briefly the second brightest in the sky, and wrapped itself in the Homunculus Nebula. A supernova waiting to happen."
     aliases: [η Carinae, η Car, Eta Car]
     source: "https://en.wikipedia.org/wiki/Eta_Carinae (infobox: distance 7 500 ly / 2 300 pc, mass ~100 Suns, read 2026-09-08)"
@@ -161,6 +165,7 @@ exotics:
     dec: +07° 24′ 25.4304″
     dist_ly: [408, 548]
     mass_msun: 14
+    vmag: 0.50                # 0.0 to 1.6 as it breathes
     distance_note: "two published distances, 408 and 548 light-years; the star's boiling surface makes its parallax hard to pin down"
     why: "The red shoulder of Orion, a supergiant so large it would swallow Mars. It dimmed in 2019-20 after coughing out a cloud of dust; one day it will go supernova."
     aliases: [α Orionis, Alpha Orionis, α Ori]

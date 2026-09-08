@@ -18,7 +18,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _genmirror import Mirror  # noqa: E402
 
-FIELDS = ("id", "name", "kind", "why", "aliases", "source", "distance_note")
+FIELDS = ("id", "name", "kind", "why", "aliases", "source", "distance_note", "vmag")
 
 
 def ra_deg(text: str) -> float:

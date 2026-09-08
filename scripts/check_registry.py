@@ -707,6 +707,10 @@ def check_exotics() -> list:
             fail(where, "a pulsar needs `period_s`")
         if r.get("kind") == "blackhole" and r.get("mass_msun") is None:
             fail(where, "a black hole needs `mass_msun` (a number or a [low, high] range)")
+        if r.get("vmag") is not None and not isinstance(r.get("vmag"), (int, float)):
+            fail(where, "`vmag` must be a number")
+        if r.get("kind") == "star" and r.get("vmag") is None:
+            fail(where, "a star needs `vmag` -- the card decides from it whether a person can see it")
     return rows_
 
 
