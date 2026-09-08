@@ -166,8 +166,10 @@ export function createStars3d(scene, opts = {}) {
     uUnitsPerPc: { value: 1 },
   };
 
-  async function fetchJson(u) { const r = await fetch(String(u)); if (!r.ok) throw new Error(`${u}: HTTP ${r.status}`); return r.json(); }
-  async function fetchBin(u) { const r = await fetch(String(u)); if (!r.ok) throw new Error(`${u}: HTTP ${r.status}`); return r.arrayBuffer(); }
+  // `no-cache` = revalidate against the server (a 304 when unchanged): the files keep their names
+  // when a rebuild changes them, so a plain cached copy could be a month stale.
+  async function fetchJson(u) { const r = await fetch(String(u), { cache: 'no-cache' }); if (!r.ok) throw new Error(`${u}: HTTP ${r.status}`); return r.json(); }
+  async function fetchBin(u) { const r = await fetch(String(u), { cache: 'no-cache' }); if (!r.ok) throw new Error(`${u}: HTTP ${r.status}`); return r.arrayBuffer(); }
 
   /** The named stars, as records: what the layer, search and the card work from. Small file. */
   async function load() {
