@@ -58,6 +58,10 @@ check(has(compare('sizeM', 70), '25-storey'), `70 m: ${compare('sizeM', 70)}`);
 check(has(compare('sizeM', 121), '40-storey'), `121 m: ${compare('sizeM', 121)}`);
 check(has(compare('sizeM', 100), 'football'), 'a 100 m thing keeps the football field');
 
+// magnitude bands: Betelgeuse (0.5) is one of the brightest stars; Polaris (2.0) an ordinary one
+check(compare('magnitude', 0.5) === 'as bright as the brightest stars', `mag 0.5 is a first-magnitude star (${compare('magnitude', 0.5)})`);
+check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('magnitude', 13.4).startsWith('too faint'), 'mag 2 is ordinary, mag 13 needs a telescope');
+
 if (problems.length) {
   console.log(`cards copy: ${problems.length} problem(s)`);
   for (const p of problems) console.log('  - ' + p);
