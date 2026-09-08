@@ -1038,6 +1038,10 @@ function honestyClause(record) {
     return parts.length ? parts.join(' ') : null;
   }
 
+  // Not yet in the public catalogue (spec 0026 req 15): the elements are the operator's own, so
+  // the position is inferred whatever their age, and the card says where the number will come from.
+  if (pick(md, 'provisional') === true) return C.provisional;
+
   // Bolted to something else. The class line above printed the CARRIER's class, because the
   // carrier's propagator and elements are what produced the number; this says whose position it
   // was. It comes before the precision cases because an attached row has neither an anchor nor

@@ -661,6 +661,8 @@ export const COPY = {
     inferredNoElements: 'position worked out rather than measured',
     illustrative: 'drawn to show where it goes; the real track is not public',
     sample: 'bundled sample data, not a live position',
+    // spec 0026 req 15: a fresh launch the public catalogue has not numbered yet.
+    provisional: 'not yet in the public catalogue — these are the operator’s own elements, published through CelesTrak; a permanent number comes when Space-Track lists it',
     unknown: 'we cannot say how this position was worked out',
     // A record with no position at all -- not a failed calculation, an absent fact. It reads
     // where the class line reads for everything else, so the card never has an empty honesty slot.

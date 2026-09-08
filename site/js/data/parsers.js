@@ -84,6 +84,11 @@ export function parseCelestrakGP(json, opts = {}) {
     // that is what identifies them.
     const numbered = Number.isFinite(norad) && norad > 0 && norad < 90000;
     const id = numbered ? `sat-${norad}` : intl ? `int-${intl}` : `${source}-${out.length}`;
+    // PROVISIONAL (spec 0026 req 15): an object the public catalogue has not numbered yet, known only
+    // from the operator's own elements. Drawn dimmer, classed `inferred` whatever its epoch age, and
+    // the card says so -- orbitalradar draws these identical to catalogued satellites, which is the
+    // flaw the study named.
+    const provisional = !numbered;
     if (seen.has(id)) continue;
     seen.add(id);
 
@@ -102,13 +107,14 @@ export function parseCelestrakGP(json, opts = {}) {
       frame: 'earth-inertial',
       // The class the DATA deserves. The renderer downgrades further as the app clock runs on:
       // spec 0008's ladder is fresh < 7 d, old < 30 d, stale beyond.
-      cls: Number.isFinite(epoch) && epoch > 0 ? classForEpoch(epoch, freshMs) : 'inferred',
+      cls: provisional ? 'inferred' : Number.isFinite(epoch) && epoch > 0 ? classForEpoch(epoch, freshMs) : 'inferred',
       epoch,
       source,
       satrec,
       meta: {
         noradId: numbered ? norad : null,
         catalogueNumber: Number.isFinite(norad) ? norad : null,
+        provisional,
         intlDesignator: intl || null,
         objectName: name,
         launchYear: launchYearOf(intl),
