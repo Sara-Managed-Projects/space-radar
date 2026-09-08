@@ -370,6 +370,16 @@ function buildLayers(ctx, state) {
   wrap.appendChild(list);
   state.layerList = list;
   state.layerRows = new Map();
+  // Data-saver and the frame-rate latch say what they did here (spec 0026 req 18).
+  const quality = el('p', 'sr-layers__quality');
+  quality.hidden = true;
+  wrap.appendChild(quality);
+  window.addEventListener('sr:quality', (e) => {
+    const d = e && e.detail;
+    if (!d) return;
+    quality.textContent = d.level === 'data-saver' ? COPY.quality.dataSaver : t(COPY.quality.lowered, { ms: d.medianMs || '' });
+    quality.hidden = false;
+  });
 
   const layers = layerList(ctx);
   if (!layers.length) {

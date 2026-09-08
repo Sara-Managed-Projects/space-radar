@@ -271,6 +271,7 @@ export function createStarfield(scene, opts = {}) {
   const state = { stars: null, lines: null, milkyway: null, errors: [] };
   let gain = 1; // setGain's own value; setSkyOpacity multiplies it rather than overwriting it
   let skyOpacity = 1;
+  let detailLow = false; // the frame-rate latch hides the picture and the lines, never the stars
   let pixelRatio =
     opts.pixelRatio || (typeof window !== 'undefined' ? Math.min(2, window.devicePixelRatio || 1) : 1);
   let dprLocked = false; // true once setPixelRatio() is called by hand
@@ -503,11 +504,16 @@ export function createStarfield(scene, opts = {}) {
       const v = Math.min(1, Math.max(0, Number(k)));
       skyOpacity = v;
       const mw = state.milkyway;
-      if (mw && mw.material) { mw.material.opacity = v; mw.visible = v > 0; }
+      if (mw && mw.material) { mw.material.opacity = v; mw.visible = v > 0 && !detailLow; }
       const ln = state.lines;
-      if (ln && ln.material) { ln.material.opacity = 0.25 * v; ln.visible = v > 0; }
+      if (ln && ln.material) { ln.material.opacity = 0.25 * v; ln.visible = v > 0 && !detailLow; }
       starUniforms.uGain.value = Math.min(1, Math.max(0, gain * v));
       if (state.stars) state.stars.visible = v > 0;
+    },
+    /** 'low' hides the Milky Way picture and the constellation lines (spec 0026 req 18); the stars stay. */
+    setDetail(level) {
+      detailLow = level === 'low';
+      this.setSkyOpacity(skyOpacity);
     },
     /** Overall star brightness, 0..1 — the sky view dims them at dawn. */
     setGain(g) {
