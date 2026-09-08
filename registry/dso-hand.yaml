@@ -24,6 +24,46 @@ objects:
     source: "https://en.wikipedia.org/wiki/Large_Magellanic_Cloud (infobox, read 2026-09-08)"
     why: "The nearest big galaxy, a naked-eye cloud from the southern hemisphere, and the reason the ladder has a local-group rung at all."
 
+  - id: smc
+    name: Small Magellanic Cloud
+    designation: NGC 292
+    type: G
+    hubble: SB(s)m pec
+    ra_deg: 13.1867         # 00h 52m 44.8s
+    dec_deg: -72.8286       # -72 deg 49 min 43 s
+    dist_kly: 203.7
+    vmag: 2.7
+    maj_ax_arcmin: 320      # 5 deg 20 min
+    con: Tucana
+    source: "https://en.wikipedia.org/wiki/Small_Magellanic_Cloud (infobox, read 2026-09-08)"
+    why: "The Large Cloud's smaller companion, a naked-eye smudge from the south, and the pair that gave the Magellanic Stream its name."
+
+  - id: fornax-dwarf
+    name: Fornax Dwarf
+    type: G
+    hubble: dE0
+    ra_deg: 39.9971         # 02h 39m 59.3s
+    dec_deg: -34.4492       # -34 deg 26 min 57 s
+    dist_kly: 466
+    vmag: 9.3
+    maj_ax_arcmin: 17.0
+    con: Fornax
+    source: "https://en.wikipedia.org/wiki/Fornax_Dwarf (infobox, read 2026-09-08)"
+    why: "A faint satellite of the Milky Way with six globular clusters of its own -- a small galaxy that kept its jewellery."
+
+  - id: sculptor-dwarf
+    name: Sculptor Dwarf
+    type: G
+    hubble: E
+    ra_deg: 15.0388         # 01h 00m 09.3s
+    dec_deg: -33.7092       # -33 deg 42 min 33 s
+    dist_kly: 290
+    vmag: 10.1
+    maj_ax_arcmin: 39.8
+    con: Sculptor
+    source: "https://en.wikipedia.org/wiki/Sculptor_Dwarf_Galaxy (infobox, read 2026-09-08)"
+    why: "The first dwarf spheroidal galaxy ever found (1937): so sparse that Shapley took it for a smudge on the plate."
+
 messier_distances:
   # Thousands of light-years, from the table in https://en.wikipedia.org/wiki/List_of_Messier_objects
   # (read 2026-09-08). A range is written as [low, high]; the card prints both. Positions come from
