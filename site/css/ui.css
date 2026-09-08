@@ -2056,3 +2056,7 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
 .sr-traj__line { fill: none; stroke: var(--sr-satellite, #7fd1ff); stroke-width: 1.5; }
 .sr-traj__now { fill: var(--sr-ember); }
 .sr-traj__label { fill: var(--sr-text-dim); font-size: 9px; font-family: inherit; }
+
+/* Space weather, one line (spec 0026 req 16) ----------------------------------------------- */
+
+.sr-status__weather { margin: 0 0 10px; font-size: 12.5px; line-height: 1.45; color: var(--sr-text); }
