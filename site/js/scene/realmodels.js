@@ -108,6 +108,10 @@ export const REAL_MODELS = {
     // Suomi model), NOAA 21 no (JPSS-2, a different bus; it keeps the generic shape and says so).
     // By name rather than by catalogue number because a number that cannot be checked live today
     // is a number that shipped wrong once before.
+    // OCO-2 is on the `active` layer under the catalogue name OCO 2. By name, not id: its id was not
+    // confirmed against a live catalogue this session, and a wrong id draws the wrong spacecraft.
+    'oco 2': { file: 'oco2.glb', colour: 'satellite', name: 'Orbiting Carbon Observatory-2', klass: ['satellite'] },
+    'oco-2': { file: 'oco2.glb', colour: 'satellite', name: 'Orbiting Carbon Observatory-2', klass: ['satellite'] },
     'noaa 15': { file: 'poes.glb', colour: 'satellite', name: 'NOAA 15', klass: ['satellite'] },
     'noaa 18': { file: 'poes.glb', colour: 'satellite', name: 'NOAA 18', klass: ['satellite'] },
     'noaa 19': { file: 'poes.glb', colour: 'satellite', name: 'NOAA 19', klass: ['satellite'] },

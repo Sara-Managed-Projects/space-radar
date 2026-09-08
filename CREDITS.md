@@ -153,9 +153,9 @@ Passing those along:
 
 ## 3b. 3D models — NASA, public domain
 
-Thirty-four spacecraft, spacecraft-bus, antenna, rocket-stage and surface models ship in `site/models/`, all
+Thirty-five spacecraft, spacecraft-bus, antenna, rocket-stage and surface models ship in `site/models/`, all
 from **NASA 3D Resources** (<https://github.com/nasa/NASA-3D-Resources>, mirrored from
-<https://science.nasa.gov/3d-resources/>), 9.8 MB in total.
+<https://science.nasa.gov/3d-resources/>), 10.0 MB in total.
 
 NASA's media usage guidelines: material created by NASA is generally **not protected by copyright**
 and may be used without permission. The exceptions are the NASA insignia, logo and seal, which may
@@ -214,6 +214,7 @@ than counted by hand.
 | `landsat.glb` | Landsat 7 | NORAD 25682, 39084, 49260 (Landsat 7, 8, 9) | 68 KB |
 | `mms.glb` | Magnetospheric Multiscale (MMS) (A) | catalogue names containing MMS | 121 KB |
 | `sentinel6.glb` | Jason Continuity of Service (Sentinel-6) | NORAD 46984 (SENTINEL-6A) | 401 KB |
+| `oco2.glb` | Orbiting Carbon Observatory (OCO) 2 | catalogue name OCO 2 | 189 KB |
 | `suomi.glb` | Suomi National Polar-orbiting Partnership (Suomi NPP) | NORAD 37849 (SUOMI NPP) | 152 KB |
 | `tdrs.glb` | Tracking and Data Relay Satellites (TDRS) (A) | catalogue names containing TDRS | 10 KB |
 | `terra.glb` | Terra | NORAD 25994 (TERRA) | 20 KB |
