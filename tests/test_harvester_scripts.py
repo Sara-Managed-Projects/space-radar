@@ -355,6 +355,10 @@ def test_package(tmp: Path) -> int:
     tree = tmp / "tree"
     shutil.copytree(ROOT / "scripts", tree / "scripts")
     shutil.copytree(ROOT / "registry", tree / "registry")
+    # The generator inlines harvest/lists/horizons-ids.yaml into sources.json, so the tree
+    # needs the list even when it has no harvest/ package (the placeholder case).
+    if (ROOT / "harvest" / "lists").is_dir():
+        shutil.copytree(ROOT / "harvest" / "lists", tree / "harvest" / "lists")
     fake = Fake(tmp, "absent")
 
     proc = fake.run(str(tree / "scripts/package-harvester.sh"), "--out", str(tmp / "dry.zip"), "--dry-run", cwd=tree)
