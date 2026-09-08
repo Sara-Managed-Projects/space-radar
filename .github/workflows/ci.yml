@@ -79,3 +79,5 @@ jobs:
       # from the real snapshots of 2026-09-08, so the frame and the join are checked, not assumed.
       - name: Snapshots become records, and a missing one keeps its stand-in
         run: node tests/test_snapshot_parsers.mjs
+      - name: Cards say what they are drawn as, and how old their elements are
+        run: node tests/test_cards_copy.mjs
