@@ -856,6 +856,17 @@ export const COPY = {
     locationCoords: '{lat}, {lon}',
     locationNoMatch: 'No city in the bundled list matches that.',
     locationHint: 'A rough position is enough. It is only used in your browser.',
+    // The Now moment's first screen guesses a place from the clock and says so, in words that a
+    // person reads, not in a tooltip: a guess about where you are is held to the same rule as a
+    // guess about an orbit.
+    locationGuessed: 'We guessed {name} from your clock’s time zone. Set where you are if that is wrong.',
+    locationGuessedByOffset: 'We guessed {name} from your clock’s offset from UTC, which is rough. Set where you are.',
+    tonightTitle: 'Coming over tonight',
+    tonightHint: 'The next twelve hours, from where you are. Only passes bright enough to see.',
+    tonightRow: '{name} at {time}, {dir}, {fists}',
+    tonightNone: 'Nothing bright comes over in the next twelve hours.',
+    tonightNoObserver: 'Set where you are, or open the Now door, and this will list what comes over.',
+    tonightCouldNotLook: 'Could not look: the satellite catalogue has not loaded.',
   },
 
   // ui/search.js. The footer strings are the honest ones: a layer nobody has read has no size,

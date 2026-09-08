@@ -13,7 +13,8 @@
 // ctx.clock.now() while the clock is live, remembered as the scrub anchor.
 
 import { readMoment, writeMoment } from './urlstate.js';
-import { COPY, CITIES, t, fmt, timeText, inWords } from '../copy/en.js';
+import { COPY, CITIES, t, fmt, timeText, inWords, compassWords, fistsWords } from '../copy/en.js';
+import { predictPasses } from '../sky/passes.js';
 import { createSearch } from './search.js';
 import { shapeLine } from './tripframe.js';
 
@@ -747,6 +748,103 @@ function buildLocation(ctx, state) {
     });
     current.classList.add('is-set');
   }
+
+  // --- what the place means tonight ----------------------------------------------------------
+  //
+  // The Now moment's first screen (spec 0026 item 4). The current line is re-rendered from the
+  // observer the app actually holds, so a place guessed on entering Now is printed AS a guess;
+  // and the next twelve hours of visible passes are listed from the records the app holds, with
+  // the same direction and fist words a card uses. No records yet is "could not look", not an
+  // empty list pretending to be an answer.
+  const tonightTitle = el('h3', 'sr-tonight__title', COPY.controls.tonightTitle);
+  const tonightHint = el('p', 'sr-tonight__hint', COPY.controls.tonightHint);
+  const tonightList = el('ul', 'sr-tonight__list');
+  const tonightNote = el('p', 'sr-tonight__note', COPY.controls.tonightNoObserver);
+  wrap.appendChild(tonightTitle);
+  wrap.appendChild(tonightHint);
+  wrap.appendChild(tonightList);
+  wrap.appendChild(tonightNote);
+
+  const DEG = 180 / Math.PI;
+  const RAD = Math.PI / 180;
+  function observerNow() {
+    return ctx && ctx.observer ? ctx.observer : state.observer || null;
+  }
+  function renderCurrent() {
+    const o = observerNow();
+    // Rendered from the observer the app holds, whoever set it -- the panel's own buttons, the
+    // Now door's guess, or a caller -- so the line can never describe a place that is no longer
+    // the one in use. MEASURED: setting London after a guess left "We guessed Tehran" on screen.
+    if (!o) {
+      current.textContent = COPY.controls.locationNone;
+      current.classList.remove('is-guess');
+      return;
+    }
+    const name = o.name || t(COPY.controls.locationCoords, { lat: o.latDeg.toFixed(1), lon: o.lonDeg.toFixed(1) });
+    if (o.source === 'guess') {
+      const key = o.how === 'timezone' ? COPY.controls.locationGuessed : COPY.controls.locationGuessedByOffset;
+      current.textContent = t(key, { name });
+      current.classList.add('is-guess');
+    } else {
+      current.textContent = t(COPY.controls.locationSet, { name });
+      current.classList.remove('is-guess');
+    }
+  }
+  function renderTonight() {
+    while (tonightList.firstChild) tonightList.removeChild(tonightList.firstChild);
+    const o = observerNow();
+    if (!o) {
+      tonightNote.textContent = COPY.controls.tonightNoObserver;
+      tonightNote.hidden = false;
+      return;
+    }
+    const records = []
+      .concat(typeof ctx.recordsFor === 'function' ? ctx.recordsFor('stations') : [])
+      .concat(typeof ctx.recordsFor === 'function' ? ctx.recordsFor('visual') : [])
+      .filter((r) => r && r.satrec);
+    if (!records.length) {
+      tonightNote.textContent = COPY.controls.tonightCouldNotLook;
+      tonightNote.hidden = false;
+      return;
+    }
+    const observer = Number.isFinite(o.latRad) ? o : { ...o, latRad: o.latDeg * RAD, lonRad: o.lonDeg * RAD };
+    let passes = [];
+    try {
+      const now = ctx.clock && typeof ctx.clock.now === 'function' ? ctx.clock.now() : Date.now();
+      passes = predictPasses(records, observer, now, 12).filter((p) => p.visible === true).slice(0, 5);
+    } catch {
+      passes = [];
+    }
+    if (!passes.length) {
+      tonightNote.textContent = COPY.controls.tonightNone;
+      tonightNote.hidden = false;
+      return;
+    }
+    tonightNote.hidden = true;
+    for (const p of passes) {
+      const li = el('li', 'sr-tonight__row', t(COPY.controls.tonightRow, {
+        name: (p.record && p.record.name) || COPY.card.unknownName,
+        time: timeText.hhmm(p.startMs),
+        dir: compassWords(p.startAz * DEG),
+        fists: fistsWords(p.peakEl * DEG),
+      }));
+      li.addEventListener('click', () => {
+        if (p.record && ctx && typeof ctx.select === 'function') ctx.select(p.record);
+      });
+      tonightList.appendChild(li);
+    }
+  }
+  window.addEventListener('sr:observer', () => {
+    renderCurrent();
+    renderTonight();
+  });
+  window.addEventListener('sr:layer', (e) => {
+    const id = e.detail && e.detail.id;
+    if (id === 'stations' || id === 'visual') renderTonight();
+  });
+  renderCurrent();
+  renderTonight();
+
   return wrap;
 }
 

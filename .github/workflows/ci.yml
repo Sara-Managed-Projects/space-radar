@@ -81,3 +81,5 @@ jobs:
         run: node tests/test_snapshot_parsers.mjs
       - name: Cards say what they are drawn as, and how old their elements are
         run: node tests/test_cards_copy.mjs
+      - name: The Now moment guesses a place and says so
+        run: node tests/test_guessplace.mjs

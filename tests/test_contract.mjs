@@ -1663,6 +1663,37 @@ for (const file of allFiles) {
     if (!r.overdue) problems.push('SNAPSHOT a snapshot past its valid_until must say so');
     if (r.stale) problems.push('SNAPSHOT overdue is not stale: the ladder is freshnessMaxMs, and ten minutes is inside it');
 
+    // (a3) a cached live FAILURE must not hide a snapshot that appears afterwards. MEASURED
+    // 2026-09-08: a page whose live fetch timed out kept saying "could not look" for the source's
+    // whole cadence although the manifest had a fresh snapshot minutes later. The gate now asks
+    // the index, on its own cadence, for a snapshot NEWER than the failed attempt -- and never
+    // touches upstream for it.
+    reset('celestrak-stations');
+    const t0 = Date.now();
+    routes = new Map([[stations.url, () => new Response('', { status: 500 })]]); // no manifest at all
+    r = await load('celestrak-stations', { await: true, now: t0 });
+    if (r.ok || r.via) problems.push(`SNAPSHOT (a3) the first attempt should fail live; got ok=${r.ok} via=${r.via}`);
+    const afterFailure = upstreamSeen().length;
+    // an OLDER snapshot than the attempt: still inside the gate, still no upstream call
+    const older = new Date(t0 - 60 * 1000).toISOString();
+    routes = new Map([
+      ['/data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('ok', { fetched_at: older }) }))],
+      ['/data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp, { fetched_at: older }))],
+    ]);
+    r = await load('celestrak-stations', { await: true, now: t0 + 6 * 60 * 1000 });
+    if (r.via === 'snapshot') problems.push('SNAPSHOT (a3) a snapshot OLDER than the failed attempt must not reopen the gate');
+    if (upstreamSeen().length !== afterFailure) problems.push('SNAPSHOT (a3) checking our own manifest must not touch upstream');
+    // a NEWER snapshot: taken, within the cadence, with no upstream call
+    const newer = new Date(t0 + 3 * 60 * 1000).toISOString();
+    routes = new Map([
+      ['/data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('ok', { fetched_at: newer }) }))],
+      ['/data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp, { fetched_at: newer }))],
+    ]);
+    forgetIndex();
+    r = await load('celestrak-stations', { await: true, now: t0 + 7 * 60 * 1000 });
+    if (r.via !== 'snapshot' || !r.ok) problems.push(`SNAPSHOT (a3) a snapshot newer than the failed attempt must be read within the cadence; got via=${r.via} ok=${r.ok} reason=${r.reason}`);
+    if (upstreamSeen().length !== afterFailure) problems.push(`SNAPSHOT (a3) taking the snapshot must not touch upstream: ${upstreamSeen().join(', ')}`);
+
     // (b) the manifest is keyed by REGISTRY id, which is not always this module's id
     reset('celestrak-starlink');
     routes = new Map([
