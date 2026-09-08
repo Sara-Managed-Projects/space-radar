@@ -38,6 +38,14 @@ check(recs.length === 151 && recs.every((r) => r.klass === 'dso' && r.propagator
 const wlmRec = recs.find((r) => r.id === 'dso-wlm');
 check(wlmRec && wlmRec.meta.typeText === 'dwarf irregular galaxy' && wlmRec.meta.hubble === 'IB(s)m', `WLM: words for the sentence, the code beside them (${wlmRec && wlmRec.meta.typeText})`);
 check(wlmRec && /^Position and distance: https:\/\/en\.wikipedia\.org/.test(wlmRec.meta.cite), `a hand row does not credit OpenNGC for a position it did not use (${wlmRec && wlmRec.meta.cite})`);
+// "an ultra-faint dwarf galaxy", not "a ultra-faint" (live, Reticulum II, 2026-09-09)
+const { firstSentence } = await import(join(JS, 'ui/cards.js'));
+const m0 = { frame: 'sun-inertial', worldId: 'earth' };
+const retRec = recs.find((r) => r.id === 'dso-reticulum-ii');
+const retSay = firstSentence(retRec, null, m0, {});
+check(retSay.includes('Reticulum II is an ultra-faint dwarf galaxy'), `Reticulum II gets "an": ${retSay}`);
+const wlmSay = firstSentence(recs.find((r) => r.id === 'dso-wlm'), null, m0, {});
+check(wlmSay.includes('is a dwarf irregular galaxy'), `WLM keeps "a": ${wlmSay}`);
 const andromeda = recs.find((r) => r.id === 'dso-m31');
 check(andromeda && /^Position: OpenNGC/.test(andromeda.meta.cite), 'a Messier row still credits OpenNGC for its position');
 check(andromeda.name === 'Andromeda Galaxy' && andromeda.meta.aliases.includes('M31') && andromeda.meta.aliases.includes('NGC 224'), `Andromeda carries M31 and NGC 224 as aliases (${andromeda.meta.aliases})`);
