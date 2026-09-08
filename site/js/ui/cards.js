@@ -39,6 +39,7 @@ import {
 } from '../copy/en.js';
 import { propagate } from '../propagate/index.js';
 import { realModelFor } from '../scene/realmodels.js';
+import { sunlitState } from '../scene/shadow.js';
 import {
   gmst,
   eciToEcef,
@@ -755,6 +756,10 @@ function rightNowRows(record, m, passInfo) {
     }
     if (m.speedKmh !== null && m.speedKmh > 0.5) {
       rows.push([R.speed, t(V.kmh, { n: fmt.int(m.speedKmh) })]);
+    }
+    if (!stands) {
+      const lit = sunlitState(record, m.tMs);
+      if (lit) rows.push([R.sunlight, lit === 'sunlit' ? V.inSunlight : V.inShadow]);
     }
     if (m.latDeg !== null && m.lonDeg !== null) {
       const label = stands ? R.location : R.groundPoint;
