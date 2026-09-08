@@ -52,6 +52,7 @@ import {
 } from '../propagate/frames.js';
 import { predictPasses } from '../sky/passes.js';
 import { trajectorySection } from './trajectory.js';
+import { trainOf } from '../data/trains.js';
 import { attachedOdditiesFor, attachedOddityRecord } from '../data/attached.js';
 
 const MAX_FIRST_SENTENCE = 160; // spec 0013 requirement 10, enforced by check_copy.py
@@ -1229,6 +1230,31 @@ export function orbitLineLine(record) {
   return periodMs > 365.25 * 86400e3 ? COPY.drawing.orbitLineYear : COPY.drawing.orbitLine;
 }
 
+/** The words for a record's train, or null. Exported for the test. */
+export function trainSentence(record, train) {
+  if (!train || !record || train.count < 2) return null;
+  const T = COPY.train;
+  const idx = train.members.findIndex((r) => r && r.id === record.id);
+  const parts = [t(T.oneOf, { n: fmt.int(train.count), designator: train.designator })];
+  if (idx === 0) parts.push(T.youLead);
+  else if (train.lead) parts.push(t(T.leads, { name: displayName(train.lead), position: fmt.int(idx + 1) }));
+  if (train.stillRaising === true) parts.push(t(T.stillRaising, { alt: fmt.int(train.meanAltKm) }));
+  else if (train.stillRaising === false) parts.push(t(T.spreadOut, { alt: fmt.int(train.meanAltKm) }));
+  return parts.join(' ');
+}
+
+function trainSection(record, ctx, m) {
+  const layer = ctx && Array.isArray(ctx.layers) ? ctx.layers.find((l) => l.id === record.layer) : null;
+  if (!layer || typeof layer.groupBy !== 'function') return null;
+  const records = ctx && typeof ctx.recordsFor === 'function' ? ctx.recordsFor(layer.id) : [];
+  const train = trainOf(record, records, m.tMs, { stillRaisingBelowKm: layer.train && layer.train.still_raising_below_km });
+  const words = trainSentence(record, train);
+  if (!words) return null;
+  const wrap = section('sr-card__block sr-card__train', COPY.train.label);
+  wrap.appendChild(el('p', 'sr-card__sentence', words));
+  return wrap;
+}
+
 export function drawingLine(record) {
   const md = meta(record);
   const drawsAs = pick(md, 'drawsAs');
@@ -1472,6 +1498,11 @@ function render(record, ctx, opts = {}) {
   // any record carrying myths and nothing at all for the rest.
   const myths = mythSection(record);
   if (myths) body.appendChild(myths);
+
+  // 4b2. the train this rides in (spec 0026 req 17): how many launched together, who leads, and
+  // whether they are still climbing as one thing or have spread out.
+  const trainBlock = trainSection(record, ctx, m);
+  if (trainBlock) body.appendChild(trainBlock);
 
   // 4c. what is riding on this, or what this is riding on. Below the facts because it is a way
   // OUT of this card rather than a fact about the object, and above "see it from here" because

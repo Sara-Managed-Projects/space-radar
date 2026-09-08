@@ -39,6 +39,7 @@ def render(doc: dict) -> list:
             "glyph": (r.get("style") or {}).get("glyph"),
             "colour": (r.get("style") or {}).get("colour"),
             "maxItems": (r.get("budget") or {}).get("max_items"),
+            "train": r.get("train"),
         })
     return [("Every layer the registry knows, with the fields the registry decides. Order is the registry's.", "LAYER_ROWS", rows)]
 

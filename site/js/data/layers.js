@@ -832,6 +832,7 @@ for (const layer of LAYERS) {
   if (!layer.enabled) layer.forcedOff = true;
   if (row.display) layer.display = row.display;
   if (row.moments && Object.keys(row.moments).length) layer.moments = { ...layer.moments, ...row.moments };
+  if (row.train) layer.train = row.train;
 }
 
 /** Layer ids on exactly one side of the registry/browser mirror -- what the test refuses. */

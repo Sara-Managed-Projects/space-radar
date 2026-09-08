@@ -505,6 +505,7 @@ export const COPY = {
     approachNoDistance: '{name} passes Earth {when}',
     perihelion: '{name} is closest to the Sun {when}',
     pass: '{name} comes over you {when}',
+    train: 'A train of {n} satellites comes over you {when}',
     none: 'Nothing is scheduled in what the app has loaded.',
     notLoaded: 'Not loaded, so not listed: {layers}.',
     noObserver: 'Set where you are and passes over you join the list.',
@@ -524,6 +525,15 @@ export const COPY = {
     north: 'N',
     south: 'S',
     note: 'Worked out from the same elements as the dot; the map is the ground directly below it.',
+  },
+  // A launch's satellites as one thing (spec 0026 req 17).
+  train: {
+    label: 'In a train',
+    oneOf: 'One of {n} launched together ({designator}).',
+    youLead: 'This one leads.',
+    leads: '{name} leads; this one is {position} in the line.',
+    stillRaising: 'Still climbing as one line, about {alt} km up — the string of lights people report.',
+    spreadOut: 'Spread out now, about {alt} km up; no longer a line in the sky.',
   },
   chooser: {
     label: 'Things under your finger',
