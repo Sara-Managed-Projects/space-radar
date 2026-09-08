@@ -29,6 +29,8 @@ import { createMobileUI } from './ui/mobile.js';
 import { createGitHubMark } from './ui/github.js';
 import { createTrip } from './ui/trip.js';
 import { createTripFrame } from './ui/tripframe.js';
+import { rankPick, rankAll } from './scene/pickrank.js';
+import { showChooser, hideChooser } from './ui/chooser.js';
 
 const MOMENTS = ['wonder', 'now', 'next'];
 
@@ -120,35 +122,47 @@ export async function boot({ setStatus } = {}) {
     const moved = Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y);
     const held = performance.now() - downAt.t;
     downAt = null;
-    // A drag is a camera move, not a tap. 6 px and 400 ms are the usual thresholds.
-    if (moved > 6 || held > 400) return;
+    // A drag is a camera move, not a tap. 6 px is the usual threshold.
+    if (moved > 6) return;
     const rect = canvas.getBoundingClientRect();
     const ndcX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
     const ndcY = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-    const hit = pick(ndcX, ndcY);
+    hideChooser();
+    if (held > 400) {
+      // A long press on a crowded spot lists everything within reach instead of guessing.
+      const all = candidatesAt(ndcX, ndcY, rect);
+      const list = rankAll(all.glyphs, all.discs, 6);
+      if (list.length > 1) { showChooser(list, e.clientX, e.clientY, (rec) => select(rec), { layers: LAYERS }); return; }
+      if (list.length === 1) { select(list[0].record); return; }
+      deselect();
+      return;
+    }
+    const hit = pick(ndcX, ndcY, rect);
     if (hit) select(hit);
     else deselect();
   });
 
-  function pick(ndcX, ndcY) {
-    // Each layer's pick() already applies the 24 px forgiveness rule and returns its own nearest
-    // record, or null. Across layers we take the first hit in draw order, which puts stations and
-    // named objects ahead of a debris cloud -- the layer order is the priority.
+  /** Everything within the forgiveness rule, from every layer that is on, unranked. */
+  function candidatesAt(ndcX, ndcY, rect) {
+    const glyphs = [];
     for (const layer of LAYERS) {
       if (!isLayerOn(layer.id)) continue;
       const gl = glyphLayers.get(layer.id);
-      if (!gl) continue;
-      const hit = gl.pick(ndcX, ndcY);
-      if (hit) return hit;
+      if (!gl || !gl.pickAll) continue;
+      for (const c of gl.pickAll(ndcX, ndcY, 6)) glyphs.push(c);
     }
-    // No glyph within reach: a world's disc, if the tap is on or near one. After the glyphs on
-    // purpose -- a satellite drawn over Earth is the smaller thing and the thing a finger means.
-    if (isLayerOn('worlds')) {
-      const rect = canvas.getBoundingClientRect();
-      const hit = worlds.pick(ndcX, ndcY, camera, { w: rect.width, h: rect.height });
-      if (hit) return hit;
-    }
-    return null;
+    const discs = isLayerOn('worlds') && worlds.pickAll
+      ? worlds.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height })
+      : [];
+    return { glyphs, discs };
+  }
+
+  function pick(ndcX, ndcY, rect) {
+    // One decision across every layer (scene/pickrank.js): the smaller thing wins. A glyph within
+    // 24 px beats any world's disc, the nearest glyph beats the rest (debris penalised), and a disc
+    // is chosen by its rim and its size. The layer draw order no longer decides between glyphs.
+    const all = candidatesAt(ndcX, ndcY, rect || canvas.getBoundingClientRect());
+    return rankPick(all.glyphs, all.discs);
   }
 
   /**

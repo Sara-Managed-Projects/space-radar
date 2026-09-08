@@ -404,6 +404,41 @@ export function createGlyphLayer(scene, layer = {}) {
 
   const _m = new THREE.Matrix4();
 
+  /**
+   * Every record within the forgiveness rule, nearest first, each with its pixel distance and its
+   * penalised score -- for scene/pickrank.js to weigh against other layers and for a long press to
+   * list. pick() is the one-winner form of the same scan.
+   */
+  function pickAll(ndcX, ndcY, limit = 6) {
+    if (!lastCamera || !geometry || !mesh.visible || geometry.instanceCount === 0) return [];
+    lastCamera.updateMatrixWorld();
+    mesh.updateMatrixWorld();
+    _m.multiplyMatrices(lastCamera.projectionMatrix, lastCamera.matrixWorldInverse);
+    _m.multiply(mesh.matrixWorld);
+    const e = _m.elements;
+    const halfW = viewport.w * 0.5;
+    const halfH = viewport.h * 0.5;
+    const out = [];
+    for (let i = 0; i < geometry.instanceCount; i++) {
+      const x = livePos[i * 3];
+      const y = livePos[i * 3 + 1];
+      const z = livePos[i * 3 + 2];
+      const w = e[3] * x + e[7] * y + e[11] * z + e[15];
+      if (w <= 0) continue;
+      const cx = (e[0] * x + e[4] * y + e[8] * z + e[12]) / w;
+      const cy = (e[1] * x + e[5] * y + e[9] * z + e[13]) / w;
+      const dx = (cx - ndcX) * halfW;
+      const dy = (cy - ndcY) * halfH;
+      const px = Math.sqrt(dx * dx + dy * dy);
+      if (px > PICK_PX) continue;
+      const rec = live[i];
+      if (!rec) continue;
+      out.push({ record: rec, px, score: rec.klass === 'debris' ? px * DEBRIS_PICK_PENALTY : px });
+    }
+    out.sort((p, q) => p.score - q.score);
+    return out.slice(0, Math.max(1, limit));
+  }
+
   function pick(ndcX, ndcY) {
     if (!lastCamera || !geometry || !mesh.visible || geometry.instanceCount === 0) return null;
     lastCamera.updateMatrixWorld();
@@ -443,6 +478,7 @@ export function createGlyphLayer(scene, layer = {}) {
     setRecords,
     update,
     pick,
+    pickAll,
     setVisible(b) {
       if (mesh) mesh.visible = !!b;
     },

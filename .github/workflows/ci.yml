@@ -87,3 +87,5 @@ jobs:
         run: node tests/test_station_shapes.mjs
       - name: worlds are objects (spec 0028 step 0)
         run: node tests/test_worlds_layer.mjs
+      - name: the smaller thing under the finger wins (spec 0028 step 1)
+        run: node tests/test_pickrank.mjs

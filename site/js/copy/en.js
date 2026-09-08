@@ -471,6 +471,11 @@ export const COPY = {
     },
   },
 
+  // The long-press list (spec 0028 req 4): what is under a finger when several things are.
+  chooser: {
+    label: 'Things under your finger',
+    hint: '{n} here. Tap one, or tap the sky to close.',
+  },
   card: {
     close: 'Close',
     closeTitle: 'Close this card',
