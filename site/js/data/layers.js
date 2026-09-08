@@ -902,7 +902,10 @@ export async function loadLayerDetailed(layer, nowMs) {
         // snapshot carries, so the same parser reads it, and every record says "as of <date>".
         // Same origin, so it is a plain fetch; a failure falls through to the stand-in.
         try {
-          const r = await fetch(layer.bundledText);
+          // `no-cache` = revalidate: the file keeps its name across PRs, and a browser that cached it
+          // under the old month-long header would otherwise show last week's rows (live, 2026-09-09).
+          // Unchanged, the answer is a 304 and costs nothing.
+          const r = await fetch(layer.bundledText, { cache: 'no-cache' });
           if (r.ok) {
             const text = await r.text();
             layer.lastBodyWasBundled = true;

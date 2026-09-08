@@ -106,7 +106,8 @@ export function createGalaxy(scene, opts = {}) {
     if (loading) return loading;
     loading = (opts.binBuffer
       ? Promise.resolve(opts.binBuffer)
-      : fetch(String(src)).then((r) => { if (!r.ok) throw new Error(`${src}: HTTP ${r.status}`); return r.arrayBuffer(); }))
+      // `no-cache` = revalidate: the name never changes, the bytes do; unchanged, the answer is a 304.
+      : fetch(String(src), { cache: 'no-cache' }).then((r) => { if (!r.ok) throw new Error(`${src}: HTTP ${r.status}`); return r.arrayBuffer(); }))
       .then((buf) => { data = parseGalaxy(buf); build(); rebuild(); return data; })
       .catch((err) => { console.warn('galaxy: could not load', err); loading = null; return null; });
     return loading;
