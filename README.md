@@ -213,6 +213,35 @@ sky this map draws, with sources.
 
 ---
 
+## Finishing the front end — what the studies taught
+
+Three competitors were studied (satellitemap.space, orbitalradar.com, satellitetracker3d.com) and the
+best of each was taken, as data where a registry could hold it:
+
+- **Colour by** — one click recolours every dot by a fact it already carries: height, orbit tilt, or
+  how long it has been up, from `registry/colorkeys.yaml`; the legend counts the dots on screen and
+  says how many have no value rather than guessing one.
+- **Sunlit or in shadow** — every Earth-orbiting dot dims when it is in Earth's shadow, and its card
+  says which; a shadow-cylinder test in scene units, ten times a second, for the whole sky.
+- **The orbit line** — select anything that laps and one closed lap is drawn from the same elements as
+  the dot; the card says so. **The trajectory chart** on the card shows height and the ground track
+  over the next lap and a half, broken at the date line.
+- **Trains** — a fresh launch's satellites are one thing: who leads (by orbital phase), whether it is
+  still climbing as a line (a registry threshold), and when the line comes over you.
+- **Provisional objects** — a launch the public catalogue has not numbered yet is drawn dimmer, classed
+  *inferred* whatever its elements' age, and its card says where the number will come from.
+- **Space weather** — one line at the top of the status panel: NOAA's Kp, the word it means, how old the
+  reading is by NOAA's own stamp, and whether it was read live or from our copy.
+- **Data-saver and a frame-rate latch** — on a slow or metered connection the two heavy catalogues wait
+  until asked for; when frames stay slow for three seconds the picture drops to one pixel per pixel
+  without the Milky Way backdrop — once, and said in the panel.
+- **Labels, the Next list, search to its spec** — names over the selection, its train and the nearest
+  notable things (never the catalogue); a Next moment that lists launches, close approaches, perihelia
+  and passes from what is already loaded; eight search rows with whole words first, an announced
+  fallback, and nicknames as a registry.
+
+---
+
 ## Nine silhouettes, learned once
 
 ![The nine object classes and their colours](assets/readme/classes.svg)
