@@ -368,6 +368,7 @@ export const LAYERS = [
     // plane and simply not there, which is the truth of it -- select one and you are taken to the
     // stellar rung, where they are.
     id: 'exoplanets',
+    ladderOnly: true, // drawn from the ladder's rungs only: from a world stage the true positions are past the far plane
     display: 'Planets around other stars',
     klass: 'exoplanet',
     source: 'nasa-exoplanet-archive',
@@ -396,6 +397,7 @@ export const LAYERS = [
     // rows in registry/dso-hand.yaml (the LMC). One class `dso`, the type on the card. Bundled JSON
     // through the same `bundledText` path exoplanets use; nothing to harvest.
     id: 'deep-sky',
+    ladderOnly: true, // drawn from the ladder's rungs only: from a world stage the true positions are past the far plane
     display: 'Nebulae, clusters and galaxies',
     klass: 'dso',
     source: 'bundled',
@@ -447,6 +449,7 @@ export const LAYERS = [
     // the records come from registry/exotics.yaml through its generated mirror. Plain glyphs, one
     // class, the kind on the card. `bundled`: the fact sheets are this repository's.
     id: 'exotics',
+    ladderOnly: true, // drawn from the ladder's rungs only: from a world stage the true positions are past the far plane
     display: 'Black holes and other extremes',
     klass: 'exotic',
     source: 'bundled',

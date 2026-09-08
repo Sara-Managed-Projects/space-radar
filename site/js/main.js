@@ -163,7 +163,7 @@ export async function boot({ setStatus } = {}) {
   function candidatesAt(ndcX, ndcY, rect) {
     const glyphs = [];
     for (const layer of LAYERS) {
-      if (!isLayerOn(layer.id)) continue;
+      if (!isLayerDrawable(layer)) continue;
       const gl = glyphLayers.get(layer.id);
       if (!gl || !gl.pickAll) continue;
       for (const c of gl.pickAll(ndcX, ndcY, 6)) glyphs.push(c);
@@ -240,6 +240,20 @@ export async function boot({ setStatus } = {}) {
     const nearKm = (layer && layer.nearKm) || 2000;
     return Math.max(0.05, (nearKm * 0.35) / stage.unitKm);
   }
+
+  /**
+   * Is this layer drawn right now? On, and -- for a layer that lives on the ladder's rungs (planets
+   * around other stars, deep-sky objects, black holes) -- only when the stage is a rung. From a
+   * world stage their true positions are past the far plane and, MEASURED 2026-09-08 in the browser,
+   * the glyph shader drew them anyway as a green rash over Earth's sky. The layer stays "on" in the
+   * panel; it simply has nothing honest to draw from here, and its records still count and search.
+   */
+  function isLayerDrawable(layer) {
+    if (!layer || !isLayerOn(layer.id)) return false;
+    if (layer.ladderOnly && !isLadderStage(stage.worldId)) return false;
+    return true;
+  }
+  ctx.isLayerDrawable = isLayerDrawable;
 
   function isLayerOn(id) {
     const layer = LAYERS.find((l) => l.id === id);
@@ -333,7 +347,10 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     if (sinceLayerUpdate >= interval) {
       sinceLayerUpdate = 0;
       for (const [id, gl] of glyphLayers) {
-        if (ctx.isLayerOn(id)) gl.update(t, ctx.camera);
+        const layer = LAYERS.find((l) => l.id === id);
+        const drawable = ctx.isLayerDrawable ? ctx.isLayerDrawable(layer) : ctx.isLayerOn(id);
+        if (layer && layer.ladderOnly && gl.setVisible) gl.setVisible(drawable);
+        if (drawable) gl.update(t, ctx.camera);
       }
     }
 
@@ -367,7 +384,7 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
   for (const layer of ordered) {
     // A layer another module already draws (the worlds' discs) gets no glyph layer: two marks for
     // one planet would be two places to tap and one of them wrong.
-    if (layer.draw === 'worlds' || layer.draw === 'galaxy') continue;
+    if (layer.draw === 'worlds' || layer.draw === 'galaxy' || layer.draw === 'stars3d') continue;
     const gl = createGlyphLayer(scene, layer);
     gl.setRecords([]);
     // Hidden until its records arrive; one() then sets the real visibility. This loop runs
