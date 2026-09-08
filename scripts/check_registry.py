@@ -525,6 +525,121 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
                     f"turn")
 
 
+# The hooks scene/lod.js's caller implements. A rule naming anything else is refused: a rule
+# nothing reads is a rule that silently does nothing, which is worse than no rule.
+LOD_HOOKS = {"sky-panorama"}
+
+
+def check_stages(world_ids: set) -> list:
+    """registry/stages.yaml: the ladder's rungs, and scene/stage.js's STAGES table must carry them.
+
+    The mirror is hand-written (three rows), so the refusal reads the JS with a regular expression
+    and compares ids and unit_km. A rung in the YAML that the browser has never heard of is a
+    stage the card can name and the camera cannot reach.
+    """
+    path = REG / "stages.yaml"
+    if not path.exists():
+        return []
+    try:
+        doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as exc:
+        fail("stages.yaml", f"will not parse: {exc}")
+        return []
+    stages = doc.get("stages")
+    if not isinstance(stages, list):
+        fail("stages.yaml", "no `stages:` list")
+        return []
+    seen = set()
+    for st in stages:
+        if not isinstance(st, dict):
+            fail("stages.yaml", "a row is not a mapping")
+            continue
+        sid = st.get("id")
+        where = f"stages.yaml[{sid}]"
+        if not sid:
+            fail("stages.yaml", "a row has no id")
+            continue
+        if sid in seen:
+            fail(where, "duplicate id")
+        seen.add(sid)
+        if sid in world_ids:
+            fail(where, "a rung may not reuse a world's id: a world is a stage already")
+        unit = st.get("unit_km")
+        if not isinstance(unit, (int, float)) or not unit > 0:
+            fail(where, "`unit_km` must be a positive number")
+        frame = str(st.get("frame") or "")
+        world, _, kind = frame.rpartition("-")
+        if world not in world_ids or kind != "inertial":
+            fail(where, f"frame {frame!r} must be `<world>-inertial` naming a worlds.yaml row")
+        if st.get("centre") not in world_ids:
+            fail(where, f"centre `{st.get('centre')}` has no worlds.yaml row")
+        if not st.get("display"):
+            fail(where, "no `display:` name")
+        if not st.get("reaches"):
+            fail(where, "no `reaches:` line -- the breadcrumb has nothing to say about this rung")
+
+    # The hand mirror in scene/stage.js. tests/test_growth.py runs this checker on a copy of the
+    # tree that holds only registry/ and scripts/, so a missing mirror is "cannot look", not a fail.
+    js_path = ROOT / "site/js/scene/stage.js"
+    if not js_path.exists():
+        return stages
+    js = js_path.read_text(encoding="utf-8")
+    mirror = {}
+    for m in re.finditer(r"^\s*'?([a-z][a-z0-9-]*)'?:\s*\{[^}]*unitKm:\s*([0-9.e+]+)[^}]*ladder:\s*true", js, re.M):
+        mirror[m.group(1)] = float(m.group(2))
+    for st in stages:
+        if not isinstance(st, dict) or not st.get("id"):
+            continue
+        sid = st["id"]
+        if sid not in mirror:
+            fail(f"stages.yaml[{sid}]", "scene/stage.js STAGES has no `ladder: true` row for it -- the mirror is stale")
+        elif isinstance(st.get("unit_km"), (int, float)) and abs(mirror[sid] - float(st["unit_km"])) > 1e-3 * float(st["unit_km"]):
+            fail(f"stages.yaml[{sid}]", f"unit_km {st['unit_km']} but scene/stage.js says {mirror[sid]}")
+    for sid in mirror:
+        if sid not in seen:
+            fail("stage.js", f"STAGES row `{sid}` is a ladder rung with no stages.yaml row")
+    return stages
+
+
+def check_lod() -> list:
+    """registry/lod.yaml: a rule must name a hook that exists and a range that is a range."""
+    path = REG / "lod.yaml"
+    if not path.exists():
+        return []
+    try:
+        doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as exc:
+        fail("lod.yaml", f"will not parse: {exc}")
+        return []
+    rules = doc.get("rules")
+    if not isinstance(rules, list):
+        fail("lod.yaml", "no `rules:` list")
+        return []
+    seen = set()
+    for r in rules:
+        if not isinstance(r, dict):
+            fail("lod.yaml", "a rule is not a mapping")
+            continue
+        rid = r.get("id")
+        where = f"lod.yaml[{rid}]"
+        if not rid:
+            fail("lod.yaml", "a rule has no id")
+            continue
+        if rid in seen:
+            fail(where, "duplicate id")
+        seen.add(rid)
+        if r.get("what") not in LOD_HOOKS:
+            fail(where, f"`what: {r.get('what')}` is not a hook the scene implements {sorted(LOD_HOOKS)}")
+        if r.get("fade") not in {"in", "out"}:
+            fail(where, "`fade` must be `in` or `out`")
+        a, b = r.get("from_km"), r.get("to_km")
+        if not isinstance(a, (int, float)) or not isinstance(b, (int, float)) or not (0 <= a < b):
+            fail(where, "`from_km` and `to_km` must be numbers with 0 <= from_km < to_km")
+        if not r.get("why"):
+            fail(where, "no `why:` -- a level-of-detail rule without a reason is a knob nobody can review")
+    return rules
+
+
 def check_oddities(doc: dict, world_ids: set, sites: list) -> None:
     """registry/oddities.yaml: eight rows, five kinds of answer to "where is it?", one rule.
 
@@ -1203,6 +1318,8 @@ def main() -> int:
             fail(where, "no `doing:` line -- a site card with nothing to say is a dot")
 
     check_oddities(oddities_doc, world_ids, sites)
+    ladder = check_stages(world_ids)
+    lod_rules = check_lod()
     check_tours(oddities_doc, layer_ids, world_ids, {s.get('id') for s in sites},
                 {str(t.get('term') or '').lower() for t in terms})
 
@@ -1399,7 +1516,8 @@ def main() -> int:
             print(f"  {e}")
         return 1
     print(
-        f"registry ok: {len(worlds)} worlds, {len(sources)} sources, {len(layers)} layers, "
+        f"registry ok: {len(worlds)} worlds, {len(ladder)} ladder rungs, {len(lod_rules)} lod rules, "
+        f"{len(sources)} sources, {len(layers)} layers, "
         f"{len(events)} event types, {len(models)} models, {len(real_models)} real models, "
         f"{len(marks)} third-party marks, {len(sites)} sites, "
         f"{len(terms)} glossary terms, {len(showers)} showers, "
