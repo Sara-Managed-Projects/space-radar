@@ -221,6 +221,11 @@ const COMPARE_KINDS = {
  * A comparison a beginner can hold, or null when there is no number to compare.
  * Never returns a placeholder: a card drops the chip instead.
  */
+/** The indefinite article for a type phrase: "an ultra-faint dwarf galaxy", "a spiral galaxy". English only. */
+export function article(phrase) {
+  return /^[aeiou]/i.test(String(phrase || '').trim()) ? 'an' : 'a';
+}
+
 export function compare(kind, value) {
   const fn = COMPARE_KINDS[kind];
   if (!fn) return null;
@@ -1182,8 +1187,8 @@ export const COPY = {
     },
     dso: {
       leadHome: '{name} is the galaxy we live in; its centre is {dist} light-years away',
-      lead: '{name} is a {type} {dist} light-years away',
-      leadRange: '{name} is a {type} somewhere between {lo} and {hi} light-years away',
+      lead: '{name} is {a} {type} {dist} light-years away',
+      leadRange: '{name} is {a} {type} somewhere between {lo} and {hi} light-years away',
       leadUntyped: '{name} is {dist} light-years away',
       size: 'about {n} light-years across',
       seenAs: 'the light you see left it {n} years ago',

@@ -36,7 +36,7 @@ import {
   fistsWords,
   inWords,
   UNITS,
-} from '../copy/en.js';
+ article } from '../copy/en.js';
 import { propagate } from '../propagate/index.js';
 import { realModelFor } from '../scene/realmodels.js';
 import { sunlitState } from '../scene/shadow.js';
@@ -580,8 +580,8 @@ const TEMPLATES = {
     const name = displayName(record);
     let lead;
     if (pick(md, 'home') === true && distLy !== null) lead = t(T.leadHome, { name, dist: fmt.int(distLy) });
-    else if (lo !== null && hi !== null) lead = t(T.leadRange, { name, type, lo: fmt.int(lo), hi: fmt.int(hi) });
-    else if (distLy !== null) lead = t(T.lead, { name, type, dist: fmt.int(distLy) });
+    else if (lo !== null && hi !== null) lead = t(T.leadRange, { name, a: article(type), type, lo: fmt.int(lo), hi: fmt.int(hi) });
+    else if (distLy !== null) lead = t(T.lead, { name, a: article(type), type, dist: fmt.int(distLy) });
     else lead = t(T.leadUntyped, { name, dist: '?' });
     return buildSentence(lead, [
       con ? t(T.constellation, { con: String(con) }) : null,
@@ -655,7 +655,8 @@ const TEMPLATES = {
   },
 };
 
-function firstSentence(record, ctx, m, passInfo) {
+/** The card's first sentence. Exported for the tests. */
+export function firstSentence(record, ctx, m, passInfo) {
   const klass = klassOf(record);
   const builder = TEMPLATES[klass];
   const template = COPY.templates[klass];
