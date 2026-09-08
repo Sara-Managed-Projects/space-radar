@@ -11,10 +11,13 @@
 # ra / dec     J2000, degrees, for an object OpenNGC has no row for (the LMC is not an NGC object).
 version: 1
 
+# `what:` is the plain phrase the card's first sentence uses ("a dwarf spheroidal galaxy"); `hubble:`
+# is the catalogue code shown beside it. A row needs both words and code.
 objects:
   - id: lmc
     name: Large Magellanic Cloud
     type: G
+    what: barred irregular galaxy
     hubble: SB(s)m
     ra_deg: 80.8917         # 05h 23m 34s
     dec_deg: -69.7567       # -69 deg 45.4 min
@@ -28,6 +31,7 @@ objects:
     name: Small Magellanic Cloud
     designation: NGC 292
     type: G
+    what: dwarf irregular galaxy
     hubble: SB(s)m pec
     ra_deg: 13.1867         # 00h 52m 44.8s
     dec_deg: -72.8286       # -72 deg 49 min 43 s
@@ -41,6 +45,7 @@ objects:
   - id: fornax-dwarf
     name: Fornax Dwarf
     type: G
+    what: dwarf spheroidal galaxy
     hubble: dE0
     ra_deg: 39.9971         # 02h 39m 59.3s
     dec_deg: -34.4492       # -34 deg 26 min 57 s
@@ -54,6 +59,7 @@ objects:
   - id: sculptor-dwarf
     name: Sculptor Dwarf
     type: G
+    what: dwarf spheroidal galaxy
     hubble: E
     ra_deg: 15.0388         # 01h 00m 09.3s
     dec_deg: -33.7092       # -33 deg 42 min 33 s
@@ -67,6 +73,7 @@ objects:
   - id: carina-dwarf
     name: Carina Dwarf
     type: G
+    what: dwarf spheroidal galaxy
     hubble: "E3"
     ra_deg: 100.4029        # 06h 41m 36.7s
     dec_deg: -50.9661       # -50 deg 57 min 58 s
@@ -80,6 +87,7 @@ objects:
   - id: draco-dwarf
     name: Draco Dwarf
     type: G
+    what: dwarf spheroidal galaxy
     hubble: "E pec"
     ra_deg: 260.0517        # 17h 20m 12.4s
     dec_deg: 57.9153        # +57 deg 54 min 55 s
@@ -93,6 +101,7 @@ objects:
   - id: ursa-minor-dwarf
     name: Ursa Minor Dwarf
     type: G
+    what: dwarf spheroidal galaxy
     hubble: "E"
     ra_deg: 227.2854        # 15h 09m 08.5s
     dec_deg: 67.2225        # +67 deg 13 min 21 s
@@ -106,6 +115,7 @@ objects:
   - id: sextans-dwarf
     name: Sextans Dwarf
     type: G
+    what: dwarf spheroidal galaxy
     hubble: "dSph"
     ra_deg: 153.2621        # 10h 13m 02.9s
     dec_deg: -1.6147        # -01 deg 36 min 53 s
@@ -119,6 +129,7 @@ objects:
   - id: leo-i
     name: Leo I
     type: G
+    what: dwarf spheroidal galaxy
     hubble: "E (dSph)"
     ra_deg: 152.1142        # 10h 08m 27.4s
     dec_deg: 12.3075        # +12 deg 18 min 27 s
@@ -132,6 +143,7 @@ objects:
   - id: leo-ii
     name: Leo II
     type: G
+    what: dwarf spheroidal galaxy
     hubble: "E0 pec"
     ra_deg: 168.3717        # 11h 13m 29.2s
     dec_deg: 22.1547        # +22 deg 09 min 17 s
@@ -146,6 +158,7 @@ objects:
     name: Barnard's Galaxy
     designation: NGC 6822
     type: G
+    what: barred irregular galaxy
     hubble: "IB(s)m"
     ra_deg: 296.2404        # 19h 44m 57.70s
     dec_deg: -14.8033       # -14 deg 48 min 12.0 s
@@ -160,6 +173,7 @@ objects:
     name: IC 10
     designation: IC 10
     type: G
+    what: dwarf irregular starburst galaxy
     hubble: "dIrr IV/BCD"
     ra_deg: 5.072           # 00h 20m 17.29s
     dec_deg: 59.3039        # +59 deg 18 min 13.9 s
@@ -174,6 +188,7 @@ objects:
     name: IC 1613
     designation: IC 1613
     type: G
+    what: dwarf irregular galaxy
     hubble: "IB(s)m"
     ra_deg: 16.1992         # 01h 04m 47.8s
     dec_deg: 2.1178         # +02 deg 07 min 04 s
@@ -188,6 +203,7 @@ objects:
     name: Wolf-Lundmark-Melotte
     designation: WLM
     type: G
+    what: dwarf irregular galaxy
     hubble: "IB(s)m"
     ra_deg: 0.4921          # 00h 01m 58.1s
     dec_deg: -15.4608       # -15 deg 27 min 39 s

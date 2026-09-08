@@ -640,6 +640,8 @@ def check_dso_hand() -> list:
         seen.add(oid)
         if not o.get("source"):
             fail(where, "no `source:` -- a distance nobody can check is a distance nobody should draw")
+        if not isinstance(o.get("what"), str) or not o["what"].strip() or "(" in o["what"]:
+            fail(where, "no `what:` -- the plain words the card's sentence uses (\"dwarf spheroidal galaxy\"), not a catalogue code")
         d = o.get("dist_kly")
         if isinstance(d, list):
             ok = len(d) == 2 and all(isinstance(v, (int, float)) and v > 0 for v in d) and d[0] < d[1]

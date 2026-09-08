@@ -137,7 +137,7 @@ def main(argv):
             "common": o["name"],
             "kind": KIND.get(o["type"], "other"),
             "typeCode": o["type"],
-            "typeText": o.get("hubble") or o["type"],
+            "typeText": o.get("what") or KIND.get(o["type"], "object"),  # words for the sentence; the Hubble code sits beside them
             "hubble": o.get("hubble"),
             "con": o.get("con"),
             "raDeg": o["ra_deg"],
