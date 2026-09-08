@@ -754,6 +754,9 @@ export const COPY = {
   // do not write "colour unknown" -- we simply never claim one. (This read 14 in three places,
   // which was the inverse: 15 rows DO have a colour. check_registry.py prints the live figure.)
   drawing: {
+    // The orbit line under the selection (spec 0026 req 13): the same elements as the dot, one lap ahead.
+    orbitLine: 'The line is one lap ahead, worked out from the same elements as the dot.',
+    orbitLineYear: 'The line is the coming year of its path, worked out from the same elements as the dot.',
     variant: 'drawn from published dimensions for {name}',
     // "and height": the size chip beside this line is the matched row's height_m, and on a
     // family match that is the family's figure -- 63 m for an H3 that may be flying the 57 m
