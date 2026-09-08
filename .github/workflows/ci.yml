@@ -74,3 +74,8 @@ jobs:
       # budget was a comment until this job ran: nothing had ever measured it.
       - name: Modules agree, and every drawn shape fits its budget
         run: node tests/test_contract.mjs
+      # The harvested JPL snapshots become records: Horizons vectors -> measured sampled probes,
+      # close approaches joined to the SBDB -> inferred kepler asteroids. Fixtures are cut
+      # from the real snapshots of 2026-09-08, so the frame and the join are checked, not assumed.
+      - name: Snapshots become records, and a missing one keeps its stand-in
+        run: node tests/test_snapshot_parsers.mjs

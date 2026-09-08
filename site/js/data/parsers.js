@@ -1005,3 +1005,221 @@ function num(v) {
 function numOrNull(v) {
   return num(v);
 }
+
+// ---------------------------------------------------------------------------------------------
+// The two parsers the harvester made possible (spec 0003 amendment 1 §4 follow-up).
+//
+// JPL sends no CORS headers, so until the harvester existed the asteroid and deep-space layers
+// were hand-made stand-ins classed `sample`, each card saying so. The harvester now writes the
+// real bodies to /data/v1/, the reader hands them here verbatim, and these two functions turn them
+// into records. When a snapshot is missing the loader falls back to the stand-in, per record and
+// per layer, and nothing is invented.
+// ---------------------------------------------------------------------------------------------
+
+const JD_UNIX_EPOCH = 2440587.5;
+const LUNAR_DISTANCE_KM = 384400;
+
+function jdToMs(jd) {
+  return (Number(jd) - JD_UNIX_EPOCH) * 86400000;
+}
+
+/**
+ * JPL Horizons VECTORS text -> [{tMs, x, y, z, vx, vy, vz}], km and km/s, in the frame the
+ * request asked for. The harvester asks for CENTER='500@10' (the Sun) with Horizons' default
+ * reference plane, which is the ECLIPTIC of J2000 -- the same frame this app calls
+ * `sun-inertial` and the same one the comets' MPC elements are in. MEASURED against the real
+ * body for Voyager 1 on 2026-09-07: |r| = 171.7 au (Horizons' own r on that date is 171.68), and
+ * z/r = 0.58, i.e. 35 deg above the ecliptic, which is where Voyager 1 is; in the equatorial frame
+ * that ratio would read very differently.
+ *
+ * The rows sit between $$SOE and $$EOE as CSV: JDTDB, calendar date, X, Y, Z, VX, VY, VZ.
+ * A text with no $$SOE block (Horizons refusing a window, an unknown id) yields [].
+ */
+export function horizonsSamples(text) {
+  if (typeof text !== 'string') return [];
+  const s = text.indexOf('$$SOE');
+  const e = text.indexOf('$$EOE', s + 5);
+  if (s < 0 || e < 0) return [];
+  const out = [];
+  for (const line of text.slice(s + 5, e).split(/\r?\n/)) {
+    const c = line.split(',').map((f) => f.trim());
+    if (c.length < 8) continue;
+    const jd = Number(c[0]);
+    const v = c.slice(2, 8).map(Number);
+    if (!Number.isFinite(jd) || v.some((n) => !Number.isFinite(n))) continue;
+    out.push({ tMs: jdToMs(jd), x: v[0], y: v[1], z: v[2], vx: v[3], vy: v[4], vz: v[5] });
+  }
+  return out;
+}
+
+/**
+ * The deep-space layer from a harvested Horizons snapshot.
+ *
+ * @param {Object<string,string>} body   the snapshot body: Horizons id -> response text
+ * @param {Array<Object>} base           the hand-kept records (data/sample.js sampleDeepSpace)
+ *   -- names, classes, ids the trips and the models refer to, and `meta.horizonsId`. Only the
+ *   POSITION changes here: a record whose id has data becomes `sampled` and `measured`; one whose
+ *   id has none stays exactly the stand-in it was, card and all. The ids never change, because
+ *   registry/tours.yaml and registry/oddities.yaml name them.
+ */
+export function parseHorizonsVectors(body, base = []) {
+  const list = Array.isArray(base) ? base : [];
+  if (!body || typeof body !== 'object') return list;
+  const out = [];
+  for (const rec of list) {
+    const hid = rec && rec.meta ? rec.meta.horizonsId : null;
+    const text = hid == null ? null : body[String(hid)];
+    const samples = horizonsSamples(text);
+    if (samples.length < 2) {
+      out.push(rec);
+      continue;
+    }
+    const first = samples[0].tMs;
+    const last = samples[samples.length - 1].tMs;
+    out.push({
+      ...rec,
+      propagator: 'sampled',
+      elements: undefined,
+      samples,
+      // Horizons' state vectors are the mission's own navigation solution, sampled every six
+      // hours; a Hermite curve between two of them is closer to the truth than anything else
+      // this page draws.
+      cls: 'measured',
+      epoch: last,
+      meta: {
+        ...rec.meta,
+        construction: 'horizons',
+        anchor: null,
+        anchorDrift: null,
+        approx: false,
+        approxFields: [],
+        sampleCount: samples.length,
+        samplesFromMs: first,
+        samplesToMs: last,
+        why:
+          'Position from JPL Horizons: the mission’s own trajectory, sampled every six hours ' +
+          'and interpolated between samples. Fetched by our scheduled job, not by this page.',
+      },
+    });
+  }
+  return out;
+}
+
+/** A JPL table `{fields:[...], data:[[...]]}` -> array of plain objects. Anything else -> []. */
+function jplTable(t) {
+  if (!t || !Array.isArray(t.fields) || !Array.isArray(t.data)) return [];
+  return t.data.map((row) => {
+    const o = {};
+    t.fields.forEach((f, i) => { o[f] = row[i]; });
+    return o;
+  });
+}
+
+/**
+ * The join key for a small body. SBDB writes "   433 Eros (A898 PA)" and "       (2026 RR1)";
+ * CAD writes des "433" and "2026 RR1". Numbered bodies match on the number, unnumbered ones on
+ * the provisional designation in the parentheses.
+ */
+function sbdbKeys(fullName) {
+  const fn = String(fullName || '').trim();
+  const keys = [];
+  const m = /^(\d+)\s/.exec(fn);
+  if (m) keys.push(m[1]);
+  const p = fn.lastIndexOf('(');
+  const q = fn.lastIndexOf(')');
+  if (p >= 0 && q > p) keys.push(fn.slice(p + 1, q).trim());
+  if (!keys.length) keys.push(fn);
+  return keys;
+}
+
+/**
+ * "Asteroids passing by": the bodies JPL's close-approach table lists for the coming weeks, each
+ * with its orbit from the SBDB. Two snapshots, one layer. A CAD row with no SBDB match is
+ * skipped -- there is nothing honest to draw it with.
+ *
+ * The elements are measured (JPL's fit). The POSITION is computed here from them by two-body
+ * motion, so the record is `inferred`, exactly as the comets are.
+ */
+export function parseNeoApproaches(cad, sbdb) {
+  const approaches = jplTable(cad);
+  const bodies = jplTable(sbdb);
+  if (!approaches.length || !bodies.length) return [];
+  const byKey = new Map();
+  for (const b of bodies) for (const k of sbdbKeys(b.full_name)) if (!byKey.has(k)) byKey.set(k, b);
+
+  const out = [];
+  const seen = new Set();
+  for (const a of approaches) {
+    const des = String(a.des || '').trim();
+    const b = byKey.get(des);
+    if (!b) continue;
+    const aAu = Number(b.a);
+    const e = Number(b.e);
+    const epochJd = Number(b.epoch);
+    if (!(aAu > 0) || !(e >= 0) || !Number.isFinite(epochJd)) continue;
+    const id = `neo-${des.replace(/\s+/g, '-').toLowerCase()}`;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    const aKm = aAu * AU_KM;
+    const qKm = aKm * (1 - e);
+    const epochMs = jdToMs(epochJd);
+    const fullName = String(b.full_name || a.fullname || des).trim();
+    // "433 Eros (A898 PA)" keeps its name; "(2026 RR1)" is a designation and loses the brackets.
+    const name = /^\(.*\)$/.test(fullName) ? fullName.slice(1, -1) : fullName;
+    const distAu = Number(a.dist);
+    const distKm = Number.isFinite(distAu) ? distAu * AU_KM : null;
+    const caMs = Number.isFinite(Number(a.jd)) ? jdToMs(a.jd) : null;
+    const H = Number(b.H);
+    const diameter = Number(b.diameter);
+    out.push({
+      id,
+      name,
+      layer: 'asteroids',
+      klass: 'asteroid',
+      propagator: 'kepler',
+      frame: 'sun-inertial',
+      cls: 'inferred',
+      epoch: epochMs,
+      source: 'jpl-sbdb-neo',
+      elements: {
+        qKm,
+        e,
+        aKm,
+        iRad: Number(b.i) * DEG,
+        omRad: Number(b.om) * DEG,
+        wRad: Number(b.w) * DEG,
+        maRad: Number(b.ma) * DEG,
+        epochMs,
+        muKm3S2: MU_SUN,
+      },
+      meta: {
+        designation: des,
+        fullName,
+        aAu,
+        qAu: qKm / AU_KM,
+        eccentricity: e,
+        inclinationDeg: Number(b.i),
+        nodeDeg: Number(b.om),
+        argpDeg: Number(b.w),
+        meanAnomalyDeg: Number(b.ma),
+        periodDays: (2 * Math.PI * Math.sqrt((aKm * aKm * aKm) / MU_SUN)) / 86400,
+        absoluteMagnitude: Number.isFinite(H) ? H : null,
+        diameterKm: Number.isFinite(diameter) ? diameter : null,
+        orbitClass: b.class || null,
+        neo: true,
+        closeApproachMs: caMs,
+        closeApproachDistanceKm: distKm,
+        closeApproachLunarDistances: distKm != null ? distKm / LUNAR_DISTANCE_KM : null,
+        relativeSpeedKmS: Number.isFinite(Number(a.v_rel)) ? Number(a.v_rel) : null,
+        approx: false,
+        approxFields: [],
+        why:
+          'The orbit is JPL’s fit to real observations. Where it is along that orbit is ' +
+          'computed here from those elements, so the position is inferred, not measured. ' +
+          'It is in this layer because JPL’s close-approach table lists it passing within ' +
+          'ten lunar distances.',
+      },
+    });
+  }
+  return out;
+}

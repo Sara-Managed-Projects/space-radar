@@ -224,7 +224,22 @@ export const SOURCES = {
     browser: false,
     kind: 'json',
     attribution: 'Orbits: NASA/JPL Small-Body Database',
-    note: NO_CORS_REASON + ' See data/sample.js sampleAsteroids().',
+    note: NO_CORS_REASON + ' Read from our snapshot; sampleAsteroids() stands in only when that is missing.',
+  },
+  'jpl-cad': {
+    id: 'jpl-cad',
+    registryId: 'jpl-cad',
+    label: 'JPL CNEOS — close approaches',
+    publisher: 'NASA/JPL',
+    url: 'https://ssd-api.jpl.nasa.gov/cad.api?dist-max=10LD&date-min=now&date-max=%2B60&sort=date&diameter=true&fullname=true',
+    cadenceMs: 24 * HOUR,
+    freshnessMaxMs: 168 * HOUR,
+    browser: false,
+    kind: 'json',
+    attribution: 'Close approaches: NASA/JPL CNEOS',
+    // Which asteroids are "passing by" this month. Paired with jpl-sbdb-neo, which has their
+    // orbits; parsers.js parseNeoApproaches joins the two.
+    note: NO_CORS_REASON + ' Read from our snapshot; without it the asteroid layer shows its stand-ins.',
   },
   'horizons-deep-space': {
     id: 'horizons-deep-space',

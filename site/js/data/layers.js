@@ -17,7 +17,7 @@
 // says out loud what it selects. Adding a layer is a row here plus, at most, one predicate.
 
 import { load } from './sources.js';
-import { parseCelestrakGP, parseLaunches, parseComets } from './parsers.js';
+import { parseCelestrakGP, parseLaunches, parseComets, parseHorizonsVectors, parseNeoApproaches } from './parsers.js';
 import {
   sampleAsteroids,
   sampleDeepSpace,
@@ -511,6 +511,10 @@ export const LAYERS = [
     display: 'Asteroids passing by',
     klass: 'asteroid',
     source: 'jpl-sbdb-neo',
+    // "Passing by" is JPL's close-approach table; the orbits come from the SBDB. Both snapshots
+    // are needed, in this order, and the stand-in appears only if either is missing.
+    sources: ['jpl-cad', 'jpl-sbdb-neo'],
+    parse: 'neo-approaches',
     sample: sampleAsteroids,
     propagator: 'kepler',
     frame: 'sun-inertial',
@@ -529,6 +533,7 @@ export const LAYERS = [
     display: 'Probes and telescopes',
     klass: 'probe',
     source: 'horizons-deep-space',
+    parse: 'horizons-vectors',
     sample: sampleDeepSpace,
     propagator: 'kepler', // records also carry `sampled`; the propagator is per record
     frame: 'sun-inertial',
@@ -605,17 +610,21 @@ export async function loadLayerDetailed(layer, nowMs) {
   let result = null;
 
   try {
+    const ids = Array.isArray(layer.sources) ? layer.sources : layer.source ? [layer.source] : [];
     if (typeof layer.sample === 'function') {
-      // A source a browser cannot call. Bundled, cls 'sample', and every record says why.
-      //
-      // SEAM (follow-up to spec 0003 amendment 1 §4). The three `sample:` layers -- asteroids,
-      // deep-space, reentries -- stay bundled in this change. The harvester removes the reason
-      // they exist (no CORS at JPL, a login at Space-Track), but each needs a browser parser that
-      // does not exist yet (SBDB, Horizons, TIP in parsers.js, wired through parseFor below).
-      // When one does, this branch becomes: `result = await load(layer.source)` first -- which is
-      // via snapshot only for a `browser: false` row and never goes upstream -- and
-      // `layer.sample()` only when `result.data == null`. Nothing else in this file moves.
-      parsed = layer.sample();
+      // A source a browser cannot call. The harvester (spec 0003 amendment 1 §4) writes it to
+      // /data/v1/ and load() reads that snapshot -- for a `browser: false` row it never goes
+      // upstream -- so: the real body first, through the layer's parser, and the bundled
+      // stand-in (cls 'sample', every card saying so) ONLY when a snapshot is missing. A layer
+      // with no parser yet (reentries: Space-Track needs a login nobody has registered) is the
+      // stand-in always, as before.
+      let bodies = null;
+      if (layer.parse && ids.length) {
+        const results = await Promise.all(ids.map((id) => load(id)));
+        result = results[0];
+        if (results.every((r) => r && r.data != null)) bodies = results.map((r) => r.data);
+      }
+      parsed = bodies ? parseFor(layer, bodies.length === 1 ? bodies[0] : bodies) : layer.sample();
     } else {
       result = await load(layer.source);
       if (result.data == null) {
@@ -666,6 +675,13 @@ function parseFor(layer, data) {
       return parseLaunches(data).pads;
     case 'comets':
       return parseComets(data);
+    case 'horizons-vectors':
+      // The stand-in records are the metadata base: names, ids the trips and models refer to,
+      // and the Horizons id each one carries. Only positions change.
+      return parseHorizonsVectors(data, typeof layer.sample === 'function' ? layer.sample() : []);
+    case 'neo-approaches':
+      // Two snapshots: the close-approach table says WHICH bodies, the SBDB says their orbits.
+      return Array.isArray(data) ? parseNeoApproaches(data[0], data[1]) : [];
     default:
       return [];
   }
