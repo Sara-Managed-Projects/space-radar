@@ -365,14 +365,21 @@ function buildDebris(variant) {
  */
 function buildSoyuzFamily(variant) {
   const g = new THREE.Group();
-  const progress = variant === 'progress';
-  g.userData.realSizeM = progress ? 10.6 : 10.7; // across the wings, the longest dimension
-  const green = '#6E7E62'; // the thermal blanket
+  const progress = variant === 'progress' || variant === 'tianzhou';
+  // Shenzhou: the same three-module plan at 9.25 m, wings on BOTH the orbital and service
+  // modules (CMSA), about 17 m across. Tianzhou: a 10.6 m cargo cylinder 3.35 m across with one
+  // pair of wings, about 14.9 m across -- a Progress at half again the size.
+  const shenzhou = variant === 'shenzhou';
+  const tianzhou = variant === 'tianzhou';
+  const span = shenzhou ? 17 : tianzhou ? 14.9 : progress ? 10.6 : 10.7;
+  g.userData.realSizeM = span; // across the wings, the longest dimension
+  const green = tianzhou ? '#D9DDE3' : shenzhou ? '#C9CCD1' : '#6E7E62'; // Chinese hulls are white-grey
   const body = 'body';
-  const S = 1 / 10.7; // metres -> unit box along the wingspan
+  const S = 1 / span; // metres -> unit box along the wingspan
+  const R = tianzhou ? 1.675 : 1.36; // hull radius
 
   // Instrument and propulsion module, aft: a plain cylinder, both variants.
-  const svc = cyl(1.36 * S, 1.36 * S, 2.3 * S, 16, green, body, 'service');
+  const svc = cyl(R * S, R * S, (tianzhou ? 3.2 : 2.3) * S, 16, green, body, 'service');
   svc.rotation.x = Math.PI / 2;
   svc.position.z = -2.4 * S;
   g.add(svc);
@@ -383,13 +390,13 @@ function buildSoyuzFamily(variant) {
 
   if (progress) {
     // Refuelling section where the bell would be, then the cargo drum where the crew would be.
-    const tank = cyl(1.2 * S, 1.36 * S, 1.6 * S, 16, green, body, 'tanks');
+    const tank = cyl((R - 0.16) * S, R * S, 1.6 * S, 16, green, body, 'tanks');
     tank.rotation.x = Math.PI / 2;
     tank.position.z = -0.45 * S;
     g.add(tank);
-    const cargo = cyl(1.13 * S, 1.13 * S, 2.6 * S, 16, green, body, 'cargo');
+    const cargo = cyl((tianzhou ? R : 1.13) * S, (tianzhou ? R : 1.13) * S, (tianzhou ? 5.4 : 2.6) * S, 16, green, body, 'cargo');
     cargo.rotation.x = Math.PI / 2;
-    cargo.position.z = 1.65 * S;
+    cargo.position.z = (tianzhou ? 3.05 : 1.65) * S;
     g.add(cargo);
   } else {
     // The bell: wide at the heat shield, narrow at the hatch to the orbital module.
@@ -397,24 +404,37 @@ function buildSoyuzFamily(variant) {
     bell.rotation.x = Math.PI / 2;
     bell.position.z = -0.2 * S;
     g.add(bell);
-    const orbital = new THREE.Mesh(new THREE.SphereGeometry(1.13 * S, 16, 12), toonMaterial(green, body));
+    // Soyuz's orbital module is a sphere; Shenzhou's is a cylinder with a docking ring, and it
+    // carries its own pair of wings, which is the one thing that tells the two apart.
+    const orbital = shenzhou
+      ? cyl(1.13 * S, 1.13 * S, 2.8 * S, 16, green, body, 'orbital')
+      : new THREE.Mesh(new THREE.SphereGeometry(1.13 * S, 16, 12), toonMaterial(green, body));
     orbital.name = 'orbital';
-    orbital.position.z = 1.75 * S;
+    if (shenzhou) orbital.rotation.x = Math.PI / 2;
+    orbital.position.z = (shenzhou ? 2.1 : 1.75) * S;
     g.add(orbital);
+    if (shenzhou) {
+      for (const side of [-1, 1]) {
+        const w = panelWing(2.6 * S, 1.2 * S, METAL, side > 0 ? 'fwdwing+' : 'fwdwing-');
+        w.rotation.y = side > 0 ? -Math.PI / 2 : Math.PI / 2;
+        w.position.set(side * (1.13 * S + 1.3 * S), 0, 2.1 * S);
+        g.add(w);
+      }
+    }
   }
   // Docking probe at the front.
   const probe = cyl(0.12 * S, 0.12 * S, 0.5 * S, 8, METAL, body, 'probe');
   probe.rotation.x = Math.PI / 2;
-  probe.position.z = (progress ? 3.2 : 3.1) * S;
+  probe.position.z = (tianzhou ? 6.0 : shenzhou ? 3.7 : progress ? 3.2 : 3.1) * S;
   g.add(probe);
 
   // Two wings off the service module, in the plane of the hull.
-  const wingLen = 3.7 * S;
-  const wingWidth = 1.4 * S;
+  const wingLen = (tianzhou ? 5.0 : shenzhou ? 5.5 : 3.7) * S;
+  const wingWidth = (tianzhou ? 2.2 : 1.4) * S;
   for (const side of [-1, 1]) {
     const w = panelWing(wingLen, wingWidth, METAL, side > 0 ? 'wing+' : 'wing-');
     w.rotation.y = side > 0 ? -Math.PI / 2 : Math.PI / 2;
-    w.position.set(side * (1.36 * S + wingLen / 2), 0, -2.4 * S);
+    w.position.set(side * (R * S + wingLen / 2), 0, -2.4 * S);
     g.add(w);
   }
   return g;
@@ -1821,7 +1841,7 @@ const ODDITY_BUILDERS = {
 
 // One row per model. Adding a shape is a row here, not a change to modelFor().
 const BUILDERS = {
-  station: { default: buildStation, iss: buildStation, soyuz: buildSoyuzFamily, progress: buildSoyuzFamily, cygnus: buildCygnus, tiangong: buildTiangong, 'tiangong-module': buildTiangong },
+  station: { default: buildStation, iss: buildStation, soyuz: buildSoyuzFamily, progress: buildSoyuzFamily, shenzhou: buildSoyuzFamily, tianzhou: buildSoyuzFamily, cygnus: buildCygnus, tiangong: buildTiangong, 'tiangong-module': buildTiangong },
   satellite: {
     default: buildSatelliteComms,
     comms: buildSatelliteComms,

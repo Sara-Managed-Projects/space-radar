@@ -117,6 +117,10 @@ export const REAL_MODELS = {
     'css (tianhe': { build: 'tiangong', colour: 'station', name: 'the Tiangong station', klass: ['station'], generic: true },
     'css (wentian': { build: 'tiangong-module', colour: 'station', name: 'a Tiangong laboratory module', klass: ['station'], generic: true },
     'css (mengtian': { build: 'tiangong-module', colour: 'station', name: 'a Tiangong laboratory module', klass: ['station'], generic: true },
+    // Shenzhou and Tianzhou: the Soyuz plan at Chinese proportions, white-grey, wings on both ends
+    // of a Shenzhou. CC BY models exist for both (spec 0027, Ivan's list); procedural until then.
+    shenzhou: { build: 'shenzhou', colour: 'station', name: 'a Shenzhou spacecraft', klass: ['station', 'satellite'], generic: true },
+    tianzhou: { build: 'tianzhou', colour: 'station', name: 'a Tianzhou cargo ship', klass: ['station', 'satellite'], generic: true },
     soyuz: { build: 'soyuz', colour: 'station', name: 'a Soyuz spacecraft', klass: ['station', 'satellite'], generic: true },
     // Cygnus: the round UltraFlex fans are the recognition; nothing free exists (spec 0027), so
     // procedural. Klass-gated so the Cygnus Loop and anything else named Cygnus stay untouched.
