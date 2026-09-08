@@ -575,7 +575,8 @@ const TEMPLATES = {
     const con = pick(md, 'con');
     const name = displayName(record);
     let lead;
-    if (lo !== null && hi !== null) lead = t(T.leadRange, { name, type, lo: fmt.int(lo), hi: fmt.int(hi) });
+    if (pick(md, 'home') === true && distLy !== null) lead = t(T.leadHome, { name, dist: fmt.int(distLy) });
+    else if (lo !== null && hi !== null) lead = t(T.leadRange, { name, type, lo: fmt.int(lo), hi: fmt.int(hi) });
     else if (distLy !== null) lead = t(T.lead, { name, type, dist: fmt.int(distLy) });
     else lead = t(T.leadUntyped, { name, dist: '?' });
     return buildSentence(lead, [
@@ -906,6 +907,17 @@ function seeItLine(record, ctx, m, passInfo) {
     return riseMs !== null
       ? t(COPY.sky.worldRise, { time: timeText.hhmm(riseMs) })
       : COPY.sky.worldNoRise;
+  }
+  // A star, a nebula or a galaxy is not "too far away": its distance is the point of it. What
+  // decides whether a person can see it is brightness -- magnitude 6.5 from a dark site -- and the
+  // record knows its magnitude. The Milky Way is the one thing here everyone has seen.
+  if (['star', 'dso', 'exotic', 'exoplanet'].includes(klass)) {
+    if (klass === 'exoplanet') return COPY.sky.starOnly;
+    const md = meta(record);
+    const mag = pickNumber(md, 'mag');
+    if (pick(md, 'home') === true) return COPY.sky.nakedEye;
+    if (mag !== null) return mag <= 6.5 ? COPY.sky.nakedEye : COPY.sky.needsTelescope;
+    return COPY.sky.needsTelescope;
   }
   if (!isEarthFrame(m.frame)) return COPY.sky.notVisibleFromGround;
   switch (passInfo.state) {
