@@ -44,6 +44,7 @@ export const CLASS_COLOURS = {
   star: '#FFF3C4', // warm white: a point of light, not a made thing
   exoplanet: '#8EE3A8', // a green no natural star has: a world, and not one of ours
   dso: '#D8B4FF', // lilac: a cloud of light, not a point
+  exotic: '#FF8FA3', // a warning pink: something extreme
 };
 
 // cell index by class name. Order is the design language's class table.
@@ -61,6 +62,7 @@ export const CELL_OF = {
   star: 10, // cells 10..15 of the 4x4 grid were free; HALO_BIAS only encodes the halo bit
   exoplanet: 11,
   dso: 12,
+  exotic: 13,
 };
 
 export const GLYPH_CLASSES = Object.keys(CELL_OF);
@@ -198,6 +200,10 @@ const SHAPES = {
   dso(ctx, cx, cy, R) {
     paint(ctx, annulus(cx, cy, R * 0.95, R * 0.7), R * 0.6);
     paint(ctx, disc(cx, cy, R * 0.45), R);
+  },
+  // a ring with a dark centre: a black hole's shadow, which is also the shape of the one photograph
+  exotic(ctx, cx, cy, R) {
+    paint(ctx, annulus(cx, cy, R * 0.9, R * 0.45), R);
   },
   // a plain disc
   satellite(ctx, cx, cy, R) {

@@ -80,6 +80,18 @@ layers:
     select: {all: true}
     budget: {max_items: 4}
 
+  # Black holes and other extremes (spec 0028 step 7): registry/exotics.yaml, one fact sheet each.
+  - id: exotics
+    display: Black holes and other extremes
+    moments: {wonder: on, now: off, next: off}
+    source: bundled
+    propagator: static
+    frame: sun-inertial
+    style: {kind: glyph, glyph: exotic, colour: exotic}
+    card: exotic
+    select: {all: true}
+    budget: {max_items: 200}
+
   - id: stations
     display: Crewed stations
     moments: {wonder: on, now: on, next: off}

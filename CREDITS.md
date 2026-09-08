@@ -443,6 +443,13 @@ that stands in until the first snapshot lands, every record saying *as of* its d
 - Used unmodified in the snapshot; in the bundled copy, columns reduced to thirteen and numbers
   rounded to the precision the card prints (`scripts/build-exoplanets.py` says which).
 
+### 4.8 Black holes and other extremes — `registry/exotics.yaml`
+
+Ten fact sheets, each read from the Wikipedia article's infobox on 2026-09-08 and carrying that page as
+its `source:`; the card prints the source under the numbers. Positions, distances, masses and pulsar
+periods are facts; the sentence on each row is this project's. Wikipedia's text is CC BY-SA 4.0 and
+none of it is reproduced — only the figures.
+
 ## 4.6 Third-party trademarks the app names or draws
 
 None of the marks below is licensed to this project and none is used as a badge of origin. They are

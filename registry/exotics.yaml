@@ -1,0 +1,121 @@
+# Black holes and other extremes (spec 0028 step 7). A hand-kept list: every row is a FACT SHEET
+# with the page it was read from, and scripts/check_registry.py refuses a row without a source, a
+# distance, a kind it knows, or a position on the sky. scripts/gen_exotics_js.py mirrors this file
+# into site/js/data/exotics.js; CI refuses drift.
+#
+# kind        blackhole | pulsar | magnetar | star
+# ra / dec    J2000, as the source prints them (h m s / deg arcmin arcsec); the mirror converts to degrees.
+# dist_ly     light-years. A range is [low, high]. For TON 618 the LIGHT-TRAVEL distance is used and
+#             the row says so: at redshift 2.2 "distance" needs a word beside it.
+# mass_msun   solar masses, where the object has one worth saying. period_s for a pulsar.
+# why         one sentence a visitor reads first. What is remarkable, in plain words.
+# source      where every number above was read, and when.
+version: 1
+
+exotics:
+  - id: sgr-a-star
+    name: Sagittarius A*
+    kind: blackhole
+    ra: 17h 45m 40.0409s
+    dec: -29° 00′ 28.118″
+    dist_ly: 26996
+    mass_msun: 4297000
+    why: "The black hole at the centre of our galaxy, four million Suns in one point. Every star on this map goes round it."
+    aliases: [Sgr A*, galactic centre black hole]
+    source: "https://en.wikipedia.org/wiki/Sagittarius_A* (infobox, read 2026-09-08)"
+
+  - id: m87-star
+    name: M87*
+    kind: blackhole
+    ra: 12h 30m 49.42338s
+    dec: +12° 23′ 28.0439″
+    dist_ly: 53500000
+    mass_msun: 6500000000
+    why: "The first black hole anyone photographed: the orange ring of 2019. Six and a half billion Suns, at the heart of the galaxy M87."
+    aliases: [Powehi, Virgo A black hole]
+    source: "https://en.wikipedia.org/wiki/Messier_87 (infobox and the M87* section; EHT 2019 mass, read 2026-09-08)"
+
+  - id: cygnus-x-1
+    name: Cygnus X-1
+    kind: blackhole
+    ra: 19h 58m 21.67574s
+    dec: +35° 12′ 05.7845″
+    dist_ly: 7300
+    mass_msun: [13.8, 17.5]
+    why: "The first black hole anyone was sure of, found in 1964 by its X-rays. It is eating a blue supergiant, HDE 226868."
+    aliases: [Cyg X-1]
+    source: "https://en.wikipedia.org/wiki/Cygnus_X-1 (infobox, read 2026-09-08)"
+
+  - id: gaia-bh1
+    name: Gaia BH1
+    kind: blackhole
+    ra: 17h 28m 41.09661s
+    dec: -00° 34′ 51.5234″
+    dist_ly: 1560
+    mass_msun: 9.27
+    why: "The nearest known black hole, found in 2022 by the wobble of the Sun-like star that orbits it. It is quiet: nothing falls in."
+    source: "https://en.wikipedia.org/wiki/Gaia_BH1 (infobox, read 2026-09-08)"
+
+  - id: gaia-bh3
+    name: Gaia BH3
+    kind: blackhole
+    ra: 19h 39m 18.71s
+    dec: +14° 55′ 54.0″
+    dist_ly: 1936
+    mass_msun: 33.08
+    why: "The heaviest black hole from a dead star in our galaxy, thirty-three Suns, found in 2024 in the Gaia data."
+    source: "https://en.wikipedia.org/wiki/Gaia_BH3 (infobox, read 2026-09-08)"
+
+  - id: v404-cygni
+    name: V404 Cygni
+    kind: blackhole
+    ra: 20h 24m 03.82s
+    dec: +33° 52′ 02.0″
+    dist_ly: 7800
+    mass_msun: 9
+    why: "A black hole that flares: in 2015 it lit up brighter than anything else in the X-ray sky for two weeks, then went quiet again."
+    source: "https://en.wikipedia.org/wiki/V404_Cygni (infobox, read 2026-09-08)"
+
+  - id: ton-618
+    name: TON 618
+    kind: blackhole
+    ra: 12h 28m 24.9s
+    dec: +31° 28′ 38″
+    dist_ly: 10800000000
+    distance_note: "light-travel distance; redshift 2.219, so its light left 10.8 billion years ago and the object is farther now"
+    mass_msun: 40700000000
+    why: "One of the heaviest black holes known, forty billion Suns, so far away that its light left before the Earth existed."
+    source: "https://en.wikipedia.org/wiki/TON_618 (infobox; 2019 mass estimate, read 2026-09-08)"
+
+  - id: crab-pulsar
+    name: Crab Pulsar
+    kind: pulsar
+    ra: 05h 34m 31.95s
+    dec: +22° 00′ 52.2″
+    dist_ly: 6200
+    period_s: 0.0333924123
+    why: "What was left when a star seen exploding in 1054 collapsed: a city-sized star spinning thirty times a second, inside the Crab Nebula (M1)."
+    aliases: [PSR B0531+21]
+    source: "https://en.wikipedia.org/wiki/Crab_Pulsar (infobox, read 2026-09-08)"
+
+  - id: vela-pulsar
+    name: Vela Pulsar
+    kind: pulsar
+    ra: 08h 35m 20.65525s
+    dec: -45° 10′ 35.1545″
+    dist_ly: 959
+    period_s: 0.089328385024
+    why: "The brightest pulsar in the gamma-ray sky, eleven times a second, from a supernova about eleven thousand years ago."
+    aliases: [PSR B0833-45]
+    source: "https://en.wikipedia.org/wiki/Vela_Pulsar (infobox, read 2026-09-08)"
+
+  - id: psr-b1919-21
+    name: PSR B1919+21
+    kind: pulsar
+    ra: 19h 21m 44.815s
+    dec: +21° 53′ 02.25″
+    dist_ly: [300, 3600]
+    period_s: 1.3373021601895
+    why: "The first pulsar ever found, by Jocelyn Bell Burnell in 1967. Its tick was so regular it was nicknamed LGM-1: Little Green Men."
+    aliases: [LGM-1, CP 1919]
+    source: "https://en.wikipedia.org/wiki/PSR_B1919%2B21 (infobox, read 2026-09-08)"

@@ -653,6 +653,60 @@ def check_dso_hand() -> list:
     return objects
 
 
+EXOTIC_KINDS = {"blackhole", "pulsar", "magnetar", "star"}
+
+
+def check_exotics() -> list:
+    """registry/exotics.yaml: a fact sheet must say where its facts came from."""
+    path = REG / "exotics.yaml"
+    if not path.exists():
+        return []
+    try:
+        doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as exc:
+        fail("exotics.yaml", f"will not parse: {exc}")
+        return []
+    rows_ = doc.get("exotics")
+    if not isinstance(rows_, list):
+        fail("exotics.yaml", "no `exotics:` list")
+        return []
+    seen = set()
+    for r in rows_:
+        if not isinstance(r, dict):
+            fail("exotics.yaml", "a row is not a mapping")
+            continue
+        rid = r.get("id")
+        where = f"exotics.yaml[{rid}]"
+        if not rid:
+            fail("exotics.yaml", "a row has no id")
+            continue
+        if rid in seen:
+            fail(where, "duplicate id")
+        seen.add(rid)
+        if r.get("kind") not in EXOTIC_KINDS:
+            fail(where, f"`kind: {r.get('kind')}` is not one of {sorted(EXOTIC_KINDS)}")
+        if not r.get("source"):
+            fail(where, "no `source:` -- a fact sheet with no source is a rumour")
+        if not r.get("why"):
+            fail(where, "no `why:` sentence")
+        if not re.match(r"^\s*\d+h\s*\d+m\s*[\d.]+s\s*$", str(r.get("ra") or "")):
+            fail(where, f"`ra` must be `HHh MMm SS.Ss` as the source prints it, not {r.get('ra')!r}")
+        if not re.match(r"^\s*[+-]?\d+°\s*\d+′\s*[\d.]+″\s*$", str(r.get("dec") or "")):
+            fail(where, f"`dec` must be `±DD° MM′ SS.S″` as the source prints it, not {r.get('dec')!r}")
+        d = r.get("dist_ly")
+        if isinstance(d, list):
+            ok = len(d) == 2 and all(isinstance(v, (int, float)) and v > 0 for v in d) and d[0] < d[1]
+        else:
+            ok = isinstance(d, (int, float)) and d > 0
+        if not ok:
+            fail(where, "`dist_ly` must be a positive number or a [low, high] range")
+        if r.get("kind") == "pulsar" and not isinstance(r.get("period_s"), (int, float)):
+            fail(where, "a pulsar needs `period_s`")
+        if r.get("kind") == "blackhole" and r.get("mass_msun") is None:
+            fail(where, "a black hole needs `mass_msun` (a number or a [low, high] range)")
+    return rows_
+
+
 def check_lod() -> list:
     """registry/lod.yaml: a rule must name a hook that exists and a range that is a range."""
     path = REG / "lod.yaml"
@@ -1373,6 +1427,7 @@ def main() -> int:
     ladder = check_stages(world_ids)
     lod_rules = check_lod()
     dso_hand = check_dso_hand()
+    exotics = check_exotics()
     check_tours(oddities_doc, layer_ids, world_ids, {s.get('id') for s in sites},
                 {str(t.get('term') or '').lower() for t in terms})
 
@@ -1570,7 +1625,7 @@ def main() -> int:
         return 1
     print(
         f"registry ok: {len(worlds)} worlds, {len(ladder)} ladder rungs, {len(lod_rules)} lod rules, "
-        f"{len(dso_hand)} hand-placed deep-sky objects, "
+        f"{len(dso_hand)} hand-placed deep-sky objects, {len(exotics)} exotics, "
         f"{len(sources)} sources, {len(layers)} layers, "
         f"{len(events)} event types, {len(models)} models, {len(real_models)} real models, "
         f"{len(marks)} third-party marks, {len(sites)} sites, "
