@@ -540,6 +540,30 @@ const TEMPLATES = {
     ]);
   },
 
+  exotic(record, ctx, m, passInfo, T) {
+    const md = meta(record);
+    const kind = String(pick(md, 'kind') || 'blackhole');
+    const distLy = pickNumber(md, 'distLy');
+    const lo = pickNumber(md, 'distLyLow');
+    const hi = pickNumber(md, 'distLyHigh');
+    const mass = pickNumber(md, 'massMsun');
+    const mLo = pickNumber(md, 'massMsunLow');
+    const mHi = pickNumber(md, 'massMsunHigh');
+    const period = pickNumber(md, 'periodS');
+    const name = displayName(record);
+    const leadKey = { blackhole: 'leadBlackhole', pulsar: 'leadPulsar', magnetar: 'leadMagnetar', star: 'leadStar' }[kind] || 'leadBlackhole';
+    const lead = lo !== null && hi !== null
+      ? t(T.leadRange, { name, kind: T.kinds[kind] || kind, lo: fmt.int(lo), hi: fmt.int(hi) })
+      : t(T[leadKey], { name, dist: distLy !== null ? fmt.int(distLy) : '?' });
+    let massSay = null;
+    if (mLo !== null && mHi !== null) massSay = t(T.massRange, { lo: fmt.smart(mLo), hi: fmt.smart(mHi) });
+    else if (mass !== null && mass >= 1e9) massSay = t(T.massBillions, { n: fmt.smart(mass / 1e9) });
+    else if (mass !== null && mass >= 1e6) massSay = t(T.massMillions, { n: fmt.smart(mass / 1e6) });
+    else if (mass !== null) massSay = t(T.mass, { n: fmt.smart(mass) });
+    const spinSay = period === null ? null : period < 1 ? t(T.spins, { n: fmt.smart(1 / period) }) : t(T.spinsSlow, { n: fmt.smart(period) });
+    return buildSentence(lead, [massSay, spinSay]);
+  },
+
   dso(record, ctx, m, passInfo, T) {
     const md = meta(record);
     const distLy = pickNumber(md, 'distLy');
@@ -655,7 +679,7 @@ function comparisons(record, m) {
   // is only written when the distance from the observer's own world is known.
   // A star's distance is light-years and has its own rows; "x the Moon's distance" for Sirius is
   // a true number that means nothing.
-  const distanceKm = onTheGround || ['star', 'exoplanet', 'dso'].includes(klassOf(record)) ? null : m.altKm !== null ? m.altKm : m.distEarthKm;
+  const distanceKm = onTheGround || ['star', 'exoplanet', 'dso', 'exotic'].includes(klassOf(record)) ? null : m.altKm !== null ? m.altKm : m.distEarthKm;
   const candidates = [
     compare('sizeM', pickNumber(md, 'sizeM', 'diameterM', 'lengthM')),
     compare('distanceKm', distanceKm),
@@ -756,6 +780,26 @@ function rightNowRows(record, m, passInfo) {
     if (m.speedKmh !== null && m.speedKmh > 0.5) {
       rows.push([R.speed, t(V.kmh, { n: fmt.int(m.speedKmh) })]);
     }
+  } else if (klassOf(record) === 'exotic') {
+    const distLy = pickNumber(md, 'distLy');
+    const lo = pickNumber(md, 'distLyLow');
+    const hi = pickNumber(md, 'distLyHigh');
+    if (lo !== null && hi !== null) rows.push([R.distanceRange, t(V.lightYearsRange, { lo: fmt.int(lo), hi: fmt.int(hi) })]);
+    else rows.push([R.distanceFromSun, distLy !== null ? t(V.lightYears, { n: fmt.int(distLy) }) : COPY.card.couldNotLook]);
+    if (distLy !== null) {
+      rows.push([R.lightLeft, distLy >= 1e9 ? t(V.billionYearsAgo, { n: fmt.smart(distLy / 1e9) }) : distLy >= 1e6 ? t(V.millionYearsAgo, { n: fmt.smart(distLy / 1e6) }) : t(V.yearsAgo, { n: fmt.int(distLy) })]);
+    }
+    const note = pick(md, 'distanceNote');
+    if (note) rows.push([R.distanceNote, String(note)]);
+    const mass = pickNumber(md, 'massMsun');
+    const mLo = pickNumber(md, 'massMsunLow');
+    const mHi = pickNumber(md, 'massMsunHigh');
+    if (mLo !== null && mHi !== null) rows.push([R.mass, t(V.sunsRange, { lo: fmt.smart(mLo), hi: fmt.smart(mHi) })]);
+    else if (mass !== null) rows.push([R.mass, mass >= 1e9 ? t(V.billionSuns, { n: fmt.smart(mass / 1e9) }) : mass >= 1e6 ? t(V.millionSuns, { n: fmt.smart(mass / 1e6) }) : t(V.suns, { n: fmt.smart(mass) })]);
+    const period = pickNumber(md, 'periodS');
+    if (period !== null) rows.push([R.spin, period < 1 ? t(V.milliseconds, { n: fmt.smart(period * 1000) }) : t(V.seconds, { n: fmt.smart(period) })]);
+    const src = pick(md, 'source');
+    if (src) rows.push([R.source, String(src)]);
   } else if (klassOf(record) === 'dso') {
     const distLy = pickNumber(md, 'distLy');
     const lo = pickNumber(md, 'distLyLow');

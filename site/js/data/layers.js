@@ -26,11 +26,13 @@ import {
   sampleOddities,
 } from './sample.js';
 import { worldRecords } from '../scene/worlds.js';
+import { EXOTICS } from './exotics.js';
 
 const DAY_MS = 86400000;
 
 // Class colours, verbatim from docs/design-language.md. No red. No purple gradients.
 const C = {
+  exotic: '#FF8FA3',
   dso: '#D8B4FF',
   exoplanet: '#8EE3A8',
   star: '#FFF3C4',
@@ -268,6 +270,41 @@ function milkyWayRecords() {
   }];
 }
 
+// Black holes and other extremes (spec 0028 step 7): the mirror of registry/exotics.yaml as static
+// records on the sun-inertial axes -- the same sky -> ecliptic rotation the stars and planets use.
+function exoticRecords() {
+  const LY = 9460730472580.8;
+  const e = 23.4392911 * (Math.PI / 180);
+  return EXOTICS.map((x) => {
+    const ra = x.raDeg * (Math.PI / 180), dec = x.decDeg * (Math.PI / 180), r = x.distLy * LY;
+    const ex = Math.cos(dec) * Math.cos(ra), ey = Math.cos(dec) * Math.sin(ra), ez = Math.sin(dec);
+    return {
+      id: `exotic-${x.id}`,
+      name: x.name,
+      klass: 'exotic',
+      layer: 'exotics',
+      propagator: 'static',
+      frame: 'sun-inertial',
+      pos: { x: ex * r, y: (ey * Math.cos(e) + ez * Math.sin(e)) * r, z: (-ey * Math.sin(e) + ez * Math.cos(e)) * r },
+      cls: 'measured',
+      meta: {
+        kind: x.kind,
+        distLy: x.distLy,
+        distLyLow: x.distLyLow ?? null,
+        distLyHigh: x.distLyHigh ?? null,
+        distanceNote: x.distance_note || null,
+        massMsun: x.massMsun ?? null,
+        massMsunLow: x.massMsunLow ?? null,
+        massMsunHigh: x.massMsunHigh ?? null,
+        periodS: x.periodS ?? null,
+        why: x.why,
+        source: x.source,
+        aliases: Array.isArray(x.aliases) ? x.aliases.slice() : [],
+      },
+    };
+  });
+}
+
 export const LAYERS = [
   {
     // The worlds as a layer (spec 0028 step 0). Mirrors registry/layers.yaml `worlds`. No glyph
@@ -404,6 +441,30 @@ export const LAYERS = [
     card: 'dso',
     priority: 63,
     sentence: 'Our own galaxy, drawn as a model of its published measurements. The shape is an illustration; the stars around you are measured.',
+  },
+  {
+    // Black holes and other extremes (spec 0028 step 7). Mirrors registry/layers.yaml `exotics`;
+    // the records come from registry/exotics.yaml through its generated mirror. Plain glyphs, one
+    // class, the kind on the card. `bundled`: the fact sheets are this repository's.
+    id: 'exotics',
+    display: 'Black holes and other extremes',
+    klass: 'exotic',
+    source: 'bundled',
+    parse: null,
+    propagator: 'static',
+    frame: 'sun-inertial',
+    moments: { wonder: true, now: false, next: false },
+    defaultOn: true,
+    noModel: true,
+    sample: () => exoticRecords(),
+    select: all,
+    budget: { maxItems: 200 },
+    colour: C.exotic,
+    glyph: 'exotic',
+    nearKm: 0,
+    card: 'exotic',
+    priority: 64,
+    sentence: 'Black holes and pulsars with a fact sheet each, and the page every number came from.',
   },
   {
     id: 'stations',

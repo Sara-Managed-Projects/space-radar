@@ -196,7 +196,7 @@ export async function boot({ setStatus } = {}) {
   function select(record, opts = {}) {
     // A star is a place on the stellar rung: from a world stage its true position is past the far
     // plane, so selecting one recentres on the Sun at one unit = one light-year first.
-    if (record && ['star', 'exoplanet', 'dso'].includes(record.klass) && !isLadderStage(stage.worldId) && opts.fly !== false) ctx.setStage('stellar');
+    if (record && ['star', 'exoplanet', 'dso', 'exotic'].includes(record.klass) && !isLadderStage(stage.worldId) && opts.fly !== false) ctx.setStage('stellar');
     selected = record;
     for (const gl of glyphLayers.values()) if (gl.setSelected) gl.setSelected(record ? record.id : null);
     showCard(record, ctx);
@@ -230,6 +230,7 @@ export async function boot({ setStatus } = {}) {
     if (record && record.klass === 'world') return Math.max(0.05, worlds.drawnRadiusUnits(record.id) * 3.5);
     if (record && record.klass === 'star') return 0.4; // a point of light: close, but not inside it
     if (record && record.klass === 'exoplanet') return 0.4;
+    if (record && record.klass === 'exotic') return 0.4;
     if (record && record.klass === 'dso') {
       // Frame the object by its own size: a galaxy 200 000 ly across wants the camera well back.
       const sizeLy = record.meta && Number.isFinite(record.meta.sizeLy) ? record.meta.sizeLy : 20;

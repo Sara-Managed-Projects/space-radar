@@ -449,6 +449,7 @@ export const COPY = {
     star: 'Star',
     exoplanet: 'Planet of another star',
     dso: 'Deep-sky object',
+    exotic: 'Extreme object',
     // Not a physical class -- a curatorial one. A golf ball, a car and a photograph have nothing
     // in common except that somebody sent them and nobody had to.
     oddity: 'Oddity',
@@ -505,6 +506,10 @@ export const COPY = {
       lightLeft: 'Its light left it',
       hostStar: 'Its star',
       across: 'Across',
+      mass: 'Mass',
+      spin: 'One turn takes',
+      source: 'Read from',
+      distanceNote: 'About that distance',
       objectType: 'What it is',
       constellation: 'Constellation',
       distanceRange: 'Distance, best estimates',
@@ -551,6 +556,11 @@ export const COPY = {
       suns: '{n}× the Sun',
       earths: '{n}× Earth',
       lightYearsRange: '{lo} to {hi} light-years',
+      sunsRange: '{lo} to {hi}× the Sun',
+      millionSuns: '{n} million Suns',
+      billionSuns: '{n} billion Suns',
+      milliseconds: '{n} milliseconds',
+      billionYearsAgo: '{n} billion years ago',
       millionYearsAgo: '{n} million years ago',
       days: '{n} days',
       hours: '{n} hours',
@@ -734,6 +744,7 @@ export const COPY = {
       star: 'a point of light, sized by how bright it looks from where you are',
       exoplanet: 'a mark at its star -- the orbit itself is far too small to draw',
       dso: 'a soft mark at its measured distance; its true shape is not drawn',
+      exotic: 'a ring at its measured distance; a black hole has no shape to draw and a pulsar is far too small',
     },
     // Where an attached object sits on its carrier's model is our arrangement, AND SO IS HOW BIG
     // IT IS. The disc really is bolted to the side of the bus; the centimetre we chose is ours,
@@ -1041,6 +1052,20 @@ export const COPY = {
   // The "why now" clause is first in every list, per spec 0013's template table.
   // ------------------------------------------------------------------------------------
   templates: {
+    exotic: {
+      leadBlackhole: '{name} is a black hole {dist} light-years away',
+      leadPulsar: '{name} is a pulsar {dist} light-years away',
+      leadMagnetar: '{name} is a magnetar {dist} light-years away',
+      leadStar: '{name} is a star {dist} light-years away',
+      leadRange: '{name} is a {kind} somewhere between {lo} and {hi} light-years away',
+      mass: 'weighing {n} Suns',
+      massRange: 'weighing between {lo} and {hi} Suns',
+      massMillions: 'weighing {n} million Suns',
+      massBillions: 'weighing {n} billion Suns',
+      spins: 'turning {n} times a second',
+      spinsSlow: 'turning once every {n} seconds',
+      kinds: { blackhole: 'black hole', pulsar: 'pulsar', magnetar: 'magnetar', star: 'star' },
+    },
     dso: {
       lead: '{name} is a {type} {dist} light-years away',
       leadRange: '{name} is a {type} somewhere between {lo} and {hi} light-years away',

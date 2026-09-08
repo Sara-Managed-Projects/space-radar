@@ -33,6 +33,8 @@ check(drawingLine(world) === null, 'a world has no drawing line');
 const star = { id: 'hip-32349', name: 'Sirius', klass: 'star', layer: 'stars', propagator: 'static', frame: 'sun-inertial', pos: { x: 1, y: 0, z: 0 }, meta: { distLy: 8.6 } };
 const exo = { id: 'exo-proxima-cen-b', name: 'Proxima Cen b', klass: 'exoplanet', layer: 'exoplanets', propagator: 'static', frame: 'sun-inertial', pos: { x: 1, y: 0, z: 0 }, meta: { distLy: 4.24 } };
 const dso = { id: 'dso-m31', name: 'Andromeda Galaxy', klass: 'dso', layer: 'deep-sky', propagator: 'static', frame: 'sun-inertial', pos: { x: 1, y: 0, z: 0 }, meta: { distLy: 2540000 } };
+const exotic = { id: 'exotic-sgr-a-star', name: 'Sagittarius A*', klass: 'exotic', layer: 'exotics', propagator: 'static', frame: 'sun-inertial', pos: { x: 1, y: 0, z: 0 }, meta: { kind: 'blackhole', distLy: 26996 } };
+check(has(drawingLine(exotic), 'ring'), `an extreme object says it is a ring: ${drawingLine(exotic)}`);
 check(has(drawingLine(dso), 'soft mark'), `a deep-sky object says it is a soft mark: ${drawingLine(dso)}`);
 check(has(drawingLine(exo), 'at its star'), `an exoplanet says it is drawn at its star: ${drawingLine(exo)}`);
 check(has(drawingLine(star), 'point of light'), `a star says it is a point of light sized by brightness: ${drawingLine(star)}`);
