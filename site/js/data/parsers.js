@@ -1223,3 +1223,111 @@ export function parseNeoApproaches(cad, sbdb) {
   }
   return out;
 }
+
+
+// =================================================================================================
+// Exoplanets (spec 0028 step 4): the NASA Exoplanet Archive's pscomppars table, as CSV
+// =================================================================================================
+
+const LY_PER_PC = 3.2615637771674333;
+const LY_KM_EXO = 9460730472580.8;
+const OBLIQUITY_RAD = 23.4392911 * (Math.PI / 180);
+
+/** Split one CSV line honouring double quotes ("Radial Velocity", "K2-18 b"). */
+export function splitCsvLine(line) {
+  const out = [];
+  let cur = '';
+  let q = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (q) {
+      if (ch === '"') {
+        if (line[i + 1] === '"') { cur += '"'; i++; } else q = false;
+      } else cur += ch;
+    } else if (ch === '"') q = true;
+    else if (ch === ',') { out.push(cur); cur = ''; }
+    else cur += ch;
+  }
+  out.push(cur);
+  return out;
+}
+
+/**
+ * RA/Dec (degrees) and a distance (parsecs) -> a heliocentric position in km on the ecliptic J2000
+ * axes of `sun-inertial` -- the same rotation scripts/build-stars3d.py applies, so a planet lands
+ * on its star.
+ */
+export function skyToSunInertialKm(raDeg, decDeg, distPc) {
+  const ra = raDeg * (Math.PI / 180);
+  const dec = decDeg * (Math.PI / 180);
+  const r = distPc * LY_PER_PC * LY_KM_EXO;
+  const x = Math.cos(dec) * Math.cos(ra);
+  const y = Math.cos(dec) * Math.sin(ra);
+  const z = Math.sin(dec);
+  const ce = Math.cos(OBLIQUITY_RAD), se = Math.sin(OBLIQUITY_RAD);
+  return { x: x * r, y: (y * ce + z * se) * r, z: (-y * se + z * ce) * r };
+}
+
+/**
+ * The archive's CSV -> one `static` record per planet, placed AT ITS STAR. A planet's orbit is
+ * a few au across; at the nearest exoplanet that is 0.7 arcseconds and at every zoom this app
+ * draws it is far below one pixel, so the star's position is the planet's to well under a pixel
+ * and the position is `measured`. The card says the planet is drawn at its star.
+ *
+ * Both the harvester's snapshot (13 columns) and the bundled copy (same columns, rounded, with a
+ * leading `#` line saying its date) parse here; columns are read by header name.
+ *
+ * @param {string} text
+ * @param {{asOf?: string}} [opts]  the bundled copy's date, stamped on every record
+ */
+export function parseExoplanets(text, opts = {}) {
+  if (typeof text !== 'string') return [];
+  const lines = text.split(/\r?\n/).filter((l) => l.trim() && !l.startsWith('#'));
+  if (!lines.length) return [];
+  let asOf = opts.asOf || null;
+  const dated = text.match(/^#.*as of (\d{4}-\d{2}-\d{2})/m);
+  if (!asOf && dated) asOf = dated[1];
+  const header = splitCsvLine(lines[0]).map((h) => h.trim());
+  const col = (name) => header.indexOf(name);
+  const iName = col('pl_name'), iHost = col('hostname'), iRa = col('ra'), iDec = col('dec'), iDist = col('sy_dist');
+  if (iName < 0 || iHost < 0 || iRa < 0 || iDec < 0 || iDist < 0) return [];
+  const iRade = col('pl_rade'), iMass = col('pl_bmasse'), iPer = col('pl_orbper'), iYear = col('disc_year');
+  const iMethod = col('discoverymethod'), iTeff = col('st_teff'), iSrad = col('st_rad'), iSpect = col('st_spectype');
+  const num = (f, i) => { if (i < 0) return null; const v = parseFloat(f[i]); return Number.isFinite(v) ? v : null; };
+  const out = [];
+  for (let k = 1; k < lines.length; k++) {
+    const f = splitCsvLine(lines[k]);
+    const name = (f[iName] || '').trim();
+    const host = (f[iHost] || '').trim();
+    const ra = num(f, iRa), dec = num(f, iDec), distPc = num(f, iDist);
+    if (!name || ra === null || dec === null || distPc === null || distPc <= 0) continue;
+    const pos = skyToSunInertialKm(ra, dec, distPc);
+    const year = num(f, iYear);
+    out.push({
+      id: 'exo-' + name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+      name,
+      klass: 'exoplanet',
+      layer: 'exoplanets',
+      propagator: 'static',
+      frame: 'sun-inertial',
+      pos,
+      cls: 'measured',
+      meta: {
+        host,
+        distLy: Math.round(distPc * LY_PER_PC * 100) / 100,
+        radiusEarths: num(f, iRade),
+        massEarths: num(f, iMass),
+        periodDays: num(f, iPer),
+        discYear: year === null ? null : Math.round(year),
+        method: (iMethod >= 0 ? f[iMethod] : '').trim() || null,
+        starTeffK: num(f, iTeff),
+        starRadiusSuns: num(f, iSrad),
+        starSpect: (iSpect >= 0 ? f[iSpect] : '').trim() || null,
+        aliases: host ? [host] : [],
+        asOf,
+        drawnAtStar: true,
+      },
+    });
+  }
+  return out;
+}

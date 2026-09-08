@@ -540,6 +540,26 @@ const TEMPLATES = {
     ]);
   },
 
+  exoplanet(record, ctx, m, passInfo, T) {
+    const md = meta(record);
+    const distLy = pickNumber(md, 'distLy');
+    const host = pick(md, 'host');
+    const rade = pickNumber(md, 'radiusEarths');
+    const mass = pickNumber(md, 'massEarths');
+    const period = pickNumber(md, 'periodDays');
+    const year = pickNumber(md, 'discYear');
+    const method = pick(md, 'method');
+    const dist = distLy !== null ? fmt.smart(distLy) : '?';
+    const lead = host ? t(T.lead, { name: displayName(record), host: String(host), dist }) : t(T.leadNoHost, { name: displayName(record), dist });
+    return buildSentence(lead, [
+      rade !== null && rade >= 1.05 ? t(T.size, { n: fmt.smart(rade) }) : null,
+      rade !== null && rade < 0.95 ? t(T.sizeSmaller, { n: `${fmt.int(rade * 100)}%` }) : null,
+      period !== null && period >= 2 ? t(T.year, { n: fmt.smart(period) }) : null,
+      period !== null && period < 2 ? t(T.yearHours, { n: fmt.smart(period * 24) }) : null,
+      year !== null ? (method ? t(T.found, { year: fmt.int(year), method: String(method).toLowerCase() }) : t(T.foundYear, { year: fmt.int(year) })) : null,
+    ]);
+  },
+
   star(record, ctx, m, passInfo, T) {
     const md = meta(record);
     const distLy = pickNumber(md, 'distLy');
@@ -613,7 +633,7 @@ function comparisons(record, m) {
   // is only written when the distance from the observer's own world is known.
   // A star's distance is light-years and has its own rows; "x the Moon's distance" for Sirius is
   // a true number that means nothing.
-  const distanceKm = onTheGround || klassOf(record) === 'star' ? null : m.altKm !== null ? m.altKm : m.distEarthKm;
+  const distanceKm = onTheGround || klassOf(record) === 'star' || klassOf(record) === 'exoplanet' ? null : m.altKm !== null ? m.altKm : m.distEarthKm;
   const candidates = [
     compare('sizeM', pickNumber(md, 'sizeM', 'diameterM', 'lengthM')),
     compare('distanceKm', distanceKm),
@@ -714,6 +734,22 @@ function rightNowRows(record, m, passInfo) {
     if (m.speedKmh !== null && m.speedKmh > 0.5) {
       rows.push([R.speed, t(V.kmh, { n: fmt.int(m.speedKmh) })]);
     }
+  } else if (klassOf(record) === 'exoplanet') {
+    const distLy = pickNumber(md, 'distLy');
+    rows.push([R.distanceFromSun, distLy !== null ? t(V.lightYears, { n: fmt.smart(distLy) }) : COPY.card.couldNotLook]);
+    const host = pick(md, 'host');
+    if (host) rows.push([R.hostStar, String(host) + (pick(md, 'starSpect') ? ` (${pick(md, 'starSpect')})` : '')]);
+    const rade = pickNumber(md, 'radiusEarths');
+    if (rade !== null) rows.push([R.planetRadius, t(V.earths, { n: fmt.smart(rade) })]);
+    const mass = pickNumber(md, 'massEarths');
+    if (mass !== null) rows.push([R.planetMass, t(V.earths, { n: fmt.smart(mass) })]);
+    const period = pickNumber(md, 'periodDays');
+    if (period !== null) rows.push([R.yearLength, period >= 2 ? t(V.days, { n: fmt.smart(period) }) : t(V.hours, { n: fmt.smart(period * 24) })]);
+    const year = pickNumber(md, 'discYear');
+    const method = pick(md, 'method');
+    if (year !== null) rows.push([R.found, method ? t(V.yearByMethod, { year: fmt.int(year), method: String(method) }) : fmt.int(year)]);
+    const asOf = pick(md, 'asOf');
+    if (asOf) rows.push([R.catalogueCopy, t(V.asOf, { date: String(asOf) })]);
   } else if (klassOf(record) === 'star') {
     // Light-years, not astronomical units: 268 000 au for Proxima is a number nobody can hold.
     const distLy = pickNumber(md, 'distLy');

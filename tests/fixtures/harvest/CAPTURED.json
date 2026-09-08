@@ -56,5 +56,9 @@
   "space_track_tip.json": {
     "url": null,
     "note": "NOT captured: Space-Track needs a login nobody here holds. The shape is from its documentation; the test marks it as such"
+  },
+  "nasa_exoplanet_archive.csv": {
+    "url": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+top+12+pl_name,hostname,ra,dec,sy_dist,pl_rade,pl_bmasse,pl_orbper,disc_year,discoverymethod,st_teff,st_rad,st_spectype+from+pscomppars&format=csv",
+    "note": "verbatim; `top 12` instead of the row's whole table (6 360 rows, 867 kB)"
   }
 }

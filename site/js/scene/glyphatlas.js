@@ -42,6 +42,7 @@ export const CLASS_COLOURS = {
   site: '#F58F7C',
   world: '#E8ECF2',
   star: '#FFF3C4', // warm white: a point of light, not a made thing
+  exoplanet: '#8EE3A8', // a green no natural star has: a world, and not one of ours
 };
 
 // cell index by class name. Order is the design language's class table.
@@ -57,6 +58,7 @@ export const CELL_OF = {
   site: 8,
   world: 9,
   star: 10, // cells 10..15 of the 4x4 grid were free; HALO_BIAS only encodes the halo bit
+  exoplanet: 11,
 };
 
 export const GLYPH_CLASSES = Object.keys(CELL_OF);
@@ -184,6 +186,11 @@ const SHAPES = {
       pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]);
     }
     paint(ctx, polygon(pts), R);
+  },
+  // a disc with one orbiting dot: a planet, and its star implied
+  exoplanet(ctx, cx, cy, R) {
+    paint(ctx, disc(cx, cy, R * 0.55), R);
+    paint(ctx, disc(cx + R * 0.72, cy - R * 0.55, R * 0.22), R * 0.5);
   },
   // a plain disc
   satellite(ctx, cx, cy, R) {

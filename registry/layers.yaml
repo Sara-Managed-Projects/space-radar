@@ -41,6 +41,19 @@ layers:
     select: {all: true}
     budget: {max_items: 200000}
 
+  # Planets around other stars (spec 0028 step 4): the NASA Exoplanet Archive through the harvester,
+  # a dated bundled copy until the first snapshot lands. Drawn at their stars, as plain glyphs.
+  - id: exoplanets
+    display: Planets around other stars
+    moments: {wonder: on, now: off, next: off}
+    source: nasa-exoplanet-archive
+    propagator: static
+    frame: sun-inertial
+    style: {kind: glyph, glyph: exoplanet, colour: exoplanet}
+    card: exoplanet
+    select: {all: true}
+    budget: {max_items: 8000}
+
   - id: stations
     display: Crewed stations
     moments: {wonder: on, now: on, next: off}
