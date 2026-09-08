@@ -153,9 +153,9 @@ Passing those along:
 
 ## 3b. 3D models — NASA, public domain
 
-Thirty-six spacecraft, spacecraft-bus, antenna, rocket-stage and surface models ship in `site/models/`, all
+Thirty-seven spacecraft, spacecraft-bus, antenna, rocket-stage and surface models ship in `site/models/`, all
 from **NASA 3D Resources** (<https://github.com/nasa/NASA-3D-Resources>, mirrored from
-<https://science.nasa.gov/3d-resources/>), 10.3 MB in total.
+<https://science.nasa.gov/3d-resources/>), 10.5 MB in total.
 
 NASA's media usage guidelines: material created by NASA is generally **not protected by copyright**
 and may be used without permission. The exceptions are the NASA insignia, logo and seal, which may
@@ -206,6 +206,7 @@ than counted by hand.
 | `aqua.glb` | Aqua (B) | NORAD 27424 (AQUA) | 158 KB |
 | `aura.glb` | Aura (A) | NORAD 28376 (AURA) | 74 KB |
 | `bus-ssl1300.glb` | Space Systems Loral (SSL-1300) | DEFAULT for the geostationary ring -- several hundred unnamed commercial satellites | 81 KB |
+| `calipso.glb` | Cloud-Aerosol Lidar and Infrared Pathfinder Satellite (CALIPSO) | catalogue name CALIPSO | 267 KB |
 | `cloudsat.glb` | CloudSat (A) | catalogue name CLOUDSAT | 206 KB |
 | `dscovr.glb` | Deep Space Climate Observatory (DSCOVR) (Triana) | catalogue names containing DSCOVR | 95 KB |
 | `goes.glb` | Geostationary Operational Environmental Satellites | catalogue names containing GOES | 313 KB |
