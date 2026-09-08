@@ -69,6 +69,7 @@ export const REAL_MODELS = {
     // one is the spacecraft itself, not a sister ship. Jason-3 (41240) is NOT routed here: it is
     // a Proteus bus, a different shape, and gets its own file.
     46984: { file: 'sentinel6.glb', colour: 'satellite', name: 'Sentinel-6 Michael Freilich', catalogue: 'SENTINEL-6A' },
+    43613: { file: 'icesat2.glb', colour: 'satellite', name: 'ICESat-2', catalogue: 'ICESAT-2' },
     43476: { file: 'grace.glb', colour: 'satellite', name: 'a GRACE-series gravity mapper', catalogue: 'GRACE-FO 1', generic: true },
   },
   horizons: {

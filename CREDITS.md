@@ -153,9 +153,9 @@ Passing those along:
 
 ## 3b. 3D models — NASA, public domain
 
-Thirty-two spacecraft, spacecraft-bus, antenna, rocket-stage and surface models ship in `site/models/`, all
+Thirty-three spacecraft, spacecraft-bus, antenna, rocket-stage and surface models ship in `site/models/`, all
 from **NASA 3D Resources** (<https://github.com/nasa/NASA-3D-Resources>, mirrored from
-<https://science.nasa.gov/3d-resources/>), 9.4 MB in total.
+<https://science.nasa.gov/3d-resources/>), 9.7 MB in total.
 
 NASA's media usage guidelines: material created by NASA is generally **not protected by copyright**
 and may be used without permission. The exceptions are the NASA insignia, logo and seal, which may
@@ -209,6 +209,7 @@ than counted by hand.
 | `dscovr.glb` | Deep Space Climate Observatory (DSCOVR) (Triana) | catalogue names containing DSCOVR | 95 KB |
 | `goes.glb` | Geostationary Operational Environmental Satellites | catalogue names containing GOES | 313 KB |
 | `grace.glb` | Gravity Recovery and Climate Experiment (GRACE) (B) | NORAD 43476 (GRACE-FO 1), drawn as its sister ship | 135 KB |
+| `icesat2.glb` | Ice, Clouds, and Land Elevation Satellite-2 (ICESat-2) (A) | NORAD 43613 (ICESAT-2) | 290 KB |
 | `landsat.glb` | Landsat 7 | NORAD 25682, 39084, 49260 (Landsat 7, 8, 9) | 68 KB |
 | `mms.glb` | Magnetospheric Multiscale (MMS) (A) | catalogue names containing MMS | 121 KB |
 | `sentinel6.glb` | Jason Continuity of Service (Sentinel-6) | NORAD 46984 (SENTINEL-6A) | 401 KB |
