@@ -17,6 +17,11 @@
 // The panel also carries the full attribution list -- cards carry their own source line,
 // this is the whole set -- and which layers are live and which are bundled sample data,
 // because in v1 several classes ship as samples and the visitor must see that at a glance.
+//
+// Spec 0003 amendment 1 §4: provenance is said per source. Each row's line says whether the
+// reading is from our snapshot (the harvester's copy, with the harvester's read time), read live
+// from the publisher, or could not be looked at -- and, for that third case, why. The panel head
+// says what the manifest said: when it was generated and how many sources it covers.
 
 import { COPY, t, fmt, ageInWords } from '../copy/en.js';
 
@@ -94,12 +99,84 @@ function stateTitle(state) {
   return COPY.status.stateUnknownTitle;
 }
 
-function ageLine(row) {
-  if (stateOf(row) === STATE_UNKNOWN) return COPY.status.ageNeverLine;
+/**
+ * One line under each source: where the reading came from and how old it is.
+ *
+ *   from our snapshot, fetched 12 minutes ago    via 'snapshot' -- the harvester's copy
+ *   read live from CelesTrak 3 minutes ago       via 'live'     -- the direct fetch
+ *   last read 3 hours ago                        a copy that predates the field
+ *   could not look: ...                          nothing, and we know why
+ *   no good copy in this browser yet             nothing, and the error line says why
+ */
+function provenanceLine(row) {
+  if (stateOf(row) === STATE_UNKNOWN) {
+    const why = couldNotLookWhy(row);
+    return why ? t(COPY.status.couldNotLookLine, { reason: why }) : COPY.status.ageNeverLine;
+  }
   const ageMs = Number(row.ageMs);
-  return t(COPY.status.ageLabel, {
-    age: ageInWords(Number.isFinite(ageMs) ? ageMs : null),
-  });
+  const age = ageInWords(Number.isFinite(ageMs) ? ageMs : null);
+  if (row.via === 'snapshot') {
+    const line = t(COPY.status.viaSnapshotLine, { age });
+    // Past its valid_until: the harvester promised a fresher copy by now. Said, never hidden.
+    return row.overdue ? line + COPY.punctuation.separator + COPY.status.snapshotOverdue : line;
+  }
+  if (row.via === 'live') {
+    return t(COPY.status.viaLiveLine, { publisher: publisherOf(row), age });
+  }
+  return t(COPY.status.ageLabel, { age });
+}
+
+function publisherOf(row) {
+  return (row && (row.publisher || row.label || row.id)) || '';
+}
+
+/** Why our snapshot was not used, in words -- or null when the code is not one we have words for. */
+function snapshotWhy(row) {
+  const words = COPY.status.snapshotWhy;
+  const code = row && row.snapshot;
+  if (!words || !code || !Object.prototype.hasOwnProperty.call(words, code)) return null;
+  return words[code];
+}
+
+/**
+ * "could not look: <reason>", only when the reason is one worth a sentence. `no-route` is our
+ * snapshot missing AND a browser barred from the host, so nothing was asked. A failed direct
+ * read is not repeated here: the error line under it already says what the server said.
+ */
+function couldNotLookWhy(row) {
+  if (!row || row.reason !== 'no-route') return null;
+  const why = snapshotWhy(row) || COPY.status.snapshotWhy.unreadable;
+  return t(COPY.status.reasonNoRoute, { why, publisher: publisherOf(row) });
+}
+
+/** The manifest's own line at the head of the panel. */
+function renderHarvest(ctx, into) {
+  let h = null;
+  try {
+    const s = ctx && ctx.sources;
+    h = s && typeof s.harvestStatus === 'function' ? s.harvestStatus() : null;
+  } catch {
+    h = null;
+  }
+  if (!h) {
+    into.hidden = true;
+    return;
+  }
+  into.hidden = false;
+  into.classList.toggle('is-unavailable', !h.available && !!h.error);
+  if (h.available) {
+    const counts = h.counts || {};
+    into.textContent = t(COPY.status.harvestLine, {
+      age: ageInWords(h.generatedAgeMs),
+      ok: fmt.int(counts.good || 0),
+      refused: fmt.int(counts.refused || 0),
+      error: fmt.int(counts.error || 0),
+    });
+  } else if (h.error) {
+    into.textContent = COPY.status.harvestUnavailable;
+  } else {
+    into.textContent = COPY.status.harvestUnchecked;
+  }
 }
 
 // ---------------------------------------------------------------------------------------
@@ -175,7 +252,11 @@ function renderSources(ctx, into) {
     head.appendChild(badge);
     item.appendChild(head);
 
-    item.appendChild(el('p', 'sr-source__age sr-num', ageLine(row)));
+    const line = el('p', 'sr-source__age sr-num', provenanceLine(row));
+    // A live reading carries, as a tooltip, why our snapshot was not the source this time.
+    const why = state === STATE_UNKNOWN ? null : snapshotWhy(row);
+    if (why && row.via === 'live') line.title = why;
+    item.appendChild(line);
 
     if (row.error) {
       item.appendChild(
@@ -232,6 +313,8 @@ export function createStatus(ctx) {
 
   node.appendChild(el('h2', 'sr-status__title', COPY.status.title));
   node.appendChild(el('p', 'sr-status__intro', COPY.status.intro));
+  const harvest = el('p', 'sr-status__harvest sr-num');
+  node.appendChild(harvest);
 
   const sourceList = el('ul', 'sr-status__sources');
   node.appendChild(sourceList);
@@ -252,6 +335,7 @@ export function createStatus(ctx) {
 
   const paint = () => {
     try {
+      renderHarvest(ctx, harvest);
       renderSources(ctx, sourceList);
       renderLayers(ctx, layerList);
       renderAttribution(ctx, creditList);

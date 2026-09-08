@@ -44,6 +44,12 @@ CASES: list[tuple[str, str, str, str]] = [
      "sources.yaml", "parser: celestrak_satcat", "parser: celestrak_catalogue"),
     ("source names a list file that is not in the tree",
      "sources.yaml", "list: harvest/lists/horizons-ids.yaml", "list: harvest/lists/nowhere.yaml"),
+    # The `browser:` flag decides whether the app may fall back to the upstream when our snapshot
+    # is missing. Left out, either default would be a guess about CORS dressed as a measurement.
+    ("source does not say whether a browser may read it",
+     "sources.yaml", "    browser: true\n", ""),
+    ("source's browser flag is a word, not a boolean",
+     "sources.yaml", "browser: false", "browser: maybe"),
     ("model has no licence",
      "models.yaml", 'licence: "MIT (this project)", budget_tris: 1500', "budget_tris: 1500"),
     ("event type has no lead times",

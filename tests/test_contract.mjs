@@ -1568,6 +1568,189 @@ for (const file of allFiles) {
   }
 }
 
+// --- the reader of the harvester's snapshots (spec 0003 amendment 1, §3 and §4) ---------------
+//
+// Three routes, and one assertion that matters more than the others. With a manifest and a file,
+// a source is read from our snapshot and the upstream is never asked. Without a manifest, a
+// `browser: true` row falls back to the direct fetch it has always made. Without a manifest, a
+// `browser: false` row says "could not look" -- and the fake fetch below must NEVER have seen the
+// upstream URL, because a request a browser cannot read still costs the host its rate limit and
+// would be a request made in the hope of an answer we already know we cannot use.
+{
+  const savedFetch = globalThis.fetch;
+  try {
+    const { SOURCES, load, status, harvestStatus, forget, forgetIndex } = await import(
+      join(JS, 'data/sources.js')
+    );
+    const seen = [];
+    let routes = new Map();
+    globalThis.fetch = async (url) => {
+      const u = String(url);
+      seen.push(u);
+      const route = routes.get(u);
+      return route ? route() : new Response('', { status: 404 });
+    };
+    const json = (body, code = 200) => () =>
+      new Response(JSON.stringify(body), { status: code, headers: { 'content-type': 'application/json' } });
+    const reset = (...ids) => {
+      seen.length = 0;
+      forgetIndex();
+      for (const id of ids) forget(id);
+    };
+    const upstreamSeen = () => seen.filter((u) => !u.startsWith('/data/v1/'));
+
+    // A body shaped like CelesTrak's, a harvester read ten minutes ago, a fresher copy promised
+    // in three hours. Real wall-clock times, because `stale` and `overdue` are measured against it.
+    const gp = [{ OBJECT_NAME: 'ISS (ZARYA)', NORAD_CAT_ID: 25544, EPOCH: '2026-09-08T00:00:00' }];
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const inThreeHours = new Date(Date.now() + 3 * 3600 * 1000).toISOString();
+    const anHourAgo = new Date(Date.now() - 3600 * 1000).toISOString();
+    const manifest = (snapshots, schema = 1) => ({
+      schema,
+      generated_at: tenMinutesAgo,
+      run: { started_at: tenMinutesAgo, duration_ms: 1, runner: 'local' },
+      snapshots,
+    });
+    const snapRow = (state, extra = {}) => ({
+      fetched_at: tenMinutesAgo, valid_until: inThreeHours, items: 1, bytes: 1, duration_ms: 1,
+      status: state, last_error: null, etag: null, ...extra,
+    });
+    const snapFile = (source, body, extra = {}) => ({
+      schema: 1, source, fetched_at: tenMinutesAgo, valid_until: inThreeHours,
+      upstream_url: SOURCES[source] ? SOURCES[source].url : 'x', content_type: 'application/json',
+      items: 1, body, ...extra,
+    });
+    const stations = SOURCES['celestrak-stations'];
+    const jpl = SOURCES['jpl-sbdb-neo'];
+    const tip = SOURCES['space-track-tip'];
+    if (stations.browser !== true || jpl.browser !== false || tip.browser !== false) {
+      problems.push('SNAPSHOT the three rows this section leans on no longer have the browser flags it assumes');
+    }
+
+    // (a) manifest + file -> via snapshot; the upstream is not asked; the age is the harvester's
+    reset('celestrak-stations');
+    routes = new Map([
+      ['/data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('ok') }))],
+      ['/data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp))],
+    ]);
+    let r = await load('celestrak-stations', { await: true });
+    if (r.via !== 'snapshot' || !r.ok) {
+      problems.push(`SNAPSHOT manifest + file should read via snapshot; got via=${r.via} ok=${r.ok} error=${r.error} reason=${r.reason} snapshot=${r.snapshot}`);
+    }
+    if (JSON.stringify(r.data) !== JSON.stringify(gp)) problems.push('SNAPSHOT the body must reach the caller verbatim');
+    if (r.fetchedAt !== Date.parse(tenMinutesAgo)) problems.push(`SNAPSHOT fetchedAt must be the harvester's fetched_at, got ${r.fetchedAt}`);
+    if (r.validUntil !== Date.parse(inThreeHours)) problems.push(`SNAPSHOT validUntil must be the harvester's valid_until, got ${r.validUntil}`);
+    if (r.stale) problems.push('SNAPSHOT a copy fetched ten minutes ago is inside every freshness window');
+    if (r.overdue) problems.push('SNAPSHOT a copy valid for three more hours is not overdue');
+    if (upstreamSeen().length) problems.push(`SNAPSHOT the upstream was asked while a snapshot existed: ${upstreamSeen().join(', ')}`);
+    const row = status().find((x) => x.id === 'celestrak-stations');
+    if (!row || row.via !== 'snapshot' || row.state !== 'ok') {
+      problems.push(`SNAPSHOT status() should say via snapshot / ok; got ${row && row.via} / ${row && row.state}`);
+    }
+    const h = harvestStatus();
+    if (!h.available || h.counts.ok !== 1 || h.counts.good !== 1 || h.generatedAt !== Date.parse(tenMinutesAgo)) {
+      problems.push(`SNAPSHOT harvestStatus() should report the manifest it read; got ${JSON.stringify(h)}`);
+    }
+
+    // (a2) past valid_until: said as overdue, and the stale ladder is still the source's own
+    reset('celestrak-stations');
+    routes = new Map([
+      ['/data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('not-due', { valid_until: anHourAgo }) }))],
+      ['/data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp, { valid_until: anHourAgo }))],
+    ]);
+    r = await load('celestrak-stations', { await: true });
+    if (r.via !== 'snapshot') problems.push(`SNAPSHOT a not-due row still has its file from the earlier run; got via=${r.via} snapshot=${r.snapshot}`);
+    if (!r.overdue) problems.push('SNAPSHOT a snapshot past its valid_until must say so');
+    if (r.stale) problems.push('SNAPSHOT overdue is not stale: the ladder is freshnessMaxMs, and ten minutes is inside it');
+
+    // (b) the manifest is keyed by REGISTRY id, which is not always this module's id
+    reset('celestrak-starlink');
+    routes = new Map([
+      ['/data/v1/index.json', json(manifest({ 'celestrak-supplemental-starlink': snapRow('ok') }))],
+      ['/data/v1/celestrak-supplemental-starlink.json', json(snapFile('celestrak-supplemental-starlink', gp))],
+    ]);
+    r = await load('celestrak-starlink', { await: true });
+    if (r.via !== 'snapshot') {
+      problems.push(`SNAPSHOT celestrak-starlink must read /data/v1/${SOURCES['celestrak-starlink'].registryId}.json; got via=${r.via} snapshot=${r.snapshot}`);
+    }
+
+    // (c) no manifest, browser: true -> live, and it says why the snapshot was not the source
+    reset('celestrak-stations');
+    routes = new Map([[stations.url, json(gp)]]);
+    r = await load('celestrak-stations', { await: true });
+    if (r.via !== 'live' || r.data == null) problems.push(`SNAPSHOT no manifest + browser:true should fall back to live; got via=${r.via} error=${r.error}`);
+    if (!seen.includes(stations.url)) problems.push('SNAPSHOT the live fallback did not ask the upstream');
+    if (r.snapshot !== 'no-index') problems.push(`SNAPSHOT the live fallback should say why the snapshot was not used; got ${r.snapshot}`);
+
+    // (d) no manifest, browser: false -> could not look, and the upstream URL was NEVER requested.
+    //     The route for it is a trap: it would answer if asked.
+    reset('jpl-sbdb-neo');
+    routes = new Map([[jpl.url, json({ data: [['2000433', 'Eros']] })]]);
+    r = await load('jpl-sbdb-neo', { await: true });
+    if (r.ok || r.data != null) problems.push('SNAPSHOT a browser:false row with no snapshot must not produce data');
+    if (r.reason !== 'no-route' || r.snapshot !== 'no-index') problems.push(`SNAPSHOT no manifest + browser:false should be reason no-route / no-index; got ${r.reason} / ${r.snapshot}`);
+    if (upstreamSeen().length) problems.push(`SNAPSHOT a browser:false row asked the upstream: ${upstreamSeen().join(', ')}`);
+    const jplRow = status().find((x) => x.id === 'jpl-sbdb-neo');
+    if (!jplRow || jplRow.state !== 'could-not-look' || jplRow.reason !== 'no-route' || jplRow.browser !== false) {
+      problems.push(`SNAPSHOT status() should say could-not-look / no-route for jpl-sbdb-neo; got ${jplRow && jplRow.state} / ${jplRow && jplRow.reason}`);
+    }
+
+    // (e) a manifest that says skipped (no credentials), browser: false -> could not look, untouched
+    reset('space-track-tip');
+    routes = new Map([
+      ['/data/v1/index.json', json(manifest({ 'space-track-tip': snapRow('skipped', { fetched_at: null, valid_until: null }) }))],
+      [tip.url, json([{ NORAD_CAT_ID: '1' }])],
+    ]);
+    r = await load('space-track-tip', { await: true });
+    if (r.data != null || r.reason !== 'no-route' || r.snapshot !== 'skipped') {
+      problems.push(`SNAPSHOT a skipped snapshot on a browser:false row should be no-route / skipped; got ${r.reason} / ${r.snapshot}`);
+    }
+    if (upstreamSeen().length) problems.push(`SNAPSHOT a browser:false row asked the upstream after a skipped harvest: ${upstreamSeen().join(', ')}`);
+
+    // (f) a snapshot file of unknown schema is a snapshot we do not have: browser:true -> live
+    reset('celestrak-stations');
+    routes = new Map([
+      ['/data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('ok') }))],
+      ['/data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp, { schema: 2 }))],
+      [stations.url, json(gp)],
+    ]);
+    r = await load('celestrak-stations', { await: true });
+    if (r.via !== 'live' || r.snapshot !== 'unreadable') problems.push(`SNAPSHOT schema 2 file should fall back to live as unreadable; got via=${r.via} snapshot=${r.snapshot}`);
+
+    // (g) a manifest of unknown schema is no manifest
+    reset('celestrak-stations');
+    routes = new Map([
+      ['/data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('ok') }, 2))],
+      [stations.url, json(gp)],
+    ]);
+    r = await load('celestrak-stations', { await: true });
+    if (r.via !== 'live' || r.snapshot !== 'no-index') problems.push(`SNAPSHOT schema 2 manifest should read as no index; got via=${r.via} snapshot=${r.snapshot}`);
+    if (harvestStatus().available) problems.push('SNAPSHOT harvestStatus() must not call a schema-2 manifest available');
+
+    // (h) a refused harvest on a browser:true row -> live; the file the guard kept is not read
+    reset('celestrak-stations');
+    routes = new Map([
+      ['/data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('refused', { last_error: 'never-worse: 3 of 22' }) }))],
+      ['/data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp))],
+      [stations.url, json(gp)],
+    ]);
+    r = await load('celestrak-stations', { await: true });
+    if (r.via !== 'live' || r.snapshot !== 'refused') problems.push(`SNAPSHOT a refused harvest should fall back to live as refused; got via=${r.via} snapshot=${r.snapshot}`);
+    if (seen.includes('/data/v1/celestrak-stations.json')) problems.push('SNAPSHOT a refused snapshot file must not be read');
+
+    reset('celestrak-stations', 'celestrak-starlink', 'jpl-sbdb-neo', 'space-track-tip');
+    notes.push(
+      'snapshots: manifest + file -> via snapshot with the harvester\'s age; no manifest -> live for ' +
+        'browser:true, "could not look" with zero upstream requests for browser:false'
+    );
+  } catch (e) {
+    problems.push(`SNAPSHOT could not check the reader: ${String((e && e.stack) || e)}`);
+  } finally {
+    if (savedFetch) globalThis.fetch = savedFetch;
+    else delete globalThis.fetch;
+  }
+}
+
 // 4. report
 if (notes.length) {
   console.log('notes:');
