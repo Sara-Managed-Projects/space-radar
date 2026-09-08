@@ -33,6 +33,7 @@
 //     feature working and looking broken.
 
 import { COPY, t, fmt } from '../copy/en.js';
+import { ALIASES } from '../data/aliases.js';
 
 // Ids are per instance, not per module. aria-controls and aria-activedescendant are id
 // REFERENCES, so two panels sharing one id silently point a screen reader at the other panel's
@@ -44,7 +45,7 @@ let instances = 0;
 const MIN_QUERY = 2; // one letter matches thousands of things and helps nobody
 /** Added to an alias's own score so the canonical object outranks anything merely named alike. */
 const ALIAS_BONUS = 10000;
-const MAX_RESULTS = 12;
+const MAX_RESULTS = 8; // spec 0021 requirement 7: a list of twelve was still a scroll
 const INPUT_DEBOUNCE_MS = 120;
 // `sr:layer` fires once per layer, ~15 times over several seconds. Rebuilding 17 000 entries on
 // each is waste; this is the trailing edge of the burst. A query that arrives before it fires
@@ -247,24 +248,8 @@ function scoreOne(index, i, q, numeric) {
   return 0;
 }
 
-/**
- * What people type, against what the catalogue calls it. Searching "hubble" found nothing at all
- * until this existed, because CelesTrak's name for it is `HST` -- and a search that cannot find
- * the Hubble Space Telescope is not a search anybody will use twice.
- *
- * Deliberately short. This is a list of names the public uses for famous objects, not a synonym
- * engine: every row is a fact about naming, and a row nobody can justify should be removed.
- */
-const ALIASES = {
-  hubble: 'hst',
-  webb: 'jwst',
-  'james webb': 'jwst',
-  'space station': 'iss',
-  station: 'iss',
-  tiangong: 'css',
-  chandra: 'cxo',
-  'international space station': 'iss',
-};
+// What people type, against what the catalogue calls it: registry/aliases.yaml through its mirror
+// (spec 0021 requirement 6). Searched ALONGSIDE the query, never instead of it -- see findMatches.
 
 /**
  * The whole ranking, pure and DOM-free.
@@ -289,16 +274,22 @@ export function findMatches(index, query, limit = MAX_RESULTS) {
   // Object.prototype. MEASURED: findMatches(index, 'constructor').query was a FUNCTION, which
   // breaks the `{hits, total, query: string}` this function documents.
   const alias = Object.prototype.hasOwnProperty.call(ALIASES, q) ? ALIASES[q] : '';
-  const out = { hits: [], total: 0, query: q };
+  const out = { hits: [], total: 0, query: q, fallback: false };
   if (!index || !index.n || q.length < MIN_QUERY) return out;
 
   const numeric = /^[0-9]+$/.test(q);
   const aliasNumeric = alias ? /^[0-9]+$/.test(alias) : false;
   // The score is kept from the scan rather than recomputed in the comparator: scoring twice was
   // the difference between one pass and one pass plus a sort's worth of indexOf.
+  // Spec 0021 requirement 4: a match is a whole thing or the start of a word. Letters buried inside
+  // a word (NAME_CONTAINS) only count when the boundary pass found NOTHING, and the result says so
+  // (`fallback`) -- "iss" must not offer SWISSCUBE next to the station, and when it offers only
+  // buried matches the line under the list has to admit it.
   const found = [];
+  let buried = [];
   for (let i = 0; i < index.n; i += 1) {
     let score = scoreOne(index, i, q, numeric);
+    if (score === NAME_CONTAINS) { buried.push({ i, score }); score = 0; }
     if (alias) {
       // The alias must land at the START OF A WORD, which is what WORD_PREFIX and better mean.
       // Two measurements set that line. Requiring an exact name match was too strict: the
@@ -311,6 +302,8 @@ export function findMatches(index, query, limit = MAX_RESULTS) {
     }
     if (score > 0) found.push({ i, score });
   }
+  if (!found.length && buried.length) { found.push(...buried); out.fallback = true; }
+  buried = null;
   out.total = found.length;
   if (!found.length) return out;
 
@@ -479,18 +472,22 @@ export function createSearch(ctx, host) {
       if (!record || !record.layer) continue;
       counts.set(record.layer, (counts.get(record.layer) || 0) + 1);
     }
-    const out = [];
+    // Two different truths (spec 0021 / 0026 req 7): a layer that has not answered yet is LOADING;
+    // one that answered with nothing COULD NOT BE READ (or is empty). The searcher is told which.
+    const loading = [];
+    const unread = [];
     for (const layer of layerList(ctx)) {
       if (!layer || !layer.id) continue;
       if (layer.forcedOff) continue;
       if ((counts.get(layer.id) || 0) > 0) continue;
-      out.push(layer.display || layer.id);
+      (state.reported.has(layer.id) ? unread : loading).push(layer.display || layer.id);
     }
-    return out;
+    return { loading, unread, all: loading.concat(unread) };
   }
 
   function paintNote() {
-    const missing = missingLayers();
+    const split = missingLayers();
+    const missing = split.all;
     const parts = [];
     parts.push(
       state.index.n === 0
@@ -499,10 +496,10 @@ export function createSearch(ctx, host) {
             n: fmt.int(state.index.n),
           }),
     );
-    if (missing.length) {
-      parts.push(t(COPY.search.notLoaded, { layers: missing.join(COPY.punctuation.listJoin) }));
-      parts.push(COPY.search.notLoadedCount);
-    }
+    if (split.loading.length) parts.push(t(COPY.search.stillLoading, { layers: split.loading.join(COPY.punctuation.listJoin) }));
+    if (split.unread.length) parts.push(t(COPY.search.couldNotRead, { layers: split.unread.join(COPY.punctuation.listJoin) }));
+    if (missing.length) parts.push(COPY.search.notLoadedCount);
+    if (state.switchedOn) parts.push(t(COPY.search.switchedOn, { layer: state.switchedOn }));
     note.textContent = parts.join(' ');
     note.classList.toggle('is-warning', missing.length > 0);
   }
@@ -566,9 +563,13 @@ export function createSearch(ctx, host) {
     }
 
     const hidden = state.total - state.hits.length;
-    if (!state.hits.length) foot.textContent = COPY.search.noMatch;
-    else if (hidden > 0) foot.textContent = t(COPY.search.more, { n: fmt.int(hidden) });
-    else foot.textContent = '';
+    const lines = [];
+    if (!state.hits.length) lines.push(COPY.search.noMatch);
+    else {
+      if (state.fallback) lines.push(COPY.search.fallback);
+      if (hidden > 0) lines.push(t(COPY.search.more, { n: fmt.int(hidden) }));
+    }
+    foot.textContent = lines.join(' ');
     foot.hidden = foot.textContent === '';
   }
 
@@ -629,6 +630,8 @@ export function createSearch(ctx, host) {
     const result = findMatches(state.index, q, MAX_RESULTS);
     state.hits = result.hits;
     state.total = result.total;
+    state.fallback = result.fallback === true;
+    state.switchedOn = null;
     paintList();
     // Always open on a real query, even with nothing to show: the footer's "nothing matches" is
     // an answer, and a dropdown that simply does not appear is indistinguishable from a bug.
@@ -655,6 +658,9 @@ export function createSearch(ctx, host) {
       if (typeof ctx.isLayerOn === 'function' && typeof ctx.setLayerOn === 'function') {
         if (!ctx.isLayerOn(record.layer)) {
           ctx.setLayerOn(record.layer, true);
+          const row = layerList(ctx).find((l) => l.id === record.layer);
+          state.switchedOn = row ? row.display || row.id : record.layer;
+          paintNote();
           document.dispatchEvent(
             new CustomEvent('sr:layer-toggle', {
               detail: { id: record.layer, on: true, handled: true, from: 'search' },

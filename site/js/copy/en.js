@@ -974,6 +974,10 @@ export const COPY = {
     searchingOne: 'Searching one object.',
     empty: 'Nothing has loaded yet, so there is nothing to search.',
     notLoaded: 'Not loaded, so not searched: {layers}.',
+    stillLoading: 'Still loading, so not searched yet: {layers}.',
+    couldNotRead: 'Could not be read, so not searched: {layers}.',
+    fallback: 'Nothing starts with that, so these merely contain it.',
+    switchedOn: 'Switched on {layer} so you can see it.',
     notLoadedCount: 'How many objects that leaves out cannot be known until they load.',
   },
 

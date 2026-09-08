@@ -44,6 +44,8 @@ jobs:
       # library alone, so registry/sources.yaml is mirrored into harvest/sources.json -- with its
       # `list:` and `query:` files inlined -- and a stale mirror is a Lambda fetching last month's
       # list of spacecraft.
+      - name: The aliases mirror matches the registry (spec 0021 req 6)
+        run: python3 scripts/gen_aliases_js.py --check
       - name: The ladder mirror matches the registry (spec 0028 step 8)
         run: python3 scripts/gen_ladder_js.py --check
       - name: The exotics mirror matches the registry (spec 0028 step 7)
@@ -113,3 +115,5 @@ jobs:
         run: node tests/test_labels.mjs
       - name: the Next list is built from records already held, nearest in time first (spec 0026 req 6)
         run: node tests/test_next.mjs
+      - name: search ranks whole words first, falls back to buried letters only when it must and says so (spec 0021)
+        run: node tests/test_search.mjs

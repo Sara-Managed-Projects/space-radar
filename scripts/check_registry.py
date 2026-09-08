@@ -755,6 +755,42 @@ def check_ladder(world_ids: set, layer_ids: set) -> list:
     return rungs_
 
 
+def check_aliases() -> list:
+    """registry/aliases.yaml: a nickname says what it means and why, once."""
+    path = REG / "aliases.yaml"
+    if not path.exists():
+        return []
+    try:
+        doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as exc:
+        fail("aliases.yaml", f"will not parse: {exc}")
+        return []
+    rows_ = doc.get("aliases")
+    if not isinstance(rows_, list):
+        fail("aliases.yaml", "no `aliases:` list")
+        return []
+    seen = set()
+    for r in rows_:
+        if not isinstance(r, dict):
+            fail("aliases.yaml", "a row is not a mapping")
+            continue
+        say = str(r.get("say") or "").strip().lower()
+        where = f"aliases.yaml[{say or '?'}]"
+        if not say:
+            fail("aliases.yaml", "a row has no `say:`")
+            continue
+        if say in seen:
+            fail(where, "duplicate `say:`")
+        seen.add(say)
+        if not str(r.get("means") or "").strip():
+            fail(where, "no `means:`")
+        if not r.get("why"):
+            fail(where, "no `why:` -- an alias nobody can justify is an alias that should go")
+        if say == str(r.get("means") or "").strip().lower():
+            fail(where, "`say` and `means` are the same word; the row does nothing")
+    return rows_
+
+
 def check_lod() -> list:
     """registry/lod.yaml: a rule must name a hook that exists and a range that is a range."""
     path = REG / "lod.yaml"
@@ -1477,6 +1513,7 @@ def main() -> int:
     dso_hand = check_dso_hand()
     ladder_rungs = check_ladder(world_ids, layer_ids)
     exotics = check_exotics()
+    aliases = check_aliases()
     TOUR_STAGES.update(world_ids)
     TOUR_STAGES.update(st.get('id') for st in ladder if isinstance(st, dict) and st.get('id'))
     check_tours(oddities_doc, layer_ids, world_ids, {s.get('id') for s in sites},
@@ -1676,7 +1713,7 @@ def main() -> int:
         return 1
     print(
         f"registry ok: {len(worlds)} worlds, {len(ladder)} ladder rungs, {len(lod_rules)} lod rules, "
-        f"{len(dso_hand)} hand-placed deep-sky objects, {len(exotics)} exotics, {len(ladder_rungs)} breadcrumb rungs, "
+        f"{len(dso_hand)} hand-placed deep-sky objects, {len(exotics)} exotics, {len(ladder_rungs)} breadcrumb rungs, {len(aliases)} aliases, "
         f"{len(sources)} sources, {len(layers)} layers, "
         f"{len(events)} event types, {len(models)} models, {len(real_models)} real models, "
         f"{len(marks)} third-party marks, {len(sites)} sites, "

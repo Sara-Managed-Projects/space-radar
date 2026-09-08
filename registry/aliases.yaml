@@ -1,0 +1,23 @@
+# Names people actually use, against what the catalogue calls things (spec 0021 requirement 6).
+#
+# `iss`, `hubble`, `webb` are what visitors type; CelesTrak writes ISS (ZARYA), HST, JWST. An alias
+# is searched ALONGSIDE the query, never instead of it, and must land at the start of a word in a
+# record's name (ui/search.js). This file is the reviewable copy; scripts/gen_aliases_js.py mirrors
+# it into site/js/data/aliases.js and CI refuses drift. Adding a nickname is one row and no code.
+#
+# Deliberately short: every row is a fact about naming, and a row nobody can justify should go. The
+# worlds' aliases (Luna, the Red Planet) live on their rows in registry/worlds.yaml; stars, planets
+# and deep-sky objects carry Bayer/HIP/NGC aliases from their catalogues.
+version: 1
+
+aliases:
+  - {say: hubble, means: hst, why: "CelesTrak's name for the Hubble Space Telescope is HST"}
+  - {say: webb, means: jwst, why: "the James Webb Space Telescope's catalogue name"}
+  - {say: james webb, means: jwst, why: "as above"}
+  - {say: space station, means: iss, why: "the one people mean; Tiangong is reached by its own name"}
+  - {say: station, means: iss, why: "as above"}
+  - {say: international space station, means: iss, why: "the full name; the catalogue writes ISS (ZARYA)"}
+  - {say: tiangong, means: css, why: "CelesTrak lists the Chinese station's modules as CSS (TIANHE), CSS (WENTIAN), CSS (MENGTIAN)"}
+  - {say: chandra, means: cxo, why: "the Chandra X-ray Observatory's catalogue name"}
+  - {say: galactic center, means: sagittarius a, why: "the black hole at the centre; both spellings of centre are typed"}
+  - {say: galactic centre, means: sagittarius a, why: "as above"}
