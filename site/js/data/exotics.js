@@ -144,5 +144,71 @@ export const EXOTICS = [
     "distLyHigh": 3600,
     "distLy": 1950.0,
     "periodS": 1.3373021601895
+  },
+  {
+    "id": "sgr-1806-20",
+    "name": "SGR 1806-20",
+    "kind": "magnetar",
+    "why": "A magnetar: a neutron star with the strongest magnetic field known. Its flare of 27 December 2004 was the brightest event ever seen from outside the Solar System, and it briefly stretched Earth's ionosphere.",
+    "aliases": [
+      "SGR 1806−20",
+      "GRB 790107"
+    ],
+    "source": "https://en.wikipedia.org/wiki/SGR_1806%E2%88%9220 (infobox, read 2026-09-08)",
+    "raDeg": 272.163833,
+    "decDeg": -20.410972,
+    "distLy": 42000,
+    "periodS": 7.55592
+  },
+  {
+    "id": "geminga",
+    "name": "Geminga",
+    "kind": "pulsar",
+    "why": "A pulsar found by its gamma rays alone, in 1972, and unidentified for twenty years. Its name is Milanese for 'it is not there'.",
+    "aliases": [
+      "PSR B0633+17",
+      "PSR J0633+1746"
+    ],
+    "source": "https://en.wikipedia.org/wiki/Geminga (infobox, read 2026-09-08)",
+    "distance_note": "about 815 light-years; the parallax has a wide error bar (250 +120/-62 parsecs)",
+    "raDeg": 98.475625,
+    "decDeg": 17.77025,
+    "distLy": 815,
+    "periodS": 0.237
+  },
+  {
+    "id": "eta-carinae",
+    "name": "Eta Carinae",
+    "kind": "star",
+    "why": "A star of about a hundred Suns that erupted in the 1840s, briefly the second brightest in the sky, and wrapped itself in the Homunculus Nebula. A supernova waiting to happen.",
+    "aliases": [
+      "η Carinae",
+      "η Car",
+      "Eta Car"
+    ],
+    "source": "https://en.wikipedia.org/wiki/Eta_Carinae (infobox: distance 7 500 ly / 2 300 pc, mass ~100 Suns, read 2026-09-08)",
+    "raDeg": 161.264962,
+    "decDeg": -59.684517,
+    "distLy": 7500,
+    "massMsun": 100
+  },
+  {
+    "id": "betelgeuse",
+    "name": "Betelgeuse",
+    "kind": "star",
+    "why": "The red shoulder of Orion, a supergiant so large it would swallow Mars. It dimmed in 2019-20 after coughing out a cloud of dust; one day it will go supernova.",
+    "aliases": [
+      "α Orionis",
+      "Alpha Orionis",
+      "α Ori"
+    ],
+    "source": "https://en.wikipedia.org/wiki/Betelgeuse (infobox, read 2026-09-08)",
+    "distance_note": "two published distances, 408 and 548 light-years; the star's boiling surface makes its parallax hard to pin down",
+    "raDeg": 88.792939,
+    "decDeg": 7.407064,
+    "distLyLow": 408,
+    "distLyHigh": 548,
+    "distLy": 478.0,
+    "massMsun": 14
   }
 ];
