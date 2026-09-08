@@ -17,8 +17,9 @@ const { buildIndex, findMatches } = await import(join(JS, 'ui/search.js'));
 const { drawingLine } = await import(join(JS, 'ui/cards.js'));
 
 const doc = JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8'));
-check(doc.count === 114 && doc.objects.length === 114, `110 Messier objects, both Magellanic Clouds and two dwarf galaxies (${doc.count})`);
+check(doc.count === 124 && doc.objects.length === 124, `110 Messier objects and fourteen Local Group galaxies by hand (${doc.count})`);
 check(doc.objects.some((o) => o.id === 'smc' && o.distLy === 203700) && doc.objects.some((o) => o.id === 'fornax-dwarf') && doc.objects.some((o) => o.id === 'sculptor-dwarf'), 'the SMC, Fornax and Sculptor dwarfs are hand rows with sourced distances');
+check(doc.objects.some((o) => o.id === 'wlm' && o.distLy === 3226000) && doc.objects.some((o) => o.id === 'ngc-6822' && o.designation === 'NGC 6822') && doc.objects.some((o) => o.id === 'carina-dwarf' && o.vmag === null), 'WLM at 3.23 Mly, Barnard\'s Galaxy keeps its NGC number, Carina has no V magnitude invented');
 check(doc.openNgcTotal > 13000, `the file says how many OpenNGC objects exist without a distance (${doc.openNgcTotal})`);
 const m31 = doc.objects.find((o) => o.id === 'm31');
 check(m31 && m31.distLy === 2540000 && m31.distLyLow === 2430000 && m31.kind === 'galaxy' && m31.common === 'Andromeda Galaxy', 'M31 is Andromeda, 2.43-2.65 Mly, a galaxy');
@@ -30,7 +31,7 @@ check(doc.objects.some((o) => o.id === 'lmc' && o.distLy === 163000), 'the LMC i
 check(doc.objects.find((o) => o.id === 'm45')?.kind === 'cluster', 'the Pleiades (from the addendum) are a cluster');
 
 const recs = parseDso(doc);
-check(recs.length === 114 && recs.every((r) => r.klass === 'dso' && r.propagator === 'static' && r.layer === 'deep-sky'), 'one static dso record per object');
+check(recs.length === 124 && recs.every((r) => r.klass === 'dso' && r.propagator === 'static' && r.layer === 'deep-sky'), 'one static dso record per object');
 const andromeda = recs.find((r) => r.id === 'dso-m31');
 check(andromeda.name === 'Andromeda Galaxy' && andromeda.meta.aliases.includes('M31') && andromeda.meta.aliases.includes('NGC 224'), `Andromeda carries M31 and NGC 224 as aliases (${andromeda.meta.aliases})`);
 check(andromeda.meta.sizeLy > 120000 && andromeda.meta.sizeLy < 140000, `Andromeda's size follows from 177.83 arcmin at 2.54 Mly (${andromeda.meta.sizeLy} ly)`);

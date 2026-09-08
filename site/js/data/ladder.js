@@ -100,8 +100,8 @@ export const WE_SHOW = [
   },
   {
     "what": "nebulae, clusters and galaxies placed",
-    "n": 114,
-    "of": "13 372 in OpenNGC that have no measured distance written down; the Local Group beyond these four galaxies waits for sourced rows",
+    "n": 124,
+    "of": "13 372 in OpenNGC that have no measured distance written down; the rest of the Local Group waits for sourced rows",
     "source": "OpenNGC; Wikipedia Messier distances"
   },
   {

@@ -64,6 +64,140 @@ objects:
     source: "https://en.wikipedia.org/wiki/Sculptor_Dwarf_Galaxy (infobox, read 2026-09-08)"
     why: "The first dwarf spheroidal galaxy ever found (1937): so sparse that Shapley took it for a smudge on the plate."
 
+  - id: carina-dwarf
+    name: Carina Dwarf
+    type: G
+    hubble: "E3"
+    ra_deg: 100.4029        # 06h 41m 36.7s
+    dec_deg: -50.9661       # -50 deg 57 min 58 s
+    dist_kly: 330           # 330 +/- 30 kly
+    # vmag omitted: the infobox gives 11.3 in B, not V, so no V magnitude here
+    maj_ax_arcmin: 23.4
+    con: Carina
+    source: "https://en.wikipedia.org/wiki/Carina_Dwarf_Spheroidal_Galaxy (infobox, read 2026-09-08)"
+    why: "A faint Milky Way satellite whose stars formed in several distinct bursts -- a small galaxy with a stop-start history."
+
+  - id: draco-dwarf
+    name: Draco Dwarf
+    type: G
+    hubble: "E pec"
+    ra_deg: 260.0517        # 17h 20m 12.4s
+    dec_deg: 57.9153        # +57 deg 54 min 55 s
+    dist_kly: 260           # 260 +/- 30 kly
+    vmag: 10.9
+    maj_ax_arcmin: 35.5
+    con: Draco
+    source: "https://en.wikipedia.org/wiki/Draco_Dwarf (infobox, read 2026-09-08)"
+    why: "One of the most dark-matter-dominated galaxies known: its stars move far too fast for the light we see."
+
+  - id: ursa-minor-dwarf
+    name: Ursa Minor Dwarf
+    type: G
+    hubble: "E"
+    ra_deg: 227.2854        # 15h 09m 08.5s
+    dec_deg: 67.2225        # +67 deg 13 min 21 s
+    dist_kly: 200           # 200 +/- 30 kly
+    vmag: 11.9
+    maj_ax_arcmin: 30.2
+    con: Ursa Minor
+    source: "https://en.wikipedia.org/wiki/Ursa_Minor_Dwarf (infobox, read 2026-09-08)"
+    why: "A near neighbour of the Milky Way whose stars are almost all ancient -- it stopped forming them early."
+
+  - id: sextans-dwarf
+    name: Sextans Dwarf
+    type: G
+    hubble: "dSph"
+    ra_deg: 153.2621        # 10h 13m 02.9s
+    dec_deg: -1.6147        # -01 deg 36 min 53 s
+    dist_kly: 290           # 290 +/- 30 kly
+    vmag: 10.4
+    maj_ax_arcmin: 30.0
+    con: Sextans
+    source: "https://en.wikipedia.org/wiki/Sextans_Dwarf_Spheroidal (infobox, read 2026-09-08)"
+    why: "So diffuse it was only found in 1990, on photographic plates scanned by machine."
+
+  - id: leo-i
+    name: Leo I
+    type: G
+    hubble: "E (dSph)"
+    ra_deg: 152.1142        # 10h 08m 27.4s
+    dec_deg: 12.3075        # +12 deg 18 min 27 s
+    dist_kly: 820           # 820 +/- 70 kly
+    vmag: 11.2
+    maj_ax_arcmin: 9.8
+    con: Leo
+    source: "https://en.wikipedia.org/wiki/Leo_I_(dwarf_galaxy) (infobox, read 2026-09-08)"
+    why: "Sits in the glare of Regulus, one of the brightest stars in the sky, which hid it for decades."
+
+  - id: leo-ii
+    name: Leo II
+    type: G
+    hubble: "E0 pec"
+    ra_deg: 168.3717        # 11h 13m 29.2s
+    dec_deg: 22.1547        # +22 deg 09 min 17 s
+    dist_kly: 690           # 690 +/- 70 kly
+    vmag: 12.6
+    maj_ax_arcmin: 12.0
+    con: Leo
+    source: "https://en.wikipedia.org/wiki/Leo_II_(dwarf_galaxy) (infobox, read 2026-09-08)"
+    why: "Leo I's fainter neighbour on the sky, a dwarf spheroidal found on the same 1950 survey plates."
+
+  - id: ngc-6822
+    name: Barnard's Galaxy
+    designation: NGC 6822
+    type: G
+    hubble: "IB(s)m"
+    ra_deg: 296.2404        # 19h 44m 57.70s
+    dec_deg: -14.8033       # -14 deg 48 min 12.0 s
+    dist_kly: 1630          # 1.63 +/- 0.03 Mly
+    vmag: 9.3
+    maj_ax_arcmin: 15.5
+    con: Sagittarius
+    source: "https://en.wikipedia.org/wiki/NGC_6822 (infobox, read 2026-09-08)"
+    why: "The first galaxy beyond the Milky Way whose distance was measured -- Hubble's 1925 proof that other galaxies exist."
+
+  - id: ic-10
+    name: IC 10
+    designation: IC 10
+    type: G
+    hubble: "dIrr IV/BCD"
+    ra_deg: 5.072           # 00h 20m 17.29s
+    dec_deg: 59.3039        # +59 deg 18 min 13.9 s
+    dist_kly: 2500          # 2.5 +/- 0.5 Mly
+    vmag: 10.4
+    maj_ax_arcmin: 6.8
+    con: Cassiopeia
+    source: "https://en.wikipedia.org/wiki/IC_10 (infobox, read 2026-09-08)"
+    why: "The Local Group's only starburst galaxy, seen dimly through the dust of the Milky Way's own disc."
+
+  - id: ic-1613
+    name: IC 1613
+    designation: IC 1613
+    type: G
+    hubble: "IB(s)m"
+    ra_deg: 16.1992         # 01h 04m 47.8s
+    dec_deg: 2.1178         # +02 deg 07 min 04 s
+    dist_kly: 2380          # 2.38 +/- 0.07 Mly
+    vmag: 9.9
+    maj_ax_arcmin: 16.2
+    con: Cetus
+    source: "https://en.wikipedia.org/wiki/IC_1613 (infobox, read 2026-09-08)"
+    why: "A quiet irregular dwarf so free of dust that it anchors the Cepheid distance scale."
+
+  - id: wlm
+    name: Wolf-Lundmark-Melotte
+    designation: WLM
+    type: G
+    hubble: "IB(s)m"
+    ra_deg: 0.4921          # 00h 01m 58.1s
+    dec_deg: -15.4608       # -15 deg 27 min 39 s
+    dist_kly: 3226          # 989 +/- 27 kpc, 3.23 Mly
+    vmag: 11.0
+    maj_ax_arcmin: 11.5
+    con: Cetus
+    source: "https://en.wikipedia.org/wiki/Wolf–Lundmark–Melotte (infobox, read 2026-09-08)"
+    why: "An isolated dwarf at the edge of the Local Group that has lived its whole life alone."
+
 messier_distances:
   # Thousands of light-years, from the table in https://en.wikipedia.org/wiki/List_of_Messier_objects
   # (read 2026-09-08). A range is written as [low, high]; the card prints both. Positions come from
