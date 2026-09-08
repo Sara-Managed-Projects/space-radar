@@ -1045,6 +1045,12 @@ export const COPY = {
     notLoadedCount: 'How many objects that leaves out cannot be known until they load.',
   },
 
+  // Data-saver and the frame-rate latch (spec 0026 req 18): two things the app decided for the visitor, said out loud.
+  quality: {
+    dataSaver: 'Your connection asked for data-saving, so the two biggest catalogues wait until you switch them on.',
+    lowered: 'Frames were taking {ms} ms, so the picture is drawn at one pixel per pixel without the Milky Way backdrop.',
+  },
+
   status: {
     title: 'What the app could and could not read',
     intro:

@@ -125,6 +125,8 @@ jobs:
         run: node tests/test_layers_registry.mjs
       - name: a fresh launch is one train with a lead, still climbing or spread out (spec 0026 req 17)
         run: node tests/test_trains.mjs
+      - name: the frame-rate latch trips once after three slow seconds; data-saver reads the connection (spec 0026 req 18)
+        run: node tests/test_quality.mjs
       - name: colour keys bucket records by fields they hold and count the unknown (spec 0026 req 11)
         run: node tests/test_colorkeys.mjs
       - name: a satellite behind the Earth is in its shadow, one in front is lit (spec 0026 req 12)

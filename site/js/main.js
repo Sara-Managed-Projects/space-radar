@@ -38,6 +38,7 @@ import { SUN_INERTIAL, STAGES } from './scene/stage.js';
 import { showChooser, hideChooser } from './ui/chooser.js';
 import { createLabels } from './ui/labels.js';
 import { createOrbitLine } from './scene/orbitline.js';
+import { createFrameLatch, shouldSaveData } from './scene/quality.js';
 import { keyById, bucketOf } from './data/colorkeyrules.js';
 
 const MOMENTS = ['wonder', 'now', 'next'];
@@ -47,7 +48,8 @@ export async function boot({ setStatus } = {}) {
   const canvas = document.getElementById('stage');
 
   say('Building the sky…');
-  const { renderer, scene, camera, resize, render } = createRenderer(canvas);
+  const rendererApi = createRenderer(canvas);
+  const { renderer, scene, camera, resize, render } = rendererApi;
   const cameraRig = createCameraRig(camera, canvas);
 
   const worlds = createWorlds(scene);
@@ -67,7 +69,7 @@ export async function boot({ setStatus } = {}) {
   let moment = readMomentFromHash();
 
   const ctx = {
-    clock, stage, scene, camera, cameraRig, worlds, renderer, sources,
+    clock, stage, scene, camera, cameraRig, worlds, renderer, rendererApi, sources,
     layers: LAYERS,
     records: () => [...layerRecords.values()].flat(),
     recordsFor: (id) => layerRecords.get(id) || [],
@@ -276,6 +278,7 @@ export async function boot({ setStatus } = {}) {
   ctx.setLayerOn = (id, on) => {
     const layer = LAYERS.find((l) => l.id === id);
     if (layer) layer.on = on;
+    if (layer && on && layer.deferred && typeof ctx.loadLayerNow === 'function') ctx.loadLayerNow(layer);
     const gl = glyphLayers.get(id);
     if (gl) gl.setVisible(on);
     if (id === 'worlds') worlds.setVisible(on);
@@ -352,11 +355,20 @@ export async function boot({ setStatus } = {}) {
 function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfield, heroes, lod }) {
   let last = performance.now();
   let sinceLayerUpdate = 0;
+  // The frame-rate latch (spec 0026 req 18): twenty-frame median over 33 ms for three seconds ->
+  // one device pixel per CSS pixel and no Milky Way picture, once, said in the panel.
+  const latch = createFrameLatch();
 
   function frame(nowReal) {
     requestAnimationFrame(frame);
-    const dt = Math.min(100, nowReal - last);   // a backgrounded tab must not lurch on return
+    const frameMs = nowReal - last;             // the real duration, before the clamp below
+    const dt = Math.min(100, frameMs);           // a backgrounded tab must not lurch on return
     last = nowReal;
+    if (!document.hidden && latch.push(frameMs, nowReal)) {
+      if (ctx.renderer && ctx.rendererApi && ctx.rendererApi.setQuality) ctx.rendererApi.setQuality('low');
+      if (starfield && starfield.setDetail) starfield.setDetail('low');
+      window.dispatchEvent(new CustomEvent('sr:quality', { detail: { level: 'low', medianMs: Math.round(latch.median()) } }));
+    }
 
     clock.tick(dt);
     const t = clock.now();
@@ -407,6 +419,11 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
   // Cheapest and most interesting first: the station is fifteen objects and it is what people
   // came for. The eleven-thousand-object catalogue is last and off by default.
   // The registry's `enabled: false` (spec 0026 req 8): the layer is not created, not loaded, not listed.
+  // Data-saver (spec 0026 req 18): on a slow or metered connection the heavy catalogue files wait
+  // until the visitor asks for the layer. The layer stays in the panel, off, and the panel says why.
+  const saveData = typeof navigator !== 'undefined' && shouldSaveData(navigator.connection);
+  for (const l of LAYERS) l.deferred = !!(saveData && l.heavy);
+  if (saveData) window.dispatchEvent(new CustomEvent('sr:quality', { detail: { level: 'data-saver' } }));
   const ordered = [...LAYERS].filter((l) => l.enabled !== false).sort((a, b) => (a.priority || 50) - (b.priority || 50));
 
   // The glyph layers are created up front, in priority order, so the scene's draw order is the
@@ -437,11 +454,14 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
   const local = [];
   const upstream = [];
   for (const layer of ordered) {
+    if (layer.deferred) continue; // loads when the visitor switches it on (ctx.loadLayerNow)
     const srcs = idsOf(layer);
     // One cached manifest read behind these, not a request per layer.
     const snaps = srcs.length ? await Promise.all(srcs.map((id) => sources.snapshotAvailable(id))) : [];
     (srcs.length === 0 || snaps.every(Boolean) ? local : upstream).push(layer);
   }
+
+  ctx.loadLayerNow = (layer) => { if (layer && layer.deferred) { layer.deferred = false; return one(layer); } return Promise.resolve(); };
 
   async function one(layer) {
     const gl = glyphLayers.get(layer.id);

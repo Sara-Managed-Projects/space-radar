@@ -2060,3 +2060,7 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
 /* Space weather, one line (spec 0026 req 16) ----------------------------------------------- */
 
 .sr-status__weather { margin: 0 0 10px; font-size: 12.5px; line-height: 1.45; color: var(--sr-text); }
+
+/* Data-saver / frame latch note (spec 0026 req 18) --------------------------------------- */
+
+.sr-layers__quality { margin: 6px 0 0; font-size: 11.5px; line-height: 1.4; color: var(--sr-ember); }

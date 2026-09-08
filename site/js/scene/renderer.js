@@ -109,9 +109,18 @@ export function createRenderer(canvas) {
   let lastH = -1;
   let lastDpr = -1;
 
+  // The frame-rate latch (scene/quality.js) may cap this at 1: one device pixel per CSS pixel.
+  let dprCap = MAX_DPR;
+
   function currentDpr() {
     const dpr = typeof devicePixelRatio === 'number' && devicePixelRatio > 0 ? devicePixelRatio : 1;
-    return Math.min(dpr, MAX_DPR);
+    return Math.min(dpr, MAX_DPR, dprCap);
+  }
+
+  /** 'low' caps the pixel ratio at 1 and re-sizes at once; 'full' lifts the cap. */
+  function setQuality(level) {
+    dprCap = level === 'low' ? 1 : MAX_DPR;
+    resize(true);
   }
 
   function resize(force) {
@@ -179,6 +188,7 @@ export function createRenderer(canvas) {
     resize,
     render,
     dispose,
+    setQuality,
     get contextLost() { return contextLost; },
     get pixelRatio() { return lastDpr; },
     get size() { return { width: lastW, height: lastH }; },
