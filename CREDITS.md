@@ -153,7 +153,7 @@ Passing those along:
 
 ## 3b. 3D models — NASA, public domain
 
-Twenty-nine spacecraft, spacecraft-bus, antenna and surface models ship in `site/models/`, all
+Thirty spacecraft, spacecraft-bus, antenna, rocket-stage and surface models ship in `site/models/`, all
 from **NASA 3D Resources** (<https://github.com/nasa/NASA-3D-Resources>, mirrored from
 <https://science.nasa.gov/3d-resources/>), 7.3 MB in total.
 
@@ -174,6 +174,12 @@ than counted by hand.
 | file | NASA model | used for | size |
 |---|---|---|---|
 | `iss.glb` | International Space Station (ISS) (A) | NORAD 25544 | 34 KB |
+
+**Rocket bodies**
+
+| file | NASA model | used for | size |
+|---|---|---|---|
+| `rocket-body.glb` | Space Shuttle Parts / Solid Rocket Booster | every spent stage (catalogue names with R/B, ROCKET BODY, UPPER STAGE), as a class default the card names | 81 KB |
 
 **Telescopes and observatories**
 
