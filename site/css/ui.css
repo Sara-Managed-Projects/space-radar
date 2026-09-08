@@ -1942,3 +1942,67 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
   font-size: 11px;
   color: var(--sr-text-dim);
 }
+
+/* The scale ladder (spec 0028 step 8) ------------------------------------------------------- */
+
+.sr-ladder__intro,
+.sr-ladder__why {
+  margin: 0 0 6px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--sr-text-dim);
+}
+
+.sr-ladder__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: rung;
+}
+
+.sr-ladder__rung {
+  position: relative;
+  padding-left: 16px;
+  margin-bottom: 8px;
+}
+
+.sr-ladder__rung::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 6px;
+  bottom: -8px;
+  border-left: 1px solid var(--sr-line);
+}
+
+.sr-ladder__rung:last-child::before { bottom: auto; height: 14px; }
+
+.sr-ladder__btn {
+  appearance: none;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 32px;
+  padding: 4px 8px;
+  font: inherit;
+  color: var(--sr-text);
+  text-align: left;
+  background: transparent;
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius-sm);
+  cursor: pointer;
+}
+
+.sr-ladder__btn:hover:not(:disabled),
+.sr-ladder__btn:focus-visible { border-color: var(--sr-line-strong); outline: none; }
+
+.sr-ladder__btn:disabled { opacity: 0.55; cursor: default; }
+
+.sr-ladder__dist { color: var(--sr-text-dim); font-size: 12px; white-space: nowrap; }
+
+.sr-ladder__show { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--sr-line); }
+
+.sr-ladder__showlist { margin: 0; padding: 0; list-style: none; }
+
+.sr-ladder__showrow { font-size: 11.5px; line-height: 1.45; color: var(--sr-text-dim); margin: 0 0 4px; }

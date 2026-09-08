@@ -1453,10 +1453,21 @@ for (const file of allFiles) {
     const { WORLDS } = await import(join(JS, 'scene/worlds.js'));
     const { CAMERA_EASES } = await import(join(JS, 'scene/camera.js'));
 
+    // Every producer of records that ship IN THIS REPOSITORY (spec 0028 added four): the worlds,
+    // the named stars, the placed deep-sky objects, and the layers whose `sample()` is the data.
+    const { worldRecords } = await import(join(JS, 'scene/worlds.js'));
+    const { recordsFromNames } = await import(join(JS, 'scene/stars3d.js'));
+    const { parseDso } = await import(join(JS, 'data/parsers.js'));
+    const starNames = JSON.parse(readFileSync(join(ROOT, 'site/data/stars3d.names.json'), 'utf8')).rows;
+    const dsoDoc = JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8'));
     const bundled = new Set([
       ...sampleOddities().map((r) => r.id),
       ...sampleDeepSpace().map((r) => r.id),
       ...handKeptSites().map((r) => r.id),
+      ...worldRecords().map((r) => r.id),
+      ...recordsFromNames(starNames).map((r) => r.id),
+      ...parseDso(dsoDoc).map((r) => r.id),
+      ...LAYERS.filter((l) => l.source === 'bundled' && typeof l.sample === 'function' && !l.parse).flatMap((l) => l.sample()).map((r) => r.id),
     ]);
     const layerIds = new Set(LAYERS.map((l) => l.id));
     const worldIds = new Set(WORLDS.map((w) => w.id));
@@ -1493,7 +1504,7 @@ for (const file of allFiles) {
           if (bundled.has(id)) resolvable += 1;
           else {
             problems.push(
-              `TOUR     ${tour.id}/${stop.id}: '${id}' is not emitted by data/sample.js, so ` +
+              `TOUR     ${tour.id}/${stop.id}: '${id}' is not emitted by data/sample.js or any other bundled producer, so ` +
                 `recordById() returns null and this stop is silently dropped`
             );
           }

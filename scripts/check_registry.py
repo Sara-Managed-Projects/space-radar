@@ -178,6 +178,9 @@ TOUR_EASES = {"auto", "ui", "inout", "cruise", "linear"}
 # stop, which is not shipped either. Refusing it by name is better than accepting a value the
 # state machine would silently treat as `drop`.
 TOUR_ON_UNRESOLVED = {"drop", "hold"}
+# Trips may name any world or any rung of the ladder since spec 0028 step 8: ui/trip.js saves the
+# stage on begin, calls ctx.setStage(tour.stage), and restores it on leave; the rig is re-taught its
+# world at every stop. Filled in main() from worlds.yaml and stages.yaml.
 TOUR_STAGES = {"earth"}
 TOUR_MAX_TITLE = 60
 TOUR_MIN_STOPS_FLOOR = 3
@@ -705,6 +708,51 @@ def check_exotics() -> list:
         if r.get("kind") == "blackhole" and r.get("mass_msun") is None:
             fail(where, "a black hole needs `mass_msun` (a number or a [low, high] range)")
     return rows_
+
+
+def check_ladder(world_ids: set, layer_ids: set) -> list:
+    """registry/ladder.yaml: every rung names a world or a record in a layer, with a distance and its source."""
+    path = REG / "ladder.yaml"
+    if not path.exists():
+        return []
+    try:
+        doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as exc:
+        fail("ladder.yaml", f"will not parse: {exc}")
+        return []
+    rungs_ = doc.get("rungs")
+    if not isinstance(rungs_, list) or not rungs_:
+        fail("ladder.yaml", "no `rungs:` list")
+        return []
+    seen = set()
+    for r in rungs_:
+        if not isinstance(r, dict):
+            fail("ladder.yaml", "a rung is not a mapping")
+            continue
+        rid = r.get("id")
+        where = f"ladder.yaml[{rid}]"
+        if not rid:
+            fail("ladder.yaml", "a rung has no id")
+            continue
+        if rid in seen:
+            fail(where, "duplicate id")
+        seen.add(rid)
+        t = r.get("target") or {}
+        keys = [k for k in ("world", "record") if k in t]
+        if len(keys) != 1:
+            fail(where, "target must be exactly one of {world: ...} or {record: ...}")
+        elif keys[0] == "world" and t["world"] not in world_ids:
+            fail(where, f"targets world `{t['world']}`, which has no worlds.yaml row")
+        elif keys[0] == "record":
+            if r.get("layer") not in layer_ids:
+                fail(where, f"a record rung must name the layer that produces it (`layer: {r.get('layer')}` has no layers.yaml row)")
+        for key in ("label", "distance", "distance_source", "why"):
+            if not r.get(key):
+                fail(where, f"no `{key}:`")
+    for row in doc.get("we_show") or []:
+        if not isinstance(row, dict) or not row.get("what") or not isinstance(row.get("n"), int) or not row.get("source"):
+            fail("ladder.yaml", "each `we_show` row needs `what:`, an integer `n:` and a `source:`")
+    return rungs_
 
 
 def check_lod() -> list:
@@ -1427,7 +1475,10 @@ def main() -> int:
     ladder = check_stages(world_ids)
     lod_rules = check_lod()
     dso_hand = check_dso_hand()
+    ladder_rungs = check_ladder(world_ids, layer_ids)
     exotics = check_exotics()
+    TOUR_STAGES.update(world_ids)
+    TOUR_STAGES.update(st.get('id') for st in ladder if isinstance(st, dict) and st.get('id'))
     check_tours(oddities_doc, layer_ids, world_ids, {s.get('id') for s in sites},
                 {str(t.get('term') or '').lower() for t in terms})
 
@@ -1625,7 +1676,7 @@ def main() -> int:
         return 1
     print(
         f"registry ok: {len(worlds)} worlds, {len(ladder)} ladder rungs, {len(lod_rules)} lod rules, "
-        f"{len(dso_hand)} hand-placed deep-sky objects, {len(exotics)} exotics, "
+        f"{len(dso_hand)} hand-placed deep-sky objects, {len(exotics)} exotics, {len(ladder_rungs)} breadcrumb rungs, "
         f"{len(sources)} sources, {len(layers)} layers, "
         f"{len(events)} event types, {len(models)} models, {len(real_models)} real models, "
         f"{len(marks)} third-party marks, {len(sites)} sites, "

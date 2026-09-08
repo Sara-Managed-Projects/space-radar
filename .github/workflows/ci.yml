@@ -44,6 +44,8 @@ jobs:
       # library alone, so registry/sources.yaml is mirrored into harvest/sources.json -- with its
       # `list:` and `query:` files inlined -- and a stale mirror is a Lambda fetching last month's
       # list of spacecraft.
+      - name: The ladder mirror matches the registry (spec 0028 step 8)
+        run: python3 scripts/gen_ladder_js.py --check
       - name: The exotics mirror matches the registry (spec 0028 step 7)
         run: python3 scripts/gen_exotics_js.py --check
       - name: The level-of-detail mirror matches the registry (spec 0028)
@@ -105,3 +107,5 @@ jobs:
         run: node tests/test_galaxy.mjs
       - name: every extreme object has a source and sits where its source says (spec 0028 step 7)
         run: node tests/test_exotics.mjs
+      - name: every rung of the breadcrumb and every stop of the edge trip names something that exists (spec 0028 step 8)
+        run: node tests/test_ladder_ui.mjs

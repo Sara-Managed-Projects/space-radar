@@ -455,8 +455,11 @@ TOUR_CASES: list[tuple[str, str, str]] = [
      "looping between the Earth and Mars", "looping around its own semi-major axis"),
     ("a trip with fewer stops than its own floor",
      "    min_stops: 3\n", "    min_stops: 8\n"),
-    ("a stage the rig has never been taught to fly",
-     "  stage: earth\n", "  stage: mars\n"),
+    # Since spec 0028 step 8 a trip may live on any world or any rung of the ladder (ui/trip.js
+    # switches the stage on begin and back on leave), so `mars` is legal now; a stage that is
+    # neither a world nor a rung is what the checker must still refuse.
+    ("a stage that is neither a world nor a rung of the ladder",
+     "  stage: earth\n", "  stage: nowhere\n"),
     ("a frozen clock on a trip that wants eleven thousand objects",
      "    requires: [stations]\n    clock: as-found",
      "    requires: [stations, active]\n    clock: freeze"),
