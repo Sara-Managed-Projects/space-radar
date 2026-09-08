@@ -37,6 +37,7 @@ import { isLadderStage } from './scene/stage.js';
 import { SUN_INERTIAL, STAGES } from './scene/stage.js';
 import { showChooser, hideChooser } from './ui/chooser.js';
 import { createLabels } from './ui/labels.js';
+import { keyById, bucketOf } from './data/colorkeyrules.js';
 
 const MOMENTS = ['wonder', 'now', 'next'];
 
@@ -282,6 +283,21 @@ export async function boot({ setStatus } = {}) {
    * ground. Offered from the world card; not yet done on every select, because the Now moment's
    * sky view still assumes Earth underfoot.
    */
+  /**
+   * Colour every dot by a key (spec 0026 req 11): registry/colorkeys.yaml's rows through
+   * data/colorkeyrules.js. `class` (or an unknown id) puts the class colours back. Layers that load
+   * later pick the key up in setRecords through the same function.
+   */
+  let colourKeyId = 'class';
+  ctx.setColourKey = (id) => {
+    colourKeyId = id || 'class';
+    const key = colourKeyId === 'class' ? null : keyById(colourKeyId);
+    const fn = key ? (record) => { const b = bucketOf(key, record); return b ? b.colour : null; } : null;
+    for (const gl of glyphLayers.values()) if (gl.recolour) gl.recolour(fn);
+    ctx.colourKeyFn = fn;
+  };
+  ctx.colourKey = () => colourKeyId;
+
   ctx.setStage = (stageId) => {
     if (!STAGES[stageId] || stage.worldId === stageId) return false;
     // A world, or a rung of the ladder (stellar, galaxy, local-group: registry/stages.yaml). A rung
@@ -431,6 +447,7 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
         ctx.stars3d.setVisible(ctx.isLayerOn(layer.id));
       }
       if (gl) {
+        if (ctx.colourKeyFn && gl.recolour) gl.recolour(ctx.colourKeyFn);
         gl.setRecords(records || []);
         gl.setVisible(ctx.isLayerOn(layer.id));
       }

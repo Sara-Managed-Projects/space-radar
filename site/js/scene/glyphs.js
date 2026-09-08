@@ -216,6 +216,9 @@ export function createGlyphLayer(scene, layer = {}) {
   let livePos = new Float32Array(0); // scene units, xyz per live instance
   let attrOffset = null;
   let attrColour = null;
+  // A colour key (spec 0026 req 11): a function of the record, or null for the class colours.
+  let colourFn = null;
+  let currentRecords = [];
   let attrSize = null;
   let attrOpacity = null;
   let attrCell = null;
@@ -302,6 +305,7 @@ export function createGlyphLayer(scene, layer = {}) {
     if (n > capacity) allocate(Math.ceil(n * 1.25));
     else if (!geometry) allocate(n);
 
+    currentRecords = records;
     recColour = new Float32Array(n * 3);
     recSize = new Float32Array(n);
     recOpacity = new Float32Array(n);
@@ -310,7 +314,7 @@ export function createGlyphLayer(scene, layer = {}) {
     const c = new THREE.Color();
     for (let i = 0; i < n; i++) {
       const r = records[i];
-      c.set(colourOf(r, layer));
+      c.set((colourFn && colourFn(r)) || colourOf(r, layer));
       recColour[i * 3] = c.r;
       recColour[i * 3 + 1] = c.g;
       recColour[i * 3 + 2] = c.b;
@@ -439,6 +443,22 @@ export function createGlyphLayer(scene, layer = {}) {
     return out.slice(0, Math.max(1, limit));
   }
 
+  /**
+   * Recolour every record by a key (spec 0026 req 11), or back to the class colours with null. Only
+   * the per-record colour table changes; the next update() copies it into the instance buffer,
+   * with the selection's ember still winning.
+   */
+  function recolour(fn) {
+    colourFn = typeof fn === 'function' ? fn : null;
+    if (!recColour) return;
+    const c = new THREE.Color();
+    for (let i = 0; i < currentRecords.length; i++) {
+      const r = currentRecords[i];
+      c.set((colourFn && colourFn(r)) || colourOf(r, layer));
+      recColour[i * 3] = c.r; recColour[i * 3 + 1] = c.g; recColour[i * 3 + 2] = c.b;
+    }
+  }
+
   function pick(ndcX, ndcY) {
     if (!lastCamera || !geometry || !mesh.visible || geometry.instanceCount === 0) return null;
     lastCamera.updateMatrixWorld();
@@ -479,6 +499,7 @@ export function createGlyphLayer(scene, layer = {}) {
     update,
     pick,
     pickAll,
+    recolour,
     setVisible(b) {
       if (mesh) mesh.visible = !!b;
     },

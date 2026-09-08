@@ -509,6 +509,11 @@ export const COPY = {
     notLoaded: 'Not loaded, so not listed: {layers}.',
     noObserver: 'Set where you are and passes over you join the list.',
   },
+  // Colour keys (spec 0026 req 11).
+  colourKey: {
+    title: 'Colour by',
+    unknown: 'not known for these',
+  },
   chooser: {
     label: 'Things under your finger',
     hint: '{n} here. Tap one, or tap the sky to close.',

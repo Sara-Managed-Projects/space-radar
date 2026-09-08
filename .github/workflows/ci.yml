@@ -44,6 +44,8 @@ jobs:
       # library alone, so registry/sources.yaml is mirrored into harvest/sources.json -- with its
       # `list:` and `query:` files inlined -- and a stale mirror is a Lambda fetching last month's
       # list of spacecraft.
+      - name: The colour-keys mirror matches the registry (spec 0026 req 11)
+        run: python3 scripts/gen_colorkeys_js.py --check
       - name: The layers mirror matches the registry (spec 0026 req 8)
         run: python3 scripts/gen_layers_js.py --check
       - name: The aliases mirror matches the registry (spec 0021 req 6)
@@ -121,3 +123,5 @@ jobs:
         run: node tests/test_search.mjs
       - name: every layer exists on both sides of the registry mirror and `enabled:` is honoured (spec 0026 req 8)
         run: node tests/test_layers_registry.mjs
+      - name: colour keys bucket records by fields they hold and count the unknown (spec 0026 req 11)
+        run: node tests/test_colorkeys.mjs
