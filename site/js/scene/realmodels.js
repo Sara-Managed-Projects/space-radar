@@ -103,6 +103,13 @@ export const REAL_MODELS = {
     'noaa 15': { file: 'poes.glb', colour: 'satellite', name: 'NOAA 15', klass: ['satellite'] },
     'noaa 18': { file: 'poes.glb', colour: 'satellite', name: 'NOAA 18', klass: ['satellite'] },
     'noaa 19': { file: 'poes.glb', colour: 'satellite', name: 'NOAA 19', klass: ['satellite'] },
+    // A visiting vehicle's catalogue number changes every flight, so it is matched by name. These
+    // rows carry `build:` instead of `file:`: no free model with a licence exists for a modern
+    // Soyuz or any Progress (spec 0027 hunt, 2026-09-08), so the shape is procedural, drawn at
+    // once by scene/models.js rather than fetched. `generic: true` because it is the family hull,
+    // and the card says so.
+    soyuz: { build: 'soyuz', colour: 'station', name: 'a Soyuz spacecraft', klass: ['station', 'satellite'], generic: true },
+    progress: { build: 'progress', colour: 'station', name: 'a Progress cargo ship', klass: ['station', 'satellite'], generic: true },
     bennu: { file: 'asteroid-bennu.glb', colour: 'asteroid', name: '101955 Bennu', klass: ['asteroid'] },
     tdrs: { file: 'tdrs.glb', colour: 'satellite', name: 'Tracking and Data Relay Satellite', klass: ['satellite'] },
     swift: { file: 'swift.glb', colour: 'telescope', name: 'Swift', klass: ['satellite', 'telescope'] },
@@ -299,6 +306,7 @@ function applyToon(root, colourToken) {
  * not break a frame.
  */
 export function loadRealModel(entry, { keepMaterials = false } = {}) {
+  // An entry with `build:` and no `file:` is a procedural shape: nothing to load, heroes.js drew it.
   if (!entry || !entry.file) return Promise.resolve(null);
   const key = `${entry.file}:${keepMaterials ? 'orig' : entry.colour}`;
   if (cache.has(key)) return cache.get(key);

@@ -26,6 +26,8 @@ models:
   - {id: satellite-comms,    file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1500, for: {family: comms}}
   - {id: satellite-weather,  file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1500, for: {family: weather}}
   - {id: satellite-flat,     file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 900,  for: {family: flat-packed}}
+  - {id: station-soyuz,      file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1200, for: {variant: soyuz}}
+  - {id: station-progress,   file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1200, for: {variant: progress}}
   - {id: station-generic,    file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 4000, for: {layer: stations}}
   - {id: debris-shard,       file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 200,  for: {layer: debris-notable}}
   # ONE row for every launch vehicle, because all fifty shapes are the same procedural source

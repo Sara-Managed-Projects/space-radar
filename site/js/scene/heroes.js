@@ -78,7 +78,11 @@ export function createHeroes(scene, ctx) {
   function acquire(record) {
     const existing = live.get(record.id);
     if (existing) return existing;
-    const obj = modelFor(record.klass, record.meta && record.meta.modelVariant);
+    // A real-model entry may name a procedural shape (`build:`) instead of a file: that variant
+    // is drawn now and there is nothing to upgrade to. Otherwise the record's own variant, if any.
+    const early = realModelFor(record);
+    const variant = early && early.build ? early.build : record.meta && record.meta.modelVariant;
+    const obj = modelFor(record.klass, variant);
     obj.userData.recordId = record.id;
     obj.visible = false;
     // Whatever rides on this thing, as children of it. Two records in the app carry anything at
@@ -92,8 +96,8 @@ export function createHeroes(scene, ctx) {
 
     // If NASA publishes this exact object, fetch it and swap it in when it arrives. The procedural
     // model is on screen in the meantime, so nothing waits and nothing pops into an empty orbit.
-    const real = realModelFor(record);
-    if (real) {
+    const real = early;
+    if (real && real.file) {
       entry.upgrading = true;
       loadRealModel(real).then((loaded) => {
         entry.upgrading = false;
