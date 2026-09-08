@@ -234,6 +234,22 @@ distribution whose ARN is the only thing the bucket policy admits. HTTPS matters
 manners: geolocation and device orientation only work in a secure context, so a plain HTTP bucket
 cannot run the sky view. Both scripts take `--dry-run`.
 
+### The harvester
+
+```bash
+./scripts/provision-harvester.sh --bucket your-unique-bucket-name --distribution E1ABCDEF23456 --dry-run
+./scripts/package-harvester.sh && ./scripts/deploy-harvester.sh --function space-radar-harvester
+```
+
+A Lambda on a 30-minute EventBridge schedule that snapshots the upstream feeds into `data/v1/` of
+the same bucket, so the browser reads one file instead of sixteen APIs. `provision-harvester.sh`
+creates an IAM role that may write `data/v1/*` and nothing else, the function, the schedule and a
+log group; it is idempotent, `--teardown` undoes it, and `--dry-run` prints every command with its
+real values and runs only the reads — creating a role is the account owner's decision, so read
+that first. `package-harvester.sh` builds a byte-for-byte reproducible zip with a JSON mirror of
+`registry/sources.yaml` inside (the runtime is stdlib-only), and a placeholder handler while
+`harvest/` does not exist yet. No `aws` is needed to package; CI does it on every pull request.
+
 ### Your own domain
 
 ```bash
@@ -275,8 +291,8 @@ site/                 the entire app, served as-is
 registry/             eleven YAML files. Adding a world, an object class, a data source, an event
                       type, a launch vehicle, an odd thing or a whole trip is a ROW here — not a
                       code change. CI enforces it, and refuses a stale generated mirror.
-scripts/              provision, deploy, the validator, the three mirror generators, and the
-                      README screenshot script
+scripts/              provision, deploy, the harvester's provision/package/deploy, the validator,
+                      the mirror generators, and the README screenshot script
 tests/                registry validation, the module contract, a growth test, and a refusal test
                       that breaks every rule on purpose to prove the validator still says no
 ```
@@ -355,6 +371,8 @@ python3 scripts/gen_tours_js.py --check     #   "
 python3 scripts/check_copy.py            # no user-visible string outside copy/en.js
 python3 tests/test_growth.py             # adding a world is still just a registry row
 python3 tests/test_refusals.py           # the validator still refuses what it claims to
+scripts/package-harvester.sh --out /tmp/h.zip   # the harvester packages, reproducibly, with no AWS
+python3 tests/test_harvester_scripts.py  # its scripts only read under --dry-run
 node     tests/test_contract.mjs         # imports resolve, and every drawn shape fits its budget
 ```
 
