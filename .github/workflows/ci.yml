@@ -83,3 +83,5 @@ jobs:
         run: node tests/test_cards_copy.mjs
       - name: The Now moment guesses a place and says so
         run: node tests/test_guessplace.mjs
+      - name: Visiting-vehicle shapes build inside budget and match the right names
+        run: node tests/test_station_shapes.mjs

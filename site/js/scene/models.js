@@ -349,6 +349,77 @@ function buildDebris(variant) {
   return g;
 }
 
+// --------------------------------------------------------------------------- soyuz and progress
+
+/**
+ * The Soyuz hull, as a family shape. Three modules in a line and two long wings: that silhouette
+ * has flown since 1967 and is what a Progress shares with a Soyuz, which is why one builder draws
+ * both. Published dimensions (RSC Energia): Soyuz MS 7.48 m long, 10.7 m across the wings, orbital
+ * module 2.26 m across, descent module 2.17 m, instrument module 2.72 m. Progress MS 7.23 m long,
+ * 10.6 m across, a cargo drum where the crew module is and a tank section where the descent
+ * module is. The card says "the kind of thing, not this exact one", because it is.
+ *
+ * The one recognition detail: the descent module is a BELL, not a cylinder -- Soyuz is the only
+ * visiting vehicle with that waist -- and the Progress has no bell, which is how the two differ
+ * at forty pixels.
+ */
+function buildSoyuzFamily(variant) {
+  const g = new THREE.Group();
+  const progress = variant === 'progress';
+  g.userData.realSizeM = progress ? 10.6 : 10.7; // across the wings, the longest dimension
+  const green = '#6E7E62'; // the thermal blanket
+  const body = 'body';
+  const S = 1 / 10.7; // metres -> unit box along the wingspan
+
+  // Instrument and propulsion module, aft: a plain cylinder, both variants.
+  const svc = cyl(1.36 * S, 1.36 * S, 2.3 * S, 16, green, body, 'service');
+  svc.rotation.x = Math.PI / 2;
+  svc.position.z = -2.4 * S;
+  g.add(svc);
+  const nozzle = cyl(0.3 * S, 0.45 * S, 0.5 * S, 12, '#4A4F57', 'foil', 'nozzle');
+  nozzle.rotation.x = Math.PI / 2;
+  nozzle.position.z = -3.8 * S;
+  g.add(nozzle);
+
+  if (progress) {
+    // Refuelling section where the bell would be, then the cargo drum where the crew would be.
+    const tank = cyl(1.2 * S, 1.36 * S, 1.6 * S, 16, green, body, 'tanks');
+    tank.rotation.x = Math.PI / 2;
+    tank.position.z = -0.45 * S;
+    g.add(tank);
+    const cargo = cyl(1.13 * S, 1.13 * S, 2.6 * S, 16, green, body, 'cargo');
+    cargo.rotation.x = Math.PI / 2;
+    cargo.position.z = 1.65 * S;
+    g.add(cargo);
+  } else {
+    // The bell: wide at the heat shield, narrow at the hatch to the orbital module.
+    const bell = cyl(0.8 * S, 1.08 * S, 2.1 * S, 16, '#8C8F93', body, 'descent');
+    bell.rotation.x = Math.PI / 2;
+    bell.position.z = -0.2 * S;
+    g.add(bell);
+    const orbital = new THREE.Mesh(new THREE.SphereGeometry(1.13 * S, 16, 12), toonMaterial(green, body));
+    orbital.name = 'orbital';
+    orbital.position.z = 1.75 * S;
+    g.add(orbital);
+  }
+  // Docking probe at the front.
+  const probe = cyl(0.12 * S, 0.12 * S, 0.5 * S, 8, METAL, body, 'probe');
+  probe.rotation.x = Math.PI / 2;
+  probe.position.z = (progress ? 3.2 : 3.1) * S;
+  g.add(probe);
+
+  // Two wings off the service module, in the plane of the hull.
+  const wingLen = 3.7 * S;
+  const wingWidth = 1.4 * S;
+  for (const side of [-1, 1]) {
+    const w = panelWing(wingLen, wingWidth, METAL, side > 0 ? 'wing+' : 'wing-');
+    w.rotation.y = side > 0 ? -Math.PI / 2 : Math.PI / 2;
+    w.position.set(side * (1.36 * S + wingLen / 2), 0, -2.4 * S);
+    g.add(w);
+  }
+  return g;
+}
+
 // -------------------------------------------------------------------------------------- rocket
 //
 // A rocket is not a shape in this file any more: it is a row in registry/rockets.yaml, mirrored
@@ -1642,7 +1713,7 @@ const ODDITY_BUILDERS = {
 
 // One row per model. Adding a shape is a row here, not a change to modelFor().
 const BUILDERS = {
-  station: { default: buildStation, iss: buildStation },
+  station: { default: buildStation, iss: buildStation, soyuz: buildSoyuzFamily, progress: buildSoyuzFamily },
   satellite: {
     default: buildSatelliteComms,
     comms: buildSatelliteComms,
