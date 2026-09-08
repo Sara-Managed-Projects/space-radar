@@ -131,3 +131,5 @@ jobs:
         run: node tests/test_trajectory.mjs
       - name: the orbit line is one closed lap from the same elements, and only for things that lap (spec 0026 req 13)
         run: node tests/test_orbitline.mjs
+      - name: a not-yet-catalogued object is inferred, dimmer, and says so (spec 0026 req 15)
+        run: node tests/test_provisional.mjs

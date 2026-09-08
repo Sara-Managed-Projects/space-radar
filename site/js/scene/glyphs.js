@@ -47,6 +47,7 @@ const RENDER_ORDER_GLYPH = 10;
 const PAD = 1.7; // the quad is 1.7x the glyph, leaving room for the sample halo
 const PICK_PX = 24; // the contract's forgiveness rule
 const DEBRIS_PICK_PENALTY = 1.6; // a satellite beats a speck at the same distance
+const PROVISIONAL_OPACITY = 0.7; // not yet in the public catalogue (spec 0026 req 15)
 
 const VERT = /* glsl */ `
 attribute vec3 iOffset;
@@ -329,7 +330,8 @@ export function createGlyphLayer(scene, layer = {}) {
       recColour[i * 3 + 1] = c.g;
       recColour[i * 3 + 2] = c.b;
       recSize[i] = sizeOf(r, layer);
-      recOpacity[i] = r.klass === 'debris' ? DEBRIS_OPACITY : 1;
+      // A provisional object (spec 0026 req 15) is drawn at 70%: there, but visibly not yet a catalogued thing.
+      recOpacity[i] = r.klass === 'debris' ? DEBRIS_OPACITY : r.meta && r.meta.provisional ? PROVISIONAL_OPACITY : 1;
       recCell[i] = glyphCell(r.klass || layer.klass || layer.glyph) + (r.cls === 'sample' ? HALO_BIAS : 0);
     }
     live = [];
