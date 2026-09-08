@@ -57,6 +57,7 @@ const NAME_EXACT = 900;
 const NAME_PREFIX = 800;
 const WORD_PREFIX = 700; // "dragon" finds "CREW DRAGON 12"
 const NAME_CONTAINS = 600;
+const ALIAS_WORD = 650; // a word of another name for it (worlds.yaml aliases)
 const OTHER_CONTAINS = 500; // designator or operator
 // Below every tier the brief names, and the reason it exists: a catalogue number is typed one
 // digit at a time. Without it "2554" finds nothing at all and "25544" finds the station, which
@@ -165,6 +166,7 @@ export function buildIndex(records, layers) {
     cat: [], // catalogue number as text, '' when the object has none
     desig: [], // lower-cased international designator
     oper: [], // lower-cased operator
+    alias: [], // lower-cased other names, space-joined (worlds.yaml `aliases:`); '' for most
     rank: [], // layer position; smaller comes first
     len: [], // name length, a tie-break
     picked: [], // on the hand-kept list; a tie-break, see below
@@ -181,13 +183,15 @@ export function buildIndex(records, layers) {
     // The OMM parser carries no operator today; LightLive2 spells the same idea `provider`.
     // Both are read, neither is invented: an object with neither simply is not found by operator.
     const oper = norm(meta.operator || meta.provider);
-    if (!name && !catText && !oper) continue; // nothing to search it by
+    const aliasText = Array.isArray(meta.aliases) ? norm(meta.aliases.join(' ')) : '';
+    if (!name && !catText && !oper && !aliasText) continue; // nothing to search it by
 
     index.record.push(record);
     index.name.push(name);
     index.cat.push(catText);
     index.desig.push(norm(meta.intlDesignator));
     index.oper.push(oper);
+    index.alias.push(Array.isArray(meta.aliases) ? norm(meta.aliases.join(' ')) : '');
     const rank = rankOf.get(record.layer);
     index.rank.push(rank === undefined ? rows.length : rank);
     index.len.push(name.length);
@@ -225,6 +229,16 @@ function scoreOne(index, i, q, numeric) {
     }
   }
 
+  // An alias is a name people use, so it ranks like a word of the name -- below the name's own
+  // words, above a match in the operator. "red planet" finds Mars; "planet" alone finds it too.
+  const alias = index.alias[i];
+  if (alias) {
+    let at = alias.indexOf(q);
+    while (at >= 0) {
+      if (at === 0 || isBoundary(alias.charCodeAt(at - 1))) return ALIAS_WORD;
+      at = alias.indexOf(q, at + 1);
+    }
+  }
   const desig = index.desig[i];
   if (desig && desig.indexOf(q) >= 0) return OTHER_CONTAINS;
   const oper = index.oper[i];

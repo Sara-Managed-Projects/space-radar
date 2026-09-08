@@ -11,7 +11,7 @@ import { clock } from './clock.js';
 import { createRenderer } from './scene/renderer.js';
 import { stage } from './scene/stage.js';
 import { propagate } from './propagate/index.js';
-import { createWorlds } from './scene/worlds.js';
+import { createWorlds, WORLDS } from './scene/worlds.js';
 import { createStarfield } from './scene/starfield.js';
 import { createGlyphLayer } from './scene/glyphs.js';
 import { createHeroes } from './scene/heroes.js';
@@ -141,6 +141,13 @@ export async function boot({ setStatus } = {}) {
       const hit = gl.pick(ndcX, ndcY);
       if (hit) return hit;
     }
+    // No glyph within reach: a world's disc, if the tap is on or near one. After the glyphs on
+    // purpose -- a satellite drawn over Earth is the smaller thing and the thing a finger means.
+    if (isLayerOn('worlds')) {
+      const rect = canvas.getBoundingClientRect();
+      const hit = worlds.pick(ndcX, ndcY, camera, { w: rect.width, h: rect.height });
+      if (hit) return hit;
+    }
     return null;
   }
 
@@ -171,6 +178,9 @@ export async function boot({ setStatus } = {}) {
   }
 
   function positionOfRecord(record) {
+    // A world is drawn where scene/worlds.js put its DISC -- nearer than it is for the planets
+    // (PLANET_VIEW, and the card says so). Flying to the true position would arrive at empty sky.
+    if (record && record.klass === 'world') return worlds.drawnPositionOf(record.id);
     // Deliberately NOT asking the glyph layer: it owns a packed position buffer for drawing, and
     // exposing a per-record lookup would make the camera depend on a layer being visible. The
     // contract's propagate + stage.toScene answers this for any record, drawn or not.
@@ -180,6 +190,7 @@ export async function boot({ setStatus } = {}) {
   }
 
   function arrivalDistance(record) {
+    if (record && record.klass === 'world') return Math.max(0.05, worlds.drawnRadiusUnits(record.id) * 3.5);
     const layer = LAYERS.find((l) => l.id === record.layer);
     const nearKm = (layer && layer.nearKm) || 2000;
     return Math.max(0.05, (nearKm * 0.35) / stage.unitKm);
@@ -197,6 +208,26 @@ export async function boot({ setStatus } = {}) {
     if (layer) layer.on = on;
     const gl = glyphLayers.get(id);
     if (gl) gl.setVisible(on);
+    if (id === 'worlds') worlds.setVisible(on);
+  };
+
+  /**
+   * Make a world the centre of the map (spec 0006 req 5, spec 0028 req 2). The stage's floating
+   * origin moves to it, its neighbourhood draws at true scale, and the camera is told the new
+   * ground. Offered from the world card; not yet done on every select, because the Now moment's
+   * sky view still assumes Earth underfoot.
+   */
+  ctx.setStage = (worldId) => {
+    const w = WORLDS.find((x) => x.id === worldId);
+    if (!w || stage.worldId === worldId) return false;
+    stage.setWorld(worldId);
+    worlds.update(clock.now());
+    const r = w.radiusKm / stage.unitKm;
+    cameraRig.setWorldRadius(r);
+    cameraRig.setWorldCentre({ x: 0, y: 0, z: 0 });
+    cameraRig.stopFollow();
+    cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance: r * 3.5, ms: 0 });
+    return true;
   };
 
   function setMoment(next, { silent } = {}) {
@@ -276,6 +307,9 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
   // priority order whatever order the network answers in. Each one starts empty and fills when
   // its records arrive.
   for (const layer of ordered) {
+    // A layer another module already draws (the worlds' discs) gets no glyph layer: two marks for
+    // one planet would be two places to tap and one of them wrong.
+    if (layer.draw === 'worlds') continue;
     const gl = createGlyphLayer(scene, layer);
     gl.setRecords([]);
     // Hidden until its records arrive; one() then sets the real visibility. This loop runs
@@ -308,8 +342,10 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
     try {
       const records = await loadLayer(layer, clock.now());
       layerRecords.set(layer.id, records || []);
-      gl.setRecords(records || []);
-      gl.setVisible(ctx.isLayerOn(layer.id));
+      if (gl) {
+        gl.setRecords(records || []);
+        gl.setVisible(ctx.isLayerOn(layer.id));
+      }
       window.dispatchEvent(new CustomEvent('sr:layer', { detail: { id: layer.id, count: (records || []).length } }));
     } catch (err) {
       // A layer that fails is a layer that is absent, never a page that is broken.

@@ -57,6 +57,64 @@ const VIEW_TRUE = 'true';
 /** Planets: true direction, compressed distance, floored angular size. */
 const VIEW_COMPRESSED = 'compressed';
 
+
+/** Other names people type. Mirrors `aliases:` in registry/worlds.yaml; search reads them. */
+export const WORLD_ALIASES = {
+  sun: ['Sol', 'our star'],
+  earth: ['Terra', 'home'],
+  moon: ['Luna'],
+  mars: ['the Red Planet'],
+  venus: ['the Morning Star', 'the Evening Star'],
+};
+
+
+// --- the worlds as RECORDS (spec 0028 step 0) ---------------------------------------------------
+//
+// One record per world so the rest of the app -- the layer list, search, a tap, the card -- can
+// treat a planet like any other object. The record's id IS the world id (`mars`), which is what
+// ui/cards.js already keys its Moon sentence on. `propagator: body` is the contract's own ephemeris
+// propagator, so `propagate(record, t)` answers with the TRUE position; the drawn disc may be
+// nearer (PLANET_VIEW), and main.js asks `drawnPositionOf` when it wants the disc.
+
+/** @returns {Array<Object>} one record per world, klass `world`, layer `worlds`. */
+export function worldRecords() {
+  return WORLDS.map((w) => ({
+    id: w.id,
+    name: w.display,
+    klass: 'world',
+    layer: 'worlds',
+    propagator: 'body',
+    body: w.body,
+    world: w.id,
+    frame: w.frame,
+    cls: 'measured',
+    meta: {
+      worldId: w.id,
+      radiusKm: w.radiusKm,
+      parent: w.parent,
+      aliases: (WORLD_ALIASES[w.id] || []).slice(),
+      view: w.view,
+    },
+  }));
+}
+
+/**
+ * The fair-to-the-small-thing rule for discs, pure so a test can hold it (spec 0028 req 4).
+ * Each candidate is {id, cx, cy, r} in PIXELS from the top-left. A tap counts for a disc when it
+ * lands within `forgivePx` of the disc's EDGE; among those, the SMALLER disc wins, then the nearer.
+ * A finger that lands on a tiny moon drawn over a big planet means the moon.
+ */
+export function pickWorldDisc(candidates, tapX, tapY, forgivePx = 24) {
+  let best = null;
+  for (const c of candidates) {
+    if (!c || !(c.r >= 0)) continue;
+    const edge = Math.max(0, Math.hypot(c.cx - tapX, c.cy - tapY) - c.r);
+    if (edge > forgivePx) continue;
+    if (!best || c.r < best.r || (c.r === best.r && edge < best.edge)) best = { ...c, edge };
+  }
+  return best;
+}
+
 // --- the rows ----------------------------------------------------------------------------------
 // Mirrors registry/worlds.yaml. `textures` are the exact filenames in site/textures/.
 
@@ -241,6 +299,8 @@ export function createWorlds(scene, opts = {}) {
 
   const meshes = new Map();
   const viewState = new Map();
+  // The `worlds` layer's switch. The stage world and the Sun stay: one is the ground, the other the light.
+  let layerOn = true;
 
   for (const w of WORLDS) {
     // The map is fetched ONCE. Building a cel material and then replacing it for the Sun would
@@ -329,7 +389,7 @@ export function createWorlds(scene, opts = {}) {
       if (!mesh) continue;
       const p = positionOf(w.id, tMs);
       if (!p) { mesh.visible = false; continue; }
-      mesh.visible = true;
+      mesh.visible = layerOn || w.id === stage.worldId || w.id === 'sun';
 
       // The world's own true position in the stage's frame, and from it the direction to the
       // Sun that lights it. Both in km, both before any of the drawing exaggeration below.
@@ -387,6 +447,58 @@ export function createWorlds(scene, opts = {}) {
   }
 
   function meshFor(id) { return meshes.get(id) || null; }
+
+  // --- the worlds as objects under a finger (spec 0028 step 0) ---------------------------------
+
+  /** The `worlds` layer's checkbox. The stage world and the Sun are never hidden by it. */
+  function setVisible(on) { layerOn = on !== false; }
+
+  /** Where the DISC is, in scene units -- the compressed position, not the true one. */
+  function drawnPositionOf(id, out) {
+    const mesh = meshes.get(id);
+    if (!mesh || !mesh.visible) return null;
+    return (out || new THREE.Vector3()).copy(mesh.position);
+  }
+
+  /** The disc's radius in scene units, as drawn (equatorial for Earth, mean for the rest). */
+  function drawnRadiusUnits(id) {
+    const mesh = meshes.get(id);
+    return mesh ? mesh.scale.x : 0;
+  }
+
+  const _proj = new THREE.Vector3();
+  const _camPos = new THREE.Vector3();
+
+  /**
+   * Which world, if any, a tap meant. NDC in, a record out (or null). Every visible disc is
+   * projected; `pickWorldDisc` decides. Called by main.js AFTER the glyph layers have had their
+   * turn, so a satellite drawn over a planet still wins -- a glyph has no radius to subtract and
+   * is always the smaller thing.
+   */
+  function pick(ndcX, ndcY, camera, viewport) {
+    if (!camera || !viewport || !(viewport.w > 0) || !(viewport.h > 0)) return null;
+    camera.updateMatrixWorld();
+    camera.getWorldPosition(_camPos);
+    const halfW = viewport.w * 0.5;
+    const halfH = viewport.h * 0.5;
+    const tanHalfFov = Math.tan(((camera.fov || 45) * Math.PI) / 360);
+    const candidates = [];
+    for (const w of WORLDS) {
+      const mesh = meshes.get(w.id);
+      if (!mesh || !mesh.visible) continue;
+      const dist = mesh.position.distanceTo(_camPos);
+      if (!(dist > 0)) continue;
+      _proj.copy(mesh.position).project(camera);
+      if (_proj.z > 1) continue; // behind the camera
+      // Angular radius -> pixels: r_px = (R / d) / tan(fov/2) * halfH. Good to a few % for discs
+      // smaller than the view, which is every disc a finger can miss.
+      const rPx = (mesh.scale.x / dist / tanHalfFov) * halfH;
+      candidates.push({ id: w.id, cx: (_proj.x + 1) * halfW, cy: (1 - _proj.y) * halfH, r: rPx });
+    }
+    const hit = pickWorldDisc(candidates, (ndcX + 1) * halfW, (1 - ndcY) * halfH);
+    if (!hit) return null;
+    return worldRecords().find((r) => r.id === hit.id) || null;
+  }
 
   const _adjCentre = new THREE.Vector3();
 
@@ -451,6 +563,10 @@ export function createWorlds(scene, opts = {}) {
     meshFor,
     positionOf,
     viewScale,
+    setVisible,
+    drawnPositionOf,
+    drawnRadiusUnits,
+    pick,
     dispose,
     root,
     light: sunLight,

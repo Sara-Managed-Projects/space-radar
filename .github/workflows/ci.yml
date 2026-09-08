@@ -85,3 +85,5 @@ jobs:
         run: node tests/test_guessplace.mjs
       - name: Visiting-vehicle shapes build inside budget and match the right names
         run: node tests/test_station_shapes.mjs
+      - name: worlds are objects (spec 0028 step 0)
+        run: node tests/test_worlds_layer.mjs
