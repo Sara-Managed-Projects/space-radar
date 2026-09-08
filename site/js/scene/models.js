@@ -461,6 +461,73 @@ function buildCygnus() {
   return g;
 }
 
+// ------------------------------------------------------------------------------------- tiangong
+
+/**
+ * China's Tiangong, as a family shape: a T of three cylinders. Tianhe, the core, runs fore-aft
+ * (16.6 m long, 4.2 m across, CMSA); Wentian and Mengtian, the two laboratory modules (17.9 m,
+ * 4.2 m), sit port and starboard at the forward node, each with a pair of long wings; the core
+ * carries a shorter pair aft. About 55 m across the labs' wings, which is the longest dimension.
+ * CelesTrak catalogues the three modules as three objects at one position -- CSS (TIANHE),
+ * CSS (WENTIAN), CSS (MENGTIAN) -- so the core draws the whole station and a lab, when it is
+ * not swallowed by the station's radius, draws as a single module. The card says the family
+ * shape either way. A CC BY model of the core exists (spec 0027); this is the honest shape until it
+ * is downloaded.
+ */
+function buildTiangong(variant) {
+  const g = new THREE.Group();
+  const S = 1 / 55;
+  const white = '#E6EAF0';
+  const gold = '#C9A45C'; // the labs' blanket colour reads warm in photographs
+  const body = 'body';
+  const module = (len, colour, name) => {
+    const c = cyl(2.1 * S, 2.1 * S, len * S, 18, colour, body, name);
+    return c;
+  };
+  const wingPair = (span, width, z, x0, name) => {
+    for (const side of [-1, 1]) {
+      const w = panelWing(span * S, width * S, METAL, `${name}${side > 0 ? '+' : '-'}`);
+      w.rotation.y = side > 0 ? -Math.PI / 2 : Math.PI / 2;
+      w.position.set(side * (x0 + span / 2) * S, 0, z * S);
+      g.add(w);
+    }
+  };
+  if (variant === 'tiangong-module') {
+    g.userData.realSizeM = 56; // one lab across its wings
+    const lab = module(17.9, gold, 'lab');
+    lab.rotation.x = Math.PI / 2;
+    g.add(lab);
+    wingPair(26, 6, -6.5, 2.1, 'wing');
+    return g;
+  }
+  g.userData.realSizeM = 55;
+  const core = module(16.6, white, 'tianhe');
+  core.rotation.x = Math.PI / 2;
+  core.position.z = -4 * S;
+  g.add(core);
+  const node = new THREE.Mesh(new THREE.SphereGeometry(2.4 * S, 16, 12), toonMaterial(white, body));
+  node.name = 'node';
+  node.position.z = 5.2 * S;
+  g.add(node);
+  for (const side of [-1, 1]) {
+    const lab = module(17.9, gold, side > 0 ? 'mengtian' : 'wentian');
+    lab.rotation.z = Math.PI / 2; // along X
+    lab.position.set(side * (2.4 + 17.9 / 2) * S, 0, 5.2 * S);
+    g.add(lab);
+    // Each lab's wings fold out at its far end, fore and aft of the lab's axis.
+    for (const dz of [-1, 1]) {
+      const w = panelWing(15 * S, 5 * S, METAL, `labwing${side}${dz}`);
+      w.rotation.y = dz > 0 ? 0 : Math.PI;
+      w.rotation.z = Math.PI / 2;
+      w.position.set(side * (2.4 + 17.9 + 0.5) * S, 0, (5.2 + dz * 8) * S);
+      g.add(w);
+    }
+  }
+  // The core's shorter pair, aft.
+  wingPair(12.6, 4.5, -10, 2.1, 'corewing');
+  return g;
+}
+
 // -------------------------------------------------------------------------------------- rocket
 //
 // A rocket is not a shape in this file any more: it is a row in registry/rockets.yaml, mirrored
@@ -1754,7 +1821,7 @@ const ODDITY_BUILDERS = {
 
 // One row per model. Adding a shape is a row here, not a change to modelFor().
 const BUILDERS = {
-  station: { default: buildStation, iss: buildStation, soyuz: buildSoyuzFamily, progress: buildSoyuzFamily, cygnus: buildCygnus },
+  station: { default: buildStation, iss: buildStation, soyuz: buildSoyuzFamily, progress: buildSoyuzFamily, cygnus: buildCygnus, tiangong: buildTiangong, 'tiangong-module': buildTiangong },
   satellite: {
     default: buildSatelliteComms,
     comms: buildSatelliteComms,

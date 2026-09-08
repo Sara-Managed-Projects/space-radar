@@ -111,6 +111,12 @@ export const REAL_MODELS = {
     // Soyuz or any Progress (spec 0027 hunt, 2026-09-08), so the shape is procedural, drawn at
     // once by scene/models.js rather than fetched. `generic: true` because it is the family hull,
     // and the card says so.
+    // Tiangong: three catalogue objects at one position. The core draws the whole T; a lab draws
+    // as a single module when the core's model has not already swallowed it. Klass station by
+    // classify()'s own rule (`CSS (` names). A CC BY model of the core is listed in spec 0027.
+    'css (tianhe': { build: 'tiangong', colour: 'station', name: 'the Tiangong station', klass: ['station'], generic: true },
+    'css (wentian': { build: 'tiangong-module', colour: 'station', name: 'a Tiangong laboratory module', klass: ['station'], generic: true },
+    'css (mengtian': { build: 'tiangong-module', colour: 'station', name: 'a Tiangong laboratory module', klass: ['station'], generic: true },
     soyuz: { build: 'soyuz', colour: 'station', name: 'a Soyuz spacecraft', klass: ['station', 'satellite'], generic: true },
     // Cygnus: the round UltraFlex fans are the recognition; nothing free exists (spec 0027), so
     // procedural. Klass-gated so the Cygnus Loop and anything else named Cygnus stay untouched.

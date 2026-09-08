@@ -13,14 +13,15 @@ const check = (ok, msg) => { if (!ok) problems.push(msg); };
 const tris = (obj) => { let n = 0; obj.traverse((o) => { if (o.isMesh && o.geometry) { const g = o.geometry; n += g.index ? g.index.count / 3 : g.attributes.position.count / 3; } }); return n; };
 const budgetOf = (id) => Number(((yaml.split('\n').find((l) => l.includes(`id: ${id},`)) || '').match(/budget_tris:\s*(\d+)/) || [])[1] || 0);
 
-for (const v of ['soyuz', 'progress', 'cygnus']) {
+for (const v of ['soyuz', 'progress', 'cygnus', 'tiangong', 'tiangong-module']) {
   check(modelVariants().station.includes(v), `station variant ${v} is registered`);
   const obj = modelFor('station', v);
   check(!obj.userData.generic, `${v} is a real variant, not a fallback`);
   const n = tris(obj); const b = budgetOf(`station-${v}`);
   check(b > 0, `models.yaml has a budget for station-${v}`);
   check(n > 0 && n <= b, `${v} builds ${n} triangles within its budget of ${b}`);
-  check(obj.userData.realSizeM > 10 && obj.userData.realSizeM < 12, `${v} is 10.6-11.5 m across the wings, got ${obj.userData.realSizeM}`);
+  const expect = v.startsWith('tiangong') ? [50, 60] : [10, 12];
+  check(obj.userData.realSizeM > expect[0] && obj.userData.realSizeM < expect[1], `${v} size ${obj.userData.realSizeM} m is within ${expect}`);
   disposeModels(obj);
 }
 const soyuzRec = { id: 'sat-1', name: 'SOYUZ-MS 28', klass: 'station', layer: 'stations', meta: { noradId: 1 } };
@@ -32,12 +33,16 @@ const cyg = { id: 'sat-4', name: 'CYGNUS NG-24', klass: 'station', layer: 'stati
 // to test is a klass-satellite Cygnus, and the thing to exclude is Cygnus debris.
 const cygSat = { id: 'sat-6', name: 'CYGNUS NG-24', klass: 'satellite', layer: 'stations', meta: { noradId: 6 } };
 const cygDeb = { id: 'x', name: 'CYGNUS NG-24 DEB', klass: 'debris', layer: 'active', meta: { noradId: 5 } };
+const tianhe = { id: 'sat-48274', name: 'CSS (TIANHE)', klass: 'station', layer: 'stations', meta: { noradId: 48274 } };
+const wentian = { id: 'sat-53239', name: 'CSS (WENTIAN)', klass: 'station', layer: 'stations', meta: { noradId: 53239 } };
 const iss = { id: 'sat-25544', name: 'ISS (ZARYA)', klass: 'station', layer: 'stations', meta: { noradId: 25544 } };
 const e1 = realModelFor(soyuzRec), e2 = realModelFor(progRec), e3 = realModelFor(debRec), e4 = realModelFor(iss);
 check(e1 && e1.build === 'soyuz' && e1.generic === true && !e1.file, `SOYUZ-MS -> build soyuz, generic: ${JSON.stringify(e1)}`);
 check(e2 && e2.build === 'progress' && e2.generic === true, `PROGRESS-MS -> build progress: ${JSON.stringify(e2)}`);
 check(e3 === null, 'Soyuz debris keeps the debris shape');
 check(e4 && e4.file === 'iss.glb', 'the ISS keeps its own file (the id route wins)');
+check(realModelFor(tianhe)?.build === 'tiangong', 'CSS (TIANHE) draws the whole station');
+check(realModelFor(wentian)?.build === 'tiangong-module', 'CSS (WENTIAN) draws a single lab module');
 const e5 = realModelFor(cyg);
 check(e5 && e5.build === 'cygnus' && e5.generic === true, `CYGNUS NG-24 -> build cygnus: ${JSON.stringify(e5)}`);
 check(realModelFor(cygSat) && realModelFor(cygSat).build === 'cygnus', 'a Cygnus classified satellite (the production case) gets the shape');
