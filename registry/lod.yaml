@@ -19,3 +19,10 @@ rules:
     from_km: 75000000000      # 500 au: past every planet, inside the heliopause
     to_km: 750000000000       # 5 000 au: nothing of ours is out here
     why: "The sky sphere is the view from inside the Solar System; from outside it, it is a lie."
+
+  - id: stars-in-three-dimensions
+    what: stars-3d
+    fade: in
+    from_km: 75000000000      # 500 au -- the same band as the rule above, the other way
+    to_km: 750000000000       # 5 000 au
+    why: "The 3D star layer replaces the sky sphere: one set of stars at a time, never both drawn over each other."

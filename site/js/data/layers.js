@@ -31,6 +31,7 @@ const DAY_MS = 86400000;
 
 // Class colours, verbatim from docs/design-language.md. No red. No purple gradients.
 const C = {
+  star: '#FFF3C4',
   world: '#E8ECF2',
   station: '#F2F4F7',
   satellite: '#7FD1FF',
@@ -252,6 +253,33 @@ export const LAYERS = [
     card: 'world',
     priority: 1,
     sentence: 'The Sun, the Moon and the planets, where they really are in the sky right now.',
+  },
+  {
+    // Stars in three dimensions (spec 0028 step 3). Mirrors registry/layers.yaml `stars`. Drawn by
+    // scene/stars3d.js (`draw: 'stars3d'`) as one Points cloud, never as glyphs: 109 389 of them.
+    // The RECORDS of this layer are only the ~3 400 named stars -- search, a tap and the card need
+    // a name -- so `count` is the layer's own number, not the record count. `noModel`: a star is
+    // a point of light, and heroes.js must never hang a satellite bus on Sirius.
+    id: 'stars',
+    display: 'Stars',
+    klass: 'star',
+    source: 'bundled',
+    parse: null,
+    propagator: 'static',
+    frame: 'sun-inertial',
+    moments: { wonder: true, now: false, next: false },
+    defaultOn: true,
+    draw: 'stars3d',
+    noModel: true,
+    sample: () => [],
+    select: all,
+    budget: { maxItems: 200000 },
+    colour: C.star,
+    glyph: 'star',
+    nearKm: 0,
+    card: 'star',
+    priority: 60,
+    sentence: 'Every star with a measured distance, where it really is. From here they are the sky; from a light-year out they are places.',
   },
   {
     id: 'stations',

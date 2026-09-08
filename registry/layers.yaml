@@ -26,6 +26,21 @@ layers:
     select: {all: true}
     budget: {max_items: 20}
 
+  # Stars in three dimensions (spec 0028 step 3). `bundled`: site/data/stars3d.bin is repacked from
+  # HYG v4.4 by scripts/build-stars3d.py (CC BY-SA 4.0, credited in CREDITS.md §3c). `static`: a
+  # star does not move at any zoom this app draws. Drawn by scene/stars3d.js, not as glyphs, and
+  # only once the camera is far enough out for the sky-from-here to have faded (registry/lod.yaml).
+  - id: stars
+    display: Stars
+    moments: {wonder: on, now: off, next: off}
+    source: bundled
+    propagator: static
+    frame: sun-inertial
+    style: {kind: glyph, glyph: star, colour: star}
+    card: star
+    select: {all: true}
+    budget: {max_items: 200000}
+
   - id: stations
     display: Crewed stations
     moments: {wonder: on, now: on, next: off}

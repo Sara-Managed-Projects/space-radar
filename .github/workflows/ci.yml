@@ -93,3 +93,5 @@ jobs:
         run: node tests/test_pickrank.mjs
       - name: the scale ladder's rungs and the sky-from-here fade (spec 0028 step 2)
         run: node tests/test_ladder.mjs
+      - name: the stars are places (spec 0028 step 3)
+        run: node tests/test_stars3d.mjs

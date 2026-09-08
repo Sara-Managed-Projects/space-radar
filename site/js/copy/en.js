@@ -446,6 +446,7 @@ export const COPY = {
     comet: 'Comet',
     site: 'Ground site',
     world: 'World',
+    star: 'Star',
     // Not a physical class -- a curatorial one. A golf ball, a car and a photograph have nothing
     // in common except that somebody sent them and nobody had to.
     oddity: 'Oddity',
@@ -472,6 +473,11 @@ export const COPY = {
   },
 
   // The long-press list (spec 0028 req 4): what is under a finger when several things are.
+  // A star without a name in any catalogue people use: its HYG row is what we can say.
+  stars: {
+    unnamed: 'An unnamed star (HYG {n})',
+    notPlaced: '{n} more have no measured distance and are not drawn.',
+  },
   chooser: {
     label: 'Things under your finger',
     hint: '{n} here. Tap one, or tap the sky to close.',
@@ -494,6 +500,11 @@ export const COPY = {
       groundPoint: 'Passing over',
       distanceFromEarth: 'Distance from Earth',
       distanceFromSun: 'Distance from the Sun',
+      lightLeft: 'Its light left it',
+      spectralType: 'Type of star',
+      brightness: 'How bright it looks',
+      luminosity: 'Light output',
+      catalogue: 'Catalogue',
       lightTime: 'Radio time each way',
       nextPass: 'Next pass over you',
       crew: 'People aboard',
@@ -522,6 +533,11 @@ export const COPY = {
       kmh: '{n} km/h',
       kmPerS: '{n} km/s',
       au: '{n} astronomical units',
+      lightYears: '{n} light-years',
+      yearsAgo: '{n} years ago',
+      monthsAgo: '{n} months ago',
+      suns: '{n}× the Sun',
+      magnitude: 'magnitude {n}',
       lunar: "{n}× the Moon's distance",
       minutes: '{n} minutes',
       seconds: '{n} seconds',
@@ -696,6 +712,7 @@ export const COPY = {
       asteroid: 'a generic asteroid',
       comet: 'a generic comet',
       site: 'a generic ground site',
+      star: 'a point of light, sized by how bright it looks from where you are',
     },
     // Where an attached object sits on its carrier's model is our arrangement, AND SO IS HOW BIG
     // IT IS. The disc really is bolted to the side of the bus; the centimetre we chose is ours,
@@ -1003,6 +1020,18 @@ export const COPY = {
   // The "why now" clause is first in every list, per spec 0013's template table.
   // ------------------------------------------------------------------------------------
   templates: {
+    star: {
+      lead: '{name} is a star {dist} light-years away',
+      leadNear: '{name} is a star {dist} light-years away, one of the nearest there are',
+      colour: 'a {colour} star',
+      seenAs: 'the light you see left it {n} years ago',
+      seenAsMonths: 'the light you see left it {n} months ago',
+      luminosity: 'shining {n} times as bright as the Sun',
+      dimmer: 'shining at {n} of the Sun’s brightness',
+      // Spectral class letter -> the colour a person would see. The letters are the physics; the
+      // words are what the eye reports, and they are the whole reason to print the class at all.
+      colours: { O: 'blue', B: 'blue-white', A: 'white', F: 'yellow-white', G: 'yellow', K: 'orange', M: 'red' },
+    },
     station: {
       lead: '{name} is a crewed space station circling Earth',
       whyPass: 'crossing your sky at {time}',
