@@ -467,7 +467,8 @@ export async function load(id, opts = {}) {
   }
 
   const entry = readEntry(id) || blankEntry();
-  const now = wallNow();
+  // `opts.now` exists for the contract test, which cannot wait out a five-minute gate.
+  const now = Number.isFinite(opts.now) ? opts.now : wallNow();
 
   // Once per page, whatever the caches say: the status panel's "our snapshots" line must not
   // depend on some source happening to be due. A 4 kB file, HTTP-cached for a minute, and it
@@ -480,8 +481,24 @@ export async function load(id, opts = {}) {
   // manifest's cadence rather than waiting out the source's; a harvester that comes back is then
   // seen within minutes, unattended.
   const sinceAttempt = entry.lastAttemptAt == null ? Infinity : now - entry.lastAttemptAt;
-  const gateMs = entry.data == null && entry.reason === 'no-route' ? INDEX_CADENCE_MS : src.cadenceMs;
-  const due = opts.force === true || sinceAttempt >= gateMs;
+  const failed = entry.data == null;
+  const gateMs = failed && entry.reason === 'no-route' ? INDEX_CADENCE_MS : src.cadenceMs;
+  let due = opts.force === true || sinceAttempt >= gateMs;
+
+  // A cached FAILURE is not a reason to ignore our own bucket for three hours. MEASURED
+  // 2026-09-08: a page whose live fetch had timed out kept saying "could not look" although a
+  // usable snapshot had appeared in the manifest minutes later -- the source's cadence gated the
+  // cheap same-origin check along with the expensive upstream one. So on the manifest's cadence,
+  // a failed source asks the index whether a snapshot NEWER than its last attempt exists, and
+  // only then is an attempt due. doFetch reads the snapshot first, so upstream is not touched
+  // unless that snapshot proves unreadable.
+  if (!due && failed && sinceAttempt >= INDEX_CADENCE_MS) {
+    const view = await ensureIndex();
+    const rid = src.registryId || src.id;
+    const row = view.data && view.data.snapshots ? view.data.snapshots[rid] : null;
+    const at = row && row.fetched_at ? Date.parse(row.fetched_at) : NaN;
+    if (row && SNAPSHOT_USABLE.has(row.status) && Number.isFinite(at) && at > (entry.lastAttemptAt || 0)) due = true;
+  }
 
   // Cache is inside the cadence window: serve it and do not touch the network.
   if (!due) {

@@ -1855,3 +1855,13 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
 .sr-trips__shape:empty {
   display: none;
 }
+
+/* --- the Now moment's first screen: the guess in words, and tonight's passes ------------- */
+.sr-place__current.is-guess { color: var(--sr-text); font-style: italic; }
+.sr-tonight__title { margin: 12px 0 2px; font-size: 12px; font-weight: 600; letter-spacing: .02em; color: var(--sr-text-dim); text-transform: uppercase; }
+.sr-tonight__hint { margin: 0 0 6px; font-size: 11.5px; color: var(--sr-text-dim); }
+.sr-tonight__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.sr-tonight__row { padding: 6px 8px; font-size: 12.5px; background: var(--sr-raise); border: 1px solid var(--sr-line); border-radius: var(--sr-radius-sm); cursor: pointer; }
+.sr-tonight__row:hover { border-color: var(--sr-ember); }
+.sr-tonight__note { margin: 4px 0 0; font-size: 12px; color: var(--sr-text-dim); }
+.sr-tonight__note[hidden] { display: none; }

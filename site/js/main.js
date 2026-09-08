@@ -17,6 +17,8 @@ import { createGlyphLayer } from './scene/glyphs.js';
 import { createHeroes } from './scene/heroes.js';
 import { createCameraRig } from './scene/camera.js';
 import { readMoment, writeMoment } from './ui/urlstate.js';
+import { guessObserver } from './sky/guessplace.js';
+import { CITIES } from './copy/en.js';
 import { LAYERS, loadLayer } from './data/layers.js';
 import * as sources from './data/sources.js';
 import { createSkyView } from './sky/skyview.js';
@@ -202,6 +204,12 @@ export async function boot({ setStatus } = {}) {
     moment = next;
     for (const layer of LAYERS) layer.on = !!(layer.moments && layer.moments[moment]);
     for (const [id, gl] of glyphLayers) gl.setVisible(isLayerOn(id));
+    // The Now door with nothing set used to do nothing (measured). A guessed place, marked as a
+    // guess, opens the dome; the panel says the guess out loud and a real place replaces it.
+    if (moment === 'now' && !observer) {
+      const guess = guessObserver(CITIES);
+      if (guess) ctx.setObserver(guess);
+    }
     if (moment === 'now' && observer) ctx.skyView.enter(observer);
     else if (ctx.skyView.active) ctx.skyView.exit();
     if (!silent) writeMoment(moment);
