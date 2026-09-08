@@ -126,6 +126,9 @@ layers:
     # A train is one card with N members, not N cards: it is what a beginner sees in the sky.
     select: {name_prefix: STARLINK, launched_within_days: 10, group_by: intl_designator_launch}
     budget: {max_items: 400}
+    # A launch is still a TRAIN while its members climb to their shell (spec 0026 req 17); below this
+    # mean height they read as one thing in the sky, above it they have spread out.
+    train: {still_raising_below_km: 500}
 
   - id: just-launched
     display: Launched in the last two weeks

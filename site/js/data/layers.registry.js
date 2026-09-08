@@ -25,7 +25,8 @@ export const LAYER_ROWS = [
     "card": "world",
     "glyph": "planet",
     "colour": "world",
-    "maxItems": 20
+    "maxItems": 20,
+    "train": null
   },
   {
     "id": "stars",
@@ -43,7 +44,8 @@ export const LAYER_ROWS = [
     "card": "star",
     "glyph": "star",
     "colour": "star",
-    "maxItems": 200000
+    "maxItems": 200000,
+    "train": null
   },
   {
     "id": "exoplanets",
@@ -61,7 +63,8 @@ export const LAYER_ROWS = [
     "card": "exoplanet",
     "glyph": "exoplanet",
     "colour": "exoplanet",
-    "maxItems": 8000
+    "maxItems": 8000,
+    "train": null
   },
   {
     "id": "deep-sky",
@@ -79,7 +82,8 @@ export const LAYER_ROWS = [
     "card": "dso",
     "glyph": "dso",
     "colour": "dso",
-    "maxItems": 2000
+    "maxItems": 2000,
+    "train": null
   },
   {
     "id": "galaxy",
@@ -97,7 +101,8 @@ export const LAYER_ROWS = [
     "card": "dso",
     "glyph": "dso",
     "colour": "dso",
-    "maxItems": 4
+    "maxItems": 4,
+    "train": null
   },
   {
     "id": "exotics",
@@ -115,7 +120,8 @@ export const LAYER_ROWS = [
     "card": "exotic",
     "glyph": "exotic",
     "colour": "exotic",
-    "maxItems": 200
+    "maxItems": 200,
+    "train": null
   },
   {
     "id": "stations",
@@ -133,7 +139,8 @@ export const LAYER_ROWS = [
     "card": "station",
     "glyph": "station",
     "colour": "station",
-    "maxItems": 20
+    "maxItems": 20,
+    "train": null
   },
   {
     "id": "notable",
@@ -151,7 +158,8 @@ export const LAYER_ROWS = [
     "card": "satellite",
     "glyph": "satellite",
     "colour": "satellite",
-    "maxItems": 80
+    "maxItems": 80,
+    "train": null
   },
   {
     "id": "starlink-trains",
@@ -169,7 +177,10 @@ export const LAYER_ROWS = [
     "card": "satellite",
     "glyph": "train",
     "colour": "satellite",
-    "maxItems": 400
+    "maxItems": 400,
+    "train": {
+      "still_raising_below_km": 500
+    }
   },
   {
     "id": "just-launched",
@@ -187,7 +198,8 @@ export const LAYER_ROWS = [
     "card": "satellite",
     "glyph": "just-launched",
     "colour": "launch",
-    "maxItems": 200
+    "maxItems": 200,
+    "train": null
   },
   {
     "id": "active",
@@ -205,7 +217,8 @@ export const LAYER_ROWS = [
     "card": "satellite",
     "glyph": "satellite",
     "colour": "satellite",
-    "maxItems": 15000
+    "maxItems": 15000,
+    "train": null
   },
   {
     "id": "geo-ring",
@@ -223,7 +236,8 @@ export const LAYER_ROWS = [
     "card": "satellite",
     "glyph": "satellite",
     "colour": "satellite",
-    "maxItems": 900
+    "maxItems": 900,
+    "train": null
   },
   {
     "id": "debris-notable",
@@ -241,7 +255,8 @@ export const LAYER_ROWS = [
     "card": "debris",
     "glyph": "debris",
     "colour": "debris",
-    "maxItems": 40
+    "maxItems": 40,
+    "train": null
   },
   {
     "id": "launches",
@@ -259,7 +274,8 @@ export const LAYER_ROWS = [
     "card": "launch",
     "glyph": "rocket",
     "colour": "rocket",
-    "maxItems": 30
+    "maxItems": 30,
+    "train": null
   },
   {
     "id": "asteroids",
@@ -277,7 +293,8 @@ export const LAYER_ROWS = [
     "card": "asteroid",
     "glyph": "asteroid",
     "colour": "asteroid",
-    "maxItems": 300
+    "maxItems": 300,
+    "train": null
   },
   {
     "id": "comets",
@@ -295,7 +312,8 @@ export const LAYER_ROWS = [
     "card": "comet",
     "glyph": "comet",
     "colour": "comet",
-    "maxItems": 60
+    "maxItems": 60,
+    "train": null
   },
   {
     "id": "deep-space",
@@ -313,7 +331,8 @@ export const LAYER_ROWS = [
     "card": "probe",
     "glyph": "probe",
     "colour": "probe",
-    "maxItems": 40
+    "maxItems": 40,
+    "train": null
   },
   {
     "id": "visual",
@@ -331,7 +350,8 @@ export const LAYER_ROWS = [
     "card": "satellite",
     "glyph": "satellite",
     "colour": "satellite",
-    "maxItems": 200
+    "maxItems": 200,
+    "train": null
   },
   {
     "id": "ground-sites",
@@ -349,7 +369,8 @@ export const LAYER_ROWS = [
     "card": "site",
     "glyph": "site",
     "colour": "site",
-    "maxItems": 400
+    "maxItems": 400,
+    "train": null
   },
   {
     "id": "hand-kept-sites",
@@ -367,7 +388,8 @@ export const LAYER_ROWS = [
     "card": "site",
     "glyph": "site",
     "colour": "site",
-    "maxItems": 40
+    "maxItems": 40,
+    "train": null
   },
   {
     "id": "reentries",
@@ -385,7 +407,8 @@ export const LAYER_ROWS = [
     "card": "debris",
     "glyph": "debris",
     "colour": "debris",
-    "maxItems": 10
+    "maxItems": 10,
+    "train": null
   },
   {
     "id": "oddities",
@@ -403,6 +426,7 @@ export const LAYER_ROWS = [
     "card": "oddity",
     "glyph": "oddity",
     "colour": "probe",
-    "maxItems": 60
+    "maxItems": 60,
+    "train": null
   }
 ];

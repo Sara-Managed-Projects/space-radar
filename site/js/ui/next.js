@@ -13,6 +13,7 @@
 
 import { COPY, t, fmt, timeText, UNITS } from '../copy/en.js';
 import { predictPasses } from '../sky/passes.js';
+import { trainsFrom } from '../data/trains.js';
 
 export const NEXT_CAP = 8;
 const HOUR = 3600e3;
@@ -68,6 +69,17 @@ export function buildNextItems(records, nowMs, opts = {}) {
       } catch { /* a pass we could not compute is a row we do not print */ }
     }
   }
+  // Trains over you (spec 0026 req 17): the lead of each train that is still climbing, as one row.
+  if (observer && Number.isFinite(observer.latRad) && Number.isFinite(observer.lonRad)) {
+    const trainRecords = (Array.isArray(records) ? records : []).filter((r) => r && r.satrec && r.layer === 'starlink-trains');
+    for (const train of trainsFrom(trainRecords, nowMs, { stillRaisingBelowKm: opts.trainThresholdKm })) {
+      if (train.stillRaising !== true || !train.lead || !train.lead.satrec) continue;
+      try {
+        const passes = predictPasses([train.lead], observer, nowMs, 24).filter((p) => p.visible === true);
+        for (const p of passes.slice(0, 1)) items.push({ kind: 'train', record: train.lead, tMs: p.startMs, count: train.count });
+      } catch { /* no row for a pass we could not compute */ }
+    }
+  }
   items.sort((a, b) => a.tMs - b.tMs);
   return items.slice(0, NEXT_CAP);
 }
@@ -90,6 +102,8 @@ export function rowText(item, nowMs) {
       return t(T.perihelion, { name, when });
     case 'pass':
       return t(T.pass, { name, when });
+    case 'train':
+      return t(T.train, { n: fmt.int(item.count), when });
     default:
       return `${name} ${when}`;
   }

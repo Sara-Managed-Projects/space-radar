@@ -123,6 +123,8 @@ jobs:
         run: node tests/test_search.mjs
       - name: every layer exists on both sides of the registry mirror and `enabled:` is honoured (spec 0026 req 8)
         run: node tests/test_layers_registry.mjs
+      - name: a fresh launch is one train with a lead, still climbing or spread out (spec 0026 req 17)
+        run: node tests/test_trains.mjs
       - name: colour keys bucket records by fields they hold and count the unknown (spec 0026 req 11)
         run: node tests/test_colorkeys.mjs
       - name: a satellite behind the Earth is in its shadow, one in front is lit (spec 0026 req 12)
