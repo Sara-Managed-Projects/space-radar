@@ -2047,3 +2047,12 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
 .sr-colourkey__label { flex: 1 1 auto; color: var(--sr-text-dim); }
 
 .sr-colourkey__count { flex: 0 0 auto; }
+
+/* The card's trajectory chart (spec 0026 req 14) ---------------------------------------- */
+
+.sr-traj { display: block; width: 100%; height: auto; margin: 4px 0 6px; }
+.sr-traj__axis, .sr-traj__equator { stroke: var(--sr-line); stroke-width: 1; }
+.sr-traj__map { fill: var(--sr-raise); stroke: var(--sr-line); stroke-width: 1; }
+.sr-traj__line { fill: none; stroke: var(--sr-satellite, #7fd1ff); stroke-width: 1.5; }
+.sr-traj__now { fill: var(--sr-ember); }
+.sr-traj__label { fill: var(--sr-text-dim); font-size: 9px; font-family: inherit; }

@@ -514,6 +514,17 @@ export const COPY = {
     title: 'Colour by',
     unknown: 'not known for these',
   },
+  // The card's trajectory chart (spec 0026 req 14).
+  trajectory: {
+    label: 'Its path, the next lap and a half',
+    ariaLabel: 'Height over time, and the ground track on a flat map',
+    km: '{n} km',
+    now: 'now',
+    laps: '1½ laps later',
+    north: 'N',
+    south: 'S',
+    note: 'Worked out from the same elements as the dot; the map is the ground directly below it.',
+  },
   chooser: {
     label: 'Things under your finger',
     hint: '{n} here. Tap one, or tap the sky to close.',
