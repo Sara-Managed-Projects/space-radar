@@ -31,6 +31,10 @@ const early = spaceWeatherLine(parsed, { fetchedAt: readingMs - 60e3, via: 'live
 if (observedRows.length) check(early.includes('measured for the current three-hour period'), `a stamp still ahead of the clock names the bin (${early})`);
 const late = spaceWeatherLine(parsed, { fetchedAt: readingMs + 5 * 3600e3, via: 'live', stale: false }, readingMs + 5 * 3600e3);
 if (observedRows.length) check(late.includes('5 hours ago'), `five hours on it says hours (${late})`);
+const oneHour = spaceWeatherLine(parsed, { fetchedAt: readingMs + 3600e3, via: 'live', stale: false }, readingMs + 3600e3);
+if (observedRows.length) check(oneHour.includes('measured an hour ago') && !oneHour.includes('1 hours'), `one hour is "an hour ago" (${oneHour})`);
+const oneDay = spaceWeatherLine(parsed, { fetchedAt: readingMs + 50 * 3600e3, via: 'live', stale: false }, readingMs + 50 * 3600e3);
+if (observedRows.length) check(oneDay.includes('measured 2 days ago'), `fifty hours rounds to two days (${oneDay})`);
 // stale is said
 const staleLine = spaceWeatherLine(parsed, { fetchedAt: now, via: 'snapshot', stale: true }, now);
 check(staleLine.includes('older than NOAA promises') && staleLine.includes('from our copy'), 'a stale snapshot reading says both');
