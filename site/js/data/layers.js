@@ -229,6 +229,45 @@ const bySoonest = (a, b) => (a.meta.netMs ?? Infinity) - (b.meta.netMs ?? Infini
  * source entirely for the three things a browser cannot fetch.
  * @type {Array<Object>}
  */
+// The Milky Way's one record (spec 0028 step 6): its centre, 8.15 kpc away (Reid et al. 2019) in the
+// direction of Sagittarius A* (RA 266.405, Dec -28.936, J2000). A `static` record like a galaxy in
+// the deep-sky layer, with the model's honesty on its face: `drawsAs: 'variant'` + `departure` make
+// ui/cards.js print that the arms and bar are a model of measurements, not a photograph.
+const KPC_KM_MW = 30856775814913670; // one kiloparsec, not one parsec
+const LY_KM_MW = 9460730472580.8;
+function milkyWayRecords() {
+  const raDeg = 266.405, decDeg = -28.936, distKpc = 8.15;
+  const ra = raDeg * (Math.PI / 180), dec = decDeg * (Math.PI / 180);
+  const r = distKpc * KPC_KM_MW;
+  const ex = Math.cos(dec) * Math.cos(ra), ey = Math.cos(dec) * Math.sin(ra), ez = Math.sin(dec);
+  const e = 23.4392911 * (Math.PI / 180);
+  const pos = { x: ex * r, y: (ey * Math.cos(e) + ez * Math.sin(e)) * r, z: (-ey * Math.sin(e) + ez * Math.cos(e)) * r };
+  return [{
+    id: 'dso-milky-way',
+    name: 'The Milky Way',
+    klass: 'dso',
+    layer: 'galaxy',
+    propagator: 'static',
+    frame: 'sun-inertial',
+    pos,
+    cls: 'measured',
+    meta: {
+      kind: 'galaxy',
+      typeText: 'Barred spiral galaxy — the one we live in',
+      hubble: 'SBbc',
+      con: 'Sagittarius',
+      distLy: Math.round(distKpc * KPC_KM_MW / LY_KM_MW),
+      sizeLy: 87400,
+      aliases: ['Milky Way', 'our galaxy', 'the Galaxy', 'galactic centre', 'galactic center'],
+      why: 'Everything else on this map is inside it. The Sun sits 26 600 light-years from its centre, a little more than halfway out.',
+      drawsAs: 'variant',
+      drawnName: 'a point-cloud model of the Milky Way',
+      departure: 'the disc, bar and arms follow published measurements (Reid et al. 2019 for the arms and the distance to the centre); nobody has seen our galaxy from outside, so the picture is an illustration and the stars around you are the measured part',
+      distanceSource: 'Reid et al. 2019, ApJ 885:131 (R0 = 8.15 kpc)',
+    },
+  }];
+}
+
 export const LAYERS = [
   {
     // The worlds as a layer (spec 0028 step 0). Mirrors registry/layers.yaml `worlds`. No glyph
@@ -339,6 +378,32 @@ export const LAYERS = [
     card: 'dso',
     priority: 62,
     sentence: 'The Messier objects and the Magellanic Clouds, at their measured distances. The rest of the sky\'s deep-sky catalogue has no distances written down, so it is not drawn as places.',
+  },
+  {
+    // The Milky Way as a place (spec 0028 step 6). Mirrors registry/layers.yaml `galaxy`. One record --
+    // our galaxy, keyed to its centre 26 600 ly away, klass dso -- and one point cloud drawn by
+    // scene/galaxy.js (`draw: 'galaxy'`) from published measurements. The cloud is an ILLUSTRATION
+    // (registry/models.yaml galaxy-model); the record's drawing line and the card say so in words.
+    id: 'galaxy',
+    display: 'The Milky Way',
+    klass: 'dso',
+    source: 'bundled',
+    parse: null,
+    propagator: 'static',
+    frame: 'sun-inertial',
+    moments: { wonder: true, now: false, next: false },
+    defaultOn: true,
+    draw: 'galaxy',
+    noModel: true,
+    sample: () => milkyWayRecords(),
+    select: all,
+    budget: { maxItems: 4 },
+    colour: C.dso,
+    glyph: 'dso',
+    nearKm: 0,
+    card: 'dso',
+    priority: 63,
+    sentence: 'Our own galaxy, drawn as a model of its published measurements. The shape is an illustration; the stars around you are measured.',
   },
   {
     id: 'stations',

@@ -26,3 +26,10 @@ rules:
     from_km: 75000000000      # 500 au -- the same band as the rule above, the other way
     to_km: 750000000000       # 5 000 au
     why: "The 3D star layer replaces the sky sphere: one set of stars at a time, never both drawn over each other."
+
+  - id: the-galaxy-appears
+    what: galaxy-model
+    fade: in
+    from_km: 4730365236290400   # 500 light-years from the Sun: the nearest stars are behind you
+    to_km: 47303652362904000    # 5 000 light-years: the arm you live in is visible as an arm
+    why: "The Milky Way model is a shape to fly around, not a sky to look at: it comes in once the camera is far enough out to see a shape."

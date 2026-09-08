@@ -67,6 +67,19 @@ layers:
     select: {all: true}
     budget: {max_items: 2000}
 
+  # The Milky Way as a place (spec 0028 step 6): one record for the galaxy and an illustrative point
+  # cloud (models.yaml galaxy-model), drawn only from the ladder's rungs.
+  - id: galaxy
+    display: The Milky Way
+    moments: {wonder: on, now: off, next: off}
+    source: bundled
+    propagator: static
+    frame: sun-inertial
+    style: {kind: model, model: galaxy-model, glyph: dso, colour: dso, near_km: 0}
+    card: dso
+    select: {all: true}
+    budget: {max_items: 4}
+
   - id: stations
     display: Crewed stations
     moments: {wonder: on, now: on, next: off}
