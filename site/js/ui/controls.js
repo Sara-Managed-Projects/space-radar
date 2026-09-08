@@ -377,7 +377,7 @@ function buildLayers(ctx, state) {
   }
 
   for (const layer of layers) {
-    if (layer.enabled === false && layer.stage === 'off') continue;
+    if (layer.enabled === false) continue; // the registry switched it off (spec 0026 req 8)
     const row = el('li', 'sr-layer');
     const label = el('label', 'sr-layer__label');
     const box = document.createElement('input');
