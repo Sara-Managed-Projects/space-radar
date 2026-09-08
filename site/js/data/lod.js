@@ -21,5 +21,12 @@ export const LOD_RULES = [
     "fade": "in",
     "from_km": 75000000000,
     "to_km": 750000000000
+  },
+  {
+    "id": "the-galaxy-appears",
+    "what": "galaxy-model",
+    "fade": "in",
+    "from_km": 4730365236290400,
+    "to_km": 47303652362904000
   }
 ];

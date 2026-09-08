@@ -63,6 +63,10 @@ models:
 # NOT byte-verified: the source site refuses scripted downloads, so provenance rests on exact
 # filename and dimension matches against their published 2k pack. `2k_uranus.jpg` and
 # `2k_neptune.jpg` carry no embedded metadata at all and are the least certain of the fourteen.
+  # The Milky Way point cloud (spec 0028 step 6). `kind: illustrative`: built from published numbers by
+  # scripts/build-galaxy.py, and a shape nobody has photographed. The card for the galaxy says so.
+  - {id: galaxy-model, file: site/data/galaxy.bin, kind: illustrative, source: "scripts/build-galaxy.py from Reid et al. 2019 (ApJ 885:131) Table 2 and R0; Wikipedia 'Milky Way' disc size; Wikipedia 'Galactic Center' bar range", licence: "MIT (this project); the measurements are facts", budget_tris: 0, for: {layer: galaxy}}
+
 textures:
   - {id: earth-day,     file: 2k_earth_daymap.jpg,        source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
   - {id: earth-night,   file: 2k_earth_nightmap.jpg,      source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}

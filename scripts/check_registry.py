@@ -527,7 +527,7 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
 
 # The hooks scene/lod.js's caller implements. A rule naming anything else is refused: a rule
 # nothing reads is a rule that silently does nothing, which is worse than no rule.
-LOD_HOOKS = {"sky-panorama", "stars-3d"}
+LOD_HOOKS = {"sky-panorama", "stars-3d", "galaxy-model"}
 
 
 def check_stages(world_ids: set) -> list:

@@ -32,6 +32,7 @@ import { createTripFrame } from './ui/tripframe.js';
 import { rankPick, rankAll } from './scene/pickrank.js';
 import { createLod } from './scene/lod.js';
 import { createStars3d } from './scene/stars3d.js';
+import { createGalaxy } from './scene/galaxy.js';
 import { isLadderStage } from './scene/stage.js';
 import { SUN_INERTIAL, STAGES } from './scene/stage.js';
 import { showChooser, hideChooser } from './ui/chooser.js';
@@ -81,11 +82,14 @@ export async function boot({ setStatus } = {}) {
   // The scale ladder's level of detail (spec 0028 req 10): a table in registry/lod.yaml, hooks here.
   const stars3d = createStars3d(scene);
   ctx.stars3d = stars3d;
+  const galaxy = createGalaxy(scene);
+  ctx.galaxy = galaxy;
   const lod = createLod({
     'sky-panorama': (k) => starfield.setSkyOpacity && starfield.setSkyOpacity(k),
     'stars-3d': (k) => stars3d.setOpacity(k),
+    'galaxy-model': (k) => galaxy.setOpacity(k),
   });
-  window.addEventListener('sr:stage', () => stars3d.rebuild());
+  window.addEventListener('sr:stage', () => { stars3d.rebuild(); galaxy.rebuild(); });
   ctx.lod = lod;
   ctx.skyView = createSkyView(ctx);
   const heroes = createHeroes(scene, ctx);
@@ -250,6 +254,7 @@ export async function boot({ setStatus } = {}) {
     if (gl) gl.setVisible(on);
     if (id === 'worlds') worlds.setVisible(on);
     if (id === 'stars' && ctx.stars3d) ctx.stars3d.setVisible(on);
+    if (id === 'galaxy' && ctx.galaxy) ctx.galaxy.setVisible(on);
   };
 
   /**
@@ -341,6 +346,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     if (heroes) heroes.update(t);
     if (starfield && starfield.update) starfield.update(ctx.camera);
     if (ctx.stars3d) ctx.stars3d.update(ctx.camera, ctx.renderer);
+    if (ctx.galaxy) ctx.galaxy.update(ctx.camera, ctx.renderer);
     if (ctx.skyView.active) ctx.skyView.update(t);
     render();
   }
@@ -360,7 +366,7 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
   for (const layer of ordered) {
     // A layer another module already draws (the worlds' discs) gets no glyph layer: two marks for
     // one planet would be two places to tap and one of them wrong.
-    if (layer.draw === 'worlds') continue;
+    if (layer.draw === 'worlds' || layer.draw === 'galaxy') continue;
     const gl = createGlyphLayer(scene, layer);
     gl.setRecords([]);
     // Hidden until its records arrive; one() then sets the real visibility. This loop runs

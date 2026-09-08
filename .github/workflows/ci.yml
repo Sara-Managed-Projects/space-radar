@@ -99,3 +99,5 @@ jobs:
         run: node tests/test_exoplanets.mjs
       - name: deep-sky objects sit at sourced distances (spec 0028 step 5)
         run: node tests/test_dso.mjs
+      - name: the Milky Way model is a model, in the right place (spec 0028 step 6)
+        run: node tests/test_galaxy.mjs
