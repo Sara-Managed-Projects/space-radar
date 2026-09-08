@@ -16,6 +16,7 @@ import { createStarfield } from './scene/starfield.js';
 import { createGlyphLayer } from './scene/glyphs.js';
 import { createHeroes } from './scene/heroes.js';
 import { createCameraRig } from './scene/camera.js';
+import { readMoment, writeMoment } from './ui/urlstate.js';
 import { LAYERS, loadLayer } from './data/layers.js';
 import * as sources from './data/sources.js';
 import { createSkyView } from './sky/skyview.js';
@@ -203,7 +204,7 @@ export async function boot({ setStatus } = {}) {
     for (const [id, gl] of glyphLayers) gl.setVisible(isLayerOn(id));
     if (moment === 'now' && observer) ctx.skyView.enter(observer);
     else if (ctx.skyView.active) ctx.skyView.exit();
-    if (!silent) history.replaceState(null, '', `#${moment}`);
+    if (!silent) writeMoment(moment);
     window.dispatchEvent(new CustomEvent('sr:moment', { detail: moment }));
   }
 
@@ -262,14 +263,45 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
   // Cheapest and most interesting first: the station is fifteen objects and it is what people
   // came for. The eleven-thousand-object catalogue is last and off by default.
   const ordered = [...LAYERS].sort((a, b) => (a.priority || 50) - (b.priority || 50));
+
+  // The glyph layers are created up front, in priority order, so the scene's draw order is the
+  // priority order whatever order the network answers in. Each one starts empty and fills when
+  // its records arrive.
   for (const layer of ordered) {
+    const gl = createGlyphLayer(scene, layer);
+    gl.setRecords([]);
+    // Hidden until its records arrive; one() then sets the real visibility. This loop runs
+    // before the first await, and ctx.isLayerOn is attached to ctx after this function is
+    // called -- MEASURED: calling it here threw and no layer ever loaded.
+    gl.setVisible(false);
+    glyphLayers.set(layer.id, gl);
+  }
+
+  // Two lanes. MEASURED 2026-09-08: one-at-a-time, the map spent 150 s on two CelesTrak files
+  // while the launches layer's snapshot sat ready on our own origin; a three-slot pool alone did
+  // not help, because the three highest-priority layers are all CelesTrak-backed and all three
+  // slots hung together. So: a layer that is bundled, or whose every source has a usable snapshot
+  // in the harvester's manifest, loads in the LOCAL lane at once -- same origin, cheap, no host to
+  // wait for. Everything else goes through a small UPSTREAM pool, where priority still decides who
+  // starts first and a slow host delays only its own layer. sources.js caps any one live fetch at
+  // 20 s besides, so "slow" is bounded.
+  const idsOf = (l) => (Array.isArray(l.sources) ? l.sources : l.source ? [l.source] : []);
+  const local = [];
+  const upstream = [];
+  for (const layer of ordered) {
+    const srcs = idsOf(layer);
+    // One cached manifest read behind these, not a request per layer.
+    const snaps = srcs.length ? await Promise.all(srcs.map((id) => sources.snapshotAvailable(id))) : [];
+    (srcs.length === 0 || snaps.every(Boolean) ? local : upstream).push(layer);
+  }
+
+  async function one(layer) {
+    const gl = glyphLayers.get(layer.id);
     try {
       const records = await loadLayer(layer, clock.now());
       layerRecords.set(layer.id, records || []);
-      const gl = createGlyphLayer(scene, layer);
       gl.setRecords(records || []);
       gl.setVisible(ctx.isLayerOn(layer.id));
-      glyphLayers.set(layer.id, gl);
       window.dispatchEvent(new CustomEvent('sr:layer', { detail: { id: layer.id, count: (records || []).length } }));
     } catch (err) {
       // A layer that fails is a layer that is absent, never a page that is broken.
@@ -278,13 +310,20 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
       window.dispatchEvent(new CustomEvent('sr:layer', { detail: { id: layer.id, count: 0, error: String(err) } }));
     }
   }
+  function pool(list, size) {
+    let next = 0;
+    const worker = async () => {
+      while (next < list.length) await one(list[next++]);
+    };
+    return Promise.all(Array.from({ length: Math.min(size, list.length) }, worker));
+  }
+  await Promise.all([pool(local, 6), pool(upstream, 3)]);
 }
 
 // --- small helpers -----------------------------------------------------------
 
 function readMomentFromHash() {
-  const h = (location.hash || '').replace('#', '').split('/')[0];
-  return MOMENTS.includes(h) ? h : 'wonder';
+  return readMoment(MOMENTS) || 'wonder';
 }
 
 function revealUI() {
