@@ -55,9 +55,11 @@ STAGE="$(mktemp -d "${TMPDIR:-/tmp}/harvester-pkg.XXXXXX")"
 trap 'rm -rf "$STAGE"' EXIT
 
 # 1. the package -- the real one, or the placeholder
-if [ -d "$ROOT/harvest" ]; then
-  [ -f "$ROOT/harvest/lambda_handler.py" ] \
-    || die "harvest/ exists but has no lambda_handler.py; the Lambda entry is harvest.lambda_handler.handler"
+# Three states, told apart by what harvest/ holds. The ENTRY POINT present: the real package.
+# Python present but no entry point: a broken package, and packaging refuses rather than ship a
+# Lambda that cannot start. No Python at all: only registry data (harvest/lists/, harvest/queries/,
+# which the generator reads and which exist in a tree with no package), so the placeholder ships.
+if [ -f "$ROOT/harvest/lambda_handler.py" ]; then
   echo "==> harvest/ found: packaging the real harvester"
   mkdir -p "$STAGE/harvest"
   # Copy the sources, not the residue: bytecode caches differ per machine and would defeat the
@@ -72,17 +74,22 @@ if [ -d "$ROOT/harvest" ]; then
   if [ -f "$ROOT/harvest/sources.json" ]; then
     echo "    NOTE: harvest/sources.json is checked in; the zip gets a fresh one from the registry."
   fi
+elif [ -d "$ROOT/harvest" ] && find "$ROOT/harvest" -name '*.py' -not -path '*/__pycache__/*' | grep -q .; then
+  die "harvest/ has Python in it but no lambda_handler.py; the Lambda entry is harvest.lambda_handler.handler"
 else
-  echo "==> harvest/ is NOT in the tree: packaging the PLACEHOLDER handler"
+  echo "==> no harvest package in the tree: packaging the PLACEHOLDER handler"
   echo "    It writes the heartbeat index.json (run.placeholder=true, no snapshots) and fetches nothing."
   mkdir -p "$STAGE/harvest"
   : > "$STAGE/harvest/__init__.py"
   cp "$ROOT/scripts/_harvester_placeholder.py" "$STAGE/harvest/lambda_handler.py"
 fi
 
-# 2. the registry mirror
-python3 "$ROOT/scripts/gen_sources_json.py" --out "$STAGE/harvest/sources.json" \
-  | sed "s#$STAGE/#    #"
+# 2. the registry mirror. The generator writes the CHECKED-IN mirror at harvest/sources.json (so CI
+#    can --check it, exactly as the JS mirrors are checked); packaging refreshes it and copies it in.
+#    In a tree without the package the file lands beside harvest/lists/, which the generator reads.
+mkdir -p "$ROOT/harvest"
+python3 "$ROOT/scripts/gen_sources_json.py" | sed 's/^/    /'
+cp "$ROOT/harvest/sources.json" "$STAGE/harvest/sources.json"
 
 # 3. the zip
 FILES=$(cd "$STAGE" && find . -type f | sed 's#^\./##' | LC_ALL=C sort)
