@@ -111,3 +111,5 @@ jobs:
         run: node tests/test_ladder_ui.mjs
       - name: labels name the selection, its train and the nearest notable things, never the catalogue (spec 0026 req 5)
         run: node tests/test_labels.mjs
+      - name: the Next list is built from records already held, nearest in time first (spec 0026 req 6)
+        run: node tests/test_next.mjs
