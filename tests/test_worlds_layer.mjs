@@ -72,6 +72,8 @@ check(pickWorldDisc([], 1, 1) === null, 'no discs, no pick');
   const vp = { w: 800, h: 600 };
   check(worlds.pick(0, 0, camera, vp)?.id === 'earth', 'a tap dead centre on Earth picks Earth');
   check(worlds.pick(0.95, 0.95, camera, vp) === null, 'a tap in the corner, off every disc, picks nothing');
+  const all = worlds.pickAll(0, 0, camera, vp);
+  check(all.length >= 1 && all[0].record.id === 'earth' && all[0].edge === 0 && all[0].r > 100, `pickAll at the centre lists Earth first with the finger on it (${JSON.stringify(all.map((c) => [c.record.id, Math.round(c.edge), Math.round(c.r)]))})`);
   check(worlds.drawnPositionOf('earth') && worlds.drawnPositionOf('earth').length() === 0, 'the stage world is drawn at the origin');
   check(Math.abs(worlds.drawnRadiusUnits('earth') - 6378.137 / 1000) < 0.01 || Math.abs(worlds.drawnRadiusUnits('earth') - 6.371) < 0.01, `Earth's drawn radius is its radius in units (${worlds.drawnRadiusUnits('earth')})`);
   worlds.setVisible(false);

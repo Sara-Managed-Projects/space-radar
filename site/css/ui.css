@@ -1865,3 +1865,60 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
 .sr-tonight__row:hover { border-color: var(--sr-ember); }
 .sr-tonight__note { margin: 4px 0 0; font-size: 12px; color: var(--sr-text-dim); }
 .sr-tonight__note[hidden] { display: none; }
+
+/* A world's note about how it is drawn (spec 0028 step 0) ------------------------------- */
+
+.sr-card__note {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--sr-text-dim);
+}
+
+/* The long-press chooser: what is under the finger (spec 0028 step 1) ------------------- */
+
+.sr-pick {
+  position: fixed;
+  z-index: calc(var(--sr-z-card) + 1);
+  min-width: 220px;
+  max-width: min(320px, calc(100vw - 16px));
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--sr-raise);
+  border: 1px solid var(--sr-line-strong);
+  border-radius: var(--sr-radius-sm);
+  box-shadow: 0 12px 32px rgba(5, 7, 10, 0.55);
+}
+
+.sr-pick[hidden] { display: none; }
+
+.sr-pick__btn {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 36px;
+  padding: 0 8px;
+  font: inherit;
+  color: var(--sr-text);
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: var(--sr-radius-sm);
+  cursor: pointer;
+}
+
+.sr-pick__btn:hover,
+.sr-pick__btn:focus-visible { background: rgba(255, 255, 255, 0.06); outline: none; }
+
+.sr-pick__name { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.sr-pick__where { flex: 0 0 auto; font-size: 11px; color: var(--sr-text-dim); }
+
+.sr-pick__hint {
+  padding: 6px 8px 2px;
+  font-size: 11px;
+  color: var(--sr-text-dim);
+}

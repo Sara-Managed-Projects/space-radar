@@ -475,6 +475,37 @@ export function createWorlds(scene, opts = {}) {
    * turn, so a satellite drawn over a planet still wins -- a glyph has no radius to subtract and
    * is always the smaller thing.
    */
+  /**
+   * Every disc within the forgiveness rule as {record, edge, r} for scene/pickrank.js; pick() is
+   * the one-winner form.
+   */
+  function pickAll(ndcX, ndcY, camera, viewport, forgivePx = 24) {
+    if (!camera || !viewport || !(viewport.w > 0) || !(viewport.h > 0)) return [];
+    camera.updateMatrixWorld();
+    camera.getWorldPosition(_camPos);
+    const halfW = viewport.w * 0.5;
+    const halfH = viewport.h * 0.5;
+    const tanHalfFov = Math.tan(((camera.fov || 45) * Math.PI) / 360);
+    const tapX = (ndcX + 1) * halfW;
+    const tapY = (1 - ndcY) * halfH;
+    const records = worldRecords();
+    const out = [];
+    for (const w of WORLDS) {
+      const mesh = meshes.get(w.id);
+      if (!mesh || !mesh.visible) continue;
+      const dist = mesh.position.distanceTo(_camPos);
+      if (!(dist > 0)) continue;
+      _proj.copy(mesh.position).project(camera);
+      if (_proj.z > 1) continue;
+      const r = (mesh.scale.x / dist / tanHalfFov) * halfH;
+      const edge = Math.max(0, Math.hypot((_proj.x + 1) * halfW - tapX, (1 - _proj.y) * halfH - tapY) - r);
+      if (edge > forgivePx) continue;
+      const record = records.find((x) => x.id === w.id);
+      if (record) out.push({ record, edge, r });
+    }
+    return out.sort((p, q) => (p.r - q.r) || (p.edge - q.edge));
+  }
+
   function pick(ndcX, ndcY, camera, viewport) {
     if (!camera || !viewport || !(viewport.w > 0) || !(viewport.h > 0)) return null;
     camera.updateMatrixWorld();
@@ -567,6 +598,7 @@ export function createWorlds(scene, opts = {}) {
     drawnPositionOf,
     drawnRadiusUnits,
     pick,
+    pickAll,
     dispose,
     root,
     light: sunLight,

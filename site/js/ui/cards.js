@@ -1243,7 +1243,7 @@ function render(record, ctx, opts = {}) {
     const vs = ctx && ctx.worlds && typeof ctx.worlds.viewScale === 'function' ? ctx.worlds.viewScale(record.id) : null;
     if (vs && vs.exaggerated && vs.note) body.appendChild(el('p', 'sr-card__note', vs.note));
     const isCentre = ctx && ctx.stage && ctx.stage.worldId === record.id;
-    const centre = el('button', 'sr-card__action', isCentre
+    const centre = el('button', 'sr-btn', isCentre
       ? COPY.card.isCentre
       : t(COPY.card.makeCentre, { name: displayName(record) }));
     centre.type = 'button';
@@ -1251,7 +1251,9 @@ function render(record, ctx, opts = {}) {
     centre.addEventListener('click', () => {
       if (ctx && typeof ctx.setStage === 'function' && ctx.setStage(record.id)) render(record, ctx, opts);
     });
-    body.appendChild(centre);
+    const actions = el('div', 'sr-card__actions');
+    actions.appendChild(centre);
+    body.appendChild(actions);
   }
 
   // 3. comparison chips, at most three
