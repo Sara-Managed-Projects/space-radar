@@ -129,3 +129,5 @@ jobs:
         run: node tests/test_shadow.mjs
       - name: the trajectory chart samples the record's own path and breaks at the date line (spec 0026 req 14)
         run: node tests/test_trajectory.mjs
+      - name: the orbit line is one closed lap from the same elements, and only for things that lap (spec 0026 req 13)
+        run: node tests/test_orbitline.mjs

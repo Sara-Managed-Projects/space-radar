@@ -37,6 +37,7 @@ import { isLadderStage } from './scene/stage.js';
 import { SUN_INERTIAL, STAGES } from './scene/stage.js';
 import { showChooser, hideChooser } from './ui/chooser.js';
 import { createLabels } from './ui/labels.js';
+import { createOrbitLine } from './scene/orbitline.js';
 import { keyById, bucketOf } from './data/colorkeyrules.js';
 
 const MOMENTS = ['wonder', 'now', 'next'];
@@ -123,6 +124,9 @@ export async function boot({ setStatus } = {}) {
   // Names over the scene (spec 0026 req 5): the selection, its train, the nearest notable things.
   const labels = createLabels(ctx, document.getElementById('labels'));
   ctx.labels = labels;
+  // One lap of the selection's orbit (spec 0026 req 13), from the same elements as the dot.
+  const orbitLine = createOrbitLine(scene, ctx);
+  ctx.orbitLine = orbitLine;
   setMoment(moment, { silent: true });
 
   // Data arrives in the background, layer by layer, slowest last. Nothing here is awaited by the
@@ -205,6 +209,7 @@ export async function boot({ setStatus } = {}) {
     selected = record;
     for (const gl of glyphLayers.values()) if (gl.setSelected) gl.setSelected(record ? record.id : null);
     showCard(record, ctx);
+    if (ctx.orbitLine) ctx.orbitLine.setRecord(record);
     const pos = positionOfRecord(record);
     if (pos && opts.fly !== false) cameraRig.flyTo({ targetScene: pos, distance: arrivalDistance(record), ms: 900 });
     cameraRig.follow(() => positionOfRecord(record));
@@ -213,6 +218,7 @@ export async function boot({ setStatus } = {}) {
 
   function deselect() {
     selected = null;
+    if (ctx.orbitLine) ctx.orbitLine.setRecord(null);
     for (const gl of glyphLayers.values()) if (gl.setSelected) gl.setSelected(null);
     hideCard();
     cameraRig.stopFollow();
@@ -376,6 +382,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
 
     // Labels ride the same tick as the glyphs they sit over, so the two never drift apart.
     if (ctx.labels && sinceLayerUpdate === 0) ctx.labels.update(t);
+    if (ctx.orbitLine) ctx.orbitLine.update(t);
 
     // The ladder's level of detail, on the same tick: how far the camera is from the Sun, in km.
     if (lod && sinceLayerUpdate === 0) {

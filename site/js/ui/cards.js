@@ -40,6 +40,7 @@ import {
 import { propagate } from '../propagate/index.js';
 import { realModelFor } from '../scene/realmodels.js';
 import { sunlitState } from '../scene/shadow.js';
+import { periodMsOf } from '../scene/orbitline.js';
 import {
   gmst,
   eciToEcef,
@@ -1217,6 +1218,13 @@ function derivedDrawingLine(record, T) {
   return shape ? t(T.objectFamily, { name: shape }) : null;
 }
 
+/** What the line under the selected dot is, or null when the thing does not lap. Exported for the test. */
+export function orbitLineLine(record) {
+  const periodMs = periodMsOf(record);
+  if (!periodMs) return null;
+  return periodMs > 365.25 * 86400e3 ? COPY.drawing.orbitLineYear : COPY.drawing.orbitLine;
+}
+
 export function drawingLine(record) {
   const md = meta(record);
   const drawsAs = pick(md, 'drawsAs');
@@ -1488,6 +1496,9 @@ function render(record, ctx, opts = {}) {
   // neither the shape nor the path is a measurement of this particular flight.
   const drawn = drawingLine(record);
   if (drawn) foot.appendChild(el('p', 'sr-card__drawn', drawn));
+  // 7c. the orbit line, when there is one (scene/orbitline.js draws it for the selection)
+  const lap = orbitLineLine(record);
+  if (lap) foot.appendChild(el('p', 'sr-card__drawn', lap));
 
   // 8. the source line
   const src = sourceRow(record, ctx);
