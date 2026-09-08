@@ -135,3 +135,5 @@ jobs:
         run: node tests/test_orbitline.mjs
       - name: a not-yet-catalogued object is inferred, dimmer, and says so (spec 0026 req 15)
         run: node tests/test_provisional.mjs
+      - name: the space-weather line says the number, the word, the age and the source (spec 0026 req 16)
+        run: node tests/test_spaceweather.mjs

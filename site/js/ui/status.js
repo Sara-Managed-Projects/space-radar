@@ -24,6 +24,7 @@
 // says what the manifest said: when it was generated and how many sources it covers.
 
 import { COPY, t, fmt, ageInWords } from '../copy/en.js';
+import { createSpaceWeather } from './spaceweather.js';
 
 const HOST_ID = 'sr-status';
 const REFRESH_MS = 5000;
@@ -315,6 +316,8 @@ export function createStatus(ctx) {
   node.appendChild(el('p', 'sr-status__intro', COPY.status.intro));
   const harvest = el('p', 'sr-status__harvest sr-num');
   node.appendChild(harvest);
+  // One line of space weather, measured just now (spec 0026 req 16), before the source list.
+  createSpaceWeather(ctx, node);
 
   const sourceList = el('ul', 'sr-status__sources');
   node.appendChild(sourceList);
