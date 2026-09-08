@@ -103,12 +103,18 @@ export const REAL_MODELS = {
     'noaa 15': { file: 'poes.glb', colour: 'satellite', name: 'NOAA 15', klass: ['satellite'] },
     'noaa 18': { file: 'poes.glb', colour: 'satellite', name: 'NOAA 18', klass: ['satellite'] },
     'noaa 19': { file: 'poes.glb', colour: 'satellite', name: 'NOAA 19', klass: ['satellite'] },
-    // A visiting vehicle's catalogue number changes every flight, so it is matched by name. These
+    // A visiting vehicle's catalogue number changes every flight, so it is matched by name. NOTE the
+    // klass: the stations layer forces none, and parsers.js classify() makes a Soyuz, Progress or
+    // Cygnus klass `satellite` (only ISS/CSS names and six ids are `station`), so both are allowed
+    // and debris is not. These
     // rows carry `build:` instead of `file:`: no free model with a licence exists for a modern
     // Soyuz or any Progress (spec 0027 hunt, 2026-09-08), so the shape is procedural, drawn at
     // once by scene/models.js rather than fetched. `generic: true` because it is the family hull,
     // and the card says so.
     soyuz: { build: 'soyuz', colour: 'station', name: 'a Soyuz spacecraft', klass: ['station', 'satellite'], generic: true },
+    // Cygnus: the round UltraFlex fans are the recognition; nothing free exists (spec 0027), so
+    // procedural. Klass-gated so the Cygnus Loop and anything else named Cygnus stay untouched.
+    cygnus: { build: 'cygnus', colour: 'station', name: 'a Cygnus cargo ship', klass: ['station', 'satellite'], generic: true },
     progress: { build: 'progress', colour: 'station', name: 'a Progress cargo ship', klass: ['station', 'satellite'], generic: true },
     bennu: { file: 'asteroid-bennu.glb', colour: 'asteroid', name: '101955 Bennu', klass: ['asteroid'] },
     tdrs: { file: 'tdrs.glb', colour: 'satellite', name: 'Tracking and Data Relay Satellite', klass: ['satellite'] },

@@ -420,6 +420,47 @@ function buildSoyuzFamily(variant) {
   return g;
 }
 
+// --------------------------------------------------------------------------------------- cygnus
+
+/**
+ * Northrop Grumman's Cygnus, as a family shape: a stubby pressurised drum with a boxy service
+ * module behind it and two ROUND solar wings -- the UltraFlex fans that nothing else at the
+ * station has, which is the whole recognition. Published dimensions (Northrop Grumman fact
+ * sheet, enhanced Cygnus): pressurised cargo module 3.07 m across and 6.4 m long including the
+ * service module, UltraFlex arrays 3.7 m in diameter each; about 11.5 m tip to tip. No free model
+ * with a licence exists (spec 0027 hunt), so the card says "the kind of thing, not this exact one".
+ */
+function buildCygnus() {
+  const g = new THREE.Group();
+  g.userData.realSizeM = 11.5; // across the wings, the longest dimension
+  const S = 1 / 11.5;
+  const white = '#E9EDF2'; // the cargo module's blankets
+  const body = 'body';
+  const drum = cyl(1.535 * S, 1.535 * S, 4.6 * S, 18, white, body, 'cargo');
+  drum.rotation.x = Math.PI / 2;
+  drum.position.z = 0.9 * S;
+  g.add(drum);
+  const svc = box(2.6 * S, 2.6 * S, 1.8 * S, '#B9BFC7', 'foil', 'service');
+  svc.position.z = -2.3 * S;
+  g.add(svc);
+  const hatch = cyl(0.5 * S, 0.5 * S, 0.3 * S, 12, METAL, body, 'hatch');
+  hatch.rotation.x = Math.PI / 2;
+  hatch.position.z = 3.35 * S;
+  g.add(hatch);
+  // The fans: two thin discs on short booms off the service module, facing +Y like every wing here.
+  for (const side of [-1, 1]) {
+    const boom = cyl(0.08 * S, 0.08 * S, 1.6 * S, 6, METAL, body, 'boom');
+    boom.rotation.z = Math.PI / 2;
+    boom.position.set(side * 2.1 * S, 0, -2.3 * S);
+    g.add(boom);
+    const fan = new THREE.Mesh(new THREE.CylinderGeometry(1.85 * S, 1.85 * S, 0.04 * S, 24), toonMaterial('#1F3A5F', 'panel'));
+    fan.name = side > 0 ? 'wing+' : 'wing-';
+    fan.position.set(side * 4.75 * S, 0, -2.3 * S);
+    g.add(fan);
+  }
+  return g;
+}
+
 // -------------------------------------------------------------------------------------- rocket
 //
 // A rocket is not a shape in this file any more: it is a row in registry/rockets.yaml, mirrored
@@ -1713,7 +1754,7 @@ const ODDITY_BUILDERS = {
 
 // One row per model. Adding a shape is a row here, not a change to modelFor().
 const BUILDERS = {
-  station: { default: buildStation, iss: buildStation, soyuz: buildSoyuzFamily, progress: buildSoyuzFamily },
+  station: { default: buildStation, iss: buildStation, soyuz: buildSoyuzFamily, progress: buildSoyuzFamily, cygnus: buildCygnus },
   satellite: {
     default: buildSatelliteComms,
     comms: buildSatelliteComms,
