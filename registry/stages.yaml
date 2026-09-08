@@ -1,0 +1,36 @@
+# The scale ladder (spec 0028 requirement 1): stages that are a SCALE rather than a world.
+#
+# A stage decides one thing -- how many kilometres one scene unit is -- and where the floating
+# origin sits (spec 0005). Every world in worlds.yaml is a stage already (unit_km on its row). The
+# rows here are the rungs beyond the Solar System: centred on the Sun, one unit each, in the
+# heliocentric ecliptic frame every asteroid and probe already uses. Nothing in site/js/ names
+# these ids; scene/stage.js's STAGES table mirrors this file and check_registry.py refuses drift.
+#
+# unit_km   what one unit is. float32 holds ~7 digits, so a stage places anything from 1e-3 to
+#           1e7 units to better than a pixel; each rung is chosen so its catalogue sits in that band.
+# frame     the axes and origin positions are expressed in before the origin is subtracted.
+# centre    the world at the origin. `sun` for all three, because the Sun is where we measure from.
+# reaches   prose, for the card and the breadcrumb: what is drawable at this rung.
+version: 1
+
+stages:
+  - id: stellar
+    display: The stellar neighbourhood
+    unit_km: 9460730472580.8     # one light-year, exactly (IAU: 9 460 730 472 580 800 m)
+    frame: sun-inertial
+    centre: sun
+    reaches: "Every star with a measured distance -- the Sun is a point, the planets are gone."
+
+  - id: galaxy
+    display: The Milky Way
+    unit_km: 30856775814913670   # one kiloparsec (IAU: 3.085 677 581 491 367e19 m)
+    frame: sun-inertial
+    centre: sun
+    reaches: "The galaxy's disc, bar and arms; the Sun is 8.2 of these from the centre."
+
+  - id: local-group
+    display: The Local Group
+    unit_km: 9460730472580800000 # one million light-years
+    frame: sun-inertial
+    centre: sun
+    reaches: "Andromeda at 2.5, Triangulum at 2.7, and the edge of what we show."

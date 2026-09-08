@@ -32,7 +32,7 @@
 
 import * as THREE from '../../vendor/three.module.min.js';
 import * as Astronomy from '../../vendor/astronomy.js';
-import { stage, SUN_INERTIAL, EARTH_INERTIAL } from './stage.js';
+import { stage, SUN_INERTIAL, EARTH_INERTIAL, isLadderStage } from './stage.js';
 import { j2000ToTeme, rotateDir, stageFrame } from '../propagate/frames.js';
 import { createEarth, updateEarth } from './earth.js';
 
@@ -410,7 +410,7 @@ export function createWorlds(scene, opts = {}) {
         // last position it happened to have is exactly the silent lie this refusal exists for.
         if (!stage.toSceneInto(p, p.frame, _pos, tMs)) { mesh.visible = false; continue; }
         const trueDistKm = _pos.length() * stage.unitKm;
-        if (w.view === VIEW_COMPRESSED && !sameSystem(w.id, stage.worldId) && trueDistKm > 0) {
+        if (w.view === VIEW_COMPRESSED && compressesFrom(stage.worldId) && !sameSystem(w.id, stage.worldId) && trueDistKm > 0) {
           const drawnKm = drawnDistanceKm(trueDistKm);
           const shrink = drawnKm / trueDistKm;
           const drawnRadiusKm = Math.max(
@@ -701,6 +701,17 @@ export function positionOf(id, tMs) {
 export function drawnDistanceKm(trueDistanceKm) {
   const { DISTANCE_AT_REF_KM, REF_KM, DISTANCE_EXPONENT } = PLANET_VIEW;
   return DISTANCE_AT_REF_KM * Math.pow(trueDistanceKm / REF_KM, DISTANCE_EXPONENT);
+}
+
+/**
+ * Is the view from this stage one that squeezes the planets? From a planet or a moon, yes: the
+ * others are sub-pixel and the compression is what makes them findable (the block at the top of
+ * this file). From the Sun stage, and from every rung of the ladder (stage.js `ladder`), no: those
+ * stages exist to show the true layout, and a squeezed Neptune there would be a lie with no reason.
+ */
+export function compressesFrom(stageId) {
+  if (stageId === 'sun' || isLadderStage(stageId)) return false;
+  return true;
 }
 
 function sameSystem(a, b) {

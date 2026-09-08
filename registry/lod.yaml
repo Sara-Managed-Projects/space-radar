@@ -1,0 +1,21 @@
+# Level of detail as a TABLE, not a branch (spec 0028 requirement 10).
+#
+# Each rule fades one thing in or out as the camera moves away from the Sun. `from_km` and `to_km`
+# are the camera's distance from the Sun; between them the rule eases with a smoothstep; outside
+# them it is fully one way or the other. A rule that fades OUT is at full strength inside `from_km`
+# and gone past `to_km`; IN is the reverse. `what` names a hook the scene exposes -- the list of
+# hooks is in scripts/check_registry.py and a rule naming an unknown one is refused, because a rule
+# nothing reads is a rule that silently does nothing.
+#
+# The first rule is the reason the file exists: the Milky Way panorama and the naked-eye star
+# sphere are a picture of the sky FROM HERE. From a light-year out they are simply wrong, so they
+# go before anything that far away is ever drawn (spec 0028 requirement 8).
+version: 1
+
+rules:
+  - id: sky-from-here
+    what: sky-panorama
+    fade: out
+    from_km: 75000000000      # 500 au: past every planet, inside the heliopause
+    to_km: 750000000000       # 5 000 au: nothing of ours is out here
+    why: "The sky sphere is the view from inside the Solar System; from outside it, it is a lie."

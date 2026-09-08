@@ -269,6 +269,8 @@ export function createStarfield(scene, opts = {}) {
 
   const names = [];
   const state = { stars: null, lines: null, milkyway: null, errors: [] };
+  let gain = 1; // setGain's own value; setSkyOpacity multiplies it rather than overwriting it
+  let skyOpacity = 1;
   let pixelRatio =
     opts.pixelRatio || (typeof window !== 'undefined' ? Math.min(2, window.devicePixelRatio || 1) : 1);
   let dprLocked = false; // true once setPixelRatio() is called by hand
@@ -288,6 +290,8 @@ export function createStarfield(scene, opts = {}) {
       depthWrite: false,
       depthTest: false,
       toneMapped: false,
+      transparent: true, // so the scale ladder can fade the picture out (scene/lod.js)
+      opacity: 1,
       color: new THREE.Color(0.42, 0.42, 0.46), // a whisper, not a wallpaper
     });
     const m = new THREE.Mesh(geo, mat);
@@ -489,9 +493,26 @@ export function createStarfield(scene, opts = {}) {
       starUniforms.uPixelRatio.value = pixelRatio;
       dprLocked = true;
     },
+    /**
+     * How much of the sky-from-here is drawn, 0..1 (spec 0028 req 8, driven by scene/lod.js). The
+     * panorama, the naked-eye stars and the constellation lines are a picture of the sky as seen
+     * from inside the Solar System; from a light-year out that picture is wrong, so it goes. At 0
+     * the three meshes are hidden outright rather than drawn invisible.
+     */
+    setSkyOpacity(k) {
+      const v = Math.min(1, Math.max(0, Number(k)));
+      skyOpacity = v;
+      const mw = state.milkyway;
+      if (mw && mw.material) { mw.material.opacity = v; mw.visible = v > 0; }
+      const ln = state.lines;
+      if (ln && ln.material) { ln.material.opacity = 0.25 * v; ln.visible = v > 0; }
+      starUniforms.uGain.value = Math.min(1, Math.max(0, gain * v));
+      if (state.stars) state.stars.visible = v > 0;
+    },
     /** Overall star brightness, 0..1 — the sky view dims them at dawn. */
     setGain(g) {
-      starUniforms.uGain.value = Math.min(1, Math.max(0, g));
+      gain = Math.min(1, Math.max(0, g));
+      starUniforms.uGain.value = Math.min(1, Math.max(0, gain * skyOpacity));
     },
     /**
      * Re-measure the equatorial -> scene rotation from stage.toScene(). update() does this by

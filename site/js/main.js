@@ -30,6 +30,8 @@ import { createGitHubMark } from './ui/github.js';
 import { createTrip } from './ui/trip.js';
 import { createTripFrame } from './ui/tripframe.js';
 import { rankPick, rankAll } from './scene/pickrank.js';
+import { createLod } from './scene/lod.js';
+import { SUN_INERTIAL, STAGES } from './scene/stage.js';
 import { showChooser, hideChooser } from './ui/chooser.js';
 
 const MOMENTS = ['wonder', 'now', 'next'];
@@ -74,6 +76,9 @@ export async function boot({ setStatus } = {}) {
     isSecure: window.isSecureContext === true,
   };
 
+  // The scale ladder's level of detail (spec 0028 req 10): a table in registry/lod.yaml, hooks here.
+  const lod = createLod({ 'sky-panorama': (k) => starfield.setSkyOpacity && starfield.setSkyOpacity(k) });
+  ctx.lod = lod;
   ctx.skyView = createSkyView(ctx);
   const heroes = createHeroes(scene, ctx);
   // Constructed BEFORE the layers load, because the trip counts which layers have landed by
@@ -109,7 +114,7 @@ export async function boot({ setStatus } = {}) {
     window.dispatchEvent(new CustomEvent('sr:layers-ready'));
   });
 
-  startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfield, heroes });
+  startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfield, heroes, lod });
   fadeBoot();
 
   // --- interaction ----------------------------------------------------------
@@ -231,16 +236,18 @@ export async function boot({ setStatus } = {}) {
    * ground. Offered from the world card; not yet done on every select, because the Now moment's
    * sky view still assumes Earth underfoot.
    */
-  ctx.setStage = (worldId) => {
-    const w = WORLDS.find((x) => x.id === worldId);
-    if (!w || stage.worldId === worldId) return false;
-    stage.setWorld(worldId);
+  ctx.setStage = (stageId) => {
+    if (!STAGES[stageId] || stage.worldId === stageId) return false;
+    // A world, or a rung of the ladder (stellar, galaxy, local-group: registry/stages.yaml). A rung
+    // has no ground, so the camera's clearance sphere is switched off and it arrives a few units out.
+    const w = WORLDS.find((x) => x.id === stageId);
+    stage.setWorld(stageId);
     worlds.update(clock.now());
-    const r = w.radiusKm / stage.unitKm;
+    const r = w ? w.radiusKm / stage.unitKm : 0;
     cameraRig.setWorldRadius(r);
     cameraRig.setWorldCentre({ x: 0, y: 0, z: 0 });
     cameraRig.stopFollow();
-    cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance: r * 3.5, ms: 0 });
+    cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance: w ? r * 3.5 : 5, ms: 0 });
     return true;
   };
 
@@ -274,7 +281,7 @@ export async function boot({ setStatus } = {}) {
 
 // --- the loop ----------------------------------------------------------------
 
-function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfield, heroes }) {
+function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfield, heroes, lod }) {
   let last = performance.now();
   let sinceLayerUpdate = 0;
 
@@ -300,6 +307,13 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       for (const [id, gl] of glyphLayers) {
         if (ctx.isLayerOn(id)) gl.update(t, ctx.camera);
       }
+    }
+
+    // The ladder's level of detail, on the same tick: how far the camera is from the Sun, in km.
+    if (lod && sinceLayerUpdate === 0) {
+      const camKm = stage.fromScene(ctx.camera.position);
+      const sunKm = stage.toStageFrame({ x: 0, y: 0, z: 0 }, SUN_INERTIAL, t);
+      if (camKm && sunKm) lod.apply(Math.hypot(camKm.x - sunKm.x, camKm.y - sunKm.y, camKm.z - sunKm.z));
     }
 
     if (heroes) heroes.update(t);

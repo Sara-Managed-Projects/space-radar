@@ -59,7 +59,19 @@ export const STAGES = {
   saturn: { frame: SUN_INERTIAL, unitKm: 10000 },
   uranus: { frame: SUN_INERTIAL, unitKm: 10000 },
   neptune: { frame: SUN_INERTIAL, unitKm: 10000 },
+  // The scale ladder (spec 0028 req 1). Mirrors registry/stages.yaml -- check_registry.py refuses
+  // drift. Not worlds: the origin is the Sun and one unit is a light-year, a kiloparsec, a
+  // million light-years. `ladder: true` is how worlds.js knows nothing is compressed from here.
+  stellar: { frame: SUN_INERTIAL, unitKm: 9460730472580.8, ladder: true },
+  galaxy: { frame: SUN_INERTIAL, unitKm: 30856775814913670, ladder: true },
+  'local-group': { frame: SUN_INERTIAL, unitKm: 9460730472580800000, ladder: true },
 };
+
+/** Is this stage a rung of the ladder rather than a world? */
+export function isLadderStage(id) {
+  const row = STAGES[id];
+  return !!(row && row.ladder);
+}
 
 // Scratch, so a per-frame loop over twenty thousand glyphs allocates nothing.
 const _a = { x: 0, y: 0, z: 0 };

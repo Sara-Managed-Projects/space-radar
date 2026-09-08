@@ -44,6 +44,8 @@ jobs:
       # library alone, so registry/sources.yaml is mirrored into harvest/sources.json -- with its
       # `list:` and `query:` files inlined -- and a stale mirror is a Lambda fetching last month's
       # list of spacecraft.
+      - name: The level-of-detail mirror matches the registry (spec 0028)
+        run: python3 scripts/gen_lod_js.py --check
       - name: The harvester's source mirror matches the registry
         run: python3 scripts/gen_sources_json.py --check
       # Every parser against what its source really sends (captured fixtures), the never-worse
@@ -89,3 +91,5 @@ jobs:
         run: node tests/test_worlds_layer.mjs
       - name: the smaller thing under the finger wins (spec 0028 step 1)
         run: node tests/test_pickrank.mjs
+      - name: the scale ladder's rungs and the sky-from-here fade (spec 0028 step 2)
+        run: node tests/test_ladder.mjs
