@@ -534,6 +534,7 @@ export const COPY = {
     leads: '{name} leads; this one is {position} in the line.',
     stillRaising: 'Still climbing as one line, about {alt} km up — the string of lights people report.',
     spreadOut: 'Spread out now, about {alt} km up; no longer a line in the sky.',
+  },
   // One line of space weather (spec 0026 req 16). Kp is NOAA's 0-9 planetary index; the words are
   // NOAA's own scale names made plain, and G1..G5 are its storm grades from Kp 5 upward.
   spaceWeather: {
