@@ -547,7 +547,18 @@ export function createSearch(ctx, host) {
       // pointerdown would blur the input before the click lands, closing the list under the
       // finger. Suppressing the default keeps focus where the ARIA state says it is.
       item.addEventListener('pointerdown', (event) => event.preventDefault());
+      // MEASURED 2026-09-08 on the mobile layout: a touch on an option BLURS the input (an <li> is not
+      // focusable), focusout closed the list, and the tap's click then landed on nothing -- "I cannot
+      // select the Milky Way from the dropdown on my phone" (Ivan). So the pick happens on pointerup,
+      // before any blur can close the list; the click below stays for keyboards and old browsers and
+      // is a no-op when pointerup already picked.
+      item.addEventListener('pointerup', (event) => {
+        if (event.button !== undefined && event.button !== 0) return;
+        state.pickedAt = performance.now();
+        pick(hit.record);
+      });
       item.addEventListener('click', () => {
+        if (state.pickedAt && performance.now() - state.pickedAt < 700) return; // pointerup did it
         setActive(i);
         pick(hit.record);
       });
@@ -712,7 +723,15 @@ export function createSearch(ctx, host) {
   const onFocusOut = (event) => {
     const next = event.relatedTarget;
     if (next && wrap.contains(next)) return;
-    setOpen(false);
+    // Not at once: on a touch screen the blur arrives BEFORE the tap that caused it has finished,
+    // and closing here removed the option from under the finger. A beat later, unless a pick
+    // happened in between, the list closes exactly as before.
+    window.clearTimeout(state.closeTimer);
+    state.closeTimer = window.setTimeout(() => {
+      if (state.pickedAt && performance.now() - state.pickedAt < 700) return;
+      if (document.activeElement && wrap.contains(document.activeElement)) return;
+      setOpen(false);
+    }, 150);
   };
 
   const onFocusIn = () => {
