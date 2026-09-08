@@ -33,6 +33,7 @@ models:
   - {id: station-tiangong-module, file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1000, for: {variant: tiangong-module}}
   - {id: station-shenzhou,   file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1400, for: {variant: shenzhou}}
   - {id: station-tianzhou,   file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1200, for: {variant: tianzhou}}
+  - {id: station-dragon,     file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1400, for: {variant: dragon}}
   - {id: station-generic,    file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 4000, for: {layer: stations}}
   - {id: debris-shard,       file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 200,  for: {layer: debris-notable}}
   # ONE row for every launch vehicle, because all fifty shapes are the same procedural source
