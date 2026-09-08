@@ -42,6 +42,9 @@ check(e2 && e2.build === 'progress' && e2.generic === true, `PROGRESS-MS -> buil
 check(e3 === null, 'Soyuz debris keeps the debris shape');
 check(e4 && e4.file === 'iss.glb', 'the ISS keeps its own file (the id route wins)');
 check(realModelFor(tianhe)?.build === 'tiangong', 'CSS (TIANHE) draws the whole station');
+{ const o = modelFor('satellite', 'iridium'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-iridium') && Math.abs(o.userData.realSizeM - 9.4) < 0.01, `iridium builds inside budget at 9.4 m (${tris(o)} tris)`); disposeModels(o); }
+check(realModelFor({ id: 'i1', name: 'IRIDIUM 167', klass: 'satellite', layer: 'visual', meta: { noradId: 14 } })?.build === 'iridium', 'an Iridium gets its shape');
+check(realModelFor({ id: 'i2', name: 'IRIDIUM 33 DEB', klass: 'debris', layer: 'active', meta: { noradId: 15 } }) === null, 'Iridium 33 debris keeps the debris shape');
 check(realModelFor({ id: 'd1', name: 'CREW DRAGON 12', klass: 'satellite', layer: 'stations', meta: { noradId: 11 } })?.build === 'dragon', 'a Crew Dragon gets its shape');
 check(realModelFor({ id: 'd2', name: 'DRAGON CRS-33', klass: 'satellite', layer: 'stations', meta: { noradId: 12 } })?.build === 'dragon', 'a cargo Dragon gets its shape');
 check(realModelFor({ id: 'd3', name: 'DRAGON 12 DEB', klass: 'debris', layer: 'active', meta: { noradId: 13 } }) === null, 'Dragon debris keeps the debris shape');
