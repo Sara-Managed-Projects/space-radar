@@ -12,6 +12,7 @@
 // Every string comes from copy/en.js. Nothing here calls Date.now(): the "present" is
 // ctx.clock.now() while the clock is live, remembered as the scrub anchor.
 
+import { readMoment, writeMoment } from './urlstate.js';
 import { COPY, CITIES, t, fmt, timeText, inWords } from '../copy/en.js';
 import { createSearch } from './search.js';
 import { shapeLine } from './tripframe.js';
@@ -20,7 +21,6 @@ const HOST_ID = 'sr-controls';
 const MOMENTS = [COPY.moments.wonder, COPY.moments.now, COPY.moments.next];
 const MOMENT_IDS = MOMENTS.map((m) => m.id);
 const SPEEDS = [1, 10, 60, 600, 3600, 36000]; // the contract's rate ladder
-const HASH_KEY = 'm';
 const SCRUB_BACK_MS = 7 * 86400000; // spec 0005: -7 days
 const SCRUB_FORWARD_MS = 30 * 86400000; // spec 0005: +30 days
 const SCRUB_STEPS = 20000; // range slider resolution
@@ -70,43 +70,10 @@ function ensureHost() {
 // location.hash -- one key, other keys left alone so spec 0017's packed state can share it
 // ---------------------------------------------------------------------------------------
 
-function hashParts() {
-  const raw = (typeof location !== 'undefined' ? location.hash : '') || '';
-  return raw.replace(/^#/, '').split('&').filter(Boolean);
-}
-
-function readMomentFromHash() {
-  for (const part of hashParts()) {
-    const eq = part.indexOf('=');
-    if (eq < 0) continue;
-    if (part.slice(0, eq) === HASH_KEY) {
-      const value = part.slice(eq + 1);
-      if (MOMENT_IDS.includes(value)) return value;
-    }
-  }
-  return null;
-}
-
-function writeMomentToHash(moment) {
-  const parts = hashParts();
-  let found = false;
-  const next = parts.map((part) => {
-    const eq = part.indexOf('=');
-    if (eq > 0 && part.slice(0, eq) === HASH_KEY) {
-      found = true;
-      return `${HASH_KEY}=${moment}`;
-    }
-    return part;
-  });
-  if (!found) next.unshift(`${HASH_KEY}=${moment}`);
-  const target = `#${next.join('&')}`;
-  if (location.hash === target) return;
-  try {
-    history.replaceState(null, '', target);
-  } catch {
-    location.hash = target;
-  }
-}
+// The hash is owned by ui/urlstate.js (one format, two readers). These two names are kept so the
+// call sites below read as before.
+const readMomentFromHash = () => readMoment(MOMENT_IDS);
+const writeMomentToHash = (moment) => writeMoment(moment);
 
 // ---------------------------------------------------------------------------------------
 // Reading ctx without reaching into anyone's internals more than the contract allows

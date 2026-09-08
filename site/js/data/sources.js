@@ -55,6 +55,8 @@ const SNAPSHOT_SCHEMA = 1;
 // It is the shortest cadence any source has (dsn-now, 5 min), so a due source never reads a
 // manifest older than its own cadence; the HTTP cache (max-age=60) does the rest.
 const INDEX_CADENCE_MS = 5 * MINUTE;
+// How long a live upstream fetch may take before it is abandoned. See fetchLive().
+const LIVE_TIMEOUT_MS = 20 * 1000;
 // Manifest statuses under which a snapshot FILE exists to read. `not-due` is here on purpose:
 // a 24 h source is due once in 48 runs and the file from the earlier run is still there.
 // `refused`, `error` and `skipped` are not: §4 says a snapshot that errored is one we do not have.
@@ -620,6 +622,20 @@ export function forgetIndex() {
  *            counts:{ok:number,notModified:number,notDue:number,refused:number,error:number,
  *                    skipped:number,other:number,good:number,total:number}}}
  */
+/**
+ * Does the harvester's manifest hold a usable snapshot for this source right now? One index
+ * fetch, cached, shared with load(). main.js uses it to start snapshot-backed layers at once
+ * instead of queueing them behind upstream hosts that may be slow.
+ */
+export async function snapshotAvailable(id) {
+  const src = SOURCES[id];
+  if (!src) return false;
+  const view = await ensureIndex();
+  const rid = src.registryId || src.id;
+  const row = view.data && view.data.snapshots ? view.data.snapshots[rid] : null;
+  return !!(row && SNAPSHOT_USABLE.has(row.status) && row.fetched_at);
+}
+
 export function harvestStatus() {
   const doc = indexState.data;
   const counts = {
@@ -729,7 +745,18 @@ async function fetchLive(src, prev, attemptAt) {
   let payload = null;
 
   try {
-    const response = await fetch(src.url, { credentials: 'omit', redirect: 'follow' });
+    // A dead host must cost seconds, not minutes. MEASURED 2026-09-08: with CelesTrak not
+    // answering, each of its files hung for 75 s before the browser gave up, and the map sat empty
+    // behind them. Twenty seconds is longer than any of these sources takes when it is alive (the
+    // 7 MB catalogue included, measured at 3.7 s) and short enough to move on.
+    const abort = new AbortController();
+    const timer = setTimeout(() => abort.abort(), LIVE_TIMEOUT_MS);
+    let response;
+    try {
+      response = await fetch(src.url, { credentials: 'omit', redirect: 'follow', signal: abort.signal });
+    } finally {
+      clearTimeout(timer);
+    }
     httpStatus = response.status;
     if (response.status === 403 && src.id.startsWith('celestrak-')) {
       // The documented answer to an early re-fetch. It is not a failure and it must never be
@@ -750,7 +777,7 @@ async function fetchLive(src, prev, attemptAt) {
       }
     }
   } catch (e) {
-    error = describe(e);
+    error = e && e.name === 'AbortError' ? `No answer within ${LIVE_TIMEOUT_MS / 1000} seconds.` : describe(e);
   }
 
   const got = payload != null;
