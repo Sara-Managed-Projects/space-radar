@@ -86,7 +86,9 @@ LONG="public, max-age=2592000"
 if [ "$WHAT" != "app" ]; then
   echo "==> textures, data, vendored libraries"
   "${SYNC[@]}" "$SITE/textures" "s3://$BUCKET/textures" --cache-control "$LONG" --delete
-  "${SYNC[@]}" "$SITE/data"     "s3://$BUCKET/data"     --cache-control "$LONG" --delete
+  # data/v1/ is the harvester's (spec 0003 amendment 1): it is never in site/, and --delete would
+  # otherwise remove every snapshot on each deploy. The filter keeps it out of the upload too.
+  "${SYNC[@]}" "$SITE/data"     "s3://$BUCKET/data"     --cache-control "$LONG" --delete --exclude "v1/*"
   "${SYNC[@]}" "$SITE/vendor"   "s3://$BUCKET/vendor"   --cache-control "$LONG" --delete
   # The spacecraft models. Content type matters: CloudFront will not compress an octet-stream, and
   # a .glb served as one is a few hundred KB that could have been fewer.

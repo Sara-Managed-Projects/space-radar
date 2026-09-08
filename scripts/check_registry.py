@@ -1009,6 +1009,16 @@ def main() -> int:
             fail(where, "no `auth:` (write `none` rather than leaving it out)")
         elif auth != "none" and not str(auth).startswith("secret:"):
             fail(where, f"auth {auth!r} must be `none` or `secret:NAME`")
+        # Whether a PAGE may read this host is what decides the app's fallback when our snapshot is
+        # missing: a `true` row falls back to the upstream, a `false` row says "could not look".
+        # It is a measurement (the CORS column of docs/data-sources.md), so a row must state it;
+        # a missing flag defaulting to either answer would be a guess dressed as a fact.
+        browser = s.get("browser")
+        if browser is None:
+            fail(where, "no `browser:` (true when the host sends Access-Control-Allow-Origin `*` "
+                        "and a page may read it directly; false when it cannot. Measured, not assumed)")
+        elif not isinstance(browser, bool):
+            fail(where, f"`browser` must be true or false, got {browser!r}")
         for key in ("cadence", "freshness_max"):
             if not duration_ok(s.get(key, "")):
                 fail(where, f"`{key}` must look like `15m` or `3h`, got {s.get(key)!r}")

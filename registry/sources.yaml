@@ -8,6 +8,11 @@
 # freshness_max   after this the app shows a stale stamp. It still renders (spec 0001 rule 6).
 # auth            `none`, or `secret:NAME` — a missing secret SKIPS the source and reports it,
 #                 it never fails the run for the free sources.
+# browser         true when the host answers a page with `Access-Control-Allow-Origin: *`, so
+#                 the app may read it directly when our snapshot is missing; false when it
+#                 cannot (no CORS header, or a login). MEASURED 2026-09-06 -- the CORS column
+#                 of docs/data-sources.md -- never assumed. For a `false` row the snapshot is
+#                 the only route and the app says "could not look" rather than inventing.
 version: 1
 
 sources:
@@ -19,6 +24,7 @@ sources:
   - id: celestrak-stations
     url: https://celestrak.org/NORAD/elements/gp.php?GROUP=stations&FORMAT=json
     auth: none
+    browser: true
     cadence: 3h
     freshness_max: 48h
     parser: celestrak_gp
@@ -28,6 +34,7 @@ sources:
   - id: celestrak-active
     url: https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=json
     auth: none
+    browser: true
     cadence: 6h
     freshness_max: 72h
     parser: celestrak_gp
@@ -39,6 +46,7 @@ sources:
   - id: celestrak-supplemental-starlink
     url: https://celestrak.org/NORAD/elements/supplemental/sup-gp.php?FILE=starlink&FORMAT=json
     auth: none
+    browser: true
     cadence: 3h
     freshness_max: 24h
     parser: celestrak_gp
@@ -48,6 +56,7 @@ sources:
   - id: celestrak-satcat
     url: https://celestrak.org/pub/satcat.csv
     auth: none
+    browser: true
     cadence: 24h
     freshness_max: 168h
     parser: celestrak_satcat
@@ -61,6 +70,7 @@ sources:
   - id: ll2-upcoming
     url: https://ll.thespacedevs.com/2.3.0/launches/upcoming/?limit=50&mode=detailed
     auth: none
+    browser: true
     cadence: 2h
     freshness_max: 12h
     parser: ll2
@@ -70,6 +80,7 @@ sources:
   - id: ll2-events
     url: https://ll.thespacedevs.com/2.3.0/events/upcoming/?limit=30
     auth: none
+    browser: true
     cadence: 2h
     freshness_max: 24h
     parser: ll2_events
@@ -82,6 +93,7 @@ sources:
   - id: jpl-sbdb-neo
     url: https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name,spkid,e,a,q,i,om,w,ma,epoch,H,diameter,class&sb-kind=a&sb-group=neo
     auth: none
+    browser: false
     cadence: 24h
     freshness_max: 168h
     parser: jpl_sbdb
@@ -91,6 +103,7 @@ sources:
   - id: jpl-cad
     url: https://ssd-api.jpl.nasa.gov/cad.api?dist-max=10LD&date-min=now&date-max=%2B60&sort=date&diameter=true&fullname=true
     auth: none
+    browser: false
     cadence: 24h
     freshness_max: 72h
     parser: jpl_cad
@@ -100,6 +113,7 @@ sources:
   - id: esa-neocc-close
     url: https://neo.ssa.esa.int/PSDB-portlet/download?file=esa_upcoming_close_app
     auth: none
+    browser: false
     cadence: 24h
     freshness_max: 168h
     parser: esa_neocc
@@ -111,6 +125,7 @@ sources:
   - id: mpc-comets
     url: https://minorplanetcenter.net/iau/MPCORB/CometEls.txt
     auth: none
+    browser: true
     cadence: 24h
     freshness_max: 168h
     parser: mpc_comets
@@ -121,6 +136,7 @@ sources:
   - id: horizons-deep-space
     url: https://ssd.jpl.nasa.gov/api/horizons.api
     auth: none
+    browser: false
     cadence: 24h
     freshness_max: 168h
     parser: horizons
@@ -135,6 +151,7 @@ sources:
   - id: dsn-now
     url: https://eyes.nasa.gov/dsn/data/dsn.xml
     auth: none
+    browser: true
     cadence: 5m
     freshness_max: 30m
     parser: dsn_now
@@ -145,6 +162,7 @@ sources:
   - id: swpc-kp
     url: https://services.swpc.noaa.gov/products/noaa-planetary-k-index-forecast.json
     auth: none
+    browser: true
     cadence: 15m
     freshness_max: 6h
     parser: swpc
@@ -155,6 +173,7 @@ sources:
   - id: swpc-ovation
     url: https://services.swpc.noaa.gov/json/ovation_aurora_latest.json
     auth: none
+    browser: true
     cadence: 15m
     freshness_max: 3h
     parser: swpc_ovation
@@ -167,6 +186,7 @@ sources:
   - id: wikidata-observatories
     url: https://query.wikidata.org/sparql
     auth: none
+    browser: true
     cadence: 168h
     freshness_max: 720h
     parser: wikidata
@@ -180,6 +200,7 @@ sources:
   - id: space-track-tip
     url: https://www.space-track.org/basicspacedata/query/class/tip/format/json
     auth: secret:SPACE_TRACK_PASSWORD
+    browser: false
     cadence: 6h
     freshness_max: 48h
     parser: space_track_tip

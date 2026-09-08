@@ -839,6 +839,19 @@
   color: var(--sr-text-dim);
 }
 
+/* What the harvester's manifest said. Dim like the intro; the slate of "never read" when it
+   could not be read at all, because every source below is then live or absent. */
+.sr-status__harvest {
+  margin: -4px 0 10px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--sr-text-dim);
+}
+
+.sr-status__harvest.is-unavailable {
+  color: var(--sr-unread);
+}
+
 .sr-status__block {
   margin-top: 14px;
   padding-top: 12px;

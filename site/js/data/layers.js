@@ -607,6 +607,14 @@ export async function loadLayerDetailed(layer, nowMs) {
   try {
     if (typeof layer.sample === 'function') {
       // A source a browser cannot call. Bundled, cls 'sample', and every record says why.
+      //
+      // SEAM (follow-up to spec 0003 amendment 1 §4). The three `sample:` layers -- asteroids,
+      // deep-space, reentries -- stay bundled in this change. The harvester removes the reason
+      // they exist (no CORS at JPL, a login at Space-Track), but each needs a browser parser that
+      // does not exist yet (SBDB, Horizons, TIP in parsers.js, wired through parseFor below).
+      // When one does, this branch becomes: `result = await load(layer.source)` first -- which is
+      // via snapshot only for a `browser: false` row and never goes upstream -- and
+      // `layer.sample()` only when `result.data == null`. Nothing else in this file moves.
       parsed = layer.sample();
     } else {
       result = await load(layer.source);

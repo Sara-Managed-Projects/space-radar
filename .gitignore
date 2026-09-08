@@ -10,3 +10,7 @@ __pycache__/
 
 # CI links the container's global playwright in here; never committed.
 node_modules/
+
+# The harvester's output (spec 0003 amendment 1 §3) lives in the bucket under data/v1/, never in
+# this repository. A copy here is a local fixture for the snapshot reader and must not be committed.
+site/data/v1/

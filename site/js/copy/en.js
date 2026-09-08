@@ -872,6 +872,26 @@ export const COPY = {
     // A source we have never had a good copy from needs its own line, not "last read
     // never read": the point of the third state is that it does not read like the others.
     ageNeverLine: 'no good copy in this browser yet',
+    // Provenance, one line per source (spec 0003 amendment 1 §4). {age} is ageInWords.
+    viaSnapshotLine: 'from our snapshot, fetched {age}',
+    viaLiveLine: 'read live from {publisher} {age}',
+    snapshotOverdue: 'a fresher copy is overdue',
+    couldNotLookLine: 'could not look: {reason}',
+    reasonNoRoute: '{why}, and a browser cannot read {publisher} directly',
+    // Why our snapshot was not the source, keyed by the code data/sources.js reports.
+    snapshotWhy: {
+      'no-index': 'our snapshot index could not be read',
+      'not-in-index': 'our snapshots do not include this source',
+      refused: 'the last harvest of it was refused',
+      error: 'the last harvest of it failed',
+      skipped: 'the harvester skipped it',
+      unreadable: 'our snapshot of it could not be read',
+    },
+    // The manifest's own line at the head of the panel.
+    harvestUnchecked: 'Our snapshots: not checked yet.',
+    harvestUnavailable:
+      'Our snapshots are not available right now, so every source below is read live from its publisher, or not at all.',
+    harvestLine: 'Our snapshots: written {age} · {ok} sources ok · {refused} refused · {error} failed',
     errorLabel: 'Last error',
     attributionTitle: 'Credits',
     attributionIntro: 'The data on this map is other people’s work.',

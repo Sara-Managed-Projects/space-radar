@@ -21,6 +21,7 @@ sources:
   - id: horizons-europa-orbiters
     url: https://ssd.jpl.nasa.gov/api/horizons.api
     auth: none
+    browser: false
     cadence: 24h
     freshness_max: 168h
     parser: horizons
