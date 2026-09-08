@@ -722,6 +722,16 @@ export function createTrip(ctx) {
   }
 
   function begin(resolved) {
+    // A trip is a Wonder-moment thing: it flies the free camera between objects. Started from
+    // the sky view -- the Now moment's dome, which owns the camera -- the two fought for it.
+    // MEASURED 2026-09-08 (the review's top defect): seven seconds into the first flight the
+    // camera had not moved, and after Escape it sat 84 million km away with the dome still
+    // active. So leave the dome first, through the same door the moment switch uses, and give
+    // the renderer one frame to hand the camera back before the first flight is planned.
+    if (ctx.skyView && ctx.skyView.active && typeof ctx.setMoment === 'function') {
+      ctx.setMoment('wonder');
+      return new Promise((resolve) => requestAnimationFrame(() => resolve(begin(resolved))));
+    }
     const tour = resolved.tour;
     run = {
       tour,
