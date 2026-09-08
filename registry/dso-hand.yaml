@@ -413,6 +413,184 @@ objects:
     source: "https://en.wikipedia.org/wiki/Andromeda_II (infobox, read 2026-09-09)"
     why: "One of Andromeda's small spheroidal companions, found in 1970 on photographic plates."
 
+  - id: andromeda-i
+    name: Andromeda I
+    type: G
+    what: dwarf spheroidal galaxy
+    hubble: "dSph"
+    ra_deg: 11.4158         # 00h 45m 39.8s
+    dec_deg: 38.0411        # +38 deg 02 min 28 s
+    dist_kly: 2400          # 2.40 +/- 0.08 Mly
+    vmag: 13.6
+    maj_ax_arcmin: 2.5
+    con: Andromeda
+    source: "https://en.wikipedia.org/wiki/Andromeda_I (infobox, read 2026-09-09)"
+    why: "The first of Andromeda's small spheroidal companions to be numbered, found by Sidney van den Bergh in 1970."
+
+  - id: andromeda-iii
+    name: Andromeda III
+    type: G
+    what: dwarf spheroidal galaxy
+    hubble: "dSph"
+    ra_deg: 8.8908          # 00h 35m 33.8s
+    dec_deg: 36.4978        # +36 deg 29 min 52 s
+    dist_kly: 2440          # 2.44 +/- 0.08 Mly
+    vmag: 15.0
+    maj_ax_arcmin: 4.5
+    con: Andromeda
+    source: "https://en.wikipedia.org/wiki/Andromeda_III (infobox, read 2026-09-09)"
+    why: "Another of Andromeda's faint companions from the 1970 plates, a little farther out than the first."
+
+  - id: ngc-3109
+    name: NGC 3109
+    designation: NGC 3109
+    type: G
+    what: barred irregular galaxy, seen edge-on
+    hubble: "SB(s)m"
+    ra_deg: 150.7787        # 10h 03m 06.88s
+    dec_deg: -26.1596       # -26 deg 09 min 34.5 s
+    dist_kly: 4348          # 1.333 +/- 0.19 Mpc
+    vmag: 10.4
+    maj_ax_arcmin: 19.1
+    con: Hydra
+    source: "https://en.wikipedia.org/wiki/NGC_3109 (infobox, read 2026-09-09)"
+    why: "A thin edge-on streak at the Local Group's outer edge; whether it belongs to the Group at all is still argued."
+
+  - id: ursa-major-ii
+    name: Ursa Major II Dwarf
+    type: G
+    what: dwarf spheroidal galaxy
+    hubble: "dSph"
+    ra_deg: 132.875         # 08h 51m 30.0s
+    dec_deg: 63.13          # +63 deg 07 min 48 s
+    dist_kly: 98            # 98 +/- 16 kly
+    vmag: 14.3
+    maj_ax_arcmin: 32
+    con: Ursa Major
+    source: "https://en.wikipedia.org/wiki/Ursa_Major_II_Dwarf (infobox, read 2026-09-09)"
+    why: "One of the ultra-faint dwarfs found in Sloan survey data in 2006: a few thousand stars, spread over a patch the size of the full Moon."
+
+  - id: segue-1
+    name: Segue 1
+    type: G
+    what: ultra-faint dwarf galaxy, or perhaps a star cluster
+    hubble: "dSph or GC"
+    ra_deg: 151.7667        # 10h 07m 04s
+    dec_deg: 16.0819        # +16 deg 04 min 55 s
+    dist_kly: 75            # 75 +/- 6.5 kly
+    vmag: 13.8
+    maj_ax_arcmin: 8.8
+    con: Leo
+    source: "https://en.wikipedia.org/wiki/Segue_1 (infobox, read 2026-09-09)"
+    why: "Among the faintest galaxies known, a few hundred stars held together by far more dark matter than light -- if it is a galaxy at all."
+
+  - id: leo-t
+    name: Leo T
+    type: G
+    what: transition dwarf galaxy, part spheroidal, part irregular
+    hubble: "dSph/dIrr"
+    ra_deg: 143.7225        # 09h 34m 53.4s
+    dec_deg: 17.0514        # +17 deg 03 min 05 s
+    dist_kly: 1334          # 409 kpc
+    vmag: 16
+    maj_ax_arcmin: 2.8
+    con: Leo
+    source: "https://en.wikipedia.org/wiki/Leo_T (infobox, read 2026-09-09)"
+    why: "The faintest galaxy known to still hold gas and make the odd new star, found in Sloan survey data in 2007."
+
+  - id: bootes-i
+    name: Bootes I
+    type: G
+    what: dwarf spheroidal galaxy
+    hubble: "dSph"
+    ra_deg: 210.025         # 14h 00m 06s
+    dec_deg: 14.5           # +14 deg 30 min 00 s
+    dist_kly: 197           # 197 +/- 18 kly
+    vmag: 13.1
+    maj_ax_arcmin: 26.0
+    con: Bootes
+    source: "https://en.wikipedia.org/wiki/Bo%C3%B6tes_I (infobox, read 2026-09-09)"
+    why: "One of the faintest galaxies known when it was found in 2006; a few hundred thousand stars where a normal galaxy has billions."
+
+  - id: canes-venatici-i
+    name: Canes Venatici I
+    type: G
+    what: dwarf spheroidal galaxy
+    hubble: "dSph"
+    ra_deg: 202.0146        # 13h 28m 03.5s
+    dec_deg: 33.5558        # +33 deg 33 min 21 s
+    dist_kly: 711           # 711 +/- 33 kly
+    vmag: 13.9
+    maj_ax_arcmin: 17.8
+    con: Canes Venatici
+    source: "https://en.wikipedia.org/wiki/Canes_Venatici_I (infobox, read 2026-09-09)"
+    why: "A remote Milky Way satellite with two separate generations of stars, found in 2006."
+
+  - id: ursa-major-i
+    name: Ursa Major I Dwarf
+    type: G
+    what: dwarf spheroidal galaxy
+    hubble: "dSph"
+    ra_deg: 158.72          # 10h 34m 52.8s
+    dec_deg: 51.92          # +51 deg 55 min 12 s
+    dist_kly: 330           # 330 000 ly (100 kpc)
+    con: Ursa Major
+    source: "https://en.wikipedia.org/wiki/Ursa_Major_I_Dwarf (infobox, read 2026-09-09)"
+    why: "Found in 2005, the first of the ultra-faint dwarfs the Sloan survey turned up around the Milky Way."
+
+  - id: reticulum-ii
+    name: Reticulum II
+    type: G
+    what: ultra-faint dwarf galaxy
+    ra_deg: 53.9256         # 03h 35m 42.14s
+    dec_deg: -54.0492       # -54 deg 02 min 57.1 s
+    dist_kly: 103.1         # 31.6 kpc
+    vmag: 17.4
+    maj_ax_arcmin: 3.37
+    con: Reticulum
+    source: "https://en.wikipedia.org/wiki/Reticulum_II (infobox, read 2026-09-09)"
+    why: "Found in 2015 in Dark Energy Survey data; its stars are rich in the heavy elements a merger of two neutron stars makes."
+
+  - id: leo-iv
+    name: Leo IV
+    type: G
+    what: dwarf spheroidal galaxy
+    hubble: "dSph"
+    ra_deg: 173.2375        # 11h 32m 57s
+    dec_deg: -0.5333        # -00 deg 32 min 00 s
+    dist_kly: 520           # 520 +49/-45 kly
+    vmag: 15.9
+    maj_ax_arcmin: 5.7
+    con: Leo
+    source: "https://en.wikipedia.org/wiki/Leo_IV_%28dwarf_galaxy%29 (infobox, read 2026-09-09)"
+    why: "A faint Sloan-survey dwarf with a neighbour, Leo V, close enough on the sky that the two may be linked."
+
+  - id: willman-1
+    name: Willman 1
+    type: G
+    what: ultra-faint dwarf galaxy
+    ra_deg: 162.3438        # 10h 49m 22.5s
+    dec_deg: 51.0501        # +51 deg 03 min 00.4 s
+    dist_kly: 126           # 126 +/- 2 kly
+    vmag: 15.4
+    con: Ursa Major
+    source: "https://en.wikipedia.org/wiki/Willman_1 (infobox, read 2026-09-09)"
+    why: "Named for Beth Willman, who found it in 2005: for years nobody was sure whether it was a galaxy or a star cluster."
+
+  - id: pisces-ii
+    name: Pisces II
+    type: G
+    what: dwarf spheroidal galaxy
+    hubble: "dSph"
+    ra_deg: 344.6292        # 22h 58m 31s
+    dec_deg: 5.9525         # +05 deg 57 min 09 s
+    dist_kly: 585           # 585 kly (180 kpc)
+    vmag: 17.03
+    maj_ax_arcmin: 2.2
+    con: Pisces
+    source: "https://en.wikipedia.org/wiki/Pisces_II (infobox, read 2026-09-09)"
+    why: "A faint satellite found in 2010, one of the most distant of the Milky Way's dwarfs."
+
 messier_distances:
   # Thousands of light-years, from the table in https://en.wikipedia.org/wiki/List_of_Messier_objects
   # (read 2026-09-08). A range is written as [low, high]; the card prints both. Positions come from
