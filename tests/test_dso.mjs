@@ -17,9 +17,10 @@ const { buildIndex, findMatches } = await import(join(JS, 'ui/search.js'));
 const { drawingLine } = await import(join(JS, 'ui/cards.js'));
 
 const doc = JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8'));
-check(doc.count === 124 && doc.objects.length === 124, `110 Messier objects and fourteen Local Group galaxies by hand (${doc.count})`);
+check(doc.count === 138 && doc.objects.length === 138, `110 Messier objects and twenty-eight Local Group galaxies by hand (${doc.count})`);
 check(doc.objects.some((o) => o.id === 'smc' && o.distLy === 203700) && doc.objects.some((o) => o.id === 'fornax-dwarf') && doc.objects.some((o) => o.id === 'sculptor-dwarf'), 'the SMC, Fornax and Sculptor dwarfs are hand rows with sourced distances');
 check(doc.objects.some((o) => o.id === 'wlm' && o.distLy === 3226000) && doc.objects.some((o) => o.id === 'ngc-6822' && o.designation === 'NGC 6822') && doc.objects.some((o) => o.id === 'carina-dwarf' && o.vmag === null), 'WLM at 3.23 Mly, Barnard\'s Galaxy keeps its NGC number, Carina has no V magnitude invented');
+check(doc.objects.some((o) => o.id === 'sagittarius-dwarf' && o.distLy === 80400) && doc.objects.some((o) => o.id === 'sextans-a' && o.distLy === 4586000) && doc.objects.some((o) => o.id === 'sagdig' && o.designation === 'SagDIG'), 'the Sagittarius Dwarf at 80 400 ly, Sextans A at 4.59 Mly, SagDIG by its short name');
 check(doc.openNgcTotal > 13000, `the file says how many OpenNGC objects exist without a distance (${doc.openNgcTotal})`);
 const m31 = doc.objects.find((o) => o.id === 'm31');
 check(m31 && m31.distLy === 2540000 && m31.distLyLow === 2430000 && m31.kind === 'galaxy' && m31.common === 'Andromeda Galaxy', 'M31 is Andromeda, 2.43-2.65 Mly, a galaxy');
@@ -31,7 +32,7 @@ check(doc.objects.some((o) => o.id === 'lmc' && o.distLy === 163000), 'the LMC i
 check(doc.objects.find((o) => o.id === 'm45')?.kind === 'cluster', 'the Pleiades (from the addendum) are a cluster');
 
 const recs = parseDso(doc);
-check(recs.length === 124 && recs.every((r) => r.klass === 'dso' && r.propagator === 'static' && r.layer === 'deep-sky'), 'one static dso record per object');
+check(recs.length === 138 && recs.every((r) => r.klass === 'dso' && r.propagator === 'static' && r.layer === 'deep-sky'), 'one static dso record per object');
 // a hand row speaks in words, not a Hubble code, and credits the one page it came from (found live 2026-09-09)
 const wlmRec = recs.find((r) => r.id === 'dso-wlm');
 check(wlmRec && wlmRec.meta.typeText === 'dwarf irregular galaxy' && wlmRec.meta.hubble === 'IB(s)m', `WLM: words for the sentence, the code beside them (${wlmRec && wlmRec.meta.typeText})`);
@@ -51,7 +52,9 @@ stage.setWorld('earth');
 const row = LAYERS.find((l) => l.id === 'deep-sky');
 check(!!row && row.parse === 'dso' && row.bundledText === 'data/dso.json' && row.source === 'bundled' && row.noModel === true, 'the deep-sky layer row is bundled JSON through bundledText');
 const index = buildIndex(recs, LAYERS);
-check(findMatches(index, 'andromeda').hits[0]?.record.id === 'dso-m31', '"andromeda" finds M31');
+check(findMatches(index, 'andromeda').hits[0]?.record.id === 'dso-m31', '"andromeda" finds M31 first, not Andromeda II (brighter wins the tie)');
+check(findMatches(index, 'andromeda').hits.some((h) => h.record.id === 'dso-andromeda-ii'), 'Andromeda II is still in the list');
+check(findMatches(index, 'sagittarius dwarf').hits[0]?.record.id === 'dso-sagittarius-dwarf', '"sagittarius dwarf" finds the spheroidal (mag 4.5) before SagDIG (15.5)');
 check(findMatches(index, 'm31').hits[0]?.record.id === 'dso-m31', '"m31" finds M31 by alias');
 check(findMatches(index, 'pleiades').hits[0]?.record.id === 'dso-m45', '"pleiades" finds M45');
 check(findMatches(index, 'ngc 224').hits.some((h) => h.record.id === 'dso-m31'), '"ngc 224" finds M31');
