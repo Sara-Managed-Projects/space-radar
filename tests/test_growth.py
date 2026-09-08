@@ -41,12 +41,16 @@ ALLOWED_PREFIXES = ("registry/", "harvest/lists/", "harvest/queries/")
 # THREE of them now: registry/tours.yaml is mirrored the same way and for the same reason, and
 # `gen_tours_js.py --check` fails CI until it is regenerated and committed. All three are build
 # outputs, not second places a human edits.
+# FOUR: the harvester (spec 0003) parses no YAML either, so registry/sources.yaml is mirrored into
+# harvest/sources.json by scripts/gen_sources_json.py, and `--check` fails CI until it is current.
 GENERATED = "site/js/data/rockets.js"
 GENERATED_ODDITIES = "site/js/data/oddities.js"
 GENERATED_TOURS = "site/js/data/tours.js"
+GENERATED_SOURCES = "harvest/sources.json"
 MIRRORS = ((GENERATED, "scripts/gen_rockets_js.py", "rockets"),
            (GENERATED_ODDITIES, "scripts/gen_oddities_js.py", "oddities"),
-           (GENERATED_TOURS, "scripts/gen_tours_js.py", "tours"))
+           (GENERATED_TOURS, "scripts/gen_tours_js.py", "tours"),
+           (GENERATED_SOURCES, "scripts/gen_sources_json.py", "sources"))
 
 
 def snapshot(root: Path) -> dict[str, str]:
@@ -105,6 +109,11 @@ def main() -> int:
         # Real bytes, both of them: the validator cross-checks CREDITS.md against
         # registry/models.yaml, and the mirror check is a byte comparison.
         shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")
+        # The validator checks every `parser:` has a module and every `list:`/`query:` a file, and
+        # the sources mirror inlines those files; so the harvest tree comes along, minus the mirror
+        # itself, which is copied with the others below.
+        shutil.copytree(ROOT / "harvest", work / "harvest",
+                        ignore=shutil.ignore_patterns("__pycache__", "sources.json"))
         (work / "site/js/data").mkdir(parents=True, exist_ok=True)
         for mirror, _, _ in MIRRORS:
             shutil.copy2(ROOT / mirror, work / mirror)
@@ -171,7 +180,7 @@ def main() -> int:
     print("\nPASS: a new world, a new source, a new layer, a new texture, a new surface site, "
           "two new launch vehicles, a new odd thing on that new world, a new thing bolted to a "
           "spacecraft and a new guided trip that visits all of them are rows. Nothing under "
-          "site/js/ was needed but the three generated mirrors, which no human edits.")
+          "site/js/ or harvest/ was needed but the four generated mirrors, which no human edits.")
     return 0
 
 
