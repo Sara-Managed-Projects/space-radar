@@ -1237,6 +1237,23 @@ function render(record, ctx, opts = {}) {
   // 2. one plain sentence
   body.appendChild(el('p', 'sr-card__sentence', firstSentence(record, ctx, m, passInfo)));
 
+  // 2b. a world says how it is drawn, and offers to become the centre (spec 0028 step 0). The
+  // compression note is scene/worlds.js's own sentence (`viewScale`), never restated here.
+  if (klass === 'world') {
+    const vs = ctx && ctx.worlds && typeof ctx.worlds.viewScale === 'function' ? ctx.worlds.viewScale(record.id) : null;
+    if (vs && vs.exaggerated && vs.note) body.appendChild(el('p', 'sr-card__note', vs.note));
+    const isCentre = ctx && ctx.stage && ctx.stage.worldId === record.id;
+    const centre = el('button', 'sr-card__action', isCentre
+      ? COPY.card.isCentre
+      : t(COPY.card.makeCentre, { name: displayName(record) }));
+    centre.type = 'button';
+    centre.disabled = isCentre || !(ctx && typeof ctx.setStage === 'function');
+    centre.addEventListener('click', () => {
+      if (ctx && typeof ctx.setStage === 'function' && ctx.setStage(record.id)) render(record, ctx, opts);
+    });
+    body.appendChild(centre);
+  }
+
   // 3. comparison chips, at most three
   const chips = comparisons(record, m);
   if (chips.length) {

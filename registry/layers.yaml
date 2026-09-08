@@ -11,6 +11,21 @@
 version: 1
 
 layers:
+  # The worlds as a LAYER (spec 0028 step 0). scene/worlds.js already draws them; this row is what
+  # puts them in the layer list with a count, in search, and under a finger. `bundled` because the
+  # rows are worlds.yaml itself; `body` because astronomy-engine is the ephemeris. The style glyph
+  # is never drawn -- data/layers.js marks the row `draw: worlds` and the meshes stand in for glyphs.
+  - id: worlds
+    display: Planets and moons
+    moments: {wonder: on, now: on, next: on}
+    source: bundled
+    propagator: body
+    frame: sun-inertial
+    style: {kind: glyph, glyph: planet, colour: world}
+    card: world
+    select: {all: true}
+    budget: {max_items: 20}
+
   - id: stations
     display: Crewed stations
     moments: {wonder: on, now: on, next: off}

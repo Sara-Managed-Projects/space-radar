@@ -25,11 +25,13 @@ import {
   handKeptSites,
   sampleOddities,
 } from './sample.js';
+import { worldRecords } from '../scene/worlds.js';
 
 const DAY_MS = 86400000;
 
 // Class colours, verbatim from docs/design-language.md. No red. No purple gradients.
 const C = {
+  world: '#E8ECF2',
   station: '#F2F4F7',
   satellite: '#7FD1FF',
   debris: '#7A8494',
@@ -225,6 +227,32 @@ const bySoonest = (a, b) => (a.meta.netMs ?? Infinity) - (b.meta.netMs ?? Infini
  * @type {Array<Object>}
  */
 export const LAYERS = [
+  {
+    // The worlds as a layer (spec 0028 step 0). Mirrors registry/layers.yaml `worlds`. No glyph
+    // layer is created for it (`draw: 'worlds'`): scene/worlds.js already draws the discs, so the
+    // meshes are the marks. `sample` is the contract's "records that live in this repository"
+    // path; `noModel` keeps heroes.js from drawing a satellite bus over Mars when Mars is selected.
+    id: 'worlds',
+    display: 'Planets and moons',
+    klass: 'world',
+    source: 'bundled',
+    parse: null,
+    propagator: 'body',
+    frame: 'sun-inertial',
+    moments: { wonder: true, now: true, next: true },
+    defaultOn: true,
+    draw: 'worlds',
+    noModel: true,
+    sample: () => worldRecords(),
+    select: all,
+    budget: { maxItems: 20 },
+    colour: C.world,
+    glyph: 'planet',
+    nearKm: 0,
+    card: 'world',
+    priority: 1,
+    sentence: 'The Sun, the Moon and the planets, where they really are in the sky right now.',
+  },
   {
     id: 'stations',
     display: 'Crewed stations',

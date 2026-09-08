@@ -474,6 +474,8 @@ export const COPY = {
   card: {
     close: 'Close',
     closeTitle: 'Close this card',
+    makeCentre: 'Make {name} the centre of the map',
+    isCentre: 'This is the centre of the map',
     comparisonsLabel: 'To give you a feel for it',
     rightNowLabel: 'Right now',
     seeItLabel: 'See it from here',
