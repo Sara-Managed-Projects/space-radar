@@ -817,6 +817,160 @@ objects:
     source: "https://en.wikipedia.org/wiki/Coalsack_Nebula (infobox, read 2026-09-09)"
     why: "A hole in the Milky Way next to the Southern Cross: not a hole but a cloud of dust so thick no starlight gets through."
 
+  - id: bubble-nebula
+    name: Bubble Nebula
+    designation: NGC 7635
+    type: HII
+    what: emission nebula
+    ra_deg: 350.2013        # 23h 20m 48.3s
+    dec_deg: 61.2017        # +61 deg 12 min 06 s
+    dist_kly: [7.1,11.0]    # 7 100 to 11 000 ly
+    vmag: 10
+    maj_ax_arcmin: 15
+    con: Cassiopeia
+    source: "https://en.wikipedia.org/wiki/Bubble_Nebula (infobox, read 2026-09-09)"
+    why: "A hot giant star blowing a bubble ten light-years wide into the cloud that made it."
+
+  - id: ngc-2419
+    name: Intergalactic Wanderer
+    designation: NGC 2419
+    type: GCl
+    what: globular cluster
+    ra_deg: 114.5355        # 07h 38m 08.51s
+    dec_deg: 38.8819        # +38 deg 52 min 54.9 s
+    dist_kly: 275           # 275 kly from the Sun
+    vmag: 10.3
+    maj_ax_arcmin: 4.6
+    con: Lynx
+    source: "https://en.wikipedia.org/wiki/NGC_2419 (infobox, read 2026-09-09)"
+    why: "A globular cluster so far out -- farther than the Magellanic Clouds -- that it was once thought to be leaving the galaxy. It is not; it just takes three billion years to go round."
+
+  - id: eskimo-nebula
+    name: Eskimo Nebula
+    designation: NGC 2392
+    type: PN
+    what: planetary nebula
+    ra_deg: 112.2949        # 07h 29m 10.7669s
+    dec_deg: 20.9118        # +20 deg 54 min 42.488 s
+    dist_kly: 6.52          # 6 520 +/- 560 ly (Gaia)
+    vmag: 9.1
+    maj_ax_arcmin: 0.8      # 48 arcsec
+    con: Gemini
+    source: "https://en.wikipedia.org/wiki/Eskimo_Nebula (infobox, read 2026-09-09)"
+    why: "A face in a fur hood: a dying star's shell seen down its axis, with a ring of comet-like streamers round it."
+
+  - id: saturn-nebula
+    name: Saturn Nebula
+    designation: NGC 7009
+    type: PN
+    what: planetary nebula
+    ra_deg: 316.0453        # 21h 04m 10.877s
+    dec_deg: -11.3634       # -11 deg 21 min 48.25 s
+    dist_kly: [2.0,4.0]     # 2 000 to 4 000 ly
+    vmag: 8.0
+    maj_ax_arcmin: 0.68      # 41 arcsec
+    con: Aquarius
+    source: "https://en.wikipedia.org/wiki/Saturn_Nebula (infobox, read 2026-09-09)"
+    why: "Two jets stick out of its sides like Saturn's rings seen edge-on, which is how it got its name in 1840."
+
+  - id: ngc-7331
+    name: NGC 7331
+    designation: NGC 7331
+    type: G
+    hubble: "SA(s)b"
+    what: spiral galaxy
+    ra_deg: 339.2669        # 22h 37m 04.0624s
+    dec_deg: 34.4158        # +34 deg 24 min 56.72 s
+    dist_kly: 43800         # 13.427 +/- 2.698 Mpc
+    vmag: 10.4
+    maj_ax_arcmin: 10.5
+    con: Pegasus
+    source: "https://en.wikipedia.org/wiki/NGC_7331 (infobox, read 2026-09-09)"
+    why: "Once called the Milky Way's twin: a big spiral seen at a tilt, with a bulge that turns the opposite way to its disc."
+
+  - id: ngc-2244
+    name: Satellite Cluster
+    designation: NGC 2244
+    type: OCl
+    what: open cluster
+    ra_deg: 97.975          # 06h 31m 54s
+    dec_deg: 4.9333         # +04 deg 56 min
+    dist_kly: 5.2           # 5.2 kly
+    vmag: 4.8
+    maj_ax_arcmin: 24
+    con: Monoceros
+    source: "https://en.wikipedia.org/wiki/NGC_2244 (infobox, read 2026-09-09)"
+    why: "The young stars in the heart of the Rosette Nebula; their light is what makes the rose glow."
+
+  - id: ngc-3532
+    name: Wishing Well Cluster
+    designation: NGC 3532
+    type: OCl
+    what: open cluster
+    ra_deg: 166.3875        # 11h 05m 33s
+    dec_deg: -58.73         # -58 deg 43.8 min
+    dist_kly: 1.321         # 1 321 ly (405 pc)
+    # vmag omitted: the infobox leaves the magnitude blank
+    con: Carina
+    source: "https://en.wikipedia.org/wiki/NGC_3532 (infobox, read 2026-09-09)"
+    why: "Hundreds of stars like coins at the bottom of a well; the first target the Hubble Space Telescope ever pointed at, in 1990."
+
+  - id: ic-2602
+    name: Southern Pleiades
+    designation: IC 2602
+    type: OCl
+    what: open cluster
+    ra_deg: 160.7396        # 10h 42m 57.5s
+    dec_deg: -64.3942       # -64 deg 23 min 39 s
+    dist_kly: 0.486         # 486 ly (149 pc)
+    vmag: 1.9
+    maj_ax_arcmin: 50
+    con: Carina
+    source: "https://en.wikipedia.org/wiki/IC_2602 (infobox, read 2026-09-09)"
+    why: "The south's answer to the Pleiades, round the star Theta Carinae: a naked-eye cluster the north never sees."
+
+  - id: ngc-6231
+    name: NGC 6231
+    designation: NGC 6231
+    type: OCl
+    what: open cluster
+    ra_deg: 253.55          # 16h 54.2m
+    dec_deg: -41.8          # -41 deg 48 min
+    dist_kly: 5.6           # 5 600 +/- 400 ly
+    vmag: 2.6
+    maj_ax_arcmin: 15.0
+    con: Scorpius
+    source: "https://en.wikipedia.org/wiki/NGC_6231 (infobox, read 2026-09-09)"
+    why: "A tight knot of hot young stars in the Scorpion's tail, the core of a much larger stellar association."
+
+  - id: flame-nebula
+    name: Flame Nebula
+    designation: NGC 2024
+    type: HII
+    what: emission nebula
+    ra_deg: 85.475          # 05h 41m 54s
+    dec_deg: -1.85          # -01 deg 51 min 00 s
+    dist_kly: 1.35          # 1 350 ly (415 pc)
+    # vmag omitted: the infobox's magnitude is tagged citation-needed
+    maj_ax_arcmin: 30
+    con: Orion
+    source: "https://en.wikipedia.org/wiki/Flame_Nebula (infobox, read 2026-09-09)"
+    why: "Next to Alnitak in Orion's Belt, a glowing cloud split by a dark lane of dust, with a cluster of newborn stars hidden inside."
+
+  - id: horsehead-nebula
+    name: Horsehead Nebula
+    designation: Barnard 33
+    type: DrkN
+    what: dark nebula
+    ra_deg: 85.2458         # 05h 40m 59.0s
+    dec_deg: -2.4583        # -02 deg 27 min 30.0 s
+    dist_kly: 1.375         # 1 375 +/- 54 ly (Gaia DR2)
+    vmag: 6.8
+    maj_ax_arcmin: 8
+    con: Orion
+    source: "https://en.wikipedia.org/wiki/Horsehead_Nebula (infobox, read 2026-09-09)"
+    why: "The most famous dark cloud in the sky: a horse's head of dust against the red glow of IC 434, below Orion's Belt."
+
 messier_distances:
   # Thousands of light-years, from the table in https://en.wikipedia.org/wiki/List_of_Messier_objects
   # (read 2026-09-08). A range is written as [low, high]; the card prints both. Positions come from

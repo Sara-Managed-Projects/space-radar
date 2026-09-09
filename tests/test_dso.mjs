@@ -17,7 +17,7 @@ const { buildIndex, findMatches } = await import(join(JS, 'ui/search.js'));
 const { drawingLine } = await import(join(JS, 'ui/cards.js'));
 
 const doc = JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8'));
-check(doc.count === 167 && doc.objects.length === 167, `110 Messier objects, forty-one Local Group galaxies and sixteen famous non-Messier objects by hand (${doc.count})`);
+check(doc.count === 178 && doc.objects.length === 178, `110 Messier objects, forty-one Local Group galaxies and twenty-seven famous non-Messier objects by hand (${doc.count})`);
 check(doc.objects.some((o) => o.id === 'smc' && o.distLy === 203700) && doc.objects.some((o) => o.id === 'fornax-dwarf') && doc.objects.some((o) => o.id === 'sculptor-dwarf'), 'the SMC, Fornax and Sculptor dwarfs are hand rows with sourced distances');
 check(doc.objects.some((o) => o.id === 'wlm' && o.distLy === 3226000) && doc.objects.some((o) => o.id === 'ngc-6822' && o.designation === 'NGC 6822') && doc.objects.some((o) => o.id === 'carina-dwarf' && o.vmag === null), 'WLM at 3.23 Mly, Barnard\'s Galaxy keeps its NGC number, Carina has no V magnitude invented');
 check(doc.objects.some((o) => o.id === 'sagittarius-dwarf' && o.distLy === 80400) && doc.objects.some((o) => o.id === 'sextans-a' && o.distLy === 4586000) && doc.objects.some((o) => o.id === 'sagdig' && o.designation === 'SagDIG'), 'the Sagittarius Dwarf at 80 400 ly, Sextans A at 4.59 Mly, SagDIG by its short name');
@@ -27,6 +27,9 @@ check(omega && omega.kind === 'cluster' && omega.distLy === 15800 && omega.typeT
 const coal = doc.objects.find((o) => o.id === 'coalsack');
 check(coal && coal.kind === 'nebula' && coal.vmag === null && coal.distLy === 587, 'the Coalsack is a nebula with no magnitude, 587 ly');
 check(doc.objects.find((o) => o.id === 'centaurus-a').distLyLow === 11000000, 'Centaurus A keeps its 11-13 Mly range');
+const horse = doc.objects.find((o) => o.id === 'horsehead-nebula');
+check(horse && horse.kind === 'nebula' && horse.distLy === 1375 && horse.designation === 'Barnard 33', 'the Horsehead is a dark nebula 1 375 ly out under its Barnard number');
+check(doc.objects.find((o) => o.id === 'ngc-2419').distLy === 275000 && doc.objects.find((o) => o.id === 'flame-nebula').vmag === null, 'NGC 2419 at 275 000 ly; the Flame Nebula keeps no citation-needed magnitude');
 check(doc.openNgcTotal > 13000, `the file says how many OpenNGC objects exist without a distance (${doc.openNgcTotal})`);
 const m31 = doc.objects.find((o) => o.id === 'm31');
 check(m31 && m31.distLy === 2540000 && m31.distLyLow === 2430000 && m31.kind === 'galaxy' && m31.common === 'Andromeda Galaxy', 'M31 is Andromeda, 2.43-2.65 Mly, a galaxy');
@@ -38,7 +41,7 @@ check(doc.objects.some((o) => o.id === 'lmc' && o.distLy === 163000), 'the LMC i
 check(doc.objects.find((o) => o.id === 'm45')?.kind === 'cluster', 'the Pleiades (from the addendum) are a cluster');
 
 const recs = parseDso(doc);
-check(recs.length === 167 && recs.every((r) => r.klass === 'dso' && r.propagator === 'static' && r.layer === 'deep-sky'), 'one static dso record per object');
+check(recs.length === 178 && recs.every((r) => r.klass === 'dso' && r.propagator === 'static' && r.layer === 'deep-sky'), 'one static dso record per object');
 // a hand row speaks in words, not a Hubble code, and credits the one page it came from (found live 2026-09-09)
 const wlmRec = recs.find((r) => r.id === 'dso-wlm');
 check(wlmRec && wlmRec.meta.typeText === 'dwarf irregular galaxy' && wlmRec.meta.hubble === 'IB(s)m', `WLM: words for the sentence, the code beside them (${wlmRec && wlmRec.meta.typeText})`);
