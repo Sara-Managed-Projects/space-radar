@@ -217,3 +217,27 @@ exotics:
     why: "Two neutron stars circling each other every 7.75 hours, spiralling inward exactly as Einstein's gravitational waves demand -- the 1993 Nobel Prize, twenty years before the waves were heard directly."
     aliases: [PSR B1913+16, PSR J1915+1606]
     source: "https://en.wikipedia.org/wiki/Hulse%E2%80%93Taylor_pulsar (infobox, read 2026-09-09)"
+
+  - id: psr-j1614-2230
+    name: PSR J1614-2230
+    kind: pulsar
+    ra: 16h 14m 36.5051s
+    dec: -22° 30′ 31.081″
+    dist_ly: 3900
+    period_s: 0.003150807655690673
+    mass_msun: 1.908
+    why: "A neutron star of nearly two Suns, weighed in 2010 by the delay its companion's gravity puts on its radio ticks -- a mass that ruled out many ideas of what neutron stars are made of."
+    aliases: [J1614-2230]
+    source: "https://en.wikipedia.org/wiki/PSR_J1614%E2%88%922230 (infobox, read 2026-09-09)"
+
+  - id: psr-j0348-0432
+    name: PSR J0348+0432
+    kind: pulsar
+    ra: 03h 48m 43.639s
+    dec: +04° 32′ 11.46″
+    dist_ly: 6800
+    period_s: 0.0391226563571297
+    mass_msun: 2.01
+    why: "Two Suns in a ball twenty kilometres across, circling a white dwarf every two and a half hours; among the heaviest neutron stars ever weighed."
+    aliases: [J0348+0432]
+    source: "https://en.wikipedia.org/wiki/PSR_J0348%2B0432 (infobox, read 2026-09-09)"
