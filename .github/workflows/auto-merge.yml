@@ -3,17 +3,25 @@ name: auto-merge
 # Squash-merge same-repo PRs into main after ci.yml is green.
 # Hold: draft PR, or labels `no-auto-merge` / `hold`.
 
+#
+# Two triggers. The ci completion is the fast path. The schedule is the safety net: an attempt made
+# while a sibling PR was merging fails on the base-branch policy, and nothing re-fires -- three PRs
+# sat CLEAN for half an hour on 2026-09-09 until someone re-ran ci by hand. Every quarter hour the
+# sweep merges whatever is open, non-draft, unheld and CLEAN.
 on:
   workflow_run:
     workflows: [ci]
     types: [completed]
+  schedule:
+    - cron: "*/15 * * * *"
 
 jobs:
   merge:
     if: >
-      github.event.workflow_run.conclusion == 'success'
+      github.event_name == 'schedule'
+      || (github.event.workflow_run.conclusion == 'success'
       && github.event.workflow_run.event == 'pull_request'
-      && github.event.workflow_run.head_repository.full_name == github.repository
+      && github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -23,21 +31,33 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
-          SHA: ${{ github.event.workflow_run.head_sha }}
+          SHA: ${{ github.event.workflow_run.head_sha || '' }}
         run: |
           set -euo pipefail
+          held() {
+            LABELS=$(gh pr view "$1" --repo "$REPO" --json labels --jq '[.labels[].name] | join(",")')
+            case ",${LABELS}," in *,no-auto-merge,*|*,hold,*) return 0 ;; esac
+            return 1
+          }
+          if [ -z "${SHA}" ]; then
+            # The scheduled sweep: every open, non-draft, unheld PR into main that GitHub calls CLEAN
+            # (green, up to date, no conflict). One at a time, oldest first; a merge makes the next
+            # one BEHIND, and its author's rebase brings it back through ci and this file.
+            for PR in $(gh pr list --repo "$REPO" --base main --state open --json number,isDraft,mergeStateStatus \
+                --jq '[.[] | select(.isDraft==false and .mergeStateStatus=="CLEAN")] | sort_by(.number) | .[].number'); do
+              if held "$PR"; then echo "PR #$PR held by label"; continue; fi
+              if gh pr merge "$PR" --repo "$REPO" --squash --delete-branch; then echo "merged #$PR"; break; fi
+              echo "PR #$PR did not merge; leaving it for the next sweep"
+            done
+            exit 0
+          fi
           PR=$(gh api "repos/${REPO}/commits/${SHA}/pulls" \
             --jq '[.[] | select(.base.ref=="main" and .draft==false and .state=="open")] | .[0].number // empty')
           if [ -z "$PR" ]; then
             echo "no open non-draft PR into main for $SHA"
             exit 0
           fi
-          LABELS=$(gh pr view "$PR" --repo "$REPO" --json labels --jq '[.labels[].name] | join(",")')
-          case ",${LABELS}," in
-            *,no-auto-merge,*|*,hold,*)
-              echo "PR #$PR held by label"
-              exit 0
-              ;;
-          esac
-          gh pr merge "$PR" --repo "$REPO" --squash --delete-branch
+          if held "$PR"; then echo "PR #$PR held by label"; exit 0; fi
+          # A failure here is not the end: the quarter-hour sweep above retries while the PR is CLEAN.
+          gh pr merge "$PR" --repo "$REPO" --squash --delete-branch || { echo "merge refused now; the sweep will retry"; exit 0; }
           echo "merged #$PR"
