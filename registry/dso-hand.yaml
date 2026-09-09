@@ -591,6 +591,232 @@ objects:
     source: "https://en.wikipedia.org/wiki/Pisces_II (infobox, read 2026-09-09)"
     why: "A faint satellite found in 2010, one of the most distant of the Milky Way's dwarfs."
 
+  - id: ngc-253
+    name: Sculptor Galaxy
+    designation: NGC 253
+    type: G
+    hubble: "SAB(s)c"
+    what: spiral galaxy, seen nearly edge-on and bursting with new stars
+    ra_deg: 11.888          # 00h 47m 33.13s
+    dec_deg: -25.2881       # -25 deg 17 min 17.1 s
+    dist_kly: 11400         # 11.4 +/- 0.7 Mly
+    vmag: 8.0
+    maj_ax_arcmin: 27.5
+    con: Sculptor
+    source: "https://en.wikipedia.org/wiki/Sculptor_Galaxy (infobox, read 2026-09-09)"
+    why: "The brightest galaxy outside the Local Group for southern binoculars, a dusty starburst spiral tilted almost edge-on to us."
+
+  - id: centaurus-a
+    name: Centaurus A
+    designation: NGC 5128
+    type: G
+    hubble: "S0 pec"
+    what: peculiar galaxy with a giant black hole firing radio jets
+    ra_deg: 201.3651        # 13h 25m 27.615s
+    dec_deg: -43.0191       # -43 deg 01 min 08.806 s
+    dist_kly: [11000,13000] # 11 to 13 Mly
+    vmag: 6.84
+    maj_ax_arcmin: 25.7
+    con: Centaurus
+    source: "https://en.wikipedia.org/wiki/Centaurus_A (infobox, read 2026-09-09)"
+    why: "The nearest galaxy with jets: a dark dust lane across a round glow, and radio lobes many times its size, from a black hole eating a swallowed spiral."
+
+  - id: omega-centauri
+    name: Omega Centauri
+    designation: NGC 5139
+    type: GCl
+    what: globular cluster
+    ra_deg: 201.697         # 13h 26m 47.28s
+    dec_deg: -47.4795       # -47 deg 28 min 46.1 s
+    dist_kly: 15.8          # 15.8 +/- 1.1 kly
+    vmag: 3.9
+    maj_ax_arcmin: 36.3
+    con: Centaurus
+    source: "https://en.wikipedia.org/wiki/Omega_Centauri (infobox, read 2026-09-09)"
+    why: "The biggest globular cluster in the sky, ten million stars, so large it may be the stripped core of a small galaxy."
+
+  - id: 47-tucanae
+    name: 47 Tucanae
+    designation: NGC 104
+    type: GCl
+    what: globular cluster
+    ra_deg: 6.0231          # 00h 24m 05.539s
+    dec_deg: -72.0814       # -72 deg 04 min 53.20 s
+    dist_kly: 14.5          # 4.45 +/- 0.01 kpc
+    vmag: 4.09
+    maj_ax_arcmin: 43.8
+    con: Tucana
+    source: "https://en.wikipedia.org/wiki/47_Tucanae (infobox, read 2026-09-09)"
+    why: "The second-brightest globular cluster, a naked-eye ball of stars next to the Small Magellanic Cloud, though 200 000 light-years nearer."
+
+  - id: carina-nebula
+    name: Carina Nebula
+    designation: NGC 3372
+    type: HII
+    what: emission nebula
+    ra_deg: 161.2854        # 10h 45m 08.5s
+    dec_deg: -59.8678       # -59 deg 52 min 04 s
+    dist_kly: 8.5           # about 8 500 ly
+    vmag: 1.0
+    maj_ax_arcmin: 120
+    con: Carina
+    source: "https://en.wikipedia.org/wiki/Carina_Nebula (infobox, read 2026-09-09)"
+    why: "Four times the size of the Orion Nebula and brighter, home to Eta Carinae and some of the heaviest stars known; the south's great nebula."
+
+  - id: helix-nebula
+    name: Helix Nebula
+    designation: NGC 7293
+    type: PN
+    what: planetary nebula
+    ra_deg: 337.4106        # 22h 29m 38.55s
+    dec_deg: -20.8371       # -20 deg 50 min 13.6 s
+    dist_kly: 0.65          # 650 +/- 3 ly (200 pc)
+    vmag: 7.6
+    maj_ax_arcmin: 25
+    con: Aquarius
+    source: "https://en.wikipedia.org/wiki/Helix_Nebula (infobox, read 2026-09-09)"
+    why: "One of the nearest planetary nebulae, the shell a dying Sun-like star has thrown off; the 'Eye of God' photographs."
+
+  - id: cats-eye-nebula
+    name: Cat's Eye Nebula
+    designation: NGC 6543
+    type: PN
+    what: planetary nebula
+    ra_deg: 269.6393        # 17h 58m 33.423s
+    dec_deg: 66.6332        # +66 deg 37 min 59.52 s
+    dist_kly: 3.3           # 3.3 +/- 0.9 kly
+    # vmag omitted: the infobox gives 9.8 in B, not V
+    maj_ax_arcmin: 0.33      # core 20 arcsec
+    con: Draco
+    source: "https://en.wikipedia.org/wiki/Cat%27s_Eye_Nebula (infobox, read 2026-09-09)"
+    why: "The first planetary nebula whose light was split into a spectrum (1864), showing glowing gas, not stars; Hubble's portrait of it is famous."
+
+  - id: double-cluster
+    name: Double Cluster
+    designation: NGC 869 and NGC 884
+    type: OCl
+    what: pair of open clusters
+    ra_deg: 35.0            # 02h 20m
+    dec_deg: 57.1333        # +57 deg 08 min
+    dist_kly: [7.46,7.64]   # 7 460 and 7 640 ly, one for each cluster
+    vmag: 3.7                # 3.7 and 3.8, one for each
+    maj_ax_arcmin: 60
+    con: Perseus
+    source: "https://en.wikipedia.org/wiki/Double_Cluster (infobox, read 2026-09-09)"
+    why: "Two young star clusters side by side in binoculars, born together about 13 million years ago."
+
+  - id: hyades
+    name: Hyades
+    designation: Melotte 25
+    type: OCl
+    what: open cluster
+    ra_deg: 66.75           # 04h 27m
+    dec_deg: 15.8667        # +15 deg 52 min
+    dist_kly: 0.153         # 153 ly (47 pc)
+    vmag: 0.5
+    maj_ax_arcmin: 330
+    con: Taurus
+    source: "https://en.wikipedia.org/wiki/Hyades_(star_cluster) (infobox, read 2026-09-09)"
+    why: "The nearest open cluster, the V of stars that makes the Bull's face; Aldebaran sits in front of it but is not a member."
+
+  - id: rosette-nebula
+    name: Rosette Nebula
+    designation: NGC 2237
+    type: HII
+    what: emission nebula
+    ra_deg: 98.4375         # 06h 33m 45s
+    dec_deg: 4.9983         # +04 deg 59 min 54 s
+    dist_kly: 5.2           # 5 200 ly
+    vmag: 9.0
+    maj_ax_arcmin: 78      # 1.3 deg
+    con: Monoceros
+    source: "https://en.wikipedia.org/wiki/Rosette_Nebula (infobox, read 2026-09-09)"
+    why: "A ring of glowing gas round a young cluster whose stars have blown the middle clear -- a rose with a hollow heart."
+
+  - id: north-america-nebula
+    name: North America Nebula
+    designation: NGC 7000
+    type: HII
+    what: emission nebula
+    ra_deg: 314.8213        # 20h 59m 17.1s
+    dec_deg: 44.5289        # +44 deg 31 min 44 s
+    dist_kly: 2.59          # 2 590 +/- 80 ly
+    vmag: 4
+    maj_ax_arcmin: 120
+    con: Cygnus
+    source: "https://en.wikipedia.org/wiki/North_America_Nebula (infobox, read 2026-09-09)"
+    why: "Shaped like the continent, with a dark 'Gulf of Mexico' of dust; a naked-eye glow from a truly dark site."
+
+  - id: ngc-891
+    name: NGC 891
+    designation: NGC 891
+    type: G
+    hubble: "SA(s)b?"
+    what: spiral galaxy seen exactly edge-on
+    ra_deg: 35.6392         # 02h 22m 33.4s
+    dec_deg: 42.3492        # +42 deg 20 min 57 s
+    dist_kly: 27300         # 27.3 +/- 1.8 Mly
+    vmag: 10.1
+    maj_ax_arcmin: 13.5
+    con: Andromeda
+    source: "https://en.wikipedia.org/wiki/NGC_891 (infobox, read 2026-09-09)"
+    why: "What the Milky Way would look like from outside and exactly edge-on: a thin disc split by a dark lane of dust."
+
+  - id: jewel-box
+    name: Jewel Box
+    designation: NGC 4755
+    type: OCl
+    what: open cluster
+    ra_deg: 193.425         # 12h 53m 42s
+    dec_deg: -60.3667       # -60 deg 22.0 min
+    dist_kly: 6.5           # 6.50 kly
+    # vmag omitted: the infobox leaves the magnitude blank
+    con: Crux
+    source: "https://en.wikipedia.org/wiki/Jewel_Box_(star_cluster) (infobox, read 2026-09-09)"
+    why: "A small cluster of blue-white stars with one red supergiant among them -- Herschel's 'casket of variously coloured precious stones'."
+
+  - id: tarantula-nebula
+    name: Tarantula Nebula
+    designation: NGC 2070
+    type: HII
+    what: emission nebula in the Large Magellanic Cloud
+    ra_deg: 84.6583         # 05h 38m 38s
+    dec_deg: -69.095        # -69 deg 05.7 min
+    dist_kly: 160           # 160 +/- 10 kly
+    vmag: 8
+    maj_ax_arcmin: 40
+    con: Dorado
+    source: "https://en.wikipedia.org/wiki/Tarantula_Nebula (infobox, read 2026-09-09)"
+    why: "The most violent star factory in the Local Group, in another galaxy: put where the Orion Nebula is, it would cast shadows."
+
+  - id: veil-nebula
+    name: Veil Nebula
+    designation: NGC 6960, 6992 and 6995
+    type: SNR
+    what: supernova remnant
+    ra_deg: 311.4083        # 20h 45m 38.0s
+    dec_deg: 30.7083        # +30 deg 42 min 30 s
+    dist_kly: 2.4           # 2 400 ly
+    vmag: 7.0
+    maj_ax_arcmin: 180      # 3 deg
+    con: Cygnus
+    source: "https://en.wikipedia.org/wiki/Veil_Nebula (infobox, read 2026-09-09)"
+    why: "The torn shell of a star that exploded ten to twenty thousand years ago, six full Moons across, in lacework filaments."
+
+  - id: coalsack
+    name: Coalsack Nebula
+    designation: Caldwell 99
+    type: DrkN
+    what: dark nebula
+    ra_deg: 192.5           # 12h 50m
+    dec_deg: -62.5          # -62 deg 30 min
+    dist_kly: 0.587         # 180 pc
+    # vmag omitted: a dark cloud has no magnitude
+    maj_ax_arcmin: 420      # 7 x 5 deg
+    con: Crux
+    source: "https://en.wikipedia.org/wiki/Coalsack_Nebula (infobox, read 2026-09-09)"
+    why: "A hole in the Milky Way next to the Southern Cross: not a hole but a cloud of dust so thick no starlight gets through."
+
 messier_distances:
   # Thousands of light-years, from the table in https://en.wikipedia.org/wiki/List_of_Messier_objects
   # (read 2026-09-08). A range is written as [low, high]; the card prints both. Positions come from
