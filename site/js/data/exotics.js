@@ -275,5 +275,35 @@ export const EXOTICS = [
     "distLy": 21000,
     "massMsun": 1.441,
     "periodS": 0.059030003217813
+  },
+  {
+    "id": "psr-j1614-2230",
+    "name": "PSR J1614-2230",
+    "kind": "pulsar",
+    "why": "A neutron star of nearly two Suns, weighed in 2010 by the delay its companion's gravity puts on its radio ticks -- a mass that ruled out many ideas of what neutron stars are made of.",
+    "aliases": [
+      "J1614-2230"
+    ],
+    "source": "https://en.wikipedia.org/wiki/PSR_J1614%E2%88%922230 (infobox, read 2026-09-09)",
+    "raDeg": 243.652105,
+    "decDeg": -22.508634,
+    "distLy": 3900,
+    "massMsun": 1.908,
+    "periodS": 0.003150807655690673
+  },
+  {
+    "id": "psr-j0348-0432",
+    "name": "PSR J0348+0432",
+    "kind": "pulsar",
+    "why": "Two Suns in a ball twenty kilometres across, circling a white dwarf every two and a half hours; among the heaviest neutron stars ever weighed.",
+    "aliases": [
+      "J0348+0432"
+    ],
+    "source": "https://en.wikipedia.org/wiki/PSR_J0348%2B0432 (infobox, read 2026-09-09)",
+    "raDeg": 57.181829,
+    "decDeg": 4.536517,
+    "distLy": 6800,
+    "massMsun": 2.01,
+    "periodS": 0.0391226563571297
   }
 ];
