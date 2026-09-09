@@ -319,8 +319,11 @@ export function findMatches(index, query, limit = MAX_RESULTS) {
   found.sort((a, b) => {
     if (a.score !== b.score) return b.score - a.score;
     if (index.rank[a.i] !== index.rank[b.i]) return index.rank[a.i] - index.rank[b.i];
-    // Brighter first, when both have a magnitude: "andromeda" means the galaxy, not Andromeda II.
-    if (index.mag[a.i] !== index.mag[b.i] && Number.isFinite(index.mag[a.i]) && Number.isFinite(index.mag[b.i])) return index.mag[a.i] - index.mag[b.i];
+    // Brighter first: "andromeda" means the galaxy, not Andromeda II. A record with no magnitude
+    // (Infinity) sorts after one that has a magnitude -- MEASURED live: "carina" put the Carina
+    // Dwarf (no magnitude on its page) above the Carina Nebula (magnitude 1.0) on name length.
+    // Two records both without one are equal here and fall through to the next rule.
+    if (index.mag[a.i] !== index.mag[b.i]) return index.mag[a.i] - index.mag[b.i];
     // The hand-kept list, before the name length. MEASURED on the live page: "iss" returns
     // ISS (NAUKA) and ISS (ZARYA), same score, same layer, names of the same length -- so
     // without this line the alphabet decides and a module of the station outranks the station.
