@@ -8,10 +8,17 @@ name: auto-merge
 # while a sibling PR was merging fails on the base-branch policy, and nothing re-fires -- three PRs
 # sat CLEAN for half an hour on 2026-09-09 until someone re-ran ci by hand. Every quarter hour the
 # sweep merges whatever is open, non-draft, unheld and CLEAN.
+#
+# MEASURED 2026-09-09: the schedule did not fire once in four hours after it landed on main, and the
+# fast path's one attempt died on a GitHub GraphQL "something went wrong". So the fast path now
+# retries for up to five minutes while the PR stays CLEAN, and every push to main (which is what a
+# merge is) sweeps for the next CLEAN PR. The schedule stays as a third chance.
 on:
   workflow_run:
     workflows: [ci]
     types: [completed]
+  push:
+    branches: [main]
   schedule:
     - cron: "*/15 * * * *"
 
@@ -19,6 +26,7 @@ jobs:
   merge:
     if: >
       github.event_name == 'schedule'
+      || github.event_name == 'push'
       || (github.event.workflow_run.conclusion == 'success'
       && github.event.workflow_run.event == 'pull_request'
       && github.event.workflow_run.head_repository.full_name == github.repository)
@@ -58,6 +66,17 @@ jobs:
             exit 0
           fi
           if held "$PR"; then echo "PR #$PR held by label"; exit 0; fi
-          # A failure here is not the end: the quarter-hour sweep above retries while the PR is CLEAN.
-          gh pr merge "$PR" --repo "$REPO" --squash --delete-branch || { echo "merge refused now; the sweep will retry"; exit 0; }
-          echo "merged #$PR"
+          # Up to ten tries, half a minute apart. GitHub's answer is often transient (a GraphQL
+          # "something went wrong", or a sibling merging seconds earlier). BEHIND means the author
+          # must rebase, and the rebased head comes back through ci and this file; stop then.
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            if gh pr merge "$PR" --repo "$REPO" --squash --delete-branch; then echo "merged #$PR"; exit 0; fi
+            STATE=$(gh pr view "$PR" --repo "$REPO" --json state,mergeStateStatus --jq '.state + " " + .mergeStateStatus')
+            echo "attempt $attempt: refused; PR #$PR is $STATE"
+            case "$STATE" in
+              MERGED*) exit 0 ;;
+              *BEHIND*|*DIRTY*|CLOSED*) echo "nothing more to do here"; exit 0 ;;
+            esac
+            sleep 30
+          done
+          echo "gave up after ten tries; the push and schedule sweeps will retry"
