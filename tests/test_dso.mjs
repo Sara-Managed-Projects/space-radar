@@ -69,6 +69,7 @@ const index = buildIndex(recs, LAYERS);
 check(findMatches(index, 'andromeda').hits[0]?.record.id === 'dso-m31', '"andromeda" finds M31 first, not Andromeda II (brighter wins the tie)');
 check(findMatches(index, 'andromeda').hits.some((h) => h.record.id === 'dso-andromeda-ii'), 'Andromeda II is still in the list');
 check(findMatches(index, 'sagittarius dwarf').hits[0]?.record.id === 'dso-sagittarius-dwarf', '"sagittarius dwarf" finds the spheroidal (mag 4.5) before SagDIG (15.5)');
+check(findMatches(index, 'carina').hits[0]?.record.id === 'dso-carina-nebula', `"carina" finds the naked-eye nebula before the dwarf galaxy with no magnitude (${findMatches(index, 'carina').hits[0]?.record.id})`);
 check(findMatches(index, 'm31').hits[0]?.record.id === 'dso-m31', '"m31" finds M31 by alias');
 check(findMatches(index, 'pleiades').hits[0]?.record.id === 'dso-m45', '"pleiades" finds M45');
 check(findMatches(index, 'ngc 224').hits.some((h) => h.record.id === 'dso-m31'), '"ngc 224" finds M31');
