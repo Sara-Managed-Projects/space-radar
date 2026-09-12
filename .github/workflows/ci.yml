@@ -97,6 +97,11 @@ jobs:
         run: node tests/test_guessplace.mjs
       - name: Visiting-vehicle shapes build inside budget and match the right names
         run: node tests/test_station_shapes.mjs
+      # Spec 0022 left this open and measured the number first: the attitude code aimed the vehicle
+      # along the local vertical, which is 87.5 degrees off the direction of travel at 90 % of the
+      # arc. The propagator now returns the tangent of the curve it already draws.
+      - name: A launching rocket points where it is going (spec 0022)
+        run: node tests/test_ascent_attitude.mjs
       - name: worlds are objects (spec 0028 step 0)
         run: node tests/test_worlds_layer.mjs
       - name: the smaller thing under the finger wins (spec 0028 step 1)
