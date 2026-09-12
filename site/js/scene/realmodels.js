@@ -103,6 +103,45 @@ export const REAL_MODELS = {
     41890: { file: 'cygnss.glb', colour: 'satellite', name: 'a CYGNSS hurricane microsatellite', catalogue: 'CYGFM07' },
     41891: { file: 'cygnss.glb', colour: 'satellite', name: 'a CYGNSS hurricane microsatellite', catalogue: 'CYGFM03' },
     // ---------------------------------------------------------------------------------------
+    // ACS3, NASA's Advanced Composite Solar Sail System, on the `visual` layer -- a 9 m square of
+    // film is a very large very bright flat thing, which is the whole point of a sail and the
+    // reason it is on that layer.
+    //
+    // `build:` and NOT generic. NASA ships `3D Models/Solar Sail Concept`, public domain, and it
+    // was fetched, looked at and REJECTED: it is an octagon, and ACS3 is a square with booms along
+    // the diagonals. A procedural shape from ACS3's own published numbers -- 80 m^2, "about 9
+    // meters on a side", two booms "spanning the diagonal" -- is closer to the object than
+    // somebody's drawing of a different object, so the card's "drawn from published dimensions
+    // for ACS3" is the true sentence here.
+    59588: { build: 'solarsail', colour: 'satellite', name: 'ACS3, a solar sail', catalogue: 'ACS3' },
+
+    // THE NINE LASER-RANGING SPHERES, which were all drawn as a box bus with a dish and two wings.
+    //
+    // These are solid balls studded with retroreflectors. No wings, no antenna, no instrument,
+    // nothing that moves; a ground station fires a laser at them and times the flash coming back.
+    // They are the only spheres in the catalogue and they had the least sphere-like shape in it.
+    //
+    // ONE SHAPE, NINE SIZES, and `generic: true` because of that: AJISAI is 2.15 m, Etalon 1.29 m,
+    // LAGEOS 0.60 m, LARES 0.36 m, Starlette, Stella and WESTPAC 0.24 m. Size on screen encodes
+    // class here and never metres, so one ball serves all nine -- and the card says "the kind of
+    // thing, not this exact one" rather than implying we modelled each.
+    //
+    // AJISAI is the one on `visual`: it carries 318 mirrors as well as its corner cubes and
+    // FLASHES as it rotates, which is why a person outside can see it.
+    // Etalon 1 and 2 are catalogued as COSMOS 1989 and COSMOS 2024, which is one more reminder
+    // that a COSMOS number says nothing about what the spacecraft is.
+    // LARES-2 is NOT here: the id it is often given, 52307, is STARLINK-3755.
+    16908: { build: 'sphere', colour: 'satellite', name: 'a laser-ranging sphere', catalogue: 'AJISAI (EGS)', generic: true },
+    8820: { build: 'sphere', colour: 'satellite', name: 'a laser-ranging sphere', catalogue: 'LAGEOS 1', generic: true },
+    22195: { build: 'sphere', colour: 'satellite', name: 'a laser-ranging sphere', catalogue: 'LAGEOS 2', generic: true },
+    7646: { build: 'sphere', colour: 'satellite', name: 'a laser-ranging sphere', catalogue: 'STARLETTE', generic: true },
+    22824: { build: 'sphere', colour: 'satellite', name: 'a laser-ranging sphere', catalogue: 'STELLA', generic: true },
+    38077: { build: 'sphere', colour: 'satellite', name: 'a laser-ranging sphere', catalogue: 'LARES', generic: true },
+    19751: { build: 'sphere', colour: 'satellite', name: 'a laser-ranging sphere', catalogue: 'COSMOS 1989 (ETALON 1)', generic: true },
+    20026: { build: 'sphere', colour: 'satellite', name: 'a laser-ranging sphere', catalogue: 'COSMOS 2024 (ETALON 2)', generic: true },
+    25398: { build: 'sphere', colour: 'satellite', name: 'a laser-ranging sphere', catalogue: 'WESTPAC', generic: true },
+
+    // ---------------------------------------------------------------------------------------
     // TSELINA-2, the eighteen of them still in the catalogue.
     //
     // The `visual` layer -- things bright enough to go outside and see -- carries eighteen COSMOS

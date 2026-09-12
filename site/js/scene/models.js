@@ -443,6 +443,115 @@ function buildSoyuzFamily(variant) {
 // -------------------------------------------------------------------------------------- iridium
 
 /**
+ * A solar sail, drawn for ACS3 -- NASA's Advanced Composite Solar Sail System, NORAD 59588, on the
+ * `visual` layer because a sail is a very large very bright flat thing and that is the whole point
+ * of it.
+ *
+ * NASA rejected its own model for this. `3D Models/Solar Sail Concept` is public domain and ships
+ * an OCTAGON; ACS3 is a square with booms along the diagonals, and an octagon is not a square. A
+ * procedural shape built from NASA's own published numbers is closer to the object than NASA's own
+ * drawing of a different object, which is the whole argument requirement 3 is making.
+ *
+ * PUBLISHED NUMBERS (nasa.gov/mission/acs3): the sail is "approximately 860 square feet (80 square
+ * meters)", "approximately 30 feet (about 9 meters) on a side", spread by composite booms "spanning
+ * the diagonal of the square (23 feet or about 7 meters in length)", from a bus the size of a
+ * microwave. So: a 9 m square, four boom arms to the corners, and a bus small enough that the sail
+ * is the object.
+ *
+ * `realSizeM` is the DIAGONAL, 12.73 m, because that is the longest dimension and every other
+ * builder here reports the longest dimension. The side is the number a person can feel and it is
+ * on the card from the record, not from here.
+ */
+const SAIL_SIDE_M = 9;
+function buildSolarSail() {
+  const g = new THREE.Group();
+  const diagonal = SAIL_SIDE_M * Math.SQRT2;
+  g.userData.realSizeM = diagonal;
+  // Normalised on the DIAGONAL, so the diagonal is 1 and the side is 1/sqrt(2).
+  const side = 1 / Math.SQRT2;
+
+  // The film, as four triangular quadrants rather than one square, because that is how a square
+  // sail is actually made and the seams between them are the only thing on it to see. Each
+  // quadrant is a right triangle from the centre to one edge.
+  for (const a of [0, 1, 2, 3]) {
+    const tri = new THREE.Shape();
+    tri.moveTo(0, 0);
+    tri.lineTo(side / 2, side / 2);
+    tri.lineTo(-side / 2, side / 2);
+    tri.closePath();
+    // Extruded rather than a flat ShapeGeometry, so it is a closed solid with two faces. A
+    // single-sided plane is invisible from behind, and a sail is a sheet a camera goes round.
+    const geo = new THREE.ExtrudeGeometry(tri, { depth: 0.004, bevelEnabled: false });
+    const quad = mesh(geo, '#E8E4D8', 'foil', 'quadrant');
+    quad.rotation.z = (a * Math.PI) / 2;
+    quad.position.z = a % 2 ? 0.0025 : -0.0025; // a hair apart, so the seams read as seams
+    g.add(quad);
+  }
+
+  // TWO booms, spanning the diagonals -- NASA's own words. Each runs corner to corner, so each is
+  // the full diagonal, which is 1 by construction. They sit proud of the film on the sunward side.
+  for (const a of [0, 1]) {
+    const boom = cyl(0.007, 0.007, 1, 6, '#4A4A52', 'body', 'boom');
+    boom.rotation.z = Math.PI / 2;
+    const pivot = new THREE.Group();
+    pivot.rotation.z = Math.PI / 4 + (a * Math.PI) / 2;
+    pivot.position.z = 0.008;
+    pivot.add(boom);
+    g.add(pivot);
+  }
+  // The bus: a 12U CubeSat, about 0.2 x 0.2 x 0.3 m against a 9 m sail, so it is a speck. Drawn a
+  // little larger than true because one pixel is not a spacecraft -- and that exaggeration is the
+  // same one every model here makes, since size on screen encodes class and never true size.
+  const bus = box(0.075, 0.075, 0.05, FOIL, 'foil', 'bus');
+  bus.position.z = -0.03;
+  g.add(bus);
+  return g;
+}
+
+/**
+ * A laser-ranging geodetic sphere: a solid ball studded with retroreflectors, no wings, no
+ * antenna, no instrument, nothing that moves. Nine of them are up, they are the only spheres in
+ * the catalogue, and until now every one was drawn as a box bus with a dish and two panels.
+ *
+ * AJISAI is on the `visual` layer and is the reason this exists: 2.15 m across and carrying 318
+ * mirrors as well as its corner cubes, it FLASHES as it rotates, which is why a person outside can
+ * see it. The rest -- LAGEOS 1 and 2, Starlette, Stella, LARES, Etalon 1 and 2, WESTPAC -- share
+ * the plan and differ only in size, and size on screen encodes class here rather than metres, so
+ * one shape serves all nine honestly.
+ *
+ * THE FACETS ARE THE MODEL. A smooth sphere reads as a moon. A faceted one reads as an object
+ * built out of flat reflectors, which is exactly what these are, so the geometry is left
+ * deliberately coarse and flat-shaded rather than smoothed.
+ *
+ * Sources: AJISAI 2.15 m and 318 mirrors from eoPortal's EGS page; the family's diameters from
+ * their own mission pages. `realSizeM` is AJISAI's, the largest and the only one on `visual`.
+ */
+function buildGeodeticSphere() {
+  const g = new THREE.Group();
+  g.userData.realSizeM = 2.15;
+  // IcosahedronGeometry at detail 1 is 80 flat faces -- enough to read as faceted at 84 px and a
+  // twentieth of the triangles a smooth sphere would cost.
+  const ball = mesh(new THREE.IcosahedronGeometry(0.5, 1), '#C9CED6', 'body', 'ball');
+  g.add(ball);
+  // A scatter of brighter corner-cube panels over it, so it is a ball MADE OF reflectors rather
+  // than a ball painted grey. Twelve, at the icosahedron's own vertices, which is where a real
+  // one's arrays cluster too.
+  const t = (1 + Math.sqrt(5)) / 2;
+  const verts = [];
+  for (const [a, b] of [[1, t], [-1, t], [1, -t], [-1, -t]]) {
+    verts.push([0, a, b], [a, b, 0], [b, 0, a]);
+  }
+  const r = 0.5 / Math.hypot(1, t);
+  for (const v of verts) {
+    const face = mesh(new THREE.CircleGeometry(0.075, 6), '#F2F5FA', 'panel', 'reflector');
+    face.position.set(v[0] * r, v[1] * r, v[2] * r).multiplyScalar(1.02);
+    face.lookAt(face.position.clone().multiplyScalar(2));
+    g.add(face);
+  }
+  return g;
+}
+
+/**
  * An AST SpaceMobile BlueBird, as a family shape -- and the one shape on the visible layer whose
  * recognition is SIZE and FLATNESS rather than parts. There is no dish, no wing sticking out and
  * no bus worth seeing: it is a sheet. Nothing else a person can see from a garden looks like that.
@@ -2003,6 +2112,8 @@ const BUILDERS = {
     flat: buildSatelliteFlat,
     iridium: buildIridium,
     spacemobile: buildSpaceMobile,
+    solarsail: buildSolarSail,
+    sphere: buildGeodeticSphere,
   },
   debris: { default: buildDebris },
   rocket: rocketVariants(),
