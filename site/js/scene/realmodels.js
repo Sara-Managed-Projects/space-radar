@@ -31,6 +31,31 @@ const BASE = new URL('../../models/', import.meta.url);
  * a NORAD number for anything in Earth orbit, a JPL Horizons id for anything beyond it.
  * A key that is not here simply keeps its procedural model, which is the normal case.
  */
+/**
+ * FIVE OF THESE SHAPES REACH NOTHING, measured 2026-09-12 by scripts/check-model-reach.py.
+ *
+ * scripts/check-model-ids.sh answers "does this id point at the object the row NAMES?" -- the check
+ * against drawing the wrong spacecraft. It cannot answer the other half: "does anything the app
+ * draws match this row at all?" Nobody had asked, and for five shipped models the answer is no:
+ *
+ *     poes.glb      221 kB   NOAA 15, 18 and 19 left CelesTrak's `active` group
+ *     icon.glb      244 kB   ICON was decommissioned in 2022
+ *     calipso.glb   267 kB   CALIPSO ended in 2023
+ *     cloudsat.glb  206 kB   CloudSat ended in 2023
+ *     dscovr.glb     96 kB   DSCOVR sits at L1 and is in none of the three groups
+ *
+ * registry/sources.yaml fetches exactly three files -- GROUP=active, GROUP=visual, GROUP=stations
+ * -- so an object CelesTrak knows about and does not put in one of them is an object this app never
+ * sees. All five mappings are CORRECT: the ids and names are right and check-model-ids.sh passes on
+ * every one. They are dormant, not wrong, and deleting them would mean re-deriving them the day an
+ * object comes back. What the zero means is that these files are not doing what their rows claim
+ * TODAY, and the tree should be able to say that out loud rather than assume otherwise.
+ *
+ * Run `scripts/check-model-reach.py --names` before adding a mapping. Its other half is that it
+ * prints every object a name key catches, which is how ELARASAT MMS-1 was found wearing NASA's
+ * Magnetospheric Multiscale: a wrong object is invisible for exactly as long as nobody prints the
+ * list.
+ */
 export const REAL_MODELS = {
   /**
    * By catalogue number. `catalogue` is the name CelesTrak returns for that number and is not
