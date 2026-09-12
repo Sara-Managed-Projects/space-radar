@@ -102,6 +102,18 @@ for (const [id, name] of [[39634, 'SENTINEL-1A'], [23710, 'RADARSAT-1'], [31698,
 // ALOS DEB is debris from the same spacecraft and must not take the shape: the id route has no
 // class gate, so this is asserted on the id the catalogue actually gives the debris.
 check(realModelFor({ id: 'r-35418', name: 'ALOS DEB', klass: 'debris', layer: 'active', meta: { noradId: 35418 } }) === null, 'ALOS debris keeps the debris shape');
+// The commercial small SAR fleets, by name. Same flat side-looking blade, much smaller: ICEYE's
+// antenna is 3.25 m on an 85 kg microsatellite against RADARSAT-2's 15 m.
+for (const n of ['ICEYE-X2', 'ICEYE-X31', 'STRIX-1', 'PAZ', 'NOVASAR 1', 'GAOFEN-3 02']) {
+  const e = realModelFor({ id: `sar-${n}`, name: n, klass: 'satellite', layer: 'active', meta: { noradId: 91000 } });
+  check(e?.build === 'radar' && e.generic === true, `${n} is a radar imager: ${JSON.stringify(e && e.build)}`);
+}
+// ...and the three that carry a MESH REFLECTOR rather than a blade. Giving them the blade would be
+// the same error as giving a navigation satellite a dish, run backwards.
+for (const n of ['CAPELLA-11 (ACADIA-1)', 'UMBRA-07', 'QPS-SAR-5 (TSUKUYOMI-I)']) {
+  const e = realModelFor({ id: `mesh-${n}`, name: n, klass: 'satellite', layer: 'active', meta: { noradId: 91001 } });
+  check(!e || e.build !== 'radar', `${n} unfurls a mesh reflector and does not get the blade: ${JSON.stringify(e && e.build)}`);
+}
 // 52307 is STARLINK-3755, not LARES-2. An id that is often quoted for a sphere and is not one.
 {
   // 52307 is STARLINK-3755, an id often quoted for LARES-2. It must not get the sphere; since the

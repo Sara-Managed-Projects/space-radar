@@ -328,6 +328,23 @@ export const REAL_MODELS = {
     // Iridium: 66 NEXT satellites in service and the first generation's survivors, all one plan.
     // Klass satellite only, so IRIDIUM 33 DEB and the rest of that collision keep the debris shape.
     iridium: { build: 'iridium', colour: 'satellite', name: 'an Iridium satellite', klass: ['satellite'], generic: true },
+    // SIXTY-SEVEN MORE RADAR IMAGERS, by name, and three constellations deliberately left out.
+    //
+    // The twenty-two mapped by id are the big national ones. These are the commercial and small
+    // ones, and they carry the same flat side-looking blade: ICEYE's is 3.25 m on an 85 kg
+    // microsatellite, Synspective's StriX about 5 m, and PAZ is a TerraSAR-X built from the same
+    // drawing. That range -- 3.25 m to RADARSAT-2's 15 m -- is wider than the family shape admits,
+    // which is what `generic: true` and "the kind of thing" are for.
+    //
+    // NOT EVERY RADAR SATELLITE HAS A BLADE, and the three that do not are excluded on purpose:
+    // Capella, Umbra and QPS-SAR each unfurl a MESH REFLECTOR, which is a dish. Giving them the
+    // blade would be the same mistake as giving a navigation satellite a dish, run backwards, and
+    // all three are asserted to keep the generic shape until somebody draws the umbrella.
+    iceye: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', klass: ['satellite'], generic: true },
+    strix: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', klass: ['satellite'], generic: true },
+    paz: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', klass: ['satellite'], generic: true },
+    novasar: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', klass: ['satellite'], generic: true },
+    'gaofen-3': { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', klass: ['satellite'], generic: true },
     // THE 3U CUBESATS -- 164 objects, and the largest population in this app outside Starlink.
     //
     // Planet's Flock (94 Doves and SuperDoves, imaging the whole land surface daily) and Spire's
