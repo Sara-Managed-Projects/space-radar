@@ -509,6 +509,81 @@ function buildSolarSail() {
 }
 
 /**
+ * A 3U CubeSat, and this is the one shape in this file that needs no fudging: a CubeSat is a
+ * STANDARD, not a style. One unit is a 10 cm cube; a 3U is three of them in a row, 10 x 10 x 30 cm,
+ * and every one that flies has to fit a dispenser built to that drawing. Where every other family
+ * shape here is an average of spacecraft that merely resemble each other, this is the specification.
+ *
+ * 164 OF THEM, and they were all drawn as a 30-metre communications satellite with a parabolic dish.
+ * Planet's Flock -- 94 Doves and SuperDoves imaging the whole land surface daily -- and Spire's 70
+ * Lemurs are both 3U, and between them they are the largest population in this app outside Starlink.
+ * The error was not subtle: the drawing was a hundred times the length of the object.
+ *
+ * THE RECOGNITION IS THE RATIO. A 3U is three times as long as it is wide, and the deployed panels
+ * are bigger than the body, which is what makes it read as a brick with two flaps rather than as a
+ * small satellite. The body is drawn at exactly 1:1:3 and is not rounded to look better.
+ *
+ * THE PANELS ARE NOT PART OF THE STANDARD, and that is the one thing here that is a choice rather
+ * than a specification. The bus is fixed by the dispenser; what an operator hangs off it is not.
+ * Doves and Lemurs both fly two deployable wings and neither publishes their size, so they are
+ * drawn as a common double-deployable, 2U x 3U a side. Saying so here is the point -- the card
+ * calls this "the kind of thing, not this exact one", and this paragraph is which part of it is
+ * the kind of thing.
+ *
+ * `realSizeM` is the deployed span that follows from those numbers, 0.50 m, because every builder
+ * here reports its longest dimension. The 30 cm body is the number a person can feel and it
+ * belongs on the card.
+ *
+ * Sources: the CubeSat Design Specification's 100 x 100 x 113.5 mm unit; Planet's Dove and SuperDove
+ * and Spire's LEMUR-2 are each published as 3U.
+ */
+function buildCubeSat() {
+  const g = new THREE.Group();
+  const SPAN_M = 0.5; // the 0.10 m body plus a 0.20 m panel each side, deployed flat
+  g.userData.realSizeM = SPAN_M;
+  const S = 1 / SPAN_M;
+
+  // The 3U body: 0.10 x 0.10 x 0.30 m, long axis along Z so `sun-panels` attitude puts its end at
+  // the world -- which is where the camera on a Dove points.
+  const body = box(0.1 * S, 0.1 * S, 0.3 * S, '#DCE2EA', 'body', 'bus');
+  g.add(body);
+  // The two rails that make it a CubeSat rather than a box: the dispenser runs on them.
+  for (const [x, y] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+    const rail = box(0.014 * S, 0.014 * S, 0.305 * S, METAL, 'foil', 'rail');
+    rail.position.set(x * 0.045 * S, y * 0.045 * S, 0);
+    g.add(rail);
+  }
+  // The optic, on one end. A Dove is mostly a telescope, and the end it looks out of is the only
+  // feature on the body worth drawing.
+  const optic = cyl(0.035 * S, 0.035 * S, 0.02 * S, 10, '#2A2E36', 'body', 'boresight');
+  optic.rotation.x = Math.PI / 2;
+  optic.position.z = 0.155 * S;
+  g.add(optic);
+
+  // Two deployed panels, each 1U x 3U, flat out from the long sides. Same size as the body, which
+  // is the ratio that carries the recognition.
+  const pivot = new THREE.Group();
+  pivot.name = 'panelPivot';
+  for (const side of [-1, 1]) {
+    // panelWing already lays a slab `length` along X and `width` along Z, which is exactly the
+    // orientation wanted here -- so the only transform is the flip for the far side. Rotating it
+    // further, as the first version did, folds the panels diagonally and throws the 1:3 away.
+    const wing = panelWing(0.2 * S, 0.3 * S, METAL, side > 0 ? 'wing+' : 'wing-');
+    if (side < 0) wing.rotation.y = Math.PI;
+    wing.position.set(side * 0.05 * S, 0, 0);
+    pivot.add(wing);
+  }
+  g.add(pivot);
+  g.userData.panelPivots = [pivot];
+
+  // A whip antenna, because a 3U's radio is a tape measure and it is the only thing sticking out.
+  const whip = cyl(0.004 * S, 0.004 * S, 0.17 * S, 5, METAL, 'body', 'antenna');
+  whip.position.set(0, 0.06 * S, -0.1 * S);
+  g.add(whip);
+  return g;
+}
+
+/**
  * A radar-imaging satellite, as a family shape: a long flat blade of an antenna, a small bus behind
  * it, and the blade AIMED OFF TO ONE SIDE rather than straight down.
  *
@@ -2186,6 +2261,7 @@ const BUILDERS = {
     solarsail: buildSolarSail,
     sphere: buildGeodeticSphere,
     radar: buildRadarImager,
+    cubesat: buildCubeSat,
   },
   debris: { default: buildDebris },
   rocket: rocketVariants(),
