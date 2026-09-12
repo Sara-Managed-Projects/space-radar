@@ -44,6 +44,28 @@ check(e4 && e4.file === 'iss.glb', 'the ISS keeps its own file (the id route win
 check(realModelFor(tianhe)?.build === 'tiangong', 'CSS (TIANHE) draws the whole station');
 { const o = modelFor('satellite', 'iridium'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-iridium') && Math.abs(o.userData.realSizeM - 9.4) < 0.01, `iridium builds inside budget at 9.4 m (${tris(o)} tris)`); disposeModels(o); }
 check(realModelFor({ id: 'i1', name: 'IRIDIUM 167', klass: 'satellite', layer: 'visual', meta: { noradId: 14 } })?.build === 'iridium', 'an Iridium gets its shape');
+// Starlink: 11 131 objects, and the one row in the table that picks its shape from the record.
+// The generations differ by an array, the catalogue name does not say which, and the launch year
+// does -- for the 84 % of the constellation launched outside 2023.
+for (const v of ['starlink-v1', 'starlink-v2']) {
+  const o = modelFor('satellite', v);
+  check(!o.userData.generic && tris(o) <= budgetOf(`satellite-${v}`), `${v} builds inside budget (${tris(o)} tris)`);
+  disposeModels(o);
+}
+check(Math.abs(modelFor('satellite', 'starlink-v1').userData.realSizeM - 9) < 0.01, 'a v1 Starlink is drawn at 9 m');
+check(Math.abs(modelFor('satellite', 'starlink-v2').userData.realSizeM - 30) < 0.01, "a v2 Mini is drawn at SpaceX's published 30 m span");
+for (const [year, build] of [[2019, 'starlink-v1'], [2022, 'starlink-v1'], [2023, 'starlink-v2'], [2026, 'starlink-v2']]) {
+  const e = realModelFor({ id: `sl-${year}`, name: 'STARLINK-1007', klass: 'satellite', layer: 'active', meta: { noradId: 99000, launchYear: year } });
+  check(e?.build === build && e.generic === true, `a Starlink launched in ${year} is drawn as ${build}: ${JSON.stringify(e && e.build)}`);
+}
+// A record with no launch year at all falls to the current generation rather than throwing.
+check(realModelFor({ id: 'sl-none', name: 'STARLINK-9999', klass: 'satellite', layer: 'active', meta: { noradId: 99001 } })?.build === 'starlink-v2',
+  'a Starlink with no launch year gets the current generation');
+check(realModelFor({ id: 'sl-deb', name: 'STARLINK-1007 DEB', klass: 'debris', layer: 'active', meta: { noradId: 99002, launchYear: 2020 } }) === null,
+  'Starlink debris keeps the debris shape');
+// `resolve` must not leak to the other rows: an entry without one comes back untouched.
+check(realModelFor({ id: 'sl-ir', name: 'IRIDIUM 167', klass: 'satellite', layer: 'active', meta: { noradId: 99003, launchYear: 2019 } })?.build === 'iridium',
+  'a row with no resolve() is returned unchanged');
 // MMS by id, and the satellite that used to steal its model. ELARASAT MMS-1 is a real object in
 // the live catalogue (NORAD 64539) and it is not NASA's Magnetospheric Multiscale; the
 // word-boundary rule accepts `mms` followed by a hyphen, so the name route could not tell them
@@ -81,8 +103,14 @@ for (const [id, name] of [[39634, 'SENTINEL-1A'], [23710, 'RADARSAT-1'], [31698,
 // class gate, so this is asserted on the id the catalogue actually gives the debris.
 check(realModelFor({ id: 'r-35418', name: 'ALOS DEB', klass: 'debris', layer: 'active', meta: { noradId: 35418 } }) === null, 'ALOS debris keeps the debris shape');
 // 52307 is STARLINK-3755, not LARES-2. An id that is often quoted for a sphere and is not one.
-check(realModelFor({ id: 's-52307', name: 'STARLINK-3755', klass: 'satellite', layer: 'active', meta: { noradId: 52307 } }) === null,
-  'STARLINK-3755 is not LARES-2 and gets no sphere');
+{
+  // 52307 is STARLINK-3755, an id often quoted for LARES-2. It must not get the sphere; since the
+  // Starlink row landed it now correctly gets a Starlink instead, so the assertion is on the thing
+  // that matters -- not a ball -- rather than on "no shape at all", which it briefly was.
+  const e = realModelFor({ id: 's-52307', name: 'STARLINK-3755', klass: 'satellite', layer: 'active', meta: { noradId: 52307, launchYear: 2022 } });
+  check(e && e.build !== 'sphere', `STARLINK-3755 is not LARES-2 and gets no sphere: ${JSON.stringify(e && e.build)}`);
+  check(e?.build === 'starlink-v1', 'and it gets the Starlink its name says it is');
+}
 { const o = modelFor('satellite', 'spacemobile'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-spacemobile') && Math.abs(o.userData.realSizeM - 8.02) < 0.01, `spacemobile builds inside budget at 8.02 m (${tris(o)} tris)`); disposeModels(o); }
 // The nine live catalogue names as of 2026-09-12, and the two things that must NOT take the shape.
 for (const n of ['SPACEMOBILE-001', 'SPACEMOBILE-006', 'SPACEMOBILE-010']) {

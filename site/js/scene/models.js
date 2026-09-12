@@ -509,6 +509,71 @@ function buildSolarSail() {
 }
 
 /**
+ * A Starlink, in its two generations -- 11 131 objects in the catalogue the app fetches, sixty-seven
+ * per cent of everything in it, and until now every one of them was a box with a parabolic dish.
+ *
+ * SPEC 0027 PUT THIS OUT OF SCOPE and gave a reason: "the only model found is CC BY on Sketchfab
+ * behind a login and is the one-wing v1; 7 059 active are two-wing v2 Mini ... it needs Ivan's
+ * download and a launch-date gate." The download was only ever needed for REAL GEOMETRY. A Starlink
+ * is a flat rectangle and a solar array; drawing it procedurally needs nobody's licence, and the
+ * launch-date gate is the other half, which is below.
+ *
+ * WHAT IS PUBLISHED, AND BY WHOM
+ *   v1.0 / v1.5   "a flat panel design with a single solar panel", about 260 kg (Gunter's Space
+ *                 Page, Starlink Block v1.0). ONE array is the fact that matters.
+ *   v2 Mini       a body "over 4.1 meters wide", TWO arrays unfurling to "about 100 feet (30
+ *                 meters)", each 52.5 m^2, 800 kg (Spaceflight Now, 2023-02-26). Gunter's adds that
+ *                 the bus is "twice the size of the Starlink Block v1.5 satellites".
+ *
+ * THE ONE NUMBER HERE THAT NOBODY PUBLISHES is v1.5's span. SpaceX gives the v2 Mini's 30 m and not
+ * its predecessor's. Nine metres is what this project draws it at, from the chassis plus the single
+ * array; it is the least-sourced figure in this file and it is written down here rather than
+ * quietly rounded into the geometry.
+ *
+ * THE SHAPE IS THE ABSENCE OF A SHAPE. There is no bus, no dish, no boom and no body: a Starlink is
+ * a flat rectangle with a bigger flat rectangle hinged to it, which is why they stack like pizza
+ * boxes inside a fairing and why a train of them looks like a string of beads rather than a string
+ * of spacecraft. The phased-array panels tiling the chassis underside are the only feature on it.
+ */
+const STARLINK = {
+  v1: { span: 9, chassis: [2.8, 1.4], arrays: 1, array: [5.6, 2.6] },
+  v2: { span: 30, chassis: [4.1, 2.7], arrays: 2, array: [12.4, 4.2] },
+};
+function buildStarlink(variant) {
+  const g = new THREE.Group();
+  const s = STARLINK[variant === 'starlink-v1' ? 'v1' : 'v2'];
+  g.userData.realSizeM = s.span;
+  const S = 1 / s.span;
+  const [cw, cd] = s.chassis;
+
+  // The chassis: a slab, thin enough that edge-on it nearly disappears, which is true of the object.
+  const chassis = box(cw * S, 0.22 * S, cd * S, '#E7EBF1', 'body', 'chassis');
+  g.add(chassis);
+  // The phased-array panels on the Earth-facing side. Four tiles, dark, and the only thing on it.
+  for (const [i, j] of [[-1, -1], [-1, 1], [1, -1], [1, 1]]) {
+    const tile = box(cw * 0.44 * S, 0.03 * S, cd * 0.42 * S, '#242A34', 'panel', 'phased-array');
+    tile.position.set(i * cw * 0.24 * S, -0.13 * S, j * cd * 0.24 * S);
+    g.add(tile);
+  }
+
+  // The array, or arrays. This is the whole difference between the generations and the reason for
+  // the gate in realmodels.js: v1 has one and v2 Mini has two.
+  const pivot = new THREE.Group();
+  pivot.name = 'panelPivot';
+  const [al, aw] = s.array;
+  const sides = s.arrays === 2 ? [-1, 1] : [1];
+  for (const side of sides) {
+    const wing = panelWing(al * S, aw * S, METAL, side > 0 ? 'wing+' : 'wing-');
+    if (side < 0) wing.rotation.y = Math.PI;
+    wing.position.set(side * cw * 0.5 * S, 0, 0);
+    pivot.add(wing);
+  }
+  g.add(pivot);
+  g.userData.panelPivots = [pivot];
+  return g;
+}
+
+/**
  * A 3U CubeSat, and this is the one shape in this file that needs no fudging: a CubeSat is a
  * STANDARD, not a style. One unit is a 10 cm cube; a 3U is three of them in a row, 10 x 10 x 30 cm,
  * and every one that flies has to fit a dispenser built to that drawing. Where every other family
@@ -2262,6 +2327,8 @@ const BUILDERS = {
     sphere: buildGeodeticSphere,
     radar: buildRadarImager,
     cubesat: buildCubeSat,
+    'starlink-v1': buildStarlink,
+    'starlink-v2': buildStarlink,
   },
   debris: { default: buildDebris },
   rocket: rocketVariants(),
