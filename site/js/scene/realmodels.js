@@ -75,6 +75,34 @@ export const REAL_MODELS = {
     41240: { file: 'jason.glb', colour: 'satellite', name: 'a Jason-series ocean altimeter', catalogue: 'JASON-3', generic: true },
     43476: { file: 'grace.glb', colour: 'satellite', name: 'a GRACE-series gravity mapper', catalogue: 'GRACE-FO 1', generic: true },
     // ---------------------------------------------------------------------------------------
+    // THE NASA SCIENCE SET spec 0027 task 9f left open, and the two reasons it was left open.
+    //
+    // 9f read: "Fermi and CYGNSS skipped -- catalogue names uncertain (FGST? CYGFM0x?) and a name
+    // that never matches is a wasted file", and it gave ICON no id at all. Both were answerable in
+    // one query each. The catalogue says FGRST (GLAST), not FGST. It says CYGFM01 upward. And ICON
+    // is 44628 -- the id 9f floated, 44387, is METEOR-M2 2, which is precisely the failure the
+    // `catalogue:` field and check-model-ids.sh exist to catch, caught on paper this time.
+    //
+    // All six checked live on 2026-09-12 and re-checked by scripts/check-model-ids.sh.
+    33053: { file: 'fermi.glb', colour: 'telescope', name: 'the Fermi Gamma-ray Space Telescope', catalogue: 'FGRST (GLAST)' },
+    29479: { file: 'hinode.glb', colour: 'telescope', name: 'Hinode', catalogue: 'HINODE (SOLAR-B)' },
+    44628: { file: 'icon.glb', colour: 'satellite', name: 'ICON, the Ionospheric Connection Explorer', catalogue: 'ICON' },
+    39574: { file: 'gpm.glb', colour: 'satellite', name: 'the GPM Core Observatory', catalogue: 'GPM-CORE' },
+    // SeaStar is the spacecraft; SeaWiFS was the instrument; ORBVIEW 2 is what the catalogue calls
+    // it. NASA files the model under the spacecraft's build name, which is why every earlier sweep
+    // of the NASA index for a catalogue name missed it.
+    24883: { file: 'seastar.glb', colour: 'satellite', name: 'SeaStar, which carried SeaWiFS', catalogue: 'ORBVIEW 2 (SEASTAR)' },
+    // CYGNSS: eight identical microsatellites launched together, seven still in the catalogue.
+    // CYGFM06 (41889) is NOT here -- CelesTrak answers "No GP data found" for it, and an id the
+    // catalogue does not have is a mapping that can only ever be wrong.
+    41884: { file: 'cygnss.glb', colour: 'satellite', name: 'a CYGNSS hurricane microsatellite', catalogue: 'CYGFM05' },
+    41885: { file: 'cygnss.glb', colour: 'satellite', name: 'a CYGNSS hurricane microsatellite', catalogue: 'CYGFM04' },
+    41886: { file: 'cygnss.glb', colour: 'satellite', name: 'a CYGNSS hurricane microsatellite', catalogue: 'CYGFM02' },
+    41887: { file: 'cygnss.glb', colour: 'satellite', name: 'a CYGNSS hurricane microsatellite', catalogue: 'CYGFM01' },
+    41888: { file: 'cygnss.glb', colour: 'satellite', name: 'a CYGNSS hurricane microsatellite', catalogue: 'CYGFM08' },
+    41890: { file: 'cygnss.glb', colour: 'satellite', name: 'a CYGNSS hurricane microsatellite', catalogue: 'CYGFM07' },
+    41891: { file: 'cygnss.glb', colour: 'satellite', name: 'a CYGNSS hurricane microsatellite', catalogue: 'CYGFM03' },
+    // ---------------------------------------------------------------------------------------
     // TSELINA-2, the eighteen of them still in the catalogue.
     //
     // The `visual` layer -- things bright enough to go outside and see -- carries eighteen COSMOS

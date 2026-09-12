@@ -211,7 +211,7 @@ The numbers are facts and carry no licence; the arrangement is this project's (M
 
 ## 3b. 3D models — NASA, public domain
 
-Thirty-eight spacecraft, spacecraft-bus, antenna, rocket-stage and surface models ship in `site/models/`, all
+Forty-four spacecraft, spacecraft-bus, antenna, rocket-stage and surface models ship in `site/models/`, all
 from **NASA 3D Resources** (<https://github.com/nasa/NASA-3D-Resources>, mirrored from
 <https://science.nasa.gov/3d-resources/>), 10.6 MB in total.
 
@@ -250,6 +250,8 @@ than counted by hand.
 | file | NASA model | used for | size |
 |---|---|---|---|
 | `chandra.glb` | Chandra X-ray Observatory | NORAD 25867 (CXO) | 195 KB |
+| `fermi.glb` | Fermi Gamma-ray Large Area Space Telescope | NORAD 33053 (FGRST (GLAST)) | 174 KB |
+| `hinode.glb` | Hinode (Solar-B) | NORAD 29479 (HINODE (SOLAR-B)) | 102 KB |
 | `hubble.glb` | Hubble Space Telescope (A) | NORAD 20580 | 163 KB |
 | `jwst.glb` | James Webb Space Telescope (B) | Horizons -170 | 891 KB |
 | `sdo.glb` | Solar Dynamics Observatory | NORAD 36395 (SDO) | 142 KB |
@@ -277,6 +279,10 @@ than counted by hand.
 | `oco2.glb` | Orbiting Carbon Observatory (OCO) 2 | catalogue name OCO 2 | 189 KB |
 | `suomi.glb` | Suomi National Polar-orbiting Partnership (Suomi NPP) | NORAD 37849 (SUOMI NPP) | 152 KB |
 | `tdrs.glb` | Tracking and Data Relay Satellites (TDRS) (A) | catalogue names containing TDRS | 10 KB |
+| `cygnss.glb` | Cyclone Global Navigation Satellite System (CYGNSS) | NORAD 41884-41891, the seven CYGNSS microsatellites still in the catalogue | 160 KB |
+| `gpm.glb` | Global Precipitation Measurement | NORAD 39574 (GPM-CORE) | 222 KB |
+| `icon.glb` | Ionospheric Connection Explorer (ICON) | NORAD 44628 (ICON) | 244 KB |
+| `seastar.glb` | SeaStar | NORAD 24883 (ORBVIEW 2 (SEASTAR)) | 12 KB |
 | `terra.glb` | Terra | NORAD 25994 (TERRA) | 20 KB |
 | `tselina2.glb` | Tselina-2 | the eighteen Tselina-2 ELINT satellites in the catalogue, by NORAD id | 122 KB |
 

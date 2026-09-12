@@ -72,6 +72,25 @@ for (const [id, name] of [[18958, 'COSMOS 1933'], [22236, 'COSMOS 2221'], [14699
   check(realModelFor({ id: `td-${id}`, name, klass: 'satellite', layer: 'visual', meta: { noradId: id } }) === null, `${name} is a Tselina-D and keeps the generic shape`);
 }
 check(realModelFor({ id: 'tdeb', name: 'COSMOS 2219 DEB', klass: 'debris', layer: 'active', meta: { noradId: 99901 } }) === null, 'Tselina-2 debris keeps the debris shape');
+// The NASA science set task 9f left open. Every id here was wrong, missing or called uncertain in
+// that task; every one was answerable in one catalogue query. 44387 -- the id 9f floated for ICON
+// -- is METEOR-M2 2, so the negative case is asserted too.
+for (const [id, name, file] of [
+  [33053, 'FGRST (GLAST)', 'fermi.glb'],
+  [29479, 'HINODE (SOLAR-B)', 'hinode.glb'],
+  [44628, 'ICON', 'icon.glb'],
+  [39574, 'GPM-CORE', 'gpm.glb'],
+  [24883, 'ORBVIEW 2 (SEASTAR)', 'seastar.glb'],
+  [41884, 'CYGFM05', 'cygnss.glb'],
+  [41891, 'CYGFM03', 'cygnss.glb'],
+]) {
+  const e = realModelFor({ id: `n-${id}`, name, klass: 'satellite', layer: 'active', meta: { noradId: id } });
+  check(e?.file === file && !e.generic, `${name} (${id}) draws ${file} as itself`);
+}
+check(realModelFor({ id: 'n-44387', name: 'METEOR-M2 2', klass: 'satellite', layer: 'active', meta: { noradId: 44387 } }) === null,
+  'METEOR-M2 2 is not ICON: the id task 9f floated maps to nothing');
+check(realModelFor({ id: 'n-41889', name: 'CYGFM06', klass: 'satellite', layer: 'active', meta: { noradId: 41889 } }) === null,
+  'CYGFM06 is not in the catalogue and is not mapped');
 { const j = realModelFor({ id: 'j3', name: 'JASON-3', klass: 'satellite', layer: 'notable', meta: { noradId: 41240 } }); check(j?.file === 'jason.glb' && j.generic === true, 'Jason-3 draws as the OSTM/Jason-2 sister ship, and says so'); }
 check(realModelFor({ id: 'd3', name: 'DRAGON 12 DEB', klass: 'debris', layer: 'active', meta: { noradId: 13 } }) === null, 'Dragon debris keeps the debris shape');
 check(realModelFor({ id: 'z1', name: 'SHENZHOU-21 (SZ-21)', klass: 'satellite', layer: 'stations', meta: { noradId: 8 } })?.build === 'shenzhou', 'a Shenzhou gets its shape');
