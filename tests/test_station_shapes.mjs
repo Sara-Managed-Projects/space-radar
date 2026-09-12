@@ -44,6 +44,15 @@ check(e4 && e4.file === 'iss.glb', 'the ISS keeps its own file (the id route win
 check(realModelFor(tianhe)?.build === 'tiangong', 'CSS (TIANHE) draws the whole station');
 { const o = modelFor('satellite', 'iridium'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-iridium') && Math.abs(o.userData.realSizeM - 9.4) < 0.01, `iridium builds inside budget at 9.4 m (${tris(o)} tris)`); disposeModels(o); }
 check(realModelFor({ id: 'i1', name: 'IRIDIUM 167', klass: 'satellite', layer: 'visual', meta: { noradId: 14 } })?.build === 'iridium', 'an Iridium gets its shape');
+// The 3U CubeSats, by name because the id list of a constellation launched in batches would be
+// stale within the month. The real catalogue names, and the debris that must not take the shape.
+{ const o = modelFor('satellite', 'cubesat'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-cubesat') && Math.abs(o.userData.realSizeM - 0.5) < 0.001, `cubesat builds inside budget at a 0.50 m deployed span (${tris(o)} tris)`); disposeModels(o); }
+for (const n of ['FLOCK 4Q-16', 'FLOCK 4V-1', 'LEMUR-2-GREENBERG', 'LEMUR-1']) {
+  const e = realModelFor({ id: `c-${n}`, name: n, klass: 'satellite', layer: 'active', meta: { noradId: 90001 } });
+  check(e?.build === 'cubesat' && e.generic === true, `${n} is drawn as the 3U CubeSat it is`);
+}
+check(realModelFor({ id: 'c-deb', name: 'FLOCK 2E-1 DEB', klass: 'debris', layer: 'active', meta: { noradId: 90002 } }) === null, 'Flock debris keeps the debris shape');
+check(realModelFor({ id: 'c-rb', name: 'FALCON 9 R/B', klass: 'rocket', layer: 'active', meta: { noradId: 90003 } })?.file === 'rocket-body.glb', 'the stage that launched them is still a rocket body');
 // ACS3 and the nine laser-ranging spheres, both procedural, both `norad:` rows.
 { const o = modelFor('satellite', 'solarsail'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-solarsail') && Math.abs(o.userData.realSizeM - 9 * Math.SQRT2) < 0.01, `solarsail builds inside budget at the 9 m sail's diagonal (${tris(o)} tris)`); disposeModels(o); }
 { const o = modelFor('satellite', 'sphere'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-sphere') && Math.abs(o.userData.realSizeM - 2.15) < 0.01, `sphere builds inside budget at AJISAI's 2.15 m (${tris(o)} tris)`); disposeModels(o); }

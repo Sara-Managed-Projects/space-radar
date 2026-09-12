@@ -287,6 +287,20 @@ export const REAL_MODELS = {
     // Iridium: 66 NEXT satellites in service and the first generation's survivors, all one plan.
     // Klass satellite only, so IRIDIUM 33 DEB and the rest of that collision keep the debris shape.
     iridium: { build: 'iridium', colour: 'satellite', name: 'an Iridium satellite', klass: ['satellite'], generic: true },
+    // THE 3U CUBESATS -- 164 objects, and the largest population in this app outside Starlink.
+    //
+    // Planet's Flock (94 Doves and SuperDoves, imaging the whole land surface daily) and Spire's
+    // 70 Lemurs are both published as 3U: 10 x 10 x 30 cm. Every one of them was drawn as a
+    // 30-metre communications satellite with a parabolic dish -- a drawing a hundred times the
+    // length of the object.
+    //
+    // By NAME rather than by id, and that is the right route here for once: these constellations
+    // are launched in batches of dozens and retired continuously, so the id list would be stale
+    // within the month while the name will not be. Klass-gated to `satellite` so the many pieces
+    // of Flock debris keep the debris shape, and matched on a whole word so `FLOCK 4Q-16` counts
+    // and nothing that merely contains the letters does.
+    flock: { build: 'cubesat', colour: 'satellite', name: 'a Dove, a 3U CubeSat', klass: ['satellite'], generic: true },
+    lemur: { build: 'cubesat', colour: 'satellite', name: 'a Lemur, a 3U CubeSat', klass: ['satellite'], generic: true },
     // AST SpaceMobile's BlueBirds: nine of them on the `visual` layer as of 2026-09-12, which is
     // more objects than any other unshaped thing on it, and they are among the brightest things
     // in the sky because the array is a sheet the size of a studio apartment. The catalogue calls
