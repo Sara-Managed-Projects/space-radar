@@ -390,6 +390,17 @@ export const REAL_MODELS = {
     // Capella, Umbra and QPS-SAR each unfurl a MESH REFLECTOR, which is a dish. Giving them the
     // blade would be the same mistake as giving a navigation satellite a dish, run backwards, and
     // all three are asserted to keep the generic shape until somebody draws the umbrella.
+    // THE OTHER KIND OF RADAR IMAGER: twenty-five spacecraft that do the same job by the opposite
+    // means. Capella, Umbra and iQPS each unfurl a PARABOLIC MESH REFLECTOR on radial ribs, which
+    // is a dish, so they must not take the blade above -- #105 left them deliberately generic and
+    // said the umbrella was a shape nobody had drawn here yet. It is drawn now.
+    //
+    // The rule this pair of shapes makes concrete: a shared FUNCTION is not a shared SHAPE. Radar
+    // imaging is the job; the flat blade and the wrapped-rib umbrella are two ways to do it, and
+    // they look nothing alike.
+    capella: { build: 'radar-mesh', colour: 'satellite', name: 'a radar imager with a mesh reflector', klass: ['satellite'], generic: true },
+    umbra: { build: 'radar-mesh', colour: 'satellite', name: 'a radar imager with a mesh reflector', klass: ['satellite'], generic: true },
+    'qps-sar': { build: 'radar-mesh', colour: 'satellite', name: 'a radar imager with a mesh reflector', klass: ['satellite'], generic: true },
     iceye: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', klass: ['satellite'], generic: true },
     strix: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', klass: ['satellite'], generic: true },
     paz: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', klass: ['satellite'], generic: true },

@@ -130,11 +130,14 @@ for (const n of ['ICEYE-X2', 'ICEYE-X31', 'STRIX-1', 'PAZ', 'NOVASAR 1', 'GAOFEN
   const e = realModelFor({ id: `sar-${n}`, name: n, klass: 'satellite', layer: 'active', meta: { noradId: 91000 } });
   check(e?.build === 'radar' && e.generic === true, `${n} is a radar imager: ${JSON.stringify(e && e.build)}`);
 }
-// ...and the three that carry a MESH REFLECTOR rather than a blade. Giving them the blade would be
-// the same error as giving a navigation satellite a dish, run backwards.
-for (const n of ['CAPELLA-11 (ACADIA-1)', 'UMBRA-07', 'QPS-SAR-5 (TSUKUYOMI-I)']) {
+// ...and the three that carry a MESH REFLECTOR rather than a blade. They must not get the blade --
+// that would be the same error as giving a navigation satellite a dish, run backwards -- and since
+// the umbrella exists they get that instead of staying generic.
+{ const o = modelFor('satellite', 'radar-mesh'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-radar-mesh') && Math.abs(o.userData.realSizeM - 3.5) < 0.01, `radar-mesh builds inside budget at Capella's 3.5 m reflector (${tris(o)} tris)`); disposeModels(o); }
+for (const n of ['CAPELLA-11 (ACADIA-1)', 'UMBRA-07', 'QPS-SAR-5 (TSUKUYOMI-I)', 'QPS-SAR-12 (KUSHINADA-I)']) {
   const e = realModelFor({ id: `mesh-${n}`, name: n, klass: 'satellite', layer: 'active', meta: { noradId: 91001 } });
-  check(!e || e.build !== 'radar', `${n} unfurls a mesh reflector and does not get the blade: ${JSON.stringify(e && e.build)}`);
+  check(e?.build === 'radar-mesh', `${n} unfurls a mesh reflector and gets the umbrella: ${JSON.stringify(e && e.build)}`);
+  check(e?.build !== 'radar', `${n} does not get the flat blade`);
 }
 // 52307 is STARLINK-3755, not LARES-2. An id that is often quoted for a sphere and is not one.
 {
