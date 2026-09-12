@@ -61,6 +61,7 @@ const FADE_MS = 200;
 
 const _v = new THREE.Vector3();
 const _camPos = new THREE.Vector3();
+const _climb = new THREE.Vector3();
 
 export function createHeroes(scene, ctx) {
   const root = new THREE.Group();
@@ -256,6 +257,19 @@ export function createHeroes(scene, ctx) {
       // has ever read them, so a rocket's plume has never once been visible. This is that wire.
       // It is per-frame state, which is why it goes on the object and not into parse-time meta.
       if (c.p && c.p.phase) obj.userData.burn = { on: c.p.phase === 'ascent', f: c.p.f };
+
+      // WHERE IT IS GOING. propagate/ascent.js returns the unit tangent of the arc it draws, in
+      // the arc's own frame; stage.dirToScene() turns that into a scene direction, because a frame
+      // change is a rotation and a translation and only the rotation applies to a direction.
+      // models.js aims the vehicle's +Y along it. Per-frame state on the object, exactly as `burn`
+      // is, and absent for every record whose propagator returns no tangent -- which is all of
+      // them except a launch, and which the attitude code falls back for.
+      if (c.p && c.p.tangent) {
+        const dir = stage.dirToScene(c.p.tangent, c.p.frame, _climb, tMs);
+        obj.userData.climb = dir ? { x: dir.x, y: dir.y, z: dir.z } : null;
+      } else if (obj.userData.climb) {
+        obj.userData.climb = null;
+      }
 
       // Attitude wants the nadir direction: from the object toward the world's centre, which in
       // the stage frame is the origin.

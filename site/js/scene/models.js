@@ -2667,8 +2667,29 @@ export function updateModelAttitude(obj, record, sunDirScene, nadirScene) {
       break;
     }
     case 'ascent': {
-      // body +Y along the climb; the plume trails below it
-      const up = _v.copy(_nadir).multiplyScalar(-1);
+      // BODY +Y ALONG THE DIRECTION OF TRAVEL, and the plume trails behind it.
+      //
+      // This used to aim +Y along the LOCAL VERTICAL, which is right for about the first second of
+      // a flight and wrong for all the rest of it: propagate/ascent.js's own curve leaves the pad
+      // vertical and arrives horizontal, so the vertical is 87.5 degrees off the direction of
+      // travel at 90 % of the arc. Rockets stood bolt upright through insertion, and the plume --
+      // which hangs off -Y -- pointed at the ground from halfway up. Spec 0022 measured the 87.5
+      // and left the fix as its own change; this is it.
+      //
+      // `userData.climb` is per-frame state written by scene/heroes.js from the tangent the
+      // propagator now returns, converted into scene space with stage.dirToScene(). When it is
+      // absent -- any caller that is not heroes.js, or a record whose propagator has no tangent --
+      // the local vertical is still the fallback, which is the old behaviour and correct on the pad.
+      // `up` is the axis the body's +Y is aimed along -- the climb direction when we have one and
+      // the local vertical when we do not. Written into _v either way, and named `up` for what it
+      // does rather than for what it used to be.
+      const climb = obj.userData && obj.userData.climb;
+      const up = _v;
+      if (climb && Number.isFinite(climb.x) && climb.x * climb.x + climb.y * climb.y + climb.z * climb.z > 1e-8) {
+        up.set(climb.x, climb.y, climb.z).normalize();
+      } else {
+        up.copy(_nadir).multiplyScalar(-1);
+      }
       _x.crossVectors(_sun, up);
       if (_x.lengthSq() < 1e-8) _x.set(1, 0, 0);
       _x.normalize();

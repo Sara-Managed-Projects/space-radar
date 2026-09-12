@@ -364,6 +364,74 @@ function pointAt(g, f) {
 }
 
 /**
+ * THE DIRECTION OF TRAVEL at flight fraction f: the unit tangent of the very curve pointAt() draws,
+ * in the same earth-fixed frame. Not a new claim -- it is a property of a shape this file already
+ * commits to, which is why spec 0022 could call the missing version "a real defect" rather than a
+ * missing feature.
+ *
+ * WHY IT IS NEEDED. scene/models.js's `ascent` attitude case aimed the vehicle along the LOCAL
+ * VERTICAL, so every rocket stood bolt upright all the way through insertion. Differentiating
+ *
+ *     h(f) = H (2f^2 - f^4)          theta(f) = Theta f^3          r(f) = R + h(f)
+ *     P(f) = r(f) ( cos theta * radial + sin theta * heading )
+ *
+ * gives a climb angle above the local horizontal of atan( h'(f) / (r(f) theta'(f)) ), which at
+ * f = 0.9 on a LEO profile is 2.5 degrees. The old code was therefore 87.5 degrees out exactly
+ * where the vehicle is most visible, and spec 0022 measured that number before this was written.
+ *
+ * f = 0 IS THE ONE PLACE THE DERIVATIVE VANISHES. h'(0) and theta'(0) are both zero, so dP/df is
+ * the zero vector and its direction is a limit rather than a value: h' ~ 4Hf and r theta' ~ 3R*Th*f^2,
+ * so the ratio goes to infinity and the tangent tends to `radial`. A rocket on the pad points
+ * straight up, which is both the limit and the obvious answer, and returning it explicitly is
+ * cheaper than hoping a normalise() of (0,0,0) does something sensible.
+ */
+function tangentAt(g, f) {
+  const H = g.insertionAltKm;
+  const TH = g.downrangeRad;
+  const r = g.padRadiusKm + H * (2 * f * f - f * f * f * f);
+  const dr = H * (4 * f - 4 * f * f * f); // d(altitude)/df
+  const theta = TH * f * f * f;
+  const dtheta = 3 * TH * f * f;
+  const ct = Math.cos(theta);
+  const st = Math.sin(theta);
+  // Radial rate along the current radial, plus transverse rate along the current downrange axis.
+  const vr = dr;
+  const vt = r * dtheta;
+  const x = vr * (ct * g.radial.x + st * g.heading.x) + vt * (-st * g.radial.x + ct * g.heading.x);
+  const y = vr * (ct * g.radial.y + st * g.heading.y) + vt * (-st * g.radial.y + ct * g.heading.y);
+  const z = vr * (ct * g.radial.z + st * g.heading.z) + vt * (-st * g.radial.z + ct * g.heading.z);
+  const len = Math.hypot(x, y, z);
+  if (!(len > 1e-9)) return { x: g.radial.x, y: g.radial.y, z: g.radial.z }; // f = 0: straight up
+  return { x: x / len, y: y / len, z: z / len };
+}
+
+/**
+ * The climb angle above the local horizontal at f, in degrees. Exported for the test.
+ *
+ * AGAINST THE LOCAL VERTICAL AT f, not the pad's. By insertion the vehicle has travelled
+ * `downrangeDeg` round the planet -- 22 degrees for LEO -- and the up direction has turned with it.
+ * The first version of this helper measured against the pad's radial and reported the arc arriving
+ * at MINUS 22 degrees, which is the downrange angle with a sign, not a climb. The tangent was
+ * right; the reference was wrong, and that is exactly the class of error this whole function is
+ * here to catch.
+ */
+export function ascentClimbAngleDeg(record, f) {
+  const g = ascentGeometry(record);
+  if (!g) return null;
+  const t = tangentAt(g, f);
+  const theta = g.downrangeRad * f * f * f;
+  const ct = Math.cos(theta);
+  const st = Math.sin(theta);
+  const up = {
+    x: ct * g.radial.x + st * g.heading.x,
+    y: ct * g.radial.y + st * g.heading.y,
+    z: ct * g.radial.z + st * g.heading.z,
+  };
+  const dot = t.x * up.x + t.y * up.y + t.z * up.z;
+  return 90 - (Math.acos(Math.max(-1, Math.min(1, dot))) * 180) / Math.PI;
+}
+
+/**
  * The whole arc as a polyline, for the dashed curve. `segments` edges, so segments+1 points.
  * Returns {frame, cls, points, orbit, azimuthDeg, t0Ms, durationSec} or null.
  */
@@ -415,6 +483,10 @@ export function ascent(record, tMs) {
     cls: 'illustrative', // not negotiable
     f,
     phase: raw < 0 ? 'pre' : raw >= 1 ? 'inserted' : 'ascent',
+    // Where it is going, in this same frame. scene/heroes.js turns it into a scene direction with
+    // stage.dirToScene() and scene/models.js aims the vehicle along it. A propagator that returns a
+    // position and not a direction is why rockets flew sideways-up for as long as they did.
+    tangent: tangentAt(g, f),
   };
 }
 
