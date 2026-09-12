@@ -44,6 +44,13 @@ check(e4 && e4.file === 'iss.glb', 'the ISS keeps its own file (the id route win
 check(realModelFor(tianhe)?.build === 'tiangong', 'CSS (TIANHE) draws the whole station');
 { const o = modelFor('satellite', 'iridium'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-iridium') && Math.abs(o.userData.realSizeM - 9.4) < 0.01, `iridium builds inside budget at 9.4 m (${tris(o)} tris)`); disposeModels(o); }
 check(realModelFor({ id: 'i1', name: 'IRIDIUM 167', klass: 'satellite', layer: 'visual', meta: { noradId: 14 } })?.build === 'iridium', 'an Iridium gets its shape');
+// OneWeb: 651 objects that had a parabolic dish they do not carry.
+{ const o = modelFor('satellite', 'oneweb'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-oneweb') && Math.abs(o.userData.realSizeM - 6) < 0.01, `oneweb builds inside budget at its approximate 6 m span (${tris(o)} tris)`); disposeModels(o); }
+for (const n of ['ONEWEB-0012', 'ONEWEB-0644']) {
+  const e = realModelFor({ id: `ow-${n}`, name: n, klass: 'satellite', layer: 'active', meta: { noradId: 92000 } });
+  check(e?.build === 'oneweb' && e.generic === true, `${n} is drawn as a OneWeb: ${JSON.stringify(e && e.build)}`);
+}
+check(realModelFor({ id: 'ow-deb', name: 'ONEWEB-0012 DEB', klass: 'debris', layer: 'active', meta: { noradId: 92001 } }) === null, 'OneWeb debris keeps the debris shape');
 // Starlink: 11 131 objects, and the one row in the table that picks its shape from the record.
 // The generations differ by an array, the catalogue name does not say which, and the launch year
 // does -- for the 84 % of the constellation launched outside 2023.

@@ -459,6 +459,17 @@ export const REAL_MODELS = {
     //
     // Klass-gated to `satellite`: Starlink debris and the stages that launched them keep their own
     // shapes, and there are a great many of both.
+    // ONEWEB -- 651 objects, the largest population left after Starlink, and the same defect:
+    // buildSatelliteComms gave every one of them a parabolic dish about forty per cent of its
+    // silhouette. OneWeb's user link is Ku-band through fixed horn apertures on the nadir face,
+    // with small steerable Ka-band gateway reflectors beside them. There is no big dish on it.
+    //
+    // The metres behind this shape are the weakest in the file and scene/models.js says so at
+    // length: Airbus publishes the Arrow platform without dimensions, and the 2021 AMOS paper that
+    // characterised the constellation photometrically declined to give any, noting only that the
+    // bus has "a more complex prismatic shape" than a Starlink. What is NOT approximate is the
+    // silhouette, which is the half that carries recognition and the half that was wrong.
+    oneweb: { build: 'oneweb', colour: 'satellite', name: 'a OneWeb broadband satellite', klass: ['satellite'], generic: true },
     starlink: {
       colour: 'satellite',
       klass: ['satellite'],
