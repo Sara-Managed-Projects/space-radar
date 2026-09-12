@@ -2285,9 +2285,11 @@ const BUILDERS = {
  * @param {string} klass station|satellite|debris|rocket|probe|telescope|asteroid|comet|site|world
  * @param {string} [variant] a key of that class's row, or any string for the seeded shapes
  * @returns {THREE.Object3D} always an Object3D; unknown classes fall back to a generic satellite
- *   and set userData.generic. NOTHING READS THAT FLAG YET: the card's "what you are looking at"
- *   line (COPY.drawing) is written from a launch's registry row in data/parsers.js and is not
- *   printed for any other class, so a generic satellite is drawn without the card saying so.
+ *   and set userData.generic. THE CARD SAYS SO, and this line used to claim it did not: spec 0026
+ *   item 3's derivedDrawingLine() in ui/cards.js prints "drawn as a generic satellite -- the kind
+ *   of thing, not this exact one" from COPY.drawing.classShape for every class that reaches it.
+ *   It does not read THIS flag -- it re-derives the same fact from scene/realmodels.js -- so the
+ *   flag itself is still read by nothing, and that is the accurate version of the old sentence.
  */
 export function modelFor(klass, variant) {
   // Own-property lookups only: a record whose klass or variant happened to be "constructor" or
@@ -2312,7 +2314,7 @@ export function modelFor(klass, variant) {
   obj.userData.klass = generic ? 'satellite' : klass;
   obj.userData.variant = variant || 'default';
   // "generic" means the shape may not be named as the object: an unknown class, or a variant that
-  // was asked for and does not exist. (The card does not print this yet -- see above.)
+  // was asked for and does not exist. (The card prints the equivalent sentence -- see above.)
   // Asking for NO variant gets the class's own default model, which
   // is not generic -- and heroes.js passes no variant for almost every record, so the old
   // `!use[variant]` marked every model in the app generic.
