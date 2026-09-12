@@ -462,6 +462,64 @@ function buildSolarSail() {
 }
 
 /**
+ * A OneWeb, as a family shape: a small box bus between two wings, with flat horn apertures on the
+ * Earth face and -- again -- NO PARABOLIC DISH.
+ *
+ * 651 objects, the largest population left after Starlink, and every one of them was drawn as
+ * buildSatelliteComms, whose silhouette is roughly forty per cent parabolic dish. OneWeb's user
+ * link is Ku-band through fixed horn apertures on the nadir face, with small steerable Ka-band
+ * gateway antennas beside them; there is no big dish on it to draw.
+ *
+ * THE SOURCING HERE IS WEAKER THAN ANYWHERE ELSE IN THIS FILE, and that is why this paragraph is
+ * long. Airbus publishes the Arrow platform without dimensions. What is reported, consistently but
+ * always hedged, is a box "approximately 1 m x 1 m x 1.3 m", about 150 kg, and two deployable
+ * panels spanning "approximately 6 m". The 2021 AMOS paper that characterised the constellation
+ * photometrically (Johnson et al.) declined to give numbers at all, saying only that "the OneWeb
+ * Arrow satellite bus has a more complex prismatic shape compared to the Starlink satellite".
+ *
+ * So the METRES below are approximate and the comment says so rather than letting them harden into
+ * fact by being in the geometry. What is NOT approximate, and is the whole reason this shape
+ * exists, is the silhouette: a box, two wings, a flat Earth-facing antenna face, and no dish.
+ * `generic: true`, and the card says "the kind of thing, not this exact one".
+ */
+const ONEWEB_SPAN_M = 6; // approximate -- see above
+function buildOneWeb() {
+  const g = new THREE.Group();
+  g.userData.realSizeM = ONEWEB_SPAN_M;
+  const S = 1 / ONEWEB_SPAN_M;
+
+  // The bus, roughly 1 x 1 x 1.3 m, long axis at the world so the antenna face is nadir.
+  const bus = box(1.0 * S, 1.0 * S, 1.3 * S, '#E6EAF0', 'body', 'bus');
+  g.add(bus);
+  // The Earth face: two rectangular Ku-band horn apertures, and two small steerable Ka-band
+  // reflectors beside them. Small ones: a gateway dish on this spacecraft is the size of a dinner
+  // plate, not the half-metre parabola the generic comms shape was giving it.
+  for (const x of [-0.26, 0.26]) {
+    const horn = box(0.38 * S, 0.5 * S, 0.16 * S, '#2C323C', 'panel', 'ku-horn');
+    horn.position.set(x * S, 0, 0.72 * S);
+    g.add(horn);
+  }
+  for (const x of [-0.3, 0.3]) {
+    const gw = dish(0.14 * S, 0.05 * S, 10, '#C9CFD8', 'foil', 'ka-gateway');
+    gw.position.set(x * S, 0.36 * S, 0.7 * S);
+    g.add(gw);
+  }
+
+  // Two wings to the ~6 m span: (6 - 1.0) / 2 = 2.5 m each.
+  const pivot = new THREE.Group();
+  pivot.name = 'panelPivot';
+  for (const side of [-1, 1]) {
+    const w = panelWing(2.5 * S, 1.0 * S, METAL, side > 0 ? 'wing+' : 'wing-');
+    if (side < 0) w.rotation.y = Math.PI;
+    w.position.set(side * 0.5 * S, 0, 0);
+    pivot.add(w);
+  }
+  g.add(pivot);
+  g.userData.panelPivots = [pivot];
+  return g;
+}
+
+/**
  * A Starlink, in its two generations -- 11 131 objects in the catalogue the app fetches, sixty-seven
  * per cent of everything in it, and until now every one of them was a box with a parabolic dish.
  *
@@ -2340,6 +2398,7 @@ const BUILDERS = {
     sphere: buildGeodeticSphere,
     radar: buildRadarImager,
     cubesat: buildCubeSat,
+    oneweb: buildOneWeb,
     'starlink-v1': buildStarlink,
     'starlink-v2': buildStarlink,
     navigation: buildNavSatellite,
