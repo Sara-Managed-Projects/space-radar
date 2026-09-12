@@ -211,9 +211,9 @@ The numbers are facts and carry no licence; the arrangement is this project's (M
 
 ## 3b. 3D models — NASA, public domain
 
-Thirty-seven spacecraft, spacecraft-bus, antenna, rocket-stage and surface models ship in `site/models/`, all
+Thirty-eight spacecraft, spacecraft-bus, antenna, rocket-stage and surface models ship in `site/models/`, all
 from **NASA 3D Resources** (<https://github.com/nasa/NASA-3D-Resources>, mirrored from
-<https://science.nasa.gov/3d-resources/>), 10.5 MB in total.
+<https://science.nasa.gov/3d-resources/>), 10.6 MB in total.
 
 NASA's media usage guidelines: material created by NASA is generally **not protected by copyright**
 and may be used without permission. The exceptions are the NASA insignia, logo and seal, which may
@@ -278,6 +278,7 @@ than counted by hand.
 | `suomi.glb` | Suomi National Polar-orbiting Partnership (Suomi NPP) | NORAD 37849 (SUOMI NPP) | 152 KB |
 | `tdrs.glb` | Tracking and Data Relay Satellites (TDRS) (A) | catalogue names containing TDRS | 10 KB |
 | `terra.glb` | Terra | NORAD 25994 (TERRA) | 20 KB |
+| `tselina2.glb` | Tselina-2 | the eighteen Tselina-2 ELINT satellites in the catalogue, by NORAD id | 122 KB |
 
 **Probes**
 
