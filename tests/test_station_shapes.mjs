@@ -44,6 +44,18 @@ check(e4 && e4.file === 'iss.glb', 'the ISS keeps its own file (the id route win
 check(realModelFor(tianhe)?.build === 'tiangong', 'CSS (TIANHE) draws the whole station');
 { const o = modelFor('satellite', 'iridium'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-iridium') && Math.abs(o.userData.realSizeM - 9.4) < 0.01, `iridium builds inside budget at 9.4 m (${tris(o)} tris)`); disposeModels(o); }
 check(realModelFor({ id: 'i1', name: 'IRIDIUM 167', klass: 'satellite', layer: 'visual', meta: { noradId: 14 } })?.build === 'iridium', 'an Iridium gets its shape');
+// ACS3 and the nine laser-ranging spheres, both procedural, both `norad:` rows.
+{ const o = modelFor('satellite', 'solarsail'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-solarsail') && Math.abs(o.userData.realSizeM - 9 * Math.SQRT2) < 0.01, `solarsail builds inside budget at the 9 m sail's diagonal (${tris(o)} tris)`); disposeModels(o); }
+{ const o = modelFor('satellite', 'sphere'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-sphere') && Math.abs(o.userData.realSizeM - 2.15) < 0.01, `sphere builds inside budget at AJISAI's 2.15 m (${tris(o)} tris)`); disposeModels(o); }
+{ const e = realModelFor({ id: 'acs3', name: 'ACS3', klass: 'satellite', layer: 'visual', meta: { noradId: 59588 } });
+  check(e?.build === 'solarsail' && !e.generic && !e.file, `ACS3 is drawn from its own published numbers, not as a family: ${JSON.stringify(e)}`); }
+for (const [id, name] of [[16908, 'AJISAI (EGS)'], [8820, 'LAGEOS 1'], [19751, 'COSMOS 1989 (ETALON 1)'], [25398, 'WESTPAC']]) {
+  const e = realModelFor({ id: `s-${id}`, name, klass: 'satellite', layer: 'visual', meta: { noradId: id } });
+  check(e?.build === 'sphere' && e.generic === true, `${name} is a sphere, and says it is the kind of thing`);
+}
+// 52307 is STARLINK-3755, not LARES-2. An id that is often quoted for a sphere and is not one.
+check(realModelFor({ id: 's-52307', name: 'STARLINK-3755', klass: 'satellite', layer: 'active', meta: { noradId: 52307 } }) === null,
+  'STARLINK-3755 is not LARES-2 and gets no sphere');
 { const o = modelFor('satellite', 'spacemobile'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-spacemobile') && Math.abs(o.userData.realSizeM - 8.02) < 0.01, `spacemobile builds inside budget at 8.02 m (${tris(o)} tris)`); disposeModels(o); }
 // The nine live catalogue names as of 2026-09-12, and the two things that must NOT take the shape.
 for (const n of ['SPACEMOBILE-001', 'SPACEMOBILE-006', 'SPACEMOBILE-010']) {
