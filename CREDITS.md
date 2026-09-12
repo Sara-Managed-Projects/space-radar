@@ -213,7 +213,7 @@ The numbers are facts and carry no licence; the arrangement is this project's (M
 
 Forty-four spacecraft, spacecraft-bus, antenna, rocket-stage and surface models ship in `site/models/`, all
 from **NASA 3D Resources** (<https://github.com/nasa/NASA-3D-Resources>, mirrored from
-<https://science.nasa.gov/3d-resources/>), 10.6 MB in total.
+<https://science.nasa.gov/3d-resources/>), 6.7 MB in total.
 
 NASA's media usage guidelines: material created by NASA is generally **not protected by copyright**
 and may be used without permission. The exceptions are the NASA insignia, logo and seal, which may
@@ -237,7 +237,7 @@ than counted by hand.
 
 | file | NASA model | used for | size |
 |---|---|---|---|
-| `poes.glb` | Polar Operational Environmental Satellite (POES) | NOAA 15, NOAA 18, NOAA 19 — the bus they share | 1 323 KB |
+| `poes.glb` | Polar Operational Environmental Satellite (POES) | NOAA 15, NOAA 18, NOAA 19 — the bus they share | 221 KB |
 
 **Rocket bodies**
 
@@ -252,33 +252,33 @@ than counted by hand.
 | `chandra.glb` | Chandra X-ray Observatory | NORAD 25867 (CXO) | 195 KB |
 | `fermi.glb` | Fermi Gamma-ray Large Area Space Telescope | NORAD 33053 (FGRST (GLAST)) | 174 KB |
 | `hinode.glb` | Hinode (Solar-B) | NORAD 29479 (HINODE (SOLAR-B)) | 102 KB |
-| `hubble.glb` | Hubble Space Telescope (A) | NORAD 20580 | 163 KB |
-| `jwst.glb` | James Webb Space Telescope (B) | Horizons -170 | 891 KB |
-| `sdo.glb` | Solar Dynamics Observatory | NORAD 36395 (SDO) | 142 KB |
+| `hubble.glb` | Hubble Space Telescope (A) | NORAD 20580 | 164 KB |
+| `jwst.glb` | James Webb Space Telescope (B) | Horizons -170 | 204 KB |
+| `sdo.glb` | Solar Dynamics Observatory | NORAD 36395 (SDO) | 124 KB |
 | `soho.glb` | Solar and Heliospheric Observatory | Horizons -21 | 29 KB |
-| `swift.glb` | Swift | NORAD 28485 (SWIFT) | 238 KB |
+| `swift.glb` | Swift | NORAD 28485 (SWIFT) | 152 KB |
 | `tess.glb` | Transiting Exoplanet Survey Satellite (TESS) (A) | NORAD 43435 (TESS) | 162 KB |
 
 **Satellites**
 
 | file | NASA model | used for | size |
 |---|---|---|---|
-| `aqua.glb` | Aqua (B) | NORAD 27424 (AQUA) | 158 KB |
+| `aqua.glb` | Aqua (B) | NORAD 27424 (AQUA) | 159 KB |
 | `aura.glb` | Aura (A) | NORAD 28376 (AURA) | 74 KB |
-| `bus-ssl1300.glb` | Space Systems Loral (SSL-1300) | DEFAULT for the geostationary ring -- several hundred unnamed commercial satellites | 81 KB |
+| `bus-ssl1300.glb` | Space Systems Loral (SSL-1300) | DEFAULT for the geostationary ring -- several hundred unnamed commercial satellites | 82 KB |
 | `calipso.glb` | Cloud-Aerosol Lidar and Infrared Pathfinder Satellite (CALIPSO) | catalogue name CALIPSO | 267 KB |
 | `cloudsat.glb` | CloudSat (A) | catalogue name CLOUDSAT | 206 KB |
-| `dscovr.glb` | Deep Space Climate Observatory (DSCOVR) (Triana) | catalogue names containing DSCOVR | 95 KB |
-| `goes.glb` | Geostationary Operational Environmental Satellites | catalogue names containing GOES | 313 KB |
-| `grace.glb` | Gravity Recovery and Climate Experiment (GRACE) (B) | NORAD 43476 (GRACE-FO 1), drawn as its sister ship | 135 KB |
+| `dscovr.glb` | Deep Space Climate Observatory (DSCOVR) (Triana) | catalogue names containing DSCOVR | 96 KB |
+| `goes.glb` | Geostationary Operational Environmental Satellites | catalogue names containing GOES | 141 KB |
+| `grace.glb` | Gravity Recovery and Climate Experiment (GRACE) (B) | NORAD 43476 (GRACE-FO 1), drawn as its sister ship | 136 KB |
 | `icesat2.glb` | Ice, Clouds, and Land Elevation Satellite-2 (ICESat-2) (A) | NORAD 43613 (ICESAT-2) | 290 KB |
 | `jason.glb` | Ocean Surface Topography Mission (OSTM Jason-2) | NORAD 41240 (JASON-3), drawn as its sister ship | 178 KB |
-| `landsat.glb` | Landsat 7 | NORAD 25682, 39084, 49260 (Landsat 7, 8, 9) | 68 KB |
+| `landsat.glb` | Landsat 7 | NORAD 25682, 39084, 49260 (Landsat 7, 8, 9) | 69 KB |
 | `mms.glb` | Magnetospheric Multiscale (MMS) (A) | catalogue names containing MMS | 121 KB |
 | `sentinel6.glb` | Jason Continuity of Service (Sentinel-6) | NORAD 46984 (SENTINEL-6A) | 401 KB |
 | `oco2.glb` | Orbiting Carbon Observatory (OCO) 2 | catalogue name OCO 2 | 189 KB |
 | `suomi.glb` | Suomi National Polar-orbiting Partnership (Suomi NPP) | NORAD 37849 (SUOMI NPP) | 152 KB |
-| `tdrs.glb` | Tracking and Data Relay Satellites (TDRS) (A) | catalogue names containing TDRS | 10 KB |
+| `tdrs.glb` | Tracking and Data Relay Satellites (TDRS) (A) | catalogue names containing TDRS | 11 KB |
 | `cygnss.glb` | Cyclone Global Navigation Satellite System (CYGNSS) | NORAD 41884-41891, the seven CYGNSS microsatellites still in the catalogue | 160 KB |
 | `gpm.glb` | Global Precipitation Measurement | NORAD 39574 (GPM-CORE) | 222 KB |
 | `icon.glb` | Ionospheric Connection Explorer (ICON) | NORAD 44628 (ICON) | 244 KB |
@@ -290,26 +290,26 @@ than counted by hand.
 
 | file | NASA model | used for | size |
 |---|---|---|---|
-| `juno.glb` | Juno (B) | Horizons -61 | 254 KB |
-| `mro.glb` | Mars Reconnaissance Orbiter (MRO) (B) | Horizons -74 | 11 KB |
+| `juno.glb` | Juno (B) | Horizons -61 | 111 KB |
+| `mro.glb` | Mars Reconnaissance Orbiter (MRO) (B) | Horizons -74 | 12 KB |
 | `parker.glb` | Parker Solar Probe | Horizons -96 | 247 KB |
-| `voyager.glb` | Voyager Probe (A) | Horizons -31, -32 | 288 KB |
+| `voyager.glb` | Voyager Probe (A) | Horizons -31, -32 | 139 KB |
 
 **Small bodies**
 
 | file | NASA model | used for | size |
 |---|---|---|---|
-| `asteroid-bennu.glb` | 1999 RQ36 asteroid | Bennu, and the asteroid class | 23 KB |
+| `asteroid-bennu.glb` | 1999 RQ36 asteroid | Bennu, and the asteroid class | 24 KB |
 
 **Places on a surface**
 
 | file | NASA model | used for | size |
 |---|---|---|---|
-| `dsn34.glb` | Deep Space Network 34-meter | the dss-25 antenna, which is 34 m and was wrongly drawn with the 70 m model | 757 KB |
-| `dsn70.glb` | Deep Space Network 70-meter | DEFAULT for ground sites of class `dish` | 502 KB |
-| `lunar-module.glb` | Apollo Lunar Module | the Apollo 11, 14, 16 and 17 landing sites -- one vehicle design, four descent stages | 554 KB |
+| `dsn34.glb` | Deep Space Network 34-meter | the dss-25 antenna, which is 34 m and was wrongly drawn with the 70 m model | 151 KB |
+| `dsn70.glb` | Deep Space Network 70-meter | DEFAULT for ground sites of class `dish` | 149 KB |
+| `lunar-module.glb` | Apollo Lunar Module | the Apollo 11, 14, 16 and 17 landing sites -- one vehicle design, four descent stages | 473 KB |
 | `pad.glb` | Mobile Launcher | DEFAULT for every launch pad -- 17 today, more with each Launch Library refresh | 117 KB |
-| `perseverance.glb` | Mars 2020 Perseverance Rover | Jezero crater on Mars | 1494 KB |
+| `perseverance.glb` | Mars 2020 Perseverance Rover | Jezero crater on Mars | 415 KB |
 
 **Credit line:** `3D model: NASA`
 
@@ -324,12 +324,24 @@ credit:
    Hubble went from 1 655 KB to 163 KB. Done once with `@gltf-transform/cli`, never at runtime.
 2. **Simplified**, at a 0.001 error tolerance, since these are CAD models with far more detail than
    an object a few hundred pixels across can show.
-3. **Retextured at runtime.** The original PBR materials are replaced with this project's toon
+3. **Decimated**, for eleven of them, with `scripts/decimate-model.mjs`. Step 2 shrinks the *file*
+   and often leaves the *triangles* alone: a CAD export carries a normal and up to four texture
+   coordinate sets that differ on every hard edge, so `weld` cannot merge vertices and the
+   simplifier has nothing to collapse. Until 2026-09-12 nothing measured the triangles, and
+   `poes.glb` shipped 116 517 of them in 1 324 KB. Dropping the attributes this project never
+   reads, welding on position, simplifying and recomputing normals took the set from 783 099
+   triangles to 361 768. Each row says its own before and after, and
+   `tests/test_contract.mjs` now measures every file against the `budget_tris` its row claims.
+4. **Images removed** wherever step 3 ran. Dropping texture coordinates makes every texture in the
+   file unsampleable, and the materials still pointed at them, so they still downloaded —
+   `perseverance.glb` carried 700 KB of images that no pixel could read. 1 016 KB of them went.
+5. **Retextured at runtime.** The original PBR materials are replaced with this project's toon
    material. The *geometry* is NASA's; the *look* is ours. That is the brief — cartoon objects on a
    realistic setting — and it is why a real Hubble still reads as part of the same drawn world.
+   This is also what makes step 4 safe: no shipped model has ever had a texture sampled.
 
 They are loaded **on demand**, one file per object, only when the camera is near it. Nobody
-downloads all twenty-nine; the largest single download is `perseverance.glb` at 1 494 KB.
+downloads all thirty-seven; the largest single download is `perseverance.glb` at 415 KB.
 
 ## 4. Runtime data sources
 
