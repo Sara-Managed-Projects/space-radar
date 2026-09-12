@@ -74,6 +74,43 @@ export const REAL_MODELS = {
     // published the Jason-2 model, so this is the sister ship and `generic` lets the card say so.
     41240: { file: 'jason.glb', colour: 'satellite', name: 'a Jason-series ocean altimeter', catalogue: 'JASON-3', generic: true },
     43476: { file: 'grace.glb', colour: 'satellite', name: 'a GRACE-series gravity mapper', catalogue: 'GRACE-FO 1', generic: true },
+    // ---------------------------------------------------------------------------------------
+    // TSELINA-2, the eighteen of them still in the catalogue.
+    //
+    // The `visual` layer -- things bright enough to go outside and see -- carries eighteen COSMOS
+    // records, and they are NOT one kind of spacecraft. Four are Tselina-2 (3 200 kg, Zenit-2,
+    // ~71 deg) and seven are its predecessor Tselina-D (2 000 kg, Tsyklon-3, ~82.5 deg), which is
+    // a different bus. Putting this model on the 82.5 deg ones because they are also COSMOS and
+    // also Soviet ELINT would be exactly the confident lie this file exists to prevent, so they
+    // are not here and keep the generic shape.
+    //
+    // Membership is Gunter's Space Page's Tselina-2 launch table, joined to the catalogue on
+    // COSPAR id on 2026-09-12; every NORAD id below came back from CelesTrak with the name in its
+    // `catalogue:` field on that date, and scripts/check-model-ids.sh re-checks them live.
+    // Kosmos 1714 (1985-121A) is in the family and is NOT here: its query could not be read that
+    // day, and an id nobody has checked is the kind of id that shipped wrong twice before.
+    //
+    // No `generic:` flag: this is the spacecraft, not a family stand-in. Kosmos 1603 and 1656 are
+    // the first two of the family and flew on Proton rather than Zenit-2, which changed how they
+    // got up and not what they are.
+    15333: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 1603, a Tselina-2 listening satellite', catalogue: 'COSMOS 1603' },
+    15755: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 1656, a Tselina-2 listening satellite', catalogue: 'COSMOS 1656' },
+    17973: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 1844, a Tselina-2 listening satellite', catalogue: 'COSMOS 1844' },
+    19119: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 1943, a Tselina-2 listening satellite', catalogue: 'COSMOS 1943' },
+    19649: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 1980, a Tselina-2 listening satellite', catalogue: 'COSMOS 1980' },
+    20624: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 2082, a Tselina-2 listening satellite', catalogue: 'COSMOS 2082' },
+    22219: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 2219, a Tselina-2 listening satellite', catalogue: 'COSMOS 2219' },
+    22284: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 2227, a Tselina-2 listening satellite', catalogue: 'COSMOS 2227' },
+    22565: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 2237, a Tselina-2 listening satellite', catalogue: 'COSMOS 2237' },
+    22802: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 2263, a Tselina-2 listening satellite', catalogue: 'COSMOS 2263' },
+    23087: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 2278, a Tselina-2 listening satellite', catalogue: 'COSMOS 2278' },
+    23404: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 2297, a Tselina-2 listening satellite', catalogue: 'COSMOS 2297' },
+    23704: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 2322, a Tselina-2 listening satellite', catalogue: 'COSMOS 2322' },
+    24297: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 2333, a Tselina-2 listening satellite', catalogue: 'COSMOS 2333' },
+    25406: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 2360, a Tselina-2 listening satellite', catalogue: 'COSMOS 2360' },
+    26069: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 2369, a Tselina-2 listening satellite', catalogue: 'COSMOS 2369' },
+    28352: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 2406, a Tselina-2 listening satellite', catalogue: 'COSMOS 2406' },
+    31792: { file: 'tselina2.glb', colour: 'satellite', name: 'Kosmos 2428, a Tselina-2 listening satellite', catalogue: 'COSMOS 2428' },
   },
   horizons: {
     '-31': { file: 'voyager.glb', colour: 'probe', name: 'Voyager 1' },

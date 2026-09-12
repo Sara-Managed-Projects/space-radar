@@ -60,6 +60,18 @@ check(realModelFor({ id: 'ocod', name: 'OCO 2 DEB', klass: 'debris', layer: 'act
 check(realModelFor({ id: 'cs', name: 'CLOUDSAT', klass: 'satellite', layer: 'active', meta: { noradId: 23 } })?.file === 'cloudsat.glb', 'CloudSat gets its model by name');
 check(realModelFor({ id: 'cal', name: 'CALIPSO', klass: 'satellite', layer: 'active', meta: { noradId: 24 } })?.file === 'calipso.glb', 'CALIPSO gets its model by name');
 check(realModelFor({ id: 'ic2', name: 'ICESAT-2', klass: 'satellite', layer: 'notable', meta: { noradId: 43613 } })?.file === 'icesat2.glb', 'ICESat-2 gets its own file by id');
+// Tselina-2, and the thing the mapping must NOT do. Four of the eighteen COSMOS records on the
+// `visual` layer are Tselina-2; seven others are its predecessor Tselina-D -- a different bus at a
+// different inclination -- and "also COSMOS, also Soviet, also ELINT" is not a reason to draw them
+// as this spacecraft. 1933 and 2221 are Tselina-D (Tsyklon-3, 82.5 deg) and must stay generic.
+for (const [id, name] of [[17973, 'COSMOS 1844'], [22219, 'COSMOS 2219'], [23087, 'COSMOS 2278'], [31792, 'COSMOS 2428'], [15333, 'COSMOS 1603'], [26069, 'COSMOS 2369']]) {
+  const e = realModelFor({ id: `t-${id}`, name, klass: 'satellite', layer: 'visual', meta: { noradId: id } });
+  check(e?.file === 'tselina2.glb' && !e.generic, `${name} is drawn as the Tselina-2 it is, not as a stand-in`);
+}
+for (const [id, name] of [[18958, 'COSMOS 1933'], [22236, 'COSMOS 2221'], [14699, 'COSMOS 1536']]) {
+  check(realModelFor({ id: `td-${id}`, name, klass: 'satellite', layer: 'visual', meta: { noradId: id } }) === null, `${name} is a Tselina-D and keeps the generic shape`);
+}
+check(realModelFor({ id: 'tdeb', name: 'COSMOS 2219 DEB', klass: 'debris', layer: 'active', meta: { noradId: 99901 } }) === null, 'Tselina-2 debris keeps the debris shape');
 { const j = realModelFor({ id: 'j3', name: 'JASON-3', klass: 'satellite', layer: 'notable', meta: { noradId: 41240 } }); check(j?.file === 'jason.glb' && j.generic === true, 'Jason-3 draws as the OSTM/Jason-2 sister ship, and says so'); }
 check(realModelFor({ id: 'd3', name: 'DRAGON 12 DEB', klass: 'debris', layer: 'active', meta: { noradId: 13 } }) === null, 'Dragon debris keeps the debris shape');
 check(realModelFor({ id: 'z1', name: 'SHENZHOU-21 (SZ-21)', klass: 'satellite', layer: 'stations', meta: { noradId: 8 } })?.build === 'shenzhou', 'a Shenzhou gets its shape');
