@@ -574,6 +574,68 @@ function buildStarlink(variant) {
 }
 
 /**
+ * A navigation satellite, as a family shape: a small box between two long wings, with a flat plate
+ * of little horns on the Earth face and NO DISH ANYWHERE.
+ *
+ * THE MISSING DISH IS THE RECOGNITION. A communications satellite points a dish at one place and
+ * pours a beam into it. A navigation satellite does the opposite: it has to be heard by everything
+ * in view of it at once, so it carries a flat array of L-band elements covering the whole disc of
+ * the Earth beneath it and nothing that concentrates. Until now all 130 of them were drawn as
+ * buildSatelliteComms, whose whole silhouette is its parabolic dish -- the one feature these
+ * spacecraft are defined by not having.
+ *
+ * ONE SHAPE, FOUR CONSTELLATIONS: 54 BeiDou, 32 GPS, 35 Galileo, 7 IRNSS, 5 QZSS, plus GLONASS by
+ * id below. They differ -- GLONASS-M is a pressurised drum, GPS IIF is nearly twice Galileo's size,
+ * BeiDou flies from geostationary as well as medium orbit -- and they agree about the box, the two
+ * long wings and the flat array, which is what a family shape is for.
+ *
+ * PROPORTIONS from Galileo's Full Operational Capability satellite, the one ESA publishes plainly:
+ * body "2.7 x 1.1 x 1.2 m", solar array span "13m" deployed, launch mass "700kg", an L-band antenna
+ * for "the navigation signals in the 1200-1600 MHz frequency range". GPS Block IIF is larger and
+ * GLONASS-M is a different shape entirely; the card says "the kind of thing, not this exact one".
+ *
+ * Source: ESA, "Galileo satellites" (esa.int).
+ */
+const NAV_SPAN_M = 13;
+function buildNavSatellite() {
+  const g = new THREE.Group();
+  g.userData.realSizeM = NAV_SPAN_M;
+  const S = 1 / NAV_SPAN_M;
+
+  // The bus: 2.7 x 1.1 x 1.2 m, long axis along Z so the Earth face is where the attitude puts it.
+  const bus = box(1.1 * S, 1.2 * S, 2.7 * S, '#E4E9F0', 'body', 'bus');
+  g.add(bus);
+
+  // The navigation antenna: a plate on the Earth face (+Z) carrying a ring of short helical
+  // elements. Twelve, which is GPS's count; Galileo's array is a different pattern and the same
+  // idea, and at 84 px what reads is "a cluster of little horns" rather than any one layout.
+  const plate = box(1.0 * S, 1.05 * S, 0.12 * S, '#C3C9D2', 'body', 'l-band');
+  plate.position.z = 1.4 * S;
+  g.add(plate);
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    const ring = i < 4 ? 0.22 : 0.42;
+    const horn = cyl(0.055 * S, 0.055 * S, 0.34 * S, 5, METAL, 'foil', 'element');
+    horn.rotation.x = Math.PI / 2;
+    horn.position.set(Math.cos(a) * ring * S, Math.sin(a) * ring * S, 1.62 * S);
+    g.add(horn);
+  }
+
+  // Two wings to a 13 m span: (13 - 1.1) / 2 = 5.95 m each.
+  const pivot = new THREE.Group();
+  pivot.name = 'panelPivot';
+  for (const side of [-1, 1]) {
+    const w = panelWing(5.95 * S, 1.4 * S, METAL, side > 0 ? 'wing+' : 'wing-');
+    if (side < 0) w.rotation.y = Math.PI;
+    w.position.set(side * 0.55 * S, 0, 0);
+    pivot.add(w);
+  }
+  g.add(pivot);
+  g.userData.panelPivots = [pivot];
+  return g;
+}
+
+/**
  * A 3U CubeSat, and this is the one shape in this file that needs no fudging: a CubeSat is a
  * STANDARD, not a style. One unit is a 10 cm cube; a 3U is three of them in a row, 10 x 10 x 30 cm,
  * and every one that flies has to fit a dispenser built to that drawing. Where every other family
@@ -2329,6 +2391,7 @@ const BUILDERS = {
     cubesat: buildCubeSat,
     'starlink-v1': buildStarlink,
     'starlink-v2': buildStarlink,
+    navigation: buildNavSatellite,
   },
   debris: { default: buildDebris },
   rocket: rocketVariants(),

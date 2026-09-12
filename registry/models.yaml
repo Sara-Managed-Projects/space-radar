@@ -26,6 +26,7 @@ models:
   - {id: satellite-spacemobile, file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 300, for: {variant: spacemobile}}
   - {id: satellite-solarsail, file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 150, for: {variant: solarsail}}
   - {id: satellite-sphere,    file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 250, for: {variant: sphere}}
+  - {id: satellite-navigation, file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 400, for: {variant: navigation}}
   - {id: satellite-cubesat,   file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 250, for: {variant: cubesat}}
   # Two rows for one constellation, because it changed shape in flight and the catalogue name did
   # not change with it. Which one a record gets is a launch-year gate in scene/realmodels.js.
