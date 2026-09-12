@@ -406,6 +406,9 @@ for (const file of allFiles) {
     // it caught its own author doing. So the fixture stays the authority for the rows it holds,
     // and a new row is held to the REQUIREMENT instead of to a stored vector -- it must answer in
     // the frame it declares, and a body-fixed one must be on that body's surface.
+    // Hoisted above the loop: the off-Earth branch needs it too now, and it used to be imported
+    // only for the new-row branch below.
+    const { WORLD_RADIUS_KM: RADII } = await import(join(JS, 'propagate/frames.js'));
     const knownIds = new Set(golden.rows.map((r) => r.id));
     let earthRows = 0;
     let movedRows = 0;
@@ -435,10 +438,29 @@ for (const file of allFiles) {
         if (JSON.stringify(is.pos) === JSON.stringify(was.pos)) {
           problems.push(`GOLDEN   ${was.id} is still where the bug put it: ${JSON.stringify(was.pos)}`);
         }
+        // ...AND IT IS ON ITS OWN WORLD. The two checks above are "the frame is right" and "it
+        // moved", and spec 0023's tasks.md called out what they leave open in as many words: five
+        // of these seven rows "would not notice a radius regression that kept the frame". They
+        // would not. `moon-fixed` at 6371 km satisfies both of them -- it answers in the declared
+        // frame, and it is certainly not where the bug put it -- and it is the Moon's surface
+        // drawn at Earth's radius, which is the ORIGINAL BUG with its sign flipped.
+        //
+        // The band is the same 25 km the new-row branch below uses and for the same reason: these
+        // are spheres standing in for bodies with topography, and Olympus Mons is 21 km of it.
+        const world = String(was.declaredFrame || '').split('-')[0];
+        const wantKm = RADII[world];
+        const gotKm = Math.hypot(is.pos.x, is.pos.y, is.pos.z);
+        if (!Number.isFinite(wantKm)) {
+          problems.push(`GOLDEN   ${was.id} declares ${was.declaredFrame}, whose world has no radius in frames.js`);
+        } else if (Math.abs(gotKm - wantKm) > 25) {
+          problems.push(
+            `GOLDEN   ${was.id} answers in ${is.pos.frame} but is ${gotKm.toFixed(1)} km from the ` +
+              `centre of ${world}, whose radius is ${wantKm}`
+          );
+        }
         movedRows += 1;
       }
     }
-    const { WORLD_RADIUS_KM: RADII } = await import(join(JS, 'propagate/frames.js'));
     for (const [id, row] of now) {
       if (knownIds.has(id)) continue;
       newRows += 1;
@@ -462,8 +484,8 @@ for (const file of allFiles) {
       }
     }
     notes.push(
-      `golden master: ${earthRows} Earth rows unchanged, ${movedRows} off-Earth rows corrected, ` +
-        `${newRows} fixed record(s) added since and held to the requirement`
+      `golden master: ${earthRows} Earth rows unchanged, ${movedRows} off-Earth rows corrected and ` +
+        `on their own world's surface, ${newRows} fixed record(s) added since and held to the requirement`
     );
   } catch (e) {
     problems.push(`GOLDEN   could not check the golden master: ${String(e && e.message)}`);
