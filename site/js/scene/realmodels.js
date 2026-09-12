@@ -140,6 +140,13 @@ export const REAL_MODELS = {
     // Iridium: 66 NEXT satellites in service and the first generation's survivors, all one plan.
     // Klass satellite only, so IRIDIUM 33 DEB and the rest of that collision keep the debris shape.
     iridium: { build: 'iridium', colour: 'satellite', name: 'an Iridium satellite', klass: ['satellite'], generic: true },
+    // AST SpaceMobile's BlueBirds: nine of them on the `visual` layer as of 2026-09-12, which is
+    // more objects than any other unshaped thing on it, and they are among the brightest things
+    // in the sky because the array is a sheet the size of a studio apartment. The catalogue calls
+    // them SPACEMOBILE-001 upward (checked live, 2026-09-12); `bluebird` is NOT a second key,
+    // because a key the catalogue never says is a file nobody ever sees. Klass satellite only, so
+    // the launch's debris and spent stage keep their own shapes.
+    spacemobile: { build: 'spacemobile', colour: 'satellite', name: 'a BlueBird direct-to-phone satellite', klass: ['satellite'], generic: true },
     'crew dragon': { build: 'dragon', colour: 'station', name: 'a Dragon spacecraft', klass: ['station', 'satellite'], generic: true },
     'dragon crs': { build: 'dragon', colour: 'station', name: 'a Dragon spacecraft', klass: ['station', 'satellite'], generic: true },
     soyuz: { build: 'soyuz', colour: 'station', name: 'a Soyuz spacecraft', klass: ['station', 'satellite'], generic: true },
