@@ -443,6 +443,83 @@ function buildSoyuzFamily(variant) {
 // -------------------------------------------------------------------------------------- iridium
 
 /**
+ * An AST SpaceMobile BlueBird, as a family shape -- and the one shape on the visible layer whose
+ * recognition is SIZE and FLATNESS rather than parts. There is no dish, no wing sticking out and
+ * no bus worth seeing: it is a sheet. Nothing else a person can see from a garden looks like that.
+ *
+ * THE TWO FACES ARE THE WHOLE MODEL, and they are different on purpose. AST's own description of
+ * the array: it is assembled from identical modules they call Microns -- 148 of them on Block 1 --
+ * and "solar cells collect energy on one side, and on the other side, many small antennas form a
+ * phased array". So the Earth-facing side is pale antenna tiling and the space-facing side is dark
+ * blue cells, which is the reverse of every other satellite here, where the cells face the Sun on
+ * wings and the Earth-facing side carries the instrument. Drawing both faces the same colour would
+ * throw away the one thing that makes this spacecraft what it is.
+ *
+ * WHICH WAY IT FACES IS NOT A DRAWING CHOICE. updateModelAttitude points a satellite's body +Z at
+ * the world, and these really do fly with the antenna at the phones, so +Z is the antenna side.
+ *
+ * PUBLISHED NUMBERS, and which one this is drawn from. Block 1 (SPACEMOBILE-001 to -005, launched
+ * 2024-09-12) unfolds 64.38 m^2; the next-generation Block 2 unfolds "nearly 2,400 square feet",
+ * about 223 m^2. Nine are on the visible layer today and they are NOT all the same size, so this
+ * is the family shape at Block 1's published area and the card says "the kind of thing, not this
+ * exact one". A Block 2 drawn at Block 1's metres would put a wrong number on the size chip, which
+ * is worse than a family shape that admits what it is.
+ *
+ * THE SIDE IS DERIVED, NOT PUBLISHED: AST states the AREA, so 64.38 m^2 is drawn as a square
+ * 8.02 m on a side. The array is built from identical square modules, so a square is the right
+ * idealisation -- but it is ours, and this sentence is where that is admitted.
+ *
+ * Sources: BlueBird Block 1 on Gunter's Space Page (space.skyrocket.de/doc_sdat/bluebird-1.htm)
+ * for 64.38 m^2 and ~1500 kg; ast-science.com/bluebird-1-5 for the 148 Microns and the two faces;
+ * ast-science.com/next-gen-bluebird for the Block 2 area.
+ */
+const BLUEBIRD_SIDE_M = 8.02; // sqrt(64.38 m^2): the Block 1 array, as a square
+const BLUEBIRD_ANTENNA = '#D7DDE6'; // the phased-array face: pale, matte, Earth-facing
+function buildSpaceMobile() {
+  const g = new THREE.Group();
+  g.userData.realSizeM = BLUEBIRD_SIDE_M;
+
+  // Two slabs back to back rather than one box, because the two faces are different materials and
+  // a box has one. Together they are 24 mm thick on an 8 m square -- which is roughly true, and is
+  // why this reads as a sheet from every angle except dead edge-on.
+  const antenna = box(1, 1, 0.012, BLUEBIRD_ANTENNA, 'body', 'antenna-face');
+  antenna.position.z = 0.006;
+  g.add(antenna);
+  const cells = box(1, 1, 0.012, PANEL_BLUE, 'panel', 'solar-face');
+  cells.position.z = -0.006;
+  g.add(cells);
+
+  // The module grid, on the antenna side. Three ribs each way reads as "tiled" at 84 px; drawing
+  // all 148 Microns would be 148 boxes nobody can resolve and a budget spent on nothing.
+  for (let i = 1; i <= 3; i++) {
+    const t = i / 4 - 0.5;
+    const across = box(1, 0.016, 0.026, METAL, 'foil', 'rib');
+    across.position.set(0, t, 0.012);
+    g.add(across);
+    const down = box(0.016, 1, 0.026, METAL, 'foil', 'rib');
+    down.position.set(t, 0, 0.012);
+    g.add(down);
+  }
+  // The frame, so the sheet has an edge instead of fading into the sky when it is near edge-on.
+  for (const [x, y, w, h] of [[0, 0.5, 1, 0.028], [0, -0.5, 1, 0.028], [0.5, 0, 0.028, 1], [-0.5, 0, 0.028, 1]]) {
+    const edge = box(w, h, 0.05, METAL, 'body', 'frame');
+    edge.position.set(x, y, 0);
+    g.add(edge);
+  }
+
+  // The bus, on the solar side: small, and that ratio is the recognition as much as the square is.
+  // AST describe the stowed spacecraft as a phone booth and the deployed array as a studio flat.
+  const bus = box(0.15, 0.15, 0.10, FOIL, 'foil', 'bus');
+  bus.position.z = -0.062;
+  g.add(bus);
+  const boom = cyl(0.008, 0.008, 0.16, 6, METAL, 'body', 'boom');
+  boom.rotation.x = Math.PI / 2;
+  boom.position.z = -0.16;
+  g.add(boom);
+  return g;
+}
+
+/**
  * An Iridium satellite, as a family shape. The NEXT generation (Thales Alenia ELiTeBus, 66 in
  * service plus spares) is a box bus 3.1 x 2.4 x 1.5 m, two wings across 9.4 m, and the thing that
  * makes it an Iridium: a large flat main mission antenna hung off the Earth-facing side. Published
@@ -1925,6 +2002,7 @@ const BUILDERS = {
     weather: buildSatelliteWeather,
     flat: buildSatelliteFlat,
     iridium: buildIridium,
+    spacemobile: buildSpaceMobile,
   },
   debris: { default: buildDebris },
   rocket: rocketVariants(),
