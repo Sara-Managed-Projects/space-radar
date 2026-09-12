@@ -807,10 +807,17 @@ function buildMeshReflector() {
  * one fact is why these spacecraft all look alike and why none of them looks like the box-with-a-
  * dish they were all drawn as until now.
  *
- * Twenty-two of them are in the catalogue: Sentinel-1 A to D, RADARSAT-1 and 2, TerraSAR-X,
- * TanDEM-X, COSMO-SkyMed 1 to 4, CSG-1 to 3, ALOS, ALOS-2, ALOS-4, SAOCOM 1A and 1B, ERS-1 and
- * Envisat. They differ in how wide the blade is and how many wings are behind it, and they agree
- * about the blade, so one shape serves them all and the card says "the kind of thing".
+ * Ninety-odd of them are in the catalogue and they span forty-eight years. SEASAT, 1978, is the
+ * first civilian synthetic-aperture radar ever flown and its antenna is "a 10.74-m by 2.16-m planar
+ * array"; Sentinel-1's, in 2014, is 12.3 x 0.821 m. Between them: RADARSAT-1, -2 and the RCM trio,
+ * TerraSAR-X, TanDEM-X, PAZ, COSMO-SkyMed and its Second Generation, ALOS, ALOS-2, ALOS-4, SAOCOM,
+ * ERS-1, Envisat, NovaSAR, Gaofen-3, and the commercial microsatellite fleets -- ICEYE at 3.25 m on
+ * 85 kg, Synspective's StriX at about 5 m. They differ in how wide the blade is and how many wings
+ * are behind it, and they agree about the blade, so one shape serves them all and the card says
+ * "the kind of thing, not this exact one".
+ *
+ * THE ONES THAT DO NOT AGREE GET buildMeshReflector() INSTEAD -- Capella, Umbra, iQPS and the
+ * RISAT-2B family unfurl a dish. Radar imaging is the job; the blade is one of two ways to do it.
  *
  * PROPORTIONS from Sentinel-1's C-SAR, the one ESA publishes plainly: 12.3 m x 0.821 m, on a
  * 2 300 kg spacecraft. That is 15:1, and it is the narrow end of the family -- ALOS-2's PALSAR-2 is

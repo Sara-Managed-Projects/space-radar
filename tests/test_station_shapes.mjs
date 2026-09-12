@@ -124,6 +124,20 @@ for (const [id, name] of [[39634, 'SENTINEL-1A'], [23710, 'RADARSAT-1'], [31698,
 // ALOS DEB is debris from the same spacecraft and must not take the shape: the id route has no
 // class gate, so this is asserted on the id the catalogue actually gives the debris.
 check(realModelFor({ id: 'r-35418', name: 'ALOS DEB', klass: 'debris', layer: 'active', meta: { noradId: 35418 } }) === null, 'ALOS debris keeps the debris shape');
+// Seasat and the RADARSAT Constellation take the blade; the RISAT-2B family takes the umbrella.
+// Both by id: `risat` as a key is safe today -- the word boundary rejects TIGRISAT and BRISAT --
+// and would be wrong if RISAT-1, which flew a planar array, ever came back to the catalogue.
+for (const [id, name] of [[10967, 'SEASAT 1'], [44322, 'RCM-1'], [44323, 'RCM-3'], [44324, 'RCM-2']]) {
+  check(realModelFor({ id: `b-${id}`, name, klass: 'satellite', layer: 'active', meta: { noradId: id } })?.build === 'radar', `${name} takes the flat blade`);
+}
+for (const [id, name] of [[44233, 'RISAT-2B'], [44857, 'RISAT-2BR1'], [46905, 'RISAT-2BR2']]) {
+  check(realModelFor({ id: `u-${id}`, name, klass: 'satellite', layer: 'active', meta: { noradId: id } })?.build === 'radar-mesh', `${name} takes the umbrella, not the blade`);
+}
+// The two that merely contain the letters, and are neither.
+for (const [id, name] of [[40043, 'TIGRISAT'], [41591, 'BRISAT']]) {
+  const e = realModelFor({ id: `n-${id}`, name, klass: 'satellite', layer: 'active', meta: { noradId: id } });
+  check(!e || (e.build !== 'radar' && e.build !== 'radar-mesh'), `${name} is not a RISAT and gets neither radar shape`);
+}
 // The commercial small SAR fleets, by name. Same flat side-looking blade, much smaller: ICEYE's
 // antenna is 3.25 m on an 85 kg microsatellite against RADARSAT-2's 15 m.
 for (const n of ['ICEYE-X2', 'ICEYE-X31', 'STRIX-1', 'PAZ', 'NOVASAR 1', 'GAOFEN-3 02']) {

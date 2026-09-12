@@ -237,6 +237,36 @@ export const REAL_MODELS = {
     27386: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ENVISAT', generic: true },
 
     // ---------------------------------------------------------------------------------------
+    // SEVEN MORE RADAR IMAGERS, BY ID, and they are split between the two shapes -- which is the
+    // whole reason the split exists.
+    //
+    // THE BLADE:
+    //   SEASAT 1, 1978, the first civilian synthetic-aperture radar ever flown and on the
+    //   `visual` layer. Its antenna is "a 10.74-m (along-track) by 2.16-m (cross-track) planar
+    //   array" -- the flat side-looking blade, forty-eight years before Sentinel-1's, which is
+    //   what makes this family a family.
+    //   RCM 1, 2 and 3, the RADARSAT Constellation: "a unidirectional electronically steerable
+    //   planar phased-array SAR antenna", 6.98 m.
+    //
+    // THE UMBRELLA:
+    //   RISAT-2B, 2BR1 and 2BR2 carry, in ISRO's own words, "the X-Band SAR with a radial rib
+    //   reflector 3.6 m mesh antenna". Same job as the blade, opposite hardware.
+    //
+    // BY ID RATHER THAN BY NAME, for a reason the catalogue makes concrete. `risat` as a key is
+    // SAFE today -- wordMatch rejects TIGRISAT and BRISAT, which contain the letters and are an
+    // Iraqi CubeSat and an Indonesian communications satellite -- and it would still be wrong,
+    // because RISAT-1 flew a PLANAR active array and would take the umbrella if it ever returned
+    // to the catalogue. A key that is right about every object that exists today and wrong about
+    // one that might is a key worth not writing.
+    10967: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SEASAT 1', generic: true },
+    44322: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'RCM-1', generic: true },
+    44323: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'RCM-3', generic: true },
+    44324: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'RCM-2', generic: true },
+    44233: { build: 'radar-mesh', colour: 'satellite', name: 'a radar imager with a mesh reflector', catalogue: 'RISAT-2B', generic: true },
+    44857: { build: 'radar-mesh', colour: 'satellite', name: 'a radar imager with a mesh reflector', catalogue: 'RISAT-2BR1', generic: true },
+    46905: { build: 'radar-mesh', colour: 'satellite', name: 'a radar imager with a mesh reflector', catalogue: 'RISAT-2BR2', generic: true },
+
+    // ---------------------------------------------------------------------------------------
     // ACS3, NASA's Advanced Composite Solar Sail System, on the `visual` layer -- a 9 m square of
     // film is a very large very bright flat thing, which is the whole point of a sail and the
     // reason it is on that layer.
