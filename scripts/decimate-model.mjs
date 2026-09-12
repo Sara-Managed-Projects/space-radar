@@ -16,6 +16,18 @@
 // TEXCOORD_*, COLOR_*, NORMAL and TANGENT, welds on position alone, simplifies, recomputes flat
 // normals, quantizes and meshopt-compresses. ICESat-2: 149 000 -> 18 400 triangles, 1 229 -> 297 kB.
 //
+// AND IT DROPS THE IMAGES, which the first version did not, and that omission shipped. Dropping
+// TEXCOORD_* makes every texture in the file UNSAMPLEABLE -- there are no coordinates left to
+// sample it at -- but the materials still referenced them, so `prune` kept them and they still
+// downloaded. site/models/perseverance.glb carried 700 kB of images that no pixel could ever
+// read. So the texture slots are cleared before `prune`, which is what makes prune able to
+// collect them.
+//
+// This is safe for THIS project and would not be for another: realmodels.js replaces every
+// material on every loaded mesh with the toon material and disposes each map as it goes, so no
+// shipped model has ever had its textures sampled. `loadRealModel`'s `keepMaterials: true` is
+// the one thing that would read them, and nothing calls it.
+//
 // The dependencies are resolved from the CURRENT DIRECTORY on purpose, so nothing is installed
 // into this repository for a build-time step that runs once per model.
 import { createRequire } from 'node:module';
@@ -49,6 +61,20 @@ for (const mesh of doc.getRoot().listMeshes()) {
     for (const sem of prim.listSemantics()) if (DROP(sem)) { prim.setAttribute(sem, null); dropped++; }
   }
 }
+
+// Every texture slot on every material, cleared -- see the header. Without this, prune() keeps
+// images that nothing can sample, because the material still points at them. Counted rather than
+// assumed: the line at the end reports how many images actually went, so a run that dropped none
+// says so instead of implying a saving it did not make.
+const imagesBefore = doc.getRoot().listTextures().length;
+const kbBefore = Math.round(doc.getRoot().listTextures().reduce((n, t) => n + (t.getImage()?.byteLength || 0), 0) / 1024);
+for (const material of doc.getRoot().listMaterials()) {
+  material.setBaseColorTexture(null);
+  material.setNormalTexture(null);
+  material.setMetallicRoughnessTexture(null);
+  material.setOcclusionTexture(null);
+  material.setEmissiveTexture(null);
+}
 const tris = () => doc.getRoot().listMeshes().flatMap((m) => m.listPrimitives())
   .reduce((n, p) => n + (p.getIndices() ? p.getIndices().getCount() : p.getAttribute('POSITION').getCount()) / 3, 0);
 const before = tris();
@@ -58,4 +84,8 @@ await doc.transform(
   normals({ overwrite: true }), quantize(), meshopt({ encoder: MeshoptEncoder }),
 );
 await io.write(OUT, doc);
-console.log(`attribute sets dropped ${dropped}; triangles ${Math.round(before)} -> ${Math.round(tris())}`);
+const imagesAfter = doc.getRoot().listTextures().length;
+console.log(
+  `attribute sets dropped ${dropped}; triangles ${Math.round(before)} -> ${Math.round(tris())}; ` +
+  `images ${imagesBefore} -> ${imagesAfter} (${kbBefore} kB of image data dropped)`
+);

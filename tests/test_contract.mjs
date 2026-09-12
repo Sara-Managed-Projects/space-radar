@@ -13,7 +13,7 @@
 //
 // Run: node tests/test_contract.mjs
 
-import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -196,6 +196,84 @@ for (const file of allFiles) {
       problems.push(`BUDGET   could not build the rocket shapes: ${String(e && e.message)}`);
     }
   }
+}
+
+// 3bb. every SHIPPED MODEL FILE fits the triangle budget its registry row claims.
+//
+// 3b measures the procedural shapes, which are a few hundred triangles each. Nothing has ever
+// measured the .glb files, which are the other 99 % -- and on 2026-09-12 that turned out to be
+// 783 099 triangles across 38 files, with poes.glb alone at 116 517 and 1 324 kB for three NOAA
+// satellites. The `kb:` field was the only number in those rows, and a kilobyte count says
+// nothing about what the GPU is asked to do: meshopt compresses a CAD model to a tenth of its
+// size and then hands the card every one of its triangles.
+//
+// READ STRAIGHT OUT OF THE FILE, WITH NO DEPENDENCIES. A GLB is a 12-byte header and then chunks;
+// chunk 0 is the glTF JSON, and the JSON alone carries every accessor's `count`. So the triangle
+// count is arithmetic on the JSON -- no decoder, no three.js, no npm install in CI. Only the
+// BUFFER is meshopt-compressed, and this never touches it.
+{
+  const yaml = readFileSync(join(ROOT, 'registry/models.yaml'), 'utf8');
+  const rows = yaml.split('\n').filter((l) => /file: site\/models\/[A-Za-z0-9_.-]+\.glb/.test(l));
+  const MODE_TRIS = { 4: (n) => n / 3, 5: (n) => Math.max(n - 2, 0), 6: (n) => Math.max(n - 2, 0) };
+
+  /** The triangle count of one .glb, from its JSON chunk. Null when the file cannot be read. */
+  const trianglesIn = (path) => {
+    const buf = readFileSync(path);
+    if (buf.length < 20 || buf.toString('utf8', 0, 4) !== 'glTF') return null;
+    const jsonLen = buf.readUInt32LE(12);
+    if (buf.toString('utf8', 16, 20) !== 'JSON') return null;
+    const gltf = JSON.parse(buf.toString('utf8', 20, 20 + jsonLen));
+    const accessors = gltf.accessors || [];
+    let tris = 0;
+    for (const mesh of gltf.meshes || []) {
+      for (const prim of mesh.primitives || []) {
+        // `mode` defaults to 4 (TRIANGLES) when absent -- glTF 2.0 section 3.7.2.1. Anything that
+        // is not a triangle topology (points, lines, fans) contributes what its mode says, and
+        // an unknown mode contributes nothing rather than a wrong number.
+        const mode = prim.mode === undefined ? 4 : prim.mode;
+        const fn = MODE_TRIS[mode];
+        if (!fn) continue;
+        const acc = prim.indices !== undefined ? accessors[prim.indices] : accessors[(prim.attributes || {}).POSITION];
+        if (!acc || typeof acc.count !== 'number') continue;
+        tris += fn(acc.count);
+      }
+    }
+    return Math.round(tris);
+  };
+
+  // One cap over all of them, so a NEW model cannot be added at 116 517 triangles by writing
+  // itself a 116 517 budget. Raising this is a deliberate edit with a reason, which is the point.
+  const CAP = 20000;
+  let total = 0;
+  let worst = { id: null, tris: 0 };
+  let counted = 0;
+  for (const row of rows) {
+    const id = (row.match(/id: ([A-Za-z0-9_-]+)/) || [])[1] || '?';
+    const rel = (row.match(/file: (site\/models\/[A-Za-z0-9_.-]+\.glb)/) || [])[1];
+    const budget = Number((row.match(/budget_tris:\s*(\d+)/) || [])[1] || 0);
+    const path = join(ROOT, rel);
+    if (!existsSync(path)) { problems.push(`MODEL    ${rel} has a registry row and does not ship`); continue; }
+    if (!budget) { problems.push(`MODEL    ${id} has no budget_tris; a model nobody measures is a guess`); continue; }
+    if (budget > CAP) { problems.push(`MODEL    ${id} claims budget_tris ${budget}, over the ${CAP} cap for one file`); }
+    const tris = trianglesIn(path);
+    if (tris === null) { problems.push(`MODEL    ${rel} is not a readable GLB`); continue; }
+    counted += 1;
+    total += tris;
+    if (tris > budget) {
+      problems.push(`MODEL    ${id} is ${tris} tris, over budget_tris ${budget} -- run scripts/decimate-model.mjs`);
+    }
+    // A `kb:` that drifts from the file is a claim CREDITS.md then repeats. Two kB of slack,
+    // because the row is written by a human reading a rounded number.
+    const kb = Number((row.match(/kb: (\d+)/) || [])[1] || 0);
+    const realKb = Math.round(statSync(path).size / 1024);
+    if (kb && Math.abs(kb - realKb) > 2) {
+      problems.push(`MODEL    ${id} says kb: ${kb} and the file is ${realKb} kB`);
+    }
+    if (tris > worst.tris) worst = { id, tris };
+  }
+  notes.push(
+    `${counted} model files ship ${total} triangles; heaviest is ${worst.id} at ${worst.tris} of a ${CAP} cap`
+  );
 }
 
 // 3c. a launch may never claim a shape it did not match. `stands_for: variant` on a row is a
