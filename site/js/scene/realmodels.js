@@ -103,6 +103,49 @@ export const REAL_MODELS = {
     41890: { file: 'cygnss.glb', colour: 'satellite', name: 'a CYGNSS hurricane microsatellite', catalogue: 'CYGFM07' },
     41891: { file: 'cygnss.glb', colour: 'satellite', name: 'a CYGNSS hurricane microsatellite', catalogue: 'CYGFM03' },
     // ---------------------------------------------------------------------------------------
+    // THE TWENTY-TWO RADAR IMAGERS, which all looked like a box with a dish.
+    //
+    // A synthetic-aperture radar cannot image what is directly beneath it -- returns from left and
+    // right of the ground track would arrive together and could not be told apart -- so every SAR
+    // ever flown SQUINTS, and carries a long flat blade of an antenna aimed off to one side. That
+    // single constraint is why these twenty-two spacecraft, from four continents and thirty years
+    // apart, all look alike, and it is the recognition the shape is built on.
+    //
+    // `generic: true` and one shape for all of them: they agree about the blade and differ about
+    // how wide it is, so the card says "the kind of thing, not this exact one". Proportions are
+    // Sentinel-1's published C-SAR, 12.3 m x 0.821 m.
+    //
+    // THIS ALSO ANSWERS TASK 9g, which found nothing free for Sentinel-1A, Sentinel-1B and the
+    // rest of the European set and concluded they "stay generic unless Ivan finds a licensed
+    // source". A licence was never the obstacle for a shape this constrained: nobody had drawn it.
+    //
+    // ERS-1 and Envisat carried far more than a radar and are here because the blade is still the
+    // thing you would recognise them by. Envisat's own CC BY model stays on Ivan's list (spec 0027
+    // design.md): this is the family shape until then, which is better than a dish.
+    39634: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SENTINEL-1A', generic: true },
+    41456: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SENTINEL-1B', generic: true },
+    62261: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SENTINEL-1C', generic: true },
+    66315: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SENTINEL-1D', generic: true },
+    23710: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'RADARSAT-1', generic: true },
+    32382: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'RADARSAT-2', generic: true },
+    31698: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'TERRASAR-X', generic: true },
+    36605: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'TANDEM-X', generic: true },
+    31598: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'COSMO-SKYMED 1', generic: true },
+    32376: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'COSMO-SKYMED 2', generic: true },
+    33412: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'COSMO-SKYMED 3', generic: true },
+    37216: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'COSMO-SKYMED 4', generic: true },
+    44873: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'CSG-1', generic: true },
+    51444: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'CSG-2', generic: true },
+    67304: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'CSG-3', generic: true },
+    28931: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ALOS (DAICHI)', generic: true },
+    39766: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ALOS-2', generic: true },
+    60182: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ALOS-4 (DAICHI-4)', generic: true },
+    43641: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SAOCOM 1A', generic: true },
+    46265: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SAOCOM 1B', generic: true },
+    21574: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ERS-1', generic: true },
+    27386: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'ENVISAT', generic: true },
+
+    // ---------------------------------------------------------------------------------------
     // ACS3, NASA's Advanced Composite Solar Sail System, on the `visual` layer -- a 9 m square of
     // film is a very large very bright flat thing, which is the whole point of a sail and the
     // reason it is on that layer.

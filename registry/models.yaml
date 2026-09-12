@@ -26,6 +26,7 @@ models:
   - {id: satellite-spacemobile, file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 300, for: {variant: spacemobile}}
   - {id: satellite-solarsail, file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 150, for: {variant: solarsail}}
   - {id: satellite-sphere,    file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 250, for: {variant: sphere}}
+  - {id: satellite-radar,     file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 200, for: {variant: radar}}
   - {id: satellite-generic,  file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1500, for: {layer: notable}}
   - {id: satellite-comms,    file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1500, for: {family: comms}}
   - {id: satellite-weather,  file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1500, for: {family: weather}}

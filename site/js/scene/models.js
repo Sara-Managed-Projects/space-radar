@@ -509,6 +509,77 @@ function buildSolarSail() {
 }
 
 /**
+ * A radar-imaging satellite, as a family shape: a long flat blade of an antenna, a small bus behind
+ * it, and the blade AIMED OFF TO ONE SIDE rather than straight down.
+ *
+ * THE SIDEWAYS LOOK IS THE RECOGNITION, and it is not decoration. A synthetic-aperture radar cannot
+ * image what is directly beneath it -- the returns from left and right of the ground track would
+ * arrive at the same instant and could not be told apart -- so every SAR ever flown squints. That
+ * one fact is why these spacecraft all look alike and why none of them looks like the box-with-a-
+ * dish they were all drawn as until now.
+ *
+ * Twenty-two of them are in the catalogue: Sentinel-1 A to D, RADARSAT-1 and 2, TerraSAR-X,
+ * TanDEM-X, COSMO-SkyMed 1 to 4, CSG-1 to 3, ALOS, ALOS-2, ALOS-4, SAOCOM 1A and 1B, ERS-1 and
+ * Envisat. They differ in how wide the blade is and how many wings are behind it, and they agree
+ * about the blade, so one shape serves them all and the card says "the kind of thing".
+ *
+ * PROPORTIONS from Sentinel-1's C-SAR, the one ESA publishes plainly: 12.3 m x 0.821 m, on a
+ * 2 300 kg spacecraft. That is 15:1, and it is the narrow end of the family -- ALOS-2's PALSAR-2 is
+ * 9.9 x 2.9 m and RADARSAT-2's is 15 x 1.5 m -- so the blade here is drawn at Sentinel-1's length
+ * and a little over its width, which is the compromise that still reads as a blade at 84 px
+ * instead of vanishing into a line. Said here because the card cannot say it.
+ *
+ * Source: Copernicus SentiWiki, Sentinel-1 mission -- "12.3 m x 0.821 m" and "approximately
+ * 2 300 kg".
+ */
+const SAR_ANTENNA_M = 12.3;
+const SAR_SQUINT = 0.55; // radians off nadir -- about 31 degrees, the middle of the usual range
+function buildRadarImager() {
+  const g = new THREE.Group();
+  g.userData.realSizeM = SAR_ANTENNA_M;
+  const S = 1 / SAR_ANTENNA_M;
+
+  // Everything that squints lives under one pivot, so the antenna and its spine stay parallel.
+  const look = new THREE.Group();
+  look.name = 'boresight';
+  look.rotation.x = SAR_SQUINT;
+
+  // The blade. Every length below is metres times S, so the numbers read as the spacecraft:
+  // 12.3 m long, 0.06 m thick, and 1.2 m wide against Sentinel-1's published 0.821 -- see header.
+  const panel = box(12.3 * S, 0.06 * S, 1.2 * S, '#D5DAE2', 'body', 'antenna');
+  look.add(panel);
+  // Three seams across it: a SAR antenna is a row of identical transmit/receive tiles, and that is
+  // the only thing on its face.
+  for (const t of [-3.1, 0, 3.1]) {
+    const seam = box(0.12 * S, 0.08 * S, 1.26 * S, METAL, 'foil', 'seam');
+    seam.position.set(t * S, 0.02 * S, 0);
+    look.add(seam);
+  }
+  g.add(look);
+
+  // The bus, on the sky side of the blade and much smaller than it.
+  const bus = box(3.9 * S, 2.2 * S, 2.2 * S, FOIL, 'foil', 'bus');
+  bus.position.y = -1.6 * S;
+  g.add(bus);
+
+  // Two wings, on the sky side, perpendicular to the blade so the silhouette is a cross rather
+  // than a sheet: that is what tells a radar imager from the BlueBird sheet at a glance.
+  const pivot = new THREE.Group();
+  pivot.name = 'panelPivot';
+  for (const side of [-1, 1]) {
+    // panelWing builds along +X, so -90 degrees about Y sends it to +Z and +90 to -Z. Started
+    // from the outside of the bus, or the first 2 m of wing is buried inside it.
+    const w = panelWing(4.6 * S, 1.8 * S, METAL, side > 0 ? 'wing+' : 'wing-');
+    w.rotation.y = side > 0 ? -Math.PI / 2 : Math.PI / 2;
+    w.position.set(0, -1.6 * S, side * 1.25 * S);
+    pivot.add(w);
+  }
+  g.add(pivot);
+  g.userData.panelPivots = [pivot];
+  return g;
+}
+
+/**
  * A laser-ranging geodetic sphere: a solid ball studded with retroreflectors, no wings, no
  * antenna, no instrument, nothing that moves. Nine of them are up, they are the only spheres in
  * the catalogue, and until now every one was drawn as a box bus with a dish and two panels.
@@ -2114,6 +2185,7 @@ const BUILDERS = {
     spacemobile: buildSpaceMobile,
     solarsail: buildSolarSail,
     sphere: buildGeodeticSphere,
+    radar: buildRadarImager,
   },
   debris: { default: buildDebris },
   rocket: rocketVariants(),
