@@ -249,6 +249,12 @@ best of each was taken, as data where a registry could hold it:
 Size on screen encodes *class*, never true size — at true scale every one of these is invisible.
 The real size lives on the card as something you can picture instead.
 
+**Inside a class, the big populations get their own shape.** A Starlink is a flat rectangle with an
+array hinged to it; a Dove is a 10 × 30 cm brick between two flaps; a navigation satellite is
+defined by the parabolic dish it does *not* carry; a radar imager squints, because a radar cannot
+image what is directly beneath it. Where a shape stands in for a family rather than for one
+spacecraft, the card says so in those words: *the kind of thing, not this exact one*.
+
 **Rockets are the exception, and they are drawn per family.** Every launch used to be the same
 white tube. `registry/rockets.yaml` now holds **forty-nine launch vehicles**, and four fields carry
 the recognition at forty pixels: the shape of the strap-ons, what sits on top, the nozzle pattern,
@@ -338,7 +344,7 @@ site/                 the entire app, served as-is
   js/ui/              cards, controls, the sources panel, the phone drawers, the trip, and the
                       GitHub link in the corner
   vendor/             three.js, satellite.js, astronomy-engine
-  models/             twenty-nine NASA models, loaded one at a time when you get close
+  models/             forty-four NASA models, loaded one at a time when you get close
   textures/ data/     planet textures and the star catalogue
 registry/             eleven YAML files. Adding a world, an object class, a data source, an event
                       type, a launch vehicle, an odd thing or a whole trip is a ROW here — not a
@@ -408,9 +414,13 @@ Issues and pull requests are welcome. The things most worth doing, roughly in or
 1. **The scheduled harvester.** Move the API calls out of the browser into a small cron job that
    writes JSON snapshots. It is what turns the three `sample` classes into live ones, and it is the
    single biggest improvement available.
-2. **More real 3D models.** Twenty-nine ship, from NASA's public-domain library, and they cover the
-   famous objects. Everything else is still procedural geometry and reads as its class rather than
-   as that particular spacecraft.
+2. **More shapes for the long tail.** Forty-four NASA models ship and they cover the famous
+   objects; nineteen procedural shapes cover the big populations, so about 77 % of the catalogue
+   now reads as *what it is* rather than as a generic satellite. The remaining 3 800 are mostly
+   debris and the constellations nobody publishes dimensions for — Kuiper is blocked on two facts,
+   its bus size and how many solar arrays it has, and that is a research problem rather than a
+   drawing one. `scripts/check-model-reach.py` will tell you what any new mapping would actually
+   reach before you build it.
 3. **More trips.** Two ship. The registry supports four target forms; `group:` (frame several
    objects at once) and `view:` (“the next time it crosses your sky”) are designed and not built,
    and each of them unlocks a trip that wants it.
