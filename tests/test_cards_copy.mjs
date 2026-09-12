@@ -21,6 +21,17 @@ const plain = { id: 'sat-2', name: 'SOME CUBESAT', klass: 'satellite', layer: 'a
 const apollo = { id: 'apollo-11', name: 'Apollo 11 landing site', klass: 'site', layer: 'hand-kept-sites', siteClass: 'pad', meta: { siteKind: 'pad' } };
 const world = { id: 'moon', name: 'Moon', klass: 'world', meta: {} };
 check(has(drawingLine(iss), 'International Space Station'), `a real model of THIS object says so: ${drawingLine(iss)}`);
+// ...and HOW it was made, which is a second claim and was wrong for every one of them. A `file:`
+// entry is somebody else's model, loaded; a `build:` entry is scene/models.js working from
+// published metres. One string was making both claims, so Hubble's card said "drawn from
+// published dimensions" about NASA's own CAD.
+check(has(drawingLine(iss), 'published model of'), `a loaded model says it is a model: ${drawingLine(iss)}`);
+const soyuz = { id: 'sat-3', name: 'SOYUZ-MS 29', klass: 'satellite', layer: 'stations', meta: { noradId: 3 } };
+check(has(drawingLine(soyuz), 'not this exact one') && !has(drawingLine(soyuz), 'published model'),
+  `a procedural family shape does not claim to be somebody's model: ${drawingLine(soyuz)}`);
+const rocket = { id: 'l-1', name: 'Falcon 9', klass: 'rocket', layer: 'launches', meta: { drawsAs: 'variant', rocket: 'Falcon 9', sizeM: 70 } };
+check(has(drawingLine(rocket), 'published dimensions'),
+  `a rocket IS built from published dimensions and still says so: ${drawingLine(rocket)}`);
 check(has(drawingLine(geo), 'communications satellite') && has(drawingLine(geo), 'not this exact one'), `a class default admits it: ${drawingLine(geo)}`);
 check(has(drawingLine(plain), 'generic satellite'), `the procedural shape admits it: ${drawingLine(plain)}`);
 // The review's example was "Apollo sites drawn as a pad and no card says so". Since then the sites

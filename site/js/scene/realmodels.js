@@ -331,11 +331,14 @@ export const REAL_MODELS = {
    * are a box bus with a big dish and two long wings. One 81 kB model makes the whole ring read as
    * what it is instead of as identical grey boxes.
    *
-   * `generic: true` marks it as a stand-in. The card does NOT say so today: the "what you are
-   * looking at" line is written from a launch's registry row in data/parsers.js and covers
-   * launches only, so this bus, the DSN dish, the pad and grace.glb (which is GRACE-FO 1 drawn
-   * as its sister ship) are all undisclosed stand-ins. That is a gap, and saying it here is
-   * better than a comment claiming a line the card never prints.
+   * `generic: true` marks it as a stand-in, AND THE CARD NOW SAYS SO. This comment used to end
+   * "that is a gap, and saying it here is better than a comment claiming a line the card never
+   * prints" -- which was true when it was written and stopped being true when spec 0026 item 3
+   * shipped cards.js's derivedDrawingLine(): it reads this very table and prints
+   * "drawn as a communications satellite -- the kind of thing, not this exact one" for this bus,
+   * and the equivalent for the DSN dish, the pad and grace.glb. A comment DENYING a line the card
+   * does print is the same defect with the sign flipped, which is why this paragraph is longer
+   * than the fix.
    */
   byLayer: {
     'geo-ring': { file: 'bus-ssl1300.glb', colour: 'satellite', name: 'a communications satellite', generic: true },

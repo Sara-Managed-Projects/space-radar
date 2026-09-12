@@ -1217,9 +1217,11 @@ function derivedDrawingLine(record, T) {
   let entry = null;
   try { entry = realModelFor(record); } catch { entry = null; }
   if (entry && entry.name) {
-    return entry.generic
-      ? t(T.objectFamily, { name: String(entry.name) })
-      : t(T.objectVariant, { name: String(entry.name) });
+    if (entry.generic) return t(T.objectFamily, { name: String(entry.name) });
+    // A `file:` entry is somebody's model, loaded; a `build:` entry is scene/models.js working
+    // from published metres. Both were printing "drawn from published dimensions", which is true
+    // of one of them. See COPY.drawing.objectModel.
+    return t(entry.file ? T.objectModel : T.objectVariant, { name: String(entry.name) });
   }
   // An extreme object that is a star (Betelgeuse) is drawn like the others, but the reason is
   // different: it has a shape, it is just a point at this scale.

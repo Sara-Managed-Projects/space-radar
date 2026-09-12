@@ -830,6 +830,14 @@ export const COPY = {
     // is the row's own words, not a string here -- only the row knows what its builder
     // exaggerated to make the object read at 40 pixels.
     objectVariant: 'drawn from published dimensions for {name}',
+    // ...and the one for a record whose shape is a FILE rather than a builder, because those are
+    // two different claims and one string was making both. A rocket really is built in
+    // scene/models.js from registry/rockets.yaml's metres, so "published dimensions" is exactly
+    // what happened to it. Hubble, Chandra and Terra are NASA's own CAD, loaded and retextured --
+    // nobody derived them from a dimension, and a card that says otherwise overstates how the
+    // drawing was made. Source-agnostic on purpose: the next one of these may be a CC BY model
+    // from somebody else, and CREDITS.md is where whose it is belongs.
+    objectModel: 'drawn from a published model of {name}',
     objectFamily: 'drawn as {name} — the kind of thing, not this exact one',
     objectGeneric: 'drawn as a generic object; we have no shape for {name}',
     // The procedural shape a class falls back to when nothing more specific is known. Used
