@@ -44,6 +44,15 @@ check(e4 && e4.file === 'iss.glb', 'the ISS keeps its own file (the id route win
 check(realModelFor(tianhe)?.build === 'tiangong', 'CSS (TIANHE) draws the whole station');
 { const o = modelFor('satellite', 'iridium'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-iridium') && Math.abs(o.userData.realSizeM - 9.4) < 0.01, `iridium builds inside budget at 9.4 m (${tris(o)} tris)`); disposeModels(o); }
 check(realModelFor({ id: 'i1', name: 'IRIDIUM 167', klass: 'satellite', layer: 'visual', meta: { noradId: 14 } })?.build === 'iridium', 'an Iridium gets its shape');
+// MMS by id, and the satellite that used to steal its model. ELARASAT MMS-1 is a real object in
+// the live catalogue (NORAD 64539) and it is not NASA's Magnetospheric Multiscale; the
+// word-boundary rule accepts `mms` followed by a hyphen, so the name route could not tell them
+// apart and the class gate could not either, since both are klass `satellite`.
+for (const [id, name] of [[40482, 'MMS 1'], [40483, 'MMS 2'], [40484, 'MMS 3'], [40485, 'MMS 4']]) {
+  check(realModelFor({ id: `m-${id}`, name, klass: 'satellite', layer: 'active', meta: { noradId: id } })?.file === 'mms.glb', `${name} gets the MMS model by id`);
+}
+check(realModelFor({ id: 'm-elara', name: 'ELARASAT MMS-1', klass: 'satellite', layer: 'active', meta: { noradId: 64539 } }) === null,
+  'ELARASAT MMS-1 is not NASA\'s MMS and gets no model');
 // The 3U CubeSats, by name because the id list of a constellation launched in batches would be
 // stale within the month. The real catalogue names, and the debris that must not take the shape.
 { const o = modelFor('satellite', 'cubesat'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-cubesat') && Math.abs(o.userData.realSizeM - 0.5) < 0.001, `cubesat builds inside budget at a 0.50 m deployed span (${tris(o)} tris)`); disposeModels(o); }

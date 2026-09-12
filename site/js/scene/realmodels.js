@@ -74,6 +74,22 @@ export const REAL_MODELS = {
     // published the Jason-2 model, so this is the sister ship and `generic` lets the card say so.
     41240: { file: 'jason.glb', colour: 'satellite', name: 'a Jason-series ocean altimeter', catalogue: 'JASON-3', generic: true },
     43476: { file: 'grace.glb', colour: 'satellite', name: 'a GRACE-series gravity mapper', catalogue: 'GRACE-FO 1', generic: true },
+    // NASA's Magnetospheric Multiscale: four spacecraft flying in a tetrahedron, MMS 1 to MMS 4.
+    //
+    // THIS USED TO BE THE NAME `mms`, WHICH ALSO MATCHED ELARASAT MMS-1 -- a different satellite,
+    // from a different country, doing a different job -- because the word-boundary rule accepts
+    // `mms` followed by a hyphen. So the app drew NASA's magnetospheric quartet on it,
+    // confidently, with nothing on screen saying so. That is the exact failure this file is
+    // organised against, and the third time this class of defect has been found in it.
+    //
+    // The class gate could not help: both are klass `satellite`. A narrower key could not either,
+    // because `MMS 1` and `MMS-1` differ only in the separator the rule deliberately ignores.
+    // Four ids is the honest fix, and MMS is a fixed four-spacecraft mission, so unlike a
+    // constellation the list cannot go stale.
+    40482: { file: 'mms.glb', colour: 'satellite', name: 'Magnetospheric Multiscale 1', catalogue: 'MMS 1' },
+    40483: { file: 'mms.glb', colour: 'satellite', name: 'Magnetospheric Multiscale 2', catalogue: 'MMS 2' },
+    40484: { file: 'mms.glb', colour: 'satellite', name: 'Magnetospheric Multiscale 3', catalogue: 'MMS 3' },
+    40485: { file: 'mms.glb', colour: 'satellite', name: 'Magnetospheric Multiscale 4', catalogue: 'MMS 4' },
     // ---------------------------------------------------------------------------------------
     // THE NASA SCIENCE SET spec 0027 task 9f left open, and the two reasons it was left open.
     //
@@ -323,7 +339,6 @@ export const REAL_MODELS = {
     dscovr: { file: 'dscovr.glb', colour: 'satellite', name: 'DSCOVR', klass: ['satellite'] },
     'suomi npp': { file: 'suomi.glb', colour: 'satellite', name: 'Suomi NPP', klass: ['satellite'] },
     goes: { file: 'goes.glb', colour: 'satellite', name: 'GOES weather satellite', klass: ['satellite'] },
-    mms: { file: 'mms.glb', colour: 'satellite', name: 'Magnetospheric Multiscale', klass: ['satellite'] },
   },
   /**
    * A default for a whole LAYER. This is the highest-value entry in the file: the geostationary
