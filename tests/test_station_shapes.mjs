@@ -75,6 +75,21 @@ for (const [id, name] of [[40482, 'MMS 1'], [40483, 'MMS 2'], [40484, 'MMS 3'], 
 }
 check(realModelFor({ id: 'm-elara', name: 'ELARASAT MMS-1', klass: 'satellite', layer: 'active', meta: { noradId: 64539 } }) === null,
   'ELARASAT MMS-1 is not NASA\'s MMS and gets no model');
+// The navigation satellites: 130 by name, 29 GLONASS by id, and the thirteen that must NOT match.
+{ const o = modelFor('satellite', 'navigation'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-navigation') && Math.abs(o.userData.realSizeM - 13) < 0.01, `navigation builds inside budget at Galileo's 13 m span (${tris(o)} tris)`); disposeModels(o); }
+for (const n of ['BEIDOU-3 M1', 'GSAT0210 (GALILEO 15)', 'GPS BIIR-5  (PRN 22)', 'NAVSTAR 81 (USA 319)', 'IRNSS-1A', 'QZS-2 (QZSS/PRN 194)']) {
+  const e = realModelFor({ id: `g-${n}`, name: n, klass: 'satellite', layer: 'active', meta: { noradId: 90100 } });
+  check(e?.build === 'navigation', `${n} is drawn as a navigation satellite: ${JSON.stringify(e)}`);
+}
+// GLONASS by id, because a `cosmos` name key would also catch Tselina-2, Tselina-D and Etalon.
+check(realModelFor({ id: 'g-32275', name: 'COSMOS 2433 (720)', klass: 'satellite', layer: 'active', meta: { noradId: 32275 } })?.build === 'navigation', 'a GLONASS catalogued as COSMOS gets the navigation shape by id');
+check(realModelFor({ id: 'g-22219', name: 'COSMOS 2219', klass: 'satellite', layer: 'visual', meta: { noradId: 22219 } })?.file === 'tselina2.glb', 'and a Tselina-2 catalogued as COSMOS still gets its own model, not the navigation shape');
+// The augmentation payloads: communications satellites with dishes that carry a navigation
+// payload. GSAT-8 is the trap a `gsat` key would have fallen into.
+for (const n of ['GSAT-8 (GAGAN/PRN 127)', 'INMARSAT 4-F2 (SOUTHPAN/PRN 122)', 'SES-5 (EGNOS/PRN 136)', 'LUCH 5A (SDCM/PRN 140)', 'EUTELSAT 117 WEST B (WAAS/PRN 131)']) {
+  const e = realModelFor({ id: `x-${n}`, name: n, klass: 'satellite', layer: 'active', meta: { noradId: 90101 } });
+  check(!e || e.build !== 'navigation', `${n} carries a navigation payload and is NOT a navigation satellite: ${JSON.stringify(e)}`);
+}
 // The 3U CubeSats, by name because the id list of a constellation launched in batches would be
 // stale within the month. The real catalogue names, and the debris that must not take the shape.
 { const o = modelFor('satellite', 'cubesat'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-cubesat') && Math.abs(o.userData.realSizeM - 0.5) < 0.001, `cubesat builds inside budget at a 0.50 m deployed span (${tris(o)} tris)`); disposeModels(o); }

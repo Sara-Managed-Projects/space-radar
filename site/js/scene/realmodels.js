@@ -116,6 +116,56 @@ export const REAL_MODELS = {
     40484: { file: 'mms.glb', colour: 'satellite', name: 'Magnetospheric Multiscale 3', catalogue: 'MMS 3' },
     40485: { file: 'mms.glb', colour: 'satellite', name: 'Magnetospheric Multiscale 4', catalogue: 'MMS 4' },
     // ---------------------------------------------------------------------------------------
+    // GLONASS, WHICH THE CATALOGUE CALLS COSMOS.
+    //
+    // These are navigation satellites and they are mapped BY ID, not by name, for the reason this
+    // file keeps running into: `COSMOS nnnn` is not a spacecraft type. A `cosmos` name key would
+    // also catch the four Tselina-2 above, the seven Tselina-D on the `visual` layer and everything
+    // else the Soviet Union and Russia ever numbered that way. Etalon 1 and 2 are COSMOS too, and
+    // they are balls.
+    //
+    // The list is CelesTrak's own `gnss` group as of 2026-09-12, filtered to the COSMOS names.
+    //
+    // THE NAMES BELOW ARE NOT THE ONES THAT GROUP GAVE, and that is a trap worth writing down.
+    // CelesTrak returns a DIFFERENT OBJECT_NAME for the same object depending on which file you
+    // ask for: GROUP=gnss annotates with the orbital slot, `COSMOS 2433 (720)`, while GROUP=active
+    // and a CATNR query both say `COSMOS 2433 [GLONASS-M]`. The first version of this block was
+    // written from the gnss group and check-model-ids.sh reported ten WRONG before it was, which
+    // is the check doing exactly its job on its author.
+    //
+    // The `catalogue:` field must come from the endpoint the CHECKER uses (CATNR), and that is
+    // also the one the app sees, because registry/sources.yaml fetches GROUP=active.
+    32275: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2433 [GLONASS-M]', generic: true },
+    32276: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2432 [GLONASS-M]', generic: true },
+    32393: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2434 [GLONASS-M]', generic: true },
+    32395: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2436 [GLONASS-M]', generic: true },
+    36111: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2456 [GLONASS-M]', generic: true },
+    36112: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2457 [GLONASS-M]', generic: true },
+    36402: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2460 [GLONASS-M]', generic: true },
+    37867: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2476 [GLONASS-M]', generic: true },
+    37868: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2477 [GLONASS-M]', generic: true },
+    37869: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2475 [GLONASS-M]', generic: true },
+    39155: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2485 [GLONASS-M]', generic: true },
+    39620: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2492 [GLONASS-M]', generic: true },
+    40001: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2500 [GLONASS-M]', generic: true },
+    40315: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2501 [GLONASS-K]', generic: true },
+    41330: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2514 [GLONASS-M]', generic: true },
+    42939: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2522 [GLONASS-M]', generic: true },
+    43508: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2527 [GLONASS-M]', generic: true },
+    43687: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2529 [GLONASS-M]', generic: true },
+    44299: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2534 [GLONASS-M]', generic: true },
+    44850: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2544 [GLONASS-M]', generic: true },
+    45358: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2545 [GLONASS-M]', generic: true },
+    46805: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2547 [GLONASS-K]', generic: true },
+    52984: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2557 [GLONASS-K]', generic: true },
+    54031: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2559 [GLONASS-K]', generic: true },
+    54377: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2564 [GLONASS-M]', generic: true },
+    57517: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2569 [GLONASS-K2]', generic: true },
+    63130: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2584 [GLONASS-K2]', generic: true },
+    65590: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2596 [GLONASS-K1]', generic: true },
+    100460: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2619 [GLONASS-K1]', generic: true },
+
+    // ---------------------------------------------------------------------------------------
     // THE NASA SCIENCE SET spec 0027 task 9f left open, and the two reasons it was left open.
     //
     // 9f read: "Fermi and CYGNSS skipped -- catalogue names uncertain (FGST? CYGFM0x?) and a name
@@ -345,6 +395,35 @@ export const REAL_MODELS = {
     paz: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', klass: ['satellite'], generic: true },
     novasar: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', klass: ['satellite'], generic: true },
     'gaofen-3': { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', klass: ['satellite'], generic: true },
+    // THE OTHER 130 NAVIGATION SATELLITES, by name -- 54 BeiDou, 35 Galileo, 32 GPS, 7 IRNSS,
+    // 5 QZSS -- all drawn until now as a communications satellite, whose whole silhouette is the
+    // parabolic dish these spacecraft are defined by NOT having.
+    //
+    // EVERY KEY WAS TESTED AGAINST THE LIVE GROUP before it was written here. Two traps were found
+    // and both are avoided:
+    //   * `gsat` would catch GSAT-8, GSAT-10 and GSAT-15, which are ISRO COMMUNICATIONS satellites
+    //     in geostationary orbit that happen to carry a GAGAN augmentation payload. The Galileos
+    //     are `GSAT0101 (GALILEO-PFM)` upward, so the key is `galileo`, which is inside the
+    //     parentheses on every one of them and on none of the GSAT-n.
+    //   * thirteen more augmentation payloads ride on INMARSAT 4-F2, SES-5, SES-15, ASTRA 5B,
+    //     EUTELSAT 117 WEST B, EUTELSAT 5 WEST B, GALAXY 30 and the three LUCH relays. Those ARE
+    //     communications satellites with dishes, and they correctly match nothing here.
+    // Result: 130 of the 172 in the group matched, and the 42 that did not are the 29 GLONASS
+    // (mapped by id above) plus exactly those 13.
+    beidou: { build: 'navigation', colour: 'satellite', name: 'a BeiDou navigation satellite', klass: ['satellite'], generic: true },
+    galileo: { build: 'navigation', colour: 'satellite', name: 'a Galileo navigation satellite', klass: ['satellite'], generic: true },
+    // TWO KEYS FOR ONE CONSTELLATION, and this is the endpoint trap again rather than belt and
+    // braces. GROUP=active -- the file sources.yaml actually fetches -- calls them
+    // `NAVSTAR 43 (USA 132)`, and 40 of them match that. GROUP=gnss and a CATNR query call the
+    // same objects `GPS BIIR-5  (PRN 22)`. Measured against today's `active`, `gps` matches
+    // NOTHING and `navstar` matches all forty; the spec's rule is that a key which never matches
+    // is a wasted file, and `gps` is kept anyway BECAUSE the other spelling is one source change
+    // away and this comment is cheaper than rediscovering it.
+    gps: { build: 'navigation', colour: 'satellite', name: 'a GPS navigation satellite', klass: ['satellite'], generic: true },
+    navstar: { build: 'navigation', colour: 'satellite', name: 'a GPS navigation satellite', klass: ['satellite'], generic: true },
+    glonass: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', klass: ['satellite'], generic: true },
+    irnss: { build: 'navigation', colour: 'satellite', name: 'an IRNSS navigation satellite', klass: ['satellite'], generic: true },
+    qzs: { build: 'navigation', colour: 'satellite', name: 'a QZSS navigation satellite', klass: ['satellite'], generic: true },
     // THE 3U CUBESATS -- 164 objects, and the largest population in this app outside Starlink.
     //
     // Planet's Flock (94 Doves and SuperDoves, imaging the whole land surface daily) and Spire's
