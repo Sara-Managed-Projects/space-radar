@@ -340,6 +340,42 @@ export const REAL_MODELS = {
     // within the month while the name will not be. Klass-gated to `satellite` so the many pieces
     // of Flock debris keep the debris shape, and matched on a whole word so `FLOCK 4Q-16` counts
     // and nothing that merely contains the letters does.
+    // STARLINK -- 11 131 objects, sixty-seven per cent of the catalogue this app fetches, and
+    // every one of them was drawn as a box with a parabolic dish.
+    //
+    // SPEC 0027 PUT THIS OUT OF SCOPE for a reason that turned out to apply to half the problem:
+    // "the only model found is CC BY on Sketchfab behind a login and is the one-wing v1 ... it
+    // needs Ivan's download and a launch-date gate". The download was only ever needed for REAL
+    // GEOMETRY. A Starlink is a flat rectangle with a solar array hinged to it; drawing that
+    // procedurally needs nobody's licence. The gate is the other half, and it is here.
+    //
+    // THE GATE IS THE LAUNCH YEAR, and its edges are honest rather than tidy:
+    //
+    //     launched 2022 or earlier   2 227 objects (20%)   v1.0/v1.5, ONE array   certain
+    //     launched in 2023          1 793 objects (16%)   BOTH flew that year     not certain
+    //     launched 2024 or later    7 111 objects (64%)   v2 Mini, TWO arrays     certain
+    //
+    // v2 Mini first flew on 2023-02-27 and the v1.5 line kept flying beside it for the rest of that
+    // year, so 2023 cannot be split by any field the catalogue carries. It is drawn as a v2 Mini,
+    // which is right for most of that year's launches and wrong for some, and `generic: true`
+    // means the card says "the kind of thing, not this exact one" for every one of the 11 131.
+    // Counted against GROUP=active on 2026-09-12.
+    //
+    // Klass-gated to `satellite`: Starlink debris and the stages that launched them keep their own
+    // shapes, and there are a great many of both.
+    starlink: {
+      colour: 'satellite',
+      klass: ['satellite'],
+      generic: true,
+      build: 'starlink-v2',
+      name: 'a Starlink',
+      resolve: (record) => {
+        const year = record && record.meta ? record.meta.launchYear : null;
+        return Number.isFinite(year) && year <= 2022
+          ? { build: 'starlink-v1', name: 'a first-generation Starlink' }
+          : { build: 'starlink-v2', name: 'a Starlink V2 Mini' };
+      },
+    },
     flock: { build: 'cubesat', colour: 'satellite', name: 'a Dove, a 3U CubeSat', klass: ['satellite'], generic: true },
     lemur: { build: 'cubesat', colour: 'satellite', name: 'a Lemur, a 3U CubeSat', klass: ['satellite'], generic: true },
     // AST SpaceMobile's BlueBirds: nine of them on the `visual` layer as of 2026-09-12, which is
@@ -473,7 +509,12 @@ export function realModelFor(record) {
     // name match now has to agree about what KIND of thing it is, and match a whole word.
     if (entry.klass && !entry.klass.includes(record.klass)) continue;
     if (!wordMatch(name, key)) continue;
-    return entry;
+    // One entry, two shapes, chosen from the record. Starlink is the only row that needs this and
+    // spec 0027 named it in advance -- "it needs ... a launch-date gate" -- because the
+    // constellation changed shape in flight and the catalogue name did not change with it.
+    // `resolve` returns the fields to override, so an entry without one is untouched and this
+    // costs the other thirty-nine rows nothing.
+    return typeof entry.resolve === 'function' ? { ...entry, ...entry.resolve(record) } : entry;
   }
   // Last: a default for the whole layer, so an unnamed member of a known population still gets
   // geometry that looks like what it is.

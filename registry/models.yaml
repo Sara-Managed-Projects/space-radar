@@ -27,6 +27,10 @@ models:
   - {id: satellite-solarsail, file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 150, for: {variant: solarsail}}
   - {id: satellite-sphere,    file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 250, for: {variant: sphere}}
   - {id: satellite-cubesat,   file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 250, for: {variant: cubesat}}
+  # Two rows for one constellation, because it changed shape in flight and the catalogue name did
+  # not change with it. Which one a record gets is a launch-year gate in scene/realmodels.js.
+  - {id: satellite-starlink-v1, file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 150, for: {variant: starlink-v1}}
+  - {id: satellite-starlink-v2, file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 200, for: {variant: starlink-v2}}
   - {id: satellite-radar,     file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 200, for: {variant: radar}}
   - {id: satellite-generic,  file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1500, for: {layer: notable}}
   - {id: satellite-comms,    file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1500, for: {family: comms}}

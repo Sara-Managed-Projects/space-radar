@@ -87,6 +87,33 @@ def block(src, name):
     return src[start : src.index("\n  },", start)]
 
 
+def named_entries(text):
+    """Yield (key, body) for each entry of the `named:` table.
+
+    Brace-BALANCED rather than "up to the first }", which is how the first version of this script
+    read the table and is wrong the moment an entry contains a nested object. The Starlink row does:
+    it carries a `resolve(record)` that returns `{ build, name }`, so a first-brace reader stopped
+    inside the arrow function, mis-attributed the rest and reported Starlink's shape as reaching
+    12 315 objects when the key catches exactly 11 131.
+    """
+    i = 0
+    while True:
+        m = re.compile(r"(?:^|\n)[ \t]*'?([a-z0-9 /\-()]+?)'?:[ \t]*\{").search(text, i)
+        if not m:
+            return
+        depth, j = 0, m.end() - 1
+        while j < len(text):
+            if text[j] == "{":
+                depth += 1
+            elif text[j] == "}":
+                depth -= 1
+                if depth == 0:
+                    break
+            j += 1
+        yield m.group(1).strip(), text[m.end() : j]
+        i = j + 1
+
+
 def parse():
     """The three routes realModelFor() uses that a catalogue can answer for: norad, named, byLayer."""
     src = SRC.read_text(encoding="utf-8")
@@ -99,15 +126,20 @@ def parse():
     nb = block(src, "named")
     nb = nb[nb.index("{") + 1 :]
     named = []
-    for m in re.finditer(r"(?:^|\n)\s*'?([a-z0-9 /\-()]+?)'?:\s*\{([^}]*)\}", nb):
-        key, body = m.group(1).strip(), m.group(2)
+    for key, body in named_entries(nb):
         f = re.search(r"file:\s*'([^']*)'", body)
         b = re.search(r"build:\s*'([^']*)'", body)
         kl = re.search(r"klass:\s*\[([^\]]*)\]", body)
+        shape = f.group(1) if f else ("build:" + b.group(1) if b else "?")
+        # An entry with a resolve() picks its shape from the record at draw time -- Starlink's
+        # launch-year gate is the one. The reach is still the key's, and the shape below is the
+        # entry's default, so it is marked rather than quietly reported as the only one.
+        if "resolve:" in body:
+            shape += " (+resolve)"
         named.append(
             {
                 "key": key,
-                "shape": f.group(1) if f else ("build:" + b.group(1) if b else "?"),
+                "shape": shape,
                 "klass": [x.strip().strip("'") for x in kl.group(1).split(",")] if kl else None,
             }
         )
