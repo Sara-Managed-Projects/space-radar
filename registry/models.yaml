@@ -5,6 +5,15 @@
 # public found three claims here that were false of the shipped tree, and they are corrected below.
 # CREDITS.md is the human-readable record and takes precedence over this file if they ever differ.
 #
+# THREE SCRIPTS NOW TURN THREE OF THESE STRINGS INTO FACTS, and none of them is in CI because each
+# needs the network:
+#   scripts/check-model-ids.sh      does a `norad:` id point at the object its row NAMES?
+#   scripts/check-model-reach.py    does a mapping reach any object the app actually draws?
+#   scripts/check-model-sources.py  does a `source:` name a model NASA actually has?
+# The last one resolves all 44 rows against NASA's own file index. Run it when you add a row: a
+# credit nobody can follow is not a credit, and a folder name is easy to mistype and impossible to
+# notice.
+#
 # WHAT CHANGED, AND WHY IT MATTERS
 #   * The `models:` rows described nineteen .glb files. There is no `models/` directory and nothing
 #     loads glTF: `site/js/scene/models.js` builds every shape from three.js primitives. Five of
