@@ -722,6 +722,82 @@ function buildCubeSat() {
 }
 
 /**
+ * The OTHER kind of radar imager: a small bus under a big ribbed umbrella.
+ *
+ * buildRadarImager draws the flat side-looking blade that twenty-seven rows share. These twenty-five
+ * spacecraft do the same job by the opposite means -- Capella, Umbra and iQPS each unfurl a
+ * PARABOLIC MESH REFLECTOR on radial ribs, which is a dish, and giving them the blade would be the
+ * same error as giving a navigation satellite a dish, run backwards. #105 left them deliberately
+ * generic and said the umbrella was a shape nobody had drawn here yet. This is it.
+ *
+ * THE RIBS ARE WHY IT IS NOT THE COMMS DISH. A communications parabola is a solid, smooth,
+ * Earth-pointing shell. This is a mesh stretched over spokes, folded like an umbrella for launch
+ * and sprung open in orbit, and it is offset-fed -- the feed sits out to the side on a boom rather
+ * than in the middle of the aperture. At 84 px the spokes and the off-centre feed are what separate
+ * it from bus-ssl1300's dish, so both are drawn and neither is decoration.
+ *
+ * SIZE from Capella, the one published plainly: "a 3.5 meter deployed mesh-based reflector
+ * antenna". iQPS describes a "deployable wrapped-rib parabolic mesh reflector" without giving its
+ * diameter, and Umbra publishes neither, so 3.5 m is Capella's number standing for the family and
+ * `generic: true` says as much on every card.
+ */
+const MESH_REFLECTOR_M = 3.5;
+function buildMeshReflector() {
+  const g = new THREE.Group();
+  g.userData.realSizeM = MESH_REFLECTOR_M;
+  const S = 1 / MESH_REFLECTOR_M;
+
+  // The reflector, facing +Z, which the `sun-panels` attitude points at the world. Darker than a
+  // communications parabola because it is a mesh: it scatters where a solid shell would glare.
+  const shell = dish(1.75 * S, 0.5 * S, 18, '#9AA3AF', 'foil', 'reflector');
+  shell.position.z = 0.2 * S;
+  g.add(shell);
+  // Radial ribs, twelve of them, lying ON the face and running a little past the rim -- a
+  // wrapped-rib reflector really does have its rib tips proud of the mesh. In front of the shell
+  // rather than behind it: the first version put them at z below the dish's own surface and they
+  // were invisible, which is the whole feature gone.
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    const rib = box(1.9 * S, 0.05 * S, 0.05 * S, '#EEF2F7', 'body', 'rib');
+    rib.position.set(Math.cos(a) * 0.95 * S, Math.sin(a) * 0.95 * S, 0.42 * S);
+    rib.rotation.z = a;
+    g.add(rib);
+  }
+  // The hub the ribs spring from.
+  const hub = cyl(0.14 * S, 0.18 * S, 0.16 * S, 10, METAL, 'body', 'hub');
+  hub.rotation.x = Math.PI / 2;
+  hub.position.z = 0.28 * S;
+  g.add(hub);
+
+  // The bus, behind the reflector and much smaller: these are 100 kg class spacecraft whose
+  // antenna is most of what there is.
+  const bus = box(0.55 * S, 0.55 * S, 0.7 * S, FOIL, 'foil', 'bus');
+  bus.position.z = -0.55 * S;
+  g.add(bus);
+
+  // The feed, OFF TO THE SIDE on a boom -- an offset feed, not a centre one. This is the detail
+  // that says "radar" rather than "television".
+  const boom = cyl(0.025 * S, 0.025 * S, 1.3 * S, 6, METAL, 'body', 'feed-boom');
+  boom.rotation.x = Math.PI / 2;
+  boom.position.set(-0.8 * S, 0, 0.55 * S);
+  g.add(boom);
+  const feed = cyl(0.11 * S, 0.16 * S, 0.22 * S, 10, '#3A4048', 'body', 'feed');
+  feed.rotation.x = -Math.PI / 2;
+  feed.position.set(-0.8 * S, 0, 1.15 * S);
+  g.add(feed);
+
+  // One wing. A Capella carries its cells on a single deployed panel behind the reflector.
+  const pivot = new THREE.Group();
+  pivot.name = 'panelPivot';
+  const wing = panelWing(1.5 * S, 0.55 * S, METAL, 'wing');
+  wing.position.set(0.3 * S, 0, -0.55 * S);
+  pivot.add(wing);
+  g.add(pivot);
+  g.userData.panelPivots = [pivot];
+  return g;
+}
+
+/**
  * A radar-imaging satellite, as a family shape: a long flat blade of an antenna, a small bus behind
  * it, and the blade AIMED OFF TO ONE SIDE rather than straight down.
  *
@@ -2397,6 +2473,7 @@ const BUILDERS = {
     solarsail: buildSolarSail,
     sphere: buildGeodeticSphere,
     radar: buildRadarImager,
+    'radar-mesh': buildMeshReflector,
     cubesat: buildCubeSat,
     oneweb: buildOneWeb,
     'starlink-v1': buildStarlink,
