@@ -280,53 +280,6 @@ function buildSatelliteComms() {
   return g;
 }
 
-function buildSatelliteWeather() {
-  const g = new THREE.Group();
-  g.userData.realSizeM = 4;
-  const drum = cyl(0.2, 0.2, 0.34, 16, '#DCE3EC', 'foil', 'drum');
-  drum.rotation.x = Math.PI / 2; // the spin axis points at nadir
-  g.add(drum);
-  const cap = cyl(0.2, 0.17, 0.05, 16, '#B7C1CE', 'body', 'cap');
-  cap.rotation.x = Math.PI / 2;
-  cap.position.z = -0.19;
-  g.add(cap);
-  // instrument aperture, pointed at the sub-satellite point
-  const scope = cyl(0.07, 0.09, 0.1, 12, '#8E99A8', 'body', 'aperture');
-  scope.rotation.x = Math.PI / 2;
-  scope.position.z = 0.2;
-  scope.name = 'boresight';
-  g.add(scope);
-  const pivot = new THREE.Group();
-  pivot.name = 'panelPivot';
-  const wing = panelWing(0.3, 0.14, METAL, 'wing');
-  wing.position.x = 0.2;
-  pivot.add(wing);
-  g.add(pivot);
-  g.userData.panelPivots = [pivot];
-  return g;
-}
-
-function buildSatelliteFlat() {
-  const g = new THREE.Group();
-  g.userData.realSizeM = 3;
-  const slab = box(0.5, 0.02, 0.32, '#E3E8EF', 'body', 'slab');
-  g.add(slab);
-  const pivot = new THREE.Group();
-  pivot.name = 'panelPivot';
-  const wing = panelWing(0.48, 0.3, METAL, 'wing');
-  wing.position.set(0.02, 0.03, 0);
-  wing.rotation.y = Math.PI / 2;
-  pivot.add(wing);
-  pivot.position.z = 0.02;
-  g.add(pivot);
-  g.userData.panelPivots = [pivot];
-  const ant = cyl(0.01, 0.01, 0.14, 6, METAL, 'body', 'antenna');
-  ant.rotation.x = Math.PI / 2;
-  ant.position.z = 0.1;
-  g.add(ant);
-  return g;
-}
-
 // -------------------------------------------------------------------------------------- debris
 
 function buildDebris(variant) {
@@ -2381,8 +2334,6 @@ const BUILDERS = {
   satellite: {
     default: buildSatelliteComms,
     comms: buildSatelliteComms,
-    weather: buildSatelliteWeather,
-    flat: buildSatelliteFlat,
     iridium: buildIridium,
     spacemobile: buildSpaceMobile,
     solarsail: buildSolarSail,

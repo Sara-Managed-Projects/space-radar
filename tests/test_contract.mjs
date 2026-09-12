@@ -276,6 +276,68 @@ for (const file of allFiles) {
   );
 }
 
+// 3bc. every procedural variant can actually be ASKED FOR by something.
+//
+// registry/models.yaml has a row per procedural shape and each row's `for:` says who it is meant
+// for. Nothing checked that anyone could reach it, and two could not: `satellite-flat` claimed
+// `for: {family: flat-packed}` and `satellite-weather` claimed `for: {family: weather}`, and there
+// is no `family` routing anywhere in the app -- no record carries one and no code reads one. They
+// were shapes nobody could request, described by a field describing a mechanism that does not
+// exist.
+//
+// THE ROUTES THAT CAN ASK FOR A VARIANT, and they are the whole list:
+//   * `build:` in scene/realmodels.js -- what heroes.js passes for a matched record
+//   * `meta.modelVariant` -- set by data/parsers.js from registry/rockets.yaml, by data/sample.js
+//     and data/attached.js from registry/oddities.yaml, and by data/layers.js for surface sites
+//   * the class DEFAULT, which is reached by every record of that class with no variant at all
+//
+// This checks the two classes whose variants come only from realmodels.js. Rockets, oddities and
+// sites are covered by 3b and 3d, which build every registry row.
+{
+  const REALMODELS = readFileSync(join(JS, 'scene/realmodels.js'), 'utf8');
+  const asked = new Set([...REALMODELS.matchAll(/build:\s*'([^']+)'/g)].map((m) => m[1]));
+  // ...and an ALIAS OF THE DEFAULT is reachable whatever its key says, because every record of
+  // that class with no variant lands on it. `satellite.comms` and `station.iss` are both just
+  // second names for their class's default builder, and reporting those would be noise. Read from
+  // the BUILDERS table's own text, so the comparison is the function each key actually names.
+  const src = readFileSync(join(JS, 'scene/models.js'), 'utf8');
+  const table = src.slice(src.indexOf('const BUILDERS = {'));
+  /** The builder FUNCTION NAME a class's variant maps to, read from the BUILDERS table's own text. */
+  const builderOf = (klass, variant) => {
+    const row = new RegExp(klass + ': \\{([^}]*)\\}').exec(table);
+    if (!row) return null;
+    const key = variant.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+    // A leading space so a key sitting at position 0 still has a boundary in front of it.
+    const m = new RegExp("[\\s,{]'?" + key + "'?\\s*:\\s*([A-Za-z0-9_]+)").exec(' ' + row[1]);
+    return m ? m[1] : null;
+  };
+  try {
+    const { modelVariants } = await import(join(JS, 'scene/models.js'));
+    const variants = modelVariants();
+    const orphans = [];
+    for (const klass of ['satellite', 'station']) {
+      const dflt = builderOf(klass, 'default');
+      for (const v of variants[klass] || []) {
+        if (v === 'default' || asked.has(v)) continue;
+        if (dflt && builderOf(klass, v) === dflt) continue; // a second name for the default
+        orphans.push(`${klass}:${v}`);
+      }
+    }
+    if (orphans.length) {
+      problems.push(
+        `VARIANT  nothing can ask for ${orphans.join(', ')} -- no build: in realmodels.js names ` +
+          `${orphans.length > 1 ? 'them' : 'it'}, and there is no other route to a satellite or station variant`
+      );
+    }
+    notes.push(
+      `${asked.size} variants are asked for by name in realmodels.js; every satellite and station ` +
+        `builder is reachable`
+    );
+  } catch (e) {
+    problems.push(`VARIANT  could not check builder reachability: ${e.message}`);
+  }
+}
+
 // 3c. a launch may never claim a shape it did not match. `stands_for: variant` on a row is a
 // claim about ONE vehicle; nine such rows also list a family string, so a launch whose full_name
 // nobody has listed yet lands on one of them and the card would say "drawn from published
