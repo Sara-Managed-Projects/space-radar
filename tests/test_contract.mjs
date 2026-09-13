@@ -13,7 +13,7 @@
 //
 // Run: node tests/test_contract.mjs
 
-import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -489,6 +489,47 @@ for (const file of allFiles) {
     );
   } catch (e) {
     problems.push(`GOLDEN   could not check the golden master: ${String(e && e.message)}`);
+  }
+}
+
+// 3d2. AND THE BEFORE PICTURE CANNOT BE OVERWRITTEN BY ACCIDENT.
+//
+// The check above is only worth anything while the fixture still holds the BEFORE numbers, and
+// the generator that writes it lives in tests/ and matches `tests/*.mjs`. Running the suite with
+// a glob -- the obvious thing to do -- therefore used to replace the before picture with the
+// after picture, silently, and the damage then surfaced as a failure in 3d, which reads as "the
+// propagator broke" rather than "your fixture is gone". It cost a debugging session here.
+//
+// So the generator refuses to write without --write, and this breaks that on purpose: run it the
+// accidental way and require the bytes to be untouched. If someone drops the flag check, this
+// fails -- and puts the bytes back first, because a guard for the golden master must not be the
+// thing that destroys it.
+{
+  const path = join(ROOT, 'tests/fixtures/fixed-golden.json');
+  const before = readFileSync(path);
+  let out = '';
+  try {
+    out = execFileSync(process.execPath, [join(ROOT, 'tests/dump_fixed_golden.mjs')], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+  } catch (e) {
+    problems.push(`GENERATOR run without --write exited non-zero: ${String(e && e.message)}`);
+  }
+  const after = readFileSync(path);
+  if (!before.equals(after)) {
+    writeFileSync(path, before);
+    problems.push(
+      'GENERATOR tests/dump_fixed_golden.mjs rewrote the golden master without being asked. ' +
+        'The bytes have been restored; put the --write guard back.'
+    );
+  } else if (!/nothing written/i.test(out)) {
+    problems.push(
+      `GENERATOR run without --write wrote nothing but did not say so, so a person running it ` +
+        `cannot tell: ${JSON.stringify(out.trim().slice(0, 120))}`
+    );
+  } else {
+    notes.push('the golden-master generator will not write unless asked, and says so');
   }
 }
 

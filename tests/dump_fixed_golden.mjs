@@ -88,7 +88,19 @@ export async function dumpRows() {
   return rows;
 }
 
+// Writing is opt-in. This file lives in tests/ and matches `tests/*.mjs`, so anyone running the
+// suite with a glob -- the obvious thing to do -- used to silently overwrite the before picture
+// with the after picture and destroy the safety net. The damage then presented as a test failure
+// in test_contract.mjs, which is the worst possible disguise for it. Regenerating the fixture is
+// a deliberate act, so it needs a deliberate flag.
 if (process.argv[1] && process.argv[1].endsWith('dump_fixed_golden.mjs')) {
+  if (!process.argv.includes('--write')) {
+    console.log(
+      'dump_fixed_golden.mjs is a generator, not a test. It rewrites the golden master that\n' +
+      'test_contract.mjs checks against. Nothing written. Pass --write if that is what you mean.'
+    );
+    process.exit(0);
+  }
   const rows = await dumpRows();
   const doc = {
     note:
