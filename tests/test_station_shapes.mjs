@@ -330,22 +330,43 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
     // carry its rib tips proud of the mesh, so the box runs a little past the dish.
     ['satellite:radar-mesh', 1.086],
   ]);
+  // ROCKETS ARE MEASURED WITH THE PLUME HIDDEN, which is the state they are built in. buildRocket
+  // adds a `plume-cone` 0.4 units long below the nozzle and leaves it invisible until heroes.js
+  // sees a burn, so the full box of every rocket in the file is 1.40 and the drawn one is 1.01.
+  // Measuring the full box would have declared all fifty of them 40 % wrong and taught nothing;
+  // measuring the visible one holds them to the same convention as everything else.
+  const visibleSize = (root) => {
+    const box = new THREE.Box3();
+    root.updateMatrixWorld(true);
+    root.traverse((n) => {
+      if (!n.isMesh) return;
+      for (let p = n; p; p = p.parent) if (!p.visible) return;
+      box.expandByObject(n);
+    });
+    return box.isEmpty() ? new THREE.Vector3() : box.getSize(new THREE.Vector3());
+  };
+  // A rocket gets a little more room than a spacecraft: it is normalised by the vehicle's quoted
+  // height and the engine bell hangs below the bottom of the stage, which is true of the hardware.
+  // Themis is the worst of the fifty at 1.063, because a 28 m vehicle's Prometheus bell is a
+  // bigger fraction of it than a Falcon 9's Merlins are of 70 m.
+  const TOLERANCE = { station: 0.06, satellite: 0.06, rocket: 0.08 };
   let units = 0;
-  for (const klass of ['station', 'satellite']) {
+  for (const klass of ['station', 'satellite', 'rocket']) {
     for (const variant of modelVariants()[klass]) {
       const id = `${klass}:${variant}`;
       const obj = modelFor(klass, variant);
-      const size = new THREE.Box3().setFromObject(obj).getSize(new THREE.Vector3());
+      const size = visibleSize(obj);
       const built = Math.max(size.x, size.y, size.z);
       const want = UNIT_EXEMPT.get(id) ?? 1;
+      const tol = TOLERANCE[klass];
       units += 1;
-      check(Math.abs(built - want) <= 0.06,
+      check(Math.abs(built - want) <= tol,
         `${id} builds ${built.toFixed(3)} units where the convention is ${want} ` +
           `-- ${(Math.abs(built - want) * 100).toFixed(0)} % of the model is out of proportion with the rest of it`);
       disposeModels(obj);
     }
   }
-  if (!problems.length) console.log(`  ${units} vehicle shapes are within 6 % of the one unit they declare`);
+  if (!problems.length) console.log(`  ${units} vehicle shapes hold the one unit they declare, rockets measured with the plume hidden`);
   if (!problems.length) console.log(`  each of ${checked} shapes is ONE connected object; the loosest joint is ${worst.id} "${worst.part}" at ${(worst.gap * 100).toFixed(1)} %`);
 }
 
