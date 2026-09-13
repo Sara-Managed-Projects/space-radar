@@ -11,6 +11,7 @@ that does not say where is a refusal somebody will switch off.
 
 from __future__ import annotations
 
+import re
 import shutil
 import subprocess
 import sys
@@ -576,6 +577,66 @@ def check_copy_refuses() -> int:
     return failures
 
 
+def check_models_dir_refuses() -> int:
+    """A .glb in site/models/ with no registry row must be refused.
+
+    The other two model checks compare two LISTS -- registry/models.yaml against CREDITS.md, in
+    both directions. A file that is in neither list is invisible to both, and
+    scripts/deploy.sh --assets-only syncs the DIRECTORY. So an uncredited redistribution of
+    somebody else's work could reach the bucket through the one door nothing was watching.
+
+    Both directions here: a directory that matches the registry is accepted, and one extra file
+    is refused by name. The placeholders are empty -- this guard reads the directory listing and
+    never opens a file, and writing 6.7 MB of real models into a temporary tree to prove that
+    would be testing shutil.
+    """
+    failures = 0
+    listed = sorted(
+        re.findall(r"file: site/models/([A-Za-z0-9_.-]+\.glb)", (ROOT / "registry/models.yaml").read_text(encoding="utf-8"))
+    )
+    if not listed:
+        print("  ** models directory: no real_models rows found, so this guard was not exercised")
+        return 1
+
+    for label, extra in (("the directory as the registry lists it", None),
+                         ("one .glb with no row", "unlisted-and-uncredited.glb")):
+        with tempfile.TemporaryDirectory() as tmp:
+            work = Path(tmp) / "work"
+            work.mkdir()
+            shutil.copytree(ROOT / "registry", work / "registry")
+            shutil.copytree(ROOT / "scripts", work / "scripts")
+            shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")
+            shutil.copytree(ROOT / "harvest", work / "harvest",
+                            ignore=shutil.ignore_patterns("__pycache__"))
+            models = work / "site" / "models"
+            models.mkdir(parents=True)
+            for name in listed:
+                (models / name).write_bytes(b"")
+            if extra:
+                (models / extra).write_bytes(b"")
+
+            result = subprocess.run(
+                [sys.executable, "scripts/check_registry.py"],
+                cwd=work, capture_output=True, text=True,
+            )
+            out = result.stdout + result.stderr
+            refused = result.returncode != 0
+            if extra is None:
+                if refused:
+                    print(f"  ** models directory: {label} was refused\n{out.strip()[:400]}")
+                    failures += 1
+                else:
+                    print(f"  accepted: {label}")
+            else:
+                if refused and "site/models" in out and extra in out:
+                    print(f"  refused: {label}")
+                else:
+                    why = "was accepted" if not refused else "refused without naming the file"
+                    print(f"  ** models directory: {label} {why}")
+                    failures += 1
+    return failures
+
+
 def main() -> int:
     failures = 0
     with tempfile.TemporaryDirectory() as tmp:
@@ -624,12 +685,15 @@ def main() -> int:
     print("")
     failures += check_copy_refuses()
 
+    print("")
+    failures += check_models_dir_refuses()
+
     if failures:
         print(f"\n{failures} guard(s) do not do what they claim")
         return 1
-    refusals = len(CASES) + len(COPY_CASES) + len(TOUR_CASES)
+    refusals = len(CASES) + len(COPY_CASES) + len(TOUR_CASES) + 1
     print(f"\nall {refusals} refusals fire and each names its file, and registry/tours.yaml "
-          f"as it stands is accepted")
+          f"and a site/models that matches the registry are both accepted")
     return 0
 
 

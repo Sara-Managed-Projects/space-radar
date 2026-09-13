@@ -1518,6 +1518,29 @@ def main() -> int:
                 fail("CREDITS.md", f"credits `{name}`, which has no models.yaml real_models row "
                                    f"and does not ship -- a credit for work that is not here")
 
+    # ...and the DIRECTORY, which neither of the two checks above looks at.
+    #
+    # models.yaml is checked against CREDITS.md in both directions, and CREDITS.md against
+    # models.yaml -- and both of them are lists. A .glb sitting in site/models/ that is in NEITHER
+    # list passes every check in this file and deploys anyway: scripts/deploy.sh --assets-only
+    # syncs the directory, not the registry. That is an uncredited redistribution of somebody
+    # else's work, which is the one thing this whole section exists to prevent, arriving through
+    # the one door it was not watching.
+    #
+    # It is easy to do by accident. scripts/fetch-model.sh writes straight into site/models/ and
+    # then TELLS you to add the row by hand, deliberately -- "the wrong model on an object is a
+    # confident lie" -- so the window between fetching a model and deciding about it is exactly
+    # when an unlisted file exists. Several sat there during this session's work; they were
+    # removed by hand, and nothing would have said so if they had not been.
+    models_dir = ROOT / "site/models"
+    if models_dir.is_dir():
+        listed = {Path(str(m.get("file") or "")).name for m in real_models} - {""}
+        for f in sorted(p.name for p in models_dir.glob("*.glb")):
+            if f not in listed:
+                fail("site/models", f"`{f}` ships and has no models.yaml real_models row -- so it "
+                                    f"carries no licence, no credit and no source, and deploy.sh "
+                                    f"would push it anyway")
+
     # --- marks: somebody else's LOGO, which is the strictest case in the file ---------
     # A logo is a trademark as well as a drawing, and the permission to use one is conditional on
     # not changing it. So this asks for more than a licence string: it asks the row to say WHERE
