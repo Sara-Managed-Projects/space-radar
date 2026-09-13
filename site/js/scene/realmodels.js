@@ -61,8 +61,20 @@ const BASE = new URL('../../models/', import.meta.url);
  * The geostationary bus, reached two ways and defined once. See `byLayer` below for why this model
  * is the highest-value entry in the file, and `isGeostationary` in data/parsers.js for why the
  * layer is no longer what decides it.
+ *
+ * THE NAME SAYS WHAT THE ORBIT KNOWS, AND NO MORE. It used to say "a communications satellite",
+ * and the card prints it as "drawn as a communications satellite -- the kind of thing". But an
+ * orbit tells you a satellite is geostationary; it does not tell you what the satellite is FOR.
+ * Of the 400 objects this entry reaches on 2026-09-12, sixteen are weather satellites (Himawari,
+ * Fengyun, Elektro-L, INSAT-3D, GEO-KOMPSAT-2), four are Earth-observation (Gaofen-4, Gaofen-13,
+ * Yaogan-41), and about thirty are classified -- USA 270 and 271 are GSSAP, which watch other
+ * satellites. The layer's own sentence already said "a ring of television and weather
+ * satellites"; the model's name contradicted it. The kind is now the kind the evidence supports.
+ *
+ * The shape still carries a comms payload's dishes, which is the "not this exact one" half. It is
+ * wrong in SILHOUETTE for exactly two of the 400: Fengyun 2G and 2H are spin-stabilised drums.
  */
-const GEO_BUS = { file: 'bus-ssl1300.glb', colour: 'satellite', name: 'a communications satellite', generic: true };
+const GEO_BUS = { file: 'bus-ssl1300.glb', colour: 'satellite', name: 'a geostationary satellite', generic: true };
 
 export const REAL_MODELS = {
   /**
@@ -559,15 +571,16 @@ export const REAL_MODELS = {
   },
   /**
    * A default for a whole LAYER. This is the highest-value entry in the file: the geostationary
-   * ring is several hundred unnamed commercial communications satellites, and most of them really
-   * are a box bus with a big dish and two long wings. One 81 kB model makes the whole ring read as
-   * what it is instead of as identical grey boxes.
+   * ring is several hundred unnamed satellites, mostly commercial communications satellites, and
+   * nearly all of them -- weather and military ones included -- really are a box bus with two long
+   * wings. One 81 kB model makes the whole ring read as what it is instead of as identical grey
+   * boxes.
    *
    * `generic: true` marks it as a stand-in, AND THE CARD NOW SAYS SO. This comment used to end
    * "that is a gap, and saying it here is better than a comment claiming a line the card never
    * prints" -- which was true when it was written and stopped being true when spec 0026 item 3
    * shipped cards.js's derivedDrawingLine(): it reads this very table and prints
-   * "drawn as a communications satellite -- the kind of thing, not this exact one" for this bus,
+   * "drawn as a geostationary satellite -- the kind of thing, not this exact one" for this bus,
    * and the equivalent for the DSN dish, the pad and grace.glb. A comment DENYING a line the card
    * does print is the same defect with the sign flipped, which is why this paragraph is longer
    * than the fix.
@@ -675,14 +688,15 @@ export function realModelFor(record) {
     return typeof entry.resolve === 'function' ? { ...entry, ...entry.resolve(record) } : entry;
   }
   // Then the ORBIT. A satellite in a near-circular twenty-four-hour orbit is a geostationary
-  // communications satellite whatever it is called, and most of them really are a box bus with a
-  // big dish and two long wings.
+  // satellite whatever it is called, and nearly all of them are a box bus with two long wings.
   //
   // THIS USED TO BE A LAYER TEST AND THAT WAS THE BUG. `geo-ring` and `active` read the same
   // CelesTrak file, so the same satellite arrived on both -- and got the SSL-1300 on one and a
   // generic comms drum on the other. Which shape a person saw depended on which checkbox they had
-  // ticked. Measured against the live catalogue on 2026-09-12: 410 objects, every one of them a
-  // commercial communications satellite (ABS, Alphasat, Amazonas, AMC, AMOS, Anik, Apstar...).
+  // ticked. Measured against the live catalogue on 2026-09-12: 410 objects, most of them commercial
+  // communications satellites (ABS, Alphasat, Amazonas, AMC, AMOS, Anik, Apstar...) -- and not all:
+  // see GEO_BUS for the weather, Earth-observation and classified ones, and why the entry's name
+  // no longer says what they are for.
   //
   // Klass-gated: a spent stage or a fragment in the ring keeps the shape of what it is. Every
   // route above still wins, so GOES and TDRS keep their own models.

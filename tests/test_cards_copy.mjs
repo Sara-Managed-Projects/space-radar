@@ -32,7 +32,11 @@ check(has(drawingLine(soyuz), 'not this exact one') && !has(drawingLine(soyuz), 
 const rocket = { id: 'l-1', name: 'Falcon 9', klass: 'rocket', layer: 'launches', meta: { drawsAs: 'variant', rocket: 'Falcon 9', sizeM: 70 } };
 check(has(drawingLine(rocket), 'published dimensions'),
   `a rocket IS built from published dimensions and still says so: ${drawingLine(rocket)}`);
-check(has(drawingLine(geo), 'communications satellite') && has(drawingLine(geo), 'not this exact one'), `a class default admits it: ${drawingLine(geo)}`);
+// "geostationary", not "communications": the ring holds weather, Earth-observation and surveillance
+// satellites too, and the orbit is the only thing the entry actually knows (scene/realmodels.js,
+// GEO_BUS). A default that names a mission is a default that is wrong for some of what it reaches.
+check(has(drawingLine(geo), 'geostationary satellite') && has(drawingLine(geo), 'not this exact one'), `a class default admits it: ${drawingLine(geo)}`);
+check(!has(drawingLine(geo), 'communications'), `the ring default does not claim a mission it cannot know: ${drawingLine(geo)}`);
 check(has(drawingLine(plain), 'generic satellite'), `the procedural shape admits it: ${drawingLine(plain)}`);
 // The review's example was "Apollo sites drawn as a pad and no card says so". Since then the sites
 // got a real lunar-module model, so the honest line is now the specific one -- and a DSN dish is

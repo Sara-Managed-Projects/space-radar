@@ -227,8 +227,9 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
 // `geo-ring` and `active` read the SAME CelesTrak file, so the same satellite arrives on both --
 // and the bus used to be keyed off `record.layer === 'geo-ring'`, so which shape a person saw
 // depended on which checkbox they had ticked. Against the live catalogue on 2026-09-12 that was
-// 410 objects: every commercial communications satellite in the ring, drawn as a generic comms
-// drum on the layer that is on by default.
+// 410 objects in the ring -- mostly commercial communications satellites, and weather, Earth-
+// observation and classified ones too -- drawn as a generic comms drum on the layer that is on by
+// default.
 {
   const ring = (over = {}) => ({
     id: 'geo-x', name: 'ABS-2', klass: 'satellite', layer: 'active',
@@ -258,6 +259,16 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   // Every route above the orbit still wins.
   check(realModelFor({ ...ring(), name: 'GOES 18' })?.file === 'goes.glb',
     'a named satellite in the ring keeps its own model');
+
+  // AND IT CLAIMS ONLY WHAT THE ORBIT SHOWS. The card prints this name as "drawn as ___ -- the
+  // kind of thing". It said "a communications satellite", which is false for the weather,
+  // Earth-observation and surveillance satellites the same rule reaches: an orbit does not tell
+  // you what a satellite is for.
+  for (const name of ['HIMAWARI-9', 'FENGYUN 4B', 'ELEKTRO-L 3', 'GAOFEN-4', 'USA 270']) {
+    const e = realModelFor({ ...ring(), name });
+    check(e === bus && !/communicat|weather|television|relay/i.test(e.name),
+      `${name} in the ring is drawn as ${JSON.stringify(e && e.name)}, which must not claim a mission`);
+  }
 
   // AND THE THRESHOLDS ARE THE REGISTRY'S. registry/layers.yaml is the authority and the numbers
   // were hand-copied into layers.js once already; a copy that nothing compares is a copy that
