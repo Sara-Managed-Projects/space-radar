@@ -231,10 +231,15 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
 // in formation. The declared size was 4 m off, which is well inside any tolerance worth setting,
 // so a size check would not have caught it either. The gap is what gives it away.
 //
-// So: every mesh must touch something. The measure is the gap between axis-aligned world boxes,
-// as a fraction of the model's own longest dimension, and a part is attached if it comes within
-// 3 % of ANY other part -- not of the hull specifically, because a panel legitimately hangs off a
-// mast that hangs off a boom.
+// The measure is the gap between axis-aligned world boxes as a fraction of the model's longest
+// dimension, and two parts count as joined at 3 % -- not to the hull specifically, because a panel
+// legitimately hangs off a mast that hangs off a boom.
+//
+// IT IS ONE CONNECTED COMPONENT, NOT "EVERY PART HAS A NEIGHBOUR". The first version of this
+// check asked each mesh for its nearest neighbour, and Soyuz walked straight through it: its two
+// wings were detached from the hull by 1.15 m, but each wing's panel and mast touch EACH OTHER,
+// so every part had a neighbour and the vehicle was three separate clusters flying in formation.
+// A union-find over the same 3 % is the same measurement asked correctly.
 {
   const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
   const boxGap = (a, b) => Math.max(
@@ -261,20 +266,87 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
       const span = Math.max(size.x, size.y, size.z) || 1;
       if (parts.length > 1 && !ALLOWED.has(id)) {
         checked += 1;
+        const parent = parts.map((_, i) => i);
+        const find = (i) => { while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; } return i; };
+        let closestSplit = Infinity;
+        for (let i = 0; i < parts.length; i += 1) {
+          for (let j = i + 1; j < parts.length; j += 1) {
+            const gap = boxGap(parts[i].box, parts[j].box) / span;
+            if (gap <= 0.03) { parent[find(i)] = find(j); }
+          }
+        }
+        const groups = new Map();
+        for (let i = 0; i < parts.length; i += 1) {
+          const root = find(i);
+          if (!groups.has(root)) groups.set(root, []);
+          groups.get(root).push(parts[i].name);
+        }
+        // The narrowest gap BETWEEN components is what a person would have to close to make the
+        // vehicle one object, so report that rather than "they are not touching".
+        if (groups.size > 1) {
+          for (let i = 0; i < parts.length; i += 1) {
+            for (let j = i + 1; j < parts.length; j += 1) {
+              if (find(i) === find(j)) continue;
+              closestSplit = Math.min(closestSplit, boxGap(parts[i].box, parts[j].box) / span);
+            }
+          }
+        }
+        check(groups.size === 1,
+          `${id}: not one object but ${groups.size} -- ` +
+            `${[...groups.values()].map((names) => `{${[...new Set(names)].join(', ')}}`).join(' + ')}` +
+            `, nearest pair ${(closestSplit * 100).toFixed(1)} % of the model apart`);
         for (const part of parts) {
           let nearest = Infinity;
           for (const other of parts) if (other !== part) nearest = Math.min(nearest, boxGap(part.box, other.box));
-          const gap = nearest / span;
-          if (gap > worst.gap) worst = { id, gap, part: part.name };
-          check(gap <= 0.03,
-            `${id}: "${part.name}" floats ${(gap * 100).toFixed(1)} % of the model clear of every other part`);
+          if (nearest / span > worst.gap) worst = { id, gap: nearest / span, part: part.name };
         }
       }
       disposeModels(obj);
     }
   }
   check(checked > 20, `the no-floating-part check ran on ${checked} shapes, which is too few to mean anything`);
-  if (!problems.length) console.log(`  every part of ${checked} shapes touches another; the loosest is ${worst.id} "${worst.part}" at ${(worst.gap * 100).toFixed(1)} %`);
+
+  // ------------------------------------------------------------------ AND IT IS ABOUT ONE UNIT
+  //
+  // models.js's scale convention: "each model is built so its longest dimension is about 1 unit",
+  // with `realSizeM` the metres that unit stands for. Every vehicle builder divides real metres by
+  // its own span to get there, so the unit is not decoration -- it is the arithmetic that keeps a
+  // wing's length honest against its own hull. When it slips, something inside the model is out of
+  // proportion with the rest of it:
+  //
+  //   JWST built 0.62 of a unit, because the mirror was 77 % of the sunshield's width where the
+  //   real one is 34 %. A 16 m primary on a 21 m shield.
+  //   Soyuz built 0.88, because its wings spanned 7.8 m of a hull that declares 10.7.
+  //   Cygnus built 1.15, because its booms were twice the length that its own cited 11.5 m
+  //   tip-to-tip allows.
+  //
+  // Vehicles only. A rocket is 1.40 by construction (the plume), a site marker and an oddity prop
+  // are not normalised by anything real, and an asteroid is a seeded blob.
+  const UNIT_EXEMPT = new Map([
+    // A square sail's longest dimension is its DIAGONAL, which is what realSizeM records and what
+    // the builder divides by -- so an axis-aligned bounding box is 1/sqrt(2) of it by construction.
+    ['satellite:solarsail', 0.707],
+    // Normalised by Capella's published 3.5 m reflector, and a wrapped-rib antenna really does
+    // carry its rib tips proud of the mesh, so the box runs a little past the dish.
+    ['satellite:radar-mesh', 1.086],
+  ]);
+  let units = 0;
+  for (const klass of ['station', 'satellite']) {
+    for (const variant of modelVariants()[klass]) {
+      const id = `${klass}:${variant}`;
+      const obj = modelFor(klass, variant);
+      const size = new THREE.Box3().setFromObject(obj).getSize(new THREE.Vector3());
+      const built = Math.max(size.x, size.y, size.z);
+      const want = UNIT_EXEMPT.get(id) ?? 1;
+      units += 1;
+      check(Math.abs(built - want) <= 0.06,
+        `${id} builds ${built.toFixed(3)} units where the convention is ${want} ` +
+          `-- ${(Math.abs(built - want) * 100).toFixed(0)} % of the model is out of proportion with the rest of it`);
+      disposeModels(obj);
+    }
+  }
+  if (!problems.length) console.log(`  ${units} vehicle shapes are within 6 % of the one unit they declare`);
+  if (!problems.length) console.log(`  each of ${checked} shapes is ONE connected object; the loosest joint is ${worst.id} "${worst.part}" at ${(worst.gap * 100).toFixed(1)} %`);
 }
 
 if (problems.length) { console.log(`station shapes: ${problems.length} problem(s)`); for (const p of problems) console.log('  - ' + p); process.exit(1); }
