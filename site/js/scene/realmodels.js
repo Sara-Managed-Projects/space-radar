@@ -707,6 +707,38 @@ function normalise(root) {
   return wrapper;
 }
 
+/**
+ * Give every mesh flat normals if the file did not ship any.
+ *
+ * WHY THIS EXISTS. site/models/terra.glb ships two primitives with POSITION and TEXCOORD_0 and no
+ * NORMAL at all. A MeshToonMaterial with no normals has nothing to sample its ramp against, so
+ * Terra was drawn as a flat single-tone cut-out while the other forty-three models were shaded --
+ * silently, with nothing anywhere saying so, for as long as the file has shipped. It was found by
+ * rendering all forty-four at hero size and counting, which is the only way it could have been.
+ *
+ * FLAT, AND AT NO COST IN BYTES. scripts/decimate-model.mjs recomputes flat normals offline, and
+ * flat normals need one vertex per corner -- regenerating terra.glb that way took it from 20 kB to
+ * 71 kB for a model that is 4 159 triangles. Doing the same split at load time costs 10 000 extra
+ * vertices in memory on one model and nothing on the wire, and it covers every file added later
+ * rather than the one that happens to be wrong today.
+ *
+ * Exported for the test that breaks it on purpose.
+ */
+export function ensureNormals(root) {
+  let fixed = 0;
+  root.traverse((n) => {
+    if (!n.isMesh || !n.geometry || n.geometry.attributes.normal) return;
+    // toNonIndexed() first: computeVertexNormals() on an INDEXED geometry averages across the
+    // faces sharing a vertex, which rounds off every hard edge on what is usually a box.
+    const flat = n.geometry.index ? n.geometry.toNonIndexed() : n.geometry;
+    if (flat !== n.geometry) n.geometry.dispose();
+    flat.computeVertexNormals();
+    n.geometry = flat;
+    fixed += 1;
+  });
+  return fixed;
+}
+
 function applyToon(root, colourToken) {
   const hex = CLASS_COLOURS[colourToken] || CLASS_COLOURS.satellite;
   // A pool PER MODEL, not the shared one. models.js explains why: the hero layer fades a model in
@@ -756,6 +788,10 @@ export function loadRealModel(entry, { keepMaterials = false } = {}) {
         try {
           const scene = gltf.scene || (gltf.scenes && gltf.scenes[0]);
           if (!scene) return resolve(null);
+          // Before the material, because a toon material with no normals to sample is the bug
+          // this guards -- and before normalise(), which only moves the result around.
+          const fixed = ensureNormals(scene);
+          if (fixed) console.info(`real model ${entry.file}: computed normals for ${fixed} mesh(es)`);
           if (!keepMaterials) applyToon(scene, entry.colour);
           resolve(normalise(scene));
         } catch (err) {
