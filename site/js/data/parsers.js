@@ -153,6 +153,34 @@ function classForEpoch(epochMs, freshMs) {
   return age >= 0 && age < freshMs ? 'measured' : 'inferred';
 }
 
+/**
+ * What KIND of thing a catalogue entry is, from its name.
+ *
+ * Everything downstream hangs off this answer: it is the class gate on every `named:` row in
+ * scene/realmodels.js, it picks the glyph, it picks the colour, and it picks the builder when no
+ * model matches. It is four regular expressions, and until 2026-09-12 it had no number behind it.
+ *
+ * MEASURED AGAINST THE AUTHORITY. CelesTrak publishes satcat.csv with an OBJECT_TYPE column --
+ * PAY, R/B, DEB -- for every object it tracks. The app does not read it, and that is a defensible
+ * choice: it is a 70 000-row, 12 MB CSV and the gp.php feeds this app fetches do not carry the
+ * field. But it means the heuristic can be CHECKED against the authority even though it cannot
+ * cheaply be replaced by it. Over the 16 695 objects in the three groups the app fetches:
+ *
+ *     agreement   16 690 / 16 695   =   99.97 %
+ *
+ * FIVE DISAGREEMENTS, four of which are not errors. `CELESTIS-02 & TAURUS R/B`, `RS-44 & BREEZE-KM
+ * R/B`, `IPM 2 & BREEZE-M R/B` and `IDEFIX & ARIANE 42P R/B` are combined objects: a payload that
+ * never separated from its stage. The catalogue files the pair under the payload; this function
+ * calls it a rocket, and drawing a payload-still-bolted-to-a-stage as a stage is the more truthful
+ * of the two.
+ *
+ * The fifth is real: `HRC MONOBLOCK CAMERA` (66052) is hardware released from the ISS, satcat calls
+ * it DEB, and this function calls it a satellite -- so the app draws a piece of debris as a
+ * thirty-metre communications satellite on the stations layer. It is NOT patched, because fixing it
+ * by name means teaching the debris regex the word "camera", which would be worse than the defect.
+ * scripts/check-object-classes.py prints it by name every time it runs, which is the honest place
+ * for a known miss that costs more to fix than to carry.
+ */
 function classify(name, norad) {
   if (STATION_IDS.has(norad)) return 'station';
   const n = String(name || '').toUpperCase();
