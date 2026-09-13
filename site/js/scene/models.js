@@ -619,8 +619,11 @@ function buildNavSatellite() {
 
   // The navigation antenna: a plate on the Earth face (+Z) carrying a ring of short helical
   // elements. Twelve, which is GPS's count; Galileo's array is a different pattern and the same
-  // idea, and at 84 px what reads is "a cluster of little horns" rather than any one layout.
-  const plate = box(1.0 * S, 1.05 * S, 0.12 * S, '#C3C9D2', 'body', 'l-band');
+  // idea, and neither is legible at hero size: measured against the 84-px silhouette the horns are
+  // 0.9 px and the plate is 11. So the plate is dark, the way an antenna aperture really reads and
+  // the way Starlink's phased-array tiles already are here, and the horns are detail for the
+  // selected view at 260 px. See amendment 3 to spec 0027 for the measurement.
+  const plate = box(1.0 * S, 1.05 * S, 0.12 * S, '#2B313C', 'body', 'l-band');
   plate.position.z = 1.4 * S;
   g.add(plate);
   for (let i = 0; i < 12; i++) {
@@ -1134,11 +1137,17 @@ function buildTiangong(variant) {
     const c = cyl(2.1 * S, 2.1 * S, len * S, 18, colour, body, name);
     return c;
   };
+  // A pair of wings rooted ON the hull at +-x0 and growing outward along X. panelWing() puts its
+  // slab at +x from the group origin, so the position IS the root and the only thing a side needs
+  // is a yaw of pi. Rotating the wing a quarter turn instead -- which this did -- left the root
+  // pointing along Z and put the panels ten metres clear of the module with nothing between them:
+  // at 84 px Wentian read as three unconnected objects, and the built span came out 52 m against
+  // the 56 m the model declares. tests/test_station_shapes.mjs now measures both.
   const wingPair = (span, width, z, x0, name) => {
     for (const side of [-1, 1]) {
       const w = panelWing(span * S, width * S, METAL, `${name}${side > 0 ? '+' : '-'}`);
-      w.rotation.y = side > 0 ? -Math.PI / 2 : Math.PI / 2;
-      w.position.set(side * (x0 + span / 2) * S, 0, z * S);
+      if (side < 0) w.rotation.y = Math.PI;
+      w.position.set(side * x0 * S, 0, z * S);
       g.add(w);
     }
   };
@@ -1164,12 +1173,18 @@ function buildTiangong(variant) {
     lab.rotation.z = Math.PI / 2; // along X
     lab.position.set(side * (2.4 + 17.9 / 2) * S, 0, 5.2 * S);
     g.add(lab);
-    // Each lab's wings fold out at its far end, fore and aft of the lab's axis.
+    // Each lab's wings fold out at its far end, fore and aft of the lab's axis: 27.4 x 4.1 m
+    // each (CMSA), which is where the 55 m in the doc comment above comes from -- one wing
+    // forward and one aft spans the station's longest dimension. They used to be 15 m panels
+    // yawed onto the Y axis, so they stood straight up out of the station's plane, all four on
+    // the same side, and the built span never came near the declared 55 m.
     for (const dz of [-1, 1]) {
-      const w = panelWing(15 * S, 5 * S, METAL, `labwing${side}${dz}`);
-      w.rotation.y = dz > 0 ? 0 : Math.PI;
-      w.rotation.z = Math.PI / 2;
-      w.position.set(side * (2.4 + 17.9 + 0.5) * S, 0, (5.2 + dz * 8) * S);
+      const w = panelWing(27.4 * S, 4.1 * S, METAL, `labwing${side}${dz}`);
+      w.rotation.y = dz > 0 ? -Math.PI / 2 : Math.PI / 2;
+      // Rooted at the lab's OUTBOARD end and both on the same plane, one forward and one aft,
+      // which is how they are mounted and what makes the tip-to-tip span 2 x 27.4 = 54.8 m --
+      // the published "about 55 m" the size below declares, now measured rather than asserted.
+      w.position.set(side * (2.4 + 17.9 - 4.1 / 2) * S, 0, 5.2 * S);
       g.add(w);
     }
   }

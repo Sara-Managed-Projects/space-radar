@@ -220,5 +220,62 @@ check(e5 && e5.build === 'cygnus' && e5.generic === true, `CYGNUS NG-24 -> build
 check(realModelFor(cygSat) && realModelFor(cygSat).build === 'cygnus', 'a Cygnus classified satellite (the production case) gets the shape');
 check(realModelFor(cygDeb) === null, 'Cygnus debris keeps the debris shape');
 check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 'stations', meta: { noradId: 7 } })?.build === 'soyuz', 'a Soyuz classified satellite (the production case) gets the shape');
+
+// ------------------------------------------------------------------ NOTHING FLOATS OFF THE HULL
+//
+// A procedural vehicle is a handful of boxes and cylinders placed by hand, and a placement can be
+// wrong in a way nothing here would have noticed: the shape still builds, still fits its triangle
+// budget, and still declares a plausible size. Tiangong's wings were placed with a quarter-turn
+// that left panelWing()'s root pointing the wrong way, so both arrays sat TEN METRES clear of the
+// module with empty space between -- at hero size Wentian read as three unrelated objects drifting
+// in formation. The declared size was 4 m off, which is well inside any tolerance worth setting,
+// so a size check would not have caught it either. The gap is what gives it away.
+//
+// So: every mesh must touch something. The measure is the gap between axis-aligned world boxes,
+// as a fraction of the model's own longest dimension, and a part is attached if it comes within
+// 3 % of ANY other part -- not of the hull specifically, because a panel legitimately hangs off a
+// mast that hangs off a boom.
+{
+  const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
+  const boxGap = (a, b) => Math.max(
+    0,
+    a.min.x - b.max.x, b.min.x - a.max.x,
+    a.min.y - b.max.y, b.min.y - a.max.y,
+    a.min.z - b.max.z, b.min.z - a.max.z,
+  );
+  // Juno's three LEGO figures: Galileo holds his globe out at arm's length, and at 4 cm the whole
+  // group is a prop, not a vehicle. It is the one deliberate gap in the app and it is named here
+  // rather than raising the threshold for everything else.
+  const ALLOWED = new Set(['oddity:minifigures']);
+  let checked = 0;
+  let worst = { id: '-', gap: 0 };
+  for (const [klass, variants] of Object.entries(modelVariants())) {
+    if (klass === 'world') continue; // worlds.js owns the worlds; modelFor returns an empty group
+    for (const variant of variants) {
+      const id = `${klass}:${variant}`;
+      const obj = modelFor(klass, variant);
+      obj.updateMatrixWorld(true);
+      const parts = [];
+      obj.traverse((o) => { if (o.isMesh) parts.push({ name: o.name || '(unnamed)', box: new THREE.Box3().setFromObject(o) }); });
+      const size = new THREE.Box3().setFromObject(obj).getSize(new THREE.Vector3());
+      const span = Math.max(size.x, size.y, size.z) || 1;
+      if (parts.length > 1 && !ALLOWED.has(id)) {
+        checked += 1;
+        for (const part of parts) {
+          let nearest = Infinity;
+          for (const other of parts) if (other !== part) nearest = Math.min(nearest, boxGap(part.box, other.box));
+          const gap = nearest / span;
+          if (gap > worst.gap) worst = { id, gap, part: part.name };
+          check(gap <= 0.03,
+            `${id}: "${part.name}" floats ${(gap * 100).toFixed(1)} % of the model clear of every other part`);
+        }
+      }
+      disposeModels(obj);
+    }
+  }
+  check(checked > 20, `the no-floating-part check ran on ${checked} shapes, which is too few to mean anything`);
+  if (!problems.length) console.log(`  every part of ${checked} shapes touches another; the loosest is ${worst.id} "${worst.part}" at ${(worst.gap * 100).toFixed(1)} %`);
+}
+
 if (problems.length) { console.log(`station shapes: ${problems.length} problem(s)`); for (const p of problems) console.log('  - ' + p); process.exit(1); }
 console.log('station shapes ok: Soyuz and Progress build inside budget at 10.7 m, and the name route picks them for stations-layer vehicles only');
