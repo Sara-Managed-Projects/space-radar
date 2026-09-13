@@ -5,8 +5,20 @@
 // soft Fresnel rim, one sharp specular on panels only, and no outline anywhere on 3D.
 //
 // Scale convention: each model is built so its longest dimension is about 1 unit, and carries
-// `userData.realSizeM` (the real longest dimension, in metres) for the card's comparison chip. The
-// caller scales the Object3D to whatever the stage wants; nothing here assumes a stage unit.
+// `userData.realSizeM`, the real longest dimension in metres. The caller scales the Object3D to
+// whatever the stage wants; nothing here assumes a stage unit.
+//
+// THE ONE UNIT IS THE PART THAT IS LOAD-BEARING, and it is now a test. Every builder divides real
+// metres by its own span, so "1 unit" is what keeps a wing's length honest against its own hull --
+// and when a model quietly built 0.62 of a unit, as JWST did, it was because the mirror was more
+// than twice its true share of the sunshield. tests/test_station_shapes.mjs measures it.
+//
+// `realSizeM` itself is read by NOTHING. scene/heroes.js sizes every hero from a pixel target
+// (`obj.scale.setScalar((px * 2 * d) / (h * f))`), and the card's size chip reads `sizeM` off the
+// RECORD's metadata in ui/cards.js, not off the model. It is the same situation as the `generic`
+// flag below: a true number that no caller has ever asked for. It is kept because it is what each
+// builder divides by, so it is the model's own statement of what it is drawing, and the test above
+// holds the geometry to it.
 //
 // Local frame convention, so updateModelAttitude() can aim them:
 //   +Z  nadir (toward the world) for orbiting things; the dish/instrument boresight
@@ -259,13 +271,15 @@ function buildSatelliteComms() {
   g.userData.realSizeM = 30;
   const bus = box(0.22, 0.24, 0.28, '#E3E8EF', 'body', 'bus');
   g.add(bus);
+  // On the bus's Earth face, not hovering 4 % of the model in front of it, which is where the
+  // dish and its feed used to sit: one object, two clusters. tests/test_station_shapes.mjs.
   const d = dish(0.2, 0.06, 16, '#EDF1F6', 'foil', 'dish');
-  d.position.z = 0.18;
+  d.position.z = 0.14;
   d.name = 'dish';
   g.add(d);
   const feed = cyl(0.012, 0.012, 0.12, 8, METAL, 'body', 'feed');
   feed.rotation.x = Math.PI / 2;
-  feed.position.z = 0.24;
+  feed.position.z = 0.2;
   g.add(feed);
   const pivot = new THREE.Group();
   pivot.name = 'panelPivot';
@@ -369,8 +383,8 @@ function buildSoyuzFamily(variant) {
     if (shenzhou) {
       for (const side of [-1, 1]) {
         const w = panelWing(2.6 * S, 1.2 * S, METAL, side > 0 ? 'fwdwing+' : 'fwdwing-');
-        w.rotation.y = side > 0 ? -Math.PI / 2 : Math.PI / 2;
-        w.position.set(side * (1.13 * S + 1.3 * S), 0, 2.1 * S);
+        if (side < 0) w.rotation.y = Math.PI;
+        w.position.set(side * 1.13 * S, 0, 2.1 * S);
         g.add(w);
       }
     }
@@ -381,13 +395,22 @@ function buildSoyuzFamily(variant) {
   probe.position.z = (tianzhou ? 6.0 : shenzhou ? 3.7 : progress ? 3.2 : 3.1) * S;
   g.add(probe);
 
-  // Two wings off the service module, in the plane of the hull.
-  const wingLen = (tianzhou ? 5.0 : shenzhou ? 5.5 : 3.7) * S;
+  // Two wings off the service module, in the plane of the hull, ROOTED ON IT: panelWing() grows
+  // along +X from its group origin, so the position is the root and a side needs nothing but a
+  // yaw of pi. The quarter-turn that used to be here pointed the root along Z, which is why the
+  // position carried a wingLen / 2 correction -- and why the pair only ever spanned 7.8 m of the
+  // 10.7 m the model declares, with 1.15 m of nothing between each wing and the hull. At hero
+  // size a Soyuz was three objects flying in formation.
+  //
+  // The wing length now comes OUT of the published span instead of standing beside it as an
+  // independent number: 2 x (hull radius + wing) is the span, by construction, so the two can
+  // never drift apart again. They had drifted by 27 %.
+  const wingLen = (span / 2 - R) * S;
   const wingWidth = (tianzhou ? 2.2 : 1.4) * S;
   for (const side of [-1, 1]) {
     const w = panelWing(wingLen, wingWidth, METAL, side > 0 ? 'wing+' : 'wing-');
-    w.rotation.y = side > 0 ? -Math.PI / 2 : Math.PI / 2;
-    w.position.set(side * (R * S + wingLen / 2), 0, -2.4 * S);
+    if (side < 0) w.rotation.y = Math.PI;
+    w.position.set(side * R * S, 0, -2.4 * S);
     g.add(w);
   }
   return g;
@@ -547,9 +570,16 @@ function buildOneWeb() {
  * of spacecraft. The phased-array panels tiling the chassis underside are the only feature on it.
  */
 const STARLINK = {
-  v1: { span: 9, chassis: [2.8, 1.4], arrays: 1, array: [5.6, 2.6] },
-  v2: { span: 30, chassis: [4.1, 2.7], arrays: 2, array: [12.4, 4.2] },
+  v1: { span: 9, chassis: [2.8, 1.4], arrays: 1, arrayWidth: 2.6 },
+  v2: { span: 30, chassis: [4.1, 2.7], arrays: 2, arrayWidth: 4.2 },
 };
+// THE ARRAY LENGTH IS DERIVED FROM THE SPAN, not written beside it. The span is the sourced
+// number -- SpaceX's 30 m for the v2 Mini, and for v1 the figure the comment above admits this
+// project chose -- so the array is whatever reaches it: (span - chassis) / arrays. Written as two
+// independent numbers they disagreed, and the geometry was the one that lost: v2 built 28.9 m
+// against SpaceX's published 30, and v1 built 8.4 against a comment claiming 9 is "the chassis
+// plus the single array". It was not; 2.8 + 5.6 is 8.4.
+for (const s of Object.values(STARLINK)) s.array = [(s.span - s.chassis[0]) / s.arrays, s.arrayWidth];
 function buildStarlink(variant) {
   const g = new THREE.Group();
   const s = STARLINK[variant === 'starlink-v1' ? 'v1' : 'v2'];
@@ -777,6 +807,12 @@ function buildMeshReflector() {
   const bus = box(0.55 * S, 0.55 * S, 0.7 * S, FOIL, 'foil', 'bus');
   bus.position.z = -0.55 * S;
   g.add(bus);
+  // The deployment mast the reflector rides on. Without it the reflector, its ribs, its hub and
+  // its feed were one object and the bus and its wing were another, 0.4 m apart with nothing
+  // drawn between them -- and a reflector this size really does stand off its bus on a stem.
+  const stem = cyl(0.07 * S, 0.07 * S, 0.45 * S, 8, METAL, 'body', 'stem');
+  stem.rotation.x = Math.PI / 2;
+  g.add(stem);
 
   // The feed, OFF TO THE SIDE on a boom -- an offset feed, not a centre one. This is the detail
   // that says "radar" rather than "television".
@@ -1017,10 +1053,13 @@ function buildIridium() {
   mma.position.set(0, -1.0 * S, 0.2 * S);
   mma.rotation.x = 0.25;
   g.add(mma);
+  // Rooted on the bus. With the quarter-turn that used to be here the pair spanned 7.4 m against
+  // a declared 9.4 and stood a metre clear of the hull; rooted, 2 x (1.2 + 3.5) is 9.4 m exactly,
+  // which is the tell that the length was always chosen for a wing that starts at the bus.
   for (const side of [-1, 1]) {
     const w = panelWing(3.5 * S, 1.5 * S, METAL, side > 0 ? 'wing+' : 'wing-');
-    w.rotation.y = side > 0 ? -Math.PI / 2 : Math.PI / 2;
-    w.position.set(side * (1.2 * S + 1.75 * S), 0.2 * S, -0.6 * S);
+    if (side < 0) w.rotation.y = Math.PI;
+    w.position.set(side * 1.2 * S, 0.2 * S, -0.6 * S);
     g.add(w);
   }
   return g;
@@ -1102,13 +1141,16 @@ function buildCygnus() {
   g.add(hatch);
   // The fans: two thin discs on short booms off the service module, facing +Y like every wing here.
   for (const side of [-1, 1]) {
-    const boom = cyl(0.08 * S, 0.08 * S, 1.6 * S, 6, METAL, body, 'boom');
+    // 1.3 m of service module, then the boom, then a 3.7 m fan: 2 x (1.3 + 0.75 + 3.7) is the
+    // 11.5 m tip to tip above. The boom used to be 1.6 m and the pair spanned 13.2 m, so the
+    // model was 15 % wider than the number it declares and the number the card reads from.
+    const boom = cyl(0.08 * S, 0.08 * S, 0.75 * S, 6, METAL, body, 'boom');
     boom.rotation.z = Math.PI / 2;
-    boom.position.set(side * 2.1 * S, 0, -2.3 * S);
+    boom.position.set(side * 1.675 * S, 0, -2.3 * S);
     g.add(boom);
     const fan = new THREE.Mesh(new THREE.CylinderGeometry(1.85 * S, 1.85 * S, 0.04 * S, 24), toonMaterial('#1F3A5F', 'panel'));
     fan.name = side > 0 ? 'wing+' : 'wing-';
-    fan.position.set(side * 4.75 * S, 0, -2.3 * S);
+    fan.position.set(side * 3.9 * S, 0, -2.3 * S);
     g.add(fan);
   }
   return g;
@@ -1565,13 +1607,15 @@ function buildProbe() {
   g.userData.realSizeM = 6;
   const bus = box(0.2, 0.18, 0.2, FOIL, 'foil', 'bus');
   g.add(bus);
+  // Mounted ON the bus. It used to stand 5.8 % of the model clear of it, with the feed carried
+  // along, so the high-gain antenna was a separate object flying alongside the spacecraft.
   const hga = dish(0.26, 0.08, 18, '#EDF1F6', 'foil', 'dish');
-  hga.position.z = 0.16;
+  hga.position.z = 0.1;
   hga.name = 'dish';
   g.add(hga);
   const feed = cyl(0.01, 0.01, 0.14, 8, METAL, 'body', 'feed');
   feed.rotation.x = Math.PI / 2;
-  feed.position.z = 0.22;
+  feed.position.z = 0.16;
   g.add(feed);
   // the magnetometer boom: the thing that says "this is a probe" at a glance
   const boom = cyl(0.008, 0.008, 0.55, 6, METAL, 'body', 'boom');
@@ -1587,26 +1631,40 @@ function buildProbe() {
 
 // ----------------------------------------------------------------------------------- telescope
 
+/**
+ * THE HEX VARIANT IS JWST, AND IT IS BUILT IN METRES. NASA publishes the numbers plainly: the
+ * sunshield is "21.2 m by 14.2 m ... about the size of a tennis court" and the primary is a 6.5 m
+ * segmented mirror of eighteen hexagons, 7.3 m corner to corner (jwst.nasa.gov).
+ *
+ * It used to be hand-tuned in normalised units and both proportions were wrong in opposite
+ * directions: the shade came out 0.62 of the unit box, so a telescope declaring 21 m was drawn
+ * 13 m across, and the mirror was 77 % of the shade's width where the real one is 34 %. A 16 m
+ * mirror, in other words. Dividing real metres by one 1 / 21.2 is what the rest of this file
+ * does and it gets both right with nothing tuned.
+ */
 function buildTelescope(variant) {
   const g = new THREE.Group();
-  g.userData.realSizeM = variant === 'hex' ? 21 : 13;
+  g.userData.realSizeM = variant === 'hex' ? 21.2 : 13;
   if (variant === 'hex') {
-    // segmented mirror plus a flat sunshade, JWST's silhouette
-    const mirror = cyl(0.24, 0.24, 0.02, 6, '#E6C86A', 'radiator', 'mirror');
+    const S = 1 / 21.2;
+    // The primary: a hexagon 7.3 m corner to corner, which is 3.65 m of lathe radius.
+    const mirror = cyl(3.65 * S, 3.65 * S, 0.4 * S, 6, '#E6C86A', 'radiator', 'mirror');
     mirror.rotation.x = Math.PI / 2;
-    mirror.position.z = 0.1;
+    mirror.position.z = 3.4 * S;
     mirror.name = 'boresight';
     g.add(mirror);
-    const spine = box(0.03, 0.03, 0.18, METAL, 'body', 'spine');
+    // The tower that holds the optics off the shield.
+    const spine = box(0.8 * S, 0.8 * S, 6.4 * S, METAL, 'body', 'spine');
+    spine.position.z = 0.6 * S;
     g.add(spine);
-    const shade = box(0.62, 0.012, 0.44, '#8FA0B8', 'radiator', 'sunshade');
-    shade.position.z = -0.14;
+    const shade = box(21.2 * S, 0.25 * S, 14.2 * S, '#8FA0B8', 'radiator', 'sunshade');
+    shade.position.z = -2.6 * S;
     shade.rotation.z = 0.12;
     g.add(shade);
     for (const s of [-1, 1]) {
-      const boom = cyl(0.008, 0.008, 0.3, 6, METAL, 'body', 'boom');
+      const boom = cyl(0.17 * S, 0.17 * S, 6.4 * S, 6, METAL, 'body', 'boom');
       boom.rotation.z = Math.PI / 2;
-      boom.position.set(s * 0.16, 0, -0.06);
+      boom.position.set(s * 3.4 * S, 0, -1.2 * S);
       g.add(boom);
     }
   } else {
