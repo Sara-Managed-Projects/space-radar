@@ -276,6 +276,85 @@ for (const file of allFiles) {
   );
 }
 
+// 3bbn. A SHIPPED MODEL WITH NO NORMALS IS A FLAT CUT-OUT, and one of them was.
+//
+// site/models/terra.glb ships two primitives carrying POSITION and TEXCOORD_0 and nothing else.
+// A MeshToonMaterial with no normals has nothing to sample its ramp against, so Terra was drawn
+// as a single flat tone while the other forty-three models were shaded -- silently, for as long as
+// the file has shipped. Nothing here would have noticed: it is inside the triangle budget, the kB
+// matches, it loads without a warning and `realModelFor` maps it correctly. It was found by
+// rendering all forty-four at hero size and looking.
+//
+// realmodels.js now computes flat normals at load time for any mesh missing them, which fixes
+// Terra and every file added later at no cost in bytes. This is the guard for the guard, in both
+// directions: the function must do what it claims, and the shipped set must not quietly grow more
+// files that need it -- regenerating one through scripts/decimate-model.mjs is three times smaller
+// than the same geometry split at load time, so a NEW offender is a pipeline step somebody skipped
+// rather than something to leave to the runtime.
+{
+  const KNOWN_WITHOUT_NORMALS = new Set(['terra.glb']);
+  const yaml = readFileSync(join(ROOT, 'registry/models.yaml'), 'utf8');
+  const files = [...new Set(yaml.match(/site\/models\/[A-Za-z0-9_.-]+\.glb/g) || [])];
+  const missing = [];
+  for (const rel of files) {
+    const path = join(ROOT, rel);
+    if (!existsSync(path)) continue;
+    const buf = readFileSync(path);
+    if (buf.length < 20 || buf.toString('utf8', 0, 4) !== 'glTF') continue;
+    const jsonLen = buf.readUInt32LE(12);
+    if (buf.toString('utf8', 16, 20) !== 'JSON') continue;
+    const gltf = JSON.parse(buf.toString('utf8', 20, 20 + jsonLen));
+    // `!pr.attributes.NORMAL` is wrong and was written that way first: an accessor INDEX of 0 is
+    // falsy, so eighteen files that carry normals in accessor 0 reported as carrying none.
+    const bare = (gltf.meshes || []).some((m) =>
+      (m.primitives || []).some((pr) => (pr.attributes || {}).NORMAL === undefined));
+    if (bare) missing.push(rel.split('/').pop());
+  }
+  for (const name of missing) {
+    if (KNOWN_WITHOUT_NORMALS.has(name)) continue;
+    problems.push(
+      `MODEL    ${name} ships a primitive with no NORMAL. The loader will compute flat normals ` +
+        `for it, which costs three vertices per triangle in memory -- regenerate it with ` +
+        `scripts/decimate-model.mjs instead, which does the same thing offline and smaller.`
+    );
+  }
+  for (const name of KNOWN_WITHOUT_NORMALS) {
+    if (!missing.includes(name)) {
+      problems.push(`MODEL    ${name} no longer needs the normals guard; take it off the known list`);
+    }
+  }
+
+  // And the guard itself, broken on purpose: strip the normals off a box and require them back,
+  // FLAT -- the three corners of one triangle sharing one normal. computeVertexNormals() on an
+  // indexed geometry averages instead, which rounds off every hard edge on what is usually a box,
+  // so "it has normals again" is not enough to check.
+  try {
+    const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
+    const { ensureNormals } = await import(join(JS, 'scene/realmodels.js'));
+    const geo = new THREE.BoxGeometry(1, 1, 1);
+    geo.deleteAttribute('normal');
+    const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial());
+    const root = new THREE.Group();
+    root.add(mesh);
+    const fixed = ensureNormals(root);
+    const n = mesh.geometry.attributes.normal;
+    if (fixed !== 1 || !n) {
+      problems.push(`NORMALS  ensureNormals() left a geometry without normals (fixed ${fixed})`);
+    } else {
+      const same = (i, j) =>
+        Math.abs(n.getX(i) - n.getX(j)) < 1e-6 &&
+        Math.abs(n.getY(i) - n.getY(j)) < 1e-6 &&
+        Math.abs(n.getZ(i) - n.getZ(j)) < 1e-6;
+      if (mesh.geometry.index) problems.push('NORMALS  ensureNormals() left the geometry indexed, so the normals are averaged, not flat');
+      else if (!same(0, 1) || !same(1, 2)) problems.push('NORMALS  ensureNormals() produced smoothed normals; a box came back with rounded edges');
+      else if (same(0, 3) && same(0, 6)) problems.push('NORMALS  every face of the box came back with the SAME normal, which is not normals');
+      else notes.push(`the normals guard covers ${missing.length} shipped file(s) and gives a box flat faces`);
+    }
+  } catch (e) {
+    problems.push(`NORMALS  could not check the normals guard: ${String(e && e.message)}`);
+  }
+}
+
 // 3bc. every procedural variant can actually be ASKED FOR by something.
 //
 // registry/models.yaml has a row per procedural shape and each row's `for:` says who it is meant
