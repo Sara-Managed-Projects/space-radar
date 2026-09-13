@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const { modelFor, modelVariants, disposeModels } = await import(join(ROOT, 'site/js/scene/models.js'));
 const { realModelFor } = await import(join(ROOT, 'site/js/scene/realmodels.js'));
+const { GEO_RING } = await import(join(ROOT, 'site/js/data/parsers.js'));
 const yaml = readFileSync(join(ROOT, 'registry/models.yaml'), 'utf8');
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
@@ -220,6 +221,54 @@ check(e5 && e5.build === 'cygnus' && e5.generic === true, `CYGNUS NG-24 -> build
 check(realModelFor(cygSat) && realModelFor(cygSat).build === 'cygnus', 'a Cygnus classified satellite (the production case) gets the shape');
 check(realModelFor(cygDeb) === null, 'Cygnus debris keeps the debris shape');
 check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 'stations', meta: { noradId: 7 } })?.build === 'soyuz', 'a Soyuz classified satellite (the production case) gets the shape');
+
+// ----------------------------------------------- THE GEOSTATIONARY RING IS AN ORBIT, NOT A LAYER
+//
+// `geo-ring` and `active` read the SAME CelesTrak file, so the same satellite arrives on both --
+// and the bus used to be keyed off `record.layer === 'geo-ring'`, so which shape a person saw
+// depended on which checkbox they had ticked. Against the live catalogue on 2026-09-12 that was
+// 410 objects: every commercial communications satellite in the ring, drawn as a generic comms
+// drum on the layer that is on by default.
+{
+  const ring = (over = {}) => ({
+    id: 'geo-x', name: 'ABS-2', klass: 'satellite', layer: 'active',
+    meta: { noradId: 990001, meanMotion: 1.003, eccentricity: 0.0002, inclinationDeg: 0.03, ...over },
+  });
+  const bus = realModelFor(ring());
+  check(bus?.file === 'bus-ssl1300.glb' && bus.generic === true,
+    `a geostationary satellite on the active layer draws the bus: ${JSON.stringify(bus)}`);
+  // The identity matters: two rows saying the same thing are two rows that can come to disagree.
+  check(realModelFor({ ...ring(), layer: 'geo-ring' }) === bus,
+    'the ring layer and the orbit rule return the SAME entry, not two copies of it');
+
+  // Klass-gated. A spent stage or a fragment in the ring keeps the shape of what it is.
+  for (const klass of ['rocket', 'debris']) {
+    check(realModelFor({ ...ring(), klass }) === null, `a ${klass} in the ring does not draw a comms bus`);
+  }
+  // And the band is the band: each threshold refused on its own.
+  for (const [what, over] of [
+    ['a LEO satellite', { meanMotion: 15.5 }],
+    ['a GTO transfer orbit', { eccentricity: 0.7 }],
+    ['a 30-degree inclined orbit', { inclinationDeg: 30 }],
+    ['a 12-hour orbit', { meanMotion: 2.006 }],
+    ['a record with no elements', { meanMotion: null, eccentricity: null, inclinationDeg: null }],
+  ]) {
+    check(realModelFor(ring(over)) === null, `${what} does not draw the geostationary bus`);
+  }
+  // Every route above the orbit still wins.
+  check(realModelFor({ ...ring(), name: 'GOES 18' })?.file === 'goes.glb',
+    'a named satellite in the ring keeps its own model');
+
+  // AND THE THRESHOLDS ARE THE REGISTRY'S. registry/layers.yaml is the authority and the numbers
+  // were hand-copied into layers.js once already; a copy that nothing compares is a copy that
+  // drifts.
+  const row = (readFileSync(join(ROOT, 'registry/layers.yaml'), 'utf8')
+    .match(/id: geo-ring[\s\S]*?select: \{([^}]*)\}/) || [])[1] || '';
+  const nums = (row.match(/-?\d+(?:\.\d+)?/g) || []).map(Number);
+  const want = [GEO_RING.meanMotionMin, GEO_RING.meanMotionMax, GEO_RING.eccBelow, GEO_RING.inclBelowDeg];
+  check(nums.length === 4 && nums.every((n, i) => n === want[i]),
+    `layers.yaml says ${JSON.stringify(nums)} and parsers.js says ${JSON.stringify(want)}`);
+}
 
 // ------------------------------------------------------------------ NOTHING FLOATS OFF THE HULL
 //

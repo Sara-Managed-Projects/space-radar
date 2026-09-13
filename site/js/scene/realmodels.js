@@ -23,6 +23,7 @@ import { GLTFLoader } from '../../vendor/GLTFLoader.js';
 import { MeshoptDecoder } from '../../vendor/meshopt_decoder.module.js';
 import { toonMaterial } from './models.js';
 import { CLASS_COLOURS } from './glyphatlas.js';
+import { isGeostationary } from '../data/parsers.js';
 
 const BASE = new URL('../../models/', import.meta.url);
 
@@ -56,6 +57,13 @@ const BASE = new URL('../../models/', import.meta.url);
  * Magnetospheric Multiscale: a wrong object is invisible for exactly as long as nobody prints the
  * list.
  */
+/**
+ * The geostationary bus, reached two ways and defined once. See `byLayer` below for why this model
+ * is the highest-value entry in the file, and `isGeostationary` in data/parsers.js for why the
+ * layer is no longer what decides it.
+ */
+const GEO_BUS = { file: 'bus-ssl1300.glb', colour: 'satellite', name: 'a communications satellite', generic: true };
+
 export const REAL_MODELS = {
   /**
    * By catalogue number. `catalogue` is the name CelesTrak returns for that number and is not
@@ -565,7 +573,9 @@ export const REAL_MODELS = {
    * than the fix.
    */
   byLayer: {
-    'geo-ring': { file: 'bus-ssl1300.glb', colour: 'satellite', name: 'a communications satellite', generic: true },
+    // The SAME object the orbit rule returns, not a copy: two rows saying the same thing is two
+    // rows that can come to disagree.
+    'geo-ring': GEO_BUS,
   },
   /** A default for a class of ground site. The app already draws the live dish-to-spacecraft links. */
   bySiteClass: {
@@ -664,8 +674,22 @@ export function realModelFor(record) {
     // costs the other thirty-nine rows nothing.
     return typeof entry.resolve === 'function' ? { ...entry, ...entry.resolve(record) } : entry;
   }
+  // Then the ORBIT. A satellite in a near-circular twenty-four-hour orbit is a geostationary
+  // communications satellite whatever it is called, and most of them really are a box bus with a
+  // big dish and two long wings.
+  //
+  // THIS USED TO BE A LAYER TEST AND THAT WAS THE BUG. `geo-ring` and `active` read the same
+  // CelesTrak file, so the same satellite arrived on both -- and got the SSL-1300 on one and a
+  // generic comms drum on the other. Which shape a person saw depended on which checkbox they had
+  // ticked. Measured against the live catalogue on 2026-09-12: 410 objects, every one of them a
+  // commercial communications satellite (ABS, Alphasat, Amazonas, AMC, AMOS, Anik, Apstar...).
+  //
+  // Klass-gated: a spent stage or a fragment in the ring keeps the shape of what it is. Every
+  // route above still wins, so GOES and TDRS keep their own models.
+  if (record.klass === 'satellite' && isGeostationary(record)) return GEO_BUS;
   // Last: a default for the whole layer, so an unnamed member of a known population still gets
-  // geometry that looks like what it is.
+  // geometry that looks like what it is. The ring is above; this stays for any layer that gets a
+  // default later.
   if (Object.prototype.hasOwnProperty.call(REAL_MODELS.byLayer, record.layer)) {
     return REAL_MODELS.byLayer[record.layer];
   }

@@ -17,7 +17,7 @@
 // says out loud what it selects. Adding a layer is a row here plus, at most, one predicate.
 
 import { load } from './sources.js';
-import { parseCelestrakGP, parseLaunches, parseComets, parseHorizonsVectors, parseNeoApproaches, parseExoplanets, parseDso } from './parsers.js';
+import { parseCelestrakGP, parseLaunches, parseComets, parseHorizonsVectors, parseNeoApproaches, parseExoplanets, parseDso, isGeostationary } from './parsers.js';
 import {
   sampleAsteroids,
   sampleDeepSpace,
@@ -188,23 +188,11 @@ const launchedWithinDaysByOrder = (days) => (records, nowMs) => {
 
 /**
  * The geostationary ring: one revolution a sidereal day, near-circular, near the equator.
- * Straight from registry/layers.yaml — mean_motion_between [0.99, 1.01], ecc below 0.02,
- * inclination below 15 degrees. The 15 degrees is deliberate: it catches the drifting derelicts
- * that make the ring look like a ring instead of a line.
+ * The thresholds used to be written out here; they are now `isGeostationary` in data/parsers.js,
+ * because scene/realmodels.js needs the same question answered about one record and was answering
+ * it with `record.layer === 'geo-ring'` instead.
  */
-const geoBand = (records) =>
-  records.filter((r) => {
-    const m = r.meta || {};
-    return (
-      Number.isFinite(m.meanMotion) &&
-      m.meanMotion >= 0.99 &&
-      m.meanMotion <= 1.01 &&
-      Number.isFinite(m.eccentricity) &&
-      m.eccentricity < 0.02 &&
-      Number.isFinite(m.inclinationDeg) &&
-      m.inclinationDeg < 15
-    );
-  });
+const geoBand = (records) => records.filter(isGeostationary);
 
 /** Comets: perihelion inside a year either way, OR bright enough that somebody might see it. */
 const cometsWorthDrawing = (records, nowMs) => {

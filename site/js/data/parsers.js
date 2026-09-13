@@ -207,6 +207,37 @@ function launchPieceOf(intl) {
   return m ? m[1].toUpperCase() : null;
 }
 
+/**
+ * The geostationary ring, as a predicate on ONE record.
+ *
+ * The numbers are registry/layers.yaml's, on the `geo-ring` row:
+ *   select: {mean_motion_between: [0.99, 1.01], ecc_below: 0.02, incl_below: 15}
+ * The 15 degrees is deliberate -- it catches the drifting derelicts that make the ring look like a
+ * ring instead of a line.
+ *
+ * IT LIVES HERE BECAUSE TWO CALLERS NEED IT, and until now only one had it. data/layers.js used
+ * these thresholds to decide which records go on the `geo-ring` LAYER, and scene/realmodels.js
+ * keyed the geostationary bus off `record.layer === 'geo-ring'`. Both layers read the same
+ * CelesTrak file, so the same satellite was an SSL-1300 bus with the ring turned on and a generic
+ * comms drum with only `active` turned on -- 410 objects whose shape depended on a checkbox.
+ * A predicate on the orbit answers the same for both.
+ *
+ * @param {object} record a parsed record; reads meta.meanMotion / eccentricity / inclinationDeg
+ */
+export const GEO_RING = { meanMotionMin: 0.99, meanMotionMax: 1.01, eccBelow: 0.02, inclBelowDeg: 15 };
+export function isGeostationary(record) {
+  const m = (record && record.meta) || {};
+  return (
+    Number.isFinite(m.meanMotion) &&
+    m.meanMotion >= GEO_RING.meanMotionMin &&
+    m.meanMotion <= GEO_RING.meanMotionMax &&
+    Number.isFinite(m.eccentricity) &&
+    m.eccentricity < GEO_RING.eccBelow &&
+    Number.isFinite(m.inclinationDeg) &&
+    m.inclinationDeg < GEO_RING.inclBelowDeg
+  );
+}
+
 function orbitShape(meanMotionRevPerDay, ecc) {
   if (!Number.isFinite(meanMotionRevPerDay) || meanMotionRevPerDay <= 0) {
     return { aKm: null, apogeeKm: null, perigeeKm: null, periodMin: null };
