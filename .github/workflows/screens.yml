@@ -45,6 +45,7 @@ on:
       # that changes it is a guard you find out about on somebody else's branch.
       - ".github/workflows/screens.yml"
       - "scripts/shots.mjs"
+      - "scripts/check-drawn.mjs"
 
 permissions:
   contents: read
@@ -104,6 +105,25 @@ jobs:
           }
           shoot "1280,800" desktop "#sr-controls"
           shoot "390,844"  mobile  ".sr-mobilebar"
+
+      # A PICTURE NOBODY LOOKS AT IS NOT A CHECK, and this job proved it: on 2026-09-08 one flag
+      # put the Milky Way in three's transparent render list, where it painted over the Earth, the
+      # Moon, the Sun and every model. This job booted the app, waited for `#sr-controls`,
+      # photographed a black rectangle and went green -- the same failure the header above
+      # describes, one level deeper. The shots are still taken and still uploaded; this step is the
+      # one that fails. It boots the app and asks the pixels whether the world is on screen.
+      - name: The world is actually drawn
+        if: steps.page.outputs.found == '1'
+        run: |
+          set -euo pipefail
+          docker run --rm --network host \
+            -u "$(id -u):$(id -g)" -e HOME=/tmp \
+            -e PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+            -v "$PWD:/work" -w /work \
+            mcr.microsoft.com/playwright:v1.49.1-jammy \
+            bash -c 'set -euo pipefail
+              npm install --no-save --no-audit --no-fund playwright@1.49.1
+              node scripts/check-drawn.mjs --base=http://127.0.0.1:8177'
 
       # A shot that exists but is a picture of a failure panel is the thing this job used to
       # produce. The selector wait above is the real guard; this only catches an empty file.
