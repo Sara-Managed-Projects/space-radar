@@ -880,6 +880,68 @@ for (const file of allFiles) {
   }
 }
 
+// 3e4. NOTHING WITH depthTest OFF MAY BE IN THE TRANSPARENT LIST.
+//
+// three draws its render lists opaque -> transmissive -> transparent, and renderOrder only sorts
+// WITHIN a list. A transparent material therefore draws after every opaque object whatever its
+// renderOrder, and with depthTest off it paints over them. The sky is built exactly that way on
+// purpose -- depthTest off, a negative renderOrder, "painted first and can never occlude
+// anything" -- which is only true while it is in the opaque list.
+//
+// The Milky Way panorama was flagged `transparent: true` on 2026-09-08 so the scale ladder could
+// fade it, and from then until 2026-09-16 it painted over the Earth, the Moon, the Sun and every
+// planet: a camera 22 units from a lit Earth read (0,0,0) at the centre pixel, and the live site
+// showed a ring of satellites around an empty sky. The stars and the constellation lines beside
+// it had each been fixed for this, one at a time, with a comment saying why. A rule written per
+// material is a rule the next material does not know about, so this checks every material the
+// scene's builders make.
+{
+  try {
+    const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
+    const { stage } = await import(join(JS, 'scene/stage.js'));
+    const { createStarfield } = await import(join(JS, 'scene/starfield.js'));
+    const { createWorlds } = await import(join(JS, 'scene/worlds.js'));
+    stage.setWorld('earth');
+    const scene = new THREE.Scene();
+    const stars = readFileSync(join(ROOT, 'site/data/stars.bin'));
+    const sky = createStarfield(scene, {
+      starsBin: stars,
+      linesJson: JSON.parse(readFileSync(join(ROOT, 'site/data/constellations.lines.json'), 'utf8')),
+      namesJson: JSON.parse(readFileSync(join(ROOT, 'site/data/constellation-names.json'), 'utf8')),
+      milkyWayTexture: new THREE.Texture(),
+    });
+    await sky.ready;
+    // A texture loader that hands back an empty texture at once, so every lazy map is applied and
+    // the materials are checked in the state they are drawn in, not just the one they start in.
+    const worlds = createWorlds(scene, { textureBase: '', loadTexture: (url, onLoad) => { const t = new THREE.Texture(); if (onLoad) onLoad(t); return t; } });
+    for (const w of worlds.waitingMaps()) worlds.preload(w);
+    let checked = 0;
+    const named = new Set();
+    scene.traverse((o) => {
+      const mats = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+      for (const m of mats) {
+        checked += 1;
+        named.add(o.name);
+        if (m.depthTest === false && m.transparent === true) {
+          problems.push(
+            `DRAWORDER ${o.name || o.type} is transparent with depthTest off, so it draws after every ` +
+              `opaque object and paints over the planets. Keep it in the opaque list: ` +
+              `transparent:false with CustomBlending (see the Milky Way in scene/starfield.js).`
+          );
+        }
+      }
+    });
+    const want = ['milkyway', 'stars', 'earth', 'mars', 'sun'];
+    const missing = want.filter((n) => ![...named].some((x) => x === n || x.startsWith(n)));
+    if (missing.length) problems.push(`DRAWORDER the check never saw ${missing.join(', ')}, so it proves nothing about them`);
+    else notes.push(`${checked} materials across the sky and the worlds; none draws after the planets with depthTest off`);
+    sky.dispose && sky.dispose();
+    worlds.dispose();
+  } catch (e) {
+    problems.push(`DRAWORDER could not build the sky and the worlds to check them: ${String(e && e.stack || e).slice(0, 300)}`);
+  }
+}
+
 // 3f. stage.js must REFUSE a vector it cannot convert, not pass it through unchanged. Passing it
 // through is how a lunar landing site was drawn in Africa for months without a single warning
 // anybody read.

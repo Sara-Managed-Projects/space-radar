@@ -85,8 +85,98 @@ check(pickWorldDisc([], 1, 1) === null, 'no discs, no pick');
   worlds.dispose();
 }
 
+// 6. A PLANET'S MAP IS FETCHED WHEN IT CAN BE SEEN, NOT AT BOOT.
+//
+// Every world used to fetch its 2048 x 1024 map at construction: 6.4 MB on the wire and about
+// 139 MB of GPU memory against a 150 MB phone budget for everything, while from the default Earth
+// view nine of those fourteen maps paint discs a few pixels wide. This watches the loader.
+{
+  const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
+  const { stage } = await import(join(JS, 'scene/stage.js'));
+  const { createWorlds, TEXTURE_AT_HALF_VIEW } = await import(join(JS, 'scene/worlds.js'));
+  stage.setWorld('earth');
+  stage.setTime(tMs);
+  const fetched = [];
+  const pending = new Map();
+  const loadTexture = (url, onLoad) => {
+    fetched.push(url);
+    const tex = new THREE.Texture();
+    pending.set(url, () => onLoad && onLoad(tex));
+    return tex;
+  };
+  const camera = new THREE.PerspectiveCamera(45, 800 / 600, 1e-5, 1e9);
+  camera.position.set(0, 0, 22); // the default view: a few Earth radii out
+  camera.lookAt(0, 0, 0);
+  camera.updateMatrixWorld();
+  const worlds = createWorlds(new THREE.Scene(), { textureBase: 't/', loadTexture, camera });
+
+  const EAGER = ['t/2k_earth_daymap.jpg', 't/2k_earth_nightmap.jpg', 't/2k_earth_clouds.jpg', 't/2k_saturn_ring_alpha.png'];
+  const lazyWorlds = WORLDS.filter((w) => !w.look.earth && w.look.map);
+  check(fetched.length === EAGER.length && EAGER.every((u) => fetched.includes(u)),
+    `construction fetches Earth's three maps and the ring strip, nothing else (${JSON.stringify(fetched)})`);
+  check(lazyWorlds.length === 9 && worlds.waitingMaps().length === lazyWorlds.length, `nine worlds -- the Sun, the Moon and seven planets -- wait for their maps (${worlds.waitingMaps().length})`);
+
+  worlds.update(tMs);
+  check(fetched.length === EAGER.length,
+    `from the default view no planet, the Moon or the Sun is big enough to fetch (${JSON.stringify(fetched.slice(EAGER.length))})`);
+
+  // Until the map arrives the world is its measured mean colour -- not white, which is what an
+  // unloaded cel material used to fall back to, and not black.
+  for (const w of lazyWorlds) {
+    const m = worlds.meshFor(w.id).material;
+    const colour = m.uniforms ? m.uniforms.uTint.value : m.color;
+    const hasMap = m.uniforms ? m.uniforms.uHasMap.value === 1 : !!m.map;
+    const hex = colour.getHex();
+    check(!hasMap && Number.isFinite(w.look.tint) && hex !== 0xffffff && hex !== 0x000000,
+      `${w.id} waits in its mean colour, not a map and not white (#${hex.toString(16)})`);
+  }
+
+  // Fly the camera to Mars's drawn disc: past the threshold, fetched exactly once.
+  const marsAt = worlds.drawnPositionOf('mars');
+  const marsR = worlds.drawnRadiusUnits('mars');
+  camera.position.copy(marsAt).add(new THREE.Vector3(0, 0, marsR * 4));
+  camera.updateMatrixWorld();
+  worlds.update(tMs);
+  worlds.update(tMs);
+  const marsFetches = fetched.filter((u) => u.endsWith('2k_mars.jpg')).length;
+  check(marsFetches === 1, `Mars's map is fetched once when its disc fills the view, over two frames (${marsFetches})`);
+  check(!worlds.waitingMaps().includes('mars'), 'and Mars stops waiting');
+  const mars = worlds.meshFor('mars').material.uniforms;
+  check(mars.uHasMap.value === 0, 'the map is not used before it has arrived');
+  pending.get('t/2k_mars.jpg')();
+  check(mars.uHasMap.value === 1 && mars.uTint.value.getHex() === 0xffffff && mars.uMap.value,
+    'when it arrives the map replaces the mean colour, untinted');
+
+  // Selecting a world starts its map at once, whatever size it is drawn.
+  check(worlds.preload('saturn') === true && fetched.includes('t/2k_saturn.jpg'), 'preload(saturn) fetches Saturn now');
+  check(worlds.preload('saturn') === false, 'and a second preload does not fetch it again');
+  pending.get('t/2k_sun.jpg');
+  check(worlds.preload('sun') === true, 'the Sun can be preloaded too');
+  pending.get('t/2k_sun.jpg')();
+  const sunMat = worlds.meshFor('sun').material;
+  check(sunMat.map && sunMat.color.getHex() === 0xffffff, 'the Sun, a basic material, takes its map the same way');
+  check(worlds.preload('earth') === false, 'Earth never waits: its maps were fetched at construction');
+
+  // The threshold means what it says: a disc just under it does not fetch, just over it does.
+  const w2 = createWorlds(new THREE.Scene(), { textureBase: 't/', loadTexture: () => new THREE.Texture(), camera });
+  const jup = worlds.drawnPositionOf('jupiter');
+  const jr = worlds.drawnRadiusUnits('jupiter');
+  const tanHalf = Math.tan((45 * Math.PI) / 360);
+  for (const [factor, want] of [[0.95, true], [1.05, false]]) {
+    const dist = jr / (TEXTURE_AT_HALF_VIEW * tanHalf) * factor;
+    camera.position.copy(jup).add(new THREE.Vector3(0, 0, dist));
+    camera.updateMatrixWorld();
+    w2.update(tMs);
+    const fetchedNow = !w2.waitingMaps().includes('jupiter');
+    if (fetchedNow !== want) problems.push(`Jupiter at ${factor}x the threshold distance: fetched=${fetchedNow}, expected ${want}`);
+    if (want) break;
+  }
+  worlds.dispose();
+  w2.dispose();
+}
+
 if (problems.length) {
   console.error('worlds layer FAILED:\n  ' + problems.join('\n  '));
   process.exit(1);
 }
-console.log(`worlds layer ok: ${recs.length} worlds are records, searchable by name and alias, and the smaller disc wins a tap`);
+console.log(`worlds layer ok: ${recs.length} worlds are records, searchable by name and alias, and the smaller disc wins a tap, and a planet's map waits until its disc can show it`);

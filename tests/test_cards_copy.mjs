@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const JS = join(ROOT, 'site/js');
-const { drawingLine, classLine } = await import(join(JS, 'ui/cards.js'));
+const { drawingLine, classLine, flyTo } = await import(join(JS, 'ui/cards.js'));
 const { compare } = await import(join(JS, 'copy/en.js'));
 
 const problems = [];
@@ -76,6 +76,29 @@ check(has(compare('sizeM', 100), 'football'), 'a 100 m thing keeps the football 
 // magnitude bands: Betelgeuse (0.5) is one of the brightest stars; Polaris (2.0) an ordinary one
 check(compare('magnitude', 0.5) === 'as bright as the brightest stars', `mag 0.5 is a first-magnitude star (${compare('magnitude', 0.5)})`);
 check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('magnitude', 13.4).startsWith('too faint'), 'mag 2 is ordinary, mag 13 needs a telescope');
+
+// --- "Fly to it" is main.js's flight, not a second one -----------------------------------------
+// The card flew to a record's TRUE position. Every planet but the stage world is drawn nearer than
+// it is, so Mars's own "Fly to it" arrived 1.8 au past the disc, looking at nothing -- found on
+// 2026-09-16 by pressing it. The card now hands the record to ctx.flyToRecord, which knows.
+{
+  const marsRec = { id: 'mars', name: 'Mars', klass: 'world', layer: 'worlds', meta: {} };
+  const calls = [];
+  const rigCalls = [];
+  const ctxMain = {
+    flyToRecord: (record, ms) => calls.push([record.id, ms]),
+    cameraRig: { flyTo: (o) => rigCalls.push(o), follow: () => {} },
+    stage: { toScene: () => ({ length: () => 1 }) },
+  };
+  flyTo(marsRec, ctxMain, { ok: true, posKm: { x: 1, y: 0, z: 0 }, frame: 'sun-inertial' });
+  check(calls.length === 1 && calls[0][0] === 'mars', `the card's Fly to it hands Mars to ctx.flyToRecord (${JSON.stringify(calls)})`);
+  check(rigCalls.length === 0, 'and does not also fly the camera itself to the true position');
+  // Without main.js (a test, an embed) the old flight still works for things nothing moves.
+  const rig2 = [];
+  flyTo({ id: 'iss', klass: 'station' }, { cameraRig: { flyTo: (o) => rig2.push(o), follow: () => {} }, stage: { toScene: () => ({ length: () => 6.8 }) } },
+    { ok: true, posKm: { x: 6800, y: 0, z: 0 }, frame: 'earth-inertial' });
+  check(rig2.length === 1, 'with no ctx.flyToRecord the card still flies on its own');
+}
 
 if (problems.length) {
   console.log(`cards copy: ${problems.length} problem(s)`);
