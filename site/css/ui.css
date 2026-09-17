@@ -345,6 +345,31 @@
   line-height: 1.45;
 }
 
+/* A photograph of the object, where one exists ---------------------------------------
+ *
+ * Two of the exotics have been photographed and the pictures ship under CC BY 4.0, which asks for
+ * the credit "in a clear and readable manner to all users". So the caption is part of the figure,
+ * at the app's smallest readable size but not smaller, and never a tooltip or a hover. */
+
+.sr-card__figure {
+  margin: 12px 0;
+}
+
+.sr-card__photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  background: #05070c; /* these are pictures of the dark; do not flash white while loading */
+}
+
+.sr-card__photo-credit {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--sr-text-dim);
+}
+
 /* The trip lead -- block 0, and only during a guided trip ----------------------------
  *
  * Enough type to be legible the day it ships, and no more. The cinematic frame around it --

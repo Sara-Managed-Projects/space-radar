@@ -343,6 +343,28 @@ credit:
 They are loaded **on demand**, one file per object, only when the camera is near it. Nobody
 downloads all thirty-seven; the largest single download is `perseverance.glb` at 415 KB.
 
+## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
+
+`site/images/` holds two pictures, shown on the cards for the only two objects in
+`registry/exotics.yaml` that anybody has photographed. They are not illustrations and nothing in
+them was redrawn.
+
+| file | object | credit | licence | source |
+|---|---|---|---|---|
+| `eht-m87.jpg` | M87* | **EHT Collaboration** | CC BY 4.0 | [eso1907a](https://www.eso.org/public/images/eso1907a/), Screensize JPEG 1280×746, downloaded 2026-09-17 |
+| `eht-sgr-a.jpg` | Sagittarius A* | **EHT Collaboration** | CC BY 4.0 | [eso2208-eht-mwa](https://www.eso.org/public/images/eso2208-eht-mwa/), Screensize JPEG 1280×1280, downloaded 2026-09-17 |
+
+ESO releases its images under the Creative Commons Attribution 4.0 International licence and asks
+that "the full image or footage credit must be presented in a clear and readable manner to all
+users, with the wording unaltered"
+([ESO copyright](https://www.eso.org/public/outreach/copyright/)). That is why the credit is a
+caption under the picture on the card and not a tooltip, why the wording is exactly
+*EHT Collaboration*, and why `scripts/check_registry.py` refuses an `image:` row that cannot name
+its credit, its licence and where it came from.
+
+**What was changed:** nothing but the choice of size. Both are ESO's own "Screensize JPEG"
+downloads, shipped byte for byte.
+
 ## 4. Runtime data sources
 
 The app calls these from the visitor's browser. Nothing here is redistributed in this repository —

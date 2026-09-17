@@ -97,6 +97,9 @@ def main() -> int:
         work = Path(tmp) / "repo"
         shutil.copytree(ROOT / "registry", work / "registry")
         shutil.copytree(ROOT / "scripts", work / "scripts")
+        # registry/exotics.yaml points at the two photographs and the validator checks they
+        # are really in the tree, so the tree needs them.
+        shutil.copytree(ROOT / "site" / "images", work / "site" / "images")
         # The validator checks that every asset a registry row names is really in the tree, so the
         # tree it validates has to contain them. Copying the names rather than the bytes keeps this
         # test fast -- it is asking whether the REGISTRY grows cleanly, not whether a GLB is valid.

@@ -32,6 +32,17 @@ CASES: list[tuple[str, str, str, str]] = [
      "layers.yaml", "model: station-generic", "model: station-deluxe"),
     ("world's parent does not exist",
      "worlds.yaml", "parent: sun", "parent: nebula"),
+    # A PHOTOGRAPH IS SOMEBODY ELSE'S WORK. The EHT pictures ship under CC BY 4.0, whose bargain is
+    # that the credit travels with the image; a row that cannot name the credit, the licence or the
+    # source must not ship one, and a file that is not in the repository is a 404 on a card.
+    ("exotic ships a photograph with no credit",
+     "exotics.yaml", 'credit: "EHT Collaboration"', 'credit: ""'),
+    ("exotic ships a photograph with no licence",
+     "exotics.yaml", 'licence: "CC BY 4.0"', 'licence: ""'),
+    ("exotic ships a photograph that is not in the repository",
+     "exotics.yaml", "file: site/images/eht-m87.jpg", "file: site/images/eht-m87-missing.jpg"),
+    ("exotic ships a photograph from outside site/images/",
+     "exotics.yaml", "file: site/images/eht-m87.jpg", "file: site/models/eht-m87.jpg"),
     ("source has no attribution line",
      "sources.yaml", '    attribution: "Orbital data: CelesTrak (T. S. Kelso)"\n', ""),
     ("source's cadence is not a duration",
@@ -487,6 +498,10 @@ def check_tour_refusals() -> int:
             work.mkdir()
             shutil.copytree(ROOT / "registry", work / "registry")
             shutil.copytree(ROOT / "scripts", work / "scripts")
+            # registry/exotics.yaml points at the two photographs and the validator checks
+            # they are really in the tree, so the tree needs them or every case fails for a
+            # reason that has nothing to do with the case under test.
+            shutil.copytree(ROOT / "site" / "images", work / "site" / "images")
             shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")
             shutil.copytree(ROOT / "harvest", work / "harvest",
                             ignore=shutil.ignore_patterns("__pycache__"))
@@ -545,6 +560,10 @@ def check_copy_refuses() -> int:
             (work / "site" / "js").mkdir(parents=True)
             shutil.copytree(ROOT / "site/js/ui", work / "site/js/ui")
             shutil.copytree(ROOT / "scripts", work / "scripts")
+            # registry/exotics.yaml points at the two photographs and the validator checks
+            # they are really in the tree, so the tree needs them or every case fails for a
+            # reason that has nothing to do with the case under test.
+            shutil.copytree(ROOT / "site" / "images", work / "site" / "images")
 
             path = work / "site" / "js" / "ui" / filename
             text = path.read_text(encoding="utf-8")
@@ -605,6 +624,10 @@ def check_models_dir_refuses() -> int:
             work.mkdir()
             shutil.copytree(ROOT / "registry", work / "registry")
             shutil.copytree(ROOT / "scripts", work / "scripts")
+            # registry/exotics.yaml points at the two photographs and the validator checks
+            # they are really in the tree, so the tree needs them or every case fails for a
+            # reason that has nothing to do with the case under test.
+            shutil.copytree(ROOT / "site" / "images", work / "site" / "images")
             shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")
             shutil.copytree(ROOT / "harvest", work / "harvest",
                             ignore=shutil.ignore_patterns("__pycache__"))
@@ -650,6 +673,10 @@ def main() -> int:
             work.mkdir()
             shutil.copytree(pristine, work / "registry")
             shutil.copytree(ROOT / "scripts", work / "scripts")
+            # registry/exotics.yaml points at the two photographs and the validator checks
+            # they are really in the tree, so the tree needs them or every case fails for a
+            # reason that has nothing to do with the case under test.
+            shutil.copytree(ROOT / "site" / "images", work / "site" / "images")
             # The validator cross-checks registry/models.yaml against CREDITS.md, so a tree
             # without it fails for a reason that has nothing to do with the case under test.
             shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")
