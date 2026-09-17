@@ -1484,6 +1484,29 @@ function render(record, ctx, opts = {}) {
   // 2. one plain sentence
   body.appendChild(el('p', 'sr-card__sentence', firstSentence(record, ctx, m, passInfo)));
 
+  // 2a. THE PHOTOGRAPH, where the registry has one. Two of the twenty exotics have been
+  // photographed -- M87* in 2019 and Sgr A* in 2022 -- and spec 0028 asked for their pictures on
+  // the card. Until now the card said "the first black hole anyone photographed" and showed a dot.
+  //
+  // The credit rides WITH the picture, visible, because that is what CC BY 4.0 asks for: "the full
+  // image credit must be presented in a clear and readable manner to all users, with the wording
+  // unaltered". Lazy and async so a card that is never scrolled to costs nothing, and the alt text
+  // comes from the registry row, where somebody wrote it by looking.
+  const photo = pick(meta(record), 'image');
+  if (photo && photo.file && photo.credit && photo.licence) {
+    const figure = el('figure', 'sr-card__figure');
+    const img = document.createElement('img');
+    img.className = 'sr-card__photo';
+    img.src = String(photo.file).replace(/^site\//, '');
+    img.alt = String(photo.alt || '');
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    figure.appendChild(img);
+    figure.appendChild(el('figcaption', 'sr-card__photo-credit',
+      t(COPY.card.photoCredit, { credit: String(photo.credit), licence: String(photo.licence) })));
+    body.appendChild(figure);
+  }
+
   // 2b. a world says how it is drawn, and offers to become the centre (spec 0028 step 0). The
   // compression note is scene/worlds.js's own sentence (`viewScale`), never restated here.
   if (klass === 'world') {

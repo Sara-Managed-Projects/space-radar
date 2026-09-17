@@ -692,6 +692,23 @@ def check_exotics() -> list:
             fail(where, f"`kind: {r.get('kind')}` is not one of {sorted(EXOTIC_KINDS)}")
         if not r.get("source"):
             fail(where, "no `source:` -- a fact sheet with no source is a rumour")
+        img = r.get("image")
+        if img is not None:
+            # SHIPPING SOMEBODY ELSE'S PHOTOGRAPH. The EHT pictures are CC BY 4.0 through ESO, and
+            # that licence is a bargain: the credit must travel with the image, unaltered. A row
+            # that cannot say whose picture it is, under what licence, and where it came from is a
+            # row that must not ship one -- the same rule registry/models.yaml lives under.
+            if not isinstance(img, dict):
+                fail(where, "`image:` must be a mapping with file, credit, licence, source and alt")
+            else:
+                for field in ("file", "credit", "licence", "source", "alt"):
+                    if not str(img.get(field) or "").strip():
+                        fail(where, f"`image.{field}` is missing -- a picture with no {field} does not ship")
+                f = str(img.get("file") or "")
+                if f and not f.startswith("site/images/"):
+                    fail(where, f"`image.file` must live under site/images/, not {f!r}")
+                if f and not (ROOT / f).exists():
+                    fail(where, f"`image.file` {f} is not in the repository")
         if not r.get("why"):
             fail(where, "no `why:` sentence")
         if not re.match(r"^\s*\d+h\s*\d+m\s*[\d.]+s\s*$", str(r.get("ra") or "")):

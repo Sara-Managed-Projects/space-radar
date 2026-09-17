@@ -25,6 +25,12 @@ exotics:
     why: "The black hole at the centre of our galaxy, four million Suns in one point. Every star on this map goes round it."
     aliases: [Sgr A*, galactic centre black hole]
     source: "https://en.wikipedia.org/wiki/Sagittarius_A* (infobox, read 2026-09-08)"
+    image:
+      file: site/images/eht-sgr-a.jpg
+      credit: "EHT Collaboration"
+      licence: "CC BY 4.0"
+      source: "https://www.eso.org/public/images/eso2208-eht-mwa/ -- Screensize JPEG, 1280x1280, downloaded 2026-09-17"
+      alt: "A thick orange ring of light with three brighter knots, around a dark centre."
 
   - id: m87-star
     name: M87*
@@ -36,6 +42,12 @@ exotics:
     why: "The first black hole anyone photographed: the orange ring of 2019. Six and a half billion Suns, at the heart of the galaxy M87."
     aliases: [Powehi, Virgo A black hole]
     source: "https://en.wikipedia.org/wiki/Messier_87 (infobox and the M87* section; EHT 2019 mass, read 2026-09-08)"
+    image:
+      file: site/images/eht-m87.jpg
+      credit: "EHT Collaboration"
+      licence: "CC BY 4.0"
+      source: "https://www.eso.org/public/images/eso1907a/ -- Screensize JPEG, 1280x746, downloaded 2026-09-17"
+      alt: "A fuzzy orange ring of light around a dark centre, brighter along the bottom."
 
   - id: cygnus-x-1
     name: Cygnus X-1

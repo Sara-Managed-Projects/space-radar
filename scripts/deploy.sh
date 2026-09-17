@@ -67,7 +67,7 @@ SYNC=(aws s3 sync --region "$REGION")
 # hypothetical: `site/models/` was added for the NASA spacecraft and this script did not know about
 # it, so the first deploy after that shipped an app whose models 403'd. The app degraded correctly
 # and nobody would have noticed for a while, which is exactly what makes it worth a check.
-KNOWN="textures data vendor js css models"
+KNOWN="textures data vendor js css models images"
 MISSING=""
 for d in "$SITE"/*/; do
   name=$(basename "$d")
@@ -99,6 +99,9 @@ if [ "$WHAT" != "app" ]; then
   # a .glb served as one is a few hundred KB that could have been fewer.
   "${SYNC[@]}" "$SITE/models"   "s3://$BUCKET/models"   --cache-control "$LONG" \
     --content-type "model/gltf-binary" --delete
+  # The photographs on the cards. Same bargain as the models: somebody else's work, shipped with
+  # its credit, so it is deployed as a directory and never silently half-pushed.
+  "${SYNC[@]}" "$SITE/images"   "s3://$BUCKET/images"   --cache-control "$LONG" --delete
 fi
 
 if [ "$WHAT" != "assets" ]; then

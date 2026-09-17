@@ -581,6 +581,10 @@ export const COPY = {
     hint: '{n} here. Tap one, or tap the sky to close.',
   },
   card: {
+    // A PHOTOGRAPH OF THE OBJECT, where one exists and is free to ship. CC BY 4.0 asks for the
+    // credit "in a clear and readable manner ... with the wording unaltered", so this is one line
+    // under the picture and not a tooltip: {credit} is whose it is, {licence} the terms.
+    photoCredit: '{credit} · {licence}',
     close: 'Close',
     closeTitle: 'Close this card',
     makeCentre: 'Make {name} the centre of the map',

@@ -293,6 +293,10 @@ function exoticRecords() {
         source: x.source,
         cite: x.source,
         aliases: Array.isArray(x.aliases) ? x.aliases.slice() : [],
+        // A PHOTOGRAPH, WHERE ONE EXISTS. Two of these objects have been photographed and the
+        // pictures are CC BY 4.0 through ESO; the row carries the credit and the licence with the
+        // file because that is the licence's bargain, and ui/cards.js prints them under it.
+        image: x.image || null,
       },
     };
   });

@@ -19,6 +19,13 @@ export const EXOTICS = [
       "galactic centre black hole"
     ],
     "source": "https://en.wikipedia.org/wiki/Sagittarius_A* (infobox, read 2026-09-08)",
+    "image": {
+      "file": "site/images/eht-sgr-a.jpg",
+      "credit": "EHT Collaboration",
+      "licence": "CC BY 4.0",
+      "source": "https://www.eso.org/public/images/eso2208-eht-mwa/ -- Screensize JPEG, 1280x1280, downloaded 2026-09-17",
+      "alt": "A thick orange ring of light with three brighter knots, around a dark centre."
+    },
     "raDeg": 266.416837,
     "decDeg": -29.007811,
     "distLy": 26996,
@@ -34,6 +41,13 @@ export const EXOTICS = [
       "Virgo A black hole"
     ],
     "source": "https://en.wikipedia.org/wiki/Messier_87 (infobox and the M87* section; EHT 2019 mass, read 2026-09-08)",
+    "image": {
+      "file": "site/images/eht-m87.jpg",
+      "credit": "EHT Collaboration",
+      "licence": "CC BY 4.0",
+      "source": "https://www.eso.org/public/images/eso1907a/ -- Screensize JPEG, 1280x746, downloaded 2026-09-17",
+      "alt": "A fuzzy orange ring of light around a dark centre, brighter along the bottom."
+    },
     "raDeg": 187.705931,
     "decDeg": 12.391123,
     "distLy": 53500000,
