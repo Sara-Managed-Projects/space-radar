@@ -50,7 +50,12 @@ export async function boot({ setStatus } = {}) {
   say('Building the sky…');
   const rendererApi = createRenderer(canvas);
   const { renderer, scene, camera, resize, render } = rendererApi;
-  const cameraRig = createCameraRig(camera, canvas);
+  // The arrow keys fly the camera (scene/camera.js). Not during a trip: ui/tripframe.js gives the
+  // arrows to the stops there -- left and right are previous and next -- and one key doing two
+  // things at once is how a control stops being trusted.
+  const cameraRig = createCameraRig(camera, canvas, {
+    keysEnabled: () => !(ctx && ctx.trip && ctx.trip.state && ctx.trip.state.phase !== 'idle'),
+  });
 
   // The camera is how worlds.js decides a planet is near enough to be worth its map; without it the
   // eight planets, the Moon and the Sun would stay in their mean colours for good.

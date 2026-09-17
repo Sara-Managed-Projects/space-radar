@@ -487,6 +487,109 @@ export function createCameraRig(camera, domElement, options = {}) {
     e.preventDefault?.();
   }
 
+  // ---------------------------------------------------------------- the keyboard
+  //
+  // Ivan: "add controle with arrows (like in space video games so user will be able to travel with
+  // arrows)". The keys feed the SAME dAz / dPolar / dLogDist the pointer feeds, so they inherit the
+  // damping and the coast, and a flight is interrupted by a key exactly as it is by a drag.
+  //
+  // THE DIRECTIONS MATCH THE DRAG, not a flight simulator: ArrowRight does what dragging right
+  // does. Two inputs to one camera that disagree about which way is right is a camera nobody
+  // trusts, and dragging is the one everybody meets first.
+  //
+  // Held, not tapped: a keydown starts the motion and the keyup ends it, so the camera moves for as
+  // long as the key is down and at a rate per SECOND rather than per keypress.
+
+  /** Radians a second, held. A drag across the viewport height is pi, so this is about a third of that. */
+  const KEY_ORBIT_RAD_PER_S = 1.1;
+  /** Fractions of the viewport height a second, held. */
+  const KEY_PAN_PER_S = 0.7;
+  /** In log distance: e^0.9 is about 2.5x a second, which is a second and a half from Earth to the ring. */
+  const KEY_DOLLY_LOG_PER_S = 0.9;
+
+  const CAMERA_KEYS = new Set([
+    'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+    'PageUp', 'PageDown', 'w', 'W', 's', 'S', '+', '=', '-', '_',
+  ]);
+  const held = new Set();
+
+  /** Typing is typing. A key that lands in a field, or that the app already handled, is not ours. */
+  function keyIsOurs(e) {
+    if (!e || e.defaultPrevented) return false;
+    if (e.ctrlKey || e.metaKey || e.altKey) return false; // browser and OS shortcuts
+    if (!CAMERA_KEYS.has(e.key)) return false;
+    if (typeof keysEnabled === 'function' && !keysEnabled()) return false;
+    const el = e.target;
+    const tag = el && el.tagName ? String(el.tagName).toLowerCase() : '';
+    if (tag === 'input' || tag === 'textarea' || tag === 'select') return false;
+    if (el && el.isContentEditable) return false;
+    return true;
+  }
+
+  function onKeyDown(e) {
+    if (!keyIsOurs(e)) return;
+    e.preventDefault?.();      // arrows scroll a page and PageUp/PageDown jump it
+    if (!held.has(e.key)) {
+      held.add(e.key);
+      // The same courtesy the pointer gets: a hand on the controls ends a flight where it is.
+      interrupt();
+      emitUserInput('keys');
+    }
+    held.add(e.key);
+    keyShift = !!e.shiftKey;
+  }
+
+  function onKeyUp(e) {
+    held.delete(e.key);
+    if (held.size === 0) keyShift = false;
+  }
+
+  /** A window that loses focus never sends the keyup, and the camera would drift for ever. */
+  function onBlur() {
+    held.clear();
+    keyShift = false;
+  }
+
+  let keyShift = false;
+
+  /** Per frame: turn whatever is held into the same deltas a drag would have made. */
+  function applyHeldKeys(dts) {
+    if (!held.size) return;
+    const { h } = elementSize();
+    let az = 0;
+    let polar = 0;
+    let dolly = 0;
+    if (held.has('ArrowLeft')) az += 1;
+    if (held.has('ArrowRight')) az -= 1;
+    if (held.has('ArrowUp')) polar += 1;
+    if (held.has('ArrowDown')) polar -= 1;
+    if (held.has('PageUp') || held.has('w') || held.has('W') || held.has('+') || held.has('=')) dolly -= 1;
+    if (held.has('PageDown') || held.has('s') || held.has('S') || held.has('-') || held.has('_')) dolly += 1;
+
+    if (keyShift && (az || polar)) {
+      // Shift is pan, as it is for a drag. panBy takes pixels, so the rate is a share of the view.
+      panBy(-az * KEY_PAN_PER_S * h * dts, polar * KEY_PAN_PER_S * h * dts);
+    } else {
+      if (az) dAz += az * KEY_ORBIT_RAD_PER_S * dts;
+      if (polar) dPolar += polar * KEY_ORBIT_RAD_PER_S * dts;
+    }
+    if (dolly) dollyBy(dolly * KEY_DOLLY_LOG_PER_S * dts);
+  }
+
+  // The keys live on the WINDOW, not the canvas: a canvas is not focusable without a tabindex, and
+  // an app that fills the screen should answer an arrow key without being clicked first. `keyTarget`
+  // is how a test hands it something else, and `keysEnabled` is how main.js says "not during a
+  // trip" without this file having to know what a trip is.
+  const keyTarget = options.keyTarget !== undefined
+    ? options.keyTarget
+    : (typeof window !== 'undefined' ? window : null);
+  const keysEnabled = options.keysEnabled;
+  if (keyTarget && typeof keyTarget.addEventListener === 'function') {
+    keyTarget.addEventListener('keydown', onKeyDown);
+    keyTarget.addEventListener('keyup', onKeyUp);
+    keyTarget.addEventListener('blur', onBlur);
+  }
+
   if (domElement && typeof domElement.addEventListener === 'function') {
     if (domElement.style) domElement.style.touchAction = 'none';
     domElement.addEventListener('pointerdown', onPointerDown);
@@ -802,6 +905,9 @@ export function createCameraRig(camera, domElement, options = {}) {
 
     if (followFn) applyFollow();
 
+    // Held keys are read before the damping, so they feed the same smoothing a drag does.
+    applyHeldKeys(dts);
+
     if (flight) {
       advanceFlight(dts);
     } else {
@@ -904,6 +1010,12 @@ export function createCameraRig(camera, domElement, options = {}) {
       domElement.removeEventListener('wheel', onWheel);
       domElement.removeEventListener('contextmenu', onContextMenu);
     }
+    if (keyTarget && typeof keyTarget.removeEventListener === 'function') {
+      keyTarget.removeEventListener('keydown', onKeyDown);
+      keyTarget.removeEventListener('keyup', onKeyUp);
+      keyTarget.removeEventListener('blur', onBlur);
+    }
+    held.clear();
     // Nothing is left waiting on a rig that no longer exists.
     const was = flight;
     flight = null;
