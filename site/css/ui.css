@@ -1078,8 +1078,9 @@
 /*                      still a bottom sheet. The mark rides over the panel's blank top     */
 /*                      right, above it in z so the panel never swallows it.               */
 /*   >= 900 px          .sr-card is a right rail from top 16 to bottom 16, so the corner    */
-/*                      IS the card. The mark steps in by the rail's width and clears its   */
-/*                      left edge by 8 px at every width -- 1440: mark 960-1004, card from  */
+/*                      IS the card WHEN ONE IS OPEN. With no card the mark sits in the     */
+/*                      corner at right 16; with one open it steps in by the rail's width   */
+/*                      and clears its left edge by 8 px -- 1440: mark 960-1004, card from  */
 /*                      1012.                                                              */
 /* ------------------------------------------------------------------------------------ */
 
@@ -1111,6 +1112,16 @@
 @media (min-width: 900px) {
   .sr-mark {
     top: 16px;
+    /* The corner, and the corner is where it was asked to be. It used to sit at
+       `var(--sr-card-w) + 24px` at every width, which is a hole the size of the card rail kept
+       open for a card that is usually not there. */
+    right: 16px;
+  }
+
+  /* ...and it steps aside only while a card IS there. <html> carries the class because the mark
+     is in the document before the card host exists, so no sibling selector can reach it
+     (ui/cards.js markCardOpen). 1440: mark 960-1004, card from 1012, as before. */
+  html.sr-card-open .sr-mark {
     right: calc(var(--sr-card-w) + 24px);
   }
 }

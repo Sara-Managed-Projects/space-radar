@@ -942,6 +942,45 @@ for (const file of allFiles) {
   }
 }
 
+// 3e5. THE GITHUB MARK STEPS ASIDE FOR THE CARD, AND ONLY FOR THE CARD.
+//
+// The mark asks for the top right corner. On desktop it used to sit at `var(--sr-card-w) + 24px`
+// at every width, open card or not, so the corner it was asked for was a hole the width of the
+// card rail whenever nothing was selected -- which is most of the time. It cannot read the card
+// with a sibling selector: ui/github.js appends the mark at boot and ui/cards.js builds the card
+// host lazily on the first showCard(), so the card is always after it in the document. The signal
+// is a class on <html>, like ui/mobile.js's `sr-phone`.
+//
+// Two halves in two files, and neither is any use alone. There is no DOM in these tests, so this
+// is the source-level version of that pair: the class is set where the card opens, cleared where
+// it closes, and some rule keyed on it moves the mark.
+{
+  const cards = readFileSync(join(JS, 'ui/cards.js'), 'utf8');
+  const css = readFileSync(join(ROOT, 'site/css/ui.css'), 'utf8');
+  const opens = (cards.match(/markCardOpen\(true\)/g) || []).length;
+  const closes = (cards.match(/markCardOpen\(false\)/g) || []).length;
+  const addsIsOpen = (cards.match(/classList\.add\('is-open'\)/g) || []).length;
+  if (!/classList\.toggle\('sr-card-open'/.test(cards)) {
+    problems.push("MARK     ui/cards.js does not set the `sr-card-open` class, so the mark cannot know a card is open");
+  }
+  if (opens !== addsIsOpen) {
+    problems.push(`MARK     ui/cards.js opens the card ${addsIsOpen} way(s) but says so ${opens} time(s); a path that opens without markCardOpen(true) leaves the mark over the card`);
+  }
+  if (closes < 1) problems.push('MARK     nothing calls markCardOpen(false), so the mark never returns to the corner');
+  if (!/html\.sr-card-open[^{]*\.sr-mark\s*\{/.test(css)) {
+    problems.push('MARK     css/ui.css has no rule keyed on html.sr-card-open for .sr-mark, so setting the class does nothing');
+  }
+  // And the resting place is the corner, not the rail: the plain desktop rule must not be the
+  // one that steps aside.
+  const desktop = (css.match(/@media \(min-width: 900px\) \{[\s\S]*?\n\}/g) || []).find((b) => b.includes('.sr-mark'));
+  // The BARE selector only -- `html.sr-card-open .sr-mark` ends in `.sr-mark` too, and matching
+  // that was this check's own first bug.
+  if (desktop && /(^|\n)\s*\.sr-mark\s*\{[^}]*right:\s*calc\(var\(--sr-card-w\)/.test(desktop)) {
+    problems.push('MARK     the mark sits at the card rail width with no card open; that is the hole this check exists for');
+  }
+  if (!problems.some((x) => x.startsWith('MARK'))) notes.push('the GitHub mark rests in the corner and steps aside only while a card is open');
+}
+
 // 3f. stage.js must REFUSE a vector it cannot convert, not pass it through unchanged. Passing it
 // through is how a lunar landing site was drawn in Africa for months without a single warning
 // anybody read.
