@@ -27,7 +27,7 @@ import { createControls } from './ui/controls.js';
 import { createStatus } from './ui/status.js';
 import { createMobileUI } from './ui/mobile.js';
 import { createGitHubMark } from './ui/github.js';
-import { createTrip } from './ui/trip.js';
+import { createTrip, tripFocusLayer } from './ui/trip.js';
 import { createTripFrame } from './ui/tripframe.js';
 import { rankPick, rankAll } from './scene/pickrank.js';
 import { createLod } from './scene/lod.js';
@@ -288,9 +288,53 @@ export async function boot({ setStatus } = {}) {
   function isLayerDrawable(layer) {
     if (!layer || !isLayerOn(layer.id)) return false;
     if (layer.ladderOnly && !isLadderStage(stage.worldId)) return false;
+    // A trip standing next to one machine hides the crowd around it -- ui/trip.js's
+    // tripFocusLayer() decides, and it decides from the layer's own nearKm rather than a number
+    // invented here. Recomputed once a tick below, not per call: this runs per layer AND per label
+    // candidate, and it costs a propagate().
+    // GLYPH LAYERS ONLY. `worlds`, `stars3d` and `galaxy` draw themselves (layer.draw), and this
+    // predicate also decides what a tap can hit and what gets a label -- so letting the focus reach
+    // them would make the Earth untappable while a trip stood beside a satellite, which is not what
+    // was asked for and is the kind of side effect that turns a small rule into a bug.
+    const focus = updateTripFocus();
+    if (focus && !layer.draw && layer.id !== focus) return false;
     return true;
   }
   ctx.isLayerDrawable = isLayerDrawable;
+
+  /**
+   * The trip's focus, recomputed once a tick. `null` means "draw everything", which is every frame
+   * outside a trip: somebody flying by hand is looking around, not at one thing.
+   */
+  let focusLayerId = null;
+  let focusAt = -1;
+  const _focusCam = new THREE.Vector3();
+  // COMPUTED WHEN ASKED, not only from the frame loop. It costs a propagate(), so it is memoised
+  // for a frame's worth of milliseconds -- but a value that only exists while rAF is running is a
+  // value nothing can test, and the whole rule is invisible until a trip is in the air.
+  const FOCUS_TTL_MS = 30;
+  function updateTripFocus(force = false) {
+    const nowMs = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    if (!force && focusAt >= 0 && nowMs - focusAt < FOCUS_TTL_MS) return focusLayerId;
+    focusAt = nowMs;
+    const phase = ctx.trip && ctx.trip.state ? ctx.trip.state.phase : null;
+    const record = selected;
+    focusLayerId = null;
+    if (!phase || !record) return focusLayerId;
+    const layer = LAYERS.find((l) => l.id === record.layer);
+    const pos = positionOfRecord(record);
+    if (!layer || !pos) return focusLayerId;
+    camera.getWorldPosition(_focusCam);
+    focusLayerId = tripFocusLayer({
+      phase,
+      subjectLayerId: record.layer,
+      nearKm: layer.nearKm,
+      distanceKm: _focusCam.distanceTo(pos) * stage.unitKm,
+    });
+    return focusLayerId;
+  }
+  /** The layer a running trip is standing next to, or null. Exported for the test and the console. */
+  ctx.tripFocusLayerId = () => updateTripFocus(true);
 
   function isLayerOn(id) {
     const layer = LAYERS.find((l) => l.id === id);
@@ -408,10 +452,15 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     const interval = clock.mode === 'live' && clock.rate === 1 ? 100 : 0;
     if (sinceLayerUpdate >= interval) {
       sinceLayerUpdate = 0;
+      updateTripFocus(true);
       for (const [id, gl] of glyphLayers) {
         const layer = LAYERS.find((l) => l.id === id);
         const drawable = ctx.isLayerDrawable ? ctx.isLayerDrawable(layer) : ctx.isLayerOn(id);
-        if (layer && layer.ladderOnly && gl.setVisible) gl.setVisible(drawable);
+        // EVERY layer, not only the ladder's. This used to be `ladderOnly &&`, which was enough
+        // when the ladder was the only reason a layer that is ON is not drawn; the trip's focus is
+        // the second reason, and a layer it hides has to be shown again when the trip moves on.
+        // For every other layer this is what setLayerOn already set, so it costs a boolean.
+        if (gl.setVisible) gl.setVisible(drawable);
         if (drawable) gl.update(t, ctx.camera);
       }
     }

@@ -44,7 +44,7 @@ const CONTRACT = {
   'sky/skyview.js': ['createSkyView'],
   'ui/cards.js': ['showCard', 'hideCard'],
   'ui/controls.js': ['createControls'],
-  'ui/trip.js': ['createTrip'],
+  'ui/trip.js': ['createTrip', 'tripFocusLayer', 'TRIP_ARRIVED_PHASES'],
   'ui/tripframe.js': ['createTripFrame', 'shapeLine'],
   'ui/status.js': ['createStatus'],
   'ui/github.js': ['createGitHubMark'],
@@ -877,6 +877,40 @@ for (const file of allFiles) {
     else delete globalThis.requestAnimationFrame;
   } catch (e) {
     problems.push(`TRIPEND  could not check the trip exits: ${String(e && e.message)}`);
+  }
+}
+
+// 3e3b. A TRIP STANDING NEXT TO ONE MACHINE HIDES THE CROWD, AND ONLY THEN.
+//
+// Ivan, on the stations tour: "dont like in the tour with stations stations inside the earth ...
+// when in trips something zoommed in we should hide other objects around and only when it regular
+// size keep things back." A glyph is a fixed size in pixels whatever its distance, so standing
+// beside the ISS leaves a hundred other dots at ten pixels each, landing on the globe behind it.
+//
+// The rule invents no number: it reuses the layer's own `nearKm`, which is what heroes.js uses to
+// decide a record is worth geometry and what stopDistanceKm() takes 0.35 of. So the cases that
+// matter are: arrived or not, inside or outside, and a layer whose nearKm is 0 -- the worlds and
+// the ladder's rungs -- which must never focus, because that is the "regular size" half of the ask.
+{
+  const { tripFocusLayer, TRIP_ARRIVED_PHASES } = await import(join(JS, 'ui/trip.js'));
+  const at = (over) => tripFocusLayer({ phase: 'dwell', subjectLayerId: 'stations', nearKm: 20000, distanceKm: 7000, ...over });
+
+  if (at({}) !== 'stations') problems.push('TRIPFOCUS a stop parked 7 000 km from a stations record (nearKm 20 000) does not focus');
+  if (at({ distanceKm: 20000 }) !== 'stations') problems.push('TRIPFOCUS exactly at nearKm should still focus');
+  if (at({ distanceKm: 20001 }) !== null) problems.push('TRIPFOCUS a camera outside nearKm must leave the crowd alone');
+  // The flight is a move; putting the lights out in the middle of one is worse than the clutter.
+  for (const phase of ['idle', 'resolving', 'intro', 'flight', 'outro']) {
+    if (at({ phase }) !== null) problems.push(`TRIPFOCUS phase ${phase} is not standing still and must not focus`);
+  }
+  for (const phase of TRIP_ARRIVED_PHASES) {
+    if (at({ phase }) !== 'stations') problems.push(`TRIPFOCUS phase ${phase} has arrived and should focus`);
+  }
+  // nearKm 0 is the worlds and every ladder layer: a stop that frames a planet keeps the crowd.
+  if (at({ nearKm: 0, subjectLayerId: 'worlds' }) !== null) problems.push('TRIPFOCUS a layer with nearKm 0 must never focus');
+  if (at({ subjectLayerId: null }) !== null) problems.push('TRIPFOCUS no subject, no focus');
+  if (at({ distanceKm: NaN }) !== null) problems.push('TRIPFOCUS an unknown distance must not focus');
+  if (!problems.some((p) => p.startsWith('TRIPFOCUS'))) {
+    notes.push(`the trip hides the crowd only once it has arrived and is inside the subject's own nearKm (${TRIP_ARRIVED_PHASES.join('/')})`);
   }
 }
 
