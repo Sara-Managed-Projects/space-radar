@@ -1412,6 +1412,20 @@ function leadBlock(lead) {
   return wrap;
 }
 
+/**
+ * The card is open, or it is not, and the ROOT element says which.
+ *
+ * ui/github.js's mark used to step left by the card rail's width at every desktop width, open or
+ * not, so the corner it was asked to sit in was empty whenever no card was showing. It cannot read
+ * the card with a CSS sibling selector either: the mark is appended at boot and the card host is
+ * built lazily on the first showCard(), so the card is always AFTER it in the document. A class on
+ * <html> is how ui/mobile.js and ui/tripframe.js already say the same kind of thing.
+ */
+function markCardOpen(open) {
+  if (typeof document === 'undefined' || !document.documentElement) return;
+  document.documentElement.classList.toggle('sr-card-open', open !== false);
+}
+
 /** A stop with no object behind it: the lead is the whole card. */
 function renderLeadOnly(lead) {
   const node = ensureHost();
@@ -1422,6 +1436,7 @@ function renderLeadOnly(lead) {
   bodyEl = null;
   node.hidden = false;
   node.classList.add('is-open');
+  markCardOpen(true);
 }
 
 function section(className, labelText) {
@@ -1568,6 +1583,7 @@ function render(record, ctx, opts = {}) {
 
   node.hidden = false;
   node.classList.add('is-open');
+  markCardOpen(true);
 }
 
 function subscribe(ctx) {
@@ -1611,6 +1627,7 @@ export function hideCard() {
   if (!host) return;
   host.classList.remove('is-open');
   host.hidden = true;
+  markCardOpen(false);
   if (bodyEl) clear(bodyEl);
 }
 
