@@ -1828,6 +1828,75 @@ for (const file of allFiles) {
       still.update(0.5);
       near(still.state.azimuth, az0, 1e-9, 'reduced motion leaves the camera still');
       if (seen.join() !== 'reduced-motion') failed(`a refused drift reported [${seen}]`);
+      // --- THE ARROW KEYS FLY IT ----------------------------------------------------------
+      //
+      // Ivan asked for "controle with arrows (like in space video games so user will be able to
+      // travel with arrows)". Held, not tapped -- so what is tested is that holding moves the
+      // camera for as long as it is held, at a rate per second, and that letting go stops it.
+      //
+      // The rest of these cases are the ways a key is NOT ours: somebody typing, a trip that owns
+      // the arrows for its stops, a browser shortcut, and a window that lost focus while a key was
+      // down -- which sends no keyup, and would otherwise leave the camera turning for ever.
+      {
+        const keys = { handlers: {},
+          addEventListener(type, fn) { (this.handlers[type] ||= []).push(fn); },
+          removeEventListener(type, fn) { this.handlers[type] = (this.handlers[type] || []).filter((f) => f !== fn); },
+          send(type, e) { for (const fn of this.handlers[type] || []) fn(e); } };
+        const key = (k, over = {}) => ({ key: k, preventDefault() { this.defaultPrevented = true; }, defaultPrevented: false, target: {}, ...over });
+        let tripRunning = false;
+        const cam = new THREE.PerspectiveCamera(50, 1.5, 0.1, 1e9);
+        cam.position.set(0, 0, 10);
+        const rig = createCameraRig(cam, null, { worldRadius: 0, keyTarget: keys, keysEnabled: () => !tripRunning });
+        rig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance: 10, ms: 0 });
+        rig.update(0.1);
+
+        const az0 = rig.state.azimuth;
+        keys.send('keydown', key('ArrowLeft'));
+        run(rig, 0.5);
+        const azHeld = rig.state.azimuth;
+        if (!(Math.abs(azHeld - az0) > 0.2)) failed(`holding ArrowLeft for half a second moved the camera ${(azHeld - az0).toFixed(3)} rad`);
+        keys.send('keyup', key('ArrowLeft'));
+        run(rig, 2);
+        const azRest = rig.state.azimuth;
+        run(rig, 2);
+        if (Math.abs(rig.state.azimuth - azRest) > 1e-6) failed('the camera keeps turning after the key is released');
+
+        // Distance: held W (or PageUp) comes closer, S goes out.
+        const d0 = rig.state.distance;
+        keys.send('keydown', key('w'));
+        run(rig, 0.5);
+        keys.send('keyup', key('w'));
+        run(rig, 1.5);
+        if (!(rig.state.distance < d0 * 0.95)) failed(`holding W did not come closer (${d0} -> ${rig.state.distance})`);
+
+        // Not ours: typing, a running trip, a browser shortcut, and an already-handled key.
+        const refuse = (label, k) => {
+          const before = rig.state.azimuth;
+          keys.send('keydown', k);
+          run(rig, 0.5);
+          keys.send('keyup', k);
+          run(rig, 1);
+          if (Math.abs(rig.state.azimuth - before) > 1e-6) failed(`${label} moved the camera and must not`);
+        };
+        refuse('typing in an input', key('ArrowLeft', { target: { tagName: 'INPUT' } }));
+        refuse('typing in a contenteditable', key('ArrowLeft', { target: { isContentEditable: true } }));
+        refuse('a browser shortcut', key('ArrowLeft', { metaKey: true }));
+        refuse('a key another handler already took', key('ArrowLeft', { defaultPrevented: true }));
+        tripRunning = true;
+        refuse('an arrow during a trip, which belongs to the stops', key('ArrowLeft'));
+        tripRunning = false;
+
+        // A window that loses focus never sends the keyup.
+        keys.send('keydown', key('ArrowRight'));
+        run(rig, 0.2);
+        keys.send('blur', {});
+        run(rig, 2);
+        const azAfterBlur = rig.state.azimuth;
+        run(rig, 2);
+        if (Math.abs(rig.state.azimuth - azAfterBlur) > 1e-6) failed('a key held when the window lost focus leaves the camera turning');
+        rig.dispose();
+      }
+
       notes.push(
         `camera: reduced motion cuts and fades 220 ms; ${STOPS} chained stops ran at callback ` +
           `depth ${maxDepth}`
