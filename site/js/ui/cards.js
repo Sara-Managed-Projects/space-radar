@@ -1327,8 +1327,21 @@ function sourceRow(record, ctx) {
 // Actions
 // ---------------------------------------------------------------------------------------
 
-function flyTo(record, ctx, m) {
-  if (!m.ok || !ctx || !ctx.cameraRig || !ctx.stage) return;
+/**
+ * The card's "Fly to it". Exported for the test.
+ *
+ * It hands the record to ctx.flyToRecord -- main.js's flight, the same one a tap or a search makes
+ * -- because a flight of its own got planets wrong: it flew to a world's TRUE position, and every
+ * planet but the stage world is drawn nearer than it is, so Mars's own button arrived 1.8 au past
+ * Mars. What is left below is for a ctx without main.js (a test, an embed), and is right for
+ * everything worlds.js does not move.
+ */
+export function flyTo(record, ctx, m) {
+  if (ctx && typeof ctx.flyToRecord === 'function') {
+    try { ctx.flyToRecord(record, 800); } catch { /* a camera that will not fly is not worth breaking the card over */ }
+    return;
+  }
+  if (!m || !m.ok || !ctx || !ctx.cameraRig || !ctx.stage) return;
   try {
     const targetScene = ctx.stage.toScene(m.posKm, m.frame);
     if (!targetScene) return;

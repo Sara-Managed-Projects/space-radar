@@ -117,12 +117,19 @@ export function pickWorldDisc(candidates, tapX, tapY, forgivePx = 24) {
 
 // --- the rows ----------------------------------------------------------------------------------
 // Mirrors registry/worlds.yaml. `textures` are the exact filenames in site/textures/.
+//
+// `tint` is the colour a world is drawn in UNTIL its map is loaded, and it is not a design choice:
+// it is the texture's own mean, measured on 2026-09-16 by decoding each file, weighting every row
+// of the equirectangular map by cos(latitude) so the poles count for the area they cover, and
+// averaging in LINEAR light before converting back to sRGB -- the shader works in linear, so an
+// sRGB average would draw the flat disc darker than the textured one it stands in for. Re-measure
+// it if a texture changes; a Mars dot the wrong red is exactly the kind of thing nobody notices.
 
 export const WORLDS = [
   {
     id: 'sun', display: 'The Sun', parent: '', radiusKm: 696340.0,
     body: 'Sun', frame: SUN_INERTIAL, view: VIEW_TRUE,
-    look: { map: '2k_sun.jpg', emissive: true, corona: true },
+    look: { map: '2k_sun.jpg', tint: 0xf18833, emissive: true, corona: true },
   },
   {
     id: 'earth', display: 'Earth', parent: 'sun', radiusKm: 6371.0,
@@ -132,42 +139,42 @@ export const WORLDS = [
   {
     id: 'moon', display: 'The Moon', parent: 'earth', radiusKm: 1737.4,
     body: 'Moon', frame: EARTH_INERTIAL, view: VIEW_TRUE, rotation: 'iau',
-    look: { map: '2k_moon.jpg' },
+    look: { map: '2k_moon.jpg', tint: 0x9b9796 },
   },
   {
     id: 'mercury', display: 'Mercury', parent: 'sun', radiusKm: 2439.7,
     body: 'Mercury', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_mercury.jpg' },
+    look: { map: '2k_mercury.jpg', tint: 0x848383 },
   },
   {
     id: 'venus', display: 'Venus', parent: 'sun', radiusKm: 6051.8,
     body: 'Venus', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_venus_atmosphere.jpg' },
+    look: { map: '2k_venus_atmosphere.jpg', tint: 0xe6bf81 },
   },
   {
     id: 'mars', display: 'Mars', parent: 'sun', radiusKm: 3389.5,
     body: 'Mars', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_mars.jpg' },
+    look: { map: '2k_mars.jpg', tint: 0xb75d41 },
   },
   {
     id: 'jupiter', display: 'Jupiter', parent: 'sun', radiusKm: 69911.0,
     body: 'Jupiter', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_jupiter.jpg' },
+    look: { map: '2k_jupiter.jpg', tint: 0xb3aba1 },
   },
   {
     id: 'saturn', display: 'Saturn', parent: 'sun', radiusKm: 58232.0,
     body: 'Saturn', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_saturn.jpg', ring: { innerKm: 74500, outerKm: 140220, map: '2k_saturn_ring_alpha.png' } },
+    look: { map: '2k_saturn.jpg', tint: 0xdfcca8, ring: { innerKm: 74500, outerKm: 140220, map: '2k_saturn_ring_alpha.png' } },
   },
   {
     id: 'uranus', display: 'Uranus', parent: 'sun', radiusKm: 25362.0,
     body: 'Uranus', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_uranus.jpg' },
+    look: { map: '2k_uranus.jpg', tint: 0x9eced5 },
   },
   {
     id: 'neptune', display: 'Neptune', parent: 'sun', radiusKm: 24622.0,
     body: 'Neptune', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_neptune.jpg' },
+    look: { map: '2k_neptune.jpg', tint: 0x395eb7 },
   },
 ];
 
@@ -257,6 +264,7 @@ function celMaterial(map, tint) {
 // --- construction --------------------------------------------------------------------------------
 
 const _pos = new THREE.Vector3();
+const _camPosU = new THREE.Vector3();
 const _sunScene = new THREE.Vector3(1, 0, 0);
 const _sunHere = new THREE.Vector3(1, 0, 0);
 const _m4 = new THREE.Matrix4();
@@ -275,22 +283,63 @@ function sunDirFrom(toKm, fromKm, out) {
   return out.set(dx / len, dz / len, -dy / len);
 }
 
+/**
+ * A world's map is fetched when its disc is at least this fraction of HALF the view's height --
+ * six pixels of radius on an 800-pixel screen. Below it a cel-shaded ball in the texture's own mean
+ * colour is the same picture as the textured one, because there are not enough pixels for a
+ * surface feature to land on.
+ */
+export const TEXTURE_AT_HALF_VIEW = 0.015;
+
 export function createWorlds(scene, opts = {}) {
   const base = opts.textureBase === undefined ? 'textures/' : opts.textureBase;
   // No document means no image decoding: a headless test builds every mesh and every
   // material, just without pixels. That is what makes this file testable outside a browser.
+  // `opts.loadTexture(url, onLoad)` replaces the loader, which is how a test watches what is
+  // fetched and when.
   const canLoad = typeof document !== 'undefined' && typeof THREE.TextureLoader === 'function';
-  const loader = canLoad ? new THREE.TextureLoader() : null;
+  const threeLoader = canLoad ? new THREE.TextureLoader() : null;
+  const load = typeof opts.loadTexture === 'function'
+    ? opts.loadTexture
+    : threeLoader ? (url, onLoad) => threeLoader.load(url, onLoad) : null;
   const maxAniso = opts.renderer && opts.renderer.capabilities
     ? opts.renderer.capabilities.getMaxAnisotropy()
     : 8;
+  // The camera the maps are measured against. Without one nothing is ever fetched lazily, which
+  // is what a headless test that only wants geometry needs.
+  const camera = opts.camera || null;
 
-  function texture(name) {
-    if (!name || !loader) return null;
-    const tex = loader.load(base + name);
+  function configure(tex) {
+    if (!tex) return tex;
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = maxAniso;
     return tex;
+  }
+
+  function texture(name) {
+    if (!name || !load) return null;
+    return configure(load(base + name));
+  }
+
+  // WHY THE PLANETS WAIT. Every world used to fetch its map at construction: fourteen 2048 x 1024
+  // textures, 6.4 MB on the wire and about 139 MB of GPU memory once decoded with mipmaps --
+  // against a budget of 150 MB for EVERYTHING on a phone (docs/toolkit.md), before a single model,
+  // star buffer or framebuffer. And from the default Earth view, every one of the nine maps below is
+  // a disc a few pixels across: the Moon is 0.0045 rad, the Sun about the same, and a compressed
+  // planet is held at 0.0035 rad (PLANET_VIEW). So a first visit downloaded 4.6 MB of surface
+  // detail that could not be drawn. Now a world is drawn in its measured mean colour (`look.tint`)
+  // until its disc grows past TEXTURE_AT_HALF_VIEW, or somebody selects it, and then the map loads
+  // once and stays. Earth's three maps and the Milky Way are still fetched at once: they are on
+  // screen from the first frame.
+  const waiting = new Map(); // world id -> { name, apply(tex) }
+
+  function fetchMap(id) {
+    const job = waiting.get(id);
+    if (!job) return false;
+    waiting.delete(id); // before the load, so a second frame over the threshold cannot fetch it twice
+    if (!load) return false;
+    load(base + job.name, (tex) => job.apply(configure(tex)));
+    return true;
   }
 
   const root = new THREE.Group();
@@ -303,9 +352,10 @@ export function createWorlds(scene, opts = {}) {
   let layerOn = true;
 
   for (const w of WORLDS) {
-    // The map is fetched ONCE. Building a cel material and then replacing it for the Sun would
-    // decode 2k_sun.jpg twice and leave the first material and its texture with no owner.
-    const map = w.look.earth ? null : texture(w.look.map);
+    // The map is fetched ONCE, and not here: see `waiting` above. The material is built without it,
+    // in the world's measured mean colour, and `apply` swaps the map in when it arrives.
+    const map = null;
+    const tint = w.look.tint === undefined ? 0xffffff : w.look.tint;
     const mesh = w.look.earth
       ? createEarth({
         day: texture(w.look.day),
@@ -317,9 +367,27 @@ export function createWorlds(scene, opts = {}) {
         // The Sun is not lit by anything, so it does not get the cel material: a flat disc of
         // its own texture, out of the tone mapper's way so it stays white rather than grey.
         w.look.emissive
-          ? new THREE.MeshBasicMaterial({ map, color: 0xffffff, toneMapped: false, fog: false })
-          : celMaterial(map, 0xffffff),
+          ? new THREE.MeshBasicMaterial({ map, color: tint, toneMapped: false, fog: false })
+          : celMaterial(map, tint),
       );
+    if (!w.look.earth && w.look.map) {
+      const material = mesh.material;
+      waiting.set(w.id, {
+        name: w.look.map,
+        apply(tex) {
+          if (!tex) return;
+          if (material.uniforms) {
+            material.uniforms.uMap.value = tex;
+            material.uniforms.uHasMap.value = 1;
+            material.uniforms.uTint.value.set(0xffffff);
+          } else {
+            material.map = tex;
+            material.color.set(0xffffff);
+            material.needsUpdate = true; // a map where there was none is a different shader
+          }
+        },
+      });
+    }
 
     mesh.name = w.id;
     mesh.userData.kind = 'world';
@@ -443,8 +511,27 @@ export function createWorlds(scene, opts = {}) {
         // at true angular size, so nothing to do but keep it facing the camera (Sprite does).
         mesh.userData.corona.material.rotation = 0;
       }
+
+      // 5. Big enough to show a surface? Then fetch it. The same angular arithmetic as pick():
+      //    radius over distance, over tan(fov / 2), is the disc's share of half the view height.
+      if (camera && mesh.visible && waiting.has(w.id)) {
+        camera.getWorldPosition(_camPosU);
+        const dist = mesh.position.distanceTo(_camPosU);
+        const tanHalfFov = Math.tan(((camera.fov || 45) * Math.PI) / 360);
+        if (!(dist > 0) || mesh.scale.x / dist / tanHalfFov >= TEXTURE_AT_HALF_VIEW) fetchMap(w.id);
+      }
     }
   }
+
+  /**
+   * Fetch a world's map now, whatever size it is drawn. main.js calls this when a world is
+   * selected, so a flight toward Saturn spends its 900 ms downloading Saturn rather than arriving
+   * at a flat tan ball and waiting. Returns true if this call started a fetch.
+   */
+  function preload(id) { return fetchMap(id); }
+
+  /** The worlds still drawn in their mean colour, for the test and the status panel. */
+  function waitingMaps() { return [...waiting.keys()]; }
 
   function meshFor(id) { return meshes.get(id) || null; }
 
@@ -591,6 +678,8 @@ export function createWorlds(scene, opts = {}) {
 
   return {
     update,
+    preload,
+    waitingMaps,
     meshFor,
     positionOf,
     viewScale,

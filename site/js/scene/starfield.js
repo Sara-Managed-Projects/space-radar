@@ -291,7 +291,30 @@ export function createStarfield(scene, opts = {}) {
       depthWrite: false,
       depthTest: false,
       toneMapped: false,
-      transparent: true, // so the scale ladder can fade the picture out (scene/lod.js)
+      // NOT `transparent: true` -- and that one flag hid EARTH from 2026-09-08 to 2026-09-16.
+      //
+      // It was added so the scale ladder could fade the picture (scene/lod.js, spec 0028 step 2).
+      // But three draws its render lists opaque -> transmissive -> transparent, and renderOrder only
+      // sorts WITHIN a list, so a transparent material draws after every opaque object whatever
+      // its renderOrder of -3 says. With depthTest off, the panorama then painted straight over the
+      // Earth, the Moon, the Sun and every planet: a camera 22 units from a lit Earth read (0,0,0)
+      // at the centre pixel, and the live site showed a ring of satellites around an empty sky
+      // with only the atmosphere's rim left, because the atmosphere is transparent too and draws
+      // after it. The stars and the constellation lines below had already been fixed for exactly
+      // this, with comments saying why; the Milky Way was the piece of the sky that was not.
+      //
+      // So: the opaque list, and the blend factors three's setBlending emits for NormalBlending
+      // spelled out as CustomBlending -- the same pixels, and because the blending is no longer
+      // NormalBlending three does not define OPAQUE, so `opacity` still reaches the shader and
+      // the ladder's fade still works. tests/test_contract.mjs refuses the combination anywhere in
+      // the scene.
+      transparent: false,
+      blending: THREE.CustomBlending,
+      blendEquation: THREE.AddEquation,
+      blendSrc: THREE.SrcAlphaFactor,
+      blendDst: THREE.OneMinusSrcAlphaFactor,
+      blendSrcAlpha: THREE.OneFactor,
+      blendDstAlpha: THREE.OneMinusSrcAlphaFactor,
       opacity: 1,
       color: new THREE.Color(0.42, 0.42, 0.46), // a whisper, not a wallpaper
     });

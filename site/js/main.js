@@ -52,7 +52,9 @@ export async function boot({ setStatus } = {}) {
   const { renderer, scene, camera, resize, render } = rendererApi;
   const cameraRig = createCameraRig(camera, canvas);
 
-  const worlds = createWorlds(scene);
+  // The camera is how worlds.js decides a planet is near enough to be worth its map; without it the
+  // eight planets, the Moon and the Sun would stay in their mean colours for good.
+  const worlds = createWorlds(scene, { camera });
   const starfield = createStarfield(scene, {
     starsBin: 'data/stars.bin',
     linesJson: 'data/constellations.lines.json',
@@ -77,6 +79,7 @@ export async function boot({ setStatus } = {}) {
     selected: () => selected,
     select,
     deselect,
+    flyToRecord: (record, ms) => flyToRecord(record, ms),
     get observer() { return observer; },
     setObserver: (o) => { observer = o; window.dispatchEvent(new CustomEvent('sr:observer', { detail: o })); },
     get moment() { return moment; },
@@ -209,13 +212,34 @@ export async function boot({ setStatus } = {}) {
     // plane, so selecting one recentres on the Sun at one unit = one light-year first.
     if (record && ['star', 'exoplanet', 'dso', 'exotic'].includes(record.klass) && !isLadderStage(stage.worldId) && opts.fly !== false) ctx.setStage('stellar');
     selected = record;
+    // Start the map now, not when the disc grows past the threshold mid-flight: a selected world is
+    // about to fill the screen, and a trip's own flight (fly: false) needs it just as much.
+    if (record && record.klass === 'world') worlds.preload(record.id);
     for (const gl of glyphLayers.values()) if (gl.setSelected) gl.setSelected(record ? record.id : null);
     showCard(record, ctx);
     if (ctx.orbitLine) ctx.orbitLine.setRecord(record);
-    const pos = positionOfRecord(record);
-    if (pos && opts.fly !== false) cameraRig.flyTo({ targetScene: pos, distance: arrivalDistance(record), ms: 900 });
-    cameraRig.follow(() => positionOfRecord(record));
+    if (opts.fly !== false) flyToRecord(record);
+    else cameraRig.follow(() => positionOfRecord(record));
     window.dispatchEvent(new CustomEvent('sr:select', { detail: record }));
+  }
+
+  /**
+   * Fly to a record and follow it. THE one definition: select() uses it, and so does the card's
+   * "Fly to it" button through ctx.flyToRecord.
+   *
+   * The card used to have its own: the record's TRUE position through stage.toScene, at 2 % of its
+   * distance. For a satellite that is a different framing of the same place. For a planet it is
+   * empty sky -- worlds.js draws Mars along its true direction but ~115x nearer, so the button
+   * that says "Fly to it" on Mars's own card flew 1.8 au past the disc and stopped there, looking
+   * at nothing. positionOfRecord below says why in as many words; the card never asked it.
+   */
+  function flyToRecord(record, ms = 900) {
+    if (!record) return false;
+    if (record.klass === 'world') worlds.preload(record.id);
+    const pos = positionOfRecord(record);
+    if (pos) cameraRig.flyTo({ targetScene: pos, distance: arrivalDistance(record), ms });
+    cameraRig.follow(() => positionOfRecord(record));
+    return !!pos;
   }
 
   function deselect() {
