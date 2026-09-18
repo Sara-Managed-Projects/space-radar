@@ -183,7 +183,7 @@ export function createHeroes(scene, ctx) {
     // is drawn now and there is nothing to upgrade to. Otherwise the record's own variant, if any.
     const early = realModelFor(record);
     const variant = early && early.build ? early.build : record.meta && record.meta.modelVariant;
-    const obj = modelFor(record.klass, variant);
+    const obj = modelFor(record.klass, variant, { record });
     obj.userData.recordId = record.id;
     obj.visible = false;
     // Whatever rides on this thing, as children of it. Two records in the app carry anything at
