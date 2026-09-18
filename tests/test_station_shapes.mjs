@@ -409,9 +409,17 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   // height and the engine bell hangs below the bottom of the stage, which is true of the hardware.
   // Themis is the worst of the fifty at 1.063, because a 28 m vehicle's Prometheus bell is a
   // bigger fraction of it than a Falcon 9's Merlins are of 70 m.
-  const TOLERANCE = { station: 0.06, satellite: 0.06, rocket: 0.08 };
+  const TOLERANCE = { station: 0.06, satellite: 0.06, rocket: 0.08, probe: 0.06, telescope: 0.06 };
   let units = 0;
-  for (const klass of ['station', 'satellite', 'rocket']) {
+  // PROBES AND TELESCOPES JOINED THIS LIST on 2026-09-17. They were the last two classes in spec
+  // 0027 amendment 3 section 5's open list -- `probe:default` built 0.855 of a unit and
+  // `telescope:default` 0.920, both because one part stopped short: a magnetometer boom and a pair
+  // of solar wings. Both are now normalised like everything else, and the three named spacecraft
+  // added alongside them -- Gaia, Solar Orbiter, New Horizons -- are built from published metres
+  // divided by their own published overall size, so they are 1.000 by construction rather than by
+  // tuning. The classes still absent are the ones nothing real normalises: a site marker, an
+  // oddity prop, a seeded asteroid, a comet and a debris shard.
+  for (const klass of ['station', 'satellite', 'rocket', 'probe', 'telescope']) {
     for (const variant of modelVariants()[klass]) {
       const id = `${klass}:${variant}`;
       const obj = modelFor(klass, variant);
@@ -428,6 +436,50 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   }
   if (!problems.length) console.log(`  ${units} vehicle shapes hold the one unit they declare, rockets measured with the plume hidden`);
   if (!problems.length) console.log(`  each of ${checked} shapes is ONE connected object; the loosest joint is ${worst.id} "${worst.part}" at ${(worst.gap * 100).toFixed(1)} %`);
+}
+
+// THE DEEP-SPACE LAYER'S OWN SPACECRAFT.
+//
+// `deep-space` holds ten records. Seven have a NASA model; Gaia, Solar Orbiter and New Horizons had
+// nothing and fell through to the generic shape for their class -- so an app whose whole premise is
+// that a named object looks like itself drew Gaia, a ten-metre disc, as a tube with two wings.
+//
+// Every one of the ten is checked here, against the real bundled records rather than hand-made
+// ones, because "which shape does this record get" is the question that was being answered wrongly
+// and a route is only worth anything if it fires on the data the app actually loads.
+{
+  const { sampleDeepSpace } = await import(join(ROOT, 'site/js/data/sample.js'));
+  const rows = sampleDeepSpace();
+  check(rows.length === 10, `the deep-space layer still holds ten records (found ${rows.length})`);
+  const want = {
+    'deep-jwst': 'jwst.glb', 'deep-soho': 'soho.glb', 'deep-mro': 'mro.glb', 'deep-juno': 'juno.glb',
+    'deep-voyager-1': 'voyager.glb', 'deep-voyager-2': 'voyager.glb', 'deep-parker': 'parker.glb',
+    'deep-gaia': 'build:gaia', 'deep-new-horizons': 'build:new-horizons',
+    'deep-solar-orbiter': 'build:solar-orbiter',
+  };
+  for (const r of rows) {
+    const e = realModelFor(r);
+    const got = e && e.file ? e.file : e && e.build ? `build:${e.build}` : null;
+    if (want[r.id]) check(got === want[r.id], `${r.name} is drawn as ${want[r.id]}, not ${got}`);
+    else check(got !== null, `${r.name} (${r.id}) has no shape at all -- it would fall back to the generic one`);
+  }
+  // 1279 Gaia is a main-belt asteroid. Without the klass gate on the name route it would be drawn
+  // with a ten-metre sunshield, which is the TESS mistake -- a comet wearing a telescope -- exactly.
+  const rock = realModelFor({ id: 'a-1279', name: '1279 Gaia', klass: 'asteroid', layer: 'asteroids', meta: {} });
+  check(!rock || rock.build !== 'gaia', `the asteroid 1279 Gaia must not be drawn as the spacecraft: ${JSON.stringify(rock)}`);
+  // Same shape of trap on the other side: a comet discovered by Solar Orbiter keeps its own shape.
+  const comet = realModelFor({ id: 'c-so', name: 'C/2021 A1 (Solar Orbiter)', klass: 'comet', layer: 'comets', meta: {} });
+  check(!comet || comet.build !== 'solar-orbiter', `a comet named Solar Orbiter must not get the spacecraft: ${JSON.stringify(comet)}`);
+  // The three new shapes are real variants, inside budget, at the size their sources publish.
+  for (const [klass, variant, sizeM] of [['telescope', 'gaia', 10.2], ['probe', 'solar-orbiter', 18], ['probe', 'new-horizons', 3.2]]) {
+    const o = modelFor(klass, variant);
+    const b = budgetOf(`${klass}-${variant}`);
+    check(!o.userData.generic, `${klass}:${variant} is a real variant, not a fallback`);
+    check(b > 0 && tris(o) <= b, `${klass}:${variant} builds ${tris(o)} triangles within its budget of ${b}`);
+    check(Math.abs(o.userData.realSizeM - sizeM) < 0.01, `${klass}:${variant} is drawn at its published ${sizeM} m, not ${o.userData.realSizeM}`);
+    disposeModels(o);
+  }
+  if (!problems.length) console.log('  all ten deep-space spacecraft have their own shape; 1279 Gaia the asteroid does not get one');
 }
 
 if (problems.length) { console.log(`station shapes: ${problems.length} problem(s)`); for (const p of problems) console.log('  - ' + p); process.exit(1); }

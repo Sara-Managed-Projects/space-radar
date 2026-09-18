@@ -62,6 +62,11 @@ models:
   # it. It was 800 when a rocket was five meshes; the worst case is Vulcan VC6L at 1104.
   - {id: rocket-upper-stage, file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1600, for: {layer: launches}}
   - {id: probe-generic,      file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1500, for: {layer: deep-space}}
+  # Three named spacecraft on the deep-space layer that no public model exists for, so they are
+  # built from published dimensions instead of being left to the generic shape for their class.
+  - {id: probe-new-horizons, file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 500, for: {variant: new-horizons}}
+  - {id: probe-solar-orbiter, file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 500, for: {variant: solar-orbiter}}
+  - {id: telescope-gaia,     file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 400, for: {variant: gaia}}
   - {id: telescope-generic,  file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1500, for: {family: telescope}}
   - {id: asteroid-generic,   file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 700,  for: {layer: asteroids}}
   - {id: comet-generic,      file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 600,  for: {layer: comets}}

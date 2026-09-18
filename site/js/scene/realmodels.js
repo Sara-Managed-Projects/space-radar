@@ -371,6 +371,9 @@ export const REAL_MODELS = {
     '-170': { file: 'jwst.glb', colour: 'telescope', name: 'James Webb Space Telescope' },
     '-21': { file: 'soho.glb', colour: 'telescope', name: 'SOHO' },
     '-74': { file: 'mro.glb', colour: 'probe', name: 'Mars Reconnaissance Orbiter' },
+    // No NASA model exists for New Horizons, so this names a PROCEDURAL shape instead of a
+    // file: `build:` is drawn immediately and has nothing to upgrade to (scene/heroes.js).
+    '-98': { build: 'new-horizons', colour: 'probe', name: 'New Horizons' },
   },
   /**
    * Matched on the catalogue NAME rather than a catalogue number, deliberately.
@@ -568,6 +571,14 @@ export const REAL_MODELS = {
     dscovr: { file: 'dscovr.glb', colour: 'satellite', name: 'DSCOVR', klass: ['satellite'] },
     'suomi npp': { file: 'suomi.glb', colour: 'satellite', name: 'Suomi NPP', klass: ['satellite'] },
     goes: { file: 'goes.glb', colour: 'satellite', name: 'GOES weather satellite', klass: ['satellite'] },
+    // Gaia and Solar Orbiter are matched by NAME because neither carries a Horizons id in the
+    // bundled deep-space data (`horizonsId: null` -- both are drawn from an anchor, not a
+    // vector), so there is no number to key on. The klass gate is doing real work on the first
+    // one: 1279 Gaia is a main-belt asteroid, and without `klass: ['telescope']` a ten-metre
+    // sunshield would be drawn on a rock. That is the TESS mistake exactly, and it is why the
+    // gate exists.
+    gaia: { build: 'gaia', colour: 'telescope', name: 'Gaia', klass: ['telescope'] },
+    'solar orbiter': { build: 'solar-orbiter', colour: 'probe', name: 'Solar Orbiter', klass: ['probe'] },
   },
   /**
    * A default for a whole LAYER. This is the highest-value entry in the file: the geostationary
