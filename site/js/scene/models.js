@@ -2785,6 +2785,10 @@ const BUILDERS = {
     'starlink-v1': buildStarlink,
     'starlink-v2': buildStarlink,
     navigation: buildNavSatellite,
+    // The telescope tube, for records whose klass is `satellite` -- the catalogue does not call
+    // anything a telescope, so an observatory arrives as a satellite and needs a satellite variant
+    // to be drawn as one. buildTelescope treats any variant but `hex` as the tube.
+    'space-telescope': buildTelescope,
   },
   debris: { default: buildDebris },
   rocket: rocketVariants(),

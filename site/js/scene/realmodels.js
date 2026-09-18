@@ -91,6 +91,26 @@ export const REAL_MODELS = {
    */
   norad: {
     25544: { file: 'iss.glb', colour: 'station', name: 'International Space Station', catalogue: 'ISS (ZARYA)' },
+    // NAUKA AND POISK ARE PARTS OF THE ISS, catalogued separately because they were launched
+    // separately, and their elements track the station they are bolted to. Each used to be drawn as
+    // a generic station of its own -- selecting Nauka showed a second, different space station. They
+    // are drawn as the station they are part of; heroes.js's docked-vehicle rule means only one of
+    // the two models is ever on screen at that point, whichever is selected.
+    49044: { file: 'iss.glb', colour: 'station', name: 'the International Space Station, which Nauka is part of', catalogue: 'ISS (NAUKA)' },
+    36086: { file: 'iss.glb', colour: 'station', name: 'the International Space Station, which Poisk is part of', catalogue: 'POISK' },
+    // A ROCKET STAGE CATALOGUED AS A PAYLOAD. AC-2 (1963) put the instrumented Centaur stage itself
+    // into orbit -- the first hydrogen engine fired in space -- so the catalogue calls the stage the
+    // payload and its name carries no R/B. It was drawn, and its card described it, as "a generic
+    // satellite". It is a spent upper stage and is drawn as one.
+    694: { file: 'rocket-body.glb', colour: 'rocket', name: 'a spent rocket stage', catalogue: 'ATLAS CENTAUR 2', generic: true },
+    // SPACE TELESCOPES WITH NO MODEL OF THEIR OWN, drawn as the generic telescope rather than as a
+    // communications satellite with a dish, which is what the satellite default is. The card says
+    // "a space telescope -- the kind of thing, not this exact one", which is now true of the shape.
+    3597: { build: 'space-telescope', colour: 'telescope', name: 'a space telescope', catalogue: 'OAO 2', generic: true },
+    6153: { build: 'space-telescope', colour: 'telescope', name: 'a space telescope', catalogue: 'OAO 3 (COPERNICUS)', generic: true },
+    41337: { build: 'space-telescope', colour: 'telescope', name: 'a space telescope', catalogue: 'ASTRO-H (HITOMI)', generic: true },
+    42758: { build: 'space-telescope', colour: 'telescope', name: 'a space telescope', catalogue: 'HXMT (HUIYAN)', generic: true },
+    57800: { build: 'space-telescope', colour: 'telescope', name: 'a space telescope', catalogue: 'XRISM', generic: true },
     20580: { file: 'hubble.glb', colour: 'telescope', name: 'Hubble Space Telescope', catalogue: 'HST' },
     25682: { file: 'landsat.glb', colour: 'satellite', name: 'Landsat 7', catalogue: 'LANDSAT 7' },
     39084: { file: 'landsat.glb', colour: 'satellite', name: 'Landsat 8', catalogue: 'LANDSAT 8' },

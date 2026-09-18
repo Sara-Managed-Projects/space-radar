@@ -68,6 +68,7 @@ models:
   - {id: probe-solar-orbiter, file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 500, for: {variant: solar-orbiter}}
   - {id: telescope-gaia,     file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 400, for: {variant: gaia}}
   - {id: telescope-generic,  file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1500, for: {family: telescope}}
+  - {id: satellite-space-telescope, file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 1500, for: {variant: space-telescope}}
   - {id: asteroid-generic,   file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 700,  for: {layer: asteroids}}
   - {id: comet-generic,      file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 600,  for: {layer: comets}}
   - {id: pad-generic,        file: "", kind: procedural, source: "site/js/scene/models.js", licence: "MIT (this project)", budget_tris: 400,  for: {site_class: pad}}
