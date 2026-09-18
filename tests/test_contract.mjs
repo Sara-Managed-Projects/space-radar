@@ -355,6 +355,102 @@ for (const file of allFiles) {
   }
 }
 
+// 3bbo. A SHIPPED MODEL WHOSE NORMALS FACE INTO ITS OWN SURFACE IS LIT FROM BEHIND, and four were.
+//
+// The toon material draws front faces only and shades by the stored normal. Measured 2026-09-18
+// across every shipped file: in asteroid-bennu, soho, hinode and seastar, 96-100 % of vertex
+// normals faced against the winding of the very triangle they belong to. The faces were drawn and
+// every one was lit from the wrong side, so each rendered as a flat silhouette in the ambient fill
+// colour -- a blue-grey shape with no sun on it -- for as long as it had shipped. A dull model looks
+// like a dull model, not like a bug, which is why nothing had noticed: 3bbn above checks that
+// normals EXIST, and these had them.
+//
+// Every file that went through scripts/decimate-model.mjs is at 0 %, because that script recomputes
+// normals from the winding. These four were only re-encoded and kept their authors' normals.
+// scripts/fix-model-normals.mjs turned them round, per connected piece.
+//
+// MEASURED ON WHAT THE APP LOADS: three's own GLTFLoader with the vendored meshopt decoder, in world
+// space, so quantization's node transform is applied exactly as it is on screen. The test is the
+// normal against its own triangle's winding, which works on open CAD meshes where "points away from
+// the centre" means nothing. A few per cent is ordinary smoothing at a hard edge and thin panels
+// whose two sides share vertices -- aura is the worst at 12.6 % and renders sunlit -- so the line
+// is drawn at a third, far above that and far below the 96 % of the files that were wrong.
+{
+  globalThis.self = globalThis; // GLTFLoader reads self.URL for images these files do not carry
+  const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
+  const { GLTFLoader } = await import(join(ROOT, 'site/vendor/GLTFLoader.js'));
+  const { MeshoptDecoder } = await import(join(ROOT, 'site/vendor/meshopt_decoder.module.js'));
+  await MeshoptDecoder.ready;
+  const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+  const quiet = console.warn;
+  const parse = async (buf) => {
+    const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+    console.warn = () => {}; // "Couldn't load texture": realmodels.js never samples one anyway
+    try { return await new Promise((res, rej) => loader.parse(ab, '', res, rej)); } finally { console.warn = quiet; }
+  };
+  // Fraction of vertex normals that face against the triangle they belong to, world space.
+  const against = (scene) => {
+    scene.updateMatrixWorld(true);
+    let ok = 0, bad = 0;
+    const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
+    const f = new THREE.Vector3(), n = new THREE.Vector3(), nm = new THREE.Matrix3();
+    scene.traverse((o) => {
+      if (!o.isMesh || !o.geometry.attributes.normal) return;
+      const g = o.geometry, P = g.attributes.position, N = g.attributes.normal, I = g.index;
+      nm.getNormalMatrix(o.matrixWorld);
+      // A mirrored transform turns the winding round, and three culls accordingly.
+      const mirror = o.matrixWorld.determinant() < 0 ? -1 : 1;
+      const T = (I ? I.count : P.count) / 3;
+      for (let t = 0; t < T; t += 1) {
+        const i = [0, 1, 2].map((k) => (I ? I.getX(t * 3 + k) : t * 3 + k));
+        a.fromBufferAttribute(P, i[0]).applyMatrix4(o.matrixWorld);
+        b.fromBufferAttribute(P, i[1]).applyMatrix4(o.matrixWorld);
+        c.fromBufferAttribute(P, i[2]).applyMatrix4(o.matrixWorld);
+        f.subVectors(b, a).cross(c.sub(a));
+        if (f.lengthSq() === 0) continue;
+        for (const v of i) {
+          n.fromBufferAttribute(N, v).applyMatrix3(nm);
+          if (mirror * n.dot(f) >= 0) ok += 1; else bad += 1;
+        }
+      }
+    });
+    return ok + bad ? bad / (ok + bad) : 0;
+  };
+  const LIMIT = 1 / 3;
+  const yaml = readFileSync(join(ROOT, 'registry/models.yaml'), 'utf8');
+  const files = [...new Set(yaml.match(/site\/models\/[A-Za-z0-9_.-]+\.glb/g) || [])];
+  let measured = 0, worst = { name: '-', frac: 0 };
+  for (const rel of files) {
+    const path = join(ROOT, rel);
+    if (!existsSync(path)) continue;
+    const gltf = await parse(readFileSync(path));
+    const frac = against(gltf.scene);
+    measured += 1;
+    const name = rel.split('/').pop();
+    if (frac > worst.frac) worst = { name, frac };
+    if (frac > LIMIT) {
+      problems.push(
+        `MODEL    ${name}: ${(frac * 100).toFixed(1)} % of its normals face INTO their own triangles, so the ` +
+          `front-face-only toon material lights it from behind and it renders as a flat blue-grey silhouette. ` +
+          `Turn them round with scripts/fix-model-normals.mjs.`
+      );
+    }
+  }
+  // Broken on purpose: the same measurement on a box whose normals are negated must fail, or the
+  // measurement is not measuring anything.
+  const box = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial());
+  const good = against(box);
+  const nArr = box.geometry.attributes.normal.array;
+  for (let k = 0; k < nArr.length; k += 1) nArr[k] = -nArr[k];
+  const flipped = against(box);
+  if (!(good === 0 && flipped === 1)) {
+    problems.push(`NORMALS  the inside-out test cannot tell a box from an inside-out box (${good} vs ${flipped})`);
+  }
+  if (!problems.some((p) => p.includes('face INTO') || p.startsWith('NORMALS'))) {
+    notes.push(`${measured} shipped models face outward; the loosest is ${worst.name} at ${(worst.frac * 100).toFixed(1)} % (limit ${Math.round(LIMIT * 100)} %)`);
+  }
+}
+
 // 3bc. every procedural variant can actually be ASKED FOR by something.
 //
 // registry/models.yaml has a row per procedural shape and each row's `for:` says who it is meant

@@ -579,6 +579,19 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   } else {
     problems.push('ROCKS the bundled asteroid list no longer contains Ceres, Vesta, Eros and Itokawa');
   }
+  // Vesta has a real shape model now -- Dawn's, from NASA's 3D Printing collection -- and routes by
+  // name like Bennu. The same collection's Eros and Itokawa are NOT used: both are cut in half for
+  // printing and laid out as two pieces, and reassembling them would be a guess.
+  const vesta = rocks.find((r) => r.name === 'Vesta');
+  check(vesta && realModelFor(vesta)?.file === 'asteroid-vesta.glb', `Vesta is drawn from its shape model: ${JSON.stringify(vesta && realModelFor(vesta))}`);
+  for (const name of ['Eros', 'Itokawa']) {
+    const r = rocks.find((x) => x.name === name);
+    const e = r && realModelFor(r);
+    check(!e || !/eros|itokawa/.test(String(e.file)), `${name} must not be drawn from the split 3D-printing file: ${JSON.stringify(e)}`);
+  }
+  // The klass gate: anything that is not an asteroid and happens to be called Vesta keeps its shape.
+  check(realModelFor({ id: 's-vesta', name: 'VESTA', klass: 'satellite', layer: 'active', meta: {} }) === null,
+    'a satellite named VESTA must not be drawn as the asteroid');
   // A record with no measured diameter must still build something rather than throw or vanish.
   const unknown = shapeOf({ id: 'a-unknown', name: 'unmeasured', klass: 'asteroid', layer: 'asteroids', meta: {} });
   check(unknown.roundness > 0 && unknown.realSizeM > 0, 'an asteroid with no measured diameter still builds a rock');

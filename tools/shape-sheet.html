@@ -19,9 +19,12 @@
 <style>body{margin:0;background:#0b0e14}canvas{display:block}</style>
 <canvas id="c"></canvas>
 <script type="module">
+addEventListener('unhandledrejection', (e) => { window.__err = String(e.reason && e.reason.message || e.reason); });
+addEventListener('error', (e) => { window.__err = String(e.message); });
 import * as THREE from '../site/vendor/three.module.min.js';
 import { modelFor, setSunDirection } from '../site/js/scene/models.js';
 import { sampleAsteroids } from '../site/js/data/sample.js';
+import { loadRealModel } from '../site/js/scene/realmodels.js';
 
 // `asteroid#Eros` builds from the real bundled RECORD rather than a variant name, because an
 // asteroid's shape is drawn from its own measured diameter and there is no other way to ask for it.
@@ -48,6 +51,16 @@ scene.add(sun, new THREE.AmbientLight(0x2a3550, 0.35));
 const labels = [];
 for (let i = 0; i < WHICH.length; i++) {
   const [klass, variant] = WHICH[i].split(':');
+  // `file:asteroid-eros.glb` loads a shipped model through the app's OWN loader, so the sheet shows
+  // what the app shows: normalise() and the toon retexture included, not a bare GLTFLoader result.
+  if (klass === 'file') {
+    const obj = await loadRealModel({ file: variant, colour: 'asteroid' });
+    if (!obj) throw new Error(`could not load ${variant}`);
+    obj.userData.cell = i;
+    scene.add(obj);
+    labels.push(WHICH[i]);
+    continue;
+  }
   const rec = variant && variant.startsWith('#') ? byName.get(variant.slice(1).toLowerCase()) : null;
   const obj = rec ? modelFor(klass, undefined, { record: rec }) : modelFor(klass, variant);
   obj.userData.cell = i;
