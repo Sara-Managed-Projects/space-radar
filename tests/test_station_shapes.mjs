@@ -482,5 +482,73 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   if (!problems.length) console.log('  all ten deep-space spacecraft have their own shape; 1279 Gaia the asteroid does not get one');
 }
 
+// TEN NAMED ROCKS, TEN SHAPES, AND THE BIG ONES ROUND.
+//
+// buildAsteroid always took a seed and nothing ever passed one -- `meta.modelVariant` is null for
+// every asteroid -- so `seedOf('asteroid:0')` ran once per rock and the layer drew ten named
+// objects as ONE lump. Measured before the fix: Ceres, a 939 km dwarf planet, had the same 540
+// vertices in the same places as Itokawa, a 330 m rubble pile.
+//
+// The rule that replaced it is physical rather than decorative: a body holds whatever shape an
+// impact left it in until it is heavy enough to pull itself round. So roundness is asserted as an
+// ORDER over the real bundled records, not as a set of magic numbers -- it has to survive somebody
+// retuning the constants, and it fails the moment the shape stops depending on the size.
+{
+  const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
+  const { sampleAsteroids } = await import(join(ROOT, 'site/js/data/sample.js'));
+  const rocks = sampleAsteroids();
+  check(rocks.length >= 8, `the bundled asteroid list is still worth testing (${rocks.length} rows)`);
+
+  const shapeOf = (record) => {
+    const obj = modelFor('asteroid', undefined, { record });
+    obj.updateMatrixWorld(true);
+    const size = new THREE.Box3().setFromObject(obj).getSize(new THREE.Vector3());
+    let sig = 0;
+    obj.traverse((n) => {
+      if (!n.isMesh || !n.geometry) return;
+      const p = n.geometry.attributes.position;
+      for (let i = 0; i < p.count; i += 13) sig = (sig * 31 + Math.round(p.getX(i) * 1e5) + Math.round(p.getY(i) * 1e5)) | 0;
+    });
+    disposeModels(obj);
+    const mx = Math.max(size.x, size.y, size.z);
+    const mn = Math.min(size.x, size.y, size.z);
+    return { sig, roundness: mn / mx, realSizeM: obj.userData.realSizeM };
+  };
+
+  const seen = new Map();
+  for (const r of rocks) {
+    const { sig } = shapeOf(r);
+    seen.set(sig, [...(seen.get(sig) || []), r.name]);
+  }
+  const shared = [...seen.values()].filter((names) => names.length > 1);
+  check(seen.size === rocks.length,
+    `each of the ${rocks.length} asteroids has its own shape; these share one: ${shared.map((n) => n.join(' = ')).join('; ')}`);
+
+  // Bigger is rounder, across four objects three orders of magnitude apart. Ceres and Itokawa are
+  // the ends of the real range and the pair that was drawn identically.
+  const by = (name) => rocks.find((r) => r.name === name);
+  const order = ['Ceres', 'Vesta', 'Eros', 'Itokawa'];
+  const got = order.map((n) => (by(n) ? { n, ...shapeOf(by(n)), km: by(n).meta.diameterKm } : null));
+  if (got.every(Boolean)) {
+    for (let i = 1; i < got.length; i += 1) {
+      check(got[i - 1].roundness > got[i].roundness,
+        `${got[i - 1].n} (${got[i - 1].km} km) should be rounder than ${got[i].n} (${got[i].km} km): ` +
+          `${got[i - 1].roundness.toFixed(3)} vs ${got[i].roundness.toFixed(3)}`);
+    }
+    check(got[0].roundness > 0.99, `Ceres is a dwarf planet and should be drawn round, not ${got[0].roundness.toFixed(3)}`);
+    check(got[3].roundness < 0.8, `Itokawa is a rubble pile and should be drawn lumpy, not ${got[3].roundness.toFixed(3)}`);
+    // And the size the model declares is the size the record measured, not a constant 500 m.
+    check(Math.abs(got[0].realSizeM - 939000) < 1, `Ceres should declare its measured 939 km, not ${got[0].realSizeM} m`);
+  } else {
+    problems.push('ROCKS the bundled asteroid list no longer contains Ceres, Vesta, Eros and Itokawa');
+  }
+  // A record with no measured diameter must still build something rather than throw or vanish.
+  const unknown = shapeOf({ id: 'a-unknown', name: 'unmeasured', klass: 'asteroid', layer: 'asteroids', meta: {} });
+  check(unknown.roundness > 0 && unknown.realSizeM > 0, 'an asteroid with no measured diameter still builds a rock');
+  if (!problems.some((p) => p.startsWith('ROCKS'))) {
+    console.log(`  ${rocks.length} asteroids, ${seen.size} distinct shapes; Ceres ${got[0] ? got[0].roundness.toFixed(3) : '?'} round, Itokawa ${got[3] ? got[3].roundness.toFixed(3) : '?'}`);
+  }
+}
+
 if (problems.length) { console.log(`station shapes: ${problems.length} problem(s)`); for (const p of problems) console.log('  - ' + p); process.exit(1); }
 console.log('station shapes ok: Soyuz and Progress build inside budget at 10.7 m, and the name route picks them for stations-layer vehicles only');

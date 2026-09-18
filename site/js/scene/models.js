@@ -1878,10 +1878,40 @@ function buildNewHorizons() {
 
 // ------------------------------------------------------------------------------------ asteroid
 
-function buildAsteroid(variant) {
-  const seed = seedOf(`asteroid:${variant || 0}`);
+/**
+ * ONE ROCK PER ROCK, AND ROUNDER WHEN IT IS BIG.
+ *
+ * This builder always took a seed, and nothing ever passed one: `meta.modelVariant` is null for
+ * every asteroid, so `seedOf('asteroid:0')` ran ten times and the asteroid layer drew ten named
+ * objects as ONE identical lump. Measured 2026-09-17 -- Ceres, a 939 km dwarf planet that is
+ * visibly round, had the same 540 vertices in the same places as Itokawa, a 330 m rubble pile.
+ *
+ * So the seed now comes from the record's own id, and the shape from its measured size. Bodies
+ * hold whatever shape an impact left them in until they are heavy enough to pull themselves round:
+ * below about 10 km a rock is as irregular as it likes, by a few hundred km self-gravity has
+ * flattened most of it away, and Ceres is round enough to be a dwarf planet. `relax` is that,
+ * interpolated on a log scale between those two ends, and it damps every lump and crater below.
+ *
+ * The card still says "drawn as a generic asteroid -- the kind of thing, not this exact one",
+ * because that is still true: this is the right SHAPE FAMILY for a body that size, not a shape
+ * model of that body. Bennu is the one with a real one, and it comes from a file.
+ */
+function relaxationOf(diameterKm) {
+  if (!Number.isFinite(diameterKm) || diameterKm <= 0) return 0;
+  const lo = Math.log10(10);   // irregular: no size limit on how lumpy
+  const hi = Math.log10(900);  // round: Ceres is 939 km and is a sphere to the eye
+  return Math.min(1, Math.max(0, (Math.log10(diameterKm) - lo) / (hi - lo)));
+}
+
+function buildAsteroid(variant, opts = {}) {
+  const record = opts.record || null;
+  const key = variant || (record && record.id) || 0;
+  const seed = seedOf(`asteroid:${key}`);
   const g = new THREE.Group();
-  g.userData.realSizeM = 500;
+  const diameterKm = record && record.meta ? Number(record.meta.diameterKm) : NaN;
+  g.userData.realSizeM = Number.isFinite(diameterKm) && diameterKm > 0 ? diameterKm * 1000 : 500;
+  const relax = relaxationOf(diameterKm);
+  const lump = 1 - relax; // 1 = a potato, 0 = a ball
   const geo = new THREE.IcosahedronGeometry(0.5, 2);
   const p = geo.attributes.position;
 
@@ -1899,7 +1929,7 @@ function buildAsteroid(variant) {
         Math.cos(theta)
       ),
       radius: 0.35 + 0.25 * hash01(seed + c * 307),
-      depth: 0.1 + 0.06 * hash01(seed + c * 401),
+      depth: (0.1 + 0.06 * hash01(seed + c * 401)) * lump,
     });
   }
 
@@ -1910,9 +1940,11 @@ function buildAsteroid(variant) {
     // lumpy potato: three low-frequency bumps from the seeded hash
     let r =
       1 +
-      0.16 * (hash01(seed + Math.round(n.x * 97) * 31 + Math.round(n.y * 97)) - 0.5) +
-      0.1 * Math.sin(3.1 * n.x + seed % 7) * Math.cos(2.7 * n.y + (seed % 11)) +
-      0.07 * Math.sin(4.3 * n.z + (seed % 13));
+      lump * (
+        0.16 * (hash01(seed + Math.round(n.x * 97) * 31 + Math.round(n.y * 97)) - 0.5) +
+        0.1 * Math.sin(3.1 * n.x + seed % 7) * Math.cos(2.7 * n.y + (seed % 11)) +
+        0.07 * Math.sin(4.3 * n.z + (seed % 13))
+      );
     for (const c of craters) {
       const d = n.dot(c.dir); // 1 at the crater centre
       const t = Math.max(0, (d - (1 - c.radius * c.radius * 0.5)) / (c.radius * c.radius * 0.5 + 1e-6));
@@ -1921,7 +1953,9 @@ function buildAsteroid(variant) {
     v.copy(n).multiplyScalar(0.5 * r);
     p.setXYZ(i, v.x, v.y, v.z);
   }
-  geo.scale(1.0, 0.86, 0.72); // potatoes are not spheres
+  // Potatoes are not spheres, and planets are: the same interpolation, so Ceres comes out round
+  // and a kilometre-wide rock keeps its 1 : 0.86 : 0.72 axes.
+  geo.scale(1.0, 1 - 0.14 * lump, 1 - 0.28 * lump);
   geo.computeVertexNormals();
   g.add(mesh(geo, CLASS_COLOURS.asteroid, 'body', 'body'));
   return g;
@@ -2770,7 +2804,7 @@ const BUILDERS = {
  *   It does not read THIS flag -- it re-derives the same fact from scene/realmodels.js -- so the
  *   flag itself is still read by nothing, and that is the accurate version of the old sentence.
  */
-export function modelFor(klass, variant) {
+export function modelFor(klass, variant, opts = {}) {
   // Own-property lookups only: a record whose klass or variant happened to be "constructor" or
   // "toString" would otherwise pull a function off Object.prototype and crash on the next line.
   const own = (o, k) => (typeof k === 'string' && Object.prototype.hasOwnProperty.call(o, k) ? o[k] : undefined);
@@ -2784,7 +2818,9 @@ export function modelFor(klass, variant) {
   modelMaterials = pool;
   let obj;
   try {
-    obj = build(variant);
+    // `opts` is additive and every other builder ignores it: it exists so a shape can be drawn
+    // from the record's own measurements -- the asteroids are the first to need that.
+    obj = build(variant, opts);
   } finally {
     modelMaterials = outer;
   }
