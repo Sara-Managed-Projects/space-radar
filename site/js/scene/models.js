@@ -296,8 +296,13 @@ function buildSatelliteComms() {
 
 // -------------------------------------------------------------------------------------- debris
 
-function buildDebris(variant) {
-  const seed = seedOf(`debris:${variant || 0}`);
+// ONE SHARD PER FRAGMENT. Debris is drawn in crowds more than anything else in the app, and a
+// crowd of IDENTICAL shards reads as a rendering bug rather than as a field of fragments -- which
+// is the same complaint the docked-vehicle test above exists to answer. A fragment has no published
+// size and this invents none; only the seed changes.
+function buildDebris(variant, opts = {}) {
+  const record = opts.record || null;
+  const seed = seedOf(`debris:${variant || (record && record.id) || 0}`);
   const g = new THREE.Group();
   g.userData.realSizeM = 0.3;
   const geo = new THREE.IcosahedronGeometry(0.5, 0);
@@ -2002,8 +2007,13 @@ function tailRibbon(length, width, bend, colour, opacity, name) {
   return mesh2;
 }
 
-function buildComet(variant) {
-  const seed = seedOf(`comet:${variant || 0}`);
+// ONE NUCLEUS PER COMET. The same miss as the asteroids: this took a seed, nothing passed one, and
+// sixty comets shared a single rock. There is no roundness rule here -- MPCORB publishes elements,
+// not nucleus dimensions, so the app does not know how big any of these are and does not pretend
+// to. The seed is all that changes, and that is enough for sixty different rocks.
+function buildComet(variant, opts = {}) {
+  const record = opts.record || null;
+  const seed = seedOf(`comet:${variant || (record && record.id) || 0}`);
   const g = new THREE.Group();
   g.userData.realSizeM = 4000;
   const geo = new THREE.IcosahedronGeometry(0.12, 1);
