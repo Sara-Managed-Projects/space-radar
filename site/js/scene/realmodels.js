@@ -564,6 +564,10 @@ export const REAL_MODELS = {
     cygnus: { build: 'cygnus', colour: 'station', name: 'a Cygnus cargo ship', klass: ['station', 'satellite'], generic: true },
     progress: { build: 'progress', colour: 'station', name: 'a Progress cargo ship', klass: ['station', 'satellite'], generic: true },
     bennu: { file: 'asteroid-bennu.glb', colour: 'asteroid', name: '101955 Bennu', klass: ['asteroid'] },
+    // Dawn's shape model, from NASA's 3D Printing collection. The same collection has Eros and
+    // Itokawa, and neither is used: both are cut in half for printing and laid out as two pieces.
+    // Klass-gated like Bennu, so nothing but the asteroid called Vesta can wear it.
+    vesta: { file: 'asteroid-vesta.glb', colour: 'asteroid', name: '4 Vesta', klass: ['asteroid'] },
     tdrs: { file: 'tdrs.glb', colour: 'satellite', name: 'Tracking and Data Relay Satellite', klass: ['satellite'] },
     swift: { file: 'swift.glb', colour: 'telescope', name: 'Swift', klass: ['satellite', 'telescope'] },
     tess: { file: 'tess.glb', colour: 'telescope', name: 'TESS', klass: ['satellite', 'telescope'] },

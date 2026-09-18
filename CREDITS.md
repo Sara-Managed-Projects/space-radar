@@ -251,7 +251,7 @@ than counted by hand.
 |---|---|---|---|
 | `chandra.glb` | Chandra X-ray Observatory | NORAD 25867 (CXO) | 195 KB |
 | `fermi.glb` | Fermi Gamma-ray Large Area Space Telescope | NORAD 33053 (FGRST (GLAST)) | 174 KB |
-| `hinode.glb` | Hinode (Solar-B) | NORAD 29479 (HINODE (SOLAR-B)) | 102 KB |
+| `hinode.glb` | Hinode (Solar-B) | NORAD 29479 (HINODE (SOLAR-B)) | 103 KB |
 | `hubble.glb` | Hubble Space Telescope (A) | NORAD 20580 | 164 KB |
 | `jwst.glb` | James Webb Space Telescope (B) | Horizons -170 | 204 KB |
 | `sdo.glb` | Solar Dynamics Observatory | NORAD 36395 (SDO) | 124 KB |
@@ -300,6 +300,7 @@ than counted by hand.
 | file | NASA model | used for | size |
 |---|---|---|---|
 | `asteroid-bennu.glb` | 1999 RQ36 asteroid | Bennu, and the asteroid class | 24 KB |
+| `asteroid-vesta.glb` | Asteroid 4 Vesta (A), from NASA's 3D Printing collection | 4 Vesta | 23 KB |
 
 **Places on a surface**
 
