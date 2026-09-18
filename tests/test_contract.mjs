@@ -44,7 +44,7 @@ const CONTRACT = {
   'sky/skyview.js': ['createSkyView'],
   'ui/cards.js': ['showCard', 'hideCard'],
   'ui/controls.js': ['createControls'],
-  'ui/trip.js': ['createTrip', 'tripFocusLayer', 'TRIP_ARRIVED_PHASES'],
+  'ui/trip.js': ['createTrip'],
   'ui/tripframe.js': ['createTripFrame', 'shapeLine'],
   'ui/status.js': ['createStatus'],
   'ui/github.js': ['createGitHubMark'],
@@ -882,35 +882,62 @@ for (const file of allFiles) {
 
 // 3e3b. A TRIP STANDING NEXT TO ONE MACHINE HIDES THE CROWD, AND ONLY THEN.
 //
-// Ivan, on the stations tour: "dont like in the tour with stations stations inside the earth ...
-// when in trips something zoommed in we should hide other objects around and only when it regular
-// size keep things back." A glyph is a fixed size in pixels whatever its distance, so standing
-// beside the ISS leaves a hundred other dots at ten pixels each, landing on the globe behind it.
+// 3e3b. A HERO MAY NOT BE DRAWN INSIDE THE WORLD IT ORBITS.
 //
-// The rule invents no number: it reuses the layer's own `nearKm`, which is what heroes.js uses to
-// decide a record is worth geometry and what stopDistanceKm() takes 0.35 of. So the cases that
-// matter are: arrived or not, inside or outside, and a layer whose nearKm is 0 -- the worlds and
-// the ladder's rungs -- which must never focus, because that is the "regular size" half of the ask.
+// Ivan, on the stations tour: "dont like in the tour with stations stations inside the earth."
+// He was right, and the first fix was aimed at the wrong thing -- it hid the other LAYERS while a
+// trip stood still (public #125), which did not fire at the stop he was describing and did fire at
+// two stops that were fine, so the next report was "i dont see many objects now at all".
+//
+// The cause is scene/heroes.js sizing: a hero is drawn at a constant number of PIXELS, so its
+// world radius is `px * d / (h * f)` and grows without limit as the camera backs away. The trip
+// selects its subject at every stop, a selection is drawn at 260 px AND skips the nearKm gate, and
+// the tour's opening stop parks 32 000 km back. The ISS came out 4 308 km in radius while orbiting
+// 6 791 km from the centre of a 6 371 km planet: 3 888 km of station below the surface.
+//
+// The ceiling is the object's own altitude -- drawn no larger than its height above the ground, it
+// cannot reach the ground. heroes.js caps the SCALE at `altitude * CLEARANCE / reach`, where reach
+// is how far that particular model sticks out at scale 1, so the drawn reach is `altitude *
+// CLEARANCE` whatever shape it is and the model's own size cancels. That is what is checked here,
+// stated independently because heroes.js cannot be constructed without a WebGL context and the
+// number is the whole point.
+//
+// MEASURED IN A REAL BROWSER on 2026-09-17 (headless Chrome, 1280x800, the live code): at the
+// 32 000 km stop the ISS reaches 362 km and its lowest point is 6 624 km from the Earth's centre --
+// 253 km clear of the surface -- and it reads as 22 px. At the 3 000 km stop it still reads 233 px,
+// so the close-up this budget exists for is untouched.
 {
-  const { tripFocusLayer, TRIP_ARRIVED_PHASES } = await import(join(JS, 'ui/trip.js'));
-  const at = (over) => tripFocusLayer({ phase: 'dwell', subjectLayerId: 'stations', nearKm: 20000, distanceKm: 7000, ...over });
-
-  if (at({}) !== 'stations') problems.push('TRIPFOCUS a stop parked 7 000 km from a stations record (nearKm 20 000) does not focus');
-  if (at({ distanceKm: 20000 }) !== 'stations') problems.push('TRIPFOCUS exactly at nearKm should still focus');
-  if (at({ distanceKm: 20001 }) !== null) problems.push('TRIPFOCUS a camera outside nearKm must leave the crowd alone');
-  // The flight is a move; putting the lights out in the middle of one is worse than the clutter.
-  for (const phase of ['idle', 'resolving', 'intro', 'flight', 'outro']) {
-    if (at({ phase }) !== null) problems.push(`TRIPFOCUS phase ${phase} is not standing still and must not focus`);
+  const F = 1 / Math.tan((45 * Math.PI / 180) / 2); // CAMERA_FOV_DEG in scene/renderer.js
+  const CLEARANCE = 0.9;
+  const R_EARTH = 6371;      // registry/worlds.yaml
+  const UNIT_KM = 1000;      // the earth stage, scene/stage.js
+  // The same expression heroes.js evaluates, in kilometres.
+  const radiusKm = (px, distKm, h, orbitKm) => {
+    const want = (px * (distKm / UNIT_KM)) / (h * F) * UNIT_KM;
+    const altitude = orbitKm - R_EARTH;
+    return altitude > 0 ? Math.min(want, altitude * CLEARANCE) : want;
+  };
+  const ISS = R_EARTH + 420;
+  // The stop that was reported, at the two viewport heights either side of a laptop.
+  for (const h of [800, 1200]) {
+    const r = radiusKm(260, 32000, h, ISS);
+    if (ISS - r <= R_EARTH) {
+      problems.push(`HEROCLEAR at ${h}px the selected ISS is drawn ${r.toFixed(0)} km in radius at the 32 000 km stop, which reaches ${(R_EARTH - (ISS - r)).toFixed(0)} km inside a ${R_EARTH} km planet`);
+    }
   }
-  for (const phase of TRIP_ARRIVED_PHASES) {
-    if (at({ phase }) !== 'stations') problems.push(`TRIPFOCUS phase ${phase} has arrived and should focus`);
+  // Uncapped is the bug, and the test has to be able to fail: the same stop without the clamp.
+  const uncapped = (260 * (32000 / UNIT_KM)) / (800 * F) * UNIT_KM;
+  if (!(ISS - uncapped < R_EARTH)) problems.push('HEROCLEAR the uncapped size no longer reproduces the bug, so this test proves nothing');
+  // Close up, the cap must not bite: this is where the 260 px exists to be spent.
+  const near = radiusKm(260, 3, 800, ISS);
+  if (Math.abs(near - (260 * (3 / UNIT_KM)) / (800 * F) * UNIT_KM) > 1e-9) {
+    problems.push('HEROCLEAR the clamp is biting 3 km from the station, where the model is meant to be big');
   }
-  // nearKm 0 is the worlds and every ladder layer: a stop that frames a planet keeps the crowd.
-  if (at({ nearKm: 0, subjectLayerId: 'worlds' }) !== null) problems.push('TRIPFOCUS a layer with nearKm 0 must never focus');
-  if (at({ subjectLayerId: null }) !== null) problems.push('TRIPFOCUS no subject, no focus');
-  if (at({ distanceKm: NaN }) !== null) problems.push('TRIPFOCUS an unknown distance must not focus');
-  if (!problems.some((p) => p.startsWith('TRIPFOCUS'))) {
-    notes.push(`the trip hides the crowd only once it has arrived and is inside the subject's own nearKm (${TRIP_ARRIVED_PHASES.join('/')})`);
+  // On the surface there is no altitude to spend and a marker is MEANT to touch the ground.
+  const pad = radiusKm(84, 900, 800, R_EARTH);
+  if (!(pad > 0)) problems.push('HEROCLEAR a ground site at altitude zero must not be clamped to nothing');
+  if (!problems.some((p) => p.startsWith('HEROCLEAR'))) {
+    notes.push(`a hero is drawn no larger than its own altitude: the ISS at the 32 000 km stop is ${radiusKm(260, 32000, 800, ISS).toFixed(0)} km, not ${uncapped.toFixed(0)}`);
   }
 }
 

@@ -19,6 +19,7 @@ import { modelFor, updateModelAttitude, setSunDirection, disposeModels, attachOd
 import { realModelFor, loadRealModel } from './realmodels.js';
 import { propagate } from '../propagate/index.js';
 import { stage } from './stage.js';
+import { WORLDS } from './worlds.js';
 
 /** How many pixels tall a hero model should read as. Big enough to see it is a thing with parts. */
 const TARGET_PX = 84;
@@ -51,6 +52,105 @@ function heroPixels(record, selected) {
   const m = record && record.meta && record.meta.sizeM;
   if (!Number.isFinite(m)) return base;
   return base * Math.min(1.45, Math.max(0.62, Math.sqrt(m / REF_M)));
+}
+
+/**
+ * A HERO IS NEVER DRAWN BIGGER THAN ITS OWN ALTITUDE, so it cannot sink into the world it orbits.
+ *
+ * The constant-angular-size rule above buys readability with world size: a model's drawn radius is
+ * `px * d / (h * f)`, which grows LINEARLY with how far away the camera is. Near the object that is
+ * the whole point. Far from it the number runs away, and on 2026-09-17 Ivan reported what that
+ * looks like -- "in the tour with stations, stations inside the earth".
+ *
+ * He was looking at the opening stop of `people-in-space`, which parks 32 000 km back so that "the
+ * planet reads as a planet". The trip SELECTS its subject at every stop (ui/trip.js), and a
+ * selection is drawn at 260 px and skips the nearKm gate below, so at h = 800 the ISS was drawn
+ * with a radius of 4 308 km. It orbits 6 791 km from the centre of a 6 371 km planet. The model
+ * therefore reached 3 888 km BELOW the surface -- more than half way to the core.
+ *
+ * The honest ceiling is the object's own height above the ground: a spacecraft drawn no larger
+ * than its altitude cannot touch the surface, whatever the camera does. CLEARANCE keeps a tenth of
+ * that gap so it does not graze either. When the cap bites the model gets smaller with distance
+ * again, which is what being far away is supposed to look like. MEASURED in headless Chrome at
+ * 1280x800 on 2026-09-17: at that opening stop the ISS now reaches 362 km, its lowest point is
+ * 253 km clear of the surface and it reads as 22 px, with the glyph -- fixed size, never wrong
+ * about position -- carrying it. At the 3 000 km stop it still reads 233 px, so the close-up the
+ * 260 px budget exists for is untouched.
+ *
+ * Objects at or below the surface -- ground sites, launch pads -- are left alone. A pad marker is
+ * MEANT to touch the ground, and capping it at an altitude of zero would delete it.
+ *
+ * THE MODEL IS MEASURED, NOT ASSUMED. Every shape this app draws is "about one unit across" and
+ * `tests/test_station_shapes.mjs` holds the procedural ones to it within 6 %, but the imported
+ * .glb files are only normalised approximately -- `iss.glb` reaches 1.15 units. Capping the scale
+ * as though every model were exactly one unit left the station 20 km inside the Earth when it was
+ * measured in a browser, which is small but is still the bug. So each model reports how far it
+ * actually reaches from its own origin, and the cap is computed from that.
+ */
+const CLEARANCE = 0.9;
+const _worldRadius = new Map();
+function stageRadiusUnits() {
+  const id = stage.worldId;
+  if (!_worldRadius.has(id)) {
+    const w = WORLDS.find((x) => x.id === id);
+    _worldRadius.set(id, w && w.radiusKm > 0 ? w.radiusKm : 0);
+  }
+  // Not cached in units: unitKm is per stage and a stage change must not be served a stale scale.
+  const km = _worldRadius.get(id);
+  return km > 0 ? km / stage.unitKm : 0;
+}
+
+/**
+ * How far an unscaled model reaches from its own origin, in model units -- so a scale can be turned
+ * into a real world radius. Invisible parts are skipped for the same reason the one-unit test skips
+ * them: a rocket's plume hangs 0.4 units below the nozzle and is only shown during a burn, and
+ * counting it would shrink every rocket by a third for a shape nobody is looking at.
+ */
+const _reachBox = new THREE.Box3();
+const _reachV = new THREE.Vector3();
+function unitReachOf(obj) {
+  obj.updateMatrixWorld(true);
+  _reachBox.makeEmpty();
+  obj.traverse((n) => {
+    if (!n.isMesh) return;
+    // STRICTLY BELOW THE ROOT. A hero is created invisible and faded in, so testing the root's own
+    // visibility skipped every mesh, left the box empty and silently returned the 0.5 fallback --
+    // which is how the ISS came out 20 km inside the Earth with the cap apparently working.
+    for (let p = n; p && p !== obj; p = p.parent) if (!p.visible) return;
+    _reachBox.expandByObject(n);
+  });
+  if (_reachBox.isEmpty()) return 0.5; // the convention: one unit across, so half a unit of reach
+  // The farthest corner from the model's ORIGIN, which is where the record's position goes -- not
+  // the box's own centre, because a model whose mass sits off to one side still hangs off to one
+  // side when it is drawn.
+  let reach = 0;
+  for (const x of [_reachBox.min.x, _reachBox.max.x]) {
+    for (const y of [_reachBox.min.y, _reachBox.max.y]) {
+      for (const z of [_reachBox.min.z, _reachBox.max.z]) reach = Math.max(reach, _reachV.set(x, y, z).length());
+    }
+  }
+  return reach > 0 ? reach : 0.5;
+}
+
+/**
+ * The scale a hero is drawn at -- the one place that decides it, because the docked-vehicle test
+ * and the scale below must agree or a model swallows a neighbour it is no longer big enough to hide.
+ *
+ * @param {number} px    pixels the model should read as, from heroPixels()
+ * @param {number} d     distance from the camera, scene units
+ * @param {number} h     viewport height in CSS pixels
+ * @param {number} f     projectionMatrix[5], i.e. 1 / tan(fovY / 2)
+ * @param {THREE.Vector3} pos  the record's position -- the stage world is the origin, at true size
+ * @param {number} reach how far this model reaches from its origin at scale 1
+ */
+function heroScale(px, d, h, f, pos, reach) {
+  const want = (px * 2 * d) / (h * f);
+  const R = stageRadiusUnits();
+  if (!(R > 0) || !pos) return want;
+  const altitude = pos.length() - R;
+  if (!(altitude > 0)) return want;
+  const r = reach > 0 ? reach : 0.5;
+  return Math.min(want, (altitude * CLEARANCE) / r);
 }
 
 /** How many models may exist at once. Each is a few draw calls; this is the phone budget. */
@@ -92,7 +192,7 @@ export function createHeroes(scene, ctx) {
     // procedural Voyager too, not only on the one that finished downloading.
     attachOddityModels(obj, record.id);
     root.add(obj);
-    const entry = { obj, record, fadeStart: null, upgraded: false };
+    const entry = { obj, record, fadeStart: null, upgraded: false, reach: unitReachOf(obj) };
     live.set(record.id, entry);
 
     // If NASA publishes this exact object, fetch it and swap it in when it arrives. The procedural
@@ -108,6 +208,10 @@ export function createHeroes(scene, ctx) {
         const clone = loaded.clone(true);
         clone.userData.recordId = record.id;
         clone.userData.realModel = true;
+        // MEASURED BEFORE THE SCALE IS COPIED ON. unitReachOf() walks world matrices, so asking it
+        // after the line below would return a reach already multiplied by the drawn scale -- and
+        // the clearance cap would then be computed from a number in the wrong units entirely.
+        entry.reach = unitReachOf(clone);
         clone.position.copy(entry.obj.position);
         clone.scale.copy(entry.obj.scale);
         clone.quaternion.copy(entry.obj.quaternion);
@@ -203,7 +307,10 @@ export function createHeroes(scene, ctx) {
       // The SAME heroPixels() as the scale below, or a big Starship is drawn large and still
       // swallows its neighbours as though it were small. One function, two call sites.
       const px = heroPixels(c.record, c.forced);
-      c.drawnRadius = (px * c.d) / (h * f); // half the drawn size, in world units
+      // The model may not exist yet on the frame it is first considered; half a unit is the
+      // convention every shape is built to, and this only decides which neighbour is hidden.
+      const reach = (live.get(c.record.id) || {}).reach || 0.5;
+      c.drawnRadius = heroScale(px, c.d, h, f, c.pos, reach) * reach; // how far it reaches, in world units
       const swallowedBy = c.forced ? null : kept.find((k) => k.pos.distanceTo(c.pos) < k.drawnRadius);
       if (swallowedBy) {
         hidden.push({ record: c.record, insideOf: swallowedBy.record });
@@ -249,7 +356,7 @@ export function createHeroes(scene, ctx) {
       obj.position.copy(c.pos);
 
       const px = heroPixels(c.record, c.record.id === selectedId);
-      const size = (px * 2 * c.d) / (h * f);
+      const size = heroScale(px, c.d, h, f, c.pos, entry.reach);
       obj.scale.setScalar(size);
 
       // The burn signal. propagate() already returned `phase` and `f` for this record a few
