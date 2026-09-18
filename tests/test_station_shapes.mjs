@@ -482,6 +482,43 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   if (!problems.length) console.log('  all ten deep-space spacecraft have their own shape; 1279 Gaia the asteroid does not get one');
 }
 
+// A CROWD OF FRAGMENTS, NOT ONE FRAGMENT REPEATED.
+//
+// buildComet and buildDebris had the asteroids' miss exactly: a seed nothing passed, so sixty
+// comets shared one nucleus and every debris shard in a field was the same shard. Debris is the
+// one drawn in crowds, and a crowd of identical shapes reads as a rendering bug -- which is the
+// complaint the docked-vehicle rule already exists to answer.
+//
+// No size rule for either: MPCORB publishes elements and not nucleus dimensions, and a catalogue
+// fragment has no published size at all. Only the seed varies, and the test says only that.
+{
+  const shapeSig = (klass, record) => {
+    const obj = modelFor(klass, undefined, { record });
+    let sig = 0;
+    obj.traverse((n) => {
+      if (!n.isMesh || !n.geometry) return;
+      const p = n.geometry.attributes.position;
+      for (let i = 0; i < p.count; i += 7) sig = (sig * 31 + Math.round(p.getX(i) * 1e5) + Math.round(p.getZ(i) * 1e5)) | 0;
+    });
+    disposeModels(obj);
+    return sig;
+  };
+  for (const klass of ['comet', 'debris']) {
+    const seen = new Set();
+    const N = 12;
+    for (let i = 0; i < N; i += 1) seen.add(shapeSig(klass, { id: `${klass}-${i}`, klass, meta: {} }));
+    check(seen.size === N, `${N} ${klass} records should build ${N} shapes, not ${seen.size}`);
+    // The same record twice is the SAME shape: seeded, not random. Nothing in this project uses
+    // Math.random, and a shape that changed between two frames would be the loudest bug in the app.
+    const a = shapeSig(klass, { id: `${klass}-stable`, klass, meta: {} });
+    const b = shapeSig(klass, { id: `${klass}-stable`, klass, meta: {} });
+    check(a === b, `the same ${klass} record must build the same shape twice (${a} vs ${b})`);
+    // And a record with no id at all still builds something rather than throwing.
+    check(Number.isFinite(shapeSig(klass, { klass, meta: {} })), `a ${klass} with no id still builds`);
+  }
+  if (!problems.length) console.log('  comets and debris are seeded per record, and the same record twice is the same shape');
+}
+
 // TEN NAMED ROCKS, TEN SHAPES, AND THE BIG ONES ROUND.
 //
 // buildAsteroid always took a seed and nothing ever passed one -- `meta.modelVariant` is null for
