@@ -482,6 +482,34 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   if (!problems.length) console.log('  all ten deep-space spacecraft have their own shape; 1279 Gaia the asteroid does not get one');
 }
 
+// THE RIGHT KIND OF THING. Measured against the live stations and visual catalogues on 2026-09-18:
+// two ISS modules catalogued on their own were drawn as a second, different space station; a 1963
+// Centaur stage catalogued as a payload was drawn -- and described on its card -- as "a generic
+// satellite"; five space telescopes were drawn as a communications satellite with a dish. Records
+// here are built by id alone, because the id is what the route keys on and the test must not need
+// the network. scripts/check-model-ids.sh checks the ids against CelesTrak.
+{
+  const rec = (noradId, name, klass, layer) => ({ id: `sat-${noradId}`, name, klass, layer, meta: { noradId } });
+  for (const [id, name] of [[49044, 'ISS (NAUKA)'], [36086, 'POISK']]) {
+    const e = realModelFor(rec(id, name, 'station', 'stations'));
+    check(e?.file === 'iss.glb' && !e.generic, `${name} is part of the ISS and is drawn as it: ${JSON.stringify(e)}`);
+  }
+  const stage = realModelFor(rec(694, 'ATLAS CENTAUR 2', 'satellite', 'visual'));
+  check(stage?.file === 'rocket-body.glb' && stage.generic === true, `ATLAS CENTAUR 2 is a spent Centaur stage: ${JSON.stringify(stage)}`);
+  for (const [id, name] of [[3597, 'OAO 2'], [6153, 'OAO 3 (COPERNICUS)'], [41337, 'ASTRO-H (HITOMI)'], [42758, 'HXMT (HUIYAN)'], [57800, 'XRISM']]) {
+    const e = realModelFor(rec(id, name, 'satellite', 'visual'));
+    check(e?.build === 'space-telescope' && e.generic === true, `${name} is drawn as a space telescope: ${JSON.stringify(e)}`);
+  }
+  // The variant those five name must exist for a klass-satellite record -- otherwise modelFor falls
+  // back to the comms dish with `generic` set, and the route would change nothing on screen.
+  const scope = modelFor('satellite', 'space-telescope');
+  check(!scope.userData.generic, 'satellite:space-telescope is a real variant, not the comms fallback');
+  check(scope.getObjectByName('boresight') !== undefined, 'satellite:space-telescope is the telescope tube');
+  check(tris(scope) <= budgetOf('satellite-space-telescope'), `satellite:space-telescope builds ${tris(scope)} tris inside its budget`);
+  disposeModels(scope);
+  if (!problems.length) console.log('  Nauka and Poisk draw the ISS, a 1963 Centaur stage draws as a stage, five observatories as telescopes');
+}
+
 // A CROWD OF FRAGMENTS, NOT ONE FRAGMENT REPEATED.
 //
 // buildComet and buildDebris had the asteroids' miss exactly: a seed nothing passed, so sixty
