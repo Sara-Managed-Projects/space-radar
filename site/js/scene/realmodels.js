@@ -568,6 +568,10 @@ export const REAL_MODELS = {
     // Itokawa, and neither is used: both are cut in half for printing and laid out as two pieces.
     // Klass-gated like Bennu, so nothing but the asteroid called Vesta can wear it.
     vesta: { file: 'asteroid-vesta.glb', colour: 'asteroid', name: '4 Vesta', klass: ['asteroid'] },
+    // Gaskell's shape model from the PDS archive, in ONE piece -- NASA's 3D Printing Eros is cut in
+    // half. The klass gate is load-bearing here: EROS A and EROS B are Israeli imaging satellites,
+    // and without it they would be drawn as a 33 km asteroid.
+    eros: { file: 'asteroid-eros.glb', colour: 'asteroid', name: '433 Eros', klass: ['asteroid'] },
     tdrs: { file: 'tdrs.glb', colour: 'satellite', name: 'Tracking and Data Relay Satellite', klass: ['satellite'] },
     swift: { file: 'swift.glb', colour: 'telescope', name: 'Swift', klass: ['satellite', 'telescope'] },
     tess: { file: 'tess.glb', colour: 'telescope', name: 'TESS', klass: ['satellite', 'telescope'] },

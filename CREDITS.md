@@ -301,6 +301,7 @@ than counted by hand.
 |---|---|---|---|
 | `asteroid-bennu.glb` | 1999 RQ36 asteroid | Bennu, and the asteroid class | 24 KB |
 | `asteroid-vesta.glb` | Asteroid 4 Vesta (A), from NASA's 3D Printing collection | 4 Vesta | 23 KB |
+| `asteroid-eros.glb` | Gaskell Eros Shape Model V1.1 (NASA PDS, not NASA 3D Resources): Gaskell, R. (2021), doi:10.26033/d0gq-9427. CC0 under NASA's science data policy | 433 Eros | 22 KB |
 
 **Places on a surface**
 

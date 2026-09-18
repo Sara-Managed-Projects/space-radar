@@ -79,8 +79,13 @@ def main():
         print("nothing said: the index could not be read, which is not the same as a bad source.")
         return 0
 
-    glbs = {x["path"]: x.get("size", 0) for x in index.get("tree", []) if x["path"].lower().endswith(".glb")}
-    stems = {p[:-4]: s for p, s in glbs.items()}                       # path without .glb
+    # .glb AND .stl: NASA keeps two collections, `3D Models/` as glTF and `3D Printing/` as STL, and
+    # the second is where the small-body shape models are. Looking only at .glb reported Vesta's
+    # correct credit -- `3D Printing/Asteroid 4 Vesta (A)` -- as naming nothing, which would have
+    # sent somebody to "fix" a citation that was right, the same trap the paragraph above describes.
+    glbs = {x["path"]: x.get("size", 0) for x in index.get("tree", [])
+            if x["path"].lower().endswith((".glb", ".stl"))}
+    stems = {p[:-4]: s for p, s in glbs.items()}                       # path without the extension
     folders = {}
     for p, s in glbs.items():
         folders.setdefault("/".join(p.split("/")[:2]), []).append((p, s))
