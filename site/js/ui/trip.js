@@ -144,41 +144,6 @@ function worldOfFrame(frame) {
   return worldById.has(head) ? head : 'earth';
 }
 
-/**
- * While a trip is standing next to something, which layer may keep its glyphs? The subject's, or
- * `null` for "all of them, as usual".
- *
- * WHY. Ivan, on the stations tour: "dont like in the tour with stations stations inside the earth,
- * i think when in trips something zoommed in we should hide other objects around and only when it
- * regular size keep things back."
- *
- * A glyph is a fixed size in PIXELS whatever its distance, so parking the camera beside the ISS
- * does not make the rest of low Earth orbit any smaller -- a hundred other dots keep their ten
- * pixels and land on the globe behind the station, which is what reads as "inside the earth".
- *
- * THE YARDSTICK IS ALREADY IN THE REGISTRY and this invents no number. A layer's `nearKm` is the
- * distance inside which scene/heroes.js judges a record worth real geometry, and stopDistanceKm()
- * above parks the camera at 0.35 of it -- so "the trip is standing next to this" is exactly
- * "inside the subject's own nearKm". Layers whose nearKm is 0 (the worlds, and everything on the
- * ladder's rungs) never focus, which is the "regular size" half of the ask: a stop that frames a
- * planet keeps the crowd, a stop that frames a machine does not.
- *
- * AND ONLY ONCE THE FLIGHT IS OVER. Hiding things mid-flight is a light going out in the middle of
- * a move; the phases below are the ones where the camera has arrived and is holding still.
- *
- * @param {{phase: string, subjectLayerId: string|null, nearKm: number, distanceKm: number}} at
- * @returns {string|null} the layer id that keeps its glyphs, or null for no focus
- */
-export const TRIP_ARRIVED_PHASES = ['settle', 'dwell', 'held'];
-export function tripFocusLayer(at = {}) {
-  const { phase, subjectLayerId, nearKm, distanceKm } = at;
-  if (!subjectLayerId) return null;
-  if (!TRIP_ARRIVED_PHASES.includes(phase)) return null;
-  if (!Number.isFinite(nearKm) || nearKm <= 0) return null;
-  if (!Number.isFinite(distanceKm) || distanceKm > nearKm) return null;
-  return subjectLayerId;
-}
-
 export function createTrip(ctx) {
   const rig = ctx.cameraRig;
 
