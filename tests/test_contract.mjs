@@ -436,6 +436,44 @@ for (const file of allFiles) {
       );
     }
   }
+  // A SMALL BODY IS ONE PIECE. NASA's 3D Printing Eros and Itokawa are each cut in half and laid
+  // out as two pieces for a print bed; drawn, that is two half-asteroids side by side in space.
+  // Welded on position, every shipped asteroid must be a single connected surface.
+  const pieces = (scene) => {
+    const key = new Map();
+    const parent = [];
+    const find = (i) => { while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; } return i; };
+    const v = new THREE.Vector3();
+    scene.updateMatrixWorld(true);
+    scene.traverse((o) => {
+      if (!o.isMesh) return;
+      const P = o.geometry.attributes.position, I = o.geometry.index;
+      const id = [];
+      for (let k = 0; k < P.count; k += 1) {
+        v.fromBufferAttribute(P, k).applyMatrix4(o.matrixWorld);
+        const s = `${v.x.toFixed(4)},${v.y.toFixed(4)},${v.z.toFixed(4)}`;
+        if (!key.has(s)) { key.set(s, parent.length); parent.push(parent.length); }
+        id.push(key.get(s));
+      }
+      const T = (I ? I.count : P.count) / 3;
+      for (let t = 0; t < T; t += 1) {
+        const [a, b, c] = [0, 1, 2].map((k) => id[I ? I.getX(t * 3 + k) : t * 3 + k]);
+        parent[find(b)] = find(a);
+        parent[find(c)] = find(a);
+      }
+    });
+    return new Set(parent.map((_, i) => find(i))).size;
+  };
+  const rockRows = yaml.split('\n').filter((l) => /file: site\/models\/[^,]+\.glb/.test(l) && /class: asteroid\b/.test(l));
+  for (const line of rockRows) {
+    const rel = line.match(/file: (site\/models\/[^,]+\.glb)/)[1];
+    if (!existsSync(join(ROOT, rel))) continue;
+    const n = pieces((await parse(readFileSync(join(ROOT, rel)))).scene);
+    if (n !== 1) {
+      problems.push(`MODEL    ${rel.split('/').pop()} is ${n} separate pieces, not one body -- a model cut up for 3D printing draws as fragments in space`);
+    }
+  }
+
   // Broken on purpose: the same measurement on a box whose normals are negated must fail, or the
   // measurement is not measuring anything.
   const box = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial());
