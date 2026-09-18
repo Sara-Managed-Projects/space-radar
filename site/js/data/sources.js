@@ -39,6 +39,15 @@
 // drawn. Ages shown in the status panel are wall-clock ages, which is what they mean.
 
 const PREFIX = 'sr.v1.';
+// THE LARGEST PAYLOAD KEPT IN localStorage, in characters. Chrome holds 5 241 856 characters in
+// localStorage for the WHOLE origin (measured 2026-09-18), and two feeds are bigger than that on
+// their own: CelesTrak `active` at 6.98 M and the Starlink supplemental at 5.07 M. Anything above
+// this goes to Cache Storage instead (see BULK below), and the ceiling leaves every other source
+// -- about 1.4 M between them -- room to be cached next to each other.
+const LOCAL_MAX_CHARS = 1.5 * 1024 * 1024;
+const BULK_CACHE = PREFIX + 'bulk';
+/** The payload object last written to the bulk store per source, so an attempt stamp does not rewrite 7 MB. */
+const bulkSaved = new Map();
 const HOUR = 3600 * 1000;
 const MINUTE = 60 * 1000;
 
@@ -357,6 +366,7 @@ function readEntry(id) {
       readAt: numOrNull(parsed.readAt),
       reason: typeof parsed.reason === 'string' ? parsed.reason : null,
       snapshot: typeof parsed.snapshot === 'string' ? parsed.snapshot : null,
+      bulk: parsed.bulk === true,
     };
     memory.set(id, entry);
     return entry;
@@ -369,17 +379,93 @@ function writeEntry(id, entry) {
   memory.set(id, entry);
   const s = storage();
   if (!s) return;
+  // A payload too big for localStorage is written to Cache Storage, and localStorage keeps a stub:
+  // the timestamps, status and reason, with `bulk: true` where the data would be. The stub is what
+  // gates the next fetch, so the two-hour rule holds across a reload whichever store has the data.
+  let text = null;
   try {
-    s.setItem(PREFIX + id, JSON.stringify(entry));
+    text = JSON.stringify(entry);
+  } catch {
+    return;
+  }
+  let stored = entry;
+  if (text.length > LOCAL_MAX_CHARS && entry.data != null) {
+    stored = { ...entry, data: null, bulk: true };
+    text = JSON.stringify(stored);
+    if (bulkSaved.get(id) !== entry.data) {
+      bulkSaved.set(id, entry.data);
+      bulkPut(id, entry.data);
+    }
+  } else if (entry.data != null && entry.bulk) {
+    // A payload that shrank back under the ceiling: the stub no longer points anywhere.
+    stored = { ...entry, bulk: false };
+    text = JSON.stringify(stored);
+    bulkDelete(id);
+  }
+  try {
+    s.setItem(PREFIX + id, text);
   } catch {
     // Almost always a quota error. Drop the biggest other cached source and try once more,
-    // then give up quietly and live off the in-memory mirror for this session.
+    // then give up quietly and live off the in-memory mirror for this session. Only small entries
+    // get here now: this used to run for the 7 MB `active` feed, which could never fit, so every
+    // page load evicted the largest OTHER source -- `visual`, the 156 things bright enough to see
+    // -- and then failed anyway. A reload inside CelesTrak's two hours found both gone.
     try {
       evictLargestExcept(s, id);
-      s.setItem(PREFIX + id, JSON.stringify(entry));
+      s.setItem(PREFIX + id, text);
     } catch {
       /* the in-memory mirror is the cache now */
     }
+  }
+}
+
+// --- the bulk store: Cache Storage, for payloads localStorage cannot hold ---------------------
+//
+// Cache Storage is per origin, sized as a share of the disk rather than at 5 MB, and available on
+// every secure origin (https, and localhost). Where it is missing -- node, an insecure origin, a
+// browser that refuses it -- the stub is written without its data and the source behaves as it did
+// before this existed, except that it no longer evicts anybody else. Every call is wrapped: this
+// file never throws.
+function bulkStore() {
+  try {
+    return typeof globalThis.caches !== 'undefined' && globalThis.caches ? globalThis.caches : null;
+  } catch {
+    return null;
+  }
+}
+function bulkKey(id) {
+  const origin = (globalThis.location && globalThis.location.origin) || 'https://spaceradar.invalid';
+  return new URL('/__sr-bulk/' + encodeURIComponent(id), origin).href;
+}
+function bulkPut(id, data) {
+  const c = bulkStore();
+  if (!c) return Promise.resolve(false);
+  return c.open(BULK_CACHE)
+    .then((cache) => cache.put(bulkKey(id), new Response(JSON.stringify(data), { headers: { 'content-type': 'application/json' } })))
+    .then(() => true, () => false);
+}
+function bulkDelete(id) {
+  bulkSaved.delete(id);
+  const c = bulkStore();
+  if (!c) return Promise.resolve(false);
+  return c.open(BULK_CACHE).then((cache) => cache.delete(bulkKey(id)), () => false).catch(() => false);
+}
+/** Fill a stub's data from the bulk store, into the in-memory mirror only. Never rejects. */
+async function hydrate(id, entry) {
+  if (!entry || !entry.bulk || entry.data != null) return entry;
+  const c = bulkStore();
+  if (!c) return entry;
+  try {
+    const cache = await c.open(BULK_CACHE);
+    const hit = await cache.match(bulkKey(id));
+    if (!hit) return entry;
+    const data = await hit.json();
+    const full = { ...entry, data };
+    memory.set(id, full);
+    bulkSaved.set(id, data);
+    return full;
+  } catch {
+    return entry;
   }
 }
 
@@ -479,7 +565,9 @@ export async function load(id, opts = {}) {
     };
   }
 
-  const entry = readEntry(id) || blankEntry();
+  // A big feed's data lives in Cache Storage behind a stub; read it back before the gate below
+  // decides anything from `entry.data`, or a cached 7 MB feed would look like no feed at all.
+  const entry = (await hydrate(id, readEntry(id))) || blankEntry();
   // `opts.now` exists for the contract test, which cannot wait out a five-minute gate.
   const now = Number.isFinite(opts.now) ? opts.now : wallNow();
 
@@ -620,6 +708,7 @@ export function onUpdate(fn) {
 /** Drop one cached copy. Not in the module contract; the status panel's retry needs it. */
 export function forget(id) {
   memory.delete(id);
+  bulkDelete(id);
   const s = storage();
   if (!s) return;
   try {

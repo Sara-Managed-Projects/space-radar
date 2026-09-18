@@ -91,6 +91,12 @@ jobs:
       # from the real snapshots of 2026-09-08, so the frame and the join are checked, not assumed.
       - name: Snapshots become records, and a missing one keeps its stand-in
         run: node tests/test_snapshot_parsers.mjs
+      # CelesTrak allows one download per file per IP per two hours and no harvester is provisioned,
+      # so a reload lives on the cache. Two feeds are bigger than localStorage can hold; writing them
+      # used to evict the OTHER sources, and a reload came back with the bright-enough-to-see layer
+      # and "Satellites worth knowing" empty.
+      - name: A reload inside CelesTrak's two hours keeps what the first visit loaded
+        run: node tests/test_sources_cache.mjs
       - name: Cards say what they are drawn as, and how old their elements are
         run: node tests/test_cards_copy.mjs
       - name: The Now moment guesses a place and says so
