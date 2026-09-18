@@ -1617,10 +1617,17 @@ function buildProbe() {
   feed.rotation.x = Math.PI / 2;
   feed.position.z = 0.16;
   g.add(feed);
-  // the magnetometer boom: the thing that says "this is a probe" at a glance
-  const boom = cyl(0.008, 0.008, 0.55, 6, METAL, 'body', 'boom');
+  // The magnetometer boom: the thing that says "this is a probe" at a glance, and the part that
+  // sets the model's length. It was 0.55 long, which built the whole shape to 0.855 of a unit --
+  // every other vehicle in the file is 1.00 within a few per cent, and a generic probe being 15 %
+  // short is 15 % of a boom that a real probe carries metres of. At the declared 6 m, 0.62 is a
+  // 3.7 m boom, which is the modest end of the real range.
+  // 0.63 at -0.405 rather than 0.62 at -0.41: the boom then OVERLAPS the bus by a hundredth of a
+  // unit instead of meeting it at exactly zero, which is the difference between a joint and a
+  // coincidence. The connectivity check in tests/test_station_shapes.mjs is what noticed.
+  const boom = cyl(0.008, 0.008, 0.63, 6, METAL, 'body', 'boom');
   boom.rotation.z = Math.PI / 2;
-  boom.position.x = -0.3;
+  boom.position.x = -0.405;
   g.add(boom);
   const rtg = cyl(0.035, 0.035, 0.16, 10, '#6E7784', 'body', 'rtg');
   rtg.rotation.z = Math.PI / 2;
@@ -1682,15 +1689,190 @@ function buildTelescope(variant) {
     g.add(back);
     const pivot = new THREE.Group();
     pivot.name = 'panelPivot';
-    const a = panelWing(0.3, 0.18, METAL, 'wing+');
+    // 0.34, not 0.30: the wings are what this shape's width is, and at 0.30 the model built to
+    // 0.92 of a unit against a convention every other vehicle holds to within a few per cent.
+    const a = panelWing(0.34, 0.18, METAL, 'wing+');
     a.position.x = 0.16;
-    const b = panelWing(0.3, 0.18, METAL, 'wing-');
+    const b = panelWing(0.34, 0.18, METAL, 'wing-');
     b.rotation.y = Math.PI;
     b.position.x = -0.16;
     pivot.add(a, b);
     g.add(pivot);
     g.userData.panelPivots = [pivot];
   }
+  return g;
+}
+
+/**
+ * THE THREE NAMED SPACECRAFT THE DEEP-SPACE LAYER WAS DRAWING AS SOMETHING ELSE.
+ *
+ * `deep-space` holds ten records. Seven have a real NASA model; Gaia, Solar Orbiter and New
+ * Horizons fell through to the generic probe and telescope shapes -- so an app whose whole point is
+ * that a named object looks like itself drew Gaia, which is a ten-metre disc, as a tube.
+ *
+ * All three are built the way buildTelescope's `hex` variant is: in PUBLISHED METRES divided by the
+ * size the row declares, so nothing is hand-tuned and the proportions come out right by
+ * construction. The numbers, and where each one comes from:
+ *
+ *   Gaia (ESA)            sunshield 10.2 m across; body (payload + service module) 4.3 m wide and
+ *                         2.3 m high; toroidal optical bench about 3 m in diameter.
+ *                         sci.esa.int/web/gaia -- spacecraft, service module, deployable sunshield.
+ *   Solar Orbiter (ESA)   body 2.5 x 3.1 x 2.7 m; six panels of 2.1 x 1.2 m in two arrays, 18 m
+ *                         tip to tip deployed; heat shield about 3.1 x 2.4 m; a 4.40 m instrument
+ *                         boom and three 6.50 m RPW antennae.
+ *                         esa.int Solar Orbiter factsheet; cosmos.esa.int/web/solar-orbiter.
+ *   New Horizons (APL)    2.1 m high-gain antenna; primary structure 0.7 m tall, 2.1 m long,
+ *                         2.7 m at its widest; about 2.2 x 2.7 x 3.2 m overall with the RTG.
+ *                         pluto.jhuapl.edu -- spacecraft systems and components.
+ *
+ * Each is normalised by its OVERALL published size -- 10.2, 18 and 3.2 m -- which is also what
+ * `realSizeM` carries, so the one-unit convention holds without a fudge factor.
+ */
+
+// Gaia is a sunshade with a telescope sitting on it: a 10.2 m twelve-sided skirt, and a body only
+// 4.3 m across on top. The skirt is nearly two and a half times the width of everything else, which
+// is the whole silhouette and exactly what the generic telescope had no way to show.
+function buildGaia() {
+  const g = new THREE.Group();
+  const M = 10.2;
+  g.userData.realSizeM = M;
+  const S = 1 / M;
+
+  // The deployable sunshield: twelve panels, 10.2 m across, solar cells on the sun-facing side.
+  // Drawn as one twelve-sided plate rather than twelve, because at 84 px the seams are not there.
+  const shield = cyl(5.1 * S, 5.1 * S, 0.12 * S, 12, PANEL_BLUE, 'panel', 'sunshield');
+  shield.position.y = -0.9 * S;
+  g.add(shield);
+  // The rim the panels fold back against, in foil rather than cell blue so the disc reads as a
+  // made thing and not a coin.
+  const rim = cyl(5.1 * S, 5.1 * S, 0.30 * S, 12, FOIL, 'foil', 'shield-rim');
+  rim.position.y = -1.08 * S;
+  g.add(rim);
+
+  // The service module: 4.3 m across, the lower half of the 2.3 m body.
+  const svc = cyl(2.15 * S, 2.15 * S, 1.0 * S, 8, METAL, 'body', 'service-module');
+  svc.position.y = -0.3 * S;
+  g.add(svc);
+  // The payload module: a thermal tent over a toroidal optical bench about 3 m in diameter.
+  const tent = cyl(1.5 * S, 2.05 * S, 1.3 * S, 8, '#D8DEE7', 'foil', 'payload-tent');
+  tent.position.y = 0.85 * S;
+  g.add(tent);
+  // The two telescopes look out through apertures in the tent, 106.5 degrees apart -- the basic
+  // angle that makes the whole survey work, and the one detail worth a face each.
+  for (const deg of [-53.25, 53.25]) {
+    const port = box(0.9 * S, 0.7 * S, 0.05 * S, '#2B3340', 'body', 'aperture');
+    const a = (deg * Math.PI) / 180;
+    port.position.set(Math.sin(a) * 1.7 * S, 0.85 * S, Math.cos(a) * 1.7 * S);
+    port.rotation.y = a;
+    g.add(port);
+  }
+  // The phased-array antenna that sent the catalogue home, on the underside of the service module.
+  const antenna = cyl(0.8 * S, 0.8 * S, 0.12 * S, 8, '#8E98A6', 'body', 'antenna');
+  antenna.position.y = -0.85 * S;
+  g.add(antenna);
+  return g;
+}
+
+// Solar Orbiter is a heat shield with a spacecraft hiding behind it. Everything it does is arranged
+// around staying in that shadow, so the shield is drawn proud of the bus on the sun side and the
+// arrays are swept back from it.
+function buildSolarOrbiter() {
+  const g = new THREE.Group();
+  const M = 18; // tip to tip with the arrays deployed
+  g.userData.realSizeM = M;
+  const S = 1 / M;
+
+  // The bus: 2.5 m across the array axis, 2.7 m tall, 3.1 m deep. +Z is the Sun.
+  const bus = box(2.5 * S, 2.7 * S, 3.1 * S, FOIL, 'foil', 'bus');
+  g.add(bus);
+  // The heat shield: 3.1 x 2.4 m of titanium foil and calcium phosphate, standing off the bus on
+  // struts. It overhangs the bus on purpose -- that is what casts the shadow the rest lives in.
+  const shield = box(3.1 * S, 2.4 * S, 0.14 * S, '#3A3F47', 'body', 'heat-shield');
+  shield.position.z = 1.85 * S;
+  g.add(shield);
+  for (const sx of [-1, 1]) {
+    for (const sy of [-1, 1]) {
+      const strut = cyl(0.05 * S, 0.05 * S, 0.55 * S, 6, METAL, 'body', 'shield-strut');
+      strut.rotation.x = Math.PI / 2;
+      strut.position.set(sx * 1.0 * S, sy * 0.9 * S, 1.6 * S);
+      g.add(strut);
+    }
+  }
+  // Two arrays of three 2.1 x 1.2 m panels, 18 m tip to tip. Each wing therefore reaches
+  // (18 - 2.5) / 2 = 7.75 m from the side of the bus.
+  const pivot = new THREE.Group();
+  pivot.name = 'panelPivot';
+  const wingA = panelWing(7.75 * S, 1.2 * S, METAL, 'wing+');
+  wingA.position.x = 1.25 * S;
+  const wingB = panelWing(7.75 * S, 1.2 * S, METAL, 'wing-');
+  wingB.rotation.y = Math.PI;
+  wingB.position.x = -1.25 * S;
+  pivot.add(wingA, wingB);
+  g.add(pivot);
+  g.userData.panelPivots = [pivot];
+
+  // The 4.40 m instrument boom, out of the shadow side where the magnetometers can work.
+  const boom = cyl(0.045 * S, 0.045 * S, 4.4 * S, 6, METAL, 'body', 'boom');
+  boom.rotation.x = Math.PI / 2;
+  boom.position.z = -3.75 * S;
+  g.add(boom);
+  // Three 6.50 m RPW antennae, swept back so the longest thing on the model stays the array span.
+  for (const [ax, ay] of [[0.85, 0.5], [-0.85, 0.5], [0, -1]]) {
+    const ant = cyl(0.03 * S, 0.03 * S, 6.5 * S, 5, METAL, 'body', 'rpw-antenna');
+    const len = Math.hypot(ax, ay) || 1;
+    const ux = ax / len, uy = ay / len;
+    ant.rotation.z = Math.atan2(uy, ux) - Math.PI / 2;
+    ant.position.set(ux * 3.4 * S, uy * 3.4 * S, -1.4 * S);
+    g.add(ant);
+  }
+  return g;
+}
+
+// New Horizons is a 2.1 m dish with a triangle behind it and the RTG stuck out one side -- which is
+// why it looks lopsided in every photograph, and why drawing it symmetrically would be wrong.
+function buildNewHorizons() {
+  const g = new THREE.Group();
+  const M = 3.2; // overall length, RTG included
+  g.userData.realSizeM = M;
+  const S = 1 / M;
+
+  // The primary structure: 2.1 m long, 2.7 m at its widest, 0.7 m thick.
+  //
+  // A three-sided prism is the honest primitive and costs eight triangles, but an EQUILATERAL one
+  // cannot be both 2.1 long and 2.7 wide -- a 3-gon of circumradius r is 1.5r long and r*sqrt(3)
+  // across, so matching the length gives 2.42 m of width. The spacecraft's own triangle is not
+  // equilateral either, so the prism is built to the published length and then widened to the
+  // published width rather than one number being quietly dropped.
+  // Rotated upright, the prism's LENGTH runs along +Y and its width along X; measured, not assumed.
+  const R = 1.4 * S; // 1.5 * R = the published 2.1 m length
+  const bus = cyl(R, R, 0.7 * S, 3, FOIL, 'foil', 'bus');
+  bus.rotation.x = Math.PI / 2;
+  bus.scale.x = 2.7 / (1.4 * Math.sqrt(3)); // 2.42 m across -> the published 2.7 m
+  g.add(bus);
+  // The 2.1 m high-gain antenna, on the front face and pointed at Earth.
+  const hga = dish(1.05 * S, 0.30 * S, 20, '#EDF1F6', 'foil', 'dish');
+  hga.position.z = 0.35 * S;
+  hga.name = 'dish';
+  g.add(hga);
+  const feed = cyl(0.03 * S, 0.03 * S, 0.5 * S, 8, METAL, 'body', 'feed');
+  feed.rotation.x = Math.PI / 2;
+  feed.position.z = 0.75 * S;
+  g.add(feed);
+  // The RTG: one GPHS unit, 0.42 m across and 1.13 m long, cantilevered off one corner. Placed so
+  // the overall length is the published 3.2 m.
+  // The RTG hangs off the BASE of the triangle, on the length axis -- "externally mounted at one
+  // end of the triangular structure", and it is what makes the spacecraft 3.2 m long rather than
+  // the 2.1 m the bus alone would be. The dish reaches +1.05 m, so the RTG's far end sits at
+  // 1.05 - 3.2 = -2.15 m. Offset in X because the real one is: New Horizons is visibly lopsided,
+  // and centring it would tidy away the most recognisable thing about the shape.
+  const RTG_Y = -1.585 * S;
+  const RTG_X = -0.35 * S;
+  const rtg = cyl(0.21 * S, 0.21 * S, 1.13 * S, 10, '#6E7784', 'body', 'rtg');
+  rtg.position.set(RTG_X, RTG_Y, 0);
+  g.add(rtg);
+  const fins = cyl(0.30 * S, 0.30 * S, 0.9 * S, 6, '#5C646F', 'body', 'rtg-fins');
+  fins.position.set(RTG_X, RTG_Y, 0);
+  g.add(fins);
   return g;
 }
 
@@ -2562,8 +2744,8 @@ const BUILDERS = {
   },
   debris: { default: buildDebris },
   rocket: rocketVariants(),
-  probe: { default: buildProbe },
-  telescope: { default: buildTelescope, tube: buildTelescope, hex: buildTelescope },
+  probe: { default: buildProbe, 'new-horizons': buildNewHorizons, 'solar-orbiter': buildSolarOrbiter },
+  telescope: { default: buildTelescope, tube: buildTelescope, hex: buildTelescope, gaia: buildGaia },
   asteroid: { default: buildAsteroid },
   comet: { default: buildComet },
   site: {

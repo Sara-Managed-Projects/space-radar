@@ -1,0 +1,68 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>shape sheet</title>
+<!--
+  A CONTACT SHEET FOR THE PROCEDURAL SHAPES. Not part of the site: it lives here, outside site/,
+  because site/ is served byte-for-byte and scripts/deploy.sh refuses anything it does not know.
+
+    python3 -m http.server 8195           # from the repository root, not from site/
+    open http://127.0.0.1:8195/tools/shape-sheet.html?m=telescope:gaia,probe:new-horizons
+
+  `m` is a comma-separated list of klass:variant, and defaults to the five shapes that were being
+  reviewed when this was written. It renders one model per cell and leaves the PNG on
+  `window.__sheet.dataUrl`, so a headless browser can pull the image out without a screenshot.
+
+  IT ADDS THE SAME TWO LIGHTS scene/worlds.js adds. A MeshToonMaterial in an unlit scene renders
+  nearly black: the first version of this sheet had no lights, and the silhouettes were honest
+  while every colour on it was a lie.
+-->
+<style>body{margin:0;background:#0b0e14}canvas{display:block}</style>
+<canvas id="c"></canvas>
+<script type="module">
+import * as THREE from '../site/vendor/three.module.min.js';
+import { modelFor, setSunDirection } from '../site/js/scene/models.js';
+
+const WHICH = (new URLSearchParams(location.search).get('m') || 'telescope:gaia,probe:solar-orbiter,probe:new-horizons,probe:default,telescope:default').split(',');
+const CELL = 340, COLS = Math.min(3, WHICH.length);
+const ROWS = Math.ceil(WHICH.length / COLS);
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1);
+renderer.setSize(CELL * COLS, CELL * ROWS, false);
+renderer.setScissorTest(true);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#0b0e14');
+setSunDirection(new THREE.Vector3(0.6, 0.5, 0.62));
+// The SAME two lights scene/worlds.js puts in the real scene. A MeshToonMaterial with no light in
+// the scene renders nearly black, which is what the first sheet showed and it said nothing about
+// the models: the shapes read, the colours were a lie.
+const sun = new THREE.DirectionalLight(0xfff4e6, 3.0);
+sun.position.set(0.6, 0.5, 0.62).multiplyScalar(100);
+scene.add(sun, new THREE.AmbientLight(0x2a3550, 0.35));
+
+const labels = [];
+for (let i = 0; i < WHICH.length; i++) {
+  const [klass, variant] = WHICH[i].split(':');
+  const obj = modelFor(klass, variant);
+  obj.userData.cell = i;
+  scene.add(obj);
+  labels.push(WHICH[i]);
+}
+const cam = new THREE.PerspectiveCamera(30, 1, 0.01, 100);
+// Three-quarter view: the angle a shape sheet has to be read at, or a flat disc and a flat plate
+// look the same.
+cam.position.set(1.5, 1.05, 1.9);
+cam.lookAt(0, 0, 0);
+
+for (const o of scene.children) {
+  if (o.userData.cell === undefined) continue;
+  const i = o.userData.cell;
+  const cx = (i % COLS) * CELL, cy = (ROWS - 1 - Math.floor(i / COLS)) * CELL;
+  renderer.setViewport(cx, cy, CELL, CELL);
+  renderer.setScissor(cx, cy, CELL, CELL);
+  for (const p of scene.children) if (p.userData.cell !== undefined) p.visible = (p === o);
+  renderer.render(scene, cam);
+}
+window.__sheet = { dataUrl: canvas.toDataURL('image/png'), labels, cols: COLS, rows: ROWS, cell: CELL };
+window.__ready = true;
+</script>
