@@ -73,6 +73,16 @@ jobs:
         run: python3 tests/test_growth.py
       - name: The validator actually refuses
         run: python3 tests/test_refusals.py
+      # The harvester's zip is built on every pull request with no AWS in sight (specs/0003
+      # amendment 1): a parser change is proven to package before it is ever deployed, and the
+      # placeholder path is exercised until harvest/ lands. Deterministic, so the hash is a fact.
+      - name: The harvester packages without AWS
+        run: scripts/package-harvester.sh --out /tmp/h.zip
+      # The three harvester scripts under --dry-run against a fake `aws` that records every call:
+      # each may read, none may write, and the plan they print names the right resources with the
+      # right permissions. Also proves deploy.sh no longer deletes data/v1/*.
+      - name: The harvester scripts only read in --dry-run
+        run: python3 tests/test_harvester_scripts.py
 
   contract:
     runs-on: ubuntu-latest
