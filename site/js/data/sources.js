@@ -64,6 +64,18 @@ const SNAPSHOT_SCHEMA = 1;
 // It is the shortest cadence any source has (dsn-now, 5 min), so a due source never reads a
 // manifest older than its own cadence; the HTTP cache (max-age=60) does the rest.
 const INDEX_CADENCE_MS = 5 * MINUTE;
+// WHEN THERE IS NOTHING TO SHOW, TRY AGAIN SOON. A source's cadence is how long a GOOD copy is
+// allowed to stand -- three hours for most CelesTrak groups, six for `active`. Applying it to a
+// source that has NO data was the wrong reading of it: a visitor who arrives while CelesTrak's
+// two-hour window is closed for their address (an office, a campus, a mobile carrier) saw an empty
+// layer, and the app then refused to look again for three hours, long after the window reopened.
+//
+// So an empty source retries on a floor of fifteen minutes, doubling per consecutive failure up to
+// the source's own cadence: 15, 30, 60, 120 minutes. The backoff is the part that keeps this safe.
+// CelesTrak firewalls a client that makes fifty errors in two hours, and five sources retrying
+// flat out every fifteen minutes would be forty.
+const EMPTY_RETRY_MS = 15 * MINUTE;
+const EMPTY_RETRY_STEPS = 4;
 // How long a live upstream fetch may take before it is abandoned. See fetchLive().
 const LIVE_TIMEOUT_MS = 20 * 1000;
 // Manifest statuses under which a snapshot FILE exists to read. `not-due` is here on purpose:
@@ -367,6 +379,7 @@ function readEntry(id) {
       reason: typeof parsed.reason === 'string' ? parsed.reason : null,
       snapshot: typeof parsed.snapshot === 'string' ? parsed.snapshot : null,
       bulk: parsed.bulk === true,
+      failures: numOrNull(parsed.failures) || 0,
     };
     memory.set(id, entry);
     return entry;
@@ -520,7 +533,18 @@ function blankEntry() {
     readAt: null,
     reason: null,
     snapshot: null,
+    failures: 0,
   };
+}
+
+/**
+ * How long a source with NO data waits before looking again: fifteen minutes, doubling per
+ * consecutive failure, never longer than the source's own cadence.
+ */
+function emptyRetryMs(entry, src) {
+  // The wait AFTER the first failure is the floor itself, so the exponent counts from zero there.
+  const n = Math.min(Math.max(0, (entry.failures || 1) - 1), EMPTY_RETRY_STEPS);
+  return Math.min(src.cadenceMs, EMPTY_RETRY_MS * 2 ** n);
 }
 
 // --- the public surface ------------------------------------------------------------------------
@@ -593,7 +617,9 @@ export async function load(id, opts = {}) {
   // seen within minutes, unattended.
   const sinceAttempt = entry.lastAttemptAt == null ? Infinity : now - entry.lastAttemptAt;
   const failed = entry.data == null;
-  const gateMs = failed && entry.reason === 'no-route' ? INDEX_CADENCE_MS : src.cadenceMs;
+  const gateMs = failed
+    ? (entry.reason === 'no-route' ? INDEX_CADENCE_MS : emptyRetryMs(entry, src))
+    : src.cadenceMs;
   let due = opts.force === true || sinceAttempt >= gateMs;
 
   // A cached FAILURE is not a reason to ignore our own bucket for three hours. MEASURED
@@ -851,6 +877,8 @@ async function doFetch(id) {
       snapshot: snap.why,
     };
   }
+  // Consecutive attempts that produced nothing, for the retry floor above. A success clears it.
+  next.failures = next.data == null ? (prev.failures || 0) + 1 : 0;
   writeEntry(id, next);
 
   const result = resultFrom(src, next, wallNow(), false);
