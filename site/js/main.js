@@ -492,6 +492,8 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
     // one planet would be two places to tap and one of them wrong.
     if (layer.draw === 'worlds' || layer.draw === 'galaxy' || layer.draw === 'stars3d') continue;
     const gl = createGlyphLayer(scene, layer);
+    // One mark per object: the dot fades out as that record's 3D model fades in.
+    gl.setModelOpacity((id) => (heroes ? heroes.drawnOpacity(id) : 0));
     gl.setRecords([]);
     // Hidden until its records arrive; one() then sets the real visibility. This loop runs
     // before the first await, and ctx.isLayerOn is attached to ctx after this function is

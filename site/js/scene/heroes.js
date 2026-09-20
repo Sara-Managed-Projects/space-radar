@@ -19,6 +19,7 @@ import { modelFor, updateModelAttitude, setSunDirection, disposeModels, attachOd
 import { realModelFor, loadRealModel } from './realmodels.js';
 import { propagate } from '../propagate/index.js';
 import { stage } from './stage.js';
+import { modelOpacity } from './onemark.js';
 import { WORLDS } from './worlds.js';
 
 /** How many pixels tall a hero model should read as. Big enough to see it is a thing with parts. */
@@ -227,6 +228,8 @@ export function createHeroes(scene, ctx) {
   root.renderOrder = 10;
   scene.add(root);
 
+  /** The last update()'s clock, so drawnOpacity() reads the same fade the frame drew. */
+  let lastTMs = 0;
   /** id -> {obj, record, fadeStart} */
   const live = new Map();
   // The adaptive pool (nextHeroCap above): the cap the device has earned, how long the camera has
@@ -410,6 +413,7 @@ export function createHeroes(scene, ctx) {
   }
 
   function update(tMs, at = {}) {
+    lastTMs = tMs;
     const camera = ctx.camera;
     if (!camera) return;
 
@@ -526,6 +530,18 @@ export function createHeroes(scene, ctx) {
     poolCap: () => cap,
     /** [{record, insideOf}] -- vehicles docked to something that is drawn. */
     hidden: () => lastHidden,
+    /**
+     * How much of this record's MODEL is on screen right now, 0..1. The dot layer multiplies its
+     * own opacity by (1 - this), so an object is drawn once: as its model while the model is
+     * there, as its dot otherwise. 0 when there is no model, when it is docked inside a neighbour
+     * and hidden, when the whole hero layer is off, and rising with the fade-in rather than
+     * snapping -- a dot that vanishes before the model has arrived is an object that blinks.
+     * Ivan, 2026-09-20: "we shouldn't repeat the dot with 3d object if 3d object rendered on
+     * screen, if not - dot".
+     */
+    drawnOpacity(id) {
+      return modelOpacity(live.get(id), root.visible, lastTMs, FADE_MS);
+    },
     setVisible(b) { root.visible = !!b; },
     dispose() {
       for (const id of [...live.keys()]) release(id);

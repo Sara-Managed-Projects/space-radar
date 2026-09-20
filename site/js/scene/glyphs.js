@@ -15,6 +15,7 @@ import * as THREE from '../../vendor/three.module.min.js';
 import * as propagateMod from '../propagate/index.js';
 import * as stageMod from './stage.js';
 import { inEarthShadow, sunAndEarthScene, orbitsEarth } from './shadow.js';
+import { dotOpacity } from './onemark.js';
 import {
   getGlyphAtlas,
   glyphCell,
@@ -181,6 +182,8 @@ export function createGlyphLayer(scene, layer = {}) {
         ? (p, frame, out, tMs) => stage.toScene(p, frame, tMs)
         : null;
   let warnedNoPropagator = false;
+  /** id -> 0..1, how much of that record's 3D model is on screen; set by main.js from heroes. */
+  let modelOpacityOf = null;
 
   const atlas = getGlyphAtlas();
   const outline = new THREE.Color(PALETTE.space);
@@ -402,7 +405,11 @@ export function createGlyphLayer(scene, layer = {}) {
       // Sunlit or in Earth's shadow, for the things that go round the Earth; everything else is lit.
       attrLit.array[k] = shadowRef && orbitsEarth(rec) && inEarthShadow(v, shadowRef.earth, shadowRef.sun, shadowRef.radius) ? 0 : 1;
       attrSize.array[k] = selected ? recSize[i] * 1.35 : recSize[i];
-      attrOpacity.array[k] = selected ? 1 : recOpacity[i];
+      // An object is drawn once. While its model is on screen the dot yields to it -- by the
+      // model's own fade, so neither blinks -- and it stays in `live`, so it is still there to
+      // tap. No model, a hidden model, or the hero layer off: the dot, as before.
+      const yieldTo = modelOpacityOf ? modelOpacityOf(rec.id) : 0;
+      attrOpacity.array[k] = dotOpacity(selected ? 1 : recOpacity[i], yieldTo);
       attrCell.array[k] = recCell[i];
       live.push(rec);
       k++;
@@ -512,6 +519,8 @@ export function createGlyphLayer(scene, layer = {}) {
 
   return {
     setRecords,
+    /** fn(id) -> 0..1: the dot for that record yields to its model by this much. */
+    setModelOpacity(fn) { modelOpacityOf = typeof fn === 'function' ? fn : null; },
     update,
     pick,
     pickAll,
