@@ -83,6 +83,30 @@ export function chooseLabels(candidates, opts = {}) {
   return out;
 }
 
+/** How far a label keeps off the edge of the window, in CSS pixels. */
+export const LABEL_EDGE_PAD = 4;
+
+/**
+ * Where to centre a label of `boxWidth` anchored at `x`, so the whole box stays on screen.
+ *
+ * A label is drawn with `translate(-50%)`, so half of it hangs to the left of the anchor and half
+ * to the right. Only the ANCHOR was ever kept on screen, never the box, so a name on an object near
+ * the edge was cut off by the edge of the window. MEASURED on a 375 px phone, 2026-09-20: a label
+ * ran 311..407 on a 375 px screen, a third of the name off the side. It happens on a desktop too,
+ * as a smaller fraction of a wider window, which is why it had not been noticed.
+ *
+ * A label wider than the window cannot be fully shown; it starts at the left edge rather than being
+ * centred on nothing, so the beginning of the name is the part that survives.
+ */
+export function clampLabelX(x, boxWidth, hostWidth, pad = LABEL_EDGE_PAD) {
+  if (!Number.isFinite(x)) return x;
+  const half = (Number.isFinite(boxWidth) ? boxWidth : 0) / 2;
+  const lo = half + pad;
+  const hi = (Number.isFinite(hostWidth) ? hostWidth : 0) - half - pad;
+  if (hi < lo) return lo;
+  return Math.min(Math.max(x, lo), hi);
+}
+
 export function createLabels(ctx, host) {
   if (!host || typeof document === 'undefined') return { update() {}, destroy() {} };
   const pool = [];
@@ -165,15 +189,29 @@ export function createLabels(ctx, host) {
     return out;
   }
 
+  /**
+   * A label is centred on the thing it names, so half of it hangs past that point. Only the ANCHOR
+   * was kept on screen (`x > w + 20` in project()), never the box, so a name on an object near the
+   * right edge was cut off by the edge of the window.
+   *
+   * MEASURED on a 375 px phone, 2026-09-20, which is where it shows worst: a label ran 311..407 on
+   * a 375 px screen -- a third of the name off the side. The same thing happens on a desktop; it is
+   * simply a smaller fraction of a wider window, which is why nobody had seen it.
+   *
+   * So the box is kept inside the host: the anchor may sit anywhere, the label slides to stay
+   * readable, and a label wider than the whole screen still starts at the left edge rather than
+   * being centred on nothing.
+   */
   function update(tMs) {
     if (host.hidden) return;
     const chosen = chooseLabels(candidatesNow(tMs));
+    // Pass one: contents. Pass two: measure and place. Reading offsetWidth invalidates layout, so
+    // interleaving it with the writes would re-layout the whole list once per label.
     for (let i = 0; i < pool.length; i++) {
       const slot = pool[i];
       const c = chosen[i];
       if (!c) { if (!slot.node.hidden) slot.node.hidden = true; continue; }
       slot.node.hidden = false;
-      slot.node.style.transform = `translate(${Math.round(c.x)}px, ${Math.round(c.y)}px) translate(-50%, -140%)`;
       const name = labelName(c.record);
       if (slot.text.textContent !== name) slot.text.textContent = name;
       const klass = c.record.klass || 'satellite';
@@ -182,6 +220,14 @@ export function createLabels(ctx, host) {
         slot.klass = klass;
       }
       slot.node.dataset.kind = c.kind;
+    }
+    const w = host.clientWidth || window.innerWidth;
+    for (let i = 0; i < pool.length; i++) {
+      const slot = pool[i];
+      const c = chosen[i];
+      if (!c) continue;
+      const x = clampLabelX(c.x, slot.node.offsetWidth, w);
+      slot.node.style.transform = `translate(${Math.round(x)}px, ${Math.round(c.y)}px) translate(-50%, -140%)`;
     }
   }
 
