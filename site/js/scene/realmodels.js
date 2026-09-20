@@ -388,7 +388,10 @@ export const REAL_MODELS = {
     '-32': { file: 'voyager.glb', colour: 'probe', name: 'Voyager 2' },
     '-61': { file: 'juno.glb', colour: 'probe', name: 'Juno' },
     '-96': { file: 'parker.glb', colour: 'probe', name: 'Parker Solar Probe' },
-    '-170': { file: 'jwst.glb', colour: 'telescope', name: 'James Webb Space Telescope' },
+    // Procedural, not NASA's file: see buildJwst in scene/models.js. A loaded model is retextured
+    // in one colour for its class, and JWST without the contrast between gold, silver and dark
+    // is a brown lump -- which is what shipped until 2026-09-20.
+    '-170': { build: 'jwst', colour: 'telescope', name: 'James Webb Space Telescope' },
     '-21': { file: 'soho.glb', colour: 'telescope', name: 'SOHO' },
     '-74': { file: 'mro.glb', colour: 'probe', name: 'Mars Reconnaissance Orbiter' },
     // No NASA model exists for New Horizons, so this names a PROCEDURAL shape instead of a
