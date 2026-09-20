@@ -1,0 +1,41 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>model colour census</title>
+<!--
+  WHICH ROUTE EACH SHIPPED MODEL TAKES through realmodels.js's colourRoute(). Not part of the site:
+  it lives here, outside site/, because site/ is served byte-for-byte and scripts/deploy.sh refuses
+  anything it does not know.
+
+    python3 tools/serve.py . 8190       # from the repository root
+    node tools/cdp.mjs 'http://127.0.0.1:8190/tools/model-colour-census.html?files=iss.glb,tess.glb' probe.js
+
+  It loads every .glb through the app's OWN loader, so the answer is the one the app gets rather
+  than an offline re-reading of the glTF. The result is left on `window.__census`.
+-->
+<body style="background:#0b0e14;color:#c9ceda;font:13px ui-monospace,monospace">
+<pre id="out">loading…</pre>
+<script type="module">
+addEventListener('unhandledrejection', (e) => { window.__err = String(e.reason && e.reason.message || e.reason); });
+import { GLTFLoader } from '../site/vendor/GLTFLoader.js';
+import { MeshoptDecoder } from '../site/vendor/meshopt_decoder.module.js';
+import { colourRoute } from '../site/js/scene/realmodels.js';
+
+// `?files=iss.glb,tess.glb` -- a page cannot list a directory, so the caller passes the list.
+const FILES = (new URLSearchParams(location.search).get('files') || '').split(',').filter(Boolean);
+const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+const rows = [];
+for (const f of FILES) {
+  try {
+    const gltf = await new Promise((res, rej) => loader.load(`../site/models/${f}`, res, undefined, rej));
+    rows.push({ file: f, route: colourRoute(gltf.scene) });
+  } catch (e) {
+    rows.push({ file: f, route: 'ERROR', err: String(e.message || e).slice(0, 80) });
+  }
+}
+const by = {};
+for (const r of rows) by[r.route] = (by[r.route] || 0) + 1;
+window.__census = { rows, counts: by, total: rows.length };
+document.getElementById('out').textContent = rows.map((r) => `${r.file.padEnd(24)} ${r.route}`).join('\n') +
+  `\n\n${Object.entries(by).map(([k, v]) => `${k}=${v}`).join('  ')}`;
+window.__ready = true;
+</script>

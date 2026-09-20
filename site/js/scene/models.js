@@ -80,12 +80,12 @@ let modelMaterials = null;
  * @param {'body'|'panel'|'foil'|'radiator'} kind
  * @param {Map} [pool] where to cache it; defaults to the process-wide pool
  */
-export function toonMaterial(colour, kind = 'body', pool = materials) {
-  const key = `${colour}|${kind}`;
+export function toonMaterial(colour, kind = 'body', pool = materials, map = null) {
+  const key = `${colour}|${kind}${map ? `|${map.uuid}` : ''}`;
   const hit = pool.get(key);
   if (hit) return hit;
   const s = SPECULAR[kind] || SPECULAR.body;
-  const m = new THREE.MeshToonMaterial({ color: colour, gradientMap: gradientMap() });
+  const m = new THREE.MeshToonMaterial({ color: colour, gradientMap: gradientMap(), map });
   m.userData.kind = kind;
   m.userData.perModel = pool !== materials;
   m.onBeforeCompile = (shader) => {

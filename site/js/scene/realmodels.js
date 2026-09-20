@@ -819,8 +819,68 @@ export function ensureNormals(root) {
   return fixed;
 }
 
+/**
+ * Is this texture one of the pipeline's baked colour palettes rather than a picture of a surface?
+ *
+ * `gltf-transform palette` -- which scripts/decimate-model.mjs runs, and which is why half the
+ * shipped files have materials called `PaletteMaterial001` -- collapses a model's flat-coloured
+ * materials into ONE strip four texels tall: a column per original material, a row per channel.
+ * Fifteen of the shipped files carry one, they are 0.1 to 0.5 kB, and the app already downloads
+ * every byte of them and then throws the colours away.
+ *
+ * Four texels tall is the test, and it is not a guess about size: a texture that short cannot
+ * carry surface detail. It can only carry flat colours, which is exactly what the procedural
+ * models use -- gold foil, blue array, dark bus. A 1024x1024 photograph of Sentinel-6 is a
+ * different thing and is still discarded, because that WOULD be the photoreal shading the module
+ * header rules out.
+ */
+export function isPalette(texture) {
+  const img = texture && texture.image;
+  const h = img && (img.height || img.naturalHeight);
+  const w = img && (img.width || img.naturalWidth);
+  return h > 0 && h <= PALETTE_ROWS && w > 0 && w <= PALETTE_MAX_W;
+}
+
+const UNPAINTED = '#C9CEDA'; // structure whose colour was in a texture: the same silver models.js uses
+const PALETTE_ROWS = 4;      // what gltf-transform's palette transform writes
+const PALETTE_MAX_W = 512;   // one column per original material; the widest shipped is 128
+
+/**
+ * What colour information does this FILE actually carry, and does it carry it everywhere?
+ *
+ * Decided once per model, never per mesh, because half a spacecraft in NASA's colours and half in
+ * the class colour looks like a bug -- Sentinel-6 has both a baked palette and 2048px photographs,
+ * and mixing the two routes drew an orange satellite with white panels.
+ *
+ * 'palette'  every material reads a palette strip: keep them, tint white, let the file speak.
+ * 'own'      no palette, but at least two DIFFERENT stated colours: use each material's own.
+ * 'class'    neither: one class colour, which is what every loaded model used to get.
+ *
+ * Pure white is not a stated colour. In these files it means "the texture carries the colour", and
+ * the texture is exactly what gets discarded -- counting it made Aqua and Chandra wash out to
+ * white, which says less than the class colour does.
+ */
+export function colourRoute(root) {
+  const mats = [];
+  root.traverse((n) => {
+    if (!n.isMesh) return;
+    for (const m of Array.isArray(n.material) ? n.material : [n.material]) if (m) mats.push(m);
+  });
+  if (!mats.length) return 'class';
+  if (mats.every((m) => m.map && isPalette(m.map))) return 'palette';
+  const stated = new Set();
+  for (const m of mats) {
+    if (!m.color) continue;
+    const hex = `#${m.color.getHexString()}`;
+    if (hex !== '#ffffff') stated.add(hex);
+  }
+  return stated.size >= 2 ? 'own' : 'class';
+}
+
 function applyToon(root, colourToken) {
   const hex = CLASS_COLOURS[colourToken] || CLASS_COLOURS.satellite;
+  // Measured once per model, not per mesh: the question is whether the FILE carries variation.
+  const route = colourRoute(root);
   // A pool PER MODEL, not the shared one. models.js explains why: the hero layer fades a model in
   // by writing material.opacity, and one shared instance would fade every object of that class at
   // once. The compiled shader program is still shared, so this costs a few uniforms and nothing more.
@@ -830,7 +890,26 @@ function applyToon(root, colourToken) {
     n.castShadow = false;
     n.receiveShadow = false;
     const kind = /panel|solar|array/i.test(n.name || '') ? 'panel' : 'body';
-    const replacement = toonMaterial(hex, kind, pool);
+    // A model that still carries its baked palette keeps it, and is tinted white so the palette's
+    // own colours come through the toon ramp unchanged. Without one, the whole model is the class
+    // colour, as before -- which is what makes a decimated mesh read as a single blob.
+    const first = Array.isArray(n.material) ? n.material[0] : n.material;
+    const palette = route === 'palette' && first && first.map ? first.map : null;
+    if (palette) {
+      palette.magFilter = THREE.NearestFilter;   // a palette is looked up, not blended: one texel,
+      palette.minFilter = THREE.NearestFilter;   // one colour, no bleeding into the neighbour
+      palette.generateMipmaps = false;
+    }
+    // A white material on the 'own' route is one whose colour lived in a texture we dropped, so it
+    // gets the neutral silver the procedural models use for unpainted structure -- not pure white,
+    // which glares, and not the class colour, which would fight the real colours beside it.
+    let tint = hex;
+    if (palette) tint = '#ffffff';
+    else if (route === 'own' && first && first.color) {
+      const own = `#${first.color.getHexString()}`;
+      tint = own === '#ffffff' ? UNPAINTED : own;
+    }
+    const replacement = toonMaterial(tint, kind, pool, palette);
     if (replacement) {
       // Dispose what NASA shipped: the textures on these can be several megabytes of GPU memory
       // that nothing will ever sample once the material is replaced.
@@ -838,6 +917,7 @@ function applyToon(root, colourToken) {
       for (const m of old) {
         if (!m) continue;
         for (const key of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'emissiveMap', 'aoMap']) {
+          if (m[key] === palette) continue; // the one texture that is still in use
           if (m[key] && m[key].dispose) m[key].dispose();
         }
         if (m.dispose) m.dispose();
