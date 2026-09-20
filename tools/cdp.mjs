@@ -43,6 +43,10 @@ const PORT = Number(arg('port', String(9300 + Math.floor(Math.random() * 600))))
 const MOBILE = process.argv.includes('--mobile');
 // --shot=out.png: a PNG of the page after the script has run, WebGL canvas included.
 const SHOT = arg('shot', '');
+// --cpuprofile=out.json: a CPU profile of the page while the script runs, plus a self-time
+// summary on stderr. What blocks the main thread is JavaScript, so this is meaningful even
+// though headless renders in software.
+const CPUPROFILE = arg('cpuprofile', '');
 const DPR = Number(arg('dpr', MOBILE ? '3' : '1'));
 const trace = (m) => { if (process.env.CDP_TRACE) process.stderr.write('[cdp] ' + m + '\n'); };
 
@@ -115,6 +119,11 @@ try {
   await send(ws, 'Page.navigate', { url }, sessionId);
   trace('navigated');
 
+  if (CPUPROFILE) {
+    await send(ws, 'Profiler.enable', {}, sessionId);
+    await send(ws, 'Profiler.setSamplingInterval', { interval: 200 }, sessionId);
+    await send(ws, 'Profiler.start', {}, sessionId);
+  }
   const body = readFileSync(scriptPath, 'utf8');
   trace('evaluating');
   const r = await send(ws, 'Runtime.evaluate', {
@@ -122,6 +131,26 @@ try {
     awaitPromise: true, returnByValue: true,
   }, sessionId);
   trace('done');
+  if (CPUPROFILE) {
+    const { profile } = await send(ws, 'Profiler.stop', {}, sessionId);
+    writeFileSync(CPUPROFILE, JSON.stringify(profile));
+    // Self time per function: the profile is samples plus the time between them.
+    const byId = new Map(profile.nodes.map((n) => [n.id, n]));
+    const self = new Map();
+    const total = (profile.endTime - profile.startTime) / 1000;
+    for (let i = 0; i < profile.samples.length; i += 1) {
+      const dt = (profile.timeDeltas[i] || 0) / 1000;
+      const n = byId.get(profile.samples[i]);
+      if (!n) continue;
+      const f = n.callFrame;
+      const where = (f.url || '').split('/').slice(-2).join('/').split('?')[0];
+      const key = `${f.functionName || '(anonymous)'} ${where}${f.lineNumber >= 0 ? ':' + (f.lineNumber + 1) : ''}`;
+      self.set(key, (self.get(key) || 0) + dt);
+    }
+    const top = [...self].sort((a, b) => b[1] - a[1]).slice(0, 18);
+    console.error(`--- cpu profile: ${total.toFixed(0)} ms wall, top self time ---`);
+    for (const [k, ms] of top) console.error(`${ms.toFixed(0).padStart(7)} ms  ${(100 * ms / total).toFixed(1).padStart(5)} %  ${k}`);
+  }
   if (SHOT) {
     const shot = await send(ws, 'Page.captureScreenshot', { format: 'png', captureBeyondViewport: false }, sessionId);
     writeFileSync(SHOT, Buffer.from(shot.data, 'base64'));

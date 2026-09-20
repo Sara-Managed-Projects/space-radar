@@ -379,27 +379,36 @@ function writeEntry(id, entry) {
   memory.set(id, entry);
   const s = storage();
   if (!s) return;
+  // ONE PASS OVER THE PAYLOAD. A 7 MB feed is expensive to serialise -- it showed up in a CPU
+  // profile of a phone boot -- so the data is stringified once and the result is reused for the
+  // size decision, for localStorage, and for the Cache Storage body. The first version of this
+  // stringified it up to three times.
+  let dataText = null;
+  try {
+    dataText = entry.data == null ? null : JSON.stringify(entry.data);
+  } catch {
+    return; // a payload that cannot be serialised is not one we can cache
+  }
+  const big = dataText != null && dataText.length > LOCAL_MAX_CHARS;
   // A payload too big for localStorage is written to Cache Storage, and localStorage keeps a stub:
   // the timestamps, status and reason, with `bulk: true` where the data would be. The stub is what
   // gates the next fetch, so the two-hour rule holds across a reload whichever store has the data.
-  let text = null;
+  const { data: _omit, ...meta } = entry;
+  meta.bulk = big;
+  let text;
   try {
-    text = JSON.stringify(entry);
+    const metaText = JSON.stringify(meta);
+    text = `{"data":${big || dataText == null ? 'null' : dataText}${metaText.length > 2 ? ',' + metaText.slice(1) : '}'}`;
   } catch {
     return;
   }
-  let stored = entry;
-  if (text.length > LOCAL_MAX_CHARS && entry.data != null) {
-    stored = { ...entry, data: null, bulk: true };
-    text = JSON.stringify(stored);
+  if (big) {
     if (bulkSaved.get(id) !== entry.data) {
       bulkSaved.set(id, entry.data);
-      bulkPut(id, entry.data);
+      bulkPut(id, dataText);
     }
-  } else if (entry.data != null && entry.bulk) {
+  } else if (entry.bulk) {
     // A payload that shrank back under the ceiling: the stub no longer points anywhere.
-    stored = { ...entry, bulk: false };
-    text = JSON.stringify(stored);
     bulkDelete(id);
   }
   try {
@@ -437,11 +446,12 @@ function bulkKey(id) {
   const origin = (globalThis.location && globalThis.location.origin) || 'https://spaceradar.invalid';
   return new URL('/__sr-bulk/' + encodeURIComponent(id), origin).href;
 }
-function bulkPut(id, data) {
+/** @param {string} dataText the payload, already serialised by writeEntry -- serialised once. */
+function bulkPut(id, dataText) {
   const c = bulkStore();
   if (!c) return Promise.resolve(false);
   return c.open(BULK_CACHE)
-    .then((cache) => cache.put(bulkKey(id), new Response(JSON.stringify(data), { headers: { 'content-type': 'application/json' } })))
+    .then((cache) => cache.put(bulkKey(id), new Response(dataText, { headers: { 'content-type': 'application/json' } })))
     .then(() => true, () => false);
 }
 function bulkDelete(id) {
