@@ -1137,6 +1137,41 @@ for (const file of allFiles) {
   }
 }
 
+// 3e4b. THE SCENE HAS A NAME, A HEADING AND A LANDMARK.
+//
+// Measured 2026-09-20 with a headless browser: the app's contrast and control names are clean --
+// zero low-contrast strings and zero nameless controls out of 52 focusable elements -- but the
+// canvas itself was an unlabelled <canvas>. A screen reader reached the panels and found nothing
+// where the map is; the page had no <h1> at all, and no landmark around the scene.
+//
+// `role="img"` with a name is the honest description of a canvas that draws a scene, and it is a
+// NAME rather than a live region on purpose: everything drawn is also reachable as text -- the
+// layer list, the search, a card per object -- and a sentence that changed sixty times a second
+// would be unusable. The heading is visually hidden rather than display:none, which would hide it
+// from assistive technology too, which is the whole point of it.
+{
+  const html = readFileSync(join(ROOT, 'site/index.html'), 'utf8');
+  const css = readFileSync(join(ROOT, 'site/css/site.css'), 'utf8');
+  const canvas = (html.match(/<canvas[^>]*id="stage"[^>]*>/s) || [''])[0];
+  if (!/role="img"/.test(canvas)) problems.push('A11Y     the canvas has no role: a screen reader finds nothing where the map is');
+  const name = (canvas.match(/aria-label="([^"]+)"/s) || [])[1] || '';
+  if (name.trim().length < 40) problems.push(`A11Y     the canvas needs a name that says what it draws (got ${name.length} characters)`);
+  const h1s = html.match(/<h1\b/g) || [];
+  if (h1s.length !== 1) problems.push(`A11Y     the page should have exactly one h1; it has ${h1s.length}`);
+  const h1 = (html.match(/<h1[^>]*class="([^"]*)"/) || [])[1] || '';
+  if (!h1.includes('sr-hidden-text')) problems.push('A11Y     the h1 should be the visually hidden heading');
+  // The class has to exist and has to hide by clipping, not by display:none.
+  const rule = (css.match(/\.sr-hidden-text\s*\{[^}]*\}/s) || [''])[0];
+  if (!rule) problems.push('A11Y     .sr-hidden-text is used by index.html and not defined in site.css');
+  else if (/display:\s*none/.test(rule) || /visibility:\s*hidden/.test(rule)) {
+    problems.push('A11Y     .sr-hidden-text hides itself from assistive technology too; clip it instead');
+  }
+  if (!/<main\b/.test(html)) problems.push('A11Y     the scene is not inside a main landmark');
+  if (!problems.some((p) => p.startsWith('A11Y'))) {
+    notes.push('the scene is a named image inside a main landmark, under one visually hidden h1');
+  }
+}
+
 // 3e5. THE GITHUB MARK STEPS ASIDE FOR THE CARD, AND ONLY FOR THE CARD.
 //
 // The mark asks for the top right corner. On desktop it used to sit at `var(--sr-card-w) + 24px`
