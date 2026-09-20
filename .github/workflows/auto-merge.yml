@@ -47,6 +47,16 @@ jobs:
             case ",${LABELS}," in *,no-auto-merge,*|*,hold,*) return 0 ;; esac
             return 1
           }
+          # Every check on the PR, not only the workflow that woke this one. #142 was merged the
+          # second `ci` went green, four minutes before `shots` -- the only check with a GPU --
+          # finished and said "heroes is not defined". main was broken until #143.
+          # Anything not yet SUCCESS / SKIPPED / NEUTRAL is a reason to wait, and "could not ask"
+          # counts as not green.
+          green() {
+            BAD=$(gh pr checks "$1" --repo "$REPO" --json state \
+              --jq '[.[] | select(.state != "SUCCESS" and .state != "SKIPPED" and .state != "NEUTRAL")] | length' 2>/dev/null) || BAD=1
+            [ "${BAD:-1}" = "0" ]
+          }
           if [ -z "${SHA}" ]; then
             # The scheduled sweep: every open, non-draft, unheld PR into main that GitHub calls CLEAN
             # (green, up to date, no conflict). One at a time, oldest first; a merge makes the next
@@ -54,6 +64,7 @@ jobs:
             for PR in $(gh pr list --repo "$REPO" --base main --state open --json number,isDraft,mergeStateStatus \
                 --jq '[.[] | select(.isDraft==false and .mergeStateStatus=="CLEAN")] | sort_by(.number) | .[].number'); do
               if held "$PR"; then echo "PR #$PR held by label"; continue; fi
+              if ! green "$PR"; then echo "PR #$PR has a check that is not green yet"; continue; fi
               if gh pr merge "$PR" --repo "$REPO" --squash --delete-branch; then echo "merged #$PR"; break; fi
               echo "PR #$PR did not merge; leaving it for the next sweep"
             done
@@ -70,6 +81,7 @@ jobs:
           # "something went wrong", or a sibling merging seconds earlier). BEHIND means the author
           # must rebase, and the rebased head comes back through ci and this file; stop then.
           for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            if ! green "$PR"; then echo "attempt $attempt: a check on PR #$PR is not green yet"; sleep 30; continue; fi
             if gh pr merge "$PR" --repo "$REPO" --squash --delete-branch; then echo "merged #$PR"; exit 0; fi
             STATE=$(gh pr view "$PR" --repo "$REPO" --json state,mergeStateStatus --jq '.state + " " + .mergeStateStatus')
             echo "attempt $attempt: refused; PR #$PR is $STATE"
