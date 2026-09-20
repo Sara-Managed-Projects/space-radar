@@ -123,7 +123,10 @@ jobs:
             mcr.microsoft.com/playwright:v1.49.1-jammy \
             bash -c 'set -euo pipefail
               npm install --no-save --no-audit --no-fund playwright@1.49.1
-              node scripts/check-drawn.mjs --base=http://127.0.0.1:8177'
+              node scripts/check-drawn.mjs --base=http://127.0.0.1:8177
+              # And the phone, which no review could measure until tools/cdp.mjs could boot one.
+              # The same pixels, plus: no label may run off the edge of a 375 px window.
+              node scripts/check-drawn.mjs --base=http://127.0.0.1:8177 --width=375 --height=812 --mobile'
 
       # A shot that exists but is a picture of a failure panel is the thing this job used to
       # produce. The selector wait above is the real guard; this only catches an empty file.
