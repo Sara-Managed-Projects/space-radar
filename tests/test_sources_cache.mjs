@@ -113,6 +113,60 @@ async function twoVisits({ withCaches }) {
   if (!problems.length) console.log('  without Cache Storage: the small feeds survive, nothing is evicted for the big ones, and the gate still holds');
 }
 
+// AN EMPTY SOURCE LOOKS AGAIN SOON; A GOOD COPY IS LEFT ALONE.
+//
+// A source's cadence is how long a GOOD copy may stand: three hours for most CelesTrak groups, six
+// for `active`. Applying it to a source with NO data meant a visitor who arrived while CelesTrak's
+// two-hour window was closed for their address saw an empty layer and the app refused to look again
+// for three hours -- long after the window reopened. Ivan, 2026-09-20: "keep it until next success
+// retrieval - if failed - we take cached one ... so it will help us always have all objects online."
+{
+  const MIN = 60 * 1000;
+  const store = new Map();
+  globalThis.localStorage = {
+    get length() { return store.size; }, key: (i) => [...store.keys()][i] ?? null,
+    getItem: (k) => store.get(k) ?? null, removeItem: (k) => { store.delete(k); },
+    setItem: (k, v) => { store.set(k, String(v)); },
+  };
+  delete globalThis.caches;
+  let mode = 'fail';
+  let upstream = 0;
+  globalThis.fetch = async (url) => {
+    if (String(url).includes('/data/v1/')) return new Response('no', { status: 403 });
+    upstream += 1;
+    if (mode === 'fail') return new Response('GP data has not updated since your last successful download', { status: 403 });
+    return new Response(JSON.stringify([omm(1), omm(2)]), { status: 200, headers: { 'content-type': 'application/json' } });
+  };
+  const mod = await import(join(ROOT, 'site/js/data/sources.js') + '?retry=1');
+  const id = 'celestrak-stations';                       // cadence: three hours
+  // Attempts are stamped with the real wall clock (the module says so: bookkeeping never reads
+  // the app's scrubbable clock), so the synthetic `now` has to start from the real one.
+  const t = Date.now();
+  const at = async (minutes) => { const before = upstream; await mod.load(id, { await: true, now: t + minutes * MIN }); return upstream - before; };
+
+  // Every attempt is stamped with the real clock, which barely moves during a test, so `at(n)` is
+  // n minutes after the FIRST attempt rather than after the previous one. The waits below are the
+  // backoff measured from that fixed point: 15, then 30, then 60.
+  check((await at(0)) === 1, 'the first visit asks upstream');
+  check((await at(5)) === 0, 'five minutes later, with nothing to show, it does NOT ask again');
+  check((await at(16)) === 1, 'at sixteen minutes it tries again rather than waiting out the three-hour cadence');
+  check((await at(20)) === 0, 'after a second failure the wait has doubled to thirty minutes');
+  check((await at(36)) === 1, 'and at thirty-six minutes it tries a third time');
+  check((await at(50)) === 0, 'after a third failure the wait is an hour');
+  // A success: the source's own cadence applies again, and the copy is kept.
+  mode = 'ok';
+  check((await at(70)) === 1, 'at seventy minutes it tries again and lands a copy');
+  const got = await mod.load(id, { await: true, now: t + 71 * MIN });
+  check(got.data != null && got.data.length === 2, `the copy is held: ${got.data && got.data.length} records`);
+  check((await at(100)) === 0, 'with a good copy the three-hour cadence applies again -- not every fifteen minutes');
+  // And a later failure must not blank it.
+  mode = 'fail';
+  check((await at(200)) === 1, 'after three hours it revalidates');
+  const after = await mod.load(id, { await: true, now: t + 201 * MIN });
+  check(after.data != null && after.data.length === 2, 'a failed revalidation keeps the last good copy');
+  if (!problems.length) console.log('  an empty source retries at 15 minutes and backs off; a good copy stands for the source cadence and survives a failure');
+}
+
 if (problems.length) {
   console.log(`sources cache: ${problems.length} problem(s)`);
   for (const p of problems) console.log('  - ' + p);
