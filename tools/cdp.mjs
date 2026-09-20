@@ -27,7 +27,7 @@
 // BUDGET YOUR BOOTS. Each boot of the app pulls the live catalogues. About fifteen in an hour got
 // this machine a 403 from CelesTrak on 2026-09-17, which then looks exactly like an empty layer.
 import { spawn } from 'node:child_process';
-import { readFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -37,6 +37,13 @@ const arg = (n, d) => { const h = process.argv.find((a) => a.startsWith('--' + n
 const W = Number(arg('width', '1280'));
 const H = Number(arg('height', '800'));
 const PORT = Number(arg('port', String(9300 + Math.floor(Math.random() * 600))));
+// --mobile: a phone, properly -- device pixel ratio, touch points and a phone user agent, not
+// just a narrow window. The CSS is keyed on width, but `hover: none` and `pointer: coarse` are
+// not, and the app asks about touch.
+const MOBILE = process.argv.includes('--mobile');
+// --shot=out.png: a PNG of the page after the script has run, WebGL canvas included.
+const SHOT = arg('shot', '');
+const DPR = Number(arg('dpr', MOBILE ? '3' : '1'));
 const trace = (m) => { if (process.env.CDP_TRACE) process.stderr.write('[cdp] ' + m + '\n'); };
 
 const CHROME = process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
@@ -96,7 +103,15 @@ try {
   trace('attached');
   await send(ws, 'Page.enable', {}, sessionId);
   await send(ws, 'Runtime.enable', {}, sessionId);
-  await send(ws, 'Emulation.setDeviceMetricsOverride', { width: W, height: H, deviceScaleFactor: 1, mobile: false }, sessionId);
+  await send(ws, 'Emulation.setDeviceMetricsOverride', { width: W, height: H, deviceScaleFactor: DPR, mobile: MOBILE, screenWidth: W, screenHeight: H }, sessionId);
+  if (MOBILE) {
+    await send(ws, 'Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 }, sessionId);
+    await send(ws, 'Emulation.setUserAgentOverride', {
+      userAgent: 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Mobile Safari/537.36',
+      platform: 'Android',
+      userAgentMetadata: { platform: 'Android', platformVersion: '14', architecture: '', model: 'Pixel 8', mobile: true, brands: [{ brand: 'Chromium', version: '153' }], fullVersion: '153.0.0.0' },
+    }, sessionId);
+  }
   await send(ws, 'Page.navigate', { url }, sessionId);
   trace('navigated');
 
@@ -107,6 +122,11 @@ try {
     awaitPromise: true, returnByValue: true,
   }, sessionId);
   trace('done');
+  if (SHOT) {
+    const shot = await send(ws, 'Page.captureScreenshot', { format: 'png', captureBeyondViewport: false }, sessionId);
+    writeFileSync(SHOT, Buffer.from(shot.data, 'base64'));
+    trace('wrote ' + SHOT);
+  }
   if (r.exceptionDetails) {
     console.error('PAGE THREW:', r.exceptionDetails.exception?.description || r.exceptionDetails.text);
     if (logs.length) console.error(logs.join('\n'));
