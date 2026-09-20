@@ -36,6 +36,12 @@ const arg = (name, fallback) => {
 
 const BASE = arg('base', 'http://127.0.0.1:8177');
 const VIEWPORT = { width: Number(arg('width', '1280')), height: Number(arg('height', '800')) };
+// --mobile: a phone, not just a narrow window -- device pixel ratio and touch as well as size. The
+// phone regime went unchecked in every review until 2026-09-20 because nothing here could boot one.
+const MOBILE = process.argv.includes('--mobile');
+// The "app is up" selector differs by viewport: the desktop rail is #sr-controls, the phone's is
+// its bottom bar. The screenshot step above this one in screens.yml has always known that.
+const UP = arg('selector', MOBILE ? '.sr-mobilebar' : '#sr-controls');
 // MEASURED, not guessed, in the app on 2026-09-17 at the default view (camera 22 units out):
 //   healthy                       Earth 25.4 % of the frame, sky 68.2 %
 //   the 2026-09-08 bug put back   Earth  1.03 %  -- the atmosphere's rim, and nothing else
@@ -47,7 +53,7 @@ const SKY_MIN_PCT = Number(arg('sky-min', '0.02'));
 const fail = (msg) => { console.error(`::error::${msg}`); process.exitCode = 1; };
 
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: VIEWPORT, deviceScaleFactor: 1 });
+const page = await browser.newPage({ viewport: VIEWPORT, deviceScaleFactor: MOBILE ? 3 : 1, isMobile: MOBILE, hasTouch: MOBILE });
 const problems = [];
 page.on('pageerror', (e) => problems.push(`page error: ${e.message}`));
 
@@ -57,7 +63,7 @@ try {
   // window once boot is done. No wait on RECORDS: the world is drawn from bundled ephemeris and
   // needs no network, and a red build for somebody else's outage is how a team learns to ignore
   // red builds.
-  await page.waitForSelector('#sr-controls', { state: 'attached', timeout: 90_000 });
+  await page.waitForSelector(UP, { state: 'attached', timeout: 90_000 });
   await page.waitForFunction(() => !!(window.spaceRadar && window.spaceRadar.worlds), null, { timeout: 90_000 });
 
   const seen = await page.evaluate(() => {
@@ -102,7 +108,22 @@ try {
       }
     });
 
+    // A label is centred on what it names, so half hangs past that point. Before #136 only the
+    // ANCHOR was kept on screen: on a 375 px phone, names ran up to 77 px off the side. Any label
+    // that is drawn must be inside the window, whatever the viewport.
+    const clipped = [];
+    for (const el of document.querySelectorAll('div.label')) {
+      if (el.hidden) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width < 4) continue;
+      if (r.right > window.innerWidth + 1 || r.left < -1) {
+        clipped.push(`${(el.textContent || '').trim().slice(0, 20)} ${Math.round(r.left)}..${Math.round(r.right)}`);
+      }
+    }
+
     return {
+      clipped,
+      labelCount: document.querySelectorAll('div.label').length,
       stageId,
       viewport: [w, h],
       worldPct: share(world),
@@ -112,6 +133,12 @@ try {
     };
   });
 
+  if (seen.clipped.length) {
+    fail(
+      `${seen.clipped.length} label(s) run off the edge of a ${VIEWPORT.width}x${VIEWPORT.height} window: ` +
+        `${seen.clipped.join('; ')}. ui/labels.js clampLabelX() keeps the box inside the host.`
+    );
+  }
   console.log(`stage world: ${seen.stageId}   viewport: ${seen.viewport.join('x')}   camera ${seen.cameraDistance.toFixed(1)} units out`);
   console.log(`the stage world covers ${seen.worldPct} % of the frame; the sky ${seen.skyPct} %`);
 
@@ -132,7 +159,7 @@ try {
     );
   }
   for (const p of problems) fail(p);
-  if (!process.exitCode) console.log('drawn ok: the world and the sky are both on screen, and nothing draws over them');
+  if (!process.exitCode) console.log(`drawn ok at ${VIEWPORT.width}x${VIEWPORT.height}${MOBILE ? ' (phone)' : ''}: the world and the sky are both on screen, nothing draws over them, and ${seen.labelCount} label(s) stay inside the window`);
 } finally {
   await browser.close();
 }
