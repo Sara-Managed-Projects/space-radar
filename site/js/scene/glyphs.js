@@ -9,7 +9,9 @@
 // 24 px. Raycasting tens of thousands of instances is the thing this exists to avoid.
 //
 // A record whose cls is 'sample' also draws a dashed halo ring, so bundled demonstration data can
-// never be mistaken for a live position (the module contract rule 5).
+// never be mistaken for a live position (the module contract rule 5). The ring is drawn by the
+// same instance as the dot but at its own opacity (iRing), because the dot yields to a 3D model
+// and the ring must not: a model built from bundled coordinates is no more live than a dot is.
 
 import * as THREE from '../../vendor/three.module.min.js';
 import * as propagateMod from '../propagate/index.js';
@@ -57,6 +59,7 @@ attribute float iSize;
 attribute float iOpacity;
 attribute float iLit;      // 1 in sunlight, 0 in Earth's shadow (scene/shadow.js)
 attribute float iCell;
+attribute float iRing;     // the sample halo's own opacity: what iOpacity was before it yielded
 
 uniform float uPxScale;   // world units per CSS pixel, per unit of view depth
 uniform float uGrid;
@@ -67,6 +70,7 @@ varying vec3 vColour;
 varying float vOpacity;
 varying float vHalo;
 varying float vLit;
+varying float vRing;
 varying vec2 vCell0;
 
 #include <common>
@@ -77,6 +81,7 @@ void main() {
   vColour = iColour;
   vOpacity = iOpacity;
   vLit = iLit;
+  vRing = iRing;
 
   float cells = uGrid * uGrid;
   float cell = iCell;
@@ -107,6 +112,7 @@ varying vec3 vColour;
 varying float vOpacity;
 varying float vHalo;
 varying float vLit;
+varying float vRing;
 varying vec2 vCell0;
 
 #include <common>
@@ -130,7 +136,9 @@ void main() {
     float ring = smoothstep( 0.395, 0.415, r ) * ( 1.0 - smoothstep( 0.450, 0.470, r ) );
     float ang = atan( d.y, d.x ) * 0.15915494 + 0.5;
     float dash = step( 0.5, fract( ang * 12.0 ) );
-    float h = ring * dash * 0.85 * vOpacity;
+    // vRing, NOT vOpacity: a dot that has yielded to its model still came from bundled data, and
+    // this ring is the only thing on screen that says so. It is drawn at the record's own opacity.
+    float h = ring * dash * 0.85 * vRing;
     rgb = mix( rgb, vColour, step( a, h ) );
     a = max( a, h );
   }
@@ -233,6 +241,7 @@ export function createGlyphLayer(scene, layer = {}) {
   let currentRecords = [];
   let attrSize = null;
   let attrOpacity = null;
+  let attrRing = null;
   let attrCell = null;
 
   let selectedId = null;
@@ -260,7 +269,8 @@ export function createGlyphLayer(scene, layer = {}) {
     attrOpacity = new THREE.InstancedBufferAttribute(new Float32Array(capacity), 1);
     attrCell = new THREE.InstancedBufferAttribute(new Float32Array(capacity), 1);
     attrLit = new THREE.InstancedBufferAttribute(new Float32Array(capacity).fill(1), 1);
-    for (const a of [attrOffset, attrColour, attrSize, attrOpacity, attrCell, attrLit]) {
+    attrRing = new THREE.InstancedBufferAttribute(new Float32Array(capacity), 1);
+    for (const a of [attrOffset, attrColour, attrSize, attrOpacity, attrCell, attrLit, attrRing]) {
       a.setUsage(THREE.DynamicDrawUsage);
     }
     geometry.setAttribute('iOffset', attrOffset);
@@ -269,6 +279,7 @@ export function createGlyphLayer(scene, layer = {}) {
     geometry.setAttribute('iOpacity', attrOpacity);
     geometry.setAttribute('iCell', attrCell);
     geometry.setAttribute('iLit', attrLit);
+    geometry.setAttribute('iRing', attrRing);
     geometry.instanceCount = 0;
     // The quad is expanded in view space, so three's bounds are meaningless here.
     geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(), Infinity);
@@ -409,7 +420,11 @@ export function createGlyphLayer(scene, layer = {}) {
       // model's own fade, so neither blinks -- and it stays in `live`, so it is still there to
       // tap. No model, a hidden model, or the hero layer off: the dot, as before.
       const yieldTo = modelOpacityOf ? modelOpacityOf(rec.id) : 0;
-      attrOpacity.array[k] = dotOpacity(selected ? 1 : recOpacity[i], yieldTo);
+      const own = selected ? 1 : recOpacity[i];
+      attrOpacity.array[k] = dotOpacity(own, yieldTo);
+      // The sample halo does NOT yield: see the note in the fragment shader. It is drawn at the
+      // record's own opacity, which is what the dot's was before the model took it.
+      attrRing.array[k] = own;
       attrCell.array[k] = recCell[i];
       live.push(rec);
       k++;
@@ -423,6 +438,7 @@ export function createGlyphLayer(scene, layer = {}) {
     attrOpacity.needsUpdate = true;
     attrCell.needsUpdate = true;
     attrLit.needsUpdate = true;
+    attrRing.needsUpdate = true;
     if (!material.uniforms.uAtlas.value) {
       const a = getGlyphAtlas();
       if (a) material.uniforms.uAtlas.value = a;
