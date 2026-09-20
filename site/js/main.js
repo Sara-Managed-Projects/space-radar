@@ -106,6 +106,7 @@ export async function boot({ setStatus } = {}) {
   ctx.lod = lod;
   ctx.skyView = createSkyView(ctx);
   const heroes = createHeroes(scene, ctx);
+  ctx.heroes = heroes; // the status panel reads count(); a browser check reads poolCap()
   // Constructed BEFORE the layers load, because the trip counts which layers have landed by
   // listening for `sr:layer` -- and a layer that landed before anybody was listening is a layer
   // the trip would then wait eight seconds for.
@@ -406,6 +407,9 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
   // The frame-rate latch (spec 0026 req 18): twenty-frame median over 33 ms for three seconds ->
   // one device pixel per CSS pixel and no Milky Way picture, once, said in the panel.
   const latch = createFrameLatch();
+  // Read once: every extra hero model is a file to fetch, so a metered or slow connection keeps
+  // the model pool at its floor (scene/heroes.js, nextHeroCap).
+  const saveData = typeof navigator !== 'undefined' && shouldSaveData(navigator.connection);
 
   function frame(nowReal) {
     requestAnimationFrame(frame);
@@ -455,7 +459,9 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       if (camKm && sunKm) lod.apply(Math.hypot(camKm.x - sunKm.x, camKm.y - sunKm.y, camKm.z - sunKm.z));
     }
 
-    if (heroes) heroes.update(t);
+    // What the frame cost and what the device has already admitted about itself: scene/heroes.js
+    // spends a fast machine's headroom on more models and gives it back when the frames say so.
+    if (heroes) heroes.update(t, { frameMs, latched: latch.latched, saveData });
     if (starfield && starfield.update) starfield.update(ctx.camera);
     if (ctx.stars3d) ctx.stars3d.update(ctx.camera, ctx.renderer);
     if (ctx.galaxy) ctx.galaxy.update(ctx.camera, ctx.renderer);

@@ -153,8 +153,65 @@ function heroScale(px, d, h, f, pos, reach) {
   return Math.min(want, (altitude * CLEARANCE) / r);
 }
 
-/** How many models may exist at once. Each is a few draw calls; this is the phone budget. */
+/**
+ * HOW MANY MODELS MAY EXIST AT ONCE -- a floor, and a ceiling the device earns.
+ *
+ * Ivan, 2026-09-20: "if user PC or mobile is fast enough, render more 3d objects, and render more
+ * gradually if it not moving, not much to not kill the visibility and show garbage, but more and
+ * better to load real models and not cubes, the idea is to show more 3D."
+ *
+ * Eight was a fixed phone budget: a few draw calls each, and every device paid the same. The rules
+ * below spend a fast device's headroom and take it straight back when it is gone.
+ *
+ *   - GROW ONLY WHEN STILL. A model appearing mid-flight is a thing that pops into an already
+ *     moving picture, and building one costs a frame. The camera has to have been still for half a
+ *     second, and then models arrive one every 400 ms -- gradually, as asked.
+ *   - GROW ONLY WITH ROOM TO SPARE. The median of recent frames must be under 20 ms (50 fps). The
+ *     budget is given back in twos the moment the median passes 28 ms, whether the camera is moving
+ *     or not, because that is the safety valve.
+ *   - NEVER ABOVE THE LATCH. If scene/quality.js has latched the scene to its low setting, the
+ *     device has already told us it cannot keep up: the pool stays at the floor.
+ *   - NEVER ON A METERED CONNECTION. Every extra model is a file to fetch, so `saveData` and a 2g
+ *     or 3g connection keep the floor too.
+ *
+ * The ceiling is 16 rather than something grander because `docs/toolkit.md` budgets 60 draw calls
+ * at 60 fps on a phone and a model is a few each. Frame time is the real arbiter -- the ceiling is
+ * there so a machine that is fast for one second cannot commit the next ten to redrawing.
+ */
 const POOL = 8;
+const POOL_MAX = 16;
+const GROW_EVERY_MS = 400;
+const STILL_BEFORE_GROWING_MS = 500;
+const FRAME_FAST_MS = 20;
+const FRAME_SLOW_MS = 28;
+
+/**
+ * The next pool size, from what the last second looked like. Pure, so the rule can be tested
+ * without a GPU -- which matters here, because the machine this was written on renders in software
+ * and would never grow the pool at all.
+ *
+ * @param {Object} at
+ * @param {number} at.cap            the cap now
+ * @param {number} at.medianFrameMs  median of the recent frames, 0 when not enough are known yet
+ * @param {number} at.stillMs        how long the camera has been still
+ * @param {number} at.sinceGrowMs    how long since the last model was added
+ * @param {boolean} at.latched       quality.js has dropped the scene to its low setting
+ * @param {boolean} at.saveData      the connection is metered or slow
+ */
+export function nextHeroCap(at = {}) {
+  const cap = Number.isFinite(at.cap) ? at.cap : POOL;
+  const median = Number.isFinite(at.medianFrameMs) ? at.medianFrameMs : 0;
+  if (at.latched || at.saveData) return POOL;
+  if (median > FRAME_SLOW_MS) return Math.max(POOL, cap - 2);
+  if (cap >= POOL_MAX) return POOL_MAX;
+  const still = Number.isFinite(at.stillMs) ? at.stillMs : 0;
+  const since = Number.isFinite(at.sinceGrowMs) ? at.sinceGrowMs : 0;
+  // A median of 0 means fewer frames than the window: not yet evidence of headroom.
+  if (median > 0 && median < FRAME_FAST_MS && still >= STILL_BEFORE_GROWING_MS && since >= GROW_EVERY_MS) {
+    return cap + 1;
+  }
+  return cap;
+}
 
 /** Fade a model in over this, so it never pops. */
 const FADE_MS = 200;
@@ -172,6 +229,19 @@ export function createHeroes(scene, ctx) {
 
   /** id -> {obj, record, fadeStart} */
   const live = new Map();
+  // The adaptive pool (nextHeroCap above): the cap the device has earned, how long the camera has
+  // been still, and a window of recent frame times to take the median of.
+  let cap = POOL;
+  let stillSince = null;
+  let lastGrowAt = 0;
+  const frameWindow = [];
+  const _camWas = { pos: new THREE.Vector3(), quat: new THREE.Quaternion(), had: false };
+  const medianFrame = () => {
+    if (frameWindow.length < 20) return 0;
+    const a2 = frameWindow.slice().sort((x, y) => x - y);
+    const h2 = a2.length >> 1;
+    return a2.length % 2 ? a2[h2] : (a2[h2 - 1] + a2[h2]) / 2;
+  };
 
   /** Records not drawn this frame because they sit inside another model (docked vehicles). */
   let lastHidden = [];
@@ -291,6 +361,20 @@ export function createHeroes(scene, ctx) {
 
     out.sort((a, b) => (b.forced ? 1 : 0) - (a.forced ? 1 : 0) || a.d - b.d);
 
+    // THE EXTRA SLOTS PREFER A REAL MODEL. The first POOL are the nearest, which is the honest
+    // ordering and the one a person expects: what you have flown to is what gets geometry. Above
+    // that the pool is a bonus the device has earned, and Ivan asked for it to be spent well --
+    // "more and better to load real models and not cubes". So among the candidates beyond the
+    // floor, the ones with a file of their own come first, and distance breaks the tie.
+    if (out.length > POOL) {
+      const head = out.slice(0, POOL);
+      const tail = out.slice(POOL);
+      const real = (c) => { const e = realModelFor(c.record); return e && e.file ? 0 : 1; };
+      tail.sort((a, b) => real(a) - real(b) || a.d - b.d);
+      out.length = 0;
+      out.push(...head, ...tail);
+    }
+
     // DOCKED VEHICLES. A Dragon, two Progresses and a Cygnus berthed to the station really are at
     // the station's position -- the catalogue is right and so is the propagation. Drawing each of
     // them as its own model puts five overlapping spacecraft at one point, which reads as a
@@ -317,7 +401,7 @@ export function createHeroes(scene, ctx) {
         continue;
       }
       kept.push(c);
-      if (kept.length >= POOL) break;
+      if (kept.length >= cap) break;
     }
     // What was hidden is worth knowing rather than silently dropping: the card layer can say
     // "4 vehicles are docked here" from this, and today it at least makes the behaviour findable.
@@ -325,9 +409,37 @@ export function createHeroes(scene, ctx) {
     return kept;
   }
 
-  function update(tMs) {
+  function update(tMs, at = {}) {
     const camera = ctx.camera;
     if (!camera) return;
+
+    // How much room is there, and is the picture holding still? The frame duration comes from the
+    // loop that called us; stillness is measured here, from the camera itself, because that is the
+    // thing that would make a new model pop into a moving picture.
+    const nowMs = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    if (Number.isFinite(at.frameMs) && at.frameMs > 0) {
+      frameWindow.push(Math.min(at.frameMs, 1000));
+      if (frameWindow.length > 30) frameWindow.shift();
+    }
+    camera.getWorldPosition(_camPos);
+    const moved = !_camWas.had
+      || _camPos.distanceToSquared(_camWas.pos) > 1e-12
+      || Math.abs(camera.quaternion.dot(_camWas.quat)) < 0.9999999;
+    _camWas.pos.copy(_camPos);
+    _camWas.quat.copy(camera.quaternion);
+    _camWas.had = true;
+    if (moved) stillSince = null;
+    else if (stillSince === null) stillSince = nowMs;
+    const next = nextHeroCap({
+      cap,
+      medianFrameMs: medianFrame(),
+      stillMs: stillSince === null ? 0 : nowMs - stillSince,
+      sinceGrowMs: nowMs - lastGrowAt,
+      latched: at.latched === true,
+      saveData: at.saveData === true,
+    });
+    if (next > cap) lastGrowAt = nowMs;
+    cap = next;
 
     // Not in the sky view. From the ground a satellite IS a moving point of light -- drawing a
     // metre-accurate model of one hanging over the horizon would be a picture of something nobody
@@ -410,6 +522,8 @@ export function createHeroes(scene, ctx) {
   return {
     update,
     count: () => live.size,
+    /** The cap the device has earned, for the status panel and for a browser check. */
+    poolCap: () => cap,
     /** [{record, insideOf}] -- vehicles docked to something that is drawn. */
     hidden: () => lastHidden,
     setVisible(b) { root.visible = !!b; },
