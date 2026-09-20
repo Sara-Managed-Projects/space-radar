@@ -1172,6 +1172,51 @@ for (const file of allFiles) {
   }
 }
 
+// 3e4c. THE DOT YIELDS TO ITS MODEL. THE SAMPLE HALO DOES NOT.
+//
+// One mark per object (#142) fades a record's dot out while its 3D model is on screen, by
+// multiplying the instance's iOpacity by (1 - modelOpacity). That is the obvious way to do it and
+// it took something else with it: the dashed halo that marks bundled sample data is drawn by the
+// SAME instance, from the SAME opacity, so the ring went out with the dot.
+//
+// That matters more than it sounds. Every deep-space spacecraft is a `sample` record while the
+// harvester is unprovisioned, and a hero model is exactly what those records get -- so the objects
+// whose positions are least certain were the ones quietly losing the one mark on screen that says
+// "this is not a live position". That is the module contract's rule 5, and losing it silently is
+// worse than never having drawn it.
+//
+// So the ring carries its own opacity. This asserts the split at the source: the arithmetic is
+// GLSL and there is no GL in CI to run it in.
+{
+  const src = readFileSync(join(JS, 'scene/glyphs.js'), 'utf8');
+  const frag = (src.match(/const FRAG = \/\* glsl \*\/ `([\s\S]*?)`;/) || [])[1] || '';
+  if (!frag) problems.push('HALO     could not find the fragment shader in scene/glyphs.js');
+  else {
+    const dotAlpha = (frag.match(/^\s*float a = .*$/m) || [''])[0];
+    const ringAlpha = (frag.match(/^\s*float h = .*$/m) || [''])[0];
+    if (!/vOpacity/.test(dotAlpha)) {
+      problems.push(`HALO     the dot no longer reads the opacity that yields to its model: "${dotAlpha.trim()}"`);
+    }
+    if (!/vRing/.test(ringAlpha) || /vOpacity/.test(ringAlpha)) {
+      problems.push(
+        'HALO     the sample halo is drawn at the dot\'s opacity, so a bundled position drawn as a ' +
+          `model loses the ring that says it is bundled: "${ringAlpha.trim()}"`
+      );
+    }
+  }
+  // ... and the two must be written from different numbers on the CPU side too.
+  const dotLine = (src.match(/^\s*attrOpacity\.array\[k\] = .*$/m) || [''])[0];
+  const ringLine = (src.match(/^\s*attrRing\.array\[k\] = .*$/m) || [''])[0];
+  if (!/dotOpacity\(/.test(dotLine)) problems.push(`HALO     the dot is not written through onemark's dotOpacity(): "${dotLine.trim()}"`);
+  if (!ringLine) problems.push('HALO     nothing writes iRing, so the halo has no opacity of its own');
+  else if (/dotOpacity\(|yieldTo|modelOpacity/.test(ringLine)) {
+    problems.push(`HALO     the halo's opacity yields to the model as well: "${ringLine.trim()}"`);
+  }
+  if (!problems.some((p) => p.startsWith('HALO'))) {
+    notes.push('a dot yields to its model; the sample halo keeps its own opacity and stays');
+  }
+}
+
 // 3e5. THE GITHUB MARK STEPS ASIDE FOR THE CARD, AND ONLY FOR THE CARD.
 //
 // The mark asks for the top right corner. On desktop it used to sit at `var(--sr-card-w) + 24px`
