@@ -452,7 +452,7 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   const rows = sampleDeepSpace();
   check(rows.length === 10, `the deep-space layer still holds ten records (found ${rows.length})`);
   const want = {
-    'deep-jwst': 'jwst.glb', 'deep-soho': 'soho.glb', 'deep-mro': 'mro.glb', 'deep-juno': 'juno.glb',
+    'deep-jwst': 'build:jwst', 'deep-soho': 'soho.glb', 'deep-mro': 'mro.glb', 'deep-juno': 'juno.glb',
     'deep-voyager-1': 'voyager.glb', 'deep-voyager-2': 'voyager.glb', 'deep-parker': 'parker.glb',
     'deep-gaia': 'build:gaia', 'deep-new-horizons': 'build:new-horizons',
     'deep-solar-orbiter': 'build:solar-orbiter',
@@ -471,7 +471,8 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   const comet = realModelFor({ id: 'c-so', name: 'C/2021 A1 (Solar Orbiter)', klass: 'comet', layer: 'comets', meta: {} });
   check(!comet || comet.build !== 'solar-orbiter', `a comet named Solar Orbiter must not get the spacecraft: ${JSON.stringify(comet)}`);
   // The three new shapes are real variants, inside budget, at the size their sources publish.
-  for (const [klass, variant, sizeM] of [['telescope', 'gaia', 10.2], ['probe', 'solar-orbiter', 18], ['probe', 'new-horizons', 3.2]]) {
+  for (const [klass, variant, sizeM] of [['telescope', 'gaia', 10.2], ['probe', 'solar-orbiter', 18],
+                                         ['probe', 'new-horizons', 3.2], ['telescope', 'jwst', 21.197]]) {
     const o = modelFor(klass, variant);
     const b = budgetOf(`${klass}-${variant}`);
     check(!o.userData.generic, `${klass}:${variant} is a real variant, not a fallback`);

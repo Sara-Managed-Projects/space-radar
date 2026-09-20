@@ -1654,32 +1654,123 @@ function buildProbe() {
  * mirror, in other words. Dividing real metres by one 1 / 21.2 is what the rest of this file
  * does and it gets both right with nothing tuned.
  */
+/**
+ * JWST, DRAWN SO IT READS AS JWST.
+ *
+ * Ivan, 2026-09-20: "isnt james web to big? garbage model could be better?" -- and he was right
+ * about the model. NASA's own file was shipped decimated to 13 000 triangles, and beside Hubble it
+ * was a brown lump: no kite, no segmented mirror, no tower.
+ *
+ * The mesh was not the problem. scene/realmodels.js retextures every loaded file with ONE toon
+ * colour for its class, because a downloaded model's own materials are not this project's palette.
+ * Hubble survives that -- a tube with two wings is a silhouette. JWST does not: what makes it
+ * recognisable is the CONTRAST between a gold mirror, a silver shield and a dark bus, and a
+ * single-colour mesh throws all of it away. A procedural shape can carry its own colours, which is
+ * why Gaia and Solar Orbiter read at 84 px and a 204 kB download did not.
+ *
+ * Nor is it drawn too big: no deep-space record carries `meta.sizeM`, so every hero in that layer
+ * is the same 84 px (260 selected). What made it look big is that normalising by the longest part
+ * fits the 21.2 m sunshield to that budget -- and the shield really is most of JWST.
+ *
+ * Published, in metres (jwst.nasa.gov, NASA fact sheets):
+ *   sunshield  21.197 x 14.162 m, five layers, "about the size of a tennis court"
+ *   primary    6.5 m across, EIGHTEEN hexagonal segments, each 1.32 m flat to flat, no centre one
+ *   secondary  0.74 m, on a tripod in front of the primary
+ * Divided by the 21.2 m the row declares, so the proportions come out right by construction.
+ */
+function buildJwst() {
+  const g = new THREE.Group();
+  const M = 21.197;
+  g.userData.realSizeM = M;
+  const S = 1 / M;
+  const SHIELD = '#C9CEDA';   // silvered kapton, cool against the gold
+  const GOLD = '#E6C86A';
+  const DARK = '#3A4049';
+
+  // The sunshield: five kite layers, largest at the bottom, a hand's breadth apart. A kite rather
+  // than a rectangle because that is its shape -- two triangles per layer, which is also the
+  // cheapest thing in this file.
+  for (let i = 0; i < 5; i++) {
+    const k = 1 - i * 0.06;
+    const half = (21.197 / 2) * k * S;
+    const wide = (14.162 / 2) * k * S;
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array([
+      -half, 0, 0, 0, 0, -wide, half, 0, 0,
+      -half, 0, 0, half, 0, 0, 0, 0, wide,
+    ]), 3));
+    geo.computeVertexNormals();
+    const layer = mesh(geo, SHIELD, 'radiator', `shield-${i + 1}`);
+    // A sheet has two sides and both are seen: from above the shield hides the bus, from below it
+    // hides the optics. The toon material draws front faces only, and the first version of this
+    // wound the kite face-down -- five layers, all culled, a JWST with no sunshield at all.
+    layer.material.side = THREE.DoubleSide;
+    layer.position.y = (-1.6 + i * 0.34) * S;
+    g.add(layer);
+  }
+
+  // The primary: eighteen 1.32 m segments on a hexagonal grid, and no centre segment -- the hole is
+  // where the secondary's light goes through, and it is the detail that makes the mirror read as
+  // THIS mirror rather than a gold disc.
+  const flat = 1.32;
+  const r = flat / Math.sqrt(3);
+  const step = flat + 0.02;
+  const axial = [];
+  for (let q = -2; q <= 2; q++) {
+    for (let rr = -2; rr <= 2; rr++) {
+      const sCoord = -q - rr;
+      const ring = Math.max(Math.abs(q), Math.abs(rr), Math.abs(sCoord));
+      if (ring === 1 || ring === 2) axial.push([q, rr]);
+    }
+  }
+  for (const [q, rr] of axial.slice(0, 18)) {
+    const x = step * (q + rr / 2);
+    const z = step * (rr * Math.sqrt(3) / 2);
+    const seg = cyl(r * S, r * S, 0.08 * S, 6, GOLD, 'radiator', 'segment');
+    seg.position.set(x * S, 1.9 * S, z * S);
+    g.add(seg);
+  }
+  // Named for the attitude code, which points `boresight` at what the telescope is looking at.
+  const hub = cyl(0.2 * S, 0.2 * S, 0.1 * S, 6, DARK, 'body', 'boresight');
+  hub.position.y = 1.9 * S;
+  g.add(hub);
+
+  // The secondary, on its tripod, forward of the primary.
+  const secondary = cyl(0.37 * S, 0.37 * S, 0.08 * S, 10, GOLD, 'radiator', 'secondary');
+  secondary.position.y = 6.6 * S;
+  g.add(secondary);
+  for (const a of [0, 2.094, 4.189]) {
+    const strut = cyl(0.06 * S, 0.06 * S, 4.9 * S, 5, METAL, 'body', 'strut');
+    strut.position.set(Math.cos(a) * 1.5 * S, 4.2 * S, Math.sin(a) * 1.5 * S);
+    strut.rotation.z = Math.atan2(Math.cos(a) * 1.5, 4.9) * -1;
+    strut.rotation.x = Math.atan2(Math.sin(a) * 1.5, 4.9);
+    g.add(strut);
+  }
+
+  // The bus, under the shield where the sunlight is: instruments, wheels, the antenna.
+  const bus = box(3.5 * S, 1.8 * S, 3.0 * S, DARK, 'body', 'bus');
+  bus.position.y = -2.6 * S;
+  g.add(bus);
+  const panel = box(5.9 * S, 0.06 * S, 1.9 * S, PANEL_BLUE, 'panel', 'panel');
+  panel.position.set(-4.0 * S, -3.2 * S, 0);
+  g.add(panel);
+  const dish = cyl(0.6 * S, 0.6 * S, 0.08 * S, 12, '#DDE3EC', 'foil', 'antenna');
+  dish.position.set(2.4 * S, -3.1 * S, 0);
+  dish.rotation.z = 0.5;
+  g.add(dish);
+  // The deployable tower: it carries the bus's load up through the shield to the mirror's
+  // backplane, so it has to REACH the mirror (bottom -1.5 m, top 1.9 m, where the segments sit).
+  // Stopping it short left the optics floating as a second, unattached object.
+  const tower = box(0.8 * S, 3.4 * S, 0.8 * S, METAL, 'body', 'tower');
+  tower.position.y = 0.2 * S;
+  g.add(tower);
+  return g;
+}
+
 function buildTelescope(variant) {
   const g = new THREE.Group();
-  g.userData.realSizeM = variant === 'hex' ? 21.2 : 13;
-  if (variant === 'hex') {
-    const S = 1 / 21.2;
-    // The primary: a hexagon 7.3 m corner to corner, which is 3.65 m of lathe radius.
-    const mirror = cyl(3.65 * S, 3.65 * S, 0.4 * S, 6, '#E6C86A', 'radiator', 'mirror');
-    mirror.rotation.x = Math.PI / 2;
-    mirror.position.z = 3.4 * S;
-    mirror.name = 'boresight';
-    g.add(mirror);
-    // The tower that holds the optics off the shield.
-    const spine = box(0.8 * S, 0.8 * S, 6.4 * S, METAL, 'body', 'spine');
-    spine.position.z = 0.6 * S;
-    g.add(spine);
-    const shade = box(21.2 * S, 0.25 * S, 14.2 * S, '#8FA0B8', 'radiator', 'sunshade');
-    shade.position.z = -2.6 * S;
-    shade.rotation.z = 0.12;
-    g.add(shade);
-    for (const s of [-1, 1]) {
-      const boom = cyl(0.17 * S, 0.17 * S, 6.4 * S, 6, METAL, 'body', 'boom');
-      boom.rotation.z = Math.PI / 2;
-      boom.position.set(s * 3.4 * S, 0, -1.2 * S);
-      g.add(boom);
-    }
-  } else {
+  g.userData.realSizeM = 13;
+  {
     const tube = cyl(0.15, 0.15, 0.5, 16, '#DCE3EC', 'foil', 'tube');
     tube.rotation.x = Math.PI / 2;
     tube.name = 'boresight';
@@ -2793,7 +2884,7 @@ const BUILDERS = {
   debris: { default: buildDebris },
   rocket: rocketVariants(),
   probe: { default: buildProbe, 'new-horizons': buildNewHorizons, 'solar-orbiter': buildSolarOrbiter },
-  telescope: { default: buildTelescope, tube: buildTelescope, hex: buildTelescope, gaia: buildGaia },
+  telescope: { default: buildTelescope, tube: buildTelescope, hex: buildJwst, jwst: buildJwst, gaia: buildGaia },
   asteroid: { default: buildAsteroid },
   comet: { default: buildComet },
   site: {

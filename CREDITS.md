@@ -253,7 +253,6 @@ than counted by hand.
 | `fermi.glb` | Fermi Gamma-ray Large Area Space Telescope | NORAD 33053 (FGRST (GLAST)) | 174 KB |
 | `hinode.glb` | Hinode (Solar-B) | NORAD 29479 (HINODE (SOLAR-B)) | 103 KB |
 | `hubble.glb` | Hubble Space Telescope (A) | NORAD 20580 | 164 KB |
-| `jwst.glb` | James Webb Space Telescope (B) | Horizons -170 | 204 KB |
 | `sdo.glb` | Solar Dynamics Observatory | NORAD 36395 (SDO) | 124 KB |
 | `soho.glb` | Solar and Heliospheric Observatory | Horizons -21 | 29 KB |
 | `swift.glb` | Swift | NORAD 28485 (SWIFT) | 152 KB |
