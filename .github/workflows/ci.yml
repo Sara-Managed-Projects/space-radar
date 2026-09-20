@@ -117,6 +117,8 @@ jobs:
       # back when frames slow down. Pure, because headless renders in software and would never grow.
       - name: More 3D when the device can take it, and not a model more
         run: node tests/test_quality_pool.mjs
+      - name: One mark per object -- a dot yields to its 3D model
+        run: node tests/test_onemark.mjs
       # Spec 0022 left this open and measured the number first: the attitude code aimed the vehicle
       # along the local vertical, which is 87.5 degrees off the direction of travel at 90 % of the
       # arc. The propagator now returns the tangent of the curve it already draws.
