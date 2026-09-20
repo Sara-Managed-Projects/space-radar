@@ -12,7 +12,19 @@
 </head>
 <body>
 
-<canvas id="stage"></canvas>
+<!-- The scene is the main content, and until now it was an unlabelled canvas: a screen reader
+     reached the panels and found nothing where the map is. `role="img"` with a name is the honest
+     description of what a canvas of a drawn scene is; the text inside it is what a browser without
+     canvas support shows. Everything drawn here is also reachable as text -- the layer list, the
+     search, and a card per object -- which is why this is a name and not a live region: a sentence
+     that changed sixty times a second would be unusable. -->
+<main class="sr-scene">
+  <h1 class="sr-hidden-text">Space Radar</h1>
+  <canvas id="stage" role="img"
+    aria-label="A map of what is in orbit above Earth right now, drawn at real positions: satellites, stations, rockets, probes and the ground sites that talk to them. Everything in it is also listed in the panels beside it.">
+    A map of what is in orbit above Earth right now. It needs a browser that can draw with canvas.
+  </canvas>
+</main>
 
 <!-- Boot state. Replaced the moment the first frame draws; if it is still visible, something
      failed and the message says what, because a black screen explains nothing. -->
