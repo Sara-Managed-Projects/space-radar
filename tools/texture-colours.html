@@ -1,0 +1,113 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>texture colours</title>
+<!--
+  WHAT FLAT COLOUR EACH TEXTURED MATERIAL ACTUALLY SHOWS, for scripts/flatten-textures.mjs.
+  Not part of the site: it lives here, outside site/, because site/ is served byte-for-byte and
+  scripts/deploy.sh refuses anything it does not know.
+
+    python3 tools/serve.py . 8190       # from the repository root
+    node tools/cdp.mjs 'http://127.0.0.1:8190/tools/texture-colours.html?files=suomi.glb,aqua.glb' probe.js
+
+  WHY A BROWSER: the textures are WebP, and nothing in this repository's toolchain decodes WebP
+  without installing something. A browser decodes it for free.
+
+  WHY SAMPLE AT TRIANGLES rather than average the image: a texture is often an atlas shared by
+  several materials, or a palette strip where each material reads one column. The average of the
+  whole image is then the same muddy colour for every material that uses it. Sampling the texel
+  under each triangle's UV centroid, weighted by the triangle's area, is what the material actually
+  shows -- for a dedicated texture, an atlas and a palette strip alike.
+
+  The result is keyed by glTF MATERIAL INDEX, not name: names repeat and GLTFLoader renames them.
+  Left on `window.__colours` as { file: { materialIndex: { hex, triangles, flag } } }.
+-->
+<body style="background:#0b0e14;color:#c9ceda;font:13px ui-monospace,monospace">
+<pre id="out">loading…</pre>
+<script type="module">
+addEventListener('unhandledrejection', (e) => { window.__err = String(e.reason && e.reason.message || e.reason); });
+import { GLTFLoader } from '../site/vendor/GLTFLoader.js';
+import { MeshoptDecoder } from '../site/vendor/meshopt_decoder.module.js';
+
+const FILES = (new URLSearchParams(location.search).get('files') || '').split(',').filter(Boolean);
+const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+const pixels = new Map(); // texture uuid -> {w, h, data}
+
+function pixelsOf(texture) {
+  const hit = pixels.get(texture.uuid);
+  if (hit) return hit;
+  const img = texture.image;
+  const w = Math.min(1024, img.width), h = Math.min(1024, img.height);
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const cx = c.getContext('2d', { willReadFrequently: true });
+  cx.drawImage(img, 0, 0, w, h);
+  const out = { w, h, data: cx.getImageData(0, 0, w, h).data };
+  pixels.set(texture.uuid, out);
+  return out;
+}
+
+// A colour nobody would paint a spacecraft: saturated magenta is the classic "missing texture" /
+// UV-checker placeholder. GRACE's `underside.001` averages to #e902ea. Flagged for a human, never
+// silently baked.
+function flagOf(r, g, b) {
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const sat = max === 0 ? 0 : (max - min) / max;
+  if (r > 180 && b > 180 && g < 90) return 'magenta-placeholder';
+  if (sat > 0.85 && max > 200) return 'very-saturated';
+  return null;
+}
+
+const result = {};
+for (const f of FILES) {
+  const gltf = await new Promise((res, rej) => loader.load(`../site/models/${f}`, res, undefined, rej));
+  const acc = new Map(); // material index -> {r, g, b, w, tris}
+  gltf.scene.updateMatrixWorld(true);
+  gltf.scene.traverse((n) => {
+    if (!n.isMesh) return;
+    const mats = Array.isArray(n.material) ? n.material : [n.material];
+    const geo = n.geometry;
+    const uv = geo.attributes.uv;
+    const pos = geo.attributes.position;
+    const idx = geo.index;
+    const groups = geo.groups.length ? geo.groups : [{ start: 0, count: idx ? idx.count : pos.count, materialIndex: 0 }];
+    for (const grp of groups) {
+      const m = mats[grp.materialIndex || 0];
+      if (!m) continue;
+      const assoc = gltf.parser.associations.get(m);
+      const mi = assoc && assoc.materials != null ? assoc.materials : -1;
+      if (mi < 0 || !m.map || !m.map.image || !uv) continue;
+      const px = pixelsOf(m.map);
+      const f3 = m.color; // baseColorFactor, which multiplies the texel
+      const a = acc.get(mi) || { r: 0, g: 0, b: 0, w: 0, tris: 0 };
+      for (let t = grp.start; t + 2 < grp.start + grp.count; t += 3) {
+        const i0 = idx ? idx.getX(t) : t, i1 = idx ? idx.getX(t + 1) : t + 1, i2 = idx ? idx.getX(t + 2) : t + 2;
+        let u = (uv.getX(i0) + uv.getX(i1) + uv.getX(i2)) / 3;
+        let v = (uv.getY(i0) + uv.getY(i1) + uv.getY(i2)) / 3;
+        u -= Math.floor(u); v -= Math.floor(v); // REPEAT wrapping
+        // glTF UV (0,0) is the image's top-left, and GLTFLoader leaves flipY false: no flip here.
+        const x = Math.min(px.w - 1, Math.floor(u * px.w));
+        const y = Math.min(px.h - 1, Math.floor(v * px.h));
+        const k = (y * px.w + x) * 4;
+        if (px.data[k + 3] < 8) continue;
+        // area weight, in model space
+        const ax = pos.getX(i1) - pos.getX(i0), ay = pos.getY(i1) - pos.getY(i0), az = pos.getZ(i1) - pos.getZ(i0);
+        const bx = pos.getX(i2) - pos.getX(i0), by = pos.getY(i2) - pos.getY(i0), bz = pos.getZ(i2) - pos.getZ(i0);
+        const cxv = ay * bz - az * by, cyv = az * bx - ax * bz, czv = ax * by - ay * bx;
+        const area = Math.sqrt(cxv * cxv + cyv * cyv + czv * czv) || 1e-12;
+        a.r += px.data[k] * f3.r * area; a.g += px.data[k + 1] * f3.g * area; a.b += px.data[k + 2] * f3.b * area;
+        a.w += area; a.tris++;
+      }
+      acc.set(mi, a);
+    }
+  });
+  const rows = {};
+  for (const [mi, a] of acc) {
+    if (!a.w) continue;
+    const r = Math.round(a.r / a.w), g = Math.round(a.g / a.w), b = Math.round(a.b / a.w);
+    rows[mi] = { hex: '#' + [r, g, b].map((v) => v.toString(16).padStart(2, '0')).join(''), triangles: a.tris, flag: flagOf(r, g, b) };
+  }
+  result[f] = rows;
+}
+window.__colours = result;
+document.getElementById('out').textContent = JSON.stringify(result, null, 1);
+window.__ready = true;
+</script>

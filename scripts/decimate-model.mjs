@@ -24,9 +24,14 @@
 // collect them.
 //
 // This is safe for THIS project and would not be for another: realmodels.js replaces every
-// material on every loaded mesh with the toon material and disposes each map as it goes, so no
-// shipped model has ever had its textures sampled. `loadRealModel`'s `keepMaterials: true` is
-// the one thing that would read them, and nothing calls it.
+// material on every loaded mesh with the toon material and disposes each map as it goes.
+//
+// WITH ONE EXCEPTION SINCE 2026-09-20, and it matters here. A palette strip -- four texels tall,
+// what `gltf-transform palette` writes -- IS sampled now (realmodels.js isPalette/colourRoute),
+// because it holds the model's flat per-part colours and nothing else. Dropping TEXCOORD_* kills
+// that too. So for a file whose colours live in a palette or a texture, run
+// scripts/flatten-textures.mjs FIRST: it bakes what each material shows into its base colour,
+// and then this script has nothing left to lose.
 //
 // The dependencies are resolved from the CURRENT DIRECTORY on purpose, so nothing is installed
 // into this repository for a build-time step that runs once per model.

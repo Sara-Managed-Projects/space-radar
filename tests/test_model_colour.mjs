@@ -45,4 +45,56 @@ assert.equal(colourRoute(root([mat('#ffffff'), mat('#5e17ff')])), 'class',
   'one non-white colour beside white is still only one stated colour');
 assert.equal(colourRoute(root([])), 'class', 'a model with no materials keeps the class colour');
 
+// EVERY IMAGE IN A SHIPPED MODEL IS ONE THE APP CAN USE.
+//
+// realmodels.js samples a palette strip and discards everything else. Before 2026-09-21 thirteen
+// shipped files carried photographs -- 1024 and 2048 px pictures of foil and solar cells -- that
+// every visitor downloaded and no pixel ever sampled: 1.3 MB of the model folder. They were baked
+// into flat colours by scripts/flatten-textures.mjs. This keeps the next file from bringing its
+// photographs back: an image more than four texels tall in site/models/ is bytes for nothing.
+{
+  const { readdirSync, readFileSync } = await import('node:fs');
+  const DIR = join(ROOT, 'site/models');
+  const parts = (buf) => {
+    let off = 12, json = null, bin = null;
+    while (off < buf.length) {
+      const len = buf.readUInt32LE(off), type = buf.readUInt32LE(off + 4);
+      const body = buf.subarray(off + 8, off + 8 + len);
+      if (type === 0x4e4f534a) json = JSON.parse(body.toString('utf8'));
+      if (type === 0x004e4942) bin = body;
+      off += 8 + len + ((4 - (len % 4)) % 4);
+    }
+    return { json, bin };
+  };
+  // PNG IHDR, and the three WebP headers (lossy VP8, lossless VP8L, extended VP8X).
+  const dims = (b) => {
+    if (b[0] === 0x89 && b[1] === 0x50) return [b.readUInt32BE(16), b.readUInt32BE(20)];
+    if (b.subarray(0, 4).toString() !== 'RIFF') return null;
+    const fmt = b.subarray(12, 16).toString();
+    if (fmt === 'VP8X') return [1 + b.readUIntLE(24, 3), 1 + b.readUIntLE(27, 3)];
+    if (fmt === 'VP8L') { const v = b.readUInt32LE(21); return [1 + (v & 0x3fff), 1 + ((v >> 14) & 0x3fff)]; }
+    if (fmt === 'VP8 ') return [b.readUInt16LE(26) & 0x3fff, b.readUInt16LE(28) & 0x3fff];
+    return null;
+  };
+  const wasted = [];
+  let images = 0, files = 0;
+  for (const f of readdirSync(DIR).filter((n) => n.endsWith('.glb'))) {
+    files++;
+    const { json, bin } = parts(readFileSync(join(DIR, f)));
+    for (const im of json.images || []) {
+      images++;
+      const bv = json.bufferViews[im.bufferView];
+      const bytes = bin.subarray(bv.byteOffset || 0, (bv.byteOffset || 0) + bv.byteLength);
+      const d = dims(Buffer.from(bytes));
+      if (!d) { wasted.push(`${f}: an image whose size cannot be read (${im.mimeType})`); continue; }
+      if (!isPalette({ image: { width: d[0], height: d[1] } })) {
+        wasted.push(`${f}: a ${d[0]}x${d[1]} image, ${(bv.byteLength / 1024).toFixed(1)} kB that no pixel samples`);
+      }
+    }
+  }
+  assert.deepEqual(wasted, [], 'shipped models carry images the app downloads and discards:\n  ' + wasted.join('\n  ') +
+    '\n  bake them with scripts/flatten-textures.mjs');
+  console.log(`  ${files} shipped models, ${images} images, every one a palette strip the app samples`);
+}
+
 console.log('model colour: ok');

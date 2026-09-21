@@ -243,16 +243,16 @@ than counted by hand.
 
 | file | NASA model | used for | size |
 |---|---|---|---|
-| `rocket-body.glb` | Space Shuttle Parts / Solid Rocket Booster | every spent stage (catalogue names with R/B, ROCKET BODY, UPPER STAGE), as a class default the card names | 81 KB |
+| `rocket-body.glb` | Space Shuttle Parts / Solid Rocket Booster | every spent stage (catalogue names with R/B, ROCKET BODY, UPPER STAGE), as a class default the card names | 41 KB |
 
 **Telescopes and observatories**
 
 | file | NASA model | used for | size |
 |---|---|---|---|
-| `chandra.glb` | Chandra X-ray Observatory | NORAD 25867 (CXO) | 195 KB |
+| `chandra.glb` | Chandra X-ray Observatory | NORAD 25867 (CXO) | 118 KB |
 | `fermi.glb` | Fermi Gamma-ray Large Area Space Telescope | NORAD 33053 (FGRST (GLAST)) | 174 KB |
 | `hinode.glb` | Hinode (Solar-B) | NORAD 29479 (HINODE (SOLAR-B)) | 103 KB |
-| `hubble.glb` | Hubble Space Telescope (A) | NORAD 20580 | 164 KB |
+| `hubble.glb` | Hubble Space Telescope (A) | NORAD 20580 | 47 KB |
 | `sdo.glb` | Solar Dynamics Observatory | NORAD 36395 (SDO) | 124 KB |
 | `soho.glb` | Solar and Heliospheric Observatory | Horizons -21 | 29 KB |
 | `swift.glb` | Swift | NORAD 28485 (SWIFT) | 152 KB |
@@ -262,23 +262,23 @@ than counted by hand.
 
 | file | NASA model | used for | size |
 |---|---|---|---|
-| `aqua.glb` | Aqua (B) | NORAD 27424 (AQUA) | 159 KB |
-| `aura.glb` | Aura (A) | NORAD 28376 (AURA) | 74 KB |
+| `aqua.glb` | Aqua (B) | NORAD 27424 (AQUA) | 76 KB |
+| `aura.glb` | Aura (A) | NORAD 28376 (AURA) | 22 KB |
 | `bus-ssl1300.glb` | Space Systems Loral (SSL-1300) | DEFAULT for the geostationary ring -- several hundred unnamed commercial satellites | 82 KB |
 | `calipso.glb` | Cloud-Aerosol Lidar and Infrared Pathfinder Satellite (CALIPSO) | catalogue name CALIPSO | 267 KB |
 | `cloudsat.glb` | CloudSat (A) | catalogue name CLOUDSAT | 206 KB |
 | `dscovr.glb` | Deep Space Climate Observatory (DSCOVR) (Triana) | catalogue names containing DSCOVR | 96 KB |
 | `goes.glb` | Geostationary Operational Environmental Satellites | catalogue names containing GOES | 141 KB |
-| `grace.glb` | Gravity Recovery and Climate Experiment (GRACE) (B) | NORAD 43476 (GRACE-FO 1), drawn as its sister ship | 136 KB |
+| `grace.glb` | Gravity Recovery and Climate Experiment (GRACE) (B) | NORAD 43476 (GRACE-FO 1), drawn as its sister ship | 17 KB |
 | `icesat2.glb` | Ice, Clouds, and Land Elevation Satellite-2 (ICESat-2) (A) | NORAD 43613 (ICESAT-2) | 290 KB |
-| `jason.glb` | Ocean Surface Topography Mission (OSTM Jason-2) | NORAD 41240 (JASON-3), drawn as its sister ship | 178 KB |
+| `jason.glb` | Ocean Surface Topography Mission (OSTM Jason-2) | NORAD 41240 (JASON-3), drawn as its sister ship | 59 KB |
 | `landsat.glb` | Landsat 7 | NORAD 25682, 39084, 49260 (Landsat 7, 8, 9) | 69 KB |
 | `mms.glb` | Magnetospheric Multiscale (MMS) (A) | NORAD 40482-40485 (MMS 1 to MMS 4) | 121 KB |
-| `sentinel6.glb` | Jason Continuity of Service (Sentinel-6) | NORAD 46984 (SENTINEL-6A) | 401 KB |
+| `sentinel6.glb` | Jason Continuity of Service (Sentinel-6) | NORAD 46984 (SENTINEL-6A) | 102 KB |
 | `oco2.glb` | Orbiting Carbon Observatory (OCO) 2 | catalogue name OCO 2 | 189 KB |
-| `suomi.glb` | Suomi National Polar-orbiting Partnership (Suomi NPP) | NORAD 37849 (SUOMI NPP) | 152 KB |
+| `suomi.glb` | Suomi National Polar-orbiting Partnership (Suomi NPP) | NORAD 37849 (SUOMI NPP) | 27 KB |
 | `tdrs.glb` | Tracking and Data Relay Satellites (TDRS) (A) | catalogue names containing TDRS | 11 KB |
-| `cygnss.glb` | Cyclone Global Navigation Satellite System (CYGNSS) | NORAD 41884-41891, the seven CYGNSS microsatellites still in the catalogue | 160 KB |
+| `cygnss.glb` | Cyclone Global Navigation Satellite System (CYGNSS) | NORAD 41884-41891, the seven CYGNSS microsatellites still in the catalogue | 34 KB |
 | `gpm.glb` | Global Precipitation Measurement | NORAD 39574 (GPM-CORE) | 222 KB |
 | `icon.glb` | Ionospheric Connection Explorer (ICON) | NORAD 44628 (ICON) | 244 KB |
 | `seastar.glb` | SeaStar | NORAD 24883 (ORBVIEW 2 (SEASTAR)) | 12 KB |
@@ -291,7 +291,7 @@ than counted by hand.
 |---|---|---|---|
 | `juno.glb` | Juno (B) | Horizons -61 | 111 KB |
 | `mro.glb` | Mars Reconnaissance Orbiter (MRO) (B) | Horizons -74 | 12 KB |
-| `parker.glb` | Parker Solar Probe | Horizons -96 | 247 KB |
+| `parker.glb` | Parker Solar Probe | Horizons -96 | 180 KB |
 | `voyager.glb` | Voyager Probe (A) | Horizons -31, -32 | 139 KB |
 
 **Small bodies**
@@ -309,8 +309,8 @@ than counted by hand.
 | `dsn34.glb` | Deep Space Network 34-meter | the dss-25 antenna, which is 34 m and was wrongly drawn with the 70 m model | 151 KB |
 | `dsn70.glb` | Deep Space Network 70-meter | DEFAULT for ground sites of class `dish` | 149 KB |
 | `lunar-module.glb` | Apollo Lunar Module | the Apollo 11, 14, 16 and 17 landing sites -- one vehicle design, four descent stages | 473 KB |
-| `pad.glb` | Mobile Launcher | DEFAULT for every launch pad -- 17 today, more with each Launch Library refresh | 117 KB |
-| `perseverance.glb` | Mars 2020 Perseverance Rover | Jezero crater on Mars | 415 KB |
+| `pad.glb` | Mobile Launcher | DEFAULT for every launch pad -- 17 today, more with each Launch Library refresh | 74 KB |
+| `perseverance.glb` | Mars 2020 Perseverance Rover | Jezero crater on Mars | 412 KB |
 
 **Credit line:** `3D model: NASA`
 
@@ -339,10 +339,22 @@ credit:
 5. **Retextured at runtime.** The original PBR materials are replaced with this project's toon
    material. The *geometry* is NASA's; the *look* is ours. That is the brief — cartoon objects on a
    realistic setting — and it is why a real Hubble still reads as part of the same drawn world.
-   This is also what makes step 4 safe: no shipped model has ever had a texture sampled.
+   This is also what makes step 4 safe -- with one exception since 2026-09-20: a **palette
+   strip**, four texels tall, which `gltf-transform palette` wrote and which holds nothing but the
+   model's flat per-part colours, IS sampled, and those models are drawn in NASA's colours through
+   the toon ramp rather than in one class colour. A strip that short cannot carry surface detail,
+   so it is not the photoreal shading rule 5 rules out.
+6. **Textures baked to flat colours**, for thirteen files, with `scripts/flatten-textures.mjs`.
+   Ten carried their colours only as photographs -- 1024 and 2048 px pictures of foil and solar
+   cells that every visitor downloaded and no pixel sampled. `tools/texture-colours.html` samples
+   the texel under each triangle, weighted by area, which is what each material actually shows;
+   that becomes the material's base colour and the images go. One sample was refused: GRACE's
+   `underside.001` is a magenta UV-checker placeholder in NASA's file, and it is drawn in neutral
+   silver instead. The other three had images no material referenced. The thirteen went from
+   2 480 KB to 1 211 KB, and `tests/test_model_colour.mjs` fails if a shipped model carries an
+   image that is not a palette strip.
 
-They are loaded **on demand**, one file per object, only when the camera is near it. Nobody
-downloads all thirty-seven; the largest single download is `perseverance.glb` at 415 KB.
+They are loaded **on demand**, one file per object, only when the camera is near it. Nobody downloads all 45; the largest single download is `lunar-module.glb` at 473 KB.
 
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 
