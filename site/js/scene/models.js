@@ -2909,6 +2909,29 @@ const BUILDERS = {
  *   It does not read THIS flag -- it re-derives the same fact from scene/realmodels.js -- so the
  *   flag itself is still read by nothing, and that is the accurate version of the old sentence.
  */
+/**
+ * The class whose registry row holds `variant`, preferring `klass` itself.
+ *
+ * realmodels.js routes a record to a builder by name, and gates the route by the record's klass:
+ * `'crew dragon'` accepts a station OR a satellite, because CelesTrak files a visiting vehicle
+ * under whichever it likes. But the builders live in one row -- `dragon`, `soyuz`, `progress`,
+ * `cygnus`, `shenzhou` and `tianzhou` are all under `station` -- so a Progress the catalogue calls
+ * a satellite asked `satellite` for `progress`, found nothing, and was drawn as a comms satellite
+ * with a dish. Measured on the live stations layer 2026-09-21: six visiting vehicles, all six.
+ *
+ * This does not AUTHORISE anything; the route already did, and that gate is what keeps 1279 Gaia
+ * the asteroid from wearing a telescope's sunshield. It only says where the builder lives. A
+ * variant no row holds returns `klass` unchanged, and modelFor() falls back as it always has.
+ */
+export function builderKlass(klass, variant) {
+  if (variant == null || typeof variant !== 'string') return klass;
+  const has = (k) => Object.prototype.hasOwnProperty.call(BUILDERS, k) &&
+    Object.prototype.hasOwnProperty.call(BUILDERS[k], variant);
+  if (has(klass)) return klass;
+  for (const k of Object.keys(BUILDERS)) if (has(k)) return k;
+  return klass;
+}
+
 export function modelFor(klass, variant, opts = {}) {
   // Own-property lookups only: a record whose klass or variant happened to be "constructor" or
   // "toString" would otherwise pull a function off Object.prototype and crash on the next line.

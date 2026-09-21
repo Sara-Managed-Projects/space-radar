@@ -15,7 +15,7 @@
 // position, to the metre. Only its apparent size is chosen.
 
 import * as THREE from '../../vendor/three.module.min.js';
-import { modelFor, updateModelAttitude, setSunDirection, disposeModels, attachOddityModels } from './models.js';
+import { modelFor, updateModelAttitude, setSunDirection, disposeModels, attachOddityModels, builderKlass } from './models.js';
 import { realModelFor, loadRealModel } from './realmodels.js';
 import { propagate } from '../propagate/index.js';
 import { stage } from './stage.js';
@@ -256,7 +256,10 @@ export function createHeroes(scene, ctx) {
     // is drawn now and there is nothing to upgrade to. Otherwise the record's own variant, if any.
     const early = realModelFor(record);
     const variant = early && early.build ? early.build : record.meta && record.meta.modelVariant;
-    const obj = modelFor(record.klass, variant, { record });
+    // A routed build is drawn from the row that holds it (models.js builderKlass): a Progress the
+    // catalogue files as a satellite is still a Progress.
+    const klass = early && early.build ? builderKlass(record.klass, variant) : record.klass;
+    const obj = modelFor(klass, variant, { record });
     obj.userData.recordId = record.id;
     obj.visible = false;
     // Whatever rides on this thing, as children of it. Two records in the app carry anything at
