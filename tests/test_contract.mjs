@@ -382,11 +382,17 @@ for (const file of allFiles) {
   const { MeshoptDecoder } = await import(join(ROOT, 'site/vendor/meshopt_decoder.module.js'));
   await MeshoptDecoder.ready;
   const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
-  const quiet = console.warn;
+  // Node has no image decoder, so every texture in a shipped file fails to load here -- the palette
+  // strips realmodels.js DOES sample in a browser included. That is fine for what this section
+  // measures (geometry), but the failures arrive asynchronously, AFTER parse() resolves, so
+  // silencing console.warn around the parse let all of them through: eighteen lines of noise in
+  // every CI log. It was the wrong channel as well -- GLTFLoader reports this with console.ERROR.
+  // Only that one message is dropped, for the rest of the run; every other error still prints.
+  const error = console.error;
+  console.error = (...a) => { if (!/Couldn't load texture/.test(String(a[0]))) error(...a); };
   const parse = async (buf) => {
     const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
-    console.warn = () => {}; // "Couldn't load texture": realmodels.js never samples one anyway
-    try { return await new Promise((res, rej) => loader.parse(ab, '', res, rej)); } finally { console.warn = quiet; }
+    return new Promise((res, rej) => loader.parse(ab, '', res, rej));
   };
   // Fraction of vertex normals that face against the triangle they belong to, world space.
   const against = (scene) => {
