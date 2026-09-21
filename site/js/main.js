@@ -64,7 +64,7 @@ export async function boot({ setStatus } = {}) {
     starsBin: 'data/stars.bin',
     linesJson: 'data/constellations.lines.json',
     namesJson: 'data/constellation-names.json',
-    milkyWayTexture: 'textures/2k_stars_milky_way.jpg',
+    milkyWayTexture: 'textures/2k_stars_milky_way.webp',
   });
 
   // Records, keyed by layer id. Layers fill in as their data lands; the loop reads whatever is

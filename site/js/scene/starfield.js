@@ -222,7 +222,7 @@ export function createStarfield(scene, opts = {}) {
     starsBin: opts.starsBin ?? new URL('../../data/stars.bin', here),
     linesJson: opts.linesJson ?? new URL('../../data/constellations.lines.json', here),
     namesJson: opts.namesJson ?? new URL('../../data/constellation-names.json', here),
-    milkyWayTexture: opts.milkyWayTexture ?? new URL('../../textures/2k_stars_milky_way.jpg', here),
+    milkyWayTexture: opts.milkyWayTexture ?? new URL('../../textures/2k_stars_milky_way.webp', here),
   };
 
   const group = new THREE.Group();

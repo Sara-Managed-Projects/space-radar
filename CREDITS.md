@@ -75,7 +75,12 @@ notice, a licence notice, a link to the material, and an indication of any chang
 satisfies that with:
 
 > Planet and star textures © Solar System Scope (<https://www.solarsystemscope.com/textures/>),
-> licensed CC BY 4.0 (<https://creativecommons.org/licenses/by/4.0/>). Used unmodified.
+> licensed CC BY 4.0 (<https://creativecommons.org/licenses/by/4.0/>). Used unmodified, except
+> three files re-encoded from JPEG to WebP (quality 0.85) on 2026-09-21, same pixels in the same
+> dimensions, to cut a first visit on a phone by about 730 kB: the night side, the cloud layer (as
+> one grey channel, which is all the shader reads) and the Milky Way. The day side is deliberately
+> still the original JPEG: the ocean mask is computed from its colour, and WebP's halved colour
+> resolution moved 1.6 % of its pixels between sea and land.
 
 | File | Used for | Licence | Source |
 |---|---|---|---|
@@ -83,8 +88,8 @@ satisfies that with:
 | `2k_mercury.jpg` | Mercury | CC BY 4.0 | Solar System Scope |
 | `2k_venus_atmosphere.jpg` | Venus | CC BY 4.0 | Solar System Scope |
 | `2k_earth_daymap.jpg` | Earth, day side | CC BY 4.0 | Solar System Scope |
-| `2k_earth_nightmap.jpg` | Earth, night side | CC BY 4.0 | Solar System Scope |
-| `2k_earth_clouds.jpg` | Earth cloud layer | CC BY 4.0 | Solar System Scope |
+| `2k_earth_nightmap.webp` | Earth, night side | CC BY 4.0 | Solar System Scope |
+| `2k_earth_clouds.webp` | Earth cloud layer | CC BY 4.0 | Solar System Scope |
 | `2k_moon.jpg` | the Moon | CC BY 4.0 | Solar System Scope |
 | `2k_mars.jpg` | Mars | CC BY 4.0 | Solar System Scope |
 | `2k_jupiter.jpg` | Jupiter | CC BY 4.0 | Solar System Scope |
@@ -92,7 +97,7 @@ satisfies that with:
 | `2k_saturn_ring_alpha.png` | Saturn's rings | CC BY 4.0 | Solar System Scope |
 | `2k_uranus.jpg` | Uranus | CC BY 4.0 | Solar System Scope |
 | `2k_neptune.jpg` | Neptune | CC BY 4.0 | Solar System Scope |
-| `2k_stars_milky_way.jpg` | the Milky Way sky sphere | CC BY 4.0 | Solar System Scope |
+| `2k_stars_milky_way.webp` | the Milky Way sky sphere | CC BY 4.0 | Solar System Scope |
 
 **What could not be verified, stated plainly.** solarsystemscope.com answers HTTP 403 to scripted
 downloads, so these files could not be byte-compared against the origin. Provenance rests on the
@@ -103,7 +108,7 @@ want certainty, re-download the pack by hand and diff.
 
 **No texture in the tree comes from anywhere else.** In particular, `registry/models.yaml` claims
 the night-side texture comes from NASA Earth Observatory's Night Lights and the starfield from NASA
-SVS 4851. Neither is what shipped: `2k_earth_nightmap.jpg` and `2k_stars_milky_way.jpg` are Solar
+SVS 4851. Neither is what shipped: `2k_earth_nightmap.webp` and `2k_stars_milky_way.webp` are Solar
 System Scope files, by name, size and fingerprint. The registry is wrong and the table above is
 right. See [§5](#5-corrections-to-registrymodelsyaml).
 
@@ -567,11 +572,11 @@ not true of the shipped tree, recorded here so the public repo does not carry a 
    with their modifications stated. The `real_models:` section of the registry describes them, and
    `scripts/check_registry.py` now refuses a row there whose file is missing — which is the check
    that would have caught this audit's finding in the first place.
-2. **`earth-night` is credited to NASA Earth Observatory.** The shipped `2k_earth_nightmap.jpg` is a
+2. **`earth-night` is credited to NASA Earth Observatory.** The shipped `2k_earth_nightmap.webp` is a
    Solar System Scope file. CC BY 4.0, not public domain — and CC BY has an attribution obligation
    that "Public domain (NASA)" does not discharge.
 3. **`starfield` is credited to NASA SVS 4851**, with a long required credit line naming Gaia DR2
-   and the IAU/Sky & Telescope constellation figures. The shipped `2k_stars_milky_way.jpg` is a
+   and the IAU/Sky & Telescope constellation figures. The shipped `2k_stars_milky_way.webp` is a
    Solar System Scope file. That NASA credit line is for an asset the repository does not contain.
 
 Items 2 and 3 are the ones that matter: they are wrong licence claims on files that are actually
