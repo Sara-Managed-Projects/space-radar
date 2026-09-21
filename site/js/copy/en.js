@@ -1155,9 +1155,15 @@ export const COPY = {
   // out was to reload: tapping where "Layers" is drawn hit a layer checkbox underneath and
   // silently turned a layer off. `closeTitle` takes the panel's own label so that adding a
   // drawer stays one row in ui/mobile.js's PANELS table.
+  //
+  // `controls` names the drawer that holds the trips, the Wonder/Now/Next switch and the layer
+  // list, in that order. It used to say "Layers", which is the LAST thing in it: on a desktop the
+  // trips are the first panel anyone sees, and on a phone -- measured 2026-09-21 at 390 x 844 --
+  // they were behind a button that did not mention them, so a first visit showed the Earth and two
+  // buttons called Layers and Sources, and nothing that said there was a guided trip to take.
   mobile: {
     barLabel: 'Panels',
-    layers: 'Layers',
+    controls: 'Trips & layers',
     sources: 'Sources',
     close: 'Close',
     closeTitle: 'Close {panel}',
