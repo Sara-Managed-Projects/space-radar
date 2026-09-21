@@ -121,6 +121,8 @@ jobs:
         run: node tests/test_onemark.mjs
       - name: A loaded model keeps the colours its file carries
         run: node tests/test_model_colour.mjs
+      - name: A routed vehicle is drawn as itself whatever class the catalogue files it under
+        run: node tests/test_route_builders.mjs
       # Spec 0022 left this open and measured the number first: the attitude code aimed the vehicle
       # along the local vertical, which is 87.5 degrees off the direction of travel at 90 % of the
       # arc. The propagator now returns the tangent of the curve it already draws.
