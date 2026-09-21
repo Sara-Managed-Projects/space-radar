@@ -119,7 +119,7 @@ jobs:
         run: node tests/test_quality_pool.mjs
       - name: One mark per object -- a dot yields to its 3D model
         run: node tests/test_onemark.mjs
-      - name: A loaded model keeps the colours its file carries
+      - name: A loaded model keeps its colours, and ships no image it cannot use
         run: node tests/test_model_colour.mjs
       - name: A routed vehicle is drawn as itself whatever class the catalogue files it under
         run: node tests/test_route_builders.mjs
