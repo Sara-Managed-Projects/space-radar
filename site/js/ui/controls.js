@@ -18,6 +18,7 @@ import { predictPasses } from '../sky/passes.js';
 import { createSearch } from './search.js';
 import { LADDER_RUNGS, WE_SHOW } from '../data/ladder.js';
 import { createNext } from './next.js';
+import { revealInColumn } from './reveal.js';
 import { createColorKey } from './colorkey.js';
 import { shapeLine } from './tripframe.js';
 
@@ -699,6 +700,7 @@ function findCity(query) {
 
 function buildLocation(ctx, state) {
   const wrap = el('section', 'sr-panel sr-place');
+  state.placeSection = wrap; // Now reveals it: ui/reveal.js
   wrap.appendChild(el('h2', 'sr-panel__title', COPY.controls.locationTitle));
 
   const row = el('div', 'sr-place__row');
@@ -1027,6 +1029,13 @@ export function createControls(ctx) {
     if (!next || next === state.moment) return;
     state.moment = next;
     paintMoments(state);   // the module's own painter, so the aria state stays correct too
+  });
+  // Now is about where you are and what comes over it tonight; both sections sat 2 000 px down a
+  // column that shows 500, so they go to the top of it (ui/reveal.js). A listener of its own: the
+  // one above returns early when a moment button has already set state.moment, which is exactly
+  // the case of a visitor pressing Now.
+  window.addEventListener('sr:moment', (e) => {
+    if (e && e.detail === 'now') revealInColumn(state.placeSection, 8);
   });
   paintClock(ctx, state);
   paintLayers(ctx, state);

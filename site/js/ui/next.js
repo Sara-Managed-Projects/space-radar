@@ -14,6 +14,7 @@
 import { COPY, t, fmt, timeText, UNITS } from '../copy/en.js';
 import { predictPasses } from '../sky/passes.js';
 import { trainsFrom } from '../data/trains.js';
+import { revealInColumn } from './reveal.js';
 
 export const NEXT_CAP = 8;
 const HOUR = 3600e3;
@@ -165,9 +166,16 @@ export function createNext(ctx) {
     if (!root.hidden) refresh();
   }
 
+  // Pressing Next reveals the list directly under the row of moment buttons, so the answer appears
+  // under the question (ui/reveal.js has the measurement). REVEAL_ABOVE is that row's height.
+  const REVEAL_ABOVE = 104;
+
   const onLayer = () => refresh();
   const onObserver = () => refresh();
-  const onMoment = (e) => setMoment(e && e.detail);
+  const onMoment = (e) => {
+    setMoment(e && e.detail);
+    if (e && e.detail === 'next') revealInColumn(root, REVEAL_ABOVE);
+  };
   window.addEventListener('sr:layer', onLayer);
   window.addEventListener('sr:observer', onObserver);
   window.addEventListener('sr:moment', onMoment);
