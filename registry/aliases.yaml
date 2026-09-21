@@ -12,8 +12,8 @@ version: 1
 
 aliases:
   - {say: hubble, means: hst, why: "CelesTrak's name for the Hubble Space Telescope is HST"}
-  - {say: webb, means: jwst, why: "the James Webb Space Telescope's catalogue name"}
-  - {say: james webb, means: jwst, why: "as above"}
+  - {say: jwst, means: james webb, why: "how most people write it; the telescope sits at L2 with no CelesTrak element set, so the app's record is the deep-space layer's 'James Webb Space Telescope' and a JWST-named record never exists (the old webb -> jwst rows pointed at it; 'webb' matches the real name directly)"}
+  - {say: golden record, means: voyager, why: "each Voyager carries one; the app draws it riding on them (data/attached.js) and a trip talks about it, but it is not a record of its own"}
   - {say: space station, means: iss, why: "the one people mean; Tiangong is reached by its own name"}
   - {say: station, means: iss, why: "as above"}
   - {say: international space station, means: iss, why: "the full name; the catalogue writes ISS (ZARYA)"}

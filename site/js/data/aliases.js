@@ -6,8 +6,8 @@
 /** What people type -> the word to search alongside it. Keys and values lower-cased. */
 export const ALIASES = {
   "hubble": "hst",
-  "webb": "jwst",
-  "james webb": "jwst",
+  "jwst": "james webb",
+  "golden record": "voyager",
   "space station": "iss",
   "station": "iss",
   "international space station": "iss",

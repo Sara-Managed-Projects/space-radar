@@ -35,7 +35,23 @@ check(wis.hits.length === 1 && wis.hits[0].record.name === 'SWISSCUBE' && wis.fa
 const num = findMatches(index, '25544');
 check(num.hits[0].record.id === 'sat-25544', 'a NORAD number finds its object first');
 // requirement 6: aliases come from the registry mirror
-check(ALIASES.hubble === 'hst' && ALIASES.webb === 'jwst' && ALIASES.tiangong === 'css', 'the alias table is the registry mirror');
+check(ALIASES.hubble === 'hst' && ALIASES.jwst === 'james webb' && ALIASES.tiangong === 'css', 'the alias table is the registry mirror');
+// "jwst" is how the telescope is written, and no record is called that: it sits at L2, has no
+// CelesTrak element set, and the app's record is the deep-space layer's full name. The old alias
+// ran the other way (webb -> jwst) and pointed at a name nothing had, so "jwst" found nothing.
+{
+  const deep = buildIndex([
+    { id: 'deep-jwst', name: 'James Webb Space Telescope', klass: 'telescope', layer: 'deep-space', meta: {} },
+    { id: 'deep-voyager-1', name: 'Voyager 1', klass: 'probe', layer: 'deep-space', meta: {} },
+    { id: 'deep-voyager-2', name: 'Voyager 2', klass: 'probe', layer: 'deep-space', meta: {} },
+    { id: 'dso-x', name: "Webb's Cross Cluster", klass: 'dso', layer: 'deep-sky', meta: {} },
+  ], LAYERS);
+  const j = findMatches(deep, 'jwst');
+  check(j.hits[0] && j.hits[0].record.id === 'deep-jwst', `"jwst" finds the James Webb Space Telescope (${j.hits[0] && j.hits[0].record.name})`);
+  check(findMatches(deep, 'webb').hits.some((h) => h.record.id === 'deep-jwst'), '"webb" still finds it by its own name');
+  const g = findMatches(deep, 'golden record');
+  check(g.hits.length === 2 && g.hits.every((h) => /^Voyager/.test(h.record.name)), `"golden record" leads to the two Voyagers that carry it (${g.hits.map((h) => h.record.name)})`);
+}
 const hub = findMatches(index, 'hubble');
 check(hub.hits[0].record.id === 'sat-20580', `"hubble" puts HST first through the alias, above the satellites named after it (${hub.hits[0] && hub.hits[0].record.name})`);
 check(Object.keys(ALIASES).every((k) => k === k.toLowerCase()), 'alias keys are lower-cased');
