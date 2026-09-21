@@ -17,7 +17,7 @@ export function createMobileUI() {
   let openId = null;
 
   const PANELS = [
-    { id: 'sr-controls', label: COPY.mobile.layers },
+    { id: 'sr-controls', label: COPY.mobile.controls },
     { id: 'sr-status', label: COPY.mobile.sources },
   ];
 
