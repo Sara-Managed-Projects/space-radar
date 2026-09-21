@@ -155,6 +155,41 @@ function heroScale(px, d, h, f, pos, reach) {
 }
 
 /**
+ * The largest reach any shipped model has been measured at (iss.glb, 1.15 units). closeUpDistance
+ * uses it when the model is not built yet, so an arrival is close enough for ANY model.
+ */
+export const ARRIVAL_REACH = 1.15;
+
+/**
+ * How far away the camera may stand and still see a SELECTED model at its full SELECTED_PX.
+ *
+ * heroScale caps a model at its own altitude so it can never reach into the planet. That cap binds
+ * when the camera is far away -- which is the point -- but the camera's ARRIVAL distance was being
+ * chosen without asking it. main.js parked at 35 % of the layer's nearKm, and for the stations
+ * layer that is 7 000 km. MEASURED 2026-09-21 at 1100x750 with Tiangong selected: the station was
+ * drawn 26 x 72 px while three unselected satellites beside it were 62 x 87, 123 x 127 and
+ * 43 x 89. The one object the visitor asked for was the smallest thing on screen, because at
+ * 395 km it is the lowest thing up and the cap squeezes it hardest.
+ *
+ * nearKm is the distance at which a model starts to EXIST, set generously so it is there when you
+ * arrive; the 2026-09-17 incident write-up names exactly this -- borrowing nearKm to mean "zoomed
+ * in" -- as the mistake to not repeat. So the arrival is solved from the cap itself:
+ *
+ *   drawn diameter  px * 2 * d / (h * f)   <=   altitude * CLEARANCE / reach   (heroScale)
+ *   =>  d  <=  altitude * CLEARANCE * h * f / (2 * px * reach)
+ *
+ * Infinity when the object is not above the stage world, where the cap does not apply.
+ */
+export function closeUpDistance(pos, h, f, reach = ARRIVAL_REACH, px = SELECTED_PX) {
+  const R = stageRadiusUnits();
+  if (!(R > 0) || !pos || !(h > 0) || !(f > 0)) return Infinity;
+  const altitude = pos.length() - R;
+  if (!(altitude > 0)) return Infinity;
+  const r = reach > 0 ? reach : ARRIVAL_REACH;
+  return (altitude * CLEARANCE * h * f) / (2 * px * r);
+}
+
+/**
  * HOW MANY MODELS MAY EXIST AT ONCE -- a floor, and a ceiling the device earns.
  *
  * Ivan, 2026-09-20: "if user PC or mobile is fast enough, render more 3d objects, and render more

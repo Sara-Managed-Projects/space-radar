@@ -117,6 +117,8 @@ jobs:
       # back when frames slow down. Pure, because headless renders in software and would never grow.
       - name: More 3D when the device can take it, and not a model more
         run: node tests/test_quality_pool.mjs
+      - name: A selected station arrives close enough to be drawn at full size
+        run: node tests/test_arrival.mjs
       - name: One mark per object -- a dot yields to its 3D model
         run: node tests/test_onemark.mjs
       - name: A loaded model keeps its colours, and ships no image it cannot use
