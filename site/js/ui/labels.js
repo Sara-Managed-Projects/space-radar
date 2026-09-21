@@ -14,7 +14,9 @@
 //   3. the nearest notable objects: records a hand-kept list gave a reason (`meta.why`), the worlds,
 //      and the crewed stations -- at most ten, nearest to the camera first.
 // Two labels closer than 24 px on screen would overprint, so the later one is dropped; that is the
-// same forgiveness distance a tap uses (scene/pickrank.js), for the same reason.
+// same forgiveness distance a tap uses (scene/pickrank.js), for the same reason. That test is on
+// ANCHORS, before anything is measured, and a name is a box two hundred pixels wide -- so the boxes
+// are checked again once they are measured and placed (keepClearOf, below).
 //
 // COST. Candidates are a few hundred records at most (the notable lists, the worlds, the stations,
 // the selection's train), projected in float64 through stage.toScene and camera.project on the
@@ -105,6 +107,35 @@ export function clampLabelX(x, boxWidth, hostWidth, pad = LABEL_EDGE_PAD) {
   const hi = (Number.isFinite(hostWidth) ? hostWidth : 0) - half - pad;
   if (hi < lo) return lo;
   return Math.min(Math.max(x, lo), hi);
+}
+
+/** Space kept between two label boxes, in CSS pixels. */
+export const LABEL_GAP_PX = 2;
+
+/**
+ * Which of these placed boxes to keep, in priority order: the first box always, and each later box
+ * only if it overlaps none already kept. `boxes` are {left, top, right, bottom} in CSS pixels, in
+ * the order chooseLabels returned them -- selection, train, nearest notable -- so when two collide
+ * the more important name is the one that survives.
+ *
+ * WHY THIS EXISTS. chooseLabels drops a label whose ANCHOR is within 24 px of another's. A label is
+ * not an anchor: it is a box as wide as its name. Two payloads from one launch fly metres apart,
+ * their anchors land 30-odd pixels apart on the same row, both pass the 24 px test, and their boxes
+ * print on top of each other. Seen on the live site on a 390 px phone, 2026-09-21: "Long March 6A |
+ * Unknown Payload 1" and "... Payload 2" as one unreadable line. clampLabelX can also slide a box
+ * sideways into its neighbour after the anchor test has already passed it. Both need the real width,
+ * which only exists after measuring -- so this runs on placed boxes, not anchors.
+ */
+export function keepClearOf(boxes, gap = LABEL_GAP_PX) {
+  const kept = [];
+  const out = [];
+  for (const b of Array.isArray(boxes) ? boxes : []) {
+    const ok = !!b && [b.left, b.top, b.right, b.bottom].every(Number.isFinite) &&
+      !kept.some((k) => b.left < k.right + gap && b.right + gap > k.left && b.top < k.bottom + gap && b.bottom + gap > k.top);
+    out.push(ok);
+    if (ok) kept.push(b);
+  }
+  return out;
 }
 
 export function createLabels(ctx, host) {
@@ -222,12 +253,24 @@ export function createLabels(ctx, host) {
       slot.node.dataset.kind = c.kind;
     }
     const w = host.clientWidth || window.innerWidth;
+    // Measure every box once (one layout), then place, then keep only the boxes that do not overlap
+    // one kept before them. The CSS draws a label at translate(-50%, -140%) from its anchor, so the
+    // box spans x +- width/2 and from y - 1.4 height to y - 0.4 height.
+    const placed = [];
     for (let i = 0; i < pool.length; i++) {
-      const slot = pool[i];
       const c = chosen[i];
-      if (!c) continue;
-      const x = clampLabelX(c.x, slot.node.offsetWidth, w);
-      slot.node.style.transform = `translate(${Math.round(x)}px, ${Math.round(c.y)}px) translate(-50%, -140%)`;
+      if (!c) break;
+      const bw = pool[i].node.offsetWidth;
+      const bh = pool[i].node.offsetHeight;
+      const x = clampLabelX(c.x, bw, w);
+      placed.push({ x, y: c.y, left: x - bw / 2, right: x + bw / 2, top: c.y - 1.4 * bh, bottom: c.y - 0.4 * bh });
+    }
+    const keep = keepClearOf(placed);
+    for (let i = 0; i < placed.length; i++) {
+      const slot = pool[i];
+      if (!keep[i]) { slot.node.hidden = true; continue; }
+      const b = placed[i];
+      slot.node.style.transform = `translate(${Math.round(b.x)}px, ${Math.round(b.y)}px) translate(-50%, -140%)`;
     }
   }
 
