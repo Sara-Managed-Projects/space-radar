@@ -44,6 +44,8 @@ export function labelName(record) {
     if (entry && entry.displayName) name = String(entry.displayName).trim();
     else if (entry && !entry.generic && entry.name) name = String(entry.name).trim();
   }
+  // Then the hand-kept list's own name (data/layers.js NOTABLE), before the catalogue's string.
+  if (!name && record && record.meta && record.meta.listName) name = String(record.meta.listName).trim();
   if (!name) name = record && record.name ? String(record.name).trim() : '';
   if (name.length > MAX_NAME) name = name.slice(0, MAX_NAME - 1).trimEnd() + '…';
   return name;
