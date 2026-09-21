@@ -90,7 +90,12 @@ DATA="public, max-age=3600"
 
 if [ "$WHAT" != "app" ]; then
   echo "==> textures, data, vendored libraries"
-  "${SYNC[@]}" "$SITE/textures" "s3://$BUCKET/textures" --cache-control "$LONG" --delete
+  "${SYNC[@]}" "$SITE/textures" "s3://$BUCKET/textures" --cache-control "$LONG" --delete --exclude "*.webp"
+  # WebP by its own type: the CLI guesses a Content-Type from the extension, and a guess that comes
+  # back binary/octet-stream is served as a download to anything that asks what the bytes are. The
+  # --delete above does not touch these, because excluded files are never deleted by a sync.
+  "${SYNC[@]}" "$SITE/textures" "s3://$BUCKET/textures" --cache-control "$LONG" --delete \
+    --exclude "*" --include "*.webp" --content-type "image/webp"
   # data/v1/ is the harvester's (spec 0003 amendment 1): it is never in site/, and --delete would
   # otherwise remove every snapshot on each deploy. The filter keeps it out of the upload too.
   "${SYNC[@]}" "$SITE/data"     "s3://$BUCKET/data"     --cache-control "$DATA" --delete --exclude "v1/*"

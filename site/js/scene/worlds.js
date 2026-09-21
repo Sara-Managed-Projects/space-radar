@@ -134,7 +134,11 @@ export const WORLDS = [
   {
     id: 'earth', display: 'Earth', parent: 'sun', radiusKm: 6371.0,
     body: 'Earth', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'earth-gmst',
-    look: { earth: true, day: '2k_earth_daymap.jpg', night: '2k_earth_nightmap.jpg', clouds: '2k_earth_clouds.jpg' },
+    // The night and cloud maps are WebP and the day map is not, on purpose. Both of those are read
+    // as brightness, and lossy WebP keeps brightness at full resolution; the day map is also read
+    // as COLOUR -- the ocean mask is blue minus red (earth.js OCEAN_MASK) -- and WebP halves colour
+    // resolution. Measured: 1.6 % of the map's pixels changed between sea and land.
+    look: { earth: true, day: '2k_earth_daymap.jpg', night: '2k_earth_nightmap.webp', clouds: '2k_earth_clouds.webp' },
   },
   {
     id: 'moon', display: 'The Moon', parent: 'earth', radiusKm: 1737.4,

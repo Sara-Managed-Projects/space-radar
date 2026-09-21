@@ -20,10 +20,10 @@
 #     those rows credited NASA 3D Resources for ISS, Hubble, JWST and Voyager geometry that this
 #     project does not ship. Crediting someone for work you did not use is its own kind of wrong,
 #     so the rows now describe the procedural geometry that does ship.
-#   * `earth-night` was credited "Public domain (NASA)". The shipped 2k_earth_nightmap.jpg is a
+#   * `earth-night` was credited "Public domain (NASA)". The shipped 2k_earth_nightmap (.webp since 2026-09-21) is a
 #     Solar System Scope file under CC BY 4.0. A public-domain claim does not discharge CC BY's
 #     attribution requirement, so this one mattered.
-#   * `starfield` carried a NASA SVS / Gaia DR2 credit line. The shipped 2k_stars_milky_way.jpg is
+#   * `starfield` carried a NASA SVS / Gaia DR2 credit line. The shipped 2k_stars_milky_way (.webp since 2026-09-21) is
 #     also Solar System Scope, CC BY 4.0.
 version: 1
 
@@ -95,8 +95,8 @@ models:
 
 textures:
   - {id: earth-day,     file: 2k_earth_daymap.jpg,        source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
-  - {id: earth-night,   file: 2k_earth_nightmap.jpg,      source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
-  - {id: earth-clouds,  file: 2k_earth_clouds.jpg,        source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
+  - {id: earth-night,   file: 2k_earth_nightmap.webp,      source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
+  - {id: earth-clouds,  file: 2k_earth_clouds.webp,        source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
   - {id: earth-realistic, file: 2k_earth_daymap.jpg,      source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
   - {id: moon,          file: 2k_moon.jpg,                source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
   - {id: sun,           file: 2k_sun.jpg,                 source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
@@ -108,7 +108,7 @@ textures:
   - {id: saturn-ring,   file: 2k_saturn_ring_alpha.png,   source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
   - {id: uranus,        file: 2k_uranus.jpg,              source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
   - {id: neptune,       file: 2k_neptune.jpg,             source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
-  - {id: starfield,     file: 2k_stars_milky_way.jpg,     source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
+  - {id: starfield,     file: 2k_stars_milky_way.webp,     source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
 
 # `stars.bin` is a DERIVATIVE work: d3-celestial's stars.6.json repacked to 5 044 Float32
 # quadruples (ra, dec, mag, bv). BSD-3-Clause governs it as a binary-form redistribution, which is

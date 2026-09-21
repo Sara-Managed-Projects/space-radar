@@ -110,7 +110,7 @@ check(pickWorldDisc([], 1, 1) === null, 'no discs, no pick');
   camera.updateMatrixWorld();
   const worlds = createWorlds(new THREE.Scene(), { textureBase: 't/', loadTexture, camera });
 
-  const EAGER = ['t/2k_earth_daymap.jpg', 't/2k_earth_nightmap.jpg', 't/2k_earth_clouds.jpg', 't/2k_saturn_ring_alpha.png'];
+  const EAGER = ['t/2k_earth_daymap.jpg', 't/2k_earth_nightmap.webp', 't/2k_earth_clouds.webp', 't/2k_saturn_ring_alpha.png'];
   const lazyWorlds = WORLDS.filter((w) => !w.look.earth && w.look.map);
   check(fetched.length === EAGER.length && EAGER.every((u) => fetched.includes(u)),
     `construction fetches Earth's three maps and the ring strip, nothing else (${JSON.stringify(fetched)})`);
