@@ -14,6 +14,7 @@
 import { COPY, t, fmt, timeText, UNITS } from '../copy/en.js';
 import { predictPasses } from '../sky/passes.js';
 import { trainsFrom } from '../data/trains.js';
+import { revealInColumn } from './reveal.js';
 
 export const NEXT_CAP = 8;
 const HOUR = 3600e3;
@@ -165,37 +166,15 @@ export function createNext(ctx) {
     if (!root.hidden) refresh();
   }
 
-  /**
-   * Bring the list into view inside whatever scrolls it -- never the page.
-   *
-   * MEASURED at 1280 x 800 on the live site, 2026-09-21: the controls column shows 496 px of a
-   * 3 784 px panel, and this section starts at y = 553, below the column's visible bottom at 512.
-   * So pressing Next changed the scene and left the list it is FOR scrolled out of sight, with
-   * nothing on screen to say it had appeared. On every change to Next, including arriving at #next.
-   *
-   * The scroller, not scrollIntoView: on a phone the column is a drawer, and scrollIntoView would
-   * also scroll the page under it. REVEAL_ABOVE keeps the Wonder / Now / Next row that was just
-   * pressed in view above the list, so the answer appears under the question.
-   */
+  // Pressing Next reveals the list directly under the row of moment buttons, so the answer appears
+  // under the question (ui/reveal.js has the measurement). REVEAL_ABOVE is that row's height.
   const REVEAL_ABOVE = 104;
-  function reveal() {
-    if (root.hidden || typeof getComputedStyle !== 'function') return;
-    for (let p = root.parentElement; p; p = p.parentElement) {
-      const oy = getComputedStyle(p).overflowY;
-      if ((oy === 'auto' || oy === 'scroll') && p.scrollHeight > p.clientHeight) {
-        const top = root.getBoundingClientRect().top - p.getBoundingClientRect().top + p.scrollTop;
-        const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-        p.scrollTo({ top: Math.max(0, top - REVEAL_ABOVE), behavior: reduce ? 'auto' : 'smooth' });
-        return;
-      }
-    }
-  }
 
   const onLayer = () => refresh();
   const onObserver = () => refresh();
   const onMoment = (e) => {
     setMoment(e && e.detail);
-    if (e && e.detail === 'next') reveal();
+    if (e && e.detail === 'next') revealInColumn(root, REVEAL_ABOVE);
   };
   window.addEventListener('sr:layer', onLayer);
   window.addEventListener('sr:observer', onObserver);
