@@ -78,5 +78,18 @@ check(labelName({ name: 'A'.repeat(60), meta: {} }).length <= 34, 'a long name i
   check(keepClearOf(undefined).length === 0, 'no boxes, no labels');
 }
 
+// A GENERIC SHAPE IS NOT A GENERIC NAME. Tiangong is drawn from a representative build, and the
+// flag that says so also stopped its name being used: the second crewed station in orbit was
+// labelled "CSS (TIANHE)" beside "International Space Station". A route's own displayName wins.
+{
+  const station = (name) => ({ id: 'sat-48274', name, klass: 'station', layer: 'stations', meta: {} });
+  check(labelName(station('CSS (TIANHE)')) === 'Tiangong space station', `Tianhe is labelled ${labelName(station('CSS (TIANHE)'))}`);
+  check(/Wentian/.test(labelName(station('CSS (WENTIAN)'))) && /Tiangong/.test(labelName(station('CSS (WENTIAN)'))), 'Wentian names itself and its station');
+  // ... and a generic route WITHOUT one still does not rename: "a Starlink" is a class, and the
+  // catalogue's STARLINK-31234 is the more specific thing to print over one particular satellite.
+  const sl = { id: 'sat-1', name: 'STARLINK-31234', klass: 'satellite', layer: 'visual', meta: {} };
+  check(labelName(sl) === 'STARLINK-31234', `a Starlink keeps its designation, got ${labelName(sl)}`);
+}
+
 if (problems.length) { console.error('labels FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`labels ok: selection, then its train, then at most ${NOTABLE_CAP} nearest notable; 24 px dedupe; never the catalogue; the box stays on screen; and no two boxes overprint`);

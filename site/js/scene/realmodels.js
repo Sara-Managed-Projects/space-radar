@@ -442,9 +442,16 @@ export const REAL_MODELS = {
     // Tiangong: three catalogue objects at one position. The core draws the whole T; a lab draws
     // as a single module when the core's model has not already swallowed it. Klass station by
     // classify()'s own rule (`CSS (` names). A CC BY model of the core is listed in spec 0027.
-    'css (tianhe': { build: 'tiangong', colour: 'station', name: 'the Tiangong station', klass: ['station'], generic: true },
-    'css (wentian': { build: 'tiangong-module', colour: 'station', name: 'a Tiangong laboratory module', klass: ['station'], generic: true },
-    'css (mengtian': { build: 'tiangong-module', colour: 'station', name: 'a Tiangong laboratory module', klass: ['station'], generic: true },
+    //
+    // `displayName` is the name a person uses for THIS object, and it wins over the catalogue's
+    // string even though the SHAPE is generic. The two were one flag: `generic: true` says the
+    // drawing is representative, and ui/cards.js and ui/labels.js both read it as "the name is a
+    // type, not this object" -- right for "a Starlink", wrong for the second crewed station in
+    // orbit, which the stations trip is about and which was labelled "CSS (TIANHE)" while the ISS
+    // beside it read "International Space Station".
+    'css (tianhe': { build: 'tiangong', colour: 'station', name: 'the Tiangong station', displayName: 'Tiangong space station', klass: ['station'], generic: true },
+    'css (wentian': { build: 'tiangong-module', colour: 'station', name: 'a Tiangong laboratory module', displayName: 'Wentian, a Tiangong module', klass: ['station'], generic: true },
+    'css (mengtian': { build: 'tiangong-module', colour: 'station', name: 'a Tiangong laboratory module', displayName: 'Mengtian, a Tiangong module', klass: ['station'], generic: true },
     // Shenzhou and Tianzhou: the Soyuz plan at Chinese proportions, white-grey, wings on both ends
     // of a Shenzhou. CC BY models exist for both (spec 0027, Ivan's list); procedural until then.
     shenzhou: { build: 'shenzhou', colour: 'station', name: 'a Shenzhou spacecraft', klass: ['station', 'satellite'], generic: true },

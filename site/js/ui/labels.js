@@ -39,7 +39,10 @@ export function labelName(record) {
   if (!name) {
     let entry = null;
     try { entry = realModelFor(record); } catch { entry = null; }
-    if (entry && !entry.generic && entry.name) name = String(entry.name).trim();
+    // A route's own `displayName` names this exact object even when its shape is generic
+    // (Tiangong); otherwise a generic route's `name` is a class ("a Starlink") and renames nothing.
+    if (entry && entry.displayName) name = String(entry.displayName).trim();
+    else if (entry && !entry.generic && entry.name) name = String(entry.name).trim();
   }
   if (!name) name = record && record.name ? String(record.name).trim() : '';
   if (name.length > MAX_NAME) name = name.slice(0, MAX_NAME - 1).trimEnd() + '…';
