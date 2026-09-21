@@ -14,7 +14,7 @@ import { propagate } from './propagate/index.js';
 import { createWorlds, WORLDS } from './scene/worlds.js';
 import { createStarfield } from './scene/starfield.js';
 import { createGlyphLayer } from './scene/glyphs.js';
-import { createHeroes } from './scene/heroes.js';
+import { createHeroes, closeUpDistance } from './scene/heroes.js';
 import { createCameraRig } from './scene/camera.js';
 import { readMoment, writeMoment } from './ui/urlstate.js';
 import { guessObserver } from './sky/guessplace.js';
@@ -243,7 +243,7 @@ export async function boot({ setStatus } = {}) {
     if (!record) return false;
     if (record.klass === 'world') worlds.preload(record.id);
     const pos = positionOfRecord(record);
-    if (pos) cameraRig.flyTo({ targetScene: pos, distance: arrivalDistance(record), ms });
+    if (pos) cameraRig.flyTo({ targetScene: pos, distance: arrivalDistance(record, pos), ms });
     cameraRig.follow(() => positionOfRecord(record));
     return !!pos;
   }
@@ -269,7 +269,7 @@ export async function boot({ setStatus } = {}) {
     return stage.toScene(p, p.frame, clock.now());
   }
 
-  function arrivalDistance(record) {
+  function arrivalDistance(record, pos) {
     if (record && record.klass === 'world') return Math.max(0.05, worlds.drawnRadiusUnits(record.id) * 3.5);
     if (record && record.klass === 'star') return 0.4; // a point of light: close, but not inside it
     if (record && record.klass === 'exoplanet') return 0.4;
@@ -281,7 +281,14 @@ export async function boot({ setStatus } = {}) {
     }
     const layer = LAYERS.find((l) => l.id === record.layer);
     const nearKm = (layer && layer.nearKm) || 2000;
-    return Math.max(0.05, (nearKm * 0.35) / stage.unitKm);
+    // No farther than the selected model can be drawn at full size (scene/heroes.js
+    // closeUpDistance): at 35 % of the stations layer's nearKm the camera parked 7 000 km from
+    // Tiangong, and the altitude cap drew the station smaller than the satellites around it.
+    const el = ctx.renderer && ctx.renderer.domElement;
+    const h = el && el.clientHeight > 0 ? el.clientHeight : window.innerHeight;
+    const f = ctx.camera ? ctx.camera.projectionMatrix.elements[5] : 0;
+    const close = pos ? closeUpDistance(pos, h, f) : Infinity;
+    return Math.max(0.05, Math.min((nearKm * 0.35) / stage.unitKm, close));
   }
 
   /**
