@@ -936,11 +936,16 @@ export async function loadLayerDetailed(layer, nowMs) {
     selected = selected.slice(0, max);
   }
 
-  // Stamp the layer on, and attach the list's reason where there is one.
+  // Stamp the layer on, and attach the list's reason where there is one -- and its NAME. The rows
+  // were written by hand ("Envisat", "Atlas Centaur 2", "Thor Agena D rocket body") and the labels
+  // and cards printed the catalogue's instead: ENVISAT, THOR AGENA D R/B, SL-8 R/B, in capitals, on
+  // a phone, 2026-09-21. It is `listName` and not `displayName` because it must NOT outrank a
+  // real-model route: the list says "ISS (Zarya)" and the route says "International Space Station".
   for (const r of selected) {
     r.layer = layer.id;
     const row = r.meta && NOTABLE_BY_ID.get(r.meta.noradId);
     if (row && r.meta && !r.meta.why) r.meta.why = row.why;
+    if (row && r.meta && !r.meta.listName && row.name) r.meta.listName = row.name;
   }
 
   return { records: selected, source: result, error: result ? result.error : null };

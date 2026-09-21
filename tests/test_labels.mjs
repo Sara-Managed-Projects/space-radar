@@ -91,5 +91,19 @@ check(labelName({ name: 'A'.repeat(60), meta: {} }).length <= 34, 'a long name i
   check(labelName(sl) === 'STARLINK-31234', `a Starlink keeps its designation, got ${labelName(sl)}`);
 }
 
+// THE HAND-KEPT LIST'S NAME, before the catalogue's -- but never over a route's. Seen on a phone,
+// 2026-09-21: ENVISAT, THOR AGENA D R/B and SL-8 R/B in capitals, while data/layers.js had
+// "Envisat", "Thor Agena D rocket body" and "SL-8 rocket body" written out by hand beside them.
+{
+  const row = (name, klass, noradId, listName) => ({ id: `sat-${noradId}`, name, klass, layer: 'debris-notable', meta: { noradId, listName } });
+  check(labelName(row('ENVISAT', 'satellite', 27386, 'Envisat')) === 'Envisat', 'Envisat is written as a name, not shouted');
+  check(labelName(row('THOR AGENA D R/B', 'rocket', 733, 'Thor Agena D rocket body')) === 'Thor Agena D rocket body', 'the list names a rocket body in words');
+  // the list says "ISS (Zarya)" and "CSS (Tianhe)"; the routes are better and must win
+  check(labelName(row('ISS (ZARYA)', 'station', 25544, 'ISS (Zarya)')) === 'International Space Station', 'the list must not outrank the ISS route');
+  check(labelName(row('CSS (TIANHE)', 'station', 48274, 'CSS (Tianhe)')) === 'Tiangong space station', 'the list must not outrank the Tiangong route');
+  // and a record the list does not know keeps the catalogue's string
+  check(labelName(row('COSMOS 1933', 'satellite', 18187, undefined)) === 'COSMOS 1933', 'no list name, no rename');
+}
+
 if (problems.length) { console.error('labels FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`labels ok: selection, then its train, then at most ${NOTABLE_CAP} nearest notable; 24 px dedupe; never the catalogue; the box stays on screen; and no two boxes overprint`);
