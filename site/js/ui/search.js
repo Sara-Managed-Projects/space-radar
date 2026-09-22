@@ -386,6 +386,32 @@ export function findMatches(index, query, limit = MAX_RESULTS) {
 // The component
 // ---------------------------------------------------------------------------------------
 
+/**
+ * What is NOT being searched, sorted into the three true reasons (spec 0021 / 0026 req 7). Pure.
+ *
+ * - LOADING: the layer has not answered yet.
+ * - UNREAD: it answered with nothing (could not be read, or is empty).
+ * - DEFERRED: data saver holds a heavy layer back until it is switched on.
+ * A layer the registry switched off (`enabled: false`) is none of these: the app never loads it
+ * and no panel offers it. It used to count as LOADING, so every note said "Still loading, so not
+ * searched yet: Everything active, The geostationary ring, Famous debris, Things that came down"
+ * -- forever, about four layers a visitor cannot see (measured 2026-09-22).
+ */
+export function coverageOf(layers, counts, reported) {
+  const loading = [];
+  const unread = [];
+  const deferred = [];
+  for (const layer of Array.isArray(layers) ? layers : []) {
+    if (!layer || !layer.id) continue;
+    if (layer.forcedOff || layer.enabled === false) continue;
+    if (((counts && counts.get(layer.id)) || 0) > 0) continue;
+    const name = layer.display || layer.id;
+    if (layer.deferred) deferred.push(name);
+    else ((reported && reported.has(layer.id)) ? unread : loading).push(name);
+  }
+  return { loading, unread, deferred, all: loading.concat(unread, deferred) };
+}
+
 export function createSearch(ctx, host) {
   const parent =
     (host && host.appendChild ? host : null) || document.getElementById('sr-controls') || document.body;
@@ -484,17 +510,7 @@ export function createSearch(ctx, host) {
       if (!record || !record.layer) continue;
       counts.set(record.layer, (counts.get(record.layer) || 0) + 1);
     }
-    // Two different truths (spec 0021 / 0026 req 7): a layer that has not answered yet is LOADING;
-    // one that answered with nothing COULD NOT BE READ (or is empty). The searcher is told which.
-    const loading = [];
-    const unread = [];
-    for (const layer of layerList(ctx)) {
-      if (!layer || !layer.id) continue;
-      if (layer.forcedOff) continue;
-      if ((counts.get(layer.id) || 0) > 0) continue;
-      (state.reported.has(layer.id) ? unread : loading).push(layer.display || layer.id);
-    }
-    return { loading, unread, all: loading.concat(unread) };
+    return coverageOf(layerList(ctx), counts, state.reported);
   }
 
   function paintNote() {
@@ -509,6 +525,7 @@ export function createSearch(ctx, host) {
           }),
     );
     if (split.loading.length) parts.push(t(COPY.search.stillLoading, { layers: split.loading.join(COPY.punctuation.listJoin) }));
+    if (split.deferred.length) parts.push(t(COPY.search.loadsWhenOn, { layers: split.deferred.join(COPY.punctuation.listJoin) }));
     if (split.unread.length) parts.push(t(COPY.search.couldNotRead, { layers: split.unread.join(COPY.punctuation.listJoin) }));
     if (missing.length) parts.push(COPY.search.notLoadedCount);
     if (state.switchedOn) parts.push(t(COPY.search.switchedOn, { layer: state.switchedOn }));

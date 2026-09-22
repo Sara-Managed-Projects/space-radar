@@ -61,5 +61,24 @@ check(star.hits.length === 8 && star.total === 20, `eight rows shown of ${star.t
 // determinism
 check(JSON.stringify(findMatches(index, 'starlink').hits.map((h) => h.record.id)) === JSON.stringify(star.hits.map((h) => h.record.id)), 'the same query gives the same order');
 
+// What the note says is not searched (2026-09-22): four registry-disabled layers were "still
+// loading" in every note, forever.
+{
+  const { coverageOf } = await import(join(JS, 'ui/search.js'));
+  const layers = [
+    { id: 'stations', display: 'Crewed stations' },
+    { id: 'visual', display: 'Bright enough to see' },
+    { id: 'active', display: 'Everything active', enabled: false },
+    { id: 'starlink', display: 'Starlink', deferred: true },
+    { id: 'worlds', display: 'Planets' },
+    { id: 'gone', display: 'Gone', forcedOff: true },
+  ];
+  const cov = coverageOf(layers, new Map([['worlds', 10]]), new Set(['visual']));
+  check(cov.loading.join() === 'Crewed stations', `not answered yet: loading (${cov.loading})`);
+  check(cov.unread.join() === 'Bright enough to see', `answered with nothing: could not be read (${cov.unread})`);
+  check(cov.deferred.join() === 'Starlink', `held back by data saver: its own reason (${cov.deferred})`);
+  check(!cov.all.includes('Everything active') && !cov.all.includes('Gone'), 'a layer the registry switched off is not "still loading"');
+}
+
 if (problems.length) { console.error('search FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('search ok: whole words first, buried letters only as an announced fallback, eight rows, aliases from the registry');

@@ -1106,6 +1106,7 @@ export const COPY = {
     empty: 'Nothing has loaded yet, so there is nothing to search.',
     notLoaded: 'Not loaded, so not searched: {layers}.',
     stillLoading: 'Still loading, so not searched yet: {layers}.',
+    loadsWhenOn: 'Loaded only when you switch them on, to save data, so not searched yet: {layers}.',
     couldNotRead: 'Could not be read, so not searched: {layers}.',
     fallback: 'Nothing starts with that, so these merely contain it.',
     switchedOn: 'Switched on {layer} so you can see it.',
