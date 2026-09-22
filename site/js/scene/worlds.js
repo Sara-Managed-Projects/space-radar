@@ -77,6 +77,11 @@ export const WORLD_ALIASES = {
 // nearer (PLANET_VIEW), and main.js asks `drawnPositionOf` when it wants the disc.
 
 /** @returns {Array<Object>} one record per world, klass `world`, layer `worlds`. */
+// Every world card ended "Source not recorded". The positions are not unsourced: propagate/body.js
+// computes them with Astronomy Engine, whose licence and version CREDITS.md already records. The
+// card reads `meta.cite` first (ui/cards.js sourceRow), so this is where the world says so.
+const WORLD_CITE = 'computed with Astronomy Engine (Don Cross, MIT licence): truncated VSOP87 for the planets, ELP for the Moon';
+
 export function worldRecords() {
   return WORLDS.map((w) => ({
     id: w.id,
@@ -94,6 +99,7 @@ export function worldRecords() {
       parent: w.parent,
       aliases: (WORLD_ALIASES[w.id] || []).slice(),
       view: w.view,
+      cite: WORLD_CITE,
     },
   }));
 }
