@@ -551,11 +551,17 @@ const TEMPLATES = {
     const milestone = pick(md, 'milestone', 'nextEvent');
     const milestoneMs = pickTime(md, 'milestoneMs', 'nextEventMs', 'milestoneDate');
     const au = m.distSunKm !== null ? m.distSunKm / UNITS.AU_KM : null;
-    return buildSentence(t(T.lead, { name: displayName(record) }), [
+    // Round another world, that world is the answer to "where is it": LRO is not "out in the solar
+    // system", and neither is MRO (#215 put them on their own orbits; this says so). The name comes
+    // from the same COPY.worlds the rows below use.
+    const orbits = worldName(pick(md, 'orbits'));
+    return buildSentence(orbits ? t(T.leadOrbits, { name: displayName(record), world: orbits }) : t(T.lead, { name: displayName(record) }), [
       destination ? t(T.destination, { destination: String(destination) }) : null,
       m.lightMinutes !== null && m.lightMinutes >= 120
         ? t(T.lightTimeHours, { hours: fmt.smart(m.lightMinutes / 60) })
-        : m.lightMinutes !== null ? t(T.lightTime, { mins: fmt.smart(m.lightMinutes) }) : null,
+        : m.lightMinutes !== null && m.lightMinutes < 1
+          ? t(T.lightTimeSeconds, { secs: fmt.smart(m.lightMinutes * 60) })
+          : m.lightMinutes !== null ? t(T.lightTime, { mins: fmt.smart(m.lightMinutes) }) : null,
       au !== null ? t(T.distanceSun, { au: fmt.smart(au) }) : null,
       milestone && milestoneMs !== null
         ? t(T.milestone, { milestone: String(milestone), date: timeText.dateNear(milestoneMs, m && m.tMs) })
