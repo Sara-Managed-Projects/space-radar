@@ -165,6 +165,23 @@ function toVector3(v, out) {
  *   rotateSpeed/dollySpeed/panSpeed {number}
  *   onFade           {function(ms)} called instead of a flight under prefers-reduced-motion
  */
+/**
+ * How far to stand from a world to see all of it: 3.5 radii, as it always was, unless the screen is
+ * too narrow for that -- then far enough that the globe fills `fill` of the width. Pure.
+ *
+ * A portrait phone has a narrow horizontal field of view, and 3.5 radii drew Earth about 630 px
+ * across on a 390 px screen: the planet's sides were cut off and it never read as a ball (measured
+ * 2026-09-22). Landscape screens are height-bound and unchanged.
+ */
+export function worldFramingDistance(radius, fovDeg, aspect, radii = 3.5, fill = 0.9) {
+  const base = radius * radii;
+  if (!(radius > 0) || !(fovDeg > 0) || !(aspect > 0)) return base;
+  const halfWidthTan = Math.tan((fovDeg * Math.PI / 180) / 2) * aspect;
+  const k = fill * halfWidthTan;
+  // the silhouette's half-width is tan(asin(R/d)) = R / sqrt(d^2 - R^2); set it to k and solve for d
+  return Math.max(base, radius * Math.sqrt(1 + 1 / (k * k)));
+}
+
 export function createCameraRig(camera, domElement, options = {}) {
   const target = new THREE.Vector3();
   const pendingPan = new THREE.Vector3();

@@ -15,7 +15,7 @@ import { createWorlds, WORLDS } from './scene/worlds.js';
 import { createStarfield } from './scene/starfield.js';
 import { createGlyphLayer } from './scene/glyphs.js';
 import { createHeroes, closeUpDistance } from './scene/heroes.js';
-import { createCameraRig } from './scene/camera.js';
+import { createCameraRig, worldFramingDistance } from './scene/camera.js';
 import { createViewShift } from './scene/viewshift.js';
 import { readMoment, writeMoment } from './ui/urlstate.js';
 import { guessObserver } from './sky/guessplace.js';
@@ -130,7 +130,8 @@ export async function boot({ setStatus } = {}) {
   cameraRig.setWorldRadius(6371 / stage.unitKm);
   cameraRig.setWorldCentre({ x: 0, y: 0, z: 0 });
   cameraRig.setTarget({ x: 0, y: 0, z: 0 });
-  cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance: 22, ms: 0 });
+  // 3.5 radii (22 units), or further on a screen too narrow to show the whole globe at that.
+  cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance: worldFramingDistance(6371 / stage.unitKm, camera.fov, camera.aspect), ms: 0 });
   render();
   revealUI();
 
@@ -400,7 +401,7 @@ export async function boot({ setStatus } = {}) {
     cameraRig.setWorldRadius(r);
     cameraRig.setWorldCentre({ x: 0, y: 0, z: 0 });
     cameraRig.stopFollow();
-    cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance: w ? r * 3.5 : 5, ms: 0 });
+    cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance: w ? worldFramingDistance(r, camera.fov, camera.aspect) : 5, ms: 0 });
     return true;
   };
 
