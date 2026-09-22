@@ -548,7 +548,14 @@ const TEMPLATES = {
     const au = m.distSunKm !== null ? m.distSunKm / UNITS.AU_KM : null;
     let brightness = null;
     if (mag !== null) brightness = mag <= 6 ? T.nakedEye : T.faint;
-    return buildSentence(t(T.lead, { name: displayName(record) }), [
+    // Periodic (the MPC's orbit type P, or a period under two centuries) comes back; the rest do not.
+    const periodDays = pickNumber(md, 'periodDays');
+    const years = periodDays !== null && periodDays > 0 ? periodDays / 365.25 : null;
+    const periodic = years !== null && years < 200 && (pick(md, 'orbitType') === 'P' || /^\d*P\//.test(String(record.name || '')));
+    const lead = periodic
+      ? t(T.leadPeriodic, { name: displayName(record), n: fmt.smart(years) })
+      : t(T.lead, { name: displayName(record) });
+    return buildSentence(lead, [
       periMs !== null ? t(T.whyPerihelion, { date: timeText.dateNear(periMs, m && Number.isFinite(m.tMs) ? m.tMs : Date.now()) }) : null,
       brightness,
       au !== null ? t(T.distanceSun, { au: fmt.smart(au) }) : null,
@@ -657,7 +664,8 @@ const TEMPLATES = {
       rade !== null && rade < 0.95 ? t(T.sizeSmaller, { n: `${fmt.int(rade * 100)}%` }) : null,
       period !== null && period >= 2 ? t(T.year, { n: fmt.smart(period) }) : null,
       period !== null && period < 2 ? t(T.yearHours, { n: fmt.smart(period * 24) }) : null,
-      year !== null ? (method ? t(T.found, { year: fmt.int(year), method: String(method).toLowerCase() }) : t(T.foundYear, { year: fmt.int(year) })) : null,
+      // A year is not a quantity: fmt.int wrote TRAPPIST-1 b as "found in 2 016".
+      year !== null ? (method ? t(T.found, { year: String(Math.round(year)), method: String(method).toLowerCase() }) : t(T.foundYear, { year: String(Math.round(year)) })) : null,
     ]);
   },
 
@@ -940,7 +948,7 @@ function rightNowRows(record, m, passInfo) {
     if (period !== null) rows.push([R.yearLength, period >= 2 ? t(V.days, { n: fmt.smart(period) }) : t(V.hours, { n: fmt.smart(period * 24) })]);
     const year = pickNumber(md, 'discYear');
     const method = pick(md, 'method');
-    if (year !== null) rows.push([R.found, method ? t(V.yearByMethod, { year: fmt.int(year), method: String(method) }) : fmt.int(year)]);
+    if (year !== null) rows.push([R.found, method ? t(V.yearByMethod, { year: String(Math.round(year)), method: String(method) }) : String(Math.round(year))]);
     const asOf = pick(md, 'asOf');
     if (asOf) rows.push([R.catalogueCopy, t(V.asOf, { date: String(asOf) })]);
   } else if (klassOf(record) === 'star') {
