@@ -178,6 +178,11 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
   check(/in the Large Magellanic Cloud/.test(tarantula), `a proper name inside a type keeps its capitals: "${tarantula}"`);
   const barred = text(firstSentence({ id: 'dso-m95', name: 'M95', klass: 'dso', frame: 'sun-inertial', meta: { distLy: 33000000, typeText: 'Barred Spiral galaxy' } }, ctx, m0, { state: 'none' }));
   check(/is a barred spiral galaxy/.test(barred), `ordinary type words are still lowered: "${barred}"`);
+  // "about 131 391 light-years across": an angle times a distance, printed to six figures.
+  const big = text(firstSentence({ id: 'dso-m31', name: 'Andromeda Galaxy', klass: 'dso', frame: 'sun-inertial', meta: { distLy: 2540000, sizeLy: 131391.3, typeText: 'Spiral galaxy' } }, ctx, m0, { state: 'none' }));
+  check(/about 130\u00a0?\s?000 light-years across/.test(big.replace(/\u202f/g, ' ')), `a size is given to two figures: "${big}"`);
+  const home = text(firstSentence({ id: 'dso-milky-way', name: 'The Milky Way', klass: 'dso', frame: 'sun-inertial', meta: { home: true, distLy: 26582, sizeLy: 87400, con: 'Sagittarius', typeText: 'Barred spiral galaxy' } }, ctx, m0, { state: 'none' }));
+  check(!/seen as it was/.test(home), `the galaxy we are inside is not "seen as it was" anything: "${home}"`);
   const m31 = text(firstSentence({ id: 'dso-m31', name: 'Andromeda Galaxy', klass: 'dso', frame: 'sun-inertial', meta: { distLy: 2540000, typeText: 'spiral galaxy' } }, ctx, m0, { state: 'none' }));
   check(!/the light you see/.test(m31) && /seen as it was 2\.54 million years ago/.test(m31), `a deep-sky sentence hangs the light's age off itself: "${m31}"`);
 

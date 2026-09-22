@@ -374,6 +374,16 @@ function nextPass(record, ctx, m) {
 // A clause with no number behind it is never written.
 // ---------------------------------------------------------------------------------------
 
+/**
+ * A size worth two figures, not six: "about 131 391 light-years across" came from multiplying an
+ * angle by a distance, and neither is known to one part in a hundred thousand.
+ */
+function roughly(n) {
+  if (!(n >= 100)) return Math.round(n);
+  const step = 10 ** (Math.floor(Math.log10(n)) - 1);
+  return Math.round(n / step) * step;
+}
+
 function buildSentence(lead, clauses) {
   let out = lead;
   for (const clause of clauses) {
@@ -642,9 +652,10 @@ const TEMPLATES = {
     else lead = t(T.leadUntyped, { name, dist: '?' });
     return buildSentence(lead, [
       con ? t(T.constellation, { con: String(con) }) : null,
-      sizeLy !== null && sizeLy >= 1 ? t(T.size, { n: fmt.int(sizeLy) }) : null,
+      sizeLy !== null && sizeLy >= 1 ? t(T.size, { n: fmt.int(roughly(sizeLy)) }) : null,
+      // Not for the galaxy we are inside: "the Milky Way ... seen as it was 26 582 years ago".
       distLy !== null && distLy >= 1e6 ? t(T.seenAsMillions, { n: fmt.smart(distLy / 1e6) }) : null,
-      distLy !== null && distLy < 1e6 ? t(T.seenAs, { n: fmt.int(distLy) }) : null,
+      distLy !== null && distLy < 1e6 && pick(md, 'home') !== true ? t(T.seenAs, { n: fmt.int(distLy) }) : null,
     ]);
   },
 
@@ -929,7 +940,7 @@ function rightNowRows(record, m, passInfo) {
     const type = pick(md, 'typeText');
     if (type) rows.push([R.objectType, String(type) + (pick(md, 'hubble') ? ` (${pick(md, 'hubble')})` : '')]);
     const sizeLy = pickNumber(md, 'sizeLy');
-    if (sizeLy !== null && sizeLy >= 1) rows.push([R.across, t(V.lightYears, { n: fmt.int(sizeLy) })]);
+    if (sizeLy !== null && sizeLy >= 1) rows.push([R.across, t(V.lightYears, { n: fmt.int(roughly(sizeLy)) })]);
     const con = pick(md, 'con');
     if (con) rows.push([R.constellation, String(con)]);
     const desig = pick(md, 'designation');
