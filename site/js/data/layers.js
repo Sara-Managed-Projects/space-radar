@@ -542,7 +542,7 @@ export const LAYERS = [
     id: 'notable',
     display: 'Satellites worth knowing',
     klass: 'satellite',
-    source: 'celestrak-active',
+    source: 'celestrak-notable', // a cut of the active catalogue when our copy has it (data/sources.js)
     parse: 'gp',
     propagator: 'sgp4',
     frame: 'earth-inertial',
@@ -561,7 +561,7 @@ export const LAYERS = [
     id: 'starlink-trains',
     display: 'Fresh Starlink trains',
     klass: 'satellite',
-    source: 'celestrak-starlink',
+    source: 'celestrak-starlink-recent', // the latest launches only, when our copy has the cut
     parse: 'gp',
     propagator: 'sgp4',
     frame: 'earth-inertial',

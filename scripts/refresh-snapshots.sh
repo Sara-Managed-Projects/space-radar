@@ -157,6 +157,47 @@ if os.path.exists(cad_p) and os.path.exists(neo_p):
         ix["snapshots"]["jpl-sbdb-neo"]["bytes"] = os.path.getsize(neo_p)
         json.dump(ix, open(ix_p, "w"), indent=1)
     print(f"    jpl-sbdb-neo: {before} rows -> {len(nb['data'])} published ({len(want)} close approaches)")
+
+# TWO CUTS OF THE BIG CELESTRAK FILES, published beside them (site/js/data/sources.js explains):
+# the satellites the hand-kept NOTABLE list names, and Starlink's latest launches. Each copies its
+# parent's stamps and says what it was cut from.
+def derive(parent_id, child_id, keep, what):
+    pp = os.path.join(d, parent_id + ".json")
+    ix_p = os.path.join(d, "index.json"); ix = json.load(open(ix_p))
+    row = ix.get("snapshots", {}).get(parent_id)
+    if not os.path.exists(pp) or not row or row.get("status") not in ("ok", "not-modified", "not-due"):
+        return
+    f = json.load(open(pp)); rows, was_str = body(f)
+    kept = keep(rows)
+    out = dict(f)
+    out["source"] = child_id
+    out["body"] = json.dumps(kept) if was_str else kept
+    out["items"] = len(kept)
+    out["note"] = f"{what}: {len(kept)} of the {len(rows)} rows of {parent_id}.json of the same publish"
+    cp = os.path.join(d, child_id + ".json")
+    json.dump(out, open(cp, "w"))
+    child = dict(row); child["items"] = len(kept); child["bytes"] = os.path.getsize(cp)
+    ix["snapshots"][child_id] = child
+    json.dump(ix, open(ix_p, "w"), indent=1)
+    print(f"    {child_id}: {len(kept)} of {len(rows)} rows ({os.path.getsize(cp)} B)")
+
+layers_js = open("site/js/data/layers.js").read()
+start = layers_js.index("export const NOTABLE = [")
+notable_ids = {int(x) for x in re.findall(r"noradId:\s*(\d+)", layers_js[start:layers_js.index("];", start)])}
+derive("celestrak-active", "celestrak-notable",
+       lambda rows: [r for r in rows if int(r.get("NORAD_CAT_ID", -1)) in notable_ids],
+       "the satellites site/js/data/layers.js NOTABLE names")
+
+def launch(r):
+    m = re.match(r"^(\d{4})-(\d{3})", str(r.get("OBJECT_ID", "")))
+    return (int(m.group(1)), int(m.group(2))) if m else None
+def recent_starlink(rows, launches=12):
+    sl = [r for r in rows if str(r.get("OBJECT_NAME", "")).upper().startswith("STARLINK") and launch(r)]
+    latest = sorted({launch(r) for r in sl}, reverse=True)[:launches]
+    return [r for r in sl if launch(r) in set(latest)]
+derive("celestrak-supplemental-starlink", "celestrak-starlink-recent", recent_starlink,
+       "Starlink's twelve latest launches, which is where a train can be")
+
 ix = json.load(open(os.path.join(d, "index.json")))
 ok = sorted(k for k, v in ix["snapshots"].items() if v.get("status") in ("ok", "not-modified", "not-due") and v.get("fetched_at"))
 print(f"    publishing {len(ok)} of {len(ix['snapshots'])} sources with data: {', '.join(ok)}")

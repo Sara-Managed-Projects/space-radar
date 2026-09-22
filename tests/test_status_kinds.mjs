@@ -35,4 +35,11 @@ assert.equal(word('launches'), COPY.status.layerIllustrative, 'a sketched ascent
 assert.equal(word('hand-kept-sites'), COPY.status.layerCatalogue, 'a dish and a landing site are hand-kept coordinates: a catalogue');
 assert.equal(word('oddities'), COPY.status.layerLive, 'a layer with anything moving in it is not all catalogue');
 assert.notEqual(COPY.status.layerCatalogue, COPY.status.layerLive);
+// Only what this page asked for is listed (2026-09-22): a source nothing requested is not a failure.
+{
+  const { askedRows } = await import(join(JS, 'ui/status.js'));
+  const r = askedRows([{ id: 'a', attempted: true }, { id: 'b', attempted: false, fetchedAt: null }, { id: 'c', attempted: false, fetchedAt: 5 }]);
+  assert.equal(r.asked.map((x) => x.id).join(), 'a,c', 'asked, or holding data, is listed');
+  assert.equal(r.notAsked, 1, 'never asked is counted, not called a failure');
+}
 console.log('status kinds ok: catalogue, live, bundled sample and drawn are four different claims');
