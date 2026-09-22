@@ -243,9 +243,21 @@ function kindClass(entry) {
 // Render
 // ---------------------------------------------------------------------------------------
 
+/**
+ * The rows the panel shows: the sources this page has actually asked for. A source nothing has
+ * asked for -- it feeds only layers that are off, or a cut of it was read instead (data/sources.js,
+ * 2026-09-22) -- used to be listed as "could not look", which reads as a failure of something that
+ * was never attempted. Those are counted in one line instead. Pure.
+ */
+export function askedRows(rows) {
+  const list = Array.isArray(rows) ? rows : [];
+  const asked = list.filter((r) => r && (r.attempted || r.fetchedAt != null));
+  return { asked, notAsked: list.length - asked.length };
+}
+
 function renderSources(ctx, into) {
   clear(into);
-  const rows = sourceRows(ctx);
+  const { asked: rows, notAsked } = askedRows(sourceRows(ctx));
   if (!rows.length) {
     into.appendChild(el('li', 'sr-source sr-source--empty', COPY.status.sourcesEmpty));
     return;
@@ -278,6 +290,7 @@ function renderSources(ctx, into) {
     }
     into.appendChild(item);
   }
+  if (notAsked > 0) into.appendChild(el('li', 'sr-source sr-source--note', t(COPY.status.notAsked, { n: fmt.int(notAsked) })));
 }
 
 function renderLayers(ctx, into) {

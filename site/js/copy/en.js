@@ -1185,6 +1185,7 @@ export const COPY = {
     layerEmpty: 'nothing loaded',
     layerCountLabel: '{n} shown',
     sourcesEmpty: 'No sources have been declared.',
+    notAsked: '{n} more sources are read only when a layer that needs them is switched on.',
     refresh: 'Read again',
     refreshTitle: 'Ask every source that is due for a fresh copy',
   },

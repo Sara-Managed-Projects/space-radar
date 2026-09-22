@@ -149,6 +149,38 @@ export const SOURCES = {
     attribution: 'Orbital data: CelesTrak (T. S. Kelso)',
     note: "SpaceX's own elements, hours fresher than the tracked catalogue. 11 129 objects, 5.1 MB.",
   },
+  // TWO CUTS OF THE BIG FEEDS, published beside them (scripts/refresh-snapshots.sh). The first
+  // screen draws 33 "satellites worth knowing" out of the 16 587-object active catalogue and the
+  // Starlink trains out of the 11 136-object supplemental file; with the saved copy in /data/v1 a
+  // first visit spent 1.9 MB of its 4.6 MB on those two files (measured on a phone, 2026-09-22). A
+  // cut holds only what the layer selects; with no cut in the manifest, or once it is out of date,
+  // the live URL below is the full file, exactly as before.
+  'celestrak-notable': {
+    id: 'celestrak-notable',
+    registryId: 'celestrak-notable',
+    label: 'CelesTrak — satellites worth knowing (a cut of the active catalogue)',
+    publisher: 'CelesTrak',
+    url: 'https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=json',
+    cadenceMs: 3 * HOUR,
+    freshnessMaxMs: 24 * HOUR,
+    browser: true,
+    kind: 'json',
+    attribution: 'Orbital data: CelesTrak (T. S. Kelso)',
+    note: 'The active catalogue cut to the satellites the hand-kept list names, when our copy has the cut.',
+  },
+  'celestrak-starlink-recent': {
+    id: 'celestrak-starlink-recent',
+    registryId: 'celestrak-starlink-recent',
+    label: 'CelesTrak — recent Starlink launches (a cut of the operator file)',
+    publisher: 'CelesTrak',
+    url: 'https://celestrak.org/NORAD/elements/supplemental/sup-gp.php?FILE=starlink&FORMAT=json',
+    cadenceMs: 3 * HOUR,
+    freshnessMaxMs: 24 * HOUR,
+    browser: true,
+    kind: 'json',
+    attribution: 'Orbital data: CelesTrak (T. S. Kelso)',
+    note: 'SpaceX\'s file cut to its latest launches, when our copy has the cut: the trains are drawn from those.',
+  },
   'celestrak-visual': {
     id: 'celestrak-visual',
     label: 'CelesTrak — bright enough to see',
