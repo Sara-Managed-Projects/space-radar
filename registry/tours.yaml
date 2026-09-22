@@ -139,9 +139,9 @@ tours:
         card:
           title: "The International Space Station"
           body: >-
-            About the size of a football pitch, and moving at eight kilometres a second. It goes
-            all the way round the Earth every ninety minutes, so the crew see sixteen sunrises a
-            day.
+            About the size of a football pitch, and moving at nearly eight kilometres a second. It
+            goes all the way round the Earth every ninety-three minutes, so the crew see fifteen or
+            sixteen sunrises a day.
 
       - id: tiangong
         # MEASURED IN A BROWSER, 2026-09-07, and the design had it wrong: CelesTrak's stations
@@ -155,18 +155,26 @@ tours:
         card:
           title: "Tiangong"
           body: >-
-            China's station, about a fifth the size, and newer. Three people live here at a time,
-            in the same low Earth orbit a few hundred kilometres up.
+            China's station, about a fifth the mass, and newer. Three people live here at a time,
+            in a low orbit like the other one's, a few hundred kilometres up.
 
       - id: both
         target: {world: earth}
         frame_radii: 5.0
         drift_deg: 20
+        # THIS CARD USED TO SAY "They are never near each other. Two specks on opposite sides of
+        # one planet" -- written as a constant, about two things that move. Two circular orbits
+        # with J2 precession (ISS 415 km at 51.64 deg, Tiangong 385 km at 41.47 deg), one year at
+        # 20 s steps from twenty random starts, 2026-09-22: they average 9 000 km apart and are
+        # farther apart than the Earth is wide only 12 % of the time; closer than 1 000 km about
+        # nine minutes a day, closer than 2 000 km about forty; and every year they pass within
+        # ~30 km, the difference in their heights, where the two orbits cross. "Most of the time
+        # thousands of kilometres apart" is what survives that.
         card:
-          title: "Two specks, on opposite sides of a planet"
+          title: "Two specks, one planet"
           body: >-
-            They are never near each other. Two specks on opposite sides of one planet, and that
-            is the whole of humanity that does not live on the ground.
+            Most of the time they are thousands of kilometres apart. Two specks going round one
+            planet, and that is the whole of humanity that does not live on the ground.
 
   # =============================================================================================
   # THE ID IS `strangest-things` AND NOT `oddities`, because `oddities` is the layer. Every stop
@@ -272,7 +280,8 @@ tours:
           title: "The Sun, from one light-year"
           body: >-
             From here the whole Solar System is smaller than a pixel. Light from the Sun takes a year
-            to reach this spot; the fastest spacecraft we have built would take twenty thousand.
+            to reach this spot; Voyager 1, the fastest thing we have sent out of the Solar System,
+            would take about eighteen thousand.
 
       - id: proxima
         target: {record: hip-70890}
@@ -281,8 +290,8 @@ tours:
         card:
           title: "Proxima Centauri"
           body: >-
-            The nearest star to the Sun, a dim red one a fifth of the Sun's mass. It has at least one
-            planet. Everything you can see with your eyes at night is farther than this.
+            The nearest star to the Sun, a dim red one an eighth of the Sun's mass. It has at least
+            one planet. Every star you can see with your eyes at night is farther away than this one.
 
       - id: sirius
         target: {record: hip-32349}
@@ -292,7 +301,7 @@ tours:
           title: "Sirius"
           body: >-
             The brightest star in our sky, eight and a half light-years out and twenty-five times as
-            bright as the Sun. The light reaching your eye tonight left it eight years ago.
+            bright as the Sun. The light reaching your eye tonight left it eight and a half years ago.
 
       - id: pleiades
         target: {record: dso-m45}
@@ -301,8 +310,8 @@ tours:
         card:
           title: "The Pleiades"
           body: >-
-            A few hundred young stars, a hundred million years old, about four hundred and forty
-            light-years away. Their light left when Shakespeare was alive.
+            Over a thousand young stars, a hundred million years old, about four hundred and
+            twenty-five light-years away. Their light left when Shakespeare was alive.
 
       - id: centre
         target: {record: exotic-sgr-a-star}
@@ -323,7 +332,7 @@ tours:
           title: "The Milky Way"
           body: >-
             Our galaxy, about ninety thousand light-years across, seen from sixty thousand light-years
-            above its disc -- a view nobody has had. The shape is an illustration of what has been
+            above its disc, a view nobody has had. The shape is an illustration of what has been
             measured.
 
       - id: andromeda

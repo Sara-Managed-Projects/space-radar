@@ -69,7 +69,7 @@ export const TOURS = [
         "distance_km": 3000,
         "card": {
           "title": "The International Space Station",
-          "body": "About the size of a football pitch, and moving at eight kilometres a second. It goes all the way round the Earth every ninety minutes, so the crew see sixteen sunrises a day."
+          "body": "About the size of a football pitch, and moving at nearly eight kilometres a second. It goes all the way round the Earth every ninety-three minutes, so the crew see fifteen or sixteen sunrises a day."
         },
         "frame_radii": 5.0,
         "drift_deg": 34,
@@ -78,7 +78,7 @@ export const TOURS = [
         "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
-        "dwell_ms": 13489
+        "dwell_ms": 14488
       },
       {
         "id": "tiangong",
@@ -92,7 +92,7 @@ export const TOURS = [
         "distance_km": 3000,
         "card": {
           "title": "Tiangong",
-          "body": "China's station, about a fifth the size, and newer. Three people live here at a time, in the same low Earth orbit a few hundred kilometres up."
+          "body": "China's station, about a fifth the mass, and newer. Three people live here at a time, in a low orbit like the other one's, a few hundred kilometres up."
         },
         "frame_radii": 5.0,
         "drift_deg": 34,
@@ -101,7 +101,7 @@ export const TOURS = [
         "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
-        "dwell_ms": 11491
+        "dwell_ms": 12157
       },
       {
         "id": "both",
@@ -111,18 +111,18 @@ export const TOURS = [
         "frame_radii": 5.0,
         "drift_deg": 20,
         "card": {
-          "title": "Two specks, on opposite sides of a planet",
-          "body": "They are never near each other. Two specks on opposite sides of one planet, and that is the whole of humanity that does not live on the ground."
+          "title": "Two specks, one planet",
+          "body": "Most of the time they are thousands of kilometres apart. Two specks going round one planet, and that is the whole of humanity that does not live on the ground."
         },
         "drift_rate_deg_s": 6,
         "drift": "toward-light",
         "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
-        "dwell_ms": 11824
+        "dwell_ms": 12490
       }
     ],
-    "estimate_ms": 59697
+    "estimate_ms": 62028
   },
   {
     "id": "strangest-things",
@@ -276,7 +276,7 @@ export const TOURS = [
         "drift_deg": 15,
         "card": {
           "title": "The Sun, from one light-year",
-          "body": "From here the whole Solar System is smaller than a pixel. Light from the Sun takes a year to reach this spot; the fastest spacecraft we have built would take twenty thousand."
+          "body": "From here the whole Solar System is smaller than a pixel. Light from the Sun takes a year to reach this spot; Voyager 1, the fastest thing we have sent out of the Solar System, would take about eighteen thousand."
         },
         "frame_radii": 5.0,
         "drift_rate_deg_s": 6,
@@ -284,7 +284,7 @@ export const TOURS = [
         "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
-        "dwell_ms": 13156
+        "dwell_ms": 15820
       },
       {
         "id": "proxima",
@@ -295,7 +295,7 @@ export const TOURS = [
         "distance_km": 4730365236290.4,
         "card": {
           "title": "Proxima Centauri",
-          "body": "The nearest star to the Sun, a dim red one a fifth of the Sun's mass. It has at least one planet. Everything you can see with your eyes at night is farther than this."
+          "body": "The nearest star to the Sun, a dim red one an eighth of the Sun's mass. It has at least one planet. Every star you can see with your eyes at night is farther away than this one."
         },
         "frame_radii": 5.0,
         "drift_deg": 34,
@@ -304,7 +304,7 @@ export const TOURS = [
         "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
-        "dwell_ms": 14155
+        "dwell_ms": 15154
       },
       {
         "id": "sirius",
@@ -315,7 +315,7 @@ export const TOURS = [
         "distance_km": 9460730472580.8,
         "card": {
           "title": "Sirius",
-          "body": "The brightest star in our sky, eight and a half light-years out and twenty-five times as bright as the Sun. The light reaching your eye tonight left it eight years ago."
+          "body": "The brightest star in our sky, eight and a half light-years out and twenty-five times as bright as the Sun. The light reaching your eye tonight left it eight and a half years ago."
         },
         "frame_radii": 5.0,
         "drift_deg": 34,
@@ -324,7 +324,7 @@ export const TOURS = [
         "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
-        "dwell_ms": 12823
+        "dwell_ms": 13822
       },
       {
         "id": "pleiades",
@@ -335,7 +335,7 @@ export const TOURS = [
         "distance_km": 946073047258080,
         "card": {
           "title": "The Pleiades",
-          "body": "A few hundred young stars, a hundred million years old, about four hundred and forty light-years away. Their light left when Shakespeare was alive."
+          "body": "Over a thousand young stars, a hundred million years old, about four hundred and twenty-five light-years away. Their light left when Shakespeare was alive."
         },
         "frame_radii": 5.0,
         "drift_deg": 34,
@@ -375,7 +375,7 @@ export const TOURS = [
         "distance_km": 567643828354848000,
         "card": {
           "title": "The Milky Way",
-          "body": "Our galaxy, about ninety thousand light-years across, seen from sixty thousand light-years above its disc -- a view nobody has had. The shape is an illustration of what has been measured."
+          "body": "Our galaxy, about ninety thousand light-years across, seen from sixty thousand light-years above its disc, a view nobody has had. The shape is an illustration of what has been measured."
         },
         "frame_radii": 5.0,
         "drift_deg": 34,
@@ -384,7 +384,7 @@ export const TOURS = [
         "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
-        "dwell_ms": 12823
+        "dwell_ms": 12490
       },
       {
         "id": "andromeda",
@@ -427,6 +427,6 @@ export const TOURS = [
         "dwell_ms": 20000
       }
     ],
-    "estimate_ms": 137227
+    "estimate_ms": 141556
   }
 ];

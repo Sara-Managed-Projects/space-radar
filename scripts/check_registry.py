@@ -273,6 +273,13 @@ def unreachable_oddities(oddities_doc: dict) -> dict:
     return out
 
 
+# A card is printed exactly as written. This file's comments, and the YAML's, write ` -- ` for a
+# dash, and one card borrowed it: "above its disc -- a view nobody has had" reached the screen as
+# two hyphens in the middle of a sentence.
+TOUR_DOUBLE_HYPHEN = ("the screen prints that as two hyphens. Write a comma, a colon or a real "
+                      "dash; `--` is for comments")
+
+
 def check_tours(oddities_doc: dict, layer_ids: set, world_ids: set, site_ids: set,
                 glossary: set) -> None:
     """registry/tours.yaml: a trip may not promise a stop it will not deliver.
@@ -330,6 +337,9 @@ def check_tours(oddities_doc: dict, layer_ids: set, world_ids: set, site_ids: se
             fail(where, f"title is {len(str(title))} characters, over {TOUR_MAX_TITLE}")
         if not tour.get("blurb"):
             fail(where, "no `blurb:` -- one sentence saying what this is")
+        for label in ("title", "blurb"):
+            if "--" in str(tour.get(label) or ""):
+                fail(where, f"the {label} has \"--\"; {TOUR_DOUBLE_HYPHEN}")
 
         pacing = tour.get("pacing", defaults.get("pacing"))
         if pacing not in TOUR_PACING:
@@ -500,6 +510,10 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
             fail(where, f"the card says \"{word}\" and registry/glossary.yaml has no entry for it. "
                         f"Either add the term there -- two lines, written for a curious "
                         f"fourteen-year-old -- or say it in words a beginner already has")
+
+    for label, text in (("title", title), ("body", body)):
+        if "--" in str(text or ""):
+            fail(where, f"the card's {label} has \"--\"; {TOUR_DOUBLE_HYPHEN}")
 
     dwell = stop.get("dwell_ms")
     computed = tour_dwell_ms(body)
