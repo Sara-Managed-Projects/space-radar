@@ -1100,6 +1100,7 @@ export const COPY = {
     tonightNone: 'Nothing bright comes over in the next twelve hours.',
     tonightNoObserver: 'Set where you are, or open the Now door, and this will list what comes over.',
     tonightCouldNotLook: 'Could not look: the satellite catalogue has not loaded.',
+    tonightShowerTail: 'The sky view marks its radiant.',
   },
 
   // ui/search.js. The footer strings are the honest ones: a layer nobody has read has no size,

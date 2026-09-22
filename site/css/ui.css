@@ -1927,6 +1927,9 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
 .sr-tonight__row:hover { border-color: var(--sr-ember); }
 .sr-tonight__note { margin: 4px 0 0; font-size: 12px; color: var(--sr-text-dim); }
 .sr-tonight__note[hidden] { display: none; }
+/* A meteor shower peaking tonight: the one line in this section that needs no satellite catalogue. */
+.sr-tonight__shower { margin: 6px 0; padding-left: 8px; border-left: 2px solid var(--sr-ember); font-size: 12.5px; line-height: 1.45; }
+.sr-tonight__shower[hidden] { display: none; }
 
 /* A world's note about how it is drawn (spec 0028 step 0) ------------------------------- */
 
