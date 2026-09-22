@@ -110,5 +110,12 @@ if (said) {
   check(n(said[4]) === doc.openNgcTotal, `the edge card says OpenNGC lists ${said[4]}; dso.json records ${doc.openNgcTotal}`);
 }
 
+// The Layers panel's sentence counts the hand rows; the count comes from the file.
+{
+  const said = (row.sentence || '').match(/Messier objects and (\d+) more/);
+  const hand = doc.objects.filter((o) => o.positionSource !== 'OpenNGC').length;
+  check(said && Number(said[1]) === hand, `the deep-sky layer's sentence says ${said && said[1]} more than Messier; dso.json has ${hand}`);
+}
+
 if (problems.length) { console.error('dso FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('dso ok: 110 Messier objects and the LMC at sourced distances, Andromeda 2.54 Mly on the stellar rung, found by name, M-number and NGC number');
