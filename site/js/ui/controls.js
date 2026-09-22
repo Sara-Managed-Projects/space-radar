@@ -17,7 +17,8 @@ import { COPY, CITIES, t, fmt, timeText, inWords, compassWords, fistsWords } fro
 import { predictPasses } from '../sky/passes.js';
 import { createSearch } from './search.js';
 import { LADDER_RUNGS, WE_SHOW } from '../data/ladder.js';
-import { createNext } from './next.js';
+import { createNext, showerItems, rowText as nextRowText } from './next.js';
+import { SHOWERS } from '../data/showers.js';
 import { revealInColumn } from './reveal.js';
 import { createColorKey } from './colorkey.js';
 import { shapeLine } from './tripframe.js';
@@ -869,8 +870,14 @@ function buildLocation(ctx, state) {
   const tonightHint = el('p', 'sr-tonight__hint', COPY.controls.tonightHint);
   const tonightList = el('ul', 'sr-tonight__list');
   const tonightNote = el('p', 'sr-tonight__note', COPY.controls.tonightNoObserver);
+  // A meteor shower peaking tonight or tomorrow: the same sentence "Coming up" gives it, with the
+  // Moon and, from this place, when its radiant is highest. It needs no satellite catalogue, so it
+  // shows when the passes cannot (2026-09-22: CelesTrak refused, and this section said only that).
+  const tonightShower = el('p', 'sr-tonight__shower');
+  tonightShower.hidden = true;
   wrap.appendChild(tonightTitle);
   wrap.appendChild(tonightHint);
+  wrap.appendChild(tonightShower);
   wrap.appendChild(tonightList);
   wrap.appendChild(tonightNote);
 
@@ -899,9 +906,21 @@ function buildLocation(ctx, state) {
       current.classList.remove('is-guess');
     }
   }
+  function renderShowerTonight(o) {
+    tonightShower.hidden = true;
+    if (!o) return;
+    const observer = Number.isFinite(o.latRad) ? o : { ...o, latRad: o.latDeg * RAD, lonRad: o.lonDeg * RAD };
+    const now = ctx.clock && typeof ctx.clock.now === 'function' ? ctx.clock.now() : Date.now();
+    let item = null;
+    try { item = showerItems(now, 36 * 3600e3, SHOWERS, observer)[0] || null; } catch { item = null; }
+    if (!item) return;
+    tonightShower.textContent = nextRowText(item, now) + COPY.punctuation.sentenceJoin + COPY.controls.tonightShowerTail;
+    tonightShower.hidden = false;
+  }
   function renderTonight() {
     while (tonightList.firstChild) tonightList.removeChild(tonightList.firstChild);
     const o = observerNow();
+    renderShowerTonight(o);
     if (!o) {
       tonightNote.textContent = COPY.controls.tonightNoObserver;
       tonightNote.hidden = false;
