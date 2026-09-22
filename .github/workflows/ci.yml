@@ -105,6 +105,10 @@ jobs:
       # from the real snapshots of 2026-09-08, so the frame and the join are checked, not assumed.
       - name: Snapshots become records, and a missing one keeps its stand-in
         run: node tests/test_snapshot_parsers.mjs
+      # The Horizons list and the deep-space records agree both ways, and the ten craft added on
+      # 2026-09-22 sit on JPL's own positions at their element dates and drift as their cards say.
+      - name: Every Horizons id has a craft, every craft is fetched, and each stand-in is where JPL says
+        run: node tests/test_deep_space.mjs
       # CelesTrak allows one download per file per IP per two hours and no harvester is provisioned,
       # so a reload lives on the cache. Two feeds are bigger than localStorage can hold; writing them
       # used to evict the OTHER sources, and a reload came back with the bright-enough-to-see layer

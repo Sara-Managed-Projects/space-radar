@@ -274,6 +274,17 @@ export function sampleAsteroids() {
 //     escape direction, all rounded, moving in a straight line. At 60 au the Sun bends the path
 //     by well under a degree a decade, so the line is the honest shape. The three numbers are
 //     stated in meta and each is soft.
+//
+// (C) OSCULATING. A craft on its own path round the Sun, between flybys, is drawn on the orbit
+//     JPL Horizons gives for it on a stated day -- all six elements, mean anomaly included -- and
+//     moved on by two-body motion. At that day it sits on Horizons' own position; after it, it
+//     drifts by whatever the engines and the planets do, and each row says by how much, measured
+//     against Horizons' own forecast (added 2026-09-22, OSCULATING_CRAFT below).
+//
+// Parker Solar Probe and Solar Orbiter use a fourth, older shape: elements without a phase
+// (ELLIPTIC_CRAFT). Every construction is only the stand-in: once the harvester's Horizons
+// snapshot holds a craft's id, data/parsers.js parseHorizonsVectors() swaps the position for the
+// real vectors and keeps everything else on the row.
 
 /** Published J2000 elements (JPL's approximate-positions table). L and varpi reduced to M and w. */
 const ANCHORS = {
@@ -378,6 +389,21 @@ const ANCHORED_CRAFT = [
       'cloud tops than any orbiter before it.',
     offset: 'It orbits Jupiter on a long ellipse. At solar-system scale that is drawn as Jupiter.',
   },
+  {
+    id: 'deep-hope',
+    name: 'Hope (Emirates Mars Mission)',
+    klass: 'probe',
+    horizonsId: -62,
+    anchor: 'mars',
+    // Horizons -62 header (revised 2026-06-03): built by the UAE, Mars arrival 2021-02-09, a
+    // 55-hour orbit "roughly 22000 x 44000 km", and the aim of "a global picture of how the martian
+    // atmosphere varies throughout the day and year". Anchored like MRO because it orbits Mars;
+    // unlike MRO its orbit is slow enough for the 6-hourly snapshot (horizons-ids.yaml, LEFT OUT).
+    note: 'Built by the United Arab Emirates, it has circled Mars every 55 hours since 2021, ' +
+      'watching how the whole planet’s weather changes through the day.',
+    offset: 'It loops around Mars every 55 hours, roughly 22 000 to 44 000 km out. At solar-system ' +
+      'scale that is drawn as Mars.',
+  },
 ];
 
 /**
@@ -428,8 +454,10 @@ const CRUISING_CRAFT = [
     speedKmS: 13.6,
     lonDeg: 293,
     latDeg: -2,
-    // "Still sending back" Arrokoth: that downlink finished in 2020.
-    note: 'It crossed Pluto in nine hours in 2015 after nine years of falling towards it, and ' +
+    // "Still sending back" Arrokoth: that downlink finished in 2020. "A nine-year fall" was "nine
+    // years of falling" until 2026-09-22, three characters over the 160 that
+    // tests/test_deep_space.mjs now holds every note in this layer to.
+    note: 'It crossed Pluto in nine hours in 2015 after a nine-year fall towards it, and ' +
       'in 2019 flew past Arrokoth, a Kuiper belt rock, the farthest thing ever visited.',
   },
 ];
@@ -463,6 +491,174 @@ const ELLIPTIC_CRAFT = [
     note: 'It uses Venus to lever itself out of the plane of the planets, so it can photograph ' +
       'the Sun’s poles — which nothing had seen until 2025.',
     phaseKnown: false,
+  },
+];
+
+/**
+ * Construction C. Every element set is MEASURED: JPL Horizons, EPHEM_TYPE=ELEMENTS,
+ * CENTER='500@10' (heliocentric, ecliptic J2000 -- the frame of the snapshot vectors), at 00:00 TDB
+ * on the row's date, fetched 2026-09-22, rounded to the digits shown. TDB is taken as UTC, as
+ * data/parsers.js does for the vectors: that is 69 s late, about 2 000 km along the track at these
+ * speeds, and it is the SAME 69 s the snapshot carries, so the stand-in and the real vectors agree
+ * with each other. Rounded, each row sits within 400 km of Horizons' position at its date
+ * (measured), and tests/test_deep_space.mjs checks that and every `drift` sentence against
+ * Horizons' own positions.
+ *
+ * `drift` is visitor-facing: it ends the card's honesty line, after the sentence that says the
+ * orbit is two-body from the stated day. `destination` is printed by the probe card ("on its way
+ * to ..."), so it is set only where it stays true for years: BepiColombo and Hera arrive within
+ * months of this list being written, and a bundled row does not know when it has.
+ */
+const OSC_EPOCH_MS = Date.UTC(2026, 8, 22);
+const OSC_EPOCH_WORDS = '22 September 2026';
+
+const OSCULATING_CRAFT = [
+  {
+    id: 'deep-psyche',
+    name: 'Psyche',
+    klass: 'probe',
+    horizonsId: -255,
+    // Horizons -255 header (revised 2026-09-01): Mars flyby 2026-05-15, solar-electric Hall
+    // thrusters, captured by 16 Psyche in late July 2029.
+    note: 'Past its Mars flyby of May 2026, it is pushing out on electric thrusters to 16 Psyche, ' +
+      'a metal-rich asteroid it reaches in 2029.',
+    destination: 'the metal-rich asteroid 16 Psyche',
+    aAu: 2.078466, e: 0.33187, iDeg: 2.6236, nodeDeg: 160.077, argpDeg: 221.9003, maDeg: 35.8142,
+    // Thrusting all the time, so the drift grows with the square of the time: 182 000 km at 30
+    // days, 2.17 million at 90.
+    drift: 'Checked against JPL’s own forecast, it is 200 000 km out after a month and 2 million ' +
+      'km after three.',
+  },
+  {
+    id: 'deep-lucy',
+    name: 'Lucy',
+    klass: 'probe',
+    horizonsId: -49,
+    // Horizons -49 header (revised 2025-10-25): 3548 Eurybates on 2027-08-11 is the first of the
+    // five Jupiter Trojans in its flyby list. 5.05 au from the Sun on 2026-09-22 (Horizons).
+    note: 'Now 5 au from the Sun, it flies past 3548 Eurybates in August 2027, the first of the ' +
+      'five Trojan asteroids sharing Jupiter’s orbit that it will visit.',
+    destination: 'Jupiter’s Trojan asteroids',
+    aAu: 3.354199, e: 0.71343, iDeg: 4.4203, nodeDeg: 261.2311, argpDeg: 160.4172, maDeg: 106.295,
+    // Coasting: 4 000 km at 90 days, 16 000 at 180. Its next burn, DSM-3, is 312.7 m/s on
+    // 2027-04-03 (the header's maneuver plan); a year out the drawing is 4.6 million km off.
+    drift: 'Checked against JPL’s own forecast, it stays within 16 000 km for six months, until ' +
+      'the engine burn planned for April 2027.',
+  },
+  {
+    id: 'deep-europa-clipper',
+    name: 'Europa Clipper',
+    klass: 'probe',
+    horizonsId: -159,
+    // Horizons -159 header (revised 2026-08-18): Earth gravity assist 2026-12-03, Jupiter arrival
+    // 2030-04-11, 49 Europa flybys.
+    note: 'Heading for Jupiter, it swings past Earth on 3 December 2026 for the speed to arrive in ' +
+      'April 2030 and fly past Europa 49 times.',
+    destination: 'Jupiter’s moon Europa',
+    aAu: 1.599125, e: 0.475425, iDeg: 2.0465, nodeDeg: 71.4327, argpDeg: 302.3992, maDeg: 344.6094,
+    // Coasting to the flyby: 12 000 km off on 2026-12-03. The flyby itself is 10 290 km from
+    // Earth's centre at 20:20 TDB (Horizons, CENTER='500@399'), and after it this orbit is the one
+    // the craft left: 8 million km off by 2026-12-21, 42 million by March. A post-flyby element
+    // set was measured too and is worse NOW, which is when this stand-in is used.
+    drift: 'Checked against JPL’s own forecast, it stays within 12 000 km until its Earth flyby ' +
+      'on 3 December 2026, and is wrong after it.',
+  },
+  {
+    id: 'deep-juice',
+    name: 'JUICE',
+    klass: 'probe',
+    horizonsId: -28,
+    aliases: ['Jupiter Icy Moons Explorer'],
+    // Closest approach 2026-09-28 11:50 TDB, 15 248 km from Earth's centre (Horizons, CENTER=
+    // '500@399', 10-minute steps). Horizons -28 header (revised 2026-09-21): Earth flyby #2 of the
+    // gravity assists that bring it to Jupiter in July 2031.
+    note: 'Its Earth flyby of 28 September 2026, 15 000 km from Earth’s centre, is one of the ' +
+      'gravity assists that take it to Jupiter in July 2031.',
+    destination: 'Jupiter’s moon Ganymede',
+    // The elements for 1 OCTOBER, after the flyby, not 22 September: the flyby adds about 4 km/s,
+    // so the pre-flyby set was 8 million km off a month later. This one is 2.2 million km off on
+    // 22 September, 0.17 million on the 28th, and 111 000 km four months after the flyby.
+    epochMs: Date.UTC(2026, 9, 1),
+    epochWords: '1 October 2026',
+    aAu: 1.632993, e: 0.479749, iDeg: 0.0041, nodeDeg: 176.1322, argpDeg: 246.7938, maDeg: 341.1351,
+    drift: 'That is just after its Earth flyby, so checked against JPL’s own forecast it is up to ' +
+      '2 million km out before 28 September, and about 110 000 km four months after.',
+  },
+  {
+    id: 'deep-bepicolombo',
+    name: 'BepiColombo',
+    klass: 'probe',
+    horizonsId: -121,
+    // Horizons -121 header (revised 2026-09-21): six Mercury flybys 2021-2025; the 2024-09-02 note
+    // on reduced electric propulsion and the one-year delay; Mercury orbit insertion 2026-Nov.
+    note: 'Six Mercury flybys behind it, it enters orbit around Mercury in November 2026, a year ' +
+      'late after a power fault weakened its thrusters.',
+    aAu: 0.393399, e: 0.196236, iDeg: 6.9817, nodeDeg: 48.3583, argpDeg: 26.7043, maDeg: 162.3605,
+    // 542 000 km at 30 days, 4.98 million at 60.
+    drift: 'Checked against JPL’s own forecast, it is half a million km out after a month and ' +
+      '5 million after two.',
+  },
+  {
+    id: 'deep-hera',
+    name: 'Hera',
+    klass: 'probe',
+    horizonsId: -91,
+    // Horizons -91 header (revised 2026-09-01): its objective is the crater DART left on Dimorphos
+    // on 2022-09-26; rendezvous manoeuvre 2026-Oct, arrival "Late 2026".
+    note: 'ESA’s follow-up to NASA’s DART impact, it reaches the asteroid pair Didymos and ' +
+      'Dimorphos in late 2026 to measure the crater DART left.',
+    aAu: 1.693677, e: 0.396112, iDeg: 3.3826, nodeDeg: 72.0392, argpDeg: 317.9109, maDeg: 313.4267,
+    // 137 000 km at 30 days, 429 000 at 42 as it manoeuvres in; Horizons' file ends 2026-11-04.
+    drift: 'Checked against JPL’s own forecast, it is 140 000 km out after a month; that forecast ' +
+      'stops on 4 November 2026.',
+  },
+  {
+    id: 'deep-osiris-apex',
+    name: 'OSIRIS-APEX',
+    klass: 'probe',
+    horizonsId: -64,
+    // The same spacecraft under its first mission's name, which is the one people remember.
+    aliases: ['OSIRIS-REx'],
+    // Horizons -64 header (revised 2025-09-18): sample capsule recovered 2023-09-24, retargeted to
+    // Apophis, 2029 rendezvous. Earth flyby 2027-03-16 03:30 TDB, 10 564 km from Earth's centre
+    // (Horizons, CENTER='500@399').
+    note: 'Having delivered Bennu’s sample in 2023, it is bound for Apophis, which it reaches in ' +
+      '2029, with an Earth flyby on 16 March 2027 on the way.',
+    destination: 'the asteroid Apophis',
+    aAu: 1.06431, e: 0.22684, iDeg: 0.0043, nodeDeg: 353.4003, argpDeg: 95.4774, maDeg: 263.441,
+    // Coasting: about 1 000 km at 120 days; 21 000 km on 2027-03-11 as Earth pulls; wrong after.
+    drift: 'Checked against JPL’s own forecast, it stays within about 1 000 km for four months, ' +
+      'and is wrong after its Earth flyby on 16 March 2027.',
+  },
+  {
+    id: 'deep-hayabusa2',
+    name: 'Hayabusa2',
+    klass: 'probe',
+    horizonsId: -37,
+    // Horizons -37 header (revised 2026-09-01): Ryugu sample returned 2020-12-05, 2001 CC21 flyby
+    // 2026-07-05, 1998 KY26 rendezvous July 2031.
+    note: 'Its Ryugu sample delivered in 2020, it flew past the asteroid 2001 CC21 in July 2026 ' +
+      'and is bound for 1998 KY26, which it reaches in 2031.',
+    destination: 'the asteroid 1998 KY26',
+    aAu: 0.917504, e: 0.158424, iDeg: 4.3119, nodeDeg: 76.5053, argpDeg: 119.4213, maDeg: 124.0497,
+    // 34 000 km at 30 days, 133 000 at 60; Horizons' file ends 2026-11-27.
+    drift: 'Checked against JPL’s own forecast, it is 30 000 km out after a month and 130 000 km ' +
+      'after two.',
+  },
+  {
+    id: 'deep-stereo-a',
+    name: 'STEREO-A',
+    klass: 'probe',
+    horizonsId: -234,
+    // Horizons -234 header (revised 2026-09-01): launched 2006 to watch the Sun and its coronal
+    // mass ejections from ahead of Earth. a = 0.961 au, a 344-day year, so it gains on Earth; it
+    // last passed us on 2023-08-17 at 8.3 million km (Horizons, CENTER='500@399'), and on
+    // 2026-09-22 it was 70 degrees ahead.
+    note: 'Its year is three weeks shorter than ours, so it slowly laps Earth, watching the Sun’s ' +
+      'eruptions from the side; it last passed us in August 2023.',
+    aAu: 0.96074, e: 0.006769, iDeg: 0.128, nodeDeg: 212.2938, argpDeg: 77.7722, maDeg: 137.8142,
+    // 2 000 km at 60 days, 4 000 at 85; Horizons' file ends 2026-12-18.
+    drift: 'Checked against JPL’s own forecast, it stays within a few thousand km for two months.',
   },
 ];
 
@@ -618,6 +814,58 @@ export function sampleDeepSpace() {
           'the Sun on 1 January 2026. Its year is only ' +
           Math.round(periodDays(aKm)) +
           ' days, so treat the dot as a placeholder and the ellipse as the fact.',
+      },
+    });
+  }
+
+  for (const c of OSCULATING_CRAFT) {
+    const aKm = c.aAu * AU_KM;
+    const epoch = Number.isFinite(c.epochMs) ? c.epochMs : OSC_EPOCH_MS;
+    const epochWords = c.epochWords || OSC_EPOCH_WORDS;
+    out.push({
+      id: c.id,
+      name: c.name,
+      layer: 'deep-space',
+      klass: c.klass,
+      propagator: 'kepler',
+      frame: 'sun-inertial',
+      cls: 'sample',
+      epoch,
+      source: 'horizons-deep-space',
+      elements: {
+        qKm: aKm * (1 - c.e),
+        e: c.e,
+        aKm,
+        iRad: c.iDeg * DEG,
+        omRad: c.nodeDeg * DEG,
+        wRad: c.argpDeg * DEG,
+        // The mean anomaly, not a time of perihelion: the phase is KNOWN here, which is the whole
+        // difference from ELLIPTIC_CRAFT above.
+        maRad: c.maDeg * DEG,
+        epochMs: epoch,
+        muKm3S2: MU_SUN,
+      },
+      meta: {
+        horizonsId: c.horizonsId,
+        construction: 'osculating',
+        elementsEpochMs: epoch,
+        aAu: c.aAu,
+        eccentricity: c.e,
+        inclinationDeg: c.iDeg,
+        periodDays: periodDays(aKm),
+        note: c.note,
+        ...(c.destination ? { destination: c.destination } : {}),
+        // ui/search.js matches meta.aliases at a word start, after the name.
+        ...(c.aliases ? { aliases: c.aliases } : {}),
+        approx: true,
+        approxFields: ['position after ' + epochWords],
+        why:
+          NO_CORS +
+          ' It is drawn on the orbit JPL Horizons gave for it on ' +
+          epochWords +
+          ' and moved on from there by the Sun’s pull alone, so no engine burn or flyby after ' +
+          'that date is in it. ' +
+          c.drift,
       },
     });
   }
