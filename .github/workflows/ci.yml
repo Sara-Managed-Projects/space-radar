@@ -195,6 +195,10 @@ jobs:
         run: node tests/test_search.mjs
       - name: every landing site is a record on its own world, drawn as what landed, and findable
         run: node tests/test_landing_sites.mjs
+      # The trip's camera runs through the real trip machine at four instants: a key light chosen
+      # without the ground's horizon looked at Surveyor 1 through 500 km of Moon (2026-09-22).
+      - name: the Moon trip visits real landing sites in order, and sees each from above its horizon
+        run: node tests/test_moon_trip.mjs
       - name: every layer exists on both sides of the registry mirror and `enabled:` is honoured (spec 0026 req 8)
         run: node tests/test_layers_registry.mjs
       - name: a fresh launch is one train with a lead, still climbing or spread out (spec 0026 req 17)

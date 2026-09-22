@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const JS = join(dirname(fileURLToPath(import.meta.url)), '..', 'site/js');
-const { chooseLabels, labelName, isNotable, isOwnPlaceOnLadder, clampLabelX, keepClearOf, LABEL_EDGE_PAD, LABEL_CAP, NOTABLE_CAP } = await import(join(JS, 'ui/labels.js'));
+const { chooseLabels, labelName, isNotable, isOwnPlaceOnLadder, clampLabelX, keepClearOf, behindWorld, LABEL_EDGE_PAD, LABEL_CAP, NOTABLE_CAP } = await import(join(JS, 'ui/labels.js'));
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
@@ -112,6 +112,25 @@ check(!isOwnPlaceOnLadder({ klass: 'world', id: 'uranus' }), 'Uranus is inside t
 check(!isOwnPlaceOnLadder({ klass: 'probe', id: 'deep-voyager-1' }), 'Voyager 1 is inside the Sun\'s pixel on the ladder');
 check(['star', 'exoplanet', 'dso', 'exotic'].every((klass) => isOwnPlaceOnLadder({ klass, id: 'x' })), 'stars, exoplanets, deep-sky objects and exotics are places on the ladder');
 check(!isOwnPlaceOnLadder(null), 'nothing is not a place');
+
+// A WORLD HIDES THE NAMES BEHIND IT. On the Moon trip's first stop (headless Chrome, 2026-09-22)
+// seven deep-space names were printed across the lunar surface. The Moon here is the real one: a
+// 1.7374-unit sphere with the camera 900 km (0.9 units) above a site on it.
+{
+  const moon = { id: 'moon', x: 0, y: 0, z: 0, r: 1.7374 };
+  const site = { x: 0, y: 1.7374, z: 0 };                  // on the surface, facing the eye
+  const eye = { x: 0.3, y: 1.7374 + 0.85, z: 0 };
+  const farBehind = { x: -30, y: -250, z: 0 };               // a probe far beyond, straight through the Moon
+  const beside = { x: 400, y: 2.6, z: 0 };                   // off to the side, clear of the limb
+  const farSide = { x: 0, y: -1.7374, z: 0 };                // a site on the far side of the Moon
+  check(behindWorld(eye, farBehind, [moon]), 'a thing behind the Moon has no label over the Moon');
+  check(!behindWorld(eye, site, [moon]), 'a site on the near surface keeps its label: its own ground does not hide it');
+  check(behindWorld(eye, farSide, [moon]), 'a site on the far side is hidden by the Moon');
+  check(!behindWorld(eye, beside, [moon]), 'a thing clear of the limb keeps its label');
+  check(!behindWorld(eye, { x: 0, y: 0, z: 0 }, [moon], 'moon'), "a world's own label, on its own centre, is not hidden by itself");
+  check(!behindWorld({ x: 0, y: 5, z: 0 }, { x: 0, y: 10, z: 0 }, [moon]), 'a sphere behind the eye hides nothing');
+  check(!behindWorld(eye, farBehind, [{ id: 'x', x: 0, y: 0, z: 0, r: 0 }]) && !behindWorld(eye, farBehind, null), 'no sphere, nothing hidden');
+}
 
 if (problems.length) { console.error('labels FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`labels ok: selection, then its train, then at most ${NOTABLE_CAP} nearest notable; 24 px dedupe; never the catalogue; the box stays on screen; and no two boxes overprint`);

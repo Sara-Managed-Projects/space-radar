@@ -30,6 +30,7 @@ import * as THREE from '../../vendor/three.module.min.js';
 import { propagate } from '../propagate/index.js';
 import { stage, isLadderStage } from '../scene/stage.js';
 import { realModelFor } from '../scene/realmodels.js';
+import { WORLDS } from '../scene/worlds.js';
 
 export const LABEL_CAP = 12;
 export const NOTABLE_CAP = 10;
@@ -175,6 +176,48 @@ export function keepClearOf(boxes, gap = LABEL_GAP_PX) {
   return out;
 }
 
+/**
+ * A world hides the label of anything behind it. Shrunk by this much, so a thing standing ON the
+ * surface -- a landing site, seen at a low angle over faceted geometry -- is not hidden by its own
+ * ground.
+ */
+export const OCCLUDER_SHRINK = 0.998;
+
+/**
+ * Is `pos` hidden from `eye` behind one of these spheres? Pure; `spheres` are {x, y, z, r, id} in
+ * scene units, and the sphere whose `id` is `skipId` is ignored -- a world's label sits on its own
+ * centre, which its own surface would otherwise always hide.
+ *
+ * WHY. A label was placed wherever its point projected, whatever was in front of it. MEASURED in
+ * headless Chrome on 2026-09-22, the Moon trip's first stop: seven names -- Ryugu, Bennu, Eros,
+ * OSIRIS-APEX, Hera, Hayabusa2, Europa Clipper, every one of them far beyond the Moon in that
+ * direction -- printed across the lunar surface around Surveyor 1, as if they were landing sites.
+ */
+export function behindWorld(eye, pos, spheres, skipId = null) {
+  const dx = pos.x - eye.x;
+  const dy = pos.y - eye.y;
+  const dz = pos.z - eye.z;
+  const len = Math.hypot(dx, dy, dz);
+  if (!(len > 0) || !Array.isArray(spheres)) return false;
+  const ux = dx / len;
+  const uy = dy / len;
+  const uz = dz / len;
+  for (const s of spheres) {
+    if (!s || s.id === skipId || !(s.r > 0)) continue;
+    const ox = s.x - eye.x;
+    const oy = s.y - eye.y;
+    const oz = s.z - eye.z;
+    const along = ox * ux + oy * uy + oz * uz;
+    if (along <= 0) continue; // behind the eye
+    const r = s.r * OCCLUDER_SHRINK;
+    const off2 = ox * ox + oy * oy + oz * oz - along * along;
+    if (off2 >= r * r) continue; // the line of sight passes beside it
+    const entry = along - Math.sqrt(r * r - off2);
+    if (entry > 0 && entry < len) return true;
+  }
+  return false;
+}
+
 export function createLabels(ctx, host) {
   if (!host || typeof document === 'undefined') return { update() {}, destroy() {} };
   const pool = [];
@@ -193,6 +236,21 @@ export function createLabels(ctx, host) {
     pool.push({ node, dot, text, klass: '' });
   }
   const _v = new THREE.Vector3();
+  const _c = new THREE.Vector3();
+  let spheres = [];
+
+  /** The drawn worlds, as spheres a label can be behind, once per update. */
+  function occluders() {
+    const out = [];
+    const worlds = ctx.worlds;
+    if (!worlds || !worlds.drawnPositionOf || !worlds.drawnRadiusUnits) return out;
+    for (const w of WORLDS) {
+      const c = worlds.drawnPositionOf(w.id, _c);
+      const r = worlds.drawnRadiusUnits(w.id);
+      if (c && r > 0) out.push({ id: w.id, x: c.x, y: c.y, z: c.z, r });
+    }
+    return out;
+  }
 
   function project(record, tMs, camera, w, h) {
     const p = propagate(record, tMs);
@@ -203,6 +261,7 @@ export function createLabels(ctx, host) {
     if (record.klass === 'world' && ctx.worlds && ctx.worlds.drawnPositionOf) pos = ctx.worlds.drawnPositionOf(record.id, _v);
     if (!pos) pos = stage.toSceneInto(p, p.frame, _v, tMs);
     if (!pos) return null;
+    if (behindWorld(camera.position, pos, spheres, record.klass === 'world' ? record.id : null)) return null;
     const dist = pos.distanceTo(camera.position);
     pos.project(camera);
     if (pos.z > 1 || pos.z < -1) return null;
@@ -219,6 +278,7 @@ export function createLabels(ctx, host) {
     const h = host.clientHeight || window.innerHeight;
     const out = [];
     const seen = new Set();
+    spheres = occluders();
     const inTrip = document.documentElement.classList.contains('sr-trip-mode');
     const selected = typeof ctx.selected === 'function' ? ctx.selected() : null;
     const layerOf = (id) => (ctx.layers || []).find((l) => l.id === id);

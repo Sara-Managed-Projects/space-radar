@@ -364,10 +364,9 @@ def check_tours(oddities_doc: dict, layer_ids: set, world_ids: set, site_ids: se
 
         stage = tour.get("stage", defaults.get("stage"))
         if stage not in TOUR_STAGES:
-            fail(where, f"stage `{stage}` is not supported. The rig is told its world radius once, "
-                        f"at boot, and nothing subscribes to `sr:stage`, so a trip crossing stages "
-                        f"would fly with its clearance sphere in the wrong place and its distances "
-                        f"wrong by 1000x. `earth` is the only honest value today")
+            fail(where, f"stage `{stage}` is neither a worlds.yaml world nor a stages.yaml rung, "
+                        f"so ctx.setStage would refuse it and the trip would fly every stop on the "
+                        f"stage the visitor happened to be on, with its distances in the wrong unit")
 
         clock = tour.get("clock", defaults.get("clock"))
         if clock not in TOUR_CLOCKS:

@@ -19,6 +19,7 @@ import { modelFor, updateModelAttitude, setSunDirection, disposeModels, attachOd
 import { realModelFor, loadRealModel } from './realmodels.js';
 import { propagate } from '../propagate/index.js';
 import { stage } from './stage.js';
+import { parseFrame } from '../propagate/frames.js';
 import { modelOpacity } from './onemark.js';
 import { WORLDS } from './worlds.js';
 
@@ -144,6 +145,20 @@ function unitReachOf(obj) {
  * @param {THREE.Vector3} pos  the record's position -- the stage world is the origin, at true size
  * @param {number} reach how far this model reaches from its origin at scale 1
  */
+/**
+ * Does the altitude cap apply to this record at all? Not to a thing fixed to a world's ground: the
+ * block above leaves "ground sites, launch pads" alone, and heroScale decided that with a
+ * subtraction -- |pos| minus the stage world's radius, not above zero -- which float rounding gets
+ * to answer for a site standing exactly on the surface. MEASURED in headless Chrome on 2026-09-22,
+ * the Moon trip on the Moon's stage: Chang'e 4 came out a few centimetres "up", was capped to that
+ * height, and was drawn zero pixels across under its own label; the other lunar sites came out a
+ * hair below and were drawn at full size. A site is on the ground by what it is, not by the sign of
+ * a rounding error.
+ */
+export function altitudeCapApplies(record) {
+  return !(record && record.propagator === 'fixed');
+}
+
 function heroScale(px, d, h, f, pos, reach) {
   const want = (px * 2 * d) / (h * f);
   const R = stageRadiusUnits();
@@ -255,8 +270,67 @@ const FADE_MS = 200;
 const _v = new THREE.Vector3();
 const _camPos = new THREE.Vector3();
 const _climb = new THREE.Vector3();
+const _ground = new THREE.Vector3();
+
+/**
+ * Which way is DOWN for a model at `pos`: toward the centre of the world it stands on. Pure, and
+ * exported so a test can hold it without a scene.
+ *
+ * For nearly everything that is the stage's own world, at the scene origin. A landing site on
+ * ANOTHER world is the exception, and it was not one until 2026-09-22: every model took the stage
+ * origin, so from the Earth stage a lander on the Moon was stood up AWAY FROM THE EARTH -- which
+ * on the near side is into the Moon. On 2026-09-22 every lunar site was 42 to 164 degrees off its
+ * own vertical (Apollo 11's lunar module 153, all but upside down), and headless Chrome showed
+ * Surveyor 1, at 139, as two footpads sticking out of the ground with the body buried. main.js
+ * teachRigWorld had already fixed the camera for the same reason (PR #210); this is the model.
+ * tests/test_landing_sites.mjs holds every lunar and Martian site to its own world's vertical.
+ *
+ * @param {object} record
+ * @param {THREE.Vector3} pos the model's scene position
+ * @param {function(string, THREE.Vector3): ?THREE.Vector3} centreOf the drawn centre of a world,
+ *   scene/worlds.js drawnPositionOf -- the DISC, which is where a site on a compressed planet is
+ *   drawn standing (stage.js viewAdjust)
+ * @param {THREE.Vector3} out
+ * @returns {THREE.Vector3} out, a unit vector
+ */
+export function nadirOf(record, pos, centreOf, out) {
+  const f = record && record.propagator === 'fixed' ? parseFrame(record.frame) : null;
+  if (f && f.kind === 'fixed' && f.world !== stage.worldId && typeof centreOf === 'function') {
+    const c = centreOf(f.world, _ground);
+    if (c && c.distanceToSquared(pos) > 0) return out.copy(c).sub(pos).normalize();
+  }
+  return out.copy(pos).multiplyScalar(-1).normalize();
+}
+
+/**
+ * Stand a loaded real model on the ground, in place: its lowest point at its own origin, and the
+ * `up` attitude (models.js: +Y along the local vertical) that its procedural stand-in had. Pure
+ * apart from the model it is given, and exported so a test can hold it without a scene.
+ *
+ * TWO THINGS WENT WRONG WITH THE SWAP, measured in headless Chrome on 2026-09-22 at the Moon
+ * trip's Apollo stops. realmodels.js normalise() CENTRES a file on its bounding box, so an upright
+ * lunar module stood with its lower 0.39 units -- the whole descent stage -- under the ground.
+ * And the swapped-in wrapper carried no attitude, so models.js gave it the seeded constant it
+ * gives an object whose attitude nobody knows: Apollo 11's module lay 90 degrees off its vertical,
+ * Apollo 12's 72. glTF is +Y up by specification, which is exactly the axis `up` aims, so every
+ * file drawn on the ground -- the lunar module, Perseverance, the Deep Space Network dishes, the
+ * launch platform -- stands the way it was built to.
+ *
+ * @param {THREE.Object3D} obj a realmodels.js wrapper (wrapper > inner > file), not yet scaled
+ * @returns {THREE.Object3D} obj
+ */
+export function standOnGround(obj) {
+  obj.userData.attitude = 'up';
+  const inner = obj.children[0];
+  if (!inner) return obj;
+  obj.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(obj, true);
+  if (!box.isEmpty() && Number.isFinite(box.min.y)) inner.position.y -= box.min.y;
+  return obj;
+}
 
 export function createHeroes(scene, ctx) {
+  const drawnCentre = (id, out) => (ctx.worlds && ctx.worlds.drawnPositionOf ? ctx.worlds.drawnPositionOf(id, out) : null);
   const root = new THREE.Group();
   root.name = 'heroes';
   // Heroes draw after the glyph layers so a model sits over its own dot rather than behind it.
@@ -319,6 +393,10 @@ export function createHeroes(scene, ctx) {
         const clone = loaded.clone(true);
         clone.userData.recordId = record.id;
         clone.userData.realModel = true;
+        // A thing on the ground stays on it through the swap (standOnGround). Anything else keeps
+        // the seeded constant attitude it has always had: a file's axes say nothing about which way
+        // a spacecraft points.
+        if (entry.obj.userData.attitude === 'up') standOnGround(clone);
         // MEASURED BEFORE THE SCALE IS COPIED ON. unitReachOf() walks world matrices, so asking it
         // after the line below would return a reach already multiplied by the drawn scale -- and
         // the clearance cap would then be computed from a number in the wrong units entirely.
@@ -435,7 +513,7 @@ export function createHeroes(scene, ctx) {
       // The model may not exist yet on the frame it is first considered; half a unit is the
       // convention every shape is built to, and this only decides which neighbour is hidden.
       const reach = (live.get(c.record.id) || {}).reach || 0.5;
-      c.drawnRadius = heroScale(px, c.d, h, f, c.pos, reach) * reach; // how far it reaches, in world units
+      c.drawnRadius = heroScale(px, c.d, h, f, altitudeCapApplies(c.record) ? c.pos : null, reach) * reach; // how far it reaches, in world units
       const swallowedBy = c.forced ? null : kept.find((k) => k.pos.distanceTo(c.pos) < k.drawnRadius);
       if (swallowedBy) {
         hidden.push({ record: c.record, insideOf: swallowedBy.record });
@@ -510,7 +588,7 @@ export function createHeroes(scene, ctx) {
       obj.position.copy(c.pos);
 
       const px = heroPixels(c.record, c.record.id === selectedId);
-      const size = heroScale(px, c.d, h, f, c.pos, entry.reach);
+      const size = heroScale(px, c.d, h, f, altitudeCapApplies(c.record) ? c.pos : null, entry.reach);
       obj.scale.setScalar(size);
 
       // The burn signal. propagate() already returned `phase` and `f` for this record a few
@@ -532,9 +610,10 @@ export function createHeroes(scene, ctx) {
         obj.userData.climb = null;
       }
 
-      // Attitude wants the nadir direction: from the object toward the world's centre, which in
-      // the stage frame is the origin.
-      _v.copy(c.pos).multiplyScalar(-1).normalize();
+      // Attitude wants the nadir direction: from the object toward the centre of its world --
+      // the origin for anything on or around the stage's own, the drawn disc for a site on
+      // another (nadirOf).
+      nadirOf(c.record, c.pos, drawnCentre, _v);
       updateModelAttitude(obj, c.record, sun, _v);
 
       if (!obj.visible) {
