@@ -175,6 +175,14 @@ check(pickWorldDisc([], 1, 1) === null, 'no discs, no pick');
   w2.dispose();
 }
 
+// "Source not recorded" on every world card: the positions come from Astronomy Engine (propagate/
+// body.js), and the card's source line reads meta.cite first.
+{
+  const { worldRecords: wr } = await import(join(JS, 'scene/worlds.js'));
+  const uncited = wr().filter((r) => !/Astronomy Engine/.test((r.meta && r.meta.cite) || '')).map((r) => r.id);
+  check(uncited.length === 0, `every world names where its position comes from; these do not: ${uncited}`);
+}
+
 if (problems.length) {
   console.error('worlds layer FAILED:\n  ' + problems.join('\n  '));
   process.exit(1);
