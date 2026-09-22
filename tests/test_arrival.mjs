@@ -50,6 +50,18 @@ check(closeUpDistance(new THREE.Vector3(u(1000), 0, 0), 750, f) === Infinity, 'a
 check(closeUpDistance(null, 750, f) === Infinity, 'no position, no constraint');
 check(closeUpDistance(at(400), 0, f) === Infinity, 'no viewport, no constraint');
 
+// The whole globe on a phone (2026-09-22): 3.5 radii cut a portrait screen's Earth at both sides.
+{
+  const { worldFramingDistance } = await import(join(JS, 'scene/camera.js'));
+  const R = 6.371;
+  const halfWidth = (d, fov, aspect) => (R / Math.sqrt(d * d - R * R)) / (Math.tan((fov * Math.PI / 180) / 2) * aspect);
+  const desk = worldFramingDistance(R, 45, 1280 / 800);
+  check(Math.abs(desk - R * 3.5) < 1e-9, `a landscape desktop keeps 3.5 radii (${desk.toFixed(2)})`);
+  const phone = worldFramingDistance(R, 45, 390 / 844);
+  check(phone > R * 3.5 && Math.abs(halfWidth(phone, 45, 390 / 844) - 0.9) < 1e-6, `a portrait phone stands back until the globe is 90% of the width (${phone.toFixed(1)} units)`);
+  check(worldFramingDistance(R, 45, 0) === R * 3.5, 'no aspect yet, the old framing');
+}
+
 if (problems.length) { console.error('arrival FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 const d = closeUpDistance(at(395), 750, f) * stage.unitKm;
 console.log(`arrival ok: Tiangong is reached from ${Math.round(d)} km at 750 px tall (was 7 000), drawn at the full ${SELECTED_PX} px; the old arrival drew ${old.toFixed(0)} px`);
