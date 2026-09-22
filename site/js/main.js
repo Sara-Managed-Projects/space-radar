@@ -584,6 +584,22 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
       window.dispatchEvent(new CustomEvent('sr:layer', { detail: { id: layer.id, count: 0, error: String(err) } }));
     }
   }
+  // A source that answers AFTER its layers have drawn -- a live file arriving behind a saved copy,
+  // or a background refresh once a cadence has passed (data/sources.js) -- redraws those layers.
+  // sources.onUpdate() existed and nothing listened, so a refresh reached the cache and never the
+  // map. A layer still on its first load is skipped: its own load is about to draw the same data.
+  const drawnAt = new Map();
+  sources.onUpdate((sourceId, result) => {
+    if (!result || result.data == null) return;
+    const stamp = result.fetchedAt || 0;
+    if (drawnAt.get(sourceId) === stamp) return;
+    drawnAt.set(sourceId, stamp);
+    for (const layer of ordered) {
+      if (layer.deferred || !layerRecords.has(layer.id)) continue;
+      if (idsOf(layer).includes(sourceId)) one(layer);
+    }
+  });
+
   function pool(list, size) {
     let next = 0;
     const worker = async () => {

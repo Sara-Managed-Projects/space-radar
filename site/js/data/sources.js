@@ -28,6 +28,11 @@
 //    harvest, an unknown schema) a `browser: true` row falls back to the direct fetch below,
 //    recorded `via: 'live'`; a `browser: false` row says "could not look" and makes NO upstream
 //    request. Nothing is invented, and the direct path stays: it is the safety net.
+//  * A SNAPSHOT PAST ITS OWN valid_until IS A SAVED COPY, NOT THE ANSWER. It is drawn at once, and
+//    a `browser: true` row also asks its publisher behind it; a newer live answer replaces it and
+//    onUpdate() says so, so the layers redraw. Without this a snapshot uploaded once (from a
+//    laptop, 2026-09-22, while the harvester stays unprovisioned) would have frozen the map at the
+//    moment of the upload: snapshot-first used to mean snapshot-only.
 //  * Nothing here throws. Ever. A source that cannot be reached yields ok:false and the app
 //    keeps its last good copy.
 //  * localStorage is absent in private mode on some browsers and throws on access in others,
@@ -847,6 +852,7 @@ async function doFetch(id) {
   // 1. Our snapshot, when the manifest says there is one to read.
   const snap = await readSnapshot(src);
   let next;
+  let behind = false;
   if (snap.ok) {
     next = {
       data: snap.body,
@@ -861,6 +867,8 @@ async function doFetch(id) {
       reason: null,
       snapshot: null,
     };
+    // Past its own valid_until: draw it now, and ask upstream behind it (see the header).
+    behind = src.browser === true && snap.validUntil != null && attemptAt > snap.validUntil;
   } else if (src.browser === true) {
     // 2. The direct fetch this file has always made. The safety net, unchanged.
     next = await fetchLive(src, prev, attemptAt);
@@ -882,6 +890,12 @@ async function doFetch(id) {
   writeEntry(id, next);
 
   const result = resultFrom(src, next, wallNow(), false);
+  notify(id, result);
+  if (behind) liveBehind(id, src, next);
+  return result;
+}
+
+function notify(id, result) {
   for (const fn of listeners) {
     try {
       fn(id, result);
@@ -889,7 +903,22 @@ async function doFetch(id) {
       /* a listener must not be able to break the data layer */
     }
   }
-  return result;
+}
+
+/**
+ * The publisher, asked behind a saved copy that is already on screen. A newer answer replaces the
+ * copy and is announced; anything else -- a refusal, a timeout, the same file -- leaves the copy
+ * exactly as it was, with no second error on the panel for a source that is showing data.
+ */
+function liveBehind(id, src, shown) {
+  fetchLive(src, shown, wallNow())
+    .then((live) => {
+      if (live.via !== 'live' || !(live.fetchedAt > (shown.fetchedAt || 0))) return;
+      const entry = { ...live, failures: 0 };
+      writeEntry(id, entry);
+      notify(id, resultFrom(src, entry, wallNow(), false));
+    })
+    .catch(() => {});
 }
 
 /**
