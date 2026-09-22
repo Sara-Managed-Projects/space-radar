@@ -41,6 +41,11 @@ export const GLYPH_SIZE_PX = {
   comet: 10,
   site: 9,
   world: 12,
+  // A mark for a planet nobody can see, drawn at the star it goes round: an annotation on the star
+  // field, so smaller than the brightest star (stars3d.js tops out at 6 px). With no row it took
+  // the satellite's 8 px, and on the stellar rung 150 green marks outdrew the stars they belong to
+  // -- one sat on top of Sirius from a light-year out (measured 2026-09-22).
+  exoplanet: 5,
 };
 
 const DEBRIS_SIZE = 0.6; // 60 % size

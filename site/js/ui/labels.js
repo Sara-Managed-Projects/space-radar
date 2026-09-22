@@ -8,7 +8,10 @@
 //
 // WHAT GETS A NAME. Never the catalogue: 17 000 labels is a wall of text and a frame budget. Three
 // kinds of thing, in this order, capped at twelve on screen:
-//   1. the selection -- always, unless a trip is running (the trip's card names its subject);
+//   1. the selection -- always, and a trip's subject too, unless it is the ground under the camera.
+//      The trip's card names its subject but cannot point at it: MEASURED 2026-09-22 on "To the
+//      edge", Proxima was one unlabelled point among hundreds, and at the Sun the nearest name was
+//      Voyager 1's;
 //   2. the selection's train -- the other members of the same group (a fresh Starlink line is
 //      one card with N members, and the names say which is which);
 //   3. the nearest notable objects: records a hand-kept list gave a reason (`meta.why`), the worlds,
@@ -25,7 +28,7 @@
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { propagate } from '../propagate/index.js';
-import { stage } from '../scene/stage.js';
+import { stage, isLadderStage } from '../scene/stage.js';
 import { realModelFor } from '../scene/realmodels.js';
 
 export const LABEL_CAP = 12;
@@ -49,6 +52,19 @@ export function labelName(record) {
   if (!name) name = record && record.name ? String(record.name).trim() : '';
   if (name.length > MAX_NAME) name = name.slice(0, MAX_NAME - 1).trimEnd() + '…';
   return name;
+}
+
+// Classes that are places on the ladder's own scale. On a ladder stage everything else -- the
+// planets, the probes, the asteroids -- sits inside one pixel of the Sun, where a label names
+// whichever happened to be first: "Uranus" for the Sun from the Pleiades, "Voyager 1" from a
+// light-year out (measured 2026-09-22). There the Sun speaks for the whole Solar System.
+const LADDER_KLASSES = new Set(['star', 'exoplanet', 'dso', 'exotic']);
+
+/** On a ladder stage, is this record drawn as its own place rather than inside the Sun's pixel? */
+export function isOwnPlaceOnLadder(record) {
+  if (!record) return false;
+  if (record.klass === 'world') return record.id === 'sun';
+  return LADDER_KLASSES.has(record.klass);
 }
 
 /** Is this a record a hand-kept list, or the app's own structure, made worth naming? */
@@ -192,7 +208,9 @@ export function createLabels(ctx, host) {
     const layerOf = (id) => (ctx.layers || []).find((l) => l.id === id);
     const drawable = (layer) => (ctx.isLayerDrawable ? ctx.isLayerDrawable(layer) : ctx.isLayerOn && ctx.isLayerOn(layer.id));
 
-    if (selected && !inTrip) {
+    const ladder = isLadderStage(stage.worldId);
+    const isGround = (r) => r.klass === 'world' && r.id === stage.worldId;
+    if (selected && !(inTrip && isGround(selected))) {
       const pr = project(selected, tMs, camera, w, h);
       if (pr) { out.push({ record: selected, kind: 'selection', ...pr }); seen.add(selected.id); }
     }
@@ -217,7 +235,8 @@ export function createLabels(ctx, host) {
       // a layer that is small enough to name entirely, or the hand-kept rows of a big one
       for (const r of records) {
         if (seen.has(r.id) || !isNotable(r)) continue;
-        if (r.klass === 'world' && r.id === stage.worldId) continue; // the ground has no label
+        if (isGround(r)) continue; // the ground has no label
+        if (ladder && !isOwnPlaceOnLadder(r)) continue; // inside the Sun's pixel
         const pr = project(r, tMs, camera, w, h);
         if (pr) { out.push({ record: r, kind: 'notable', ...pr }); seen.add(r.id); }
       }

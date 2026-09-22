@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const JS = join(dirname(fileURLToPath(import.meta.url)), '..', 'site/js');
-const { chooseLabels, labelName, isNotable, clampLabelX, keepClearOf, LABEL_EDGE_PAD, LABEL_CAP, NOTABLE_CAP } = await import(join(JS, 'ui/labels.js'));
+const { chooseLabels, labelName, isNotable, isOwnPlaceOnLadder, clampLabelX, keepClearOf, LABEL_EDGE_PAD, LABEL_CAP, NOTABLE_CAP } = await import(join(JS, 'ui/labels.js'));
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
@@ -104,6 +104,14 @@ check(labelName({ name: 'A'.repeat(60), meta: {} }).length <= 34, 'a long name i
   // and a record the list does not know keeps the catalogue's string
   check(labelName(row('COSMOS 1933', 'satellite', 18187, undefined)) === 'COSMOS 1933', 'no list name, no rename');
 }
+
+// On a ladder stage the Solar System is one pixel, and the Sun names it (measured 2026-09-22: the
+// Sun from the Pleiades was labelled "Uranus", from a light-year out "Voyager 1").
+check(isOwnPlaceOnLadder({ klass: 'world', id: 'sun' }), 'the Sun is its own place on the ladder');
+check(!isOwnPlaceOnLadder({ klass: 'world', id: 'uranus' }), 'Uranus is inside the Sun\'s pixel on the ladder');
+check(!isOwnPlaceOnLadder({ klass: 'probe', id: 'deep-voyager-1' }), 'Voyager 1 is inside the Sun\'s pixel on the ladder');
+check(['star', 'exoplanet', 'dso', 'exotic'].every((klass) => isOwnPlaceOnLadder({ klass, id: 'x' })), 'stars, exoplanets, deep-sky objects and exotics are places on the ladder');
+check(!isOwnPlaceOnLadder(null), 'nothing is not a place');
 
 if (problems.length) { console.error('labels FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`labels ok: selection, then its train, then at most ${NOTABLE_CAP} nearest notable; 24 px dedupe; never the catalogue; the box stays on screen; and no two boxes overprint`);

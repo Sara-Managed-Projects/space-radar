@@ -676,11 +676,13 @@ const TEMPLATES = {
     const letter = spect.charAt(0).toUpperCase();
     const colour = T.colours && Object.prototype.hasOwnProperty.call(T.colours, letter) ? T.colours[letter] : null;
     const lum = pickNumber(md, 'lum');
-    const lead = distLy !== null
-      ? t(distLy < 20 ? T.leadNear : T.lead, { name: displayName(record), dist: fmt.smart(distLy) })
-      : t(COPY.templates.satellite.lead, { name: displayName(record) });
+    const name = displayName(record);
+    const dist = distLy !== null ? fmt.smart(distLy) : null;
+    const lead = distLy === null ? t(COPY.templates.satellite.lead, { name })
+      : colour ? t(T.leadColour, { name, a: article(colour), colour, dist })
+        : t(T.lead, { name, dist });
     return buildSentence(lead, [
-      colour ? t(T.colour, { a: article(colour), colour }) : null,
+      distLy !== null && distLy < 20 ? T.near : null,
       distLy !== null && distLy >= 1.5 ? t(T.seenAs, { n: fmt.int(distLy) }) : null,
       distLy !== null && distLy < 1.5 ? t(T.seenAsMonths, { n: fmt.int(distLy * 12) }) : null,
       lum !== null && lum >= 1.5 ? t(T.luminosity, { n: fmt.int(lum) }) : null,

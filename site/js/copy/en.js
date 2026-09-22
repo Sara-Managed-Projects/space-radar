@@ -1224,8 +1224,10 @@ export const COPY = {
       leadRange: '{name} is {a} {type} somewhere between {lo} and {hi} light-years away',
       leadUntyped: '{name} is {dist} light-years away',
       size: 'about {n} light-years across',
-      seenAs: 'the light you see left it {n} years ago',
-      seenAsMillions: 'the light you see left it {n} million years ago',
+      // A participle, so it hangs off the sentence: "..., the light you see left it 2.54 million
+      // years ago" was a second sentence joined with a comma.
+      seenAs: 'seen as it was {n} years ago',
+      seenAsMillions: 'seen as it was {n} million years ago',
       constellation: 'in {con}',
       // OpenNGC type codes -> words, for the sentence. The card's row prints the source's own words.
       kinds: { galaxy: 'galaxy', nebula: 'nebula', cluster: 'star cluster', other: 'deep-sky object' },
@@ -1244,11 +1246,14 @@ export const COPY = {
     },
     star: {
       lead: '{name} is a star {dist} light-years away',
-      leadNear: '{name} is a star {dist} light-years away, one of the nearest there are',
+      // The colour goes in the lead: "Proxima Centauri is a star 4.23 light-years away, one of the
+      // nearest there are, a red star, the light you see left it 4 years ago" said "star" twice
+      // and ran two sentences together with a comma (read on a trip card, 2026-09-22).
       // {a} is article(colour): "an orange star". A literal 'a' printed "Arcturus is ... a orange star".
-      colour: '{a} {colour} star',
-      seenAs: 'the light you see left it {n} years ago',
-      seenAsMonths: 'the light you see left it {n} months ago',
+      leadColour: '{name} is {a} {colour} star {dist} light-years away',
+      near: 'one of the nearest there are',
+      seenAs: 'seen as it was {n} years ago',
+      seenAsMonths: 'seen as it was {n} months ago',
       luminosity: 'shining {n} times as bright as the Sun',
       dimmer: 'shining at {n} of the Sun’s brightness',
       // Spectral class letter -> the colour a person would see. The letters are the physics; the
