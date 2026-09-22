@@ -188,6 +188,14 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
   check(/takes 23\.9 hours each way/.test(voyager) && !/1431/.test(voyager.replace(/\s/g, '')), `a day's radio time is said in hours: "${voyager}"`);
   const mars = text(firstSentence({ id: 'deep-mro', name: 'MRO', klass: 'probe', frame: 'sun-inertial', meta: {} }, ctx, { ...m0, lightMinutes: 12.5, distSunKm: 1.5 * 149597870.7 }, { state: 'none' }));
   check(/takes 12\.5 minutes each way/.test(mars), `twelve minutes is still minutes: "${mars}"`);
+  // One limit for "can I see it" (2026-09-22): the chip said faint at 6.5 while the sky line said visible.
+  {
+    const { compare, COPY: C, NAKED_EYE_LIMIT } = await import(join(ROOT, 'site/js/copy/en.js'));
+    check(NAKED_EYE_LIMIT === 6.5, 'the naked-eye limit is 6.5');
+    check(compare('magnitude', 6.5) === 'just visible from a dark place' && compare('magnitude', 6.6) === 'too faint to see without a telescope',
+      `the chip turns at the same limit (6.5: "${compare('magnitude', 6.5)}", 6.6: "${compare('magnitude', 6.6)}")`);
+    check(!!C.sky.nakedEye, 'the sky line exists');
+  }
   const m31 = text(firstSentence({ id: 'dso-m31', name: 'Andromeda Galaxy', klass: 'dso', frame: 'sun-inertial', meta: { distLy: 2540000, typeText: 'spiral galaxy' } }, ctx, m0, { state: 'none' }));
   check(!/the light you see/.test(m31) && /seen as it was 2\.54 million years ago/.test(m31), `a deep-sky sentence hangs the light's age off itself: "${m31}"`);
 
