@@ -533,7 +533,7 @@ export const COPY = {
     // R/B" -- and two identical rows read as a bug. The catalogue number tells them apart.
     sameName: '{name} ({id})',
     title: 'Coming up',
-    hint: 'From what the app has loaded: launches, close approaches, comets, and passes over you.',
+    hint: 'From what the app has loaded: launches, close approaches, comets, meteor showers, and passes over you.',
     now: 'about now',
     inMinutes: 'in {n} minutes',
     inHours: 'in {n} hours',
@@ -546,6 +546,8 @@ export const COPY = {
     perihelion: '{name} is closest to the Sun {when}',
     pass: '{name} comes over you {when}',
     train: 'A train of {n} satellites comes over you {when}',
+    // ZHR is the rate under a perfect sky with the radiant overhead, so it is "up to", never "you will see".
+    shower: 'The {name} meteor shower peaks around {date}, up to {zhr} an hour under a dark sky',
     none: 'Nothing is scheduled in what the app has loaded.',
     notLoaded: 'Not loaded, so not listed: {layers}.',
     noObserver: 'Set where you are and passes over you join the list.',
