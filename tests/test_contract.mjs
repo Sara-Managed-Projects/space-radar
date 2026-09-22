@@ -1259,6 +1259,14 @@ for (const file of allFiles) {
   if (!problems.some((p) => p.startsWith('A11Y'))) notes.push('the card is a named dialog; it takes focus from a control, never from a tap or a trip, and gives it back');
 }
 
+// 3e4g. THE FRAME LOOP'S STEP IS NEVER NEGATIVE (2026-09-22): a negative first step held the glyph
+// and label updates back for over a minute in headless Chrome. Asserted where it is written.
+{
+  const src = readFileSync(join(JS, 'main.js'), 'utf8');
+  if (!/const frameMs = Math\.max\(0, nowReal - last\)/.test(src)) problems.push('FRAME    the frame step can go negative again (rAF stamps a frame with when it began)');
+  else notes.push('the frame step is never negative, so the 10 Hz glyph and label tick starts on the first frames');
+}
+
 // 3e4f. A TRIP'S SUBJECT IS NAMED WHERE IT IS DRAWN.
 //
 // Measured on "To the edge", 2026-09-22: the labels skipped the selection whenever a trip ran,
