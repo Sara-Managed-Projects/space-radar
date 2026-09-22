@@ -255,8 +255,17 @@ function measure(record, ctx) {
   } else if (out.frame === 'sun-inertial') {
     const r = Math.hypot(p.x, p.y, p.z);
     if (Number.isFinite(r)) out.distSunKm = r;
-    const earth = heliocentricEarth(ctx, tMs);
-    if (earth) {
+    // A craft held at a Sun–Earth Lagrange point is DRAWN on Earth's own orbit (data/sample.js,
+    // construction A), and that stand-in sits anything up to ~1.1 million km from the real Earth.
+    // Its distance from Earth is then the construction's error, not the craft's: the card printed
+    // JWST at "0.4x the Moon's distance" and 0.009 radio-minutes, beside a note saying 1.5 million
+    // km. The record carries the real range, and it wins.
+    const known = pickNumber(meta(record), 'earthRangeKm');
+    const earth = known !== null ? null : heliocentricEarth(ctx, tMs);
+    if (known !== null && known > 0) {
+      out.distEarthKm = known;
+      out.lightMinutes = known / UNITS.LIGHT_MINUTE_KM;
+    } else if (earth) {
       const d = Math.hypot(p.x - earth.x, p.y - earth.y, p.z - earth.z);
       if (Number.isFinite(d)) {
         out.distEarthKm = d;
