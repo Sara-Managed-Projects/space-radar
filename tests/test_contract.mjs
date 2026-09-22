@@ -1242,6 +1242,23 @@ for (const file of allFiles) {
   if (!problems.some((p) => p.startsWith('DATE'))) notes.push('every date more than half a year away prints its year');
 }
 
+// 3e4e. THE CARD IS A NAMED DIALOG THAT TAKES FOCUS FROM A CONTROL, AND GIVES IT BACK.
+//
+// Measured in a browser, 2026-09-22: open a card from search with Enter and focus stayed on <body>,
+// and the card was role="dialog" with no name. Checked there too: a tap in the scene and a running
+// trip must NOT move focus. There is no DOM here, so the rules are asserted where they are written.
+{
+  const src = readFileSync(join(JS, 'ui/cards.js'), 'utf8');
+  const take = (src.match(/function takeFocus\(\) \{([\s\S]*?)\n\}/) || [])[1] || '';
+  if (!/aria-labelledby/.test(take)) problems.push('A11Y     the card dialog is not named by its title (aria-labelledby)');
+  if (!/sr-trip-mode/.test(take)) problems.push('A11Y     takeFocus() must not move focus while a trip is running');
+  if (!/document\.body/.test(take) || !/CANVAS/.test(take)) problems.push('A11Y     takeFocus() must leave focus alone after a tap in the scene (body or canvas)');
+  if (!/if \(!wasOpen\) takeFocus\(\)/.test(src)) problems.push('A11Y     focus must move only when the card OPENS, not on every re-render');
+  const hide = (src.match(/export function hideCard\(\) \{([\s\S]*?)\n\}/) || [])[1] || '';
+  if (!/returnFocus/.test(hide)) problems.push('A11Y     closing the card must give focus back to where it came from');
+  if (!problems.some((p) => p.startsWith('A11Y'))) notes.push('the card is a named dialog; it takes focus from a control, never from a tap or a trip, and gives it back');
+}
+
 // 3e5. THE GITHUB MARK STEPS ASIDE FOR THE CARD, AND ONLY FOR THE CARD.
 //
 // The mark asks for the top right corner. On desktop it used to sit at `var(--sr-card-w) + 24px`
