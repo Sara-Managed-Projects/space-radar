@@ -127,6 +127,8 @@ jobs:
         run: node tests/test_status_kinds.mjs
       - name: A phone's sheets move the view up by half of what they cover
         run: node tests/test_viewshift.mjs
+      - name: The Trips panel leads with the trips that can run
+        run: node tests/test_trips_panel.mjs
       - name: One mark per object -- a dot yields to its 3D model
         run: node tests/test_onemark.mjs
       - name: A loaded model keeps its colours, and ships no image it cannot use
