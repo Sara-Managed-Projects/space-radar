@@ -1329,6 +1329,9 @@ export const COPY = {
     },
     comet: {
       lead: '{name} is a comet on a long loop around the Sun',
+      // A periodic comet -- 123P, Halley's -- comes back every few years or decades. "A long loop"
+      // was right only for the C/ comets, and the card said it of 123P/West-Hartley, period 7.6 years.
+      leadPeriodic: '{name} is a comet that comes round the Sun every {n} years',
       whyPerihelion: 'closest to the Sun on {date}',
       nakedEye: 'bright enough to find without a telescope',
       faint: 'too faint to see without a telescope',

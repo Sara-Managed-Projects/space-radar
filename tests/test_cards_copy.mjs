@@ -242,6 +242,23 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
   check(/is a satellite going round the Earth/.test(String(firstSentence(plain, { ...ctx, records: () => [plain] }, m(plain), { state: 'none' }))), 'a CubeSat with no route is still just a satellite');
 }
 
+// "Found: 2 016, Transit" (a year printed as a quantity) and "123P/West-Hartley is a comet on a long
+// loop around the Sun" (a 7.6-year comet) -- both read off the live site, 2026-09-22.
+{
+  const now = Date.UTC(2026, 8, 22);
+  const ctx = { clock: { now: () => now }, worlds: null, selected: () => null };
+  const m = { ok: true, tMs: now, altKm: null, distSunKm: null, distEarthKm: null };
+  const planet = { id: 'trappist-1-b', name: 'TRAPPIST-1 b', klass: 'exoplanet', frame: 'sun-inertial', propagator: 'static', pos: { x: 1, y: 0, z: 0 },
+    meta: { host: 'TRAPPIST-1', distLy: 40.5, year: 2016, discYear: 2016, method: 'Transit', discMethod: 'Transit' } };
+  const found = rightNowFor(planet, ctx).find(([k]) => k === 'Found');
+  check(found && /2016/.test(found[1]) && !/2\s016/.test(found[1]), `a discovery year is a year, not a quantity: ${found && found[1]}`);
+  const comet = (name, orbitType, years) => ({ id: name, name, klass: 'comet', frame: 'sun-inertial', meta: { orbitType, periodDays: years * 365.25 } });
+  const west = String(firstSentence(comet('123P/West-Hartley', 'P', 7.6), ctx, m, { state: 'none' }));
+  check(/comes round the Sun every 7\.6/.test(west) && !/long loop/.test(west), `a 7.6-year comet comes round, it is not on a long loop: "${west}"`);
+  const hb = String(firstSentence(comet('C/1995 O1 (Hale-Bopp)', 'C', 2400), ctx, m, { state: 'none' }));
+  check(/long loop/.test(hb), `Hale-Bopp, 2 400 years, is on a long loop: "${hb}"`);
+}
+
 if (problems.length) {
   console.log(`cards copy: ${problems.length} problem(s)`);
   for (const p of problems) console.log('  - ' + p);
