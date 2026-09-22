@@ -537,6 +537,25 @@ const PARENT = { phobos: 'mars', deimos: 'mars', enceladus: 'saturn', titan: 'sa
     check(STAGES[id] && STAGES[id].unitKm > 0, `${id} can be the centre of the map`);
   }
   earth.dispose();
+  // The one-pixel floor is measured from the CAMERA. By Earth it is what it was; flown to three
+  // drawn Mars radii from the drawn Mars, a floor measured from Earth drew Phobos a quarter of
+  // Mars's width (2026-09-22), where its true share, 11.08 / 3389.5, is 0.33 %.
+  {
+    const cam = new THREE.PerspectiveCamera(45, 800 / 600, 1e-5, 1e9);
+    const near = createWorlds(new THREE.Scene(), { textureBase: null, camera: cam });
+    near.update(t);
+    const M = near.meshFor('mars');
+    const Ph = near.meshFor('phobos');
+    const byEarth = Ph.scale.x / M.scale.x;
+    cam.position.copy(M.position).add(new THREE.Vector3(0, 0, 3 * M.scale.x));
+    cam.updateMatrixWorld();
+    near.update(t);
+    const byMars = Ph.scale.x / M.scale.x;
+    const trueShare = rowOf('phobos').radiusKm / rowOf('mars').radiusKm;
+    check(byEarth > 0.1, `from Earth, Phobos keeps its one-pixel floor (${(byEarth * 100).toFixed(1)} % of the drawn Mars)`);
+    check(byMars < 3 * trueShare, `by the drawn Mars, Phobos is ${(byMars * 100).toFixed(2)} % of it, near its true ${(trueShare * 100).toFixed(2)} %`);
+    near.dispose();
+  }
   // From each moon's planet and from the moon itself: one system, drawn true.
   for (const [centre, members] of [['saturn', ['saturn', 'titan', 'enceladus']], ['titan', ['saturn', 'titan', 'enceladus']],
     ['mars', ['mars', 'phobos', 'deimos']], ['phobos', ['mars', 'phobos', 'deimos']], ['neptune', ['neptune', 'triton']],
