@@ -76,6 +76,22 @@ export function isNotable(record) {
 }
 
 /**
+ * May this record compete for one of the "nearest notable" labels on this kind of stage? Pure, and
+ * the one filter candidatesNow applies, so a test can hold it.
+ *
+ * A FAMOUS STAR IS NAMED ON THE LADDER ONLY (2026-09-22, registry/stars-notable.yaml). On a rung it
+ * is a place the camera can fly past. On a world stage the stars are directions on a shell, and
+ * the Sun's stage (1e6 km a unit) puts every star within ~100 light-years inside the far plane, so
+ * without this Sirius and Vega would take label slots from the planets on a view that is about the
+ * planets. The selection is labelled wherever it is; this is only the notable list.
+ */
+export function isNotableHere(record, ladder) {
+  if (!isNotable(record)) return false;
+  if (ladder) return isOwnPlaceOnLadder(record);
+  return record.klass !== 'star';
+}
+
+/**
  * The choice, pure. `candidates` are already projected: {record, x, y, dist, kind} with x, y in
  * pixels and kind one of 'selection' | 'train' | 'notable'. Returns those that get a label:
  * selection first, then the train, then notable by distance, dropping anything within DEDUPE_PX
@@ -234,9 +250,8 @@ export function createLabels(ctx, host) {
       const records = ctx.recordsFor(layer.id) || [];
       // a layer that is small enough to name entirely, or the hand-kept rows of a big one
       for (const r of records) {
-        if (seen.has(r.id) || !isNotable(r)) continue;
+        if (seen.has(r.id) || !isNotableHere(r, ladder)) continue; // on the ladder: not inside the Sun's pixel
         if (isGround(r)) continue; // the ground has no label
-        if (ladder && !isOwnPlaceOnLadder(r)) continue; // inside the Sun's pixel
         const pr = project(r, tMs, camera, w, h);
         if (pr) { out.push({ record: r, kind: 'notable', ...pr }); seen.add(r.id); }
       }

@@ -669,6 +669,9 @@ export const COPY = {
       mass: 'Mass',
       spin: 'One turn takes',
       source: 'Read from',
+      // A famous star's one line (registry/stars-notable.yaml) and the page it came from. Not
+      // `source`: on a star card every other row is HYG's, and "Read from" would claim them too.
+      whySource: 'Why it is known, read from',
       distanceNote: 'About that distance',
       objectType: 'What it is',
       constellation: 'Constellation',

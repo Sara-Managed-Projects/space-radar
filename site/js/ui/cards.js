@@ -9,7 +9,8 @@
 //      block 1 and reorders nothing below it, so everything the card knows -- the freshness
 //      stamp, the provenance class, the myth block -- stays exactly where it was.
 //   1. name and class glyph
-//   2. ONE plain sentence: what it is and why it matters now
+//   2. ONE plain sentence: what it is and why it matters now -- and under it, for a star, an
+//      extreme object or a deep-sky object, the hand-kept line on why this one is known (whyLine)
 //   3. up to three comparison chips, scale first
 //   4. "right now"
 //   4b. "often said" -- the myth block, against the facts it corrects
@@ -771,6 +772,25 @@ function dockedAt(record, ctx, m) {
 /** The three worlds a card must not measure against themselves. */
 const isWorld = (record, id) => klassOf(record) === 'world' && String(record && record.id || '').toLowerCase() === id;
 
+// WHICH `meta.why` A CARD PRINTS (2026-09-22). None did. registry/exotics.yaml's mirror says "the
+// card prints both" `why` and `source`, and check_registry.py guards dso-hand.yaml's `why` as "what
+// the card prints"; the card printed neither line. So the card for Sagittarius A* said "a black hole
+// 26 996 light-years away" and never that every star on the map goes round it. The line now goes
+// under the first sentence for the classes whose `why` is a hand-kept line with its sources beside
+// it: registry/stars-notable.yaml, registry/exotics.yaml and registry/dso-hand.yaml (plus the Milky
+// Way's own row in data/layers.js). It is a paragraph of its own, so the first sentence's
+// 160-character cap does not cut it.
+// NOT the satellites: their `why` is data/layers.js NOTABLE, with no source, and "Seven people live
+// here" is a count that changes with every crew. There it ranks labels and search ties, as before.
+const WHY_KLASSES = new Set(['star', 'exotic', 'dso']);
+
+/** The hand-kept line saying why this object is known, or null. Exported for the test. */
+export function whyLine(record) {
+  if (!record || !WHY_KLASSES.has(klassOf(record))) return null;
+  const why = pick(meta(record), 'why');
+  return why === null ? null : String(why).trim() || null;
+}
+
 /** The card's first sentence. Exported for the tests. */
 export function firstSentence(record, ctx, m, passInfo) {
   const klass = klassOf(record);
@@ -979,6 +999,11 @@ function rightNowRows(record, m, passInfo) {
     if (lum !== null && lum > 0) rows.push([R.luminosity, t(V.suns, { n: fmt.smart(lum) })]);
     const hip = pick(md, 'hip');
     if (hip) rows.push([R.catalogue, `HIP ${hip}`]);
+    // The line under the first sentence is registry/stars-notable.yaml's, not HYG's, so it says
+    // where it was read -- with its own label, because "Read from" beside the distance would claim
+    // the distance came from there too. The footer's source line stays HYG's.
+    const whySource = pick(md, 'whySource');
+    if (whySource && whyLine(record)) rows.push([R.whySource, String(whySource)]);
   } else {
     // The Sun's card printed "Distance from the Sun: 0.000 astronomical units" and Earth's printed
     // "Distance from Earth: 0.000" and a radio time to itself. Rows that measure a thing against
@@ -1619,8 +1644,10 @@ function render(record, ctx, opts = {}) {
   bodyEl = body;
   node.appendChild(body);
 
-  // 2. one plain sentence
+  // 2. one plain sentence, and the registry's line on why this one is known (see WHY_KLASSES)
   body.appendChild(el('p', 'sr-card__sentence', firstSentence(record, ctx, m, passInfo)));
+  const why = whyLine(record);
+  if (why) body.appendChild(el('p', 'sr-card__why', why));
 
   // 2a. THE PHOTOGRAPH, where the registry has one. Two of the twenty exotics have been
   // photographed -- M87* in 2019 and Sgr A* in 2022 -- and spec 0028 asked for their pictures on

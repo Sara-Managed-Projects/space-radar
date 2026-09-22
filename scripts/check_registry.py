@@ -772,6 +772,106 @@ def check_exotics() -> list:
     return rows_
 
 
+# A source line says which page and which day: "https://en.wikipedia.org/wiki/Vega (read 2026-09-22)".
+# A page changes, so a claim with no date on its source is a claim nobody can re-read as it was.
+STAR_SOURCE = re.compile(r"^https?://\S+ \(read \d{4}-\d{2}-\d{2}\)")
+
+
+def check_stars_notable(exotics: list) -> list:
+    """registry/stars-notable.yaml: a famous star is a real star record, with one sourced line.
+
+    Added 2026-09-22 with the file. The row's HIP number is the join: scene/stars3d.js turns the
+    names file's rows into records `hip-<n>`, and a number that is not there is a line the label and
+    the card would never print -- silently, because nothing in the browser looks for the row it
+    missed. So the join is checked here, against the same names file the browser reads.
+    """
+    path = REG / "stars-notable.yaml"
+    if not path.exists():
+        return []
+    try:
+        doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as exc:
+        fail("stars-notable.yaml", f"will not parse: {exc}")
+        return []
+    rows_ = doc.get("stars")
+    if not isinstance(rows_, list):
+        fail("stars-notable.yaml", "no `stars:` list")
+        return []
+
+    # The names file the browser builds star records from. Absent only in tests/test_refusals.py's
+    # scratch trees for OTHER registries; that file copies it in for the cases aimed at this one.
+    names = ROOT / "site" / "data" / "stars3d.names.json"
+    by_hip: set | None = None
+    no_hip_proper: dict[str, int] = {}
+    if names.exists() and names.stat().st_size > 0:
+        import json
+        named = json.loads(names.read_text(encoding="utf-8")).get("rows") or []
+        by_hip = {r[4] for r in named if len(r) > 4 and r[4]}
+        for r in named:
+            if len(r) > 4 and not r[4] and r[1]:
+                no_hip_proper[r[1]] = no_hip_proper.get(r[1], 0) + 1
+
+    # An exotic that is a star has its own fact sheet (Betelgeuse, Eta Carinae). Two lines for one
+    # star is two cards' worth of claims about it, so a name either file uses belongs to one file.
+    exotic_names = set()
+    for x in exotics or []:
+        if isinstance(x, dict):
+            exotic_names.add(str(x.get("name") or "").strip().lower())
+            for a in x.get("aliases") or []:
+                exotic_names.add(str(a).strip().lower())
+
+    seen_hip, seen_proper, seen_name = set(), set(), set()
+    for r in rows_:
+        if not isinstance(r, dict):
+            fail("stars-notable.yaml", "a row is not a mapping")
+            continue
+        hip, proper, name = r.get("hip"), r.get("proper"), str(r.get("name") or "").strip()
+        where = f"stars-notable.yaml[{name or hip or proper}]"
+        if (hip is None) == (proper is None):
+            fail(where, "needs exactly one of `hip:` (the Hipparcos number) or `proper:` (only for a star with no HIP)")
+        if hip is not None:
+            if not isinstance(hip, int) or isinstance(hip, bool) or hip <= 0:
+                fail(where, f"`hip: {hip!r}` must be a positive whole number")
+            elif hip in seen_hip:
+                fail(where, f"HIP {hip} has a row already -- one star, one line")
+            elif by_hip is not None and hip not in by_hip:
+                fail(where, f"HIP {hip} is not a named star in site/data/stars3d.names.json, so there is no "
+                            f"record `hip-{hip}` for this line to reach")
+            seen_hip.add(hip)
+        if proper is not None:
+            p = str(proper).strip()
+            if not p:
+                fail(where, "`proper:` is empty")
+            elif p in seen_proper:
+                fail(where, f"`proper: {p}` has a row already")
+            elif by_hip is not None and no_hip_proper.get(p, 0) != 1:
+                fail(where, f"`proper: {p}` must name exactly one row with no HIP number in "
+                            f"site/data/stars3d.names.json (found {no_hip_proper.get(p, 0)})")
+            seen_proper.add(p)
+        if not name:
+            fail(where, "no `name:` -- the label and the card need a name to print")
+        elif name.lower() in seen_name:
+            fail(where, "two rows share this name")
+        elif name.lower() in exotic_names:
+            fail(where, f"{name} is already a registry/exotics.yaml row with its own fact sheet")
+        seen_name.add(name.lower())
+        why = r.get("why")
+        if not isinstance(why, str) or not why.strip():
+            fail(where, "no `why:` -- the one line is the whole point of the row")
+        else:
+            if len(why) > MAX_SENTENCE:
+                fail(where, f"`why:` is {len(why)} characters; the card prints {MAX_SENTENCE} and would cut it mid-claim")
+            if "--" in why:
+                fail(where, f"`why:` has `--`: {TOUR_DOUBLE_HYPHEN}")
+            phrase = time_relative(why)
+            if phrase:
+                fail(where, f"`why:` says {phrase!r}, which is true on a date and not forever")
+        if not STAR_SOURCE.match(str(r.get("source") or "")):
+            fail(where, "`source:` must be the page and the day it was read: "
+                        "\"https://... (read YYYY-MM-DD)\" -- a line with no source is a rumour")
+    return rows_
+
+
 def check_ladder(world_ids: set, layer_ids: set) -> list:
     """registry/ladder.yaml: every rung names a world or a record in a layer, with a distance and its source."""
     path = REG / "ladder.yaml"
@@ -1659,6 +1759,7 @@ def main() -> int:
     dso_hand = check_dso_hand()
     ladder_rungs = check_ladder(world_ids, layer_ids)
     exotics = check_exotics()
+    famous_stars = check_stars_notable(exotics)
     aliases = check_aliases()
     colorkeys = check_colorkeys()
     TOUR_STAGES.update(world_ids)
@@ -1860,7 +1961,7 @@ def main() -> int:
         return 1
     print(
         f"registry ok: {len(worlds)} worlds, {len(ladder)} ladder rungs, {len(lod_rules)} lod rules, "
-        f"{len(dso_hand)} hand-placed deep-sky objects, {len(exotics)} exotics, {len(ladder_rungs)} breadcrumb rungs, {len(aliases)} aliases, {len(colorkeys)} colour keys, "
+        f"{len(dso_hand)} hand-placed deep-sky objects, {len(exotics)} exotics, {len(famous_stars)} famous stars, {len(ladder_rungs)} breadcrumb rungs, {len(aliases)} aliases, {len(colorkeys)} colour keys, "
         f"{len(sources)} sources, {len(layers)} layers, "
         f"{len(events)} event types, {len(models)} models, {len(real_models)} real models, "
         f"{len(marks)} third-party marks, {len(sites)} sites, "
