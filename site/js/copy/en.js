@@ -529,6 +529,13 @@ export const COPY = {
     weShowRow: '{n} {what} — of {of}',
   },
   // The Next moment's list (spec 0026 req 6): what is coming, from records already loaded.
+  // ui/scenenote.js: the one line on the scene when no satellite could be read at all.
+  sceneNote: {
+    refused: 'No satellites on the map right now: CelesTrak, which publishes their orbits, could not be read from this connection. The Moon, the planets, the stars and the trips that do not need satellites still work.',
+    why: 'What could not be read',
+    close: '×',
+    closeTitle: 'Close this note',
+  },
   nextList: {
     // Two rows can name different objects the same way -- CelesTrak calls dozens of stages "SL-8
     // R/B" -- and two identical rows read as a bug. The catalogue number tells them apart.
