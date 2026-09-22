@@ -170,6 +170,14 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
   // Read on the "To the edge" trip card. The colour is in the lead now; the light is a participle.
   const proxima = text(firstSentence({ id: 'hip-70890', name: 'Proxima Centauri', klass: 'star', frame: 'sun-inertial', meta: { spect: 'M5.5Ve', distLy: 4.23 } }, ctx, m0, { state: 'none' }));
   check(proxima === 'Proxima Centauri is a red star 4.23 light-years away, one of the nearest there are, seen as it was 4 years ago.', `Proxima's sentence is one sentence: "${proxima}"`);
+  // "Checkmark Nebula is a h ii region nebula": the type was lowered wholesale and the article
+  // did not know an initialism is said by its letters. And "the large magellanic cloud".
+  const m17 = text(firstSentence({ id: 'dso-m17', name: 'Checkmark Nebula', klass: 'dso', frame: 'sun-inertial', meta: { distLy: 5500, distLyLow: 5000, distLyHigh: 6000, typeText: 'H II region nebula with cluster' } }, ctx, m0, { state: 'none' }));
+  check(/is an H II region nebula with cluster/.test(m17), `an H II region keeps its capitals and takes "an": "${m17}"`);
+  const tarantula = text(firstSentence({ id: 'dso-tarantula-nebula', name: 'Tarantula Nebula', klass: 'dso', frame: 'sun-inertial', meta: { distLy: 160000, typeText: 'emission nebula in the Large Magellanic Cloud' } }, ctx, m0, { state: 'none' }));
+  check(/in the Large Magellanic Cloud/.test(tarantula), `a proper name inside a type keeps its capitals: "${tarantula}"`);
+  const barred = text(firstSentence({ id: 'dso-m95', name: 'M95', klass: 'dso', frame: 'sun-inertial', meta: { distLy: 33000000, typeText: 'Barred Spiral galaxy' } }, ctx, m0, { state: 'none' }));
+  check(/is a barred spiral galaxy/.test(barred), `ordinary type words are still lowered: "${barred}"`);
   const m31 = text(firstSentence({ id: 'dso-m31', name: 'Andromeda Galaxy', klass: 'dso', frame: 'sun-inertial', meta: { distLy: 2540000, typeText: 'spiral galaxy' } }, ctx, m0, { state: 'none' }));
   check(!/the light you see/.test(m31) && /seen as it was 2\.54 million years ago/.test(m31), `a deep-sky sentence hangs the light's age off itself: "${m31}"`);
 

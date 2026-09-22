@@ -36,7 +36,7 @@ import {
   fistsWords,
   inWords,
   UNITS,
- article } from '../copy/en.js';
+ article, typeWords } from '../copy/en.js';
 import { propagate } from '../propagate/index.js';
 import { realModelFor } from '../scene/realmodels.js';
 import { sunlitState } from '../scene/shadow.js';
@@ -631,7 +631,7 @@ const TEMPLATES = {
     const lo = pickNumber(md, 'distLyLow');
     const hi = pickNumber(md, 'distLyHigh');
     const kind = String(pick(md, 'kind') || 'other');
-    const type = pick(md, 'typeText') ? String(pick(md, 'typeText')).toLowerCase() : (T.kinds[kind] || T.kinds.other);
+    const type = pick(md, 'typeText') ? typeWords(pick(md, 'typeText')) : (T.kinds[kind] || T.kinds.other);
     const sizeLy = pickNumber(md, 'sizeLy');
     const con = pick(md, 'con');
     const name = displayName(record);

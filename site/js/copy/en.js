@@ -223,7 +223,28 @@ const COMPARE_KINDS = {
  */
 /** The indefinite article for a type phrase: "an ultra-faint dwarf galaxy", "a spiral galaxy". English only. */
 export function article(phrase) {
-  return /^[aeiou]/i.test(String(phrase || '').trim()) ? 'an' : 'a';
+  const text = String(phrase || '').trim();
+  // An initialism is said letter by letter, so it is the LETTER's sound that counts: "an H II
+  // region" (aitch), "an M dwarf", "a UV source". A card read "a h ii region" (2026-09-22).
+  const first = text.split(/\s+/)[0] || '';
+  if (/^[A-Z]{1,4}$/.test(first)) return /^[AEFHILMNORSX]/.test(first) ? 'an' : 'a';
+  return /^[aeiou]/i.test(text) ? 'an' : 'a';
+}
+
+// Names inside a type description that stay capitalised when the description goes mid-sentence.
+const PROPER_IN_TYPES = ['Milky Way', 'Large Magellanic Cloud', 'Small Magellanic Cloud', 'Local Group'];
+
+/**
+ * A catalogue's type words, lowered for the middle of a sentence -- but not wholesale. Lowering
+ * everything printed "a h ii region nebula" and "an emission nebula in the large magellanic cloud"
+ * (read on the live site, 2026-09-22). Short all-capital tokens (H, II, HII) and the few proper
+ * names above keep their capitals; every other word is lowered.
+ */
+export function typeWords(text) {
+  let s = String(text || '');
+  PROPER_IN_TYPES.forEach((name, i) => { s = s.split(name).join(`\u0000${i}\u0000`); });
+  s = s.split(/(\s+)/).map((w) => (/^[A-Z0-9]{1,3}$/.test(w) ? w : w.toLowerCase())).join('');
+  return s.replace(/\u0000(\d+)\u0000/g, (_, i) => PROPER_IN_TYPES[Number(i)]);
 }
 
 export function compare(kind, value) {
