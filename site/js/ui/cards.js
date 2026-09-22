@@ -767,8 +767,8 @@ const TEMPLATES = {
       explicitDiameter !== null ? explicitDiameter : radiusKm !== null ? radiusKm * 2 : null;
     const km = m.distEarthKm !== null ? m.distEarthKm : m.altKm;
     const distanceSay = isMoon && km !== null ? t(T.distanceKm, { n: fmt.int(km) }) : compare('distanceKm', km);
-    // What it is, for the worlds copy/en.js has a sourced line for (Pluto, Jupiter's four big
-    // moons): "a world in the solar system" is true of Europa and tells a visitor nothing.
+    // What it is, for the worlds copy/en.js has a sourced line for (Pluto and the ten moons of
+    // other planets): "a world in the solar system" is true of Europa and tells a visitor nothing.
     const id = String(record.id || '').toLowerCase();
     const what = T.what && Object.prototype.hasOwnProperty.call(T.what, id) ? T.what[id] : null;
     const lead = isMoon
@@ -1155,7 +1155,8 @@ export function seeItLine(record, ctx, m, passInfo) {
   if (klass === 'world') {
     const riseMs = pickTime(meta(record), 'riseMs', 'riseTime');
     if (riseMs !== null) return t(COPY.sky.worldRise, { time: timeText.hhmm(riseMs) });
-    // "You can see this one with your own eyes" is not true of Pluto or Jupiter's moons.
+    // "You can see this one with your own eyes" is not true of Pluto, of any moon but ours, or of
+    // Neptune; copy/en.js worldSee says what is.
     const id = String(record.id || '').toLowerCase();
     return Object.prototype.hasOwnProperty.call(COPY.sky.worldSee, id) ? COPY.sky.worldSee[id] : COPY.sky.worldNoRise;
   }
@@ -1455,8 +1456,12 @@ function aboardButton(label, title, onClick) {
 function derivedDrawingLine(record, T) {
   const klass = record && record.klass ? String(record.klass) : '';
   // A world with a surface map needs no line: it is drawn as itself. One without says so
-  // (scene/worlds.js puts `flat` on the record for the rows that ship no map).
-  if (klass === 'world') return pick(meta(record), 'flat') === true ? t(T.worldFlat, { name: displayName(record) }) : null;
+  // (scene/worlds.js puts `flat` on the record for the rows that ship no map), and one that is not
+  // even round -- Phobos, Deimos: `irregular` -- says the ball is not its shape.
+  if (klass === 'world') {
+    if (pick(meta(record), 'flat') !== true) return null;
+    return t(pick(meta(record), 'irregular') === true ? T.worldFlatIrregular : T.worldFlat, { name: displayName(record) });
+  }
   if (!klass) return null;
   let entry = null;
   try { entry = realModelFor(record); } catch { entry = null; }

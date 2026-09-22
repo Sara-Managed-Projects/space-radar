@@ -24,7 +24,9 @@ layers:
     style: {kind: glyph, glyph: planet, colour: world}
     card: world
     select: {all: true}
-    budget: {max_items: 20}
+    # 21 worlds since 2026-09-22 (six more moons); at 20 the budget silently dropped Deimos, the
+    # last row. Room for a few more before anyone has to remember this line.
+    budget: {max_items: 32}
 
   # Stars in three dimensions (spec 0028 step 3). `bundled`: site/data/stars3d.bin is repacked from
   # HYG v4.4 by scripts/build-stars3d.py (CC BY-SA 4.0, credited in CREDITS.md §3c). `static`: a

@@ -25,6 +25,7 @@
 
 import * as satellite from '../../vendor/satellite.esm.js';
 import * as Astronomy from '../../vendor/astronomy.js';
+import { hasFittedElements, fittedMoonOffsetKm } from './moons.js';
 
 // ---------------------------------------------------------------------------
 // constants
@@ -176,6 +177,16 @@ export const WORLD_RADIUS_KM = {
   europa: 1560.8,
   ganymede: 2631.2,
   callisto: 2410.3,
+  // Six more moons (2026-09-22): JPL Solar System Dynamics, Planetary Satellite Physical
+  // Parameters (ssd.jpl.nasa.gov/sats/phys_par/), one table for all six: the radius of the sphere
+  // with each one's volume. Phobos and Deimos are lumpy rocks, so theirs is a mean the ball is
+  // drawn at, and their cards say the true shape is not drawn.
+  phobos: 11.08,
+  deimos: 6.2,
+  enceladus: 252.1,
+  titan: 2574.76,
+  triton: 1352.6,
+  charon: 606.0,
 };
 
 /** A world's mean radius in km, or null. Null is an answer: it refuses rather than guessing. */
@@ -423,6 +434,41 @@ export function jupiterMoonOffsetKm(worldId, tMs) {
   return { x: s.x * KM_PER_AU, y: s.y * KM_PER_AU, z: s.z * KM_PER_AU };
 }
 
+// A MOON OF ANOTHER WORLD is that world's position plus an offset, whichever way the offset is
+// computed: JupiterMoons() for Jupiter's four, the elements fitted to JPL Horizons in moons.js for
+// Phobos, Deimos, Enceladus, Titan, Triton and Charon (2026-09-22; that file has the method and the
+// measured error). Every caller below -- the heliocentric position here, the view from Earth in
+// body.js, the drawing in scene/worlds.js -- asks these three and never names a moon. Earth's Moon
+// is not in the table: Astronomy Engine has a Body for it, and it keeps its own path.
+const MOON_PARENT = {
+  io: 'jupiter', europa: 'jupiter', ganymede: 'jupiter', callisto: 'jupiter',
+  phobos: 'mars', deimos: 'mars',
+  enceladus: 'saturn', titan: 'saturn',
+  triton: 'neptune',
+  charon: 'pluto',
+};
+
+/** Is this world placed as its planet plus an offset? */
+export function isPlanetMoon(worldId) {
+  return Object.prototype.hasOwnProperty.call(MOON_PARENT, String(worldId || '').toLowerCase());
+}
+
+/** The world a moon of MOON_PARENT is placed from, or null. */
+export function moonParent(worldId) {
+  const key = String(worldId || '').toLowerCase();
+  return Object.prototype.hasOwnProperty.call(MOON_PARENT, key) ? MOON_PARENT[key] : null;
+}
+
+/**
+ * A moon's position relative to its planet's centre, km, EQJ axes, geometric -- or null for any
+ * other world, a time that is not a time, or (for the fitted six) a time outside the span their
+ * error was measured over.
+ */
+export function moonOffsetKm(worldId, tMs) {
+  if (isJupiterMoon(worldId)) return jupiterMoonOffsetKm(worldId, tMs);
+  return hasFittedElements(worldId) ? fittedMoonOffsetKm(worldId, tMs) : null;
+}
+
 /**
  * Heliocentric ecliptic J2000 position of a world, km. This is the sun-inertial frame, so the Sun
  * itself is the origin. Returns null for a world with no ephemeris.
@@ -432,16 +478,16 @@ export function worldHelioEclKm(worldId, tMs) {
   if (key === 'sun') return { x: 0, y: 0, z: 0 };
   const date = toDate(tMs);
   if (!date) return null;
-  const moonOfJupiter = isJupiterMoon(key);
-  const body = moonOfJupiter ? Astronomy.Body.Jupiter : bodyForWorld(key);
+  const parent = moonParent(key);
+  const body = parent ? bodyForWorld(parent) : bodyForWorld(key);
   if (!body) return null;
   try {
     let eqj;
-    if (moonOfJupiter) {
-      const jupiter = Astronomy.HelioVector(body, date);
-      const off = jupiterMoonOffsetKm(key, date.getTime());
+    if (parent) {
+      const planet = Astronomy.HelioVector(body, date);
+      const off = moonOffsetKm(key, date.getTime());
       if (!off) return null;
-      eqj = { x: jupiter.x + off.x / KM_PER_AU, y: jupiter.y + off.y / KM_PER_AU, z: jupiter.z + off.z / KM_PER_AU };
+      eqj = { x: planet.x + off.x / KM_PER_AU, y: planet.y + off.y / KM_PER_AU, z: planet.z + off.z / KM_PER_AU };
     } else if (key === 'moon') {
       // astronomy-engine has no HelioVector for the Moon; take Earth + the geocentric Moon.
       const earth = Astronomy.HelioVector(Astronomy.Body.Earth, date);

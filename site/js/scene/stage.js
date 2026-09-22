@@ -66,6 +66,17 @@ export const STAGES = {
   europa: { frame: SUN_INERTIAL, unitKm: 1000 },
   ganymede: { frame: SUN_INERTIAL, unitKm: 1000 },
   callisto: { frame: SUN_INERTIAL, unitKm: 1000 },
+  // Six more moons (2026-09-22). Titan, Triton and Charon (606 to 2 575 km) take the Moon's unit
+  // too, Charon with Pluto so the pair shares one scale. Enceladus (252 km), Phobos (11) and Deimos
+  // (6) take 100 km, not 10: the camera's far plane is 1e9 units, and at 10 km a unit Voyager 1,
+  // 2.5e10 km out, would be past it. At 100, Phobos's radius is 0.11 units, still 11 000 times
+  // the camera's 1e-5 near plane (scene/renderer.js).
+  enceladus: { frame: SUN_INERTIAL, unitKm: 100 },
+  titan: { frame: SUN_INERTIAL, unitKm: 1000 },
+  triton: { frame: SUN_INERTIAL, unitKm: 1000 },
+  charon: { frame: SUN_INERTIAL, unitKm: 1000 },
+  phobos: { frame: SUN_INERTIAL, unitKm: 100 },
+  deimos: { frame: SUN_INERTIAL, unitKm: 100 },
   // The scale ladder (spec 0028 req 1). Mirrors registry/stages.yaml -- check_registry.py refuses
   // drift. Not worlds: the origin is the Sun and one unit is a light-year, a kiloparsec, a
   // million light-years. `ladder: true` is how worlds.js knows nothing is compressed from here.

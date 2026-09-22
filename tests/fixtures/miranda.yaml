@@ -1,26 +1,29 @@
 # The growth fixture (spec 0002 § 6, requirement 3). Adding a world, a layer of things around
 # it, and a site on its surface must be THIS FILE and nothing under app/.
 #
-# Enceladus is chosen because nothing in the app anticipates it: it orbits Saturn rather than the
+# Miranda is chosen because nothing in the app anticipates it: it orbits Uranus rather than the
 # Sun, it needs a frame that composes two levels up, it has no ephemeris of its own in
-# astronomy-engine and it has no textures in the tree. (This fixture was Europa until 2026-09-22,
-# when Europa became a real row in registry/worlds.yaml and a second one would be a duplicate id.)
+# astronomy-engine or in propagate/moons.js, and it has no textures in the tree. (This fixture was
+# Europa until 2026-09-22, when Europa became a real row in registry/worlds.yaml, and then
+# Enceladus until the same day's second batch of moons made that one real too. A duplicate id is
+# not growth.) Radius: JPL's satellite physical parameters, 235.8 km. Rotation: synchronous with
+# its 1.413479-day orbit (Wikipedia, Miranda), 33.923 h.
 worlds:
-  - id: enceladus
-    display: Enceladus
-    parent: saturn
-    radius_km: 252.1
+  - id: miranda
+    display: Miranda
+    parent: uranus
+    radius_km: 235.8
     unit_km: 100
-    ephemeris: {propagator: body, body: Saturn}   # placeholder until a moon ephemeris exists
-    rotation: {kind: sidereal, period_h: 32.885}
+    ephemeris: {propagator: body, body: Uranus}   # placeholder until a moon ephemeris exists
+    rotation: {kind: sidereal, period_h: 33.923}
     frames: [inertial, fixed]
-    look: {textures: enceladus}
+    look: {textures: miranda}
 
 textures:
-  - {id: enceladus, source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures (c) Solar System Scope, CC BY 4.0", tiers: [2048]}
+  - {id: miranda, source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures (c) Solar System Scope, CC BY 4.0", tiers: [2048]}
 
 sources:
-  - id: horizons-enceladus-orbiters
+  - id: horizons-miranda-orbiters
     url: https://ssd.jpl.nasa.gov/api/horizons.api
     auth: none
     browser: false
@@ -28,24 +31,25 @@ sources:
     freshness_max: 168h
     parser: horizons
     list: harvest/lists/horizons-ids.yaml
-    outputs: [enceladus-orbiters.json]
+    outputs: [miranda-orbiters.json]
     attribution: "Ephemerides: JPL Horizons"
 
 layers:
-  - id: enceladus-orbiters
-    display: Spacecraft at Enceladus
+  - id: miranda-orbiters
+    display: Spacecraft at Miranda
     moments: {wonder: on, now: off, next: off}
-    source: horizons-enceladus-orbiters
+    source: horizons-miranda-orbiters
     propagator: sampled
-    frame: enceladus-inertial
+    frame: miranda-inertial
     style: {kind: model, model: probe-generic, glyph: probe, colour: probe, near_km: 50000}
     card: probe
     select: {all: true}
     budget: {max_items: 10}
 
 sites:
-  # USGS Gazetteer of Planetary Nomenclature: 80.59 S, 285.87 W; written here east-positive.
-  - {id: damascus-sulcus, display: "Damascus Sulcus", class: surface, world: enceladus, lat: -80.59, lon: 74.13, doing: "A tiger stripe: a fracture near the south pole that vents a plume of ice."}
+  # USGS Gazetteer of Planetary Nomenclature (feature 6359, through Wikipedia's Verona Rupes
+  # article): 18.30 S, 347.80 E.
+  - {id: verona-rupes, display: "Verona Rupes", class: surface, world: miranda, lat: -18.30, lon: 347.80, doing: "A cliff Voyager 2 photographed in 1986, perhaps the tallest in the solar system."}
 
 # A rocket must be a row too (registry/rockets.yaml). Two rows, because there are two ways a row
 # earns its keys: `pslv-xl` refines an existing family stand-in with a full_name the live feed
@@ -90,19 +94,19 @@ rockets:
 # which is the case with the most moving parts: it anchors on the site row two sections up, so it
 # proves that a surveyed coordinate still lives in exactly one place after the registry grows.
 oddities:
-  - id: damascus-drill-bit
-    display: "A drill bit at Damascus Sulcus"
+  - id: verona-drill-bit
+    display: "A drill bit at Verona Rupes"
     klass: oddity
     where:
       kind: on_surface
-      world: enceladus
+      world: miranda
       anchor:
-        id: damascus-sulcus
-        lat: -80.59
-        lon: 74.13
+        id: verona-rupes
+        lat: -18.30
+        lon: 347.80
         uncertainty_m: 25
-        of: "the Damascus Sulcus landing ellipse"
-        source: "the growth fixture; there is no lander at Enceladus and this row is a test"
+        of: "the Verona Rupes landing ellipse"
+        source: "the growth fixture; there is no lander at Miranda and this row is a test"
       object:
         precision_m: unknown
         how: unsurveyed
@@ -111,8 +115,8 @@ oddities:
     shape: {build: generic, budget_tris: 200, stands_for: generic, drawn_name: "a drill bit"}
     fact: "A fixture row, not a fact about the world: it exists so the growth test can add an odd
            thing without touching a line of JavaScript."
-    cite: "tests/fixtures/enceladus.yaml"
-    source: "This row is part of tests/fixtures/enceladus.yaml and describes nothing that exists."
+    cite: "tests/fixtures/miranda.yaml"
+    source: "This row is part of tests/fixtures/miranda.yaml and describes nothing that exists."
 
   # And the other half of the growth claim: a thing bolted to a spacecraft the app already draws
   # is also just a row. It gets no dot and no id anything resolves -- scene/models.js hangs it on
@@ -130,8 +134,8 @@ oddities:
     shape: {build: generic, budget_tris: 200, stands_for: generic, drawn_name: "a plaque"}
     fact: "A fixture row, not a fact about the spacecraft: it exists so the growth test can bolt
            something to a probe without touching a line of JavaScript."
-    cite: "tests/fixtures/enceladus.yaml"
-    source: "This row is part of tests/fixtures/enceladus.yaml and describes nothing that exists."
+    cite: "tests/fixtures/miranda.yaml"
+    source: "This row is part of tests/fixtures/miranda.yaml and describes nothing that exists."
 
 # AND A TRIP MUST BE A ROW (registry/tours.yaml). The third trip is this section plus
 # `python3 scripts/gen_tours_js.py`, and nothing under site/js/ -- the state machine in
@@ -141,34 +145,34 @@ oddities:
 # the point: a trip is written against the OTHER registries, so if growing them left a target
 # form that no longer resolves, this is where it shows up.
 tours:
-  - id: enceladus-tour
-    title: "The ice, and what is under it"
+  - id: miranda-tour
+    title: "The innermost round moon"
     blurb: "A fixture trip that visits everything this fixture added."
-    requires: [enceladus-orbiters]
+    requires: [miranda-orbiters]
     stops:
       - id: the-world
-        target: {world: enceladus}
+        target: {world: miranda}
         frame_radii: 5.0
         card:
-          title: "Enceladus"
+          title: "Miranda"
           body: >-
-            A small moon of Saturn with a shell of ice over an ocean of salt water. A fixture row,
-            and not a fact about the world.
+            Of Uranus's five round moons, the one that orbits closest. A fixture row, and not a fact
+            about the world.
 
-      - id: the-chaos
-        target: {site: damascus-sulcus}
+      - id: the-cliff
+        target: {site: verona-rupes}
         distance_km: 400
         card:
-          title: "Damascus Sulcus"
+          title: "Verona Rupes"
           body: >-
-            A crack near the south pole that vents ice. A fixture row, and not a fact about the
-            world, written so that the growth test has a surface site to fly to.
+            A cliff photographed by Voyager 2. A fixture row, and not a fact about the world,
+            written so that the growth test has a surface site to fly to.
 
       - id: the-drill-bit
-        target: {record: damascus-drill-bit}
+        target: {record: verona-drill-bit}
         distance_km: 400
         card:
-          title: "A drill bit in the ice"
+          title: "A drill bit on the cliff"
           body: >-
-            There is no lander at Enceladus and there is no drill bit. This stop exists so the growth
+            There is no lander at Miranda and there is no drill bit. This stop exists so the growth
             test can add a trip without touching a line of JavaScript.

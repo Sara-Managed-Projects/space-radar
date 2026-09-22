@@ -355,7 +355,8 @@ export const LAYERS = [
     noModel: true,
     sample: () => worldRecords(),
     select: all,
-    budget: { maxItems: 20 },
+    // registry/layers.yaml says why 32: 21 worlds since 2026-09-22, and 20 dropped Deimos.
+    budget: { maxItems: 32 },
     colour: C.world,
     glyph: 'planet',
     nearKm: 0,
@@ -515,7 +516,8 @@ export const LAYERS = [
     moments: { wonder: true, now: true, next: false },
     defaultOn: true,
     select: all,
-    budget: { maxItems: 20 },
+    // registry/layers.yaml says why 32: 21 worlds since 2026-09-22, and 20 dropped Deimos.
+    budget: { maxItems: 32 },
     colour: C.station,
     glyph: 'station',
     nearKm: 20000,

@@ -541,6 +541,27 @@ Ten hand-kept rows: Ceres, Eris, Haumea, Makemake, Sedna, Gonggong, Quaoar, Orcu
   `whySource`, its infobox and lead, read 2026-09-22. Figures only; each sentence is this project's.
   Wikipedia's text is CC BY-SA 4.0 and none of it is reproduced.
 
+### 4.11 Phobos, Deimos, Enceladus, Titan, Triton and Charon — `registry/worlds.yaml`
+
+Six more moons drawn the same way, with **no texture or image**, and every fact read on 2026-09-22.
+
+- Positions: each moon's orbit is a precessing ellipse **fitted by this project to state vectors
+  from JPL Horizons** (NASA/JPL Solar System Dynamics; ephemerides MAR099, SAT441, NEP098 and
+  PLU060), added to its planet's position from astronomy-engine (§1). The fitted numbers are in
+  `site/js/propagate/moons.js` with the error measured against Horizons, and
+  `scripts/fit-moon-elements.mjs` re-measures and refits them. The starting poles and precession
+  periods were read from JPL's *Planetary Satellite Mean Elements* table.
+- Radii: JPL Solar System Dynamics, *Planetary Satellite Physical Parameters*
+  (ssd.jpl.nasa.gov/sats/phys_par/). Albedos and the magnitudes of Phobos, Deimos and Charon: NASA
+  Space Science Data Coordinated Archive, *Mars*, *Saturnian Satellite*, *Neptunian Satellite* and
+  *Pluto* fact sheets. US government works; facts.
+- What each one is, and the colours of Enceladus, Charon, Phobos and Deimos: NASA Science's pages for
+  each moon; the sentence on the card is this project's.
+- Titan's landing, colour and brightness, Enceladus's and Triton's brightness, Triton's colour,
+  Charon seen from Earth, the discovery of Mars's moons, and how Neptune can be seen: Wikipedia's
+  *Titan*, *Enceladus*, *Triton*, *Charon*, *Phobos*, *Moons of Mars* and *Neptune* articles (CC BY-SA
+  4.0; a few words quoted in the registry as evidence, none shipped to the page).
+
 ## 4.6 Third-party trademarks the app names or draws
 
 None of the marks below is licensed to this project and none is used as a badge of origin. They are

@@ -239,13 +239,23 @@ function scoreOne(index, i, q, numeric) {
 
   // An alias is a name people use, so it ranks like a word of the name -- below the name's own
   // words, above a match in the operator. "red planet" finds Mars; "planet" alone finds it too.
+  //
+  // A WHOLE alias word scores one more than the start of a longer one, and the one point is the
+  // whole rule: "mars i" is Phobos's own name and only the beginning of Deimos's "mars ii", and
+  // until 2026-09-22 the two tied and the alphabet put Deimos first. One point cannot climb a tier.
   const alias = index.alias[i];
   if (alias) {
+    let best = 0;
     let at = alias.indexOf(q);
     while (at >= 0) {
-      if (at === 0 || isBoundary(alias.charCodeAt(at - 1))) return ALIAS_WORD;
+      if (at === 0 || isBoundary(alias.charCodeAt(at - 1))) {
+        const end = at + q.length;
+        if (end === alias.length || isBoundary(alias.charCodeAt(end))) return ALIAS_WORD + 1;
+        best = ALIAS_WORD;
+      }
       at = alias.indexOf(q, at + 1);
     }
+    if (best) return best;
   }
   const desig = index.desig[i];
   if (desig && desig.indexOf(q) >= 0) return OTHER_CONTAINS;
