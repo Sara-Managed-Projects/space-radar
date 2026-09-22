@@ -548,6 +548,8 @@ export const COPY = {
     train: 'A train of {n} satellites comes over you {when}',
     // ZHR is the rate under a perfect sky with the radiant overhead, so it is "up to", never "you will see".
     shower: 'The {name} meteor shower peaks around {date}, up to {zhr} an hour under a dark sky',
+    showerMoon: 'The {name} meteor shower peaks around {date}, up to {zhr} an hour under a dark sky, with the Moon {pct}% lit that night',
+    showerNoMoon: 'The {name} meteor shower peaks around {date}, up to {zhr} an hour under a dark sky, and the Moon is nearly new',
     none: 'Nothing is scheduled in what the app has loaded.',
     notLoaded: 'Not loaded, so not listed: {layers}.',
     noObserver: 'Set where you are and passes over you join the list.',

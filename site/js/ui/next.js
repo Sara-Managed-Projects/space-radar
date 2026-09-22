@@ -17,6 +17,7 @@ import { trainsFrom } from '../data/trains.js';
 import { revealInColumn } from './reveal.js';
 import { labelName } from './labels.js';
 import { SHOWERS } from '../data/showers.js';
+import * as Astronomy from '../../vendor/astronomy.js';
 
 export const NEXT_CAP = 8;
 const HOUR = 3600e3;
@@ -57,6 +58,20 @@ export const PASS_ROWS = 3;
  * a calendar date that moves by about a day between years, so the row carries the date and says
  * "around", never a time. Today's peak still counts: tonight is when you would go out. Pure.
  */
+/**
+ * How much of the Moon is lit on the night of `dayMs` (at local 23:00), 0..1, or null. The line
+ * registry/events.yaml asks a shower's card for is never the rate but the sky: a full Moon washes out
+ * all but the brightest meteors, and it is the same fraction wherever the visitor stands.
+ */
+export function moonLitThatNight(dayMs) {
+  try {
+    const d = new Date(dayMs);
+    d.setHours(23, 0, 0, 0);
+    const f = Astronomy.Illumination(Astronomy.Body.Moon, d).phase_fraction;
+    return Number.isFinite(f) ? f : null;
+  } catch { return null; }
+}
+
 export function showerItems(nowMs, horizonMs, showers) {
   const out = [];
   const today = startOfDay(nowMs);
@@ -67,7 +82,7 @@ export function showerItems(nowMs, horizonMs, showers) {
     for (const y of [year, year + 1]) {
       const at = new Date(y, Number(m[1]) - 1, Number(m[2]), 12, 0, 0, 0).getTime(); // local noon of the date
       if (startOfDay(at) < today) continue;
-      if (at - nowMs < horizonMs) out.push({ kind: 'shower', record: null, label: sh.display, tMs: at, zhr: sh.zhr, showerId: sh.id });
+      if (at - nowMs < horizonMs) out.push({ kind: 'shower', record: null, label: sh.display, tMs: at, zhr: sh.zhr, showerId: sh.id, moonLit: moonLitThatNight(at) });
       break;
     }
   }
@@ -195,7 +210,12 @@ export function rowText(item, nowMs) {
       return t(T.train, { n: fmt.int(item.count), when });
     case 'shower':
       // A date, not a time: the peak moves by hours between years (registry/showers.yaml).
-      return t(T.shower, { name, date: timeText.dateNear(item.tMs, nowMs), zhr: fmt.int(item.zhr) });
+      {
+        const base = { name, date: timeText.dateNear(item.tMs, nowMs), zhr: fmt.int(item.zhr) };
+        if (!Number.isFinite(item.moonLit)) return t(T.shower, base);
+        if (item.moonLit < 0.1) return t(T.showerNoMoon, base);
+        return t(T.showerMoon, { ...base, pct: fmt.int(Math.round(item.moonLit * 100)) });
+      }
     default:
       return `${name} ${when}`;
   }
