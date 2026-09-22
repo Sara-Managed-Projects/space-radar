@@ -448,7 +448,7 @@ const TEMPLATES = {
     return buildSentence(t(T.lead, { name: displayName(record) }), [
       origin ? t(T.origin, { origin: String(origin) }) : null,
       breakupMs !== null ? t(T.brokeUp, { year: new Date(breakupMs).getUTCFullYear() }) : null,
-      decayMs !== null ? t(T.decay, { date: timeText.localDate(decayMs) }) : null,
+      decayMs !== null ? t(T.decay, { date: timeText.dateNear(decayMs, m && m.tMs) }) : null,
       m.altKm !== null ? t(T.altitude, { alt: fmt.int(m.altKm) }) : null,
       T.burnsUp,
     ]);
@@ -499,7 +499,7 @@ const TEMPLATES = {
         : null,
       au !== null ? t(T.distanceSun, { au: fmt.smart(au) }) : null,
       milestone && milestoneMs !== null
-        ? t(T.milestone, { milestone: String(milestone), date: timeText.localDate(milestoneMs) })
+        ? t(T.milestone, { milestone: String(milestone), date: timeText.dateNear(milestoneMs, m && m.tMs) })
         : null,
     ]);
   },
