@@ -199,6 +199,18 @@ TOUR_ON_UNRESOLVED = {"drop", "hold"}
 # stage on begin, calls ctx.setStage(tour.stage), and restores it on leave; the rig is re-taught its
 # world at every stop. Filled in main() from worlds.yaml and stages.yaml.
 TOUR_STAGES = {"earth"}
+# WHERE A WORLD IS DRAWN TRUE (2026-09-22, the trip out past Jupiter). A stop may name its own
+# `stage:`, and a stop about a world has to be flown on a stage that draws that world where it is:
+# ui/trip.js flies to a world's TRUE place, and from Earth's stage Saturn is drawn nearer and
+# larger along its true direction and Titan around the enlarged disc (scene/worlds.js
+# VIEW_COMPRESSED and VIEW_WITH_PARENT), so the flight would arrive at empty sky 1.4 billion km
+# past the drawing. scene/worlds.js draws a world true from the stages that squeeze nothing
+# (compressesFrom: the Sun's and every rung of the ladder), from its own stage and its own system
+# (sameSystem: a planet and its moons), and always for the Sun and the Moon (VIEW_TRUE). The
+# parents are filled in main() from worlds.yaml, the rungs from stages.yaml.
+TOUR_WORLD_PARENTS: dict[str, str] = {}
+TOUR_UNSQUEEZED_STAGES = {"sun"}
+TOUR_ALWAYS_TRUE_WORLDS = {"sun", "moon"}
 TOUR_MAX_TITLE = 60
 TOUR_MIN_STOPS_FLOOR = 3
 # The camera's own world-clearance floor (scene/camera.js WORLD_CLEARANCE). Below it the rig
@@ -256,6 +268,19 @@ def tour_dwell_ms(body: str) -> int:
         TOUR_DWELL_MIN_MS,
         min(TOUR_DWELL_MAX_MS, TOUR_DWELL_BASE_MS + n * TOUR_DWELL_PER_WORD_MS),
     )
+
+
+def tour_drawn_true(world: str, stage: str) -> bool:
+    """Does scene/worlds.js draw `world` at its true place and size when the map is centred on
+    `stage`? The same four answers as that file's update(), in the same order."""
+    if stage in TOUR_UNSQUEEZED_STAGES or world == stage or world in TOUR_ALWAYS_TRUE_WORLDS:
+        return True
+
+    def system(w: str) -> str:
+        parent = TOUR_WORLD_PARENTS.get(w) or ""
+        return parent if parent and parent != "sun" else w
+
+    return system(world) == system(stage)
 
 
 def unreachable_oddities(oddities_doc: dict) -> dict:
@@ -448,6 +473,14 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
     kind = named[0]
     value = target[kind]
 
+    # The stage this stop is flown on: its own, or its trip's. ui/trip.js reads it the same way.
+    stop_stage = stop.get("stage")
+    if stop_stage is not None and stop_stage not in TOUR_STAGES:
+        fail(where, f"`stage: {stop_stage}` is neither a worlds.yaml world nor a stages.yaml rung, "
+                    f"so ctx.setStage would refuse it and this stop would be flown on whatever "
+                    f"stage the stop before it left, with its distances in that stage's unit")
+    flown_on = stop_stage or tour.get("stage", defaults.get("stage"))
+
     if kind == "record":
         if value in unreachable:
             fail(where, f"targets `{value}` and {unreachable[value]}")
@@ -471,6 +504,29 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
                     fail(where, f"is on the `{value}` layer, whose own layers.yaml row says the "
                                 f"track is a DRAWING, and its card says \"{word}\". A stop there "
                                 f"may not write copy that claims certainty the layer cannot back")
+
+    # A world's own record (`{record: titan}`) is flown to as the world, so the same rule holds.
+    if kind in ("world", "record") and value in world_ids and flown_on in TOUR_STAGES \
+            and not tour_drawn_true(value, flown_on):
+        fail(where, f"targets the world `{value}` on the `{flown_on}` stage, where scene/worlds.js "
+                    f"draws it nearer and larger than it is. The trip flies to where it truly is, so "
+                    f"the camera would arrive at empty sky. Give the stop `stage: {value}`, or the "
+                    f"stage of the planet it goes round")
+
+    # `behind:` names a world the shot keeps in the picture. It has to be drawn true from the same
+    # stage for the same reason the subject does: the direction the camera is pointed at is the
+    # TRUE one, and from a squeezing stage a moon is not drawn along it.
+    behind = stop.get("behind")
+    if behind is not None:
+        if behind not in world_ids:
+            fail(where, f"`behind: {behind}` has no worlds.yaml row")
+        elif behind == value:
+            fail(where, f"`behind: {behind}` is the stop's own subject, so there is nothing to put "
+                        f"behind it")
+        elif flown_on in TOUR_STAGES and not tour_drawn_true(behind, flown_on):
+            fail(where, f"`behind: {behind}` is drawn nearer and larger than it is from the "
+                        f"`{flown_on}` stage, so pointing the camera along the true direction to it "
+                        f"would not put it in the picture")
 
     needs = stop.get("needs_layer")
     if needs is not None and needs not in layer_ids:
@@ -2024,6 +2080,8 @@ def main() -> int:
     colorkeys = check_colorkeys()
     TOUR_STAGES.update(world_ids)
     TOUR_STAGES.update(st.get('id') for st in ladder if isinstance(st, dict) and st.get('id'))
+    TOUR_UNSQUEEZED_STAGES.update(st.get('id') for st in ladder if isinstance(st, dict) and st.get('id'))
+    TOUR_WORLD_PARENTS.update({w.get('id'): str(w.get('parent') or '') for w in worlds})
     check_tours(oddities_doc, layer_ids, world_ids, {s.get('id') for s in sites},
                 {str(t.get('term') or '').lower() for t in terms})
 

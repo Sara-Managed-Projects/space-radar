@@ -133,9 +133,13 @@ which way the Roadster points, so it is drawn level, and the red is ours.
 
 ## Trips — the camera flies it for you
 
-A **trip** is a chain of shots with a card at each one, and the camera flies between them. Three
+A **trip** is a chain of shots with a card at each one, and the camera flies between them. Five
 ship today: *Where people are living in space right now*, *The strangest things we have ever sent*,
-which visits the objects above, and *To the edge of what we know*, which leaves the Solar System.
+which visits the objects above, *To the edge of what we know*, which leaves the Solar System,
+*Where we have landed on the Moon*, which stands on ten landing sites in the order they happened,
+and *Out past Jupiter, to the farthest thing we sent*, which goes from Io to Voyager 1 and centres
+the map on each system it visits, because that is the only place its worlds are drawn where they
+are.
 
 <table>
 <tr>
@@ -169,8 +173,10 @@ The other half is that leaving has to be free, or nobody will start:
 - The layers a trip switched on, and the clock speed it clamped, are put back exactly as they were.
 
 Adding a trip is a row in `registry/tours.yaml` and a row per stop, and nothing under `site/js/`.
-Twenty-one refusals guard that file; the one that forbids a trip id from colliding with a layer id
-caught a real collision the first time it ran.
+Twenty-six refusals guard that file; the one that forbids a trip id from colliding with a layer id
+caught a real collision the first time it ran, and the newest refuses a stop about a world its own
+stage draws nearer and larger than it is, because the camera would fly to where that world really
+is and arrive at empty sky.
 
 ---
 
@@ -431,7 +437,7 @@ Issues and pull requests are welcome. The things most worth doing, roughly in or
    its bus size and how many solar arrays it has, and that is a research problem rather than a
    drawing one. `scripts/check-model-reach.py` will tell you what any new mapping would actually
    reach before you build it.
-3. **More trips.** Two ship. The registry supports four target forms; `group:` (frame several
+3. **More trips.** Five ship. The registry supports four target forms; `group:` (frame several
    objects at once) and `view:` (“the next time it crosses your sky”) are designed and not built,
    and each of them unlocks a trip that wants it.
 4. **Frame rate on real phones.** The budgets in the code are targets, not measurements. Numbers

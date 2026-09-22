@@ -152,6 +152,11 @@ tours:
     stops:
       - id: the-world
         target: {world: miranda}
+        # A moon of Uranus is drawn around a Uranus that is itself drawn nearer and larger than it
+        # is (scene/worlds.js), so from Earth's stage this stop would fly to a place on the screen
+        # where nothing is drawn. Naming the stage is what a stop about a new world costs, and the
+        # validator refuses the pairing rather than letting it be found in a browser.
+        stage: miranda
         frame_radii: 5.0
         card:
           title: "Miranda"

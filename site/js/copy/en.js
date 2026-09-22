@@ -1066,6 +1066,13 @@ export const COPY = {
     expandTitle: 'Bring the card back (c)',
     leave: 'Leave',
     leaveTitle: 'Leave the trip. The camera stays exactly where it is. (Escape)',
+    // ...WHICH IS NOT TRUE OF A TRIP THAT MOVED THE MAP'S CENTRE (2026-09-22). A trip may be flown
+    // on another world's stage or on a rung of the ladder, and leaving puts the centre back where
+    // the visitor had it: one scene unit is a different distance there, so the camera cannot stay.
+    // ui/trip.js says whether that happened (`state.stageChanged`) and ui/tripframe.js picks the
+    // line. The end card said "The camera stays where it is" over a camera that was about to fly
+    // 4.5 billion km home.
+    leaveTitleStage: 'Leave the trip. The map goes back to the world it was centred on before, which moves the camera. (Escape)',
     progressLabel: 'How far through the trip you are',
     controlsLabel: 'Trip controls',
 
@@ -1080,8 +1087,10 @@ export const COPY = {
     // An unmarked ending is indistinguishable from a crash. Three offers, and not a menu.
     endTitle: 'That is the end of the trip.',
     endBody: 'The camera stays where it is. Nothing here goes back.',
+    endBodyStage: 'Leaving puts the map back on the world it was centred on before the trip, because out here one step of the map is a different distance. Nothing else goes back.',
     endExplore: 'Explore from here',
     endExploreTitle: 'Keep this view and carry on by yourself',
+    endExploreTitleStage: 'Carry on by yourself, back on the map you started from',
     endReplay: 'Watch it again',
     endNext: 'Next: {title}',
 

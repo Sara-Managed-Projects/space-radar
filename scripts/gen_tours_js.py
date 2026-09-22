@@ -42,9 +42,16 @@ TRIP_FIELDS = ("id", "title", "blurb", "pacing", "requires", "min_stops", "stage
 STOP_FIELDS = (
     "id",
     "target",
+    # A stop's own centre for the map, when it is not its trip's. Written only where a stop names
+    # one: ui/trip.js flies every other stop on `stage || tour.stage`, so an unnamed stop is still
+    # never at the mercy of whichever stage the stop before it left behind.
+    "stage",
     "needs_layer",
     "distance_km",
     "frame_radii",
+    # The world the shot keeps in the picture behind its subject. ui/trip.js narrows the key-light
+    # search to the directions that hold it.
+    "behind",
     "drift_deg",
     "drift_rate_deg_s",
     "drift",

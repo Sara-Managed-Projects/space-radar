@@ -573,6 +573,17 @@ TOUR_CASES: list[tuple[str, str, str]] = [
      "      - id: beresheet\n", "      - id: beresheet\n        dwell_ms: 1200\n"),
     ("a card that writes a dash as two hyphens, which the screen prints as two hyphens",
      "Nobody knows where in the wreck", "Nobody knows -- where in the wreck"),
+    # Since the trip out past Jupiter a STOP may name its own stage, and a stop about a world has
+    # to be flown on a stage that draws that world where it is (scene/worlds.js squeezes the rest).
+    ("a stop stage that is neither a world nor a rung of the ladder",
+     "        stage: neptune\n", "        stage: neptunium\n"),
+    ("a stop about a world its own stage draws nearer and larger than it is",
+     "        target: {record: saturn}\n        stage: saturn",
+     "        target: {record: saturn}\n        stage: earth"),
+    ("a `behind:` world the stop's stage draws nearer and larger than it is",
+     "        behind: charon\n", "        behind: jupiter\n"),
+    ("a `behind:` world that is the stop's own subject",
+     "        behind: charon\n", "        behind: pluto\n"),
     ("a stop on the `launches` layer, whose track is a drawing, claiming certainty",
      '        target: {layer: stations, catalog: "25544"}\n        # Far enough back',
      '        target: {layer: launches, catalog: "25544"}\n        # Far enough back'),
