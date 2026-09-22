@@ -125,7 +125,7 @@ export const SITES = [
     "lat": -2.4745,
     "lon": 316.6602,
     "shape": "lander",
-    "doing": "The first American spacecraft to land softly on the Moon, in June 1966. It sent home more than 11,000 pictures."
+    "doing": "The first American spacecraft to land softly on the Moon, in June 1966. It sent home more than 11 000 pictures."
   },
   {
     "id": "surveyor-3",
@@ -218,7 +218,7 @@ export const SITES = [
     "aliases": [
       "Change 5"
     ],
-    "doing": "Collected 1,731 grams of soil and rock in December 2020, the first Moon samples brought to Earth since 1976."
+    "doing": "Collected 1 731 grams of soil and rock in December 2020, the first Moon samples brought to Earth since 1976."
   },
   {
     "id": "chandrayaan-3",
@@ -271,7 +271,7 @@ export const SITES = [
     "aliases": [
       "Change 6"
     ],
-    "doing": "Scooped and drilled 1,935 grams of soil and rock in June 2024: the first samples ever brought back from the far side of the Moon."
+    "doing": "Scooped and drilled 1 935 grams of soil and rock in June 2024: the first samples ever brought back from the far side of the Moon."
   },
   {
     "id": "blue-ghost-1",
