@@ -1333,6 +1333,8 @@ export const COPY = {
       lead: '{name} is a spacecraft out in the solar system',
       destination: 'on its way to {destination}',
       lightTime: 'far enough that a radio message takes {mins} minutes each way',
+      // Past two hours, hours: "1431 minutes each way" was Voyager 1, a day away (2026-09-22).
+      lightTimeHours: 'far enough that a radio message takes {hours} hours each way',
       distanceSun: '{au} astronomical units from the Sun',
       milestone: 'with {milestone} due on {date}',
     },

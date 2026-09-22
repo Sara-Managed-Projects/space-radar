@@ -183,6 +183,11 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
   check(/about 130\u00a0?\s?000 light-years across/.test(big.replace(/\u202f/g, ' ')), `a size is given to two figures: "${big}"`);
   const home = text(firstSentence({ id: 'dso-milky-way', name: 'The Milky Way', klass: 'dso', frame: 'sun-inertial', meta: { home: true, distLy: 26582, sizeLy: 87400, con: 'Sagittarius', typeText: 'Barred spiral galaxy' } }, ctx, m0, { state: 'none' }));
   check(!/seen as it was/.test(home), `the galaxy we are inside is not "seen as it was" anything: "${home}"`);
+  // "a radio message takes 1431 minutes each way": Voyager 1, a day away. Hours past two hours.
+  const voyager = text(firstSentence({ id: 'deep-voyager-1', name: 'Voyager 1', klass: 'probe', frame: 'sun-inertial', meta: {} }, ctx, { ...m0, lightMinutes: 1431, distSunKm: 172 * 149597870.7 }, { state: 'none' }));
+  check(/takes 23\.9 hours each way/.test(voyager) && !/1431/.test(voyager.replace(/\s/g, '')), `a day's radio time is said in hours: "${voyager}"`);
+  const mars = text(firstSentence({ id: 'deep-mro', name: 'MRO', klass: 'probe', frame: 'sun-inertial', meta: {} }, ctx, { ...m0, lightMinutes: 12.5, distSunKm: 1.5 * 149597870.7 }, { state: 'none' }));
+  check(/takes 12\.5 minutes each way/.test(mars), `twelve minutes is still minutes: "${mars}"`);
   const m31 = text(firstSentence({ id: 'dso-m31', name: 'Andromeda Galaxy', klass: 'dso', frame: 'sun-inertial', meta: { distLy: 2540000, typeText: 'spiral galaxy' } }, ctx, m0, { state: 'none' }));
   check(!/the light you see/.test(m31) && /seen as it was 2\.54 million years ago/.test(m31), `a deep-sky sentence hangs the light's age off itself: "${m31}"`);
 

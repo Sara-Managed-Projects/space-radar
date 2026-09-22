@@ -504,9 +504,9 @@ const TEMPLATES = {
     const au = m.distSunKm !== null ? m.distSunKm / UNITS.AU_KM : null;
     return buildSentence(t(T.lead, { name: displayName(record) }), [
       destination ? t(T.destination, { destination: String(destination) }) : null,
-      m.lightMinutes !== null
-        ? t(T.lightTime, { mins: fmt.smart(m.lightMinutes) })
-        : null,
+      m.lightMinutes !== null && m.lightMinutes >= 120
+        ? t(T.lightTimeHours, { hours: fmt.smart(m.lightMinutes / 60) })
+        : m.lightMinutes !== null ? t(T.lightTime, { mins: fmt.smart(m.lightMinutes) }) : null,
       au !== null ? t(T.distanceSun, { au: fmt.smart(au) }) : null,
       milestone && milestoneMs !== null
         ? t(T.milestone, { milestone: String(milestone), date: timeText.dateNear(milestoneMs, m && m.tMs) })
@@ -998,7 +998,9 @@ function rightNowRows(record, m, passInfo) {
         : COPY.card.couldNotLook,
     ]);
     if (m.lightMinutes !== null && !isEarth) {
-      rows.push([R.lightTime, t(V.minutes, { n: fmt.smart(m.lightMinutes) })]);
+      rows.push([R.lightTime, m.lightMinutes >= 120
+        ? t(V.hours, { n: fmt.smart(m.lightMinutes / 60) })
+        : t(V.minutes, { n: fmt.smart(m.lightMinutes) })]);
     }
     if (m.speedKmh !== null && m.speedKmh > 0.5) {
       rows.push([R.speed, t(V.kmh, { n: fmt.int(m.speedKmh) })]);
