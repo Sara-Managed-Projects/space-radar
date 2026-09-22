@@ -144,6 +144,11 @@ jobs:
         run: node tests/test_viewshift.mjs
       - name: The Trips panel leads with the trips that can run
         run: node tests/test_trips_panel.mjs
+      # The trip out past Jupiter runs the real trip machine at four dates: every stop resolves to
+      # a bundled record, the map is centred where that stop is drawn true, the camera is outside
+      # its subject and frames it, and the numbers the cards state are the records' own.
+      - name: "Out past Jupiter: ten stops, each seen from where it is drawn true"
+        run: node tests/test_outer_trip.mjs
       - name: The scene says so when no satellite could be read
         run: node tests/test_scenenote.mjs
       - name: A shower's radiant is where the sky view marks it

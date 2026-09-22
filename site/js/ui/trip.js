@@ -53,7 +53,7 @@ import * as THREE from '../../vendor/three.module.min.js';
 import { TOURS } from '../data/tours.js';
 import { propagate } from '../propagate/index.js';
 import { stage } from '../scene/stage.js';
-import { WORLDS, positionOf } from '../scene/worlds.js';
+import { WORLDS, positionOf, compressesFrom } from '../scene/worlds.js';
 import { showCard, hideCard } from './cards.js';
 import { COPY, t } from '../copy/en.js';
 
@@ -120,6 +120,16 @@ const CLOCK_RATE_CEILING = 60;
 const KEY_LIGHT_POLARS = [Math.PI * 0.33, Math.PI * 0.42, Math.PI * 0.5];
 const KEY_LIGHT_STEPS = 36;
 const KEY_LIGHT_TURN_WEIGHT = 0.35;
+// A stop's `behind:` world: how far off the middle of the frame it may sit and still be in the
+// picture. Half the camera's vertical field of view is 22.5 degrees (scene/renderer.js), and at
+// that the backdrop's CENTRE is on the frame's edge with half its disc outside: measured at 22,
+// Neptune came out cut in half by the top of the frame behind Triton. 16 leaves a quarter of the
+// frame's height under it. BACKDROP_CLEAR is how far outside the subject's own disc it is kept,
+// because exactly behind is hidden behind.
+const BACKDROP_MAX_OFF_AXIS = 16 * DEG;
+const BACKDROP_CLEAR = 3 * DEG;
+const BACKDROP_RINGS = 3;
+const BACKDROP_STEPS = 24;
 
 /**
  * A subject standing ON a world -- a landing site, a golf ball, a photograph in the dust -- is
@@ -163,6 +173,16 @@ function isNum(v) {
 
 const worldById = new Map(WORLDS.map((w) => [w.id, w]));
 
+/**
+ * A world's system: its parent when that is not the Sun, and itself otherwise. The same rule as
+ * scene/worlds.js `sameSystem`, which decides what that file draws true, read here to decide what
+ * this one may point the camera at.
+ */
+function systemOf(id) {
+  const w = worldById.get(id);
+  return w && w.parent && w.parent !== 'sun' ? w.parent : id;
+}
+
 /** Which world is the occluder for a record: the one its frame is named after. */
 function worldOfFrame(frame) {
   const head = String(frame || '').split('-')[0];
@@ -188,6 +208,10 @@ export function createTrip(ctx) {
     pacing: 'auto',
     reducedMotion: false,
     clockClamped: false,
+    // Whether this trip has moved the map's centre. The frame reads it, because leaving then puts
+    // the centre back and the camera CANNOT stay where it is: one unit is a different distance
+    // there. Every "the camera stays where it is" line in copy/en.js has a second version for it.
+    stageChanged: false,
     dropped: [],
     held: null,
     reason: null,
@@ -218,9 +242,13 @@ export function createTrip(ctx) {
   let driftRun = null;
   let pausedDuring = null;
   let lastRecord = null;
-  // True while stop() is tearing a trip down. Its own ctx.setStage fires `sr:stage`, and the
-  // listener below would otherwise re-fly the stop being left -- in the new stage's units.
+  // THE TWO TIMES THE TRIP MOVES THE MAP'S CENTRE ITSELF, and the `sr:stage` listener at the foot
+  // of this file must sit still for both: it exists for a stage change NOBODY in the trip asked
+  // for, and answering the trip's own would re-fly the stop being left, in the new stage's units.
+  // `leaving` covers stop() tearing the trip down; `switching` covers a stop arriving on its own
+  // stage (enterStage) and the trip's stage on begin.
   let leaving = false;
+  let switching = false;
 
   // Which layers have LANDED, as opposed to which are switched on. main.js fires `sr:layer` once
   // per layer whether it loaded rows or failed, so this is the honest answer to "has that layer
@@ -398,9 +426,28 @@ export function createTrip(ctx) {
     return target.pick === 'last' ? matches[matches.length - 1] : matches[0];
   }
 
+  /**
+   * A world's own RECORD -- `saturn`, `titan`, the rows of the worlds layer -- named by
+   * `target: {record: ...}`. It is flown to as the world it is: framed by its radius, kept out of
+   * by its own sphere, placed where scene/worlds.js draws it. recordSubject() would answer
+   * `worldId: 'sun'` for every one of them (their frame is sun-inertial) and no radius, so Titan
+   * would be framed at a layer's default distance with the Sun as the only thing the camera must
+   * not enter. The record is kept, and that is the reason to name one rather than a `world:`:
+   * paintCard() selects it, so the world's own card, with the pages its facts were read from,
+   * opens under the stop's words.
+   */
+  function worldRecordSubject(record) {
+    if (!record || record.klass !== 'world' || !worldById.has(record.id)) return null;
+    const subject = worldSubject(record.id);
+    return { ...subject, kind: 'record', name: record.name || subject.name, record, layerId: record.layer };
+  }
+
   function resolveTarget(target) {
     if (!target) return null;
-    if (target.record) return recordSubject(ctx.recordById(target.record));
+    if (target.record) {
+      const record = ctx.recordById(target.record);
+      return worldRecordSubject(record) || recordSubject(record);
+    }
     if (target.site) return recordSubject(ctx.recordById(target.site));
     if (target.world) return worldSubject(target.world);
     if (target.layer) return recordSubject(pickFromLayer(target));
@@ -480,6 +527,9 @@ export function createTrip(ctx) {
 
   const _sun = new THREE.Vector3();
   const _u = new THREE.Vector3();
+  const _b1 = new THREE.Vector3();
+  const _b2 = new THREE.Vector3();
+  const _b3 = new THREE.Vector3();
   const _toTarget = new THREE.Vector3();
   const _up = new THREE.Vector3();
   const _arc = new THREE.Vector3();
@@ -538,7 +588,69 @@ export function createTrip(ctx) {
     return true;
   }
 
-  function keyLightAngles(targetScene, d, worldCentre, radius, sunPos, wantDeg, driftRad, groundUp) {
+  /** The 36 azimuths at each of the co-latitudes this stop may be seen from. */
+  function gridCandidates(polars) {
+    const out = [];
+    for (const polar of polars) {
+      for (let i = 0; i < KEY_LIGHT_STEPS; i += 1) {
+        out.push({ azimuth: (i * Math.PI * 2) / KEY_LIGHT_STEPS, polar });
+      }
+    }
+    return out;
+  }
+
+  /**
+   * The directions that put `backdrop` in the picture: a cone of them, around the one direction
+   * that would put it exactly behind the subject.
+   *
+   * IT CANNOT BE A FILTER ON THE GRID ABOVE, and the numbers say why. The grid's three
+   * co-latitudes are 59, 76 and 90 degrees from the scene's north, which is the ecliptic pole, and
+   * a moon does not orbit in the ecliptic: measured over four dates, Titan's direction to Saturn
+   * was 131 degrees from the nearest direction the grid offers, Neptune's from Triton 73, Charon's
+   * from Pluto 99. Filtering the grid left nothing to choose from at half the stops.
+   *
+   * So the rings are measured from the backdrop itself. `minOff` keeps it clear of the subject's
+   * own disc -- exactly behind means hidden behind -- and BACKDROP_MAX_OFF_AXIS keeps it inside
+   * the frame; the ring the light likes best wins.
+   */
+  function backdropCandidates(backdrop, minOff) {
+    const out = [];
+    _b1.copy(backdrop).multiplyScalar(-1); // the camera sits opposite the backdrop
+    _b2.copy(ctx.camera.up).normalize();
+    if (Math.abs(_b2.dot(_b1)) > 0.95) _b2.set(_b1.z, _b1.x, _b1.y);
+    _b2.projectOnPlane(_b1).normalize();
+    _b3.crossVectors(_b1, _b2).normalize();
+    const lo = Math.min(minOff, BACKDROP_MAX_OFF_AXIS - 2 * DEG);
+    for (let r = 0; r < BACKDROP_RINGS; r += 1) {
+      const tilt = lo + ((BACKDROP_MAX_OFF_AXIS - lo) * r) / (BACKDROP_RINGS - 1);
+      for (let i = 0; i < BACKDROP_STEPS; i += 1) {
+        const phi = (i * Math.PI * 2) / BACKDROP_STEPS;
+        _u.copy(_b1).multiplyScalar(Math.cos(tilt))
+          .addScaledVector(_b2, Math.sin(tilt) * Math.cos(phi))
+          .addScaledVector(_b3, Math.sin(tilt) * Math.sin(phi));
+        // Back into the rig's own two angles: the inverse of offsetDirection().
+        _u.applyQuaternion(_q);
+        out.push({ azimuth: Math.atan2(_u.x, _u.z), polar: Math.acos(clamp(_u.y, -1, 1)) });
+      }
+    }
+    return out;
+  }
+
+  /**
+   * THE STANDING POINT, and three things can constrain it.
+   *
+   * @param {number} driftRad the arc the dwell will turn through, so a ground subject stays in
+   *   sight all the way round it.
+   * @param {?THREE.Vector3} groundUp the vertical of a subject standing ON a world: the search
+   *   runs in that basis, only from co-latitudes above its horizon, and the camera arrives with it
+   *   as its up (the Moon trip).
+   * @param {?THREE.Vector3} backdrop unit vector from the subject toward the world the stop asked
+   *   to keep in the picture (`behind:`), or null (the trip out past Jupiter).
+   * @param {number} subjectRad the subject's own angular radius from this distance, so a backdrop
+   *   is not placed exactly behind it and hidden by it.
+   */
+  function keyLightAngles(targetScene, d, worldCentre, radius, sunPos, wantDeg, driftRad, groundUp,
+    backdrop, subjectRad) {
     if (!sunPos) return null;
     // A ground stop is chosen in the frame of the site's own vertical, which is the up the camera
     // will have when it arrives. Borrowed for the search and put back: the rig reads camera.up
@@ -561,19 +673,27 @@ export function createTrip(ctx) {
         _toTarget.copy(ctx.camera.position).sub(targetScene).applyQuaternion(_q);
         if (_toTarget.lengthSq() > 1e-18) azNow = Math.atan2(_toTarget.x, _toTarget.z);
       }
-      let best = null;
-      for (const polar of borrowed ? GROUND_POLARS : KEY_LIGHT_POLARS) {
-        for (let i = 0; i < KEY_LIGHT_STEPS; i += 1) {
-          const az = (i * Math.PI * 2) / KEY_LIGHT_STEPS;
-          offsetDirection(az, polar, _u);
+      /** The best-lit direction in a list of candidates, or null when every one of them is out. */
+      const pick = (candidates) => {
+        let best = null;
+        for (const c of candidates) {
+          offsetDirection(c.azimuth, c.polar, _u);
           if (blocked(targetScene, _u, d, worldCentre, radius * APEX_CLEARANCE)) continue;
-          if (borrowed && !seesGround(az, polar, driftRad || 0, groundUp)) continue;
+          if (borrowed && !seesGround(c.azimuth, c.polar, driftRad || 0, groundUp)) continue;
           const lit = Math.abs(_u.dot(_sun) - want);
-          const turn = Math.abs(shortestAngle(azNow, az)) / Math.PI;
+          const turn = Math.abs(shortestAngle(azNow, c.azimuth)) / Math.PI;
           const score = lit + KEY_LIGHT_TURN_WEIGHT * turn;
-          if (!best || score < best.score) best = { azimuth: az, polar, score };
+          if (!best || score < best.score) best = { azimuth: c.azimuth, polar: c.polar, score };
         }
-      }
+        return best;
+      };
+      // A stop that named a world to keep behind its subject searches a cone around that direction
+      // FIRST; if nothing in the cone survives, the plain search decides and the backdrop is given
+      // up rather than the shot.
+      let best = backdrop
+        ? pick(backdropCandidates(backdrop, (subjectRad || 0) + BACKDROP_CLEAR))
+        : null;
+      if (!best) best = pick(gridCandidates(borrowed ? GROUND_POLARS : KEY_LIGHT_POLARS));
       // Every candidate blocked is a real case -- low over the night side, with the planet on
       // every side of you. Fall back to the rig's own framingAngles, which is occlusion-free by
       // construction, and accept flat light. This is a CAMERA choice and never goes on the card.
@@ -630,6 +750,31 @@ export function createTrip(ctx) {
   /** The up a shot arrives with: the site's vertical on the ground, the visitor's own elsewhere. */
   function upFor(shot) {
     return (shot && shot.up) || (run && run.savedUp) || null;
+  }
+
+  /**
+   * The direction from the subject toward the world a stop asked to have behind it, as a unit
+   * vector in scene axes, or null when that world is not drawn where this stage would need it.
+   *
+   * WHY A STOP ASKS. The camera direction is chosen by the key light, which knows about the Sun
+   * and nothing else, so Io came out alone in the dark: measured in headless Chrome 2026-09-22,
+   * Jupiter's drawn disc sat 198 px above the top of the frame at the first stop of the trip out
+   * past Jupiter, on a card that opens "Io goes round Jupiter every 42 hours". The rig has the
+   * same rule for a record standing on a world (framingAngles, "put the world behind it") and
+   * nothing reached it here, because these angles are given.
+   */
+  function backdropDir(id, subjectScene, tMs) {
+    const w = worldById.get(id);
+    if (!w || !subjectScene) return null;
+    // Only where both are drawn at their true places: from a stage that squeezes, a moon is drawn
+    // around its planet's enlarged disc and the true direction between them is not the drawn one.
+    // check_registry.py refuses that pairing in the registry; this is the same rule at runtime.
+    if (compressesFrom(stage.worldId) && systemOf(id) !== systemOf(stage.worldId)) return null;
+    const p = positionOf(id, tMs);
+    const at = p ? stage.toScene(p, p.frame, tMs) : null;
+    if (!at) return null;
+    const dir = at.sub(subjectScene);
+    return dir.lengthSq() > 1e-18 ? dir.normalize() : null;
   }
 
   /** Which way round the arc turns: toward the light opens the subject up over the dwell. */
@@ -717,6 +862,8 @@ export function createTrip(ctx) {
       entry.stop.key_light_deg,
       driftDeg * DEG,
       groundUp,
+      entry.stop.behind ? backdropDir(entry.stop.behind, targetScene, tMs) : null,
+      isNum(subject.radiusKm) && d1 > 0 ? Math.asin(clamp(subject.radiusKm / stage.unitKm / d1, 0, 1)) : 0,
     );
 
     const named = entry.stop.ease;
@@ -776,6 +923,53 @@ export function createTrip(ctx) {
   }
 
   // --- the machine ------------------------------------------------------------------------
+
+  /**
+   * CENTRE THE MAP WHERE THIS STOP IS SEEN TRUE (2026-09-22, the trip out past Jupiter). A stop may
+   * name its own `stage:`; one that does not is flown on its trip's. From Earth's stage the outer
+   * planets are drawn nearer and larger and their moons around the enlarged disc (scene/worlds.js
+   * VIEW_COMPRESSED, VIEW_WITH_PARENT), so Titan seen from there is a drawing of where Titan is;
+   * from Saturn's stage it is at its true place and size. The whole trip cannot simply live on the
+   * Sun's stage either: one unit there is a million km, and a moon's vertices, which the world
+   * shader places in float32 world space, land on a grid about 120 km wide at Saturn's distance --
+   * half of Enceladus's radius (scene/stage.js says why the floating origin exists).
+   *
+   * Changing the stage moves the camera, because main.js ctx.setStage frames the new stage's
+   * world at once. Between two planets that CUT is the honest move: the stop being left is drawn
+   * squeezed from the new stage, so the camera, kept where it was in km, would be looking at empty
+   * sky where Europa had been. Onto a stage that squeezes nothing -- the Sun's, or a rung of the
+   * ladder -- every world is drawn where it truly is, so the camera is put back where it was, in
+   * km, and the flight to the next stop starts from the last one: Pluto to Eris is one move, not a
+   * jump to the Sun's face and a six-second fall back out.
+   * @returns {boolean} whether the stage changed
+   */
+  function enterStage(id) {
+    if (!run || !id || id === stage.worldId || typeof ctx.setStage !== 'function') return false;
+    const keep = compressesFrom(id)
+      ? null
+      : { camera: stage.fromScene(ctx.camera.position), target: stage.fromScene(rig.state.target) };
+    let changed = false;
+    switching = true;
+    try {
+      changed = !!ctx.setStage(id);
+    } finally {
+      switching = false;
+    }
+    if (!changed) return false;
+    run.stageChanged = true;
+    state.stageChanged = true;
+    if (keep) {
+      const tMs = ctx.clock.now();
+      const cam = stage.toScene(keep.camera, keep.camera.frame, tMs);
+      const target = stage.toScene(keep.target, keep.target.frame, tMs);
+      if (cam && target) {
+        ctx.camera.position.copy(cam);
+        // setTarget re-reads the rig's angles and distance from where the camera now is.
+        rig.setTarget(target);
+      }
+    }
+    return true;
+  }
 
   function saveWorld() {
     return {
@@ -880,9 +1074,17 @@ export function createTrip(ctx) {
     // every distance below is derived in the right unit, and it is put back on leave.
     run.savedStage = stage.worldId;
     if (tour.stage && tour.stage !== stage.worldId && typeof ctx.setStage === 'function') {
-      ctx.setStage(tour.stage);
+      // `switching` for the same reason enterStage() sets it: this is the trip's own stage change,
+      // and the sr:stage listener is for one nobody in the trip asked for.
+      switching = true;
+      try {
+        ctx.setStage(tour.stage);
+      } finally {
+        switching = false;
+      }
       run.stageChanged = true;
     }
+    state.stageChanged = !!run.stageChanged;
     for (const id of resolved.layers) if (setLayer(id, true)) run.flipped.push(id);
     const clockChange = applyClock(tour, run.savedClock);
     run.clockMovedInstant = clockChange.movedInstant;
@@ -961,6 +1163,10 @@ export function createTrip(ctx) {
       holdAt(entry);
       return;
     }
+
+    // Before the shot is composed, so every distance in it is in the new stage's unit. Back and
+    // Next land here too, so a stop is always seen from its own stage whichever way it is reached.
+    enterStage(entry.stop.stage || run.tour.stage);
 
     const shot = composeShot(entry);
     if (!shot) {
@@ -1274,7 +1480,8 @@ export function createTrip(ctx) {
     if (stageLeft) {
       // Back to the stage the visitor was on. The camera cannot "stay where it is" across a stage
       // change -- the unit changed under it -- so this is the one leave that moves it, and the
-      // trip's blurb says so.
+      // trip's blurb says so. `leaving`, set at the top of this function, is what keeps the
+      // sr:stage listener from re-flying the stop being left in the new stage's units.
       ctx.setStage(run.savedStage);
     } else if (run.savedWorld) {
       rig.setWorldRadius(run.savedWorld.radius);
@@ -1293,6 +1500,7 @@ export function createTrip(ctx) {
     state.count = 0;
     state.estimateMs = 0;
     state.clockClamped = false;
+    state.stageChanged = false;
     state.pausedBy = null;
     state.held = null;
     state.reason = reason || null;
@@ -1304,9 +1512,10 @@ export function createTrip(ctx) {
     // EXCEPT ACROSS A STAGE CHANGE, where the camera has just been put back at home. Selecting
     // the last stop's subject there installs `follow` on it, and follow moves the camera with its
     // target: MEASURED in headless Chrome, 2026-09-22, leaving the Moon trip at Lunokhod 1 put the
-    // map back on the Earth's stage and the camera 414 000 km out, beside the Moon, under a blurb
-    // that says leaving brings you back to Earth. There the stop's subject is let go instead --
-    // card, highlight and all -- so home is not left with a selection on a world out of shot.
+    // map back on the Earth's stage and the camera 414 000 km out, beside the Moon, and leaving
+    // the trip out past Jupiter at Voyager 1 would have flown it 170 au, both under a blurb that
+    // says leaving brings you back to Earth. There the stop's subject is let go instead -- card,
+    // highlight and all -- so home is not left with a selection on a world out of shot.
     if (record && !stageLeft) ctx.select(record, { fly: false });
     else if (record && typeof ctx.deselect === 'function') ctx.deselect();
     else hideCard();
@@ -1407,7 +1616,9 @@ export function createTrip(ctx) {
   // centred where the world no longer is, and a cut is the correct degradation. Recompute the
   // current stop from KILOMETRES and put the camera there in one frame.
   const onStage = () => {
-    if (!run || leaving || state.index < 0) return;
+    // Not while the trip is moving the centre itself: `leaving` is stop() putting the visitor's
+    // stage back, `switching` is a stop arriving on its own (enterStage, and begin).
+    if (!run || leaving || switching || state.index < 0) return;
     gen += 1;
     state.generation = gen;
     clearTimers();

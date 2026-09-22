@@ -633,5 +633,221 @@ export const TOURS = [
       }
     ],
     "estimate_ms": 205686
+  },
+  {
+    "id": "outer-solar-system",
+    "title": "Out past Jupiter, to the farthest thing we sent",
+    "blurb": "Ten stops through the cold half of the Solar System, each world at its true size. Leaving brings you back to Earth.",
+    "requires": [
+      "worlds",
+      "deep-space",
+      "far-bodies"
+    ],
+    "stage": "jupiter",
+    "clock": "as-found",
+    "pacing": "auto",
+    "min_stops": 3,
+    "stops": [
+      {
+        "id": "io",
+        "target": {
+          "record": "io"
+        },
+        "stage": "jupiter",
+        "frame_radii": 12,
+        "behind": "jupiter",
+        "card": {
+          "title": "Io, the moon Jupiter never lets rest",
+          "body": "Io goes round Jupiter every 42 hours, pulled one way by the planet and the other by two moons further out, in time with it. All that kneading has to go somewhere, and it comes out of hundreds of volcanoes."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 15820
+      },
+      {
+        "id": "europa",
+        "target": {
+          "record": "europa"
+        },
+        "stage": "jupiter",
+        "frame_radii": 12,
+        "behind": "jupiter",
+        "card": {
+          "title": "Europa, and the two ships on their way",
+          "body": "Under that ice is twice as much water as every ocean on Earth put together. Europa Clipper reaches Jupiter in April 2030 to fly past here 49 times and ask whether anything could live down there; Europe's JUICE arrives in 2031 and ends up circling Ganymede."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 17818
+      },
+      {
+        "id": "saturn",
+        "target": {
+          "record": "saturn"
+        },
+        "stage": "saturn",
+        "frame_radii": 4.5,
+        "card": {
+          "title": "Saturn, and a ring ten metres thick",
+          "body": "The rings reach eighty thousand kilometres out from the equator and in places are ten metres from top to bottom. They are almost all water ice. Cassini circled here for thirteen years and finished by flying into the planet in September 2017."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 16486
+      },
+      {
+        "id": "titan",
+        "target": {
+          "record": "titan"
+        },
+        "stage": "saturn",
+        "frame_radii": 6,
+        "behind": "saturn",
+        "card": {
+          "title": "Titan, and the farthest we have landed",
+          "body": "The air at the ground presses half again as hard as Earth's, and the lakes under the haze are methane. Huygens came down through it on 14 January 2005 and sent for ninety minutes from the surface. Nothing has landed further from home, before or since."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 17818
+      },
+      {
+        "id": "enceladus",
+        "target": {
+          "record": "enceladus"
+        },
+        "stage": "saturn",
+        "frame_radii": 12,
+        "behind": "saturn",
+        "card": {
+          "title": "Enceladus, spraying its ocean into space",
+          "body": "Cassini found the jets in 2005, coming off the south pole at four hundred metres a second, and flew straight through them. They carry water, salt, silica and more organic material than anyone expected, and they have not stopped: the dust keeps one of Saturn's outer rings supplied."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 18484
+      },
+      {
+        "id": "triton",
+        "target": {
+          "record": "triton"
+        },
+        "stage": "neptune",
+        "frame_radii": 14,
+        "behind": "neptune",
+        "card": {
+          "title": "Triton, going the wrong way round",
+          "body": "One spacecraft has ever visited Neptune: Voyager 2, on 25 August 1989. Five hours after passing the planet it flew by Triton, forty thousand kilometres up, and found a surface at minus 235 degrees with geysers going off on it."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 15820
+      },
+      {
+        "id": "pluto",
+        "target": {
+          "record": "pluto"
+        },
+        "stage": "pluto",
+        "frame_radii": 9,
+        "behind": "charon",
+        "card": {
+          "title": "Pluto and Charon, going round each other",
+          "body": "New Horizons crossed this pair on 14 July 2015, nine and a half years out from Earth. It found mountains of water ice, and beside them a plain of nitrogen ice that is still slowly turning over. Sending the pictures home took until October 2016."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 17485
+      },
+      {
+        "id": "sedna",
+        "target": {
+          "record": "dwarf-sedna"
+        },
+        "stage": "sun",
+        "needs_layer": "far-bodies",
+        "card": {
+          "title": "Sedna, on its way in",
+          "body": "It is falling towards its closest point, some time around 2076, and even that is seventy-six times the Earth's distance from the Sun. Then it climbs back out to nine hundred and thirty-seven times. No planet we know of could have put it on that path, and finding it in 2003 was part of what made astronomers ask what a planet is."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 20000
+      },
+      {
+        "id": "eris",
+        "target": {
+          "record": "dwarf-eris"
+        },
+        "stage": "sun",
+        "needs_layer": "far-bodies",
+        "card": {
+          "title": "Eris, which made planet a definition",
+          "body": "The definition astronomers agreed on in 2006 asks three things of a planet: it goes round the Sun, gravity has pulled it round, and it has cleared its own path. Eris and Pluto fail the third. Eris is near the far end of a 560-year lap, ninety five times as far from the Sun as we are."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 20000
+      },
+      {
+        "id": "voyager-1",
+        "target": {
+          "record": "deep-voyager-1"
+        },
+        "stage": "sun",
+        "needs_layer": "deep-space",
+        "card": {
+          "title": "Voyager 1, and everything behind it",
+          "body": "It passed Jupiter in March 1979 and Saturn in November 1980, and it has been leaving ever since, more than 170 times the Earth's distance from the Sun. In 1990 it turned round and photographed the planets it had left. Earth came out 0.12 of a pixel wide."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 18484
+      }
+    ],
+    "estimate_ms": 211715
   }
 ];

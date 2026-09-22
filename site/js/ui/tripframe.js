@@ -188,7 +188,8 @@ export function createTripFrame(ctx) {
     const chip = el('div', 'sr-trip__chip');
     chip.appendChild(el('span', 'sr-trip__chiptext', COPY.trip.pausedChip));
     chip.appendChild(button('sr-trip__btn sr-trip__btn--ember', COPY.trip.resume, COPY.trip.resumeTitle, onResume));
-    chip.appendChild(button('sr-trip__btn', COPY.trip.leave, COPY.trip.leaveTitle, leave));
+    const chipLeave = button('sr-trip__btn', COPY.trip.leave, COPY.trip.leaveTitle, leave);
+    chip.appendChild(chipLeave);
     chip.hidden = true;
 
     // What a screen reader is told. The CARD is the accessible representation of a stop -- we do
@@ -219,7 +220,8 @@ export function createTripFrame(ctx) {
     const top = el('header', 'sr-trip__bar sr-trip__bar--top');
     const title = el('h1', 'sr-trip__title');
     top.appendChild(title);
-    top.appendChild(button('sr-trip__btn sr-trip__btn--leave', COPY.trip.leave, COPY.trip.leaveTitle, leave));
+    const topLeave = button('sr-trip__btn sr-trip__btn--leave', COPY.trip.leave, COPY.trip.leaveTitle, leave);
+    top.appendChild(topLeave);
 
     // The intro and the end card. An unmarked ending is indistinguishable from a crash.
     const panel = el('div', 'sr-trip__panel');
@@ -238,7 +240,7 @@ export function createTripFrame(ctx) {
     parts = {
       pause, back, next, replay, collapse, controls,
       progress, count, segs, chip, live, group, heading, status,
-      title, panel, fade, bottom, top,
+      title, panel, fade, bottom, top, leaveButtons: [topLeave, chipLeave],
     };
   }
 
@@ -416,9 +418,12 @@ export function createTripFrame(ctx) {
     const p = parts.panel;
     p.textContent = '';
     p.appendChild(el('h2', 'sr-trip__paneltitle', COPY.trip.endTitle));
-    p.appendChild(el('p', 'sr-trip__panelnote', COPY.trip.endBody));
+    // A trip that moved the map's centre cannot promise the camera stays: leaving puts the centre
+    // back, and one unit is a different distance there (ui/trip.js `state.stageChanged`).
+    p.appendChild(el('p', 'sr-trip__panelnote', st.stageChanged ? COPY.trip.endBodyStage : COPY.trip.endBody));
     const row = el('div', 'sr-trip__panelrow');
-    const explore = button('sr-trip__btn sr-trip__btn--ember', COPY.trip.endExplore, COPY.trip.endExploreTitle, leave);
+    const explore = button('sr-trip__btn sr-trip__btn--ember', COPY.trip.endExplore,
+      st.stageChanged ? COPY.trip.endExploreTitleStage : COPY.trip.endExploreTitle, leave);
     row.appendChild(explore);
     row.appendChild(button('sr-trip__btn', COPY.trip.endReplay, null, () => trip.start(st.tourId)));
     p.appendChild(row);
@@ -478,6 +483,9 @@ export function createTripFrame(ctx) {
     document.documentElement.setAttribute(PHASE_ATTR, st.phase);
     host.setAttribute('aria-label', st.tourTitle || '');
     parts.title.textContent = st.tourTitle || '';
+    // The same promise the end card makes, on the button that keeps it.
+    const leaveTitle = st.stageChanged ? COPY.trip.leaveTitleStage : COPY.trip.leaveTitle;
+    for (const b of parts.leaveButtons) b.title = leaveTitle;
 
     const showPanel = st.phase === 'intro' || st.phase === 'outro';
     parts.controls.hidden = showPanel;

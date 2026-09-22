@@ -51,13 +51,14 @@
 #   min_stops     below this the trip is offered GREYED WITH ITS REASON, never hidden: a missing
 #                 feature and a broken one look identical when you hide one. Floor of 3 -- below
 #                 three stops it is a link, not a trip.
-#   stage         the world, or the rung of the ladder, the map is centred on for the trip:
-#                 `earth` by default, any registry/worlds.yaml or registry/stages.yaml id. This
-#                 was `earth` only until spec 0028 step 8 taught the trip to save the stage on
-#                 begin, switch with ctx.setStage, and put it back on leave (ui/trip.js), and the
-#                 rig is re-taught its world at every stop. Leaving a trip on another stage is the
-#                 one leave that moves the camera -- it goes back to the stage it came from -- so
-#                 such a trip's blurb says so.
+#   stage         the world, or the rung of the ladder, the map is centred on for the trip, and so
+#                 what one scene unit is: `earth` by default, any registry/worlds.yaml or
+#                 registry/stages.yaml id. This was `earth` only until spec 0028 step 8 taught the
+#                 trip to save the stage on begin, switch with ctx.setStage, and put it back on
+#                 leave (ui/trip.js), and the rig is re-taught its world at every stop. Leaving a
+#                 trip on another stage is the one leave that moves the camera -- it goes back to
+#                 the stage it came from -- so such a trip's blurb says so. Every stop is flown on
+#                 this stage unless it names its own, below.
 #   clock         as-found | live | freeze. `freeze` pauses time, which flips the clock from live
 #                 to scrub, which drops glyph re-propagation from every 100 ms to EVERY FRAME
 #                 (main.js) -- so a trip that freezes may not require the `active` layer, which
@@ -68,6 +69,26 @@
 #   target        above.
 #   needs_layer   this stop's own layer requirement, when it differs from the trip's. The trip
 #                 switches it on for the duration and switches it back on the way out.
+#   stage         this stop's own centre for the map, when it differs from the trip's. IT IS A
+#                 TRUTH SETTING, not a camera one. A world is drawn where it really is only from
+#                 its own stage, from the stage of the planet it goes round, and from the stages
+#                 that squeeze nothing (the Sun's, and the ladder's rungs). From everywhere else
+#                 scene/worlds.js draws it nearer and larger, and its moons around the enlarged
+#                 disc -- so a stop that flew to where Titan really is, from Earth's stage, would
+#                 arrive 1.4 billion km from the Titan on the screen. check_registry.py refuses
+#                 that pairing by name. Changing stage between two stops is a CUT: the stop being
+#                 left is drawn squeezed from the new stage, so there is nothing to fly away from.
+#                 Onto a stage that squeezes nothing the camera keeps its place in kilometres
+#                 instead, which is why Pluto to Eris below is one move and not a jump to the Sun.
+#   behind        a world (worlds.yaml) the shot keeps in the picture behind its subject. The
+#                 camera's direction is otherwise chosen by the key light, which knows about the
+#                 Sun and nothing else: measured in a browser, the first stop of the trip below
+#                 came out with Io alone in the dark and Jupiter's disc 198 px above the top of the
+#                 frame, under a card that opens "Io goes round Jupiter every 42 hours". The
+#                 key-light search is narrowed to the directions that hold this world within 22
+#                 degrees of the middle, and falls back to the best-lit direction when none does,
+#                 so it narrows the choice and never empties it. The world named must be drawn true
+#                 from the stop's stage, and check_registry.py refuses it when it is not.
 #   distance_km   how far the camera sits from the subject. It does NOT change how big the
 #                 subject looks: scene/heroes.js draws every model at a constant ANGULAR size, so
 #                 this number decides how much WORLD is in frame behind it, and nothing else.
@@ -573,3 +594,240 @@ tours:
             NASA's table of what lies on the Moon, last updated in August 2025, lists 28 landings,
             six of them with people aboard. This map marks 19 of them, two by where their rovers
             stopped. Luna 9, the first of all, is not one: nobody knows exactly where it is.
+
+  # =============================================================================================
+  # OUT PAST JUPITER. Ten stops, each on the stage where its subject is drawn where it really is:
+  # Jupiter's for Io and Europa, Saturn's for Titan and Enceladus, Neptune's for Triton, Pluto's
+  # for the pair, and the Sun's for the three that are further out than any planet. From Earth's
+  # stage every one of the outer worlds is drawn nearer and larger, and its moons around the
+  # enlarged disc (scene/worlds.js): the trip would have flown to a place on the screen where
+  # nothing is drawn. The per-stop `stage:` field above arrived with this trip; the only other row
+  # that names one is the fixture trip in tests/fixtures/miranda.yaml, which visits a moon of
+  # Uranus for the same reason.
+  #
+  # EVERY STOP IS A `record:` AND NOT A `world:`, so the world's or the probe's OWN card opens
+  # under the stop's words: the moons' cards carry the page and the day each of their facts was
+  # read (registry/worlds.yaml `facts:`), which is where the reader goes next. The stop's words
+  # therefore ADD and never repeat -- the same rule the four surface stops above are written to.
+  #
+  # THE ORDER IS THE DISTANCE, and it is also the order the story happened in: every world here
+  # was a dot until something we built went past it, and the last stop is the thing that went
+  # furthest. The fragile end is the tail, as in the trip above: the three `far-bodies` and
+  # `deep-space` stops are bundled data, so nothing here needs a network, but if the layers were
+  # ever switched off the trip still ends on Pluto and Charon, which is also a good ending.
+  # =============================================================================================
+  - id: outer-solar-system
+    title: "Out past Jupiter, to the farthest thing we sent"
+    blurb: "Ten stops through the cold half of the Solar System, each world at its true size. Leaving brings you back to Earth."
+    requires: [worlds, deep-space, far-bodies]
+    stage: jupiter
+    clock: as-found
+    stops:
+      - id: io
+        target: {record: io}
+        behind: jupiter
+        stage: jupiter
+        # 12 Io radii: at 5 the moon fills the frame and Jupiter, 5.9 Jupiter radii away, is
+        # whatever the key light leaves behind it. Checked in the browser, 2026-09-22.
+        frame_radii: 12
+        card:
+          title: "Io, the moon Jupiter never lets rest"
+          # Io's lap is 1.769 days (NASA's Jovian satellite fact sheet, the same table
+          # registry/worlds.yaml takes its radius from, read 2026-09-22) = 42.5 hours. The tug of
+          # war and the volcanoes are NASA Science, Io, read 2026-09-22: "caught in a tug-of-war
+          # between Jupiter's massive gravity and the smaller but precisely timed pulls from two
+          # neighboring moons that orbit farther from Jupiter -- Europa and Ganymede", and "the
+          # most volcanically active world in the solar system, with hundreds of volcanoes".
+          body: >-
+            Io goes round Jupiter every 42 hours, pulled one way by the planet and the other by two
+            moons further out, in time with it. All that kneading has to go somewhere, and it comes
+            out of hundreds of volcanoes.
+
+      - id: europa
+        target: {record: europa}
+        behind: jupiter
+        stage: jupiter
+        frame_radii: 12
+        card:
+          title: "Europa, and the two ships on their way"
+          # Twice Earth's ocean: NASA Science, Europa, read 2026-09-22, "holding twice as much
+          # water as Earth's global ocean". Europa Clipper: first closest approach to Europa
+          # 2030-04-11 and 49 flybys (Wikipedia, Europa Clipper, and the Horizons -159 header
+          # data/sample.js quotes), goal "to determine whether there are places below the surface
+          # of Jupiter's icy moon, Europa, that could support life" (NASA Science). JUICE arrives
+          # July 2031 (data/sample.js, from the Horizons -28 header) and is "the first intended to
+          # orbit a moon other than Earth's Moon", Ganymede, from December 2034 (Wikipedia, Jupiter
+          # Icy Moons Explorer). All read 2026-09-22.
+          body: >-
+            Under that ice is twice as much water as every ocean on Earth put together. Europa
+            Clipper reaches Jupiter in April 2030 to fly past here 49 times and ask whether
+            anything could live down there; Europe's JUICE arrives in 2031 and ends up circling
+            Ganymede.
+
+      - id: saturn
+        target: {record: saturn}
+        stage: saturn
+        frame_radii: 4.5
+        card:
+          title: "Saturn, and a ring ten metres thick"
+          # Wikipedia, Rings of Saturn, read 2026-09-22: they "extend from 7,000 km (4,300 mi) to
+          # 80,000 km (50,000 mi) away from Saturn's equator", are "made almost entirely of water
+          # ice, with a trace component of rocky material", and have a "local thickness of as
+          # little as 10 meters". The ring this map draws is 74 500 to 140 220 km from Saturn's
+          # centre (registry/worlds.yaml), which is that same 16 000 to 82 000 km above the
+          # equator. Cassini: orbit insertion 1 July 2004, "13 years, 76 days at Saturn", and on
+          # 15 September 2017 its "trajectory took it into Saturn's upper atmosphere and it burned
+          # up" (Wikipedia, Cassini-Huygens, read 2026-09-22).
+          body: >-
+            The rings reach eighty thousand kilometres out from the equator and in places are ten
+            metres from top to bottom. They are almost all water ice. Cassini circled here for
+            thirteen years and finished by flying into the planet in September 2017.
+
+      - id: titan
+        target: {record: titan}
+        behind: saturn
+        stage: saturn
+        frame_radii: 6
+        card:
+          title: "Titan, and the farthest we have landed"
+          # Wikipedia, Titan (moon), read 2026-09-22: surface pressure "146.7 kPa (1.45 atm)", "the
+          # only moon in the Solar System with an atmosphere denser than Earth's", and "the only
+          # known object in the Solar System besides Earth with clear evidence of stable bodies of
+          # surface liquid". Huygens "landed on Titan on 14 January 2005", "continued to send data
+          # for about 90 minutes after touchdown", and its landing was "the farthest landing from
+          # Earth a spacecraft has ever made" and "so far the only one accomplished in the outer
+          # Solar System" (Wikipedia, Huygens (spacecraft), read 2026-09-22).
+          body: >-
+            The air at the ground presses half again as hard as Earth's, and the lakes under the
+            haze are methane. Huygens came down through it on 14 January 2005 and sent for ninety
+            minutes from the surface. Nothing has landed further from home, before or since.
+
+      - id: enceladus
+        target: {record: enceladus}
+        behind: saturn
+        stage: saturn
+        # Enceladus is 252 km in radius and 238 000 km from Saturn. MEASURED in the browser,
+        # 2026-09-22: at 5 radii the moon came out 193 px across against a Saturn 235 px across,
+        # which reads as two bodies of a size. At 12 it is 85 px against the same 250 px, and
+        # perspective is doing less of the lying: Saturn really is 231 times the radius.
+        frame_radii: 12
+        card:
+          title: "Enceladus, spraying its ocean into space"
+          # NASA Science, Enceladus, read 2026-09-22: "In 2005, NASA's Cassini spacecraft
+          # discovered that icy water particles and gas gush from the moon's surface at
+          # approximately 800 miles per hour (400 meters per second)"; the plume carries "water
+          # vapor, carbon dioxide, methane, perhaps a little ammonia and either carbon monoxide or
+          # nitrogen gas ... along with salts and silica", and "the density of organic materials in
+          # the plume was about 20 times denser than scientists expected"; "The eruptions appear to
+          # be continuous ... which supplies material to Saturn's E-ring". The moon is "only about
+          # 310 miles (500 kilometers) across".
+          body: >-
+            Cassini found the jets in 2005, coming off the south pole at four hundred metres a
+            second, and flew straight through them. They carry water, salt, silica and more organic
+            material than anyone expected, and they have not stopped: the dust keeps one of
+            Saturn's outer rings supplied.
+
+      - id: triton
+        target: {record: triton}
+        behind: neptune
+        stage: neptune
+        # Triton is 1 353 km in radius, Neptune 24 622 and 355 000 km away, so perspective at 8
+        # radii drew the moon twice the width of the planet it goes round (browser, 2026-09-22).
+        # At 14 they are 69 and 65 px, which is at least the right way round.
+        frame_radii: 14
+        card:
+          title: "Triton, going the wrong way round"
+          # Wikipedia, Voyager 2, read 2026-09-22: "Voyager 2's closest approach to Neptune
+          # occurred on August 25, 1989"; "Five hours after Voyager 2 made its closest approach to
+          # Neptune, it performed a close fly-by of Triton ... passing within about 40,000 km"; it
+          # is "The only spacecraft to have visited either of the ice giant planets". NASA Science,
+          # Triton, read 2026-09-22: Voyager 2 "found surface temperatures of -391 degrees
+          # Fahrenheit (-235 degrees Celsius)" and "found Triton has active geysers".
+          body: >-
+            One spacecraft has ever visited Neptune: Voyager 2, on 25 August 1989. Five hours
+            after passing the planet it flew by Triton, forty thousand kilometres up, and found a
+            surface at minus 235 degrees with geysers going off on it.
+
+      - id: pluto
+        target: {record: pluto}
+        behind: charon
+        stage: pluto
+        # Charon is 19 600 km from Pluto and 606 km in radius. At 9 Pluto radii (10 700 km) the
+        # pair is the shot; the moon's own card is one tap away.
+        frame_radii: 9
+        card:
+          title: "Pluto and Charon, going round each other"
+          # Wikipedia, New Horizons, read 2026-09-22: launch "January 19, 2006", closest approach
+          # "July 14, 2015, at 11:49 UTC" at "12,500 km (7,800 mi)", and the last flyby data
+          # reached Earth on "October 25, 2016". Wikipedia, Pluto, read 2026-09-22: "Sputnik
+          # Planitia is covered with churning nitrogen ice 'cells' that are geologically young and
+          # turning over due to convection"; "The mountains are made of water ice"; Pluto and
+          # Charon's shared centre of mass "does not lie within either body, and they are tidally
+          # locked".
+          body: >-
+            New Horizons crossed this pair on 14 July 2015, nine and a half years out from Earth.
+            It found mountains of water ice, and beside them a plain of nitrogen ice that is still
+            slowly turning over. Sending the pictures home took until October 2016.
+
+      - id: sedna
+        target: {record: dwarf-sedna}
+        needs_layer: far-bodies
+        stage: sun
+        # NOT pulled back to hold the whole 1 087 au lap the card is about, though the line is
+        # drawn (public #212). MEASURED 2026-09-22: from 2 400 au the picture was unchanged,
+        # because scene/heroes.js draws the SELECTED model at a constant 260 px whatever the
+        # distance. Sedna and Eris therefore look like the same rock at the same size; the words
+        # and the orbit line are what tell them apart.
+        card:
+          title: "Sedna, on its way in"
+          # Wikipedia, 90377 Sedna, read 2026-09-22: found "on 14 November 2003"; perihelion
+          # "76.19 AU (11.4 billion km)", reached about July 2076; aphelion "937 AU (140 billion
+          # km)"; one lap "approximately 11,400 years"; its closest point is "far too distant for
+          # it to have been scattered by any of the known planets". The record's own elements agree
+          # (data/sample.js: JPL's perihelion date is 2075-11).
+          body: >-
+            It is falling towards its closest point, some time around 2076, and even that is
+            seventy-six times the Earth's distance from the Sun. Then it climbs back out to nine
+            hundred and thirty-seven times. No planet we know of could have put it on that path,
+            and finding it in 2003 was part of what made astronomers ask what a planet is.
+
+      - id: eris
+        target: {record: dwarf-eris}
+        needs_layer: far-bodies
+        stage: sun
+        card:
+          title: "Eris, which made planet a definition"
+          # Wikipedia, IAU definition of planet, read 2026-09-22. The resolution of 24 August 2006
+          # asks that a planet "is in orbit around the Sun", "has sufficient mass for its
+          # self-gravity to overcome rigid body forces so that it assumes a hydrostatic equilibrium
+          # (nearly round) shape" and "has cleared the neighbourhood around its orbit"; a dwarf
+          # planet meets the first two and not the third. The card gives the year and not the
+          # month, because the month pushes its first sentence past the 160 characters ui/cards.js
+          # prints. Eris's lap is 560 years from JPL's own
+          # elements (a = 67.93 au, data/sample.js) and it is 95.5 au from the Sun on 2026-09-22
+          # against an aphelion of 97.7, so "near the far end" is good for decades.
+          body: >-
+            The definition astronomers agreed on in 2006 asks three things of a planet: it goes
+            round the Sun, gravity has pulled it round, and it has cleared its own path. Eris and
+            Pluto fail the third. Eris is near the far end of a 560-year lap, ninety five times as
+            far from the Sun as we are.
+
+      - id: voyager-1
+        target: {record: deep-voyager-1}
+        needs_layer: deep-space
+        stage: sun
+        # NO `behind: sun`, though the Sun is the thing this card points back at: tried in the
+        # browser 2026-09-22, and at 172 au the Sun is 0.01 px across, so aiming the camera at it
+        # only turned Voyager 1 side on and put nothing in the frame.
+        card:
+          title: "Voyager 1, and everything behind it"
+          # Wikipedia, Voyager 1, read 2026-09-22: launched "September 5, 1977", Jupiter on
+          # "March 5, 1979", Saturn on "November 12, 1980", and it crossed into interstellar space
+          # on "August 25, 2012". The photograph is 14 February 1990 from "40.47 astronomical
+          # units", in which Earth "takes up less than one (0.12 of a pixel, according to NASA)"
+          # (Wikipedia, Pale Blue Dot, read 2026-09-22). The distance is the record's own: JPL
+          # Horizons put it at 171.7 au on 2026-09-07 (data/sample.js), and it adds 3.6 a year.
+          body: >-
+            It passed Jupiter in March 1979 and Saturn in November 1980, and it has been leaving
+            ever since, more than 170 times the Earth's distance from the Sun. In 1990 it turned
+            round and photographed the planets it had left. Earth came out 0.12 of a pixel wide.

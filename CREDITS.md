@@ -562,6 +562,28 @@ Six more moons drawn the same way, with **no texture or image**, and every fact 
   *Titan*, *Enceladus*, *Triton*, *Charon*, *Phobos*, *Moons of Mars* and *Neptune* articles (CC BY-SA
   4.0; a few words quoted in the registry as evidence, none shipped to the page).
 
+### 4.12 The trip out past Jupiter — `registry/tours.yaml`
+
+Ten cards of words written for this project, from figures and dates read on 2026-09-22. Each stop's
+row names its pages in a comment beside the words, with the sentence each number came from.
+
+- NASA Science (science.nasa.gov), US government works, facts: *Io* (the pull of Jupiter and of two
+  other moons, and the volcanoes), *Europa* (twice Earth's ocean), *Enceladus* (the jets, their
+  speed, what they carry, and the ring they supply) and *Triton* (the geysers and the surface
+  temperature Voyager 2 measured).
+- NASA Space Science Data Coordinated Archive, *Jovian Satellite Fact Sheet* (nssdc.gsfc.nasa.gov):
+  Io's orbital period, 1.769 days.
+- Wikipedia (CC BY-SA 4.0; figures and dates are facts, the words on the cards are this project's,
+  and the few phrases quoted in the registry are evidence and do not ship to the page):
+  *Rings of Saturn*, *Cassini-Huygens*, *Titan*, *Huygens (spacecraft)*, *Voyager 2*,
+  *New Horizons*, *Pluto*, *IAU definition of planet*, *90377 Sedna*, *Voyager 1*, *Pale Blue Dot*,
+  *Europa Clipper* and *Jupiter Icy Moons Explorer*.
+- The distances, the orbits and the dates a card shares with a record it flies to (Eris's 560-year
+  lap, Sedna's perihelion, Voyager 1's 172 au, Europa Clipper's arrival and its 49 flybys) come from
+  the same sources as those records: JPL's Small-Body Database (§4.10) and JPL Horizons (§4.1 of
+  `site/js/data/sample.js`'s own evidence block). `tests/test_outer_trip.mjs` checks the card
+  against the record at four dates.
+
 ## 4.6 Third-party trademarks the app names or draws
 
 None of the marks below is licensed to this project and none is used as a badge of origin. They are
