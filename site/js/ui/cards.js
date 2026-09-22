@@ -496,9 +496,13 @@ const TEMPLATES = {
     // Spec 0013 requirement 6: only written when a named source classified it. The word
     // "danger" appears nowhere, because no sourced risk field exists in v1.
     const sourcedNoImpact = md.impactRisk === 'none' || md.noImpact === true;
-    return buildSentence(t(T.lead, { name: displayName(record) }), [
+    const now = m && Number.isFinite(m.tMs) ? m.tMs : Date.now();
+    // `neo` is the data's own classification; only an explicit false changes the sentence, so a
+    // live NEO-feed record that does not carry the field still reads as the near-Earth object it is.
+    const lead = md.neo === false ? T.leadMainBelt : T.lead;
+    return buildSentence(t(lead, { name: displayName(record) }), [
       caMs !== null && ld !== null
-        ? t(T.whyApproach, { date: timeText.localDate(caMs), ld: fmt.smart(ld) })
+        ? t(T.whyApproach, { date: timeText.dateNear(caMs, now), ld: fmt.smart(ld) })
         : null,
       sizeSay ? t(T.size, { size: sizeSay }) : null,
       sourcedNoImpact ? T.willNotHit : null,
@@ -513,7 +517,7 @@ const TEMPLATES = {
     let brightness = null;
     if (mag !== null) brightness = mag <= 6 ? T.nakedEye : T.faint;
     return buildSentence(t(T.lead, { name: displayName(record) }), [
-      periMs !== null ? t(T.whyPerihelion, { date: timeText.localDate(periMs) }) : null,
+      periMs !== null ? t(T.whyPerihelion, { date: timeText.dateNear(periMs, m && Number.isFinite(m.tMs) ? m.tMs : Date.now()) }) : null,
       brightness,
       au !== null ? t(T.distanceSun, { au: fmt.smart(au) }) : null,
     ]);
