@@ -447,7 +447,13 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
 
   function frame(nowReal) {
     requestAnimationFrame(frame);
-    const frameMs = nowReal - last;             // the real duration, before the clamp below
+    // Never negative. requestAnimationFrame stamps a frame with the time it BEGAN, which can be
+    // earlier than the performance.now() `last` was set from -- and a negative first step was added
+    // to the 10 Hz accumulator below, holding the glyph and label updates back until real time paid
+    // it off: over a minute in headless Chrome (found 2026-09-22 by the famous-stars work), and the
+    // "glyph layers read zero for ~20 s after boot" that earlier probes put down to a race. It also
+    // nudged the clock backwards and fed the frame-rate latch a negative frame.
+    const frameMs = Math.max(0, nowReal - last); // the real duration, before the clamp below
     const dt = Math.min(100, frameMs);           // a backgrounded tab must not lurch on return
     last = nowReal;
     if (!document.hidden && latch.push(frameMs, nowReal)) {
