@@ -14,5 +14,7 @@ export const ALIASES = {
   "tiangong": "css",
   "chandra": "cxo",
   "galactic center": "sagittarius a",
-  "galactic centre": "sagittarius a"
+  "galactic centre": "sagittarius a",
+  "cone nebula": "christmas tree cluster",
+  "lobster nebula": "war and peace"
 };

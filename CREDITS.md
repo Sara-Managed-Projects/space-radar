@@ -186,12 +186,12 @@ Gliese Catalog 3rd ed., and Gaia DR3 distances via the AT-HYG work.
 |---|---|---|---|
 | Positions, types, sizes, magnitudes, Messier numbers, common names of 110 Messier objects | **OpenNGC** by Mattia Verga, `NGC.csv` + `addendum.csv` (<https://github.com/mattiaverga/OpenNGC>) | CC BY-SA 4.0 | Object data from OpenNGC, © Mattia Verga |
 | Distances of the 110 Messier objects (`scripts/data/messier-distances.txt`) | the distance column of Wikipedia's *List of Messier objects*, read 2026-09-08 | facts; the page text is CC BY-SA 4.0 | Distances as compiled in Wikipedia's List of Messier objects |
-| The Large Magellanic Cloud (`registry/dso-hand.yaml`) | Wikipedia's *Large Magellanic Cloud* infobox, read 2026-09-08 | facts | as the row says |
+| The 99 objects placed by hand (`registry/dso-hand.yaml`), from the Large Magellanic Cloud to the Antennae Galaxies | the infobox of the Wikipedia page each row names, read 2026-09-08 to 2026-09-22 | facts | as the row says |
 
 **What OpenNGC does not have.** It carries **no distance column** (parallaxes and redshifts for a
 few). A nebula in our galaxy and a galaxy fifty million light-years away cannot share an invented
-shell, so the app places only the 111 objects whose distance a source wrote down; the other 13 261
-real OpenNGC objects are not drawn as places, and `dso.json` says how many they are.
+shell, so the app places only the 209 objects whose distance a source wrote down; the rest of
+OpenNGC's 13 372 real objects are not drawn as places, and `dso.json` says how many they are.
 
 **ShareAlike.** `dso.json` is a derivative of OpenNGC and is offered under CC BY-SA 4.0 (§6).
 

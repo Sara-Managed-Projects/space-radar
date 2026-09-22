@@ -6,7 +6,7 @@
 //
 // WHY. Every deep-sky object was one 8 px dot whatever its size. On the "To the edge" trip the
 // Pleiades stop is 100 light-years from a cluster 19 light-years across -- eleven degrees of sky --
-// and it was that dot (measured 2026-09-22). The records know how big they are: 172 of 178 carry a
+// and it was that dot (measured 2026-09-22). The records know how big they are: 202 of 209 carry a
 // major axis (OpenNGC or the hand row's source), and data/parsers.js turns it into `sizeLy`.
 //
 // WHAT IT IS, AND IS NOT. A soft round glow at the measured distance, the measured size across,

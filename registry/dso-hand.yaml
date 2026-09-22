@@ -971,6 +971,463 @@ objects:
     source: "https://en.wikipedia.org/wiki/Horsehead_Nebula (infobox, read 2026-09-09)"
     why: "The most famous dark cloud in the sky: a horse's head of dust against the red glow of IC 434, below Orion's Belt."
 
+  # THIRTY-ONE MORE FAMOUS OBJECTS OUTSIDE MESSIER'S LIST (2026-09-22). The stellar rung had the
+  # Messier catalogue, the Local Group and a handful of showpieces, and nothing for a visitor who
+  # knows the Heart and Soul, the Antennae or Thor's Helmet by name. Each row is its page's rendered
+  # infobox; where the infobox and the article's lead disagree (the Heart, the Cocoon, the Cat's Paw,
+  # NGC 1300) the infobox wins, as for every row above, and the comment says what the lead says.
+  # Looked at and NOT added, for want of a usable number:
+  #   IC 1396 / the Elephant's Trunk   both infoboxes give a distance and no position
+  #   Stephan's Quintet                "90.25 +/- 6.33" with no unit
+  #   NGC 1365                         74 Mly light-travel in the infobox, unreferenced, against 56 Mly in the lead
+  #   the Pelican Nebula (IC 5070)     an unreferenced 1 800 ly, for a cloud the North America row above
+  #                                    puts at 2 590 ly (both are part of one H II region, W80)
+  #   the Cartwheel Galaxy             500 Mly, six times farther than anything else this file places
+  #   the Spirograph Nebula (IC 418)   four apparent sizes and no way to say which one the glow should use
+
+  - id: thors-helmet
+    name: Thor's Helmet
+    designation: NGC 2359
+    type: HII
+    what: emission nebula
+    ra_deg: 109.625         # 07h 18m 30s
+    dec_deg: -13.23         # -13 deg 13.8 min
+    dist_kly: 11.96         # 11 960 ly (3 670 pc)
+    # vmag omitted: the infobox leaves the magnitude blank
+    maj_ax_arcmin: 9        # 9 x 6 arcmin
+    con: Canis Major
+    source: "https://en.wikipedia.org/wiki/NGC_2359 (infobox, read 2026-09-22)"
+    why: "A bubble blown by WR 7, an extremely hot star thought to be close to going supernova; a nearby gas cloud gave it its curved, complex shape."
+
+  - id: butterfly-nebula
+    name: Butterfly Nebula
+    designation: NGC 6302
+    type: PN
+    what: planetary nebula
+    ra_deg: 258.4342        # 17h 13m 44.211s
+    dec_deg: -37.1044       # -37 deg 06 min 15.94 s
+    dist_kly: 3.4           # 3 400 +/- 500 ly
+    # vmag omitted: the infobox gives 7.1 in B, not V
+    maj_ax_arcmin: 3.0      # >3.0 arcmin, a lower bound
+    con: Scorpius
+    source: "https://en.wikipedia.org/wiki/NGC_6302 (infobox, read 2026-09-22)"
+    why: "Its central white dwarf, one of the hottest stars known at over 250 000 °C, hides behind a dark lane of dust across the waist of its two lobes."
+
+  - id: ghost-of-jupiter
+    name: Ghost of Jupiter
+    designation: NGC 3242
+    type: PN
+    what: planetary nebula
+    ra_deg: 156.1921        # 10h 24m 46.1s
+    dec_deg: -18.6424       # -18 deg 38 min 32.6 s
+    dist_kly: 4.8           # 4 800 +/- 500 ly
+    vmag: 7.7
+    maj_ax_arcmin: 0.67     # 40 arcsec
+    con: Hydra
+    source: "https://en.wikipedia.org/wiki/NGC_3242 (infobox, read 2026-09-22)"
+    why: "Named for its likeness to Jupiter in a telescope: a bluish-green disc about two light-years long, its inner layers thrown off some 1 500 years ago."
+
+  - id: blue-snowball
+    name: Blue Snowball Nebula
+    designation: NGC 7662
+    type: PN
+    what: planetary nebula
+    ra_deg: 351.4743        # 23h 25m 53.832s
+    dec_deg: 42.535         # +42 deg 32 min 05.84 s
+    dist_kly: 5.73          # 5 730 +/- 340 ly (1 757 pc, Gaia EDR3)
+    vmag: 8.3
+    maj_ax_arcmin: 0.53     # 32 x 28 arcsec
+    con: Andromeda
+    source: "https://en.wikipedia.org/wiki/NGC_7662 (infobox, read 2026-09-22)"
+    why: "A small bluish disc in a modest telescope: shells of gas a dying star threw off about 3 000 years ago, lit by a core of about 100 000 degrees."
+
+  - id: skull-nebula
+    name: Skull Nebula
+    designation: NGC 246
+    type: PN
+    what: planetary nebula
+    ra_deg: 11.7639         # 00h 47m 03.338s
+    dec_deg: -11.8719       # -11 deg 52 min 18.94 s
+    dist_kly: 3.5           # 3 500 +720/-850 ly
+    vmag: 8.0               # 8; the central star is 11.8
+    maj_ax_arcmin: 3.8      # 3.8 arcmin
+    con: Cetus
+    source: "https://en.wikipedia.org/wiki/NGC_246 (infobox, read 2026-09-22)"
+    why: "The first planetary nebula known to have three stars at its centre: a white dwarf and two companions, the third found in 2014."
+
+  - id: christmas-tree-cluster
+    name: Christmas Tree Cluster
+    designation: NGC 2264
+    type: Cl+N
+    what: young open cluster in an emission nebula
+    ra_deg: 100.25          # 06h 41m
+    dec_deg: 9.8833         # +09 deg 53 min
+    dist_kly: 2.35          # 2 350 +/- 52 ly (721 pc)
+    vmag: 4.1
+    maj_ax_arcmin: 40       # 40 arcmin
+    con: Monoceros
+    source: "https://en.wikipedia.org/wiki/NGC_2264 (infobox, read 2026-09-22)"
+    why: "A young cluster shaped like an upside-down Christmas tree, with the Cone Nebula at its tip; new stars are still forming in its dust."
+
+  - id: heart-nebula
+    name: Heart Nebula
+    designation: IC 1805
+    type: HII
+    what: emission nebula
+    ra_deg: 38.3417         # 02h 33m 22s
+    dec_deg: 61.4433        # +61 deg 26 min 36 s
+    dist_kly: 7.0           # 7 000 ly (2 100 pc); the article's lead says 7 500, the infobox wins as for every row here
+    vmag: 6.5
+    maj_ax_arcmin: 150      # 150 x 150 arcmin
+    con: Cassiopeia
+    source: "https://en.wikipedia.org/wiki/Heart_Nebula (infobox, read 2026-09-22)"
+    why: "Hydrogen glowing red in the light of a young cluster at its centre, whose brightest stars are nearly 50 times the mass of the Sun."
+
+  - id: soul-nebula
+    name: Soul Nebula
+    designation: IC 1848
+    type: HII
+    what: emission nebula
+    ra_deg: 43.85           # 02h 55m 24s
+    dec_deg: 60.41          # +60 deg 24 min 36 s
+    dist_kly: 7.5           # 7 500 ly
+    # vmag omitted: the infobox's 6.5 is labelled absolute magnitude, so no V magnitude here
+    maj_ax_arcmin: 150      # 150 x 75 arcmin
+    con: Cassiopeia
+    source: "https://en.wikipedia.org/wiki/Westerhout_5 (infobox, read 2026-09-22)"
+    why: "The Heart Nebula's eastern neighbour: its stars get younger the farther they sit from the hollows its biggest stars blew, as if each generation lit the next."
+
+  - id: iris-nebula
+    name: Iris Nebula
+    designation: NGC 7023
+    type: RfN
+    what: reflection nebula
+    ra_deg: 315.3983        # 21h 01m 35.60s
+    dec_deg: 68.1694        # +68 deg 10 min 10.0 s
+    dist_kly: 1.3           # 1 300 ly
+    vmag: 6.8
+    maj_ax_arcmin: 18       # 18 x 18 arcmin
+    con: Cepheus
+    source: "https://en.wikipedia.org/wiki/Iris_Nebula (infobox, read 2026-09-22)"
+    why: "Dust lit by a young double star; buckyballs, football-shaped molecules of 60 carbon atoms, were first firmly found in interstellar space here and in NGC 2023."
+
+  - id: cocoon-nebula
+    name: Cocoon Nebula
+    designation: IC 5146
+    type: Cl+N
+    what: reflection and emission nebula
+    ra_deg: 328.3696        # 21h 53m 28.7s
+    dec_deg: 47.2669        # +47 deg 16 min 01 s
+    dist_kly: 2.5           # 2 500 +/- 100 ly (780 pc); the lead says 4 000, the infobox wins
+    vmag: 7.2
+    maj_ax_arcmin: 12       # 12 arcmin
+    con: Cygnus
+    source: "https://en.wikipedia.org/wiki/IC_5146 (infobox, read 2026-09-22)"
+    why: "A star nursery at the head of a long dark trail of dust, Barnard 168; Spitzer and Chandra found hundreds of young stars in it."
+
+  - id: cats-paw-nebula
+    name: Cat's Paw Nebula
+    designation: NGC 6334
+    type: HII
+    what: emission nebula
+    ra_deg: 260.2121        # 17h 20m 50.9s
+    dec_deg: -36.115        # -36 deg 06 min 54 s
+    dist_kly: 4.37          # 4 370 +/- 650 ly (1 340 pc); the lead says 5 500, the infobox wins
+    # vmag omitted: the infobox leaves the magnitude blank
+    maj_ax_arcmin: 35       # 35 x 20 arcmin
+    con: Scorpius
+    source: "https://en.wikipedia.org/wiki/NGC_6334 (infobox, read 2026-09-22)"
+    why: "Round glowing pads like a cat's paw, with ten star clusters hidden in its dust; in 2025 Webb looked inside one 'toe bean' and saw stars forming."
+
+  - id: war-and-peace-nebula
+    name: War and Peace Nebula
+    designation: NGC 6357
+    type: HII
+    what: emission nebula
+    ra_deg: 261             # 17h 24m
+    dec_deg: -34.3333       # -34 deg 20 min
+    dist_kly: 5.9           # ~5 900 +/- 450 ly (1 800 pc)
+    # vmag omitted: the infobox gives no magnitude
+    # maj_ax_arcmin omitted: the infobox gives no size, so it has no glow
+    con: Scorpius
+    source: "https://en.wikipedia.org/wiki/NGC_6357 (infobox, read 2026-09-22)"
+    why: "Home to the cluster Pismis 24, whose brightest star was once thought to weigh 300 Suns, until it turned out to be at least three stars."
+
+  - id: needle-galaxy
+    name: Needle Galaxy
+    designation: NGC 4565
+    type: G
+    what: spiral galaxy seen edge-on
+    hubble: "SA(s)b?"
+    ra_deg: 189.0865        # 12h 36m 20.7710s
+    dec_deg: 25.9877        # +25 deg 59 min 15.678 s
+    dist_kly: [38160,53000] # the infobox gives two: 38.16 +/- 2.27 Mly and 53 +/- 4 Mly
+    vmag: 10.42
+    maj_ax_arcmin: 15.9     # 15.90 x 1.85 arcmin
+    con: Coma Berenices
+    source: "https://en.wikipedia.org/wiki/NGC_4565 (infobox, read 2026-09-22)"
+    why: "A giant spiral more luminous than Andromeda, seen edge-on as a thin needle of light; the edge of its disc is slightly warped."
+
+  - id: whale-galaxy
+    name: Whale Galaxy
+    designation: NGC 4631
+    type: G
+    what: barred spiral galaxy seen edge-on
+    hubble: "SB(s)d"
+    ra_deg: 190.5333        # 12h 42m 08.0s
+    dec_deg: 32.5414        # +32 deg 32 min 29 s
+    dist_kly: 30000         # 30 Mly
+    vmag: 9.8
+    maj_ax_arcmin: 15.5     # 15.5 x 2.7 arcmin
+    con: Canes Venatici
+    source: "https://en.wikipedia.org/wiki/NGC_4631 (infobox, read 2026-09-22)"
+    why: "An edge-on spiral shaped like a whale or a herring, where so many stars have exploded that their wind blows gas out of the galaxy's disc."
+
+  - id: ngc-2403
+    name: NGC 2403
+    designation: NGC 2403
+    type: G
+    what: spiral galaxy
+    hubble: "SAB(s)cd"
+    ra_deg: 114.2137        # 07h 36m 51.298s
+    dec_deg: 65.6027        # +65 deg 36 min 09.662 s
+    dist_kly: 9650          # 9.65 Mly (2.96 Mpc)
+    vmag: 8.2
+    maj_ax_arcmin: 23.4     # 23.4 x 11.8 arcmin
+    con: Camelopardalis
+    source: "https://en.wikipedia.org/wiki/NGC_2403 (infobox, read 2026-09-22)"
+    why: "The first galaxy beyond the Local Group in which a Cepheid variable star was found, by Edwin Hubble; an outlying member of the M81 group."
+
+  - id: fireworks-galaxy
+    name: Fireworks Galaxy
+    designation: NGC 6946
+    type: G
+    what: spiral galaxy seen face-on
+    hubble: "SAB(rs)cd"
+    ra_deg: 308.7179        # 20h 34m 52.3s
+    dec_deg: 60.1539        # +60 deg 09 min 14 s
+    dist_kly: 25200         # 25.2 +/- 1.0 Mly (7.72 Mpc)
+    vmag: 9.6
+    maj_ax_arcmin: 16.0     # 16.0 x 11.2 arcmin
+    con: Cepheus and Cygnus
+    source: "https://en.wikipedia.org/wiki/NGC_6946 (infobox, read 2026-09-22)"
+    why: "Ten supernovae seen between 1917 and 2017, about ten times the Milky Way's rate from a galaxy with half as many stars: hence the Fireworks."
+
+  - id: ngc-55
+    name: NGC 55
+    designation: NGC 55
+    type: G
+    what: barred spiral galaxy seen nearly edge-on
+    hubble: "SB(s)m"
+    ra_deg: 3.7233          # 00h 14m 53.6s
+    dec_deg: -39.1966       # -39 deg 11 min 47.9 s
+    dist_kly: 6500          # 6.5 +/- 0.65 Mly (2.00 Mpc)
+    vmag: 7.87
+    maj_ax_arcmin: 32.4     # 32.4 x 5.6 arcmin
+    con: Sculptor
+    source: "https://en.wikipedia.org/wiki/NGC_55 (infobox, read 2026-09-22)"
+    why: "Seen nearly edge-on, like a smaller Large Magellanic Cloud; it and NGC 300 lie in front of the Sculptor Group and are likely a bound pair."
+
+  - id: ngc-300
+    name: NGC 300
+    designation: NGC 300
+    type: G
+    what: spiral galaxy
+    hubble: "SA(s)d"
+    ra_deg: 13.7228         # 00h 54m 53.48s
+    dec_deg: -37.6844       # -37 deg 41 min 03.8 s
+    dist_kly: 6070          # 6.07 +/- 0.23 Mly (1.86 Mpc)
+    vmag: 9.0
+    maj_ax_arcmin: 21.9     # 21.9 x 15.5 arcmin
+    con: Sculptor
+    source: "https://en.wikipedia.org/wiki/NGC_300 (infobox, read 2026-09-22)"
+    why: "A spiral much like the Triangulum Galaxy; its distance, 6.07 million light-years, comes from Cepheid stars and red giants, two methods that agree."
+
+  - id: ngc-1300
+    name: NGC 1300
+    designation: NGC 1300
+    type: G
+    what: barred spiral galaxy
+    hubble: "(R')SB(s)bc"
+    ra_deg: 49.9209         # 03h 19m 41.0253s
+    dec_deg: -19.4112       # -19 deg 24 min 40.149 s
+    dist_kly: 61300         # 61.3 Mly (18.8 Mpc); the lead says 69, the infobox wins
+    vmag: 11.4
+    maj_ax_arcmin: 6.2      # 6.2 x 4.1 arcmin
+    con: Eridanus
+    source: "https://en.wikipedia.org/wiki/NGC_1300 (infobox, read 2026-09-22)"
+    why: "A barred spiral with a second, grand-design spiral 3 300 light-years long in its core: a spiral within a spiral, seen only in galaxies with big bars."
+
+  - id: antennae-galaxies
+    name: Antennae Galaxies
+    designation: NGC 4038 and NGC 4039
+    type: GPair
+    what: pair of colliding galaxies
+    hubble: "SB(s)m pec and SA(s)m pec"
+    ra_deg: 180.4708        # 12h 01m 53.0s, NGC 4038's; NGC 4039 is about 1 arcmin south
+    dec_deg: -18.8675       # -18 deg 52 min 03 s
+    dist_kly: 71750         # 71.75 +/- 9.785 Mly (22 Mpc)
+    vmag: 11.2              # 11.2 and 11.08, one for each; the first is NGC 4038's
+    maj_ax_arcmin: 5.2      # NGC 4038, 5.2 x 3.1 arcmin; NGC 4039 is 3.1 x 1.6
+    con: Corvus
+    source: "https://en.wikipedia.org/wiki/Antennae_Galaxies (infobox, read 2026-09-22)"
+    why: "Two galaxies in collision, flinging out two long tails of stars and gas like an insect's antennae; the crash is setting off bursts of new stars."
+
+  - id: blinking-planetary
+    name: Blinking Planetary
+    designation: NGC 6826
+    type: PN
+    what: planetary nebula
+    ra_deg: 296.2008        # 19h 44m 48.2s
+    dec_deg: 50.5251        # +50 deg 31 min 30.3 s
+    dist_kly: 2.0           # ~2 000 ly
+    vmag: 8.8
+    maj_ax_arcmin: 0.45     # 27 x 24 arcsec
+    con: Cygnus
+    source: "https://en.wikipedia.org/wiki/NGC_6826 (infobox, read 2026-09-22)"
+    why: "Stare at it and the bright central star drowns the nebula; look aside and the nebula comes back, so it seems to blink on and off."
+
+  - id: wizard-nebula
+    name: Wizard Nebula
+    designation: NGC 7380
+    type: Cl+N
+    what: young open cluster in an emission nebula
+    ra_deg: 341.8375        # 22h 47m 21.0s
+    dec_deg: 58.1317        # +58 deg 07 min 54 s
+    dist_kly: 8.5           # 8.5 +/- 1.3 kly (2.6 kpc)
+    vmag: 7.2
+    maj_ax_arcmin: 25       # 25 arcmin
+    con: Cepheus
+    source: "https://en.wikipedia.org/wiki/NGC_7380 (infobox, read 2026-09-22)"
+    why: "A young cluster found by Caroline Herschel in 1787; the pair of massive stars at its centre lights the Wizard Nebula and drives its gas outward."
+
+  - id: pacman-nebula
+    name: Pacman Nebula
+    designation: NGC 281
+    type: HII
+    what: emission nebula
+    ra_deg: 13.2471         # 00h 52m 59.3s
+    dec_deg: 56.6219        # +56 deg 37 min 19 s
+    dist_kly: 9.5           # 9 500 ly (2 900 pc)
+    vmag: 7.4
+    maj_ax_arcmin: 35       # 35 x 30 arcmin
+    con: Cassiopeia
+    source: "https://en.wikipedia.org/wiki/NGC_281 (infobox, read 2026-09-22)"
+    why: "Shaped like the video-game Pac-Man: glowing gas round the young cluster IC 1590, with small dark globules of dust against it."
+
+  - id: crescent-nebula
+    name: Crescent Nebula
+    designation: NGC 6888
+    type: HII
+    what: emission nebula
+    ra_deg: 303.0292        # 20h 12m 07s
+    dec_deg: 38.355         # +38 deg 21.3 min
+    dist_kly: 5.0           # 5 000 ly
+    vmag: 7.4
+    maj_ax_arcmin: 18       # 18 x 12 arcmin
+    con: Cygnus
+    source: "https://en.wikipedia.org/wiki/Crescent_Nebula (infobox, read 2026-09-22)"
+    why: "The fast wind of the Wolf-Rayet star WR 136 slamming into the slower wind it shed as a red giant some 250 000 years ago."
+
+  - id: hamburger-galaxy
+    name: Hamburger Galaxy
+    designation: NGC 3628
+    type: G
+    what: spiral galaxy
+    hubble: "SAb pec"
+    ra_deg: 170.0708        # 11h 20m 17.0s
+    dec_deg: 13.5897        # +13 deg 35 min 23 s
+    dist_kly: 35000         # 35 Mly (11 Mpc)
+    vmag: 9.5
+    maj_ax_arcmin: 13.1     # 13.1 x 3.6 arcmin
+    con: Leo
+    source: "https://en.wikipedia.org/wiki/NGC_3628 (infobox, read 2026-09-22)"
+    why: "The third galaxy of the Leo Triplet, with M65 and M66: a band of dust splits it like a hamburger, and a tidal tail 300 000 light-years long streams away."
+
+  - id: california-nebula
+    name: California Nebula
+    designation: NGC 1499
+    type: HII
+    what: emission nebula
+    ra_deg: 60.825          # 04h 03m 18.00s
+    dec_deg: 36.4217        # +36 deg 25 min 18.0 s
+    dist_kly: 1.3           # 1 300 +/- 160 ly (410 pc, Gaia DR3)
+    vmag: 6.0
+    maj_ax_arcmin: 150      # 2.5 deg long
+    con: Perseus
+    source: "https://en.wikipedia.org/wiki/California_Nebula (infobox, read 2026-09-22)"
+    why: "Shaped like the state of California, and by coincidence it passes straight overhead in central California, whose latitude matches its declination."
+
+  - id: southern-ring-nebula
+    name: Southern Ring Nebula
+    designation: NGC 3132
+    type: PN
+    what: planetary nebula
+    ra_deg: 151.7574        # 10h 07m 01.7640s
+    dec_deg: -40.4364       # -40 deg 26 min 11.060 s
+    dist_kly: 2.0           # 2 000 ly
+    vmag: 9.2
+    maj_ax_arcmin: 1.03     # 62 x 43 arcsec
+    con: Vela
+    source: "https://en.wikipedia.org/wiki/NGC_3132 (infobox, read 2026-09-22)"
+    why: "One of the five targets of the Webb telescope's first science images, July 2022: a dying star's shells, with a white dwarf and a companion at the centre."
+
+  - id: ngc-7027
+    name: NGC 7027
+    designation: NGC 7027
+    type: PN
+    what: planetary nebula
+    ra_deg: 316.7571        # 21h 07m 01.7s
+    dec_deg: 42.2364        # +42 deg 14 min 11 s
+    dist_kly: 3.0           # 3 000 ly
+    vmag: 10
+    maj_ax_arcmin: 0.27     # 16 x 12 arcsec
+    con: Cygnus
+    source: "https://en.wikipedia.org/wiki/NGC_7027 (infobox, read 2026-09-22)"
+    why: "A planetary nebula in the earliest stage of its life, about 600 years old, and one of the smallest known: 0.2 light-years long where most are one."
+
+  - id: owl-cluster
+    name: Owl Cluster
+    designation: NGC 457
+    type: OCl
+    what: open cluster
+    ra_deg: 19.8858         # 01h 19m 32.6s
+    dec_deg: 58.2908        # +58 deg 17 min 27 s
+    dist_kly: 7.922         # 7.922 kly (2.429 kpc)
+    vmag: 6.4
+    maj_ax_arcmin: 20       # 20 arcmin
+    con: Cassiopeia
+    source: "https://en.wikipedia.org/wiki/NGC_457 (infobox, read 2026-09-22)"
+    why: "Two bright stars make the eyes of an owl, or of E.T.; if the brighter, Phi Cassiopeiae, truly belongs to the cluster, it outshines Rigel."
+
+  - id: carolines-rose
+    name: Caroline's Rose
+    designation: NGC 7789
+    type: OCl
+    what: open cluster
+    ra_deg: 359.35          # 23h 57m 24s
+    dec_deg: 56.7083        # +56 deg 42 min 30 s
+    dist_kly: 7.6           # 7.6 kly (2 337 pc)
+    vmag: 6.7
+    maj_ax_arcmin: 16       # 16 arcmin
+    con: Cassiopeia
+    source: "https://en.wikipedia.org/wiki/NGC_7789 (infobox, read 2026-09-22)"
+    why: "Found by Caroline Herschel in 1783: loops of stars and dark lanes like the petals of a rose seen from above, 1.4 to 1.7 billion years old."
+
+  - id: ngc-6397
+    name: NGC 6397
+    designation: NGC 6397
+    type: GCl
+    what: globular cluster
+    ra_deg: 265.1754        # 17h 40m 42.09s
+    dec_deg: -53.6743       # -53 deg 40 min 27.6 s
+    dist_kly: 7.8           # 7.8 kly (2.4 kpc)
+    vmag: 6.68
+    maj_ax_arcmin: 32.0     # 32.0 arcmin
+    con: Ara
+    source: "https://en.wikipedia.org/wiki/NGC_6397 (infobox, read 2026-09-22)"
+    why: "One of the two nearest globular clusters, with M4; in 2004 the beryllium in two of its stars put the Milky Way's age at about 13.6 billion years."
+
 messier_distances:
   # Thousands of light-years, from the table in https://en.wikipedia.org/wiki/List_of_Messier_objects
   # (read 2026-09-08). A range is written as [low, high]; the card prints both. Positions come from

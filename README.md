@@ -193,11 +193,11 @@ What is out there, and where every number came from:
 - **Every confirmed planet around another star** (6 332 as of the catalogue copy's date), from the
   NASA Exoplanet Archive, drawn *at its star* — the orbit is far below a pixel at any zoom — with
   its size and mass in Earths, its year, and how it was found.
-- **178 nebulae, clusters and galaxies** at sourced distances: the 110 Messier objects and 68 more
+- **209 nebulae, clusters and galaxies** at sourced distances: the 110 Messier objects and 99 more
   placed by hand from the page each row names — the Magellanic Clouds, the Local Group's dwarfs,
-  Omega Centauri, the Carina Nebula. Each glows as wide as it measures (the size, not the shape,
-  and the card says so). OpenNGC has positions for 13 372 deep-sky objects and no distances, so the
-  rest are not placed as places, and the file says so.
+  Omega Centauri, the Carina Nebula, the Heart and Soul, the Antennae. Each glows as wide as it
+  measures (the size, not the shape, and the card says so). OpenNGC has positions for 13 372
+  deep-sky objects and no distances, so the rest are not placed as places, and the file says so.
 - **The Milky Way** as a point cloud built from published measurements — Reid et al. 2019's fitted
   spiral arms and the distance to the centre, the disc's measured size, the debated bar at the
   middle of its range — and called an *illustration* everywhere it appears. Nobody has seen our
