@@ -221,6 +221,12 @@ export async function boot({ setStatus } = {}) {
     // A star is a place on the stellar rung: from a world stage its true position is past the far
     // plane, so selecting one recentres on the Sun at one unit = one light-year first.
     if (record && ['star', 'exoplanet', 'dso', 'exotic'].includes(record.klass) && !isLadderStage(stage.worldId) && opts.fly !== false) ctx.setStage('stellar');
+    // And back: a thing inside the Solar System, chosen on a rung (from search, or the Next list),
+    // sits inside the Sun's pixel there and its layer does not draw (isLayerDrawable above), so the
+    // camera would fly into one pixel and show nothing. It goes home to the Earth stage first. The
+    // Sun is a place on the ladder and stays.
+    else if (record && isLadderStage(stage.worldId) && opts.fly !== false
+      && !['star', 'exoplanet', 'dso', 'exotic'].includes(record.klass) && !(record.klass === 'world' && record.id === 'sun')) ctx.setStage('earth');
     selected = record;
     // Start the map now, not when the disc grows past the threshold mid-flight: a selected world is
     // about to fill the screen, and a trip's own flight (fly: false) needs it just as much.
