@@ -11,6 +11,7 @@ import { clock } from './clock.js';
 import { createRenderer } from './scene/renderer.js';
 import { stage } from './scene/stage.js';
 import { propagate } from './propagate/index.js';
+import { parseFrame } from './propagate/frames.js';
 import { createWorlds, WORLDS } from './scene/worlds.js';
 import { createStarfield } from './scene/starfield.js';
 import { createGlyphLayer } from './scene/glyphs.js';
@@ -261,10 +262,52 @@ export async function boot({ setStatus } = {}) {
   function flyToRecord(record, ms = 900) {
     if (!record) return false;
     if (record.klass === 'world') worlds.preload(record.id);
+    const on = teachRigWorld(record);
     const pos = positionOfRecord(record);
     if (pos) cameraRig.flyTo({ targetScene: pos, distance: arrivalDistance(record, pos), ms });
-    cameraRig.follow(() => positionOfRecord(record));
+    // Following something standing on the Moon is following the Moon, which crosses its own
+    // radius in about half an hour, so its centre is re-taught with every tick of the target.
+    cameraRig.follow(on
+      ? () => {
+        const c = worlds.drawnPositionOf(on);
+        if (c) cameraRig.setWorldCentre(c);
+        return positionOfRecord(record);
+      }
+      : () => positionOfRecord(record));
     return !!pos;
+  }
+
+  /**
+   * The world a record stands on, when that is not the stage's own: a landing site on the Moon or
+   * Mars, seen from the Earth stage. Null for everything else, the stage's own ground included.
+   */
+  function surfaceWorldOf(record) {
+    const f = record && record.propagator === 'fixed' ? parseFrame(record.frame) : null;
+    if (!f || f.kind !== 'fixed' || f.world === stage.worldId) return null;
+    return worlds.drawnPositionOf(f.world) ? f.world : null;
+  }
+
+  /**
+   * Tell the rig which world the camera must stay out of, and which way is "outward" when it frames
+   * a flight. It was told once, at boot, and kept the stage's world for good -- so every flight to
+   * a site on the Moon's near side was framed outward from EARTH's centre, along a line that runs
+   * on into the Moon. Measured 2026-09-22 in headless Chrome: Apollo 12, selected, parked the camera
+   * 231 km under the lunar surface, drawing the lunar module against the stars; the four older
+   * Apollo sites did the same. ui/trip.js already re-teaches the rig at every stop (composeShot); a
+   * plain selection now does too, and puts the stage's world back for anything that is not on
+   * another world's ground. Returns the world it taught, or null.
+   */
+  function teachRigWorld(record) {
+    const on = surfaceWorldOf(record);
+    if (on) {
+      cameraRig.setWorldRadius(worlds.drawnRadiusUnits(on));
+      cameraRig.setWorldCentre(worlds.drawnPositionOf(on));
+      return on;
+    }
+    const w = WORLDS.find((x) => x.id === stage.worldId);
+    cameraRig.setWorldRadius(w ? w.radiusKm / stage.unitKm : 0);
+    cameraRig.setWorldCentre({ x: 0, y: 0, z: 0 });
+    return null;
   }
 
   function deselect() {

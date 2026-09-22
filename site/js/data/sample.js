@@ -996,298 +996,59 @@ function normLon(deg) {
   return d;
 }
 
+import { SITES } from './sites.js';
+
 /**
  * The ground and surface sites nothing serves as an API: the Deep Space Network's big dishes, the
- * Apollo landing sites, the rovers on Mars. Ported from `registry/sites.yaml`, which is the
- * reviewable copy; this is the one the browser reads.
+ * places on the Moon and Mars where something landed. `registry/sites.yaml` is the reviewable copy
+ * and data/sites.js its generated mirror; this turns the mirror's rows into records.
+ *
+ * THIS USED TO BE THE ROWS THEMSELVES, hand-ported, one 22-line literal per site, with nothing
+ * checking that a latitude here matched the one in the registry. That was thirteen records until
+ * 2026-09-22, when twenty-one landing sites arrived at once: the rows are now generated and
+ * `gen_sites_js.py --check` is the check the port never had.
  *
  * These are `measured`, NOT `sample`. A dish does not move and its coordinates are published --
  * hand-kept is a statement about where the data comes from, not about how sure we are of it. The
  * distinction matters because `sample` is drawn with a dashed halo meaning "not a live position",
  * and that would be wrong here.
  *
- * @returns {Array<Object>} 11 records
+ * A row that says `record: false` is a coordinate and not a record: Beresheet's impact smudge,
+ * which registry/oddities.yaml anchors the lunar library on and which has nothing standing on it
+ * to draw.
+ *
+ * @returns {Array<Object>} one record per sites.yaml row, less the `record: false` ones
  */
 export function handKeptSites() {
-  return [
-  {
-    id: 'dss-14',
-    name: 'Goldstone DSS-14',
+  return SITES.filter((row) => row.record !== false).map(siteRecord);
+}
+
+function siteRecord(row) {
+  const meta = { siteKind: row.class, world: row.world, doing: row.doing };
+  if (row.diameter_m != null) meta.diameterM = row.diameter_m;
+  // What the scene draws on a surface row: scene/realmodels.js routes `lander` and `rover` to a
+  // procedural stand-in and the card says so. `siteKind` stays the row's class, because that is
+  // what it has always meant to the card and to the pad and dish routes.
+  if (row.shape) meta.siteShape = row.shape;
+  // Other names search matches (ui/search.js reads meta.aliases): Sojourner, Tranquility Base.
+  if (Array.isArray(row.aliases) && row.aliases.length) meta.aliases = row.aliases.slice();
+  meta.latDeg = row.lat;
+  meta.lonDeg = row.lon;
+  return {
+    id: row.id,
+    name: row.display,
     klass: 'site',
     layer: 'hand-kept-sites',
     propagator: 'fixed',
-    frame: 'earth-fixed',
-    // MEASURED, not sample: a dish does not move and its coordinates are published. It is
-    // hand-kept because no API serves it, which is a different thing from being uncertain.
+    // The row's own world. A lunar site that said 'earth-fixed' was drawn on Earth for months;
+    // see scene/stage.js.
+    frame: `${row.world}-fixed`,
     cls: 'measured',
     epoch: null,
     source: 'registry/sites.yaml',
-    fixed: { latDeg: 35.426, lonDeg: -116.89, altKm: 1.001 },
-    meta: {
-      siteKind: 'dish',
-      world: 'earth',
-      doing: 'The 70-metre dish at Goldstone, California.',
-      diameterM: 70,
-      latDeg: 35.426,
-      lonDeg: -116.89,
-    },
-  },
-  {
-    id: 'dss-25',
-    name: 'Goldstone DSS-25',
-    klass: 'site',
-    layer: 'hand-kept-sites',
-    propagator: 'fixed',
-    frame: 'earth-fixed',
-    // MEASURED, not sample: a dish does not move and its coordinates are published. It is
-    // hand-kept because no API serves it, which is a different thing from being uncertain.
-    cls: 'measured',
-    epoch: null,
-    source: 'registry/sites.yaml',
-    fixed: { latDeg: 35.3376, lonDeg: -116.8747, altKm: 0.960 },
-    meta: {
-      siteKind: 'dish',
-      world: 'earth',
-      doing: 'A 34-metre dish at Goldstone.',
-      diameterM: 34,
-      latDeg: 35.3376,
-      lonDeg: -116.8747,
-    },
-  },
-  {
-    id: 'dss-43',
-    name: 'Canberra DSS-43',
-    klass: 'site',
-    layer: 'hand-kept-sites',
-    propagator: 'fixed',
-    frame: 'earth-fixed',
-    // MEASURED, not sample: a dish does not move and its coordinates are published. It is
-    // hand-kept because no API serves it, which is a different thing from being uncertain.
-    cls: 'measured',
-    epoch: null,
-    source: 'registry/sites.yaml',
-    fixed: { latDeg: -35.4022, lonDeg: 148.9812, altKm: 0.689 },
-    meta: {
-      siteKind: 'dish',
-      world: 'earth',
-      doing: 'The only dish that can still send commands to Voyager 2.',
-      diameterM: 70,
-      latDeg: -35.4022,
-      lonDeg: 148.9812,
-    },
-  },
-  {
-    id: 'dss-63',
-    name: 'Madrid DSS-63',
-    klass: 'site',
-    layer: 'hand-kept-sites',
-    propagator: 'fixed',
-    frame: 'earth-fixed',
-    // MEASURED, not sample: a dish does not move and its coordinates are published. It is
-    // hand-kept because no API serves it, which is a different thing from being uncertain.
-    cls: 'measured',
-    epoch: null,
-    source: 'registry/sites.yaml',
-    fixed: { latDeg: 40.2414, lonDeg: -4.248, altKm: 0.865 },
-    meta: {
-      siteKind: 'dish',
-      world: 'earth',
-      doing: 'The 70-metre dish outside Madrid.',
-      diameterM: 70,
-      latDeg: 40.2414,
-      lonDeg: -4.248,
-    },
-  },
-  {
-    id: 'apollo-11',
-    name: 'Apollo 11 landing site',
-    klass: 'site',
-    layer: 'hand-kept-sites',
-    propagator: 'fixed',
-    frame: 'moon-fixed',
-    // MEASURED, not sample: a dish does not move and its coordinates are published. It is
-    // hand-kept because no API serves it, which is a different thing from being uncertain.
-    cls: 'measured',
-    epoch: null,
-    source: 'registry/sites.yaml',
-    fixed: { latDeg: 0.6741, lonDeg: 23.473, altKm: 0.000 },
-    meta: {
-      siteKind: 'surface',
-      world: 'moon',
-      doing: 'Where people first stood on another world, in July 1969. The descent stage is still there.',
-      latDeg: 0.6741,
-      lonDeg: 23.473,
-    },
-  },
-  {
-    id: 'apollo-14',
-    name: 'Apollo 14 landing site',
-    klass: 'site',
-    layer: 'hand-kept-sites',
-    propagator: 'fixed',
-    frame: 'moon-fixed',
-    // MEASURED, not sample: a dish does not move and its coordinates are published. It is
-    // hand-kept because no API serves it, which is a different thing from being uncertain.
-    cls: 'measured',
-    epoch: null,
-    source: 'registry/sites.yaml',
-    fixed: { latDeg: -3.64589, lonDeg: 342.52806, altKm: 0.000 },
-    meta: {
-      siteKind: 'surface',
-      world: 'moon',
-      doing: 'Fra Mauro, February 1971. Alan Shepard hit two golf balls here and they are still lying where they stopped.',
-      latDeg: -3.64589,
-      lonDeg: 342.52806,
-    },
-  },
-  {
-    id: 'apollo-16',
-    name: 'Apollo 16 landing site',
-    klass: 'site',
-    layer: 'hand-kept-sites',
-    propagator: 'fixed',
-    frame: 'moon-fixed',
-    // MEASURED, not sample: a dish does not move and its coordinates are published. It is
-    // hand-kept because no API serves it, which is a different thing from being uncertain.
-    cls: 'measured',
-    epoch: null,
-    source: 'registry/sites.yaml',
-    fixed: { latDeg: -8.9734, lonDeg: 15.5011, altKm: 0.000 },
-    meta: {
-      siteKind: 'surface',
-      world: 'moon',
-      doing: 'Descartes, April 1972. Charlie Duke left a photograph of his family face-up in the dust beside the lander.',
-      latDeg: -8.9734,
-      lonDeg: 15.5011,
-    },
-  },
-  {
-    id: 'apollo-17',
-    name: 'Apollo 17 landing site',
-    klass: 'site',
-    layer: 'hand-kept-sites',
-    propagator: 'fixed',
-    frame: 'moon-fixed',
-    // MEASURED, not sample: a dish does not move and its coordinates are published. It is
-    // hand-kept because no API serves it, which is a different thing from being uncertain.
-    cls: 'measured',
-    epoch: null,
-    source: 'registry/sites.yaml',
-    fixed: { latDeg: 20.1908, lonDeg: 30.7717, altKm: 0.000 },
-    meta: {
-      siteKind: 'surface',
-      world: 'moon',
-      doing: 'The last place people have stood on another world, in December 1972.',
-      latDeg: 20.1908,
-      lonDeg: 30.7717,
-    },
-  },
-  {
-    id: 'change-4',
-    name: "Chang'e 4",
-    klass: 'site',
-    layer: 'hand-kept-sites',
-    propagator: 'fixed',
-    frame: 'moon-fixed',
-    // MEASURED, not sample: a dish does not move and its coordinates are published. It is
-    // hand-kept because no API serves it, which is a different thing from being uncertain.
-    cls: 'measured',
-    epoch: null,
-    source: 'registry/sites.yaml',
-    fixed: { latDeg: -45.4446, lonDeg: 177.5991, altKm: 0.000 },
-    meta: {
-      siteKind: 'surface',
-      world: 'moon',
-      doing: 'The first landing on the far side of the Moon, in 2019.',
-      latDeg: -45.4446,
-      lonDeg: 177.5991,
-    },
-  },
-  {
-    id: 'jezero',
-    name: 'Perseverance, Jezero crater',
-    klass: 'site',
-    layer: 'hand-kept-sites',
-    propagator: 'fixed',
-    frame: 'mars-fixed',
-    // MEASURED, not sample: a dish does not move and its coordinates are published. It is
-    // hand-kept because no API serves it, which is a different thing from being uncertain.
-    cls: 'measured',
-    epoch: null,
-    source: 'registry/sites.yaml',
-    fixed: { latDeg: 18.4447, lonDeg: 77.4508, altKm: 0.000 },
-    meta: {
-      siteKind: 'surface',
-      world: 'mars',
-      doing: 'A rover the size of a car, collecting rock samples in a crater that was once a river delta.',
-      latDeg: 18.4447,
-      lonDeg: 77.4508,
-    },
-  },
-  {
-    id: 'gale',
-    name: 'Curiosity, Gale crater',
-    klass: 'site',
-    layer: 'hand-kept-sites',
-    propagator: 'fixed',
-    frame: 'mars-fixed',
-    // MEASURED, not sample: a dish does not move and its coordinates are published. It is
-    // hand-kept because no API serves it, which is a different thing from being uncertain.
-    cls: 'measured',
-    epoch: null,
-    source: 'registry/sites.yaml',
-    fixed: { latDeg: -4.5895, lonDeg: 137.4417, altKm: 0.000 },
-    meta: {
-      siteKind: 'surface',
-      world: 'mars',
-      doing: 'Driving up a mountain of layered rock since 2012.',
-      latDeg: -4.5895,
-      lonDeg: 137.4417,
-    },
-  },
-  {
-    id: 'elysium',
-    name: 'InSight, Elysium Planitia',
-    klass: 'site',
-    layer: 'hand-kept-sites',
-    propagator: 'fixed',
-    frame: 'mars-fixed',
-    // MEASURED, not sample: a dish does not move and its coordinates are published. It is
-    // hand-kept because no API serves it, which is a different thing from being uncertain.
-    cls: 'measured',
-    epoch: null,
-    source: 'registry/sites.yaml',
-    fixed: { latDeg: 4.5024, lonDeg: 135.6234, altKm: 0.000 },
-    meta: {
-      siteKind: 'surface',
-      world: 'mars',
-      doing: 'Listened to marsquakes until its solar panels were covered in dust in 2022.',
-      latDeg: 4.5024,
-      lonDeg: 135.6234,
-    },
-  },
-  {
-    id: 'utopia',
-    name: 'Zhurong, Utopia Planitia',
-    klass: 'site',
-    layer: 'hand-kept-sites',
-    propagator: 'fixed',
-    frame: 'mars-fixed',
-    // MEASURED, not sample: a dish does not move and its coordinates are published. It is
-    // hand-kept because no API serves it, which is a different thing from being uncertain.
-    cls: 'measured',
-    epoch: null,
-    source: 'registry/sites.yaml',
-    fixed: { latDeg: 25.066, lonDeg: 109.926, altKm: 0.000 },
-    meta: {
-      siteKind: 'surface',
-      world: 'mars',
-      doing: "China's first Mars rover, landed in 2021.",
-      latDeg: 25.066,
-      lonDeg: 109.926,
-    },
-  },
-  ];
+    fixed: { latDeg: row.lat, lonDeg: row.lon, altKm: (row.alt_m || 0) / 1000 },
+    meta,
+  };
 }
 
 // =================================================================================================

@@ -866,7 +866,11 @@ for (const file of allFiles) {
     const local = new THREE.Vector3();
     let checked = 0;
     let worst = 0;
-    for (const [world, ids] of [['moon', ['apollo-11', 'apollo-14', 'apollo-16', 'apollo-17', 'change-4']]]) {
+    // EVERY row on each world, not a list of five: twenty-one landing sites arrived on 2026-09-22
+    // and a hand-kept list of which ones to check is a list that stops growing. Mars is in it
+    // since then too -- its rows were never held to its own globe's texture before.
+    const onWorld = (w) => [...byId.values()].filter((r) => r.meta && r.meta.world === w).map((r) => r.id);
+    for (const [world, ids] of [['moon', onWorld('moon')], ['mars', onWorld('mars')]]) {
       const mesh = worlds.meshFor(world);
       if (!mesh) { problems.push(`MESH     no ${world} mesh to check`); continue; }
       mesh.updateMatrixWorld(true);
@@ -907,7 +911,7 @@ for (const file of allFiles) {
       }
     }
     if (!checked) problems.push('MESH     nothing was checked, so this test proves nothing');
-    else notes.push(`the drawn globe and the marker agree: ${checked} lunar rows, worst ${(worst * 1000).toFixed(0)} m`);
+    else notes.push(`the drawn globe and the marker agree: ${checked} lunar and Martian rows, worst ${(worst * 1000).toFixed(0)} m`);
     worlds.dispose();
   } catch (e) {
     problems.push(`MESH     could not check the mesh orientation: ${String(e && e.message)}`);

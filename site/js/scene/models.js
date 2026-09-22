@@ -2186,29 +2186,98 @@ function buildSiteDome() {
   return g;
 }
 
+/**
+ * A rover: a box body on six wheels with a camera mast. Drawn for every landing site whose
+ * `shape:` in registry/sites.yaml is `rover` -- Spirit, Opportunity, Curiosity, Zhurong and the
+ * two Lunokhods -- as the kind of thing, not any one of them.
+ *
+ * THE PARTS ARE BUILT SMALL AND SCALED UP TO ONE UNIT. This builder sat in the table unreachable
+ * until 2026-09-22 (models.yaml said `for: {site_class: surface}` and nothing routed a surface
+ * site to it), and it built 0.41 of a unit. heroes.js sizes every hero by a pixel target on the
+ * assumption that a model is one unit across -- realmodels.js normalises the GLBs to exactly that
+ * -- so a rover at 0.41 would have been drawn at two fifths of the size of the lander beside it.
+ * The inner group carries the scale because heroes.js overwrites the outer group's.
+ */
 function buildSiteRover() {
   const g = new THREE.Group();
   g.userData.realSizeM = 3;
+  const inner = new THREE.Group();
+  inner.name = 'rover-parts';
+  g.add(inner);
   const body = box(0.34, 0.12, 0.22, '#DCE3EC', 'body', 'body');
   body.position.y = 0.14;
-  g.add(body);
+  inner.add(body);
   const deck = box(0.24, 0.02, 0.18, PANEL_BLUE, 'panel', 'deck');
   deck.position.y = 0.21;
-  g.add(deck);
+  inner.add(deck);
   const mast = cyl(0.012, 0.012, 0.18, 8, '#8E99A8', 'body', 'mast');
   mast.position.set(0.12, 0.29, 0);
-  g.add(mast);
+  inner.add(mast);
   const head = box(0.06, 0.04, 0.05, CLASS_COLOURS.site, 'body', 'head');
   head.position.set(0.12, 0.39, 0);
-  g.add(head);
+  inner.add(head);
   for (const x of [-0.12, 0, 0.12]) {
     for (const z of [-0.13, 0.13]) {
       const wheel = cyl(0.06, 0.06, 0.05, 10, '#6E7784', 'body', 'wheel');
       wheel.rotation.x = Math.PI / 2;
       wheel.position.set(x, 0.06, z);
-      g.add(wheel);
+      inner.add(wheel);
     }
   }
+  // Measured rather than hard-coded, so a part added later cannot quietly undo it.
+  const size = new THREE.Box3().setFromObject(inner).getSize(new THREE.Vector3());
+  inner.scale.setScalar(1 / Math.max(size.x, size.y, size.z));
+  return g;
+}
+
+/**
+ * A lander standing on another world: a foil-wrapped body on four splayed legs with round
+ * footpads, and a dish on a short mast. Drawn for every landing site whose `shape:` in
+ * registry/sites.yaml is `lander` -- Surveyor, Luna, Viking, Phoenix, Chang'e, Vikram, SLIM and
+ * the rest -- none of which has a public model this project ships. It is the KIND of thing
+ * (the card says "drawn as a lander -- the kind of thing, not this exact one"), so it copies no
+ * one craft: Surveyor was a tripod, Luna 16 a stack of spheres, Viking a hexagon on three legs.
+ * Four legs because that is what most of them have and what reads as "lander" at 40 px.
+ *
+ * Built to the one-unit convention: the footpads span one unit tip to tip, and realSizeM is the
+ * three metres a Surveyor or a Chang'e lander measures across its legs.
+ */
+function buildSiteLander() {
+  const g = new THREE.Group();
+  g.userData.realSizeM = 3;
+  const body = cyl(0.24, 0.24, 0.2, 8, FOIL, 'foil', 'body');
+  body.position.y = 0.38;
+  g.add(body);
+  const deck = cyl(0.25, 0.25, 0.02, 8, METAL, 'body', 'deck');
+  deck.position.y = 0.49;
+  g.add(deck);
+  const top = new THREE.Vector3();
+  const foot = new THREE.Vector3();
+  const along = new THREE.Vector3();
+  for (let i = 0; i < 4; i++) {
+    const a = (i * Math.PI) / 2;
+    const cx = Math.cos(a);
+    const cz = Math.sin(a);
+    // From inside the body's lower edge down and out to the pad. Starting INSIDE the body is what
+    // keeps each leg joined to it: tests/test_station_shapes.mjs refuses a part floating free.
+    top.set(0.2 * cx, 0.3, 0.2 * cz);
+    foot.set(0.44 * cx, 0.03, 0.44 * cz);
+    along.subVectors(foot, top);
+    const leg = cyl(0.018, 0.018, along.length(), 6, '#8E99A8', 'body', 'leg');
+    leg.position.addVectors(top, foot).multiplyScalar(0.5);
+    leg.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), along.normalize());
+    g.add(leg);
+    const pad = cyl(0.055, 0.065, 0.03, 10, '#6E7784', 'body', 'footpad');
+    pad.position.set(0.44 * cx, 0.015, 0.44 * cz);
+    g.add(pad);
+  }
+  const mast = cyl(0.012, 0.012, 0.14, 6, '#8E99A8', 'body', 'mast');
+  mast.position.y = 0.57;
+  g.add(mast);
+  const d = dish(0.1, 0.03, 12, '#E3E8EF', 'foil', 'dish');
+  d.position.y = 0.66;
+  d.rotation.x = -0.9; // tilted up at the sky, as buildSiteDish's is
+  g.add(d);
   return g;
 }
 
@@ -2893,6 +2962,7 @@ const BUILDERS = {
     dish: buildSiteDish,
     dome: buildSiteDome,
     rover: buildSiteRover,
+    lander: buildSiteLander,
   },
   oddity: ODDITY_BUILDERS,
   world: { default: () => new THREE.Group() }, // worlds.js owns the worlds; this keeps modelFor total

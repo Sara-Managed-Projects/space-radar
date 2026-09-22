@@ -50,6 +50,16 @@ for (const table of ['norad', 'horizons']) {
   }
 }
 
+// 2b. the site routes. `lander` and `rover` became builds on 2026-09-22 (a landing site's
+// `shape:`), and a site's klass is always `site`, so that is the one klass to ask for.
+for (const table of ['bySiteClass', 'bySite']) {
+  for (const [key, route] of Object.entries(REAL_MODELS[table] || {})) {
+    if (!route || !route.build) continue;
+    pairs++;
+    if (draw('site', route.build)) problems.push(`${table} '${key}' build '${route.build}' has no site builder`);
+  }
+}
+
 // 3. the reported case end to end, through realModelFor as heroes.js calls it
 const progress = { id: 'sat-99991', name: 'PROGRESS-MS 31', klass: 'satellite', layer: 'stations', meta: {} };
 const route = realModelFor(progress);

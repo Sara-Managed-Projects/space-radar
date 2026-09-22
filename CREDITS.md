@@ -313,7 +313,7 @@ than counted by hand.
 |---|---|---|---|
 | `dsn34.glb` | Deep Space Network 34-meter | the dss-25 antenna, which is 34 m and was wrongly drawn with the 70 m model | 151 KB |
 | `dsn70.glb` | Deep Space Network 70-meter | DEFAULT for ground sites of class `dish` | 149 KB |
-| `lunar-module.glb` | Apollo Lunar Module | the Apollo 11, 14, 16 and 17 landing sites -- one vehicle design, four descent stages | 473 KB |
+| `lunar-module.glb` | Apollo Lunar Module | the Apollo 11, 12, 14, 15, 16 and 17 landing sites -- one vehicle design, six descent stages | 473 KB |
 | `pad.glb` | Mobile Launcher | DEFAULT for every launch pad -- 17 today, more with each Launch Library refresh | 74 KB |
 | `perseverance.glb` | Mars 2020 Perseverance Rover | Jezero crater on Mars | 412 KB |
 

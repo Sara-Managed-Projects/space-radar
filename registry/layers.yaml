@@ -268,8 +268,9 @@ layers:
   #                        is one row for fifty. WHICH shape a record gets is its own
   #                        registry/oddities.yaml `shape.build`, and every one of them is measured
   #                        against its budget in tests/test_contract.mjs.
-  # The DSN antennas, the Apollo sites and the rovers: published coordinates that do not change,
-  # kept in registry/sites.yaml and ported to data/sample.js. `bundled`: nothing serves them.
+  # The DSN antennas and the landing sites on the Moon and Mars: published coordinates that do not
+  # change, kept in registry/sites.yaml and mirrored into data/sites.js. `bundled`: nothing serves
+  # them. 34 records on 2026-09-22, under the 40 below.
   - id: hand-kept-sites
     display: Dishes, landers and rovers
     moments: {wonder: on, now: on, next: off}

@@ -13,6 +13,7 @@ green check on a documentation change.
 
 from __future__ import annotations
 
+import datetime
 import re
 import sys
 from pathlib import Path
@@ -131,6 +132,22 @@ TIME_RELATIVE = (
     "has not been announced",
     "no end-of-mission",
 )
+
+# --- registry/sites.yaml -------------------------------------------------------------------
+SITE_CLASSES = {"dish", "surface"}
+# What a landing site is drawn as. Adding one is three edits and deliberately so: this set,
+# BUILDERS.site in site/js/scene/models.js, and bySiteClass in site/js/scene/realmodels.js (or a
+# `bySite` entry, for a model of the vehicle itself, which is what `lunar-module` is).
+# tests/test_landing_sites.mjs draws every row and fails one that reaches none of them.
+SITE_SHAPES = {"lander", "rover", "lunar-module"}
+# The reserved literal for a coordinate nobody wrote a source down for. Allowed ONLY for the rows
+# that predate the rule (2026-09-22), by id: a new landing site cites a reference or does not
+# ship. When one of these is matched to a reference, its id comes out of this set -- the check
+# below refuses a set member that has started citing something, so the set cannot go stale.
+SITE_UNCITED = "uncited"
+UNCITED_SITES = frozenset({"apollo-11", "apollo-17", "change-4", "jezero", "elysium", "utopia"})
+# Luna 2 hit the Moon on 13 September 1959. A landing date before it is a typo, not a landing.
+FIRST_ARRIVAL = datetime.date(1959, 9, 13)
 
 
 def dimension(where: str, holder: dict, key: str, label: str, ceiling: float) -> None:
@@ -1275,6 +1292,11 @@ def check_oddities(doc: dict, world_ids: set, sites: list) -> None:
                         if anchor.get(key) != site.get(key):
                             fail(where, f"anchor.{key} is {anchor.get(key)!r} and sites.yaml[{aid}]"
                                         f" says {site.get(key)!r}. Two copies, already disagreeing")
+                    # The site row states its reference's uncertainty since 2026-09-22, so the
+                    # anchor's copy of it is held to the same rule as the coordinates.
+                    if site.get("uncertainty_m") is not None and anchor.get("uncertainty_m") != site.get("uncertainty_m"):
+                        fail(where, f"anchor.uncertainty_m is {anchor.get('uncertainty_m')!r} and "
+                                    f"sites.yaml[{aid}] says {site.get('uncertainty_m')!r}")
                     if site.get("world") != world:
                         fail(where, f"anchor.id `{aid}` is on {site.get('world')!r} and this row "
                                     f"says {world!r}")
@@ -1551,6 +1573,134 @@ def rows(doc: dict, key: str, name: str) -> list[dict]:
         fail(name, f"`{key}:` is not a list")
         return []
     return got
+
+
+def check_sites(sites_doc: dict, sites: list, world_ids: set) -> None:
+    """registry/sites.yaml: every row is somewhere real, and every landing says where the number came from.
+
+    The first four checks are the old ones. The rest arrived with twenty-one landing sites on
+    2026-09-22, and each refuses a way that batch could have been wrong without anything noticing:
+    a coordinate with no source, a source nobody can open, a landing drawn as a launch pad, and a
+    card sentence the card would have cut in half.
+    """
+    refs = sites_doc.get("references")
+    if refs is None:
+        refs = {}
+    if not isinstance(refs, dict):
+        fail("sites.yaml", "`references:` must be a map of key -> {url, read, says}")
+        refs = {}
+    for key, ref in refs.items():
+        where = f"sites.yaml[references/{key}]"
+        if not isinstance(ref, dict):
+            fail(where, "is not a map")
+            continue
+        url = ref.get("url")
+        if not isinstance(url, str) or not url.startswith("https://"):
+            fail(where, f"url {url!r} is not an https URL -- a reference nobody can open is a claim")
+        if not isinstance(ref.get("read"), datetime.date):
+            fail(where, "no `read:` date (YYYY-MM-DD). A page changes; the date is which version of "
+                        "it the numbers were copied from")
+        if not str(ref.get("says") or "").strip():
+            fail(where, "no `says:` -- what the page states about its own frame and precision is "
+                        "the reason to trust the digits")
+    cited: set[str] = set()
+    seen: set[str] = set()
+    ids: set[str] = set()
+    for s in sites:
+        if not isinstance(s, dict):
+            fail("sites.yaml", f"row {s!r} is not a map")
+            continue
+        sid = s.get("id")
+        where = f"sites.yaml[{sid}]"
+        if not sid:
+            fail("sites.yaml", "a row has no id")
+            continue
+        if sid in seen:
+            fail(where, "duplicate id -- the second row would never be reached")
+        seen.add(sid)
+        ids.add(sid)
+        if s.get("world") not in world_ids:
+            fail(where, f"world `{s.get('world')}` has no worlds.yaml row")
+        for key in ("lat", "lon"):
+            if not is_number(s.get(key)):
+                fail(where, f"`{key}` must be a number")
+        # East longitude runs 0-360 on the Moon and Mars and -180-180 on Earth, so the union.
+        if is_number(s.get("lat")) and not -90 <= s["lat"] <= 90:
+            fail(where, f"lat {s['lat']} is not a latitude")
+        if is_number(s.get("lon")) and not -180 <= s["lon"] < 360:
+            fail(where, f"lon {s['lon']} is outside both -180..180 and 0..360")
+        klass = s.get("class")
+        if klass not in SITE_CLASSES:
+            fail(where, f"class {klass!r} is not one of {sorted(SITE_CLASSES)}")
+        doing = s.get("doing")
+        if not doing:
+            fail(where, "no `doing:` line -- a site card with nothing to say is a dot")
+        elif isinstance(doing, str):
+            # The card prints this sentence FIRST and cuts at MAX_SENTENCE, so it is held to the
+            # cap here, where it is written. Same rule as the oddities and the trips.
+            if len(doing) > MAX_SENTENCE:
+                fail(where, f"`doing:` is {len(doing)} characters and the card prints {MAX_SENTENCE}")
+            if " -- " in doing:
+                fail(where, "`doing:` contains ' -- ', which is this file's comment style and not "
+                            "the card's")
+            low = doing.lower()
+            for phrase in TIME_RELATIVE:
+                if phrase in low:
+                    fail(where, f"`doing:` says {phrase!r}, which is true on one date; the card "
+                                f"is read on every other one")
+        if "record" in s and s.get("record") is not False:
+            fail(where, "`record:` is only ever written as `record: false`; a row is a record by "
+                        "default")
+        drawn = s.get("record") is not False
+        shape = s.get("shape")
+        landed = s.get("landed")
+        if shape is not None:
+            if shape not in SITE_SHAPES:
+                fail(where, f"shape {shape!r} is not one of {sorted(SITE_SHAPES)} -- nothing "
+                            f"would draw it")
+            if not drawn:
+                fail(where, "a `record: false` row names a shape, and nothing ever draws it")
+            if klass != "surface":
+                fail(where, f"a `{klass}` row names a landing shape")
+            if landed is None:
+                fail(where, "names what landed and not when -- give `landed:` (YYYY-MM-DD, UTC)")
+        if landed is not None:
+            if not isinstance(landed, datetime.date):
+                fail(where, f"landed {landed!r} is not a date (YYYY-MM-DD, unquoted)")
+            elif not FIRST_ARRIVAL <= landed <= datetime.date.today():
+                fail(where, f"landed {landed} is before Luna 2 or after today")
+            if drawn and shape is None:
+                fail(where, "a landing with no `shape:` is drawn with the class default, which is "
+                            "a launch pad -- say `lander`, `rover` or `lunar-module`")
+            source = s.get("source")
+            if source is None:
+                fail(where, "a landing with no `source:` -- cite a `references:` key")
+            elif source == SITE_UNCITED:
+                if sid not in UNCITED_SITES:
+                    fail(where, "`source: uncited` is reserved for the six rows that predate the "
+                                "rule. A new landing site cites a reference or does not ship")
+            elif source not in refs:
+                fail(where, f"source `{source}` is not a key of `references:`")
+            else:
+                cited.add(source)
+                read = (refs.get(source) or {}).get("read")
+                if isinstance(landed, datetime.date) and isinstance(read, datetime.date) and landed > read:
+                    fail(where, f"landed {landed}, after its reference was read on {read}")
+            if sid in UNCITED_SITES and source != SITE_UNCITED:
+                fail(where, "cites a reference now, so take its id out of UNCITED_SITES in "
+                            "scripts/check_registry.py -- the set lists the rows still uncited")
+        al = s.get("aliases")
+        if al is not None and (not isinstance(al, list) or not al
+                               or not all(isinstance(x, str) and x.strip() for x in al)):
+            fail(where, "`aliases:` must be a non-empty list of names")
+        u = s.get("uncertainty_m")
+        if u is not None and not (is_number(u) and u > 0):
+            fail(where, f"uncertainty_m {u!r} must be a positive number of metres")
+    for key in refs:
+        if key not in cited:
+            fail(f"sites.yaml[references/{key}]", "no row cites it -- a reference for nothing")
+    for sid in sorted(UNCITED_SITES - ids):
+        fail("sites.yaml", f"UNCITED_SITES names `{sid}`, which has no row")
 
 
 def duration_ok(value: str) -> bool:
@@ -1858,16 +2008,7 @@ def main() -> int:
             fail(f"models.yaml[{m.get('id')}]", f"`for.layer` names `{layer}`, which has no layers.yaml row")
 
     # --- sites -------------------------------------------------------------------
-    for s in sites:
-        sid = s.get("id")
-        where = f"sites.yaml[{sid}]"
-        if s.get("world") not in world_ids:
-            fail(where, f"world `{s.get('world')}` has no worlds.yaml row")
-        for key in ("lat", "lon"):
-            if not isinstance(s.get(key), (int, float)):
-                fail(where, f"`{key}` must be a number")
-        if not s.get("doing"):
-            fail(where, "no `doing:` line -- a site card with nothing to say is a dot")
+    check_sites(sites_doc, sites, world_ids)
 
     check_oddities(oddities_doc, world_ids, sites)
     ladder = check_stages(world_ids)

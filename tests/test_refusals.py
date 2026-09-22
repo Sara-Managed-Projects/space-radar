@@ -88,6 +88,48 @@ CASES: list[tuple[str, str, str, str]] = [
      "events.yaml", "    lead_times: [same-day, 1d, 1w, on-confirm]\n", ""),
     ("site sits on a world that does not exist",
      "sites.yaml", "world: moon", "world: enceladus"),
+
+    # --- registry/sites.yaml, the landing sites ----------------------------------------
+    # Twenty-one arrived at once on 2026-09-22, each with a coordinate somebody copied off a page.
+    # Every case here is a way that batch could have been wrong with nothing noticing: a landing
+    # drawn as a launch pad, a number with no page behind it, a page with no date, and a sentence
+    # the card would have cut in half.
+    ("a landing site that does not say what to draw, so it would be a launch pad",
+     "sites.yaml", "shape: rover, source: pds-msl", "source: pds-msl"),
+    ("a landing site drawn as a shape nothing builds",
+     "sites.yaml", "shape: rover, source: pds-msl", "shape: hovercraft, source: pds-msl"),
+    ("a landing site citing a reference that does not exist",
+     "sites.yaml", "source: pds-msl", "source: pds-nothing"),
+    ("a new landing site that cites nothing",
+     "sites.yaml", '    source: pds-mer\n    aliases: ["Columbia',
+     '    source: uncited\n    aliases: ["Columbia'),
+    ("an uncited row that now cites something and is still listed as uncited",
+     "sites.yaml", "landed: 2021-02-18, shape: rover, source: uncited",
+     "landed: 2021-02-18, shape: rover, source: pds-msl"),
+    ("a landing site that says what landed and not when",
+     "sites.yaml", "    landed: 1966-06-02\n", ""),
+    ("a landing date that is not a date",
+     "sites.yaml", "    landed: 1966-06-02\n", '    landed: "June 1966"\n'),
+    ("a reference with no date it was read",
+     "sites.yaml", '    url: "https://www.uahirise.org/ESP_031036_1345"\n    read: 2026-09-22\n',
+     '    url: "https://www.uahirise.org/ESP_031036_1345"\n'),
+    ("a reference that is not a URL anybody can open",
+     "sites.yaml", 'url: "https://www.uahirise.org/ESP_031036_1345"', 'url: "HiRISE, somewhere"'),
+    ("a reference no row cites",
+     "sites.yaml", "references:\n",
+     'references:\n  orphan:\n    url: "https://example.org/"\n    read: 2026-09-22\n    says: "nothing"\n'),
+    ("a site sentence longer than the card prints",
+     "sites.yaml", 'doing: "Driving up a mountain of layered rock since 2012."',
+     'doing: "Driving up a mountain of layered rock since 2012, and before that landing on a '
+     'crane, and before that crossing the gap between two planets for eight and a half months, '
+     'on the way to the crater."'),
+    ("a site sentence that is only true today",
+     "sites.yaml", 'doing: "Driving up a mountain of layered rock since 2012."',
+     'doing: "Currently driving up a mountain of layered rock."'),
+    ("a latitude that is not a latitude",
+     "sites.yaml", "lat: -45.058", "lat: -145.058"),
+    ("an anchor whose uncertainty has drifted from the site row it came from",
+     "oddities.yaml", "        uncertainty_m: 0.4\n", "        uncertainty_m: 4.0\n"),
     ("shower's peak is not a date",
      "showers.yaml", 'peak: "08-12"', 'peak: "August"'),
 

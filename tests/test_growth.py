@@ -43,14 +43,21 @@ ALLOWED_PREFIXES = ("registry/", "harvest/lists/", "harvest/queries/")
 # outputs, not second places a human edits.
 # FOUR: the harvester (spec 0003) parses no YAML either, so registry/sources.yaml is mirrored into
 # harvest/sources.json by scripts/gen_sources_json.py, and `--check` fails CI until it is current.
+# FIVE, and this one closes a hole rather than adding a file: "a new surface site is a row" was
+# printed as PASS below while the row never reached the browser at all -- data/sample.js held a
+# hand-ported copy of every site, and Conamara would have validated and drawn nothing until
+# somebody wrote it a record by hand. registry/sites.yaml is mirrored by scripts/gen_sites_js.py
+# since 2026-09-22, so the fixture's site row is now checked all the way into the browser's copy.
 GENERATED = "site/js/data/rockets.js"
 GENERATED_ODDITIES = "site/js/data/oddities.js"
 GENERATED_TOURS = "site/js/data/tours.js"
 GENERATED_SOURCES = "harvest/sources.json"
+GENERATED_SITES = "site/js/data/sites.js"
 MIRRORS = ((GENERATED, "scripts/gen_rockets_js.py", "rockets"),
            (GENERATED_ODDITIES, "scripts/gen_oddities_js.py", "oddities"),
            (GENERATED_TOURS, "scripts/gen_tours_js.py", "tours"),
-           (GENERATED_SOURCES, "scripts/gen_sources_json.py", "sources"))
+           (GENERATED_SOURCES, "scripts/gen_sources_json.py", "sources"),
+           (GENERATED_SITES, "scripts/gen_sites_js.py", "sites"))
 
 
 def snapshot(root: Path) -> dict[str, str]:
@@ -183,7 +190,7 @@ def main() -> int:
     print("\nPASS: a new world, a new source, a new layer, a new texture, a new surface site, "
           "two new launch vehicles, a new odd thing on that new world, a new thing bolted to a "
           "spacecraft and a new guided trip that visits all of them are rows. Nothing under "
-          "site/js/ or harvest/ was needed but the four generated mirrors, which no human edits.")
+          "site/js/ or harvest/ was needed but the five generated mirrors, which no human edits.")
     return 0
 
 
