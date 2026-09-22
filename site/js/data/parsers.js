@@ -1409,6 +1409,17 @@ export function parseExoplanets(text, opts = {}) {
  * on `meta`. A size in light-years is derived from the apparent major axis and the distance --
  * small-angle, which for a 3 degree galaxy is good to a part in a thousand.
  */
+// A deep-sky object drawn as a SHAPE rather than a mark must say what the shape is, in the same
+// words the Milky Way's record uses (data/layers.js). scene/galaxy.js ANDROMEDA holds the numbers.
+const DSO_DRAWN = {
+  m31: {
+    drawsAs: 'variant',
+    drawnName: 'Andromeda, from our own galaxy\u2019s model',
+    departure: 'at the size given here and tilted as measured, 77\u00b0 with the north-west edge ' +
+      'nearest; its own arms have not been mapped star by star, so these are ours',
+  },
+};
+
 export function parseDso(doc) {
   const list = doc && Array.isArray(doc.objects) ? doc.objects : [];
   const out = [];
@@ -1449,6 +1460,7 @@ export function parseDso(doc) {
           ? `Position and distance: ${o.positionSource}`
           : `Position: OpenNGC (CC BY-SA 4.0); distance: ${o.distanceSource || 'as the row says'}`,
         aliases,
+        ...(DSO_DRAWN[o.id] || {}),
       },
     });
   }

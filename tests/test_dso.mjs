@@ -76,7 +76,9 @@ check(findMatches(index, 'carina').hits[0]?.record.id === 'dso-carina-nebula', `
 check(findMatches(index, 'm31').hits[0]?.record.id === 'dso-m31', '"m31" finds M31 by alias');
 check(findMatches(index, 'pleiades').hits[0]?.record.id === 'dso-m45', '"pleiades" finds M45');
 check(findMatches(index, 'ngc 224').hits.some((h) => h.record.id === 'dso-m31'), '"ngc 224" finds M31');
-check(typeof drawingLine(andromeda) === 'string' && drawingLine(andromeda).includes('soft mark'), `a deep-sky object says how it is drawn: ${drawingLine(andromeda)}`);
+check(/our own galaxy/.test(drawingLine(andromeda)) && /not been mapped/.test(drawingLine(andromeda)), `Andromeda says it is drawn from our galaxy's model, and that its arms are not its own: ${drawingLine(andromeda)}`);
+const pleiades = recs.find((r) => r.id === 'dso-m45');
+check(typeof drawingLine(pleiades) === 'string' && drawingLine(pleiades).includes('soft mark'), `every other deep-sky object is still a soft mark: ${drawingLine(pleiades)}`);
 
 // The last stop of "To the edge of what we know" states what this map draws. It said 111 of
 // OpenNGC's objects while the file drew 178 (110 placed by OpenNGC, 68 by hand); the numbers on

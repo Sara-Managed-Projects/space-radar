@@ -10,7 +10,7 @@ const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
 const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
 const { stage } = await import(join(JS, 'scene/stage.js'));
-const { parseGalaxy, createGalaxy, KPC_KM } = await import(join(JS, 'scene/galaxy.js'));
+const { parseGalaxy, createGalaxy, KPC_KM, ANDROMEDA, andromedaAxes, andromedaFromModel, andromedaDiameterLy } = await import(join(JS, 'scene/galaxy.js'));
 const { LAYERS } = await import(join(JS, 'data/layers.js'));
 const { LOD_RULES } = await import(join(JS, 'data/lod.js'));
 const { propagate } = await import(join(JS, 'propagate/index.js'));
@@ -75,6 +75,42 @@ check(!!rule && rule.fade === 'in' && Math.abs(rule.from_km / 9460730472580.8 - 
   g.dispose();
 }
 stage.setWorld('earth');
+
+// Andromeda from the same model (2026-09-22): at the trip's Andromeda stop it was an 8 px dot.
+{
+  const row = JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8')).objects.find((o) => o.id === 'm31');
+  check(row && row.raDeg === ANDROMEDA.raDeg && row.decDeg === ANDROMEDA.decDeg && row.distLy === ANDROMEDA.distLy && row.majAxArcmin === ANDROMEDA.majAxArcmin,
+    'the drawn Andromeda stands where, as far and as big as the M31 row says');
+  const ax = andromedaAxes();
+  const d = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  check(Math.abs(d(ax.major, ax.across)) < 1e-9 && Math.abs(d(ax.major, ax.normal)) < 1e-9 && Math.abs(d(ax.across, ax.normal)) < 1e-9, 'the disc axes are orthogonal');
+  const tilt = Math.acos(Math.abs(d(ax.normal, ax.los))) * 180 / Math.PI;
+  check(Math.abs(tilt - 77) < 1e-6, `the disc is inclined 77 degrees to the line of sight (${tilt.toFixed(3)})`);
+  // The north-west edge is the near one: the in-disc axis that shows toward the NW on the sky
+  // points back toward the Sun.
+  check(d(ax.across, ax.los) < 0, 'the north-west edge is the nearer one');
+  // The moved cloud: centred on Andromeda, the size its card prints.
+  const bin = readFileSync(join(ROOT, 'site/data/galaxy.bin'));
+  const g = parseGalaxy(bin.buffer.slice(bin.byteOffset, bin.byteOffset + bin.byteLength));
+  let cx = 0, cy = 0, cz = 0, nb = 0;
+  for (let i = 0; i < g.count; i++) if (g.kind[i] === 1) { cx += g.posKpc[i * 3]; cy += g.posKpc[i * 3 + 1]; cz += g.posKpc[i * 3 + 2]; nb++; }
+  const twin = andromedaFromModel(g.posKpc, g.count, [cx / nb, cy / nb, cz / nb]);
+  let tx = 0, ty = 0, tz = 0, tb = 0;
+  for (let i = 0; i < g.count; i++) if (g.kind[i] === 1) { tx += twin[i * 3]; ty += twin[i * 3 + 1]; tz += twin[i * 3 + 2]; tb++; }
+  const KPC_LY = KPC_KM / 9460730472580.8;
+  const distLy = Math.hypot(tx / tb, ty / tb, tz / tb) * KPC_LY;
+  check(Math.abs(distLy - ANDROMEDA.distLy) / ANDROMEDA.distLy < 0.001, `its bulge is at Andromeda's distance (${Math.round(distLy)} ly)`);
+  const rMw = [], rM31 = [];
+  for (let i = 0; i < g.count; i++) {
+    rMw.push(Math.hypot(g.posKpc[i * 3] - cx / nb, g.posKpc[i * 3 + 1] - cy / nb, g.posKpc[i * 3 + 2] - cz / nb));
+    rM31.push(Math.hypot(twin[i * 3] - tx / tb, twin[i * 3 + 1] - ty / tb, twin[i * 3 + 2] - tz / tb));
+  }
+  rMw.sort((a, b) => a - b); rM31.sort((a, b) => a - b);
+  const q = Math.floor(0.99 * g.count);
+  const ratio = rM31[q] / rMw[q];
+  check(Math.abs(ratio - andromedaDiameterLy() / ANDROMEDA.templateDiameterLy) < 0.01, `it is the model scaled by the two records' sizes (${ratio.toFixed(3)})`);
+  check(Math.abs(andromedaDiameterLy() - 131391) < 1, 'and that size is the one the card prints (131 391 ly before rounding)');
+}
 
 if (problems.length) { console.error('galaxy FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`galaxy ok: ${data.count} points, the centre 8.15 kpc away toward Sagittarius A*, drawn only from a rung, and the card calls it a model`);
