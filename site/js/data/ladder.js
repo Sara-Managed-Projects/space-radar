@@ -40,7 +40,7 @@ export const LADDER_RUNGS = [
     },
     "layer": "stars",
     "distance": "4.2 light-years",
-    "why": "The nearest star to the Sun. The fastest thing we have ever built would take seventy thousand years."
+    "why": "The nearest star to the Sun. Voyager 1, the fastest thing we have sent out of the Solar System, would take seventy-five thousand years."
   },
   {
     "id": "pleiades",
@@ -49,8 +49,8 @@ export const LADDER_RUNGS = [
       "record": "dso-m45"
     },
     "layer": "deep-sky",
-    "distance": "about 440 light-years",
-    "why": "A cluster you can see with your eyes in winter. Its light left in the sixteenth century."
+    "distance": "about 425 light-years",
+    "why": "A cluster you can see with your eyes on winter evenings. Its light left around the year 1600."
   },
   {
     "id": "galactic-centre",

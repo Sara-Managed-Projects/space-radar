@@ -413,6 +413,10 @@ COPY_CASES: list[tuple[str, str, str, str]] = [
      "  instances += 1;\n  host.setAttribute('aria-label', 'Find an object by name');"),
     ("a label held in a local table on its way to the DOM",
      "mobile.js", "  const PANELS = [", "  const PANELS = [\n    { id: 'sr-x', label: 'Everything' },"),
+    # Not a leak but the same file's other rule: a dash typed as two hyphens prints as two hyphens.
+    ("a dash written as two hyphens in the copy",
+     "../copy/en.js", "give or take — the date is not fixed yet",
+     "give or take -- the date is not fixed yet"),
 ]
 
 
@@ -552,7 +556,7 @@ def check_tour_refusals() -> int:
 
 
 def check_copy_refuses() -> int:
-    """Break the no-literals rule five ways and assert check_copy.py says which line and which file."""
+    """Break the no-literals rule five ways and the dash rule once; assert check_copy.py names the file."""
     failures = 0
     with tempfile.TemporaryDirectory() as tmp:
         for name, filename, find, replace in COPY_CASES:
@@ -561,6 +565,8 @@ def check_copy_refuses() -> int:
                 shutil.rmtree(work)
             (work / "site" / "js").mkdir(parents=True)
             shutil.copytree(ROOT / "site/js/ui", work / "site/js/ui")
+            shutil.copytree(ROOT / "site/js/copy", work / "site/js/copy")
+            shutil.copytree(ROOT / "site/js/data", work / "site/js/data")
             shutil.copytree(ROOT / "scripts", work / "scripts")
             # registry/exotics.yaml points at the two photographs and the validator checks
             # they are really in the tree, so the tree needs them or every case fails for a
@@ -580,7 +586,7 @@ def check_copy_refuses() -> int:
                 cwd=work, capture_output=True, text=True,
             )
             out = result.stdout + result.stderr
-            if result.returncode != 0 and filename in out:
+            if result.returncode != 0 and Path(filename).name in out:
                 print(f"  refused: {name}")
             else:
                 why = "was accepted" if result.returncode == 0 else f"refused without naming {filename}"
