@@ -87,7 +87,7 @@ CASES: list[tuple[str, str, str, str]] = [
     ("event type has no lead times",
      "events.yaml", "    lead_times: [same-day, 1d, 1w, on-confirm]\n", ""),
     ("site sits on a world that does not exist",
-     "sites.yaml", "world: moon", "world: enceladus"),
+     "sites.yaml", "world: moon", "world: miranda"),
 
     # --- registry/sites.yaml, the landing sites ----------------------------------------
     # Twenty-one arrived at once on 2026-09-22, each with a coordinate somebody copied off a page.
@@ -278,7 +278,7 @@ CASES: list[tuple[str, str, str, str]] = [
     ("a latitude off the world",
      "oddities.yaml", "        lat: 32.5956", "        lat: 132.5956"),
     ("a surface row on a world with no worlds.yaml row",
-     "oddities.yaml", "      world: moon\n      anchor:", "      world: enceladus\n      anchor:"),
+     "oddities.yaml", "      world: moon\n      anchor:", "      world: miranda\n      anchor:"),
 
     # An orbit is six numbers plus a phase, or it is a wrong orbit rather than none
     ("half an element set, which draws a wrong orbit rather than no orbit",
@@ -539,7 +539,7 @@ TOUR_CASES: list[tuple[str, str, str]] = [
     ("a stop that hand-writes the class the record already knows",
      "      - id: roadster\n", "      - id: roadster\n        class: measured\n"),
     ("a stop aimed at a world with no worlds.yaml row",
-     "        target: {world: earth}", "        target: {world: enceladus}"),
+     "        target: {world: earth}", "        target: {world: miranda}"),
     ("a stop aimed at a site with no sites.yaml row",
      "        target: {record: beresheet-lunar-library}", "        target: {site: apollo-18}"),
     ("a trip requiring a layer nothing declares",

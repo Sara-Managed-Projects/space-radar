@@ -129,6 +129,10 @@ worlds:
     rotation: {kind: sidereal, period_h: 16.11}
     frames: [inertial, fixed]
     look: {textures: neptune}
+    # Its card said "You can see this one with your own eyes" until 2026-09-22, which at magnitude
+    # 7.7 it cannot; copy/en.js worldSee.neptune now says what this page does.
+    facts:
+      seen: {source: "https://en.wikipedia.org/wiki/Neptune", read: 2026-09-22, says: "Neptune is too faint to be visible to the naked eye. The apparent magnitude currently ranges from 7.67 to 7.89 ... A telescope or strong binoculars will resolve Neptune as a small blue disk"}
 
   # PLUTO AND JUPITER'S FOUR BIG MOONS: worlds with SOURCED FACTS instead of a texture. No map ships
   # for them and none is fetched, so `look.flat` is the colour they are drawn in -- a hue from the
@@ -224,3 +228,123 @@ worlds:
       what: {source: "https://science.nasa.gov/jupiter/jupiter-moons/callisto/", read: 2026-09-22, says: "the most heavily cratered object in our solar system"}
       colour: {source: "https://en.wikipedia.org/wiki/Callisto_(moon)", read: 2026-09-22, says: "Callisto's surface has an albedo of about 20%"}
       seen: {source: "https://en.wikipedia.org/wiki/Galilean_moons", read: 2026-09-22, says: "readily seen with common binoculars ... closeness to bright Jupiter makes naked-eye observation very difficult"}
+
+  # SIX MORE MOONS (2026-09-22): Mars's two, Saturn's Enceladus and Titan, Neptune's Triton and
+  # Pluto's Charon, flat and sourced like the five above. Astronomy Engine has nothing for them, so
+  # where each one is comes from propagate/moons.js: a precessing ellipse FITTED TO JPL HORIZONS
+  # (2000-2050), added to its planet's own position -- `ephemeris.moon` again. That file has the
+  # method and the error measured against Horizons at instants the fit never saw: Phobos within
+  # 5.9 km over 2000-2050, Deimos 120, Enceladus 1 480, Titan 836, Triton 9.8, Charon 0.7 (0.003
+  # to 0.62 % of each orbit). Outside 2000-2050 nothing was measured and they are not drawn.
+  #
+  # Radii: JPL Solar System Dynamics, Planetary Satellite Physical Parameters, one table for all
+  # six. Albedos: NASA's fact sheets, as for the five above, so the eleven flat colours share one
+  # light-to-dark order. unit_km: 1 000 for the three Moon-sized ones, 100 for the three small
+  # ones (scene/stage.js says why not 10).
+  - id: phobos
+    aliases: ["Mars I"]
+    display: Phobos
+    parent: mars
+    radius_km: 11.08
+    unit_km: 100
+    ephemeris: {propagator: body, body: Mars, moon: phobos}
+    frames: [inertial]
+    look: {flat: "#4a4540"}
+    facts:
+      radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Phobos 401 ... Mean Radius (km) 11.08"}
+      albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html", read: 2026-09-22, says: "Satellites of Mars ... Geometric albedo 0.07 (Phobos)"}
+      what: {source: "https://science.nasa.gov/mars/moons/phobos/", read: 2026-09-22, says: "Phobos is the larger of Mars' two moons ... It's nearing Mars at a rate of six feet (1.8 meters) every hundred years."}
+      shape: {source: "https://science.nasa.gov/mars/moons/phobos/", read: 2026-09-22, says: "17 x 14 x 11 miles (27 by 22 by 18 kilometers) in diameter"}
+      colour: {source: "https://science.nasa.gov/mars/moons/phobos/", read: 2026-09-22, says: "composed of C-type rock, similar to blackish carbonaceous chondrite asteroids"}
+      seen: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html", read: 2026-09-22, says: "Apparent visual magnitude (V0) 11.3 (Phobos)"}
+      glare: {source: "https://en.wikipedia.org/wiki/Moons_of_Mars", read: 2026-09-22, says: "scattered light from Mars prevented them from searching the inner few arcminutes where the satellites Phobos and Deimos reside"}
+      found: {source: "https://en.wikipedia.org/wiki/Phobos_(moon)", read: 2026-09-22, says: "The two moons were discovered in 1877 by American astronomer Asaph Hall."}
+      telescope: {source: "https://en.wikipedia.org/wiki/Moons_of_Mars", read: 2026-09-22, says: "The telescope used for the discovery was the 26-inch (66 cm) refractor"}
+
+  - id: deimos
+    aliases: ["Mars II"]
+    display: Deimos
+    parent: mars
+    radius_km: 6.2
+    unit_km: 100
+    ephemeris: {propagator: body, body: Mars, moon: deimos}
+    frames: [inertial]
+    look: {flat: "#524d47"}
+    facts:
+      radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Deimos 402 ... Mean Radius (km) 6.2"}
+      albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html", read: 2026-09-22, says: "Satellites of Mars ... Geometric albedo 0.08 (Deimos)"}
+      what: {source: "https://science.nasa.gov/mars/moons/deimos/", read: 2026-09-22, says: "Deimos is the smaller of the two Martian moons and is less irregular in shape."}
+      shape: {source: "https://science.nasa.gov/mars/moons/deimos/", read: 2026-09-22, says: "Like Phobos, Deimos is a small and lumpy, heavily cratered object."}
+      colour: {source: "https://science.nasa.gov/mars/moons/phobos/", read: 2026-09-22, says: "Phobos and Deimos appear to be composed of C-type rock, similar to blackish carbonaceous chondrite asteroids."}
+      seen: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html", read: 2026-09-22, says: "Apparent visual magnitude (V0) 12.40 (Deimos)"}
+      glare: {source: "https://en.wikipedia.org/wiki/Moons_of_Mars", read: 2026-09-22, says: "scattered light from Mars prevented them from searching the inner few arcminutes where the satellites Phobos and Deimos reside"}
+      found: {source: "https://en.wikipedia.org/wiki/Phobos_(moon)", read: 2026-09-22, says: "The two moons were discovered in 1877 by American astronomer Asaph Hall."}
+      telescope: {source: "https://en.wikipedia.org/wiki/Moons_of_Mars", read: 2026-09-22, says: "The telescope used for the discovery was the 26-inch (66 cm) refractor"}
+
+  - id: enceladus
+    aliases: ["Saturn II"]
+    display: Enceladus
+    parent: saturn
+    radius_km: 252.1
+    unit_km: 100
+    ephemeris: {propagator: body, body: Saturn, moon: enceladus}
+    frames: [inertial]
+    look: {flat: "#eff1f1"}
+    facts:
+      radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Enceladus 602 ... Mean Radius (km) 252.10"}
+      # Wikipedia's infobox gives 1.375 at 550 nm (Verbiscer et al. 2007); the fact sheet is the
+      # source the other ten flat worlds' albedos come from, so the order uses its 1.0.
+      albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturniansatfact.html", read: 2026-09-22, says: "Enceladus (II) ... Visual geometric albedo 1.0"}
+      what: {source: "https://science.nasa.gov/saturn/moons/enceladus/", read: 2026-09-22, says: "geyser-like jets spewing water vapor and ice particles into space ... Enceladus sprays its ocean out into space"}
+      colour: {source: "https://science.nasa.gov/saturn/moons/enceladus/", read: 2026-09-22, says: "Enceladus is the most reflective body in the solar system ... bright white all over"}
+      seen: {source: "https://en.wikipedia.org/wiki/Enceladus", read: 2026-09-22, says: "Its faint apparent magnitude (HV = +11.7) and its proximity to the much brighter Saturn and Saturn's rings make Enceladus difficult to observe from Earth with smaller telescopes."}
+
+  - id: titan
+    aliases: ["Saturn VI"]
+    display: Titan
+    parent: saturn
+    radius_km: 2574.76
+    unit_km: 1000
+    ephemeris: {propagator: body, body: Saturn, moon: titan}
+    frames: [inertial]
+    look: {flat: "#a8702e"}
+    facts:
+      radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Titan 606 ... Mean Radius (km) 2574.76"}
+      albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturniansatfact.html", read: 2026-09-22, says: "Titan (VI) ... Visual geometric albedo 0.22"}
+      what: {source: "https://science.nasa.gov/saturn/moons/titan/", read: 2026-09-22, says: "Titan is Saturn's largest moon, and the only moon in our solar system known to have a substantial atmosphere ... lakes and seas of liquid hydrocarbons like methane and ethane"}
+      landing: {source: "https://en.wikipedia.org/wiki/Titan_(moon)", read: 2026-09-22, says: "The Huygens probe descends by parachute and lands on Titan on January 14, 2005."}
+      colour: {source: "https://en.wikipedia.org/wiki/Titan_(moon)", read: 2026-09-22, says: "Titan's orange color comes from a thick atmospheric haze"}
+      seen: {source: "https://en.wikipedia.org/wiki/Titan_(moon)", read: 2026-09-22, says: "Titan is never visible to the naked eye, but can be observed through small telescopes or strong binoculars. Amateur observation is difficult because of the proximity of Titan to Saturn's brilliant globe and ring system ... a maximum apparent magnitude of +8.2"}
+
+  - id: triton
+    aliases: ["Neptune I"]
+    display: Triton
+    parent: neptune
+    radius_km: 1352.6
+    unit_km: 1000
+    ephemeris: {propagator: body, body: Neptune, moon: triton}
+    frames: [inertial]
+    look: {flat: "#e3d4cc"}
+    facts:
+      radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Triton 801 ... Mean Radius (km) 1352.60"}
+      albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/neptuniansatfact.html", read: 2026-09-22, says: "Triton (NI) ... Visual geometric albedo 0.72"}
+      what: {source: "https://science.nasa.gov/neptune/moons/triton/", read: 2026-09-22, says: "Triton is the largest of Neptune's 13 moons. It is unusual because it is the only large moon in our solar system that orbits in the opposite direction of its planet's rotation ... Scientists think Triton is a Kuiper Belt Object captured by Neptune's gravity"}
+      colour: {source: "https://en.wikipedia.org/wiki/Triton_(moon)", read: 2026-09-22, says: "Triton's reddish color is thought to be the result of methane ice"}
+      seen: {source: "https://en.wikipedia.org/wiki/Triton_(moon)", read: 2026-09-22, says: "apparent magnitude 13.47 (infobox)"}
+
+  - id: charon
+    aliases: ["Pluto I"]
+    display: Charon
+    parent: pluto
+    radius_km: 606.0
+    unit_km: 1000
+    ephemeris: {propagator: body, body: Pluto, moon: charon}
+    frames: [inertial]
+    look: {flat: "#8e8a86"}
+    facts:
+      radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Charon 901 ... Mean Radius (km) 606.0"}
+      albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/plutofact.html", read: 2026-09-22, says: "Charon (P1) ... Geometric Albedo 0.42"}
+      what: {source: "https://science.nasa.gov/dwarf-planets/pluto/moons/charon/", read: 2026-09-22, says: "Charon is the largest of Pluto's five moons. At half the size of Pluto, Charon is the largest known satellite relative to its parent body. The same surfaces of Charon and Pluto always face each other"}
+      colour: {source: "https://science.nasa.gov/dwarf-planets/pluto/moons/charon/", read: 2026-09-22, says: "Charon's color palette is not as diverse as Pluto's. Most striking is the reddish north (top) polar region."}
+      seen: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/plutofact.html", read: 2026-09-22, says: "Charon (P1) ... Apparent visual magnitude 16.8"}
+      split: {source: "https://en.wikipedia.org/wiki/Charon_(moon)", read: 2026-09-22, says: "a group of amateur astronomers in Italy used a 14-inch telescope in 2008 to successfully resolve Charon in an image of Pluto"}

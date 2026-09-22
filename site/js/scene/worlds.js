@@ -1,12 +1,12 @@
-// The worlds: Earth, the Moon, the Sun, the seven planets, Pluto and Jupiter's four big moons, each
-// built from a ROW.
+// The worlds: Earth, the Moon, the Sun, the seven planets, Pluto, Jupiter's four big moons, and
+// Phobos, Deimos, Enceladus, Titan, Triton and Charon, each built from a ROW.
 //
 // Contract: createWorlds(scene) -> { update(tMs), meshFor(id), positionOf(id, tMs) }
 //
 // The table below mirrors registry/worlds.yaml, and scripts/check_registry.py refuses the two when
-// they disagree on an id, a parent, a radius or a flat colour. Adding Titan is a row here, a row
-// there and a row in stage.js's STAGES -- there is no Mars.js, and this file contains no
-// `if (id === ...)` anywhere in its drawing path.
+// they disagree on an id, a parent, a radius or a flat colour. Adding Titan was a row here, a row
+// there and a row in stage.js's STAGES, plus its orbit in propagate/moons.js -- there is no Mars.js,
+// and this file contains no `if (id === ...)` anywhere in its drawing path.
 // Ephemerides are astronomy-engine, which is a pure function of time and needs no network.
 //
 // ---------------------------------------------------------------------------------------------
@@ -48,7 +48,7 @@
 import * as THREE from '../../vendor/three.module.min.js';
 import * as Astronomy from '../../vendor/astronomy.js';
 import { stage, SUN_INERTIAL, EARTH_INERTIAL, isLadderStage } from './stage.js';
-import { j2000ToTeme, rotateDir, stageFrame, isJupiterMoon, worldHelioEclKm } from '../propagate/frames.js';
+import { j2000ToTeme, rotateDir, stageFrame, isPlanetMoon, worldHelioEclKm } from '../propagate/frames.js';
 import { createEarth, updateEarth } from './earth.js';
 import { COPY, t, fmt } from '../copy/en.js';
 
@@ -97,6 +97,13 @@ export const WORLD_ALIASES = {
   europa: ['Jupiter II'],
   ganymede: ['Jupiter III'],
   callisto: ['Jupiter IV'],
+  // The numbered designations people also type: Titan is Saturn VI, Triton is Neptune I.
+  phobos: ['Mars I'],
+  deimos: ['Mars II'],
+  enceladus: ['Saturn II'],
+  titan: ['Saturn VI'],
+  triton: ['Neptune I'],
+  charon: ['Pluto I'],
 };
 
 
@@ -134,8 +141,10 @@ export function worldRecords() {
       // Pluto and the moons are not VSOP87, so WORLD_CITE would be wrong about them; theirs names
       // their own method and where their facts were read (copy/en.js worldFacts).
       cite: COPY.worldFacts.cite[w.id] || WORLD_CITE,
-      // A world with no surface map says so on its card (ui/cards.js drawingLine).
+      // A world with no surface map says so on its card (ui/cards.js drawingLine), and one that is
+      // not round says the ball is not its shape.
       flat: !!w.look.flat,
+      irregular: !!w.look.irregular,
     },
   }));
 }
@@ -260,6 +269,54 @@ export const WORLDS = [
     id: 'callisto', display: 'Callisto', parent: 'jupiter', radiusKm: 2410.3,
     body: 'Callisto', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
     look: { flat: true, tint: 0x5e564c, albedo: 0.19 },
+  },
+  // SIX MORE MOONS (2026-09-22), flat like the five above and in the same one light-to-dark order:
+  // their albedos are NASA's fact sheets' too (Saturnian, Neptunian and Mars sheets, Pluto's for
+  // Charon) -- Enceladus 1.0, Triton 0.72, Charon 0.42, Titan 0.22, Deimos 0.08, Phobos 0.07 --
+  // so the eleven run Enceladus, Triton, Europa, Io, Pluto, Ganymede, Charon, Titan, Callisto,
+  // Deimos, Phobos, and the test holds all eleven. Radii are JPL's satellite physical parameters.
+  // Where they are is propagate/moons.js (fitted to JPL Horizons, error measured there). Each comes
+  // after its planet, for the reason above; Mars, Saturn and Neptune are planets and Pluto is first
+  // of the flat rows.
+  {
+    // "the most reflective body in the solar system ... bright white all over" (NASA Science).
+    id: 'enceladus', display: 'Enceladus', parent: 'saturn', radiusKm: 252.1,
+    body: 'Enceladus', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
+    look: { flat: true, tint: 0xeff1f1, albedo: 1.0 },
+  },
+  {
+    // "Titan's orange color comes from a thick atmospheric haze" (Wikipedia): the haze, not the
+    // ground, is what anyone has seen of Titan in visible light.
+    id: 'titan', display: 'Titan', parent: 'saturn', radiusKm: 2574.76,
+    body: 'Titan', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
+    look: { flat: true, tint: 0xa8702e, albedo: 0.22 },
+  },
+  {
+    // "Triton's reddish color" (Wikipedia) on frost with "an icy sheen" (NASA Science): a pale pink.
+    id: 'triton', display: 'Triton', parent: 'neptune', radiusKm: 1352.6,
+    body: 'Triton', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
+    look: { flat: true, tint: 0xe3d4cc, albedo: 0.72 },
+  },
+  {
+    // "Charon's color palette is not as diverse as Pluto's. Most striking is the reddish north
+    // (top) polar region" (NASA Science): a grey, faintly warm.
+    id: 'charon', display: 'Charon', parent: 'pluto', radiusKm: 606.0,
+    body: 'Charon', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
+    look: { flat: true, tint: 0x8e8a86, albedo: 0.42 },
+  },
+  {
+    // "composed of C-type rock, similar to blackish carbonaceous chondrite asteroids" (NASA
+    // Science, of both moons of Mars). `irregular`: a lumpy rock drawn as a ball of its mean
+    // radius, and its card says the true shape is not drawn.
+    id: 'phobos', display: 'Phobos', parent: 'mars', radiusKm: 11.08,
+    body: 'Phobos', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
+    look: { flat: true, tint: 0x4a4540, albedo: 0.07, irregular: true },
+  },
+  {
+    // The same NASA sentence; a shade lighter than Phobos for its 0.08 against 0.07.
+    id: 'deimos', display: 'Deimos', parent: 'mars', radiusKm: 6.2,
+    body: 'Deimos', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
+    look: { flat: true, tint: 0x524d47, albedo: 0.08, irregular: true },
   },
 ];
 
@@ -895,9 +952,10 @@ export function positionOf(id, tMs) {
 
   if (id === 'sun') return { x: 0, y: 0, z: 0, frame: SUN_INERTIAL, cls: 'measured' };
 
-  // Jupiter's four big moons have no astronomy-engine Body. frames.js adds JupiterMoons() to
-  // Jupiter's heliocentric vector and hands back the same ecliptic frame as the planets below.
-  if (isJupiterMoon(id)) {
+  // A moon of another planet has no astronomy-engine Body. frames.js adds its offset (JupiterMoons()
+  // for Jupiter's four, propagate/moons.js for the other six) to the planet's heliocentric vector
+  // and hands back the same ecliptic frame as the planets below.
+  if (isPlanetMoon(id)) {
     const h = worldHelioEclKm(id, tMs);
     return h ? { x: h.x, y: h.y, z: h.z, frame: SUN_INERTIAL, cls: 'measured' } : null;
   }
@@ -943,7 +1001,8 @@ export function compressesFrom(stageId) {
 /**
  * A planet and its moons see each other truly; everything else across a stage boundary is squeezed.
  * A world's system is its parent when the parent is not the Sun, and itself otherwise -- so Earth
- * and the Moon share one, and so do Jupiter, Io, Europa, Ganymede and Callisto.
+ * and the Moon share one, and so do Jupiter and its four big moons, Saturn with Titan and
+ * Enceladus, Mars with Phobos and Deimos, Neptune with Triton, and Pluto with Charon.
  */
 function sameSystem(a, b) {
   const sys = (id) => {

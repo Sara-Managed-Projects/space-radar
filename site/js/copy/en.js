@@ -481,6 +481,12 @@ export const COPY = {
     europa: 'Europa',
     ganymede: 'Ganymede',
     callisto: 'Callisto',
+    phobos: 'Phobos',
+    deimos: 'Deimos',
+    enceladus: 'Enceladus',
+    titan: 'Titan',
+    triton: 'Triton',
+    charon: 'Charon',
   },
 
   // PLUTO AND JUPITER'S FOUR BIG MOONS are the worlds that came with sourced facts instead of a
@@ -495,11 +501,20 @@ export const COPY = {
       europa: 'position computed with Astronomy Engine (Don Cross, MIT licence): Jupiter, plus the L1.2 theory of its moons (Lainey, Duriez and Vienne); radius from NASA’s Jovian satellite fact sheet, what it is from NASA Science, its colour and how to see it from Wikipedia, all read 2026-09-22',
       ganymede: 'position computed with Astronomy Engine (Don Cross, MIT licence): Jupiter, plus the L1.2 theory of its moons (Lainey, Duriez and Vienne); radius from NASA’s Jovian satellite fact sheet, what it is from NASA Science, its colour and how to see it from Wikipedia, all read 2026-09-22',
       callisto: 'position computed with Astronomy Engine (Don Cross, MIT licence): Jupiter, plus the L1.2 theory of its moons (Lainey, Duriez and Vienne); radius from NASA’s Jovian satellite fact sheet, what it is from NASA Science, its colour and how to see it from Wikipedia, all read 2026-09-22',
+      // The six whose orbits were fitted to JPL Horizons (propagate/moons.js). "Within" is the
+      // worst error measured there over 2000 to 2050, at instants the fit never saw.
+      phobos: 'position: Mars from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 6 km over 2000 to 2050; radius from JPL’s satellite physical parameters, brightness from NASA’s Mars fact sheet, what it is and its colour from NASA Science, all read 2026-09-22',
+      deimos: 'position: Mars from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 120 km over 2000 to 2050; radius from JPL’s satellite physical parameters, brightness from NASA’s Mars fact sheet, what it is and its colour from NASA Science, all read 2026-09-22',
+      enceladus: 'position: Saturn from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 1 480 km over 2000 to 2050; radius from JPL’s satellite physical parameters, what it is and its colour from NASA Science, how to see it from Wikipedia, all read 2026-09-22',
+      titan: 'position: Saturn from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 840 km over 2000 to 2050; radius from JPL’s satellite physical parameters, what it is from NASA Science, the Huygens landing, its colour and how to see it from Wikipedia, all read 2026-09-22',
+      triton: 'position: Neptune from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 10 km over 2000 to 2050; radius from JPL’s satellite physical parameters, what it is from NASA Science, its colour and brightness from Wikipedia, all read 2026-09-22',
+      charon: 'position: Pluto from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 1 km over 2000 to 2050; radius from JPL’s satellite physical parameters, brightness from NASA’s Pluto fact sheet, what it is and its colour from NASA Science, all read 2026-09-22',
     },
   },
 
   // scene/worlds.js viewScale(id).note for a moon drawn around a planet that is itself drawn nearer
-  // and larger than it is: Jupiter's moons, seen from any stage outside Jupiter's own system. {n}
+  // and larger than it is: Jupiter's, Saturn's, Mars's, Neptune's and Pluto's moons, seen from any
+  // stage outside their own planet's system. {n}
   // is how many times wider than the real one the planet is drawn on the sky, and the gap between
   // them is widened by the same factor. The second sentence is added only when the moon's own disc
   // had to be enlarged again to be seen at all.
@@ -985,6 +1000,10 @@ export const COPY = {
     // The colour is a hue from a published description, darker or lighter in the order of the
     // measured albedo; nobody averaged a photograph for it, and the line does not pretend so.
     worldFlat: 'drawn as a plain ball: there is no surface map of {name} here, and its one colour is chosen from published descriptions, not measured',
+    // ...and Phobos and Deimos are not balls at all. Phobos is 27 by 22 by 18 km and Deimos is
+    // "small and lumpy" (NASA Science, registry/worlds.yaml `facts.shape`); each is drawn as a ball
+    // of its mean radius (JPL), and the card says the shape on screen is not theirs.
+    worldFlatIrregular: 'drawn as a plain ball the size of its average radius: there is no surface map of {name} here, its one colour is chosen from published descriptions, not measured, and {name} is really a lumpy rock whose true shape is not drawn',
     mount: 'where we hang it on the model is our own arrangement, and it is drawn far bigger than it is — at true size it would be too small to see',
   },
 
@@ -1111,6 +1130,19 @@ export const COPY = {
       europa: 'Common binoculars show it as a point of light beside Jupiter; by eye it is lost in Jupiter’s glare.',
       ganymede: 'Common binoculars show it as a point of light beside Jupiter; by eye it is lost in Jupiter’s glare.',
       callisto: 'Common binoculars show it as a point of light beside Jupiter; by eye it is lost in Jupiter’s glare.',
+      // Six more moons, and Neptune (2026-09-22). Every magnitude is registry/worlds.yaml
+      // `facts.seen` on that row; "times fainter" is against the same 6.5 limit, 10^(0.4 x the
+      // difference): Triton 13.47 is 7.0 past it, 614 times; Charon 16.8 is 10.3 past it, 13 000.
+      // Neptune is Wikipedia's 7.67 to 7.89 and "too faint to be visible to the naked eye", which
+      // is why it no longer gets worldNoRise's "your own eyes". Uranus, 5.38 to 6.03 by the same
+      // article, is at the eye's limit and keeps it.
+      titan: 'Not by eye: Titan is magnitude 8.2 at its brightest, so it takes a small telescope or strong binoculars, and Saturn’s glare beside it makes even that hard.',
+      enceladus: 'Not by eye: Enceladus is magnitude 11.7, and so close to bright Saturn and its rings that it is hard to see even through a small telescope.',
+      triton: 'Not by eye or binoculars: Triton is magnitude 13.5, about 600 times fainter than the faintest star you can see, so it takes a telescope.',
+      charon: 'Barely: Charon is magnitude 16.8, 13 000 times fainter than the faintest star you can see, and so close to Pluto that amateurs split the pair in 2008 by photographing them through a 14-inch telescope.',
+      phobos: 'Not by eye: Phobos is magnitude 11.3 at its best and hugs Mars, whose glare drowns it; it was found in 1877 with a 26-inch telescope.',
+      deimos: 'Not by eye: Deimos is magnitude 12.4 at its best and close to Mars, whose glare drowns it; it was found in 1877 with a 26-inch telescope.',
+      neptune: 'Not by eye: Neptune is magnitude 7.7 to 7.9, too faint to see without help. Strong binoculars or a telescope show it as a small blue disc.',
     },
     couldNotLook: 'Could not work out a pass from here.',
     nowhereToLook: 'Nobody knows where this one is, so there is nowhere to look.',
@@ -1526,6 +1558,14 @@ export const COPY = {
         europa: 'one of Jupiter’s four big moons, with a salt-water ocean under its ice',
         ganymede: 'Jupiter’s biggest moon and the biggest in the solar system, larger than Mercury',
         callisto: 'one of Jupiter’s four big moons, and the most heavily cratered object in the solar system',
+        // Six more (2026-09-22), each from its NASA Science page (registry/worlds.yaml `facts.what`;
+        // Titan's landing from `facts.landing`).
+        titan: 'Saturn’s biggest moon, under thick orange haze, with methane lakes; Huygens landed there in 2005',
+        enceladus: 'a small icy moon of Saturn whose geysers spray the ocean under its ice out into space',
+        triton: 'Neptune’s biggest moon; it orbits backwards and is probably a captured Kuiper Belt object',
+        charon: 'Pluto’s biggest moon, half Pluto’s size; the two always turn the same faces to each other',
+        phobos: 'the larger of Mars’s two moons, a lumpy rock spiralling in towards Mars by 1.8 m a century',
+        deimos: 'the smaller of Mars’s two moons, a small lumpy rock covered in craters',
       },
     },
   },

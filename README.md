@@ -284,7 +284,9 @@ APIs, caches them, and does the orbital mechanics itself:
 - **SGP4** for every object in Earth orbit, the same model the catalogues are published for.
 - **Kepler** propagation from published elements for asteroids and comets.
 - **Sun, Moon, planets, Pluto, Jupiter's four big moons, eclipses and twilight** computed offline
-  by an ephemeris library — no network call at all for the most-used part of the app.
+  by an ephemeris library — no network call at all for the most-used part of the app. Phobos,
+  Deimos, Enceladus, Titan, Triton and Charon too, from orbits fitted to JPL Horizons and checked
+  against it (`site/js/propagate/moons.js` has the measured error).
 - **Alt-azimuth** from your position for the sky view, including whether a satellite is sunlit
   while you are in darkness, which is what decides if you can actually see it.
 
@@ -361,8 +363,8 @@ tests/                registry validation, the module contract, a growth test, a
                       that breaks every rule on purpose to prove the validator still says no
 ```
 
-**The registry is the architecture.** `tests/test_growth.py` adds Enceladus — a moon two levels
-down the world tree, so its frame has to compose through Saturn — and proves it is five registry
+**The registry is the architecture.** `tests/test_growth.py` adds Miranda — a moon two levels
+down the world tree, so its frame has to compose through Uranus — and proves it is five registry
 rows and nothing under `site/js/` but the generated mirrors. If that test ever fails, the
 architecture regressed, whatever the feature that caused it. The one registry the browser keeps
 by hand is `worlds.yaml` (a world also carries its texture's measured colour and how it is drawn,
