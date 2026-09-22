@@ -2110,3 +2110,40 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
 /* Data-saver / frame latch note (spec 0026 req 18) --------------------------------------- */
 
 .sr-layers__quality { margin: 6px 0 0; font-size: 11.5px; line-height: 1.4; color: var(--sr-ember); }
+
+/* The note on the scene when no satellite could be read (ui/scenenote.js) ------------------ */
+
+.sr-scenenote {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30; /* over the scene and its labels, under the panels, the card and the mark */
+  width: min(440px, calc(100vw - 32px));
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 10px;
+  align-items: start;
+  padding: 10px 12px;
+  background: var(--sr-panel);
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius-sm);
+  color: var(--sr-text);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+.sr-scenenote[hidden] { display: none; }
+.sr-scenenote__text { margin: 0; grid-column: 1; }
+.sr-scenenote__close {
+  grid-column: 2; grid-row: 1;
+  appearance: none; background: none; border: 0; color: var(--sr-text-dim);
+  font-size: 18px; line-height: 1; padding: 2px 4px; cursor: pointer;
+}
+.sr-scenenote__close:hover { color: var(--sr-ember); }
+.sr-scenenote__close:focus-visible { outline: 2px solid var(--sr-ember); outline-offset: 2px; }
+.sr-scenenote__why { grid-column: 1; justify-self: start; }
+html.sr-trip-mode .sr-scenenote { display: none; }
+@media (max-width: 600px) {
+  /* Under the GitHub mark, which sits in the top-right corner of a phone. */
+  .sr-scenenote { top: calc(56px + env(safe-area-inset-top, 0px)); }
+}
