@@ -216,6 +216,29 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
   check(/rocket launch/.test(String(firstSentence(launch, ctx, { ...m, altKm: 0 }, { state: 'none' }))), 'and a launch is still a launch');
 }
 
+// "CREW DRAGON 12 is a satellite going round the Earth", beside the ISS's own height and ground point.
+// The kind comes from the model route; "docked at" from distance to a crewed station, right now.
+{
+  const now = Date.UTC(2026, 8, 22);
+  const at = (x) => ({ x, y: 0, z: 0 });
+  const iss = { id: 'sat-25544', name: 'ISS (ZARYA)', klass: 'station', layer: 'stations', propagator: 'static', frame: 'earth-inertial', pos: at(6800), meta: { why: 'people live here', noradId: 25544 } };
+  const nauka = { id: 'sat-49044', name: 'ISS (NAUKA)', klass: 'station', layer: 'stations', propagator: 'static', frame: 'earth-inertial', pos: at(6800.05), meta: { noradId: 49044 } };
+  const dragon = { id: 'sat-1', name: 'CREW DRAGON 12', klass: 'satellite', layer: 'stations', propagator: 'static', frame: 'earth-inertial', pos: at(6800.3), meta: {} };
+  const faraway = { ...dragon, id: 'sat-2', name: 'CREW DRAGON 13', pos: at(8400) };
+  const all = [iss, nauka, dragon, faraway];
+  const ctx = { clock: { now: () => now }, worlds: null, selected: () => null, records: () => all };
+  const m = (r) => ({ ok: true, tMs: now, posKm: r.pos, frame: r.frame, altKm: 431, distSunKm: null, distEarthKm: null, speedKmh: 27500 });
+  const said = String(firstSentence(dragon, ctx, m(dragon), { state: 'none' }));
+  check(/is a Dragon spacecraft docked at the International Space Station/.test(said), `a Dragon 0.3 km from the ISS is docked at it -- the station, not its Nauka module: "${said}"`);
+  const free = String(firstSentence(faraway, ctx, m(faraway), { state: 'none' }));
+  check(/is a Dragon spacecraft going round the Earth/.test(free) && !/docked/.test(free), `a Dragon 1 600 km away is not docked: "${free}"`);
+  const sl = { id: 'sat-9', name: 'STARLINK-31234', klass: 'satellite', layer: 'starlink-trains', propagator: 'static', frame: 'earth-inertial', pos: at(6930), meta: { launchYear: 2025 } };
+  const slSaid = String(firstSentence(sl, { ...ctx, records: () => [sl] }, m(sl), { state: 'none' }));
+  check(/is a Starlink V2 Mini going round the Earth/.test(slSaid), `a Starlink says what kind it is: "${slSaid}"`);
+  const plain = { ...sl, id: 'sat-8', name: 'KNACKSAT-2', layer: 'stations' };
+  check(/is a satellite going round the Earth/.test(String(firstSentence(plain, { ...ctx, records: () => [plain] }, m(plain), { state: 'none' }))), 'a CubeSat with no route is still just a satellite');
+}
+
 if (problems.length) {
   console.log(`cards copy: ${problems.length} problem(s)`);
   for (const p of problems) console.log('  - ' + p);

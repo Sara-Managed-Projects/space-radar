@@ -422,7 +422,16 @@ const TEMPLATES = {
     const operator = pick(md, 'operator', 'owner', 'country');
     const purpose = pick(md, 'purpose', 'does', 'role');
     const time = passTimeClause(passInfo);
-    return buildSentence(t(T.lead, { name: displayName(record) }), [
+    // "CREW DRAGON 12 is a satellite going round the Earth" -- beside a ground point and a height
+    // identical to the station it is docked to. Say what kind of spacecraft it is when the model
+    // route knows, and where it is when it is riding on a station.
+    const kind = spacecraftKind(record);
+    const station = dockedAt(record, ctx, m);
+    const name = displayName(record);
+    const lead = station
+      ? t(T.leadDocked, { name, kind: kind || T.aSpacecraft, station })
+      : kind ? t(T.leadKind, { name, kind }) : t(T.lead, { name });
+    return buildSentence(lead, [
       launchClause,
       operator ? t(T.operator, { operator: String(operator) }) : null,
       purpose ? t(T.purpose, { purpose: String(purpose) }) : null,
@@ -695,6 +704,44 @@ const TEMPLATES = {
     ]);
   },
 };
+
+/**
+ * The model route's name for what TYPE of spacecraft this is, when the route draws a type rather
+ * than this exact object: "a Dragon spacecraft", "a Starlink V2 Mini". Null otherwise -- a route
+ * for one specific object carries that object's proper name, which is not a type.
+ */
+function spacecraftKind(record) {
+  let entry = null;
+  try { entry = realModelFor(record); } catch { entry = null; }
+  return entry && entry.generic && typeof entry.name === 'string' && /^an? /.test(entry.name) ? entry.name : null;
+}
+
+const DOCKED_KM = 2;
+/**
+ * The crewed station this record is riding on right now, by name, or null.
+ *
+ * Distance, not the hero layer's "inside another model's drawn radius", which is a question about
+ * drawing scale. Measured on the live stations layer 2026-09-22: Crew Dragon, Cygnus and Progress at
+ * the ISS and Tianzhou and Shenzhou at Tiangong were 0.00 to 0.43 km from their station, and every
+ * other object over 1 600 km away. A station's own modules are at 0 km too, so the station a
+ * hand-kept list names (meta.why: the ISS, Tianhe) is preferred over Nauka or Wentian.
+ */
+function dockedAt(record, ctx, m) {
+  if (!record || klassOf(record) === 'station' || !m || !m.ok || !Number.isFinite(m.tMs)) return null;
+  const p = m.posKm;
+  if (!p || !ctx || typeof ctx.records !== 'function') return null;
+  let best = null;
+  for (const s of ctx.records()) {
+    if (s === record || klassOf(s) !== 'station' || s.frame !== record.frame) continue;
+    const q = positionAt(s, m.tMs);
+    if (!q) continue;
+    const km = Math.hypot(p.x - q.x, p.y - q.y, p.z - q.z);
+    if (!(km < DOCKED_KM)) continue;
+    const rank = (s.meta && s.meta.why ? 0 : 1) * 1e6 + km;
+    if (!best || rank < best.rank) best = { rank, s };
+  }
+  return best ? displayName(best.s) : null;
+}
 
 /** The three worlds a card must not measure against themselves. */
 const isWorld = (record, id) => klassOf(record) === 'world' && String(record && record.id || '').toLowerCase() === id;

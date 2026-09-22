@@ -1258,6 +1258,13 @@ export const COPY = {
     },
     satellite: {
       lead: '{name} is a satellite going round the Earth',
+      // {kind} is the model route's own name for the type -- "a Dragon spacecraft", "a Starlink V2
+      // Mini", "a GLONASS navigation satellite" -- where the route knows one.
+      leadKind: '{name} is {kind} going round the Earth',
+      // Within DOCKED_KM of a crewed station, right now: measured 2026-09-22, the vehicles at the ISS
+      // and Tiangong sit 0.00 to 0.43 km from them and everything else is over 1 600 km away.
+      leadDocked: '{name} is {kind} docked at the {station}',
+      aSpacecraft: 'a spacecraft',
       whyLaunchedDays: 'launched {n} days ago',
       whyLaunchedYear: 'launched in {year}',
       operator: 'flown by {operator}',
