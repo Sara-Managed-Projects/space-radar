@@ -16,6 +16,7 @@ import { predictPasses } from '../sky/passes.js';
 import { trainsFrom } from '../data/trains.js';
 import { revealInColumn } from './reveal.js';
 import { labelName } from './labels.js';
+import { SHOWERS } from '../data/showers.js';
 
 export const NEXT_CAP = 8;
 const HOUR = 3600e3;
@@ -51,9 +52,32 @@ function startOfDay(ms) {
 /** At most this many "comes over you" rows, so a pass minutes away cannot fill the list. */
 export const PASS_ROWS = 3;
 
+/**
+ * Meteor-shower peaks inside the horizon, from registry/showers.yaml (via data/showers.js). A peak is
+ * a calendar date that moves by about a day between years, so the row carries the date and says
+ * "around", never a time. Today's peak still counts: tonight is when you would go out. Pure.
+ */
+export function showerItems(nowMs, horizonMs, showers) {
+  const out = [];
+  const today = startOfDay(nowMs);
+  for (const sh of Array.isArray(showers) ? showers : []) {
+    const m = /^(\d{2})-(\d{2})$/.exec(String(sh && sh.peak || ''));
+    if (!m) continue;
+    const year = new Date(nowMs).getFullYear();
+    for (const y of [year, year + 1]) {
+      const at = new Date(y, Number(m[1]) - 1, Number(m[2]), 12, 0, 0, 0).getTime(); // local noon of the date
+      if (startOfDay(at) < today) continue;
+      if (at - nowMs < horizonMs) out.push({ kind: 'shower', record: null, label: sh.display, tMs: at, zhr: sh.zhr, showerId: sh.id });
+      break;
+    }
+  }
+  return out;
+}
+
 export function buildNextItems(records, nowMs, opts = {}) {
   const horizonMs = opts.horizonMs || 30 * DAY;
   const items = [];
+  if (opts.showers) items.push(...showerItems(nowMs, horizonMs, opts.showers));
   for (const r of Array.isArray(records) ? records : []) {
     if (!r || !r.meta) continue;
     const m = r.meta;
@@ -118,7 +142,7 @@ export function balance(items) {
   const events = items.filter((it) => it.kind !== 'pass' && it.kind !== 'train').sort(byTime);
   const chosen = [...passes.slice(0, PASS_ROWS), ...trains.slice(0, 1)];
   const take = (it) => { if (chosen.length < NEXT_CAP && !chosen.includes(it)) chosen.push(it); };
-  for (const kind of ['launch', 'approach', 'perihelion']) {
+  for (const kind of ['launch', 'approach', 'perihelion', 'shower']) {
     const first = events.find((e) => e.kind === kind);
     if (first) take(first);
   }
@@ -169,6 +193,9 @@ export function rowText(item, nowMs) {
       return t(T.pass, { name, when });
     case 'train':
       return t(T.train, { n: fmt.int(item.count), when });
+    case 'shower':
+      // A date, not a time: the peak moves by hours between years (registry/showers.yaml).
+      return t(T.shower, { name, date: timeText.dateNear(item.tMs, nowMs), zhr: fmt.int(item.zhr) });
     default:
       return `${name} ${when}`;
   }
@@ -205,11 +232,18 @@ export function createNext(ctx) {
     while (list.firstChild) list.removeChild(list.firstChild);
     const now = ctx.clock && typeof ctx.clock.now === 'function' ? ctx.clock.now() : Date.now();
     const observer = ctx.observer && Number.isFinite(ctx.observer.latRad) ? ctx.observer : null;
-    const items = buildNextItems(ctx.records(), now, { observer });
+    const items = buildNextItems(ctx.records(), now, { observer, showers: SHOWERS });
     for (const item of items) {
       const li = el('li', 'sr-next__row', rowText(item, now));
       li.dataset.kind = item.kind;
-      li.addEventListener('click', () => { if (item.record && typeof ctx.select === 'function') ctx.select(item.record); });
+      if (item.record) {
+        // A row that flies somewhere is a button to a keyboard too; it was click-only.
+        const go = () => { if (typeof ctx.select === 'function') ctx.select(item.record); };
+        li.tabIndex = 0;
+        li.setAttribute('role', 'button');
+        li.addEventListener('click', go);
+        li.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+      }
       list.appendChild(li);
     }
     const have = loadedIds();

@@ -56,5 +56,22 @@ check(buildNextItems([launch('A', H)], now, { observer: { latRad: 0.9, lonRad: 0
   check(stationRows.length === 1 && stationRows[0].record.name === 'ISS (ZARYA)', `one pass for the station and its modules, told as the station: ${stationRows.map((r) => r.record.name)}`);
 }
 
+// Meteor showers (2026-09-22): the registry had eight and "Coming up" listed none.
+{
+  const { showerItems, rowText: rt } = await import(join(JS, 'ui/next.js'));
+  const { SHOWERS } = await import(join(JS, 'data/showers.js'));
+  const sept22 = new Date(2026, 8, 22, 20, 0).getTime();
+  const within = showerItems(sept22, 30 * D, SHOWERS);
+  check(within.length === 1 && within[0].showerId === 'orionids', `from 22 September the next month holds the Orionids (${within.map((x) => x.showerId)})`);
+  const text = rt(within[0], sept22);
+  check(/The Orionids meteor shower peaks around .*21 Oct/.test(text) && /up to 20 an hour/.test(text) && !/\d\d:\d\d/.test(text), `a shower row gives a date, never a time: "${text}"`);
+  const onTheDay = showerItems(new Date(2026, 11, 14, 23, 0).getTime(), 30 * D, SHOWERS).map((x) => x.showerId);
+  check(onTheDay.includes('geminids') && onTheDay.includes('ursids'), `on the night of the peak it is still listed (${onTheDay})`);
+  const wrap = showerItems(new Date(2026, 11, 20).getTime(), 30 * D, SHOWERS).map((x) => x.showerId);
+  check(wrap.includes('quadrantids'), `in late December the Quadrantids of next January are listed (${wrap})`);
+  const withShowers = buildNextItems([], sept22, { showers: SHOWERS });
+  check(withShowers.length === 1 && withShowers[0].kind === 'shower' && withShowers[0].record === null, 'with nothing else loaded the list still has the shower');
+}
+
 if (problems.length) { console.error('next FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('next ok: launches, close approaches and perihelia from held records, nearest first, capped, honest about rough dates');

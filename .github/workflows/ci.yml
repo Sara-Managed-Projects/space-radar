@@ -50,6 +50,8 @@ jobs:
         run: python3 scripts/gen_layers_js.py --check
       - name: The aliases mirror matches the registry (spec 0021 req 6)
         run: python3 scripts/gen_aliases_js.py --check
+      - name: The showers mirror matches the registry
+        run: python3 scripts/gen_showers_js.py --check
       - name: The ladder mirror matches the registry (spec 0028 step 8)
         run: python3 scripts/gen_ladder_js.py --check
       - name: The exotics mirror matches the registry (spec 0028 step 7)

@@ -2067,6 +2067,10 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
 }
 
 .sr-next__row:hover { border-color: var(--sr-line-strong); }
+.sr-next__row:focus-visible { outline: 2px solid var(--sr-ember); outline-offset: 2px; }
+/* A shower peak is a date, not an object: nothing to fly to, so the row does not look tappable. */
+.sr-next__row[data-kind='shower'] { cursor: default; }
+.sr-next__row[data-kind='shower']:hover { border-color: var(--sr-line); }
 
 /* Colour by (spec 0026 req 11) -------------------------------------------------------------- */
 
