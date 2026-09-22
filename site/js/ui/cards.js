@@ -327,14 +327,28 @@ const PASS_NONE = 'none';
 const PASS_ERROR = 'error';
 const PASS_OK = 'ok';
 
+/**
+ * Standing on the ground right now: a pad, a dish, a landing site, a museum case -- or a rocket
+ * that has not lifted off yet.
+ *
+ * The last one is new. An upcoming launch is drawn at its pad until T-0 (propagate/ascent.js), and
+ * its card said "Passing over 19.6 N, 110.9 E", "in sunlight" and "Next pass over you" about a
+ * rocket four days from leaving the ground. The rows and the pass predictor both ask this one
+ * question, so they cannot disagree about it.
+ */
+function standsStill(record, m) {
+  if (!record) return false;
+  if (record.propagator === 'fixed' || klassOf(record) === 'site') return true;
+  const a = record.propagator === 'ascent' ? record.ascent : null;
+  return !!a && Number.isFinite(a.t0Ms) && m && Number.isFinite(m.tMs) && m.tMs < a.t0Ms;
+}
+
 function nextPass(record, ctx, m) {
-  // `fixed` is the propagator for things that do not move: pads, dishes, landing sites, and now a
-  // museum case in Houston. Asking predictPasses() when the next pass over you is right there is
-  // not a bug in the maths, it is a question with no meaning -- and until this line the historic
-  // reentries were asking it too.
-  const doesNotMove = record && record.propagator === 'fixed';
-  if (!isEarthFrame(m.frame) || doesNotMove ||
-      klassOf(record) === 'site' || klassOf(record) === 'world') {
+  // Things that do not move -- see standsStill. Asking predictPasses() when the next pass over you
+  // is right there is not a bug in the maths, it is a question with no meaning -- and until this
+  // line the historic reentries were asking it too.
+  const doesNotMove = standsStill(record, m);
+  if (!isEarthFrame(m.frame) || doesNotMove || klassOf(record) === 'world') {
     return { state: PASS_NOT_APPLICABLE, pass: null };
   }
   // No position, no promise about the sky.
@@ -553,7 +567,7 @@ const TEMPLATES = {
     const lead = doing
       ? String(doing).trim().replace(/\.\s*$/, '')
       : kindWord
-        ? t(T.leadKind, { name: displayName(record), kind: kindWord })
+        ? t(T.leadKind, { name: displayName(record), a: article(kindWord), kind: kindWord })
         : t(T.lead, { name: displayName(record) });
     return buildSentence(lead, [
       spacecraft ? t(T.whyDsn, { spacecraft: String(spacecraft) }) : null,
@@ -575,7 +589,7 @@ const TEMPLATES = {
     const name = displayName(record);
     const leadKey = { blackhole: 'leadBlackhole', pulsar: 'leadPulsar', magnetar: 'leadMagnetar', star: 'leadStar' }[kind] || 'leadBlackhole';
     const lead = lo !== null && hi !== null
-      ? t(T.leadRange, { name, kind: T.kinds[kind] || kind, lo: fmt.int(lo), hi: fmt.int(hi) })
+      ? t(T.leadRange, { name, a: article(T.kinds[kind] || kind), kind: T.kinds[kind] || kind, lo: fmt.int(lo), hi: fmt.int(hi) })
       : t(T[leadKey], { name, dist: distLy !== null ? fmt.int(distLy) : '?' });
     let massSay = null;
     if (mLo !== null && mHi !== null) massSay = t(T.massRange, { lo: fmt.smart(mLo), hi: fmt.smart(mHi) });
@@ -640,7 +654,7 @@ const TEMPLATES = {
       ? t(distLy < 20 ? T.leadNear : T.lead, { name: displayName(record), dist: fmt.smart(distLy) })
       : t(COPY.templates.satellite.lead, { name: displayName(record) });
     return buildSentence(lead, [
-      colour ? t(T.colour, { colour }) : null,
+      colour ? t(T.colour, { a: article(colour), colour }) : null,
       distLy !== null && distLy >= 1.5 ? t(T.seenAs, { n: fmt.int(distLy) }) : null,
       distLy !== null && distLy < 1.5 ? t(T.seenAsMonths, { n: fmt.int(distLy * 12) }) : null,
       lum !== null && lum >= 1.5 ? t(T.luminosity, { n: fmt.int(lum) }) : null,
@@ -657,13 +671,13 @@ const TEMPLATES = {
     const radiusKm = pickNumber(md, 'radiusKm');
     const diameterKm =
       explicitDiameter !== null ? explicitDiameter : radiusKm !== null ? radiusKm * 2 : null;
-    const distanceSay = compare(
-      'distanceKm',
-      m.distEarthKm !== null ? m.distEarthKm : m.altKm,
-    );
+    const km = m.distEarthKm !== null ? m.distEarthKm : m.altKm;
+    const distanceSay = isMoon && km !== null ? t(T.distanceKm, { n: fmt.int(km) }) : compare('distanceKm', km);
     const lead = isMoon
       ? t(T.leadMoon, { name: displayName(record) })
-      : t(T.lead, { name: displayName(record) });
+      : isWorld(record, 'sun')
+        ? t(T.leadSun, { name: displayName(record) })
+        : t(T.lead, { name: displayName(record) });
     return buildSentence(lead, [
       phase ? t(T.whyPhase, { phase: String(phase) }) : null,
       riseMs !== null ? t(T.whyRise, { time: timeText.hhmm(riseMs) }) : null,
@@ -672,6 +686,9 @@ const TEMPLATES = {
     ]);
   },
 };
+
+/** The three worlds a card must not measure against themselves. */
+const isWorld = (record, id) => klassOf(record) === 'world' && String(record && record.id || '').toLowerCase() === id;
 
 /** The card's first sentence. Exported for the tests. */
 export function firstSentence(record, ctx, m, passInfo) {
@@ -704,9 +721,10 @@ function comparisons(record, m) {
   // A star's distance is light-years and has its own rows; "x the Moon's distance" for Sirius is
   // a true number that means nothing.
   const distanceKm = onTheGround || ['star', 'exoplanet', 'dso', 'exotic'].includes(klassOf(record)) ? null : m.altKm !== null ? m.altKm : m.distEarthKm;
+  const moonKm = isWorld(record, 'moon') && distanceKm !== null ? t(COPY.templates.world.distanceKm, { n: fmt.int(distanceKm) }) : null;
   const candidates = [
     compare('sizeM', pickNumber(md, 'sizeM', 'diameterM', 'lengthM')),
-    compare('distanceKm', distanceKm),
+    moonKm || compare('distanceKm', distanceKm),
     compare('speedKmh', m.speedKmh),
     compare('magnitude', pickNumber(md, 'magnitude', 'mag')),
   ];
@@ -769,8 +787,11 @@ function rightNowRows(record, m, passInfo) {
     // dish, a landing site, or a lightsaber in a case in Houston. It does not PASS OVER the place
     // it is at, and "height above the ground" of a museum standing on that ground is 0 km, which
     // is a row that costs a line and says nothing.
-    const stands = (record && record.propagator === 'fixed') || klassOf(record) === 'site';
-    if (!(stands && m.altKm !== null && Math.abs(m.altKm) < 0.05)) {
+    const stands = standsStill(record, m);
+    // Not for anything standing: its "altitude" is the ground's own height above the ellipsoid.
+    // Goldstone's 70 m dish read "Height above the ground: 1 km" -- the desert is a kilometre up,
+    // and the dish is on it. The old test only hid values within 50 m of zero.
+    if (!stands) {
       rows.push([
         R.altitude,
         m.altKm !== null ? t(V.km, { n: fmt.int(m.altKm) }) : COPY.card.couldNotLook,
@@ -878,19 +899,24 @@ function rightNowRows(record, m, passInfo) {
     const hip = pick(md, 'hip');
     if (hip) rows.push([R.catalogue, `HIP ${hip}`]);
   } else {
-    rows.push([
+    // The Sun's card printed "Distance from the Sun: 0.000 astronomical units" and Earth's printed
+    // "Distance from Earth: 0.000" and a radio time to itself. Rows that measure a thing against
+    // itself say nothing; they are left out for those two.
+    const isSun = isWorld(record, 'sun');
+    const isEarth = isWorld(record, 'earth');
+    if (!isSun) rows.push([
       R.distanceFromSun,
       m.distSunKm !== null
         ? t(V.au, { n: fmt.smart(m.distSunKm / UNITS.AU_KM) })
         : COPY.card.couldNotLook,
     ]);
-    rows.push([
+    if (!isEarth) rows.push([
       R.distanceFromEarth,
       m.distEarthKm !== null
         ? t(V.au, { n: fmt.smart(m.distEarthKm / UNITS.AU_KM) })
         : COPY.card.couldNotLook,
     ]);
-    if (m.lightMinutes !== null) {
+    if (m.lightMinutes !== null && !isEarth) {
       rows.push([R.lightTime, t(V.minutes, { n: fmt.smart(m.lightMinutes) })]);
     }
     if (m.speedKmh !== null && m.speedKmh > 0.5) {
@@ -923,9 +949,11 @@ function rightNowRows(record, m, passInfo) {
 export function seeItLine(record, ctx, m, passInfo) {
   const klass = klassOf(record);
   if (pick(meta(record), 'unplaceable')) return COPY.sky.nowhereToLook;
-  // `fixed` means it does not move, whatever class it is: a dish, a landing site, or a lightsaber
-  // in a case in Houston. Without this a museum exhibit got "too far away to pick out by eye".
-  if (klass === 'site' || (record && record.propagator === 'fixed')) {
+  // Standing still, whatever class it is: a dish, a landing site, a lightsaber in a case in Houston,
+  // or a rocket before T-0 (standsStill). Without this a museum exhibit got "too far away to pick
+  // out by eye", and a rocket on its pad got "Set where you are and this line will tell you where
+  // to look" -- a pass that cannot happen until it has left the ground.
+  if (klass === 'site' || standsStill(record, m)) {
     if (isEarthFrame(m.frame) || !m.worldId || m.worldId === 'earth') return COPY.sky.onTheGround;
     const world = worldName(m.worldId);
     return world ? t(COPY.sky.onAnotherWorld, { world }) : COPY.sky.notVisibleFromGround;

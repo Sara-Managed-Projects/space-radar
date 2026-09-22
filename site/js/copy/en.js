@@ -1203,7 +1203,7 @@ export const COPY = {
       leadPulsar: '{name} is a pulsar {dist} light-years away',
       leadMagnetar: '{name} is a magnetar {dist} light-years away',
       leadStar: '{name} is a star {dist} light-years away',
-      leadRange: '{name} is a {kind} somewhere between {lo} and {hi} light-years away',
+      leadRange: '{name} is {a} {kind} somewhere between {lo} and {hi} light-years away',
       mass: 'weighing {n} Suns',
       massRange: 'weighing between {lo} and {hi} Suns',
       massMillions: 'weighing {n} million Suns',
@@ -1239,7 +1239,8 @@ export const COPY = {
     star: {
       lead: '{name} is a star {dist} light-years away',
       leadNear: '{name} is a star {dist} light-years away, one of the nearest there are',
-      colour: 'a {colour} star',
+      // {a} is article(colour): "an orange star". A literal 'a' printed "Arcturus is ... a orange star".
+      colour: '{a} {colour} star',
       seenAs: 'the light you see left it {n} years ago',
       seenAsMonths: 'the light you see left it {n} months ago',
       luminosity: 'shining {n} times as bright as the Sun',
@@ -1322,7 +1323,7 @@ export const COPY = {
     },
     site: {
       lead: '{name} is a place on the ground that works with spacecraft',
-      leadKind: '{name} is a {kind}',
+      leadKind: '{name} is {a} {kind}', // {a}: "an observatory"
       where: 'in {where}',
       whyDsn: 'talking to {spacecraft} right now',
       whyLaunch: 'with {launch} due {when}',
@@ -1336,6 +1337,11 @@ export const COPY = {
     world: {
       lead: '{name} is a world in the solar system',
       leadMoon: '{name} is the Earth’s own moon',
+      // The worlds layer holds the Sun too, and "The Sun is a world in the solar system" is wrong.
+      leadSun: '{name} is the star at the centre of the solar system',
+      // The Moon's distance in kilometres: the comparison chooser picks "x the Moon's distance" for
+      // anything in lunar range, and printed "The Moon ... 1.02x the Moon's distance" about itself.
+      distanceKm: '{n} km away',
       whyPhase: '{phase} tonight',
       whyRise: 'rising from where you are at {time}',
       distance: '{distance}',

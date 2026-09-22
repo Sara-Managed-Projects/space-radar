@@ -57,6 +57,20 @@ def bayer_text(bayer: str, con: str) -> str:
     return f"{letter}{sup and ('¹²³⁴⁵⁶⁷⁸⁹'[int(sup) - 1] if sup.isdigit() and 1 <= int(sup) <= 9 else sup)} {con}".strip()
 
 
+# SPECTRAL TYPES HYG HAS WRONG FOR A NAMED STAR, by HIP number, with the source that corrects them.
+#
+# HYG's `spect` for a composite spectrum can be the COMPANION's type. ui/cards.js turns the class
+# letter into the colour a person sees, so two of the brightest stars in the sky were described in
+# the wrong colour on the live site (2026-09-21): Capella as "a red star" (HYG: "M1: comp") and
+# Dubhe, by the same rule, as yellow-white (HYG: "F7V comp"). Both are giants of the class below,
+# which is what their measured B-V (0.80 and 1.07) also says. Every other `comp` row among the
+# named stars was checked against its B-V and is the right colour, so this is a table, not a rule.
+SPECT_CORRECTIONS = {
+    24608: ("G3III+G0III", "Capella: SIMBAD, alpha Aur Aa/Ab; B-V 0.80"),
+    54061: ("K0IIIa", "Dubhe: SIMBAD, alpha UMa A; B-V 1.07"),
+}
+
+
 def main(argv: list[str]) -> int:
     if len(argv) != 1:
         print(__doc__)
@@ -93,8 +107,11 @@ def main(argv: list[str]) -> int:
             if proper or bayer or flam_text:
                 hip = int(float(row["hip"])) if row.get("hip") else None
                 lum = float(row["lum"]) if row.get("lum") else None
+                spect = (row.get("spect") or "").strip()
+                if hip in SPECT_CORRECTIONS:
+                    spect = SPECT_CORRECTIONS[hip][0]
                 names.append([
-                    count, proper, bayer, flam_text, hip, (row.get("spect") or "").strip(),
+                    count, proper, bayer, flam_text, hip, spect,
                     round(dist * LY_PER_PC, 2), round(mag, 2), round(lum, 3) if lum is not None else None,
                     round(xl, 4), round(yl, 4), round(zl, 4),
                 ])

@@ -152,6 +152,56 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
   check(!/2026/.test(near) && /Nov/.test(near), `a perihelion six weeks out keeps the short form: "${near}"`);
 }
 
+// READ OFF THE LIVE SITE, 2026-09-22, ONE CARD AT A TIME: sentences that were grammatical nonsense,
+// wrong about a colour, or measuring a thing against itself.
+{
+  const now = Date.UTC(2026, 8, 22);
+  const ctx = { clock: { now: () => now }, worlds: null, selected: () => null, observer: { latRad: 0.71, lonRad: -1.29 } };
+  const m0 = { ok: true, tMs: now, altKm: null, distSunKm: null, distEarthKm: null, speedKmh: null };
+  const text = (x) => (Array.isArray(x) ? x.join(' ') : String(x));
+
+  // "Arcturus is ... a orange star"
+  const star = (name, spect) => ({ id: name, name, klass: 'star', frame: 'sun-inertial', meta: { spect, distLy: 36.7, lum: 116 } });
+  check(/an orange star/.test(text(firstSentence(star('Arcturus', 'K2IIIp'), ctx, m0, { state: 'none' }))), 'Arcturus is an orange star, with an n');
+  check(/a white star/.test(text(firstSentence(star('Vega', 'A0Vvar'), ctx, m0, { state: 'none' }))), 'and Vega is still a white star');
+
+  // Capella and Dubhe: HYG gives the companion's type for both; the shipped data carries SIMBAD's
+  const { readFileSync } = await import('node:fs');
+  const rows = JSON.parse(readFileSync(join(ROOT, 'site/data/stars3d.names.json'), 'utf8')).rows;
+  const byHip = (hip) => rows.find((r) => r[4] === hip);
+  check(byHip(24608) && /^G/.test(byHip(24608)[5]), `Capella's type is a G giant, not ${byHip(24608) && byHip(24608)[5]}`);
+  check(byHip(54061) && /^K/.test(byHip(54061)[5]), `Dubhe's type is a K giant, not ${byHip(54061) && byHip(54061)[5]}`);
+  check(/a yellow star/.test(text(firstSentence(star('Capella', byHip(24608)[5]), ctx, m0, { state: 'none' }))), 'Capella is described as yellow');
+
+  // The Sun, Earth and the Moon, against themselves
+  const { worldRecords } = await import(join(JS, 'scene/worlds.js'));
+  const w = (id) => worldRecords().find((r) => r.id === id);
+  const sunSays = text(firstSentence(w('sun'), ctx, m0, { state: 'none' }));
+  check(/the star at the centre/.test(sunSays) && !/is a world/.test(sunSays), `the Sun is a star, not a world: "${sunSays}"`);
+  check(!rightNowFor(w('sun'), ctx).some(([k]) => k === 'Distance from the Sun'), 'the Sun has no distance from the Sun');
+  const earthRows = rightNowFor(w('earth'), ctx).map(([k]) => k);
+  check(!earthRows.includes('Distance from Earth') && !earthRows.includes('Radio time each way'), `Earth is not measured from Earth: ${earthRows}`);
+  const moonSays = text(firstSentence(w('moon'), ctx, { ...m0, distEarthKm: 392400 }, { state: 'none' }));
+  check(!/Moon's distance/.test(moonSays) && /392\s400 km away/.test(moonSays), `the Moon is not 1.02x the Moon's distance: "${moonSays}"`);
+
+  // Goldstone stands a kilometre up, on the ground
+  const { handKeptSites } = await import(join(JS, 'data/sample.js'));
+  const dss14 = handKeptSites().find((r) => /DSS-14/.test(r.name));
+  const dssRows = dss14 ? rightNowFor(dss14, ctx).map(([k]) => k) : null;
+  check(dssRows && !dssRows.includes('Height above the ground'), `a dish on the ground has no height above it: ${dssRows}`);
+
+  // A rocket on its pad four days before launch does not pass over anything
+  const launch = (t0) => ({ id: 'l', name: 'Long March 8A', klass: 'rocket', propagator: 'ascent', frame: 'earth-fixed', cls: 'illustrative', meta: {},
+    ascent: { t0Ms: t0, durationS: 540, pad: { latRad: 0.342, lonRad: 1.936, altKm: 0 }, padLatDeg: 19.6, padLonDeg: 110.95, targetAltKm: 500, targetInclRad: 0.72, orbitAbbrev: 'LEO', orbitClass: 'LEO', azimuthSign: 1 } });
+  const onPad = rightNowFor(launch(now + 4 * 86400e3), ctx).map(([k]) => k);
+  check(onPad.length === 1 && onPad[0] === 'Where it stands', `a rocket on its pad only stands there: ${onPad}`);
+  const { seeItLine } = await import(join(JS, 'ui/cards.js'));
+  const padLine = seeItLine(launch(now + 4 * 86400e3), ctx, { ...m0, frame: 'earth-fixed' }, { state: 'na' });
+  check(/stands on the ground/.test(padLine), `a rocket on its pad has nothing to look up for yet: "${padLine}"`);
+  const flying = rightNowFor(launch(now - 200e3), ctx).map(([k]) => k);
+  check(flying.includes('Height above the ground'), `two hundred seconds after lift-off it has a height again: ${flying}`);
+}
+
 if (problems.length) {
   console.log(`cards copy: ${problems.length} problem(s)`);
   for (const p of problems) console.log('  - ' + p);
