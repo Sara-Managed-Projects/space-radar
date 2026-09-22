@@ -36,6 +36,7 @@ Run:  python3 scripts/check_copy.py
 
 from __future__ import annotations
 
+import json
 import re
 import sys
 from pathlib import Path
@@ -87,6 +88,9 @@ PUNCTUATION_ONLY = re.compile(r"^[\s\W]{0,2}$")
 # a real dash. Checked in the copy and in every data file the cards read; a `source:` or `file:`
 # value is evidence a reviewer reads, never printed, and is exempt.
 SHIPPED_TEXT = [ROOT / "site" / "js" / "copy" / "en.js", *sorted((ROOT / "site" / "js" / "data").glob("*.js"))]
+# ...and the JSON the cards read beside them: site/data/dso.json carried nine of its own.
+SHIPPED_JSON = sorted((ROOT / "site" / "data").glob("*.json"))
+EVIDENCE_KEYS = {"source", "file", "url", "distanceSource", "positionSource"}
 QUOTED = re.compile(r"""(?:"((?:[^"\\\n]|\\.)*)"|'((?:[^'\\\n]|\\.)*)')""")
 EVIDENCE_KEY = re.compile(r"""["']?(?:source|file|url)["']?\s*:\s*$""")
 
@@ -106,6 +110,26 @@ def double_hyphens() -> list[str]:
                     continue
                 out.append(f"  {rel}:{lineno}  prints two hyphens as a dash: {text[:90]!r}\n"
                            f"      Write a comma, a colon or a real dash; ` -- ` is for comments.")
+
+    def walk(node, where, rel):
+        if isinstance(node, dict):
+            for key, value in node.items():
+                if key not in EVIDENCE_KEYS:
+                    walk(value, f"{where}.{key}" if where else key, rel)
+        elif isinstance(node, list):
+            for i, value in enumerate(node):
+                label = value.get("id", i) if isinstance(value, dict) else i
+                walk(value, f"{where}[{label}]", rel)
+        elif isinstance(node, str) and " -- " in node:
+            out.append(f"  {rel} {where}  prints two hyphens as a dash: {node[:90]!r}\n"
+                       f"      Write a comma, a colon or a real dash; ` -- ` is for comments.")
+
+    for path in SHIPPED_JSON:
+        try:
+            doc = json.loads(path.read_text(encoding="utf-8"))
+        except ValueError:
+            continue  # not this check's business; the file's own tests read it
+        walk(doc, "", path.relative_to(ROOT))
     return out
 
 
@@ -148,8 +172,8 @@ def main() -> int:
         return 1
     print(
         f"copy ok: {len(files)} files under site/js/ui/ write no user-visible string literal; "
-        f"every one comes from site/js/copy/en.js, and none of {len(SHIPPED_TEXT)} copy and data "
-        f"files prints ` -- ` for a dash"
+        f"every one comes from site/js/copy/en.js, and none of "
+        f"{len(SHIPPED_TEXT) + len(SHIPPED_JSON)} copy and data files prints ` -- ` for a dash"
     )
     return 0
 
