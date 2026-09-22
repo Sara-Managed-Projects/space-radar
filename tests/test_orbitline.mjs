@@ -58,5 +58,34 @@ check(orbitLineLine({ propagator: 'sgp4', meta: { periodMin: 93 } }).includes('o
   ol.dispose();
 }
 
+// A craft round another world (2026-09-22): on that world's stage its line is a RING round the world,
+// 3 626 to 3 695 km from Mars's centre for MRO. Converted with Mars's place at each sample's own time
+// it was a 159 000 km streak, because Mars moves on while MRO laps it; the line holds Mars still.
+{
+  const { sampleDeepSpace } = await import(join(JS, 'data/sample.js'));
+  const mro = sampleDeepSpace().find((r) => r.id === 'deep-mro');
+  const t = Date.UTC(2026, 8, 23);
+  check(Math.abs(periodMsOf(mro) - 111.6 * 60e3) < 1, 'MRO laps in its own 111.6 minutes');
+  stage.setWorld('mars'); stage.setTime(t);
+  const { createWorlds } = await import(join(JS, 'scene/worlds.js'));
+  const worlds = createWorlds(new THREE.Scene());
+  worlds.update(t); // puts the floating origin on Mars
+  const ol = createOrbitLine(new THREE.Scene(), {});
+  ol.setRecord(mro);
+  ol.update(t);
+  check(ol.hasLine() === true, 'MRO gets a line');
+  const pos = ol.line.geometry.attributes.position.array;
+  const n = ol.line.geometry.drawRange.count;
+  let rmin = Infinity, rmax = 0;
+  // The vertices are offsets from the line's own position, which sits on the dot (the local
+  // origin the far-bodies layer brought, 2026-09-22); the scene origin is Mars's centre.
+  const o = ol.line.position;
+  for (let i = 0; i < n; i++) { const r = Math.hypot(pos[i * 3] + o.x, pos[i * 3 + 1] + o.y, pos[i * 3 + 2] + o.z) * stage.unitKm; rmin = Math.min(rmin, r); rmax = Math.max(rmax, r); }
+  check(rmin > 3600 && rmax < 3720, `MRO's line is a ring 3 600-3 720 km from Mars's centre (${rmin.toFixed(0)}-${rmax.toFixed(0)} km)`);
+  ol.dispose();
+  worlds.dispose();
+  stage.setWorld('earth');
+}
+
 if (problems.length) { console.error('orbit line FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
-console.log('orbit line ok: a closed lap from the record\'s own propagator; the ISS loops at 6 700 km; things that do not lap get no line');
+console.log('orbit line ok: a closed lap from the record\'s own propagator; the ISS loops at 6 700 km; MRO rings Mars at 3 650 km; things that do not lap get no line');

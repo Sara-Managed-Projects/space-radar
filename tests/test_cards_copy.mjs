@@ -102,7 +102,7 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
 
 // A CRAFT AT L1 OR L2 IS 1.5 MILLION KM FROM EARTH, WHATEVER ITS DRAWING SAYS.
 //
-// data/sample.js draws JWST, Gaia and SOHO on Earth's own orbit (construction A), and that stand-in
+// data/sample.js draws JWST and SOHO on Earth's own orbit (construction A), and that stand-in
 // sits anything up to ~1.1 million km from the real Earth. So the distance FROM EARTH the card
 // computed off the drawing was the construction's error: on 2026-09-21 the JWST card read
 // "0.4x the Moon's distance", 0.001 au and 0.009 radio-minutes, directly above a note saying 1.5
@@ -117,18 +117,22 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
     const hit = r && rightNowFor(r, ctx).find(([k]) => k === label);
     return hit ? hit[1] : null;
   };
-  for (const id of ['deep-jwst', 'deep-gaia', 'deep-soho']) {
+  // Gaia was the third until 2026-09-22: it left L2 in March 2025 (Horizons -139479), and is now
+  // drawn on its own orbit round the Sun, so it must NOT be given the L2 distance.
+  for (const id of ['deep-jwst', 'deep-soho']) {
     const d = cell(id, 'Distance from Earth');
     check(d && /^0\.010? astronomical units$/.test(d), `${id} is about 1.5 million km (0.010 au) from Earth, not "${d}"`);
     const radio = cell(id, 'Radio time each way');
     check(radio && /^0\.08\d? minutes$/.test(radio), `${id} is about 5 radio-seconds away (0.083 minutes), not "${radio}"`);
   }
-  // Only Earth-anchored craft: MRO sits on Mars's orbit, where the construction's error is a few
-  // per cent of the real distance, and it must still be COMPUTED -- with no Earth position in this
-  // harness that is the honest "could not work this out", not a borrowed constant.
+  // Only Earth-anchored craft: MRO is drawn from Mars (construction D) and its distance must still
+  // be COMPUTED, never a borrowed constant.
   const mro = rows.find((x) => x.id === 'deep-mro');
-  check(mro && !(mro.meta && 'earthRangeKm' in mro.meta), 'a Mars-anchored craft carries no fixed Earth range');
+  check(mro && !(mro.meta && 'earthRangeKm' in mro.meta), 'a craft round Mars carries no fixed Earth range');
   check(cell('deep-mro', 'Distance from Earth') !== '0.010 astronomical units', 'MRO is not given the L2 distance');
+  const gaia = rows.find((x) => x.id === 'deep-gaia');
+  check(gaia && !(gaia.meta && 'earthRangeKm' in gaia.meta), 'Gaia, off L2 since 2025, carries no L2 range');
+  check(cell('deep-gaia', 'Distance from Earth') !== '0.010 astronomical units', 'Gaia is not given the L2 distance');
 }
 
 // WHAT THE FIRST SENTENCE CLAIMS ABOUT AN ORBIT. Read off the live site, 2026-09-21: "Ceres is a

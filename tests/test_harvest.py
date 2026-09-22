@@ -401,6 +401,20 @@ class Quirks(unittest.TestCase):
         self.assertEqual(set(snapshot["body"]), {"-170", "-31", "-999999"})
         self.assertTrue(snapshot["body"]["-170"].lstrip().startswith("****"), "the `result` text, unwrapped")
 
+    def test_an_id_row_with_its_own_center_asks_for_it_and_only_it_does(self):
+        # 2026-09-22: a craft round another world is fetched relative to that world
+        # (harvest/lists/horizons-ids.yaml, `center:`); every other id keeps the list's CENTER.
+        good = fixture("horizons")[0]["-170"]
+        lst = {"params": {"COMMAND": "'{id}'", "CENTER": "'500@10'"},
+               "ids": [{"id": "-170"}, {"id": "-74", "center": "'500@499'"}]}
+        src = source(id="list-source", parser="horizons", list=lst, refresh="24h")
+        f = Fetcher(lambda url, h, e, s: response(url, text=json.dumps({"result": good})))
+        run(self.store, [src], now=NOW, fetcher=f, sleep=lambda s: None, log=lambda s: None)
+        self.assertIn("CENTER=%27500%4010%27", f.calls[0]["url"])
+        self.assertIn("COMMAND=%27-74%27", f.calls[1]["url"])
+        self.assertIn("CENTER=%27500%40499%27", f.calls[1]["url"])
+        self.assertNotIn("500%4010", f.calls[1]["url"], "the row's centre replaces the list's, it is not added")
+
     def test_list_row_reports_a_failed_id_without_losing_the_others(self):
         good = fixture("horizons")[0]["-170"]
         lst = {"params": {"COMMAND": "'{id}'"}, "ids": [{"id": "-170"}, {"id": "-31"}]}

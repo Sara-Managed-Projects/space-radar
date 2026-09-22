@@ -609,9 +609,9 @@ export const REAL_MODELS = {
     dscovr: { file: 'dscovr.glb', colour: 'satellite', name: 'DSCOVR', klass: ['satellite'] },
     'suomi npp': { file: 'suomi.glb', colour: 'satellite', name: 'Suomi NPP', klass: ['satellite'] },
     goes: { file: 'goes.glb', colour: 'satellite', name: 'GOES weather satellite', klass: ['satellite'] },
-    // Gaia and Solar Orbiter are matched by NAME because neither carries a Horizons id in the
-    // bundled deep-space data (`horizonsId: null` -- both are drawn from an anchor, not a
-    // vector), so there is no number to key on. The klass gate is doing real work on the first
+    // Gaia and Solar Orbiter are matched by NAME: Solar Orbiter carries no Horizons id in the
+    // bundled deep-space data, and Gaia's (-139479, since 2026-09-22) has no glTF to key, because
+    // its shape is built rather than downloaded. The klass gate is doing real work on the first
     // one: 1279 Gaia is a main-belt asteroid, and without `klass: ['telescope']` a ten-metre
     // sunshield would be drawn on a rock. That is the TESS mistake exactly, and it is why the
     // gate exists.

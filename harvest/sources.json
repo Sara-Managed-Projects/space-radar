@@ -178,12 +178,14 @@
           {
             "id": "-74",
             "name": "Mars Reconnaissance Orbiter",
-            "app_id": "deep-mro"
+            "app_id": "deep-mro",
+            "center": "'500@499'"
           },
           {
             "id": "-61",
             "name": "Juno",
-            "app_id": "deep-juno"
+            "app_id": "deep-juno",
+            "center": "'500@599'"
           },
           {
             "id": "-31",
@@ -248,12 +250,30 @@
           {
             "id": "-62",
             "name": "Hope (Emirates Mars Mission)",
-            "app_id": "deep-hope"
+            "app_id": "deep-hope",
+            "center": "'500@499'"
           },
           {
             "id": "-234",
             "name": "STEREO-A",
             "app_id": "deep-stereo-a"
+          },
+          {
+            "id": "-41",
+            "name": "Mars Express",
+            "app_id": "deep-mars-express",
+            "center": "'500@499'"
+          },
+          {
+            "id": "-85",
+            "name": "Lunar Reconnaissance Orbiter",
+            "app_id": "deep-lro",
+            "center": "'500@301'"
+          },
+          {
+            "id": "-139479",
+            "name": "Gaia",
+            "app_id": "deep-gaia"
           }
         ]
       }

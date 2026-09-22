@@ -42,7 +42,7 @@ check(dv1 && dv1.propagator === 'sampled' && dv1.cls === 'measured', 'Voyager 1 
 check(dv1 && dv1.samples && dv1.samples.length === 3 && dv1.elements === undefined, 'Voyager 1 carries samples and no elements');
 check(dv1 && dv1.meta.approxFields.length === 0 && dv1.meta.construction === 'horizons', 'Voyager 1 meta stops claiming an approximation');
 check(dpsp && dpsp.cls === 'measured', 'Parker Solar Probe (-96) becomes measured too');
-check(djuno && djuno.cls === 'sample' && djuno.propagator === 'kepler', 'Juno, absent from the snapshot, stays the honest stand-in');
+check(djuno && djuno.cls === 'sample' && djuno.propagator === 'orbiter', 'Juno, absent from the snapshot, stays the honest stand-in');
 check(new Set(deep.map((d) => d.id)).size === deep.length, 'ids stay unique and unchanged');
 const pos = dv1 && propagate(dv1, v1[1].tMs + 3 * 3600 * 1000);
 check(pos && Math.abs(Math.hypot(pos.x, pos.y, pos.z) / AU_KM - r) < 0.01, 'the sampled propagator interpolates Voyager 1 between two real samples');

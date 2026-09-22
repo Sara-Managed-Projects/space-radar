@@ -37,6 +37,28 @@
 #                    1-hour samples, 2026-09-22..25) -- more than three Moon radii. Mars Express
 #                    (-41, 15 006 km) fails the same way. So does MRO, already listed: 17 923 km.
 #                    Hope's 55-hour orbit is fine at 251 km.
+#                    BOTH CAME BACK the same day, with `center:` below.
+#
+# `center:` ON A ROW (added 2026-09-22) replaces CENTER for that id alone: the five craft that
+# circle another world are fetched RELATIVE TO IT, and data/parsers.js draws them from it
+# (propagate/orbiter.js). Heliocentric vectors cannot place them, for three reasons measured that
+# day against Horizons at 10-minute steps, 2026-09-23..25, and at perijove for Juno:
+#   * six hours is three of MRO's laps. Hermite through the 6-hourly samples was 17 914 km from
+#     MRO, 15 061 from Mars Express, 6 287 from LRO, 104 975 from Juno at its 2026-10-11 perijove
+#     (251 for Hope; 0.01 to 9 km for every craft on its own path round the Sun). Drawn, MRO went
+#     483 to 17 470 km from Mars's centre -- in and out of a planet 3 389.5 km in radius.
+#   * the planet on the screen is Astronomy Engine's, and it differs from JPL's by up to 3 103 km
+#     for Mars, 17 904 for Jupiter and 1 251 for the Moon (daily, 2026-09-01..12-31). A perfect
+#     heliocentric vector still lands that far off the drawn planet. MRO's orbit is 236 km up.
+#   * Horizons' JD is TDB, 69.184 s ahead of UTC. Read as UTC it slides the craft 1 644 km along
+#     Mars's path relative to Mars.
+# Relative to the world, six-hourly states joined by two-body arcs stay within 160 km of MRO (58
+# at 3-hourly, 17 at hourly), 88 of Mars Express, 902 of Juno at perijove, 6 of LRO, 0.3 of Hope,
+# over 2026-09-22..10-22, and never inside the world. Six hours is kept: one step for the list,
+# and the card states each of those numbers (data/sample.js PLANET_ORBITERS).
+#
+# GAIA (-139479) joined the same day: it left L2 on 2025-03-28 for its own orbit round the Sun,
+# 83.7 million km from Earth on 2026-09-22, so it is heliocentric like the others.
 #
 # `params` is the query string, with three placeholders the harvester fills: {id}, {start}, {stop}.
 # Horizons wants its string values single-quoted, hence the quotes inside the quotes.
@@ -62,8 +84,8 @@ pause_s: 0.5
 ids:
   - {id: "-170", name: "James Webb Space Telescope", app_id: deep-jwst}
   - {id: "-21",  name: "SOHO",                       app_id: deep-soho}
-  - {id: "-74",  name: "Mars Reconnaissance Orbiter", app_id: deep-mro}
-  - {id: "-61",  name: "Juno",                       app_id: deep-juno}
+  - {id: "-74",  name: "Mars Reconnaissance Orbiter", app_id: deep-mro, center: "'500@499'"}
+  - {id: "-61",  name: "Juno",                       app_id: deep-juno, center: "'500@599'"}
   - {id: "-31",  name: "Voyager 1",                  app_id: deep-voyager-1}
   - {id: "-32",  name: "Voyager 2",                  app_id: deep-voyager-2}
   - {id: "-98",  name: "New Horizons",               app_id: deep-new-horizons}
@@ -76,5 +98,8 @@ ids:
   - {id: "-91",  name: "Hera",                       app_id: deep-hera}
   - {id: "-64",  name: "OSIRIS-APEX",                app_id: deep-osiris-apex}
   - {id: "-37",  name: "Hayabusa2",                  app_id: deep-hayabusa2}
-  - {id: "-62",  name: "Hope (Emirates Mars Mission)", app_id: deep-hope}
+  - {id: "-62",  name: "Hope (Emirates Mars Mission)", app_id: deep-hope, center: "'500@499'"}
   - {id: "-234", name: "STEREO-A",                   app_id: deep-stereo-a}
+  - {id: "-41",  name: "Mars Express",               app_id: deep-mars-express, center: "'500@499'"}
+  - {id: "-85",  name: "Lunar Reconnaissance Orbiter", app_id: deep-lro, center: "'500@301'"}
+  - {id: "-139479", name: "Gaia",                    app_id: deep-gaia}

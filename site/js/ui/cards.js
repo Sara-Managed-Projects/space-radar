@@ -287,6 +287,11 @@ function measure(record, ctx) {
           out.lonDeg = sph.lonRad * DEG;
           out.altKm = sph.altKm;
         }
+      } else if (out.frame === `${world}-inertial`) {
+        // In orbit round it (data/sample.js construction D): the height above the sphere the
+        // world is drawn as, which is the height the card's orbit sentence gives.
+        const r = worldRadiusKm(world);
+        if (r) out.altKm = Math.hypot(p.x, p.y, p.z) - r;
       }
       try {
         const geo = toStage(record, p, { worldId: 'earth', frame: 'earth-inertial', tMs }, tMs);
@@ -993,6 +998,10 @@ function rightNowRows(record, m, passInfo) {
           ? t(V.latLonOn, { lat: latText(m.latDeg), lon: lonText(m.lonDeg), world })
           : t(V.latLon, { lat: latText(m.latDeg), lon: lonText(m.lonDeg) }),
       ]);
+    } else if (world && m.frame === `${m.worldId}-inertial`) {
+      // In orbit round it, not on it: MRO's card read "Standing on: Mars" (2026-09-22).
+      rows.push([R.orbiting, world]);
+      if (m.altKm !== null) rows.push([t(R.heightAbove, { world }), t(V.km, { n: fmt.int(m.altKm) })]);
     } else if (world) {
       rows.push([R.onWorld, world]);
     }
@@ -1268,9 +1277,10 @@ export function classLine(record, m) {
  *    and JPL's own caveat, so the card says why the number may be worse than it looks.
  *  * A RECORD WITH NO POSITION. Says why, and what it would take to find out.
  *
- * Returns null when the record has nothing extra to admit, which is most of them.
+ * Returns null when the record has nothing extra to admit, which is most of them. Exported for the
+ * test (tests/test_deep_space.mjs reads the craft round other worlds through it).
  */
-function honestyClause(record) {
+export function honestyClause(record) {
   const md = meta(record);
   const C = COPY.cls;
 
@@ -1335,6 +1345,12 @@ function honestyClause(record) {
       caveat: String(caveat),
     });
   }
+  // A craft round another world, drawn from JPL's states relative to it (data/parsers.js). The
+  // class line alone says "worked out rather than measured"; this says what IS known -- how high,
+  // how often -- and how closely the dot follows JPL between states. The row wrote it beside the
+  // measurement (data/sample.js PLANET_ORBITERS).
+  const orbitKnown = pick(md, 'orbitKnown');
+  if (orbitKnown) return String(orbitKnown);
   return null;
 }
 
