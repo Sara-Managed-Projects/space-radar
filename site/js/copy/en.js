@@ -534,7 +534,7 @@ export const COPY = {
     // R/B" -- and two identical rows read as a bug. The catalogue number tells them apart.
     sameName: '{name} ({id})',
     title: 'Coming up',
-    hint: 'From what the app has loaded: launches, close approaches, comets, meteor showers, and passes over you.',
+    hint: 'From what the app has loaded: launches, close approaches, comets, meteor showers, storms that bring auroras, and passes over you.',
     now: 'about now',
     inMinutes: 'in {n} minutes',
     inHours: 'in {n} hours',
@@ -548,6 +548,10 @@ export const COPY = {
     pass: '{name} comes over you {when}',
     train: 'A train of {n} satellites comes over you {when}',
     // ZHR is the rate under a perfect sky with the radiant overhead, so it is "up to", never "you will see".
+    // NOAA's own storm scale, in kpWords' words ("a minor storm — aurora possible in the far north
+    // and south"). No latitude line: the rules of thumb disagree, and the words already say where.
+    aurora: 'NOAA forecasts {word}, from {when} (Kp {kp})',
+    auroraNow: 'A geomagnetic storm is under way: {word} (Kp {kp})',
     shower: 'The {name} meteor shower peaks around {date}, up to {zhr} an hour under a dark sky',
     showerMoon: 'The {name} meteor shower peaks around {date}, up to {zhr} an hour under a dark sky, with the Moon {pct}% lit that night',
     showerNoMoon: 'The {name} meteor shower peaks around {date}, up to {zhr} an hour under a dark sky, and the Moon is nearly new',
