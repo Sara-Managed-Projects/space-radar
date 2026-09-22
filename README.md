@@ -186,18 +186,23 @@ and the same stars come back as places.
 What is out there, and where every number came from:
 
 - **109 389 stars** with a measured distance, from the HYG Stellar Database (Gaia and Hipparcos),
-  sized on the GPU by how bright they would look from wherever the camera is. The 10 224 stars whose
-  distance nobody has measured are counted and **not drawn** on an invented shell.
+  sized on the GPU by how bright they would look from wherever the camera is — and past the
+  brightest star in Earth's sky they grow a glare, so Sirius from a light-year out is a blaze, and
+  the Sun, from out here, is one more star. The 10 224 stars whose distance nobody has measured are
+  counted and **not drawn** on an invented shell.
 - **Every confirmed planet around another star** (6 332 as of the catalogue copy's date), from the
   NASA Exoplanet Archive, drawn *at its star* — the orbit is far below a pixel at any zoom — with
   its size and mass in Earths, its year, and how it was found.
-- **The 110 Messier objects and the Large Magellanic Cloud** at sourced distances. OpenNGC has
-  positions for 13 372 deep-sky objects and no distances, so the other 13 261 are not placed as
-  places, and the file says so.
+- **178 nebulae, clusters and galaxies** at sourced distances: the 110 Messier objects and 68 more
+  placed by hand from the page each row names — the Magellanic Clouds, the Local Group's dwarfs,
+  Omega Centauri, the Carina Nebula. Each glows as wide as it measures (the size, not the shape,
+  and the card says so). OpenNGC has positions for 13 372 deep-sky objects and no distances, so the
+  rest are not placed as places, and the file says so.
 - **The Milky Way** as a point cloud built from published measurements — Reid et al. 2019's fitted
   spiral arms and the distance to the centre, the disc's measured size, the debated bar at the
   middle of its range — and called an *illustration* everywhere it appears. Nobody has seen our
-  galaxy from outside.
+  galaxy from outside. The same model, moved to Andromeda, scaled to the size its card prints and
+  tilted as measured (77°, north-west edge nearest), stands in for Andromeda, and says so.
 - **Twenty extremes** — black holes, pulsars, a magnetar, Eta Carinae and Betelgeuse — with a fact sheet each: position, distance, mass or spin exactly
   as the source prints them, and the page it was read from, on the card.
 
@@ -236,9 +241,10 @@ best of each was taken, as data where a registry could hold it:
   until asked for; when frames stay slow for three seconds the picture drops to one pixel per pixel
   without the Milky Way backdrop — once, and said in the panel.
 - **Labels, the Next list, search to its spec** — names over the selection, its train and the nearest
-  notable things (never the catalogue); a Next moment that lists launches, close approaches, perihelia
-  and passes from what is already loaded; eight search rows with whole words first, an announced
-  fallback, and nicknames as a registry.
+  notable things (never the catalogue); a Next moment that lists launches, close approaches, perihelia,
+  meteor-shower peaks (with the Moon that night and, once you set a place, when the radiant is
+  highest — the sky view marks it), storms that bring auroras, and passes, from what is already
+  loaded; eight search rows with whole words first, an announced fallback, and nicknames as a registry.
 
 ---
 
