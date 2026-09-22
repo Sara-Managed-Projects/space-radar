@@ -32,7 +32,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const [url, scriptPath] = process.argv.slice(2).filter((a) => !a.startsWith('--'));
-if (!url || !scriptPath) { console.error('usage: node tools/cdp.mjs <url> <script.js> [--width=] [--height=]'); process.exit(2); }
+if (!url || !scriptPath) { console.error('usage: node tools/cdp.mjs <url> <script.js> [--width=] [--height=] [--mobile] [--shot=] [--cpuprofile=] [--block=host,...]'); process.exit(2); }
 const arg = (n, d) => { const h = process.argv.find((a) => a.startsWith('--' + n + '=')); return h ? h.slice(n.length + 3) : d; };
 const W = Number(arg('width', '1280'));
 const H = Number(arg('height', '800'));
@@ -48,6 +48,12 @@ const SHOT = arg('shot', '');
 // though headless renders in software.
 const CPUPROFILE = arg('cpuprofile', '');
 const DPR = Number(arg('dpr', MOBILE ? '3' : '1'));
+// --block=celestrak.org[,other.host]: refuse those requests inside the page. Every boot of the app
+// asks CelesTrak for five files, CelesTrak allows each file once per IP per two hours, and a day of
+// headless measurement ends in its hard 403 (2026-09-17 and again 2026-09-22). Blocking it here
+// means a probe that is not ABOUT live data does not spend the budget the next real visit needs --
+// the app then behaves exactly as it does when CelesTrak says no, which is itself worth testing.
+const BLOCK = arg('block', '').split(',').map((h) => h.trim()).filter(Boolean);
 const trace = (m) => { if (process.env.CDP_TRACE) process.stderr.write('[cdp] ' + m + '\n'); };
 
 const CHROME = process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
@@ -115,6 +121,11 @@ try {
       platform: 'Android',
       userAgentMetadata: { platform: 'Android', platformVersion: '14', architecture: '', model: 'Pixel 8', mobile: true, brands: [{ brand: 'Chromium', version: '153' }], fullVersion: '153.0.0.0' },
     }, sessionId);
+  }
+  if (BLOCK.length) {
+    await send(ws, 'Network.enable', {}, sessionId);
+    await send(ws, 'Network.setBlockedURLs', { urls: BLOCK.map((h) => `*${h}*`) }, sessionId);
+    trace('blocking ' + BLOCK.join(', '));
   }
   await send(ws, 'Page.navigate', { url }, sessionId);
   trace('navigated');
