@@ -277,7 +277,7 @@ export const ODDITIES = [
       "drawn_name": "the Graflex 3-cell flash handle the prop was built on",
       "departure": "this is the camera part the prop was built from, not the prop: the hilt's design is not ours to draw"
     },
-    "fact": "The lightsaber prop from Return of the Jedi spent fourteen days in orbit sealed in foam, and never once came out of its box.",
+    "fact": "The lightsaber prop from Return of the Jedi spent fifteen days in orbit sealed in foam, and never once came out of its box.",
     "myths": [
       {
         "claim": "the lightsaber is in space",

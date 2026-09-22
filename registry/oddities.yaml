@@ -436,7 +436,7 @@ oddities:
       drawn_name: "the Graflex 3-cell flash handle the prop was built on"
       departure: "this is the camera part the prop was built from, not the prop: the hilt's
                   design is not ours to draw"
-    fact: "The lightsaber prop from Return of the Jedi spent fourteen days in orbit sealed in
+    fact: "The lightsaber prop from Return of the Jedi spent fifteen days in orbit sealed in
            foam, and never once came out of its box."
     myths:
       - claim: "the lightsaber is in space"
@@ -444,10 +444,16 @@ oddities:
                      could reach it, and was handed back to Lucasfilm."
         source: "Space.com, on the STS-120 lightsaber"
     cite: "Space.com and collectSPACE on STS-120 · Space Center Houston"
+    # FOURTEEN DAYS was the PLANNED mission, from Space.com's article of August 2007, before the
+    # flight. STS-120 flew 15 d 2 h 23 min (launched 23 Oct 2007 15:38 UTC, landed 7 Nov 18:01 UTC;
+    # Wikipedia, STS-120, read 2026-09-22) -- and `left_space` above already said 7 November.
+    # STILL OPEN, and not fixed by guessing: the sources put the prop on display at Space Center
+    # Houston "through the end of the year" (2007) and the myth below says it went back to
+    # Lucasfilm. Nothing read says where it is now, so the dot stays on the one sourced place.
     source: "Space.com (space.com/4283) and collectSPACE on STS-120, Discovery, launched
-             23 October 2007, 14 days in orbit, returned and handed back to Lucasfilm; displayed
-             at Space Center Houston. The lat/lon is the museum campus, good to a few hundred
-             metres -- it is a building's map reference, not a survey."
+             23 October 2007, landed 7 November, 15 days in orbit, returned and handed back to
+             Lucasfilm; displayed at Space Center Houston. The lat/lon is the museum campus, good
+             to a few hundred metres -- it is a building's map reference, not a survey."
     note: "At the handover on 28 August 2007 at Oakland airport, Chewbacca presented it to NASA
            officials in person. It flew in an inaccessible compartment, so nobody ever held it in
            zero-g."
