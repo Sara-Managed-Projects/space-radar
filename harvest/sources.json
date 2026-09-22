@@ -204,6 +204,56 @@
             "id": "-96",
             "name": "Parker Solar Probe",
             "app_id": "deep-parker"
+          },
+          {
+            "id": "-255",
+            "name": "Psyche",
+            "app_id": "deep-psyche"
+          },
+          {
+            "id": "-49",
+            "name": "Lucy",
+            "app_id": "deep-lucy"
+          },
+          {
+            "id": "-159",
+            "name": "Europa Clipper",
+            "app_id": "deep-europa-clipper"
+          },
+          {
+            "id": "-28",
+            "name": "JUICE",
+            "app_id": "deep-juice"
+          },
+          {
+            "id": "-121",
+            "name": "BepiColombo",
+            "app_id": "deep-bepicolombo"
+          },
+          {
+            "id": "-91",
+            "name": "Hera",
+            "app_id": "deep-hera"
+          },
+          {
+            "id": "-64",
+            "name": "OSIRIS-APEX",
+            "app_id": "deep-osiris-apex"
+          },
+          {
+            "id": "-37",
+            "name": "Hayabusa2",
+            "app_id": "deep-hayabusa2"
+          },
+          {
+            "id": "-62",
+            "name": "Hope (Emirates Mars Mission)",
+            "app_id": "deep-hope"
+          },
+          {
+            "id": "-234",
+            "name": "STEREO-A",
+            "app_id": "deep-stereo-a"
           }
         ]
       }

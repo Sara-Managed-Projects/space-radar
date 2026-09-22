@@ -6,6 +6,37 @@
 # Every id below is one site/js/data/sample.js sampleDeepSpace() or scene/realmodels.js `horizons:`
 # names today. -170 and -31 were VERIFIED by fetch on 2026-09-06 (docs/data-sources.md §4); the
 # rest were confirmed against Horizons' own object header on 2026-09-08 when this list was written.
+# tests/test_deep_space.mjs holds the two sides together: every id here has a record, and every
+# record with an id is here.
+#
+# THE TEN FROM -255 DOWN were added on 2026-09-22. Each was checked two ways that day: the object
+# header (COMMAND='<id>', OBJ_DATA=YES, MAKE_EPHEM=NO) names the craft, and a VECTORS request with
+# exactly the params below returned 125 rows for 2026-09-21..2026-10-22. What the header said:
+#   id    header revised  navigation data through           trajectory file ends
+#   -255  2026-09-01      2026-08-11, then JPL's prediction  2029-Feb-11
+#   -49   2025-10-25      2025-09-08 (Lucy updates only its reference trajectory, per its header)
+#                                                            2033-Apr-02
+#   -159  2026-08-18      2026-08-12                         2034-Sep-03
+#   -28   2026-09-21      2026-09-16 (ESA)                   2031-Jul-21
+#   -121  2026-09-21      2026-09-14 (ESA)                   2027-Apr-10
+#   -91   2026-09-01      2026-08-30 (ESA)                   2026-Nov-04
+#   -64   2025-09-18      (a 2025 cruise solution to Apophis) 2030-Mar-22
+#   -37   2026-09-01      2026-08-25 (JAXA)                  2026-Nov-27
+#   -62   2026-06-03      2026-05-28                         2026-Nov-26
+#   -234  2026-09-01      2026-08-20                         2026-Dec-18
+# A file that ends inside the 30-day window is clamped by the harvester (harvest/run.py), and one
+# that has ended leaves its record on the bundled stand-in; neither drops the craft.
+#
+# LEFT OUT, the same day, and why, so nobody spends the afternoon again:
+#   MAVEN (-202)     no contact since 2025-12-06, and its file ends 2026-Mar-01 ("No ephemeris
+#                    after"), so there is nothing current to fetch.
+#   Tianwen-1        Horizons has only an unofficial 2020 cruise track (-9901491) that stops an
+#                    hour after Mars arrival in 2021. Tianwen-2 is not in Horizons at all.
+#   LRO (-85)        current, but it laps the Moon in about two hours, and Hermite between these
+#                    6-hourly samples put it up to 5 868 km from its real place (measured against
+#                    1-hour samples, 2026-09-22..25) -- more than three Moon radii. Mars Express
+#                    (-41, 15 006 km) fails the same way. So does MRO, already listed: 17 923 km.
+#                    Hope's 55-hour orbit is fine at 251 km.
 #
 # `params` is the query string, with three placeholders the harvester fills: {id}, {start}, {stop}.
 # Horizons wants its string values single-quoted, hence the quotes inside the quotes.
@@ -37,3 +68,13 @@ ids:
   - {id: "-32",  name: "Voyager 2",                  app_id: deep-voyager-2}
   - {id: "-98",  name: "New Horizons",               app_id: deep-new-horizons}
   - {id: "-96",  name: "Parker Solar Probe",         app_id: deep-parker}
+  - {id: "-255", name: "Psyche",                     app_id: deep-psyche}
+  - {id: "-49",  name: "Lucy",                       app_id: deep-lucy}
+  - {id: "-159", name: "Europa Clipper",             app_id: deep-europa-clipper}
+  - {id: "-28",  name: "JUICE",                      app_id: deep-juice}
+  - {id: "-121", name: "BepiColombo",                app_id: deep-bepicolombo}
+  - {id: "-91",  name: "Hera",                       app_id: deep-hera}
+  - {id: "-64",  name: "OSIRIS-APEX",                app_id: deep-osiris-apex}
+  - {id: "-37",  name: "Hayabusa2",                  app_id: deep-hayabusa2}
+  - {id: "-62",  name: "Hope (Emirates Mars Mission)", app_id: deep-hope}
+  - {id: "-234", name: "STEREO-A",                   app_id: deep-stereo-a}
