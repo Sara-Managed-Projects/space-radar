@@ -202,6 +202,20 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
   check(flying.includes('Height above the ground'), `two hundred seconds after lift-off it has a height again: ${flying}`);
 }
 
+// "SL-8 R/B is a rocket launch." -- a spent stage from the 1970s, one of the brightest objects in the
+// visual layer, described with the upcoming-launch template. A launch has an ascent block; a stage
+// in orbit is an SGP4 record, and says what it is.
+{
+  const now = Date.UTC(2026, 8, 22);
+  const ctx = { clock: { now: () => now }, worlds: null, selected: () => null };
+  const m = { ok: true, tMs: now, altKm: 783, distSunKm: null, distEarthKm: null, speedKmh: 26841 };
+  const stage = { id: 'sat-12139', name: 'SL-8 R/B', klass: 'rocket', layer: 'visual', propagator: 'sgp4', frame: 'earth-inertial', meta: { launchYear: 1980 } };
+  const said = String(firstSentence(stage, ctx, m, { state: 'none' }));
+  check(!/rocket launch/.test(said) && /spent rocket stage/.test(said) && /783 km up/.test(said) && /1980/.test(said), `a stage in orbit is not a launch: "${said}"`);
+  const launch = { id: 'l', name: 'Falcon 9', klass: 'rocket', layer: 'launches', propagator: 'ascent', frame: 'earth-fixed', ascent: { t0Ms: now + 86400e3 }, meta: {} };
+  check(/rocket launch/.test(String(firstSentence(launch, ctx, { ...m, altKm: 0 }, { state: 'none' }))), 'and a launch is still a launch');
+}
+
 if (problems.length) {
   console.log(`cards copy: ${problems.length} problem(s)`);
   for (const p of problems) console.log('  - ' + p);
