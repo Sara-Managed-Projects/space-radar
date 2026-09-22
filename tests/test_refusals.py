@@ -466,11 +466,10 @@ TOUR_CASES: list[tuple[str, str, str]] = [
     ("a drift that cannot finish inside its own dwell",
      "        drift_deg: 20\n", "        drift_deg: 340\n"),
     ("a card sentence longer than the card can print",
-     "            Charlie Duke left a picture of his wife and two sons face-up on the Moon, took a\n"
-     "            photograph of it, and walked away.",
+     "            His family signed the back and pressed their thumbprints into it.",
      "            " + LONG_SENTENCE),
     ("a card that uses jargon registry/glossary.yaml cannot explain",
-     "looping between the Earth and Mars", "looping around its own semi-major axis"),
+     "A car, going round the Sun", "A car, going round its own semi-major axis"),
     ("a trip with fewer stops than its own floor",
      "    min_stops: 3\n", "    min_stops: 8\n"),
     # Since spec 0028 step 8 a trip may live on any world or any rung of the ladder (ui/trip.js
@@ -488,7 +487,7 @@ TOUR_CASES: list[tuple[str, str, str]] = [
     ("a dwell written well below what its own words need",
      "      - id: beresheet\n", "      - id: beresheet\n        dwell_ms: 1200\n"),
     ("a card that writes a dash as two hyphens, which the screen prints as two hyphens",
-     "Israeli lander crashed here carrying", "Israeli lander crashed here -- carrying"),
+     "Nobody knows where in the wreck", "Nobody knows -- where in the wreck"),
     ("a stop on the `launches` layer, whose track is a drawing, claiming certainty",
      '        target: {layer: stations, catalog: "25544"}\n        # Far enough back',
      '        target: {layer: launches, catalog: "25544"}\n        # Far enough back'),

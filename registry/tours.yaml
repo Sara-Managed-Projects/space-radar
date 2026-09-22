@@ -205,9 +205,16 @@ tours:
         distance_km: 900
         card:
           title: "A photograph lying in the dust"
+          # THE TRIP CARD ADDS; IT DOES NOT REPEAT. The object's own card opens right under this one
+          # with the record's `fact:`, and all four surface stops here used to say the same thing
+          # twice in one panel (read 2026-09-22). So each trip card says what the fact does not,
+          # from the row's own `note:` or the source it cites.
+          # The inscription is Wikipedia's (Charles Duke, read 2026-09-22), which also says the
+          # family signed the back and added thumbprints.
           body: >-
-            Charlie Duke left a picture of his wife and two sons face-up on the Moon, took a
-            photograph of it, and walked away. The plastic and the paper are still there.
+            His family signed the back and pressed their thumbprints into it.
+            It also says: This is the family of Astronaut Duke from Planet Earth, who landed on the
+            Moon on the twentieth of April 1972.
 
       - id: golf-balls
         target: {record: shepard-golf-balls}
@@ -215,8 +222,8 @@ tours:
         card:
           title: "Two golf balls, twenty-four and forty yards out"
           body: >-
-            Alan Shepard smuggled a six-iron head to the Moon in a sock and hit two balls
-            one-handed. They went twenty-four and forty yards, not the miles everybody repeats.
+            They went twenty-four and forty yards, not the miles everybody repeats. The brand is
+            unknown: Shepard never said, so that nobody could make money from it.
 
       - id: beresheet
         target: {record: beresheet-lunar-library}
@@ -224,8 +231,8 @@ tours:
         card:
           title: "Thirty million pages, and some tardigrades"
           body: >-
-            An Israeli lander crashed here carrying a stack of nickel discs with thirty million
-            pages on them, and dried tardigrades set in resin between the layers.
+            Nobody knows where in the wreck the discs ended up; the camera orbiting the Moon cannot
+            pick them out. Nor can anyone say whether the tardigrades survived the crash.
 
       - id: golden-record
         target: {record: deep-voyager-1}
@@ -243,8 +250,9 @@ tours:
         card:
           title: "A car, going round the Sun"
           body: >-
-            A cherry-red sports car with a dummy at the wheel, launched on a test flight and now
-            looping between the Earth and Mars. Nobody has actually looked at it since 2018.
+            In the glovebox, a towel and a copy of The Hitchhiker's Guide to the Galaxy; on a
+            circuit board, the words Made on Earth by humans. Nobody has actually looked at it since
+            2018.
 
       - id: pull-back
         target: {world: earth}

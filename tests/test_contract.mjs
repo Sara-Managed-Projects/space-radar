@@ -2294,6 +2294,35 @@ for (const file of allFiles) {
       }
     }
     notes.push(`tours: ${TOURS.length} trips, ${stops} stops, ${resolvable} resolvable without a network`);
+
+    // A TRIP CARD ADDS TO THE OBJECT'S CARD; IT DOES NOT REPEAT IT. The object's card opens under
+    // the trip's in the same panel, first line first. On 2026-09-22 four of the six "strangest
+    // things" stops said the same sentence twice, a few words apart. Six words in a row shared with
+    // the record's own `fact` or `note` is a repeat.
+    const words = (x) => String(x || '').toLowerCase().replace(/[^a-z0-9' ]+/g, ' ').split(/\s+/).filter(Boolean);
+    const sharedRun = (a, b) => {
+      const A = words(a), B = words(b);
+      let best = 0;
+      for (let i = 0; i < A.length; i++) for (let j = 0; j < B.length; j++) {
+        let k = 0;
+        while (i + k < A.length && j + k < B.length && A[i + k] === B[j + k]) k++;
+        if (k > best) best = k;
+      }
+      return best;
+    };
+    const byId = new Map([...sampleOddities(), ...sampleDeepSpace()].map((r) => [r.id, r]));
+    let compared = 0;
+    for (const tour of TOURS) for (const stop of tour.stops) {
+      const rec = stop.target && byId.get(stop.target.record);
+      if (!rec || !stop.card) continue;
+      for (const own of [rec.meta && rec.meta.fact, rec.meta && rec.meta.note]) {
+        if (!own) continue;
+        compared += 1;
+        const run = sharedRun(stop.card.body, own);
+        if (run >= 6) problems.push(`TOUR     ${tour.id}/${stop.id}: the trip card repeats ${run} words of the record's own card, which opens right under it`);
+      }
+    }
+    notes.push(`trip cards: ${compared} compared with the record card under them, none repeats it`);
   } catch (e) {
     problems.push(`TOUR     could not check registry/tours.yaml against the app: ${String(e)}`);
   }

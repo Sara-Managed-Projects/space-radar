@@ -144,7 +144,7 @@ export const TOURS = [
         "distance_km": 900,
         "card": {
           "title": "A photograph lying in the dust",
-          "body": "Charlie Duke left a picture of his wife and two sons face-up on the Moon, took a photograph of it, and walked away. The plastic and the paper are still there."
+          "body": "His family signed the back and pressed their thumbprints into it. It also says: This is the family of Astronaut Duke from Planet Earth, who landed on the Moon on the twentieth of April 1972."
         },
         "frame_radii": 5.0,
         "drift_deg": 34,
@@ -153,7 +153,7 @@ export const TOURS = [
         "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
-        "dwell_ms": 12823
+        "dwell_ms": 14155
       },
       {
         "id": "golf-balls",
@@ -163,26 +163,7 @@ export const TOURS = [
         "distance_km": 900,
         "card": {
           "title": "Two golf balls, twenty-four and forty yards out",
-          "body": "Alan Shepard smuggled a six-iron head to the Moon in a sock and hit two balls one-handed. They went twenty-four and forty yards, not the miles everybody repeats."
-        },
-        "frame_radii": 5.0,
-        "drift_deg": 34,
-        "drift_rate_deg_s": 6,
-        "drift": "toward-light",
-        "key_light_deg": 125,
-        "ease": "auto",
-        "on_unresolved": "drop",
-        "dwell_ms": 11824
-      },
-      {
-        "id": "beresheet",
-        "target": {
-          "record": "beresheet-lunar-library"
-        },
-        "distance_km": 900,
-        "card": {
-          "title": "Thirty million pages, and some tardigrades",
-          "body": "An Israeli lander crashed here carrying a stack of nickel discs with thirty million pages on them, and dried tardigrades set in resin between the layers."
+          "body": "They went twenty-four and forty yards, not the miles everybody repeats. The brand is unknown: Shepard never said, so that nobody could make money from it."
         },
         "frame_radii": 5.0,
         "drift_deg": 34,
@@ -192,6 +173,25 @@ export const TOURS = [
         "ease": "auto",
         "on_unresolved": "drop",
         "dwell_ms": 11158
+      },
+      {
+        "id": "beresheet",
+        "target": {
+          "record": "beresheet-lunar-library"
+        },
+        "distance_km": 900,
+        "card": {
+          "title": "Thirty million pages, and some tardigrades",
+          "body": "Nobody knows where in the wreck the discs ended up; the camera orbiting the Moon cannot pick them out. Nor can anyone say whether the tardigrades survived the crash."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 12157
       },
       {
         "id": "golden-record",
@@ -219,7 +219,7 @@ export const TOURS = [
         },
         "card": {
           "title": "A car, going round the Sun",
-          "body": "A cherry-red sports car with a dummy at the wheel, launched on a test flight and now looping between the Earth and Mars. Nobody has actually looked at it since 2018."
+          "body": "In the glovebox, a towel and a copy of The Hitchhiker's Guide to the Galaxy; on a circuit board, the words Made on Earth by humans. Nobody has actually looked at it since 2018."
         },
         "frame_radii": 5.0,
         "drift_deg": 34,
@@ -228,7 +228,7 @@ export const TOURS = [
         "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
-        "dwell_ms": 12823
+        "dwell_ms": 13822
       },
       {
         "id": "pull-back",
@@ -250,7 +250,7 @@ export const TOURS = [
         "dwell_ms": 10159
       }
     ],
-    "estimate_ms": 92043
+    "estimate_ms": 94707
   },
   {
     "id": "to-the-edge",
