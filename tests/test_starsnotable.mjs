@@ -94,6 +94,18 @@ const lmcRow = JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8')
 check(lmcRow && whyLine({ klass: 'dso', name: lmcRow.name, meta: { why: lmcRow.why } }) === lmcRow.why, 'a hand-placed deep-sky object\'s line is printed too');
 // A satellite's `why` has no source and ranks labels; the card does not print it as a claim.
 check(whyLine({ klass: 'station', name: 'ISS (ZARYA)', meta: { why: 'Seven people live here.' } }) === null, 'a satellite\'s unsourced `why` is not printed');
+// The bundled asteroids, craft and reentries each carry a hand-kept `note`, which no card printed;
+// their `why` is the honesty line, which stays out of this paragraph.
+{
+  const { sampleAsteroids, sampleDeepSpace, sampleReentries } = await import(join(JS, 'data/sample.js'));
+  const bundled = [...sampleAsteroids(), ...sampleDeepSpace(), ...sampleReentries(Date.UTC(2026, 8, 22))];
+  const noted = bundled.filter((r) => r.meta && r.meta.note);
+  check(noted.length >= 23, `the bundled rows carry their notes (${noted.length})`);
+  for (const r of noted) check(whyLine(r) === r.meta.note, `${r.id}: the card prints its note`);
+  const bennu = noted.find((r) => r.id === 'asteroid-101955');
+  check(bennu && whyLine(bennu) !== bennu.meta.why, 'a bundled row\'s honesty `why` is not printed as its note');
+  check(whyLine({ klass: 'station', meta: { note: 'x' } }) === null, 'a satellite\'s note is not printed');
+}
 
 // 4. labels on the stellar rung: from three light-years behind the Sun, looking at Sirius, the
 // famous stars in view are named nearest first -- Sirius, then Epsilon Eridani, Procyon, Kapteyn's

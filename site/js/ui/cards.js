@@ -789,12 +789,21 @@ const isWorld = (record, id) => klassOf(record) === 'world' && String(record && 
 // NOT the satellites: their `why` is data/layers.js NOTABLE, with no source, and "Seven people live
 // here" is a count that changes with every crew. There it ranks labels and search ties, as before.
 const WHY_KLASSES = new Set(['star', 'exotic', 'dso']);
+// THE BUNDLED ROWS' `note` (2026-09-22). data/sample.js writes one visitor-facing line for each of
+// its asteroids, deep-space craft and historic reentries -- "OSIRIS-REx brought 122 grams of it back
+// to the Utah desert", each sourced in a comment beside it, and tests/test_deep_space.mjs holds the
+// craft to 160 characters "for the card" -- and nothing printed any of the 23. Their `why` is the
+// honesty line (classLine prints it), so the line that says why the thing is known is `note`. A live
+// row replacing a bundled one keeps it (data/parsers.js parseHorizonsVectors); no parser writes one.
+const NOTE_KLASSES = new Set(['probe', 'telescope', 'asteroid', 'debris']);
 
 /** The hand-kept line saying why this object is known, or null. Exported for the test. */
 export function whyLine(record) {
-  if (!record || !WHY_KLASSES.has(klassOf(record))) return null;
-  const why = pick(meta(record), 'why');
-  return why === null ? null : String(why).trim() || null;
+  if (!record) return null;
+  const klass = klassOf(record);
+  const key = WHY_KLASSES.has(klass) ? 'why' : NOTE_KLASSES.has(klass) ? 'note' : null;
+  const why = key && pick(meta(record), key);
+  return why == null || why === false ? null : String(why).trim() || null;
 }
 
 /** The card's first sentence. Exported for the tests. */
