@@ -34,9 +34,13 @@ const DAY_MS = 86400000;
 /** J2000.0 = 2000-01-01 12:00 TT. The epoch the planetary mean anomalies below are stated at. */
 const J2000_MS = Date.UTC(2000, 0, 1, 12, 0, 0);
 
+// Shown on the card of every deep-space craft and sample asteroid, JWST and Voyager among them. It used
+// to say "answer 200 with no Access-Control-Allow-Origin header" and "until the harvester runs": true,
+// and written for whoever built the app. The term stays, in brackets, for anyone who wants to look
+// it up.
 const NO_CORS =
-  "JPL's small-body and ephemeris APIs answer 200 with no Access-Control-Allow-Origin header " +
-  'at all, so a browser cannot read them. Until the harvester runs, this is bundled data.';
+  "NASA's JPL servers do not let a page on another website read them (they send no CORS header), " +
+  'so this browser cannot fetch them. Until our own server copies them, this is data shipped with the app.';
 
 // =================================================================================================
 // Asteroids

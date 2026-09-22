@@ -52,8 +52,8 @@ const HOUR = 3600 * 1000;
 const MINUTE = 60 * 1000;
 
 const NO_CORS_REASON =
-  'This host sends no Access-Control-Allow-Origin header, so a browser cannot read it. ' +
-  'Bundled sample data stands in for it.';
+  'This publisher does not let a page on another website read it (it sends no CORS header), so a ' +
+  'browser cannot. Bundled sample data stands in for it.';
 
 // Where the harvester puts its files (amendment 1 §3). Absolute on purpose: the contract is a
 // path on the site's own origin, and a same-origin read needs CORS from nobody.
