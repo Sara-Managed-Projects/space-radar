@@ -211,10 +211,32 @@ function buildTrips(ctx, state) {
   return wrap;
 }
 
+/**
+ * The order the trip rows are shown in: the ones that can run first, each group in the registry's
+ * own order. Pure. `rows` is [{id, off, index}].
+ *
+ * With CelesTrak refusing a visitor's IP -- a phone behind carrier NAT, on its first visit -- the
+ * first thing in the Trips panel was the headline trip, greyed, saying "Only 1 of the stops on this
+ * trip can be found right now, and it needs 3" above two trips that would have run (2026-09-22).
+ * A refused trip still shows, with its reason; it no longer leads.
+ */
+export function tripOrder(rows) {
+  return (Array.isArray(rows) ? rows.slice() : [])
+    .sort((a, b) => (Number(!!a.off) - Number(!!b.off)) || (a.index - b.index))
+    .map((r) => r.id);
+}
+
 /** Resolve every trip once the layers have landed, and print what is actually on offer. */
 function planTrips(ctx, state) {
   const trip = ctx && ctx.trip;
   if (!trip || !state.tripRows) return;
+  const reorder = () => {
+    const entries = [...state.tripRows.entries()];
+    const list = entries.length && entries[0][1].row ? entries[0][1].row.parentNode : null;
+    if (!list) return;
+    const order = tripOrder(entries.map(([id, r], index) => ({ id, index, off: r.row.classList.contains('is-off') })));
+    for (const id of order) list.appendChild(state.tripRows.get(id).row);
+  };
   for (const [id, row] of state.tripRows) {
     Promise.resolve(trip.plan(id))
       .then((plan) => {
@@ -224,12 +246,14 @@ function planTrips(ctx, state) {
           row.start.disabled = false;
           row.start.classList.remove('is-off');
           if (row.row) row.row.classList.remove('is-off');
+          reorder();
           return;
         }
         row.shape.textContent = plan.reason || '';
         row.start.disabled = true;
         row.start.classList.add('is-off');
         if (row.row) row.row.classList.add('is-off');
+        reorder();
       })
       .catch(() => {
         row.shape.textContent = '';
