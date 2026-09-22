@@ -1509,7 +1509,12 @@ function actionButtons(record, ctx, m) {
  */
 function leadBlock(lead) {
   const wrap = el('section', 'sr-card__lead');
-  if (lead.title) wrap.appendChild(el('h2', 'sr-card__leadtitle', lead.title));
+  if (lead.title) {
+    const title = el('h2', 'sr-card__leadtitle', lead.title);
+    title.id = CARD_LEAD_TITLE_ID;
+    title.tabIndex = -1;
+    wrap.appendChild(title);
+  }
   if (lead.body) wrap.appendChild(el('p', 'sr-card__leadbody', lead.body));
   return wrap;
 }
@@ -1570,7 +1575,11 @@ function render(record, ctx, opts = {}) {
   const glyph = el('span', `sr-glyph sr-glyph--${klass}`);
   glyph.setAttribute('aria-hidden', 'true');
   header.appendChild(glyph);
-  header.appendChild(el('h2', 'sr-card__name', displayName(record)));
+  const title = el('h2', 'sr-card__name', displayName(record));
+  // The card is a dialog, and a dialog needs a name: it had role="dialog" and nothing to call it by.
+  title.id = CARD_TITLE_ID;
+  title.tabIndex = -1; // focusable by script only (takeFocus), never a stop in the tab order
+  header.appendChild(title);
   header.appendChild(el('span', 'sr-card__klass', COPY.klass[klass]));
   const close = el('button', 'sr-card__close', COPY.card.close);
   close.type = 'button';
@@ -1737,23 +1746,60 @@ function subscribe(ctx) {
 // Contract exports
 // ---------------------------------------------------------------------------------------
 
+const CARD_TITLE_ID = 'sr-card-title';
+const CARD_LEAD_TITLE_ID = 'sr-card-lead-title';
+/** Where focus was when the card took it, so closing the card can give it back. */
+let returnFocus = null;
+
+/**
+ * Move focus into a card that has just opened -- but only for a visitor who was on a control.
+ *
+ * Measured 2026-09-22: open a card from search with Enter and focus stayed on <body>. A screen
+ * reader announced nothing, and a keyboard had to Tab from the top of the page to reach it. But a
+ * tap on the scene leaves focus on the body or the canvas, and a trip opens a card at every stop
+ * while its own controls hold focus; taking focus in either case would be theft. So: only when the
+ * active element is a real control outside the card, and never in trip mode.
+ */
+function takeFocus() {
+  if (typeof document === 'undefined' || !host) return;
+  const heading = host.querySelector(`#${CARD_TITLE_ID}`) || host.querySelector(`#${CARD_LEAD_TITLE_ID}`);
+  if (heading) host.setAttribute('aria-labelledby', heading.id);
+  if (document.documentElement.classList.contains('sr-trip-mode')) return;
+  const active = document.activeElement;
+  if (!active || active === document.body || active.tagName === 'CANVAS' || host.contains(active)) return;
+  returnFocus = active;
+  if (heading && typeof heading.focus === 'function') heading.focus({ preventScroll: true });
+}
+
 export function showCard(record, ctx, opts = {}) {
   if (!record && !opts.lead) {
     hideCard();
     return;
   }
+  const wasOpen = !!(host && !host.hidden);
   current = { record, ctx, opts };
   subscribe(ctx);
   render(record, ctx, opts);
+  if (!wasOpen) takeFocus();
+  else if (host) {
+    const heading = host.querySelector(`#${CARD_TITLE_ID}`) || host.querySelector(`#${CARD_LEAD_TITLE_ID}`);
+    if (heading) host.setAttribute('aria-labelledby', heading.id);
+  }
 }
 
 export function hideCard() {
   current = null;
   if (!host) return;
+  // Give focus back to where the visitor was -- the search box, a list row -- if it is still there
+  // and nothing else has taken focus since.
+  const hadFocus = typeof document !== 'undefined' && (host.contains(document.activeElement) || document.activeElement === document.body);
   host.classList.remove('is-open');
   host.hidden = true;
   markCardOpen(false);
   if (bodyEl) clear(bodyEl);
+  const back = returnFocus;
+  returnFocus = null;
+  if (back && hadFocus && back.isConnected && typeof back.focus === 'function') back.focus({ preventScroll: true });
 }
 
 if (typeof document !== 'undefined') {
