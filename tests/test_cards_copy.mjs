@@ -192,6 +192,15 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
   check(/takes 23\.9 hours each way/.test(voyager) && !/1431/.test(voyager.replace(/\s/g, '')), `a day's radio time is said in hours: "${voyager}"`);
   const mars = text(firstSentence({ id: 'deep-mro', name: 'MRO', klass: 'probe', frame: 'sun-inertial', meta: {} }, ctx, { ...m0, lightMinutes: 12.5, distSunKm: 1.5 * 149597870.7 }, { state: 'none' }));
   check(/takes 12\.5 minutes each way/.test(mars), `twelve minutes is still minutes: "${mars}"`);
+  // A craft round another world says which world, and a radio time under a minute is said in
+  // seconds: LRO's card read "out in the solar system" and "0.022 minutes each way" (2026-09-22).
+  const lro = text(firstSentence({ id: 'deep-lro', name: 'Lunar Reconnaissance Orbiter', klass: 'probe', frame: 'moon-inertial', meta: { orbits: 'moon' } },
+    ctx, { ...m0, lightMinutes: 0.0215, distSunKm: 149597870.7, worldId: 'moon' }, { state: 'none' }));
+  check(/circling the Moon/.test(lro) && !/out in the solar system/.test(lro), `LRO circles the Moon: "${lro}"`);
+  check(/takes 1\.29 seconds each way/.test(lro) && !/minutes/.test(lro), `and its radio time is in seconds: "${lro}"`);
+  const mro2 = text(firstSentence({ id: 'deep-mro', name: 'MRO', klass: 'probe', frame: 'mars-inertial', meta: { orbits: 'mars' } },
+    ctx, { ...m0, lightMinutes: 14.3, distSunKm: 1.5 * 149597870.7, worldId: 'mars' }, { state: 'none' }));
+  check(/circling Mars/.test(mro2), `MRO circles Mars: "${mro2}"`);
   // One limit for "can I see it" (2026-09-22): the chip said faint at 6.5 while the sky line said visible.
   {
     const { compare, COPY: C, NAKED_EYE_LIMIT } = await import(join(ROOT, 'site/js/copy/en.js'));

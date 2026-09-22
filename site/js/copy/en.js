@@ -1467,8 +1467,13 @@ export const COPY = {
     },
     probe: {
       lead: '{name} is a spacecraft out in the solar system',
+      // A craft round another world (#215): "out in the solar system" was all its card said of
+      // where it is, while the rows under it read "In orbit round: Mars" (2026-09-22).
+      leadOrbits: '{name} is a spacecraft circling {world}',
       destination: 'on its way to {destination}',
       lightTime: 'far enough that a radio message takes {mins} minutes each way',
+      // Under a minute, seconds: LRO's card said "0.022 minutes each way" (2026-09-22).
+      lightTimeSeconds: 'near enough that a radio message takes {secs} seconds each way',
       // Past two hours, hours: "1431 minutes each way" was Voyager 1, a day away (2026-09-22).
       lightTimeHours: 'far enough that a radio message takes {hours} hours each way',
       distanceSun: '{au} astronomical units from the Sun',
