@@ -358,10 +358,14 @@ tours:
         needs_layer: exotics
         distance_km: 47303652362904000000
         card:
-          title: "The edge of this map"
+          # "THIS IS AS FAR AS THIS MAP DRAWS PLACES" was never true: the exotics layer draws TON 618's
+          # black hole 10.8 billion light-years out, and M109 (83.5 Mly) and, since public #201, NGC 1300
+          # and the Antennae are farther than M87 too. The trip still ends here, on the first black hole
+          # anyone photographed; the card now says the map goes further. test_dso reads the number.
+          title: "As far as this trip goes"
           body: >-
             Fifty-three million light-years: the black hole in M87, the first one ever photographed.
-            This is as far as this map draws places. It shows 109 389 stars of the 1.8 billion Gaia has
-            measured, 209 nebulae, clusters and galaxies (110 of them from OpenNGC's 13 372), and every
+            The map goes further, to a quasar's black hole 10.8 billion light-years out. It shows
+            109 389 stars of the 1.8 billion Gaia has measured, 209 nebulae, clusters and galaxies (110 of them from OpenNGC's 13 372), and every
             confirmed planet around another star whose distance has been measured. The rest is out
             there; we have not drawn what we cannot place.

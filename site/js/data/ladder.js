@@ -80,7 +80,7 @@ export const LADDER_RUNGS = [
     },
     "layer": "exotics",
     "distance": "53 million light-years",
-    "why": "The first black hole ever photographed. This is the edge of what this map draws as a place."
+    "why": "The first black hole ever photographed, and the last rung of this ladder. A few places on the map are farther still."
   }
 ];
 
