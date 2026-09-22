@@ -1125,8 +1125,11 @@ export const COPY = {
     attributionIntro: 'The data on this map is other people’s work.',
     layersTitle: 'Live or bundled',
     layersIntro:
-      'Some classes ship as bundled sample data in this version, because their source cannot be called from a browser at all.',
+      'Live is read from its publisher, or worked out for this moment, as you watch. A catalogue ships with the app: stars, galaxies and the dishes and landing sites on the ground do not move while you look. A bundled sample stands in for a source a browser cannot call at all.',
     layerLive: 'live',
+    // Stars, galaxies, black holes and the exoplanet table are positions from a catalogue that ships
+    // with the app. The panel called them "live" beside "NASA Exoplanet Archive: could not look".
+    layerCatalogue: 'catalogue',
     layerSample: 'bundled sample',
     layerIllustrative: 'drawn, not tracked',
     layerMixed: 'mixed',
