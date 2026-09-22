@@ -78,7 +78,17 @@ check(findMatches(index, 'pleiades').hits[0]?.record.id === 'dso-m45', '"pleiade
 check(findMatches(index, 'ngc 224').hits.some((h) => h.record.id === 'dso-m31'), '"ngc 224" finds M31');
 check(/our own galaxy/.test(drawingLine(andromeda)) && /not been mapped/.test(drawingLine(andromeda)), `Andromeda says it is drawn from our galaxy's model, and that its arms are not its own: ${drawingLine(andromeda)}`);
 const pleiades = recs.find((r) => r.id === 'dso-m45');
-check(typeof drawingLine(pleiades) === 'string' && drawingLine(pleiades).includes('soft mark'), `every other deep-sky object is still a soft mark: ${drawingLine(pleiades)}`);
+check(typeof drawingLine(pleiades) === 'string' && drawingLine(pleiades).includes('soft glow'), `every other deep-sky object is a soft glow: ${drawingLine(pleiades)}`);
+
+// As big as it is (scene/dsoglow.js, 2026-09-22): the Pleiades stop is 100 ly from a cluster 19 ly
+// across, and it was an 8 px dot.
+const { glowFor } = await import(join(JS, 'scene/dsoglow.js'));
+const pg = glowFor(pleiades);
+check(pg && Math.abs(pg.sizeKm / 9460730472580.8 - pleiades.meta.sizeLy) < 1e-6 && pg.colour[2] > pg.colour[0], `the Pleiades glow as wide as their record says, blue-white (${pg && pg.colour})`);
+check(glowFor(recs.find((r) => r.id === 'dso-coalsack')) === null, 'a dark nebula does not glow');
+check(glowFor(andromeda) === null, 'Andromeda has its own model and no glow');
+const glowing = recs.filter((r) => glowFor(r)).length;
+check(glowing > 150 && glowing < recs.length, `most deep-sky objects glow at their size (${glowing} of ${recs.length}); those with no size or no light do not`);
 
 // The last stop of "To the edge of what we know" states what this map draws. It said 111 of
 // OpenNGC's objects while the file drew 178 (110 placed by OpenNGC, 68 by hand); the numbers on

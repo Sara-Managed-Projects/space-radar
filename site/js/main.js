@@ -34,6 +34,7 @@ import { rankPick, rankAll } from './scene/pickrank.js';
 import { createLod } from './scene/lod.js';
 import { createStars3d } from './scene/stars3d.js';
 import { createGalaxy } from './scene/galaxy.js';
+import { createDsoGlow } from './scene/dsoglow.js';
 import { isLadderStage } from './scene/stage.js';
 import { SUN_INERTIAL, STAGES } from './scene/stage.js';
 import { showChooser, hideChooser } from './ui/chooser.js';
@@ -101,12 +102,16 @@ export async function boot({ setStatus } = {}) {
   ctx.stars3d = stars3d;
   const galaxy = createGalaxy(scene);
   ctx.galaxy = galaxy;
+  // Deep-sky objects as big as they are, when that is bigger than their dot (scene/dsoglow.js).
+  const dsoGlow = createDsoGlow(scene);
+  ctx.dsoGlow = dsoGlow;
+  window.addEventListener('sr:layer', (e) => { if (e.detail && e.detail.id === 'deep-sky') dsoGlow.setRecords(ctx.recordsFor('deep-sky')); });
   const lod = createLod({
     'sky-panorama': (k) => starfield.setSkyOpacity && starfield.setSkyOpacity(k),
     'stars-3d': (k) => stars3d.setOpacity(k),
     'galaxy-model': (k) => galaxy.setOpacity(k),
   });
-  window.addEventListener('sr:stage', () => { stars3d.rebuild(); galaxy.rebuild(); });
+  window.addEventListener('sr:stage', () => { stars3d.rebuild(); galaxy.rebuild(); dsoGlow.rebuild(); });
   ctx.lod = lod;
   ctx.skyView = createSkyView(ctx);
   const heroes = createHeroes(scene, ctx);
@@ -491,6 +496,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     if (starfield && starfield.update) starfield.update(ctx.camera);
     if (ctx.stars3d) ctx.stars3d.update(ctx.camera, ctx.renderer);
     if (ctx.galaxy) ctx.galaxy.update(ctx.camera, ctx.renderer);
+    if (ctx.dsoGlow) ctx.dsoGlow.update(ctx.camera, ctx.renderer, ctx.isLayerDrawable(LAYERS.find((l) => l.id === 'deep-sky')));
     if (ctx.skyView.active) ctx.skyView.update(t);
     render();
   }
