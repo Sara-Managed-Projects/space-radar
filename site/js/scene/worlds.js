@@ -591,7 +591,16 @@ export function createWorlds(scene, opts = {}) {
     _pos.sub(_parentTrue).multiplyScalar(k).add(parentMesh.position);
     const drawnDistKm = _pos.length() * stage.unitKm;
     const scaledKm = w.radiusKm * k;
-    const floorKm = drawnDistKm * MOON_VIEW.MIN_ANGULAR_RADIUS_RAD;
+    // The floor is a pixel as seen FROM THE CAMERA, not from the stage's origin (2026-09-22). The
+    // two agree while the camera sits by Earth; flown up to the drawn Mars it is a hundred times
+    // nearer than Earth, and a floor measured from Earth drew Phobos a quarter of Mars's drawn
+    // width there, where its real share is 0.3 %. With no camera the origin stands in.
+    let viewKm = drawnDistKm;
+    if (camera) {
+      camera.getWorldPosition(_camPosU);
+      viewKm = _pos.distanceTo(_camPosU) * stage.unitKm;
+    }
+    const floorKm = viewKm * MOON_VIEW.MIN_ANGULAR_RADIUS_RAD;
     const drawnRadiusKm = Math.max(scaledKm, floorKm);
     mesh.position.copy(_pos);
     mesh.scale.setScalar(drawnRadiusKm / stage.unitKm);
