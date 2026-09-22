@@ -1383,7 +1383,7 @@ export const GLOSSARY = {
   orbit:
     'A path around something, held by gravity. Fast enough sideways and you keep falling past the Earth instead of into it.',
   'low Earth orbit':
-    'The busy shell from about 200 to 2000 km up. The station, most satellites and nearly all the debris are here.',
+    'The busy shell from about 200 to 2000 km up. The station, most satellites and most of the debris are here.',
   geostationary:
     'An orbit 35 786 km up where one lap takes exactly one day, so the satellite seems to hang over one spot.',
   'polar orbit':
@@ -1422,7 +1422,7 @@ export const GLOSSARY = {
   constellation:
     'A pattern of stars people named long ago. The stars in one are usually nowhere near each other.',
   L1: 'A balance point between the Earth and the Sun, about 1.5 million km sunward. Good for watching the Sun.',
-  L2: 'A balance point 1.5 million km away from the Sun, where a telescope can keep the Earth and Sun behind it and stay cold.',
+  L2: 'A balance point 1.5 million km from Earth on the side away from the Sun, where a telescope can keep the Earth and Sun behind it and stay cold.',
   transit: 'When one thing passes in front of another as seen from where you stand.',
   conjunction: 'When two things appear close together in the sky. They are not close in space.',
   ephemeris: 'A table of where something will be, worked out in advance.',
