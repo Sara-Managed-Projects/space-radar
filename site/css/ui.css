@@ -1411,8 +1411,9 @@ html.sr-trip-mode .sr-mobilebar {
     transform 400ms var(--sr-ease);
 }
 
-/* The scene's own labels: gone while the camera is moving, back at a whisper once it is not.
-   The subject's own label stays off either way, because the card names it. */
+/* The scene's own labels: gone while the camera is moving, back once it is not -- the subject's
+   at full strength, because it is how the card points at what it is about (ui/labels.js), and
+   everything else at a whisper. */
 html.sr-trip-mode #labels {
   opacity: 0;
   transition: opacity var(--sr-slow) var(--sr-ease);
@@ -1420,6 +1421,11 @@ html.sr-trip-mode #labels {
 
 html.sr-trip-mode[data-trip-phase='dwell'] #labels,
 html.sr-trip-mode[data-trip-phase='paused'] #labels {
+  opacity: 1;
+}
+
+html.sr-trip-mode[data-trip-phase='dwell'] #labels .label:not([data-kind='selection']),
+html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selection']) {
   opacity: 0.6;
 }
 

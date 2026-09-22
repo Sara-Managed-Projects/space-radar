@@ -123,7 +123,8 @@ html, body {
   will-change: transform;
   font-size: 12.5px;
   color: var(--text);
-  text-shadow: 0 0 3px var(--space), 0 0 6px var(--space);
+  /* Dense enough to read over the galaxy models' white clouds, not only over black sky. */
+  text-shadow: 0 0 2px var(--space), 0 0 2px var(--space), 0 0 4px var(--space), 0 0 8px var(--space);
   white-space: nowrap;
   pointer-events: none;
 }
