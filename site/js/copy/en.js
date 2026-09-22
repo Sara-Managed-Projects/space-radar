@@ -508,6 +508,9 @@ export const COPY = {
   },
   // The Next moment's list (spec 0026 req 6): what is coming, from records already loaded.
   nextList: {
+    // Two rows can name different objects the same way -- CelesTrak calls dozens of stages "SL-8
+    // R/B" -- and two identical rows read as a bug. The catalogue number tells them apart.
+    sameName: '{name} ({id})',
     title: 'Coming up',
     hint: 'From what the app has loaded: launches, close approaches, comets, and passes over you.',
     now: 'about now',
