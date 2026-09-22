@@ -2310,7 +2310,8 @@ for (const file of allFiles) {
     // A TRIP CARD ADDS TO THE OBJECT'S CARD; IT DOES NOT REPEAT IT. The object's card opens under
     // the trip's in the same panel, first line first. On 2026-09-22 four of the six "strangest
     // things" stops said the same sentence twice, a few words apart. Six words in a row shared with
-    // the record's own `fact` or `note` is a repeat.
+    // the record's own `fact` or `note` is a repeat -- or, for a landing site, with the row's
+    // `doing:` sentence, which is the first line of a site card (the Moon trip, 2026-09-22).
     const words = (x) => String(x || '').toLowerCase().replace(/[^a-z0-9' ]+/g, ' ').split(/\s+/).filter(Boolean);
     const sharedRun = (a, b) => {
       const A = words(a), B = words(b);
@@ -2322,12 +2323,12 @@ for (const file of allFiles) {
       }
       return best;
     };
-    const byId = new Map([...sampleOddities(), ...sampleDeepSpace()].map((r) => [r.id, r]));
+    const byId = new Map([...sampleOddities(), ...sampleDeepSpace(), ...handKeptSites()].map((r) => [r.id, r]));
     let compared = 0;
     for (const tour of TOURS) for (const stop of tour.stops) {
-      const rec = stop.target && byId.get(stop.target.record);
+      const rec = stop.target && byId.get(stop.target.record ?? stop.target.site);
       if (!rec || !stop.card) continue;
-      for (const own of [rec.meta && rec.meta.fact, rec.meta && rec.meta.note]) {
+      for (const own of [rec.meta && rec.meta.fact, rec.meta && rec.meta.note, rec.meta && rec.meta.doing]) {
         if (!own) continue;
         compared += 1;
         const run = sharedRun(stop.card.body, own);

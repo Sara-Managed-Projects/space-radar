@@ -121,6 +121,31 @@ const KEY_LIGHT_POLARS = [Math.PI * 0.33, Math.PI * 0.42, Math.PI * 0.5];
 const KEY_LIGHT_STEPS = 36;
 const KEY_LIGHT_TURN_WEIGHT = 0.35;
 
+/**
+ * A subject standing ON a world -- a landing site, a golf ball, a photograph in the dust -- is
+ * inside the clearance shell itself, so `blocked` (is the CAMERA inside the shell?) cannot see the
+ * case that matters for it: a camera well outside the Moon, looking at the site THROUGH the Moon.
+ * Found 2026-09-22 by tests/test_moon_trip.mjs, which runs this machine: at the Moon trip's first
+ * stop the key light chose a direction 8.4 degrees below Surveyor 1's horizon, 900 km out, and
+ * the drift then carried it to 31 degrees below -- about 500 km of Moon between the camera and the
+ * lander. So a ground subject is seen from at least this high above its own horizon, at every
+ * point of the drift the dwell will run.
+ *
+ * AND ITS SKY IS UP. The rig's "up" is the scene's north, so a site in the southern hemisphere was
+ * framed with its ground across the top of the screen and the lander hanging from it (headless
+ * Chrome, Chang'e 4, the same day). For a ground stop the trip turns the camera's up to the site's
+ * own vertical, through the flight (see `upTween`), and chooses among these co-latitudes FROM that
+ * vertical: 54, 41, 31 and 14 degrees above the horizon, the ground below and the sky above, and
+ * the drift circles the lander at the height it arrived.
+ */
+const GROUND_MIN_ELEVATION = 10 * DEG;
+const GROUND_POLARS = [Math.PI * 0.2, Math.PI * 0.27, Math.PI * 0.33, Math.PI * 0.42];
+const GROUND_ARC_SAMPLES = 5;
+// A subject is on the ground when it is this close to its world's surface: from 0.9 of the radius
+// (a site is at 1.0, and nothing flies below it) up to the key light's own clearance. The world's
+// own centre, a `world:` stop, is not.
+const GROUND_BAND = [0.9, APEX_CLEARANCE];
+
 function shortestAngle(from, to) {
   let d = (to - from) % (Math.PI * 2);
   if (d > Math.PI) d -= Math.PI * 2;
@@ -193,6 +218,9 @@ export function createTrip(ctx) {
   let driftRun = null;
   let pausedDuring = null;
   let lastRecord = null;
+  // True while stop() is tearing a trip down. Its own ctx.setStage fires `sr:stage`, and the
+  // listener below would otherwise re-fly the stop being left -- in the new stage's units.
+  let leaving = false;
 
   // Which layers have LANDED, as opposed to which are switched on. main.js fires `sr:layer` once
   // per layer whether it loaded rows or failed, so this is the honest answer to "has that layer
@@ -273,6 +301,7 @@ export function createTrip(ctx) {
       return;
     }
     requestAnimationFrame(tick);
+    stepUpTween();
     // A timer from a superseded generation is dropped rather than fired: a user-initiated jump
     // must not be overtaken by the dwell of the stop it left.
     timers = timers.filter((timer) => timer.gen === gen);
@@ -453,6 +482,10 @@ export function createTrip(ctx) {
   const _u = new THREE.Vector3();
   const _toTarget = new THREE.Vector3();
   const _up = new THREE.Vector3();
+  const _arc = new THREE.Vector3();
+  const _savedUp = new THREE.Vector3();
+  const _uq = new THREE.Quaternion();
+  const _uqk = new THREE.Quaternion();
   const _q = new THREE.Quaternion();
   const _qi = new THREE.Quaternion();
   const Y_UP = new THREE.Vector3(0, 1, 0);
@@ -489,30 +522,114 @@ export function createTrip(ctx) {
     return stage.toScene(p, p.frame, tMs);
   }
 
-  function keyLightAngles(targetScene, d, worldCentre, radius, sunPos, wantDeg) {
+  /**
+   * Is a subject on the ground seen from above its horizon, by GROUND_MIN_ELEVATION, from this
+   * co-latitude at every azimuth of the arc az +- driftRad the dwell may turn through? The drift
+   * keeps the co-latitude and turns the azimuth (scene/camera.js orbit), so sampling the arc is
+   * the whole of the test.
+   */
+  function seesGround(az, polar, driftRad, normal) {
+    const floor = Math.sin(GROUND_MIN_ELEVATION);
+    const n = driftRad > 0 ? GROUND_ARC_SAMPLES : 1;
+    for (let k = 0; k < n; k += 1) {
+      const a = n > 1 ? az + driftRad * ((2 * k) / (n - 1) - 1) : az;
+      if (offsetDirection(a, polar, _arc).dot(normal) < floor) return false;
+    }
+    return true;
+  }
+
+  function keyLightAngles(targetScene, d, worldCentre, radius, sunPos, wantDeg, driftRad, groundUp) {
     if (!sunPos) return null;
-    syncUpBasis();
-    _sun.copy(sunPos).sub(targetScene);
-    if (_sun.lengthSq() < 1e-18) return null;
-    _sun.normalize();
-    const want = Math.cos((wantDeg ?? 125) * DEG);
-    const azNow = rig.state.azimuth || 0;
-    let best = null;
-    for (const polar of KEY_LIGHT_POLARS) {
-      for (let i = 0; i < KEY_LIGHT_STEPS; i += 1) {
-        const az = (i * Math.PI * 2) / KEY_LIGHT_STEPS;
-        offsetDirection(az, polar, _u);
-        if (blocked(targetScene, _u, d, worldCentre, radius * APEX_CLEARANCE)) continue;
-        const lit = Math.abs(_u.dot(_sun) - want);
-        const turn = Math.abs(shortestAngle(azNow, az)) / Math.PI;
-        const score = lit + KEY_LIGHT_TURN_WEIGHT * turn;
-        if (!best || score < best.score) best = { azimuth: az, polar, score };
+    // A ground stop is chosen in the frame of the site's own vertical, which is the up the camera
+    // will have when it arrives. Borrowed for the search and put back: the rig reads camera.up
+    // on every frame, and the flight must START in the basis the camera is in now.
+    const borrowed = !!groundUp;
+    if (borrowed) {
+      _savedUp.copy(ctx.camera.up);
+      ctx.camera.up.copy(groundUp);
+    }
+    try {
+      syncUpBasis();
+      _sun.copy(sunPos).sub(targetScene);
+      if (_sun.lengthSq() < 1e-18) return null;
+      _sun.normalize();
+      const want = Math.cos((wantDeg ?? 125) * DEG);
+      // Where the camera is now, seen from the new subject in the frame the search runs in, so
+      // the turn penalty prefers the side of the lander the camera is already on.
+      let azNow = rig.state.azimuth || 0;
+      if (borrowed) {
+        _toTarget.copy(ctx.camera.position).sub(targetScene).applyQuaternion(_q);
+        if (_toTarget.lengthSq() > 1e-18) azNow = Math.atan2(_toTarget.x, _toTarget.z);
+      }
+      let best = null;
+      for (const polar of borrowed ? GROUND_POLARS : KEY_LIGHT_POLARS) {
+        for (let i = 0; i < KEY_LIGHT_STEPS; i += 1) {
+          const az = (i * Math.PI * 2) / KEY_LIGHT_STEPS;
+          offsetDirection(az, polar, _u);
+          if (blocked(targetScene, _u, d, worldCentre, radius * APEX_CLEARANCE)) continue;
+          if (borrowed && !seesGround(az, polar, driftRad || 0, groundUp)) continue;
+          const lit = Math.abs(_u.dot(_sun) - want);
+          const turn = Math.abs(shortestAngle(azNow, az)) / Math.PI;
+          const score = lit + KEY_LIGHT_TURN_WEIGHT * turn;
+          if (!best || score < best.score) best = { azimuth: az, polar, score };
+        }
+      }
+      // Every candidate blocked is a real case -- low over the night side, with the planet on
+      // every side of you. Fall back to the rig's own framingAngles, which is occlusion-free by
+      // construction, and accept flat light. This is a CAMERA choice and never goes on the card.
+      // On the ground the rig's framing is no fallback -- it is computed in the basis the camera is
+      // leaving -- and every candidate is above the horizon, so the only way to have none is a
+      // drift wider than the arc can hold: then the side the camera is on, from high up.
+      if (!best && borrowed) best = { azimuth: azNow, polar: GROUND_POLARS[0], score: Infinity };
+      return best;
+    } finally {
+      if (borrowed) {
+        ctx.camera.up.copy(_savedUp);
+        syncUpBasis();
       }
     }
-    // Every candidate blocked is a real case -- low over the night side, with the planet on every
-    // side of you. Fall back to the rig's own framingAngles, which is occlusion-free by
-    // construction, and accept flat light. This is a CAMERA choice and never goes on the card.
-    return best;
+  }
+
+  // --- the sky's way up -------------------------------------------------------------------
+
+  /**
+   * THE CAMERA'S UP, TURNED THROUGH THE FLIGHT. A ground stop's angles are chosen from the site's
+   * own vertical (keyLightAngles), and the camera must arrive with that vertical as its up or the
+   * pose is not the one chosen. Turning it at the start would roll the whole picture in one frame;
+   * turning it at the end, once the camera has stopped, would be a second move after the move. So
+   * it turns WITH the flight, on the wall clock like every timer here: the rig reads camera.up
+   * every frame, both its angles and its basis run continuously from where the camera is to where
+   * it is going, and the path between is a smooth one. arrived() makes the last step exact.
+   */
+  let upTween = null;
+
+  function beginUpTween(to, ms) {
+    upTween = { from: ctx.camera.up.clone().normalize(), to: to.clone().normalize(), at: now(), ms };
+    stepUpTween();
+  }
+
+  function stepUpTween() {
+    if (!upTween) return;
+    const k = upTween.ms > 0 ? clamp((now() - upTween.at) / upTween.ms, 0, 1) : 1;
+    if (k >= 1) {
+      settleUp(upTween.to);
+      return;
+    }
+    const e = k * k * (3 - 2 * k);
+    _uq.setFromUnitVectors(upTween.from, upTween.to);
+    _uqk.identity().slerp(_uq, e);
+    ctx.camera.up.copy(upTween.from).applyQuaternion(_uqk).normalize();
+  }
+
+  /** Put the up exactly where the stop wants it, and stop turning it. */
+  function settleUp(to) {
+    upTween = null;
+    if (to) ctx.camera.up.copy(to);
+  }
+
+  /** The up a shot arrives with: the site's vertical on the ground, the visitor's own elsewhere. */
+  function upFor(shot) {
+    return (shot && shot.up) || (run && run.savedUp) || null;
   }
 
   /** Which way round the arc turns: toward the light opens the subject up over the dwell. */
@@ -583,6 +700,14 @@ export function createTrip(ctx) {
     );
 
     const sun = sunScene(tMs);
+    // The arc the dwell will turn through, so a subject on the ground stays in sight all the way.
+    const driftDeg = entry.stop.drift === 'none' ? 0 : Number(entry.stop.drift_deg) || 0;
+    // On the ground: a record standing on its world's surface, and its own vertical is the up.
+    const fromCentre = targetScene.distanceTo(worldCentre);
+    const groundUp = subject.kind === 'record' && radius > 0
+      && fromCentre > radius * GROUND_BAND[0] && fromCentre < radius * GROUND_BAND[1]
+      ? targetScene.clone().sub(worldCentre).normalize()
+      : null;
     const angles = keyLightAngles(
       targetScene,
       d1,
@@ -590,6 +715,8 @@ export function createTrip(ctx) {
       radius,
       sun,
       entry.stop.key_light_deg,
+      driftDeg * DEG,
+      groundUp,
     );
 
     const named = entry.stop.ease;
@@ -608,6 +735,9 @@ export function createTrip(ctx) {
       polar: angles ? angles.polar : undefined,
       sun,
       chosenAz: angles ? angles.azimuth : null,
+      // The up the camera arrives with: the site's vertical on the ground, and the visitor's own
+      // up everywhere else, so a trip that leaves the ground turns the sky back the right way.
+      up: groundUp,
     };
   }
 
@@ -740,6 +870,9 @@ export function createTrip(ctx) {
       savedClock: saveClock(),
       savedWorld: saveWorld(),
       savedCamera: rig.saveState ? rig.saveState() : null,
+      // The visitor's up, which every stop that is not on the ground turns back to and leaving
+      // restores. Ground stops turn it to the site's own vertical (upTween).
+      savedUp: ctx.camera.up.clone(),
       savedSelection: ctx.selected ? ctx.selected() : null,
     };
     // A trip may live on another stage (spec 0028 step 8): the stellar rung for a trip to the stars.
@@ -839,6 +972,10 @@ export function createTrip(ctx) {
 
     state.phase = 'flight';
     entry.shot = shot;
+    // A cut has no flight to turn the up through: it is set first, so the one pose is the chosen
+    // one. Otherwise it turns with the flight.
+    const cutting = reducedMotion() || !(shot.ms > 0);
+    if (cutting) settleUp(upFor(shot));
     rig.flyTo({
       targetScene: shot.targetScene,
       distance: shot.distance,
@@ -853,6 +990,7 @@ export function createTrip(ctx) {
       // trip; this exists so the rig never has to drop a callback silently.
       onCancel: guarded(() => {}),
     });
+    if (!cutting && upFor(shot)) beginUpTween(upFor(shot), shot.ms);
 
     // The title, six tenths of the way in. Skipped under reduced motion and for a cut, where the
     // arrival above has already happened -- synchronously, before flyTo returned -- and the card
@@ -891,6 +1029,8 @@ export function createTrip(ctx) {
   function arrived(index, reason) {
     if (!run || state.index !== index || state.phase !== 'flight') return;
     if (reason !== 'done' && reason !== 'skipped') return;
+    // A flight collapsed by Next, or slower than the wall clock, ends with the up where it belongs.
+    settleUp(upFor(run.stops[index].shot));
     state.phase = 'settle';
     paintCard(run.stops[index]);
     after(SETTLE_MS, () => dwell(index));
@@ -984,7 +1124,9 @@ export function createTrip(ctx) {
     rig.stopOrbit('replaced');
     driftRun = null;
     // Exactly a video player's seek: collapse the running flight onto its end state rather than
-    // starting a fifth half-finished sweep from wherever the camera happens to be.
+    // starting a fifth half-finished sweep from wherever the camera happens to be -- and its up
+    // with it, or the end state is read in a basis half way round.
+    if (upTween) settleUp(upTween.to);
     if (rig.finishFlight) rig.finishFlight();
     state.pausedBy = null;
     pausedDuring = null;
@@ -1053,6 +1195,8 @@ export function createTrip(ctx) {
     // is told 'replaced' rather than dropped -- and moves the camera nowhere, which is the
     // difference between this and finishFlight(): the visitor asked to stop, not to arrive.
     if (pausedDuring === 'flight') freezeFlight();
+    // The up stops where it is, with the camera; resuming re-flies the stop and turns it from here.
+    upTween = null;
     if (driftRun) {
       const doneDeg = ((now() - driftRun.at) / 1000) * driftRun.rate;
       const left = Math.max(0, Math.abs(driftRun.deg) - doneDeg);
@@ -1109,16 +1253,25 @@ export function createTrip(ctx) {
     }
     gen += 1;
     state.generation = gen;
+    leaving = true;
     clearTimers();
     // BEFORE anything else, and before `run` is thrown away: leaving must leave the camera where
     // it is, and a flight nobody stopped goes on flying with the frame gone.
     freezeFlight();
     rig.stopOrbit('cancelled');
     driftRun = null;
+    // The visitor's up back, the camera kept where it is: sync() re-reads the rig's angles from the
+    // camera's position in the restored basis, so only the roll changes.
+    upTween = null;
+    if (run.savedUp && !ctx.camera.up.equals(run.savedUp)) {
+      ctx.camera.up.copy(run.savedUp);
+      if (rig.sync) rig.sync();
+    }
 
     for (const id of run.flipped) setLayer(id, false);
     restoreClock(run.savedClock, run.clockMovedInstant);
-    if (run.stageChanged && run.savedStage && typeof ctx.setStage === 'function') {
+    const stageLeft = !!(run.stageChanged && run.savedStage && typeof ctx.setStage === 'function');
+    if (stageLeft) {
       // Back to the stage the visitor was on. The camera cannot "stay where it is" across a stage
       // change -- the unit changed under it -- so this is the one leave that moves it, and the
       // trip's blurb says so.
@@ -1147,8 +1300,17 @@ export function createTrip(ctx) {
     // The camera stays EXACTLY where it is, and the card changes identity: the ordinary object
     // card, the glyph highlighted, `follow` installed, `sr:select` fired. Leaving reads as "I
     // arrived here" rather than "I lost something".
-    if (record) ctx.select(record, { fly: false });
+    //
+    // EXCEPT ACROSS A STAGE CHANGE, where the camera has just been put back at home. Selecting
+    // the last stop's subject there installs `follow` on it, and follow moves the camera with its
+    // target: MEASURED in headless Chrome, 2026-09-22, leaving the Moon trip at Lunokhod 1 put the
+    // map back on the Earth's stage and the camera 414 000 km out, beside the Moon, under a blurb
+    // that says leaving brings you back to Earth. There the stop's subject is let go instead --
+    // card, highlight and all -- so home is not left with a selection on a world out of shot.
+    if (record && !stageLeft) ctx.select(record, { fly: false });
+    else if (record && typeof ctx.deselect === 'function') ctx.deselect();
     else hideCard();
+    leaving = false;
     notify();
   }
 
@@ -1245,7 +1407,7 @@ export function createTrip(ctx) {
   // centred where the world no longer is, and a cut is the correct degradation. Recompute the
   // current stop from KILOMETRES and put the camera there in one frame.
   const onStage = () => {
-    if (!run || state.index < 0) return;
+    if (!run || leaving || state.index < 0) return;
     gen += 1;
     state.generation = gen;
     clearTimers();
@@ -1254,6 +1416,8 @@ export function createTrip(ctx) {
     const entry = run.stops[state.index];
     const shot = composeShot(entry);
     if (!shot) return;
+    entry.shot = shot;
+    settleUp(upFor(shot));
     rig.flyTo({
       targetScene: shot.targetScene,
       distance: shot.distance,

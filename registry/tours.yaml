@@ -51,12 +51,13 @@
 #   min_stops     below this the trip is offered GREYED WITH ITS REASON, never hidden: a missing
 #                 feature and a broken one look identical when you hide one. Floor of 3 -- below
 #                 three stops it is a link, not a trip.
-#   stage         `earth` only. The rig is told its world radius once, at boot (main.js), and
-#                 nothing subscribes to `sr:stage`, so a trip crossing stages would fly with its
-#                 clearance sphere in the wrong place and its distances wrong by 1000x. When a
-#                 spec teaches the rig about `sr:stage` this field grows values; until then the
-#                 validator refuses anything else, because "not yet" is a better answer than a
-#                 smear.
+#   stage         the world, or the rung of the ladder, the map is centred on for the trip:
+#                 `earth` by default, any registry/worlds.yaml or registry/stages.yaml id. This
+#                 was `earth` only until spec 0028 step 8 taught the trip to save the stage on
+#                 begin, switch with ctx.setStage, and put it back on leave (ui/trip.js), and the
+#                 rig is re-taught its world at every stop. Leaving a trip on another stage is the
+#                 one leave that moves the camera -- it goes back to the stage it came from -- so
+#                 such a trip's blurb says so.
 #   clock         as-found | live | freeze. `freeze` pauses time, which flips the clock from live
 #                 to scrub, which drops glyph re-propagation from every 100 ms to EVERY FRAME
 #                 (main.js) -- so a trip that freezes may not require the `active` layer, which
@@ -369,3 +370,206 @@ tours:
             109 389 stars of the 1.8 billion Gaia has measured, 209 nebulae, clusters and galaxies (110 of them from OpenNGC's 13 372), and every
             confirmed planet around another star whose distance has been measured. The rest is out
             there; we have not drawn what we cannot place.
+
+  # =============================================================================================
+  # The Moon's landing sites as a trip: the first soft landing, the first people, a rover driven
+  # from Earth, the last crew, the far side, the south pole and the first private landers, in the
+  # order they happened. Every stop is a registry/sites.yaml row (PR #210) and every one ships in
+  # this repository, so like `strangest-things` this trip needs no network at all.
+  #
+  # THE CARD UNDER EACH OF THESE IS THE SITE'S OWN. A site card opens with the row's `doing:`
+  # sentence (ui/cards.js), right under the trip's words, so each body below says what that
+  # sentence does not. tests/test_contract.mjs holds the two apart: six words in a row shared with
+  # the row's sentence is a repeat.
+  #
+  # EVERY FACT HAS ITS PAGE, all read 2026-09-22. "NSSDCA table" is the site rows' own
+  # `nssdc-lunar` reference (Table of Anthropogenic Impacts and Spacecraft on the Moon, last updated
+  # 13 August 2025); "NSSDCA <id>" is https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=<id>.
+  #
+  # ON THE MOON'S STAGE. The trip recentres the map on the Moon for its length, as `to-the-edge`
+  # does on the stellar rung, and leaving puts the visitor back on the stage they came from, which
+  # the blurb says. Measured in headless Chrome on 2026-09-22, first on the Earth stage: every
+  # lander there was stood up away from the EARTH, not the Moon (scene/heroes.js took the stage
+  # origin for "down"), so Surveyor 1 was two footpads sticking out of the ground. heroes.js now
+  # takes the site's own world, but on the Moon's stage the Moon IS the origin: "down", the rig's
+  # clearance sphere and a visitor's own hand on the camera during a pause all agree with nothing
+  # to re-teach. Staying on the Earth stage would have kept the camera where it is on leave, and
+  # left the rig's clearance on the Earth with the camera beside the Moon.
+  #
+  # 900 km, as `strangest-things` uses for its lunar surface stops: close enough that the Moon is
+  # the ground and not a ball, with its curve and the black sky still in frame. At a landing site
+  # ui/trip.js turns the camera's up to the site's own vertical, so the ground is at the bottom of
+  # the frame, the lander stands on it, and the drift circles it at the height it arrived.
+  # =============================================================================================
+  - id: moon-landings
+    title: "Where we have landed on the Moon"
+    blurb: "The first soft landing, the first people, a rover driven from Earth, the far side, the south pole and the first private landers. Leaving brings you back to Earth."
+    # The worlds switch too: with it off the Moon is not drawn and every lander would stand on
+    # nothing. The trip turns both on for its length and puts them back on the way out.
+    requires: [hand-kept-sites, worlds]
+    stage: moon
+    clock: as-found
+    stops:
+      - id: surveyor-1
+        target: {site: surveyor-1}
+        distance_km: 900
+        card:
+          title: "The first soft landing anyone can find"
+          # NSSDCA 1966-006A: Luna 9 made the first soft landing, "preceding the U.S. Surveyor 1
+          # soft lander by about 4 months", on 3 February 1966. NSSDCA table note f (Wagner et al.
+          # 2017): the published coordinates are from the first Pravda report, LROC finds no lander
+          # there, and the site "is probably at least 10 km away, direction unknown" -- which is
+          # why registry/sites.yaml has no Luna 9 row. NSSDCA 1966-045A: "Engines were turned off
+          # at a height of 3.4 m above the lunar surface and the spacecraft fell freely".
+          body: >-
+            It was not the first. The Soviet Luna 9 landed softly four months earlier, on 3
+            February 1966, but NASA's table says the place published for it is probably at least
+            10 km out, direction unknown. Surveyor 1 shut off its engines 3.4 m up and dropped the
+            rest of the way.
+
+      - id: apollo-11
+        target: {site: apollo-11}
+        distance_km: 900
+        card:
+          title: "The first people"
+          # NSSDCA 1969-059C (the Apollo 11 lunar module): the LM "lifted off from the Moon ...
+          # after 21 hours, 36 minutes on the lunar surface"; "The astronauts traversed a total
+          # distance of about 250 meters, both ranging up to about 100 meters from the LM"; and
+          # the CSM was "piloted by Michael Collins".
+          body: >-
+            Neil Armstrong and Buzz Aldrin stayed 21 hours and 36 minutes. Their whole walk
+            covered about 250 metres, and neither went more than about 100 m from the lander.
+            Michael Collins waited for them in orbit.
+
+      - id: apollo-12
+        target: {site: apollo-12}
+        distance_km: 900
+        card:
+          title: "A visit to an older robot"
+          # NSSDCA 1969-099C: on the second moonwalk they "visited the Surveyor 3 spacecraft,
+          # bringing back about 10 kg of parts for later examination on Earth". NSSDCA 1967-035A:
+          # the parts included the TV camera, and "The Surveyor 3 camera is now on display in the
+          # Smithsonian National Air and Space Museum in Washington, D.C." Surveyor 3 is its own
+          # row, 157 m from this one at the two rows' coordinates (NSSDCA says "about 180 m"), so
+          # at this distance the two are drawn one on top of the other.
+          body: >-
+            On their second walk they went over to Surveyor 3 and brought about 10 kg of it home to
+            study, its TV camera included. That camera is on show at the Smithsonian's National Air
+            and Space Museum in Washington.
+
+      - id: lunokhod-1
+        target: {site: lunokhod-1}
+        distance_km: 900
+        card:
+          title: "A rover driven from Earth"
+          # NSSDCA 1970-095D (Lunokhod 1): its TV images "were used by a five-man team of
+          # controllers on Earth who sent driving commands to the rover in real time"; "two
+          # speeds, ~1 km/hr and ~2 km/hr"; "intended to operate through three lunar days but
+          # actually operated for eleven lunar days (322 Earth days)".
+          body: >-
+            Nobody rode it. A team of five controllers on Earth drove it by its television
+            pictures, at one or two kilometres an hour. It was built to last three lunar days and
+            kept going for eleven, 322 Earth days in all.
+
+      - id: apollo-17
+        target: {site: apollo-17}
+        distance_km: 900
+        card:
+          title: "Seventy-five hours, then a long quiet"
+          # NSSDCA 1972-096C: "Schmitt was the first scientist-astronaut to walk on the Moon"; the
+          # LM lifted off "after 75 hours on the lunar surface"; on three moonwalks "they covered
+          # 30 km", using the rover. The NSSDCA table's soft landings after 11 December 1972 are
+          # Luna 21 (1973), Luna 23 (1974) and Luna 24 (18 August 1976), and the next is Chang'e 3
+          # on 14 December 2013: thirty-seven years and four months. Impacts in between (Hiten,
+          # Lunar Prospector, SMART-1) are not landings, hence "landed softly".
+          body: >-
+            Gene Cernan and Harrison Schmitt, the first scientist to walk on the Moon, stayed 75
+            hours and covered 30 km with their rover. After them robots landed three more times,
+            and then nothing landed softly on the Moon for 37 years.
+
+      - id: change-4
+        target: {site: change-4}
+        distance_km: 900
+        card:
+          title: "The side that never faces us"
+          # NSSDCA 2018-103A: "Since the lander is on the far side, the Moon is blocking direct
+          # radio contact with the Earth, so a relay satellite is used"; Queqiao, "in a halo orbit
+          # around the Earth-Moon L2 point", launched on 20 May 2018, seven months before the
+          # landing. NSSDCA table note z: "Yutu 2 rover still mobile as of January 2023", four
+          # years after the landing on 3 January 2019. At 177.6 E the Earth stays below the
+          # horizon whatever the Moon's wobble, which reaches about eight degrees of longitude.
+          body: >-
+            From here the Earth is always below the horizon, so the Moon itself blocks any radio
+            link home. China first put a relay satellite, Queqiao, out beyond the Moon, and the
+            lander spoke to Earth through it. Its rover, Yutu 2, was still driving four years
+            later.
+
+      - id: chandrayaan-3
+        target: {site: chandrayaan-3}
+        distance_km: 900
+        card:
+          title: "Near the south pole"
+          # NSSDCA 2019-042A (Chandrayaan-2): "The lander, named Vikram"; contact was lost during
+          # the descent on 6 September 2019 UT and it "crashed on the surface at 70.881 S, 22.784
+          # E". Great circle from there to this row's 69.3741 S, 32.32 E on a 1737.4 km sphere:
+          # 108 km. NSSDCA 2023-098A: "designed to operate for one lunar daylight period (about 14
+          # Earth days). On September 4 they entered sleep mode."
+          body: >-
+            India's first try, Chandrayaan-2, carried a lander also called Vikram, and it crashed in
+            September 2019 about 110 km from here. This one was built to work for one lunar day,
+            about 14 Earth days, and was put to sleep on 4 September 2023.
+
+      - id: im-1
+        target: {site: im-1}
+        distance_km: 900
+        card:
+          title: "The first private lander, leaning"
+          # NSSDCA IM-1-NOVA: "It landed in a 1 km diameter crater on a slope of about 12 degrees
+          # ... Some of the landing gear broke upon impact, and Odysseus tipped over and was
+          # resting at a 30 degree angle to the horizontal, but was still operational." The NSSDCA
+          # table: no landing before it was nearer a pole than 80.13 S (Chandrayaan-3's 69.37 S
+          # was the nearest), and Intuitive Machines 2 landed at 84.7906 S on 6 March 2025.
+          body: >-
+            It came down on a slope of about 12 degrees, broke some of its landing gear, and came
+            to rest leaning at 30 degrees, still working. Nothing had landed nearer a pole until
+            the same company's next lander, IM-2, reached 84.8 degrees south in March 2025.
+
+      - id: blue-ghost-1
+        target: {site: blue-ghost-1}
+        distance_km: 900
+        card:
+          title: "An eclipse, seen from the Moon"
+          # NASA, "NASA Science Continues After Firefly's First Moon Mission Concludes" (18 March
+          # 2025): "10 NASA science and technology instruments"; it recorded "a total solar
+          # eclipse". Firefly, "Firefly Aerospace Successfully Completes 14 Days of Surface
+          # Operations on the Moon" (17 March 2025): imagery "of a total solar eclipse on March 14
+          # ... where the Earth blocks the sun", and "of the lunar sunset on March 16", for "a
+          # lunar horizon glow that was hypothesized and observed by Eugene Cernan on Apollo 17".
+          # Not "the first eclipse seen from the Moon": Surveyor 3 recorded images of an eclipse
+          # of the Sun by the Earth in 1967 (NSSDCA 1967-035A).
+          body: >-
+            It carried ten NASA instruments. On 14 March 2025 it watched the Earth pass in front of
+            the Sun, a total eclipse seen from the Moon. Two days later it filmed the sunset,
+            looking for a glow over the horizon that Gene Cernan saw on Apollo 17.
+
+      - id: whole-moon
+        target: {world: moon}
+        # Six radii, not Celestia's five: the Moon is then 19 degrees across, inside the 22-degree
+        # width of a 390 px phone held upright (measured at four radii, 2026-09-22, the disc ran
+        # off both sides of the phone), and a third of a 1280 x 800 window.
+        frame_radii: 6.0
+        drift_deg: 20
+        # Lit from the front, not three-quarter behind: the last shot is the Moon's face with its
+        # sites on it, and the house back light would make it a crescent.
+        key_light_deg: 45
+        card:
+          title: "Twenty-eight landings, nineteen on this map"
+          # The NSSDCA table, "Last Updated: 13 August 2025", counted 2026-09-22: 28 rows typed
+          # Soft Landing, Crewed Landing or Lander, leaving out the two Yutu rovers it also types
+          # Soft Landing; 6 of them Crewed Landing. The 19 is registry/sites.yaml's lunar rows
+          # that are records -- two of them the rovers Luna 17 and Luna 21 carried, where they
+          # stopped -- and tests/test_moon_trip.mjs holds this card to that count.
+          body: >-
+            NASA's table of what lies on the Moon, last updated in August 2025, lists 28 landings,
+            six of them with people aboard. This map marks 19 of them, two by where their rovers
+            stopped. Luna 9, the first of all, is not one: nobody knows exactly where it is.

@@ -33,7 +33,9 @@ const { modelFor, builderKlass, disposeModels } = await import(join(JS, 'scene/m
 const { firstSentence, rightNowFor, drawingLine } = await import(join(JS, 'ui/cards.js'));
 const { buildIndex, findMatches } = await import(join(JS, 'ui/search.js'));
 const { LAYERS } = await import(join(JS, 'data/layers.js'));
-const { worldRecords } = await import(join(JS, 'scene/worlds.js'));
+const { worldRecords, positionOf } = await import(join(JS, 'scene/worlds.js'));
+const { nadirOf, standOnGround, altitudeCapApplies } = await import(join(JS, 'scene/heroes.js'));
+const { stage } = await import(join(JS, 'scene/stage.js'));
 
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
@@ -158,6 +160,75 @@ for (const [shape, id] of [['lander', 'lander-generic'], ['rover', 'rover-generi
   const span = Math.max(size.x, size.y, size.z);
   check(Math.abs(span - 1) <= 0.06, `UNIT     site:${shape} is ${span.toFixed(3)} units across, not one`);
   disposeModels(obj);
+}
+
+// ------------------------------------------------------------------ standing up on its own world
+// scene/heroes.js stands a site's model along "away from the centre", and until 2026-09-22 the
+// centre was the stage origin for every model: from the Earth stage each lunar lander was stood up
+// away from the EARTH, 42 to 164 degrees off its own vertical (Apollo 11's LM at 153). nadirOf now
+// takes the centre of the world the site is on. Checked from the Earth stage, where the two differ,
+// against the world's true centre -- the Moon is drawn where it is -- and for Mars against a disc
+// put somewhere else entirely, because Mars is drawn compressed and a site stands on the DISC.
+{
+  const at = (id) => { const w = positionOf(id, tMs); return w && stage.toScene(w, w.frame, tMs); };
+  const moonAt = at('moon');
+  const marsDisc = new THREE.Vector3(1234, -56, 789);
+  const centreOf = (id, out) => (id === 'moon' ? out.copy(moonAt) : id === 'mars' ? out.copy(marsDisc) : null);
+  let stood = 0;
+  for (const r of landings) {
+    const p = propagate(r, tMs);
+    const pos = stage.toScene(p, p.frame, tMs);
+    if (!pos) continue;
+    const centre = r.meta.world === 'moon' ? moonAt : marsDisc;
+    const down = nadirOf(r, pos, centreOf, new THREE.Vector3());
+    const want = centre.clone().sub(pos).normalize();
+    const off = (Math.acos(Math.min(1, Math.max(-1, down.dot(want)))) * 180) / Math.PI;
+    check(off < 1e-3, `UPRIGHT  ${r.id} is drawn ${off.toFixed(1)} degrees off its own world's vertical`);
+    stood += 1;
+  }
+  check(stood === landings.length, `UPRIGHT  only ${stood} of ${landings.length} sites could be placed from the Earth stage`);
+  // And the stage's own ground keeps the origin: Goldstone stands up away from the Earth's centre.
+  const dss = byId.get('dss-14');
+  const pd = propagate(dss, tMs);
+  const posD = stage.toScene(pd, pd.frame, tMs);
+  const downD = nadirOf(dss, posD, centreOf, new THREE.Vector3());
+  check(downD.dot(posD.clone().multiplyScalar(-1).normalize()) > 1 - 1e-9, 'UPRIGHT  a dish on the Earth no longer points its feet at the Earth\'s centre');
+}
+
+// A REAL MODEL ON THE GROUND STANDS ON IT. realmodels.js centres a file on its bounding box and the
+// swap in heroes.js dropped the stand-in's `up` attitude, so the lunar module was drawn at a
+// seeded angle with its descent stage underground (headless Chrome, 2026-09-22). A wrapper built
+// the way normalise() builds one -- a 9.4 x 7 unit box, centred, scaled to one unit -- must come out
+// standing on its origin with the `up` attitude.
+{
+  const file = new THREE.Mesh(new THREE.BoxGeometry(9.4, 7, 9.4));
+  const inner = new THREE.Group();
+  file.position.set(0, 0, 0);
+  inner.add(file);
+  inner.scale.setScalar(1 / 9.4);
+  const wrapper = new THREE.Group();
+  wrapper.add(inner);
+  standOnGround(wrapper);
+  wrapper.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(wrapper, true);
+  check(Math.abs(box.min.y) < 1e-9, `GROUND   a real model's lowest point is ${box.min.y.toFixed(3)} units from the ground it stands on`);
+  check(Math.abs(box.max.y - 7 / 9.4) < 1e-9, 'GROUND   standing a model up changed its height');
+  check(wrapper.userData.attitude === 'up', `GROUND   a real model on the ground has attitude ${wrapper.userData.attitude}, not up`);
+  const heroes = readFileSync(join(JS, 'scene/heroes.js'), 'utf8');
+  check(/userData\.attitude === 'up'\) standOnGround\(clone\)/.test(heroes), 'GROUND   heroes.js no longer stands a swapped-in ground model up');
+}
+
+// A SITE IS NEVER SHRUNK TO ITS "ALTITUDE". heroes.js caps a model at its height above the stage
+// world so a satellite cannot reach into the planet, and it used to decide who is on the ground by
+// the sign of |pos| - R: on the Moon's stage Chang'e 4 came out a few centimetres up and was drawn
+// zero pixels across (headless Chrome, 2026-09-22). Every site is exempt by what it is.
+{
+  for (const r of records) check(!altitudeCapApplies(r), `GROUND   ${r.id} would be capped at its altitude above the stage world`);
+  check(altitudeCapApplies({ id: 'sat', propagator: 'sgp4' }), 'GROUND   a satellite is no longer capped at its altitude');
+  const heroes = readFileSync(join(JS, 'scene/heroes.js'), 'utf8');
+  const calls = heroes.match(/heroScale\(px, c\.d,[^;]*;/g) || [];
+  check(calls.length === 2 && calls.every((c) => c.includes('altitudeCapApplies(c.record)')),
+    `GROUND   every heroScale call must ask altitudeCapApplies first (${calls.length} calls)`);
 }
 
 // ---------------------------------------------------------------------------------- 4. the card

@@ -428,5 +428,210 @@ export const TOURS = [
       }
     ],
     "estimate_ms": 141556
+  },
+  {
+    "id": "moon-landings",
+    "title": "Where we have landed on the Moon",
+    "blurb": "The first soft landing, the first people, a rover driven from Earth, the far side, the south pole and the first private landers. Leaving brings you back to Earth.",
+    "requires": [
+      "hand-kept-sites",
+      "worlds"
+    ],
+    "stage": "moon",
+    "clock": "as-found",
+    "pacing": "auto",
+    "min_stops": 3,
+    "stops": [
+      {
+        "id": "surveyor-1",
+        "target": {
+          "site": "surveyor-1"
+        },
+        "distance_km": 900,
+        "card": {
+          "title": "The first soft landing anyone can find",
+          "body": "It was not the first. The Soviet Luna 9 landed softly four months earlier, on 3 February 1966, but NASA's table says the place published for it is probably at least 10 km out, direction unknown. Surveyor 1 shut off its engines 3.4 m up and dropped the rest of the way."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 19816
+      },
+      {
+        "id": "apollo-11",
+        "target": {
+          "site": "apollo-11"
+        },
+        "distance_km": 900,
+        "card": {
+          "title": "The first people",
+          "body": "Neil Armstrong and Buzz Aldrin stayed 21 hours and 36 minutes. Their whole walk covered about 250 metres, and neither went more than about 100 m from the lander. Michael Collins waited for them in orbit."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 14488
+      },
+      {
+        "id": "apollo-12",
+        "target": {
+          "site": "apollo-12"
+        },
+        "distance_km": 900,
+        "card": {
+          "title": "A visit to an older robot",
+          "body": "On their second walk they went over to Surveyor 3 and brought about 10 kg of it home to study, its TV camera included. That camera is on show at the Smithsonian's National Air and Space Museum in Washington."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 15487
+      },
+      {
+        "id": "lunokhod-1",
+        "target": {
+          "site": "lunokhod-1"
+        },
+        "distance_km": 900,
+        "card": {
+          "title": "A rover driven from Earth",
+          "body": "Nobody rode it. A team of five controllers on Earth drove it by its television pictures, at one or two kilometres an hour. It was built to last three lunar days and kept going for eleven, 322 Earth days in all."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 16153
+      },
+      {
+        "id": "apollo-17",
+        "target": {
+          "site": "apollo-17"
+        },
+        "distance_km": 900,
+        "card": {
+          "title": "Seventy-five hours, then a long quiet",
+          "body": "Gene Cernan and Harrison Schmitt, the first scientist to walk on the Moon, stayed 75 hours and covered 30 km with their rover. After them robots landed three more times, and then nothing landed softly on the Moon for 37 years."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 16153
+      },
+      {
+        "id": "change-4",
+        "target": {
+          "site": "change-4"
+        },
+        "distance_km": 900,
+        "card": {
+          "title": "The side that never faces us",
+          "body": "From here the Earth is always below the horizon, so the Moon itself blocks any radio link home. China first put a relay satellite, Queqiao, out beyond the Moon, and the lander spoke to Earth through it. Its rover, Yutu 2, was still driving four years later."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 18151
+      },
+      {
+        "id": "chandrayaan-3",
+        "target": {
+          "site": "chandrayaan-3"
+        },
+        "distance_km": 900,
+        "card": {
+          "title": "Near the south pole",
+          "body": "India's first try, Chandrayaan-2, carried a lander also called Vikram, and it crashed in September 2019 about 110 km from here. This one was built to work for one lunar day, about 14 Earth days, and was put to sleep on 4 September 2023."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 17152
+      },
+      {
+        "id": "im-1",
+        "target": {
+          "site": "im-1"
+        },
+        "distance_km": 900,
+        "card": {
+          "title": "The first private lander, leaning",
+          "body": "It came down on a slope of about 12 degrees, broke some of its landing gear, and came to rest leaning at 30 degrees, still working. Nothing had landed nearer a pole until the same company's next lander, IM-2, reached 84.8 degrees south in March 2025."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 17818
+      },
+      {
+        "id": "blue-ghost-1",
+        "target": {
+          "site": "blue-ghost-1"
+        },
+        "distance_km": 900,
+        "card": {
+          "title": "An eclipse, seen from the Moon",
+          "body": "It carried ten NASA instruments. On 14 March 2025 it watched the Earth pass in front of the Sun, a total eclipse seen from the Moon. Two days later it filmed the sunset, looking for a glow over the horizon that Gene Cernan saw on Apollo 17."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 18151
+      },
+      {
+        "id": "whole-moon",
+        "target": {
+          "world": "moon"
+        },
+        "frame_radii": 6.0,
+        "drift_deg": 20,
+        "key_light_deg": 45,
+        "card": {
+          "title": "Twenty-eight landings, nineteen on this map",
+          "body": "NASA's table of what lies on the Moon, last updated in August 2025, lists 28 landings, six of them with people aboard. This map marks 19 of them, two by where their rovers stopped. Luna 9, the first of all, is not one: nobody knows exactly where it is."
+        },
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 18817
+      }
+    ],
+    "estimate_ms": 205686
   }
 ];
