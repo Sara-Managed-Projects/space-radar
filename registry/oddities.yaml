@@ -387,8 +387,11 @@ oddities:
       drawn_name: "three aluminium minifigures and their props"
       departure: "the props are drawn at about twice scale: three identical 4 cm bodies differ
                   only by what is in the hand"
-    fact: "Three tiny aluminium LEGO people have been riding through Jupiter's radiation belts
-           since 2011: Galileo, Jupiter, and his wife Juno."
+    fact: "Three tiny aluminium LEGO people left Earth on Juno in 2011 and reached Jupiter's
+           radiation belts in 2016: Galileo, Jupiter, and his wife Juno."
+    # "RIDING THROUGH JUPITER'S RADIATION BELTS SINCE 2011" said launch for arrival: Juno entered
+    # Jupiter orbit on 4 July 2016. Written so it stays true whatever Juno is doing now, which the
+    # myth below says is not established.
     myths:
       - claim: "Juno is dead, so the figures are gone"
         correction: "neither is established. The mission's funding lapsed on 30 September 2025,
