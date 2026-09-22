@@ -443,7 +443,10 @@ export const LAYERS = [
     nearKm: 0,
     card: 'dso',
     priority: 62,
-    sentence: 'The Messier objects and the Magellanic Clouds, at their measured distances. The rest of the sky\'s deep-sky catalogue has no distances written down, so it is not drawn as places.',
+    // 178 rows since the hand-kept 68 (dso-hand.yaml) joined the Messier list; the sentence still
+    // said "the Messier objects and the Magellanic Clouds" (2026-09-22). And since scene/dsoglow.js
+    // each is drawn as wide as it measures.
+    sentence: 'The Messier objects and 68 more, from the Local Group\'s dwarf galaxies to the Carina Nebula, at their measured distances and drawn as wide as they measure. The rest of the sky\'s deep-sky catalogue has no distances written down, so it is not drawn as places.',
   },
   {
     // The Milky Way as a place (spec 0028 step 6). Mirrors registry/layers.yaml `galaxy`. One record --
@@ -469,7 +472,7 @@ export const LAYERS = [
     nearKm: 0,
     card: 'dso',
     priority: 63,
-    sentence: 'Our own galaxy, drawn as a model of its published measurements. The shape is an illustration; the stars around you are measured.',
+    sentence: 'Our own galaxy, drawn as a model of its published measurements, and the same model moved, scaled and tilted to stand in for Andromeda. The shapes are illustrations; the stars around you are measured.',
   },
   {
     // Black holes and other extremes (spec 0028 step 7). Mirrors registry/layers.yaml `exotics`;
