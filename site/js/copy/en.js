@@ -1276,6 +1276,11 @@ export const COPY = {
     rocket: {
       lead: '{name} is a rocket launch',
       leadWithPad: '{name} is a rocket launch from {pad}',
+      // A rocket BODY in orbit is catalogued as klass rocket too -- SL-8 R/B, ATLAS CENTAUR 2 -- and
+      // the card called a 1970s upper stage "a rocket launch". Spent stages are among the brightest
+      // things in the visual layer, so it was one of the commonest cards to be wrong.
+      leadStage: '{name} is a spent rocket stage going round the Earth',
+      stageLaunched: 'launched in {year}',
       whyCountdown: 'lifting off {when}',
       whyFlown: 'which lifted off {when}',
       destination: 'heading for {destination}',

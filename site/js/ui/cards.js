@@ -447,6 +447,15 @@ const TEMPLATES = {
 
   rocket(record, ctx, m, passInfo, T) {
     const md = meta(record);
+    // A launch has an ascent block (data/parsers.js parseLaunches). Anything else classed rocket is
+    // a stage already in orbit, propagated from its own elements: it is not a launch at all.
+    if (!(record && (record.ascent || record.propagator === 'ascent'))) {
+      const year = pickNumber(md, 'launchYear');
+      return buildSentence(t(T.leadStage, { name: displayName(record) }), [
+        m.altKm !== null && m.altKm > 50 ? t(COPY.templates.satellite.altitude, { alt: fmt.int(m.altKm) }) : null,
+        year !== null ? t(T.stageLaunched, { year: String(year) }) : null,
+      ]);
+    }
     // The contract's ascent block carries t0Ms and the pad, so it is read before meta.
     const ascent = (record && record.ascent) || {};
     const pad = pick(md, 'pad', 'padName', 'site', 'launchSite');
