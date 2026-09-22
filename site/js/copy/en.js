@@ -391,6 +391,15 @@ export const timeText = {
   localDate: (ms) => localDateFmt.format(new Date(ms)),
   /** "19 March 2018" -- for a date far enough away that the year carries the meaning. */
   longDate: (ms) => longDateFmt.format(new Date(ms)),
+  /**
+   * The short form within ~half a year of `nowMs`, the long form beyond it. A comet card read
+   * "Hale-Bopp ... closest to the Sun on Fri 28 Mar": that was 1997, and without the year it says
+   * next March -- the Roadster mistake above, in a template nobody had moved to longDate.
+   */
+  dateNear: (ms, nowMs) =>
+    Number.isFinite(nowMs) && Math.abs(ms - nowMs) < 180 * 86400e3
+      ? localDateFmt.format(new Date(ms))
+      : longDateFmt.format(new Date(ms)),
   /** "21:14" -- the form used inside a sentence. */
   hhmm: (ms) => clockFmt.format(new Date(ms)),
   /** "Fri 12 Sep, 21:14" */
@@ -1288,6 +1297,9 @@ export const COPY = {
     },
     asteroid: {
       lead: '{name} is a near-Earth object on its own orbit around the Sun',
+      // Ceres, Vesta and Pallas are in the layer too, and each carries `neo: false`: perihelia of
+      // 2.1 to 2.5 au, nowhere near Earth. The card called all of them near-Earth objects.
+      leadMainBelt: '{name} is an asteroid in the main belt, between Mars and Jupiter',
       whyApproach: "passing Earth on {date} at {ld}× the Moon's distance",
       size: '{size}',
       // Only written when a named source says so (spec 0013 requirement 6).

@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const JS = join(ROOT, 'site/js');
-const { drawingLine, classLine, flyTo, rightNowFor } = await import(join(JS, 'ui/cards.js'));
+const { drawingLine, classLine, flyTo, rightNowFor, firstSentence } = await import(join(JS, 'ui/cards.js'));
 const { compare } = await import(join(JS, 'copy/en.js'));
 
 const problems = [];
@@ -129,6 +129,27 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
   const mro = rows.find((x) => x.id === 'deep-mro');
   check(mro && !(mro.meta && 'earthRangeKm' in mro.meta), 'a Mars-anchored craft carries no fixed Earth range');
   check(cell('deep-mro', 'Distance from Earth') !== '0.010 astronomical units', 'MRO is not given the L2 distance');
+}
+
+// WHAT THE FIRST SENTENCE CLAIMS ABOUT AN ORBIT. Read off the live site, 2026-09-21: "Ceres is a
+// near-Earth object" -- Ceres's perihelion is 2.55 au, and the record said `neo: false` -- and
+// "Hale-Bopp ... closest to the Sun on Fri 28 Mar", which was 1997 and read as next March.
+{
+  const { sampleAsteroids } = await import(join(JS, 'data/sample.js'));
+  const now = Date.UTC(2026, 8, 21);
+  const ctx = { clock: { now: () => now }, worlds: null, selected: () => null };
+  const m = { ok: true, tMs: now, altKm: null, distSunKm: null, distEarthKm: null, speedKmh: null };
+  for (const r of sampleAsteroids()) {
+    const said = firstSentence(r, ctx, m, { state: 'none' });
+    const text = Array.isArray(said) ? said.join(' ') : String(said);
+    if (r.meta.neo === false) check(!/near-Earth/.test(text) && /main belt/.test(text), `${r.name} (q ${r.meta.qAu} au) is not a near-Earth object: "${text}"`);
+    else check(/near-Earth/.test(text), `${r.name} is a near-Earth object and should say so: "${text}"`);
+  }
+  const comet = (ms) => ({ id: 'c', name: 'C/TEST', klass: 'comet', frame: 'sun-inertial', meta: { perihelionMs: ms } });
+  const far = String(firstSentence(comet(Date.UTC(1997, 2, 28, 12)), ctx, m, { state: 'none' }));
+  check(/1997/.test(far), `a perihelion 29 years ago must carry its year: "${far}"`);
+  const near = String(firstSentence(comet(Date.UTC(2026, 10, 2, 12)), ctx, m, { state: 'none' }));
+  check(!/2026/.test(near) && /Nov/.test(near), `a perihelion six weeks out keeps the short form: "${near}"`);
 }
 
 if (problems.length) {
