@@ -78,5 +78,25 @@ check(findMatches(index, 'pleiades').hits[0]?.record.id === 'dso-m45', '"pleiade
 check(findMatches(index, 'ngc 224').hits.some((h) => h.record.id === 'dso-m31'), '"ngc 224" finds M31');
 check(typeof drawingLine(andromeda) === 'string' && drawingLine(andromeda).includes('soft mark'), `a deep-sky object says how it is drawn: ${drawingLine(andromeda)}`);
 
+// The last stop of "To the edge of what we know" states what this map draws. It said 111 of
+// OpenNGC's objects while the file drew 178 (110 placed by OpenNGC, 68 by hand); the numbers on
+// that card are read from the shipped files here, so the next rebuild cannot leave them behind.
+const { TOURS } = await import(join(JS, 'data/tours.js'));
+const { parseStars3d } = await import(join(JS, 'scene/stars3d.js'));
+const edge = TOURS.flatMap((t) => t.stops || []).find((s) => s.card && s.card.title === 'The edge of this map');
+const say = edge ? edge.card.body : '';
+const n = (text) => Number(String(text).replace(/\s/g, ''));
+const starBuf = readFileSync(join(ROOT, 'site/data/stars3d.bin'));
+const placed = parseStars3d(starBuf.buffer.slice(starBuf.byteOffset, starBuf.byteOffset + starBuf.byteLength)).count;
+const fromNgc = doc.objects.filter((o) => o.positionSource === 'OpenNGC').length;
+const said = say.match(/shows ([\d ]+) stars .*?, ([\d ]+) nebulae, clusters and galaxies \(([\d ]+) of them from OpenNGC's ([\d ]+)\)/);
+check(!!said, `the edge card still states its stars and deep-sky counts in the form this test reads: "${say.slice(0, 160)}"`);
+if (said) {
+  check(n(said[1]) === placed, `the edge card says ${said[1]} stars; stars3d.bin places ${placed}`);
+  check(n(said[2]) === doc.count, `the edge card says ${said[2]} deep-sky objects; dso.json draws ${doc.count}`);
+  check(n(said[3]) === fromNgc, `the edge card says ${said[3]} from OpenNGC; dso.json places ${fromNgc} by OpenNGC`);
+  check(n(said[4]) === doc.openNgcTotal, `the edge card says OpenNGC lists ${said[4]}; dso.json records ${doc.openNgcTotal}`);
+}
+
 if (problems.length) { console.error('dso FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('dso ok: 110 Messier objects and the LMC at sourced distances, Andromeda 2.54 Mly on the stellar rung, found by name, M-number and NGC number');

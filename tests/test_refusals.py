@@ -481,6 +481,8 @@ TOUR_CASES: list[tuple[str, str, str]] = [
      "      - id: golf-balls", "      - id: duke-photo"),
     ("a dwell written well below what its own words need",
      "      - id: beresheet\n", "      - id: beresheet\n        dwell_ms: 1200\n"),
+    ("a card that writes a dash as two hyphens, which the screen prints as two hyphens",
+     "Israeli lander crashed here carrying", "Israeli lander crashed here -- carrying"),
     ("a stop on the `launches` layer, whose track is a drawing, claiming certainty",
      '        target: {layer: stations, catalog: "25544"}\n        # Far enough back',
      '        target: {layer: launches, catalog: "25544"}\n        # Far enough back'),
