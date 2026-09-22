@@ -121,6 +121,8 @@ jobs:
         run: node tests/test_arrival.mjs
       - name: The comets drawn are the ones brightest in the sky now
         run: node tests/test_comets_rank.mjs
+      - name: The Sources panel says catalogue, not live, for what ships with the app
+        run: node tests/test_status_kinds.mjs
       - name: One mark per object -- a dot yields to its 3D model
         run: node tests/test_onemark.mjs
       - name: A loaded model keeps its colours, and ships no image it cannot use

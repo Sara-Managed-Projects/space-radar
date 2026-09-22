@@ -184,7 +184,8 @@ function renderHarvest(ctx, into) {
 // Live or bundled, derived from the records actually on screen rather than from a promise
 // ---------------------------------------------------------------------------------------
 
-function layerKinds(ctx) {
+/** Exported for tests/test_status_kinds.mjs. */
+export function layerKinds(ctx) {
   const byLayer = new Map();
   let records = [];
   try {
@@ -197,12 +198,16 @@ function layerKinds(ctx) {
     if (!record || !record.layer) continue;
     let entry = byLayer.get(record.layer);
     if (!entry) {
-      entry = { id: record.layer, total: 0, sample: 0, illustrative: 0, live: 0 };
+      entry = { id: record.layer, total: 0, sample: 0, illustrative: 0, catalogue: 0, live: 0 };
       byLayer.set(record.layer, entry);
     }
     entry.total += 1;
     if (record.cls === 'sample') entry.sample += 1;
     else if (record.cls === 'illustrative') entry.illustrative += 1;
+    // A `static` or `fixed` position is a catalogue's -- a star's, a dish's, a landing site's: it
+    // ships with the app and is read from nobody while you watch. The planets are `body`, computed
+    // for this moment, and stay live.
+    else if (record.propagator === 'static' || record.propagator === 'fixed') entry.catalogue += 1;
     else entry.live += 1;
   }
   return byLayer;
@@ -215,10 +220,12 @@ function layerDisplay(ctx, id) {
   return (row && (row.display || row.id)) || id;
 }
 
-function kindWords(entry) {
+/** Exported for tests/test_status_kinds.mjs. */
+export function kindWords(entry) {
   if (!entry || entry.total === 0) return COPY.status.layerEmpty;
   if (entry.sample === entry.total) return COPY.status.layerSample;
   if (entry.illustrative === entry.total) return COPY.status.layerIllustrative;
+  if (entry.catalogue === entry.total) return COPY.status.layerCatalogue;
   if (entry.sample > 0 || entry.illustrative > 0) return COPY.status.layerMixed;
   return COPY.status.layerLive;
 }
@@ -227,6 +234,7 @@ function kindClass(entry) {
   if (!entry || entry.total === 0) return 'is-empty';
   if (entry.sample === entry.total) return 'is-sample';
   if (entry.illustrative === entry.total) return 'is-illustrative';
+  if (entry.catalogue === entry.total) return 'is-catalogue';
   if (entry.sample > 0 || entry.illustrative > 0) return 'is-mixed';
   return 'is-live';
 }
