@@ -27,11 +27,31 @@ CASES: list[tuple[str, str, str, str]] = [
     ("layer names a propagator that does not exist",
      "layers.yaml", "propagator: sgp4", "propagator: magic"),
     ("layer's frame names a world that does not exist",
-     "layers.yaml", "frame: earth-inertial", "frame: pluto-inertial"),
+     "layers.yaml", "frame: earth-inertial", "frame: eris-inertial"),
     ("layer's style names a model with no row",
      "layers.yaml", "model: station-generic", "model: station-deluxe"),
     ("world's parent does not exist",
      "worlds.yaml", "parent: sun", "parent: nebula"),
+    # A WORLD DRAWN FROM FACTS names where each one was read (Pluto and Jupiter's four big moons,
+    # 2026-09-22). A radius with no page is a number nobody can check; a page with no day is one
+    # nobody can re-check when the page changes.
+    ("a flat-coloured world with no page for its radius",
+     "worlds.yaml",
+     '      radius: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/joviansatfact.html", read: 2026-09-22, says: "radius 1821.5 km"}\n',
+     ""),
+    ("a world fact with no day it was read",
+     "worlds.yaml", 'read: 2026-09-22, says: "radius 1560.8 km"', 'says: "radius 1560.8 km"'),
+    ("a flat colour that is not a colour",
+     "worlds.yaml", 'look: {flat: "#d6cfc0"}', 'look: {flat: "pale"}'),
+    # The browser's copy of worlds.yaml is kept by hand (scene/worlds.js, scene/stage.js), so the
+    # two must be refused when they disagree -- which is why this harness copies those two files.
+    ("a world whose radius the browser does not draw",
+     "worlds.yaml", "radius_km: 1560.8", "radius_km: 1650.8"),
+    ("a world row the browser has never heard of",
+     "worlds.yaml", "  - id: callisto\n",
+     "  - id: themisto\n    display: Themisto\n    parent: jupiter\n    radius_km: 4.5\n"
+     "    unit_km: 1\n    ephemeris: {propagator: body, body: Jupiter}\n    look: {textures: jupiter}\n\n"
+     "  - id: callisto\n"),
     # A PHOTOGRAPH IS SOMEBODY ELSE'S WORK. The EHT pictures ship under CC BY 4.0, whose bargain is
     # that the credit travels with the image; a row that cannot name the credit, the licence or the
     # source must not ship one, and a file that is not in the repository is a 404 on a card.
@@ -67,7 +87,7 @@ CASES: list[tuple[str, str, str, str]] = [
     ("event type has no lead times",
      "events.yaml", "    lead_times: [same-day, 1d, 1w, on-confirm]\n", ""),
     ("site sits on a world that does not exist",
-     "sites.yaml", "world: moon", "world: europa"),
+     "sites.yaml", "world: moon", "world: enceladus"),
     ("shower's peak is not a date",
      "showers.yaml", 'peak: "08-12"', 'peak: "August"'),
 
@@ -213,7 +233,7 @@ CASES: list[tuple[str, str, str, str]] = [
     ("a latitude off the world",
      "oddities.yaml", "        lat: 32.5956", "        lat: 132.5956"),
     ("a surface row on a world with no worlds.yaml row",
-     "oddities.yaml", "      world: moon\n      anchor:", "      world: europa\n      anchor:"),
+     "oddities.yaml", "      world: moon\n      anchor:", "      world: enceladus\n      anchor:"),
 
     # An orbit is six numbers plus a phase, or it is a wrong orbit rather than none
     ("half an element set, which draws a wrong orbit rather than no orbit",
@@ -474,7 +494,7 @@ TOUR_CASES: list[tuple[str, str, str]] = [
     ("a stop that hand-writes the class the record already knows",
      "      - id: roadster\n", "      - id: roadster\n        class: measured\n"),
     ("a stop aimed at a world with no worlds.yaml row",
-     "        target: {world: earth}", "        target: {world: europa}"),
+     "        target: {world: earth}", "        target: {world: enceladus}"),
     ("a stop aimed at a site with no sites.yaml row",
      "        target: {record: beresheet-lunar-library}", "        target: {site: apollo-18}"),
     ("a trip requiring a layer nothing declares",
@@ -717,6 +737,10 @@ def main() -> int:
             shutil.copy2(ROOT / "site" / "data" / "dso.json", work / "site" / "data" / "dso.json")
             # ...and registry/stars-notable.yaml against the names file the star records come from.
             shutil.copy2(ROOT / "site" / "data" / "stars3d.names.json", work / "site" / "data" / "stars3d.names.json")
+            # ...and registry/worlds.yaml against its two hand mirrors in the browser.
+            (work / "site" / "js" / "scene").mkdir(parents=True, exist_ok=True)
+            for js in ("worlds.js", "stage.js"):
+                shutil.copy2(ROOT / "site" / "js" / "scene" / js, work / "site" / "js" / "scene" / js)
 
             path = work / "registry" / filename
             text = path.read_text(encoding="utf-8")

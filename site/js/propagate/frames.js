@@ -169,6 +169,13 @@ export const WORLD_RADIUS_KM = {
   uranus: 25362,
   neptune: 24622,
   pluto: 1188.3,
+  // Jupiter's four big moons: NASA's Jovian satellite fact sheet (registry/worlds.yaml has the URL
+  // and the date it was read). Wikipedia's infobox gives Ganymede 2634.1 against the sheet's
+  // 2631.2; one source for all four, so the sizes are comparable with each other.
+  io: 1821.5,
+  europa: 1560.8,
+  ganymede: 2631.2,
+  callisto: 2410.3,
 };
 
 /** A world's mean radius in km, or null. Null is an answer: it refuses rather than guessing. */
@@ -378,6 +385,44 @@ export function bodyForWorld(worldId) {
   return Astronomy.Body[name] || null;
 }
 
+// JUPITER'S FOUR BIG MOONS have no astronomy-engine Body, so they are not in WORLD_BODY and
+// bodyForWorld() still answers null for them -- which keeps `europa-fixed` a refusal, because there
+// is no rotation model to turn it by. Their positions come from JupiterMoons(), astronomy-engine's
+// port of the L1.2 theory (Lainey, Duriez and Vienne), which gives each one RELATIVE TO JUPITER in
+// EQJ axes. Added to Jupiter's own heliocentric vector they are ordinary heliocentric positions,
+// and every frame conversion below works on them unchanged.
+const JUPITER_MOON = { io: 'io', europa: 'europa', ganymede: 'ganymede', callisto: 'callisto' };
+
+/** Is this world one of the four whose position is JupiterMoons() plus Jupiter? */
+export function isJupiterMoon(worldId) {
+  return Object.prototype.hasOwnProperty.call(JUPITER_MOON, String(worldId || '').toLowerCase());
+}
+
+// One call answers all four moons, and a frame asks for each of them several times at one instant
+// (the drawing, the label, the card). A pure function of time, so a one-entry cache is exact.
+let _moonsAt = NaN;
+let _moons = null;
+
+/**
+ * A moon of Jupiter's position relative to Jupiter's centre, km, EQJ axes -- or null for any other
+ * world, or a time that is not a time.
+ */
+export function jupiterMoonOffsetKm(worldId, tMs) {
+  const key = JUPITER_MOON[String(worldId || '').toLowerCase()];
+  if (!key || !Number.isFinite(tMs)) return null;
+  if (_moonsAt !== tMs) {
+    try {
+      _moons = Astronomy.JupiterMoons(new Date(tMs));
+    } catch (err) {
+      _moons = null;
+    }
+    _moonsAt = tMs;
+  }
+  const s = _moons && _moons[key];
+  if (!s || !Number.isFinite(s.x)) return null;
+  return { x: s.x * KM_PER_AU, y: s.y * KM_PER_AU, z: s.z * KM_PER_AU };
+}
+
 /**
  * Heliocentric ecliptic J2000 position of a world, km. This is the sun-inertial frame, so the Sun
  * itself is the origin. Returns null for a world with no ephemeris.
@@ -387,11 +432,17 @@ export function worldHelioEclKm(worldId, tMs) {
   if (key === 'sun') return { x: 0, y: 0, z: 0 };
   const date = toDate(tMs);
   if (!date) return null;
-  const body = bodyForWorld(key);
+  const moonOfJupiter = isJupiterMoon(key);
+  const body = moonOfJupiter ? Astronomy.Body.Jupiter : bodyForWorld(key);
   if (!body) return null;
   try {
     let eqj;
-    if (key === 'moon') {
+    if (moonOfJupiter) {
+      const jupiter = Astronomy.HelioVector(body, date);
+      const off = jupiterMoonOffsetKm(key, date.getTime());
+      if (!off) return null;
+      eqj = { x: jupiter.x + off.x / KM_PER_AU, y: jupiter.y + off.y / KM_PER_AU, z: jupiter.z + off.z / KM_PER_AU };
+    } else if (key === 'moon') {
       // astronomy-engine has no HelioVector for the Moon; take Earth + the geocentric Moon.
       const earth = Astronomy.HelioVector(Astronomy.Body.Earth, date);
       const moon = Astronomy.GeoMoon(date);

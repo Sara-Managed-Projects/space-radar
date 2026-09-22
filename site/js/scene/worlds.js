@@ -1,9 +1,12 @@
-// The worlds: Earth, the Moon, the Sun and the seven planets, each built from a ROW.
+// The worlds: Earth, the Moon, the Sun, the seven planets, Pluto and Jupiter's four big moons, each
+// built from a ROW.
 //
 // Contract: createWorlds(scene) -> { update(tMs), meshFor(id), positionOf(id, tMs) }
 //
-// The table below mirrors registry/worlds.yaml. Adding Europa is a row here and a row there --
-// there is no Mars.js, and this file contains no `if (id === ...)` anywhere in its drawing path.
+// The table below mirrors registry/worlds.yaml, and scripts/check_registry.py refuses the two when
+// they disagree on an id, a parent, a radius or a flat colour. Adding Titan is a row here, a row
+// there and a row in stage.js's STAGES -- there is no Mars.js, and this file contains no
+// `if (id === ...)` anywhere in its drawing path.
 // Ephemerides are astronomy-engine, which is a pure function of time and needs no network.
 //
 // ---------------------------------------------------------------------------------------------
@@ -29,12 +32,25 @@
 //
 // `viewScale(id)` returns the exact numbers, and the card is expected to print them. The one
 // thing never altered is DIRECTION: where a planet is in the sky is measured, always.
+//
+// A MOON OF A SQUEEZED PLANET (VIEW_WITH_PARENT) cannot keep its own direction, and the numbers say
+// why. From Earth on 2026-09-22 Jupiter is drawn 0.0035 rad in radius where the real one is
+// 7.8e-5 -- 45 times wider -- and Callisto, the outermost big moon, is 0.0021 rad from the real
+// Jupiter's centre. Drawn in its own true direction every one of the four would sit INSIDE the
+// enlarged Jupiter disc. So a moon is drawn around its planet's drawn disc at the planet's own
+// enlargement: offset from the planet's true centre, times drawnRadius / trueRadius, added to the
+// drawn centre -- the same arithmetic viewAdjust() below applies to a rover on Mars. The system
+// keeps its true shape measured in planet radii; across the sky it is 45 times wider, and the card
+// says so. The moon's own radius takes the same factor, with a floor of MOON_VIEW's angle so it is
+// a dot rather than nothing: Europa at Jupiter's scale would be 0.08 of a pixel in radius on an
+// 800-pixel screen, and with the floor it is one.
 
 import * as THREE from '../../vendor/three.module.min.js';
 import * as Astronomy from '../../vendor/astronomy.js';
 import { stage, SUN_INERTIAL, EARTH_INERTIAL, isLadderStage } from './stage.js';
-import { j2000ToTeme, rotateDir, stageFrame } from '../propagate/frames.js';
+import { j2000ToTeme, rotateDir, stageFrame, isJupiterMoon, worldHelioEclKm } from '../propagate/frames.js';
 import { createEarth, updateEarth } from './earth.js';
+import { COPY, t, fmt } from '../copy/en.js';
 
 const KM_PER_AU = Astronomy.KM_PER_AU;
 const DEG = Math.PI / 180;
@@ -56,6 +72,17 @@ export const PLANET_VIEW = {
 const VIEW_TRUE = 'true';
 /** Planets: true direction, compressed distance, floored angular size. */
 const VIEW_COMPRESSED = 'compressed';
+/** A moon of a compressed planet: its true place around the planet, at the planet's drawn scale. */
+const VIEW_WITH_PARENT = 'with-parent';
+
+export const MOON_VIEW = {
+  /**
+   * 0.001 rad is one pixel of radius on an 800-pixel-tall screen at the 45 degree field of view:
+   * the least a ball can be and still be seen. Under a third of PLANET_VIEW's floor, so a moon is
+   * always drawn smaller than the planet it goes round.
+   */
+  MIN_ANGULAR_RADIUS_RAD: 0.001,
+};
 
 
 /** Other names people type. Mirrors `aliases:` in registry/worlds.yaml; search reads them. */
@@ -65,6 +92,11 @@ export const WORLD_ALIASES = {
   moon: ['Luna'],
   mars: ['the Red Planet'],
   venus: ['the Morning Star', 'the Evening Star'],
+  pluto: ['134340 Pluto'],
+  io: ['Jupiter I'],
+  europa: ['Jupiter II'],
+  ganymede: ['Jupiter III'],
+  callisto: ['Jupiter IV'],
 };
 
 
@@ -99,7 +131,11 @@ export function worldRecords() {
       parent: w.parent,
       aliases: (WORLD_ALIASES[w.id] || []).slice(),
       view: w.view,
-      cite: WORLD_CITE,
+      // Pluto and the moons are not VSOP87, so WORLD_CITE would be wrong about them; theirs names
+      // their own method and where their facts were read (copy/en.js worldFacts).
+      cite: COPY.worldFacts.cite[w.id] || WORLD_CITE,
+      // A world with no surface map says so on its card (ui/cards.js drawingLine).
+      flat: !!w.look.flat,
     },
   }));
 }
@@ -185,6 +221,45 @@ export const WORLDS = [
     id: 'neptune', display: 'Neptune', parent: 'sun', radiusKm: 24622.0,
     body: 'Neptune', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
     look: { map: '2k_neptune.jpg', tint: 0x395eb7 },
+  },
+  // THE FLAT ONES. No map ships for these five and none is fetched (`flat: true`, no `map`), so the
+  // tint is not a texture's mean like the rows above: it is a HUE from a published description,
+  // made lighter or darker in the order of the measured geometric albedo (`albedo`, from the NASA
+  // fact sheets registry/worlds.yaml cites) -- Europa 0.68, Io 0.62, Pluto 0.52, Ganymede 0.44,
+  // Callisto 0.19. tests/test_worlds_layer.mjs holds the order. The card says the colour was
+  // chosen, not measured. No `rotation`: there is nothing on a plain ball to turn.
+  //
+  // The moons come AFTER Jupiter on purpose: update() places a moon from its planet's drawn disc,
+  // so the planet has to have been placed first in the same frame.
+  {
+    // "charcoal black, to dark orange and white" (Wikipedia): a light orange-tan.
+    id: 'pluto', display: 'Pluto', parent: 'sun', radiusKm: 1188.3,
+    body: 'Pluto', frame: SUN_INERTIAL, view: VIEW_COMPRESSED,
+    look: { flat: true, tint: 0xb4926f, albedo: 0.52 },
+  },
+  {
+    // "shades of yellow, red, white, black, and green, largely due to ... sulfur" (Wikipedia).
+    id: 'io', display: 'Io', parent: 'jupiter', radiusKm: 1821.5,
+    body: 'Io', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
+    look: { flat: true, tint: 0xc9b061, albedo: 0.62 },
+  },
+  {
+    // "a pale ... surface striated by light tan cracks and streaks" (Wikipedia).
+    id: 'europa', display: 'Europa', parent: 'jupiter', radiusKm: 1560.8,
+    body: 'Europa', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
+    look: { flat: true, tint: 0xd6cfc0, albedo: 0.68 },
+  },
+  {
+    // "very old, highly cratered, dark regions and somewhat younger ... lighter regions" (Wikipedia).
+    id: 'ganymede', display: 'Ganymede', parent: 'jupiter', radiusKm: 2631.2,
+    body: 'Ganymede', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
+    look: { flat: true, tint: 0x958b7e, albedo: 0.44 },
+  },
+  {
+    // "Callisto's surface has an albedo of about 20%" (Wikipedia): the darkest of the four.
+    id: 'callisto', display: 'Callisto', parent: 'jupiter', radiusKm: 2410.3,
+    body: 'Callisto', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
+    look: { flat: true, tint: 0x5e564c, albedo: 0.19 },
   },
 ];
 
@@ -435,6 +510,38 @@ export function createWorlds(scene, opts = {}) {
 
   // --- per-frame ---------------------------------------------------------------------------------
 
+  // Where each VIEW_WITH_PARENT moon really is, in scene units, for viewAdjust(): its drawn place
+  // is not its true place scaled along one line, so the true one is kept rather than recovered.
+  const trueCentres = new Map();
+  const _parentTrue = new THREE.Vector3();
+
+  /**
+   * Place a moon around its planet's DRAWN disc (the block at the top of this file). `_pos` holds
+   * the moon's true scene position on the way in. False -- draw it where it is -- when the planet
+   * is not drawn this frame or is not enlarged, which leaves nothing to be drawn around.
+   */
+  function drawWithParent(w, mesh, trueDistKm) {
+    const parentMesh = meshes.get(w.parent);
+    const ps = viewState.get(w.parent);
+    if (!parentMesh || !parentMesh.visible || !ps || !ps.exaggerated) return false;
+    if (!(ps.distanceFactor > 0) || !(ps.trueRadiusKm > 0)) return false;
+    const k = ps.drawnRadiusKm / ps.trueRadiusKm;
+    // The planet's true centre: the compression kept its direction, so dividing the drawn position
+    // by the distance factor undoes it exactly -- viewAdjust() recovers a planet's centre the same way.
+    _parentTrue.copy(parentMesh.position).multiplyScalar(1 / ps.distanceFactor);
+    if (!trueCentres.has(w.id)) trueCentres.set(w.id, new THREE.Vector3());
+    trueCentres.get(w.id).copy(_pos);
+    _pos.sub(_parentTrue).multiplyScalar(k).add(parentMesh.position);
+    const drawnDistKm = _pos.length() * stage.unitKm;
+    const scaledKm = w.radiusKm * k;
+    const floorKm = drawnDistKm * MOON_VIEW.MIN_ANGULAR_RADIUS_RAD;
+    const drawnRadiusKm = Math.max(scaledKm, floorKm);
+    mesh.position.copy(_pos);
+    mesh.scale.setScalar(drawnRadiusKm / stage.unitKm);
+    viewState.set(w.id, describe(w, trueDistKm, drawnDistKm, drawnRadiusKm, { parent: ps, floored: floorKm > scaledKm }));
+    return true;
+  }
+
   function update(tMs) {
     stage.setTime(tMs);
 
@@ -499,6 +606,9 @@ export function createWorlds(scene, opts = {}) {
           mesh.position.copy(_pos);
           mesh.scale.setScalar((drawnRadiusKm * (meshRadiusKm / w.radiusKm)) / stage.unitKm);
           viewState.set(w.id, describe(w, trueDistKm, drawnKm, drawnRadiusKm));
+        } else if (w.view === VIEW_WITH_PARENT && compressesFrom(stage.worldId) && !sameSystem(w.id, stage.worldId)
+          && drawWithParent(w, mesh, trueDistKm)) {
+          // placed around its planet's drawn disc (the block at the top of this file)
         } else {
           mesh.position.copy(_pos);
           mesh.scale.setScalar(trueRadiusUnits);
@@ -659,7 +769,10 @@ export function createWorlds(scene, opts = {}) {
     if (!st || !st.exaggerated) return out;
     const mesh = meshes.get(id);
     if (!mesh || !(st.distanceFactor > 0) || !(st.trueRadiusKm > 0)) return out;
-    _adjCentre.copy(mesh.position).multiplyScalar(1 / st.distanceFactor);
+    // A moon drawn around its planet was moved sideways, not along its own line of sight, so its
+    // true centre is the one update() kept rather than one divided back out of the drawn position.
+    if (st.withParent && trueCentres.has(id)) _adjCentre.copy(trueCentres.get(id));
+    else _adjCentre.copy(mesh.position).multiplyScalar(1 / st.distanceFactor);
     return out.sub(_adjCentre).multiplyScalar(st.drawnRadiusKm / st.trueRadiusKm)
       .add(mesh.position);
   }
@@ -707,10 +820,16 @@ export function createWorlds(scene, opts = {}) {
     ids: () => WORLDS.map((w) => w.id),
   };
 
-  function describe(w, trueDistKm, drawnDistKm, drawnRadiusKm) {
+  function describe(w, trueDistKm, drawnDistKm, drawnRadiusKm, around) {
     const trueAng = trueDistKm > 0 ? w.radiusKm / trueDistKm : 0;
     const drawnAng = drawnDistKm > 0 ? (drawnRadiusKm || w.radiusKm) / drawnDistKm : 0;
-    const exaggerated = trueDistKm > 0 && Math.abs(drawnDistKm - trueDistKm) / trueDistKm > 1e-6;
+    // A moon drawn around its planet can land at the same distance from the stage and still be
+    // somewhere else entirely, so for one of those the test is simply that it was moved.
+    const exaggerated = around ? true : trueDistKm > 0 && Math.abs(drawnDistKm - trueDistKm) / trueDistKm > 1e-6;
+    const aroundNote = around
+      ? t(COPY.worldView.withParent, { parent: around.parent.display, name: w.display, n: fmt.int(around.parent.angularFactor) })
+        + (around.floored ? ` ${t(COPY.worldView.withParentFloor, { name: w.display })}` : '')
+      : null;
     return {
       id: w.id,
       display: w.display,
@@ -723,10 +842,11 @@ export function createWorlds(scene, opts = {}) {
       drawnAngularRadiusRad: drawnAng,
       angularFactor: trueAng > 0 ? drawnAng / trueAng : 1,
       exaggerated,
+      withParent: !!around,
       cls: exaggerated ? 'illustrative' : 'measured',
-      note: exaggerated
+      note: aroundNote || (exaggerated
         ? `${w.display} is drawn in its true direction, but nearer and larger than it really is, so you can find it.`
-        : `${w.display} is drawn where it is, at the size it is.`,
+        : `${w.display} is drawn where it is, at the size it is.`),
     };
   }
 
@@ -775,6 +895,13 @@ export function positionOf(id, tMs) {
 
   if (id === 'sun') return { x: 0, y: 0, z: 0, frame: SUN_INERTIAL, cls: 'measured' };
 
+  // Jupiter's four big moons have no astronomy-engine Body. frames.js adds JupiterMoons() to
+  // Jupiter's heliocentric vector and hands back the same ecliptic frame as the planets below.
+  if (isJupiterMoon(id)) {
+    const h = worldHelioEclKm(id, tMs);
+    return h ? { x: h.x, y: h.y, z: h.z, frame: SUN_INERTIAL, cls: 'measured' } : null;
+  }
+
   if (id === 'moon') {
     // GeoMoon is EQJ (J2000 equator). frames.js defines 'earth-inertial' as TEME -- the frame
     // SGP4 works in -- and the two differ by precession, 0.36 degrees in 2026. Rotating here
@@ -813,9 +940,17 @@ export function compressesFrom(stageId) {
   return true;
 }
 
+/**
+ * A planet and its moons see each other truly; everything else across a stage boundary is squeezed.
+ * A world's system is its parent when the parent is not the Sun, and itself otherwise -- so Earth
+ * and the Moon share one, and so do Jupiter, Io, Europa, Ganymede and Callisto.
+ */
 function sameSystem(a, b) {
-  // Earth and the Moon see each other truly; everything else across a stage boundary is squeezed.
-  return (a === 'earth' && b === 'moon') || (a === 'moon' && b === 'earth');
+  const sys = (id) => {
+    const w = BY_ID.get(id);
+    return w && w.parent && w.parent !== 'sun' ? w.parent : id;
+  };
+  return sys(a) === sys(b);
 }
 
 const _bx = new THREE.Vector3();

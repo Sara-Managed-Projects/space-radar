@@ -477,6 +477,35 @@ export const COPY = {
     uranus: 'Uranus',
     neptune: 'Neptune',
     pluto: 'Pluto',
+    io: 'Io',
+    europa: 'Europa',
+    ganymede: 'Ganymede',
+    callisto: 'Callisto',
+  },
+
+  // PLUTO AND JUPITER'S FOUR BIG MOONS are the worlds that came with sourced facts instead of a
+  // texture (registry/worlds.yaml, `facts:` on each row, with the URL and the day it was read).
+  // `cite` is the card's source line; scene/worlds.js puts it on the record, because the positions
+  // are not computed the way the other worlds' are and WORLD_CITE there would say the wrong thing
+  // about them (VSOP87 is not how Astronomy Engine does Pluto or the moons).
+  worldFacts: {
+    cite: {
+      pluto: 'position computed with Astronomy Engine (Don Cross, MIT licence), which follows Pluto under the pull of the Sun and the giant planets; radius from Wikipedia’s Pluto infobox, what it is from NASA Science, its colour and how to see it from Wikipedia, all read 2026-09-22',
+      io: 'position computed with Astronomy Engine (Don Cross, MIT licence): Jupiter, plus the L1.2 theory of its moons (Lainey, Duriez and Vienne); radius from NASA’s Jovian satellite fact sheet, what it is from NASA Science, its colour and how to see it from Wikipedia, all read 2026-09-22',
+      europa: 'position computed with Astronomy Engine (Don Cross, MIT licence): Jupiter, plus the L1.2 theory of its moons (Lainey, Duriez and Vienne); radius from NASA’s Jovian satellite fact sheet, what it is from NASA Science, its colour and how to see it from Wikipedia, all read 2026-09-22',
+      ganymede: 'position computed with Astronomy Engine (Don Cross, MIT licence): Jupiter, plus the L1.2 theory of its moons (Lainey, Duriez and Vienne); radius from NASA’s Jovian satellite fact sheet, what it is from NASA Science, its colour and how to see it from Wikipedia, all read 2026-09-22',
+      callisto: 'position computed with Astronomy Engine (Don Cross, MIT licence): Jupiter, plus the L1.2 theory of its moons (Lainey, Duriez and Vienne); radius from NASA’s Jovian satellite fact sheet, what it is from NASA Science, its colour and how to see it from Wikipedia, all read 2026-09-22',
+    },
+  },
+
+  // scene/worlds.js viewScale(id).note for a moon drawn around a planet that is itself drawn nearer
+  // and larger than it is: Jupiter's moons, seen from any stage outside Jupiter's own system. {n}
+  // is how many times wider than the real one the planet is drawn on the sky, and the gap between
+  // them is widened by the same factor. The second sentence is added only when the moon's own disc
+  // had to be enlarged again to be seen at all.
+  worldView: {
+    withParent: '{parent} is drawn {n} times wider on the sky than it looks, so you can find it, and {name} is drawn around it at the same scale: its gap from {parent} is widened just as much.',
+    withParentFloor: '{name} itself is drawn bigger still, or it would be too small to see.',
   },
 
   klass: {
@@ -931,6 +960,10 @@ export const COPY = {
     // a model is drawn here, and three 4 cm figures on Juno are less than one. Both are drawn
     // far larger, and the sentence that says so has to cover both, so it belongs here rather
     // than in either registry row's `departure:`.
+    // Pluto and Jupiter's four big moons ship no surface map (registry/worlds.yaml `look.flat`).
+    // The colour is a hue from a published description, darker or lighter in the order of the
+    // measured albedo; nobody averaged a photograph for it, and the line does not pretend so.
+    worldFlat: 'drawn as a plain ball: there is no surface map of {name} here, and its one colour is chosen from published descriptions, not measured',
     mount: 'where we hang it on the model is our own arrangement, and it is drawn far bigger than it is — at true size it would be too small to see',
   },
 
@@ -1046,6 +1079,18 @@ export const COPY = {
     // invisible: the Moon and the planets are the easiest things in the sky to find.
     worldNoRise:
       'You can see this one with your own eyes. Working out when it rises from your place is not in this version yet.',
+    // ...which is not true of Pluto or of Jupiter's moons, so they say what IS true. Sources in
+    // registry/worlds.yaml `facts.seen`: the moons are "readily seen with common binoculars" and
+    // lost to the eye in Jupiter's glare (Wikipedia, Galilean moons); Pluto is magnitude 13.65 to
+    // 16.3, mean 15.1 (Wikipedia's infobox) -- 8.6 magnitudes past the 6.5 this file calls the eye's
+    // limit, which is 10^(0.4 x 8.6) = 2 750 times fainter.
+    worldSee: {
+      pluto: 'Not by eye, and not with binoculars: Pluto is nearly 3 000 times fainter than the faintest star you can see, so it takes a telescope.',
+      io: 'Common binoculars show it as a point of light beside Jupiter; by eye it is lost in Jupiter’s glare.',
+      europa: 'Common binoculars show it as a point of light beside Jupiter; by eye it is lost in Jupiter’s glare.',
+      ganymede: 'Common binoculars show it as a point of light beside Jupiter; by eye it is lost in Jupiter’s glare.',
+      callisto: 'Common binoculars show it as a point of light beside Jupiter; by eye it is lost in Jupiter’s glare.',
+    },
     couldNotLook: 'Could not work out a pass from here.',
     nowhereToLook: 'Nobody knows where this one is, so there is nowhere to look.',
   },
@@ -1433,6 +1478,18 @@ export const COPY = {
       whyRise: 'rising from where you are at {time}',
       distance: '{distance}',
       diameter: 'about {n} km across',
+      // What a world IS, where "a world in the solar system" says too little. Only the worlds that
+      // came with sourced facts carry a line (registry/worlds.yaml `facts.what` names the page each
+      // was read from); the rest keep `lead`. Short on purpose: the distance and the size have to
+      // fit after it inside the card's 160 characters.
+      leadWhat: '{name} is {what}',
+      what: {
+        pluto: 'a dwarf planet beyond Neptune, counted as the ninth planet until 2006',
+        io: 'one of Jupiter’s four big moons, and the most volcanic world in the solar system',
+        europa: 'one of Jupiter’s four big moons, with a salt-water ocean under its ice',
+        ganymede: 'Jupiter’s biggest moon and the biggest in the solar system, larger than Mercury',
+        callisto: 'one of Jupiter’s four big moons, and the most heavily cratered object in the solar system',
+      },
     },
   },
 };

@@ -713,11 +713,17 @@ const TEMPLATES = {
       explicitDiameter !== null ? explicitDiameter : radiusKm !== null ? radiusKm * 2 : null;
     const km = m.distEarthKm !== null ? m.distEarthKm : m.altKm;
     const distanceSay = isMoon && km !== null ? t(T.distanceKm, { n: fmt.int(km) }) : compare('distanceKm', km);
+    // What it is, for the worlds copy/en.js has a sourced line for (Pluto, Jupiter's four big
+    // moons): "a world in the solar system" is true of Europa and tells a visitor nothing.
+    const id = String(record.id || '').toLowerCase();
+    const what = T.what && Object.prototype.hasOwnProperty.call(T.what, id) ? T.what[id] : null;
     const lead = isMoon
       ? t(T.leadMoon, { name: displayName(record) })
       : isWorld(record, 'sun')
         ? t(T.leadSun, { name: displayName(record) })
-        : t(T.lead, { name: displayName(record) });
+        : what
+          ? t(T.leadWhat, { name: displayName(record), what })
+          : t(T.lead, { name: displayName(record) });
     return buildSentence(lead, [
       phase ? t(T.whyPhase, { phase: String(phase) }) : null,
       riseMs !== null ? t(T.whyRise, { time: timeText.hhmm(riseMs) }) : null,
@@ -1068,9 +1074,10 @@ export function seeItLine(record, ctx, m, passInfo) {
   }
   if (klass === 'world') {
     const riseMs = pickTime(meta(record), 'riseMs', 'riseTime');
-    return riseMs !== null
-      ? t(COPY.sky.worldRise, { time: timeText.hhmm(riseMs) })
-      : COPY.sky.worldNoRise;
+    if (riseMs !== null) return t(COPY.sky.worldRise, { time: timeText.hhmm(riseMs) });
+    // "You can see this one with your own eyes" is not true of Pluto or Jupiter's moons.
+    const id = String(record.id || '').toLowerCase();
+    return Object.prototype.hasOwnProperty.call(COPY.sky.worldSee, id) ? COPY.sky.worldSee[id] : COPY.sky.worldNoRise;
   }
   // A star, a nebula or a galaxy is not "too far away": its distance is the point of it. What
   // decides whether a person can see it is brightness -- magnitude 6.5 from a dark site -- and the
@@ -1367,7 +1374,10 @@ function aboardButton(label, title, onClick) {
  */
 function derivedDrawingLine(record, T) {
   const klass = record && record.klass ? String(record.klass) : '';
-  if (!klass || klass === 'world') return null;
+  // A world with a surface map needs no line: it is drawn as itself. One without says so
+  // (scene/worlds.js puts `flat` on the record for the rows that ship no map).
+  if (klass === 'world') return pick(meta(record), 'flat') === true ? t(T.worldFlat, { name: displayName(record) }) : null;
+  if (!klass) return null;
   let entry = null;
   try { entry = realModelFor(record); } catch { entry = null; }
   if (entry && entry.name) {

@@ -2,6 +2,7 @@
 //
 // A planet is a record (search finds it, the layer list counts it, a tap picks it) and the picker
 // is fair to the small thing: a moon's disc drawn over a planet's disc is what a finger means.
+// Sections 7 to 10 hold Pluto and Jupiter's four big moons to numbers from outside this repository.
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -183,8 +184,188 @@ check(pickWorldDisc([], 1, 1) === null, 'no discs, no pick');
   check(uncited.length === 0, `every world names where its position comes from; these do not: ${uncited}`);
 }
 
+// 7. PLUTO AND JUPITER'S FOUR BIG MOONS (2026-09-22). Each claim below is checked against a number
+// from somewhere else: the moons' distances from Jupiter against the semi-major axes on NASA's
+// Jovian satellite fact sheet (the page registry/worlds.yaml cites for their radii), Pluto's
+// distance against where it is in 2026 (35.4 to 35.7 au by this ephemeris; Wikipedia gives a
+// semi-major axis of 39.5 au and a 1989 perihelion of 29.7, so it is still near the inner part).
+const NEW_WORLDS = ['pluto', 'io', 'europa', 'ganymede', 'callisto'];
+{
+  const { positionOf } = await import(join(JS, 'scene/worlds.js'));
+  const { worldPositionKm } = await import(join(JS, 'propagate/body.js'));
+  const { temeToJ2000, jupiterMoonOffsetKm } = await import(join(JS, 'propagate/frames.js'));
+  const AU = 149597870.7;
+  // NASA fact sheet semi-major axes, km. Eccentricities are 0.0041, 0.0094, 0.0013 and 0.0074, so
+  // 1.5 % holds every one of them at every point on its orbit, and a moon swapped for its
+  // neighbour (the nearest pair, Europa and Ganymede, differ by 60 %) fails at once.
+  const AXIS_KM = { io: 421800, europa: 671100, ganymede: 1070400, callisto: 1882700 };
+  for (const iso of ['2026-01-01T00:00:00Z', '2026-05-17T06:00:00Z', '2026-09-22T12:00:00Z', '2026-12-31T18:00:00Z']) {
+    const t = Date.parse(iso);
+    const j = positionOf('jupiter', t);
+    for (const [id, a] of Object.entries(AXIS_KM)) {
+      const m = positionOf(id, t);
+      const d = m && j ? Math.hypot(m.x - j.x, m.y - j.y, m.z - j.z) : NaN;
+      check(Math.abs(d - a) / a < 0.015, `${id} is ${Math.round(d)} km from Jupiter at ${iso}; NASA's semi-major axis is ${a}`);
+      // The card measures through the record's propagator, the drawing through positionOf: one answer.
+      const rec = recs.find((r) => r.id === id);
+      const p = propagate(rec, t);
+      check(p && Math.hypot(p.x - m.x, p.y - m.y, p.z - m.z) < 1e-3, `${id}: the record's propagator and the drawing agree at ${iso}`);
+      // And from Earth: GeoVector back-dates Jupiter by the light time (50 minutes on 2026-09-22),
+      // so the moon must be back-dated with it. A distance cannot see the mistake -- a moon on a
+      // near-circle is the same distance from Jupiter 50 minutes earlier -- so the OFFSET is
+      // compared, as a vector, with the one from when the light left: measured at these four
+      // instants, 17 000 to 52 000 km apart if the back-dating is skipped, 0.0 km when it is not.
+      const ge = worldPositionKm(id, t, 'earth-inertial');
+      const gj = worldPositionKm('jupiter', t, 'earth-inertial');
+      const seen = temeToJ2000({ x: ge.x - gj.x, y: ge.y - gj.y, z: ge.z - gj.z }, t);
+      const lightMs = (Math.hypot(gj.x, gj.y, gj.z) / 299792.458) * 1000;
+      const then = jupiterMoonOffsetKm(id, t - lightMs);
+      const nowOff = jupiterMoonOffsetKm(id, t);
+      const miss = Math.hypot(seen.x - then.x, seen.y - then.y, seen.z - then.z);
+      const skipped = Math.hypot(nowOff.x - then.x, nowOff.y - then.y, nowOff.z - then.z);
+      check(miss < 500 && skipped > 10000,
+        `${id} seen from Earth is ${Math.round(miss)} km from where it was when the light left (skipping the light time would be ${Math.round(skipped)} km)`);
+    }
+    const pl = positionOf('pluto', t);
+    const au = pl ? Math.hypot(pl.x, pl.y, pl.z) / AU : NaN;
+    check(au > 35.0 && au < 36.0, `Pluto is ${au.toFixed(2)} au from the Sun at ${iso}; in 2026 it is between 35 and 36`);
+  }
+  check(positionOf('ganymede', NaN) === null, 'no time, no Ganymede: a refusal, not a guess');
+}
+
+// 8. They are found by name and by the names people type.
+{
+  const idx = buildIndex([...loaded, { id: 'sat-9', name: 'IO-117', klass: 'satellite', layer: 'active', meta: {} },
+    { id: 'sat-10', name: 'EUROPA CLIPPER', klass: 'probe', layer: 'deep-space', meta: {} }], LAYERS);
+  for (const [q, want] of [['pluto', 'pluto'], ['io', 'io'], ['europa', 'europa'], ['ganymede', 'ganymede'], ['callisto', 'callisto'],
+    ['jupiter ii', 'europa'], ['jupiter iii', 'ganymede'], ['134340', 'pluto'], ['jupiter', 'jupiter']]) {
+    const hit = findMatches(idx, q).hits[0];
+    check(hit && hit.record.id === want, `"${q}" finds ${want} first (got ${hit && hit.record.id})`);
+  }
+}
+
+// 9. How they are drawn.
+{
+  const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
+  const { stage } = await import(join(JS, 'scene/stage.js'));
+  const { createWorlds, MOON_VIEW, PLANET_VIEW } = await import(join(JS, 'scene/worlds.js'));
+  const t = Date.parse('2026-09-22T12:00:00Z');
+  const moons = ['io', 'europa', 'ganymede', 'callisto'];
+  const rowOf = (id) => WORLDS.find((w) => w.id === id);
+
+  // A moon is placed from its planet's drawn disc, so the planet has to come first in the table.
+  for (const w of WORLDS) {
+    if (!w.parent) continue;
+    check(WORLDS.findIndex((x) => x.id === w.parent) < WORLDS.findIndex((x) => x.id === w.id), `${w.parent} comes before ${w.id} in WORLDS`);
+  }
+  // No map ships for them, none is fetched, and their one colour runs light to dark in the order of
+  // their measured albedo (NASA fact sheets, registry/worlds.yaml `facts.albedo`).
+  const lum = (hex) => {
+    const c = new THREE.Color(hex);
+    return 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b; // linear, which is what the shader works in
+  };
+  const byAlbedo = NEW_WORLDS.map(rowOf).sort((a, b) => b.look.albedo - a.look.albedo);
+  for (let i = 1; i < byAlbedo.length; i++) {
+    check(lum(byAlbedo[i - 1].look.tint) > lum(byAlbedo[i].look.tint),
+      `${byAlbedo[i - 1].id} (albedo ${byAlbedo[i - 1].look.albedo}) is drawn lighter than ${byAlbedo[i].id} (${byAlbedo[i].look.albedo})`);
+  }
+  for (const id of NEW_WORLDS) {
+    const w = rowOf(id);
+    check(w.look.flat === true && !w.look.map, `${id} is flat and names no map`);
+  }
+
+  // From EARTH: Jupiter is squeezed, and its moons are drawn around the drawn Jupiter at Jupiter's
+  // own enlargement -- same shape measured in Jupiter radii, the real one's centre recoverable.
+  stage.setWorld('earth');
+  stage.setTime(t);
+  const fetched = [];
+  const earth = createWorlds(new THREE.Scene(), { textureBase: 't/', loadTexture: (u) => { fetched.push(u); return new THREE.Texture(); } });
+  earth.update(t);
+  const J = earth.meshFor('jupiter');
+  const jv = earth.viewScale('jupiter');
+  check(jv.exaggerated && jv.angularFactor > 10, `Jupiter is squeezed from Earth (${jv.angularFactor.toFixed(1)}x wider)`);
+  const { positionOf } = await import(join(JS, 'scene/worlds.js'));
+  const jt = positionOf('jupiter', t);
+  for (const id of moons) {
+    const m = earth.meshFor(id);
+    const mt = positionOf(id, t);
+    const trueRadii = Math.hypot(mt.x - jt.x, mt.y - jt.y, mt.z - jt.z) / rowOf('jupiter').radiusKm;
+    const drawnRadii = m.position.distanceTo(J.position) / J.scale.x;
+    check(m.visible && Math.abs(drawnRadii - trueRadii) / trueRadii < 1e-6,
+      `${id} is drawn ${drawnRadii.toFixed(3)} Jupiter radii from the drawn Jupiter; it is ${trueRadii.toFixed(3)} from the real one`);
+    const vs = earth.viewScale(id);
+    const floor = (m.position.length() * stage.unitKm) * MOON_VIEW.MIN_ANGULAR_RADIUS_RAD;
+    check(Math.abs(vs.drawnRadiusKm - Math.max(floor, rowOf(id).radiusKm * jv.drawnRadiusKm / jv.trueRadiusKm)) < 1e-6 * vs.drawnRadiusKm,
+      `${id}'s drawn radius is Jupiter's enlargement or the one-pixel floor, whichever is bigger (${vs.drawnRadiusKm.toFixed(0)} km)`);
+    check(m.scale.x < J.scale.x, `${id} is drawn smaller than Jupiter`);
+    check(vs.exaggerated && vs.cls === 'illustrative' && /Jupiter is drawn \d+ times wider/.test(vs.note) && vs.note.includes(rowOf(id).display),
+      `${id}'s card says how it is drawn: "${vs.note}"`);
+  }
+  check(MOON_VIEW.MIN_ANGULAR_RADIUS_RAD < PLANET_VIEW.MIN_ANGULAR_RADIUS_RAD / 3, 'a moon\'s floor is under a third of a planet\'s');
+  const pv = earth.viewScale('pluto');
+  check(pv.exaggerated && /true direction/.test(pv.note), `Pluto is squeezed like the planets: "${pv.note}"`);
+  check(NEW_WORLDS.every((id) => !earth.waitingMaps().includes(id) && earth.preload(id) === false)
+    && !fetched.some((u) => NEW_WORLDS.some((id) => u.includes(id))), `nothing is ever fetched for them (${fetched.filter((u) => NEW_WORLDS.some((id) => u.includes(id)))})`);
+
+  // A tap on a moon's drawn disc means the moon, even with Jupiter's larger disc a few pixels away.
+  const eu = earth.meshFor('europa').position.clone();
+  const camera = new THREE.PerspectiveCamera(45, 800 / 600, 1e-5, 1e9);
+  camera.position.copy(eu).add(eu.clone().normalize().multiplyScalar(-40 * J.scale.x));
+  camera.lookAt(eu);
+  camera.updateMatrixWorld();
+  camera.updateProjectionMatrix();
+  check(earth.pick(0, 0, camera, { w: 800, h: 600 })?.id === 'europa', 'a tap on Europa near Jupiter picks Europa');
+  earth.dispose();
+
+  // From JUPITER, and from EUROPA: one system, everything at its true place and size.
+  for (const centre of ['jupiter', 'europa']) {
+    stage.setWorld(centre);
+    stage.setTime(t);
+    const w = createWorlds(new THREE.Scene(), { textureBase: null });
+    w.update(t);
+    for (const id of ['jupiter', ...moons]) {
+      const vs = w.viewScale(id);
+      check(vs && !vs.exaggerated && Math.abs(w.drawnRadiusUnits(id) * stage.unitKm - rowOf(id).radiusKm) < 1e-6 * rowOf(id).radiusKm,
+        `from ${centre}, ${id} is drawn where it is at the size it is`);
+    }
+    check(w.viewScale('earth').exaggerated, `from ${centre}, Earth is squeezed`);
+    check(w.drawnPositionOf(centre).length() === 0, `${centre} is the origin of its own stage`);
+    w.dispose();
+  }
+  stage.setWorld('earth');
+}
+
+// 10. The card: what it is, how big, how far, how it is drawn and where each of those came from.
+{
+  const { firstSentence, drawingLine, rightNowFor, seeItLine } = await import(join(JS, 'ui/cards.js'));
+  const { positionOf } = await import(join(JS, 'scene/worlds.js'));
+  const now = Date.parse('2026-09-22T12:00:00Z');
+  const ctx = { clock: { now: () => now }, worlds: { positionOf }, selected: () => null };
+  const WHAT = { pluto: 'dwarf planet', io: 'volcanic', europa: 'ocean under its ice', ganymede: 'biggest in the solar system', callisto: 'cratered' };
+  for (const id of NEW_WORLDS) {
+    const r = recs.find((x) => x.id === id);
+    const rows = rightNowFor(r, ctx);
+    const fromEarth = rows.find(([k]) => k === 'Distance from Earth');
+    check(fromEarth && /astronomical units/.test(fromEarth[1]), `${id}'s card gives its distance from Earth now (${fromEarth && fromEarth[1]})`);
+    const e = positionOf('earth', now);
+    const p = positionOf(id, now);
+    const s = String(firstSentence(r, ctx, { ok: true, tMs: now, distEarthKm: Math.hypot(p.x - e.x, p.y - e.y, p.z - e.z), altKm: null }, { state: 'na' }));
+    const across = Math.round(r.meta.radiusKm * 2);
+    check(s.length <= 160 && s.includes(WHAT[id]) && s.replace(/\s/g, '').includes(`about${across}kmacross`),
+      `${id}'s first sentence says what it is and how big, in 160 characters: "${s}"`);
+    check(!s.includes(' -- '), `${id}'s sentence writes no double-hyphen dash`);
+    check(/no surface map/.test(drawingLine(r) || ''), `${id}'s card says it is a plain ball: ${drawingLine(r)}`);
+    check(/Astronomy Engine/.test(r.meta.cite) && /read 2026-09-22/.test(r.meta.cite), `${id}'s source line names the ephemeris and the day its facts were read`);
+    // "You can see this one with your own eyes" -- every other world's line -- is false of Pluto,
+    // at magnitude 15, and of moons lost in Jupiter's glare.
+    const see = seeItLine(r, ctx, { ok: true, tMs: now }, { state: 'na' });
+    check(!/your own eyes/.test(see) && (id === 'pluto' ? /telescope/.test(see) : /binoculars/.test(see)), `${id} says how it can really be seen: "${see}"`);
+  }
+  check(drawingLine(recs.find((x) => x.id === 'mars')) === null, 'Mars, which has a map, still has no drawing line');
+}
+
 if (problems.length) {
   console.error('worlds layer FAILED:\n  ' + problems.join('\n  '));
   process.exit(1);
 }
-console.log(`worlds layer ok: ${recs.length} worlds are records, searchable by name and alias, and the smaller disc wins a tap, and a planet's map waits until its disc can show it`);
+console.log(`worlds layer ok: ${recs.length} worlds are records, searchable by name and alias, and the smaller disc wins a tap, and a planet's map waits until its disc can show it; Pluto and Jupiter's four big moons sit where NASA's numbers put them, the moons drawn around the drawn Jupiter, and each card says what it is, how big, how far and that it is a plain ball`);
