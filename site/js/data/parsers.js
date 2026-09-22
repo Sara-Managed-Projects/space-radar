@@ -1443,6 +1443,7 @@ export function parseDso(doc) {
         messier: o.messier ?? null,
         designation: o.designation || null,
         kind: o.kind || 'other',
+        typeCode: o.typeCode || null,
         typeText: o.typeText || null,
         hubble: o.hubble || null,
         con: o.con || null,

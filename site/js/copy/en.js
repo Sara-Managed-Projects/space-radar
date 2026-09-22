@@ -891,7 +891,7 @@ export const COPY = {
       site: 'a generic ground site',
       star: 'a point of light, sized by how bright it looks from where you are',
       exoplanet: 'a mark at its star — the orbit itself is far too small to draw',
-      dso: 'a soft mark at its measured distance; its true shape is not drawn',
+      dso: 'a soft glow at its measured distance, as wide as it measures; its true shape is not drawn',
       exotic: 'a ring at its measured distance; a black hole has no shape to draw and a pulsar is far too small',
       exoticStar: 'a ring at its measured distance; the star itself is a point at this scale',
     },
