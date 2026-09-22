@@ -713,7 +713,11 @@ const TEMPLATES = {
 function spacecraftKind(record) {
   let entry = null;
   try { entry = realModelFor(record); } catch { entry = null; }
-  return entry && entry.generic && typeof entry.name === 'string' && /^an? /.test(entry.name) ? entry.name : null;
+  if (entry && entry.generic && typeof entry.name === 'string' && /^an? /.test(entry.name)) return entry.name;
+  // A route for one specific object carries its proper name -- "Hubble Space Telescope" -- which is
+  // no use as a type, but its class is: Hubble was "a satellite going round the Earth".
+  if (entry && !entry.generic && entry.colour === 'telescope') return COPY.templates.satellite.aTelescope;
+  return null;
 }
 
 const DOCKED_KM = 2;
