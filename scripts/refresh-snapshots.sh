@@ -5,6 +5,8 @@
 #   scripts/refresh-snapshots.sh --dry-run       # say what is due; fetch and publish nothing
 #   scripts/refresh-snapshots.sh --work=DIR      # where the full working copy lives
 #                                                # (default ~/.cache/spaceradar-v1)
+#   scripts/refresh-snapshots.sh --from-run=ID   # also merge what a GitHub `harvest` workflow run read
+#   scripts/refresh-snapshots.sh --no-harvest    # publish the working copy (and --from-run) only
 #
 # WHY. The harvester (harvest/, public #26) is built to run as a Lambda every few minutes and has
 # never been provisioned, so /data/v1/ was empty and every visitor fetched every source live --
@@ -33,6 +35,8 @@ REGION="eu-north-1"
 DISTRIBUTION="E1JGFDLBX6HS7B"
 WORK="${HOME}/.cache/spaceradar-v1"
 DRY=0
+FROM_RUN=""
+HARVEST=1
 for a in "$@"; do
   case "$a" in
     --work=*) WORK="${a#--work=}" ;;
@@ -40,6 +44,8 @@ for a in "$@"; do
     --region=*) REGION="${a#--region=}" ;;
     --distribution=*) DISTRIBUTION="${a#--distribution=}" ;;
     --dry-run) DRY=1 ;;
+    --from-run=*) FROM_RUN="${a#--from-run=}" ;;
+    --no-harvest) HARVEST=0 ;;
     -h|--help) sed -n '2,30p' "$0"; exit 0 ;;
     *) echo "unknown argument: $a" >&2; exit 2 ;;
   esac
@@ -72,10 +78,11 @@ if command -v node >/dev/null 2>&1; then
   node -p "require('tls').rootCertificates.join('\n')" > "$ROOTS"
 fi
 
-echo "==> harvesting into $WORK"
-HARVEST_ARGS=(--dest "$WORK")
-[ "$DRY" = 1 ] && HARVEST_ARGS+=(--dry-run)
-python3 - "$ROOTS" "${HARVEST_ARGS[@]}" <<'PY'
+if [ "$HARVEST" = 1 ]; then
+  echo "==> harvesting into $WORK"
+  HARVEST_ARGS=(--dest "$WORK")
+  [ "$DRY" = 1 ] && HARVEST_ARGS+=(--dry-run)
+  python3 - "$ROOTS" "${HARVEST_ARGS[@]}" <<'PY'
 import runpy, ssl, sys
 roots = sys.argv[1]
 if roots:
@@ -83,7 +90,36 @@ if roots:
 sys.argv = ["harvest"] + sys.argv[2:]
 runpy.run_module("harvest", run_name="__main__")
 PY
+fi
 [ "$DRY" = 1 ] && { echo "dry run: nothing published"; exit 0; }
+
+# What a GitHub runner read (.github/workflows/harvest.yml), for sources this machine cannot reach.
+# A row it read successfully replaces this machine's row, and only if it is newer.
+if [ -n "$FROM_RUN" ]; then
+  RUN_DIR="$(mktemp -d)"
+  echo "==> merging workflow run $FROM_RUN"
+  gh run download "$FROM_RUN" -n snapshots -D "$RUN_DIR"
+  python3 - "$RUN_DIR" "$WORK" <<'PY'
+import json, os, shutil, sys
+src, dst = sys.argv[1], sys.argv[2]
+a = json.load(open(os.path.join(src, "index.json")))
+b = json.load(open(os.path.join(dst, "index.json")))
+for k, row in a["snapshots"].items():
+    if row.get("status") not in ("ok", "not-modified") or not row.get("fetched_at"):
+        continue
+    mine = b["snapshots"].get(k, {})
+    if mine.get("fetched_at") and mine["fetched_at"] >= row["fetched_at"]:
+        continue
+    f = os.path.join(src, k + ".json")
+    if not os.path.exists(f):
+        continue
+    shutil.copy(f, os.path.join(dst, k + ".json"))
+    b["snapshots"][k] = row
+    print(f"    {k}: {row['items']} items, read {row['fetched_at']} on GitHub")
+json.dump(b, open(os.path.join(dst, "index.json"), "w"), indent=1)
+PY
+  rm -rf "$RUN_DIR"
+fi
 
 PUBLISH="$(mktemp -d)"
 trap 'rm -rf "$PUBLISH"' EXIT

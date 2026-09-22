@@ -1,0 +1,44 @@
+# Run the harvester (harvest/, public #26) on a GitHub runner and keep what it read as an artifact.
+#
+# WHY. CelesTrak allows one download of a file per IP per two hours and firewalls an address that
+# asks too often; the machine the site is deployed from has been dropped outright since 2026-09-22,
+# so the satellites -- the site's main subject -- could not be saved from it. A runner reads from
+# its own address. Nothing here can write to the site: there are no cloud credentials in this repo.
+# scripts/refresh-snapshots.sh --from-run=<id> downloads the artifact and publishes it with the rest.
+#
+# Manual only. A schedule would spend CelesTrak's allowance from GitHub's shared addresses with
+# nobody asking for the result.
+name: harvest
+
+on:
+  workflow_dispatch:
+    inputs:
+      sources:
+        description: "Source ids, space-separated (default: the five CelesTrak files)"
+        required: false
+        default: "celestrak-stations celestrak-visual celestrak-active celestrak-supplemental-starlink celestrak-satcat"
+
+permissions:
+  contents: read
+
+jobs:
+  harvest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Harvest
+        env:
+          SOURCES: ${{ inputs.sources }}
+        run: |
+          mkdir -p out
+          for id in $SOURCES; do python3 -m harvest --dest out --only "$id"; done
+          python3 -c "import json; d=json.load(open('out/index.json')); [print(k, v['status'], v['items']) for k, v in d['snapshots'].items() if v['status'] != 'skipped']"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: snapshots
+          path: out/
+          retention-days: 3
