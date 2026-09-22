@@ -30,6 +30,7 @@ import * as THREE from '../../vendor/three.module.min.js';
 import { stage, isLadderStage } from './stage.js';
 import { bvToKelvin, kelvinToRgb } from './starfield.js';
 import { COPY, t } from '../copy/en.js';
+import { STARS_NOTABLE } from '../data/starsnotable.js';
 
 export const LY_KM = 9460730472580.8;
 // The Sun's absolute visual magnitude (IAU 2015 B3's V-band value, 4.83), and its B-V (0.65).
@@ -133,16 +134,36 @@ export function parseStars3d(buffer) {
   return { version, count, unplaced, posLy, absMag, appMag, ci, nameRef };
 }
 
+// FAMOUS STARS (registry/stars-notable.yaml, 2026-09-22). No star record carried `meta.why`, so
+// ui/labels.js named a star on the ladder only once it was selected, and a card for Vega said what
+// any star's card says. A row keys on the HIP number the record id is built from; the one star with
+// no HIP number (Wolf 359) keys on its exact proper name, which check_registry.py proves is unique.
+const FAMOUS_BY_HIP = new Map(STARS_NOTABLE.filter((s) => s.hip).map((s) => [s.hip, s]));
+const FAMOUS_BY_PROPER = new Map(STARS_NOTABLE.filter((s) => !s.hip && s.proper).map((s) => [s.proper, s]));
+
+/** The registry row for a names-file row, or null. */
+function famousRow(proper, hip) {
+  if (hip) return FAMOUS_BY_HIP.get(hip) || null;
+  return proper ? FAMOUS_BY_PROPER.get(proper) || null : null;
+}
+
 /** One record per named star, from the names file. Exported for the test and for search. */
 export function recordsFromNames(rows) {
   const out = [];
   for (const r of Array.isArray(rows) ? rows : []) {
     const [idx, proper, bayer, flam, hip, spect, distLy, mag, lum, x, y, z] = r;
     if (!Number.isFinite(x)) continue;
-    const name = proper || bayer || flam || (hip ? `HIP ${hip}` : null);
-    if (!name) continue;
-    const aliases = [bayer, flam, hip ? `HIP ${hip}` : null].filter((a) => a && a !== name);
-    out.push(starRecord(idx, name, { x, y, z }, { hip, spect, distLy, mag, lum, aliases, named: true }));
+    const catalogueName = proper || bayer || flam || (hip ? `HIP ${hip}` : null);
+    if (!catalogueName) continue;
+    const famous = famousRow(proper, hip);
+    // The name a person uses wins over the names file's (Tau Ceti over "τ Cet", Alpha Centauri A
+    // over Rigil Kentaurus): search lists record.name and the label and card print it. The file's
+    // own name stays first among the aliases, so "rigil kentaurus" and "ran" still find their star.
+    const name = famous && famous.name ? famous.name : catalogueName;
+    const aliases = [...new Set([catalogueName, bayer, flam, hip ? `HIP ${hip}` : null])].filter((a) => a && a !== name);
+    const meta = { hip, spect, distLy, mag, lum, aliases, named: true };
+    if (famous) { meta.why = famous.why; meta.whySource = famous.source; }
+    out.push(starRecord(idx, name, { x, y, z }, meta));
   }
   return out;
 }

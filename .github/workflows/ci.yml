@@ -56,6 +56,8 @@ jobs:
         run: python3 scripts/gen_ladder_js.py --check
       - name: The exotics mirror matches the registry (spec 0028 step 7)
         run: python3 scripts/gen_exotics_js.py --check
+      - name: The famous-stars mirror matches the registry
+        run: python3 scripts/gen_stars_notable_js.py --check
       - name: The level-of-detail mirror matches the registry (spec 0028)
         run: python3 scripts/gen_lod_js.py --check
       - name: The harvester's source mirror matches the registry
@@ -152,6 +154,11 @@ jobs:
         run: node tests/test_ladder.mjs
       - name: the stars are places (spec 0028 step 3)
         run: node tests/test_stars3d.mjs
+      # registry/stars-notable.yaml: before it, no star record carried a `why`, so on the ladder a
+      # star was named only once somebody selected it. Every row must reach its star, and the card
+      # must print the line with the page it was read from.
+      - name: famous stars are named on the ladder and their cards say why
+        run: node tests/test_starsnotable.mjs
       - name: planets around other stars sit on their stars (spec 0028 step 4)
         run: node tests/test_exoplanets.mjs
       - name: deep-sky objects sit at sourced distances (spec 0028 step 5)

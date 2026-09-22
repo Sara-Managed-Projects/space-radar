@@ -390,6 +390,26 @@ CASES: list[tuple[str, str, str, str]] = [
      "layers.yaml", "    frame: per-record", "    frame: whenever"),
     ("a deep-sky card line changed in the registry and not in the built file the card reads",
      "dso-hand.yaml", "a small galaxy that kept its jewellery", "a small galaxy that kept its rings"),
+
+    # --- registry/stars-notable.yaml (2026-09-22) -----------------------------------------
+    # The HIP number is the join to a star record. A number the names file does not have is a line
+    # no label and no card will ever print, and nothing in the browser would say so.
+    ("a famous star whose HIP number is not a named star",
+     "stars-notable.yaml", "  - hip: 32349\n", "  - hip: 32350\n"),
+    ("a famous star with no HIP whose proper name the names file does not have",
+     "stars-notable.yaml", "  - proper: Wolf 359\n", "  - proper: Wolf 360\n"),
+    ("two famous-star rows for one star",
+     "stars-notable.yaml", "  - hip: 71681\n", "  - hip: 71683\n"),
+    ("a famous star's line longer than the card prints",
+     "stars-notable.yaml", 'why: "One point of light, six stars in three pairs.',
+     'why: "One point of light, six stars in three pairs, each pair going round the others in orbits '
+     'that take centuries, which is the sort of sentence that runs past what a card can print.'),
+    ("a famous star with no source",
+     "stars-notable.yaml", '    source: "https://en.wikipedia.org/wiki/Sirius (read 2026-09-22)"\n', ""),
+    ("a famous star's source with no date it was read",
+     "stars-notable.yaml", "wiki/Sirius (read 2026-09-22)", "wiki/Sirius"),
+    ("a famous star that is already an extreme object with its own fact sheet",
+     "stars-notable.yaml", "    name: Sirius\n", "    name: Betelgeuse\n"),
 ]
 
 
@@ -695,6 +715,8 @@ def main() -> int:
             # ...and registry/dso-hand.yaml against the built site/data/dso.json the card reads.
             (work / "site" / "data").mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / "site" / "data" / "dso.json", work / "site" / "data" / "dso.json")
+            # ...and registry/stars-notable.yaml against the names file the star records come from.
+            shutil.copy2(ROOT / "site" / "data" / "stars3d.names.json", work / "site" / "data" / "stars3d.names.json")
 
             path = work / "registry" / filename
             text = path.read_text(encoding="utf-8")
