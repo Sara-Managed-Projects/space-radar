@@ -25,7 +25,7 @@ objects:
     vmag: 0.13
     maj_ax_arcmin: 645      # 10.75 deg
     source: "https://en.wikipedia.org/wiki/Large_Magellanic_Cloud (infobox, read 2026-09-08)"
-    why: "The nearest big galaxy, a naked-eye cloud from the southern hemisphere, and the reason the ladder has a local-group rung at all."
+    why: "The biggest of the Milky Way's companion galaxies, a naked-eye cloud from the southern hemisphere, and the reason the ladder has a local-group rung at all."
 
   - id: smc
     name: Small Magellanic Cloud
@@ -54,7 +54,7 @@ objects:
     maj_ax_arcmin: 17.0
     con: Fornax
     source: "https://en.wikipedia.org/wiki/Fornax_Dwarf (infobox, read 2026-09-08)"
-    why: "A faint satellite of the Milky Way with six globular clusters of its own -- a small galaxy that kept its jewellery."
+    why: "A faint satellite of the Milky Way with six globular clusters of its own: a small galaxy that kept its jewellery."
 
   - id: sculptor-dwarf
     name: Sculptor Dwarf
@@ -82,7 +82,7 @@ objects:
     maj_ax_arcmin: 23.4
     con: Carina
     source: "https://en.wikipedia.org/wiki/Carina_Dwarf_Spheroidal_Galaxy (infobox, read 2026-09-08)"
-    why: "A faint Milky Way satellite whose stars formed in several distinct bursts -- a small galaxy with a stop-start history."
+    why: "A faint Milky Way satellite whose stars formed in several distinct bursts: a small galaxy with a stop-start history."
 
   - id: draco-dwarf
     name: Draco Dwarf
@@ -110,7 +110,7 @@ objects:
     maj_ax_arcmin: 30.2
     con: Ursa Minor
     source: "https://en.wikipedia.org/wiki/Ursa_Minor_Dwarf (infobox, read 2026-09-08)"
-    why: "A near neighbour of the Milky Way whose stars are almost all ancient -- it stopped forming them early."
+    why: "A near neighbour of the Milky Way whose stars are almost all ancient: it stopped forming them early."
 
   - id: sextans-dwarf
     name: Sextans Dwarf
@@ -167,7 +167,7 @@ objects:
     maj_ax_arcmin: 15.5
     con: Sagittarius
     source: "https://en.wikipedia.org/wiki/NGC_6822 (infobox, read 2026-09-08)"
-    why: "The first galaxy beyond the Milky Way whose distance was measured -- Hubble's 1925 proof that other galaxies exist."
+    why: "The first galaxy beyond the Magellanic Clouds to have its distance measured, by Hubble in 1925, from its Cepheid stars."
 
   - id: ic-10
     name: IC 10
@@ -256,7 +256,7 @@ objects:
     maj_ax_arcmin: 11.7
     con: Cassiopeia
     source: "https://en.wikipedia.org/wiki/NGC_185 (infobox, read 2026-09-09)"
-    why: "Andromeda's satellite with a faint active nucleus -- the nearest Seyfert galaxy, and a dwarf at that."
+    why: "Andromeda's satellite with a faint active nucleus: the nearest Seyfert galaxy, and a dwarf at that."
 
   - id: sextans-a
     name: Sextans A
@@ -397,7 +397,7 @@ objects:
     maj_ax_arcmin: 2.0
     con: Antlia
     source: "https://en.wikipedia.org/wiki/Antlia_Dwarf (infobox, read 2026-09-09)"
-    why: "Found only in 1997, a companion of NGC 3109 at the Local Group's edge -- proof that the neighbourhood still has galaxies to find."
+    why: "Found only in 1997, a companion of NGC 3109 at the Local Group's edge, proof that the neighbourhood still has galaxies to find."
 
   - id: andromeda-ii
     name: Andromeda II
@@ -482,7 +482,7 @@ objects:
     maj_ax_arcmin: 8.8
     con: Leo
     source: "https://en.wikipedia.org/wiki/Segue_1 (infobox, read 2026-09-09)"
-    why: "Among the faintest galaxies known, a few hundred stars held together by far more dark matter than light -- if it is a galaxy at all."
+    why: "Among the faintest galaxies known, a few hundred stars held together by far more dark matter than light, if it is a galaxy at all."
 
   - id: leo-t
     name: Leo T
@@ -604,7 +604,7 @@ objects:
     maj_ax_arcmin: 27.5
     con: Sculptor
     source: "https://en.wikipedia.org/wiki/Sculptor_Galaxy (infobox, read 2026-09-09)"
-    why: "The brightest galaxy outside the Local Group for southern binoculars, a dusty starburst spiral tilted almost edge-on to us."
+    why: "One of the brightest galaxies beyond the Local Group, a dusty starburst spiral tilted almost edge-on to us."
 
   - id: centaurus-a
     name: Centaurus A
@@ -647,7 +647,7 @@ objects:
     maj_ax_arcmin: 43.8
     con: Tucana
     source: "https://en.wikipedia.org/wiki/47_Tucanae (infobox, read 2026-09-09)"
-    why: "The second-brightest globular cluster, a naked-eye ball of stars next to the Small Magellanic Cloud, though 200 000 light-years nearer."
+    why: "The second-brightest globular cluster, a naked-eye ball of stars next to the Small Magellanic Cloud, though about 190 000 light-years nearer."
 
   - id: carina-nebula
     name: Carina Nebula
@@ -731,7 +731,7 @@ objects:
     maj_ax_arcmin: 78      # 1.3 deg
     con: Monoceros
     source: "https://en.wikipedia.org/wiki/Rosette_Nebula (infobox, read 2026-09-09)"
-    why: "A ring of glowing gas round a young cluster whose stars have blown the middle clear -- a rose with a hollow heart."
+    why: "A ring of glowing gas round a young cluster whose stars have blown the middle clear: a rose with a hollow heart."
 
   - id: north-america-nebula
     name: North America Nebula
@@ -773,7 +773,7 @@ objects:
     # vmag omitted: the infobox leaves the magnitude blank
     con: Crux
     source: "https://en.wikipedia.org/wiki/Jewel_Box_(star_cluster) (infobox, read 2026-09-09)"
-    why: "A small cluster of blue-white stars with one red supergiant among them -- Herschel's 'casket of variously coloured precious stones'."
+    why: "A small cluster of blue-white stars with one red supergiant among them: Herschel's 'casket of variously coloured precious stones'."
 
   - id: tarantula-nebula
     name: Tarantula Nebula
@@ -843,7 +843,7 @@ objects:
     maj_ax_arcmin: 4.6
     con: Lynx
     source: "https://en.wikipedia.org/wiki/NGC_2419 (infobox, read 2026-09-09)"
-    why: "A globular cluster so far out -- farther than the Magellanic Clouds -- that it was once thought to be leaving the galaxy. It is not; it just takes three billion years to go round."
+    why: "A globular cluster so far out, farther than the Magellanic Clouds, that it was once thought to be leaving the galaxy. It is not; it just takes three billion years to go round."
 
   - id: eskimo-nebula
     name: Eskimo Nebula
