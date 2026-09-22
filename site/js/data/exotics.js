@@ -248,7 +248,7 @@ export const EXOTICS = [
     "id": "grs-1915-105",
     "name": "GRS 1915+105",
     "kind": "blackhole",
-    "why": "The heaviest stellar black hole in our galaxy known for years, and the first object seen to throw out matter faster than light seems to move -- a trick of geometry called superluminal motion.",
+    "why": "For years the heaviest stellar black hole known in our galaxy, and the first thing in it seen throwing out matter apparently faster than light: a trick of geometry called superluminal motion.",
     "aliases": [
       "V1487 Aquilae"
     ],
@@ -278,7 +278,7 @@ export const EXOTICS = [
     "id": "hulse-taylor",
     "name": "Hulse-Taylor pulsar",
     "kind": "pulsar",
-    "why": "Two neutron stars circling each other every 7.75 hours, spiralling inward exactly as Einstein's gravitational waves demand -- the 1993 Nobel Prize, twenty years before the waves were heard directly.",
+    "why": "Two neutron stars circling each other every 7.75 hours, spiralling inward exactly as Einstein's gravitational waves demand. It won the 1993 Nobel Prize, twenty-two years before the waves were heard directly.",
     "aliases": [
       "PSR B1913+16",
       "PSR J1915+1606"
@@ -294,7 +294,7 @@ export const EXOTICS = [
     "id": "psr-j1614-2230",
     "name": "PSR J1614-2230",
     "kind": "pulsar",
-    "why": "A neutron star of nearly two Suns, weighed in 2010 by the delay its companion's gravity puts on its radio ticks -- a mass that ruled out many ideas of what neutron stars are made of.",
+    "why": "A neutron star of nearly two Suns, weighed in 2010 by the delay its companion's gravity puts on its radio ticks, a mass that ruled out many ideas of what neutron stars are made of.",
     "aliases": [
       "J1614-2230"
     ],

@@ -81,6 +81,33 @@ SINKS = [
 # Layout, not language: a separator, a bullet, a space. One character of punctuation is not copy.
 PUNCTUATION_ONLY = re.compile(r"^[\s\W]{0,2}$")
 
+# A DASH WRITTEN AS TWO HYPHENS. This codebase's comments write ` -- ` for a dash, and prose
+# copied out of a comment or a YAML file keeps it: on 2026-09-22 it was on a trip card, three
+# exotic cards and two lines of copy/en.js, printed as two hyphens mid-sentence. copy/en.js writes
+# a real dash. Checked in the copy and in every data file the cards read; a `source:` or `file:`
+# value is evidence a reviewer reads, never printed, and is exempt.
+SHIPPED_TEXT = [ROOT / "site" / "js" / "copy" / "en.js", *sorted((ROOT / "site" / "js" / "data").glob("*.js"))]
+QUOTED = re.compile(r"""(?:"((?:[^"\\\n]|\\.)*)"|'((?:[^'\\\n]|\\.)*)')""")
+EVIDENCE_KEY = re.compile(r"""["']?(?:source|file|url)["']?\s*:\s*$""")
+
+
+def double_hyphens() -> list[str]:
+    out = []
+    for path in SHIPPED_TEXT:
+        rel = path.relative_to(ROOT)
+        for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            stripped = line.lstrip()
+            if stripped.startswith("//") or stripped.startswith("*"):
+                continue
+            code = line.split(" // ")[0]
+            for match in QUOTED.finditer(code):
+                text = match.group(1) if match.group(1) is not None else match.group(2)
+                if " -- " not in text or EVIDENCE_KEY.search(code[: match.start()]):
+                    continue
+                out.append(f"  {rel}:{lineno}  prints two hyphens as a dash: {text[:90]!r}\n"
+                           f"      Write a comma, a colon or a real dash; ` -- ` is for comments.")
+    return out
+
 
 def literal(match: re.Match) -> str:
     for group in match.groups()[-3:]:
@@ -113,14 +140,16 @@ def main() -> int:
                         f"there and read it here."
                     )
 
+    findings += double_hyphens()
     if findings:
-        print(f"copy: {len(findings)} string literal(s) reaching the screen from outside copy/en.js\n")
+        print(f"copy: {len(findings)} problem(s) with strings that reach the screen\n")
         for f in findings:
             print(f)
         return 1
     print(
         f"copy ok: {len(files)} files under site/js/ui/ write no user-visible string literal; "
-        f"every one comes from site/js/copy/en.js"
+        f"every one comes from site/js/copy/en.js, and none of {len(SHIPPED_TEXT)} copy and data "
+        f"files prints ` -- ` for a dash"
     )
     return 0
 

@@ -38,15 +38,20 @@ rungs:
     layer: stars
     distance: "4.2 light-years"
     distance_source: "HYG v4.4 (Gaia parallax)"
-    why: "The nearest star to the Sun. The fastest thing we have ever built would take seventy thousand years."
+    # "THE FASTEST THING WE HAVE EVER BUILT" is Parker Solar Probe, ~190 km/s at perihelion, which
+    # would take ~6 600 years. Seventy thousand is Voyager 1's figure: 4.25 ly at 16.9 km/s is
+    # ~75 000 years, and Voyager 1 is the fastest thing actually leaving the Solar System.
+    why: "The nearest star to the Sun. Voyager 1, the fastest thing we have sent out of the Solar System, would take seventy-five thousand years."
 
   - id: pleiades
     label: The Pleiades
     target: {record: dso-m45}
     layer: deep-sky
-    distance: "about 440 light-years"
+    # 440 was not the source's number: 0.39-0.46 kly is 425 at the middle, which is what the M45
+    # record itself carries (site/data/dso.json) and prints on its card. 2026 - 425 = 1601.
+    distance: "about 425 light-years"
     distance_source: "Wikipedia, List of Messier objects (0.39-0.46 kly)"
-    why: "A cluster you can see with your eyes in winter. Its light left in the sixteenth century."
+    why: "A cluster you can see with your eyes on winter evenings. Its light left around the year 1600."
 
   - id: galactic-centre
     label: Sagittarius A*

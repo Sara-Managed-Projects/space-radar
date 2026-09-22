@@ -203,7 +203,9 @@ exotics:
     dist_ly: 28000
     mass_msun: 12.4
     distance_note: "8 600 +2 000/-1 600 parsecs; 28 000 light-years is the infobox's round figure"
-    why: "The heaviest stellar black hole in our galaxy known for years, and the first object seen to throw out matter faster than light seems to move -- a trick of geometry called superluminal motion."
+    # "THE FIRST OBJECT SEEN" to do it was wrong: quasars showed apparent faster-than-light motion
+    # in 1971 (3C 279). GRS 1915+105, in 1994, was the first in our own galaxy.
+    why: "For years the heaviest stellar black hole known in our galaxy, and the first thing in it seen throwing out matter apparently faster than light: a trick of geometry called superluminal motion."
     aliases: [V1487 Aquilae]
     source: "https://en.wikipedia.org/wiki/GRS_1915%2B105 (infobox, read 2026-09-09)"
 
@@ -226,7 +228,8 @@ exotics:
     dist_ly: 21000
     period_s: 0.059030003217813
     mass_msun: 1.441
-    why: "Two neutron stars circling each other every 7.75 hours, spiralling inward exactly as Einstein's gravitational waves demand -- the 1993 Nobel Prize, twenty years before the waves were heard directly."
+    # The Nobel was 1993 and LIGO heard the waves in September 2015: twenty-two years, not twenty.
+    why: "Two neutron stars circling each other every 7.75 hours, spiralling inward exactly as Einstein's gravitational waves demand. It won the 1993 Nobel Prize, twenty-two years before the waves were heard directly."
     aliases: [PSR B1913+16, PSR J1915+1606]
     source: "https://en.wikipedia.org/wiki/Hulse%E2%80%93Taylor_pulsar (infobox, read 2026-09-09)"
 
@@ -238,7 +241,7 @@ exotics:
     dist_ly: 3900
     period_s: 0.003150807655690673
     mass_msun: 1.908
-    why: "A neutron star of nearly two Suns, weighed in 2010 by the delay its companion's gravity puts on its radio ticks -- a mass that ruled out many ideas of what neutron stars are made of."
+    why: "A neutron star of nearly two Suns, weighed in 2010 by the delay its companion's gravity puts on its radio ticks, a mass that ruled out many ideas of what neutron stars are made of."
     aliases: [J1614-2230]
     source: "https://en.wikipedia.org/wiki/PSR_J1614%E2%88%922230 (infobox, read 2026-09-09)"
 
