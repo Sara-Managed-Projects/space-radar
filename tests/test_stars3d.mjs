@@ -76,12 +76,18 @@ check(COPY.klass.star === 'Star' && COPY.templates.star && COPY.templates.star.l
   await stars.ensureGeometry();
   check(stars.count() === data.count && stars.unplaced() === data.unplaced, 'count() is the number drawn, unplaced() the number not');
   check(stars.mode() === 'shell', `on a world stage the stars are a shell (${stars.mode()})`);
+  const sunPt = stars.group.children.find((c) => c.name === 'stars3d:sun');
+  check(sunPt && sunPt.visible === false, 'on a world stage the Sun is its disc, not a point in the star cloud');
   const posAttr = stars.group.children[0].geometry.getAttribute('position').array;
   const r0 = Math.hypot(posAttr[0], posAttr[1], posAttr[2]);
   check(Math.abs(r0 - 1e8) < 50, `shell radius is 1e8 units within float32 (${r0})`);
   stage.setWorld('stellar'); stage.setTime(tMs);
   stars.rebuild();
   check(stars.mode() === 'true', 'on the stellar rung the stars are at true positions');
+  // The Sun is a star here (2026-09-22: from a light-year out its place was the probes' glyphs).
+  const sunAt = sunPt.geometry.getAttribute('position').array;
+  check(sunPt.visible === true && Math.hypot(sunAt[0], sunAt[1], sunAt[2]) < 1e-9, 'on the stellar rung the Sun is a point of the star cloud, at the origin');
+  check(Math.abs(sunPt.geometry.getAttribute('aAbsMag').array[0] - 4.83) < 1e-6, 'with the Sun\'s absolute magnitude, 4.83');
   const sx = posAttr[si * 3], sy = posAttr[si * 3 + 1], sz = posAttr[si * 3 + 2];
   check(Math.abs(Math.hypot(sx, sy, sz) - sirLy) < 0.01, `Sirius sits ${Math.hypot(sx, sy, sz).toFixed(2)} units from the Sun in the buffer`);
   // a camera looking straight at Sirius from 2 ly away picks Sirius

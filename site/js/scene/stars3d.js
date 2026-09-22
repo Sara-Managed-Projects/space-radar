@@ -32,6 +32,9 @@ import { bvToKelvin, kelvinToRgb } from './starfield.js';
 import { COPY, t } from '../copy/en.js';
 
 export const LY_KM = 9460730472580.8;
+// The Sun's absolute visual magnitude (IAU 2015 B3's V-band value, 4.83), and its B-V (0.65).
+export const SUN_ABS_MAG = 4.83;
+const SUN_BV = 0.65;
 export const PC_KM = 30856775814913.67;
 const SHELL_UNITS = 1e8; // the shell's radius in scene units: far inside the 1e9 far plane
 const RECORD_BYTES = 24;
@@ -174,6 +177,11 @@ export function createStars3d(scene, opts = {}) {
   let records = [];
   let points = null;
   let geometry = null;
+  // THE SUN, AS A STAR. HYG's row for the Sun has no distance and is not in the binary, and on a
+  // rung of the ladder nothing else drew it as one: from a light-year out, where it is magnitude
+  // -2.7, its place was a purple ringed glyph of the probes stacked on its pixel (2026-09-22). One
+  // more point with the same shader, on the ladder only -- from a world stage the Sun is a disc.
+  let sunPoints = null;
   let layerOn = true;
   let opacity = 0;
   let mode = null; // 'true' | 'shell'
@@ -246,10 +254,24 @@ export function createStars3d(scene, opts = {}) {
     points.frustumCulled = false;
     points.renderOrder = -1;
     group.add(points);
+
+    const sun = new THREE.BufferGeometry();
+    sun.setAttribute('position', new THREE.BufferAttribute(new Float32Array(3), 3));
+    sun.setAttribute('aAbsMag', new THREE.BufferAttribute(new Float32Array([SUN_ABS_MAG]), 1));
+    sun.setAttribute('aAppMag', new THREE.BufferAttribute(new Float32Array([99]), 1)); // never on the shell
+    const sunRgb = kelvinToRgb(bvToKelvin(SUN_BV));
+    c.setRGB(sunRgb[0], sunRgb[1], sunRgb[2], THREE.SRGBColorSpace);
+    sun.setAttribute('aColour', new THREE.BufferAttribute(new Float32Array([c.r, c.g, c.b]), 3));
+    sunPoints = new THREE.Points(sun, material);
+    sunPoints.name = 'stars3d:sun';
+    sunPoints.frustumCulled = false;
+    sunPoints.renderOrder = -1;
+    group.add(sunPoints);
     applyVisibility();
   }
 
   const _km = { x: 0, y: 0, z: 0 };
+  const _km0 = { x: 0, y: 0, z: 0 };
   const _v = new THREE.Vector3();
 
   /**
@@ -280,11 +302,18 @@ export function createStars3d(scene, opts = {}) {
     uniforms.uShell.value = mode === 'shell' ? 1 : 0;
     uniforms.uUnitsPerPc.value = PC_KM / stage.unitKm;
     if (mode === 'true') group.position.set(0, 0, 0);
+    if (sunPoints) {
+      const at = sunPoints.geometry.getAttribute('position');
+      if (mode === 'true' && stage.toSceneInto(_km0, SUN_INERTIAL, _v, tMs)) { at.array[0] = _v.x; at.array[1] = _v.y; at.array[2] = _v.z; }
+      at.needsUpdate = true;
+    }
+    applyVisibility();
     if (bad) console.warn(`stars3d: ${bad} stars could not be placed in the ${stage.worldId} stage`);
   }
 
   function applyVisibility() {
     if (points) points.visible = layerOn && opacity > 0;
+    if (sunPoints) sunPoints.visible = !!(points && points.visible) && mode === 'true';
     uniforms.uGain.value = opacity;
   }
 
@@ -355,9 +384,10 @@ export function createStars3d(scene, opts = {}) {
 
   function dispose() {
     if (geometry) geometry.dispose();
+    if (sunPoints) sunPoints.geometry.dispose();
     if (points && points.material) points.material.dispose();
     if (scene) scene.remove(group);
-    data = null; geometry = null; points = null; builtFor = null;
+    data = null; geometry = null; points = null; sunPoints = null; builtFor = null;
   }
 
   return {

@@ -321,9 +321,17 @@ export async function boot({ setStatus } = {}) {
   // reached most of the way to the planet's core. That is fixed where it is caused, in
   // scene/heroes.js (`heroScale`), and this predicate goes back to answering only what it can
   // answer honestly: is the layer on, and does it have anything true to draw from this stage.
+  // On a rung of the ladder the whole Solar System is one pixel. A layer of things inside it stacks
+  // every glyph on the Sun: measured 2026-09-22, the probes and oddities drew one purple ringed blob
+  // where the Sun should be, and with live data every satellite would sit on that pixel for a tap
+  // near the Sun to pick. There only the ladder's own layers draw, and the worlds, which keep the
+  // Sun's name; stars3d draws the Sun itself as a star.
+  const LADDER_SCALE_LAYERS = new Set(['stars', 'galaxy', 'worlds']);
   function isLayerDrawable(layer) {
     if (!layer || !isLayerOn(layer.id)) return false;
-    if (layer.ladderOnly && !isLadderStage(stage.worldId)) return false;
+    const ladder = isLadderStage(stage.worldId);
+    if (layer.ladderOnly && !ladder) return false;
+    if (ladder && !layer.ladderOnly && !LADDER_SCALE_LAYERS.has(layer.id)) return false;
     return true;
   }
   ctx.isLayerDrawable = isLayerDrawable;
