@@ -109,7 +109,7 @@ check(glowing > 150 && glowing < recs.length, `most deep-sky objects glow at the
 // that card are read from the shipped files here, so the next rebuild cannot leave them behind.
 const { TOURS } = await import(join(JS, 'data/tours.js'));
 const { parseStars3d } = await import(join(JS, 'scene/stars3d.js'));
-const edge = TOURS.flatMap((t) => t.stops || []).find((s) => s.card && s.card.title === 'The edge of this map');
+const edge = TOURS.flatMap((t) => t.stops || []).find((s) => s.id === 'edge' && s.card);
 const say = edge ? edge.card.body : '';
 const n = (text) => Number(String(text).replace(/\s/g, ''));
 const starBuf = readFileSync(join(ROOT, 'site/data/stars3d.bin'));
@@ -129,6 +129,15 @@ if (said) {
   const said = (row.sentence || '').match(/Messier objects and (\d+) more/);
   const hand = doc.objects.filter((o) => o.positionSource !== 'OpenNGC').length;
   check(said && Number(said[1]) === hand, `the deep-sky layer's sentence says ${said && said[1]} more than Messier; dso.json has ${hand}`);
+}
+
+// "The map goes further, to ... 10.8 billion light-years out": the farthest place any layer draws.
+{
+  const { EXOTICS } = await import(join(JS, 'data/exotics.js'));
+  const farthest = Math.max(...doc.objects.map((o) => o.distLy), ...EXOTICS.map((e) => Number(e.distLy) || 0));
+  const said = say.match(/to a quasar's black hole ([\d.]+) billion light-years out/);
+  check(!!said && Math.abs(Number(said[1]) * 1e9 - farthest) / farthest < 0.01, `the edge card's farthest place (${said && said[1]} billion ly) is the farthest drawn (${farthest} ly)`);
+  check(!/as far as this map draws/.test(say), 'the edge card no longer says M87 is the edge of the map');
 }
 
 if (problems.length) { console.error('dso FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }

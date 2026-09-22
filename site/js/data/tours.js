@@ -414,8 +414,8 @@ export const TOURS = [
         "needs_layer": "exotics",
         "distance_km": 47303652362904000000,
         "card": {
-          "title": "The edge of this map",
-          "body": "Fifty-three million light-years: the black hole in M87, the first one ever photographed. This is as far as this map draws places. It shows 109 389 stars of the 1.8 billion Gaia has measured, 209 nebulae, clusters and galaxies (110 of them from OpenNGC's 13 372), and every confirmed planet around another star whose distance has been measured. The rest is out there; we have not drawn what we cannot place."
+          "title": "As far as this trip goes",
+          "body": "Fifty-three million light-years: the black hole in M87, the first one ever photographed. The map goes further, to a quasar's black hole 10.8 billion light-years out. It shows 109 389 stars of the 1.8 billion Gaia has measured, 209 nebulae, clusters and galaxies (110 of them from OpenNGC's 13 372), and every confirmed planet around another star whose distance has been measured. The rest is out there; we have not drawn what we cannot place."
         },
         "frame_radii": 5.0,
         "drift_deg": 34,
