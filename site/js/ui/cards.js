@@ -41,7 +41,7 @@ import {
 import { propagate } from '../propagate/index.js';
 import { realModelFor } from '../scene/realmodels.js';
 import { sunlitState } from '../scene/shadow.js';
-import { periodMsOf } from '../scene/orbitline.js';
+import { periodMsOf, wholePathKind } from '../scene/orbitline.js';
 import {
   gmst,
   eciToEcef,
@@ -406,6 +406,49 @@ function daysSince(ms, nowMs) {
   return Math.floor((nowMs - ms) / 86400000);
 }
 
+// WHERE A FAR BODY IS, from its own orbit rather than from a word somebody typed next to it. Each
+// bound is a planet's own, from NASA's planetary fact sheets: Mars's aphelion (1.666 au), Jupiter's
+// perihelion (4.950 au) and Neptune's aphelion (30.33 au). "Beyond Neptune" is written only of an
+// orbit that never comes inside Neptune's, and "far beyond" only of one whose CLOSEST point is more
+// than twice Neptune's distance -- Sedna's is 76 au. Anything else keeps the plain lead, which is
+// true of every dwarf planet there is.
+const MARS_APHELION_AU = 1.666;
+const JUPITER_PERIHELION_AU = 4.95;
+const NEPTUNE_APHELION_AU = 30.33;
+
+/** 'belt' | 'beyond' | 'farBeyond' | null, for a record carrying qAu and (if bound) aphelionAu. */
+export function farRegion(record) {
+  const md = meta(record);
+  const q = pickNumber(md, 'qAu');
+  const Q = pickNumber(md, 'aphelionAu');
+  if (q === null) return null;
+  if (Q !== null && q > MARS_APHELION_AU && Q < JUPITER_PERIHELION_AU) return 'belt';
+  if (q > 2 * NEPTUNE_APHELION_AU) return 'farBeyond';
+  if (q > NEPTUNE_APHELION_AU) return 'beyond';
+  return null;
+}
+
+/**
+ * The lead for a record of the far-bodies layer, or null for everything else. Both the asteroid
+ * and the comet template ask, because 'Oumuamua is filed as the one and Borisov as the other.
+ */
+function farLead(record, m, T) {
+  const md = meta(record);
+  const kind = pick(md, 'farKind');
+  const name = displayName(record);
+  if (kind === 'interstellar' && T.leadInterstellarOut) {
+    const periMs = pickTime(md, 'perihelionMs');
+    const now = m && Number.isFinite(m.tMs) ? m.tMs : Date.now();
+    return t(periMs !== null && now < periMs ? T.leadInterstellarIn : T.leadInterstellarOut, { name });
+  }
+  if (kind === 'dwarf' && T.leadDwarf) {
+    const region = farRegion(record);
+    const lead = region === 'belt' ? T.leadDwarfBelt : region === 'farBeyond' ? T.leadDwarfFarBeyond : region === 'beyond' ? T.leadDwarfBeyond : T.leadDwarf;
+    return t(lead, { name });
+  }
+  return null;
+}
+
 const TEMPLATES = {
   station(record, ctx, m, passInfo, T) {
     const md = meta(record);
@@ -540,6 +583,13 @@ const TEMPLATES = {
     // "danger" appears nowhere, because no sourced risk field exists in v1.
     const sourcedNoImpact = md.impactRisk === 'none' || md.noImpact === true;
     const now = m && Number.isFinite(m.tMs) ? m.tMs : Date.now();
+    // A dwarf planet or an interstellar visitor: what it is and how far out, and nothing about
+    // passing Earth, which none of them does.
+    const far = farLead(record, m, T);
+    if (far) {
+      const au = m && m.distSunKm !== null && m.distSunKm !== undefined ? m.distSunKm / UNITS.AU_KM : null;
+      return buildSentence(far, [au !== null ? t(T.distanceSun, { au: fmt.smart(au) }) : null]);
+    }
     // `neo` is the data's own classification; only an explicit false changes the sentence, so a
     // live NEO-feed record that does not carry the field still reads as the near-Earth object it is.
     const lead = md.neo === false ? T.leadMainBelt : T.lead;
@@ -557,6 +607,10 @@ const TEMPLATES = {
     const periMs = pickTime(md, 'perihelionMs', 'perihelionDate', 'tp');
     const mag = pickNumber(md, 'magnitude', 'mag', 'h');
     const au = m.distSunKm !== null ? m.distSunKm / UNITS.AU_KM : null;
+    // 2I/Borisov. Its perihelion was 8 December 2019 and "closest to the Sun on" a date six years
+    // gone reads as news; the why line under the sentence says when it was found instead.
+    const far = farLead(record, m, T);
+    if (far) return buildSentence(far, [au !== null ? t(T.distanceSun, { au: fmt.smart(au) }) : null]);
     let brightness = null;
     if (mag !== null) brightness = mag <= NAKED_EYE_LIMIT ? T.nakedEye : T.faint;
     // Periodic (the MPC's orbit type P, or a period under two centuries) comes back; the rest do not.
@@ -801,7 +855,11 @@ const NOTE_KLASSES = new Set(['probe', 'telescope', 'asteroid', 'debris']);
 export function whyLine(record) {
   if (!record) return null;
   const klass = klassOf(record);
-  const key = WHY_KLASSES.has(klass) ? 'why' : NOTE_KLASSES.has(klass) ? 'note' : null;
+  // A line that NAMES WHERE IT WAS READ (`whySource`) is printed whatever the class: the far-bodies
+  // rows (data/sample.js farBodies), filed as asteroids and one comet, whose `why` is one sourced
+  // sentence each. It is `why` there and not `note` because `why` is also what makes a record worth
+  // a label (ui/labels.js isNotable), and those ten are the famous ones.
+  const key = WHY_KLASSES.has(klass) || pick(meta(record), 'whySource') ? 'why' : NOTE_KLASSES.has(klass) ? 'note' : null;
   const why = key && pick(meta(record), key);
   return why == null || why === false ? null : String(why).trim() || null;
 }
@@ -1044,6 +1102,19 @@ function rightNowRows(record, m, passInfo) {
     }
     if (m.speedKmh !== null && m.speedKmh > 0.5) {
       rows.push([R.speed, t(V.kmh, { n: fmt.int(m.speedKmh) })]);
+    }
+    // A dwarf planet's size and moons, and where its line was read. Not the size CHIP: the chip's
+    // bands stop at "about the size of a city", which is 2 300 km too small for Eris.
+    if (pick(md, 'farKind')) {
+      const lo = pickNumber(md, 'diameterLowKm');
+      const hi = pickNumber(md, 'diameterHighKm');
+      const d = pickNumber(md, 'diameterKm');
+      if (lo !== null && hi !== null) rows.push([R.across, t(V.kmRange, { lo: fmt.int(lo), hi: fmt.int(hi) })]);
+      else if (d !== null) rows.push([R.across, t(V.km, { n: fmt.int(d) })]);
+      const moons = md.moons;
+      if (Array.isArray(moons)) rows.push([R.moons, moons.length ? moons.join(COPY.punctuation.listJoin) : V.noMoonsKnown]);
+      const whySource = pick(md, 'whySource');
+      if (whySource && whyLine(record)) rows.push([R.whySource, String(whySource)]);
     }
   }
 
@@ -1398,13 +1469,20 @@ function derivedDrawingLine(record, T) {
   }
   // An extreme object that is a star (Betelgeuse) is drawn like the others, but the reason is
   // different: it has a shape, it is just a point at this scale.
-  const key = klass === 'exotic' && pick(meta(record), 'kind') === 'star' && T.classShape && T.classShape.exoticStar ? 'exoticStar' : klass;
+  const key = klass === 'exotic' && pick(meta(record), 'kind') === 'star' && T.classShape && T.classShape.exoticStar ? 'exoticStar'
+    // A dwarf planet is drawn by the asteroid builder, which makes anything its size a ball; "a
+    // generic asteroid" would name the wrong kind of thing.
+    : klass === 'asteroid' && pick(meta(record), 'farKind') === 'dwarf' && T.classShape && T.classShape.dwarf ? 'dwarf'
+    : klass;
   const shape = T.classShape && Object.prototype.hasOwnProperty.call(T.classShape, key) ? T.classShape[key] : null;
   return shape ? t(T.objectFamily, { name: shape }) : null;
 }
 
 /** What the line under the selected dot is, or null when the thing does not lap. Exported for the test. */
 export function orbitLineLine(record) {
+  const whole = wholePathKind(record);
+  if (whole === 'orbit') return COPY.drawing.orbitLineWhole;
+  if (whole === 'passage') return COPY.drawing.orbitLinePassage;
   const periodMs = periodMsOf(record);
   if (!periodMs) return null;
   return periodMs > 365.25 * 86400e3 ? COPY.drawing.orbitLineYear : COPY.drawing.orbitLine;
@@ -1439,7 +1517,13 @@ export function drawingLine(record) {
   const md = meta(record);
   const drawsAs = pick(md, 'drawsAs');
   const T = COPY.drawing;
-  if (!drawsAs) return derivedDrawingLine(record, T);
+  if (!drawsAs) {
+    // The derived line, plus a row's own `departure` where the drawing knowingly differs: Haumea
+    // is drawn round and is an egg; nobody has seen 'Oumuamua's shape at all.
+    const derived = derivedDrawingLine(record, T);
+    const departure = pick(md, 'departure');
+    return derived && departure ? derived + COPY.punctuation.separator + String(departure) : derived;
+  }
   const rocket = pick(md, 'rocket');
   const name = pick(md, 'drawnName') || rocket;
   const isLaunch = rocket != null;
@@ -1617,6 +1701,17 @@ function renderLeadOnly(lead) {
   markCardOpen(true);
 }
 
+/**
+ * The badge beside the name. The far bodies are filed as asteroids (and Borisov as a comet) so the
+ * glyph, the model and the colour are the right family -- but a badge reading "Asteroid" beside
+ * "Eris is a dwarf planet" contradicts the sentence under it (read in the browser, 2026-09-22).
+ */
+export function klassLabel(record, klass = klassOf(record)) {
+  const far = pick(meta(record), 'farKind');
+  if (far && COPY.klassFar && Object.prototype.hasOwnProperty.call(COPY.klassFar, far)) return COPY.klassFar[far];
+  return COPY.klass[klass];
+}
+
 function section(className, labelText) {
   const wrap = el('section', className);
   if (labelText) wrap.appendChild(el('h3', 'sr-card__label', labelText));
@@ -1651,7 +1746,7 @@ function render(record, ctx, opts = {}) {
   title.id = CARD_TITLE_ID;
   title.tabIndex = -1; // focusable by script only (takeFocus), never a stop in the tab order
   header.appendChild(title);
-  header.appendChild(el('span', 'sr-card__klass', COPY.klass[klass]));
+  header.appendChild(el('span', 'sr-card__klass', klassLabel(record, klass)));
   const close = el('button', 'sr-card__close', COPY.card.close);
   close.type = 'button';
   close.title = COPY.card.closeTitle;

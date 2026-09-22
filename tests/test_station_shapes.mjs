@@ -572,8 +572,10 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
 // retuning the constants, and it fails the moment the shape stops depending on the size.
 {
   const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
-  const { sampleAsteroids } = await import(join(ROOT, 'site/js/data/sample.js'));
-  const rocks = sampleAsteroids();
+  const { sampleAsteroids, farBodies } = await import(join(ROOT, 'site/js/data/sample.js'));
+  // Ceres moved to the far-bodies layer on 2026-09-22 (real phase, always loaded); it is the same
+  // builder and the round end of this range, so it is taken from there.
+  const rocks = [...sampleAsteroids(), ...farBodies().filter((r) => r.id === 'dwarf-ceres')];
   check(rocks.length >= 8, `the bundled asteroid list is still worth testing (${rocks.length} rows)`);
 
   const shapeOf = (record) => {
@@ -615,7 +617,8 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
     check(got[0].roundness > 0.99, `Ceres is a dwarf planet and should be drawn round, not ${got[0].roundness.toFixed(3)}`);
     check(got[3].roundness < 0.8, `Itokawa is a rubble pile and should be drawn lumpy, not ${got[3].roundness.toFixed(3)}`);
     // And the size the model declares is the size the record measured, not a constant 500 m.
-    check(Math.abs(got[0].realSizeM - 939000) < 1, `Ceres should declare its measured 939 km, not ${got[0].realSizeM} m`);
+    // 939.4 km since Ceres moved rows: the SBDB's own figure (Park et al. 2016), not the rounded 939.
+    check(Math.abs(got[0].realSizeM - 939400) < 1, `Ceres should declare its measured 939.4 km, not ${got[0].realSizeM} m`);
   } else {
     problems.push('ROCKS the bundled asteroid list no longer contains Ceres, Vesta, Eros and Itokawa');
   }

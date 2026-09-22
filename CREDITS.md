@@ -526,6 +526,21 @@ Five worlds drawn as plain one-colour balls: **no texture or image ships for the
   card says so. Wikipedia's text is CC BY-SA 4.0; only a few words are quoted in the registry as
   evidence (`says:`), and no text of it ships to the page.
 
+### 4.10 Dwarf planets and far travellers — `site/js/data/sample.js` `farBodies()`
+
+Ten hand-kept rows: Ceres, Eris, Haumea, Makemake, Sedna, Gonggong, Quaoar, Orcus, ʻOumuamua and
+2I/Borisov.
+
+- Orbits: the NASA/JPL Small-Body Database API
+  (`https://ssd-api.jpl.nasa.gov/sbdb.api?sstr=<object>&phys-par=1&full-prec=1`), read 2026-09-22.
+  Each row states its epoch, the date JPL solved the orbit and the last observation in the fit; each
+  card names the database and the solution date. Checked against JPL Horizons vectors for
+  2026-09-22 (`tests/test_far_bodies.mjs`). Bundled because JPL's APIs send no CORS header (§4).
+- Ceres's diameter and Haumea's rotation period: the same SBDB records.
+- The other diameters, the moons and the one line on each card: the Wikipedia article the row names in
+  `whySource`, its infobox and lead, read 2026-09-22. Figures only; each sentence is this project's.
+  Wikipedia's text is CC BY-SA 4.0 and none of it is reproduced.
+
 ## 4.6 Third-party trademarks the app names or draws
 
 None of the marks below is licensed to this project and none is used as a badge of origin. They are

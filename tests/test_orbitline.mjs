@@ -47,8 +47,11 @@ check(orbitLineLine({ propagator: 'sgp4', meta: { periodMin: 93 } }).includes('o
   const pos = ol.line.geometry.attributes.position.array;
   const n = ol.line.geometry.drawRange.count;
   check(n === SAMPLES + 1, `${SAMPLES} samples plus closure (${n})`);
+  // The vertices are offsets from the line's own origin, which is the dot (the float32 fix,
+  // 2026-09-22), so the radius from Earth's centre adds it back.
+  const o = ol.line.position;
   let rmin = Infinity, rmax = 0;
-  for (let i = 0; i < n; i++) { const r = Math.hypot(pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2]); rmin = Math.min(rmin, r); rmax = Math.max(rmax, r); }
+  for (let i = 0; i < n; i++) { const r = Math.hypot(pos[i * 3] + o.x, pos[i * 3 + 1] + o.y, pos[i * 3 + 2] + o.z); rmin = Math.min(rmin, r); rmax = Math.max(rmax, r); }
   check(rmin > 6.6 && rmax < 7.0, `the loop stays 6 600-7 000 km from the centre (${(rmin * 1000).toFixed(0)}-${(rmax * 1000).toFixed(0)} km)`);
   ol.setRecord({ propagator: 'fixed', meta: {} });
   check(ol.hasLine() === false, 'a site clears the line');

@@ -8,6 +8,11 @@
 // Every record here carries cls:'sample' and a meta.why saying what it stands in for and why it
 // is not live. It is drawn with a dashed halo so it is never mistaken for a live position.
 //
+// Three builders here are NOT stand-ins and say so in their own cls: handKeptSites() (measured),
+// sampleOddities() (each row's own class) and farBodies() (inferred: JPL's orbits with their real
+// phase, the far-bodies layer). They live in this file because it is where hand-kept rows that
+// ship with the app already are.
+//
 // ---------------------------------------------------------------------------------------------
 // THE HONESTY RULES THIS FILE IS WRITTEN UNDER
 //
@@ -114,22 +119,10 @@ const ASTEROIDS = [
     neo: true,
     note: 'Hayabusa2 shot it, landed on it twice and brought 5 grams home in 2020.',
   },
-  {
-    id: 'asteroid-1',
-    name: 'Ceres',
-    designation: '1 Ceres',
-    aAu: 2.766,
-    e: 0.0785,
-    iDeg: 10.59,
-    nodeDeg: 80.31,
-    argpDeg: 73.6,
-    hMag: 3.34,
-    diameterKm: 939,
-    neo: false,
-    // "It has more fresh water than Earth" was an estimate stated as a measurement.
-    note: 'A quarter the width of the Moon, and the largest thing in the asteroid belt. It may ' +
-      'hold more fresh water than Earth does, as ice.',
-  },
+  // CERES MOVED OUT on 2026-09-22, to FAR_BODIES below. Here it sat at its own perihelion (rule 3)
+  // and only on the day the NEO snapshot was missing -- the live close-approach table never lists
+  // it, so on a normal day the largest thing in the asteroid belt was on nobody's map. There it has
+  // JPL's real phase and a layer that is always loaded.
   {
     id: 'asteroid-4',
     name: 'Vesta',
@@ -253,6 +246,331 @@ export function sampleAsteroids() {
           'shape and tilt are right. Where it is ALONG that orbit is not known to this page: ' +
           'it is drawn at its closest point to the Sun on 1 January 2026, which is a ' +
           'placeholder, not a position.',
+      },
+    };
+  });
+}
+
+// =================================================================================================
+// Dwarf planets and far travellers
+// =================================================================================================
+//
+// Eight dwarf planets and the two objects known to have come from another star, each on JPL's own
+// orbit WITH ITS PHASE, so each is drawn where it is today. That is the difference from the
+// asteroids above, and why these are not rows there: those sit at a placeholder perihelion (rule
+// 3), carry cls 'sample', and appear only when the NEO snapshot is missing. These stand in for
+// nothing -- like the oddities, they are the thing -- so they get their own always-loaded layer
+// (`far-bodies` in data/layers.js and registry/layers.yaml) and cls 'inferred', exactly as a live
+// SBDB record is: JPL measured the orbit, this page computes the position from it.
+//
+// THE EVIDENCE IS THIS BLOCK, as it is for Eros above: this repository is code only.
+//   Elements   JPL Small-Body Database API, one query per row:
+//                https://ssd-api.jpl.nasa.gov/sbdb.api?sstr=<number or designation>&phys-par=1&full-prec=1
+//              (read 2026-09-22). Heliocentric ecliptic J2000 osculating elements, kept to nine
+//              significant figures -- JPL's fit, not a rounding of mine, so rule 1's worry about
+//              undefendable digits does not apply; nine is where the position stops changing at
+//              the scale anything here is drawn. Each row names its epoch, the date JPL solved the
+//              orbit, and the last observation in the fit.
+//   Checked    against JPL Horizons, heliocentric vectors for 2026-09-22 00:00 TDB
+//              (https://ssd.jpl.nasa.gov/api/horizons.api?COMMAND='136199;'&EPHEM_TYPE=VECTORS&CENTER='500@10'&REF_PLANE=ECLIPTIC
+//              and the same for each row). Two-body motion from these elements lands within
+//              0.0001 au of Horizons for all eight dwarf planets. The two interstellar objects miss
+//              by 0.028 au ('Oumuamua) and 0.018 au (Borisov): nine and seven years of pull from the
+//              planets and of the small non-gravitational push both showed, which two-body motion
+//              leaves out -- a few million km, at 50 au. tests/test_far_bodies.mjs holds all ten.
+//   Facts      diameters, moons and each `why` line: the Wikipedia article named in `whySource`,
+//              its infobox and lead (read 2026-09-22), except Ceres's diameter, which is the SBDB's
+//              own (Park et al. 2016, Nature 537). "Dwarf planet" for all eight is Wikipedia's
+//              "Dwarf planet" lead: astronomers are in general agreement that the nine largest
+//              candidates are dwarf planets, and these are eight of the nine -- Pluto, the ninth, is
+//              a world in registry/worlds.yaml, not a row here.
+//   Hyperbolic 'Oumuamua (e 1.20) and Borisov (e 3.36) are not bound to the Sun. propagate/kepler.js
+//              has solved the hyperbolic branch since the MPC comets needed it (safeguarded Newton,
+//              solveKeplerHyperbolic); both rows use the mean-anomaly form JPL publishes, which the
+//              normaliser there turns into time since perihelion on either branch.
+
+/** JPL's epoch for every dwarf-planet row: JD 2461200.5 = 2026-06-09 00:00 TDB. */
+const SBDB_EPOCH_JD = 2461200.5;
+
+/**
+ * @type {Array<{id, name, designation, aliases, klass, farKind, aAu, e, iDeg, nodeDeg, argpDeg,
+ *   maDeg, epochJd, tpJd, solution, lastObs, hMag, diameterKm, diameterLowKm?, diameterHighKm?,
+ *   moons, why, whySource, departure?, orbitCaveat?}>}
+ */
+const FAR_BODIES = [
+  {
+    id: 'dwarf-ceres',
+    name: 'Ceres',
+    designation: '1 Ceres',
+    aliases: ['1 Ceres', '(1) Ceres', 'A801 AA', 'dwarf planet'],
+    klass: 'asteroid',
+    farKind: 'dwarf',
+    // sstr=1. Solved 2021-04-13, observations 1995-01-05 to 2021-01-28, re-osculated by JPL to
+    // the current epoch.
+    aAu: 2.7655526, e: 0.0796922951, iDeg: 10.5880278, nodeDeg: 80.2486268, argpDeg: 73.2942145,
+    maDeg: 274.419346, epochJd: SBDB_EPOCH_JD, tpJd: 2461599.8415,
+    solution: '2021-04-13', lastObs: '2021-01-28',
+    hMag: 3.34,
+    diameterKm: 939.4, // SBDB phys-par: Park et al. 2016, Nature 537, 515
+    moons: [], // "the largest without a moon" (Wikipedia, Ceres)
+    why: 'The largest thing in the asteroid belt, a quarter the width of the Moon. NASA’s Dawn went ' +
+      'into orbit around it in 2015 and is still there, switched off.',
+    whySource: 'Wikipedia, Ceres (dwarf planet), read 22 September 2026',
+  },
+  {
+    id: 'dwarf-eris',
+    name: 'Eris',
+    designation: '136199 Eris',
+    // "Xena" is the discoverers' nickname before the name, in the article's infobox.
+    aliases: ['136199', '136199 Eris', '2003 UB313', 'Xena', 'dwarf planet'],
+    klass: 'asteroid',
+    farKind: 'dwarf',
+    // sstr=136199. Solved 2026-06-06, observations 1954-09-03 to 2026-02-06.
+    aAu: 67.9339469, e: 0.438238535, iDeg: 43.9258279, nodeDeg: 36.0047704, argpDeg: 150.794924,
+    maDeg: 211.774434, epochJd: SBDB_EPOCH_JD, tpJd: 2545407.7168,
+    solution: '2026-06-06', lastObs: '2026-02-06',
+    hMag: -1.26,
+    diameterKm: 2326,
+    moons: ['Dysnomia'],
+    why: 'It is 27% more massive than Pluto, though slightly smaller. Finding it in 2005 is what ' +
+      'pushed astronomers to define the word planet, in 2006.',
+    whySource: 'Wikipedia, Eris (dwarf planet), read 22 September 2026',
+  },
+  {
+    id: 'dwarf-haumea',
+    name: 'Haumea',
+    designation: '136108 Haumea',
+    aliases: ['136108', '136108 Haumea', '2003 EL61', 'dwarf planet'],
+    klass: 'asteroid',
+    farKind: 'dwarf',
+    // sstr=136108. Solved 2026-06-06, observations 1955-03-22 to 2026-04-14.
+    aAu: 43.0602902, e: 0.194443015, iDeg: 28.2084739, nodeDeg: 121.786056, argpDeg: 240.690547,
+    maDeg: 223.210412, epochJd: SBDB_EPOCH_JD, tpJd: 2500416.5996,
+    solution: '2026-06-06', lastObs: '2026-04-14',
+    hMag: 0.14,
+    // The mean of 2 122 x 1 688 x 1 036 km (infobox). Drawn round -- the departure says so.
+    diameterKm: 1544,
+    moons: ['Hiʻiaka', 'Namaka'],
+    // 3.9154 h is the SBDB's own rotation period (LCDB).
+    why: 'It spins once every 3.9 hours and is twice as long as it is thick. In 2017 it became the ' +
+      'first dwarf planet found to have a ring.',
+    whySource: 'Wikipedia, Haumea, read 22 September 2026; rotation from the JPL Small-Body Database',
+    departure: 'the real Haumea is an elongated egg, about twice as long as it is thick',
+  },
+  {
+    id: 'dwarf-makemake',
+    name: 'Makemake',
+    designation: '136472 Makemake',
+    aliases: ['136472', '136472 Makemake', '2005 FY9', 'dwarf planet'],
+    klass: 'asteroid',
+    farKind: 'dwarf',
+    // sstr=136472. Solved 2026-06-06, observations 1955-01-29 to 2026-04-05.
+    aAu: 45.5709332, e: 0.158888995, iDeg: 29.027856, nodeDeg: 79.2948338, argpDeg: 297.092273,
+    maDeg: 169.937996, epochJd: SBDB_EPOCH_JD, tpJd: 2408158.6941,
+    solution: '2026-06-06', lastObs: '2026-04-05',
+    hMag: -0.25,
+    diameterKm: 1430, // twice the infobox's mean radius, 715 km
+    moons: ['S/2015 (136472) 1'], // found in 2015, still unnamed
+    why: 'Covered in frozen methane stained reddish-brown. Found in 2005, it is one of the ' +
+      'discoveries that made Pluto a dwarf planet in 2006.',
+    whySource: 'Wikipedia, Makemake, read 22 September 2026',
+  },
+  {
+    id: 'dwarf-sedna',
+    name: 'Sedna',
+    designation: '90377 Sedna',
+    aliases: ['90377', '90377 Sedna', '2003 VB12', 'dwarf planet'],
+    klass: 'asteroid',
+    farKind: 'dwarf',
+    // sstr=90377. Solved 2026-06-06, observations 1990-09-25 to 2026-02-27. The osculating
+    // heliocentric a (544 au) is not the orbit's size in the long run: the barycentric one is 506
+    // au and the lap about 11 400 years, which is the figure the `why` line gives. Near where
+    // Sedna is now, the two ellipses are the same curve to far better than a pixel.
+    aAu: 543.719529, e: 0.859882459, iDeg: 11.9252758, nodeDeg: 144.506166, argpDeg: 311.098773,
+    maDeg: 358.595694, epochJd: SBDB_EPOCH_JD, tpJd: 2479264.7507,
+    solution: '2026-06-06', lastObs: '2026-02-27',
+    hMag: 1.5,
+    // 906 km, +314 / -258 (Lellouch et al. 2013, in the infobox): nobody has weighed or resolved
+    // it, so the card prints the range, not the middle.
+    diameterKm: 906,
+    diameterLowKm: 648,
+    diameterHighKm: 1220,
+    moons: [],
+    why: 'One lap of the Sun takes it about 11 400 years, and even at its closest it is more than ' +
+      'twice as far out as Neptune.',
+    whySource: 'Wikipedia, Sedna (dwarf planet), read 22 September 2026',
+  },
+  {
+    id: 'dwarf-gonggong',
+    name: 'Gonggong',
+    designation: '225088 Gonggong',
+    aliases: ['225088', '225088 Gonggong', '2007 OR10', 'dwarf planet'],
+    klass: 'asteroid',
+    farKind: 'dwarf',
+    // sstr=225088. Solved 2026-08-27, observations 1985-08-19 to 2025-10-15.
+    aAu: 66.8666657, e: 0.504251, iDeg: 30.8990672, nodeDeg: 336.838316, argpDeg: 206.623284,
+    maDeg: 111.664542, epochJd: SBDB_EPOCH_JD, tpJd: 2399252.7247,
+    solution: '2026-08-27', lastObs: '2025-10-15',
+    hMag: 1.82,
+    diameterKm: 1230,
+    moons: ['Xiangliu'],
+    // 31 degrees is the SBDB inclination above; 33 to 101 au are its perihelion and aphelion.
+    why: 'Its orbit swings it between 33 and 101 au from the Sun, tilted 31 degrees out of the ' +
+      'plane the planets move in. It has one moon, Xiangliu.',
+    whySource: 'Wikipedia, Gonggong (dwarf planet), read 22 September 2026',
+  },
+  {
+    id: 'dwarf-quaoar',
+    name: 'Quaoar',
+    designation: '50000 Quaoar',
+    aliases: ['50000', '50000 Quaoar', '2002 LM60', 'dwarf planet'],
+    klass: 'asteroid',
+    farKind: 'dwarf',
+    // sstr=50000. Solved 2026-06-06, observations 1954-05-25 to 2025-08-31.
+    aAu: 43.1561765, e: 0.0352002368, iDeg: 7.9915758, nodeDeg: 188.919125, argpDeg: 163.209051,
+    maDeg: 292.848757, epochJd: SBDB_EPOCH_JD, tpJd: 2480516.3765,
+    solution: '2026-06-06', lastObs: '2025-08-31',
+    hMag: 2.41,
+    diameterKm: 1098, // volume-equivalent, 1 097.6 km (Proudfoot et al. 2025, in the infobox)
+    moons: ['Weywot'], // one confirmed; a second is unconfirmed and not listed
+    why: 'It has two thin rings, farther out than theory said rings could last, and one moon, Weywot.',
+    whySource: 'Wikipedia, Quaoar, read 22 September 2026',
+  },
+  {
+    id: 'dwarf-orcus',
+    name: 'Orcus',
+    designation: '90482 Orcus',
+    aliases: ['90482', '90482 Orcus', '2004 DW', 'dwarf planet'],
+    klass: 'asteroid',
+    farKind: 'dwarf',
+    // sstr=90482. Solved 2026-06-06, observations 1951-11-08 to 2026-04-13.
+    aAu: 39.3768654, e: 0.220524063, iDeg: 20.5568102, nodeDeg: 268.405352, argpDeg: 73.5684861,
+    maDeg: 189.097291, epochJd: SBDB_EPOCH_JD, tpJd: 2504046.135,
+    solution: '2026-06-06', lastObs: '2026-04-13',
+    hMag: 2.13,
+    diameterKm: 910, // +50 / -40 km (Brown 2018, in the infobox)
+    moons: ['Vanth'],
+    why: 'It keeps Pluto’s rhythm, two laps of the Sun for every three of Neptune’s, but in the ' +
+      'opposite phase: when Pluto is closest in, Orcus is farthest out.',
+    whySource: 'Wikipedia, Orcus (dwarf planet), read 22 September 2026',
+  },
+  {
+    id: 'interstellar-1i',
+    name: 'ʻOumuamua',
+    designation: '1I/2017 U1',
+    aliases: ['Oumuamua', "'Oumuamua", '1I', '1I/2017 U1', 'A/2017 U1', 'interstellar object'],
+    // JPL files it as an asteroid (kind `au`, prefix A): it showed no coma.
+    klass: 'asteroid',
+    farKind: 'interstellar',
+    // sstr=1I. Solved 2018-06-26, observations 2017-10-14 to 2018-01-02. JPL's fit includes the
+    // non-gravitational acceleration; two-body motion from its osculating elements does not.
+    aAu: -1.27234501, e: 1.2011338, iDeg: 122.741706, nodeDeg: 24.5969096, argpDeg: 241.810536,
+    maDeg: 51.1576198, epochJd: 2458080.5, tpJd: 2458006.0073,
+    solution: '2018-06-26', lastObs: '2018-01-02',
+    hMag: 22.08,
+    // No diameter: "between 100 and 1000 m long" is a range of shapes, not a size. The asteroid
+    // builder draws its default rock, and the departure says what is not known.
+    diameterKm: null,
+    moons: null,
+    why: 'The first object ever seen passing through the Solar System from another star, found on ' +
+      '19 October 2017. It sped up slightly on the way out, and nobody is sure why.',
+    whySource: 'Wikipedia, 1I/ʻOumuamua, read 22 September 2026',
+    departure: 'nobody has seen its shape; the way its brightness changed says it is much longer or flatter than this',
+    orbitCaveat: 'where it is now is worked out from JPL’s orbit, not seen',
+  },
+  {
+    id: 'interstellar-2i',
+    name: '2I/Borisov',
+    designation: 'C/2019 Q4 (Borisov)',
+    aliases: ['Borisov', 'C/2019 Q4', 'C/2019 Q4 (Borisov)', '2I', 'interstellar object', 'interstellar comet'],
+    klass: 'comet',
+    farKind: 'interstellar',
+    // sstr=2I. Solved 2024-06-24, observations 2019-02-24 to 2020-09-30.
+    aAu: -0.851492255, e: 3.35647578, iDeg: 44.0526425, nodeDeg: 308.147729, argpDeg: 209.123686,
+    maDeg: 34.4294703, epochJd: 2458853.5, tpJd: 2458826.0528,
+    solution: '2024-06-24', lastObs: '2020-09-30',
+    hMag: null, // a comet's M1 (13.8) is not an asteroid's H, and nothing here reads it
+    diameterKm: null, // "at most 0.4 to 0.5 km" is an upper limit, not a size
+    moons: null,
+    why: 'The first comet seen coming from another star, found on 29 August 2019 by Gennadiy Borisov, ' +
+      'an amateur astronomer and telescope maker in Crimea.',
+    whySource: 'Wikipedia, 2I/Borisov, read 22 September 2026',
+    // scene/models.js shows a selected comet's tails at any distance, so it reads as a comet. Seen
+    // in the browser on 2026-09-22: two tails on a comet 48 au out that nobody has seen since 2020.
+    departure: 'the tails are part of the drawing, not an observation: nobody has seen Borisov since September 2020',
+    orbitCaveat: 'where it is now is worked out from JPL’s orbit, not seen',
+  },
+];
+
+/**
+ * The far-bodies layer's records. Not samples: cls 'inferred', a real phase, and no dashed halo.
+ * @returns {Array<Object>} 10 records
+ */
+export function farBodies() {
+  return FAR_BODIES.map((b) => {
+    const aKm = b.aAu * AU_KM; // negative on a hyperbola, which kepler.js expects
+    const qKm = aKm * (1 - b.e);
+    const epochMs = jdToMs(b.epochJd);
+    const lastObsMs = Date.parse(b.lastObs);
+    const bound = b.e < 1;
+    return {
+      id: b.id,
+      name: b.name,
+      layer: 'far-bodies',
+      klass: b.klass,
+      propagator: 'kepler',
+      frame: 'sun-inertial',
+      cls: 'inferred',
+      // The age the card prints is the age of the EVIDENCE, as for the Roadster: the last
+      // observation in JPL's fit, not the epoch the elements were re-osculated to.
+      epoch: lastObsMs,
+      source: 'jpl-sbdb',
+      elements: {
+        qKm,
+        e: b.e,
+        aKm,
+        iRad: b.iDeg * DEG,
+        omRad: b.nodeDeg * DEG,
+        wRad: b.argpDeg * DEG,
+        maRad: b.maDeg * DEG,
+        epochMs,
+        muKm3S2: MU_SUN,
+      },
+      meta: {
+        designation: b.designation,
+        aliases: b.aliases.slice(),
+        farKind: b.farKind,
+        aAu: b.aAu,
+        qAu: qKm / AU_KM,
+        aphelionAu: bound ? b.aAu * (1 + b.e) : null,
+        eccentricity: b.e,
+        inclinationDeg: b.iDeg,
+        nodeDeg: b.nodeDeg,
+        argpDeg: b.argpDeg,
+        meanAnomalyDeg: b.maDeg,
+        perihelionMs: jdToMs(b.tpJd),
+        // JPL's heliocentric osculating period. See Sedna's row for why no card prints it.
+        periodDays: bound ? periodDays(aKm) : null,
+        absoluteMagnitude: b.hMag,
+        diameterKm: b.diameterKm,
+        diameterLowKm: b.diameterLowKm ?? null,
+        diameterHighKm: b.diameterHighKm ?? null,
+        moons: Array.isArray(b.moons) ? b.moons.slice() : null,
+        // Never near Earth: the asteroid card's near-Earth sentence reads this, as for Vesta.
+        neo: false,
+        why: b.why,
+        whySource: b.whySource,
+        // Noon UTC, so "6 June 2026" is 6 June in every time zone a visitor reads it from.
+        cite: `JPL Small-Body Database, ${b.designation}: orbit solved ${timeText.longDate(Date.parse(`${b.solution}T12:00:00Z`))}, read 22 September 2026`,
+        solution: b.solution,
+        // The honesty clause's arc sentence is for a body nobody can see any more; the dwarf
+        // planets are observed every season and their age line is enough.
+        arcEnd: b.orbitCaveat ? `${b.lastObs}T12:00:00Z` : null,
+        orbitCaveat: b.orbitCaveat || null,
+        departure: b.departure || null,
+        // scene/orbitline.js draws the whole orbit (or, on a hyperbola, the whole passage) for
+        // these rather than the coming year, which is a sliver of a 560-year lap.
+        wholePath: true,
       },
     };
   });
@@ -1088,6 +1406,7 @@ function siteRecord(row) {
 //     been a guess, and every other layer on this map has taught the visitor that a dot is a claim.
 
 import { ODDITIES } from './oddities.js';
+import { timeText } from '../copy/en.js';
 
 /** JD -> ms. 2440587.5 is the Julian Date of the Unix epoch. */
 function jdToMs(jd) {

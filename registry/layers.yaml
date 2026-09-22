@@ -203,6 +203,22 @@ layers:
     # enabled: absent means on. Stage B shipped 2026-09-06; the `enabled: false` these rows carried
     # until 2026-09-08 was never read by the browser, which is exactly what spec 0026 req 8 fixes.
 
+  # Dwarf planets and the two interstellar visitors (2026-09-22): hand-kept rows in data/sample.js
+  # farBodies(), each with its JPL SBDB query, epoch and solution date, and each drawn where it is
+  # now. Not rows of `asteroids`, whose hand rows are stand-ins shown only without the NEO snapshot.
+  # `bundled`: the elements are checked into this repository and nothing is fetched. `kepler` on
+  # both conic branches -- 'Oumuamua and Borisov are hyperbolic, which propagate/kepler.js solves.
+  - id: far-bodies
+    display: Dwarf planets and far travellers
+    moments: {wonder: on, now: off, next: off}
+    source: bundled
+    propagator: kepler
+    frame: sun-inertial
+    style: {kind: model, model: asteroid-generic, glyph: asteroid, colour: asteroid, near_km: 500000}
+    card: asteroid
+    select: {all: true}      # the curation IS the record list, as for the oddities
+    budget: {max_items: 20}
+
   - id: comets
     display: Comets
     moments: {wonder: on, now: off, next: on}
