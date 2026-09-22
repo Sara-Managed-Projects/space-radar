@@ -309,6 +309,9 @@ const ANCHORS = {
   },
 };
 
+// `earthRangeKm`: how far the craft really is from Earth, for the three held at a Sun–Earth
+// Lagrange point. The drawing puts them on Earth's orbit (construction A above), so any distance
+// FROM EARTH computed off that drawing measures the construction, not the spacecraft.
 const ANCHORED_CRAFT = [
   {
     id: 'deep-jwst',
@@ -316,6 +319,7 @@ const ANCHORED_CRAFT = [
     klass: 'telescope',
     horizonsId: -170,
     anchor: 'earth',
+    earthRangeKm: 1.5e6,
     note: 'A 6.5-metre gold mirror behind a sunshield the size of a tennis court, kept in the ' +
       'dark 1.5 million km behind Earth.',
     offset: 'It orbits the Sun–Earth L2 point, 1.5 million km beyond Earth — one hundredth of ' +
@@ -327,6 +331,7 @@ const ANCHORED_CRAFT = [
     klass: 'telescope',
     horizonsId: null,
     anchor: 'earth',
+    earthRangeKm: 1.5e6,
     note: 'It measured the positions and motions of about two billion stars — including the ' +
       'ones this app draws behind everything else.',
     offset: 'Also at Sun–Earth L2, and drawn the same way. Gaia stopped observing in 2025; its ' +
@@ -338,6 +343,7 @@ const ANCHORED_CRAFT = [
     klass: 'telescope',
     horizonsId: -21,
     anchor: 'earth',
+    earthRangeKm: 1.5e6,
     note: 'It has watched the Sun without a break since 1995, and has found more than 5 000 ' +
       'comets falling into it along the way.',
     offset: 'It orbits the Sun–Earth L1 point, 1.5 million km SUNWARD of Earth. Drawn on ' +
@@ -486,6 +492,10 @@ export function sampleDeepSpace() {
         periodDays: periodDays(aKm),
         approx: true,
         anchorDrift: anchor.driftNote,
+        // Only for craft held near EARTH. Drawn on Earth's own orbit, their distance from Earth is
+        // the construction's error -- up to ~1.1 million km, the same order as the real 1.5 million
+        // -- so the card printed JWST at "0.4x the Moon's distance". ui/cards.js reads this instead.
+        ...(Number.isFinite(c.earthRangeKm) ? { earthRangeKm: c.earthRangeKm } : {}),
         approxFields: ['position offset from ' + anchor.label],
         why: NO_CORS + ' ' + c.offset + ' The orbit itself is the published J2000 element set ' +
           'for ' + anchor.label + ', mean anomaly included, so the place along it is real to ' +

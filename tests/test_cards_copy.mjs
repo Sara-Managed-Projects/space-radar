@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const JS = join(ROOT, 'site/js');
-const { drawingLine, classLine, flyTo } = await import(join(JS, 'ui/cards.js'));
+const { drawingLine, classLine, flyTo, rightNowFor } = await import(join(JS, 'ui/cards.js'));
 const { compare } = await import(join(JS, 'copy/en.js'));
 
 const problems = [];
@@ -98,6 +98,37 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
   flyTo({ id: 'iss', klass: 'station' }, { cameraRig: { flyTo: (o) => rig2.push(o), follow: () => {} }, stage: { toScene: () => ({ length: () => 6.8 }) } },
     { ok: true, posKm: { x: 6800, y: 0, z: 0 }, frame: 'earth-inertial' });
   check(rig2.length === 1, 'with no ctx.flyToRecord the card still flies on its own');
+}
+
+// A CRAFT AT L1 OR L2 IS 1.5 MILLION KM FROM EARTH, WHATEVER ITS DRAWING SAYS.
+//
+// data/sample.js draws JWST, Gaia and SOHO on Earth's own orbit (construction A), and that stand-in
+// sits anything up to ~1.1 million km from the real Earth. So the distance FROM EARTH the card
+// computed off the drawing was the construction's error: on 2026-09-21 the JWST card read
+// "0.4x the Moon's distance", 0.001 au and 0.009 radio-minutes, directly above a note saying 1.5
+// million km. The comparison chip is computed from the same number as these rows, so the rows are
+// what is asserted.
+{
+  const { sampleDeepSpace } = await import(join(JS, 'data/sample.js'));
+  const rows = sampleDeepSpace();
+  const ctx = { clock: { now: () => Date.UTC(2026, 8, 21) }, worlds: null, selected: () => null };
+  const cell = (id, label) => {
+    const r = rows.find((x) => x.id === id);
+    const hit = r && rightNowFor(r, ctx).find(([k]) => k === label);
+    return hit ? hit[1] : null;
+  };
+  for (const id of ['deep-jwst', 'deep-gaia', 'deep-soho']) {
+    const d = cell(id, 'Distance from Earth');
+    check(d && /^0\.010? astronomical units$/.test(d), `${id} is about 1.5 million km (0.010 au) from Earth, not "${d}"`);
+    const radio = cell(id, 'Radio time each way');
+    check(radio && /^0\.08\d? minutes$/.test(radio), `${id} is about 5 radio-seconds away (0.083 minutes), not "${radio}"`);
+  }
+  // Only Earth-anchored craft: MRO sits on Mars's orbit, where the construction's error is a few
+  // per cent of the real distance, and it must still be COMPUTED -- with no Earth position in this
+  // harness that is the honest "could not work this out", not a borrowed constant.
+  const mro = rows.find((x) => x.id === 'deep-mro');
+  check(mro && !(mro.meta && 'earthRangeKm' in mro.meta), 'a Mars-anchored craft carries no fixed Earth range');
+  check(cell('deep-mro', 'Distance from Earth') !== '0.010 astronomical units', 'MRO is not given the L2 distance');
 }
 
 if (problems.length) {
