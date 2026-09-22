@@ -126,8 +126,9 @@ const ASTEROIDS = [
     hMag: 3.34,
     diameterKm: 939,
     neo: false,
-    note: 'A quarter the width of the Moon, and the largest thing in the asteroid belt. It has ' +
-      'more fresh water than Earth does, as ice.',
+    // "It has more fresh water than Earth" was an estimate stated as a measurement.
+    note: 'A quarter the width of the Moon, and the largest thing in the asteroid belt. It may ' +
+      'hold more fresh water than Earth does, as ice.',
   },
   {
     id: 'asteroid-4',
@@ -348,8 +349,9 @@ const ANCHORED_CRAFT = [
     horizonsId: -21,
     anchor: 'earth',
     earthRangeKm: 1.5e6,
-    note: 'It has watched the Sun without a break since 1995, and has found more than 5 000 ' +
-      'comets falling into it along the way.',
+    // "Without a break" was not true: contact was lost from June to September 1998.
+    note: 'It has watched the Sun since 1995, and has found more than 5 000 comets falling ' +
+      'into it along the way.',
     offset: 'It orbits the Sun–Earth L1 point, 1.5 million km SUNWARD of Earth. Drawn on ' +
       "Earth's orbit; the offset is smaller than the dot.",
   },
@@ -360,7 +362,7 @@ const ANCHORED_CRAFT = [
     horizonsId: -74,
     anchor: 'mars',
     note: 'Its HiRISE camera can see something the size of a dinner table on Mars, and it ' +
-      'relays most of what the rovers say.',
+      'relays much of what the rovers say.',
     offset: 'It orbits Mars at about 300 km. At solar-system scale that is drawn as Mars.',
   },
   {
@@ -369,8 +371,11 @@ const ANCHORED_CRAFT = [
     klass: 'probe',
     horizonsId: -61,
     anchor: 'jupiter',
-    note: 'It dives between Jupiter and its radiation belts every 38 days, closer to the cloud ' +
-      'tops than anything has been.',
+    // "Every 38 days" was one stage of an orbit the moon flybys kept shortening (53 days in the
+    // prime mission, about 33 by 2024); "than anything has been" overlooked Galileo's probe,
+    // which went in.
+    note: 'It dives between Jupiter and its radiation belts every month or so, closer to the ' +
+      'cloud tops than any orbiter before it.',
     offset: 'It orbits Jupiter on a long ellipse. At solar-system scale that is drawn as Jupiter.',
   },
 ];
@@ -396,7 +401,7 @@ const CRUISING_CRAFT = [
     lonDeg: 255,
     latDeg: 35,
     note: 'The most distant thing people have made. It left the Sun’s bubble in 2012 and ' +
-      'its radio signal takes about 23 hours to get here.',
+      'its radio signal takes about a day to get here.',
   },
   {
     id: 'deep-voyager-2',
@@ -423,8 +428,9 @@ const CRUISING_CRAFT = [
     speedKmS: 13.6,
     lonDeg: 293,
     latDeg: -2,
+    // "Still sending back" Arrokoth: that downlink finished in 2020.
     note: 'It crossed Pluto in nine hours in 2015 after nine years of falling towards it, and ' +
-      'is still sending back what it saw of a Kuiper belt rock called Arrokoth.',
+      'in 2019 flew past Arrokoth, a Kuiper belt rock, the farthest thing ever visited.',
   },
 ];
 
