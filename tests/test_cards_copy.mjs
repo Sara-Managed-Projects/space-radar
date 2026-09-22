@@ -235,6 +235,9 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
   const sl = { id: 'sat-9', name: 'STARLINK-31234', klass: 'satellite', layer: 'starlink-trains', propagator: 'static', frame: 'earth-inertial', pos: at(6930), meta: { launchYear: 2025 } };
   const slSaid = String(firstSentence(sl, { ...ctx, records: () => [sl] }, m(sl), { state: 'none' }));
   check(/is a Starlink V2 Mini going round the Earth/.test(slSaid), `a Starlink says what kind it is: "${slSaid}"`);
+  const hst = { id: 'sat-20580', name: 'HST', klass: 'satellite', layer: 'visual', propagator: 'static', frame: 'earth-inertial', pos: at(6850), meta: { noradId: 20580 } };
+  const hstSaid = String(firstSentence(hst, { ...ctx, records: () => [hst] }, m(hst), { state: 'none' }));
+  check(/Hubble Space Telescope is a space telescope going round the Earth/.test(hstSaid), `Hubble is a space telescope, not a satellite: "${hstSaid}"`);
   const plain = { ...sl, id: 'sat-8', name: 'KNACKSAT-2', layer: 'stations' };
   check(/is a satellite going round the Earth/.test(String(firstSentence(plain, { ...ctx, records: () => [plain] }, m(plain), { state: 'none' }))), 'a CubeSat with no route is still just a satellite');
 }

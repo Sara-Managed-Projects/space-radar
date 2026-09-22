@@ -1271,6 +1271,9 @@ export const COPY = {
       // and Tiangong sit 0.00 to 0.43 km from them and everything else is over 1 600 km away.
       leadDocked: '{name} is {kind} docked at the {station}',
       aSpacecraft: 'a spacecraft',
+      // A route for one named telescope (Hubble, Chandra, TESS) carries a proper name, not a type;
+      // its class says what it is.
+      aTelescope: 'a space telescope',
       whyLaunchedDays: 'launched {n} days ago',
       whyLaunchedYear: 'launched in {year}',
       operator: 'flown by {operator}',
