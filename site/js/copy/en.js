@@ -453,6 +453,7 @@ export const COPY = {
     dash: ' — ',
     colon: ': ',
     ellipsis: '…',
+    sentenceJoin: '. ',
   },
 
   // The visual class of a record, in words. Record.klass -> a badge on the card.
@@ -548,6 +549,13 @@ export const COPY = {
     train: 'A train of {n} satellites comes over you {when}',
     // ZHR is the rate under a perfect sky with the radiant overhead, so it is "up to", never "you will see".
     shower: 'The {name} meteor shower peaks around {date}, up to {zhr} an hour under a dark sky',
+    showerMoon: 'The {name} meteor shower peaks around {date}, up to {zhr} an hour under a dark sky, with the Moon {pct}% lit that night',
+    showerNoMoon: 'The {name} meteor shower peaks around {date}, up to {zhr} an hour under a dark sky, and the Moon is nearly new',
+    // With a place set: where the radiant is that night, 20:00 to 06:00 local. Meteors come only
+    // while it is up, and more the higher it is.
+    radiantHigh: 'From where you are its radiant is highest around {time}',
+    radiantLow: 'From where you are its radiant stays low all night, so expect far fewer',
+    radiantNeverUp: 'From where you are its radiant stays below the horizon that night',
     none: 'Nothing is scheduled in what the app has loaded.',
     notLoaded: 'Not loaded, so not listed: {layers}.',
     noObserver: 'Set where you are and passes over you join the list.',

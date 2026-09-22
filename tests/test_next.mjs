@@ -65,10 +65,34 @@ check(buildNextItems([launch('A', H)], now, { observer: { latRad: 0.9, lonRad: 0
   check(within.length === 1 && within[0].showerId === 'orionids', `from 22 September the next month holds the Orionids (${within.map((x) => x.showerId)})`);
   const text = rt(within[0], sept22);
   check(/The Orionids meteor shower peaks around .*21 Oct/.test(text) && /up to 20 an hour/.test(text) && !/\d\d:\d\d/.test(text), `a shower row gives a date, never a time: "${text}"`);
+  // The Moon that night (Astronomy Engine): 2026's Orionids fall under a bright Moon, the Perseids
+  // under a new one. The fraction is the same wherever you stand, so it needs no place.
+  check(/with the Moon 8\d% lit that night/.test(text), `the Orionids row says the Moon will be bright: "${text}"`);
+  const pers = showerItems(new Date(2026, 7, 1).getTime(), 30 * D, SHOWERS).find((x) => x.showerId === 'perseids');
+  check(pers && /the Moon is nearly new/.test(rt(pers, new Date(2026, 7, 1).getTime())), `and the 2026 Perseids row says the Moon is out of the way: "${pers && rt(pers, new Date(2026, 7, 1).getTime())}"`);
   const onTheDay = showerItems(new Date(2026, 11, 14, 23, 0).getTime(), 30 * D, SHOWERS).map((x) => x.showerId);
   check(onTheDay.includes('geminids') && onTheDay.includes('ursids'), `on the night of the peak it is still listed (${onTheDay})`);
   const wrap = showerItems(new Date(2026, 11, 20).getTime(), 30 * D, SHOWERS).map((x) => x.showerId);
   check(wrap.includes('quadrantids'), `in late December the Quadrantids of next January are listed (${wrap})`);
+  // With a place: the radiant. From London the Orionids' radiant (Orion, dec +16) climbs high
+  // before dawn; the Eta Aquariids' (dec -1, in May's short nights) stays low.
+  const { radiantThatNight } = await import(join(JS, 'ui/next.js'));
+  // "Local" is the browser's own time zone, which for a visitor is where they are. Pin it to the
+  // place under test, or the night window is this machine's night, not London's.
+  const savedTz = process.env.TZ;
+  process.env.TZ = 'Europe/London';
+  const london = { latRad: 51.5 * Math.PI / 180, lonRad: -0.13 * Math.PI / 180 };
+  const ori = radiantThatNight(SHOWERS.find((x) => x.id === 'orionids'), new Date(2026, 9, 21, 12).getTime(), london);
+  const oriHour = new Date(ori.tMs).getHours();
+  check(ori && ori.altDeg > 45 && (oriHour >= 4 && oriHour <= 6), `the Orionids' radiant is high before dawn from London (${ori && ori.altDeg.toFixed(0)} deg at ${oriHour}h local)`);
+  process.env.TZ = 'Australia/Sydney';
+  const sydney = { latRad: -33.9 * Math.PI / 180, lonRad: 151.2 * Math.PI / 180 };
+  const urs = radiantThatNight(SHOWERS.find((x) => x.id === 'ursids'), new Date(2026, 11, 22, 12).getTime(), sydney);
+  process.env.TZ = 'Europe/London';
+  check(urs && urs.altDeg < 0, `the Ursids' radiant (dec +76) never rises from Sydney (${urs && urs.altDeg.toFixed(0)} deg)`);
+  const withPlace = rt(showerItems(sept22, 30 * D, SHOWERS, london)[0], sept22);
+  check(/From where you are its radiant is highest around \d\d:\d\d/.test(withPlace), `with a place the row says when the radiant is highest: "${withPlace}"`);
+  if (savedTz === undefined) delete process.env.TZ; else process.env.TZ = savedTz;
   const withShowers = buildNextItems([], sept22, { showers: SHOWERS });
   check(withShowers.length === 1 && withShowers[0].kind === 'shower' && withShowers[0].record === null, 'with nothing else loaded the list still has the shower');
 }
