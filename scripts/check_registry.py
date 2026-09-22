@@ -669,6 +669,31 @@ def check_dso_hand() -> list:
                 fail(where, f"`{key}` must be a number in [{lo}, {hi}]")
         if not o.get("name") or not o.get("type"):
             fail(where, "needs `name:` and an OpenNGC `type:` code")
+
+    # THE BUILT FILE AGREES WITH THIS ONE. site/data/dso.json is built by scripts/build-dso.py from
+    # OpenNGC's CSVs, which are not in the tree, so a change to a card line here is patched into
+    # the JSON by hand and nothing regenerated would catch a miss. Found by needing it: thirteen
+    # lines corrected on 2026-09-22 had to land in both files.
+    # An empty file is tests/test_refusals.py's names-not-bytes tree, not a build.
+    built = ROOT / "site" / "data" / "dso.json"
+    if built.exists() and built.stat().st_size > 0:
+        import json
+        rows = {r.get("id"): r for r in json.loads(built.read_text(encoding="utf-8")).get("objects", [])}
+        for o in objects:
+            if not isinstance(o, dict) or not o.get("id"):
+                continue
+            row = rows.get(o["id"])
+            where = f"dso-hand.yaml[{o['id']}]"
+            if row is None:
+                fail(where, "is not in site/data/dso.json; rebuild it with scripts/build-dso.py")
+                continue
+            if (row.get("why") or None) != (o.get("why") or None):
+                fail(where, "`why:` differs from site/data/dso.json, which is what the card prints. "
+                            "Rebuild with scripts/build-dso.py, or patch the same sentence into both")
+            d = o.get("dist_kly")
+            mid = (d[0] + d[1]) / 2 if isinstance(d, list) and len(d) == 2 else d
+            if isinstance(mid, (int, float)) and row.get("distLy") != round(mid * 1000):
+                fail(where, f"`dist_kly: {d}` but site/data/dso.json draws it at {row.get('distLy')} ly")
     return objects
 
 

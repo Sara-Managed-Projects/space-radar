@@ -388,6 +388,8 @@ CASES: list[tuple[str, str, str, str]] = [
      "layers.yaml", "    propagator: per-record", "    propagator: whatever"),
     ("a per-record layer whose frame is neither a frame nor the reserved literal",
      "layers.yaml", "    frame: per-record", "    frame: whenever"),
+    ("a deep-sky card line changed in the registry and not in the built file the card reads",
+     "dso-hand.yaml", "a small galaxy that kept its jewellery", "a small galaxy that kept its rings"),
 ]
 
 
@@ -691,6 +693,9 @@ def main() -> int:
             # ...and registry/sources.yaml against harvest/parsers/ and the list/query files.
             shutil.copytree(ROOT / "harvest", work / "harvest",
                             ignore=shutil.ignore_patterns("__pycache__"))
+            # ...and registry/dso-hand.yaml against the built site/data/dso.json the card reads.
+            (work / "site" / "data").mkdir(parents=True, exist_ok=True)
+            shutil.copy2(ROOT / "site" / "data" / "dso.json", work / "site" / "data" / "dso.json")
 
             path = work / "registry" / filename
             text = path.read_text(encoding="utf-8")
