@@ -167,6 +167,52 @@ async function twoVisits({ withCaches }) {
   if (!problems.length) console.log('  an empty source retries at 15 minutes and backs off; a good copy stands for the source cadence and survives a failure');
 }
 
+// A SAVED COPY, THEN LIVE (2026-09-22). Snapshots were uploaded once from a laptop; snapshot-first
+// used to mean snapshot-only, so the map would have frozen at the upload. Past its valid_until a
+// snapshot is drawn at once and the publisher is asked behind it; a newer answer replaces it.
+async function savedCopy({ validMinutes, liveOk }) {
+  const store = new Map();
+  globalThis.localStorage = {
+    get length() { return store.size; }, key: (i) => [...store.keys()][i] ?? null,
+    getItem: (k) => store.get(k) ?? null, removeItem: (k) => { store.delete(k); },
+    setItem: (k, v) => { store.set(k, String(v)); },
+  };
+  delete globalThis.caches;
+  const fetched = new Date(Date.now() - 3 * 3600e3).toISOString();
+  const valid = new Date(Date.now() + validMinutes * 60e3).toISOString();
+  let upstream = 0;
+  globalThis.fetch = async (url) => {
+    const u = String(url);
+    if (u.endsWith('/data/v1/index.json')) {
+      return new Response(JSON.stringify({ schema: 1, snapshots: { 'celestrak-stations': { status: 'ok', fetched_at: fetched, valid_until: valid } } }), { status: 200 });
+    }
+    if (u.includes('/data/v1/')) {
+      return new Response(JSON.stringify({ schema: 1, source: 'celestrak-stations', fetched_at: fetched, valid_until: valid, body: [omm(1)] }), { status: 200 });
+    }
+    upstream += 1;
+    if (!liveOk) return new Response('GP data has not updated since your last successful download', { status: 403 });
+    return new Response(JSON.stringify([omm(1), omm(2), omm(3)]), { status: 200 });
+  };
+  const mod = await import(join(ROOT, 'site/js/data/sources.js') + `?saved=${validMinutes}-${liveOk}`);
+  const updates = [];
+  mod.onUpdate((id, r) => updates.push({ id, n: r.data ? r.data.length : 0, via: r.via }));
+  const first = await mod.load('celestrak-stations', { await: true });
+  await new Promise((r) => setTimeout(r, 20));
+  return { first, updates, upstream };
+}
+{
+  const stale = await savedCopy({ validMinutes: -60, liveOk: true });
+  check(stale.first.data && stale.first.data.length === 1, `an out-of-date saved copy is handed back at once (${stale.first.data && stale.first.data.length} record)`);
+  check(stale.upstream === 1, `and the publisher is asked behind it (${stale.upstream} request)`);
+  const live = stale.updates.find((u) => u.n === 3);
+  check(!!live && live.via === 'live', `the newer live answer replaces it and is announced (${JSON.stringify(stale.updates)})`);
+  const refused = await savedCopy({ validMinutes: -60, liveOk: false });
+  check(refused.upstream === 1 && !refused.updates.some((u) => u.n !== 1), 'a refusal leaves the saved copy exactly as it was');
+  const fresh = await savedCopy({ validMinutes: 60, liveOk: true });
+  check(fresh.upstream === 0 && fresh.first.data.length === 1, 'a snapshot still inside its valid_until is the answer, and nothing is asked upstream');
+  if (!problems.length) console.log('  an out-of-date snapshot is drawn at once and replaced by a newer live answer; an in-date one is left alone');
+}
+
 if (problems.length) {
   console.log(`sources cache: ${problems.length} problem(s)`);
   for (const p of problems) console.log('  - ' + p);
