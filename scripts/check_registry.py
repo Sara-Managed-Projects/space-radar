@@ -1643,6 +1643,10 @@ def check_sites(sites_doc: dict, sites: list, world_ids: set) -> None:
             if " -- " in doing:
                 fail(where, "`doing:` contains ' -- ', which is this file's comment style and not "
                             "the card's")
+            # 2026-09-22: three landings shipped as "1,935 grams" beside every other card's
+            # "1 500 grains" and fmt.int's "15 000 km". One way of writing a number on the page.
+            if re.search(r"\d,\d{3}", doing):
+                fail(where, "`doing:` writes a thousands comma; the cards write 1 935, with a space")
             low = doing.lower()
             for phrase in TIME_RELATIVE:
                 if phrase in low:
