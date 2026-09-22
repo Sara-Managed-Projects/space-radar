@@ -1010,6 +1010,8 @@ export const COPY = {
   },
 
   sky: {
+    // A shower's radiant, marked in the sky view for the nights around its peak (sky/radiants.js).
+    radiant: '{name} radiant',
     // The copy pattern that is the actual feature (docs/design-language.md).
     lookLine: 'Look {dir}, {fists}, at {time}. It moves for about {mins} minutes.',
     lookLineNoDuration: 'Look {dir}, {fists}, at {time}.',

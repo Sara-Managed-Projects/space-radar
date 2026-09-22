@@ -18,6 +18,9 @@
 
 import * as THREE from '../../vendor/three.module.min.js';
 import * as Astronomy from '../../vendor/astronomy.js';
+import { SHOWERS } from '../data/showers.js';
+import { activeShowers, radiantAltAz } from './radiants.js';
+import { COPY, t } from '../copy/en.js';
 
 const DEG2RAD = Math.PI / 180;
 const RAD2DEG = 180 / Math.PI;
@@ -268,6 +271,34 @@ function makeLetterTexture(letter) {
   g.strokeText(letter, size / 2, size / 2 + 3);
   g.fillStyle = '#E8ECF2';
   g.fillText(letter, size / 2, size / 2 + 3);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace ?? tex.colorSpace;
+  tex.needsUpdate = true;
+  return tex;
+}
+
+/** A name on the sky, the cardinals' style, with a small ring on the left that marks the point. */
+function makeRadiantTexture(text) {
+  const canvas = typeof document !== 'undefined' ? document.createElement('canvas') : null;
+  if (!canvas) return null;
+  canvas.width = 512;
+  canvas.height = 64;
+  const g = canvas.getContext('2d');
+  g.clearRect(0, 0, 512, 64);
+  g.lineWidth = 3;
+  g.strokeStyle = '#FF9F43';
+  g.beginPath();
+  g.arc(32, 32, 14, 0, Math.PI * 2);
+  g.stroke();
+  g.font = '600 30px Inter, system-ui, sans-serif';
+  g.textAlign = 'left';
+  g.textBaseline = 'middle';
+  g.lineWidth = 6;
+  g.lineJoin = 'round';
+  g.strokeStyle = '#0B0E14';
+  g.strokeText(text, 58, 34);
+  g.fillStyle = '#E8ECF2';
+  g.fillText(text, 58, 34);
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace ?? tex.colorSpace;
   tex.needsUpdate = true;
@@ -619,8 +650,47 @@ export function createSkyView(ctx, options = {}) {
     const horizon = buildHorizon(R);
     const { ticks, arcs } = buildAltitudeTicks(R);
     const cardinals = buildCardinals(R);
-    group.add(dome, ground, horizon, ticks, arcs, cardinals);
-    parts = { R, dome, ground, horizon, ticks, arcs, cardinals };
+    const radiants = new THREE.Group();
+    radiants.name = 'sky-radiants';
+    group.add(dome, ground, horizon, ticks, arcs, cardinals, radiants);
+    parts = { R, dome, ground, horizon, ticks, arcs, cardinals, radiants };
+    radiantsFor = null;
+  }
+
+  // The radiants of the showers near their peak, re-placed once a minute: a radiant moves across
+  // the sky at the stars' pace, a quarter of a degree a minute.
+  let radiantsFor = null;   // the local date the sprites were made for
+  let radiantsAt = -Infinity;
+  function placeRadiants(tMs) {
+    if (!parts || !parts.radiants || !observer) return;
+    const day = new Date(tMs).toDateString();
+    if (radiantsFor !== day) {
+      for (const s of [...parts.radiants.children]) { s.material.map?.dispose?.(); s.material.dispose(); parts.radiants.remove(s); }
+      for (const sh of activeShowers(tMs, SHOWERS)) {
+        const tex = makeRadiantTexture(t(COPY.sky.radiant, { name: sh.display }));
+        if (!tex) continue;
+        const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false }));
+        const h = parts.R * 0.05; // the cardinals are 0.055; a name of this length needs about as much
+        sprite.scale.set(h * 8, h, 1);
+        sprite.center.set(32 / 512, 0.5); // the ring, not the middle of the name, sits on the point
+        sprite.renderOrder = 102;
+        sprite.frustumCulled = false;
+        sprite.userData.shower = sh;
+        parts.radiants.add(sprite);
+      }
+      radiantsFor = day;
+      radiantsAt = -Infinity;
+    }
+    if (tMs - radiantsAt < 60e3 && tMs >= radiantsAt) return;
+    radiantsAt = tMs;
+    const where = { latRad: observer.latDeg * DEG2RAD, lonRad: observer.lonDeg * DEG2RAD };
+    for (const sprite of parts.radiants.children) {
+      const aa = radiantAltAz(sprite.userData.shower, tMs, where);
+      sprite.visible = !!aa && aa.altDeg > 0;
+      if (!aa) continue;
+      localDir(aa.azDeg * DEG2RAD, aa.altDeg * DEG2RAD, _dir).multiplyScalar(parts.R * 0.94);
+      sprite.position.copy(_dir);
+    }
   }
 
   function disposeGroup() {
@@ -768,6 +838,7 @@ export function createSkyView(ctx, options = {}) {
     measureFrame();
     solveSun(t);
     applySky();
+    placeRadiants(t);
 
     // Damped look. No dt is passed in by the contract, so this is a fixed per-frame fraction --
     // it is a head turn, not scene state, so it does not need to be frame-rate exact.
