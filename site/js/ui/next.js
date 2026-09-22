@@ -72,7 +72,30 @@ export function moonLitThatNight(dayMs) {
   } catch { return null; }
 }
 
-export function showerItems(nowMs, horizonMs, showers) {
+/**
+ * Where a shower's radiant is on its peak night, for a place: the highest it gets between 20:00 and
+ * 06:00 local, and the hour it gets there. Meteors appear only while the radiant is up, and more of
+ * them the higher it is -- which is why a southern shower is a poor show from the north. Pure given
+ * the place; null without one.
+ */
+export function radiantThatNight(shower, dayMs, observer) {
+  if (!shower || !observer || !Number.isFinite(observer.latRad) || !Number.isFinite(observer.lonRad)) return null;
+  const dec = Number(shower.dec) * DEG, ra = Number(shower.ra_h) * 15 * DEG;
+  if (!Number.isFinite(dec) || !Number.isFinite(ra)) return null;
+  let best = null;
+  const start = new Date(dayMs); start.setHours(20, 0, 0, 0);
+  for (let h = 0; h <= 10 * 4; h++) { // every quarter hour, 20:00 to 06:00
+    const tMs = start.getTime() + h * 15 * 60e3;
+    let lst;
+    try { lst = Astronomy.SiderealTime(new Date(tMs)) * 15 * DEG + observer.lonRad; } catch { return null; }
+    const ha = lst - ra;
+    const alt = Math.asin(Math.sin(observer.latRad) * Math.sin(dec) + Math.cos(observer.latRad) * Math.cos(dec) * Math.cos(ha)) / DEG;
+    if (!best || alt > best.altDeg) best = { altDeg: alt, tMs };
+  }
+  return best;
+}
+
+export function showerItems(nowMs, horizonMs, showers, observer = null) {
   const out = [];
   const today = startOfDay(nowMs);
   for (const sh of Array.isArray(showers) ? showers : []) {
@@ -82,7 +105,7 @@ export function showerItems(nowMs, horizonMs, showers) {
     for (const y of [year, year + 1]) {
       const at = new Date(y, Number(m[1]) - 1, Number(m[2]), 12, 0, 0, 0).getTime(); // local noon of the date
       if (startOfDay(at) < today) continue;
-      if (at - nowMs < horizonMs) out.push({ kind: 'shower', record: null, label: sh.display, tMs: at, zhr: sh.zhr, showerId: sh.id, moonLit: moonLitThatNight(at) });
+      if (at - nowMs < horizonMs) out.push({ kind: 'shower', record: null, label: sh.display, tMs: at, zhr: sh.zhr, showerId: sh.id, moonLit: moonLitThatNight(at), radiant: radiantThatNight(sh, at, observer) });
       break;
     }
   }
@@ -92,7 +115,7 @@ export function showerItems(nowMs, horizonMs, showers) {
 export function buildNextItems(records, nowMs, opts = {}) {
   const horizonMs = opts.horizonMs || 30 * DAY;
   const items = [];
-  if (opts.showers) items.push(...showerItems(nowMs, horizonMs, opts.showers));
+  if (opts.showers) items.push(...showerItems(nowMs, horizonMs, opts.showers, opts.observer || null));
   for (const r of Array.isArray(records) ? records : []) {
     if (!r || !r.meta) continue;
     const m = r.meta;
@@ -212,9 +235,16 @@ export function rowText(item, nowMs) {
       // A date, not a time: the peak moves by hours between years (registry/showers.yaml).
       {
         const base = { name, date: timeText.dateNear(item.tMs, nowMs), zhr: fmt.int(item.zhr) };
-        if (!Number.isFinite(item.moonLit)) return t(T.shower, base);
-        if (item.moonLit < 0.1) return t(T.showerNoMoon, base);
-        return t(T.showerMoon, { ...base, pct: fmt.int(Math.round(item.moonLit * 100)) });
+        let line = !Number.isFinite(item.moonLit) ? t(T.shower, base)
+          : item.moonLit < 0.1 ? t(T.showerNoMoon, base)
+            : t(T.showerMoon, { ...base, pct: fmt.int(Math.round(item.moonLit * 100)) });
+        const r = item.radiant;
+        if (r) {
+          line += COPY.punctuation.sentenceJoin + (r.altDeg < 0 ? T.radiantNeverUp
+            : r.altDeg < 20 ? T.radiantLow
+              : t(T.radiantHigh, { time: timeText.hhmm(r.tMs) }));
+        }
+        return line;
       }
     default:
       return `${name} ${when}`;

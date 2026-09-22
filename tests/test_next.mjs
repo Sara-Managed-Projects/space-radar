@@ -74,6 +74,25 @@ check(buildNextItems([launch('A', H)], now, { observer: { latRad: 0.9, lonRad: 0
   check(onTheDay.includes('geminids') && onTheDay.includes('ursids'), `on the night of the peak it is still listed (${onTheDay})`);
   const wrap = showerItems(new Date(2026, 11, 20).getTime(), 30 * D, SHOWERS).map((x) => x.showerId);
   check(wrap.includes('quadrantids'), `in late December the Quadrantids of next January are listed (${wrap})`);
+  // With a place: the radiant. From London the Orionids' radiant (Orion, dec +16) climbs high
+  // before dawn; the Eta Aquariids' (dec -1, in May's short nights) stays low.
+  const { radiantThatNight } = await import(join(JS, 'ui/next.js'));
+  // "Local" is the browser's own time zone, which for a visitor is where they are. Pin it to the
+  // place under test, or the night window is this machine's night, not London's.
+  const savedTz = process.env.TZ;
+  process.env.TZ = 'Europe/London';
+  const london = { latRad: 51.5 * Math.PI / 180, lonRad: -0.13 * Math.PI / 180 };
+  const ori = radiantThatNight(SHOWERS.find((x) => x.id === 'orionids'), new Date(2026, 9, 21, 12).getTime(), london);
+  const oriHour = new Date(ori.tMs).getHours();
+  check(ori && ori.altDeg > 45 && (oriHour >= 4 && oriHour <= 6), `the Orionids' radiant is high before dawn from London (${ori && ori.altDeg.toFixed(0)} deg at ${oriHour}h local)`);
+  process.env.TZ = 'Australia/Sydney';
+  const sydney = { latRad: -33.9 * Math.PI / 180, lonRad: 151.2 * Math.PI / 180 };
+  const urs = radiantThatNight(SHOWERS.find((x) => x.id === 'ursids'), new Date(2026, 11, 22, 12).getTime(), sydney);
+  process.env.TZ = 'Europe/London';
+  check(urs && urs.altDeg < 0, `the Ursids' radiant (dec +76) never rises from Sydney (${urs && urs.altDeg.toFixed(0)} deg)`);
+  const withPlace = rt(showerItems(sept22, 30 * D, SHOWERS, london)[0], sept22);
+  check(/From where you are its radiant is highest around \d\d:\d\d/.test(withPlace), `with a place the row says when the radiant is highest: "${withPlace}"`);
+  if (savedTz === undefined) delete process.env.TZ; else process.env.TZ = savedTz;
   const withShowers = buildNextItems([], sept22, { showers: SHOWERS });
   check(withShowers.length === 1 && withShowers[0].kind === 'shower' && withShowers[0].record === null, 'with nothing else loaded the list still has the shower');
 }
