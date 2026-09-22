@@ -15,6 +15,7 @@ import { COPY, t, fmt, timeText, UNITS } from '../copy/en.js';
 import { predictPasses } from '../sky/passes.js';
 import { trainsFrom } from '../data/trains.js';
 import { revealInColumn } from './reveal.js';
+import { labelName } from './labels.js';
 
 export const NEXT_CAP = 8;
 const HOUR = 3600e3;
@@ -47,6 +48,9 @@ function startOfDay(ms) {
  * The list, pure. `records` is everything loaded; `opts.observer` ({latRad, lonRad, altKm}) adds
  * passes. Kinds: launch | approach | perihelion | pass. Only future times; capped at NEXT_CAP.
  */
+/** At most this many "comes over you" rows, so a pass minutes away cannot fill the list. */
+export const PASS_ROWS = 3;
+
 export function buildNextItems(records, nowMs, opts = {}) {
   const horizonMs = opts.horizonMs || 30 * DAY;
   const items = [];
@@ -83,14 +87,72 @@ export function buildNextItems(records, nowMs, opts = {}) {
       } catch { /* no row for a pass we could not compute */ }
     }
   }
-  items.sort((a, b) => a.tMs - b.tMs);
-  return items.slice(0, NEXT_CAP);
+  return balance(items);
+}
+
+/**
+ * Which rows make the eight.
+ *
+ * It was the eight soonest. With a place set, that is eight passes: 156 bright objects cross the
+ * sky of anywhere every few minutes, so on 2026-09-22 London's list read "SL-8 R/B comes over you
+ * about now" (twice), five more spent stages and a SAOCOM -- and not tomorrow's launch, nor any of
+ * the comets the list's own heading promises. So passes get at most PASS_ROWS rows, a crewed
+ * station's first because that is the pass people come for; a climbing train gets at most one; the
+ * soonest launch, close approach and perihelion each get a row before the rest fill by time; and
+ * whatever room is left goes back to passes. The rows are then shown in time order.
+ */
+export function balance(items) {
+  const byTime = (a, b) => a.tMs - b.tMs;
+  // klass, not layer: the stations layer also holds the CubeSats deployed from the ISS, and the first
+  // version of this preferred three of them passing tomorrow over the stages passing now.
+  const crewed = (it) => !!(it.record && it.record.klass === 'station');
+  // One pass per place in the sky. The ISS's core and its Poisk and Nauka modules are three catalogue
+  // objects at one point, and made three identical rows; a docked Dragon would make a fourth. Passes
+  // starting within a minute of each other are one pass, told under the name a hand-kept list gives.
+  const named = (it) => !!(it.record && it.record.meta && it.record.meta.why);
+  const allPasses = items.filter((it) => it.kind === 'pass').sort((a, b) => (named(b) - named(a)) || byTime(a, b));
+  const passes = [];
+  for (const p of allPasses) if (!passes.some((q) => Math.abs(q.tMs - p.tMs) < 60e3)) passes.push(p);
+  passes.sort((a, b) => (crewed(b) - crewed(a)) || byTime(a, b));
+  const trains = items.filter((it) => it.kind === 'train').sort(byTime);
+  const events = items.filter((it) => it.kind !== 'pass' && it.kind !== 'train').sort(byTime);
+  const chosen = [...passes.slice(0, PASS_ROWS), ...trains.slice(0, 1)];
+  const take = (it) => { if (chosen.length < NEXT_CAP && !chosen.includes(it)) chosen.push(it); };
+  for (const kind of ['launch', 'approach', 'perihelion']) {
+    const first = events.find((e) => e.kind === kind);
+    if (first) take(first);
+  }
+  for (const e of events) take(e);
+  for (const p of passes.slice(PASS_ROWS)) take(p);
+  for (const tr of trains.slice(1)) take(tr);
+  chosen.sort(byTime);
+  // Name each row as the visitor will read it; where two rows would read the same, add the number.
+  const seen = new Map();
+  for (const it of chosen) { const n = shownName(it.record); if (n) seen.set(n, (seen.get(n) || 0) + 1); }
+  for (const it of chosen) {
+    const n = shownName(it.record);
+    const id = it.record && it.record.meta && it.record.meta.noradId;
+    if (n && seen.get(n) > 1 && id) it.label = t(COPY.nextList.sameName, { name: n, id: String(id) });
+  }
+  return chosen;
+}
+
+/**
+ * The name the labels over the scene use -- "International Space Station", "Envisat", not ISS (ZARYA)
+ * and ENVISAT -- but never shortened: labelName cuts at 34 characters to keep a label off its
+ * neighbours, and a list row has the room. A launch's own name is already the readable one.
+ */
+function shownName(record) {
+  if (!record) return null;
+  if (record.layer === 'launches') return record.name || null;
+  const short = labelName(record);
+  return short && short.endsWith('…') ? record.name : short;
 }
 
 /** One row's words. Pure. */
 export function rowText(item, nowMs) {
   const T = COPY.nextList;
-  const name = (item.record && item.record.name) || COPY.card.unknownName;
+  const name = item.label || shownName(item.record) || COPY.card.unknownName;
   const when = whenText(item.tMs, nowMs);
   switch (item.kind) {
     case 'launch':

@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const JS = join(dirname(fileURLToPath(import.meta.url)), '..', 'site/js');
-const { buildNextItems, rowText, whenText, NEXT_CAP } = await import(join(JS, 'ui/next.js'));
+const { buildNextItems, rowText, whenText, NEXT_CAP, balance, PASS_ROWS } = await import(join(JS, 'ui/next.js'));
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
@@ -25,6 +25,36 @@ check(buildNextItems(many, now).length === NEXT_CAP, `capped at ${NEXT_CAP}`);
 check(buildNextItems(null, now).length === 0 && buildNextItems([{ id: 'x' }, null], now).length === 0, 'bad input gives an empty list, never a throw');
 // passes need an observer AND orbit-bearing records; without either, nothing is added and nothing throws
 check(buildNextItems([launch('A', H)], now, { observer: { latRad: 0.9, lonRad: 0 } }).length === 1, 'an observer with no orbits adds no passes and breaks nothing');
+
+// WHICH EIGHT. With a place set, London's list on 2026-09-22 was eight passes in the next ten minutes --
+// SL-8 R/B twice -- and not tomorrow's launch nor any comet. At most PASS_ROWS passes, a crewed
+// station's first; one of each event kind before the rest fill by time; repeated names numbered.
+{
+  const pass = (name, min, layer = 'visual', klass = 'rocket', noradId = null) => ({ kind: 'pass', tMs: now + min * 60e3, record: { name, layer, klass, meta: { noradId } } });
+  const rows = balance([
+    pass('SL-8 R/B', 1, 'visual', 'rocket', 12139), pass('SL-8 R/B', 1.5, 'visual', 'rocket', 11267), pass('CZ-2C R/B', 2), pass('SL-16 R/B', 4),
+    pass('SL-14 R/B', 6), pass('SAOCOM 1A', 7, 'visual', 'satellite'), pass('H-2A R/B', 8), pass('SL-3 R/B', 10),
+    pass('ISS (ZARYA)', 95, 'stations', 'station'), pass('KNACKSAT-2', 20 * 60, 'stations', 'satellite'),
+    { kind: 'launch', tMs: now + 26 * H, record: { name: 'Long March 8A', layer: 'launches', meta: {} } },
+    { kind: 'perihelion', tMs: now + 20 * D, record: { name: '123P/West-Hartley', layer: 'comets', meta: {} } },
+  ]);
+  const kinds = rows.map((r) => r.kind);
+  check(rows.length <= NEXT_CAP, 'still capped');
+  check(kinds.filter((k) => k === 'pass').length <= PASS_ROWS + (NEXT_CAP - PASS_ROWS - 2), 'passes do not crowd out the events');
+  check(kinds.includes('launch') && kinds.includes('perihelion'), `tomorrow's launch and the comet both make the list: ${kinds}`);
+  check(rows.some((r) => r.record.name === 'ISS (ZARYA)'), 'the ISS pass makes the list, though eight stages pass sooner');
+  const firstPasses = balance([pass('SL-8 R/B', 1), pass('KNACKSAT-2', 20 * 60, 'stations', 'satellite'), pass('SL-16 R/B', 4), pass('SL-3 R/B', 10)]).filter((r) => r.kind === 'pass').slice(0, PASS_ROWS).map((r) => r.record.name);
+  check(!firstPasses.includes('KNACKSAT-2') || firstPasses.length > 3, `a CubeSat in the stations layer is not a crewed station: ${firstPasses}`);
+  const sl8 = rows.filter((r) => r.record.name === 'SL-8 R/B').map((r) => rowText(r, now));
+  check(sl8.length < 2 || new Set(sl8).size === sl8.length, `two stages both called SL-8 R/B read differently: ${sl8}`);
+  check(rows.every((r, i) => i === 0 || rows[i - 1].tMs <= r.tMs), 'shown in time order');
+  const stationRows = balance([
+    { kind: 'pass', tMs: now + 95 * 60e3, record: { name: 'POISK', layer: 'stations', klass: 'station', meta: { noradId: 36086 } } },
+    { kind: 'pass', tMs: now + 95 * 60e3 + 5e3, record: { name: 'ISS (ZARYA)', layer: 'stations', klass: 'station', meta: { noradId: 25544, why: 'people live here' } } },
+    { kind: 'pass', tMs: now + 95 * 60e3 + 8e3, record: { name: 'ISS (NAUKA)', layer: 'stations', klass: 'station', meta: { noradId: 49044 } } },
+  ]).filter((r) => r.kind === 'pass');
+  check(stationRows.length === 1 && stationRows[0].record.name === 'ISS (ZARYA)', `one pass for the station and its modules, told as the station: ${stationRows.map((r) => r.record.name)}`);
+}
 
 if (problems.length) { console.error('next FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('next ok: launches, close approaches and perihelia from held records, nearest first, capped, honest about rough dates');
