@@ -16,6 +16,7 @@ import { createStarfield } from './scene/starfield.js';
 import { createGlyphLayer } from './scene/glyphs.js';
 import { createHeroes, closeUpDistance } from './scene/heroes.js';
 import { createCameraRig } from './scene/camera.js';
+import { createViewShift } from './scene/viewshift.js';
 import { readMoment, writeMoment } from './ui/urlstate.js';
 import { guessObserver } from './sky/guessplace.js';
 import { CITIES } from './copy/en.js';
@@ -56,6 +57,9 @@ export async function boot({ setStatus } = {}) {
   const cameraRig = createCameraRig(camera, canvas, {
     keysEnabled: () => !(ctx && ctx.trip && ctx.trip.state && ctx.trip.state.phase !== 'idle'),
   });
+  // A phone's card is a sheet over the lower half of the canvas; this keeps the centre of the view
+  // in the part left uncovered (scene/viewshift.js says why and how).
+  const viewShift = createViewShift(camera, canvas);
 
   // The camera is how worlds.js decides a planet is near enough to be worth its map; without it the
   // eight planets, the Moon and the Sun would stay in their mean colours for good.
@@ -76,7 +80,7 @@ export async function boot({ setStatus } = {}) {
   let moment = readMomentFromHash();
 
   const ctx = {
-    clock, stage, scene, camera, cameraRig, worlds, renderer, rendererApi, sources,
+    clock, stage, scene, camera, cameraRig, viewShift, worlds, renderer, rendererApi, sources,
     layers: LAYERS,
     records: () => [...layerRecords.values()].flat(),
     recordsFor: (id) => layerRecords.get(id) || [],
@@ -434,6 +438,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     stage.setTime(t);   // every frame conversion this tick reads it; set it before anything does
 
     resize();
+    if (ctx.viewShift) ctx.viewShift.update(dt);
     cameraRig.update(dt);
     worlds.update(t);
 
