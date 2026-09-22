@@ -452,20 +452,21 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
 // this repository, so each is DELIBERATELY the generic probe, and the card says "drawn as a generic
 // probe -- the kind of thing, not this exact one". What must never happen is the other failure: a
 // name or id route handing one of them somebody else's spacecraft. So for those the check is the
-// opposite one -- no route at all.
+// opposite one -- no route at all. Mars Express and LRO came the same day (drawn from the world they
+// circle, propagate/orbiter.js) and are generic on the same terms.
 {
   const { sampleDeepSpace } = await import(join(ROOT, 'site/js/data/sample.js'));
   const rows = sampleDeepSpace();
-  check(rows.length === 20, `the deep-space layer holds twenty records (found ${rows.length})`);
+  check(rows.length === 22, `the deep-space layer holds twenty-two records (found ${rows.length})`);
   const want = {
     'deep-jwst': 'build:jwst', 'deep-soho': 'soho.glb', 'deep-mro': 'mro.glb', 'deep-juno': 'juno.glb',
     'deep-voyager-1': 'voyager.glb', 'deep-voyager-2': 'voyager.glb', 'deep-parker': 'parker.glb',
     'deep-gaia': 'build:gaia', 'deep-new-horizons': 'build:new-horizons',
     'deep-solar-orbiter': 'build:solar-orbiter',
   };
-  // The 2026-09-22 ten: generic on purpose, and never another craft's shape.
+  // The 2026-09-22 twelve: generic on purpose, and never another craft's shape.
   const generic = new Set(['deep-psyche', 'deep-lucy', 'deep-europa-clipper', 'deep-juice', 'deep-bepicolombo',
-    'deep-hera', 'deep-osiris-apex', 'deep-hayabusa2', 'deep-hope', 'deep-stereo-a']);
+    'deep-hera', 'deep-osiris-apex', 'deep-hayabusa2', 'deep-hope', 'deep-stereo-a', 'deep-mars-express', 'deep-lro']);
   for (const r of rows) {
     const e = realModelFor(r);
     const got = e && e.file ? e.file : e && e.build ? `build:${e.build}` : null;
@@ -473,7 +474,7 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
     else if (generic.has(r.id)) check(got === null, `${r.name} (${r.id}) has no model of its own, yet a route gives it ${got}`);
     else check(got !== null, `${r.name} (${r.id}) has no shape at all -- it would fall back to the generic one`);
   }
-  check(rows.filter((r) => generic.has(r.id)).length === generic.size, 'all ten generic-probe craft are in the layer');
+  check(rows.filter((r) => generic.has(r.id)).length === generic.size, 'all twelve generic-probe craft are in the layer');
   // 1279 Gaia is a main-belt asteroid. Without the klass gate on the name route it would be drawn
   // with a ten-metre sunshield, which is the TESS mistake -- a comet wearing a telescope -- exactly.
   const rock = realModelFor({ id: 'a-1279', name: '1279 Gaia', klass: 'asteroid', layer: 'asteroids', meta: {} });
@@ -491,7 +492,7 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
     check(Math.abs(o.userData.realSizeM - sizeM) < 0.01, `${klass}:${variant} is drawn at its published ${sizeM} m, not ${o.userData.realSizeM}`);
     disposeModels(o);
   }
-  if (!problems.length) console.log('  the ten original deep-space spacecraft have their own shape, the ten added 2026-09-22 are the generic probe and nobody else; 1279 Gaia the asteroid does not get one');
+  if (!problems.length) console.log('  the ten original deep-space spacecraft have their own shape, the twelve added 2026-09-22 are the generic probe and nobody else; 1279 Gaia the asteroid does not get one');
 }
 
 // THE RIGHT KIND OF THING. Measured against the live stations and visual catalogues on 2026-09-18:

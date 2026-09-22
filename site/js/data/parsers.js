@@ -1123,8 +1123,10 @@ export function horizonsSamples(text) {
  * @param {Object<string,string>} body   the snapshot body: Horizons id -> response text
  * @param {Array<Object>} base           the hand-kept records (data/sample.js sampleDeepSpace)
  *   -- names, classes, ids the trips and the models refer to, and `meta.horizonsId`. Only the
- *   POSITION changes here: a record whose id has data becomes `sampled` and `measured`; one whose
- *   id has none stays exactly the stand-in it was, card and all. The ids never change, because
+ *   POSITION changes here: a record whose id has data becomes `sampled` and `measured` -- or, for
+ *   a craft round another world, `orbiter` and `inferred`, and only from vectors relative to that
+ *   world; one whose id has none stays exactly the stand-in it was, card and all. The ids never
+ *   change, because
  *   registry/tours.yaml and registry/oddities.yaml name them.
  */
 export function parseHorizonsVectors(body, base = []) {
@@ -1139,6 +1141,28 @@ export function parseHorizonsVectors(body, base = []) {
       out.push(rec);
       continue;
     }
+    // A craft round another world (data/sample.js construction D) is drawn from that world, so
+    // only vectors RELATIVE TO it will do. Heliocentric ones -- every snapshot harvested before
+    // 2026-09-22 -- land off the drawn planet by Astronomy Engine's own error in that planet (up
+    // to 3 103 km for Mars) and, six hours apart, cannot follow a 112-minute orbit at all
+    // (propagate/orbiter.js has the measurements). With those the stand-in stays, card and all.
+    const world = rec.meta && rec.meta.orbits;
+    const centre = horizonsCentre(text);
+    if (world) {
+      const step = samples[1].tMs - samples[0].tMs;
+      if (centre !== NAIF_CENTRE[world] || !(step <= ORBITER_MAX_STEP_MS)) {
+        out.push(rec);
+        continue;
+      }
+      out.push(orbiterFromHorizons(rec, samples));
+      continue;
+    }
+    // And the other way round: a table about some other centre is not a heliocentric position.
+    // A header with no centre line (older fixtures) is read as the Sun's, as it always was.
+    if (centre !== null && centre !== NAIF_CENTRE.sun) {
+      out.push(rec);
+      continue;
+    }
     const first = samples[0].tMs;
     const last = samples[samples.length - 1].tMs;
     out.push({
@@ -1147,8 +1171,11 @@ export function parseHorizonsVectors(body, base = []) {
       elements: undefined,
       samples,
       // Horizons' state vectors are the mission's own navigation solution, sampled every six
-      // hours; a Hermite curve between two of them is closer to the truth than anything else
-      // this page draws.
+      // hours. For a craft on its own path round the Sun a Hermite curve between two of them is
+      // as good as the samples: MEASURED 2026-09-22, against Horizons hourly over 2026-09-23..25,
+      // the worst of the fifteen heliocentric craft was BepiColombo at 9 km, SOHO 0.07, JWST 0.01,
+      // the rest under 0.01. It was NOT true of the craft round other worlds (17 914 km for MRO),
+      // which is why those take the branch above and never reach this line.
       cls: 'measured',
       epoch: last,
       meta: {
@@ -1168,6 +1195,65 @@ export function parseHorizonsVectors(body, base = []) {
     });
   }
   return out;
+}
+
+/** NAIF ids Horizons names in "Center body name: Mars (499)", for the centres this app asks for. */
+const NAIF_CENTRE = { sun: 10, earth: 399, moon: 301, mars: 499, jupiter: 599 };
+
+/**
+ * TDB minus UTC in 2026: 32.184 s (TT - TAI, by definition) + 37 s (TAI - UTC since 2017-01-01,
+ * IERS Bulletin C; no leap second since). TDB - TT is under 2 ms. The heliocentric rows above read
+ * Horizons' JD TDB as UTC, and at their scale 69 s is nothing; round a world it is not -- MRO moves
+ * 3.4 km/s, 235 km in 69 s, and Juno at perijove 55.5 km/s, 3 840 km.
+ */
+export const TDB_MINUS_UTC_MS = 69184;
+
+/**
+ * The step the `arc` sentences in data/sample.js were measured at. A snapshot with a coarser step
+ * would make them false, so it is refused rather than drawn.
+ */
+const ORBITER_MAX_STEP_MS = 6 * 3600 * 1000 + 1000;
+
+/** The centre a Horizons vector table is relative to, as a NAIF id, or null if it does not say. */
+export function horizonsCentre(text) {
+  if (typeof text !== 'string') return null;
+  const m = /Center body name:[^\n(]*\((-?\d+)\)/.exec(text);
+  return m ? Number(m[1]) : null;
+}
+
+/**
+ * A craft round another world, from Horizons vectors relative to that world: JPL's states, on
+ * the UTC clock, joined by two-body arcs round the world (propagate/orbiter.js). `inferred`, not
+ * `measured`: between the six-hourly states nobody measured it, and the card says how close the
+ * arcs stay (`orbitKnown`, from the row's own measured sentence).
+ */
+function orbiterFromHorizons(rec, samples) {
+  const utc = samples.map((s) => ({ ...s, tMs: s.tMs - TDB_MINUS_UTC_MS }));
+  const first = utc[0].tMs;
+  const last = utc[utc.length - 1].tMs;
+  const { extrapolateMs, ...rest } = rec;
+  return {
+    ...rest,
+    propagator: 'orbiter',
+    elements: undefined,
+    samples: utc,
+    cls: 'inferred',
+    epoch: last,
+    meta: {
+      ...rec.meta,
+      construction: 'horizons-round-a-world',
+      approx: false,
+      approxFields: [],
+      sampleCount: utc.length,
+      samplesFromMs: first,
+      samplesToMs: last,
+      orbitKnown: rec.meta.snapshotKnown || null,
+      why:
+        'Position from JPL Horizons relative to the world it circles, every six hours, and ' +
+        'carried round that world between them by its pull alone. Fetched by our scheduled job, ' +
+        'not by this page.',
+    },
+  };
 }
 
 /** A JPL table `{fields:[...], data:[[...]]}` -> array of plain objects. Anything else -> []. */

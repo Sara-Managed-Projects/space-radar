@@ -4,7 +4,8 @@ The loop knows no source names. What varies per row is data on the row:
 
     auth: secret:NAME   -> skipped, with the reason, unless the environment has NAME
     enabled: false      -> skipped, "disabled in registry"
-    list: {...}         -> one request per id, the body maps id -> response text (Horizons)
+    list: {...}         -> one request per id, the body maps id -> response text (Horizons);
+                           an id row's `center:` replaces the list's CENTER for that id alone
     query: "..."        -> the text is sent as `query=` with a SPARQL Accept header (Wikidata)
     parser: name        -> harvest/parsers/<name>.py: count(), validate(), not_modified()
 
@@ -272,6 +273,11 @@ def _fetch_list(source: Source, *, now: datetime, fetcher, sleep) -> Fetched:
     for i, row in enumerate(spec["ids"]):
         sid = str(row["id"] if isinstance(row, dict) else row)
         params = {k: str(v).format(id=sid, start=start, stop=stop) for k, v in params_t.items()}
+        # A craft round another world is drawn from that world, so it is asked for relative to it
+        # (harvest/lists/horizons-ids.yaml says why, with the measurements). The key is CENTER
+        # because that is the one parameter such a row changes; the rest stay the list's.
+        if isinstance(row, dict) and row.get("center"):
+            params["CENTER"] = str(row["center"])
         url = _fetch.with_params(source.url, params)
         if i:
             sleep(pause)

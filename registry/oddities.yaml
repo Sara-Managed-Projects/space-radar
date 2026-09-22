@@ -80,16 +80,16 @@ attachable:
   - {id: deep-voyager-1,     horizons_id: "-31", emitted_by: "sample.js sampleDeepSpace(), CRUISING_CRAFT"}
   - {id: deep-voyager-2,     horizons_id: "-32", emitted_by: "sample.js sampleDeepSpace(), CRUISING_CRAFT"}
   - {id: deep-new-horizons,  horizons_id: "-98", emitted_by: "sample.js sampleDeepSpace(), CRUISING_CRAFT"}
-  - {id: deep-juno,          horizons_id: "-61", emitted_by: "sample.js sampleDeepSpace(), ANCHORED_CRAFT"}
+  - {id: deep-juno,          horizons_id: "-61", emitted_by: "sample.js sampleDeepSpace(), PLANET_ORBITERS"}
   - {id: deep-parker,        horizons_id: "-96", emitted_by: "sample.js sampleDeepSpace(), ELLIPTIC_CRAFT"}
   - {id: deep-jwst,          horizons_id: "-170", emitted_by: "sample.js sampleDeepSpace(), ANCHORED_CRAFT"}
   - {id: deep-soho,          horizons_id: "-21", emitted_by: "sample.js sampleDeepSpace(), ANCHORED_CRAFT"}
-  - {id: deep-mro,           horizons_id: "-74", emitted_by: "sample.js sampleDeepSpace(), ANCHORED_CRAFT"}
-  # These two have no Horizons id in sample.js -- they are drawn from an anchor and from elements
-  # respectively -- and they were missing from this block while it claimed to be the command's
-  # output. A guard that reports wrongly is worse than none: check_registry.py refused a row
-  # attaching to Gaia with the sentence "the app does not draw it", and the app draws it.
-  - {id: deep-gaia,          horizons_id: null,  emitted_by: "sample.js sampleDeepSpace(), ANCHORED_CRAFT"}
+  - {id: deep-mro,           horizons_id: "-74", emitted_by: "sample.js sampleDeepSpace(), PLANET_ORBITERS"}
+  # These two had no Horizons id in sample.js, and they were missing from this block while it
+  # claimed to be the command's output. A guard that reports wrongly is worse than none:
+  # check_registry.py refused a row attaching to Gaia with the sentence "the app does not draw it",
+  # and the app draws it. Gaia has one since 2026-09-22, when it turned out to have left L2.
+  - {id: deep-gaia,          horizons_id: "-139479", emitted_by: "sample.js sampleDeepSpace(), OSCULATING_CRAFT"}
   - {id: deep-solar-orbiter, horizons_id: null,  emitted_by: "sample.js sampleDeepSpace(), ELLIPTIC_CRAFT"}
 
 oddities:

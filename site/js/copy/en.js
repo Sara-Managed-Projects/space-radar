@@ -744,6 +744,9 @@ export const COPY = {
       period: 'One lap takes',
       location: 'Where it stands',
       onWorld: 'Standing on',
+      // A craft in orbit round another world (data/sample.js construction D).
+      orbiting: 'In orbit round',
+      heightAbove: 'Height above {world}',
       closestApproach: 'Closest to Earth',
       // A dwarf planet's known moons, by name (data/sample.js farBodies, each from its article's
       // infobox). An empty list is a fact too: Ceres and Sedna have none that anyone has found.

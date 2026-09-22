@@ -23,13 +23,15 @@
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { propagate } from '../propagate/index.js';
+import { lapTimes } from '../propagate/orbiter.js';
 import { stage } from './stage.js';
 import { CLASS_COLOURS } from './glyphatlas.js';
 
 export const SAMPLES = 240;
 const REBUILD_MS = 30e3;
 const DAY = 86400e3;
-const PERIODIC = new Set(['sgp4', 'kepler', 'body']);
+// `orbiter` (2026-09-22): a craft round another world, whose line is its lap round that world.
+const PERIODIC = new Set(['sgp4', 'kepler', 'body', 'orbiter']);
 
 /** How long one lap takes, in ms, or null when the record does not lap. */
 export function periodMsOf(record) {
@@ -181,7 +183,8 @@ export function createOrbitLine(scene, ctx) {
   const _v = new THREE.Vector3();
 
   // `frameT` is the time the frame conversion is made at: the sample's own for a lap (where the
-  // dot WILL be drawn), today's for a whole path (the path in space, round today's origin).
+  // dot WILL be drawn), today's for a whole path (the path in space, round today's origin) and
+  // for a lap round another world (below).
   function positionScene(tMs, frameT = tMs) {
     const p = propagate(record, tMs);
     if (!p) return null;
@@ -191,8 +194,17 @@ export function createOrbitLine(scene, ctx) {
   function rebuild(tMs) {
     let pts;
     const whole = wholePathTimes(record, tMs, SAMPLES);
+    const round = !whole && record.propagator === 'orbiter' ? lapTimes(record, tMs, SAMPLES) : null;
     if (whole) {
       pts = sampleAt((t) => positionScene(t, tMs), whole, wholePathKind(record) === 'orbit');
+    } else if (round) {
+      // A CRAFT ROUND ANOTHER WORLD (propagate/orbiter.js). Two things differ from a lap round the
+      // Sun or Earth. The world is held where it is NOW: MRO's 112-minute lap, converted with
+      // Mars's place at each sample's own time, came out 159 000 km long (Mars moves 23.8 km/s
+      // round the Sun) -- a streak, not a ring round the Mars the dot is circling. And the points
+      // are spaced in eccentric anomaly (lapTimes), because evenly in time one chord of Juno's
+      // lap cut straight through Jupiter.
+      pts = sampleAt((t) => positionScene(t, tMs), round, true);
     } else {
       const periodMs = periodMsOf(record);
       if (!periodMs) { line.visible = false; return; }

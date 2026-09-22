@@ -24,8 +24,9 @@
 //     said so out loud. Every asteroid below therefore sits at ITS OWN perihelion: the orbit's
 //     size, shape and plane are right, the place along it is a placeholder. That reads as a
 //     placeholder at a glance, which is the point — a plausible-looking wrong phase would not.
-//  4. Where a phase IS knowable it is used. The craft anchored to Earth, Mars and Jupiter below
-//     use the published J2000 mean anomalies of those planets, so their positions are real.
+//  4. Where a phase IS knowable it is used. The craft anchored to Earth below use Earth's
+//     published J2000 mean anomaly, so their positions are real; the craft orbiting other worlds
+//     start from JPL's own position for them (deep space, construction D).
 //
 // Element shape matches data/parsers.js parseComets() exactly, so one `kepler` propagator eats
 // both: {qKm, e, aKm, iRad, omRad, wRad, tpMs, epochMs, muKm3S2}. Sampled records carry
@@ -582,11 +583,12 @@ export function farBodies() {
 //
 // Two honest constructions, and each record says which one it used.
 //
-// (A) ANCHORED. A craft in orbit around a planet, or holding station at a Sun–Earth Lagrange
-//     point, is drawn on that planet's own heliocentric orbit. The elements are the published
-//     J2000 Keplerian set for the planet — mean anomaly included — so the position is genuinely
-//     right to about an arcminute. The offset from the planet (1.5 million km to L2, 0.0004 au;
-//     a Mars orbit, 0.00002 au) is smaller than the dot that draws it.
+// (A) ANCHORED. A craft holding station at a Sun–Earth Lagrange point is drawn on Earth's own
+//     heliocentric orbit. The elements are the published J2000 Keplerian set for Earth — mean
+//     anomaly included — so the position is genuinely right to about an arcminute. The offset
+//     from Earth (1.5 million km to L1 or L2, 0.01 au) is smaller than the dot at the scale where
+//     the Sun is the centre. Craft ORBITING a planet used to be drawn this way too; since
+//     2026-09-22 they are (D) below, because at their own planet's scale the anchor is a lie.
 //
 // (B) STRAIGHT LINE. A craft far outside the planets is drawn from a distance, a speed and an
 //     escape direction, all rounded, moving in a straight line. At 60 au the Sun bends the path
@@ -599,10 +601,17 @@ export function farBodies() {
 //     drifts by whatever the engines and the planets do, and each row says by how much, measured
 //     against Horizons' own forecast (added 2026-09-22, OSCULATING_CRAFT below).
 //
-// Parker Solar Probe and Solar Orbiter use a fourth, older shape: elements without a phase
+// (D) ROUND A WORLD. A craft in orbit round Mars, Jupiter or the Moon is kept in THAT world's
+//     frame (`mars-inertial` and so on: centred on it, ecliptic J2000 axes) and drawn from it,
+//     so it is exactly as far from the drawn world as the real craft is from the real one. The
+//     stand-in is one JPL Horizons state relative to the world, moved on by the world's pull
+//     alone (propagate/orbiter.js says why, with the measurements). PLANET_ORBITERS below.
+//
+// Parker Solar Probe and Solar Orbiter use a fifth, older shape: elements without a phase
 // (ELLIPTIC_CRAFT). Every construction is only the stand-in: once the harvester's Horizons
 // snapshot holds a craft's id, data/parsers.js parseHorizonsVectors() swaps the position for the
-// real vectors and keeps everything else on the row.
+// real vectors and keeps everything else on the row -- for (D), only vectors relative to the
+// craft's own world will do, and the harvester asks for those (harvest/lists/horizons-ids.yaml).
 
 /** Published J2000 elements (JPL's approximate-positions table). L and varpi reduced to M and w. */
 const ANCHORS = {
@@ -619,33 +628,18 @@ const ANCHORS = {
     // Lagrange point, so the construction is as good as the thing it stands in for.
     driftNote: 'about a million kilometres, which is the same order as the distance to L1 and L2',
   },
-  mars: {
-    aAu: 1.52371034,
-    e: 0.0933941,
-    iDeg: 1.84969142,
-    nodeDeg: 49.55953891,
-    argpDeg: 286.49683,
-    m0Deg: 19.3902,
-    label: "Mars's orbit",
-    // MEASURED against astronomy-engine for 2026-09-06: 0.013 au (1.9 million km) from Mars.
-    driftNote: 'a couple of million kilometres, about half a degree around its orbit',
-  },
-  jupiter: {
-    aAu: 5.202887,
-    e: 0.04838624,
-    iDeg: 1.30439695,
-    nodeDeg: 100.47390909,
-    argpDeg: 274.25457,
-    m0Deg: 19.66796,
-    label: "Jupiter's orbit",
-    // MEASURED against astronomy-engine for 2026-09-06: 0.065 au from Jupiter.
-    driftNote: 'about ten million kilometres, well under a degree around its orbit',
-  },
 };
 
-// `earthRangeKm`: how far the craft really is from Earth, for the three held at a Sun–Earth
+// `earthRangeKm`: how far the craft really is from Earth, for the two held at a Sun–Earth
 // Lagrange point. The drawing puts them on Earth's orbit (construction A above), so any distance
-// FROM EARTH computed off that drawing measures the construction, not the spacecraft.
+// FROM EARTH computed off that drawing measures the construction, not the spacecraft. Checked
+// 2026-09-22 against Horizons (VECTORS, CENTER='500@399', 00:00 TDB): JWST 1 234 799 km, SOHO
+// 1 637 602 km, so "1.5 million" is the right round figure for both.
+//
+// Gaia was the third, until that same check: Horizons -139479 (header revised 2025-05-16) says it
+// "left its orbit around Earth-Sun L2 and was placed in a heliocentric disposal orbit" on
+// 2025-03-28, and on 2026-09-22 it was 83 714 436 km from Earth. The card said "Also at Sun–Earth
+// L2" and printed 1.5 million km. It is an osculating row now (OSCULATING_CRAFT).
 const ANCHORED_CRAFT = [
   {
     id: 'deep-jwst',
@@ -660,18 +654,6 @@ const ANCHORED_CRAFT = [
       "the way to the Sun. It is drawn here on Earth's orbit; the offset is smaller than the dot.",
   },
   {
-    id: 'deep-gaia',
-    name: 'Gaia',
-    klass: 'telescope',
-    horizonsId: null,
-    anchor: 'earth',
-    earthRangeKm: 1.5e6,
-    note: 'It measured the positions and motions of about two billion stars — including the ' +
-      'ones this app draws behind everything else.',
-    offset: 'Also at Sun–Earth L2, and drawn the same way. Gaia stopped observing in 2025; its ' +
-      'catalogue did not.',
-  },
-  {
     id: 'deep-soho',
     name: 'SOHO',
     klass: 'telescope',
@@ -684,43 +666,161 @@ const ANCHORED_CRAFT = [
     offset: 'It orbits the Sun–Earth L1 point, 1.5 million km SUNWARD of Earth. Drawn on ' +
       "Earth's orbit; the offset is smaller than the dot.",
   },
+];
+
+/**
+ * Construction D: craft in orbit round a world, drawn from that world (the block at the top of
+ * this section, and propagate/orbiter.js for the measurements that forced it).
+ *
+ * `rKm`/`vKmS` are MEASURED: JPL Horizons, EPHEM_TYPE=VECTORS, CENTER='500@<world>' (499 Mars,
+ * 599 Jupiter, 301 the Moon), default reference plane (ecliptic J2000, the frame `<world>-inertial`
+ * uses), 2026-09-22 00:00 TDB, fetched 2026-09-22, to the metre and the millimetre per second.
+ * The epoch is that instant in UTC, 69.184 s earlier (ORBITER_EPOCH_MS below): read as UTC, as the
+ * heliocentric rows are, it would put MRO 235 km along its track from where JPL has it.
+ *
+ * Three sentences a card prints are on each row, each measured against Horizons' own positions
+ * relative to the same world at 10-minute steps (queries as above, STEP_SIZE='10 m'):
+ *   `orbit`  what IS known: how high, how often. The heights are the least and greatest distance
+ *            from the world's centre over 2026-09-22..10-22 (MRO to 10-12, where its file ends),
+ *            less the radius this app draws the world with (propagate/frames.js WORLD_RADIUS_KM).
+ *   `drift`  how far the stand-in strays: this one state, moved on by the world's pull alone.
+ *   `arc`    how close the harvested snapshot stays: JPL's states every six hours, and two-body
+ *            arcs between them (data/parsers.js), worst case over the same month.
+ * `periodMin` is the osculating period at the epoch (Horizons ELEMENTS, same centre and instant);
+ * scene/orbitline.js draws one lap of it for the selection.
+ */
+const ORBITER_EPOCH_MS = Date.UTC(2026, 8, 22) - 69184;
+const ORBITER_EPOCH_WORDS = '22 September 2026';
+
+/**
+ * GM of each world, km^3/s^2: the "Keplerian GM" Horizons prints in the ELEMENTS header for that
+ * centre (read 2026-09-22). The same GM the elements the orbits were checked against were made with.
+ */
+const WORLD_GM = { mars: 42828.374857356255, jupiter: 126686531.9003704, moon: 4902.8001184575487 };
+const WORLD_WORDS = { mars: 'Mars', jupiter: 'Jupiter', moon: 'the Moon' };
+
+const PLANET_ORBITERS = [
   {
     id: 'deep-mro',
     name: 'Mars Reconnaissance Orbiter',
     klass: 'probe',
     horizonsId: -74,
-    anchor: 'mars',
+    world: 'mars',
     note: 'Its HiRISE camera can see something the size of a dinner table on Mars, and it ' +
       'relays much of what the rovers say.',
-    offset: 'It orbits Mars at about 300 km. At solar-system scale that is drawn as Mars.',
+    rKm: [919.321, 803.949, 3481.344],
+    vKmS: [-1.761825, 2.887384, -0.209889],
+    periodMin: 111.6,
+    // 3 626..3 695 km from Mars's centre, 92.7 degrees to Mars's equator (the orbit's pole against
+    // Astronomy Engine's Mars axis). Horizons -74 header: "a 112 minute, near circular polar orbit".
+    orbit: 'circles Mars over the poles every 112 minutes, about 240 to 310 km up',
+    // 63 km at an hour, 1 577 at a day, 4 477 at three; more than a quarter-lap (90 degrees round
+    // Mars) out from 3.6 days, and from a week on the error is the whole width of the orbit. Mars's
+    // flattening turns an orbit this low faster than two-body motion can follow.
+    drift: 'Checked against JPL’s own forecast, the dot is 1 600 km from MRO after a day, and ' +
+      'after four days where MRO is on that ring is not known.',
+    // 160 km (2026-09-23 21:00); 58 with 3-hourly states, 17 with hourly.
+    arc: 'within about 160 km of JPL’s own track',
   },
   {
-    id: 'deep-juno',
-    name: 'Juno',
+    id: 'deep-mars-express',
+    name: 'Mars Express',
     klass: 'probe',
-    horizonsId: -61,
-    anchor: 'jupiter',
-    // "Every 38 days" was one stage of an orbit the moon flybys kept shortening (53 days in the
-    // prime mission, about 33 by 2024); "than anything has been" overlooked Galileo's probe,
-    // which went in.
-    note: 'It dives between Jupiter and its radiation belts every month or so, closer to the ' +
-      'cloud tops than any orbiter before it.',
-    offset: 'It orbits Jupiter on a long ellipse. At solar-system scale that is drawn as Jupiter.',
+    horizonsId: -41,
+    world: 'mars',
+    // Horizons -41 header (revised 2026-09-01): launched 2003-06-02 on a Soyuz-Fregat, Mars arrival
+    // December 2003, ESA's. The stereo camera is HRSC, the High Resolution Stereo Camera (ESA's
+    // Mars Express instrument pages).
+    note: 'Europe’s first spacecraft to another planet, it has circled Mars since December 2003, ' +
+      'mapping it in colour and in 3D with its stereo camera.',
+    rKm: [1422.347, -1469.76, 3262.347],
+    vKmS: [-0.524419, -3.980093, -1.115009],
+    periodMin: 415.2,
+    // 3 807..13 831 km from Mars's centre. The header's "Period: 6h 43m ... apocentre 11 560 km"
+    // is an older orbit; these are the ones the file holds now.
+    orbit: 'swings round Mars every 6 hours 55 minutes, from 420 km up out to 10 400 km',
+    // Up to 2 859 km within the first day, a quarter-lap out from 2.0 days.
+    drift: 'Checked against JPL’s own forecast, the dot drifts up to 3 000 km from it within a ' +
+      'day, and after two days where it is on that orbit is not known.',
+    // 88 km (2026-10-08 02:50).
+    arc: 'within about 90 km of JPL’s own track',
   },
   {
     id: 'deep-hope',
     name: 'Hope (Emirates Mars Mission)',
     klass: 'probe',
     horizonsId: -62,
-    anchor: 'mars',
+    world: 'mars',
     // Horizons -62 header (revised 2026-06-03): built by the UAE, Mars arrival 2021-02-09, a
     // 55-hour orbit "roughly 22000 x 44000 km", and the aim of "a global picture of how the martian
-    // atmosphere varies throughout the day and year". Anchored like MRO because it orbits Mars;
-    // unlike MRO its orbit is slow enough for the 6-hourly snapshot (horizons-ids.yaml, LEFT OUT).
+    // atmosphere varies throughout the day and year".
     note: 'Built by the United Arab Emirates, it has circled Mars every 55 hours since 2021, ' +
       'watching how the whole planet’s weather changes through the day.',
-    offset: 'It loops around Mars every 55 hours, roughly 22 000 to 44 000 km out. At solar-system ' +
-      'scale that is drawn as Mars.',
+    rKm: [-13429.248, 32991.669, -4245.386],
+    vKmS: [-0.896321, 0.107588, 0.594912],
+    periodMin: 3332.6,
+    // 23 271..47 001 km from Mars's centre.
+    orbit: 'loops round Mars every 55 hours, 20 000 to 44 000 km up',
+    // 3 km at a day, 166 at 30 days, 323 at 60 (Horizons' file ends 2026-11-26).
+    drift: 'Checked against JPL’s own forecast, it stays within 200 km for a month and 350 km ' +
+      'for two.',
+    // 0.3 km.
+    arc: 'within a kilometre of JPL’s own track',
+  },
+  {
+    id: 'deep-juno',
+    name: 'Juno',
+    klass: 'probe',
+    horizonsId: -61,
+    world: 'jupiter',
+    // "Every 38 days" was one stage of an orbit the moon flybys kept shortening (53 days in the
+    // prime mission, about 33 by 2024); "than anything has been" overlooked Galileo's probe,
+    // which went in.
+    note: 'It dives between Jupiter and its radiation belts every month or so, closer to the ' +
+      'cloud tops than any orbiter before it.',
+    rKm: [1350578.538, -661190.227, -5432547.724],
+    vKmS: [0.553754, -0.858287, -0.963073],
+    periodMin: 47084.5,
+    // 80 325 km from Jupiter's centre at the 2026-10-11 perijove (10 414 above the 69 911 km this
+    // app draws Jupiter with), 5 816 227 at apojove; perijoves 2026-09-09, 10-11 and 11-13
+    // (Horizons, CENTER='500@599', hourly), 32.7 days apart.
+    orbit: 'swings round Jupiter every 33 days, from 10 000 km above it out to 5.7 million km',
+    // 84 km at a day, 1 194 at a week, and no more than 5 687 through the perijove of 2026-10-11
+    // 22:59 TDB (10-minute steps). After it, Jupiter's pull at 80 000 km and the trim burn the header
+    // puts four hours after every perijove change the orbit: 9 786 km six hours on, 22 354 on
+    // 10-13, 71 832 by 10-22.
+    drift: 'Checked against JPL’s own forecast, it stays within 6 000 km until its close pass ' +
+      'of 11 October 2026, and is wrong after it.',
+    // 902 km at 2026-10-11 21:08, two hours before that perijove, where the arcs are shortest in
+    // time and longest in angle; 43 km from six to 24 hours out, and under 3 km more than a day
+    // away.
+    arc: 'within about 900 km of JPL’s own track in the hours round its closest pass, and within ' +
+      '3 km more than a day from it',
+  },
+  {
+    id: 'deep-lro',
+    name: 'Lunar Reconnaissance Orbiter',
+    klass: 'probe',
+    horizonsId: -85,
+    world: 'moon',
+    aliases: ['LRO'],
+    // Horizons -85 header (revised 2026-08-05): launched 2009-06-18, extended mission in "a
+    // low-maintenance orbit". Its camera (LROC) imaged the Apollo landing sites, and LROC post 1101
+    // is the source registry/oddities.yaml gives for the Beresheet crash site this map draws.
+    note: 'Circling the Moon since 2009, its camera has photographed the Apollo landers, and this ' +
+      'map places the Beresheet crash from its pictures.',
+    rKm: [-1673.335, -729.446, 131.352],
+    vKmS: [-0.033981, -0.26336, -1.613845],
+    periodMin: 116.8,
+    // 1 801..1 853 km from the Moon's centre; 83 degrees to the lunar equator (the orbit's pole
+    // against Astronomy Engine's lunar axis), so near-polar, not polar.
+    orbit: 'circles the Moon every 117 minutes, about 65 to 115 km up',
+    // 17 km at a day, 90 at two weeks, 606 at 30 days, 1 865 at 60, 2 878 at 90 (the orbit is
+    // 3 650 km across, so by then where it is on the ring is lost).
+    drift: 'Checked against JPL’s own forecast, the dot stays within 100 km of it for two weeks, ' +
+      'and is about 600 km off after a month.',
+    // 6 km.
+    arc: 'within about 6 km of JPL’s own track',
   },
 ];
 
@@ -978,6 +1078,22 @@ const OSCULATING_CRAFT = [
     // 2 000 km at 60 days, 4 000 at 85; Horizons' file ends 2026-12-18.
     drift: 'Checked against JPL’s own forecast, it stays within a few thousand km for two months.',
   },
+  {
+    id: 'deep-gaia',
+    name: 'Gaia',
+    klass: 'telescope',
+    horizonsId: -139479,
+    // Horizons -139479 header (revised 2025-05-16): science observations ended 2025-01-25, and on
+    // 2025-03-28 it "left its orbit around Earth-Sun L2 and was placed in a heliocentric disposal
+    // orbit", coming back past Earth every 14 years at about 10 million km. 83.7 million km from
+    // Earth on 2026-09-22. It was drawn at L2 (construction A) until that day.
+    note: 'It measured the positions and motions of about two billion stars, then in March 2025 ' +
+      'was pushed away from L2 onto an orbit of its own round the Sun.',
+    aAu: 1.049606, e: 0.025513, iDeg: 0.0786, nodeDeg: 100.5376, argpDeg: 87.9103, maDeg: 137.1475,
+    // Nothing steers it now: 277 km at 30 days, 1 663 at 60, 20 184 at 180, 75 806 at a year.
+    drift: 'Checked against JPL’s own forecast, it stays within 2 000 km for two months and ' +
+      '20 000 km for six.',
+  },
 ];
 
 /** @returns {Array<Object>} */
@@ -1024,6 +1140,52 @@ export function sampleDeepSpace() {
         why: NO_CORS + ' ' + c.offset + ' The orbit itself is the published J2000 element set ' +
           'for ' + anchor.label + ', mean anomaly included, so the place along it is real to ' +
           'within ' + anchor.driftNote + '.',
+      },
+    });
+  }
+
+  for (const c of PLANET_ORBITERS) {
+    const world = WORLD_WORDS[c.world];
+    const worlds = world === 'the Moon' ? 'the Moon’s' : world + '’s';
+    out.push({
+      id: c.id,
+      name: c.name,
+      layer: 'deep-space',
+      klass: c.klass,
+      propagator: 'orbiter',
+      frame: c.world + '-inertial',
+      cls: 'sample',
+      epoch: ORBITER_EPOCH_MS,
+      source: 'horizons-deep-space',
+      muKm3S2: WORLD_GM[c.world],
+      samples: [{ tMs: ORBITER_EPOCH_MS, rKm: c.rKm, vKmS: c.vKmS }],
+      // A bound orbit repeats, so one state answers for any date and the craft never leaves the
+      // map; `drift` is the sentence that says how soon the place along the orbit stops being known.
+      extrapolateMs: Infinity,
+      meta: {
+        horizonsId: c.horizonsId,
+        construction: 'round-a-world',
+        orbits: c.world,
+        periodMin: c.periodMin,
+        note: c.note,
+        ...(c.aliases ? { aliases: c.aliases } : {}),
+        // What the card says once the harvested snapshot draws it instead (data/parsers.js copies
+        // it to `orbitKnown`, which ui/cards.js prints after the class line). Written here, beside
+        // the measurement of `arc`, because that measurement is what makes it true: it holds for
+        // six-hourly states, and the parser refuses a coarser snapshot rather than overclaim.
+        snapshotKnown: 'it ' + c.orbit + '; JPL Horizons gives its place relative to ' + world +
+          ' every six hours, and between those it is carried round ' + world + ' by ' + worlds +
+          ' pull alone, which keeps it ' + c.arc,
+        approx: true,
+        approxFields: ['position along the orbit after ' + ORBITER_EPOCH_WORDS],
+        // Not NO_CORS alone: for these the server's copy existing is not enough. Every snapshot
+        // before 2026-09-22 holds them relative to the Sun, which data/parsers.js refuses.
+        why: 'This browser cannot read JPL’s servers itself (they send no CORS header), and a ' +
+          'craft this close to ' + world + ' can only be drawn where it is from JPL’s positions ' +
+          'relative to ' + world + ', which our own server’s copy does not have at the moment. ' +
+          'Until it does, this is data shipped with the app. It ' + c.orbit + '. The dot starts ' +
+          'from JPL Horizons’ position for it relative to ' + world + ' on ' + ORBITER_EPOCH_WORDS +
+          ' and is carried round ' + world + ' by ' + worlds + ' pull alone. ' + c.drift,
       },
     });
   }

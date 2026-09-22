@@ -1,7 +1,8 @@
-// propagate/index.js -- one signature, seven implementations, and the extension point.
+// propagate/index.js -- one signature, eight implementations, and the extension point.
 //
-// Every propagator is (record, tMs) -> {x, y, z, frame, cls} | null. Adding a seventh is a file
-// under propagate/ and a row in PROPAGATORS. Nothing else in the app learns its name.
+// Every propagator is (record, tMs) -> {x, y, z, frame, cls} | null. Adding a ninth is a file
+// under propagate/ and a row in PROPAGATORS. Nothing else in the app learns its name. (The eighth,
+// `orbiter`, arrived 2026-09-22 for craft that circle another world: propagate/orbiter.js.)
 //
 // Two rules are enforced here rather than trusted to each propagator:
 //   1. A propagator never throws. A record with bad data draws nothing; it does not take the
@@ -17,11 +18,12 @@ import { body } from './body.js';
 import { fixed } from './fixed.js';
 import { ascent } from './ascent.js';
 import { staticPos } from './static.js';
+import { orbiter } from './orbiter.js';
 
-export { sgp4, kepler, sampled, body, fixed, ascent, staticPos };
+export { sgp4, kepler, sampled, body, fixed, ascent, staticPos, orbiter };
 
 /** The registry. Key = record.propagator. */
-export const PROPAGATORS = { sgp4, kepler, sampled, body, fixed, ascent, static: staticPos };
+export const PROPAGATORS = { sgp4, kepler, sampled, body, fixed, ascent, static: staticPos, orbiter };
 
 // Strictest first. A propagator may only move a record down this list, never up.
 const CLASS_ORDER = ['measured', 'inferred', 'illustrative', 'sample'];
