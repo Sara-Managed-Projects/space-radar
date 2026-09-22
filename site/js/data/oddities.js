@@ -246,7 +246,7 @@ export const ODDITIES = [
       "drawn_name": "three aluminium minifigures and their props",
       "departure": "the props are drawn at about twice scale: three identical 4 cm bodies differ only by what is in the hand"
     },
-    "fact": "Three tiny aluminium LEGO people have been riding through Jupiter's radiation belts since 2011: Galileo, Jupiter, and his wife Juno.",
+    "fact": "Three tiny aluminium LEGO people left Earth on Juno in 2011 and reached Jupiter's radiation belts in 2016: Galileo, Jupiter, and his wife Juno.",
     "myths": [
       {
         "claim": "Juno is dead, so the figures are gone",
@@ -277,7 +277,7 @@ export const ODDITIES = [
       "drawn_name": "the Graflex 3-cell flash handle the prop was built on",
       "departure": "this is the camera part the prop was built from, not the prop: the hilt's design is not ours to draw"
     },
-    "fact": "The lightsaber prop from Return of the Jedi spent fourteen days in orbit sealed in foam, and never once came out of its box.",
+    "fact": "The lightsaber prop from Return of the Jedi spent fifteen days in orbit sealed in foam, and never once came out of its box.",
     "myths": [
       {
         "claim": "the lightsaber is in space",
