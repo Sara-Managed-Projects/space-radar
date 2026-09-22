@@ -36,7 +36,7 @@ import {
   fistsWords,
   inWords,
   UNITS,
- article, typeWords } from '../copy/en.js';
+ article, typeWords, NAKED_EYE_LIMIT } from '../copy/en.js';
 import { propagate } from '../propagate/index.js';
 import { realModelFor } from '../scene/realmodels.js';
 import { sunlitState } from '../scene/shadow.js';
@@ -557,7 +557,7 @@ const TEMPLATES = {
     const mag = pickNumber(md, 'magnitude', 'mag', 'h');
     const au = m.distSunKm !== null ? m.distSunKm / UNITS.AU_KM : null;
     let brightness = null;
-    if (mag !== null) brightness = mag <= 6 ? T.nakedEye : T.faint;
+    if (mag !== null) brightness = mag <= NAKED_EYE_LIMIT ? T.nakedEye : T.faint;
     // Periodic (the MPC's orbit type P, or a period under two centuries) comes back; the rest do not.
     const periodDays = pickNumber(md, 'periodDays');
     const years = periodDays !== null && periodDays > 0 ? periodDays / 365.25 : null;
@@ -1055,7 +1055,7 @@ export function seeItLine(record, ctx, m, passInfo) {
     const md = meta(record);
     const mag = pickNumber(md, 'mag');
     if (pick(md, 'home') === true) return COPY.sky.nakedEye;
-    if (mag !== null) return mag <= 6.5 ? COPY.sky.nakedEye : COPY.sky.needsTelescope;
+    if (mag !== null) return mag <= NAKED_EYE_LIMIT ? COPY.sky.nakedEye : COPY.sky.needsTelescope;
     return COPY.sky.needsTelescope;
   }
   if (!isEarthFrame(m.frame)) return COPY.sky.notVisibleFromGround;

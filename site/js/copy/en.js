@@ -124,6 +124,12 @@ const SIZE_BANDS = [
   { upto: Infinity, say: 'about the size of a city' },
 ];
 
+// The usual naked-eye limit from a dark site. ONE number for every sentence that answers "can I see
+// it": the chip's band stopped at 6 while the "See it from here" line used 6.5, so an object at 6.5
+// was "too faint to see without a telescope" and "Bright enough to see with your own eyes" on the
+// same card (found 2026-09-22 adding NGC objects at 6.5).
+export const NAKED_EYE_LIMIT = 6.5;
+
 const MAGNITUDE_BANDS = [
   { upto: -11, say: 'as bright as the full Moon' },
   { upto: -6, say: 'brighter than any star or planet' },
@@ -132,7 +138,7 @@ const MAGNITUDE_BANDS = [
   // called an ordinary star (live, 2026-09-09).
   { upto: 1.5, say: 'as bright as the brightest stars' },
   { upto: 3, say: 'as bright as an ordinary star' },
-  { upto: 6, say: 'just visible from a dark place' },
+  { upto: NAKED_EYE_LIMIT, say: 'just visible from a dark place' },
   { upto: Infinity, say: 'too faint to see without a telescope' },
 ];
 
