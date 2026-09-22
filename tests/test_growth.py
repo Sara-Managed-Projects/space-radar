@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """The growth test: adding a world is a registry row, or the architecture regressed.
 
-Spec 0002 requirement 3 and its acceptance test. This applies `tests/fixtures/europa.yaml`
+Spec 0002 requirement 3 and its acceptance test. This applies `tests/fixtures/enceladus.yaml`
 into the registry, asserts the validator still passes, and asserts that making it work
 required NO file outside `registry/` and the generated mirror.
 
@@ -91,7 +91,7 @@ def apply_fixture(registry: Path, fixture: dict) -> None:
 
 
 def main() -> int:
-    fixture = yaml.safe_load((ROOT / "tests/fixtures/europa.yaml").read_text(encoding="utf-8"))
+    fixture = yaml.safe_load((ROOT / "tests/fixtures/enceladus.yaml").read_text(encoding="utf-8"))
 
     with tempfile.TemporaryDirectory() as tmp:
         work = Path(tmp) / "repo"

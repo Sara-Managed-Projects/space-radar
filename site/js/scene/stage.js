@@ -59,6 +59,13 @@ export const STAGES = {
   saturn: { frame: SUN_INERTIAL, unitKm: 10000 },
   uranus: { frame: SUN_INERTIAL, unitKm: 10000 },
   neptune: { frame: SUN_INERTIAL, unitKm: 10000 },
+  // Pluto and Jupiter's four big moons are Moon-sized (1 188 to 2 631 km), so they take the Moon's
+  // 1 000 km unit. They draw in the heliocentric frame like the planets, with the origin on them.
+  pluto: { frame: SUN_INERTIAL, unitKm: 1000 },
+  io: { frame: SUN_INERTIAL, unitKm: 1000 },
+  europa: { frame: SUN_INERTIAL, unitKm: 1000 },
+  ganymede: { frame: SUN_INERTIAL, unitKm: 1000 },
+  callisto: { frame: SUN_INERTIAL, unitKm: 1000 },
   // The scale ladder (spec 0028 req 1). Mirrors registry/stages.yaml -- check_registry.py refuses
   // drift. Not worlds: the origin is the Sun and one unit is a light-year, a kiloparsec, a
   // million light-years. `ladder: true` is how worlds.js knows nothing is compressed from here.

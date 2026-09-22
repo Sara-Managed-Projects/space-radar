@@ -3,6 +3,7 @@
 // `measured` in the sense the app means it: these are the positions, not a guess at them.
 // astronomy-engine's VSOP87/ELP truncations are good to well under an arcsecond for the planets
 // and a few kilometres for the Moon over the years this app covers -- far below one screen pixel.
+// Jupiter's four big moons are Jupiter plus JupiterMoons() (frames.js says why).
 //
 // astronomy-engine returns AU in EQJ (equatorial J2000). Everything here converts to km, and to
 // the axes the record's frame asks for:
@@ -14,6 +15,8 @@ import * as Astronomy from '../../vendor/astronomy.js';
 import {
   KM_PER_AU,
   bodyForWorld,
+  isJupiterMoon,
+  jupiterMoonOffsetKm,
   worldHelioEclKm,
   j2000ToTeme,
   eciToEcef,
@@ -54,6 +57,16 @@ export function worldPositionKm(worldId, tMs, frame = 'sun-inertial') {
         eqj = { x: m.x * KM_PER_AU, y: m.y * KM_PER_AU, z: m.z * KM_PER_AU };
       } else if (key === 'earth') {
         eqj = { x: 0, y: 0, z: 0 };
+      } else if (isJupiterMoon(key)) {
+        // GeoVector back-dates Jupiter by the light time, 33 to 54 minutes over a year. The moon's
+        // offset must be taken at that same earlier instant, or it is added to a Jupiter from a
+        // different moment: Io moves 17.4 km/s round Jupiter, 52 000 km in the 50.1 minutes the
+        // light took on 2026-09-22 (measured with this file's own GeoVector).
+        const g = Astronomy.GeoVector(Astronomy.Body.Jupiter, date, false);
+        const lightDays = Math.hypot(g.x, g.y, g.z) / Astronomy.C_AUDAY;
+        const off = jupiterMoonOffsetKm(key, tMs - lightDays * 86400000);
+        if (!off) return null;
+        eqj = { x: g.x * KM_PER_AU + off.x, y: g.y * KM_PER_AU + off.y, z: g.z * KM_PER_AU + off.z };
       } else {
         const body = bodyForWorld(key);
         if (!body) return null;

@@ -509,6 +509,23 @@ its `source:`; the card prints the source under the numbers. Positions, distance
 periods are facts; the sentence on each row is this project's. Wikipedia's text is CC BY-SA 4.0 and
 none of it is reproduced — only the figures.
 
+### 4.9 Pluto and Jupiter's four big moons — `registry/worlds.yaml`
+
+Five worlds drawn as plain one-colour balls: **no texture or image ships for them.** Each row's
+`facts:` names the page every figure and sentence was read from, on 2026-09-22.
+
+- Positions: astronomy-engine (§1). Io, Europa, Ganymede and Callisto are its `JupiterMoons()`, a
+  port of the L1.2 theory of Lainey, Duriez and Vienne, added to Jupiter's own position.
+- Radii and albedos: NASA Space Science Data Coordinated Archive, *Jovian Satellite Fact Sheet* and
+  *Pluto Fact Sheet* (nssdc.gsfc.nasa.gov); Pluto's radius from Wikipedia's *Pluto* infobox. US
+  government works; facts.
+- What each one is: NASA Science's pages for each world (science.nasa.gov); the sentence on the card
+  is this project's.
+- Colour and how to see it: Wikipedia's *Pluto*, *Io*, *Europa*, *Ganymede*, *Callisto* and
+  *Galilean moons* articles. The colour is this project's choice from those descriptions, and the
+  card says so. Wikipedia's text is CC BY-SA 4.0; only a few words are quoted in the registry as
+  evidence (`says:`), and no text of it ships to the page.
+
 ## 4.6 Third-party trademarks the app names or draws
 
 None of the marks below is licensed to this project and none is used as a badge of origin. They are

@@ -1,11 +1,20 @@
-# Worlds. A body is a ROW: adding Mars, Europa or a lunar stage touches this file and nothing
-# under app/. A world is a row: id, parent, radius, ephemeris, rotation model, textures.
+# Worlds. A body is a ROW: id, parent, radius, ephemeris, rotation model, textures.
+#
+# THE BROWSER'S COPY IS HAND-KEPT. There is no generator for this file: a world in the browser
+# also carries its texture's measured mean colour and the rule it is drawn by, which live only in
+# scene/worlds.js. So a new world is a row here, a row in scene/worlds.js WORLDS and one in
+# scene/stage.js STAGES, and scripts/check_registry.py refuses any disagreement between the three
+# on id, parent, radius, unit_km or flat colour (added 2026-09-22 with Pluto and the four moons).
 #
 # parent      the world this one orbits; `sun` is the root and has none.
 # unit_km     scene units when this world is the active stage (spec 0005 floating origin).
 # ephemeris   how its position is computed. `body` = astronomy-engine, no fetch, no network.
 # rotation    how its fixed frame turns, for anything sitting on the surface.
-# look        texture set and atmosphere treatment (spec 0006).
+# look        texture set and atmosphere treatment (spec 0006), or `flat: "#rrggbb"` for a world
+#             with no texture, drawn in that one colour. A flat row must carry `facts:`.
+# facts       for a world whose card and colour rest on read pages: each fact names its `source:`
+#             URL, the day it was `read:` and what the page `says:`. check_registry.py refuses
+#             a flat world without radius, albedo, what, colour and seen (how to see it).
 # aliases     other names people type into search (spec 0028 step 0); the display name stays.
 # enabled     absent means on. Switching a world off removes it from the map, the stage list and
 #             the fly-to menu at once, because they all read this row.
@@ -120,3 +129,98 @@ worlds:
     rotation: {kind: sidereal, period_h: 16.11}
     frames: [inertial, fixed]
     look: {textures: neptune}
+
+  # PLUTO AND JUPITER'S FOUR BIG MOONS: worlds with SOURCED FACTS instead of a texture. No map ships
+  # for them and none is fetched, so `look.flat` is the colour they are drawn in -- a hue from the
+  # description quoted under `facts.colour`, lighter or darker in the order of `facts.albedo`. The
+  # card says the colour was chosen, not measured. Every number and every sentence the card prints
+  # about them names the page it was read from and the day (check_registry.py refuses a fact
+  # without both).
+  #
+  # The moons' positions are astronomy-engine's JupiterMoons() (the L1.2 theory of Lainey, Duriez
+  # and Vienne) added to Jupiter's own; there is no astronomy-engine Body for them, which is what
+  # `ephemeris.moon` says. They have no rotation model there either, so only `inertial` frames:
+  # a `europa-fixed` position is refused rather than turned by a guess.
+  #
+  # unit_km 1000, the Moon's: all five are Moon-sized, 1 188 to 2 631 km.
+  - id: pluto
+    aliases: ["134340 Pluto"]
+    display: Pluto
+    parent: sun
+    radius_km: 1188.3
+    unit_km: 1000
+    ephemeris: {propagator: body, body: Pluto}
+    # `fixed` because astronomy-engine's RotationAxis has Pluto's IAU pole and spin, which
+    # propagate/frames.js already turns a body-fixed position by. The plain ball has nothing to turn.
+    frames: [inertial, fixed]
+    look: {flat: "#b4926f"}
+    facts:
+      radius: {source: "https://en.wikipedia.org/wiki/Pluto", read: 2026-09-22, says: "mean radius 1,188.3 km (infobox)"}
+      albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/plutofact.html", read: 2026-09-22, says: "geometric albedo 0.52"}
+      what: {source: "https://science.nasa.gov/dwarf-planets/pluto/", read: 2026-09-22, says: "reclassified as a dwarf planet in 2006; beyond Neptune, in the Kuiper Belt"}
+      colour: {source: "https://en.wikipedia.org/wiki/Pluto", read: 2026-09-22, says: "The color varies from charcoal black, to dark orange and white."}
+      seen: {source: "https://en.wikipedia.org/wiki/Pluto", read: 2026-09-22, says: "apparent magnitude 13.65 to 16.3 (mean is 15.1) (infobox)"}
+
+  - id: io
+    aliases: ["Jupiter I"]
+    display: Io
+    parent: jupiter
+    radius_km: 1821.5
+    unit_km: 1000
+    ephemeris: {propagator: body, body: Jupiter, moon: io}
+    frames: [inertial]
+    look: {flat: "#c9b061"}
+    facts:
+      radius: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/joviansatfact.html", read: 2026-09-22, says: "radius 1821.5 km"}
+      albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/joviansatfact.html", read: 2026-09-22, says: "visual geometric albedo 0.62"}
+      what: {source: "https://science.nasa.gov/jupiter/jupiter-moons/io/", read: 2026-09-22, says: "the most volcanically active world in the solar system"}
+      colour: {source: "https://en.wikipedia.org/wiki/Io_(moon)", read: 2026-09-22, says: "shades of yellow, red, white, black, and green, largely due to ... sulfur"}
+      seen: {source: "https://en.wikipedia.org/wiki/Galilean_moons", read: 2026-09-22, says: "readily seen with common binoculars ... closeness to bright Jupiter makes naked-eye observation very difficult"}
+
+  - id: europa
+    aliases: ["Jupiter II"]
+    display: Europa
+    parent: jupiter
+    radius_km: 1560.8
+    unit_km: 1000
+    ephemeris: {propagator: body, body: Jupiter, moon: europa}
+    frames: [inertial]
+    look: {flat: "#d6cfc0"}
+    facts:
+      radius: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/joviansatfact.html", read: 2026-09-22, says: "radius 1560.8 km"}
+      albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/joviansatfact.html", read: 2026-09-22, says: "visual geometric albedo 0.68"}
+      what: {source: "https://science.nasa.gov/jupiter/jupiter-moons/europa/", read: 2026-09-22, says: "A saltwater ocean lies beneath its icy shell"}
+      colour: {source: "https://en.wikipedia.org/wiki/Europa_(moon)", read: 2026-09-22, says: "a pale ... surface striated by light tan cracks and streaks"}
+      seen: {source: "https://en.wikipedia.org/wiki/Galilean_moons", read: 2026-09-22, says: "readily seen with common binoculars ... closeness to bright Jupiter makes naked-eye observation very difficult"}
+
+  - id: ganymede
+    aliases: ["Jupiter III"]
+    display: Ganymede
+    parent: jupiter
+    radius_km: 2631.2
+    unit_km: 1000
+    ephemeris: {propagator: body, body: Jupiter, moon: ganymede}
+    frames: [inertial]
+    look: {flat: "#958b7e"}
+    facts:
+      radius: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/joviansatfact.html", read: 2026-09-22, says: "radius 2631.2 km (Wikipedia's infobox has 2634.1; one source for all four moons)"}
+      albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/joviansatfact.html", read: 2026-09-22, says: "visual geometric albedo 0.44"}
+      what: {source: "https://science.nasa.gov/jupiter/jupiter-moons/ganymede/", read: 2026-09-22, says: "the largest moon in the solar system ... even bigger than the planet Mercury"}
+      colour: {source: "https://en.wikipedia.org/wiki/Ganymede_(moon)", read: 2026-09-22, says: "very old, highly cratered, dark regions and somewhat younger ... lighter regions"}
+      seen: {source: "https://en.wikipedia.org/wiki/Galilean_moons", read: 2026-09-22, says: "readily seen with common binoculars ... closeness to bright Jupiter makes naked-eye observation very difficult"}
+
+  - id: callisto
+    aliases: ["Jupiter IV"]
+    display: Callisto
+    parent: jupiter
+    radius_km: 2410.3
+    unit_km: 1000
+    ephemeris: {propagator: body, body: Jupiter, moon: callisto}
+    frames: [inertial]
+    look: {flat: "#5e564c"}
+    facts:
+      radius: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/joviansatfact.html", read: 2026-09-22, says: "radius 2410.3 km"}
+      albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/joviansatfact.html", read: 2026-09-22, says: "visual geometric albedo 0.19"}
+      what: {source: "https://science.nasa.gov/jupiter/jupiter-moons/callisto/", read: 2026-09-22, says: "the most heavily cratered object in our solar system"}
+      colour: {source: "https://en.wikipedia.org/wiki/Callisto_(moon)", read: 2026-09-22, says: "Callisto's surface has an albedo of about 20%"}
+      seen: {source: "https://en.wikipedia.org/wiki/Galilean_moons", read: 2026-09-22, says: "readily seen with common binoculars ... closeness to bright Jupiter makes naked-eye observation very difficult"}

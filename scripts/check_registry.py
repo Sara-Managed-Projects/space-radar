@@ -547,6 +547,119 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
 LOD_HOOKS = {"sky-panorama", "stars-3d", "galaxy-model"}
 
 
+# The facts a world with no texture must carry, and what each is for on the card. `albedo` is
+# there because it is what orders the flat colours from light to dark (scene/worlds.js); the rest
+# are what the card prints -- `seen` is its "see it from here" line, because "you can see this
+# one with your own eyes", the line every other world gets, is false of Pluto.
+FLAT_WORLD_FACTS = ("radius", "albedo", "what", "colour", "seen")
+READ_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+def check_world_look_and_facts(w: dict, where: str) -> None:
+    """A world is drawn as SOMETHING, and a world drawn from facts names where each fact was read.
+
+    Pluto and Jupiter's four big moons ship no texture: their disc is one colour, and their card
+    says what they are and how big from pages a person read on a given day. A fact with no page is
+    a number nobody can check; a page with no date is a number nobody can re-check when the page
+    changes. So a `look.flat` row must carry `facts:` for everything the card and the colour rest
+    on, each with the page (`source:`), the day (`read:`) and what the page said (`says:`).
+    """
+    look = w.get("look") or {}
+    flat = look.get("flat")
+    if not look.get("textures") and flat is None:
+        fail(where, "`look:` names neither `textures` nor a `flat` colour, so nothing says what to draw")
+    facts = w.get("facts")
+    if flat is not None:
+        if not isinstance(flat, str) or not HEX.match(flat):
+            fail(where, f"`look.flat` {flat!r} must be a colour written #rrggbb")
+        if not isinstance(facts, dict):
+            fail(where, "a flat-coloured world must carry `facts:` -- its colour and its card rest on them")
+            return
+        for key in FLAT_WORLD_FACTS:
+            if key not in facts:
+                fail(where, f"`facts.{key}` is missing; a flat-coloured world names where its {key} came from")
+    if facts is None:
+        return
+    if not isinstance(facts, dict):
+        fail(where, "`facts:` must be a mapping of fact -> {source, read, says}")
+        return
+    for key, fact in facts.items():
+        at = f"{where}.facts.{key}"
+        if not isinstance(fact, dict):
+            fail(at, "must be {source, read, says}")
+            continue
+        if not str(fact.get("source") or "").startswith("https://"):
+            fail(at, "no `source:` page (an https:// URL a reviewer can open)")
+        # PyYAML reads an unquoted 2026-09-22 as a date; a quoted one stays a string. Both are fine.
+        if not READ_DATE.match(str(fact.get("read") or "")):
+            fail(at, "no `read:` date (YYYY-MM-DD), so nobody can tell when the page said it")
+        if not str(fact.get("says") or "").strip():
+            fail(at, "no `says:` -- what the page said, so a reviewer can find it on the page")
+
+
+def check_world_mirror(worlds: list) -> None:
+    """registry/worlds.yaml against its two hand mirrors: scene/worlds.js WORLDS and scene/stage.js STAGES.
+
+    There is no generator for this registry -- a world row carries a measured texture mean, a view
+    rule and a shader choice the YAML does not -- so the browser's copy is hand-kept, like the
+    ladder rungs in check_stages(). Until 2026-09-22 nothing compared them, and adding Pluto and
+    four moons means five rows written twice. This reads the JS with regular expressions and refuses
+    any disagreement on id, parent, radius, unit_km or flat colour, in either direction.
+
+    tests/test_growth.py runs this checker on a copy of the tree with no site/js in it, so a missing
+    mirror is "cannot look", not a fail -- exactly as check_stages() treats stage.js.
+    """
+    worlds_js = ROOT / "site/js/scene/worlds.js"
+    stage_js = ROOT / "site/js/scene/stage.js"
+    if not worlds_js.exists() or not stage_js.exists():
+        return
+    rows = {w.get("id"): w for w in worlds if isinstance(w, dict) and w.get("id")}
+    js = worlds_js.read_text(encoding="utf-8")
+    drawn = {}
+    for m in re.finditer(
+        r"id:\s*'([a-z][a-z0-9-]*)',\s*display:\s*'[^']*',\s*parent:\s*'([a-z0-9-]*)',\s*radiusKm:\s*([0-9.]+),"
+        r"(?P<rest>[\s\S]*?)look:\s*\{(?P<look>[^\n]*)\}", js):
+        tint = re.search(r"tint:\s*0x([0-9a-fA-F]{6})", m.group("look"))
+        drawn[m.group(1)] = {
+            "parent": m.group(2),
+            "radius": float(m.group(3)),
+            "flat": "flat: true" in m.group("look"),
+            "tint": tint.group(1).lower() if tint else None,
+        }
+    stages = {}
+    for m in re.finditer(r"^\s*'?([a-z][a-z0-9-]*)'?:\s*\{\s*frame:\s*[A-Z_]+,\s*unitKm:\s*([0-9.e+]+)\s*\}",
+                         stage_js.read_text(encoding="utf-8"), re.M):
+        stages[m.group(1)] = float(m.group(2))
+
+    for wid, w in rows.items():
+        where = f"worlds.yaml[{wid}]"
+        d = drawn.get(wid)
+        if d is None:
+            fail(where, "scene/worlds.js WORLDS has no row for it -- the browser would never draw it")
+            continue
+        if d["parent"] != (w.get("parent") or ""):
+            fail(where, f"parent `{w.get('parent')}` but scene/worlds.js says `{d['parent']}`")
+        radius = w.get("radius_km")
+        if isinstance(radius, (int, float)) and abs(d["radius"] - float(radius)) > 1e-6 * float(radius):
+            fail(where, f"radius_km {radius} but scene/worlds.js draws {d['radius']}")
+        flat = (w.get("look") or {}).get("flat")
+        if isinstance(flat, str) and HEX.match(flat):
+            if not d["flat"]:
+                fail(where, "`look.flat` here but scene/worlds.js waits for a texture map")
+            elif d["tint"] != flat[1:].lower():
+                fail(where, f"flat colour {flat} but scene/worlds.js draws #{d['tint']}")
+        elif d["flat"]:
+            fail(where, "scene/worlds.js draws it flat but this row has no `look.flat` colour")
+        unit = w.get("unit_km")
+        if wid not in stages:
+            fail(where, "scene/stage.js STAGES has no row for it -- it could never be the centre")
+        elif isinstance(unit, (int, float)) and abs(stages[wid] - float(unit)) > 1e-6 * float(unit):
+            fail(where, f"unit_km {unit} but scene/stage.js says {stages[wid]}")
+    for wid in drawn:
+        if wid not in rows:
+            fail("worlds.js", f"WORLDS row `{wid}` has no worlds.yaml row")
+
+
 def check_stages(world_ids: set) -> list:
     """registry/stages.yaml: the ladder's rungs, and scene/stage.js's STAGES table must carry them.
 
@@ -1507,6 +1620,9 @@ def main() -> int:
         ring = look.get("ring") or {}
         if ring and ring.get("texture") not in texture_ids:
             fail(where, f"ring texture `{ring.get('texture')}` has no models.yaml row")
+        check_world_look_and_facts(w, where)
+
+    check_world_mirror(worlds)
 
     # --- sources -----------------------------------------------------------------
     seen = set()
