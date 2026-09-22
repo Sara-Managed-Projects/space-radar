@@ -297,6 +297,25 @@ export const LAYER_ROWS = [
     "train": null
   },
   {
+    "id": "far-bodies",
+    "display": "Dwarf planets and far travellers",
+    "enabled": true,
+    "moments": {
+      "wonder": true,
+      "now": false,
+      "next": false
+    },
+    "source": "bundled",
+    "sources": null,
+    "propagator": "kepler",
+    "frame": "sun-inertial",
+    "card": "asteroid",
+    "glyph": "asteroid",
+    "colour": "asteroid",
+    "maxItems": 20,
+    "train": null
+  },
+  {
     "id": "comets",
     "display": "Comets",
     "enabled": true,

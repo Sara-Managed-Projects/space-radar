@@ -24,6 +24,7 @@ import {
   sampleReentries,
   handKeptSites,
   sampleOddities,
+  farBodies,
 } from './sample.js';
 import { worldRecords } from '../scene/worlds.js';
 import { EXOTICS } from './exotics.js';
@@ -765,6 +766,37 @@ export const LAYERS = [
     // Nothing to fetch, so it is nearly free and should be on screen early.
     priority: 25,
     sentence: 'Things people sent off the planet that were never part of the mission.',
+  },
+  {
+    // Mirrors registry/layers.yaml `far-bodies` (2026-09-22). Eight dwarf planets and the two
+    // visitors from another star, on JPL's orbits with their real phase (data/sample.js farBodies,
+    // which says where every number came from). A layer of its own and not rows in `asteroids`:
+    // that layer's hand rows are STAND-INS, shown only when the NEO snapshot is missing and drawn
+    // at a placeholder perihelion, so on a normal day Ceres was on nobody's map. These stand in
+    // for nothing, so they load always, like the oddities. `source: bundled`: nothing to fetch.
+    id: 'far-bodies',
+    display: 'Dwarf planets and far travellers',
+    klass: 'asteroid',
+    source: 'bundled',
+    parse: null,
+    // Borisov is a comet: its glyph follows its klass already, and its colour does here, because
+    // a layer colour outranks the class colour in scene/glyphs.js colourOf.
+    sample: () => farBodies().map((r) => (r.klass === 'comet' ? { ...r, colour: C.comet } : r)),
+    propagator: 'kepler',
+    frame: 'sun-inertial',
+    moments: { wonder: true, now: false, next: false },
+    defaultOn: true,
+    select: all,
+    budget: { maxItems: 20 },
+    colour: C.asteroid,
+    glyph: 'asteroid',
+    // As `asteroids`: where a model starts to exist. The dwarf planets are 900 to 2 300 km across,
+    // so the model's own close-up distance (heroes.js) is what actually decides the framing.
+    nearKm: 500000,
+    card: 'asteroid',
+    // Nothing to fetch, so it is nearly free and on screen early, beside the oddities.
+    priority: 26,
+    sentence: 'Eight dwarf planets, from Ceres in the asteroid belt to Sedna far past Neptune, and the two visitors from another star, each where it is today on its own orbit.',
   },
   {
     id: 'comets',

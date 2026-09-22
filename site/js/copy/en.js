@@ -529,6 +529,13 @@ export const COPY = {
     unknown: 'Object',
   },
 
+  // The card's badge for the far-bodies layer, whose records are filed under the asteroid and comet
+  // classes for their glyph and model (ui/cards.js klassLabel).
+  klassFar: {
+    dwarf: 'Dwarf planet',
+    interstellar: 'Interstellar object',
+  },
+
   moments: {
     title: 'What are you here for',
     wonder: {
@@ -723,6 +730,9 @@ export const COPY = {
       location: 'Where it stands',
       onWorld: 'Standing on',
       closestApproach: 'Closest to Earth',
+      // A dwarf planet's known moons, by name (data/sample.js farBodies, each from its article's
+      // infobox). An empty list is a fact too: Ceres and Sedna have none that anyone has found.
+      moons: 'Moons',
       missDistance: 'Miss distance',
       perihelion: 'Closest to the Sun',
       magnitude: 'Brightness',
@@ -750,6 +760,10 @@ export const COPY = {
       suns: '{n}× the Sun',
       earths: '{n}× Earth',
       lightYearsRange: '{lo} to {hi} light-years',
+      // Sedna's width is 906 km, +314 / -258: nobody has weighed or resolved it, so the card
+      // gives the range rather than a middle that reads as a measurement.
+      kmRange: '{lo} to {hi} km',
+      noMoonsKnown: 'none known',
       sunsRange: '{lo} to {hi}× the Sun',
       millionSuns: '{n} million Suns',
       billionSuns: '{n} billion Suns',
@@ -906,6 +920,10 @@ export const COPY = {
     // The orbit line under the selection (spec 0026 req 13): the same elements as the dot, one lap ahead.
     orbitLine: 'The line is one lap ahead, worked out from the same elements as the dot.',
     orbitLineYear: 'The line is the coming year of its path, worked out from the same elements as the dot.',
+    // The far bodies draw their WHOLE path (scene/orbitline.js wholePathTimes): the coming year is
+    // a sliver of Eris's 560-year lap and less than a hair of Sedna's. A hyperbola has no lap.
+    orbitLineWhole: 'The line is its whole orbit around the Sun, worked out from the same elements as the dot.',
+    orbitLinePassage: 'The line is its one pass through the Solar System, in and out, worked out from the same elements as the dot.',
     variant: 'drawn from published dimensions for {name}',
     // "and height": the size chip beside this line is the matched row's height_m, and on a
     // family match that is the family's figure -- 63 m for an H3 that may be flying the 57 m
@@ -946,6 +964,9 @@ export const COPY = {
       probe: 'a generic probe',
       telescope: 'a generic telescope',
       asteroid: 'a generic asteroid',
+      // A dwarf planet is round by definition, and scene/models.js buildAsteroid draws anything over
+      // about 900 km as a ball. Haumea, which is not, says so in its own row's `departure`.
+      dwarf: 'a plain round body of its measured size',
       comet: 'a generic comet',
       site: 'a generic ground site',
       star: 'a point of light, sized by how bright it looks from where you are',
@@ -1430,6 +1451,19 @@ export const COPY = {
       // Ceres, Vesta and Pallas are in the layer too, and each carries `neo: false`: perihelia of
       // 2.1 to 2.5 au, nowhere near Earth. The card called all of them near-Earth objects.
       leadMainBelt: '{name} is an asteroid in the main belt, between Mars and Jupiter',
+      // The far-bodies layer (2026-09-22). Its first sentence has to be true of a world 95 au out,
+      // and "a near-Earth object" or "in the main belt" is true of none of them but Ceres. Which
+      // of these a card uses is decided from the record's own perihelion and aphelion
+      // (ui/cards.js farRegion), never from a label somebody typed.
+      leadDwarf: '{name} is a dwarf planet on its own orbit around the Sun',
+      leadDwarfBelt: '{name} is a dwarf planet in the asteroid belt, between Mars and Jupiter',
+      leadDwarfBeyond: '{name} is a dwarf planet beyond Neptune',
+      leadDwarfFarBeyond: '{name} is a dwarf planet far beyond Neptune',
+      // 'Oumuamua: not bound to the Sun (e 1.20). Which way it is going is the clock's to say --
+      // a visitor can wind the app back to before 9 September 2017.
+      leadInterstellarOut: '{name} came from another star and is on its way out of the Solar System',
+      leadInterstellarIn: '{name} came from another star and is falling in towards the Sun',
+      distanceSun: '{au} astronomical units from the Sun',
       whyApproach: "passing Earth on {date} at {ld}× the Moon's distance",
       size: '{size}',
       // Only written when a named source says so (spec 0013 requirement 6).
@@ -1440,6 +1474,9 @@ export const COPY = {
       // A periodic comet -- 123P, Halley's -- comes back every few years or decades. "A long loop"
       // was right only for the C/ comets, and the card said it of 123P/West-Hartley, period 7.6 years.
       leadPeriodic: '{name} is a comet that comes round the Sun every {n} years',
+      // 2I/Borisov (e 3.36): "a long loop around the Sun" would be the one thing it is not.
+      leadInterstellarOut: '{name} is a comet from another star, on its way out of the Solar System',
+      leadInterstellarIn: '{name} is a comet from another star, falling in towards the Sun',
       whyPerihelion: 'closest to the Sun on {date}',
       nakedEye: 'bright enough to find without a telescope',
       faint: 'too faint to see without a telescope',
