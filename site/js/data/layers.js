@@ -282,7 +282,10 @@ function milkyWayRecords() {
       distLy: Math.round(distKpc * KPC_KM_MW / LY_KM_MW),
       sizeLy: 87400,
       aliases: ['Milky Way', 'our galaxy', 'the Galaxy', 'galactic centre', 'galactic center'],
-      why: 'Everything else on this map is inside it. The Sun sits 26 600 light-years from its centre, a little more than halfway out.',
+      // No number here: the card's first sentence gives the distance to the centre from distKpc
+      // (26 582), and since cards print this line under it (public #204) "26 600" beside it read as
+      // a second, different figure.
+      why: 'Everything else on this map is inside it. The Sun sits a little more than halfway out from its centre.',
       drawsAs: 'variant',
       drawnName: 'a point-cloud model of the Milky Way',
       departure: 'the disc, bar and arms follow published measurements (Reid et al. 2019 for the arms and the distance to the centre); nobody has seen our galaxy from outside, so the picture is an illustration and the stars around you are the measured part',
