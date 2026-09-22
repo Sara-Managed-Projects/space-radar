@@ -28,6 +28,7 @@ import {
 import { worldRecords } from '../scene/worlds.js';
 import { EXOTICS } from './exotics.js';
 import { LAYER_ROWS } from './layers.registry.js';
+import { propagate } from '../propagate/index.js';
 
 const DAY_MS = 86400000;
 
@@ -197,18 +198,47 @@ const geoBand = (records) => records.filter(isGeostationary);
 /** Comets: perihelion inside a year either way, OR bright enough that somebody might see it. */
 const cometsWorthDrawing = (records, nowMs) => {
   const t = Number.isFinite(nowMs) ? nowMs : Date.now();
-  return records.filter((r) => {
+  const kept = records.filter((r) => {
     const m = r.meta || {};
     const near = Number.isFinite(m.perihelionMs) && Math.abs(m.perihelionMs - t) <= 365 * DAY_MS;
     const bright = Number.isFinite(m.absoluteMagnitude) && m.absoluteMagnitude <= 8;
     return near || bright;
   });
+  for (const r of kept) r.meta.magNow = cometMagNow(r, t);
+  return kept;
 };
+
+/**
+ * How bright a comet is in the sky NOW, roughly: the standard total-magnitude law
+ * m = H + 5 log10(delta) + 10 log10(r), with its distance from Earth taken as its distance from
+ * the Sun (m ~ H + 15 log10 r). That approximation errs toward faint for a comet close to Earth,
+ * and it is only ever used to ORDER comets against each other.
+ *
+ * WHY. The layer draws 60 comets and ranked them by H alone -- how bright each would be one au
+ * from the Sun and from us -- so it drew the 60 intrinsically brightest comets in the catalogue,
+ * wherever they were. Measured on the live MPC feed, 2026-09-21: 228 comets reach perihelion
+ * within a year of today and 223 of them were cut, while Hale-Bopp, 29 years past perihelion and
+ * 51 au out, took a slot; so did two SOHO fragments of 2020 whose H values (-1.6 and 0) come from a
+ * few coronagraph sightings next to the Sun. By this law Hale-Bopp is about magnitude 24 tonight.
+ */
+function cometMagNow(record, tMs) {
+  const H = record.meta && record.meta.absoluteMagnitude;
+  if (!Number.isFinite(H)) return null;
+  let p = null;
+  try { p = propagate(record, tMs); } catch { p = null; }
+  if (!p) return null;
+  const rAu = Math.hypot(p.x, p.y, p.z) / AU_KM_RANK;
+  if (!(rAu > 0)) return null;
+  return H + 15 * Math.log10(Math.max(rAu, 0.05));
+}
+const AU_KM_RANK = 149597870.7;
 
 // Ranking used only when a layer overflows its budget, so the cut is deterministic and
 // defensible rather than "whatever the server listed first".
 const byPerigee = (a, b) => (a.meta.perigeeKm ?? 1e9) - (b.meta.perigeeKm ?? 1e9);
-const byBrightest = (a, b) => (a.meta.absoluteMagnitude ?? 99) - (b.meta.absoluteMagnitude ?? 99);
+// Brightest in the sky now (cometMagNow). A comet that could not be placed sorts after every one
+// that could, by H among themselves -- it replaced a ranking by H alone.
+const byBrightNow = (a, b) => (a.meta.magNow ?? (a.meta.absoluteMagnitude ?? 99) + 50) - (b.meta.magNow ?? (b.meta.absoluteMagnitude ?? 99) + 50);
 const bySoonest = (a, b) => (a.meta.netMs ?? Infinity) - (b.meta.netMs ?? Infinity);
 
 // =================================================================================================
@@ -740,7 +770,7 @@ export const LAYERS = [
     moments: { wonder: true, now: false, next: true },
     defaultOn: false,
     select: cometsWorthDrawing,
-    budget: { maxItems: 60, rank: byBrightest },
+    budget: { maxItems: 60, rank: byBrightNow },
     colour: C.comet,
     glyph: 'comet',
     nearKm: 2000000,
