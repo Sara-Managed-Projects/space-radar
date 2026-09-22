@@ -18,6 +18,9 @@ import { revealInColumn } from './reveal.js';
 import { labelName } from './labels.js';
 import { SHOWERS } from '../data/showers.js';
 import * as Astronomy from '../../vendor/astronomy.js';
+import { kpWords } from './spaceweather.js';
+import { load } from '../data/sources.js';
+import { parseSpaceWeather } from '../data/parsers.js';
 
 export const NEXT_CAP = 8;
 const HOUR = 3600e3;
@@ -112,9 +115,33 @@ export function showerItems(nowMs, horizonMs, showers, observer = null) {
   return out;
 }
 
+/**
+ * A geomagnetic storm, from NOAA's planetary Kp (the swpc-kp feed the space-weather line reads):
+ * the storm under way now if the latest measured bin is Kp 5 or more, else the strongest forecast
+ * bin of Kp 5 or more still ahead. One row, never three: NOAA forecasts in three-hour bins and a
+ * storm spans several. registry/events.yaml's `aurora` event, which had no row anywhere. Pure.
+ */
+export function auroraItem(parsed, nowMs, horizonMs = 3 * DAY) {
+  const rows = parsed && Array.isArray(parsed.forecast) ? parsed.forecast : [];
+  const isMeasured = (r) => r.observed === 'observed' || r.observed === 'estimated';
+  const measured = rows.filter(isMeasured);
+  const latest = measured[measured.length - 1];
+  if (latest && latest.kp >= 5 && nowMs - latest.tMs < 6 * HOUR) {
+    return { kind: 'aurora', record: null, tMs: nowMs, kp: latest.kp, now: true };
+  }
+  let best = null;
+  for (const r of rows) {
+    if (isMeasured(r) || !(r.kp >= 5)) continue;
+    if (r.tMs + 3 * HOUR <= nowMs || r.tMs - nowMs > horizonMs) continue;
+    if (!best || r.kp > best.kp) best = r;
+  }
+  return best ? { kind: 'aurora', record: null, tMs: Math.max(best.tMs, nowMs), kp: best.kp, now: false } : null;
+}
+
 export function buildNextItems(records, nowMs, opts = {}) {
   const horizonMs = opts.horizonMs || 30 * DAY;
   const items = [];
+  if (opts.spaceWeather) { const a = auroraItem(opts.spaceWeather, nowMs); if (a) items.push(a); }
   if (opts.showers) items.push(...showerItems(nowMs, horizonMs, opts.showers, opts.observer || null));
   for (const r of Array.isArray(records) ? records : []) {
     if (!r || !r.meta) continue;
@@ -180,7 +207,7 @@ export function balance(items) {
   const events = items.filter((it) => it.kind !== 'pass' && it.kind !== 'train').sort(byTime);
   const chosen = [...passes.slice(0, PASS_ROWS), ...trains.slice(0, 1)];
   const take = (it) => { if (chosen.length < NEXT_CAP && !chosen.includes(it)) chosen.push(it); };
-  for (const kind of ['launch', 'approach', 'perihelion', 'shower']) {
+  for (const kind of ['aurora', 'launch', 'approach', 'perihelion', 'shower']) {
     const first = events.find((e) => e.kind === kind);
     if (first) take(first);
   }
@@ -231,6 +258,10 @@ export function rowText(item, nowMs) {
       return t(T.pass, { name, when });
     case 'train':
       return t(T.train, { n: fmt.int(item.count), when });
+    case 'aurora':
+      return item.now
+        ? t(T.auroraNow, { kp: fmt.smart(item.kp), word: kpWords(item.kp).word })
+        : t(T.aurora, { kp: fmt.smart(item.kp), word: kpWords(item.kp).word, when });
     case 'shower':
       // A date, not a time: the peak moves by hours between years (registry/showers.yaml).
       {
@@ -282,7 +313,7 @@ export function createNext(ctx) {
     while (list.firstChild) list.removeChild(list.firstChild);
     const now = ctx.clock && typeof ctx.clock.now === 'function' ? ctx.clock.now() : Date.now();
     const observer = ctx.observer && Number.isFinite(ctx.observer.latRad) ? ctx.observer : null;
-    const items = buildNextItems(ctx.records(), now, { observer, showers: SHOWERS });
+    const items = buildNextItems(ctx.records(), now, { observer, showers: SHOWERS, spaceWeather: weather });
     for (const item of items) {
       const li = el('li', 'sr-next__row', rowText(item, now));
       li.dataset.kind = item.kind;
@@ -309,9 +340,18 @@ export function createNext(ctx) {
     note.hidden = parts.length === 0;
   }
 
+  // NOAA's Kp, through the same source row and gate the space-weather line uses, so opening the
+  // list costs no request that line has not already made.
+  let weather = null;
+  function readWeather() {
+    load('swpc-kp')
+      .then((r) => { weather = r && r.data != null ? parseSpaceWeather(r.data) : null; refresh(); })
+      .catch(() => {});
+  }
+
   function setMoment(moment) {
     root.hidden = moment !== 'next';
-    if (!root.hidden) refresh();
+    if (!root.hidden) { refresh(); readWeather(); }
   }
 
   // Pressing Next reveals the list directly under the row of moment buttons, so the answer appears

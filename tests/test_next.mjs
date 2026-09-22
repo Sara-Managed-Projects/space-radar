@@ -97,5 +97,23 @@ check(buildNextItems([launch('A', H)], now, { observer: { latRad: 0.9, lonRad: 0
   check(withShowers.length === 1 && withShowers[0].kind === 'shower' && withShowers[0].record === null, 'with nothing else loaded the list still has the shower');
 }
 
+// Storms that bring auroras (2026-09-22: NOAA forecast Kp 5.33 and "Coming up" said nothing).
+{
+  const { auroraItem, rowText: rt2 } = await import(join(JS, 'ui/next.js'));
+  const t0 = Date.parse('2026-09-22T12:00:00Z');
+  const bin = (h, kp, observed) => ({ tMs: t0 + h * H, kp, observed });
+  const quietNowStormLater = { forecast: [bin(-6, 1.3, 'observed'), bin(-3, 1.67, 'estimated'), bin(3, 3.0, 'predicted'), bin(9, 5.33, 'predicted'), bin(12, 5.0, 'predicted'), bin(30, 4.0, 'predicted')] };
+  const a = auroraItem(quietNowStormLater, t0);
+  check(a && !a.now && a.kp === 5.33 && a.tMs === t0 + 9 * H, `the strongest forecast bin of Kp 5+ is the one row (${a && a.kp} at +${a && (a.tMs - t0) / H}h)`);
+  const text = rt2(a, t0);
+  check(/NOAA forecasts a minor storm/.test(text) && /aurora possible/.test(text) && /Kp 5\.33/.test(text), `the row uses NOAA's scale and says aurora: "${text}"`);
+  const now = auroraItem({ forecast: [bin(-3, 6.0, 'observed'), bin(3, 7.0, 'predicted')] }, t0);
+  check(now && now.now && now.kp === 6, 'a storm measured now outranks a bigger one forecast');
+  check(/under way/.test(rt2(now, t0)), `and says it is under way: "${rt2(now, t0)}"`);
+  check(auroraItem({ forecast: [bin(3, 4.67, 'predicted')] }, t0) === null, 'Kp 4.67 is not a storm and makes no row');
+  check(auroraItem({ forecast: [bin(-9, 6, 'predicted')] }, t0) === null, 'a forecast bin already over makes no row');
+  check(auroraItem(null, t0) === null && auroraItem({}, t0) === null, 'no reading, no row');
+}
+
 if (problems.length) { console.error('next FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('next ok: launches, close approaches and perihelia from held records, nearest first, capped, honest about rough dates');
