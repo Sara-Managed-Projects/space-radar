@@ -1223,6 +1223,25 @@ for (const file of allFiles) {
   }
 }
 
+// 3e4d. A DATE FAR ENOUGH AWAY CARRIES ITS YEAR.
+//
+// `timeText.localDate` is "Mon 19 Mar": right for tonight's pass, wrong for anything a season or more
+// away. It has now been caught four times in four places -- the Roadster's last sighting (2018), a
+// comet's perihelion (Hale-Bopp, 1997), a debris reentry and a probe's milestone -- each read by a
+// visitor as a date in the next few months. The card and the Next list no longer call it at all:
+// dateNear() chooses by distance from now, and passes use dayAndTime, which is always within hours.
+{
+  for (const f of ['ui/cards.js', 'ui/next.js']) {
+    const src = readFileSync(join(JS, f), 'utf8').split('\n').filter((l) => !/^\s*\/\//.test(l)).join('\n');
+    if (/timeText\.localDate\(/.test(src)) problems.push(`DATE     ${f} calls timeText.localDate; use timeText.dateNear(ms, now) so a far date keeps its year`);
+  }
+  const { timeText } = await import(join(JS, 'copy/en.js'));
+  const now = Date.UTC(2026, 8, 22);
+  if (!/2029/.test(timeText.dateNear(Date.UTC(2029, 3, 13), now))) problems.push('DATE     Apophis in April 2029 must print 2029');
+  if (/2026/.test(timeText.dateNear(Date.UTC(2026, 9, 30), now))) problems.push('DATE     a date five weeks out keeps the short form');
+  if (!problems.some((p) => p.startsWith('DATE'))) notes.push('every date more than half a year away prints its year');
+}
+
 // 3e5. THE GITHUB MARK STEPS ASIDE FOR THE CARD, AND ONLY FOR THE CARD.
 //
 // The mark asks for the top right corner. On desktop it used to sit at `var(--sr-card-w) + 24px`

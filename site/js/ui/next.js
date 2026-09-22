@@ -32,7 +32,9 @@ export function whenText(tMs, nowMs) {
   if (dayDiff === 0) return t(T.todayAt, { time: timeText.hhmm(tMs) });
   if (dayDiff === 1) return t(T.tomorrowAt, { time: timeText.hhmm(tMs) });
   if (d < 7 * DAY) return timeText.dayAndTime(tMs);
-  return timeText.localDate(tMs);
+  // The list runs to a comet's perihelion up to a year out, and "Mon 19 Mar" eleven months away reads
+  // as next week's Monday; dateNear writes the year once it is more than half a year off.
+  return timeText.dateNear(tMs, nowMs);
 }
 
 function startOfDay(ms) {
