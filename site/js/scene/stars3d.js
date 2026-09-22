@@ -49,6 +49,8 @@ uniform float uShell;
 uniform float uUnitsPerPc;
 varying vec3 vColour;
 varying float vAlpha;
+varying float vCore;
+varying float vGlare;
 void main() {
   vec4 mv = modelViewMatrix * vec4( position, 1.0 );
   gl_Position = projectionMatrix * mv;
@@ -62,7 +64,18 @@ void main() {
   }
   // the same curve as starfield.js magToSize / magToAlpha, extended one magnitude fainter
   float tt = clamp( ( 6.5 - m ) / 8.0, 0.0, 1.0 );
-  gl_PointSize = ( 1.0 + 5.0 * pow( tt, 1.6 ) ) * uPixelRatio;
+  float core = 1.0 + 5.0 * pow( tt, 1.6 );
+  // BRIGHTER THAN ANY STAR IN EARTH'S SKY. That curve tops out at -1.5, Sirius from here, because
+  // the sky from Earth never goes further. On the ladder you can fly close: Sirius from a light-year
+  // out is magnitude -6, brighter than Venus, and was drawn the same 6 px speck as a star of -1.5
+  // while the exoplanet marks around it were bigger (measured on the "To the edge" trip,
+  // 2026-09-22). So past -1.5 the core stays its size and a glare grows round it, the way the eye
+  // reports a light too bright to resolve. At -1.5 and fainter nothing changes: glare is 0.
+  float glare = clamp( ( -1.5 - m ) / 6.0, 0.0, 1.0 );
+  float size = core + 26.0 * glare;
+  gl_PointSize = size * uPixelRatio;
+  vCore = core / size;
+  vGlare = glare;
   vAlpha = ( m > 7.5 ) ? 0.0 : ( 0.35 + 0.65 * tt ) * uGain;
   vColour = aColour;
 }
@@ -71,11 +84,18 @@ void main() {
 const FRAG = /* glsl */ `
 varying vec3 vColour;
 varying float vAlpha;
+varying float vCore;
+varying float vGlare;
 #include <common>
 void main() {
   if ( vAlpha <= 0.0 ) discard;
   float d = length( gl_PointCoord - vec2( 0.5 ) );
-  float a = 1.0 - smoothstep( 0.12, 0.5, d );
+  // The core in its own units, so it is the same number of pixels with or without a glare.
+  float a = 1.0 - smoothstep( 0.12, 0.5, d / max( vCore, 1e-3 ) );
+  if ( vGlare > 0.0 ) {
+    float e = 1.0 - clamp( d / 0.5, 0.0, 1.0 );
+    a = max( a, vGlare * 0.8 * e * e );
+  }
   if ( a <= 0.0 ) discard;
   gl_FragColor = vec4( vColour, a * vAlpha );
   #include <colorspace_fragment>

@@ -1259,6 +1259,19 @@ for (const file of allFiles) {
   if (!problems.some((p) => p.startsWith('A11Y'))) notes.push('the card is a named dialog; it takes focus from a control, never from a tap or a trip, and gives it back');
 }
 
+// 3e4f. A TRIP'S SUBJECT IS NAMED WHERE IT IS DRAWN.
+//
+// Measured on "To the edge", 2026-09-22: the labels skipped the selection whenever a trip ran,
+// on the grounds that the card names it. The card cannot point: Proxima was one unlabelled point
+// among hundreds, and the nearest name to the Sun was Voyager 1's. Only the ground under the camera
+// goes unnamed now. No DOM here, so the rule is asserted where it is written.
+{
+  const src = readFileSync(join(JS, 'ui/labels.js'), 'utf8');
+  if (/if \(selected && !inTrip\)/.test(src)) problems.push('LABELS   the selection is hidden during a trip again -- the card names its subject but cannot point at it');
+  if (!/isOwnPlaceOnLadder/.test(src)) problems.push('LABELS   on a ladder stage a planet or probe can take the Sun\'s pixel\'s name again');
+  else notes.push('a trip names its subject where it is drawn; on the ladder the Sun speaks for the Solar System');
+}
+
 // 3e5. THE GITHUB MARK STEPS ASIDE FOR THE CARD, AND ONLY FOR THE CARD.
 //
 // The mark asks for the top right corner. On desktop it used to sit at `var(--sr-card-w) + 24px`

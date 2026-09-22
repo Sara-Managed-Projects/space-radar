@@ -165,6 +165,14 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
   check(/an orange star/.test(text(firstSentence(star('Arcturus', 'K2IIIp'), ctx, m0, { state: 'none' }))), 'Arcturus is an orange star, with an n');
   check(/a white star/.test(text(firstSentence(star('Vega', 'A0Vvar'), ctx, m0, { state: 'none' }))), 'and Vega is still a white star');
 
+  // "Proxima Centauri is a star 4.23 light-years away, one of the nearest there are, a red star,
+  // the light you see left it 4 years ago": "star" twice, and two sentences joined by a comma.
+  // Read on the "To the edge" trip card. The colour is in the lead now; the light is a participle.
+  const proxima = text(firstSentence({ id: 'hip-70890', name: 'Proxima Centauri', klass: 'star', frame: 'sun-inertial', meta: { spect: 'M5.5Ve', distLy: 4.23 } }, ctx, m0, { state: 'none' }));
+  check(proxima === 'Proxima Centauri is a red star 4.23 light-years away, one of the nearest there are, seen as it was 4 years ago.', `Proxima's sentence is one sentence: "${proxima}"`);
+  const m31 = text(firstSentence({ id: 'dso-m31', name: 'Andromeda Galaxy', klass: 'dso', frame: 'sun-inertial', meta: { distLy: 2540000, typeText: 'spiral galaxy' } }, ctx, m0, { state: 'none' }));
+  check(!/the light you see/.test(m31) && /seen as it was 2\.54 million years ago/.test(m31), `a deep-sky sentence hangs the light's age off itself: "${m31}"`);
+
   // Capella and Dubhe: HYG gives the companion's type for both; the shipped data carries SIMBAD's
   const { readFileSync } = await import('node:fs');
   const rows = JSON.parse(readFileSync(join(ROOT, 'site/data/stars3d.names.json'), 'utf8')).rows;
