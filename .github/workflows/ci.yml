@@ -60,6 +60,10 @@ jobs:
         run: python3 scripts/gen_stars_notable_js.py --check
       - name: The level-of-detail mirror matches the registry (spec 0028)
         run: python3 scripts/gen_lod_js.py --check
+      # The dishes and landing sites were ported to data/sample.js by hand until 2026-09-22, with
+      # nothing checking the port; twenty-one more rows made that a copy that would drift.
+      - name: The sites mirror matches the registry
+        run: python3 scripts/gen_sites_js.py --check
       - name: The harvester's source mirror matches the registry
         run: python3 scripts/gen_sources_json.py --check
       # Every parser against what its source really sends (captured fixtures), the never-worse
@@ -182,6 +186,8 @@ jobs:
         run: node tests/test_next.mjs
       - name: search ranks whole words first, falls back to buried letters only when it must and says so (spec 0021)
         run: node tests/test_search.mjs
+      - name: every landing site is a record on its own world, drawn as what landed, and findable
+        run: node tests/test_landing_sites.mjs
       - name: every layer exists on both sides of the registry mirror and `enabled:` is honoured (spec 0026 req 8)
         run: node tests/test_layers_registry.mjs
       - name: a fresh launch is one train with a lead, still climbing or spread out (spec 0026 req 17)

@@ -2,7 +2,126 @@
 # and observatories from Wikidata (see sources.yaml); these are the rows nothing publishes as
 # an API, and the surface sites on other worlds -- which are the visible proof of spec 0002's
 # claim that a new world is a row. Jezero is a row.
+#
+# scripts/gen_sites_js.py mirrors this file into site/js/data/sites.js, which is what the browser
+# reads, and `--check` refuses drift. The sites used to be ported to data/sample.js BY HAND, with
+# nothing checking that the port agreed with this file -- fine at fourteen rows, and not at
+# thirty-five (2026-09-22).
+#
+# A LANDING SITE SAYS FOUR MORE THINGS than a dish does. A row that gives `landed:` must give
+# `shape:` (unless it is `record: false`) and `source:`, a row that gives a shape must say when it
+# landed, and check_registry.py refuses a row that leaves one out:
+#
+#   landed:  the UTC date it came down.
+#   shape:   what the scene draws there -- `lander`, `rover` or `lunar-module`. A surface row with
+#            no shape used to fall through to the class default, scene/models.js buildSitePad:
+#            Curiosity, InSight, Zhurong and Chang'e 4 were each drawn as a launch pad with a tower
+#            and a swing arm, under a card saying "a generic ground site". `lander` and `rover` are
+#            procedural stand-ins and the card says so ("drawn as a lander -- the kind of thing,
+#            not this exact one");
+#            `lunar-module` is NASA's model of the vehicle itself, routed by id in
+#            scene/realmodels.js's `bySite`, and tests/test_landing_sites.mjs holds the two in step.
+#   source:  a key of `references:` below -- one URL, the date it was read, and what the reference
+#            says about its own frame and precision, written once for every row that cites it.
+#   and, where the reference states one, `uncertainty_m:` for THIS object.
+#
+# `aliases:` is optional and is what search matches besides the display name (ui/search.js reads
+# meta.aliases): the rover a lander carried (Sojourner, Pragyan, Yutu), the name a site was given
+# (Tranquility Base, Bradbury Landing), and "Change" for the four Chang'e rows, because a search
+# box does not make anybody type an apostrophe.
+#
+# The rule is keyed on `landed:` rather than on `class: surface` because a surface row need not be
+# a landing: tests/fixtures/europa.yaml grows the registry with Conamara Chaos, a place where
+# nothing has landed. Every surface row in THIS file is a landing, and tests/test_landing_sites.mjs
+# fails any of them that would be drawn with the class default -- so the first surface row that
+# is a place rather than a machine will need a shape of its own before it ships.
+#
+# `source: uncited` is the reserved literal for the six rows that predate the rule and whose
+# numbers were not matched to a reference when it was written. It is not a new row's option:
+# check_registry.py holds the six ids in a frozen set, so citing nothing is a deliberate edit
+# there and never a silent default here.
+#
+# THE CONVENTIONS, because a latitude is only a number once you know which one it is:
+#   * Moon: planetocentric latitude, east longitude 0-360, in the mean Earth/polar axis frame
+#     (LROC and NSSDCA both say DE421). Apollo 14's 342.52806 is 17.47194 W.
+#   * Mars: PLANETOCENTRIC latitude, EAST longitude 0-360, in the IAU 2000 / MOLA frame -- what
+#     Jezero, Gale, InSight and Zhurong already used. Older Mars coordinates are often written
+#     planetographic, west longitude, or both, and planetographic latitude runs up to a third of a
+#     degree higher in mid-latitudes -- 20 km of ground. NSSDCA's own Mars mileage guide writes
+#     Viking 1 as 22.54 N, 48.23 W, and the same page gives Spirit's and Opportunity's longitudes
+#     swapped, which is why it is not cited here. Every reference below states planetocentric (or
+#     areocentric, the same thing on Mars) and east, so no row here needed converting.
+#   * The digits are the reference's digits. `lon: 336.5820` is written as the source wrote it,
+#     even though YAML reads it as 336.582, because the trailing zero is the precision claim.
 version: 1
+
+references:
+  lroc-2016:
+    url: "https://www.lroc.asu.edu/posts/938"
+    read: 2026-09-22
+    says: "LROC team, 'Spacecraft Related Coordinates - 2016 Update' (M. Robinson, 25 November
+           2016; the table of Wagner et al. 2017, Icarus 283, 92-103). Mean of several NAC images
+           per object, mean Earth/polar axis frame, planetocentric latitude, east longitude 0-360,
+           with each object's own uncertainty in metres."
+  nssdc-lunar:
+    url: "https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_artifact_impacts.html"
+    read: 2026-09-22
+    says: "NASA NSSDCA, 'Table of Anthropogenic Impacts and Spacecraft on the Moon' (D. R.
+           Williams, last updated 13 August 2025). DE421 mean Earth/polar axis frame, N and E
+           positive, from LROC images. 'Precision of knowledge of location is reflected in the
+           precision of the coordinates, 0.001 degrees equals approximately 30 meters.' Used for
+           the landers after 2016, which the LROC table above predates."
+  nssdc-viking-1:
+    url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1975-075C"
+    read: 2026-09-22
+    says: "NASA NSSDCA, Viking 1 Lander: '22.27 deg N latitude and 312.05 deg E longitude
+           (planetocentric)'. HiRISE's image of the lander (PSP_001521_2025) is centred at
+           22.273 N, 312.054 E, which agrees to the hundredth of a degree."
+  nssdc-viking-2:
+    url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1975-083C"
+    read: 2026-09-22
+    says: "NASA NSSDCA, Viking 2 Lander: '47.6673 deg N latitude and 134.2809 deg E longitude'.
+           The page does not name the convention. HiRISE's image of the lander (PSP_001501_2280)
+           is centred at 47.673 N, 134.300 E planetocentric, a kilometre away; read as
+           planetographic, 47.6673 would be 47.40 planetocentric, 16 km south of that image.
+           NSSDCA's Viking overview gives the site as 47.64 N, 134.29 E and calls it
+           planetocentric."
+  pds-mer:
+    url: "https://an.rsl.wustl.edu/help/Content/About%20the%20mission/MER/MER%20mission.htm"
+    read: 2026-09-22
+    says: "PDS Geosciences Node, Analyst's Notebook, MER mission overview: the landing sites
+           'with respect to surface features in maps produced in the MOLA IAU 2000 cartographic
+           reference frame' are 14.5692 S, 175.4729 E (Spirit) and 1.9462 S, 354.4734 E
+           (Opportunity). The map-frame numbers, not the inertial ones beside them, because the
+           app draws on a map."
+  pds-phoenix:
+    url: "https://an.rsl.wustl.edu/help/Content/About%20the%20mission/PHX/PHX%20mission.htm"
+    read: 2026-09-22
+    says: "PDS Geosciences Node, Analyst's Notebook, Phoenix mission overview: '68.22 degrees N,
+           234.25 degrees East Areocentric'. JPL's PIA13804 caption gives the same two numbers."
+  pds-msl:
+    url: "https://an.rsl.wustl.edu/help/Content/About%20the%20mission/MSL/MSL%20mission.htm"
+    read: 2026-09-22
+    says: "PDS Geosciences Node, Analyst's Notebook, MSL mission overview: 'latitude of 4.5895
+           degrees South, and longitude of 137.4417 degrees East'."
+  hirise-pathfinder:
+    url: "https://www.uahirise.org/PSP_001890_1995"
+    read: 2026-09-22
+    says: "HiRISE, 'HiRISE Images Mars Pathfinder Site', 21 December 2006: Latitude (centered)
+           19.086, Longitude (East) 326.763. That is the centre of an image targeted on the
+           lander, which the caption finds in it -- not a surveyed point, but the only published
+           position found in the frame the other Mars rows use. The PDS entry-and-descent
+           dataset (mpfl-m-asimet-4-ddr-edl-v1.0) gives '19.1 North Areocentric latitude, and
+           326.48 East longitude', a third of a degree west of this, and names no cartographic
+           frame for that longitude, so it is not used."
+  hirise-mars-3:
+    url: "https://www.uahirise.org/ESP_031036_1345"
+    read: 2026-09-22
+    says: "HiRISE, 'Could This Be the Soviet Mars 3 Lander?', 10 March 2013: Latitude (centered)
+           -45.058, Longitude (East) 202.031. The centre of the image in which amateur searchers
+           found what may be the parachute, retrorockets, heat shield and lander; the caption
+           says alternative explanations 'cannot be ruled out', and the row's own sentence says
+           'may'."
 
 sites:
   # --- Deep Space Network: three complexes, the big dishes ---------------------------
@@ -12,26 +131,288 @@ sites:
   - {id: dss-63, display: "Madrid DSS-63", class: dish, world: earth, lat: 40.2414, lon: -4.2480, alt_m: 865, diameter_m: 70, doing: "The 70-metre dish outside Madrid."}
 
   # --- On the Moon --------------------------------------------------------------------
-  - {id: apollo-11, display: "Apollo 11 landing site", class: surface, world: moon, lat: 0.6741, lon: 23.4730, doing: "Where people first stood on another world, in July 1969. The descent stage is still there."}
+  # Uncited: LROC's 2016 table has the lunar module at 0.67416, 23.47314 (+/- 0.3 m), about 5 m
+  # from this row. Where this row's numbers came from is not recorded.
+  - {id: apollo-11, display: "Apollo 11 landing site", class: surface, world: moon, lat: 0.6741, lon: 23.4730, landed: 1969-07-20, shape: lunar-module, source: uncited, aliases: ["Tranquility Base"], doing: "Where people first stood on another world, in July 1969. The descent stage is still there."}
   # Apollo 14 and 16 are here because registry/oddities.yaml anchors on them BY ID: a surveyed
   # coordinate lives in exactly one place, and an oddity that copied the numbers into its own row
   # would be a second place for them to drift. Both are LROC spacecraft coordinates and both
   # carry a published uncertainty the oddity rows quote -- 0.4 m and 3.0 m.
-  - {id: apollo-14, display: "Apollo 14 landing site", class: surface, world: moon, lat: -3.64589, lon: 342.52806, doing: "Fra Mauro, February 1971. Alan Shepard hit two golf balls here and they are still lying where they stopped."}
-  - {id: apollo-16, display: "Apollo 16 landing site", class: surface, world: moon, lat: -8.9734, lon: 15.5011, doing: "Descartes, April 1972. Charlie Duke left a photograph of his family face-up in the dust beside the lander."}
-  - {id: apollo-17, display: "Apollo 17 landing site", class: surface, world: moon, lat: 20.1908, lon: 30.7717, doing: "The last place people have stood on another world, in December 1972."}
-  - {id: change-4, display: "Chang'e 4", class: surface, world: moon, lat: -45.4446, lon: 177.5991, doing: "The first landing on the far side of the Moon, in 2019."}
+  - {id: apollo-14, display: "Apollo 14 landing site", class: surface, world: moon, lat: -3.64589, lon: 342.52806, uncertainty_m: 0.4, landed: 1971-02-05, shape: lunar-module, source: lroc-2016, doing: "Fra Mauro, February 1971. Alan Shepard hit two golf balls here and they are still lying where they stopped."}
+  - {id: apollo-16, display: "Apollo 16 landing site", class: surface, world: moon, lat: -8.9734, lon: 15.5011, uncertainty_m: 3.0, landed: 1972-04-21, shape: lunar-module, source: lroc-2016, doing: "Descartes, April 1972. Charlie Duke left a photograph of his family face-up in the dust beside the lander."}
+  # Uncited: LROC's 2016 table has 20.1911, 30.7723 (+/- 3.5 m), about 20 m from this row.
+  - {id: apollo-17, display: "Apollo 17 landing site", class: surface, world: moon, lat: 20.1908, lon: 30.7717, landed: 1972-12-11, shape: lunar-module, source: uncited, doing: "The last place people have stood on another world, in December 1972."}
+  # Uncited: these are the numbers LROC announced in February 2019. NSSDCA's table now gives
+  # 45.4561 S, 177.5885 E, about 0.4 km away; which is the later measurement is unchecked.
+  - {id: change-4, display: "Chang'e 4", class: surface, world: moon, lat: -45.4446, lon: 177.5991, landed: 2019-01-03, shape: lander, source: uncited, aliases: ["Change 4", "Yutu-2"], doing: "The first landing on the far side of the Moon, in 2019."}
   # The crash smudge, not the lander and not the library inside it: LROC published the darkest
   # pixel with a 20 m by 8 m 95% confidence interval, and registry/oddities.yaml anchors the
   # lunar library on it BY ID, so the coordinate lives in exactly one place. This row is the
-  # coordinate and NOT a record: sample.js's handKeptSites() does not mirror it, because every
-  # `surface` site outside realmodels.js's `bySite` table is drawn as a launch pad -- true of
-  # change-4, gale, elysium and utopia today -- and a launch pad at a crash site would be a
-  # stand-in that says nothing, which is the one thing this layer may not ship.
-  - {id: beresheet, display: "Beresheet impact site", class: surface, world: moon, lat: 32.5956, lon: 19.3496, doing: "Where an Israeli lander hit Mare Serenitatis in April 2019, carrying a stack of nickel discs."}
+  # coordinate and NOT a record (`record: false`): nothing lies here to draw a shape of, and a
+  # lander standing upright at a crash site would be a stand-in that says something false.
+  - {id: beresheet, display: "Beresheet impact site", class: surface, world: moon, lat: 32.5956, lon: 19.3496, landed: 2019-04-11, record: false, source: nssdc-lunar, doing: "Where an Israeli lander hit Mare Serenitatis in April 2019, carrying a stack of nickel discs."}
+
+  # Added 2026-09-22: fourteen more places a machine came down on the Moon, each where LROC has
+  # photographed the hardware. LROC's 2016 table for everything it covers, because it states an
+  # uncertainty per object; NSSDCA's 2025 table for the six landings since.
+  - id: surveyor-1
+    display: "Surveyor 1, Oceanus Procellarum"
+    class: surface
+    world: moon
+    lat: -2.4745
+    lon: 316.6602
+    uncertainty_m: 5.6
+    landed: 1966-06-02
+    shape: lander
+    source: lroc-2016
+    doing: "The first American spacecraft to land softly on the Moon, in June 1966. It sent home more than 11,000 pictures."
+  - id: surveyor-3
+    display: "Surveyor 3, Oceanus Procellarum"
+    class: surface
+    world: moon
+    lat: -3.0162
+    lon: 336.5820
+    uncertainty_m: 2.6
+    landed: 1967-04-20
+    shape: lander
+    source: lroc-2016
+    doing: "Landed in April 1967. Two and a half years later the Apollo 12 crew walked over and took its camera home."
+  # About 180 m from Surveyor 3 (NSSDCA's figure), so the two are drawn almost on top of each
+  # other until the camera is close. Both are rows because both are places something landed.
+  - id: apollo-12
+    display: "Apollo 12 landing site"
+    class: surface
+    world: moon
+    lat: -3.0128
+    lon: 336.5781
+    uncertainty_m: 2.2
+    landed: 1969-11-19
+    shape: lunar-module
+    source: lroc-2016
+    doing: "Pete Conrad and Alan Bean, November 1969. They landed about 180 m from Surveyor 3, a robot that had been there since 1967."
+  - id: luna-16
+    display: "Luna 16, Mare Fecunditatis"
+    class: surface
+    world: moon
+    lat: -0.5137
+    lon: 56.3638
+    uncertainty_m: 3.7
+    landed: 1970-09-20
+    shape: lander
+    source: lroc-2016
+    doing: "The first robot to bring Moon rock to Earth, in September 1970. It drilled up 101 grams of soil."
+  # Where the rover STOPPED, not where Luna 17 set it down: LROC lists both, 2.4 km apart in a
+  # straight line, and the rover is the thing. It landed with Luna 17 on the date below.
+  - id: lunokhod-1
+    display: "Lunokhod 1, Mare Imbrium"
+    class: surface
+    world: moon
+    lat: 38.3150
+    lon: 324.9919
+    uncertainty_m: 3.8
+    landed: 1970-11-17
+    shape: rover
+    source: lroc-2016
+    aliases: ["Luna 17"]
+    doing: "The first rover on another world. It drove 10.5 km across Mare Imbrium in 1970 and 1971, and this is where it stopped."
+  - id: apollo-15
+    display: "Apollo 15 landing site"
+    class: surface
+    world: moon
+    lat: 26.13239
+    lon: 3.63330
+    uncertainty_m: 1.0
+    landed: 1971-07-30
+    shape: lunar-module
+    source: lroc-2016
+    doing: "Hadley Rille, July 1971. The first car on the Moon drove here, and Dave Scott dropped a hammer and a feather to watch them land together."
+  # Again the rover's last position, not Luna 21's. "At least 37 km" because NSSDCA says 37 and
+  # NASA's July 2014 release, when Opportunity passed it, says 39: the smaller figure is the one
+  # that is true under both.
+  - id: lunokhod-2
+    display: "Lunokhod 2, Le Monnier crater"
+    class: surface
+    world: moon
+    lat: 25.8323
+    lon: 30.9222
+    uncertainty_m: 7.5
+    landed: 1973-01-15
+    shape: rover
+    source: lroc-2016
+    aliases: ["Luna 21"]
+    doing: "A Soviet rover that landed in January 1973 and drove at least 37 km over hills and rilles in four months. It stopped here."
+  - id: change-3
+    display: "Chang'e 3, Mare Imbrium"
+    class: surface
+    world: moon
+    lat: 44.1214
+    lon: 340.4883
+    uncertainty_m: 9.1
+    landed: 2013-12-14
+    shape: lander
+    source: lroc-2016
+    aliases: ["Change 3", "Yutu"]
+    doing: "China's first Moon landing, in December 2013, and the first soft landing on the Moon since 1976. It carried the Yutu rover."
+  - id: change-5
+    display: "Chang'e 5, Oceanus Procellarum"
+    class: surface
+    world: moon
+    lat: 43.0576
+    lon: 308.0839
+    landed: 2020-12-01
+    shape: lander
+    source: nssdc-lunar
+    aliases: ["Change 5"]
+    doing: "Collected 1,731 grams of soil and rock in December 2020, the first Moon samples brought to Earth since 1976."
+  - id: chandrayaan-3
+    display: "Chandrayaan-3 Vikram lander"
+    class: surface
+    world: moon
+    lat: -69.3741
+    lon: 32.32
+    landed: 2023-08-23
+    shape: lander
+    source: nssdc-lunar
+    aliases: ["Pragyan", "Statio Shiv Shakti"]
+    doing: "India's first landing on the Moon, in August 2023, and the first anywhere near its south pole. The Pragyan rover drove off from here."
+  # JAXA's own figure for the miss is about 55 m east of the target (press release, 25 January
+  # 2024), and the pictures from its small rover LEV-2 showed it standing on its nose.
+  - id: slim
+    display: "SLIM, near Shioli crater"
+    class: surface
+    world: moon
+    lat: -13.3160
+    lon: 25.2510
+    landed: 2024-01-19
+    shape: lander
+    source: nssdc-lunar
+    aliases: ["Moon Sniper"]
+    doing: "Japan's first Moon landing, January 2024. It came down about 55 m from its target, then tipped over onto its nose."
+  - id: im-1
+    display: "Odysseus (IM-1), near Malapert A"
+    class: surface
+    world: moon
+    lat: -80.13
+    lon: 1.44
+    landed: 2024-02-22
+    shape: lander
+    source: nssdc-lunar
+    aliases: ["Intuitive Machines"]
+    doing: "The first private spacecraft to land on the Moon and the first American one since 1972, in February 2024. It tipped over as it landed."
+  # 206.0148 E is 153.9852 W: the far side, which tests/test_landing_sites.mjs checks from the
+  # geometry rather than trusting this comment.
+  - id: change-6
+    display: "Chang'e 6, Apollo basin"
+    class: surface
+    world: moon
+    lat: -41.6385
+    lon: 206.0148
+    landed: 2024-06-01
+    shape: lander
+    source: nssdc-lunar
+    aliases: ["Change 6"]
+    doing: "Scooped and drilled 1,935 grams of soil and rock in June 2024: the first samples ever brought back from the far side of the Moon."
+  - id: blue-ghost-1
+    display: "Blue Ghost 1, Mare Crisium"
+    class: surface
+    world: moon
+    lat: 18.562
+    lon: 61.810
+    landed: 2025-03-02
+    shape: lander
+    source: nssdc-lunar
+    aliases: ["Firefly"]
+    doing: "Firefly's lander, March 2025: the first fully successful commercial Moon landing. It worked for a whole lunar day and into the night."
 
   # --- On Mars ------------------------------------------------------------------------
-  - {id: jezero, display: "Perseverance, Jezero crater", class: surface, world: mars, lat: 18.4447, lon: 77.4508, doing: "A rover the size of a car, collecting rock samples in a crater that was once a river delta."}
-  - {id: gale, display: "Curiosity, Gale crater", class: surface, world: mars, lat: -4.5895, lon: 137.4417, doing: "Driving up a mountain of layered rock since 2012."}
-  - {id: elysium, display: "InSight, Elysium Planitia", class: surface, world: mars, lat: 4.5024, lon: 135.6234, doing: "Listened to marsquakes until its solar panels were covered in dust in 2022."}
-  - {id: utopia, display: "Zhurong, Utopia Planitia", class: surface, world: mars, lat: 25.066, lon: 109.926, doing: "China's first Mars rover, landed in 2021."}
+  # Uncited: NASA's landing announcement numbers, not matched to a reference in this change.
+  - {id: jezero, display: "Perseverance, Jezero crater", class: surface, world: mars, lat: 18.4447, lon: 77.4508, landed: 2021-02-18, shape: rover, source: uncited, aliases: ["Octavia E. Butler Landing"], doing: "A rover the size of a car, collecting rock samples in a crater that was once a river delta."}
+  - {id: gale, display: "Curiosity, Gale crater", class: surface, world: mars, lat: -4.5895, lon: 137.4417, landed: 2012-08-06, shape: rover, source: pds-msl, aliases: ["Bradbury Landing"], doing: "Driving up a mountain of layered rock since 2012."}
+  # Uncited: Wikipedia gives the same pair and cites Parker et al. (2019), which was not read here.
+  - {id: elysium, display: "InSight, Elysium Planitia", class: surface, world: mars, lat: 4.5024, lon: 135.6234, landed: 2018-11-26, shape: lander, source: uncited, doing: "Listened to marsquakes until its solar panels were covered in dust in 2022."}
+  # Uncited: Wikipedia gives 25.066 N, 109.925 E, a thousandth of a degree from this row, citing
+  # Liu et al. (2021), which was not read here. Landed 14 May UTC; it was 15 May in Beijing.
+  - {id: utopia, display: "Zhurong, Utopia Planitia", class: surface, world: mars, lat: 25.066, lon: 109.926, landed: 2021-05-14, shape: rover, source: uncited, doing: "China's first Mars rover, landed in 2021."}
+
+  # Added 2026-09-22: seven more. Every one is planetocentric and east-positive in its own
+  # reference (see `references:`), which is the convention of the four rows above.
+  - id: viking-1
+    display: "Viking 1, Chryse Planitia"
+    class: surface
+    world: mars
+    lat: 22.27
+    lon: 312.05
+    landed: 1976-07-20
+    shape: lander
+    source: nssdc-viking-1
+    aliases: ["Thomas Mutch Memorial Station"]
+    doing: "Landed in July 1976 and sent back pictures and weather reports for more than six years, until November 1982."
+  - id: viking-2
+    display: "Viking 2, Utopia Planitia"
+    class: surface
+    world: mars
+    lat: 47.6673
+    lon: 134.2809
+    landed: 1976-09-03
+    shape: lander
+    source: nssdc-viking-2
+    aliases: ["Gerald Soffen Memorial Station"]
+    doing: "Landed in September 1976. In the Martian winter its cameras saw a thin coat of frost on the ground around it."
+  - id: mars-pathfinder
+    display: "Mars Pathfinder, Ares Vallis"
+    class: surface
+    world: mars
+    lat: 19.086
+    lon: 326.763
+    landed: 1997-07-04
+    shape: lander
+    source: hirise-pathfinder
+    aliases: ["Sojourner", "Carl Sagan Memorial Station"]
+    doing: "Bounced down on airbags on 4 July 1997 and let out Sojourner, the first rover to drive on Mars."
+  # The landing site, not where the rover ended: Spirit finished 7.7 km away at Troy, and
+  # Opportunity 45 km away on the rim of Endeavour crater. Neither final position is in a
+  # reference read here, and the sentences say "where it landed" so that the dot is not a claim
+  # about where the rover is.
+  - id: spirit
+    display: "Spirit, Gusev crater"
+    class: surface
+    world: mars
+    lat: -14.5692
+    lon: 175.4729
+    landed: 2004-01-04
+    shape: rover
+    source: pds-mer
+    aliases: ["Columbia Memorial Station"]
+    doing: "Where Spirit landed in January 2004. Built for 90 Martian days, it drove 7.7 km and worked for six years."
+  - id: opportunity
+    display: "Opportunity, Meridiani Planum"
+    class: surface
+    world: mars
+    lat: -1.9462
+    lon: 354.4734
+    landed: 2004-01-25
+    shape: rover
+    source: pds-mer
+    aliases: ["Challenger Memorial Station"]
+    doing: "Where Opportunity rolled to a stop inside a small crater in January 2004. It went on to drive 45 km in more than 14 years."
+  - id: phoenix
+    display: "Phoenix, Vastitas Borealis"
+    class: surface
+    world: mars
+    lat: 68.22
+    lon: 234.25
+    landed: 2008-05-25
+    shape: lander
+    source: pds-phoenix
+    aliases: ["Green Valley"]
+    doing: "Landed on the arctic plains of Mars in May 2008 and dug down to water ice a few centimetres under the soil."
+  - id: mars-3
+    display: "Mars 3, Ptolemaeus crater"
+    class: surface
+    world: mars
+    lat: -45.058
+    lon: 202.031
+    landed: 1971-12-02
+    shape: lander
+    source: hirise-mars-3
+    doing: "The first soft landing on Mars, in December 1971. It fell silent after 20 seconds; in 2013 HiRISE photographed what may be its parachute."

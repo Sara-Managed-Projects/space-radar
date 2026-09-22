@@ -711,9 +711,9 @@ export const LAYERS = [
     id: 'hand-kept-sites',
     display: 'Dishes, landers and rovers',
     klass: 'site',
-    // No source: nothing serves these as an API. The Deep Space Network's antennas, the Apollo
-    // landing sites and the rovers on Mars are published coordinates that do not change, kept in
-    // registry/sites.yaml and ported to data/sample.js for the browser.
+    // No source: nothing serves these as an API. The Deep Space Network's antennas and the places
+    // on the Moon and Mars where something landed are published coordinates that do not change,
+    // kept in registry/sites.yaml and mirrored into data/sites.js by scripts/gen_sites_js.py.
     source: null,
     sample: handKeptSites,
     propagator: 'fixed',

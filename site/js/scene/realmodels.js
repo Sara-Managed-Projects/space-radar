@@ -647,6 +647,16 @@ export const REAL_MODELS = {
     // opening: it reads as "launch platform" rather than as one particular pad, which is what a
     // default has to do. (The *assembled* variant was rejected: its tower is unmistakably LC-39B.)
     pad: { file: 'pad.glb', colour: 'site', name: 'a launch pad', generic: true },
+    // A landing site's own `shape:` (registry/sites.yaml, carried as meta.siteShape). Before
+    // these two rows every surface site outside `bySite` matched nothing here and was drawn by
+    // BUILDERS.site.default, which is buildSitePad -- a slab with a tower and a swing arm -- under
+    // a card saying "a generic ground site". Curiosity, InSight, Zhurong and Chang'e 4 were each
+    // a launch pad on Mars or the Moon (measured 2026-09-22, when twenty-one more landing sites
+    // were about to join them). No public model covers most of these craft, so they are
+    // procedural and the card says so: "drawn as a lander -- the kind of thing, not this exact
+    // one". check_registry.py refuses a surface row with no shape.
+    lander: { build: 'lander', colour: 'site', name: 'a lander', generic: true },
+    rover: { build: 'rover', colour: 'site', name: 'a rover', generic: true },
   },
   /** Named surface sites, where the thing that landed is the thing worth drawing. */
   bySite: {
@@ -663,6 +673,11 @@ export const REAL_MODELS = {
     'apollo-14': { file: 'lunar-module.glb', colour: 'site', name: 'Apollo 14 lunar module Antares' },
     'apollo-16': { file: 'lunar-module.glb', colour: 'site', name: 'Apollo 16 lunar module Orion' },
     'apollo-17': { file: 'lunar-module.glb', colour: 'site', name: 'Apollo 17 lunar module' },
+    // Added with the other landing sites on 2026-09-22. Their rows say `shape: lunar-module`,
+    // and tests/test_landing_sites.mjs fails a row that says so without an entry here -- it would
+    // otherwise fall through to the procedural lander, which is a stand-in for a vehicle we have.
+    'apollo-12': { file: 'lunar-module.glb', colour: 'site', name: 'Apollo 12 lunar module Intrepid' },
+    'apollo-15': { file: 'lunar-module.glb', colour: 'site', name: 'Apollo 15 lunar module Falcon' },
   },
 };
 
@@ -716,7 +731,9 @@ export function realModelFor(record) {
   if (Object.prototype.hasOwnProperty.call(REAL_MODELS.bySite, record.id)) {
     return REAL_MODELS.bySite[record.id];
   }
-  const siteClass = meta.siteKind || meta.siteClass || record.siteClass;
+  // The row's own shape first: a landing site's class is `surface`, which says where it is and
+  // nothing about what stands there.
+  const siteClass = meta.siteShape || meta.siteKind || meta.siteClass || record.siteClass;
   if (siteClass && Object.prototype.hasOwnProperty.call(REAL_MODELS.bySiteClass, siteClass)) {
     return REAL_MODELS.bySiteClass[siteClass];
   }
