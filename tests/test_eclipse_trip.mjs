@@ -149,6 +149,13 @@ if (row && total && annular && lunar) {
   check(lunarLine.includes(COPY.trip.eclipseLine) && lunarLine.includes(COPY.trip.eclipseColour),
     `the lunar stop adds that the colour is an illustration: "${lunarLine}"`);
   check(eclipseLine(machine.state, false) === COPY.trip.eclipseLineLatched, 'under the frame latch the line says the shadow is not drawn here');
+// 2026-09-23: the shadow draws whatever the frame latch says (main.js ctx.eclipseDrawn): gated on
+// it, the live trip told exactly the slow phones "the shadow is not drawn on this device".
+{
+  const { readFileSync } = await import('node:fs');
+  const mainSrc = readFileSync(new URL('../site/js/main.js', import.meta.url), 'utf8');
+  check(/ctx\.eclipseDrawn = \(\) => ctx\.eclipseOverride !== false;/.test(mainSrc), 'the eclipse shadow is not gated on the frame latch');
+}
 
   machine.stop('left');
   check(clock.mode === 'live' && clock.offsetMs() === 0, `leaving puts the live clock back (${clock.mode}, ${clock.offsetMs()} ms)`);

@@ -535,14 +535,17 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
   // Read once: every extra hero model is a file to fetch, so a metered or slow connection keeps
   // the model pool at its floor (scene/heroes.js, nextHeroCap).
   const saveData = typeof navigator !== 'undefined' && shouldSaveData(navigator.connection);
-  // Spec 0037: the eclipse shaders run unless the latch has tripped. The card's honesty line asks
-  // ctx.eclipseDrawn(). ctx.eclipseOverride (true / false / null) is for a probe only: headless
-  // Chrome renders in software at ~3 fps, trips the latch in three seconds, and could then never
-  // show the shadow it is measuring; nothing in the app sets it.
+  // Spec 0037: the eclipse shaders. They were gated on the frame latch as the spec asked, and on
+  // 2026-09-23 the live "Chasing the solar eclipse" trip said "The shadow is not drawn on this
+  // device" -- on exactly the slow phones the latch trips on, which is a trip about a shadow with
+  // no shadow. The cost does not justify it: #228 measured no difference above noise with the
+  // shadow on or off (SwiftShader, Earth filling the screen), and the branch runs only while the
+  // Moon is within 1.7 degrees of the Sun from the Earth, i.e. only at an eclipse. So the shadow
+  // draws whatever the latch says. ctx.eclipseOverride (true / false / null) stays for probes and
+  // tests; nothing in the app sets it, and the "not drawn here" line is reached only through it.
   ctx.latched = () => latch.latched;
   ctx.eclipseOverride = null;
-  ctx.eclipseDrawn = () => (ctx.eclipseOverride === null || ctx.eclipseOverride === undefined
-    ? !latch.latched : ctx.eclipseOverride === true);
+  ctx.eclipseDrawn = () => ctx.eclipseOverride !== false;
 
   function frame(nowReal) {
     requestAnimationFrame(frame);
