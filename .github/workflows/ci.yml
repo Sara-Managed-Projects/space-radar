@@ -235,6 +235,12 @@ jobs:
       # dialects once bounced the app between moments; this is the check that there is one.
       - name: one module owns every key of the URL, and a stop is found by number or by id (spec 0032)
         run: node tests/test_urlstate.mjs
+      # Share (spec 0033): the link is built from the known keys only, so the visitor's place can
+      # never ride along, and the postcard's caption is the card's own lines, string for string.
+      - name: a shared link is the view and nothing else; with no share sheet the clipboard and a toast (spec 0033)
+        run: node tests/test_share.mjs
+      - name: the postcard is 1080 x 1350 with its caption band at 1080..1350, five lines in order (spec 0033)
+        run: node tests/test_postcard.mjs
       - name: every layer exists on both sides of the registry mirror and `enabled:` is honoured (spec 0026 req 8)
         run: node tests/test_layers_registry.mjs
       - name: a fresh launch is one train with a lead, still climbing or spread out (spec 0026 req 17)

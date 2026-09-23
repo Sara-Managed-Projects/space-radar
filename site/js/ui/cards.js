@@ -16,7 +16,8 @@
 //   4b. "often said" -- the myth block, against the facts it corrects
 //   4c. "also aboard" / "riding on" -- the link between a spacecraft and what is bolted to it
 //   5. "see it from here"
-//   6. up to three actions
+//   6. up to three actions (the third is Share, spec 0033)
+//   6a. "Save a picture": the postcard, under the actions
 //   7. the class-and-age line
 //   8. the source line
 //
@@ -55,6 +56,7 @@ import { predictPasses } from '../sky/passes.js';
 import { trajectorySection } from './trajectory.js';
 import { trainOf } from '../data/trains.js';
 import { attachedOdditiesFor, attachedOddityRecord } from '../data/attached.js';
+import { shareButton, pictureButton } from './share.js';
 
 const MAX_FIRST_SENTENCE = 160; // spec 0013 requirement 10, enforced by check_copy.py
 const MAX_COMPARISONS = 3; // spec 0013 requirement 2
@@ -1607,6 +1609,45 @@ function sourceRow(record, ctx) {
   return { label: id, attribution: null };
 }
 
+/**
+ * Block 7's line and block 8's line, as the card prints them. Exported because since 2026-09-23 a
+ * second thing prints them: the postcard (spec 0033, ui/postcard.js), whose caption must carry the
+ * card's own honesty line and sources and could otherwise drift from them. One function, two
+ * printers.
+ */
+export function honestyLine(record, m) {
+  const honesty = honestyClause(record);
+  return classLine(record, m) + (honesty ? COPY.punctuation.dash + honesty : '');
+}
+
+export function sourceLine(record, ctx) {
+  const src = sourceRow(record, ctx);
+  if (!src.label) return COPY.source.unknown;
+  const parts = [COPY.source.prefix + COPY.punctuation.colon + src.label];
+  if (src.attribution) parts.push(src.attribution);
+  return parts.join(COPY.punctuation.separator);
+}
+
+/**
+ * What the card says about `record` right now, as strings and no DOM: the name, the badge, the
+ * first sentence, the "right now" rows, the honesty line and the source line. The share sheet's
+ * words and the postcard's caption are read from here (spec 0033 req 2, 3, 7), so neither can
+ * state a number the card does not.
+ */
+export function cardWords(record, ctx) {
+  const m = measure(record, ctx);
+  const passInfo = nextPass(record, ctx, m);
+  return {
+    name: displayName(record),
+    klass: klassLabel(record),
+    sentence: firstSentence(record, ctx, m, passInfo),
+    rows: rightNowRows(record, m, passInfo),
+    honesty: honestyLine(record, m),
+    sources: sourceLine(record, ctx),
+    tMs: m.tMs,
+  };
+}
+
 // ---------------------------------------------------------------------------------------
 // Actions
 // ---------------------------------------------------------------------------------------
@@ -1673,6 +1714,13 @@ function actionButtons(record, ctx, m) {
 
   // "Tell me before" returns with spec 0015. A disabled button with an apology under it was
   // honest and was also clutter on every card; the review measured it as such.
+
+  // Share (spec 0033, 2026-09-23): the third action. The words are read at the tap, not now, so
+  // the sentence on the share sheet is the one the card shows at that moment.
+  buttons.push(shareButton(ctx, 'sr-btn sr-btn--share', () => {
+    const w = cardWords(record, ctx);
+    return { title: w.name, text: w.sentence };
+  }, record && record.id));
 
   return buttons.slice(0, MAX_ACTIONS);
 }
@@ -1884,12 +1932,15 @@ function render(record, ctx, opts = {}) {
   actions.setAttribute('aria-label', COPY.card.actionsLabel);
   for (const b of actionButtons(record, ctx, m)) actions.appendChild(b);
   body.appendChild(actions);
+  // 6a. the postcard, one tap more than Share and directly under it (spec 0033 req 3). Its own
+  // row and not a fourth action: spec 0013 caps the actions at three.
+  const picture = el('div', 'sr-card__picture');
+  picture.appendChild(pictureButton(ctx, 'sr-btn sr-btn--quiet sr-btn--picture', record));
+  body.appendChild(picture);
 
   // 7. the class-and-age line
   const foot = el('footer', 'sr-card__foot');
-  const honesty = honestyClause(record);
-  foot.appendChild(el('p', 'sr-card__cls',
-    classLine(record, m) + (honesty ? COPY.punctuation.dash + honesty : '')));
+  foot.appendChild(el('p', 'sr-card__cls', honestyLine(record, m)));
 
   // 7b. what the drawn shape is. Between this and the line above it, the card states that
   // neither the shape nor the path is a measurement of this particular flight.
@@ -1900,14 +1951,7 @@ function render(record, ctx, opts = {}) {
   if (lap) foot.appendChild(el('p', 'sr-card__drawn', lap));
 
   // 8. the source line
-  const src = sourceRow(record, ctx);
-  if (src.label) {
-    const parts = [COPY.source.prefix + COPY.punctuation.colon + src.label];
-    if (src.attribution) parts.push(src.attribution);
-    foot.appendChild(el('p', 'sr-card__source', parts.join(COPY.punctuation.separator)));
-  } else {
-    foot.appendChild(el('p', 'sr-card__source', COPY.source.unknown));
-  }
+  foot.appendChild(el('p', 'sr-card__source', sourceLine(record, ctx)));
   node.appendChild(foot);
 
   node.hidden = false;

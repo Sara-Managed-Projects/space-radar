@@ -663,6 +663,24 @@ export const COPY = {
     unknownAt: 'That object is not on this map; showing the default view.',
     unknownStage: 'That place is not a centre this map can take; showing the default view.',
   },
+  // Sharing (spec 0033): a link that reopens this exact view, and a picture of it with its caption.
+  // The picture's caption is the card's own lines (ui/postcard.js); only the frame words are here.
+  share: {
+    link: 'Share',
+    linkTitle: 'Share a link that opens this exact view',
+    picture: 'Save a picture',
+    pictureTitle: 'A picture of this view with its caption, saved to your device',
+    copied: 'Link copied',
+    making: 'Making the picture',
+    saved: 'Picture saved',
+    failed: 'The picture could not be made just now',
+    // `{id}` is the object's or the trip's id, `{date}` the day the sky in the picture is from.
+    fileName: 'space-radar-{id}-{date}.png',
+    mark: 'spaceradar.ai',
+    // The place-and-time line on the picture: the card's first "right now" row, then the instant.
+    row: '{label}: {value}',
+    when: '{date}, {time} UTC',
+  },
   nextList: {
     // Two rows can name different objects the same way -- CelesTrak calls dozens of stages "SL-8
     // R/B" -- and two identical rows read as a bug. The catalogue number tells them apart.

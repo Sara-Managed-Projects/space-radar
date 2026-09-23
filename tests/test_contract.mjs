@@ -54,6 +54,9 @@ const CONTRACT = {
   // The one owner of the URL hash (spec 0032): main.js, ui/controls.js and ui/trip.js all write
   // through it, and a second dialect is the bug it was written to end.
   'ui/urlstate.js': ['KEYS', 'VERSION', 'read', 'write', 'clear', 'stopIndex', 'readMoment', 'writeMoment'],
+  // Share (spec 0033): one control in two hosts, and the postcard it imports on first use.
+  'ui/share.js': ['shareUrl', 'shareState', 'shareLink', 'savePicture', 'shareButton', 'pictureButton', 'toast'],
+  'ui/postcard.js': ['composePostcard', 'composeCard', 'postcardCaption', 'savePostcard', 'ogPicture', 'PC_W', 'PC_H', 'BAND_H'],
   'ui/status.js': ['createStatus'],
   'ui/github.js': ['createGitHubMark'],
   'copy/en.js': ['COPY', 'compare'],
@@ -2668,6 +2671,36 @@ for (const file of allFiles) {
     notes.push(`trip pages: ${pages.length}, one per trip, each with its own og:url, a refresh to its own hash and a 1200 x 630 picture`);
   } catch (e) {
     problems.push(`TRIPPAGE could not check the trip pages: ${String(e)}`);
+  }
+}
+
+// --- the trip pictures (spec 0033 req 6) -------------------------------------------------------
+//
+// Every PNG under site/og/ is what a chat or a feed shows for a shared link, so each is held to the
+// size its page's tags claim (1200 x 630, read from the PNG header) and to more than 50 000 bytes:
+// a 1200 x 630 frame of black sky with one world in it is 60-200 kB, and less means an empty frame
+// (the failure #157 taught). A trip with no picture of its own is NOTED, not failed: its page falls
+// back to default.png (scripts/gen_trip_pages.py), and a trip added by another change should not
+// turn this red until the readme-shots workflow has rendered it (2026-09-23).
+{
+  try {
+    const { TOURS } = await import(join(JS, 'data/tours.js'));
+    const dir = join(ROOT, 'site/og');
+    const pngs = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.png')) : [];
+    if (!pngs.includes('default.png')) problems.push('OGIMAGE  site/og/default.png is missing: the root and every trip without its own picture use it');
+    const known = new Set(['default', ...TOURS.map((t) => t.id)]);
+    for (const f of pngs) {
+      const png = readFileSync(join(dir, f));
+      const w = png.readUInt32BE(16);
+      const h = png.readUInt32BE(20);
+      if (png.slice(1, 4).toString() !== 'PNG' || w !== 1200 || h !== 630) problems.push(`OGIMAGE  site/og/${f} is ${w} x ${h}, not a 1200 x 630 PNG`);
+      if (png.length <= 50000) problems.push(`OGIMAGE  site/og/${f} is ${png.length} bytes: an empty frame, not a picture`);
+      if (!known.has(f.replace(/\.png$/, ''))) problems.push(`OGIMAGE  site/og/${f} names no trip in the registry`);
+    }
+    const without = TOURS.filter((t) => !pngs.includes(`${t.id}.png`)).map((t) => t.id);
+    notes.push(`trip pictures: ${pngs.length} under site/og/, each 1200 x 630 and over 50 kB${without.length ? `; still on default.png: ${without.join(', ')}` : '; every trip has its own'}`);
+  } catch (e) {
+    problems.push(`OGIMAGE  could not check the trip pictures: ${String(e)}`);
   }
 }
 

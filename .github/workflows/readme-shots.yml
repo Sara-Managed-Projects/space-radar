@@ -3,6 +3,11 @@ name: readme-shots
 # Takes the pictures the README uses, on a runner, against the real app and live data.
 # Dispatch it by hand, download the artifact, and commit the PNGs to assets/readme/.
 #
+# And, since spec 0033 (2026-09-23), one preview picture per trip: site/og/<trip-id>.png, the
+# og:image of its /t/<id>.html page, plus site/og/default.png. Download the `og-pictures`
+# artifact, commit the PNGs to site/og/, run scripts/gen_trip_pages.py so each page names its
+# own, and after the deploy invalidate /og/* by hand (deploy.sh does not; they are long-cached).
+#
 # Not on every push: it drives live APIs, and a README image that changes on every commit is noise
 # in every diff. The pictures are committed files, refreshed deliberately.
 
@@ -13,6 +18,10 @@ on:
         description: "Device scale factor (2 = retina)"
         required: false
         default: "2"
+      which:
+        description: "Which pictures: all, readme or og"
+        required: false
+        default: "all"
 
 permissions:
   contents: read
@@ -36,6 +45,7 @@ jobs:
       # --network host so the container reaches the runner's server; HOME because `-u 1001` has no
       # passwd entry, so $HOME is `/` and npm cannot create /.npm.
       - name: Take the shots
+        if: ${{ inputs.which != 'og' }}
         env:
           # Evaluated by Actions BEFORE bash sees the script, so the expression never has to
           # survive shell quoting -- which is exactly what broke the first version of this step.
@@ -56,6 +66,7 @@ jobs:
               node scripts/shots.mjs --base=http://127.0.0.1:8177 --out=assets/readme --scale="$SCALE"'
 
       - name: They are real pictures, not empty files
+        if: ${{ inputs.which != 'og' }}
         run: |
           set -euo pipefail
           for f in assets/readme/*.png; do
@@ -65,7 +76,46 @@ jobs:
           done
 
       - uses: actions/upload-artifact@v4
+        if: ${{ inputs.which != 'og' }}
         with:
           name: readme-shots
           path: assets/readme/*.png
+          if-no-files-found: error
+
+      # One picture per trip, composed in the page (ui/postcard.js ogPicture), not screenshotted.
+      - name: Take the trip pictures
+        if: ${{ inputs.which != 'readme' }}
+        run: |
+          set -euo pipefail
+          docker run --rm --network host \
+            -u "$(id -u):$(id -g)" -e HOME=/tmp \
+            -e PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+            -v "$PWD:/work" -w /work \
+            mcr.microsoft.com/playwright:v1.49.1-jammy \
+            bash -c 'set -euo pipefail
+              npm install --no-save --no-audit --no-fund playwright@1.49.1
+              node scripts/shots.mjs --base=http://127.0.0.1:8177 --only=og --out=site/og'
+
+      # 50 000, not 20 000: a 1200 x 630 frame of black sky with one world in it is 60-200 kB, and
+      # under 50 kB is an empty frame (#157). The header check is the size the page's tags claim.
+      - name: The trip pictures are 1200 x 630 and not empty
+        if: ${{ inputs.which != 'readme' }}
+        run: |
+          set -euo pipefail
+          n=0
+          for f in site/og/*.png; do
+            size=$(stat -c%s "$f")
+            dims=$(python3 -c "import struct,sys; b=open(sys.argv[1],'rb').read(24); print('%dx%d' % struct.unpack('>II', b[16:24]))" "$f")
+            [ "$size" -gt 50000 ] || { echo "::error::$f is only $size bytes"; exit 1; }
+            [ "$dims" = "1200x630" ] || { echo "::error::$f is $dims, not 1200x630"; exit 1; }
+            echo "$f  $dims  $size bytes"
+            n=$((n + 1))
+          done
+          echo "$n pictures"
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ inputs.which != 'readme' }}
+        with:
+          name: og-pictures
+          path: site/og/*.png
           if-no-files-found: error
