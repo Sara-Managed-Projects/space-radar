@@ -37,8 +37,12 @@ from _genmirror import Mirror, pick  # noqa: E402
 
 # What the browser needs to FLY a trip and to say what it is flying to. The YAML's comments are
 # the evidence a reviewer reads and are not shipped; neither is anything a future field adds
-# until somebody puts it in one of these two lists.
-TRIP_FIELDS = ("id", "title", "blurb", "pacing", "requires", "min_stops", "stage", "clock")
+# until somebody puts it in one of these three lists. `group` and `next` (spec 0029) are what the
+# picker and the end card read: which heading a trip sits under, and which trip is offered after.
+TRIP_FIELDS = ("id", "title", "blurb", "pacing", "requires", "min_stops", "stage", "clock", "group",
+               "next")
+# A `groups:` row: the id a trip names, the heading the picker prints, and where it sits.
+GROUP_FIELDS = ("id", "display", "order")
 STOP_FIELDS = (
     "id",
     "target",
@@ -128,6 +132,12 @@ def render(doc: dict) -> list[tuple[str, str, object]]:
             "here so the browser can say what a stop inherited.",
             "TOUR_DEFAULTS",
             defaults,
+        ),
+        (
+            "The headings the picker lists trips under, in the registry's order; a trip's `group` "
+            "names one. A group with no trip is here too and is not drawn.",
+            "TOUR_GROUPS",
+            [pick(g, GROUP_FIELDS) for g in (doc.get("groups") or [])],
         ),
         (
             "Every trip, with every default resolved and every dwell computed.",

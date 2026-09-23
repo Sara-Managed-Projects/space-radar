@@ -351,6 +351,38 @@ def check_tours(oddities_doc: dict, layer_ids: set, world_ids: set, site_ids: se
         fail("tours.yaml", "no `tours:` list")
         return
 
+    # THE GROUPS ARE A TABLE, AND EVERY TRIP NAMES A ROW OF IT (spec 0029). The picker draws one
+    # heading per group that has a trip; a trip whose group is not a row has nowhere to be drawn,
+    # and the panel's rule is that every trip is listed. The `display` string is printed as it
+    # is, so it gets the same two-hyphen refusal a title does.
+    group_ids: set[str] = set()
+    groups = doc.get("groups")
+    if not isinstance(groups, list) or not groups:
+        fail("tours.yaml", "no `groups:` list; the picker has no headings to list trips under")
+        groups = []
+    for g in groups:
+        if not isinstance(g, dict) or not g.get("id"):
+            fail("tours.yaml", f"a group row has no id: {g!r}")
+            continue
+        gid = str(g["id"])
+        gwhere = f"tours.yaml[groups/{gid}]"
+        if gid in group_ids:
+            fail(gwhere, "duplicate group id")
+        group_ids.add(gid)
+        if gid in layer_ids:
+            fail(gwhere, f"a group id may not be a layer id: `{gid}` is a row in layers.yaml, and "
+                         f"a cross-reference by bare id would resolve to the wrong registry")
+        if not g.get("display"):
+            fail(gwhere, "no `display:`; it is the heading a visitor reads")
+        elif "--" in str(g["display"]):
+            fail(gwhere, f"the display has \"--\"; {TOUR_DOUBLE_HYPHEN}")
+        if not isinstance(g.get("order"), int) or isinstance(g.get("order"), bool):
+            fail(gwhere, f"`order: {g.get('order')!r}` is not an integer; it is where the heading "
+                         f"sits in the picker")
+
+    # Every trip id, before the loop: `next:` may name a trip written further down the file.
+    trip_ids = {t.get("id") for t in tours if isinstance(t, dict) and t.get("id")}
+
     seen_trips: set[str] = set()
     for tour in tours:
         if not isinstance(tour, dict):
@@ -382,6 +414,23 @@ def check_tours(oddities_doc: dict, layer_ids: set, world_ids: set, site_ids: se
         for label in ("title", "blurb"):
             if "--" in str(tour.get(label) or ""):
                 fail(where, f"the {label} has \"--\"; {TOUR_DOUBLE_HYPHEN}")
+
+        group = tour.get("group")
+        if not group:
+            fail(where, "no `group:`; the picker has nowhere to put it, and it lists every trip")
+        elif group not in group_ids:
+            fail(where, f"`group: {group}` is not a row of `groups:`; the picker has nowhere to "
+                        f"put it, and it lists every trip")
+
+        # The end card offers `next:` first, so it must be a trip, and not this one: a trip that
+        # names itself would offer "Next: <its own title>" over the "Watch it again" button.
+        nxt = tour.get("next")
+        if nxt is not None:
+            if nxt == tid:
+                fail(where, "`next:` names the trip itself; the end card already offers a replay")
+            elif nxt not in trip_ids:
+                fail(where, f"`next: {nxt}` is not a trip in this file, so the end card would "
+                            f"offer nothing where it promised a trip")
 
         pacing = tour.get("pacing", defaults.get("pacing"))
         if pacing not in TOUR_PACING:

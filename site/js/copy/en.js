@@ -1048,6 +1048,16 @@ export const COPY = {
     shape: '{count} stops · about {mins} minutes',
     shapeOneMinute: '{count} stops · about a minute',
     startTitle: 'Fly this trip',
+    // --- the picker (spec 0029, ui/trippicker.js) ------------------------------------------
+    // One <select> with a heading per group; the heading text itself is the registry's
+    // `display` (TOUR_GROUPS), printed as it is, with its count folded in here because a native
+    // <optgroup> has one label and no second line. A trip that cannot run today keeps its option
+    // and gets the mark, never `disabled`: iOS draws a disabled option as grey text with nothing
+    // attached, and the reason is printed in the details block under the select instead.
+    pickerLabel: 'Choose a trip',
+    groupCount: '{display} · {count} trips',
+    groupCountOne: '{display} · 1 trip',
+    cannotRunMark: '· cannot run today',
 
     // --- the intro card ------------------------------------------------------------------
     // It sets the expectation, it makes the trip a decision rather than an ambush, and it gives
