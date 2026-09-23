@@ -212,6 +212,13 @@ TOUR_WORLD_PARENTS: dict[str, str] = {}
 TOUR_UNSQUEEZED_STAGES = {"sun"}
 TOUR_ALWAYS_TRUE_WORLDS = {"sun", "moon"}
 TOUR_MAX_TITLE = 60
+# Spec 0034 req 3: a stop's `chapter:` is a title card in the letterbox's top bar -- "Chapter two:
+# the ringed planet" -- and not a sentence. Forty characters is what the bar holds on a 390 px
+# phone beside the trip's own title before either is cut with an ellipsis.
+CHAPTER_MAX = 40
+# The same six-word test tests/test_contract.mjs applies between a trip card and the record card
+# under it: six words in a row shared is a repeat.
+CHAPTER_REPEAT_WORDS = 6
 TOUR_MIN_STOPS_FLOOR = 3
 # The camera's own world-clearance floor (scene/camera.js WORLD_CLEARANCE). Below it the rig
 # pushes the camera back out and the framing this row asked for is silently ignored.
@@ -714,6 +721,42 @@ def check_stop_clock(stop: dict, where: str, kind: str, sgp4: bool, flown_on) ->
                     f"or an event reference")
 
 
+def chapter_words(text) -> list:
+    return [w for w in re.sub(r"[^a-z0-9' ]+", " ", str(text or "").lower()).split() if w]
+
+
+def shared_run(a, b) -> int:
+    """The longest run of consecutive words two texts share."""
+    A, B = chapter_words(a), chapter_words(b)
+    best = 0
+    for i in range(len(A)):
+        for j in range(len(B)):
+            k = 0
+            while i + k < len(A) and j + k < len(B) and A[i + k] == B[j + k]:
+                k += 1
+            best = max(best, k)
+    return best
+
+
+def check_stop_chapter(stop: dict, where: str, title) -> None:
+    """Spec 0034 req 3: `chapter:` is optional, short, and not the card title said twice."""
+    if "chapter" not in stop:
+        return
+    chapter = stop.get("chapter")
+    if not isinstance(chapter, str) or not chapter.strip():
+        fail(where, f"`chapter: {chapter!r}` must be a line of words; leave the field out for none")
+        return
+    if len(chapter) > CHAPTER_MAX:
+        fail(where, f"`chapter:` is {len(chapter)} characters, over {CHAPTER_MAX}: a chapter is a "
+                    f"title card, not a sentence")
+    if "--" in chapter:
+        fail(where, f"the chapter has \"--\"; {TOUR_DOUBLE_HYPHEN}")
+    if title and (chapter.strip().lower() == str(title).strip().lower()
+                  or shared_run(chapter, title) >= CHAPTER_REPEAT_WORDS):
+        fail(where, "the chapter and the card title are two lines on one screen, and this chapter "
+                    "repeats the title. Name the part of the story, not the stop")
+
+
 def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: dict,
                     unreachable: dict, layer_ids: set, world_ids: set, site_ids: set,
                     glossary: set) -> None:
@@ -898,6 +941,8 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
         if named:
             fail(where, f"the card names {', '.join(named)} on a trip from the visitor's own place: "
                         f"the place is generated; the card may not name one")
+
+    check_stop_chapter(stop, where, title)
 
     if "time" in stop:
         hit = TOUR_CARD_TIME.search(f"{title or ''} {body}")

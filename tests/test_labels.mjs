@@ -1,6 +1,7 @@
 // tests/test_labels.mjs -- spec 0026 req 5: a few names over the scene, never the catalogue.
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { readFileSync } from 'node:fs';
 
 const JS = join(dirname(fileURLToPath(import.meta.url)), '..', 'site/js');
 const { chooseLabels, labelName, labelParentId, isNotable, isOwnPlaceOnLadder, clampLabelX, keepClearOf, behindWorld, LABEL_EDGE_PAD, LABEL_CAP, NOTABLE_CAP } = await import(join(JS, 'ui/labels.js'));
@@ -212,6 +213,88 @@ check(!isOwnPlaceOnLadder(null), 'nothing is not a place');
   // a parentId nobody projected this frame falls back to the candidate's own distance
   const orphan = { record: world('titan', 'Titan'), kind: 'notable', x: 300, y: 300, dist: 5, parentId: 'saturn' };
   check(chooseLabels([near, orphan])[0].record.id === 'titan', 'a moon whose planet is not on screen keeps its own place');
+}
+
+// SPEC 0034 REQ 4: THE RACK-FOCUS SUBSTITUTE. emphasise(id) puts `is-subject` on the slot that
+// names `id` and `is-dimmed` on every other visible slot, from the next update(); clearEmphasis()
+// takes both off at once. The numbers the CSS draws are these constants, read back out of ui.css.
+{
+  const { createLabels, EMPHASIS_MS, EMPHASIS_FROM, DIM_OPACITY, SUBJECT_CLASS, DIMMED_CLASS } = await import(join(JS, 'ui/labels.js'));
+  check(EMPHASIS_MS === 300 && EMPHASIS_FROM === 0.92 && DIM_OPACITY === 0.6, `the emphasis numbers are 300 ms, 0.92, 0.6 (${EMPHASIS_MS}, ${EMPHASIS_FROM}, ${DIM_OPACITY})`);
+  const css = readFileSync(join(JS, '..', 'css/ui.css'), 'utf8');
+  const kf = (css.match(/@keyframes sr-label-in \{([\s\S]*?)\n\}/) || [])[1] || '';
+  check(new RegExp(`from \\{\\s*transform: scale\\(${EMPHASIS_FROM}\\)`).test(kf), 'ui.css scales the subject from EMPHASIS_FROM');
+  check(new RegExp(`\\.is-subject \\.label__text \\{[^}]*animation: sr-label-in ${EMPHASIS_MS}ms`).test(css), 'over EMPHASIS_MS');
+  check(new RegExp(`\\.label\\.is-dimmed \\{[^}]*opacity: ${DIM_OPACITY};`).test(css), 'and dims the rest to DIM_OPACITY');
+  check(/@media \(prefers-reduced-motion: reduce\) \{\s*#labels \.label\.is-subject \.label__text \{\s*animation: none;/.test(css), 'reduced motion drops the scale and keeps the dim');
+
+  // No DOM: the stub has both calls, and neither throws.
+  const bare = createLabels({}, null);
+  let threw = false;
+  try { bare.emphasise('x'); bare.update(0); bare.clearEmphasis(); } catch { threw = true; }
+  check(!threw && typeof bare.emphasise === 'function' && typeof bare.clearEmphasis === 'function', 'with no DOM emphasise() and clearEmphasis() exist and do not throw');
+
+  // A small fake DOM: enough for createLabels to pool its twelve slots and write their classes.
+  const THREE = await import(join(JS, '..', 'vendor/three.module.min.js'));
+  const { stage } = await import(join(JS, 'scene/stage.js'));
+  const fakeNode = () => {
+    const classes = new Set();
+    const kids = [];
+    return {
+      hidden: false, style: {}, dataset: {}, textContent: '', offsetWidth: 60, offsetHeight: 16,
+      set className(v) { classes.clear(); String(v).split(/\s+/).filter(Boolean).forEach((c) => classes.add(c)); },
+      get className() { return [...classes].join(' '); },
+      classList: {
+        add: (c) => classes.add(c), remove: (c) => classes.delete(c), contains: (c) => classes.has(c),
+        toggle: (c, on) => { const want = on === undefined ? !classes.has(c) : !!on; if (want) classes.add(c); else classes.delete(c); return want; },
+      },
+      setAttribute() {}, appendChild(n) { kids.push(n); return n; }, remove() {}, kids,
+    };
+  };
+  const hadDoc = 'document' in globalThis;
+  const hadWin = 'window' in globalThis;
+  globalThis.document = { createElement: fakeNode, documentElement: { classList: { contains: () => false } } };
+  globalThis.window = { innerWidth: 1280, innerHeight: 800 };
+  try {
+    const tMs = Date.parse('2026-09-23T12:00:00Z');
+    stage.setWorld('earth'); stage.setTime(tMs);
+    // Three stations 20 000 km out, spread across the view; `why` makes each one notable.
+    const recs = [[20000, 0, 0], [20000, 3000, 0], [20000, -3000, 1500]].map(([x, y, z], i) => ({
+      id: `s${i}`, name: `S${i}`, klass: 'station', layer: 'x', propagator: 'static', frame: 'earth-inertial',
+      pos: { x, y, z }, meta: { why: 'a test' },
+    }));
+    const scenePos = recs.map((r) => stage.toScene(r.pos, r.frame, tMs));
+    const centre = scenePos.reduce((a, v) => a.add(v), new THREE.Vector3()).multiplyScalar(1 / 3);
+    const camera = new THREE.PerspectiveCamera(45, 1280 / 800, 0.001, 1e9);
+    camera.position.set(0, 0, 0);
+    camera.lookAt(centre);
+    camera.updateMatrixWorld(); camera.updateProjectionMatrix();
+    // The pool is the twelve nodes createLabels appends to its host; the host keeps them to read.
+    const pool = [];
+    const host = { hidden: false, clientWidth: 1280, clientHeight: 800, appendChild: (n) => { pool.push(n); return n; } };
+    const ctx = {
+      camera, layers: [{ id: 'x' }], isLayerDrawable: () => true,
+      recordsFor: (id) => (id === 'x' ? recs : []), selected: () => null,
+    };
+    const labels = createLabels(ctx, host);
+    labels.update(tMs);
+    const shown = () => pool.filter((n) => !n.hidden);
+    check(shown().length === 3, `three stations are labelled (${shown().length})`);
+    check(shown().every((n) => !n.classList.contains(SUBJECT_CLASS) && !n.classList.contains(DIMMED_CLASS)), 'with nothing emphasised, no label is marked');
+    labels.emphasise('s1');
+    labels.update(tMs);
+    const subj = shown().filter((n) => n.classList.contains(SUBJECT_CLASS));
+    const dim = shown().filter((n) => n.classList.contains(DIMMED_CLASS));
+    check(subj.length === 1 && subj[0].kids[1].textContent === 'S1', `after emphasise('s1') and one update, S1 is the subject (${subj.map((n) => n.kids[1].textContent)})`);
+    check(dim.length === 2 && !dim.includes(subj[0]), `and the other two are dimmed (${dim.length})`);
+    labels.clearEmphasis();
+    check(pool.every((n) => !n.classList.contains(SUBJECT_CLASS) && !n.classList.contains(DIMMED_CLASS)), 'clearEmphasis() takes both off at once, before the next update');
+    labels.update(tMs);
+    check(shown().every((n) => !n.classList.contains(SUBJECT_CLASS) && !n.classList.contains(DIMMED_CLASS)), 'and the next update leaves them off');
+  } finally {
+    if (!hadDoc) delete globalThis.document;
+    if (!hadWin) delete globalThis.window;
+  }
 }
 
 if (problems.length) { console.error('labels FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }

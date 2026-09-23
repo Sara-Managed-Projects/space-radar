@@ -958,8 +958,40 @@ export function createCameraRig(camera, domElement, options = {}) {
     }
 
     applyToCamera();
+    trackVelocity();
     // Completions last, with the camera already where the callback will find it.
     drainDone();
+  }
+
+  // THE CAMERA'S DIRECTION OF TRAVEL (spec 0034, 2026-09-23), for the star-stretch: the normalised
+  // difference of the camera's position between the last two frames that moved it. Kept rather
+  // than recomputed from the flight's maths, because the apex, the target delay and `follow` all
+  // bend the path and the stars must streak along the path actually flown. A frame that did not
+  // move the camera leaves the last direction as it was.
+  const lastCamPos = new THREE.Vector3();
+  const travelDir = new THREE.Vector3(0, 0, -1);
+  let hasLastCamPos = false;
+  function trackVelocity() {
+    if (hasLastCamPos) {
+      const dx = camera.position.x - lastCamPos.x;
+      const dy = camera.position.y - lastCamPos.y;
+      const dz = camera.position.z - lastCamPos.z;
+      const n = Math.hypot(dx, dy, dz);
+      if (n > 1e-9 * Math.max(1, camera.position.length())) travelDir.set(dx / n, dy / n, dz / n);
+    }
+    lastCamPos.copy(camera.position);
+    hasLastCamPos = true;
+  }
+
+  /** The camera's last direction of travel, unit length, scene axes. */
+  function velocityDir(out) {
+    return (out || new THREE.Vector3()).copy(travelDir);
+  }
+
+  /** How far through the running flight, 0..1 by the rig's own clock, or null with none flying. */
+  function flightProgress() {
+    if (!flight || !(flight.ms > 0)) return null;
+    return Math.min(1, Math.max(0, flight.elapsed / flight.ms));
   }
 
   // ---------------------------------------------------------------- misc api
@@ -1060,6 +1092,8 @@ export function createCameraRig(camera, domElement, options = {}) {
     orbit,
     stopOrbit,
     onFade,
+    velocityDir,
+    flightProgress,
     setWorldRadius,
     setWorldCentre,
     setTarget,

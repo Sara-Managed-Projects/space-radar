@@ -51,6 +51,10 @@ const CONTRACT = {
   'ui/trippicker.js': ['createTripPicker', 'groupTrips', 'nextTripId', 'nextTripOrder', 'tripOrder'],
   'ui/trip.js': ['createTrip'],
   'ui/tripframe.js': ['createTripFrame', 'shapeLine', 'eclipseLine', 'stopTimeLine'],
+  // Spec 0034: the one black over the canvas, and the star-stretch both star draws share.
+  'ui/veil.js': ['createVeil', 'VEIL_MS', 'REDUCED_VEIL_MS'],
+  'scene/stretch.js': ['STRETCH_PX', 'stretchUniforms', 'writeStretch'],
+  'scene/stars3d.js': ['createStars3d', 'STRETCH_PX'],
   // The one owner of the URL hash (spec 0032): main.js, ui/controls.js and ui/trip.js all write
   // through it, and a second dialect is the bug it was written to end.
   'ui/urlstate.js': ['KEYS', 'VERSION', 'read', 'write', 'clear', 'stopIndex', 'readMoment', 'writeMoment'],
@@ -2352,6 +2356,24 @@ for (const file of allFiles) {
       }
     }
     notes.push(`trip cards: ${compared} compared with the record card under them, none repeats it`);
+
+    // SPEC 0034: A CHAPTER NAMES THE PART OF THE STORY, NOT THE STOP. The chapter line sits in the
+    // top bar while the card title is in the card; six words in a row shared is the same line
+    // twice on one screen. scripts/check_registry.py refuses it where it is written; this is the
+    // same rule over the mirror the browser actually reads.
+    let chapters = 0;
+    for (const tour of TOURS) for (const stop of tour.stops) {
+      if (!stop.chapter) continue;
+      chapters += 1;
+      const title = stop.card && stop.card.title;
+      if (String(stop.chapter).length > 40) problems.push(`TOUR     ${tour.id}/${stop.id}: chapter is ${String(stop.chapter).length} characters, over 40`);
+      if (String(stop.chapter).includes('--')) problems.push(`TOUR     ${tour.id}/${stop.id}: the chapter prints two hyphens`);
+      const run = sharedRun(stop.chapter, title);
+      if (run >= 6 || String(stop.chapter).toLowerCase() === String(title || '').toLowerCase()) {
+        problems.push(`TOUR     ${tour.id}/${stop.id}: the chapter repeats ${run} words of the card title`);
+      }
+    }
+    notes.push(`chapters: ${chapters} written, none repeats its card title`);
   } catch (e) {
     problems.push(`TOUR     could not check registry/tours.yaml against the app: ${String(e)}`);
   }
@@ -2706,6 +2728,30 @@ for (const file of allFiles) {
     notes.push(`trip pictures: ${pngs.length} under site/og/, each 1200 x 630 and over 50 kB${without.length ? `; still on default.png: ${without.join(', ')}` : '; every trip has its own'}`);
   } catch (e) {
     problems.push(`OGIMAGE  could not check the trip pictures: ${String(e)}`);
+  }
+}
+
+// --- spec 0034: what stays forbidden, and the cinematic numbers ------------------------------
+// No lens flare, no bloom, no post-processing, ever (docs/design-language.md, "Cinematic language
+// (0034)"). The star-stretch is geometry in two vertex shaders; a pass over the whole frame is the
+// thing a future "just add a little bloom" PR would bring, and this is where it is refused.
+{
+  const FORBIDDEN = ['EffectComposer', 'RenderPass', 'UnrealBloomPass', 'ShaderPass', 'BloomPass', 'LensflareElement'];
+  const sceneDir = join(JS, 'scene');
+  for (const f of readdirSync(sceneDir).filter((n) => n.endsWith('.js'))) {
+    const src = readFileSync(join(sceneDir, f), 'utf8');
+    for (const word of FORBIDDEN) {
+      if (src.includes(word)) problems.push(`CINEMA   scene/${f} names ${word}: no post-processing pass, no bloom, no lens flare (spec 0034 req 7)`);
+    }
+  }
+  try {
+    const { VEIL_MS } = await import(join(JS, 'ui/veil.js'));
+    const { STRETCH_PX } = await import(join(JS, 'scene/stretch.js'));
+    if (VEIL_MS !== 350) problems.push(`CINEMA   VEIL_MS is ${VEIL_MS}, not the 350 ms docs/design-language.md states`);
+    if (STRETCH_PX !== 12) problems.push(`CINEMA   STRETCH_PX is ${STRETCH_PX}, not the 12 px docs/design-language.md states`);
+    notes.push(`cinema: no post-processing under scene/, VEIL_MS ${VEIL_MS}, STRETCH_PX ${STRETCH_PX}`);
+  } catch (e) {
+    problems.push(`CINEMA   could not read the cinematic constants: ${String(e)}`);
   }
 }
 

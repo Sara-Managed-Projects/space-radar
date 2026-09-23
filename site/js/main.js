@@ -32,6 +32,7 @@ import { createSceneNote } from './ui/scenenote.js';
 import { createGitHubMark } from './ui/github.js';
 import { createTrip } from './ui/trip.js';
 import { createTripFrame } from './ui/tripframe.js';
+import { createVeil } from './ui/veil.js';
 import { rankPick, rankAll } from './scene/pickrank.js';
 import { createLod } from './scene/lod.js';
 import { createStars3d } from './scene/stars3d.js';
@@ -102,6 +103,9 @@ export async function boot({ setStatus } = {}) {
   // The scale ladder's level of detail (spec 0028 req 10): a table in registry/lod.yaml, hooks here.
   const stars3d = createStars3d(scene);
   ctx.stars3d = stars3d;
+  // The naked-eye sky, on ctx for one reader: ui/trip.js stretches both star draws on a ladder
+  // flight (spec 0034), and the two must never disagree during the lod crossfade between them.
+  ctx.starfield = starfield;
   const galaxy = createGalaxy(scene);
   ctx.galaxy = galaxy;
   // Deep-sky objects as big as they are, when that is bigger than their dot (scene/dsoglow.js).
@@ -121,6 +125,13 @@ export async function boot({ setStatus } = {}) {
   // Constructed BEFORE the layers load, because the trip counts which layers have landed by
   // listening for `sr:layer` -- and a layer that landed before anybody was listening is a layer
   // the trip would then wait eight seconds for.
+  // THE ONE BLACK (spec 0034 req 1): over the canvas and the labels, under every panel, the card
+  // and the trip's letterbox. A stage change in a trip goes through it; the reduced-motion
+  // cross-fade is it. Mounted on <body> beside the canvas, because the trip frame is a stacking
+  // context of its own and anything inside it sits over the card.
+  ctx.veil = createVeil(document.body, {
+    reducedMotion: () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
+  });
   ctx.trip = createTrip(ctx);
 
   say('Placing Earth…');
@@ -532,6 +543,17 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
   // The frame-rate latch (spec 0026 req 18): twenty-frame median over 33 ms for three seconds ->
   // one device pixel per CSS pixel and no Milky Way picture, once, said in the panel.
   const latch = createFrameLatch();
+  function degrade() {
+    if (ctx.renderer && ctx.rendererApi && ctx.rendererApi.setQuality) ctx.rendererApi.setQuality('low');
+    if (starfield && starfield.setDetail) starfield.setDetail('low');
+    window.dispatchEvent(new CustomEvent('sr:quality', { detail: { level: 'low', medianMs: Math.round(latch.median()) } }));
+  }
+  // Read by ui/trip.js, which keeps the star-stretch at 0 on a latched device (spec 0034 req 6),
+  // and forced from a console or a browser check the way a slow device would trip it.
+  ctx.latch = {
+    get latched() { return latch.latched; },
+    force() { if (latch.force()) degrade(); return latch.latched; },
+  };
   // Read once: every extra hero model is a file to fetch, so a metered or slow connection keeps
   // the model pool at its floor (scene/heroes.js, nextHeroCap).
   const saveData = typeof navigator !== 'undefined' && shouldSaveData(navigator.connection);
@@ -558,11 +580,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     const frameMs = Math.max(0, nowReal - last); // the real duration, before the clamp below
     const dt = Math.min(100, frameMs);           // a backgrounded tab must not lurch on return
     last = nowReal;
-    if (!document.hidden && latch.push(frameMs, nowReal)) {
-      if (ctx.renderer && ctx.rendererApi && ctx.rendererApi.setQuality) ctx.rendererApi.setQuality('low');
-      if (starfield && starfield.setDetail) starfield.setDetail('low');
-      window.dispatchEvent(new CustomEvent('sr:quality', { detail: { level: 'low', medianMs: Math.round(latch.median()) } }));
-    }
+    if (!document.hidden && latch.push(frameMs, nowReal)) degrade();
 
     clock.tick(dt);
     const t = clock.now();

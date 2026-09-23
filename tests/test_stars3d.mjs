@@ -10,7 +10,7 @@ const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
 const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
 const { stage } = await import(join(JS, 'scene/stage.js'));
-const { parseStars3d, recordsFromNames, createStars3d, LY_KM } = await import(join(JS, 'scene/stars3d.js'));
+const { parseStars3d, recordsFromNames, createStars3d, LY_KM, STRETCH_PX } = await import(join(JS, 'scene/stars3d.js'));
 const { propagate, PROPAGATORS } = await import(join(JS, 'propagate/index.js'));
 const { LAYERS } = await import(join(JS, 'data/layers.js'));
 const { buildIndex, findMatches } = await import(join(JS, 'ui/search.js'));
@@ -101,11 +101,44 @@ check(COPY.klass.star === 'Star' && COPY.templates.star && COPY.templates.star.l
   check(hits.length >= 1 && hits[0].record.id === 'hip-32349', `a tap on Sirius from 2 ly away picks Sirius (${hits[0] && hits[0].record.name})`);
   const off = stars.pickAll(0.9, 0.9, camera, { w: 800, h: 600 }, 6);
   check(off.every((h) => h.record.id !== 'hip-32349'), 'a tap in the corner does not pick Sirius');
+  // 6. spec 0034 req 2: the star-stretch. Off by default, written by setStretch, and at 0 the shader
+  // takes the path it always took.
+  {
+    const mat = stars.group.children[0].material;
+    check(mat.uniforms.uStretch && mat.uniforms.uStretch.value === 0 && stars.stretch() === 0, `uStretch defaults to 0 (${mat.uniforms.uStretch && mat.uniforms.uStretch.value})`);
+    check(mat.vertexShader.includes('uStretch > 0.0') && /else \{\s*gl_PointSize = sizePx;/.test(mat.vertexShader), 'the vertex shader keeps today\'s point size behind a uStretch > 0.0 test');
+    check(/#define STRETCH_PX 12\.0/.test(mat.vertexShader) && STRETCH_PX === 12, `STRETCH_PX is 12 and is the shader's #define (${STRETCH_PX})`);
+    check(mat.fragmentShader.includes('vStretchScale') && mat.fragmentShader.includes('taper'), 'the fragment shader draws a capsule along the stretch');
+    const k = stars.setStretch(0.5, { x: 0, y: 3, z: 4 });
+    const v = mat.uniforms.uVelocityDir.value;
+    check(k === 0.5 && mat.uniforms.uStretch.value === 0.5, 'setStretch(0.5, dir) writes uStretch');
+    check(Math.abs(v.x) < 1e-12 && Math.abs(v.y - 0.6) < 1e-12 && Math.abs(v.z - 0.8) < 1e-12, `and a unit uVelocityDir (${v.x}, ${v.y}, ${v.z})`);
+    stars.setStretch(0);
+    check(mat.uniforms.uStretch.value === 0, 'setStretch(0) restores the unstretched stars');
+    stars.setStretch(1, { x: 0, y: 0, z: 0 });
+    check(mat.uniforms.uStretch.value === 0, 'no direction of travel, no stretch');
+    stars.setStretch(7, { x: 1, y: 0, z: 0 });
+    check(mat.uniforms.uStretch.value === 1, 'clamped to 1');
+    stars.setStretch(0);
+  }
   stars.setVisible(false);
   check(stars.group.children[0].visible === false, 'the layer switch hides the cloud');
   stars.dispose();
 }
 stage.setWorld('earth');
+
+// 7. the naked-eye sky sphere carries the same stretch, off by default.
+{
+  const { createStarfield } = await import(join(JS, 'scene/starfield.js'));
+  // Nothing to fetch under node: the uniforms are built before any file arrives.
+  const sky = createStarfield(new THREE.Scene(), { starsBin: '', linesJson: '', namesJson: '', milkyWayTexture: '' });
+  check(typeof sky.setStretch === 'function' && sky.stretch() === 0, 'the sky sphere has setStretch and starts at 0');
+  sky.setStretch(0.25, { x: 1, y: 0, z: 0 });
+  check(sky.stretch() === 0.25, 'and writes it');
+  sky.setStretch(0);
+  const src = readFileSync(join(JS, 'scene/starfield.js'), 'utf8');
+  check(src.includes('${STRETCH_VERT}') && src.includes('${STRETCH_FRAG}'), 'starfield.js splices the same shader chunks as stars3d.js');
+}
 
 if (problems.length) { console.error('stars3d FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`stars3d ok: ${data.count} stars placed and ${data.unplaced} honestly not, Sirius at 8.6 ly, a shell from Earth and true positions on the stellar rung, a tap picks Sirius`);

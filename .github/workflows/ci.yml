@@ -162,6 +162,12 @@ jobs:
       # its subject and frames it, and the numbers the cards state are the records' own.
       - name: "Out past Jupiter: ten stops, each seen from where it is drawn true"
         run: node tests/test_outer_trip.mjs
+      # Spec 0034: a stage change inside a trip goes through black. The veil's own arithmetic on a
+      # fake clock (350 ms to black, the switch in it, 350 ms back; a second request joins; reduced
+      # motion is the rig's one 220 ms fade), then the real trip machine out past Jupiter: the map
+      # moves only inside the black, a Next pressed in it wins, and no star-stretch on a world stage.
+      - name: "A stage change in a trip goes through black, and reduced motion is one short fade (spec 0034)"
+        run: node tests/test_veil.mjs
       # Spec 0030: a stop may set the clock's instant and rate, and leaving puts it back. The real
       # clock.js with its wall clock moved by hand: arrival at the instant, the clock held through
       # the flight, 1x after an untimed stop, pause holding it only while the trip owns it, an

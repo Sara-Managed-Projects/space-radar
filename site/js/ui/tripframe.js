@@ -77,7 +77,9 @@
 // already cuts and cross-fades; ui/trip.js already forces reader pacing and leaves the dwell
 // alone. What is here: the letterbox does not slide, the card does not rise, and the 220 ms
 // cross-fade the rig has been emitting since it was written finally has a consumer -- over the
-// CANVAS and never over the card, or the scene appears to teleport under stationary text.
+// CANVAS and never over the card, or the scene appears to teleport under stationary text. Since
+// spec 0034 (2026-09-23) that black is ui/veil.js's, the same node a stage change goes through, and
+// the chapter line above the title appears rather than rises.
 
 import { COPY, t, formatRate, formatShownAt } from '../copy/en.js';
 import { nextTripOrder } from './trippicker.js';
@@ -257,8 +259,16 @@ export function createTripFrame(ctx) {
     bottom.appendChild(status);
 
     const top = el('header', 'sr-trip__bar sr-trip__bar--top');
+    // Spec 0034 req 3: the stop's `chapter:` above the trip's title, the one line of the frame that
+    // changes with the story rather than with the controls. Not a live region: the stop title in
+    // the status below is what a screen reader is told, and a chapter is not news.
+    const titles = el('div', 'sr-trip__titles');
+    const chapter = el('p', 'sr-trip__chapter');
+    chapter.hidden = true;
     const title = el('h1', 'sr-trip__title');
-    top.appendChild(title);
+    titles.appendChild(chapter);
+    titles.appendChild(title);
+    top.appendChild(titles);
     // Under the trip's title, in the letterbox, because the stop heading below is for a screen
     // reader only and the card is the stop's own words. Not a live region: at a year a minute it
     // changes every frame, and a reader is told the instant by reading the line, not interrupted.
@@ -277,20 +287,15 @@ export function createTripFrame(ctx) {
     const panel = el('div', 'sr-trip__panel');
     panel.hidden = true;
 
-    // The 220 ms cross-fade under reduced motion: over the canvas, under the card.
-    const fade = el('div', 'sr-trip__fade');
-    fade.setAttribute('aria-hidden', 'true');
-
     host.appendChild(bottom);
     host.appendChild(top);
     host.appendChild(panel);
-    host.appendChild(fade);
     document.body.appendChild(host);
 
     parts = {
       pause, back, next, replay, share, collapse, controls,
       progress, count, segs, chip, live, group, heading, status,
-      title, clockLine, eclipseText, panel, fade, bottom, top, leaveButtons: [topLeave, chipLeave],
+      title, chapter, clockLine, eclipseText, panel, bottom, top, leaveButtons: [topLeave, chipLeave],
     };
   }
 
@@ -538,6 +543,7 @@ export function createTripFrame(ctx) {
     document.documentElement.setAttribute(PHASE_ATTR, st.phase);
     host.setAttribute('aria-label', st.tourTitle || '');
     parts.title.textContent = st.tourTitle || '';
+    paintChapter(st);
     // The same promise the end card makes, on the button that keeps it.
     const leaveTitle = st.stageChanged ? COPY.trip.leaveTitleStage : COPY.trip.leaveTitle;
     for (const b of parts.leaveButtons) b.title = leaveTitle;
@@ -595,6 +601,24 @@ export function createTripFrame(ctx) {
     // a keyboard visitor had to tab in from the top of the document to reach the controls again.
     if (userJumped) parts.heading.focus();
     userJumped = false;
+  }
+
+  /**
+   * The chapter line. Re-announced (the `is-new` rise) only when its words change, so the stops of
+   * one chapter share it without it blinking at each; ui.css turns the rise off under reduced
+   * motion, where the words simply appear.
+   */
+  function paintChapter(st) {
+    const text = st.chapter || '';
+    const node = parts.chapter;
+    if (node.textContent === text) return;
+    node.textContent = text;
+    node.hidden = !text;
+    node.classList.remove('is-new');
+    if (text) {
+      void node.offsetWidth; // restart the animation on a node that already had the class
+      node.classList.add('is-new');
+    }
   }
 
   function paintClockLine(st) {
@@ -684,16 +708,11 @@ export function createTripFrame(ctx) {
   }
 
   /** Cover the canvas instantly, then fade off over the rig's own `ms`. A cut with a fade over it
-   * is the whole of "reduced motion" here; the card underneath never moves and never fades. */
+   * is the whole of "reduced motion" here; the card underneath never moves and never fades. The
+   * black is ui/veil.js's since spec 0034: one node, over the canvas and under the frame. */
   function flash(ms) {
-    if (!parts) return;
-    const node = parts.fade;
-    const dur = Math.max(0, Number(ms) || 0);
-    node.style.transition = 'none';
-    node.classList.add('is-on');
-    void node.offsetWidth; // commit the cover before the fade is armed
-    node.style.transition = `opacity ${dur}ms linear`;
-    node.classList.remove('is-on');
+    if (!parts || !ctx.veil || typeof ctx.veil.fade !== 'function') return;
+    ctx.veil.fade(ms);
   }
 
   const offChange = trip.onChange(render);
