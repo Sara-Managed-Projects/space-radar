@@ -1646,6 +1646,13 @@ export function createTrip(ctx) {
     const nextStage = entry.stop.stage || run.tour.stage;
     if (wantsVeil(nextStage)) {
       state.phase = 'veil';
+      // The card of the stop being LEFT goes as the black comes up (2026-09-23): the veil sits under
+      // the card (ui/veil.js, z 8), so the old card stayed over the black and on into the next
+      // flight until the new title replaced it -- measured in headless Chrome, Europa's card over
+      // all 86 samples of the veil into Saturn and 1.0 s of the flight after it, under a frame
+      // already titled Saturn. Only here: a flight without a veil keeps the old card until the new
+      // title lands, because there the old world is still on the screen under it.
+      hideCard();
       notify();
       const mine = gen;
       ctx.veil
