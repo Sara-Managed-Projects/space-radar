@@ -7,6 +7,8 @@
 //   groupTrips(tours, groups, plans)    the drawn structure, empty groups removed
 //   nextTripId(tours, fromId)           `next:` when it names a trip, else the positional successor
 //   nextTripOrder(tours, fromId)        every other trip, the one to offer first at the head
+//   eventTypeOf(tour)                   the event type its first `{event:}` stop names, or null
+//   eventSubtitle(tour, nowMs, ...)     "Next: 2 August 2027" for an event trip, else null
 //
 // WHY A <select>. The panel was a flat list of buttons, one per trip; the sixth trip was already
 // written when Ivan asked for a drop-down "as we will add more and more excursion types"
@@ -33,8 +35,9 @@
 // the picker owns its own planning: it listens for `sr:layers-ready` once, and exposes plan() for
 // a host built after that event has already fired.
 
-import { COPY, t } from '../copy/en.js';
+import { COPY, t, timeText } from '../copy/en.js';
 import { TOUR_GROUPS } from '../data/tours.js';
+import { nextEvent } from '../data/events.js';
 import { shapeLine } from './tripframe.js';
 
 const SELECT_ID = 'sr-trips-select';
@@ -158,6 +161,33 @@ export function nextTripOrder(tours, fromId) {
   return walk.filter((tour) => tour.id === first).concat(walk.filter((tour) => tour.id !== first));
 }
 
+/**
+ * The event type an event trip is timed by: the first stop whose `time:` is spec 0030's reference
+ * form, `{event: <type>.next, offset_s}`. Null for a trip with none. Pure.
+ */
+export function eventTypeOf(tour) {
+  for (const stop of (tour && Array.isArray(tour.stops) ? tour.stops : [])) {
+    const ref = stop && stop.time && typeof stop.time === 'object' ? stop.time.event : null;
+    const m = /^([a-z0-9-]+)\.next$/.exec(String(ref || ''));
+    if (m) return m[1];
+  }
+  return null;
+}
+
+/**
+ * The line under an event trip's title: when its event next happens (spec 0031 task 5). A trip in
+ * the Events group is only as good as its date, and "Chasing the solar eclipse" means February or
+ * August depending on the day it is read. Null for a trip timed by no event, or when nothing of
+ * that type falls in the next 400 days. Pure given `resolve` (data/events.js nextEvent).
+ */
+export function eventSubtitle(tour, nowMs, observer = null, resolve = nextEvent) {
+  const type = eventTypeOf(tour);
+  if (!type) return null;
+  let ev = null;
+  try { ev = resolve(type, nowMs, observer); } catch { ev = null; }
+  return ev && Number.isFinite(ev.t) ? t(COPY.trip.nextEventLine, { date: timeText.longDate(ev.t) }) : null;
+}
+
 // ---------------------------------------------------------------------------------------
 // The control
 // ---------------------------------------------------------------------------------------
@@ -204,12 +234,14 @@ export function createTripPicker(ctx, host) {
 
   const details = el('div', 'sr-trips__details');
   const blurb = el('p', 'sr-trips__blurb');
+  const when = el('p', 'sr-trips__next');
   // THE SHAPE LINE IS NOT INSIDE THE BUTTON, and it is live. Inside, its rewrite as each plan
   // landed changed the button's accessible name under a screen reader (spec 0025's panel review).
   // `aria-live="polite"` announces the resolution when it lands, and the reason when there is one.
   const shape = el('p', 'sr-trips__shape', COPY.trip.planning);
   shape.setAttribute('aria-live', 'polite');
   const start = button('sr-btn sr-btn--primary sr-trips__start', COPY.trip.startTitle);
+  details.appendChild(when);
   details.appendChild(blurb);
   details.appendChild(shape);
   details.appendChild(start);
@@ -244,6 +276,9 @@ export function createTripPicker(ctx, host) {
     const row = rowOf(drawn, select.value);
     if (!row) return;
     blurb.textContent = row.blurb || '';
+    const tour = tours.find((x) => x.id === row.id);
+    const nowMs = ctx.clock && typeof ctx.clock.now === 'function' ? ctx.clock.now() : Date.now();
+    when.textContent = eventSubtitle(tour, nowMs, ctx.observer || null) || '';
     shape.textContent = !row.planned
       ? COPY.trip.planning
       : row.off ? row.reason || '' : row.failed ? '' : shapeLine(row.count, row.estimateMs);

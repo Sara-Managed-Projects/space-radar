@@ -101,5 +101,23 @@ const chain = ['people-in-space'];
 for (let i = 0; i < 4; i += 1) chain.push(nextTripId(TOURS, chain[chain.length - 1]));
 check(chain.join() === 'people-in-space,strangest-things,moon-landings,outer-solar-system,to-the-edge', `the shipped \`next:\` chain leads a stranger outward (${chain})`);
 
+// --- event trips (spec 0031 task 5) -----------------------------------------------------
+// A trip in the Events group says when its event next happens, from the first `{event:}` stop
+// (spec 0030's reference form). From 2026-09-22 the next solar eclipse is the February annular.
+{
+  const { eventTypeOf, eventSubtitle } = await import(join(JS, 'ui/trippicker.js'));
+  const eclipseTrip = {
+    id: 'chasing-the-eclipse', group: 'events',
+    stops: [{ id: 'earth', target: { world: 'earth' } }, { id: 'shadow', target: { world: 'earth' }, time: { event: 'solar-eclipse.next', offset_s: -5400 } }],
+  };
+  check(eventTypeOf(eclipseTrip) === 'solar-eclipse', `the trip is timed by its first {event:} stop (${eventTypeOf(eclipseTrip)})`);
+  const line = eventSubtitle(eclipseTrip, Date.UTC(2026, 8, 22));
+  // 15:59 UT on 6 February 2027 is already the 7th east of UTC+8, and the zone is the visitor's.
+  check(/^Next: [67] February 2027$/.test(String(line)), `and its subtitle is the February date: "${line}"`);
+  check(eventSubtitle(TOURS[0], Date.UTC(2026, 8, 22)) === null, 'a trip timed by no event has no subtitle');
+  check(eventSubtitle({ stops: [{ time: { event: 'nonsense.next' } }] }, Date.UTC(2026, 8, 22)) === null, 'an event type nobody builds has none either');
+  check(eventSubtitle({ stops: [{ time: 'now' }] }, Date.UTC(2026, 8, 22)) === null, '`time: now` is not an event');
+}
+
 if (problems.length) { console.error('trips panel FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('trips panel ok: the trips that can run lead; every trip sits under its group, a refused one last with its reason; the end card offers the named next trip first');

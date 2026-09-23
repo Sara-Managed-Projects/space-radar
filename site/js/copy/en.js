@@ -1103,6 +1103,9 @@ export const COPY = {
     groupCount: '{display} · {count} trips',
     groupCountOne: '{display} · 1 trip',
     cannotRunMark: '· cannot run today',
+    // An event trip's next occurrence under its title (spec 0031 task 5): the date its first
+    // `{event:}` stop resolves to, computed here like the Next list's eclipse rows.
+    nextEventLine: 'Next: {date}',
 
     // --- the intro card ------------------------------------------------------------------
     // It sets the expectation, it makes the trip a decision rather than an ambush, and it gives

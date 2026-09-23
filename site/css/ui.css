@@ -1879,6 +1879,18 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
   display: none;
 }
 
+/* An event trip's next date, under its title (spec 0031): empty, and gone, for every other trip. */
+.sr-trips__next {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--sr-text);
+}
+
+.sr-trips__next:empty {
+  display: none;
+}
+
 /* Greyed WITH ITS REASON, and still readable: the reason is the point of not hiding it. */
 .sr-trips__details.is-off .sr-trips__blurb {
   color: var(--sr-text-dim);
