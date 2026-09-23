@@ -1,0 +1,133 @@
+version: 1
+# Spec 0035: every sound the app can play. Every row is a file that ships and a credit that ships
+# with it; scripts/check_registry.py check_audio() refuses a row missing a field, a `credit` that
+# CREDITS.md section 9 does not carry word for word, a file or twin that is not in the tree, a
+# `kb` more than 5 % off the file it describes, a bed over 600 kB, a total over 3 000 kB, a stage
+# that is not one of the four, two beds for one stage, and a `source` with no read date.
+#
+# NOTHING HERE IS FETCHED BEFORE A GESTURE. site/js/audio/ asks for a bed the first time its rung
+# is entered with sound on, and for a sting the first time it plays; a visitor who never turns
+# sound on downloads none of it (spec 0035 req 1, asserted by scripts/check-drawn.mjs in CI).
+#
+#   kind     bed | sting
+#   stage    beds only: earth (the Earth and the Moon) | world (any other world) | sun | ladder
+#   file     the Opus file (64 kbps), the one budgeted
+#   twin     the AAC file for a browser that cannot play Opus (Safari before 18.4)
+#   seconds  length of the file
+#   kb       the Opus file's size in kB (1 000 bytes), measured
+#   loop     true for a bed (cut to loop seamlessly), false for a sting
+#   licence  the licence, quoted from the page it was read on where it is short
+#   source   the page the file came from, with the day it was read: "URL (read YYYY-MM-DD)"
+#   credit   the line printed in the Sources panel and carried verbatim by CREDITS.md section 9
+#   original the file that was downloaded (its URL; never committed) and its sha256
+#   make     how scripts/build-audio.py cut it: `from` and `seconds` into the original, `xfade`
+#            seconds of tail cross-faded into the head for a bed, `fade_out` for a sting, and the
+#            loudness it is levelled to. Re-cut with:
+#              python3 scripts/build-audio.py --originals DIR   (DIR holds the `make.original` files)
+#
+# THE CHOICE (2026-09-23). Public domain first, as spec 0035 req 9 orders. The four beds are one
+# composer's CC0 drones, John Bartmann's "100 Ambient Atmospheric Soundtracks" on the Free Music
+# Archive: one hand, so the four rooms sound like one building, and no beats, no melody that ends,
+# nothing that tells the ear a track is looping. Each bed is the steadiest 76 s of its piece by
+# momentary loudness (EBU R128, measured over every 2 s start; the start and end loudness of the
+# window within 0.3 LU of each other), cut to 72 s with the last 4 s cross-faded into the first.
+# The ladder bed starts 2 s after its steadiest window: cut there, its ENCODED Opus seam jumped
+# 1.4 times the file's own largest step (build-audio.py --check-seams); 2 s later it is 0.15.
+# NASA's own recordings were heard of and set aside for beds: the plasma-wave and sonification
+# files are 5 to 22 kHz mono and would be the only lo-fi thing in the app. The three stings are
+# CC0 on Freesound, taken from its HQ previews (the originals need an account to download).
+audio:
+  - id: bed-ladder
+    kind: bed
+    stage: ladder
+    file: site/audio/bed-ladder.opus
+    twin: site/audio/bed-ladder.m4a
+    seconds: 72
+    kb: 585.6
+    loop: true
+    licence: "CC0 1.0 Universal (public domain dedication)"
+    source: "https://freemusicarchive.org/music/John_Bartmann/100-ambient-atmospheric-soundtracks-straylight-drones-collection/fake-vega-master/ (read 2026-09-23)"
+    credit: "Fake Vega by John Bartmann, CC0"
+    original: {url: "https://files.freemusicarchive.org/storage-freemusicarchive-org/tracks/5yd6vJe0YjahY4Pp6qWBFnGHQqjo9sM5kKxX8u3v.mp3", sha256: 545db0df8d802f0e83b84d2165ee14514b6ef922fbd7a746da44432f02c04cf7, bytes: 10350607}
+    make: {original: bartmann-fake-vega.mp3, from: 45, seconds: 72, xfade: 4, lufs: -23}
+
+  - id: bed-earth
+    kind: bed
+    stage: earth
+    file: site/audio/bed-earth.opus
+    twin: site/audio/bed-earth.m4a
+    seconds: 72
+    kb: 585.6
+    loop: true
+    licence: "CC0 1.0 Universal (public domain dedication)"
+    source: "https://freemusicarchive.org/music/John_Bartmann/100-ambient-atmospheric-soundtracks-straylight-drones-collection/above-the-clouds-master/ (read 2026-09-23)"
+    credit: "Above the Clouds by John Bartmann, CC0"
+    original: {url: "https://files.freemusicarchive.org/storage-freemusicarchive-org/tracks/AWFdDYMxTG14bTSgfwC71CvpsDPaLdAVU1UzwZx2.mp3", sha256: d13c13de3ff5ed65cf3a2392e4599ff70e96bc94f9e9a0d7e351e1d0ce53754f, bytes: 10350621}
+    make: {original: bartmann-above-the-clouds.mp3, from: 129, seconds: 72, xfade: 4, lufs: -23}
+
+  - id: bed-world
+    kind: bed
+    stage: world
+    file: site/audio/bed-world.opus
+    twin: site/audio/bed-world.m4a
+    seconds: 72
+    kb: 585.5
+    loop: true
+    licence: "CC0 1.0 Universal (public domain dedication)"
+    source: "https://freemusicarchive.org/music/John_Bartmann/100-ambient-atmospheric-soundtracks-straylight-drones-collection/calabi-yau-master/ (read 2026-09-23)"
+    credit: "Calabi-Yau by John Bartmann, CC0"
+    original: {url: "https://files.freemusicarchive.org/storage-freemusicarchive-org/tracks/dYbSvLYrp5ubBSjEL3Jdey0HqpyLtsd3oKDxr9mV.mp3", sha256: b52fee492d7121de9d6bca2c748c587b712113c0e90da304f16f250c99d9c291, bytes: 10350609}
+    make: {original: bartmann-calabi-yau.mp3, from: 121, seconds: 72, xfade: 4, lufs: -23}
+
+  - id: bed-sun
+    kind: bed
+    stage: sun
+    file: site/audio/bed-sun.opus
+    twin: site/audio/bed-sun.m4a
+    seconds: 72
+    kb: 585.6
+    loop: true
+    licence: "CC0 1.0 Universal (public domain dedication)"
+    source: "https://freemusicarchive.org/music/John_Bartmann/100-ambient-atmospheric-soundtracks-straylight-drones-collection/edge-of-the-sky-master/ (read 2026-09-23)"
+    credit: "Edge of the Sky by John Bartmann, CC0"
+    original: {url: "https://files.freemusicarchive.org/storage-freemusicarchive-org/tracks/SOf61uRBT367UXX99dTbPQOmzSZxURcrWmrl0VtJ.mp3", sha256: 38267317b2a94f547b6c2cb5fc0ff41b83628e8f1c0fa57be33a907eccce2db0, bytes: 10350619}
+    make: {original: bartmann-edge-of-the-sky.mp3, from: 127, seconds: 72, xfade: 4, lufs: -23}
+
+  - id: sting-arrive
+    kind: sting
+    file: site/audio/sting-arrive.opus
+    twin: site/audio/sting-arrive.m4a
+    seconds: 3
+    kb: 24.8
+    loop: false
+    licence: "CC0 1.0: \"You can copy, modify, distribute and perform the sound, even for commercial purposes, all without the need of asking permission to the author.\""
+    source: "https://freesound.org/people/LaurenPonder/sounds/639429/ (read 2026-09-23)"
+    credit: "Crystal Twinkle by LaurenPonder (Freesound), CC0"
+    original: {url: "https://cdn.freesound.org/previews/639/639429_5685306-hq.ogg", sha256: 649ffab56fb16b0c2c63bdf4a47e7a8ba5a28f0f021d11fcd5cc407027b99ff7, bytes: 37174}
+    make: {original: fs639429-crystal-twinkle.ogg, from: 0, seconds: 3, fade_out: 1.2, lufs: -21}
+
+  - id: sting-stage
+    kind: sting
+    file: site/audio/sting-stage.opus
+    twin: site/audio/sting-stage.m4a
+    seconds: 3
+    kb: 23.9
+    loop: false
+    licence: "CC0 1.0: \"You can copy, modify, distribute and perform the sound, even for commercial purposes, all without the need of asking permission to the author.\""
+    source: "https://freesound.org/people/Kinoton/sounds/558826/ (read 2026-09-23)"
+    credit: "Deep Whoosh #6 by Kinoton (Freesound), CC0"
+    original: {url: "https://cdn.freesound.org/previews/558/558826_2247456-hq.ogg", sha256: 27b97c5dbb41d40d2e30f85954d5c52c8445c3e3b217f9db8723175e8bb82e0c, bytes: 83030}
+    make: {original: fs558826-deep-whoosh-6.ogg, from: 0, seconds: 3, fade_out: 1, lufs: -22}
+
+  - id: sting-end
+    kind: sting
+    file: site/audio/sting-end.opus
+    twin: site/audio/sting-end.m4a
+    seconds: 2.5
+    kb: 20.7
+    loop: false
+    licence: "CC0 1.0: \"You can copy, modify, distribute and perform the sound, even for commercial purposes, all without the need of asking permission to the author.\""
+    source: "https://freesound.org/people/nathanmanaker/sounds/486952/ (read 2026-09-23)"
+    credit: "harp flourish by nathanmanaker (Freesound), CC0"
+    original: {url: "https://cdn.freesound.org/previews/486/486952_6657415-hq.ogg", sha256: c973756c27d870b6a9150312e027e13662b203053028983288e7093861ad204b, bytes: 55548}
+    make: {original: fs486952-harp-flourish.ogg, from: 0, seconds: 2.5, fade_out: 0.5, lufs: -21}

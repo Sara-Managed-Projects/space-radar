@@ -33,6 +33,12 @@ import { createGitHubMark } from './ui/github.js';
 import { createTrip } from './ui/trip.js';
 import { createTripFrame } from './ui/tripframe.js';
 import { createVeil } from './ui/veil.js';
+import { createAudio } from './audio/engine.js';
+import { createLoader } from './audio/load.js';
+import { createBeds } from './audio/beds.js';
+import { createStings } from './audio/stings.js';
+import { rungOf } from './audio/pick.js';
+import { AUDIO } from './data/audio.js';
 import { rankPick, rankAll } from './scene/pickrank.js';
 import { createLod } from './scene/lod.js';
 import { createStars3d } from './scene/stars3d.js';
@@ -137,6 +143,9 @@ export async function boot({ setStatus } = {}) {
     reducedMotion: () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
   });
   ctx.trip = createTrip(ctx);
+  // Sound (spec 0035): built now so the panels below can put its button in, and silent until a
+  // visitor presses one. Creating it makes no AudioContext and fetches nothing (wireSound).
+  ctx.audio = wireSound(ctx);
 
   say('Placing Earth…');
   // One frame before any data: the world, the stars, the light.
@@ -178,7 +187,7 @@ export async function boot({ setStatus } = {}) {
   say('Reading the catalogues…');
   createControls(ctx);
   createStatus(ctx);
-  ctx.mobile = createMobileUI();
+  ctx.mobile = createMobileUI(ctx);
   // One line on the scene when no satellite could be read at all (ui/scenenote.js).
   ctx.sceneNote = createSceneNote(ctx);
   createGitHubMark();
@@ -754,6 +763,43 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
     return Promise.all(Array.from({ length: Math.min(size, list.length) }, worker));
   }
   await Promise.all([pool(local, 6), pool(upstream, 3)]);
+}
+
+// --- sound ---------------------------------------------------------------------
+//
+// Spec 0035, 2026-09-23. The engine, its beds and stings, and the four events they follow. Every
+// hook is a listener on something the app already says out loud -- `sr:stage`, `sr:veil`, the
+// trip's own onChange -- so no module that moves the camera knows sound exists, and each of them
+// still runs in node without it.
+
+function wireSound(ctx) {
+  const audio = createAudio();
+  const loader = createLoader(audio);
+  audio.beds = createBeds(audio, AUDIO, { loader });
+  audio.stings = createStings(audio, audio.beds, AUDIO, { loader });
+  const here = () => rungOf(ctx.stage.worldId, isLadderStage);
+  // Turned on (or the first gesture of a visit that remembered "on"): the bed for where we are.
+  // Turned off: the engine ramps the master down and suspends; the bed is kept for next time.
+  audio.onChange((on) => { if (on) audio.beds.enter(here()); });
+  window.addEventListener('sr:stage', () => audio.beds.enter(here()));
+  // The stage sting lands in the black, where the change of room is (spec 0034's veil).
+  document.addEventListener('sr:veil', (e) => {
+    if (e && e.detail && e.detail.phase === 'covered') audio.stings.play('stage');
+  });
+  // `arrive` when a stop's flight lands (ui/trip.js arrived() is the only way into `settle`), `end`
+  // when the end card shows. Read from phase edges, so a render that repeats a phase is not a
+  // second chime, and a Next that collapses a flight still lands exactly once.
+  let phase = 'idle';
+  if (ctx.trip && typeof ctx.trip.onChange === 'function') {
+    ctx.trip.onChange((st) => {
+      const next = st && st.phase;
+      if (next === phase) return;
+      if (next === 'settle') audio.stings.play('arrive');
+      else if (next === 'outro') audio.stings.play('end');
+      phase = next;
+    });
+  }
+  return audio;
 }
 
 // --- the link ------------------------------------------------------------------

@@ -71,6 +71,9 @@ jobs:
         run: python3 scripts/gen_stars_notable_js.py --check
       - name: The level-of-detail mirror matches the registry (spec 0028)
         run: python3 scripts/gen_lod_js.py --check
+      # Spec 0035: the browser reads which file is which bed, and the credit it prints, from this.
+      - name: The audio mirror matches the registry (spec 0035)
+        run: python3 scripts/gen_audio_js.py --check
       # The dishes and landing sites were ported to data/sample.js by hand until 2026-09-22, with
       # nothing checking the port; twenty-one more rows made that a copy that would drift.
       - name: The sites mirror matches the registry
@@ -248,6 +251,11 @@ jobs:
         run: node tests/test_urlstate.mjs
       # Share (spec 0033): the link is built from the known keys only, so the visitor's place can
       # never ride along, and the postcard's caption is the card's own lines, string for string.
+      # Spec 0035: a stub AudioContext. No context and no fetch before a gesture, one context after
+      # it, the choice remembered, a 2 s cross-fade per stage, a 0.4 duck under a sting, a quiet
+      # failure when a file is missing.
+      - name: sound is off until chosen, cross-fades per stage, ducks under a sting, fails quietly (spec 0035)
+        run: node tests/test_audio.mjs
       - name: a shared link is the view and nothing else; with no share sheet the clipboard and a toast (spec 0033)
         run: node tests/test_share.mjs
       - name: the postcard is 1080 x 1350 with its caption band at 1080..1350, five lines in order (spec 0033)

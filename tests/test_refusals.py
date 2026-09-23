@@ -489,6 +489,30 @@ CASES: list[tuple[str, str, str, str]] = [
      "stars-notable.yaml", "wiki/Sirius (read 2026-09-22)", "wiki/Sirius"),
     ("a famous star that is already an extreme object with its own fact sheet",
      "stars-notable.yaml", "    name: Sirius\n", "    name: Betelgeuse\n"),
+
+    # --- registry/audio.yaml (spec 0035) ------------------------------------------------------
+    # Sound is somebody else's recording, and the one asset a visitor cannot see is credited. Each
+    # case is a way a row could ship a file with no credit, over the budget, on a rung the engine
+    # does not have, twice for one rung, or naming a file that is not in the tree.
+    ("a sound with no credit",
+     "audio.yaml", 'credit: "Fake Vega by John Bartmann, CC0"', 'credit: ""'),
+    ("a sound whose credit CREDITS.md section 9 does not carry",
+     "audio.yaml", 'credit: "Fake Vega by John Bartmann, CC0"', 'credit: "Fake Vega by J. Bartmann, CC0"'),
+    ("a bed of 700 kB, over the 600 kB budget",
+     "audio.yaml", "kb: 585.6", "kb: 700"),
+    ("a bed for a rung the engine does not have",
+     "audio.yaml", "stage: ladder", "stage: mars"),
+    ("two beds for one rung",
+     "audio.yaml", "stage: world", "stage: earth"),
+    ("a sound whose file is not in the tree",
+     "audio.yaml", "file: site/audio/bed-sun.opus", "file: site/audio/bed-saturn.opus"),
+    ("a sound whose file is not Opus",
+     "audio.yaml", "file: site/audio/bed-sun.opus", "file: site/audio/bed-sun.m4a"),
+    ("a sound whose source has no read date",
+     "audio.yaml", "sounds/639429/ (read 2026-09-23)", "sounds/639429/"),
+    ("a bed that does not loop",
+     "audio.yaml", "    loop: true\n    licence: \"CC0 1.0 Universal (public domain dedication)\"\n    source: \"https://freemusicarchive.org/music/John_Bartmann/100-ambient-atmospheric-soundtracks-straylight-drones-collection/calabi",
+     "    loop: false\n    licence: \"CC0 1.0 Universal (public domain dedication)\"\n    source: \"https://freemusicarchive.org/music/John_Bartmann/100-ambient-atmospheric-soundtracks-straylight-drones-collection/calabi"),
 ]
 
 
@@ -737,6 +761,9 @@ def check_tour_refusals() -> int:
             # they are really in the tree, so the tree needs them or every case fails for a
             # reason that has nothing to do with the case under test.
             shutil.copytree(ROOT / "site" / "images", work / "site" / "images")
+            # ...and registry/audio.yaml against the files it names (spec 0035).
+            if (ROOT / "site" / "audio").is_dir():
+                shutil.copytree(ROOT / "site" / "audio", work / "site" / "audio")
             shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")
             # The bundled cities a visitor can pick (spec 0038): a card on a trip from the visitor's
             # place may not name one, and the checker reads them from here.
@@ -805,6 +832,9 @@ def check_copy_refuses() -> int:
             # they are really in the tree, so the tree needs them or every case fails for a
             # reason that has nothing to do with the case under test.
             shutil.copytree(ROOT / "site" / "images", work / "site" / "images")
+            # ...and registry/audio.yaml against the files it names (spec 0035).
+            if (ROOT / "site" / "audio").is_dir():
+                shutil.copytree(ROOT / "site" / "audio", work / "site" / "audio")
 
             path = work / "site" / "js" / "ui" / filename
             text = path.read_text(encoding="utf-8")
@@ -869,6 +899,9 @@ def check_models_dir_refuses() -> int:
             # they are really in the tree, so the tree needs them or every case fails for a
             # reason that has nothing to do with the case under test.
             shutil.copytree(ROOT / "site" / "images", work / "site" / "images")
+            # ...and registry/audio.yaml against the files it names (spec 0035).
+            if (ROOT / "site" / "audio").is_dir():
+                shutil.copytree(ROOT / "site" / "audio", work / "site" / "audio")
             shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")
             shutil.copytree(ROOT / "harvest", work / "harvest",
                             ignore=shutil.ignore_patterns("__pycache__"))
@@ -918,6 +951,9 @@ def main() -> int:
             # they are really in the tree, so the tree needs them or every case fails for a
             # reason that has nothing to do with the case under test.
             shutil.copytree(ROOT / "site" / "images", work / "site" / "images")
+            # ...and registry/audio.yaml against the files it names (spec 0035).
+            if (ROOT / "site" / "audio").is_dir():
+                shutil.copytree(ROOT / "site" / "audio", work / "site" / "audio")
             # The validator cross-checks registry/models.yaml against CREDITS.md, so a tree
             # without it fails for a reason that has nothing to do with the case under test.
             shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")

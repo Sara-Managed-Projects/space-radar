@@ -56,6 +56,15 @@ const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: VIEWPORT, deviceScaleFactor: MOBILE ? 3 : 1, isMobile: MOBILE, hasTouch: MOBILE });
 const problems = [];
 page.on('pageerror', (e) => problems.push(`page error: ${e.message}`));
+// SOUND IS A CHOICE (spec 0035 req 1, 2026-09-23): a first visit asks for nothing under /audio/
+// and makes no AudioContext. Every request is logged from the first byte; the path is matched
+// from its root, because the engine's own modules live at /js/audio/ and are rightly loaded.
+const audioRequests = [];
+page.on('request', (req) => {
+  try {
+    if (new URL(req.url()).pathname.startsWith('/audio/')) audioRequests.push(req.url());
+  } catch { /* a data: or blob: URL is not a sound file */ }
+});
 
 try {
   await page.goto(`${BASE}/index.html`, { waitUntil: 'domcontentloaded', timeout: 60_000 });
@@ -132,6 +141,20 @@ try {
       cameraDistance: cam.position.length(),
     };
   });
+
+  // After the checks above: the boot has had its ~90 s, the layers have landed or given up, and
+  // the page has been rendered twice. A sound fetched at boot would be in the log by now.
+  const sound = await page.evaluate(() => {
+    const a = window.spaceRadar && window.spaceRadar.audio;
+    return { exists: !!a, context: a ? a.context : 'no engine', on: a ? a.isOn() : null };
+  });
+  if (!sound.exists) fail('window.spaceRadar.audio is missing: main.js wireSound() did not run');
+  else if (sound.context !== null) fail('an AudioContext exists after boot with no gesture (spec 0035 req 1)');
+  if (audioRequests.length) {
+    fail(`${audioRequests.length} request(s) under /audio/ before any gesture (spec 0035 req 1): ${audioRequests.slice(0, 3).join(', ')}`);
+  } else {
+    console.log('sound: 0 requests under /audio/ and no AudioContext at boot');
+  }
 
   if (seen.clipped.length) {
     fail(
