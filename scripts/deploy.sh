@@ -10,8 +10,10 @@
 #   --distribution ID     optional. Without it nothing is invalidated, so a deploy can take up to
 #                         the cache lifetime to appear.
 #   --profile NAME        an AWS CLI profile. Default: whatever your environment already uses.
-#   --assets-only         skip the app files; push textures, data, vendor and models only.
-#   --app-only            skip the big assets; push HTML, CSS and JS only. The usual case.
+#   --assets-only         skip the app files; push textures, data, vendor, models, images and the
+#                         share pictures (og/) only.
+#   --app-only            skip the big assets; push HTML, CSS, JS and the trip pages (t/) only.
+#                         The usual case.
 #   --dry-run             print what would be uploaded and change nothing.
 #
 # WHY THIS IS A SCRIPT AND NOT ONE `aws s3 sync`
@@ -67,7 +69,7 @@ SYNC=(aws s3 sync --region "$REGION")
 # hypothetical: `site/models/` was added for the NASA spacecraft and this script did not know about
 # it, so the first deploy after that shipped an app whose models 403'd. The app degraded correctly
 # and nobody would have noticed for a while, which is exactly what makes it worth a check.
-KNOWN="textures data vendor js css models images"
+KNOWN="textures data vendor js css models images t og"
 MISSING=""
 for d in "$SITE"/*/; do
   name=$(basename "$d")
@@ -107,6 +109,10 @@ if [ "$WHAT" != "app" ]; then
   # The photographs on the cards. Same bargain as the models: somebody else's work, shipped with
   # its credit, so it is deployed as a directory and never silently half-pushed.
   "${SYNC[@]}" "$SITE/images"   "s3://$BUCKET/images"   --cache-control "$LONG" --delete
+  # The pictures a chat unfurler shows for a shared trip page (spec 0032, scripts/gen_trip_pages.py):
+  # og/default.png today, one per trip when spec 0033 renders them. Long-lived like the images,
+  # and for the same reason not invalidated by this script -- see the note at the end.
+  "${SYNC[@]}" "$SITE/og"       "s3://$BUCKET/og"       --cache-control "$LONG" --delete
 fi
 
 if [ "$WHAT" != "assets" ]; then
@@ -124,6 +130,12 @@ if [ "$WHAT" != "assets" ]; then
   "${SYNC[@]}" "$SITE/js"  "s3://$BUCKET/js" \
     --cache-control "no-cache" --content-type "text/javascript; charset=utf-8" \
     --exclude "*.md" --delete
+  # One static page per trip (spec 0032): the share URL a crawler reads, which sends a browser on
+  # to `/#trip=<id>`. HTML, no-cache, like index.html: a page that says the wrong thing about a
+  # trip for a cache lifetime is a share that lies. --delete, because a trip that left the
+  # registry must not keep a page that opens the app on nothing.
+  "${SYNC[@]}" "$SITE/t"   "s3://$BUCKET/t" \
+    --cache-control "no-cache" --content-type "text/html; charset=utf-8" --delete
   if [ "$DRY_RUN" = "1" ]; then
     echo "  would upload index.html"
   else
@@ -133,7 +145,7 @@ if [ "$WHAT" != "assets" ]; then
 fi
 
 if [ -n "$DISTRIBUTION" ] && [ "$DRY_RUN" != "1" ]; then
-  PATHS=("/" "/index.html" "/js/*" "/css/*")
+  PATHS=("/" "/index.html" "/js/*" "/css/*" "/t/*")
   if [ "$WHAT" != "app" ]; then
     # The data files were just pushed and keep their names: expire the edge copies now.
     PATHS+=("/data/*")
@@ -145,10 +157,10 @@ if [ -n "$DISTRIBUTION" ] && [ "$DRY_RUN" != "1" ]; then
     --paths "${PATHS[@]}" \
     --output text --query 'Invalidation.Id'
   if [ "$WHAT" != "app" ]; then
-    echo "    NOTE: textures, vendor and models were uploaded but NOT invalidated -- their names are"
-    echo "    not content-hashed, so nothing expires them early. If you changed one, run:"
+    echo "    NOTE: textures, vendor, models, images and og were uploaded but NOT invalidated -- their"
+    echo "    names are not content-hashed, so nothing expires them early. If you changed one, run:"
     echo "      aws cloudfront create-invalidation --distribution-id $DISTRIBUTION \\"
-    echo "        --paths '/textures/*' '/vendor/*' '/models/*'"
+    echo "        --paths '/textures/*' '/vendor/*' '/models/*' '/images/*' '/og/*'"
   fi
 fi
 

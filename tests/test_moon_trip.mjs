@@ -257,6 +257,54 @@ for (let week = 0; week < 4; week += 1) {
   stage.setOrigin(null);
 }
 
+// ------------------------------------------------------- 4. a deep link into a later stop
+// Spec 0032: `#trip=moon-landings&stop=3` starts the trip through start(), so the intro card and
+// its count are honest, then jumpTo(2) during the intro arms the first flight; play() goes to
+// stop 2 directly, not through stop 0. Mid-trip, jumpTo() is jump(): clamped to the stops there are.
+{
+  const tMs = START;
+  const camera = new THREE.PerspectiveCamera(45, 1.6, 0.001, 1e9);
+  camera.position.set(0, 0, 22);
+  const rig = createCameraRig(camera, null, { worldRadius: 6.371 });
+  const ctx = {
+    camera, cameraRig: rig,
+    clock: { mode: 'live', rate: 1, paused: false, now: () => tMs, goTo() {}, setRate() {}, setPaused() {}, live() {} },
+    layers: [{ id: 'hand-kept-sites', nearKm: 900 }, { id: 'worlds' }],
+    recordsFor: (id) => (id === 'hand-kept-sites' ? records : []),
+    recordById: (id) => byId.get(id) || null,
+    isLayerOn: () => true, setLayerOn() {}, select() {}, deselect() {}, selected: () => null,
+    setStage(id) { stage.setWorld(id); stage.setOrigin(id === 'earth' ? null : positionOf(id, tMs)); return true; },
+  };
+  const machine = createTrip(ctx);
+  const visited = [];
+  machine.onChange((st) => { if (st.phase === 'flight') visited.push(st.index); });
+  check(machine.jumpTo(2) === false, 'jumpTo() with no trip running says so and does nothing');
+  await machine.start(TRIP_ID);
+  pump();
+  check(machine.state.phase === 'intro', `the trip opens on its intro, not ${machine.state.phase}`);
+  check(machine.jumpTo(2) === true && machine.state.phase === 'intro' && machine.state.index === -1,
+    'jumpTo(2) during the intro leaves the intro up: the count is still a decision');
+  machine.play();
+  pump(2);
+  check(machine.state.index === 2 && machine.state.phase === 'flight', `play() after jumpTo(2) lands on stop index ${machine.state.index} (${machine.state.phase}), not 2`);
+  check(visited.length === 1 && visited[0] === 2, `the first flight is straight to stop 2, not through ${visited}`);
+  rig.finishFlight();
+  pump(2);
+  machine.jumpTo(99);
+  pump(2);
+  check(machine.state.index === trip.stops.length - 1, `jumpTo(99) is clamped to the last stop, not ${machine.state.index}`);
+  machine.jumpTo(-3);
+  pump(2);
+  check(machine.state.index === 0, `jumpTo(-3) is clamped to the first stop, not ${machine.state.index}`);
+  machine.jumpTo('4');
+  pump(2);
+  check(machine.state.index === 4, `jumpTo("4") reads a number, landing on ${machine.state.index}`);
+  machine.stop('test');
+  pump();
+  check(machine.state.phase === 'idle' && machine.state.index === -1, 'leaving is unchanged');
+  stage.setOrigin(null);
+}
+
 if (problems.length) {
   console.error(`moon trip FAILED (${problems.length}):\n  ` + problems.join('\n  '));
   process.exit(1);

@@ -605,6 +605,15 @@ export const COPY = {
     close: '×',
     closeTitle: 'Close this note',
   },
+  // A deep link (spec 0032) that names something this map does not have. Said once, on the scene,
+  // through the same note; the default view is what is shown, and the line says so rather than
+  // leaving a visitor to wonder why a link to the Moon opened on the Earth.
+  link: {
+    unknownVersion: 'This link was made by a newer version of the map; showing the default view.',
+    unknownTrip: 'That trip is not on this map any more; showing the default view.',
+    unknownAt: 'That object is not on this map; showing the default view.',
+    unknownStage: 'That place is not a centre this map can take; showing the default view.',
+  },
   nextList: {
     // Two rows can name different objects the same way -- CelesTrak calls dozens of stages "SL-8
     // R/B" -- and two identical rows read as a bug. The catalogue number tells them apart.

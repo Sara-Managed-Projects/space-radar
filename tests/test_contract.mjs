@@ -47,6 +47,9 @@ const CONTRACT = {
   'ui/trippicker.js': ['createTripPicker', 'groupTrips', 'nextTripId', 'nextTripOrder', 'tripOrder'],
   'ui/trip.js': ['createTrip'],
   'ui/tripframe.js': ['createTripFrame', 'shapeLine'],
+  // The one owner of the URL hash (spec 0032): main.js, ui/controls.js and ui/trip.js all write
+  // through it, and a second dialect is the bug it was written to end.
+  'ui/urlstate.js': ['KEYS', 'VERSION', 'read', 'write', 'clear', 'stopIndex', 'readMoment', 'writeMoment'],
   'ui/status.js': ['createStatus'],
   'ui/github.js': ['createGitHubMark'],
   'copy/en.js': ['COPY', 'compare'],
@@ -2615,6 +2618,52 @@ for (const file of allFiles) {
   } finally {
     if (savedFetch) globalThis.fetch = savedFetch;
     else delete globalThis.fetch;
+  }
+}
+
+// --- one page per trip, for the share preview (spec 0032 req 7) --------------------------
+//
+// A fragment never reaches CloudFront, so `#trip=<id>` unfurls as the root page. Each trip gets a
+// generated `site/t/<id>.html` with its own og:url and a refresh to its own hash; the generator's
+// --check holds the bytes to the registry, and this holds the shape to what a crawler and a
+// browser each need from it. The description rule is the blurb rule: no ` -- ` reaches a screen.
+{
+  try {
+    const { TOURS } = await import(join(JS, 'data/tours.js'));
+    const dir = join(ROOT, 'site/t');
+    const pages = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.html')) : [];
+    if (pages.length !== TOURS.length) problems.push(`TRIPPAGE ${pages.length} pages under site/t/ for ${TOURS.length} trips`);
+    const attr = (html, re) => (html.match(re) || [])[1] || '';
+    for (const tour of TOURS) {
+      const file = join(dir, `${tour.id}.html`);
+      if (!existsSync(file)) { problems.push(`TRIPPAGE no page for ${tour.id}`); continue; }
+      const html = readFileSync(file, 'utf8');
+      const ogUrl = attr(html, /property="og:url" content="([^"]+)"/);
+      if (!/^https:\/\//.test(ogUrl) || !ogUrl.endsWith(`/t/${tour.id}.html`)) problems.push(`TRIPPAGE ${tour.id}: og:url is '${ogUrl}', not its own short URL`);
+      if (attr(html, /rel="canonical" href="([^"]+)"/) !== ogUrl) problems.push(`TRIPPAGE ${tour.id}: canonical and og:url disagree`);
+      const refresh = attr(html, /http-equiv="refresh" content="0; url=([^"]+)"/);
+      if (!refresh.endsWith(`#trip=${tour.id}`)) problems.push(`TRIPPAGE ${tour.id}: the refresh goes to '${refresh}', not #trip=${tour.id}`);
+      if (!html.includes(`location.replace('../#trip=${tour.id}')`)) problems.push(`TRIPPAGE ${tour.id}: no script redirect to its hash`);
+      if (!html.includes(`<a href="../#trip=${tour.id}">`)) problems.push(`TRIPPAGE ${tour.id}: no plain link for no-script`);
+      const description = attr(html, /name="description" content="([^"]*)"/);
+      if (!description) problems.push(`TRIPPAGE ${tour.id}: no description`);
+      if (description.includes(' -- ')) problems.push(`TRIPPAGE ${tour.id}: the description prints two hyphens as a dash`);
+      if (attr(html, /property="og:description" content="([^"]*)"/) !== description) problems.push(`TRIPPAGE ${tour.id}: og:description and description disagree`);
+      if (attr(html, /name="twitter:card" content="([^"]*)"/) !== 'summary_large_image') problems.push(`TRIPPAGE ${tour.id}: twitter:card is not summary_large_image`);
+      // The picture the unfurl shows must be a file this tree ships, at the size the tags claim.
+      const image = attr(html, /property="og:image" content="([^"]+)"/);
+      const imageFile = join(ROOT, 'site', image.replace(/^https?:\/\/[^/]+\//, ''));
+      if (!existsSync(imageFile)) problems.push(`TRIPPAGE ${tour.id}: og:image ${image} is not in site/`);
+      else {
+        const png = readFileSync(imageFile);
+        const w = png.readUInt32BE(16);
+        const h = png.readUInt32BE(20);
+        if (png.slice(1, 4).toString() !== 'PNG' || w !== 1200 || h !== 630) problems.push(`TRIPPAGE ${tour.id}: og:image is ${w} x ${h}, not a 1200 x 630 PNG`);
+      }
+    }
+    notes.push(`trip pages: ${pages.length}, one per trip, each with its own og:url, a refresh to its own hash and a 1200 x 630 picture`);
+  } catch (e) {
+    problems.push(`TRIPPAGE could not check the trip pages: ${String(e)}`);
   }
 }
 

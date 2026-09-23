@@ -40,6 +40,12 @@ jobs:
       # stale mirror is a trip promising a visitor a length it does not spend.
       - name: The tours mirror matches the registry
         run: python3 scripts/gen_tours_js.py --check
+      # Same registry, a second mirror, in HTML (spec 0032): one static page per trip carries the
+      # trip's title and blurb for a chat unfurler and sends the browser on to `/#trip=<id>`,
+      # because a fragment never reaches CloudFront. A stale page is a share that says the wrong
+      # thing about the trip it opens.
+      - name: The trip pages match the registry (spec 0032)
+        run: python3 scripts/gen_trip_pages.py --check
       # Same rule, fourth registry, other direction: the harvester (spec 0003) runs on the standard
       # library alone, so registry/sources.yaml is mirrored into harvest/sources.json -- with its
       # `list:` and `query:` files inlined -- and a stale mirror is a Lambda fetching last month's
@@ -206,6 +212,11 @@ jobs:
       # without the ground's horizon looked at Surveyor 1 through 500 km of Moon (2026-09-22).
       - name: the Moon trip visits real landing sites in order, and sees each from above its horizon
         run: node tests/test_moon_trip.mjs
+      # The URL is the state (spec 0017's rule, spec 0032's keys): one module owns every key of
+      # the hash, drops what it does not know, and never writes it back. Two writers in two
+      # dialects once bounced the app between moments; this is the check that there is one.
+      - name: one module owns every key of the URL, and a stop is found by number or by id (spec 0032)
+        run: node tests/test_urlstate.mjs
       - name: every layer exists on both sides of the registry mirror and `enabled:` is honoured (spec 0026 req 8)
         run: node tests/test_layers_registry.mjs
       - name: a fresh launch is one train with a lead, still climbing or spread out (spec 0026 req 17)

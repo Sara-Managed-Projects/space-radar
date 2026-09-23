@@ -1,7 +1,12 @@
 // ui/scenenote.js -- one note on the scene when no satellite could be read at all.
 //
-// Contract: createSceneNote(ctx) -> { check(), destroy() }
+// Contract: createSceneNote(ctx) -> { check(), say(text), destroy() }
 // Also exported, pure, for the test: refusedEverywhere(statuses, counts) -> boolean
+//
+// `say(text)` (spec 0032, 2026-09-23) is the second thing the note can carry: one line about a
+// deep link that named a trip, an object or a place this map does not have. Same place on the
+// screen, same close button, no "why" button (there is no drawer to open for it). It takes the
+// note over until it is closed; the satellite line, if it is due, comes back after.
 //
 // WHY. A visitor whose connection CelesTrak refuses -- a phone behind carrier NAT on its first
 // visit, or this machine for all of 2026-09-22 -- saw a beautiful Earth with nothing on it and not a
@@ -27,7 +32,7 @@ export function refusedEverywhere(statuses, counts) {
 }
 
 export function createSceneNote(ctx) {
-  if (typeof document === 'undefined') return { check() {}, destroy() {} };
+  if (typeof document === 'undefined') return { check() {}, say() {}, destroy() {} };
   const T = COPY.sceneNote;
   const root = document.createElement('aside');
   root.className = 'sr-scenenote';
@@ -50,8 +55,17 @@ export function createSceneNote(ctx) {
 
   let settled = false;
   let dismissed = false;
+  let said = null;
 
   function check() {
+    if (said) {
+      text.textContent = said;
+      why.hidden = true;
+      root.hidden = false;
+      return;
+    }
+    text.textContent = T.refused;
+    why.hidden = false;
     if (!settled || dismissed) { root.hidden = true; return; }
     const counts = new Map(SATELLITE_LAYERS.map((id) => [id, (ctx.recordsFor(id) || []).length]));
     let statuses = [];
@@ -59,12 +73,19 @@ export function createSceneNote(ctx) {
     root.hidden = !refusedEverywhere(statuses, counts);
   }
 
+  /** One line of the caller's own, until it is closed. */
+  function say(line) {
+    said = line ? String(line) : null;
+    check();
+  }
+
   why.addEventListener('click', () => {
     if (ctx.mobile && ctx.mobile.isPhone) { ctx.mobile.setOpen('sr-status'); return; }
     const panel = document.getElementById('sr-status');
     if (panel) { panel.scrollIntoView({ block: 'start' }); panel.setAttribute('tabindex', '-1'); panel.focus({ preventScroll: true }); }
   });
-  close.addEventListener('click', () => { dismissed = true; check(); });
+  // Closing the link's line closes only that line; the satellite line is its own dismissal.
+  close.addEventListener('click', () => { if (said) said = null; else dismissed = true; check(); });
   const onReady = () => { settled = true; check(); };
   const onLayer = () => check();
   window.addEventListener('sr:layers-ready', onReady);
@@ -72,6 +93,7 @@ export function createSceneNote(ctx) {
 
   return {
     check,
+    say,
     destroy() {
       window.removeEventListener('sr:layers-ready', onReady);
       window.removeEventListener('sr:layer', onLayer);

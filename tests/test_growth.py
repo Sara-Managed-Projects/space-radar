@@ -48,16 +48,34 @@ ALLOWED_PREFIXES = ("registry/", "harvest/lists/", "harvest/queries/")
 # hand-ported copy of every site, and Conamara would have validated and drawn nothing until
 # somebody wrote it a record by hand. registry/sites.yaml is mirrored by scripts/gen_sites_js.py
 # since 2026-09-22, so the fixture's site row is now checked all the way into the browser's copy.
+# SIX, and the first that is a DIRECTORY: registry/tours.yaml is mirrored a second time, as one
+# static page per trip under site/t/ (spec 0032), so a shared link unfurls with the trip's title
+# and blurb. A new trip is a new page, and `gen_trip_pages.py --check` fails CI until it exists.
 GENERATED = "site/js/data/rockets.js"
 GENERATED_ODDITIES = "site/js/data/oddities.js"
 GENERATED_TOURS = "site/js/data/tours.js"
 GENERATED_SOURCES = "harvest/sources.json"
 GENERATED_SITES = "site/js/data/sites.js"
+GENERATED_TRIP_PAGES = "site/t"
 MIRRORS = ((GENERATED, "scripts/gen_rockets_js.py", "rockets"),
            (GENERATED_ODDITIES, "scripts/gen_oddities_js.py", "oddities"),
            (GENERATED_TOURS, "scripts/gen_tours_js.py", "tours"),
            (GENERATED_SOURCES, "scripts/gen_sources_json.py", "sources"),
-           (GENERATED_SITES, "scripts/gen_sites_js.py", "sites"))
+           (GENERATED_SITES, "scripts/gen_sites_js.py", "sites"),
+           (GENERATED_TRIP_PAGES, "scripts/gen_trip_pages.py", "tours"))
+
+
+def under(path: str, mirror: str) -> bool:
+    """Is this repo-relative file the mirror, or inside it when the mirror is a directory?"""
+    return path == mirror or path.startswith(mirror + "/")
+
+
+def mirror_has(work: Path, mirror: str, rid: str) -> bool:
+    """Did the row reach the browser's copy: quoted in a file, or a page of its own in a directory."""
+    target = work / mirror
+    if target.is_dir():
+        return (target / f"{rid}.html").is_file()
+    return f'"{rid}"' in target.read_text(encoding="utf-8")
 
 
 def snapshot(root: Path) -> dict[str, str]:
@@ -126,7 +144,10 @@ def main() -> int:
                         ignore=shutil.ignore_patterns("__pycache__", "sources.json"))
         (work / "site/js/data").mkdir(parents=True, exist_ok=True)
         for mirror, _, _ in MIRRORS:
-            shutil.copy2(ROOT / mirror, work / mirror)
+            if (ROOT / mirror).is_dir():
+                shutil.copytree(ROOT / mirror, work / mirror)
+            else:
+                shutil.copy2(ROOT / mirror, work / mirror)
 
         before = snapshot(work)
         apply_fixture(work / "registry", fixture)
@@ -166,18 +187,17 @@ def main() -> int:
         changed = sorted(k for k in set(before) | set(after) if before.get(k) != after.get(k))
         generated = {m for m, _, _ in MIRRORS}
         outside = [f for f in changed
-                   if not f.startswith(ALLOWED_PREFIXES) and f not in generated]
+                   if not f.startswith(ALLOWED_PREFIXES) and not any(under(f, m) for m in generated)]
         if outside:
             print("FAIL: growing the registry changed files outside it: " + ", ".join(outside))
             return 1
         for mirror, _, section in MIRRORS:
-            if mirror not in changed:
+            if not any(under(f, mirror) for f in changed):
                 print(f"FAIL: {mirror} did not change, so the new {section} rows never reached "
                       f"the browser's copy of the registry.")
                 return 1
-            text = (work / mirror).read_text(encoding="utf-8")
             for rid in [r["id"] for r in fixture.get(section, [])]:
-                if f'"{rid}"' not in text:
+                if not mirror_has(work, mirror, rid):
                     print(f"FAIL: {section} row {rid!r} validates but is not in the mirror the "
                           f"browser loads, so nothing would ever draw it.")
                     return 1
@@ -190,7 +210,7 @@ def main() -> int:
     print("\nPASS: a new world, a new source, a new layer, a new texture, a new surface site, "
           "two new launch vehicles, a new odd thing on that new world, a new thing bolted to a "
           "spacecraft and a new guided trip that visits all of them are rows. Nothing under "
-          "site/js/ or harvest/ was needed but the five generated mirrors, which no human edits.")
+          "site/js/ or harvest/ was needed but the six generated mirrors, which no human edits.")
     return 0
 
 

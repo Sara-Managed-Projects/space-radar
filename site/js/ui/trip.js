@@ -1,8 +1,9 @@
 // ui/trip.js -- the guided trip: a chain of shots the camera flies, one card per stop.
 //
 // Contract exports: createTrip(ctx) -> { start(id), play(), stop(reason), next(), back(),
-//                                        replay(), pause(reason), resume(), plan(id), tours(),
-//                                        onChange(fn), dwellFraction(), currentRecordId(), state }
+//                                        replay(), jumpTo(index), pause(reason), resume(),
+//                                        plan(id), tours(), onChange(fn), dwellFraction(),
+//                                        currentRecordId(), state }
 //
 // The trips themselves are DATA: registry/tours.yaml, mirrored into data/tours.js by
 // scripts/gen_tours_js.py. Nothing in this file knows about any particular trip, and adding one
@@ -55,9 +56,14 @@ import { propagate } from '../propagate/index.js';
 import { stage } from '../scene/stage.js';
 import { WORLDS, positionOf, compressesFrom } from '../scene/worlds.js';
 import { showCard, hideCard } from './cards.js';
+import { write as writeUrl, clear as clearUrl } from './urlstate.js';
 import { COPY, t } from '../copy/en.js';
 
 const DEG = Math.PI / 180;
+
+// The phases in which the trip IS at a stop, so the address bar may say which (spec 0032 req 3).
+// The intro names the trip alone; `resolving`, `outro` and `idle` write nothing new.
+const STOP_PHASES = ['flight', 'settle', 'dwell', 'held', 'paused'];
 
 // A layer that has not landed in this long is a layer the trip stops waiting for. Layers load in
 // a sequential await loop and the eleven-thousand-object catalogue is in it, so a first visit can
@@ -226,12 +232,32 @@ export function createTrip(ctx) {
     return () => listeners.delete(fn);
   }
   function notify() {
+    writeUrlState();
     for (const fn of [...listeners]) {
       try {
         fn(state);
       } catch {
         /* a listener must never stop the trip */
       }
+    }
+  }
+
+  /**
+   * THE ADDRESS BAR SAYS WHERE THE TRIP IS (spec 0032 req 3), from the same beat the frame paints
+   * it: a visitor who copies it mid-trip has a link to this stop, which is the cheapest share
+   * there is. The stop is written as its NUMBER, not its id, because the number is what the intro
+   * card and the progress row show. The intro writes the trip alone; leaving clears both keys
+   * (stop()). Guarded like every other touch of the document in this file, so the machine still
+   * runs under node.
+   */
+  function writeUrlState() {
+    if (typeof window === 'undefined' || !state.tourId) return;
+    if (state.phase === 'intro') {
+      // A deep link into stop 3 keeps saying stop 3 while its intro is up (jumpTo, below).
+      const armed = run && run.startAt > 0 ? String(run.startAt + 1) : null;
+      writeUrl({ trip: state.tourId, stop: armed });
+    } else if (state.index >= 0 && STOP_PHASES.includes(state.phase)) {
+      writeUrl({ trip: state.tourId, stop: String(state.index + 1) });
     }
   }
 
@@ -1112,11 +1138,14 @@ export function createTrip(ctx) {
     return plannedShape(resolved);
   }
 
-  /** Leave the intro card. The only way into the first flight. */
+  /** Leave the intro card. The only way into the first flight -- which is to the first stop,
+   * unless jumpTo() was called during the intro (a deep link into a later stop). */
   function play() {
     if (!run || state.phase !== 'intro') return;
+    const first = run.startAt || 0;
+    run.startAt = 0;
     startTicking();
-    goTo(0);
+    goTo(first);
   }
 
   function plannedShape(resolved) {
@@ -1359,6 +1388,27 @@ export function createTrip(ctx) {
     jump(state.index);
   }
 
+  /**
+   * Go to a stop by index, from anywhere in the trip -- and from the intro, where nothing is
+   * flying yet. A deep link into stop 3 (spec 0032) shows the intro like any other start, so the
+   * count and the length are still a decision rather than an ambush; Start then flies to stop 3
+   * directly, rather than snapping through stop 1 and flying on from there. Clamped to the stops
+   * that resolved today, which can be fewer than the registry's. Returns whether a trip was there
+   * to move.
+   */
+  function jumpTo(to) {
+    if (!run) return false;
+    const n = Number(to);
+    const index = clamp(Number.isFinite(n) ? Math.trunc(n) : 0, 0, run.stops.length - 1);
+    if (state.phase === 'intro') {
+      run.startAt = index;
+      writeUrlState();
+      return true;
+    }
+    jump(index);
+    return true;
+  }
+
   const PAUSABLE = ['flight', 'settle', 'dwell', 'held'];
 
   /**
@@ -1519,6 +1569,9 @@ export function createTrip(ctx) {
     if (record && !stageLeft) ctx.select(record, { fly: false });
     else if (record && typeof ctx.deselect === 'function') ctx.deselect();
     else hideCard();
+    // The address bar stops naming the trip (spec 0032 req 3). AFTER the select above, whose
+    // `sr:select` may write `at`: with the trip gone, what is selected is the visitor's own.
+    if (typeof window !== 'undefined') clearUrl(['trip', 'stop']);
     leaving = false;
     notify();
   }
@@ -1670,6 +1723,7 @@ export function createTrip(ctx) {
     next,
     back,
     replay,
+    jumpTo,
     pause,
     resume,
     plan,

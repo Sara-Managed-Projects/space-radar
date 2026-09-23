@@ -172,6 +172,16 @@ The other half is that leaving has to be free, or nobody will start:
   about the camera can shorten it.
 - The layers a trip switched on, and the clock speed it clamped, are put back exactly as they were.
 
+**Every view has a link, and the address bar is it.** Copy it mid-trip and you have
+`#trip=moon-landings&stop=3`: the same trip's intro, then the same stop. The other keys are
+`#at=europa` (select and fly to a thing, by its id), `#t=2027-08-02T10:00:00Z&rate=60` (the
+clock, absent means now), `#stage=saturn` (what the map is centred on) and `#m=now` (the moment),
+in any combination. For sharing there is a short page per trip, `spaceradar.ai/t/moon-landings.html`,
+which carries the trip's title, blurb and picture for a chat unfurler and opens the same thing.
+Everything is written with `replaceState`, so **Back is not Previous Stop**: it leaves the site
+the way it always did, and a link into a trip is one history entry. A link that names a trip or
+an object this map does not have says so in one line and shows the default view.
+
 Adding a trip is a row in `registry/tours.yaml` and a row per stop, and nothing under `site/js/`.
 Twenty-six refusals guard that file; the one that forbids a trip id from colliding with a layer id
 caught a real collision the first time it ran, and the newest refuses a stop about a world its own
@@ -360,6 +370,8 @@ site/                 the entire app, served as-is
   vendor/             three.js, satellite.js, astronomy-engine
   models/             forty-four NASA models, loaded one at a time when you get close
   textures/ data/     planet textures and the star catalogue
+  t/ og/              one generated page per trip (the share URL a chat unfurler reads) and the
+                      picture it shows
 registry/             eleven YAML files. Adding a world, an object class, a data source, an event
                       type, a launch vehicle, an odd thing or a whole trip is a ROW here — not a
                       code change. CI enforces it, and refuses a stale generated mirror.
@@ -451,6 +463,7 @@ python3 scripts/check_registry.py        # the eleven registries validate
 python3 scripts/gen_rockets_js.py --check   # the browser's copy of the registry is current
 python3 scripts/gen_oddities_js.py --check  #   "
 python3 scripts/gen_tours_js.py --check     #   "
+python3 scripts/gen_trip_pages.py --check   # one share page per trip, current
 python3 scripts/check_copy.py            # no user-visible string outside copy/en.js
 python3 tests/test_growth.py             # adding a world is still just a registry row
 python3 tests/test_refusals.py           # the validator still refuses what it claims to
