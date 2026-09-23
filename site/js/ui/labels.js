@@ -30,7 +30,7 @@ import * as THREE from '../../vendor/three.module.min.js';
 import { propagate } from '../propagate/index.js';
 import { stage, isLadderStage } from '../scene/stage.js';
 import { realModelFor } from '../scene/realmodels.js';
-import { WORLDS } from '../scene/worlds.js';
+import { WORLDS, systemOf } from '../scene/worlds.js';
 
 export const LABEL_CAP = 12;
 export const NOTABLE_CAP = 10;
@@ -94,19 +94,35 @@ export function isNotableHere(record, ladder) {
 
 /**
  * The choice, pure. `candidates` are already projected: {record, x, y, dist, kind} with x, y in
- * pixels and kind one of 'selection' | 'train' | 'notable'. Returns those that get a label:
- * selection first, then the train, then notable by distance, dropping anything within DEDUPE_PX
- * of a label already kept, capped at LABEL_CAP with at most NOTABLE_CAP notable.
+ * pixels and kind one of 'selection' | 'train' | 'notable'. A candidate may also carry `parentId`:
+ * the id of the world it goes round (ui/labels.js sets it from scene/worlds.js systemOf). Returns
+ * those that get a label: selection first, then the train, then notable by distance, dropping
+ * anything within DEDUPE_PX of a label already kept, capped at LABEL_CAP with at most NOTABLE_CAP
+ * notable.
+ *
+ * A MOON NEVER OUTRANKS ITS PLANET. Nearest-first is the right order for things at honest
+ * distances, but a planet and its moons are drawn on one compressed shell where the moon's drawn
+ * distance is the planet's plus a widened offset -- which of the two came out nearer was a coin
+ * toss. MEASURED from Saturn on 2026-09-22 at 1280x800, aimed at the Sun: the names printed were
+ * "4 Vesta, Titan, Earth, Deimos, Phaethon, Ganymede, Callisto". Mars was drawn 11 px from Deimos
+ * and Jupiter 5 px from Ganymede, each ten times the wider disc, and neither was named: the rest of
+ * the solar system read as a row of moons. So a candidate with a `parentId` that is also a
+ * candidate sorts on ITS PARENT'S distance, and behind the parent.
  */
 export function chooseLabels(candidates, opts = {}) {
   const cap = opts.cap || LABEL_CAP;
   const notableCap = opts.notableCap || NOTABLE_CAP;
   const dedupe = opts.dedupePx || DEDUPE_PX;
   const order = { selection: 0, train: 1, notable: 2 };
-  const list = (Array.isArray(candidates) ? candidates : [])
-    .filter((c) => c && c.record && Number.isFinite(c.x) && Number.isFinite(c.y))
+  const clean = (Array.isArray(candidates) ? candidates : [])
+    .filter((c) => c && c.record && Number.isFinite(c.x) && Number.isFinite(c.y));
+  const distById = new Map(clean.map((c) => [c.record.id, c.dist]));
+  const rankDist = (c) => (c.parentId && distById.has(c.parentId) ? distById.get(c.parentId) : c.dist);
+  const isChild = (c) => (c.parentId && distById.has(c.parentId) ? 1 : 0);
+  const list = clean
     .slice()
-    .sort((a, b) => (order[a.kind] - order[b.kind]) || (a.dist - b.dist));
+    .sort((a, b) => (order[a.kind] - order[b.kind]) || (rankDist(a) - rankDist(b))
+      || (isChild(a) - isChild(b)) || (a.dist - b.dist));
   const out = [];
   let notable = 0;
   for (const c of list) {
@@ -121,6 +137,19 @@ export function chooseLabels(candidates, opts = {}) {
     if (c.kind === 'notable') notable++;
   }
   return out;
+}
+
+/**
+ * Which world a record is DRAWN AROUND, which is what chooseLabels ranks a moon behind. Null for
+ * anything else -- including a planet, whose parent is the Sun: the Sun is the stage's light rather
+ * than a thing anybody finds a planet by, and ranking every planet at the Sun's distance would put
+ * the whole solar system behind every satellite in low orbit. scene/worlds.js systemOf draws that
+ * same line for the drawing, and there is one rule, not two.
+ */
+export function labelParentId(record) {
+  if (!record || record.klass !== 'world' || !record.id) return null;
+  const sys = systemOf(record.id);
+  return sys === record.id ? null : sys;
 }
 
 /** How far a label keeps off the edge of the window, in CSS pixels. */
@@ -313,7 +342,8 @@ export function createLabels(ctx, host) {
         if (seen.has(r.id) || !isNotableHere(r, ladder)) continue; // on the ladder: not inside the Sun's pixel
         if (isGround(r)) continue; // the ground has no label
         const pr = project(r, tMs, camera, w, h);
-        if (pr) { out.push({ record: r, kind: 'notable', ...pr }); seen.add(r.id); }
+        // A moon says which world it goes round, so chooseLabels can rank it behind that world.
+        if (pr) { out.push({ record: r, kind: 'notable', parentId: labelParentId(r), ...pr }); seen.add(r.id); }
       }
     }
     return out;

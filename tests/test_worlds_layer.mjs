@@ -903,8 +903,173 @@ const TEN_PARENT = { mimas: 'saturn', tethys: 'saturn', dione: 'saturn', rhea: '
   check(/both albedos/.test(iap.meta.cite), 'Iapetus\'s source line says two albedos were read, not one');
 }
 
+// 19. WHAT THE REST OF THE SOLAR SYSTEM LOOKS LIKE WHEN THE CENTRE IS NOT EARTH (2026-09-22).
+//
+// From Earth the compression has room: every planet is at its own elongation, and the nearest two
+// discs of different systems were 8.2 degrees apart. From outside the planets there is no room --
+// everything nearer the Sun than the stage is inside a cone of arcsin(a/d) around it, and DIRECTION
+// IS NEVER ALTERED -- so the 0.40-degree floor drew one planet over the next. Measured at 1280x800,
+// fov 45, at the camera the app arrives with (scene/camera.js worldFramingDistance):
+//
+//   from SATURN  Mercury and Venus 0.137 deg = 2.3 px apart, each disc 3.4 px in radius: Mercury's
+//                centre inside Venus's disc. After the cap: 0.97 px each, a 0.4 px gap.
+//   from PLUTO   Earth and Mars 5.8 px apart with 6.8 px of radii; Mercury and Venus 2.4 px apart
+//                with 6.8 px. After: no two compressed worlds overlap at any of these dates.
+//   from SATURN  the Moon was drawn at its true 1.265e9 km, 371 times farther out than the drawn
+//                Earth and 0.0013 px wide, and still took a label. After: with Earth, 1.03 px.
+//
+// And the Earth stage, which is what nearly every visit sees, is untouched to the last digit: the
+// cap never bites there, so every disc is still drawn at exactly the floor.
+{
+  const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
+  const { stage } = await import(join(JS, 'scene/stage.js'));
+  const { createWorlds, drawnDistanceKm, cappedAngularRadiusRad, nearestNeighbours, PLANET_VIEW, systemOf } =
+    await import(join(JS, 'scene/worlds.js'));
+  const { worldFramingDistance } = await import(join(JS, 'scene/camera.js'));
+  const { FLOOR, CAP, MIN } = { FLOOR: PLANET_VIEW.MIN_ANGULAR_RADIUS_RAD, CAP: PLANET_VIEW.NEIGHBOUR_SHARE, MIN: PLANET_VIEW.MIN_VISIBLE_ANGULAR_RADIUS_RAD };
+
+  // the cap, pure
+  check(cappedAngularRadiusRad(Infinity) === FLOOR, 'a world with nobody near it is drawn at the floor');
+  check(cappedAngularRadiusRad(1.0) === FLOOR, 'a neighbour a radian away changes nothing');
+  check(Math.abs(cappedAngularRadiusRad(FLOOR / CAP) - FLOOR) < 1e-12, 'the cap meets the floor exactly where 0.4 x the gap is the floor');
+  check(Math.abs(cappedAngularRadiusRad(0.005) - CAP * 0.005) < 1e-12, `a neighbour 0.005 rad away holds the disc to ${CAP} of that`);
+  check(cappedAngularRadiusRad(0.001) === MIN, 'a neighbour so close that the share is under a pixel still leaves a pixel');
+  check(cappedAngularRadiusRad(0) === MIN && cappedAngularRadiusRad(NaN) === MIN, 'an exact conjunction is a pixel, not a division by nothing');
+  // two discs that both take the cap cannot touch: 2 x 0.4 < 1
+  check(2 * CAP < 1, `two capped discs cover ${2 * CAP} of the gap between their centres, so a fifth of it is empty sky`);
+  const nn = nearestNeighbours([
+    { id: 'a', dir: [1, 0, 0] }, { id: 'b', dir: [Math.cos(0.1), Math.sin(0.1), 0] }, { id: 'c', dir: [0, 1, 0] },
+  ]);
+  check(nn.get('a').id === 'b' && Math.abs(nn.get('a').rad - 0.1) < 1e-9, `the nearest to a is b, 0.1 rad away (${JSON.stringify(nn.get('a'))})`);
+  check(nn.get('c').id === 'b' && Math.abs(nn.get('c').rad - (Math.PI / 2 - 0.1)) < 1e-9, 'and the nearest to c is b as well');
+  check(nearestNeighbours([{ id: 'only', dir: [1, 0, 0] }]).get('only').rad === Infinity, 'one world alone has no neighbour');
+  check(nearestNeighbours(null).size === 0, 'no directions, no neighbours');
+
+  const W = 1280, H = 800, FOV = 45;
+  const pxPerRad = (H / 2) / Math.tan((FOV * Math.PI) / 360);
+  /** The app's arrival view for a stage: the camera where ctx.setStage leaves it. */
+  function look(stageId, t) {
+    stage.setWorld(stageId);
+    stage.setTime(t);
+    const row = rowOf(stageId);
+    const r = row.radiusKm / stage.unitKm;
+    const cam = new THREE.PerspectiveCamera(FOV, W / H, 1e-5, 1e9);
+    cam.position.set(0, 0, worldFramingDistance(r, FOV, W / H));
+    cam.lookAt(0, 0, 0);
+    cam.updateMatrixWorld();
+    cam.updateProjectionMatrix();
+    const worlds = createWorlds(new THREE.Scene(), { textureBase: null, camera: cam });
+    worlds.update(t);
+    worlds.update(t); // the camera-measured cap settles on the second tick, like the moon floor
+    const discs = [];
+    for (const w of WORLDS) {
+      const mesh = worlds.meshFor(w.id);
+      if (!mesh || !mesh.visible || w.id === stageId) continue;
+      const d = mesh.position.distanceTo(cam.position);
+      discs.push({ id: w.id, pxR: (mesh.scale.x / d) * pxPerRad, dir: mesh.position.clone().sub(cam.position).normalize() });
+    }
+    return { worlds, cam, discs };
+  }
+  const sepPx = (a, b) => Math.acos(Math.max(-1, Math.min(1, a.dir.dot(b.dir)))) * pxPerRad;
+
+  const WHEN = ['2026-01-01T00:00:00Z', '2026-09-22T12:00:00Z', '2027-06-15T03:00:00Z'];
+  for (const iso of WHEN) {
+    const t = Date.parse(iso);
+    // EARTH: nothing capped, every compressed disc exactly at the floor, exactly as before this rule.
+    {
+      const { worlds } = look('earth', t);
+      for (const w of WORLDS) {
+        const vs = worlds.viewScale(w.id);
+        if (!vs || !vs.exaggerated || vs.withParent || w.view !== 'compressed') continue;
+        const want = drawnDistanceKm(vs.trueDistanceKm) * FLOOR;
+        check(Math.abs(vs.drawnRadiusKm - want) < 1e-9 * want && vs.heldBackBy === null,
+          `from Earth on ${iso}, ${w.id} is drawn at the floor and nothing holds it back (${vs.drawnRadiusKm.toFixed(1)} km, wanted ${want.toFixed(1)})`);
+      }
+      worlds.dispose();
+    }
+    // FROM OUTSIDE: no compressed world's disc reaches another's.
+    for (const centre of ['saturn', 'pluto', 'titan', 'enceladus', 'jupiter']) {
+      const { worlds, discs } = look(centre, t);
+      const compressed = discs.filter((d) => {
+        const vs = worlds.viewScale(d.id);
+        return vs && vs.exaggerated && !vs.withParent;
+      });
+      for (let i = 0; i < compressed.length; i++) {
+        for (let j = i + 1; j < compressed.length; j++) {
+          const gap = sepPx(compressed[i], compressed[j]);
+          check(gap > compressed[i].pxR + compressed[j].pxR,
+            `from ${centre} on ${iso}, ${compressed[i].id} and ${compressed[j].id} are ${gap.toFixed(1)} px apart and their radii sum to ${(compressed[i].pxR + compressed[j].pxR).toFixed(1)} px`);
+        }
+      }
+      // every world is still SOMETHING: the cap never takes a disc below a pixel of radius
+      for (const d of compressed) check(d.pxR >= 0.9, `from ${centre} on ${iso}, ${d.id} is still ${d.pxR.toFixed(2)} px of radius`);
+      worlds.dispose();
+    }
+  }
+
+  // The numbers from the block at the top of scene/worlds.js, at the day they were measured.
+  {
+    const t = Date.parse('2026-09-22T12:00:00Z');
+    const { worlds, discs } = look('saturn', t);
+    const by = (id) => discs.find((d) => d.id === id);
+    const gap = sepPx(by('mercury'), by('venus'));
+    check(Math.abs(gap - 2.3) < 0.4, `from Saturn, Mercury and Venus are ${gap.toFixed(1)} px apart (measured 2.3)`);
+    check(Math.abs(by('mercury').pxR - 0.97) < 0.05 && Math.abs(by('venus').pxR - 0.97) < 0.05,
+      `and each is held to ${by('mercury').pxR.toFixed(2)} px, where the plain floor drew 3.4`);
+    check(worlds.viewScale('mercury').heldBackBy === 'venus' && worlds.viewScale('venus').heldBackBy === 'mercury',
+      'each says which world held it back');
+    const note = worlds.viewScale('mercury').note;
+    check(/true direction/.test(note) && /Venus is only 0\.\d\d degrees away/.test(note) && !note.includes(' -- '),
+      `and the card says so: "${note}"`);
+    check(worlds.viewScale('mars').heldBackBy === null && /^Mars is drawn in its true direction/.test(worlds.viewScale('mars').note),
+      'a planet with room keeps the floor and says nothing about neighbours');
+    // Earth's moon, from a stage that is neither: with Earth, at Earth's enlargement, and SEEN.
+    const mv = worlds.viewScale('moon');
+    const ev = worlds.viewScale('earth');
+    check(mv.withParent && mv.note.includes('Earth') && mv.note.includes('The Moon'), `the Moon is drawn around Earth: "${mv.note}"`);
+    check(Math.abs(mv.drawnDistanceKm - 1.265e9) > 1e9, `and not at its true 1.265e9 km (${mv.drawnDistanceKm.toExponential(3)})`);
+    const M = worlds.meshFor('moon');
+    const E = worlds.meshFor('earth');
+    const { positionOf: posOf } = await import(join(JS, 'scene/worlds.js'));
+    const me = posOf('moon', t);
+    const ea = posOf('earth', t);
+    // The Moon's position is geocentric, so the separation is the Moon's own vector: 384 400 km is
+    // the mean and it is 396 000 on this day. Earth's mesh is in EQUATORIAL radii, not mean ones
+    // (scene/earth.js), so the drawn count is in those and this one has to be too, or the two
+    // disagree by 6378.137 / 6371, which is 0.11 %.
+    const trueRadii = Math.hypot(me.x, me.y, me.z) / (E.userData.scaleRadiusKm || rowOf('earth').radiusKm);
+    const drawnRadii = M.position.distanceTo(E.position) / E.scale.x;
+    check(ea && Math.abs(drawnRadii - trueRadii) / trueRadii < 1e-6,
+      `the pair keeps its shape in Earth radii: ${drawnRadii.toFixed(3)} drawn, ${trueRadii.toFixed(3)} real`);
+    check(by('moon').pxR > 0.9, `and the Moon is ${by('moon').pxR.toFixed(2)} px of radius, where drawn true it was 0.0013`);
+    check(ev.exaggerated && M.scale.x < E.scale.x, 'the Moon is drawn smaller than Earth');
+    worlds.dispose();
+  }
+
+  // From the Sun and from the ladder nothing is compressed, so nothing is capped either: those
+  // stages exist to show the true layout (compressesFrom).
+  for (const centre of ['sun', 'stellar']) {
+    stage.setWorld(centre);
+    const t = Date.parse('2026-09-22T12:00:00Z');
+    stage.setTime(t);
+    const w = createWorlds(new THREE.Scene(), { textureBase: null });
+    w.update(t);
+    check(!w.viewScale('neptune').exaggerated && w.viewScale('neptune').heldBackBy === null,
+      `from ${centre}, Neptune is drawn where it is`);
+    w.dispose();
+  }
+  stage.setWorld('earth');
+
+  // systemOf, which is what both the drawing and ui/labels.js rank by.
+  check(systemOf('titan') === 'saturn' && systemOf('moon') === 'earth' && systemOf('charon') === 'pluto',
+    'a moon\'s system is its planet');
+  check(systemOf('mars') === 'mars' && systemOf('sun') === 'sun' && systemOf('pluto') === 'pluto',
+    'a planet is its own system, because its parent is the Sun');
+  check(systemOf('nothing') === 'nothing', 'an id that is not a world is its own system');
+}
+
 if (problems.length) {
   console.error('worlds layer FAILED:\n  ' + problems.join('\n  '));
   process.exit(1);
 }
-console.log(`worlds layer ok: ${recs.length} worlds are records, searchable by name and alias, and the smaller disc wins a tap, and a planet's map waits until its disc can show it; Pluto and Jupiter's four big moons sit where NASA's numbers put them, the moons drawn around the drawn Jupiter, and each card says what it is, how big, how far and that it is a plain ball; Phobos, Deimos, Enceladus, Titan, Triton and Charon sit within 0.3 % of their orbits of where JPL Horizons puts them, and Neptune's card no longer claims the naked eye; Saturn's Mimas, Tethys, Dione, Rhea and Iapetus and Uranus's five sit within 0.45 %, with their planets' own poles, and their cards say what each is, how to see it and that Iapetus has two faces`);
+console.log(`worlds layer ok: ${recs.length} worlds are records, searchable by name and alias, and the smaller disc wins a tap, and a planet's map waits until its disc can show it; Pluto and Jupiter's four big moons sit where NASA's numbers put them, the moons drawn around the drawn Jupiter, and each card says what it is, how big, how far and that it is a plain ball; Phobos, Deimos, Enceladus, Titan, Triton and Charon sit within 0.3 % of their orbits of where JPL Horizons puts them, and Neptune's card no longer claims the naked eye; Saturn's Mimas, Tethys, Dione, Rhea and Iapetus and Uranus's five sit within 0.45 %, with their planets' own poles, and their cards say what each is, how to see it and that Iapetus has two faces; and from Saturn, Pluto, Titan, Enceladus and Jupiter no compressed world's disc reaches another's, while the Earth stage draws every one of them at exactly the floor it always did`);

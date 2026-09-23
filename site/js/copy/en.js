@@ -533,6 +533,10 @@ export const COPY = {
   worldView: {
     withParent: '{parent} is drawn {n} times wider on the sky than it looks, so you can find it, and {name} is drawn around it at the same scale: its gap from {parent} is widened just as much.',
     withParentFloor: '{name} itself is drawn bigger still, or it would be too small to see.',
+    // From a stage outside the planets, everything nearer the Sun crowds into a few degrees of sky,
+    // and the enlargement that makes one planet findable draws it over the next one. The disc stops
+    // short instead, and this is the card saying so (scene/worlds.js, the block at the top).
+    crowded: '{name} is not drawn as wide as that: {near} is only {deg} degrees away in this sky, and a disc that size would cover it.',
   },
 
   klass: {

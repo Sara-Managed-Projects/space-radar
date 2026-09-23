@@ -33,6 +33,56 @@
 // `viewScale(id)` returns the exact numbers, and the card is expected to print them. The one
 // thing never altered is DIRECTION: where a planet is in the sky is measured, always.
 //
+// ---------------------------------------------------------------------------------------------
+// AND FROM A STAGE THAT IS NOT EARTH (2026-09-22)
+// ---------------------------------------------------------------------------------------------
+// The rule above was written for the Earth stage, where it works because Earth is INSIDE the
+// planetary system: the eight planets and Pluto sit at every elongation, and measured from Earth
+// on 2026-09-22 at 1280x800 the nearest two discs belonging to different systems were the Moon and
+// Pluto, 8.2 degrees -- 138 pixels -- apart. There is room for everything.
+//
+// From outside that system there is not. An observer at Saturn or Pluto sees everything nearer the
+// Sun than itself inside a cone of arcsin(a / d) around the Sun, and DIRECTION IS MEASURED, ALWAYS:
+// no compression of distance can widen that cone. Measured the same day, same viewport:
+//
+//   from SATURN   Mercury and Venus are 0.137 degrees = 2.3 px apart, and the floor drew each of
+//                 them 3.4 px in radius: Mercury's centre sat INSIDE Venus's disc. Earth, Mercury,
+//                 Venus and the Sun all fell within 1.5 degrees, 26 px, of one another.
+//   from PLUTO    85 pairs of drawn discs were within 140 px; Earth and Mars were 5.8 px apart with
+//                 6.8 px of radii between them. Every compressed world was drawn between 4.77e6 and
+//                 5.26e6 km, a spread of 10 %, so the compressed distance carried no information
+//                 either.
+//
+// So the exaggeration was breaking this file's own rule -- nothing is drawn inside anything else --
+// and it was the exaggeration doing it, not the sky: the true discs are a thousandth of a pixel.
+// The floor is therefore CAPPED BY THE NEIGHBOURS: a compressed world is never drawn wider than
+// NEIGHBOUR_SHARE of the angle to the nearest other compressed world, so two of them always keep a
+// gap of (1 - 2 x NEIGHBOUR_SHARE) of that angle between their edges, and never smaller than one
+// pixel of radius, below which a disc is nothing at all. The angle is measured from the CAMERA,
+// like the moon floor (#214): a camera 3.5 world radii out looks at the shell from the side, and
+// that parallax closed the Mercury-Venus gap from 0.21 degrees at Saturn's centre to 0.137 at the
+// arrival camera. `viewScale(id).note` says when the cap bit, and which world it was.
+//
+// Only the compressed worlds are counted. A moon drawn around ANOTHER planet, and the Sun, are
+// not: a planet must not shrink because a 6 km rock drawn as a one-pixel dot passes in front of
+// it, and a planet crossing the Sun is a real conjunction. Measured over three dates from five
+// stages, that leaves one such pair at a time (Venus over Deimos from Pluto; Venus over Phobos and
+// the Sun from Jupiter on 2026-01-01), each a 1 px dot on a 1 to 3 px disc, against seven
+// planet-on-planet overlaps from Pluto alone before the cap.
+//
+// What this does NOT change: from Earth the nearest cross-system pair is 0.143 rad and
+// NEIGHBOUR_SHARE x 0.143 = 0.057 rad, sixteen times the 0.0035 floor, so every disc keeps the size
+// it had. Measured before and after, three dates: every compressed world 3.35 to 3.40 px, and the
+// drawn radius in km identical, because when the cap does not bite the arithmetic is the old one.
+//
+// The other half of the same defect was the MOON. Its row says VIEW_TRUE because from the Earth
+// stage it is true, and `view` was read as if it held from everywhere -- so from Saturn the Moon
+// was drawn at its true 1.265e9 km, 371 times farther out than the drawn Earth, 0.0013 px in
+// radius, and still took a label: a name beside nothing, 1.5 px from Earth's. A row's `view` says
+// how a world is drawn from INSIDE ITS OWN SYSTEM. From outside one, the PARENT decides: a world
+// that goes round a planet is drawn with that planet, exactly like Io, Titan and Charon; a world
+// that goes round the Sun is compressed; and the Sun, which goes round nothing, is never either.
+//
 // A MOON OF A SQUEEZED PLANET (VIEW_WITH_PARENT) cannot keep its own direction, and the numbers say
 // why. From Earth on 2026-09-22 Jupiter is drawn 0.0035 rad in radius where the real one is
 // 7.8e-5 -- 45 times wider -- and Callisto, the outermost big moon, is 0.0021 rad from the real
@@ -66,6 +116,21 @@ export const PLANET_VIEW = {
   DISTANCE_EXPONENT: 0.25,
   /** 0.0035 rad = 0.40 degrees across. The Moon is 0.52. */
   MIN_ANGULAR_RADIUS_RAD: 0.0035,
+  /**
+   * 0.4: the most of the way to the nearest other compressed world a disc may reach. Two discs
+   * that both take it are separated by an angle and cover 0.8 of it, so a fifth of the gap between
+   * their centres is always empty sky. From Earth nothing comes near this (the nearest cross-system
+   * pair on 2026-09-22 was 0.143 rad, and 0.4 x 0.143 is sixteen floors); from Saturn it is what
+   * stops Mercury being drawn inside Venus.
+   */
+  NEIGHBOUR_SHARE: 0.4,
+  /**
+   * 0.001 rad, one pixel of radius on an 800-pixel screen at the 45 degree field of view: the same
+   * least-a-ball-can-be as MOON_VIEW's floor below. The neighbour cap stops here. Two worlds closer
+   * together than two pixels cannot be told apart from this stage whatever is drawn, and two dots
+   * touching is a truer picture of that than one disc with another hidden inside it.
+   */
+  MIN_VISIBLE_ANGULAR_RADIUS_RAD: 0.001,
 };
 
 /** Sun and Moon: true distance, true radius, nothing exaggerated. */
@@ -668,6 +733,13 @@ export function createWorlds(scene, opts = {}) {
   // is not its true place scaled along one line, so the true one is kept rather than recovered.
   const trueCentres = new Map();
   const _parentTrue = new THREE.Vector3();
+  // Per-frame scratch, refilled in update() and never reallocated: every world's true position for
+  // this instant, the unit directions of the ones the compression is about to move, and how close
+  // each of those comes to another.
+  const truePos = new Map();
+  const crowd = [];
+  const crowdSlot = [];
+  const nearest = new Map();
 
   /**
    * Place a moon around its planet's DRAWN disc (the block at the top of this file). `_pos` holds
@@ -708,6 +780,12 @@ export function createWorlds(scene, opts = {}) {
   function update(tMs) {
     stage.setTime(tMs);
 
+    // 0. Every world's TRUE position, once. The crowding pre-pass in step 2b and the loop in step 3
+    //    both want them, and an ephemeris is the expensive thing in this function -- asking twice
+    //    would double it for twenty-one worlds, sixty times a second.
+    truePos.clear();
+    for (const w of WORLDS) truePos.set(w.id, positionOf(w.id, tMs));
+
     // 1. The floating origin: where the stage's own world is, in the stage's frame. When the
     //    frame is already centred on that world (the Earth stage in earth-inertial, the Sun
     //    stage in sun-inertial) the origin is zero BY DEFINITION -- taking it from the ephemeris
@@ -718,7 +796,7 @@ export function createWorlds(scene, opts = {}) {
     if (frameWorld === stage.worldId) {
       stage.setOrigin(null);
     } else {
-      const centre = positionOf(stage.worldId, tMs);
+      const centre = truePos.get(stage.worldId);
       stage.setOrigin(centre ? stage.toStageFrame(centre, centre.frame, tMs) : null);
     }
 
@@ -731,11 +809,47 @@ export function createWorlds(scene, opts = {}) {
     if (sunLight.position.lengthSq() === 0) sunLight.position.set(0, 1e5, 0);
     sunTarget.position.set(0, 0, 0);
 
+    // 2b. HOW CROWDED THE SKY IS, before anything is sized. Where each compressed world WILL be
+    //     drawn (its true direction at the compressed distance: step 3 repeats the same two lines),
+    //     as a direction FROM THE CAMERA, and from those the angle to the nearest other one. Step 3
+    //     holds the angular floor back with it so an enlarged disc cannot reach its neighbour.
+    //
+    //     From the camera, not from the stage, for the reason #214 measured the moon floor from the
+    //     camera: this is a rule about the picture. A camera 3.5 world radii out looks at the shell
+    //     from the side, and that parallax closed the Mercury-Venus gap from 0.21 degrees measured
+    //     at Saturn's centre to 0.137 measured at the arrival camera (2026-09-22). With no camera
+    //     -- a headless test that only wants geometry -- the stage's origin stands in.
+    crowd.length = 0;
+    const squeezes = compressesFrom(stage.worldId);
+    const haveCam = !!camera;
+    if (haveCam) camera.getWorldPosition(_camPosU);
+    // Last frame's answers, blanked rather than thrown away: a world that drops out of the crowd
+    // (the stage changed, a frame refused to convert) must read as "nobody near", not as whatever
+    // it read last time.
+    for (const entry of nearest.values()) { entry.rad = Infinity; entry.id = ''; }
+    for (const w of WORLDS) {
+      if (w.view !== VIEW_COMPRESSED || !squeezes || sameSystem(w.id, stage.worldId)) continue;
+      const p = truePos.get(w.id);
+      if (!p) continue;
+      if (!crowdSlot[crowd.length]) crowdSlot[crowd.length] = { id: '', dir: [0, 0, 0], v: new THREE.Vector3() };
+      const slot = crowdSlot[crowd.length];
+      const v = slot.v;
+      if (!stage.toSceneInto(p, p.frame, v, tMs) || v.lengthSq() === 0) continue;
+      v.setLength(drawnDistanceKm(v.length() * stage.unitKm) / stage.unitKm);
+      if (haveCam) v.sub(_camPosU);
+      if (v.lengthSq() === 0) continue;
+      v.normalize();
+      slot.id = w.id;
+      slot.dir[0] = v.x; slot.dir[1] = v.y; slot.dir[2] = v.z;
+      crowd.push(slot);
+    }
+    nearestNeighbours(crowd, nearest);
+
     // 3. Every world.
     for (const w of WORLDS) {
       const mesh = meshes.get(w.id);
       if (!mesh) continue;
-      const p = positionOf(w.id, tMs);
+      const p = truePos.get(w.id);
       if (!p) { mesh.visible = false; continue; }
       mesh.visible = layerOn || w.id === stage.worldId || w.id === 'sun';
 
@@ -758,20 +872,36 @@ export function createWorlds(scene, opts = {}) {
         // last position it happened to have is exactly the silent lie this refusal exists for.
         if (!stage.toSceneInto(p, p.frame, _pos, tMs)) { mesh.visible = false; continue; }
         const trueDistKm = _pos.length() * stage.unitKm;
-        if (w.view === VIEW_COMPRESSED && compressesFrom(stage.worldId) && !sameSystem(w.id, stage.worldId) && trueDistKm > 0) {
-          const drawnKm = drawnDistanceKm(trueDistKm);
-          const shrink = drawnKm / trueDistKm;
-          const drawnRadiusKm = Math.max(
-            w.radiusKm * shrink,
-            drawnKm * PLANET_VIEW.MIN_ANGULAR_RADIUS_RAD,
-          );
-          _pos.setLength(drawnKm / stage.unitKm);
-          mesh.position.copy(_pos);
-          mesh.scale.setScalar((drawnRadiusKm * (meshRadiusKm / w.radiusKm)) / stage.unitKm);
-          viewState.set(w.id, describe(w, trueDistKm, drawnKm, drawnRadiusKm));
-        } else if (w.view === VIEW_WITH_PARENT && compressesFrom(stage.worldId) && !sameSystem(w.id, stage.worldId)
+        // Outside the world's own system the row's `view` no longer decides: its PARENT does. A
+        // world that goes round a planet is drawn with that planet (the Moon from Saturn as much as
+        // Io from Earth), a world that goes round the Sun is compressed, and the Sun is neither.
+        const outside = squeezes && !sameSystem(w.id, stage.worldId);
+        if (outside && w.parent && w.parent !== 'sun'
           && drawWithParent(w, mesh, trueDistKm)) {
           // placed around its planet's drawn disc (the block at the top of this file)
+        } else if (outside && w.view === VIEW_COMPRESSED && trueDistKm > 0) {
+          const drawnKm = drawnDistanceKm(trueDistKm);
+          const shrink = drawnKm / trueDistKm;
+          _pos.setLength(drawnKm / stage.unitKm);
+          // THE FLOOR, AND THE CAP THAT KEEPS IT OFF THE NEIGHBOURS. They are measured from two
+          // different places on purpose. The floor is an angle at the STAGE, because it says what a
+          // planet IS here: a body 0.40 degrees across on a shell around the stage world, the same
+          // size from wherever the camera stands, so a rover's marker on it (viewAdjust) does not
+          // crawl as the camera orbits. The cap is an angle at the CAMERA, because it is a rule
+          // about the PICTURE: one disc must not cover another on the screen being looked at. When
+          // nothing is crowded the cap IS the floor and this is the arithmetic the Earth stage has
+          // always run, to the last digit.
+          const near = nearest.get(w.id) || { rad: Infinity, id: '' };
+          const capRad = cappedAngularRadiusRad(near.rad);
+          const crowded = capRad < PLANET_VIEW.MIN_ANGULAR_RADIUS_RAD;
+          const viewKm = haveCam ? _pos.distanceTo(_camPosU) * stage.unitKm : drawnKm;
+          const drawnRadiusKm = Math.max(
+            w.radiusKm * shrink,
+            (crowded ? viewKm : drawnKm) * capRad,
+          );
+          mesh.position.copy(_pos);
+          mesh.scale.setScalar((drawnRadiusKm * (meshRadiusKm / w.radiusKm)) / stage.unitKm);
+          viewState.set(w.id, describe(w, trueDistKm, drawnKm, drawnRadiusKm, null, crowded ? near : null));
         } else {
           mesh.position.copy(_pos);
           mesh.scale.setScalar(trueRadiusUnits);
@@ -983,7 +1113,7 @@ export function createWorlds(scene, opts = {}) {
     ids: () => WORLDS.map((w) => w.id),
   };
 
-  function describe(w, trueDistKm, drawnDistKm, drawnRadiusKm, around) {
+  function describe(w, trueDistKm, drawnDistKm, drawnRadiusKm, around, heldBackBy) {
     const trueAng = trueDistKm > 0 ? w.radiusKm / trueDistKm : 0;
     const drawnAng = drawnDistKm > 0 ? (drawnRadiusKm || w.radiusKm) / drawnDistKm : 0;
     // A moon drawn around its planet can land at the same distance from the stage and still be
@@ -993,6 +1123,11 @@ export function createWorlds(scene, opts = {}) {
       ? t(COPY.worldView.withParent, { parent: around.parent.display, name: w.display, n: fmt.int(around.parent.angularFactor) })
         + (around.floored ? ` ${t(COPY.worldView.withParentFloor, { name: w.display })}` : '')
       : null;
+    // The enlargement stopped short of a neighbour, so the card says which one and how close it is.
+    const neighbour = heldBackBy && BY_ID.get(heldBackBy.id);
+    const crowdedNote = neighbour
+      ? ` ${t(COPY.worldView.crowded, { name: w.display, near: neighbour.display, deg: fmt.num((heldBackBy.rad * 180) / Math.PI, 2) })}`
+      : '';
     return {
       id: w.id,
       display: w.display,
@@ -1006,9 +1141,12 @@ export function createWorlds(scene, opts = {}) {
       angularFactor: trueAng > 0 ? drawnAng / trueAng : 1,
       exaggerated,
       withParent: !!around,
+      /** The world whose nearness held this one's disc back, or null. */
+      heldBackBy: neighbour ? neighbour.id : null,
+      nearestNeighbourRad: heldBackBy ? heldBackBy.rad : Infinity,
       cls: exaggerated ? 'illustrative' : 'measured',
       note: aroundNote || (exaggerated
-        ? `${w.display} is drawn in its true direction, but nearer and larger than it really is, so you can find it.`
+        ? `${w.display} is drawn in its true direction, but nearer and larger than it really is, so you can find it.${crowdedNote}`
         : `${w.display} is drawn where it is, at the size it is.`),
     };
   }
@@ -1094,6 +1232,52 @@ export function drawnDistanceKm(trueDistanceKm) {
 }
 
 /**
+ * How wide a compressed world may be drawn, in radians of angular RADIUS, given the angle to the
+ * nearest other compressed world. The floor, unless the neighbour is close enough that a disc that
+ * size would reach it, and never under one pixel. Pure, so a test holds the numbers (the block at
+ * the top of this file).
+ *
+ * @param {number} nearestRad angle to the nearest other compressed world; Infinity when alone.
+ */
+export function cappedAngularRadiusRad(nearestRad) {
+  const { MIN_ANGULAR_RADIUS_RAD, NEIGHBOUR_SHARE, MIN_VISIBLE_ANGULAR_RADIUS_RAD } = PLANET_VIEW;
+  // Two worlds in exactly one direction (a conjunction to the last digit): the cap cannot be
+  // computed, so take the smallest disc that is still a disc rather than divide by nothing.
+  if (!(nearestRad > 0)) return MIN_VISIBLE_ANGULAR_RADIUS_RAD;
+  const share = NEIGHBOUR_SHARE * nearestRad;
+  if (share >= MIN_ANGULAR_RADIUS_RAD) return MIN_ANGULAR_RADIUS_RAD;
+  return Math.max(MIN_VISIBLE_ANGULAR_RADIUS_RAD, share);
+}
+
+/**
+ * For each of `dirs` -- {id, dir: [x, y, z]} with dir a UNIT vector -- the nearest other entry and
+ * how far away it is, in radians: `{ id -> { rad, id } }`, rad Infinity when there is nobody else.
+ * Pure. Only the compressed worlds go in, and every one of those goes round the Sun, so no two of
+ * them share a system and none has to be skipped.
+ */
+export function nearestNeighbours(dirs, out) {
+  const list = Array.isArray(dirs) ? dirs : [];
+  // `out` is a Map the caller owns, so the per-frame version of this allocates nothing: the entries
+  // already in it are rewritten rather than replaced.
+  const map = out || new Map();
+  for (let i = 0; i < list.length; i++) {
+    let rad = Infinity;
+    let id = '';
+    for (let j = 0; j < list.length; j++) {
+      if (i === j) continue;
+      const a = list[i].dir;
+      const b = list[j].dir;
+      const dot = Math.max(-1, Math.min(1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2]));
+      const ang = Math.acos(dot);
+      if (ang < rad) { rad = ang; id = list[j].id; }
+    }
+    const entry = map.get(list[i].id);
+    if (entry) { entry.rad = rad; entry.id = id; } else map.set(list[i].id, { rad, id });
+  }
+  return map;
+}
+
+/**
  * Is the view from this stage one that squeezes the planets? From a planet or a moon, yes: the
  * others are sub-pixel and the compression is what makes them findable (the block at the top of
  * this file). From the Sun stage, and from every rung of the ladder (stage.js `ladder`), no: those
@@ -1105,17 +1289,20 @@ export function compressesFrom(stageId) {
 }
 
 /**
- * A planet and its moons see each other truly; everything else across a stage boundary is squeezed.
- * A world's system is its parent when the parent is not the Sun, and itself otherwise -- so Earth
- * and the Moon share one, and so do Jupiter and its four big moons, Saturn with Titan and
- * Enceladus, Mars with Phobos and Deimos, Neptune with Triton, and Pluto with Charon.
+ * The system a world belongs to: its parent when the parent is not the Sun, and itself otherwise.
+ * So Earth and the Moon share one, and so do Jupiter and its four big moons, Saturn with Titan and
+ * Enceladus, Mars with Phobos and Deimos, Neptune with Triton, and Pluto with Charon. A planet's
+ * parent IS the Sun, and the Sun is the stage's light rather than a thing you find a planet by, so
+ * a planet is its own system. ui/labels.js ranks names by this.
  */
+export function systemOf(id) {
+  const w = BY_ID.get(id);
+  return w && w.parent && w.parent !== 'sun' ? w.parent : id;
+}
+
+/** A planet and its moons see each other truly; everything else across a stage boundary is squeezed. */
 function sameSystem(a, b) {
-  const sys = (id) => {
-    const w = BY_ID.get(id);
-    return w && w.parent && w.parent !== 'sun' ? w.parent : id;
-  };
-  return sys(a) === sys(b);
+  return systemOf(a) === systemOf(b);
 }
 
 const _bx = new THREE.Vector3();

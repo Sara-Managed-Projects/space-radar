@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const JS = join(dirname(fileURLToPath(import.meta.url)), '..', 'site/js');
-const { chooseLabels, labelName, isNotable, isOwnPlaceOnLadder, clampLabelX, keepClearOf, behindWorld, LABEL_EDGE_PAD, LABEL_CAP, NOTABLE_CAP } = await import(join(JS, 'ui/labels.js'));
+const { chooseLabels, labelName, labelParentId, isNotable, isOwnPlaceOnLadder, clampLabelX, keepClearOf, behindWorld, LABEL_EDGE_PAD, LABEL_CAP, NOTABLE_CAP } = await import(join(JS, 'ui/labels.js'));
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
@@ -132,5 +132,77 @@ check(!isOwnPlaceOnLadder(null), 'nothing is not a place');
   check(!behindWorld(eye, farBehind, [{ id: 'x', x: 0, y: 0, z: 0, r: 0 }]) && !behindWorld(eye, farBehind, null), 'no sphere, nothing hidden');
 }
 
+// A MOON NEVER OUTRANKS ITS PLANET, AND NO TWO NAMES OF DISTANT WORLDS PRINT ON ONE ANOTHER.
+//
+// From a stage that is not Earth every other world is drawn on one compressed shell a few degrees
+// wide, so which of a planet and its moon came out nearer the camera was a coin toss. MEASURED on
+// the live app from Saturn, 2026-09-22, 1280x800, camera aimed at the Sun: the names printed were
+// "4 Vesta, Titan, Earth, Deimos, Phaethon, Ganymede, Callisto". Mars was drawn 11 px from Deimos,
+// Jupiter 5 px from Ganymede, each of them ten times the wider disc, and neither was named. The
+// anchors below are those pixel positions, and the box widths are what the app measured for those
+// names at 13 px (ui/site.css .label).
+{
+  const world = (id, name) => ({ id, name, klass: 'world', layer: 'worlds', meta: {} });
+  // {id, x, y, drawn distance in scene units, the world it goes round}
+  const SATURN_VIEW = [
+    ['earth', 619, 395, 341.1, null], ['moon', 618, 395, 313.9, 'earth'],
+    ['mercury', 605, 403, 353.1, null], ['venus', 602, 402, 344.6, null],
+    ['mars', 789, 395, 346.8, null], ['phobos', 792, 398, 344.2, 'mars'], ['deimos', 779, 403, 350.3, 'mars'],
+    ['jupiter', 987, 404, 379.2, null], ['io', 972, 405, 387.0, 'jupiter'],
+    ['ganymede', 982, 402, 360.2, 'jupiter'], ['callisto', 1069, 398, 355.1, 'jupiter'],
+  ];
+  // labelParentId is what ui/labels.js itself asks, so the rows above are checked against it
+  // rather than trusted: a moon's is its planet, a planet's is nothing.
+  for (const [id, , , , parentId] of SATURN_VIEW) {
+    check(labelParentId(world(id, id)) === parentId, `labelParentId(${id}) is ${parentId} (got ${labelParentId(world(id, id))})`);
+  }
+  check(labelParentId(rec('sat-1')) === null && labelParentId(null) === null, 'a satellite goes round nothing a label cares about');
+  const cands = SATURN_VIEW.map(([id, x, y, dist]) => ({
+    record: world(id, id), kind: 'notable', x, y, dist, parentId: labelParentId(world(id, id)),
+  }));
+  const chosen = chooseLabels(cands);
+  const names = chosen.map((c) => c.record.id);
+  for (const planet of ['mars', 'jupiter']) {
+    const moons = SATURN_VIEW.filter(([, , , , p]) => p === planet).map(([id]) => id);
+    const named = moons.filter((m) => names.includes(m));
+    check(names.includes(planet) || named.length === 0,
+      `${planet} is named before any of its moons (got ${names.join(', ')})`);
+    check(names.indexOf(planet) < 0 || named.every((m) => names.indexOf(m) > names.indexOf(planet)),
+      `${planet} comes before ${named.join(', ')} in the list`);
+  }
+  check(names.includes('earth') && names.includes('mars') && names.includes('jupiter'),
+    `the three planets in this view are named (${names.join(', ')})`);
+  // ... and the boxes those names need do not print over each other.
+  const WIDE = { earth: 42, moon: 74, mercury: 62, venus: 46, mars: 40, phobos: 56, deimos: 56, jupiter: 56, io: 22, ganymede: 74, callisto: 56 };
+  const H = 19;
+  const boxes = chosen.map((c) => {
+    const w = WIDE[c.record.id] || 50;
+    const x = clampLabelX(c.x, w, 1280);
+    return { id: c.record.id, left: x - w / 2, right: x + w / 2, top: c.y - 1.4 * H, bottom: c.y - 0.4 * H };
+  });
+  const keep = keepClearOf(boxes);
+  const printed = boxes.filter((_, i) => keep[i]);
+  let over = [];
+  for (let i = 0; i < printed.length; i++) {
+    for (let j = i + 1; j < printed.length; j++) {
+      const a = printed[i], b = printed[j];
+      if (a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top) over.push(`${a.id}/${b.id}`);
+    }
+  }
+  check(over.length === 0, `no two printed names of distant worlds overlap (${over.join(' ')})`);
+  check(printed.some((b) => b.id === 'mars') && printed.some((b) => b.id === 'jupiter'),
+    `Mars and Jupiter survive the box test too (${printed.map((b) => b.id).join(', ')})`);
+
+  // A planet's own parent is the Sun, and ui/labels.js passes null rather than 'sun' for it -- with
+  // 'sun' every planet would rank at the Sun's distance, which from Earth is 150 000 scene units
+  // and would put the whole solar system behind every satellite in low orbit.
+  const far = { record: world('sun', 'The Sun'), kind: 'notable', x: 640, y: 400, dist: 150000, parentId: null };
+  const near = { record: world('venus', 'Venus'), kind: 'notable', x: 100, y: 100, dist: 344, parentId: null };
+  check(chooseLabels([far, near])[0].record.id === 'venus', 'a planet is not ranked at the Sun\'s distance');
+  // a parentId nobody projected this frame falls back to the candidate's own distance
+  const orphan = { record: world('titan', 'Titan'), kind: 'notable', x: 300, y: 300, dist: 5, parentId: 'saturn' };
+  check(chooseLabels([near, orphan])[0].record.id === 'titan', 'a moon whose planet is not on screen keeps its own place');
+}
+
 if (problems.length) { console.error('labels FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
-console.log(`labels ok: selection, then its train, then at most ${NOTABLE_CAP} nearest notable; 24 px dedupe; never the catalogue; the box stays on screen; and no two boxes overprint`);
+console.log(`labels ok: selection, then its train, then at most ${NOTABLE_CAP} nearest notable; 24 px dedupe; never the catalogue; the box stays on screen; no two boxes overprint, and a moon never takes the name a planet should have had`);
