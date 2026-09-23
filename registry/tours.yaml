@@ -63,6 +63,15 @@
 #                 to scrub, which drops glyph re-propagation from every 100 ms to EVERY FRAME
 #                 (main.js) -- so a trip that freezes may not require the `active` layer, which
 #                 is eleven thousand objects. The validator enforces exactly that.
+#   group         which `groups:` row (below) the picker lists the trip under. REQUIRED, and it
+#                 must name a row: a trip with no group has nowhere to be drawn, and the panel
+#                 lists every trip (spec 0029). Written on the trip and not derived from its
+#                 stage, because the Moon trip is "around the Solar System" and the stations trip
+#                 is "around the Earth" for reasons a stage id does not carry.
+#   next          the trip the end card offers first, by id, still only if it can run that day
+#                 (ui/tripframe.js asks plan() before it appends the button). Optional: without
+#                 it the end card offers the next trip in this file's order, wrapping round. May
+#                 not name a trip that is not here, nor the trip itself.
 #
 # PER STOP
 #   id            unique within its trip.
@@ -114,6 +123,18 @@
 #                 quietly shorten a reader's time.
 version: 1
 
+# THE GROUPS. A trip names one, and the picker in the panel (site/js/ui/trippicker.js) draws one
+# heading per group that has a trip in it, in `order`. A group with no trips is allowed and is
+# not drawn: `events` waits for the first trip about something that has not happened yet. The
+# `display` string is printed as it is, which makes this the one place copy lives in a registry
+# other than registry/layers.yaml's layer names, and for the same reason: the row IS the thing.
+# A group id may not be a layer id, exactly as a trip id may not (below).
+groups:
+  - {id: earth-orbit,  display: "Around the Earth",        order: 1}
+  - {id: solar-system, display: "Around the Solar System", order: 2}
+  - {id: beyond,       display: "Beyond the Solar System", order: 3}
+  - {id: events,       display: "Things about to happen",  order: 4}
+
 defaults:
   pacing: auto
   stage: earth
@@ -140,6 +161,8 @@ tours:
   - id: people-in-space
     title: "Where people are living in space right now"
     blurb: "The only two places above you tonight with people inside them."
+    group: earth-orbit
+    next: strangest-things
     requires: [stations]
     clock: as-found
     stops:
@@ -217,6 +240,8 @@ tours:
   - id: strangest-things
     title: "The strangest things we have ever sent"
     blurb: "A family photograph, two golf balls, a library, a record and a car."
+    group: solar-system
+    next: moon-landings
     requires: [oddities]
     min_stops: 3
     clock: as-found
@@ -298,6 +323,7 @@ tours:
   - id: to-the-edge
     title: "To the edge of what we know"
     blurb: "From the Sun to the first black hole anyone photographed, in eight steps. Leaving brings you back to Earth."
+    group: beyond
     requires: [stars, deep-sky, exotics, galaxy]
     stage: stellar
     clock: as-found
@@ -425,6 +451,8 @@ tours:
   - id: moon-landings
     title: "Where we have landed on the Moon"
     blurb: "The first soft landing, the first people, a rover driven from Earth, the far side, the south pole and the first private landers. Leaving brings you back to Earth."
+    group: solar-system
+    next: outer-solar-system
     # The worlds switch too: with it off the Moon is not drawn and every lander would stand on
     # nothing. The trip turns both on for its length and puts them back on the way out.
     requires: [hand-kept-sites, worlds]
@@ -619,6 +647,8 @@ tours:
   - id: outer-solar-system
     title: "Out past Jupiter, to the farthest thing we sent"
     blurb: "Ten stops through the cold half of the Solar System, each world at its true size. Leaving brings you back to Earth."
+    group: solar-system
+    next: to-the-edge
     requires: [worlds, deep-space, far-bodies]
     stage: jupiter
     clock: as-found

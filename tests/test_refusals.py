@@ -591,6 +591,25 @@ TOUR_CASES: list[tuple[str, str, str]] = [
     ("a stop on the `launches` layer, whose track is a drawing, claiming certainty",
      '        target: {layer: stations, catalog: "25544"}\n        # Far enough back',
      '        target: {layer: launches, catalog: "25544"}\n        # Far enough back'),
+    # Spec 0029: every trip names a row of the `groups:` table, and `next:` names a trip. The
+    # picker lists every trip under a heading, so a trip the table cannot place is a trip the
+    # panel cannot draw; and an end card that promises a trip must be able to find it.
+    ("no `groups:` table at all",
+     "groups:\n  - {id: earth-orbit,", "group_table:\n  - {id: earth-orbit,"),
+    ("a trip naming a group that is not a row of the table",
+     "    group: beyond\n", "    group: beyond-the-beyond\n"),
+    ("a trip with no group, which the picker has nowhere to put",
+     "    group: earth-orbit\n", ""),
+    ("two groups sharing an id",
+     "  - {id: events,       display:", "  - {id: beyond,       display:"),
+    ("a group id that is also a layer id",
+     "  - {id: events,       display:", "  - {id: stations,     display:"),
+    ("a `next:` naming a trip that does not exist",
+     "    next: strangest-things\n", "    next: strangest-thing\n"),
+    ("a `next:` naming the trip itself",
+     "    next: moon-landings\n", "    next: strangest-things\n"),
+    ("a group heading that writes a dash as two hyphens",
+     'display: "Around the Earth",', 'display: "Around -- the Earth",'),
 ]
 
 

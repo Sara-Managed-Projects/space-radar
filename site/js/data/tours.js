@@ -26,6 +26,30 @@ export const TOUR_DEFAULTS = {
   "on_unresolved": "drop"
 };
 
+/** The headings the picker lists trips under, in the registry's order; a trip's `group` names one. A group with no trip is here too and is not drawn. */
+export const TOUR_GROUPS = [
+  {
+    "id": "earth-orbit",
+    "display": "Around the Earth",
+    "order": 1
+  },
+  {
+    "id": "solar-system",
+    "display": "Around the Solar System",
+    "order": 2
+  },
+  {
+    "id": "beyond",
+    "display": "Beyond the Solar System",
+    "order": 3
+  },
+  {
+    "id": "events",
+    "display": "Things about to happen",
+    "order": 4
+  }
+];
+
 /** Every trip, with every default resolved and every dwell computed. */
 export const TOURS = [
   {
@@ -36,6 +60,8 @@ export const TOURS = [
       "stations"
     ],
     "clock": "as-found",
+    "group": "earth-orbit",
+    "next": "strangest-things",
     "pacing": "auto",
     "stage": "earth",
     "min_stops": 3,
@@ -133,6 +159,8 @@ export const TOURS = [
     ],
     "min_stops": 3,
     "clock": "as-found",
+    "group": "solar-system",
+    "next": "moon-landings",
     "pacing": "auto",
     "stage": "earth",
     "stops": [
@@ -264,6 +292,7 @@ export const TOURS = [
     ],
     "stage": "stellar",
     "clock": "as-found",
+    "group": "beyond",
     "pacing": "auto",
     "min_stops": 3,
     "stops": [
@@ -439,6 +468,8 @@ export const TOURS = [
     ],
     "stage": "moon",
     "clock": "as-found",
+    "group": "solar-system",
+    "next": "outer-solar-system",
     "pacing": "auto",
     "min_stops": 3,
     "stops": [
@@ -645,6 +676,8 @@ export const TOURS = [
     ],
     "stage": "jupiter",
     "clock": "as-found",
+    "group": "solar-system",
+    "next": "to-the-edge",
     "pacing": "auto",
     "min_stops": 3,
     "stops": [

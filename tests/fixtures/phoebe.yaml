@@ -153,6 +153,10 @@ tours:
   - id: phoebe-tour
     title: "The moon that goes round backwards"
     blurb: "A fixture trip that visits everything this fixture added."
+    # Since spec 0029 every trip names a row of the `groups:` table, which is how the picker
+    # knows which heading to list it under; a trip without one is refused. Phoebe goes round
+    # Saturn, so it sits with the Moon and the outer planets.
+    group: solar-system
     requires: [phoebe-orbiters]
     stops:
       - id: the-world

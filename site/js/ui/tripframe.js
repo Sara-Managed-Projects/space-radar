@@ -76,6 +76,7 @@
 // CANVAS and never over the card, or the scene appears to teleport under stationary text.
 
 import { COPY, t } from '../copy/en.js';
+import { nextTripOrder } from './trippicker.js';
 
 const HOST_ID = 'sr-trip';
 // NOT 'sr-trip'. The host div carries `.sr-trip`, and `.sr-trip` in ui.css sets
@@ -436,11 +437,11 @@ export function createTripFrame(ctx) {
     // people are living in space right now" -- a trip plan() greys out in the Trips panel with
     // its reason -- and pressing it tore the frame down and showed the refusal to nobody. The
     // button is appended only once a plan says the trip can actually run.
-    const all = trip.tours();
-    const here = all.findIndex((tour) => tour.id === st.tourId);
-    const candidates = all.filter((tour) => tour.id !== st.tourId);
-    const ordered = here < 0 ? candidates : all.slice(here + 1).concat(all.slice(0, here));
-    offerNext(ordered, row, st.tourId);
+    //
+    // Which trip is asked first is the registry's own `next:` (spec 0029; ui/trippicker.js
+    // nextTripOrder), then the positional walk it was before the field existed, so a named
+    // follow-on that cannot run today falls back to what the card offered before.
+    offerNext(nextTripOrder(trip.tours(), st.tourId), row, st.tourId);
   }
 
   /**
@@ -602,6 +603,15 @@ export function createTripFrame(ctx) {
     savedFocus = null;
     if (!back && tourId) back = document.querySelector(`#sr-controls [data-trip="${tourId}"]`);
     if (back && typeof back.focus === 'function') back.focus();
+    // ON A PHONE THE PANEL IS A DRAWER, AND setup() CLOSED IT. A control inside a closed drawer
+    // is `visibility: hidden` (site.css) and cannot take focus: measured 2026-09-23 at 390 × 844,
+    // the [data-trip] button was found, focus() was called, and activeElement stayed on <body>.
+    // The bar button that reopens the drawer is where ui/mobile.js's own Close sends focus, so
+    // it is where Leave sends it too; one key then reopens the sheet on the trip just left.
+    if (back && document.activeElement !== back) {
+      const bar = document.querySelector(`${MOBILE_BAR} button[data-panel="sr-controls"]`);
+      if (bar && typeof bar.focus === 'function') bar.focus();
+    }
     tourId = null;
   }
 

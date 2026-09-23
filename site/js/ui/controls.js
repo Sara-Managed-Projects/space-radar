@@ -2,7 +2,8 @@
 //
 // Contract export: createControls(ctx): void
 //
-// Four things, in this order down the panel:
+// Four things, in this order down the panel, under the Trips picker (ui/trippicker.js, which
+// this module only mounts):
 //   1. Wonder / Now / Next as three equal doors (spec 0001), reflected in location.hash
 //   2. layer toggles, each with its LIVE count, calm by default
 //   3. the clock: play/pause, speed steps, an obvious scrub, and "now" always visible
@@ -21,7 +22,7 @@ import { createNext, showerItems, rowText as nextRowText } from './next.js';
 import { SHOWERS } from '../data/showers.js';
 import { revealInColumn } from './reveal.js';
 import { createColorKey } from './colorkey.js';
-import { shapeLine } from './tripframe.js';
+import { createTripPicker } from './trippicker.js';
 
 const HOST_ID = 'sr-controls';
 const MOMENTS = [COPY.moments.wonder, COPY.moments.now, COPY.moments.next];
@@ -157,113 +158,6 @@ function applyLayerEnabled(ctx, layer, on) {
     );
   } catch {
     /* older browsers: the direct call above already did the work */
-  }
-}
-
-// ---------------------------------------------------------------------------------------
-// 0. Trips -- the one place a guided trip is offered
-//
-// A ROW STATES ITS COUNT AND ITS LENGTH ONLY AFTER THE STOPS HAVE BEEN RESOLVED. Before that it
-// says it is working it out. A count printed before resolution is a guess wearing a fact's
-// clothes, and "5 stops, about two minutes" has to be a sentence the browser will actually keep.
-//
-// A trip that cannot fill its own floor is GREYED WITH ITS REASON and never hidden: a missing
-// feature and a broken one look identical when you hide one, and the visitor cannot tell which
-// they are looking at.
-// ---------------------------------------------------------------------------------------
-
-function buildTrips(ctx, state) {
-  const wrap = el('section', 'sr-panel sr-trips');
-  const trip = ctx && ctx.trip;
-  const tours = trip && typeof trip.tours === 'function' ? trip.tours() : [];
-  if (!tours.length) return wrap;
-
-  wrap.appendChild(el('h2', 'sr-panel__title', COPY.trip.sectionTitle));
-  wrap.appendChild(el('p', 'sr-trips__hint', COPY.trip.sectionHint));
-  const list = el('ul', 'sr-trips__list');
-  // WebKit stops announcing a <ul> as a list once `list-style: none` removes its markers, and
-  // ui.css removes them. One attribute puts the list back.
-  list.setAttribute('role', 'list');
-  state.tripRows = new Map();
-
-  for (const tour of tours) {
-    const row = el('li', 'sr-trips__row');
-    const start = button('sr-trips__start', null, COPY.trip.startTitle);
-    start.dataset.trip = tour.id;
-    start.appendChild(el('span', 'sr-trips__title', tour.title));
-    start.appendChild(el('span', 'sr-trips__blurb', tour.blurb));
-    // THE SHAPE LINE IS A SIBLING OF THE BUTTON, NOT ITS THIRD CHILD. Three things were wrong
-    // with it inside: planTrips() rewrites it after the panel is built, so the BUTTON'S
-    // ACCESSIBLE NAME changed under the reader as the trips resolved; a trip that cannot be
-    // offered sets `start.disabled`, which takes the button out of the tab order AND took the
-    // reason with it, defeating "greyed WITH ITS REASON and never hidden"; and a <p> stacks
-    // under the row with no CSS at all, which is the half of the reported phone rendering that
-    // looked worst. `aria-live="polite"` announces the resolution when it lands.
-    const shape = el('p', 'sr-trips__shape', COPY.trip.planning);
-    shape.setAttribute('aria-live', 'polite');
-    start.addEventListener('click', () => {
-      try {
-        trip.start(tour.id);
-      } catch {
-        /* the row stays as it was rather than the panel dying with it */
-      }
-    });
-    row.appendChild(start);
-    row.appendChild(shape);
-    list.appendChild(row);
-    state.tripRows.set(tour.id, { row, start, shape });
-  }
-  wrap.appendChild(list);
-  return wrap;
-}
-
-/**
- * The order the trip rows are shown in: the ones that can run first, each group in the registry's
- * own order. Pure. `rows` is [{id, off, index}].
- *
- * With CelesTrak refusing a visitor's IP -- a phone behind carrier NAT, on its first visit -- the
- * first thing in the Trips panel was the headline trip, greyed, saying "Only 1 of the stops on this
- * trip can be found right now, and it needs 3" above two trips that would have run (2026-09-22).
- * A refused trip still shows, with its reason; it no longer leads.
- */
-export function tripOrder(rows) {
-  return (Array.isArray(rows) ? rows.slice() : [])
-    .sort((a, b) => (Number(!!a.off) - Number(!!b.off)) || (a.index - b.index))
-    .map((r) => r.id);
-}
-
-/** Resolve every trip once the layers have landed, and print what is actually on offer. */
-function planTrips(ctx, state) {
-  const trip = ctx && ctx.trip;
-  if (!trip || !state.tripRows) return;
-  const reorder = () => {
-    const entries = [...state.tripRows.entries()];
-    const list = entries.length && entries[0][1].row ? entries[0][1].row.parentNode : null;
-    if (!list) return;
-    const order = tripOrder(entries.map(([id, r], index) => ({ id, index, off: r.row.classList.contains('is-off') })));
-    for (const id of order) list.appendChild(state.tripRows.get(id).row);
-  };
-  for (const [id, row] of state.tripRows) {
-    Promise.resolve(trip.plan(id))
-      .then((plan) => {
-        if (!plan) return;
-        if (plan.offerable) {
-          row.shape.textContent = shapeLine(plan.count, plan.estimateMs);
-          row.start.disabled = false;
-          row.start.classList.remove('is-off');
-          if (row.row) row.row.classList.remove('is-off');
-          reorder();
-          return;
-        }
-        row.shape.textContent = plan.reason || '';
-        row.start.disabled = true;
-        row.start.classList.add('is-off');
-        if (row.row) row.row.classList.add('is-off');
-        reorder();
-      })
-      .catch(() => {
-        row.shape.textContent = '';
-      });
   }
 }
 
@@ -1030,7 +924,6 @@ export function createControls(ctx) {
     doors: null,
     layerList: null,
     layerRows: null,
-    tripRows: null,
     clockEls: null,
   };
 
@@ -1041,8 +934,9 @@ export function createControls(ctx) {
   }
 
   // Trips sit at the top: it is the one control that answers "I do not know what to look at",
-  // which is the state a first-time visitor is actually in.
-  node.appendChild(buildTrips(ctx, state));
+  // which is the state a first-time visitor is actually in. The picker plans its own trips once
+  // the layers land (ui/trippicker.js), so nothing here waits for `sr:layers-ready` on its behalf.
+  state.tripPicker = createTripPicker(ctx, node);
   node.appendChild(buildMoments(ctx, state));
   // The Next moment's list, right under its door: hidden on the other two moments.
   state.next = createNext(ctx);
@@ -1104,10 +998,6 @@ export function createControls(ctx) {
       node.classList.toggle('is-reduced-motion', reduceMotion.matches);
     });
   }
-
-  // The trips are resolved once the data has landed, and not before: their counts are the one
-  // thing in this panel that must not be a guess.
-  window.addEventListener('sr:layers-ready', () => planTrips(ctx, state), { once: true });
 
   startLoop(ctx, state);
 }
