@@ -412,6 +412,16 @@
   color: var(--sr-text);
 }
 
+/* The line the trip generates under the stop's words (spec 0038): the visitor's place, the
+   station's distance, its next pass. Quieter than the words, because it is a reading and not the
+   story; no rise animation, because the card repaints with the clock and it would replay. */
+.sr-card__leadnote {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--sr-text-dim);
+}
+
 /* Comparison chips -- at most three, scale first ------------------------------------- */
 
 .sr-chips {

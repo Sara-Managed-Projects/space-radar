@@ -1746,6 +1746,16 @@ function leadBlock(lead) {
     wrap.appendChild(title);
   }
   if (lead.body) wrap.appendChild(el('p', 'sr-card__leadbody', lead.body));
+  // A line the trip GENERATES under the stop's words (spec 0038): the visitor's place, the
+  // station's distance from them, its next pass. A function when it changes with the clock, read
+  // at every repaint; the words above it are the registry's and never change.
+  let note = '';
+  try {
+    note = typeof lead.note === 'function' ? lead.note() : lead.note;
+  } catch {
+    note = '';
+  }
+  if (note) wrap.appendChild(el('p', 'sr-card__leadnote', note));
   return wrap;
 }
 
@@ -2024,6 +2034,27 @@ export function showCard(record, ctx, opts = {}) {
     const heading = host.querySelector(`#${CARD_TITLE_ID}`) || host.querySelector(`#${CARD_LEAD_TITLE_ID}`);
     if (heading) host.setAttribute('aria-labelledby', heading.id);
   }
+}
+
+/**
+ * Re-read the trip's generated line (`opts.lead.note`) and write it into the card that is up, with
+ * nothing else repainted. The clock only tells the card when it is SET, never as it runs, so a
+ * line that changes with the running clock -- the station's distance from the visitor (spec 0038)
+ * -- is refreshed by the trip, once a second, through this.
+ */
+export function refreshLeadNote() {
+  if (!current || !host || !current.opts || !current.opts.lead) return;
+  const note = current.opts.lead.note;
+  if (typeof note !== 'function') return;
+  const node = host.querySelector('.sr-card__leadnote');
+  if (!node) return;
+  let text = '';
+  try {
+    text = note();
+  } catch {
+    return;
+  }
+  if (text && node.textContent !== text) node.textContent = text;
 }
 
 export function hideCard() {

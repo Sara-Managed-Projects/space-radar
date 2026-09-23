@@ -151,6 +151,110 @@ export const TOURS = [
     "estimate_ms": 62028
   },
   {
+    "id": "journey-to-the-station",
+    "title": "From your ground to the space station",
+    "blurb": "Straight up from where you are, out to the station, and on to the minute it next crosses your sky. This trip moves the clock and puts it back when you leave.",
+    "requires": [
+      "stations"
+    ],
+    "clock": "as-found",
+    "group": "earth-orbit",
+    "next": "people-in-space",
+    "requires_observer": true,
+    "pacing": "auto",
+    "stage": "earth",
+    "min_stops": 3,
+    "stops": [
+      {
+        "id": "ground",
+        "target": {
+          "observer": true
+        },
+        "distance_km": 200,
+        "drift_deg": 20,
+        "time": "now",
+        "card": {
+          "title": "Where you are standing",
+          "body": "This is the ground you are standing on, seen from high above it. All the weather you have ever felt happens in the bottom twelve kilometres of air, a layer too thin to see from here."
+        },
+        "frame_radii": 5.0,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 14488
+      },
+      {
+        "id": "air",
+        "target": {
+          "observer": true
+        },
+        "distance_km": 650,
+        "drift_deg": 15,
+        "time": "now",
+        "card": {
+          "title": "The air, from the station's height",
+          "body": "Space begins a hundred kilometres up, with nearly all of the air already below. From the station's height the air is the blue glow along the edge of the world."
+        },
+        "frame_radii": 5.0,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 12490
+      },
+      {
+        "id": "now",
+        "target": {
+          "layer": "stations",
+          "catalog": "25544"
+        },
+        "distance_km": 3000,
+        "time": "now",
+        "card": {
+          "title": "The station, where it is this minute",
+          "body": "The International Space Station, a laboratory and a home, about as long as a football pitch. It goes round the Earth sixteen times a day, eight kilometres every second."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 12157
+      },
+      {
+        "id": "pass",
+        "target": {
+          "layer": "stations",
+          "catalog": "25544"
+        },
+        "distance_km": 20,
+        "behind": "earth",
+        "drift_deg": 30,
+        "time": {
+          "event": "station-pass.next"
+        },
+        "rate": 1,
+        "card": {
+          "title": "The next time it crosses your sky",
+          "body": "This is the station at the top of its next pass over you, with your ground below. From where you stand it looks like a bright star moving steadily across the sky, with no blinking lights."
+        },
+        "frame_radii": 5.0,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 14488
+      }
+    ],
+    "estimate_ms": 67023
+  },
+  {
     "id": "strangest-things",
     "title": "The strangest things we have ever sent",
     "blurb": "A family photograph, two golf balls, a library, a record and a car.",

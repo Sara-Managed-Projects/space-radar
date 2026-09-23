@@ -53,12 +53,15 @@
 import * as THREE from '../../vendor/three.module.min.js';
 import { TOURS } from '../data/tours.js';
 import { propagate } from '../propagate/index.js';
+import { fixed } from '../propagate/fixed.js';
 import { stage, isLadderStage } from '../scene/stage.js';
 import { WORLDS, positionOf, compressesFrom } from '../scene/worlds.js';
-import { showCard, hideCard } from './cards.js';
+import { showCard, hideCard, seeItLine, refreshLeadNote } from './cards.js';
 import { write as writeUrl, clear as clearUrl } from './urlstate.js';
 import { nextEvent } from '../data/events.js';
-import { COPY, t } from '../copy/en.js';
+import { guessObserver } from '../sky/guessplace.js';
+import { SELECTED_PX } from '../scene/heroes.js';
+import { COPY, CITIES, t, fmt } from '../copy/en.js';
 
 const DEG = Math.PI / 180;
 
@@ -185,6 +188,13 @@ const GROUND_ARC_SAMPLES = 5;
 // (a site is at 1.0, and nothing flies below it) up to the key light's own clearance. The world's
 // own centre, a `world:` stop, is not.
 const GROUND_BAND = [0.9, APEX_CLEARANCE];
+// THE SHELL A GROUND SHOT MUST STAY OUT OF is the rig's own, scene/camera.js WORLD_CLEARANCE, and
+// not APEX_CLEARANCE. Found 2026-09-23 with the trip from the visitor's own ground (spec 0038):
+// 1.05 Earth radii is 319 km up, so from 200 km every direction the key light could choose was
+// "blocked" and the shot fell back to whichever side the camera happened to be on, lit or not. On
+// the Moon (1.05 R is 87 km up) the 900 km stops never met it. seesGround() already keeps a ground
+// subject in sight; what is left for this test is the camera's own floor.
+const GROUND_CLEARANCE = 1.02;
 
 function shortestAngle(from, to) {
   let d = (to - from) % (Math.PI * 2);
@@ -252,6 +262,9 @@ export function createTrip(ctx) {
     dropped: [],
     held: null,
     reason: null,
+    // The generated line under the current stop's words (spec 0038): the visitor's place, the
+    // station's distance from them, or its next pass. Null when the stop has none.
+    stopNote: null,
   };
 
   // The frame subscribes; so can a browser check. Every phase change ends in notify(), so nothing
@@ -387,6 +400,7 @@ export function createTrip(ctx) {
     }
     requestAnimationFrame(tick);
     stepUpTween();
+    refreshNote();
     // A timer from a superseded generation is dropped rather than fired: a user-initiated jump
     // must not be overtaken by the dwell of the stop it left.
     timers = timers.filter((timer) => timer.gen === gen);
@@ -396,6 +410,22 @@ export function createTrip(ctx) {
     if (!due.length) return;
     timers = timers.filter((timer) => due.indexOf(timer) === -1);
     for (const timer of due) timer.fn();
+  }
+
+  // The stop's generated line, re-read once a second while it is up (spec 0038): the station moves
+  // eight kilometres a second and the clock does not tell the card it is running.
+  const NOTE_REFRESH_MS = 1000;
+  let noteAt = 0;
+  function refreshNote() {
+    if (!state.stopNote || (state.phase !== 'dwell' && state.phase !== 'settle')) return;
+    const n = now();
+    if (n - noteAt < NOTE_REFRESH_MS) return;
+    noteAt = n;
+    try {
+      refreshLeadNote();
+    } catch {
+      /* the card is the frame's business; the trip goes on */
+    }
   }
 
   // --- resolution -------------------------------------------------------------------------
@@ -499,8 +529,60 @@ export function createTrip(ctx) {
     return { ...subject, kind: 'record', name: record.name || subject.name, record, layerId: record.layer };
   }
 
+  /**
+   * THE VISITOR'S PLACE (spec 0038, 2026-09-23): the one they set, or the guess from their clock
+   * that the Now moment already makes (sky/guessplace.js), or null when there is neither. Read at
+   * plan time and at every stop, and NEVER WRITTEN: the trip does not set ctx.observer, the URL
+   * does not carry it, and a shared link opens the trip at the recipient's own place.
+   * `ctx.guessPlace` exists so a test, or a browser check, can stub the guess.
+   */
+  function placeOf() {
+    if (ctx.observer) return ctx.observer;
+    try {
+      return typeof ctx.guessPlace === 'function' ? ctx.guessPlace() : guessObserver(CITIES);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * `target: {observer: true}`: the ground under the visitor, as a subject. A synthetic fixed
+   * record that is in no layer and is never drawn or selected; `record: null` so paintCard()
+   * treats it as a PLACE -- no object card, `follow` on the point as the Earth turns it. On the
+   * ground, so composeShot() frames it the way it frames a landing site: from above its horizon,
+   * with its own vertical as the camera's up.
+   */
+  function observerSubject() {
+    const o = placeOf();
+    const latDeg = o ? (isNum(o.latDeg) ? o.latDeg : isNum(o.latRad) ? o.latRad / DEG : NaN) : NaN;
+    const lonDeg = o ? (isNum(o.lonDeg) ? o.lonDeg : isNum(o.lonRad) ? o.lonRad / DEG : NaN) : NaN;
+    if (!isNum(latDeg) || !isNum(lonDeg)) return null;
+    const record = {
+      id: 'observer',
+      propagator: 'fixed',
+      frame: 'earth-fixed',
+      fixed: { latDeg, lonDeg, altKm: isNum(o.altKm) ? o.altKm : 0 },
+    };
+    return {
+      kind: 'observer',
+      id: 'observer',
+      name: o.name || COPY.trip.yourPlace,
+      record: null,
+      layerId: null,
+      worldId: 'earth',
+      radiusKm: null,
+      source: o.source || 'set',
+      how: o.how || null,
+      position(tMs) {
+        const p = fixed(record, tMs);
+        return p ? stage.toScene(p, p.frame, tMs) : null;
+      },
+    };
+  }
+
   function resolveTarget(target) {
     if (!target) return null;
+    if (target.observer === true) return observerSubject();
     if (target.record) {
       const record = ctx.recordById(target.record);
       return worldRecordSubject(record) || recordSubject(record);
@@ -564,9 +646,27 @@ export function createTrip(ctx) {
   async function plan(id) {
     const tour = tourById(id);
     if (!tour) return null;
+    // A trip from the visitor's own ground with no place at all -- none set, and no time zone to
+    // guess one from -- is greyed with THAT reason, first, rather than with the count its dropped
+    // ground stops would leave (spec 0038 req 3).
+    if (tour.requires_observer && !placeOf()) {
+      return {
+        id: tour.id,
+        title: tour.title,
+        blurb: tour.blurb,
+        count: 0,
+        dropped: [],
+        estimateMs: 0,
+        offerable: false,
+        reason: COPY.trip.needsPlace,
+      };
+    }
     const resolved = await resolveTour(tour);
     const count = resolved.stops.length;
     const enough = count >= (tour.min_stops || 3);
+    // Asked again after the wait: the place can be cleared while the layers land, and then the
+    // true reason is still the place, not the count its dropped ground stops leave.
+    const placeless = !enough && tour.requires_observer && !placeOf();
     const estimate = estimateOf(resolved.stops);
     return {
       id: tour.id,
@@ -580,8 +680,16 @@ export function createTrip(ctx) {
       // when you hide one, and the visitor cannot tell which they are looking at.
       reason: enough
         ? null
-        : t(COPY.trip.notEnoughStops, { count, min: tour.min_stops || 3, title: tour.title }),
+        : placeless
+          ? COPY.trip.needsPlace
+          : t(COPY.trip.notEnoughStops, { count, min: tour.min_stops || 3, title: tour.title }),
     };
+  }
+
+  /** Why a trip cannot start: no place for a trip that starts from yours, or too few stops. */
+  function refusalOf(tour, count) {
+    if (tour.requires_observer && !placeOf()) return COPY.trip.needsPlace;
+    return t(COPY.trip.notEnoughStops, { count, min: tour.min_stops || 3, title: tour.title });
   }
 
   // --- the shot ---------------------------------------------------------------------------
@@ -711,15 +819,24 @@ export function createTrip(ctx) {
    *   is not placed exactly behind it and hidden by it.
    */
   function keyLightAngles(targetScene, d, worldCentre, radius, sunPos, wantDeg, driftRad, groundUp,
-    backdrop, subjectRad) {
+    backdrop, subjectRad, arriveUp) {
     if (!sunPos) return null;
     // A ground stop is chosen in the frame of the site's own vertical, which is the up the camera
     // will have when it arrives. Borrowed for the search and put back: the rig reads camera.up
     // on every frame, and the flight must START in the basis the camera is in now.
-    const borrowed = !!groundUp;
+    //
+    // AND SO IS EVERY STOP AFTER ONE. Leaving the ground turns the up back to the visitor's own
+    // through the flight, and the rig reads the chosen angles in whatever basis the camera has when
+    // it lands. Measured 2026-09-23 (tests/test_station_trip.mjs): the angles for the station at
+    // 3 000 km were chosen in the basis of the visitor's ground and read in the scene's, which put
+    // the camera behind the Earth, pushed out to 5 506 km, looking at the station through the
+    // planet. `arriveUp` is the up the flight turns to; the search runs in it whenever it differs.
+    const ground = !!groundUp;
+    const basisUp = groundUp || arriveUp || null;
+    const borrowed = !!basisUp && ctx.camera.up.distanceToSquared(basisUp) > 1e-12;
     if (borrowed) {
       _savedUp.copy(ctx.camera.up);
-      ctx.camera.up.copy(groundUp);
+      ctx.camera.up.copy(basisUp);
     }
     try {
       syncUpBasis();
@@ -739,8 +856,8 @@ export function createTrip(ctx) {
         let best = null;
         for (const c of candidates) {
           offsetDirection(c.azimuth, c.polar, _u);
-          if (blocked(targetScene, _u, d, worldCentre, radius * APEX_CLEARANCE)) continue;
-          if (borrowed && !seesGround(c.azimuth, c.polar, driftRad || 0, groundUp)) continue;
+          if (blocked(targetScene, _u, d, worldCentre, radius * (ground ? GROUND_CLEARANCE : APEX_CLEARANCE))) continue;
+          if (ground && !seesGround(c.azimuth, c.polar, driftRad || 0, groundUp)) continue;
           const lit = Math.abs(_u.dot(_sun) - want);
           const turn = Math.abs(shortestAngle(azNow, c.azimuth)) / Math.PI;
           const score = lit + KEY_LIGHT_TURN_WEIGHT * turn;
@@ -754,14 +871,14 @@ export function createTrip(ctx) {
       let best = backdrop
         ? pick(backdropCandidates(backdrop, (subjectRad || 0) + BACKDROP_CLEAR))
         : null;
-      if (!best) best = pick(gridCandidates(borrowed ? GROUND_POLARS : KEY_LIGHT_POLARS));
+      if (!best) best = pick(gridCandidates(ground ? GROUND_POLARS : KEY_LIGHT_POLARS));
       // Every candidate blocked is a real case -- low over the night side, with the planet on
       // every side of you. Fall back to the rig's own framingAngles, which is occlusion-free by
       // construction, and accept flat light. This is a CAMERA choice and never goes on the card.
       // On the ground the rig's framing is no fallback -- it is computed in the basis the camera is
       // leaving -- and every candidate is above the horizon, so the only way to have none is a
       // drift wider than the arc can hold: then the side the camera is on, from high up.
-      if (!best && borrowed) best = { azimuth: azNow, polar: GROUND_POLARS[0], score: Infinity };
+      if (!best && ground) best = { azimuth: azNow, polar: GROUND_POLARS[0], score: Infinity };
       return best;
     } finally {
       if (borrowed) {
@@ -910,7 +1027,9 @@ export function createTrip(ctx) {
     const driftDeg = entry.stop.drift === 'none' ? 0 : Number(entry.stop.drift_deg) || 0;
     // On the ground: a record standing on its world's surface, and its own vertical is the up.
     const fromCentre = targetScene.distanceTo(worldCentre);
-    const groundUp = subject.kind === 'record' && radius > 0
+    // The visitor's own place (spec 0038) is on the ground exactly as a landing site is, and goes
+    // down the same path: one rule for the vertical, the co-latitudes and the drift.
+    const groundUp = (subject.kind === 'record' || subject.kind === 'observer') && radius > 0
       && fromCentre > radius * GROUND_BAND[0] && fromCentre < radius * GROUND_BAND[1]
       ? targetScene.clone().sub(worldCentre).normalize()
       : null;
@@ -925,6 +1044,8 @@ export function createTrip(ctx) {
       groundUp,
       entry.stop.behind ? backdropDir(entry.stop.behind, targetScene, tMs) : null,
       isNum(subject.radiusKm) && d1 > 0 ? Math.asin(clamp(subject.radiusKm / stage.unitKm / d1, 0, 1)) : 0,
+      // The up this flight lands with off the ground (upFor): the visitor's own.
+      (run && run.savedUp) || null,
     );
     if (!angles && subject.kind === 'world' && subject.id === 'sun' && stage.worldId === 'sun') {
       angles = { azimuth: rig.state.azimuth || 0, polar: SUN_OVERVIEW_POLAR };
@@ -964,6 +1085,18 @@ export function createTrip(ctx) {
   function paintCard(entry, titleOnly) {
     const card = entry.stop.card || {};
     const lead = { title: card.title, body: titleOnly ? null : card.body };
+    // The generated line under the stop's words (spec 0038), a function so ui/cards.js reads it
+    // afresh each time it repaints the card on the clock: the station's distance changes by eight
+    // kilometres a second. `state.stopNote` holds the last reading, for the frame and a probe.
+    const noted = titleOnly ? null : noteFor(entry);
+    if (noted) {
+      lead.note = () => {
+        const text = noted();
+        state.stopNote = text;
+        return text;
+      };
+      state.stopNote = noted();
+    }
     if (titleOnly) {
       showCard(null, ctx, { lead });
       return;
@@ -981,9 +1114,61 @@ export function createTrip(ctx) {
       // restyle: the stop's own words are the whole card.
       ctx.deselect();
       lastRecord = null;
-      showCard(null, ctx, { lead });
+      // `follow` before the card, so the camera holds the place (a visitor's ground turns with the
+      // Earth) even when painting the card fails -- as it does in node, where there is no document.
       rig.follow(() => entry.subject.position(ctx.clock.now()));
+      showCard(null, ctx, { lead });
     }
+  }
+
+  /**
+   * THE LINES THE REGISTRY MAY NOT TYPE (spec 0038 req 2 and 4), as a function of the moment, or
+   * null. Chosen by what the stop IS, never by its id, so this file still knows no trip:
+   *
+   *   - a stop at the visitor's own place says which place and how it was got (set, the device's,
+   *     or a guess from the clock, which says so and where to set a better one);
+   *   - an Earth-orbit record in a trip that starts from the visitor, shown at the present, says
+   *     how far it is from them right now;
+   *   - a stop timed to the station's next pass over them says where to look and when (the same
+   *     sentence the object card uses, ui/cards.js seeItLine), whether that pass can be seen, and
+   *     that the model on screen is drawn at class size.
+   */
+  function noteFor(entry) {
+    const subject = entry.subject;
+    if (!subject) return null;
+    if (subject.kind === 'observer') {
+      const line = subject.source === 'guess'
+        ? t(COPY.trip.observerGuess, { place: subject.name })
+        : subject.source === 'geolocation'
+          ? COPY.trip.observerDevice
+          : t(COPY.trip.observerSet, { place: subject.name });
+      return () => line;
+    }
+    const record = subject.record;
+    if (!record || !run || !run.tour.requires_observer || !/^earth-/.test(String(record.frame || ''))) return null;
+    const ev = entry.event;
+    if (isEventTime(entry.stop.time) && ev && ev.pass) {
+      const p = ev.pass;
+      // `sunlit: null` so seeItLine() leaves its own sunlit clause out: "still catching sunlight"
+      // is true of a daytime pass nobody can see, and the next sentence says which this one is.
+      const look = seeItLine(record, ctx, { frame: record.frame, ok: true, tMs: ev.t, worldId: 'earth' },
+        { state: 'ok', pass: { ...p, sunlit: null } });
+      const line = [look, p.visible ? COPY.trip.passNight : COPY.trip.passDay,
+        t(COPY.trip.drawnAtClassSize, { px: fmt.int(SELECTED_PX) })].join(' ');
+      return () => line;
+    }
+    if (isEventTime(entry.stop.time)) return null;
+    const home = observerSubject();
+    if (!home) return null;
+    return () => {
+      const tMs = ctx.clock.now();
+      const a = subject.position(tMs);
+      const b = home.position(tMs);
+      if (!a || !b) return '';
+      // To the nearest ten kilometres: the number turns over every second or so, not every frame.
+      const km = Math.round((a.distanceTo(b) * stage.unitKm) / 10) * 10;
+      return t(COPY.trip.stationFromYou, { km: fmt.int(km) });
+    };
   }
 
   // --- the machine ------------------------------------------------------------------------
@@ -1109,6 +1294,10 @@ export function createTrip(ctx) {
     return null;
   }
 
+  // The event the last resolveStopTime() found, so applyStopTime() can keep it on the stop: the
+  // pass stop's card describes that pass (noteFor).
+  let lastEvent = null;
+
   function isEventTime(time) {
     return !!time && typeof time === 'object' && time.event !== undefined;
   }
@@ -1123,6 +1312,7 @@ export function createTrip(ctx) {
    * The loaded records go with the question: a pass or a train is found among them.
    */
   function resolveStopTime(time, nowMs) {
+    lastEvent = null;
     if (time === 'now') return nowMs;
     if (typeof time === 'string') {
       const ms = Date.parse(time);
@@ -1132,8 +1322,11 @@ export function createTrip(ctx) {
       const [type, which] = String(time.event).split('.');
       if (which !== 'next') return null;
       const records = typeof ctx.records === 'function' ? ctx.records() : [];
-      // `kind:` (spec 0037) narrows an eclipse: `{event: solar-eclipse.next, kind: total}`.
-      const ev = nextEvent(type, nowMs, ctx.observer || null, records, { kind: time.kind || null });
+      // `kind:` (spec 0037) narrows an eclipse: `{event: solar-eclipse.next, kind: total}`. The
+      // place is the one the trip's ground stops use, the guess included (spec 0038): a pass over
+      // "your place" must be over the place the card names.
+      const ev = nextEvent(type, nowMs, placeOf(), records, { kind: time.kind || null });
+      lastEvent = ev;
       return ev && isNum(ev.t) ? ev.t + (Number(time.offset_s) || 0) * 1000 : null;
     }
     return null;
@@ -1194,6 +1387,7 @@ export function createTrip(ctx) {
         // found the following one, a year later. The intro card's count is resolved from the
         // visitor's clock too, so the two now agree.
         const ms = resolveStopTime(stop.time, run.savedClock ? run.savedClock.t : c.now());
+        entry.event = lastEvent;
         if (ms === null) return 'unresolved';
         c.goTo(ms);
       }
@@ -1354,6 +1548,7 @@ export function createTrip(ctx) {
     state.stopId = entry.stop.id;
     state.stopTitle = (entry.stop.card || {}).title || entry.stop.id;
     state.stopEventType = instantEventType(index);
+    state.stopNote = null;
     state.generation = gen;
     state.held = null;
     run.dwellTimer = null;
@@ -1735,6 +1930,7 @@ export function createTrip(ctx) {
     state.stopId = null;
     state.stopEventType = null;
     state.stopTitle = null;
+    state.stopNote = null;
     state.index = -1;
     state.count = 0;
     state.estimateMs = 0;
@@ -1784,11 +1980,7 @@ export function createTrip(ctx) {
       return resolveTour(tour).then((resolved) => {
         if (!run || run.tour.id === id) return start(id);
         if (resolved.stops.length < (tour.min_stops || 3)) {
-          state.reason = t(COPY.trip.notEnoughStops, {
-            count: resolved.stops.length,
-            min: tour.min_stops || 3,
-            title: tour.title,
-          });
+          state.reason = refusalOf(tour, resolved.stops.length);
           notify();
           return { id: tour.id, count: resolved.stops.length, offerable: false, reason: state.reason };
         }
@@ -1813,11 +2005,7 @@ export function createTrip(ctx) {
       if (resolved.stops.length < (tour.min_stops || 3)) {
         state.phase = 'idle';
         state.tourId = null;
-        state.reason = t(COPY.trip.notEnoughStops, {
-          count: resolved.stops.length,
-          min: tour.min_stops || 3,
-          title: tour.title,
-        });
+        state.reason = refusalOf(tour, resolved.stops.length);
         notify();
         return { id: tour.id, count: resolved.stops.length, offerable: false, reason: state.reason };
       }

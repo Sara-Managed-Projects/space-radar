@@ -186,7 +186,7 @@ def time_relative(text: str) -> str | None:
     return None
 
 
-TOUR_TARGET_KEYS = ("record", "layer", "world", "site")
+TOUR_TARGET_KEYS = ("record", "layer", "world", "site", "observer")
 TOUR_PACING = {"auto", "reader"}
 TOUR_CLOCKS = {"as-found", "live", "freeze"}
 TOUR_DRIFTS = {"toward-light", "away", "none"}
@@ -265,6 +265,29 @@ TOUR_JARGON = (
     "right ascension",
     "semi-major axis",
 )
+
+# --- a stop at the visitor's own place (spec 0038) ------------------------------------------------
+# `target: {observer: true}` is the ground under the visitor: the place they set, or the guess from
+# their clock (site/js/sky/guessplace.js). THE CLEARANCE: scene/camera.js WORLD_CLEARANCE 1.02
+# puts the camera's floor 127 km above the Earth, and ui/trip.js sees a ground subject from 36 to
+# 76 degrees off its vertical (GROUND_POLARS), so the camera is at most distance x cos 36 degrees
+# up. Below 127 / cos 36 = 157 km every angle is under the floor and the rig pushes the camera out;
+# the spec's 130 km (and its 150 km first stop) were written from the floor alone, and measured
+# 2026-09-23 they left no angle the key light could choose. 160 is the next round number.
+TOUR_OBSERVER_MIN_KM = 160
+# The bundled places a visitor can pick (site/js/copy/en.js CITIES). A card on a trip that starts
+# from the visitor may not name one: the place is generated, and it is a different one for every
+# visitor. Read in main(); a tree with no site/js (tests/test_growth.py) cannot look, and does not.
+TOUR_CITY_NAMES: set[str] = set()
+
+
+def load_city_names() -> set[str]:
+    en = ROOT / "site/js/copy/en.js"
+    if not en.exists():
+        return set()
+    block = re.search(r"export const CITIES = \[([\s\S]*?)\n\];", en.read_text(encoding="utf-8"))
+    return set(re.findall(r"name: '([^']+)'", block.group(1))) if block else set()
+
 
 # --- a stop's own clock (spec 0030) ---------------------------------------------------------------
 # A stop may name the instant it is shown at (`time:`) and how fast the clock runs while it is
@@ -546,6 +569,25 @@ def check_tours(oddities_doc: dict, layer_ids: set, world_ids: set, site_ids: se
             fail(where, "`clock: freeze` and a stop with `rate:`: the trip says the clock stands "
                         "still and a stop says how fast it runs. Drop one")
 
+        # A TRIP FROM THE VISITOR'S OWN PLACE SAYS SO (spec 0038), so the picker can grey it with
+        # "Needs a place" when there is none; and one that says so has such a stop, or it greys
+        # itself for nothing. Its station stops need the stations layer loaded before it is planned.
+        wants_place = tour.get("requires_observer", False)
+        if not isinstance(wants_place, bool):
+            fail(where, f"`requires_observer: {wants_place!r}` is true or false")
+            wants_place = False
+        at_place = [s.get("id") for s in stop_rows
+                    if isinstance(s.get("target"), dict) and "observer" in s["target"]]
+        if wants_place and not at_place:
+            fail(where, "`requires_observer: true` and no stop is `target: {observer: true}`: the "
+                        "trip would be greyed for want of a place it never visits")
+        if wants_place and "stations" not in requires and any(
+                isinstance(s.get("target"), dict) and s["target"].get("layer") == "stations"
+                for s in stop_rows):
+            fail(where, "a trip from the visitor's place with a stop on the `stations` layer does not "
+                        "list `stations` in `requires:`, so it is planned before the station is loaded "
+                        "and its pass cannot be found")
+
         min_stops = tour.get("min_stops", defaults.get("min_stops", TOUR_MIN_STOPS_FLOOR))
         if not isinstance(min_stops, int) or min_stops < TOUR_MIN_STOPS_FLOOR:
             fail(where, f"`min_stops: {min_stops!r}` -- below {TOUR_MIN_STOPS_FLOOR} it is a link, "
@@ -564,6 +606,30 @@ def check_tours(oddities_doc: dict, layer_ids: set, world_ids: set, site_ids: se
         for n, stop in enumerate(stops, start=1):
             check_tour_stop(tour, stop, n, seen_stops, defaults, unreachable,
                             layer_ids, world_ids, site_ids, glossary)
+
+
+def check_observer_stop(tour: dict, stop: dict, where: str, value) -> None:
+    """`target: {observer: true}` (spec 0038): the ground under the visitor."""
+    if value is not True:
+        fail(where, f"`observer: {value!r}`: the visitor's place is `target: {{observer: true}}` and "
+                    f"nothing else")
+    if tour.get("requires_observer") is not True:
+        fail(where, "a stop at the visitor needs the trip to say it needs a place "
+                    "(`requires_observer: true`), so the picker can say so")
+    distance_km = stop.get("distance_km")
+    if not is_number(distance_km):
+        fail(where, "a stop at the visitor's place has no radius to frame by: give `distance_km:`")
+    elif distance_km < TOUR_OBSERVER_MIN_KM:
+        fail(where, f"`distance_km: {distance_km}` on the visitor's place: scene/camera.js "
+                    f"WORLD_CLEARANCE 1.02 puts the camera floor 127 km above the Earth, and seen "
+                    f"from at most 54 degrees above the horizon the camera is under it below "
+                    f"{TOUR_OBSERVER_MIN_KM} km")
+    when = stop.get("time")
+    if when is not None and when != "now" and not isinstance(when, dict):
+        written = when.strftime("%Y-%m-%dT%H:%M:%SZ") if isinstance(when, datetime.datetime) else when
+        fail(where, f"`time: {written}` on the visitor's place: its ground does not move but its sky "
+                    f"does, and a written date is the same instant for every visitor. Write `now` or "
+                    f"an event reference")
 
 
 def check_stop_clock(stop: dict, where: str, kind: str, sgp4: bool, flown_on) -> None:
@@ -705,6 +771,8 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
     elif kind == "site":
         if value not in site_ids:
             fail(where, f"targets site `{value}`, which has no sites.yaml row")
+    elif kind == "observer":
+        check_observer_stop(tour, stop, where, value)
     elif kind == "layer":
         if value not in layer_ids:
             fail(where, f"targets layer `{value}`, which has no layers.yaml row")
@@ -821,6 +889,15 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
     for label, text in (("title", title), ("body", body)):
         if "--" in str(text or ""):
             fail(where, f"the card's {label} has \"--\"; {TOUR_DOUBLE_HYPHEN}")
+
+    # The place is generated (ui/trip.js noteFor) and differs for every visitor, so a card on a
+    # trip that starts from the visitor's place may not name one of the places they could be.
+    if tour.get("requires_observer") is True:
+        text = f"{title or ''} {body}"
+        named = sorted(c for c in TOUR_CITY_NAMES if re.search(rf"\b{re.escape(c)}\b", text))
+        if named:
+            fail(where, f"the card names {', '.join(named)} on a trip from the visitor's own place: "
+                        f"the place is generated; the card may not name one")
 
     if "time" in stop:
         hit = TOUR_CARD_TIME.search(f"{title or ''} {body}")
@@ -2349,6 +2426,7 @@ def main() -> int:
     TOUR_WORLD_PARENTS.update({w.get('id'): str(w.get('parent') or '') for w in worlds})
     TOUR_SGP4_LAYERS.update(l.get("id") for l in layers if l.get("propagator") == "sgp4")
     TOUR_EVENT_TYPES.update(e.get("id") for e in events if isinstance(e, dict) and e.get("id"))
+    TOUR_CITY_NAMES.update(load_city_names())
     check_tours(oddities_doc, layer_ids, world_ids, {s.get('id') for s in sites},
                 {str(t.get('term') or '').lower() for t in terms})
 

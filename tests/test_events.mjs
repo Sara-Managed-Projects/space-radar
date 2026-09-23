@@ -16,6 +16,7 @@ process.env.TZ = 'Europe/Madrid';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { deepStrictEqual } from 'node:assert';
+import { readFileSync } from 'node:fs';
 
 const JS = join(dirname(fileURLToPath(import.meta.url)), '..', 'site/js');
 const { buildEvents, nextEvent, localCircumstances, nearestCity, whereWords, BUILT_TYPES } = await import(join(JS, 'data/events.js'));
@@ -198,6 +199,57 @@ const auckland = place(-36.8485, 174.7633);
   const median = (xs) => xs.slice().sort((a, b) => a - b)[xs.length >> 1];
   notes.push(`buildEvents([], now) over 100 runs: median ${median(cold).toFixed(1)} ms searching (a new day each run), ${median(warm).toFixed(2)} ms within a day`);
   check(median(cold) < 50, `a cold search stays under the spec's 50 ms memo line (${median(cold).toFixed(1)} ms)`);
+}
+
+// 7b. The station's next pass over one place, for a trip stop (spec 0038 task 2) --------------------
+// The harvest fixture's ISS elements (epoch 2026-09-07T11:57Z), from Madrid, a day after the epoch so
+// the elements are as honest as they get. The two instants are chosen from the passes the fixture
+// gives: from 00:00 UTC on 09-08 the first pass above 10 degrees (00:47, the station in the Earth's
+// shadow) cannot be seen and the evening's 19:07 can; from 16:00 on 09-13 the first is at 16:47 in
+// daylight and 20:00 is dark and sunlit.
+{
+  const { parseCelestrakGP } = await import(join(JS, 'data/parsers.js'));
+  const { predictPasses } = await import(join(JS, 'sky/passes.js'));
+  const { fromPasses, STATION_PASS_HORIZON_MS } = await import(join(JS, 'data/events.js'));
+  const gp = readFileSync(join(JS, '..', '..', 'tests/fixtures/harvest/celestrak_gp.json'), 'utf8');
+  const stations = parseCelestrakGP(gp, { layer: 'stations', source: 'celestrak-stations' });
+  const other = parseCelestrakGP(gp, { layer: 'visual', source: 'celestrak-visual' }); // the same satellite in another layer
+  const madridObs = { latDeg: 40.42, lonDeg: -3.70, latRad: 40.42 * Math.PI / 180, lonRad: -3.70 * Math.PI / 180, altKm: 0 };
+  for (const [fromIso, label] of [['2026-09-08T00:00:00Z', 'shadowed night pass'], ['2026-09-13T16:00:00Z', 'daytime pass']]) {
+    const from = Date.parse(fromIso);
+    const all = predictPasses(stations, madridObs, from, STATION_PASS_HORIZON_MS / H);
+    const first = all.find((p) => p.peakElDeg >= 10 && !p.clippedStart);
+    const ev = nextEvent('station-pass', from, madridObs, [...other, ...stations]);
+    check(ev && all.some((p) => p.peakMs === ev.t && p.peakElDeg >= 10), `${fromIso}: the event's t is a predictPasses() peak above 10 degrees (${ev && iso(ev.t)})`);
+    check(first && first.visible === false && ev && ev.pass.visible === true && ev.t > first.peakMs && ev.t - from < 2 * D,
+      `${fromIso}: a visible pass within 48 h wins over the earlier ${label} (${first && iso(first.peakMs)} unseen, chose ${ev && iso(ev.t)})`);
+    check(ev && ev.record && ev.record.layer === 'stations' && ev.type === 'station-pass' && ev.class === 'inferred' && ev.t_window[0] < ev.t && ev.t < ev.t_window[1],
+      `${fromIso}: the record is the stations layer's ISS, 'inferred', with its window around the peak`);
+    notes.push(`station-pass.next from ${fromIso}, Madrid: first above 10 degrees ${iso(first.peakMs)} (${label}), chosen ${iso(ev.t)}, peak ${ev.pass.peakElDeg.toFixed(0)} degrees, visible`);
+  }
+  // With no visible pass in the first 48 hours the first pass above 10 degrees is the answer.
+  const noVis = fromPasses(stations, Date.parse('2026-09-08T00:00:00Z'), { observer: madridObs, passHorizonMs: 12 * H });
+  check(noVis.length === 1 && noVis[0].pass.visible === false && iso(noVis[0].t) === '2026-09-08T00:47Z', `inside 12 hours with nothing visible, the first pass (${noVis[0] && iso(noVis[0].t)})`);
+  check(nextEvent('station-pass', Date.parse('2026-09-08T00:00:00Z'), null, stations) === null, 'no observer, no pass: null');
+  check(nextEvent('station-pass', Date.parse('2026-09-08T00:00:00Z'), madridObs, other) === null, 'the ISS in another layer only is not the stations layer: null');
+  // Latitude 80 N: the station's 51.6 degree orbit never climbs 10 degrees over it.
+  const north = { latDeg: 80, lonDeg: 15, latRad: 80 * Math.PI / 180, lonRad: 15 * Math.PI / 180, altKm: 0 };
+  check(nextEvent('station-pass', Date.parse('2026-09-08T00:00:00Z'), north, stations) === null, 'from 80 N there is no pass above 10 degrees in a week: null');
+  // Measured: the cost the design asked for, seven days of one record, cold (a fresh place each time
+  // defeats the one-hour memo) and warm.
+  const cold = [], warm = [];
+  for (let i = 0; i < 5; i++) {
+    const obs = { ...madridObs, lonRad: madridObs.lonRad + i * 1e-4 };
+    let t0 = performance.now();
+    nextEvent('station-pass', Date.parse('2026-09-08T00:00:00Z'), obs, stations);
+    cold.push(performance.now() - t0);
+    t0 = performance.now();
+    nextEvent('station-pass', Date.parse('2026-09-08T00:10:00Z'), obs, stations);
+    warm.push(performance.now() - t0);
+  }
+  const med = (xs) => xs.slice().sort((a, b) => a - b)[xs.length >> 1];
+  notes.push(`predictPasses() for seven days of the ISS: median ${med(cold).toFixed(0)} ms cold, ${med(warm).toFixed(2)} ms reusing the hour's list`);
+  check(med(warm) < 5, `a second ask within the hour reuses the list (${med(warm).toFixed(2)} ms)`);
 }
 
 // 8. The nearest-city helper -------------------------------------------------------------------------

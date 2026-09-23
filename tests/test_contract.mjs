@@ -2304,6 +2304,11 @@ for (const file of allFiles) {
           // have, so the checkable half is that the LAYER exists and is one the app loads.
           if (layerIds.has(target.layer)) resolvable += 1;
           else problems.push(`TOUR     ${tour.id}/${stop.id}: layer '${target.layer}' is not in LAYERS`);
+        } else if (target.observer !== undefined) {
+          // The visitor's own place (spec 0038): no record to find, and it needs no network, only a
+          // place set or guessed. It is only legal on a trip that says it needs one.
+          if (target.observer === true && tour.requires_observer === true) resolvable += 1;
+          else problems.push(`TOUR     ${tour.id}/${stop.id}: an observer stop on a trip without requires_observer`);
         } else {
           const id = target.record ?? target.site;
           if (bundled.has(id)) resolvable += 1;

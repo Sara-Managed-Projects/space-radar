@@ -27,8 +27,9 @@ import { WORLDS } from './worlds.js';
 const TARGET_PX = 84;
 // The selected object is the one you flew across the solar system to look at, and now that the
 // geometry is real there is something to look AT -- the station's trusses and radiators, Hubble's
-// door, Voyager's dish and boom. 130 px showed a shape; 260 shows a machine.
-const SELECTED_PX = 260;
+// door, Voyager's dish and boom. 130 px showed a shape; 260 shows a machine. Exported 2026-09-23 so
+// the station trip's card can say the number it is drawn at (spec 0038) without typing it.
+export const SELECTED_PX = 260;
 
 /**
  * SIZE ON SCREEN, for launches only.
