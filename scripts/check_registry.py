@@ -2025,6 +2025,129 @@ def rows(doc: dict, key: str, name: str) -> list[dict]:
     return got
 
 
+# --- registry/audio.yaml (spec 0035, 2026-09-23) ---------------------------------------------
+# Sound is somebody else's work more often than anything else in the tree, and it is the one
+# asset a visitor cannot see is credited: so it gets the models' treatment and then some. A row
+# is refused unless the file ships, its size is measured, the credit is in CREDITS.md section 9
+# word for word, and the page it came from is named with the day it was read. The budget is here
+# too, because a bed is the largest thing a visitor can download after the first visit and the
+# only way it stays small is a number that fails the build.
+AUDIO_FIELDS = ("id", "kind", "file", "twin", "seconds", "kb", "loop", "licence", "source", "credit")
+AUDIO_KINDS = {"bed", "sting"}
+AUDIO_STAGES = {"earth", "world", "sun", "ladder"}
+AUDIO_BED_MAX_KB = 600
+AUDIO_TOTAL_MAX_KB = 3000
+AUDIO_KB_SLACK = 0.05
+AUDIO_FILE = re.compile(r"[A-Za-z0-9_.-]+\.(?:opus|m4a)")
+
+
+def credits_section(text: str, number: int) -> str | None:
+    """The body of `## <number>. ...` in CREDITS.md, up to the next `## `; None if absent."""
+    m = re.search(rf"^## {number}\.[^\n]*\n(.*?)(?=^## |\Z)", text, re.M | re.S)
+    return m.group(1) if m else None
+
+
+def check_audio() -> list:
+    path = REG / "audio.yaml"
+    if not path.exists():
+        return []  # the engine ships before any sound does (spec 0035 design section 6)
+    doc = load("audio.yaml")
+    rows_ = rows(doc, "audio", "audio.yaml")
+    credits_path = ROOT / "CREDITS.md"
+    credits = credits_path.read_text(encoding="utf-8") if credits_path.exists() else ""
+    section = credits_section(credits, 9)
+    if rows_ and section is None:
+        fail("CREDITS.md", "registry/audio.yaml ships sound and CREDITS.md has no `## 9. Audio` "
+                           "section -- the credit has to be somewhere a visitor's lawyer would look")
+    section = section or ""
+    seen_ids, beds_by_stage, shipped = set(), {}, set()
+    total_kb = 0.0
+    for r in rows_:
+        if not isinstance(r, dict):
+            fail("audio.yaml", f"a row that is not a mapping: {r!r}")
+            continue
+        rid = r.get("id")
+        where = f"audio.yaml[{rid}]"
+        missing = [k for k in AUDIO_FIELDS if r.get(k) in (None, "")]
+        if missing:
+            fail(where, f"no {', '.join(missing)} -- every row redistributes somebody's recording")
+        if rid in seen_ids:
+            fail(where, "the id is used twice")
+        seen_ids.add(rid)
+        kind = r.get("kind")
+        if kind not in AUDIO_KINDS:
+            fail(where, f"kind {kind!r} must be one of {sorted(AUDIO_KINDS)}")
+        stage = r.get("stage")
+        if kind == "bed":
+            if stage not in AUDIO_STAGES:
+                fail(where, f"stage {stage!r} must be one of {sorted(AUDIO_STAGES)} -- the four rungs "
+                            f"site/js/audio/pick.js rungOf() can answer")
+            elif stage in beds_by_stage:
+                fail(where, f"one bed per rung: `{stage}` already has {beds_by_stage[stage]}")
+            else:
+                beds_by_stage[stage] = rid
+            if r.get("loop") is not True:
+                fail(where, "a bed loops; `loop: true`, and the file cut so the seam is inaudible")
+        elif kind == "sting" and stage is not None:
+            fail(where, "a sting has no stage; it plays wherever the trip is")
+        if not isinstance(r.get("loop"), bool):
+            fail(where, f"loop {r.get('loop')!r} must be true or false")
+        if not is_number(r.get("seconds")) or not r.get("seconds") > 0:
+            fail(where, f"seconds {r.get('seconds')!r} must be a positive number")
+        for key, ext in (("file", ".opus"), ("twin", ".m4a")):
+            f = str(r.get(key) or "")
+            if not f:
+                continue
+            if not f.startswith("site/audio/"):
+                fail(where, f"{key} `{f}` must be under site/audio/, which deploy.sh ships as a directory")
+            if not f.endswith(ext):
+                fail(where, f"{key} `{f}` must be a {ext} file (spec 0035 req 7: Opus, and an AAC twin)")
+            if not (ROOT / f).is_file():
+                fail(where, f"{key} `{f}` does not exist -- a row describing a file we do not ship is "
+                            f"worse than no row")
+            else:
+                shipped.add(Path(f).name)
+        kb = r.get("kb")
+        f = ROOT / str(r.get("file") or "")
+        if is_number(kb):
+            total_kb += kb
+            if r.get("file") and f.is_file():
+                real = f.stat().st_size / 1000
+                if abs(real - kb) > AUDIO_KB_SLACK * real:
+                    fail(where, f"kb: {kb} but `{r.get('file')}` is {real:.1f} kB -- the row's size is "
+                                f"the budget; measure it")
+            if kind == "bed" and kb > AUDIO_BED_MAX_KB:
+                fail(where, f"a bed of {kb} kB is over the {AUDIO_BED_MAX_KB} kB budget (about 75 s at "
+                            f"64 kbps); cut it shorter or encode it lower")
+        elif kb is not None:
+            fail(where, f"kb {kb!r} must be a number")
+        src = str(r.get("source") or "")
+        if src and not STAR_SOURCE.match(src):
+            fail(where, f"source {src!r} must be `URL (read YYYY-MM-DD)` -- a page with no day is one "
+                        f"nobody can re-check when the page changes")
+        credit = r.get("credit")
+        if credit and str(credit) not in section:
+            fail("CREDITS.md", f"audio.yaml credits `{rid}` as {credit!r}, and CREDITS.md section 9 "
+                               f"does not carry that line")
+        if credit and " -- " in str(credit):
+            fail(where, "the credit prints two hyphens as a dash; write a comma or a real dash")
+    if total_kb > AUDIO_TOTAL_MAX_KB:
+        fail("audio.yaml", f"the sounds add up to {total_kb:.0f} kB, over the {AUDIO_TOTAL_MAX_KB} kB "
+                           f"budget spec 0035 req 7 sets")
+    # The reverse rule: a credit for a file that does not ship, and a file that ships uncredited.
+    for name in sorted(set(AUDIO_FILE.findall(section))):
+        if name not in shipped:
+            fail("CREDITS.md", f"section 9 credits `{name}`, which has no audio.yaml row and does not "
+                               f"ship -- a credit for work that is not here")
+    audio_dir = ROOT / "site" / "audio"
+    if audio_dir.is_dir():
+        for p in sorted(audio_dir.iterdir()):
+            if p.is_file() and p.name not in shipped and not p.name.startswith("."):
+                fail("site/audio", f"`{p.name}` ships and has no audio.yaml row -- so it carries no "
+                                   f"licence, no credit and no source, and deploy.sh would push it anyway")
+    return rows_
+
+
 def check_sites(sites_doc: dict, sites: list, world_ids: set) -> None:
     """registry/sites.yaml: every row is somewhere real, and every landing says where the number came from.
 
@@ -2489,6 +2612,7 @@ def main() -> int:
     check_sites(sites_doc, sites, world_ids)
 
     check_oddities(oddities_doc, world_ids, sites)
+    audio = check_audio()
     ladder = check_stages(world_ids)
     lod_rules = check_lod()
     dso_hand = check_dso_hand()
@@ -2705,7 +2829,7 @@ def main() -> int:
         f"{len(sources)} sources, {len(layers)} layers, "
         f"{len(events)} event types, {len(models)} models, {len(real_models)} real models, "
         f"{len(marks)} third-party marks, {len(sites)} sites, "
-        f"{len(terms)} glossary terms, {len(showers)} showers, "
+        f"{len(terms)} glossary terms, {len(showers)} showers, {len(audio)} sounds, "
         f"{len(oddities_doc.get('oddities') or [])} oddities "
         f"({sum(1 for o in (oddities_doc.get('oddities') or []) if (o.get('where') or {}).get('kind') == 'unknown')} "
         f"of them nobody can place), {len(rockets)} rockets "

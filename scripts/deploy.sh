@@ -10,8 +10,8 @@
 #   --distribution ID     optional. Without it nothing is invalidated, so a deploy can take up to
 #                         the cache lifetime to appear.
 #   --profile NAME        an AWS CLI profile. Default: whatever your environment already uses.
-#   --assets-only         skip the app files; push textures, data, vendor, models, images and the
-#                         share pictures (og/) only.
+#   --assets-only         skip the app files; push textures, data, vendor, models, images, the
+#                         share pictures (og/) and the sounds (audio/) only.
 #   --app-only            skip the big assets; push HTML, CSS, JS and the trip pages (t/) only.
 #                         The usual case.
 #   --dry-run             print what would be uploaded and change nothing.
@@ -69,7 +69,7 @@ SYNC=(aws s3 sync --region "$REGION")
 # hypothetical: `site/models/` was added for the NASA spacecraft and this script did not know about
 # it, so the first deploy after that shipped an app whose models 403'd. The app degraded correctly
 # and nobody would have noticed for a while, which is exactly what makes it worth a check.
-KNOWN="textures data vendor js css models images t og"
+KNOWN="textures data vendor js css models images t og audio"
 MISSING=""
 for d in "$SITE"/*/; do
   name=$(basename "$d")
@@ -113,6 +113,17 @@ if [ "$WHAT" != "app" ]; then
   # og/default.png today, one per trip when spec 0033 renders them. Long-lived like the images,
   # and for the same reason not invalidated by this script -- see the note at the end.
   "${SYNC[@]}" "$SITE/og"       "s3://$BUCKET/og"       --cache-control "$LONG" --delete
+  # The music and sounds (spec 0035, 2026-09-23): fetched only after a visitor turns sound on, and
+  # long-lived like the models, because a bed is up to 600 kB that a returning visitor should not
+  # download twice. Each type by its own sync: the CLI guesses from the extension, `.opus` is not
+  # in every mimetypes table, and a bed served as binary/octet-stream is a bed some proxies will
+  # not cache. The --delete on each is scoped by its filter, so the two never delete each other.
+  if [ -d "$SITE/audio" ]; then
+    "${SYNC[@]}" "$SITE/audio" "s3://$BUCKET/audio" --cache-control "$LONG" --delete \
+      --exclude "*" --include "*.opus" --content-type "audio/ogg"
+    "${SYNC[@]}" "$SITE/audio" "s3://$BUCKET/audio" --cache-control "$LONG" --delete \
+      --exclude "*" --include "*.m4a" --content-type "audio/mp4"
+  fi
 fi
 
 if [ "$WHAT" != "assets" ]; then
@@ -157,10 +168,10 @@ if [ -n "$DISTRIBUTION" ] && [ "$DRY_RUN" != "1" ]; then
     --paths "${PATHS[@]}" \
     --output text --query 'Invalidation.Id'
   if [ "$WHAT" != "app" ]; then
-    echo "    NOTE: textures, vendor, models, images and og were uploaded but NOT invalidated -- their"
-    echo "    names are not content-hashed, so nothing expires them early. If you changed one, run:"
+    echo "    NOTE: textures, vendor, models, images, og and audio were uploaded but NOT invalidated --"
+    echo "    their names are not content-hashed, so nothing expires them early. If you changed one, run:"
     echo "      aws cloudfront create-invalidation --distribution-id $DISTRIBUTION \\"
-    echo "        --paths '/textures/*' '/vendor/*' '/models/*' '/images/*' '/og/*'"
+    echo "        --paths '/textures/*' '/vendor/*' '/models/*' '/images/*' '/og/*' '/audio/*'"
   fi
 fi
 

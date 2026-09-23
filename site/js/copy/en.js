@@ -681,6 +681,21 @@ export const COPY = {
     row: '{label}: {value}',
     when: '{date}, {time} UTC',
   },
+  // Sound (spec 0035): off until the visitor turns it on, and remembered once they have. The words
+  // say the state, not the action, on the toggle ("Sound: off"), and the action on the mute in the
+  // bars ("Mute"), because a bar button is pressed mid-trip by somebody who already hears it.
+  audio: {
+    on: 'Sound: on',
+    off: 'Sound: off',
+    toggleTitle: 'Music and sounds. Off until you turn it on; remembered on this device.',
+    mute: 'Mute',
+    unmute: 'Sound',
+    muteTitle: 'Turn the music and sounds off',
+    unmuteTitle: 'Turn the music and sounds on',
+    panelTitle: 'Sound',
+    panelNote: 'A quiet score for the map and its trips. Nothing is downloaded until you turn it on.',
+    creditsLine: 'Music and sounds: {credits}',
+  },
   nextList: {
     // Two rows can name different objects the same way -- CelesTrak calls dozens of stages "SL-8
     // R/B" -- and two identical rows read as a bug. The catalogue number tells them apart.
