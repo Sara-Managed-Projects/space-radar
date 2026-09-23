@@ -20,8 +20,10 @@ runs (`python3 tools/serve.py . 8386` puts the app at `/site/`). `og:url` and th
 are absolute, because a crawler needs them to be; the host is `--host`, defaulting to the one
 scripts/deploy.sh already knows, so a fork is not hardcoded to it.
 
-`og:image` is `/og/<id>.png` when that file exists (the per-trip still spec 0033 will render) and
-`/og/default.png` until it does: a checked-in 1200 x 630 still of the opening Earth.
+`og:image` is `/og/<id>.png` when that file exists and `/og/default.png` when it does not. Since
+spec 0033 (2026-09-23) the per-trip pictures are rendered by `scripts/shots.mjs --only=og` in the
+readme-shots workflow and checked in; a trip added since the last run keeps the default until the
+workflow is run again. Re-run this after adding a picture: `--check` then holds the page to it.
 
 Same rule as the other generators: the page is a mirror of the registry, in HTML, and CI refuses
 a stale one. A stale page is a share that says the wrong thing about the trip it opens.

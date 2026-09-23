@@ -6,6 +6,18 @@
 <title>Space Radar</title>
 <meta name="description" content="A living 3D map of everything in motion around Earth: satellites, stations, rockets, probes and the ground sites that talk to them, at their real positions.">
 <meta name="color-scheme" content="dark">
+<!-- What a chat or a feed shows for a shared link to the root (spec 0033). A trip's own link is
+     /t/<id>.html with its own picture (scripts/gen_trip_pages.py); a hash never reaches a crawler,
+     so every other link unfurls as this. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Space Radar">
+<meta property="og:title" content="Space Radar">
+<meta property="og:description" content="Everything in motion around Earth, where it really is, right now.">
+<meta property="og:image" content="https://www.spaceradar.ai/og/default.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.spaceradar.ai/">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="css/site.css">
 <link rel="stylesheet" href="css/ui.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='9' fill='%231B4F8A'/><circle cx='16' cy='16' r='13' fill='none' stroke='%23FF9F43' stroke-width='1.5' stroke-dasharray='3 4'/></svg>">

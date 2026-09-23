@@ -11,7 +11,7 @@
 // THREE OPTIONAL FLAGS, all of which exist because "take one picture again" should not mean
 // "take all of them again against a moving sky":
 //
-//   --only=trip,oddities   take just these shots, by name
+//   --only=trip,oddities   take just these shots, by name -- or a whole family: --only=og
 //   --min-records=6        the floor `ready()` waits for. Some shots need only bundled data
 //   --block=celestrak      abort every request whose URL matches this regex, immediately
 //
@@ -22,7 +22,8 @@
 // source that works look like one that does not.
 
 import { chromium } from 'playwright';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { TOURS } from '../site/js/data/tours.js';
 
 const arg = (name, fallback) => {
   const hit = process.argv.find((a) => a.startsWith(`--${name}=`));
@@ -100,6 +101,93 @@ async function tripTo(page, tourId, index) {
   );
   await page.waitForTimeout(1800);
 }
+
+// --- the trip pictures (spec 0033 req 6, 2026-09-23) ----------------------------------------
+//
+// NOT SCREENSHOTS. The picture is composed IN THE PAGE by ui/postcard.js ogPicture(): the scene
+// drawn once at 1200 x 504 by renderer.renderTo(), and the caption band under it by the same
+// routine the visitor's postcard uses, so CI and the page share one composer and one font, and no
+// panel, card or letterbox has to be hidden -- renderTo() draws the scene and nothing else. The
+// PNG comes back as base64 and is written as it is.
+//
+//   node scripts/shots.mjs --only=og --out=site/og      one picture per trip, and default.png
+//
+// A trip whose first stop cannot be found in CI (CelesTrak refusing, say) is planned without it
+// by ui/trip.js, so the picture is of its first stop that DID resolve -- and this says so.
+
+async function ogBytes(page, words) {
+  const b64 = await page.evaluate(async (w) => {
+    const { ogPicture } = await import('./js/ui/postcard.js');
+    const blob = await ogPicture(window.spaceRadar, w);
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    let bin = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+    return btoa(bin);
+  }, words);
+  return Buffer.from(b64, 'base64');
+}
+
+async function tripFirstStop(page, tour) {
+  const plan = await page.evaluate(async (id) => {
+    const p = await window.spaceRadar.trip.start(id);
+    return p ? { offerable: p.offerable !== false, reason: p.reason || null } : null;
+  }, tour.id);
+  if (!plan || !plan.offerable) throw new Error(`the trip cannot run here: ${(plan && plan.reason) || 'no plan'}`);
+  await page.waitForFunction(() => window.spaceRadar.trip.state.phase === 'intro', null, { timeout: 30_000 });
+  await page.evaluate(() => window.spaceRadar.trip.play());
+  await page.waitForFunction(
+    () => window.spaceRadar.trip.state.phase === 'dwell' && window.spaceRadar.trip.state.index === 0,
+    null,
+    { timeout: 90_000 }
+  );
+  // Arrived; one beat more for the textures of what it arrived at.
+  await page.waitForTimeout(2500);
+  const st = await page.evaluate(() => {
+    const s = window.spaceRadar.trip.state;
+    return { stopId: s.stopId, stopTitle: s.stopTitle, dropped: (s.dropped || []).map((d) => d.id) };
+  });
+  const first = tour.stops && tour.stops[0] && tour.stops[0].id;
+  if (first && st.stopId !== first) {
+    console.warn(`  og-${tour.id}: the first stop (${first}) could not be found here; this is its first stop that could: ${st.stopId}`);
+  }
+  return st;
+}
+
+const ogShots = [
+  {
+    name: 'og-default',
+    family: 'og',
+    file: 'default.png',
+    viewport: { width: 1200, height: 630 },
+    scale: 1,
+    minRecords: 6,
+    async picture(page) {
+      await hideStatus(page);
+      await page.evaluate(() => {
+        window.spaceRadar.cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance: 25, ms: 0 });
+      });
+      await page.waitForTimeout(2500);
+      const words = await page.evaluate(async () => {
+        const { COPY } = await import('./js/copy/en.js');
+        return { title: COPY.app.name, blurb: COPY.app.tagline };
+      });
+      return ogBytes(page, words);
+    },
+  },
+  ...TOURS.map((tour) => ({
+    name: `og-${tour.id}`,
+    family: 'og',
+    file: `${tour.id}.png`,
+    viewport: { width: 1200, height: 630 },
+    scale: 1,
+    minRecords: 6,
+    layersReady: true,
+    async picture(page) {
+      await tripFirstStop(page, tour);
+      return ogBytes(page, { title: tour.title, blurb: tour.blurb });
+    },
+  })),
+];
 
 const hideStatus = (page) =>
   page.evaluate(() => {
@@ -304,17 +392,20 @@ const browser = await chromium.launch({ args: ['--enable-gpu', '--use-gl=angle',
 await mkdir(OUT, { recursive: true });
 let failed = 0;
 
-const wanted = ONLY.length ? shots.filter((s) => ONLY.includes(s.name)) : shots;
-const missing = ONLY.filter((n) => !shots.some((s) => s.name === n));
+// A family is asked for by name and never taken by default: the og pictures are written into
+// site/, and a README run must not rewrite them into assets/readme.
+const every = [...shots, ...ogShots];
+const wanted = ONLY.length ? every.filter((s) => ONLY.includes(s.name) || ONLY.includes(s.family)) : shots;
+const missing = ONLY.filter((n) => !every.some((s) => s.name === n || s.family === n));
 if (missing.length) {
-  console.error(`no such shot: ${missing.join(', ')}. Known: ${shots.map((s) => s.name).join(', ')}`);
+  console.error(`no such shot: ${missing.join(', ')}. Known: ${every.map((s) => s.name).join(', ')}, and the family og`);
   process.exit(2);
 }
 
 for (const shot of wanted) {
   const context = await browser.newContext({
     viewport: shot.viewport,
-    deviceScaleFactor: SCALE,
+    deviceScaleFactor: shot.scale || SCALE,
     // A fixed place and language so the shots do not change with the runner.
     locale: 'en-GB',
     timezoneId: 'UTC',
@@ -329,12 +420,19 @@ for (const shot of wanted) {
   try {
     await page.goto(`${BASE}/index.html`, { waitUntil: 'domcontentloaded', timeout: 90_000 });
     await ready(page, shot.minRecords ?? MIN_RECORDS, shot.layer || null, shot.layersReady === true);
-    await shot.run(page);
-    const path = `${OUT}/${shot.name}.png`;
-    if (shot.element) await page.locator(shot.element).screenshot({ path });
-    else await page.screenshot(shot.clip ? { path, clip: shot.clip } : { path });
+    const path = `${OUT}/${shot.file || `${shot.name}.png`}`;
+    let size = '';
+    if (shot.picture) {
+      const bytes = await shot.picture(page);
+      await writeFile(path, bytes);
+      size = `  ${bytes.length} bytes`;
+    } else {
+      await shot.run(page);
+      if (shot.element) await page.locator(shot.element).screenshot({ path });
+      else await page.screenshot(shot.clip ? { path, clip: shot.clip } : { path });
+    }
     const n = await page.evaluate(() => window.spaceRadar.records().length);
-    console.log(`  ${shot.name.padEnd(15)} ${shot.viewport.width}x${shot.viewport.height} @${SCALE}x  ${n} records  -> ${path}`);
+    console.log(`  ${shot.name.padEnd(15)} ${shot.viewport.width}x${shot.viewport.height} @${shot.scale || SCALE}x  ${n} records  -> ${path}${size}`);
   } catch (err) {
     failed++;
     console.error(`  ${shot.name}: FAILED -- ${err.message}`);

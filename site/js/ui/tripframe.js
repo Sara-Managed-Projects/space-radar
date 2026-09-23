@@ -25,7 +25,7 @@
 //               pause control mandatory for that and the WAI-ARIA carousel pattern requires it
 //               FIRST IN TAB ORDER -- which is why the bottom bar is before the top bar in the
 //               DOM and put in place by CSS. Tab therefore reaches
-//               Pause, Back, Next, Replay, Hide card, Leave, then the card.
+//               Pause, Back, Next, Replay, Share, Hide card, Leave, then the card.
 //   Back        NASA's Eyes gives back equal visual weight to next: a chevron pair, not a next
 //               button with an escape hatch. Measured in that product, 2026-09-07.
 //   Next        See onNext: it collapses the running flight rather than starting a new one.
@@ -36,6 +36,8 @@
 //               reader and illegible past about eight.
 //   Replay      Eyes ships per-stop REPLAY ANIMATION and it is the right answer to "I looked
 //               away". Free here: it is jump(current index).
+//   Share       Spec 0033 (2026-09-23): a trip is the thing most worth sending to somebody, and
+//               the stop you are looking at is the link (ui/share.js).
 //   Hide card   The 3D scene is the product and the card covers it. Eyes ships this as "Expand
 //               story panel". Bound to `c`.
 //   Leave       Always visible, never behind a menu -- see GETTING OUT below.
@@ -79,6 +81,7 @@
 
 import { COPY, t, formatRate, formatShownAt } from '../copy/en.js';
 import { nextTripOrder } from './trippicker.js';
+import { shareButton } from './share.js';
 
 const HOST_ID = 'sr-trip';
 // NOT 'sr-trip'. The host div carries `.sr-trip`, and `.sr-trip` in ui.css sets
@@ -204,10 +207,13 @@ export function createTripFrame(ctx) {
     const back = button('sr-trip__btn', COPY.trip.back, COPY.trip.backTitle, onBack);
     const next = button('sr-trip__btn', COPY.trip.next, COPY.trip.nextTitle, onNext);
     const replay = button('sr-trip__btn', COPY.trip.replay, COPY.trip.replayTitle, onReplay);
+    // Share, after Replay (spec 0033, 2026-09-23): the link to this stop, or to the trip's own
+    // page at stop 1. The words are the trip's title and blurb (ui/share.js tripWords).
+    const share = shareButton(ctx, 'sr-trip__btn sr-trip__btn--share');
     const collapse = button('sr-trip__btn', COPY.trip.collapse, COPY.trip.collapseTitle, () =>
       setCollapsed(!collapsed),
     );
-    for (const b of [pause, back, next, replay, collapse]) controls.appendChild(b);
+    for (const b of [pause, back, next, replay, share, collapse]) controls.appendChild(b);
 
     const progress = el('div', 'sr-trip__progress');
     const count = el('span', 'sr-trip__count');
@@ -282,7 +288,7 @@ export function createTripFrame(ctx) {
     document.body.appendChild(host);
 
     parts = {
-      pause, back, next, replay, collapse, controls,
+      pause, back, next, replay, share, collapse, controls,
       progress, count, segs, chip, live, group, heading, status,
       title, clockLine, eclipseText, panel, fade, bottom, top, leaveButtons: [topLeave, chipLeave],
     };

@@ -1,6 +1,6 @@
 // The renderer, the scene and the camera. One canvas, one WebGL2 context, nothing else.
 //
-// Contract: createRenderer(canvas) -> { renderer, scene, camera, resize(), render() }
+// Contract: createRenderer(canvas) -> { renderer, scene, camera, resize(), render(), renderTo(w, h) }
 //
 // Three.js r185 API notes, because several of these were renamed and the old names fail silently:
 //   - `outputEncoding` is GONE. It is `renderer.outputColorSpace = THREE.SRGBColorSpace`.
@@ -177,6 +177,49 @@ export function createRenderer(canvas) {
     renderer.render(scene, camera);
   }
 
+  /**
+   * The frame drawn ONCE at `width` x `height` pixels and handed back as a 2D canvas: the picture
+   * a postcard or a trip's preview is made of (spec 0033). Returns null with no context.
+   *
+   * SAME TASK, SAME FRAME. The drawing buffer is not preserved (GL_ATTRIBUTES above), so a
+   * canvas read on any later task gets a cleared buffer. render() and the drawImage() copy
+   * therefore run back to back here, synchronously; that is legal with preserveDrawingBuffer
+   * false, and turning it on would cost every frame on every phone for one tap in a thousand.
+   *
+   * The live size, ratio and aspect are put back in a `finally` and the live frame is drawn again
+   * before returning, still in the same task, so the page never composites the odd-sized frame.
+   * `lastW/lastH/lastDpr` are never touched, so the loop's resize() sees nothing to redo.
+   * Measured 2026-09-23 in headless Chrome: the centre pixel of the live canvas read before and
+   * after a 1080 x 1080 renderTo() in one task is identical (tests nothing in node: no GL there).
+   */
+  function renderTo(width, height) {
+    if (contextLost || typeof document === 'undefined') return null;
+    const w = Math.max(1, Math.round(width));
+    const h = Math.max(1, Math.round(height));
+    const aspect = camera.aspect;
+    const liveW = lastW > 0 ? lastW : 1;
+    const liveH = lastH > 0 ? lastH : 1;
+    const liveDpr = lastDpr > 0 ? lastDpr : 1;
+    const out = document.createElement('canvas');
+    out.width = w;
+    out.height = h;
+    try {
+      renderer.setPixelRatio(1);
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.render(scene, camera);
+      out.getContext('2d').drawImage(renderer.domElement, 0, 0, w, h);
+    } finally {
+      renderer.setPixelRatio(liveDpr);
+      renderer.setSize(liveW, liveH, false);
+      camera.aspect = aspect;
+      camera.updateProjectionMatrix();
+      renderer.render(scene, camera);
+    }
+    return out;
+  }
+
   function dispose() {
     renderer.dispose();
   }
@@ -187,6 +230,7 @@ export function createRenderer(canvas) {
     camera,
     resize,
     render,
+    renderTo,
     dispose,
     setQuality,
     get contextLost() { return contextLost; },
