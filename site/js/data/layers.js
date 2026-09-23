@@ -631,13 +631,14 @@ export const LAYERS = [
     nearKm: 0,
     card: 'satellite',
     heavy: true,
+    load: 'on-demand', // 7 MB: fetched when the box is ticked, never at boot (main.js)
     sentence: 'Everything in Earth orbit that is still working.',
   },
   {
     id: 'geo-ring',
     display: 'The geostationary ring',
     klass: 'satellite',
-    source: 'celestrak-active',
+    source: 'celestrak-geo', // the active catalogue cut to the ring when our copy has it (data/sources.js)
     parse: 'gp',
     propagator: 'sgp4',
     frame: 'earth-inertial',

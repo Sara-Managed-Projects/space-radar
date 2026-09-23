@@ -188,6 +188,17 @@ derive("celestrak-active", "celestrak-notable",
        lambda rows: [r for r in rows if int(r.get("NORAD_CAT_ID", -1)) in notable_ids],
        "the satellites site/js/data/layers.js NOTABLE names")
 
+# The ring, with the thresholds site/js/data/parsers.js GEO_RING applies to the same rows: the
+# layer draws it from ~900 rows instead of parsing the 7 MB catalogue for them (2026-09-22).
+def geo(r):
+    try:
+        n = float(r.get("MEAN_MOTION")); e = float(r.get("ECCENTRICITY")); i = float(r.get("INCLINATION"))
+    except (TypeError, ValueError):
+        return False
+    return 0.99 <= n <= 1.01 and e < 0.02 and i < 15
+derive("celestrak-active", "celestrak-geo", lambda rows: [r for r in rows if geo(r)],
+       "the geostationary ring, by the browser's own thresholds")
+
 def launch(r):
     m = re.match(r"^(\d{4})-(\d{3})", str(r.get("OBJECT_ID", "")))
     return (int(m.group(1)), int(m.group(2))) if m else None

@@ -1931,6 +1931,15 @@ def main() -> int:
             fail(where, "no card template")
         if not l.get("select"):
             fail(where, "no `select:` rule -- a layer that selects nothing is a layer nobody sees")
+        # `load: on-demand` (2026-09-22): the layer is fetched when its box is ticked, never at
+        # boot. Reserved for a file too big to fetch for everybody: the active catalogue is 7 MB.
+        # A small layer marked this way would just be a layer that hides its own data.
+        load_mode = l.get("load")
+        if load_mode is not None and load_mode != "on-demand":
+            fail(where, f"`load: {load_mode}` is not `on-demand` (the only value; leave it out to load at boot)")
+        if load_mode == "on-demand" and not ((l.get("budget") or {}).get("max_items", 0) >= 5000):
+            fail(where, "`load: on-demand` is for a catalogue-sized layer (budget.max_items >= 5000); "
+                        "a small one loads at boot like everything else")
 
     # --- events ------------------------------------------------------------------
     seen = set()

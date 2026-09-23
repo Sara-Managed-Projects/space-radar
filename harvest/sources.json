@@ -37,6 +37,17 @@
       ]
     },
     {
+      "id": "celestrak-last30",
+      "url": "https://celestrak.org/NORAD/elements/gp.php?GROUP=last-30-days&FORMAT=json",
+      "auth": "none",
+      "refresh": "3h",
+      "freshness_max": "48h",
+      "parser": "celestrak_gp",
+      "outputs": [
+        "last30.json"
+      ]
+    },
+    {
       "id": "celestrak-supplemental-starlink",
       "url": "https://celestrak.org/NORAD/elements/supplemental/sup-gp.php?FILE=starlink&FORMAT=json",
       "auth": "none",

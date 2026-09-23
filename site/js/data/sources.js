@@ -168,6 +168,20 @@ export const SOURCES = {
     attribution: 'Orbital data: CelesTrak (T. S. Kelso)',
     note: 'The active catalogue cut to the satellites the hand-kept list names, when our copy has the cut.',
   },
+  'celestrak-geo': {
+    id: 'celestrak-geo',
+    registryId: 'celestrak-geo',
+    label: 'CelesTrak — the geostationary ring (a cut of the active catalogue)',
+    publisher: 'CelesTrak',
+    url: 'https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=json',
+    cadenceMs: 3 * HOUR,
+    freshnessMaxMs: 24 * HOUR,
+    browser: true,
+    kind: 'json',
+    attribution: 'Orbital data: CelesTrak (T. S. Kelso)',
+    note: 'The active catalogue cut to the ring (data/parsers.js GEO_RING) when our copy has the cut: ' +
+      'about 900 rows, 100 kB, instead of the 7 MB file.',
+  },
   'celestrak-starlink-recent': {
     id: 'celestrak-starlink-recent',
     registryId: 'celestrak-starlink-recent',

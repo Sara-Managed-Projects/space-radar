@@ -1192,6 +1192,7 @@ export const COPY = {
     layerCount: '{n}',
     layerCountLoading: 'counting',
     layerCountEmpty: 'nothing loaded',
+    layerWaits: 'loads when switched on',
     // A layer whose members are in more than one state says so on its own tick. Zero parts are
     // dropped, so a layer that grows out of a state stops mentioning it without a code change.
     layerCountParts: {
