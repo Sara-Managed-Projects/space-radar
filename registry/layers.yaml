@@ -24,9 +24,11 @@ layers:
     style: {kind: glyph, glyph: planet, colour: world}
     card: world
     select: {all: true}
-    # 21 worlds since 2026-09-22 (six more moons); at 20 the budget silently dropped Deimos, the
-    # last row. Room for a few more before anyone has to remember this line.
-    budget: {max_items: 32}
+    # 31 worlds since 2026-09-22 (six more moons, then ten more); at 20 the budget silently
+    # dropped Deimos, the last row, and 32 would have left room for one. 40 is nine spare, which
+    # is more moons than are left worth adding: Hyperion, Proteus, Nereid, Phoebe and Charon's
+    # four small sisters are the whole of what a visitor would recognise.
+    budget: {max_items: 40}
 
   # Stars in three dimensions (spec 0028 step 3). `bundled`: site/data/stars3d.bin is repacked from
   # HYG v4.4 by scripts/build-stars3d.py (CC BY-SA 4.0, credited in CREDITS.md §3c). `static`: a

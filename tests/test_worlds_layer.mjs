@@ -3,8 +3,9 @@
 // A planet is a record (search finds it, the layer list counts it, a tap picks it) and the picker
 // is fair to the small thing: a moon's disc drawn over a planet's disc is what a finger means.
 // Sections 7 to 10 hold Pluto and Jupiter's four big moons to numbers from outside this repository,
-// and 11 to 14 do the same for Phobos, Deimos, Enceladus, Titan, Triton and Charon against JPL
-// Horizons, and for Neptune's "how to see it" line.
+// 11 to 14 do the same for Phobos, Deimos, Enceladus, Titan, Triton and Charon against JPL
+// Horizons, and for Neptune's "how to see it" line, and 15 to 18 for Saturn's Mimas, Tethys,
+// Dione, Rhea and Iapetus and Uranus's Miranda, Ariel, Umbriel, Titania and Oberon.
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -74,7 +75,9 @@ check(pickWorldDisc([], 1, 1) === null, 'no discs, no pick');
   camera.updateProjectionMatrix();
   const vp = { w: 800, h: 600 };
   check(worlds.pick(0, 0, camera, vp)?.id === 'earth', 'a tap dead centre on Earth picks Earth');
-  check(worlds.pick(0.95, 0.95, camera, vp) === null, 'a tap in the corner, off every disc, picks nothing');
+  // The lower-left corner: the lower-right one held nothing until 2026-09-22, when Uranus, which
+  // is drawn there on this date, got five moons and Umbriel's one-pixel disc landed 12 px from it.
+  check(worlds.pick(-0.95, -0.95, camera, vp) === null, 'a tap in the corner, off every disc, picks nothing');
   const all = worlds.pickAll(0, 0, camera, vp);
   check(all.length >= 1 && all[0].record.id === 'earth' && all[0].edge === 0 && all[0].r > 100, `pickAll at the centre lists Earth first with the finger on it (${JSON.stringify(all.map((c) => [c.record.id, Math.round(c.edge), Math.round(c.r)]))})`);
   check(worlds.drawnPositionOf('earth') && worlds.drawnPositionOf('earth').length() === 0, 'the stage world is drawn at the origin');
@@ -192,8 +195,10 @@ check(pickWorldDisc([], 1, 1) === null, 'no discs, no pick');
 // distance against where it is in 2026 (35.4 to 35.7 au by this ephemeris; Wikipedia gives a
 // semi-major axis of 39.5 au and a 1989 perihelion of 29.7, so it is still near the inner part).
 const NEW_WORLDS = ['pluto', 'io', 'europa', 'ganymede', 'callisto'];
-// ...and the six whose orbits propagate/moons.js fits to JPL Horizons (sections 11 to 14).
+// ...and the six whose orbits propagate/moons.js fits to JPL Horizons (sections 11 to 14)...
 const SIX = ['phobos', 'deimos', 'enceladus', 'titan', 'triton', 'charon'];
+// ...and the ten more it fits the same way (sections 15 to 18).
+const TEN = ['mimas', 'tethys', 'dione', 'rhea', 'iapetus', 'miranda', 'ariel', 'umbriel', 'titania', 'oberon'];
 const rowOf = (id) => WORLDS.find((w) => w.id === id);
 {
   const { positionOf } = await import(join(JS, 'scene/worlds.js'));
@@ -264,20 +269,29 @@ const rowOf = (id) => WORLDS.find((w) => w.id === id);
   }
   // No map ships for them, none is fetched, and their one colour runs light to dark in the order of
   // their measured albedo (NASA fact sheets, registry/worlds.yaml `facts.albedo`) -- ALL the flat
-  // worlds in one order, the six moons added on 2026-09-22 among the first five: eleven, from
-  // Enceladus (1.0) to Phobos (0.07).
+  // worlds in one order, the sixteen moons added on 2026-09-22 among the first five: twenty-one,
+  // from Enceladus (1.0) to Phobos (0.07). Dione and Rhea share the sheet's 0.7, so between those
+  // two the rule is "not lighter" rather than "darker"; everywhere the albedo drops, so must the
+  // colour. Iapetus's 0.275 is the mean of its sheet's two faces (scene/worlds.js says why).
   const lum = (hex) => {
     const c = new THREE.Color(hex);
     return 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b; // linear, which is what the shader works in
   };
   const FLAT = WORLDS.filter((w) => w.look.flat).map((w) => w.id);
-  check(FLAT.length === 11 && [...NEW_WORLDS, ...SIX].every((id) => FLAT.includes(id)), `eleven flat worlds (${FLAT})`);
-  const byAlbedo = FLAT.map(rowOf).sort((a, b) => b.look.albedo - a.look.albedo);
+  check(FLAT.length === 21 && [...NEW_WORLDS, ...SIX, ...TEN].every((id) => FLAT.includes(id)), `twenty-one flat worlds (${FLAT})`);
+  const byAlbedo = FLAT.map(rowOf).sort((a, b) => b.look.albedo - a.look.albedo || FLAT.indexOf(a.id) - FLAT.indexOf(b.id));
   check(byAlbedo[0].id === 'enceladus' && byAlbedo[byAlbedo.length - 1].id === 'phobos', `Enceladus is the lightest flat world and Phobos the darkest (${byAlbedo.map((w) => w.id)})`);
+  let ties = 0;
   for (let i = 1; i < byAlbedo.length; i++) {
-    check(lum(byAlbedo[i - 1].look.tint) > lum(byAlbedo[i].look.tint),
-      `${byAlbedo[i - 1].id} (albedo ${byAlbedo[i - 1].look.albedo}) is drawn lighter than ${byAlbedo[i].id} (${byAlbedo[i].look.albedo})`);
+    const [a, b] = [byAlbedo[i - 1], byAlbedo[i]];
+    const tie = a.look.albedo === b.look.albedo;
+    if (tie) ties++;
+    check(tie ? lum(a.look.tint) >= lum(b.look.tint) : lum(a.look.tint) > lum(b.look.tint),
+      `${a.id} (albedo ${a.look.albedo}) is drawn ${tie ? 'no darker' : 'lighter'} than ${b.id} (${b.look.albedo})`);
   }
+  check(ties === 1 && rowOf('dione').look.albedo === rowOf('rhea').look.albedo, `the one tie in albedo is Dione and Rhea (${ties})`);
+  check(lum(rowOf('titan').look.tint) > lum(rowOf('callisto').look.tint) && lum(rowOf('oberon').look.tint) - lum(rowOf('titan').look.tint) > 0.01,
+    'Titan, darkened on 2026-09-22 to make room, still sits above Callisto and a clear step below Oberon');
   for (const id of FLAT) {
     const w = rowOf(id);
     check(w.look.flat === true && !w.look.map, `${id} is flat and names no map`);
@@ -614,8 +628,283 @@ const PARENT = { phobos: 'mars', deimos: 'mars', enceladus: 'saturn', titan: 'sa
   check(/your own eyes/.test(uranus), `Uranus, at magnitude 5.4 to 6.0, keeps its line: "${uranus}"`);
 }
 
+// 15. TEN MORE MOONS, AGAINST JPL HORIZONS (2026-09-22): Saturn's Mimas, Tethys, Dione, Rhea and
+// Iapetus, Uranus's Miranda, Ariel, Umbriel, Titania and Oberon, the same six instants and the same
+// query as section 11 with COMMAND 601/603/604/605/608 and CENTER '500@699' for Saturn's, COMMAND
+// 705/701/702/703/704 and CENTER '500@799' for Uranus's. Tolerances are a little over what
+// propagate/moons.js measured over 2024-2030 for the four near instants and over 2000-2050 for the
+// far pair: Mimas 130 and 703, Tethys 83 and 119, Dione 211 and 235, Rhea 161 and 199, Iapetus
+// 3 709 and 6 800, Miranda 57 and 117, Ariel 80 and 114, Umbriel 362 and 410, Titania 1 008 and
+// 996, Oberon 1 208 and 1 230. MEASURED, one at a time: Mimas with its three `lib` terms taken
+// away fails every instant by 100 000 km and more; without the third alone, 2026 by 560 km; Tethys
+// without its first by 10 000; Miranda without its first by 3 000; Titania and Oberon without their
+// second eccentricity vector by 1 400 and 1 900 over the far pair; Iapetus without its second
+// inclination vector by 9 000; Uranus's pole for its antipode puts all five on the wrong side.
+const HORIZONS_TEN = {
+  mimas: [
+    ['2026-01-15T06:00:00Z', -185075.056, -14746.184, 19351.431],
+    ['2026-09-22T12:00:00Z', 172934.138, 58938.969, -14498.427],
+    ['2027-03-10T18:30:00Z', -92549.884, -160090.130, 22984.824],
+    ['2027-09-22T00:00:00Z', 71936.942, -167679.304, 8663.782],
+    ['2005-06-01T09:00:00Z', -173926.478, -62176.860, 24441.826],
+    ['2045-06-01T21:00:00Z', -72861.443, -168720.392, 15625.533],
+  ],
+  tethys: [
+    ['2026-01-15T06:00:00Z', 230012.239, -184200.959, -4988.146],
+    ['2026-09-22T12:00:00Z', -282122.682, 84022.905, 12467.901],
+    ['2027-03-10T18:30:00Z', 213820.511, 200150.214, -32884.584],
+    ['2027-09-22T00:00:00Z', -286011.509, -64359.593, 29917.162],
+    ['2005-06-01T09:00:00Z', -239299.335, -169418.207, 29733.990],
+    ['2045-06-01T21:00:00Z', 291345.523, 35636.030, -25895.086],
+  ],
+  dione: [
+    ['2026-01-15T06:00:00Z', 207385.505, -315770.637, 5304.908],
+    ['2026-09-22T12:00:00Z', -67432.482, 369943.912, -21320.585],
+    ['2027-03-10T18:30:00Z', 265079.065, 264633.672, -42115.412],
+    ['2027-09-22T00:00:00Z', -362600.623, 99983.795, 23688.720],
+    ['2005-06-01T09:00:00Z', -372124.058, -47175.342, 35353.637],
+    ['2045-06-01T21:00:00Z', 179032.361, -331177.243, 8910.795],
+  ],
+  rhea: [
+    ['2026-01-15T06:00:00Z', 222264.772, -477097.004, 18747.191],
+    ['2026-09-22T12:00:00Z', 111982.772, 512742.389, -49348.391],
+    ['2027-03-10T18:30:00Z', -208138.520, -481071.026, 55052.987],
+    ['2027-09-22T00:00:00Z', 427428.960, -307200.230, -11724.884],
+    ['2005-06-01T09:00:00Z', -262845.055, 457200.533, -8337.960],
+    ['2045-06-01T21:00:00Z', -515275.968, -100357.056, 52510.299],
+  ],
+  iapetus: [
+    ['2026-01-15T06:00:00Z', -3591032.199, -48866.937, 706280.295],
+    ['2026-09-22T12:00:00Z', -2225361.645, -2878609.924, -89994.338],
+    ['2027-03-10T18:30:00Z', 512500.031, -3449587.191, -741624.904],
+    ['2027-09-22T00:00:00Z', -53249.719, 3475257.125, 656009.542],
+    ['2005-06-01T09:00:00Z', -3486413.026, -988247.942, 520477.165],
+    ['2045-06-01T21:00:00Z', -1040018.783, -3430114.146, -448788.471],
+  ],
+  miranda: [
+    ['2026-01-15T06:00:00Z', 124254.924, -32830.468, -19363.119],
+    ['2026-09-22T12:00:00Z', 115908.808, -21156.960, -54837.988],
+    ['2027-03-10T18:30:00Z', 49234.438, -46516.880, 110595.614],
+    ['2027-09-22T00:00:00Z', 114219.456, -47223.184, 39627.231],
+    ['2005-06-01T09:00:00Z', -34558.703, -16101.926, 124070.203],
+    ['2045-06-01T21:00:00Z', 1288.887, 36501.609, -124814.735],
+  ],
+  ariel: [
+    ['2026-01-15T06:00:00Z', -154630.015, 3583.083, 112107.707],
+    ['2026-09-22T12:00:00Z', 139944.317, -63041.451, 113559.532],
+    ['2027-03-10T18:30:00Z', 178894.373, -22843.688, -62469.841],
+    ['2027-09-22T00:00:00Z', -186491.756, 36933.606, 17939.950],
+    ['2005-06-01T09:00:00Z', 66576.944, -61642.162, 167753.894],
+    ['2045-06-01T21:00:00Z', 4165.425, -51912.029, 183520.095],
+  ],
+  umbriel: [
+    ['2026-01-15T06:00:00Z', 145560.345, 29162.725, -221838.487],
+    ['2026-09-22T12:00:00Z', -250752.416, 33964.266, 79540.361],
+    ['2027-03-10T18:30:00Z', -196235.843, 87579.646, -157043.322],
+    ['2027-09-22T00:00:00Z', -259645.473, 55913.390, 7770.983],
+    ['2005-06-01T09:00:00Z', -248375.090, 71898.331, -57407.873],
+    ['2045-06-01T21:00:00Z', 259440.790, -51774.472, -22661.228],
+  ],
+  titania: [
+    ['2026-01-15T06:00:00Z', -64980.788, -101865.824, 420242.029],
+    ['2026-09-22T12:00:00Z', -419087.569, 108756.839, -51942.703],
+    ['2027-03-10T18:30:00Z', 365254.733, -136773.487, 196726.216],
+    ['2027-09-22T00:00:00Z', -227068.657, 145994.356, -342193.301],
+    ['2005-06-01T09:00:00Z', -414904.225, 114245.678, -74810.568],
+    ['2045-06-01T21:00:00Z', -138146.368, -81653.937, 406345.744],
+  ],
+  oberon: [
+    ['2026-01-15T06:00:00Z', 446742.372, -188532.426, 322779.785],
+    ['2026-09-22T12:00:00Z', -567911.638, 135943.734, -32436.222],
+    ['2027-03-10T18:30:00Z', 536147.320, -59724.999, -219359.616],
+    ['2027-09-22T00:00:00Z', -536873.721, 59235.632, 221777.641],
+    ['2005-06-01T09:00:00Z', -414992.916, 192380.215, -363318.670],
+    ['2045-06-01T21:00:00Z', -475283.832, 13440.065, 340170.935],
+  ],
+};
+const TEN_TOL_KM = { mimas: 200, tethys: 120, dione: 260, rhea: 210, iapetus: 4200, miranda: 90, ariel: 120, umbriel: 420, titania: 1100, oberon: 1300 };
+const TEN_FAR_TOL_KM = { mimas: 800, tethys: 160, dione: 300, rhea: 260, iapetus: 7500, miranda: 160, ariel: 160, umbriel: 480, titania: 1100, oberon: 1350 };
+const TEN_PARENT = { mimas: 'saturn', tethys: 'saturn', dione: 'saturn', rhea: 'saturn', iapetus: 'saturn', miranda: 'uranus', ariel: 'uranus', umbriel: 'uranus', titania: 'uranus', oberon: 'uranus' };
+{
+  const { positionOf } = await import(join(JS, 'scene/worlds.js'));
+  const { worldPositionKm } = await import(join(JS, 'propagate/body.js'));
+  const { moonOffsetKm, moonParent, eclipticToEquatorial, temeToJ2000 } = await import(join(JS, 'propagate/frames.js'));
+  const { MOON_ELEMENTS, MOON_ELEMENTS_VALID } = await import(join(JS, 'propagate/moons.js'));
+  check(Object.keys(HORIZONS_TEN).length === TEN.length && TEN.every((id) => HORIZONS_TEN[id]), 'a Horizons table for every one of the ten');
+  for (const id of TEN) {
+    check(moonParent(id) === TEN_PARENT[id] && rowOf(id).parent === TEN_PARENT[id], `${id} goes round ${TEN_PARENT[id]} in frames.js and in WORLDS`);
+    const rec = recs.find((r) => r.id === id);
+    check(!!rec, `${id} is a world record`);
+    for (const [iso, x, y, z] of HORIZONS_TEN[id]) {
+      const t = Date.parse(iso);
+      const off = moonOffsetKm(id, t);
+      const miss = off ? Math.hypot(off.x - x, off.y - y, off.z - z) : NaN;
+      const tol = (isFar(iso) ? TEN_FAR_TOL_KM : TEN_TOL_KM)[id];
+      check(miss < tol, `${id} at ${iso} is ${miss.toFixed(2)} km from where Horizons puts it (tolerance ${tol} km)`);
+      // Under 0.45 % of the orbit, whatever the tolerance: a moon on the wrong side of a circle
+      // the right size would pass a distance check and must not pass this one.
+      check(tol / MOON_ELEMENTS[id].a < 0.0045, `${id}'s tolerance is under 0.45 % of its orbit`);
+      const m = positionOf(id, t);
+      const p = positionOf(TEN_PARENT[id], t);
+      const d = m && p ? eclipticToEquatorial({ x: m.x - p.x, y: m.y - p.y, z: m.z - p.z }) : null;
+      const dist = d ? Math.hypot(d.x, d.y, d.z) : NaN;
+      check(Math.abs(dist - Math.hypot(x, y, z)) < tol,
+        `${id} is drawn ${dist.toFixed(1)} km from ${TEN_PARENT[id]} at ${iso}; Horizons: ${Math.hypot(x, y, z).toFixed(1)}`);
+      const q = propagate(rec, t);
+      check(q && Math.hypot(q.x - m.x, q.y - m.y, q.z - m.z) < 1e-3, `${id}: the record's propagator and the drawing agree at ${iso}`);
+      // From Earth the planet is back-dated by its light time (79 minutes for Saturn, 2 hours 40 for
+      // Uranus on 2026-09-22), so the moon must be too. Skipping it would move Mimas 6 000 km.
+      const ge = worldPositionKm(id, t, 'earth-inertial');
+      const gp = worldPositionKm(TEN_PARENT[id], t, 'earth-inertial');
+      const seen = temeToJ2000({ x: ge.x - gp.x, y: ge.y - gp.y, z: ge.z - gp.z }, t);
+      const lightMs = (Math.hypot(gp.x, gp.y, gp.z) / 299792.458) * 1000;
+      const then = moonOffsetKm(id, t - lightMs);
+      const lag = Math.hypot(seen.x - then.x, seen.y - then.y, seen.z - then.z);
+      const skipped = Math.hypot(off.x - then.x, off.y - then.y, off.z - then.z);
+      check(lag < 5 && skipped > 100,
+        `${id} seen from Earth at ${iso} is ${lag.toFixed(2)} km from where it was when the light left (skipping the light time would be ${Math.round(skipped)} km)`);
+    }
+    for (const t of [MOON_ELEMENTS_VALID.fromMs - 86400000, MOON_ELEMENTS_VALID.toMs + 86400000]) {
+      check(positionOf(id, t) === null && propagate(rec, t) === null && worldPositionKm(id, t, 'earth-inertial') === null,
+        `${id} is not placed on ${new Date(t).toISOString().slice(0, 10)}, outside 2000-2050`);
+    }
+    check(positionOf(id, NaN) === null, `no time, no ${id}`);
+    // The pole is the planet's own, held, as moons.js says: Saturn's for its five, the antipode of
+    // Uranus's for its five (Uranus turns backwards about its IAU pole, and so its moons go round
+    // the other end of the axis).
+    const el = MOON_ELEMENTS[id];
+    const pole = TEN_PARENT[id] === 'saturn' ? [40.589, 83.537] : [77.311, 15.175];
+    check(el.poleRa === pole[0] && el.poleDec === pole[1], `${id}'s pole is ${TEN_PARENT[id]}'s own (${el.poleRa}, ${el.poleDec})`);
+  }
+  // The Mimas-Tethys resonance, as the fit found it: the two swing on the same seventy-year beat
+  // (Wikipedia, Tethys: "locked in an inclination resonance with Mimas"), Mimas twenty times as far
+  // as Tethys for being a sixteenth of its mass.
+  const { mimas, tethys } = MOON_ELEMENTS;
+  const yr = (nu) => 360 / nu / 365.25;
+  check(yr(mimas.libNu) > 65 && yr(mimas.libNu) < 75 && yr(tethys.libNu) > 65 && yr(tethys.libNu) < 75,
+    `Mimas and Tethys share a ~70-year libration (${yr(mimas.libNu).toFixed(1)}, ${yr(tethys.libNu).toFixed(1)} years)`);
+  const ratio = Math.hypot(mimas.libA, mimas.libB) / Math.hypot(tethys.libA, tethys.libB);
+  check(ratio > 15 && ratio < 25, `Mimas swings ${ratio.toFixed(1)} times as far as Tethys`);
+  // Iapetus's plane is two: the second inclination vector is 7 to 9 degrees and nowhere near zero.
+  const { iapetus } = MOON_ELEMENTS;
+  const i2 = 2 * Math.atan(Math.hypot(iapetus.q2, iapetus.p2)) * 180 / Math.PI;
+  check(i2 > 7 && i2 < 9, `Iapetus carries a second inclination of ${i2.toFixed(2)} degrees`);
+}
+
+// 16. Found by name and by their numbered designations, ahead of craft named after them; "Uranus I"
+// is Ariel and not the start of "Uranus II", "Uranus III" or "Uranus IV".
+{
+  const idx = buildIndex([...loaded, { id: 'sat-13', name: 'ARIEL 4', klass: 'satellite', layer: 'active', meta: {} },
+    { id: 'sat-14', name: 'OBERON-1', klass: 'satellite', layer: 'active', meta: {} },
+    { id: 'sat-15', name: 'MIRANDA', klass: 'debris', layer: 'debris', meta: {} },
+    { id: 'sat-16', name: 'TITAN 3C TRANSTAGE DEB', klass: 'debris', layer: 'debris', meta: {} }], LAYERS);
+  for (const [q, want] of [['mimas', 'mimas'], ['tethys', 'tethys'], ['dione', 'dione'], ['rhea', 'rhea'], ['iapetus', 'iapetus'],
+    ['miranda', 'miranda'], ['ariel', 'ariel'], ['umbriel', 'umbriel'], ['titania', 'titania'], ['oberon', 'oberon'],
+    ['saturn i', 'mimas'], ['saturn iii', 'tethys'], ['saturn iv', 'dione'], ['saturn v', 'rhea'], ['saturn viii', 'iapetus'],
+    ['uranus i', 'ariel'], ['uranus ii', 'umbriel'], ['uranus iii', 'titania'], ['uranus iv', 'oberon'], ['uranus v', 'miranda'],
+    ['saturn ii', 'enceladus'], ['saturn vi', 'titan'], ['uranus', 'uranus'], ['saturn', 'saturn'], ['titan', 'titan']]) {
+    const hit = findMatches(idx, q).hits[0];
+    check(hit && hit.record.id === want, `"${q}" finds ${want} first (got ${hit && hit.record.id})`);
+  }
+  // Nothing is dropped on the way to search: every one of the 31 worlds is in the index.
+  const missing = WORLDS.map((w) => w.id).filter((id) => !findMatches(idx, rowOf(id).display).hits.some((h) => h.record.id === id));
+  check(missing.length === 0, `every world can be found by its own name; these cannot: ${missing}`);
+}
+
+// 17. How they are drawn: from Earth around the drawn Saturn or Uranus at its enlargement; from
+// Saturn, Iapetus, Uranus and Miranda, at their true places and sizes. And nothing is silently
+// dropped by the layer's budget on the way.
+{
+  const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
+  const { stage, STAGES } = await import(join(JS, 'scene/stage.js'));
+  const { createWorlds, positionOf } = await import(join(JS, 'scene/worlds.js'));
+  const t = Date.parse('2026-09-22T12:00:00Z');
+  check(loaded.length === 31 && row.budget.maxItems >= loaded.length + 4,
+    `the worlds layer loads all 31 records with room to spare (${loaded.length} of ${row.budget.maxItems})`);
+  stage.setWorld('earth');
+  stage.setTime(t);
+  const earth = createWorlds(new THREE.Scene(), { textureBase: null });
+  earth.update(t);
+  for (const id of TEN) {
+    const P = earth.meshFor(TEN_PARENT[id]);
+    const pv = earth.viewScale(TEN_PARENT[id]);
+    const m = earth.meshFor(id);
+    const mt = positionOf(id, t);
+    const pt = positionOf(TEN_PARENT[id], t);
+    const trueRadii = Math.hypot(mt.x - pt.x, mt.y - pt.y, mt.z - pt.z) / rowOf(TEN_PARENT[id]).radiusKm;
+    const drawnRadii = m.position.distanceTo(P.position) / P.scale.x;
+    check(pv.exaggerated && m.visible && Math.abs(drawnRadii - trueRadii) / trueRadii < 1e-6,
+      `${id} is drawn ${drawnRadii.toFixed(3)} ${TEN_PARENT[id]} radii from the drawn ${TEN_PARENT[id]}; it is ${trueRadii.toFixed(3)} from the real one`);
+    check(m.scale.x < P.scale.x, `${id} is drawn smaller than ${TEN_PARENT[id]}`);
+    const vs = earth.viewScale(id);
+    check(vs.exaggerated && vs.withParent && vs.note.includes(rowOf(TEN_PARENT[id]).display) && vs.note.includes(rowOf(id).display),
+      `${id}'s card says how it is drawn: "${vs.note}"`);
+    check(STAGES[id] && STAGES[id].unitKm === (rowOf(id).radiusKm < 500 ? 100 : 1000), `${id} can be the centre of the map, at the unit its size sets`);
+  }
+  // Iapetus is 61 Saturn radii out and Mimas 3.2: the system keeps its shape around the drawn disc.
+  const S = earth.meshFor('saturn');
+  const far = earth.meshFor('iapetus').position.distanceTo(S.position) / S.scale.x;
+  const near = earth.meshFor('mimas').position.distanceTo(S.position) / S.scale.x;
+  check(far > 55 && far < 66 && near > 3.0 && near < 3.4, `from Earth, Iapetus is drawn ${far.toFixed(1)} Saturn radii out and Mimas ${near.toFixed(2)}`);
+  earth.dispose();
+  for (const [centre, members] of [['saturn', ['saturn', 'mimas', 'tethys', 'dione', 'rhea', 'iapetus', 'titan']],
+    ['iapetus', ['saturn', 'iapetus', 'titan']], ['mimas', ['saturn', 'mimas', 'enceladus']],
+    ['uranus', ['uranus', 'miranda', 'ariel', 'umbriel', 'titania', 'oberon']], ['miranda', ['uranus', 'miranda', 'ariel']], ['oberon', ['uranus', 'oberon']]]) {
+    stage.setWorld(centre);
+    stage.setTime(t);
+    const w = createWorlds(new THREE.Scene(), { textureBase: null });
+    w.update(t);
+    for (const id of members) {
+      const vs = w.viewScale(id);
+      check(vs && !vs.exaggerated && Math.abs(w.drawnRadiusUnits(id) * stage.unitKm - rowOf(id).radiusKm) < 1e-6 * rowOf(id).radiusKm,
+        `from ${centre}, ${id} is drawn where it is at the size it is`);
+    }
+    check(w.drawnPositionOf(centre).length() === 0, `${centre} is the origin of its own stage`);
+    check(w.viewScale('jupiter').exaggerated, `from ${centre}, Jupiter is squeezed`);
+    w.dispose();
+  }
+  stage.setWorld('earth');
+}
+
+// 18. The cards: what each one is, how to see it with its magnitude, that it is a plain ball, and
+// where it came from. Iapetus's says it has two faces. Checked at three dates, because the
+// distance is part of the sentence and the 160 characters have to hold at each.
+{
+  const { firstSentence, drawingLine, seeItLine } = await import(join(JS, 'ui/cards.js'));
+  const { positionOf } = await import(join(JS, 'scene/worlds.js'));
+  const WHAT = { mimas: 'crater a third', tethys: 'water ice', dione: 'ice cliffs', rhea: 'second largest', iapetus: 'dark as coal',
+    miranda: 'Grand Canyon', ariel: 'brightest', umbriel: 'darkest', titania: 'largest moon', oberon: 'second largest' };
+  const SEE = { mimas: /12\.9.*telescope/, tethys: /10\.2.*telescope/, dione: /10\.4.*telescope/, rhea: /magnitude 10\b.*telescope/,
+    iapetus: /10\.2.*11\.9.*dark side.*telescope/, miranda: /16\.6.*telescopes/, ariel: /14\.8.*telescope/, umbriel: /15\.1.*telescope/,
+    titania: /13\.9.*telescope/, oberon: /14\.1.*telescope/ };
+  for (const iso of ['2026-01-15T06:00:00Z', '2026-09-22T12:00:00Z', '2027-09-22T00:00:00Z']) {
+    const now = Date.parse(iso);
+    const ctx = { clock: { now: () => now }, worlds: { positionOf }, selected: () => null };
+    for (const id of TEN) {
+      const r = recs.find((x) => x.id === id);
+      const e = positionOf('earth', now);
+      const p = positionOf(id, now);
+      const s = String(firstSentence(r, ctx, { ok: true, tMs: now, distEarthKm: Math.hypot(p.x - e.x, p.y - e.y, p.z - e.z), altKm: null }, { state: 'na' }));
+      const across = Math.round(r.meta.radiusKm * 2);
+      check(s.length <= 160 && s.includes(WHAT[id]) && s.replace(/\s/g, '').includes(`about${across}kmacross`),
+        `${id}'s first sentence says what it is and how big, in 160 characters at ${iso.slice(0, 10)}: "${s}" (${s.length})`);
+      check(!s.includes(' -- '), `${id}'s sentence writes no double-hyphen dash`);
+      if (iso.startsWith('2026-09')) {
+        const see = seeItLine(r, ctx, { ok: true, tMs: now }, { state: 'na' });
+        check(!/your own eyes/.test(see) && /^(Not by eye|Barely)/.test(see) && SEE[id].test(see), `${id} says how it can really be seen: "${see}"`);
+        const draw = drawingLine(r) || '';
+        check(/no surface map/.test(draw) && !/true shape is not drawn/.test(draw), `${id}'s drawing line says it is a plain ball and not that it is lumpy: ${draw}`);
+        check(/Astronomy Engine/.test(r.meta.cite) && /JPL Horizons/.test(r.meta.cite) && /read 2026-09-22/.test(r.meta.cite),
+          `${id}'s source line names the ephemeris, the fit and the day its facts were read`);
+      }
+    }
+  }
+  const iap = recs.find((x) => x.id === 'iapetus');
+  check(/both albedos/.test(iap.meta.cite), 'Iapetus\'s source line says two albedos were read, not one');
+}
+
 if (problems.length) {
   console.error('worlds layer FAILED:\n  ' + problems.join('\n  '));
   process.exit(1);
 }
-console.log(`worlds layer ok: ${recs.length} worlds are records, searchable by name and alias, and the smaller disc wins a tap, and a planet's map waits until its disc can show it; Pluto and Jupiter's four big moons sit where NASA's numbers put them, the moons drawn around the drawn Jupiter, and each card says what it is, how big, how far and that it is a plain ball; Phobos, Deimos, Enceladus, Titan, Triton and Charon sit within 0.3 % of their orbits of where JPL Horizons puts them, and Neptune's card no longer claims the naked eye`);
+console.log(`worlds layer ok: ${recs.length} worlds are records, searchable by name and alias, and the smaller disc wins a tap, and a planet's map waits until its disc can show it; Pluto and Jupiter's four big moons sit where NASA's numbers put them, the moons drawn around the drawn Jupiter, and each card says what it is, how big, how far and that it is a plain ball; Phobos, Deimos, Enceladus, Titan, Triton and Charon sit within 0.3 % of their orbits of where JPL Horizons puts them, and Neptune's card no longer claims the naked eye; Saturn's Mimas, Tethys, Dione, Rhea and Iapetus and Uranus's five sit within 0.45 %, with their planets' own poles, and their cards say what each is, how to see it and that Iapetus has two faces`);

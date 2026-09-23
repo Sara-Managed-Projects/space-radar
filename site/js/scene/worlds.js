@@ -104,6 +104,19 @@ export const WORLD_ALIASES = {
   titan: ['Saturn VI'],
   triton: ['Neptune I'],
   charon: ['Pluto I'],
+  // The rest of Saturn's round moons and all five of Uranus's (2026-09-22). The numbers are the
+  // order of discovery as NASA's satellite fact sheets print them, which is why Uranus's run
+  // Ariel I, Umbriel II, Titania III, Oberon IV and Miranda V rather than outward from the planet.
+  mimas: ['Saturn I'],
+  tethys: ['Saturn III'],
+  dione: ['Saturn IV'],
+  rhea: ['Saturn V'],
+  iapetus: ['Saturn VIII'],
+  miranda: ['Uranus V'],
+  ariel: ['Uranus I'],
+  umbriel: ['Uranus II'],
+  titania: ['Uranus III'],
+  oberon: ['Uranus IV'],
 };
 
 
@@ -270,14 +283,23 @@ export const WORLDS = [
     body: 'Callisto', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
     look: { flat: true, tint: 0x5e564c, albedo: 0.19 },
   },
-  // SIX MORE MOONS (2026-09-22), flat like the five above and in the same one light-to-dark order:
-  // their albedos are NASA's fact sheets' too (Saturnian, Neptunian and Mars sheets, Pluto's for
-  // Charon) -- Enceladus 1.0, Triton 0.72, Charon 0.42, Titan 0.22, Deimos 0.08, Phobos 0.07 --
-  // so the eleven run Enceladus, Triton, Europa, Io, Pluto, Ganymede, Charon, Titan, Callisto,
-  // Deimos, Phobos, and the test holds all eleven. Radii are JPL's satellite physical parameters.
-  // Where they are is propagate/moons.js (fitted to JPL Horizons, error measured there). Each comes
-  // after its planet, for the reason above; Mars, Saturn and Neptune are planets and Pluto is first
-  // of the flat rows.
+  // SIXTEEN MORE MOONS (six on 2026-09-22, ten more the same day), flat like the five above and in
+  // the same one light-to-dark order: their albedos are NASA's fact sheets' too (the Saturnian,
+  // Uranian, Neptunian and Mars sheets, Pluto's for Charon). All twenty-one flat worlds now run
+  // Enceladus 1.0, Tethys 0.8, Triton 0.72, Dione 0.7, Rhea 0.7, Europa 0.68, Io 0.62, Mimas 0.6,
+  // Pluto 0.52, Ganymede 0.44, Charon 0.42, Ariel 0.39, Miranda 0.32, Iapetus 0.275, Titania 0.27,
+  // Oberon 0.23, Titan 0.22, Umbriel 0.21, Callisto 0.19, Deimos 0.08, Phobos 0.07, and the test
+  // holds every one of them. Radii are JPL's satellite physical parameters. Where they are is
+  // propagate/moons.js (fitted to JPL Horizons, error measured there). Each comes after its planet,
+  // for the reason above; Mars, Saturn, Uranus and Neptune are planets and Pluto is first of the
+  // flat rows.
+  //
+  // TITAN'S TINT MOVED on 2026-09-22, from #a8702e to #8f5e26: the same orange, darker. It was the
+  // only row that had to. Ten more worlds had to fit between Charon (albedo 0.42) and Callisto
+  // (0.19), five of them between Charon and Titan, and Titan's old orange was light enough
+  // (luminance 0.20 against Charon's 0.26) that the five would have had to share four hundredths of
+  // a luminance and come out as one grey. Titan is now 0.14, which is still above Callisto's 0.10
+  // and leaves the five a step apiece.
   {
     // "the most reflective body in the solar system ... bright white all over" (NASA Science).
     id: 'enceladus', display: 'Enceladus', parent: 'saturn', radiusKm: 252.1,
@@ -286,10 +308,10 @@ export const WORLDS = [
   },
   {
     // "Titan's orange color comes from a thick atmospheric haze" (Wikipedia): the haze, not the
-    // ground, is what anyone has seen of Titan in visible light.
+    // ground, is what anyone has seen of Titan in visible light. Darkened 2026-09-22, same hue.
     id: 'titan', display: 'Titan', parent: 'saturn', radiusKm: 2574.76,
     body: 'Titan', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0xa8702e, albedo: 0.22 },
+    look: { flat: true, tint: 0x8f5e26, albedo: 0.22 },
   },
   {
     // "Triton's reddish color" (Wikipedia) on frost with "an icy sheen" (NASA Science): a pale pink.
@@ -317,6 +339,81 @@ export const WORLDS = [
     id: 'deimos', display: 'Deimos', parent: 'mars', radiusKm: 6.2,
     body: 'Deimos', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
     look: { flat: true, tint: 0x524d47, albedo: 0.08, irregular: true },
+  },
+  // The other five round moons of Saturn, then all five of Uranus's (2026-09-22).
+  {
+    // "very bright, the second-brightest of the moons of Saturn after Enceladus, and neutral in
+    // color" (Wikipedia): a near-white with no hue to speak of.
+    id: 'tethys', display: 'Tethys', parent: 'saturn', radiusKm: 531.1,
+    body: 'Tethys', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
+    look: { flat: true, tint: 0xe3e5e7, albedo: 0.8 },
+  },
+  {
+    // "a network of bright ice cliffs" on ice over "a dense core (probably silicate rock)" (NASA
+    // Science, Wikipedia): white ice, faintly warm.
+    id: 'dione', display: 'Dione', parent: 'saturn', radiusKm: 561.4,
+    body: 'Dione', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
+    look: { flat: true, tint: 0xd4d5d3, albedo: 0.7 },
+  },
+  {
+    // "a frozen dirty snowball" (NASA Science): Dione's albedo to the fact sheet's one figure, and
+    // the same white a shade dirtier.
+    id: 'rhea', display: 'Rhea', parent: 'saturn', radiusKm: 763.5,
+    body: 'Rhea', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
+    look: { flat: true, tint: 0xd5d3cc, albedo: 0.7 },
+  },
+  {
+    // "consists almost entirely of water ice, which is the only substance ever detected on Mimas"
+    // (NASA Science): grey ice.
+    id: 'mimas', display: 'Mimas', parent: 'saturn', radiusKm: 198.2,
+    body: 'Mimas', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
+    look: { flat: true, tint: 0xa7aaac, albedo: 0.6 },
+  },
+  {
+    // The two-faced one: "as dark as coal (albedo 0.03-0.05 with a slight reddish tinge)" on the
+    // leading side and "much brighter at 0.5-0.6" on the trailing one (NASA Science). ONE ball
+    // cannot be both, so it is drawn at the mean of the fact sheet's 0.05 and 0.5, in the reddish
+    // tinge the dark side is described by, and copy/en.js says on the card that it has two faces.
+    id: 'iapetus', display: 'Iapetus', parent: 'saturn', radiusKm: 734.3,
+    body: 'Iapetus', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
+    look: { flat: true, tint: 0x89735f, albedo: 0.275 },
+  },
+  {
+    // "the brightest surface of the five largest Uranian moons, but none of them reflect more than
+    // about a third of the sunlight that strikes them ... darkened by a carbonaceous material"
+    // (NASA Science): a light neutral grey, and the lightest of Uranus's five.
+    id: 'ariel', display: 'Ariel', parent: 'uranus', radiusKm: 578.9,
+    body: 'Ariel', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
+    look: { flat: true, tint: 0x868786, albedo: 0.39 },
+  },
+  {
+    // "fairly uniformly dark. However, the cliffs bordering certain impact craters reveal, at
+    // depth, the presence of much more luminous material" (Wikipedia): mid grey.
+    id: 'miranda', display: 'Miranda', parent: 'uranus', radiusKm: 235.8,
+    body: 'Miranda', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
+    look: { flat: true, tint: 0x7d7f81, albedo: 0.32 },
+  },
+  {
+    // "The neutral gray color of Titania is typical of most of the significant Uranian moons"
+    // (NASA Science), against Wikipedia's "relatively dark and slightly red": NASA's grey, since
+    // it is the one describing what the colour IS.
+    id: 'titania', display: 'Titania', parent: 'uranus', radiusKm: 788.9,
+    body: 'Titania', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
+    look: { flat: true, tint: 0x767573, albedo: 0.27 },
+  },
+  {
+    // "dark and slightly red in color" (Wikipedia): a dark warm grey.
+    id: 'oberon', display: 'Oberon', parent: 'uranus', radiusKm: 761.4,
+    body: 'Oberon', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
+    look: { flat: true, tint: 0x7a6a62, albedo: 0.23 },
+  },
+  {
+    // "the darkest among Uranian moons" (Wikipedia), "reflects only 16 percent of the light that
+    // strikes its surface" (NASA Science): a dark neutral grey, darker than all four of its
+    // sisters and than Titan.
+    id: 'umbriel', display: 'Umbriel', parent: 'uranus', radiusKm: 584.7,
+    body: 'Umbriel', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
+    look: { flat: true, tint: 0x616060, albedo: 0.21 },
   },
 ];
 

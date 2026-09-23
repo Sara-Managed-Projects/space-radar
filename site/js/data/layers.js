@@ -355,8 +355,9 @@ export const LAYERS = [
     noModel: true,
     sample: () => worldRecords(),
     select: all,
-    // registry/layers.yaml says why 32: 21 worlds since 2026-09-22, and 20 dropped Deimos.
-    budget: { maxItems: 32 },
+    // registry/layers.yaml says why 40: 31 worlds since 2026-09-22 (ten more moons the same day
+    // the count reached 21), 20 dropped Deimos, and 32 would have left room for one more.
+    budget: { maxItems: 40 },
     colour: C.world,
     glyph: 'planet',
     nearKm: 0,
@@ -516,8 +517,9 @@ export const LAYERS = [
     moments: { wonder: true, now: true, next: false },
     defaultOn: true,
     select: all,
-    // registry/layers.yaml says why 32: 21 worlds since 2026-09-22, and 20 dropped Deimos.
-    budget: { maxItems: 32 },
+    // registry/layers.yaml says why 40: 31 worlds since 2026-09-22 (ten more moons the same day
+    // the count reached 21), 20 dropped Deimos, and 32 would have left room for one more.
+    budget: { maxItems: 40 },
     colour: C.station,
     glyph: 'station',
     nearKm: 20000,

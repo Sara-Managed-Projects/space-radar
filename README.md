@@ -369,8 +369,8 @@ tests/                registry validation, the module contract, a growth test, a
                       that breaks every rule on purpose to prove the validator still says no
 ```
 
-**The registry is the architecture.** `tests/test_growth.py` adds Miranda — a moon two levels
-down the world tree, so its frame has to compose through Uranus — and proves it is five registry
+**The registry is the architecture.** `tests/test_growth.py` adds Phoebe — a moon two levels
+down the world tree, so its frame has to compose through Saturn — and proves it is five registry
 rows and nothing under `site/js/` but the generated mirrors. If that test ever fails, the
 architecture regressed, whatever the feature that caused it. The one registry the browser keeps
 by hand is `worlds.yaml` (a world also carries its texture's measured colour and how it is drawn,
