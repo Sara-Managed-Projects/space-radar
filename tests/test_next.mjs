@@ -115,5 +115,26 @@ check(buildNextItems([launch('A', H)], now, { observer: { latRad: 0.9, lonRad: 0
   check(auroraItem(null, t0) === null && auroraItem({}, t0) === null, 'no reading, no row');
 }
 
+// Eclipses (spec 0031, 2026-09-23): computed here, a date rather than a countdown, one row for the
+// next solar and one for the next lunar, and a ninth launch does not push them off the list.
+{
+  const { classText } = await import(join(JS, 'ui/next.js'));
+  const sept22 = Date.UTC(2026, 8, 22);
+  const nine = Array.from({ length: 9 }, (_, i) => ({ id: `L${i}`, name: `L${i}`, layer: 'launches', klass: 'rocket', meta: { netMs: sept22 + (i + 1) * H } }));
+  const rows = buildNextItems(nine, sept22, { eclipses: true });
+  const ecl = rows.filter((r) => r.kind === 'solar-eclipse' || r.kind === 'lunar-eclipse');
+  check(rows.length === NEXT_CAP && ecl.length === 2, `two eclipse rows survive nine launches (${rows.map((r) => r.kind)})`);
+  check(ecl.map((r) => r.kind).join(',') === 'solar-eclipse,lunar-eclipse', `the next solar, then the next lunar, in time order (${ecl.map((r) => r.kind)})`);
+  const texts = ecl.map((r) => rowText(r, sept22));
+  // The date is the visitor's own: 23:12 UT on 20 February is already the 21st in Madrid, and the
+  // February annular's 15:59 UT is the 7th in Tokyo. The zone is fixed when copy/en.js builds its
+  // formatters, so either day is right here.
+  check(/^Annular solar eclipse on [67] February 2027/.test(texts[0]) && /^Penumbral lunar eclipse on 2[01] February 2027/.test(texts[1]), `each row gives the date: ${JSON.stringify(texts)}`);
+  check(texts.every((x) => !/\bin \d+ days\b|expected/.test(x)), 'never "in N days", never "expected"');
+  check(ecl.every((r) => /to the minute/.test(classText(r))), 'and the line under each says it is worked out to the minute');
+  check(rows.filter((r) => r.kind === 'launch').length === NEXT_CAP - 2, 'the launches fill the rest');
+  check(buildNextItems([], sept22).length === 0, 'without eclipses asked for, an empty list stays empty (the cases above)');
+}
+
 if (problems.length) { console.error('next FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('next ok: launches, close approaches and perihelia from held records, nearest first, capped, honest about rough dates');

@@ -2058,6 +2058,13 @@ html.sr-phone .sr-trips__select {
 /* A shower peak is a date, not an object: nothing to fly to, so the row does not look tappable. */
 .sr-next__row[data-kind='shower'] { cursor: default; }
 .sr-next__row[data-kind='shower']:hover { border-color: var(--sr-line); }
+/* Eclipses are computed, not objects in the scene: nothing to fly to either (spec 0031). */
+.sr-next__row[data-kind='solar-eclipse'],
+.sr-next__row[data-kind='lunar-eclipse'] { cursor: default; }
+.sr-next__row[data-kind='solar-eclipse']:hover,
+.sr-next__row[data-kind='lunar-eclipse']:hover { border-color: var(--sr-line); }
+/* What the row's time is: a plan, a computation, elements of some age (spec 0031 req 7). */
+.sr-next__class { display: block; margin-top: 2px; font-size: 11px; line-height: 1.35; color: var(--sr-text-dim); }
 
 /* Colour by (spec 0026 req 11) -------------------------------------------------------------- */
 
