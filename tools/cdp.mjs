@@ -32,7 +32,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const [url, scriptPath] = process.argv.slice(2).filter((a) => !a.startsWith('--'));
-if (!url || !scriptPath) { console.error('usage: node tools/cdp.mjs <url> <script.js> [--width=] [--height=] [--mobile] [--shot=] [--cpuprofile=] [--block=host,...]'); process.exit(2); }
+if (!url || !scriptPath) { console.error('usage: node tools/cdp.mjs <url> <script.js> [--width=] [--height=] [--mobile] [--shot=] [--shot-dir=] [--reduced-motion] [--cpuprofile=] [--block=host,...]'); process.exit(2); }
 const arg = (n, d) => { const h = process.argv.find((a) => a.startsWith('--' + n + '=')); return h ? h.slice(n.length + 3) : d; };
 const W = Number(arg('width', '1280'));
 const H = Number(arg('height', '800'));
@@ -54,6 +54,21 @@ const DPR = Number(arg('dpr', MOBILE ? '3' : '1'));
 // means a probe that is not ABOUT live data does not spend the budget the next real visit needs --
 // the app then behaves exactly as it does when CelesTrak says no, which is itself worth testing.
 const BLOCK = arg('block', '').split(',').map((h) => h.trim()).filter(Boolean);
+// --reduced-motion: the page sees `prefers-reduced-motion: reduce`, set by the protocol before the
+// app boots, so every matchMedia read the app makes agrees -- a probe that overrides matchMedia
+// itself reaches only the reads made after it ran.
+const REDUCED = process.argv.includes('--reduced-motion');
+// --shot-dir=dir: the page may call `await window.cdpShot('name')` mid-script and a PNG of that
+// moment lands at dir/name.png. Added for spec 0034 (2026-09-23): the veil is 350 ms of black, and
+// the one --shot taken after the script returns cannot be aimed inside it. The promise resolves
+// once the picture is written, so a probe can take a frame and read its own clock around it.
+//
+// A screenshot waits for a frame of its own, which in software rendering is seconds: a 700 ms veil
+// is over before it lands. So the same directory also takes a SCREENCAST: `await
+// window.cdpCast('start', 'name')` ... `await window.cdpCast('stop')` writes every frame the
+// compositor produced in between as name-<n>-<epoch ms>.png -- the frames a visitor would have
+// seen, stamped, to line up with Date.now() read in the page.
+const SHOT_DIR = arg('shot-dir', '');
 const trace = (m) => { if (process.env.CDP_TRACE) process.stderr.write('[cdp] ' + m + '\n'); };
 
 const CHROME = process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
@@ -96,6 +111,9 @@ try {
   const ws = new WebSocket(v.webSocketDebuggerUrl);
   await new Promise((r, j) => { ws.onopen = r; ws.onerror = (e) => j(new Error('ws: ' + (e.message || 'failed'))); });
   const logs = [];
+  let shotQueue = Promise.resolve();
+  let cast = null;
+  const sessionIdRef = { id: null };
   ws.onmessage = (e) => {
     const m = JSON.parse(e.data);
     if (m.id && pending.has(m.id)) {
@@ -105,11 +123,45 @@ try {
       else res(m.result);
       return;
     }
+    if (m.method === 'Page.screencastFrame' && cast) {
+      const { data, metadata, sessionId: castSession } = m.params;
+      cast.n += 1;
+      const file = join(SHOT_DIR, `${cast.name}-${String(cast.n).padStart(3, '0')}-${Math.round(metadata.timestamp * 1000)}.png`);
+      writeFileSync(file, Buffer.from(data, 'base64'));
+      send(ws, 'Page.screencastFrameAck', { sessionId: castSession }, sessionIdRef.id).catch(() => {});
+      return;
+    }
+    if (m.method === 'Runtime.bindingCalled' && m.params.name === 'cdpCastRaw' && SHOT_DIR) {
+      const { cmd, name, token } = JSON.parse(m.params.payload);
+      shotQueue = shotQueue.then(async () => {
+        if (cmd === 'start') {
+          cast = { name: String(name || 'cast').replace(/[^\w.-]/g, '_'), n: 0 };
+          await send(ws, 'Page.startScreencast', { format: 'png', everyNthFrame: 1 }, sessionIdRef.id);
+        } else {
+          await send(ws, 'Page.stopScreencast', {}, sessionIdRef.id);
+          trace('cast ' + (cast && cast.name) + ': ' + (cast && cast.n) + ' frames');
+          cast = null;
+        }
+        await send(ws, 'Runtime.evaluate', { expression: `window.__cdpShotDone && window.__cdpShotDone(${JSON.stringify(token)})` }, sessionIdRef.id);
+      }).catch((e) => logs.push('[cdp] cast failed: ' + e.message));
+      return;
+    }
+    if (m.method === 'Runtime.bindingCalled' && m.params.name === 'cdpShotRaw' && SHOT_DIR) {
+      const { name, token } = JSON.parse(m.params.payload);
+      shotQueue = shotQueue.then(async () => {
+        const shot = await send(ws, 'Page.captureScreenshot', { format: 'png', captureBeyondViewport: false }, sessionIdRef.id);
+        writeFileSync(join(SHOT_DIR, String(name).replace(/[^\w.-]/g, '_') + '.png'), Buffer.from(shot.data, 'base64'));
+        trace('shot ' + name);
+        await send(ws, 'Runtime.evaluate', { expression: `window.__cdpShotDone && window.__cdpShotDone(${JSON.stringify(token)})` }, sessionIdRef.id);
+      }).catch((e) => logs.push('[cdp] shot failed: ' + e.message));
+      return;
+    }
     if (m.method === 'Runtime.consoleAPICalled') logs.push('[' + m.params.type + '] ' + m.params.args.map((a) => a.value ?? a.description ?? a.type).join(' '));
     if (m.method === 'Runtime.exceptionThrown') logs.push('[pageerror] ' + (m.params.exceptionDetails.exception?.description || m.params.exceptionDetails.text));
   };
   const { targetId } = await send(ws, 'Target.createTarget', { url: 'about:blank' });
   const { sessionId } = await send(ws, 'Target.attachToTarget', { targetId, flatten: true });
+  sessionIdRef.id = sessionId;
   trace('attached');
   await send(ws, 'Page.enable', {}, sessionId);
   await send(ws, 'Runtime.enable', {}, sessionId);
@@ -121,6 +173,30 @@ try {
       platform: 'Android',
       userAgentMetadata: { platform: 'Android', platformVersion: '14', architecture: '', model: 'Pixel 8', mobile: true, brands: [{ brand: 'Chromium', version: '153' }], fullVersion: '153.0.0.0' },
     }, sessionId);
+  }
+  if (REDUCED) {
+    await send(ws, 'Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] }, sessionId);
+    trace('prefers-reduced-motion: reduce');
+  }
+  if (SHOT_DIR) {
+    await send(ws, 'Runtime.addBinding', { name: 'cdpShotRaw' }, sessionId);
+    await send(ws, 'Runtime.addBinding', { name: 'cdpCastRaw' }, sessionId);
+    await send(ws, 'Page.addScriptToEvaluateOnNewDocument', { source: `
+      (() => {
+        const waiting = new Map();
+        let n = 0;
+        window.__cdpShotDone = (token) => { const f = waiting.get(token); waiting.delete(token); if (f) f(); };
+        window.cdpShot = (name) => new Promise((resolve) => {
+          const token = 't' + (++n);
+          waiting.set(token, resolve);
+          window.cdpShotRaw(JSON.stringify({ name, token }));
+        });
+        window.cdpCast = (cmd, name) => new Promise((resolve) => {
+          const token = 'c' + (++n);
+          waiting.set(token, resolve);
+          window.cdpCastRaw(JSON.stringify({ cmd, name, token }));
+        });
+      })();` }, sessionId);
   }
   if (BLOCK.length) {
     await send(ws, 'Network.enable', {}, sessionId);
@@ -136,12 +212,14 @@ try {
     await send(ws, 'Profiler.start', {}, sessionId);
   }
   const body = readFileSync(scriptPath, 'utf8');
+  await shotQueue;
   trace('evaluating');
   const r = await send(ws, 'Runtime.evaluate', {
     expression: '(async () => {\n' + body + '\n})()',
     awaitPromise: true, returnByValue: true,
   }, sessionId);
   trace('done');
+  await shotQueue;
   if (CPUPROFILE) {
     const { profile } = await send(ws, 'Profiler.stop', {}, sessionId);
     writeFileSync(CPUPROFILE, JSON.stringify(profile));

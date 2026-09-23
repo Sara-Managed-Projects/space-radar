@@ -1,7 +1,7 @@
 // scene/stars3d.js -- the stars as places, not as a picture (spec 0028 step 3).
 //
 // Contract: createStars3d(scene, opts) -> { load, ensureGeometry, records, count, unplaced,
-//   setVisible, setOpacity, rebuild, update, pickAll, dispose }
+//   setVisible, setOpacity, setStretch, stretch, rebuild, update, pickAll, dispose }
 //
 // 109 389 stars from HYG v4.4 (site/data/stars3d.bin, scripts/build-stars3d.py) as ONE Points
 // cloud. Two things decide how it is drawn, and both are the stage's (spec 0005):
@@ -31,6 +31,11 @@ import { stage, isLadderStage } from './stage.js';
 import { bvToKelvin, kelvinToRgb } from './starfield.js';
 import { COPY, t } from '../copy/en.js';
 import { STARS_NOTABLE } from '../data/starsnotable.js';
+import { STRETCH_PX, STRETCH_VERT_HEAD, STRETCH_VERT, STRETCH_FRAG_HEAD, STRETCH_FRAG, stretchUniforms, writeStretch } from './stretch.js';
+
+// Spec 0034: the star-stretch's length lives in scene/stretch.js (both star draws read it) and is
+// re-exported here, where docs/design-language.md's table says to look for it.
+export { STRETCH_PX };
 
 export const LY_KM = 9460730472580.8;
 // The Sun's absolute visual magnitude (IAU 2015 B3's V-band value, 4.83), and its B-V (0.65).
@@ -55,6 +60,7 @@ varying vec3 vColour;
 varying float vAlpha;
 varying float vCore;
 varying float vGlare;
+${STRETCH_VERT_HEAD}
 void main() {
   vec4 mv = modelViewMatrix * vec4( position, 1.0 );
   gl_Position = projectionMatrix * mv;
@@ -77,7 +83,10 @@ void main() {
   // reports a light too bright to resolve. At -1.5 and fainter nothing changes: glare is 0.
   float glare = clamp( ( -1.5 - m ) / 6.0, 0.0, 1.0 );
   float size = core + 26.0 * glare;
-  gl_PointSize = size * uPixelRatio;
+  float sizePx = size * uPixelRatio;
+  // Spec 0034: during a ladder flight the point becomes a capsule along its own screen motion;
+  // at uStretch == 0 this is gl_PointSize = sizePx, as before.
+${STRETCH_VERT}
   vCore = core / size;
   vGlare = glare;
   vAlpha = ( m > 7.5 ) ? 0.0 : ( 0.35 + 0.65 * tt ) * uGain;
@@ -90,10 +99,12 @@ varying vec3 vColour;
 varying float vAlpha;
 varying float vCore;
 varying float vGlare;
+${STRETCH_FRAG_HEAD}
 #include <common>
 void main() {
   if ( vAlpha <= 0.0 ) discard;
-  float d = length( gl_PointCoord - vec2( 0.5 ) );
+  // The distance to the star's segment (a point when it is not stretched), in the disc's units.
+${STRETCH_FRAG}
   // The core in its own units, so it is the same number of pixels with or without a glare.
   float a = 1.0 - smoothstep( 0.12, 0.5, d / max( vCore, 1e-3 ) );
   if ( vGlare > 0.0 ) {
@@ -101,7 +112,7 @@ void main() {
     a = max( a, vGlare * 0.8 * e * e );
   }
   if ( a <= 0.0 ) discard;
-  gl_FragColor = vec4( vColour, a * vAlpha );
+  gl_FragColor = vec4( vColour, a * vAlpha * taper );
   #include <colorspace_fragment>
 }
 `;
@@ -213,6 +224,8 @@ export function createStars3d(scene, opts = {}) {
     uGain: { value: 0 },
     uShell: { value: 1 },
     uUnitsPerPc: { value: 1 },
+    // Spec 0034: 0 unless ui/trip.js is flying a ladder flight longer than three seconds.
+    ...stretchUniforms(),
   };
 
   // `no-cache` = revalidate against the server (a 304 when unchanged): the files keep their names
@@ -355,6 +368,15 @@ export function createStars3d(scene, opts = {}) {
     if (mode === 'shell' && camera) group.position.copy(camera.position);
   }
 
+  /**
+   * Spec 0034 req 2: stretch every star along the screen projection of the camera's velocity `dir`
+   * (scene axes), `k` of the way to STRETCH_PX. 0 is the picture as it always was. The caller -- only
+   * ui/trip.js, on a rung of the ladder -- owns the envelope, the reduced-motion rule and the latch.
+   */
+  function setStretch(k, dir) {
+    return writeStretch(uniforms, k, dir);
+  }
+
   const _m = new THREE.Matrix4();
 
   /**
@@ -419,6 +441,9 @@ export function createStars3d(scene, opts = {}) {
     unplaced: () => (data ? data.unplaced : null),
     setVisible,
     setOpacity,
+    setStretch,
+    /** What the shader is drawing: tests and the browser check read it. */
+    stretch: () => uniforms.uStretch.value,
     rebuild,
     update,
     pickAll,

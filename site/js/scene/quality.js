@@ -1,7 +1,7 @@
 // scene/quality.js -- data-saver and a frame-rate latch (spec 0026 req 18).
 //
 // Pure. Exported:
-//   createFrameLatch(opts) -> { push(frameMs, nowMs) -> boolean, latched, median() }
+//   createFrameLatch(opts) -> { push(frameMs, nowMs) -> boolean, latched, median(), force() }
 //   shouldSaveData(connection) -> boolean
 //
 // satellitemap.space's eighth take. Two decisions the app used to leave to hope:
@@ -45,7 +45,18 @@ export function createFrameLatch(opts = {}) {
     return false;
   }
 
-  return { push, median, get latched() { return latched; } };
+  /**
+   * Latch now, as a slow device would (spec 0034's acceptance: "with the latch forced, uStretch
+   * reads 0 through a flight"). One-way like the real thing. Returns true when this call latched,
+   * so main.js can run the same degrade a tripped latch runs and the two paths cannot differ.
+   */
+  function force() {
+    if (latched) return false;
+    latched = true;
+    return true;
+  }
+
+  return { push, median, force, get latched() { return latched; } };
 }
 
 const SLOW = new Set(['slow-2g', '2g', '3g']);

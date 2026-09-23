@@ -699,6 +699,16 @@ TOUR_CASES: list[tuple[str, str, str]] = [
     ("`requires_observer: true` on a trip with no stop at the visitor",
      "    next: strangest-things\n    requires: [stations]\n",
      "    next: strangest-things\n    requires: [stations]\n    requires_observer: true\n"),
+
+    # --- spec 0034: a stop's chapter line -------------------------------------------------------
+    ("a chapter over forty characters, which is a sentence and not a title card",
+     'chapter: "Epilogue: looking back"',
+     'chapter: "Epilogue: looking back at everything it has passed"'),
+    ("a chapter that writes a dash as two hyphens",
+     'chapter: "Epilogue: looking back"', 'chapter: "Epilogue -- looking back"'),
+    ("a chapter that is the card title again, two lines saying one thing",
+     'chapter: "Chapter two: the ringed planet"',
+     'chapter: "Saturn, and a ring ten metres thick"'),
 ]
 
 

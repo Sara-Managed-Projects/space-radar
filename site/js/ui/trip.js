@@ -67,7 +67,7 @@ const DEG = Math.PI / 180;
 
 // The phases in which the trip IS at a stop, so the address bar may say which (spec 0032 req 3).
 // The intro names the trip alone; `resolving`, `outro` and `idle` write nothing new.
-const STOP_PHASES = ['flight', 'settle', 'dwell', 'held', 'paused'];
+const STOP_PHASES = ['veil', 'flight', 'settle', 'dwell', 'held', 'paused'];
 
 // A layer that has not landed in this long is a layer the trip stops waiting for. Layers load in
 // a sequential await loop and the eleven-thousand-object catalogue is in it, so a first visit can
@@ -137,6 +137,22 @@ const STOP_RATE_MAX = 1000000;
 // orbits, so the camera looks down from 50 degrees above that plane (40 from its pole), where a
 // circle is drawn 0.77 as tall as it is wide and the plane still reads as a plane.
 const SUN_OVERVIEW_POLAR = 40 * DEG;
+
+// THE STAR-STRETCH (spec 0034 req 2, 2026-09-23). A flight on a rung of the ladder longer than this
+// draws the stars as short streaks along the camera's motion (scene/stretch.js): rising over the
+// first third of the flight, held, and falling over the last, so the shot still starts and ends
+// at rest. Below three seconds a flight is a reframe, not a journey, and a streak would read as a
+// glitch. Never on a world stage, never outside a trip, never under reduced motion (there is no
+// flight, only the 220 ms cut) and never once the frame latch has said the device is slow.
+const STRETCH_MIN_FLIGHT_MS = 3000;
+
+/** The stretch envelope over a flight's progress k: up over the first third, held, down over the last. */
+export function stretchEnvelope(k) {
+  if (!(k > 0) || !(k < 1)) return 0;
+  if (k < 1 / 3) return k * 3;
+  if (k > 2 / 3) return (1 - k) * 3;
+  return 1;
+}
 
 /**
  * The one flight the rig cannot be asked for: an angle chosen so the Sun is three-quarter BEHIND
@@ -259,6 +275,10 @@ export function createTrip(ctx) {
     // the centre back and the camera CANNOT stay where it is: one unit is a different distance
     // there. Every "the camera stays where it is" line in copy/en.js has a second version for it.
     stageChanged: false,
+    // Spec 0034 req 3: the stop's `chapter:` once it has landed (the k = 0.6 title point, or the
+    // arrival for a cut), kept across the stops of one chapter, cleared by the first that has
+    // another or none. The frame prints it above the trip's title.
+    chapter: null,
     dropped: [],
     held: null,
     reason: null,
@@ -369,6 +389,51 @@ export function createTrip(ctx) {
 
   function clearTimers() {
     timers = [];
+    endStretch();
+  }
+
+  // --- the star-stretch (spec 0034 req 2) ----------------------------------------------------
+
+  let stretchRun = null;
+  const _travel = new THREE.Vector3();
+
+  function setStarStretch(k) {
+    const dir = k > 0 && rig.velocityDir ? rig.velocityDir(_travel) : null;
+    if (ctx.stars3d && ctx.stars3d.setStretch) ctx.stars3d.setStretch(k, dir);
+    if (ctx.starfield && ctx.starfield.setStretch) ctx.starfield.setStretch(k, dir);
+  }
+
+  function latched() {
+    return !!(ctx.latch && ctx.latch.latched);
+  }
+
+  function beginStretch(shot, index) {
+    endStretch();
+    if (!(shot.ms > STRETCH_MIN_FLIGHT_MS) || !isLadderStage(stage.worldId)) return;
+    if (reducedMotion() || latched()) return;
+    stretchRun = { index, gen, startedAt: now(), ms: shot.ms };
+  }
+
+  /** Every exit from a flight lands here: jump, pause, leave, arrival, the latch tripping. */
+  function endStretch() {
+    const was = stretchRun;
+    stretchRun = null;
+    if (was) setStarStretch(0);
+  }
+
+  /** Per frame, from tick(): the envelope over the rig's own progress through the flight. */
+  function stepStretch() {
+    const sr = stretchRun;
+    if (!sr) return;
+    if (sr.gen !== gen || state.phase !== 'flight' || state.index !== sr.index || latched()) {
+      endStretch();
+      return;
+    }
+    // The rig's clock, not the wall's: a slow frame is clamped to 250 ms in the rig, so on a slow
+    // device the flight runs longer than its `ms` and a wall-clock envelope would end mid-flight.
+    const k = rig.flightProgress ? rig.flightProgress() : null;
+    const at = k !== null ? k : (now() - sr.startedAt) / sr.ms;
+    setStarStretch(stretchEnvelope(at));
   }
 
   function holdTimers() {
@@ -401,6 +466,7 @@ export function createTrip(ctx) {
     requestAnimationFrame(tick);
     stepUpTween();
     refreshNote();
+    stepStretch();
     // A timer from a superseded generation is dropped rather than fired: a user-initiated jump
     // must not be overtaken by the dwell of the stop it left.
     timers = timers.filter((timer) => timer.gen === gen);
@@ -1554,6 +1620,11 @@ export function createTrip(ctx) {
     run.dwellTimer = null;
     run.dwellMs = 0;
 
+    if (ctx.labels && ctx.labels.clearEmphasis) ctx.labels.clearEmphasis();
+    // A new chapter, or none: the old line goes now and the new one lands with the stop's title.
+    // The same chapter again stays up, so the stops of one chapter do not re-announce it.
+    if ((entry.stop.chapter || null) !== state.chapter) state.chapter = null;
+
     if (entry.held) {
       holdAt(entry);
       return;
@@ -1561,8 +1632,39 @@ export function createTrip(ctx) {
 
     // Before the shot is composed, so every distance in it is in the new stage's unit. Back and
     // Next land here too, so a stop is always seen from its own stage whichever way it is reached.
-    enterStage(entry.stop.stage || run.tour.stage);
+    //
+    // THROUGH BLACK (spec 0034 req 1, 2026-09-23). A stage change frames the new world at once, a
+    // cut; inside a trip it now happens inside ui/veil.js's 350 ms to black and 350 ms back, and the
+    // flight to the stop starts from rest once the canvas is clear. Under reduced motion there is
+    // no veil: the stage cuts, the flight is the rig's cut, and the rig's own 220 ms cross-fade is
+    // the one fade (two would be the flicker the preference exists to prevent). `veil` is not
+    // PAUSABLE: a pause pressed in the black takes effect on the flight that follows it.
+    const nextStage = entry.stop.stage || run.tour.stage;
+    if (wantsVeil(nextStage)) {
+      state.phase = 'veil';
+      notify();
+      const mine = gen;
+      ctx.veil
+        .through(() => {
+          if (mine === gen && run && state.index === index) enterStage(nextStage);
+        })
+        .then(() => {
+          if (mine === gen && run && state.index === index && state.phase === 'veil') flyToStop(entry, index);
+        });
+      return;
+    }
+    enterStage(nextStage);
+    flyToStop(entry, index);
+  }
 
+  /** Whether reaching this stop changes the map's centre, and the veil should cover it. */
+  function wantsVeil(nextStage) {
+    return !!(run && nextStage && nextStage !== stage.worldId && typeof ctx.setStage === 'function'
+      && ctx.veil && typeof ctx.veil.through === 'function' && !reducedMotion());
+  }
+
+  /** The rest of goTo(), once the stop's stage is the map's: its clock, its shot, its flight. */
+  function flyToStop(entry, index) {
     // The stop's own clock, after the stage (the rate cap depends on it) and BEFORE the shot, whose
     // subject, key light and arrival all read ctx.clock.now().
     if (applyStopTime(entry) === 'unresolved') {
@@ -1599,6 +1701,7 @@ export function createTrip(ctx) {
       onCancel: guarded(() => {}),
     });
     if (!cutting && upFor(shot)) beginUpTween(upFor(shot), shot.ms);
+    if (!cutting && state.phase === 'flight' && state.index === index) beginStretch(shot, index);
 
     // The title, six tenths of the way in. Skipped under reduced motion and for a cut, where the
     // arrival above has already happened -- synchronously, before flyTo returned -- and the card
@@ -1608,6 +1711,8 @@ export function createTrip(ctx) {
       after(shot.ms * TITLE_AT, () => {
         if (!run || state.phase !== 'flight' || state.index !== index) return;
         paintCard(entry, true);
+        // The chapter lands with the title: "where am I going" and "which part of the story".
+        state.chapter = entry.stop.chapter || null;
         notify();
       });
     }
@@ -1640,7 +1745,11 @@ export function createTrip(ctx) {
     if (reason !== 'done' && reason !== 'skipped') return;
     // A flight collapsed by Next, or slower than the wall clock, ends with the up where it belongs.
     settleUp(upFor(run.stops[index].shot));
+    endStretch();
     state.phase = 'settle';
+    // A cut had no k = 0.6 to land the chapter at; it appears with the card (and under reduced
+    // motion ui.css makes that an appearance, not a rise).
+    state.chapter = run.stops[index].stop.chapter || null;
     releaseClockHold();
     paintCard(run.stops[index]);
     after(SETTLE_MS, () => dwell(index));
@@ -1651,6 +1760,11 @@ export function createTrip(ctx) {
     if (!run || state.index !== index) return;
     state.phase = 'dwell';
     const entry = run.stops[index];
+    // THE RACK-FOCUS SUBSTITUTE (spec 0034 req 4): the subject's name settles to full size and the
+    // rest dim. At the dwell and not at the arrival, because the labels are hidden while the camera
+    // moves and come back here (ui.css): a 300 ms settle begun at arrival would be half over
+    // before anyone could see it.
+    if (ctx.labels && ctx.labels.emphasise) ctx.labels.emphasise(subjectIdOf(entry));
     const stop = entry.stop;
     const deg = Number(stop.drift_deg) || 0;
     if (deg > 0 && stop.drift !== 'none') {
@@ -1682,6 +1796,14 @@ export function createTrip(ctx) {
       run.dwellTimer = after(stop.dwell_ms, () => advance());
     }
     notify();
+  }
+
+  /** The id the labels know the stop's subject by: its record's, or the world's own. */
+  function subjectIdOf(entry) {
+    const subject = entry && entry.subject;
+    if (!subject) return null;
+    if (subject.record) return subject.record.id;
+    return subject.kind === 'world' ? subject.id : null;
   }
 
   /**
@@ -1718,6 +1840,7 @@ export function createTrip(ctx) {
     rig.stopOrbit('done');
     driftRun = null;
     run.dwellTimer = null;
+    state.chapter = null;
     state.phase = 'outro';
     notify();
   }
@@ -1826,6 +1949,7 @@ export function createTrip(ctx) {
     // is told 'replaced' rather than dropped -- and moves the camera nowhere, which is the
     // difference between this and finishFlight(): the visitor asked to stop, not to arrive.
     if (pausedDuring === 'flight') freezeFlight();
+    endStretch();
     // The up stops where it is, with the camera; resuming re-flies the stop and turns it from here.
     upTween = null;
     if (driftRun) {
@@ -1894,6 +2018,7 @@ export function createTrip(ctx) {
     state.generation = gen;
     leaving = true;
     clearTimers();
+    if (ctx.labels && ctx.labels.clearEmphasis) ctx.labels.clearEmphasis();
     // BEFORE anything else, and before `run` is thrown away: leaving must leave the camera where
     // it is, and a flight nobody stopped goes on flying with the frame gone.
     freezeFlight();
@@ -1938,6 +2063,7 @@ export function createTrip(ctx) {
     state.clockMoves = false;
     state.clockOwned = false;
     state.stageChanged = false;
+    state.chapter = null;
     state.pausedBy = null;
     state.held = null;
     state.reason = reason || null;

@@ -72,6 +72,10 @@ STOP_FIELDS = (
     # is exactly the stop it was before the fields existed.
     "time",
     "rate",
+    # Spec 0034: the line in the letterbox's top bar for the part of the story this stop is in.
+    # Stops of one chapter repeat it, and the frame keeps it up across them rather than
+    # re-announcing it; scripts/check_registry.py holds it to forty characters.
+    "chapter",
     "card",
 )
 

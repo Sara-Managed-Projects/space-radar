@@ -583,6 +583,7 @@ export const TOURS = [
           "site": "surveyor-1"
         },
         "distance_km": 900,
+        "chapter": "Chapter one: the race, 1966 to 1972",
         "card": {
           "title": "The first soft landing anyone can find",
           "body": "It was not the first. The Soviet Luna 9 landed softly four months earlier, on 3 February 1966, but NASA's table says the place published for it is probably at least 10 km out, direction unknown. Surveyor 1 shut off its engines 3.4 m up and dropped the rest of the way."
@@ -602,6 +603,7 @@ export const TOURS = [
           "site": "apollo-11"
         },
         "distance_km": 900,
+        "chapter": "Chapter one: the race, 1966 to 1972",
         "card": {
           "title": "The first people",
           "body": "Neil Armstrong and Buzz Aldrin stayed 21 hours and 36 minutes. Their whole walk covered about 250 metres, and neither went more than about 100 m from the lander. Michael Collins waited for them in orbit."
@@ -621,6 +623,7 @@ export const TOURS = [
           "site": "apollo-12"
         },
         "distance_km": 900,
+        "chapter": "Chapter one: the race, 1966 to 1972",
         "card": {
           "title": "A visit to an older robot",
           "body": "On their second walk they went over to Surveyor 3 and brought about 10 kg of it home to study, its TV camera included. That camera is on show at the Smithsonian's National Air and Space Museum in Washington."
@@ -640,6 +643,7 @@ export const TOURS = [
           "site": "lunokhod-1"
         },
         "distance_km": 900,
+        "chapter": "Chapter one: the race, 1966 to 1972",
         "card": {
           "title": "A rover driven from Earth",
           "body": "Nobody rode it. A team of five controllers on Earth drove it by its television pictures, at one or two kilometres an hour. It was built to last three lunar days and kept going for eleven, 322 Earth days in all."
@@ -659,6 +663,7 @@ export const TOURS = [
           "site": "apollo-17"
         },
         "distance_km": 900,
+        "chapter": "Chapter one: the race, 1966 to 1972",
         "card": {
           "title": "Seventy-five hours, then a long quiet",
           "body": "Gene Cernan and Harrison Schmitt, the first scientist to walk on the Moon, stayed 75 hours and covered 30 km with their rover. After them robots landed three more times, and then nothing landed softly on the Moon for 37 years."
@@ -678,6 +683,7 @@ export const TOURS = [
           "site": "change-4"
         },
         "distance_km": 900,
+        "chapter": "Chapter two: the long quiet ends",
         "card": {
           "title": "The side that never faces us",
           "body": "From here the Earth is always below the horizon, so the Moon itself blocks any radio link home. China first put a relay satellite, Queqiao, out beyond the Moon, and the lander spoke to Earth through it. Its rover, Yutu 2, was still driving four years later."
@@ -697,6 +703,7 @@ export const TOURS = [
           "site": "chandrayaan-3"
         },
         "distance_km": 900,
+        "chapter": "Chapter two: the long quiet ends",
         "card": {
           "title": "Near the south pole",
           "body": "India's first try, Chandrayaan-2, carried a lander also called Vikram, and it crashed in September 2019 about 110 km from here. This one was built to work for one lunar day, about 14 Earth days, and was put to sleep on 4 September 2023."
@@ -716,6 +723,7 @@ export const TOURS = [
           "site": "im-1"
         },
         "distance_km": 900,
+        "chapter": "Chapter three: the first companies",
         "card": {
           "title": "The first private lander, leaning",
           "body": "It came down on a slope of about 12 degrees, broke some of its landing gear, and came to rest leaning at 30 degrees, still working. Nothing had landed nearer a pole until the same company's next lander, IM-2, reached 84.8 degrees south in March 2025."
@@ -735,6 +743,7 @@ export const TOURS = [
           "site": "blue-ghost-1"
         },
         "distance_km": 900,
+        "chapter": "Chapter three: the first companies",
         "card": {
           "title": "An eclipse, seen from the Moon",
           "body": "It carried ten NASA instruments. On 14 March 2025 it watched the Earth pass in front of the Sun, a total eclipse seen from the Moon. Two days later it filmed the sunset, looking for a glow over the horizon that Gene Cernan saw on Apollo 17."
@@ -756,6 +765,7 @@ export const TOURS = [
         "frame_radii": 6.0,
         "drift_deg": 20,
         "key_light_deg": 45,
+        "chapter": "Epilogue: the whole Moon",
         "card": {
           "title": "Twenty-eight landings, nineteen on this map",
           "body": "NASA's table of what lies on the Moon, last updated in August 2025, lists 28 landings, six of them with people aboard. This map marks 19 of them, two by where their rovers stopped. Luna 9, the first of all, is not one: nobody knows exactly where it is."
@@ -793,6 +803,7 @@ export const TOURS = [
         "stage": "jupiter",
         "frame_radii": 12,
         "behind": "jupiter",
+        "chapter": "Chapter one: Jupiter's moons",
         "card": {
           "title": "Io, the moon Jupiter never lets rest",
           "body": "Io goes round Jupiter every 42 hours, pulled one way by the planet and the other by two moons further out, in time with it. All that kneading has to go somewhere, and it comes out of hundreds of volcanoes."
@@ -813,6 +824,7 @@ export const TOURS = [
         "stage": "jupiter",
         "frame_radii": 12,
         "behind": "jupiter",
+        "chapter": "Chapter one: Jupiter's moons",
         "card": {
           "title": "Europa, and the two ships on their way",
           "body": "Under that ice is twice as much water as every ocean on Earth put together. Europa Clipper reaches Jupiter in April 2030 to fly past here 49 times and ask whether anything could live down there; Europe's JUICE arrives in 2031 and ends up circling Ganymede."
@@ -832,6 +844,7 @@ export const TOURS = [
         },
         "stage": "saturn",
         "frame_radii": 4.5,
+        "chapter": "Chapter two: the ringed planet",
         "card": {
           "title": "Saturn, and a ring ten metres thick",
           "body": "The rings reach eighty thousand kilometres out from the equator and in places are ten metres from top to bottom. They are almost all water ice. Cassini circled here for thirteen years and finished by flying into the planet in September 2017."
@@ -852,6 +865,7 @@ export const TOURS = [
         "stage": "saturn",
         "frame_radii": 6,
         "behind": "saturn",
+        "chapter": "Chapter two: the ringed planet",
         "card": {
           "title": "Titan, and the farthest we have landed",
           "body": "The air at the ground presses half again as hard as Earth's, and the lakes under the haze are methane. Huygens came down through it on 14 January 2005 and sent for ninety minutes from the surface. Nothing has landed further from home, before or since."
@@ -872,6 +886,7 @@ export const TOURS = [
         "stage": "saturn",
         "frame_radii": 12,
         "behind": "saturn",
+        "chapter": "Chapter two: the ringed planet",
         "card": {
           "title": "Enceladus, spraying its ocean into space",
           "body": "Cassini found the jets in 2005, coming off the south pole at four hundred metres a second, and flew straight through them. They carry water, salt, silica and more organic material than anyone expected, and they have not stopped: the dust keeps one of Saturn's outer rings supplied."
@@ -892,6 +907,7 @@ export const TOURS = [
         "stage": "neptune",
         "frame_radii": 14,
         "behind": "neptune",
+        "chapter": "Chapter three: the last planet",
         "card": {
           "title": "Triton, going the wrong way round",
           "body": "One spacecraft has ever visited Neptune: Voyager 2, on 25 August 1989. Five hours after passing the planet it flew by Triton, forty thousand kilometres up, and found a surface at minus 235 degrees with geysers going off on it."
@@ -912,6 +928,7 @@ export const TOURS = [
         "stage": "pluto",
         "frame_radii": 9,
         "behind": "charon",
+        "chapter": "Chapter four: past Neptune",
         "card": {
           "title": "Pluto and Charon, going round each other",
           "body": "New Horizons crossed this pair on 14 July 2015, nine and a half years out from Earth. It found mountains of water ice, and beside them a plain of nitrogen ice that is still slowly turning over. Sending the pictures home took until October 2016."
@@ -931,6 +948,7 @@ export const TOURS = [
         },
         "stage": "sun",
         "needs_layer": "far-bodies",
+        "chapter": "Chapter four: past Neptune",
         "card": {
           "title": "Sedna, on its way in",
           "body": "It is falling towards its closest point, some time around 2076, and even that is seventy-six times the Earth's distance from the Sun. Then it climbs back out to nine hundred and thirty-seven times. No planet we know of could have put it on that path, and finding it in 2003 was part of what made astronomers ask what a planet is."
@@ -951,6 +969,7 @@ export const TOURS = [
         },
         "stage": "sun",
         "needs_layer": "far-bodies",
+        "chapter": "Chapter four: past Neptune",
         "card": {
           "title": "Eris, which made planet a definition",
           "body": "The definition astronomers agreed on in 2006 asks three things of a planet: it goes round the Sun, gravity has pulled it round, and it has cleared its own path. Eris and Pluto fail the third. Eris is near the far end of a 560-year lap, ninety five times as far from the Sun as we are."
@@ -971,6 +990,7 @@ export const TOURS = [
         },
         "stage": "sun",
         "needs_layer": "deep-space",
+        "chapter": "Epilogue: looking back",
         "card": {
           "title": "Voyager 1, and everything behind it",
           "body": "It passed Jupiter in March 1979 and Saturn in November 1980, and it has been leaving ever since, more than 170 times the Earth's distance from the Sun. In 1990 it turned round and photographed the planets it had left. Earth came out 0.12 of a pixel wide."

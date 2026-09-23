@@ -1406,7 +1406,10 @@ html.sr-trip-mode .sr-mark {
 
 :root {
   --sr-z-trip: 60;
-  --sr-z-tripfade: 8; /* over the canvas and the labels, under every panel and the card */
+  /* The veil (ui/veil.js, spec 0034): over the canvas and the labels, under every panel, the card
+     and the letterbox. It is mounted on <body> beside the canvas, not inside the trip frame: the
+     frame is its own stacking context at 60, and the old fade in it covered the card too. */
+  --sr-z-veil: 8;
   --sr-letterbox: min(6.5vh, 64px);
 }
 
@@ -1456,6 +1459,39 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels {
 html.sr-trip-mode[data-trip-phase='dwell'] #labels .label:not([data-kind='selection']),
 html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selection']) {
   opacity: 0.6;
+}
+
+/* THE RACK-FOCUS SUBSTITUTE (spec 0034 req 4). The camera never pulls focus; the subject's name
+   settles from 0.92 to full size over 300 ms as the dwell begins and everything else waits at 0.6
+   (ui/labels.js EMPHASIS_MS, EMPHASIS_FROM, DIM_OPACITY -- tests/test_labels.mjs reads these
+   numbers back out of this file). The scale is on the text, not on the label: the label's own
+   `transform` is its position, and a `scale` beside it would scale about the host's corner. */
+#labels .label.is-subject .label__text {
+  display: inline-block;
+  transform-origin: 50% 100%;
+  animation: sr-label-in 300ms var(--sr-ease) both;
+}
+
+#labels .label.is-dimmed {
+  opacity: 0.6;
+  transition: opacity 200ms var(--sr-ease);
+}
+
+@keyframes sr-label-in {
+  from {
+    transform: scale(0.92);
+  }
+
+  to {
+    transform: scale(1);
+  }
+}
+
+/* The dim is not motion and stays; the scale is, and goes. */
+@media (prefers-reduced-motion: reduce) {
+  #labels .label.is-subject .label__text {
+    animation: none;
+  }
 }
 
 .sr-trip {
@@ -1727,19 +1763,68 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   gap: 8px;
 }
 
-/* The reduced-motion cross-fade: over the CANVAS, never over the card, or the scene appears to
-   teleport underneath stationary text. Nothing listens to `camera-fade` but this. */
-.sr-trip__fade {
+/* THE VEIL (spec 0034, 2026-09-23): one black over the CANVAS, never over the card, the letterbox
+   or the controls, or the scene appears to teleport underneath stationary text. A stage change in
+   a trip goes through it at 350 ms each way; under reduced motion it is the rig's 220 ms
+   cross-fade, once. `--sr-space` and not `--sr-space-edge`: the veil is the sky with the stars
+   taken out, and the letterbox bars stay a shade darker than it so the frame still reads. */
+.sr-veil {
   position: fixed;
   inset: 0;
-  z-index: var(--sr-z-tripfade);
+  z-index: var(--sr-z-veil);
   pointer-events: none;
-  background: var(--sr-space-edge);
+  background: var(--sr-space);
   opacity: 0;
 }
 
-.sr-trip__fade.is-on {
+.sr-veil.is-on {
   opacity: 1;
+}
+
+/* THE CHAPTER (spec 0034 req 3): a planetarium's "Chapter two" line, above the trip's title in
+   the top bar. It lands at the stop title's k = 0.6 point with a short rise, and stays while the
+   chapter does -- two stops in one chapter do not re-announce it. */
+.sr-trip__titles {
+  display: flex;
+  /* A zero basis, not `auto`: with `auto` the title's full width is what the top bar wraps on, and
+     at 390 px it pushed Leave onto a row of its own (measured 2026-09-23, a 75 px top bar). The
+     title ellipsises instead, as it always has, and Leave stays beside it. */
+  flex: 1 1 0;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.sr-trip__chapter {
+  margin: 0;
+  overflow: hidden;
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--sr-text-dim); /* not ember: ember is the one interactive colour, and this is not */
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sr-trip__chapter[hidden] {
+  display: none;
+}
+
+.sr-trip__chapter.is-new {
+  animation: sr-chapter-in 420ms var(--sr-ease) both;
+}
+
+@keyframes sr-chapter-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* The card during a trip -------------------------------------------------------------- */
@@ -1883,6 +1968,11 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
   html.sr-trip-mode #sr-card .sr-card__body,
   html.sr-trip-mode #sr-card .sr-card__foot {
     animation-name: sr-trip-fade;
+  }
+
+  /* Spec 0034 req 5: the chapter appears, it does not rise. */
+  .sr-trip__chapter.is-new {
+    animation: none;
   }
 }
 

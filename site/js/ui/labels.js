@@ -1,6 +1,6 @@
 // ui/labels.js -- names over the scene for the few things worth naming (spec 0026 req 5).
 //
-// Contract: createLabels(ctx, host) -> { update(tMs), destroy() }
+// Contract: createLabels(ctx, host) -> { update(tMs), destroy(), emphasise(id), clearEmphasis() }
 // Also exported, pure, so the choice can be tested without a DOM:
 //   chooseLabels(candidates, opts) -> the candidates that get a label, in draw order
 //
@@ -35,6 +35,16 @@ import { WORLDS, systemOf } from '../scene/worlds.js';
 export const LABEL_CAP = 12;
 export const NOTABLE_CAP = 10;
 export const DEDUPE_PX = 24;
+// THE RACK-FOCUS SUBSTITUTE (spec 0034 req 4, 2026-09-23). A film pulls focus to the thing the
+// scene is about; this camera never does, because a defocused world is a world drawn wrong. So on
+// arrival the trip's subject's name settles from EMPHASIS_FROM to full size over EMPHASIS_MS and
+// every other name waits at DIM_OPACITY. The numbers are drawn by site/css/ui.css (a keyframe
+// and an opacity cannot read a JS constant); tests/test_labels.mjs reads them back out of the CSS.
+export const EMPHASIS_MS = 300;
+export const EMPHASIS_FROM = 0.92;
+export const DIM_OPACITY = 0.6;
+export const SUBJECT_CLASS = 'is-subject';
+export const DIMMED_CLASS = 'is-dimmed';
 const MAX_NAME = 34;
 
 /** A name a person uses, before the catalogue's string. Mirrors ui/cards.js displayName. */
@@ -256,7 +266,12 @@ export function behindWorld(eye, pos, spheres, skipId = null) {
 }
 
 export function createLabels(ctx, host) {
-  if (!host || typeof document === 'undefined') return { update() {}, destroy() {} };
+  if (!host || typeof document === 'undefined') {
+    return { update() {}, destroy() {}, emphasise() {}, clearEmphasis() {}, subject: () => null };
+  }
+  // The id whose label is emphasised, or null. Read by update(), so the classes follow the slot the
+  // subject is drawn in whichever of the twelve that turns out to be on the next tick.
+  let subjectId = null;
   const pool = [];
   for (let i = 0; i < LABEL_CAP; i++) {
     const node = document.createElement('div');
@@ -389,6 +404,9 @@ export function createLabels(ctx, host) {
         slot.klass = klass;
       }
       slot.node.dataset.kind = c.kind;
+      const isSubject = subjectId !== null && c.record.id === subjectId;
+      setClass(slot.node, SUBJECT_CLASS, isSubject);
+      setClass(slot.node, DIMMED_CLASS, subjectId !== null && !isSubject);
     }
     const w = host.clientWidth || window.innerWidth;
     // Measure every box once (one layout), then place, then keep only the boxes that do not overlap
@@ -417,5 +435,25 @@ export function createLabels(ctx, host) {
     pool.length = 0;
   }
 
-  return { update, destroy };
+  // Toggled only when it changes: re-adding `is-subject` to a node that has it would not restart
+  // the keyframe, and removing it for a frame would restart it every tick.
+  function setClass(node, cls, on) {
+    if (node.classList.contains(cls) !== on) node.classList.toggle(cls, on);
+  }
+
+  /** Emphasise the label of record `id` from the next update() on, and dim every other. */
+  function emphasise(id) {
+    subjectId = id === undefined || id === null || id === '' ? null : String(id);
+  }
+
+  /** Undo emphasise(), now rather than on the next tick: a flight must not start under a dim. */
+  function clearEmphasis() {
+    subjectId = null;
+    for (const slot of pool) {
+      setClass(slot.node, SUBJECT_CLASS, false);
+      setClass(slot.node, DIMMED_CLASS, false);
+    }
+  }
+
+  return { update, destroy, emphasise, clearEmphasis, subject: () => subjectId };
 }

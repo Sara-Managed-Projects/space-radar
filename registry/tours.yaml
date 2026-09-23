@@ -592,6 +592,10 @@ tours:
       - id: surveyor-1
         target: {site: surveyor-1}
         distance_km: 900
+        # Spec 0034: the part of the story this stop is in, above the trip's title in the
+        # letterbox. The stops of one chapter repeat it and the frame keeps it up across them;
+        # a new one lands with the stop's title, which for a new stage is just after the black.
+        chapter: "Chapter one: the race, 1966 to 1972"
         card:
           title: "The first soft landing anyone can find"
           # NSSDCA 1966-006A: Luna 9 made the first soft landing, "preceding the U.S. Surveyor 1
@@ -609,6 +613,7 @@ tours:
       - id: apollo-11
         target: {site: apollo-11}
         distance_km: 900
+        chapter: "Chapter one: the race, 1966 to 1972"
         card:
           title: "The first people"
           # NSSDCA 1969-059C (the Apollo 11 lunar module): the LM "lifted off from the Moon ...
@@ -623,6 +628,7 @@ tours:
       - id: apollo-12
         target: {site: apollo-12}
         distance_km: 900
+        chapter: "Chapter one: the race, 1966 to 1972"
         card:
           title: "A visit to an older robot"
           # NSSDCA 1969-099C: on the second moonwalk they "visited the Surveyor 3 spacecraft,
@@ -639,6 +645,7 @@ tours:
       - id: lunokhod-1
         target: {site: lunokhod-1}
         distance_km: 900
+        chapter: "Chapter one: the race, 1966 to 1972"
         card:
           title: "A rover driven from Earth"
           # NSSDCA 1970-095D (Lunokhod 1): its TV images "were used by a five-man team of
@@ -653,6 +660,7 @@ tours:
       - id: apollo-17
         target: {site: apollo-17}
         distance_km: 900
+        chapter: "Chapter one: the race, 1966 to 1972"
         card:
           title: "Seventy-five hours, then a long quiet"
           # NSSDCA 1972-096C: "Schmitt was the first scientist-astronaut to walk on the Moon"; the
@@ -669,6 +677,7 @@ tours:
       - id: change-4
         target: {site: change-4}
         distance_km: 900
+        chapter: "Chapter two: the long quiet ends"
         card:
           title: "The side that never faces us"
           # NSSDCA 2018-103A: "Since the lander is on the far side, the Moon is blocking direct
@@ -686,6 +695,7 @@ tours:
       - id: chandrayaan-3
         target: {site: chandrayaan-3}
         distance_km: 900
+        chapter: "Chapter two: the long quiet ends"
         card:
           title: "Near the south pole"
           # NSSDCA 2019-042A (Chandrayaan-2): "The lander, named Vikram"; contact was lost during
@@ -701,6 +711,7 @@ tours:
       - id: im-1
         target: {site: im-1}
         distance_km: 900
+        chapter: "Chapter three: the first companies"
         card:
           title: "The first private lander, leaning"
           # NSSDCA IM-1-NOVA: "It landed in a 1 km diameter crater on a slope of about 12 degrees
@@ -716,6 +727,7 @@ tours:
       - id: blue-ghost-1
         target: {site: blue-ghost-1}
         distance_km: 900
+        chapter: "Chapter three: the first companies"
         card:
           title: "An eclipse, seen from the Moon"
           # NASA, "NASA Science Continues After Firefly's First Moon Mission Concludes" (18 March
@@ -741,6 +753,7 @@ tours:
         # Lit from the front, not three-quarter behind: the last shot is the Moon's face with its
         # sites on it, and the house back light would make it a crescent.
         key_light_deg: 45
+        chapter: "Epilogue: the whole Moon"
         card:
           title: "Twenty-eight landings, nineteen on this map"
           # The NSSDCA table, "Last Updated: 13 August 2025", counted 2026-09-22: 28 rows typed
@@ -790,6 +803,10 @@ tours:
         # 12 Io radii: at 5 the moon fills the frame and Jupiter, 5.9 Jupiter radii away, is
         # whatever the key light leaves behind it. Checked in the browser, 2026-09-22.
         frame_radii: 12
+        # Spec 0034: the part of the story this stop is in, above the trip's title in the
+        # letterbox. The stops of one chapter repeat it and the frame keeps it up across them;
+        # a new one lands with the stop's title, which for a new stage is just after the black.
+        chapter: "Chapter one: Jupiter's moons"
         card:
           title: "Io, the moon Jupiter never lets rest"
           # Io's lap is 1.769 days (NASA's Jovian satellite fact sheet, the same table
@@ -808,6 +825,7 @@ tours:
         behind: jupiter
         stage: jupiter
         frame_radii: 12
+        chapter: "Chapter one: Jupiter's moons"
         card:
           title: "Europa, and the two ships on their way"
           # Twice Earth's ocean: NASA Science, Europa, read 2026-09-22, "holding twice as much
@@ -828,6 +846,7 @@ tours:
         target: {record: saturn}
         stage: saturn
         frame_radii: 4.5
+        chapter: "Chapter two: the ringed planet"
         card:
           title: "Saturn, and a ring ten metres thick"
           # Wikipedia, Rings of Saturn, read 2026-09-22: they "extend from 7,000 km (4,300 mi) to
@@ -848,6 +867,7 @@ tours:
         behind: saturn
         stage: saturn
         frame_radii: 6
+        chapter: "Chapter two: the ringed planet"
         card:
           title: "Titan, and the farthest we have landed"
           # Wikipedia, Titan (moon), read 2026-09-22: surface pressure "146.7 kPa (1.45 atm)", "the
@@ -871,6 +891,7 @@ tours:
         # which reads as two bodies of a size. At 12 it is 85 px against the same 250 px, and
         # perspective is doing less of the lying: Saturn really is 231 times the radius.
         frame_radii: 12
+        chapter: "Chapter two: the ringed planet"
         card:
           title: "Enceladus, spraying its ocean into space"
           # NASA Science, Enceladus, read 2026-09-22: "In 2005, NASA's Cassini spacecraft
@@ -895,6 +916,7 @@ tours:
         # radii drew the moon twice the width of the planet it goes round (browser, 2026-09-22).
         # At 14 they are 69 and 65 px, which is at least the right way round.
         frame_radii: 14
+        chapter: "Chapter three: the last planet"
         card:
           title: "Triton, going the wrong way round"
           # Wikipedia, Voyager 2, read 2026-09-22: "Voyager 2's closest approach to Neptune
@@ -915,6 +937,7 @@ tours:
         # Charon is 19 600 km from Pluto and 606 km in radius. At 9 Pluto radii (10 700 km) the
         # pair is the shot; the moon's own card is one tap away.
         frame_radii: 9
+        chapter: "Chapter four: past Neptune"
         card:
           title: "Pluto and Charon, going round each other"
           # Wikipedia, New Horizons, read 2026-09-22: launch "January 19, 2006", closest approach
@@ -938,6 +961,7 @@ tours:
         # because scene/heroes.js draws the SELECTED model at a constant 260 px whatever the
         # distance. Sedna and Eris therefore look like the same rock at the same size; the words
         # and the orbit line are what tell them apart.
+        chapter: "Chapter four: past Neptune"
         card:
           title: "Sedna, on its way in"
           # Wikipedia, 90377 Sedna, read 2026-09-22: found "on 14 November 2003"; perihelion
@@ -955,6 +979,7 @@ tours:
         target: {record: dwarf-eris}
         needs_layer: far-bodies
         stage: sun
+        chapter: "Chapter four: past Neptune"
         card:
           title: "Eris, which made planet a definition"
           # Wikipedia, IAU definition of planet, read 2026-09-22. The resolution of 24 August 2006
@@ -979,6 +1004,7 @@ tours:
         # NO `behind: sun`, though the Sun is the thing this card points back at: tried in the
         # browser 2026-09-22, and at 172 au the Sun is 0.01 px across, so aiming the camera at it
         # only turned Voyager 1 side on and put nothing in the frame.
+        chapter: "Epilogue: looking back"
         card:
           title: "Voyager 1, and everything behind it"
           # Wikipedia, Voyager 1, read 2026-09-22: launched "September 5, 1977", Jupiter on

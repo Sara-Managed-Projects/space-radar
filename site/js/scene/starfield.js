@@ -19,6 +19,7 @@ import * as THREE from '../../vendor/three.module.min.js';
 import * as frames from '../propagate/frames.js';
 import * as stageMod from './stage.js';
 import { PALETTE } from './glyphatlas.js';
+import { STRETCH_VERT_HEAD, STRETCH_VERT, STRETCH_FRAG_HEAD, STRETCH_FRAG, stretchUniforms, writeStretch } from './stretch.js';
 
 const DEG = Math.PI / 180;
 const DEFAULT_RADIUS = 1e5; // scene units; update(camera) clamps this under camera.far
@@ -143,24 +144,28 @@ uniform float uPixelRatio;
 uniform float uGain;
 varying vec3 vColour;
 varying float vAlpha;
+${STRETCH_VERT_HEAD}
 void main() {
   vColour = aColour;
   vAlpha = aAlpha * uGain;
   vec4 mv = modelViewMatrix * vec4( position, 1.0 );
   gl_Position = projectionMatrix * mv;
-  gl_PointSize = aSize * uPixelRatio;
+  float sizePx = aSize * uPixelRatio;
+  // Spec 0034: the same stretch as scene/stars3d.js; at uStretch == 0, gl_PointSize = sizePx.
+${STRETCH_VERT}
 }
 `;
 
 const STAR_FRAG = /* glsl */ `
 varying vec3 vColour;
 varying float vAlpha;
+${STRETCH_FRAG_HEAD}
 #include <common>
 void main() {
-  float d = length( gl_PointCoord - vec2( 0.5 ) );
+${STRETCH_FRAG}
   float a = 1.0 - smoothstep( 0.12, 0.5, d );
   if ( a <= 0.0 ) discard;
-  gl_FragColor = vec4( vColour, a * vAlpha );
+  gl_FragColor = vec4( vColour, a * vAlpha * taper );
   #include <colorspace_fragment>
 }
 `;
@@ -278,6 +283,7 @@ export function createStarfield(scene, opts = {}) {
   const starUniforms = {
     uPixelRatio: { value: pixelRatio },
     uGain: { value: 1 },
+    ...stretchUniforms(),
   };
 
   // ---- Milky Way ----------------------------------------------------------------------------
@@ -537,6 +543,17 @@ export function createStarfield(scene, opts = {}) {
     setDetail(level) {
       detailLow = level === 'low';
       this.setSkyOpacity(skyOpacity);
+    },
+    /**
+     * Spec 0034 req 2: the same star-stretch as scene/stars3d.js setStretch, on the naked-eye sky.
+     * On a rung of the ladder registry/lod.yaml has usually faded this sky out already; it is
+     * stretched anyway, so the two draws can never disagree during the crossfade between them.
+     */
+    setStretch(k, dir) {
+      return writeStretch(starUniforms, k, dir);
+    },
+    stretch() {
+      return starUniforms.uStretch.value;
     },
     /** Overall star brightness, 0..1 — the sky view dims them at dawn. */
     setGain(g) {
