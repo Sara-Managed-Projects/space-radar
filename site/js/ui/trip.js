@@ -258,6 +258,9 @@ export function createTrip(ctx) {
     stopTitle: null,
     // Spec 0037: the event type the stop's instant comes from ('solar-eclipse', ...), or null.
     stopEventType: null,
+    // The planets whose paths and dots the Sun stage draws while this trip runs (`orbits:`,
+    // scene/orbitrings.js), and which the frame's "drawn larger" line is about. Empty when none.
+    orbits: [],
     index: -1,
     count: 0,
     estimateMs: 0,
@@ -1547,6 +1550,7 @@ export function createTrip(ctx) {
 
     state.tourId = tour.id;
     state.tourTitle = tour.title;
+    state.orbits = Array.isArray(tour.orbits) ? tour.orbits.slice() : [];
     state.count = resolved.stops.length;
     state.estimateMs = estimateOf(resolved.stops);
     state.dropped = resolved.dropped;
@@ -1642,6 +1646,13 @@ export function createTrip(ctx) {
     const nextStage = entry.stop.stage || run.tour.stage;
     if (wantsVeil(nextStage)) {
       state.phase = 'veil';
+      // The card of the stop being LEFT goes as the black comes up (2026-09-23): the veil sits under
+      // the card (ui/veil.js, z 8), so the old card stayed over the black and on into the next
+      // flight until the new title replaced it -- measured in headless Chrome, Europa's card over
+      // all 86 samples of the veil into Saturn and 1.0 s of the flight after it, under a frame
+      // already titled Saturn. Only here: a flight without a veil keeps the old card until the new
+      // title lands, because there the old world is still on the screen under it.
+      hideCard();
       notify();
       const mine = gen;
       ctx.veil
@@ -2052,6 +2063,7 @@ export function createTrip(ctx) {
     state.phase = 'idle';
     state.tourId = null;
     state.tourTitle = null;
+    state.orbits = [];
     state.stopId = null;
     state.stopEventType = null;
     state.stopTitle = null;

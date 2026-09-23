@@ -112,8 +112,12 @@ async function tripTo(page, tourId, index) {
 //
 //   node scripts/shots.mjs --only=og --out=site/og      one picture per trip, and default.png
 //
-// A trip whose first stop cannot be found in CI (CelesTrak refusing, say) is planned without it
-// by ui/trip.js, so the picture is of its first stop that DID resolve -- and this says so.
+// THE STOP IS THE TRIP'S `og_stop:` (registry/tours.yaml, 2026-09-23), its first when it names
+// none. A first stop is chosen to start a trip, not to sell it: "To the edge" opens on the Sun
+// from a light-year, which at 1200 x 630 is a field of star-ladder dots, and its sixth stop is the
+// Milky Way from outside. A stop that cannot be found in CI (CelesTrak refusing, say) is dropped
+// by ui/trip.js's planner, so the picture falls back to the trip's first stop that DID resolve --
+// and this says so.
 
 async function ogBytes(page, words) {
   const b64 = await page.evaluate(async (w) => {
@@ -127,28 +131,40 @@ async function ogBytes(page, words) {
   return Buffer.from(b64, 'base64');
 }
 
-async function tripFirstStop(page, tour) {
+/** The index, among the stops that resolved today, of the stop the picture is taken at. Pure. */
+function ogStopIndex(tour, droppedIds) {
+  const stops = (tour && tour.stops) || [];
+  const wanted = stops[(Number.isInteger(tour && tour.og_stop) ? tour.og_stop : 1) - 1];
+  const dropped = new Set(droppedIds || []);
+  const kept = stops.filter((s) => !dropped.has(s.id));
+  const at = wanted ? kept.findIndex((s) => s.id === wanted.id) : -1;
+  return { index: Math.max(0, at), wantedId: wanted ? wanted.id : null, found: at >= 0 };
+}
+
+async function tripOgStop(page, tour) {
   const plan = await page.evaluate(async (id) => {
     const p = await window.spaceRadar.trip.start(id);
-    return p ? { offerable: p.offerable !== false, reason: p.reason || null } : null;
+    return p ? { offerable: p.offerable !== false, reason: p.reason || null, dropped: (p.dropped || []).map((d) => d.id) } : null;
   }, tour.id);
   if (!plan || !plan.offerable) throw new Error(`the trip cannot run here: ${(plan && plan.reason) || 'no plan'}`);
+  const { index, wantedId, found } = ogStopIndex(tour, plan.dropped);
   await page.waitForFunction(() => window.spaceRadar.trip.state.phase === 'intro', null, { timeout: 30_000 });
-  await page.evaluate(() => window.spaceRadar.trip.play());
+  // From the intro, jumpTo() names the stop play() flies to first -- the deep link's path
+  // (ui/trip.js jumpTo), so the camera arrives at this stop exactly as a visitor's would.
+  await page.evaluate((i) => { if (i > 0) window.spaceRadar.trip.jumpTo(i); window.spaceRadar.trip.play(); }, index);
   await page.waitForFunction(
-    () => window.spaceRadar.trip.state.phase === 'dwell' && window.spaceRadar.trip.state.index === 0,
-    null,
+    (i) => window.spaceRadar.trip.state.phase === 'dwell' && window.spaceRadar.trip.state.index === i,
+    index,
     { timeout: 90_000 }
   );
   // Arrived; one beat more for the textures of what it arrived at.
   await page.waitForTimeout(2500);
   const st = await page.evaluate(() => {
     const s = window.spaceRadar.trip.state;
-    return { stopId: s.stopId, stopTitle: s.stopTitle, dropped: (s.dropped || []).map((d) => d.id) };
+    return { stopId: s.stopId, stopTitle: s.stopTitle };
   });
-  const first = tour.stops && tour.stops[0] && tour.stops[0].id;
-  if (first && st.stopId !== first) {
-    console.warn(`  og-${tour.id}: the first stop (${first}) could not be found here; this is its first stop that could: ${st.stopId}`);
+  if (!found) {
+    console.warn(`  og-${tour.id}: its picture stop (${wantedId}) could not be found here; this is its first stop that could: ${st.stopId}`);
   }
   return st;
 }
@@ -183,7 +199,7 @@ const ogShots = [
     minRecords: 6,
     layersReady: true,
     async picture(page) {
-      await tripFirstStop(page, tour);
+      await tripOgStop(page, tour);
       return ogBytes(page, { title: tour.title, blurb: tour.blurb });
     },
   })),

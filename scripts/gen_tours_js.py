@@ -42,9 +42,11 @@ from _genmirror import Mirror, pick  # noqa: E402
 # picker and the end card read: which heading a trip sits under, and which trip is offered after.
 # `requires_observer` (spec 0038): the trip starts from the visitor's own place, and ui/trip.js
 # plan() greys it with "Needs a place" when there is none. A stop's `{observer: true}` target is a
-# `target:` like any other and passes through unchanged.
+# `target:` like any other and passes through unchanged. `og_stop` (2026-09-23) is what
+# scripts/shots.mjs reads to take the preview picture at a stop other than the first; `orbits` is
+# what ui/trip.js hands scene/orbitrings.js.
 TRIP_FIELDS = ("id", "title", "blurb", "pacing", "requires", "min_stops", "stage", "clock", "group",
-               "next", "requires_observer")
+               "next", "requires_observer", "og_stop", "orbits")
 # A `groups:` row: the id a trip names, the heading the picker prints, and where it sits.
 GROUP_FIELDS = ("id", "display", "order")
 STOP_FIELDS = (

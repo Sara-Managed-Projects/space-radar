@@ -709,6 +709,16 @@ TOUR_CASES: list[tuple[str, str, str]] = [
     ("a chapter that is the card title again, two lines saying one thing",
      'chapter: "Chapter two: the ringed planet"',
      'chapter: "Saturn, and a ring ten metres thick"'),
+
+    # --- 2026-09-23: the preview picture's stop, and the Sun stage's paths ----------------------
+    ("a preview picture at a stop the trip does not have",
+     "    og_stop: 1\n", "    og_stop: 9\n"),
+    ("a preview picture at stop zero, which is not 1-based",
+     "    og_stop: 1\n", "    og_stop: 0\n"),
+    ("paths drawn for a moon, which has none round the Sun",
+     "    orbits: [mercury, venus, earth, mars, jupiter]", "    orbits: [mercury, moon]"),
+    ("paths on a trip that is not on the Sun stage, where they are never drawn",
+     "    stage: stellar\n    clock: as-found\n", "    stage: stellar\n    clock: as-found\n    orbits: [mercury]\n"),
 ]
 
 

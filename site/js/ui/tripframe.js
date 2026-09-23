@@ -3,6 +3,7 @@
 // Contract export: createTripFrame(ctx) -> { dispose() }
 //                  stopTimeLine(state, clock) -> the "Shown at" line, pure (spec 0030)
 //                  eclipseLine(state, drawn) -> the eclipse stops' honesty line, pure (spec 0037)
+//                  orbitsLine(state, stageId) -> "drawn larger than they are", pure (2026-09-23)
 //
 // ui/trip.js flies the camera. This is what a visitor sees of it: the letterbox, the controls in
 // the letterbox, the progress row, the intro and end cards, the keyboard, and the announcement a
@@ -165,6 +166,18 @@ export function eclipseLine(st, drawn) {
   if (type !== 'solar-eclipse' && type !== 'lunar-eclipse') return '';
   const line = drawn ? COPY.trip.eclipseLine : COPY.trip.eclipseLineLatched;
   return type === 'lunar-eclipse' && drawn ? `${line} ${COPY.trip.eclipseColour}` : line;
+}
+
+/**
+ * THE ORBITS LINE (2026-09-23): on every stop of a trip that draws the planets' paths and dots on
+ * the Sun stage (`orbits:`, scene/orbitrings.js), that the dots are drawn larger than the planets
+ * are and the places and paths are computed. Generated, like the eclipse line, so no card can
+ * forget it; the house rule is that size may be exaggerated only where the picture says so.
+ * Empty off the Sun stage, where nothing is drawn by orbitrings.js. Exported for the test.
+ */
+export function orbitsLine(st, stageId) {
+  if (!st || !Array.isArray(st.orbits) || !st.orbits.length || stageId !== 'sun') return '';
+  return COPY.trip.orbitsLine;
 }
 
 export function createTripFrame(ctx) {
@@ -629,7 +642,12 @@ export function createTripFrame(ctx) {
     if (parts.clockLine.textContent !== text) parts.clockLine.textContent = text;
     parts.clockLine.hidden = !text;
     const drawn = typeof ctx.eclipseDrawn === 'function' ? ctx.eclipseDrawn() : true;
-    const ecl = st && st.phase !== 'idle' ? eclipseLine(st, drawn) : '';
+    // The eclipse line and the orbits line share the element under the instant: no trip has both,
+    // and two stacked honesty lines would be read as one anyway.
+    const stageId = ctx.stage && ctx.stage.worldId;
+    const ecl = st && st.phase !== 'idle'
+      ? [eclipseLine(st, drawn), orbitsLine(st, stageId)].filter(Boolean).join(' ')
+      : '';
     if (parts.eclipseText.textContent !== ecl) parts.eclipseText.textContent = ecl;
     parts.eclipseText.hidden = !ecl;
   }

@@ -609,6 +609,38 @@ def check_tours(oddities_doc: dict, layer_ids: set, world_ids: set, site_ids: se
             fail(where, f"{len(stops)} stops, below its own `min_stops: {min_stops}` -- a trip that "
                         f"cannot reach its own floor on a perfect day will never reach it")
 
+        # `og_stop:` (2026-09-23): the stop the preview picture is taken at, 1-based. A number
+        # past the end would have scripts/shots.mjs photograph whatever jumpTo() clamps it to, a
+        # picture of a stop nobody chose. `True` is refused too: YAML reads `yes` as a bool, and a
+        # bool is an int in Python.
+        og_stop = tour.get("og_stop")
+        if og_stop is not None and (isinstance(og_stop, bool) or not isinstance(og_stop, int)
+                                    or not 1 <= og_stop <= len(stops)):
+            fail(where, f"`og_stop: {og_stop!r}` is not one of its {len(stops)} stops (1 to "
+                        f"{len(stops)}); the preview picture would be of a stop nobody chose")
+
+        # `orbits:` (2026-09-23): planets whose paths and dots scene/orbitrings.js draws. It draws
+        # on the Sun stage only -- everywhere else worlds.js already floors the planets, and a dot
+        # beside a squeezed disc is two answers to where Mars is -- and only a world that goes
+        # round the Sun has a path round it to draw.
+        orbits = tour.get("orbits")
+        if orbits is not None:
+            if not isinstance(orbits, list) or not orbits:
+                fail(where, "`orbits:` must be a non-empty list of planets")
+            else:
+                if stage != "sun":
+                    fail(where, f"`orbits:` on a trip on the `{stage}` stage; the paths are drawn "
+                                f"on the Sun stage only, so the trip would promise lines it never "
+                                f"shows")
+                for wid in orbits:
+                    if wid not in world_ids:
+                        fail(where, f"`orbits:` names `{wid}`, which has no worlds.yaml row")
+                    elif TOUR_WORLD_PARENTS.get(wid) != "sun" or wid == "sun":
+                        fail(where, f"`orbits:` names `{wid}`, which does not go round the Sun, so "
+                                    f"it has no path round it to draw")
+                if len(set(map(str, orbits))) != len(orbits):
+                    fail(where, "`orbits:` names a planet twice")
+
         seen_stops: set[str] = set()
         for n, stop in enumerate(stops, start=1):
             check_tour_stop(tour, stop, n, seen_stops, defaults, unreachable,
