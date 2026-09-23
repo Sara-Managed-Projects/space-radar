@@ -131,3 +131,39 @@ export function readMoment(valid) {
 export function writeMoment(moment) {
   write({ [HASH_KEY]: moment });
 }
+
+/**
+ * Read the link ONCE, at boot, apply its clock keys (`t`, `rate`) there and then, and return the
+ * rest of it for the caller to apply when the layers have landed.
+ *
+ * WHY, measured 2026-09-23 in headless Chrome. main.js used to read the hash at `sr:layers-ready`,
+ * 7-17 s after boot. By then the app's own clock writer (main.js, one write a second, trailing edge)
+ * had been putting the clock INTO the hash, so what was applied was not the visitor's link but a
+ * stale echo of the app's own state. A visitor who jumped to 2027-01-01 and pressed 1 h/s right
+ * after load was wound back 16 min of app time the moment the layers landed (0.27 h at SwiftShader's
+ * frame rate; about seven hours in a real browser), and the eclipse probe (#228) needed a throwaway
+ * jump because its first goTo() was undone the same way. Reading the link before any writer runs
+ * and applying the clock at once -- it needs nothing loaded, every position is a function of it --
+ * means a first scrub after load always sticks.
+ *
+ * `clock` is the app clock (clock.js), passed in so a test can hold it. A link in a format this
+ * reader does not know applies nothing, here as at layers-ready. The returned object never carries
+ * `t` or `rate`, so the later half cannot move the clock.
+ */
+export function bootLink(clock) {
+  const st = read();
+  if (clock && !st.unknownVersion) {
+    if (st.t && st.t !== 'now') {
+      const ms = Date.parse(st.t);
+      if (Number.isFinite(ms)) clock.goTo(ms);
+    }
+    if (st.rate) {
+      const r = Number(st.rate);
+      if (r > 0 && clock.rates().includes(r)) clock.setRate(r);
+    }
+  }
+  const rest = { ...st };
+  delete rest.t;
+  delete rest.rate;
+  return rest;
+}

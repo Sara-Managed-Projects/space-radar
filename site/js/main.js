@@ -18,7 +18,7 @@ import { createGlyphLayer } from './scene/glyphs.js';
 import { createHeroes, closeUpDistance } from './scene/heroes.js';
 import { createCameraRig, worldFramingDistance } from './scene/camera.js';
 import { createViewShift } from './scene/viewshift.js';
-import { readMoment, writeMoment, read as readUrlState, write as writeUrlState, clear as clearUrlState, stopIndex } from './ui/urlstate.js';
+import { readMoment, writeMoment, bootLink, write as writeUrlState, clear as clearUrlState, stopIndex } from './ui/urlstate.js';
 import { guessObserver } from './sky/guessplace.js';
 import { COPY, CITIES } from './copy/en.js';
 import { LAYERS, loadLayer } from './data/layers.js';
@@ -82,6 +82,9 @@ export async function boot({ setStatus } = {}) {
   let selected = null;
   let observer = null;
   let moment = readMomentFromHash();
+  // The link, read NOW, before any of the app's own writers below can touch the hash; its clock
+  // keys are applied here and the rest waits for the layers (ui/urlstate.js bootLink says why).
+  const link = bootLink(clock);
 
   const ctx = {
     clock, stage, scene, camera, cameraRig, viewShift, worlds, renderer, rendererApi, sources,
@@ -191,9 +194,11 @@ export async function boot({ setStatus } = {}) {
 
   // The rest of the link is applied ONCE the layers have landed (spec 0032 req 2): a trip
   // resolves its stops against records and `at` names one, so before this there is nothing to
-  // apply it to. The moment was read above already, because the doors are built before any data
-  // arrives. Registered before the load starts so the event cannot be missed.
-  window.addEventListener('sr:layers-ready', () => applyUrlState(ctx, readUrlState()), { once: true });
+  // apply it to. The moment and the clock were applied at boot already, and what is applied here
+  // is the link as it was read then, not the hash as it is now (2026-09-23: the hash by now holds
+  // the app's own clock, up to a second stale, and re-applying it undid a visitor's first scrub).
+  // Registered before the load starts so the event cannot be missed.
+  window.addEventListener('sr:layers-ready', () => applyUrlState(ctx, link), { once: true });
 
   // Data arrives in the background, layer by layer, slowest last. Nothing here is awaited by the
   // render loop.
@@ -742,8 +747,9 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
 // --- the link ------------------------------------------------------------------
 //
 // A deep link (spec 0032): `#trip=moon-landings&stop=3`, `#at=europa`, `#t=2027-08-02T10:00:00Z`,
-// `#stage=saturn`, in any combination. Applied once, after the layers land, in this order: the
-// clock first (every position is a function of it), the stage next (a record is selected on the
+// `#stage=saturn`, in any combination. Read once, at boot. The clock is applied then (every
+// position is a function of it, and it needs nothing loaded: ui/urlstate.js bootLink); the rest
+// once the layers land, in this order: the stage first (a record is selected on the
 // map it is drawn on), then EITHER a trip OR a selection -- a trip selects its own stops, so `at`
 // beside `trip` would fight it. A key that names nothing known is ignored and the scene says so
 // in one line (ui/scenenote.js); the rest of the link still applies, and the dead key leaves the
@@ -759,14 +765,7 @@ function applyUrlState(ctx, st) {
   // A newer format: this reader cannot tell what the keys it does recognise mean in it, so it
   // applies none of them rather than half of a link.
   if (st.unknownVersion) { linkNote(ctx, COPY.link.unknownVersion); return; }
-  if (st.t && st.t !== 'now') {
-    const ms = Date.parse(st.t);
-    if (Number.isFinite(ms)) ctx.clock.goTo(ms);
-  }
-  if (st.rate) {
-    const r = Number(st.rate);
-    if (r > 0 && ctx.clock.rates().includes(r)) ctx.clock.setRate(r);
-  }
+  // `t` and `rate` are not here: ui/urlstate.js bootLink() applied them at boot, and took them out.
   if (st.stage) {
     if (STAGES[st.stage]) ctx.setStage(st.stage);
     else linkNote(ctx, COPY.link.unknownStage, ['stage']);

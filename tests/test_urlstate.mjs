@@ -19,7 +19,8 @@ globalThis.history = {
 };
 const setHash = (h) => { globalThis.location.hash = h; };
 
-const { KEYS, VERSION, read, write, clear, stopIndex, readMoment, writeMoment, HASH_KEY } = await import(join(JS, 'ui/urlstate.js'));
+const { KEYS, VERSION, read, write, clear, stopIndex, readMoment, writeMoment, HASH_KEY, bootLink } = await import(join(JS, 'ui/urlstate.js'));
+const { clock } = await import(join(JS, 'clock.js'));
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -109,8 +110,61 @@ check(stopIndex(tour, '0') === -1 && stopIndex(tour, '5') === -1 && stopIndex(to
 check(stopIndex(tour, 'nope') === -1 && stopIndex(tour, '') === -1 && stopIndex(tour, null) === -1 && stopIndex(tour, undefined) === -1, 'nothing named is -1');
 check(stopIndex(null, '1') === -1 && stopIndex({}, '1') === -1, 'no tour, no index');
 
+// ------------------------------------------------------------------ bootLink(), 2026-09-23
+// A visitor's first scrub right after load must stick. main.js used to read the hash at
+// `sr:layers-ready`, after its own clock writer had been writing into it, and re-applied that echo:
+// a jump plus 1 h/s at boot was wound back to the instant of the last write when the layers landed.
+// This replays that sequence on the real clock: boot, scrub, the writer's echo, seven seconds of
+// frames, then what the layers-ready half is handed.
+const H = 3600e3;
+const X = Date.parse('2027-01-01T00:00:00Z');
+clock.live();
+setHash('#m=wonder');
+const plain = bootLink(clock);
+check(clock.mode === 'live', 'a link with no `t` leaves the clock live at boot');
+check(same(plain, { m: 'wonder' }), `bootLink() returns the rest of a plain link: ${JSON.stringify(plain)}`);
+clock.goTo(X);                                   // the visitor's first scrub
+clock.setRate(3600);
+write({ t: new Date(X).toISOString().replace(/\.\d{3}Z$/, 'Z'), rate: '3600' }); // main.js's writer
+for (let i = 0; i < 70; i++) clock.tick(100);    // seven seconds of frames before the layers land
+check(!('t' in plain) && !('rate' in plain), 'what the layers-ready half is handed carries no clock key, so it cannot move the clock');
+check(read().t !== undefined && Date.parse(read().t) === X,
+  'the hash at layers-ready does hold the stale echo -- re-reading it there is what used to rewind');
+check(Math.abs(clock.now() - (X + 7 * H)) < 1, `the scrub stuck: ${(clock.now() - X) / H} h past the jump, 7 expected`);
+
+setHash('#m=now&t=2027-08-02T10%3A00%3A00Z&rate=60&trip=chasing-the-eclipse&stop=2');
+clock.live();
+const deep = bootLink(clock);
+check(clock.mode === 'scrub' && clock.now() === Date.parse('2027-08-02T10:00:00Z') && clock.rate === 60,
+  `a link's t and rate are applied at boot: ${new Date(clock.now()).toISOString()} at ${clock.rate}x`);
+check(same(deep, { m: 'now', trip: 'chasing-the-eclipse', stop: '2' }), `and the rest is kept for later: ${JSON.stringify(deep)}`);
+setHash('#m=now');
+check(deep.trip === 'chasing-the-eclipse', 'the returned link is a snapshot: a later write to the hash does not change it');
+
+setHash('#m=now&t=soon&rate=7');
+clock.live();
+bootLink(clock);
+check(clock.mode === 'live', 'an unreadable t and a rate the clock does not offer apply nothing');
+
+setHash('#v=2&t=2027-08-02T10%3A00%3A00Z');
+clock.live();
+const newer = bootLink(clock);
+check(clock.mode === 'live' && newer.unknownVersion === true, 'a newer format applies no clock at boot, and says unknownVersion for the note');
+clock.live();
+setHash('');
+
+{
+  // main.js must hand the layers-ready half the boot snapshot, never a fresh read of the hash.
+  const { readFileSync } = await import('node:fs');
+  const main = readFileSync(join(JS, 'main.js'), 'utf8');
+  const ready = main.split('\n').filter((line) => line.includes("'sr:layers-ready'") && line.includes('applyUrlState'));
+  check(ready.length === 1 && /applyUrlState\(ctx, link\)/.test(ready[0]), `main.js applies the boot link at layers-ready: ${ready.join(' | ')}`);
+  check(!/ctx\.clock\.(goTo|setRate)/.test(main.slice(main.indexOf('function applyUrlState'), main.indexOf('function openTrip'))),
+    'applyUrlState() in main.js no longer touches the clock');
+}
+
 if (problems.length) {
   console.error(`urlstate FAILED (${problems.length}):\n  ${problems.join('\n  ')}`);
   process.exit(1);
 }
-console.log(`urlstate ok: ${KEYS.length} keys read and written through one module, unknown keys dropped and never written, v=${VERSION} the only version known, a stop found by number or by id`);
+console.log(`urlstate ok: ${KEYS.length} keys read and written through one module, unknown keys dropped and never written, v=${VERSION} the only version known, a stop found by number or by id, the clock applied at boot and never re-read from the app's own echo`);
