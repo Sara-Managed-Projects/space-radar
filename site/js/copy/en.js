@@ -1197,6 +1197,9 @@ export const COPY = {
     // The copper of a totally eclipsed Moon is a constant tint (scene/worlds.js uUmbraTint), not
     // sunlight bent through the Earth's air, and the lunar stop says so.
     eclipseColour: 'The colour is an illustration; the shadow is computed.',
+    // A trip with `orbits:` on the Sun stage (scene/orbitrings.js, 2026-09-23): the dots are the one
+    // exaggeration, size only. Under the instant on every stop, generated, never typed in a card.
+    orbitsLine: 'Planets drawn larger than they are, as dots; their places and paths are computed.',
     rateWords: {
       10: 'ten times faster than life',
       60: 'a minute a second',

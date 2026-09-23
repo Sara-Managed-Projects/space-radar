@@ -1,5 +1,6 @@
 // tests/test_year_trip.mjs -- "A year in a minute": four stops on the Sun's stage, the clock at a
-// year a minute, and every world drawn at its true size and place (spec 0030 task 4).
+// year a minute, every world at its true place, and each planet's path and a dot drawn larger
+// than it is -- said on the card and on every stop (spec 0030 task 4; the paths 2026-09-23).
 //
 //   node tests/test_year_trip.mjs
 //
@@ -12,6 +13,11 @@
 //      first stop starts from the visitor's present, each stop runs at 525 600, the clock is held
 //      while the camera flies and runs under the card, the Earth goes 30 degrees round the Sun in
 //      five real seconds, and leaving puts the visitor back on live with 0 ms of drift.
+//   5. THE PATHS AND THE DOTS (scene/orbitrings.js, 2026-09-23): at true size from 700 million km
+//      every planet is a hundredth of a pixel, so the trip names `orbits:` and the Sun stage draws
+//      one lap of each from the same ephemeris, closed, 1 au round for the Earth, and one dot per
+//      planet at exactly positionOf(); nothing off the Sun stage or outside a trip; and the card
+//      and the frame's generated line both say the dots are drawn larger.
 //   4. THE CAMERA SEES THE ORBITS. The Sun has no key light, so on this stage the camera looks down
 //      from 50 degrees above the planets' plane (ui/trip.js SUN_OVERVIEW_POLAR); from there Mars and
 //      the Earth are inside the frame at the first stop and Jupiter at the last, at four dates, and
@@ -34,7 +40,9 @@ const { WORLDS, createWorlds, positionOf, compressesFrom } = await import(join(J
 const { stage, STAGES } = await import(join(JS, 'scene/stage.js'));
 const { createCameraRig, worldFramingDistance } = await import(join(JS, 'scene/camera.js'));
 const { createTrip } = await import(join(JS, 'ui/trip.js'));
-const { stopTimeLine } = await import(join(JS, 'ui/tripframe.js'));
+const { stopTimeLine, orbitsLine } = await import(join(JS, 'ui/tripframe.js'));
+const { createOrbitRings, periodMsOfWorld, ringTimes, RING_SAMPLES, MARKER_PX } = await import(join(JS, 'scene/orbitrings.js'));
+const { COPY } = await import(join(JS, 'copy/en.js'));
 
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
@@ -72,6 +80,72 @@ for (const stop of trip.stops) {
 const mercury = trip.stops.find((s) => s.target.world === 'mercury');
 check(mercury && mercury.distance_km >= 1.0 * 58e6, `the Mercury stop sits ${mercury && mercury.distance_km} km out; its orbit is 0.39 au, 58 million km`);
 check(mercury && mercury.behind === 'sun', 'the Mercury stop keeps the Sun in the picture, or its laps have nothing to go round');
+
+// ------------------------------------------------------------ 5. the paths and the dots
+const ORBITS = ['mercury', 'venus', 'earth', 'mars', 'jupiter'];
+check(JSON.stringify(trip.orbits) === JSON.stringify(ORBITS), `the trip draws the paths of ${trip.orbits}`);
+check(trip.og_stop === 1, `the preview picture is taken at stop ${trip.og_stop}, the one with four paths in it`);
+check(/drawn far larger than it is/.test(trip.stops[0].card.body) && !/true size/.test(trip.stops[0].card.body),
+  'the first card says the dots are drawn larger, and no longer that everything is at its true size');
+check(Math.abs(periodMsOfWorld('earth') / DAY_MS - 365.26) < 0.05, `the Earth's lap is ${periodMsOfWorld('earth') / DAY_MS} days`);
+check(Math.abs(periodMsOfWorld('jupiter') / DAY_MS / 365.25 - 11.86) < 0.02, 'Jupiter\'s lap is 11.86 years');
+check(periodMsOfWorld('moon') === null && periodMsOfWorld('sun') === null && periodMsOfWorld('titan') === null,
+  'a moon and the Sun have no path round the Sun');
+{
+  const ts = ringTimes(1000, 5, 4);
+  check(ts.length === 4 && ts[0] === 5 && ts[3] === 755, `ringTimes spreads one lap evenly: ${[...ts]}`);
+}
+check(MARKER_PX >= 1 && MARKER_PX <= 8, `the dot is ${MARKER_PX} px, "one to a few"`);
+{
+  const T = Date.parse('2026-09-23T12:00:00Z');
+  const scene = new THREE.Scene();
+  const rings = createOrbitRings(scene);
+  stage.setWorld('sun');
+  stage.setOrigin(null);
+  rings.update(T, ORBITS);
+  check(rings.visible(), 'the paths are drawn on the Sun stage while the trip names them');
+  const lines = rings.group.children.filter((o) => o.isLine);
+  check(lines.length === ORBITS.length && lines.every((l) => l.visible), `${lines.length} paths drawn, ${ORBITS.length} asked for`);
+  const earthLine = lines.find((l) => l.name === 'orbit-ring-earth');
+  const pos = earthLine.geometry.attributes.position;
+  const n = earthLine.geometry.drawRange.count;
+  check(n === RING_SAMPLES + 1, `the Earth's path has ${n} points, ${RING_SAMPLES} and the one that closes it`);
+  const first = [pos.getX(0), pos.getY(0), pos.getZ(0)];
+  const last = [pos.getX(n - 1), pos.getY(n - 1), pos.getZ(n - 1)];
+  check(first.every((v, k) => v === last[k]), 'the path is closed');
+  let rMin = Infinity, rMax = 0;
+  for (let k = 0; k < n; k += 1) {
+    const r = Math.hypot(pos.getX(k), pos.getY(k), pos.getZ(k)) * stage.unitKm;
+    rMin = Math.min(rMin, r); rMax = Math.max(rMax, r);
+  }
+  check(rMin > 1.47e8 && rMax < 1.522e8, `the Earth's path runs ${(rMin / 1e6).toFixed(1)} to ${(rMax / 1e6).toFixed(1)} million km from the Sun, perihelion to aphelion`);
+  const dots = rings.group.children.find((o) => o.isPoints);
+  check(dots.geometry.drawRange.count === ORBITS.length, `${dots.geometry.drawRange.count} dots, one per planet`);
+  // Each dot is exactly where the planet is: the exaggeration is size only.
+  const dp = dots.geometry.attributes.position;
+  const v = new THREE.Vector3();
+  let worst = 0;
+  ORBITS.forEach((id, k) => {
+    const p = positionOf(id, T);
+    stage.toSceneInto(p, p.frame, v, T);
+    worst = Math.max(worst, Math.hypot(dp.getX(k) - v.x, dp.getY(k) - v.y, dp.getZ(k) - v.z) * stage.unitKm);
+  });
+  check(worst < 50, `the dots sit at the planets' true places, the worst ${worst.toFixed(1)} km off (float32 at 1e6 km a unit)`);
+  check(dots.material.sizeAttenuation === false && dots.material.size === MARKER_PX, 'the dot is a size in pixels, not in km');
+  rings.update(T, null);
+  check(!rings.visible(), 'no trip naming them, no paths');
+  stage.setWorld('earth');
+  rings.update(T, ORBITS);
+  check(!rings.visible(), 'off the Sun stage, no paths: worlds.js already floors the planets there');
+  rings.dispose();
+  check(!scene.children.includes(rings.group), 'dispose() takes them out of the scene');
+  stage.setWorld('earth');
+}
+check(orbitsLine({ orbits: ORBITS }, 'sun') === COPY.trip.orbitsLine && /drawn larger than they are/.test(COPY.trip.orbitsLine),
+  `the frame's line under every stop: "${orbitsLine({ orbits: ORBITS }, 'sun')}"`);
+check(orbitsLine({ orbits: ORBITS }, 'earth') === '' && orbitsLine({ orbits: [] }, 'sun') === '' && orbitsLine(null, 'sun') === '',
+  'no line where nothing is drawn larger');
+check(!COPY.trip.orbitsLine.includes(' -- '), 'the line has no " -- "');
 
 // ------------------------------------------------------------------------ 2. the words hold
 const checker = readFileSync(join(ROOT, 'scripts/check_registry.py'), 'utf8');
@@ -174,6 +248,7 @@ for (let q = 0; q < 4; q += 1) {
   pump();
   check(stage.worldId === 'sun', `${day}: the trip began on the ${stage.worldId} stage`);
   check(machine.state.clockMoves === true, `${day}: the intro says the trip moves the clock`);
+  check(JSON.stringify(machine.state.orbits) === JSON.stringify(ORBITS), `${day}: the running trip hands the Sun stage its paths: ${machine.state.orbits}`);
   check(clock.mode === 'live', `${day}: nothing moves the clock before the first stop`);
   machine.play();
   pump(1);
@@ -231,6 +306,7 @@ for (let q = 0; q < 4; q += 1) {
   machine.stop('left');
   pump(2);
   check(stage.worldId === 'earth', `${day}: leaving left the map on ${stage.worldId}`);
+  check(machine.state.orbits.length === 0, `${day}: leaving takes the paths away`);
   check(clock.mode === 'live' && clock.rate === 1 && !clock.paused && clock.offsetMs() === 0,
     `${day}: leaving put the clock back ${clock.mode} at ${clock.rate}, ${clock.offsetMs()} ms off`);
   machine.dispose();
@@ -243,6 +319,6 @@ if (problems.length) {
   process.exit(1);
 }
 console.log(
-  'year trip ok: four worlds on the Sun\'s stage, every one drawn true, at 525 600 with the clock held ' +
+  'year trip ok: four worlds on the Sun\'s stage, every one at its true place with its path and a dot said to be drawn larger, at 525 600 with the clock held ' +
     `through each flight, the orbits in frame at four dates, and leaving back to live with 0 ms of drift (${notes.join('; ')})`,
 );

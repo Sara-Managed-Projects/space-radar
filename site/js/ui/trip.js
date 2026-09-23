@@ -258,6 +258,9 @@ export function createTrip(ctx) {
     stopTitle: null,
     // Spec 0037: the event type the stop's instant comes from ('solar-eclipse', ...), or null.
     stopEventType: null,
+    // The planets whose paths and dots the Sun stage draws while this trip runs (`orbits:`,
+    // scene/orbitrings.js), and which the frame's "drawn larger" line is about. Empty when none.
+    orbits: [],
     index: -1,
     count: 0,
     estimateMs: 0,
@@ -1547,6 +1550,7 @@ export function createTrip(ctx) {
 
     state.tourId = tour.id;
     state.tourTitle = tour.title;
+    state.orbits = Array.isArray(tour.orbits) ? tour.orbits.slice() : [];
     state.count = resolved.stops.length;
     state.estimateMs = estimateOf(resolved.stops);
     state.dropped = resolved.dropped;
@@ -2052,6 +2056,7 @@ export function createTrip(ctx) {
     state.phase = 'idle';
     state.tourId = null;
     state.tourTitle = null;
+    state.orbits = [];
     state.stopId = null;
     state.stopEventType = null;
     state.stopTitle = null;

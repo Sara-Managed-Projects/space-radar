@@ -43,6 +43,7 @@ import { SUN_INERTIAL, STAGES } from './scene/stage.js';
 import { showChooser, hideChooser } from './ui/chooser.js';
 import { createLabels } from './ui/labels.js';
 import { createOrbitLine } from './scene/orbitline.js';
+import { createOrbitRings } from './scene/orbitrings.js';
 import { createFrameLatch, shouldSaveData } from './scene/quality.js';
 import { keyById, bucketOf } from './data/colorkeyrules.js';
 
@@ -190,6 +191,9 @@ export async function boot({ setStatus } = {}) {
   // One lap of the selection's orbit (spec 0026 req 13), from the same elements as the dot.
   const orbitLine = createOrbitLine(scene, ctx);
   ctx.orbitLine = orbitLine;
+  // The planets' paths and a dot at each, on the Sun stage while a trip names them (`orbits:` in
+  // registry/tours.yaml; scene/orbitrings.js says why "A year in a minute" needs them).
+  ctx.orbitRings = createOrbitRings(scene, { renderer });
   setMoment(moment, { silent: true });
 
   // The rest of the link is applied ONCE the layers have landed (spec 0032 req 2): a trip
@@ -618,6 +622,10 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     // Labels ride the same tick as the glyphs they sit over, so the two never drift apart.
     if (ctx.labels && sinceLayerUpdate === 0) ctx.labels.update(t);
     if (ctx.orbitLine) ctx.orbitLine.update(t);
+    if (ctx.orbitRings) {
+      const st = ctx.trip && ctx.trip.state;
+      ctx.orbitRings.update(t, st && st.phase !== 'idle' ? st.orbits : null);
+    }
 
     // The ladder's level of detail, on the same tick: how far the camera is from the Sun, in km.
     if (lod && sinceLayerUpdate === 0) {

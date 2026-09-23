@@ -83,6 +83,17 @@
 #                 (ui/tripframe.js asks plan() before it appends the button). Optional: without
 #                 it the end card offers the next trip in this file's order, wrapping round. May
 #                 not name a trip that is not here, nor the trip itself.
+#   og_stop       which stop the trip's preview picture (site/og/<id>.png, spec 0033) is taken
+#                 at, 1-based like the link's `stop=`. Optional: without it, the first. Added
+#                 2026-09-23 because a first stop is chosen to START a trip, not to sell it: "To
+#                 the edge" opens on the Sun from a light-year, which as a 1200 x 630 picture is a
+#                 field of star-ladder dots. scripts/shots.mjs reads it; check_registry.py refuses
+#                 a number that is not one of the trip's stops.
+#   orbits        planets (worlds.yaml rows that go round the Sun) whose paths, and a dot at each
+#                 one's true place, are drawn while the trip runs on the Sun stage
+#                 (scene/orbitrings.js). The dot is the one exaggeration, size only, and the frame
+#                 prints that it is "drawn larger than it is" on every stop (ui/tripframe.js
+#                 orbitsLine). Refused unless the trip's stage is `sun`, the one stage it draws on.
 #
 # PER STOP
 #   id            unique within its trip.
@@ -457,6 +468,11 @@ tours:
     requires: [stars, deep-sky, exotics, galaxy]
     stage: stellar
     clock: as-found
+    # The preview picture (2026-09-23): the Milky Way from outside, its arms and its bar. The first
+    # stop, the Sun from a light-year, rendered at 1200 x 630 as a field of dots; the Pleiades,
+    # the centre and Andromeda were rendered too, and read as a smear, a white blot and a small
+    # galaxy far off.
+    og_stop: 6
     stops:
       - id: sun
         target: {world: sun}
@@ -1049,6 +1065,14 @@ tours:
     requires: [worlds]
     stage: sun
     clock: as-found          # the STOPS move it; `clock:` stays the trip-level mode
+    # 2026-09-23: at true size from 700 million km every planet is a fraction of a pixel (the Earth
+    # 0.009 px in radius), so the trip showed a Sun and some names and not the one thing it is for.
+    # The paths and a dot at each planet make the going-round visible; the dot is size only, and
+    # every stop says it is drawn larger (scene/orbitrings.js, measured there).
+    orbits: [mercury, venus, earth, mars, jupiter]
+    # The first stop again, now that it draws the paths: the four inner planets round the Sun is
+    # the trip in one picture. Before the paths it was a scatter of craft markers and no planets.
+    og_stop: 1
     stops:
       - id: inner
         target: {world: sun}
@@ -1067,7 +1091,8 @@ tours:
           title: "Everything inside Mars, going round"
           body: >-
             Every second here is six days, so Mercury goes round the Sun in fifteen seconds and the
-            Earth in a minute. Everything is at its true size, which is why the planets are specks.
+            Earth in a minute. Each planet is a dot drawn far larger than it is, on the path it
+            really follows.
 
       - id: earth
         target: {world: earth}

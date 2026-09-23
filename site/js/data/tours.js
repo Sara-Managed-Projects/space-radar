@@ -397,6 +397,7 @@ export const TOURS = [
     "stage": "stellar",
     "clock": "as-found",
     "group": "beyond",
+    "og_stop": 6,
     "pacing": "auto",
     "min_stops": 3,
     "stops": [
@@ -1018,6 +1019,14 @@ export const TOURS = [
     "clock": "as-found",
     "group": "solar-system",
     "next": "outer-solar-system",
+    "og_stop": 1,
+    "orbits": [
+      "mercury",
+      "venus",
+      "earth",
+      "mars",
+      "jupiter"
+    ],
     "pacing": "auto",
     "min_stops": 3,
     "stops": [
@@ -1032,7 +1041,7 @@ export const TOURS = [
         "rate": 525600,
         "card": {
           "title": "Everything inside Mars, going round",
-          "body": "Every second here is six days, so Mercury goes round the Sun in fifteen seconds and the Earth in a minute. Everything is at its true size, which is why the planets are specks."
+          "body": "Every second here is six days, so Mercury goes round the Sun in fifteen seconds and the Earth in a minute. Each planet is a dot drawn far larger than it is, on the path it really follows."
         },
         "frame_radii": 5.0,
         "drift_rate_deg_s": 6,
@@ -1040,7 +1049,7 @@ export const TOURS = [
         "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
-        "dwell_ms": 13822
+        "dwell_ms": 15154
       },
       {
         "id": "earth",
@@ -1104,7 +1113,7 @@ export const TOURS = [
         "dwell_ms": 14821
       }
     ],
-    "estimate_ms": 72351
+    "estimate_ms": 73683
   },
   {
     "id": "chasing-the-solar-eclipse",
