@@ -77,6 +77,20 @@ export const STAGES = {
   charon: { frame: SUN_INERTIAL, unitKm: 1000 },
   phobos: { frame: SUN_INERTIAL, unitKm: 100 },
   deimos: { frame: SUN_INERTIAL, unitKm: 100 },
+  // Ten more (2026-09-22): Saturn's other five round moons and all five of Uranus's. The rule the
+  // rows above set carries straight over -- 1 000 km a unit for the eight from 531 to 789 km, the
+  // range Charon (606) already sits in, and 100 for Mimas (198) and Miranda (236), which are
+  // Enceladus-sized.
+  mimas: { frame: SUN_INERTIAL, unitKm: 100 },
+  tethys: { frame: SUN_INERTIAL, unitKm: 1000 },
+  dione: { frame: SUN_INERTIAL, unitKm: 1000 },
+  rhea: { frame: SUN_INERTIAL, unitKm: 1000 },
+  iapetus: { frame: SUN_INERTIAL, unitKm: 1000 },
+  miranda: { frame: SUN_INERTIAL, unitKm: 100 },
+  ariel: { frame: SUN_INERTIAL, unitKm: 1000 },
+  umbriel: { frame: SUN_INERTIAL, unitKm: 1000 },
+  titania: { frame: SUN_INERTIAL, unitKm: 1000 },
+  oberon: { frame: SUN_INERTIAL, unitKm: 1000 },
   // The scale ladder (spec 0028 req 1). Mirrors registry/stages.yaml -- check_registry.py refuses
   // drift. Not worlds: the origin is the Sun and one unit is a light-year, a kiloparsec, a
   // million light-years. `ladder: true` is how worlds.js knows nothing is compressed from here.

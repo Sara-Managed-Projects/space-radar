@@ -187,6 +187,20 @@ export const WORLD_RADIUS_KM = {
   titan: 2574.76,
   triton: 1352.6,
   charon: 606.0,
+  // Ten more (2026-09-22), same table, same column: Saturn's other five big round moons and all
+  // five of Uranus's. Mimas, Miranda and Iapetus are not round -- NASA's Saturnian satellite fact
+  // sheet gives Mimas 208 x 197 x 191 km and Iapetus 746 x 746 x 712 -- but they are round enough
+  // for one number and a ball, which is why their cards do not carry Phobos's "not drawn" line.
+  mimas: 198.2,
+  tethys: 531.1,
+  dione: 561.4,
+  rhea: 763.5,
+  iapetus: 734.3,
+  miranda: 235.8,
+  ariel: 578.9,
+  umbriel: 584.7,
+  titania: 788.9,
+  oberon: 761.4,
 };
 
 /** A world's mean radius in km, or null. Null is an answer: it refuses rather than guessing. */
@@ -435,15 +449,19 @@ export function jupiterMoonOffsetKm(worldId, tMs) {
 }
 
 // A MOON OF ANOTHER WORLD is that world's position plus an offset, whichever way the offset is
-// computed: JupiterMoons() for Jupiter's four, the elements fitted to JPL Horizons in moons.js for
-// Phobos, Deimos, Enceladus, Titan, Triton and Charon (2026-09-22; that file has the method and the
-// measured error). Every caller below -- the heliocentric position here, the view from Earth in
+// computed: JupiterMoons() for Jupiter's four, and the elements fitted to JPL Horizons in moons.js
+// for the other sixteen -- Mars's two, Saturn's seven, Uranus's five, Triton and Charon
+// (2026-09-22; that file has the method and the measured error, 6 km to 6 800). Every moon added
+// after the first six needed nothing here but a row in this table and one in the radii above,
+// which is the point of it. Every caller below -- the heliocentric position here, the view from Earth in
 // body.js, the drawing in scene/worlds.js -- asks these three and never names a moon. Earth's Moon
 // is not in the table: Astronomy Engine has a Body for it, and it keeps its own path.
 const MOON_PARENT = {
   io: 'jupiter', europa: 'jupiter', ganymede: 'jupiter', callisto: 'jupiter',
   phobos: 'mars', deimos: 'mars',
   enceladus: 'saturn', titan: 'saturn',
+  mimas: 'saturn', tethys: 'saturn', dione: 'saturn', rhea: 'saturn', iapetus: 'saturn',
+  miranda: 'uranus', ariel: 'uranus', umbriel: 'uranus', titania: 'uranus', oberon: 'uranus',
   triton: 'neptune',
   charon: 'pluto',
 };

@@ -307,7 +307,7 @@ worlds:
     unit_km: 1000
     ephemeris: {propagator: body, body: Saturn, moon: titan}
     frames: [inertial]
-    look: {flat: "#a8702e"}
+    look: {flat: "#8f5e26"}
     facts:
       radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Titan 606 ... Mean Radius (km) 2574.76"}
       albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturniansatfact.html", read: 2026-09-22, says: "Titan (VI) ... Visual geometric albedo 0.22"}
@@ -348,3 +348,179 @@ worlds:
       colour: {source: "https://science.nasa.gov/dwarf-planets/pluto/moons/charon/", read: 2026-09-22, says: "Charon's color palette is not as diverse as Pluto's. Most striking is the reddish north (top) polar region."}
       seen: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/plutofact.html", read: 2026-09-22, says: "Charon (P1) ... Apparent visual magnitude 16.8"}
       split: {source: "https://en.wikipedia.org/wiki/Charon_(moon)", read: 2026-09-22, says: "a group of amateur astronomers in Italy used a 14-inch telescope in 2008 to successfully resolve Charon in an image of Pluto"}
+
+  # TEN MORE MOONS (2026-09-22): Saturn's other five big round moons and all five of Uranus's,
+  # placed the same way as the six above by propagate/moons.js, which has the method and the error
+  # measured against JPL Horizons at instants the fit never saw. Worst over 2000-2050: Tethys 119
+  # km, Rhea 199, Miranda 117, Ariel 114, Dione 235, Umbriel 410, Mimas 703, Titania 996, Oberon
+  # 1 230, Iapetus 6 800 -- 0.04 % to 0.38 % of each orbit, against the 0.62 % this app already
+  # draws Enceladus at, so none of the ten was left out. Outside 2000-2050 they are not drawn.
+  #
+  # Radii: the same JPL table as the six above. Albedos: NASA's Saturnian and Uranian satellite
+  # fact sheets, so all twenty-one flat worlds share one light-to-dark order (scene/worlds.js
+  # holds it, tests/test_worlds_layer.mjs checks it). unit_km 1 000 for the eight over 500 km,
+  # 100 for Mimas and Miranda, the rule Charon and Enceladus already set.
+  - id: mimas
+    aliases: ["Saturn I"]
+    display: Mimas
+    parent: saturn
+    radius_km: 198.2
+    unit_km: 100
+    ephemeris: {propagator: body, body: Saturn, moon: mimas}
+    frames: [inertial]
+    look: {flat: "#a7aaac"}
+    facts:
+      radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Mimas 601 ... Mean Radius (km) 198.20"}
+      albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturniansatfact.html", read: 2026-09-22, says: "Mimas (I) ... Visual geometric albedo 0.6"}
+      what: {source: "https://science.nasa.gov/saturn/moons/mimas/", read: 2026-09-22, says: "Crater-covered Mimas is the smallest and innermost of Saturn's major moons."}
+      crater: {source: "https://science.nasa.gov/saturn/moons/mimas/", read: 2026-09-22, says: "The Herschel Crater is 80 miles (130 kilometers) across, one third of the diameter of the moon itself, with outer walls about 3 miles (5 kilometers) high and a central peak 3.5 miles (6 km) high."}
+      colour: {source: "https://science.nasa.gov/saturn/moons/mimas/", read: 2026-09-22, says: "Its low density suggests that it consists almost entirely of water ice, which is the only substance ever detected on Mimas."}
+      seen: {source: "https://en.wikipedia.org/wiki/Mimas_(moon)", read: 2026-09-22, says: "Apparent magnitude 12.9 (infobox)"}
+
+  - id: tethys
+    aliases: ["Saturn III"]
+    display: Tethys
+    parent: saturn
+    radius_km: 531.1
+    unit_km: 1000
+    ephemeris: {propagator: body, body: Saturn, moon: tethys}
+    frames: [inertial]
+    look: {flat: "#e3e5e7"}
+    facts:
+      radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Tethys 603 ... Mean Radius (km) 531.10"}
+      albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturniansatfact.html", read: 2026-09-22, says: "Tethys (III) ... Visual geometric albedo 0.8"}
+      what: {source: "https://science.nasa.gov/saturn/moons/tethys/", read: 2026-09-22, says: "Tethys is Saturn's fifth largest moon ... Tethys is composed almost entirely of water ice plus a small amount of rock ... The Voyager images showed a major impact crater and a great chasm."}
+      colour: {source: "https://en.wikipedia.org/wiki/Tethys_(moon)", read: 2026-09-22, says: "The surface of Tethys is very bright, the second-brightest of the moons of Saturn after Enceladus, and neutral in color."}
+      seen: {source: "https://en.wikipedia.org/wiki/Tethys_(moon)", read: 2026-09-22, says: "Apparent magnitude 10.2 (infobox)"}
+
+  - id: dione
+    aliases: ["Saturn IV"]
+    display: Dione
+    parent: saturn
+    radius_km: 561.4
+    unit_km: 1000
+    ephemeris: {propagator: body, body: Saturn, moon: dione}
+    frames: [inertial]
+    look: {flat: "#d4d5d3"}
+    facts:
+      radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Dione 604 ... Mean Radius (km) 561.40"}
+      albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturniansatfact.html", read: 2026-09-22, says: "Dione (IV) ... Visual geometric albedo 0.7"}
+      what: {source: "https://en.wikipedia.org/wiki/Dione_(moon)", read: 2026-09-22, says: "Its trailing hemisphere, however, contains an unusual and distinctive surface feature: a network of bright ice cliffs."}
+      colour: {source: "https://science.nasa.gov/saturn/moons/dione/", read: 2026-09-22, says: "Dione's density is 1.48 times that of liquid water, suggesting that about a third of Dione is made up of a dense core (probably silicate rock) with the remainder of its material being ice."}
+      seen: {source: "https://en.wikipedia.org/wiki/Dione_(moon)", read: 2026-09-22, says: "Apparent magnitude 10.4 (infobox)"}
+
+  - id: rhea
+    aliases: ["Saturn V"]
+    display: Rhea
+    parent: saturn
+    radius_km: 763.5
+    unit_km: 1000
+    ephemeris: {propagator: body, body: Saturn, moon: rhea}
+    frames: [inertial]
+    look: {flat: "#d5d3cc"}
+    facts:
+      radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Rhea 605 ... Mean Radius (km) 763.50"}
+      albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturniansatfact.html", read: 2026-09-22, says: "Rhea (V) ... Visual geometric albedo 0.7"}
+      what: {source: "https://science.nasa.gov/saturn/moons/rhea/", read: 2026-09-22, says: "Rhea is the second largest moon of Saturn ... it is thought that Rhea is composed of a homogenous mixture of ice and rock, a frozen dirty snowball."}
+      colour: {source: "https://science.nasa.gov/saturn/moons/rhea/", read: 2026-09-22, says: "Rhea has a high reflectivity (or geometric albedo) suggesting a surface composition largely of water ice, which behaves like rock in Rhea's temperature range."}
+      seen: {source: "https://en.wikipedia.org/wiki/Rhea_(moon)", read: 2026-09-22, says: "Apparent magnitude 10 (infobox)"}
+
+  # Iapetus is the one world here whose fact sheet prints TWO albedos, 0.05 for the leading side
+  # and 0.5 for the trailing one. `look.flat` is the mean of them, 0.275, and the card says the
+  # two faces rather than pretending either colour is the whole moon.
+  - id: iapetus
+    aliases: ["Saturn VIII"]
+    display: Iapetus
+    parent: saturn
+    radius_km: 734.3
+    unit_km: 1000
+    ephemeris: {propagator: body, body: Saturn, moon: iapetus}
+    frames: [inertial]
+    look: {flat: "#89735f"}
+    facts:
+      radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Iapetus 608 ... Mean Radius (km) 734.30"}
+      albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturniansatfact.html", read: 2026-09-22, says: "Iapetus (VIII) ... Visual geometric albedo 0.05 / 0.5"}
+      what: {source: "https://science.nasa.gov/saturn/moons/iapetus/", read: 2026-09-22, says: "Iapetus has been called the yin and yang of the Saturn moons because its leading hemisphere has a reflectivity (or albedo) as dark as coal (albedo 0.03-0.05 with a slight reddish tinge) and its trailing hemisphere is much brighter at 0.5-0.6."}
+      ridge: {source: "https://science.nasa.gov/saturn/moons/iapetus/", read: 2026-09-22, says: "The second most notable feature of Iapetus is its equatorial ridge, a chain of 6-mile (10-km) high mountains girdling the moon's equator."}
+      colour: {source: "https://science.nasa.gov/saturn/moons/iapetus/", read: 2026-09-22, says: "as dark as coal (albedo 0.03-0.05 with a slight reddish tinge) ... its trailing hemisphere is much brighter at 0.5-0.6"}
+      seen: {source: "https://en.wikipedia.org/wiki/Iapetus_(moon)", read: 2026-09-22, says: "Apparent magnitude 10.2 to 11.9 (infobox) ... the apparent magnitude of the trailing hemisphere is around 10.2, whereas that of the leading hemisphere is around 11.9"}
+
+  - id: miranda
+    aliases: ["Uranus V"]
+    display: Miranda
+    parent: uranus
+    radius_km: 235.8
+    unit_km: 100
+    ephemeris: {propagator: body, body: Uranus, moon: miranda}
+    frames: [inertial]
+    look: {flat: "#7d7f81"}
+    facts:
+      radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Miranda 705 ... Mean Radius (km) 235.8"}
+      albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/uraniansatfact.html", read: 2026-09-22, says: "Miranda (UV) ... Visual geometric albedo 0.32"}
+      what: {source: "https://science.nasa.gov/uranus/moons/miranda/", read: 2026-09-22, says: "Miranda's giant fault canyons are as much as 12 times as deep as the Grand Canyon. Due to Miranda's low gravity and large cliffs, a rock dropped off the edge of the highest cliff would take a full 10 minutes to reach the foot of the cliff."}
+      colour: {source: "https://en.wikipedia.org/wiki/Miranda_(moon)", read: 2026-09-22, says: "The surface of these regions is fairly uniformly dark. However, the cliffs bordering certain impact craters reveal, at depth, the presence of much more luminous material."}
+      seen: {source: "https://en.wikipedia.org/wiki/Miranda_(moon)", read: 2026-09-22, says: "its apparent magnitude is +16.6, making it invisible to many amateur telescopes"}
+
+  - id: ariel
+    aliases: ["Uranus I"]
+    display: Ariel
+    parent: uranus
+    radius_km: 578.9
+    unit_km: 1000
+    ephemeris: {propagator: body, body: Uranus, moon: ariel}
+    frames: [inertial]
+    look: {flat: "#868786"}
+    facts:
+      radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Ariel 701 ... Mean Radius (km) 578.9"}
+      albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/uraniansatfact.html", read: 2026-09-22, says: "Ariel (UI) ... Visual geometric albedo 0.39"}
+      what: {source: "https://science.nasa.gov/uranus/moons/ariel/", read: 2026-09-22, says: "Ariel's surface appears to be the youngest of all the moons of Uranus ... It is transected by grabens, which are fault-bounded valleys."}
+      colour: {source: "https://science.nasa.gov/uranus/moons/ariel/", read: 2026-09-22, says: "Ariel has the brightest surface of the five largest Uranian moons, but none of them reflect more than about a third of the sunlight that strikes them. This suggests that their surfaces have been darkened by a carbonaceous material."}
+      seen: {source: "https://en.wikipedia.org/wiki/Ariel_(moon)", read: 2026-09-22, says: "The apparent magnitude of Ariel is 14.8; similar to that of Pluto near perihelion."}
+
+  - id: umbriel
+    aliases: ["Uranus II"]
+    display: Umbriel
+    parent: uranus
+    radius_km: 584.7
+    unit_km: 1000
+    ephemeris: {propagator: body, body: Uranus, moon: umbriel}
+    frames: [inertial]
+    look: {flat: "#616060"}
+    facts:
+      radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Umbriel 702 ... Mean Radius (km) 584.7"}
+      albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/uraniansatfact.html", read: 2026-09-22, says: "Umbriel (UII) ... Visual geometric albedo 0.21"}
+      what: {source: "https://science.nasa.gov/uranus/moons/umbriel/", read: 2026-09-22, says: "Umbriel is the darkest of Uranus' largest moons. It reflects only 16 percent of the light that strikes its surface ... Images taken by Voyager 2 in 1986 revealed a curious bright ring about 90 miles (140 kilometers) in diameter on the moon's dark surface."}
+      colour: {source: "https://en.wikipedia.org/wiki/Umbriel", read: 2026-09-22, says: "The surface is the darkest among Uranian moons and appears to have been shaped primarily by impacts"}
+      seen: {source: "https://en.wikipedia.org/wiki/Umbriel", read: 2026-09-22, says: "Apparent magnitude 15.1 (infobox)"}
+
+  - id: titania
+    aliases: ["Uranus III"]
+    display: Titania
+    parent: uranus
+    radius_km: 788.9
+    unit_km: 1000
+    ephemeris: {propagator: body, body: Uranus, moon: titania}
+    frames: [inertial]
+    look: {flat: "#767573"}
+    facts:
+      radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Titania 703 ... Mean Radius (km) 788.9"}
+      albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/uraniansatfact.html", read: 2026-09-22, says: "Titania (UIII) ... Visual geometric albedo 0.27"}
+      what: {source: "https://science.nasa.gov/uranus/moons/titania/", read: 2026-09-22, says: "Titania is Uranus' largest moon ... A prominent system of fault valleys, some nearly 1,000 miles (1,609 kilometers) long, is visible near the terminator"}
+      colour: {source: "https://science.nasa.gov/uranus/moons/titania/", read: 2026-09-22, says: "The neutral gray color of Titania is typical of most of the significant Uranian moons."}
+      seen: {source: "https://en.wikipedia.org/wiki/Titania_(moon)", read: 2026-09-22, says: "Apparent magnitude 13.9 (infobox)"}
+
+  - id: oberon
+    aliases: ["Uranus IV"]
+    display: Oberon
+    parent: uranus
+    radius_km: 761.4
+    unit_km: 1000
+    ephemeris: {propagator: body, body: Uranus, moon: oberon}
+    frames: [inertial]
+    look: {flat: "#7a6a62"}
+    facts:
+      radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Oberon 704 ... Mean Radius (km) 761.4"}
+      albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/uraniansatfact.html", read: 2026-09-22, says: "Oberon (UIV) ... Visual geometric albedo 0.23"}
+      what: {source: "https://science.nasa.gov/uranus/moons/oberon/", read: 2026-09-22, says: "Oberon is the second largest moon of Uranus ... Oberon is heavily cratered ... Oberon has at least one large mountain that rises about 6 km off the surface."}
+      colour: {source: "https://en.wikipedia.org/wiki/Oberon_(moon)", read: 2026-09-22, says: "The surface of Oberon, which is dark and slightly red in color, appears to have been primarily shaped by asteroid and comet impacts."}
+      seen: {source: "https://en.wikipedia.org/wiki/Oberon_(moon)", read: 2026-09-22, says: "Apparent magnitude 14.1 (infobox)"}

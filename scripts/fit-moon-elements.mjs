@@ -11,41 +11,85 @@
 //
 // THE MEASUREMENT uses instants the fit never saw: per moon, 998 over 2024-2030 starting at 03:17
 // UT, and 1 002 over 2000-2050 starting 2000-01-03 07:41 UT. Every vector is geometric, relative
-// to the planet's body centre (500@499 Mars, 500@699 Saturn, 500@899 Neptune, 500@999 Pluto), in
-// ICRF axes, km, time tags in UT -- the same things moons.js computes.
+// to the planet's body centre (500@499 Mars, 500@699 Saturn, 500@799 Uranus, 500@899 Neptune,
+// 500@999 Pluto), in ICRF axes, km, time tags in UT -- the same things moons.js computes.
 //
 // THE FIT is Levenberg-Marquardt on every x, y and z residual: 4 001 vectors over 2024-2030 plus
 // 601 each over 2000-2024 and 2030-2050. It starts from the shipped rows, so a refit is a nudge,
 // not a search. The FIRST fit (2026-09-22) started from JPL's mean-element table for the poles and
 // the precession periods, scanned the precession rates (they have to be near right before an
 // eccentricity can be seen at all) and, for Enceladus, the two periods of its resonance terms,
-// which the table does not have; that exploration is not repeated here. Which numbers are free is
-// per moon, as moons.js describes: Titan's and Charon's poles are held (JPL's Laplace pole, IAU
-// Pluto pole), and only Phobos, Deimos and Triton carry the quadratic term, only Enceladus the sines.
+// which the table does not have; that exploration is not repeated here.
+//
+// THE TEN ADDED ON 2026-09-22 (Saturn's Mimas, Tethys, Dione, Rhea and Iapetus; Uranus's five)
+// were started instead from the DATA, because the exploration above does not generalise. The one-
+// off script that did it imported `horizons`, `fit` and `worst` from here -- nothing above runs on
+// import -- and seeded each row from about 600 Horizons STATE vectors (VEC_TABLE 2) over
+// 2000-2050: the pole from the planet's IAU 2015 axis, then the osculating equinoctial elements in
+// that frame at every state, then `a` from their mean, `n` and `L0` from the unwrapped mean
+// longitude, and the (k, h) and (q, p) vectors -- both of them, where a moon has two -- from the
+// peaks of mean(z e^-i(nu t)) scanned over nu. The long-period longitude terms came from the
+// fitted model's own along-track residual, one at a time, strongest period first. That exploration
+// is not repeated here either; what IS repeated is the last step, which is the `fit` call below,
+// and the shipped rows are a fixed point of it.
+//
+// Which numbers are free is per moon, as moons.js describes: Titan's, Charon's and all ten of the
+// 2026-09-22 moons' poles are held, only Phobos, Deimos and Triton carry the quadratic term, and
+// the sine terms and the second (k, h) / (q, p) vectors are per moon.
 
+import { pathToFileURL } from 'node:url';
 import { MOON_ELEMENTS, elementsOffsetKm } from '../site/js/propagate/moons.js';
 
 const API = 'https://ssd.jpl.nasa.gov/api/horizons.api';
-const TARGET = {
+export const TARGET = {
   phobos: ['401', '500@499'], deimos: ['402', '500@499'], enceladus: ['602', '500@699'],
   titan: ['606', '500@699'], triton: ['801', '500@899'], charon: ['901', '500@999'],
+  // Ten more (2026-09-22): Saturn's other big round moons and all five of Uranus's. Saturn's
+  // come from SAT441 like Enceladus and Titan; the Uranian five from URA111, the only ephemeris
+  // Horizons offers for them over 2000-2050.
+  mimas: ['601', '500@699'], tethys: ['603', '500@699'], dione: ['604', '500@699'],
+  rhea: ['605', '500@699'], iapetus: ['608', '500@699'],
+  miranda: ['705', '500@799'], ariel: ['701', '500@799'], umbriel: ['702', '500@799'],
+  titania: ['703', '500@799'], oberon: ['704', '500@799'],
 };
 const BASE = ['a', 'L0', 'n', 'k0', 'h0', 'wdot', 'q0', 'p0', 'odot'];
+const POLE = [...BASE, 'poleRa', 'poleDec'];
+const E2 = ['k2', 'h2', 'w2dot'];
+const I2 = ['q2', 'p2', 'o2dot'];
+const LIB = ['libA', 'libB', 'libNu'];
+const LIB2 = [...LIB, 'lib2A', 'lib2B', 'lib2Nu'];
+const LIB3 = [...LIB2, 'lib3A', 'lib3B', 'lib3Nu'];
 const FREE = {
-  phobos: [...BASE, 'poleRa', 'poleDec', 'c2'],
-  deimos: [...BASE, 'poleRa', 'poleDec', 'c2'],
-  enceladus: [...BASE, 'poleRa', 'poleDec', 'libA', 'libB', 'libNu', 'lib2A', 'lib2B', 'lib2Nu'],
+  phobos: [...POLE, 'c2'],
+  deimos: [...POLE, 'c2'],
+  enceladus: [...POLE, ...LIB2],
   titan: BASE,
-  triton: [...BASE, 'poleRa', 'poleDec', 'c2'],
+  triton: [...POLE, 'c2'],
   charon: BASE,
+  // The ten of 2026-09-22. NONE of them frees its pole: all ten are held at their planet's own IAU
+  // 2015 pole, which is where the fit wanted to be anyway and reads as something rather than as
+  // nine digits. Freeing it buys between nothing and 700 km (moons.js, THE POLES) and costs the
+  // row its meaning -- left free, Iapetus's came out at declination -47 and Titania's 10 degrees
+  // off Uranus's, each trading against an inclination nobody could then recognise.
+  mimas: [...BASE, ...E2, ...LIB3],
+  tethys: [...BASE, ...LIB3],
+  dione: [...BASE, ...LIB2],
+  rhea: [...BASE, ...E2, ...I2, ...LIB],
+  iapetus: [...BASE, ...I2, ...LIB2],
+  miranda: [...BASE, ...LIB3],
+  ariel: [...BASE, ...E2, ...I2, ...LIB3],
+  umbriel: [...BASE, ...E2, ...LIB],
+  titania: [...BASE, ...E2, ...LIB2],
+  oberon: [...BASE, ...E2, ...LIB],
 };
 // Finite-difference steps, in each number's own units.
 const STEP = {
   a: 1e-3, L0: 1e-6, n: 1e-9, k0: 1e-7, h0: 1e-7, wdot: 1e-8, q0: 1e-7, p0: 1e-7, odot: 1e-8,
-  poleRa: 1e-5, poleDec: 1e-5, c2: 1e-12, libA: 1e-6, libB: 1e-6, libNu: 1e-8, lib2A: 1e-6, lib2B: 1e-6, lib2Nu: 1e-9,
+  poleRa: 1e-5, poleDec: 1e-5, c2: 1e-12, libA: 1e-6, libB: 1e-6, libNu: 1e-8, lib2A: 1e-6, lib2B: 1e-6, lib2Nu: 1e-9, lib3A: 1e-6, lib3B: 1e-6, lib3Nu: 1e-9,
+  k2: 1e-7, h2: 1e-7, w2dot: 1e-8, q2: 1e-7, p2: 1e-7, o2dot: 1e-8,
 };
 
-async function horizons(id, start, stop, steps) {
+export async function horizons(id, start, stop, steps) {
   const [command, center] = TARGET[id];
   const q = {
     format: 'json', COMMAND: `'${command}'`, OBJ_DATA: "'NO'", MAKE_EPHEM: "'YES'", EPHEM_TYPE: "'VECTORS'",
@@ -96,7 +140,7 @@ function solve(A, b) {
   return x;
 }
 
-function fit(start, rows, keys) {
+export function fit(start, rows, keys) {
   let el = { ...start };
   let r = residuals(el, rows);
   let cost = sumSq(r);
@@ -126,13 +170,19 @@ function fit(start, rows, keys) {
   return el;
 }
 
-function worst(el, rows) {
+export function worst(el, rows) {
   return rows.reduce((m, row) => {
     const p = elementsOffsetKm(el, row.t);
     return Math.max(m, Math.hypot(p.x - row.x, p.y - row.y, p.z - row.z));
   }, 0);
 }
 
+// Nothing above runs on import, so the one-off seeding a NEW moon needs -- the exploration this
+// file does not repeat -- can import `horizons`, `fit` and `worst` and drive the same arithmetic
+// the shipped rows came out of, rather than growing a second fitter somewhere else.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await main();
+
+async function main() {
 const refit = process.argv.includes('--refit');
 const km = (v) => (v < 10 ? v.toFixed(1) : String(Math.round(v)));
 for (const id of Object.keys(MOON_ELEMENTS)) {
@@ -154,4 +204,5 @@ for (const id of Object.keys(MOON_ELEMENTS)) {
   const w = worst(el, wide);
   console.log(`${id.padEnd(9)} 2026 ${km(year(2026)).padStart(6)} km   2027 ${km(year(2027)).padStart(6)} km   `
     + `2024-2030 ${km(worst(el, near)).padStart(6)} km   2000-2050 ${km(w).padStart(6)} km (${(100 * w / el.a).toFixed(3)} % of a)`);
+}
 }

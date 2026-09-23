@@ -25,7 +25,7 @@ export const LAYER_ROWS = [
     "card": "world",
     "glyph": "planet",
     "colour": "world",
-    "maxItems": 32,
+    "maxItems": 40,
     "train": null
   },
   {

@@ -509,6 +509,18 @@ export const COPY = {
       titan: 'position: Saturn from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 840 km over 2000 to 2050; radius from JPL’s satellite physical parameters, what it is from NASA Science, the Huygens landing, its colour and how to see it from Wikipedia, all read 2026-09-22',
       triton: 'position: Neptune from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 10 km over 2000 to 2050; radius from JPL’s satellite physical parameters, what it is from NASA Science, its colour and brightness from Wikipedia, all read 2026-09-22',
       charon: 'position: Pluto from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 1 km over 2000 to 2050; radius from JPL’s satellite physical parameters, brightness from NASA’s Pluto fact sheet, what it is and its colour from NASA Science, all read 2026-09-22',
+      // Ten more, the same day and the same way. Each "within" is that moon's own worst error over
+      // 2000 to 2050, measured in propagate/moons.js at instants the fit never saw.
+      mimas: 'position: Saturn from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 700 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Saturnian satellite fact sheet, what it is and its colour from NASA Science, brightness from Wikipedia, all read 2026-09-22',
+      tethys: 'position: Saturn from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 120 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Saturnian satellite fact sheet, what it is from NASA Science, its colour and brightness from Wikipedia, all read 2026-09-22',
+      dione: 'position: Saturn from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 240 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Saturnian satellite fact sheet, its colour from NASA Science, what it is and its brightness from Wikipedia, all read 2026-09-22',
+      rhea: 'position: Saturn from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 200 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Saturnian satellite fact sheet, what it is and its colour from NASA Science, brightness from Wikipedia, all read 2026-09-22',
+      iapetus: 'position: Saturn from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 6 800 km over 2000 to 2050, which is 0.19 per cent of its orbit; radius from JPL’s satellite physical parameters, both albedos from NASA’s Saturnian satellite fact sheet, what it is and its colour from NASA Science, brightness from Wikipedia, all read 2026-09-22',
+      miranda: 'position: Uranus from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 120 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Uranian satellite fact sheet, what it is from NASA Science, its colour and brightness from Wikipedia, all read 2026-09-22',
+      ariel: 'position: Uranus from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 120 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Uranian satellite fact sheet, what it is and its colour from NASA Science, brightness from Wikipedia, all read 2026-09-22',
+      umbriel: 'position: Uranus from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 410 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Uranian satellite fact sheet, what it is from NASA Science, its colour and brightness from Wikipedia, all read 2026-09-22',
+      titania: 'position: Uranus from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 1 000 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Uranian satellite fact sheet, what it is and its colour from NASA Science, brightness from Wikipedia, all read 2026-09-22',
+      oberon: 'position: Uranus from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 1 230 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Uranian satellite fact sheet, what it is from NASA Science, its colour and brightness from Wikipedia, all read 2026-09-22',
     },
   },
 
@@ -1155,6 +1167,20 @@ export const COPY = {
       phobos: 'Not by eye: Phobos is magnitude 11.3 at its best and hugs Mars, whose glare drowns it; it was found in 1877 with a 26-inch telescope.',
       deimos: 'Not by eye: Deimos is magnitude 12.4 at its best and close to Mars, whose glare drowns it; it was found in 1877 with a 26-inch telescope.',
       neptune: 'Not by eye: Neptune is magnitude 7.7 to 7.9, too faint to see without help. Strong binoculars or a telescope show it as a small blue disc.',
+      // Ten more (2026-09-22). Every magnitude is that row's `facts.seen` in registry/worlds.yaml:
+      // Wikipedia's infobox for all ten. Saturn's five are the reachable ones, Uranus's five are
+      // not: at magnitude 13.9 Titania is already 1 000 times fainter than the 6.5 this file calls
+      // the eye's limit, and Miranda at 16.6 is 25 000 times.
+      mimas: 'Not by eye: Mimas is magnitude 12.9 and hugs Saturn, so it takes a large telescope and a steady night.',
+      tethys: 'Not by eye: Tethys is magnitude 10.2, within reach of a small telescope, though Saturn’s glare beside it makes it hard.',
+      dione: 'Not by eye: Dione is magnitude 10.4, within reach of a small telescope, though Saturn’s glare beside it makes it hard.',
+      rhea: 'Not by eye: Rhea is magnitude 10, the brightest of Saturn’s moons after Titan, and a small telescope will show it.',
+      iapetus: 'Not by eye: Iapetus runs from magnitude 10.2 to 11.9 as its bright side and its dark side take turns facing us, so a small telescope catches it at its best.',
+      miranda: 'Barely: Miranda is magnitude 16.6, lost in Uranus’s glare, and invisible to many amateur telescopes.',
+      ariel: 'Not by eye or binoculars: Ariel is magnitude 14.8, about as faint as Pluto near its closest, so it takes a good telescope and a dark sky.',
+      umbriel: 'Not by eye or binoculars: Umbriel is magnitude 15.1, the faintest of Uranus’s big four, so it takes a good telescope and a dark sky.',
+      titania: 'Not by eye: Titania is magnitude 13.9, the brightest of Uranus’s moons, and still needs a telescope of some size.',
+      oberon: 'Not by eye: Oberon is magnitude 14.1 and sits farthest out from Uranus of the five, so it takes a telescope and a steady night.',
     },
     couldNotLook: 'Could not work out a pass from here.',
     nowhereToLook: 'Nobody knows where this one is, so there is nowhere to look.',
@@ -1583,6 +1609,19 @@ export const COPY = {
         charon: 'Pluto’s biggest moon, half Pluto’s size; the two always turn the same faces to each other',
         phobos: 'the larger of Mars’s two moons, a lumpy rock spiralling in towards Mars by 1.8 m a century',
         deimos: 'the smaller of Mars’s two moons, a small lumpy rock covered in craters',
+        // Ten more (2026-09-22), each from its NASA Science page or its Wikipedia article, as
+        // registry/worlds.yaml `facts.what` records. Short, because the distance and the size have
+        // to fit after it: Titania's leaves 60 characters spare at the widest the distance gets.
+        mimas: 'Saturn’s innermost round moon, marked by a crater a third as wide as the moon itself',
+        tethys: 'Saturn’s fifth largest moon, almost pure water ice, split by a chasm and a huge crater',
+        dione: 'an icy moon of Saturn whose trailing side is laced with a network of bright ice cliffs',
+        rhea: 'Saturn’s second largest moon, a frozen dirty snowball of ice and rock',
+        iapetus: 'Saturn’s third largest moon: one side as dark as coal, the other ten times brighter',
+        miranda: 'the smallest of Uranus’s five big moons, with canyons up to 12 times the Grand Canyon’s depth',
+        ariel: 'the brightest and youngest-looking of Uranus’s five big moons, cut across by fault valleys',
+        umbriel: 'the darkest of Uranus’s big moons, reflecting about a fifth of the light that reaches it',
+        titania: 'Uranus’s largest moon, neutral grey, split by fault valleys nearly 1 600 km long',
+        oberon: 'Uranus’s second largest moon, dark, cratered, and carrying a mountain 6 km high',
       },
     },
   },

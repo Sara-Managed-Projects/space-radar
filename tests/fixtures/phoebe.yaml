@@ -1,29 +1,34 @@
 # The growth fixture (spec 0002 § 6, requirement 3). Adding a world, a layer of things around
 # it, and a site on its surface must be THIS FILE and nothing under app/.
 #
-# Miranda is chosen because nothing in the app anticipates it: it orbits Uranus rather than the
-# Sun, it needs a frame that composes two levels up, it has no ephemeris of its own in
-# astronomy-engine or in propagate/moons.js, and it has no textures in the tree. (This fixture was
-# Europa until 2026-09-22, when Europa became a real row in registry/worlds.yaml, and then
-# Enceladus until the same day's second batch of moons made that one real too. A duplicate id is
-# not growth.) Radius: JPL's satellite physical parameters, 235.8 km. Rotation: synchronous with
-# its 1.413479-day orbit (Wikipedia, Miranda), 33.923 h.
+# Phoebe is chosen because nothing in the app anticipates it: it orbits Saturn rather than the
+# Sun, backwards and thirteen million km out, it needs a frame that composes two levels up, it has
+# no ephemeris of its own in astronomy-engine or in propagate/moons.js, and it has no textures in
+# the tree. (This fixture was Europa until 2026-09-22, when Europa became a real row in
+# registry/worlds.yaml; then Enceladus, until the same day's second batch of moons made that one
+# real; then Miranda, until the third batch made THAT one real. A duplicate id is not growth.
+# Proteus and Hyperion were looked at first: Proteus's one named crater, Pharos, has no centre
+# coordinate in the USGS gazetteer, and Hyperion tumbles chaotically, so its coordinates are, in
+# Wikipedia's words, "entirely arbitrary". A fixture that proves a surveyed coordinate lives in
+# one place needs a surveyed coordinate.) Radius: JPL's satellite physical parameters, 106.5 km.
+# Rotation: 9.27365 h, not synchronous -- Phoebe is too far out to be tide-locked (Wikipedia,
+# Phoebe, read 2026-09-22).
 worlds:
-  - id: miranda
-    display: Miranda
-    parent: uranus
-    radius_km: 235.8
+  - id: phoebe
+    display: Phoebe
+    parent: saturn
+    radius_km: 106.5
     unit_km: 100
-    ephemeris: {propagator: body, body: Uranus}   # placeholder until a moon ephemeris exists
-    rotation: {kind: sidereal, period_h: 33.923}
+    ephemeris: {propagator: body, body: Saturn}   # placeholder until a moon ephemeris exists
+    rotation: {kind: sidereal, period_h: 9.27365}
     frames: [inertial, fixed]
-    look: {textures: miranda}
+    look: {textures: phoebe}
 
 textures:
-  - {id: miranda, source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures (c) Solar System Scope, CC BY 4.0", tiers: [2048]}
+  - {id: phoebe, source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures (c) Solar System Scope, CC BY 4.0", tiers: [2048]}
 
 sources:
-  - id: horizons-miranda-orbiters
+  - id: horizons-phoebe-orbiters
     url: https://ssd.jpl.nasa.gov/api/horizons.api
     auth: none
     browser: false
@@ -31,25 +36,25 @@ sources:
     freshness_max: 168h
     parser: horizons
     list: harvest/lists/horizons-ids.yaml
-    outputs: [miranda-orbiters.json]
+    outputs: [phoebe-orbiters.json]
     attribution: "Ephemerides: JPL Horizons"
 
 layers:
-  - id: miranda-orbiters
-    display: Spacecraft at Miranda
+  - id: phoebe-orbiters
+    display: Spacecraft at Phoebe
     moments: {wonder: on, now: off, next: off}
-    source: horizons-miranda-orbiters
+    source: horizons-phoebe-orbiters
     propagator: sampled
-    frame: miranda-inertial
+    frame: phoebe-inertial
     style: {kind: model, model: probe-generic, glyph: probe, colour: probe, near_km: 50000}
     card: probe
     select: {all: true}
     budget: {max_items: 10}
 
 sites:
-  # USGS Gazetteer of Planetary Nomenclature (feature 6359, through Wikipedia's Verona Rupes
-  # article): 18.30 S, 347.80 E.
-  - {id: verona-rupes, display: "Verona Rupes", class: surface, world: miranda, lat: -18.30, lon: 347.80, doing: "A cliff Voyager 2 photographed in 1986, perhaps the tallest in the solar system."}
+  # USGS Gazetteer of Planetary Nomenclature, feature 2810 (read 2026-09-22): centre 16.20 N,
+  # 317.70 W in its +West system, which is 42.30 E; 101 km across; approved 2006.
+  - {id: jason-crater, display: "Jason", class: surface, world: phoebe, lat: 16.20, lon: 42.30, doing: "The largest crater on Phoebe, 101 km across, photographed by Cassini in 2004."}
 
 # A rocket must be a row too (registry/rockets.yaml). Two rows, because there are two ways a row
 # earns its keys: `pslv-xl` refines an existing family stand-in with a full_name the live feed
@@ -94,19 +99,19 @@ rockets:
 # which is the case with the most moving parts: it anchors on the site row two sections up, so it
 # proves that a surveyed coordinate still lives in exactly one place after the registry grows.
 oddities:
-  - id: verona-drill-bit
-    display: "A drill bit at Verona Rupes"
+  - id: jason-drill-bit
+    display: "A drill bit in Jason crater"
     klass: oddity
     where:
       kind: on_surface
-      world: miranda
+      world: phoebe
       anchor:
-        id: verona-rupes
-        lat: -18.30
-        lon: 347.80
+        id: jason-crater
+        lat: 16.20
+        lon: 42.30
         uncertainty_m: 25
-        of: "the Verona Rupes landing ellipse"
-        source: "the growth fixture; there is no lander at Miranda and this row is a test"
+        of: "the Jason crater landing ellipse"
+        source: "the growth fixture; there is no lander at Phoebe and this row is a test"
       object:
         precision_m: unknown
         how: unsurveyed
@@ -115,8 +120,8 @@ oddities:
     shape: {build: generic, budget_tris: 200, stands_for: generic, drawn_name: "a drill bit"}
     fact: "A fixture row, not a fact about the world: it exists so the growth test can add an odd
            thing without touching a line of JavaScript."
-    cite: "tests/fixtures/miranda.yaml"
-    source: "This row is part of tests/fixtures/miranda.yaml and describes nothing that exists."
+    cite: "tests/fixtures/phoebe.yaml"
+    source: "This row is part of tests/fixtures/phoebe.yaml and describes nothing that exists."
 
   # And the other half of the growth claim: a thing bolted to a spacecraft the app already draws
   # is also just a row. It gets no dot and no id anything resolves -- scene/models.js hangs it on
@@ -134,8 +139,8 @@ oddities:
     shape: {build: generic, budget_tris: 200, stands_for: generic, drawn_name: "a plaque"}
     fact: "A fixture row, not a fact about the spacecraft: it exists so the growth test can bolt
            something to a probe without touching a line of JavaScript."
-    cite: "tests/fixtures/miranda.yaml"
-    source: "This row is part of tests/fixtures/miranda.yaml and describes nothing that exists."
+    cite: "tests/fixtures/phoebe.yaml"
+    source: "This row is part of tests/fixtures/phoebe.yaml and describes nothing that exists."
 
 # AND A TRIP MUST BE A ROW (registry/tours.yaml). The third trip is this section plus
 # `python3 scripts/gen_tours_js.py`, and nothing under site/js/ -- the state machine in
@@ -145,39 +150,39 @@ oddities:
 # the point: a trip is written against the OTHER registries, so if growing them left a target
 # form that no longer resolves, this is where it shows up.
 tours:
-  - id: miranda-tour
-    title: "The innermost round moon"
+  - id: phoebe-tour
+    title: "The moon that goes round backwards"
     blurb: "A fixture trip that visits everything this fixture added."
-    requires: [miranda-orbiters]
+    requires: [phoebe-orbiters]
     stops:
       - id: the-world
-        target: {world: miranda}
-        # A moon of Uranus is drawn around a Uranus that is itself drawn nearer and larger than it
+        target: {world: phoebe}
+        # A moon of Saturn is drawn around a Saturn that is itself drawn nearer and larger than it
         # is (scene/worlds.js), so from Earth's stage this stop would fly to a place on the screen
         # where nothing is drawn. Naming the stage is what a stop about a new world costs, and the
         # validator refuses the pairing rather than letting it be found in a browser.
-        stage: miranda
+        stage: phoebe
         frame_radii: 5.0
         card:
-          title: "Miranda"
+          title: "Phoebe"
           body: >-
-            Of Uranus's five round moons, the one that orbits closest. A fixture row, and not a fact
-            about the world.
+            Saturn's far-out moon, captured and going round the wrong way. A fixture row, and not
+            a fact about the world.
 
-      - id: the-cliff
-        target: {site: verona-rupes}
+      - id: the-crater
+        target: {site: jason-crater}
         distance_km: 400
         card:
-          title: "Verona Rupes"
+          title: "Jason"
           body: >-
-            A cliff photographed by Voyager 2. A fixture row, and not a fact about the world,
+            A crater photographed by Cassini. A fixture row, and not a fact about the world,
             written so that the growth test has a surface site to fly to.
 
       - id: the-drill-bit
-        target: {record: verona-drill-bit}
+        target: {record: jason-drill-bit}
         distance_km: 400
         card:
-          title: "A drill bit on the cliff"
+          title: "A drill bit in the crater"
           body: >-
-            There is no lander at Miranda and there is no drill bit. This stop exists so the growth
+            There is no lander at Phoebe and there is no drill bit. This stop exists so the growth
             test can add a trip without touching a line of JavaScript.

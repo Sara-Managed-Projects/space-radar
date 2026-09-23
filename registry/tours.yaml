@@ -602,8 +602,8 @@ tours:
   # stage every one of the outer worlds is drawn nearer and larger, and its moons around the
   # enlarged disc (scene/worlds.js): the trip would have flown to a place on the screen where
   # nothing is drawn. The per-stop `stage:` field above arrived with this trip; the only other row
-  # that names one is the fixture trip in tests/fixtures/miranda.yaml, which visits a moon of
-  # Uranus for the same reason.
+  # that names one is the fixture trip in tests/fixtures/phoebe.yaml, which visits a moon of
+  # Saturn for the same reason.
   #
   # EVERY STOP IS A `record:` AND NOT A `world:`, so the world's or the probe's OWN card opens
   # under the stop's words: the moons' cards carry the page and the day each of their facts was
