@@ -337,6 +337,23 @@ export function createTripPicker(ctx, host) {
   });
   const onReady = () => plan();
   window.addEventListener('sr:layers-ready', onReady, { once: true });
+  // A trip from the visitor's own place (spec 0038) is greyed "Needs a place" until there is one,
+  // and names the place it starts from: setting or clearing the place re-plans the trips that
+  // depend on it, and only those, once the first plan has run.
+  const onObserver = () => {
+    if (!plans.size) return;
+    for (const tour of tours) {
+      if (!tour.requires_observer) continue;
+      Promise.resolve(trip.plan(tour.id))
+        .then((p) => {
+          if (!alive || !p) return;
+          plans.set(tour.id, p);
+          repaint();
+        })
+        .catch(() => {});
+    }
+  };
+  window.addEventListener('sr:observer', onObserver);
 
   repaint();
 
@@ -346,6 +363,7 @@ export function createTripPicker(ctx, host) {
     destroy() {
       alive = false;
       window.removeEventListener('sr:layers-ready', onReady);
+      window.removeEventListener('sr:observer', onObserver);
       root.remove();
     },
   };

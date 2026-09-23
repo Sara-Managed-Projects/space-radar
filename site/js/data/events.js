@@ -202,6 +202,96 @@ function trainItems(records, nowMs, observer, stillRaisingBelowKm) {
 }
 
 // ---------------------------------------------------------------------------------------
+// The station's next pass over one place, for a trip stop (spec 0038)
+// ---------------------------------------------------------------------------------------
+
+/** The station a `station-pass.next` stop counts to: the ISS, by its catalogue number. */
+export const STATION_CATALOG = 25544;
+/**
+ * How far ahead a stop looks for the pass. Seven days, because elements are honest for about a
+ * week (spec 0008) and the station crosses 10 degrees over any place below about 52 degrees of
+ * latitude several times in that. The Next list keeps its own 24 hours (passItems above).
+ */
+export const STATION_PASS_HORIZON_MS = 7 * DAY;
+/** A visible pass this soon wins over an earlier daytime one: two nights is worth waiting for. */
+export const STATION_PASS_PREFER_VISIBLE_MS = 2 * DAY;
+
+const isStation = (r) => {
+  if (!r || !r.satrec || r.layer !== 'stations') return false;
+  const n = r.meta ? (r.meta.noradId ?? r.meta.catalogueNumber) : null;
+  return Number(n) === STATION_CATALOG;
+};
+
+// ONE SEARCH AN HOUR. Measured 2026-09-23 in node on this machine (tests/test_events.mjs prints it):
+// seven days of one record is about 100 ms, and a trip asks twice -- when it is planned, for an
+// honest count, and again at the stop -- with the picker planning it on every open. So the week's
+// passes are kept for an hour, for the same record, elements and place, and filtered per call.
+// One entry, never stored anywhere else: the observer in its key lives as long as the page.
+let stationPassCache = { key: '', from: NaN, horizonMs: 0, passes: [] };
+const STATION_PASS_REUSE_MS = HOUR;
+
+function stationPasses(record, observer, nowMs, horizonMs) {
+  const key = `${record.id}|${record.epoch}|${observer.latRad}|${observer.lonRad}|${observer.altKm || 0}`;
+  const c = stationPassCache;
+  if (c.key === key && nowMs >= c.from && nowMs - c.from < STATION_PASS_REUSE_MS && c.horizonMs >= horizonMs) {
+    return c.passes.filter((p) => p.endMs > nowMs && p.startMs < nowMs + horizonMs);
+  }
+  let passes;
+  try {
+    // An hour of extra window so a reused list still reaches a full `horizonMs` past a later now.
+    passes = predictPasses([record], observer, nowMs, (horizonMs + STATION_PASS_REUSE_MS) / HOUR);
+  } catch { return []; }
+  stationPassCache = { key, from: nowMs, horizonMs, passes };
+  return passes.filter((p) => p.startMs < nowMs + horizonMs);
+}
+
+/**
+ * THE STATION'S NEXT PASS OVER YOU, as an event: the peak of the first pass above 10 degrees in
+ * seven days, preferring a pass you could SEE (sunlit, your sky dark) when one comes within two
+ * days. Spec 0038 req 5, 2026-09-23.
+ *
+ * WHY NOT THE LIST'S OWN `station-pass` BUILDER. That one answers the Next list's question -- every
+ * station and bright satellite you could see in the next 24 hours, timed at rise -- and a trip stop
+ * asks a different one: the ISS, the next time it is over you at all, timed at the top of its arc,
+ * because the camera is put there at that minute. At a latitude where the station only crosses in
+ * daylight for a week the list shows nothing and the stop still has a pass, and the card says it
+ * is a daytime one (`pass.visible`). The list's rows are unchanged.
+ */
+export function fromPasses(records, nowMs, { observer = null, passHorizonMs = STATION_PASS_HORIZON_MS, type = null } = {}) {
+  if (!validObserver(observer) || !Number.isFinite(nowMs)) return [];
+  const iss = (Array.isArray(records) ? records : []).filter(isStation);
+  if (!iss.length) return [];
+  const passes = stationPasses(iss[0], observer, nowMs, passHorizonMs);
+  // A pass already under way when the window opens is clipped at the window's start, so its "peak"
+  // is only the highest point of what is left, and one cut off by the window's end the same: the
+  // stop is the NEXT whole crossing, so neither counts, and the peak must still be ahead.
+  const ahead = passes.filter((p) => p.peakElDeg >= 10 && p.peakMs > nowMs && !p.clippedStart && !p.clippedEnd);
+  const pick = ahead.find((p) => p.visible && p.peakMs < nowMs + STATION_PASS_PREFER_VISIBLE_MS) || ahead[0];
+  if (!pick) return [];
+  const ty = type || EVENT_TYPES.find((e) => e.id === 'station-pass') || { id: 'station-pass', display: 'station-pass', prominence: 2, source: 'celestrak-stations', locationDependent: true };
+  return [{
+    id: `station-pass:${pick.record.id}:${Math.round(pick.peakMs / 60e3)}`,
+    type: 'station-pass',
+    t: pick.peakMs,
+    t_precision: 'minute',
+    t_window: [pick.startMs, pick.endMs],
+    title: ty.display,
+    say: null,
+    where: null,
+    location_dependent: true,
+    // A pass is propagated from elements somebody measured, so it is as good as their age: the
+    // card prints that age as it does for every SGP4 record.
+    class: 'inferred',
+    prominence: ty.prominence,
+    source: ty.source,
+    links: [],
+    record: pick.record,
+    detail: { peakEl: pick.peakEl, visible: pick.visible },
+    pass: pick,
+  }];
+}
+
+// ---------------------------------------------------------------------------------------
 // Items become records
 // ---------------------------------------------------------------------------------------
 
@@ -497,6 +587,9 @@ export function nextEvent(type, fromMs, observer = null, records = [], { kind = 
   if (!ty || !ty.enabled || !BUILDERS[type] || !Number.isFinite(fromMs)) return null;
   if (kind !== null && kind !== undefined && !(ECLIPSE_KINDS[type] || []).includes(kind)) return null;
   const obs = validObserver(observer) ? observer : null;
+  // A stop's `station-pass.next` is the ISS over this place within a week (fromPasses, spec 0038),
+  // not the Next list's 24 hours of anything visible.
+  if (type === 'station-pass') return fromPasses(records, fromMs, { observer: obs, type: ty })[0] || null;
   const horizon = kind ? ECLIPSE_KIND_HORIZON_MS : ECLIPSE_HORIZON_MS;
   const found = BUILDERS[type](records, fromMs, {
     observer: obs, horizonMs: horizon, eclipseHorizonMs: horizon, showers: SHOWERS, spaceWeather: null, type: ty,

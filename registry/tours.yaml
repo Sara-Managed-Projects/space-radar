@@ -11,13 +11,22 @@
 # stop that quietly is not there.
 #
 # ---------------------------------------------------------------------------------------------
-# HOW A STOP NAMES ITS TARGET. Exactly one key, out of four:
+# HOW A STOP NAMES ITS TARGET. Exactly one key, out of five:
 #
 #     target: {record: tesla-roadster}                 a record id, in any layer
 #     target: {layer: stations, catalog: "25544"}      a NORAD number within a layer
 #     target: {layer: stations, query: {name_contains: TIANGONG}, pick: first}
 #     target: {world: earth}                           a registry/worlds.yaml row
 #     target: {site: apollo-11}                        a registry/sites.yaml row
+#     target: {observer: true}                         the visitor's own place (spec 0038)
+#
+# The visitor's place is the one they set under Where you are, or the guess from their clock the
+# Now moment makes (sky/guessplace.js), read when the trip is planned and at the stop and never
+# written anywhere. A trip with such a stop says `requires_observer: true`, so the picker can
+# grey it with "Needs a place" when there is neither; it is refused without it. The camera may not
+# come closer than scene/camera.js WORLD_CLEARANCE allows (127 km above the Earth, and more once
+# the camera looks down at an angle), so `distance_km` under 160 is refused on such a stop; and
+# the card may not name a city, because the place is generated and differs for every visitor.
 #
 # Zero keys or two keys is refused. Ambiguity is the failure mode: a row with both `record:` and
 # `layer:` resolves to SOMETHING PLAUSIBLE, which is exactly what this file's validator exists to
@@ -68,6 +77,8 @@
 #                 lists every trip (spec 0029). Written on the trip and not derived from its
 #                 stage, because the Moon trip is "around the Solar System" and the stations trip
 #                 is "around the Earth" for reasons a stage id does not carry.
+#   requires_observer  true when a stop is `target: {observer: true}`: the trip starts from the
+#                 visitor's own place and is greyed with "Needs a place" when there is none.
 #   next          the trip the end card offers first, by id, still only if it can run that day
 #                 (ui/tripframe.js asks plan() before it appends the button). Optional: without
 #                 it the end card offers the next trip in this file's order, wrapping round. May
@@ -239,6 +250,106 @@ tours:
           body: >-
             Most of the time they are thousands of kilometres apart. Two specks going round one
             planet, and that is the whole of humanity that does not live on the ground.
+
+  # =============================================================================================
+  # FROM YOUR GROUND TO THE STATION (spec 0038, 2026-09-23). The kiosk's "Journey to Int'l Space
+  # Station": start from the visitor, go straight up through the air, out to the station where it
+  # is now, and on to the minute it next crosses their sky. The place is never written here: the
+  # first card's line saying which place, and how it was got, is generated (ui/trip.js noteFor).
+  #
+  # EVERY FACT IS NASA's, read 2026-09-23: "five miles per second", "16 orbits of Earth" a day and
+  # "109 meters" end to end, "one yard shy of" an American football field
+  # (https://www.nasa.gov/international-space-station/space-station-facts-and-figures/); "an
+  # altitude of between 370-460 km" (https://www.nasa.gov/reference/international-space-station/);
+  # the troposphere "about 12 kilometers" deep and the Karman line at "100 kilometers", with
+  # "99.99997 percent" of the air beneath it (https://science.nasa.gov/earth/earth-atmosphere/
+  # earths-atmosphere-a-multi-layered-cake/); and the station looks like "a very bright star
+  # moving across the night sky", with no "flashing lights" (https://www.nasa.gov/spot-the-station/).
+  #
+  # `time: now` on the first three stops, not only on the pass: once the pass stop has moved the
+  # clock the trip owns it until leave, so Back from the pass would otherwise show "the station,
+  # this minute" at the minute of the pass. Each stop says which instant it is.
+  # =============================================================================================
+  - id: journey-to-the-station
+    title: "From your ground to the space station"
+    blurb: "Straight up from where you are, out to the station, and on to the minute it next crosses your sky. This trip moves the clock and puts it back when you leave."
+    group: earth-orbit
+    next: people-in-space
+    requires: [stations]
+    requires_observer: true
+    clock: as-found
+    stops:
+      - id: ground
+        target: {observer: true}
+        # THE SPEC SAID 150 km, and the rig cannot honour it. scene/camera.js WORLD_CLEARANCE 1.02
+        # puts the camera's floor 127 km above the Earth, and a ground stop is seen from 36 to 76
+        # degrees off the local vertical (ui/trip.js GROUND_POLARS), so the camera's height is at
+        # most the distance times cos 36 degrees: 150 km gives 122 km, under the floor at every
+        # angle, and the rig would push it out. From 200 km the two steepest angles clear it (162
+        # and 133 km up), which leaves the key light a choice. Measured in tests/test_station_trip.mjs.
+        distance_km: 200
+        time: now
+        drift_deg: 20
+        card:
+          title: "Where you are standing"
+          body: >-
+            This is the ground you are standing on, seen from high above it. All the weather you
+            have ever felt happens in the bottom twelve kilometres of air, a layer too thin to see
+            from here.
+
+      - id: air
+        target: {observer: true}
+        # THE CAMERA AT THE STATION'S HEIGHT, which is not the same as 420 km from the ground point.
+        # NASA gives the station 370 to 460 km up, and the harvest fixture's elements
+        # (tests/fixtures/harvest/celestrak_gp.json, epoch 2026-09-07) put it 416 to 423 km. The
+        # spec wrote `distance_km: 420`, and measured 2026-09-23 that stood the camera 226 to 283 km
+        # up, looking down at 31 to 41 degrees, and on a 390 x 844 phone the horizon, the air's edge
+        # this stop is about, was out of the frame. From 650 km the camera is 360 to 530 km up at
+        # the three steeper angles, 194 km at the shallowest (Miami, afternoon, headless Chrome), and
+        # the limb is in the picture from all four. scene/earth.js draws the air as a shell 159 km
+        # thick (ATMOSPHERE_SCALE 1.025), so from just above it the glow is a wide band, not the
+        # thin line the station's crew see; the card says "glow" and makes no claim about its width.
+        distance_km: 650
+        time: now
+        drift_deg: 15
+        card:
+          title: "The air, from the station's height"
+          body: >-
+            Space begins a hundred kilometres up, with nearly all of the air already below. From
+            the station's height the air is the blue glow along the edge of the world.
+
+      - id: now
+        target: {layer: stations, catalog: "25544"}
+        distance_km: 3000
+        time: now
+        card:
+          title: "The station, where it is this minute"
+          body: >-
+            The International Space Station, a laboratory and a home, about as long as a football
+            pitch. It goes round the Earth sixteen times a day, eight kilometres every second.
+
+      - id: pass
+        target: {layer: stations, catalog: "25544"}
+        # Close enough that the station fills the frame and the ground is the backdrop. The model
+        # is drawn at class size whatever the distance (scene/heroes.js SELECTED_PX), and the
+        # card's generated line says so.
+        distance_km: 20
+        # THE GROUND BEHIND IT. Without this the key light chose a camera 7 km below the station,
+        # looking up at it against black sky (headless Chrome, Miami, 2026-09-23), under a card
+        # that says "with your ground below".
+        behind: earth
+        # The peak of the next pass over the visitor above 10 degrees within seven days,
+        # preferring one they could see within two (data/events.js fromPasses). At rate 1: the
+        # station at the minute it crosses, not a replay of it.
+        time: {event: station-pass.next}
+        rate: 1
+        drift_deg: 30
+        card:
+          title: "The next time it crosses your sky"
+          body: >-
+            This is the station at the top of its next pass over you, with your ground below. From
+            where you stand it looks like a bright star moving steadily across the sky, with no
+            blinking lights.
 
   # =============================================================================================
   # THE ID IS `strangest-things` AND NOT `oddities`, because `oddities` is the layer. Every stop

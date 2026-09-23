@@ -230,6 +230,11 @@ jobs:
       # without the ground's horizon looked at Surveyor 1 through 500 km of Moon (2026-09-22).
       - name: the Moon trip visits real landing sites in order, and sees each from above its horizon
         run: node tests/test_moon_trip.mjs
+      # Spec 0038: a trip from the visitor's own ground to the station and its next pass, through
+      # the real trip machine with the harvest fixture's ISS and a fixture place. The flights are
+      # flown, not collapsed: collapsed, the station stop put the camera behind the Earth.
+      - name: "From your ground to the station: your place, from above its horizon, and a real pass ahead (spec 0038)"
+        run: node tests/test_station_trip.mjs
       # The URL is the state (spec 0017's rule, spec 0032's keys): one module owns every key of
       # the hash, drops what it does not know, and never writes it back. Two writers in two
       # dialects once bounced the app between moments; this is the check that there is one.

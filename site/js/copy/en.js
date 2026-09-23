@@ -1207,6 +1207,23 @@ export const COPY = {
       525600: 'a day every sixth of a second',
     },
     rateGeneric: '{n} times faster than life',
+    // Spec 0038: a trip that starts from the visitor's own place (`target: {observer: true}`).
+    // The place is GENERATED, never typed in the registry, and it says how it was got: a place
+    // set by hand, one the device gave, or a guess from the clock, which says it is one.
+    yourPlace: 'Your place',
+    observerSet: 'Your place: {place}, set by you.',
+    observerDevice: 'Your place: where your device says you are.',
+    observerGuess: 'Your place is a guess from your clock’s time zone: {place}. Set it under Where you are for a better one.',
+    needsPlace: 'Needs a place. Set where you are first.',
+    // Recomputed while the stop is up: the station moves eight kilometres every second.
+    stationFromYou: 'Right now it is {km} km from you.',
+    // `px` is scene/heroes.js SELECTED_PX, interpolated so the sentence cannot outlive the number.
+    drawnAtClassSize: 'The model is drawn {px} pixels wide whatever the distance; the real station would be a bright dot.',
+    // Whether the pass the stop shows is one you could see: the station sunlit AND your sky dark
+    // (sky/passes.js `visible`). A night pass in the Earth's shadow is not, so neither word is
+    // "night" or "day" alone.
+    passNight: 'On this pass it is sunlit against a dark sky: you could see it, weather allowing.',
+    passDay: 'You would not see this pass: your sky is too light, or the station is in the Earth’s shadow.',
 
     // --- the letterbox -------------------------------------------------------------------
     frameLabel: 'guided trip',
@@ -1868,6 +1885,9 @@ export const CITIES = [
   { name: 'Manila', country: 'Philippines', latDeg: 14.5995, lonDeg: 120.9842 },
   { name: 'Melbourne', country: 'Australia', latDeg: -37.8136, lonDeg: 144.9631 },
   { name: 'Mexico City', country: 'Mexico', latDeg: 19.4326, lonDeg: -99.1332 },
+  // Added 2026-09-23 for the Miami kiosk (spec 0038's trip starts from the visitor's own place):
+  // its time zone is America/New_York, so the guess says New York, and the box could not find it.
+  { name: 'Miami', country: 'United States', latDeg: 25.7617, lonDeg: -80.1918 },
   { name: 'Moscow', country: 'Russia', latDeg: 55.7558, lonDeg: 37.6173 },
   { name: 'Mumbai', country: 'India', latDeg: 19.076, lonDeg: 72.8777 },
   { name: 'Nairobi', country: 'Kenya', latDeg: -1.2921, lonDeg: 36.8219 },

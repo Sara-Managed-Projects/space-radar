@@ -679,6 +679,26 @@ TOUR_CASES: list[tuple[str, str, str]] = [
     ("an eclipse card with a safety warning",
      "            Now it is the Earth that is in the way.",
      "            Now it is the Earth that is in the way, and there is no need to protect your eyes."),
+
+    # --- spec 0038: a stop at the visitor's own place --------------------------------------------
+    ("a visitor's-place target with a second key beside it",
+     "        target: {observer: true}\n        # THE SPEC SAID",
+     "        target: {observer: true, world: earth}\n        # THE SPEC SAID"),
+    ("a stop at the visitor's place in a trip that does not say it needs one",
+     "    requires_observer: true\n", ""),
+    ("a trip from the visitor's place whose station stops are not in `requires:`",
+     "    requires: [stations]\n    requires_observer: true\n",
+     "    requires: [worlds]\n    requires_observer: true\n"),
+    ("the visitor's place framed from inside the camera's clearance floor",
+     "        distance_km: 200\n        time: now\n", "        distance_km: 130\n        time: now\n"),
+    ("the visitor's place shown at a written instant, the same for every visitor",
+     "        distance_km: 200\n        time: now\n",
+     "        distance_km: 200\n        time: 2027-08-02T10:07:00Z\n"),
+    ("a card on a trip from the visitor's place that names a city",
+     "This is the ground you are standing on,", "This is Madrid, the ground you are standing on,"),
+    ("`requires_observer: true` on a trip with no stop at the visitor",
+     "    next: strangest-things\n    requires: [stations]\n",
+     "    next: strangest-things\n    requires: [stations]\n    requires_observer: true\n"),
 ]
 
 
@@ -698,6 +718,10 @@ def check_tour_refusals() -> int:
             # reason that has nothing to do with the case under test.
             shutil.copytree(ROOT / "site" / "images", work / "site" / "images")
             shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")
+            # The bundled cities a visitor can pick (spec 0038): a card on a trip from the visitor's
+            # place may not name one, and the checker reads them from here.
+            (work / "site" / "js" / "copy").mkdir(parents=True, exist_ok=True)
+            shutil.copy2(ROOT / "site" / "js" / "copy" / "en.js", work / "site" / "js" / "copy" / "en.js")
             shutil.copytree(ROOT / "harvest", work / "harvest",
                             ignore=shutil.ignore_patterns("__pycache__"))
             # A COMPLETE tree, unlike the mutation harness above, because the last case asserts

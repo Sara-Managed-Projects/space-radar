@@ -40,8 +40,11 @@ from _genmirror import Mirror, pick  # noqa: E402
 # the evidence a reviewer reads and are not shipped; neither is anything a future field adds
 # until somebody puts it in one of these three lists. `group` and `next` (spec 0029) are what the
 # picker and the end card read: which heading a trip sits under, and which trip is offered after.
+# `requires_observer` (spec 0038): the trip starts from the visitor's own place, and ui/trip.js
+# plan() greys it with "Needs a place" when there is none. A stop's `{observer: true}` target is a
+# `target:` like any other and passes through unchanged.
 TRIP_FIELDS = ("id", "title", "blurb", "pacing", "requires", "min_stops", "stage", "clock", "group",
-               "next")
+               "next", "requires_observer")
 # A `groups:` row: the id a trip names, the heading the picker prints, and where it sits.
 GROUP_FIELDS = ("id", "display", "order")
 STOP_FIELDS = (
