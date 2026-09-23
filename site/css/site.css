@@ -171,6 +171,13 @@ html.sr-phone #sr-status {
   overflow-y: auto;
   z-index: 45;
   border-radius: 16px 16px 0 0;
+  /* ui.css gives .sr-controls `padding-top: pad + env(safe-area-inset-top)` for its desktop life
+     as a bar along the TOP of the screen. A bottom sheet has no notch above it, and on a real
+     iPhone (Ivan's screenshot, 2026-09-22) that inset opened a 47-59 px empty band between the
+     sheet's rounded edge and "Trips & layers" -- invisible in a desktop emulation, where the
+     inset is 0. The drawer head's negative margin cancels exactly one pad, so this is what
+     puts the head flush against the edge. */
+  padding-top: var(--sr-pad);
   padding-bottom: calc(64px + var(--safe-bottom));
   transform: translateY(102%);
   transition: transform 260ms cubic-bezier(.2,.8,.2,1);
