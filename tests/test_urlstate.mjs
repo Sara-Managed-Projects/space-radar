@@ -19,7 +19,7 @@ globalThis.history = {
 };
 const setHash = (h) => { globalThis.location.hash = h; };
 
-const { KEYS, VERSION, read, write, clear, stopIndex, readMoment, writeMoment, HASH_KEY, bootLink } = await import(join(JS, 'ui/urlstate.js'));
+const { KEYS, VERSION, read, write, clear, stopIndex, readMoment, writeMoment, HASH_KEY, bootLink, laterLink } = await import(join(JS, 'ui/urlstate.js'));
 const { clock } = await import(join(JS, 'clock.js'));
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
@@ -153,12 +153,23 @@ check(clock.mode === 'live' && newer.unknownVersion === true, 'a newer format ap
 clock.live();
 setHash('');
 
+// laterLink(): a trip the visitor started before the layers landed outranks the link.
+{
+  const link = { m: 'wonder', trip: 'moon-landings', stop: '3', at: 'iss', stage: 'saturn' };
+  check(laterLink(link, false) === link, 'no trip running: the whole boot link applies');
+  check(same(laterLink(link, true), { m: 'wonder' }), `a trip running: nothing that moves the camera or the map: ${JSON.stringify(laterLink(link, true))}`);
+  check(link.trip === 'moon-landings', 'laterLink() does not change the snapshot it is given');
+  check(laterLink(null, true) === null, 'no link, nothing');
+}
+
 {
   // main.js must hand the layers-ready half the boot snapshot, never a fresh read of the hash.
   const { readFileSync } = await import('node:fs');
   const main = readFileSync(join(JS, 'main.js'), 'utf8');
-  const ready = main.split('\n').filter((line) => line.includes("'sr:layers-ready'") && line.includes('applyUrlState'));
-  check(ready.length === 1 && /applyUrlState\(ctx, link\)/.test(ready[0]), `main.js applies the boot link at layers-ready: ${ready.join(' | ')}`);
+  const at = main.indexOf("window.addEventListener('sr:layers-ready', () => {");
+  const handler = at >= 0 ? main.slice(at, main.indexOf('{ once: true });', at)) : '';
+  check(/applyUrlState\(ctx, laterLink\(link, tripRunning\)\)/.test(handler) && !/\bread\(|readUrlState/.test(handler),
+    `main.js applies the boot link at layers-ready, never a fresh read of the hash: ${handler.slice(0, 200)}`);
   check(!/ctx\.clock\.(goTo|setRate)/.test(main.slice(main.indexOf('function applyUrlState'), main.indexOf('function openTrip'))),
     'applyUrlState() in main.js no longer touches the clock');
 }

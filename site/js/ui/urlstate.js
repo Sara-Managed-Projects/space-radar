@@ -167,3 +167,20 @@ export function bootLink(clock) {
   delete rest.rate;
   return rest;
 }
+
+/**
+ * What of the boot link is still the visitor's to apply once the layers land. All of it, unless a
+ * trip is already running: then nothing that would move the camera or the map -- `trip`, `stop`,
+ * `at` and `stage` go -- because the visitor started that trip themselves after the page opened,
+ * and the link is older than their decision. Measured 2026-09-23 on main before bootLink(): a trip
+ * started 8 s into the boot was restarted at its first stop when the layers landed 10 s later (its
+ * own `trip=` key, written into the hash, read back as a link; ui/trip.js start() on the running
+ * trip is jump(0)), so the first stop was flown twice. bootLink() ends that echo; this covers a
+ * link that named a trip of its own. Pure.
+ */
+export function laterLink(link, tripRunning) {
+  if (!link || !tripRunning) return link;
+  const rest = { ...link };
+  for (const key of ['trip', 'stop', 'at', 'stage']) delete rest[key];
+  return rest;
+}

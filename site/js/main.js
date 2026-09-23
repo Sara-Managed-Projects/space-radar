@@ -18,7 +18,7 @@ import { createGlyphLayer } from './scene/glyphs.js';
 import { createHeroes, closeUpDistance } from './scene/heroes.js';
 import { createCameraRig, worldFramingDistance } from './scene/camera.js';
 import { createViewShift } from './scene/viewshift.js';
-import { readMoment, writeMoment, bootLink, write as writeUrlState, clear as clearUrlState, stopIndex } from './ui/urlstate.js';
+import { readMoment, writeMoment, bootLink, laterLink, write as writeUrlState, clear as clearUrlState, stopIndex } from './ui/urlstate.js';
 import { guessObserver } from './sky/guessplace.js';
 import { COPY, CITIES } from './copy/en.js';
 import { LAYERS, loadLayer } from './data/layers.js';
@@ -202,7 +202,11 @@ export async function boot({ setStatus } = {}) {
   // is the link as it was read then, not the hash as it is now (2026-09-23: the hash by now holds
   // the app's own clock, up to a second stale, and re-applying it undid a visitor's first scrub).
   // Registered before the load starts so the event cannot be missed.
-  window.addEventListener('sr:layers-ready', () => applyUrlState(ctx, link), { once: true });
+  // A trip the visitor has already started by then outranks the link (ui/urlstate.js laterLink).
+  window.addEventListener('sr:layers-ready', () => {
+    const tripRunning = !!(ctx.trip && ctx.trip.state && ctx.trip.state.phase !== 'idle');
+    applyUrlState(ctx, laterLink(link, tripRunning));
+  }, { once: true });
 
   // Data arrives in the background, layer by layer, slowest last. Nothing here is awaited by the
   // render loop.
