@@ -142,6 +142,8 @@ jobs:
         run: node tests/test_status_kinds.mjs
       - name: A phone's sheets move the view up by half of what they cover
         run: node tests/test_viewshift.mjs
+      - name: The layers that are off by default still exist, and the active catalogue alone loads on demand
+        run: node tests/test_layer_boot.mjs
       - name: The Trips panel leads with the trips that can run
         run: node tests/test_trips_panel.mjs
       # The trip out past Jupiter runs the real trip machine at four dates: every stop resolves to

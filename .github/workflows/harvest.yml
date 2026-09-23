@@ -16,7 +16,7 @@ on:
       sources:
         description: "Source ids, space-separated (default: the five CelesTrak files)"
         required: false
-        default: "celestrak-stations celestrak-visual celestrak-active celestrak-supplemental-starlink celestrak-satcat"
+        default: "celestrak-stations celestrak-visual celestrak-active celestrak-supplemental-starlink celestrak-satcat celestrak-last30"
 
 permissions:
   contents: read

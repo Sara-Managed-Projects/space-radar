@@ -54,6 +54,18 @@ sources:
     outputs: [active.json]
     attribution: "Orbital data: CelesTrak (T. S. Kelso)"
 
+  # The "Launched in the last two weeks" layer read this file live on every visit, because it
+  # had no row here and so no saved copy: from a refused connection it showed nothing (2026-09-22).
+  - id: celestrak-last30
+    url: https://celestrak.org/NORAD/elements/gp.php?GROUP=last-30-days&FORMAT=json
+    auth: none
+    browser: true
+    cadence: 3h
+    freshness_max: 48h
+    parser: celestrak_gp
+    outputs: [last30.json]
+    attribution: "Orbital data: CelesTrak (T. S. Kelso)"
+
   # Supplemental files are the OPERATORS' own ephemerides and are hours fresher than the
   # tracked catalogue -- which is exactly what a three-day-old Starlink train needs.
   - id: celestrak-supplemental-starlink

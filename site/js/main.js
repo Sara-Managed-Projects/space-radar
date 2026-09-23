@@ -136,6 +136,30 @@ export async function boot({ setStatus } = {}) {
   render();
   revealUI();
 
+  // The layer switches, BEFORE the panel that presses them. createControls() applies the moment's
+  // defaults to every layer as it builds, through ctx.setLayerOn; until 2026-09-22 that was
+  // attached 260 lines below, so the panel's fallback wrote `layer.enabled = false` on every layer
+  // off in Wonder -- and `enabled: false` means "the registry switched this layer off": no glyph
+  // layer, never loaded, and the box did nothing. "Everything active", the geostationary ring,
+  // the famous debris and the reentries read "nothing loaded" on every visit for that reason.
+  function isLayerOn(id) {
+    const layer = LAYERS.find((l) => l.id === id);
+    if (!layer) return false;
+    if (layer.forcedOff) return false;
+    return layer.on !== undefined ? layer.on : !!(layer.moments && layer.moments[moment]);
+  }
+  ctx.isLayerOn = isLayerOn;
+  ctx.setLayerOn = (id, on) => {
+    const layer = LAYERS.find((l) => l.id === id);
+    if (layer) layer.on = on;
+    if (layer && on && layer.deferred && typeof ctx.loadLayerNow === 'function') ctx.loadLayerNow(layer);
+    const gl = glyphLayers.get(id);
+    if (gl) gl.setVisible(on);
+    if (id === 'worlds') worlds.setVisible(on);
+    if (id === 'stars' && ctx.stars3d) ctx.stars3d.setVisible(on);
+    if (id === 'galaxy' && ctx.galaxy) ctx.galaxy.setVisible(on);
+  };
+
   say('Reading the catalogues…');
   createControls(ctx);
   createStatus(ctx);
@@ -394,23 +418,6 @@ export async function boot({ setStatus } = {}) {
   }
   ctx.isLayerDrawable = isLayerDrawable;
 
-  function isLayerOn(id) {
-    const layer = LAYERS.find((l) => l.id === id);
-    if (!layer) return false;
-    if (layer.forcedOff) return false;
-    return layer.on !== undefined ? layer.on : !!(layer.moments && layer.moments[moment]);
-  }
-  ctx.isLayerOn = isLayerOn;
-  ctx.setLayerOn = (id, on) => {
-    const layer = LAYERS.find((l) => l.id === id);
-    if (layer) layer.on = on;
-    if (layer && on && layer.deferred && typeof ctx.loadLayerNow === 'function') ctx.loadLayerNow(layer);
-    const gl = glyphLayers.get(id);
-    if (gl) gl.setVisible(on);
-    if (id === 'worlds') worlds.setVisible(on);
-    if (id === 'stars' && ctx.stars3d) ctx.stars3d.setVisible(on);
-    if (id === 'galaxy' && ctx.galaxy) ctx.galaxy.setVisible(on);
-  };
 
   /**
    * Make a world the centre of the map (spec 0006 req 5, spec 0028 req 2). The stage's floating
@@ -565,7 +572,9 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
   // Data-saver (spec 0026 req 18): on a slow or metered connection the heavy catalogue files wait
   // until the visitor asks for the layer. The layer stays in the panel, off, and the panel says why.
   const saveData = typeof navigator !== 'undefined' && shouldSaveData(navigator.connection);
-  for (const l of LAYERS) l.deferred = !!(saveData && l.heavy);
+  // `load: 'on-demand'` (registry/layers.yaml) is the same wait by design: the active catalogue
+  // is 7 MB for 16 587 objects, and nobody asked for it until they ticked the box.
+  for (const l of LAYERS) l.deferred = !!(saveData && l.heavy) || l.load === 'on-demand';
   if (saveData) window.dispatchEvent(new CustomEvent('sr:quality', { detail: { level: 'data-saver' } }));
   const ordered = [...LAYERS].filter((l) => l.enabled !== false).sort((a, b) => (a.priority || 50) - (b.priority || 50));
 

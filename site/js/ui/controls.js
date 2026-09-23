@@ -144,7 +144,12 @@ function applyLayerEnabled(ctx, layer, on) {
   } catch {
     handled = false;
   }
-  if (!handled) layer.enabled = on;
+  // NEVER `layer.enabled = on` here. `enabled: false` is the registry's word for "switched off
+  // for good" (main.js drops such a layer before it is created), and this fallback wrote it at
+  // boot for four layers on every visit until 2026-09-22, because the panel was built before
+  // main.js attached ctx.setLayerOn. A missing handler is a wiring fault to shout about, not a
+  // flag to overload.
+  if (!handled) console.warn(`layer ${layer.id}: no handler for the switch; the panel cannot turn it ${on ? 'on' : 'off'}`);
   // Whatever handled it, say so once so the integrator can hang the scene off one event.
   try {
     document.dispatchEvent(
@@ -465,7 +470,13 @@ function paintLayers(ctx, state) {
     // own number; everything else is counted from the records it loaded.
     const own = typeof row.layer.count === 'function' ? row.layer.count() : undefined;
     const n = Number.isFinite(own) ? own : counts.get(id);
-    const text = n === undefined || n === 0 ? COPY.controls.layerCountEmpty : countText(row.layer, ctx, n);
+    // Three different silences, and one string covered all of them until 2026-09-22 ("nothing
+    // loaded"): a layer that loads only when switched on (registry `load: on-demand`, or a heavy
+    // one under data-saver), one still on its way, and one that came back empty.
+    const waits = row.layer.deferred === true && !on && n === undefined;
+    const text = waits ? COPY.controls.layerWaits
+      : n === undefined ? COPY.controls.layerCountLoading
+        : n === 0 ? COPY.controls.layerCountEmpty : countText(row.layer, ctx, n);
     row.count.textContent = text;
     row.count.classList.toggle('is-empty', !n);
     // A sentence does not fit in a column sized for "157". MEASURED in the browser: the oddities

@@ -158,6 +158,8 @@ layers:
     card: satellite
     select: {all: true}
     budget: {max_items: 15000}
+    # 7 MB for 16 587 objects: fetched when the box is ticked, never at boot (2026-09-22).
+    load: on-demand
 
   - id: geo-ring
     display: The geostationary ring
