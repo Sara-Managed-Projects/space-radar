@@ -86,6 +86,16 @@ CASES: list[tuple[str, str, str, str]] = [
      "models.yaml", 'licence: "MIT (this project)", budget_tris: 1500', "budget_tris: 1500"),
     ("event type has no lead times",
      "events.yaml", "    lead_times: [same-day, 1d, 1w, on-confirm]\n", ""),
+    # Spec 0031: the browser reads events.yaml now (data/events.registry.js), so its three promises
+    # are checked: `computed` means data/events.js has a builder, prominence orders the stream, and
+    # `enabled` is the switch the mirror resolves.
+    ("an event type claiming to be computed that nothing in the browser computes",
+     "events.yaml", "    source: ll2-upcoming\n", "    source: computed\n"),
+    ("an event prominence outside 1..5",
+     "events.yaml", "    prominence: 3\n    copy: launch\n", "    prominence: 9\n    copy: launch\n"),
+    ("an event `enabled:` that is a word, not a boolean",
+     "events.yaml", "    enabled: false              # until the Space-Track secret exists",
+     "    enabled: yes-please         # until the Space-Track secret exists"),
     ("site sits on a world that does not exist",
      "sites.yaml", "world: moon", "world: phoebe"),
 
