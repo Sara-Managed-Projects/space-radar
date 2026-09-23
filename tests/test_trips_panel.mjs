@@ -70,10 +70,11 @@ const stray = groupTrips([...TRIPS, { id: 'x', title: 'X', blurb: '', group: 'no
 check(stray.length === 4 && stray[3].group === null && stray[3].trips[0].id === 'x', 'a trip with an unknown group is still listed, last');
 check(groupTrips(null, null, null).length === 0, 'nothing in, nothing out');
 
-// The shipped registry: five trips in three groups, and every trip is drawn exactly once.
+// The shipped registry: every group with a trip in it, and every trip drawn exactly once. Four
+// groups since 2026-09-23, when "Chasing the solar eclipse" (spec 0037) filled `events`.
 const shipped = groupTrips(TOURS, TOUR_GROUPS, new Map());
 const drawnIds = shipped.flatMap((g) => g.trips.map((r) => r.id));
-check(shipped.length === 3, `the shipped registry draws three groups (${shipped.map((g) => g.group)})`);
+check(shipped.length === 4 && shipped[3].group === 'events', `the shipped registry draws four groups, events last (${shipped.map((g) => g.group)})`);
 check(drawnIds.length === TOURS.length && new Set(drawnIds).size === TOURS.length, 'every shipped trip is drawn once');
 
 // --- nextTripId / nextTripOrder -------------------------------------------------------------

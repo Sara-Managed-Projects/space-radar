@@ -37,7 +37,9 @@ const CONTRACT = {
   'scene/renderer.js': ['createRenderer'],
   'scene/stage.js': ['stage'],
   'scene/worlds.js': ['createWorlds'],
-  'scene/earth.js': ['createEarth'],
+  'scene/earth.js': ['createEarth', 'updateEarthEclipse'],
+  // Spec 0037: one formula for the shadow, in JS for the test and as GLSL for both shaders.
+  'scene/eclipse.js': ['obscuration', 'surfaceObscuration', 'discOverlap', 'eclipseLikely', 'ECLIPSE_GLSL', 'SUN_RADIUS_KM', 'MOON_RADIUS_KM'],
   'scene/starfield.js': ['createStarfield'],
   'scene/glyphs.js': ['createGlyphLayer'],
   'scene/models.js': ['modelFor'],
@@ -48,7 +50,7 @@ const CONTRACT = {
   'ui/controls.js': ['createControls'],
   'ui/trippicker.js': ['createTripPicker', 'groupTrips', 'nextTripId', 'nextTripOrder', 'tripOrder'],
   'ui/trip.js': ['createTrip'],
-  'ui/tripframe.js': ['createTripFrame', 'shapeLine', 'stopTimeLine'],
+  'ui/tripframe.js': ['createTripFrame', 'shapeLine', 'eclipseLine', 'stopTimeLine'],
   // The one owner of the URL hash (spec 0032): main.js, ui/controls.js and ui/trip.js all write
   // through it, and a second dialect is the bug it was written to end.
   'ui/urlstate.js': ['KEYS', 'VERSION', 'read', 'write', 'clear', 'stopIndex', 'readMoment', 'writeMoment'],

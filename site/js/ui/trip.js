@@ -230,6 +230,8 @@ export function createTrip(ctx) {
     tourTitle: null,
     stopId: null,
     stopTitle: null,
+    // Spec 0037: the event type the stop's instant comes from ('solar-eclipse', ...), or null.
+    stopEventType: null,
     index: -1,
     count: 0,
     estimateMs: 0,
@@ -1093,6 +1095,20 @@ export function createTrip(ctx) {
 
   // --- a stop's own clock (spec 0030) ---------------------------------------------------------
 
+  /**
+   * The event type the clock's instant at stop `index` comes from, or null (spec 0037): the stop's
+   * own `{event:}`, or, for a stop without `time:`, the latest earlier stop's, because the clock
+   * carried on from there. ui/tripframe.js prints the eclipse honesty line from it.
+   */
+  function instantEventType(index) {
+    for (let i = index; i >= 0; i -= 1) {
+      const s = run && run.stops[i] && run.stops[i].stop;
+      if (!s || s.time === undefined || s.time === null) continue;
+      return isEventTime(s.time) ? String(s.time.event).split('.')[0] : null;
+    }
+    return null;
+  }
+
   function isEventTime(time) {
     return !!time && typeof time === 'object' && time.event !== undefined;
   }
@@ -1116,7 +1132,8 @@ export function createTrip(ctx) {
       const [type, which] = String(time.event).split('.');
       if (which !== 'next') return null;
       const records = typeof ctx.records === 'function' ? ctx.records() : [];
-      const ev = nextEvent(type, nowMs, ctx.observer || null, records);
+      // `kind:` (spec 0037) narrows an eclipse: `{event: solar-eclipse.next, kind: total}`.
+      const ev = nextEvent(type, nowMs, ctx.observer || null, records, { kind: time.kind || null });
       return ev && isNum(ev.t) ? ev.t + (Number(time.offset_s) || 0) * 1000 : null;
     }
     return null;
@@ -1170,7 +1187,13 @@ export function createTrip(ctx) {
         // from exactly this instant, which is how the clock itself leaves live (clock.js).
         c.live();
       } else {
-        const ms = resolveStopTime(stop.time, c.now());
+        // Counted from the VISITOR'S clock, the one the trip found, not from wherever an earlier
+        // stop has run it to (spec 0037, 2026-09-23). Measured on the eclipse trip: its first stop
+        // runs at 600x for a sixteen-second card, which carries the clock 2 h 40 min on and PAST
+        // the eclipse it was showing, so the next stop's `solar-eclipse.next` counted from there
+        // found the following one, a year later. The intro card's count is resolved from the
+        // visitor's clock too, so the two now agree.
+        const ms = resolveStopTime(stop.time, run.savedClock ? run.savedClock.t : c.now());
         if (ms === null) return 'unresolved';
         c.goTo(ms);
       }
@@ -1273,6 +1296,7 @@ export function createTrip(ctx) {
     state.held = null;
     state.index = -1;
     state.stopId = null;
+    state.stopEventType = null;
     state.stopTitle = null;
 
     // THE INTRO IS A PHASE, not a courtesy. It makes the trip a decision rather than an ambush,
@@ -1329,6 +1353,7 @@ export function createTrip(ctx) {
     state.index = index;
     state.stopId = entry.stop.id;
     state.stopTitle = (entry.stop.card || {}).title || entry.stop.id;
+    state.stopEventType = instantEventType(index);
     state.generation = gen;
     state.held = null;
     run.dwellTimer = null;
@@ -1708,6 +1733,7 @@ export function createTrip(ctx) {
     state.tourId = null;
     state.tourTitle = null;
     state.stopId = null;
+    state.stopEventType = null;
     state.stopTitle = null;
     state.index = -1;
     state.count = 0;

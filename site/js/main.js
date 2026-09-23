@@ -535,6 +535,14 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
   // Read once: every extra hero model is a file to fetch, so a metered or slow connection keeps
   // the model pool at its floor (scene/heroes.js, nextHeroCap).
   const saveData = typeof navigator !== 'undefined' && shouldSaveData(navigator.connection);
+  // Spec 0037: the eclipse shaders run unless the latch has tripped. The card's honesty line asks
+  // ctx.eclipseDrawn(). ctx.eclipseOverride (true / false / null) is for a probe only: headless
+  // Chrome renders in software at ~3 fps, trips the latch in three seconds, and could then never
+  // show the shadow it is measuring; nothing in the app sets it.
+  ctx.latched = () => latch.latched;
+  ctx.eclipseOverride = null;
+  ctx.eclipseDrawn = () => (ctx.eclipseOverride === null || ctx.eclipseOverride === undefined
+    ? !latch.latched : ctx.eclipseOverride === true);
 
   function frame(nowReal) {
     requestAnimationFrame(frame);
@@ -560,6 +568,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     resize();
     if (ctx.viewShift) ctx.viewShift.update(dt);
     cameraRig.update(dt);
+    worlds.setEclipseAllowed(ctx.eclipseDrawn());
     worlds.update(t);
 
     // Glyph positions are the expensive part. At 1x they need no more than ~10 Hz to look

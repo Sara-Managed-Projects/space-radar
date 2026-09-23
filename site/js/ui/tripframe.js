@@ -2,6 +2,7 @@
 //
 // Contract export: createTripFrame(ctx) -> { dispose() }
 //                  stopTimeLine(state, clock) -> the "Shown at" line, pure (spec 0030)
+//                  eclipseLine(state, drawn) -> the eclipse stops' honesty line, pure (spec 0037)
 //
 // ui/trip.js flies the camera. This is what a visitor sees of it: the letterbox, the controls in
 // the letterbox, the progress row, the intro and end cards, the keyboard, and the announcement a
@@ -147,6 +148,20 @@ export function stopTimeLine(st, clock) {
   return t(COPY.trip.stopTimeRate, { when, rate: formatRate(rate) });
 }
 
+/**
+ * THE ECLIPSE LINE (spec 0037 requirements 7 and 8), generated and never typed in the registry: on
+ * any stop whose instant comes from an eclipse (`state.stopEventType`), what the shadow is made of
+ * and how good the timing is -- or, when the frame latch has turned the shader off
+ * (ctx.eclipseDrawn() false), that the shadow is not drawn here and the timing still stands. A
+ * lunar stop adds that the copper is an illustration. Exported so a test can read it without a DOM.
+ */
+export function eclipseLine(st, drawn) {
+  const type = st && st.stopEventType;
+  if (type !== 'solar-eclipse' && type !== 'lunar-eclipse') return '';
+  const line = drawn ? COPY.trip.eclipseLine : COPY.trip.eclipseLineLatched;
+  return type === 'lunar-eclipse' && drawn ? `${line} ${COPY.trip.eclipseColour}` : line;
+}
+
 export function createTripFrame(ctx) {
   const trip = ctx && ctx.trip;
   if (!trip) return { dispose() {} };
@@ -244,6 +259,11 @@ export function createTripFrame(ctx) {
     const clockLine = el('p', 'sr-trip__time');
     clockLine.hidden = true;
     top.appendChild(clockLine);
+    // Spec 0037: under the instant, what the eclipse picture is made of. Wraps rather than
+    // truncating: it is a sentence of honesty, and half of one is worse than none.
+    const eclipseText = el('p', 'sr-trip__eclipse');
+    eclipseText.hidden = true;
+    top.appendChild(eclipseText);
     const topLeave = button('sr-trip__btn sr-trip__btn--leave', COPY.trip.leave, COPY.trip.leaveTitle, leave);
     top.appendChild(topLeave);
 
@@ -264,7 +284,7 @@ export function createTripFrame(ctx) {
     parts = {
       pause, back, next, replay, collapse, controls,
       progress, count, segs, chip, live, group, heading, status,
-      title, clockLine, panel, fade, bottom, top, leaveButtons: [topLeave, chipLeave],
+      title, clockLine, eclipseText, panel, fade, bottom, top, leaveButtons: [topLeave, chipLeave],
     };
   }
 
@@ -578,6 +598,10 @@ export function createTripFrame(ctx) {
     // node rewritten every frame with the same words is layout work for nothing.
     if (parts.clockLine.textContent !== text) parts.clockLine.textContent = text;
     parts.clockLine.hidden = !text;
+    const drawn = typeof ctx.eclipseDrawn === 'function' ? ctx.eclipseDrawn() : true;
+    const ecl = st && st.phase !== 'idle' ? eclipseLine(st, drawn) : '';
+    if (parts.eclipseText.textContent !== ecl) parts.eclipseText.textContent = ecl;
+    parts.eclipseText.hidden = !ecl;
   }
 
   function loop() {
