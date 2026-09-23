@@ -37,7 +37,9 @@ const CONTRACT = {
   'scene/renderer.js': ['createRenderer'],
   'scene/stage.js': ['stage'],
   'scene/worlds.js': ['createWorlds'],
-  'scene/earth.js': ['createEarth'],
+  'scene/earth.js': ['createEarth', 'updateEarthEclipse'],
+  // Spec 0037: one formula for the shadow, in JS for the test and as GLSL for both shaders.
+  'scene/eclipse.js': ['obscuration', 'surfaceObscuration', 'discOverlap', 'eclipseLikely', 'ECLIPSE_GLSL', 'SUN_RADIUS_KM', 'MOON_RADIUS_KM'],
   'scene/starfield.js': ['createStarfield'],
   'scene/glyphs.js': ['createGlyphLayer'],
   'scene/models.js': ['modelFor'],

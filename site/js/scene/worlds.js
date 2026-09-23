@@ -1,7 +1,8 @@
 // The worlds: Earth, the Moon, the Sun, the seven planets, Pluto, Jupiter's four big moons, and
 // Phobos, Deimos, Enceladus, Titan, Triton and Charon, each built from a ROW.
 //
-// Contract: createWorlds(scene) -> { update(tMs), meshFor(id), positionOf(id, tMs) }
+// Contract: createWorlds(scene) -> { update(tMs), meshFor(id), positionOf(id, tMs),
+//                                    setEclipseAllowed(on), eclipse() }
 //
 // The table below mirrors registry/worlds.yaml, and scripts/check_registry.py refuses the two when
 // they disagree on an id, a parent, a radius or a flat colour. Adding Titan was a row here, a row
@@ -99,7 +100,8 @@ import * as THREE from '../../vendor/three.module.min.js';
 import * as Astronomy from '../../vendor/astronomy.js';
 import { stage, SUN_INERTIAL, EARTH_INERTIAL, isLadderStage } from './stage.js';
 import { j2000ToTeme, rotateDir, stageFrame, isPlanetMoon, worldHelioEclKm } from '../propagate/frames.js';
-import { createEarth, updateEarth } from './earth.js';
+import { createEarth, updateEarth, updateEarthEclipse } from './earth.js';
+import { ECLIPSE_GLSL, eclipseLikely, MOON_RADIUS_KM } from './eclipse.js';
 import { COPY, t, fmt } from '../copy/en.js';
 
 const KM_PER_AU = Astronomy.KM_PER_AU;
@@ -505,7 +507,8 @@ void main() {
 }
 `;
 
-const WORLD_FRAG = /* glsl */`
+/** Exported for tests/test_eclipse.mjs, which checks the lunar case is spliced in. */
+export const WORLD_FRAG = /* glsl */`
 #include <common>
 #include <logdepthbuf_pars_fragment>
 uniform sampler2D uMap;
@@ -516,10 +519,17 @@ uniform vec3 uRimColour;
 uniform float uRimGain;
 uniform float uBand;
 uniform float uAmbient;
+// Spec 0037, 2026-09-23: a lunar eclipse, the mirror of the Earth's (scene/earth.js). Every cel world
+// carries the uniforms; only the Moon's are ever filled, and at uEclipse 0 the branch is skipped.
+uniform float uEclipse;
+uniform vec3  uEarthPosKm;    // the Earth's centre from this body's, km, SCENE axes (true positions)
+uniform float uSunDistKm;     // the Sun's centre from this body's, km; its direction is uSunDir
+uniform float uBodyRadiusKm;
+uniform vec3  uUmbraTint;
 varying vec2 vUv;
 varying vec3 vNormalW;
 varying vec3 vPosW;
-
+${ECLIPSE_GLSL}
 void main() {
   #include <logdepthbuf_fragment>
   vec3 n = normalize( vNormalW );
@@ -538,8 +548,19 @@ void main() {
   float lit = smoothstep( -0.10, 0.10, d );
   colour *= mix( uAmbient, 1.0, lit );
 
+  // The Earth covering the Sun, seen from this point of the Moon: the same formula as the Earth's
+  // shadow, with the Earth (and 88 km of air, the library's number) as the occluder. The copper in
+  // the umbra is ILLUSTRATIVE -- a constant tint on the surface, not light bent through the Earth's
+  // air -- and the trip's card says so.
+  float eclShade = 1.0;
+  if ( uEclipse > 0.5 && d > 0.0 ) {
+    float eclObs = eclObscuration( n * uBodyRadiusKm, uSunDir * uSunDistKm, uEarthPosKm, SUN_RADIUS_KM, EARTH_SHADOW_RADIUS_KM );
+    eclShade = 1.0 - 0.9 * eclObs;
+    colour = mix( colour * eclShade, base * uUmbraTint, smoothstep( 0.97, 1.0, eclObs ) );
+  }
+
   float rim = pow( 1.0 - clamp( dot( n, viewDir ), 0.0, 1.0 ), 3.0 );
-  colour += uRimColour * rim * uRimGain * lit;
+  colour += uRimColour * rim * uRimGain * lit * eclShade;
 
   gl_FragColor = vec4( colour, 1.0 );
   #include <tonemapping_fragment>
@@ -561,6 +582,13 @@ function celMaterial(map, tint) {
       uRimGain: { value: 0.35 },
       uBand: { value: 0.15 },
       uAmbient: { value: 0.05 },
+      uEclipse: { value: 0 },
+      uEarthPosKm: { value: new THREE.Vector3(-384400, 0, 0) },
+      uSunDistKm: { value: 1.496e8 },
+      uBodyRadiusKm: { value: MOON_RADIUS_KM },
+      // Copper, chosen (spec 0037 design §3), not computed: the colour of a totally eclipsed Moon in
+      // photographs, a mid Danjon L2-L3. Multiplied into the map so the maria still read.
+      uUmbraTint: { value: new THREE.Vector3(0.55, 0.22, 0.12) },
     },
   });
 }
@@ -727,6 +755,14 @@ export function createWorlds(scene, opts = {}) {
   const fill = new THREE.AmbientLight(0x2a3550, 0.35);
   root.add(fill);
 
+  // Spec 0037: eclipses. `allowed` is main.js's (the frame latch); `solar`/`lunar` are this frame's
+  // cheap test (scene/eclipse.js eclipseLikely) from the Earth's centre; the shaders draw when both.
+  let eclipseAllowed = true;
+  const eclipseState = { solar: false, lunar: false, drawnSolar: false, drawnLunar: false };
+  const _moonGeo = { x: 0, y: 0, z: 0 };
+  const _sunGeo = { x: 0, y: 0, z: 0 };
+  const _moonGeoScene = { x: 0, y: 0, z: 0 };
+
   // --- per-frame ---------------------------------------------------------------------------------
 
   // Where each VIEW_WITH_PARENT moon really is, in scene units, for viewAdjust(): its drawn place
@@ -808,6 +844,26 @@ export function createWorlds(scene, opts = {}) {
     sunLight.position.copy(_sunScene).multiplyScalar(1e5);
     if (sunLight.position.lengthSq() === 0) sunLight.position.set(0, 1e5, 0);
     sunTarget.position.set(0, 0, 0);
+
+    // 2a. Eclipses (spec 0037). The Sun and the Moon from the Earth's centre, in km, from the TRUE
+    //     positions whatever the stage draws them at -- the shadow is geometry, not picture. Three
+    //     vector operations decide whether either shader branch runs this frame.
+    const earthP = truePos.get('earth');
+    const moonP = truePos.get('moon');
+    const earthKm = earthP && sunKm ? stage.toStageFrame(earthP, earthP.frame, tMs) : null;
+    const moonKm = moonP && earthKm ? stage.toStageFrame(moonP, moonP.frame, tMs) : null;
+    eclipseState.solar = false;
+    eclipseState.lunar = false;
+    if (earthKm && moonKm) {
+      _moonGeo.x = moonKm.x - earthKm.x; _moonGeo.y = moonKm.y - earthKm.y; _moonGeo.z = moonKm.z - earthKm.z;
+      _sunGeo.x = sunKm.x - earthKm.x; _sunGeo.y = sunKm.y - earthKm.y; _sunGeo.z = sunKm.z - earthKm.z;
+      eclipseState.solar = eclipseLikely(_sunGeo, _moonGeo, 'solar');
+      eclipseState.lunar = eclipseLikely(_sunGeo, _moonGeo, 'lunar');
+      // Scene axes are the stage frame's (x, z, -y): see sunDirFrom().
+      _moonGeoScene.x = _moonGeo.x; _moonGeoScene.y = _moonGeo.z; _moonGeoScene.z = -_moonGeo.y;
+    }
+    eclipseState.drawnSolar = eclipseState.solar && eclipseAllowed;
+    eclipseState.drawnLunar = eclipseState.lunar && eclipseAllowed;
 
     // 2b. HOW CROWDED THE SKY IS, before anything is sized. Where each compressed world WILL be
     //     drawn (its true direction at the compressed distance: step 3 repeats the same two lines),
@@ -912,10 +968,21 @@ export function createWorlds(scene, opts = {}) {
       // 4. Orientation and lighting.
       if (w.look.earth) {
         updateEarth(mesh, sunDirHere, tMs);
+        updateEarthEclipse(mesh, eclipseState.drawnSolar, _moonGeoScene, Math.hypot(_sunGeo.x, _sunGeo.y, _sunGeo.z));
       } else {
         if (w.rotation === 'iau') applyIauOrientation(mesh, w.body, tMs, w.id);
         if (mesh.material && mesh.material.uniforms && mesh.material.uniforms.uSunDir) {
           mesh.material.uniforms.uSunDir.value.copy(sunDirHere);
+        }
+        if (w.id === 'moon' && mesh.material && mesh.material.uniforms && mesh.material.uniforms.uEclipse) {
+          const u = mesh.material.uniforms;
+          u.uEclipse.value = eclipseState.drawnLunar ? 1 : 0;
+          if (eclipseState.drawnLunar) {
+            // The Earth from the Moon, and the Sun's distance from the Moon, in the scene axes the
+            // fragment's normal is in; the Moon's orientation does not enter.
+            u.uEarthPosKm.value.set(-_moonGeoScene.x, -_moonGeoScene.y, -_moonGeoScene.z);
+            u.uSunDistKm.value = Math.hypot(sunKm.x - moonKm.x, sunKm.y - moonKm.y, sunKm.z - moonKm.z);
+          }
         }
       }
 
@@ -952,6 +1019,12 @@ export function createWorlds(scene, opts = {}) {
 
   /** The `worlds` layer's checkbox. The stage world and the Sun are never hidden by it. */
   function setVisible(on) { layerOn = on !== false; }
+
+  /** main.js: false under the frame latch, and the eclipse branches stay off (spec 0037 req 3). */
+  function setEclipseAllowed(on) { eclipseAllowed = on !== false; }
+
+  /** This frame's eclipse test and whether each shader drew it: {solar, lunar, drawnSolar, drawnLunar}. */
+  function eclipse() { return { ...eclipseState }; }
 
   /** Where the DISC is, in scene units -- the compressed position, not the true one. */
   function drawnPositionOf(id, out) {
@@ -1100,6 +1173,8 @@ export function createWorlds(scene, opts = {}) {
     positionOf,
     viewScale,
     setVisible,
+    setEclipseAllowed,
+    eclipse,
     drawnPositionOf,
     drawnRadiusUnits,
     pick,

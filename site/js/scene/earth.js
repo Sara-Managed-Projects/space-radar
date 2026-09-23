@@ -3,6 +3,7 @@
 // Contract:
 //   createEarth(textures): THREE.Mesh          -- atmosphere shell attached as a child
 //   updateEarth(mesh, sunDirScene, tMs): void
+//   updateEarthEclipse(mesh, on, moonKmScene, sunDistKm): void   -- spec 0037, the Moon's shadow
 //
 // The mesh is a WGS84 ELLIPSOID in units of the equatorial radius, and the caller scales it by
 // WGS84_A_KM / stage.unitKm (mesh.userData.scaleRadiusKm carries the number) so the same mesh is
@@ -43,6 +44,7 @@
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { gmst, geodeticToEcef } from '../propagate/frames.js';
+import { ECLIPSE_GLSL, MOON_RADIUS_KM } from './eclipse.js';
 
 // --- tunables, all named, none buried in the shader -------------------------------------------
 
@@ -135,9 +137,11 @@ varying vec2 vUv;
 varying vec3 vNormalW;
 varying vec3 vNormalL;
 varying vec3 vPosW;
+varying vec3 vPosL;   // the ellipsoid point itself, in equatorial radii: the eclipse needs km, not a direction
 
 void main() {
   vUv = uv;
+  vPosL = position;
   vNormalL = normalize( position );
   vec4 worldPos = modelMatrix * vec4( position, 1.0 );
   vPosW = worldPos.xyz;
@@ -147,7 +151,8 @@ void main() {
 }
 `;
 
-const SURFACE_FRAG = /* glsl */`
+/** Exported for tests/test_eclipse.mjs, which checks the eclipse formula is spliced in. */
+export const SURFACE_FRAG = /* glsl */`
 #include <common>
 #include <logdepthbuf_pars_fragment>
 
@@ -173,11 +178,23 @@ uniform float uAmbient;
 uniform float uCloudHOverR;
 uniform float uCloudGamma;
 
+// Spec 0037, 2026-09-23: the Moon's shadow. uEclipse is 0 except within 1.7 degrees of a new Moon
+// lined up with the Sun (scene/eclipse.js eclipseLikely, once a frame in JS) and never under the
+// frame latch, and a branch on a uniform is one the GPU skips whole: outside an eclipse this costs
+// a compare per fragment.
+uniform float uEclipse;
+uniform vec3  uMoonPosLocal;  // the Moon's centre from the Earth's, km, mesh-local (= earth-fixed) axes
+uniform float uMoonRadiusKm;
+uniform float uSunDistKm;     // the Sun's centre from the Earth's, km; its direction is uSunDirLocal
+
 varying vec2 vUv;
 varying vec3 vNormalW;
 varying vec3 vNormalL;
 varying vec3 vPosW;
+varying vec3 vPosL;
 
+const float EARTH_UNIT_KM = ${WGS84_A_KM};
+${ECLIPSE_GLSL}
 void main() {
   #include <logdepthbuf_fragment>
 
@@ -187,6 +204,18 @@ void main() {
   float sunDot  = dot( n, uSunDir );
   float dayMix  = smoothstep( uTerminator.x, uTerminator.y, sunDot );
   float lambert = clamp( sunDot, 0.0, 1.0 );
+
+  // ---- the Moon's shadow (spec 0037) ------------------------------------------------------------
+  // The fraction of the Sun's disc the Moon covers from THIS point, from the true positions: no cone
+  // and no decal. Both day terms fall with it, so the night map's cities come up under the umbra
+  // through the ordinary day/night mix, the clouds and the ocean glint go dark with the ground, and
+  // the penumbra is simply the gradient the overlap gives.
+  if ( uEclipse > 0.5 && sunDot > 0.0 ) {
+    float eclObs = eclObscuration( vPosL * EARTH_UNIT_KM, uSunDirLocal * uSunDistKm, uMoonPosLocal, SUN_RADIUS_KM, uMoonRadiusKm );
+    float eclShade = 1.0 - UMBRA_DEPTH * eclObs;
+    dayMix  *= eclShade;
+    lambert *= eclShade;
+  }
 
   // ---- cloud shadow offset -------------------------------------------------------------------
   // Step the cloud lookup TOWARDS the Sun by the deck height times the tangent of the Sun's
@@ -405,6 +434,10 @@ export function createEarth(textures, opts = {}) {
       uAmbient: { value: cfg.ambient },
       uCloudHOverR: { value: CLOUD_H_OVER_R },
       uCloudGamma: { value: cfg.cloudGamma },
+      uEclipse: { value: 0 },
+      uMoonPosLocal: { value: new THREE.Vector3(384400, 0, 0) },
+      uMoonRadiusKm: { value: MOON_RADIUS_KM },
+      uSunDistKm: { value: 1.496e8 },
     },
   });
 
@@ -480,6 +513,30 @@ export function updateEarth(mesh, sunDirScene, tMs) {
   if (atmosphere && atmosphere.material && atmosphere.material.uniforms && sunDirScene) {
     atmosphere.material.uniforms.uSunDir.value.copy(u.uSunDir.value);
   }
+}
+
+const _moonL = new THREE.Vector3();
+
+/**
+ * The Moon's shadow, per frame (spec 0037). Call AFTER updateEarth(), which sets the rotation this
+ * reads back. `on` is scene/eclipse.js eclipseLikely() and the frame latch, decided by the caller;
+ * off, nothing else is touched and the shader takes today's path.
+ *
+ * @param {THREE.Mesh}    mesh
+ * @param {boolean}       on
+ * @param {{x,y,z}}       moonKmScene  the Moon's centre from the Earth's, km, SCENE axes (true positions)
+ * @param {number}        sunDistKm    the Sun's centre from the Earth's, km
+ */
+export function updateEarthEclipse(mesh, on, moonKmScene, sunDistKm) {
+  if (!mesh || !mesh.material || !mesh.material.uniforms || !mesh.material.uniforms.uEclipse) return;
+  const u = mesh.material.uniforms;
+  u.uEclipse.value = on && moonKmScene && sunDistKm > 0 ? 1 : 0;
+  if (!u.uEclipse.value) return;
+  // The same inverse rotation uSunDirLocal went through, so the Sun, the Moon and the ground the
+  // fragment stands on are all in the one earth-fixed frame.
+  mesh.getWorldQuaternion(_q).invert();
+  u.uMoonPosLocal.value.copy(_moonL.set(moonKmScene.x, moonKmScene.y, moonKmScene.z).applyQuaternion(_q));
+  u.uSunDistKm.value = sunDistKm;
 }
 
 /**
