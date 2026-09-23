@@ -863,6 +863,28 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
                                 f"track is a DRAWING, and its card says \"{word}\". A stop there "
                                 f"may not write copy that claims certainty the layer cannot back")
 
+    # A STAR SYSTEM'S MEMBERS ARE DRAWN ONLY ON ITS STAGE (spec 0040). Everywhere else a planet is a
+    # mark at its star and the host star has no mark of its own, so a stop naming one on another
+    # stage would fly to a point it cannot frame; and a system's stage draws nothing but that system,
+    # so a stop there about anything else flies to empty space.
+    member_of = system_of_member(value) if kind == "record" else None
+    flown_system = flown_on[len("system-"):] if isinstance(flown_on, str) and flown_on.startswith("system-") else None
+    if member_of and flown_on != f"system-{member_of}":
+        fail(where, f"targets `{value}`, a member of the `{member_of}` system, on the `{flown_on}` stage. "
+                    f"It is drawn at its own size and place only on `system-{member_of}`; give the stop "
+                    f"`stage: system-{member_of}`")
+    if flown_system and member_of != flown_system:
+        fail(where, f"is flown on `{flown_on}`, which draws the {flown_system} system and nothing else, "
+                    f"and targets `{kind}: {value}`. Target one of that system's records, or fly the "
+                    f"stop on another stage")
+    if "mercury_ring" in stop:
+        if stop["mercury_ring"] is not True:
+            fail(where, f"`mercury_ring: {stop['mercury_ring']!r}` is `true` or left out")
+        elif not flown_system:
+            fail(where, f"`mercury_ring: true` on the `{flown_on}` stage: the ring for scale is drawn by "
+                        f"scene/systems.js on a star system's stage and nowhere else, where it would be a "
+                        f"promise the picture does not keep")
+
     # A world's own record (`{record: titan}`) is flown to as the world, so the same rule holds.
     if kind in ("world", "record") and value in world_ids and flown_on in TOUR_STAGES \
             and not tour_drawn_true(value, flown_on):
@@ -954,6 +976,26 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
         fail(where, f"the card's first sentence is {len(first)} characters, over {MAX_SENTENCE} "
                     f"-- which is where ui/cards.js would truncate it, and half a sentence is how "
                     f"a card ends up saying half of something")
+    # THE PLANET COUNT IS GENERATED (spec 0040 req 7): `{exoplanet_count}` is expanded by
+    # scripts/gen_tours_js.py from the table the layer draws, so the card and the map cannot disagree.
+    # Typed as digits it is true on the day it was typed and not after the next copy of the table.
+    text = f"{title or ''} {body}"
+    typed = TOUR_TYPED_PLANET_COUNT.search(text)
+    if typed:
+        fail(where, f"the card types a planet count, \"{typed.group(0).strip()}\": write "
+                    f"{{exoplanet_count}}, which scripts/gen_tours_js.py fills from the table the map draws")
+    for name in re.findall(r"\{([a-z_]+)\}", text):
+        if name not in TOUR_CARD_TEMPLATES:
+            fail(where, f"the card has `{{{name}}}`, which nothing fills in; the one template a card may "
+                        f"use is {sorted(TOUR_CARD_TEMPLATES)}")
+    # HABITABLE IS A CLAIM WITH A PAGE (spec 0040 req 9): only about a system planet whose row has
+    # `habitable_zone: {source}`. No page read for registry/systems.yaml says it of any planet there.
+    if re.search(r"\bhabitab", text, re.I):
+        row = system_planet_row(value) if kind == "record" else None
+        if not (row and isinstance(row.get("habitable_zone"), dict) and row["habitable_zone"].get("source")):
+            fail(where, "the card says \"habitable\" about a target whose registry/systems.yaml row has no "
+                        "`habitable_zone: {source}`; a card may not claim what no cited page says")
+
     low = str(body).lower() + " " + str(title or "").lower()
     for word in TOUR_JARGON:
         if word in low and word not in glossary:
@@ -1007,6 +1049,33 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
                     f"It must finish inside its own dwell with the 0.4 s lead and the 1.5 s tail "
                     f"that let the shot settle before the cut -- lengthen the card or slow the "
                     f"turn")
+
+
+# A number of four or more digits (grouped or not) followed within three words by "planet(s)" or
+# "world(s)": a planet count typed by hand (spec 0040 req 7).
+TOUR_TYPED_PLANET_COUNT = re.compile(r"\b\d{1,3}(?:[ \u202f\u00a0\u2009,]?\d{3})+\b(?:\s+\S+){0,3}?\s+(?:planets?|worlds?)\b", re.I)
+# The templates scripts/gen_tours_js.py expands in a card's body.
+TOUR_CARD_TEMPLATES = {"exoplanet_count"}
+
+
+def system_of_member(record_id) -> str | None:
+    """The registry/systems.yaml id a record belongs to (a planet row, or the host `star-<id>`)."""
+    rid = str(record_id or "")
+    for sid, row in SYSTEM_ROWS.items():
+        if rid == f"star-{sid}":
+            return sid
+        for p in row.get("planets") or []:
+            if isinstance(p, dict) and p.get("id") == rid:
+                return sid
+    return None
+
+
+def system_planet_row(record_id) -> dict | None:
+    for row in SYSTEM_ROWS.values():
+        for p in row.get("planets") or []:
+            if isinstance(p, dict) and p.get("id") == record_id:
+                return p
+    return None
 
 
 # The hooks scene/lod.js's caller implements. A rule naming anything else is refused: a rule
@@ -1168,7 +1237,13 @@ def check_stages(world_ids: set) -> list:
         world, _, kind = frame.rpartition("-")
         if world not in world_ids or kind != "inertial":
             fail(where, f"frame {frame!r} must be `<world>-inertial` naming a worlds.yaml row")
-        if st.get("centre") not in world_ids:
+        stage_kind = st.get("kind")
+        if stage_kind not in (None, "system"):
+            fail(where, f"`kind: {stage_kind}` is not a kind of stage; leave it out for a rung, or "
+                        f"write `system` for a star system's own stage")
+        if stage_kind == "system":
+            check_system_stage(st, where)
+        elif st.get("centre") not in world_ids:
             fail(where, f"centre `{st.get('centre')}` has no worlds.yaml row")
         if not st.get("display"):
             fail(where, "no `display:` name")
@@ -1182,20 +1257,185 @@ def check_stages(world_ids: set) -> list:
         return stages
     js = js_path.read_text(encoding="utf-8")
     mirror = {}
-    for m in re.finditer(r"^\s*'?([a-z][a-z0-9-]*)'?:\s*\{[^}]*unitKm:\s*([0-9.e+]+)[^}]*ladder:\s*true", js, re.M):
+    for m in re.finditer(r"^\s*'?([a-z][a-z0-9-]*)'?:\s*\{[^}]*unitKm:\s*([0-9.e+]+)[^}]*(?:ladder:\s*true|system:\s*'[a-z0-9-]+')", js, re.M):
         mirror[m.group(1)] = float(m.group(2))
     for st in stages:
         if not isinstance(st, dict) or not st.get("id"):
             continue
         sid = st["id"]
+        flag = "system: '<id>'" if st.get("kind") == "system" else "ladder: true"
         if sid not in mirror:
-            fail(f"stages.yaml[{sid}]", "scene/stage.js STAGES has no `ladder: true` row for it -- the mirror is stale")
+            fail(f"stages.yaml[{sid}]", f"scene/stage.js STAGES has no `{flag}` row for it -- the mirror is stale")
         elif isinstance(st.get("unit_km"), (int, float)) and abs(mirror[sid] - float(st["unit_km"])) > 1e-3 * float(st["unit_km"]):
             fail(f"stages.yaml[{sid}]", f"unit_km {st['unit_km']} but scene/stage.js says {mirror[sid]}")
     for sid in mirror:
         if sid not in seen:
-            fail("stage.js", f"STAGES row `{sid}` is a ladder rung with no stages.yaml row")
+            fail("stage.js", f"STAGES row `{sid}` is a ladder rung or a system stage with no stages.yaml row")
     return stages
+
+
+# A SYSTEM STAGE (spec 0040). One unit is 100 000 km on every one of them, exactly: the ladder's unit
+# constants were typed 1 000 times wrong twice in spec 0028 and only tests caught it, and a system's
+# numbers (TRAPPIST-1 h 93 units out, the star 0.83 in radius) are chosen for this unit.
+SYSTEM_STAGE_UNIT_KM = 100000
+# Filled by check_systems() before check_stages() runs: system id -> its row.
+SYSTEM_ROWS: dict[str, dict] = {}
+
+
+def check_system_stage(st: dict, where: str) -> None:
+    """A `kind: system` row of registry/stages.yaml: its system exists, its centre is that system's
+    host star record, its unit is 100 000 km and its frame the heliocentric one the host is placed in."""
+    sid = str(st.get("id") or "")
+    if not sid.startswith("system-"):
+        fail(where, "a system stage's id is `system-<registry/systems.yaml id>`")
+        return
+    system_id = sid[len("system-"):]
+    if SYSTEM_ROWS and system_id not in SYSTEM_ROWS:
+        fail(where, f"there is no registry/systems.yaml row `{system_id}` for this stage to draw")
+    want_centre = f"star-{system_id}"
+    if st.get("centre") != want_centre:
+        fail(where, f"centre `{st.get('centre')}` is not its system's host star; a system stage is "
+                    f"centred on `{want_centre}`, the record data/layers.js makes for the host")
+    if st.get("unit_km") != SYSTEM_STAGE_UNIT_KM:
+        fail(where, f"unit_km {st.get('unit_km')!r} on a system stage; it must be exactly "
+                    f"{SYSTEM_STAGE_UNIT_KM} (100 000 km), the unit every system row is drawn in")
+    if st.get("frame") != "sun-inertial":
+        fail(where, f"frame {st.get('frame')!r}: the host star is placed in `sun-inertial`, so its "
+                    f"stage is drawn in it")
+
+
+# Kepler's third law, a^3 / P^2 = M in au, years and Suns (the planet's own mass is below a part in
+# ten thousand of an M dwarf's and is left out). 5 % is far outside every published value's scatter
+# (TRAPPIST-1's seven rows agree to 0.13 %) and far inside a slipped digit.
+KEPLER_TOLERANCE = 0.05
+# The CSV's own columns, cross-checked within 2 %: the table rounds to 3 or 5 figures and the
+# Archive's page gives one more, so 2 % passes a rounding and refuses a different planet.
+SYSTEM_CSV_TOLERANCE = 0.02
+JULIAN_YEAR_DAYS = 365.25
+
+
+def check_systems() -> list:
+    """registry/systems.yaml (spec 0040): every system is a host in the exoplanet table, every planet
+    one of that host's records, every number cited with the day it was read, and Kepler's third law
+    holds across the three numbers the table does not carry."""
+    path = REG / "systems.yaml"
+    SYSTEM_ROWS.clear()
+    if not path.exists():
+        return []
+    try:
+        doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as exc:
+        fail("systems.yaml", f"will not parse: {exc}")
+        return []
+    systems = doc.get("systems")
+    if not isinstance(systems, list):
+        fail("systems.yaml", "no `systems:` list")
+        return []
+
+    sys.path.insert(0, str(ROOT / "scripts"))
+    from _exo_ids import exo_id, read_rows, rows_for_host, num  # noqa: E402
+    # None in a tree with no table (tests/test_growth.py) or an empty placeholder: cannot look.
+    csv_rows = read_rows(ROOT / "site" / "data" / "exoplanets.csv")
+
+    def near(a, b, tol=SYSTEM_CSV_TOLERANCE) -> bool:
+        return a is not None and b is not None and abs(float(a) - float(b)) <= tol * abs(float(b))
+
+    seen_planets: set[str] = set()
+    for s in systems:
+        if not isinstance(s, dict) or not s.get("id"):
+            fail("systems.yaml", f"a row has no id: {s!r}")
+            continue
+        sid = str(s["id"])
+        where = f"systems.yaml[{sid}]"
+        if sid in SYSTEM_ROWS:
+            fail(where, "duplicate id")
+        if not re.match(r"^[a-z0-9][a-z0-9-]*$", sid):
+            fail(where, "the id is lower-case letters, digits and dashes: it names a stage and a record")
+        SYSTEM_ROWS[sid] = s
+        host = s.get("host")
+        host_rows = rows_for_host(csv_rows, str(host)) if csv_rows is not None and host else []
+        if not host:
+            fail(where, "no `host:`, the exoplanet table's `hostname` for this star")
+        elif csv_rows is not None and not host_rows:
+            fail(where, f"host `{host}` is not a `hostname` in site/data/exoplanets.csv")
+        if s.get("colour_note") != "illustrative":
+            fail(where, "`colour_note: illustrative` is missing; the colours are drawn, not measured, "
+                        "and the card's line saying so is printed from this field")
+
+        star = s.get("star") if isinstance(s.get("star"), dict) else {}
+        for key in ("radius_suns", "teff_k", "mass_suns"):
+            if not is_number(star.get(key)) or not star.get(key) > 0:
+                fail(where, f"`star.{key}` must be a positive number")
+        if not STAR_SOURCE.match(str(star.get("source") or "")):
+            fail(where, "`star.source` must be the page and the day it was read: "
+                        "\"https://... (read YYYY-MM-DD)\" -- a number with no page is a rumour")
+        if host_rows:
+            first = host_rows[0]
+            for key, col in (("teff_k", "st_teff"), ("radius_suns", "st_rad")):
+                have = num(first, col)
+                if have is not None and is_number(star.get(key)) and not near(star[key], have):
+                    fail(where, f"`star.{key}: {star[key]}` differs from the table's {col} {have} by more "
+                                f"than {int(SYSTEM_CSV_TOLERANCE * 100)} %: one of the two is another star")
+        mass = star.get("mass_suns") if is_number(star.get("mass_suns")) and star.get("mass_suns") > 0 else None
+
+        by_id = {exo_id(r.get("pl_name") or ""): r for r in host_rows}
+        planets = s.get("planets")
+        if not isinstance(planets, list) or not planets:
+            fail(where, "no `planets:` list")
+            continue
+        for p in planets:
+            if not isinstance(p, dict) or not p.get("id"):
+                fail(where, f"a planet row has no id: {p!r}")
+                continue
+            pid = str(p["id"])
+            pwhere = f"systems.yaml[{sid}/{pid}]"
+            if pid in seen_planets:
+                fail(pwhere, "this planet is in a system already: one planet, one place")
+            seen_planets.add(pid)
+            row = by_id.get(pid)
+            if csv_rows is not None and host_rows and row is None:
+                fail(pwhere, f"`{pid}` is not a record parseExoplanets() makes from a row with hostname "
+                             f"`{host}` in site/data/exoplanets.csv, so there is no planet for it to place")
+            for key in ("period_days", "a_au", "radius_earths"):
+                if not is_number(p.get(key)) or not p.get(key) > 0:
+                    fail(pwhere, f"`{key}` must be a positive number")
+            if p.get("mass_earths") is not None and (not is_number(p.get("mass_earths")) or not p["mass_earths"] > 0):
+                fail(pwhere, "`mass_earths` must be a positive number when it is given")
+            tm = p.get("transit_mid_jd")
+            if tm is not None and (not is_number(tm) or not 2400000 < tm < 2500000):
+                fail(pwhere, f"`transit_mid_jd: {tm!r}` is not a Julian date of the telescope era")
+            if not STAR_SOURCE.match(str(p.get("source") or "")):
+                fail(pwhere, "`source` must be the page and the day it was read: "
+                             "\"https://... (read YYYY-MM-DD)\" -- a number with no page is a rumour")
+            hz = p.get("habitable_zone")
+            if hz is not None and not (isinstance(hz, dict) and STAR_SOURCE.match(str(hz.get("source") or ""))):
+                fail(pwhere, "`habitable_zone` is `{source: \"https://... (read YYYY-MM-DD)\"}`: the one "
+                             "thing that lets a card say \"habitable\" is the page that says it")
+            if row is not None:
+                for key, col in (("period_days", "pl_orbper"), ("radius_earths", "pl_rade")):
+                    have = num(row, col)
+                    if have is not None and is_number(p.get(key)) and not near(p[key], have):
+                        fail(pwhere, f"`{key}: {p[key]}` differs from the table's {col} {have} by more "
+                                     f"than {int(SYSTEM_CSV_TOLERANCE * 100)} %: the row and the card "
+                                     f"beside it would disagree")
+            a, per = p.get("a_au"), p.get("period_days")
+            if mass and is_number(a) and a > 0 and is_number(per) and per > 0:
+                implied = a ** 3 / (per / JULIAN_YEAR_DAYS) ** 2
+                if abs(implied - mass) / mass > KEPLER_TOLERANCE:
+                    fail(pwhere, f"Kepler's third law does not hold: a_au {a} and period_days {per} give "
+                                 f"a^3/P^2 = {implied:.5f} Suns, and star.mass_suns is {mass} "
+                                 f"({(implied / mass - 1) * 100:+.1f} %, the limit is "
+                                 f"{int(KEPLER_TOLERANCE * 100)} %). One of the three is mistyped")
+    return systems
+
+
+def check_system_stage_rows(stages: list) -> None:
+    """Every registry/systems.yaml row has its `kind: system` stage (the reverse of check_system_stage)."""
+    have = {str(st.get("id")) for st in stages if isinstance(st, dict) and st.get("kind") == "system"}
+    for sid in SYSTEM_ROWS:
+        if f"system-{sid}" not in have:
+            fail(f"systems.yaml[{sid}]", f"there is no `kind: system` row `system-{sid}` in "
+                                         f"registry/stages.yaml, so the system has nowhere to be drawn")
 
 
 def check_dso_hand() -> list:
@@ -2489,7 +2729,9 @@ def main() -> int:
     check_sites(sites_doc, sites, world_ids)
 
     check_oddities(oddities_doc, world_ids, sites)
+    systems = check_systems()
     ladder = check_stages(world_ids)
+    check_system_stage_rows(ladder)
     lod_rules = check_lod()
     dso_hand = check_dso_hand()
     ladder_rungs = check_ladder(world_ids, layer_ids)
@@ -2700,7 +2942,9 @@ def main() -> int:
             print(f"  {e}")
         return 1
     print(
-        f"registry ok: {len(worlds)} worlds, {len(ladder)} ladder rungs, {len(lod_rules)} lod rules, "
+        f"registry ok: {len(worlds)} worlds, "
+        f"{sum(1 for st in ladder if isinstance(st, dict) and st.get('kind') != 'system')} ladder rungs, "
+        f"{len(systems)} star system(s), {len(lod_rules)} lod rules, "
         f"{len(dso_hand)} hand-placed deep-sky objects, {len(exotics)} exotics, {len(famous_stars)} famous stars, {len(ladder_rungs)} breadcrumb rungs, {len(aliases)} aliases, {len(colorkeys)} colour keys, "
         f"{len(sources)} sources, {len(layers)} layers, "
         f"{len(events)} event types, {len(models)} models, {len(real_models)} real models, "

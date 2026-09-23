@@ -11,6 +11,16 @@
 # frame     the axes and origin positions are expressed in before the origin is subtracted.
 # centre    the world at the origin. `sun` for all three, because the Sun is where we measure from.
 # reaches   prose, for the card and the breadcrumb: what is drawable at this rung.
+# kind      absent for a rung of the ladder; `system` for a star system's own stage (spec 0040).
+#
+# A SYSTEM STAGE (spec 0040, 2026-09-23) is one star and its planets at their own scale, one row per
+# registry/systems.yaml row, written here by hand beside the rungs. Its `centre` is the host star's
+# RECORD (`star-<system id>`, made by data/layers.js from the exoplanet table), not a world, and the
+# origin is that star's measured place, which does not move. unit_km is 100 000 km on every system
+# row and check_registry.py refuses any other: TRAPPIST-1 h at 0.0619 au is then 93 units out and the
+# star 0.83 in radius, both deep inside float32's comfortable band. The ladder's unit constants were
+# typed 1 000 times wrong twice in spec 0028 and caught by tests; tests/test_ladder.mjs pins this one
+# in both files for the same reason.
 version: 1
 
 stages:
@@ -34,3 +44,11 @@ stages:
     frame: sun-inertial
     centre: sun
     reaches: "Andromeda at 2.5, Triangulum at 2.7, and the edge of what we show."
+
+  - id: system-trappist-1
+    kind: system
+    display: The TRAPPIST-1 system
+    unit_km: 100000              # one hundred thousand km; h at 0.0619 au is 93 units, the star 0.83
+    frame: sun-inertial
+    centre: star-trappist-1
+    reaches: "Seven planets, all of them closer to their star than Mercury is to the Sun."

@@ -24,6 +24,20 @@ for (const [id, km] of [['stellar', LY_KM], ['galaxy', 30856775814913670], ['loc
 }
 check(!isLadderStage('earth') && !isLadderStage('sun') && !isLadderStage('nowhere'), 'worlds and unknown ids are not rungs');
 
+// 1b. a star system's stage (spec 0040): one unit is 100 000 km EXACTLY, in both the hand mirror and
+//     the registry, because the ladder's unit constants were typed 1 000 times wrong twice in spec
+//     0028 and only a test caught it. Not a rung, and it squeezes nothing.
+{
+  const { readFileSync } = await import('node:fs');
+  const { isSystemStage } = await import(join(JS, 'scene/stage.js'));
+  check(STAGES['system-trappist-1'] && STAGES['system-trappist-1'].unitKm === 100000, `scene/stage.js: system-trappist-1 is 100 000 km a unit (${STAGES['system-trappist-1'] && STAGES['system-trappist-1'].unitKm})`);
+  const yaml = readFileSync(join(ROOT, 'registry/stages.yaml'), 'utf8');
+  const row = yaml.split(/\n\s*- id: /).find((b) => b.startsWith('system-trappist-1'));
+  const unit = row && Number((row.match(/\n\s*unit_km:\s*([0-9.e+]+)/) || [])[1]);
+  check(unit === 100000, `registry/stages.yaml: system-trappist-1 is 100 000 km a unit (${unit})`);
+  check(isSystemStage('system-trappist-1') && !isLadderStage('system-trappist-1'), 'a system stage is not a rung of the ladder');
+}
+
 // 2. a star-like point 4.2465 ly from the Sun lands 4.2465 units out on the stellar rung -- the
 //    float32 problem this step exists for: in the Earth stage the same point is 4e10 units.
 stage.setWorld('stellar');
@@ -39,6 +53,7 @@ check(v2 && v2.length() > 3.9e10, `the same point is ${v2 && v2.length().toExpon
 // 3. compression is a view from a planet, never from the Sun or a rung
 check(compressesFrom('earth') && compressesFrom('mars') && compressesFrom('moon'), 'from a planet or moon the others are squeezed');
 check(!compressesFrom('sun') && !compressesFrom('stellar') && !compressesFrom('galaxy'), 'from the Sun and from every rung nothing is squeezed');
+check(compressesFrom('system-trappist-1') === false, 'from a star system\'s stage nothing is squeezed: nothing of ours is drawn there at all');
 {
   const scene = new THREE.Scene();
   const worlds = createWorlds(scene, { textureBase: null });

@@ -58,6 +58,21 @@ layers:
     select: {all: true}
     budget: {max_items: 8000}
 
+  # Star systems at their own scale (spec 0040): registry/systems.yaml. The records are the HOST STARS,
+  # one per system (`star-<id>`), placed on the exoplanet table's own row for the host; the planets
+  # stay in `exoplanets` and are drawn on the system's stage by scene/systems.js, never twice. No
+  # glyph layer: data/layers.js marks the row `draw: systems`.
+  - id: systems
+    display: Star systems
+    moments: {wonder: on, now: off, next: off}
+    source: bundled
+    propagator: static
+    frame: sun-inertial
+    style: {kind: glyph, glyph: star, colour: star}
+    card: star
+    select: {all: true}
+    budget: {max_items: 50}
+
   # Deep-sky objects with a sourced distance (spec 0028 step 5): Messier + registry/dso-hand.yaml,
   # built into site/data/dso.json by scripts/build-dso.py. `bundled`: nothing to harvest.
   - id: deep-sky

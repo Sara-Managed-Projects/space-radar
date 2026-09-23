@@ -97,12 +97,41 @@ export const STAGES = {
   stellar: { frame: SUN_INERTIAL, unitKm: 9460730472580.8, ladder: true },
   galaxy: { frame: SUN_INERTIAL, unitKm: 30856775814913670, ladder: true },
   'local-group': { frame: SUN_INERTIAL, unitKm: 9460730472580800000, ladder: true },
+  // A star system at its own scale (spec 0040, 2026-09-23). Mirrors the `kind: system` rows of
+  // registry/stages.yaml; check_registry.py refuses drift and any unit but 100 000 km, and
+  // tests/test_ladder.mjs pins the number here too, because the ladder's units were typed 1 000
+  // times wrong twice (spec 0028). The origin is the host star's measured place, which is static:
+  // scene/systems.js registers it (setSystemOrigin) from data/systems.js, and nothing moves it.
+  'system-trappist-1': { frame: SUN_INERTIAL, unitKm: 100000, system: 'trappist-1' },
 };
 
 /** Is this stage a rung of the ladder rather than a world? */
 export function isLadderStage(id) {
   const row = STAGES[id];
   return !!(row && row.ladder);
+}
+
+/** Is this stage a star system's own (spec 0040), and not a world or a rung? */
+export function isSystemStage(id) {
+  const row = STAGES[id];
+  return !!(row && row.system);
+}
+
+// The fixed origins of the system stages, in km in sun-inertial. A world's origin comes from its
+// ephemeris every tick (scene/worlds.js); a star 40 light-years away does not move at any clock
+// rate this app runs, so its place is registered once and worlds.update() reads it from here.
+const SYSTEM_ORIGINS = new Map();
+
+/** Register a system stage's origin: its host star's heliocentric position, km, sun-inertial. */
+export function setSystemOrigin(stageId, posKm) {
+  if (!isSystemStage(stageId) || !posKm || !Number.isFinite(posKm.x)) return false;
+  SYSTEM_ORIGINS.set(stageId, { x: posKm.x, y: posKm.y, z: posKm.z });
+  return true;
+}
+
+/** The registered origin of a system stage, or null (not a system stage, or nothing registered). */
+export function systemOriginOf(stageId) {
+  return SYSTEM_ORIGINS.get(stageId) || null;
 }
 
 // Scratch, so a per-frame loop over twenty thousand glyphs allocates nothing.
@@ -208,6 +237,10 @@ export const stage = {
     this.frame = row.frame;
     this.unitKm = row.unitKm;
     this.originKm.x = 0; this.originKm.y = 0; this.originKm.z = 0;
+    // A system stage's origin is its star, and it is known now rather than on the next tick: every
+    // listener to `sr:stage` below (stars3d rebuilds its shell from it) must see the right centre.
+    const fixed = row.system ? SYSTEM_ORIGINS.get(id) : null;
+    if (fixed) { this.originKm.x = fixed.x; this.originKm.y = fixed.y; this.originKm.z = fixed.z; }
     if (typeof window !== 'undefined' && window.dispatchEvent) {
       window.dispatchEvent(new CustomEvent('sr:stage', { detail: { worldId: id, unitKm: row.unitKm, frame: row.frame } }));
     }

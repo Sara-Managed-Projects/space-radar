@@ -134,6 +134,9 @@ def main() -> int:
             for f in (ROOT / src).glob("*"):
                 if f.is_file():
                     (d / f.name).touch()
+        # Real bytes for the exoplanet table (spec 0040): the trips mirror counts its rows into the
+        # `{exoplanet_count}` card, so a placeholder would regenerate a different tours.js.
+        shutil.copy2(ROOT / "site/data/exoplanets.csv", work / "site/data/exoplanets.csv")
         # Real bytes, both of them: the validator cross-checks CREDITS.md against
         # registry/models.yaml, and the mirror check is a byte comparison.
         shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")

@@ -35,6 +35,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from _genmirror import Mirror, pick  # noqa: E402
+from _exo_ids import read_rows  # noqa: E402
 
 # What the browser needs to FLY a trip and to say what it is flying to. The YAML's comments are
 # the evidence a reviewer reads and are not shipped; neither is anything a future field adds
@@ -78,6 +79,9 @@ STOP_FIELDS = (
     # Stops of one chapter repeat it, and the frame keeps it up across them rather than
     # re-announcing it; scripts/check_registry.py holds it to forty characters.
     "chapter",
+    # Spec 0040: the dashed ring at Mercury's distance on a star system's stage, for scale. Drawn by
+    # scene/systems.js while this stop is up; check_registry.py allows it only on a system stage.
+    "mercury_ring",
     "card",
 )
 
@@ -129,8 +133,42 @@ def iso_instant(value):
     return value
 
 
+# THE ONE NUMBER A CARD MAY NOT TYPE (spec 0040 req 7). "{exoplanet_count}" in a card's body is the
+# number of planets in site/data/exoplanets.csv, counted here when the mirror is written, so the card
+# and the layer it describes can never disagree. Grouped with the narrow no-break space every number
+# in the app uses (copy/en.js groupDigits, docs/design-language.md). check_registry.py refuses a
+# planet count typed as digits.
+EXOPLANET_COUNT = "{exoplanet_count}"
+NNBSP = "\u202f"
+
+
+def grouped(n: int) -> str:
+    return f"{n:,}".replace(",", NNBSP)
+
+
+_count_cache: list[str] = []
+
+
+def exoplanet_count() -> str:
+    if not _count_cache:
+        rows = read_rows()
+        if rows is None:
+            raise SystemExit("gen_tours_js: a card names {exoplanet_count} and site/data/exoplanets.csv "
+                             "is missing or empty, so there is nothing to count")
+        _count_cache.append(grouped(len(rows)))
+    return _count_cache[0]
+
+
+def expand_card(card):
+    if not isinstance(card, dict) or EXOPLANET_COUNT not in str(card.get("body") or ""):
+        return card
+    return {**card, "body": str(card["body"]).replace(EXOPLANET_COUNT, exoplanet_count())}
+
+
 def stop_of(stop: dict, defaults: dict) -> dict:
     out = pick(stop, STOP_FIELDS)
+    if "card" in out:
+        out["card"] = expand_card(out["card"])
     if "time" in out:
         out["time"] = iso_instant(out["time"])
     for key in STOP_DEFAULTS:

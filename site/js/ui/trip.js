@@ -54,7 +54,7 @@ import * as THREE from '../../vendor/three.module.min.js';
 import { TOURS } from '../data/tours.js';
 import { propagate } from '../propagate/index.js';
 import { fixed } from '../propagate/fixed.js';
-import { stage, isLadderStage } from '../scene/stage.js';
+import { stage, isLadderStage, isSystemStage } from '../scene/stage.js';
 import { WORLDS, positionOf, compressesFrom } from '../scene/worlds.js';
 import { showCard, hideCard, seeItLine, refreshLeadNote } from './cards.js';
 import { write as writeUrl, clear as clearUrl } from './urlstate.js';
@@ -654,7 +654,11 @@ export function createTrip(ctx) {
     if (target.observer === true) return observerSubject();
     if (target.record) {
       const record = ctx.recordById(target.record);
-      return worldRecordSubject(record) || recordSubject(record);
+      // A planet with a registry/systems.yaml row, or its host star (spec 0040): flown to where
+      // scene/systems.js draws it on the system's stage, framed by its own radius, with the star as
+      // the ground the camera keeps out of.
+      const inSystem = record && ctx.systems ? ctx.systems.subjectFor(record) : null;
+      return worldRecordSubject(record) || inSystem || recordSubject(record);
     }
     if (target.site) return recordSubject(ctx.recordById(target.site));
     if (target.world) return worldSubject(target.world);
@@ -805,6 +809,9 @@ export function createTrip(ctx) {
   }
 
   function sunScene(tMs) {
+    // On a star system's stage the light is its own star, not ours forty light-years behind.
+    const own = ctx.systems && ctx.systems.lightScene ? ctx.systems.lightScene() : null;
+    if (own) return own;
     const p = positionOf('sun', tMs);
     if (!p) return null;
     return stage.toScene(p, p.frame, tMs);
@@ -1035,6 +1042,9 @@ export function createTrip(ctx) {
   }
 
   function stopDistanceKm(stop, subject) {
+    // A star system's overview (spec 0040) is never closer than the whole of it fits on THIS screen:
+    // a phone held upright is a third as wide as a desktop, and the outer orbit would be cut off.
+    if (isNum(stop.distance_km) && typeof subject.fitKm === 'function') return Math.max(stop.distance_km, subject.fitKm(stop));
     if (isNum(stop.distance_km)) return stop.distance_km;
     if (isNum(subject.radiusKm) && subject.radiusKm > 0) {
       return Math.max(stop.frame_radii * subject.radiusKm, subject.radiusKm * 1.02);
@@ -1056,11 +1066,13 @@ export function createTrip(ctx) {
     if (!targetScene) return null;
 
     const world = worldById.get(subject.worldId) || worldById.get('earth');
-    const worldCentreKm = positionOf(world.id, tMs);
-    const worldCentre = worldCentreKm
+    // A star system's member (spec 0040) names its own ground: the host star at the stage's origin.
+    const ownGround = subject.ground && subject.ground.centre ? subject.ground.centre() : null;
+    const worldCentreKm = ownGround ? null : positionOf(world.id, tMs);
+    const worldCentre = ownGround || (worldCentreKm
       ? stage.toScene(worldCentreKm, worldCentreKm.frame, tMs)
-      : new THREE.Vector3();
-    const radius = world.radiusKm / stage.unitKm;
+      : new THREE.Vector3());
+    const radius = (ownGround ? subject.ground.radiusKm : world.radiusKm) / stage.unitKm;
 
     // Re-teach the rig its world at every stop. main.js does this once, at boot, and nothing
     // subscribes to sr:stage; this is the first module in the app that keeps it current. It is
@@ -1119,6 +1131,9 @@ export function createTrip(ctx) {
     if (!angles && subject.kind === 'world' && subject.id === 'sun' && stage.worldId === 'sun') {
       angles = { azimuth: rig.state.azimuth || 0, polar: SUN_OVERVIEW_POLAR };
     }
+    // A subject that asks to be seen from above its orbits (a star system's host, spec 0040): the
+    // same look-down the Sun's overview has, at the azimuth the key light chose or the camera's own.
+    if (isNum(subject.polar)) angles = { azimuth: angles ? angles.azimuth : rig.state.azimuth || 0, polar: subject.polar };
 
     const named = entry.stop.ease;
     const ease = !named || named === 'auto' ? (ms > CRUISE_ABOVE_MS ? 'cruise' : 'inout') : named;
@@ -1263,7 +1278,9 @@ export function createTrip(ctx) {
    */
   function enterStage(id) {
     if (!run || !id || id === stage.worldId || typeof ctx.setStage !== 'function') return false;
-    const keep = compressesFrom(id)
+    // Into or out of a star system's stage (spec 0040) is always a cut: forty light-years in 100 000 km
+    // units is a camera 4e9 units out, past the far plane, with nothing to fly from.
+    const keep = compressesFrom(id) || isSystemStage(id) || isSystemStage(stage.worldId)
       ? null
       : { camera: stage.fromScene(ctx.camera.position), target: stage.fromScene(rig.state.target) };
     let changed = false;

@@ -17,7 +17,7 @@
 // says out loud what it selects. Adding a layer is a row here plus, at most, one predicate.
 
 import { load } from './sources.js';
-import { parseCelestrakGP, parseLaunches, parseComets, parseHorizonsVectors, parseNeoApproaches, parseExoplanets, parseDso, isGeostationary } from './parsers.js';
+import { parseCelestrakGP, parseLaunches, parseComets, parseHorizonsVectors, parseNeoApproaches, parseExoplanets, parseDso, isGeostationary, skyToSunInertialKm } from './parsers.js';
 import {
   sampleAsteroids,
   sampleDeepSpace,
@@ -28,6 +28,7 @@ import {
 } from './sample.js';
 import { worldRecords } from '../scene/worlds.js';
 import { EXOTICS } from './exotics.js';
+import { SYSTEMS } from './systems.js';
 import { LAYER_ROWS } from './layers.registry.js';
 import { propagate } from '../propagate/index.js';
 
@@ -297,6 +298,42 @@ function milkyWayRecords() {
 
 // Black holes and other extremes (spec 0028 step 7): the mirror of registry/exotics.yaml as static
 // records on the sun-inertial axes -- the same sky -> ecliptic rotation the stars and planets use.
+/**
+ * One record per registry/systems.yaml row: the host star, `star-<id>`, klass `star`, placed on the
+ * exoplanet table's own row for it (data/systems.js hostSky, joined by the generator) so it sits
+ * exactly on the planets' glyphs. Its facts are the row's, with the page they were read from.
+ * Exported for tests/test_systems.mjs.
+ */
+export function systemHostRecords(systems = SYSTEMS) {
+  return systems.map((s) => {
+    const h = s.hostSky;
+    const distLy = Math.round(h.distPc * 3.2615637771674333 * 100) / 100;
+    return {
+      id: s.hostId,
+      name: s.host,
+      klass: 'star',
+      layer: 'systems',
+      propagator: 'static',
+      frame: 'sun-inertial',
+      pos: skyToSunInertialKm(h.raDeg, h.decDeg, h.distPc),
+      cls: 'measured',
+      meta: {
+        distLy,
+        spect: h.spect || null,
+        teffK: s.star.teffK,
+        radiusSuns: s.star.radiusSuns,
+        massSuns: s.star.massSuns,
+        system: s.id,
+        stageId: s.stage,
+        planets: s.planets.length,
+        aliases: [s.host],
+        source: s.star.source,
+        cite: `NASA Exoplanet Archive: ${s.star.source}`,
+      },
+    };
+  });
+}
+
 function exoticRecords() {
   const LY = 9460730472580.8;
   const e = 23.4392911 * (Math.PI / 180);
@@ -422,6 +459,33 @@ export const LAYERS = [
     card: 'exoplanet',
     priority: 61,
     sentence: 'Every confirmed planet around another star, drawn at its star.',
+  },
+  {
+    // Star systems at their own scale (spec 0040). Mirrors registry/layers.yaml `systems`. The records
+    // are the host stars (systemHostRecords below), one per registry/systems.yaml row; the planets are
+    // the `exoplanets` layer's own records, which scene/systems.js draws on the system's stage.
+    // `draw: 'systems'`: no glyph layer, because on the stellar rung the exoplanet glyphs already mark
+    // the star, and on its own stage scene/systems.js draws it as a star.
+    id: 'systems',
+    display: 'Star systems',
+    klass: 'star',
+    source: 'bundled',
+    parse: null,
+    propagator: 'static',
+    frame: 'sun-inertial',
+    moments: { wonder: true, now: false, next: false },
+    defaultOn: true,
+    draw: 'systems',
+    noModel: true,
+    sample: () => systemHostRecords(),
+    select: all,
+    budget: { maxItems: 50 },
+    colour: C.star,
+    glyph: 'star',
+    nearKm: 0,
+    card: 'star',
+    priority: 65,
+    sentence: 'Stars whose planets can be visited at their true sizes, on orbits worked out from the NASA Exoplanet Archive.',
   },
   {
     // Deep-sky objects with a sourced distance (spec 0028 step 5). Mirrors registry/layers.yaml

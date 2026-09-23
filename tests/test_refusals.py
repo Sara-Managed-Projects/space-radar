@@ -489,6 +489,28 @@ CASES: list[tuple[str, str, str, str]] = [
      "stars-notable.yaml", "wiki/Sirius (read 2026-09-22)", "wiki/Sirius"),
     ("a famous star that is already an extreme object with its own fact sheet",
      "stars-notable.yaml", "    name: Sirius\n", "    name: Betelgeuse\n"),
+
+    # --- registry/systems.yaml, a star system at its own scale (spec 0040, 2026-09-23) ------------
+    # The planets are the exoplanet table's own records and three of each row's numbers are not in
+    # that table, so every way a hand-typed row could be wrong without anything noticing is here:
+    # a planet that is not a record, a system with no stage, a number that disagrees with the table,
+    # a slipped digit Kepler's third law catches, and a number with no page or no day.
+    ("a system planet that is not a record of the exoplanet table",
+     "systems.yaml", "      - id: exo-trappist-1-h\n", "      - id: exo-trappist-1-i\n"),
+    ("a system with no stage row to be drawn on",
+     "systems.yaml", "  - id: trappist-1\n    host:", "  - id: trappist-one\n    host:"),
+    ("a system planet's period 3 % off the table's",
+     "systems.yaml", "period_days: 6.101013", "period_days: 6.284"),
+    ("a semi-major axis with a slipped digit, which Kepler's third law refuses",
+     "systems.yaml", "a_au: 0.02925", "a_au: 0.03925"),
+    ("a system star's source with no day it was read",
+     "systems.yaml", 'TRAPPIST-1 (read 2026-09-23)"\n    colour_note', 'TRAPPIST-1"\n    colour_note'),
+    ("a system that does not say its colours are illustrative",
+     "systems.yaml", "    colour_note: illustrative\n", ""),
+    ("a system stage centred on something other than its host star",
+     "stages.yaml", "centre: star-trappist-1", "centre: sun"),
+    ("a system stage in a unit other than 100 000 km, the 1 000-times slip spec 0028 made twice",
+     "stages.yaml", "unit_km: 100000              #", "unit_km: 100000000           #"),
 ]
 
 
@@ -719,6 +741,20 @@ TOUR_CASES: list[tuple[str, str, str]] = [
      "    orbits: [mercury, venus, earth, mars, jupiter]", "    orbits: [mercury, moon]"),
     ("paths on a trip that is not on the Sun stage, where they are never drawn",
      "    stage: stellar\n    clock: as-found\n", "    stage: stellar\n    clock: as-found\n    orbits: [mercury]\n"),
+    # Spec 0040: the planet count is generated, "habitable" needs a page, Mercury's ring is a system
+    # stage's, and a system's planet is drawn at its size and place on that stage only.
+    ("four digits typed in the count card, which goes stale with the next copy of the table",
+     "            {exoplanet_count} planets around", "            6 332 planets around"),
+    ("\"habitable\" in a card about a planet whose row cites no page saying so",
+     "            A year here lasts six days.", "            A year here lasts six days, in the habitable zone."),
+    ("Mercury's ring promised on a stage that does not draw it",
+     "        distance_km: 4730365236290.4       # half a light-year\n",
+     "        distance_km: 4730365236290.4       # half a light-year\n        mercury_ring: true\n"),
+    ("a system's planet flown to on the stellar rung, where it is a mark at its star",
+     "        target: {record: exo-trappist-1-e}\n        stage: system-trappist-1",
+     "        target: {record: exo-trappist-1-e}\n        stage: stellar"),
+    ("a card template nothing fills in",
+     "            {exoplanet_count} planets around", "            {planet_count} planets around"),
 ]
 
 
@@ -929,6 +965,8 @@ def main() -> int:
             shutil.copy2(ROOT / "site" / "data" / "dso.json", work / "site" / "data" / "dso.json")
             # ...and registry/stars-notable.yaml against the names file the star records come from.
             shutil.copy2(ROOT / "site" / "data" / "stars3d.names.json", work / "site" / "data" / "stars3d.names.json")
+            # ...and registry/systems.yaml against the exoplanet table its planets are records of.
+            shutil.copy2(ROOT / "site" / "data" / "exoplanets.csv", work / "site" / "data" / "exoplanets.csv")
             # ...and registry/worlds.yaml against its two hand mirrors in the browser.
             (work / "site" / "js" / "scene").mkdir(parents=True, exist_ok=True)
             for js in ("worlds.js", "stage.js"):

@@ -67,6 +67,8 @@ jobs:
         run: python3 scripts/gen_ladder_js.py --check
       - name: The exotics mirror matches the registry (spec 0028 step 7)
         run: python3 scripts/gen_exotics_js.py --check
+      - name: The star systems mirror matches the registry (spec 0040)
+        run: python3 scripts/gen_systems_js.py --check
       - name: The famous-stars mirror matches the registry
         run: python3 scripts/gen_stars_notable_js.py --check
       - name: The level-of-detail mirror matches the registry (spec 0028)
@@ -177,6 +179,11 @@ jobs:
         run: node tests/test_stop_time.mjs
       - name: "A year in a minute: four worlds on the Sun's stage, drawn true, at 525 600"
         run: node tests/test_year_trip.mjs
+      # Spec 0040: TRAPPIST-1 at its own scale. Kepler's third law on the seven rows, the planets the
+      # exoplanet table's own records on a 100 000 km stage, each at its transit toward us, and the
+      # eleven-stop "Travel to exoplanets" run end to end by the real trip machine.
+      - name: "Star systems: TRAPPIST-1 at its own scale, and the trip Travel to exoplanets"
+        run: node tests/test_systems.mjs
       - name: The scene says so when no satellite could be read
         run: node tests/test_scenenote.mjs
       - name: A shower's radiant is where the sky view marks it

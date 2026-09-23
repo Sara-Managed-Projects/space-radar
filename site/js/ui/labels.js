@@ -311,6 +311,8 @@ export function createLabels(ctx, host) {
     // from a world stage); the label goes where the disc is drawn.
     let pos = null;
     if (record.klass === 'world' && ctx.worlds && ctx.worlds.drawnPositionOf) pos = ctx.worlds.drawnPositionOf(record.id, _v);
+    // On a star system's stage (spec 0040) its planets are drawn on their orbits, not at the star.
+    if (!pos && ctx.systems && ctx.systems.active) pos = ctx.systems.drawnPositionOf(record.id, _v);
     if (!pos) pos = stage.toSceneInto(p, p.frame, _v, tMs);
     if (!pos) return null;
     if (behindWorld(camera.position, pos, spheres, record.klass === 'world' ? record.id : null)) return null;
@@ -354,6 +356,15 @@ export function createLabels(ctx, host) {
             if (pr) { out.push({ record: r, kind: 'train', ...pr }); seen.add(r.id); }
           }
         }
+      }
+    }
+    // A star system's own star and planets, on its stage (spec 0040): eight names at most, and the
+    // whole of what that stage draws, so every one of them is worth its label.
+    if (ctx.systems && ctx.systems.active) {
+      for (const r of ctx.systems.records()) {
+        if (seen.has(r.id)) continue;
+        const pr = project(r, tMs, camera, w, h);
+        if (pr) { out.push({ record: r, kind: 'notable', ...pr }); seen.add(r.id); }
       }
     }
     // the nearest notable things among what is drawn

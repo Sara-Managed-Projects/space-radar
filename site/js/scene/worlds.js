@@ -98,7 +98,7 @@
 
 import * as THREE from '../../vendor/three.module.min.js';
 import * as Astronomy from '../../vendor/astronomy.js';
-import { stage, SUN_INERTIAL, EARTH_INERTIAL, isLadderStage } from './stage.js';
+import { stage, SUN_INERTIAL, EARTH_INERTIAL, isLadderStage, isSystemStage, systemOriginOf } from './stage.js';
 import { j2000ToTeme, rotateDir, stageFrame, isPlanetMoon, worldHelioEclKm } from '../propagate/frames.js';
 import { createEarth, updateEarth, updateEarthEclipse } from './earth.js';
 import { ECLIPSE_GLSL, eclipseLikely, MOON_RADIUS_KM } from './eclipse.js';
@@ -568,7 +568,7 @@ void main() {
 }
 `;
 
-function celMaterial(map, tint) {
+export function celMaterial(map, tint) {
   return new THREE.ShaderMaterial({
     name: 'world-cel',
     vertexShader: WORLD_VERT,
@@ -829,7 +829,12 @@ export function createWorlds(scene, opts = {}) {
     //    offset by the residual, which measured 9 metres. Exact beats measured when exact is
     //    available.
     const frameWorld = String(stage.frame).split('-')[0];
-    if (frameWorld === stage.worldId) {
+    // A star system's stage (spec 0040) is centred on its host star, whose place is fixed and was
+    // registered by scene/systems.js; no world's ephemeris names it.
+    const onSystem = isSystemStage(stage.worldId);
+    if (onSystem) {
+      stage.setOrigin(systemOriginOf(stage.worldId));
+    } else if (frameWorld === stage.worldId) {
       stage.setOrigin(null);
     } else {
       const centre = truePos.get(stage.worldId);
@@ -907,6 +912,10 @@ export function createWorlds(scene, opts = {}) {
       if (!mesh) continue;
       const p = truePos.get(w.id);
       if (!p) { mesh.visible = false; continue; }
+      // NOTHING OF THE SOLAR SYSTEM ON A STAR SYSTEM'S STAGE (spec 0040): the Sun is forty light-years
+      // off TRAPPIST-1's, 4e9 units past the far plane, and a world drawn there would be a shape at a
+      // float32 distance nobody can place. The system's own star and planets are scene/systems.js's.
+      if (onSystem) { mesh.visible = false; continue; }
       mesh.visible = layerOn || w.id === stage.worldId || w.id === 'sun';
 
       // The world's own true position in the stage's frame, and from it the direction to the
@@ -1359,7 +1368,8 @@ export function nearestNeighbours(dirs, out) {
  * stages exist to show the true layout, and a squeezed Neptune there would be a lie with no reason.
  */
 export function compressesFrom(stageId) {
-  if (stageId === 'sun' || isLadderStage(stageId)) return false;
+  // A star system's stage (spec 0040) draws nothing of the Solar System at all, so nothing is squeezed.
+  if (stageId === 'sun' || isLadderStage(stageId) || isSystemStage(stageId)) return false;
   return true;
 }
 
@@ -1427,7 +1437,7 @@ function applyIauOrientation(mesh, bodyName, tMs, worldId) {
 }
 
 /** A warm bloom for the Sun. No lens flare (docs/design-language.md is explicit). */
-function coronaSprite() {
+export function coronaSprite() {
   if (typeof document === 'undefined' || !document.createElement) return null;
   const size = 128;
   const canvas = document.createElement('canvas');

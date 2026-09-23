@@ -67,6 +67,25 @@ export const LAYER_ROWS = [
     "train": null
   },
   {
+    "id": "systems",
+    "display": "Star systems",
+    "enabled": true,
+    "moments": {
+      "wonder": true,
+      "now": false,
+      "next": false
+    },
+    "source": "bundled",
+    "sources": null,
+    "propagator": "static",
+    "frame": "sun-inertial",
+    "card": "star",
+    "glyph": "star",
+    "colour": "star",
+    "maxItems": 50,
+    "train": null
+  },
+  {
     "id": "deep-sky",
     "display": "Nebulae, clusters and galaxies",
     "enabled": true,

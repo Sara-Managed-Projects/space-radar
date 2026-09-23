@@ -38,7 +38,8 @@ import { createLod } from './scene/lod.js';
 import { createStars3d } from './scene/stars3d.js';
 import { createGalaxy } from './scene/galaxy.js';
 import { createDsoGlow } from './scene/dsoglow.js';
-import { isLadderStage } from './scene/stage.js';
+import { isLadderStage, isSystemStage } from './scene/stage.js';
+import { createSystems } from './scene/systems.js';
 import { SUN_INERTIAL, STAGES } from './scene/stage.js';
 import { showChooser, hideChooser } from './ui/chooser.js';
 import { createLabels } from './ui/labels.js';
@@ -121,7 +122,16 @@ export async function boot({ setStatus } = {}) {
     'stars-3d': (k) => stars3d.setOpacity(k),
     'galaxy-model': (k) => galaxy.setOpacity(k),
   });
-  window.addEventListener('sr:stage', () => { stars3d.rebuild(); galaxy.rebuild(); dsoGlow.rebuild(); });
+  // A star and its planets at the system's own scale (spec 0040, scene/systems.js): built when its
+  // stage is entered, dropped when it is left, nothing at boot.
+  const systems = createSystems(scene, ctx);
+  ctx.systems = systems;
+  window.addEventListener('sr:stage', (e) => {
+    stars3d.rebuild(); galaxy.rebuild(); dsoGlow.rebuild();
+    const id = e && e.detail ? e.detail.worldId : stage.worldId;
+    if (isSystemStage(id)) systems.enter(id);
+    else systems.leave();
+  });
   ctx.lod = lod;
   ctx.skyView = createSkyView(ctx);
   const heroes = createHeroes(scene, ctx);
@@ -173,6 +183,7 @@ export async function boot({ setStatus } = {}) {
     if (id === 'worlds') worlds.setVisible(on);
     if (id === 'stars' && ctx.stars3d) ctx.stars3d.setVisible(on);
     if (id === 'galaxy' && ctx.galaxy) ctx.galaxy.setVisible(on);
+    if (id === 'systems' && ctx.systems) ctx.systems.setVisible(on);
   };
 
   say('Reading the catalogues…');
@@ -259,6 +270,10 @@ export async function boot({ setStatus } = {}) {
     if (isLayerOn('stars') && ctx.stars3d) {
       for (const c of ctx.stars3d.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height }, 6)) glyphs.push(c);
     }
+    // A star system's own star and planets, on its stage (spec 0040): the same exo-... records.
+    if (ctx.systems && ctx.systems.active) {
+      for (const c of ctx.systems.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height }, 6)) glyphs.push(c);
+    }
     const discs = isLayerOn('worlds') && worlds.pickAll
       ? worlds.pickAll(ndcX, ndcY, camera, { w: rect.width, h: rect.height })
       : [];
@@ -282,15 +297,24 @@ export async function boot({ setStatus } = {}) {
    *   selecting from inside one used to look like.
    */
   function select(record, opts = {}) {
+    // A planet with a registry/systems.yaml row, or its host star, is a place on its SYSTEM's stage
+    // (spec 0040 req 6), where it is drawn at its own size on its orbit; everywhere else it is a mark
+    // at its star. The same rule as a star recentring on the stellar rung below, one scale further in.
+    const systemStage = ctx.systems ? ctx.systems.stageOfRecord(record) : null;
+    const offWorld = stage.worldId !== 'sun' && (isLadderStage(stage.worldId) || isSystemStage(stage.worldId));
+    if (systemStage && opts.fly !== false) ctx.setStage(systemStage);
     // A star is a place on the stellar rung: from a world stage its true position is past the far
-    // plane, so selecting one recentres on the Sun at one unit = one light-year first.
-    if (record && ['star', 'exoplanet', 'dso', 'exotic'].includes(record.klass) && !isLadderStage(stage.worldId) && opts.fly !== false) ctx.setStage('stellar');
+    // plane, so selecting one recentres on the Sun at one unit = one light-year first. From a star
+    // system's stage too: there the rest of the sky is a shell of directions.
+    else if (record && ['star', 'exoplanet', 'dso', 'exotic'].includes(record.klass) && !isLadderStage(stage.worldId) && opts.fly !== false) ctx.setStage('stellar');
     // And back: a thing inside the Solar System, chosen on a rung (from search, or the Next list),
     // sits inside the Sun's pixel there and its layer does not draw (isLayerDrawable above), so the
     // camera would fly into one pixel and show nothing. It goes home to the Earth stage first. The
-    // Sun is a place on the ladder and stays.
-    else if (record && isLadderStage(stage.worldId) && opts.fly !== false
-      && !['star', 'exoplanet', 'dso', 'exotic'].includes(record.klass) && !(record.klass === 'world' && record.id === 'sun')) ctx.setStage('earth');
+    // Sun is a place on the ladder and stays. From a star system's stage, where nothing of ours is
+    // drawn at all, the Sun goes home too.
+    else if (record && offWorld && opts.fly !== false
+      && !['star', 'exoplanet', 'dso', 'exotic'].includes(record.klass)
+      && !(record.klass === 'world' && record.id === 'sun' && isLadderStage(stage.worldId))) ctx.setStage('earth');
     selected = record;
     // Start the map now, not when the disc grows past the threshold mid-flight: a selected world is
     // about to fill the screen, and a trip's own flight (fly: false) needs it just as much.
@@ -359,7 +383,9 @@ export async function boot({ setStatus } = {}) {
       return on;
     }
     const w = WORLDS.find((x) => x.id === stage.worldId);
-    cameraRig.setWorldRadius(w ? w.radiusKm / stage.unitKm : 0);
+    // On a star system's stage the ground the camera must stay out of is the star at the origin.
+    const r = w ? w.radiusKm / stage.unitKm : ctx.systems && ctx.systems.active ? ctx.systems.starRadiusUnits() : 0;
+    cameraRig.setWorldRadius(r);
     cameraRig.setWorldCentre({ x: 0, y: 0, z: 0 });
     return null;
   }
@@ -377,6 +403,9 @@ export async function boot({ setStatus } = {}) {
     // A world is drawn where scene/worlds.js put its DISC -- nearer than it is for the planets
     // (PLANET_VIEW, and the card says so). Flying to the true position would arrive at empty sky.
     if (record && record.klass === 'world') return worlds.drawnPositionOf(record.id);
+    // A member of the star system whose stage this is: where its orbit puts it (scene/systems.js).
+    const onSystem = record && ctx.systems ? ctx.systems.drawnPositionOf(record.id) : null;
+    if (onSystem) return onSystem;
     // Deliberately NOT asking the glyph layer: it owns a packed position buffer for drawing, and
     // exposing a per-record lookup would make the camera depend on a layer being visible. The
     // contract's propagate + stage.toScene answers this for any record, drawn or not.
@@ -387,6 +416,10 @@ export async function boot({ setStatus } = {}) {
 
   function arrivalDistance(record, pos) {
     if (record && record.klass === 'world') return Math.max(0.05, worlds.drawnRadiusUnits(record.id) * 3.5);
+    // On its system's stage a planet is a ball of its own size: eight radii, the trip's framing; the
+    // host star is the whole system, every orbit in the picture.
+    const inSystem = ctx.systems && ctx.systems.active && ctx.systems.stageOfRecord(record) === stage.worldId;
+    if (inSystem) return ctx.systems.arrivalDistanceUnits(record);
     if (record && record.klass === 'star') return 0.4; // a point of light: close, but not inside it
     if (record && record.klass === 'exoplanet') return 0.4;
     if (record && record.klass === 'exotic') return 0.4;
@@ -439,8 +472,14 @@ export async function boot({ setStatus } = {}) {
   // near the Sun to pick. There only the ladder's own layers draw, and the worlds, which keep the
   // Sun's name; stars3d draws the Sun itself as a star.
   const LADDER_SCALE_LAYERS = new Set(['stars', 'galaxy', 'worlds']);
+  // ON A STAR SYSTEM'S STAGE (spec 0040) the only things drawn are the system itself and the stars as
+  // a sky of directions from it. The exoplanet glyphs for this system would sit on its star, where
+  // scene/systems.js already draws the same records at their true places; every other glyph layer is
+  // a Solar System thing forty light-years behind the camera.
+  const SYSTEM_SCALE_LAYERS = new Set(['stars', 'systems']);
   function isLayerDrawable(layer) {
     if (!layer || !isLayerOn(layer.id)) return false;
+    if (isSystemStage(stage.worldId)) return SYSTEM_SCALE_LAYERS.has(layer.id);
     const ladder = isLadderStage(stage.worldId);
     if (layer.ladderOnly && !ladder) return false;
     if (ladder && !layer.ladderOnly && !LADDER_SCALE_LAYERS.has(layer.id)) return false;
@@ -477,11 +516,15 @@ export async function boot({ setStatus } = {}) {
     const w = WORLDS.find((x) => x.id === stageId);
     stage.setWorld(stageId);
     worlds.update(clock.now());
-    const r = w ? w.radiusKm / stage.unitKm : 0;
+    // A star system's stage (spec 0040): the ground is its star, and the camera arrives with every
+    // orbit in the picture. sr:stage (above) has already built the system.
+    const system = isSystemStage(stageId) && ctx.systems && ctx.systems.active;
+    const r = w ? w.radiusKm / stage.unitKm : system ? ctx.systems.starRadiusUnits() : 0;
     cameraRig.setWorldRadius(r);
     cameraRig.setWorldCentre({ x: 0, y: 0, z: 0 });
     cameraRig.stopFollow();
-    cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance: w ? worldFramingDistance(r, camera.fov, camera.aspect) : 5, ms: 0 });
+    const distance = w ? worldFramingDistance(r, camera.fov, camera.aspect) : system ? ctx.systems.framingDistanceUnits(stageId) : 5;
+    cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance, ms: 0 });
     return true;
   };
 
@@ -643,6 +686,10 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     if (heroes) heroes.update(t, { frameMs, latched: latch.latched, saveData });
     if (starfield && starfield.update) starfield.update(ctx.camera);
     if (ctx.stars3d) ctx.stars3d.update(ctx.camera, ctx.renderer);
+    if (ctx.systems) {
+      ctx.systems.setVisible(ctx.isLayerOn('systems'));
+      ctx.systems.update(t, ctx.camera);
+    }
     if (ctx.galaxy) ctx.galaxy.update(ctx.camera, ctx.renderer);
     if (ctx.dsoGlow) ctx.dsoGlow.update(ctx.camera, ctx.renderer, ctx.isLayerDrawable(LAYERS.find((l) => l.id === 'deep-sky')));
     if (ctx.skyView.active) ctx.skyView.update(t);
@@ -672,7 +719,7 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
   for (const layer of ordered) {
     // A layer another module already draws (the worlds' discs) gets no glyph layer: two marks for
     // one planet would be two places to tap and one of them wrong.
-    if (layer.draw === 'worlds' || layer.draw === 'galaxy' || layer.draw === 'stars3d') continue;
+    if (layer.draw === 'worlds' || layer.draw === 'galaxy' || layer.draw === 'stars3d' || layer.draw === 'systems') continue;
     const gl = createGlyphLayer(scene, layer);
     // One mark per object: the dot fades out as that record's 3D model fades in.
     // Read through ctx at call time: this function has no `heroes` of its own (the first version

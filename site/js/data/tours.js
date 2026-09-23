@@ -564,6 +564,249 @@ export const TOURS = [
     "estimate_ms": 141556
   },
   {
+    "id": "travel-to-exoplanets",
+    "title": "Travel to exoplanets",
+    "blurb": "Every planet we know of around another star, then the seven of TRAPPIST-1 one by one, at their own sizes. Leaving brings you back to Earth.",
+    "requires": [
+      "stars",
+      "exoplanets",
+      "systems"
+    ],
+    "stage": "stellar",
+    "clock": "as-found",
+    "group": "beyond",
+    "next": "to-the-edge",
+    "og_stop": 3,
+    "pacing": "auto",
+    "min_stops": 3,
+    "stops": [
+      {
+        "id": "all",
+        "target": {
+          "world": "sun"
+        },
+        "distance_km": 567643828354848,
+        "drift_deg": 30,
+        "chapter": "Chapter one: the catalogue",
+        "card": {
+          "title": "Planets around other stars",
+          "body": "6 332 planets around other stars, in the copy of NASA's catalogue this map carries, each drawn as a mark at its star. Most were found by the dip in a star's light as a planet crosses in front of it, the rest mostly by the wobble a planet gives its star."
+        },
+        "frame_radii": 5.0,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 19483
+      },
+      {
+        "id": "proxima-b",
+        "target": {
+          "record": "exo-proxima-cen-b"
+        },
+        "distance_km": 4730365236290.4,
+        "chapter": "Chapter one: the catalogue",
+        "card": {
+          "title": "The nearest one",
+          "body": "Proxima b goes round the nearest star to the Sun, four light-years away, once every eleven days. Nobody has seen it: it was found by the wobble it gives its star."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 12823
+      },
+      {
+        "id": "trappist",
+        "target": {
+          "record": "star-trappist-1"
+        },
+        "stage": "system-trappist-1",
+        "distance_km": 14959787,
+        "drift_deg": 20,
+        "chapter": "Chapter two: the seven of TRAPPIST-1",
+        "card": {
+          "title": "Seven worlds round a small red star",
+          "body": "TRAPPIST-1 is a cool red star forty light-years away, a little bigger than Jupiter. Seven planets about the size of the Earth go round it, and all seven were found as they crossed in front of it."
+        },
+        "frame_radii": 5.0,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 14821
+      },
+      {
+        "id": "e",
+        "target": {
+          "record": "exo-trappist-1-e"
+        },
+        "stage": "system-trappist-1",
+        "frame_radii": 8,
+        "chapter": "Chapter two: the seven of TRAPPIST-1",
+        "card": {
+          "title": "TRAPPIST-1 e",
+          "body": "A year here lasts six days. It is nine tenths as wide as the Earth and seven tenths as heavy, and at its closest its neighbour d would look as wide in its sky as the Moon is in ours."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 15820
+      },
+      {
+        "id": "b",
+        "target": {
+          "record": "exo-trappist-1-b"
+        },
+        "stage": "system-trappist-1",
+        "frame_radii": 8,
+        "chapter": "Chapter two: the seven of TRAPPIST-1",
+        "card": {
+          "title": "TRAPPIST-1 b",
+          "body": "The innermost, 1.7 million kilometres from its star, over thirty times closer than Mercury is to the Sun. Its year is a day and a half, and it is a tenth wider than the Earth."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 14155
+      },
+      {
+        "id": "c",
+        "target": {
+          "record": "exo-trappist-1-c"
+        },
+        "stage": "system-trappist-1",
+        "frame_radii": 8,
+        "chapter": "Chapter two: the seven of TRAPPIST-1",
+        "card": {
+          "title": "TRAPPIST-1 c",
+          "body": "The second out, round its star in just under two and a half days. Like b it is a little wider than the Earth and about a third heavier."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 12157
+      },
+      {
+        "id": "d",
+        "target": {
+          "record": "exo-trappist-1-d"
+        },
+        "stage": "system-trappist-1",
+        "frame_radii": 8,
+        "chapter": "Chapter two: the seven of TRAPPIST-1",
+        "card": {
+          "title": "TRAPPIST-1 d",
+          "body": "Four days a year, and the smallest but one: four fifths of the Earth's width and less than two fifths of its mass."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 10159
+      },
+      {
+        "id": "f",
+        "target": {
+          "record": "exo-trappist-1-f"
+        },
+        "stage": "system-trappist-1",
+        "frame_radii": 8,
+        "chapter": "Chapter two: the seven of TRAPPIST-1",
+        "card": {
+          "title": "TRAPPIST-1 f",
+          "body": "Nine days a year, and the nearest of the seven to the Earth's own size and mass, a few per cent over on both."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 10492
+      },
+      {
+        "id": "g",
+        "target": {
+          "record": "exo-trappist-1-g"
+        },
+        "stage": "system-trappist-1",
+        "frame_radii": 8,
+        "chapter": "Chapter two: the seven of TRAPPIST-1",
+        "card": {
+          "title": "TRAPPIST-1 g",
+          "body": "The widest of the seven, thirteen per cent wider than the Earth. Its year lasts twelve and a third days."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 9160
+      },
+      {
+        "id": "h",
+        "target": {
+          "record": "exo-trappist-1-h"
+        },
+        "stage": "system-trappist-1",
+        "frame_radii": 8,
+        "chapter": "Chapter two: the seven of TRAPPIST-1",
+        "card": {
+          "title": "TRAPPIST-1 h",
+          "body": "The outermost and the smallest, three quarters of the Earth's width. A year here is nineteen days, and b goes round twelve times in one of them."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 11491
+      },
+      {
+        "id": "mercury",
+        "target": {
+          "record": "star-trappist-1"
+        },
+        "stage": "system-trappist-1",
+        "distance_km": 74798935,
+        "drift_deg": 0,
+        "chapter": "Chapter two: the seven of TRAPPIST-1",
+        "mercury_ring": true,
+        "card": {
+          "title": "All of it inside Mercury's orbit",
+          "body": "The dashed ring is the size of Mercury's orbit round our Sun, drawn here for scale. It is six times wider than the orbit of h: every one of these worlds is closer to its star than Mercury is to ours."
+        },
+        "frame_radii": 5.0,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 16153
+      }
+    ],
+    "estimate_ms": 183564
+  },
+  {
     "id": "moon-landings",
     "title": "Where we have landed on the Moon",
     "blurb": "The first soft landing, the first people, a rover driven from Earth, the far side, the south pole and the first private landers. Leaving brings you back to Earth.",

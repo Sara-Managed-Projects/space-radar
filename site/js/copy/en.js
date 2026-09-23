@@ -637,6 +637,11 @@ export const COPY = {
     unnamed: 'An unnamed star (HYG {n})',
     notPlaced: '{n} more have no measured distance and are not drawn.',
   },
+  // A star system at its own scale (spec 0040, scene/systems.js). The one piece of text drawn IN the
+  // scene: the dashed ring on the trip's last stop is not an orbit anything has, and it says so.
+  systems: {
+    mercuryRing: 'Mercury’s orbit, for scale',
+  },
   // The scale ladder's breadcrumb (spec 0028 req 11): eight places, each further out, and the
   // honesty line under them.
   ladder: {
@@ -1200,6 +1205,12 @@ export const COPY = {
     // A trip with `orbits:` on the Sun stage (scene/orbitrings.js, 2026-09-23): the dots are the one
     // exaggeration, size only. Under the instant on every stop, generated, never typed in a card.
     orbitsLine: 'Planets drawn larger than they are, as dots; their places and paths are computed.',
+    // Spec 0040 req 8: every card on a star system's own stage says what is measured and what is
+    // drawn. Generated (ui/cards.js drawingLine), never typed in the registry. {phase} is empty when
+    // every planet's place on its orbit comes from a transit time (scene/systems.js
+    // phaseIsMeasured), and systemPhaseUnknown when one of them is illustrative.
+    systemLine: 'Sizes and orbits from the NASA Exoplanet Archive; the colours{phase} and the tilt of the orbits are illustrative.',
+    systemPhaseUnknown: ', the planets’ places on their orbits',
     rateWords: {
       10: 'ten times faster than life',
       60: 'a minute a second',

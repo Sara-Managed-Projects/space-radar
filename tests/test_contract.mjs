@@ -2266,7 +2266,7 @@ for (const file of allFiles) {
     // the named stars, the placed deep-sky objects, and the layers whose `sample()` is the data.
     const { worldRecords } = await import(join(JS, 'scene/worlds.js'));
     const { recordsFromNames } = await import(join(JS, 'scene/stars3d.js'));
-    const { parseDso } = await import(join(JS, 'data/parsers.js'));
+    const { parseDso, parseExoplanets } = await import(join(JS, 'data/parsers.js'));
     const starNames = JSON.parse(readFileSync(join(ROOT, 'site/data/stars3d.names.json'), 'utf8')).rows;
     const dsoDoc = JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8'));
     const bundled = new Set([
@@ -2276,6 +2276,9 @@ for (const file of allFiles) {
       ...worldRecords().map((r) => r.id),
       ...recordsFromNames(starNames).map((r) => r.id),
       ...parseDso(dsoDoc).map((r) => r.id),
+      // The exoplanet table's dated copy (spec 0028 step 4) is bundled: the layer reads it whenever the
+      // harvester's snapshot is missing, so its planets resolve with no network (spec 0040's trip).
+      ...parseExoplanets(readFileSync(join(ROOT, 'site/data/exoplanets.csv'), 'utf8')).map((r) => r.id),
       ...LAYERS.filter((l) => l.source === 'bundled' && typeof l.sample === 'function' && !l.parse).flatMap((l) => l.sample()).map((r) => r.id),
     ]);
     const layerIds = new Set(LAYERS.map((l) => l.id));

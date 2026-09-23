@@ -1,0 +1,99 @@
+# A SYSTEM is a star with the planets the NASA Exoplanet Archive lists for it, drawn at the system's
+# own scale on its own stage (spec 0040). The map already places every planet around another star AT
+# its star (spec 0028 step 4): 1 au at 10 parsecs is a tenth of an arcsecond, so on the stellar rung a
+# planet and its star are one point. A system row is what it takes to draw one of them as a place.
+#
+# THE PLANETS ARE THE EXOPLANET TABLE'S OWN RECORDS. Each `id` is the record parseExoplanets()
+# (site/js/data/parsers.js) makes from a row of site/data/exoplanets.csv; scripts/_exo_ids.py derives
+# the same id in Python and check_registry.py refuses an id no row of that host would make. Nothing
+# here is a second record: on the system's stage scene/systems.js places the same `exo-...` ids, and
+# picking, search, labels and the card all resolve to them.
+#
+# WHAT THE CSV HAS AND WHAT IT DOES NOT. The bundled table carries period, radius, the star's
+# temperature and radius (scripts/build-exoplanets.py COLUMNS). check_registry.py cross-checks those
+# four against it within 2 %. The table does NOT carry the semi-major axis (`pl_orbsmax`), the transit
+# time (`pl_tranmid`) or the star's mass (`st_mass`), so they are typed here, each row with the page it
+# was read from and the day. KEPLER'S THIRD LAW TIES THEM: a^3 / P^2 (au, years) must equal the star's
+# mass in Suns within 5 %, and the row is refused with the three numbers otherwise. That is the one
+# check that catches a typo in any of the three.
+#
+# READ 2026-09-23 from the Archive's Planetary Systems Composite Parameters table (pscomppars), by
+#     https://exoplanetarchive.ipac.caltech.edu/TAP/sync?format=json&query=
+#       select pl_name,pl_orbper,pl_orbsmax,pl_rade,pl_bmasse,pl_tranmid,st_mass,st_rad,st_teff
+#       from pscomppars where hostname='TRAPPIST-1'
+# and checked against the system's overview page, which each `source` names. The Archive's own
+# references for the values: Agol et al. 2021 (PSJ 2, 1) for periods, radii, masses, semi-major axes
+# and the star's mass; Ducrot et al. 2020 (A&A 640, A112) for the transit times, which are BJD_TDB
+# (a minute or so from JD, far below anything drawn). a^3/P^2 on the seven rows, measured the same
+# day: 0.08971 to 0.08987 against 0.0898, every one within 0.13 %.
+#
+# `transit_mid_jd` is optional. With it the planet's place on its orbit is real: at that instant it
+# was between its star and the Earth, and scene/systems.js runs it round from there at `period_days`.
+# Without it the phase is an illustration, the card says so, and a hash of the id keeps the picture
+# stable. `habitable_zone: {source}` is the only way a card may say "habitable" about a planet; none
+# of the pages read for this file says it, so no row carries it.
+#
+# `colour_note: illustrative`: the star's colour comes from its temperature, the planets' is a tint,
+# and the orbit's tilt on the sky is not known. The card prints a generated line saying so
+# (COPY.trip.systemLine); the field is here so the validator can refuse a row that forgets it.
+version: 1
+
+systems:
+  - id: trappist-1
+    host: TRAPPIST-1                     # the CSV's `hostname`; the stage is centred on this star
+    star:
+      radius_suns: 0.1192
+      teff_k: 2566
+      mass_suns: 0.0898
+      source: "https://exoplanetarchive.ipac.caltech.edu/overview/TRAPPIST-1 (read 2026-09-23)"
+    colour_note: illustrative
+    planets:
+      - id: exo-trappist-1-b
+        period_days: 1.510826
+        a_au: 0.01154
+        radius_earths: 1.116
+        mass_earths: 1.374
+        transit_mid_jd: 2457322.514193
+        source: "https://exoplanetarchive.ipac.caltech.edu/overview/TRAPPIST-1 (read 2026-09-23)"
+      - id: exo-trappist-1-c
+        period_days: 2.421937
+        a_au: 0.0158
+        radius_earths: 1.097
+        mass_earths: 1.308
+        transit_mid_jd: 2457282.8113871
+        source: "https://exoplanetarchive.ipac.caltech.edu/overview/TRAPPIST-1 (read 2026-09-23)"
+      - id: exo-trappist-1-d
+        period_days: 4.049219
+        a_au: 0.02227
+        radius_earths: 0.788
+        mass_earths: 0.388
+        transit_mid_jd: 2457670.1463014
+        source: "https://exoplanetarchive.ipac.caltech.edu/overview/TRAPPIST-1 (read 2026-09-23)"
+      - id: exo-trappist-1-e
+        period_days: 6.101013
+        a_au: 0.02925
+        radius_earths: 0.92
+        mass_earths: 0.692
+        transit_mid_jd: 2457660.3676621
+        source: "https://exoplanetarchive.ipac.caltech.edu/overview/TRAPPIST-1 (read 2026-09-23)"
+      - id: exo-trappist-1-f
+        period_days: 9.20754
+        a_au: 0.03849
+        radius_earths: 1.045
+        mass_earths: 1.039
+        transit_mid_jd: 2457671.3737299
+        source: "https://exoplanetarchive.ipac.caltech.edu/overview/TRAPPIST-1 (read 2026-09-23)"
+      - id: exo-trappist-1-g
+        period_days: 12.352446
+        a_au: 0.04683
+        radius_earths: 1.129
+        mass_earths: 1.321
+        transit_mid_jd: 2457665.3628439
+        source: "https://exoplanetarchive.ipac.caltech.edu/overview/TRAPPIST-1 (read 2026-09-23)"
+      - id: exo-trappist-1-h
+        period_days: 18.772866
+        a_au: 0.06189
+        radius_earths: 0.755
+        mass_earths: 0.326
+        transit_mid_jd: 2457662.5741486
+        source: "https://exoplanetarchive.ipac.caltech.edu/overview/TRAPPIST-1 (read 2026-09-23)"

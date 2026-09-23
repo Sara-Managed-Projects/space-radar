@@ -57,6 +57,8 @@ import { trajectorySection } from './trajectory.js';
 import { trainOf } from '../data/trains.js';
 import { attachedOdditiesFor, attachedOddityRecord } from '../data/attached.js';
 import { shareButton, pictureButton } from './share.js';
+import { stage } from '../scene/stage.js';
+import { systemOfRecordId, phaseIsMeasured } from '../scene/systems.js';
 
 const MAX_FIRST_SENTENCE = 160; // spec 0013 requirement 10, enforced by check_copy.py
 const MAX_COMPARISONS = 3; // spec 0013 requirement 2
@@ -1542,10 +1544,26 @@ function trainSection(record, ctx, m) {
   return wrap;
 }
 
+/**
+ * THE LINE A STAR SYSTEM'S STAGE PRINTS (spec 0040 req 8), or null off it. On its system's stage a
+ * planet is no longer "a mark at its star": it is a ball of its own size on an orbit worked out
+ * from the Archive, and the card says which parts of that are the Archive's and which are drawn.
+ * Generated from the system's rows, never typed: {phase} names the planets' places only when one
+ * of them has no transit time to put it there. Exported for tests/test_systems.mjs.
+ */
+export function systemLine(record, stageId = stage.worldId) {
+  const m = record && record.id ? systemOfRecordId(record.id) : null;
+  if (!m || stageId !== m.system.stage) return null;
+  const guessed = m.system.planets.some((p) => !phaseIsMeasured(p));
+  return t(COPY.trip.systemLine, { phase: guessed ? COPY.trip.systemPhaseUnknown : '' });
+}
+
 export function drawingLine(record) {
   const md = meta(record);
   const drawsAs = pick(md, 'drawsAs');
   const T = COPY.drawing;
+  const inSystem = systemLine(record);
+  if (inSystem) return inSystem;
   if (!drawsAs) {
     // The derived line, plus a row's own `departure` where the drawing knowingly differs: Haumea
     // is drawn round and is an egg; nobody has seen 'Oumuamua's shape at all.
