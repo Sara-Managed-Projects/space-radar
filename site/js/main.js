@@ -18,9 +18,9 @@ import { createGlyphLayer } from './scene/glyphs.js';
 import { createHeroes, closeUpDistance } from './scene/heroes.js';
 import { createCameraRig, worldFramingDistance } from './scene/camera.js';
 import { createViewShift } from './scene/viewshift.js';
-import { readMoment, writeMoment } from './ui/urlstate.js';
+import { readMoment, writeMoment, read as readUrlState, write as writeUrlState, clear as clearUrlState, stopIndex } from './ui/urlstate.js';
 import { guessObserver } from './sky/guessplace.js';
-import { CITIES } from './copy/en.js';
+import { COPY, CITIES } from './copy/en.js';
 import { LAYERS, loadLayer } from './data/layers.js';
 import * as sources from './data/sources.js';
 import { createSkyView } from './sky/skyview.js';
@@ -177,6 +177,12 @@ export async function boot({ setStatus } = {}) {
   const orbitLine = createOrbitLine(scene, ctx);
   ctx.orbitLine = orbitLine;
   setMoment(moment, { silent: true });
+
+  // The rest of the link is applied ONCE the layers have landed (spec 0032 req 2): a trip
+  // resolves its stops against records and `at` names one, so before this there is nothing to
+  // apply it to. The moment was read above already, because the doors are built before any data
+  // arrives. Registered before the load starts so the event cannot be missed.
+  window.addEventListener('sr:layers-ready', () => applyUrlState(ctx, readUrlState()), { once: true });
 
   // Data arrives in the background, layer by layer, slowest last. Nothing here is awaited by the
   // render loop.
@@ -477,6 +483,41 @@ export async function boot({ setStatus } = {}) {
   });
   window.addEventListener('hashchange', () => setMoment(readMomentFromHash(), { silent: true }));
 
+  // THE URL IS THE STATE (spec 0017's rule, spec 0032's keys). Two more writers beside the moment,
+  // both through ui/urlstate.js so the format has one owner; the trip writes its own keys from
+  // ui/trip.js. replaceState throughout: nothing here adds a history entry.
+  //
+  // `at` is what is selected (req 4). Not the trip's own select of a stop's subject: `trip` and
+  // `stop` already say where, and `at` on top would name the same thing twice and outlive it.
+  window.addEventListener('sr:select', (e) => {
+    const record = e && e.detail;
+    if (!record) { clearUrlState(['at']); return; }
+    if (ctx.trip && ctx.trip.currentRecordId() === record.id) return;
+    writeUrlState({ at: record.id });
+  });
+  // `t` and `rate`, only when the clock is not live (req 5): a link never carries `t=now`, and
+  // `t` absent means now. Trailing-edge throttle at one write a second, because a scrub is a
+  // goTo() per pointer event and replaceState a hundred times a second is what browsers rate-limit.
+  let clockWroteAt = -Infinity;
+  let clockWriteTimer = 0;
+  const writeClock = () => {
+    clockWriteTimer = 0;
+    clockWroteAt = performance.now();
+    if (clock.mode === 'live') { clearUrlState(['t', 'rate']); return; }
+    const ms = clock.now();
+    if (!Number.isFinite(ms)) return;
+    writeUrlState({
+      t: new Date(ms).toISOString().replace(/\.\d{3}Z$/, 'Z'),
+      rate: clock.rate === 1 ? null : String(clock.rate),
+    });
+  };
+  clock.onChange(() => {
+    if (clockWriteTimer) return;
+    const wait = 1000 - (performance.now() - clockWroteAt);
+    if (wait <= 0) writeClock();
+    else clockWriteTimer = setTimeout(writeClock, wait);
+  });
+
   // The one global worth having: it makes the app inspectable from a console on a real phone,
   // which is the only debugger available on the device that matters.
   window.spaceRadar = ctx;
@@ -666,6 +707,72 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
     return Promise.all(Array.from({ length: Math.min(size, list.length) }, worker));
   }
   await Promise.all([pool(local, 6), pool(upstream, 3)]);
+}
+
+// --- the link ------------------------------------------------------------------
+//
+// A deep link (spec 0032): `#trip=moon-landings&stop=3`, `#at=europa`, `#t=2027-08-02T10:00:00Z`,
+// `#stage=saturn`, in any combination. Applied once, after the layers land, in this order: the
+// clock first (every position is a function of it), the stage next (a record is selected on the
+// map it is drawn on), then EITHER a trip OR a selection -- a trip selects its own stops, so `at`
+// beside `trip` would fight it. A key that names nothing known is ignored and the scene says so
+// in one line (ui/scenenote.js); the rest of the link still applies, and the dead key leaves the
+// address bar so a link copied from here does not carry it on.
+
+function linkNote(ctx, line, deadKeys) {
+  if (ctx.sceneNote && typeof ctx.sceneNote.say === 'function') ctx.sceneNote.say(line);
+  if (deadKeys) clearUrlState(deadKeys);
+}
+
+function applyUrlState(ctx, st) {
+  if (!st) return;
+  // A newer format: this reader cannot tell what the keys it does recognise mean in it, so it
+  // applies none of them rather than half of a link.
+  if (st.unknownVersion) { linkNote(ctx, COPY.link.unknownVersion); return; }
+  if (st.t && st.t !== 'now') {
+    const ms = Date.parse(st.t);
+    if (Number.isFinite(ms)) ctx.clock.goTo(ms);
+  }
+  if (st.rate) {
+    const r = Number(st.rate);
+    if (r > 0 && ctx.clock.rates().includes(r)) ctx.clock.setRate(r);
+  }
+  if (st.stage) {
+    if (STAGES[st.stage]) ctx.setStage(st.stage);
+    else linkNote(ctx, COPY.link.unknownStage, ['stage']);
+  }
+  // A trip that is not on this map is ignored like any other unknown key: `at` still applies.
+  if (st.trip && openTrip(ctx, st)) return;
+  if (st.at) openAt(ctx, st.at);
+}
+
+/** @returns {boolean} whether the link named a trip this map has (and so is starting it). */
+function openTrip(ctx, st) {
+  const tour = ctx.trip.tours().find((x) => x.id === st.trip);
+  if (!tour) { linkNote(ctx, COPY.link.unknownTrip, ['trip', 'stop']); return false; }
+  const index = stopIndex(tour, st.stop);
+  // Through start(), so the intro card and its count are honest: a link into stop 3 still shows
+  // "10 stops, about four minutes" and Start -- a decision rather than an ambush (spec 0025 §4) --
+  // and Start then flies to stop 3 (ui/trip.js jumpTo). A trip that cannot reach its own minimum
+  // today is refused by start() and the panel row says why; nothing to add here.
+  ctx.trip.start(tour.id).then((plan) => {
+    if (!plan || plan.offerable === false) return;
+    if (index > 0) ctx.trip.jumpTo(index);
+  });
+  return true;
+}
+
+function openAt(ctx, id) {
+  const record = ctx.recordById(id);
+  if (!record) { linkNote(ctx, COPY.link.unknownAt, ['at']); return; }
+  // Spec 0021's rule, as ui/search.js: a record whose layer is off has no mark and no model, so
+  // flying to it arrives at empty sky. The layer goes on first, and the panel is told (it paints
+  // its checkboxes from its own state, and ignores an event with no `from` as its own echo).
+  if (record.layer && !ctx.isLayerOn(record.layer)) {
+    ctx.setLayerOn(record.layer, true);
+    document.dispatchEvent(new CustomEvent('sr:layer-toggle', { detail: { id: record.layer, on: true, handled: true, from: 'link' } }));
+  }
+  ctx.select(record, { fly: true });
 }
 
 // --- small helpers -----------------------------------------------------------

@@ -32,7 +32,7 @@ if [ ${#PATHS[@]} -eq 0 ]; then
   while IFS= read -r f; do PATHS+=("${f#site/}"); done < <(find site -type f ! -name '.DS_Store' | sort)
 fi
 
-ok=0; bad=0; skipped=0
+ok=0; bad=0; skipped=0; pages=0
 for p in "${PATHS[@]}"; do
   local_file="site/$p"
   [ -f "$local_file" ] || { echo "MISSING LOCALLY  $p"; bad=$((bad + 1)); continue; }
@@ -40,7 +40,14 @@ for p in "${PATHS[@]}"; do
   want=$(hash < "$local_file")
   # A cache-busting query would test the origin, not what visitors get; ask for the path itself.
   got=$(curl -s --compressed --max-time 60 "$BASE/$p" | hash)
-  if [ "$want" = "$got" ]; then ok=$((ok + 1)); else echo "DIFFERS  $p"; bad=$((bad + 1)); fi
+  if [ "$want" = "$got" ]; then
+    ok=$((ok + 1))
+    # The trip pages (spec 0032) are counted on their own: they are the share URLs, and a deploy
+    # that shipped the app without them is a deploy whose links unfurl to nothing.
+    case "$p" in t/*.html) pages=$((pages + 1)) ;; esac
+  else
+    echo "DIFFERS  $p"; bad=$((bad + 1))
+  fi
 done
-echo "verify-deploy: $ok match, $bad differ, $skipped skipped (over 1 MB) -- $BASE"
+echo "verify-deploy: $ok match ($pages trip pages among them), $bad differ, $skipped skipped (over 1 MB) -- $BASE"
 [ "$bad" = 0 ]
