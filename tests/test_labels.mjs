@@ -21,6 +21,16 @@ check(!chooseLabels([sel, clash]).some((c) => c.record.id === 'c'), 'a label wit
 // the caps: 40 notable in -> 10 out; 40 notable + selection + 5 train -> 12 total
 const many = Array.from({ length: 40 }, (_, i) => ({ record: rec(`m${i}`), kind: 'notable', x: 50 + i * 40, y: 400, dist: i }));
 check(chooseLabels(many).length === NOTABLE_CAP, `at most ${NOTABLE_CAP} notable labels (${chooseLabels(many).length})`);
+// Spec 0030: on a trip on the Sun's stage the worlds are the picture, and take the notable slots
+// before a nearer asteroid or probe (headless Chrome, 2026-09-23: none of the planets was named).
+{
+  const rock = { record: { id: 'apophis', klass: 'asteroid' }, kind: 'notable', x: 100, y: 100, dist: 10 };
+  const mars = { record: { id: 'mars', klass: 'world' }, kind: 'notable', x: 400, y: 100, dist: 90 };
+  check(chooseLabels([rock, mars], { notableCap: 1 })[0].record.id === 'apophis', 'nearest-first stands everywhere else');
+  check(chooseLabels([rock, mars], { notableCap: 1, worldsFirst: true })[0].record.id === 'mars', 'with worldsFirst a world takes the slot before a nearer asteroid');
+  const sel2 = { record: { id: 'sel', klass: 'probe' }, kind: 'selection', x: 700, y: 100, dist: 50 };
+  check(chooseLabels([rock, mars, sel2], { worldsFirst: true })[0].record.id === 'sel', 'the selection still leads');
+}
 const trains = Array.from({ length: 5 }, (_, i) => ({ record: rec(`tr${i}`), kind: 'train', x: 50 + i * 40, y: 700, dist: i }));
 const all = chooseLabels([...many, ...trains, sel]);
 check(all.length === LABEL_CAP && all[0].kind === 'selection' && all.filter((c) => c.kind === 'train').length === 5, `the cap is ${LABEL_CAP} with the selection and the whole train kept (${all.length})`);

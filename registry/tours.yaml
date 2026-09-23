@@ -115,6 +115,21 @@
 #                 auto-advances: a failure that scrolls past is a failure nobody can report.
 #                 `fallback` is designed and not shipped -- the one stop that needed it was the
 #                 `view:` stop, which is not shipped either.
+#   time          the instant this stop is shown at (spec 0030): an ISO 8601 UTC instant, `now`, or
+#                 `{event: <events.yaml id>.next, offset_s: <int>}`, the first such event after the
+#                 visitor's clock. ui/trip.js moves the clock there BEFORE the shot is composed, so
+#                 the key light and the arrival are this instant's, and the frame prints a "Shown
+#                 at" line built from the clock -- which is why the card under a timed stop may not
+#                 state a time itself. An event reference is resolved by spec 0031's
+#                 data/events.js nextEvent(), 400 days ahead; one it cannot find follows
+#                 `on_unresolved` like a lost target, and the count on the intro card is taken after.
+#   rate          how fast the clock runs while the stop is up: 60 at most on an Earth-orbit
+#                 target, 36 000 on anything else, and up to 1 000 000 only on the Sun's stage or
+#                 a rung, where a world's own motion is the picture. Once a stop has touched the
+#                 clock the trip owns it until leave: a later stop without `rate:` runs at 1, one
+#                 without `time:` carries on from wherever the clock got to, and leaving puts the
+#                 visitor's instant, rate and pause back. `rate: 0` is refused (a still frame
+#                 under a card is a slide); a trip that must be still writes `clock: freeze`.
 #   card.title    <= 60 characters.
 #   card.body     the words. The first sentence is capped at 160 characters, which is the cap
 #                 site/js/ui/cards.js already measures; capping it where it is WRITTEN is what
@@ -861,3 +876,99 @@ tours:
             It passed Jupiter in March 1979 and Saturn in November 1980, and it has been leaving
             ever since, more than 170 times the Earth's distance from the Sun. In 1990 it turned
             round and photographed the planets it had left. Earth came out 0.12 of a pixel wide.
+
+  # =============================================================================================
+  # A YEAR IN A MINUTE (spec 0030). The first trip that moves the clock, and the cheapest one in
+  # the catalogue: four stops, every one a world, and nothing that needs a network. It runs on the
+  # SUN'S STAGE because that is the one stage that squeezes nothing (scene/worlds.js
+  # compressesFrom), so every orbit here is drawn at its true size and in its true place, and the
+  # motion is the real motion at the real proportions.
+  #
+  # THE RATE. 525 600 is the minutes in a year, so one real minute is one year of the clock and one
+  # real second is 525 600 s = 6.08 days: a day every 0.164 s, a sixth of a second. It is above the
+  # clock's own top speed (36 000, site/js/clock.js) and above the 60 a trip otherwise keeps to, and
+  # check_registry.py allows it on the Sun's stage only, where no SGP4 object is being followed.
+  # The clock is HELD while the camera flies (ui/trip.js applyStopTime) and runs while a card is
+  # up, so the four dwells are what the year is spent on: 13.8 + 15.2 + 14.5 + 14.8 = 58.3 s from
+  # their word counts (scripts/gen_tours_js.py), which is 355 days. The panel says "about 2
+  # minutes" because the four flights are on top and the length is rounded up (ui/tripframe.js).
+  #
+  # EVERY NUMBER IS NASA's PLANETARY FACT SHEET (https://nssdc.gsfc.nasa.gov/planetary/factsheet/,
+  # read 2026-09-23): orbital period Mercury 88.0 d, Earth 365.2 d, Jupiter 4331 d; distance from
+  # the Sun Mercury 57.9, Earth 149.6, Mars 228.0 (aphelion 249.3), Jupiter 778.5 million km;
+  # orbital velocity Mercury 47.4, Earth 29.8 km/s; the Moon 0.384 million km from Earth, going
+  # round in 27.3 d. At 6.08 days a second: Mercury laps in 14.5 s, the Moon in 4.5 s, the Earth in
+  # 60 s, and Jupiter would need 712 s.
+  # =============================================================================================
+  - id: a-year-in-a-minute
+    title: "A year in a minute"
+    blurb: "The planets going round the Sun, a day every sixth of a second. Leaving puts the clock back and brings you back to Earth."
+    group: solar-system
+    next: outer-solar-system
+    requires: [worlds]
+    stage: sun
+    clock: as-found          # the STOPS move it; `clock:` stays the trip-level mode
+    stops:
+      - id: inner
+        target: {world: sun}
+        # Mars at aphelion is 249.3 million km out. The camera looks down from 50 degrees above the
+        # planets' plane (ui/trip.js SUN_OVERVIEW_POLAR), so the near side of an orbit of radius r
+        # is 0.64 r nearer the camera and 0.77 r off the middle, and it stays inside the frame's
+        # 22.5-degree half-height while the distance is at least 2.49 r: 621 million km for Mars.
+        # 700 million holds the whole of Mars's orbit on a 1280 x 800 screen, at any date
+        # (tests/test_year_trip.mjs, four dates).
+        distance_km: 700000000
+        # From the visitor's present, at whatever instant that is, so nothing here names a date.
+        time: now
+        rate: 525600
+        drift_deg: 0
+        card:
+          title: "Everything inside Mars, going round"
+          body: >-
+            Every second here is six days, so Mercury goes round the Sun in fifteen seconds and the
+            Earth in a minute. Everything is at its true size, which is why the planets are specks.
+
+      - id: earth
+        target: {world: earth}
+        # The Moon's orbit is 384 400 km across the middle; from 2.5 million km the frame's
+        # half-height is 1.04 million, so the orbit fills about a third of it.
+        distance_km: 2500000
+        rate: 525600
+        drift_deg: 0
+        card:
+          title: "The Earth, and the Moon going round it"
+          body: >-
+            The Moon goes round the Earth every 27.3 days, which here is four and a half seconds.
+            The camera is riding along with the Earth at thirty kilometres a second, so it is
+            everything farther away that seems to drift.
+
+      - id: mercury
+        target: {world: mercury}
+        # Mercury is 57.9 million km from the Sun; 60 million km sits the camera about as far
+        # from Mercury as Mercury is from the Sun, with the Sun kept in the picture behind it.
+        distance_km: 60000000
+        behind: sun
+        rate: 525600
+        drift_deg: 0
+        card:
+          title: "Mercury, four laps to our one"
+          body: >-
+            Mercury goes round the Sun in 88 days, four times in each of our years, at 47
+            kilometres a second. The camera is following it, so it is the Sun that seems to wheel
+            round behind.
+
+      - id: jupiter
+        target: {world: sun}
+        # Jupiter is 778.5 million km out, and by the rule on the first stop the frame holds its
+        # orbit from 2.49 x 778.5 = 1.94 billion km. The design said 1.6 billion; measured in
+        # tests/test_year_trip.mjs, from there Jupiter was off the top or bottom of a 1280 x 800
+        # frame at three dates of four. 2.2 billion leaves a margin.
+        distance_km: 2200000000
+        rate: 525600
+        drift_deg: 0
+        card:
+          title: "Jupiter, which takes twelve of our years"
+          body: >-
+            Jupiter is five times as far from the Sun as we are and needs almost twelve of our
+            years to go round once. While the Earth goes round one time, Jupiter covers a twelfth
+            of its path.

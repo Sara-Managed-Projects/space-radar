@@ -29,6 +29,7 @@ Run:  python3 scripts/gen_tours_js.py           # write it
 from __future__ import annotations
 
 import sys
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -62,6 +63,12 @@ STOP_FIELDS = (
     "key_light_deg",
     "ease",
     "on_unresolved",
+    # Spec 0030: the instant and the rate this stop shows, passed through unresolved -- an ISO
+    # instant, `now`, or `{event: <type>.next, offset_s: n}` -- because only the browser knows the
+    # visitor's clock an event reference counts from. No default for either: a stop without them
+    # is exactly the stop it was before the fields existed.
+    "time",
+    "rate",
     "card",
 )
 
@@ -101,8 +108,22 @@ def dwell_ms(body: str) -> int:
     return max(DWELL_MIN_MS, min(DWELL_MAX_MS, DWELL_BASE_MS + words(body) * DWELL_PER_WORD_MS))
 
 
+def iso_instant(value):
+    """A `time:` written unquoted in the YAML arrives as a datetime (PyYAML reads timestamps), and
+    `json.dumps(default=str)` would write it `2027-08-02 10:07:00+00:00`, a form Date.parse is not
+    promised to read. The mirror carries the one form it is: `2027-08-02T10:07:00Z`."""
+    if isinstance(value, datetime):
+        dt = value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    if isinstance(value, date):
+        return value.strftime("%Y-%m-%dT00:00:00Z")
+    return value
+
+
 def stop_of(stop: dict, defaults: dict) -> dict:
     out = pick(stop, STOP_FIELDS)
+    if "time" in out:
+        out["time"] = iso_instant(out["time"])
     for key in STOP_DEFAULTS:
         if key not in out and key in defaults:
             out[key] = defaults[key]

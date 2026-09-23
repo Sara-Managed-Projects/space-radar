@@ -442,6 +442,51 @@ export const timeText = {
 };
 
 // ---------------------------------------------------------------------------------------
+// A trip stop's clock (spec 0030): "Shown at 2 Aug 2027, 10:07 UTC, running ten minutes a second"
+// ---------------------------------------------------------------------------------------
+
+// The instant, in UTC and in words a visitor reads: the stop's time is a fact about the world, so
+// it is not converted to anybody's local clock.
+const shownAtFmt = new Intl.DateTimeFormat('en-GB', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+  timeZone: 'UTC',
+});
+const shownOnFmt = new Intl.DateTimeFormat('en-GB', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+// At an hour a second the minutes turn over sixty times a second, which is a flicker and not a
+// reading, so from there up the line gives the day alone.
+const SHOWN_DAY_ONLY_FROM_RATE = 3600;
+
+/**
+ * "600 times faster than life" is true and means nothing; "ten minutes a second" is a picture.
+ * The named rates are COPY.trip.rateWords, the rest the number grouped the way every other number
+ * here is (fmt.int: a narrow no-break space, never a comma).
+ */
+export function formatRate(rate) {
+  const n = Number(rate);
+  if (!Number.isFinite(n) || n <= 0) return '';
+  const named = COPY.trip.rateWords[n];
+  return named || t(COPY.trip.rateGeneric, { n: fmt.int(n) });
+}
+
+/** The stop's instant for the "Shown at" line: "2 Aug 2027, 10:07 UTC", or the day alone. */
+export function formatShownAt(ms, rate) {
+  const d = new Date(ms);
+  if (!Number.isFinite(d.getTime())) return '';
+  if (Number(rate) >= SHOWN_DAY_ONLY_FROM_RATE) return shownOnFmt.format(d);
+  return t(COPY.trip.shownAtUtc, { when: shownAtFmt.format(d) });
+}
+
+// ---------------------------------------------------------------------------------------
 // COPY -- every user-visible string
 // ---------------------------------------------------------------------------------------
 
@@ -1115,6 +1160,27 @@ export const COPY = {
     droppedOne: 'One stop cannot be shown today and is not counted above.',
     droppedMany: '{n} stops cannot be shown today and are not counted above.',
     clockClamped: 'Time has been set back to normal speed for this trip.',
+    // Spec 0030: a trip whose stops set the clock says so before it starts, and the end card says
+    // what leaving will do. A visitor is never surprised to find the map a year on.
+    clockMoves: 'This trip moves the clock. It is put back when you leave.',
+    clockRestored: 'Leaving puts the clock back where you had it.',
+    // The line under the trip's title while a stop owns the clock. Built from ui/tripframe.js's
+    // reading of the clock, never from the registry, so it cannot disagree with what is drawn.
+    stopTimeNow: 'Shown now',
+    stopTimeAt: 'Shown at {when}',
+    stopTimeRate: 'Shown at {when}, running {rate}',
+    stopTimePaused: 'Shown at {when}, held while the trip is paused',
+    shownAtUtc: '{when} UTC',
+    rateWords: {
+      10: 'ten times faster than life',
+      60: 'a minute a second',
+      600: 'ten minutes a second',
+      3600: 'an hour a second',
+      36000: 'ten hours a second',
+      // 525 600 s is 6.08 days: a day every 0.164 s.
+      525600: 'a day every sixth of a second',
+    },
+    rateGeneric: '{n} times faster than life',
 
     // --- the letterbox -------------------------------------------------------------------
     frameLabel: 'guided trip',

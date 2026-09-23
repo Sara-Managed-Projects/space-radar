@@ -266,6 +266,51 @@ TOUR_JARGON = (
     "semi-major axis",
 )
 
+# --- a stop's own clock (spec 0030) ---------------------------------------------------------------
+# A stop may name the instant it is shown at (`time:`) and how fast the clock runs while it is
+# (`rate:`). ui/trip.js moves the clock before the shot is composed and puts it back on leave.
+#
+# THE CAPS ARE THE REASON THE FIELD IS SAFE, and each one is the number some other file already
+# lives by. 60 is ui/trip.js CLOCK_RATE_CEILING: above a minute a second a station laps the planet
+# in under a real minute while `follow` holds the camera on it, and at 36 000 in 0.15 s. 36 000 is
+# the top of site/js/clock.js RATES, the fastest a visitor can set by hand, allowed on a target
+# that is not in Earth orbit. Above it, to a million, only on the Sun's stage or a rung of the
+# ladder, where a world's own motion around the Sun is the picture and nothing on the stage is an
+# SGP4 object anybody is following. 525 600 -- a year a minute -- is the one the first trip uses.
+TOUR_RATE_TRIP_CEILING = 60
+TOUR_RATE_WORLD_CEILING = 36000
+TOUR_RATE_MAX = 1000000
+# The SGP4 layers, filled in main() from registry/layers.yaml `propagator: sgp4`, and the event
+# types an `{event:}` reference may name, from registry/events.yaml.
+TOUR_SGP4_LAYERS: set[str] = set()
+TOUR_EVENT_TYPES: set[str] = set()
+# A GP record's id is `sat-<norad>` or `int-<designator>` (site/js/data/parsers.js), so a
+# `record:` target of that shape is an SGP4 object as surely as a `layer:` target is.
+TOUR_SGP4_RECORD = re.compile(r"^(sat|int)-")
+# An ISO instant, in UTC, and nothing looser: `Z` or nothing, because a stop's instant is a claim
+# about the world and a local-time reading of it would be off by the visitor's offset. The range is
+# the design's (spec 0030 design §1): from Sputnik 1 on 1957-10-04, before which nothing in this
+# app was up there, to 2100, past which nobody has written the ephemeris down.
+TOUR_TIME_ISO = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?Z$")
+TOUR_TIME_FIRST = datetime.datetime(1957, 10, 4, tzinfo=datetime.timezone.utc)
+TOUR_TIME_LAST = datetime.datetime(2100, 1, 1, tzinfo=datetime.timezone.utc)
+# An event reference counts from the visitor's clock to the NEXT one and then offsets it: 90
+# minutes before an eclipse, the minute a pass tops out. A month either side is the most any trip
+# the programme designs asks for (spec 0030 design §5); more is a different event.
+TOUR_EVENT_OFFSET_MAX_S = 30 * 86400
+# THE CARD MAY NOT STATE THE TIME THE STOP SETS. The "Shown at" line under it is generated from
+# the clock (ui/tripframe.js), so a card that also writes the date is a second copy of a number,
+# and the first one to be wrong is the typed one. A four-digit year, a clock time, a day and month.
+TOUR_CARD_TIME = re.compile(
+    r"\b(1[5-9]|20|21)\d{2}\b"
+    r"|\b\d{1,2}:\d{2}\b"
+    r"|\b\d{1,2}(st|nd|rd|th)? (of )?(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\b"
+    r"|\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* \d{1,2}\b"
+)
+# The sentence the `clock: freeze` refusal already says, for the same cost from the same cause.
+TOUR_ACTIVE_SCRUB = ("flips the clock to scrub, which re-propagates every object every frame "
+                     "instead of every 100 ms, and `active` is eleven thousand of them")
+
 
 def tour_dwell_ms(body: str) -> int:
     n = len(str(body or "").split())
@@ -467,6 +512,23 @@ def check_tours(oddities_doc: dict, layer_ids: set, world_ids: set, site_ids: se
                         "clock to scrub, which re-propagates every object every frame instead of "
                         "every 100 ms, and `active` is eleven thousand of them")
 
+        # A STOP THAT MOVES THE CLOCK PUTS THE APP IN SCRUB FOR THE REST OF THE TRIP (ui/trip.js
+        # owns it until leave), so the freeze refusal above covers it too, for the same cost. The
+        # catalogue can come in through the trip's `requires`, a stop's `needs_layer` or a stop
+        # aimed into it, and any of the three is the same eleven thousand objects.
+        stop_rows = [s for s in (tour.get("stops") or []) if isinstance(s, dict)]
+        timed = [s.get("id") for s in stop_rows if "time" in s or "rate" in s]
+        wants_active = "active" in requires or any(
+            s.get("needs_layer") == "active" or (s.get("target") or {}).get("layer") == "active"
+            for s in stop_rows if isinstance(s.get("target") or {}, dict))
+        if timed and wants_active:
+            fail(where, f"stop(s) {', '.join(map(str, timed))} set `time:` or `rate:` on a trip that "
+                        f"loads `active`: moving the clock {TOUR_ACTIVE_SCRUB}")
+        # A frozen trip and a stop that runs the clock are two answers to one question.
+        if clock == "freeze" and any("rate" in s for s in stop_rows):
+            fail(where, "`clock: freeze` and a stop with `rate:`: the trip says the clock stands "
+                        "still and a stop says how fast it runs. Drop one")
+
         min_stops = tour.get("min_stops", defaults.get("min_stops", TOUR_MIN_STOPS_FLOOR))
         if not isinstance(min_stops, int) or min_stops < TOUR_MIN_STOPS_FLOOR:
             fail(where, f"`min_stops: {min_stops!r}` -- below {TOUR_MIN_STOPS_FLOOR} it is a link, "
@@ -485,6 +547,80 @@ def check_tours(oddities_doc: dict, layer_ids: set, world_ids: set, site_ids: se
         for n, stop in enumerate(stops, start=1):
             check_tour_stop(tour, stop, n, seen_stops, defaults, unreachable,
                             layer_ids, world_ids, site_ids, glossary)
+
+
+def check_stop_clock(stop: dict, where: str, kind: str, sgp4: bool, flown_on) -> None:
+    """A stop's `time:` and `rate:` (spec 0030), each capped by what the stop is looking at.
+
+    The rate caps are three, in order of what they protect: an Earth-orbit subject whips round the
+    planet above a minute a second; a world may run as fast as a visitor can set the clock by hand;
+    and only where the whole Solar System is the picture -- the Sun's stage, or a rung -- may the
+    clock run faster than that, to a year a minute and past it.
+    """
+    if "rate" in stop:
+        rate = stop.get("rate")
+        if not is_number(rate) or rate <= 0 or rate > TOUR_RATE_MAX:
+            fail(where, f"`rate: {rate!r}`: rate must be a positive number up to 1 000 000; 0 is a "
+                        f"still frame under a card, which is a slide (spec 0025 rule 1), and a trip "
+                        f"that must be still writes `clock: freeze`")
+        elif rate > TOUR_RATE_TRIP_CEILING and (sgp4 or kind == "layer"):
+            fail(where, f"`rate: {rate:g}` on an Earth-orbit target: above 60 the subject whips "
+                        f"round the planet under follow (ui/trip.js CLOCK_RATE_CEILING)")
+        elif rate > TOUR_RATE_WORLD_CEILING and not (
+                flown_on in TOUR_UNSQUEEZED_STAGES):
+            fail(where, f"`rate: {rate:g}` on the `{flown_on}` stage: above 36 000 only on the "
+                        f"Sun's stage or a rung, where a world's own motion is the picture")
+
+    if "time" not in stop:
+        return
+    when = stop.get("time")
+    if isinstance(when, dict):
+        extra = sorted(set(when) - {"event", "offset_s"})
+        ref = str(when.get("event") or "")
+        etype, _, which = ref.partition(".")
+        offset = when.get("offset_s", 0)
+        if extra:
+            fail(where, f"`time:` has {extra}; an event reference is `{{event: <type>.next, "
+                        f"offset_s: n}}` and nothing else")
+        if etype not in TOUR_EVENT_TYPES:
+            fail(where, f"`time: {{event: {ref}}}` names `{etype}`, which is not a "
+                        f"registry/events.yaml id, so there is no event to count to")
+        if which != "next":
+            fail(where, f"`time: {{event: {ref}}}` must end `.next`: the first one after the "
+                        f"visitor's clock is the only occurrence a reference can mean")
+        if not isinstance(offset, int) or isinstance(offset, bool):
+            fail(where, f"`offset_s: {offset!r}` is not a whole number of seconds")
+        elif abs(offset) > TOUR_EVENT_OFFSET_MAX_S:
+            fail(where, f"`offset_s: {offset}` is more than 30 days from the event; that is a "
+                        f"different event, not this one")
+        if sgp4 and etype != "station-pass":
+            fail(where, f"an Earth-orbit target may be shown `now` or at `{{event: station-pass.next}}`"
+                        f" and nothing else: elements are only honest within a week")
+        return
+    if when == "now":
+        return
+    # PyYAML reads an unquoted ISO instant as a datetime; a quoted one arrives as a string. Either
+    # way the messages below print it the way it was written.
+    dt = None
+    if isinstance(when, datetime.datetime):
+        dt = when if when.tzinfo else None
+        when = when.strftime("%Y-%m-%dT%H:%M:%SZ") if dt else when.isoformat()
+    elif isinstance(when, str) and TOUR_TIME_ISO.match(when):
+        try:
+            dt = datetime.datetime.fromisoformat(when.replace("Z", "+00:00"))
+        except ValueError:
+            dt = None
+    if dt is None:
+        fail(where, f"`time: {when!r}`: time is an ISO instant in UTC (2027-08-02T10:07:00Z), "
+                    f"`now`, or `{{event: <type>.next, offset_s: n}}`")
+        return
+    if not (TOUR_TIME_FIRST <= dt < TOUR_TIME_LAST):
+        fail(where, f"`time: {when}` is outside 1957-10-04 to 2100-01-01: before Sputnik there is "
+                    f"nothing in this map to show, and after 2100 nobody has the ephemeris")
+    if sgp4:
+        fail(where, f"`time: {when}` on an Earth-orbit target: elements are only honest within a "
+                    f"week (spec 0008), and a written date is wrong the day it is read. Write `now` "
+                    f"or an event reference")
 
 
 def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: dict,
@@ -612,6 +748,10 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
     if distance_km is not None and (not is_number(distance_km) or distance_km <= 0):
         fail(where, f"`distance_km: {distance_km!r}` must be a positive number of kilometres")
 
+    sgp4 = (kind == "layer" and value in TOUR_SGP4_LAYERS) or \
+        (kind == "record" and bool(TOUR_SGP4_RECORD.match(str(value))))
+    check_stop_clock(stop, where, kind, sgp4, flown_on)
+
     card = stop.get("card")
     if not isinstance(card, dict):
         fail(where, "no `card:` -- a stop with no words is a camera move, not a stop")
@@ -640,6 +780,12 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
     for label, text in (("title", title), ("body", body)):
         if "--" in str(text or ""):
             fail(where, f"the card's {label} has \"--\"; {TOUR_DOUBLE_HYPHEN}")
+
+    if "time" in stop:
+        hit = TOUR_CARD_TIME.search(f"{title or ''} {body}")
+        if hit:
+            fail(where, f"the card says \"{hit.group(0)}\" on a stop with `time:`: the shown-at "
+                        f"line is generated from the clock, and the card may not state a time")
 
     dwell = stop.get("dwell_ms")
     computed = tour_dwell_ms(body)
@@ -2160,6 +2306,8 @@ def main() -> int:
     TOUR_STAGES.update(st.get('id') for st in ladder if isinstance(st, dict) and st.get('id'))
     TOUR_UNSQUEEZED_STAGES.update(st.get('id') for st in ladder if isinstance(st, dict) and st.get('id'))
     TOUR_WORLD_PARENTS.update({w.get('id'): str(w.get('parent') or '') for w in worlds})
+    TOUR_SGP4_LAYERS.update(l.get("id") for l in layers if l.get("propagator") == "sgp4")
+    TOUR_EVENT_TYPES.update(e.get("id") for e in events if isinstance(e, dict) and e.get("id"))
     check_tours(oddities_doc, layer_ids, world_ids, {s.get('id') for s in sites},
                 {str(t.get('term') or '').lower() for t in terms})
 

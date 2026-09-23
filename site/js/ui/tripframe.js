@@ -1,6 +1,7 @@
 // ui/tripframe.js -- the cinematic frame around a guided trip.
 //
 // Contract export: createTripFrame(ctx) -> { dispose() }
+//                  stopTimeLine(state, clock) -> the "Shown at" line, pure (spec 0030)
 //
 // ui/trip.js flies the camera. This is what a visitor sees of it: the letterbox, the controls in
 // the letterbox, the progress row, the intro and end cards, the keyboard, and the announcement a
@@ -75,7 +76,7 @@
 // cross-fade the rig has been emitting since it was written finally has a consumer -- over the
 // CANVAS and never over the card, or the scene appears to teleport under stationary text.
 
-import { COPY, t } from '../copy/en.js';
+import { COPY, t, formatRate, formatShownAt } from '../copy/en.js';
 import { nextTripOrder } from './trippicker.js';
 
 const HOST_ID = 'sr-trip';
@@ -128,6 +129,22 @@ export function shapeLine(count, estimateMs) {
   const mins = Math.max(1, Math.ceil((estimateMs || 0) / MINUTE_MS));
   if (mins <= 1) return t(COPY.trip.shapeOneMinute, { count });
   return t(COPY.trip.shape, { count, mins });
+}
+
+/**
+ * THE "SHOWN AT" LINE (spec 0030 requirement 5), built from the clock and never from the registry:
+ * the numbers are ctx.clock's, so the line cannot disagree with what is drawn. Empty until a stop
+ * has taken the clock (`clockOwned`); after that, until leave, it says when the picture is and how
+ * fast it is running. Exported so tests/test_stop_time.mjs can read it without a DOM.
+ */
+export function stopTimeLine(st, clock) {
+  if (!st || !st.clockOwned || !clock) return '';
+  if (clock.mode === 'live') return COPY.trip.stopTimeNow;
+  const rate = Number(clock.rate) || 1;
+  const when = formatShownAt(clock.now(), rate);
+  if (clock.paused && st.phase === 'paused') return t(COPY.trip.stopTimePaused, { when });
+  if (clock.paused || rate === 1) return t(COPY.trip.stopTimeAt, { when });
+  return t(COPY.trip.stopTimeRate, { when, rate: formatRate(rate) });
 }
 
 export function createTripFrame(ctx) {
@@ -221,6 +238,12 @@ export function createTripFrame(ctx) {
     const top = el('header', 'sr-trip__bar sr-trip__bar--top');
     const title = el('h1', 'sr-trip__title');
     top.appendChild(title);
+    // Under the trip's title, in the letterbox, because the stop heading below is for a screen
+    // reader only and the card is the stop's own words. Not a live region: at a year a minute it
+    // changes every frame, and a reader is told the instant by reading the line, not interrupted.
+    const clockLine = el('p', 'sr-trip__time');
+    clockLine.hidden = true;
+    top.appendChild(clockLine);
     const topLeave = button('sr-trip__btn sr-trip__btn--leave', COPY.trip.leave, COPY.trip.leaveTitle, leave);
     top.appendChild(topLeave);
 
@@ -241,7 +264,7 @@ export function createTripFrame(ctx) {
     parts = {
       pause, back, next, replay, collapse, controls,
       progress, count, segs, chip, live, group, heading, status,
-      title, panel, fade, bottom, top, leaveButtons: [topLeave, chipLeave],
+      title, clockLine, panel, fade, bottom, top, leaveButtons: [topLeave, chipLeave],
     };
   }
 
@@ -402,7 +425,10 @@ export function createTripFrame(ctx) {
     // quietly subtracted. A shorter trip is fine; a shorter trip nobody mentioned is not.
     if (dropped === 1) p.appendChild(el('p', 'sr-trip__panelnote', COPY.trip.droppedOne));
     else if (dropped > 1) p.appendChild(el('p', 'sr-trip__panelnote', t(COPY.trip.droppedMany, { n: dropped })));
-    if (st.clockClamped) p.appendChild(el('p', 'sr-trip__panelnote', COPY.trip.clockClamped));
+    // A trip whose stops set the clock says so in one line, and that line is the one that matters:
+    // the stops set their own rate, so "set back to normal speed" would be over by the first stop.
+    if (st.clockMoves) p.appendChild(el('p', 'sr-trip__panelnote', COPY.trip.clockMoves));
+    else if (st.clockClamped) p.appendChild(el('p', 'sr-trip__panelnote', COPY.trip.clockClamped));
     const row = el('div', 'sr-trip__panelrow');
     const start = button('sr-trip__btn sr-trip__btn--ember', COPY.trip.introStart, COPY.trip.startTitle, () => {
       userJumped = true;
@@ -422,6 +448,8 @@ export function createTripFrame(ctx) {
     // A trip that moved the map's centre cannot promise the camera stays: leaving puts the centre
     // back, and one unit is a different distance there (ui/trip.js `state.stageChanged`).
     p.appendChild(el('p', 'sr-trip__panelnote', st.stageChanged ? COPY.trip.endBodyStage : COPY.trip.endBody));
+    // The clock is put back on leave, not now: the end card is still inside the trip.
+    if (st.clockMoves) p.appendChild(el('p', 'sr-trip__panelnote', COPY.trip.clockRestored));
     const row = el('div', 'sr-trip__panelrow');
     const explore = button('sr-trip__btn sr-trip__btn--ember', COPY.trip.endExplore,
       st.stageChanged ? COPY.trip.endExploreTitleStage : COPY.trip.endExploreTitle, leave);
@@ -543,10 +571,20 @@ export function createTripFrame(ctx) {
     userJumped = false;
   }
 
+  function paintClockLine(st) {
+    if (!parts) return;
+    const text = stopTimeLine(st, ctx.clock);
+    // Written only when it changes: at 600x the minutes turn over ten times a second, and a text
+    // node rewritten every frame with the same words is layout work for nothing.
+    if (parts.clockLine.textContent !== text) parts.clockLine.textContent = text;
+    parts.clockLine.hidden = !text;
+  }
+
   function loop() {
     raf = requestAnimationFrame(loop);
     if (!parts) return;
     const st = trip.state;
+    paintClockLine(st);
     if (st.phase !== 'dwell' || st.index < 0) return;
     const seg = parts.segs.children[st.index];
     if (!seg) return;

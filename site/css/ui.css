@@ -1495,6 +1495,24 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   white-space: nowrap;
 }
 
+/* Spec 0030: when the picture is, and how fast it runs, while a stop owns the clock. Beside the
+   title in the top bar; tabular figures so the date does not shimmer sideways as it counts. */
+.sr-trip__time {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: 12px;
+  color: var(--sr-text-dim);
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sr-trip__time[hidden] {
+  display: none;
+}
+
 /* `display: flex` on any of these beats the user-agent's `[hidden] { display: none }`, so the
    attribute the JS sets has to be answered here or a hidden row stays on screen. Measured: the
    intro card shipped for about ten minutes with the pause chip visible behind it. */
@@ -1788,6 +1806,19 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
   .sr-trip__progress {
     flex: 1 1 100%;
     justify-content: space-between;
+  }
+
+  /* The shown-at line takes a row of its own under the title: at 390 px the title, the line and
+     Leave on one row would leave each of them a few words and an ellipsis. */
+  .sr-trip__bar--top {
+    flex-wrap: wrap;
+    row-gap: 0;
+  }
+
+  .sr-trip__time {
+    flex: 1 1 100%;
+    order: 3;
+    padding-bottom: 6px;
   }
 
   html.sr-trip-mode #sr-card {

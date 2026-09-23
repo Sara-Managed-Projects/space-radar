@@ -882,5 +882,104 @@ export const TOURS = [
       }
     ],
     "estimate_ms": 211715
+  },
+  {
+    "id": "a-year-in-a-minute",
+    "title": "A year in a minute",
+    "blurb": "The planets going round the Sun, a day every sixth of a second. Leaving puts the clock back and brings you back to Earth.",
+    "requires": [
+      "worlds"
+    ],
+    "stage": "sun",
+    "clock": "as-found",
+    "group": "solar-system",
+    "next": "outer-solar-system",
+    "pacing": "auto",
+    "min_stops": 3,
+    "stops": [
+      {
+        "id": "inner",
+        "target": {
+          "world": "sun"
+        },
+        "distance_km": 700000000,
+        "drift_deg": 0,
+        "time": "now",
+        "rate": 525600,
+        "card": {
+          "title": "Everything inside Mars, going round",
+          "body": "Every second here is six days, so Mercury goes round the Sun in fifteen seconds and the Earth in a minute. Everything is at its true size, which is why the planets are specks."
+        },
+        "frame_radii": 5.0,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 13822
+      },
+      {
+        "id": "earth",
+        "target": {
+          "world": "earth"
+        },
+        "distance_km": 2500000,
+        "drift_deg": 0,
+        "rate": 525600,
+        "card": {
+          "title": "The Earth, and the Moon going round it",
+          "body": "The Moon goes round the Earth every 27.3 days, which here is four and a half seconds. The camera is riding along with the Earth at thirty kilometres a second, so it is everything farther away that seems to drift."
+        },
+        "frame_radii": 5.0,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 15820
+      },
+      {
+        "id": "mercury",
+        "target": {
+          "world": "mercury"
+        },
+        "distance_km": 60000000,
+        "behind": "sun",
+        "drift_deg": 0,
+        "rate": 525600,
+        "card": {
+          "title": "Mercury, four laps to our one",
+          "body": "Mercury goes round the Sun in 88 days, four times in each of our years, at 47 kilometres a second. The camera is following it, so it is the Sun that seems to wheel round behind."
+        },
+        "frame_radii": 5.0,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 14488
+      },
+      {
+        "id": "jupiter",
+        "target": {
+          "world": "sun"
+        },
+        "distance_km": 2200000000,
+        "drift_deg": 0,
+        "rate": 525600,
+        "card": {
+          "title": "Jupiter, which takes twelve of our years",
+          "body": "Jupiter is five times as far from the Sun as we are and needs almost twelve of our years to go round once. While the Earth goes round one time, Jupiter covers a twelfth of its path."
+        },
+        "frame_radii": 5.0,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 14821
+      }
+    ],
+    "estimate_ms": 72351
   }
 ];

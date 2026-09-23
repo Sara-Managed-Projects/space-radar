@@ -306,6 +306,22 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
   check(/long loop/.test(hb), `Hale-Bopp, 2 400 years, is on a long loop: "${hb}"`);
 }
 
+// --- a trip stop's "Shown at" line (spec 0030) -------------------------------------------------
+// A named rate is a picture ("ten minutes a second"); any other is the number, grouped the way every
+// number on the page is: a narrow no-break space (U+202F, fmt.int, public #211), never a comma.
+{
+  const { formatRate, formatShownAt } = await import(join(JS, 'copy/en.js'));
+  check(formatRate(600) === 'ten minutes a second', `formatRate(600) is the named words: "${formatRate(600)}"`);
+  check(formatRate(525600) === 'a day every sixth of a second', `the year trip's rate is named: "${formatRate(525600)}"`);
+  check(formatRate(1234) === '1\u202f234 times faster than life', `formatRate(1234) is the generic form, grouped: ${JSON.stringify(formatRate(1234))}`);
+  check(!/,/.test(formatRate(123456)), 'a rate is never grouped with a comma');
+  check(formatRate(0) === '' && formatRate(NaN) === '', 'no rate, no words');
+  const at = Date.parse('2027-08-02T10:07:00Z');
+  check(formatShownAt(at, 600) === '2 Aug 2027, 10:07 UTC', `the instant is UTC, to the minute: "${formatShownAt(at, 600)}"`);
+  // From an hour a second up, the minutes turn over sixty times a second and the day is the reading.
+  check(formatShownAt(at, 3600) === '2 Aug 2027', `at an hour a second, the day alone: "${formatShownAt(at, 3600)}"`);
+}
+
 if (problems.length) {
   console.log(`cards copy: ${problems.length} problem(s)`);
   for (const p of problems) console.log('  - ' + p);
