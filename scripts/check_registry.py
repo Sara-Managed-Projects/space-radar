@@ -307,6 +307,23 @@ TOUR_CARD_TIME = re.compile(
     r"|\b\d{1,2}(st|nd|rd|th)? (of )?(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\b"
     r"|\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* \d{1,2}\b"
 )
+# --- eclipse stops (spec 0037) -----------------------------------------------------------------
+# `{event: <type>.next, kind: <word>}` narrows an eclipse to one kind: the library's own words for
+# it (astronomy.js EclipseKind), mirrored in site/js/data/events.js ECLIPSE_KINDS, which is what
+# nextEvent() filters on. A kind on any other type, or a word not in the type's list, is a stop that
+# could never resolve.
+ECLIPSE_KINDS = {
+    "solar-eclipse": ("total", "annular", "partial", "hybrid"),
+    "lunar-eclipse": ("total", "partial", "penumbral"),
+}
+# The shadow is on the Sun's side of the Earth (or of the Moon), so an eclipse stop is lit from the
+# front: docs/design-language.md, "0 deg for an eclipse". Past 60 degrees round from the Sun the
+# camera sees the shadow at a grazing angle or not at all.
+ECLIPSE_KEY_LIGHT_MAX_DEG = 60
+# Never alarm (spec 0037 req 6): the words are "shadow" and "path", and this app is not where anybody
+# looks at the Sun, so it gives no safety warning either. The same mechanism as TOUR_CERTAINTY_WORDS.
+ECLIPSE_STOP_WORDS = ("darkness falls", "goes out", "danger", "protect your eyes")
+
 # The sentence the `clock: freeze` refusal already says, for the same cost from the same cause.
 TOUR_ACTIVE_SCRUB = ("flips the clock to scrub, which re-propagates every object every frame "
                      "instead of every 100 ms, and `active` is eleven thousand of them")
@@ -575,13 +592,21 @@ def check_stop_clock(stop: dict, where: str, kind: str, sgp4: bool, flown_on) ->
         return
     when = stop.get("time")
     if isinstance(when, dict):
-        extra = sorted(set(when) - {"event", "offset_s"})
+        extra = sorted(set(when) - {"event", "offset_s", "kind"})
         ref = str(when.get("event") or "")
         etype, _, which = ref.partition(".")
         offset = when.get("offset_s", 0)
         if extra:
             fail(where, f"`time:` has {extra}; an event reference is `{{event: <type>.next, "
-                        f"offset_s: n}}` and nothing else")
+                        f"offset_s: n, kind: <word>}}` and nothing else")
+        if "kind" in when:
+            kinds = ECLIPSE_KINDS.get(etype)
+            if kinds is None:
+                fail(where, f"`kind: {when.get('kind')!r}` on `{etype}`: only an eclipse has kinds "
+                            f"({', '.join(ECLIPSE_KINDS)})")
+            elif when.get("kind") not in kinds:
+                fail(where, f"`kind: {when.get('kind')!r}` is not a kind of `{etype}`, which is one "
+                            f"of {', '.join(kinds)}: nextEvent() would never find one")
         if etype not in TOUR_EVENT_TYPES:
             fail(where, f"`time: {{event: {ref}}}` names `{etype}`, which is not a "
                         f"registry/events.yaml id, so there is no event to count to")
@@ -751,6 +776,22 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
     sgp4 = (kind == "layer" and value in TOUR_SGP4_LAYERS) or \
         (kind == "record" and bool(TOUR_SGP4_RECORD.match(str(value))))
     check_stop_clock(stop, where, kind, sgp4, flown_on)
+
+    # An eclipse stop (spec 0037): its instant is an eclipse, so the shot is lit from the front.
+    when = stop.get("time")
+    eclipse_stop = isinstance(when, dict) and \
+        str(when.get("event") or "").partition(".")[0] in ECLIPSE_KINDS
+    if eclipse_stop:
+        key_light = stop.get("key_light_deg", defaults.get("key_light_deg"))
+        if is_number(key_light) and key_light > ECLIPSE_KEY_LIGHT_MAX_DEG:
+            fail(where, f"`key_light_deg: {key_light:g}` on an eclipse stop: the shadow is on the "
+                        f"Sun's side, so the camera is too (at most {ECLIPSE_KEY_LIGHT_MAX_DEG}, "
+                        f"0 is square on; docs/design-language.md)")
+        card_text = " ".join(str(v or "") for v in (stop.get("card") or {}).values()).lower()
+        for word in ECLIPSE_STOP_WORDS:
+            if word in card_text:
+                fail(where, f"an eclipse stop's card says \"{word}\": the words are \"shadow\" and "
+                            f"\"path\", and this app gives no alarm and no safety warning (spec 0037)")
 
     card = stop.get("card")
     if not isinstance(card, dict):

@@ -658,6 +658,27 @@ TOUR_CASES: list[tuple[str, str, str]] = [
      "            Every second here is six days,", "            On 2 August 2027 every second here is six days,"),
     ("a frozen trip with a stop that says how fast the clock runs",
      "    stage: sun\n    clock: as-found", "    stage: sun\n    clock: freeze"),
+
+    # --- spec 0037: eclipse stops --------------------------------------------------------------
+    # `kind:` is the library's own words per eclipse type (data/events.js ECLIPSE_KINDS); an eclipse
+    # stop is lit from the Sun's side; and its card never alarms.
+    ("an annular eclipse of the Moon, a kind the library does not have",
+     "time: {event: lunar-eclipse.next, kind: total, offset_s: -3600}",
+     "time: {event: lunar-eclipse.next, kind: annular, offset_s: -3600}"),
+    ("a solar eclipse of a kind that does not exist",
+     "time: {event: solar-eclipse.next, kind: annular}",
+     "time: {event: solar-eclipse.next, kind: nonsense}"),
+    ("a kind on an event that is not an eclipse",
+     "time: {event: solar-eclipse.next, kind: annular}",
+     "time: {event: launch.next, kind: annular}"),
+    ("an eclipse stop lit from behind, where the shadow is not",
+     "        key_light_deg: 0\n        time: {event: solar-eclipse.next, kind: annular}",
+     "        key_light_deg: 125\n        time: {event: solar-eclipse.next, kind: annular}"),
+    ("an eclipse card that alarms",
+     "            This is greatest eclipse,", "            Darkness falls: this is greatest eclipse,"),
+    ("an eclipse card with a safety warning",
+     "            Now it is the Earth that is in the way.",
+     "            Now it is the Earth that is in the way, and there is no need to protect your eyes."),
 ]
 
 

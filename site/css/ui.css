@@ -1513,6 +1513,27 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   display: none;
 }
 
+/* Spec 0037: the eclipse stops' honesty line, under the instant. A whole row of its own and
+   allowed to wrap: it is one sentence and a cut one says less than nothing. */
+.sr-trip__eclipse {
+  flex: 1 1 100%;
+  order: 4;
+  margin: 0;
+  padding-bottom: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--sr-text-dim);
+}
+
+.sr-trip__eclipse[hidden] {
+  display: none;
+}
+
+.sr-trip__bar--top:has(.sr-trip__eclipse:not([hidden])) {
+  flex-wrap: wrap;
+  row-gap: 0;
+}
+
 /* `display: flex` on any of these beats the user-agent's `[hidden] { display: none }`, so the
    attribute the JS sets has to be answered here or a hidden row stays on screen. Measured: the
    intro card shipped for about ten minutes with the pause chip visible behind it. */

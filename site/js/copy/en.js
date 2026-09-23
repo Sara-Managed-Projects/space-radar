@@ -1171,6 +1171,14 @@ export const COPY = {
     stopTimeRate: 'Shown at {when}, running {rate}',
     stopTimePaused: 'Shown at {when}, held while the trip is paused',
     shownAtUtc: '{when} UTC',
+    // Spec 0037: the eclipse stops' honesty line, under the instant. Generated, never typed in the
+    // registry. The first is the shader drawing; the second is the frame latch having turned it off
+    // on a slow device (scene/quality.js), where the timing is still right and the picture is not.
+    eclipseLine: "Shadow computed from the Moon's and the Sun's positions; timing from Astronomy Engine, to about a minute.",
+    eclipseLineLatched: 'The shadow is not drawn on this device; the timing is right.',
+    // The copper of a totally eclipsed Moon is a constant tint (scene/worlds.js uUmbraTint), not
+    // sunlight bent through the Earth's air, and the lunar stop says so.
+    eclipseColour: 'The colour is an illustration; the shadow is computed.',
     rateWords: {
       10: 'ten times faster than life',
       60: 'a minute a second',

@@ -981,5 +981,136 @@ export const TOURS = [
       }
     ],
     "estimate_ms": 72351
+  },
+  {
+    "id": "chasing-the-solar-eclipse",
+    "title": "Chasing the solar eclipse",
+    "blurb": "The Moon's shadow crossing the Earth at the next total eclipse, to the minute. This trip moves the clock.",
+    "requires": [
+      "worlds"
+    ],
+    "stage": "earth",
+    "clock": "as-found",
+    "group": "events",
+    "pacing": "auto",
+    "min_stops": 3,
+    "stops": [
+      {
+        "id": "arrives",
+        "target": {
+          "world": "earth"
+        },
+        "frame_radii": 7,
+        "drift_deg": 0,
+        "key_light_deg": 0,
+        "time": {
+          "event": "solar-eclipse.next",
+          "kind": "total",
+          "offset_s": -5400
+        },
+        "rate": 600,
+        "card": {
+          "title": "The shadow arrives",
+          "body": "This is the Moon's shadow crossing the Earth, drawn from where the Sun and the Moon really are. Under the pale outer part people see a bite taken out of the Sun; only under the small dark core is it covered completely."
+        },
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 16486
+      },
+      {
+        "id": "peak",
+        "target": {
+          "world": "earth"
+        },
+        "frame_radii": 3,
+        "drift_deg": 0,
+        "key_light_deg": 0,
+        "time": {
+          "event": "solar-eclipse.next",
+          "kind": "total"
+        },
+        "rate": 1,
+        "card": {
+          "title": "The minute it happens",
+          "body": "This is greatest eclipse, the minute the dark core of the shadow passes nearest the middle of the Earth. Inside it the Sun is covered for a few minutes, and never for more than seven and a half."
+        },
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 15154
+      },
+      {
+        "id": "from-the-moon",
+        "target": {
+          "world": "moon"
+        },
+        "distance_km": 12000,
+        "behind": "earth",
+        "key_light_deg": 0,
+        "rate": 60,
+        "card": {
+          "title": "The Moon, casting it",
+          "body": "Behind the Moon, the Earth, and on it the dark spot where the Moon's shadow is touching the ground. The side of the Moon facing you is in full sunlight, which is why the side facing the Earth is dark."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 15820
+      },
+      {
+        "id": "ring",
+        "target": {
+          "world": "earth"
+        },
+        "frame_radii": 3,
+        "drift_deg": 0,
+        "key_light_deg": 0,
+        "time": {
+          "event": "solar-eclipse.next",
+          "kind": "annular"
+        },
+        "rate": 1,
+        "card": {
+          "title": "A ring, not a night",
+          "body": "When the Moon is near the far end of its orbit it looks a little smaller than the Sun, so it cannot cover all of it. A bright ring is left round the Moon, and the shadow on the ground never gets as dark as a total one."
+        },
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 18484
+      },
+      {
+        "id": "lunar",
+        "target": {
+          "world": "moon"
+        },
+        "frame_radii": 4,
+        "drift_deg": 0,
+        "key_light_deg": 0,
+        "time": {
+          "event": "lunar-eclipse.next",
+          "kind": "total",
+          "offset_s": -3600
+        },
+        "rate": 600,
+        "card": {
+          "title": "The Earth's shadow on the Moon",
+          "body": "Now it is the Earth that is in the way. The Moon moves into the Earth's shadow, and anyone on the night half of the planet can watch it happen, with nothing but their eyes."
+        },
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 14155
+      }
+    ],
+    "estimate_ms": 96849
   }
 ];

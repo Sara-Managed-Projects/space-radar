@@ -3,7 +3,8 @@
 //
 // Contract (pure, no DOM, importable in node):
 //   buildEvents(records, nowMs, opts)            -> [event], sorted by prominence, then time
-//   nextEvent(type, fromMs, observer, records)   -> the first event of that type after fromMs, or null
+//   nextEvent(type, fromMs, observer, records, {kind}) -> the first event of that type (and kind)
+//                                                   after fromMs, or null
 //   localCircumstances(event, observer)          -> a solar eclipse from one place, or null
 //
 // Spec 0031, 2026-09-23. registry/events.yaml has designed twelve event types since spec 0015, and
@@ -43,6 +44,19 @@ export const EVENT_HORIZON_MS = 30 * DAY;
  * planetarium names the next one months ahead (spec 0031 req 5).
  */
 export const ECLIPSE_HORIZON_MS = 400 * DAY;
+/**
+ * How far nextEvent() looks for an eclipse of one KIND (spec 0037, 2026-09-23). A kind is rarer than
+ * the type: from today the next total lunar eclipse is 2028-12-31, 830 days off, and the longest
+ * wait for a total solar eclipse this decade is 2028-07-22 to 2030-11-25, 856 days. 1 200 days
+ * covers both with room. The search is still once a day (eclipseLists below): a median of 28 ms
+ * for this window against 22 ms for 400 days, nine uncached calls each, node on this machine.
+ */
+export const ECLIPSE_KIND_HORIZON_MS = 1200 * DAY;
+/** The kinds a `{event:, kind:}` reference may name, per type: the library's own words. */
+export const ECLIPSE_KINDS = {
+  'solar-eclipse': ['total', 'annular', 'partial', 'hybrid'],
+  'lunar-eclipse': ['total', 'partial', 'penumbral'],
+};
 
 function startOfDay(ms) {
   const d = new Date(ms);
@@ -473,13 +487,19 @@ export function buildEvents(records, nowMs, {
  * knows about events. `records` is only needed for types built from loaded records (a
  * `station-pass` needs the stations layer, `ctx.recordsFor('stations')`); an eclipse needs nothing.
  * An unknown or disabled type is null, never a throw.
+ *
+ * `kind` (spec 0037) narrows an eclipse to one of ECLIPSE_KINDS -- `{event: solar-eclipse.next,
+ * kind: total}` -- and looks 1 200 days ahead instead of 400, because a kind is rarer than its
+ * type. A kind the type does not have is null, the same as an event nobody can find.
  */
-export function nextEvent(type, fromMs, observer = null, records = []) {
+export function nextEvent(type, fromMs, observer = null, records = [], { kind = null } = {}) {
   const ty = EVENT_TYPES.find((x) => x.id === type);
   if (!ty || !ty.enabled || !BUILDERS[type] || !Number.isFinite(fromMs)) return null;
+  if (kind !== null && kind !== undefined && !(ECLIPSE_KINDS[type] || []).includes(kind)) return null;
   const obs = validObserver(observer) ? observer : null;
+  const horizon = kind ? ECLIPSE_KIND_HORIZON_MS : ECLIPSE_HORIZON_MS;
   const found = BUILDERS[type](records, fromMs, {
-    observer: obs, horizonMs: ECLIPSE_HORIZON_MS, eclipseHorizonMs: ECLIPSE_HORIZON_MS, showers: SHOWERS, spaceWeather: null, type: ty,
-  }).filter((e) => e.t > fromMs).sort((a, b) => a.t - b.t);
+    observer: obs, horizonMs: horizon, eclipseHorizonMs: horizon, showers: SHOWERS, spaceWeather: null, type: ty,
+  }).filter((e) => e.t > fromMs && (!kind || e.kind === kind)).sort((a, b) => a.t - b.t);
   return found[0] || null;
 }

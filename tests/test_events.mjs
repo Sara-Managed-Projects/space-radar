@@ -86,6 +86,15 @@ const lunar = events.filter((e) => e.type === 'lunar-eclipse');
   check(nextEvent('reentry', now) === null && nextEvent('conjunction', now) === null, 'a disabled type is null');
   check(nextEvent('station-pass', now) === null, 'a pass with no place and no records is null, not a throw');
   check(nextEvent('solar-eclipse', NaN) === null, 'a bad time is null');
+  // spec 0037: `kind` narrows an eclipse, and looks 1 200 days ahead because a kind is rarer
+  const tot = nextEvent('solar-eclipse', now, null, [], { kind: 'total' });
+  check(tot && tot.id === 'solar-eclipse:2027-08-02' && tot.kind === 'total', `kind: total skips the annular to 2027-08-02 (${tot && tot.id})`);
+  check(nextEvent('solar-eclipse', now, null, [], { kind: 'annular' })?.id === 'solar-eclipse:2027-02-06', 'kind: annular is the February one');
+  const lunTot = nextEvent('lunar-eclipse', now, null, [], { kind: 'total' });
+  check(lunTot && lunTot.id === 'lunar-eclipse:2028-12-31', `the next TOTAL lunar eclipse is 2028-12-31, past 400 days (${lunTot && lunTot.id})`);
+  check(nextEvent('lunar-eclipse', now, null, [], { kind: 'annular' }) === null, 'kind: annular on a lunar eclipse is null (the library has no such kind)');
+  check(nextEvent('solar-eclipse', now, null, [], { kind: 'nonsense' }) === null, 'an unknown kind is null');
+  check(nextEvent('solar-eclipse', now, null, [], {})?.id === n.id, 'no kind is the same answer as before');
   const far = nextEvent('solar-eclipse', Date.UTC(2027, 7, 3));
   check(far && far.id === 'solar-eclipse:2028-01-26', `a later start finds a later eclipse (${far && far.id})`);
 }
