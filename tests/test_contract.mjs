@@ -48,7 +48,7 @@ const CONTRACT = {
   'ui/controls.js': ['createControls'],
   'ui/trippicker.js': ['createTripPicker', 'groupTrips', 'nextTripId', 'nextTripOrder', 'tripOrder'],
   'ui/trip.js': ['createTrip'],
-  'ui/tripframe.js': ['createTripFrame', 'shapeLine'],
+  'ui/tripframe.js': ['createTripFrame', 'shapeLine', 'stopTimeLine'],
   // The one owner of the URL hash (spec 0032): main.js, ui/controls.js and ui/trip.js all write
   // through it, and a second dialect is the bug it was written to end.
   'ui/urlstate.js': ['KEYS', 'VERSION', 'read', 'write', 'clear', 'stopIndex', 'readMoment', 'writeMoment'],

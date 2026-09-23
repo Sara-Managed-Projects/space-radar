@@ -162,6 +162,15 @@ jobs:
       # its subject and frames it, and the numbers the cards state are the records' own.
       - name: "Out past Jupiter: ten stops, each seen from where it is drawn true"
         run: node tests/test_outer_trip.mjs
+      # Spec 0030: a stop may set the clock's instant and rate, and leaving puts it back. The real
+      # clock.js with its wall clock moved by hand: arrival at the instant, the clock held through
+      # the flight, 1x after an untimed stop, pause holding it only while the trip owns it, an
+      # event stop at spec 0031's computed eclipse, or dropped or held when none is found, 0 ms of
+      # drift on leave.
+      - name: A trip stop sets the clock, and leaving puts it back to the millisecond (spec 0030)
+        run: node tests/test_stop_time.mjs
+      - name: "A year in a minute: four worlds on the Sun's stage, drawn true, at 525 600"
+        run: node tests/test_year_trip.mjs
       - name: The scene says so when no satellite could be read
         run: node tests/test_scenenote.mjs
       - name: A shower's radiant is where the sky view marks it

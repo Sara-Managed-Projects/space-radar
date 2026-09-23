@@ -108,6 +108,13 @@ export function isNotableHere(record, ladder) {
  * and Jupiter 5 px from Ganymede, each ten times the wider disc, and neither was named: the rest of
  * the solar system read as a row of moons. So a candidate with a `parentId` that is also a
  * candidate sorts on ITS PARENT'S distance, and behind the parent.
+ *
+ * `opts.worldsFirst`: the worlds take the notable slots before anything else notable. Set while a
+ * trip runs on the Sun's stage (spec 0030, "A year in a minute"), where the planets ARE the
+ * picture: MEASURED in headless Chrome 2026-09-23, from 700 million km above the inner Solar
+ * System the ten nearest notables were probes and asteroids near the Earth (OSIRIS-APEX, Apophis,
+ * Bennu, Ryugu...), and not one planet the card was about was named. Everywhere else nearest-first
+ * stands, because there the nearest thing is what the view is about.
  */
 export function chooseLabels(candidates, opts = {}) {
   const cap = opts.cap || LABEL_CAP;
@@ -119,9 +126,10 @@ export function chooseLabels(candidates, opts = {}) {
   const distById = new Map(clean.map((c) => [c.record.id, c.dist]));
   const rankDist = (c) => (c.parentId && distById.has(c.parentId) ? distById.get(c.parentId) : c.dist);
   const isChild = (c) => (c.parentId && distById.has(c.parentId) ? 1 : 0);
+  const worldRank = (c) => (opts.worldsFirst && c.kind === 'notable' && c.record.klass !== 'world' ? 1 : 0);
   const list = clean
     .slice()
-    .sort((a, b) => (order[a.kind] - order[b.kind]) || (rankDist(a) - rankDist(b))
+    .sort((a, b) => (order[a.kind] - order[b.kind]) || (worldRank(a) - worldRank(b)) || (rankDist(a) - rankDist(b))
       || (isChild(a) - isChild(b)) || (a.dist - b.dist));
   const out = [];
   let notable = 0;
@@ -364,7 +372,8 @@ export function createLabels(ctx, host) {
    */
   function update(tMs) {
     if (host.hidden) return;
-    const chosen = chooseLabels(candidatesNow(tMs));
+    const inTrip = document.documentElement.classList.contains('sr-trip-mode');
+    const chosen = chooseLabels(candidatesNow(tMs), { worldsFirst: inTrip && stage.worldId === 'sun' });
     // Pass one: contents. Pass two: measure and place. Reading offsetWidth invalidates layout, so
     // interleaving it with the writes would re-layout the whole list once per label.
     for (let i = 0; i < pool.length; i++) {

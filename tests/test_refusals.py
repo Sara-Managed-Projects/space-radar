@@ -620,6 +620,44 @@ TOUR_CASES: list[tuple[str, str, str]] = [
      "    next: moon-landings\n", "    next: strangest-things\n"),
     ("a group heading that writes a dash as two hyphens",
      'display: "Around the Earth",', 'display: "Around -- the Earth",'),
+
+    # --- spec 0030: a stop's own clock ----------------------------------------------------------
+    # The seven in the spec's Acceptance, then the rest of design section 5. Every rate cap is
+    # what some other file already lives by: 60 is ui/trip.js CLOCK_RATE_CEILING, 36 000 the top
+    # of clock.rates(), a million the ceiling on the Sun's stage.
+    ("a station shown faster than a minute a second, which laps the planet under follow",
+     '        distance_km: 3000\n        card:\n          title: "The International Space Station"',
+     '        distance_km: 3000\n        rate: 61\n        card:\n          title: "The International Space Station"'),
+    ("a world on Earth's stage run faster than the clock's own top speed",
+     "      - id: both\n        target: {world: earth}\n",
+     "      - id: both\n        target: {world: earth}\n        rate: 40000\n"),
+    ("a rate over a million, even on the Sun's stage",
+     "        rate: 525600\n", "        rate: 2000000\n"),
+    ("a station shown at a written date, which its elements cannot honestly reach",
+     '        distance_km: 3000\n        card:\n          title: "The International Space Station"',
+     '        distance_km: 3000\n        time: 2027-08-02T10:07:00Z\n        card:\n          title: "The International Space Station"'),
+    ("a timed trip that loads the active catalogue, which scrubs 16 587 objects a frame",
+     "    requires: [worlds]\n    stage: sun\n", "    requires: [worlds, active]\n    stage: sun\n"),
+    ("an event offset of a billion seconds, which is a different event",
+     "        time: now\n", "        time: {event: solar-eclipse.next, offset_s: 1e9}\n"),
+    # `1e9` reaches the validator as a string (YAML 1.1 wants a dot in a float), so the cap on the
+    # number itself is broken with the number written out.
+    ("an event offset of a billion seconds written out, past the month either side",
+     "        time: now\n", "        time: {event: solar-eclipse.next, offset_s: 1000000000}\n"),
+    ("an event type registry/events.yaml does not have",
+     "        time: now\n", "        time: {event: nonsense.next, offset_s: 0}\n"),
+    ("an event reference that is not the next one",
+     "        time: now\n", "        time: {event: solar-eclipse.last, offset_s: 0}\n"),
+    ("a rate of zero, which is a slide under a card",
+     "        rate: 525600\n", "        rate: 0\n"),
+    ("a time that is not an instant, `now` or an event",
+     "        time: now\n", "        time: tomorrow\n"),
+    ("an instant before anything was in orbit",
+     "        time: now\n", "        time: 1950-01-01T00:00:00Z\n"),
+    ("a card on a timed stop that types the date the line under it generates",
+     "            Every second here is six days,", "            On 2 August 2027 every second here is six days,"),
+    ("a frozen trip with a stop that says how fast the clock runs",
+     "    stage: sun\n    clock: as-found", "    stage: sun\n    clock: freeze"),
 ]
 
 

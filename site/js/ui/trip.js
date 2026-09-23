@@ -53,10 +53,11 @@
 import * as THREE from '../../vendor/three.module.min.js';
 import { TOURS } from '../data/tours.js';
 import { propagate } from '../propagate/index.js';
-import { stage } from '../scene/stage.js';
+import { stage, isLadderStage } from '../scene/stage.js';
 import { WORLDS, positionOf, compressesFrom } from '../scene/worlds.js';
 import { showCard, hideCard } from './cards.js';
 import { write as writeUrl, clear as clearUrl } from './urlstate.js';
+import { nextEvent } from '../data/events.js';
 import { COPY, t } from '../copy/en.js';
 
 const DEG = Math.PI / 180;
@@ -110,6 +111,29 @@ const HIDDEN_RESUME_MS = 600;
 // on: the object whips around the planet and that is not a shot. Anything at or below a minute a
 // second is left exactly as the visitor set it.
 const CLOCK_RATE_CEILING = 60;
+
+// A STOP'S OWN CLOCK (spec 0030). A stop may name the instant it is shown at and the rate the clock
+// runs while it is up; scripts/check_registry.py caps both where they are written, and these are
+// the same caps again where they run, so a hand-edited mirror or a console call cannot put a
+// station under `follow` at a year a minute. 60 on an Earth-orbit subject (CLOCK_RATE_CEILING
+// above); 36 000, the top of clock.rates(), on any other subject; up to a million only on the Sun's
+// stage or a rung of the ladder, where a world going round the Sun is the picture.
+//
+// WHAT THE SUN'S STAGE COSTS AT THAT RATE, MEASURED FIRST (spec 0030 task 1, 2026-09-23, headless
+// Chrome, `stations` and `visual` on, 363 records in drawn layers): main.js startLoop DOES still
+// propagate every drawn glyph layer on the Sun's stage while scrubbing, every frame (25 passes in
+// 14 s at the headless frame rate, against the 10 Hz of live 1x). isLayerDrawable() turns a layer
+// off only on a rung of the ladder. The cost is 2.3 ms a frame, the median of ten, against 3.5 ms
+// on Earth's stage at the same rate: within budget, which is why the only refusal this needs is
+// the one that keeps `active` (16 587 objects) out of a timed trip.
+const STOP_RATE_WORLD_CEILING = 36000;
+const STOP_RATE_MAX = 1000000;
+// THE SUN AS A SUBJECT HAS NO KEY LIGHT -- it is the light -- so keyLightAngles() gives up and the
+// rig's own framing keeps the camera where it came from, which on the Sun's stage is near the
+// plane the planets move in: every orbit then drawn as a line. On that stage the picture is the
+// orbits, so the camera looks down from 50 degrees above that plane (40 from its pole), where a
+// circle is drawn 0.77 as tall as it is wide and the plane still reads as a plane.
+const SUN_OVERVIEW_POLAR = 40 * DEG;
 
 /**
  * The one flight the rig cannot be asked for: an angle chosen so the Sun is three-quarter BEHIND
@@ -214,6 +238,11 @@ export function createTrip(ctx) {
     pacing: 'auto',
     reducedMotion: false,
     clockClamped: false,
+    // Spec 0030. `clockMoves`: a stop in this trip sets the clock, so the intro and the end card say
+    // so. `clockOwned`: one already has, so the clock is the trip's until leave and the frame prints
+    // the "Shown at" line from it.
+    clockMoves: false,
+    clockOwned: false,
     // Whether this trip has moved the map's centre. The frame reads it, because leaving then puts
     // the centre back and the camera CANNOT stay where it is: one unit is a different distance
     // there. Every "the camera stays where it is" line in copy/en.js has a second version for it.
@@ -496,7 +525,11 @@ export function createTrip(ctx) {
     const stops = [];
     const dropped = [];
     for (const stop of tour.stops) {
-      const subject = resolveTarget(stop.target);
+      // An `{event:}` stop is resolved HERE as well as at its turn, so the count on the intro card
+      // is honest: an event nobody can find is a stop nobody can show. ISO and `now` always
+      // resolve and are not asked. data/events.js answers null for one it cannot find in 400 days.
+      const eventLost = isEventTime(stop.time) && resolveStopTime(stop.time, ctx.clock.now()) === null;
+      const subject = eventLost ? null : resolveTarget(stop.target);
       if (subject) {
         stops.push({ stop, subject, held: false });
       } else if (stop.on_unresolved === 'hold') {
@@ -879,7 +912,7 @@ export function createTrip(ctx) {
       && fromCentre > radius * GROUND_BAND[0] && fromCentre < radius * GROUND_BAND[1]
       ? targetScene.clone().sub(worldCentre).normalize()
       : null;
-    const angles = keyLightAngles(
+    let angles = keyLightAngles(
       targetScene,
       d1,
       worldCentre,
@@ -891,6 +924,9 @@ export function createTrip(ctx) {
       entry.stop.behind ? backdropDir(entry.stop.behind, targetScene, tMs) : null,
       isNum(subject.radiusKm) && d1 > 0 ? Math.asin(clamp(subject.radiusKm / stage.unitKm / d1, 0, 1)) : 0,
     );
+    if (!angles && subject.kind === 'world' && subject.id === 'sun' && stage.worldId === 'sun') {
+      angles = { azimuth: rig.state.azimuth || 0, polar: SUN_OVERVIEW_POLAR };
+    }
 
     const named = entry.stop.ease;
     const ease = !named || named === 'auto' ? (ms > CRUISE_ABOVE_MS ? 'cruise' : 'inout') : named;
@@ -1055,6 +1091,111 @@ export function createTrip(ctx) {
     return { clamped: false, movedInstant: false };
   }
 
+  // --- a stop's own clock (spec 0030) ---------------------------------------------------------
+
+  function isEventTime(time) {
+    return !!time && typeof time === 'object' && time.event !== undefined;
+  }
+
+  /**
+   * A stop's `time:` as a clock instant, or null when it cannot be had. `now` is the visitor's
+   * present; an ISO instant is itself (the validator has already refused anything else); an event
+   * reference is the first such event after `nowMs`, plus its offset, from spec 0031's resolver
+   * (data/events.js nextEvent, which searches 400 days ahead and computes eclipses in the browser).
+   * An event that resolver cannot find -- a launch with no launch list loaded, a type switched off
+   * in registry/events.yaml -- is null, and the stop follows `on_unresolved` like a lost target.
+   * The loaded records go with the question: a pass or a train is found among them.
+   */
+  function resolveStopTime(time, nowMs) {
+    if (time === 'now') return nowMs;
+    if (typeof time === 'string') {
+      const ms = Date.parse(time);
+      return Number.isFinite(ms) ? ms : null;
+    }
+    if (isEventTime(time)) {
+      const [type, which] = String(time.event).split('.');
+      if (which !== 'next') return null;
+      const records = typeof ctx.records === 'function' ? ctx.records() : [];
+      const ev = nextEvent(type, nowMs, ctx.observer || null, records);
+      return ev && isNum(ev.t) ? ev.t + (Number(time.offset_s) || 0) * 1000 : null;
+    }
+    return null;
+  }
+
+  /** The fastest this stop's subject may be shown, on the stage it is flown on. See the caps above. */
+  function rateCeilingFor(entry) {
+    const record = entry.subject && entry.subject.record;
+    const layer = record && Array.isArray(ctx.layers) ? ctx.layers.find((l) => l.id === record.layer) : null;
+    if ((record && record.propagator === 'sgp4') || (layer && layer.propagator === 'sgp4')) {
+      return CLOCK_RATE_CEILING;
+    }
+    if (stage.worldId === 'sun' || isLadderStage(stage.worldId)) return STOP_RATE_MAX;
+    return STOP_RATE_WORLD_CEILING;
+  }
+
+  /**
+   * SET THE CLOCK FOR A STOP, before its shot is composed, so the key light, the subject's place
+   * and the arrival are all this instant's. Returns 'untouched', 'moved' or 'unresolved'.
+   *
+   * ONCE A STOP HAS TOUCHED THE CLOCK THE TRIP OWNS IT UNTIL LEAVE (spec 0030 requirement 4): a
+   * later stop without `rate:` runs at 1, and one without `time:` carries on from wherever the
+   * clock got to. A trip in which no stop names either never gets here and is exactly as before.
+   *
+   * `run.clockMovedInstant` IS THE WHOLE RESTORE DESIGN. restoreClock() already puts back mode,
+   * rate and paused, and puts back the INSTANT only when this is true -- the guard spec 0025's
+   * review measured (-89 841 ms on leave when a trip that changed nothing rewound the clock). A
+   * trip that took the clock did change it, whether by naming an instant or by running it faster,
+   * so it is set the first time either happens, and leaving then lands the visitor exactly where
+   * they were: back on live if they were live.
+   *
+   * THE CLOCK IS HELD WHILE THE CAMERA FLIES, whenever the stop runs it faster than life. A flight
+   * is 1.5 to 6 s; at a year a minute that is up to 37 days, and the Earth would have moved 94
+   * million km off the point the flight was composed for, so the camera would arrive at empty
+   * space and `follow` would snap it across. Held, the shot lands on the instant it was composed
+   * at, and arrived() lets the clock run under the card, which is where the motion is the point.
+   */
+  function applyStopTime(entry) {
+    const stop = entry.stop;
+    const hasTime = stop.time !== undefined && stop.time !== null;
+    const hasRate = isNum(stop.rate);
+    if (!hasTime && !hasRate && !run.ownsClock) return 'untouched';
+    // The same refusal check_registry.py makes: a trip that loads the active catalogue may not
+    // put the app in scrub, which re-propagates 16 587 objects every frame instead of every
+    // 100 ms. Should a row ever get past the validator, the clock is left alone here too.
+    if (!run.clockAllowed) return 'untouched';
+    const c = ctx.clock;
+    if (hasTime) {
+      if (stop.time === 'now') {
+        // The visitor's present is live mode by definition; setRate below takes it into scrub
+        // from exactly this instant, which is how the clock itself leaves live (clock.js).
+        c.live();
+      } else {
+        const ms = resolveStopTime(stop.time, c.now());
+        if (ms === null) return 'unresolved';
+        c.goTo(ms);
+      }
+    }
+    const wanted = hasRate ? stop.rate : 1;
+    const r = Math.max(0, Math.min(wanted, rateCeilingFor(entry)));
+    if (!(r > 0)) return run.ownsClock ? 'moved' : 'untouched';
+    if (c.rate !== r) c.setRate(r);
+    c.setPaused(r > 1);
+    run.ownsClock = true;
+    run.clockMovedInstant = true;
+    state.clockOwned = true;
+    return 'moved';
+  }
+
+  /** The camera has arrived: the clock the flight was holding runs again, unless the trip is paused. */
+  function releaseClockHold() {
+    if (!run || !run.ownsClock || state.phase === 'paused') return;
+    if (ctx.clock.paused) ctx.clock.setPaused(false);
+  }
+
+  function isTimedStop(stop) {
+    return !!stop && ((stop.time !== undefined && stop.time !== null) || isNum(stop.rate));
+  }
+
   function setLayer(id, on) {
     if (!id) return false;
     try {
@@ -1115,6 +1256,11 @@ export function createTrip(ctx) {
     const clockChange = applyClock(tour, run.savedClock);
     run.clockMovedInstant = clockChange.movedInstant;
     state.clockClamped = clockChange.clamped;
+    // Spec 0030 requirement 7, at runtime: see applyStopTime().
+    run.clockAllowed = resolved.layers.indexOf('active') === -1;
+    run.ownsClock = false;
+    state.clockOwned = false;
+    state.clockMoves = run.clockAllowed && resolved.stops.some((entry) => isTimedStop(entry.stop));
 
     state.tourId = tour.id;
     state.tourTitle = tour.title;
@@ -1197,6 +1343,13 @@ export function createTrip(ctx) {
     // Next land here too, so a stop is always seen from its own stage whichever way it is reached.
     enterStage(entry.stop.stage || run.tour.stage);
 
+    // The stop's own clock, after the stage (the rate cap depends on it) and BEFORE the shot, whose
+    // subject, key light and arrival all read ctx.clock.now().
+    if (applyStopTime(entry) === 'unresolved') {
+      holdAt(entry);
+      return;
+    }
+
     const shot = composeShot(entry);
     if (!shot) {
       // It resolved and then stopped having a position -- a layer refreshed under us. Same answer
@@ -1243,6 +1396,7 @@ export function createTrip(ctx) {
 
   function holdAt(entry) {
     state.phase = 'held';
+    releaseClockHold();
     state.held = {
       stopId: entry.stop.id,
       title: (entry.stop.card || {}).title || entry.stop.id,
@@ -1267,6 +1421,7 @@ export function createTrip(ctx) {
     // A flight collapsed by Next, or slower than the wall clock, ends with the up where it belongs.
     settleUp(upFor(run.stops[index].shot));
     state.phase = 'settle';
+    releaseClockHold();
     paintCard(run.stops[index]);
     after(SETTLE_MS, () => dwell(index));
     notify();
@@ -1460,6 +1615,11 @@ export function createTrip(ctx) {
     }
     rig.stopOrbit('cancelled');
     state.phase = 'paused';
+    // A PAUSED TRIP THAT OWNS THE CLOCK PAUSES THE CLOCK. Before spec 0030 pause() froze the
+    // flight and not the clock, because the clock was the visitor's; at a year a minute the planets
+    // would go on racing under a chip that says "Trip paused". saveClock() holds the visitor's own
+    // paused flag and restoreClock() puts it back, so leaving from a pause needs nothing new.
+    if (run.ownsClock) ctx.clock.setPaused(true);
     notify();
   }
 
@@ -1475,6 +1635,9 @@ export function createTrip(ctx) {
     }
     state.phase = was || 'dwell';
     releaseTimers();
+    // The other half of pause(): a flight or a held stop re-flies above, and applyStopTime() sets
+    // the clock for it again; a dwell carries on, and so does the clock under it.
+    if (run.ownsClock && ctx.clock.paused) ctx.clock.setPaused(false);
     // MEASURED IN A BROWSER: the most likely pause is a visitor tapping something else, and that
     // tap replaces the card with that object's own. Resuming a dwell used to leave it there, so
     // the trip counted down to the next stop while the card on screen was about something else
@@ -1550,6 +1713,8 @@ export function createTrip(ctx) {
     state.count = 0;
     state.estimateMs = 0;
     state.clockClamped = false;
+    state.clockMoves = false;
+    state.clockOwned = false;
     state.stageChanged = false;
     state.pausedBy = null;
     state.held = null;
