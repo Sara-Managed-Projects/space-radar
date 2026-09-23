@@ -32,6 +32,8 @@ const CONTRACT = {
   'data/oddities.js': ['ODDITIES', 'ODDITIES_OBSERVED_ON'],
   'data/tours.js': ['TOURS', 'TOUR_DEFAULTS', 'TOUR_GROUPS'],
   'data/layers.js': ['LAYERS', 'loadLayer'],
+  'data/events.registry.js': ['EVENT_TYPES'],
+  'data/events.js': ['buildEvents', 'nextEvent', 'localCircumstances'],
   'scene/renderer.js': ['createRenderer'],
   'scene/stage.js': ['stage'],
   'scene/worlds.js': ['createWorlds'],

@@ -36,3 +36,8 @@ terms:
   - {term: transit, say: "When one thing passes in front of another as seen from where you stand."}
   - {term: conjunction, say: "When two things appear close together in the sky. They are not close in space."}
   - {term: ephemeris, say: "A table of where something will be, worked out in advance."}
+  # The eclipse words (spec 0031, 2026-09-23): the Next list names each eclipse's kind.
+  - {term: umbra, say: "The dark middle of a shadow, where the light is blocked completely. Stand in the Moon's umbra and the Sun is gone."}
+  - {term: penumbra, say: "The paler outer part of a shadow, where only some of the light is blocked. A Moon in the Earth's penumbra only dims a little."}
+  - {term: totality, say: "The minutes of a total eclipse when the Sun is covered completely. The sky goes dark enough to see stars."}
+  - {term: annular, say: "Ring-shaped. In an annular eclipse the Moon is too far away to cover the whole Sun, so a bright ring is left around it."}

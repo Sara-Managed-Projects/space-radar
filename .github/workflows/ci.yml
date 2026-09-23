@@ -58,6 +58,11 @@ jobs:
         run: python3 scripts/gen_aliases_js.py --check
       - name: The showers mirror matches the registry
         run: python3 scripts/gen_showers_js.py --check
+      # Spec 0031: registry/events.yaml had twelve types and no reader until 2026-09-23; the browser
+      # now builds its event stream from this mirror, so a stale one is a type switched off in the
+      # YAML and still built, or the other way round.
+      - name: The events mirror matches the registry (spec 0031)
+        run: python3 scripts/gen_events_js.py --check
       - name: The ladder mirror matches the registry (spec 0028 step 8)
         run: python3 scripts/gen_ladder_js.py --check
       - name: The exotics mirror matches the registry (spec 0028 step 7)
@@ -204,6 +209,10 @@ jobs:
         run: node tests/test_labels.mjs
       - name: the Next list is built from records already held, nearest in time first (spec 0026 req 6)
         run: node tests/test_next.mjs
+      # Eclipses are worked out here with the vendored astronomy-engine and pinned to the dates the
+      # library gives, which a reviewer checked against NASA GSFC's tables (2026-09-23).
+      - name: eclipses are computed in the browser, and one event stream feeds the Next list (spec 0031)
+        run: node tests/test_events.mjs
       - name: search ranks whole words first, falls back to buried letters only when it must and says so (spec 0021)
         run: node tests/test_search.mjs
       - name: every landing site is a record on its own world, drawn as what landed, and findable

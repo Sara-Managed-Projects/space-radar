@@ -623,7 +623,7 @@ export const COPY = {
     // R/B" -- and two identical rows read as a bug. The catalogue number tells them apart.
     sameName: '{name} ({id})',
     title: 'Coming up',
-    hint: 'From what the app has loaded: launches, close approaches, comets, meteor showers, storms that bring auroras, and passes over you.',
+    hint: 'From what the app has loaded: launches, close approaches, comets, meteor showers, storms that bring auroras and passes over you; and the next eclipses, worked out here.',
     now: 'about now',
     inMinutes: 'in {n} minutes',
     inHours: 'in {n} hours',
@@ -649,6 +649,38 @@ export const COPY = {
     radiantHigh: 'From where you are its radiant is highest around {time}',
     radiantLow: 'From where you are its radiant stays low all night, so expect far fewer',
     radiantNeverUp: 'From where you are its radiant stays below the horizon that night',
+    // Eclipses (spec 0031, 2026-09-23): computed here with astronomy-engine, a year or more ahead,
+    // so the row gives the date, never "in 312 days". The words are the eclipse vocabulary of spec
+    // 0043: shadow, path, totality (registry/glossary.yaml explains annular, penumbra, umbra and
+    // totality). A solar eclipse's place is where its shadow is deepest, told by the nearest
+    // bundled city and how far off it is, because that point is as often at sea as not.
+    eclipseKinds: { total: 'Total', annular: 'Annular', partial: 'Partial', hybrid: 'Hybrid', penumbral: 'Penumbral' },
+    solarEclipseTitle: '{kind} solar eclipse',
+    lunarEclipseTitle: '{kind} lunar eclipse',
+    solarEclipse: '{kind} solar eclipse on {date}: the Moon’s shadow falls deepest {where}',
+    solarEclipseGrazing: '{kind} solar eclipse on {date}, seen only from far north or far south',
+    lunarEclipse: '{kind} lunar eclipse on {date}, the Moon in the Earth’s shadow for everyone who can see it',
+    lunarEclipsePenumbral: '{kind} lunar eclipse on {date}: the Moon only dims a little, in the Earth’s outer shadow',
+    eclipseNear: 'near {city}',
+    eclipseFrom: 'about {km} km from {city}',
+    // With a place set (spec 0031 req 6). Times are the visitor's own clock, as every row's are.
+    eclipseLocal: 'From where you are: begins {begin}, deepest {peak} with {pct}% of the Sun covered, ends {end}',
+    eclipseLocalTotal: 'From where you are: begins {begin}, totality at {peak}, ends {end}',
+    eclipseNotVisible: 'Not visible from where you are',
+    eclipseBelowHorizon: 'From where you are the Sun is below the horizon while it happens',
+    // WHAT EACH TIME IS (spec 0031 req 7): one small line under every row. A launch's time is a
+    // plan; an eclipse's is worked out to the minute; a pass is only as good as its elements.
+    classOf: {
+      launch: 'A plan: the time the launch provider is aiming for, which can move',
+      approach: 'Worked out by NASA JPL from the asteroid’s measured orbit',
+      perihelion: 'Worked out from the comet’s published orbit',
+      shower: 'The usual yearly date; the peak moves by about a day',
+      aurora: 'NOAA’s forecast, three hours at a time',
+      auroraNow: 'Measured by NOAA in the last few hours',
+      pass: 'Worked out here from orbital elements measured {age}',
+      passNoAge: 'Worked out here from orbital elements',
+      eclipse: 'Worked out here to the minute from the motion of the Sun and Moon',
+    },
     none: 'Nothing is scheduled in what the app has loaded.',
     notLoaded: 'Not loaded, so not listed: {layers}.',
     noObserver: 'Set where you are and passes over you join the list.',
@@ -1071,6 +1103,9 @@ export const COPY = {
     groupCount: '{display} · {count} trips',
     groupCountOne: '{display} · 1 trip',
     cannotRunMark: '· cannot run today',
+    // An event trip's next occurrence under its title (spec 0031 task 5): the date its first
+    // `{event:}` stop resolves to, computed here like the Next list's eclipse rows.
+    nextEventLine: 'Next: {date}',
 
     // --- the intro card ------------------------------------------------------------------
     // It sets the expectation, it makes the trip a decision rather than an ambush, and it gives

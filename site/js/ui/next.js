@@ -3,6 +3,12 @@
 // Contract: createNext(ctx) -> { root, refresh(), destroy() }
 // Also exported, pure, so the list can be tested without a DOM or a clock:
 //   buildNextItems(records, nowMs, opts) -> [{kind, record, tMs, ...}] sorted by time
+//   rowText(item, nowMs), classText(item, nowMs) -> the row's sentence and the line under it
+//
+// Since spec 0031 (2026-09-23) the items come from data/events.js buildEvents(), the one event
+// stream registry/events.yaml describes; this file maps its records to rows and chooses the eight.
+// Only perihelia are still derived here: a comet's closest approach to the Sun is a property of a
+// record, not an event type in the registry.
 //
 // Spec 0026 req 6. Until now the Next door changed the layer defaults and said "What is coming, and
 // when" over the same globe, and nothing on screen answered. This answers from what is loaded --
@@ -11,21 +17,23 @@
 // day. Eight rows, nearest in time first, each a tap to the record. When a layer that would feed
 // the list has not loaded, the note says which, rather than the list pretending to be complete.
 
-import { COPY, t, fmt, timeText, UNITS } from '../copy/en.js';
-import { predictPasses } from '../sky/passes.js';
-import { trainsFrom } from '../data/trains.js';
+import { COPY, t, fmt, timeText, ageInWords } from '../copy/en.js';
 import { revealInColumn } from './reveal.js';
 import { labelName } from './labels.js';
 import { SHOWERS } from '../data/showers.js';
-import * as Astronomy from '../../vendor/astronomy.js';
 import { kpWords } from './spaceweather.js';
 import { load } from '../data/sources.js';
 import { parseSpaceWeather } from '../data/parsers.js';
+import { buildEvents, launchItem, approachItem, eclipseSentence } from '../data/events.js';
+import { epochMs } from '../propagate/sgp4.js';
+
+// Moved to data/events.js with the builders that use them (spec 0031 task 2); still exported from
+// here, where tests/test_next.mjs and tests/test_radiants.mjs have always imported them.
+export { showerItems, auroraItem, moonLitThatNight, radiantThatNight } from '../data/events.js';
 
 export const NEXT_CAP = 8;
 const HOUR = 3600e3;
 const DAY = 24 * HOUR;
-const DEG = Math.PI / 180;
 
 /** "in 40 minutes", "in 3 hours", "tomorrow 14:05", "Fri 12 Sep, 21:14" -- the nearest true phrase. */
 export function whenText(tMs, nowMs) {
@@ -49,131 +57,73 @@ function startOfDay(ms) {
   return d.getTime();
 }
 
-/**
- * The list, pure. `records` is everything loaded; `opts.observer` ({latRad, lonRad, altKm}) adds
- * passes. Kinds: launch | approach | perihelion | pass. Only future times; capped at NEXT_CAP.
- */
 /** At most this many "comes over you" rows, so a pass minutes away cannot fill the list. */
 export const PASS_ROWS = 3;
 
-/**
- * Meteor-shower peaks inside the horizon, from registry/showers.yaml (via data/showers.js). A peak is
- * a calendar date that moves by about a day between years, so the row carries the date and says
- * "around", never a time. Today's peak still counts: tonight is when you would go out. Pure.
- */
-/**
- * How much of the Moon is lit on the night of `dayMs` (at local 23:00), 0..1, or null. The line
- * registry/events.yaml asks a shower's card for is never the rate but the sky: a full Moon washes out
- * all but the brightest meteors, and it is the same fraction wherever the visitor stands.
- */
-export function moonLitThatNight(dayMs) {
-  try {
-    const d = new Date(dayMs);
-    d.setHours(23, 0, 0, 0);
-    const f = Astronomy.Illumination(Astronomy.Body.Moon, d).phase_fraction;
-    return Number.isFinite(f) ? f : null;
-  } catch { return null; }
+/** How the event stream's types are named as rows (the kinds rowText() and balance() read). */
+const KIND_OF = {
+  'launch': 'launch',
+  'close-approach': 'approach',
+  'meteor-shower': 'shower',
+  'station-pass': 'pass',
+  'starlink-train': 'train',
+  'aurora': 'aurora',
+  'solar-eclipse': 'solar-eclipse',
+  'lunar-eclipse': 'lunar-eclipse',
+};
+const ECLIPSE_KINDS = ['solar-eclipse', 'lunar-eclipse'];
+
+/** One event record as the row it was before the move: its kind, its record, its time, its fields. */
+export function toItem(ev) {
+  const kind = ev && KIND_OF[ev.type];
+  if (!kind) return null;
+  if (ECLIPSE_KINDS.includes(kind)) {
+    return { kind, record: null, tMs: ev.t, label: ev.title, eclipseKind: ev.kind, where: ev.where, local: ev.local, event: ev };
+  }
+  return { kind, record: ev.record || null, tMs: ev.t, ...ev.detail };
 }
 
 /**
- * Where a shower's radiant is on its peak night, for a place: the highest it gets between 20:00 and
- * 06:00 local, and the hour it gets there. Meteors appear only while the radiant is up, and more of
- * them the higher it is -- which is why a southern shower is a poor show from the north. Pure given
- * the place; null without one.
+ * The list, pure. `records` is everything loaded; `opts.observer` ({latRad, lonRad, altKm}) adds
+ * passes, trains and an eclipse's local times; `opts.showers`, `opts.spaceWeather` and
+ * `opts.eclipses: true` feed their kinds. Kinds: launch | approach | perihelion | pass | train | shower | aurora | solar-eclipse |
+ * lunar-eclipse. Only future times; capped at NEXT_CAP by balance().
  */
-export function radiantThatNight(shower, dayMs, observer) {
-  if (!shower || !observer || !Number.isFinite(observer.latRad) || !Number.isFinite(observer.lonRad)) return null;
-  const dec = Number(shower.dec) * DEG, ra = Number(shower.ra_h) * 15 * DEG;
-  if (!Number.isFinite(dec) || !Number.isFinite(ra)) return null;
-  let best = null;
-  const start = new Date(dayMs); start.setHours(20, 0, 0, 0);
-  for (let h = 0; h <= 10 * 4; h++) { // every quarter hour, 20:00 to 06:00
-    const tMs = start.getTime() + h * 15 * 60e3;
-    let lst;
-    try { lst = Astronomy.SiderealTime(new Date(tMs)) * 15 * DEG + observer.lonRad; } catch { return null; }
-    const ha = lst - ra;
-    const alt = Math.asin(Math.sin(observer.latRad) * Math.sin(dec) + Math.cos(observer.latRad) * Math.cos(dec) * Math.cos(ha)) / DEG;
-    if (!best || alt > best.altDeg) best = { altDeg: alt, tMs };
-  }
-  return best;
-}
-
-export function showerItems(nowMs, horizonMs, showers, observer = null) {
-  const out = [];
-  const today = startOfDay(nowMs);
-  for (const sh of Array.isArray(showers) ? showers : []) {
-    const m = /^(\d{2})-(\d{2})$/.exec(String(sh && sh.peak || ''));
-    if (!m) continue;
-    const year = new Date(nowMs).getFullYear();
-    for (const y of [year, year + 1]) {
-      const at = new Date(y, Number(m[1]) - 1, Number(m[2]), 12, 0, 0, 0).getTime(); // local noon of the date
-      if (startOfDay(at) < today) continue;
-      if (at - nowMs < horizonMs) out.push({ kind: 'shower', record: null, label: sh.display, tMs: at, zhr: sh.zhr, showerId: sh.id, moonLit: moonLitThatNight(at), radiant: radiantThatNight(sh, at, observer) });
-      break;
-    }
-  }
-  return out;
-}
-
-/**
- * A geomagnetic storm, from NOAA's planetary Kp (the swpc-kp feed the space-weather line reads):
- * the storm under way now if the latest measured bin is Kp 5 or more, else the strongest forecast
- * bin of Kp 5 or more still ahead. One row, never three: NOAA forecasts in three-hour bins and a
- * storm spans several. registry/events.yaml's `aurora` event, which had no row anywhere. Pure.
- */
-export function auroraItem(parsed, nowMs, horizonMs = 3 * DAY) {
-  const rows = parsed && Array.isArray(parsed.forecast) ? parsed.forecast : [];
-  const isMeasured = (r) => r.observed === 'observed' || r.observed === 'estimated';
-  const measured = rows.filter(isMeasured);
-  const latest = measured[measured.length - 1];
-  if (latest && latest.kp >= 5 && nowMs - latest.tMs < 6 * HOUR) {
-    return { kind: 'aurora', record: null, tMs: nowMs, kp: latest.kp, now: true };
-  }
-  let best = null;
-  for (const r of rows) {
-    if (isMeasured(r) || !(r.kp >= 5)) continue;
-    if (r.tMs + 3 * HOUR <= nowMs || r.tMs - nowMs > horizonMs) continue;
-    if (!best || r.kp > best.kp) best = r;
-  }
-  return best ? { kind: 'aurora', record: null, tMs: Math.max(best.tMs, nowMs), kp: best.kp, now: false } : null;
-}
-
 export function buildNextItems(records, nowMs, opts = {}) {
   const horizonMs = opts.horizonMs || 30 * DAY;
+  const observer = opts.observer && Number.isFinite(opts.observer.latRad) && Number.isFinite(opts.observer.lonRad) ? opts.observer : null;
+  const events = buildEvents(records, nowMs, {
+    observer,
+    horizonMs,
+    // Showers only when the caller hands them over, as before the move: createNext() passes the
+    // registry's, and a test that passes none gets none.
+    showers: opts.showers || null,
+    spaceWeather: opts.spaceWeather || null,
+    trainThresholdKm: opts.trainThresholdKm,
+    // Likewise eclipses: createNext() asks for them; the record-only cases in tests/test_next.mjs
+    // (which predate them) do not, and read exactly what they read before.
+    eclipses: opts.eclipses === true,
+  });
   const items = [];
-  if (opts.spaceWeather) { const a = auroraItem(opts.spaceWeather, nowMs); if (a) items.push(a); }
-  if (opts.showers) items.push(...showerItems(nowMs, horizonMs, opts.showers, opts.observer || null));
+  // The next solar and the next lunar eclipse, one row each (spec 0031 req 5): the stream holds
+  // every eclipse in 400 days, five of them from 2026-09-22, and three penumbral lunar rows would
+  // be most of the list for the faintest thing on it.
+  const eclipseSeen = new Set();
+  for (const ev of events) {
+    const it = toItem(ev);
+    if (!it) continue;
+    if (ECLIPSE_KINDS.includes(it.kind)) {
+      if (eclipseSeen.has(it.kind)) continue;
+      eclipseSeen.add(it.kind);
+    }
+    items.push(it);
+  }
+  // Perihelia stay here: the record walk's third branch, for what is neither a launch nor an approach.
   for (const r of Array.isArray(records) ? records : []) {
-    if (!r || !r.meta) continue;
+    if (!r || !r.meta || launchItem(r, nowMs, horizonMs) || approachItem(r, nowMs, horizonMs)) continue;
     const m = r.meta;
-    if (r.layer === 'launches' && Number.isFinite(m.netMs) && m.netMs > nowMs && m.netMs - nowMs < horizonMs) {
-      items.push({ kind: 'launch', record: r, tMs: m.netMs, precision: m.netPrecision || null, status: m.statusAbbrev || null });
-    } else if (Number.isFinite(m.closeApproachMs) && m.closeApproachMs > nowMs && m.closeApproachMs - nowMs < horizonMs) {
-      const ld = Number.isFinite(m.missDistanceLd) ? m.missDistanceLd : Number.isFinite(m.missDistanceKm) ? m.missDistanceKm / UNITS.LUNAR_DISTANCE_KM : null;
-      items.push({ kind: 'approach', record: r, tMs: m.closeApproachMs, ld });
-    } else if (Number.isFinite(m.perihelionMs) && m.perihelionMs > nowMs && m.perihelionMs - nowMs < horizonMs) {
+    if (Number.isFinite(m.perihelionMs) && m.perihelionMs > nowMs && m.perihelionMs - nowMs < horizonMs) {
       items.push({ kind: 'perihelion', record: r, tMs: m.perihelionMs });
-    }
-  }
-  const observer = opts.observer;
-  if (observer && Number.isFinite(observer.latRad) && Number.isFinite(observer.lonRad)) {
-    const withOrbits = (Array.isArray(records) ? records : []).filter((r) => r && r.satrec && (r.layer === 'stations' || r.layer === 'visual'));
-    if (withOrbits.length) {
-      try {
-        const passes = predictPasses(withOrbits, observer, nowMs, 24).filter((p) => p.visible === true);
-        for (const p of passes) items.push({ kind: 'pass', record: p.record, tMs: p.startMs, peakEl: p.peakEl });
-      } catch { /* a pass we could not compute is a row we do not print */ }
-    }
-  }
-  // Trains over you (spec 0026 req 17): the lead of each train that is still climbing, as one row.
-  if (observer && Number.isFinite(observer.latRad) && Number.isFinite(observer.lonRad)) {
-    const trainRecords = (Array.isArray(records) ? records : []).filter((r) => r && r.satrec && r.layer === 'starlink-trains');
-    for (const train of trainsFrom(trainRecords, nowMs, { stillRaisingBelowKm: opts.trainThresholdKm })) {
-      if (train.stillRaising !== true || !train.lead || !train.lead.satrec) continue;
-      try {
-        const passes = predictPasses([train.lead], observer, nowMs, 24).filter((p) => p.visible === true);
-        for (const p of passes.slice(0, 1)) items.push({ kind: 'train', record: train.lead, tMs: p.startMs, count: train.count });
-      } catch { /* no row for a pass we could not compute */ }
     }
   }
   return balance(items);
@@ -207,7 +157,9 @@ export function balance(items) {
   const events = items.filter((it) => it.kind !== 'pass' && it.kind !== 'train').sort(byTime);
   const chosen = [...passes.slice(0, PASS_ROWS), ...trains.slice(0, 1)];
   const take = (it) => { if (chosen.length < NEXT_CAP && !chosen.includes(it)) chosen.push(it); };
-  for (const kind of ['aurora', 'launch', 'approach', 'perihelion', 'shower']) {
+  // An eclipse is guaranteed its row right after the soonest launch: rare enough that a ninth launch
+  // must not push it off the list (spec 0031 req 5), never ahead of a storm happening now.
+  for (const kind of ['aurora', 'launch', 'solar-eclipse', 'lunar-eclipse', 'approach', 'perihelion', 'shower']) {
     const first = events.find((e) => e.kind === kind);
     if (first) take(first);
   }
@@ -277,8 +229,54 @@ export function rowText(item, nowMs) {
         }
         return line;
       }
+    case 'solar-eclipse':
+    case 'lunar-eclipse': {
+      // The date, never a countdown: "in 312 days" is a number nobody plans by (spec 0013's time
+      // rules). No "expected" either: a computed eclipse does not slip.
+      const ev = item.event || { type: item.kind, kind: item.eclipseKind, where: item.where };
+      let line = eclipseSentence(ev, timeText.longDate(item.tMs));
+      const local = localText(item.local);
+      if (local) line += COPY.punctuation.sentenceJoin + local;
+      return line;
+    }
     default:
       return `${name} ${when}`;
+  }
+}
+
+/** The local line of a solar eclipse row, or null when no place is set (spec 0031 req 6). */
+export function localText(local) {
+  const T = COPY.nextList;
+  if (!local) return null;
+  if (!local.visible) return local.reason === 'below-horizon' ? T.eclipseBelowHorizon : T.eclipseNotVisible;
+  const times = { begin: timeText.hhmm(local.beginMs), peak: timeText.hhmm(local.peakMs), end: timeText.hhmm(local.endMs) };
+  return local.kind === 'total'
+    ? t(T.eclipseLocalTotal, times)
+    : t(T.eclipseLocal, { ...times, pct: fmt.int(Math.round(local.obscuration * 100)) });
+}
+
+/**
+ * What the row's time IS, as the small line under it (spec 0031 req 7). A launch's time is a plan;
+ * an eclipse is worked out to the minute; a pass is only as good as the elements it came from, so
+ * it says how old they are (the wall clock, as data/parsers.js classForEpoch does: a scrubbed clock
+ * does not change how old the data is). Pure but for that clock.
+ */
+export function classText(item, wallMs = Date.now()) {
+  const C = COPY.nextList.classOf;
+  switch (item && item.kind) {
+    case 'launch': return C.launch;
+    case 'approach': return C.approach;
+    case 'perihelion': return C.perihelion;
+    case 'shower': return C.shower;
+    case 'aurora': return item.now ? C.auroraNow : C.aurora;
+    case 'pass':
+    case 'train': {
+      const epoch = item.record ? epochMs(item.record) : NaN;
+      return Number.isFinite(epoch) ? t(C.pass, { age: ageInWords(wallMs - epoch) }) : C.passNoAge;
+    }
+    case 'solar-eclipse':
+    case 'lunar-eclipse': return C.eclipse;
+    default: return null;
   }
 }
 
@@ -313,10 +311,12 @@ export function createNext(ctx) {
     while (list.firstChild) list.removeChild(list.firstChild);
     const now = ctx.clock && typeof ctx.clock.now === 'function' ? ctx.clock.now() : Date.now();
     const observer = ctx.observer && Number.isFinite(ctx.observer.latRad) ? ctx.observer : null;
-    const items = buildNextItems(ctx.records(), now, { observer, showers: SHOWERS, spaceWeather: weather });
+    const items = buildNextItems(ctx.records(), now, { observer, showers: SHOWERS, spaceWeather: weather, eclipses: true });
     for (const item of items) {
       const li = el('li', 'sr-next__row', rowText(item, now));
       li.dataset.kind = item.kind;
+      const cls = classText(item);
+      if (cls) li.appendChild(el('span', 'sr-next__class', cls));
       if (item.record) {
         // A row that flies somewhere is a button to a keyboard too; it was click-only.
         const go = () => { if (typeof ctx.select === 'function') ctx.select(item.record); };

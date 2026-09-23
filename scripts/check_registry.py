@@ -238,6 +238,11 @@ TOUR_DWELL_SLACK = 0.30
 TOUR_ILLUSTRATIVE_LAYERS = {"launches"}
 TOUR_CERTAINTY_WORDS = ("exactly", "precisely", "measured", "to the metre", "confirmed")
 
+# The event types site/js/data/events.js computes in the browser with astronomy-engine (spec
+# 0031). A `source: computed` row outside this set is a type nothing would ever build.
+COMPUTED_EVENT_TYPES = frozenset({"solar-eclipse", "lunar-eclipse"})
+
+
 # Jargon a beginner's card may not use unless registry/glossary.yaml can explain it. THE CHECK IS
 # THE PAIR, not the list: a word here that IS in the glossary passes, because the app can say what
 # it means. Every word below is genuinely absent from the glossary today, which is what gives the
@@ -2007,8 +2012,23 @@ def main() -> int:
             fail(where, f"source `{src}` is not a sources.yaml row, `computed`, or a registry file")
         if "lead_times" not in e:
             fail(where, "no `lead_times:` (an empty list is allowed and means: it already happened)")
-        if not isinstance(e.get("prominence"), int):
+        prom = e.get("prominence")
+        if not isinstance(prom, int) or isinstance(prom, bool):
             fail(where, "`prominence` must be an integer a human can edit")
+        elif not 1 <= prom <= 5:
+            # data/events.js sorts the stream on it and the Next list leads with 1; a 9 is a typo
+            # that would sink a type below everything without anybody deciding it (spec 0031).
+            fail(where, f"`prominence: {prom}` is outside 1..5 (1 leads)")
+        enabled = e.get("enabled", True)
+        if not isinstance(enabled, bool):
+            fail(where, f"`enabled: {enabled}` must be true or false; the browser skips a row only on false")
+        # `computed` is a promise that the browser works the type out itself, with no fetch. Only
+        # the types data/events.js has a builder for may make it, or the row validates and the
+        # event never appears (spec 0031, 2026-09-23). A disabled row promises nothing yet.
+        if src == "computed" and enabled is not False and eid not in COMPUTED_EVENT_TYPES:
+            fail(where, f"`source: computed` but the browser computes only "
+                        f"{', '.join(sorted(COMPUTED_EVENT_TYPES))}; write the builder in "
+                        f"site/js/data/events.js first, or set `enabled: false`")
         if "location_dependent" not in e:
             fail(where, "must say whether it is location_dependent -- it decides where it is computed")
         if not e.get("copy"):

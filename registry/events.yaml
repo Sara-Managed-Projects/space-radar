@@ -6,7 +6,13 @@
 # location_dependent  true means the browser computes the local answer; the snapshot carries
 #                     only the global event and no per-person data is ever stored.
 # prominence          editorial priority, 1 = lead with it. A number a human edits, not a
-#                     model's opinion. Rare and visual before routine.
+#                     model's opinion. Rare and visual before routine. An integer 1..5.
+# copy                the COPY.nextList template in site/js/copy/en.js that says it; check_copy.py
+#                     refuses an enabled row whose template does not exist (spec 0031, 2026-09-23).
+# enabled             optional, default true. false means the browser builds no record of this
+#                     type: data/events.js reads the mirror (scripts/gen_events_js.py) and skips it.
+# source: computed    astronomy-engine in the browser, no fetch. Only a type the browser really
+#                     computes may say so (check_registry.py COMPUTED_EVENT_TYPES).
 version: 1
 
 events:
@@ -34,7 +40,7 @@ events:
     location_dependent: false
     lead_times: [same-day, 1d, 1w]
     prominence: 2
-    copy: close-approach
+    copy: approach
     ics: close-approaches.ics
 
   - id: solar-eclipse
@@ -43,7 +49,7 @@ events:
     location_dependent: true
     lead_times: [same-day, 1d, 1w]
     prominence: 1
-    copy: eclipse
+    copy: solarEclipse
     ics: eclipses.ics
 
   - id: lunar-eclipse
@@ -52,7 +58,7 @@ events:
     location_dependent: true
     lead_times: [same-day, 1d, 1w]
     prominence: 1
-    copy: eclipse
+    copy: lunarEclipse
     ics: eclipses.ics
 
   - id: station-pass
@@ -101,6 +107,7 @@ events:
     prominence: 3
     copy: conjunction
     ics: sky.ics
+    enabled: false              # no builder yet; it comes with the trip that needs one (spec 0031)
 
   - id: mission-milestone
     display: A spacecraft arrives somewhere
@@ -110,6 +117,7 @@ events:
     prominence: 1
     copy: milestone
     ics: missions.ics
+    enabled: false              # no builder yet; it comes with the trip that needs one (spec 0031)
 
   - id: decay
     display: Something came down
@@ -119,3 +127,4 @@ events:
     prominence: 4
     copy: decay
     ics: ""
+    enabled: false              # no builder yet; it comes with the trip that needs one (spec 0031)

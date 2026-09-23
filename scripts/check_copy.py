@@ -133,6 +133,38 @@ def double_hyphens() -> list[str]:
     return out
 
 
+# AN EVENT TYPE NAMES ITS SENTENCE. registry/events.yaml's `copy:` said which template tells each
+# type since spec 0015, and named four that did not exist (`close-approach`, `eclipse` twice,
+# `milestone`) with nothing to notice. Since spec 0031 the browser builds those types from the
+# mirror, so an enabled row must name a key of COPY.nextList (2026-09-23). A disabled row promises
+# nothing yet. Read as text, like everything else here: this script runs no JavaScript.
+EVENTS_YAML = ROOT / "registry" / "events.yaml"
+NEXT_LIST_BLOCK = re.compile(r"^  nextList: \{\n(.*?)^  \},", re.M | re.S)
+NEXT_LIST_KEY = re.compile(r"^    ([A-Za-z_$][\w$]*)\s*:", re.M)
+
+
+def event_templates() -> list[str]:
+    en = ROOT / "site" / "js" / "copy" / "en.js"
+    if not EVENTS_YAML.exists() or not en.exists():
+        return []
+    import yaml  # the registry check's one dependency; only needed when the registry is here
+
+    block = NEXT_LIST_BLOCK.search(en.read_text(encoding="utf-8"))
+    keys = set(NEXT_LIST_KEY.findall(block.group(1))) if block else set()
+    out = []
+    doc = yaml.safe_load(EVENTS_YAML.read_text(encoding="utf-8")) or {}
+    for row in doc.get("events") or []:
+        if not isinstance(row, dict) or row.get("enabled", True) is False:
+            continue
+        key = row.get("copy")
+        if key not in keys:
+            out.append(f"  registry/events.yaml[{row.get('id')}]  copy: {key!r} is not a key of "
+                       f"COPY.nextList in site/js/copy/en.js\n"
+                       f"      An enabled event type is told by that template; add it, or name "
+                       f"the one that tells it.")
+    return out
+
+
 def literal(match: re.Match) -> str:
     for group in match.groups()[-3:]:
         if group is not None:
@@ -165,6 +197,7 @@ def main() -> int:
                     )
 
     findings += double_hyphens()
+    findings += event_templates()
     if findings:
         print(f"copy: {len(findings)} problem(s) with strings that reach the screen\n")
         for f in findings:
