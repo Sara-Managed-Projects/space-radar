@@ -21,5 +21,23 @@ check(shiftFor(444, H) === 222, 'the shift is half the covered band, so the cent
 check(shiftFor(800, H) === H * MAX_SHIFT_FRACTION, 'and it is capped, so a sheet over the whole screen does not throw the scene off the top');
 check(shiftFor(0, H) === 0 && shiftFor(NaN, H) === 0, 'no cover, no shift');
 
+// The Trips & layers drawer (62vh, over the 60 px tab bar) is a sheet like the card, and it was
+// not measured until 2026-09-22: the Earth sat behind it while the top half showed empty sky.
+const drawer = { top: 321, bottom: 844, width: 390 };
+const tabbar = { top: 784, bottom: 844, width: 390 };
+check(coveredFromBottom([drawer, tabbar], W, H) === 523, `an open drawer covers its own band (${coveredFromBottom([drawer, tabbar], W, H)})`);
+check(shiftFor(523, H) === H * MAX_SHIFT_FRACTION, 'and the shift for it hits the cap, so the Earth lands in the free band rather than off the top');
+{
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(join(ROOT, 'site/js/scene/viewshift.js'), 'utf8');
+  check(/html\.sr-phone #sr-controls\.sr-drawer-open/.test(src) && /html\.sr-phone #sr-status\.sr-drawer-open/.test(src),
+    'the two phone drawers are measured, and only when open, and only on the phone');
+  check(!/'#sr-status'|'#sr-controls'/.test(src), 'the desktop strip and top bar are never measured');
+  const css = readFileSync(join(ROOT, 'site/css/site.css'), 'utf8');
+  const block = css.slice(css.indexOf('html.sr-phone #sr-controls,\nhtml.sr-phone #sr-status {'));
+  check(/padding-top: var\(--sr-pad\);/.test(block.slice(0, block.indexOf('}'))),
+    'the phone sheet resets the top bar\'s safe-area padding, so its head sits flush against its edge');
+}
+
 if (problems.length) { console.error('viewshift FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('viewshift ok: sheets stacked on the bottom edge are measured, a side panel is not, and the view moves up by half of what they cover');

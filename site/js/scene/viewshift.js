@@ -28,8 +28,18 @@ export const MAX_SHIFT_FRACTION = 0.3; // never push the centre above 20 % of th
 const FULL_WIDTH = 0.8; // a panel this wide or wider spans the canvas
 
 // The bottom-anchored panels, in no particular order: the object card (a bottom sheet on a phone),
-// the trip's bottom bar, and the phone's tab bar.
-const SELECTORS = ['#sr-card', '#sr-trip .sr-trip__bar--bottom', '.sr-mobilebar'];
+// the trip's bottom bar, the phone's tab bar, and the two drawers the tab bar opens (Trips &
+// layers, and the sources panel). The drawers were left out until 2026-09-22: with one open, the
+// Earth sat behind it and the free half of the screen above showed empty sky (Ivan's screenshot).
+// Only the PHONE's open drawers: on a desktop #sr-status is the permanent strip along the bottom
+// and #sr-controls the bar along the top, and neither should move the scene.
+const SELECTORS = [
+  '#sr-card',
+  '#sr-trip .sr-trip__bar--bottom',
+  '.sr-mobilebar',
+  'html.sr-phone #sr-controls.sr-drawer-open',
+  'html.sr-phone #sr-status.sr-drawer-open',
+];
 
 /**
  * @param {{top:number, bottom:number, width:number}[]} rects  canvas-relative CSS px
