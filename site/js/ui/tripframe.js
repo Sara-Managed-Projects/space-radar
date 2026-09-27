@@ -26,7 +26,7 @@
 //               pause control mandatory for that and the WAI-ARIA carousel pattern requires it
 //               FIRST IN TAB ORDER -- which is why the bottom bar is before the top bar in the
 //               DOM and put in place by CSS. Tab therefore reaches
-//               Pause, Back, Next, Replay, Share, Hide card, Leave, then the card.
+//               Pause, Back, Next, Replay, Share, Hide card, Mute, Leave, then the card.
 //   Back        NASA's Eyes gives back equal visual weight to next: a chevron pair, not a next
 //               button with an escape hatch. Measured in that product, 2026-09-07.
 //   Next        See onNext: it collapses the running flight rather than starting a new one.
@@ -39,6 +39,8 @@
 //               away". Free here: it is jump(current index).
 //   Share       Spec 0033 (2026-09-23): a trip is the thing most worth sending to somebody, and
 //               the stop you are looking at is the link (ui/share.js).
+//   Mute        Spec 0035 (2026-09-23): sound is off until chosen on the intro card, and a
+//               visitor who chose it must be able to take it back without leaving the trip.
 //   Hide card   The 3D scene is the product and the card covers it. Eyes ships this as "Expand
 //               story panel". Bound to `c`.
 //   Leave       Always visible, never behind a menu -- see GETTING OUT below.
@@ -85,6 +87,7 @@
 import { COPY, t, formatRate, formatShownAt } from '../copy/en.js';
 import { nextTripOrder } from './trippicker.js';
 import { shareButton } from './share.js';
+import { soundButton } from './sound.js';
 
 const HOST_ID = 'sr-trip';
 // NOT 'sr-trip'. The host div carries `.sr-trip`, and `.sr-trip` in ui.css sets
@@ -293,6 +296,13 @@ export function createTripFrame(ctx) {
     const eclipseText = el('p', 'sr-trip__eclipse');
     eclipseText.hidden = true;
     top.appendChild(eclipseText);
+    // Mute (spec 0035, 2026-09-23): the one sound control a visitor mid-trip can reach, since the
+    // panels and the phone bar are inert while the letterbox is up. In the TOP bar beside Leave,
+    // not after Share as the spec drew it: measured at 390 x 844 in headless Chrome, a seventh
+    // button wrapped the bottom row onto a second line (88 px of letterbox instead of 44), and
+    // sound, like Leave, is about the frame rather than about the stop.
+    const sound = soundButton(ctx, 'sr-trip__btn sr-trip__btn--sound', 'mute');
+    top.appendChild(sound);
     const topLeave = button('sr-trip__btn sr-trip__btn--leave', COPY.trip.leave, COPY.trip.leaveTitle, leave);
     top.appendChild(topLeave);
 
@@ -306,7 +316,7 @@ export function createTripFrame(ctx) {
     document.body.appendChild(host);
 
     parts = {
-      pause, back, next, replay, share, collapse, controls,
+      pause, back, next, replay, share, sound, collapse, controls,
       progress, count, segs, chip, live, group, heading, status,
       title, chapter, clockLine, eclipseText, panel, bottom, top, leaveButtons: [topLeave, chipLeave],
     };
@@ -473,9 +483,15 @@ export function createTripFrame(ctx) {
     // the stops set their own rate, so "set back to normal speed" would be over by the first stop.
     if (st.clockMoves) p.appendChild(el('p', 'sr-trip__panelnote', COPY.trip.clockMoves));
     else if (st.clockClamped) p.appendChild(el('p', 'sr-trip__panelnote', COPY.trip.clockClamped));
+    // Sound, off until pressed (spec 0035 req 2). On the intro card because this is the one moment
+    // a visitor is deciding how to watch, and a click here is the gesture a browser wants first.
+    p.appendChild(soundButton(ctx, 'sr-trip__btn sr-trip__sound', 'toggle'));
     const row = el('div', 'sr-trip__panelrow');
     const start = button('sr-trip__btn sr-trip__btn--ember', COPY.trip.introStart, COPY.trip.startTitle, () => {
       userJumped = true;
+      // A visitor who chose sound on an earlier visit hears it from Start: the click is the
+      // gesture the stored choice was waiting for (audio/engine.js).
+      if (ctx.audio && ctx.audio.isOn()) ctx.audio.enable();
       trip.play();
     });
     row.appendChild(start);

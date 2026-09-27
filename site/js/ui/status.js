@@ -25,6 +25,8 @@
 
 import { COPY, t, fmt, ageInWords } from '../copy/en.js';
 import { createSpaceWeather } from './spaceweather.js';
+import { creditsText } from './sound.js';
+import { AUDIO } from '../data/audio.js';
 
 const HOST_ID = 'sr-status';
 const REFRESH_MS = 5000;
@@ -355,6 +357,10 @@ export function createStatus(ctx) {
   creditBlock.appendChild(el('p', 'sr-status__intro', COPY.status.attributionIntro));
   const creditList = el('ul', 'sr-status__credits');
   creditBlock.appendChild(creditList);
+  // Spec 0035 req 11: the music's credits in the app, not only in the repository's CREDITS.md.
+  // From the registry mirror, so it lists what ships whether or not anybody turned sound on.
+  const soundCredits = creditsText(AUDIO);
+  if (soundCredits) creditBlock.appendChild(el('p', 'sr-status__intro sr-status__sound', soundCredits));
   node.appendChild(creditBlock);
 
   const paint = () => {

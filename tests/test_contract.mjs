@@ -53,6 +53,15 @@ const CONTRACT = {
   'ui/tripframe.js': ['createTripFrame', 'shapeLine', 'eclipseLine', 'stopTimeLine'],
   // Spec 0034: the one black over the canvas, and the star-stretch both star draws share.
   'ui/veil.js': ['createVeil', 'VEIL_MS', 'REDUCED_VEIL_MS'],
+  // Spec 0035: sound, silent until a gesture. The engine makes no AudioContext at import or at
+  // construction; beds and stings fetch on first use only.
+  'audio/engine.js': ['createAudio', 'readFlag', 'writeFlag', 'STORE_KEY', 'VOLUME'],
+  'audio/load.js': ['createLoader'],
+  'audio/beds.js': ['createBeds', 'XFADE_S'],
+  'audio/stings.js': ['createStings', 'DUCK', 'DUCK_IN_S', 'DUCK_BACK_S', 'STING_LEVEL'],
+  'audio/pick.js': ['pickFormat', 'rungOf', 'RUNGS', 'OPUS_TYPE', 'AAC_TYPE'],
+  'data/audio.js': ['AUDIO'],
+  'ui/sound.js': ['soundButton', 'soundPanel', 'creditsText'],
   'scene/stretch.js': ['STRETCH_PX', 'stretchUniforms', 'writeStretch'],
   'scene/stars3d.js': ['createStars3d', 'STRETCH_PX'],
   // The one owner of the URL hash (spec 0032): main.js, ui/controls.js and ui/trip.js all write

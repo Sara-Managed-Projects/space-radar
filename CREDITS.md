@@ -823,6 +823,7 @@ is vendored in the tree.
 | PyYAML | `scripts/check_registry.py`, `tests/` — installed by `ci.yml` | MIT |
 | Playwright | `scripts/shots.mjs`, `screens.yml`, `readme-shots.yml` — from the `mcr.microsoft.com/playwright` image | Apache-2.0 |
 | `actions/checkout`, `actions/setup-python`, `actions/upload-artifact` | `.github/workflows/` | MIT |
+| FFmpeg (with libopus) | `scripts/build-audio.py`, run by hand to make `site/audio/`; not in the tree | LGPL-2.1+ / GPL builds |
 
 ## 8. Acknowledgements
 
@@ -838,3 +839,34 @@ code. No licence attaches; the credit is owed anyway.
 
 No third-party fonts are used: `site/css/` specifies system font stacks only. No file in the tree
 embeds a base64 asset.
+
+## 9. Audio — music and sounds
+
+Spec 0035 (2026-09-23). Every sound the app can play, all public domain (CC0). None of it is
+downloaded until a visitor turns sound on. `registry/audio.yaml` carries the page each file was
+read from, its read date, the downloaded original's URL and SHA-256, and how
+`scripts/build-audio.py` cut it; `scripts/check_registry.py` refuses a row whose credit is not in
+this section word for word, and a line here for a file that does not ship.
+
+CC0 asks for no credit. It is given anyway: the Sources panel in the app prints the credit column.
+
+| File | Used for | Licence | Credit line | Source |
+|---|---|---|---|---|
+| `bed-ladder.opus`, `bed-ladder.m4a` | the bed on the scale ladder's rungs | CC0 1.0 | Fake Vega by John Bartmann, CC0 | <https://freemusicarchive.org/music/John_Bartmann/100-ambient-atmospheric-soundtracks-straylight-drones-collection/fake-vega-master/> |
+| `bed-earth.opus`, `bed-earth.m4a` | the bed at the Earth and the Moon | CC0 1.0 | Above the Clouds by John Bartmann, CC0 | <https://freemusicarchive.org/music/John_Bartmann/100-ambient-atmospheric-soundtracks-straylight-drones-collection/above-the-clouds-master/> |
+| `bed-world.opus`, `bed-world.m4a` | the bed at any other world | CC0 1.0 | Calabi-Yau by John Bartmann, CC0 | <https://freemusicarchive.org/music/John_Bartmann/100-ambient-atmospheric-soundtracks-straylight-drones-collection/calabi-yau-master/> |
+| `bed-sun.opus`, `bed-sun.m4a` | the bed on the Sun's own stage | CC0 1.0 | Edge of the Sky by John Bartmann, CC0 | <https://freemusicarchive.org/music/John_Bartmann/100-ambient-atmospheric-soundtracks-straylight-drones-collection/edge-of-the-sky-master/> |
+| `sting-arrive.opus`, `sting-arrive.m4a` | a trip's camera arriving at a stop | CC0 1.0 | Crystal Twinkle by LaurenPonder (Freesound), CC0 | <https://freesound.org/people/LaurenPonder/sounds/639429/> |
+| `sting-stage.opus`, `sting-stage.m4a` | a trip's stage change, in the black | CC0 1.0 | Deep Whoosh #6 by Kinoton (Freesound), CC0 | <https://freesound.org/people/Kinoton/sounds/558826/> |
+| `sting-end.opus`, `sting-end.m4a` | a trip's end card | CC0 1.0 | harp flourish by nathanmanaker (Freesound), CC0 | <https://freesound.org/people/nathanmanaker/sounds/486952/> |
+
+The four beds are from John Bartmann's *100 Ambient Atmospheric Soundtracks: Straylight Drones
+Collection* on the Free Music Archive, each page reading "CC0 1.0 Universal License" (read
+2026-09-23). Freesound's page for each sting reads: "You can copy, modify, distribute and perform
+the sound, even for commercial purposes, all without the need of asking permission to the
+author." (read 2026-09-23).
+
+Modified: each bed is a 72 s cut of a 4:04 piece with its last 4 s cross-faded into its first so
+it loops, levelled to −23 LUFS; each sting is trimmed to 2.5–3 s with a fade and levelled to
+−21 LUFS; all are re-encoded to Opus 64 kbps and AAC 64 kbps. The stings are made from Freesound's
+HQ previews, not the uploaded originals.

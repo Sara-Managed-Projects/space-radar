@@ -8,13 +8,15 @@
 // stay the single description of what those panels contain. It attaches nothing above 600 px.
 
 import { COPY, t } from '../copy/en.js';
+import { soundButton } from './sound.js';
 
 const PHONE = '(max-width: 600px)';
 
-export function createMobileUI() {
+export function createMobileUI(ctx) {
   const mq = window.matchMedia(PHONE);
   let bar = null;
   let openId = null;
+  let mute = null;
 
   const PANELS = [
     { id: 'sr-controls', label: COPY.mobile.controls },
@@ -76,7 +78,7 @@ export function createMobileUI() {
       if (el) el.classList.toggle('sr-drawer-open', openId === p.id);
     }
     if (bar) {
-      for (const btn of bar.querySelectorAll('button')) {
+      for (const btn of bar.querySelectorAll('button[data-panel]')) {
         const on = btn.dataset.panel === openId;
         btn.classList.toggle('is-on', on);
         btn.setAttribute('aria-expanded', String(on));
@@ -102,10 +104,27 @@ export function createMobileUI() {
     document.documentElement.classList.add('sr-phone');
     for (const p of PANELS) buildHead(p);
     setOpen(null);
+    placeMute();
   }
 
+  /**
+   * A THIRD BUTTON, ONLY FOR A VISITOR WHO ASKED FOR SOUND (spec 0035 design §5, 2026-09-23). The
+   * bar is two buttons across a 375 px phone; a speaker nobody asked for would take a third of it
+   * from everybody to serve the few who turned sound on. So it appears once the stored choice is
+   * "on" (or a context exists, which means it was), and stays for the visit: taking it away on
+   * Mute would move the button out from under the thumb that pressed it. The first turn-on is the
+   * trip's intro card or the Trips & layers drawer.
+   */
+  function placeMute() {
+    const audio = ctx && ctx.audio;
+    if (!bar || mute || !audio || !(audio.isOn() || audio.context)) return;
+    mute = soundButton(ctx, 'sr-mobilebar__sound', 'mute');
+    bar.appendChild(mute);
+  }
+  if (ctx && ctx.audio) ctx.audio.onChange(placeMute);
+
   function detach() {
-    if (bar) { bar.remove(); bar = null; }
+    if (bar) { bar.remove(); bar = null; mute = null; }
     document.documentElement.classList.remove('sr-phone');
     for (const p of PANELS) {
       const el = panel(p.id);

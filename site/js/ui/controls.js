@@ -23,6 +23,7 @@ import { SHOWERS } from '../data/showers.js';
 import { revealInColumn } from './reveal.js';
 import { createColorKey } from './colorkey.js';
 import { createTripPicker } from './trippicker.js';
+import { soundPanel } from './sound.js';
 
 const HOST_ID = 'sr-controls';
 const MOMENTS = [COPY.moments.wonder, COPY.moments.now, COPY.moments.next];
@@ -951,6 +952,9 @@ export function createControls(ctx) {
   // Search sits under "where you are" because both answer the same question -- which thing do I
   // mean -- and neither belongs in a top bar over the sky.
   state.search = createSearch(ctx, node);
+  // Sound (spec 0035), last: a setting, not a way into the map. The only sound control a desktop
+  // visitor has outside a trip, and the one that turns off a bed a remembered choice started.
+  node.appendChild(soundPanel(ctx));
 
   // setMoment seeds and applies the layer defaults on its first call; doing it here too
   // fired every toggle twice on load.
