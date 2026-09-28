@@ -117,8 +117,7 @@ const DEFAULT_UNIFORMS = {
   specHalo: 0.25,
   twilightWrap: 0.12,
   ambient: 0.02,
-  atmoGain: 0.35,
-  atmoPower: 3.0,
+  atmoGain: 1.0,
 };
 
 // --- shaders ----------------------------------------------------------------------------------
@@ -297,49 +296,113 @@ const ATMO_VERT = /* glsl */`
 
 varying vec3 vNormalW;
 varying vec3 vPosW;
+varying vec3 vCentre;
+varying float vShellR;
 
 void main() {
   vec4 worldPos = modelMatrix * vec4( position, 1.0 );
   vPosW = worldPos.xyz;
   vNormalW = normalize( mat3( modelMatrix ) * normal );
+  vCentre = ( modelMatrix * vec4( 0.0, 0.0, 0.0, 1.0 ) ).xyz;
+  vShellR = length( modelMatrix[0].xyz );
   gl_Position = projectionMatrix * viewMatrix * worldPos;
   #include <logdepthbuf_vertex>
 }
 `;
 
-// BackSide: we draw the FAR half of the shell, so the outward normal points away from the camera
-// and dot(n, viewDir) is negative over the whole visible surface. abs() is therefore not a
-// shortcut, it is the correct term: it goes to 0 at the silhouette (full glow) and to 1 straight
-// behind the planet (no glow), and Earth's opaque disc hides the middle by depth test alone.
+/**
+ * Single scattering through the shell (#258). The old shell was pow(1 - |N.V|, 3) in one cyan:
+ * a ring with a hard outer edge, the same colour at noon and at dusk, nothing on the night side.
+ * This marches the view ray through the air between the shell and the ground and, at each step,
+ * the ray to the Sun: Rayleigh (blue, and what turns red over a long path) and Mie (the white
+ * glare around the Sun). Real coefficients per Earth radius; the scale heights are real times
+ * ATMO_HEIGHT_GAIN so the air is thick enough to read at the sizes this map draws the planet.
+ * BackSide, depth-tested: Earth's disc hides the shell behind it, so only the limb pays.
+ */
+export const ATMO_HEIGHT_GAIN = 2.5;
 const ATMO_FRAG = /* glsl */`
 #include <common>
 #include <logdepthbuf_pars_fragment>
 
-uniform vec3  uColour;
 uniform vec3  uSunDir;
 uniform float uIntensity;
-uniform float uPower;
+uniform float uShellScale;    // shell radius / ground radius
+uniform float uHeightGain;
 
-varying vec3 vNormalW;
 varying vec3 vPosW;
+varying vec3 vCentre;
+varying float vShellR;
+
+const int VIEW_STEPS = 12;
+const int LIGHT_STEPS = 4;
+// Sea-level scattering coefficients per metre times 6 371 000 m: per Earth radius.
+const vec3  BETA_R = vec3( 5.8e-6, 13.5e-6, 33.1e-6 ) * 6371000.0;
+const float BETA_M = 21e-6 * 6371000.0;
+const float MIE_G = 0.76;
+const float SUN_I = 14.0;
+
+vec2 sphere( vec3 ro, vec3 rd, float r ) {
+  float b = dot( ro, rd );
+  float c = dot( ro, ro ) - r * r;
+  float d = b * b - c;
+  if ( d < 0.0 ) return vec2( 1e9, -1e9 );
+  d = sqrt( d );
+  return vec2( -b - d, -b + d );
+}
 
 void main() {
   #include <logdepthbuf_fragment>
 
-  vec3 n = normalize( vNormalW );
-  vec3 viewDir = normalize( cameraPosition - vPosW );
+  float groundR = vShellR / uShellScale;
+  vec3 ro = ( cameraPosition - vCentre ) / groundR;   // in Earth radii, Earth at the origin
+  vec3 rd = normalize( vPosW - cameraPosition );
+  float top = uShellScale;
+  float hR = 8.0 / 6371.0 * uHeightGain;
+  float hM = 1.2 / 6371.0 * uHeightGain;
 
-  float rim = pow( 1.0 - clamp( abs( dot( n, viewDir ) ), 0.0, 1.0 ), uPower );
+  vec2 shell = sphere( ro, rd, top );
+  float t0 = max( shell.x, 0.0 );
+  float t1 = shell.y;
+  vec2 ground = sphere( ro, rd, 1.0 );
+  if ( ground.x > 0.0 ) t1 = min( t1, ground.x );
+  if ( t1 <= t0 ) discard;
 
-  // Thicker where the Sun is behind the limb: forward scattering is what makes the day side's
-  // edge a bright blue line and the night side's a faint one, rather than a uniform halo.
-  float sunDot = dot( n, uSunDir );
-  float sunlit = smoothstep( -0.55, 0.30, sunDot );
-  float forward = pow( clamp( dot( viewDir, -uSunDir ), 0.0, 1.0 ), 4.0 );
+  float ds = ( t1 - t0 ) / float( VIEW_STEPS );
+  float odR = 0.0, odM = 0.0;
+  vec3 sumR = vec3( 0.0 ), sumM = vec3( 0.0 );
+  for ( int i = 0; i < VIEW_STEPS; i++ ) {
+    vec3 p = ro + rd * ( t0 + ( float( i ) + 0.5 ) * ds );
+    float h = max( length( p ) - 1.0, 0.0 );
+    float dR = exp( -h / hR ) * ds;
+    float dM = exp( -h / hM ) * ds;
+    odR += dR;
+    odM += dM;
+    // In the planet's shadow, this step sees no Sun.
+    if ( sphere( p, uSunDir, 1.0 ).x > 0.0 ) continue;
+    float lt = sphere( p, uSunDir, top ).y;
+    float lds = lt / float( LIGHT_STEPS );
+    float lR = 0.0, lM = 0.0;
+    for ( int j = 0; j < LIGHT_STEPS; j++ ) {
+      float lh = max( length( p + uSunDir * ( ( float( j ) + 0.5 ) * lds ) ) - 1.0, 0.0 );
+      lR += exp( -lh / hR ) * lds;
+      lM += exp( -lh / hM ) * lds;
+    }
+    vec3 att = exp( -( BETA_R * ( odR + lR ) + BETA_M * 1.1 * ( odM + lM ) ) );
+    sumR += dR * att;
+    sumM += dM * att;
+  }
 
-  float glow = rim * ( 0.06 + 0.94 * sunlit ) * ( 1.0 + 0.6 * forward ) * uIntensity;
+  float mu = dot( rd, uSunDir );
+  float phaseR = 3.0 / ( 16.0 * PI ) * ( 1.0 + mu * mu );
+  float g2 = MIE_G * MIE_G;
+  float phaseM = 3.0 / ( 8.0 * PI ) * ( ( 1.0 - g2 ) * ( 1.0 + mu * mu ) ) / ( ( 2.0 + g2 ) * pow( 1.0 + g2 - 2.0 * MIE_G * mu, 1.5 ) );
+  vec3 colour = SUN_I * ( sumR * BETA_R * phaseR + sumM * BETA_M * phaseM ) * uIntensity;
 
-  gl_FragColor = vec4( uColour * glow, glow );
+  // Airglow: a faint green line on the night-side limb, which is real (oxygen at ~95 km).
+  float dark = 1.0 - clamp( length( sumR ) * 40.0, 0.0, 1.0 );
+  colour += vec3( 0.012, 0.045, 0.022 ) * clamp( odR * 6.0, 0.0, 1.0 ) * dark * uIntensity;
+
+  gl_FragColor = vec4( colour, 1.0 );
 
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
@@ -521,10 +584,10 @@ export function createEarth(textures, opts = {}) {
       vertexShader: ATMO_VERT,
       fragmentShader: ATMO_FRAG,
       uniforms: {
-        uColour: { value: new THREE.Color(ATMOSPHERE_RIM) },
         uSunDir: { value: new THREE.Vector3(1, 0, 0) },
         uIntensity: { value: cfg.atmoGain },
-        uPower: { value: cfg.atmoPower },
+        uShellScale: { value: ATMOSPHERE_SCALE },
+        uHeightGain: { value: ATMO_HEIGHT_GAIN },
       },
       side: THREE.BackSide,
       transparent: true,
