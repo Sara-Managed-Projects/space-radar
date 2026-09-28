@@ -827,6 +827,7 @@ export function createSkyView(ctx, options = {}) {
     dAlt = 0;
 
     isActive = true;
+    ctx.starfield?.setLines?.(true);
     update(ctx.clock?.now?.() ?? 0);
     return true;
   }
@@ -863,6 +864,7 @@ export function createSkyView(ctx, options = {}) {
   function exit() {
     if (!isActive) return;
     isActive = false;
+    ctx.starfield?.setLines?.(false);
     detachInput();
     disposeGroup();
     if (saved) {
