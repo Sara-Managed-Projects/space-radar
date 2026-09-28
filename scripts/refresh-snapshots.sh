@@ -137,6 +137,33 @@ def keys(fn):
     return out or [fn]
 def body(f):
     b = f["body"]; return (json.loads(b), True) if isinstance(b, str) else (b, False)
+
+# KEEP THE LAST GOOD COPY. A refresh that fails (CelesTrak answered this machine AND the GitHub
+# runner with 403 on 2026-09-28) leaves the row `status: error` with its old stamps carried
+# (harvest/run.py _carry), and the browser refuses an errored row (data/sources.js readSnapshot),
+# so the publish below emptied the saved satellites for every visitor CelesTrak also refuses --
+# the one thing this copy exists for. Measured that night: 5 of 6 CelesTrak rows went to `error`
+# and the cuts dropped out, until the rows were put back by hand. Here, in the PUBLISH copy only
+# (the work index keeps `error`, so the harvester still retries on its cadence), a failed row
+# whose file still holds data is published as the good copy it was, with its old fetched_at: the
+# app shows the data's real age and asks the publisher live behind it (#198).
+_ix_p = os.path.join(d, "index.json")
+_ix = json.load(open(_ix_p))
+for _k, _row in _ix.get("snapshots", {}).items():
+    if _row.get("status") not in ("error", "refused") or not _row.get("fetched_at"):
+        continue
+    _fp = os.path.join(d, _k + ".json")
+    try:
+        _b, _ = body(json.load(open(_fp)))
+    except Exception:
+        continue
+    _n = len(_b) if isinstance(_b, list) else len(_b.get("data") or []) if isinstance(_b, dict) else 0
+    if _n > 0:
+        _row["kept_after"] = _row.get("status") + ": " + str(_row.get("last_error") or "")[:160]
+        _row["status"] = "ok"
+        print(f"    {_k}: this refresh failed; publishing the last good copy from {_row['fetched_at']} ({_n} rows)")
+json.dump(_ix, open(_ix_p, "w"), indent=1)
+
 cad_p, neo_p = os.path.join(d, "jpl-cad.json"), os.path.join(d, "jpl-sbdb-neo.json")
 if os.path.exists(cad_p) and os.path.exists(neo_p):
     cb, _ = body(json.load(open(cad_p)))

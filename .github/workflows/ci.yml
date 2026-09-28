@@ -107,6 +107,8 @@ jobs:
       # right permissions. Also proves deploy.sh no longer deletes data/v1/*.
       - name: The harvester scripts only read in --dry-run
         run: python3 tests/test_harvester_scripts.py
+      - name: A refresh that fails publishes the last good saved copy, never an empty one
+        run: python3 tests/test_refresh_keep_good.py
 
   contract:
     runs-on: ubuntu-latest
