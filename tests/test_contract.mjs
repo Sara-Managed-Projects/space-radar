@@ -140,6 +140,30 @@ const allFiles = [];
   }
 })(JS);
 
+// 1b. #284: index.html preloads exactly the static boot graph from js/main.js, so the browser asks
+// for every module at once instead of one import level at a time. scripts/gen_modulepreload.py
+// writes the block; this is the same walk, so a new import without a regenerated block fails here.
+{
+  const SITE = join(ROOT, 'site');
+  const STATIC = /(?:\bimport|\bexport)\s*(?:[^'";()]*?\bfrom\s*)?['"](\.{1,2}\/[^'"]+)['"]/g;
+  const seen = new Set();
+  const todo = [join(JS, 'main.js')];
+  while (todo.length) {
+    const p = todo.shift();
+    if (seen.has(p) || !existsSync(p)) continue;
+    seen.add(p);
+    for (const m of readFileSync(p, 'utf8').matchAll(STATIC)) todo.push(join(dirname(p), m[1]));
+  }
+  const want = [...seen].map((p) => p.slice(SITE.length + 1)).sort();
+  const html = readFileSync(join(SITE, 'index.html'), 'utf8');
+  const have = [...html.matchAll(/<link rel="modulepreload" href="([^"]+)">/g)].map((m) => m[1]).sort();
+  if (want.join() !== have.join()) {
+    const extra = have.filter((x) => !want.includes(x));
+    const missing = want.filter((x) => !have.includes(x));
+    problems.push(`PRELOAD  site/index.html is stale (missing ${missing.join(', ') || 'none'}; extra ${extra.join(', ') || 'none'}): run python3 scripts/gen_modulepreload.py`);
+  }
+}
+
 for (const file of allFiles) {
   const src = readFileSync(file, 'utf8');
   const rel = file.slice(JS.length + 1);
