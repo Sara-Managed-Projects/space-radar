@@ -47,6 +47,21 @@ export const SUBJECT_CLASS = 'is-subject';
 export const DIMMED_CLASS = 'is-dimmed';
 const MAX_NAME = 34;
 
+/**
+ * Launch Library names a launch "Rocket Variant | Mission (Detail)". Over the scene that was cut
+ * mid-word -- "Falcon 9 Block 5 | Transporter 18…" (#278) -- so a label keeps the rocket's family
+ * and the mission, joined by a middle dot: "Falcon 9 · Transporter 18". The card keeps it whole.
+ */
+export function launchLabel(name) {
+  const text = String(name || '');
+  const cut = text.indexOf(' | ');
+  if (cut < 0) return text;
+  const rocket = text.slice(0, cut).replace(/\s+Block\s+\d+[A-Z]?$/i, '').replace(/\s+\([^)]*\)$/, '').trim();
+  const mission = text.slice(cut + 3).replace(/\s+\([^)]*\)?$/, '').trim();
+  if (!mission) return rocket || text;
+  return rocket ? `${rocket} · ${mission}` : mission;
+}
+
 /** A name a person uses, before the catalogue's string. Mirrors ui/cards.js displayName. */
 export function labelName(record) {
   let name = record && record.meta && record.meta.displayName ? String(record.meta.displayName).trim() : '';
@@ -61,6 +76,7 @@ export function labelName(record) {
   // Then the hand-kept list's own name (data/layers.js NOTABLE), before the catalogue's string.
   if (!name && record && record.meta && record.meta.listName) name = String(record.meta.listName).trim();
   if (!name) name = record && record.name ? String(record.name).trim() : '';
+  name = launchLabel(name);
   if (name.length > MAX_NAME) name = name.slice(0, MAX_NAME - 1).trimEnd() + '…';
   return name;
 }
@@ -196,6 +212,8 @@ export function clampLabelX(x, boxWidth, hostWidth, pad = LABEL_EDGE_PAD) {
 
 /** Space kept between two label boxes, in CSS pixels. */
 export const LABEL_GAP_PX = 2;
+/** What a label may not print under: the panels, the card, the phone's bottom bar. */
+const PANEL_SELECTOR = '.sr-panel, .sr-card, .sr-mobilebar';
 
 /**
  * Which of these placed boxes to keep, in priority order: the first box always, and each later box
@@ -211,8 +229,9 @@ export const LABEL_GAP_PX = 2;
  * sideways into its neighbour after the anchor test has already passed it. Both need the real width,
  * which only exists after measuring -- so this runs on placed boxes, not anchors.
  */
-export function keepClearOf(boxes, gap = LABEL_GAP_PX) {
-  const kept = [];
+export function keepClearOf(boxes, gap = LABEL_GAP_PX, blocked = []) {
+  // `blocked` are the panels on screen: kept before any label, so a name never prints under one.
+  const kept = (Array.isArray(blocked) ? blocked : []).filter((b) => b && [b.left, b.top, b.right, b.bottom].every(Number.isFinite));
   const out = [];
   for (const b of Array.isArray(boxes) ? boxes : []) {
     const ok = !!b && [b.left, b.top, b.right, b.bottom].every(Number.isFinite) &&
@@ -432,13 +451,31 @@ export function createLabels(ctx, host) {
       const x = clampLabelX(c.x, bw, w);
       placed.push({ x, y: c.y, left: x - bw / 2, right: x + bw / 2, top: c.y - 1.4 * bh, bottom: c.y - 0.4 * bh });
     }
-    const keep = keepClearOf(placed);
+    const keep = keepClearOf(placed, LABEL_GAP_PX, panelRects());
     for (let i = 0; i < placed.length; i++) {
       const slot = pool[i];
       if (!keep[i]) { slot.node.hidden = true; continue; }
       const b = placed[i];
       slot.node.style.transform = `translate(${Math.round(b.x)}px, ${Math.round(b.y)}px) translate(-50%, -140%)`;
     }
+  }
+
+  /**
+   * The UI's own boxes, in the host's pixels. MEASURED 2026-09-27 (#278): "Hubble Space Telescope"
+   * slid under the desktop panel column, and on a phone names ran under the bottom bar.
+   */
+  function panelRects() {
+    const out = [];
+    if (typeof host.getBoundingClientRect !== 'function' || typeof document.querySelectorAll !== 'function') return out;
+    const origin = host.getBoundingClientRect();
+    for (const node of document.querySelectorAll(PANEL_SELECTOR)) {
+      if (typeof node.getBoundingClientRect !== 'function') continue;
+      if (node.hidden || node.offsetParent === null) continue;
+      const r = node.getBoundingClientRect();
+      if (!(r.width > 0 && r.height > 0)) continue;
+      out.push({ left: r.left - origin.left, right: r.right - origin.left, top: r.top - origin.top, bottom: r.bottom - origin.top });
+    }
+    return out;
   }
 
   function destroy() {
