@@ -87,6 +87,18 @@ check(labelName({ name: 'A'.repeat(60), meta: {} }).length <= 34, 'a long name i
   // garbage: a box not yet measured is not placed over anything
   check(keepClearOf([box(200, 200), { left: NaN, right: 10, top: 0, bottom: 1 }]).join() === 'true,false', 'an unmeasured box is dropped, not drawn');
   check(keepClearOf(undefined).length === 0, 'no boxes, no labels');
+  // #278: a panel is kept before any label, so even the selection's name is not drawn under it
+  const panel = { left: 0, right: 360, top: 0, bottom: 900 };
+  check(keepClearOf([box(200, 260), box(600, 260)], 2, [panel]).join() === 'false,true', 'a label under a panel is dropped; one beside it stays');
+}
+
+// #278: Launch Library's "Rocket Variant | Mission (Detail)" is shortened for the label only.
+{
+  const { launchLabel } = await import(join(JS, 'ui/labels.js'));
+  check(launchLabel('Falcon 9 Block 5 | Transporter 18') === 'Falcon 9 · Transporter 18', `launch label: ${launchLabel('Falcon 9 Block 5 | Transporter 18')}`);
+  check(launchLabel('Starship | Starlink Group 31-1 (Starship V3)') === 'Starship · Starlink Group 31-1', `launch label drops the detail: ${launchLabel('Starship | Starlink Group 31-1 (Starship V3)')}`);
+  check(launchLabel('Hubble Space Telescope') === 'Hubble Space Telescope', 'a name with no pipe is untouched');
+  check(labelName({ name: 'Falcon Heavy | NROL-97', klass: 'rocket' }) === 'Falcon Heavy · NROL-97', 'labelName applies it');
 }
 
 // A GENERIC SHAPE IS NOT A GENERIC NAME. Tiangong is drawn from a representative build, and the
