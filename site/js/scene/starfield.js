@@ -277,6 +277,9 @@ export function createStarfield(scene, opts = {}) {
   let gain = 1; // setGain's own value; setSkyOpacity multiplies it rather than overwriting it
   let skyOpacity = 1;
   let detailLow = false; // the frame-rate latch hides the picture and the lines, never the stars
+  // The figures are a way to read the sky from the ground. From orbit they crossed the whole Earth
+  // view like scratches on the glass (#272), so they are drawn only while sky/skyview.js is up.
+  let linesOn = false;
   let pixelRatio =
     opts.pixelRatio || (typeof window !== 'undefined' ? Math.min(2, window.devicePixelRatio || 1) : 1);
   let dprLocked = false; // true once setPixelRatio() is called by hand
@@ -456,6 +459,7 @@ export function createStarfield(scene, opts = {}) {
     lines.name = 'constellations';
     lines.renderOrder = RENDER_ORDER_SKY;
     lines.frustumCulled = false;
+    lines.visible = linesOn && skyOpacity > 0 && !detailLow;
     state.lines = watch(lines);
     state.segmentCount = segments;
     group.add(lines);
@@ -535,9 +539,14 @@ export function createStarfield(scene, opts = {}) {
       const mw = state.milkyway;
       if (mw && mw.material) { mw.material.opacity = v; mw.visible = v > 0 && !detailLow; }
       const ln = state.lines;
-      if (ln && ln.material) { ln.material.opacity = 0.25 * v; ln.visible = v > 0 && !detailLow; }
+      if (ln && ln.material) { ln.material.opacity = 0.25 * v; ln.visible = v > 0 && !detailLow && linesOn; }
       starUniforms.uGain.value = Math.min(1, Math.max(0, gain * v));
       if (state.stars) state.stars.visible = v > 0;
+    },
+    /** Whether the constellation figures are drawn at all: the sky view turns them on and off. */
+    setLines(on) {
+      linesOn = !!on;
+      this.setSkyOpacity(skyOpacity);
     },
     /** 'low' hides the Milky Way picture and the constellation lines (spec 0026 req 18); the stars stay. */
     setDetail(level) {
