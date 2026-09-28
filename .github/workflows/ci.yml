@@ -158,6 +158,8 @@ jobs:
         run: node tests/test_status_kinds.mjs
       - name: A phone's sheets move the view up by half of what they cover
         run: node tests/test_viewshift.mjs
+      - name: One control hides every panel, and H and Escape work it
+        run: node tests/test_cleanview.mjs
       - name: The layers that are off by default still exist, and the active catalogue alone loads on demand
         run: node tests/test_layer_boot.mjs
       - name: The Trips panel leads with the trips that can run

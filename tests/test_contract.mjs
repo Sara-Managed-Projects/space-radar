@@ -72,6 +72,7 @@ const CONTRACT = {
   'ui/postcard.js': ['composePostcard', 'composeCard', 'postcardCaption', 'savePostcard', 'ogPicture', 'PC_W', 'PC_H', 'BAND_H'],
   'ui/status.js': ['createStatus'],
   'ui/github.js': ['createGitHubMark'],
+  'ui/cleanview.js': ['createCleanView', 'wantsToggle'],
   'copy/en.js': ['COPY', 'compare'],
 };
 

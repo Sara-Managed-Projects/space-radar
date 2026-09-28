@@ -1581,6 +1581,11 @@ export const COPY = {
   // The GitHub mark in the top corner. `href` is here rather than in ui/github.js for the same
   // reason the words are: it is the one line a human edits when the repository moves, and it
   // should not be hunted for inside a module.
+  // ui/cleanview.js: the button beside the GitHub mark, and its keyboard hint (H).
+  clean: {
+    hide: 'Hide all panels (H)',
+    show: 'Show the panels again (H or Escape)',
+  },
   mark: {
     label: 'Source on GitHub',
     title: 'Space Radar source code on GitHub',

@@ -31,6 +31,7 @@ import { createMobileUI } from './ui/mobile.js';
 import { createSceneNote } from './ui/scenenote.js';
 import { buildIndex, findMatches, LINK_MIN_SCORE } from './ui/search.js';
 import { createGitHubMark } from './ui/github.js';
+import { createCleanView } from './ui/cleanview.js';
 import { createTrip } from './ui/trip.js';
 import { createTripFrame } from './ui/tripframe.js';
 import { createVeil } from './ui/veil.js';
@@ -203,6 +204,9 @@ export async function boot({ setStatus } = {}) {
   // One line on the scene when no satellite could be read at all (ui/scenenote.js).
   ctx.sceneNote = createSceneNote(ctx);
   createGitHubMark();
+  // One control that takes every panel off the screen (ui/cleanview.js): the scene alone, for
+  // looking and for pictures. Created last of the chrome so its button sits above the mark.
+  createCleanView(ctx);
   // The cinematic frame, after the panels and the mobile bar exist: it hides all three, and it
   // reads ctx.mobile to close a phone drawer that is standing open when a trip starts.
   ctx.tripFrame = createTripFrame(ctx);
