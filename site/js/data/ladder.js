@@ -96,18 +96,21 @@ export const WE_SHOW = [
     "what": "planets around other stars",
     "n": 6332,
     "of": "every confirmed one, as of the catalogue copy's date",
-    "source": "NASA Exoplanet Archive pscomppars"
+    "source": "NASA Exoplanet Archive pscomppars",
+    "layer": "exoplanets"
   },
   {
     "what": "nebulae, clusters and galaxies placed",
     "n": 209,
     "of": "13 372 in OpenNGC that have no measured distance written down; the rest of the Local Group waits for sourced rows",
-    "source": "OpenNGC; Wikipedia Messier distances"
+    "source": "OpenNGC; Wikipedia Messier distances",
+    "layer": "deep-sky"
   },
   {
     "what": "black holes, pulsars, a magnetar and two doomed stars with a fact sheet",
     "n": 20,
     "of": "dozens known; a hand-kept list",
-    "source": "registry/exotics.yaml"
+    "source": "registry/exotics.yaml",
+    "layer": "exotics"
   }
 ];

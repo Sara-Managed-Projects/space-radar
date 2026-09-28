@@ -256,10 +256,12 @@ function buildLadder(ctx, state) {
   const show = el('div', 'sr-ladder__show');
   show.appendChild(el('h3', 'sr-card__label', COPY.ladder.weShowTitle));
   const ul = el('ul', 'sr-ladder__showlist');
+  state.showRows = [];
   for (const row of WE_SHOW) {
     const li = el('li', 'sr-ladder__showrow', t(COPY.ladder.weShowRow, { n: fmt.int(row.n), what: row.what, of: row.of }));
     li.title = row.source;
     ul.appendChild(li);
+    state.showRows.push({ row, li });
   }
   show.appendChild(ul);
   wrap.appendChild(show);
@@ -282,6 +284,12 @@ function paintLadder(ctx, state) {
     btn.disabled = !ok;
     btn.classList.toggle('is-pending', !ok);
     btn.setAttribute('aria-label', ok ? `${rung.label}, ${rung.distance}` : `${rung.label}, ${COPY.ladder.notLoaded}`);
+  }
+  // A row that names its layer prints what that layer holds, so it agrees with the toggle's count.
+  for (const { row, li } of state.showRows || []) {
+    if (!row.layer) continue;
+    const n = recordsFor(ctx, row.layer).length;
+    if (n > 0) li.textContent = t(COPY.ladder.weShowRow, { n: fmt.int(n), what: row.what, of: row.of });
   }
 }
 

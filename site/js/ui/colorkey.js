@@ -36,6 +36,9 @@ export function createColorKey(ctx) {
   root.appendChild(why);
   const legend = el('ul', 'sr-colourkey__legend');
   root.appendChild(legend);
+  // The legend counts the drawable layers only, so from Earth "deep-sky: 1" is the Milky Way
+  // record while the layer row says 209. The line says which set it is.
+  root.appendChild(el('p', 'sr-colourkey__scope', T.scope));
   let current = COLOR_KEYS[0] ? COLOR_KEYS[0].id : 'class';
 
   function onRecords() {

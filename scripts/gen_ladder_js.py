@@ -13,7 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _genmirror import Mirror, pick  # noqa: E402
 
 RUNG_FIELDS = ("id", "label", "target", "layer", "distance", "why")
-SHOW_FIELDS = ("what", "n", "of", "source")
+SHOW_FIELDS = ("what", "n", "of", "source", "layer")
 
 
 def render(doc: dict) -> list:

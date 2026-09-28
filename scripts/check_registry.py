@@ -1734,6 +1734,8 @@ def check_ladder(world_ids: set, layer_ids: set) -> list:
     for row in doc.get("we_show") or []:
         if not isinstance(row, dict) or not row.get("what") or not isinstance(row.get("n"), int) or not row.get("source"):
             fail("ladder.yaml", "each `we_show` row needs `what:`, an integer `n:` and a `source:`")
+        elif "layer" in row and row["layer"] not in layer_ids:
+            fail("ladder.yaml", f"a `we_show` row counts `layer: {row['layer']}`, which has no layers.yaml row")
     return rungs_
 
 

@@ -79,6 +79,11 @@ rungs:
 
 we_show:
   # The numbers a visitor should have when they ask "is that all of it?" Each names its source.
+  # `layer:` (optional) names the layer the number counts. Once that layer has loaded, the panel
+  # prints its live count instead of `n`, so the line cannot disagree with the layer row above it
+  # (6 332 in the bundled copy beside 6 338 from a newer snapshot, measured 2026-09-27). `n` stays
+  # the number shown until then. The stars row has none: its layer holds the named stars, not
+  # the 109 389 points drawn from the binary.
   - what: "stars drawn"
     n: 109389
     of: "1.8 billion in Gaia's catalogue; a few hundred billion in the Milky Way"
@@ -87,11 +92,14 @@ we_show:
     n: 6332
     of: "every confirmed one, as of the catalogue copy's date"
     source: "NASA Exoplanet Archive pscomppars"
+    layer: exoplanets
   - what: "nebulae, clusters and galaxies placed"
     n: 209
     of: "13 372 in OpenNGC that have no measured distance written down; the rest of the Local Group waits for sourced rows"
     source: "OpenNGC; Wikipedia Messier distances"
+    layer: deep-sky
   - what: "black holes, pulsars, a magnetar and two doomed stars with a fact sheet"
     n: 20
     of: "dozens known; a hand-kept list"
     source: "registry/exotics.yaml"
+    layer: exotics

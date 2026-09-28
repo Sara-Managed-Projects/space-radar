@@ -772,6 +772,7 @@ export const COPY = {
   colourKey: {
     title: 'Colour by',
     unknown: 'not known for these',
+    scope: 'Counting what is drawn from here, on the layers that are on.',
   },
   // The card's trajectory chart (spec 0026 req 14).
   trajectory: {
