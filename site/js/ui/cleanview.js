@@ -10,7 +10,8 @@
 // UI" camera mode is the model: one key, everything goes, the scene keeps running.
 //
 // HOW. A class on <html>. The CSS (ui.css, "clean view") hides every direct child of <body> except
-// the scene, the stage-change veil and this button, so a panel added later is hidden without
+// the scene, the stage-change veil and what is marked `.sr-over-clean` (this button, the postcard
+// camera, its menu and the toast), so a panel added later is hidden without
 // anyone remembering to list it here. Hidden with `visibility`, so the phone's view shift
 // (scene/viewshift.js), which skips an invisible panel, lets the scene use the whole screen.
 // Nothing is destroyed: a trip keeps flying and a card keeps its place, and both come back as
@@ -53,7 +54,7 @@ export function createCleanView(ctx) {
   const button = document.createElement('button');
   button.id = HOST_ID;
   button.type = 'button';
-  button.className = 'sr-clean-toggle';
+  button.className = 'sr-clean-toggle sr-over-clean';
   const svg = document.createElementNS(SVG_NS, 'svg');
   svg.setAttribute('viewBox', '0 0 24 24');
   svg.setAttribute('width', '22');

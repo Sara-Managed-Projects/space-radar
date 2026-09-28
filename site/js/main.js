@@ -32,6 +32,7 @@ import { createSceneNote } from './ui/scenenote.js';
 import { buildIndex, findMatches, LINK_MIN_SCORE } from './ui/search.js';
 import { createGitHubMark } from './ui/github.js';
 import { createCleanView } from './ui/cleanview.js';
+import { createPrintButton } from './ui/printcard.js';
 import { createTrip } from './ui/trip.js';
 import { createTripFrame } from './ui/tripframe.js';
 import { createVeil } from './ui/veil.js';
@@ -207,6 +208,8 @@ export async function boot({ setStatus } = {}) {
   // One control that takes every panel off the screen (ui/cleanview.js): the scene alone, for
   // looking and for pictures. Created last of the chrome so its button sits above the mark.
   createCleanView(ctx);
+  // The postcard camera beside it (ui/printcard.js): the screen as a 6 x 4 in print, JPEG or PDF.
+  createPrintButton(ctx);
   // The cinematic frame, after the panels and the mobile bar exist: it hides all three, and it
   // reads ctx.mobile to close a phone drawer that is standing open when a trip starts.
   ctx.tripFrame = createTripFrame(ctx);

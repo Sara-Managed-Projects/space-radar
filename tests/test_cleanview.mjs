@@ -30,8 +30,8 @@ check(wantsToggle(key('h', { defaultPrevented: true }), body, false) === null, '
 check(wantsToggle(key('x'), body, false) === null, 'other keys are not ours');
 
 const css = readFileSync(join(ROOT, 'site/css/ui.css'), 'utf8');
-const rule = /html\.sr-clean body > \*:not\(\.sr-scene\):not\(\.sr-veil\):not\(\.sr-clean-toggle\) \{([^}]*)\}/.exec(css);
-check(!!rule, 'clean view hides every direct child of <body> except the scene, the veil and the toggle');
+const rule = /html\.sr-clean body > \*:not\(\.sr-scene\):not\(\.sr-veil\):not\(\.sr-over-clean\) \{([^}]*)\}/.exec(css);
+check(!!rule, 'clean view hides every direct child of <body> except the scene, the veil and what is marked to stay');
 check(rule && /visibility: hidden !important/.test(rule[1]) && /pointer-events: none !important/.test(rule[1]) && /transition: none/.test(rule[1]), 'with visibility and no pointer events, so the view shift skips them and taps reach the scene');
 
 const { COPY } = await import(join(ROOT, 'site/js/copy/en.js'));

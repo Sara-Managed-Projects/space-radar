@@ -1581,6 +1581,20 @@ export const COPY = {
   // The GitHub mark in the top corner. `href` is here rather than in ui/github.js for the same
   // reason the words are: it is the one line a human edits when the repository moves, and it
   // should not be hunted for inside a module.
+  // ui/printcard.js: the screen as a printable postcard (Ivan, 2026-09-28). 6 x 4 in at 300 dpi.
+  print: {
+    button: 'Save this view as a postcard',
+    note: 'The picture is drawn again at print size, 6 by 4 inches at 300 dots per inch, without the panels.',
+    jpeg: 'Save as a picture (JPEG)',
+    pdf: 'Save for printing (PDF, 6 by 4 inches)',
+    making: 'Making the postcard',
+    saved: 'Postcard saved',
+    failed: 'The postcard could not be made just now',
+    // `{id}` from what the view shows, `{date}` the day the sky is from, `{ext}` jpg or pdf.
+    fileName: 'space-radar-postcard-{id}-{date}.{ext}',
+    when: '{date}, {time} UTC',
+    mark: 'spaceradar.ai',
+  },
   // ui/cleanview.js: the button beside the GitHub mark, and its keyboard hint (H).
   clean: {
     hide: 'Hide all panels (H)',

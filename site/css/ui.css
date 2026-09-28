@@ -1270,14 +1270,15 @@ html.sr-trip-mode:not(.sr-clean) .sr-clean-toggle {
   pointer-events: none;
 }
 
-/* Everything on <body> except the scene, the stage-change veil and the toggle itself: a panel
+/* Everything on <body> except the scene, the stage-change veil and what is marked `.sr-over-clean`
+   (the toggle, the postcard camera and its menu, the toast that says a picture was saved): a panel
    added later is hidden without being listed here. `visibility`, not `display`, so layouts keep
    their size and the phone's view shift (scene/viewshift.js), which skips invisible panels, gives
    the scene the whole screen. Instant, like EVE's own hide-UI key: a fade here was a CSS transition
    on every panel's visibility, and measured in headless Chrome (2026-09-28) it never advanced at a
    low frame rate, leaving every panel on screen three seconds after H. `!important`, because a
    panel's own rules (the phone drawers, the trip frame) set visibility too, and clear means clear. */
-html.sr-clean body > *:not(.sr-scene):not(.sr-veil):not(.sr-clean-toggle) {
+html.sr-clean body > *:not(.sr-scene):not(.sr-veil):not(.sr-over-clean) {
   visibility: hidden !important;
   pointer-events: none !important;
   transition: none !important;
@@ -1293,6 +1294,72 @@ html.sr-clean .sr-clean-toggle {
 }
 html.sr-clean .sr-clean-toggle:hover,
 html.sr-clean .sr-clean-toggle:focus-visible { opacity: 1; }
+
+/* ------------------------------------------------------------------------------------ */
+/* The postcard camera (ui/printcard.js): the screen as a 6 x 4 in print, JPEG or PDF.        */
+/* Ivan, 2026-09-28: "postcards of space on click ... possible to print".                     */
+/* ------------------------------------------------------------------------------------ */
+.sr-print-toggle {
+  position: fixed;
+  top: calc(8px + env(safe-area-inset-top, 0px));
+  right: 104px; /* beside the eye: 56 + 44 + 4 */
+  z-index: 56;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  color: var(--sr-text-dim);
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: color var(--sr-fast) var(--sr-ease), opacity var(--sr-slow) var(--sr-ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.sr-print-toggle:hover, .sr-print-toggle[aria-expanded="true"] { color: var(--sr-ember); }
+.sr-print-toggle:focus-visible { color: var(--sr-ember); outline: 2px solid var(--sr-ember); outline-offset: 2px; }
+@media (min-width: 900px) {
+  .sr-print-toggle { top: 16px; right: 120px; }
+  html.sr-card-open .sr-print-toggle { right: calc(var(--sr-card-w) + 128px); }
+}
+html.sr-trip-mode:not(.sr-clean) .sr-print-toggle { opacity: 0; pointer-events: none; }
+html.sr-clean .sr-print-toggle { right: 56px; opacity: 0.35; }
+@media (min-width: 900px) { html.sr-clean .sr-print-toggle { right: 68px; } }
+html.sr-clean .sr-print-toggle:hover, html.sr-clean .sr-print-toggle:focus-visible { opacity: 1; }
+
+.sr-print-menu {
+  position: fixed;
+  top: calc(56px + env(safe-area-inset-top, 0px));
+  right: 8px;
+  z-index: 57;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: min(300px, calc(100vw - 16px));
+  padding: 12px;
+  color: var(--sr-text);
+  background: var(--sr-panel-solid, rgba(11,14,20,.94));
+  border: 1px solid var(--sr-line);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.45);
+}
+.sr-print-menu[hidden] { display: none; }
+@media (min-width: 900px) { .sr-print-menu { top: 68px; right: 16px; } }
+.sr-print-menu__note { margin: 0 0 4px; font-size: 12px; line-height: 1.4; color: var(--sr-text-dim); }
+.sr-print-menu button {
+  min-height: 44px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  color: var(--sr-text);
+  background: transparent;
+  border: 1px solid var(--sr-line);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.sr-print-menu button:hover, .sr-print-menu button:focus-visible { border-color: var(--sr-ember); color: var(--sr-ember); outline: none; }
 
 /* ------------------------------------------------------------------------------------ */
 /* prefers-reduced-motion: the scrub stays, because it is a control, not decoration.       */

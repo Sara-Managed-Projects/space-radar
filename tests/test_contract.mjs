@@ -73,6 +73,7 @@ const CONTRACT = {
   'ui/status.js': ['createStatus'],
   'ui/github.js': ['createGitHubMark'],
   'ui/cleanview.js': ['createCleanView', 'wantsToggle'],
+  'ui/printcard.js': ['createPrintButton', 'printSize', 'caption', 'pdfFromJpeg'],
   'copy/en.js': ['COPY', 'compare'],
 };
 
