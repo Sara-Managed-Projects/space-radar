@@ -1690,12 +1690,15 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   background: var(--sr-ember);
 }
 
+/* With the progress row still up while paused (spec 0003), the chip must not steal the
+   controls' row: grow only as needed on desktop; on a phone it takes the next full row. */
 .sr-trip__chip {
   display: flex;
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   gap: 8px;
   align-items: center;
   justify-content: flex-end;
+  min-width: 0;
 }
 
 .sr-trip__chiptext {
@@ -1927,6 +1930,11 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
   }
 
   .sr-trip__progress {
+    flex: 1 1 100%;
+    justify-content: space-between;
+  }
+
+  .sr-trip__chip {
     flex: 1 1 100%;
     justify-content: space-between;
   }

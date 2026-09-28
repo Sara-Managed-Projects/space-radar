@@ -180,6 +180,8 @@ jobs:
       # drift on leave.
       - name: A trip stop sets the clock, and leaving puts it back to the millisecond (spec 0030)
         run: node tests/test_stop_time.mjs
+      - name: "Trip playback: pause holds advance, back/next step, stop N of M stays visible while paused (spec 0003)"
+        run: node tests/test_trip_playback.mjs
       - name: "A year in a minute: four worlds on the Sun's stage, drawn true, at 525 600"
         run: node tests/test_year_trip.mjs
       # Spec 0040: TRAPPIST-1 at its own scale. Kepler's third law on the seven rows, the planets the

@@ -1164,7 +1164,7 @@ export const COPY = {
     // failure that scrolls past is a failure nobody can report.
     heldBody: 'We could not find this one just now. Everything else on the trip still works.',
     heldTitle: 'We could not find this one',
-    stopOf: '{n} of {count}',
+    stopOf: 'stop {n} of {count}',
 
     // --- the row in the left panel -------------------------------------------------------
     sectionTitle: 'Trips',
@@ -1257,7 +1257,7 @@ export const COPY = {
     // --- the letterbox -------------------------------------------------------------------
     frameLabel: 'guided trip',
     stopRole: 'stop',
-    liveLabel: '{n} of {count}: {title}',
+    liveLabel: 'stop {n} of {count}: {title}',
     pause: 'Pause',
     pauseTitle: 'Pause the trip',
     play: 'Play',
@@ -1284,9 +1284,9 @@ export const COPY = {
     progressLabel: 'How far through the trip you are',
     controlsLabel: 'Trip controls',
 
-    // The chip that replaces the progress row when a hand lands on the camera. Not a modal: a
-    // modal is what makes people feel caught, and the whole point is that grabbing the camera
-    // never ends the trip.
+    // The chip beside the progress row when a hand lands on the camera (or Pause). Not a modal:
+    // a modal is what makes people feel caught, and the whole point is that grabbing the camera
+    // never ends the trip. Spec 0003 keeps the stop counter visible with it.
     pausedChip: 'Trip paused',
     resume: 'Resume',
     resumeTitle: 'Fly back to the stop and carry on',
@@ -1302,7 +1302,7 @@ export const COPY = {
     endReplay: 'Watch it again',
     endNext: 'Next: {title}',
 
-    docTitle: 'Space Radar — {title} — {n} of {count}',
+    docTitle: 'Space Radar — {title} — stop {n} of {count}',
   },
 
   source: {

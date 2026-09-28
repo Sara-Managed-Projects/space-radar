@@ -241,7 +241,8 @@ export function createTripFrame(ctx) {
     progress.appendChild(segs);
     progress.setAttribute('aria-label', COPY.trip.progressLabel);
 
-    // The chip REPLACES the progress row rather than adding furniture, and it is not a modal.
+    // The chip sits WITH the progress row while paused (spec 0003): the counter stays readable.
+    // It is not a modal. Camera input still lands here; Pause/Play in the control row stays too.
     const chip = el('div', 'sr-trip__chip');
     chip.appendChild(el('span', 'sr-trip__chiptext', COPY.trip.pausedChip));
     chip.appendChild(button('sr-trip__btn sr-trip__btn--ember', COPY.trip.resume, COPY.trip.resumeTitle, onResume));
@@ -579,7 +580,8 @@ export function createTripFrame(ctx) {
 
     const showPanel = st.phase === 'intro' || st.phase === 'outro';
     parts.controls.hidden = showPanel;
-    parts.progress.hidden = showPanel || st.phase === 'paused';
+    // Spec 0003: the stop counter stays up while paused; the chip no longer replaces it.
+    parts.progress.hidden = showPanel;
     parts.chip.hidden = st.phase !== 'paused';
     if (showPanel) {
       if (parts.panel.hidden || parts.panel.dataset.phase !== st.phase) {
