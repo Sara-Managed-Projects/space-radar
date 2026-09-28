@@ -322,6 +322,23 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
   check(formatShownAt(at, 3600) === '2 Aug 2027', `at an hour a second, the day alone: "${formatShownAt(at, 3600)}"`);
 }
 
+// #279: a card under a stop title that already names its object does not name it twice more.
+{
+  const { sameName, withoutLeadingName } = await import(join(JS, 'ui/cards.js'));
+  check(sameName('The International Space Station', 'International Space Station'), 'a leading "The" still names it');
+  check(sameName('Hubble', 'Hubble'), 'an exact title names it');
+  check(!sameName('A visit to an older robot', 'Apollo 12 lunar module Intrepid'), 'a title about the stop does not');
+  check(!sameName('The first people', 'Apollo 11 lunar module'), 'nor does a title that shares no name');
+  check(!sameName('', 'Anything'), 'no title, no match');
+  
+  const s = withoutLeadingName('International Space Station is a crewed space station in low Earth orbit.', 'International Space Station');
+  check(s === 'It is a crewed space station in low Earth orbit.', `the sentence starts "It is": ${s}`);
+  const t = withoutLeadingName('The Hubble Space Telescope was launched in 1990.', 'Hubble Space Telescope');
+  check(t === 'It was launched in 1990.', `"The X was" becomes "It was": ${t}`);
+  const u = withoutLeadingName('Pete Conrad and Alan Bean, November 1969.', 'Apollo 12 lunar module Intrepid');
+  check(u === 'Pete Conrad and Alan Bean, November 1969.', 'a sentence that does not open with the name is left alone');
+}
+
 if (problems.length) {
   console.log(`cards copy: ${problems.length} problem(s)`);
   for (const p of problems) console.log('  - ' + p);

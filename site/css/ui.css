@@ -303,6 +303,48 @@
   border-bottom: 1px solid var(--sr-line);
 }
 
+/* A stop title above already names it (ui/cards.js namedAbove): kept for a screen reader only. */
+.sr-card__header.is-named-above .sr-card__name {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.sr-card__header.is-named-above .sr-card__klass {
+  margin-right: auto;
+}
+
+/* More below: a fade on the bottom edge while the card has somewhere to scroll (#279). */
+.sr-card__more {
+  position: sticky;
+  bottom: calc(-1 * var(--sr-pad));
+  height: 44px;
+  margin-top: -44px;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(to bottom, transparent, var(--sr-panel) 85%);
+  transition: opacity var(--sr-fast, 150ms) ease;
+}
+
+.sr-card__more::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--sr-text-dim);
+  border-bottom: 2px solid var(--sr-text-dim);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.sr-card.has-more .sr-card__more {
+  opacity: 1;
+}
+
 .sr-card__name {
   flex: 1 1 auto;
   min-width: 0;
