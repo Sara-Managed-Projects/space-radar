@@ -28,5 +28,21 @@ const jp = guessObserver(CITIES, { timeZone: 'Etc/GMT-9', offsetMinutes: 540 });
 // honest answer to "somewhere at UTC+9".
 check(jp && jp.country === 'Japan', `UTC+9 -> a Japanese city by meridian: ${jp && jp.name}`);
 
+// #283: the guess keeps the visitor's clock. For every zone the engine knows, in both seasons, the
+// guessed city's own zone has the same UTC offset -- UTC-4 is not Buenos Aires (UTC-3).
+const { zoneOffsetMinutes } = await import(join(ROOT, 'site/js/sky/guessplace.js'));
+check(CITIES.every((c) => typeof c.zone === 'string' && zoneOffsetMinutes(c.zone, new Date()) !== null), 'every bundled city names an IANA zone the engine knows');
+for (const now of [new Date('2026-01-15T12:00:00Z'), new Date('2026-07-15T12:00:00Z')]) {
+  for (const zone of Intl.supportedValuesOf('timeZone')) {
+    const want = zoneOffsetMinutes(zone, now);
+    const got = guessObserver(CITIES, { timeZone: zone, now });
+    const city = got && CITIES.find((c) => c.name === got.name);
+    const have = city ? zoneOffsetMinutes(city.zone, now) : null;
+    check(have === want, `${zone} at ${now.toISOString().slice(0, 10)} is UTC${want / 60}; guessed ${got && got.name} at UTC${have === null ? '?' : have / 60}`);
+  }
+}
+const pr = guessObserver(CITIES, { timeZone: 'America/Barbados', now: new Date('2026-09-27T12:00:00Z') });
+check(pr && pr.name !== 'Buenos Aires' && pr.latDeg > 0, `UTC-4 in the Americas stays in the northern Atlantic zone: ${pr && pr.name}`);
+
 if (problems.length) { console.log(`guessplace: ${problems.length} problem(s)`); for (const p of problems) console.log('  - ' + p); process.exit(1); }
 console.log('guessplace ok: a bundled time-zone city is the guess, an unbundled one falls to the nearest meridian, and both say guess');
