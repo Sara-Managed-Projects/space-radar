@@ -45,6 +45,7 @@
 import * as THREE from '../../vendor/three.module.min.js';
 import { gmst, geodeticToEcef } from '../propagate/frames.js';
 import { ECLIPSE_GLSL, MOON_RADIUS_KM } from './eclipse.js';
+import { EARTH_DAY_PLACEHOLDER } from './earthplaceholder.js';
 
 // --- tunables, all named, none buried in the shader -------------------------------------------
 
@@ -392,6 +393,40 @@ function ellipsoidGeometry(widthSegments, heightSegments) {
   return geo;
 }
 
+/** Has this texture an image the GPU can take yet? A TextureLoader texture has none until it decodes. */
+function textureReady(tex) {
+  const img = tex && tex.image;
+  return !!(img && (img.width || img.naturalWidth || (img.data && img.data.length)));
+}
+
+/** How long a map takes to come up once it has decoded, so it arrives rather than pops. */
+export const MAP_FADE_MS = 400;
+
+/**
+ * Once a frame, until nothing is pending: a decoded map either takes its slot (the full day map
+ * over the placeholder, same colours, so no fade) or ramps its flag 0 -> 1 over MAP_FADE_MS.
+ * Wall time, not app time: a clock held still must not hold a texture back.
+ */
+function settleMaps(mesh, u) {
+  const pending = mesh.userData && mesh.userData.pendingMaps;
+  if (!pending || pending.length === 0) return;
+  const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+  for (let i = pending.length - 1; i >= 0; i--) {
+    const job = pending[i];
+    if (!textureReady(job.tex) && !textureReady(job.alt)) continue;
+    if (job.slot) {
+      u[job.slot].value = job.tex;
+      if (job.replaces && job.replaces.dispose) job.replaces.dispose();
+      pending.splice(i, 1);
+      continue;
+    }
+    if (job.startedAt === undefined) job.startedAt = now;
+    const k = Math.min(1, (now - job.startedAt) / MAP_FADE_MS);
+    u[job.flag].value = k;
+    if (k >= 1) pending.splice(i, 1);
+  }
+}
+
 function blank() {
   // A 1x1 black texture, so the sampler is always bound even before the JPEG lands and the
   // shader never reads an undefined uniform. Earth draws in the first frame either way.
@@ -410,9 +445,22 @@ function blank() {
  */
 export function createEarth(textures, opts = {}) {
   const t = textures || {};
-  const day = asTexture(t.day || t.dayMap) || blank();
+  const dayFull = asTexture(t.day || t.dayMap);
   const night = asTexture(t.night || t.nightMap) || blank();
   const clouds = asTexture(t.clouds || t.cloudMap || t.cloud) || blank();
+  // A map that is still downloading samples as black, and the flag said "have it" from the first
+  // frame: a black disc with a blue rim until 1 MB landed (#274). Now the day side is the inline
+  // placeholder until the full map decodes, and night and clouds fade in when theirs do.
+  const canDecode = typeof document !== 'undefined';
+  const placeholder = canDecode && dayFull && !textureReady(dayFull) ? asTexture(EARTH_DAY_PLACEHOLDER) : null;
+  const day = placeholder || dayFull || blank();
+  const pending = [];
+  if (placeholder) {
+    pending.push({ tex: placeholder, alt: dayFull, flag: 'uHasDay' });
+    pending.push({ tex: dayFull, slot: 'uDay', replaces: placeholder });
+  }
+  if ((t.night || t.nightMap) && !textureReady(night)) pending.push({ tex: night, flag: 'uHasNight' });
+  if ((t.clouds || t.cloudMap || t.cloud) && !textureReady(clouds)) pending.push({ tex: clouds, flag: 'uHasClouds' });
   const cfg = Object.assign({}, DEFAULT_UNIFORMS, opts);
   const seg = opts.segments || SEGMENTS;
 
@@ -430,9 +478,9 @@ export function createEarth(textures, opts = {}) {
       uDay: { value: day },
       uNight: { value: night },
       uClouds: { value: clouds },
-      uHasDay: { value: t.day || t.dayMap ? 1 : 0 },
-      uHasNight: { value: t.night || t.nightMap ? 1 : 0 },
-      uHasClouds: { value: t.clouds || t.cloudMap || t.cloud ? 1 : 0 },
+      uHasDay: { value: (t.day || t.dayMap) && !placeholder ? 1 : 0 },
+      uHasNight: { value: (t.night || t.nightMap) && textureReady(night) ? 1 : 0 },
+      uHasClouds: { value: (t.clouds || t.cloudMap || t.cloud) && textureReady(clouds) ? 1 : 0 },
       uSunDir: { value: new THREE.Vector3(1, 0, 0) },
       uSunDirLocal: { value: new THREE.Vector3(1, 0, 0) },
       uCloudOffset: { value: new THREE.Vector2(0, 0) },
@@ -458,6 +506,7 @@ export function createEarth(textures, opts = {}) {
 
   const mesh = new THREE.Mesh(ellipsoidGeometry(seg.width, seg.height), material);
   mesh.name = 'earth';
+  mesh.userData.pendingMaps = pending;
   mesh.userData.kind = 'world';
   mesh.userData.worldId = 'earth';
   mesh.userData.cls = 'measured';
@@ -511,6 +560,7 @@ export function updateEarth(mesh, sunDirScene, tMs) {
   mesh.updateMatrixWorld();
 
   const u = mesh.material.uniforms;
+  settleMaps(mesh, u);
   if (sunDirScene) {
     u.uSunDir.value.copy(sunDirScene).normalize();
     // Same direction expressed in the mesh's own axes, which are earth-fixed. Used only by the
