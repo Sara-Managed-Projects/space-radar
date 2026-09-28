@@ -29,6 +29,7 @@ import { createControls } from './ui/controls.js';
 import { createStatus } from './ui/status.js';
 import { createMobileUI } from './ui/mobile.js';
 import { createSceneNote } from './ui/scenenote.js';
+import { buildIndex, findMatches, LINK_MIN_SCORE } from './ui/search.js';
 import { createGitHubMark } from './ui/github.js';
 import { createTrip } from './ui/trip.js';
 import { createTripFrame } from './ui/tripframe.js';
@@ -896,8 +897,29 @@ function openTrip(ctx, st) {
   return true;
 }
 
+/**
+ * What `#at=` names. A record id first (`sat-25544`, `europa`), then a bare catalogue number
+ * (`25544`), then what a person would type (`iss`, `hubble`), through the same index and alias
+ * table as the search box. Only a whole-name, name-prefix or word-prefix match counts: a
+ * letters-inside-a-word hit is a guess, and a link must not fly somewhere it did not name.
+ */
+function resolveAt(ctx, id) {
+  const text = String(id || '').trim();
+  if (!text) return null;
+  const direct = ctx.recordById(text);
+  if (direct) return direct;
+  if (/^[0-9]+$/.test(text)) {
+    const sat = ctx.recordById(`sat-${text}`);
+    if (sat) return sat;
+  }
+  const records = typeof ctx.records === 'function' ? ctx.records() : [];
+  const found = findMatches(buildIndex(records, ctx.layers || []), text.replace(/[-_+]+/g, ' '), 1);
+  const hit = found.hits[0];
+  return hit && !found.fallback && hit.score >= LINK_MIN_SCORE ? hit.record : null;
+}
+
 function openAt(ctx, id) {
-  const record = ctx.recordById(id);
+  const record = resolveAt(ctx, id);
   if (!record) { linkNote(ctx, COPY.link.unknownAt, ['at']); return; }
   // Spec 0021's rule, as ui/search.js: a record whose layer is off has no mark and no model, so
   // flying to it arrives at empty sky. The layer goes on first, and the panel is told (it paints

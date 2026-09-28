@@ -64,6 +64,8 @@ const OTHER_CONTAINS = 500; // designator or operator
 // digit at a time. Without it "2554" finds nothing at all and "25544" finds the station, which
 // reads as the search being broken rather than as the number being incomplete.
 const CAT_PREFIX = 400;
+/** The weakest hit a `#at=` link will fly to (main.js resolveAt): the start of a word or better. */
+export const LINK_MIN_SCORE = WORD_PREFIX;
 
 const reduceMotion =
   typeof window !== 'undefined' && window.matchMedia

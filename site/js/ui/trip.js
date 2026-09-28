@@ -321,10 +321,11 @@ export function createTrip(ctx) {
     if (typeof window === 'undefined' || !state.tourId) return;
     if (state.phase === 'intro') {
       // A deep link into stop 3 keeps saying stop 3 while its intro is up (jumpTo, below).
+      // `at` goes: the trip selects its own stops, and a selection from before it would outlive them.
       const armed = run && run.startAt > 0 ? String(run.startAt + 1) : null;
-      writeUrl({ trip: state.tourId, stop: armed });
+      writeUrl({ trip: state.tourId, stop: armed, at: null });
     } else if (state.index >= 0 && STOP_PHASES.includes(state.phase)) {
-      writeUrl({ trip: state.tourId, stop: String(state.index + 1) });
+      writeUrl({ trip: state.tourId, stop: String(state.index + 1), at: null });
     }
   }
 
