@@ -18,7 +18,7 @@ import { createGlyphLayer } from './scene/glyphs.js';
 import { createHeroes, closeUpDistance } from './scene/heroes.js';
 import { createCameraRig, worldFramingDistance } from './scene/camera.js';
 import { createViewShift } from './scene/viewshift.js';
-import { readMoment, writeMoment, bootLink, laterLink, write as writeUrlState, clear as clearUrlState, stopIndex } from './ui/urlstate.js';
+import { readMoment, writeMoment, bootLink, laterLink, read as readUrlKeys, write as writeUrlState, clear as clearUrlState, stopIndex } from './ui/urlstate.js';
 import { guessObserver } from './sky/guessplace.js';
 import { COPY, CITIES } from './copy/en.js';
 import { LAYERS, loadLayer } from './data/layers.js';
@@ -558,7 +558,14 @@ export async function boot({ setStatus } = {}) {
   window.addEventListener('sr:observer', () => {
     if (moment === 'now' && observer) ctx.skyView.enter(observer);
   });
-  window.addEventListener('hashchange', () => setMoment(readMomentFromHash(), { silent: true }));
+  window.addEventListener('hashchange', () => {
+    setMoment(readMomentFromHash(), { silent: true });
+    // `at` too, not only at boot: a link opened in a tab that is already running must fly there.
+    // The app's own writes use replaceState, which fires no hashchange, so this cannot echo.
+    const at = readUrlKeys().at;
+    const current = typeof ctx.selected === 'function' ? ctx.selected() : null;
+    if (at && (!current || current.id !== at)) openAt(ctx, at);
+  });
 
   // THE URL IS THE STATE (spec 0017's rule, spec 0032's keys). Two more writers beside the moment,
   // both through ui/urlstate.js so the format has one owner; the trip writes its own keys from
