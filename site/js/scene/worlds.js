@@ -281,35 +281,37 @@ export const WORLDS = [
     body: 'Mercury', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
     look: { map: '2k_mercury.jpg', tint: 0x848383 },
   },
+  // `rim` is a thin scattering rim where there is air, in the colour photographs show at the limb;
+  // `limb` darkens the giants' edges (issue #263). Airless worlds keep the default pale rim.
   {
     id: 'venus', display: 'Venus', parent: 'sun', radiusKm: 6051.8,
     body: 'Venus', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_venus_atmosphere.jpg', tint: 0xe6bf81 },
+    look: { map: '2k_venus_atmosphere.jpg', tint: 0xe6bf81, rim: { colour: 0xfff0c8, gain: 0.5 } },
   },
   {
     id: 'mars', display: 'Mars', parent: 'sun', radiusKm: 3389.5,
     body: 'Mars', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_mars.jpg', tint: 0xb75d41 },
+    look: { map: '2k_mars.jpg', tint: 0xb75d41, rim: { colour: 0xe8b089, gain: 0.3 } },
   },
   {
     id: 'jupiter', display: 'Jupiter', parent: 'sun', radiusKm: 69911.0,
     body: 'Jupiter', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_jupiter.jpg', tint: 0xb3aba1 },
+    look: { map: '2k_jupiter.jpg', tint: 0xb3aba1, limb: 0.35 },
   },
   {
     id: 'saturn', display: 'Saturn', parent: 'sun', radiusKm: 58232.0,
     body: 'Saturn', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_saturn.jpg', tint: 0xdfcca8, ring: { innerKm: 74500, outerKm: 140220, map: '2k_saturn_ring_alpha.png' } },
+    look: { map: '2k_saturn.jpg', tint: 0xdfcca8, limb: 0.35, ring: { innerKm: 74500, outerKm: 140220, map: '2k_saturn_ring_alpha.png' } },
   },
   {
     id: 'uranus', display: 'Uranus', parent: 'sun', radiusKm: 25362.0,
     body: 'Uranus', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_uranus.jpg', tint: 0x9eced5 },
+    look: { map: '2k_uranus.jpg', tint: 0x9eced5, limb: 0.5, rim: { colour: 0xc8f4ff, gain: 0.35 } },
   },
   {
     id: 'neptune', display: 'Neptune', parent: 'sun', radiusKm: 24622.0,
     body: 'Neptune', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_neptune.jpg', tint: 0x395eb7 },
+    look: { map: '2k_neptune.jpg', tint: 0x395eb7, limb: 0.45, rim: { colour: 0x9cc0ff, gain: 0.35 } },
   },
   // THE FLAT ONES. No map ships for these five and none is fetched (`flat: true`, no `map`), so the
   // tint is not a texture's mean like the rows above: it is a HUE from a published description,
@@ -378,7 +380,7 @@ export const WORLDS = [
     // ground, is what anyone has seen of Titan in visible light. Darkened 2026-09-22, same hue.
     id: 'titan', display: 'Titan', parent: 'saturn', radiusKm: 2574.76,
     body: 'Titan', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x8f5e26, albedo: 0.22 },
+    look: { flat: true, tint: 0x8f5e26, albedo: 0.22, rim: { colour: 0xe0a050, gain: 0.7 } },
   },
   {
     // "Triton's reddish color" (Wikipedia) on frost with "an icy sheen" (NASA Science): a pale pink.
@@ -494,14 +496,20 @@ const BY_ID = new Map(WORLDS.map((w) => [w.id, w]));
 const WORLD_VERT = /* glsl */`
 #include <common>
 #include <logdepthbuf_pars_vertex>
+uniform vec3 uSunDir;
 varying vec2 vUv;
 varying vec3 vNormalW;
 varying vec3 vPosW;
+varying vec3 vPosL;   // on the unit sphere, body-fixed: +Y is the pole, the ring plane is y = 0
+varying vec3 vSunL;
 void main() {
   vUv = uv;
   vec4 worldPos = modelMatrix * vec4( position, 1.0 );
   vPosW = worldPos.xyz;
   vNormalW = normalize( mat3( modelMatrix ) * normal );
+  vPosL = position;
+  // The mesh is scaled uniformly, so the transpose is the inverse rotation up to a length.
+  vSunL = normalize( transpose( mat3( modelMatrix ) ) * uSunDir );
   gl_Position = projectionMatrix * viewMatrix * worldPos;
   #include <logdepthbuf_vertex>
 }
@@ -526,9 +534,19 @@ uniform vec3  uEarthPosKm;    // the Earth's centre from this body's, km, SCENE 
 uniform float uSunDistKm;     // the Sun's centre from this body's, km; its direction is uSunDir
 uniform float uBodyRadiusKm;
 uniform vec3  uUmbraTint;
+// Issue #263. Limb darkening (0 = off), terminator half-width, and the ring's shadow on the globe.
+uniform float uLimb;
+uniform float uTerminator;
+uniform float uRingOn;
+uniform vec2  uRingRadii;     // inner, outer, in planet radii
+uniform sampler2D uRingMap;
+uniform float uHasRingMap;
+uniform float uRingOpacity;
 varying vec2 vUv;
 varying vec3 vNormalW;
 varying vec3 vPosW;
+varying vec3 vPosL;
+varying vec3 vSunL;
 ${ECLIPSE_GLSL}
 void main() {
   #include <logdepthbuf_fragment>
@@ -545,8 +563,26 @@ void main() {
   vec3 colour = mix( shadow, base, b1 );
   colour = mix( colour, highlight, b2 );
 
-  float lit = smoothstep( -0.10, 0.10, d );
+  float lit = smoothstep( -uTerminator, uTerminator, d );
   colour *= mix( uAmbient, 1.0, lit );
+
+  float mu = clamp( dot( n, viewDir ), 1e-3, 1.0 );
+  if ( uLimb > 0.0 ) colour *= pow( mu, uLimb );
+
+  // The ring between this point and the Sun: one ray-plane test, then the ring's own opacity there.
+  float ringShade = 1.0;
+  if ( uRingOn > 0.5 && abs( vSunL.y ) > 1e-4 ) {
+    float t = -vPosL.y / vSunL.y;
+    if ( t > 0.0 ) {
+      float r = length( ( vPosL + vSunL * t ).xz );
+      float u = ( r - uRingRadii.x ) / ( uRingRadii.y - uRingRadii.x );
+      if ( u > 0.0 && u < 1.0 ) {
+        float a = mix( 1.0, texture2D( uRingMap, vec2( u, 0.5 ) ).a, uHasRingMap ) * uRingOpacity;
+        ringShade = 1.0 - 0.85 * a;
+      }
+    }
+  }
+  colour *= mix( 1.0, ringShade, lit );
 
   // The Earth covering the Sun, seen from this point of the Moon: the same formula as the Earth's
   // shadow, with the Earth (and 88 km of air, the library's number) as the occluder. The copper in
@@ -560,7 +596,7 @@ void main() {
   }
 
   float rim = pow( 1.0 - clamp( dot( n, viewDir ), 0.0, 1.0 ), 3.0 );
-  colour += uRimColour * rim * uRimGain * lit * eclShade;
+  colour += uRimColour * rim * uRimGain * lit * eclShade * ringShade;
 
   gl_FragColor = vec4( colour, 1.0 );
   #include <tonemapping_fragment>
@@ -589,8 +625,103 @@ export function celMaterial(map, tint) {
       // Copper, chosen (spec 0037 design §3), not computed: the colour of a totally eclipsed Moon in
       // photographs, a mid Danjon L2-L3. Multiplied into the map so the maria still read.
       uUmbraTint: { value: new THREE.Vector3(0.55, 0.22, 0.12) },
+      uLimb: { value: 0 },
+      uTerminator: { value: 0.10 },
+      uRingOn: { value: 0 },
+      uRingRadii: { value: new THREE.Vector2(1, 2) },
+      uRingMap: { value: null },
+      uHasRingMap: { value: 0 },
+      uRingOpacity: { value: RING_OPACITY },
     },
   });
+}
+
+/** Opacity of a ring at full alpha: the ring's own material and its shadow on the globe share it. */
+export const RING_OPACITY = 0.92;
+
+const RING_VERT = /* glsl */`
+#include <common>
+#include <logdepthbuf_pars_vertex>
+uniform vec3 uSunDir;
+varying vec2 vUv;
+varying vec3 vPosL;   // the ring mesh's own axes, in planet radii, the planet at the origin
+varying vec3 vSunL;
+varying vec3 vCamL;
+void main() {
+  vUv = uv;
+  vPosL = position;
+  mat3 toLocal = transpose( mat3( modelMatrix ) );
+  vSunL = normalize( toLocal * uSunDir );
+  vec4 worldPos = modelMatrix * vec4( position, 1.0 );
+  vCamL = toLocal * ( cameraPosition - worldPos.xyz );
+  gl_Position = projectionMatrix * viewMatrix * worldPos;
+  #include <logdepthbuf_vertex>
+}
+`;
+
+/** Exported for tests: the planet's shadow across the ring, and the ring's unlit face. */
+export const RING_FRAG = /* glsl */`
+#include <common>
+#include <logdepthbuf_pars_fragment>
+uniform sampler2D uMap;
+uniform float uHasMap;
+uniform vec3 uColour;
+uniform float uOpacity;
+varying vec2 vUv;
+varying vec3 vPosL;
+varying vec3 vSunL;
+varying vec3 vCamL;
+void main() {
+  #include <logdepthbuf_fragment>
+  vec4 tex = mix( vec4( 1.0 ), texture2D( uMap, vUv ), uHasMap );
+  // The globe (radius 1 here) between this point and the Sun: the ray's closest approach to the
+  // centre, only on the Sun-facing half of the ray. A 2 % soft edge stands in for the penumbra.
+  float b = dot( vPosL, vSunL );
+  float closest = sqrt( max( dot( vPosL, vPosL ) - b * b, 0.0 ) );
+  float shade = b < 0.0 ? smoothstep( 0.98, 1.02, closest ) : 1.0;
+  // Lit from the far side, the ring shows only the light that gets through it.
+  float lower = step( 0.0, -vSunL.z * vCamL.z );
+  float face = mix( 1.0, 0.4 + 0.4 * ( 1.0 - tex.a ), lower );
+  gl_FragColor = vec4( uColour * tex.rgb * mix( 0.06, 1.0, shade ) * face, tex.a * uOpacity );
+  #include <tonemapping_fragment>
+  #include <colorspace_fragment>
+}
+`;
+
+function ringMaterial(map, inner, outer) {
+  return new THREE.ShaderMaterial({
+    name: 'world-ring',
+    vertexShader: RING_VERT,
+    fragmentShader: RING_FRAG,
+    transparent: true,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+    uniforms: {
+      uMap: { value: map || null },
+      uHasMap: { value: map ? 1 : 0 },
+      uColour: { value: new THREE.Color(0xd9cdb4) },
+      uOpacity: { value: RING_OPACITY },
+      uSunDir: { value: new THREE.Vector3(1, 0, 0) },
+      uRadii: { value: new THREE.Vector2(inner, outer) },
+    },
+  });
+}
+
+/**
+ * Apply a world's `look` lighting: a thin scattering rim where it has air (`look.rim`), and limb
+ * darkening plus a softer terminator on the giants (`look.limb`, the exponent on cos(view angle)).
+ */
+export function applyLook(material, look) {
+  const u = material && material.uniforms;
+  if (!u || !look) return;
+  if (look.rim) {
+    u.uRimColour.value.set(look.rim.colour);
+    u.uRimGain.value = look.rim.gain;
+  }
+  if (look.limb) {
+    u.uLimb.value = look.limb;
+    u.uTerminator.value = 0.2;
+  }
 }
 
 // --- construction --------------------------------------------------------------------------------
@@ -733,10 +864,20 @@ export function createWorlds(scene, opts = {}) {
       if (halo) { mesh.add(halo); mesh.userData.corona = halo; }
     }
 
+    if (!w.look.earth && !w.look.emissive) applyLook(mesh.material, w.look);
+
     if (w.look.ring) {
-      const ring = ringMesh(w, texture(w.look.ring.map));
+      const ringMap = texture(w.look.ring.map);
+      const ring = ringMesh(w, ringMap);
       mesh.add(ring);
       mesh.userData.ring = ring;
+      const u = mesh.material.uniforms;
+      if (u) {
+        u.uRingOn.value = 1;
+        u.uRingRadii.value.copy(ring.material.uniforms.uRadii.value);
+        u.uRingMap.value = ringMap;
+        u.uHasRingMap.value = ringMap ? 1 : 0;
+      }
     }
 
     root.add(mesh);
@@ -983,6 +1124,7 @@ export function createWorlds(scene, opts = {}) {
         if (mesh.material && mesh.material.uniforms && mesh.material.uniforms.uSunDir) {
           mesh.material.uniforms.uSunDir.value.copy(sunDirHere);
         }
+        if (mesh.userData.ring) mesh.userData.ring.material.uniforms.uSunDir.value.copy(sunDirHere);
         if (w.id === 'moon' && mesh.material && mesh.material.uniforms && mesh.material.uniforms.uEclipse) {
           const u = mesh.material.uniforms;
           u.uEclipse.value = eclipseState.drawnLunar ? 1 : 0;
@@ -1249,14 +1391,7 @@ export function createWorlds(scene, opts = {}) {
       uv.setXY(i, (d - inner) / (outer - inner), 0.5);
     }
     uv.needsUpdate = true;
-    const mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
-      map: map || null,
-      color: 0xd9cdb4,
-      transparent: true,
-      opacity: 0.92,
-      side: THREE.DoubleSide,
-      depthWrite: false,
-    }));
+    const mesh = new THREE.Mesh(geo, ringMaterial(map, inner, outer));
     mesh.rotation.x = -Math.PI / 2;  // RingGeometry lies in XY; the ring is the planet's equator
     mesh.renderOrder = 1;
     mesh.name = `${w.id}-ring`;
