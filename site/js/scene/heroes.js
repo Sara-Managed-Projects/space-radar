@@ -50,6 +50,8 @@ export const SELECTED_PX = 260;
  * exactly the constant it returns today, so nothing but the launches layer changes.
  */
 const REF_M = 60; // roughly the Falcon 9 / Ariane 6 median
+/** An unselected hero must be nearer the camera than this share of the camera's distance to the stage's world. */
+const FOCUS_SHARE = 0.3;
 function heroPixels(record, selected) {
   const base = selected ? SELECTED_PX : TARGET_PX;
   const m = record && record.meta && record.meta.sizeM;
@@ -464,6 +466,11 @@ export function createHeroes(scene, ctx) {
       const layer = ctx.layers.find((l) => l.id === record.layer);
       const nearUnits = ((layer && layer.nearKm) || 2000) / stage.unitKm;
       if (!forced && d > nearUnits) return;
+      // nearKm alone let the home view, parked 22 000 km out, draw whatever MEO/GEO satellite or
+      // rock was passing as an unlabelled 84 px model in front of the Earth (#269, measured
+      // 2026-09-28: three satellite buses 15-18 units from a camera 22 from the Earth). Unasked,
+      // a model is only drawn when the camera is near IT, not near the world it is framing.
+      if (!forced && d > FOCUS_SHARE * _camPos.length()) return;
       seen.add(record.id);
       out.push({ record, pos, d, forced, p });
     };
