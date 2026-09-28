@@ -111,8 +111,10 @@ const DEFAULT_UNIFORMS = {
   nightGain: 2.6,
   cloudGamma: CLOUD_GAMMA,
   cloudGain: 0.95,
-  specGain: 1.25,
-  specPower: 90.0,
+  specGain: 1.6,
+  specPower: 700.0,
+  specHalo: 0.25,
+  twilightWrap: 0.12,
   ambient: 0.02,
   atmoGain: 0.35,
   atmoPower: 3.0,
@@ -174,6 +176,8 @@ uniform float uNightGain;
 uniform float uCloudGain;
 uniform float uSpecGain;
 uniform float uSpecPower;
+uniform float uSpecHalo;
+uniform float uTwilightWrap;
 uniform float uAmbient;
 uniform float uCloudHOverR;
 uniform float uCloudGamma;
@@ -203,7 +207,12 @@ void main() {
 
   float sunDot  = dot( n, uSunDir );
   float dayMix  = smoothstep( uTerminator.x, uTerminator.y, sunDot );
-  float lambert = clamp( sunDot, 0.0, 1.0 );
+  // Wrapped, not clamped: plain max(N.L, 0) takes bright ice and cloud from grey to black in a
+  // few pixels, and with the Sun side-on the terminator projects to a ruler-straight line. The
+  // wrap lets light fall off across the twilight band instead, the same term for ground and cloud.
+  float lambert = clamp( ( sunDot + uTwilightWrap ) / ( 1.0 + uTwilightWrap ), 0.0, 1.0 ) * dayMix;
+  // Low sun reddens: a warm tint that fades out by about 15 degrees of elevation.
+  vec3 sunTint = mix( vec3( 1.0, 0.62, 0.42 ), vec3( 1.0 ), smoothstep( 0.0, 0.26, sunDot ) );
 
   // ---- the Moon's shadow (spec 0037) ------------------------------------------------------------
   // The fraction of the Sun's disc the Moon covers from THIS point, from the true positions: no cone
@@ -243,15 +252,19 @@ void main() {
   vec3 dayTex = mix( vec3( 0.04, 0.08, 0.15 ), texture2D( uDay, vUv ).rgb, uHasDay );
   float ocean = smoothstep( uOceanMask.x, uOceanMask.y, dayTex.b - dayTex.r )
               * smoothstep( uOceanMask.x * 0.5, uOceanMask.y, dayTex.b - dayTex.g );
-  vec3 ground = dayTex * ( lambert * ( 1.0 - 0.55 * shade * dayMix ) + uAmbient );
+  vec3 ground = dayTex * ( lambert * sunTint * ( 1.0 - 0.55 * shade * dayMix ) + uAmbient );
 
   // ---- ocean specular --------------------------------------------------------------------------
-  // Blinn-Phong, masked to water, tinted slightly cyan, killed under cloud.
+  // Masked to water and killed under cloud. A tight hot core over a faint wide sheen, both scaled
+  // by Schlick Fresnel so the glint brightens and stretches towards the limb. One broad lobe at
+  // gain above 1 is what ACES flattened into a white disc the size of a US state.
   // half is a reserved word in GLSL ES, so this vector cannot be called that.
   vec3 halfVec = normalize( uSunDir + viewDir );
-  float spec = pow( max( dot( n, halfVec ), 0.0 ), uSpecPower )
-             * ocean * dayMix * ( 1.0 - cloud * 0.9 ) * uSpecGain;
-  vec3 specular = vec3( 0.62, 0.84, 1.0 ) * spec;
+  float nh = max( dot( n, halfVec ), 0.0 );
+  float fresnel = 0.02 + 0.98 * pow( 1.0 - clamp( dot( viewDir, halfVec ), 0.0, 1.0 ), 5.0 );
+  float lobe = pow( nh, uSpecPower ) + uSpecHalo * pow( nh, uSpecPower * 0.08 );
+  float spec = lobe * ( 0.35 + 0.65 * fresnel ) * ocean * dayMix * ( 1.0 - cloud ) * uSpecGain;
+  vec3 specular = vec3( 0.62, 0.84, 1.0 ) * sunTint * spec;
 
   // ---- night lights ----------------------------------------------------------------------------
   float nightAmt = 1.0 - dayMix;
@@ -262,9 +275,9 @@ void main() {
   vec3 colour = ground + specular + cities;
 
   // ---- clouds on top ----------------------------------------------------------------------------
-  float cloudLight = lambert * 0.95 + uAmbient * 2.0;
+  vec3 cloudLight = sunTint * lambert * 0.95 + uAmbient * 2.0;
   float cloudAlpha = cloud * uCloudGain * ( 0.06 + 0.94 * dayMix );
-  colour = mix( colour, vec3( cloudLight ), clamp( cloudAlpha, 0.0, 1.0 ) );
+  colour = mix( colour, cloudLight, clamp( cloudAlpha, 0.0, 1.0 ) );
 
   // ---- a breath of air on the lit limb -----------------------------------------------------------
   float rim = pow( 1.0 - clamp( dot( n, viewDir ), 0.0, 1.0 ), 3.0 );
@@ -431,6 +444,8 @@ export function createEarth(textures, opts = {}) {
       uCloudGain: { value: cfg.cloudGain },
       uSpecGain: { value: cfg.specGain },
       uSpecPower: { value: cfg.specPower },
+      uSpecHalo: { value: cfg.specHalo },
+      uTwilightWrap: { value: cfg.twilightWrap },
       uAmbient: { value: cfg.ambient },
       uCloudHOverR: { value: CLOUD_H_OVER_R },
       uCloudGamma: { value: cfg.cloudGamma },
