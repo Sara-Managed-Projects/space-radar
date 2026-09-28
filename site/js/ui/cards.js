@@ -1791,6 +1791,32 @@ function markCardOpen(open) {
   document.documentElement.classList.toggle('sr-card-open', open !== false);
 }
 
+function nameKey(text) {
+  return String(text || '').toLowerCase().replace(/^the\s+/, '').replace(/[^a-z0-9]+/g, '');
+}
+
+/** Does a stop title already name this object? "The International Space Station" names the ISS. */
+export function sameName(title, name) {
+  const a = nameKey(title);
+  const b = nameKey(name);
+  return !!a && !!b && (a === b || a.includes(b));
+}
+
+/** "International Space Station is a crewed..." under a title that said so becomes "It is a crewed...". */
+export function withoutLeadingName(sentence, name) {
+  const text = String(sentence || '');
+  const n = String(name || '').trim();
+  if (!n) return text;
+  const heads = [n, ...COPY.card.articles.map((a) => `${a} ${n}`)];
+  for (const head of heads) {
+    for (const verb of COPY.card.leadVerbs) {
+      const start = `${head} ${verb} `;
+      if (text.startsWith(start)) return `${COPY.card.it} ${verb} ${text.slice(start.length)}`;
+    }
+  }
+  return text;
+}
+
 /** A stop with no object behind it: the lead is the whole card. */
 function renderLeadOnly(lead) {
   const node = ensureHost();
@@ -1839,8 +1865,11 @@ function render(record, ctx, opts = {}) {
   // 0. the trip's own words, above everything and reordering nothing.
   if (lead) node.appendChild(leadBlock(lead));
 
-  // 1. name and class glyph
-  const header = el('header', 'sr-card__header');
+  // 1. name and class glyph. Under a stop title that already names the subject the name is kept for
+  // a screen reader and not drawn: "The International Space Station", "International Space
+  // Station", "International Space Station is..." was one name three times in 120 px (#279).
+  const namedAbove = !!(lead && lead.title && sameName(lead.title, displayName(record)));
+  const header = el('header', namedAbove ? 'sr-card__header is-named-above' : 'sr-card__header');
   const glyph = el('span', `sr-glyph sr-glyph--${klass}`);
   glyph.setAttribute('aria-hidden', 'true');
   header.appendChild(glyph);
@@ -1862,7 +1891,8 @@ function render(record, ctx, opts = {}) {
   node.appendChild(body);
 
   // 2. one plain sentence, and the registry's line on why this one is known (see WHY_KLASSES)
-  body.appendChild(el('p', 'sr-card__sentence', firstSentence(record, ctx, m, passInfo)));
+  const sentence = firstSentence(record, ctx, m, passInfo);
+  body.appendChild(el('p', 'sr-card__sentence', namedAbove ? withoutLeadingName(sentence, displayName(record)) : sentence));
   const why = whyLine(record);
   if (why) body.appendChild(el('p', 'sr-card__why', why));
 
@@ -1981,10 +2011,33 @@ function render(record, ctx, opts = {}) {
   // 8. the source line
   foot.appendChild(el('p', 'sr-card__source', sourceLine(record, ctx)));
   node.appendChild(foot);
+  node.appendChild(moreCue());
 
   node.hidden = false;
   node.classList.add('is-open');
   markCardOpen(true);
+  paintMore(node);
+}
+
+/**
+ * The card scrolls, and at 1440 x 900 its fact chips sat below the fold with nothing to say so
+ * (#279). A fade pinned to the bottom edge while there is more below; gone at the end.
+ */
+function moreCue() {
+  const cue = el('div', 'sr-card__more');
+  cue.setAttribute('aria-hidden', 'true');
+  return cue;
+}
+
+function paintMore(node) {
+  if (!node || typeof node.scrollHeight !== 'number') return;
+  if (!node.dataset.moreWatched) {
+    node.dataset.moreWatched = '1';
+    node.addEventListener('scroll', () => paintMore(node), { passive: true });
+    if (typeof window !== 'undefined') window.addEventListener('resize', () => paintMore(node));
+  }
+  const more = node.scrollHeight - node.clientHeight - node.scrollTop > 8;
+  if (node.classList.contains('has-more') !== more) node.classList.toggle('has-more', more);
 }
 
 function subscribe(ctx) {

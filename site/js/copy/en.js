@@ -839,6 +839,10 @@ export const COPY = {
     photoCredit: '{credit} · {licence}',
     close: 'Close',
     closeTitle: 'Close this card',
+    // Under a stop title that already named the object, its first sentence does not name it again.
+    it: 'It',
+    articles: ['The', 'the'],
+    leadVerbs: ['is', 'was'],
     makeCentre: 'Make {name} the centre of the map',
     isCentre: 'This is the centre of the map',
     comparisonsLabel: 'To give you a feel for it',
