@@ -1231,6 +1231,70 @@ html.sr-trip-mode .sr-mark {
 }
 
 /* ------------------------------------------------------------------------------------ */
+/* Clean view (ui/cleanview.js): every panel off, the scene alone. Ivan, 2026-09-28: "should   */
+/* have possibility to hide each panel so fully see the space only".                          */
+/* ------------------------------------------------------------------------------------ */
+
+/* The toggle sits beside the GitHub mark, same size, same quiet colour. */
+.sr-clean-toggle {
+  position: fixed;
+  top: calc(8px + env(safe-area-inset-top, 0px));
+  right: 56px; /* the mark's 8 + 44 + 4 */
+  z-index: 56;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  color: var(--sr-text-dim);
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: color var(--sr-fast) var(--sr-ease), opacity var(--sr-slow) var(--sr-ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.sr-clean-toggle:hover { color: var(--sr-ember); }
+.sr-clean-toggle:focus-visible {
+  color: var(--sr-ember);
+  outline: 2px solid var(--sr-ember);
+  outline-offset: 2px;
+}
+@media (min-width: 900px) {
+  .sr-clean-toggle { top: 16px; right: 68px; }
+  html.sr-card-open .sr-clean-toggle { right: calc(var(--sr-card-w) + 76px); }
+}
+/* A trip has its own frame with Leave in this corner; the H key still works during a trip. */
+html.sr-trip-mode:not(.sr-clean) .sr-clean-toggle {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Everything on <body> except the scene, the stage-change veil and the toggle itself: a panel
+   added later is hidden without being listed here. `visibility`, not `display`, so layouts keep
+   their size and the phone's view shift (scene/viewshift.js), which skips invisible panels, gives
+   the scene the whole screen. Instant, like EVE's own hide-UI key: a fade here was a CSS transition
+   on every panel's visibility, and measured in headless Chrome (2026-09-28) it never advanced at a
+   low frame rate, leaving every panel on screen three seconds after H. `!important`, because a
+   panel's own rules (the phone drawers, the trip frame) set visibility too, and clear means clear. */
+html.sr-clean body > *:not(.sr-scene):not(.sr-veil):not(.sr-clean-toggle) {
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: none !important;
+}
+/* With the screen clear, the toggle is the only thing left: dim until pointed at, in the corner
+   where the mark was. */
+html.sr-clean .sr-clean-toggle {
+  right: 8px;
+  opacity: 0.35;
+}
+@media (min-width: 900px) {
+  html.sr-clean .sr-clean-toggle { right: 16px; }
+}
+html.sr-clean .sr-clean-toggle:hover,
+html.sr-clean .sr-clean-toggle:focus-visible { opacity: 1; }
+
+/* ------------------------------------------------------------------------------------ */
 /* prefers-reduced-motion: the scrub stays, because it is a control, not decoration.       */
 /* ------------------------------------------------------------------------------------ */
 
