@@ -1,0 +1,404 @@
+version: 1
+# Every map the scene can wear, with a file per device tier (2026-09-28). The browser reads the mirror,
+# site/js/data/textures.js, written by scripts/gen_textures_js.py (`--check` in CI). The tier is
+# chosen by site/js/scene/quality.js chooseTier(); site/js/scene/texturetiers.js fetches the file for
+# it after the first frame, when the browser is idle, and swaps it in once it has decoded.
+#
+#   T0  phones, data-saver, small GPUs: the tier-0 file of every row, which is exactly the set every
+#       visitor booted with before tiers existed. A first visit is gated at 2.5 MB with ~140 KB spare,
+#       so tier 0 is never changed by a tier PR; a sharper file is a new row entry under a new name.
+#   T1  laptops and tablets: tier-1 files. T2 wears tier-1 files too until 8k ships as KTX2 (the
+#       study's arithmetic: an 8k RGBA map with mipmaps is ~171 MB of GPU memory on its own).
+#
+# scripts/check_registry.py check_textures() refuses a row without licence, credit or source, a file
+# that is not in the tree, bytes or pixels that are not the file's own, a tier-0 file that is not the
+# one registry/models.yaml credits under the same id, a credit CREDITS.md section 2 does not carry
+# word for word, a file under site/textures/ that no row names, and any map by an author whose terms
+# forbid hosting copies (the list is in check_textures).
+#
+#   id        registry/models.yaml's texture id where there is one (worlds.yaml dresses worlds by it)
+#   world     a worlds.yaml id, or `sky` for the Milky Way
+#   slot      what it is on that world: day | night | water | clouds | map | ring
+#   when      boot  -- nothing sharper; the tier-0 file is all there is
+#             idle  -- on screen from the first frame: fetched after it, when the browser is idle
+#             near  -- fetched when the world's disc is big enough for 4k to show, or it is selected
+#   boot      `none` when a phone does without the map altogether (the Earth's water mask)
+#   files     one per tier:
+#     tier      0 | 1 | 2
+#     file      the repository path; `{mm}` and `monthly: true` for one file per month (01..12)
+#     px        [width, height], read from the file's header by the check
+#     bytes     measured; twelve integers, January first, for a monthly file
+#     format    rgb | rgba | mono (one grey channel, uploaded as R8: a quarter of RGBA's GPU memory)
+#     licence   quoted from the page it was read on
+#     credit    the line printed in the Sources panel and carried by CREDITS.md section 2
+#     source    the page, with the day it was read: "URL (read YYYY-MM-DD)"
+#     original  tier 1+: the file downloaded (never committed); scripts/build-textures.py remakes
+#               every tier-1 file from these with `--originals DIR`
+#     make      tier 1+: what the build did to it
+#
+# NOT HERE, AND WHY. Saturn, Uranus, Neptune, Venus and the Sun keep their 2k maps: the larger Solar
+# System Scope maps of them carry no detail the 2k ones lack (Saturn's "8k" is 4096 wide and differs
+# from its own 2k upsample by 0.57 grey levels RMS, measured 2026-09-28). The Moon's NASA SVS CGI Moon
+# Kit map is a flat albedo map: it wants the LOLA normal map beside it, which belongs with the
+# physical-lighting PR, and without it the Moon would lose the relief the 2k map carries. USGS's
+# Viking Mars mosaic is 12 GB at its one published resolution. Bjorn Jonsson's and Steve Albers'
+# maps are the best of several worlds and their terms forbid hosting them; they are refused by name.
+textures:
+  # The id is models.yaml's: registry/worlds.yaml dresses the Earth in `earth-realistic`.
+  - id: earth-realistic
+    world: earth
+    slot: day
+    when: idle
+    files:
+      - tier: 0
+        file: site/textures/2k_earth_daymap.jpg
+        px: [2048, 1024]
+        bytes: 463087
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+      - tier: 1
+        file: site/textures/4k/earth_day_{mm}.webp
+        monthly: true
+        px: [4096, 2048]
+        bytes: [587366, 589298, 584612, 575956, 573982, 585684, 577510, 571606, 586856, 580030, 585554, 587964]
+        format: rgb
+        licence: 'Please credit "NASA Earth Observatory." (Blue Marble: Next Generation page)'
+        credit: "Earth by day (4k): Blue Marble Next Generation, NASA Earth Observatory"
+        source: "https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-map/ (read 2026-09-28)"
+        original: "https://assets.science.nasa.gov/content/dam/science/esd/eo/images/bmng/bmng-base/{month}/world.2004{mm}.3x5400x2700.jpg"
+        make: "scripts/build-textures.py earth-day: 5400 to 4096 wide, graded to the 2k map by a 32-cube table per surface, WebP 86"
+
+  - id: earth-night
+    world: earth
+    slot: night
+    when: idle
+    files:
+      - tier: 0
+        file: site/textures/2k_earth_nightmap.webp
+        px: [2048, 1024]
+        bytes: 84590
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+      - tier: 1
+        file: site/textures/4k/earth_night.webp
+        px: [4096, 2048]
+        bytes: 232346
+        format: mono
+        licence: 'NASA media guidelines: "generally are not subject to copyright in the United States"'
+        credit: "Earth at night (4k): Black Marble 2016, NASA Earth Observatory"
+        source: "https://science.nasa.gov/earth/earth-observatory/earth-at-night/maps/ (read 2026-09-28)"
+        original: "https://assets.science.nasa.gov/content/dam/science/esd/eo/images/imagerecords/144000/144897/BlackMarble_2016_3km_gray.jpg"
+        make: "scripts/build-textures.py earth-night: greyscale 13500 to 4096 wide, levels matched to the 2k map by quantile, WebP 80"
+
+  # A real land/water mask for the ocean glint. No tier-0 file: a phone guesses the ocean from the day map's colour (earth.js OCEAN_MASK), as every device did before tiers.
+  - id: earth-water
+    world: earth
+    slot: water
+    when: idle
+    boot: none
+    files:
+      - tier: 1
+        file: site/textures/4k/earth_water.webp
+        px: [4096, 2048]
+        bytes: 253660
+        format: mono
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Earth water mask (4k): Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        original: "https://www.solarsystemscope.com/textures/download/8k_earth_specular_map.tif"
+        make: "scripts/build-textures.py earth-water: 8192 to 4096 wide by box filter (a coast pixel is the share of it that is water), lossless WebP"
+
+  - id: earth-clouds
+    world: earth
+    slot: clouds
+    when: boot
+    files:
+      - tier: 0
+        file: site/textures/2k_earth_clouds.webp
+        px: [2048, 1024]
+        bytes: 575032
+        format: mono
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+
+  # The id is models.yaml's. The 4k map is the real sky; the 2k map is a painting of it.
+  - id: starfield
+    world: sky
+    slot: map
+    when: idle
+    files:
+      - tier: 0
+        file: site/textures/2k_stars_milky_way.webp
+        px: [2048, 1024]
+        bytes: 60004
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+      - tier: 1
+        file: site/textures/4k/milky_way.webp
+        px: [4096, 2048]
+        bytes: 111648
+        format: rgb
+        licence: 'Please give credit for this item to: NASA/Goddard Space Flight Center Scientific Visualization Studio. Gaia DR2: ESA/Gaia/DPAC.'
+        credit: "Milky Way (4k): NASA/Goddard Space Flight Center Scientific Visualization Studio, Gaia DR2: ESA/Gaia/DPAC"
+        source: "https://svs.gsfc.nasa.gov/4851/ (read 2026-09-28)"
+        original: "https://svs.gsfc.nasa.gov/vis/a000000/a004800/a004851/milkyway_2020_4k_gal.exr"
+        make: "scripts/build-textures.py milky-way: the background map (no Hipparcos or Tycho stars), flipped to the 2k map convention, levels matched to it, WebP 90"
+
+  - id: moon
+    world: moon
+    slot: map
+    when: near
+    files:
+      - tier: 0
+        file: site/textures/2k_moon.jpg
+        px: [2048, 1024]
+        bytes: 1053869
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+      - tier: 1
+        file: site/textures/4k/moon.webp
+        px: [4096, 2048]
+        bytes: 1744972
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        original: "https://www.solarsystemscope.com/textures/download/8k_moon.jpg"
+        make: "scripts/build-textures.py moon: resampled to 4096 x 2048 (Lanczos), WebP 72"
+
+  - id: mercury
+    world: mercury
+    slot: map
+    when: near
+    files:
+      - tier: 0
+        file: site/textures/2k_mercury.jpg
+        px: [2048, 1024]
+        bytes: 872555
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+      - tier: 1
+        file: site/textures/4k/mercury.webp
+        px: [4096, 2048]
+        bytes: 1389708
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        original: "https://www.solarsystemscope.com/textures/download/8k_mercury.jpg"
+        make: "scripts/build-textures.py mercury: resampled to 4096 x 2048 (Lanczos), WebP 72"
+
+  - id: mars
+    world: mars
+    slot: map
+    when: near
+    files:
+      - tier: 0
+        file: site/textures/2k_mars.jpg
+        px: [2048, 1024]
+        bytes: 750547
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+      - tier: 1
+        file: site/textures/4k/mars.webp
+        px: [4096, 2048]
+        bytes: 817910
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        original: "https://www.solarsystemscope.com/textures/download/8k_mars.jpg"
+        make: "scripts/build-textures.py mars: resampled to 4096 x 2048 (Lanczos), WebP 84"
+
+  - id: jupiter
+    world: jupiter
+    slot: map
+    when: near
+    files:
+      - tier: 0
+        file: site/textures/2k_jupiter.jpg
+        px: [2048, 1024]
+        bytes: 498976
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+      - tier: 1
+        file: site/textures/4k/jupiter.webp
+        px: [4096, 2048]
+        bytes: 351130
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        original: "https://www.solarsystemscope.com/textures/download/8k_jupiter.jpg"
+        make: "scripts/build-textures.py jupiter: resampled to 4096 x 2048 (Lanczos), WebP 84"
+
+  - id: sun
+    world: sun
+    slot: map
+    when: boot
+    files:
+      - tier: 0
+        file: site/textures/2k_sun.jpg
+        px: [2048, 1024]
+        bytes: 822427
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+
+  - id: venus
+    world: venus
+    slot: map
+    when: boot
+    files:
+      - tier: 0
+        file: site/textures/2k_venus_atmosphere.jpg
+        px: [2048, 1024]
+        bytes: 229696
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+
+  - id: saturn
+    world: saturn
+    slot: map
+    when: boot
+    files:
+      - tier: 0
+        file: site/textures/2k_saturn.jpg
+        px: [2048, 1024]
+        bytes: 199916
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+
+  - id: saturn-ring
+    world: saturn
+    slot: ring
+    when: boot
+    files:
+      - tier: 0
+        file: site/textures/2k_saturn_ring_alpha.png
+        px: [2048, 125]
+        bytes: 12119
+        format: rgba
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+
+  - id: uranus
+    world: uranus
+    slot: map
+    when: boot
+    files:
+      - tier: 0
+        file: site/textures/2k_uranus.jpg
+        px: [2048, 1024]
+        bytes: 77751
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+
+  - id: neptune
+    world: neptune
+    slot: map
+    when: boot
+    files:
+      - tier: 0
+        file: site/textures/2k_neptune.jpg
+        px: [2048, 1024]
+        bytes: 241580
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+
+  # The moons a trip flies to (#322, 2026-09-28): public-domain NASA/USGS maps, one size for every
+  # device. registry/models.yaml carries the same file, credit and source under the same id.
+  - id: io
+    world: io
+    slot: map
+    when: boot
+    files:
+      - tier: 0
+        file: site/textures/1k_io_usgs.jpg
+        px: [1224, 612]
+        bytes: 118131
+        format: rgb
+        licence: "Public domain"
+        credit: "Io map: USGS Astrogeology Science Center (Galileo SSI), public domain"
+        source: "https://commons.wikimedia.org/wiki/File:Io_modest_scale_map_Io_SSI-only_color_SIMP0_med.cub.jpg (read 2026-09-28)"
+
+  - id: europa
+    world: europa
+    slot: map
+    when: boot
+    files:
+      - tier: 0
+        file: site/textures/1k_europa_usgs.jpg
+        px: [1024, 512]
+        bytes: 89436
+        format: rgb
+        licence: "Public domain"
+        credit: "Europa map: USGS / PDS (Voyager and Galileo SSI), public domain"
+        source: "https://commons.wikimedia.org/wiki/File:Europa_Voyager_GalileoSSI_global_mosaic.jpg (read 2026-09-28)"
+
+  - id: enceladus
+    world: enceladus
+    slot: map
+    when: boot
+    files:
+      - tier: 0
+        file: site/textures/1k_enceladus_cassini.jpg
+        px: [1024, 512]
+        bytes: 222843
+        format: rgb
+        licence: "Public domain"
+        credit: "Enceladus map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute, public domain"
+        source: "https://commons.wikimedia.org/wiki/File:Enceladus_Color_Map.jpg (read 2026-09-28)"
+
+  - id: triton
+    world: triton
+    slot: map
+    when: boot
+    files:
+      - tier: 0
+        file: site/textures/1k_triton_voyager.jpg
+        px: [1024, 512]
+        bytes: 71547
+        format: rgb
+        licence: "Public domain"
+        credit: "Triton map: NASA/JPL-Caltech/Lunar and Planetary Institute (Voyager 2), public domain"
+        source: "https://commons.wikimedia.org/wiki/File:Triton_Map.jpg (read 2026-09-28)"
+
+  - id: pluto
+    world: pluto
+    slot: map
+    when: boot
+    files:
+      - tier: 0
+        file: site/textures/2k_pluto_newhorizons.jpg
+        px: [2048, 1024]
+        bytes: 274287
+        format: rgb
+        licence: "Public domain"
+        credit: "Pluto map: NASA/JHUAPL/SwRI (New Horizons, PIA20658), public domain"
+        source: "https://commons.wikimedia.org/wiki/File:PIA20658-Pluto-Global-released20160502.jpg (read 2026-09-28)"

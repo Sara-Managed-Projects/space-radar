@@ -27,6 +27,7 @@ import { COPY, t, fmt, ageInWords } from '../copy/en.js';
 import { createSpaceWeather } from './spaceweather.js';
 import { creditsText } from './sound.js';
 import { AUDIO } from '../data/audio.js';
+import { tierLine } from '../scene/quality.js';
 
 const HOST_ID = 'sr-status';
 const REFRESH_MS = 5000;
@@ -325,6 +326,14 @@ function renderAttribution(ctx, into) {
   if (!seen.size) into.appendChild(el('li', 'sr-credit sr-credit--empty', COPY.status.sourcesEmpty));
 }
 
+function renderMaps(ctx, into) {
+  const q = ctx.quality;
+  if (!q) { into.hidden = true; return; }
+  const text = tierLine(q.describe(), COPY.quality) + ' ' + t(COPY.quality.mapsWorn, { credits: q.credits().join('; ') });
+  if (into.textContent !== text) into.textContent = text;
+  into.hidden = false;
+}
+
 // ---------------------------------------------------------------------------------------
 // Contract export
 // ---------------------------------------------------------------------------------------
@@ -371,6 +380,10 @@ export function createStatus(ctx) {
     creditBlock.appendChild(cloudsLine);
     for (const line of ctx.liveClouds.credit()) creditBlock.appendChild(el('p', 'sr-status__intro sr-status__clouds-credit', line));
   }
+  // The device tier and the maps it is wearing (scene/texturetiers.js, 2026-09-28): the 4k maps are
+  // other people's pictures too, and which ones are on screen depends on the device.
+  const maps = el('p', 'sr-status__intro sr-status__maps');
+  creditBlock.appendChild(maps);
   node.appendChild(creditBlock);
 
   const paint = () => {
@@ -380,6 +393,7 @@ export function createStatus(ctx) {
       renderLayers(ctx, layerList);
       renderAttribution(ctx, creditList);
       if (cloudsLine) cloudsLine.textContent = ctx.liveClouds.line(ctx.clock ? ctx.clock.now() : Date.now());
+      renderMaps(ctx, maps);
     } catch {
       /* keep the last good panel rather than blanking the one page that says what is wrong */
     }

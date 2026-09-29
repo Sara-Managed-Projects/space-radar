@@ -1518,6 +1518,16 @@ export const COPY = {
   quality: {
     dataSaver: 'Your connection asked for data-saving, so the two biggest catalogues wait until you switch them on.',
     lowered: 'Frames were taking {ms} ms, so the picture is drawn at one pixel per pixel without the Milky Way backdrop.',
+    // The device tier (scene/quality.js, 2026-09-28): which maps this device wears, and why.
+    tierPhone: 'Surface maps at 2k, the size a phone has memory for.',
+    tierSaver: 'Surface maps at 2k, because your connection asked to save data.',
+    tierSmall: 'Surface maps at 2k, sized for this device’s graphics memory.',
+    tierLatched: 'Surface maps back at 2k, because frames were slow.',
+    tier1: 'Surface maps at 4k, fetched after the first picture while nothing else was happening.',
+    tier2: 'Surface maps at 4k, with more worlds kept sharp at once.',
+    promoted: 'Raised one step after three seconds of fast frames.',
+    // The Sources panel's credits: the maps the scene is wearing on this device right now.
+    mapsWorn: 'Maps on this device: {credits}.',
   },
 
   status: {

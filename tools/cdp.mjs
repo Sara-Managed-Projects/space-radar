@@ -32,7 +32,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const [url, scriptPath] = process.argv.slice(2).filter((a) => !a.startsWith('--'));
-if (!url || !scriptPath) { console.error('usage: node tools/cdp.mjs <url> <script.js> [--width=] [--height=] [--mobile] [--shot=] [--shot-dir=] [--reduced-motion] [--cpuprofile=] [--block=host,...] [--bytes=]'); process.exit(2); }
+if (!url || !scriptPath) { console.error('usage: node tools/cdp.mjs <url> <script.js> [--width=] [--height=] [--mobile] [--shot=] [--shot-dir=] [--reduced-motion] [--cpuprofile=] [--block=host,...] [--bytes=] [--net=4g|3g]'); process.exit(2); }
 const arg = (n, d) => { const h = process.argv.find((a) => a.startsWith('--' + n + '=')); return h ? h.slice(n.length + 3) : d; };
 const W = Number(arg('width', '1280'));
 const H = Number(arg('height', '800'));
@@ -76,6 +76,12 @@ const SHOT_DIR = arg('shot-dir', '');
 // be measured the way screens.yml measures the CI server.
 const BYTES = arg('bytes', '');
 const requests = new Map();
+// --net=4g|3g: a known connection. Headless Chrome's network-quality estimate at boot is whatever it
+// has not measured yet, and on 2026-09-28 it told the app `navigator.connection` was slow: every
+// probe so far ran the app in data-saver without saying so (heavy layers deferred, and since the
+// device tiers, the phone's 2k maps on a desktop). DevTools throttling sets the estimate, so the
+// app reads 4g (or 3g) from its first line. 4g is 100 Mbit/s at 10 ms, so it slows nothing here.
+const NET = arg('net', '');
 const trace = (m) => { if (process.env.CDP_TRACE) process.stderr.write('[cdp] ' + m + '\n'); };
 
 const CHROME = process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
@@ -194,6 +200,18 @@ try {
       platform: 'Android',
       userAgentMetadata: { platform: 'Android', platformVersion: '14', architecture: '', model: 'Pixel 8', mobile: true, brands: [{ brand: 'Chromium', version: '153' }], fullVersion: '153.0.0.0' },
     }, sessionId);
+  }
+  if (NET) {
+    const fast = NET === '4g';
+    await send(ws, 'Network.enable', {}, sessionId);
+    await send(ws, 'Network.emulateNetworkConditions', {
+      offline: false,
+      latency: fast ? 10 : 300,
+      downloadThroughput: fast ? 12.5e6 : 50e3,
+      uploadThroughput: fast ? 5e6 : 25e3,
+      connectionType: fast ? 'wifi' : 'cellular3g',
+    }, sessionId);
+    trace('network ' + NET);
   }
   if (REDUCED) {
     await send(ws, 'Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] }, sessionId);

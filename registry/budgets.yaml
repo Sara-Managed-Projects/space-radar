@@ -30,4 +30,11 @@ budgets:
   - {id: audio_total_kb, value: 3000, unit: kB, since: 2026-09-22, reason: "spec 0035"}
   - {id: og_png_min_bytes, value: 50000, unit: bytes, since: 2026-09-22, reason: "under 50 kB a 1200x630 frame is empty (#157's lesson)"}
   - {id: home_js_kb, value: 8, unit: kB, since: 2026-09-22, reason: "spec 0042", pending: "spec 0042"}
+  # The device tiers (2026-09-29): what a T1 laptop downloads AFTER the first frame, when idle, and the
+  # GPU memory its maps may hold. Measured in headless Chrome at 1440x900: 1 184 510 B for September
+  # (day 586 856 + night 232 346 + water 253 660 + Milky Way 111 648); the largest month is 589 298.
+  # GPU: 129.3 MiB of maps at idle with today's clouds on, 182.6 MiB with Mars at 4k (tests/test_tiers.mjs
+  # recomputes the worst case from registry/textures.yaml against this).
+  - {id: tier1_idle_bytes, value: 1300000, unit: bytes, since: 2026-09-29, reason: "1 187 244 B worst month, measured 2026-09-29; ~10 % margin"}
+  - {id: tier1_texture_gpu_mib, value: 250, unit: MiB, since: 2026-09-29, reason: "docs/toolkit.md: 150 phone, 400 desktop; T1 between (realism study section 5)"}
   - {id: reel_heap_growth_pct, value: 20, unit: percent, since: 2026-09-22, reason: "spec 0036 task 4, one hour on SwiftShader", pending: "spec 0036 task 4"}

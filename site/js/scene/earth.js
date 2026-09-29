@@ -187,6 +187,13 @@ uniform sampler2D uLiveA;
 uniform sampler2D uLiveB;
 uniform float uLiveFade;
 uniform float uLive;
+// 2026-09-28, the 4k tier (scene/texturetiers.js). uWater is a real land/water mask, one channel,
+// 1 = water; until it arrives (and on a phone, which never fetches it) the ocean is guessed from the
+// day map's colour as before. uNightMono is 1 when the night map is one grey channel uploaded as R8
+// (a quarter of the GPU memory of RGBA), whose bytes are still sRGB-encoded and are decoded here.
+uniform sampler2D uWater;
+uniform float uHasWater;
+uniform float uNightMono;
 
 uniform vec3  uSunDir;        // unit, scene/world axes
 uniform vec3  uSunDirLocal;   // unit, mesh-local (= earth-fixed) axes
@@ -284,8 +291,13 @@ void main() {
 
   // ---- ground ---------------------------------------------------------------------------------
   vec3 dayTex = mix( vec3( 0.04, 0.08, 0.15 ), texture2D( uDay, vUv ).rgb, uHasDay );
-  float ocean = smoothstep( uOceanMask.x, uOceanMask.y, dayTex.b - dayTex.r )
-              * smoothstep( uOceanMask.x * 0.5, uOceanMask.y, dayTex.b - dayTex.g );
+  float oceanGuess = smoothstep( uOceanMask.x, uOceanMask.y, dayTex.b - dayTex.r )
+                   * smoothstep( uOceanMask.x * 0.5, uOceanMask.y, dayTex.b - dayTex.g );
+  // The real mask counts frozen sea as water, and ice is not a mirror: brightness above what any
+  // open water reaches (the graded ocean is ~0.05 linear) takes the glint off it.
+  float oceanReal = texture2D( uWater, vUv ).r
+                  * ( 1.0 - smoothstep( 0.18, 0.40, dot( dayTex, vec3( 0.2126, 0.7152, 0.0722 ) ) ) );
+  float ocean = mix( oceanGuess, oceanReal, uHasWater );
   vec3 ground = dayTex * ( lambert * sunTint * ( 1.0 - 0.55 * shade * dayMix ) + uAmbient );
 
   // ---- ocean specular --------------------------------------------------------------------------
@@ -302,8 +314,8 @@ void main() {
 
   // ---- night lights ----------------------------------------------------------------------------
   float nightAmt = 1.0 - dayMix;
-  vec3 nightTex = texture2D( uNight, vUv ).rgb * uHasNight;
-  float lit = dot( nightTex, vec3( 0.2126, 0.7152, 0.0722 ) );
+  vec4 nightTex = texture2D( uNight, vUv );
+  float lit = mix( dot( nightTex.rgb, vec3( 0.2126, 0.7152, 0.0722 ) ), pow( nightTex.r, 2.2 ), uNightMono ) * uHasNight;
   vec3 cities = uNightTint * lit * uNightGain * pow( nightAmt, 1.5 ) * ( 1.0 - cloud * 0.75 );
 
   vec3 colour = ground + specular + cities;
@@ -578,6 +590,9 @@ export function createEarth(textures, opts = {}) {
       uHasDay: { value: (t.day || t.dayMap) && !placeholder ? 1 : 0 },
       uHasNight: { value: (t.night || t.nightMap) && textureReady(night) ? 1 : 0 },
       uHasClouds: { value: (t.clouds || t.cloudMap || t.cloud) && textureReady(clouds) ? 1 : 0 },
+      uWater: { value: blank() },
+      uHasWater: { value: 0 },
+      uNightMono: { value: 0 },
       uSunDir: { value: new THREE.Vector3(1, 0, 0) },
       uSunDirLocal: { value: new THREE.Vector3(1, 0, 0) },
       uCloudOffset: { value: new THREE.Vector2(0, 0) },
@@ -798,6 +813,45 @@ export function setEarthTextures(mesh, textures) {
     u[flag].value = 1;
     if (old && old.dispose && old !== tex) old.dispose();
   }
+}
+
+/**
+ * The tiered maps (scene/texturetiers.js, 2026-09-28): put `tex` in one slot, or null to put the
+ * boot map back. Returns the texture that was there, which the caller keeps: the 2k map is what a
+ * latched device goes back to, and it is the caller's to dispose or to keep.
+ *
+ * Separate from setEarthTextures on purpose: that one is the clouds' path, and a slot swapped here
+ * never disposes anything, because the caller may want the old map again.
+ *
+ * @param {THREE.Mesh} mesh
+ * @param {'day'|'night'|'water'} slot
+ * @param {THREE.Texture|null} tex    null: back to what was there before the first swap
+ * @param {{mono?: boolean}} [opts]   night only: the map is one grey channel (RedFormat)
+ */
+export function setEarthMap(mesh, slot, tex, opts = {}) {
+  if (!mesh || !mesh.material || !mesh.material.uniforms) return null;
+  const u = mesh.material.uniforms;
+  const key = { day: 'uDay', night: 'uNight', water: 'uWater' }[slot];
+  if (!key) return null;
+  const base = mesh.userData.baseMaps || (mesh.userData.baseMaps = {});
+  const old = u[key].value;
+  if (!(slot in base)) base[slot] = { tex: old, mono: u.uNightMono.value };
+  if (tex) {
+    u[key].value = tex;
+    if (slot === 'water') u.uHasWater.value = 1;
+    if (slot === 'night') u.uNightMono.value = opts.mono ? 1 : 0;
+  } else {
+    u[key].value = base[slot].tex;
+    if (slot === 'water') u.uHasWater.value = 0;
+    if (slot === 'night') u.uNightMono.value = base[slot].mono;
+  }
+  return old;
+}
+
+/** True once every boot map has decoded and taken its slot: a tier swap before that would be undone. */
+export function earthMapsSettled(mesh) {
+  const pending = mesh && mesh.userData && mesh.userData.pendingMaps;
+  return !pending || pending.length === 0;
 }
 
 /** Sun direction on the surface, for anyone who wants the sub-solar point. Radians, earth-fixed. */

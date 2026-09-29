@@ -50,7 +50,14 @@ edit to a file we do not ship, and does not change the notice attached to this c
 
 ## 2. Textures
 
-`site/textures/` holds **14** files (not 13). Every one of them carries a filename from the Solar
+**Two tiers since 2026-09-28.** `registry/textures.yaml` is the record of every map, with its file
+per device tier, licence, credit and source; `scripts/check_registry.py` refuses a row missing any
+of them and a file under `site/textures/` that no row names. The 14 files described next are tier 0,
+the set every visitor boots with. The 4k tier under `site/textures/4k/` is described after them.
+
+### Tier 0: the Solar System Scope 2k set
+
+`site/textures/` holds **14** files at its top level (not 13). Every one of them carries a filename from the Solar
 System Scope free texture pack, is 2048 × 1024 equirectangular (the pack's "2k" tier), and — for
 twelve of the fourteen — an identical Adobe Photoshop CC (Windows) XMP fingerprint from the same
 2015–2016 authoring session.
@@ -122,11 +129,44 @@ turn so longitude 0, the Charon-facing side, is at the centre.
 | `1k_triton_voyager.jpg` | Triton | Public domain | [NASA/JPL-Caltech/LPI, Voyager 2](https://commons.wikimedia.org/wiki/File:Triton_Map.jpg) |
 | `2k_pluto_newhorizons.jpg` | Pluto | Public domain | [NASA/JHUAPL/SwRI, New Horizons PIA20658](https://commons.wikimedia.org/wiki/File:PIA20658-Pluto-Global-released20160502.jpg) |
 
-**Beyond these five, no texture in the tree comes from anywhere else.** In particular, `registry/models.yaml` claims
+**Beyond these five, no tier-0 texture comes from anywhere else.** In particular, `registry/models.yaml` claims
 the night-side texture comes from NASA Earth Observatory's Night Lights and the starfield from NASA
 SVS 4851. Neither is what shipped: `2k_earth_nightmap.webp` and `2k_stars_milky_way.webp` are Solar
 System Scope files, by name, size and fingerprint. The registry is wrong and the table above is
-right. See [§5](#5-corrections-to-registrymodelsyaml).
+right. See [§5](#5-corrections-to-registrymodelsyaml). (Since 2026-09-28 the 4k tier below does
+carry a NASA night map and the SVS 4851 Milky Way; the 2k files are still Solar System Scope's.)
+
+### Tier 1: the 4k set (`site/textures/4k/`, 2026-09-28)
+
+Fetched only by a laptop or desktop, after the first frame, when the browser is idle
+(`site/js/scene/texturetiers.js`); a phone never asks for them. Every file is rebuilt from its
+original by `scripts/build-textures.py --originals DIR`; the originals are not committed.
+
+| File | Used for | Source | Licence, quoted | Changes |
+|---|---|---|---|---|
+| `4k/earth_day_01.webp` … `4k/earth_day_12.webp` | Earth by day, the clock's month | Blue Marble: Next Generation, base map, 2004, 5400 × 2700 (<https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-map/>) | "Anyone using or republishing Blue Marble: Next Generation please credit “NASA Earth Observatory.”" | resampled to 4096 × 2048; colour-graded to the 2k Solar System Scope map (a 32-cube table per surface fitted on June), WebP 86 |
+| `4k/earth_night.webp` | Earth's night lights | Black Marble 2016, greyscale, 13500 × 6750 (<https://science.nasa.gov/earth/earth-observatory/earth-at-night/maps/>) | NASA Images and Media Usage Guidelines: texture maps "generally are not subject to copyright in the United States" | resampled to 4096 × 2048, levels matched to the 2k map, one grey channel, WebP 80 |
+| `4k/earth_water.webp` | the ocean glint's land/water mask | Solar System Scope `8k_earth_specular_map.tif` | CC BY 4.0, as tier 0 | box-filtered to 4096 × 2048, lossless WebP |
+| `4k/milky_way.webp` | the Milky Way sky sphere | NASA SVS Deep Star Maps 2020, `milkyway_2020_4k_gal.exr`, the background without the Hipparcos and Tycho stars (<https://svs.gsfc.nasa.gov/4851/>) | "Please give credit for this item to: NASA/Goddard Space Flight Center Scientific Visualization Studio. Gaia DR2: ESA/Gaia/DPAC." | flipped top to bottom, brightness matched to the 2k map, 60 % saturation, sRGB, WebP 90 |
+| `4k/moon.webp`, `4k/mercury.webp`, `4k/mars.webp`, `4k/jupiter.webp` | those worlds, close up | Solar System Scope `8k_moon.jpg`, `8k_mercury.jpg`, `8k_mars.jpg`, `8k_jupiter.jpg` (Jupiter's is 4096 wide) | CC BY 4.0, as tier 0 | resampled to 4096 × 2048, WebP (72 for the Moon and Mercury, 84 otherwise) |
+
+**Credit lines printed in the app** (the Sources panel lists the ones in use on the device; each is
+checked against this list by `scripts/check_registry.py`):
+
+- Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0
+- Earth by day (4k): Blue Marble Next Generation, NASA Earth Observatory
+- Earth at night (4k): Black Marble 2016, NASA Earth Observatory
+- Earth water mask (4k): Solar System Scope (solarsystemscope.com), CC BY 4.0
+- Milky Way (4k): NASA/Goddard Space Flight Center Scientific Visualization Studio, Gaia DR2: ESA/Gaia/DPAC
+- Io map: USGS Astrogeology Science Center (Galileo SSI), public domain
+- Europa map: USGS / PDS (Voyager and Galileo SSI), public domain
+- Enceladus map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute, public domain
+- Triton map: NASA/JPL-Caltech/Lunar and Planetary Institute (Voyager 2), public domain
+- Pluto map: NASA/JHUAPL/SwRI (New Horizons, PIA20658), public domain
+
+**Refused by name**, because their terms forbid hosting copies: Björn Jónsson's maps ("please do
+not place a copy of the maps on your website") and Steve Albers' ("intended for personal
+non-commercial use only").
 
 ## 3. Star and constellation data
 
@@ -847,13 +887,15 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 ### Solar System Scope textures — CC BY 4.0
 
-Applies to every file in `site/textures/`.
+Applies to the 14 files at the top of `site/textures/`, and to `4k/earth_water.webp`, `4k/moon.webp`,
+`4k/mercury.webp`, `4k/mars.webp` and `4k/jupiter.webp`.
 
 ```
 Planet and star textures © Solar System Scope — https://www.solarsystemscope.com/textures/
 Licensed under the Creative Commons Attribution 4.0 International License
 https://creativecommons.org/licenses/by/4.0/
-Used unmodified.
+The 2k files: used unmodified (three re-encoded to WebP, same pixels).
+The 4k files: resampled from the 8k originals, re-encoded as WebP; the water mask box-filtered.
 
 The publisher's stated terms: "Distributed under Attribution 4.0 International license:
 You may use, adapt, and share these textures for any purpose, even commercially."

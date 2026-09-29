@@ -21,6 +21,18 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
+
+def textures_into(work: Path) -> None:
+    """site/textures/ with its bytes: registry/textures.yaml states each file's size and pixels and
+    the validator reads both from the file (2026-09-28). Hard links where the filesystem allows,
+    because this runs once per case and the tree is 10 MB."""
+    def link(src, dst):
+        try:
+            os.link(src, dst)
+        except OSError:
+            shutil.copy2(src, dst)
+    shutil.copytree(ROOT / "site" / "textures", work / "site" / "textures", copy_function=link)
+
 CASES: list[tuple[str, str, str, str]] = [
     # (name, file, find, replace)
     ("layer names a source that does not exist",
@@ -546,6 +558,28 @@ CASES: list[tuple[str, str, str, str]] = [
     # The audio check reads its ceiling from the budget now, so raising a bed means raising the row.
     ("a bed over the bed_kb budget",
      "budgets.yaml", "id: bed_kb, value: 600,", "id: bed_kb, value: 500,"),
+    # --- registry/textures.yaml (2026-09-28, the device tiers) ---------------------------------
+    # A map is somebody's picture on every visitor's screen, and a 4k one is the biggest download
+    # after the first visit. No credit, no file, the wrong size, or an author whose terms forbid
+    # hosting their maps: each is refused, by the file's name.
+    ("a map with no credit",
+     "textures.yaml", 'credit: "Earth at night (4k): Black Marble 2016, NASA Earth Observatory"', 'credit: ""'),
+    ("a map with no licence",
+     "textures.yaml", """licence: 'NASA media guidelines: "generally are not subject to copyright in the United States"'""", "licence: ''"),
+    ("a map whose credit CREDITS.md does not carry",
+     "textures.yaml", 'credit: "Earth at night (4k): Black Marble 2016, NASA Earth Observatory"',
+     'credit: "Earth at night: NASA"'),
+    ("a map whose file is not in the tree",
+     "textures.yaml", "file: site/textures/4k/mars.webp", "file: site/textures/4k/mars-8k.webp"),
+    ("a map whose bytes are not the file's",
+     "textures.yaml", "bytes: 817910", "bytes: 717910"),
+    ("a map whose pixels are not the file's",
+     "textures.yaml", "file: site/textures/4k/mars.webp\n        px: [4096, 2048]", "file: site/textures/4k/mars.webp\n        px: [8192, 4096]"),
+    ("a map from an author whose terms forbid hosting it",
+     "textures.yaml", 'original: "https://www.solarsystemscope.com/textures/download/8k_mars.jpg"',
+     'original: "http://bjj.mmedia.is/data/mars/mars_map.jpg"'),
+    ("a boot map that is not the one models.yaml credits",
+     "textures.yaml", "file: site/textures/2k_mars.jpg", "file: site/textures/2k_mercury.jpg"),
 ]
 
 
@@ -822,7 +856,8 @@ def check_tour_refusals() -> int:
             # the validator ACCEPTS the file -- and an accept case cannot be run in a tree the
             # validator already rejects for missing model files. Names, not bytes: the question is
             # whether a row is refused, not whether a GLB parses.
-            for src in ("site/models", "site/textures", "site/data"):
+            textures_into(work)
+            for src in ("site/models", "site/data"):
                 d = work / src
                 d.mkdir(parents=True, exist_ok=True)
                 for f in (ROOT / src).glob("*"):
@@ -952,6 +987,7 @@ def check_models_dir_refuses() -> int:
             shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")
             shutil.copytree(ROOT / "harvest", work / "harvest",
                             ignore=shutil.ignore_patterns("__pycache__"))
+            textures_into(work)
             models = work / "site" / "models"
             models.mkdir(parents=True)
             for name in listed:
@@ -1069,6 +1105,8 @@ def main() -> int:
             shutil.copy2(ROOT / "site" / "data" / "stars3d.names.json", work / "site" / "data" / "stars3d.names.json")
             # ...and registry/systems.yaml against the exoplanet table its planets are records of.
             shutil.copy2(ROOT / "site" / "data" / "exoplanets.csv", work / "site" / "data" / "exoplanets.csv")
+            # ...and registry/textures.yaml against the maps it names.
+            textures_into(work)
             # ...and registry/worlds.yaml against its two hand mirrors in the browser.
             (work / "site" / "js" / "scene").mkdir(parents=True, exist_ok=True)
             for js in ("worlds.js", "stage.js"):

@@ -91,6 +91,10 @@ jobs:
         run: python3 scripts/gen_sites_js.py --check
       - name: The harvester's source mirror matches the registry
         run: python3 scripts/gen_sources_json.py --check
+      # 2026-09-28, the device tiers: the browser picks each map's file for its tier from this mirror,
+      # so a stale one is a laptop fetching a 4k map that is not there, or never fetching one that is.
+      - name: The texture-tier mirror matches the registry
+        run: python3 scripts/gen_textures_js.py --check
       # Every parser against what its source really sends (captured fixtures), the never-worse
       # guard at 0 / 49 % / 50 %, CelesTrak's "has not updated since" as not-modified, a missing
       # secret as a skip, and one whole run into a directory. No network: CelesTrak allows one
@@ -298,6 +302,11 @@ jobs:
         run: node tests/test_trains.mjs
       - name: the frame-rate latch trips once after three slow seconds; data-saver reads the connection (spec 0026 req 18)
         run: node tests/test_quality.mjs
+      # The device tiers (2026-09-28): the tier from capability fixtures, one promotion by frames and
+      # none past the latch, 4k fetched one at a time after the first frame and never on a phone,
+      # and a boot set that is byte for byte what a first visit loaded before tiers existed.
+      - name: a phone keeps the 2k maps, a laptop gets 4k after the first frame, and the latch is the only way down
+        run: node tests/test_tiers.mjs
       - name: colour keys bucket records by fields they hold and count the unknown (spec 0026 req 11)
         run: node tests/test_colorkeys.mjs
       - name: a satellite behind the Earth is in its shadow, one in front is lit (spec 0026 req 12)

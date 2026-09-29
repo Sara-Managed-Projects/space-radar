@@ -15,6 +15,7 @@
 
 import { readMoment, writeMoment } from './urlstate.js';
 import { COPY, CITIES, t, fmt, timeText, inWords, compassWords, fistsWords } from '../copy/en.js';
+import { tierLine } from '../scene/quality.js';
 import { predictPasses } from '../sky/passes.js';
 import { createSearch } from './search.js';
 import { LADDER_RUNGS, WE_SHOW } from '../data/ladder.js';
@@ -314,6 +315,16 @@ function buildLayers(ctx, state) {
     if (!d) return;
     quality.textContent = d.level === 'data-saver' ? COPY.quality.dataSaver : t(COPY.quality.lowered, { ms: d.medianMs || '' });
     quality.hidden = false;
+  });
+  // The device tier (scene/quality.js, 2026-09-28): one line saying which maps this device wears.
+  const tier = el('p', 'sr-layers__quality sr-layers__tier');
+  tier.hidden = true;
+  wrap.appendChild(tier);
+  window.addEventListener('sr:tier', (e) => {
+    const d = e && e.detail;
+    if (!d) return;
+    tier.textContent = tierLine(d, COPY.quality);
+    tier.hidden = false;
   });
 
   const layers = layerList(ctx);

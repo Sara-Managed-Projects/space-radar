@@ -54,8 +54,10 @@ import { showChooser, hideChooser } from './ui/chooser.js';
 import { createLabels } from './ui/labels.js';
 import { createOrbitLine } from './scene/orbitline.js';
 import { createOrbitRings } from './scene/orbitrings.js';
-import { createFrameLatch, shouldSaveData } from './scene/quality.js';
+import { createFrameLatch, shouldSaveData, chooseTier, createTierPromoter } from './scene/quality.js';
 import { createLiveClouds } from './scene/liveclouds.js';
+import { createTextureTiers } from './scene/texturetiers.js';
+import { setEarthMap, earthMapsSettled } from './scene/earth.js';
 import { keyById, bucketOf } from './data/colorkeyrules.js';
 
 const MOMENTS = ['wonder', 'now', 'next'];
@@ -258,6 +260,11 @@ export async function boot({ setStatus } = {}) {
     window.__srLayersReady = true;
     window.dispatchEvent(new CustomEvent('sr:layers-ready'));
   });
+
+  // The device tier (scene/quality.js, 2026-09-28), decided before the first frame and acted on
+  // only after it: the boot set is the same for every device, and a laptop swaps sharper maps in
+  // when the browser is idle (scene/texturetiers.js).
+  ctx.quality = createQuality(ctx, renderer, starfield, worlds);
 
   startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfield, heroes, lod });
   fadeBoot();
@@ -632,6 +639,101 @@ export async function boot({ setStatus } = {}) {
   return ctx;
 }
 
+// --- the device tier ---------------------------------------------------------
+
+function createQuality(ctx, renderer, starfield, worlds) {
+  const nav = typeof navigator !== 'undefined' ? navigator : {};
+  const mm = (q) => !!(window.matchMedia && window.matchMedia(q).matches);
+  const scr = typeof screen !== 'undefined' ? screen : {};
+  const pick = chooseTier({
+    maxTextureSize: renderer.capabilities && renderer.capabilities.maxTextureSize,
+    deviceMemory: nav.deviceMemory,
+    hardwareConcurrency: nav.hardwareConcurrency,
+    connection: nav.connection,
+    // A touch screen with no mouse or trackpad anywhere: a laptop with a touch screen is not a phone.
+    coarsePointer: mm('(pointer: coarse)') && !mm('(any-pointer: fine)'),
+    screenW: scr.width,
+    screenH: scr.height,
+  });
+  // `?tier=0|1|2` pins the tier (2026-09-29): to compare the tiers on one machine, and for the probes,
+  // whose headless SwiftShader would otherwise always read as a T1 laptop. A query key, not the hash:
+  // it is not view state and ui/urlstate.js never sees it.
+  const forced = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('tier') : null;
+  if (forced !== null && /^[012]$/.test(forced)) {
+    pick.tier = Number(forced);
+    pick.ceiling = pick.tier;
+    pick.reasons = ['pinned by ?tier=' + forced];
+  }
+  const promoter = createTierPromoter({ tier: pick.tier, ceiling: pick.ceiling });
+  const aniso = renderer.capabilities && renderer.capabilities.getMaxAnisotropy ? renderer.capabilities.getMaxAnisotropy() : 8;
+  const loader = new THREE.TextureLoader();
+  const earthMesh = () => worlds.meshFor('earth');
+  const tiers = createTextureTiers({
+    tier: pick.tier,
+    month: () => new Date(clock.now()).getUTCMonth() + 1,
+    // decode() before the texture is handed over: Chrome otherwise decodes a 4k image on the main
+    // thread inside the upload, in the middle of a frame.
+    load: (url, file) => loader.loadAsync(url).then((tex) => {
+      const img = tex.image;
+      return img && typeof img.decode === 'function' ? img.decode().then(() => tex, () => tex) : tex;
+    }).then((tex) => {
+      // One grey channel (the water mask, the night lights) goes up as R8: a quarter of RGBA's GPU
+      // memory. Its bytes stay as encoded; earth.js decodes the night map itself.
+      if (file.format === 'mono') {
+        tex.format = THREE.RedFormat;
+        tex.colorSpace = THREE.NoColorSpace;
+      } else {
+        tex.colorSpace = THREE.SRGBColorSpace;
+      }
+      tex.anisotropy = aniso;
+      tex.needsUpdate = true;
+      return tex;
+    }),
+    targets: {
+      earth: {
+        ready: () => !!earthMesh() && earthMapsSettled(earthMesh()),
+        set: (slot, tex, file) => setEarthMap(earthMesh(), slot, tex, { mono: !!(file && file.format === 'mono') }),
+      },
+      sky: {
+        ready: () => !!(starfield.state && starfield.state.milkyway) && !(ctx.latch && ctx.latch.latched),
+        set: (tex) => starfield.setMilkyWayMap(tex),
+      },
+      worlds: {
+        ready: (id) => worlds.hasMap(id),
+        set: (id, tex) => worlds.setMap(id, tex),
+        // Device pixels of radius: the share of half the view's height, times half the drawing buffer.
+        px: (id) => worlds.discShare(id) * (renderer.domElement ? renderer.domElement.height / 2 : 400),
+        selected: () => {
+          const s = ctx.selected();
+          return s && s.klass === 'world' ? s.id : null;
+        },
+      },
+    },
+  });
+  const say = () => window.dispatchEvent(new CustomEvent('sr:tier', { detail: api.describe() }));
+  const api = {
+    get tier() { return tiers.tier; },
+    bootTier: pick.tier,
+    ceiling: pick.ceiling,
+    reasons: pick.reasons,
+    get promoted() { return promoter.promoted; },
+    textures: () => tiers.state(),
+    credits: () => tiers.credits(),
+    describe: () => ({ tier: tiers.tier, bootTier: pick.tier, promoted: promoter.promoted, latched: tiers.latched, reasons: pick.reasons }),
+    /** After the first frame (startLoop). */
+    start() { tiers.start(); say(); },
+    /** Every frame, from startLoop, after the latch has been fed. */
+    frame(frameMs, nowMs, latched) {
+      const up = promoter.push(frameMs, nowMs, latched);
+      if (up !== null) { tiers.setTier(up); say(); }
+    },
+    tick(nowMs) { tiers.tick(nowMs); },
+    /** The frame latch tripped: back to the boot maps, for good. */
+    latch() { tiers.latch(); say(); },
+  };
+  return api;
+}
+
 // --- the loop ----------------------------------------------------------------
 
 function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfield, heroes, lod }) {
@@ -643,6 +745,8 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
   function degrade() {
     if (ctx.renderer && ctx.rendererApi && ctx.rendererApi.setQuality) ctx.rendererApi.setQuality('low');
     if (starfield && starfield.setDetail) starfield.setDetail('low');
+    // The tier falls with the latch and only with it: every world back on its boot map.
+    if (ctx.quality) ctx.quality.latch();
     window.dispatchEvent(new CustomEvent('sr:quality', { detail: { level: 'low', medianMs: Math.round(latch.median()) } }));
   }
   // Read by ui/trip.js, which keeps the star-stretch at 0 on a latched device (spec 0034 req 6),
@@ -678,6 +782,10 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     const dt = Math.min(100, frameMs);           // a backgrounded tab must not lurch on return
     last = nowReal;
     if (!document.hidden && latch.push(frameMs, nowReal)) degrade();
+    if (ctx.quality && !document.hidden) {
+      ctx.quality.frame(frameMs, nowReal, latch.latched);
+      if (nowReal - lastTierTick >= 1000) { lastTierTick = nowReal; ctx.quality.tick(nowReal); }
+    }
 
     clock.tick(dt);
     const t = clock.now();
@@ -737,7 +845,11 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     if (ctx.dsoGlow) ctx.dsoGlow.update(ctx.camera, ctx.renderer, ctx.isLayerDrawable(LAYERS.find((l) => l.id === 'deep-sky')));
     if (ctx.skyView.active) ctx.skyView.update(t);
     render();
+    // The first frame is on screen: from now on the sharper maps may come, when the browser is idle.
+    if (!tiersStarted && ctx.quality) { tiersStarted = true; ctx.quality.start(); }
   }
+  let tiersStarted = false;
+  let lastTierTick = 0;
   requestAnimationFrame(frame);
 }
 

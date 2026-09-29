@@ -27,6 +27,24 @@ worlds:
 textures:
   - {id: phoebe, source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures (c) Solar System Scope, CC BY 4.0", tiers: [2048]}
 
+# Its tiers (registry/textures.yaml): Phoebe has no map of its own, so the fixture dresses it in the
+# Moon's 2k file for the length of the test -- a row naming a file that exists, credited as CREDITS.md
+# section 2 credits it. Growth is the row, not the picture.
+texture_tiers:
+  - id: phoebe
+    world: phoebe
+    slot: map
+    when: boot
+    files:
+      - tier: 0
+        file: site/textures/2k_moon.jpg
+        px: [2048, 1024]
+        bytes: 1053869
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+
 sources:
   - id: horizons-phoebe-orbiters
     url: https://ssd.jpl.nasa.gov/api/horizons.api

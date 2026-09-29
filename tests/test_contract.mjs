@@ -66,6 +66,11 @@ const CONTRACT = {
   'ui/sound.js': ['soundButton', 'soundPanel', 'creditsText'],
   'scene/stretch.js': ['STRETCH_PX', 'stretchUniforms', 'writeStretch'],
   'scene/stars3d.js': ['createStars3d', 'STRETCH_PX'],
+  // The device tiers (2026-09-28): the tier is chosen in quality.js, the maps swapped by
+  // texturetiers.js from the mirror of registry/textures.yaml.
+  'scene/quality.js': ['createFrameLatch', 'shouldSaveData', 'chooseTier', 'createTierPromoter'],
+  'scene/texturetiers.js': ['createTextureTiers', 'variantFor', 'urlFor', 'bootFiles'],
+  'data/textures.js': ['TEXTURES'],
   // The one owner of the URL hash (spec 0032): main.js, ui/controls.js and ui/trip.js all write
   // through it, and a second dialect is the bug it was written to end.
   'ui/urlstate.js': ['KEYS', 'VERSION', 'read', 'write', 'clear', 'stopIndex', 'readMoment', 'writeMoment'],

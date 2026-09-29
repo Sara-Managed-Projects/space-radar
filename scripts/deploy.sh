@@ -28,6 +28,11 @@
 # `2k_earth_daymap.jpg` keeps its name when the file behind it changes. A browser that believed
 # that promise would hold a stale texture for a month with no way to be told otherwise. Change a
 # texture and you must invalidate it by hand -- the script says so at the end.
+#
+# THE 4K TIER (2026-09-28) lives under textures/4k/ with names of its own, fetched only by laptops and
+# desktops after the first frame (registry/textures.yaml). A new file under a new name needs no
+# invalidation -- nothing was cached under it -- so adding a tier or a month is a plain deploy.
+# Replacing a file under the SAME name is the case above: invalidate /textures/* by hand.
 
 set -euo pipefail
 

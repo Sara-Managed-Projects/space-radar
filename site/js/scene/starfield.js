@@ -332,17 +332,25 @@ export function createStarfield(scene, opts = {}) {
     m.renderOrder = RENDER_ORDER_MILKYWAY;
     m.frustumCulled = false;
 
-    // ALIGNMENT IS APPROXIMATE. The Solar System Scope map is an equirectangular sky drawn on the
-    // galactic frame: the image centre is (roughly) the galactic centre and the top edge the
-    // galactic north pole. three's SphereGeometry puts uv.x = 0.5 on local +X and the image top on
-    // local +Y, so mapping local +X -> the galactic centre and local +Y -> the galactic pole puts
-    // the band where it belongs to within a degree or two. It is not a registered astrometric
-    // solution and must not be used to identify anything; the stars are the measured layer.
+    // ALIGNMENT. The map is an equirectangular sky on the galactic frame, the galactic centre at
+    // the image centre. three's SphereGeometry puts uv.x = 0.5 on local +X, the image top on local
+    // +Y, and (seen from inside) uv.x = 0.75 on local -Z.
+    //
+    // THE IMAGE TOP IS GALACTIC SOUTH. Until 2026-09-28 local +Y was the galactic NORTH pole, and the
+    // sky was drawn turned 180 degrees about the line to the galactic centre: the band in the right
+    // place, everything off it on the wrong side. Found by laying NASA SVS's Deep Star Maps 2020
+    // (galactic frame, north up, longitude increasing to the left) beside the Solar System Scope
+    // map: the same sky flipped top to bottom, the Large Magellanic Cloud above the plane. Through
+    // the old basis the SSS map put the LMC at l = 79, b = +34; it is at l = 280.5, b = -32.9. With
+    // local +Y on the south pole it lands at l = 281, b = -34, and so does the 4k map, which is built
+    // in the same convention (scripts/build-textures.py). Still not an astrometric solution -- the
+    // SSS map is a painting of the sky -- and the stars remain the measured layer.
     const gc = radecToVec(266.405, -28.936); // galactic centre, l=0 b=0, J2000
     const pole = radecToVec(192.85948, 27.12825); // galactic north pole, J2000
     const x = gc.clone().addScaledVector(pole, -gc.dot(pole)).normalize();
-    const z = new THREE.Vector3().crossVectors(x, pole).normalize();
-    m.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, pole, z));
+    const south = pole.clone().negate();
+    const z = new THREE.Vector3().crossVectors(x, south).normalize();
+    m.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, south, z));
 
     state.milkyway = watch(m);
     group.add(m);
@@ -547,6 +555,19 @@ export function createStarfield(scene, opts = {}) {
     setLines(on) {
       linesOn = !!on;
       this.setSkyOpacity(skyOpacity);
+    },
+    /**
+     * The texture tiers (scene/texturetiers.js, 2026-09-28): wear `tex` as the Milky Way, or null to
+     * go back to the map it booted with. Returns the texture it was wearing; disposes nothing, since
+     * the boot map is what a latched device goes back to. False while the panorama is not built yet.
+     */
+    setMilkyWayMap(tex) {
+      const mw = state.milkyway;
+      if (!mw || !mw.material) return false;
+      if (!mw.userData.bootMap) mw.userData.bootMap = mw.material.map;
+      const old = mw.material.map;
+      mw.material.map = tex || mw.userData.bootMap;
+      return old;
     },
     /** 'low' hides the Milky Way picture and the constellation lines (spec 0026 req 18); the stars stay. */
     setDetail(level) {

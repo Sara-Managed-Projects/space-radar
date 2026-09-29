@@ -14,5 +14,7 @@ export const BUDGETS = {
   "audio_total_kb": 3000,
   "og_png_min_bytes": 50000,
   "home_js_kb": 8,
+  "tier1_idle_bytes": 1300000,
+  "tier1_texture_gpu_mib": 250,
   "reel_heap_growth_pct": 20
 };

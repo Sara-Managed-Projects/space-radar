@@ -804,6 +804,10 @@ export function createWorlds(scene, opts = {}) {
   // once and stays. Earth's three maps and the Milky Way are still fetched at once: they are on
   // screen from the first frame.
   const waiting = new Map(); // world id -> { name, apply(tex) }
+  // The map each world is wearing now, and the one it booted with (scene/texturetiers.js swaps a
+  // 4k map in over the 2k one, and a latched device goes back to the 2k one). id -> THREE.Texture.
+  const current = new Map();
+  const bootMap = new Map();
 
   function fetchMap(id) {
     const job = waiting.get(id);
@@ -850,6 +854,8 @@ export function createWorlds(scene, opts = {}) {
         name: w.look.map,
         apply(tex) {
           if (!tex) return;
+          bootMap.set(w.id, tex);
+          current.set(w.id, tex);
           if (material.uniforms) {
             material.uniforms.uMap.value = tex;
             material.uniforms.uHasMap.value = 1;
@@ -1181,6 +1187,40 @@ export function createWorlds(scene, opts = {}) {
   /** The worlds still drawn in their mean colour, for the test and the status panel. */
   function waitingMaps() { return [...waiting.keys()]; }
 
+  // --- the texture tiers (scene/texturetiers.js, 2026-09-28) ------------------------------------
+
+  /** True once a world's boot map has arrived: only then is there anything to sharpen. */
+  function hasMap(id) { return bootMap.has(id); }
+
+  /**
+   * Swap a world's map for a sharper one, or put its boot map back with null. Returns the texture it
+   * was wearing. Never disposes: the caller owns the textures it brought, and the boot map is kept.
+   */
+  function setMap(id, tex) {
+    const mesh = meshes.get(id);
+    if (!mesh || !bootMap.has(id)) return null;
+    const next = tex || bootMap.get(id);
+    const old = current.get(id) || null;
+    const m = mesh.material;
+    if (m.uniforms && m.uniforms.uMap) m.uniforms.uMap.value = next;
+    else if ('map' in m) m.map = next;
+    current.set(id, next);
+    return old;
+  }
+
+  /**
+   * How big a world is drawn, as a share of HALF the view's height -- the same arithmetic as the
+   * lazy fetch in update() step 5. 0 when it is hidden or there is no camera to measure against.
+   */
+  function discShare(id) {
+    const mesh = meshes.get(id);
+    if (!camera || !mesh || !mesh.visible) return 0;
+    camera.getWorldPosition(_camPosU);
+    const dist = mesh.position.distanceTo(_camPosU);
+    if (!(dist > 0)) return 0;
+    return mesh.scale.x / dist / Math.tan(((camera.fov || 45) * Math.PI) / 360);
+  }
+
   function meshFor(id) { return meshes.get(id) || null; }
 
   // --- the worlds as objects under a finger (spec 0028 step 0) ---------------------------------
@@ -1337,6 +1377,9 @@ export function createWorlds(scene, opts = {}) {
     update,
     preload,
     waitingMaps,
+    hasMap,
+    setMap,
+    discShare,
     meshFor,
     positionOf,
     viewScale,

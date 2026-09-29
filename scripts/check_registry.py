@@ -2488,6 +2488,181 @@ def check_audio() -> list:
     return rows_
 
 
+# --- registry/textures.yaml (2026-09-28, the device tiers) ------------------------------------
+# Every map the scene can wear, one file per device tier. A texture is somebody else's picture on
+# every visitor's screen, and a 4k one is the largest thing a laptop downloads after the first
+# visit, so a row is refused unless: it names its licence, its credit (carried word for word by
+# CREDITS.md section 2) and the page it came from with the day it was read; every file it names is
+# in the tree, measured (bytes exact) and the size it claims (pixels read from the file's own
+# header); its tier-0 file is the file registry/models.yaml already credits under the same id, so
+# the boot set cannot drift from what the rest of the registry says ships; and it does not come
+# from an author whose terms forbid hosting their maps (Bjorn Jonsson: "please do not place a copy
+# of the maps on your website"; Steve Albers: "personal non-commercial use only"). The reverse rule
+# too: a file under site/textures/ that no row names ships uncredited, and is refused.
+TEXTURE_ROW_FIELDS = ("id", "world", "slot", "when", "files")
+TEXTURE_FILE_FIELDS = ("tier", "file", "px", "bytes", "format", "licence", "credit", "source")
+TEXTURE_WHEN = {"boot", "idle", "near"}
+TEXTURE_FORMATS = {"rgb", "rgba", "mono"}
+TEXTURE_TIERS = {0, 1, 2}
+TEXTURE_REFUSED = ("bjj.mmedia.is", "jonsson", "jónsson", "albers")
+
+
+def image_size(path: Path) -> tuple[int, int] | None:
+    """(width, height) from a PNG, JPEG or WebP header, with the standard library alone."""
+    data = path.read_bytes()[:1 << 16]
+    if data[:8] == b"\x89PNG\r\n\x1a\n":
+        return int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        kind = data[12:16]
+        if kind == b"VP8 ":
+            return int.from_bytes(data[26:28], "little") & 0x3FFF, int.from_bytes(data[28:30], "little") & 0x3FFF
+        if kind == b"VP8L":
+            b = int.from_bytes(data[21:25], "little")
+            return (b & 0x3FFF) + 1, ((b >> 14) & 0x3FFF) + 1
+        if kind == b"VP8X":
+            return int.from_bytes(data[24:27], "little") + 1, int.from_bytes(data[27:30], "little") + 1
+        return None
+    if data[:2] == b"\xff\xd8":
+        i = 2
+        while i + 9 < len(data):
+            if data[i] != 0xFF:
+                i += 1
+                continue
+            marker = data[i + 1]
+            if marker in (0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF):
+                return int.from_bytes(data[i + 7:i + 9], "big"), int.from_bytes(data[i + 5:i + 7], "big")
+            if marker in (0xD8, 0x01) or 0xD0 <= marker <= 0xD7:
+                i += 2
+                continue
+            i += 2 + int.from_bytes(data[i + 2:i + 4], "big")
+    return None
+
+
+def texture_paths(f: dict) -> list[str]:
+    """The files a tier entry names: twelve for a monthly one (`{mm}` -> 01..12)."""
+    name = str(f.get("file") or "")
+    if f.get("monthly"):
+        return [name.replace("{mm}", f"{m:02d}") for m in range(1, 13)]
+    return [name]
+
+
+def check_textures(model_textures: list, world_ids: set) -> list:
+    path = REG / "textures.yaml"
+    if not path.exists():
+        fail("textures.yaml", "missing -- the device tiers read which file to fetch from its mirror")
+        return []
+    doc = load("textures.yaml")
+    rows_ = rows(doc, "textures", "textures.yaml")
+    credits_path = ROOT / "CREDITS.md"
+    credits = credits_path.read_text(encoding="utf-8") if credits_path.exists() else ""
+    section = credits_section(credits, 2) or ""
+    by_model = {t.get("id"): t for t in model_textures if isinstance(t, dict)}
+    seen, shipped = set(), set()
+    for r in rows_:
+        if not isinstance(r, dict):
+            fail("textures.yaml", f"a row that is not a mapping: {r!r}")
+            continue
+        rid = r.get("id")
+        where = f"textures.yaml[{rid}]"
+        missing = [k for k in TEXTURE_ROW_FIELDS if r.get(k) in (None, "", [])]
+        if missing:
+            fail(where, f"no {', '.join(missing)}")
+        if rid in seen:
+            fail(where, "the id is used twice")
+        seen.add(rid)
+        world = r.get("world")
+        if world not in world_ids and world != "sky":
+            fail(where, f"world {world!r} is neither a worlds.yaml row nor `sky`")
+        when = r.get("when")
+        if when not in TEXTURE_WHEN:
+            fail(where, f"when {when!r} must be one of {sorted(TEXTURE_WHEN)}")
+        files = [f for f in (r.get("files") or []) if isinstance(f, dict)]
+        tiers = [f.get("tier") for f in files]
+        # `boot: none` is the one way to have no tier-0 file, and it has to be said: the Earth's water
+        # mask, which a phone does without (the shader guesses the ocean from the day map's colour).
+        if r.get("boot") == "none":
+            if 0 in tiers:
+                fail(where, "`boot: none` and a tier-0 file: which is it?")
+        elif tiers.count(0) != 1:
+            fail(where, "exactly one file must be tier 0 -- the one every visitor boots with "
+                        "(or `boot: none`, when a phone does without it)")
+        if len(set(tiers)) != len(tiers):
+            fail(where, f"tiers {tiers} repeat; one file per tier")
+        if when == "boot" and any(t != 0 for t in tiers):
+            fail(where, "`when: boot` has nothing to upgrade to; a row with a sharper file says when it is fetched")
+        if when in ("idle", "near") and not any(t in (1, 2) for t in tiers):
+            fail(where, f"`when: {when}` with no tier-1 or tier-2 file: there is nothing to fetch")
+        model = by_model.get(rid)
+        for f in files:
+            tier = f.get("tier")
+            at = f"{where}.files[tier {tier}]"
+            gone = [k for k in TEXTURE_FILE_FIELDS if f.get(k) in (None, "", [])]
+            if gone:
+                fail(at, f"no {', '.join(gone)} -- every file on a visitor's screen is somebody's picture")
+            if tier not in TEXTURE_TIERS:
+                fail(at, f"tier {tier!r} must be one of {sorted(TEXTURE_TIERS)}")
+            if f.get("format") not in TEXTURE_FORMATS:
+                fail(at, f"format {f.get('format')!r} must be one of {sorted(TEXTURE_FORMATS)}")
+            words = " ".join(str(f.get(k) or "") for k in ("credit", "source", "original")).lower()
+            for bad in TEXTURE_REFUSED:
+                if bad in words:
+                    fail(at, f"names `{bad}`, whose terms do not allow hosting their maps")
+            src = str(f.get("source") or "")
+            if src and not STAR_SOURCE.match(src):
+                fail(at, f"source {src!r} must be `URL (read YYYY-MM-DD)`")
+            credit = f.get("credit")
+            if credit and str(credit) not in section:
+                fail("CREDITS.md", f"textures.yaml credits `{rid}` tier {tier} as {credit!r}, and CREDITS.md "
+                                   f"section 2 does not carry that line")
+            if credit and " -- " in str(credit):
+                fail(at, "the credit prints two hyphens as a dash; write a comma")
+            name = str(f.get("file") or "")
+            if not name.startswith("site/textures/"):
+                fail(at, f"file `{name}` must be under site/textures/, which deploy.sh ships")
+                continue
+            if "{mm}" in name and not f.get("monthly"):
+                fail(at, "`{mm}` in the name needs `monthly: true`")
+            paths = texture_paths(f)
+            sizes = f.get("bytes")
+            if f.get("monthly"):
+                if not (isinstance(sizes, list) and len(sizes) == 12 and all(isinstance(b, int) for b in sizes)):
+                    fail(at, "a monthly file lists `bytes:` as twelve integers, January first")
+                    sizes = [None] * 12
+            else:
+                if not isinstance(sizes, int):
+                    fail(at, f"bytes {sizes!r} must be an integer, measured")
+                sizes = [sizes]
+            px = f.get("px")
+            if not (isinstance(px, list) and len(px) == 2 and all(isinstance(v, int) for v in px)):
+                fail(at, f"px {px!r} must be [width, height]")
+                px = None
+            for p_, want in zip(paths, sizes):
+                real = ROOT / p_
+                if not real.is_file():
+                    fail(at, f"`{p_}` does not exist -- a row describing a file we do not ship is worse than no row")
+                    continue
+                shipped.add(p_)
+                size = real.stat().st_size
+                if isinstance(want, int) and size != want:
+                    fail(at, f"`{p_}` is {size} bytes and the row says {want}; measure it")
+                got = image_size(real) if size else None
+                if px and size and got != tuple(px):
+                    fail(at, f"`{p_}` is {got} pixels and the row says {tuple(px)}")
+            if tier == 0 and model is not None and model.get("file"):
+                boot = "site/textures/" + str(model.get("file") or "")
+                if name != boot:
+                    fail(at, f"the tier-0 file `{name}` is not the file models.yaml credits as `{rid}` "
+                             f"(`{boot}`): the boot set is one list")
+    tex_dir = ROOT / "site" / "textures"
+    if tex_dir.is_dir():
+        for p_ in sorted(tex_dir.rglob("*")):
+            rel = str(p_.relative_to(ROOT))
+            if p_.is_file() and not p_.name.startswith(".") and rel not in shipped:
+                fail("site/textures", f"`{rel}` ships and no textures.yaml row names it, so it carries "
+                                      f"no licence, no credit and no source")
+    return rows_
+
+
 def check_sites(sites_doc: dict, sites: list, world_ids: set) -> None:
     """registry/sites.yaml: every row is somewhere real, and every landing says where the number came from.
 
@@ -2955,6 +3130,7 @@ def main() -> int:
     systems = check_systems()
     budgets = check_budgets()
     audio = check_audio()
+    check_textures(textures, world_ids)
     ladder = check_stages(world_ids)
     check_system_stage_rows(ladder)
     lod_rules = check_lod()

@@ -51,6 +51,9 @@ ALLOWED_PREFIXES = ("registry/", "harvest/lists/", "harvest/queries/")
 # SIX, and the first that is a DIRECTORY: registry/tours.yaml is mirrored a second time, as one
 # static page per trip under site/t/ (spec 0032), so a shared link unfurls with the trip's title
 # and blurb. A new trip is a new page, and `gen_trip_pages.py --check` fails CI until it exists.
+# SEVEN (2026-09-28): registry/textures.yaml, the device tiers' manifest, mirrored by
+# scripts/gen_textures_js.py. A new world's map is a row there, and the browser fetches by the mirror.
+GENERATED_TEXTURES = "site/js/data/textures.js"
 GENERATED = "site/js/data/rockets.js"
 GENERATED_ODDITIES = "site/js/data/oddities.js"
 GENERATED_TOURS = "site/js/data/tours.js"
@@ -62,7 +65,8 @@ MIRRORS = ((GENERATED, "scripts/gen_rockets_js.py", "rockets"),
            (GENERATED_TOURS, "scripts/gen_tours_js.py", "tours"),
            (GENERATED_SOURCES, "scripts/gen_sources_json.py", "sources"),
            (GENERATED_SITES, "scripts/gen_sites_js.py", "sites"),
-           (GENERATED_TRIP_PAGES, "scripts/gen_trip_pages.py", "tours"))
+           (GENERATED_TRIP_PAGES, "scripts/gen_trip_pages.py", "tours"),
+           (GENERATED_TEXTURES, "scripts/gen_textures_js.py", "texture_tiers"))
 
 
 def under(path: str, mirror: str) -> bool:
@@ -95,6 +99,8 @@ def apply_fixture(registry: Path, fixture: dict) -> None:
         "layers": ("layers.yaml", "layers"),
         "sites": ("sites.yaml", "sites"),
         "textures": ("models.yaml", "textures"),
+        # The tiers' manifest: which file a device of each tier wears (registry/textures.yaml).
+        "texture_tiers": ("textures.yaml", "textures"),
         "models": ("models.yaml", "models"),
         # Spec: adding a launch vehicle is a row here, plus the feed evidence that it can ever
         # fire. Nothing under site/js/ -- the builder composes from these fields.
@@ -131,7 +137,10 @@ def main() -> int:
         # The validator checks that every asset a registry row names is really in the tree, so the
         # tree it validates has to contain them. Copying the names rather than the bytes keeps this
         # test fast -- it is asking whether the REGISTRY grows cleanly, not whether a GLB is valid.
-        for src in ("site/models", "site/textures", "site/data"):
+        # The textures come with their bytes: registry/textures.yaml states each file's size and
+        # pixels, and the validator reads both from the file itself (10 MB, a copy is quick).
+        shutil.copytree(ROOT / "site" / "textures", work / "site" / "textures")
+        for src in ("site/models", "site/data"):
             d = work / src
             d.mkdir(parents=True, exist_ok=True)
             for f in (ROOT / src).glob("*"):
