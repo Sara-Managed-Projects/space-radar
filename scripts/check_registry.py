@@ -14,7 +14,9 @@ green check on a documentation change.
 from __future__ import annotations
 
 import datetime
+import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -2267,6 +2269,103 @@ def rows(doc: dict, key: str, name: str) -> list[dict]:
     return got
 
 
+# --- registry/budgets.yaml (spec 0044, 2026-09-28) -------------------------------------------
+# Every gate CI reads is one row, so a gate cannot be loosened by editing a constant in a test.
+# Three refusals: a row missing a field; a value raised above the copy the change is based on
+# without a newer `since`; and a row nothing reads, which is a decoration and not a gate.
+BUDGET_FIELDS = ("id", "value", "unit", "since", "reason")
+# Where a reader may live. The mirror and its generator name every id and read none of them, and
+# test_refusals.py names them to break them.
+BUDGET_READERS = ("tests", "scripts", "site/js")
+BUDGET_NOT_READERS = {"site/js/data/budgets.js", "scripts/gen_budgets_js.py", "tests/test_refusals.py"}
+# The values the other checks read (check_audio's bed and total), filled by check_budgets().
+BUDGETS: dict[str, float] = {}
+
+
+def budget_base_rows() -> list | None:
+    """The budgets in the copy this change is based on, or None when git cannot say.
+
+    `$BUDGETS_BASE` names the revision: ci.yml sets HEAD^1, which in a pull request's merge commit is
+    the base branch. Unset, it is HEAD, which is what a contributor's uncommitted edit is based on.
+    A tree that is not a checkout (tests/test_refusals.py copies the registry into one) has no base.
+    """
+    ref = os.environ.get("BUDGETS_BASE") or "HEAD"
+    try:
+        out = subprocess.run(["git", "show", f"{ref}:registry/budgets.yaml"], cwd=ROOT,
+                             capture_output=True, text=True, timeout=20)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if out.returncode != 0:
+        return None
+    try:
+        return (yaml.safe_load(out.stdout) or {}).get("budgets") or []
+    except yaml.YAMLError:
+        return None
+
+
+def budget_reader_text() -> str | None:
+    """Every file that could read a budget, as one string; None in a tree without tests/."""
+    if not (ROOT / "tests").is_dir():
+        return None
+    parts = []
+    for top in BUDGET_READERS:
+        for f in sorted((ROOT / top).rglob("*")):
+            rel = f.relative_to(ROOT).as_posix()
+            if f.is_file() and f.suffix in (".py", ".mjs", ".js") and rel not in BUDGET_NOT_READERS:
+                parts.append(f.read_text(encoding="utf-8", errors="replace"))
+    return "\n".join(parts)
+
+
+def check_budgets() -> list:
+    path = REG / "budgets.yaml"
+    if not path.exists():
+        fail("budgets.yaml", "missing -- spec 0044 keeps every gate CI reads in it")
+        return []
+    rows_ = rows(load("budgets.yaml"), "budgets", "budgets.yaml")
+    base = {r.get("id"): r for r in (budget_base_rows() or []) if isinstance(r, dict)}
+    readers = budget_reader_text()
+    seen: set = set()
+    for r in rows_:
+        if not isinstance(r, dict):
+            fail("budgets.yaml", f"a row that is not a mapping: {r!r}")
+            continue
+        bid = r.get("id")
+        where = f"budgets.yaml[{bid}]"
+        missing = [k for k in BUDGET_FIELDS if r.get(k) in (None, "")]
+        if missing:
+            fail(where, f"no {', '.join(missing)} -- a gate says what it is, since when, and why")
+        if bid in seen:
+            fail(where, "the id is used twice")
+        seen.add(bid)
+        value, since = r.get("value"), r.get("since")
+        if not is_number(value):
+            fail(where, f"value {value!r} must be a number")
+            continue
+        if since is not None and not isinstance(since, datetime.date):
+            fail(where, f"since {since!r} must be a date, YYYY-MM-DD")
+            continue
+        BUDGETS[bid] = value
+        old = base.get(bid)
+        if old and is_number(old.get("value")) and value > old["value"]:
+            old_since = old.get("since")
+            if not (isinstance(since, datetime.date) and isinstance(old_since, datetime.date) and since > old_since):
+                fail(where, f"raised from {old['value']} to {value} with `since` still {since}: a raised gate "
+                            f"is a decision, so it carries the day it was made and what was measured")
+        if readers is not None:
+            read = re.search(rf"\b{re.escape(str(bid))}\b", readers) is not None
+            if not read and not r.get("pending"):
+                fail(where, "nothing in tests/, scripts/ or site/js/ reads it: a budget nobody checks is a "
+                            "decoration (write `pending:` with the spec task that will read it)")
+            if read and r.get("pending"):
+                fail(where, f"says `pending: {r.get('pending')}` and is read now; drop the word")
+    return rows_
+
+
+def budget(bid: str, fallback: float) -> float:
+    """A gate from registry/budgets.yaml, or the fallback when the file could not say."""
+    return BUDGETS.get(bid, fallback)
+
+
 # --- registry/audio.yaml (spec 0035, 2026-09-23) ---------------------------------------------
 # Sound is somebody else's work more often than anything else in the tree, and it is the one
 # asset a visitor cannot see is credited: so it gets the models' treatment and then some. A row
@@ -2277,8 +2376,6 @@ def rows(doc: dict, key: str, name: str) -> list[dict]:
 AUDIO_FIELDS = ("id", "kind", "file", "twin", "seconds", "kb", "loop", "licence", "source", "credit")
 AUDIO_KINDS = {"bed", "sting"}
 AUDIO_STAGES = {"earth", "world", "sun", "ladder"}
-AUDIO_BED_MAX_KB = 600
-AUDIO_TOTAL_MAX_KB = 3000
 AUDIO_KB_SLACK = 0.05
 AUDIO_FILE = re.compile(r"[A-Za-z0-9_.-]+\.(?:opus|m4a)")
 
@@ -2304,6 +2401,7 @@ def check_audio() -> list:
     section = section or ""
     seen_ids, beds_by_stage, shipped = set(), {}, set()
     total_kb = 0.0
+    bed_max_kb, total_max_kb = budget("bed_kb", 600), budget("audio_total_kb", 3000)
     for r in rows_:
         if not isinstance(r, dict):
             fail("audio.yaml", f"a row that is not a mapping: {r!r}")
@@ -2358,9 +2456,9 @@ def check_audio() -> list:
                 if abs(real - kb) > AUDIO_KB_SLACK * real:
                     fail(where, f"kb: {kb} but `{r.get('file')}` is {real:.1f} kB -- the row's size is "
                                 f"the budget; measure it")
-            if kind == "bed" and kb > AUDIO_BED_MAX_KB:
-                fail(where, f"a bed of {kb} kB is over the {AUDIO_BED_MAX_KB} kB budget (about 75 s at "
-                            f"64 kbps); cut it shorter or encode it lower")
+            if kind == "bed" and kb > bed_max_kb:
+                fail(where, f"a bed of {kb} kB is over the {bed_max_kb} kB budget (`bed_kb` in registry/budgets.yaml, "
+                            f"about 75 s at 64 kbps); cut it shorter or encode it lower")
         elif kb is not None:
             fail(where, f"kb {kb!r} must be a number")
         src = str(r.get("source") or "")
@@ -2373,9 +2471,9 @@ def check_audio() -> list:
                                f"does not carry that line")
         if credit and " -- " in str(credit):
             fail(where, "the credit prints two hyphens as a dash; write a comma or a real dash")
-    if total_kb > AUDIO_TOTAL_MAX_KB:
-        fail("audio.yaml", f"the sounds add up to {total_kb:.0f} kB, over the {AUDIO_TOTAL_MAX_KB} kB "
-                           f"budget spec 0035 req 7 sets")
+    if total_kb > total_max_kb:
+        fail("audio.yaml", f"the sounds add up to {total_kb:.0f} kB, over the {total_max_kb} kB "
+                           f"budget spec 0035 req 7 sets (`audio_total_kb` in registry/budgets.yaml)")
     # The reverse rule: a credit for a file that does not ship, and a file that ships uncredited.
     for name in sorted(set(AUDIO_FILE.findall(section))):
         if name not in shipped:
@@ -2855,6 +2953,7 @@ def main() -> int:
 
     check_oddities(oddities_doc, world_ids, sites)
     systems = check_systems()
+    budgets = check_budgets()
     audio = check_audio()
     ladder = check_stages(world_ids)
     check_system_stage_rows(ladder)
@@ -3075,7 +3174,7 @@ def main() -> int:
         f"{len(sources)} sources, {len(layers)} layers, "
         f"{len(events)} event types, {len(models)} models, {len(real_models)} real models, "
         f"{len(marks)} third-party marks, {len(sites)} sites, "
-        f"{len(terms)} glossary terms, {len(showers)} showers, {len(audio)} sounds, "
+        f"{len(terms)} glossary terms, {len(showers)} showers, {len(audio)} sounds, {len(budgets)} budgets, "
         f"{len(oddities_doc.get('oddities') or [])} oddities "
         f"({sum(1 for o in (oddities_doc.get('oddities') or []) if (o.get('where') or {}).get('kind') == 'unknown')} "
         f"of them nobody can place), {len(rockets)} rockets "

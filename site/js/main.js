@@ -253,6 +253,9 @@ export async function boot({ setStatus } = {}) {
   // Data arrives in the background, layer by layer, slowest last. Nothing here is awaited by the
   // render loop.
   loadAllLayers(ctx, layerRecords, glyphLayers, scene).then(() => {
+    // A flag as well as the event, for a probe that attaches after it fired: the first-visit byte
+    // test (spec 0044) waits on it.
+    window.__srLayersReady = true;
     window.dispatchEvent(new CustomEvent('sr:layers-ready'));
   });
 

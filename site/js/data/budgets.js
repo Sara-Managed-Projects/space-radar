@@ -1,0 +1,18 @@
+// GENERATED from registry/budgets.yaml by scripts/gen_budgets_js.py. Do not edit.
+//
+// `python3 scripts/gen_budgets_js.py --check` fails CI if this file and the YAML disagree, so an
+// edit here is an edit that will be reverted. Change the YAML.
+
+/** Every gate CI reads, by id (spec 0044). A raised value needs a dated reason in the YAML. */
+export const BUDGETS = {
+  "first_visit_bytes": 6200000,
+  "audio_at_boot_bytes": 0,
+  "og_at_boot_bytes": 0,
+  "draw_calls_per_stop": 120,
+  "triangles_per_stop": 250000,
+  "bed_kb": 600,
+  "audio_total_kb": 3000,
+  "og_png_min_bytes": 50000,
+  "home_js_kb": 8,
+  "reel_heap_growth_pct": 20
+};

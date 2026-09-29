@@ -46,6 +46,9 @@ on:
       - ".github/workflows/screens.yml"
       - "scripts/shots.mjs"
       - "scripts/check-drawn.mjs"
+      # The byte gate (spec 0044) reads its number from the registry and its rules from the test.
+      - "registry/budgets.yaml"
+      - "tests/test_first_visit_bytes.mjs"
 
 permissions:
   contents: read
@@ -128,6 +131,25 @@ jobs:
               # The same pixels, plus: no label may run off the edge of a 375 px window.
               node scripts/check-drawn.mjs --base=http://127.0.0.1:8177 --width=375 --height=812 --mobile'
 
+      # SPEC 0044: WHAT A FIRST VISIT COSTS IS A NUMBER, not a hope. A phone boots the app with
+      # CelesTrak and Launch Library blocked, waits for the layers and two seconds more, and every
+      # byte that crossed the wire is summed against `first_visit_bytes` in registry/budgets.yaml.
+      # Nothing under /audio/ or /og/, and neither galaxy.bin nor stars3d.bin, may be asked for at
+      # all. The total and the deferrable line are in this step's log and in first-visit.json.
+      - name: A first visit stays inside its byte budget
+        if: steps.page.outputs.found == '1'
+        run: |
+          set -euo pipefail
+          mkdir -p .ci-screens
+          docker run --rm --network host \
+            -u "$(id -u):$(id -g)" -e HOME=/tmp \
+            -e PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+            -v "$PWD:/work" -w /work \
+            mcr.microsoft.com/playwright:v1.49.1-jammy \
+            bash -c 'set -euo pipefail
+              npm install --no-save --no-audit --no-fund playwright@1.49.1
+              node tests/test_first_visit_bytes.mjs --base=http://127.0.0.1:8177 --out=.ci-screens/first-visit.json'
+
       # A shot that exists but is a picture of a failure panel is the thing this job used to
       # produce. The selector wait above is the real guard; this only catches an empty file.
       - name: The shots are not empty
@@ -147,5 +169,7 @@ jobs:
         with:
           name: sara-screenshots
           include-hidden-files: true
-          path: .ci-screens/*.png
+          path: |
+            .ci-screens/*.png
+            .ci-screens/first-visit.json
           if-no-files-found: error

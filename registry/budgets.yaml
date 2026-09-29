@@ -1,0 +1,33 @@
+version: 1
+# Spec 0044: every gate CI reads is a row here, so "cheap" is a number and not a hope.
+#
+# A row may be LOWERED freely. A row RAISED needs a newer `since` and a `reason` that says what was
+# measured: scripts/check_registry.py check_budgets() compares each value with the copy the change
+# is based on (`git show $BUDGETS_BASE:registry/budgets.yaml`, HEAD by default; ci.yml sets HEAD^1,
+# the base of the pull request) and refuses a silent raise.
+#
+#   value    the gate
+#   unit     what the value counts
+#   since    the day the value was set, YYYY-MM-DD
+#   reason   what was measured, or which spec set it
+#   pending  only while nothing reads the row yet: the spec task that will. check_budgets() refuses
+#            a row that no test, script or module names, unless it says `pending`, and refuses a
+#            `pending` row that something does read, so the word cannot outlive its reason.
+#
+# The browser reads the same numbers from site/js/data/budgets.js (scripts/gen_budgets_js.py).
+budgets:
+  # The CI number, not the live one: the static server in screens.yml sends bodies uncompressed and
+  # has no /data/v1 saved copy. On 2026-09-28, at 390x844 as a phone with CelesTrak blocked: 5 858 529 B
+  # from a local server as CI runs it, and 3 068 642 B from the live site (compressed, with the saved
+  # copy's 651 kB). The design's 2.5 MB was the live number of 2026-09-21 and the live site is over it
+  # now; the gate is the number CI sees, with the 6 % margin the design asked for.
+  - {id: first_visit_bytes, value: 6200000, unit: bytes, since: 2026-09-28, reason: "5 858 529 B uncompressed on CI's kind of server, 2026-09-28; 6 % margin"}
+  - {id: audio_at_boot_bytes, value: 0, unit: bytes, since: 2026-09-22, reason: "spec 0035: nothing before a gesture"}
+  - {id: og_at_boot_bytes, value: 0, unit: bytes, since: 2026-09-22, reason: "spec 0033: previews and cards only"}
+  - {id: draw_calls_per_stop, value: 120, unit: calls, since: 2026-09-22, reason: "docs/toolkit.md: 120 at 30 fps; a stop is a still under text", pending: "spec 0044 task 3"}
+  - {id: triangles_per_stop, value: 250000, unit: triangles, since: 2026-09-22, reason: "poes.glb alone was 116 517 before decimation (0027 amendment 1)", pending: "spec 0044 task 3"}
+  - {id: bed_kb, value: 600, unit: kB, since: 2026-09-22, reason: "spec 0035: 75 s at 64 kbps Opus"}
+  - {id: audio_total_kb, value: 3000, unit: kB, since: 2026-09-22, reason: "spec 0035"}
+  - {id: og_png_min_bytes, value: 50000, unit: bytes, since: 2026-09-22, reason: "under 50 kB a 1200x630 frame is empty (#157's lesson)"}
+  - {id: home_js_kb, value: 8, unit: kB, since: 2026-09-22, reason: "spec 0042", pending: "spec 0042"}
+  - {id: reel_heap_growth_pct, value: 20, unit: percent, since: 2026-09-22, reason: "spec 0036 task 4, one hour on SwiftShader", pending: "spec 0036 task 4"}

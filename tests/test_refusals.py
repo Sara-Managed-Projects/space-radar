@@ -11,6 +11,7 @@ that does not say where is a refusal somebody will switch off.
 
 from __future__ import annotations
 
+import os
 import re
 import shutil
 import subprocess
@@ -534,6 +535,17 @@ CASES: list[tuple[str, str, str, str]] = [
     ("a bed that does not loop",
      "audio.yaml", "    loop: true\n    licence: \"CC0 1.0 Universal (public domain dedication)\"\n    source: \"https://freemusicarchive.org/music/John_Bartmann/100-ambient-atmospheric-soundtracks-straylight-drones-collection/calabi",
      "    loop: false\n    licence: \"CC0 1.0 Universal (public domain dedication)\"\n    source: \"https://freemusicarchive.org/music/John_Bartmann/100-ambient-atmospheric-soundtracks-straylight-drones-collection/calabi"),
+    # SPEC 0044: A GATE SAYS WHY. A budget with no reason is a number somebody will raise without
+    # knowing what it was measured against; one with no date cannot be told from an older one.
+    ("a budget with no reason",
+     "budgets.yaml", ', reason: "spec 0035"}', "}"),
+    ("a budget with no date",
+     "budgets.yaml", "value: 600, unit: kB, since: 2026-09-22,", "value: 600, unit: kB,"),
+    ("a budget that is not a number",
+     "budgets.yaml", "value: 600, unit: kB", "value: plenty, unit: kB"),
+    # The audio check reads its ceiling from the budget now, so raising a bed means raising the row.
+    ("a bed over the bed_kb budget",
+     "budgets.yaml", "id: bed_kb, value: 600,", "id: bed_kb, value: 500,"),
 ]
 
 
@@ -969,6 +981,61 @@ def check_models_dir_refuses() -> int:
     return failures
 
 
+# The raise needs a base to compare with, so these run in a git checkout of their own; and the
+# unread-row rules need the readers, so the tree carries tests/ and site/js/ too.
+BUDGET_CASES: list[tuple[str, str, str, bool]] = [
+    # (name, find, replace, refused)
+    ("a budget raised with the date it had",
+     "value: 3000, unit: kB, since: 2026-09-22,", "value: 3500, unit: kB, since: 2026-09-22,", True),
+    ("a budget raised with a newer date",
+     "value: 3000, unit: kB, since: 2026-09-22,", "value: 3500, unit: kB, since: 2026-09-29,", False),
+    ("a budget lowered with the date it had",
+     "value: 3000, unit: kB, since: 2026-09-22,", "value: 2500, unit: kB, since: 2026-09-22,", False),
+    ("a budget nothing reads",
+     "budgets:\n", 'budgets:\n  - {id: nobody_reads_this, value: 1, unit: bytes, since: 2026-09-28, reason: "a test"}\n', True),
+    ("a budget still marked pending that something reads",
+     'reason: "spec 0035: 75 s at 64 kbps Opus"}', 'reason: "spec 0035: 75 s at 64 kbps Opus", pending: "spec 0035"}', True),
+]
+
+
+def check_budget_refusals() -> int:
+    failures = 0
+    git = ["git", "-c", "user.name=refusals", "-c", "user.email=refusals@example.invalid", "-c", "commit.gpgsign=false"]
+    for name, find, replace, want_refused in BUDGET_CASES:
+        with tempfile.TemporaryDirectory() as tmp:
+            work = Path(tmp) / "work"
+            work.mkdir()
+            for d in ("registry", "scripts", "tests", "harvest", "site/js", "site/images", "site/audio"):
+                if (ROOT / d).is_dir():
+                    shutil.copytree(ROOT / d, work / d, ignore=shutil.ignore_patterns("__pycache__"))
+            shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")
+            (work / "site" / "data").mkdir(parents=True, exist_ok=True)
+            for f in ("dso.json", "stars3d.names.json", "exoplanets.csv"):
+                shutil.copy2(ROOT / "site" / "data" / f, work / "site" / "data" / f)
+            subprocess.run(git[:1] + ["init", "-q"], cwd=work, check=True)
+            subprocess.run(git + ["add", "registry/budgets.yaml"], cwd=work, check=True)
+            subprocess.run(git + ["commit", "-q", "-m", "base"], cwd=work, check=True)
+
+            path = work / "registry" / "budgets.yaml"
+            text = path.read_text(encoding="utf-8")
+            if find not in text:
+                print(f"BROKEN TEST: {name!r} -- the string it mutates is not in budgets.yaml")
+                failures += 1
+                continue
+            path.write_text(text.replace(find, replace, 1), encoding="utf-8")
+            result = subprocess.run([sys.executable, "scripts/check_registry.py"], cwd=work,
+                                    capture_output=True, text=True, env={**os.environ, "BUDGETS_BASE": "HEAD"})
+            said = [line for line in (result.stdout + result.stderr).splitlines() if "budgets.yaml" in line]
+            if want_refused and result.returncode != 0 and said:
+                print(f"  refused: {name}")
+            elif not want_refused and not said:
+                print(f"  accepted: {name}")
+            else:
+                print(f"  ** {name}: {'was accepted' if want_refused else 'was refused: ' + '; '.join(said)}")
+                failures += 1
+    return failures
+
+
 def main() -> int:
     failures = 0
     with tempfile.TemporaryDirectory() as tmp:
@@ -1038,10 +1105,13 @@ def main() -> int:
     print("")
     failures += check_models_dir_refuses()
 
+    print("")
+    failures += check_budget_refusals()
+
     if failures:
         print(f"\n{failures} guard(s) do not do what they claim")
         return 1
-    refusals = len(CASES) + len(COPY_CASES) + len(TOUR_CASES) + 1
+    refusals = len(CASES) + len(COPY_CASES) + len(TOUR_CASES) + 1 + sum(1 for c in BUDGET_CASES if c[3])
     print(f"\nall {refusals} refusals fire and each names its file, and registry/tours.yaml "
           f"and a site/models that matches the registry are both accepted")
     return 0

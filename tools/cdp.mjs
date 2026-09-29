@@ -32,7 +32,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const [url, scriptPath] = process.argv.slice(2).filter((a) => !a.startsWith('--'));
-if (!url || !scriptPath) { console.error('usage: node tools/cdp.mjs <url> <script.js> [--width=] [--height=] [--mobile] [--shot=] [--shot-dir=] [--reduced-motion] [--cpuprofile=] [--block=host,...]'); process.exit(2); }
+if (!url || !scriptPath) { console.error('usage: node tools/cdp.mjs <url> <script.js> [--width=] [--height=] [--mobile] [--shot=] [--shot-dir=] [--reduced-motion] [--cpuprofile=] [--block=host,...] [--bytes=]'); process.exit(2); }
 const arg = (n, d) => { const h = process.argv.find((a) => a.startsWith('--' + n + '=')); return h ? h.slice(n.length + 3) : d; };
 const W = Number(arg('width', '1280'));
 const H = Number(arg('height', '800'));
@@ -69,6 +69,13 @@ const REDUCED = process.argv.includes('--reduced-motion');
 // compositor produced in between as name-<n>-<epoch ms>.png -- the frames a visitor would have
 // seen, stamped, to line up with Date.now() read in the page.
 const SHOT_DIR = arg('shot-dir', '');
+// --bytes=out.json: every request the page made, as `{url, status, bytes}` with `bytes` the
+// protocol's encodedDataLength (what crossed the wire, headers included, compressed if the server
+// compressed). Added for spec 0044 (2026-09-28): `node tests/test_first_visit_bytes.mjs
+// --from=out.json` sums it with the same rules CI applies, so the live site and a local server can
+// be measured the way screens.yml measures the CI server.
+const BYTES = arg('bytes', '');
+const requests = new Map();
 const trace = (m) => { if (process.env.CDP_TRACE) process.stderr.write('[cdp] ' + m + '\n'); };
 
 const CHROME = process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
@@ -156,6 +163,20 @@ try {
       }).catch((e) => logs.push('[cdp] shot failed: ' + e.message));
       return;
     }
+    if (BYTES && m.method === 'Network.requestWillBeSent') {
+      requests.set(m.params.requestId, { url: m.params.request.url, status: 0, bytes: 0 });
+      return;
+    }
+    if (BYTES && m.method === 'Network.responseReceived') {
+      const q = requests.get(m.params.requestId);
+      if (q) q.status = m.params.response.status;
+      return;
+    }
+    if (BYTES && (m.method === 'Network.loadingFinished' || m.method === 'Network.loadingFailed')) {
+      const q = requests.get(m.params.requestId);
+      if (q) { q.bytes = m.params.encodedDataLength || 0; if (m.method === 'Network.loadingFailed') q.failed = m.params.errorText; }
+      return;
+    }
     if (m.method === 'Runtime.consoleAPICalled') logs.push('[' + m.params.type + '] ' + m.params.args.map((a) => a.value ?? a.description ?? a.type).join(' '));
     if (m.method === 'Runtime.exceptionThrown') logs.push('[pageerror] ' + (m.params.exceptionDetails.exception?.description || m.params.exceptionDetails.text));
   };
@@ -198,6 +219,7 @@ try {
         });
       })();` }, sessionId);
   }
+  if (BYTES) await send(ws, 'Network.enable', {}, sessionId);
   if (BLOCK.length) {
     await send(ws, 'Network.enable', {}, sessionId);
     await send(ws, 'Network.setBlockedURLs', { urls: BLOCK.map((h) => `*${h}*`) }, sessionId);
@@ -239,6 +261,10 @@ try {
     const top = [...self].sort((a, b) => b[1] - a[1]).slice(0, 18);
     console.error(`--- cpu profile: ${total.toFixed(0)} ms wall, top self time ---`);
     for (const [k, ms] of top) console.error(`${ms.toFixed(0).padStart(7)} ms  ${(100 * ms / total).toFixed(1).padStart(5)} %  ${k}`);
+  }
+  if (BYTES) {
+    writeFileSync(BYTES, JSON.stringify([...requests.values()], null, 1));
+    trace('wrote ' + BYTES + ': ' + requests.size + ' requests');
   }
   if (SHOT) {
     const shot = await send(ws, 'Page.captureScreenshot', { format: 'png', captureBeyondViewport: false }, sessionId);
