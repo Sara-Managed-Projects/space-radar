@@ -197,7 +197,34 @@ for (const r of all.filter((x) => x.selector === '.sr-door.is-on')) {
   check(!/border-color: var\(--sr-ember\)|inset 0 -2px 0 var\(--sr-ember\)/.test(r.body), 'the mode tile lost its 1 px ember box to the brackets');
 }
 
-// --- 8. faces: exactly the three the amendment names, self-hosted; never Bricolage --------------
+// --- 8. the type floor: nothing a person reads under 13 px (issue #315, spec 0045 req 6) -------
+// A unit or caption beside its number may be 11 px: the clock's UTC/Local tag and the trajectory
+// chart's axis captions. Anything else under 13 is a sentence somebody has to squint at.
+const UNIT_SELECTORS = new Set(['.sr-clock__tag', '.sr-traj__label']);
+for (const r of all) {
+  if (r.at.startsWith('@font-face')) continue;
+  for (const [prop, value] of decls(r.body)) {
+    const px = prop === 'font-size' ? /^([\d.]+)px$/.exec(value) : prop === 'font' ? /(?:^|\s)([\d.]+)px/.exec(value) : null;
+    if (!px || parseFloat(px[1]) >= 13) continue;
+    const sels = r.selector.split(',').map((x) => x.trim().replace(/\s+/g, ' '));
+    const unit = sels.every((x) => UNIT_SELECTORS.has(x));
+    if (!unit) problems.push(`${r.file} ${r.selector}: font-size ${value}; reading text is 13 px or more, and only a unit beside its number may be 11`);
+    else if (parseFloat(px[1]) < 11) problems.push(`${r.file} ${r.selector}: a unit at ${value}; 11 px is the smallest`);
+  }
+}
+
+// --- 9. density and motion (spec 0045 req 10, 11) ----------------------------------------------
+const compact = all.find((r) => r.selector === 'html.sr-compact' && r.at === '');
+check(has(compact, '--sr-pad', '10px') && has(compact, '--sr-header-h', '28px'), 'html.sr-compact sets --sr-pad 10px and --sr-header-h 28px');
+check(!!floatRule && /opacity var\(--sr-mid\) var\(--sr-ease\)/.test(floatRule.body) && /border-color var\(--sr-fast\)/.test(floatRule.body), 'a panel moves in --sr-mid and its hairline in --sr-fast');
+check(all.some((r) => r.selector === '.sr-float:hover' && has(r, 'border-color', 'var(--sr-line-strong)')), 'hover strengthens the hairline');
+check(all.some((r) => /:where\(button\):active/.test(r.selector) && has(r, 'transform', 'translateY(1px)')), 'pressed is a 1 px nudge');
+check(all.some((r) => r.at === '@starting-style' && /\.sr-card\.sr-float/.test(r.selector) && has(r, 'opacity', '0') && has(r, 'transform', 'translateY(12px)')), 'the card opens from 12 px below, from nothing');
+check(all.some((r) => /prefers-reduced-motion: reduce/.test(r.at) && /\.sr-float/.test(r.selector) && has(r, 'transition', 'opacity 120ms linear')), 'reduced motion is a 120 ms fade and nothing else');
+check(token('--sr-fast') === '140ms' && token('--sr-mid') === '220ms' && token('--sr-slow') === '320ms', 'motion is 140 / 220 / 320 ms');
+check(!/@keyframes\s+[\w-]*(pulse|bounce|glow)/i.test(FILES.map((f) => readFileSync(join(ROOT, f), 'utf8')).join('\n')), 'no bounce and no glow pulse');
+
+// --- 10. faces: exactly the three the amendment names, self-hosted; never Bricolage --------------
 const fontsCss = readFileSync(join(ROOT, 'site/css/fonts.css'), 'utf8');
 const css = [...FILES.map((f) => readFileSync(join(ROOT, f), 'utf8')), fontsCss].join('\n');
 const faces = [...strip(css).matchAll(/@font-face\s*\{([^}]*)\}/g)].map((m) => m[1]);
@@ -221,4 +248,4 @@ if (problems.length) {
   if (table.length) console.error('  contrast: ' + table.join('; '));
   process.exit(1);
 }
-console.log(`tokens ok: ${DESIGN_TOKENS.length} tokens defined once, the palette unchanged, 6 px corners, the lit edge and the brackets in place, three faces self-hosted; contrast ${table.join('; ')}`);
+console.log(`tokens ok: ${DESIGN_TOKENS.length} tokens defined once, the palette unchanged, 6 px corners, the lit edge and the brackets in place, nothing read under 13 px, Compact and the panel motion defined, three faces self-hosted; contrast ${table.join('; ')}`);

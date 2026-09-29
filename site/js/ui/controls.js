@@ -20,6 +20,7 @@ import { predictPasses } from '../sky/passes.js';
 import { createSearch } from './search.js';
 import { LADDER_RUNGS, WE_SHOW } from '../data/ladder.js';
 import { createNext, showerItems, rowText as nextRowText } from './next.js';
+import { densityPanel } from './density.js';
 import { SHOWERS } from '../data/showers.js';
 import { revealInColumn } from './reveal.js';
 import { createColorKey } from './colorkey.js';
@@ -975,6 +976,8 @@ export function createControls(ctx) {
   // Sound (spec 0035), last: a setting, not a way into the map. The only sound control a desktop
   // visitor has outside a trip, and the one that turns off a bed a remembered choice started.
   node.appendChild(soundPanel(ctx));
+  // Density (spec 0045 req 10), under sound: the other setting, and the one row that changes this panel.
+  if (ctx.density) node.appendChild(densityPanel(ctx.density));
 
   // setMoment seeds and applies the layer defaults on its first call; doing it here too
   // fired every toggle twice on load.

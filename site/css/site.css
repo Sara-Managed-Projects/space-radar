@@ -129,7 +129,7 @@ html, body {
   left: 0;
   top: 0;
   will-change: transform;
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--text);
   /* Dense enough to read over the galaxy models' white clouds, not only over black sky. */
   text-shadow: 0 0 2px var(--space), 0 0 2px var(--space), 0 0 4px var(--space), 0 0 8px var(--space);
@@ -251,7 +251,7 @@ html.sr-phone .sr-drawer__close {
   min-width: 44px;
   min-height: 44px;   /* the floor .sr-mobilebar button already meets; the card's 40 is the outlier */
   font: inherit;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-dim);
   background: transparent;
   border: 0;

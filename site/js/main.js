@@ -32,6 +32,7 @@ import { createSceneNote } from './ui/scenenote.js';
 import { buildIndex, findMatches, LINK_MIN_SCORE } from './ui/search.js';
 import { createGitHubMark } from './ui/github.js';
 import { createCleanView } from './ui/cleanview.js';
+import { createDensity } from './ui/density.js';
 import { createPrintButton } from './ui/printcard.js';
 import { createTrip } from './ui/trip.js';
 import { createTripFrame } from './ui/tripframe.js';
@@ -162,6 +163,8 @@ export async function boot({ setStatus } = {}) {
   // Sound (spec 0035): built now so the panels below can put its button in, and silent until a
   // visitor presses one. Creating it makes no AudioContext and fetches nothing (wireSound).
   ctx.audio = wireSound(ctx);
+  // Regular or Compact (spec 0045 req 10), set on <html> before any panel is built.
+  ctx.density = createDensity();
 
   say('Placing Earth…');
   // One frame before any data: the world, the stars, the light.

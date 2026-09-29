@@ -702,6 +702,16 @@ export const COPY = {
     panelNote: 'A quiet score for the map and its trips. Nothing is downloaded until you turn it on.',
     creditsLine: 'Music and sounds: {credits}',
   },
+  // Spec 0045 req 10: how tightly the panels are set. Automatic is Compact on a window 800 px tall
+  // or less; the note under the row says which one Automatic picked.
+  density: {
+    panelTitle: 'Density',
+    regular: 'Regular',
+    compact: 'Compact',
+    auto: 'Automatic',
+    autoCompact: 'Compact now, because this window is short.',
+    autoRegular: 'Regular now; Compact when the window is 800 px tall or less.',
+  },
   nextList: {
     // Two rows can name different objects the same way -- CelesTrak calls dozens of stages "SL-8
     // R/B" -- and two identical rows read as a bug. The catalogue number tells them apart.

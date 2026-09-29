@@ -185,6 +185,8 @@ jobs:
       # tokens, so the study's 0.62 glass (2.16:1 for dim text over a white cloud) cannot come back.
       - name: "The instrument's tokens: glass that passes AA over a cloud, 6 px corners, a lit edge, ember brackets (spec 0045)"
         run: node tests/test_tokens.mjs
+      - name: "Regular and Compact: Compact below 800 px of height unless chosen, the choice remembered (spec 0045)"
+        run: node tests/test_density.mjs
       - name: The layers that are off by default still exist, and the active catalogue alone loads on demand
         run: node tests/test_layer_boot.mjs
       - name: The Trips panel leads with the trips that can run

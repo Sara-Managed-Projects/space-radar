@@ -121,6 +121,21 @@
   --sr-panel: var(--sr-glass-solid);
 }
 
+/* Compact (spec 0045 req 10, ui/density.js): chosen, or automatic on a window 800 px tall or
+   less. Padding, heads and rows get tighter; type stays at or above the 13 px floor. */
+html.sr-compact {
+  --sr-pad: 10px;
+  --sr-header-h: 28px;
+  --sr-gap: 8px;
+}
+
+html.sr-compact .sr-card,
+html.sr-compact .sr-controls,
+html.sr-compact .sr-status {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
 /* ------------------------------------------------------------------------------------ */
 /* Shared                                                                                */
 /* ------------------------------------------------------------------------------------ */
@@ -149,6 +164,32 @@
   border-top-color: var(--sr-edge-lit);
   border-radius: var(--sr-radius);
   box-shadow: var(--sr-edge-glow), var(--sr-shadow);
+  transition:
+    opacity var(--sr-mid) var(--sr-ease),
+    transform var(--sr-mid) var(--sr-ease),
+    border-color var(--sr-fast) var(--sr-ease);
+}
+
+/* Motion (spec 0045 req 11). Hover: the hairline strengthens in 140 ms, the lit edge stays. No
+   bounce and no glow pulse anywhere. */
+.sr-float:hover {
+  border-color: var(--sr-line-strong);
+  border-top-color: var(--sr-edge-lit);
+}
+
+/* Pressed: a 1 px nudge down. Zero specificity, so a control with a transform of its own keeps it. */
+:where(button):active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* Open: a panel shown from `hidden` fades in from 12 px off its edge, in --sr-mid. The card is the
+   one that opens and closes today; it comes up from the foot on a phone and in from the right on
+   a desktop. Closing is instant until the panel system (spec 0046) owns it. */
+@starting-style {
+  .sr-card.sr-float {
+    opacity: 0;
+    transform: translateY(12px);
+  }
 }
 
 /* Without a blur the glass would show the cloud under it at full strength: solid instead. */
@@ -400,7 +441,10 @@
   border-width: 1px 0 0;
   border-radius: var(--sr-radius) var(--sr-radius) 0 0;
   transform: translateY(0);
-  transition: transform var(--sr-slow) var(--sr-ease);
+  transition:
+    transform var(--sr-slow) var(--sr-ease),
+    opacity var(--sr-mid) var(--sr-ease),
+    border-color var(--sr-fast) var(--sr-ease);
 }
 
 .sr-card[hidden] {
@@ -478,7 +522,7 @@
 .sr-card__klass {
   flex: 0 0 auto;
   padding: 2px 8px;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--sr-text-dim);
   border: 1px solid var(--sr-line);
   border-radius: var(--sr-radius-pill);
@@ -490,7 +534,7 @@
   min-width: 40px;
   min-height: 40px;
   font: inherit;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--sr-text-dim);
   background: transparent;
   border: 0;
@@ -539,7 +583,7 @@
 
 .sr-card__photo-credit {
   margin: 6px 0 0;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.35;
   color: var(--sr-text-dim);
 }
@@ -597,7 +641,7 @@
 
 .sr-chip {
   padding: 4px 10px;
-  font-size: 12.5px;
+  font-size: 13px;
   font-variant-numeric: tabular-nums;
   color: var(--sr-text);
   background: var(--sr-raise);
@@ -665,7 +709,7 @@
 .sr-card__drawn,
 .sr-card__source {
   margin: 0 0 4px;
-  font-size: 11.5px;
+  font-size: 13px;
   line-height: 1.4;
   color: var(--sr-text-dim);
 }
@@ -690,7 +734,7 @@
 
 .sr-card__mythsource {
   margin: 0 0 10px;
-  font-size: 11.5px;
+  font-size: 13px;
   line-height: 1.4;
   color: var(--sr-text-dim);
 }
@@ -724,7 +768,7 @@
 
 .sr-card__aboardnote {
   margin: 0;
-  font-size: 11.5px;
+  font-size: 13px;
   line-height: 1.4;
   color: var(--sr-text-dim);
 }
@@ -797,7 +841,7 @@
 }
 
 .sr-door__hint {
-  font-size: 10.5px;
+  font-size: 13px;
   line-height: 1.3;
   color: var(--sr-text-dim);
 }
@@ -821,11 +865,11 @@
 .sr-source--empty,
 .sr-credit--empty {
   padding: 6px 0;
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--sr-text-dim);
 }
 /* "N more sources are read only when a layer that needs them is switched on" (ui/status.js askedRows). */
-.sr-source--note { color: var(--sr-text-dim); font-size: 12px; border: 0; }
+.sr-source--note { color: var(--sr-text-dim); font-size: 13px; border: 0; }
 
 .sr-layer__label {
   display: flex;
@@ -854,7 +898,7 @@
 
 .sr-layer__count {
   flex: 0 0 auto;
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--sr-text-dim);
 }
 
@@ -894,7 +938,7 @@
 
 .sr-clock__tag {
   flex: 0 0 46px;
-  font-size: 10.5px;
+  font-size: 11px;
   color: var(--sr-text-dim);
 }
 
@@ -905,7 +949,7 @@
 }
 
 .sr-clock__date {
-  font-size: 11.5px;
+  font-size: 13px;
   color: var(--sr-text-dim);
 }
 
@@ -917,7 +961,7 @@
 }
 
 .sr-clock__mode {
-  font-size: 11.5px;
+  font-size: 13px;
   color: var(--sr-text-dim);
   font-variant-numeric: tabular-nums;
 }
@@ -939,7 +983,7 @@
   min-height: 32px;
   padding: 0 8px;
   font: inherit;
-  font-size: 12.5px;
+  font-size: 13px;
   font-variant-numeric: tabular-nums;
   color: var(--sr-text-dim);
   background: transparent;
@@ -972,7 +1016,7 @@
 .sr-scrub__offset {
   flex: 0 0 auto;
   min-width: 84px;
-  font-size: 11.5px;
+  font-size: 13px;
   text-align: right;
   color: var(--sr-text-dim);
 }
@@ -1020,7 +1064,7 @@
 
 .sr-place__current {
   margin: 8px 0 2px;
-  font-size: 12.5px;
+  font-size: 13px;
   font-variant-numeric: tabular-nums;
   color: var(--sr-text-dim);
 }
@@ -1031,7 +1075,7 @@
 
 .sr-place__note {
   margin: 0;
-  font-size: 11.5px;
+  font-size: 13px;
   line-height: 1.4;
   color: var(--sr-text-dim);
 }
@@ -1061,7 +1105,7 @@
 
 .sr-status__intro {
   margin: 0 0 10px;
-  font-size: 11.5px;
+  font-size: 13px;
   line-height: 1.4;
   color: var(--sr-text-dim);
 }
@@ -1070,7 +1114,7 @@
    could not be read at all, because every source below is then live or absent. */
 .sr-status__harvest {
   margin: -4px 0 10px;
-  font-size: 11.5px;
+  font-size: 13px;
   line-height: 1.4;
   color: var(--sr-text-dim);
 }
@@ -1119,13 +1163,13 @@
 
 .sr-source__age {
   margin: 2px 0 0;
-  font-size: 11.5px;
+  font-size: 13px;
   color: var(--sr-text-dim);
 }
 
 .sr-source__error {
   margin: 3px 0 0;
-  font-size: 11.5px;
+  font-size: 13px;
   line-height: 1.35;
   color: var(--sr-text-dim);
   overflow-wrap: anywhere;
@@ -1135,7 +1179,7 @@
 .sr-state {
   flex: 0 0 auto;
   padding: 2px 9px;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.01em;
   border: 1px solid currentcolor;
@@ -1178,7 +1222,7 @@
 
 .sr-kind__state {
   flex: 0 0 auto;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--sr-text-dim);
 }
 
@@ -1195,14 +1239,14 @@
 .sr-kind__count {
   flex: 0 0 auto;
   min-width: 74px;
-  font-size: 11.5px;
+  font-size: 13px;
   text-align: right;
   color: var(--sr-text-dim);
 }
 
 .sr-credit {
   padding: 3px 0;
-  font-size: 11.5px;
+  font-size: 13px;
   line-height: 1.4;
   color: var(--sr-text-dim);
 }
@@ -1255,6 +1299,12 @@
 
   .sr-card__sentence {
     font-size: 17px;
+  }
+
+  @starting-style {
+    .sr-card.sr-float {
+      transform: translateX(12px);
+    }
   }
 
   .sr-door {
@@ -1450,7 +1500,7 @@ html.sr-clean .sr-print-toggle:hover, html.sr-clean .sr-print-toggle:focus-visib
 }
 .sr-print-menu[hidden] { display: none; }
 @media (min-width: 900px) { .sr-print-menu { top: 68px; right: 16px; } }
-.sr-print-menu__note { margin: 0 0 4px; font-size: 12px; line-height: 1.4; color: var(--sr-text-dim); }
+.sr-print-menu__note { margin: 0 0 4px; font-size: 13px; line-height: 1.4; color: var(--sr-text-dim); }
 .sr-print-menu button {
   min-height: 44px;
   padding: 0 12px;
@@ -1470,12 +1520,25 @@ html.sr-clean .sr-print-toggle:hover, html.sr-clean .sr-print-toggle:focus-visib
 /* ------------------------------------------------------------------------------------ */
 
 @media (prefers-reduced-motion: reduce) {
-  .sr-card,
-  .sr-controls,
-  .sr-status,
   .sr-btn,
   .sr-door {
     transition: none;
+  }
+
+  /* A panel only fades, 120 ms, with no travel and no nudge (spec 0045 req 11). */
+  .sr-float,
+  .sr-card {
+    transition: opacity 120ms linear;
+  }
+
+  :where(button):active:not(:disabled) {
+    transform: none;
+  }
+
+  @starting-style {
+    .sr-card.sr-float {
+      transform: none;
+    }
   }
 }
 
@@ -1572,7 +1635,7 @@ html.sr-clean .sr-print-toggle:hover, html.sr-clean .sr-print-toggle:focus-visib
 .sr-search__where {
   flex: 0 1 auto;
   max-width: 42%;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--sr-text-dim);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1603,7 +1666,7 @@ html.sr-clean .sr-print-toggle:hover, html.sr-clean .sr-print-toggle:focus-visib
 .sr-search__foot {
   margin: 0;
   padding: 7px 10px;
-  font-size: 11.5px;
+  font-size: 13px;
   line-height: 1.4;
   color: var(--sr-text-dim);
   border-top: 1px solid var(--sr-line);
@@ -1615,7 +1678,7 @@ html.sr-clean .sr-print-toggle:hover, html.sr-clean .sr-print-toggle:focus-visib
 
 .sr-search__note {
   margin: 8px 0 0;
-  font-size: 11.5px;
+  font-size: 13px;
   line-height: 1.4;
   color: var(--sr-text-dim);
 }
@@ -1832,7 +1895,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   min-width: 0;
   margin: 0;
   overflow: hidden;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--sr-text-dim);
   font-variant-numeric: tabular-nums;
   text-overflow: ellipsis;
@@ -1850,7 +1913,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   order: 4;
   margin: 0;
   padding-bottom: 6px;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.4;
   color: var(--sr-text-dim);
 }
@@ -1930,7 +1993,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
 
 .sr-trip__count {
   flex: 0 0 auto;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--sr-text-dim);
   font-variant-numeric: tabular-nums;
 }
@@ -1986,7 +2049,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
 }
 
 .sr-trip__chiptext {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--sr-stale);
 }
 
@@ -2005,7 +2068,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
 
 .sr-trip__stopname {
   margin: 0;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 /* The intro and the end card. Centred, over the scene, and the only thing on screen that asks
@@ -2041,7 +2104,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
 
 .sr-trip__panelnote {
   margin: 0 0 12px;
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--sr-text-dim);
 }
 
@@ -2086,7 +2149,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
 .sr-trip__chapter {
   margin: 0;
   overflow: hidden;
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.3;
   color: var(--sr-text-dim); /* not ember: ember is the one interactive colour, and this is not */
   letter-spacing: 0.08em;
@@ -2198,7 +2261,9 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
 
   /* Six controls since Share joined them (spec 0033). Measured 2026-09-23 at 390 x 844: at 10 px
      padding "Hide card" broke onto two lines; at 8 px with a 4 px gap the row is 350 px of the
-     362 available, and a narrower phone wraps the row rather than a label. */
+     362 available, and a narrower phone wraps the row rather than a label. At the 13 px floor
+     (spec 0045, 2026-09-28) 8 px made the row 362 px of 358 and wrapped it at 390; 6 px keeps it
+     on one row. */
   .sr-trip__controls {
     flex: 1 1 100%;
     flex-wrap: wrap;
@@ -2207,9 +2272,9 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
   }
 
   .sr-trip__btn {
-    padding: 0 8px;
+    padding: 0 6px;
     min-height: 40px;
-    font-size: 12.5px;
+    font-size: 13px;
     white-space: nowrap;
   }
 
@@ -2288,7 +2353,7 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
 
 .sr-trips__hint {
   margin: 0 0 8px;
-  font-size: 11.5px;
+  font-size: 13px;
   line-height: 1.4;
   color: var(--sr-text-dim);
 }
@@ -2296,7 +2361,7 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
 .sr-trips__label {
   display: block;
   margin: 0 0 4px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: .02em;
   color: var(--sr-text-dim);
@@ -2311,7 +2376,7 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
 
 .sr-trips__blurb {
   margin: 0;
-  font-size: 12.5px;
+  font-size: 13px;
   line-height: 1.45;
   color: var(--sr-text);
 }
@@ -2321,7 +2386,7 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
    accessible name does not change under a reader as the plans land. */
 .sr-trips__shape {
   margin: 0;
-  font-size: 11.5px;
+  font-size: 13px;
   line-height: 1.4;
   color: var(--sr-text-dim);
 }
@@ -2333,7 +2398,7 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
 /* An event trip's next date, under its title (spec 0031): empty, and gone, for every other trip. */
 .sr-trips__next {
   margin: 0;
-  font-size: 11.5px;
+  font-size: 13px;
   line-height: 1.4;
   color: var(--sr-text);
 }
@@ -2367,22 +2432,22 @@ html.sr-phone .sr-trips__select {
 
 /* --- the Now moment's first screen: the guess in words, and tonight's passes ------------- */
 .sr-place__current.is-guess { color: var(--sr-text); font-style: italic; }
-.sr-tonight__title { margin: 12px 0 2px; font-size: 12px; font-weight: 600; letter-spacing: .02em; color: var(--sr-text-dim); text-transform: uppercase; }
-.sr-tonight__hint { margin: 0 0 6px; font-size: 11.5px; color: var(--sr-text-dim); }
+.sr-tonight__title { margin: 12px 0 2px; font-size: 13px; font-weight: 600; letter-spacing: .02em; color: var(--sr-text-dim); text-transform: uppercase; }
+.sr-tonight__hint { margin: 0 0 6px; font-size: 13px; color: var(--sr-text-dim); }
 .sr-tonight__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
-.sr-tonight__row { padding: 6px 8px; font-size: 12.5px; background: var(--sr-raise); border: 1px solid var(--sr-line); border-radius: var(--sr-radius-sm); cursor: pointer; }
+.sr-tonight__row { padding: 6px 8px; font-size: 13px; background: var(--sr-raise); border: 1px solid var(--sr-line); border-radius: var(--sr-radius-sm); cursor: pointer; }
 .sr-tonight__row:hover { border-color: var(--sr-ember); }
-.sr-tonight__note { margin: 4px 0 0; font-size: 12px; color: var(--sr-text-dim); }
+.sr-tonight__note { margin: 4px 0 0; font-size: 13px; color: var(--sr-text-dim); }
 .sr-tonight__note[hidden] { display: none; }
 /* A meteor shower peaking tonight: the one line in this section that needs no satellite catalogue. */
-.sr-tonight__shower { margin: 6px 0; padding-left: 8px; border-left: 2px solid var(--sr-ember); font-size: 12.5px; line-height: 1.45; }
+.sr-tonight__shower { margin: 6px 0; padding-left: 8px; border-left: 2px solid var(--sr-ember); font-size: 13px; line-height: 1.45; }
 .sr-tonight__shower[hidden] { display: none; }
 
 /* A world's note about how it is drawn (spec 0028 step 0) ------------------------------- */
 
 .sr-card__note {
   margin: 0 0 10px;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.45;
   color: var(--sr-text-dim);
 }
@@ -2427,11 +2492,11 @@ html.sr-phone .sr-trips__select {
 
 .sr-pick__name { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.sr-pick__where { flex: 0 0 auto; font-size: 11px; color: var(--sr-text-dim); }
+.sr-pick__where { flex: 0 0 auto; font-size: 13px; color: var(--sr-text-dim); }
 
 .sr-pick__hint {
   padding: 6px 8px 2px;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--sr-text-dim);
 }
 
@@ -2440,7 +2505,7 @@ html.sr-phone .sr-trips__select {
 .sr-ladder__intro,
 .sr-ladder__why {
   margin: 0 0 6px;
-  font-size: 11.5px;
+  font-size: 13px;
   line-height: 1.4;
   color: var(--sr-text-dim);
 }
@@ -2491,25 +2556,25 @@ html.sr-phone .sr-trips__select {
 
 .sr-ladder__btn:disabled { opacity: 0.55; cursor: default; }
 
-.sr-ladder__dist { color: var(--sr-text-dim); font-size: 12px; white-space: nowrap; }
+.sr-ladder__dist { color: var(--sr-text-dim); font-size: 13px; white-space: nowrap; }
 
 .sr-ladder__show { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--sr-line); }
 
 .sr-ladder__showlist { margin: 0; padding: 0; list-style: none; }
 
-.sr-ladder__showrow { font-size: 11.5px; line-height: 1.45; color: var(--sr-text-dim); margin: 0 0 4px; }
+.sr-ladder__showrow { font-size: 13px; line-height: 1.45; color: var(--sr-text-dim); margin: 0 0 4px; }
 
 /* The Next moment's list (spec 0026 req 6) --------------------------------------------- */
 
 .sr-next__hint,
-.sr-next__note { margin: 0 0 8px; font-size: 11.5px; line-height: 1.4; color: var(--sr-text-dim); }
+.sr-next__note { margin: 0 0 8px; font-size: 13px; line-height: 1.4; color: var(--sr-text-dim); }
 
 .sr-next__list { margin: 0 0 6px; padding: 0; list-style: none; }
 
 .sr-next__row {
   padding: 6px 8px;
   margin-bottom: 4px;
-  font-size: 12.5px;
+  font-size: 13px;
   line-height: 1.4;
   border: 1px solid var(--sr-line);
   border-radius: var(--sr-radius-sm);
@@ -2526,7 +2591,7 @@ html.sr-phone .sr-trips__select {
 .sr-next__row[data-kind='solar-eclipse']:hover,
 .sr-next__row[data-kind='lunar-eclipse']:hover { border-color: var(--sr-line); }
 /* What the row's time is: a plan, a computation, elements of some age (spec 0031 req 7). */
-.sr-next__class { display: block; margin-top: 2px; font-size: 11px; line-height: 1.35; color: var(--sr-text-dim); }
+.sr-next__class { display: block; margin-top: 2px; font-size: 13px; line-height: 1.35; color: var(--sr-text-dim); }
 
 /* Colour by (spec 0026 req 11) -------------------------------------------------------------- */
 
@@ -2546,13 +2611,13 @@ html.sr-phone .sr-trips__select {
 
 .sr-colourkey__legend { margin: 0; padding: 0; list-style: none; }
 
-.sr-colourkey__row { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: 12px; }
+.sr-colourkey__row { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: 13px; }
 
 .sr-colourkey__label { flex: 1 1 auto; color: var(--sr-text-dim); }
 
 .sr-colourkey__count { flex: 0 0 auto; }
-.sr-colourkey__scope { margin: 6px 0 0; font-size: 11px; line-height: 1.4; color: var(--sr-text-dim); }
-.sr-colourkey__scope { margin: 6px 0 0; font-size: 11px; line-height: 1.4; color: var(--sr-text-dim); }
+.sr-colourkey__scope { margin: 6px 0 0; font-size: 13px; line-height: 1.4; color: var(--sr-text-dim); }
+.sr-colourkey__scope { margin: 6px 0 0; font-size: 13px; line-height: 1.4; color: var(--sr-text-dim); }
 
 /* The card's trajectory chart (spec 0026 req 14) ---------------------------------------- */
 
@@ -2561,15 +2626,15 @@ html.sr-phone .sr-trips__select {
 .sr-traj__map { fill: var(--sr-raise); stroke: var(--sr-line); stroke-width: 1; }
 .sr-traj__line { fill: none; stroke: var(--sr-satellite); stroke-width: 1.5; }
 .sr-traj__now { fill: var(--sr-ember); }
-.sr-traj__label { fill: var(--sr-text-dim); font-size: 9px; font-family: inherit; }
+.sr-traj__label { fill: var(--sr-text-dim); font-size: 11px; font-family: inherit; }
 
 /* Space weather, one line (spec 0026 req 16) ----------------------------------------------- */
 
-.sr-status__weather { margin: 0 0 10px; font-size: 12.5px; line-height: 1.45; color: var(--sr-text); }
+.sr-status__weather { margin: 0 0 10px; font-size: 13px; line-height: 1.45; color: var(--sr-text); }
 
 /* Data-saver / frame latch note (spec 0026 req 18) --------------------------------------- */
 
-.sr-layers__quality { margin: 6px 0 0; font-size: 11.5px; line-height: 1.4; color: var(--sr-ember); }
+.sr-layers__quality { margin: 6px 0 0; font-size: 13px; line-height: 1.4; color: var(--sr-ember); }
 
 /* The note on the scene when no satellite could be read (ui/scenenote.js) ------------------ */
 
@@ -2589,7 +2654,7 @@ html.sr-phone .sr-trips__select {
   border: 1px solid var(--sr-line);
   border-radius: var(--sr-radius-sm);
   color: var(--sr-text);
-  font-size: 12.5px;
+  font-size: 13px;
   line-height: 1.45;
 }
 .sr-scenenote[hidden] { display: none; }
@@ -2666,7 +2731,38 @@ html.sr-phone .sr-trip__btn--share {
 
 .sr-sound__note {
   margin: 0 0 8px;
-  font-size: 12.5px;
+  font-size: 13px;
+  color: var(--sr-text-dim);
+}
+
+/* Density (spec 0045 req 10): three choices in a row, the chosen one bracketed. */
+.sr-density__choices {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.sr-density__btn {
+  appearance: none;
+  flex: 1 1 0;
+  min-height: 36px;
+  padding: 0 var(--sp-2);
+  font: inherit;
+  font-size: 13px;
+  color: var(--sr-text-dim);
+  background: transparent;
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius-sm);
+  cursor: pointer;
+}
+
+.sr-density__btn[aria-pressed='true'] {
+  color: var(--sr-text);
+  border-color: var(--sr-line-strong);
+}
+
+.sr-density__note {
+  margin: var(--sp-2) 0 0;
+  font-size: 13px;
   color: var(--sr-text-dim);
 }
 .sr-sound__btn.is-on {
