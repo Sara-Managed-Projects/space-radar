@@ -18,7 +18,8 @@
 //
 // Four things must stay at zero whatever the total: anything under /audio/ (spec 0035: nothing before
 // a gesture), anything under /og/ (spec 0033: those are for chat previews), and galaxy.bin and
-// stars3d.bin (spec 0028: fetched when the ladder needs them). stars3d.names.json, exoplanets.csv
+// stars3d.bin (spec 0028: fetched when the ladder needs them). The fonts under /fonts/ have their own
+// line and budget, and a Cyrillic file on this English page fails (spec 0045 req 5). stars3d.names.json, exoplanets.csv
 // and stars.bin are printed on their own line: they are the one known saving (spec 0044 req 5), and
 // whether to defer them is decided by that line.
 import { fileURLToPath } from 'node:url';
@@ -49,7 +50,7 @@ const DEFERRABLE = new Set(['stars3d.names.json', 'exoplanets.csv', 'stars.bin']
 
 /** Sum a boot's requests: `[{url, bytes}]` -> the numbers the gate and the log read. */
 function tally(requests, pageOrigin) {
-  const t = { total: 0, count: 0, audio: [], audioBytes: 0, og: [], ogBytes: 0, lazy: [], deferrable: 0, thirdParty: 0 };
+  const t = { total: 0, count: 0, audio: [], audioBytes: 0, og: [], ogBytes: 0, lazy: [], deferrable: 0, thirdParty: 0, fonts: [], fontBytes: 0, cyrillic: [] };
   for (const r of requests) {
     const at = sitePath(r.url);
     if (!at) continue; // data: and blob: URLs cross no wire
@@ -63,6 +64,11 @@ function tally(requests, pageOrigin) {
     if (at.path.startsWith('/og/')) { t.og.push(at.path); t.ogBytes += bytes; }
     if (at.path.startsWith('/data/') && LAZY.has(file)) t.lazy.push(at.path);
     if (at.path.startsWith('/data/') && DEFERRABLE.has(file)) t.deferrable += bytes;
+    if (at.path.startsWith('/fonts/') && file.endsWith('.woff2')) {
+      t.fonts.push(`${file} ${bytes}`);
+      t.fontBytes += bytes;
+      if (/-cyrillic\.woff2$/.test(file)) t.cyrillic.push(file);
+    }
   }
   return t;
 }
@@ -76,6 +82,9 @@ function verdict(t, budgets = BUDGETS) {
   const over = (paths, bytes, cap) => (cap === 0 ? paths.length > 0 : bytes > cap);
   if (over(t.audio, t.audioBytes, budgets.audio_at_boot_bytes)) out.push(`${t.audio.length} request(s) under /audio/ at boot (spec 0035): ${t.audio.slice(0, 3).join(', ')}`);
   if (over(t.og, t.ogBytes, budgets.og_at_boot_bytes)) out.push(`${t.og.length} request(s) under /og/ at boot (spec 0033): ${t.og.slice(0, 3).join(', ')}`);
+  // Spec 0045 req 5: the faces the first screen uses, and never a Cyrillic file on an English page.
+  if (t.fontBytes > budgets.fonts_at_boot_bytes) out.push(`fonts at boot ${t.fontBytes} B are over fonts_at_boot_bytes ${budgets.fonts_at_boot_bytes} B: ${t.fonts.join(', ')}`);
+  if (t.cyrillic.length) out.push(`a Cyrillic face was fetched by an English page: ${t.cyrillic.join(', ')}`);
   if (t.lazy.length) out.push(`fetched at boot and meant to wait for the ladder (spec 0028): ${t.lazy.join(', ')}`);
   return out;
 }
@@ -84,6 +93,7 @@ const kB = (n) => `${(n / 1000).toFixed(1)} kB`;
 function report(t, where) {
   console.log(`first visit (${where}): ${t.total} B in ${t.count} requests, budget ${BUDGETS.first_visit_bytes} B`);
   console.log(`  deferrable at boot (stars3d.names.json + exoplanets.csv + stars.bin): ${t.deferrable} B (${kB(t.deferrable)})`);
+  console.log(`  fonts: ${t.fontBytes} B (${kB(t.fontBytes)}) of ${BUDGETS.fonts_at_boot_bytes} B in ${t.fonts.length} file(s)${t.fonts.length ? `: ${t.fonts.join(', ')}` : ''}`);
   console.log(`  from other hosts: ${t.thirdParty} B (${kB(t.thirdParty)})`);
   console.log(`  under /audio/: ${t.audio.length}; under /og/: ${t.og.length}; galaxy.bin or stars3d.bin: ${t.lazy.length}`);
 }
@@ -164,6 +174,10 @@ if (BASE || FROM) {
   check(verdict(tally([...visit, { url: `${O}/og/default.png`, bytes: 1 }], O)).some((p) => /\/og\//.test(p)), 'a preview picture at boot fails');
   check(verdict(tally([...visit, { url: `${O}/data/galaxy.bin`, bytes: 1 }], O)).some((p) => /galaxy\.bin/.test(p)), 'the galaxy at boot fails');
   check(verdict(tally([...visit, { url: `${O}/site/data/stars3d.bin`, bytes: 1 }], O)).some((p) => /stars3d\.bin/.test(p)), 'the 3D stars at boot fail, served under /site/ too');
+  const withFonts = [...visit, { url: `${O}/fonts/inter-400-latin.woff2`, bytes: 19176 }, { url: `${O}/fonts/jetbrains-mono-400-latin.woff2`, bytes: 9324 }];
+  check(tally(withFonts, O).fontBytes === 28500 && verdict(tally(withFonts, O)).length === 0, 'two Latin faces at boot are counted and pass');
+  check(verdict(tally(withFonts, O), { ...BUDGETS, fonts_at_boot_bytes: 20000 }).some((p) => /fonts_at_boot_bytes/.test(p)), 'fonts over their own budget fail');
+  check(verdict(tally([...withFonts, { url: `${O}/fonts/inter-400-cyrillic.woff2`, bytes: 6004 }], O)).some((p) => /Cyrillic/.test(p)), 'a Cyrillic face on an English page fails');
   check(verdict(tally([], O)).some((p) => /measured nothing/.test(p)), 'an empty record fails rather than passing as zero bytes');
 
   // The wiring: the flag the real boot waits on, and the CI step that runs the real boot.
@@ -173,5 +187,5 @@ if (BASE || FROM) {
   check(/node tests\/test_first_visit_bytes\.mjs --base=/.test(screens), 'screens.yml boots the app through this test');
   check(BUDGETS.audio_at_boot_bytes === 0 && BUDGETS.og_at_boot_bytes === 0, 'nothing under /audio/ or /og/ at boot, by budget');
 
-  finish(problems, `the rules hold on fixtures (budget ${BUDGETS.first_visit_bytes} B; ${t.total} B passes, 1 000 000 B fails it; sound, previews, the galaxy and the 3D stars at boot each fail)`);
+  finish(problems, `the rules hold on fixtures (budget ${BUDGETS.first_visit_bytes} B; ${t.total} B passes, 1 000 000 B fails it; sound, previews, the galaxy, the 3D stars, a Cyrillic face and fonts over their budget each fail)`);
 }

@@ -105,14 +105,17 @@
   --sr-z-controls: 30;
   --sr-z-card: 40;
 
+  /* The three faces (spec 0045), self-hosted in site/fonts/ and declared in css/fonts.css. Each
+     stack ends in the system's own, which is what shows until the face lands (`swap`) and what
+     draws a character the subset does not carry. */
   --sr-font:
-    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
     sans-serif;
   --sr-font-mono:
-    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
-  /* Panel titles and HUD units. Barlow Semi Condensed arrives with the self-hosted faces
-     (spec 0045 task 2); until then it is the interface face. */
-  --sr-font-hud: var(--sr-font);
+    'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono',
+    monospace;
+  /* Panel titles and, later, HUD units. No Cyrillic in Barlow: Inter draws it. */
+  --sr-font-hud: 'Barlow Semi Condensed', 'Inter', system-ui, sans-serif;
 
   /* Old names, kept for one release so no rule breaks in the change */
   --sr-panel: var(--sr-glass-solid);
@@ -214,14 +217,30 @@
   font-feature-settings: 'tnum' 1;
 }
 
+/* Every number that ticks is JetBrains Mono (spec 0045 req 6): the clock, the scrub's offset, the
+   counts beside each layer, kind and colour, the ladder's distances and the trip's stop count.
+   `.sr-num` alone is not enough to say so: it also marks whole sentences (a source's age). */
+.sr-clock__date,
+.sr-scrub__offset,
+.sr-layer__count,
+.sr-kind__count,
+.sr-colourkey__count,
+.sr-ladder__dist,
+.sr-trip__count {
+  font-family: var(--sr-font-mono);
+}
+
 .sr-panel__title,
 .sr-status__title,
 .sr-status__subtitle,
 .sr-card__label {
   margin: 0 0 6px;
-  font-size: 11px;
+  /* Panel titles: Barlow Semi Condensed 600 at 13 px, tracked 0.04 em (spec 0045 req 6). A
+     condensed face at the old 11 px read smaller than Inter did there. */
+  font-family: var(--sr-font-hud);
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
   color: var(--sr-text-dim);
 }
 

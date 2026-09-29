@@ -74,7 +74,7 @@ SYNC=(aws s3 sync --region "$REGION")
 # hypothetical: `site/models/` was added for the NASA spacecraft and this script did not know about
 # it, so the first deploy after that shipped an app whose models 403'd. The app degraded correctly
 # and nobody would have noticed for a while, which is exactly what makes it worth a check.
-KNOWN="textures data vendor js css models images t og audio"
+KNOWN="textures data vendor js css models images t og audio fonts"
 MISSING=""
 for d in "$SITE"/*/; do
   name=$(basename "$d")
@@ -129,6 +129,15 @@ if [ "$WHAT" != "app" ]; then
     "${SYNC[@]}" "$SITE/audio" "s3://$BUCKET/audio" --cache-control "$LONG" --delete \
       --exclude "*" --include "*.m4a" --content-type "audio/mp4"
   fi
+  # The three faces (spec 0045): WOFF2 subsets and the OFL text that has to travel with them.
+  # Long-lived like the models; a face changes only when scripts/build-fonts.py is re-run, and its
+  # file name does not change then, so invalidate /fonts/* by hand after a rebuild. By type, as the
+  # audio: `.woff2` is missing from older mimetypes tables, and a font served as octet-stream is
+  # refused by a browser that checks.
+  "${SYNC[@]}" "$SITE/fonts" "s3://$BUCKET/fonts" --cache-control "$LONG" --delete \
+    --exclude "*" --include "*.woff2" --content-type "font/woff2"
+  "${SYNC[@]}" "$SITE/fonts" "s3://$BUCKET/fonts" --cache-control "$LONG" --delete \
+    --exclude "*" --include "*.txt" --content-type "text/plain; charset=utf-8"
 fi
 
 if [ "$WHAT" != "assets" ]; then

@@ -24,6 +24,8 @@ budgets:
   - {id: first_visit_bytes, value: 6200000, unit: bytes, since: 2026-09-28, reason: "5 858 529 B uncompressed on CI's kind of server, 2026-09-28; 6 % margin"}
   - {id: audio_at_boot_bytes, value: 0, unit: bytes, since: 2026-09-22, reason: "spec 0035: nothing before a gesture"}
   - {id: og_at_boot_bytes, value: 0, unit: bytes, since: 2026-09-22, reason: "spec 0033: previews and cards only"}
+  # WOFF2 is already compressed, so this number is the same on CI's server and the live site.
+  - {id: fonts_at_boot_bytes, value: 90000, unit: bytes, since: 2026-09-28, reason: "spec 0045 req 5: the faces the first screen uses, Latin only"}
   - {id: draw_calls_per_stop, value: 120, unit: calls, since: 2026-09-22, reason: "docs/toolkit.md: 120 at 30 fps; a stop is a still under text", pending: "spec 0044 task 3"}
   - {id: triangles_per_stop, value: 250000, unit: triangles, since: 2026-09-22, reason: "poes.glb alone was 116 517 before decimation (0027 amendment 1)", pending: "spec 0044 task 3"}
   - {id: bed_kb, value: 600, unit: kB, since: 2026-09-22, reason: "spec 0035: 75 s at 64 kbps Opus"}

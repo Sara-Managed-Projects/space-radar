@@ -988,3 +988,22 @@ Modified: each bed is a 72 s cut of a 4:04 piece with its last 4 s cross-faded i
 it loops, levelled to −23 LUFS; each sting is trimmed to 2.5–3 s with a fade and levelled to
 −21 LUFS; all are re-encoded to Opus 64 kbps and AAC 64 kbps. The stings are made from Freesound's
 HQ previews, not the uploaded originals.
+
+## 10. Fonts
+
+Spec 0045 (2026-09-28). Three families, self-hosted in `site/fonts/`, all under the SIL Open Font
+License 1.1. None of the three declares a Reserved Font Name, so the subsets keep their names. The
+licence text travels with the files as `site/fonts/OFL-*.txt`, byte for byte the upstream file;
+`scripts/build-fonts.py --check` refuses a licence file that differs, a subset it did not make,
+and a family with no row here.
+
+| Family | Version | Licence | Credit line | Source |
+|---|---|---|---|---|
+| Inter | 4.1 (font version 4.001), weights 400 and 600 | SIL OFL 1.1 | © 2016 The Inter Project Authors | <https://github.com/rsms/inter> (release v4.1, `extras/ttf/`) |
+| Barlow Semi Condensed | 1.408, weights 500 and 600 | SIL OFL 1.1 | © 2017 The Barlow Project Authors | <https://github.com/jpt/barlow>, files from <https://github.com/google/fonts/tree/main/ofl/barlowsemicondensed> |
+| JetBrains Mono | 2.304, weights 400 and 500 | SIL OFL 1.1 | © 2020 The JetBrains Mono Project Authors | <https://github.com/JetBrains/JetBrainsMono> (release v2.304, `fonts/ttf/`) |
+
+Modified: each file is subset with fontTools to a Latin and (Inter, JetBrains Mono) a Cyrillic
+character range, hinting removed, and saved as WOFF2. Inter and Barlow keep `tnum`, the tabular
+figures; JetBrains Mono drops `calt`, its programming ligatures. Barlow Semi Condensed has no
+Cyrillic, so it has no Cyrillic file. The upstream files' SHA-256 are in `scripts/build-fonts.py`.

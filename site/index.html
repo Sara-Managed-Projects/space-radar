@@ -18,6 +18,11 @@
 <meta property="og:image:height" content="630">
 <meta property="og:url" content="https://www.spaceradar.ai/">
 <meta name="twitter:card" content="summary_large_image">
+<!-- The faces first (spec 0045), and the one file the first paint needs preloaded: Inter 400 in
+     Latin. The rest load when text on screen asks for them, and a Latin page never asks for a
+     Cyrillic file. `crossorigin` because a font is always fetched in CORS mode. -->
+<link rel="preload" href="fonts/inter-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/fonts.css">
 <link rel="stylesheet" href="css/site.css">
 <link rel="stylesheet" href="css/ui.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='9' fill='%231B4F8A'/><circle cx='16' cy='16' r='13' fill='none' stroke='%23FF9F43' stroke-width='1.5' stroke-dasharray='3 4'/></svg>">

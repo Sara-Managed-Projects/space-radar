@@ -85,6 +85,10 @@ jobs:
       # Spec 0044: the gates themselves. A stale mirror is a test holding the previous number.
       - name: The budgets mirror matches the registry (spec 0044)
         run: python3 scripts/gen_budgets_js.py --check
+      # Spec 0045: the ten font subsets are the ones build-fonts.py recorded, fonts.css is what it
+      # writes, and the OFL text and a CREDITS.md row travel with each family. Stdlib only.
+      - name: The self-hosted faces are the recorded subsets, with their licences (spec 0045)
+        run: python3 scripts/build-fonts.py --check
       # The dishes and landing sites were ported to data/sample.js by hand until 2026-09-22, with
       # nothing checking the port; twenty-one more rows made that a copy that would drift.
       - name: The sites mirror matches the registry

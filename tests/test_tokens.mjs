@@ -10,7 +10,7 @@
 //   node tests/test_tokens.mjs
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const problems = [];
@@ -197,16 +197,28 @@ for (const r of all.filter((x) => x.selector === '.sr-door.is-on')) {
   check(!/border-color: var\(--sr-ember\)|inset 0 -2px 0 var\(--sr-ember\)/.test(r.body), 'the mode tile lost its 1 px ember box to the brackets');
 }
 
-// --- 8. faces: at most the three the amendment names; never Bricolage -----------------------------
-const css = FILES.map((f) => readFileSync(join(ROOT, f), 'utf8')).join('\n');
-const families = [...strip(css).matchAll(/@font-face\s*\{[^}]*font-family:\s*["']?([^;"']+)/g)].map((m) => m[1].trim());
-const FACES = new Set(['Inter', 'Barlow Semi Condensed', 'JetBrains Mono']);
-for (const f of new Set(families)) check(FACES.has(f), `@font-face ${f} is not one of the three faces (Inter, Barlow Semi Condensed, JetBrains Mono)`);
+// --- 8. faces: exactly the three the amendment names, self-hosted; never Bricolage --------------
+const fontsCss = readFileSync(join(ROOT, 'site/css/fonts.css'), 'utf8');
+const css = [...FILES.map((f) => readFileSync(join(ROOT, f), 'utf8')), fontsCss].join('\n');
+const faces = [...strip(css).matchAll(/@font-face\s*\{([^}]*)\}/g)].map((m) => m[1]);
+const families = new Set(faces.map((b) => (/font-family:\s*["']?([^;"']+)/.exec(b) || [])[1]).filter(Boolean).map((f) => f.trim()));
+const FACES = ['Inter', 'Barlow Semi Condensed', 'JetBrains Mono'];
+check(families.size === 3 && FACES.every((f) => families.has(f)), `@font-face declares ${[...families].join(', ') || 'nothing'}; exactly Inter, Barlow Semi Condensed and JetBrains Mono`);
 check(!/Bricolage/i.test(strip(css)), 'Bricolage Grotesque is not loaded (design-language amendment 2026-09-28)');
+for (const b of faces) {
+  const src = /url\(['"]?\.\.\/fonts\/([^'")]+\.woff2)['"]?\)\s*format\(['"]woff2['"]\)/.exec(b);
+  check(!!src, `a face without a self-hosted WOFF2 source: ${b.trim().slice(0, 80)}`);
+  if (src) check(existsSync(join(ROOT, 'site/fonts', src[1])), `site/fonts/${src[1]} is named in fonts.css and is not in the tree`);
+  check(/font-display:\s*swap/.test(b), 'every face swaps: the system face first, never invisible text');
+  check(/unicode-range:/.test(b), 'every face names its unicode-range, so a Latin page never fetches Cyrillic');
+}
+check(/^'Inter',/.test(token('--sr-font') || ''), `--sr-font starts with Inter (${token('--sr-font')})`);
+check(/^'JetBrains Mono',/.test(token('--sr-font-mono') || ''), `--sr-font-mono starts with JetBrains Mono (${token('--sr-font-mono')})`);
+check(/^'Barlow Semi Condensed',/.test(token('--sr-font-hud') || ''), `--sr-font-hud starts with Barlow Semi Condensed (${token('--sr-font-hud')})`);
 
 if (problems.length) {
   console.error('tokens FAILED:\n  ' + problems.join('\n  '));
   if (table.length) console.error('  contrast: ' + table.join('; '));
   process.exit(1);
 }
-console.log(`tokens ok: ${DESIGN_TOKENS.length} tokens defined once, the palette unchanged, 6 px corners, the lit edge and the brackets in place; contrast ${table.join('; ')}`);
+console.log(`tokens ok: ${DESIGN_TOKENS.length} tokens defined once, the palette unchanged, 6 px corners, the lit edge and the brackets in place, three faces self-hosted; contrast ${table.join('; ')}`);
