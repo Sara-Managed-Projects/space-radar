@@ -223,7 +223,7 @@ export function worldRecords() {
       cite: COPY.worldFacts.cite[w.id] || WORLD_CITE,
       // A world with no surface map says so on its card (ui/cards.js drawingLine), and one that is
       // not round says the ball is not its shape.
-      flat: !!w.look.flat,
+      flat: !!w.look.flat && !w.look.map,
       irregular: !!w.look.irregular,
     },
   }));
@@ -320,25 +320,34 @@ export const WORLDS = [
   // Callisto 0.19. tests/test_worlds_layer.mjs holds the order. The card says the colour was
   // chosen, not measured. No `rotation`: there is nothing on a plain ball to turn.
   //
+  // FIVE OF THEM NOW CARRY A MAP (issue #262), because a trip flies to them: Io, Europa, Enceladus,
+  // Triton and Pluto, from public-domain USGS / NASA mosaics (CREDITS.md). The tint stays their
+  // colour until the map arrives, and each map was scaled so its mean has the tint's luminance, so
+  // the albedo order holds either way. A mapped moon has to face the right way: the four moons are
+  // `rotation: 'locked'`, longitude 0 toward their planet (applyLockedOrientation); Pluto has an
+  // IAU model whose north is the right-hand-rule pole New Horizons maps in, with longitude 0 within
+  // 1.5 degrees of Charon (tests/test_worlds_layer.mjs measures both). Titan is a
+  // trip stop too and stays one colour on purpose: in visible light its haze is all anyone has seen.
+  //
   // The moons come AFTER Jupiter on purpose: update() places a moon from its planet's drawn disc,
   // so the planet has to have been placed first in the same frame.
   {
     // "charcoal black, to dark orange and white" (Wikipedia): a light orange-tan.
     id: 'pluto', display: 'Pluto', parent: 'sun', radiusKm: 1188.3,
-    body: 'Pluto', frame: SUN_INERTIAL, view: VIEW_COMPRESSED,
-    look: { flat: true, tint: 0xb4926f, albedo: 0.52 },
+    body: 'Pluto', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
+    look: { flat: true, tint: 0xb4926f, albedo: 0.52, map: '2k_pluto_newhorizons.jpg' },
   },
   {
     // "shades of yellow, red, white, black, and green, largely due to ... sulfur" (Wikipedia).
     id: 'io', display: 'Io', parent: 'jupiter', radiusKm: 1821.5,
-    body: 'Io', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0xc9b061, albedo: 0.62 },
+    body: 'Io', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
+    look: { flat: true, tint: 0xc9b061, albedo: 0.62, map: '1k_io_usgs.jpg' },
   },
   {
     // "a pale ... surface striated by light tan cracks and streaks" (Wikipedia).
     id: 'europa', display: 'Europa', parent: 'jupiter', radiusKm: 1560.8,
-    body: 'Europa', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0xd6cfc0, albedo: 0.68 },
+    body: 'Europa', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
+    look: { flat: true, tint: 0xd6cfc0, albedo: 0.68, map: '1k_europa_usgs.jpg' },
   },
   {
     // "very old, highly cratered, dark regions and somewhat younger ... lighter regions" (Wikipedia).
@@ -372,21 +381,21 @@ export const WORLDS = [
   {
     // "the most reflective body in the solar system ... bright white all over" (NASA Science).
     id: 'enceladus', display: 'Enceladus', parent: 'saturn', radiusKm: 252.1,
-    body: 'Enceladus', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0xeff1f1, albedo: 1.0 },
+    body: 'Enceladus', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
+    look: { flat: true, tint: 0xeff1f1, albedo: 1.0, map: '1k_enceladus_cassini.jpg' },
   },
   {
     // "Titan's orange color comes from a thick atmospheric haze" (Wikipedia): the haze, not the
     // ground, is what anyone has seen of Titan in visible light. Darkened 2026-09-22, same hue.
     id: 'titan', display: 'Titan', parent: 'saturn', radiusKm: 2574.76,
     body: 'Titan', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x8f5e26, albedo: 0.22, rim: { colour: 0xe0a050, gain: 0.7 } },
+    look: { flat: true, tint: 0x8f5e26, albedo: 0.22, haze: true, rim: { colour: 0xe0a050, gain: 0.7 } },
   },
   {
     // "Triton's reddish color" (Wikipedia) on frost with "an icy sheen" (NASA Science): a pale pink.
     id: 'triton', display: 'Triton', parent: 'neptune', radiusKm: 1352.6,
-    body: 'Triton', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0xe3d4cc, albedo: 0.72 },
+    body: 'Triton', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
+    look: { flat: true, tint: 0xe3d4cc, albedo: 0.72, map: '1k_triton_voyager.jpg' },
   },
   {
     // "Charon's color palette is not as diverse as Pluto's. Most striking is the reddish north
@@ -811,6 +820,8 @@ export function createWorlds(scene, opts = {}) {
 
   const meshes = new Map();
   const viewState = new Map();
+  // Each world's true position this frame, stage frame km: a locked moon faces its planet's.
+  const stageKm = new Map();
   // The `worlds` layer's switch. The stage world and the Sun stay: one is the ground, the other the light.
   let layerOn = true;
 
@@ -1048,6 +1059,7 @@ export function createWorlds(scene, opts = {}) {
     nearestNeighbours(crowd, nearest);
 
     // 3. Every world.
+    stageKm.clear();
     for (const w of WORLDS) {
       const mesh = meshes.get(w.id);
       if (!mesh) continue;
@@ -1120,7 +1132,12 @@ export function createWorlds(scene, opts = {}) {
         updateEarth(mesh, sunDirHere, tMs);
         updateEarthEclipse(mesh, eclipseState.drawnSolar, _moonGeoScene, Math.hypot(_sunGeo.x, _sunGeo.y, _sunGeo.z));
       } else {
-        if (w.rotation === 'iau') applyIauOrientation(mesh, w.body, tMs, w.id);
+        if (w.rotation === 'iau') {
+          applyIauOrientation(mesh, w.body, tMs, w.id);
+        } else if (w.rotation === 'locked') {
+          applyLockedOrientation(mesh, pKm, stageKm.get(w.parent), meshes.get(w.parent));
+        }
+        stageKm.set(w.id, pKm);
         if (mesh.material && mesh.material.uniforms && mesh.material.uniforms.uSunDir) {
           mesh.material.uniforms.uSunDir.value.copy(sunDirHere);
         }
@@ -1567,6 +1584,29 @@ function applyIauOrientation(mesh, bodyName, tMs, worldId) {
   _by.set(-by.x, -by.z, by.y).normalize();
   _bz.set(bz.x, bz.z, -bz.y).normalize();
   _m4.makeBasis(_bx, _bz, _by);
+  mesh.quaternion.setFromRotationMatrix(_m4);
+  return true;
+}
+
+/**
+ * Orient a synchronously rotating moon: longitude 0 toward its planet, the pole along the planet's.
+ * astronomy-engine has no rotation model for them, and tidal locking is the model -- the IAU's own
+ * prime meridians for these moons are defined by the sub-planet point. The orbit planes sit within
+ * half a degree of the planet's equator for Io, Europa and Enceladus; Triton's pole wanders about
+ * 20 degrees from Neptune's, which on a 1K map of a moon seen from millions of km is not visible.
+ * @returns {boolean} false when either position or the planet's mesh is missing.
+ */
+function applyLockedOrientation(mesh, pKm, parentKm, parentMesh) {
+  if (!pKm || !parentKm || !parentMesh) return false;
+  _bx.set(parentKm.x - pKm.x, parentKm.z - pKm.z, -(parentKm.y - pKm.y));
+  if (_bx.lengthSq() === 0) return false;
+  _bx.normalize();
+  _by.set(0, 1, 0).applyQuaternion(parentMesh.quaternion);
+  _by.addScaledVector(_bx, -_by.dot(_bx));
+  if (_by.lengthSq() < 1e-12) return false;
+  _by.normalize();
+  _bz.crossVectors(_bx, _by);
+  _m4.makeBasis(_bx, _by, _bz);
   mesh.quaternion.setFromRotationMatrix(_m4);
   return true;
 }

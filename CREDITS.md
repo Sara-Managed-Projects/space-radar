@@ -106,7 +106,23 @@ exact filename match to the published pack (all 14 appear on their download list
 no XMP block at all — the other twelve do — so those two are the weakest links in the chain. If you
 want certainty, re-download the pack by hand and diff.
 
-**No texture in the tree comes from anywhere else.** In particular, `registry/models.yaml` claims
+**Five moon maps are public domain (issue #262, 2026-09-28).** The moons a trip flies to, from
+NASA / USGS mosaics mirrored on Wikimedia Commons. Public-domain works need no credit, but they
+get one anyway. Every map was changed: resized, scaled so its mean has the world's albedo-ordered
+tint (`scene/worlds.js`), and its unimaged areas (black in the source) filled with that tint
+(Pluto's south, Triton's north). Europa and Pluto were greyscale and are tinted. Enceladus and
+Triton are desaturated (Cassini's colour is enhanced with IR/UV filters). Pluto is rolled half a
+turn so longitude 0, the Charon-facing side, is at the centre.
+
+| File | Used for | Licence | Source |
+|---|---|---|---|
+| `1k_io_usgs.jpg` | Io | Public domain | [USGS Astrogeology, Galileo SSI](https://commons.wikimedia.org/wiki/File:Io_modest_scale_map_Io_SSI-only_color_SIMP0_med.cub.jpg) |
+| `1k_europa_usgs.jpg` | Europa | Public domain | [USGS / PDS, Voyager + Galileo SSI](https://commons.wikimedia.org/wiki/File:Europa_Voyager_GalileoSSI_global_mosaic.jpg) |
+| `1k_enceladus_cassini.jpg` | Enceladus | Public domain | [NASA/JPL-Caltech/SSI/LPI, Cassini](https://commons.wikimedia.org/wiki/File:Enceladus_Color_Map.jpg) |
+| `1k_triton_voyager.jpg` | Triton | Public domain | [NASA/JPL-Caltech/LPI, Voyager 2](https://commons.wikimedia.org/wiki/File:Triton_Map.jpg) |
+| `2k_pluto_newhorizons.jpg` | Pluto | Public domain | [NASA/JHUAPL/SwRI, New Horizons PIA20658](https://commons.wikimedia.org/wiki/File:PIA20658-Pluto-Global-released20160502.jpg) |
+
+**Beyond these five, no texture in the tree comes from anywhere else.** In particular, `registry/models.yaml` claims
 the night-side texture comes from NASA Earth Observatory's Night Lights and the starfield from NASA
 SVS 4851. Neither is what shipped: `2k_earth_nightmap.webp` and `2k_stars_milky_way.webp` are Solar
 System Scope files, by name, size and fingerprint. The registry is wrong and the table above is

@@ -114,6 +114,12 @@ textures:
   - {id: uranus,        file: 2k_uranus.jpg,              source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
   - {id: neptune,       file: 2k_neptune.jpg,             source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
   - {id: starfield,     file: 2k_stars_milky_way.webp,     source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
+  # Issue #262: the moons a trip flies to. Public domain; scaled, recoloured and gap-filled (CREDITS.md §2).
+  - {id: io, file: 1k_io_usgs.jpg, source: "https://commons.wikimedia.org/wiki/File:Io_modest_scale_map_Io_SSI-only_color_SIMP0_med.cub.jpg", licence: "Public domain", credit: "Io map: USGS Astrogeology Science Center (Galileo SSI), public domain"}
+  - {id: europa, file: 1k_europa_usgs.jpg, source: "https://commons.wikimedia.org/wiki/File:Europa_Voyager_GalileoSSI_global_mosaic.jpg", licence: "Public domain", credit: "Europa map: USGS / PDS (Voyager and Galileo SSI), public domain"}
+  - {id: enceladus, file: 1k_enceladus_cassini.jpg, source: "https://commons.wikimedia.org/wiki/File:Enceladus_Color_Map.jpg", licence: "Public domain", credit: "Enceladus map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute, public domain"}
+  - {id: triton, file: 1k_triton_voyager.jpg, source: "https://commons.wikimedia.org/wiki/File:Triton_Map.jpg", licence: "Public domain", credit: "Triton map: NASA/JPL-Caltech/Lunar and Planetary Institute (Voyager 2), public domain"}
+  - {id: pluto, file: 2k_pluto_newhorizons.jpg, source: "https://commons.wikimedia.org/wiki/File:PIA20658-Pluto-Global-released20160502.jpg", licence: "Public domain", credit: "Pluto map: NASA/JHUAPL/SwRI (New Horizons, PIA20658), public domain"}
 
 # `stars.bin` is a DERIVATIVE work: d3-celestial's stars.6.json repacked to 5 044 Float32
 # quadruples (ra, dec, mag, bv). BSD-3-Clause governs it as a binary-form redistribution, which is

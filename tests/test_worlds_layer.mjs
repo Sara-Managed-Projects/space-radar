@@ -120,7 +120,7 @@ check(pickWorldDisc([], 1, 1) === null, 'no discs, no pick');
   const lazyWorlds = WORLDS.filter((w) => !w.look.earth && w.look.map);
   check(fetched.length === EAGER.length && EAGER.every((u) => fetched.includes(u)),
     `construction fetches Earth's three maps and the ring strip, nothing else (${JSON.stringify(fetched)})`);
-  check(lazyWorlds.length === 9 && worlds.waitingMaps().length === lazyWorlds.length, `nine worlds -- the Sun, the Moon and seven planets -- wait for their maps (${worlds.waitingMaps().length})`);
+  check(lazyWorlds.length === 14 && worlds.waitingMaps().length === lazyWorlds.length, `fourteen worlds -- the Sun, the Moon, seven planets and the five moons a trip flies to -- wait for their maps (${worlds.waitingMaps().length})`);
 
   worlds.update(tMs);
   check(fetched.length === EAGER.length,
@@ -200,6 +200,8 @@ const SIX = ['phobos', 'deimos', 'enceladus', 'titan', 'triton', 'charon'];
 // ...and the ten more it fits the same way (sections 15 to 18).
 const TEN = ['mimas', 'tethys', 'dione', 'rhea', 'iapetus', 'miranda', 'ariel', 'umbriel', 'titania', 'oberon'];
 const rowOf = (id) => WORLDS.find((w) => w.id === id);
+// Issue #262: the flat worlds a trip flies to carry a public-domain map; the rest stay one colour.
+const MAPPED = ['pluto', 'io', 'europa', 'enceladus', 'triton'];
 {
   const { positionOf } = await import(join(JS, 'scene/worlds.js'));
   const { worldPositionKm } = await import(join(JS, 'propagate/body.js'));
@@ -294,7 +296,23 @@ const rowOf = (id) => WORLDS.find((w) => w.id === id);
     'Titan, darkened on 2026-09-22 to make room, still sits above Callisto and a clear step below Oberon');
   for (const id of FLAT) {
     const w = rowOf(id);
-    check(w.look.flat === true && !w.look.map, `${id} is flat and names no map`);
+    if (MAPPED.includes(id)) check(w.look.flat === true && /\.jpg$/.test(w.look.map || '') && w.rotation, `${id} keeps its flat colour until its map arrives, and turns so the map faces the right way`);
+    else check(w.look.flat === true && !w.look.map, `${id} is flat and names no map`);
+  }
+  // No world a trip flies to is drawn untextured, except where the haze IS the picture (Titan).
+  {
+    const { TOURS } = await import(join(JS, 'data/tours.js'));
+    const worldIds = new Set(WORLDS.map((w) => w.id));
+    const subjects = new Set();
+    for (const tour of TOURS) {
+      for (const stop of tour.stops || []) {
+        const t = stop.target || {};
+        const id = t.world || t.record;
+        if (id && worldIds.has(id)) subjects.add(id);
+      }
+    }
+    const bare = [...subjects].filter((id) => { const w = rowOf(id); return !w.look.earth && !w.look.map && !w.look.haze; });
+    check(subjects.size >= 8 && bare.length === 0, `every world a trip flies to (${[...subjects]}) names a map or a haze; untextured: ${bare}`);
   }
 
   // From EARTH: Jupiter is squeezed, and its moons are drawn around the drawn Jupiter at Jupiter's
@@ -327,8 +345,10 @@ const rowOf = (id) => WORLDS.find((w) => w.id === id);
   check(MOON_VIEW.MIN_ANGULAR_RADIUS_RAD < PLANET_VIEW.MIN_ANGULAR_RADIUS_RAD / 3, 'a moon\'s floor is under a third of a planet\'s');
   const pv = earth.viewScale('pluto');
   check(pv.exaggerated && /true direction/.test(pv.note), `Pluto is squeezed like the planets: "${pv.note}"`);
-  check(FLAT.every((id) => !earth.waitingMaps().includes(id) && earth.preload(id) === false)
-    && !fetched.some((u) => FLAT.some((id) => u.includes(id))), `nothing is ever fetched for them (${fetched.filter((u) => FLAT.some((id) => u.includes(id)))})`);
+  const PLAIN = FLAT.filter((id) => !MAPPED.includes(id));
+  check(PLAIN.every((id) => !earth.waitingMaps().includes(id) && earth.preload(id) === false)
+    && !fetched.some((u) => PLAIN.some((id) => u.includes(id))), `nothing is ever fetched for the plain ones (${fetched.filter((u) => PLAIN.some((id) => u.includes(id)))})`);
+  check(MAPPED.every((id) => earth.waitingMaps().includes(id)), 'the mapped moons wait for their maps like the planets do');
 
   // A tap on a moon's drawn disc means the moon, even with Jupiter's larger disc a few pixels away.
   const eu = earth.meshFor('europa').position.clone();
@@ -377,7 +397,8 @@ const rowOf = (id) => WORLDS.find((w) => w.id === id);
     check(s.length <= 160 && s.includes(WHAT[id]) && s.replace(/\s/g, '').includes(`about${across}kmacross`),
       `${id}'s first sentence says what it is and how big, in 160 characters: "${s}"`);
     check(!s.includes(' -- '), `${id}'s sentence writes no double-hyphen dash`);
-    check(/no surface map/.test(drawingLine(r) || ''), `${id}'s card says it is a plain ball: ${drawingLine(r)}`);
+    if (MAPPED.includes(id)) check(drawingLine(r) === null, `${id} has a map, so its card has no drawing line: ${drawingLine(r)}`);
+    else check(/no surface map/.test(drawingLine(r) || ''), `${id}'s card says it is a plain ball: ${drawingLine(r)}`);
     check(/Astronomy Engine/.test(r.meta.cite) && /read 2026-09-22/.test(r.meta.cite), `${id}'s source line names the ephemeris and the day its facts were read`);
     // "You can see this one with your own eyes" -- every other world's line -- is false of Pluto,
     // at magnitude 15, and of moons lost in Jupiter's glare.
@@ -617,7 +638,7 @@ const PARENT = { phobos: 'mars', deimos: 'mars', enceladus: 'saturn', titan: 'sa
     check(!/your own eyes/.test(see) && /^(Not by eye|Barely)/.test(see) && SEE[id].test(see), `${id} says how it can really be seen: "${see}"`);
     const draw = drawingLine(r) || '';
     const lumpy = id === 'phobos' || id === 'deimos';
-    check(/no surface map/.test(draw) && /true shape is not drawn/.test(draw) === lumpy,
+    check(MAPPED.includes(id) ? draw === '' : /no surface map/.test(draw) && /true shape is not drawn/.test(draw) === lumpy,
       `${id}'s drawing line${lumpy ? ' says its true shape is not drawn' : ''}: ${draw}`);
     check(/Astronomy Engine/.test(r.meta.cite) && /JPL Horizons/.test(r.meta.cite) && /read 2026-09-22/.test(r.meta.cite),
       `${id}'s source line names the ephemeris, the fit and the day its facts were read`);
@@ -1072,4 +1093,31 @@ if (problems.length) {
   console.error('worlds layer FAILED:\n  ' + problems.join('\n  '));
   process.exit(1);
 }
+// Issue #262: a mapped moon faces the right way. Longitude 0 (mesh +X) toward the planet for the
+// tidally locked four, toward Charon for Pluto; north along the orbit's angular momentum, except
+// Triton, whose orbit is backwards and whose IAU north is Neptune's side.
+{
+  const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
+  const { createWorlds } = await import(join(JS, 'scene/worlds.js'));
+  const { stage } = await import(join(JS, 'scene/stage.js'));
+  stage.setWorld('earth');
+  const t = Date.parse('2026-09-28T12:00:00Z');
+  const w = createWorlds(new THREE.Scene(), { textureBase: 't/', loadTexture: () => new THREE.Texture() });
+  const at = (tt) => { stage.setTime(tt); w.update(tt); };
+  const rel = (a, b) => w.meshFor(a).position.clone().sub(w.meshFor(b).position);
+  for (const [id, to, sign] of [['io', 'jupiter', 1], ['europa', 'jupiter', 1], ['enceladus', 'saturn', 1], ['triton', 'neptune', -1], ['pluto', 'charon', 1]]) {
+    const orbiter = id === 'pluto' ? 'charon' : id;
+    const centre = id === 'pluto' ? 'pluto' : to;
+    at(t + 3600e3);
+    const r1 = rel(orbiter, centre);
+    at(t);
+    const h = rel(orbiter, centre).cross(r1).normalize();
+    const m = w.meshFor(id);
+    const lon0 = new THREE.Vector3(1, 0, 0).applyQuaternion(m.quaternion);
+    const off = Math.acos(Math.min(1, lon0.dot(w.meshFor(to).position.clone().sub(m.position).normalize()))) * 180 / Math.PI;
+    const pole = new THREE.Vector3(0, 1, 0).applyQuaternion(m.quaternion).dot(h) * sign;
+    check(off < 2 && pole > 0.9, `${id}'s longitude 0 faces ${to} (${off.toFixed(1)} deg off) and its north is the right pole (${pole.toFixed(2)})`);
+  }
+}
+
 console.log(`worlds layer ok: ${recs.length} worlds are records, searchable by name and alias, and the smaller disc wins a tap, and a planet's map waits until its disc can show it; Pluto and Jupiter's four big moons sit where NASA's numbers put them, the moons drawn around the drawn Jupiter, and each card says what it is, how big, how far and that it is a plain ball; Phobos, Deimos, Enceladus, Titan, Triton and Charon sit within 0.3 % of their orbits of where JPL Horizons puts them, and Neptune's card no longer claims the naked eye; Saturn's Mimas, Tethys, Dione, Rhea and Iapetus and Uranus's five sit within 0.45 %, with their planets' own poles, and their cards say what each is, how to see it and that Iapetus has two faces; and from Saturn, Pluto, Titan, Enceladus and Jupiter no compressed world's disc reaches another's, while the Earth stage draws every one of them at exactly the floor it always did`);

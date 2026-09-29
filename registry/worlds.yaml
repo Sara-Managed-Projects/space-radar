@@ -139,7 +139,8 @@ worlds:
   # description quoted under `facts.colour`, lighter or darker in the order of `facts.albedo`. The
   # card says the colour was chosen, not measured. Every number and every sentence the card prints
   # about them names the page it was read from and the day (check_registry.py refuses a fact
-  # without both).
+  # without both). Since issue #262 the flat worlds a trip flies to (Pluto, Io, Europa, Enceladus,
+  # Triton) also name `textures:`, a public-domain map that replaces the colour once it loads.
   #
   # The moons' positions are astronomy-engine's JupiterMoons() (the L1.2 theory of Lainey, Duriez
   # and Vienne) added to Jupiter's own; there is no astronomy-engine Body for them, which is what
@@ -157,7 +158,7 @@ worlds:
     # `fixed` because astronomy-engine's RotationAxis has Pluto's IAU pole and spin, which
     # propagate/frames.js already turns a body-fixed position by. The plain ball has nothing to turn.
     frames: [inertial, fixed]
-    look: {flat: "#b4926f"}
+    look: {flat: "#b4926f", textures: pluto}
     facts:
       radius: {source: "https://en.wikipedia.org/wiki/Pluto", read: 2026-09-22, says: "mean radius 1,188.3 km (infobox)"}
       albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/plutofact.html", read: 2026-09-22, says: "geometric albedo 0.52"}
@@ -173,7 +174,7 @@ worlds:
     unit_km: 1000
     ephemeris: {propagator: body, body: Jupiter, moon: io}
     frames: [inertial]
-    look: {flat: "#c9b061"}
+    look: {flat: "#c9b061", textures: io}
     facts:
       radius: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/joviansatfact.html", read: 2026-09-22, says: "radius 1821.5 km"}
       albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/joviansatfact.html", read: 2026-09-22, says: "visual geometric albedo 0.62"}
@@ -189,7 +190,7 @@ worlds:
     unit_km: 1000
     ephemeris: {propagator: body, body: Jupiter, moon: europa}
     frames: [inertial]
-    look: {flat: "#d6cfc0"}
+    look: {flat: "#d6cfc0", textures: europa}
     facts:
       radius: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/joviansatfact.html", read: 2026-09-22, says: "radius 1560.8 km"}
       albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/joviansatfact.html", read: 2026-09-22, says: "visual geometric albedo 0.68"}
@@ -289,7 +290,7 @@ worlds:
     unit_km: 100
     ephemeris: {propagator: body, body: Saturn, moon: enceladus}
     frames: [inertial]
-    look: {flat: "#eff1f1"}
+    look: {flat: "#eff1f1", textures: enceladus}
     facts:
       radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Enceladus 602 ... Mean Radius (km) 252.10"}
       # Wikipedia's infobox gives 1.375 at 550 nm (Verbiscer et al. 2007); the fact sheet is the
@@ -324,7 +325,7 @@ worlds:
     unit_km: 1000
     ephemeris: {propagator: body, body: Neptune, moon: triton}
     frames: [inertial]
-    look: {flat: "#e3d4cc"}
+    look: {flat: "#e3d4cc", textures: triton}
     facts:
       radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Triton 801 ... Mean Radius (km) 1352.60"}
       albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/neptuniansatfact.html", read: 2026-09-22, says: "Triton (NI) ... Visual geometric albedo 0.72"}
