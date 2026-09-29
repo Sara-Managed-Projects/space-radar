@@ -61,7 +61,7 @@ function ensureHost() {
     host.id = HOST_ID;
     document.body.appendChild(host);
   }
-  host.classList.add('sr-status');
+  host.classList.add('sr-status', 'sr-float');
   host.setAttribute('aria-label', COPY.status.title);
   return host;
 }

@@ -68,7 +68,8 @@ function ensureHost() {
     host.id = HOST_ID;
     document.body.appendChild(host);
   }
-  host.classList.add('sr-controls');
+  // `sr-float` is the panel chrome (spec 0045); `sr-panel` is taken by the sections inside.
+  host.classList.add('sr-controls', 'sr-float');
   host.setAttribute('aria-label', COPY.controls.title);
   if (reduceMotion.matches) host.classList.add('is-reduced-motion');
   return host;

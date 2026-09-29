@@ -1,31 +1,39 @@
 /* Base layer: the page, the canvas, the boot state. Component styles live in ui.css. */
 
 :root {
-  --space: #0B0E14;
-  --space-edge: #05070A;
-  --ember: #FF9F43;
-  --text: #E8ECF2;
-  --text-dim: #9AA4B2;
-  --atmosphere: #6EC3FF;
-  --night-lights: #FFC98A;
+  /* The first names of the palette. The tokens live in ui.css :root (spec 0045); these point at
+     them for one release, so no rule breaks in the change. */
+  --space: var(--sr-space);
+  --space-edge: var(--sr-space-edge);
+  --ember: var(--sr-ember);
+  --text: var(--sr-text);
+  --text-dim: var(--sr-text-dim);
+  --atmosphere: var(--sr-atmosphere);
+  --night-lights: var(--sr-night-lights);
 
-  --station: #F2F4F7;
-  --satellite: #7FD1FF;
-  --debris: #7A8494;
-  --rocket: #FFD166;
-  --probe: #C3A6FF;
-  --telescope: #9EF0D8;
-  --asteroid: #B8926A;
-  --comet: #D9F3FF;
-  --site: #F58F7C;
+  --station: var(--sr-station);
+  --satellite: var(--sr-satellite);
+  --debris: var(--sr-debris);
+  --rocket: var(--sr-rocket);
+  --probe: var(--sr-probe);
+  --telescope: var(--sr-telescope);
+  --asteroid: var(--sr-asteroid);
+  --comet: var(--sr-comet);
+  --site: var(--sr-site);
 
-  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font: var(--sr-font);
+  --mono: var(--sr-font-mono);
 
-  --radius: 14px;
-  --pad: 16px;
+  --radius: var(--sr-radius);
+  --pad: var(--sr-pad);
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* The boot mark is a small drawing of the Earth, and these are its colours. */
+  --boot-glow: #0e1421;
+  --boot-earth-lit: #2e6fb8;
+  --boot-earth: #123255;
+  --boot-earth-dark: #0c2036;
 }
 
 * { box-sizing: border-box; }
@@ -76,7 +84,7 @@ html, body {
   inset: 0;
   display: grid;
   place-items: center;
-  background: radial-gradient(120% 90% at 50% 40%, #0E1421 0%, var(--space) 55%, var(--space-edge) 100%);
+  background: radial-gradient(120% 90% at 50% 40%, var(--boot-glow) 0%, var(--space) 55%, var(--space-edge) 100%);
   z-index: 100;
   transition: opacity 600ms ease;
   padding: 24px;
@@ -89,7 +97,7 @@ html, body {
   width: 64px; height: 64px;
   margin: 0 auto 22px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 32%, #2E6FB8, #123255 70%, #0C2036);
+  background: radial-gradient(circle at 35% 32%, var(--boot-earth-lit), var(--boot-earth) 70%, var(--boot-earth-dark));
   box-shadow: 0 0 0 1px rgba(110,195,255,.28), 0 0 34px rgba(110,195,255,.20);
   position: relative;
 }
@@ -149,7 +157,7 @@ html, body {
 .sr-mobilebar button {
   flex: 1;
   min-height: 44px;               /* a real tap target */
-  border-radius: 12px;
+  border-radius: var(--sr-radius);
   border: 1px solid rgba(232,236,242,.18);
   background: rgba(11,14,20,.82);
   color: var(--text);
@@ -177,7 +185,8 @@ html.sr-phone #sr-status {
   max-height: 62vh;
   overflow-y: auto;
   z-index: 45;
-  border-radius: 16px 16px 0 0;
+  border-radius: var(--sr-radius) var(--sr-radius) 0 0;
+  border-width: 1px 0 0;   /* a sheet: the lit edge is the top one (ui.css .sr-float) */
   /* ui.css gives .sr-controls `padding-top: pad + env(safe-area-inset-top)` for its desktop life
      as a bar along the TOP of the screen. A bottom sheet has no notch above it, and on a real
      iPhone (Ivan's screenshot, 2026-09-22) that inset opened a 47-59 px empty band between the

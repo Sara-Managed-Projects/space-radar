@@ -96,7 +96,8 @@ function ensureHost() {
     host.id = HOST_ID;
     document.body.appendChild(host);
   }
-  host.classList.add('sr-card');
+  // `sr-float` is the instrument's panel chrome (spec 0045): glass, hairline, lit top edge.
+  host.classList.add('sr-card', 'sr-float');
   host.setAttribute('role', 'dialog');
   host.setAttribute('aria-live', 'polite');
   host.hidden = true;

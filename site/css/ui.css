@@ -51,25 +51,55 @@
   --sr-unknown: #9aa4b2;
 
   /* Surfaces derived from the palette, never invented hues */
-  --sr-panel: rgba(11, 14, 20, 0.88);
   --sr-panel-solid: #0b0e14;
   --sr-raise: rgba(232, 236, 242, 0.06);
-  --sr-line: rgba(232, 236, 242, 0.14);
-  --sr-line-strong: rgba(232, 236, 242, 0.26);
   --sr-ink: #14100a; /* text on ember */
+  --sr-ember-soft: rgba(255, 159, 67, 0.16); /* the selected row's wash */
+  --sr-text-faint: #6b7482; /* rules and ticks ONLY: 4.09:1 on space, under AA for a glyph */
+
+  /* The instrument (spec 0045, design-language amendment 2026-09-28). Glass is 0.82 and not the
+     study's 0.62: over a white cloud, bigger than any blur radius, 0.82 is the lowest alpha at
+     which --sr-text-dim still reads at 4.5:1 (4.56; 2.16 at 0.62). tests/test_tokens.mjs
+     recomputes it from these values. */
+  --sr-glass: rgba(11, 14, 20, 0.82);
+  --sr-glass-thin: rgba(11, 14, 20, 0.62); /* chrome with no text under 18 px */
+  --sr-glass-solid: rgba(11, 14, 20, 0.88); /* reduced transparency, or no backdrop-filter */
+  --sr-blur: blur(18px) saturate(1.25);
+  --sr-line: rgba(232, 236, 242, 0.1);
+  --sr-line-strong: rgba(232, 236, 242, 0.22);
+  --sr-edge-lit: rgba(232, 236, 242, 0.34);
+  --sr-edge-glow: 0 -1px 6px rgba(232, 236, 242, 0.06);
+  --sr-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
 
   /* Status hues. Semantic red is not in the set. */
   --sr-ok: #9ef0d8;
   --sr-stale: #ffd166;
   --sr-unread: #7a8494;
 
-  --sr-radius: 14px;
-  --sr-radius-sm: 8px;
+  /* Shape: 6 px panels, and the corner brackets that mark what is selected or focused. */
+  --sr-radius: 6px;
+  --sr-radius-sm: 4px;
+  --sr-radius-pill: 999px;
+  --sr-bracket: 8px;
+  --sr-bracket-w: 1.5px;
+
+  /* Space, on a 4 px grid */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
   --sr-gap: 10px;
-  --sr-pad: 14px;
+  --sr-pad: 16px;
+  --sr-header-h: 36px;
+
+  /* Motion: panels use --sr-mid; the camera keeps its own 600-900 ms */
   --sr-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
-  --sr-fast: 160ms;
-  --sr-slow: 260ms;
+  --sr-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --sr-fast: 140ms;
+  --sr-mid: 220ms;
+  --sr-slow: 320ms;
 
   --sr-z-status: 20;
   --sr-z-controls: 30;
@@ -80,6 +110,12 @@
     sans-serif;
   --sr-font-mono:
     ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  /* Panel titles and HUD units. Barlow Semi Condensed arrives with the self-hosted faces
+     (spec 0045 task 2); until then it is the interface face. */
+  --sr-font-hud: var(--sr-font);
+
+  /* Old names, kept for one release so no rule breaks in the change */
+  --sr-panel: var(--sr-glass-solid);
 }
 
 /* ------------------------------------------------------------------------------------ */
@@ -94,12 +130,77 @@
   font-size: 14px;
   line-height: 1.45;
   color: var(--sr-text);
-  background: var(--sr-panel);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
-  border: 1px solid var(--sr-line);
   overflow-y: auto;
   overscroll-behavior: contain;
+}
+
+/* A floating panel (spec 0045 req 7): the card, the controls, the status panel, the trip's bars
+   and the search results. Glass over the scene, a hairline, and a 1 px lit top edge with a soft
+   glow above it. The edge is `border-top-color`, not a pseudo-element, so it costs nothing and
+   can never sit over content. No noise, scanlines, grain, bevels or gradients. */
+.sr-float {
+  background: var(--sr-glass);
+  -webkit-backdrop-filter: var(--sr-blur);
+  backdrop-filter: var(--sr-blur);
+  border: 1px solid var(--sr-line);
+  border-top-color: var(--sr-edge-lit);
+  border-radius: var(--sr-radius);
+  box-shadow: var(--sr-edge-glow), var(--sr-shadow);
+}
+
+/* Without a blur the glass would show the cloud under it at full strength: solid instead. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .sr-float {
+    background: var(--sr-glass-solid);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .sr-float {
+    background: var(--sr-glass-solid);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* Corner brackets (spec 0045 req 8): the selection and focus signature, four 8 px ember L-ticks
+   just outside the corners. CSS only: ::before draws the top two, ::after is the same picture
+   turned upside down. A row inside a scrolling list draws them inside its own corners instead
+   (--sr-bracket-out: 0px), where the list's edge cannot clip them. */
+/* Zero specificity, so a control that is fixed or absolute keeps its own position. */
+:where(button, a[href], [role='option'], summary),
+.sr-bracketed {
+  position: relative;
+}
+
+:where(button, a[href], [role='option'], summary):focus-visible {
+  outline: none;
+}
+
+.sr-bracketed::before,
+.sr-bracketed::after,
+.sr-door.is-on::before,
+.sr-door.is-on::after,
+.sr-search__option.is-active::before,
+.sr-search__option.is-active::after,
+:where(button, a[href], [role='option'], summary):focus-visible::before,
+:where(button, a[href], [role='option'], summary):focus-visible::after {
+  content: '';
+  position: absolute;
+  inset: calc(-1 * var(--sr-bracket-out, 4px));
+  pointer-events: none;
+  background:
+    linear-gradient(var(--sr-ember) 0 0) top left / var(--sr-bracket) var(--sr-bracket-w) no-repeat,
+    linear-gradient(var(--sr-ember) 0 0) top left / var(--sr-bracket-w) var(--sr-bracket) no-repeat,
+    linear-gradient(var(--sr-ember) 0 0) top right / var(--sr-bracket) var(--sr-bracket-w) no-repeat,
+    linear-gradient(var(--sr-ember) 0 0) top right / var(--sr-bracket-w) var(--sr-bracket) no-repeat;
+}
+
+.sr-bracketed::after,
+.sr-door.is-on::after,
+.sr-search__option.is-active::after,
+:where(button, a[href], [role='option'], summary):focus-visible::after {
+  transform: scaleY(-1);
 }
 
 .sr-card *,
@@ -151,10 +252,6 @@
   border-color: var(--sr-ember);
 }
 
-.sr-btn:focus-visible {
-  outline: 2px solid var(--sr-ember);
-  outline-offset: 2px;
-}
 
 .sr-btn--primary {
   color: var(--sr-ink);
@@ -283,7 +380,6 @@
   padding-bottom: calc(var(--sr-pad) + env(safe-area-inset-bottom, 0px));
   border-width: 1px 0 0;
   border-radius: var(--sr-radius) var(--sr-radius) 0 0;
-  box-shadow: 0 -18px 40px rgba(5, 7, 10, 0.55);
   transform: translateY(0);
   transition: transform var(--sr-slow) var(--sr-ease);
 }
@@ -366,7 +462,7 @@
   font-size: 11px;
   color: var(--sr-text-dim);
   border: 1px solid var(--sr-line);
-  border-radius: 999px;
+  border-radius: var(--sr-radius-pill);
 }
 
 .sr-card__close {
@@ -418,8 +514,8 @@
   display: block;
   width: 100%;
   height: auto;
-  border-radius: 8px;
-  background: #05070c; /* these are pictures of the dark; do not flash white while loading */
+  border-radius: var(--sr-radius);
+  background: var(--sr-space-edge); /* these are pictures of the dark; do not flash white while loading */
 }
 
 .sr-card__photo-credit {
@@ -487,7 +583,7 @@
   color: var(--sr-text);
   background: var(--sr-raise);
   border: 1px solid var(--sr-line);
-  border-radius: 999px;
+  border-radius: var(--sr-radius-pill);
 }
 
 /* Right now, and see it from here ------------------------------------------------------ */
@@ -687,15 +783,10 @@
   color: var(--sr-text-dim);
 }
 
+/* Selected: the four brackets (see "Corner brackets" above), where a 1 px ember box was. */
 .sr-door.is-on {
   color: var(--sr-text);
-  border-color: var(--sr-ember);
-  box-shadow: inset 0 -2px 0 var(--sr-ember);
-}
-
-.sr-door:focus-visible {
-  outline: 2px solid var(--sr-ember);
-  outline-offset: 2px;
+  border-color: var(--sr-line-strong);
 }
 
 /* Layers with live counts -------------------------------------------------------------- */
@@ -843,10 +934,6 @@
   border-color: var(--sr-ember);
 }
 
-.sr-speed:focus-visible {
-  outline: 2px solid var(--sr-ember);
-  outline-offset: 2px;
-}
 
 /* Scrubbing has to be obvious: the whole clock lights up while it happens. */
 .sr-scrub {
@@ -1033,7 +1120,7 @@
   font-weight: 600;
   letter-spacing: 0.01em;
   border: 1px solid currentcolor;
-  border-radius: 999px;
+  border-radius: var(--sr-radius-pill);
 }
 
 .sr-state--ok {
@@ -1206,8 +1293,6 @@
 
 .sr-mark:focus-visible {
   color: var(--sr-ember);
-  outline: 2px solid var(--sr-ember);
-  outline-offset: 2px;
 }
 
 @media (min-width: 900px) {
@@ -1262,8 +1347,6 @@ html.sr-trip-mode .sr-mark {
 .sr-clean-toggle:hover { color: var(--sr-ember); }
 .sr-clean-toggle:focus-visible {
   color: var(--sr-ember);
-  outline: 2px solid var(--sr-ember);
-  outline-offset: 2px;
 }
 @media (min-width: 900px) {
   .sr-clean-toggle { top: 16px; right: 68px; }
@@ -1344,10 +1427,7 @@ html.sr-clean .sr-print-toggle:hover, html.sr-clean .sr-print-toggle:focus-visib
   width: min(300px, calc(100vw - 16px));
   padding: 12px;
   color: var(--sr-text);
-  background: var(--sr-panel-solid, rgba(11,14,20,.94));
-  border: 1px solid var(--sr-line);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0,0,0,.45);
+  /* The glass, edge, corners and shadow are .sr-float's (spec 0045). */
 }
 .sr-print-menu[hidden] { display: none; }
 @media (min-width: 900px) { .sr-print-menu { top: 68px; right: 16px; } }
@@ -1361,7 +1441,7 @@ html.sr-clean .sr-print-toggle:hover, html.sr-clean .sr-print-toggle:focus-visib
   color: var(--sr-text);
   background: transparent;
   border: 1px solid var(--sr-line);
-  border-radius: 8px;
+  border-radius: var(--sr-radius-sm);
   cursor: pointer;
 }
 .sr-print-menu button:hover, .sr-print-menu button:focus-visible { border-color: var(--sr-ember); color: var(--sr-ember); outline: none; }
@@ -1426,11 +1506,9 @@ html.sr-clean .sr-print-toggle:hover, html.sr-clean .sr-print-toggle:focus-visib
 
 /* The dropdown -------------------------------------------------------------------------- */
 
+/* The glass, edge and corners are .sr-float's. */
 .sr-search__pop {
   margin-top: 6px;
-  background: var(--sr-panel-solid);
-  border: 1px solid var(--sr-line-strong);
-  border-radius: var(--sr-radius-sm);
   overflow: hidden;
 }
 
@@ -1491,9 +1569,11 @@ html.sr-clean .sr-print-toggle:hover, html.sr-clean .sr-print-toggle:focus-visib
 }
 
 .sr-search__option:hover,
+/* The selected row: the ember wash and the brackets, drawn inside the row's own corners because
+   the list scrolls and would clip them outside. */
 .sr-search__option.is-active {
-  background: var(--sr-raise);
-  border-left-color: var(--sr-ember);
+  --sr-bracket-out: 0px;
+  background: var(--sr-ember-soft);
 }
 
 .sr-search__option.is-active .sr-search__name {
@@ -1690,18 +1770,25 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   align-items: center;
   padding: 0 var(--sr-pad);
   color: var(--sr-text);
+  /* The letterbox is a frame, not glass: it stays the black of the cinema bars (spec 0034) and
+     takes only the panel's hairline, lit on the edge that faces the picture. */
   background: var(--sr-space-edge);
+  border-width: 0;
+  border-radius: 0;
   pointer-events: auto;
   transition: transform 400ms var(--sr-ease);
 }
 
 .sr-trip__bar--top {
+  border-bottom-width: 1px;
+  border-bottom-color: var(--sr-edge-lit);
   top: 0;
   min-height: var(--sr-letterbox);
   padding-top: env(safe-area-inset-top, 0px);
 }
 
 .sr-trip__bar--bottom {
+  border-top-width: 1px;
   bottom: 0;
   min-height: var(--sr-letterbox);
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -1785,7 +1872,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   cursor: pointer;
   background: transparent;
   border: 1px solid var(--sr-line);
-  border-radius: 999px;
+  border-radius: var(--sr-radius-pill);
 }
 
 .sr-trip__btn:hover:not(:disabled) {
@@ -2317,7 +2404,7 @@ html.sr-phone .sr-trips__select {
 }
 
 .sr-pick__btn:hover,
-.sr-pick__btn:focus-visible { background: rgba(255, 255, 255, 0.06); outline: none; }
+.sr-pick__btn:focus-visible { background: rgba(255, 255, 255, 0.06); }
 
 .sr-pick__name { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -2381,7 +2468,7 @@ html.sr-phone .sr-trips__select {
 }
 
 .sr-ladder__btn:hover:not(:disabled),
-.sr-ladder__btn:focus-visible { border-color: var(--sr-line-strong); outline: none; }
+.sr-ladder__btn:focus-visible { border-color: var(--sr-line-strong); }
 
 .sr-ladder__btn:disabled { opacity: 0.55; cursor: default; }
 
@@ -2411,7 +2498,6 @@ html.sr-phone .sr-trips__select {
 }
 
 .sr-next__row:hover { border-color: var(--sr-line-strong); }
-.sr-next__row:focus-visible { outline: 2px solid var(--sr-ember); outline-offset: 2px; }
 /* A shower peak is a date, not an object: nothing to fly to, so the row does not look tappable. */
 .sr-next__row[data-kind='shower'] { cursor: default; }
 .sr-next__row[data-kind='shower']:hover { border-color: var(--sr-line); }
@@ -2454,7 +2540,7 @@ html.sr-phone .sr-trips__select {
 .sr-traj { display: block; width: 100%; height: auto; margin: 4px 0 6px; }
 .sr-traj__axis, .sr-traj__equator { stroke: var(--sr-line); stroke-width: 1; }
 .sr-traj__map { fill: var(--sr-raise); stroke: var(--sr-line); stroke-width: 1; }
-.sr-traj__line { fill: none; stroke: var(--sr-satellite, #7fd1ff); stroke-width: 1.5; }
+.sr-traj__line { fill: none; stroke: var(--sr-satellite); stroke-width: 1.5; }
 .sr-traj__now { fill: var(--sr-ember); }
 .sr-traj__label { fill: var(--sr-text-dim); font-size: 9px; font-family: inherit; }
 
@@ -2495,7 +2581,6 @@ html.sr-phone .sr-trips__select {
   font-size: 18px; line-height: 1; padding: 2px 4px; cursor: pointer;
 }
 .sr-scenenote__close:hover { color: var(--sr-ember); }
-.sr-scenenote__close:focus-visible { outline: 2px solid var(--sr-ember); outline-offset: 2px; }
 .sr-scenenote__why { grid-column: 1; justify-self: start; }
 html.sr-trip-mode .sr-scenenote { display: none; }
 @media (max-width: 600px) {
@@ -2536,7 +2621,7 @@ html.sr-phone .sr-trip__btn--share {
      another read as neither (measured at 390 x 844, 2026-09-23). */
   background: var(--sr-panel-solid);
   border: 1px solid var(--sr-line-strong);
-  border-radius: 999px;
+  border-radius: var(--sr-radius-pill);
   color: var(--sr-text);
   font-size: 13.5px;
   line-height: 1.35;

@@ -202,7 +202,8 @@ export function createPrintButton(ctx) {
   button.appendChild(svg);
 
   const menu = document.createElement('div');
-  menu.className = 'sr-print-menu sr-over-clean';
+  // `sr-float`: the instrument's panel chrome (spec 0045), as every other floating panel.
+  menu.className = 'sr-print-menu sr-float sr-over-clean';
   menu.setAttribute('role', 'menu');
   menu.hidden = true;
   const item = (label, format) => {

@@ -472,7 +472,7 @@ export function createSearch(ctx, host) {
   row.appendChild(fly);
   wrap.appendChild(row);
 
-  const pop = el('div', 'sr-search__pop');
+  const pop = el('div', 'sr-search__pop sr-float');
   pop.hidden = true;
   const list = el('ul', 'sr-search__list');
   list.id = LIST_ID;

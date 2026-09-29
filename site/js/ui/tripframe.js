@@ -217,7 +217,7 @@ export function createTripFrame(ctx) {
     // BOTTOM BAR FIRST IN THE DOM. CSS puts it at the foot; the APG puts its pause control first
     // in the tab order. This is the only way to have both without a tabindex, and a positive
     // tabindex is a worse bug than the one it would fix.
-    const bottom = el('section', 'sr-trip__bar sr-trip__bar--bottom');
+    const bottom = el('section', 'sr-trip__bar sr-trip__bar--bottom sr-float');
 
     const controls = el('div', 'sr-trip__controls');
     controls.setAttribute('aria-label', COPY.trip.controlsLabel);
@@ -275,7 +275,7 @@ export function createTripFrame(ctx) {
     bottom.appendChild(live);
     bottom.appendChild(status);
 
-    const top = el('header', 'sr-trip__bar sr-trip__bar--top');
+    const top = el('header', 'sr-trip__bar sr-trip__bar--top sr-float');
     // Spec 0034 req 3: the stop's `chapter:` above the trip's title, the one line of the frame that
     // changes with the story rather than with the controls. Not a live region: the stop title in
     // the status below is what a screen reader is told, and a chapter is not news.
