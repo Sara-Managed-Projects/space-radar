@@ -150,7 +150,7 @@ check(tw && tw.title === tour.title && tw.text === tour.blurb, 'a trip shares it
   const out = await shareLink(ctx, { title: 'Europa', text: 'Europa is a moon.' }, 'europa');
   check(out.via === 'clipboard' && copied[0] === `${BASE}#at=europa`, `no share sheet: the clipboard gets the URL (${out.via}, ${copied[0]})`);
   check(ctx.lastShare === out, 'what happened is left on ctx.lastShare for a browser check');
-  const node = document.body.all().find((n) => n.className === 'sr-toast');
+  const node = document.body.all().find((n) => n.className.split(' ').includes('sr-toast'));
   check(node && node.textContent === COPY.share.copied && node.hidden === false, 'the toast says "Link copied"');
   check(node && node.getAttribute('role') === 'status', 'the toast is a status, so a screen reader hears it');
   await new Promise((r) => setTimeout(r, 1900));
@@ -159,7 +159,7 @@ check(tw && tw.title === tour.title && tw.text === tour.blurb, 'a trip shares it
   check(node.hidden === true, 'the toast is gone after two seconds');
   toast('one');
   toast('two');
-  check(document.body.all().filter((n) => n.className === 'sr-toast').length === 1 && node.textContent === 'two', 'one toast at a time');
+  check(document.body.all().filter((n) => n.className.split(' ').includes('sr-toast')).length === 1 && node.textContent === 'two', 'one toast at a time');
 }
 {
   const calls = [];
@@ -179,7 +179,7 @@ check(tw && tw.title === tour.title && tw.text === tour.blurb, 'a trip shares it
 {
   setNavigator({ clipboard: { writeText: async () => { throw new Error('not focused'); } } });
   const out = await shareLink({}, null, 'europa');
-  const node = document.body.all().find((n) => n.className === 'sr-toast');
+  const node = document.body.all().find((n) => n.className.split(' ').includes('sr-toast'));
   check(out.via === 'none' && node.textContent === `${BASE}#at=europa`, 'a refused clipboard puts the link itself in the toast');
 }
 

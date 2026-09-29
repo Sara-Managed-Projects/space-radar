@@ -72,7 +72,6 @@ export function toast(line, ms = 2000) {
   if (typeof document === 'undefined') return null;
   if (!toastNode || !toastNode.isConnected) {
     toastNode = document.createElement('div');
-    // `.sr-over-clean`: "Picture saved" must still be read with every panel hidden (ui/cleanview.js).
     toastNode.className = 'sr-toast sr-over-clean';
     toastNode.setAttribute('role', 'status');
     document.body.appendChild(toastNode);
