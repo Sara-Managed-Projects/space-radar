@@ -1504,6 +1504,8 @@ html.sr-clean .sr-print-toggle:hover, html.sr-clean .sr-print-toggle:focus-visib
 .sr-print-menu[hidden] { display: none; }
 @media (min-width: 900px) { .sr-print-menu { top: 68px; right: 16px; } }
 .sr-print-menu__note { margin: 0 0 4px; font-size: 13px; line-height: 1.4; color: var(--sr-text-dim); }
+.sr-print-menu__tag { display: flex; align-items: center; gap: 8px; margin: 0 0 4px; font-size: 13px; color: var(--sr-text); cursor: pointer; }
+.sr-print-menu__tag input { accent-color: var(--sr-ember); }
 .sr-print-menu button {
   min-height: 44px;
   padding: 0 12px;
