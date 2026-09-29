@@ -645,6 +645,114 @@ export function earthshineShare(alphaRad, distKm) {
   return EARTH_GEOMETRIC_ALBEDO * k * k * Math.max(0, phi);
 }
 
+// Saturn's rings (spec 0054 task 5): the numbers both shaders share. The ring's own block, below
+// RING_OPACITY, says what they are for.
+
+/** Cassini's radii of the Cassini Division's two edges, km: the B ring's outer, the A ring's inner. */
+export const CASSINI_DIVISION_KM = [117580, 122170];
+/**
+ * Where Solar System Scope's ring map draws those two edges, as a fraction of its width (the alpha at
+ * half depth between the ring and the gap, measured 2026-09-29 by tests/test_rings.mjs on the file).
+ */
+export const RING_MAP_DIVISION_U = [0.6719, 0.7139];
+/** Fine dust's share of the scattering where the ring is thin, and its forward asymmetry (illustrative). */
+export const RING_DUST = 0.35;
+export const RING_DUST_G = 0.7;
+/**
+ * The dust's colour: the ring map's own mean, in linear light, weighted by its alpha (measured
+ * 2026-09-29 by tests/test_rings.mjs on the file). The map's colour where the ring is thin is dark --
+ * those texels are mostly gap -- and dust drawn in it would not show; dust is fine ice, the colour of
+ * the ring it is in on average.
+ */
+export const RING_DUST_COLOUR = [0.139, 0.120, 0.114];
+/** #318's ring tint, kept for its hue. */
+export const RING_TINT = 0xd9cdb4;
+/**
+ * The ring's exposure, the ring's share of spec 0054 requirement 2. The map's colours are dim: the B
+ * ring's brighter texels (the 95th percentile of its luminance, 0.225 in linear light) through #318's
+ * tint (luminance 0.617) come out at 0.14, where Saturn's own map averages 0.617 -- and every picture
+ * from Voyager and Cassini shows the B ring about as bright as the globe beside it. So the ring is
+ * multiplied by 0.617 / (0.225 x 0.617) = 4.44, which puts the B ring's bright texels at the globe's
+ * mean, face-on under an overhead Sun; tests/test_rings.mjs measures both maps' numbers from the files.
+ * Before this the lit face was drawn at 0.14 whatever the angles, and the lit face at the 7.6 degrees
+ * the Sun stands above it now (0.44 of face-on) is still 2.2 times what #318 drew.
+ */
+export const RING_EXPOSURE = 4.44;
+/** The sines of elevation below which the slab formula is held: the ring seen or lit edge-on. */
+export const RING_MU_FLOOR = 0.02;
+
+/**
+ * The map coordinate for a radius in km, through the warp that puts the map's Cassini Division on
+ * Cassini's radii: three straight pieces, inner edge -> B edge -> A edge -> outer edge. Pure.
+ */
+export function ringMapU(rKm, innerKm, outerKm) {
+  const [rB, rA] = CASSINI_DIVISION_KM;
+  const [uB, uA] = RING_MAP_DIVISION_U;
+  if (rKm <= rB) return (uB * (rKm - innerKm)) / (rB - innerKm);
+  if (rKm <= rA) return uB + ((uA - uB) * (rKm - rB)) / (rA - rB);
+  return uA + ((1 - uA) * (rKm - rA)) / (outerKm - rA);
+}
+
+/** The phase of a Lambert sphere, 1 at zero phase and 0 at 180 degrees. */
+function lambertSpherePhase(cosAlpha) {
+  const a = Math.acos(Math.max(-1, Math.min(1, cosAlpha)));
+  return (Math.sin(a) + (Math.PI - a) * Math.cos(a)) / Math.PI;
+}
+
+/**
+ * Henyey-Greenstein for forward-scattering dust, as a function of the PHASE angle (Sun to ring to
+ * camera; 180 degrees is the Sun straight behind), divided by the isotropic 1/(4 pi) so it sits on
+ * the same scale as the Lambert-sphere phase: 1 for dust with g = 0.
+ */
+function dustPhase(cosAlpha, g) {
+  const cosTheta = -cosAlpha; // the scattering angle is 180 degrees minus the phase angle
+  return (1 - g * g) / Math.pow(1 + g * g - 2 * g * cosTheta, 1.5);
+}
+
+/**
+ * The ring's brightness as a share of the map's colour, and how much of what is behind it it hides.
+ * JS twin of RING_FRAG (the block above). Pure.
+ * @param {number} alpha     the map's alpha: the opacity face-on
+ * @param {number} mu0       |sine of the Sun's elevation above the ring plane|
+ * @param {number} mu        |sine of the camera's elevation|
+ * @param {number} cosAlpha  cosine of the phase angle, Sun-ring-camera
+ * @param {boolean} unlit    the Sun and the camera on opposite faces
+ * @returns {{I: number, cover: number}}
+ */
+export function ringLight(alpha, mu0, mu, cosAlpha, unlit) {
+  const a = Math.min(Math.max(alpha, 0), 0.999);
+  const tau = -Math.log(1 - a);
+  const m0 = Math.max(mu0, RING_MU_FLOOR);
+  const m = Math.max(mu, RING_MU_FLOOR);
+  let S;
+  if (!unlit) S = ((2 * m0) / (m0 + m)) * (1 - Math.exp(-tau * (1 / m0 + 1 / m)));
+  else if (Math.abs(m - m0) < 1e-4) S = ((2 * tau) / m0) * Math.exp(-tau / m0);
+  else S = ((2 * m0) / (m - m0)) * (Math.exp(-tau / m) - Math.exp(-tau / m0));
+  const dust = RING_DUST * (1 - a);
+  // The particles in the map's own colour, the dust in RING_DUST_COLOUR; I is their sum for a map
+  // of white, which is what the tests reason about.
+  const body = Math.max(0, S * (1 - dust) * lambertSpherePhase(cosAlpha));
+  const fine = Math.max(0, S * dust * dustPhase(cosAlpha, RING_DUST_G));
+  return { I: body + fine, body, dust: fine, cover: 1 - Math.exp(-tau / m) };
+}
+
+/**
+ * The warp as GLSL, shared by the ring and the globe's shadow of it: uRingRadii (inner, outer) and
+ * uRingWarp (the division's two radii, then their two map coordinates), all in planet radii.
+ */
+export const RING_U_GLSL = /* glsl */`
+float ringMapU( float r ) {
+  if ( r <= uRingWarp.x ) return uRingWarp.z * ( r - uRingRadii.x ) / ( uRingWarp.x - uRingRadii.x );
+  if ( r <= uRingWarp.y ) return uRingWarp.z + ( uRingWarp.w - uRingWarp.z ) * ( r - uRingWarp.x ) / ( uRingWarp.y - uRingWarp.x );
+  return uRingWarp.w + ( 1.0 - uRingWarp.w ) * ( r - uRingWarp.y ) / ( uRingRadii.y - uRingWarp.y );
+}
+`;
+
+/** The warp's uniform for a world of radius `radiusKm`: the division's radii in planet radii, and where the map has them. */
+export function ringWarpUniform(radiusKm) {
+  return [CASSINI_DIVISION_KM[0] / radiusKm, CASSINI_DIVISION_KM[1] / radiusKm, RING_MAP_DIVISION_U[0], RING_MAP_DIVISION_U[1]];
+}
+
 /** Exported for tests: the no-bands check (spec 0054 acceptance), and test_eclipse's lunar splice. */
 export const WORLD_FRAG = /* glsl */`
 #include <common>
@@ -674,6 +782,7 @@ uniform vec3  uUmbraTint;
 uniform float uLimb;
 uniform float uRingOn;
 uniform vec2  uRingRadii;     // inner, outer, in planet radii
+uniform vec4  uRingWarp;      // the Cassini Division's radii and their map coordinates (RING_U_GLSL)
 uniform sampler2D uRingMap;
 uniform float uHasRingMap;
 uniform float uRingOpacity;
@@ -684,7 +793,7 @@ varying vec3 vPosL;
 varying vec3 vSunL;
 ${ECLIPSE_GLSL}
 const float MU_FLOOR = ${MU_FLOOR};
-
+${RING_U_GLSL}
 // Oren-Nayar, qualitative form, divided by A: the JS twin is orenNayar() in scene/worlds.js.
 float orenNayar( vec3 n, vec3 l, vec3 v, float sigma ) {
   float nl = dot( n, l );
@@ -726,9 +835,8 @@ void main() {
     float t = -vPosL.y / vSunL.y;
     if ( t > 0.0 ) {
       float r = length( ( vPosL + vSunL * t ).xz );
-      float u = ( r - uRingRadii.x ) / ( uRingRadii.y - uRingRadii.x );
-      if ( u > 0.0 && u < 1.0 ) {
-        float a = mix( 1.0, texture2D( uRingMap, vec2( u, 0.5 ) ).a, uHasRingMap ) * uRingOpacity;
+      if ( r > uRingRadii.x && r < uRingRadii.y ) {
+        float a = mix( 1.0, texture2D( uRingMap, vec2( ringMapU( r ), 0.5 ) ).a, uHasRingMap ) * uRingOpacity;
         ringShade = 1.0 - 0.85 * a;
       }
     }
@@ -796,6 +904,7 @@ export function worldMaterial(map, tint) {
       uLimb: { value: 0 },
       uRingOn: { value: 0 },
       uRingRadii: { value: new THREE.Vector2(1, 2) },
+      uRingWarp: { value: new THREE.Vector4(1.5, 1.6, 0.5, 0.6) },
       uRingMap: { value: null },
       uHasRingMap: { value: 0 },
       uRingOpacity: { value: RING_OPACITY },
@@ -826,7 +935,43 @@ void main() {
 }
 `;
 
-/** Exported for tests: the planet's shadow across the ring, and the ring's unlit face. */
+// --- Saturn's rings, lit both ways (spec 0054 task 5, 2026-09-29) --------------------------------
+//
+// The ring is a sheet of ice particles with an optical depth, not a painted disc, and how bright it
+// looks depends on which side of it the Sun and the camera are. #318 drew the lit face at the map's
+// colour whatever the angles, and the unlit face as 0.4 + 0.4 x (1 - alpha) of it. This replaces both
+// with the single-scattering answer for a thin slab (Chandrasekhar 1960; the form Cuzzi et al. use
+// for Saturn's rings), with the map's alpha read as the slab's opacity seen face-on:
+//
+//     tau    = -ln(1 - alpha)                                 the normal optical depth
+//     lit    = 2 mu0 / (mu0 + mu) x (1 - exp(-tau (1/mu0 + 1/mu)))       Sun and camera on one side
+//     unlit  = 2 mu0 / (mu - mu0) x (exp(-tau / mu) - exp(-tau / mu0))   on opposite sides
+//
+// mu0 and mu are the sines of the Sun's and the camera's elevations above the ring plane. Both are
+// normalised so a thick ring, face-on, the Sun overhead, is the map's colour (the same rule as the
+// globe: the map is what the sub-solar point shows). What this draws that #318 could not:
+//   - THE LIT FACE DIMS AS THE SUN SINKS. On 2026-09-29 the Sun is 7.6 degrees from the ring plane;
+//     mu0 = 0.13, and the rings are half as bright as face-on light would make them. At the 2025
+//     crossing they went dark, which they did.
+//   - THE UNLIT FACE SHOWS WHAT IS THIN. The B ring (tau ~ 2) passes almost nothing: dark from
+//     below. The C ring and the Cassini Division (tau ~ 0.1) pass and scatter most of the light
+//     that reaches them: bright from below. That inversion is the signature of every Cassini
+//     picture of the unlit rings, and it falls out of the formula with no special case.
+//   - FORWARD SCATTERING. The particles are centimetres to metres: they throw light back toward the
+//     Sun (the phase of a Lambert sphere, 1 at zero phase and 0 at 180 degrees). The thin regions
+//     also hold fine dust that throws light forward (Henyey-Greenstein, g = RING_DUST_G), so with the
+//     Sun behind the rings from the camera the dusty regions glow while the thick ones go dark:
+//     Cassini's "In Saturn's Shadow" (PIA08329). How much dust is illustrative (RING_DUST), and so is
+//     its g; the slab formula and the opacity are not.
+//
+// THE CASSINI DIVISION. Solar System Scope's ring map puts the division's edges at 118 670 and
+// 121 430 km (measured on the map's alpha at half depth, tests/test_rings.mjs); the Cassini mission's
+// radii are 117 580 (the B ring's outer edge) and 122 170 km (the A ring's inner edge). The division
+// is in the right place (centred 120 050 km against 119 875) and 1 830 km too narrow. The map is not repainted: its radial coordinate is
+// warped, piecewise linearly, so its two edges land on the measured radii (ringMapU, and RING_U_GLSL
+// its twin), and the globe's ring shadow reads the map through the same warp.
+
+/** Exported for tests: the slab both ways, the two phases, the globe's shadow, and the warp. */
 export const RING_FRAG = /* glsl */`
 #include <common>
 #include <logdepthbuf_pars_fragment>
@@ -834,28 +979,66 @@ uniform sampler2D uMap;
 uniform float uHasMap;
 uniform vec3 uColour;
 uniform float uOpacity;
+uniform vec2 uRingRadii;
+uniform vec4 uRingWarp;
 varying vec2 vUv;
 varying vec3 vPosL;
 varying vec3 vSunL;
 varying vec3 vCamL;
+const float RING_DUST = ${RING_DUST.toFixed(2)};
+const float RING_DUST_G = ${RING_DUST_G.toFixed(2)};
+const float RING_MU_FLOOR = ${RING_MU_FLOOR.toFixed(2)};
+const vec3 RING_DUST_COLOUR = vec3( ${RING_DUST_COLOUR.map((c) => c.toFixed(3)).join(', ')} );
+${RING_U_GLSL}
+// The phase of a Lambert sphere: the ring's particles, centimetres to metres, throw light back.
+float lambertSpherePhase( float cosAlpha ) {
+  float a = acos( clamp( cosAlpha, -1.0, 1.0 ) );
+  return ( sin( a ) + ( PI - a ) * cos( a ) ) / PI;
+}
+// Henyey-Greenstein by phase angle (180 degrees minus the scattering angle), over the isotropic value.
+float dustPhase( float cosAlpha, float g ) {
+  return ( 1.0 - g * g ) / pow( 1.0 + g * g + 2.0 * g * cosAlpha, 1.5 );
+}
+
 void main() {
   #include <logdepthbuf_fragment>
-  vec4 tex = mix( vec4( 1.0 ), texture2D( uMap, vUv ), uHasMap );
+  // The map through the warp that puts its Cassini Division on Cassini's radii.
+  vec4 tex = mix( vec4( 1.0 ), texture2D( uMap, vec2( ringMapU( length( vPosL.xy ) ), 0.5 ) ), uHasMap );
   // The globe (radius 1 here) between this point and the Sun: the ray's closest approach to the
   // centre, only on the Sun-facing half of the ray. A 2 % soft edge stands in for the penumbra.
   float b = dot( vPosL, vSunL );
   float closest = sqrt( max( dot( vPosL, vPosL ) - b * b, 0.0 ) );
   float shade = b < 0.0 ? smoothstep( 0.98, 1.02, closest ) : 1.0;
-  // Lit from the far side, the ring shows only the light that gets through it.
-  float lower = step( 0.0, -vSunL.z * vCamL.z );
-  float face = mix( 1.0, 0.4 + 0.4 * ( 1.0 - tex.a ), lower );
-  gl_FragColor = vec4( uColour * tex.rgb * mix( 0.06, 1.0, shade ) * face, tex.a * uOpacity );
+
+  // The slab: the map's alpha is the opacity face-on, so its normal optical depth is -ln(1 - alpha).
+  float alpha = clamp( tex.a * uOpacity, 0.0, 0.999 );
+  float tau = -log( 1.0 - alpha );
+  vec3 view = normalize( vCamL );
+  float m0 = max( abs( vSunL.z ), RING_MU_FLOOR );
+  float m = max( abs( view.z ), RING_MU_FLOOR );
+  float S;
+  if ( vSunL.z * vCamL.z >= 0.0 ) {
+    S = 2.0 * m0 / ( m0 + m ) * ( 1.0 - exp( -tau * ( 1.0 / m0 + 1.0 / m ) ) );
+  } else if ( abs( m - m0 ) < 1e-4 ) {
+    S = 2.0 * tau / m0 * exp( -tau / m0 );
+  } else {
+    S = 2.0 * m0 / ( m - m0 ) * ( exp( -tau / m ) - exp( -tau / m0 ) );
+  }
+  float cosAlpha = dot( vSunL, view );
+  float dust = RING_DUST * ( 1.0 - alpha );
+  float body = max( S * ( 1.0 - dust ) * lambertSpherePhase( cosAlpha ), 0.0 );
+  float fine = max( S * dust * dustPhase( cosAlpha, RING_DUST_G ), 0.0 );
+  // What the ring hides behind it: its optical depth along the line of sight.
+  float cover = 1.0 - exp( -tau / m );
+  vec3 light = uColour * ( tex.rgb * body + RING_DUST_COLOUR * fine ) * shade;
+  // Premultiplied (One, OneMinusSrcAlpha): what the ring sends, plus what gets through it.
+  gl_FragColor = vec4( light, cover );
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
 }
 `;
 
-function ringMaterial(map, inner, outer) {
+function ringMaterial(map, inner, outer, warp) {
   return new THREE.ShaderMaterial({
     name: 'world-ring',
     vertexShader: RING_VERT,
@@ -863,13 +1046,20 @@ function ringMaterial(map, inner, outer) {
     transparent: true,
     side: THREE.DoubleSide,
     depthWrite: false,
+    // Premultiplied: RING_FRAG writes its own light and its line-of-sight cover.
+    blending: THREE.CustomBlending,
+    blendEquation: THREE.AddEquation,
+    blendSrc: THREE.OneFactor,
+    blendDst: THREE.OneMinusSrcAlphaFactor,
     uniforms: {
       uMap: { value: map || null },
       uHasMap: { value: map ? 1 : 0 },
-      uColour: { value: new THREE.Color(0xd9cdb4) },
+      uColour: { value: new THREE.Color(RING_TINT).multiplyScalar(RING_EXPOSURE) },
       uOpacity: { value: RING_OPACITY },
       uSunDir: { value: new THREE.Vector3(1, 0, 0) },
       uRadii: { value: new THREE.Vector2(inner, outer) },
+      uRingRadii: { value: new THREE.Vector2(inner, outer) },
+      uRingWarp: { value: new THREE.Vector4(...warp) },
     },
   });
 }
@@ -1065,6 +1255,7 @@ export function createWorlds(scene, opts = {}) {
       if (u) {
         u.uRingOn.value = 1;
         u.uRingRadii.value.copy(ring.material.uniforms.uRadii.value);
+        u.uRingWarp.value.copy(ring.material.uniforms.uRingWarp.value);
         u.uRingMap.value = ringMap;
         u.uHasRingMap.value = ringMap ? 1 : 0;
       }
@@ -1674,7 +1865,7 @@ export function createWorlds(scene, opts = {}) {
       uv.setXY(i, (d - inner) / (outer - inner), 0.5);
     }
     uv.needsUpdate = true;
-    const mesh = new THREE.Mesh(geo, ringMaterial(map, inner, outer));
+    const mesh = new THREE.Mesh(geo, ringMaterial(map, inner, outer, ringWarpUniform(w.radiusKm)));
     mesh.rotation.x = -Math.PI / 2;  // RingGeometry lies in XY; the ring is the planet's equator
     mesh.renderOrder = 1;
     mesh.name = `${w.id}-ring`;

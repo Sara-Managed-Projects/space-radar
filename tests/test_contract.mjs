@@ -38,7 +38,9 @@ const CONTRACT = {
   'scene/stage.js': ['stage'],
   // Spec 0054: the one physically lit world material, and the JS twins of its two reflectance laws
   // and of the earthshine share (tests/test_world_light.mjs), the way scene/eclipse.js has one.
-  'scene/worlds.js': ['createWorlds', 'worldMaterial', 'WORLD_FRAG', 'orenNayar', 'minnaert', 'earthshineShare', 'EARTHSHINE_GAIN', 'EARTH_GEOMETRIC_ALBEDO', 'MU_FLOOR', 'DEFAULT_ROUGHNESS'],
+  'scene/worlds.js': ['createWorlds', 'worldMaterial', 'WORLD_FRAG', 'orenNayar', 'minnaert', 'earthshineShare', 'EARTHSHINE_GAIN', 'EARTH_GEOMETRIC_ALBEDO', 'MU_FLOOR', 'DEFAULT_ROUGHNESS',
+    // Spec 0054 task 5: Saturn's rings lit both ways, and the Cassini Division's warp (tests/test_rings.mjs).
+    'RING_FRAG', 'RING_U_GLSL', 'ringLight', 'ringMapU', 'ringWarpUniform', 'CASSINI_DIVISION_KM', 'RING_MAP_DIVISION_U', 'RING_DUST', 'RING_DUST_G', 'RING_MU_FLOOR', 'RING_DUST_COLOUR', 'RING_TINT', 'RING_EXPOSURE'],
   'scene/earth.js': ['createEarth', 'updateEarthEclipse'],
   // Spec 0054 task 3: the air on Mars, Venus and Titan, and the JS twin of its shader (tests/test_air.mjs).
   'scene/atmosphere.js': ['ATMO_PARAMS', 'atmosphereCoefficients', 'verticalDepth', 'chapman', 'scatter', 'createAirShell', 'AIR_SHELL_FRAG', 'VIEW_STEPS'],

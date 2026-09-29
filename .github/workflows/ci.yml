@@ -342,6 +342,11 @@ jobs:
       # twin, and when a shell is drawn (never from the default view, never under the latch).
       - name: the air on Mars, Venus and Titan (spec 0054 task 3)
         run: node tests/test_air.mjs
+      # Spec 0054 task 5: Saturn's rings lit both ways. The slab formula on both faces, forward
+      # scattering from behind, and the ring map's Cassini Division read from the PNG and warped onto
+      # Cassini's radii, for the ring and for its shadow on the globe alike.
+      - name: Saturn's rings, lit both ways, with the Cassini Division where Cassini measured it (spec 0054 task 5)
+        run: node tests/test_rings.mjs
       - name: the eclipse trip's five stops land on the library's eclipses, counted from the visitor's clock (spec 0037)
         run: node tests/test_eclipse_trip.mjs
       - name: the trajectory chart samples the record's own path and breaks at the date line (spec 0026 req 14)
