@@ -111,26 +111,22 @@ export function sgp4(record, tMs) {
  * Returns null on the same conditions as sgp4().
  */
 export function sgp4State(record, tMs) {
+  const position = sgp4(record, tMs);
+  if (!position) return null;
   const rec = resolveSatrec(record);
-  if (!rec || !Number.isFinite(tMs)) return null;
   let pv;
   try {
     pv = satellite.propagate(rec, new Date(tMs));
   } catch (err) {
     return null;
   }
-  if (!pv || !pv.position || !pv.velocity || typeof pv.position === 'boolean') return null;
-  const epoch = epochMs(record);
-  const age = Number.isFinite(epoch) ? Math.abs(tMs - epoch) : 0;
+  const velocity = pv && pv.velocity;
+  if (!velocity || ![velocity.x, velocity.y, velocity.z].every(Number.isFinite)) return null;
   return {
-    x: pv.position.x,
-    y: pv.position.y,
-    z: pv.position.z,
-    vx: pv.velocity.x,
-    vy: pv.velocity.y,
-    vz: pv.velocity.z,
-    frame: record.frame || 'earth-inertial',
-    cls: age <= MEASURED_WINDOW_MS ? 'measured' : 'inferred',
+    ...position,
+    vx: velocity.x,
+    vy: velocity.y,
+    vz: velocity.z,
   };
 }
 
