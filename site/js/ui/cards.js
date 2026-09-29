@@ -48,6 +48,7 @@ import {
   gmst,
   eciToEcef,
   ecefToGeodetic,
+  geodeticToEcef,
   parseFrame,
   bodyFixedToSpherical,
   worldRadiusKm,
@@ -222,6 +223,10 @@ function measure(record, ctx) {
     distEarthKm: null,
     distSunKm: null,
     lightMinutes: null,
+    // Spec 0047: the straight line from the observer to the object, and whose place that is.
+    rangeKm: null,
+    observerName: null,
+    observerGuess: false,
   };
   let tMs;
   try {
@@ -255,6 +260,18 @@ function measure(record, ctx) {
         out.altKm = gd.altKm;
         out.latDeg = gd.latRad * DEG;
         out.lonDeg = gd.lonRad * DEG;
+      }
+      // From the place set, or guessed and said so (sky/guessplace.js `source: 'guess'`), in the
+      // same Earth-fixed frame: one subtraction. No observer, no row -- never a distance from nowhere.
+      const obs = ctx.observer;
+      if (obs && Number.isFinite(obs.latRad) && Number.isFinite(obs.lonRad)) {
+        const o = geodeticToEcef(obs.latRad, obs.lonRad, Number.isFinite(obs.altKm) ? obs.altKm : 0);
+        const r = Math.hypot(ecef.x - o.x, ecef.y - o.y, ecef.z - o.z);
+        if (Number.isFinite(r)) {
+          out.rangeKm = r;
+          out.observerName = obs.name ? String(obs.name) : null;
+          out.observerGuess = obs.source === 'guess';
+        }
       }
     } catch {
       /* altitude stays null and the row says so */
@@ -1052,6 +1069,7 @@ function rightNowRows(record, m, passInfo) {
       const label = stands ? R.location : R.groundPoint;
       rows.push([label, t(V.latLon, { lat: latText(m.latDeg), lon: lonText(m.lonDeg) })]);
     }
+    if (!stands && m.rangeKm !== null && m.rangeKm !== undefined) rows.push([rangeLabel(m), t(V.km, { n: fmt.int(m.rangeKm) })]);
   } else if (m.worldId && m.worldId !== 'sun') {
     // On, or around, another world. No Earth latitude, no "height above the ground": the ground
     // in question is not Earth's, and saying so is the whole point of this block.
@@ -1207,6 +1225,82 @@ function rightNowRows(record, m, passInfo) {
     rows.push([R.nextPass, COPY.sky.couldNotLook]);
   }
   return rows;
+}
+
+/** The "from you" row's label: yours, or the guessed place's by name (spec 0047 req 3). */
+function rangeLabel(m) {
+  return m.observerGuess && m.observerName ? t(COPY.card.rows.fromGuess, { place: m.observerName }) : COPY.card.rows.fromYou;
+}
+
+// ---------------------------------------------------------------------------------------
+// The tracked object's tag (spec 0047 req 3, 4): the card's words, shorter, on the object itself.
+// ---------------------------------------------------------------------------------------
+
+/** At most this many readouts on the tag's second line. */
+export const TAG_READOUTS = 3;
+/** The tag's honesty line is cut to this many characters, at a word. */
+export const TAG_HONESTY_MAX = 64;
+
+/**
+ * The honesty line's first clause, the card's own words cut short: up to the first dash, semicolon
+ * or sentence end, then at a word inside TAG_HONESTY_MAX with an ellipsis. Always a prefix of
+ * honestyLine() once the ellipsis is taken off, which tests/test_cards_copy.mjs holds for every
+ * class; "position propagated from elements 3 hours old" is the ISS's, whole.
+ */
+export function shortHonesty(record, m) {
+  const full = honestyLine(record, m || {});
+  let cut = full.length;
+  for (const mark of [COPY.punctuation.dash, '; ', COPY.punctuation.sentenceJoin]) {
+    const i = full.indexOf(mark);
+    if (i > 0 && i < cut) cut = i;
+  }
+  let out = full.slice(0, cut).trimEnd();
+  if (out.length > TAG_HONESTY_MAX) {
+    const space = out.lastIndexOf(' ', TAG_HONESTY_MAX - 1);
+    out = out.slice(0, space > 0 ? space : TAG_HONESTY_MAX - 1).trimEnd() + COPY.punctuation.ellipsis;
+  }
+  return out;
+}
+
+/**
+ * "27 580 km/h" -> {num: '27 580', unit: 'km/h'}: the card's value, split where the number ends so
+ * the tag can set the digits in fixed columns and the unit dim. The groups inside a number are
+ * narrow no-break spaces (copy/en.js), so the first ordinary space is where the unit starts. A value
+ * that does not start with a number ("could not work this out") is not a readout.
+ */
+export function splitReadout(value) {
+  const m = /^([−-]?[\d\u202F.]+) (.+)$/.exec(String(value || ''));
+  return m ? { num: m[1], unit: m[2] } : null;
+}
+
+/**
+ * What the tracked object's tag says, as strings and no DOM: the name, the class, up to three
+ * readouts and the short honesty line. Every number is a "right now" row the card prints, value for
+ * value (rightNowRows, with the pass left out: predicting a day of passes four times a second is the
+ * card's job on open, not the tag's), so the tag and the card cannot disagree. `m` is measure()'s,
+ * passed in by a caller that already has one.
+ *
+ * @returns {{name, klass, readouts: {key, num, unit, suffix}[], honesty, tMs}}
+ */
+export function tagLines(record, ctx, m) {
+  const mm = m || measure(record, ctx);
+  const R = COPY.card.rows;
+  const keys = new Map([
+    [R.altitude, 'altitude'], [R.speed, 'speed'], [rangeLabel(mm), 'range'],
+    [R.distanceFromEarth, 'earth'], [R.distanceFromSun, 'sun'], [R.distanceRange, 'sun'],
+  ]);
+  const readouts = [];
+  for (const [label, value] of rightNowRows(record, mm, { state: PASS_NOT_APPLICABLE, pass: null })) {
+    const key = keys.get(label);
+    if (!key || readouts.length >= TAG_READOUTS) continue;
+    const split = splitReadout(value);
+    if (!split) continue;
+    const suffix = key === 'range'
+      ? (mm.observerGuess && mm.observerName ? t(COPY.hud.fromPlace, { place: mm.observerName }) : COPY.hud.fromYou)
+      : '';
+    readouts.push({ key, num: split.num, unit: split.unit, suffix });
+  }
+  return { name: displayName(record), klass: klassOf(record), readouts, honesty: shortHonesty(record, mm), tMs: mm.tMs };
 }
 
 // ---------------------------------------------------------------------------------------

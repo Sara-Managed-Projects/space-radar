@@ -227,6 +227,8 @@ html.sr-compact .sr-status {
 .sr-door.is-on::after,
 .sr-search__option.is-active::before,
 .sr-search__option.is-active::after,
+.sr-reticle__box::before,
+.sr-reticle__box::after,
 :where(button, a[href], [role='option'], summary):focus-visible::before,
 :where(button, a[href], [role='option'], summary):focus-visible::after {
   content: '';
@@ -243,6 +245,7 @@ html.sr-compact .sr-status {
 .sr-bracketed::after,
 .sr-door.is-on::after,
 .sr-search__option.is-active::after,
+.sr-reticle__box::after,
 :where(button, a[href], [role='option'], summary):focus-visible::after {
   transform: scaleY(-1);
 }
@@ -2774,5 +2777,244 @@ html.sr-phone .sr-trip__btn--share {
 html.sr-phone .sr-trip__sound,
 html.sr-phone .sr-trip__bar--top .sr-trip__btn--sound,
 html.sr-phone .sr-sound__btn {
+  min-height: 44px;
+}
+
+/* The tracked object's HUD (spec 0047, ui/hud.js) ---------------------------------------------- */
+
+/* Over the scene and its labels (5), under the stage-change veil (8) and every panel: a stage change
+   goes through the black with nothing on it. Nothing here takes a tap but the chevron. Every piece
+   is placed by `transform` from ui/hud.js, once a frame, so a move is a composite and never a
+   layout. Hidden by the clear screen with everything else on <body> (ui/cleanview.js). */
+.sr-hud {
+  position: fixed;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.sr-hud .is-off {
+  display: none;
+}
+
+.sr-reticle,
+.sr-tick,
+.sr-tag,
+.sr-chevron {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform;
+}
+
+/* The reticle is 0045's corner brackets, the same rule as a focused control (the list above), on a
+   box sized to the thing: max(28 px, its drawn diameter + 12 px). Inside its own corners, because
+   the box is already the margin. */
+.sr-reticle__box {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  --sr-bracket-out: 0px;
+  transform-origin: 50% 50%;
+}
+
+/* Acquire, once (req 2): 1.6 -> 1.0 and in, over --sr-mid, and nothing after it. On the inner box,
+   because the outer one's transform is its position. */
+.sr-reticle__box.is-acquiring {
+  animation: sr-acquire var(--sr-mid) var(--sr-ease) both;
+}
+
+.sr-reticle__box.is-acquiring-reduced {
+  animation: sr-acquire-fade 120ms linear both;
+}
+
+@keyframes sr-acquire {
+  from {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes sr-acquire-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-reticle__box.is-acquiring {
+    animation: sr-acquire-fade 120ms linear both;
+  }
+}
+
+/* Behind a world (req 8): said, not hidden. The same four ticks, dashed and at half strength. */
+.sr-reticle.is-occluded {
+  opacity: 0.5;
+}
+
+.sr-reticle.is-occluded .sr-reticle__box::before,
+.sr-reticle.is-occluded .sr-reticle__box::after {
+  background:
+    repeating-linear-gradient(90deg, var(--sr-ember) 0 3px, transparent 3px 5px) top left / var(--sr-bracket) var(--sr-bracket-w) no-repeat,
+    repeating-linear-gradient(180deg, var(--sr-ember) 0 3px, transparent 3px 5px) top left / var(--sr-bracket-w) var(--sr-bracket) no-repeat,
+    repeating-linear-gradient(270deg, var(--sr-ember) 0 3px, transparent 3px 5px) top right / var(--sr-bracket) var(--sr-bracket-w) no-repeat,
+    repeating-linear-gradient(180deg, var(--sr-ember) 0 3px, transparent 3px 5px) top right / var(--sr-bracket-w) var(--sr-bracket) no-repeat;
+}
+
+/* The velocity tick (req 6): 20 px of ember at 60 %, from the box's edge along the projected motion. */
+.sr-tick {
+  width: 20px;
+  height: 1.5px;
+  margin-top: -0.75px;
+  background: var(--sr-ember);
+  opacity: 0.6;
+  transform-origin: 0 50%;
+}
+
+/* The tag (req 3): borderless thin glass over space, the full glass over a world's disc, where a lit
+   cloud under 0.62 would take the dim text to 2.2:1. */
+.sr-tag {
+  padding: 4px 8px 5px;
+  background: var(--sr-glass-thin);
+  border-radius: var(--sr-radius-sm);
+  color: var(--sr-text);
+  font-family: var(--sr-font);
+  white-space: nowrap;
+}
+
+.sr-tag.is-over-world {
+  background: var(--sr-glass);
+}
+
+/* A 24 px leader at 45 degrees from the box's corner to the tag's: 24 * sqrt(2) = 34 px long. */
+.sr-tag__leader {
+  position: absolute;
+  width: 34px;
+  height: 1px;
+  background: var(--sr-ember);
+  opacity: 0.6;
+  transform-origin: 0 50%;
+}
+
+.sr-tag[data-side='right'][data-vert='up'] .sr-tag__leader { left: 0; top: 100%; transform: rotate(135deg); }
+.sr-tag[data-side='right'][data-vert='down'] .sr-tag__leader { left: 0; top: 0; transform: rotate(-135deg); }
+.sr-tag[data-side='left'][data-vert='up'] .sr-tag__leader { left: 100%; top: 100%; transform: rotate(45deg); }
+.sr-tag[data-side='left'][data-vert='down'] .sr-tag__leader { left: 100%; top: 0; transform: rotate(-45deg); }
+/* No room on either side (a big box between two rails): straight up or down from the box's edge. */
+.sr-tag[data-side='centre'] .sr-tag__leader { width: 24px; left: 50%; }
+.sr-tag[data-side='centre'][data-vert='up'] .sr-tag__leader { top: 100%; transform: rotate(90deg); }
+.sr-tag[data-side='centre'][data-vert='down'] .sr-tag__leader { top: 0; transform: rotate(-90deg); }
+
+.sr-tag__name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font: 600 15px/1.3 var(--sr-font-hud);
+}
+
+.sr-tag__name .sr-glyph {
+  width: 9px;
+  height: 9px;
+  box-shadow: none;
+}
+
+/* Digits in fixed columns (req 5), units small caps in the dim text. */
+.sr-tag__readouts {
+  font: 400 13px/1.4 var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-tag__readout + .sr-tag__readout::before,
+.sr-tag__behind::before {
+  content: '\00B7';
+  margin: 0 6px;
+  color: var(--sr-text-dim);
+}
+
+.sr-tag__unit {
+  margin-left: 4px;
+  font-family: var(--sr-font);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sr-text-dim);
+}
+
+/* "from you" is words, not a unit: the 13 px reading floor, in the dim text. */
+.sr-tag__suffix {
+  margin-left: 4px;
+  font-family: var(--sr-font);
+  font-size: 13px;
+  color: var(--sr-text-dim);
+}
+
+.sr-tag__suffix:empty {
+  display: none;
+}
+
+.sr-tag__behind {
+  font-family: var(--sr-font);
+  color: var(--sr-text);
+}
+
+/* The honesty line (req 3): the card's own class-and-age words, at the 13 px reading floor. */
+.sr-tag__honesty {
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--sr-text-dim);
+}
+
+.sr-tag__honesty::first-letter {
+  text-transform: uppercase;
+}
+
+/* Off screen (req 7): a chip 16 px inside the nearest edge, pointing the way to turn. The name shows
+   on hover and focus; a click or Enter flies there. */
+.sr-chevron {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 3px 10px 3px 6px;
+  pointer-events: auto;
+  background: var(--sr-glass);
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius-pill);
+  color: var(--sr-text);
+  font: 400 13px/1 var(--sr-font-mono);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.sr-chevron:hover {
+  border-color: var(--sr-ember);
+}
+
+.sr-chevron__arrow {
+  flex: 0 0 auto;
+  color: var(--sr-ember);
+}
+
+.sr-chevron__name {
+  display: none;
+  font-family: var(--sr-font);
+}
+
+.sr-chevron:hover .sr-chevron__name,
+.sr-chevron:focus-visible .sr-chevron__name {
+  display: inline;
+}
+
+html.sr-phone .sr-chevron {
   min-height: 44px;
 }

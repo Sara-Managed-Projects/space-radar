@@ -46,7 +46,9 @@ const CONTRACT = {
   'scene/camera.js': ['createCameraRig'],
   'sky/passes.js': ['predictPasses'],
   'sky/skyview.js': ['createSkyView'],
-  'ui/cards.js': ['showCard', 'hideCard'],
+  'ui/cards.js': ['showCard', 'hideCard', 'tagLines', 'shortHonesty'],
+  // Spec 0047: the tracked object's HUD, and its pure placement rules for tests/test_hud.mjs.
+  'ui/hud.js': ['createHud', 'reticleBox', 'tagPlacement', 'showTick', 'chevronAt', 'firstDigitChanged'],
   'ui/controls.js': ['createControls'],
   'ui/trippicker.js': ['createTripPicker', 'groupTrips', 'nextTripId', 'nextTripOrder', 'tripOrder'],
   'ui/trip.js': ['createTrip'],

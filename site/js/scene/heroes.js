@@ -667,6 +667,16 @@ export function createHeroes(scene, ctx) {
     drawnOpacity(id) {
       return modelOpacity(live.get(id), root.visible, lastTMs, FADE_MS);
     },
+    /**
+     * How far this record's model reaches from its centre, in scene units, as drawn this frame; 0
+     * when no model is drawn. The tracked object's reticle (ui/hud.js, spec 0047 req 1) is sized
+     * from it, so the brackets sit round the station's trusses and not round a dot it replaced.
+     */
+    drawnReach(id) {
+      const entry = live.get(id);
+      if (!entry || !entry.obj || !entry.obj.visible || !root.visible) return 0;
+      return (entry.reach || 0.5) * entry.obj.scale.x;
+    },
     setVisible(b) { root.visible = !!b; },
     dispose() {
       for (const id of [...live.keys()]) release(id);

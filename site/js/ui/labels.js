@@ -362,7 +362,11 @@ export function createLabels(ctx, host) {
 
     const ladder = isLadderStage(stage.worldId);
     const isGround = (r) => r.klass === 'world' && r.id === stage.worldId;
-    if (selected && !(inTrip && isGround(selected))) {
+    // The tracked object's tag (ui/hud.js, spec 0047) names the selection beside its brackets; a
+    // label as well would be the same name twice, 30 px apart.
+    const tagged = !!(ctx.hud && typeof ctx.hud.namesSelection === 'function' && ctx.hud.namesSelection());
+    if (tagged && selected) seen.add(selected.id); // and not again as one of the notable names
+    if (selected && !tagged && !(inTrip && isGround(selected))) {
       const pr = project(selected, tMs, camera, w, h);
       if (pr) { out.push({ record: selected, kind: 'selection', ...pr }); seen.add(selected.id); }
     }

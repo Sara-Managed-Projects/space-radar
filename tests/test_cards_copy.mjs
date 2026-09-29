@@ -339,6 +339,41 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
   check(u === 'Pete Conrad and Alan Bean, November 1969.', 'a sentence that does not open with the name is left alone');
 }
 
+// --- the tracked object's tag says the card's honesty line, shorter (spec 0047 req 4) ---------------
+// For every class fixture: the tag's line 3 is a prefix of the card's class-and-age line, cut at a
+// clause and never past TAG_HONESTY_MAX; and tagLines() hands back exactly that string.
+{
+  const { shortHonesty, honestyLine: fullLine, tagLines, TAG_HONESTY_MAX } = await import(join(JS, 'ui/cards.js'));
+  const tNow = Date.parse('2026-09-08T12:00:00Z');
+  const FIXTURES = [
+    ['measured', { cls: 'measured', meta: {} }],
+    ['inferred, a GP set 19 h old', { cls: 'inferred', epoch: tNow - nineteenH, satrec: {}, meta: {} }],
+    ['inferred, no elements', { cls: 'inferred', meta: {} }],
+    ['inferred, unknown age', { cls: 'inferred', elements: {}, meta: {} }],
+    ['illustrative', { cls: 'illustrative', meta: {} }],
+    ['sample, with its why', { cls: 'sample', meta: { why: 'no public feed for this craft' } }],
+    ['unknown class', { cls: 'mystery', meta: {} }],
+    ['provisional', { cls: 'inferred', epoch: tNow - 3600e3, satrec: {}, meta: { provisional: true } }],
+    ['attached', { cls: 'inferred', epoch: tNow - 3600e3, satrec: {}, meta: { attachedToName: 'the ISS' } }],
+    ['surveyed split', { cls: 'inferred', meta: { anchorName: 'The Apollo 11 retroreflector', anchorUncertaintyM: 0.4, objectPrecisionM: 20, objectHow: 'photogrammetric' } }],
+    ['arc caveat', { cls: 'inferred', epoch: tNow - 400 * 86400e3, elements: {}, meta: { arcEnd: '2018-03-01', orbitCaveat: 'JPL says the orbit may be off by millions of km' } }],
+    ['storm', { cls: 'measured', klass: 'storm', meta: { advisoryMs: tNow - 3 * 3600e3 } }],
+    ['unplaceable', { cls: 'inferred', meta: { unplaceable: true, whyUnknown: 'nobody tracked it', wouldNeed: 'a radar survey' } }],
+  ];
+  for (const [name, rec] of FIXTURES) {
+    const m = { cls: rec.cls, tMs: tNow };
+    const full = fullLine(rec, m);
+    const short = shortHonesty(rec, m);
+    check(short.length > 0 && full.startsWith(short.replace(/…$/, '')), `${name}: the tag's line is the start of the card's ("${short}" / "${full}")`);
+    check(short.length <= TAG_HONESTY_MAX + 1, `${name}: the tag's line is at most ${TAG_HONESTY_MAX} characters (${short.length})`);
+    check(!/ — /.test(short), `${name}: cut at the first clause (${short})`);
+  }
+  const rec = FIXTURES[1][1];
+  const lines = tagLines({ ...rec, name: 'X', klass: 'satellite' }, { clock: { now: () => tNow } }, { cls: 'inferred', tMs: tNow, ok: false, frame: 'earth-inertial' });
+  check(lines.honesty === shortHonesty(rec, { cls: 'inferred', tMs: tNow }), `tagLines() carries shortHonesty() unchanged (${lines.honesty})`);
+  check(/19 hours old/.test(lines.honesty), 'and it keeps the element age');
+}
+
 if (problems.length) {
   console.log(`cards copy: ${problems.length} problem(s)`);
   for (const p of problems) console.log('  - ' + p);

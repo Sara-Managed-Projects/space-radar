@@ -200,7 +200,7 @@ for (const r of all.filter((x) => x.selector === '.sr-door.is-on')) {
 // --- 8. the type floor: nothing a person reads under 13 px (issue #315, spec 0045 req 6) -------
 // A unit or caption beside its number may be 11 px: the clock's UTC/Local tag and the trajectory
 // chart's axis captions. Anything else under 13 is a sentence somebody has to squint at.
-const UNIT_SELECTORS = new Set(['.sr-clock__tag', '.sr-traj__label']);
+const UNIT_SELECTORS = new Set(['.sr-clock__tag', '.sr-traj__label', '.sr-tag__unit']); // spec 0047: the tag's KM, KM/H
 for (const r of all) {
   if (r.at.startsWith('@font-face')) continue;
   for (const [prop, value] of decls(r.body)) {

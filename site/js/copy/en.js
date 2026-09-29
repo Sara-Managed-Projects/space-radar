@@ -867,6 +867,11 @@ export const COPY = {
       altitude: 'Height above the ground',
       speed: 'Speed',
       groundPoint: 'Passing over',
+      // Spec 0047: the straight line from the place set (or guessed) to the object, through the
+      // ground if need be. The tracked object's tag prints this row's number, so the card states it.
+      fromYou: 'Distance from you',
+      // The Now moment's place may be a guess from the clock (sky/guessplace.js); the row says whose.
+      fromGuess: 'Distance from {place}, our guess at your place',
       distanceFromEarth: 'Distance from Earth',
       distanceFromSun: 'Distance from the Sun',
       lightLeft: 'Its light left it',
@@ -1657,6 +1662,19 @@ export const COPY = {
     mark: 'spaceradar.ai',
   },
   // ui/cleanview.js: the button beside the GitHub mark, and its keyboard hint (H).
+  // Spec 0047: the tracked object's HUD (ui/hud.js). Its numbers and its honesty line are the
+  // card's own strings (ui/cards.js tagLines); these are only the words the tag adds around them.
+  hud: {
+    // After a readout's unit: "1 240 km from you". A guessed place is named, never passed off as yours.
+    fromYou: 'from you',
+    fromPlace: 'from {place}',
+    // Line 2 gains this when a world is between the camera and the object (ui/labels.js behindWorld).
+    behind: 'behind {world}',
+    // The chevron at the edge of the screen when the selection is outside the view.
+    offScreen: '{name}, {distance} away, off screen: fly to it',
+    // What the polite live region says, and only when a value's first digit changes.
+    live: '{name}: {readouts}',
+  },
   clean: {
     hide: 'Hide all panels (H)',
     show: 'Show the panels again (H or Escape)',

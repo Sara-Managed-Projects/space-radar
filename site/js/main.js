@@ -53,6 +53,7 @@ import { createSystems } from './scene/systems.js';
 import { SUN_INERTIAL, STAGES } from './scene/stage.js';
 import { showChooser, hideChooser } from './ui/chooser.js';
 import { createLabels } from './ui/labels.js';
+import { createHud } from './ui/hud.js';
 import { createOrbitLine } from './scene/orbitline.js';
 import { createOrbitRings } from './scene/orbitrings.js';
 import { createFrameLatch, shouldSaveData, chooseTier, createTierPromoter } from './scene/quality.js';
@@ -235,6 +236,11 @@ export async function boot({ setStatus } = {}) {
   // Names over the scene (spec 0026 req 5): the selection, its train, the nearest notable things.
   const labels = createLabels(ctx, document.getElementById('labels'));
   ctx.labels = labels;
+  // The tracked object's reticle, tick, tag and off-screen chevron (spec 0047, ui/hud.js). It asks
+  // for the selection's position through ctx.positionOfRecord, the same function follow() reads,
+  // so the brackets and the camera can never be on two different answers.
+  ctx.positionOfRecord = (record) => positionOfRecord(record);
+  ctx.hud = createHud(ctx, document.body);
   // One lap of the selection's orbit (spec 0026 req 13), from the same elements as the dot.
   const orbitLine = createOrbitLine(scene, ctx);
   ctx.orbitLine = orbitLine;
@@ -364,6 +370,7 @@ export async function boot({ setStatus } = {}) {
     // about to fill the screen, and a trip's own flight (fly: false) needs it just as much.
     if (record && record.klass === 'world') worlds.preload(record.id);
     for (const gl of glyphLayers.values()) if (gl.setSelected) gl.setSelected(record ? record.id : null);
+    if (ctx.hud) ctx.hud.select(record);
     showCard(record, ctx);
     if (ctx.orbitLine) ctx.orbitLine.setRecord(record);
     if (opts.fly !== false) flyToRecord(record);
@@ -438,6 +445,7 @@ export async function boot({ setStatus } = {}) {
     selected = null;
     if (ctx.orbitLine) ctx.orbitLine.setRecord(null);
     for (const gl of glyphLayers.values()) if (gl.setSelected) gl.setSelected(null);
+    if (ctx.hud) ctx.hud.clear();
     hideCard();
     cameraRig.stopFollow();
     window.dispatchEvent(new CustomEvent('sr:select', { detail: null }));
@@ -848,6 +856,9 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     if (ctx.dsoGlow) ctx.dsoGlow.update(ctx.camera, ctx.renderer, ctx.isLayerDrawable(LAYERS.find((l) => l.id === 'deep-sky')));
     if (ctx.skyView.active) ctx.skyView.update(t);
     render();
+    // After render(), because render() is what brings the camera's matrices up to this frame: placed
+    // before it, the brackets trailed the station by one frame of camera motion.
+    if (ctx.hud) ctx.hud.frame(t);
     // The first frame is on screen: from now on the sharper maps may come, when the browser is idle.
     if (!tiersStarted && ctx.quality) { tiersStarted = true; ctx.quality.start(); }
   }
