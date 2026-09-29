@@ -225,6 +225,12 @@ export function worldRecords() {
       // not round says the ball is not its shape.
       flat: !!w.look.flat && !w.look.map,
       irregular: !!w.look.irregular,
+      // Spec 0054: every world drawn with the world material is exposed for its own sunlight, and
+      // the card says so (ui/cards.js drawingLine); the Moon's also says how much its earthshine is
+      // brightened. The Earth has its own shader and its own sunlight is the reference; the Sun is
+      // the light.
+      exposed: !w.look.earth && !w.look.emissive,
+      earthshineGain: w.look.earthshine ? EARTHSHINE_GAIN : 0,
     },
   }));
 }
@@ -274,44 +280,51 @@ export const WORLDS = [
   {
     id: 'moon', display: 'The Moon', parent: 'earth', radiusKm: 1737.4,
     body: 'Moon', frame: EARTH_INERTIAL, view: VIEW_TRUE, rotation: 'iau',
-    look: { map: '2k_moon.jpg', tint: 0x9b9796 },
+    look: { map: '2k_moon.jpg', tint: 0x9b9796, rough: 0.5, earthshine: true },
   },
   {
     id: 'mercury', display: 'Mercury', parent: 'sun', radiusKm: 2439.7,
     body: 'Mercury', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_mercury.jpg', tint: 0x848383 },
+    look: { map: '2k_mercury.jpg', tint: 0x848383, rough: 0.45 },
   },
-  // `rim` is a thin scattering rim where there is air, in the colour photographs show at the limb;
-  // `limb` darkens the giants' edges (issue #263). Airless worlds keep the default pale rim.
+  // `rim` is a thin scattering rim where there is air, in the colour photographs show at the limb
+  // (#318). HOW EACH WORLD REFLECTS (spec 0054, the material block below): `limb` is Minnaert's k,
+  // for the cloud-covered worlds -- the giants, Venus and Titan; `rough` is Oren-Nayar's sigma in
+  // radians, for rock and ice, and a row without one takes DEFAULT_ROUGHNESS (0.2, frost). The
+  // design gave four roughnesses -- the Moon 0.5, Mercury 0.45, Mars 0.35, icy moons 0.2 -- and they
+  // were checked by eye on 2026-09-29 against the full Moon's flat disc (Lambert's limb is plainly
+  // too dark) and the Mariner 10 and Viking approach mosaics; the other rows are those four by kind,
+  // not fitted: dark cratered regolith like the Moon (Phobos, Deimos 0.5; Callisto 0.4), ice with
+  // rock in it between (0.3), fresh frost at the default. Airless worlds have no rim.
   {
     id: 'venus', display: 'Venus', parent: 'sun', radiusKm: 6051.8,
     body: 'Venus', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_venus_atmosphere.jpg', tint: 0xe6bf81, rim: { colour: 0xfff0c8, gain: 0.5 } },
+    look: { map: '2k_venus_atmosphere.jpg', tint: 0xe6bf81, limb: 0.9, rim: { colour: 0xfff0c8, gain: 0.5 } },
   },
   {
     id: 'mars', display: 'Mars', parent: 'sun', radiusKm: 3389.5,
     body: 'Mars', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_mars.jpg', tint: 0xb75d41, rim: { colour: 0xe8b089, gain: 0.3 } },
+    look: { map: '2k_mars.jpg', tint: 0xb75d41, rough: 0.35, rim: { colour: 0xe8b089, gain: 0.3 } },
   },
   {
     id: 'jupiter', display: 'Jupiter', parent: 'sun', radiusKm: 69911.0,
     body: 'Jupiter', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_jupiter.jpg', tint: 0xb3aba1, limb: 0.35 },
+    look: { map: '2k_jupiter.jpg', tint: 0xb3aba1, limb: 1.05 },
   },
   {
     id: 'saturn', display: 'Saturn', parent: 'sun', radiusKm: 58232.0,
     body: 'Saturn', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_saturn.jpg', tint: 0xdfcca8, limb: 0.35, ring: { innerKm: 74500, outerKm: 140220, map: '2k_saturn_ring_alpha.png' } },
+    look: { map: '2k_saturn.jpg', tint: 0xdfcca8, limb: 1.05, ring: { innerKm: 74500, outerKm: 140220, map: '2k_saturn_ring_alpha.png' } },
   },
   {
     id: 'uranus', display: 'Uranus', parent: 'sun', radiusKm: 25362.0,
     body: 'Uranus', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_uranus.jpg', tint: 0x9eced5, limb: 0.5, rim: { colour: 0xc8f4ff, gain: 0.35 } },
+    look: { map: '2k_uranus.jpg', tint: 0x9eced5, limb: 1.2, rim: { colour: 0xc8f4ff, gain: 0.35 } },
   },
   {
     id: 'neptune', display: 'Neptune', parent: 'sun', radiusKm: 24622.0,
     body: 'Neptune', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_neptune.jpg', tint: 0x395eb7, limb: 0.45, rim: { colour: 0x9cc0ff, gain: 0.35 } },
+    look: { map: '2k_neptune.jpg', tint: 0x395eb7, limb: 1.15, rim: { colour: 0x9cc0ff, gain: 0.35 } },
   },
   // THE FLAT ONES. No map ships for these five and none is fetched (`flat: true`, no `map`), so the
   // tint is not a texture's mean like the rows above: it is a HUE from a published description,
@@ -335,13 +348,13 @@ export const WORLDS = [
     // "charcoal black, to dark orange and white" (Wikipedia): a light orange-tan.
     id: 'pluto', display: 'Pluto', parent: 'sun', radiusKm: 1188.3,
     body: 'Pluto', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { flat: true, tint: 0xb4926f, albedo: 0.52, map: '2k_pluto_newhorizons.jpg' },
+    look: { flat: true, tint: 0xb4926f, albedo: 0.52, map: '2k_pluto_newhorizons.jpg', rough: 0.3 },
   },
   {
     // "shades of yellow, red, white, black, and green, largely due to ... sulfur" (Wikipedia).
     id: 'io', display: 'Io', parent: 'jupiter', radiusKm: 1821.5,
     body: 'Io', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
-    look: { flat: true, tint: 0xc9b061, albedo: 0.62, map: '1k_io_usgs.jpg' },
+    look: { flat: true, tint: 0xc9b061, albedo: 0.62, map: '1k_io_usgs.jpg', rough: 0.35 },
   },
   {
     // "a pale ... surface striated by light tan cracks and streaks" (Wikipedia).
@@ -353,13 +366,13 @@ export const WORLDS = [
     // "very old, highly cratered, dark regions and somewhat younger ... lighter regions" (Wikipedia).
     id: 'ganymede', display: 'Ganymede', parent: 'jupiter', radiusKm: 2631.2,
     body: 'Ganymede', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x958b7e, albedo: 0.44 },
+    look: { flat: true, tint: 0x958b7e, albedo: 0.44, rough: 0.3 },
   },
   {
     // "Callisto's surface has an albedo of about 20%" (Wikipedia): the darkest of the four.
     id: 'callisto', display: 'Callisto', parent: 'jupiter', radiusKm: 2410.3,
     body: 'Callisto', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x5e564c, albedo: 0.19 },
+    look: { flat: true, tint: 0x5e564c, albedo: 0.19, rough: 0.4 },
   },
   // SIXTEEN MORE MOONS (six on 2026-09-22, ten more the same day), flat like the five above and in
   // the same one light-to-dark order: their albedos are NASA's fact sheets' too (the Saturnian,
@@ -389,7 +402,7 @@ export const WORLDS = [
     // ground, is what anyone has seen of Titan in visible light. Darkened 2026-09-22, same hue.
     id: 'titan', display: 'Titan', parent: 'saturn', radiusKm: 2574.76,
     body: 'Titan', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x8f5e26, albedo: 0.22, haze: true, rim: { colour: 0xe0a050, gain: 0.7 } },
+    look: { flat: true, tint: 0x8f5e26, albedo: 0.22, haze: true, limb: 0.9, rim: { colour: 0xe0a050, gain: 0.7 } },
   },
   {
     // "Triton's reddish color" (Wikipedia) on frost with "an icy sheen" (NASA Science): a pale pink.
@@ -402,7 +415,7 @@ export const WORLDS = [
     // (top) polar region" (NASA Science): a grey, faintly warm.
     id: 'charon', display: 'Charon', parent: 'pluto', radiusKm: 606.0,
     body: 'Charon', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x8e8a86, albedo: 0.42 },
+    look: { flat: true, tint: 0x8e8a86, albedo: 0.42, rough: 0.3 },
   },
   {
     // "composed of C-type rock, similar to blackish carbonaceous chondrite asteroids" (NASA
@@ -410,13 +423,13 @@ export const WORLDS = [
     // radius, and its card says the true shape is not drawn.
     id: 'phobos', display: 'Phobos', parent: 'mars', radiusKm: 11.08,
     body: 'Phobos', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x4a4540, albedo: 0.07, irregular: true },
+    look: { flat: true, tint: 0x4a4540, albedo: 0.07, irregular: true, rough: 0.5 },
   },
   {
     // The same NASA sentence; a shade lighter than Phobos for its 0.08 against 0.07.
     id: 'deimos', display: 'Deimos', parent: 'mars', radiusKm: 6.2,
     body: 'Deimos', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x524d47, albedo: 0.08, irregular: true },
+    look: { flat: true, tint: 0x524d47, albedo: 0.08, irregular: true, rough: 0.5 },
   },
   // The other five round moons of Saturn, then all five of Uranus's (2026-09-22).
   {
@@ -454,7 +467,7 @@ export const WORLDS = [
     // tinge the dark side is described by, and copy/en.js says on the card that it has two faces.
     id: 'iapetus', display: 'Iapetus', parent: 'saturn', radiusKm: 734.3,
     body: 'Iapetus', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x89735f, albedo: 0.275 },
+    look: { flat: true, tint: 0x89735f, albedo: 0.275, rough: 0.35 },
   },
   {
     // "the brightest surface of the five largest Uranian moons, but none of them reflect more than
@@ -462,14 +475,14 @@ export const WORLDS = [
     // (NASA Science): a light neutral grey, and the lightest of Uranus's five.
     id: 'ariel', display: 'Ariel', parent: 'uranus', radiusKm: 578.9,
     body: 'Ariel', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x868786, albedo: 0.39 },
+    look: { flat: true, tint: 0x868786, albedo: 0.39, rough: 0.3 },
   },
   {
     // "fairly uniformly dark. However, the cliffs bordering certain impact craters reveal, at
     // depth, the presence of much more luminous material" (Wikipedia): mid grey.
     id: 'miranda', display: 'Miranda', parent: 'uranus', radiusKm: 235.8,
     body: 'Miranda', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x7d7f81, albedo: 0.32 },
+    look: { flat: true, tint: 0x7d7f81, albedo: 0.32, rough: 0.3 },
   },
   {
     // "The neutral gray color of Titania is typical of most of the significant Uranian moons"
@@ -477,13 +490,13 @@ export const WORLDS = [
     // it is the one describing what the colour IS.
     id: 'titania', display: 'Titania', parent: 'uranus', radiusKm: 788.9,
     body: 'Titania', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x767573, albedo: 0.27 },
+    look: { flat: true, tint: 0x767573, albedo: 0.27, rough: 0.3 },
   },
   {
     // "dark and slightly red in color" (Wikipedia): a dark warm grey.
     id: 'oberon', display: 'Oberon', parent: 'uranus', radiusKm: 761.4,
     body: 'Oberon', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x7a6a62, albedo: 0.23 },
+    look: { flat: true, tint: 0x7a6a62, albedo: 0.23, rough: 0.3 },
   },
   {
     // "the darkest among Uranian moons" (Wikipedia), "reflects only 16 percent of the light that
@@ -491,16 +504,43 @@ export const WORLDS = [
     // sisters and than Titan.
     id: 'umbriel', display: 'Umbriel', parent: 'uranus', radiusKm: 584.7,
     body: 'Umbriel', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x616060, albedo: 0.21 },
+    look: { flat: true, tint: 0x616060, albedo: 0.21, rough: 0.3 },
   },
 ];
 
 const BY_ID = new Map(WORLDS.map((w) => [w.id, w]));
 
-// --- the cel material for everything that is not Earth -------------------------------------------
-// docs/design-language.md: real texture, cel LIGHTING -- base, shadow (base x 0.55 shifted toward
-// blue), highlight (base x 1.25), band width 0.15, plus a Fresnel rim at 0.35. Two steps put the
-// planets beside the drawn objects instead of in a different picture.
+// --- the material for every world that is not the Earth or the Sun (spec 0054, 2026-09-29) --------
+// PHYSICALLY LIT. docs/design-language.md was amended on 2026-09-28 ("the setting is photographed",
+// and a planet is setting): until then the worlds were cel-shaded -- two smoothstep bands, a shadow
+// of base x 0.55 shifted to blue, a highlight of base x 1.25, a 5 % ambient and a pale Fresnel rim on
+// everything -- with #318's limb darkening, ring shadows and air rims added inside that. The bands,
+// the ambient and the rim on airless worlds are gone. What is left is two reflectance laws, each
+// normalised so that the SUB-SOLAR POINT SEEN FROM THE SUN shows the map's own texel:
+//
+//   ROCK AND ICE: Oren-Nayar (1994), the qualitative form in the spec's design section 1, with a
+//     roughness sigma in radians per row (`look.rough`). A rough surface has facets tilted toward
+//     the viewer everywhere, so its full disc is flatter than Lambert's: at 60 degrees from the
+//     centre of a full Moon Lambert keeps 0.50 of the centre's brightness and Oren-Nayar at 0.5
+//     rad keeps 0.82 (tests/test_world_light.mjs), which is the flat, bright-edged full Moon every
+//     photograph shows and Lambert cannot draw. Divided by its own A term, so sigma changes the
+//     SHAPE of the light and never the brightness of the map at the sub-solar point.
+//   CLOUD AND HAZE (the giants, Venus, Titan): Minnaert (1941), I = mu0^k mu^(k-1), k per row
+//     (`look.limb`, the name #318 gave the limb term). k = 1 is Lambert; k > 1 darkens the limb
+//     further, which is what an atmosphere's upper haze does. #318's pow(mu, limb) sat on a flat
+//     cel disc; on a disc that already falls off as mu0 the same look needs a smaller extra term,
+//     so the rows' numbers changed and #318's ORDER did not: Uranus darkest at the limb, then
+//     Neptune, then Jupiter and Saturn, with Venus and Titan nearest Lambert.
+//
+// EXPOSED FOR ITS OWN SUNLIGHT (spec 0054 requirement 2). Saturn gets 1/90 of the Earth's sunlight
+// and drawn that way it is a smudge; a photograph of Saturn is exposed for Saturn. So uSunIrradiance
+// is 1 on every world -- the inverse square is deliberately NOT applied to surface brightness -- and
+// the card says so (copy/en.js drawing.worldLit). This is per material, not the renderer's
+// toneMappingExposure, which would also brighten the Milky Way and the stars behind the planet;
+// tests/test_contract.mjs holds that the exposure is set in one place only (scene/renderer.js).
+//
+// NO AMBIENT. A night side is black, as it is in a photograph -- except the Moon's, which is lit by
+// the Earth (earthshine, below).
 
 const WORLD_VERT = /* glsl */`
 #include <common>
@@ -524,7 +564,81 @@ void main() {
 }
 `;
 
-/** Exported for tests/test_eclipse.mjs, which checks the lunar case is spliced in. */
+/**
+ * The floor under mu (the cosine of the view angle) in the Minnaert term. Minnaert with k < 1 goes
+ * to infinity at the limb; with k >= 1 it goes to 0 and the floor only keeps pow() off 0. It is the
+ * same 1e-3 #318's limb term clamped at, kept so the silhouette pixel is what it was.
+ */
+export const MU_FLOOR = 0.001;
+
+/**
+ * Oren-Nayar, qualitative form, normalised by its A term (the block above). Pure JS twin of the
+ * GLSL `orenNayar` in WORLD_FRAG, for tests/test_world_light.mjs. nl, nv: cosines of the incidence
+ * and view angles; cosPhi: cosine of the azimuth between them about the normal; sigma: radians.
+ */
+export function orenNayar(nl, nv, cosPhi, sigma) {
+  if (!(nl > 0)) return 0;
+  const s2 = sigma * sigma;
+  const A = 1 - 0.5 * s2 / (s2 + 0.33);
+  const B = 0.45 * s2 / (s2 + 0.09);
+  const ti = Math.acos(Math.min(1, nl));
+  const tr = Math.acos(Math.min(1, Math.max(nv, MU_FLOOR)));
+  const a = Math.max(ti, tr);
+  // tan() of an angle just short of 90 degrees: the product nl * tan(b) is bounded (b <= ti), but a
+  // float can still land on infinity times zero, so b stops at 1.5 rad as the GLSL does.
+  const b = Math.min(Math.min(ti, tr), 1.5);
+  return (nl * (A + B * Math.max(0, cosPhi) * Math.sin(a) * Math.tan(b))) / A;
+}
+
+/** Minnaert, mu0^k mu^(k-1). Pure JS twin of the GLSL `minnaert` in WORLD_FRAG. */
+export function minnaert(nl, nv, k) {
+  if (!(nl > 0)) return 0;
+  return Math.pow(nl, k) * Math.pow(Math.max(nv, MU_FLOOR), k - 1);
+}
+
+// --- earthshine (spec 0054 requirement 3) --------------------------------------------------------
+//
+// The Moon's night side is lit by the Earth, and how much is arithmetic on numbers already here:
+// the light a Lambert sphere of geometric albedo p and radius R sends to a point at distance d, at
+// phase angle alpha, as a share of the sunlight that falls on the sphere, is
+//
+//     p x (R / d)^2 x Phi(alpha),   Phi(alpha) = ( sin(alpha) + (pi - alpha) cos(alpha) ) / pi
+//
+// With the Earth's geometric albedo, 0.434 (NASA's Earth fact sheet, nssdc.gsfc.nasa.gov/planetary/
+// factsheet/earthfact.html, read 2026-09-29), its mean radius and the Moon's mean distance, a full
+// Earth lights the Moon at 1.19e-4 of full sunlight: the "about 1/10 000" the spec asks for, from
+// the fact sheet rather than quoted. alpha is the Sun-Earth-Moon angle, from the same Astronomy
+// Engine positions the eclipse test reads, so a new Moon (a full Earth in its sky) is brightest.
+//
+// DRAWN BRIGHTER THAN A CAMERA WOULD. A camera exposed for the sunlit crescent records 1.19e-4 as
+// black; the eye, which adapts, sees the whole disc faintly, and that is the picture the spec asks
+// for. So the share is multiplied by EARTHSHINE_GAIN, and the Moon's card says by how much
+// (copy/en.js drawing.worldEarthshine). Off under the frame latch.
+
+/** NASA Earth fact sheet: "Geometric albedo 0.434" (read 2026-09-29). */
+export const EARTH_GEOMETRIC_ALBEDO = 0.434;
+export const EARTH_MEAN_RADIUS_KM = 6371.0;
+/**
+ * How much brighter earthshine is drawn than it is: 1.19e-4 x 250 = 3 % of full sunlight on the Moon's
+ * night side at new Moon, fitted by eye on 2026-09-29 so the unlit disc of a 4 %-lit crescent reads
+ * against the sky at 1440 x 900 and is plainly darker than the crescent (planets-lit screenshots).
+ */
+export const EARTHSHINE_GAIN = 250;
+
+/**
+ * The Earth's light on the Moon as a share of full sunlight: p (R / d)^2 Phi(alpha). Pure.
+ * @param {number} alphaRad  the Sun-Earth-Moon angle (0 = a full Earth seen from the Moon)
+ * @param {number} distKm    Earth-Moon distance
+ */
+export function earthshineShare(alphaRad, distKm) {
+  if (!(distKm > 0) || !Number.isFinite(alphaRad)) return 0;
+  const a = Math.min(Math.PI, Math.max(0, alphaRad));
+  const phi = (Math.sin(a) + (Math.PI - a) * Math.cos(a)) / Math.PI;
+  const k = EARTH_MEAN_RADIUS_KM / distKm;
+  return EARTH_GEOMETRIC_ALBEDO * k * k * Math.max(0, phi);
+}
+
+/** Exported for tests: the no-bands check (spec 0054 acceptance), and test_eclipse's lunar splice. */
 export const WORLD_FRAG = /* glsl */`
 #include <common>
 #include <logdepthbuf_pars_fragment>
@@ -534,18 +648,23 @@ uniform vec3 uTint;
 uniform vec3 uSunDir;
 uniform vec3 uRimColour;
 uniform float uRimGain;
-uniform float uBand;
-uniform float uAmbient;
-// Spec 0037, 2026-09-23: a lunar eclipse, the mirror of the Earth's (scene/earth.js). Every cel world
+// Spec 0054: the reflectance law and the light. uLimb > 0 picks Minnaert with k = uLimb; otherwise
+// Oren-Nayar with sigma = uRoughness. uSunIrradiance is 1 on every world (exposed for its own sun).
+uniform float uRoughness;
+uniform float uSunIrradiance;
+// The Moon only: the Earth's light, as a share of full sunlight times the drawing gain, and where
+// the Earth is. 0 everywhere else, and on the Moon under the frame latch.
+uniform float uEarthshine;
+uniform vec3  uEarthDir;
+// Spec 0037, 2026-09-23: a lunar eclipse, the mirror of the Earth's (scene/earth.js). Every world
 // carries the uniforms; only the Moon's are ever filled, and at uEclipse 0 the branch is skipped.
 uniform float uEclipse;
 uniform vec3  uEarthPosKm;    // the Earth's centre from this body's, km, SCENE axes (true positions)
 uniform float uSunDistKm;     // the Sun's centre from this body's, km; its direction is uSunDir
 uniform float uBodyRadiusKm;
 uniform vec3  uUmbraTint;
-// Issue #263. Limb darkening (0 = off), terminator half-width, and the ring's shadow on the globe.
+// Issue #263: Minnaert's k (0 = rock, Oren-Nayar instead), and the ring's shadow on the globe.
 uniform float uLimb;
-uniform float uTerminator;
 uniform float uRingOn;
 uniform vec2  uRingRadii;     // inner, outer, in planet radii
 uniform sampler2D uRingMap;
@@ -557,6 +676,32 @@ varying vec3 vPosW;
 varying vec3 vPosL;
 varying vec3 vSunL;
 ${ECLIPSE_GLSL}
+const float MU_FLOOR = ${MU_FLOOR};
+
+// Oren-Nayar, qualitative form, divided by A: the JS twin is orenNayar() in scene/worlds.js.
+float orenNayar( vec3 n, vec3 l, vec3 v, float sigma ) {
+  float nl = dot( n, l );
+  if ( nl <= 0.0 ) return 0.0;
+  float nv = max( dot( n, v ), MU_FLOOR );
+  float s2 = sigma * sigma;
+  float A = 1.0 - 0.5 * s2 / ( s2 + 0.33 );
+  float B = 0.45 * s2 / ( s2 + 0.09 );
+  vec3 lp = l - n * nl;
+  vec3 vp = v - n * nv;
+  float cosPhi = ( dot( lp, lp ) > 1e-10 && dot( vp, vp ) > 1e-10 ) ? dot( normalize( lp ), normalize( vp ) ) : 0.0;
+  float ti = acos( min( nl, 1.0 ) );
+  float tr = acos( min( nv, 1.0 ) );
+  float a = max( ti, tr );
+  float b = min( min( ti, tr ), 1.5 );
+  return nl * ( A + B * max( 0.0, cosPhi ) * sin( a ) * tan( b ) ) / A;
+}
+
+// Minnaert, mu0^k mu^(k-1): the JS twin is minnaert() in scene/worlds.js.
+float minnaert( float nl, float nv, float k ) {
+  if ( nl <= 0.0 ) return 0.0;
+  return pow( nl, k ) * pow( max( nv, MU_FLOOR ), k - 1.0 );
+}
+
 void main() {
   #include <logdepthbuf_fragment>
   vec3 n = normalize( vNormalW );
@@ -564,19 +709,9 @@ void main() {
   vec3 base = mix( uTint, texture2D( uMap, vUv ).rgb * uTint, uHasMap );
 
   float d = dot( n, uSunDir );
-  vec3 shadow = base * 0.55 * vec3( 0.88, 0.94, 1.14 );   // x0.55, hue shifted toward blue
-  vec3 highlight = base * 1.25;
-
-  float b1 = smoothstep( 0.02 - uBand, 0.02 + uBand, d );
-  float b2 = smoothstep( 0.55 - uBand, 0.55 + uBand, d );
-  vec3 colour = mix( shadow, base, b1 );
-  colour = mix( colour, highlight, b2 );
-
-  float lit = smoothstep( -uTerminator, uTerminator, d );
-  colour *= mix( uAmbient, 1.0, lit );
-
-  float mu = clamp( dot( n, viewDir ), 1e-3, 1.0 );
-  if ( uLimb > 0.0 ) colour *= pow( mu, uLimb );
+  float direct = uLimb > 0.0
+    ? minnaert( d, dot( n, viewDir ), uLimb )
+    : orenNayar( n, uSunDir, viewDir, uRoughness );
 
   // The ring between this point and the Sun: one ray-plane test, then the ring's own opacity there.
   float ringShade = 1.0;
@@ -591,7 +726,12 @@ void main() {
       }
     }
   }
-  colour *= mix( 1.0, ringShade, lit );
+
+  vec3 colour = base * direct * uSunIrradiance * ringShade;
+
+  // Earthshine: Lambert under the Earth's light. Near new Moon, when it is strongest, the Earth is
+  // almost behind anyone looking at the Moon from it, where Oren-Nayar and Lambert nearly agree.
+  colour += base * uEarthshine * max( dot( n, uEarthDir ), 0.0 );
 
   // The Earth covering the Sun, seen from this point of the Moon: the same formula as the Earth's
   // shadow, with the Earth (and 88 km of air, the library's number) as the occluder. The copper in
@@ -604,8 +744,11 @@ void main() {
     colour = mix( colour * eclShade, base * uUmbraTint, smoothstep( 0.97, 1.0, eclObs ) );
   }
 
+  // #318's air rim, on the worlds whose row has air (look.rim): the sunlit air seen edge-on, which
+  // carries a little past the geometric terminator. 0 on an airless world.
   float rim = pow( 1.0 - clamp( dot( n, viewDir ), 0.0, 1.0 ), 3.0 );
-  colour += uRimColour * rim * uRimGain * lit * eclShade * ringShade;
+  float airLit = smoothstep( -0.1, 0.1, d );
+  colour += uRimColour * rim * uRimGain * airLit * eclShade * ringShade;
 
   gl_FragColor = vec4( colour, 1.0 );
   #include <tonemapping_fragment>
@@ -613,9 +756,16 @@ void main() {
 }
 `;
 
-export function celMaterial(map, tint) {
+/** Oren-Nayar roughness for a world whose row gives none: fine regolith and frost, as the icy moons. */
+export const DEFAULT_ROUGHNESS = 0.2;
+
+/**
+ * The one material for every world but the Earth and the Sun, and for the planets on a star system's
+ * stage (scene/systems.js). Named `celMaterial` until spec 0054 took the cel bands off.
+ */
+export function worldMaterial(map, tint) {
   return new THREE.ShaderMaterial({
-    name: 'world-cel',
+    name: 'world-lit',
     vertexShader: WORLD_VERT,
     fragmentShader: WORLD_FRAG,
     uniforms: {
@@ -624,9 +774,11 @@ export function celMaterial(map, tint) {
       uTint: { value: new THREE.Color(tint || 0xffffff) },
       uSunDir: { value: new THREE.Vector3(1, 0, 0) },
       uRimColour: { value: new THREE.Color(0xdfe9ff) },
-      uRimGain: { value: 0.35 },
-      uBand: { value: 0.15 },
-      uAmbient: { value: 0.05 },
+      uRimGain: { value: 0 },
+      uRoughness: { value: DEFAULT_ROUGHNESS },
+      uSunIrradiance: { value: 1 },
+      uEarthshine: { value: 0 },
+      uEarthDir: { value: new THREE.Vector3(-1, 0, 0) },
       uEclipse: { value: 0 },
       uEarthPosKm: { value: new THREE.Vector3(-384400, 0, 0) },
       uSunDistKm: { value: 1.496e8 },
@@ -635,7 +787,6 @@ export function celMaterial(map, tint) {
       // photographs, a mid Danjon L2-L3. Multiplied into the map so the maria still read.
       uUmbraTint: { value: new THREE.Vector3(0.55, 0.22, 0.12) },
       uLimb: { value: 0 },
-      uTerminator: { value: 0.10 },
       uRingOn: { value: 0 },
       uRingRadii: { value: new THREE.Vector2(1, 2) },
       uRingMap: { value: null },
@@ -717,8 +868,9 @@ function ringMaterial(map, inner, outer) {
 }
 
 /**
- * Apply a world's `look` lighting: a thin scattering rim where it has air (`look.rim`), and limb
- * darkening plus a softer terminator on the giants (`look.limb`, the exponent on cos(view angle)).
+ * Apply a world's `look` lighting (spec 0054): the reflectance law -- Minnaert with k = `look.limb`
+ * on the giants, Venus and Titan, Oren-Nayar with sigma = `look.rough` on rock and ice -- and a thin
+ * scattering rim where the row has air (`look.rim`, #318).
  */
 export function applyLook(material, look) {
   const u = material && material.uniforms;
@@ -727,10 +879,8 @@ export function applyLook(material, look) {
     u.uRimColour.value.set(look.rim.colour);
     u.uRimGain.value = look.rim.gain;
   }
-  if (look.limb) {
-    u.uLimb.value = look.limb;
-    u.uTerminator.value = 0.2;
-  }
+  if (look.limb) u.uLimb.value = look.limb;
+  if (look.rough !== undefined) u.uRoughness.value = look.rough;
 }
 
 // --- construction --------------------------------------------------------------------------------
@@ -757,7 +907,7 @@ function sunDirFrom(toKm, fromKm, out) {
 
 /**
  * A world's map is fetched when its disc is at least this fraction of HALF the view's height --
- * six pixels of radius on an 800-pixel screen. Below it a cel-shaded ball in the texture's own mean
+ * six pixels of radius on an 800-pixel screen. Below it a lit ball in the texture's own mean
  * colour is the same picture as the textured one, because there are not enough pixels for a
  * surface feature to land on.
  */
@@ -842,11 +992,11 @@ export function createWorlds(scene, opts = {}) {
       })
       : new THREE.Mesh(
         new THREE.SphereGeometry(1, 64, 48),
-        // The Sun is not lit by anything, so it does not get the cel material: a flat disc of
+        // The Sun is not lit by anything, so it does not get the world material: a flat disc of
         // its own texture, out of the tone mapper's way so it stays white rather than grey.
         w.look.emissive
           ? new THREE.MeshBasicMaterial({ map, color: tint, toneMapped: false, fog: false })
-          : celMaterial(map, tint),
+          : worldMaterial(map, tint),
       );
     if (!w.look.earth && w.look.map) {
       const material = mesh.material;
@@ -917,6 +1067,10 @@ export function createWorlds(scene, opts = {}) {
   // cheap test (scene/eclipse.js eclipseLikely) from the Earth's centre; the shaders draw when both.
   let eclipseAllowed = true;
   const eclipseState = { solar: false, lunar: false, drawnSolar: false, drawnLunar: false };
+  // Spec 0054: earthshine is off under the frame latch (main.js degrade() calls setLatched).
+  let latched = false;
+  // The Earth's light on the Moon this frame, as a share of full sunlight before the drawing gain.
+  const earthshineState = { share: 0, phaseDeg: NaN, drawn: 0 };
   const _moonGeo = { x: 0, y: 0, z: 0 };
   const _sunGeo = { x: 0, y: 0, z: 0 };
   const _moonGeoScene = { x: 0, y: 0, z: 0 };
@@ -1148,6 +1302,24 @@ export function createWorlds(scene, opts = {}) {
           mesh.material.uniforms.uSunDir.value.copy(sunDirHere);
         }
         if (mesh.userData.ring) mesh.userData.ring.material.uniforms.uSunDir.value.copy(sunDirHere);
+        if (w.look.earthshine && mesh.material && mesh.material.uniforms && mesh.material.uniforms.uEarthshine) {
+          // The Sun-Earth-Moon angle and the Earth-Moon distance, from the geocentric vectors step 2a
+          // already made, and the Earth's direction from the Moon in scene axes.
+          const u = mesh.material.uniforms;
+          const dm = Math.hypot(_moonGeo.x, _moonGeo.y, _moonGeo.z);
+          const ds = Math.hypot(_sunGeo.x, _sunGeo.y, _sunGeo.z);
+          let share = 0;
+          if (earthKm && moonKm && dm > 0 && ds > 0) {
+            const c = (_moonGeo.x * _sunGeo.x + _moonGeo.y * _sunGeo.y + _moonGeo.z * _sunGeo.z) / (dm * ds);
+            const alpha = Math.acos(Math.max(-1, Math.min(1, c)));
+            share = earthshineShare(alpha, dm);
+            earthshineState.phaseDeg = (alpha * 180) / Math.PI;
+            u.uEarthDir.value.set(-_moonGeoScene.x, -_moonGeoScene.y, -_moonGeoScene.z).normalize();
+          }
+          earthshineState.share = share;
+          earthshineState.drawn = latched ? 0 : share * EARTHSHINE_GAIN;
+          u.uEarthshine.value = earthshineState.drawn;
+        }
         if (w.id === 'moon' && mesh.material && mesh.material.uniforms && mesh.material.uniforms.uEclipse) {
           const u = mesh.material.uniforms;
           u.uEclipse.value = eclipseState.drawnLunar ? 1 : 0;
@@ -1233,6 +1405,12 @@ export function createWorlds(scene, opts = {}) {
 
   /** This frame's eclipse test and whether each shader drew it: {solar, lunar, drawnSolar, drawnLunar}. */
   function eclipse() { return { ...eclipseState }; }
+
+  /** main.js: the frame latch tripped. Earthshine goes off (spec 0054 req 3); one-way, like the latch. */
+  function setLatched(on) { latched = on !== false; }
+
+  /** The Earth's light on the Moon this frame: {share, phaseDeg, drawn}, for the probes and the test. */
+  function earthshine() { return { ...earthshineState }; }
 
   /** Where the DISC is, in scene units -- the compressed position, not the true one. */
   function drawnPositionOf(id, out) {
@@ -1386,6 +1564,8 @@ export function createWorlds(scene, opts = {}) {
     setVisible,
     setEclipseAllowed,
     eclipse,
+    setLatched,
+    earthshine,
     drawnPositionOf,
     drawnRadiusUnits,
     pick,
