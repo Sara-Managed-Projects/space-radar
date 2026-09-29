@@ -778,6 +778,8 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
   function degrade() {
     if (ctx.renderer && ctx.rendererApi && ctx.rendererApi.setQuality) ctx.rendererApi.setQuality('low');
     if (starfield && starfield.setDetail) starfield.setDetail('low');
+    // Spec 0054: earthshine goes off with the latch (scene/worlds.js setLatched).
+    if (worlds && worlds.setLatched) worlds.setLatched(true);
     // The tier falls with the latch and only with it: every world back on its boot map.
     if (ctx.quality) ctx.quality.latch();
     window.dispatchEvent(new CustomEvent('sr:quality', { detail: { level: 'low', medianMs: Math.round(latch.median()) } }));

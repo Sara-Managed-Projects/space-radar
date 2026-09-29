@@ -36,7 +36,9 @@ const CONTRACT = {
   'data/events.js': ['buildEvents', 'nextEvent', 'localCircumstances'],
   'scene/renderer.js': ['createRenderer'],
   'scene/stage.js': ['stage'],
-  'scene/worlds.js': ['createWorlds'],
+  // Spec 0054: the one physically lit world material, and the JS twins of its two reflectance laws
+  // and of the earthshine share (tests/test_world_light.mjs), the way scene/eclipse.js has one.
+  'scene/worlds.js': ['createWorlds', 'worldMaterial', 'WORLD_FRAG', 'orenNayar', 'minnaert', 'earthshineShare', 'EARTHSHINE_GAIN', 'EARTH_GEOMETRIC_ALBEDO', 'MU_FLOOR', 'DEFAULT_ROUGHNESS'],
   'scene/earth.js': ['createEarth', 'updateEarthEclipse'],
   // Spec 0037: one formula for the shadow, in JS for the test and as GLSL for both shaders.
   'scene/eclipse.js': ['obscuration', 'surfaceObscuration', 'discOverlap', 'eclipseLikely', 'ECLIPSE_GLSL', 'SUN_RADIUS_KM', 'MOON_RADIUS_KM'],
@@ -2808,6 +2810,24 @@ for (const file of allFiles) {
     if (VEIL_MS !== 350) problems.push(`CINEMA   VEIL_MS is ${VEIL_MS}, not the 350 ms docs/design-language.md states`);
     if (STRETCH_PX !== 12) problems.push(`CINEMA   STRETCH_PX is ${STRETCH_PX}, not the 12 px docs/design-language.md states`);
     notes.push(`cinema: no post-processing under scene/, VEIL_MS ${VEIL_MS}, STRETCH_PX ${STRETCH_PX}`);
+    // Spec 0054 design section 2: each world is exposed for its own sunlight IN ITS MATERIAL
+    // (uSunIrradiance), never by the renderer's exposure, which would brighten the Milky Way and every
+    // star behind the planet too. So toneMappingExposure is assigned once, where the renderer is made.
+    const assigned = [];
+    const walk = (dir) => {
+      for (const n of readdirSync(dir)) {
+        const f = join(dir, n);
+        if (statSync(f).isDirectory()) { walk(f); continue; }
+        if (!n.endsWith('.js')) continue;
+        const hits = readFileSync(f, 'utf8').match(/toneMappingExposure\s*=[^=]/g);
+        if (hits) for (let i = 0; i < hits.length; i++) assigned.push(f.slice(JS.length + 1));
+      }
+    };
+    walk(JS);
+    if (assigned.length !== 1 || assigned[0] !== 'scene/renderer.js') {
+      problems.push(`EXPOSURE toneMappingExposure is assigned in ${JSON.stringify(assigned)}; spec 0054 exposes each world in its material and the renderer's once, in scene/renderer.js`);
+    }
+    notes.push(`exposure: toneMappingExposure assigned once, in ${assigned.join(', ')}`);
   } catch (e) {
     problems.push(`CINEMA   could not read the cinematic constants: ${String(e)}`);
   }

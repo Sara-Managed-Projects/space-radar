@@ -18,6 +18,7 @@ const { worldRecords, pickWorldDisc, WORLDS, WORLD_ALIASES } = await import(join
 const { propagate } = await import(join(JS, 'propagate/index.js'));
 const { LAYERS, loadLayer } = await import(join(JS, 'data/layers.js'));
 const { buildIndex, findMatches } = await import(join(JS, 'ui/search.js'));
+const { COPY } = await import(join(JS, 'copy/en.js'));
 
 // 1. one record per world, and the contract's propagator answers for every one of them
 const recs = worldRecords();
@@ -397,15 +398,22 @@ const MAPPED = ['pluto', 'io', 'europa', 'enceladus', 'triton'];
     check(s.length <= 160 && s.includes(WHAT[id]) && s.replace(/\s/g, '').includes(`about${across}kmacross`),
       `${id}'s first sentence says what it is and how big, in 160 characters: "${s}"`);
     check(!s.includes(' -- '), `${id}'s sentence writes no double-hyphen dash`);
-    if (MAPPED.includes(id)) check(drawingLine(r) === null, `${id} has a map, so its card has no drawing line: ${drawingLine(r)}`);
-    else check(/no surface map/.test(drawingLine(r) || ''), `${id}'s card says it is a plain ball: ${drawingLine(r)}`);
+    // Spec 0054: a mapped world's only drawing line is how it is lit; a flat one says both.
+    if (MAPPED.includes(id)) check(drawingLine(r) === COPY.drawing.worldLit, `${id} has a map, so its card's drawing line is only the exposure: ${drawingLine(r)}`);
+    else check(/no surface map/.test(drawingLine(r) || '') && drawingLine(r).includes(COPY.drawing.worldLit), `${id}'s card says it is a plain ball, exposed for its own sunlight: ${drawingLine(r)}`);
     check(/Astronomy Engine/.test(r.meta.cite) && /read 2026-09-22/.test(r.meta.cite), `${id}'s source line names the ephemeris and the day its facts were read`);
     // "You can see this one with your own eyes" -- every other world's line -- is false of Pluto,
     // at magnitude 15, and of moons lost in Jupiter's glare.
     const see = seeItLine(r, ctx, { ok: true, tMs: now }, { state: 'na' });
     check(!/your own eyes/.test(see) && (id === 'pluto' ? /telescope/.test(see) : /binoculars/.test(see)), `${id} says how it can really be seen: "${see}"`);
   }
-  check(drawingLine(recs.find((x) => x.id === 'mars')) === null, 'Mars, which has a map, still has no drawing line');
+  check(drawingLine(recs.find((x) => x.id === 'mars')) === COPY.drawing.worldLit, 'Mars, which has a map, says only how it is lit');
+  // The Earth has its own shader and its own sunlight is the reference; the Sun is the light.
+  check(drawingLine(recs.find((x) => x.id === 'earth')) === null && drawingLine(recs.find((x) => x.id === 'sun')) === null,
+    'the Earth and the Sun carry no exposure line');
+  const moonLine = drawingLine(recs.find((x) => x.id === 'moon')) || '';
+  check(moonLine.startsWith(COPY.drawing.worldLit) && /earthshine/.test(moonLine) && /250 times brighter/.test(moonLine),
+    `the Moon's card says its earthshine is drawn brighter than a camera would catch it, and by how much: ${moonLine}`);
 }
 
 // 11. SIX MORE MOONS, AGAINST JPL HORIZONS (2026-09-22). propagate/moons.js fits a precessing ellipse
@@ -638,7 +646,7 @@ const PARENT = { phobos: 'mars', deimos: 'mars', enceladus: 'saturn', titan: 'sa
     check(!/your own eyes/.test(see) && /^(Not by eye|Barely)/.test(see) && SEE[id].test(see), `${id} says how it can really be seen: "${see}"`);
     const draw = drawingLine(r) || '';
     const lumpy = id === 'phobos' || id === 'deimos';
-    check(MAPPED.includes(id) ? draw === '' : /no surface map/.test(draw) && /true shape is not drawn/.test(draw) === lumpy,
+    check(MAPPED.includes(id) ? draw === COPY.drawing.worldLit : /no surface map/.test(draw) && /true shape is not drawn/.test(draw) === lumpy && draw.includes(COPY.drawing.worldLit),
       `${id}'s drawing line${lumpy ? ' says its true shape is not drawn' : ''}: ${draw}`);
     check(/Astronomy Engine/.test(r.meta.cite) && /JPL Horizons/.test(r.meta.cite) && /read 2026-09-22/.test(r.meta.cite),
       `${id}'s source line names the ephemeris, the fit and the day its facts were read`);

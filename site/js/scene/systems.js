@@ -41,7 +41,7 @@
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { stage, STAGES, setSystemOrigin, SUN_INERTIAL } from './stage.js';
-import { celMaterial, coronaSprite, MOON_VIEW } from './worlds.js';
+import { worldMaterial, coronaSprite, MOON_VIEW } from './worlds.js';
 import { kelvinToRgb } from './starfield.js';
 import { skyToSunInertialKm } from '../data/parsers.js';
 import { SYSTEMS } from '../data/systems.js';
@@ -278,7 +278,7 @@ export function createSystems(scene, ctx = {}) {
     const rings = [];
     const planets = [];
     for (const planet of system.planets) {
-      const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, PLANET_SEGMENTS[0], PLANET_SEGMENTS[1]), celMaterial(null, PLANET_TINT));
+      const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, PLANET_SEGMENTS[0], PLANET_SEGMENTS[1]), worldMaterial(null, PLANET_TINT));
       mesh.name = `systems:${planet.id}`;
       mesh.userData.recordId = planet.id;
       mesh.userData.trueRadiusUnits = (planet.radiusEarths * EARTH_RADIUS_KM) / unit;

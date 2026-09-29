@@ -1249,6 +1249,13 @@ export const COPY = {
     // "small and lumpy" (NASA Science, registry/worlds.yaml `facts.shape`); each is drawn as a ball
     // of its mean radius (JPL), and the card says the shape on screen is not theirs.
     worldFlatIrregular: 'drawn as a plain ball the size of its average radius: there is no surface map of {name} here, its one colour is chosen from published descriptions, not measured, and {name} is really a lumpy rock whose true shape is not drawn',
+    // Spec 0054 requirement 2: every world but the Earth and the Sun is drawn as bright as a
+    // photograph of it would be, not dimmed by its distance from the Sun (Saturn gets 1/90 of the
+    // Earth's sunlight). scene/worlds.js says why; this is the card saying it.
+    worldLit: 'lit as a camera exposed for its own sunlight would show it',
+    // ...and the Moon's night side, lit by the Earth (scene/worlds.js earthshineShare), is drawn
+    // brighter than that camera would catch it. {n} is EARTHSHINE_GAIN.
+    worldEarthshine: 'its dark side glows with earthshine, the Earth’s own light, drawn {n} times brighter than that camera would catch it, about as the eye sees it',
     mount: 'where we hang it on the model is our own arrangement, and it is drawn far bigger than it is — at true size it would be too small to see',
   },
 

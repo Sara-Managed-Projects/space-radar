@@ -1798,9 +1798,16 @@ function derivedDrawingLine(record, T) {
   // A world with a surface map needs no line: it is drawn as itself. One without says so
   // (scene/worlds.js puts `flat` on the record for the rows that ship no map), and one that is not
   // even round -- Phobos, Deimos: `irregular` -- says the ball is not its shape.
+  // Spec 0054: and every world drawn with the world material is exposed for its own sunlight, and
+  // the Moon says how much its earthshine is brightened. The Earth and the Sun say neither.
   if (klass === 'world') {
-    if (pick(meta(record), 'flat') !== true) return null;
-    return t(pick(meta(record), 'irregular') === true ? T.worldFlatIrregular : T.worldFlat, { name: displayName(record) });
+    const md = meta(record);
+    const parts = [];
+    if (pick(md, 'flat') === true) parts.push(t(pick(md, 'irregular') === true ? T.worldFlatIrregular : T.worldFlat, { name: displayName(record) }));
+    if (pick(md, 'exposed') === true && T.worldLit) parts.push(T.worldLit);
+    const gain = Number(pick(md, 'earthshineGain'));
+    if (gain > 0 && T.worldEarthshine) parts.push(t(T.worldEarthshine, { n: fmt.int(gain) }));
+    return parts.length ? parts.join(COPY.punctuation.separator) : null;
   }
   if (!klass) return null;
   if (klass === 'storm') return T.storm;
