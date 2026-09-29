@@ -186,15 +186,20 @@ const auckland = place(-36.8485, 174.7633);
 {
   // Cold: a different UTC day each run, so the once-a-day search really runs. Warm: the same day.
   const cold = [], warm = [];
+  // CPU time, not wall time (2026-09-29): with three agents' test suites and headless Chromes on
+  // the same laptop, the wall-clock median of this loop read 50.3-55.2 ms against the 50 ms line on
+  // an unchanged tree, while the search itself had not changed. This process's own CPU time is what
+  // the memo line is about, and other processes' load does not count against it.
+  const cpuMs = () => { const u = process.cpuUsage(); return (u.user + u.system) / 1000; };
   for (let i = 0; i < 100; i++) {
-    const t0 = performance.now();
+    const t0 = cpuMs();
     buildEvents([], now + (i + 2) * D, {});
-    cold.push(performance.now() - t0);
+    cold.push(cpuMs() - t0);
   }
   for (let i = 0; i < 100; i++) {
-    const t0 = performance.now();
+    const t0 = cpuMs();
     buildEvents([], now + 200 * D + i * 60e3, {});
-    warm.push(performance.now() - t0);
+    warm.push(cpuMs() - t0);
   }
   const median = (xs) => xs.slice().sort((a, b) => a - b)[xs.length >> 1];
   notes.push(`buildEvents([], now) over 100 runs: median ${median(cold).toFixed(1)} ms searching (a new day each run), ${median(warm).toFixed(2)} ms within a day`);
