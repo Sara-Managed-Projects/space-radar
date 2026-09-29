@@ -45,6 +45,11 @@ export const CLASS_COLOURS = {
   exoplanet: '#8EE3A8', // a green no natural star has: a world, and not one of ours
   dso: '#D8B4FF', // lilac: a cloud of light, not a point
   exotic: '#FF8FA3', // a warning pink: something extreme
+  // 2026-09-28, the storm layer. Weather is not in the design language's class table, which is
+  // about things in space; this is the one class ON the Earth that moves. Periwinkle: calm (no
+  // alarm red, docs/design-language.md), clear of satellite sky blue and probe lavender, and it
+  // reads over white cloud, which is where every storm glyph is drawn.
+  storm: '#9DB4FF',
 };
 
 // cell index by class name. Order is the design language's class table.
@@ -63,6 +68,7 @@ export const CELL_OF = {
   exoplanet: 11,
   dso: 12,
   exotic: 13,
+  storm: 14, // the fifteenth cell; 15 is the last free one
 };
 
 export const GLYPH_CLASSES = Object.keys(CELL_OF);
@@ -200,6 +206,28 @@ const SHAPES = {
   dso(ctx, cx, cy, R) {
     paint(ctx, annulus(cx, cy, R * 0.95, R * 0.7), R * 0.6);
     paint(ctx, disc(cx, cy, R * 0.45), R);
+  },
+  // the weather map's tropical-cyclone symbol: an eye with two curled arms, turned the way the
+  // storm turns in the northern hemisphere, where most of them are (anticlockwise seen from above)
+  storm(ctx, cx, cy, R) {
+    const arms = new Path2D();
+    for (const s of [1, -1]) {
+      // A quarter-turn spiral from the eye's rim outward, one arm and its point-mirror.
+      const x0 = cx + s * R * 0.34;
+      const y0 = cy;
+      arms.moveTo(x0, y0);
+      arms.bezierCurveTo(cx + s * R * 0.42, cy - s * R * 0.62, cx + s * R * 0.05, cy - s * R * 0.95, cx - s * R * 0.62, cy - s * R * 0.86);
+    }
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = R * 0.34 + R * 0.25;
+    ctx.stroke(arms);
+    // evenodd, so the eye stays open: both circles of annulus() run the same way round.
+    paint(ctx, annulus(cx, cy, R * 0.5, R * 0.2), R, { rule: 'evenodd' });
+    ctx.strokeStyle = FILL;
+    ctx.lineWidth = R * 0.34;
+    ctx.stroke(arms);
   },
   // a ring with a dark centre: a black hole's shadow, which is also the shape of the one photograph
   exotic(ctx, cx, cy, R) {

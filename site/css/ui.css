@@ -47,6 +47,7 @@
   --sr-exoplanet: #8ee3a8;
   --sr-dso: #d8b4ff;
   --sr-exotic: #ff8fa3;
+  --sr-storm: #9db4ff; /* 2026-09-28, scene/glyphatlas.js CLASS_COLOURS.storm says why */
   --sr-unknown: #9aa4b2;
 
   /* Surfaces derived from the palette, never invented hues */
@@ -254,6 +255,10 @@
 .sr-glyph--exotic,
 .sr-swatch--exotic {
   background: var(--sr-exotic);
+}
+.sr-glyph--storm,
+.sr-swatch--storm {
+  background: var(--sr-storm);
 }
 /* An oddity is not a class of object, it is a class of story, and it borrows probe violet: "a
    made thing, out there". scene/glyphatlas.js aliases the 3D glyph to `probe` for the same

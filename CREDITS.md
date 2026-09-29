@@ -412,6 +412,8 @@ services from their own IP.** Read §4.1 before you deploy.
 | NASA — DSN Now | live Deep Space Network dish↔spacecraft links | NASA content is generally not copyrighted; this endpoint is undocumented (§4.3) | NASA Deep Space Network | <https://eyes.nasa.gov/dsn/> |
 | NOAA SWPC | planetary K-index forecast | US Government work, public domain (§4.4) | Space weather: NOAA SWPC | <https://www.swpc.noaa.gov> |
 | IAU Minor Planet Center | comet orbital elements (`CometEls.txt`) | **Copyrighted**; redistributable only with the source clearly specified (§4.5) | Comet elements: IAU Minor Planet Center | <https://minorplanetcenter.net> |
+| NASA GIBS | today's clouds: GOES-East, GOES-West and Himawari Band 13 infrared, every 10 min | NASA "full and open sharing"; an acknowledgement is asked for (§4.13) | the acknowledgement in §4.13, verbatim, plus NOAA and JMA for the satellites | <https://nasa-gibs.github.io/gibs-api-docs/> |
+| GDACS (EC Joint Research Centre) | tropical cyclones now: centre, status, top wind on the track | EU-owned content, CC BY 4.0 by the Commission's reuse decision; GDACS calls it "purely indicative" (§4.14) | Tropical cyclones: GDACS, European Commission Joint Research Centre (CC BY 4.0) | <https://www.gdacs.org> |
 
 Also named in `site/js/data/sources.js` so the status panel can say "could not look" about them by
 name, but **not reachable from a browser** (no `Access-Control-Allow-Origin`) and therefore never
@@ -599,6 +601,64 @@ row names its pages in a comment beside the words, with the sentence each number
   the same sources as those records: JPL's Small-Body Database (§4.10) and JPL Horizons (§4.1 of
   `site/js/data/sample.js`'s own evidence block). `tests/test_outer_trip.mjs` checks the card
   against the record at four dates.
+
+### 4.13 NASA GIBS — today's clouds (2026-09-28)
+
+`site/js/scene/liveclouds.js` asks NASA's Global Imagery Browse Services for three layers, straight
+from the visitor's browser (CORS `*`, measured 2026-09-28), a few seconds after the first frame and
+again every 15 minutes while the tab is visible — only for a satellite that has a newer picture:
+
+| GIBS layer | Satellite | Operator |
+|---|---|---|
+| `GOES-East_ABI_Band13_Clean_Infrared` | GOES-19, 75.2° W | NOAA |
+| `GOES-West_ABI_Band13_Clean_Infrared` | GOES-18, 137.2° W | NOAA |
+| `Himawari_AHI_Band13_Clean_Infrared` | Himawari-9, 140.7° E | Japan Meteorological Agency |
+
+Endpoints: `https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi` (GetMap, 2048 × 1024 JPEG,
+186–246 KB) and `https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/1.0.0/{layer}/default/2km/all/{start}--{end}.xml`
+(DescribeDomains, ~380 bytes). The colour palette they are drawn in, `Clean_Longwave_Infrared_Window_Band`
+(GIBS colormaps v1.3), is copied into `site/js/scene/cloudcompose.js` and saved in
+`tests/fixtures/gibs/` so the copy is checked; it is GIBS's work, credited here.
+
+The [GIBS API page](https://nasa-gibs.github.io/gibs-api-docs/) (read 2026-09-28) says NASA "promotes
+full and open sharing of data" and asks:
+
+> We ask that users who make use of GIBS in their clients or when referencing it in written or oral
+> presentations to add the following acknowledgment:
+
+**We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services
+(GIBS), part of NASA's Earth Science Data and Information System (ESDIS).**
+
+The app prints that sentence verbatim in the Sources panel (`COPY.clouds.gibsAcknowledgement`), with
+the satellites' operators beside it: GOES imagery is NOAA's (US Government work, see §4.4 for the NWS
+terms), and Himawari imagery is JMA's, credited as a courtesy the realism study (2026-09-28) records
+NOAA and JMA asking for. Nothing from GIBS is stored in this repository or on our site; each visitor's
+browser fetches and composes the pictures itself.
+
+No European or Indian Ocean geostationary satellite is in GIBS, so 6.5° E to 60.6° E and the poles
+are the static Solar System Scope cloud map (§2), and the Earth's card says so. EUMETSAT's own
+imagery would fill that gap, but its terms of use allow only "personal and non-commercial use"
+without authorisation; it is not used.
+
+### 4.14 GDACS — tropical cyclones (2026-09-28)
+
+`https://www.gdacs.org/gdacsapi/api/events/geteventlist/SEARCH?eventlist=TC&alertlevel=Green;Orange;Red&pageSize=20`,
+read by the browser (CORS `*`, 27.6 KB, measured 2026-09-28) and by the harvester
+(`harvest/parsers/gdacs_tc.py`) for the saved copy. GDACS is a cooperation framework of the United
+Nations and the European Commission, run by the EC's Joint Research Centre. Its
+[terms page](https://www.gdacs.org/About/termofuse.aspx) publishes no licence of its own, and says:
+
+> While we try everything to ensure accuracy, this information is purely indicative and should not
+> be used for any decision making without alternate sources of information.
+
+It is EU-owned content, and the [Commission's legal notice](https://commission.europa.eu/legal-notice_en)
+(read 2026-09-28) says such content "is licensed under the Creative Commons Attribution 4.0
+International (CC BY 4.0) licence" unless otherwise indicated, "provided appropriate credit is given
+and changes are indicated". The credit is the card's source line; the change is that each storm is
+drawn at its latest advisory point and its numbers are reworded (the card says the wind figure is the
+highest on the track, forecast included, which is what GDACS's `severity` is). The advisories behind
+GDACS are the forecasting agencies' (NOAA NHC/CPHC, JTWC and others); each card names its agency.
+This app is not a warning service, and neither is GDACS.
 
 ## 4.6 Third-party trademarks the app names or draws
 

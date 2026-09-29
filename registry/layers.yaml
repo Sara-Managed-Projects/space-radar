@@ -319,6 +319,23 @@ layers:
     select: {all: true}
     budget: {max_items: 40}
 
+  # Tropical cyclones happening now (2026-09-28): GDACS's list, read by the browser (CORS `*`),
+  # each drawn at its centre at its latest advisory. `fixed` in `earth-fixed` because that is what
+  # an advisory is, a point on the ground at one moment; the record also carries the window of app
+  # time it is true in, and outside it the storm is not drawn (propagate/fixed.js). The select rule
+  # is the advisory's AGE, not GDACS's `iscurrent`, which stays true for storms days over.
+  - id: storms
+    display: Tropical storms now
+    moments: {wonder: on, now: on, next: off}
+    source: gdacs-tc
+    propagator: fixed
+    frame: earth-fixed
+    style: {kind: glyph, glyph: storm, colour: storm}
+    card: storm
+    select: {advised_within_hours: 12}
+    # The source is paged at 20, newest first; more than a dozen at once has never happened.
+    budget: {max_items: 20}
+
   # Things that came down. Space-Track needs a login nobody has registered, so this is the bundled
   # stand-in always (cls sample, every card saying so) until that changes.
   - id: reentries

@@ -361,6 +361,16 @@ export function createStatus(ctx) {
   // From the registry mirror, so it lists what ships whether or not anybody turned sound on.
   const soundCredits = creditsText(AUDIO);
   if (soundCredits) creditBlock.appendChild(el('p', 'sr-status__intro sr-status__sound', soundCredits));
+  // The live clouds (2026-09-28, scene/liveclouds.js) are not a layer or a source row: they are part
+  // of the Earth. Their credits are here all the same -- NASA's acknowledgement, verbatim, and the
+  // operators of the three satellites -- with one line saying what the clouds are right now.
+  let cloudsLine = null;
+  if (ctx.liveClouds) {
+    creditBlock.appendChild(el('h4', 'sr-status__subtitle sr-status__clouds-title', COPY.status.cloudsTitle));
+    cloudsLine = el('p', 'sr-status__intro sr-status__clouds', '');
+    creditBlock.appendChild(cloudsLine);
+    for (const line of ctx.liveClouds.credit()) creditBlock.appendChild(el('p', 'sr-status__intro sr-status__clouds-credit', line));
+  }
   node.appendChild(creditBlock);
 
   const paint = () => {
@@ -369,6 +379,7 @@ export function createStatus(ctx) {
       renderSources(ctx, sourceList);
       renderLayers(ctx, layerList);
       renderAttribution(ctx, creditList);
+      if (cloudsLine) cloudsLine.textContent = ctx.liveClouds.line(ctx.clock ? ctx.clock.now() : Date.now());
     } catch {
       /* keep the last good panel rather than blanking the one page that says what is wrong */
     }

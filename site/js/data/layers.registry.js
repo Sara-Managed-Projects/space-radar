@@ -430,6 +430,25 @@ export const LAYER_ROWS = [
     "train": null
   },
   {
+    "id": "storms",
+    "display": "Tropical storms now",
+    "enabled": true,
+    "moments": {
+      "wonder": true,
+      "now": true,
+      "next": false
+    },
+    "source": "gdacs-tc",
+    "sources": null,
+    "propagator": "fixed",
+    "frame": "earth-fixed",
+    "card": "storm",
+    "glyph": "storm",
+    "colour": "storm",
+    "maxItems": 20,
+    "train": null
+  },
+  {
     "id": "reentries",
     "display": "Things that came down",
     "enabled": true,

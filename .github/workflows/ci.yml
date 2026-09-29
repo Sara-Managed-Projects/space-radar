@@ -297,3 +297,10 @@ jobs:
         run: node tests/test_provisional.mjs
       - name: the space-weather line says the number, the word, the age and the source (spec 0026 req 16)
         run: node tests/test_spaceweather.mjs
+      # 2026-09-28: today's clouds from NASA GIBS and the storms from GDACS, against the answers both
+      # really gave that evening (no network here): the URLs and slots, GIBS's own colour palette,
+      # the seam with the static map, the 12-hour rule, and what each storm number means.
+      - name: live clouds are GIBS's pictures read back to temperature, seamed onto the static map, live only near the clock
+        run: node tests/test_liveclouds.mjs
+      - name: storms are the ones advised in the last 12 h, drawn only near their advisory, carded with what GDACS's numbers mean
+        run: node tests/test_storms.mjs

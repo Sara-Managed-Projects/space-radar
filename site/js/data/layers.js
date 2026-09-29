@@ -17,7 +17,7 @@
 // says out loud what it selects. Adding a layer is a row here plus, at most, one predicate.
 
 import { load } from './sources.js';
-import { parseCelestrakGP, parseLaunches, parseComets, parseHorizonsVectors, parseNeoApproaches, parseExoplanets, parseDso, isGeostationary, skyToSunInertialKm } from './parsers.js';
+import { parseCelestrakGP, parseLaunches, parseComets, parseHorizonsVectors, parseNeoApproaches, parseExoplanets, parseDso, parseGdacsCyclones, isGeostationary, skyToSunInertialKm } from './parsers.js';
 import {
   sampleAsteroids,
   sampleDeepSpace,
@@ -50,6 +50,7 @@ const C = {
   asteroid: '#B8926A',
   comet: '#D9F3FF',
   site: '#F58F7C',
+  storm: '#9DB4FF', // scene/glyphatlas.js CLASS_COLOURS.storm says why this one
 };
 
 // =================================================================================================
@@ -927,6 +928,31 @@ export const LAYERS = [
     sentence: 'The handful of things that left Earth orbit and kept going.',
   },
   {
+    // Mirrors registry/layers.yaml `storms` (2026-09-28). The parser keeps the storms whose latest
+    // advisory is within 12 hours of NOW -- wall time, on purpose, like data/sources.js's cache: the
+    // feed only ever knows the present, so a link opened at a scrubbed clock still asks "which storms
+    // are there today", and each record's own window (propagate/fixed.js) hides it at a clock far
+    // from its advisory.
+    id: 'storms',
+    display: 'Tropical storms now',
+    klass: 'storm',
+    source: 'gdacs-tc',
+    parse: 'gdacs-tc',
+    propagator: 'fixed',
+    frame: 'earth-fixed',
+    moments: { wonder: true, now: true, next: false },
+    defaultOn: true,
+    select: all,
+    budget: { maxItems: 20 },
+    colour: C.storm,
+    glyph: 'storm',
+    // No model: a storm is drawn by the clouds it is made of, and the glyph marks its eye.
+    noModel: true,
+    nearKm: 0,
+    card: 'storm',
+    sentence: 'Hurricanes, typhoons and cyclones turning right now, each at its centre at the latest advisory.',
+  },
+  {
     // NOT in registry/layers.yaml. Added because sampleReentries() exists and a reentry is one
     // of the three things spec 0011 promises. Off by default: these are historic, not news.
     id: 'reentries',
@@ -1111,6 +1137,8 @@ function parseFor(layer, data) {
       return parseDso(typeof data === 'string' ? JSON.parse(data) : data);
     case 'exoplanets':
       return parseExoplanets(data, { asOf: layer.bundledAsOf && layer.lastBodyWasBundled ? layer.bundledAsOf : undefined });
+    case 'gdacs-tc':
+      return parseGdacsCyclones(data, { nowMs: Date.now() });
     case 'neo-approaches':
       // Two snapshots: the close-approach table says WHICH bodies, the SBDB says their orbits.
       return Array.isArray(data) ? parseNeoApproaches(data[0], data[1]) : [];

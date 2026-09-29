@@ -4,6 +4,8 @@
 //   createEarth(textures): THREE.Mesh          -- atmosphere shell attached as a child
 //   updateEarth(mesh, sunDirScene, tMs): void
 //   updateEarthEclipse(mesh, on, moonKmScene, sunDistKm): void   -- spec 0037, the Moon's shadow
+//   setLiveClouds(mesh, texture): void           -- 2026-09-28, a new live cloud picture, cross-faded in
+//   setLiveCloudsShown(mesh, on): void           -- live clouds or the static map (scene/liveclouds.js decides)
 //
 // The mesh is a WGS84 ELLIPSOID in units of the equatorial radius, and the caller scales it by
 // WGS84_A_KM / stage.unitKm (mesh.userData.scaleRadiusKm carries the number) so the same mesh is
@@ -66,6 +68,10 @@ export const ATMOSPHERE_SCALE = 1.025;
  * cls: 'illustrative'. The cloud map is a single static snapshot of a day that is over; the drift
  * is decoration and the card must not claim otherwise. At 1x it is 1.4 microns of texture a
  * second -- invisible, correctly -- and it only reads when the clock is scrubbed.
+ *
+ * It moves the STATIC map only. The live clouds (2026-09-28, scene/liveclouds.js) are a picture of
+ * one moment and are sampled where they were photographed; they change by being replaced with the
+ * next picture, cross-faded over LIVE_CROSSFADE_MS, never by sliding.
  */
 export const CLOUD_DRIFT_U_PER_S = 1 / (8 * 86400);
 
@@ -107,6 +113,15 @@ export const WGS84_B_KM = 6356.752314245;
 
 /** Thin haze should not grey the planet: the cloud coverage is raised to this power first. */
 export const CLOUD_GAMMA = 1.35;
+
+/**
+ * A new live picture replaces the old one over this long, wall time, so a refresh reads as the
+ * weather moving on rather than a pop. Three seconds is long enough to see two frames of the same
+ * storm blend and short enough that a visitor looking away misses nothing.
+ */
+export const LIVE_CROSSFADE_MS = 3000;
+/** Static to live and back (the clock moved more than 12 h from the picture, data/gibs.js). */
+export const LIVE_SWITCH_MS = 1500;
 
 const DEFAULT_UNIFORMS = {
   nightGain: 2.6,
@@ -164,6 +179,14 @@ uniform sampler2D uClouds;
 uniform float uHasDay;
 uniform float uHasNight;
 uniform float uHasClouds;
+// The live clouds (2026-09-28): two pictures, R = opacity and G = how much of the place they cover
+// (scene/cloudcompose.js), cross-faded by uLiveFade; uLive fades the whole live layer in and out
+// over the static map. Where G is below 1 -- 6.5 E to 60.6 E, which no satellite in NASA GIBS
+// sees, and the poles -- the static map shows through, so the seam is a blend, not an edge.
+uniform sampler2D uLiveA;
+uniform sampler2D uLiveB;
+uniform float uLiveFade;
+uniform float uLive;
 
 uniform vec3  uSunDir;        // unit, scene/world axes
 uniform vec3  uSunDirLocal;   // unit, mesh-local (= earth-fixed) axes
@@ -199,6 +222,17 @@ varying vec3 vPosL;
 
 const float EARTH_UNIT_KM = ${WGS84_A_KM};
 ${ECLIPSE_GLSL}
+
+// Cloud coverage at a point: the static map at its drifted uv, and over it the live picture at the
+// uv it was photographed at. uLive is a uniform, so outside the live layer this is today's one fetch.
+float cloudCover( vec2 uv ) {
+  float c = pow( texture2D( uClouds, uv + uCloudOffset ).r, uCloudGamma ) * uHasClouds;
+  if ( uLive > 0.0 ) {
+    vec2 l = mix( texture2D( uLiveA, uv ).rg, texture2D( uLiveB, uv ).rg, uLiveFade );
+    c = mix( c, pow( l.r, uCloudGamma ), l.g * uLive );
+  }
+  return c;
+}
 void main() {
   #include <logdepthbuf_fragment>
 
@@ -241,12 +275,12 @@ void main() {
   );
   shadowStep = clamp( shadowStep, vec2( -0.02 ), vec2( 0.02 ) );
 
-  vec2 cuv   = vUv + uCloudOffset;
   // The cloud map is a MASK, not a colour: it is uploaded with NoColorSpace so these are the
   // encoded bytes, which is the perceptual coverage the artwork was drawn as. Decoded to linear
-  // its mean would fall from 0.28 to 0.065 and the deck would all but vanish.
-  float cloud  = pow( texture2D( uClouds, cuv ).r, uCloudGamma ) * uHasClouds;
-  float shade  = pow( texture2D( uClouds, cuv + shadowStep ).r, uCloudGamma ) * uHasClouds;
+  // its mean would fall from 0.28 to 0.065 and the deck would all but vanish. The live pictures
+  // are built in the same sense (scene/cloudcompose.js), so one gamma serves both.
+  float cloud  = cloudCover( vUv );
+  float shade  = cloudCover( vUv + shadowStep );
 
   // ---- ground ---------------------------------------------------------------------------------
   vec3 dayTex = mix( vec3( 0.04, 0.08, 0.15 ), texture2D( uDay, vUv ).rgb, uHasDay );
@@ -560,6 +594,10 @@ export function createEarth(textures, opts = {}) {
       uAmbient: { value: cfg.ambient },
       uCloudHOverR: { value: CLOUD_H_OVER_R },
       uCloudGamma: { value: cfg.cloudGamma },
+      uLiveA: { value: blankLive() },
+      uLiveB: { value: blankLive() },
+      uLiveFade: { value: 0 },
+      uLive: { value: 0 },
       uEclipse: { value: 0 },
       uMoonPosLocal: { value: new THREE.Vector3(384400, 0, 0) },
       uMoonRadiusKm: { value: MOON_RADIUS_KM },
@@ -624,6 +662,7 @@ export function updateEarth(mesh, sunDirScene, tMs) {
 
   const u = mesh.material.uniforms;
   settleMaps(mesh, u);
+  settleLive(mesh, u);
   if (sunDirScene) {
     u.uSunDir.value.copy(sunDirScene).normalize();
     // Same direction expressed in the mesh's own axes, which are earth-fixed. Used only by the
@@ -640,6 +679,77 @@ export function updateEarth(mesh, sunDirScene, tMs) {
   const atmosphere = mesh.userData && mesh.userData.atmosphere;
   if (atmosphere && atmosphere.material && atmosphere.material.uniforms && sunDirScene) {
     atmosphere.material.uniforms.uSunDir.value.copy(u.uSunDir.value);
+  }
+}
+
+// --- live clouds (2026-09-28) ---------------------------------------------------------------------
+
+/** A 1x1 "covers nothing" live texture, so both samplers are bound before any picture arrives. */
+function blankLive() {
+  const tex = new THREE.DataTexture(new Uint8Array([0, 0]), 1, 1, THREE.RGFormat, THREE.UnsignedByteType);
+  tex.needsUpdate = true;
+  return tex;
+}
+
+const wallNow = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
+
+/**
+ * A new live cloud picture (scene/liveclouds.js builds it: RG, rows south first). The first one
+ * becomes both halves of the cross-fade; every later one fades in over LIVE_CROSSFADE_MS from
+ * whatever is on screen, and the picture it replaces is freed once nothing samples it.
+ */
+export function setLiveClouds(mesh, tex) {
+  const u = mesh && mesh.material && mesh.material.uniforms;
+  if (!u || !u.uLiveA || !tex) return;
+  const live = mesh.userData.live || (mesh.userData.live = { has: false, shown: false, fadeFrom: null, switchFrom: null });
+  tex.wrapS = THREE.RepeatWrapping;       // the antimeridian is a seam in the picture, not on the globe
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  tex.colorSpace = THREE.NoColorSpace;    // coverage, not colour -- as the static map
+  if (!live.has) {
+    const oldA = u.uLiveA.value;
+    const oldB = u.uLiveB.value;
+    u.uLiveA.value = tex;
+    u.uLiveB.value = tex;
+    u.uLiveFade.value = 1;
+    live.has = true;
+    if (oldA && oldA.dispose) oldA.dispose();
+    if (oldB && oldB !== oldA && oldB.dispose) oldB.dispose();
+    return;
+  }
+  // Mid-fade, the picture on screen is a mix; snapping the fade to B first loses at most the last
+  // part of a three-second blend, and it never shows a picture older than the one before.
+  const retired = u.uLiveA.value;
+  u.uLiveA.value = u.uLiveB.value;
+  u.uLiveB.value = tex;
+  u.uLiveFade.value = 0;
+  live.fadeFrom = wallNow();
+  if (retired && retired !== u.uLiveA.value && retired !== tex && retired.dispose) retired.dispose();
+}
+
+/** Live clouds on (a picture is held and the clock is near it) or the static map (everything else). */
+export function setLiveCloudsShown(mesh, on) {
+  const live = mesh && mesh.userData && mesh.userData.live;
+  if (!live || !live.has || live.shown === !!on) return;
+  live.shown = !!on;
+  live.switchFrom = wallNow();
+  live.switchStart = mesh.material.uniforms.uLive.value;
+}
+
+/** Once a frame: the two fades, on wall time (a paused clock must not hold the weather back). */
+function settleLive(mesh, u) {
+  const live = mesh.userData && mesh.userData.live;
+  if (!live || !u.uLive) return;
+  const now = wallNow();
+  if (live.fadeFrom !== null) {
+    const k = Math.min(1, (now - live.fadeFrom) / LIVE_CROSSFADE_MS);
+    u.uLiveFade.value = k;
+    if (k >= 1) live.fadeFrom = null;
+  }
+  if (live.switchFrom !== null) {
+    const target = live.shown ? 1 : 0;
+    const k = Math.min(1, (now - live.switchFrom) / LIVE_SWITCH_MS);
+    u.uLive.value = live.switchStart + (target - live.switchStart) * k;
+    if (k >= 1) live.switchFrom = null;
   }
 }
 

@@ -219,6 +219,25 @@ sources:
     outputs: [aurora.png, aurora-summary.json]
     attribution: "Aurora forecast: NOAA SWPC"
 
+  # Tropical cyclones, worldwide, from GDACS (the UN / European Commission disaster alert system,
+  # run by the EC Joint Research Centre). MEASURED 2026-09-28: `Access-Control-Allow-Origin: *`,
+  # 27 646 bytes for the newest 20 storms in about 1-4 s. `pageSize=20` because the list is newest
+  # `todate` first and the unpaged answer is 100 storms and 140 kB; more than 20 at once has never
+  # happened. GDACS republishes the agencies' advisories (NOAA NHC/CPHC, JTWC and others) every 3 to
+  # 6 hours, so an hour is plenty. Terms: GDACS publishes no licence of its own beyond "purely
+  # indicative"; it is EU-owned content, which the Commission's reuse decision of 12 December 2011
+  # licenses as CC BY 4.0 "unless otherwise indicated" (commission.europa.eu/legal-notice, read
+  # 2026-09-28). Credit below; CREDITS.md says the rest.
+  - id: gdacs-tc
+    url: https://www.gdacs.org/gdacsapi/api/events/geteventlist/SEARCH?eventlist=TC&alertlevel=Green;Orange;Red&pageSize=20
+    auth: none
+    browser: true
+    cadence: 1h
+    freshness_max: 12h
+    parser: gdacs_tc
+    outputs: [storms.json]
+    attribution: "Tropical cyclones: GDACS, European Commission Joint Research Centre (CC BY 4.0)"
+
   # --- Ground ------------------------------------------------------------------------------
   # A descriptive User-Agent is REQUIRED here; anonymous scripts are refused. Everything
   # is CC0, so the attribution below is courtesy rather than law.

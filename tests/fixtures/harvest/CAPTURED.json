@@ -60,5 +60,9 @@
   "nasa_exoplanet_archive.csv": {
     "url": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+top+12+pl_name,hostname,ra,dec,sy_dist,pl_rade,pl_bmasse,pl_orbper,disc_year,discoverymethod,st_teff,st_rad,st_spectype+from+pscomppars&format=csv",
     "note": "verbatim; `top 12` instead of the row's whole table (6 360 rows, 867 kB)"
+  },
+  "gdacs_tc.json": {
+    "url": "https://www.gdacs.org/gdacsapi/api/events/geteventlist/SEARCH?eventlist=TC&alertlevel=Green;Orange;Red&pageSize=20",
+    "note": "verbatim, captured 2026-09-28T22:50:08Z; 20 storms, 6 of them with an advisory in the 5 hours before the capture"
   }
 }

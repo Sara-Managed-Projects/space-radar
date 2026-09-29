@@ -37,6 +37,7 @@ import {
   compassWords,
   fistsWords,
   inWords,
+  ageInWords,
   UNITS,
  article, typeWords, NAKED_EYE_LIMIT } from '../copy/en.js';
 import { propagate } from '../propagate/index.js';
@@ -458,7 +459,35 @@ function farLead(record, m, T) {
   return null;
 }
 
+/**
+ * How long before the moment on screen a storm's advisory was: "3 hours ago", or "in 2 hours" when
+ * the clock stands in the six hours before it (data/parsers.js STORM_BEFORE_MS). Exported for the test.
+ */
+export function stormAdvisoryAgo(advisoryMs, tMs) {
+  if (!Number.isFinite(advisoryMs) || !Number.isFinite(tMs)) return '';
+  return tMs >= advisoryMs ? ageInWords(tMs - advisoryMs) : inWords(advisoryMs - tMs);
+}
+
+/** A storm's status word: the basin's own name for hurricane strength, else the status itself. */
+function stormStatusKey(md) {
+  const status = pick(md, 'status');
+  if (status === 'hurricane') return pick(md, 'basinWord') || 'hurricane';
+  return status || null;
+}
+
 const TEMPLATES = {
+  storm(record, ctx, m, passInfo, T) {
+    const md = meta(record);
+    const key = stormStatusKey(md);
+    const status = key && T.statuses[key];
+    const ago = stormAdvisoryAgo(pickNumber(md, 'advisoryMs'), m.tMs);
+    const wind = pickNumber(md, 'trackMaxWindKmh');
+    return buildSentence(
+      status ? t(T.lead, { name: displayName(record), a: article(status), status, ago }) : t(T.leadUnknown, { name: displayName(record), ago }),
+      [wind !== null ? t(T.wind, { n: fmt.int(roughly(wind)) }) : null],
+    );
+  },
+
   station(record, ctx, m, passInfo, T) {
     const md = meta(record);
     const time = passTimeClause(passInfo);
@@ -903,7 +932,8 @@ export function firstSentence(record, ctx, m, passInfo) {
 
 function comparisons(record, m) {
   const md = meta(record);
-  const onTheGround = klassOf(record) === 'site';
+  // A storm is weather, standing on the Earth like a site: "0 km up" is a chip that says nothing.
+  const onTheGround = klassOf(record) === 'site' || klassOf(record) === 'storm';
   // Never the heliocentric distance: "8 light-minutes away" for an asteroid one AU from
   // the SUN is false, because the asteroid may be on the far side of it. A distance chip
   // is only written when the distance from the observer's own world is known.
@@ -969,6 +999,26 @@ function rightNowRows(record, m, passInfo) {
   }
   if (!m.ok) {
     rows.push([R.altitude, COPY.card.couldNotLook]);
+    return rows;
+  }
+  if (isEarthFrame(m.frame) && klassOf(record) === 'storm') {
+    // A storm's rows are the advisory's (data/parsers.js parseGdacsCyclones says what each field is):
+    // what it was at the latest one, the one wind number GDACS gives and what that number covers,
+    // when, where, and who advised it. No height, no speed: the point does not move between advisories.
+    const key = stormStatusKey(md);
+    if (key && V.stormStatus[key]) rows.push([R.stormNow, V.stormStatus[key]]);
+    const wind = pickNumber(md, 'trackMaxWindKmh');
+    const cat = pickNumber(md, 'trackMaxCategory');
+    if (wind !== null) {
+      rows.push([R.stormWind, cat ? t(V.stormWindCategory, { n: fmt.int(roughly(wind)), cat: fmt.int(cat) }) : t(V.stormWind, { n: fmt.int(roughly(wind)) })]);
+    }
+    const adv = pickNumber(md, 'advisoryMs');
+    if (adv !== null) rows.push([R.stormAdvisory, t(V.stormAdvisory, { time: new Date(adv).toISOString().slice(11, 16), ago: stormAdvisoryAgo(adv, m.tMs) })]);
+    if (m.latDeg !== null && m.lonDeg !== null) rows.push([R.stormCentre, t(V.latLon, { lat: latText(m.latDeg), lon: lonText(m.lonDeg) })]);
+    const agency = pick(md, 'agency');
+    if (agency) rows.push([R.stormAgency, String(agency)]);
+    const alert = pick(md, 'alertLevel');
+    if (alert && V.stormAlert[alert]) rows.push([R.stormAlert, V.stormAlert[alert]]);
     return rows;
   }
   if (isEarthFrame(m.frame)) {
@@ -1162,6 +1212,7 @@ function rightNowRows(record, m, passInfo) {
 export function seeItLine(record, ctx, m, passInfo) {
   const klass = klassOf(record);
   if (pick(meta(record), 'unplaceable')) return COPY.sky.nowhereToLook;
+  if (klass === 'storm') return COPY.sky.storm;
   // Standing still, whatever class it is: a dish, a landing site, a lightsaber in a case in Houston,
   // or a rocket before T-0 (standsStill). Without this a museum exhibit got "too far away to pick
   // out by eye", and a rocket on its pad got "Set where you are and this line will tell you where
@@ -1290,9 +1341,18 @@ export function classLine(record, m) {
  * Returns null when the record has nothing extra to admit, which is most of them. Exported for the
  * test (tests/test_deep_space.mjs reads the craft round other worlds through it).
  */
-export function honestyClause(record) {
+export function honestyClause(record, m) {
   const md = meta(record);
   const C = COPY.cls;
+
+  // A storm's centre is measured at one advisory; say which, and how long before the moment shown.
+  if (klassOf(record) === 'storm') {
+    const adv = pickNumber(md, 'advisoryMs');
+    const tMs = m && Number.isFinite(m.tMs) ? m.tMs : null;
+    return adv !== null && tMs !== null
+      ? t(C.stormAdvisory, { time: new Date(adv).toISOString().slice(11, 16), ago: stormAdvisoryAgo(adv, tMs) })
+      : null;
+  }
 
   if (pick(md, 'unplaceable')) {
     const why = pick(md, 'whyUnknown');
@@ -1489,6 +1549,7 @@ function derivedDrawingLine(record, T) {
     return t(pick(meta(record), 'irregular') === true ? T.worldFlatIrregular : T.worldFlat, { name: displayName(record) });
   }
   if (!klass) return null;
+  if (klass === 'storm') return T.storm;
   let entry = null;
   try { entry = realModelFor(record); } catch { entry = null; }
   if (entry && entry.name) {
@@ -1634,7 +1695,7 @@ function sourceRow(record, ctx) {
  * printers.
  */
 export function honestyLine(record, m) {
-  const honesty = honestyClause(record);
+  const honesty = honestyClause(record, m);
   return classLine(record, m) + (honesty ? COPY.punctuation.dash + honesty : '');
 }
 
@@ -1924,6 +1985,11 @@ function render(record, ctx, opts = {}) {
   if (klass === 'world') {
     const vs = ctx && ctx.worlds && typeof ctx.worlds.viewScale === 'function' ? ctx.worlds.viewScale(record.id) : null;
     if (vs && vs.exaggerated && vs.note) body.appendChild(el('p', 'sr-card__note', vs.note));
+    // The Earth's clouds say what they are: today's satellite picture and how old, or illustrative
+    // and why (scene/liveclouds.js, 2026-09-28). The words are copy/en.js COPY.clouds.
+    if (record.id === 'earth' && ctx && ctx.liveClouds && typeof ctx.liveClouds.line === 'function') {
+      body.appendChild(el('p', 'sr-card__note sr-card__clouds', ctx.liveClouds.line(m.tMs)));
+    }
     const isCentre = ctx && ctx.stage && ctx.stage.worldId === record.id;
     const centre = el('button', 'sr-btn', isCentre
       ? COPY.card.isCentre

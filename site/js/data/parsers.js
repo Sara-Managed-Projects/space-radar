@@ -1553,3 +1553,154 @@ export function parseDso(doc) {
   }
   return out;
 }
+
+// =================================================================================================
+// GDACS tropical cyclones (2026-09-28)
+// =================================================================================================
+//
+// MEASURED 2026-09-28 against registry/sources.yaml gdacs-tc (tests/fixtures/harvest/gdacs_tc.json
+// is that answer, verbatim). One GeoJSON Point per storm, and three things about it that decide
+// this parser:
+//
+//  * The point is the centre at the storm's LATEST advisory, `todate` (UTC, written without a Z).
+//    Checked against GDACS's own track for NOLO-26: its `current: true` row is 17.7 N 163.1 W at
+//    28 Sep 21:00, the point and `todate` here.
+//  * `severitydata` is two different things in one field. Its TEXT's first words are the status at
+//    the latest advisory ("Tropical Storm", "Hurricane/Typhoon > 74 mph", "Tropical Depression").
+//    Its NUMBER is the highest wind anywhere on the track, observed OR FORECAST: RACHEL-26 read
+//    "Tropical Storm (maximum wind speed of 157 km/h)" while every advisory it had had was 56-83 km/h
+//    and 157 km/h was the forecast for 3 Oct (GDACS timeline, read 2026-09-28). The wind now is only
+//    in that per-storm timeline, 167-520 kB each, which a page will not fetch for every storm. So the
+//    card prints the status as the status and the number as "the strongest on its track, including
+//    the forecast", which is what it is.
+//  * `iscurrent` stays "true" for storms that ended days ago (GONZALO-26: last advisory 26 Sep 21:00,
+//    still "true" on the 28th). What is happening now is decided by the advisory's age instead.
+
+/** A storm whose last advisory is older than this has stopped being advised on: over, or nearly. */
+export const STORM_CURRENT_MS = 12 * 3600 * 1000;
+/**
+ * The window of APP time a storm's marker is drawn in, around its advisory. The position is where
+ * the centre was at that moment; storms move 10-40 km/h, so six hours before it the centre was a
+ * glyph's width away, and twelve after it the next advisory is overdue. Outside it the marker is
+ * not drawn at all (propagate/fixed.js validFromMs/validToMs), rather than drawn where it was not.
+ */
+export const STORM_BEFORE_MS = 6 * 3600 * 1000;
+export const STORM_AFTER_MS = 12 * 3600 * 1000;
+
+/**
+ * NHC's Saffir-Simpson wind scale, 1-minute sustained wind, in km/h (nhc.noaa.gov/aboutsshws.php,
+ * the km/h column). GDACS's winds are the advising agency's 1-minute winds for NOAA and JTWC.
+ */
+const SAFFIR_SIMPSON_KMH = [[252, 5], [209, 4], [178, 3], [154, 2], [119, 1]];
+
+export function saffirSimpson(windKmh) {
+  if (!Number.isFinite(windKmh)) return null;
+  for (const [min, cat] of SAFFIR_SIMPSON_KMH) if (windKmh >= min) return cat;
+  return 0;
+}
+
+/**
+ * What a storm of hurricane strength is called where it is. The WMO's regional names: typhoon in
+ * the north-west Pacific (100 E to 180), hurricane in the North Atlantic and the north-east and
+ * central Pacific, cyclone everywhere else (the North Indian Ocean and the whole southern
+ * hemisphere).
+ */
+export function basinWord(latDeg, lonDeg) {
+  if (!(latDeg >= 0)) return 'cyclone';
+  if (lonDeg >= 100 && lonDeg <= 180) return 'typhoon';
+  if (lonDeg >= 30 && lonDeg < 100) return 'cyclone';
+  return 'hurricane';
+}
+
+/** The status words that open GDACS's severity text, as a key: see the header of this section. */
+export function stormStatus(text) {
+  const s = String(text || '');
+  if (/hurricane|typhoon/i.test(s)) return 'hurricane';
+  if (/tropical storm/i.test(s)) return 'storm';
+  if (/depression/i.test(s)) return 'depression';
+  return null;
+}
+
+/** "NOLO-26" -> "Nolo", "BANG-LANG-26" -> "Bang-Lang", "TWO-C-26" -> "Two-C". */
+export function stormName(eventname) {
+  const base = String(eventname || '').trim().replace(/-\d{2}$/, '');
+  if (!base) return null;
+  return base.toLowerCase().replace(/(^|[-\s])([a-z])/g, (_, sep, c) => sep + c.toUpperCase());
+}
+
+/** GDACS dates carry no zone; they are UTC (NOLO-26's 21:00 is NHC's 2100 UTC advisory). */
+function gdacsUtcMs(s) {
+  if (!s) return NaN;
+  const text = String(s);
+  return Date.parse(/[zZ]|[+-]\d\d:?\d\d$/.test(text) ? text : text + 'Z');
+}
+
+/**
+ * @param {Object|string} json  the GDACS FeatureCollection, or its text
+ * @param {{nowMs?: number}} [opts]  WALL time: which storms are advised on NOW. Omit it to keep all.
+ * @returns {Array<Object>} Records: klass 'storm', propagator 'fixed', frame 'earth-fixed'
+ */
+export function parseGdacsCyclones(json, opts = {}) {
+  let doc = json;
+  if (typeof doc === 'string') {
+    try { doc = JSON.parse(doc); } catch { return []; }
+  }
+  const features = doc && Array.isArray(doc.features) ? doc.features : [];
+  const out = [];
+  const seen = new Set();
+  for (const f of features) {
+    const p = (f && f.properties) || {};
+    if (p.eventtype && p.eventtype !== 'TC') continue;
+    const g = f.geometry || {};
+    const c = g.type === 'Point' && Array.isArray(g.coordinates) ? g.coordinates : null;
+    if (!c) continue;
+    const lonDeg = Number(c[0]);
+    const latDeg = Number(c[1]);
+    if (!Number.isFinite(latDeg) || !Number.isFinite(lonDeg) || Math.abs(latDeg) > 90) continue;
+    const advisoryMs = gdacsUtcMs(p.todate);
+    if (!Number.isFinite(advisoryMs)) continue;
+    if (Number.isFinite(opts.nowMs) && Math.abs(opts.nowMs - advisoryMs) > STORM_CURRENT_MS) continue;
+    const id = `storm-gdacs-${p.eventid}`;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    const sev = p.severitydata || {};
+    const top = Number(sev.severity);
+    const unit = String(sev.severityunit || '').toLowerCase();
+    const trackMaxKmh = Number.isFinite(top) && (unit === 'km/h' || unit === '') ? top : null;
+    const text = String(sev.severitytext || '');
+    const status = stormStatus(text);
+    out.push({
+      id,
+      name: stormName(p.eventname) || String(p.name || 'Tropical cyclone'),
+      layer: 'storms',
+      klass: 'storm',
+      propagator: 'fixed',
+      frame: 'earth-fixed',
+      cls: 'measured',
+      epoch: advisoryMs,
+      source: 'gdacs-tc',
+      fixed: { latRad: latDeg * DEG, lonRad: lonDeg * DEG, altKm: 0 },
+      validFromMs: advisoryMs - STORM_BEFORE_MS,
+      validToMs: advisoryMs + STORM_AFTER_MS,
+      meta: {
+        latDeg,
+        lonDeg,
+        advisoryMs,
+        firstAdvisoryMs: gdacsUtcMs(p.fromdate),
+        gdacsName: String(p.eventname || ''),
+        eventId: p.eventid,
+        episodeId: p.episodeid,
+        // At the latest advisory: 'hurricane' (hurricane or typhoon strength), 'storm', 'depression'.
+        status,
+        trackMaxWindKmh: trackMaxKmh,
+        trackMaxCategory: trackMaxKmh !== null ? saffirSimpson(trackMaxKmh) : null,
+        basinWord: basinWord(latDeg, lonDeg),
+        alertLevel: p.alertlevel ? String(p.alertlevel).toLowerCase() : null,
+        agency: p.source ? String(p.source) : null,
+        country: p.country ? String(p.country) : null,
+        reportUrl: p.url && p.url.report ? String(p.url.report) : null,
+      },
+    });
+  }
+  return out;
+}

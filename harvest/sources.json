@@ -324,6 +324,17 @@
       ]
     },
     {
+      "id": "gdacs-tc",
+      "url": "https://www.gdacs.org/gdacsapi/api/events/geteventlist/SEARCH?eventlist=TC&alertlevel=Green;Orange;Red&pageSize=20",
+      "auth": "none",
+      "refresh": "1h",
+      "freshness_max": "12h",
+      "parser": "gdacs_tc",
+      "outputs": [
+        "storms.json"
+      ]
+    },
+    {
       "id": "wikidata-observatories",
       "url": "https://query.wikidata.org/sparql",
       "auth": "none",

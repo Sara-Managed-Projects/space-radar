@@ -99,6 +99,9 @@ export function isNotable(record) {
   if (!record) return false;
   if (record.meta && record.meta.why) return true;
   if (record.klass === 'world' || record.klass === 'station') return true;
+  // A storm happening now is named (2026-09-28): "Polo" beside the spiral is the whole point of
+  // the layer, and there are rarely more than a handful.
+  if (record.klass === 'storm') return true;
   return false;
 }
 

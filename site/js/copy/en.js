@@ -599,6 +599,7 @@ export const COPY = {
     exoplanet: 'Planet of another star',
     dso: 'Deep-sky object',
     exotic: 'Extreme object',
+    storm: 'Tropical cyclone',
     // Not a physical class -- a curatorial one. A golf ball, a car and a photograph have nothing
     // in common except that somebody sent them and nobody had to.
     oddity: 'Oddity',
@@ -908,11 +909,30 @@ export const COPY = {
       whereabouts: 'Where it is',
       lastSeen: 'Last known',
       toFindOut: 'To find out',
+      // A tropical cyclone (2026-09-28, data/parsers.js parseGdacsCyclones says what each number is).
+      stormNow: 'At the latest advisory',
+      stormWind: 'Strongest wind on its track',
+      stormAdvisory: 'Latest advisory',
+      stormCentre: 'Its centre',
+      stormAgency: 'Advised by',
+      stormAlert: 'GDACS alert level',
     },
 
     values: {
       km: '{n} km',
       kmh: '{n} km/h',
+      // GDACS's one wind number is the highest anywhere on the track, forecast included, so it says so.
+      stormWind: '{n} km/h, forecast included',
+      stormWindCategory: '{n} km/h, Category {cat}, forecast included',
+      stormAdvisory: '{time} UTC, {ago}',
+      stormStatus: {
+        hurricane: 'hurricane strength',
+        typhoon: 'typhoon strength',
+        cyclone: 'cyclone strength',
+        storm: 'tropical storm',
+        depression: 'tropical depression',
+      },
+      stormAlert: { green: 'green', orange: 'orange', red: 'red' },
       kmPerS: '{n} km/s',
       au: '{n} astronomical units',
       lightYears: '{n} light-years',
@@ -983,6 +1003,8 @@ export const COPY = {
     // "Position propagated from elements of unknown age" was printed under Alan Shepard's golf
     // balls, which have no elements and were never propagated from anything.
     inferredNoElements: 'position worked out rather than measured',
+    // A storm's centre is measured, at one moment; this is the half of the line that says which.
+    stormAdvisory: 'its centre at the {time} UTC advisory, {ago}; a storm moves, so it has moved since',
     illustrative: 'drawn to show where it goes; the real track is not public',
     sample: 'bundled sample data, not a live position',
     // spec 0026 req 15: a fresh launch the public catalogue has not numbered yet.
@@ -1061,6 +1083,21 @@ export const COPY = {
   // The class line above already says nothing is drawn for it, so this only says WHY -- measured
   // in the browser, the two together read "Nobody knows where this is, so it is not on the map.
   // Nobody knows where this is, so it is not on the map."
+  // The Earth's clouds (2026-09-28, scene/liveclouds.js). One line on the Earth's card, and the
+  // credits NASA and the satellite operators ask for in the Sources panel.
+  clouds: {
+    live: 'Clouds: seen {when}, {ago}, in infrared by {satellites}, through NASA GIBS. Over Europe, Africa, the Indian Ocean and the poles, which none of those satellites sees, they are illustrative.',
+    at: 'at {time} UTC',
+    between: 'between {from} and {to} UTC',
+    and: ' and ',
+    illustrative: 'Clouds: illustrative. This is one picture of a day in the past, drifting slowly; it is not today’s weather.',
+    illustrativeSaveData: 'Clouds: illustrative. Today’s satellite pictures are not fetched on a connection that saves data.',
+    illustrativeScrubbed: 'Clouds: illustrative, because the clock is more than 12 hours from the latest satellite picture.',
+    // Verbatim, as NASA asks on the GIBS API page (read 2026-09-28). Do not reword it.
+    gibsAcknowledgement: "We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS).",
+    satelliteCredit: 'Live clouds: GOES-East and GOES-West infrared imagery, NOAA; Himawari infrared imagery, Japan Meteorological Agency (JMA).',
+  },
+
   unplaced: {
     why: '{whyUnknown}',
   },
@@ -1138,6 +1175,8 @@ export const COPY = {
       exotic: 'a ring at its measured distance; a black hole has no shape to draw and a pulsar is far too small',
       exoticStar: 'a ring at its measured distance; the star itself is a point at this scale',
     },
+    // A storm is not an object with a shape: the mark is where its centre is, the storm is cloud.
+    storm: 'drawn as a mark at its centre; the storm itself is the cloud around it',
     // Where an attached object sits on its carrier's model is our arrangement, AND SO IS HOW BIG
     // IT IS. The disc really is bolted to the side of the bus; the centimetre we chose is ours,
     // and so is the size -- a 30 cm record on a 13 m spacecraft is one or two pixels at the size
@@ -1337,6 +1376,7 @@ export const COPY = {
     needsTelescope: 'Too faint for the eye; a telescope, or a long photograph, shows it.',
     starOnly: 'Only its star can be seen, and only through a telescope; the planet itself is far too faint.',
     onTheGround: 'This one stands on the ground, so there is nothing to look up for.',
+    storm: 'From the ground it is the weather itself. From orbit it is a spiral of cloud hundreds of kilometres across.',
     onAnotherWorld:
       'This one is standing on {world}. You will not pick it out by eye from here, however clear the night.',
     worldRise: 'From where you are it comes up at {time}.',
@@ -1519,6 +1559,7 @@ export const COPY = {
     errorLabel: 'Last error',
     attributionTitle: 'Credits',
     attributionIntro: 'The data on this map is other people’s work.',
+    cloudsTitle: 'Clouds',
     layersTitle: 'Live or bundled',
     layersIntro:
       'Live is read from its publisher, or worked out for this moment, as you watch. A catalogue ships with the app: stars, galaxies and the dishes and landing sites on the ground do not move while you look. A bundled sample stands in for a source a browser cannot call at all.',
@@ -1617,6 +1658,20 @@ export const COPY = {
   // The "why now" clause is first in every list, per spec 0013's template table.
   // ------------------------------------------------------------------------------------
   templates: {
+    // A tropical cyclone's first sentence (2026-09-28). "whose centre was here" and not "is here":
+    // the point is the latest advisory's, and the card's honesty line says how old that is.
+    storm: {
+      lead: '{name} is {a} {status} whose centre was here {ago}',
+      leadUnknown: '{name} is a tropical cyclone whose centre was here {ago}',
+      wind: 'the strongest winds on its track, forecast included, reach {n} km/h',
+      statuses: {
+        hurricane: 'hurricane',
+        typhoon: 'typhoon',
+        cyclone: 'tropical cyclone',
+        storm: 'tropical storm',
+        depression: 'tropical depression',
+      },
+    },
     exotic: {
       leadBlackhole: '{name} is a black hole {dist} light-years away',
       leadPulsar: '{name} is a pulsar {dist} light-years away',

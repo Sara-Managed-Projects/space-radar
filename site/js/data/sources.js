@@ -278,6 +278,22 @@ export const SOURCES = {
     note: '6.9 kB, 81 rows measured 2026-09-06.',
   },
 
+  // --- Weather on Earth ---------------------------------------------------------------------
+  // registry/sources.yaml gdacs-tc says why this URL, this cadence and this licence.
+  'gdacs-tc': {
+    id: 'gdacs-tc',
+    registryId: 'gdacs-tc',
+    label: 'GDACS — tropical cyclones',
+    publisher: 'GDACS',
+    url: 'https://www.gdacs.org/gdacsapi/api/events/geteventlist/SEARCH?eventlist=TC&alertlevel=Green;Orange;Red&pageSize=20',
+    cadenceMs: 1 * HOUR,
+    freshnessMaxMs: 12 * HOUR,
+    browser: true,
+    kind: 'json',
+    attribution: 'Tropical cyclones: GDACS, European Commission Joint Research Centre (CC BY 4.0)',
+    note: '27.6 kB, the newest 20 storms, measured 2026-09-28. GDACS calls its information "purely indicative".',
+  },
+
   // --- Small bodies -------------------------------------------------------------------------
   'mpc-comets': {
     id: 'mpc-comets',

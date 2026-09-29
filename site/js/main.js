@@ -55,6 +55,7 @@ import { createLabels } from './ui/labels.js';
 import { createOrbitLine } from './scene/orbitline.js';
 import { createOrbitRings } from './scene/orbitrings.js';
 import { createFrameLatch, shouldSaveData } from './scene/quality.js';
+import { createLiveClouds } from './scene/liveclouds.js';
 import { keyById, bucketOf } from './data/colorkeyrules.js';
 
 const MOMENTS = ['wonder', 'now', 'next'];
@@ -197,6 +198,16 @@ export async function boot({ setStatus } = {}) {
     if (id === 'galaxy' && ctx.galaxy) ctx.galaxy.setVisible(on);
     if (id === 'systems' && ctx.systems) ctx.systems.setVisible(on);
   };
+
+  // TODAY'S CLOUDS (2026-09-28, scene/liveclouds.js): NASA GIBS's geostationary pictures, composed
+  // in a worker and cross-faded onto the Earth. Created now so the card and the Sources panel can
+  // ask it what the clouds are; it fetches nothing until START_DELAY_MS after this, well after the
+  // first frame above, and nothing at all on a connection that saves data.
+  ctx.liveClouds = createLiveClouds({
+    earth: () => worlds.meshFor('earth'),
+    saveData: typeof navigator !== 'undefined' && shouldSaveData(navigator.connection),
+  });
+  ctx.liveClouds.start();
 
   say('Reading the catalogues…');
   createControls(ctx);
@@ -671,6 +682,8 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     cameraRig.update(dt);
     worlds.setEclipseAllowed(ctx.eclipseDrawn());
     worlds.update(t);
+    // Live or static clouds, by how far the clock is from the picture (data/gibs.js cloudMode).
+    if (ctx.liveClouds) ctx.liveClouds.tick(t);
 
     // Glyph positions are the expensive part. At 1x they need no more than ~10 Hz to look
     // continuous at orbital speeds; while scrubbing they need every frame or the motion stutters.

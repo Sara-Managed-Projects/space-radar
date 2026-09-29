@@ -69,6 +69,11 @@ function surfacePoint(world, gd) {
 /** propagate signature: (record, tMs) -> {x, y, z, frame, cls} | null. */
 export function fixed(record, tMs) {
   if (!record) return null;
+  // A point that is only true for a while (2026-09-28: a storm's centre at one advisory,
+  // data/parsers.js parseGdacsCyclones). Outside its window there is no position, so nothing is
+  // drawn: the clock moved to last week must not show this week's hurricane where it is today.
+  if (Number.isFinite(tMs) && ((Number.isFinite(record.validFromMs) && tMs < record.validFromMs)
+    || (Number.isFinite(record.validToMs) && tMs > record.validToMs))) return null;
   const gd = normaliseFixed(record.fixed || record.site || record.pad);
   if (!gd) return null;
 
