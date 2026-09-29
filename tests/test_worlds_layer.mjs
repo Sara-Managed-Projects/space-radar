@@ -407,7 +407,12 @@ const MAPPED = ['pluto', 'io', 'europa', 'enceladus', 'triton'];
     const see = seeItLine(r, ctx, { ok: true, tMs: now }, { state: 'na' });
     check(!/your own eyes/.test(see) && (id === 'pluto' ? /telescope/.test(see) : /binoculars/.test(see)), `${id} says how it can really be seen: "${see}"`);
   }
-  check(drawingLine(recs.find((x) => x.id === 'mars')) === COPY.drawing.worldLit, 'Mars, which has a map, says only how it is lit');
+  // Spec 0054 task 3: Mars has a map and air, and says how it is lit and how its air is drawn.
+  const marsLine = drawingLine(recs.find((x) => x.id === 'mars')) || '';
+  check(marsLine.startsWith(COPY.drawing.worldLit) && /drawn 3 times thicker/.test(marsLine) && /illustrative/.test(marsLine),
+    `Mars, which has a map and air, says how it is lit and that its air is drawn thicker than it is: ${marsLine}`);
+  check(/haze is drawn at its measured height/.test(drawingLine(recs.find((x) => x.id === 'titan')) || ''), 'Titan says its haze is at its measured height');
+  check(drawingLine(recs.find((x) => x.id === 'jupiter')) === COPY.drawing.worldLit, 'Jupiter, with no shell, says only how it is lit');
   // The Earth has its own shader and its own sunlight is the reference; the Sun is the light.
   check(drawingLine(recs.find((x) => x.id === 'earth')) === null && drawingLine(recs.find((x) => x.id === 'sun')) === null,
     'the Earth and the Sun carry no exposure line');

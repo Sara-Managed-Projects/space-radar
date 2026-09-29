@@ -40,6 +40,8 @@ const CONTRACT = {
   // and of the earthshine share (tests/test_world_light.mjs), the way scene/eclipse.js has one.
   'scene/worlds.js': ['createWorlds', 'worldMaterial', 'WORLD_FRAG', 'orenNayar', 'minnaert', 'earthshineShare', 'EARTHSHINE_GAIN', 'EARTH_GEOMETRIC_ALBEDO', 'MU_FLOOR', 'DEFAULT_ROUGHNESS'],
   'scene/earth.js': ['createEarth', 'updateEarthEclipse'],
+  // Spec 0054 task 3: the air on Mars, Venus and Titan, and the JS twin of its shader (tests/test_air.mjs).
+  'scene/atmosphere.js': ['ATMO_PARAMS', 'atmosphereCoefficients', 'verticalDepth', 'chapman', 'scatter', 'createAirShell', 'AIR_SHELL_FRAG', 'VIEW_STEPS'],
   // Spec 0037: one formula for the shadow, in JS for the test and as GLSL for both shaders.
   'scene/eclipse.js': ['obscuration', 'surfaceObscuration', 'discOverlap', 'eclipseLikely', 'ECLIPSE_GLSL', 'SUN_RADIUS_KM', 'MOON_RADIUS_KM'],
   'scene/starfield.js': ['createStarfield'],

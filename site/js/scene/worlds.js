@@ -102,6 +102,7 @@ import { stage, SUN_INERTIAL, EARTH_INERTIAL, isLadderStage, isSystemStage, syst
 import { j2000ToTeme, rotateDir, stageFrame, isPlanetMoon, worldHelioEclKm } from '../propagate/frames.js';
 import { createEarth, updateEarth, updateEarthEclipse } from './earth.js';
 import { ECLIPSE_GLSL, eclipseLikely, MOON_RADIUS_KM } from './eclipse.js';
+import { createAirShell, ATMO_PARAMS } from './atmosphere.js';
 import { COPY, t, fmt } from '../copy/en.js';
 
 const KM_PER_AU = Astronomy.KM_PER_AU;
@@ -231,6 +232,9 @@ export function worldRecords() {
       // the light.
       exposed: !w.look.earth && !w.look.emissive,
       earthshineGain: w.look.earthshine ? EARTHSHINE_GAIN : 0,
+      // Spec 0054 task 3: how much thicker than it is the air is drawn (1 = its measured height), for
+      // the card's line that says so and that the haze's colour is chosen.
+      airGain: w.look.air && ATMO_PARAMS[w.look.air] ? ATMO_PARAMS[w.look.air].heightGain : 0,
     },
   }));
 }
@@ -288,7 +292,10 @@ export const WORLDS = [
     look: { map: '2k_mercury.jpg', tint: 0x848383, rough: 0.45 },
   },
   // `rim` is a thin scattering rim where there is air, in the colour photographs show at the limb
-  // (#318). HOW EACH WORLD REFLECTS (spec 0054, the material block below): `limb` is Minnaert's k,
+  // (#318). `air` names a scene/atmosphere.js ATMO_PARAMS row (spec 0054 task 3): Mars, Venus and
+  // Titan wear a single-scattering shell like the Earth's, and their rim comes back only when the
+  // shell is off -- under the frame latch, or on a disc too small to show air. Uranus and Neptune
+  // keep the rim: their upper air is limb colour, not a shell. HOW EACH WORLD REFLECTS (spec 0054, the material block below): `limb` is Minnaert's k,
   // for the cloud-covered worlds -- the giants, Venus and Titan; `rough` is Oren-Nayar's sigma in
   // radians, for rock and ice, and a row without one takes DEFAULT_ROUGHNESS (0.2, frost). The
   // design gave four roughnesses -- the Moon 0.5, Mercury 0.45, Mars 0.35, icy moons 0.2 -- and the
@@ -299,12 +306,12 @@ export const WORLDS = [
   {
     id: 'venus', display: 'Venus', parent: 'sun', radiusKm: 6051.8,
     body: 'Venus', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_venus_atmosphere.jpg', tint: 0xe6bf81, limb: 0.9, rim: { colour: 0xfff0c8, gain: 0.5 } },
+    look: { map: '2k_venus_atmosphere.jpg', tint: 0xe6bf81, limb: 0.9, air: 'venus', rim: { colour: 0xfff0c8, gain: 0.5 } },
   },
   {
     id: 'mars', display: 'Mars', parent: 'sun', radiusKm: 3389.5,
     body: 'Mars', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_mars.jpg', tint: 0xb75d41, rough: 0.35, rim: { colour: 0xe8b089, gain: 0.3 } },
+    look: { map: '2k_mars.jpg', tint: 0xb75d41, rough: 0.35, air: 'mars', rim: { colour: 0xe8b089, gain: 0.3 } },
   },
   {
     id: 'jupiter', display: 'Jupiter', parent: 'sun', radiusKm: 69911.0,
@@ -402,7 +409,7 @@ export const WORLDS = [
     // ground, is what anyone has seen of Titan in visible light. Darkened 2026-09-22, same hue.
     id: 'titan', display: 'Titan', parent: 'saturn', radiusKm: 2574.76,
     body: 'Titan', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT,
-    look: { flat: true, tint: 0x8f5e26, albedo: 0.22, haze: true, limb: 0.9, rim: { colour: 0xe0a050, gain: 0.7 } },
+    look: { flat: true, tint: 0x8f5e26, albedo: 0.22, haze: true, limb: 0.9, air: 'titan', rim: { colour: 0xe0a050, gain: 0.7 } },
   },
   {
     // "Triton's reddish color" (Wikipedia) on frost with "an icy sheen" (NASA Science): a pale pink.
@@ -913,6 +920,14 @@ function sunDirFrom(toKm, fromKm, out) {
  */
 export const TEXTURE_AT_HALF_VIEW = 0.015;
 
+/**
+ * A world's air shell is drawn when its disc is at least this share of half the view's height: the
+ * map's own threshold, six pixels of radius on an 800-pixel screen. Below it the shell's few pixels
+ * are one colour at the edge of a dot, and from the default Earth view none of the three is that big,
+ * so the air costs no draw call there (planets-air PR: 0 calls added at boot).
+ */
+export const AIR_AT_HALF_VIEW = TEXTURE_AT_HALF_VIEW;
+
 export function createWorlds(scene, opts = {}) {
   const base = opts.textureBase === undefined ? 'textures/' : opts.textureBase;
   // No document means no image decoding: a headless test builds every mesh and every
@@ -1033,6 +1048,14 @@ export function createWorlds(scene, opts = {}) {
 
     if (!w.look.earth && !w.look.emissive) applyLook(mesh.material, w.look);
 
+    // Spec 0054 task 3: the air on Mars, Venus and Titan. Off until update() finds the disc big enough.
+    if (w.look.air && ATMO_PARAMS[w.look.air]) {
+      const air = createAirShell(w.look.air);
+      air.visible = false;
+      mesh.add(air);
+      mesh.userData.air = air;
+    }
+
     if (w.look.ring) {
       const ringMap = texture(w.look.ring.map);
       const ring = ringMesh(w, ringMap);
@@ -1123,6 +1146,25 @@ export function createWorlds(scene, opts = {}) {
     mesh.scale.setScalar(drawnRadiusKm / stage.unitKm);
     viewState.set(w.id, describe(w, trueDistKm, drawnDistKm, drawnRadiusKm, { parent: ps, floored: floorKm > scaledKm }));
     return true;
+  }
+
+  /**
+   * A world's air shell this frame (spec 0054 task 3): on when its disc can show air and the frame
+   * latch has not tripped, #318's rim when it is off, the Sun's direction, and which face to draw --
+   * the front from outside, so the haze in front of the disc is drawn, the back from inside it.
+   */
+  function updateAir(w, mesh, sunDir) {
+    const air = mesh.userData.air;
+    const on = !latched && discShare(w.id) >= AIR_AT_HALF_VIEW;
+    air.visible = on;
+    const u = mesh.material.uniforms;
+    if (u && u.uRimGain) u.uRimGain.value = on || !w.look.rim ? 0 : w.look.rim.gain;
+    if (!on) return;
+    air.material.uniforms.uSunDir.value.copy(sunDir);
+    camera.getWorldPosition(_camPosU);
+    const inside = _camPosU.distanceTo(mesh.position) < mesh.scale.x * air.userData.top;
+    const side = inside ? THREE.BackSide : THREE.FrontSide;
+    if (air.material.side !== side) air.material.side = side;
   }
 
   function update(tMs) {
@@ -1302,6 +1344,7 @@ export function createWorlds(scene, opts = {}) {
           mesh.material.uniforms.uSunDir.value.copy(sunDirHere);
         }
         if (mesh.userData.ring) mesh.userData.ring.material.uniforms.uSunDir.value.copy(sunDirHere);
+        if (mesh.userData.air) updateAir(w, mesh, sunDirHere);
         if (w.look.earthshine && mesh.material && mesh.material.uniforms && mesh.material.uniforms.uEarthshine) {
           // The Sun-Earth-Moon angle and the Earth-Moon distance, from the geocentric vectors step 2a
           // already made, and the Earth's direction from the Moon in scene axes.
