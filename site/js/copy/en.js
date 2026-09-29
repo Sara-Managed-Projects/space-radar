@@ -1701,6 +1701,8 @@ export const COPY = {
     failed: 'The postcard could not be made just now',
     // `{id}` from what the view shows, `{date}` the day the sky is from, `{ext}` jpg or pdf.
     fileName: 'space-radar-postcard-{id}-{date}.{ext}',
+    // Spec 0047 req 11: the selection's brackets and tag drawn onto the picture, off by default.
+    withTag: 'With the tag on the selection',
     when: '{date}, {time} UTC',
     mark: 'spaceradar.ai',
   },

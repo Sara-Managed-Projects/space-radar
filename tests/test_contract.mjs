@@ -89,7 +89,7 @@ const CONTRACT = {
   'ui/cleanview.js': ['createCleanView', 'wantsToggle'],
   // Spec 0045 req 10: Regular and Compact, chosen or automatic below 800 px of height.
   'ui/density.js': ['createDensity', 'densityPanel', 'readDensity', 'writeDensity', 'isCompact', 'DENSITY_KEY', 'CHOICES', 'SHORT_QUERY'],
-  'ui/printcard.js': ['createPrintButton', 'printSize', 'caption', 'pdfFromJpeg'],
+  'ui/printcard.js': ['createPrintButton', 'printSize', 'caption', 'pdfFromJpeg', 'printTag', 'tagText'],
   'copy/en.js': ['COPY', 'compare'],
 };
 
