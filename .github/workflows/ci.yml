@@ -337,6 +337,11 @@ jobs:
       # and the Moon's earthshine is NASA's geometric albedo worked through the Lambert phase law.
       - name: the worlds are physically lit, and the Moon wears earthshine (spec 0054)
         run: node tests/test_world_light.mjs
+      # Spec 0054 task 3: Mars, Venus and Titan wear single-scattering shells. The JS twin's colours
+      # against the photographs, its Chapman light path against brute force, the GLSL against the
+      # twin, and when a shell is drawn (never from the default view, never under the latch).
+      - name: the air on Mars, Venus and Titan (spec 0054 task 3)
+        run: node tests/test_air.mjs
       - name: the eclipse trip's five stops land on the library's eclipses, counted from the visitor's clock (spec 0037)
         run: node tests/test_eclipse_trip.mjs
       - name: the trajectory chart samples the record's own path and breaks at the date line (spec 0026 req 14)

@@ -1807,6 +1807,9 @@ function derivedDrawingLine(record, T) {
     if (pick(md, 'exposed') === true && T.worldLit) parts.push(T.worldLit);
     const gain = Number(pick(md, 'earthshineGain'));
     if (gain > 0 && T.worldEarthshine) parts.push(t(T.worldEarthshine, { n: fmt.int(gain) }));
+    const air = Number(pick(md, 'airGain'));
+    if (air > 1 && T.worldAir) parts.push(t(T.worldAir, { n: fmt.int(air) }));
+    else if (air === 1 && T.worldAirTrue) parts.push(T.worldAirTrue);
     return parts.length ? parts.join(COPY.punctuation.separator) : null;
   }
   if (!klass) return null;

@@ -1256,6 +1256,11 @@ export const COPY = {
     // ...and the Moon's night side, lit by the Earth (scene/worlds.js earthshineShare), is drawn
     // brighter than that camera would catch it. {n} is EARTHSHINE_GAIN.
     worldEarthshine: 'its dark side glows with earthshine, the Earth’s own light, drawn {n} times brighter than that camera would catch it, about as the eye sees it',
+    // Spec 0054 task 3: the air on Mars, Venus and Titan (scene/atmosphere.js). Its height, pressure
+    // and optical depth are measured; how much thicker it is drawn, and the colour of its dust or
+    // haze, are not, and the card says both. {n} is the row's heightGain.
+    worldAir: 'its air is drawn {n} times thicker than it is so that it shows at this size, and the colour of its haze is illustrative',
+    worldAirTrue: 'its haze is drawn at its measured height, and its colour is illustrative',
     mount: 'where we hang it on the model is our own arrangement, and it is drawn far bigger than it is — at true size it would be too small to see',
   },
 
