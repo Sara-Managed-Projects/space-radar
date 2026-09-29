@@ -1,4 +1,4 @@
-// tests/test_printcard.mjs -- the screen as a printable postcard (ui/printcard.js).
+// tests/test_printcard.mjs -- the screen as a printable postcard (ui/printcard.js, ui/printcompose.js).
 //
 // Ivan, 2026-09-28: "postcards of space on click, where current screen will be as postcard which is
 // possible to print then (could be downloaded in PDF or JPEG)". Asserted: the print size is the
@@ -14,7 +14,7 @@ import { dirname, join } from 'node:path';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
-const { printSize, caption, pdfFromJpeg } = await import(join(ROOT, 'site/js/ui/printcard.js'));
+const { printSize, caption, pdfFromJpeg } = await import(join(ROOT, 'site/js/ui/printcompose.js'));
 
 const land = printSize(16 / 9);
 check(land.w === 1800 && land.h === 1200 && land.ptW === 432 && land.ptH === 288 && !land.portrait, `landscape is 1800 x 1200 px on 432 x 288 pt (${JSON.stringify(land)})`);

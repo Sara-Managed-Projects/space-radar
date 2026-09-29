@@ -10,7 +10,7 @@ import { readFileSync } from 'node:fs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const JS = join(ROOT, 'site/js');
-const { printTag, tagText, printSize } = await import(join(JS, 'ui/printcard.js'));
+const { printTag, tagText, printSize } = await import(join(JS, 'ui/printcompose.js'));
 const { tagLines } = await import(join(JS, 'ui/cards.js'));
 const { parseCelestrakGP } = await import(join(JS, 'data/parsers.js'));
 
@@ -65,10 +65,13 @@ const behind = printTag(lines, { ...at, behind: 'behind Earth' }, size, measure)
 check(behind.occluded === true && /behind Earth/.test(behind.text.readouts), 'occluded: drawn at half, and said');
 
 // --- off by default, and wired ---------------------------------------------------------------------
+// The menu is ui/printcard.js; the picture, loaded on the first save, is ui/printcompose.js.
 const src = readFileSync(join(JS, 'ui/printcard.js'), 'utf8');
+const made = readFileSync(join(JS, 'ui/printcompose.js'), 'utf8');
 check(/tagBox\.checked = false/.test(src) && /withTag: tagBox\.checked/.test(src), 'the choice is off by default and read at the tap');
-check(/const at = opts\.withTag && record \? liveTagAt\(ctx, record\) : null;\n\s+const frame = api/.test(src), 'the live projection is read before renderTo() changes the camera\'s aspect');
-check(/printTag\(tagLines\(record, ctx\), at, size, measure\)/.test(src), 'the print reads tagLines(), the card\'s words');
+check(/import\('\.\/printcompose\.js'\)/.test(src) && !/from '\.\/printcompose\.js'/.test(src), 'the picture is imported on the first save, never at boot');
+check(/const at = opts\.withTag && record \? liveTagAt\(ctx, record\) : null;\n\s+const frame = api/.test(made), 'the live projection is read before renderTo() changes the camera\'s aspect');
+check(/printTag\(tagLines\(record, ctx\), at, size, measure\)/.test(made), 'the print reads tagLines(), the card\'s words');
 
 if (problems.length) { console.error('printtag FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('printtag ok: the drawn strings are tagLines()\'s; the brackets land where the selection is in the print and scale with it; the tag flips at all four corners of the print; nothing drawn off the picture; off by default');
