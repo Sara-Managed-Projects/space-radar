@@ -184,6 +184,9 @@ jobs:
       # Spec 0047: brackets on the tracked object, a tag in the card's own words, a chevron off screen.
       - name: "The tracked object's HUD: the box rule, the tag's flip, the tick's floor, the chevron's edge"
         run: node tests/test_hud.mjs
+      # Spec 0048 task 1: shadow edges and the lap's end to 1 s against a scan a second at a time.
+      - name: "Time facts on the card: the next 90 minutes of light, the lap countdown, the orbit number"
+        run: node tests/test_timefacts.mjs
       # Spec 0045: the instrument's look as numbers. The contrast table is recomputed from the
       # tokens, so the study's 0.62 glass (2.16:1 for dim text over a white cloud) cannot come back.
       - name: "The instrument's tokens: glass that passes AA over a cloud, 6 px corners, a lit edge, ember brackets (spec 0045)"

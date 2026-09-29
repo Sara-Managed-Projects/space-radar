@@ -45,6 +45,8 @@ const CONTRACT = {
   'scene/models.js': ['modelFor'],
   'scene/camera.js': ['createCameraRig'],
   'sky/passes.js': ['predictPasses'],
+  // Spec 0048: the next 90 minutes in time, shared by the card and (later) the follow strip.
+  'sky/timefacts.js': ['lightWindows', 'nextAscendingNode', 'orbitNumber', 'launchYear', 'timeFacts', 'hasTimeFacts'],
   'sky/skyview.js': ['createSkyView'],
   'ui/cards.js': ['showCard', 'hideCard', 'tagLines', 'shortHonesty'],
   // Spec 0047: the tracked object's HUD, and its pure placement rules for tests/test_hud.mjs.

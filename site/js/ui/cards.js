@@ -56,6 +56,7 @@ import {
 } from '../propagate/frames.js';
 import { predictPasses } from '../sky/passes.js';
 import { trajectorySection } from './trajectory.js';
+import { hasTimeFacts, timeFacts, mmss, LIGHT_MINUTES } from '../sky/timefacts.js';
 import { trainOf } from '../data/trains.js';
 import { attachedOdditiesFor, attachedOddityRecord } from '../data/attached.js';
 import { shareButton, pictureButton } from './share.js';
@@ -77,6 +78,10 @@ let bodyEl = null;
 let current = null; // { record, ctx, opts }
 let subscribed = false;
 let lastPaint = 0;
+// The time facts' own once-a-second repaint (spec 0048): the card repaints when the clock is SET,
+// never as it runs, and a countdown that stands still is not a countdown.
+let timeTimer = 0;
+let timeState = null; // {record, ctx, facts}
 
 // ---------------------------------------------------------------------------------------
 // DOM helpers. Nothing here ever touches innerHTML.
@@ -1304,6 +1309,155 @@ export function tagLines(record, ctx, m) {
 }
 
 // ---------------------------------------------------------------------------------------
+// Block 4a0: the next 90 minutes in time (spec 0048 task 1)
+// ---------------------------------------------------------------------------------------
+
+/** Faster than a minute a second, countdowns give way to the clock time of the event (req 10). */
+export const TIME_FAST_RATE = 60;
+/** The facts are worked out again when the clock has moved this far from when they were. */
+const TIME_FACTS_STALE_MS = 60e3;
+
+/**
+ * What the card says about the next 90 minutes, from sky/timefacts.js's numbers and the clock:
+ * the light bar's runs as shares of the window, the next change of light, the lap countdown, the
+ * orbit number and the launch year. Pure; exported for tests/test_timefacts.mjs, which holds the
+ * scrubbed and the faster-than-60x wordings.
+ *
+ * @param {Object} facts  timeFacts(record, t0)
+ * @param {number} tNow   the clock's time, which is the visitor's at 1x and the shown time when scrubbed
+ * @param {number} [rate] the clock's rate
+ */
+export function timeFactWords(facts, tNow, rate = 1) {
+  if (!facts || !Number.isFinite(tNow)) return null;
+  const T = COPY.timeFacts;
+  const fast = Math.abs(Number(rate) || 1) > TIME_FAST_RATE;
+  const out = { bar: [], barLabel: '', light: null, lap: null, orbit: null, orbitNote: null, launched: null };
+  const windows = Array.isArray(facts.windows) ? facts.windows : [];
+  if (windows.length) {
+    const from = Math.max(tNow, windows[0].from);
+    const to = windows[windows.length - 1].to;
+    const span = to - from;
+    const parts = [];
+    for (const w of windows) {
+      const a = Math.max(w.from, from);
+      const b = Math.min(w.to, to);
+      if (!(b > a) || !(span > 0)) continue;
+      out.bar.push({ share: (b - a) / span, sunlit: w.sunlit });
+      const mins = fmt.int(Math.round((b - a) / 60e3));
+      parts.push(t(w.sunlit ? T.barSunlit : T.barShadow, { mins }));
+    }
+    out.barLabel = t(T.barLabel, { parts: parts.join(COPY.punctuation.listJoin) });
+    const here = windows.find((w) => w.from <= tNow && tNow < w.to) || windows[0];
+    const next = windows.find((w) => w.from > tNow);
+    if (!next) {
+      out.light = here.sunlit ? T.allSunlit : T.allShadow;
+    } else if (fast) {
+      out.light = t(next.sunlit ? T.entersSunlightAt : T.entersShadowAt, { time: timeText.hhmm(next.from) });
+    } else {
+      const ms = next.from - tNow;
+      const mins = ms < 60e3 ? T.underAMinute : t(T.minutes, { n: fmt.int(Math.floor(ms / 60e3)) });
+      out.light = t(next.sunlit ? T.entersSunlightIn : T.entersShadowIn, { mins });
+    }
+  }
+  if (Number.isFinite(facts.lapEndMs) && facts.lapEndMs > tNow) {
+    out.lap = fast ? t(T.lapAt, { time: timeText.hhmm(facts.lapEndMs) }) : t(T.lapIn, { mmss: mmss(facts.lapEndMs - tNow) });
+  }
+  if (facts.orbit && Number.isFinite(facts.orbit.n)) {
+    out.orbit = t(T.orbit, { n: fmt.int(facts.orbit.n) });
+    out.orbitNote = T.orbitNote;
+  }
+  if (Number.isFinite(facts.launchYear)) out.launched = t(T.launched, { year: String(facts.launchYear) });
+  return out;
+}
+
+/** The facts for this record now, recomputed only when the clock has moved on from them. */
+function freshFacts(record, tNow) {
+  const st = timeState;
+  const ok = st && st.record === record && st.facts
+    && tNow >= st.facts.t0 && tNow - st.facts.t0 < TIME_FACTS_STALE_MS
+    && !(Number.isFinite(st.facts.lapEndMs) && tNow >= st.facts.lapEndMs);
+  if (ok) return st.facts;
+  let facts = null;
+  try { facts = timeFacts(record, tNow); } catch { facts = null; }
+  timeState = { record, facts };
+  return facts;
+}
+
+function timeFactsSection(record, ctx, m) {
+  if (!hasTimeFacts(record) || standsStill(record, m) || !Number.isFinite(m.tMs)) return null;
+  const facts = freshFacts(record, m.tMs);
+  const words = timeFactWords(facts, m.tMs, ctx && ctx.clock ? ctx.clock.rate : 1);
+  if (!words || (!words.bar.length && !words.lap)) return null;
+  const wrap = section('sr-card__block sr-card__time', t(COPY.timeFacts.label, { n: LIGHT_MINUTES }));
+  const bar = el('div', 'sr-light');
+  bar.setAttribute('role', 'img');
+  wrap.appendChild(bar);
+  const axis = el('div', 'sr-light__axis');
+  axis.setAttribute('aria-hidden', 'true');
+  axis.appendChild(el('span', '', COPY.timeFacts.now));
+  axis.appendChild(el('span', '', COPY.timeFacts.end));
+  wrap.appendChild(axis);
+  // The orbit number's note is words on the card, not a tooltip: it is the half of the line that
+  // says the number is inferred.
+  for (const key of ['light', 'lap', 'orbit', 'orbitNote', 'launched']) {
+    const line = el('p', key === 'orbitNote' ? 'sr-card__fact-note' : `sr-card__fact sr-card__fact--${key}`);
+    line.dataset.fact = key;
+    wrap.appendChild(line);
+  }
+  paintTimeFacts(wrap, words);
+  return wrap;
+}
+
+/** Write the words into a time-facts block: text only, the bar's runs only when they change. */
+function paintTimeFacts(wrap, words) {
+  if (!wrap || !words) return;
+  const bar = wrap.querySelector('.sr-light');
+  if (bar) {
+    const key = words.bar.map((b) => `${b.sunlit ? 's' : 'd'}${b.share.toFixed(3)}`).join();
+    if (bar.dataset.key !== key) {
+      bar.dataset.key = key;
+      clear(bar);
+      for (const b of words.bar) {
+        const seg = el('span', b.sunlit ? 'sr-light__seg is-sunlit' : 'sr-light__seg is-shadow');
+        seg.style.width = `${(b.share * 100).toFixed(2)}%`;
+        bar.appendChild(seg);
+      }
+    }
+    if (bar.getAttribute('aria-label') !== words.barLabel) bar.setAttribute('aria-label', words.barLabel);
+    bar.hidden = !words.bar.length;
+  }
+  for (const key of ['light', 'lap', 'orbit', 'orbitNote', 'launched']) {
+    const line = wrap.querySelector(`[data-fact="${key}"]`);
+    if (!line) continue;
+    const text = words[key] || '';
+    if (line.textContent !== text) line.textContent = text;
+    if (line.hidden !== !text) line.hidden = !text;
+  }
+}
+
+/** Once a second while a card with time facts is open: the countdowns move with the clock. */
+function tickTimeFacts() {
+  if (!current || !host || host.hidden || typeof document === 'undefined') { stopTimeFacts(); return; }
+  const wrap = host.querySelector('.sr-card__time');
+  if (!wrap) { stopTimeFacts(); return; }
+  const c = current.ctx;
+  let tNow;
+  try { tNow = c.clock.now(); } catch { return; }
+  const facts = freshFacts(current.record, tNow);
+  paintTimeFacts(wrap, timeFactWords(facts, tNow, c.clock.rate));
+}
+
+function startTimeFacts() {
+  if (timeTimer || typeof setInterval !== 'function') return;
+  timeTimer = setInterval(tickTimeFacts, 1000);
+}
+
+function stopTimeFacts() {
+  if (timeTimer) clearInterval(timeTimer);
+  timeTimer = 0;
+}
+
+// ---------------------------------------------------------------------------------------
 // Block 5: "see it from here" -- the copy pattern that is the actual feature
 // ---------------------------------------------------------------------------------------
 
@@ -2125,6 +2279,10 @@ function render(record, ctx, opts = {}) {
     body.appendChild(wrap);
   }
 
+  // 4a0. the next 90 minutes in time: light and shadow, the lap, the orbit number (spec 0048)
+  const time = timeFactsSection(record, ctx, m);
+  if (time) { body.appendChild(time); startTimeFacts(); }
+
   // 4a. its path: height and ground track over the next lap and a half (spec 0026 req 14)
   const traj = trajectorySection(record, m.tMs);
   if (traj) body.appendChild(traj);
@@ -2305,6 +2463,8 @@ export function refreshLeadNote() {
 
 export function hideCard() {
   current = null;
+  stopTimeFacts();
+  timeState = null;
   if (!host) return;
   // Give focus back to where the visitor was -- the search box, a list row -- if it is still there
   // and nothing else has taken focus since.

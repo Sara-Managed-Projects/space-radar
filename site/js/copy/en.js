@@ -796,6 +796,34 @@ export const COPY = {
     south: 'S',
     note: 'Worked out from the same elements as the dot; the map is the ground directly below it.',
   },
+  // Spec 0048: the next ninety minutes of an Earth orbiter, in time (sky/timefacts.js). Every
+  // number here is worked out from the same elements as the dot, and the orbit count says it is
+  // inferred because it carries a catalogue count forward.
+  timeFacts: {
+    label: 'The next 90 minutes',
+    barLabel: 'Sunlight and shadow over the next 90 minutes: {parts}',
+    barSunlit: '{mins} min in sunlight',
+    barShadow: '{mins} min in Earth’s shadow',
+    now: 'now',
+    end: '+90 min',
+    // Counting down in the clock's own time: at 1x that is yours; scrubbed, it is the time shown.
+    entersShadowIn: 'Enters Earth’s shadow in {mins}',
+    entersSunlightIn: 'Comes out into sunlight in {mins}',
+    // Faster than a minute a second, a countdown is a blur; the clock time of the event is not.
+    entersShadowAt: 'Enters Earth’s shadow at {time}',
+    entersSunlightAt: 'Comes out into sunlight at {time}',
+    allSunlit: 'In sunlight for all of the next 90 minutes',
+    allShadow: 'In Earth’s shadow for all of the next 90 minutes',
+    minutes: '{n} min',
+    underAMinute: 'under a minute',
+    // A lap runs from one northbound equator crossing to the next (sky/timefacts.js).
+    lapIn: 'Completes this lap in {mmss}',
+    lapAt: 'Completes this lap at {time}',
+    orbit: 'Orbit {n} since launch',
+    orbitNote: 'Inferred: the catalogue’s count at the elements’ epoch, plus the laps since.',
+    // The year from the international designator ("1998-067A"); the day comes with SATCAT (task 2).
+    launched: 'Launched in {year}',
+  },
   // A launch's satellites as one thing (spec 0026 req 17).
   train: {
     label: 'In a train',

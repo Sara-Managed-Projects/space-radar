@@ -2624,6 +2624,37 @@ html.sr-phone .sr-trips__select {
 
 /* The card's trajectory chart (spec 0026 req 14) ---------------------------------------- */
 
+/* The next 90 minutes (spec 0048, ui/cards.js timeFactsSection): a bar of sunlight and shadow,
+   sunlit in the text colour and shadowed in the debris slate, "now" at its left end. */
+.sr-light {
+  display: flex;
+  height: 8px;
+  margin: 4px 0 2px;
+  overflow: hidden;
+  border-radius: var(--sr-radius-sm);
+  background: var(--sr-raise);
+}
+.sr-light__seg { height: 100%; }
+.sr-light__seg.is-sunlit { background: var(--sr-text); }
+.sr-light__seg.is-shadow { background: var(--sr-debris); }
+.sr-light__axis {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--sr-text-dim);
+}
+.sr-card__fact {
+  margin: 0 0 2px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.sr-card__fact-note {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: var(--sr-text-dim);
+}
+
 .sr-traj { display: block; width: 100%; height: auto; margin: 4px 0 6px; }
 .sr-traj__axis, .sr-traj__equator { stroke: var(--sr-line); stroke-width: 1; }
 .sr-traj__map { fill: var(--sr-raise); stroke: var(--sr-line); stroke-width: 1; }
