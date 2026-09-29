@@ -42,7 +42,7 @@ CASES: list[tuple[str, str, str, str]] = [
     ("a world fact with no day it was read",
      "worlds.yaml", 'read: 2026-09-22, says: "radius 1560.8 km"', 'says: "radius 1560.8 km"'),
     ("a flat colour that is not a colour",
-     "worlds.yaml", 'look: {flat: "#d6cfc0"}', 'look: {flat: "pale"}'),
+     "worlds.yaml", 'look: {flat: "#958b7e"}', 'look: {flat: "pale"}'),
     # The browser's copy of worlds.yaml is kept by hand (scene/worlds.js, scene/stage.js), so the
     # two must be refused when they disagree -- which is why this harness copies those two files.
     ("a world whose radius the browser does not draw",
