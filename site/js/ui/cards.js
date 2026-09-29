@@ -2113,6 +2113,16 @@ function paintMore(node) {
 function subscribe(ctx) {
   if (subscribed || !ctx || !ctx.clock || !ctx.clock.onChange) return;
   subscribed = true;
+  // The Earth's clouds line changes when a picture arrives or the live layer gives way, not on the
+  // clock (scene/liveclouds.js onChange, sent as `sr:clouds` by main.js): only that line is rewritten.
+  if (typeof window !== 'undefined') {
+    window.addEventListener('sr:clouds', () => {
+      const c = current && current.ctx;
+      const line = typeof document !== 'undefined' && document.querySelector('.sr-card__clouds');
+      if (!line || !c || !c.liveClouds || current.record.id !== 'earth') return;
+      try { line.textContent = c.liveClouds.line(c.clock.now()); } catch { /* keep the last line */ }
+    });
+  }
   try {
     ctx.clock.onChange(() => {
       if (!current) return;

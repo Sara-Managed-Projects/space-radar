@@ -206,6 +206,9 @@ export async function boot({ setStatus } = {}) {
   ctx.liveClouds = createLiveClouds({
     earth: () => worlds.meshFor('earth'),
     saveData: typeof navigator !== 'undefined' && shouldSaveData(navigator.connection),
+    // An open Earth card rewrites its clouds line on this (ui/cards.js): the card repaints on the
+    // clock, and at 1x nothing else would tell it the pictures arrived.
+    onChange: () => window.dispatchEvent(new CustomEvent('sr:clouds')),
   });
   ctx.liveClouds.start();
 

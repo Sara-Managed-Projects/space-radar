@@ -211,6 +211,13 @@ check(/mix\(\s*c,\s*pow\(\s*l\.r,\s*uCloudGamma\s*\),\s*l\.g \* uLive\s*\)/.test
 const main = readFileSync(join(JS, 'main.js'), 'utf8');
 const lc = readFileSync(join(JS, 'scene/liveclouds.js'), 'utf8');
 check(/ctx\.liveClouds\.start\(\)/.test(main) && G.START_DELAY_MS >= 5000, 'main.js starts the live clouds, and the first look waits at least 5 s');
+{
+  // 2026-09-28: the card said "illustrative" beside live pictures, because nothing told an open card
+  // they had arrived. main.js turns onChange into `sr:clouds` and the card rewrites its line on it.
+  const cards = readFileSync(join(JS, 'ui/cards.js'), 'utf8');
+  check(/onChange:\s*\(\)\s*=>\s*window\.dispatchEvent\(new CustomEvent\('sr:clouds'\)\)/.test(main), 'main.js announces every live-clouds change as sr:clouds');
+  check(/addEventListener\('sr:clouds'[\s\S]{0,400}sr-card__clouds[\s\S]{0,300}liveClouds\.line\(/.test(cards), 'an open Earth card rewrites its clouds line on sr:clouds');
+}
 check(/schedule\(START_DELAY_MS\)/.test(lc) && !/look\(\)\s*;?\s*\n\s*\}\s*,?\s*\n\s*\/\*\* Force/.test(lc), 'start() only schedules; nothing is fetched on the boot path');
 check(/if \(started \|\| saveData\) return;/.test(lc), 'saveData: never starts');
 
