@@ -480,10 +480,14 @@ const TEMPLATES = {
     const md = meta(record);
     const key = stormStatusKey(md);
     const status = key && T.statuses[key];
-    const ago = stormAdvisoryAgo(pickNumber(md, 'advisoryMs'), m.tMs);
+    const adv = pickNumber(md, 'advisoryMs');
+    const ago = stormAdvisoryAgo(adv, m.tMs);
+    const before = adv !== null && Number.isFinite(m.tMs) && m.tMs < adv;
     const wind = pickNumber(md, 'trackMaxWindKmh');
     return buildSentence(
-      status ? t(T.lead, { name: displayName(record), a: article(status), status, ago }) : t(T.leadUnknown, { name: displayName(record), ago }),
+      status
+        ? t(before ? T.leadBefore : T.lead, { name: displayName(record), a: article(status), status, ago })
+        : t(before ? T.leadBeforeUnknown : T.leadUnknown, { name: displayName(record), ago }),
       [wind !== null ? t(T.wind, { n: fmt.int(roughly(wind)) }) : null],
     );
   },

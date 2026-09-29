@@ -1663,6 +1663,9 @@ export const COPY = {
     storm: {
       lead: '{name} is {a} {status} whose centre was here {ago}',
       leadUnknown: '{name} is a tropical cyclone whose centre was here {ago}',
+      // The clock in the six hours before the advisory: "was here in 2 hours" read as nonsense.
+      leadBefore: '{name} is {a} {status} whose centre reaches here {ago}',
+      leadBeforeUnknown: '{name} is a tropical cyclone whose centre reaches here {ago}',
       wind: 'the strongest winds on its track, forecast included, reach {n} km/h',
       statuses: {
         hurricane: 'hurricane',

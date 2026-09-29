@@ -92,6 +92,7 @@ check(w.honesty.startsWith(COPY.cls.measured) && w.honesty.includes('21:00 UTC a
 check(w.sources.includes('GDACS') && w.sources.includes('CC BY 4.0'), `the source line names GDACS and its licence: ${w.sources}`);
 const before = cardWords(polo, { ...ctx, clock: { now: () => adv - 2 * 3600000 } });
 check(new Map(before.rows).get(R.stormAdvisory) === '21:00 UTC, in 2 hours', `a clock just before the advisory says "in", not "ago": ${new Map(before.rows).get(R.stormAdvisory)}`);
+check(before.sentence.startsWith('Polo is a hurricane whose centre reaches here in 2 hours'), `and so does the sentence: ${before.sentence}`);
 const fay = cardWords(byName.get('Fay'), ctx);
 check(fay.sentence.startsWith('Fay is a tropical depression whose centre was here'), `a depression is called one: ${fay.sentence}`);
 const surigae = cardWords(byName.get('Surigae'), ctx);

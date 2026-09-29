@@ -121,6 +121,9 @@ export function createLiveClouds({ earth, now = () => Date.now(), fetchImpl = (u
     composeMs: null,
     composer: null,
     mode: 'illustrative',
+    // Why the last scheduled look did not run, for the Sources panel's probes: 'hidden' | 'busy'.
+    skipped: null,
+    scheduledAt: null,
   };
   let composer = null;
   let timer = 0;
@@ -180,8 +183,9 @@ export function createLiveClouds({ earth, now = () => Date.now(), fetchImpl = (u
   }
 
   async function look() {
-    if (busy) return;
-    if (typeof document !== 'undefined' && document.hidden) return;
+    if (busy) { st.skipped = 'busy'; return; }
+    if (typeof document !== 'undefined' && document.hidden) { st.skipped = 'hidden'; return; }
+    st.skipped = null;
     busy = true;
     const t0 = (typeof performance !== 'undefined' ? performance.now() : Date.now());
     if (!composer) { composer = makeComposer(); st.composer = composer.kind; }
@@ -225,6 +229,7 @@ export function createLiveClouds({ earth, now = () => Date.now(), fetchImpl = (u
 
   function schedule(ms) {
     if (timer) clearTimeout(timer);
+    st.scheduledAt = now() + ms;
     timer = setTimeout(() => {
       timer = 0;
       const go = () => look().finally(() => {
@@ -272,6 +277,8 @@ export function createLiveClouds({ earth, now = () => Date.now(), fetchImpl = (u
         lastLookMs: st.lastLookMs,
         composeMs: st.composeMs,
         composer: st.composer,
+        skipped: st.skipped,
+        scheduledAt: st.scheduledAt,
       };
     },
     /** The Earth card's line about its clouds: which, from where, how old. */
