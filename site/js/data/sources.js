@@ -155,9 +155,17 @@ export const SOURCES = {
   // first visit spent 1.9 MB of its 4.6 MB on those two files (measured on a phone, 2026-09-22). A
   // cut holds only what the layer selects; with no cut in the manifest, or once it is out of date,
   // the live URL below is the full file, exactly as before.
+  //
+  // A cut PAST ITS valid_until IS NOT REFRESHED BEHIND ITSELF (`cutOf`): its live URL is the whole
+  // file, so asking it behind the copy spent the saving the cut exists for. MEASURED 2026-09-28,
+  // with the saved copy six days old: every first visit asked CelesTrak for the 7 MB catalogue
+  // twice (notable and geo) and the 5 MB Starlink file once, behind cuts already on screen. A
+  // stale cut stays drawn and says its age; the next snapshot refresh replaces it. With no cut in
+  // the manifest at all, the full live file is still the safety net.
   'celestrak-notable': {
     id: 'celestrak-notable',
     registryId: 'celestrak-notable',
+    cutOf: 'celestrak-active',
     label: 'CelesTrak — satellites worth knowing (a cut of the active catalogue)',
     publisher: 'CelesTrak',
     url: 'https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=json',
@@ -171,6 +179,7 @@ export const SOURCES = {
   'celestrak-geo': {
     id: 'celestrak-geo',
     registryId: 'celestrak-geo',
+    cutOf: 'celestrak-active',
     label: 'CelesTrak — the geostationary ring (a cut of the active catalogue)',
     publisher: 'CelesTrak',
     url: 'https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=json',
@@ -185,6 +194,7 @@ export const SOURCES = {
   'celestrak-starlink-recent': {
     id: 'celestrak-starlink-recent',
     registryId: 'celestrak-starlink-recent',
+    cutOf: 'celestrak-supplemental-starlink',
     label: 'CelesTrak — recent Starlink launches (a cut of the operator file)',
     publisher: 'CelesTrak',
     url: 'https://celestrak.org/NORAD/elements/supplemental/sup-gp.php?FILE=starlink&FORMAT=json',
@@ -914,7 +924,7 @@ async function doFetch(id) {
       snapshot: null,
     };
     // Past its own valid_until: draw it now, and ask upstream behind it (see the header).
-    behind = src.browser === true && snap.validUntil != null && attemptAt > snap.validUntil;
+    behind = src.browser === true && !src.cutOf && snap.validUntil != null && attemptAt > snap.validUntil;
   } else if (src.browser === true) {
     // 2. The direct fetch this file has always made. The safety net, unchanged.
     next = await fetchLive(src, prev, attemptAt);

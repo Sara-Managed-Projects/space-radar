@@ -170,7 +170,7 @@ async function twoVisits({ withCaches }) {
 // A SAVED COPY, THEN LIVE (2026-09-22). Snapshots were uploaded once from a laptop; snapshot-first
 // used to mean snapshot-only, so the map would have frozen at the upload. Past its valid_until a
 // snapshot is drawn at once and the publisher is asked behind it; a newer answer replaces it.
-async function savedCopy({ validMinutes, liveOk }) {
+async function savedCopy({ validMinutes, liveOk, id = 'celestrak-stations' }) {
   const store = new Map();
   globalThis.localStorage = {
     get length() { return store.size; }, key: (i) => [...store.keys()][i] ?? null,
@@ -184,19 +184,19 @@ async function savedCopy({ validMinutes, liveOk }) {
   globalThis.fetch = async (url) => {
     const u = String(url);
     if (u.endsWith('/data/v1/index.json')) {
-      return new Response(JSON.stringify({ schema: 1, snapshots: { 'celestrak-stations': { status: 'ok', fetched_at: fetched, valid_until: valid } } }), { status: 200 });
+      return new Response(JSON.stringify({ schema: 1, snapshots: { [id]: { status: 'ok', fetched_at: fetched, valid_until: valid } } }), { status: 200 });
     }
     if (u.includes('/data/v1/')) {
-      return new Response(JSON.stringify({ schema: 1, source: 'celestrak-stations', fetched_at: fetched, valid_until: valid, body: [omm(1)] }), { status: 200 });
+      return new Response(JSON.stringify({ schema: 1, source: id, fetched_at: fetched, valid_until: valid, body: [omm(1)] }), { status: 200 });
     }
     upstream += 1;
     if (!liveOk) return new Response('GP data has not updated since your last successful download', { status: 403 });
     return new Response(JSON.stringify([omm(1), omm(2), omm(3)]), { status: 200 });
   };
-  const mod = await import(join(ROOT, 'site/js/data/sources.js') + `?saved=${validMinutes}-${liveOk}`);
+  const mod = await import(join(ROOT, 'site/js/data/sources.js') + `?saved=${validMinutes}-${liveOk}-${id}`);
   const updates = [];
   mod.onUpdate((id, r) => updates.push({ id, n: r.data ? r.data.length : 0, via: r.via }));
-  const first = await mod.load('celestrak-stations', { await: true });
+  const first = await mod.load(id, { await: true });
   await new Promise((r) => setTimeout(r, 20));
   return { first, updates, upstream };
 }
@@ -212,6 +212,15 @@ async function savedCopy({ validMinutes, liveOk }) {
   check(fresh.upstream === 0 && fresh.first.data.length === 1, 'a snapshot still inside its valid_until is the answer, and nothing is asked upstream');
   if (!problems.length) console.log('  an out-of-date snapshot is drawn at once and replaced by a newer live answer; an in-date one is left alone');
 }
+
+// A CUT IS NEVER REFRESHED BY ITS WHOLE FILE (2026-09-28). The cuts' live URL is the 7 MB catalogue
+// or the 5 MB Starlink file; asked behind a stale cut, it cost every visitor 19 MB of JSON (before gzip) for 33 satellites.
+for (const id of ['celestrak-notable', 'celestrak-geo', 'celestrak-starlink-recent']) {
+  const cut = await savedCopy({ validMinutes: -60 * 24 * 6, liveOk: true, id });
+  check(cut.first.data && cut.first.data.length === 1, `${id}: a stale cut is still drawn (${cut.first.data && cut.first.data.length} record)`);
+  check(cut.upstream === 0, `${id}: and its whole file is not asked for behind it (${cut.upstream} request)`);
+}
+if (!problems.length) console.log('  a stale cut stays drawn and never pulls its whole file');
 
 if (problems.length) {
   console.log(`sources cache: ${problems.length} problem(s)`);
