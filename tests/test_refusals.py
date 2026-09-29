@@ -591,6 +591,13 @@ CASES: list[tuple[str, str, str, str]] = [
 #
 # (name, file under site/js/ui/, find, replace)
 COPY_CASES: list[tuple[str, str, str, str]] = [
+    # spec 0060 item 6: a string meant for later must not reach the screen (orbitalradar's
+    # "Welcome, Admin" line). The path is relative to site/js/ui/, so the copy file is reached by "..".
+    ("a TODO left in the copy",
+     "../copy/en.js", "export const COPY = {", "export const COPY = {\n  leftover: 'TODO: copy',"),
+    ("an admin-panel line in a UI module",
+     "status.js", "const HOST_ID = 'sr-status';",
+     "const HOST_ID = 'sr-status';\nconst WELCOME = t(COPY.x, {}) || 'Welcome, Admin. This is your admin panel';"),
     ("a literal handed to the shared DOM helper",
      "status.js", "const HOST_ID = 'sr-status';",
      "const HOST_ID = 'sr-status';\nconst LEAK = el('p', 'sr-x', 'Sources are loading, please wait');"),
@@ -898,7 +905,7 @@ def check_tour_refusals() -> int:
 
 
 def check_copy_refuses() -> int:
-    """Break the no-literals rule five ways and the dash rule once; assert check_copy.py names the file."""
+    """Break the no-literals rule, the dash rule and the placeholder rule; assert check_copy.py names the file."""
     failures = 0
     with tempfile.TemporaryDirectory() as tmp:
         for name, filename, find, replace in COPY_CASES:

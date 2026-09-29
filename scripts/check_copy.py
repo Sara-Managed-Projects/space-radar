@@ -133,6 +133,33 @@ def double_hyphens() -> list[str]:
     return out
 
 
+# NO PLACEHOLDER SHIPS (spec 0060 item 6). orbitalradar.com, reviewed 2026-09-28, showed every
+# visitor "Welcome, Admin. (This is your admin panel ...)": a string meant for later that reached the
+# screen. Refused in every shipped string: the copy, the data mirrors and the UI modules. Upper-case
+# markers only, because "placeholder" is honest English in our own copy ("treat the dot as a
+# placeholder and the ellipse as the fact", data/sample.js); the markers are what a person types
+# when they mean to come back.
+PLACEHOLDER_MARKER = re.compile(r"\b(?:TODO|FIXME|TBD|XXX)\b")
+PLACEHOLDER_WORDS = re.compile(r"lorem ipsum|\[insert|your (?:text|copy) here|placeholder text|admin panel", re.I)
+
+
+def placeholders() -> list[str]:
+    out = []
+    for path in [*SHIPPED_TEXT, *sorted(UI.glob("*.js"))]:
+        rel = path.relative_to(ROOT)
+        for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            stripped = line.lstrip()
+            if stripped.startswith("//") or stripped.startswith("*"):
+                continue
+            for match in QUOTED.finditer(line.split(" // ")[0]):
+                text = match.group(1) if match.group(1) is not None else match.group(2)
+                hit = PLACEHOLDER_MARKER.search(text) or PLACEHOLDER_WORDS.search(text)
+                if hit:
+                    out.append(f"  {rel}:{lineno}  ships placeholder text ({hit.group(0)!r}): {text[:90]!r}\n"
+                               f"      Write the real sentence, or leave the string out until there is one.")
+    return out
+
+
 # AN EVENT TYPE NAMES ITS SENTENCE. registry/events.yaml's `copy:` said which template tells each
 # type since spec 0015, and named four that did not exist (`close-approach`, `eclipse` twice,
 # `milestone`) with nothing to notice. Since spec 0031 the browser builds those types from the
@@ -197,6 +224,7 @@ def main() -> int:
                     )
 
     findings += double_hyphens()
+    findings += placeholders()
     findings += event_templates()
     if findings:
         print(f"copy: {len(findings)} problem(s) with strings that reach the screen\n")
