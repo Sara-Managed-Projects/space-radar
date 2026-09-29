@@ -216,6 +216,7 @@ export function createCameraRig(camera, domElement, options = {}) {
     dollySpeed: options.dollySpeed ?? 1,
     panSpeed: options.panSpeed ?? 1,
     following: false,
+    riding: false,
     flying: false,
     orbiting: false,
     reducedMotion: prefersReducedMotion(),
@@ -357,6 +358,8 @@ export function createCameraRig(camera, domElement, options = {}) {
 
   function emitUserInput(kind) {
     state.userInteracting = true;
+    // Any hand on the camera ends a ride along and gives the ordinary follow back (spec 0048 req 8).
+    if (ride) stopRide('input');
     for (const fn of inputListeners) {
       try {
         fn(kind);
@@ -690,6 +693,8 @@ export function createCameraRig(camera, domElement, options = {}) {
     dLogDist = 0;
     pendingPan.set(0, 0, 0);
 
+    // A flight ends a ride along: the caller wants the camera somewhere else now.
+    if (ride) stopRide('flight');
     // A second flight replaces the first, and the first is told so rather than dropped.
     const superseded = flight;
     flight = null;
@@ -890,6 +895,7 @@ export function createCameraRig(camera, domElement, options = {}) {
   }
 
   function stopFollow() {
+    if (ride) { ride.resume = null; stopRide('stopped'); }
     followFn = null;
     state.following = false;
   }
@@ -910,6 +916,95 @@ export function createCameraRig(camera, domElement, options = {}) {
     target.copy(followPos);
   }
 
+  // ---------------------------------------------------------------- ride along
+  //
+  // Spec 0048 req 8, orbitalradar's shot: the camera behind the object and a little above it,
+  // looking forward along its track with the Earth's limb in frame, and moving with it. It is not a
+  // flight to a fixed pose -- the object covers 7 km while a flight runs -- so it is its own mode:
+  // every frame the pose is worked out again from the object's position and velocity, and for the
+  // first `ms` the camera is eased from where it was onto that moving pose. `up` turns to the local
+  // vertical so the horizon is level; it is given back, with the ordinary follow, on the first input.
+
+  let ride = null;
+  const _rp = new THREE.Vector3();
+  const _rv = new THREE.Vector3();
+  const _rr = new THREE.Vector3();
+  const _rCam = new THREE.Vector3();
+  const _rTarget = new THREE.Vector3();
+
+  /**
+   * @param {Function} getPos  () -> the object's scene position now
+   * @param {Function} getVel  () -> its scene velocity (any length: only the direction is used)
+   * @param {{back?: number, up?: number, lookAhead?: number, ms?: number}} [opts]  scene units and ms;
+   *   main.js passes 60 km, 20 km and 400 km through stage.unitKm
+   * @returns {boolean} whether it started
+   */
+  function rideAlong(getPos, getVel, opts = {}) {
+    if (typeof getPos !== 'function' || typeof getVel !== 'function') return false;
+    const superseded = flight;
+    flight = null;
+    state.flying = false;
+    stopOrbit('replaced');
+    endFlight(superseded, 'replaced', false);
+    state.reducedMotion = prefersReducedMotion();
+    ride = {
+      getPos,
+      getVel,
+      back: Number(opts.back) || 0.06,
+      up: Number(opts.up) || 0.02,
+      ahead: Number(opts.lookAhead) || 0.4,
+      ms: state.reducedMotion ? 0 : Number.isFinite(opts.ms) ? Number(opts.ms) : 800,
+      elapsed: 0,
+      ease: easeFor(opts.ease),
+      fromCam: camera.position.clone(),
+      fromTarget: target.clone(),
+      fromUp: camera.up.clone(),
+      resume: followFn,
+    };
+    state.riding = true;
+    if (state.reducedMotion) emitFade(REDUCED_FADE_MS);
+    return true;
+  }
+
+  /** Back to the ordinary follow, the camera left where the ride put it. */
+  function stopRide(reason = 'stopped') {
+    if (!ride) return false;
+    const r = ride;
+    ride = null;
+    state.riding = false;
+    let p = null;
+    try { p = r.getPos(); } catch { p = null; }
+    camera.up.copy(r.fromUp);
+    if (toVector3(p, _rp)) target.copy(_rp);
+    readFromCamera();
+    applyToCamera();
+    if (r.resume) follow(r.resume);
+    state.lastRideEnd = reason;
+    return true;
+  }
+
+  /** The ride's pose for this frame; false if the object cannot be placed (the ride then ends). */
+  function applyRide(dts) {
+    let p = null;
+    let v = null;
+    try { p = ride.getPos(); v = ride.getVel(); } catch { p = null; }
+    if (!toVector3(p, _rp) || !toVector3(v, _rv) || !(_rv.lengthSq() > 0)) return false;
+    _rv.normalize();
+    _rr.copy(_rp).sub(worldCentre);
+    if (!(_rr.lengthSq() > 0)) return false;
+    _rr.normalize();
+    _rCam.copy(_rp).addScaledVector(_rv, -ride.back).addScaledVector(_rr, ride.up);
+    _rTarget.copy(_rp).addScaledVector(_rv, ride.ahead);
+    ride.elapsed += dts * 1000;
+    const k = ride.ms > 0 ? ride.ease(Math.min(1, ride.elapsed / ride.ms)) : 1;
+    camera.position.lerpVectors(ride.fromCam, _rCam, k);
+    target.lerpVectors(ride.fromTarget, _rTarget, k);
+    camera.up.copy(ride.fromUp).lerp(_rr, k).normalize();
+    camera.lookAt(target);
+    state.distance = camera.position.distanceTo(target);
+    return true;
+  }
+
   // ---------------------------------------------------------------- frame
 
   function update(dt) {
@@ -919,6 +1014,16 @@ export function createCameraRig(camera, domElement, options = {}) {
     if (!Number.isFinite(dts) || dts <= 0) dts = 1 / 60;
     if (dts > 0.5) dts /= 1000;
     if (dts > 0.25) dts = 0.25; // a tab that was backgrounded must not fling the camera
+
+    // A ride along owns the camera outright: no follow, no damping, no drift under it.
+    if (ride) {
+      if (!applyRide(dts)) stopRide('lost');
+      else {
+        trackVelocity();
+        drainDone();
+        return;
+      }
+    }
 
     if (followFn) applyFollow();
 
@@ -1088,6 +1193,8 @@ export function createCameraRig(camera, domElement, options = {}) {
     onUserInput,
     state,
     // beyond the contract, and additive: the integrator needs these to wire the rig up.
+    rideAlong,
+    stopRide,
     finishFlight,
     orbit,
     stopOrbit,

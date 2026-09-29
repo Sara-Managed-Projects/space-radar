@@ -824,6 +824,21 @@ export const COPY = {
     // The year from the international designator ("1998-067A"); the day comes with SATCAT (task 2).
     launched: 'Launched in {year}',
   },
+  // Spec 0048 req 3 and 8: the followed object's track on the globe, and riding along with it.
+  groundTrack: {
+    // The minute offset on every third five-minute tick of the track (scene/groundtrack.js).
+    tick: '+{n} min',
+    label: 'Follow it',
+    rideAlong: 'Ride along',
+    rideAlongTitle: 'Put the camera just behind it, looking ahead along its track. Drag to stop.',
+    // Under reduced motion the camera cuts there instead of flying, and the button says so.
+    lookBeside: 'Look from beside it',
+    showTrack: 'Draw its ground track',
+    hideTrack: 'Hide its ground track',
+    // Why a high orbit has no track until asked: it barely moves over the ground.
+    highNote: 'Its track over the ground is not drawn by itself this high up: it barely moves.',
+    trackNote: 'The line on the globe is the ground below it, 45 minutes back (dashed) and 90 ahead, with a tick every 5 minutes.',
+  },
   // A launch's satellites as one thing (spec 0026 req 17).
   train: {
     label: 'In a train',

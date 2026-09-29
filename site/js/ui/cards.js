@@ -57,6 +57,7 @@ import {
 import { predictPasses } from '../sky/passes.js';
 import { trajectorySection } from './trajectory.js';
 import { hasTimeFacts, timeFacts, mmss, LIGHT_MINUTES } from '../sky/timefacts.js';
+import { wantsTrack } from '../scene/groundtrack.js';
 import { trainOf } from '../data/trains.js';
 import { attachedOdditiesFor, attachedOddityRecord } from '../data/attached.js';
 import { shareButton, pictureButton } from './share.js';
@@ -2057,6 +2058,43 @@ function actionButtons(record, ctx, m) {
   return buttons.slice(0, MAX_ACTIONS);
 }
 
+/**
+ * "Follow it" (spec 0048 req 3, 8): Ride along, and for an orbit above 2 000 km, where the track is
+ * off by default, a switch for it. Only for what the propagator flies round the Earth. Under reduced
+ * motion the ride is a cut, and the button says "Look from beside it" rather than promise a flight.
+ */
+function followSection(record, ctx, m) {
+  if (!ctx || typeof ctx.rideAlong !== 'function' || !record || record.propagator !== 'sgp4') return null;
+  if (!isEarthFrame(m.frame) || standsStill(record, m) || !m.ok) return null;
+  const G = COPY.groundTrack;
+  const wrap = section('sr-card__block sr-card__follow', G.label);
+  const row = el('div', 'sr-card__actions');
+  const reduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const ride = el('button', 'sr-btn', reduced ? G.lookBeside : G.rideAlong);
+  ride.type = 'button';
+  ride.title = G.rideAlongTitle;
+  ride.addEventListener('click', () => { try { ctx.rideAlong(record); } catch { /* the camera stays where it is */ } });
+  row.appendChild(ride);
+  const low = wantsTrack(record, m.tMs);
+  if (!low && ctx.groundTrack) {
+    const st = ctx.groundTrack.state();
+    const shown = st.forced && st.id === record.id;
+    const toggle = el('button', 'sr-btn', shown ? G.hideTrack : G.showTrack);
+    toggle.type = 'button';
+    toggle.setAttribute('aria-pressed', shown ? 'true' : 'false');
+    toggle.addEventListener('click', () => {
+      const on = toggle.getAttribute('aria-pressed') !== 'true';
+      ctx.groundTrack.set(record, { forced: on });
+      toggle.setAttribute('aria-pressed', on ? 'true' : 'false');
+      toggle.textContent = on ? G.hideTrack : G.showTrack;
+    });
+    row.appendChild(toggle);
+  }
+  wrap.appendChild(row);
+  wrap.appendChild(el('p', 'sr-card__note', low ? G.trackNote : G.highNote));
+  return wrap;
+}
+
 // ---------------------------------------------------------------------------------------
 // Render
 // ---------------------------------------------------------------------------------------
@@ -2286,6 +2324,10 @@ function render(record, ctx, opts = {}) {
   // 4a. its path: height and ground track over the next lap and a half (spec 0026 req 14)
   const traj = trajectorySection(record, m.tMs);
   if (traj) body.appendChild(traj);
+
+  // 4a1. follow it: ride along, and the ground track's switch above 2 000 km (spec 0048)
+  const followBlock = followSection(record, ctx, m);
+  if (followBlock) body.appendChild(followBlock);
 
   // 4b. "Often said" -- the myth block, immediately after the facts it corrects. It renders for
   // any record carrying myths and nothing at all for the rest.

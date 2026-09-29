@@ -55,6 +55,8 @@ import { showChooser, hideChooser } from './ui/chooser.js';
 import { createLabels } from './ui/labels.js';
 import { createHud } from './ui/hud.js';
 import { createOrbitLine } from './scene/orbitline.js';
+import { createGroundTrack } from './scene/groundtrack.js';
+import { createTrackLabels } from './ui/tracklabels.js';
 import { createOrbitRings } from './scene/orbitrings.js';
 import { createFrameLatch, shouldSaveData, chooseTier, createTierPromoter } from './scene/quality.js';
 import { createLiveClouds } from './scene/liveclouds.js';
@@ -244,6 +246,24 @@ export async function boot({ setStatus } = {}) {
   // One lap of the selection's orbit (spec 0026 req 13), from the same elements as the dot.
   const orbitLine = createOrbitLine(scene, ctx);
   ctx.orbitLine = orbitLine;
+  // The followed object's track over the ground, on the globe (spec 0048 req 3), and its minute
+  // marks as names over the scene. Three draw calls while something low is followed, none otherwise.
+  ctx.groundTrack = createGroundTrack(scene, ctx);
+  ctx.trackLabels = createTrackLabels(ctx, document.getElementById('labels'), ctx.groundTrack);
+  // RIDE ALONG (spec 0048 req 8): the camera 60 km behind and 20 km above, looking 400 km ahead
+  // along the velocity, which is the same one-second central difference the card's speed row uses.
+  ctx.rideAlong = (record) => {
+    if (!record) return false;
+    const at = (tMs) => { const p = propagate(record, tMs); return p ? stage.toScene(p, p.frame, tMs) : null; };
+    const getVel = () => {
+      const t = clock.now();
+      const a = at(t - 500);
+      const b = at(t + 500);
+      return a && b ? b.sub(a) : null;
+    };
+    const u = stage.unitKm;
+    return cameraRig.rideAlong(() => positionOfRecord(record), getVel, { back: 60 / u, up: 20 / u, lookAhead: 400 / u, ms: 800 });
+  };
   // The planets' paths and a dot at each, on the Sun stage while a trip names them (`orbits:` in
   // registry/tours.yaml; scene/orbitrings.js says why "A year in a minute" needs them).
   ctx.orbitRings = createOrbitRings(scene, { renderer });
@@ -373,6 +393,7 @@ export async function boot({ setStatus } = {}) {
     if (ctx.hud) ctx.hud.select(record);
     showCard(record, ctx);
     if (ctx.orbitLine) ctx.orbitLine.setRecord(record);
+    if (ctx.groundTrack) ctx.groundTrack.set(record);
     if (opts.fly !== false) flyToRecord(record);
     else cameraRig.follow(() => positionOfRecord(record));
     window.dispatchEvent(new CustomEvent('sr:select', { detail: record }));
@@ -444,6 +465,7 @@ export async function boot({ setStatus } = {}) {
   function deselect() {
     selected = null;
     if (ctx.orbitLine) ctx.orbitLine.setRecord(null);
+    if (ctx.groundTrack) ctx.groundTrack.set(null);
     for (const gl of glyphLayers.values()) if (gl.setSelected) gl.setSelected(null);
     if (ctx.hud) ctx.hud.clear();
     hideCard();
@@ -831,6 +853,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     // Labels ride the same tick as the glyphs they sit over, so the two never drift apart.
     if (ctx.labels && sinceLayerUpdate === 0) ctx.labels.update(t);
     if (ctx.orbitLine) ctx.orbitLine.update(t);
+    if (ctx.groundTrack) ctx.groundTrack.update(t);
     if (ctx.orbitRings) {
       const st = ctx.trip && ctx.trip.state;
       ctx.orbitRings.update(t, st && st.phase !== 'idle' ? st.orbits : null);
@@ -859,6 +882,8 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     // After render(), because render() is what brings the camera's matrices up to this frame: placed
     // before it, the brackets trailed the station by one frame of camera motion.
     if (ctx.hud) ctx.hud.frame(t);
+    // The track's minute marks, on this frame's camera (render() brought its matrices up to date).
+    if (ctx.trackLabels) ctx.trackLabels.update();
     // The first frame is on screen: from now on the sharper maps may come, when the browser is idle.
     if (!tiersStarted && ctx.quality) { tiersStarted = true; ctx.quality.start(); }
   }

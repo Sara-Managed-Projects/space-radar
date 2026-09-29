@@ -44,6 +44,9 @@ const CONTRACT = {
   'scene/glyphs.js': ['createGlyphLayer'],
   'scene/models.js': ['modelFor'],
   'scene/camera.js': ['createCameraRig'],
+  // Spec 0048 task 4: the followed object's track on the globe, and its minute marks.
+  'scene/groundtrack.js': ['createGroundTrack', 'trackTimes', 'tickTimes', 'trackPoints', 'wantsTrack'],
+  'ui/tracklabels.js': ['createTrackLabels'],
   'sky/passes.js': ['predictPasses'],
   // Spec 0048: the next 90 minutes in time, shared by the card and (later) the follow strip.
   'sky/timefacts.js': ['lightWindows', 'nextAscendingNode', 'orbitNumber', 'launchYear', 'timeFacts', 'hasTimeFacts'],

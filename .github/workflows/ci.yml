@@ -187,6 +187,9 @@ jobs:
       # Spec 0048 task 1: shadow edges and the lap's end to 1 s against a scan a second at a time.
       - name: "Time facts on the card: the next 90 minutes of light, the lap countdown, the orbit number"
         run: node tests/test_timefacts.mjs
+      # Spec 0048 task 4: the ticks at the chart's sub-satellite points; the ride's pose and its way out.
+      - name: "The ground track on the globe and ride along: 5-minute ticks, rebuilds, 60 km behind"
+        run: node tests/test_groundtrack.mjs
       # Spec 0045: the instrument's look as numbers. The contrast table is recomputed from the
       # tokens, so the study's 0.62 glass (2.16:1 for dim text over a white cloud) cannot come back.
       - name: "The instrument's tokens: glass that passes AA over a cloud, 6 px corners, a lit edge, ember brackets (spec 0045)"
