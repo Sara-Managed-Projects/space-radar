@@ -291,11 +291,11 @@ export const WORLDS = [
   // (#318). HOW EACH WORLD REFLECTS (spec 0054, the material block below): `limb` is Minnaert's k,
   // for the cloud-covered worlds -- the giants, Venus and Titan; `rough` is Oren-Nayar's sigma in
   // radians, for rock and ice, and a row without one takes DEFAULT_ROUGHNESS (0.2, frost). The
-  // design gave four roughnesses -- the Moon 0.5, Mercury 0.45, Mars 0.35, icy moons 0.2 -- and they
-  // were checked by eye on 2026-09-29 against the full Moon's flat disc (Lambert's limb is plainly
-  // too dark) and the Mariner 10 and Viking approach mosaics; the other rows are those four by kind,
-  // not fitted: dark cratered regolith like the Moon (Phobos, Deimos 0.5; Callisto 0.4), ice with
-  // rock in it between (0.3), fresh frost at the default. Airless worlds have no rim.
+  // design gave four roughnesses -- the Moon 0.5, Mercury 0.45, Mars 0.35, icy moons 0.2 -- and the
+  // Moon's was checked by eye on 2026-09-29 against the full Moon's flat disc as every photograph
+  // shows it (Lambert's limb is plainly too dark). The other rows are those four by kind, not
+  // fitted: dark cratered regolith like the Moon (Phobos, Deimos 0.5; Callisto 0.4), ice with rock
+  // in it between (0.3), fresh frost at the default. Airless worlds have no rim.
   {
     id: 'venus', display: 'Venus', parent: 'sun', radiusKm: 6051.8,
     body: 'Venus', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
