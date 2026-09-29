@@ -11,7 +11,7 @@
 // gave only a forecast, or the reading is stale, it says that instead of dressing it up.
 
 import { COPY, t, fmt, timeText } from '../copy/en.js';
-import { load } from '../data/sources.js';
+import { load, onUpdate } from '../data/sources.js';
 import { parseSpaceWeather } from '../data/parsers.js';
 
 const SOURCE_ID = 'swpc-kp';
@@ -77,7 +77,11 @@ function el(tag, className, text) {
   return node;
 }
 
-export function createSpaceWeather(ctx, host) {
+/**
+ * `deps` is the data layer (`load`, `onUpdate`), injectable so a test can play a saved copy and then
+ * the live answer that replaces it without a browser.
+ */
+export function createSpaceWeather(ctx, host, deps = { load, onUpdate }) {
   if (!host || typeof document === 'undefined') return { refresh() {}, destroy() {} };
   const T = COPY.spaceWeather;
   const line = el('p', 'sr-status__weather');
@@ -88,7 +92,11 @@ export function createSpaceWeather(ctx, host) {
 
   async function refresh() {
     let result;
-    try { result = await load(SOURCE_ID); } catch { result = null; }
+    try { result = await deps.load(SOURCE_ID); } catch { result = null; }
+    show(result);
+  }
+
+  function show(result) {
     if (!result || result.data == null) {
       line.textContent = result && result.error ? t(T.couldNotLook, { why: result.error }) : T.couldNotLook0;
       line.hidden = false;
@@ -104,10 +112,17 @@ export function createSpaceWeather(ctx, host) {
     if (ctx) ctx.spaceWeather = last;
   }
 
+  // ONE TRUTH PER SOURCE (spec 0060 item 2). A saved copy past its valid_until is drawn and the
+  // publisher asked behind it (data/sources.js); when the live answer lands, the Sources list below
+  // repaints from it at once. This line used to wait for its own five-minute refresh, so for up to
+  // five minutes the panel said "measured 5 days ago ... from our copy" above a row saying "read
+  // live just now" (the orbitalradar comparison, 2026-09-28). It now repaints on the same event.
+  const off = deps.onUpdate((id, result) => { if (id === SOURCE_ID) show(result); });
+
   refresh();
   timer = window.setInterval(refresh, REFRESH_MS);
   return {
     refresh,
-    destroy() { window.clearInterval(timer); line.remove(); },
+    destroy() { window.clearInterval(timer); off(); line.remove(); },
   };
 }

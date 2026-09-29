@@ -44,5 +44,29 @@ const fcLine = spaceWeatherLine(fcOnly, { fetchedAt: now, via: 'live', stale: fa
 check(fcLine.includes('a forecast, not a measurement') && fcLine.includes('rising to Kp 6'), `forecast-only: ${fcLine}`);
 check(spaceWeatherLine(null, null, now) === null && spaceWeatherLine({ kp: null }, null, now) === null, 'nothing parsed, nothing said');
 
+// ONE TRUTH (spec 0060 item 2): the saved copy is said first; when the live answer replaces it, the
+// line says live at once, without waiting for its five-minute refresh.
+{
+  const nodes = [];
+  globalThis.document = { createElement: () => { const n = { hidden: false, textContent: '', remove() {} }; nodes.push(n); return n; } };
+  globalThis.window = { setInterval: () => 1, clearInterval() {} };
+  const { createSpaceWeather } = await import(join(JS, 'ui/spaceweather.js') + '?truth');
+  let listener = null;
+  const snap = { data: fx, fetchedAt: now - 5 * 86400e3, via: 'snapshot', stale: true };
+  const live = { data: fx, fetchedAt: now, via: 'live', stale: false };
+  const sw = createSpaceWeather(null, { appendChild() {} }, { load: async () => snap, onUpdate: (fn) => { listener = fn; return () => { listener = null; }; } });
+  await new Promise((r) => setTimeout(r, 5));
+  const line = nodes[0];
+  check(line && line.textContent.includes('from our copy'), `the saved copy is said first (${line && line.textContent})`);
+  check(typeof listener === 'function', 'the line listens to the data layer');
+  listener('celestrak-stations', live);
+  check(line.textContent.includes('from our copy'), 'another source\'s update leaves the line alone');
+  listener('swpc-kp', live);
+  check(!line.textContent.includes('from our copy') && !line.textContent.includes('older than NOAA promises'), `the live answer replaces it at once (${line.textContent})`);
+  sw.destroy();
+  check(listener === null, 'destroy() stops listening');
+  delete globalThis.document; delete globalThis.window;
+}
+
 if (problems.length) { console.error('space weather FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('space weather ok: Kp, the word, the G scale, the age and the source; forecasts and stale readings say so');
