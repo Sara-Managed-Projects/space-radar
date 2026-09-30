@@ -47,6 +47,8 @@ const CONTRACT = {
   // Spec 0037: one formula for the shadow, in JS for the test and as GLSL for both shaders.
   'scene/eclipse.js': ['obscuration', 'surfaceObscuration', 'discOverlap', 'eclipseLikely', 'ECLIPSE_GLSL', 'SUN_RADIUS_KM', 'MOON_RADIUS_KM'],
   'scene/starfield.js': ['createStarfield'],
+  // Spec 0048 task 3: the country or sea under a point, from an offline raster, loaded on demand.
+  'sky/overplace.js': ['loadPlaces', 'placesNow', 'placeAt', 'decodePng16', 'pngParts'],
   'scene/glyphs.js': ['createGlyphLayer'],
   'scene/models.js': ['modelFor'],
   'scene/camera.js': ['createCameraRig'],

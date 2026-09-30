@@ -279,6 +279,11 @@ function measure(record, ctx) {
           out.observerGuess = obs.source === 'guess';
         }
       }
+      // What is under it (spec 0048 req 2), once sky/overplace.js has its raster: never at boot.
+      if (placesMod && out.latDeg !== null) {
+        const places = placesMod.placesNow();
+        if (places) out.place = placesMod.placeAt(places, out.latDeg, out.lonDeg);
+      }
     } catch {
       /* altitude stays null and the row says so */
     }
@@ -1075,6 +1080,7 @@ function rightNowRows(record, m, passInfo) {
       const label = stands ? R.location : R.groundPoint;
       rows.push([label, t(V.latLon, { lat: latText(m.latDeg), lon: lonText(m.lonDeg) })]);
     }
+    if (!stands && m.place) rows.push([R.below, belowWords(m.place)]);
     if (!stands && m.rangeKm !== null && m.rangeKm !== undefined) rows.push([rangeLabel(m), t(V.km, { n: fmt.int(m.rangeKm) })]);
   } else if (m.worldId && m.worldId !== 'sun') {
     // On, or around, another world. No Earth latitude, no "height above the ground": the ground
@@ -1231,6 +1237,38 @@ function rightNowRows(record, m, passInfo) {
     rows.push([R.nextPass, COPY.sky.couldNotLook]);
   }
   return rows;
+}
+
+// --- what is under it (spec 0048 req 2) --------------------------------------------------------------
+//
+// sky/overplace.js and its 63 KB raster are loaded on the first card for something the propagator
+// flies round the Earth, never at boot (a dynamic import: the module is not in the boot graph either).
+// Until then the "Passing over" row's latitude and longitude, which are true without it, stand alone.
+let placesMod = null;
+let placesAsked = null;
+
+/**
+ * Load the places once. Exported for the test, which hands in a file reader and node's inflate;
+ * the page calls it with nothing.
+ */
+export function ensurePlaces(opts) {
+  if (!placesAsked) {
+    placesAsked = import('../sky/overplace.js')
+      .then((mod) => { placesMod = mod; return mod.loadPlaces(opts); })
+      .catch(() => { placesAsked = null; return null; });
+  }
+  return placesAsked;
+}
+
+/** "Kazakhstan", "the South Pacific Ocean", "the border of France and Spain", "land". */
+export function belowWords(place) {
+  const V = COPY.card.values;
+  if (!place) return null;
+  const named = (i) => (place.the && place.the[i] ? COPY.card.articles[1] + ' ' : '') + place.names[i];
+  if (place.kind === 'border' && place.names.length === 2) return t(V.belowBorder, { a: named(0), b: named(1) });
+  if ((place.kind === 'country' || place.kind === 'sea' || place.kind === 'ocean') && place.names[0]) return named(0);
+  if (place.kind === 'land') return V.belowLand;
+  return V.belowWater;
 }
 
 /** The "from you" row's label: yours, or the guessed place's by name (spec 0047 req 3). */
@@ -2219,6 +2257,8 @@ function render(record, ctx, opts = {}) {
   const klass = klassOf(record);
   const m = measure(record, ctx);
   const passInfo = nextPass(record, ctx, m);
+  // The first card for something over the Earth fetches the places; the row appears when they land.
+  if (!placesMod && isEarthFrame(m.frame) && m.latDeg !== null && !standsStill(record, m)) ensurePlaces();
 
   clear(node);
   node.dataset.klass = klass;
@@ -2421,6 +2461,10 @@ function subscribe(ctx) {
   // The Earth's clouds line changes when a picture arrives or the live layer gives way, not on the
   // clock (scene/liveclouds.js onChange, sent as `sr:clouds` by main.js): only that line is rewritten.
   if (typeof window !== 'undefined') {
+    // The places arrived: the open card gains its "Below it now" row on the next paint, now.
+    window.addEventListener('sr:places', () => {
+      if (current && current.record) { try { render(current.record, current.ctx, current.opts); } catch { /* keep the card */ } }
+    });
     window.addEventListener('sr:clouds', () => {
       const c = current && current.ctx;
       const line = typeof document !== 'undefined' && document.querySelector('.sr-card__clouds');

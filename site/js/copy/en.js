@@ -910,6 +910,9 @@ export const COPY = {
       altitude: 'Height above the ground',
       speed: 'Speed',
       groundPoint: 'Passing over',
+      // Spec 0048 req 2: the country or sea under it, from an offline Natural Earth raster
+      // (sky/overplace.js). Within 50 km of a border it names both rather than guess one.
+      below: 'Below it now',
       // Spec 0047: the straight line from the place set (or guessed) to the object, through the
       // ground if need be. The tracked object's tag prints this row's number, so the card states it.
       fromYou: 'Distance from you',
@@ -979,6 +982,10 @@ export const COPY = {
     values: {
       km: '{n} km',
       kmh: '{n} km/h',
+      belowBorder: 'near the border of {a} and {b}',
+      // Natural Earth's disputed and indeterminate areas: the ground, never a flag.
+      belowLand: 'land',
+      belowWater: 'open water',
       // GDACS's one wind number is the highest anywhere on the track, forecast included, so it says so.
       stormWind: '{n} km/h, forecast included',
       stormWindCategory: '{n} km/h, Category {cat}, forecast included',

@@ -700,6 +700,19 @@ highest on the track, forecast included, which is what GDACS's `severity` is). T
 GDACS are the forecasting agencies' (NOAA NHC/CPHC, JTWC and others); each card names its agency.
 This app is not a warning service, and neither is GDACS.
 
+### 4.15 Natural Earth — the country or sea under a satellite (2026-09-29)
+
+`site/data/places.png` and `site/data/places.json` are built by `scripts/build-places.py` from
+Natural Earth 1:50m **Admin 0 – Countries** and **Marine areas** (version 5.x, GeoJSON from
+<https://github.com/nvkelso/natural-earth-vector>, SHA-256 in the script). Natural Earth's terms:
+"All versions of Natural Earth raster + vector map data found on this website are in the public
+domain" (<https://www.naturalearthdata.com/about/terms-of-use/>, read 2026-09-29). No credit is
+required; this one is given anyway. What we changed: the polygons are rasterised to 2048 × 1024
+(about 20 km a pixel), rivers and reefs are left out, abbreviated names take Natural Earth's long
+form, and areas Natural Earth marks *Disputed* or *Indeterminate* (Antarctica apart) are drawn as
+plain land, so the card says "land" there and never names a claim. The raster is fetched on the
+first card for an Earth orbiter, never at boot.
+
 ## 4.6 Third-party trademarks the app names or draws
 
 None of the marks below is licensed to this project and none is used as a badge of origin. They are
