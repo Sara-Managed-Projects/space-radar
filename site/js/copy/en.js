@@ -1272,6 +1272,25 @@ export const COPY = {
     satelliteCredit: 'Live clouds: GOES-East and GOES-West infrared imagery, NOAA; Himawari infrared imagery, Japan Meteorological Agency (JMA).',
   },
 
+  // The aurora (2026-09-30, scene/aurora.js, spec 0053 task 3). One line on the Earth's card in the
+  // clouds line's style, the credit in the Sources panel, and the explore view's "Right now" line at
+  // a storm. The band is NOAA's MODEL of the next hour, and every live sentence says it is not a
+  // photograph; where the folds inside it are drawn, it says that too.
+  aurora: {
+    live: 'Aurora: where NOAA’s OVATION model expects it in the next hour (its forecast for {time} UTC, made {ago}), not a photograph. The fine folds in it are drawn.',
+    liveNoFolds: 'Aurora: where NOAA’s OVATION model expects it in the next hour (its forecast for {time} UTC, made {ago}), not a photograph.',
+    waiting: 'Aurora: NOAA’s forecast has not arrived yet.',
+    failed: 'Aurora: NOAA’s forecast could not be read just now, so none is drawn.',
+    far: 'Aurora: not drawn, because the clock is more than three hours from NOAA’s latest forecast.',
+    saveData: 'Aurora: NOAA’s forecast is not fetched on a connection that saves data.',
+    switchedOff: 'Aurora: switched off in the layers.',
+    // NOAA SWPC's products are works of the US Government and in the public domain; credited all the same.
+    credit: 'Aurora: forecast by the NOAA Space Weather Prediction Center’s OVATION Prime model (public domain).',
+    // The explore view's "Right now" line at Kp 5 and above (auroraRightNow).
+    rightNow: 'Aurora likely at high latitudes tonight (Kp {kp}).',
+    rightNowReach: 'Aurora likely tonight wherever it is dark, as far from the poles as {lat}° (Kp {kp}).',
+  },
+
   unplaced: {
     why: '{whyUnknown}',
   },
@@ -1614,6 +1633,8 @@ export const COPY = {
       onMap: '{n} on the map',
       riding: '{n} riding on something else',
       unplaceable: '{n} we cannot place',
+      // The aurora layer's one number: the highest probability in NOAA's forecast (scene/aurora.js peak()).
+      auroraPeak: 'up to {n} % likely',
     },
     layersEmpty: 'No layers are loaded yet.',
     localTimeFallback: 'local',
@@ -1728,6 +1749,7 @@ export const COPY = {
     attributionTitle: 'Credits',
     attributionIntro: 'The data on this map is other people’s work.',
     cloudsTitle: 'Clouds',
+    auroraTitle: 'Aurora',
     layersTitle: 'Live or bundled',
     layersIntro:
       'Live is read from its publisher, or worked out for this moment, as you watch. A catalogue ships with the app: stars, galaxies and the dishes and landing sites on the ground do not move while you look. A bundled sample stands in for a source a browser cannot call at all.',

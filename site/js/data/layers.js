@@ -51,6 +51,9 @@ const C = {
   comet: '#D9F3FF',
   site: '#F58F7C',
   storm: '#9DB4FF', // scene/glyphatlas.js CLASS_COLOURS.storm says why this one
+  // Spec 0053 design section 3: the aurora's green, the 557.7 nm line. Only the layers panel's
+  // swatch; the shell's own colours are emission light in scene/aurora.js.
+  aurora: '#5CFF8A',
 };
 
 // =================================================================================================
@@ -951,6 +954,33 @@ export const LAYERS = [
     nearKm: 0,
     card: 'storm',
     sentence: 'Hurricanes, typhoons and cyclones turning right now, each at its centre at the latest advisory.',
+  },
+  {
+    // Mirrors registry/layers.yaml `aurora` (2026-09-30, spec 0053 task 3). No glyph layer and no
+    // records (`draw: 'aurora'`): scene/aurora.js draws one emissive shell on the Earth's night side
+    // from NOAA's OVATION forecast and fetches it itself, off the boot path. main.js skips the row in
+    // the loader and hands its box to the shell. The panel's number is the forecast's peak
+    // probability (`count` and `counts`, attached by main.js), not a count of things.
+    id: 'aurora',
+    display: 'Aurora',
+    klass: 'aurora',
+    source: 'swpc-ovation',
+    parse: null,
+    propagator: 'static',
+    frame: 'earth-fixed',
+    moments: { wonder: true, now: true, next: false },
+    defaultOn: true,
+    draw: 'aurora',
+    noModel: true,
+    sample: () => [],
+    select: all,
+    budget: { maxItems: 1 },
+    colour: C.aurora,
+    glyph: 'storm',
+    nearKm: 0,
+    card: 'world',
+    priority: 90,
+    sentence: 'The northern and southern lights where NOAA’s model expects them in the next hour, on the night side. A forecast, not a photograph.',
   },
   {
     // NOT in registry/layers.yaml. Added because sampleReentries() exists and a reentry is one

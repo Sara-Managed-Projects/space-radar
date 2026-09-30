@@ -389,6 +389,15 @@ export function createStatus(ctx, parent) {
     creditBlock.appendChild(cloudsLine);
     for (const line of ctx.liveClouds.credit()) creditBlock.appendChild(el('p', 'sr-status__intro sr-status__clouds-credit', line));
   }
+  // The aurora (2026-09-30, scene/aurora.js) is NOAA's forecast fetched by the browser, not a source
+  // row: its credit and one line saying what the band on the night side is right now.
+  let auroraLine = null;
+  if (ctx.aurora) {
+    creditBlock.appendChild(el('h4', 'sr-status__subtitle sr-status__aurora-title', COPY.status.auroraTitle));
+    auroraLine = el('p', 'sr-status__intro sr-status__aurora', '');
+    creditBlock.appendChild(auroraLine);
+    for (const line of ctx.aurora.credit()) creditBlock.appendChild(el('p', 'sr-status__intro sr-status__aurora-credit', line));
+  }
   // The device tier and the maps it is wearing (scene/texturetiers.js, 2026-09-28): the 4k maps are
   // other people's pictures too, and which ones are on screen depends on the device.
   const maps = el('p', 'sr-status__intro sr-status__maps');
@@ -408,6 +417,7 @@ export function createStatus(ctx, parent) {
       renderLayers(ctx, layerList);
       renderAttribution(ctx, creditList);
       if (cloudsLine) cloudsLine.textContent = ctx.liveClouds.line(ctx.clock ? ctx.clock.now() : Date.now());
+      if (auroraLine) auroraLine.textContent = ctx.aurora.line(ctx.clock ? ctx.clock.now() : Date.now());
       renderMaps(ctx, maps);
     } catch {
       /* keep the last good panel rather than blanking the one page that says what is wrong */

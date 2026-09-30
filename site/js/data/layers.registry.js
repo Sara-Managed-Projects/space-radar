@@ -449,6 +449,25 @@ export const LAYER_ROWS = [
     "train": null
   },
   {
+    "id": "aurora",
+    "display": "Aurora",
+    "enabled": true,
+    "moments": {
+      "wonder": true,
+      "now": true,
+      "next": false
+    },
+    "source": "swpc-ovation",
+    "sources": null,
+    "propagator": "static",
+    "frame": "earth-fixed",
+    "card": "world",
+    "glyph": "storm",
+    "colour": "aurora",
+    "maxItems": 1,
+    "train": null
+  },
+  {
     "id": "reentries",
     "display": "Things that came down",
     "enabled": true,

@@ -59,6 +59,7 @@ import { createTrackLabels } from './ui/tracklabels.js';
 import { createOrbitRings } from './scene/orbitrings.js';
 import { createFrameLatch, shouldSaveData, chooseTier, createTierPromoter } from './scene/quality.js';
 import { createLiveClouds } from './scene/liveclouds.js';
+import { createAurora } from './scene/aurora.js';
 import { createTextureTiers } from './scene/texturetiers.js';
 import { setEarthMap, earthMapsSettled } from './scene/earth.js';
 import { keyById, bucketOf } from './data/colorkeyrules.js';
@@ -222,6 +223,31 @@ export async function boot({ setStatus } = {}) {
   // 2026-10-01 on CI with the new shell: 758 kB from other hosts, 594 kB of it GIBS, which took the
   // first visit to 6 810 227 B, over first_visit_bytes. The map's own data comes first, the weather
   // after it.
+
+  // THE AURORA (2026-09-30, scene/aurora.js, spec 0053 task 3): NOAA's OVATION forecast of the next
+  // hour, drawn on the night side. Built now so the card, the Sources panel and the layers panel can
+  // ask it; like the clouds it fetches nothing until START_DELAY_MS after this and an idle moment,
+  // builds no mesh and compiles no shader until a forecast has arrived, and never runs on a
+  // connection that saves data. Its box is the `aurora` layer (data/layers.js `draw: 'aurora'`).
+  ctx.aurora = createAurora({
+    earth: () => worlds.meshFor('earth'),
+    renderer,
+    camera,
+    scene,
+    saveData: typeof navigator !== 'undefined' && shouldSaveData(navigator.connection),
+    // The Earth card rewrites its aurora line on this, as it does its clouds line on sr:clouds.
+    onChange: () => window.dispatchEvent(new CustomEvent('sr:aurora')),
+  });
+  ctx.aurora.start();
+  {
+    const layer = LAYERS.find((l) => l.id === 'aurora');
+    if (layer) {
+      // The panel's number for this layer is the forecast's peak probability (copy/en.js
+      // controls.layerCountParts.auroraPeak), not a count of records: it has none.
+      layer.count = () => ctx.aurora.peak();
+      layer.counts = () => [{ key: 'auroraPeak', n: ctx.aurora.peak() }];
+    }
+  }
 
   say('Reading the catalogues…');
   // THE LAYOUT (spec 0061): one sidebar, one tool rail, one time pill. The shell builds the boxes;
@@ -801,6 +827,8 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
   // The frame-rate latch (spec 0026 req 18): twenty-frame median over 33 ms for three seconds ->
   // one device pixel per CSS pixel and no Milky Way picture, once, said in the panel.
   const latch = createFrameLatch();
+  // Read every frame by the aurora's folds; one query object, not a matchMedia call a frame.
+  const reducedMotionQuery = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
   function degrade() {
     if (ctx.renderer && ctx.rendererApi && ctx.rendererApi.setQuality) ctx.rendererApi.setQuality('low');
     if (starfield && starfield.setDetail) starfield.setDetail('low');
@@ -859,6 +887,18 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     worlds.update(t);
     // Live or static clouds, by how far the clock is from the picture (data/gibs.js cloudMode).
     if (ctx.liveClouds) ctx.liveClouds.tick(t);
+    // The aurora after the Earth's update (it reads the Earth's rotation and Sun): its box, the
+    // latch (fewer steps, no folds), reduced motion (the folds hold still), the tier, and how big
+    // the Earth is drawn (no draw call for a dot).
+    if (ctx.aurora) {
+      ctx.aurora.setTier(ctx.quality ? ctx.quality.tier : 1);
+      ctx.aurora.tick(t, {
+        on: ctx.isLayerOn('aurora'),
+        latched: latch.latched,
+        reducedMotion: !!(reducedMotionQuery && reducedMotionQuery.matches),
+        discShare: worlds.discShare ? worlds.discShare('earth') : 1,
+      });
+    }
 
     // Glyph positions are the expensive part. At 1x they need no more than ~10 Hz to look
     // continuous at orbital speeds; while scrubbing they need every frame or the motion stutters.
@@ -941,7 +981,7 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
   for (const layer of ordered) {
     // A layer another module already draws (the worlds' discs) gets no glyph layer: two marks for
     // one planet would be two places to tap and one of them wrong.
-    if (layer.draw === 'worlds' || layer.draw === 'galaxy' || layer.draw === 'stars3d' || layer.draw === 'systems') continue;
+    if (layer.draw === 'worlds' || layer.draw === 'galaxy' || layer.draw === 'stars3d' || layer.draw === 'systems' || layer.draw === 'aurora') continue;
     const gl = createGlyphLayer(scene, layer);
     // One mark per object: the dot fades out as that record's 3D model fades in.
     // Read through ctx at call time: this function has no `heroes` of its own (the first version
@@ -968,6 +1008,8 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
   const upstream = [];
   for (const layer of ordered) {
     if (layer.deferred) continue; // loads when the visitor switches it on (ctx.loadLayerNow)
+    // The aurora has no records to load: scene/aurora.js fetches its own forecast, after the first frame.
+    if (layer.draw === 'aurora') continue;
     const srcs = idsOf(layer);
     // One cached manifest read behind these, not a request per layer.
     const snaps = srcs.length ? await Promise.all(srcs.map((id) => sources.snapshotAvailable(id))) : [];

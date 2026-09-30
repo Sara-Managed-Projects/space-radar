@@ -2331,6 +2331,11 @@ function render(record, ctx, opts = {}) {
     if (record.id === 'earth' && ctx && ctx.liveClouds && typeof ctx.liveClouds.line === 'function') {
       body.appendChild(el('p', 'sr-card__note sr-card__clouds', ctx.liveClouds.line(m.tMs)));
     }
+    // And its aurora, in the same style: NOAA's forecast of the next hour, how old, not a photograph
+    // (scene/aurora.js, 2026-09-30). The words are copy/en.js COPY.aurora.
+    if (record.id === 'earth' && ctx && ctx.aurora && typeof ctx.aurora.line === 'function') {
+      body.appendChild(el('p', 'sr-card__note sr-card__aurora', ctx.aurora.line(m.tMs)));
+    }
     const isCentre = ctx && ctx.stage && ctx.stage.worldId === record.id;
     const centre = el('button', 'sr-btn', isCentre
       ? COPY.card.isCentre
@@ -2470,6 +2475,13 @@ function subscribe(ctx) {
       const line = typeof document !== 'undefined' && document.querySelector('.sr-card__clouds');
       if (!line || !c || !c.liveClouds || current.record.id !== 'earth') return;
       try { line.textContent = c.liveClouds.line(c.clock.now()); } catch { /* keep the last line */ }
+    });
+    // The aurora line, the same way: a forecast arrived, failed, or the clock moved away from it.
+    window.addEventListener('sr:aurora', () => {
+      const c = current && current.ctx;
+      const line = typeof document !== 'undefined' && document.querySelector('.sr-card__aurora');
+      if (!line || !c || !c.aurora || current.record.id !== 'earth') return;
+      try { line.textContent = c.aurora.line(c.clock.now()); } catch { /* keep the last line */ }
     });
   }
   try {

@@ -336,6 +336,24 @@ layers:
     # The source is paged at 20, newest first; more than a dozen at once has never happened.
     budget: {max_items: 20}
 
+  # The northern and southern lights (2026-09-30, spec 0053 task 3): NOAA SWPC's OVATION forecast of
+  # the next hour, drawn as an emissive shell on the night side by scene/aurora.js. Not glyphs and not
+  # records: data/layers.js marks the row `draw: aurora`, and the glyph below is never drawn (every
+  # row must name one). `static` in `earth-fixed` because the grid is geographic and is replaced, not
+  # propagated. Fetched by the browser straight from NOAA (CORS `*`), after the first frame, never on
+  # a connection that saves data; the saved copy is not used, because a forecast of the next hour is
+  # stale long before the harvester's next run (data/ovation.js says what was measured).
+  - id: aurora
+    display: Aurora
+    moments: {wonder: on, now: on, next: off}
+    source: swpc-ovation
+    propagator: static
+    frame: earth-fixed
+    style: {kind: glyph, glyph: storm, colour: aurora}
+    card: world
+    select: {all: true}
+    budget: {max_items: 1}
+
   # Things that came down. Space-Track needs a login nobody has registered, so this is the bundled
   # stand-in always (cls sample, every card saying so) until that changes.
   - id: reentries
