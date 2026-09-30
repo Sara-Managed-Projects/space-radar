@@ -107,6 +107,57 @@ export function parseOvation(body) {
   };
 }
 
+/**
+ * The texture the shell samples: the grid at half a degree (720 x 361, rows south first, row 0 at
+ * -90 and row 360 at +90, column 0 at longitude 0), bilinear from the 1-degree cells and then
+ * smoothed by a 5-tap binomial filter each way (sigma ~0.5 degree, wrapping in longitude).
+ *
+ * WHY. The shell gates the probability (nothing below 3 %, full at 10 %, scene/aurora.js EMISSION),
+ * and a threshold across a bilinear 1-degree field draws the cells' outline: the first screenshot
+ * (2026-09-30, a quiet oval of 11 %) had a staircase for an edge, one step a degree. A smooth field
+ * crosses the threshold on a smooth curve. OVATION's own grid is a smoothed model output, so this
+ * invents no structure; it only stops the texture filter from inventing corners. 260 kB of R8.
+ */
+export const TEX_W = 720;
+export const TEX_H = 361;
+
+export function upsampleGrid(grid) {
+  const out = new Float32Array(TEX_W * TEX_H);
+  for (let y = 0; y < TEX_H; y++) {
+    const r = y / 2;                      // grid row, fractional (lat + 90)
+    const r0 = Math.min(GRID_H - 1, Math.floor(r));
+    const r1 = Math.min(GRID_H - 1, r0 + 1);
+    const fr = r - r0;
+    for (let x = 0; x < TEX_W; x++) {
+      const c = x / 2;
+      const c0 = Math.floor(c) % GRID_W;
+      const c1 = (c0 + 1) % GRID_W;
+      const fc = c - Math.floor(c);
+      const a = grid[r0 * GRID_W + c0] * (1 - fc) + grid[r0 * GRID_W + c1] * fc;
+      const b = grid[r1 * GRID_W + c0] * (1 - fc) + grid[r1 * GRID_W + c1] * fc;
+      out[y * TEX_W + x] = a * (1 - fr) + b * fr;
+    }
+  }
+  const K = [1 / 16, 4 / 16, 6 / 16, 4 / 16, 1 / 16];
+  const tmp = new Float32Array(TEX_W * TEX_H);
+  for (let y = 0; y < TEX_H; y++) {
+    for (let x = 0; x < TEX_W; x++) {
+      let v = 0;
+      for (let k = -2; k <= 2; k++) v += K[k + 2] * out[y * TEX_W + ((x + k + TEX_W) % TEX_W)];
+      tmp[y * TEX_W + x] = v;
+    }
+  }
+  const res = new Uint8Array(TEX_W * TEX_H);
+  for (let y = 0; y < TEX_H; y++) {
+    for (let x = 0; x < TEX_W; x++) {
+      let v = 0;
+      for (let k = -2; k <= 2; k++) v += K[k + 2] * tmp[Math.min(TEX_H - 1, Math.max(0, y + k)) * TEX_W + x];
+      res[y * TEX_W + x] = Math.round(v);
+    }
+  }
+  return res;
+}
+
 /** The percentage in one cell of a decoded grid. */
 export function cellPercent(grid, latDeg, lonDeg) {
   const row = Math.round(latDeg) + 90;

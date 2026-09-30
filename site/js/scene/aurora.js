@@ -40,16 +40,16 @@
 //
 // WHAT IT COSTS. Nothing on the boot path: no request, no geometry, no shader until the first
 // forecast has arrived (START_DELAY_MS after the first frame, in an idle moment). Then one draw
-// call, one 360 x 181 R8 texture (65 160 bytes of GPU memory) and a 64 x 32 sphere of positions
-// only (~25 kB). The fragment cost is where the shell is: two cheap tests discard every pixel whose
+// call, one 720 x 361 R8 texture (259 920 bytes of GPU memory; data/ovation.js upsampleGrid says
+// why half a degree) and a 64 x 32 sphere of positions and indices only (~50 kB). The fragment cost is where the shell is: two cheap tests discard every pixel whose
 // ray never reaches the oval's latitudes or never leaves daylight, so on a quiet day most of the
 // disc pays a dozen instructions. Steps per tier: TIER_STEPS below. Under the frame latch and on
 // T0 the folds go and the steps drop; under reduced motion the folds hold still.
 
 import * as THREE from '../../vendor/three.module.min.js';
 import {
-  OVATION_URL, GRID_W, GRID_H, START_DELAY_MS, KP_STORM,
-  parseOvation, auroraMode, nextLookMs, mayLook, percentToByte,
+  OVATION_URL, GRID_W, GRID_H, TEX_W, TEX_H, START_DELAY_MS, KP_STORM,
+  parseOvation, upsampleGrid, auroraMode, nextLookMs, mayLook, percentToByte,
 } from '../data/ovation.js';
 import { WGS84_A_KM } from './earth.js';
 import { COPY, t, fmt, ageInWords } from '../copy/en.js';
@@ -95,10 +95,12 @@ export const NIGHT = { dark: -0.10, lit: 0.02 };
 
 /**
  * Probability to emission (0..1). Below 3 % nothing (OVATION's floor is noise at the oval's edge),
- * full gate by 10 % (where NOAA's own map starts colouring), then 1 - exp(-p / 0.3): brightness
- * grows with the energy flux the probability stands for, and saturates the way a camera does.
+ * the gate full by 12 % (NOAA's own map starts colouring at 10), then 1 - exp(-p / 0.45):
+ * brightness grows with the energy flux the probability stands for, and saturates the way a camera
+ * does. A quiet oval of 11 % draws at 0.17, a storm's 60 % at 0.74: faint is faint (spec 0053 req 5,
+ * "never exaggerated"). The first draft's 0.30 made a quiet night a solid green blob.
  */
-export const EMISSION = { floor: 0.03, full: 0.10, scale: 0.30 };
+export const EMISSION = { floor: 0.03, full: 0.12, scale: 0.45 };
 
 /** The overall brightness a vertical column of full emission draws at, before tone mapping. */
 export const AURORA_GAIN = 1.25;
@@ -122,14 +124,16 @@ export const TIER_STEPS = [
 export const DIPOLE_POLE = { latDeg: 80.8, lonDeg: -72.7 };
 
 /**
- * The folds (ILLUSTRATIVE): thin arcs along the oval, ARC_PER_DEG to a degree of magnetic latitude,
+ * The folds (ILLUSTRATIVE): thin arcs along the oval, one every 2.5 degrees of magnetic latitude
+ * (arcPerDeg), each about 0.5 degree (55 km) across (a raised cosine to the power `sharp`); the
+ * first draft's arc every 1.25 degrees smeared into one glow wherever the band was seen at a slant,
  * bent by two slow waves along the oval that drift away from magnetic midnight towards noon on both
  * flanks -- the way auroral forms ride the sunward return flow. The drifts are radians of magnetic
  * longitude a second: 0.01 is 25 km/s along an oval at 67 degrees, where the real flow is about
  * 1 km/s and would not move a pixel from this far out. So the motion is a slow shimmer, about a
  * pixel a second at the default view, and not a still. The card says the folds are drawn.
  */
-export const FOLDS = { arcPerDeg: 0.8, ampA: 0.9, kA: 5.0, ampB: 0.45, kB: 13.0, driftA: 0.010, driftB: 0.016 };
+export const FOLDS = { arcPerDeg: 0.4, sharp: 8, ampA: 0.9, kA: 5.0, ampB: 0.45, kB: 13.0, driftA: 0.010, driftB: 0.016 };
 
 /** The shell is not drawn when the Earth's disc is smaller than this share of half the view. */
 export const MIN_DISC_SHARE = 0.03;
@@ -187,9 +191,10 @@ export function auroraColour(hKm, e) {
   return [0, 1, 2].map((i) => k * (g * GREEN_557[i] + r * RED_630[i] + v * VIOLET_428[i]));
 }
 
-/** Where a geographic point reads the grid: texel centres on whole degrees, u east from 0, v north from -90. */
+/** Where a geographic point reads the texture: texel centres every half degree, u east from 0, v north from -90. */
 export function gridUv(latDeg, lonDeg) {
-  return { u: (lonDeg + 0.5) / GRID_W, v: (latDeg + 90 + 0.5) / GRID_H };
+  const k = TEX_W / 360;
+  return { u: (lonDeg * k + 0.5) / TEX_W, v: ((latDeg + 90) * k + 0.5) / TEX_H };
 }
 
 /**
@@ -245,7 +250,7 @@ export const AURORA_FRAG = /* glsl */`
 #include <common>
 #include <logdepthbuf_pars_fragment>
 
-uniform sampler2D uGrid;       // OVATION probability, R8, 360 x 181, rows south first
+uniform sampler2D uGrid;       // OVATION probability, R8, 720 x 361 (data/ovation.js upsampleGrid), rows south first
 uniform vec3  uCamLocal;       // the camera, Earth-local axes, equatorial radii
 uniform vec3  uSunDirLocal;    // the Earth's own uniform, shared: unit, Earth-local
 uniform vec3  uMagAxis;        // the dipole axis, Earth-local
@@ -262,6 +267,8 @@ varying vec3 vPosL;
 const float A_KM = ${WGS84_A_KM.toFixed(3)};
 const float F_FLAT = ${F_FLAT.toFixed(8)};
 const float GROUND_R = 0.9975;
+const vec2  TEX_SIZE = vec2( ${TEX_W.toFixed(1)}, ${TEX_H.toFixed(1)} );
+const float TEX_PER_DEG = ${(TEX_W / 360).toFixed(1)};
 const int   MAX_STEPS = ${Math.max(...TIER_STEPS.map((s) => s.maxSteps))};
 ${prof('P_GREEN', EMISSIONS.green)}
 ${prof('P_RED', EMISSIONS.red)}
@@ -275,6 +282,7 @@ const vec2 NIGHT = vec2( ${NIGHT.dark.toFixed(4)}, ${NIGHT.lit.toFixed(4)} );
 const vec3 EMISSION = vec3( ${EMISSION.floor.toFixed(4)}, ${EMISSION.full.toFixed(4)}, ${EMISSION.scale.toFixed(4)} );
 const vec2 VIOLET_RANGE = vec2( ${VIOLET_FROM.toFixed(3)}, ${VIOLET_TO.toFixed(3)} );
 const float ARC_PER_DEG = ${FOLDS.arcPerDeg.toFixed(4)};
+const float ARC_SHARP = ${FOLDS.sharp.toFixed(1)};
 const vec4 FOLD = vec4( ${FOLDS.ampA.toFixed(4)}, ${FOLDS.kA.toFixed(4)}, ${FOLDS.ampB.toFixed(4)}, ${FOLDS.kB.toFixed(4)} );
 const vec2 DRIFT = vec2( ${FOLDS.driftA.toFixed(4)}, ${FOLDS.driftB.toFixed(4)} );
 
@@ -369,7 +377,7 @@ void main() {
   // view is the smooth forecast and never a shimmer of aliasing. Measured once, at the entry point:
   // a derivative inside the loop below would be undefined.
   float foldK = 0.0;
-  if ( uFolds > 0.5 ) foldK = 1.0 - smoothstep( 0.2, 0.5, fwidth( arcCoord( a ) ) );
+  if ( uFolds > 0.5 ) foldK = 1.0 - smoothstep( 0.08, 0.25, fwidth( arcCoord( a ) ) );
 
   float lenKm = ( t1 - t0 ) * A_KM;
   int n = int( clamp( ceil( lenKm / uStepKm ), 2.0, float( uSteps ) ) );
@@ -390,14 +398,16 @@ void main() {
     if ( night <= 0.0 ) continue;
     float lat = degrees( asin( clamp( dir.y, -1.0, 1.0 ) ) );
     float lon = degrees( atan( -dir.z, dir.x ) );
-    float p = texture2D( uGrid, vec2( ( lon + 0.5 ) / 360.0, ( lat + 90.5 ) / 181.0 ) ).r;
+    float p = texture2D( uGrid, vec2( ( lon * TEX_PER_DEG + 0.5 ) / TEX_SIZE.x, ( ( lat + 90.0 ) * TEX_PER_DEG + 0.5 ) / TEX_SIZE.y ) ).r;
     float e = emission( p );
     if ( e <= 0.0 ) continue;
     float s = 1.0;
     if ( foldK > 0.0 ) {
-      // Discrete arcs belong to bright aurora; a faint oval is diffuse.
-      float arc = pow( 0.5 + 0.5 * cos( 6.2831853 * arcCoord( dir ) ), 4.0 );
-      s = mix( 1.0, 0.3 + 2.56 * arc, foldK * mix( 0.35, 0.8, smoothstep( 0.1, 0.5, p ) ) );
+      // The oval's light gathered into arcs: mean-preserving (a raised cosine to the 8th has mean
+      // 12870/65536, so 0.2 + 4.073 * arc averages 1), so the forecast's brightness is kept and only
+      // where inside the band it falls is drawn.
+      float arc = pow( 0.5 + 0.5 * cos( 6.2831853 * arcCoord( dir ) ), ARC_SHARP );
+      s = mix( 1.0, 0.2 + 4.073 * arc, foldK );
     }
     vec3 col = GAINS.x * stepIntegral( P_GREEN, h0, hm, hb, segKm ) * GREEN_557
              + GAINS.y * stepIntegral( P_RED, h0, hm, hb, segKm ) * RED_630
@@ -461,7 +471,7 @@ function mainThreadLooker(fetchImpl) {
       if (!res.ok) throw new Error('NOAA answered HTTP ' + res.status);
       const text = await res.text();
       const out = parseOvation(text);
-      return { ...out, chars: text.length, wireBytes: null };
+      return { ...out, tex: upsampleGrid(out.grid), chars: text.length };
     },
     kind: 'main-thread',
   };
@@ -527,7 +537,6 @@ export function createAurora({
     looks: 0,
     failures: 0,
     lastError: null,
-    wireBytes: 0,
     chars: 0,
     lastLookMs: null,
     looker: null,
@@ -550,11 +559,12 @@ export function createAurora({
   const tier = { value: 1 };
 
   function build(parent) {
-    tex = new THREE.DataTexture(new Uint8Array(GRID_W * GRID_H), GRID_W, GRID_H, THREE.RedFormat, THREE.UnsignedByteType);
+    tex = new THREE.DataTexture(new Uint8Array(TEX_W * TEX_H), TEX_W, TEX_H, THREE.RedFormat, THREE.UnsignedByteType);
+    tex.unpackAlignment = 1;                // 720 bytes a row today, but a row is not promised to be a multiple of 4
     tex.wrapS = THREE.RepeatWrapping;       // the antimeridian is a seam in the grid, not on the globe
     tex.wrapT = THREE.ClampToEdgeWrapping;
     tex.magFilter = THREE.LinearFilter;
-    tex.minFilter = THREE.LinearFilter;     // no mipmaps: 65 kB, and the shell never minifies it much
+    tex.minFilter = THREE.LinearFilter;     // no mipmaps: 260 kB, and the shell never minifies it much
     tex.generateMipmaps = false;
     tex.colorSpace = THREE.NoColorSpace;    // a probability, not a colour
     tex.needsUpdate = true;
@@ -626,7 +636,8 @@ export function createAurora({
     const parent = earthMesh();
     if (!parent) return;
     if (!mesh) mesh = build(parent);
-    const next = out.grid instanceof Uint8Array ? out.grid : new Uint8Array(out.grid);
+    const raw = out.grid instanceof Uint8Array ? out.grid : new Uint8Array(out.grid);
+    const next = out.tex instanceof Uint8Array ? out.tex : upsampleGrid(raw);
     if (!grid) {
       grid = next;
       tex.image.data.set(next);
@@ -637,7 +648,7 @@ export function createAurora({
       fadeFrom = { from: tex.image.data.slice(), to: next, at: wallNow(), lastWrite: 0 };
       grid = next;
     }
-    mesh.material.uniforms.uMinSinLat.value = Math.sin((reachLatDeg(next) * Math.PI) / 180);
+    mesh.material.uniforms.uMinSinLat.value = Math.sin((reachLatDeg(raw) * Math.PI) / 180);
     st.observationMs = out.observationMs;
     st.forecastMs = out.forecastMs;
     st.summary = out.summary;
@@ -675,7 +686,6 @@ export function createAurora({
       }
       accept(out);
       st.looks++;
-      st.wireBytes += out.wireBytes || 0;
       st.chars = out.chars || 0;
       st.lastError = null;
       ok = true;
@@ -788,13 +798,12 @@ export function createAurora({
         looks: st.looks,
         failures: st.failures,
         lastError: st.lastError,
-        wireBytes: st.wireBytes,
         chars: st.chars,
         lastLookMs: st.lastLookMs,
         looker: st.looker,
         skipped: st.skipped,
         scheduledAt: st.scheduledAt,
-        gpuBytes: mesh ? GRID_W * GRID_H + mesh.geometry.attributes.position.array.byteLength + (mesh.geometry.index ? mesh.geometry.index.array.byteLength : 0) : 0,
+        gpuBytes: mesh ? TEX_W * TEX_H + mesh.geometry.attributes.position.array.byteLength + (mesh.geometry.index ? mesh.geometry.index.array.byteLength : 0) : 0,
       };
     },
     line(clockMs) {
