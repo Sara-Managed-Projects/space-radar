@@ -56,6 +56,9 @@ const CONTRACT = {
   'scene/groundtrack.js': ['createGroundTrack', 'trackTimes', 'tickTimes', 'trackPoints', 'wantsTrack'],
   'ui/tracklabels.js': ['createTrackLabels'],
   'sky/passes.js': ['predictPasses'],
+  // Spec 0051 task 1: tonight's rules, and predictPasses in a worker.
+  'sky/tonight.js': ['nextVisible', 'guessFilter', 'passState', 'darkness', 'countdown', 'tonightWords', 'minPeakDeg'],
+  'sky/passworker.js': ['runPasses'],
   // Spec 0048: the next 90 minutes in time, shared by the card and (later) the follow strip.
   'sky/timefacts.js': ['lightWindows', 'nextAscendingNode', 'orbitNumber', 'launchYear', 'timeFacts', 'hasTimeFacts'],
   'sky/skyview.js': ['createSkyView'],

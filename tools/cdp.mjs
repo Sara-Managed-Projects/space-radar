@@ -32,7 +32,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const [url, scriptPath] = process.argv.slice(2).filter((a) => !a.startsWith('--'));
-if (!url || !scriptPath) { console.error('usage: node tools/cdp.mjs <url> <script.js> [--width=] [--height=] [--mobile] [--shot=] [--shot-dir=] [--reduced-motion] [--cpuprofile=] [--block=host,...] [--bytes=] [--net=4g|3g]'); process.exit(2); }
+if (!url || !scriptPath) { console.error('usage: node tools/cdp.mjs <url> <script.js> [--width=] [--height=] [--mobile] [--shot=] [--shot-dir=] [--reduced-motion] [--cpuprofile=] [--block=host,...] [--bytes=] [--net=4g|3g] [--timezone=IANA]'); process.exit(2); }
 const arg = (n, d) => { const h = process.argv.find((a) => a.startsWith('--' + n + '=')); return h ? h.slice(n.length + 3) : d; };
 const W = Number(arg('width', '1280'));
 const H = Number(arg('height', '800'));
@@ -82,6 +82,10 @@ const requests = new Map();
 // device tiers, the phone's 2k maps on a desktop). DevTools throttling sets the estimate, so the
 // app reads 4g (or 3g) from its first line. 4g is 100 Mbit/s at 10 ms, so it slows nothing here.
 const NET = arg('net', '');
+// --timezone=America/Chicago: the page's clock and Intl answer as if the device were there, set
+// before the app boots (spec 0051: the Tonight card guesses a place from the time zone, and its
+// acceptance screenshots are taken from Chicago without leaving this machine's own zone).
+const TIMEZONE = arg('timezone', '');
 const trace = (m) => { if (process.env.CDP_TRACE) process.stderr.write('[cdp] ' + m + '\n'); };
 
 const CHROME = process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
@@ -212,6 +216,10 @@ try {
       connectionType: fast ? 'wifi' : 'cellular3g',
     }, sessionId);
     trace('network ' + NET);
+  }
+  if (TIMEZONE) {
+    await send(ws, 'Emulation.setTimezoneOverride', { timezoneId: TIMEZONE }, sessionId);
+    trace('timezone ' + TIMEZONE);
   }
   if (REDUCED) {
     await send(ws, 'Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] }, sessionId);

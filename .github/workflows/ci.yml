@@ -197,6 +197,9 @@ jobs:
       # Spec 0048 task 3: the country or sea below, from the committed Natural Earth raster, offline.
       - name: "Below it now: Kazakhstan, the South Pacific, near the France-Spain border, land for disputed ground"
         run: node tests/test_overplace.mjs
+      # Spec 0051 task 1: the next pass, the 40 degree rule under a guessed place, darkness, the worker.
+      - name: "Tonight's rules: the next pass from a guessed place, 40 degrees up, Up now, 72 h, darkness"
+        run: node tests/test_tonight.mjs
       # Spec 0045: the instrument's look as numbers. The contrast table is recomputed from the
       # tokens, so the study's 0.62 glass (2.16:1 for dim text over a white cloud) cannot come back.
       - name: "The instrument's tokens: glass that passes AA over a cloud, 6 px corners, a lit edge, ember brackets (spec 0045)"

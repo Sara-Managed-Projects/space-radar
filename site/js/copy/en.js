@@ -1739,6 +1739,33 @@ export const COPY = {
     // What the polite live region says, and only when a value's first digit changes.
     live: '{name}: {readouts}',
   },
+  // Spec 0051: what you can see tonight (sky/tonight.js tonightWords). The place is a guess from the
+  // device's time zone unless the visitor set one, and says so; the Tonight tab (spec 0061) shows it.
+  tonight: {
+    placeGuess: 'from near {place}, estimated from your time zone',
+    placeSet: 'from {place}',
+    placeShared: 'from {place}, shared with you',
+    noPlace: 'Set where you are to see what passes over.',
+    coords: '{lat}, {lon}',
+    working: 'Working out tonight’s passes…',
+    // "International Space Station · 21:03 · from SW to NE, about five fists above the horizon at
+    // its highest (52°) · 5 min": direction and fist words are the card's own (copy/en.js above).
+    passLine: '{name} · {time} · from {from} to {to}, {fists} at its highest ({deg}°) · {mins} min',
+    startsIn: 'Starts in {countdown}',
+    // Scrubbed, a countdown from a clock that is not now would count to nothing: the clock time.
+    startsAt: 'Starts at {time}',
+    upNow: 'Up now, look {dir}',
+    guessCaveat: 'Times may differ by a few minutes where you are.',
+    nothingThenNext: 'Nothing bright passes over tonight. Next: {when}, {name}.',
+    nothingAtAll: 'Nothing bright passes over in the next three days.',
+    darkFrom: 'Dark from {time}',
+    darkUntil: 'Dark until {time}',
+    darkNow: 'Dark now',
+    neverDark: 'It does not get dark tonight',
+    moonRises: 'Moon {pct} %, rises {time}',
+    moonUp: 'Moon {pct} %, up now',
+    moonDown: 'Moon {pct} %, below the horizon',
+  },
   clean: {
     hide: 'Hide all panels (H)',
     show: 'Show the panels again (H or Escape)',
