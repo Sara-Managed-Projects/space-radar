@@ -184,6 +184,8 @@ jobs:
       # Spec 0047: brackets on the tracked object, a tag in the card's own words, a chevron off screen.
       - name: "The tracked object's HUD: the box rule, the tag's flip, the tick's floor, the chevron's edge"
         run: node tests/test_hud.mjs
+      - name: "No scene label inside the tracked object's brackets while its tag shows"
+        run: node tests/test_hudlabels.mjs
       # Spec 0048 task 1: shadow edges and the lap's end to 1 s against a scan a second at a time.
       - name: "Time facts on the card: the next 90 minutes of light, the lap countdown, the orbit number"
         run: node tests/test_timefacts.mjs

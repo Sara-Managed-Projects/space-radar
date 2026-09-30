@@ -287,6 +287,12 @@ export function behindWorld(eye, pos, spheres, skipId = null) {
   return false;
 }
 
+/** Is a label's anchor inside a square box of side `side` centred on `centre`? Pure, for the test. */
+export function insideBox(pt, centre, side) {
+  if (!pt || !centre || !(side > 0)) return false;
+  return Math.abs(pt.x - centre.x) <= side / 2 && Math.abs(pt.y - centre.y) <= side / 2;
+}
+
 export function createLabels(ctx, host) {
   if (!host || typeof document === 'undefined') {
     return { update() {}, destroy() {}, emphasise() {}, clearEmphasis() {}, subject: () => null };
@@ -405,6 +411,14 @@ export function createLabels(ctx, host) {
         // A moon says which world it goes round, so chooseLabels can rank it behind that world.
         if (pr) { out.push({ record: r, kind: 'notable', parentId: labelParentId(r), ...pr }); seen.add(r.id); }
       }
+    }
+    // Nothing is named inside the tracked object's brackets while its tag shows. MEASURED
+    // 2026-09-29 (hud-arrived.png): "the International Space Station, which Nauka is part of" was
+    // printed across the station's model -- Nauka and Poisk are catalogue objects of their own,
+    // docked to it, crewed stations and so notable, and their names sat on the station's own centre.
+    if (tagged && ctx.hud && typeof ctx.hud.state === 'function') {
+      const st = ctx.hud.state();
+      if (st && st.px && Number.isFinite(st.box)) return out.filter((c) => !insideBox(c, st.px, st.box));
     }
     return out;
   }
