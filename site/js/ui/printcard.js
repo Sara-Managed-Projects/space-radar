@@ -1,22 +1,28 @@
 // ui/printcard.js -- the postcard camera: the button beside the eye and its JPEG / PDF menu.
 //
-// Contract: createPrintButton(ctx) -> { open(), close(), save(format, opts) }
+// Contract: createPrintButton(ctx, opts) -> { open(), close(), toggle(), save(format, opts) }
+//   opts.host       where the button goes (spec 0061: the tool rail, ui/rail.js); <body> without one
+//   opts.className  its class there
 //
 // WHY. Ivan, 2026-09-28: "postcards of space on click, where current screen will be as postcard
 // which is possible to print then (could be downloaded in PDF or JPEG)". The picture itself (size,
 // caption, tag, JPEG and PDF) is ui/printcompose.js, imported on the first save: 20 kB a visitor
 // who never prints does not download (2026-09-29, when the four tracking features took a first
 // visit 6 861 B over registry/budgets.yaml first_visit_bytes).
+//
+// The menu stays on <body> wherever the button is: the rail is a glass column with overflow
+// hidden for its rounded corners, and a menu inside it would be clipped to 48 px. ui.css anchors
+// it beside the rail.
 
 import { COPY } from '../copy/en.js';
 import { toast } from './share.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
-export function createPrintButton(ctx) {
+export function createPrintButton(ctx, opts = {}) {
   const button = document.createElement('button');
   button.type = 'button';
-  button.className = 'sr-print-toggle sr-over-clean';
+  button.className = `${opts.className || 'sr-print-toggle'} sr-over-clean`;
   button.setAttribute('aria-label', COPY.print.button);
   button.title = COPY.print.button;
   button.setAttribute('aria-haspopup', 'menu');
@@ -24,15 +30,15 @@ export function createPrintButton(ctx) {
   // A camera, ours: body, lens and the viewfinder bump. 24-unit box, stroked.
   const svg = document.createElementNS(SVG_NS, 'svg');
   svg.setAttribute('viewBox', '0 0 24 24');
-  svg.setAttribute('width', '22');
-  svg.setAttribute('height', '22');
+  svg.setAttribute('width', opts.host ? '20' : '22');
+  svg.setAttribute('height', opts.host ? '20' : '22');
   svg.setAttribute('aria-hidden', 'true');
   svg.setAttribute('focusable', 'false');
   const path = document.createElementNS(SVG_NS, 'path');
   path.setAttribute('d', 'M3 8h4l2-3h6l2 3h4v11H3Z M12 10a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z');
   path.setAttribute('fill', 'none');
   path.setAttribute('stroke', 'currentColor');
-  path.setAttribute('stroke-width', '1.8');
+  path.setAttribute('stroke-width', opts.host ? '1.6' : '1.8');
   path.setAttribute('stroke-linejoin', 'round');
   svg.appendChild(path);
   button.appendChild(svg);
@@ -103,9 +109,9 @@ export function createPrintButton(ctx) {
     }
   }
 
-  document.body.appendChild(button);
+  (opts.host || document.body).appendChild(button);
   document.body.appendChild(menu);
-  const api = { open, close, save };
+  const api = { open, close, toggle: () => (menu.hidden ? open() : close()), save };
   if (ctx) ctx.printCard = api;
   return api;
 }

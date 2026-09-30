@@ -47,24 +47,30 @@ export function wantsToggle(event, activeElement, on) {
   return null;
 }
 
-export function createCleanView(ctx) {
+/**
+ * @param {Object} ctx
+ * @param {{host?: Element, className?: string}} [opts]  spec 0061: the button is the tool rail's
+ *   third (ui/rail.js). The rail is inside #sr-shell, which the clear screen hides like any panel;
+ *   ui.css brings this one button back, alone and dim, in the rail's corner.
+ */
+export function createCleanView(ctx, opts = {}) {
   const root = document.documentElement;
   let on = false;
 
   const button = document.createElement('button');
   button.id = HOST_ID;
   button.type = 'button';
-  button.className = 'sr-clean-toggle sr-over-clean';
+  button.className = `${opts.className || 'sr-clean-toggle'} sr-over-clean`;
   const svg = document.createElementNS(SVG_NS, 'svg');
   svg.setAttribute('viewBox', '0 0 24 24');
-  svg.setAttribute('width', '22');
-  svg.setAttribute('height', '22');
+  svg.setAttribute('width', opts.host ? '20' : '22');
+  svg.setAttribute('height', opts.host ? '20' : '22');
   svg.setAttribute('aria-hidden', 'true');
   svg.setAttribute('focusable', 'false');
   const path = document.createElementNS(SVG_NS, 'path');
   path.setAttribute('fill', 'none');
   path.setAttribute('stroke', 'currentColor');
-  path.setAttribute('stroke-width', '1.8');
+  path.setAttribute('stroke-width', opts.host ? '1.6' : '1.8');
   path.setAttribute('stroke-linecap', 'round');
   path.setAttribute('stroke-linejoin', 'round');
   svg.appendChild(path);
@@ -89,7 +95,7 @@ export function createCleanView(ctx) {
 
   button.addEventListener('click', () => set(!on));
   paint();
-  document.body.appendChild(button);
+  (opts.host || document.body).appendChild(button);
 
   // Capture phase: Escape must reach this before the card's or the trip's own Escape handlers,
   // which would otherwise close something the visitor cannot see.

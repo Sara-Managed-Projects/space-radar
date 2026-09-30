@@ -216,7 +216,7 @@ export function clampLabelX(x, boxWidth, hostWidth, pad = LABEL_EDGE_PAD) {
 /** Space kept between two label boxes, in CSS pixels. */
 export const LABEL_GAP_PX = 2;
 /** What a label may not print under: the panels, the card, the phone's bottom bar. */
-const PANEL_SELECTOR = '.sr-panel, .sr-card, .sr-mobilebar';
+const PANEL_SELECTOR = '#sr-side, #sr-rail, #sr-time, .sr-pop, .sr-panel, .sr-card, .sr-mobilebar';
 
 /**
  * Which of these placed boxes to keep, in priority order: the first box always, and each later box

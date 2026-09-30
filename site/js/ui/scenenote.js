@@ -80,9 +80,10 @@ export function createSceneNote(ctx) {
   }
 
   why.addEventListener('click', () => {
-    if (ctx.mobile && ctx.mobile.isPhone) { ctx.mobile.setOpen('sr-status'); return; }
-    const panel = document.getElementById('sr-status');
-    if (panel) { panel.scrollIntoView({ block: 'start' }); panel.setAttribute('tabindex', '-1'); panel.focus({ preventScroll: true }); }
+    // The sources sheet, a view of the sidebar since spec 0061 (ui/shell.js openSources: the phone's
+    // drawer on a phone, the sidebar's sources view on a desktop).
+    if (ctx.shell) { ctx.shell.openSources(); return; }
+    if (ctx.mobile && ctx.mobile.isPhone) ctx.mobile.setOpen('sources');
   });
   // Closing the link's line closes only that line; the satellite line is its own dismissal.
   close.addEventListener('click', () => { if (said) said = null; else dismissed = true; check(); });

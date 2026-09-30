@@ -175,8 +175,11 @@ jobs:
         run: node tests/test_comets_rank.mjs
       - name: The Sources panel says catalogue, not live, for what ships with the app
         run: node tests/test_status_kinds.mjs
-      - name: A phone's sheets move the view up by half of what they cover
+      - name: A phone's sheets move the view up by half of what they cover, the desktop sidebar right by half its edge
         run: node tests/test_viewshift.mjs
+      # Spec 0061 task 1: one sidebar with one view at a time, the tabs as places, the clock as a pill.
+      - name: "The shell: views push and pop, collapse remembered, tabs are places, Right now only from live data (spec 0061)"
+        run: node tests/test_shell.mjs
       - name: One control hides every panel, and H and Escape work it
         run: node tests/test_cleanview.mjs
       - name: The screen as a printable postcard, JPEG or a well-formed PDF

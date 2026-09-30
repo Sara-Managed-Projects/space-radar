@@ -1,7 +1,5 @@
-// ui/trippicker.js -- the Trips section of the panel: every trip, grouped, in one <select>, with
-// the chosen trip's details and a single Start under it (spec 0029).
+// ui/trippicker.js -- what the trips are, in the order they are offered (spec 0029).
 //
-// Contract export: createTripPicker(ctx, host) -> { root, plan(), destroy() }
 // Pure exports, tested by tests/test_trips_panel.mjs:
 //   tripOrder(rows)                     the ones that can run first, registry order within
 //   groupTrips(tours, groups, plans)    the drawn structure, empty groups removed
@@ -10,51 +8,19 @@
 //   eventTypeOf(tour)                   the event type its first `{event:}` stop names, or null
 //   eventSubtitle(tour, nowMs, ...)     "Next: 2 August 2027" for an event trip, else null
 //
-// WHY A <select>. The panel was a flat list of buttons, one per trip; the sixth trip was already
-// written when Ivan asked for a drop-down "as we will add more and more excursion types"
-// (2026-09-22). A native select is free where a hand-built list is expensive: a keyboard model, a
-// screen-reader model, a picker sheet on iOS and Android, no focus trap, and nothing to position.
-// The last one is the deciding one: on a phone this panel is a bottom sheet that scrolls (site.css
-// `html.sr-phone #sr-controls`), and anything absolutely positioned inside it clips at the sheet's
-// edge, which is why ui/search.js keeps its listbox in flow. ui/colorkey.js already uses a native
-// select in this same panel.
+// THE CONTROL IS GONE, THE ORDER IS NOT. Until spec 0061 this module also drew the panel's Trips
+// section: a <select> of every trip, the chosen one's paragraph, and one orange Start. Row D draws
+// the trips as cards in the explore view (ui/explore.js), two columns, a tap on a card to start it,
+// and that view reads its structure from groupTrips() here -- so a trip that cannot fill its own
+// floor is still GREYED WITH ITS REASON and never hidden (spec 0025 req 6), and the ones that can
+// run still lead. The end card's "next trip" (ui/tripframe.js) reads nextTripOrder() as before.
 //
-// WHAT DID NOT CHANGE. Start still calls trip.start(id); the frame, the state machine and the
-// intro card are untouched. A trip that cannot fill its own floor is still GREYED WITH ITS REASON
-// and never hidden (spec 0025 req 6). The reason goes in the details block under the select, and
-// the option gets a short suffix rather than `disabled`: iOS draws a disabled option as plain grey
-// text with no reason attached, and an option you cannot choose is a reason you cannot read.
-//
-// THE [data-trip] CONTRACT. Exactly one element in #sr-controls carries `data-trip`: the Start
-// button, whose dataset.trip follows the selection. ui/tripframe.js teardown() looks it up to put
-// focus back after Leave when whatever started the trip never took focus (a programmatic click,
-// the console). When the visitor changed the select during the trip, focus still lands on Start,
-// which is the right place to land.
-//
-// TWO HOSTS. The panel mounts this today; spec 0042's landing sheet mounts the same control. So
-// the picker owns its own planning: it listens for `sr:layers-ready` once, and exposes plan() for
-// a host built after that event has already fired.
+// THE [data-trip] CONTRACT moved with the control: each trip card in #sr-side carries `data-trip`,
+// and ui/tripframe.js teardown() looks it up to put focus back after Leave when whatever started the
+// trip never took focus (a programmatic click, the console).
 
 import { COPY, t, timeText } from '../copy/en.js';
-import { TOUR_GROUPS } from '../data/tours.js';
 import { nextEvent } from '../data/events.js';
-import { shapeLine } from './tripframe.js';
-
-const SELECT_ID = 'sr-trips-select';
-
-function el(tag, className, text) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text !== undefined && text !== null && text !== '') node.textContent = String(text);
-  return node;
-}
-
-function button(className, text, title) {
-  const b = el('button', className, text);
-  b.type = 'button';
-  if (title) b.title = title;
-  return b;
-}
 
 // ---------------------------------------------------------------------------------------
 // The pure parts
@@ -186,185 +152,4 @@ export function eventSubtitle(tour, nowMs, observer = null, resolve = nextEvent)
   let ev = null;
   try { ev = resolve(type, nowMs, observer); } catch { ev = null; }
   return ev && Number.isFinite(ev.t) ? t(COPY.trip.nextEventLine, { date: timeText.longDate(ev.t) }) : null;
-}
-
-// ---------------------------------------------------------------------------------------
-// The control
-// ---------------------------------------------------------------------------------------
-
-function groupLabel(group) {
-  const n = group.trips.length;
-  return t(n === 1 ? COPY.trip.groupCountOne : COPY.trip.groupCount, { display: group.display, count: n });
-}
-
-function rowOf(drawn, id) {
-  for (const g of drawn) for (const row of g.trips) if (row.id === id) return row;
-  return null;
-}
-
-function firstId(drawn, wantOfferable) {
-  for (const g of drawn) {
-    for (const row of g.trips) {
-      if (!wantOfferable || (row.planned && !row.off)) return row.id;
-    }
-  }
-  return null;
-}
-
-export function createTripPicker(ctx, host) {
-  const trip = ctx && ctx.trip;
-  const tours = trip && typeof trip.tours === 'function' ? trip.tours() : [];
-  const root = el('section', 'sr-panel sr-trips');
-  if (host) host.appendChild(root);
-  if (!tours.length) return { root, plan() {}, destroy() { root.remove(); } };
-
-  const plans = new Map();
-  let drawn = [];
-  let touched = false;   // the visitor has chosen; a plan landing no longer moves the selection
-  let alive = true;
-
-  root.appendChild(el('h2', 'sr-panel__title', COPY.trip.sectionTitle));
-  root.appendChild(el('p', 'sr-trips__hint', COPY.trip.sectionHint));
-  const label = el('label', 'sr-trips__label', COPY.trip.pickerLabel);
-  label.htmlFor = SELECT_ID;
-  root.appendChild(label);
-  const select = el('select', 'sr-trips__select');
-  select.id = SELECT_ID;
-  root.appendChild(select);
-
-  const details = el('div', 'sr-trips__details');
-  const blurb = el('p', 'sr-trips__blurb');
-  const when = el('p', 'sr-trips__next');
-  // THE SHAPE LINE IS NOT INSIDE THE BUTTON, and it is live. Inside, its rewrite as each plan
-  // landed changed the button's accessible name under a screen reader (spec 0025's panel review).
-  // `aria-live="polite"` announces the resolution when it lands, and the reason when there is one.
-  const shape = el('p', 'sr-trips__shape', COPY.trip.planning);
-  shape.setAttribute('aria-live', 'polite');
-  const start = button('sr-btn sr-btn--primary sr-trips__start', COPY.trip.startTitle);
-  details.appendChild(when);
-  details.appendChild(blurb);
-  details.appendChild(shape);
-  details.appendChild(start);
-  root.appendChild(details);
-
-  /** The options, rebuilt from the plans that have landed; the selection survives the rebuild. */
-  function paintOptions() {
-    drawn = groupTrips(tours, TOUR_GROUPS, plans);
-    const want = select.value || firstId(drawn, false);
-    select.textContent = '';
-    for (const g of drawn) {
-      let parent = select;
-      if (g.display) {
-        parent = el('optgroup');
-        parent.label = groupLabel(g);
-        select.appendChild(parent);
-      }
-      for (const row of g.trips) {
-        // A refused trip is MARKED, never disabled: the option stays choosable so its reason,
-        // printed in the details block, can be read.
-        const o = el('option', null, row.off ? `${row.title} ${COPY.trip.cannotRunMark}` : row.title);
-        o.value = row.id;
-        if (row.off) o.dataset.off = '1';
-        parent.appendChild(o);
-      }
-    }
-    if (want) select.value = want;
-  }
-
-  /** The chosen trip's blurb, its shape line or its reason, and the one Start button. */
-  function paintDetails() {
-    const row = rowOf(drawn, select.value);
-    if (!row) return;
-    blurb.textContent = row.blurb || '';
-    const tour = tours.find((x) => x.id === row.id);
-    const nowMs = ctx.clock && typeof ctx.clock.now === 'function' ? ctx.clock.now() : Date.now();
-    when.textContent = eventSubtitle(tour, nowMs, ctx.observer || null) || '';
-    shape.textContent = !row.planned
-      ? COPY.trip.planning
-      : row.off ? row.reason || '' : row.failed ? '' : shapeLine(row.count, row.estimateMs);
-    start.dataset.trip = row.id;
-    start.disabled = !!row.off;
-    details.classList.toggle('is-off', !!row.off);
-  }
-
-  function repaint() {
-    paintOptions();
-    // The initial selection is the first trip that can run. Until the visitor has chosen, a
-    // selection a plan just marked off moves on to the first offerable one, so the panel does
-    // not open on a greyed trip when one that runs is a line below it.
-    if (!touched) {
-      const now = rowOf(drawn, select.value);
-      if (now && now.off) {
-        const better = firstId(drawn, true);
-        if (better) select.value = better;
-      }
-    }
-    paintDetails();
-  }
-
-  /**
-   * Resolve every trip once the layers have landed, and print what is actually on offer. The
-   * counts are the one thing in this panel that must not be a guess, so nothing is stated before.
-   * A plan that throws leaves its trip choosable with no shape line: trip.start() resolves it
-   * again and says why if it cannot run.
-   */
-  function plan() {
-    for (const tour of tours) {
-      Promise.resolve(trip.plan(tour.id))
-        .then((p) => {
-          if (!alive || !p) return;
-          plans.set(tour.id, p);
-          repaint();
-        })
-        .catch(() => {
-          if (!alive) return;
-          plans.set(tour.id, { offerable: true, failed: true });
-          repaint();
-        });
-    }
-  }
-
-  select.addEventListener('change', () => {
-    touched = true;
-    paintDetails();
-  });
-  start.addEventListener('click', () => {
-    try {
-      trip.start(select.value);
-    } catch {
-      /* the panel stays as it was rather than dying with it */
-    }
-  });
-  const onReady = () => plan();
-  window.addEventListener('sr:layers-ready', onReady, { once: true });
-  // A trip from the visitor's own place (spec 0038) is greyed "Needs a place" until there is one,
-  // and names the place it starts from: setting or clearing the place re-plans the trips that
-  // depend on it, and only those, once the first plan has run.
-  const onObserver = () => {
-    if (!plans.size) return;
-    for (const tour of tours) {
-      if (!tour.requires_observer) continue;
-      Promise.resolve(trip.plan(tour.id))
-        .then((p) => {
-          if (!alive || !p) return;
-          plans.set(tour.id, p);
-          repaint();
-        })
-        .catch(() => {});
-    }
-  };
-  window.addEventListener('sr:observer', onObserver);
-
-  repaint();
-
-  return {
-    root,
-    plan,
-    destroy() {
-      alive = false;
-      window.removeEventListener('sr:layers-ready', onReady);
-      window.removeEventListener('sr:observer', onObserver);
-      root.remove();
-    },
-  };
 }

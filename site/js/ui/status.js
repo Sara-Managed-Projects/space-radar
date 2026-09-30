@@ -28,6 +28,7 @@ import { createSpaceWeather } from './spaceweather.js';
 import { creditsText } from './sound.js';
 import { AUDIO } from '../data/audio.js';
 import { tierLine } from '../scene/quality.js';
+import { createGitHubMark } from './github.js';
 
 const HOST_ID = 'sr-status';
 const REFRESH_MS = 5000;
@@ -54,15 +55,18 @@ function clear(node) {
   while (node.firstChild) node.removeChild(node.firstChild);
 }
 
-function ensureHost() {
+function ensureHost(parent) {
   if (host && host.isConnected) return host;
   host = document.getElementById(HOST_ID);
   if (!host) {
     host = el('section', 'sr-status');
     host.id = HOST_ID;
-    document.body.appendChild(host);
+    (parent || document.body).appendChild(host);
   }
-  host.classList.add('sr-status', 'sr-float');
+  // Spec 0061: a view of the sidebar (ui/shell.js "sources"), not a panel of its own. The glass is
+  // the sidebar's; `sr-float` stays for the old standalone mount a test or a probe may still use.
+  host.classList.add('sr-status');
+  if (!parent) host.classList.add('sr-float');
   host.setAttribute('aria-label', COPY.status.title);
   return host;
 }
@@ -338,10 +342,15 @@ function renderMaps(ctx, into) {
 // Contract export
 // ---------------------------------------------------------------------------------------
 
-export function createStatus(ctx) {
+/**
+ * @param {Object} ctx
+ * @param {Element} [parent]  spec 0061: the sidebar's sources view (ui/shell.js host('sources')).
+ *   The content is the old panel's, unchanged; only where it lives moved, off the first screen.
+ */
+export function createStatus(ctx, parent) {
   if (built) return;
   built = true;
-  const node = ensureHost();
+  const node = ensureHost(parent);
   clear(node);
 
   node.appendChild(el('h2', 'sr-status__title', COPY.status.title));
@@ -385,6 +394,12 @@ export function createStatus(ctx) {
   const maps = el('p', 'sr-status__intro sr-status__maps');
   creditBlock.appendChild(maps);
   node.appendChild(creditBlock);
+
+  // The footer (spec 0061 design §6): the GitHub mark, which used to sit alone in the top corner of
+  // the first screen, and what it links to in words. ui/github.js keeps the mark's rules.
+  const foot = el('footer', 'sr-status__foot');
+  createGitHubMark(foot);
+  node.appendChild(foot);
 
   const paint = () => {
     try {

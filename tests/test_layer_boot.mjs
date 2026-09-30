@@ -2,7 +2,7 @@
 //
 // MEASURED 2026-09-22 on the live site: "Everything active", "The geostationary ring", "Famous
 // debris" and "Reentries" read "nothing loaded" on every visit, and ticking a box did nothing.
-// Not data, not size: ui/controls.js was built before main.js attached ctx.setLayerOn, so the
+// Not data, not size: ui/controls.js (the panel, gone since spec 0061) was built before main.js attached ctx.setLayerOn, so the
 // panel's fallback wrote `layer.enabled = false` on every layer off in Wonder, and main.js reads
 // `enabled: false` as the registry's "switched off for good". This test holds the order and the
 // rule, from the source, because no test can boot main.js.
@@ -20,13 +20,16 @@ const check = (ok, msg) => { if (!ok) problems.push(msg); };
 // 1. the switches exist before the panel that presses them
 const main = src('site/js/main.js');
 const switches = main.indexOf('ctx.setLayerOn = (id, on) =>');
-const panel = main.indexOf('createControls(ctx);');
-check(switches > 0 && panel > 0 && switches < panel, `ctx.setLayerOn is attached before createControls(ctx) (${switches} < ${panel})`);
+// Since spec 0061 the switches are pressed from What to show, which the tool rail builds.
+const panel = main.indexOf('createRail(ctx, shell.railHost);');
+check(switches > 0 && panel > 0 && switches < panel, `ctx.setLayerOn is attached before createRail (${switches} < ${panel})`);
 
-// 2. the panel never writes the registry's flag
-const controls = src('site/js/ui/controls.js');
-const code = controls.split('\n').filter((l) => !/^\s*\/\//.test(l)).join('\n');
-check(!/layer\.enabled\s*=[^=]/.test(code), 'ui/controls.js never assigns layer.enabled (reading it is fine)');
+// 2. the panels never write the registry's flag: What to show, and the explore view that can
+// switch a layer on for a Right-now line or a far place
+for (const f of ['site/js/ui/whattoshow.js', 'site/js/ui/explore.js']) {
+  const code = src(f).split('\n').filter((l) => !/^\s*\/\//.test(l)).join('\n');
+  check(!/layer\.enabled\s*=[^=]/.test(code), `${f} never assigns layer.enabled (reading it is fine)`);
+}
 
 // 3. `load: on-demand` is the deferred path, and only a catalogue-sized layer takes it
 check(/l\.load === 'on-demand'/.test(main), 'main.js defers a layer whose registry row says load: on-demand');

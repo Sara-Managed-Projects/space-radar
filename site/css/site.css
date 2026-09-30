@@ -141,8 +141,8 @@ html, body {
 .labels .label[data-kind='notable'] { opacity: .8; }
 
 /* --- phone drawers (see js/ui/mobile.js) -------------------------------------
-   The panels are desktop-first and always open. On a phone the sky is the product, so they
-   become sheets that slide up from a bar and start closed. */
+   The sidebar is always open on a desktop. On a phone the sky is the product, so it becomes a
+   sheet that slides up from a bar and starts closed (spec 0061 task 3 makes it a three-height sheet). */
 
 .sr-mobilebar {
   position: fixed;
@@ -176,8 +176,7 @@ html, body {
   padding: 0 12px;
 }
 
-html.sr-phone #sr-controls,
-html.sr-phone #sr-status {
+html.sr-phone #sr-side {
   position: fixed;
   left: 0; right: 0;
   bottom: 0;
@@ -187,7 +186,7 @@ html.sr-phone #sr-status {
   z-index: 45;
   border-radius: var(--sr-radius) var(--sr-radius) 0 0;
   border-width: 1px 0 0;   /* a sheet: the lit edge is the top one (ui.css .sr-float) */
-  /* ui.css gives .sr-controls `padding-top: pad + env(safe-area-inset-top)` for its desktop life
+  /* The old controls panel had `padding-top: pad + env(safe-area-inset-top)` for its desktop life
      as a bar along the TOP of the screen. A bottom sheet has no notch above it, and on a real
      iPhone (Ivan's screenshot, 2026-09-22) that inset opened a 47-59 px empty band between the
      sheet's rounded edge and "Trips & layers" -- invisible in a desktop emulation, where the
@@ -199,24 +198,21 @@ html.sr-phone #sr-status {
   transition: transform 260ms cubic-bezier(.2,.8,.2,1);
   will-change: transform;
 }
-html.sr-phone #sr-controls.sr-drawer-open,
-html.sr-phone #sr-status.sr-drawer-open { transform: translateY(0); }
+html.sr-phone #sr-side.sr-drawer-open { transform: translateY(0); }
 
 /* A CLOSED DRAWER IS OUT OF THE TAB ORDER, not merely off screen.
-   Measured: with both drawers closed, #sr-controls still held 34 focusable descendants and the
+   Measured: with both drawers closed, the old #sr-controls still held 34 focusable descendants and the
    first of them focused at y 826 -- a keyboard or switch user walked into a sheet nobody could
-   see. `visibility` and not `inert`: ui/tripframe.js already owns `.inert` on these two nodes,
+   see. `visibility` and not `inert`: ui/tripframe.js already owns `.inert` on this node,
    and a second writer would have trip teardown put those 34 controls straight back. One owner
    per mechanism. The 0s-delayed visibility keeps the slide-out animation visible on the way. */
-html.sr-phone #sr-controls,
-html.sr-phone #sr-status {
+html.sr-phone #sr-side {
   visibility: hidden;
   transition:
     transform 260ms cubic-bezier(.2,.8,.2,1),
     visibility 0s 260ms;
 }
-html.sr-phone #sr-controls.sr-drawer-open,
-html.sr-phone #sr-status.sr-drawer-open {
+html.sr-phone #sr-side.sr-drawer-open {
   visibility: visible;
   transition:
     transform 260ms cubic-bezier(.2,.8,.2,1),
@@ -267,8 +263,6 @@ html.sr-phone .sr-drawer__close:focus-visible {
 html.sr-phone #sr-card { z-index: 50; }
 
 @media (prefers-reduced-motion: reduce) {
-  html.sr-phone #sr-controls,
-  html.sr-phone #sr-status { transition: visibility 0s 0s; }
-  html.sr-phone #sr-controls.sr-drawer-open,
-  html.sr-phone #sr-status.sr-drawer-open { transition: visibility 0s; }
+  html.sr-phone #sr-side { transition: visibility 0s 0s; }
+  html.sr-phone #sr-side.sr-drawer-open { transition: visibility 0s; }
 }

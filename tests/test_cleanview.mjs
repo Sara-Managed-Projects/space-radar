@@ -37,8 +37,12 @@ check(rule && /visibility: hidden !important/.test(rule[1]) && /pointer-events: 
 const { COPY } = await import(join(ROOT, 'site/js/copy/en.js'));
 check(COPY.clean && /\(H\)/.test(COPY.clean.hide) && /Escape/.test(COPY.clean.show), 'the button names its keys');
 
+// Spec 0061: the button is the tool rail's third (ui/rail.js), and main.js builds the rail.
 const main = readFileSync(join(ROOT, 'site/js/main.js'), 'utf8');
-check(/createCleanView\(ctx\)/.test(main), 'main.js creates it');
+const rail = readFileSync(join(ROOT, 'site/js/ui/rail.js'), 'utf8');
+check(/createRail\(ctx, shell\.railHost\)/.test(main) && /createCleanView\(ctx, \{ host: root/.test(rail), 'main.js builds the rail and the rail seats the clear-screen button');
+// With the screen clear the eye comes back alone in the rail's corner: the way back is where the way out was.
+check(/html\.sr-clean #sr-rail \.sr-rail__btn--clean[^{]*\{[^}]*visibility: visible !important/.test(css), 'the eye stays reachable on a clear screen');
 
 if (problems.length) { console.error('clean view FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('clean view ok: H hides every panel and brings them back, Escape leaves, typing and browser shortcuts are left alone, and the scene gets the whole screen');

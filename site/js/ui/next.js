@@ -18,7 +18,6 @@
 // the list has not loaded, the note says which, rather than the list pretending to be complete.
 
 import { COPY, t, fmt, timeText, ageInWords } from '../copy/en.js';
-import { revealInColumn } from './reveal.js';
 import { labelName } from './labels.js';
 import { SHOWERS } from '../data/showers.js';
 import { kpWords } from './spaceweather.js';
@@ -287,15 +286,27 @@ function el(tag, className, text) {
   return node;
 }
 
-export function createNext(ctx) {
+/**
+ * "Coming up" (spec 0061 design §2): always in the explore view, not a door's answer any more. It
+ * shows `opts.limit` rows and "Show all" expands the rest in place.
+ *
+ * @param {Object} ctx
+ * @param {{limit?: number}} [opts]
+ */
+export function createNext(ctx, opts = {}) {
   const T = COPY.nextList;
-  const root = el('section', 'sr-panel sr-next');
-  root.hidden = true;
-  root.appendChild(el('h2', 'sr-panel__title', T.title));
-  root.appendChild(el('p', 'sr-next__hint', T.hint));
+  const limit = Number.isFinite(opts.limit) && opts.limit > 0 ? opts.limit : Infinity;
+  let expanded = false;
+  const root = el('section', 'sr-next');
+  root.appendChild(el('h2', 'sr-micro', T.title));
   const list = el('ul', 'sr-next__list');
   const note = el('p', 'sr-next__note');
   root.appendChild(list);
+  const more = el('button', 'sr-more');
+  more.type = 'button';
+  more.hidden = true;
+  more.addEventListener('click', () => { expanded = !expanded; refresh(); });
+  root.appendChild(more);
   root.appendChild(note);
   const FEEDS = ['launches', 'asteroids', 'comets'];
   let timer = null;
@@ -307,12 +318,15 @@ export function createNext(ctx) {
   }
 
   function refresh() {
-    if (root.hidden) return;
     while (list.firstChild) list.removeChild(list.firstChild);
     const now = ctx.clock && typeof ctx.clock.now === 'function' ? ctx.clock.now() : Date.now();
     const observer = ctx.observer && Number.isFinite(ctx.observer.latRad) ? ctx.observer : null;
     const items = buildNextItems(ctx.records(), now, { observer, showers: SHOWERS, spaceWeather: weather, eclipses: true });
-    for (const item of items) {
+    const shown = expanded ? items : items.slice(0, limit);
+    more.hidden = items.length <= limit;
+    more.textContent = expanded ? T.showFewer : t(T.showAll, { n: fmt.int(items.length) });
+    more.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    for (const item of shown) {
       const li = el('li', 'sr-next__row', rowText(item, now));
       li.dataset.kind = item.kind;
       const cls = classText(item);
@@ -327,21 +341,25 @@ export function createNext(ctx) {
       }
       list.appendChild(li);
     }
-    const have = loadedIds();
-    const missing = FEEDS.filter((id) => !have.has(id)).map((id) => {
-      const layer = (ctx.layers || []).find((l) => l.id === id);
-      return layer ? layer.display || id : id;
-    });
+    // What the list could not look at, said only when the list is empty: under five rows it is a
+    // paragraph nobody needs, and with none it is the answer. No "set where you are" either -- a dead
+    // end in a list always on screen (0061's critique, item 7); the passes simply join once a place is set.
     const parts = [];
-    if (!items.length) parts.push(T.none);
-    if (missing.length) parts.push(t(T.notLoaded, { layers: missing.join(COPY.punctuation.listJoin) }));
-    if (!observer) parts.push(T.noObserver);
+    if (!items.length) {
+      parts.push(T.none);
+      const have = loadedIds();
+      const missing = FEEDS.filter((id) => !have.has(id)).map((id) => {
+        const layer = (ctx.layers || []).find((l) => l.id === id);
+        return layer ? layer.display || id : id;
+      });
+      if (missing.length) parts.push(t(T.notLoaded, { layers: missing.join(COPY.punctuation.listJoin) }));
+    }
     note.textContent = parts.join(' ');
     note.hidden = parts.length === 0;
   }
 
-  // NOAA's Kp, through the same source row and gate the space-weather line uses, so opening the
-  // list costs no request that line has not already made.
+  // NOAA's Kp, through the same source row and gate the space-weather line uses, so the list costs
+  // no request that line has not already made.
   let weather = null;
   function readWeather() {
     load('swpc-kp')
@@ -349,35 +367,20 @@ export function createNext(ctx) {
       .catch(() => {});
   }
 
-  function setMoment(moment) {
-    root.hidden = moment !== 'next';
-    if (!root.hidden) { refresh(); readWeather(); }
-  }
-
-  // Pressing Next reveals the list directly under the row of moment buttons, so the answer appears
-  // under the question (ui/reveal.js has the measurement). REVEAL_ABOVE is that row's height.
-  const REVEAL_ABOVE = 104;
-
   const onLayer = () => refresh();
   const onObserver = () => refresh();
-  const onMoment = (e) => {
-    setMoment(e && e.detail);
-    if (e && e.detail === 'next') revealInColumn(root, REVEAL_ABOVE);
-  };
   window.addEventListener('sr:layer', onLayer);
   window.addEventListener('sr:observer', onObserver);
-  window.addEventListener('sr:moment', onMoment);
   timer = window.setInterval(refresh, 60e3);
-  setMoment(ctx.moment);
+  refresh();
+  readWeather();
 
   return {
     root,
     refresh,
-    setMoment,
     destroy() {
       window.removeEventListener('sr:layer', onLayer);
       window.removeEventListener('sr:observer', onObserver);
-      window.removeEventListener('sr:moment', onMoment);
       window.clearInterval(timer);
       root.remove();
     },

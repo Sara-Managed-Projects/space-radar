@@ -25,15 +25,14 @@ import { LAYERS, loadLayer } from './data/layers.js';
 import * as sources from './data/sources.js';
 import { createSkyView } from './sky/skyview.js';
 import { showCard, hideCard } from './ui/cards.js';
-import { createControls } from './ui/controls.js';
-import { createStatus } from './ui/status.js';
+import { createShell } from './ui/shell.js';
+import { createExplore } from './ui/explore.js';
+import { createRail } from './ui/rail.js';
+import { createTimePill } from './ui/timepill.js';
 import { createMobileUI } from './ui/mobile.js';
 import { createSceneNote } from './ui/scenenote.js';
 import { buildIndex, findMatches, LINK_MIN_SCORE } from './ui/search.js';
-import { createGitHubMark } from './ui/github.js';
-import { createCleanView } from './ui/cleanview.js';
 import { createDensity } from './ui/density.js';
-import { createPrintButton } from './ui/printcard.js';
 import { createTrip } from './ui/trip.js';
 import { createTripFrame } from './ui/tripframe.js';
 import { createVeil } from './ui/veil.js';
@@ -182,8 +181,8 @@ export async function boot({ setStatus } = {}) {
   render();
   revealUI();
 
-  // The layer switches, BEFORE the panel that presses them. createControls() applies the moment's
-  // defaults to every layer as it builds, through ctx.setLayerOn; until 2026-09-22 that was
+  // The layer switches, BEFORE the panel that presses them (createRail, whose What to show paints
+  // from them). The old panel applied the moment's defaults as it built, through ctx.setLayerOn; until 2026-09-22 that was
   // attached 260 lines below, so the panel's fallback wrote `layer.enabled = false` on every layer
   // off in Wonder -- and `enabled: false` means "the registry switched this layer off": no glyph
   // layer, never loaded, and the box did nothing. "Everything active", the geostationary ring,
@@ -221,19 +220,25 @@ export async function boot({ setStatus } = {}) {
   ctx.liveClouds.start();
 
   say('Reading the catalogues…');
-  createControls(ctx);
-  createStatus(ctx);
+  // THE LAYOUT (spec 0061): one sidebar, one tool rail, one time pill. The shell builds the boxes;
+  // each module below fills its own. The explore view (wordmark, search, the four tabs, Right now,
+  // Trips, Coming up, the status line) is the sidebar's home; the sources sheet is a view of it; the
+  // card is seated in it by the shell (ui/shell.js says how). The rail holds What to show (the
+  // layers), the postcard and Hide (H); the pill is the clock.
+  // The sources sheet is built on first opening (ui/shell.js ensureSources says why).
+  const shell = createShell(ctx, { loadSources: (host) => import('./ui/status.js').then((m) => m.createStatus(ctx, host)) });
+  createExplore(ctx, shell.host('home'));
+  createRail(ctx, shell.railHost);
+  createTimePill(ctx, shell.timeHost);
   ctx.mobile = createMobileUI(ctx);
   // One line on the scene when no satellite could be read at all (ui/scenenote.js).
   ctx.sceneNote = createSceneNote(ctx);
-  createGitHubMark();
-  // One control that takes every panel off the screen (ui/cleanview.js): the scene alone, for
-  // looking and for pictures. Created last of the chrome so its button sits above the mark.
-  createCleanView(ctx);
-  // The postcard camera beside it (ui/printcard.js): the screen as a 6 x 4 in print, JPEG or PDF.
-  createPrintButton(ctx);
-  // The cinematic frame, after the panels and the mobile bar exist: it hides all three, and it
-  // reads ctx.mobile to close a phone drawer that is standing open when a trip starts.
+  // `#sources` opens the sheet (design §6): a link to "what could this page read" is worth having.
+  const openSourcesFromHash = () => { if (location.hash === '#sources') shell.openSources(); };
+  openSourcesFromHash();
+  window.addEventListener('hashchange', openSourcesFromHash);
+  // The cinematic frame, after the shell and the mobile bar exist: it hides the sidebar and the
+  // rail, and it reads ctx.mobile to close a phone drawer that is standing open when a trip starts.
   ctx.tripFrame = createTripFrame(ctx);
   // Names over the scene (spec 0026 req 5): the selection, its train, the nearest notable things.
   const labels = createLabels(ctx, document.getElementById('labels'));
@@ -599,6 +604,15 @@ export async function boot({ setStatus } = {}) {
     cameraRig.stopFollow();
     const distance = w ? worldFramingDistance(r, camera.fov, camera.aspect) : system ? ctx.systems.framingDistanceUnits(stageId) : 5;
     cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance, ms: 0 });
+    return true;
+  };
+  // The Planets tab (spec 0061, ui/explore.js): the Sun's stage framed on the inner planets rather
+  // than on the Sun's own disc, which is what setStage's world framing gives. 700 million km is the
+  // year trip's first stop (registry/tours.yaml a-year-in-a-minute `inner`), measured there to hold
+  // the whole of Mars's orbit on a 1280 x 800 screen.
+  ctx.frameSolarSystem = () => {
+    if (stage.worldId !== 'sun') return false;
+    cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance: 700e6 / stage.unitKm, ms: 0 });
     return true;
   };
 

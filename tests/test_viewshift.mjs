@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const { coveredFromBottom, shiftFor, MAX_SHIFT_FRACTION } = await import(join(ROOT, 'site/js/scene/viewshift.js'));
+const { coveredFromBottom, coveredFromLeft, shiftFor, MAX_SHIFT_FRACTION } = await import(join(ROOT, 'site/js/scene/viewshift.js'));
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
@@ -27,14 +27,26 @@ const drawer = { top: 321, bottom: 844, width: 390 };
 const tabbar = { top: 784, bottom: 844, width: 390 };
 check(coveredFromBottom([drawer, tabbar], W, H) === 523, `an open drawer covers its own band (${coveredFromBottom([drawer, tabbar], W, H)})`);
 check(shiftFor(523, H) === H * MAX_SHIFT_FRACTION, 'and the shift for it hits the cap, so the Earth lands in the free band rather than off the top');
+// THE DESKTOP SIDEBAR (spec 0061): a 360 px column 20 px from the left, top and bottom of a
+// 1440 x 900 window. The view moves right by half its right edge, 190 px: row D's Earth sits in the
+// middle of what the column leaves.
+{
+  const side = { left: 20, right: 380, top: 20, bottom: 880 };
+  check(coveredFromLeft([side], 1440, 900) === 380, `the open sidebar covers to its right edge (${coveredFromLeft([side], 1440, 900)})`);
+  check(coveredFromLeft([{ left: 20, right: 84, top: 20, bottom: 68 }], 1440, 900) === 0, 'the collapsed 48 px handle is not a column and moves nothing');
+  check(coveredFromLeft([{ ...side, left: -400, right: -40 }], 1440, 900) === 0, 'a sidebar slid off screen by a trip moves nothing');
+  check(coveredFromLeft([{ left: 1040, right: 1420, top: 20, bottom: 880 }], 1440, 900) === 0, 'a column on the right is not docked on the left');
+  check(coveredFromLeft([{ left: 0, right: 900, top: 0, bottom: 900 }], 1440, 900) === 720, 'and it never claims more than half the width');
+  check(coveredFromLeft([], 1440, 900) === 0 && coveredFromLeft([side], 0, 900) === 0, 'no column, or no canvas, no shift');
+}
 {
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(join(ROOT, 'site/js/scene/viewshift.js'), 'utf8');
-  check(/html\.sr-phone #sr-controls\.sr-drawer-open/.test(src) && /html\.sr-phone #sr-status\.sr-drawer-open/.test(src),
-    'the two phone drawers are measured, and only when open, and only on the phone');
-  check(!/'#sr-status'|'#sr-controls'/.test(src), 'the desktop strip and top bar are never measured');
+  check(/'html\.sr-phone #sr-side\.sr-drawer-open'/.test(src),
+    'the phone drawer is measured from the bottom, and only when open, and only on the phone');
+  check(/'html:not\(\.sr-phone\) #sr-side'/.test(src), 'the desktop sidebar is measured from the left, and only on a desktop');
   const css = readFileSync(join(ROOT, 'site/css/site.css'), 'utf8');
-  const block = css.slice(css.indexOf('html.sr-phone #sr-controls,\nhtml.sr-phone #sr-status {'));
+  const block = css.slice(css.indexOf('html.sr-phone #sr-side {'));
   check(/padding-top: var\(--sr-pad\);/.test(block.slice(0, block.indexOf('}'))),
     'the phone sheet resets the top bar\'s safe-area padding, so its head sits flush against its edge');
 }

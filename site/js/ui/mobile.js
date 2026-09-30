@@ -1,82 +1,85 @@
 // Mobile drawers.
 //
-// The UI modules were built desktop-first: `#sr-controls` and `#sr-status` are always-open panels,
-// which on a 375 px phone leaves about 160 px of sky between them. The sky IS the product, so on a
-// phone both panels become drawers that slide up from a bottom bar and are closed by default.
+// Contract: createMobileUI(ctx) -> { setOpen(view), close(), isPhone }
 //
-// This lives in its own file, and adds rather than edits, so `ui/controls.js` and `ui/status.js`
-// stay the single description of what those panels contain. It attaches nothing above 600 px.
+// On a phone the sidebar (ui/shell.js #sr-side) is a drawer that slides up from a bottom bar and is
+// closed by default: the sky IS the product, and a 360 px column on a 390 px screen would leave none
+// of it. The bar has two buttons, Explore and Sources; each opens the one drawer on its view. Spec
+// 0061 task 3 replaces this with a bottom sheet of three heights; until then this is today's phone
+// layout, re-pointed from the two old panels (#sr-controls, #sr-status) at the sidebar's views.
+//
+// This lives in its own file, and adds rather than edits, so ui/shell.js stays the single
+// description of the layout's boxes. It attaches nothing at 900 px and wider, where the sidebar is
+// always open (the same line as the shell's DESKTOP_QUERY).
 
 import { COPY, t } from '../copy/en.js';
 import { soundButton } from './sound.js';
 
-const PHONE = '(max-width: 600px)';
+const PHONE = '(max-width: 899.98px)';
+const SIDE_ID = 'sr-side';
 
 export function createMobileUI(ctx) {
   const mq = window.matchMedia(PHONE);
   let bar = null;
+  let head = null;
   let openId = null;
   let mute = null;
 
   const PANELS = [
-    { id: 'sr-controls', label: COPY.mobile.controls },
-    { id: 'sr-status', label: COPY.mobile.sources },
+    { id: 'home', label: COPY.mobile.controls },
+    { id: 'sources', label: COPY.mobile.sources },
   ];
+  // The old panel ids, from a caller written before spec 0061 (ui/scenenote.js's "why" link).
+  const ALIAS = { 'sr-controls': 'home', 'sr-status': 'sources' };
 
-  function panel(id) {
-    return document.getElementById(id);
-  }
+  const side = () => document.getElementById(SIDE_ID);
 
   /**
    * The sticky Close row.
    *
-   * THE BUG THIS EXISTS FOR: an open drawer is 503 of 812 px and sits at z-index 45, over the
-   * bar at 40 that opened it. The bar is not merely hard to see behind an 88%-opaque panel -- it
-   * is not hit-testable. Measured, a tap at the centre of the "Layers" bar button landed on
-   * `SPAN.sr-layer__name` and turned a layer OFF while the drawer stayed open. Scrolling does not
-   * rescue it: both are `position: fixed`, so the bar never moves out from under the drawer.
-   *
-   * STICKY, not merely first. The drawer scrolls 1639 px against a 502 px window; a Close that
-   * scrolls away is a Close you cannot reach from the bottom of the sources list.
-   *
-   * The click calls `setOpen(null)` and NOT `setOpen(p.id)`. The latter happens to work today
-   * because setOpen toggles, but it reads as "open this" and would break the moment the toggle
-   * goes away. Focus goes back to the bar button that opened the drawer -- the disclosure
-   * pattern, and the only visible thing left once the sheet has gone.
+   * THE BUG THIS EXISTS FOR: an open drawer is 503 of 812 px and sits at z-index 45, over the bar at
+   * 40 that opened it, so the bar is not hit-testable (measured: a tap at the centre of the bar's
+   * button landed on a layer checkbox and turned it off while the drawer stayed open). STICKY, not
+   * merely first: a Close that scrolls away is a Close you cannot reach from the bottom of the list.
+   * Focus goes back to the bar button that opened the drawer -- the disclosure pattern.
    */
-  function buildHead(p) {
-    const el = panel(p.id);
-    if (!el || el.querySelector('.sr-drawer__head')) return;
-
-    const head = document.createElement('div');
+  function buildHead() {
+    const el = side();
+    if (!el || head) return;
+    head = document.createElement('div');
     head.className = 'sr-drawer__head';
-
     const title = document.createElement('span');
     title.className = 'sr-drawer__title';
-    title.textContent = p.label;
-
     const close = document.createElement('button');
     close.type = 'button';
     close.className = 'sr-drawer__close';
     close.textContent = COPY.mobile.close;
-    close.title = t(COPY.mobile.closeTitle, { panel: p.label });
     close.addEventListener('click', () => {
+      const was = openId;
       setOpen(null);
-      const btn = bar && bar.querySelector('button[data-panel="' + p.id + '"]');
+      const btn = bar && bar.querySelector('button[data-panel="' + was + '"]');
       if (btn) btn.focus();
     });
-
     head.appendChild(title);
     head.appendChild(close);
     el.prepend(head);
   }
 
+  function paintHead() {
+    if (!head) return;
+    const p = PANELS.find((x) => x.id === openId);
+    head.querySelector('.sr-drawer__title').textContent = p ? p.label : '';
+    const close = head.querySelector('.sr-drawer__close');
+    close.title = t(COPY.mobile.closeTitle, { panel: p ? p.label : '' });
+  }
+
   function setOpen(id) {
-    openId = openId === id ? null : id;
-    for (const p of PANELS) {
-      const el = panel(p.id);
-      if (el) el.classList.toggle('sr-drawer-open', openId === p.id);
-    }
+    const want = ALIAS[id] || id;
+    openId = openId === want ? null : want;
+    const el = side();
+    if (el) el.classList.toggle('sr-drawer-open', !!openId);
+    if (openId && ctx && ctx.shell) ctx.shell.show(openId);
+    paintHead();
     if (bar) {
       for (const btn of bar.querySelectorAll('button[data-panel]')) {
         const on = btn.dataset.panel === openId;
@@ -102,18 +105,15 @@ export function createMobileUI(ctx) {
     }
     document.body.appendChild(bar);
     document.documentElement.classList.add('sr-phone');
-    for (const p of PANELS) buildHead(p);
+    buildHead();
     setOpen(null);
     placeMute();
   }
 
   /**
-   * A THIRD BUTTON, ONLY FOR A VISITOR WHO ASKED FOR SOUND (spec 0035 design §5, 2026-09-23). The
-   * bar is two buttons across a 375 px phone; a speaker nobody asked for would take a third of it
-   * from everybody to serve the few who turned sound on. So it appears once the stored choice is
-   * "on" (or a context exists, which means it was), and stays for the visit: taking it away on
-   * Mute would move the button out from under the thumb that pressed it. The first turn-on is the
-   * trip's intro card or the Trips & layers drawer.
+   * A THIRD BUTTON, ONLY FOR A VISITOR WHO ASKED FOR SOUND (spec 0035 design §5). The bar is two
+   * buttons across a 375 px phone; a speaker nobody asked for would take a third of it from
+   * everybody. It appears once the stored choice is "on" and stays for the visit.
    */
   function placeMute() {
     const audio = ctx && ctx.audio;
@@ -126,15 +126,11 @@ export function createMobileUI(ctx) {
   function detach() {
     if (bar) { bar.remove(); bar = null; mute = null; }
     document.documentElement.classList.remove('sr-phone');
-    for (const p of PANELS) {
-      const el = panel(p.id);
-      if (!el) continue;
-      el.classList.remove('sr-drawer-open');
-      // The head goes with the bar. Above 600 px these panels are always open, and a Close
-      // button with nothing left to reopen the panel is a trap, not a control.
-      const head = el.querySelector('.sr-drawer__head');
-      if (head) head.remove();
-    }
+    const el = side();
+    if (el) el.classList.remove('sr-drawer-open');
+    // The head goes with the bar: at 900 px and wider the sidebar is always open, and a Close with
+    // nothing left to reopen it is a trap, not a control.
+    if (head) { head.remove(); head = null; }
     openId = null;
   }
 
@@ -142,25 +138,18 @@ export function createMobileUI(ctx) {
   apply();
   mq.addEventListener('change', apply);
 
-  // Opening a card on a phone should get the drawers out of the way -- two overlapping sheets is
-  // the thing that makes a phone UI feel broken.
-  //
-  // AND SO SHOULD TAPPING EMPTY SKY. main.js's deselect() fires this same event with a null
-  // detail, and the old `&& e.detail` guard threw exactly that case away -- which is why the
-  // drawer ignored a backdrop tap while the card, on the same event, honoured it. One sheet
-  // obeying a verb the other ignores is itself the bug. main.js already tells a camera drag from
-  // a tap (6 px / 400 ms), so rotating the globe over the sky does not close the drawer.
+  // Opening a card on a phone gets the drawer out of the way, and so does tapping empty sky
+  // (main.js deselect() fires this with a null detail): one sheet obeying a verb the other ignores
+  // was itself the bug. main.js already tells a camera drag from a tap.
   window.addEventListener('sr:select', () => {
-    if (mq.matches) setOpen(null);
+    if (mq.matches) { openId = null; setOpen(null); }
   });
 
-  // Escape is already this app's "dismiss the top layer": ui/cards.js closes the card with it and
-  // ui/tripframe.js leaves a trip. A drawer that ignored it was the odd one out. Guarded on
-  // `openId` so it never swallows an Escape it did not need, and a card and a drawer are never
-  // open together because selecting closes the drawer above.
+  // Escape is this app's "dismiss the top layer"; guarded on openId so it never swallows one it did
+  // not need.
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && mq.matches && openId) setOpen(null);
+    if (e.key === 'Escape' && mq.matches && openId) { openId = null; setOpen(null); }
   });
 
-  return { setOpen, close: () => setOpen(null), get isPhone() { return mq.matches; } };
+  return { setOpen, close: () => { openId = null; setOpen(null); }, get isPhone() { return mq.matches; } };
 }

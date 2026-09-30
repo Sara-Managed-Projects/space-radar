@@ -140,11 +140,14 @@ for (const r of all) {
 
 // --- 4. corners: 6 px panels, nothing rounder -----------------------------------------------------
 check(/^\d+(\.\d+)?px$/.test(token('--sr-radius') || '') && parseFloat(token('--sr-radius')) <= 6, `--sr-radius is ${token('--sr-radius')}; panels are 6 px`);
+// Spec 0061 design §9: the one exception, the shell's OUTER corners (the sidebar, the tool rail and
+// its popover), 16 px as row D draws them. A token, so it is one number and nothing else borrows it.
+check(token('--sr-radius-shell') === '16px', `--sr-radius-shell is ${token('--sr-radius-shell')}; the shell's outer corners are 16 px`);
 for (const r of all) {
   for (const [prop, value] of decls(r.body)) {
     if (prop !== 'border-radius' && !/^border-(top|bottom)-(left|right)-radius$/.test(prop)) continue;
     for (const part of value.split(/\s+|\//).filter(Boolean)) {
-      const ok = /^var\(--sr-radius(-sm|-pill)?\)$/.test(part) || part === '50%' || part === '0' || (/^[\d.]+px$/.test(part) && parseFloat(part) <= 6);
+      const ok = /^var\(--sr-radius(-sm|-pill|-shell)?\)$/.test(part) || part === '50%' || part === '0' || (/^[\d.]+px$/.test(part) && parseFloat(part) <= 6);
       if (!ok) problems.push(`${r.file} ${r.selector}: border-radius ${value}; a corner is a --sr-radius token, a circle, or at most 6 px`);
     }
   }
@@ -169,11 +172,14 @@ check(all.some((r) => r.selector === '.sr-float' && /prefers-reduced-transparenc
 check(all.some((r) => r.selector === '.sr-float' && /@supports not/.test(r.at) && /backdrop-filter/.test(r.at) && has(r, 'background', 'var(--sr-glass-solid)')), 'without backdrop-filter the glass is solid');
 check(!all.some((r) => /scanline|grain|noise/i.test(r.selector)), 'no scanlines, grain or noise');
 
-// The builders put the chrome on every floating panel. `sr-panel` is the sections inside #sr-controls.
+// The builders put the chrome on every floating panel. Since spec 0061 the sidebar, the tool rail,
+// its popover and the time pill are the floating panels; the sources sheet is a view of the sidebar
+// and wears its glass.
 const js = (f) => readFileSync(join(ROOT, 'site/js/ui', f), 'utf8');
 check(/classList\.add\('sr-card', 'sr-float'\)/.test(js('cards.js')), 'the card wears sr-float');
-check(/classList\.add\('sr-controls', 'sr-float'\)/.test(js('controls.js')), 'the controls wear sr-float');
-check(/classList\.add\('sr-status', 'sr-float'\)/.test(js('status.js')), 'the status panel wears sr-float');
+check(/el\('aside', 'sr-side sr-float'\)/.test(js('shell.js')), 'the sidebar wears sr-float');
+check(/'sr-rail sr-float'/.test(js('rail.js')) && /'sr-pop sr-float'/.test(js('rail.js')), 'the tool rail and its popover wear sr-float');
+check(/el\('div', 'sr-time sr-float'\)/.test(js('timepill.js')), 'the time pill wears sr-float');
 check(/'sr-trip__bar sr-trip__bar--bottom sr-float'/.test(js('tripframe.js')) && /'sr-trip__bar sr-trip__bar--top sr-float'/.test(js('tripframe.js')), 'both trip bars wear sr-float');
 check(/'sr-search__pop sr-float'/.test(js('search.js')), 'the search results wear sr-float');
 check(/'sr-print-menu sr-float sr-over-clean'/.test(js('printcard.js')), 'the print menu wears sr-float and still shows over a clear screen');
@@ -183,7 +189,6 @@ const bracket = all.find((r) => /::before/.test(r.selector) && /\.sr-bracketed::
 check(!!bracket, 'there is a .sr-bracketed::before rule');
 if (bracket) {
   const sels = bracket.selector.split(',').map((s) => s.trim());
-  check(sels.includes('.sr-door.is-on::before'), 'the selected mode tile wears the brackets');
   check(sels.includes('.sr-search__option.is-active::before'), 'the selected search row wears the brackets');
   check(sels.some((s) => /:focus-visible::before$/.test(s)), 'a focused control wears the brackets');
   const grads = (bracket.body.match(/linear-gradient\(var\(--sr-ember\) 0 0\)/g) || []).length;

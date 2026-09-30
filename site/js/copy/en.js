@@ -410,6 +410,14 @@ const clockFmt = new Intl.DateTimeFormat('en-GB', {
   minute: '2-digit',
   hour12: false,
 });
+const pillFmt = new Intl.DateTimeFormat('en-US', {
+  day: '2-digit',
+  month: 'short',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+  timeZone: 'UTC',
+});
 
 export const timeText = {
   utcTime: (ms) => utcTimeFmt.format(new Date(ms)),
@@ -432,6 +440,18 @@ export const timeText = {
   /** "Fri 12 Sep, 21:14" */
   dayAndTime: (ms) =>
     `${localDateFmt.format(new Date(ms))}${COPY.punctuation.comma}${clockFmt.format(new Date(ms))}`,
+  /**
+   * "29 SEP 21:14 UTC" -- the time pill's readout (spec 0061 §7). en-US for the month because en-GB
+   * now writes "Sept", and the pill is set in capitals where a four-letter month is one too many.
+   */
+  pillUtc: (ms) => {
+    const parts = {};
+    for (const p of pillFmt.formatToParts(new Date(ms))) parts[p.type] = p.value;
+    return t(COPY.timePill.when, {
+      date: `${parts.day} ${String(parts.month || '').toUpperCase()}`,
+      time: `${parts.hour === '24' ? '00' : parts.hour}:${parts.minute}`,
+    });
+  },
   timeZoneName: () => {
     try {
       return Intl.DateTimeFormat().resolvedOptions().timeZone || COPY.controls.localTimeFallback;
@@ -494,6 +514,95 @@ export const COPY = {
   app: {
     name: 'Space Radar',
     tagline: 'Everything in motion around Earth, where it really is, right now.',
+  },
+
+  // "Six storms are turning": a count a person reads as a word (ui/explore.js Right now).
+  numberWords: SMALL_WORDS,
+
+  // THE SHELL (spec 0061, ui/shell.js): the sidebar's own words. Everything in it is a label; the
+  // explanations live in a card's About or the sources sheet (0061 req 11).
+  shell: {
+    sideLabel: 'Explore',
+    back: 'Explore',
+    backLabel: 'Back to Explore',
+    backChevron: '‹',
+    openChevron: '›',
+    handleMark: 'S',
+    expand: 'Show the panel',
+    collapse: 'Hide the panel',
+  },
+  // The four tabs (0061 req 3): places, not settings. Choosing one flies there.
+  tabs: {
+    label: 'Where',
+    earth: 'Earth',
+    planets: 'Planets',
+    stars: 'Stars',
+    tonight: 'Tonight',
+  },
+  // Right now (0061 design §2): at most three lines from live state; a missing one is left out.
+  rightNow: {
+    title: 'Right now',
+    storms: '{n} storms are turning, {name} the strongest.',
+    stormOne: 'One storm is turning: {name}.',
+    clouds: 'Today’s clouds',
+    people: 'People in space',
+    iss: 'ISS',
+    tiangong: 'Tiangong',
+  },
+  // The one line at the sidebar's foot: how the sources are, and how old the oldest reading is.
+  statusLine: {
+    reading: 'Reading the sources',
+    read: '{n} sources read',
+    readOne: 'One source read',
+    stale: '{n} stale',
+    failed: '{n} could not be read',
+    oldest: 'oldest {age}',
+    open: 'Open the sources',
+    label: '{text}. Open the sources',
+  },
+  // A trip as a card (0061 design §2): the title and one line under it.
+  tripCard: {
+    title: 'Trips',
+    meta: '{n} stops · {m} min',
+    metaOne: 'One stop · {m} min',
+    planning: 'Working out the stops',
+    cannotRun: 'Cannot run right now',
+    all: 'All {n} trips',
+    fewer: 'Fewer trips',
+  },
+  // The Planets and Stars tabs' lists.
+  explore: {
+    worldsTitle: 'The worlds',
+    farTitle: 'Far places',
+    systemsTitle: 'Star systems',
+    lightYears: '{n} ly',
+    au: '{n} AU',
+  },
+  // The tool rail (0061 req 5, ui/rail.js). Keys in brackets, as the clear screen's own label has.
+  rail: {
+    label: 'Tools',
+    show: 'What to show (L)',
+  },
+  // The time pill (0061 §7, ui/timepill.js).
+  timePill: {
+    label: 'Time',
+    when: '{date} {time} UTC',
+    live: 'LIVE · {when}',
+    held: '{when} · held',
+    away: '{when} · {off}',
+    unknown: 'Time unknown',
+    prev: '‹',
+    next: '›',
+    prevTitle: 'Back in time',
+    nextTitle: 'Forward in time',
+    backToLive: 'Live',
+    backToLiveTitle: 'Back to the real time, now',
+    rate: '{n}×',
+    rateTitle: 'Speed {n}×. Press for {next}×',
+    hold: 'Click to hold time still, drag to move through it',
+    run: 'Click to let time run, drag to move through it',
+    localTitle: 'Your time {time}, {zone}. {hold}',
+    readLabel: '{text}. {hold}',
   },
 
   punctuation: {
@@ -647,7 +756,6 @@ export const COPY = {
   // honesty line under them.
   ladder: {
     title: 'How far',
-    intro: 'Each step is farther than the last. Tap one to go there.',
     notLoaded: 'still loading',
     weShowTitle: 'What this map draws of what is known',
     weShowRow: '{n} {what} — of {of}',
@@ -717,7 +825,9 @@ export const COPY = {
     // R/B" -- and two identical rows read as a bug. The catalogue number tells them apart.
     sameName: '{name} ({id})',
     title: 'Coming up',
-    hint: 'From what the app has loaded: launches, close approaches, comets, meteor showers, storms that bring auroras and passes over you; and the next eclipses, worked out here.',
+    // The explore view's list shows five rows and expands in place (spec 0061 design §2).
+    showAll: 'Show all {n}',
+    showFewer: 'Show fewer',
     now: 'about now',
     inMinutes: 'in {n} minutes',
     inHours: 'in {n} hours',
@@ -777,7 +887,6 @@ export const COPY = {
     },
     none: 'Nothing is scheduled in what the app has loaded.',
     notLoaded: 'Not loaded, so not listed: {layers}.',
-    noObserver: 'Set where you are and passes over you join the list.',
   },
   // Colour keys (spec 0026 req 11).
   colourKey: {
@@ -1287,9 +1396,7 @@ export const COPY = {
     heldTitle: 'We could not find this one',
     stopOf: 'stop {n} of {count}',
 
-    // --- the row in the left panel -------------------------------------------------------
-    sectionTitle: 'Trips',
-    sectionHint: 'The camera flies it for you. Escape leaves at any time, and the view stays.',
+    // --- the trip's shape line (ui/tripframe.js shapeLine) ------------------------------------
     // Stated only AFTER the stops have been resolved. Before that the row says it is still
     // working it out, because a count printed before resolution is a guess wearing a fact's
     // clothes -- and this app's whole argument is that those are different things.
@@ -1297,16 +1404,6 @@ export const COPY = {
     shape: '{count} stops · about {mins} minutes',
     shapeOneMinute: '{count} stops · about a minute',
     startTitle: 'Fly this trip',
-    // --- the picker (spec 0029, ui/trippicker.js) ------------------------------------------
-    // One <select> with a heading per group; the heading text itself is the registry's
-    // `display` (TOUR_GROUPS), printed as it is, with its count folded in here because a native
-    // <optgroup> has one label and no second line. A trip that cannot run today keeps its option
-    // and gets the mark, never `disabled`: iOS draws a disabled option as grey text with nothing
-    // attached, and the reason is printed in the details block under the select instead.
-    pickerLabel: 'Choose a trip',
-    groupCount: '{display} · {count} trips',
-    groupCountOne: '{display} · 1 trip',
-    cannotRunMark: '· cannot run today',
     // An event trip's next occurrence under its title (spec 0031 task 5): the date its first
     // `{event:}` stop resolves to, computed here like the Next list's eclipse rows.
     nextEventLine: 'Next: {date}',
@@ -1519,20 +1616,6 @@ export const COPY = {
       unplaceable: '{n} we cannot place',
     },
     layersEmpty: 'No layers are loaded yet.',
-    clockTitle: 'Time',
-    play: 'Play',
-    pause: 'Pause',
-    playTitle: 'Let time run',
-    pauseTitle: 'Hold time still',
-    speedTitle: 'Speed',
-    speedLabel: '{n}×',
-    nowButton: 'Now',
-    nowTitle: 'Jump back to the real time',
-    scrubTitle: 'Drag to move through time',
-    scrubbing: 'Scrubbing',
-    live: 'Live',
-    utcLabel: 'UTC',
-    localLabel: 'Your time',
     localTimeFallback: 'local',
     locationTitle: 'Where you are',
     locationPlaceholder: 'Type a city',
@@ -1548,18 +1631,15 @@ export const COPY = {
     locationAsking: 'Asking the browser',
     locationNone: 'Not set',
     locationSet: '{name}',
-    locationCleared: 'Cleared',
     locationClear: 'Clear',
     locationCoords: '{lat}, {lon}',
     locationNoMatch: 'No city in the bundled list matches that.',
-    locationHint: 'A rough position is enough. It is only used in your browser.',
     // The Now moment's first screen guesses a place from the clock and says so, in words that a
     // person reads, not in a tooltip: a guess about where you are is held to the same rule as a
     // guess about an orbit.
     locationGuessed: 'We guessed {name} from your clock’s time zone. Set where you are if that is wrong.',
     locationGuessedByOffset: 'We guessed {name} from your clock’s offset from UTC, which is rough. Set where you are.',
     tonightTitle: 'Coming over tonight',
-    tonightHint: 'The next twelve hours, from where you are. Only passes bright enough to see.',
     tonightRow: '{name} at {time}, {dir}, {fists}',
     tonightNone: 'Nothing bright comes over in the next twelve hours.',
     tonightNoObserver: 'Set where you are, or open the Now door, and this will list what comes over.',
@@ -1571,7 +1651,7 @@ export const COPY = {
   // so the search says how many objects it IS looking at and refuses to guess at the rest.
   search: {
     title: 'Find an object',
-    placeholder: 'Type a name or a catalogue number',
+    placeholder: 'Search planets, stars, satellites',
     inputLabel: 'Search for an object by name or catalogue number',
     listLabel: 'Matching objects',
     fly: 'Fly to it',
@@ -1608,7 +1688,8 @@ export const COPY = {
   },
 
   status: {
-    title: 'What the app could and could not read',
+    // Spec 0061 design §6: the sheet is titled "Sources"; its intro still says what it is for.
+    title: 'Sources',
     intro:
       'Every source it reads, how old that reading is, and where it comes from. Nothing here is hidden in a footer.',
     stateOk: 'ok',
@@ -1700,7 +1781,9 @@ export const COPY = {
   // buttons called Layers and Sources, and nothing that said there was a guided trip to take.
   mobile: {
     barLabel: 'Panels',
-    controls: 'Trips & layers',
+    // Spec 0061: the drawer is the sidebar's explore view (search, the tabs, Right now, the trips);
+    // the layers moved to the What-to-show button in the corner.
+    controls: 'Explore',
     sources: 'Sources',
     close: 'Close',
     closeTitle: 'Close {panel}',

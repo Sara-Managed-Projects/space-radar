@@ -76,10 +76,10 @@ check(isCompact('compact', false) && !isCompact('regular', true) && isCompact('a
   check(root.classList.contains('sr-compact'), 'and the choice still holds for the page');
 }
 
-// Wired: main.js creates it before the panels, the controls carry the row, the copy has its words.
+// Wired: main.js creates it before the panels, What to show carries the row, the copy has its words.
 const main = readFileSync(join(ROOT, 'site/js/main.js'), 'utf8');
-check(/ctx\.density = createDensity\(\)/.test(main) && main.indexOf('ctx.density = createDensity()') < main.indexOf('createControls(ctx)'), 'main.js sets the density before building the controls');
-check(/densityPanel\(ctx\.density\)/.test(readFileSync(join(ROOT, 'site/js/ui/controls.js'), 'utf8')), 'the controls carry the density row');
+check(/ctx\.density = createDensity\(\)/.test(main) && main.indexOf('ctx.density = createDensity()') < main.indexOf('createShell(ctx'), 'main.js sets the density before building the shell');
+check(/densityPanel\(ctx\.density\)/.test(readFileSync(join(ROOT, 'site/js/ui/whattoshow.js'), 'utf8')), 'What to show carries the density row (spec 0061: the tool rail)');
 const { COPY } = await import(join(ROOT, 'site/js/copy/en.js'));
 check(COPY.density && ['panelTitle', 'regular', 'compact', 'auto', 'autoCompact', 'autoRegular'].every((k) => typeof COPY.density[k] === 'string'), 'the row\'s words are in copy/en.js');
 

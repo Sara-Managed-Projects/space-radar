@@ -107,7 +107,10 @@ const PHASE_ATTR = 'data-trip-phase';
 // Everything the cinematic mode takes away. ADDING A PIECE OF CHROME IS A ROW HERE -- the
 // GitHub mark was the third, and a mark left sitting in the corner of a full-screen flight
 // is exactly the kind of thing that gets noticed only in a screenshot.
-const CHROME = ['sr-controls', 'sr-status', 'sr-mark'];
+// Since spec 0061 that is the sidebar (which holds the sources sheet and the GitHub mark), the tool
+// rail, and the time pill: a trip sets its own clock per stop and says it in the letterbox, and a
+// second clock control under the letterbox would be two answers to "when is this".
+const CHROME = ['sr-side', 'sr-rail', 'sr-time'];
 const MOBILE_BAR = '.sr-mobilebar';
 
 const MINUTE_MS = 60000;
@@ -729,7 +732,7 @@ export function createTripFrame(ctx) {
     // document.activeElement on <body>, and focus went nowhere.
     let back = savedFocus && savedFocus.isConnected ? savedFocus : null;
     savedFocus = null;
-    if (!back && tourId) back = document.querySelector(`#sr-controls [data-trip="${tourId}"]`);
+    if (!back && tourId) back = document.querySelector(`#sr-side [data-trip="${tourId}"]`);
     if (back && typeof back.focus === 'function') back.focus();
     // ON A PHONE THE PANEL IS A DRAWER, AND setup() CLOSED IT. A control inside a closed drawer
     // is `visibility: hidden` (site.css) and cannot take focus: measured 2026-09-23 at 390 × 844,
@@ -737,7 +740,7 @@ export function createTripFrame(ctx) {
     // The bar button that reopens the drawer is where ui/mobile.js's own Close sends focus, so
     // it is where Leave sends it too; one key then reopens the sheet on the trip just left.
     if (back && document.activeElement !== back) {
-      const bar = document.querySelector(`${MOBILE_BAR} button[data-panel="sr-controls"]`);
+      const bar = document.querySelector(`${MOBILE_BAR} button[data-panel="home"]`);
       if (bar && typeof bar.focus === 'function') bar.focus();
     }
     tourId = null;

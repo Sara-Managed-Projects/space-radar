@@ -1,7 +1,8 @@
-/* ui.css -- the card, the controls and the status panel.
+/* ui.css -- the shell, the card and the sources sheet.
  *
- * Owned by the UI modules (ui/cards.js, ui/controls.js, ui/status.js). css/site.css is the
- * integrator's and this file does not touch it; link this one after it:
+ * Owned by the UI modules (ui/shell.js and what it hosts: ui/explore.js, ui/rail.js,
+ * ui/timepill.js, ui/cards.js, ui/status.js). css/site.css is the integrator's and this file does
+ * not touch it; link this one after it:
  *
  *   <link rel="stylesheet" href="css/ui.css">
  *
@@ -10,12 +11,12 @@
  * dangerous, which is both wrong and the opposite of the product. No purple gradients --
  * `probe` lavender is a flat class colour and never a fill.
  *
- * v1 uses the system font stack; the three self-hosted faces arrive with spec 0007.
  * `tabular-nums` is on every number that ticks, via .sr-num.
  *
- * Mobile first at 390 px: controls at the top, status at the foot, the card a bottom
- * sheet over both. Desktop from 900 px: a left rail of controls above status, and the
- * card as a right rail.
+ * Spec 0061: from 900 px, one sidebar on the left (the explore view, the card, the sources sheet
+ * as its views), a tool rail top right and a time pill bottom centre -- the shell section at the
+ * end of this file. Below 900 px the sidebar is a drawer from a bottom bar and the card a bottom
+ * sheet, until 0061 task 3 makes both one sheet.
  */
 
 :root {
@@ -130,7 +131,6 @@ html.sr-compact {
 }
 
 html.sr-compact .sr-card,
-html.sr-compact .sr-controls,
 html.sr-compact .sr-status {
   font-size: 13px;
   line-height: 1.4;
@@ -140,8 +140,8 @@ html.sr-compact .sr-status {
 /* Shared                                                                                */
 /* ------------------------------------------------------------------------------------ */
 
+
 .sr-card,
-.sr-controls,
 .sr-status {
   box-sizing: border-box;
   font-family: var(--sr-font);
@@ -223,8 +223,6 @@ html.sr-compact .sr-status {
 
 .sr-bracketed::before,
 .sr-bracketed::after,
-.sr-door.is-on::before,
-.sr-door.is-on::after,
 .sr-search__option.is-active::before,
 .sr-search__option.is-active::after,
 .sr-reticle__box::before,
@@ -243,7 +241,6 @@ html.sr-compact .sr-status {
 }
 
 .sr-bracketed::after,
-.sr-door.is-on::after,
 .sr-search__option.is-active::after,
 .sr-reticle__box::after,
 :where(button, a[href], [role='option'], summary):focus-visible::after {
@@ -251,7 +248,6 @@ html.sr-compact .sr-status {
 }
 
 .sr-card *,
-.sr-controls *,
 .sr-status * {
   box-sizing: border-box;
 }
@@ -264,12 +260,9 @@ html.sr-compact .sr-status {
 /* Every number that ticks is JetBrains Mono (spec 0045 req 6): the clock, the scrub's offset, the
    counts beside each layer, kind and colour, the ladder's distances and the trip's stop count.
    `.sr-num` alone is not enough to say so: it also marks whole sentences (a source's age). */
-.sr-clock__date,
-.sr-scrub__offset,
-.sr-layer__count,
+.sr-show__count,
 .sr-kind__count,
 .sr-colourkey__count,
-.sr-ladder__dist,
 .sr-trip__count {
   font-family: var(--sr-font-mono);
 }
@@ -321,11 +314,6 @@ html.sr-compact .sr-status {
   background: var(--sr-ember);
   border-color: var(--sr-ember);
   font-weight: 600;
-}
-
-/* Fixed width so the label swapping between Play and Pause does not shift the row. */
-.sr-btn--icon {
-  min-width: 84px;
 }
 
 .sr-btn--quiet {
@@ -776,335 +764,15 @@ html.sr-compact .sr-status {
   color: var(--sr-text-dim);
 }
 
-/* ------------------------------------------------------------------------------------ */
-/* The controls                                                                           */
-/* ------------------------------------------------------------------------------------ */
-
-.sr-controls {
-  position: fixed;
-  top: 0;
-  right: 0;
-  left: 0;
-  z-index: var(--sr-z-controls);
-  display: flex;
-  flex-direction: column;
-  gap: var(--sr-gap);
-  max-height: 46vh;
-  padding: var(--sr-pad);
-  padding-top: calc(var(--sr-pad) + env(safe-area-inset-top, 0px));
-  border-width: 0 0 1px;
-}
-
+/* The sections inside a panel (the colour key, density). The left panel they lived in is gone
+   since spec 0061; its parts are the explore view, the tool rail and the time pill. */
 .sr-panel {
   margin: 0;
-}
-
-/* Three equal doors ------------------------------------------------------------------- */
-
-.sr-doors {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-}
-
-.sr-door {
-  appearance: none;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-height: 52px;
-  padding: 8px 6px;
-  font: inherit;
-  text-align: left;
-  color: var(--sr-text-dim);
-  background: var(--sr-raise);
-  border: 1px solid var(--sr-line);
-  border-radius: var(--sr-radius-sm);
-  cursor: pointer;
-  transition:
-    color var(--sr-fast) var(--sr-ease),
-    border-color var(--sr-fast) var(--sr-ease);
-}
-
-/* THE SAME STACK, STATED TWICE, ON PURPOSE.
-   `flex-direction: column` on the door is what spaces these lines; `display: block` on the
-   children is what STACKS them, and it keeps working in an engine that declines to make a
-   <button> a flex container -- the historical Blink/Gecko/WebKit gap. It is one declaration, it
-   changes nothing about how the door renders today (a flex item is already blockified), and it
-   turns "unreadable" into "correct but unspaced" in the one case the rule is for. The trip rows
-   had the same rule until spec 0029 made the trip button a plain one. */
-.sr-door__label,
-.sr-door__hint {
-  display: block;
-}
-
-.sr-door__label {
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.sr-door__hint {
-  font-size: 13px;
-  line-height: 1.3;
-  color: var(--sr-text-dim);
-}
-
-/* Selected: the four brackets (see "Corner brackets" above), where a 1 px ember box was. */
-.sr-door.is-on {
-  color: var(--sr-text);
-  border-color: var(--sr-line-strong);
-}
-
-/* Layers with live counts -------------------------------------------------------------- */
-
-.sr-layers__list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.sr-layers__empty,
-.sr-kind--empty,
-.sr-source--empty,
-.sr-credit--empty {
-  padding: 6px 0;
-  font-size: 13px;
-  color: var(--sr-text-dim);
-}
-/* "N more sources are read only when a layer that needs them is switched on" (ui/status.js askedRows). */
-.sr-source--note { color: var(--sr-text-dim); font-size: 13px; border: 0; }
-
-.sr-layer__label {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  min-height: 34px;
-  cursor: pointer;
-}
-
-.sr-layer__box {
-  flex: 0 0 auto;
-  width: 16px;
-  height: 16px;
-  accent-color: var(--sr-ember);
-  cursor: pointer;
-}
-
-.sr-layer__name {
-  flex: 1 1 auto;
-  min-width: 0;
-  font-size: 13.5px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.sr-layer__count {
-  flex: 0 0 auto;
-  font-size: 13px;
-  color: var(--sr-text-dim);
-}
-
-.sr-layer__count.is-empty {
-  opacity: 0.6;
-}
-
-/* A layer whose members are in more than one state needs a sentence, not a number: "5 on the map
-   · 2 riding on something else · 1 we cannot place". It wraps to its own line under the name,
-   lined up past the checkbox and the swatch. Without this it is 360 px in a 335 px panel. */
-.sr-layer__label.is-split {
-  flex-wrap: wrap;
-  padding-bottom: 4px;
-}
-
-.sr-layer__count.is-split {
-  flex: 1 0 100%;
-  padding-left: 24px;
-  margin-top: -6px;
-  line-height: 1.35;
-}
-
-/* The clock ---------------------------------------------------------------------------- */
-
-.sr-clock__readout {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-bottom: 8px;
-}
-
-.sr-clock__line {
-  display: flex;
-  gap: 8px;
-  align-items: baseline;
-}
-
-.sr-clock__tag {
-  flex: 0 0 46px;
-  font-size: 11px;
-  color: var(--sr-text-dim);
-}
-
-.sr-clock__time {
-  font-family: var(--sr-font-mono);
-  font-size: 17px;
-  letter-spacing: 0.01em;
-}
-
-.sr-clock__date {
-  font-size: 13px;
-  color: var(--sr-text-dim);
-}
-
-.sr-clock__transport {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.sr-clock__mode {
-  font-size: 13px;
-  color: var(--sr-text-dim);
-  font-variant-numeric: tabular-nums;
-}
-
-.sr-clock__mode.is-live {
-  color: var(--sr-ok);
-}
-
-.sr-speeds {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 10px;
-}
-
-.sr-speed {
-  appearance: none;
-  min-width: 46px;
-  min-height: 32px;
-  padding: 0 8px;
-  font: inherit;
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
-  color: var(--sr-text-dim);
-  background: transparent;
-  border: 1px solid var(--sr-line);
-  border-radius: var(--sr-radius-sm);
-  cursor: pointer;
-}
-
-.sr-speed.is-on {
-  color: var(--sr-ember);
-  border-color: var(--sr-ember);
-}
-
-
-/* Scrubbing has to be obvious: the whole clock lights up while it happens. */
-.sr-scrub {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.sr-scrub__range {
-  flex: 1 1 auto;
-  min-width: 0;
-  height: 28px;
-  accent-color: var(--sr-ember);
-  cursor: ew-resize;
-}
-
-.sr-scrub__offset {
-  flex: 0 0 auto;
-  min-width: 84px;
-  font-size: 13px;
-  text-align: right;
-  color: var(--sr-text-dim);
-}
-
-.sr-controls.is-scrubbing .sr-clock {
-  outline: 1px solid var(--sr-ember);
-  outline-offset: 6px;
-  border-radius: var(--sr-radius-sm);
-}
-
-.sr-controls.is-scrubbing .sr-scrub__offset,
-.sr-controls.is-scrubbing .sr-clock__mode {
-  color: var(--sr-ember);
-  font-weight: 600;
-}
-
-/* Where you are ------------------------------------------------------------------------ */
-
-.sr-place__row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.sr-place__input {
-  flex: 1 1 140px;
-  min-width: 0;
-  min-height: 40px;
-  padding: 0 10px;
-  font: inherit;
-  color: var(--sr-text);
-  background: var(--sr-raise);
-  border: 1px solid var(--sr-line-strong);
-  border-radius: var(--sr-radius-sm);
-}
-
-.sr-place__input::placeholder {
-  color: var(--sr-text-dim);
-}
-
-.sr-place__input:focus-visible {
-  outline: 2px solid var(--sr-ember);
-  outline-offset: 1px;
-}
-
-.sr-place__current {
-  margin: 8px 0 2px;
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
-  color: var(--sr-text-dim);
-}
-
-.sr-place__current.is-set {
-  color: var(--sr-text);
-}
-
-.sr-place__note {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.4;
-  color: var(--sr-text-dim);
-}
-
-/* A warning is gold, never red. */
-.sr-place__note.is-warning {
-  padding-left: 8px;
-  color: var(--sr-text);
-  border-left: 2px solid var(--sr-stale);
 }
 
 /* ------------------------------------------------------------------------------------ */
 /* The status panel                                                                       */
 /* ------------------------------------------------------------------------------------ */
-
-.sr-status {
-  position: fixed;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: var(--sr-z-status);
-  max-height: 34vh;
-  padding: var(--sr-pad);
-  padding-bottom: calc(var(--sr-pad) + env(safe-area-inset-bottom, 0px));
-  border-width: 1px 0 0;
-}
 
 .sr-status__intro {
   margin: 0 0 10px;
@@ -1266,27 +934,6 @@ html.sr-compact .sr-status {
     --sr-card-w: 384px;
   }
 
-  .sr-controls {
-    top: 16px;
-    right: auto;
-    left: 16px;
-    width: 328px;
-    max-height: calc(62vh);
-    border-width: 1px;
-    border-radius: var(--sr-radius);
-    padding-top: var(--sr-pad);
-  }
-
-  .sr-status {
-    right: auto;
-    bottom: 16px;
-    left: 16px;
-    width: 328px;
-    max-height: calc(34vh);
-    border-width: 1px;
-    border-radius: var(--sr-radius);
-    padding-bottom: var(--sr-pad);
-  }
 
   .sr-card {
     top: 16px;
@@ -1309,126 +956,18 @@ html.sr-compact .sr-status {
       transform: translateX(12px);
     }
   }
-
-  .sr-door {
-    min-height: 58px;
-  }
 }
 
 @media (min-width: 1440px) {
   :root {
     --sr-card-w: 412px;
   }
-
-  .sr-controls,
-  .sr-status {
-    width: 352px;
-  }
-}
-
-/* ------------------------------------------------------------------------------------ */
-/* The GitHub mark (js/ui/github.js)                                                      */
-/*                                                                                        */
-/* WHERE IT SITS, MEASURED RATHER THAN GUESSED. Three regimes, and the corner is not free  */
-/* in all of them:                                                                        */
-/*   phone (<= 600 px)  the panels are bottom drawers and the card is a bottom sheet, so   */
-/*                      the top right is open sky -- measured, elementFromPoint(355, 32)   */
-/*                      returns the canvas.                                                */
-/*   601-899 px         .sr-controls is a full-width panel across the top and the card is  */
-/*                      still a bottom sheet. The mark rides over the panel's blank top     */
-/*                      right, above it in z so the panel never swallows it.               */
-/*   >= 900 px          .sr-card is a right rail from top 16 to bottom 16, so the corner    */
-/*                      IS the card WHEN ONE IS OPEN. With no card the mark sits in the     */
-/*                      corner at right 16; with one open it steps in by the rail's width   */
-/*                      and clears its left edge by 8 px -- 1440: mark 960-1004, card from  */
-/*                      1012.                                                              */
-/* ------------------------------------------------------------------------------------ */
-
-.sr-mark {
-  position: fixed;
-  top: calc(8px + env(safe-area-inset-top, 0px));
-  right: 8px;
-  z-index: 55; /* over the panels and the card, under the trip frame at 60 */
-  display: grid;
-  place-items: center;
-  width: 44px;  /* the tap target, not the glyph: the mark inside it is 22 px */
-  height: 44px;
-  color: var(--sr-text-dim);
-  border-radius: 50%;
-  transition: color var(--sr-fast) var(--sr-ease);
-  -webkit-tap-highlight-color: transparent;
-}
-
-.sr-mark:hover {
-  color: var(--sr-ember);
-}
-
-.sr-mark:focus-visible {
-  color: var(--sr-ember);
-}
-
-@media (min-width: 900px) {
-  .sr-mark {
-    top: 16px;
-    /* The corner, and the corner is where it was asked to be. It used to sit at
-       `var(--sr-card-w) + 24px` at every width, which is a hole the size of the card rail kept
-       open for a card that is usually not there. */
-    right: 16px;
-  }
-
-  /* ...and it steps aside only while a card IS there. <html> carries the class because the mark
-     is in the document before the card host exists, so no sibling selector can reach it
-     (ui/cards.js markCardOpen). 1440: mark 960-1004, card from 1012, as before. */
-  html.sr-card-open .sr-mark {
-    right: calc(var(--sr-card-w) + 24px);
-  }
-}
-
-/* The cinematic mode takes the chrome away; the mark goes with it. `inert` is set in JS
-   (ui/tripframe.js CHROME) and is what removes it from the tab order; this is the picture. */
-html.sr-trip-mode .sr-mark {
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--sr-slow) var(--sr-ease);
 }
 
 /* ------------------------------------------------------------------------------------ */
 /* Clean view (ui/cleanview.js): every panel off, the scene alone. Ivan, 2026-09-28: "should   */
 /* have possibility to hide each panel so fully see the space only".                          */
 /* ------------------------------------------------------------------------------------ */
-
-/* The toggle sits beside the GitHub mark, same size, same quiet colour. */
-.sr-clean-toggle {
-  position: fixed;
-  top: calc(8px + env(safe-area-inset-top, 0px));
-  right: 56px; /* the mark's 8 + 44 + 4 */
-  z-index: 56;
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  color: var(--sr-text-dim);
-  background: transparent;
-  border: 0;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: color var(--sr-fast) var(--sr-ease), opacity var(--sr-slow) var(--sr-ease);
-  -webkit-tap-highlight-color: transparent;
-}
-.sr-clean-toggle:hover { color: var(--sr-ember); }
-.sr-clean-toggle:focus-visible {
-  color: var(--sr-ember);
-}
-@media (min-width: 900px) {
-  .sr-clean-toggle { top: 16px; right: 68px; }
-  html.sr-card-open .sr-clean-toggle { right: calc(var(--sr-card-w) + 76px); }
-}
-/* A trip has its own frame with Leave in this corner; the H key still works during a trip. */
-html.sr-trip-mode:not(.sr-clean) .sr-clean-toggle {
-  opacity: 0;
-  pointer-events: none;
-}
 
 /* Everything on <body> except the scene, the stage-change veil and what is marked `.sr-over-clean`
    (the toggle, the postcard camera and its menu, the toast that says a picture was saved): a panel
@@ -1443,51 +982,10 @@ html.sr-clean body > *:not(.sr-scene):not(.sr-veil):not(.sr-over-clean) {
   pointer-events: none !important;
   transition: none !important;
 }
-/* With the screen clear, the toggle is the only thing left: dim until pointed at, in the corner
-   where the mark was. */
-html.sr-clean .sr-clean-toggle {
-  right: 8px;
-  opacity: 0.35;
-}
-@media (min-width: 900px) {
-  html.sr-clean .sr-clean-toggle { right: 16px; }
-}
-html.sr-clean .sr-clean-toggle:hover,
-html.sr-clean .sr-clean-toggle:focus-visible { opacity: 1; }
-
 /* ------------------------------------------------------------------------------------ */
 /* The postcard camera (ui/printcard.js): the screen as a 6 x 4 in print, JPEG or PDF.        */
 /* Ivan, 2026-09-28: "postcards of space on click ... possible to print".                     */
 /* ------------------------------------------------------------------------------------ */
-.sr-print-toggle {
-  position: fixed;
-  top: calc(8px + env(safe-area-inset-top, 0px));
-  right: 104px; /* beside the eye: 56 + 44 + 4 */
-  z-index: 56;
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  color: var(--sr-text-dim);
-  background: transparent;
-  border: 0;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: color var(--sr-fast) var(--sr-ease), opacity var(--sr-slow) var(--sr-ease);
-  -webkit-tap-highlight-color: transparent;
-}
-.sr-print-toggle:hover, .sr-print-toggle[aria-expanded="true"] { color: var(--sr-ember); }
-.sr-print-toggle:focus-visible { color: var(--sr-ember); outline: 2px solid var(--sr-ember); outline-offset: 2px; }
-@media (min-width: 900px) {
-  .sr-print-toggle { top: 16px; right: 120px; }
-  html.sr-card-open .sr-print-toggle { right: calc(var(--sr-card-w) + 128px); }
-}
-html.sr-trip-mode:not(.sr-clean) .sr-print-toggle { opacity: 0; pointer-events: none; }
-html.sr-clean .sr-print-toggle { right: 56px; opacity: 0.35; }
-@media (min-width: 900px) { html.sr-clean .sr-print-toggle { right: 68px; } }
-html.sr-clean .sr-print-toggle:hover, html.sr-clean .sr-print-toggle:focus-visible { opacity: 1; }
-
 .sr-print-menu {
   position: fixed;
   top: calc(56px + env(safe-area-inset-top, 0px));
@@ -1502,7 +1000,6 @@ html.sr-clean .sr-print-toggle:hover, html.sr-clean .sr-print-toggle:focus-visib
   /* The glass, edge, corners and shadow are .sr-float's (spec 0045). */
 }
 .sr-print-menu[hidden] { display: none; }
-@media (min-width: 900px) { .sr-print-menu { top: 68px; right: 16px; } }
 .sr-print-menu__note { margin: 0 0 4px; font-size: 13px; line-height: 1.4; color: var(--sr-text-dim); }
 .sr-print-menu__tag { display: flex; align-items: center; gap: 8px; margin: 0 0 4px; font-size: 13px; color: var(--sr-text); cursor: pointer; }
 .sr-print-menu__tag input { accent-color: var(--sr-ember); }
@@ -1525,8 +1022,7 @@ html.sr-clean .sr-print-toggle:hover, html.sr-clean .sr-print-toggle:focus-visib
 /* ------------------------------------------------------------------------------------ */
 
 @media (prefers-reduced-motion: reduce) {
-  .sr-btn,
-  .sr-door {
+  .sr-btn {
     transition: none;
   }
 
@@ -1547,15 +1043,10 @@ html.sr-clean .sr-print-toggle:hover, html.sr-clean .sr-print-toggle:focus-visib
   }
 }
 
-.sr-controls.is-reduced-motion .sr-door,
-.sr-controls.is-reduced-motion .sr-btn {
-  transition: none;
-}
-
 /* ------------------------------------------------------------------------------------ */
 /* Find an object (js/ui/search.js)                                                       */
 /*                                                                                        */
-/* The dropdown is IN FLOW, not an absolutely positioned popup. `.sr-controls` is a scroll */
+/* The dropdown is IN FLOW, not an absolutely positioned popup. The sidebar is a scroll      */
 /* container, and on a phone it is a 62vh drawer (see site.css), so an absolute popup      */
 /* would be clipped by the panel that contains it. In flow it cannot be, at any width.     */
 /* ------------------------------------------------------------------------------------ */
@@ -1758,27 +1249,9 @@ html.sr-clean .sr-print-toggle:hover, html.sr-clean .sr-print-toggle:focus-visib
   --sr-letterbox: min(6.5vh, 64px);
 }
 
-/* The panel, the status rail and the phone bar go away together. `inert` is set in JS and is
-   what removes them from the tab order and the accessibility tree; this is only the picture. */
-html.sr-trip-mode #sr-controls,
-html.sr-trip-mode #sr-status {
-  opacity: 0;
-  transform: translateX(-110%);
-  pointer-events: none;
-  transition:
-    opacity var(--sr-slow) var(--sr-ease),
-    transform 400ms var(--sr-ease);
-}
-
-/* The phone drawers are already translated on their own axis, so they leave downwards -- and
-   this selector has to out-specify site.css's `html.sr-phone #sr-controls`. */
-html.sr-trip-mode.sr-phone #sr-controls,
-html.sr-trip-mode.sr-phone #sr-status {
-  transform: translateY(102%);
-}
-
-/* ui/mobile.js appends this to document.body, NOT to #sr-controls, so hiding the panel alone
-   leaves it sitting over the picture. It is the single easiest thing here to get wrong. */
+/* ui/mobile.js appends this to document.body, NOT to the sidebar, so hiding the sidebar alone
+   leaves it sitting over the picture. It is the single easiest thing here to get wrong. (The
+   sidebar, the rail and the pill go away in the shell section at the end of this file.) */
 html.sr-trip-mode .sr-mobilebar {
   opacity: 0;
   transform: translateY(110%);
@@ -2319,8 +1792,9 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
    is untouched -- somebody who asked for less motion often needs more time, not less, and
    ui/trip.js derives it from word count so this file cannot shorten it even by accident. */
 @media (prefers-reduced-motion: reduce) {
-  html.sr-trip-mode #sr-controls,
-  html.sr-trip-mode #sr-status,
+  html.sr-trip-mode #sr-side,
+  html.sr-trip-mode #sr-rail,
+  html.sr-trip-mode #sr-time,
   html.sr-trip-mode .sr-mobilebar,
   html.sr-trip-mode #labels,
   .sr-trip__bar {
@@ -2348,105 +1822,6 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
     opacity: 1;
   }
 }
-
-/* The Trips section of the panel (js/ui/trippicker.js, spec 0029) ---------------------
-   One native <select> with a heading per group, the chosen trip's details under it, one Start.
-   NOTHING HERE IS POSITIONED: on a phone the panel is a bottom sheet that scrolls (site.css
-   `html.sr-phone #sr-controls`), and an absolutely positioned popup clips at its edge, which is
-   why the search listbox is kept in flow too. The <select> takes the field styling the Colour-by
-   select further down this panel already has (one rule, two selectors, below). */
-
-.sr-trips__hint {
-  margin: 0 0 8px;
-  font-size: 13px;
-  line-height: 1.4;
-  color: var(--sr-text-dim);
-}
-
-.sr-trips__label {
-  display: block;
-  margin: 0 0 4px;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: .02em;
-  color: var(--sr-text-dim);
-  text-transform: uppercase;
-}
-
-.sr-trips__details {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.sr-trips__blurb {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.45;
-  color: var(--sr-text);
-}
-
-/* Stated only after the stops have resolved; before that it says it is working it out, and
-   when the trip cannot run today it is the reason. Outside the button, so the button's
-   accessible name does not change under a reader as the plans land. */
-.sr-trips__shape {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.4;
-  color: var(--sr-text-dim);
-}
-
-.sr-trips__shape:empty {
-  display: none;
-}
-
-/* An event trip's next date, under its title (spec 0031): empty, and gone, for every other trip. */
-.sr-trips__next {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.4;
-  color: var(--sr-text);
-}
-
-.sr-trips__next:empty {
-  display: none;
-}
-
-/* Greyed WITH ITS REASON, and still readable: the reason is the point of not hiding it. */
-.sr-trips__details.is-off .sr-trips__blurb {
-  color: var(--sr-text-dim);
-}
-
-.sr-trips__details.is-off .sr-trips__shape {
-  padding-left: 8px;
-  color: var(--sr-text);
-  border-left: 2px solid var(--sr-stale);
-}
-
-.sr-trips__start {
-  width: 100%;
-  min-height: 44px;
-  margin-top: 2px;
-}
-
-/* The tap target the phone review set (spec 0026): 44 px, on the one control a first-time
-   visitor is meant to reach for. */
-html.sr-phone .sr-trips__select {
-  min-height: 44px;
-}
-
-/* --- the Now moment's first screen: the guess in words, and tonight's passes ------------- */
-.sr-place__current.is-guess { color: var(--sr-text); font-style: italic; }
-.sr-tonight__title { margin: 12px 0 2px; font-size: 13px; font-weight: 600; letter-spacing: .02em; color: var(--sr-text-dim); text-transform: uppercase; }
-.sr-tonight__hint { margin: 0 0 6px; font-size: 13px; color: var(--sr-text-dim); }
-.sr-tonight__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
-.sr-tonight__row { padding: 6px 8px; font-size: 13px; background: var(--sr-raise); border: 1px solid var(--sr-line); border-radius: var(--sr-radius-sm); cursor: pointer; }
-.sr-tonight__row:hover { border-color: var(--sr-ember); }
-.sr-tonight__note { margin: 4px 0 0; font-size: 13px; color: var(--sr-text-dim); }
-.sr-tonight__note[hidden] { display: none; }
-/* A meteor shower peaking tonight: the one line in this section that needs no satellite catalogue. */
-.sr-tonight__shower { margin: 6px 0; padding-left: 8px; border-left: 2px solid var(--sr-ember); font-size: 13px; line-height: 1.45; }
-.sr-tonight__shower[hidden] { display: none; }
 
 /* A world's note about how it is drawn (spec 0028 step 0) ------------------------------- */
 
@@ -2505,104 +1880,18 @@ html.sr-phone .sr-trips__select {
   color: var(--sr-text-dim);
 }
 
-/* The scale ladder (spec 0028 step 8) ------------------------------------------------------- */
+/* Coming up (spec 0026 req 6; spec 0061 puts it in the explore view, ui/next.js `always`). ----- */
 
-.sr-ladder__intro,
-.sr-ladder__why {
-  margin: 0 0 6px;
-  font-size: 13px;
-  line-height: 1.4;
-  color: var(--sr-text-dim);
-}
-
-.sr-ladder__list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  counter-reset: rung;
-}
-
-.sr-ladder__rung {
-  position: relative;
-  padding-left: 16px;
-  margin-bottom: 8px;
-}
-
-.sr-ladder__rung::before {
-  content: '';
-  position: absolute;
-  left: 4px;
-  top: 6px;
-  bottom: -8px;
-  border-left: 1px solid var(--sr-line);
-}
-
-.sr-ladder__rung:last-child::before { bottom: auto; height: 14px; }
-
-.sr-ladder__btn {
-  appearance: none;
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  width: 100%;
-  min-height: 32px;
-  padding: 4px 8px;
-  font: inherit;
-  color: var(--sr-text);
-  text-align: left;
-  background: transparent;
-  border: 1px solid var(--sr-line);
-  border-radius: var(--sr-radius-sm);
-  cursor: pointer;
-}
-
-.sr-ladder__btn:hover:not(:disabled),
-.sr-ladder__btn:focus-visible { border-color: var(--sr-line-strong); }
-
-.sr-ladder__btn:disabled { opacity: 0.55; cursor: default; }
-
-.sr-ladder__dist { color: var(--sr-text-dim); font-size: 13px; white-space: nowrap; }
-
-.sr-ladder__show { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--sr-line); }
-
-.sr-ladder__showlist { margin: 0; padding: 0; list-style: none; }
-
-.sr-ladder__showrow { font-size: 13px; line-height: 1.45; color: var(--sr-text-dim); margin: 0 0 4px; }
-
-/* The Next moment's list (spec 0026 req 6) --------------------------------------------- */
-
-.sr-next__hint,
-.sr-next__note { margin: 0 0 8px; font-size: 13px; line-height: 1.4; color: var(--sr-text-dim); }
-
-.sr-next__list { margin: 0 0 6px; padding: 0; list-style: none; }
-
-.sr-next__row {
-  padding: 6px 8px;
-  margin-bottom: 4px;
-  font-size: 13px;
-  line-height: 1.4;
-  border: 1px solid var(--sr-line);
-  border-radius: var(--sr-radius-sm);
-  cursor: pointer;
-}
-
-.sr-next__row:hover { border-color: var(--sr-line-strong); }
-/* A shower peak is a date, not an object: nothing to fly to, so the row does not look tappable. */
-.sr-next__row[data-kind='shower'] { cursor: default; }
-.sr-next__row[data-kind='shower']:hover { border-color: var(--sr-line); }
-/* Eclipses are computed, not objects in the scene: nothing to fly to either (spec 0031). */
+/* A shower peak is a date, not an object: nothing to fly to, so the row does not look tappable.
+   Eclipses are computed, not objects in the scene: nothing to fly to either (spec 0031). */
+.sr-next__row[data-kind='shower'],
 .sr-next__row[data-kind='solar-eclipse'],
 .sr-next__row[data-kind='lunar-eclipse'] { cursor: default; }
-.sr-next__row[data-kind='solar-eclipse']:hover,
-.sr-next__row[data-kind='lunar-eclipse']:hover { border-color: var(--sr-line); }
-/* What the row's time is: a plan, a computation, elements of some age (spec 0031 req 7). */
-.sr-next__class { display: block; margin-top: 2px; font-size: 13px; line-height: 1.35; color: var(--sr-text-dim); }
 
 /* Colour by (spec 0026 req 11) -------------------------------------------------------------- */
 
-/* The panel's one field style, shared with the trip picker's <select> (spec 0029). */
-.sr-colourkey__select,
-.sr-trips__select {
+/* The colour key's field. */
+.sr-colourkey__select {
   width: 100%;
   min-height: 36px;
   margin: 0 0 8px;
@@ -2667,10 +1956,6 @@ html.sr-phone .sr-trips__select {
 /* Space weather, one line (spec 0026 req 16) ----------------------------------------------- */
 
 .sr-status__weather { margin: 0 0 10px; font-size: 13px; line-height: 1.45; color: var(--sr-text); }
-
-/* Data-saver / frame latch note (spec 0026 req 18) --------------------------------------- */
-
-.sr-layers__quality { margin: 6px 0 0; font-size: 13px; line-height: 1.4; color: var(--sr-ember); }
 
 /* The note on the scene when no satellite could be read (ui/scenenote.js) ------------------ */
 
@@ -3051,3 +2336,1128 @@ html.sr-phone .sr-sound__btn {
 html.sr-phone .sr-chevron {
   min-height: 44px;
 }
+
+/* --- THE SHELL (spec 0061, ui/shell.js): one sidebar, one tool rail, one time pill. ---------
+   Sizes are row D's ("Space Radar redesign directions", HybridHome and HybridIss): the sidebar
+   360 px, 20 px in from three edges; the rail a 48 px column; the pill 48 px, 24 px off the
+   bottom, centred on the scene the sidebar leaves. 0045's glass and lit edge are .sr-float's; the
+   outer corners are 16 px, the inner ones 0045's. 20 px padding, an 8 px grid. */
+
+:root {
+  --sr-side-w: 360px;
+  --sr-inset: 20px;
+  /* The shell's outer corners (design §9): the sidebar, the rail, the popover. Inside them the
+     0045 corners hold: 6 px panels, 4 px segments, pills round. */
+  --sr-radius-shell: 16px;
+  /* A hovered row's name: the ember, lightened, so a hover reads as "this goes somewhere" without
+     the full ember that means "selected". */
+  --sr-ember-light: #ffc28a;
+  /* Where the scene the sidebar leaves begins: the pill is centred on it. 0 on a phone. */
+  --sr-scene-left: 0px;
+  --sr-micro: rgba(232, 236, 242, 0.62);
+  --sr-wash: rgba(232, 236, 242, 0.07);
+  --sr-wash-strong: rgba(232, 236, 242, 0.14);
+  --sr-hair: rgba(232, 236, 242, 0.08);
+}
+
+@media (min-width: 900px) {
+  :root { --sr-scene-left: calc(var(--sr-inset) + var(--sr-side-w)); }
+  html.sr-side-collapsed { --sr-scene-left: 0px; }
+}
+
+.sr-shell {
+  font-family: var(--sr-font);
+  color: var(--sr-text);
+}
+
+/* The micro-label: a section's name in Barlow capitals, tracked, dim. The one heading style in the
+   sidebar, the popover and the card view. */
+.sr-micro {
+  margin: 0;
+  padding: 0;
+  font: 600 13px/1.2 var(--sr-font-hud);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sr-micro);
+}
+
+/* --- the sidebar ---------------------------------------------------------------------- */
+
+.sr-side {
+  position: fixed;
+  top: var(--sr-inset);
+  bottom: var(--sr-inset);
+  left: var(--sr-inset);
+  z-index: var(--sr-z-controls);
+  display: flex;
+  flex-direction: column;
+  width: var(--sr-side-w);
+  box-sizing: border-box;
+  overflow: hidden;
+  border-radius: var(--sr-radius-shell);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.sr-side *,
+.sr-pop *,
+.sr-rail *,
+.sr-time * {
+  box-sizing: border-box;
+}
+
+.sr-side__view {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.sr-side__view[hidden] {
+  display: none;
+}
+
+/* The push: 220 ms slide and fade in from the side it came from (0061 req 12). Popping comes from
+   the left. Opacity and transform only: #310 found a visibility fade never advanced at low frame
+   rates in headless Chrome. */
+.sr-side__view.is-current {
+  animation: sr-view-in var(--sr-mid) var(--sr-ease) both;
+}
+
+.sr-side[data-dir='pop'] .sr-side__view.is-current {
+  animation-name: sr-view-back;
+}
+
+@keyframes sr-view-in {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes sr-view-back {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* "‹ Explore" and the view's own scroll under it. */
+.sr-side__bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 14px 16px 0;
+}
+
+.sr-side__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 10px 0 4px;
+  font: inherit;
+  font-size: 14px;
+  color: rgba(232, 236, 242, 0.78);
+  background: transparent;
+  border: 0;
+  border-radius: var(--sr-radius);
+  cursor: pointer;
+  transition: color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-side__back:hover { color: var(--sr-ember); }
+
+.sr-side__chev {
+  font-size: 20px;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
+.sr-side__cardslot,
+.sr-side__sourceshost {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* The collapsed handle: the wordmark's first letter and a chevron, in the sidebar's corner. */
+.sr-side__handle {
+  display: none;
+}
+
+.sr-side.is-collapsed {
+  bottom: auto;
+  width: 64px;
+  height: 48px;
+  border-radius: var(--sr-radius-shell);
+}
+
+.sr-side.is-collapsed .sr-side__view {
+  display: none;
+}
+
+.sr-side.is-collapsed .sr-side__handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  font: 600 22px/1 var(--sr-font-hud);
+  color: var(--sr-text);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.sr-side.is-collapsed .sr-side__handle .sr-side__chev {
+  font-family: var(--sr-font);
+  font-weight: 400;
+  color: var(--sr-micro);
+}
+
+.sr-side__handle:hover .sr-side__chev { color: var(--sr-ember); }
+
+/* --- the explore view ----------------------------------------------------------------- */
+
+.sr-explore {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.sr-explore__head {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 20px 14px;
+}
+
+.sr-explore__brand {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+/* The wordmark. Row D sets it in Instrument Serif at 28 px; the serif does not fit the first-visit
+   font budget yet (registry/budgets.yaml fonts_at_boot_bytes, 0061 task 5), so it is Barlow Semi
+   Condensed 600, the instrument's own display face, at the same cap height. */
+.sr-wordmark {
+  margin: 0;
+  font: 600 27px/1 var(--sr-font-hud);
+  letter-spacing: 0.01em;
+  color: var(--sr-text);
+}
+
+.sr-explore__collapse {
+  width: 36px;
+  height: 36px;
+  margin: -6px -8px 0 0;
+  padding: 0;
+  font: 400 22px/1 var(--sr-font);
+  color: rgba(232, 236, 242, 0.7);
+  background: transparent;
+  border: 0;
+  border-radius: var(--sr-radius);
+  cursor: pointer;
+  transition: color var(--sr-fast) var(--sr-ease), background var(--sr-fast) var(--sr-ease);
+}
+
+.sr-explore__collapse:hover {
+  color: var(--sr-text);
+  background: var(--sr-wash);
+}
+
+/* Search, mounted from ui/search.js: its field becomes row D's 44 px well with a magnifier, and its
+   heading, Fly button and running note step back -- Enter picks the top match, as before. */
+.sr-explore__search .sr-search {
+  margin: 0;
+}
+
+.sr-explore__search .sr-panel__title,
+.sr-explore__search .sr-search__fly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.sr-explore__search .sr-search__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  padding: 0 14px;
+  background: var(--sr-wash);
+  border: 1px solid transparent;
+  border-radius: var(--sr-radius);
+  color: var(--sr-micro);
+  transition: border-color var(--sr-fast) var(--sr-ease), background var(--sr-fast) var(--sr-ease);
+}
+
+.sr-explore__search .sr-search__row:focus-within {
+  border-color: var(--sr-line-strong);
+  background: rgba(232, 236, 242, 0.1);
+}
+
+.sr-explore__search .sr-search__row svg {
+  flex: 0 0 auto;
+}
+
+.sr-explore__search .sr-search__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  font: inherit;
+  font-size: 15px;
+  color: var(--sr-text);
+  background: transparent;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+}
+
+.sr-explore__search .sr-search__input::placeholder {
+  color: rgba(232, 236, 242, 0.5);
+}
+
+.sr-explore__search .sr-search__note {
+  display: none;
+}
+
+.sr-explore.is-searching .sr-tabs {
+  display: none;
+}
+
+/* What the search could not look in, said while it is used (spec 0021): quiet, never a boxed
+   warning in the sidebar, where it sits under the results it qualifies. */
+.sr-explore.is-searching .sr-search__note,
+.sr-explore.is-searching .sr-search__note.is-warning {
+  display: block;
+  margin: 10px 2px 0;
+  padding: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--sr-text-dim);
+  border: 0;
+}
+
+/* The results replace the lists while a query is typed (design §2): in flow, flat, no second glass. */
+.sr-explore__search .sr-search__pop {
+  position: static;
+  margin-top: 8px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  max-height: none;
+}
+
+.sr-explore.is-searching .sr-explore__body {
+  display: none;
+}
+
+/* The tabs: a segmented control, row D's 34 px segments in a 3 px well. */
+.sr-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 3px;
+  background: rgba(232, 236, 242, 0.06);
+  border-radius: var(--sr-radius);
+}
+
+.sr-tabs__tab {
+  height: 34px;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  color: rgba(232, 236, 242, 0.7);
+  background: transparent;
+  border: 0;
+  border-radius: var(--sr-radius-sm);
+  cursor: pointer;
+  transition: color var(--sr-fast) var(--sr-ease), background var(--sr-fast) var(--sr-ease);
+}
+
+.sr-tabs__tab:hover { color: var(--sr-text); }
+
+.sr-tabs__tab.is-on {
+  color: var(--sr-text);
+  background: var(--sr-wash-strong);
+}
+
+.sr-explore__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-bottom: 12px;
+}
+
+.sr-pane[hidden] { display: none; }
+
+.sr-sect {
+  padding: 8px 20px 10px;
+}
+
+.sr-sect[hidden] { display: none; }
+
+.sr-sect > .sr-micro {
+  padding: 8px 0 6px;
+}
+
+/* Right now: the first line large, the rest a name and a mono value. */
+.sr-now__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sr-now__row + .sr-now__row .sr-now__btn {
+  border-top: 1px solid var(--sr-hair);
+}
+
+.sr-now__btn {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 0;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.35;
+  text-align: left;
+  color: var(--sr-text);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-now__btn:hover .sr-now__text { color: var(--sr-ember-light); }
+
+.sr-now__row.is-lead .sr-now__btn {
+  padding-top: 6px;
+  font-size: 20px;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.sr-now__value {
+  flex: 0 0 auto;
+  font: 400 13px/1.35 var(--sr-font-mono);
+  color: var(--sr-text-dim);
+}
+
+/* Trips as cards: two columns of 104 px, a wash of the trip's group colour falling to near-black
+   (row D). The colours are the four groups', derived from the palette's own hues at low alpha. */
+.sr-tripgrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding-top: 6px;
+}
+
+.sr-tripcard {
+  --sr-trip-hue: 40, 60, 90;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 3px;
+  height: 104px;
+  padding: 12px;
+  font: inherit;
+  text-align: left;
+  color: var(--sr-text);
+  background: linear-gradient(180deg, rgba(var(--sr-trip-hue), 0.5), rgba(8, 10, 14, 0.92));
+  border: 1px solid var(--sr-hair);
+  border-radius: var(--sr-radius);
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color var(--sr-fast) var(--sr-ease), transform var(--sr-fast) var(--sr-ease);
+}
+
+.sr-tripcard[data-group='solar-system'] { --sr-trip-hue: 96, 64, 30; }
+.sr-tripcard[data-group='beyond'] { --sr-trip-hue: 74, 52, 100; }
+.sr-tripcard[data-group='events'] { --sr-trip-hue: 36, 84, 72; }
+
+.sr-tripcard:hover { border-color: var(--sr-line-strong); }
+
+.sr-tripcard__title {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.25;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.sr-tripcard__meta {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.35;
+  color: rgba(232, 236, 242, 0.66);
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.sr-tripcard__meta:empty { display: none; }
+
+/* Greyed WITH its reason (spec 0025 req 6): readable, not choosable. */
+.sr-tripcard.is-off {
+  cursor: default;
+  background: linear-gradient(180deg, rgba(232, 236, 242, 0.05), rgba(8, 10, 14, 0.92));
+}
+
+.sr-tripcard.is-off .sr-tripcard__title { color: var(--sr-text-dim); }
+
+/* "All 9 trips", "Show all 8": a quiet text button under a list. */
+.sr-more {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  margin-top: 4px;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  color: var(--sr-text-dim);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.sr-more:hover { color: var(--sr-ember); }
+.sr-more[hidden] { display: none; }
+
+/* A list of rows: a name, a mono value, hairlines between (the Planets and Stars tabs, Tonight). */
+.sr-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sr-list__row[hidden] { display: none; }
+
+.sr-list__row + .sr-list__row > * {
+  border-top: 1px solid var(--sr-hair);
+}
+
+.sr-list__btn,
+.sr-list__static {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 11px 0;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.3;
+  text-align: left;
+  color: var(--sr-text);
+  background: transparent;
+  border: 0;
+}
+
+.sr-list__btn { cursor: pointer; }
+.sr-list__btn:hover .sr-list__name { color: var(--sr-ember-light); }
+.sr-list__btn:disabled { cursor: default; color: var(--sr-text-dim); }
+
+.sr-list__value {
+  flex: 0 0 auto;
+  font: 400 13px/1.3 var(--sr-font-mono);
+  color: var(--sr-text-dim);
+}
+
+.sr-list--quiet .sr-list__static {
+  min-height: 0;
+  padding: 7px 0;
+  font-size: 13px;
+  color: var(--sr-text-dim);
+}
+
+.sr-list--quiet .sr-list__row + .sr-list__row > * { border-top: 0; }
+
+/* Coming up, as ui/next.js draws it, in the sidebar's row style. */
+.sr-next .sr-next__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sr-next .sr-next__row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 0;
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--sr-text);
+  border-top: 1px solid var(--sr-hair);
+  cursor: pointer;
+}
+
+.sr-next .sr-next__row:first-child { border-top: 0; }
+.sr-next .sr-next__row[role='button']:hover:not([data-kind='shower']) { color: var(--sr-ember-light); }
+
+.sr-next .sr-next__class {
+  font-size: 13px;
+  color: var(--sr-text-dim);
+}
+
+.sr-next .sr-next__note {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--sr-text-dim);
+}
+
+.sr-next .sr-next__note[hidden] { display: none; }
+
+/* Tonight: the place and its passes. */
+.sr-place__current {
+  margin: 6px 0 10px;
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.sr-place__current.is-guess { color: var(--sr-text-dim); font-size: 14px; }
+
+.sr-field {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  font: inherit;
+  font-size: 15px;
+  color: var(--sr-text);
+  background: var(--sr-wash);
+  border: 1px solid transparent;
+  border-radius: var(--sr-radius);
+  outline: 0;
+}
+
+.sr-field:focus { border-color: var(--sr-line-strong); }
+.sr-field::placeholder { color: rgba(232, 236, 242, 0.5); }
+
+.sr-place__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.sr-chip {
+  height: 36px;
+  padding: 0 14px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--sr-text);
+  background: var(--sr-wash);
+  border: 1px solid transparent;
+  border-radius: var(--sr-radius-pill);
+  cursor: pointer;
+}
+
+.sr-chip:hover:not(:disabled) { border-color: var(--sr-line-strong); }
+.sr-chip:disabled { color: var(--sr-text-dim); cursor: not-allowed; }
+.sr-chip--quiet { background: transparent; color: var(--sr-text-dim); }
+
+.sr-place__note,
+.sr-tonight__note,
+.sr-tonight__shower {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--sr-text-dim);
+}
+
+.sr-place__note.is-warning { color: var(--sr-stale); }
+.sr-place__note[hidden], .sr-tonight__note[hidden], .sr-tonight__shower[hidden] { display: none; }
+.sr-tonight { margin-top: 18px; }
+.sr-tonight > .sr-micro { padding-bottom: 4px; }
+
+/* The status line: the sidebar's foot, one sentence, a coloured dot. */
+.sr-statusline {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 12px 20px;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.3;
+  text-align: left;
+  color: rgba(232, 236, 242, 0.66);
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--sr-hair);
+  cursor: pointer;
+  transition: color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-statusline:hover { color: var(--sr-text); }
+
+.sr-statusline__dot {
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--sr-unread);
+}
+
+.sr-statusline[data-state='ok'] .sr-statusline__dot { background: var(--sr-ok); }
+.sr-statusline[data-state='stale'] .sr-statusline__dot { background: var(--sr-stale); }
+.sr-statusline[data-state='failed'] .sr-statusline__dot { background: var(--sr-ember); }
+
+/* --- the card, seated in the sidebar -------------------------------------------------- */
+/* ui/cards.js is unchanged in this task (0061 task 2 re-lays it out). Docked, it loses its own
+   glass, border and fixed place, and reads as the sidebar's content. */
+.sr-card.is-docked {
+  position: static;
+  inset: auto;
+  z-index: auto;
+  width: auto;
+  max-height: none;
+  padding: 2px 20px 20px;
+  overflow: visible;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  transform: none;
+}
+
+.sr-card.is-docked .sr-card__header {
+  padding-top: 0;
+}
+
+/* --- the sources sheet, as a view ----------------------------------------------------- */
+.sr-side .sr-status {
+  padding: 6px 20px 20px;
+  overflow: visible;
+}
+
+.sr-side .sr-status__title:focus {
+  outline: none;
+}
+
+.sr-side .sr-status__title {
+  margin: 0 0 8px;
+  font: 600 27px/1.1 var(--sr-font-hud);
+  letter-spacing: 0.01em;
+  color: var(--sr-text);
+}
+
+.sr-status__foot {
+  display: flex;
+  align-items: center;
+  margin-top: 20px;
+  padding-top: 12px;
+  border-top: 1px solid var(--sr-hair);
+}
+
+.sr-mark.sr-mark--foot {
+  position: static;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: auto;
+  height: 44px;
+  padding: 0 4px;
+  font-size: 13px;
+  color: var(--sr-text-dim);
+  text-decoration: none;
+  border-radius: var(--sr-radius-sm);
+}
+
+.sr-mark--foot:hover { color: var(--sr-text); }
+
+/* --- the tool rail -------------------------------------------------------------------- */
+
+.sr-rail {
+  position: fixed;
+  top: var(--sr-inset);
+  right: var(--sr-inset);
+  z-index: 56;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--sr-radius-shell);
+}
+
+.sr-rail__btn {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  color: var(--sr-text);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: color var(--sr-fast) var(--sr-ease), background var(--sr-fast) var(--sr-ease);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sr-rail__btn + .sr-rail__btn { border-top: 1px solid var(--sr-hair); }
+.sr-rail__btn:hover { background: var(--sr-wash); }
+
+.sr-rail__btn[aria-expanded='true'],
+.sr-rail__btn[aria-pressed='true'] {
+  color: var(--sr-ember);
+}
+
+/* The brackets would be clipped by the rail's rounded overflow; focus draws inside the button. */
+.sr-rail__btn:focus-visible { --sr-bracket-out: -4px; }
+
+/* The popover and the postcard menu open to the rail's left, top-aligned with it. */
+.sr-pop {
+  position: fixed;
+  top: var(--sr-inset);
+  right: calc(var(--sr-inset) + 48px + 12px);
+  z-index: 57;
+  width: 340px;
+  max-height: calc(100vh - 2 * var(--sr-inset));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 18px 20px 20px;
+  border-radius: var(--sr-radius-shell);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--sr-text);
+}
+
+.sr-pop[hidden] { display: none; }
+
+@media (min-width: 900px) {
+  .sr-print-menu {
+    top: var(--sr-inset);
+    right: calc(var(--sr-inset) + 48px + 12px);
+    border-radius: var(--sr-radius-shell);
+  }
+}
+
+.sr-show__list {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sr-show__label {
+  display: grid;
+  grid-template-columns: 18px 10px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 4px 0;
+  cursor: pointer;
+}
+
+.sr-show__label.is-split {
+  grid-template-columns: 18px 10px 1fr;
+}
+
+.sr-show__label.is-split .sr-show__count {
+  grid-column: 3;
+  white-space: normal;
+}
+
+.sr-show__box {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--sr-ember);
+}
+
+.sr-show__label .sr-swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.sr-show__name { font-size: 14px; }
+
+.sr-show__count {
+  font: 400 13px/1.3 var(--sr-font-mono);
+  color: var(--sr-text-dim);
+  white-space: nowrap;
+}
+
+.sr-show__note {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--sr-text-dim);
+}
+
+.sr-show__note[hidden] { display: none; }
+
+.sr-show__section {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--sr-hair);
+}
+
+.sr-show__section .sr-panel__title {
+  margin: 0 0 8px;
+  font: 600 13px/1.2 var(--sr-font-hud);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sr-micro);
+}
+
+.sr-show__setting {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sr-show__setting > .sr-micro,
+.sr-show__setting > .sr-panel__title {
+  margin: 0;
+}
+
+.sr-show__toggle {
+  height: 32px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--sr-text);
+  background: var(--sr-wash);
+  border: 1px solid transparent;
+  border-radius: var(--sr-radius-pill);
+  cursor: pointer;
+}
+
+.sr-show__toggle.is-on { color: var(--sr-ember); border-color: rgba(255, 159, 67, 0.4); }
+
+.sr-show__setting .sr-density__choices { display: flex; gap: 4px; }
+.sr-show__setting .sr-density__note { flex-basis: 100%; margin: 0; font-size: 13px; color: var(--sr-text-dim); }
+
+/* --- the time pill -------------------------------------------------------------------- */
+
+.sr-time {
+  position: fixed;
+  bottom: 24px;
+  left: calc(50% + var(--sr-scene-left) / 2);
+  z-index: 35;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 48px;
+  padding: 0 6px;
+  font: 400 13px/1 var(--sr-font-mono);
+  color: var(--sr-text);
+  white-space: nowrap;
+  border-radius: var(--sr-radius-pill);
+  transform: translateX(-50%);
+}
+
+/* .sr-float's own transform transition would slide the pill whenever the sidebar collapses; the
+   move is the sidebar's, so the pill follows it in the same 220 ms. */
+.sr-time.sr-float {
+  transition: left var(--sr-mid) var(--sr-ease), border-color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-time__step {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  font: 400 20px/1 var(--sr-font);
+  color: var(--sr-text);
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.sr-time__step:hover { background: var(--sr-wash); }
+
+.sr-time__read {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 10px;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: var(--sr-radius-pill);
+  cursor: ew-resize;
+  touch-action: none;
+  user-select: none;
+}
+
+.sr-time__read:hover { background: rgba(232, 236, 242, 0.05); }
+
+.sr-time__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--sr-ember);
+}
+
+.sr-time.is-away .sr-time__dot {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--sr-ember);
+}
+
+.sr-time__rate {
+  height: 36px;
+  min-width: 48px;
+  padding: 0 12px;
+  font: inherit;
+  color: var(--sr-text);
+  background: rgba(232, 236, 242, 0.08);
+  border: 0;
+  border-radius: var(--sr-radius-pill);
+  cursor: pointer;
+}
+
+.sr-time__rate:hover { background: var(--sr-wash-strong); }
+
+/* Not live: the pill's border turns ember and says so, and "Live" appears (§7). */
+.sr-time.is-away,
+.sr-time.is-away:hover {
+  border-color: rgba(255, 159, 67, 0.7);
+}
+
+.sr-time__live {
+  height: 36px;
+  margin-left: 2px;
+  padding: 0 14px;
+  font: 600 13px/1 var(--sr-font);
+  color: var(--sr-ink);
+  background: var(--sr-ember);
+  border: 0;
+  border-radius: var(--sr-radius-pill);
+  cursor: pointer;
+}
+
+.sr-time__live[hidden] { display: none; }
+.sr-time.is-scrubbing .sr-time__read { background: var(--sr-ember-soft); }
+
+/* --- the clear screen, a trip, and the phone ------------------------------------------- */
+
+/* H hides the sidebar, the rail and the pill together (0061 req 12): they are one #sr-shell, and
+   the clean rule hides every child of <body>. The eye comes back alone, dim, in the rail's corner,
+   so the way back is where the way out was; the postcard stays beside it, for the picture that
+   is the point of a clear screen. */
+html.sr-clean #sr-rail .sr-rail__btn--clean,
+html.sr-clean #sr-rail .sr-rail__btn--print {
+  visibility: visible !important;
+  pointer-events: auto !important;
+  opacity: 0.4;
+  border-top: 0;
+}
+
+html.sr-clean #sr-rail .sr-rail__btn--show { display: none; }
+
+html.sr-clean #sr-rail .sr-rail__btn--clean:hover,
+html.sr-clean #sr-rail .sr-rail__btn--print:hover,
+html.sr-clean #sr-rail .sr-rail__btn:focus-visible { opacity: 1; }
+
+/* A trip takes the sidebar, the rail and the pill away together (ui/tripframe.js CHROME sets
+   `inert`; this is the picture). The sidebar leaves to the left, as the old panel did. */
+html.sr-trip-mode #sr-side,
+html.sr-trip-mode #sr-rail,
+html.sr-trip-mode #sr-time {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--sr-slow) var(--sr-ease), transform 400ms var(--sr-ease);
+}
+
+html.sr-trip-mode #sr-side { transform: translateX(-110%); }
+html.sr-trip-mode.sr-phone #sr-side { transform: translateY(102%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-side__view.is-current,
+  .sr-side[data-dir='pop'] .sr-side__view.is-current {
+    animation: sr-view-fade 120ms linear both;
+  }
+
+  .sr-time.sr-float { transition: none; }
+}
+
+@keyframes sr-view-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Below 900 px the sidebar is today's phone drawer (css/site.css, ui/mobile.js) until 0061 task 3
+   makes it a sheet: full width, from the bottom, its views stacked in one scroll. */
+html.sr-phone #sr-side {
+  top: auto;
+  left: 0;
+  width: auto;
+  display: block;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+html.sr-phone #sr-side .sr-drawer__head {
+  margin-left: 0;
+  margin-right: 0;
+  padding: 2px 20px;
+}
+
+html.sr-phone .sr-side__view,
+html.sr-phone .sr-explore,
+html.sr-phone .sr-explore__body,
+html.sr-phone .sr-side__cardslot,
+html.sr-phone .sr-side__sourceshost {
+  display: block;
+  overflow: visible;
+}
+
+html.sr-phone .sr-side__view[hidden] { display: none; }
+html.sr-phone .sr-explore__head { padding-top: 14px; }
+html.sr-phone .sr-statusline { padding-bottom: 12px; }
+
+/* The rail on a phone: a row across the top right, where the camera and the eye were. */
+html.sr-phone .sr-rail {
+  top: calc(8px + env(safe-area-inset-top, 0px));
+  right: 8px;
+  flex-direction: row;
+}
+
+html.sr-phone .sr-rail__btn { width: 44px; height: 44px; }
+html.sr-phone .sr-rail__btn + .sr-rail__btn { border-top: 0; border-left: 1px solid var(--sr-hair); }
+
+html.sr-phone .sr-pop {
+  top: calc(60px + env(safe-area-inset-top, 0px));
+  right: 8px;
+  left: 8px;
+  width: auto;
+  max-height: calc(100vh - 140px);
+}
+
+/* The pill sits above the phone's bar, smaller. */
+html.sr-phone .sr-time {
+  bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+  height: 44px;
+  font-size: 13px;
+}
+
+html.sr-phone .sr-time__step { width: 36px; height: 36px; }
+html.sr-phone .sr-time__read { padding: 0 6px; }
+html.sr-phone.sr-card-open .sr-time { display: none; }
+/* Collapsing is a desktop idea: the phone's drawer has its own Close. */
+html.sr-phone .sr-explore__collapse { display: none; }
