@@ -59,6 +59,9 @@ const CONTRACT = {
   // Spec 0051 task 1: tonight's rules, and predictPasses in a worker.
   'sky/tonight.js': ['nextVisible', 'guessFilter', 'passState', 'darkness', 'countdown', 'tonightWords', 'minPeakDeg'],
   'sky/passworker.js': ['runPasses'],
+  // Spec 0051 task 2: the Tonight view the sidebar's Tonight tab mounts (spec 0061), and its arc.
+  'ui/tonight.js': ['renderTonight'],
+  'ui/skyarc.js': ['arcSvg'],
   // Spec 0048: the next 90 minutes in time, shared by the card and (later) the follow strip.
   'sky/timefacts.js': ['lightWindows', 'nextAscendingNode', 'orbitNumber', 'launchYear', 'timeFacts', 'hasTimeFacts'],
   'sky/skyview.js': ['createSkyView'],

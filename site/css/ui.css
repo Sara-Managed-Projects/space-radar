@@ -3461,3 +3461,37 @@ html.sr-phone .sr-time__read { padding: 0 6px; }
 html.sr-phone.sr-card-open .sr-time { display: none; }
 /* Collapsing is a desktop idea: the phone's drawer has its own Close. */
 html.sr-phone .sr-explore__collapse { display: none; }
+/* The Tonight view (spec 0051 task 2, ui/tonight.js): mounted by the sidebar's Tonight tab (spec 0061).
+   One pass, its arc and its countdown, the darkness line, and More passes. Type at the 13 px floor;
+   the countdown in the mono face with fixed-width digits, so it does not jitter as it ticks. */
+.sr-tonight-view { display: flex; flex-direction: column; gap: var(--sp-2); font-size: 13px; color: var(--sr-text); }
+.sr-tonight-view__title { margin: 0; font: 600 15px/1.3 var(--sr-font-hud); letter-spacing: 0.02em; }
+.sr-tonight-view__place { margin: 0; color: var(--sr-text-dim); }
+.sr-tonight-view__body { display: flex; gap: var(--sp-3); align-items: flex-start; }
+.sr-tonight-view__body[hidden] { display: none; }
+.sr-tonight-view__arc { flex: 0 0 96px; }
+.sr-tonight-view__text { flex: 1 1 auto; min-width: 0; }
+.sr-tonight-view__line { margin: 0 0 2px; line-height: 1.4; }
+.sr-tonight-view__status { margin: 0; font-family: var(--sr-font-mono); font-variant-numeric: tabular-nums; color: var(--sr-ember); }
+.sr-tonight-view__caveat,
+.sr-tonight-view__dark,
+.sr-tonight-view__empty { margin: 0; color: var(--sr-text-dim); line-height: 1.4; }
+.sr-tonight-view__actions { display: flex; gap: var(--sp-2); }
+.sr-tonight-view__list[hidden] { display: none; }
+.sr-tonight-view__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.sr-tonight-view__row { position: relative; }
+.sr-tonight-view__rowbtn { width: 100%; padding: 6px 8px; text-align: left; font: inherit; color: var(--sr-text); background: var(--sr-raise); border: 1px solid var(--sr-line); border-radius: var(--sr-radius-sm); cursor: pointer; }
+.sr-tonight-view__rowbtn:hover { border-color: var(--sr-ember); }
+/* Each row's own small arc, on hover and focus only (spec 0051 req 9). */
+.sr-tonight-view__rowarc { display: none; position: absolute; right: 6px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+.sr-tonight-view__row:hover .sr-tonight-view__rowarc,
+.sr-tonight-view__row:focus-within .sr-tonight-view__rowarc { display: block; }
+
+/* The arc (ui/skyarc.js): horizon and ticks in the hairlines, the lit path in the text colour, the
+   shadowed part dashed and dim, the peak an ember point. */
+.sr-arc { display: block; overflow: visible; }
+.sr-arc__horizon, .sr-arc__tick { stroke: var(--sr-line-strong); stroke-width: 1; }
+.sr-arc__lit { fill: none; stroke: var(--sr-text); stroke-width: 1.5; stroke-linecap: round; }
+.sr-arc__shadow { fill: none; stroke: var(--sr-text-dim); stroke-width: 1.5; stroke-dasharray: 3 3; }
+.sr-arc__peak { fill: var(--sr-ember); }
+.sr-arc__cardinal { fill: var(--sr-text-dim); font-size: 11px; font-family: var(--sr-font); }

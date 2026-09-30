@@ -1825,6 +1825,7 @@ export const COPY = {
   // Spec 0051: what you can see tonight (sky/tonight.js tonightWords). The place is a guess from the
   // device's time zone unless the visitor set one, and says so; the Tonight tab (spec 0061) shows it.
   tonight: {
+    title: 'Tonight',
     placeGuess: 'from near {place}, estimated from your time zone',
     placeSet: 'from {place}',
     placeShared: 'from {place}, shared with you',
@@ -1838,6 +1839,8 @@ export const COPY = {
     // Scrubbed, a countdown from a clock that is not now would count to nothing: the clock time.
     startsAt: 'Starts at {time}',
     upNow: 'Up now, look {dir}',
+    showMe: 'Show me',
+    showMeTitle: 'Open the sky from your place, facing where it rises',
     guessCaveat: 'Times may differ by a few minutes where you are.',
     nothingThenNext: 'Nothing bright passes over tonight. Next: {when}, {name}.',
     nothingAtAll: 'Nothing bright passes over in the next three days.',
@@ -1848,6 +1851,11 @@ export const COPY = {
     moonRises: 'Moon {pct} %, rises {time}',
     moonUp: 'Moon {pct} %, up now',
     moonDown: 'Moon {pct} %, below the horizon',
+    more: 'More passes',
+    fewer: 'Fewer passes',
+    arcLabel: 'Its path across the sky: rises in the {from}, highest {deg}° up, sets in the {to}',
+    // The arc's compass letters (ui/skyarc.js), as the trajectory chart spells its N and S.
+    cardinals: { N: 'N', E: 'E', S: 'S', W: 'W' },
   },
   clean: {
     hide: 'Hide all panels (H)',
