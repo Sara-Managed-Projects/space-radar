@@ -44,12 +44,12 @@ async function ready(page, min = MIN_RECORDS, layer = null, layersReady = false)
   // `visibility: hidden` so a keyboard user cannot tab into 34 controls sitting off the bottom
   // of the screen. Waiting for it to be visible therefore waited for something that is correctly
   // never going to happen, and the mobile shot timed out after 60 s against a perfectly healthy
-  // page. What this check is actually for is "ui/controls.js has built its host", which is
+  // page. What this check is actually for is "ui/shell.js has built its sidebar" (#sr-side since spec 0061), which is
   // `attached`. Above 600 px the panel IS always open, so the stronger assertion still runs
   // there -- the check is not weakened, it is asked per regime.
-  await page.waitForSelector('#sr-controls', { state: 'attached', timeout: 90_000 });
+  await page.waitForSelector('#sr-side', { state: 'attached', timeout: 90_000 });
   const wide = await page.evaluate(() => !window.matchMedia('(max-width: 600px)').matches);
-  if (wide) await page.waitForSelector('#sr-controls', { state: 'visible', timeout: 90_000 });
+  if (wide) await page.waitForSelector('#sr-side', { state: 'visible', timeout: 90_000 });
   await page.waitForFunction(
     (n) => window.spaceRadar && window.spaceRadar.records().length >= n,
     min,
@@ -76,7 +76,7 @@ async function ready(page, min = MIN_RECORDS, layer = null, layersReady = false)
 
 const hideControls = (page) =>
   page.evaluate(() => {
-    const c = document.getElementById('sr-controls');
+    const c = document.getElementById('sr-shell');
     if (c) c.style.display = 'none';
   });
 
@@ -280,7 +280,7 @@ const shots = [
       await page.evaluate(() => {
         const s = document.getElementById('sr-status');
         if (s) { s.style.display = ''; s.scrollTop = 0; }
-        const c = document.getElementById('sr-controls');
+        const c = document.getElementById('sr-shell');
         if (c) c.style.display = 'none';
       });
       await page.waitForTimeout(1500);
@@ -357,10 +357,14 @@ const shots = [
     clip: { x: 0, y: 0, width: 470, height: 292 },
     async run(page) {
       await hideStatus(page);
+      // Since spec 0061 the layers live in the rail's What to show popover (key L), loaded on first use.
+      await page.keyboard.press('l');
+      await page.waitForSelector('.sr-layer', { state: 'visible', timeout: 15_000 }).catch(() => {});
       await page.evaluate(() => {
-        const rows = [...document.querySelectorAll('#sr-controls .sr-layer')];
+        const rows = [...document.querySelectorAll('.sr-layer')];
         const odd = rows.find((r) => /Odd things/.test(r.textContent || ''));
-        const panel = document.getElementById('sr-controls');
+        let panel = odd && odd.parentElement;
+        while (panel && panel.scrollHeight <= panel.clientHeight + 1) panel = panel.parentElement;
         if (odd && panel) {
           // Put the odd-things row a third of the way down the crop, so the rows above and below
           // it are visible: the claim is "it is one row like the others, with a count like the

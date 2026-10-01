@@ -39,9 +39,9 @@ const VIEWPORT = { width: Number(arg('width', '1280')), height: Number(arg('heig
 // --mobile: a phone, not just a narrow window -- device pixel ratio and touch as well as size. The
 // phone regime went unchecked in every review until 2026-09-20 because nothing here could boot one.
 const MOBILE = process.argv.includes('--mobile');
-// The "app is up" selector differs by viewport: the desktop rail is #sr-controls, the phone's is
+// The "app is up" selector differs by viewport: the desktop sidebar is #sr-side (spec 0061), the phone's is
 // its bottom bar. The screenshot step above this one in screens.yml has always known that.
-const UP = arg('selector', MOBILE ? '.sr-mobilebar' : '#sr-controls');
+const UP = arg('selector', MOBILE ? '.sr-mobilebar' : '#sr-side');
 // MEASURED, not guessed, in the app on 2026-09-17 at the default view (camera 22 units out):
 //   healthy                       Earth 25.4 % of the frame, sky 68.2 %
 //   the 2026-09-08 bug put back   Earth  1.03 %  -- the atmosphere's rim, and nothing else

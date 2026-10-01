@@ -106,7 +106,7 @@ jobs:
                 --timeout=60000 \
                 "http://127.0.0.1:8177/index.html" ".ci-screens/${out}.png"
           }
-          shoot "1280,800" desktop "#sr-controls"
+          shoot "1280,800" desktop "#sr-side"
           shoot "390,844"  mobile  ".sr-mobilebar"
 
       # A PICTURE NOBODY LOOKS AT IS NOT A CHECK, and this job proved it: on 2026-09-08 one flag
