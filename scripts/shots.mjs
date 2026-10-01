@@ -359,9 +359,9 @@ const shots = [
       await hideStatus(page);
       // Since spec 0061 the layers live in the rail's What to show popover (key L), loaded on first use.
       await page.keyboard.press('l');
-      await page.waitForSelector('.sr-layer', { state: 'visible', timeout: 15_000 }).catch(() => {});
+      await page.waitForSelector('.sr-show__row', { state: 'visible', timeout: 15_000 }).catch(() => {});
       await page.evaluate(() => {
-        const rows = [...document.querySelectorAll('.sr-layer')];
+        const rows = [...document.querySelectorAll('.sr-show__row')];
         const odd = rows.find((r) => /Odd things/.test(r.textContent || ''));
         let panel = odd && odd.parentElement;
         while (panel && panel.scrollHeight <= panel.clientHeight + 1) panel = panel.parentElement;
