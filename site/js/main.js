@@ -208,8 +208,8 @@ export async function boot({ setStatus } = {}) {
 
   // TODAY'S CLOUDS (2026-09-28, scene/liveclouds.js): NASA GIBS's geostationary pictures, composed
   // in a worker and cross-faded onto the Earth. Created now so the card and the Sources panel can
-  // ask it what the clouds are; it fetches nothing until START_DELAY_MS after this, well after the
-  // first frame above, and nothing at all on a connection that saves data.
+  // ask it what the clouds are; it fetches nothing until START_DELAY_MS after the layers are ready, and
+  // nothing at all on a connection that saves data.
   ctx.liveClouds = createLiveClouds({
     earth: () => worlds.meshFor('earth'),
     saveData: typeof navigator !== 'undefined' && shouldSaveData(navigator.connection),
@@ -217,7 +217,11 @@ export async function boot({ setStatus } = {}) {
     // clock, and at 1x nothing else would tell it the pictures arrived.
     onChange: () => window.dispatchEvent(new CustomEvent('sr:clouds')),
   });
-  ctx.liveClouds.start();
+  // Started once the catalogues have landed, not from here (below, on sr:layers-ready): a fixed
+  // delay from boot let the ~600 kB of GIBS pictures fall inside a slow first visit. MEASURED
+  // 2026-10-01 on CI with the new shell: 758 kB from other hosts, 594 kB of it GIBS, which took the
+  // first visit to 6 810 227 B, over first_visit_bytes. The map's own data comes first, the weather
+  // after it.
 
   say('Reading the catalogues…');
   // THE LAYOUT (spec 0061): one sidebar, one tool rail, one time pill. The shell builds the boxes;
@@ -284,6 +288,8 @@ export async function boot({ setStatus } = {}) {
   window.addEventListener('sr:layers-ready', () => {
     const tripRunning = !!(ctx.trip && ctx.trip.state && ctx.trip.state.phase !== 'idle');
     applyUrlState(ctx, laterLink(link, tripRunning));
+    // Today's clouds: their first look is START_DELAY_MS after this, never during the first visit.
+    ctx.liveClouds.start();
   }, { once: true });
 
   // Data arrives in the background, layer by layer, slowest last. Nothing here is awaited by the
