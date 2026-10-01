@@ -1,8 +1,8 @@
 // ui/cards.js -- the card that opens when anything is tapped.
 //
 // Seated in the sidebar's card view on a desktop (ui/shell.js), a bottom sheet on a phone, and in a
-// guided trip the trip's own view of the sidebar or the trip's sheet on a phone (ui/tripframe.js). Pure DOM, no framework. Every string comes
-// from copy/en.js; every value is written with textContent, never innerHTML, so a name from an
+// guided trip the sidebar's trip view or the trip's sheet on a phone (ui/tripframe.js). Pure DOM, no
+// framework. Every string comes from copy/en.js; every value is written with textContent, never innerHTML, so a name from an
 // upstream feed cannot become markup.
 //
 // THE LAYOUT IS SPEC 0061 §4 AND docs/ui-guide.md §3.10, and its order is fixed:

@@ -356,6 +356,17 @@ await new Promise((r) => setTimeout(r, 0));
 }
 frame.dispose();
 
+// A frame made while a trip is already under way (main.js imports it when the first trip starts)
+// paints the state it finds, without waiting for the next change.
+{
+  state = { ...state, phase: 'intro', index: -1, count: 4, estimateMs: 62028, tourId: 'fx-a' };
+  const late = createTripFrame(ctx);
+  check(q('#sr-trip') !== null && q('.sr-tripsheet__start') !== null, 'a frame made mid-trip paints the intro it finds');
+  notify({ phase: 'idle' });
+  check(q('#sr-trip') === null, 'and takes itself down when the trip ends');
+  late.dispose();
+}
+
 // ------------------------------------------------------------------------------ the CSS
 {
   const css = readFileSync(join(ROOT, 'site/css/ui.css'), 'utf8');
@@ -367,6 +378,12 @@ frame.dispose();
   const reduced = css.slice(css.indexOf('REDUCED MOTION IS A CUT, NEVER A SHORTER MOVE: compressing'));
   check(/\.sr-trip__toolbar\.sr-float,[\s\S]*?transition: opacity 120ms linear;/.test(reduced), 'under reduced motion the trip\'s chrome fades in 120 ms and slides nowhere');
   check(/html\.sr-trip-mode #sr-rail,\s*html\.sr-trip-mode #sr-time,/.test(css), 'a trip takes the rail and the pill away');
+  // The frame is 50 kB that a visitor who never takes a trip does not download: main.js imports it
+  // when the first trip starts, and index.html does not preload it (the first-visit budget).
+  const main = readFileSync(join(JS, 'main.js'), 'utf8');
+  const html = readFileSync(join(ROOT, 'site/index.html'), 'utf8');
+  check(/import\('\.\/ui\/tripframe\.js'\)/.test(main) && !/^import[^\n]*tripframe/m.test(main), 'main.js imports the trip frame when the first trip starts, not at boot');
+  check(!/ui\/tripframe\.js/.test(html), 'and index.html does not preload it');
   const view = readFileSync(join(JS, 'scene/viewshift.js'), 'utf8');
   check(/'#sr-trip \.sr-trip__toolbar'/.test(view) && /'#sr-trip \.sr-tripsheet'/.test(view), 'the view shift keeps the subject out from under the trip\'s sheet and toolbar on a phone');
 }

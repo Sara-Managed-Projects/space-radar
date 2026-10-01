@@ -1036,6 +1036,9 @@ export function createTripFrame(ctx) {
   const offChange = trip.onChange(render);
   document.addEventListener('keydown', onKey, true);
   window.addEventListener('sr:select', onSelect);
+  // main.js imports this module when the first trip starts, so the trip is already under way when
+  // the frame is made: paint what is there now rather than wait for the next change.
+  if (trip.state && trip.state.phase !== 'idle') render(trip.state);
 
   function dispose() {
     offChange();
