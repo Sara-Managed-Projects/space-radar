@@ -16,7 +16,9 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
-const FILES = ['site/css/site.css', 'site/css/ui.css'];
+// css/share.css is linked by the share sheet on its first open (spec 0061 task 8), and held to the
+// same rules as the stylesheets linked at boot.
+const FILES = ['site/css/site.css', 'site/css/ui.css', 'site/css/share.css'];
 // Comments out, positions kept, so nothing quoted in a comment counts as a rule.
 const strip = (css) => css.replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, ' '));
 
@@ -200,7 +202,7 @@ check(/el\('div', 'sr-time sr-float'\)/.test(js('timepill.js')), 'the time pill 
 check(/'sr-trip__toolbar sr-float'/.test(js('tripframe.js')) && /'sr-trip__top sr-float'/.test(js('tripframe.js')), 'the trip toolbar and top bar wear sr-float');
 check(/classList\.toggle\('sr-float', want === host\)/.test(js('tripframe.js')), 'the trip sheet wears sr-float where it floats over the scene');
 check(/'sr-search__pop sr-float'/.test(js('search.js')), 'the search results wear sr-float');
-check(/'sr-print-menu sr-float sr-over-clean'/.test(js('printcard.js')), 'the print menu wears sr-float and still shows over a clear screen');
+check(/'sr-share sr-float sr-over-clean'/.test(js('sharesheet.js')), 'the share sheet wears sr-float and still shows over a clear screen');
 
 // --- 7. corner brackets: the selection and focus signature --------------------------------------
 const bracket = all.find((r) => /::before/.test(r.selector) && /\.sr-bracketed::before/.test(r.selector));

@@ -162,7 +162,8 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
 {
   const body = { tagName: 'BODY' };
   check(railKey({ key: 'l' }, body) === 'show' && railKey({ key: 'L' }, body) === 'show', 'L opens What to show');
-  check(railKey({ key: 'p' }, body) === 'print', 'P opens the postcard menu');
+  check(railKey({ key: 'p' }, body) === 'share' && railKey({ key: 'P' }, body) === 'share', 'P opens the share sheet (S moves the camera)');
+  check(railKey({ key: 's' }, body) === null, 'S stays the camera\'s');
   check(railKey({ key: 'l' }, { tagName: 'INPUT' }) === null, 'typing an l in search is typing');
   check(railKey({ key: 'p', metaKey: true }, body) === null && railKey({ key: 'l', ctrlKey: true }, body) === null, 'browser shortcuts are the browser\'s');
   check(railKey({ key: 'h' }, body) === null, 'H is the clear screen\'s own (ui/cleanview.js)');

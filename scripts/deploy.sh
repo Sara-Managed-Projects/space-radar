@@ -13,7 +13,8 @@
 #   --assets-only         skip the app files; push textures, data, vendor, models, images, the
 #                         share pictures (og/) and the sounds (audio/) only.
 #   --app-only            skip the big assets; push HTML, CSS, JS, the trip pages (t/), robots.txt
-#                         and the pages scripts/build_seo.py builds (o/, sitemap.xml, 404.html)
+#                         and the pages scripts/build_seo.py builds (o/, sitemap.xml, 404.html,
+#                         object-pages.json)
 #                         only. The usual case.
 #   --dry-run             print what would be uploaded and change nothing.
 #
@@ -177,8 +178,10 @@ if [ "$WHAT" != "assets" ]; then
   # served as binary/octet-stream is one a crawler may refuse. No-cache like index.html, so a new
   # page is in the sitemap the moment it is deployed. 404.html is what CloudFront answers for a
   # missing path once its error response names it (Ivan's setting, in the SEO pull request).
+  # object-pages.json is the share sheet's map from a record to its page (ui/sharesheet.js).
   for f in "$SITE/index.html:text/html; charset=utf-8" "$BUILT/404.html:text/html; charset=utf-8" \
-           "$SITE/robots.txt:text/plain; charset=utf-8" "$BUILT/sitemap.xml:application/xml; charset=utf-8"; do
+           "$SITE/robots.txt:text/plain; charset=utf-8" "$BUILT/sitemap.xml:application/xml; charset=utf-8" \
+           "$BUILT/object-pages.json:application/json; charset=utf-8"; do
     path="${f%%:*}"; type="${f#*:}"; name="$(basename "$path")"
     [ -f "$path" ] || die "$name is missing"
     if [ "$DRY_RUN" = "1" ]; then
@@ -191,7 +194,7 @@ if [ "$WHAT" != "assets" ]; then
 fi
 
 if [ -n "$DISTRIBUTION" ] && [ "$DRY_RUN" != "1" ]; then
-  PATHS=("/" "/index.html" "/js/*" "/css/*" "/t/*" "/o/*" "/robots.txt" "/sitemap.xml" "/404.html")
+  PATHS=("/" "/index.html" "/js/*" "/css/*" "/t/*" "/o/*" "/robots.txt" "/sitemap.xml" "/404.html" "/object-pages.json")
   if [ "$WHAT" != "app" ]; then
     # The data files were just pushed and keep their names: expire the edge copies now.
     PATHS+=("/data/*")

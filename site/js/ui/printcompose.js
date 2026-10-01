@@ -1,10 +1,15 @@
 // ui/printcompose.js -- the postcard's picture: the size, the caption, the tag, the JPEG and the PDF.
 //
-// Loaded on the first save, never at boot (ui/printcard.js holds only the button and its menu):
-// 20 kB that a visitor who never prints does not download (2026-09-29, the first-visit budget).
+// Loaded with the share sheet (ui/sharesheet.js) or the card's Postcard, never at boot: 20 kB that
+// a visitor who never shares does not download (2026-09-29, the first-visit budget).
 //
-// Contract: makePostcard(ctx, format, opts) -> { blob, name, out }
-// Also exported, pure, for the test: printSize(aspect), caption(ctx, record, tripState),
+// Contract: makePostcard(ctx, format, opts) -> { blob, jpeg, name, out }
+//   opts.record   what to caption and tag (default: the selection, ctx.selected())
+//   opts.withTag  draw the record's brackets and tag on the picture
+//   opts.save     false makes the picture without saving it (the share sheet's preview); the
+//                 sheet then saves the same bytes with saveBlob() or wraps them with pdfFromJpeg()
+// Also exported: saveBlob(blob, name), and, pure, for the test: printSize(aspect),
+//   caption(ctx, record, tripState),
 //   pdfFromJpeg(jpegBytes, pxW, pxH, ptW, ptH) -> Uint8Array,
 //   tagText(lines, behind), printTag(lines, at, size, measure) (spec 0047 task 3)
 //
@@ -63,11 +68,15 @@ function whenText(ms) {
   return t(COPY.print.when, { date: iso.slice(0, 10), time: iso.slice(11, 16) });
 }
 
-/** The band's two lines. The selection's own name, else the trip and its stop, else the app. */
-export function caption(ctx, record, tripState) {
+/**
+ * The band's two lines. The selection's name as the card prints it (`name`, from tagLines(): the
+ * ISS is "International Space Station", not its catalogue's "ISS (ZARYA)"), else its own name,
+ * else the trip and its stop, else the app.
+ */
+export function caption(ctx, record, tripState, name = null) {
   const nowMs = ctx && ctx.clock && typeof ctx.clock.now === 'function' ? ctx.clock.now() : NaN;
   let title = COPY.app.name;
-  if (record && (record.name || record.id)) title = String(record.name || record.id);
+  if (record && (name || record.name || record.id)) title = String(name || record.name || record.id);
   else if (tripState && tripState.tourTitle && tripState.phase && tripState.phase !== 'idle') {
     title = tripState.stopTitle ? `${tripState.tourTitle}${COPY.punctuation.separator}${tripState.stopTitle}` : tripState.tourTitle;
   }
@@ -287,7 +296,8 @@ function blobOf(canvas, type, quality) {
   });
 }
 
-function download(blob, name) {
+/** Hand a file to the browser's download, as the postcard and the share sheet do. */
+export function saveBlob(blob, name) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -300,7 +310,8 @@ function download(blob, name) {
   setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
 
-function fileName(words, ms, ext) {
+/** `space-radar-postcard-<what>-<day>.<ext>`: what it shows and the day the sky in it is from. */
+export function fileName(words, ms, ext) {
   const id = String(words.title || 'view').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'view';
   const date = Number.isFinite(ms) ? new Date(ms).toISOString().slice(0, 10) : 'now';
   return t(COPY.print.fileName, { id, date, ext });
@@ -316,19 +327,21 @@ export async function makePostcard(ctx, format, opts = {}) {
   const canvas = ctx && ctx.renderer && ctx.renderer.domElement;
   const aspect = canvas && canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : 1.5;
   const size = printSize(aspect);
-  const record = ctx && typeof ctx.selected === 'function' ? ctx.selected() : null;
+  const record = opts.record !== undefined ? opts.record : ctx && typeof ctx.selected === 'function' ? ctx.selected() : null;
   // Read on the live camera BEFORE renderTo(), which changes its aspect for the one print frame.
   const at = opts.withTag && record ? liveTagAt(ctx, record) : null;
   const frame = api && typeof api.renderTo === 'function' ? api.renderTo(size.w, size.h) : null;
   if (!frame) throw new Error('no frame: the map is not drawing');
-  const words = caption(ctx, record, ctx && ctx.trip && ctx.trip.state);
+  let lines = null;
+  try { lines = record ? tagLines(record, ctx) : null; } catch { lines = null; }
+  const words = caption(ctx, record, ctx && ctx.trip && ctx.trip.state, lines && lines.name);
   let tag = null;
   if (at) {
     const m = document.createElement('canvas').getContext('2d');
     let family = 'system-ui, sans-serif';
     try { family = getComputedStyle(document.body).fontFamily || family; } catch { /* the default */ }
     const measure = (text, px, weight) => { m.font = `${weight} ${px}px ${family}`; return m.measureText(text).width; };
-    tag = printTag(tagLines(record, ctx), at, size, measure);
+    tag = printTag(lines || tagLines(record, ctx), at, size, measure);
   }
   const picture = compose(frame, words, size, tag);
   const jpeg = await blobOf(picture, 'image/jpeg', JPEG_QUALITY);
@@ -339,7 +352,7 @@ export async function makePostcard(ctx, format, opts = {}) {
     blob = new Blob([pdfFromJpeg(bytes, size.w, size.h, size.ptW, size.ptH)], { type: 'application/pdf' });
   }
   const name = fileName(words, nowMs, format === 'pdf' ? 'pdf' : 'jpg');
-  download(blob, name);
+  if (opts.save !== false) saveBlob(blob, name);
   const out = { format, bytes: blob.size, width: size.w, height: size.h, fileName: name, words, tag: tag ? { text: tag.text, box: tag.box, place: tag.tag } : null, ms: Math.round(performance.now() - t0) };
-  return { blob, name, out };
+  return { blob, jpeg, name, out, size, nowMs };
 }

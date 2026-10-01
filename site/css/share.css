@@ -1,0 +1,284 @@
+/* share.css -- the share sheet (ui/sharesheet.js, spec 0061 task 8).
+ *
+ * Linked by ui/sharesheet.js on the first Share, never at boot: a first visit carries none of it
+ * (registry/budgets.yaml first_visit_bytes). Tokens only, all from css/ui.css :root, and
+ * tests/test_tokens.mjs holds this file to the same rules as ui.css.
+ *
+ * Desktop: the rail's popover place (docs/ui-guide.md §3.8), left of the rail, top-aligned with
+ * it, as wide as the sidebar (360) so a button's two words and the email line fit on one line,
+ * scrolling inside. Phone: a bottom sheet, full width, top corners
+ * of the shell's radius, never taller than the screen less 60 px. Above the trip frame, because
+ * the trip bar opens it too; under the toasts, which report what it did.
+ */
+
+.sr-share {
+  position: fixed;
+  top: var(--sr-inset);
+  right: calc(var(--sr-inset) + 48px + 12px);
+  z-index: calc(var(--sr-z-trip) + 2);
+  display: flex;
+  flex-direction: column;
+  width: var(--sr-side-w);
+  max-height: calc(100vh - 2 * var(--sr-inset));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: var(--sr-radius-shell);
+  font: 400 14px/20px var(--sr-font);
+  color: var(--sr-text);
+}
+
+.sr-share[hidden] { display: none; }
+
+.sr-share * { box-sizing: border-box; }
+
+@starting-style {
+  .sr-share.sr-float {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+.sr-share__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-2) 0 20px;
+}
+
+.sr-share__title {
+  margin: 0;
+  font: 600 15px/20px var(--sr-font);
+  color: var(--sr-text);
+}
+
+.sr-share__title:focus { outline: none; }
+
+.sr-share__close,
+.sr-share__iconbtn {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  color: var(--sr-text-soft);
+  background: transparent;
+  border: 0;
+  border-radius: var(--sr-radius);
+  cursor: pointer;
+  transition: background-color var(--sr-fast) var(--sr-ease), color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-share__iconbtn { background: var(--sr-wash); }
+
+.sr-share__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-1) 20px 20px;
+}
+
+/* The picture, and its skeleton until it is drawn: the postcard's own shape in a still wash. */
+.sr-share__pic {
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: var(--sr-wash);
+  border-radius: var(--sr-radius);
+}
+
+.sr-share__pic.is-portrait {
+  aspect-ratio: 2 / 3;
+  width: auto;
+  height: min(36vh, 360px);
+  align-self: center;
+}
+
+.sr-share__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.sr-share__img[hidden],
+.sr-share__picnote[hidden] { display: none; }
+
+.sr-share__picnote {
+  padding: 0 var(--sp-3);
+  font: 400 13px/18px var(--sr-font);
+  text-align: center;
+  color: var(--sr-text-soft);
+}
+
+.sr-share__tag {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 24px;
+  font: 400 13px/18px var(--sr-font);
+  color: var(--sr-text);
+  cursor: pointer;
+}
+
+.sr-share__tag[hidden] { display: none; }
+.sr-share__tag input { margin: 0; accent-color: var(--sr-ember); }
+
+.sr-share__micro { margin-bottom: calc(-1 * var(--sp-1)); }
+
+.sr-share__linkrow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.sr-share__link {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 44px;
+  padding: 0 var(--sp-3);
+  overflow: hidden;
+  font: 400 13px/44px var(--sr-font-mono);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-decoration: none;
+  color: var(--sr-text);
+  background: var(--sr-wash);
+  border-radius: var(--sr-radius);
+}
+
+/* The post as it will be sent: line breaks kept, selectable, read-only. */
+.sr-share__text {
+  margin: 0;
+  padding: var(--sp-3);
+  font: 400 14px/20px var(--sr-font);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--sr-text);
+  background: var(--sr-wash);
+  border-radius: var(--sr-radius);
+  user-select: text;
+}
+
+.sr-share__text:focus-visible {
+  outline: 2px solid var(--sr-ember);
+  outline-offset: 2px;
+}
+
+.sr-share__wiki,
+.sr-share__note {
+  margin: calc(-1 * var(--sp-1)) 0 0;
+  font: 400 13px/18px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-share__wiki[hidden] { display: none; }
+.sr-share__wiki a { color: inherit; }
+.sr-share__wiki a:hover { color: var(--sr-text); }
+
+/* Share… across the top, then two by two: Copy text and Email, the two downloads. */
+.sr-share__acts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-2);
+}
+
+.sr-share__btn,
+.sr-share__net {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 var(--sp-2);
+  font: 400 13px/16px var(--sr-font);
+  white-space: nowrap;
+  text-decoration: none;
+  color: var(--sr-text);
+  background: var(--sr-wash);
+  border: 0;
+  border-radius: var(--sr-radius);
+  cursor: pointer;
+  transition: background-color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-share__btn:first-child {
+  grid-column: 1 / -1;
+  font-weight: 600;
+}
+
+.sr-share__btn[hidden] { display: none; }
+
+.sr-share__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sr-share__nets {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-2);
+}
+
+@media (hover: hover) {
+  .sr-share__btn:hover:not(:disabled),
+  .sr-share__net:hover,
+  .sr-share__iconbtn:hover {
+    background: var(--sr-wash-hover);
+  }
+
+  .sr-share__close:hover {
+    color: var(--sr-text);
+    background: var(--sr-wash);
+  }
+}
+
+.sr-share__btn:active:not(:disabled),
+.sr-share__net:active,
+.sr-share__iconbtn:active {
+  background: var(--sr-wash-strong);
+}
+
+.sr-share__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* --- the phone: a bottom sheet ------------------------------------------------------------ */
+
+html.sr-phone .sr-share {
+  top: auto;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: auto;
+  max-height: calc(100% - 60px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  border-bottom: 0;
+  border-radius: var(--sr-radius-shell) var(--sr-radius-shell) 0 0;
+}
+
+html.sr-phone .sr-share__body { padding: var(--sp-1) var(--sp-4) var(--sp-4); }
+html.sr-phone .sr-share__head { padding-left: var(--sp-4); }
+
+@starting-style {
+  html.sr-phone .sr-share.sr-float {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+
+/* Reduced motion: .sr-float's 120 ms fade (ui.css) carries the sheet, with no slide. */
+@media (prefers-reduced-motion: reduce) {
+  .sr-share__btn,
+  .sr-share__net,
+  .sr-share__close,
+  .sr-share__iconbtn {
+    transition: opacity 120ms linear;
+  }
+}

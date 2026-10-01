@@ -7,6 +7,7 @@ writes, under DIR:
     o/<slug>.html   one page per notable object, from templates/object.html
     404.html        from templates/404.html
     sitemap.xml     the home page, every trip page (site/t/) and every object page
+    object-pages.json  {record id: slug}, for the app's share sheet (spec 0061 task 8)
 
 Nothing here is committed: scripts/deploy.sh runs this at deploy time and uploads DIR beside site/,
 and CI runs it into a temporary directory and holds the output to scripts/check_seo.py. The only
@@ -205,6 +206,11 @@ def build(out: Path, host: str) -> int:
     nf = fill((TEMPLATES / "404.html").read_text(encoding="utf-8"), {"icon": ICON, "style": style})
     (out / "404.html").write_text(nf, encoding="utf-8")
     (out / "sitemap.xml").write_text(sitemap(host, slugs), encoding="utf-8")
+    # The share sheet links an object to its page (ui/sharesheet.js objectPageUrl), so that a link
+    # preview shows the object's own title and picture. Which records have a page, and under which
+    # slug, is decided here and nowhere else; the sheet fetches this when it opens and never guesses.
+    index = {p["id"]: p["slug"] for p in pages}
+    (out / "object-pages.json").write_text(json.dumps(index, separators=(",", ":"), sort_keys=True), encoding="utf-8")
     return len(pages)
 
 
@@ -227,7 +233,7 @@ def main(argv: list[str]) -> int:
         print("build_seo: --out must be outside site/; the built pages are not kept in git", file=sys.stderr)
         return 2
     n = build(out, host)
-    print(f"built {n} object pages, 404.html and sitemap.xml into {out}")
+    print(f"built {n} object pages, 404.html, sitemap.xml and object-pages.json into {out}")
     return 0
 
 

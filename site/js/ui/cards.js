@@ -68,7 +68,7 @@ import { hasTimeFacts, timeFacts, mmss, LIGHT_MINUTES } from '../sky/timefacts.j
 import { wantsTrack } from '../scene/groundtrack.js';
 import { trainOf } from '../data/trains.js';
 import { attachedOdditiesFor, attachedOddityRecord } from '../data/attached.js';
-import { shareLink, savePicture } from './share.js';
+import { openShare, savePostcard } from './share.js';
 import { stage } from '../scene/stage.js';
 import { systemOfRecordId, phaseIsMeasured } from '../scene/systems.js';
 
@@ -2058,10 +2058,10 @@ function sourceRow(record, ctx) {
 }
 
 /**
- * Block 7's line and block 8's line, as the card prints them. Exported because since 2026-09-23 a
- * second thing prints them: the postcard (spec 0033, ui/postcard.js), whose caption must carry the
- * card's own honesty line and sources and could otherwise drift from them. One function, two
- * printers.
+ * Block 7's line and block 8's line, as the card prints them. Exported because other things print
+ * them too: the HUD's tag starts with the honesty line, and the object pages
+ * (scripts/object_pages.mjs) carry the source line, and neither may drift from the card. One
+ * function, several printers.
  */
 export function honestyLine(record, m) {
   const honesty = honestyClause(record, m);
@@ -2079,8 +2079,8 @@ export function sourceLine(record, ctx) {
 /**
  * What the card says about `record` right now, as strings and no DOM: the name, the badge, the
  * first sentence, the "right now" rows, the honesty line and the source line. The share sheet's
- * words and the postcard's caption are read from here (spec 0033 req 2, 3, 7), so neither can
- * state a number the card does not.
+ * words are read from here (spec 0033 req 2, 3, 7; ui/sharesheet.js), so a post can never state a
+ * number the card does not.
  */
 export function cardWords(record, ctx) {
   const m = measure(record, ctx);
@@ -2189,12 +2189,11 @@ const ICONS = {
     ['path', { d: 'M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z' }],
     ['circle', { cx: 12, cy: 13, r: 3 }],
   ],
+  // Lucide `share`, the rail's Share too: one action, one mark (spec 0061 task 8).
   share: [
-    ['circle', { cx: 18, cy: 5, r: 3 }],
-    ['circle', { cx: 6, cy: 12, r: 3 }],
-    ['circle', { cx: 18, cy: 19, r: 3 }],
-    ['line', { x1: 8.59, x2: 15.42, y1: 13.51, y2: 17.49 }],
-    ['line', { x1: 15.41, x2: 8.59, y1: 6.51, y2: 10.49 }],
+    ['path', { d: 'M12 2v13' }],
+    ['path', { d: 'm16 6-4-4-4 4' }],
+    ['path', { d: 'M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8' }],
   ],
   chevron: [['path', { d: 'm9 18 6-6-6-6' }]],
   navigation: [['polygon', { points: '3 11 22 2 13 21 11 13 3 11' }]],
@@ -2318,11 +2317,13 @@ export function actionButtons(record, ctx, m) {
     if (see.disabled) see.title = COPY.sky.notVisibleFromGround;
     buttons.push(see);
   }
-  buttons.push(actionButton('postcard', A.postcard, COPY.share.pictureTitle, 'camera', () => savePicture(ctx, record)));
-  buttons.push(actionButton('share', A.share, COPY.share.linkTitle, 'share', () => {
-    const w = cardWords(record, ctx);
-    return shareLink(ctx, { title: w.name, text: w.sentence }, record && record.id);
-  }));
+  // Postcard saves the print picture of this view with this record's tag, in one press; Share opens
+  // the one share sheet (ui/sharesheet.js) for this record, where the same picture, the link and
+  // the card's words go anywhere (spec 0061 task 8).
+  buttons.push(actionButton('postcard', A.postcard, COPY.print.title, 'camera', () => savePostcard(ctx, record)));
+  const share = actionButton('share', A.share, COPY.share.linkTitle, 'share', () => openShare(ctx, { record, opener: share }));
+  share.setAttribute('aria-haspopup', 'dialog');
+  buttons.push(share);
   return buttons.slice(0, MAX_ACTIONS);
 }
 

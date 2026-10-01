@@ -1,30 +1,18 @@
-// ui/postcard.js -- a picture of what the visitor sees, with the card's own caption (spec 0033).
+// ui/postcard.js -- a picture with a caption band, for a trip's link preview (spec 0033).
 //
-// Imported on the first tap of "Save a picture" (ui/share.js), never at boot.
+// Imported by scripts/shots.mjs inside the page, never by the app at boot. Until 2026-10-01 it also
+// made the card's 1080 x 1350 "Save a picture"; the share sheet (ui/sharesheet.js, spec 0061 task 8)
+// now hands out the print postcard instead (ui/printcompose.js), so one picture is shared, not two.
 //
-// A PICTURE OUTLIVES ITS CONTEXT (spec 0017, 2026-09). A screenshot of the map travels without the
-// card that says the position is worked out from elements three days old, or that the model is a
-// class default and not this spacecraft. So the postcard carries the card's own lines under the
-// picture: the name, where and when, the first sentence, the class-and-age line and the sources,
-// every one read from ui/cards.js (cardWords), so the picture can never state a number the card
-// does not. tests/test_share.mjs compares them string for string.
-//
-// THE LAYOUT. 1080 x 1350, the portrait ratio phones and feeds share: the frame is the top
-// 1080 x 1080, untouched (no vignette, no logo over the image), and the caption is an opaque band
-// of the map's own background from 1080 down, with "spaceradar.ai" small at its right edge. The
-// same band routine makes every trip's 1200 x 630 preview (ogPicture, scripts/shots.mjs), so the
-// page and CI share one composer and one font.
+// THE LAYOUT. A frame on top, untouched (no vignette, no logo over the image), and an opaque band of
+// the map's own background under it with the caption lines and "spaceradar.ai" small at the right.
+// A trip's preview is 1200 x 630 with the band in the lower fifth.
 //
 // THE FONT is the page's own stack read off <body>, not a web font: a canvas cannot wait for a face
 // to load, and a caption that fell back to Times on one phone in ten is worse than the system face.
 
-import { COPY, t, timeText } from '../copy/en.js';
-import { cardWords } from './cards.js';
-import { toast } from './share.js';
+import { COPY } from '../copy/en.js';
 
-export const PC_W = 1080;
-export const PC_H = 1350;
-export const BAND_H = 270;
 export const OG_W = 1200;
 export const OG_H = 630;
 // The lower fifth, as spec 0033 req 6 puts it.
@@ -54,44 +42,6 @@ function pageColours() {
     /* node, or a page without the stylesheet: the palette's own values above */
   }
   return out;
-}
-
-/** "23 Sep 2026, 14:05 UTC": the instant the sky in the picture is from. */
-export function whenLine(ms) {
-  if (!Number.isFinite(ms)) return '';
-  return t(COPY.share.when, { date: timeText.utcDate(ms), time: timeText.utcTime(ms).slice(0, 5) });
-}
-
-/**
- * The five caption lines and the mark, as strings. Every line with a record is the card's own
- * (ui/cards.js cardWords). A stop with no record -- a place, not an object -- captions itself with
- * the trip's title and the stop's title, and claims nothing it could be wrong about.
- */
-export function postcardCaption(record, ctx, tripState) {
-  const nowMs = ctx && ctx.clock && typeof ctx.clock.now === 'function' ? ctx.clock.now() : NaN;
-  if (!record) {
-    return {
-      name: (tripState && tripState.tourTitle) || COPY.app.name,
-      where: whenLine(nowMs),
-      sentence: (tripState && tripState.stopTitle) || '',
-      honesty: '',
-      sources: '',
-      mark: COPY.share.mark,
-    };
-  }
-  const w = cardWords(record, ctx);
-  const row = w.rows[0];
-  const where = [row ? t(COPY.share.row, { label: row[0], value: row[1] }) : '', whenLine(Number.isFinite(w.tMs) ? w.tMs : nowMs)]
-    .filter(Boolean)
-    .join(COPY.punctuation.separator);
-  return {
-    name: w.klass ? w.name + COPY.punctuation.separator + w.klass : w.name,
-    where,
-    sentence: w.sentence,
-    honesty: w.honesty,
-    sources: w.sources,
-    mark: COPY.share.mark,
-  };
 }
 
 // ------------------------------------------------------------------------------- the layout
@@ -126,15 +76,6 @@ export function wrap(text, max, width, maxLines) {
 }
 
 // Each block: size in px, weight, colour key, line height, most lines, fewest it may be cut to.
-const POSTCARD_BLOCKS = [
-  { key: 'name', size: 34, weight: 600, colour: 'fg', lh: 1.2, max: 1, min: 1, gap: 2 },
-  { key: 'where', size: 20, weight: 400, colour: 'dim', lh: 1.3, max: 1, min: 1, gap: 6 },
-  { key: 'sentence', size: 26, weight: 400, colour: 'fg', lh: 1.25, max: 3, min: 1, gap: 6 },
-  { key: 'honesty', size: 18, weight: 400, colour: 'dim', lh: 1.3, max: 2, min: 1, gap: 2 },
-  // Two lines: a world's sources name four publications, and one line cut them at the second.
-  { key: 'sources', size: 18, weight: 400, colour: 'dim', lh: 1.3, max: 2, min: 1, gap: 0 },
-];
-
 // Sized so a two-line blurb fits the 126 px band: at 32/21 px with 20 px padding every blurb
 // longer than one line was cut to one with an ellipsis (read in the first local render, 2026-09-23).
 const OG_BLOCKS = [
@@ -148,7 +89,7 @@ const OG_BLOCKS = [
  * Lines are taken from the sentence first, then the sources, and the honesty line last when the
  * band runs out, because the honesty line is the reason the caption exists.
  */
-export function layoutCaption(caption, box, measure, blocks = POSTCARD_BLOCKS, fontFamily = FALLBACK_FONT) {
+export function layoutCaption(caption, box, measure, blocks = OG_BLOCKS, fontFamily = FALLBACK_FONT) {
   const pad = box.pad;
   const markFont = `400 ${box.markSize}px ${fontFamily}`;
   const markW = caption.mark ? measure(caption.mark, markFont) : 0;
@@ -240,82 +181,12 @@ export function composeCard(frame, caption, spec, opts = {}) {
   return { canvas, lines, band };
 }
 
-export const POSTCARD = { width: PC_W, height: PC_H, bandH: BAND_H, pad: 24, markSize: 18, blocks: POSTCARD_BLOCKS };
 export const OG = { width: OG_W, height: OG_H, bandH: OG_BAND_H, pad: 16, markSize: 18, blocks: OG_BLOCKS };
-
-/** The postcard: 1080 x 1350, the frame on top and the card's caption in the band. */
-export function composePostcard(frame, caption, opts) {
-  return composeCard(frame, caption, POSTCARD, opts);
-}
 
 export function pngOf(canvas) {
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('toBlob gave nothing'))), 'image/png');
   });
-}
-
-/** `space-radar-europa-2026-09-23.png`: what it is and the day the sky in it is from. */
-export function fileName(id, ms) {
-  const safe = String(id || 'view').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'view';
-  const date = Number.isFinite(ms) ? new Date(ms).toISOString().slice(0, 10) : 'now';
-  return t(COPY.share.fileName, { id: safe, date });
-}
-
-function download(blob, name) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = name;
-  a.rel = 'noopener';
-  a.hidden = true;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  // Long enough for the browser to have started the save; a blob URL is memory until revoked.
-  setTimeout(() => URL.revokeObjectURL(url), 60000);
-}
-
-/**
- * Make the postcard and hand it over: the share sheet as a FILE where the device can take one
- * (navigator.canShare({files})), a download everywhere else. Nothing is uploaded anywhere.
- * `url` is the view's link, put in the share text so a picture sent on still leads back.
- */
-export async function savePostcard(ctx, record, url) {
-  const t0 = typeof performance !== 'undefined' ? performance.now() : Date.now();
-  const api = ctx && ctx.rendererApi;
-  // The picture area is square (1080 x 1080), so that is the size the frame is drawn at.
-  const frame = api && typeof api.renderTo === 'function' ? api.renderTo(PC_W, PC_H - BAND_H) : null;
-  if (!frame) throw new Error('no frame: the map is not drawing');
-  const tripState = ctx.trip && ctx.trip.state;
-  const caption = postcardCaption(record, ctx, tripState);
-  const { canvas } = composePostcard(frame, caption);
-  const blob = await pngOf(canvas);
-  const id = record ? record.id : tripState && tripState.tourId;
-  const name = fileName(id, ctx.clock && ctx.clock.now());
-  const text = [caption.sentence, url].filter(Boolean).join(' ');
-  let via = 'download';
-  let file = null;
-  try {
-    file = new File([blob], name, { type: 'image/png' });
-  } catch {
-    file = null;
-  }
-  const nav = typeof navigator !== 'undefined' ? navigator : {};
-  if (file && typeof nav.canShare === 'function' && typeof nav.share === 'function' && nav.canShare({ files: [file] })) {
-    try {
-      await nav.share({ files: [file], title: caption.name, text });
-      via = 'share';
-    } catch (e) {
-      // Dismissed is an answer. Anything else (the tap's activation ran out while the PNG was
-      // encoding, on a slow phone) still gets the picture, as a download.
-      if (e && e.name === 'AbortError') via = 'dismissed';
-      else download(blob, name);
-    }
-  } else download(blob, name);
-  toast(via === 'download' ? COPY.share.saved : null);
-  const ms = Math.round((typeof performance !== 'undefined' ? performance.now() : Date.now()) - t0);
-  ctx.lastPostcard = { caption, bytes: blob.size, width: canvas.width, height: canvas.height, fileName: name, via, ms };
-  return ctx.lastPostcard;
 }
 
 /**

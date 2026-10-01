@@ -1234,41 +1234,6 @@ html.sr-clean body > *:not(.sr-scene):not(.sr-veil):not(.sr-over-clean) {
   transition: none !important;
 }
 /* ------------------------------------------------------------------------------------ */
-/* The postcard camera (ui/printcard.js): the screen as a 6 x 4 in print, JPEG or PDF.        */
-/* Ivan, 2026-09-28: "postcards of space on click ... possible to print".                     */
-/* ------------------------------------------------------------------------------------ */
-.sr-print-menu {
-  position: fixed;
-  top: calc(56px + env(safe-area-inset-top, 0px));
-  right: 8px;
-  z-index: 57;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  width: min(300px, calc(100vw - 16px));
-  padding: 12px;
-  color: var(--sr-text);
-  /* The glass, edge, corners and shadow are .sr-float's (spec 0045). */
-}
-.sr-print-menu[hidden] { display: none; }
-.sr-print-menu__note { margin: 0 0 4px; font-size: 13px; line-height: 1.4; color: var(--sr-text-dim); }
-.sr-print-menu__tag { display: flex; align-items: center; gap: 8px; margin: 0 0 4px; font-size: 13px; color: var(--sr-text); cursor: pointer; }
-.sr-print-menu__tag input { accent-color: var(--sr-ember); }
-.sr-print-menu button {
-  min-height: 44px;
-  padding: 0 12px;
-  font: inherit;
-  font-size: 14px;
-  text-align: left;
-  color: var(--sr-text);
-  background: transparent;
-  border: 1px solid var(--sr-line);
-  border-radius: var(--sr-radius-sm);
-  cursor: pointer;
-}
-.sr-print-menu button:hover, .sr-print-menu button:focus-visible { border-color: var(--sr-ember); color: var(--sr-ember); outline: none; }
-
-/* ------------------------------------------------------------------------------------ */
 /* prefers-reduced-motion: the scrub stays, because it is a control, not decoration.       */
 /* ------------------------------------------------------------------------------------ */
 
@@ -3735,7 +3700,8 @@ html.sr-phone .sr-chevron {
 /* The brackets would be clipped by the rail's rounded overflow; focus draws inside the button. */
 .sr-rail__btn:focus-visible { --sr-bracket-out: -4px; }
 
-/* The popover and the postcard menu open to the rail's left, top-aligned with it. */
+/* The popover opens to the rail's left, top-aligned with it; the share sheet (css/share.css)
+   takes the same place. */
 .sr-pop {
   position: fixed;
   top: var(--sr-inset);
@@ -3753,14 +3719,6 @@ html.sr-phone .sr-chevron {
 }
 
 .sr-pop[hidden] { display: none; }
-
-@media (min-width: 900px) {
-  .sr-print-menu {
-    top: var(--sr-inset);
-    right: calc(var(--sr-inset) + 48px + 12px);
-    border-radius: var(--sr-radius-shell);
-  }
-}
 
 .sr-show__list {
   margin: 8px 0 0;
@@ -3969,10 +3927,10 @@ html.sr-phone .sr-chevron {
 
 /* H hides the sidebar, the rail and the pill together (0061 req 12): they are one #sr-shell, and
    the clean rule hides every child of <body>. The eye comes back alone, dim, in the rail's corner,
-   so the way back is where the way out was; the postcard stays beside it, for the picture that
-   is the point of a clear screen. */
+   so the way back is where the way out was; Share stays beside it, for the postcard that is the
+   point of a clear screen. */
 html.sr-clean #sr-rail .sr-rail__btn--clean,
-html.sr-clean #sr-rail .sr-rail__btn--print {
+html.sr-clean #sr-rail .sr-rail__btn--share {
   visibility: visible !important;
   pointer-events: auto !important;
   opacity: 0.4;
@@ -3982,7 +3940,7 @@ html.sr-clean #sr-rail .sr-rail__btn--print {
 html.sr-clean #sr-rail .sr-rail__btn--show { display: none; }
 
 html.sr-clean #sr-rail .sr-rail__btn--clean:hover,
-html.sr-clean #sr-rail .sr-rail__btn--print:hover,
+html.sr-clean #sr-rail .sr-rail__btn--share:hover,
 html.sr-clean #sr-rail .sr-rail__btn:focus-visible { opacity: 1; }
 
 /* A trip takes the rail and the pill away, and on a phone the drawer; on a desktop the sidebar

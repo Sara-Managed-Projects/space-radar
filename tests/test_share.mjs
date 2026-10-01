@@ -1,14 +1,14 @@
-// tests/test_share.mjs -- the Share control and the postcard's words (spec 0033).
+// tests/test_share.mjs -- the link rules and the one way in to sharing (spec 0033, 0061 task 8).
 //
 //   node tests/test_share.mjs
 //
 // Three claims. The LINK is the state: four forms from a fixed state, each read back through
 // ui/urlstate.js to the same values, and no field outside the known keys -- the visitor's own
-// place above all -- can ever reach it. The FALLBACK works: with no share sheet the clipboard gets
-// the URL and a toast says so for two seconds, a dismissed sheet is not an error, and a refused
-// clipboard puts the link itself in the toast. And the postcard's CAPTION is the card's own
-// strings: the card is rendered into a small DOM stub and its lines are compared with
-// postcardCaption() for the same record at the same instant, so the picture cannot drift from it.
+// place above all -- can ever reach it. The TOAST says one line at a time, for two seconds. And
+// every Share is the ONE sheet: the card's Share, the trip bar's and the rail's all open it
+// (ui/sharesheet.js, whose words tests/test_sharesheet.mjs holds), the card's Postcard saves the
+// print picture, and nothing of the old two paths (the copied link, the 1080 x 1350 picture) is
+// left.
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { readFileSync, statSync } from 'node:fs';
@@ -75,10 +75,10 @@ globalThis.location = { origin: 'https://www.spaceradar.ai', pathname: '/', hash
 globalThis.history = { replaceState(_s, _t, url) { const i = url.indexOf('#'); location.hash = i >= 0 ? url.slice(i) : ''; } };
 const setNavigator = (value) => Object.defineProperty(globalThis, 'navigator', { value, configurable: true, writable: true });
 
-const { shareUrl, shareState, shareLink, appBase, tripWords, toast } = await import(join(JS, 'ui/share.js'));
+const shareMod = await import(join(JS, 'ui/share.js'));
+const { shareUrl, shareState, appBase, tripWords, toast, shareButton } = shareMod;
 const { read } = await import(join(JS, 'ui/urlstate.js'));
 const { showCard } = await import(join(JS, 'ui/cards.js'));
-const { postcardCaption } = await import(join(JS, 'ui/postcard.js'));
 const { COPY } = await import(join(JS, 'copy/en.js'));
 const { TOURS } = await import(join(JS, 'data/tours.js'));
 
@@ -141,17 +141,10 @@ check(shareState({}, null).t === '2027-01-01T00:00:00Z', 'the hash keys ride alo
 const tw = tripWords(tripCtx('dwell', 0));
 check(tw && tw.title === tour.title && tw.text === tour.blurb, 'a trip shares its title and blurb');
 
-// ----------------------------------------------------------------------- the fallback path
+// ------------------------------------------------------------------------------------ the toast
 {
-  location.hash = '#at=europa';
-  const copied = [];
-  setNavigator({ clipboard: { writeText: async (s) => { copied.push(s); } } });
-  const ctx = {};
-  const out = await shareLink(ctx, { title: 'Europa', text: 'Europa is a moon.' }, 'europa');
-  check(out.via === 'clipboard' && copied[0] === `${BASE}#at=europa`, `no share sheet: the clipboard gets the URL (${out.via}, ${copied[0]})`);
-  check(ctx.lastShare === out, 'what happened is left on ctx.lastShare for a browser check');
-  const node = document.body.all().find((n) => n.className.split(' ').includes('sr-toast'));
-  check(node && node.textContent === COPY.share.copied && node.hidden === false, 'the toast says "Link copied"');
+  const node = toast('Link copied');
+  check(node && node.textContent === 'Link copied' && node.hidden === false, 'the toast says its line');
   check(node && node.getAttribute('role') === 'status', 'the toast is a status, so a screen reader hears it');
   await new Promise((r) => setTimeout(r, 1900));
   check(node.hidden === false, 'the toast is still up just under two seconds later');
@@ -161,61 +154,38 @@ check(tw && tw.title === tour.title && tw.text === tour.blurb, 'a trip shares it
   toast('two');
   check(document.body.all().filter((n) => n.className.split(' ').includes('sr-toast')).length === 1 && node.textContent === 'two', 'one toast at a time');
 }
-{
-  const calls = [];
-  setNavigator({ share: async (arg) => { calls.push(arg); }, clipboard: { writeText: async () => { calls.push('clipboard'); } } });
-  const out = await shareLink(tripCtx('dwell', 2), { title: 'ignored', text: 'ignored' });
-  check(calls.length === 1 && calls[0].url === `${BASE}#trip=${tour.id}&stop=3`, `the sheet gets the stop URL: ${JSON.stringify(calls[0])}`);
-  check(calls[0].title === tour.title && calls[0].text === tour.blurb, 'during a trip the sheet gets the trip\'s title and blurb');
-  check(out.via === 'share', 'shared through the sheet');
-}
-{
-  const calls = [];
-  const abort = Object.assign(new Error('dismissed'), { name: 'AbortError' });
-  setNavigator({ share: async () => { throw abort; }, clipboard: { writeText: async () => { calls.push('clipboard'); } } });
-  const out = await shareLink({}, { title: 'Europa', text: '' }, 'europa');
-  check(out.via === 'dismissed' && calls.length === 0, 'a dismissed sheet is an answer: nothing is copied behind the visitor\'s back');
-}
-{
-  setNavigator({ clipboard: { writeText: async () => { throw new Error('not focused'); } } });
-  const out = await shareLink({}, null, 'europa');
-  const node = document.body.all().find((n) => n.className.split(' ').includes('sr-toast'));
-  check(out.via === 'none' && node.textContent === `${BASE}#at=europa`, 'a refused clipboard puts the link itself in the toast');
-}
 
-// ----------------------------------------------------- the caption is the card, string for string
+// ------------------------------------------------------------------------- one way in, not three
+check(!('shareLink' in shareMod) && !('savePicture' in shareMod) && !('pictureButton' in shareMod), 'the copied-link and save-a-picture paths are gone: one sheet');
+{
+  const ctx = {};
+  const b = shareButton(ctx, 'sr-trip__btn sr-trip__btn--share');
+  check(b.textContent === COPY.share.link && b.title === COPY.share.linkTitle && b.getAttribute('aria-haspopup') === 'dialog', 'the trip bar\'s Share opens a dialog: the sheet');
+  const src = readFileSync(join(JS, 'ui/share.js'), 'utf8');
+  check(/openShare\(ctx, \{ trip: true, opener: b \}\)/.test(src), 'and it shares the running trip where it is');
+}
 {
   const { worldRecords } = await import(join(JS, 'scene/worlds.js'));
   const now = Date.UTC(2026, 8, 23, 14, 5);
   const ctx = { clock: { now: () => now, onChange: () => () => {} }, worlds: null, selected: () => null, sources: null };
-  for (const id of ['europa', 'io', 'moon']) {
+  for (const id of ['europa', 'moon']) {
     const record = worldRecords().find((r) => r.id === id);
-    if (!record) { problems.push(`no ${id} record to test the caption against`); continue; }
+    if (!record) { problems.push(`no ${id} record to show`); continue; }
     showCard(record, ctx);
     const card = document.getElementById('sr-card');
-    const text = (cls) => { const n = card && card.all().find((x) => x.className === cls); return n ? n.textContent : null; };
-    const cap = postcardCaption(record, ctx, null);
-    // The card view (spec 0061 §4) sets the class in its microlabel; the caption keeps the badge word.
-    check(cap.name.startsWith(`${text('sr-card__name')}${COPY.punctuation.separator}`), `${id}: the name line starts with the card's name: "${cap.name}"`);
-    check(cap.sentence === text('sr-card__sentence'), `${id}: the sentence is the card's first sentence: "${cap.sentence}"`);
-    check(cap.honesty === text('sr-card__cls') && cap.honesty.length > 0, `${id}: the honesty line is the card's class-and-age line: "${cap.honesty}" vs "${text('sr-card__cls')}"`);
-    check(cap.sources === text('sr-card__source'), `${id}: the sources line is the card's: "${cap.sources}"`);
-    const key = card.all().find((x) => x.className === 'sr-rows__key');
-    const val = card.all().find((x) => x.className === 'sr-rows__val');
-    check(key && cap.where.startsWith(`${key.textContent}: ${val.textContent}`), `${id}: the place line starts with the card's first "right now" row: "${cap.where}"`);
-    // en-GB prints September as "Sep" or "Sept" depending on the ICU; either is the instant.
-    check(/23 Sept? 2026, 14:05 UTC$/.test(cap.where), `${id}: and ends with the instant: "${cap.where}"`);
-    check(Object.keys(cap).join() === 'name,where,sentence,honesty,sources,mark' && cap.mark === COPY.share.mark, `${id}: five lines and the mark, in order`);
-    // The card's action row (spec 0061 §4): Fly to it, See it, Postcard, Share -- one row of four,
-    // the postcard in it rather than under it.
+    // The card's action row (spec 0061 §4): Fly to it, See it, Postcard, Share -- one row of four.
     const row = card.all().find((x) => x.className === 'sr-card__actions' && x.getAttribute('aria-label'));
     const labels = row ? row.children.map((b) => b.textContent) : [];
     const A = COPY.card.actions;
     check(labels.join() === [A.flyTo, A.seeShort, A.postcard, A.share].join(), `${id}: the action row is Fly to it, See it, Postcard, Share: ${labels}`);
-    check(row && row.children[2].title === COPY.share.pictureTitle && row.children[3].title === COPY.share.linkTitle, `${id}: Postcard and Share are spec 0033's, by their titles`);
+    check(row && row.children[2].title === COPY.print.title, `${id}: Postcard saves the print picture, by its title`);
+    check(row && row.children[3].title === COPY.share.linkTitle && row.children[3].getAttribute('aria-haspopup') === 'dialog', `${id}: Share opens the sheet`);
   }
-  const place = postcardCaption(null, ctx, { tourTitle: 'A trip', stopTitle: 'A place' });
-  check(place.name === 'A trip' && place.sentence === 'A place' && place.honesty === '' && place.sources === '', 'a stop with no record claims nothing it could be wrong about');
+  const cards = readFileSync(join(JS, 'ui/cards.js'), 'utf8');
+  check(/openShare\(ctx, \{ record, opener: share \}\)/.test(cards), 'the card\'s Share opens the sheet for its own record');
+  check(/savePostcard\(ctx, record\)/.test(cards), 'the card\'s Postcard saves the print picture with its tag');
+  const rail = readFileSync(join(JS, 'ui/rail.js'), 'utf8');
+  check(/installShare\(ctx\)/.test(rail) && /share\.open\(\{ opener: shareBtn \}\)/.test(rail), 'the rail\'s Share opens the same sheet');
 }
 
 // ------------------------------------------------------------------------------------ bytes
@@ -223,11 +193,11 @@ const bytes = statSync(join(JS, 'ui/share.js')).size;
 check(bytes < 6144, `ui/share.js loads with every card and stays under 6 kB: ${bytes} bytes`);
 const src = readFileSync(join(JS, 'ui/share.js'), 'utf8');
 check(!/import\s*\(\s*['"][^.]/.test(src) && !/from\s+['"][^.]/.test(src), 'ui/share.js imports nothing from outside site/js');
-check(/import\(\s*'\.\/postcard\.js'\s*\)/.test(src) && !/from\s+'\.\/postcard\.js'/.test(src), 'the postcard is a dynamic import on first use, never a static one');
+check(/import\('\.\/sharesheet\.js'\)/.test(src) && /import\('\.\/printcompose\.js'\)/.test(src) && !/from\s+'\.\/(sharesheet|printcompose|postcard)\.js'/.test(src), 'the sheet and the picture are dynamic imports on first use, never static ones');
 
 if (problems.length) {
   console.error(`share: ${problems.length} problem(s)`);
   for (const p of problems) console.error(`  - ${p}`);
   process.exit(1);
 }
-console.log(`share ok: four link forms, no observer field, the clipboard fallback and its toast, the caption is the card's own lines for 3 worlds; share.js ${bytes} bytes`);
+console.log(`share ok: four link forms, no observer field, one toast at a time, every Share opens the one sheet and Postcard saves the print; share.js ${bytes} bytes`);

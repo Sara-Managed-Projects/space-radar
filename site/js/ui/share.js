@@ -1,8 +1,17 @@
-// ui/share.js -- one Share control, on the card and in a trip's toolbar (spec 0033, 2026-09-23).
-// The link is the state: the hash keys ui/urlstate.js owns, or a trip's own page. The share sheet
-// where the device has one; else the clipboard and a toast (desktop Chrome and Firefox have no
-// sheet). No network, no SDK. The postcard module loads on the first tap only, and this file
-// stays under 6 kB because it loads with every card (req 8; tests/test_share.mjs holds both).
+// ui/share.js -- the one way in to sharing (spec 0033, spec 0061 task 8).
+//
+// Contract, stable (the trip toolbar calls it):
+//   installShare(ctx) -> ctx.share = { open, close, isOpen }
+//   ctx.share.open({ record, trip, opener }) -> Promise
+//     record  what to share (its tag, words, page); omitted: the selection, else the view
+//     trip    true: the running trip where it is; a tour id or {id}: that trip's page. Beats record.
+//     opener  where focus returns on close (default: the focused element)
+// Also: appBase, shareUrl, shareState, tripWords (pure), toast, openShare, savePostcard (the
+// card's Postcard, one press), shareButton (the trip bar's).
+//
+// WHY ONE ENTRY. There were three (a link, a 1080 x 1350 picture, the print). Ivan, 2026-10-01:
+// "full post, postcard, link and full text". This loads with every card, so it is the link rules
+// and the door only: ui/sharesheet.js is imported on the first open, and nothing is fetched before.
 
 import { COPY } from '../copy/en.js';
 import { read } from './urlstate.js';
@@ -16,11 +25,8 @@ export function appBase(loc = typeof location !== 'undefined' ? location : null)
   return loc.origin + String(loc.pathname || '/').replace(/[^/]*$/, '');
 }
 
-/**
- * The link for a view. Pure. A trip at stop 1 or on its intro is its short page, else the hash.
- * Keys are picked one by one, so a field not named here -- the visitor's own place above all --
- * can never reach a shared URL.
- */
+/** The link for a view. Pure. A trip at stop 1 or on its intro is its short page, else the hash.
+ * Keys are picked one by one: the visitor's own place can never reach a shared URL. */
 export function shareUrl(st, base = appBase()) {
   const s = st || {};
   const root = String(base).endsWith('/') ? String(base) : `${base}/`;
@@ -83,71 +89,63 @@ export function toast(line, ms = 2000) {
   return toastNode;
 }
 
-/** Share the view. A running trip's title and blurb beat the card's `words`: the link is the
- * trip's then. What happened is left on ctx.lastShare for a browser check. */
-export async function shareLink(ctx, words, atId) {
-  const url = shareUrl(shareState(ctx, atId));
-  const w = tripWords(ctx) || words || {};
-  const out = { url, title: w.title || COPY.app.name, text: w.text || '', via: null };
-  const nav = typeof navigator !== 'undefined' ? navigator : {};
-  if (typeof nav.share === 'function') {
-    try {
-      await nav.share({ title: out.title, text: out.text, url });
-      out.via = 'share';
-    } catch (e) {
-      // A dismissed sheet is an answer, not an error; any other failure falls to the copy.
-      out.via = e && e.name === 'AbortError' ? 'dismissed' : null;
-    }
-  }
-  if (!out.via) {
-    try {
-      await nav.clipboard.writeText(url);
-      out.via = 'clipboard';
-    } catch {
-      out.via = 'none';
-    }
-    // The clipboard refused (an unfocused page, no permission): the toast carries the link itself.
-    toast(out.via === 'none' ? url : COPY.share.copied, out.via === 'none' ? 8000 : 2000);
-  }
-  if (ctx) ctx.lastShare = out;
-  return out;
+// What went wrong is left on ctx for a browser check, and said in one line.
+const oops = (ctx, key, line, e) => {
+  toast(line);
+  if (ctx) ctx[key] = { error: String((e && e.message) || e) };
+  return null;
+};
+
+let sheet = null;
+let loading = null;
+const load = (ctx) => loading || (loading = import('./sharesheet.js')
+  .then((m) => (sheet = m.createShareSheet(ctx)))
+  .catch((e) => { loading = null; throw e; }));
+
+/** ctx.share: the door; the sheet behind it loads on the first open. */
+export function installShare(ctx) {
+  const api = {
+    open: (opts = {}) => load(ctx)
+      .then((s) => s.open({ ...opts, opener: opts.opener || document.activeElement }))
+      .catch((e) => oops(ctx, 'lastShare', COPY.share.failed, e)),
+    close: () => sheet && sheet.close(),
+    isOpen: () => !!sheet && sheet.isOpen(),
+  };
+  if (ctx) ctx.share = api;
+  return api;
 }
 
-let busy = false;
+/** The sheet, installing the door if the rail has not (a test, an embed). */
+export const openShare = (ctx, opts) => ((ctx && ctx.share) || installShare(ctx)).open(opts);
 
-/** "Save a picture": ui/postcard.js, imported on the first tap. */
-export async function savePicture(ctx, record) {
-  if (busy) return null;
-  busy = true;
-  toast(COPY.share.making, 0);
+let saving = false;
+
+/** The card's Postcard: this view's print picture with `record`'s tag, saved. */
+export async function savePostcard(ctx, record) {
+  if (saving) return null;
+  saving = true;
+  toast(COPY.print.making, 0);
   try {
-    const { savePostcard } = await import('./postcard.js');
-    return await savePostcard(ctx, record, shareUrl(shareState(ctx, record && record.id)));
+    const { makePostcard } = await import('./printcompose.js');
+    const { out } = await makePostcard(ctx, 'jpeg', { record: record || null, withTag: !!record });
+    toast(COPY.print.saved);
+    if (ctx) ctx.lastPrint = out;
+    return out;
   } catch (e) {
-    toast(COPY.share.failed);
-    if (ctx) ctx.lastPostcard = { error: String(e && e.message || e) };
-    return null;
+    return oops(ctx, 'lastPrint', COPY.print.failed, e);
   } finally {
-    busy = false;
+    saving = false;
   }
 }
 
-function button(className, label, title, onClick) {
+/** The trip bar's Share: the running trip, at the stop it is on. */
+export function shareButton(ctx, className) {
   const b = document.createElement('button');
   b.type = 'button';
   b.className = className;
-  b.textContent = label;
-  b.title = title;
-  b.addEventListener('click', onClick);
+  b.textContent = COPY.share.link;
+  b.title = COPY.share.linkTitle;
+  b.setAttribute('aria-haspopup', 'dialog');
+  b.addEventListener('click', () => openShare(ctx, { trip: true, opener: b }));
   return b;
-}
-
-/** `words()` is read at the tap, so the sentence is the one on screen then. */
-export function shareButton(ctx, className, words, atId) {
-  return button(className, COPY.share.link, COPY.share.linkTitle, () =>
-    shareLink(ctx, typeof words === 'function' ? words() : words, atId));
-}
-
-export function pictureButton(ctx, className, record) {
-  return button(className, COPY.share.picture, COPY.share.pictureTitle, () => savePicture(ctx, record));
 }

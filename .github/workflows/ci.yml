@@ -152,6 +152,10 @@ jobs:
         run: python3 scripts/build_seo.py --out "$RUNNER_TEMP/seo" && python3 scripts/check_seo.py --out "$RUNNER_TEMP/seo"
       - name: The SEO build carries the card's words and no live number, and deploy.sh ships it
         run: python3 tests/test_seo.py
+      # Spec 0061 task 8: the share sheet links an object to the page built above, by the map
+      # build_seo.py writes (object-pages.json); its post fits each network with the link last.
+      - name: "The share sheet: the post per network (X 280, link 23), the excerpt with its attribution, the object page's link, nothing fetched before it opens"
+        run: node tests/test_sharesheet.mjs
 
   contract:
     runs-on: ubuntu-latest
@@ -356,13 +360,13 @@ jobs:
       # failure when a file is missing.
       - name: sound is off until chosen, cross-fades per stage, ducks under a sting, fails quietly (spec 0035)
         run: node tests/test_audio.mjs
-      - name: a shared link is the view and nothing else; with no share sheet the clipboard and a toast (spec 0033)
+      - name: a shared link is the view and nothing else, and every Share opens the one sheet (spec 0033, 0061 task 8)
         run: node tests/test_share.mjs
       # Spec 0044: the byte gate's rules on fixtures. The real boot is in screens.yml, which has a
       # browser; this proves the sum, the lazy files and the zero-request rules without one.
       - name: a first visit is summed against its budget, and sound, previews and the lazy stars stay unfetched (spec 0044)
         run: node tests/test_first_visit_bytes.mjs
-      - name: the postcard is 1080 x 1350 with its caption band at 1080..1350, five lines in order (spec 0033)
+      - name: a trip's preview is 1200 x 630 with its caption band in the lower fifth (spec 0033)
         run: node tests/test_postcard.mjs
       - name: every layer exists on both sides of the registry mirror and `enabled:` is honoured (spec 0026 req 8)
         run: node tests/test_layers_registry.mjs

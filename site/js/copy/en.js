@@ -585,6 +585,8 @@ export const COPY = {
   rail: {
     label: 'Tools',
     show: 'What to show (L)',
+    // P, because S is the camera's (held, it moves the camera back: scene/camera.js CAMERA_KEYS).
+    share: 'Share (P)',
   },
   // The time pill (0061 §7, ui/timepill.js).
   timePill: {
@@ -780,23 +782,49 @@ export const COPY = {
     unknownAt: 'That object is not on this map; showing the default view.',
     unknownStage: 'That place is not a centre this map can take; showing the default view.',
   },
-  // Sharing (spec 0033): a link that reopens this exact view, and a picture of it with its caption.
-  // The picture's caption is the card's own lines (ui/postcard.js); only the frame words are here.
+  // Sharing (spec 0033, spec 0061 task 8): one sheet, ui/sharesheet.js, with the postcard, the link
+  // and the text. The text itself is the card's words and Wikipedia's; only the sheet's own words
+  // are here. Button labels are two words at most; the titles say the rest.
   share: {
+    // The trip bar's button, and every Share's tooltip.
     link: 'Share',
-    linkTitle: 'Share a link that opens this exact view',
-    picture: 'Save a picture',
-    pictureTitle: 'A picture of this view with its caption, saved to your device',
-    copied: 'Link copied',
-    making: 'Making the picture',
-    saved: 'Picture saved',
-    failed: 'The picture could not be made just now',
-    // `{id}` is the object's or the trip's id, `{date}` the day the sky in the picture is from.
-    fileName: 'space-radar-{id}-{date}.png',
+    linkTitle: 'Share this view: the postcard, the link and a few lines about it',
+    title: 'Share',
+    close: 'Close',
+    pictureAlt: 'The postcard: this view drawn again at print size, with its caption',
+    drawing: 'Drawing the postcard…',
+    noPicture: 'The postcard could not be drawn just now.',
+    withTag: 'Tag on the selection',
+    linkLabel: 'Link',
+    copyLink: 'Copy the link',
+    textLabel: 'Text',
+    lookingUp: 'Looking it up on Wikipedia…',
+    wikiSource: 'The Wikipedia article this quotes',
+    // CC BY-SA asks for the source and the licence beside a quote; the sheet links the article.
+    attribution: 'From Wikipedia, CC BY-SA 4.0',
+    native: 'Share…',
+    nativeTitle: 'Your device\'s own share, with the postcard where it can take a picture',
+    nativeFailed: 'The share did not open; copy or download instead',
+    copy: 'Copy text',
+    copyTitle: 'Copy the text and the link, ready to paste into a post',
+    copied: 'Text and link copied',
+    linkCopied: 'Link copied',
+    copyRefused: 'Copying was refused; the text is selected to copy',
+    jpeg: 'Download JPEG',
+    jpegTitle: 'Save the postcard as a JPEG picture, 6 by 4 inches at 300 dots per inch',
+    pdf: 'Download PDF',
+    pdfTitle: 'Save the postcard as a one-page PDF, 6 by 4 inches, for printing',
+    email: 'Email',
+    emailTitle: 'Write an email with the text and the link',
+    // A mailto: link cannot carry a file: said once, plainly, under the buttons.
+    emailNote: 'Email takes no picture: Share… or download it.',
+    networksLabel: 'Post to',
+    networkTitle: 'Open {network} with this post, in a new tab',
+    networks: { x: 'X', facebook: 'Facebook', linkedin: 'LinkedIn', whatsapp: 'WhatsApp', telegram: 'Telegram', reddit: 'Reddit' },
+    // The email's subject when something is selected; with nothing, the app's name alone.
+    subject: '{name}, on Space Radar',
+    failed: 'Sharing could not open just now',
     mark: 'spaceradar.ai',
-    // The place-and-time line on the picture: the card's first "right now" row, then the instant.
-    row: '{label}: {value}',
-    when: '{date}, {time} UTC',
   },
   // Sound (spec 0035): off until the visitor turns it on, and remembered once they have. The words
   // say the state, not the action, on the toggle ("Sound: off"), and the action on the mute in the
@@ -1953,19 +1981,15 @@ export const COPY = {
   // The GitHub mark in the top corner. `href` is here rather than in ui/github.js for the same
   // reason the words are: it is the one line a human edits when the repository moves, and it
   // should not be hunted for inside a module.
-  // ui/printcard.js: the screen as a printable postcard (Ivan, 2026-09-28). 6 x 4 in at 300 dpi.
+  // ui/printcompose.js: the screen as a printable postcard (Ivan, 2026-09-28), 6 x 4 in at 300 dpi.
+  // The card's Postcard saves it; the share sheet shows it and saves it as a JPEG or a PDF.
   print: {
-    button: 'Save this view as a postcard',
-    note: 'The picture is drawn again at print size, 6 by 4 inches at 300 dots per inch, without the panels.',
-    jpeg: 'Save as a picture (JPEG)',
-    pdf: 'Save for printing (PDF, 6 by 4 inches)',
+    title: 'Save this view as a 6 by 4 inch postcard (JPEG)',
     making: 'Making the postcard',
     saved: 'Postcard saved',
     failed: 'The postcard could not be made just now',
     // `{id}` from what the view shows, `{date}` the day the sky is from, `{ext}` jpg or pdf.
     fileName: 'space-radar-postcard-{id}-{date}.{ext}',
-    // Spec 0047 req 11: the selection's brackets and tag drawn onto the picture, off by default.
-    withTag: 'With the tag on the selection',
     when: '{date}, {time} UTC',
     mark: 'spaceradar.ai',
   },

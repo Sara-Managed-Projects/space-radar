@@ -1,4 +1,5 @@
-// tests/test_printcard.mjs -- the screen as a printable postcard (ui/printcard.js, ui/printcompose.js).
+// tests/test_printcard.mjs -- the screen as a printable postcard (ui/printcompose.js; spec 0061 task 8
+// shows it in the share sheet and saves it from there and from the card's Postcard).
 //
 // Ivan, 2026-09-28: "postcards of space on click, where current screen will be as postcard which is
 // possible to print then (could be downloaded in PDF or JPEG)". Asserted: the print size is the
@@ -50,7 +51,9 @@ const drawLen = /5 0 obj\n<< \/Length (\d+) >>\nstream\n([^\n]*)\nendstream/.exe
 check(drawLen && Number(drawLen[1]) === drawLen[2].length && drawLen[2] === 'q 432 0 0 288 0 0 cm /Im0 Do Q', 'the page draws the image over the whole page, and says its own length');
 
 const { COPY } = await import(join(ROOT, 'site/js/copy/en.js'));
-check(COPY.print && /PDF/.test(COPY.print.pdf) && /JPEG/.test(COPY.print.jpeg), 'the menu offers both formats');
+check(/PDF/.test(COPY.share.pdf) && /JPEG/.test(COPY.share.jpeg), 'the share sheet offers both formats');
+const named = caption({ clock }, { id: 'sat-25544', name: 'ISS (ZARYA)' }, null, 'International Space Station');
+check(named.title === 'International Space Station', `the caption is the card's name, not the catalogue's (${named.title})`);
 
 if (problems.length) { console.error('printcard FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('printcard ok: a 6 x 4 in postcard at 300 dpi in the screen\'s orientation, captioned with what it shows and when, as a JPEG or a well-formed one-page PDF');

@@ -72,7 +72,7 @@ const CONTRACT = {
   // Spec 0047: the tracked object's HUD, and its pure placement rules for tests/test_hud.mjs.
   'ui/hud.js': ['createHud', 'reticleBox', 'tagPlacement', 'showTick', 'chevronAt', 'firstDigitChanged'],
   // Spec 0061: the layout. The shell builds the boxes; the explore view is the sidebar's home, the
-  // rail holds What to show, the postcard and Hide, the pill is the clock, and the Tonight tab's
+  // rail holds What to show, Share and Hide, the pill is the clock, and the Tonight tab's
   // place is its own module. ui/controls.js, the left panel they replace, is gone.
   'ui/shell.js': ['createShell', 'createViewStack', 'readCollapsed', 'writeCollapsed', 'SIDE_KEY', 'VIEWS', 'DESKTOP_QUERY'],
   'ui/explore.js': ['createExplore', 'TABS', 'tabTarget', 'tabFor', 'rightNowLines', 'statusSummary', 'tripMeta'],
@@ -110,16 +110,18 @@ const CONTRACT = {
   // The one owner of the URL hash (spec 0032): main.js and ui/trip.js write
   // through it, and a second dialect is the bug it was written to end.
   'ui/urlstate.js': ['KEYS', 'VERSION', 'read', 'write', 'clear', 'stopIndex', 'readMoment', 'writeMoment'],
-  // Share (spec 0033): one control in two hosts, and the postcard it imports on first use.
-  'ui/share.js': ['shareUrl', 'shareState', 'shareLink', 'savePicture', 'shareButton', 'pictureButton', 'toast'],
-  'ui/postcard.js': ['composePostcard', 'composeCard', 'postcardCaption', 'savePostcard', 'ogPicture', 'PC_W', 'PC_H', 'BAND_H'],
+  // Share (spec 0033, spec 0061 task 8): the link rules and the one door, ctx.share.open().
+  'ui/share.js': ['appBase', 'shareUrl', 'shareState', 'tripWords', 'toast', 'installShare', 'openShare', 'savePostcard', 'shareButton'],
+  // Spec 0061 task 8: the one share sheet, imported on the first Share; its pure parts for the tests.
+  'ui/sharesheet.js': ['createShareSheet', 'shareText', 'xLength', 'excerptOf', 'wikiTitleOf', 'objectPageUrl', 'networkUrl', 'mailtoUrl', 'wikiSummary', 'NETWORKS', 'LIMITS', 'PAGES_INDEX', 'EXCERPT_MAX'],
+  'data/wikititles.js': ['WIKI_TITLES'],
+  'ui/postcard.js': ['composeCard', 'layoutCaption', 'wrap', 'pngOf', 'ogPicture', 'OG', 'OG_W', 'OG_H', 'OG_BAND_H'],
   'ui/status.js': ['createStatus'],
   'ui/github.js': ['createGitHubMark'],
   'ui/cleanview.js': ['createCleanView', 'wantsToggle'],
   // Spec 0045 req 10: Regular and Compact, chosen or automatic below 800 px of height.
   'ui/density.js': ['createDensity', 'densityPanel', 'readDensity', 'writeDensity', 'isCompact', 'DENSITY_KEY', 'CHOICES', 'SHORT_QUERY'],
-  'ui/printcard.js': ['createPrintButton'],
-  'ui/printcompose.js': ['makePostcard', 'printSize', 'caption', 'pdfFromJpeg', 'printTag', 'tagText'],
+  'ui/printcompose.js': ['makePostcard', 'saveBlob', 'fileName', 'printSize', 'caption', 'pdfFromJpeg', 'tagText', 'printTag'],
   'copy/en.js': ['COPY', 'compare'],
 };
 
