@@ -595,6 +595,18 @@ export function createTripFrame(ctx) {
     return (list || []).find((x) => x && x.id === id) || null;
   }
 
+  /**
+   * Focus a control of the sheet once it is on screen. On a desktop the sheet is in the sidebar's
+   * trip view, which the shell shows from an observer of <html>'s class (a microtask after the
+   * render): a control in a view that is still hidden cannot take focus, and Start went nowhere.
+   */
+  function focusSoon(node) {
+    node.focus();
+    setTimeout(() => {
+      if (node.isConnected && document.activeElement !== node) node.focus({ preventScroll: true });
+    }, 0);
+  }
+
   /** The head every sheet shares: a microlabel and the serif name (row D's card head). */
   function sheetHead(p, micro, name) {
     const head = el('header', 'sr-tripsheet__head');
@@ -683,7 +695,7 @@ export function createTripFrame(ctx) {
     }
     p.hidden = false;
     paintSound();
-    start.focus();
+    focusSoon(start);
   }
 
   /**
@@ -723,7 +735,7 @@ export function createTripFrame(ctx) {
     const nextHost = el('div', 'sr-tripsheet__next');
     p.appendChild(nextHost);
     p.hidden = false;
-    explore.focus();
+    focusSoon(explore);
 
     // ONE named next trip, never a picker: a menu at the end of a trip is a decision nobody asked
     // for, and the name is the whole invitation. But it was picked positionally out of tours()
@@ -975,26 +987,41 @@ export function createTripFrame(ctx) {
     savedDocTitle = null;
     destroy();
     lastIndex = -1;
-    // Focus goes back to the trip card the trip was started from -- not to <body>, which is where
-    // a keyboard visitor would otherwise have to start again from the top of the document.
+    // Focus goes back to where the visitor was -- not to <body>, which is where a keyboard visitor
+    // would otherwise have to start again from the top of the document. AFTER the shell has
+    // re-seated the card and popped the trip view (its observers run as microtasks, before this
+    // timeout), because a control in a view that is still hidden cannot take focus:
     //
-    // The saved element is the first choice and the card is the fallback, because a trip can be
-    // started by something that never took focus at all: a programmatic click, the console, or
-    // whatever entry point arrives next. Measured: a click dispatched from JS leaves
-    // document.activeElement on <body>, and focus went nowhere.
-    let back = savedFocus && savedFocus.isConnected && !(savedFocus.closest && savedFocus.closest('#sr-trip')) ? savedFocus : null;
+    //   1. the element that had focus when the trip started, if it is on screen again;
+    //   2. the card, when leaving left something selected (ui/trip.js re-selects the last stop's
+    //      subject): its heading, as the shell does for any view it pushes;
+    //   3. the trip card the trip was started from, in the explore view.
+    //
+    // The saved element is not enough on its own, because a trip can be started by something that
+    // never took focus at all: a programmatic click, the console, a deep link. Measured: a click
+    // dispatched from JS leaves document.activeElement on <body>, and focus went nowhere.
+    const saved = savedFocus;
+    const fromTour = tourId;
     savedFocus = null;
-    if (!back && tourId) back = document.querySelector(`#sr-side [data-trip="${tourId}"]`);
-    if (back && typeof back.focus === 'function') back.focus();
-    // ON A PHONE THE PANEL IS A DRAWER, AND setup() CLOSED IT. A control inside a closed drawer
-    // is `visibility: hidden` (site.css) and cannot take focus: measured 2026-09-23 at 390 × 844,
-    // the [data-trip] button was found, focus() was called, and activeElement stayed on <body>.
-    // The bar button that reopens the drawer is where ui/mobile.js's own Close sends focus, so
-    // it is where Leave sends it too; one key then reopens the sheet on the trip just left.
-    if (back && document.activeElement !== back) {
+    const shown = (n) => !!(n && n.isConnected && typeof n.focus === 'function' && (!n.getClientRects || n.getClientRects().length > 0));
+    setTimeout(() => {
+      if (document.activeElement && document.activeElement !== document.body && document.activeElement.isConnected) return;
+      const card = document.getElementById('sr-card');
+      const heading = card && !card.hidden && card.querySelector ? card.querySelector('#sr-card-title') : null;
+      const tripCard = fromTour ? document.querySelector(`#sr-side [data-trip="${fromTour}"]`) : null;
+      const back = [saved, heading, tripCard].find(shown);
+      if (back) {
+        back.focus({ preventScroll: true });
+        return;
+      }
+      // ON A PHONE THE PANEL IS A DRAWER, AND setup() CLOSED IT. A control inside a closed drawer
+      // is `visibility: hidden` (site.css) and cannot take focus: measured 2026-09-23 at 390 × 844,
+      // the [data-trip] button was found, focus() was called, and activeElement stayed on <body>.
+      // The bar button that reopens the drawer is where ui/mobile.js's own Close sends focus, so it
+      // is where Leave sends it too; one key then reopens the sheet on the trip just left.
       const bar = document.querySelector(`${MOBILE_BAR} button[data-panel="home"]`);
       if (bar && typeof bar.focus === 'function') bar.focus();
-    }
+    }, 0);
     tourId = null;
   }
 

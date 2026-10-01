@@ -487,6 +487,10 @@ export function createExplore(ctx, host) {
     rows = rows.filter((r) => !r.off).concat(rows.filter((r) => r.off));
     hostT.s.hidden = !rows.length;
     const shown = hostT.expanded ? rows : rows.slice(0, TRIPS_SHOWN);
+    // The cards are rebuilt as plans land, and a rebuilt card is a new node: the one a keyboard
+    // visitor is on (or that leaving a trip gave focus back to) would drop focus to <body>.
+    const active = typeof document !== 'undefined' ? document.activeElement : null;
+    const focusedTrip = active && hostT.grid.contains(active) && active.dataset ? active.dataset.trip : null;
     while (hostT.grid.firstChild) hostT.grid.removeChild(hostT.grid.firstChild);
     const nowMs = ctx.clock && typeof ctx.clock.now === 'function' ? ctx.clock.now() : Date.now();
     for (const row of shown) {
@@ -504,6 +508,7 @@ export function createExplore(ctx, host) {
         try { trip.start(row.id); } catch { /* the trip says why itself */ }
       });
       hostT.grid.appendChild(card);
+      if (focusedTrip && row.id === focusedTrip) card.focus({ preventScroll: true });
     }
     hostT.more.hidden = rows.length <= TRIPS_SHOWN;
     hostT.more.textContent = hostT.expanded ? COPY.tripCard.fewer : t(COPY.tripCard.all, { n: fmt.int(rows.length) });

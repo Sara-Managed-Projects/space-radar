@@ -2737,6 +2737,7 @@ function renderStop(record, ctx, opts) {
   const title = el('h2', 'sr-card__name', lead.title);
   title.id = CARD_LEAD_TITLE_ID;
   title.tabIndex = -1;
+  title.dataset.focus = 'title';
   title.title = String(lead.title || '');
   header.appendChild(title);
   // What the numbers below are OF, when the title is a line of story ("Two places, and only two")
@@ -2994,6 +2995,10 @@ function render(record, ctx, opts = {}) {
   // The card is a dialog, and a dialog needs a name: it had role="dialog" and nothing to call it by.
   title.id = CARD_TITLE_ID;
   title.tabIndex = -1; // focusable by script only (takeFocus), never a stop in the tab order
+  // A repaint (the clock set, the places landing) replaces the heading; keepPlace() puts focus back
+  // on the new one by this key. Without it, focus that had been moved to the card fell to <body>
+  // a quarter of a second later (measured leaving a trip, 2026-10-01).
+  title.dataset.focus = 'title';
   title.title = name; // two lines, then an ellipsis: the whole name is here
   header.appendChild(title);
   const close = el('button', 'sr-card__close');
