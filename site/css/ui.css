@@ -2280,6 +2280,22 @@ html.sr-phone .sr-trip__tb {
   height: 44px;
 }
 
+/* 44 px on touch wherever the bar is (docs/ui-guide.md principle 9), a touch laptop included. */
+@media (pointer: coarse) {
+  .sr-trip__tb {
+    width: 44px;
+    height: 44px;
+  }
+
+  .sr-trip__leave {
+    height: 44px;
+  }
+}
+
+html.sr-phone .sr-trip__leave {
+  height: 44px;
+}
+
 html.sr-phone .sr-trip__sep {
   display: none;
 }
@@ -2366,7 +2382,7 @@ html.sr-trip-mode .sr-toast {
 }
 
 html.sr-trip-mode.sr-phone .sr-toast {
-  top: calc(var(--sp-2) + 48px + var(--sp-3) + env(safe-area-inset-top, 0px));
+  top: calc(var(--sp-2) + 52px + var(--sp-3) + env(safe-area-inset-top, 0px));
   bottom: auto;
   left: 50%;
 }

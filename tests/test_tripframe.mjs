@@ -288,6 +288,15 @@ notify({ phase: 'dwell', index: 1, count: 4, stopTitle: 'The International Space
   byLabel(T.replay).click();
   check(calls.join() === 'next,back,replay', `next, previous and replay drive the trip: ${calls.join()}`);
   calls.length = 0;
+  // Share: spec 0061 task 8's sheet where it exists, with the trip and the stop's subject.
+  ctx.share = { open: (o) => calls.push(`share:${o.trip}:${o.record && o.record.id}`) };
+  ctx.recordById = (id) => ({ id });
+  trip.currentRecordId = () => 'sat-25544';
+  byLabel(T.share).click();
+  check(calls.join() === 'share:fx-a:sat-25544', `Share opens the share sheet with the trip and the stop's subject: ${calls.join()}`);
+  delete ctx.share;
+  trip.currentRecordId = () => null;
+  calls.length = 0;
   byLabel(T.pause).click();
   check(calls.join() === 'pause:control' && state.phase === 'paused', 'Pause pauses');
   const play = q('.sr-trip__tb--play');
