@@ -82,6 +82,8 @@ function auroraStandIn(saveData, layerOn) {
     line: () => (saveData ? A.saveData : !layerOn() ? A.switchedOff : api.failed ? A.failed : A.waiting),
     credit: () => [A.credit],
     peak: () => (saveData || api.failed ? 0 : undefined),
+    rightNow: () => null,
+    showMe: () => null,
   };
   return api;
 }

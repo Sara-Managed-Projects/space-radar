@@ -378,6 +378,9 @@ export function createNext(ctx, opts = {}) {
   return {
     root,
     refresh,
+    // NOAA's Kp as last read (parseSpaceWeather), or null: the explore view's aurora line reads it
+    // rather than asking the source a second time.
+    weather: () => weather,
     destroy() {
       window.removeEventListener('sr:layer', onLayer);
       window.removeEventListener('sr:observer', onObserver);

@@ -3,7 +3,7 @@
 // Contract: createExplore(ctx, host) -> { root, tab(), setTab(id), refresh(), mountTab(id, render, opts) }
 // Also exported, pure, for tests/test_shell.mjs:
 //   TABS, tabTarget(tab) -> {stage, moment}, tabFor(stageId, moment) -> tab
-//   rightNowLines({storms, clouds, crewed, wallMs}) -> at most three {id, text, value, lead}
+//   rightNowLines({storms, aurora, clouds, crewed, wallMs}) -> at most three {id, text, value, lead}
 //   statusSummary(rows, wallMs) -> {state, text}
 //   tripMeta(row) -> the line under a trip card's title
 //
@@ -37,7 +37,7 @@ import { LADDER_RUNGS, WE_SHOW } from '../data/ladder.js';
 import { SYSTEMS } from '../data/systems.js';
 import { groupTrips, eventSubtitle } from './trippicker.js';
 import { createSearch } from './search.js';
-import { createNext } from './next.js';
+import { createNext, auroraItem } from './next.js';
 import { tagLines } from './cards.js';
 import { revealInColumn } from './reveal.js';
 
@@ -63,6 +63,8 @@ const CREWED = [
 const STORM_RANK = { hurricane: 3, storm: 2, depression: 1 };
 const LY_PER_PC = 3.26156;
 const REFRESH_MS = 30e3;
+/** The aurora's Show me flight: the select flight's 900 ms (main.js flyToRecord). */
+const SHOW_ME_MS = 900;
 /** The card's astronomical-unit words, which the list shortens to the symbol. */
 const AU_WORDS = t(COPY.card.values.au, { n: '' }).trim();
 
@@ -92,7 +94,7 @@ function capitalise(s) {
 /**
  * The Right-now lines, from live state only. Pure.
  *
- * @param {{storms?: Object[], clouds?: {mode, capturedMs}|null, crewed?: {key, record}[], wallMs?: number}} input
+ * @param {{storms?: Object[], aurora?: {text, value}|null, clouds?: {mode, capturedMs}|null, crewed?: {key, record}[], wallMs?: number}} input
  * @returns {{id: string, text: string, value?: string, lead?: boolean, record?: Object}[]} at most three
  *
  * A line whose data is missing is LEFT OUT (0061 design §2): no storms loaded is no storm line, not
@@ -115,6 +117,11 @@ export function rightNowLines(input = {}) {
       : t(R.storms, { n: capitalise(COPY.numberWords[n] || fmt.int(n)), name: strongest.name });
     out.push({ id: 'storms', text, record: strongest });
   }
+  // A geomagnetic storm under way (internal #192 item 4): scene/aurora.js auroraRightNow's words,
+  // only at Kp 5 and above, so it is news when it is here. After the storms, which are the usual
+  // lead, and before the clouds and the crew, which are there every day.
+  const a = input.aurora;
+  if (a && a.text) out.push({ id: 'aurora', text: a.text, value: a.value || '' });
   const c = input.clouds;
   if (c && c.mode === 'live' && Number.isFinite(c.capturedMs) && Number.isFinite(input.wallMs)) {
     out.push({ id: 'clouds', text: R.clouds, value: ageInWords(Math.max(0, input.wallMs - c.capturedMs)) });
@@ -441,6 +448,43 @@ export function createExplore(ctx, host) {
     else apply();
   }
 
+  /**
+   * The aurora's Right-now line: NOAA's measured Kp (the reading Coming up already holds, through
+   * data/events.js auroraItem: a storm under way, measured in the last six hours) in the words of
+   * the aurora module. Left out until that module has loaded (main.js, OFF THE FIRST VISIT) and
+   * whenever there is no storm.
+   */
+  function auroraNow(wallMs) {
+    const a = ctx.aurora;
+    if (!a || typeof a.rightNow !== 'function') return null;
+    const w = typeof next.weather === 'function' ? next.weather() : null;
+    const item = w ? auroraItem(w, wallMs) : null;
+    if (!item || !item.now) return null;
+    try { return a.rightNow(item.kp); } catch { return null; }
+  }
+
+  /**
+   * Show me: the night side of the pole the aurora is best seen around (scene/aurora.js
+   * auroraHemisphere says which), with the layer on and the Earth's card open, whose aurora line
+   * says what the band is. From another stage the Earth's comes first, as a tab does.
+   */
+  function showAurora() {
+    const a = ctx.aurora;
+    if (!a || typeof a.showMe !== 'function') return;
+    if (typeof ctx.isLayerOn === 'function' && !ctx.isLayerOn('aurora') && typeof ctx.setLayerOn === 'function') {
+      ctx.setLayerOn('aurora', true);
+      document.dispatchEvent(new CustomEvent('sr:layer-toggle', { detail: { id: 'aurora', on: true, handled: true, from: 'explore' } }));
+    }
+    if (ctx.stage && ctx.stage.worldId !== 'earth' && typeof ctx.setStage === 'function') ctx.setStage('earth');
+    const earthRec = typeof ctx.recordById === 'function' ? ctx.recordById('earth') : null;
+    if (earthRec) ctx.select(earthRec, { fly: false });
+    const o = ctx.observer;
+    const view = a.showMe({ observerLatDeg: o && Number.isFinite(o.latRad) ? (o.latRad * 180) / Math.PI : NaN });
+    if (view && ctx.cameraRig) {
+      ctx.cameraRig.flyTo({ targetScene: view.target, distance: view.distance, azimuth: view.azimuth, polar: view.polar, ms: SHOW_ME_MS });
+    }
+  }
+
   function paintNow() {
     const wallMs = Date.now();
     let clouds = null;
@@ -450,7 +494,7 @@ export function createExplore(ctx, host) {
       const rec = typeof ctx.recordById === 'function' ? ctx.recordById(c.id) : null;
       if (rec) crewed.push({ key: c.key, record: rec });
     }
-    const lines = rightNowLines({ storms: ctx.recordsFor ? ctx.recordsFor('storms') : [], clouds, crewed, wallMs });
+    const lines = rightNowLines({ storms: ctx.recordsFor ? ctx.recordsFor('storms') : [], aurora: auroraNow(wallMs), clouds, crewed, wallMs });
     while (nowList.firstChild) nowList.removeChild(nowList.firstChild);
     now.hidden = !lines.length;
     for (const line of lines) {
@@ -458,6 +502,13 @@ export function createExplore(ctx, host) {
       const b = button('sr-now__btn');
       b.appendChild(el('span', 'sr-now__text', line.text));
       if (line.value) b.appendChild(el('span', 'sr-now__value', line.value));
+      if (line.id === 'aurora') {
+        b.title = COPY.aurora.showMe;
+        b.addEventListener('click', showAurora);
+        li.appendChild(b);
+        nowList.appendChild(li);
+        continue;
+      }
       b.addEventListener('click', () => {
         const rec = line.record || (line.id === 'clouds' ? ctx.recordById('earth') : null);
         if (!rec) return;
@@ -601,6 +652,8 @@ export function createExplore(ctx, host) {
   });
   window.addEventListener('sr:layer', () => refresh());
   window.addEventListener('sr:clouds', () => { if (current === 'earth') paintNow(); });
+  // The aurora module arrived, or a forecast did: the aurora line can be written.
+  window.addEventListener('sr:aurora', () => { if (current === 'earth') paintNow(); });
   setInterval(refresh, REFRESH_MS);
   // The status line settles over the first seconds as the sources answer; a quicker look then.
   let early = 0;

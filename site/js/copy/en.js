@@ -1390,9 +1390,14 @@ export const COPY = {
     switchedOff: 'Aurora: switched off in the layers.',
     // NOAA SWPC's products are works of the US Government and in the public domain; credited all the same.
     credit: 'Aurora: forecast by the NOAA Space Weather Prediction Center’s OVATION Prime model (public domain).',
-    // The explore view's "Right now" line at Kp 5 and above (auroraRightNow).
-    rightNow: 'Aurora likely at high latitudes tonight (Kp {kp}).',
-    rightNowReach: 'Aurora likely tonight wherever it is dark, as far from the poles as {lat}° (Kp {kp}).',
+    // The explore view's "Right now" line at Kp 5 and above (scene/aurora.js auroraRightNow): the
+    // words on the left, Kp in the value column (docs/ui-guide.md 3.4). One line at the sidebar's
+    // width, so no "tonight" and no sentence: the tap flies there, which says the rest.
+    rightNow: 'Aurora likely near the poles',
+    rightNowReach: 'Aurora likely as far as {lat}° latitude',
+    rightNowValue: 'Kp {kp}',
+    // Its tooltip: the tap is a "Show me" (ui/explore.js showAurora).
+    showMe: 'Fly to the aurora on the night side',
   },
 
   unplaced: {

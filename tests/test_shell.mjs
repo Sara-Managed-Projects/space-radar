@@ -104,6 +104,14 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   const one = rightNowLines({ storms: [storms[1]] });
   check(one.length === 1 && one[0].text === 'One storm is turning: Fay.', `one storm says so (${one[0] && one[0].text})`);
   check(rightNowLines({ storms: [{ meta: {} }] }).length === 0, 'a storm with no name is no line');
+  // Internal #192 item 4: the aurora at a geomagnetic storm, after the storms and before the clouds.
+  const aurora = { text: 'Aurora likely as far as 50° latitude', value: 'Kp 7' };
+  const withAurora = rightNowLines({ storms, aurora, clouds, crewed, wallMs });
+  check(withAurora.length === 3 && withAurora.map((l) => l.id).join() === 'storms,aurora,clouds', `the aurora line comes second and the crew make way (${withAurora.map((l) => l.id)})`);
+  check(withAurora[1].value === 'Kp 7' && !withAurora[1].lead, 'it carries Kp in the value column');
+  const auroraLead = rightNowLines({ aurora, crewed, wallMs });
+  check(auroraLead[0].id === 'aurora' && auroraLead[0].lead, 'with no storms it leads');
+  check(rightNowLines({ aurora: null, crewed }).every((l) => l.id !== 'aurora') && rightNowLines({ aurora: { text: '' } }).length === 0, 'no storm in space, no aurora line');
 }
 
 // --- 5. the status line ----------------------------------------------------------------------------

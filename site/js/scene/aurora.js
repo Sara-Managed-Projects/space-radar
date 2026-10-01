@@ -9,7 +9,10 @@
 //     .line(clockMs)              the Earth card's sentence about its aurora (copy/en.js COPY.aurora)
 //     .credit()                   the Sources panel's credit line
 //     .peak()                     the highest probability held, percent, for the layers panel
-//   auroraRightNow(kp, summary)   the explore view's "Right now" line when Kp >= 5, or null
+//     .rightNow(kp)               auroraRightNow with the summary held
+//     .showMe({observerLatDeg})   the camera's "Show me": {target, distance, azimuth, polar, hemisphere}
+//   auroraRightNow(kp, summary)   the explore view's "Right now" line when Kp >= 5, {text, value}, or null
+//   auroraHemisphere(o), nightPoleDirection(north, sun, hemisphere)   pure: where Show me goes
 //   auroraLine(state, clockMs, wallMs)   pure: the card's sentence
 //   and the JS twins of the shader's functions, for tests/test_aurora.mjs.
 //
@@ -497,13 +500,27 @@ void main() {
 }
 `;
 
+/**
+ * Show me (internal #192 item 4): the camera this far from the pole toward local midnight, and this
+ * many Earth radii from the centre. The oval's midnight side is ~25 degrees from the pole (it sits
+ * ~20 degrees from the magnetic pole and bulges toward the equator at midnight), so 25 degrees puts
+ * it in the middle of the frame with the pole above it. MEASURED 2026-10-01 in headless Chrome: the
+ * flight lands 3.2 radii out and 25.0 degrees from the pole, the night-side oval over the Arctic
+ * north of Scandinavia in the middle of the frame and Europe's lights below it.
+ */
+export const SHOW_ME_TILT = (25 * Math.PI) / 180;
+export const SHOW_ME_RADII = 3.2;
+
 // --- the pure lines -------------------------------------------------------------------------------------
 
 /**
- * The explore view's "Right now" line (spec 0053 req 5; the UI rebuild mounts it). Kp below
- * KP_STORM says nothing: a quiet oval is not news. At a storm it names how far from the poles the
- * forecast reaches when that is further than usual (the equatorward edge at EDGE_PERCENT, the
- * nearer of the two hemispheres to the equator), else the plain line.
+ * The explore view's "Right now" line (spec 0053 req 5; mounted by ui/explore.js, internal #192
+ * item 4). Kp below KP_STORM says nothing: a quiet oval is not news. At a storm it names how far
+ * from the poles the forecast reaches when that is further than usual (the equatorward edge at
+ * EDGE_PERCENT, the nearer of the two hemispheres to the equator), else the plain words. The words
+ * go on the left and Kp in the value column, as every Right-now line is drawn (docs/ui-guide.md
+ * 3.4: no sentence on the value side, one line at the sidebar's width).
+ * @returns {{text: string, value: string} | null}
  */
 export function auroraRightNow(kp, summary) {
   const C = COPY.aurora;
@@ -513,8 +530,49 @@ export function auroraRightNow(kp, summary) {
   // NOAA publishes Kp in thirds (5.33, 6.67); one decimal, and none on a whole number.
   const k = Math.round(kp * 10) / 10;
   const kpText = Number.isInteger(k) ? fmt.int(k) : fmt.num(k, 1);
-  if (reach !== null && reach <= 55) return t(C.rightNowReach, { kp: kpText, lat: reach });
-  return t(C.rightNow, { kp: kpText });
+  const value = t(C.rightNowValue, { kp: kpText });
+  if (reach !== null && reach <= 55) return { text: t(C.rightNowReach, { lat: reach }), value };
+  return { text: C.rightNow, value };
+}
+
+/**
+ * Which pole "Show me" flies to. Pure. In order:
+ *   1. never a hemisphere whose oval the forecast left empty while the other has one;
+ *   2. the visitor's own hemisphere, when a place is known (set, or guessed from the time zone):
+ *      the aurora they could go out and see;
+ *   3. else the pole turned away from the Sun, whose night is longer and whose oval has more of
+ *      itself in the dark (`sunDotNorth` is the Sun's direction on the Earth's axis, -1..1).
+ */
+export function auroraHemisphere({ observerLatDeg = NaN, sunDotNorth = 0, summary = null } = {}) {
+  const has = (h) => !!(summary && summary[h] && summary[h].cells > 0);
+  if (summary && has('north') !== has('south')) return has('north') ? 'north' : 'south';
+  if (Number.isFinite(observerLatDeg) && observerLatDeg !== 0) return observerLatDeg > 0 ? 'north' : 'south';
+  return sunDotNorth > 0 ? 'south' : 'north';
+}
+
+/**
+ * Show me's view direction: unit, from the Earth's centre toward the camera, in the axes `north` and
+ * `sun` are given in (both unit). SHOW_ME_TILT from the pole toward local midnight, so the camera
+ * looks down on the polar cap with the oval's night side, where it is drawn, in front of the pole.
+ * At a pole in daylight all round (`sun` along the axis) the midnight side is undefined; any side
+ * away from the Sun's meridian will do, and the Earth's +X is used.
+ */
+export function nightPoleDirection(north, sun, hemisphere) {
+  const s = hemisphere === 'south' ? -1 : 1;
+  const pole = [north[0] * s, north[1] * s, north[2] * s];
+  const along = -(sun[0] * pole[0] + sun[1] * pole[1] + sun[2] * pole[2]);
+  // Anti-sun, less its part along the axis: the midnight meridian's direction.
+  let m = [-sun[0] - along * pole[0], -sun[1] - along * pole[1], -sun[2] - along * pole[2]];
+  let len = Math.hypot(m[0], m[1], m[2]);
+  if (len < 1e-6) {
+    const x = [1, 0, 0];
+    const d = x[0] * pole[0] + x[1] * pole[1] + x[2] * pole[2];
+    m = [x[0] - d * pole[0], x[1] - d * pole[1], x[2] - d * pole[2]];
+    len = Math.hypot(m[0], m[1], m[2]) || 1;
+  }
+  const c = Math.cos(SHOW_ME_TILT);
+  const k = Math.sin(SHOW_ME_TILT) / len;
+  return [pole[0] * c + m[0] * k, pole[1] * c + m[1] * k, pole[2] * c + m[2] * k];
 }
 
 /** Pure, for the test: the sentence the Earth card prints about its aurora. */
@@ -901,6 +959,32 @@ export function createAurora({
     },
     peak() {
       return st.summary ? st.summary.peak : (st.phase === 'off' || st.phase === 'failed' ? 0 : undefined);
+    },
+    rightNow(kp) {
+      return auroraRightNow(kp, st.summary);
+    },
+    showMe({ observerLatDeg = NaN } = {}) {
+      const e = earthMesh();
+      const u = e && e.material && e.material.uniforms;
+      if (!e || !u || !u.uSunDir) return null;
+      e.updateMatrixWorld();
+      const q = e.getWorldQuaternion(new THREE.Quaternion());
+      // The Earth's local +Y is its north pole (scene/earth.js); its Sun direction is in scene axes.
+      const north = new THREE.Vector3(0, 1, 0).applyQuaternion(q).normalize();
+      const sun = u.uSunDir.value;
+      const hemisphere = auroraHemisphere({ observerLatDeg, sunDotNorth: sun.dot(north), summary: st.summary });
+      const d = new THREE.Vector3(...nightPoleDirection(north.toArray(), sun.toArray(), hemisphere));
+      // The camera rig's own two angles (scene/camera.js offsetDirection, inverted).
+      if (camera) d.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(camera.up.clone().normalize(), new THREE.Vector3(0, 1, 0)));
+      const target = e.getWorldPosition(new THREE.Vector3());
+      const radius = e.getWorldScale(new THREE.Vector3()).x;
+      return {
+        target,
+        distance: radius * SHOW_ME_RADII,
+        azimuth: Math.atan2(d.x, d.z),
+        polar: Math.acos(Math.max(-1, Math.min(1, d.y))),
+        hemisphere,
+      };
     },
   };
   return api;
