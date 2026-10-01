@@ -377,3 +377,8 @@ jobs:
         run: node tests/test_liveclouds.mjs
       - name: storms are the ones advised in the last 12 h, drawn only near their advisory, carded with what GDACS's numbers mean
         run: node tests/test_storms.mjs
+      # Spec 0053 task 3: the aurora, NOAA's OVATION forecast on the night side, against the answer NOAA
+      # really gave on 2026-09-30 (saved): the decode, the night mask and colour ramp twins, the
+      # schedule, and the card's "not a photograph".
+      - name: the aurora is NOAA's forecast of the next hour, night side only, coloured by height, carded as a forecast (spec 0053 task 3)
+        run: node tests/test_aurora.mjs
