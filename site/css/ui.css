@@ -64,7 +64,9 @@
      recomputes it from these values. */
   --sr-glass: rgba(11, 14, 20, 0.82);
   --sr-glass-thin: rgba(11, 14, 20, 0.62); /* chrome with no text under 18 px */
-  --sr-glass-solid: rgba(11, 14, 20, 0.88); /* reduced transparency, or no backdrop-filter */
+  /* Reduced transparency, or no backdrop-filter. 0.94, not 0.88 (docs/ui-guide.md §2.7): the
+     fallback is never lighter than --sr-glass-strong (0.90), which the trip's phone sheet wears. */
+  --sr-glass-solid: rgba(11, 14, 20, 0.94);
   --sr-blur: blur(18px) saturate(1.25);
   --sr-line: rgba(232, 236, 242, 0.1);
   --sr-line-strong: rgba(232, 236, 242, 0.22);
@@ -2372,6 +2374,22 @@ html.sr-trip-collapsed .sr-tripsheet.is-floating {
 .sr-tripsheet.is-floating .sr-tripsheet__name,
 .sr-tripsheet.is-floating .sr-card__name {
   font-size: 22px;
+}
+
+/* The phone's sheet and toolbar take glass-strong over .sr-float's glass, so they answer the solid
+   fallback themselves: no blur, nothing of the cloud through them (docs/ui-guide.md §2.1). */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  html.sr-phone .sr-trip__toolbar,
+  .sr-tripsheet.is-floating {
+    background: var(--sr-glass-solid);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  html.sr-phone .sr-trip__toolbar,
+  .sr-tripsheet.is-floating {
+    background: var(--sr-glass-solid);
+  }
 }
 
 /* A toast during a trip sits over the toolbar on a desktop, under the top bar on a phone. */
