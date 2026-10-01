@@ -95,15 +95,16 @@ export const NIGHT = { dark: -0.10, lit: 0.02 };
 
 /**
  * Probability to emission (0..1). Below 3 % nothing (OVATION's floor is noise at the oval's edge),
- * the gate full by 12 % (NOAA's own map starts colouring at 10), then 1 - exp(-p / 0.45):
- * brightness grows with the energy flux the probability stands for, and saturates the way a camera
- * does. A quiet oval of 11 % draws at 0.17, a storm's 60 % at 0.74: faint is faint (spec 0053 req 5,
- * "never exaggerated"). The first draft's 0.30 made a quiet night a solid green blob.
+ * the gate full by 12 % (NOAA's own map starts colouring at 10), then 1 - exp(-p^1.5 / 0.25):
+ * brightness grows with the energy flux the probability stands for, faster than linearly at first
+ * so the oval's core stands out from its fringe, and saturates the way a camera does. 10 % draws at
+ * 0.12, 20 % at 0.30, 60 % at 0.84: faint is faint (spec 0053 req 5, "never exaggerated"). The
+ * first drafts (1 - exp(-p / 0.3), then / 0.45) made a 20 % oval one flat green plate.
  */
-export const EMISSION = { floor: 0.03, full: 0.12, scale: 0.45 };
+export const EMISSION = { floor: 0.03, full: 0.12, scale: 0.25, power: 1.5 };
 
 /** The overall brightness a vertical column of full emission draws at, before tone mapping. */
-export const AURORA_GAIN = 0.65;
+export const AURORA_GAIN = 0.9;
 
 /**
  * Steps and step length per tier. The step count follows the ray's path through the shell (a
@@ -138,7 +139,7 @@ export const DIPOLE_POLE = { latDeg: 80.8, lonDeg: -72.7 };
  * 1 km/s and would not move a pixel from this far out. So the motion is a slow shimmer, about a
  * pixel a second at the default view, and not a still. The card says the folds are drawn.
  */
-export const FOLDS = { arcPerDeg: 0.18, sharp: 6, ampA: 0.25, kA: 3.0, ampB: 0.08, kB: 11.0, patchK: 4.0, diffuse: 0.6, driftA: 0.010, driftB: 0.016 };
+export const FOLDS = { arcPerDeg: 0.18, sharp: 6, ampA: 0.25, kA: 3.0, ampB: 0.08, kB: 11.0, patchK: 4.0, patchFloor: 0.4, diffuse: 0.4, driftA: 0.010, driftB: 0.016 };
 
 /** The mean of ((1 + cos x) / 2)^n over a period: C(2n, n) / 4^n. The arcs divide by it to keep the light. */
 export function arcMean(n) {
@@ -170,7 +171,7 @@ export function nightMask(sunDot) {
 /** NOAA's probability (0..1) to the emission the shell draws (0..1). */
 export function probabilityToEmission(p) {
   const gate = smoothstep(EMISSION.floor, EMISSION.full, p);
-  return gate * (1 - Math.exp(-Math.max(0, p) / EMISSION.scale));
+  return gate * (1 - Math.exp(-(Math.max(0, p) ** EMISSION.power) / EMISSION.scale));
 }
 
 /** One emission's density at a height, 0..1 (1 at its peak). */
@@ -292,14 +293,16 @@ const vec3 VIOLET_428 = ${vec3(VIOLET_428)};
 const float GREEN_COLUMN_KM = ${columnKm(EMISSIONS.green).toFixed(3)};
 const vec2 NIGHT = vec2( ${NIGHT.dark.toFixed(4)}, ${NIGHT.lit.toFixed(4)} );
 const vec3 EMISSION = vec3( ${EMISSION.floor.toFixed(4)}, ${EMISSION.full.toFixed(4)}, ${EMISSION.scale.toFixed(4)} );
+const float EMISSION_POWER = ${EMISSION.power.toFixed(3)};
 const vec2 VIOLET_RANGE = vec2( ${VIOLET_FROM.toFixed(3)}, ${VIOLET_TO.toFixed(3)} );
 const float ARC_PER_DEG = ${FOLDS.arcPerDeg.toFixed(4)};
 const float ARC_SHARP = ${FOLDS.sharp.toFixed(1)};
 const float PATCH_K = ${FOLDS.patchK.toFixed(3)};
 const float DIFFUSE = ${FOLDS.diffuse.toFixed(3)};
-// Mean-preserving: the arcs average arcMean(sharp) and a patch 0.5, so the arcs' share is divided
-// by both and the forecast's total light is kept; only where it falls is drawn.
-const float ARC_NORM = ${((1 - FOLDS.diffuse) / (arcMean(FOLDS.sharp) * 0.5)).toFixed(4)};
+const float PATCH_FLOOR = ${FOLDS.patchFloor.toFixed(3)};
+// Mean-preserving: the arcs average arcMean(sharp) and a patch (floor + (1 - floor) / 2), so the
+// arcs' share is divided by both and the forecast's total light is kept; only where it falls is drawn.
+const float ARC_NORM = ${((1 - FOLDS.diffuse) / (arcMean(FOLDS.sharp) * (FOLDS.patchFloor + (1 - FOLDS.patchFloor) / 2))).toFixed(4)};
 const vec4 FOLD = vec4( ${FOLDS.ampA.toFixed(4)}, ${FOLDS.kA.toFixed(4)}, ${FOLDS.ampB.toFixed(4)}, ${FOLDS.kB.toFixed(4)} );
 const vec2 DRIFT = vec2( ${FOLDS.driftA.toFixed(4)}, ${FOLDS.driftB.toFixed(4)} );
 
@@ -354,7 +357,7 @@ float stepIntegral( vec3 e, float ha, float hm, float hb, float segKm ) {
 }
 
 float emission( float p ) {
-  return smoothstep( EMISSION.x, EMISSION.y, p ) * ( 1.0 - exp( -max( p, 0.0 ) / EMISSION.z ) );
+  return smoothstep( EMISSION.x, EMISSION.y, p ) * ( 1.0 - exp( -pow( max( p, 0.0 ), EMISSION_POWER ) / EMISSION.z ) );
 }
 
 // The folds' coordinates: x = magnetic latitude in arcs, bent by two waves along the oval that
@@ -392,11 +395,12 @@ void main() {
   if ( reach < uMinSinLat ) discard;
   if ( -maxDotOnArc( a, b, -uSunDirLocal ) > NIGHT.y ) discard;
 
-  // Folds: their contrast fades where one arc would be narrower than about two pixels, so a far
+  // Folds: their contrast fades where one arc would be narrower than about two pixels (an arc is a
+  // quarter of its period wide, and fwidth over-reads a slanted gradient by up to 1.4), so a far
   // view is the smooth forecast and never a shimmer of aliasing. Measured once, at the entry point:
   // a derivative inside the loop below would be undefined.
   float foldK = 0.0;
-  if ( uFolds > 0.5 ) foldK = 1.0 - smoothstep( 0.06, 0.2, fwidth( arcCoord( a ).x ) );
+  if ( uFolds > 0.5 ) foldK = 1.0 - smoothstep( 0.12, 0.3, fwidth( arcCoord( a ).x ) );
 
   float lenKm = ( t1 - t0 ) * A_KM;
   int n = int( clamp( ceil( lenKm / uStepKm ), 2.0, float( uSteps ) ) );
@@ -424,7 +428,9 @@ void main() {
     if ( foldK > 0.0 ) {
       vec2 ac = arcCoord( dir );
       float arc = pow( 0.5 + 0.5 * cos( 6.2831853 * ac.x ), ARC_SHARP );
-      float glowPatch = 0.5 + 0.5 * sin( ac.y );
+      // Never below PATCH_FLOOR: a patch that went to zero left a 20 % oval as one flat glow
+      // wherever the arcs fell in it (2026-10-01, measured: arcs only 2x the diffuse there).
+      float glowPatch = PATCH_FLOOR + ( 1.0 - PATCH_FLOOR ) * ( 0.5 + 0.5 * sin( ac.y ) );
       s = mix( 1.0, DIFFUSE + ARC_NORM * arc * glowPatch, foldK );
     }
     vec3 col = GAINS.x * stepIntegral( P_GREEN, h0, hm, hb, segKm ) * GREEN_557
