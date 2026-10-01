@@ -508,13 +508,19 @@ export async function boot({ setStatus } = {}) {
     return null;
   }
 
-  function deselect() {
+  /**
+   * @param {{keepCard?: boolean}} [opts]  `keepCard: true` puts the selection down -- `follow`, the
+   *   highlight, the HUD, the 260 px model -- and leaves the card where it is. ui/trip.js lets go of
+   *   a stop's subject as the flight away from it starts, and the old card stays up until the next
+   *   stop's title replaces it.
+   */
+  function deselect(opts = {}) {
     selected = null;
     if (ctx.orbitLine) ctx.orbitLine.setRecord(null);
     if (ctx.groundTrack) ctx.groundTrack.set(null);
     for (const gl of glyphLayers.values()) if (gl.setSelected) gl.setSelected(null);
     if (ctx.hud) ctx.hud.clear();
-    hideCard();
+    if (!opts || opts.keepCard !== true) hideCard();
     cameraRig.stopFollow();
     window.dispatchEvent(new CustomEvent('sr:select', { detail: null }));
   }

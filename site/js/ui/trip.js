@@ -1711,6 +1711,11 @@ export function createTrip(ctx) {
 
     state.phase = 'flight';
     entry.shot = shot;
+    letGoOfTheLastSubject(entry);
+    // The camera rides to the subject the stop is ABOUT, re-aimed every frame (camera.js applyFollow
+    // keeps a flight's destination on a moving object). arrived() selects it, which installs the
+    // same follow for the dwell; installing it here means nothing else can hold the camera meanwhile.
+    rig.follow(() => entry.subject.position(ctx.clock.now()));
     // A cut has no flight to turn the up through: it is set first, so the one pose is the chosen
     // one. Otherwise it turns with the flight.
     const cutting = reducedMotion() || !(shot.ms > 0);
@@ -1748,8 +1753,44 @@ export function createTrip(ctx) {
     notify();
   }
 
+  /**
+   * THE STOP BEING LEFT LETS GO, AS THE FLIGHT AWAY FROM IT BEGINS.
+   *
+   * paintCard() selects each stop's subject on arrival, and nothing put it down again: it stayed
+   * selected until the NEXT arrival selected something else. A selection is two things that are
+   * right while you are looking at it and wrong the moment you leave:
+   *
+   *   - `follow`. main.js select() installs it, and camera.js applyFollow() re-aims a running
+   *     flight's destination at it every frame -- so the flight to stop n+1 kept its target nailed
+   *     to stop n. The distance and the angles flew, the subject did not: MEASURED with the real
+   *     machine (tests/test_trip_scale.mjs), Surveyor 1 to Apollo 11 left the camera looking at
+   *     Surveyor 1 for the whole flight, 1 915 km from where it was meant to arrive, and then the
+   *     arrival's select snapped it across in one frame.
+   *   - SELECTED_PX. scene/heroes.js draws a selection 260 px tall whatever the distance, because
+   *     it is the thing you came to look at. Pulled back for the next stop and still centred, the
+   *     subject being left filled the middle of the screen at a size nothing around it shares. Ivan
+   *     reported it on 2026-10-01 from the strangest-things trip: the Beresheet lander drawn across
+   *     half the screen, over the Moon's own markers, under a title about Voyager's record. The same
+   *     happened to whatever the visitor had selected before pressing Start (the ISS from `#at`,
+   *     260 px at the Earth's place from the Moon's stage) for the trip's whole first flight.
+   *
+   * So the previous subject -- or the visitor's own selection, on the first flight -- is put down
+   * here, with its card kept: a flight without a veil holds the old card until the new title lands
+   * (goTo), and the card going blank at take-off would be its own small bug. A subject that is the
+   * NEXT stop's too (the station trip's `far` then `iss`) is kept, so nothing blinks.
+   */
+  function letGoOfTheLastSubject(entry) {
+    const sel = typeof ctx.selected === 'function' ? ctx.selected() : null;
+    if (!sel) return;
+    const next = entry && entry.subject && entry.subject.record;
+    if (next && next.id === sel.id) return;
+    if (typeof ctx.deselect === 'function') ctx.deselect({ keepCard: true });
+  }
+
   function holdAt(entry) {
     state.phase = 'held';
+    // The flight to the world below must not be held on the stop that was left (see above).
+    letGoOfTheLastSubject(null);
     releaseClockHold();
     state.held = {
       stopId: entry.stop.id,
