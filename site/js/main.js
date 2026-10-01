@@ -1011,7 +1011,7 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
   const upstream = [];
   for (const layer of ordered) {
     if (layer.deferred) continue; // loads when the visitor switches it on (ctx.loadLayerNow)
-    // The aurora has no records to load: scene/aurora.js fetches its own forecast, after the first frame.
+    // The aurora has no records to load: scene/aurora.js fetches its own forecast, once the layers have landed.
     if (layer.draw === 'aurora') continue;
     const srcs = idsOf(layer);
     // One cached manifest read behind these, not a request per layer.
