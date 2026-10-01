@@ -132,5 +132,18 @@ check(!/^import[^\n]*(tonight|passworker)/m.test(main) && /mountTab\('tonight'[\
 const cdp = readFileSync(join(ROOT, 'tools/cdp.mjs'), 'utf8');
 check(/Emulation\.setTimezoneOverride/.test(cdp) && /arg\('timezone'/.test(cdp), 'tools/cdp.mjs --timezone=<IANA> for the acceptance screenshots');
 
+// --- what is worth looking up for (2026-10-01: the live site offered a rocket body) ------------------
+{
+  const H = 3600e3, up = 60 / (180 / Math.PI);
+  const mk = (name, klass, startH) => ({ visible: true, peakEl: up, startMs: T0 + startH * H, endMs: T0 + startH * H + 6e5, record: { name, klass } });
+  const setObs = { ...chicagoSet };
+  const rb = mk('SL-16 R/B', 'rocket', 0.5), sat = mk('Lacrosse 5', 'satellite', 1), iss = mk('ISS (ZARYA)', 'station', 2.5), late = mk('CSS (TIANHE)', 'station', 5);
+  check(tn.nextVisible([rb, sat, late], setObs, T0) === sat, 'a rocket body is passed over while a satellite is up');
+  check(tn.nextVisible([rb, sat, iss], setObs, T0) === iss, 'a crewed station within three hours of the earliest wins');
+  check(tn.nextVisible([sat, late], setObs, T0) === sat, 'a station more than three hours later does not');
+  check(tn.nextVisible([rb], setObs, T0) === rb, 'a rocket body is still offered when it is all there is');
+  check(tn.nextVisible([mk('X', undefined, 1)], setObs, T0) !== null, 'a pass without a class counts as a satellite');
+}
+
 if (problems.length) { console.error('tonight FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`tonight ok: next pass and words, the 40 degree rule (${table}), Up now, 72 h search, darkness against Astronomy Engine and a polar summer, the worker's message`);

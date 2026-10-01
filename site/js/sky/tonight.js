@@ -44,11 +44,30 @@ export function guessFilter(passes, observer) {
   return (Array.isArray(passes) ? passes : []).filter((p) => p && p.visible === true && Number.isFinite(p.peakEl) && p.peakEl * DEG >= min);
 }
 
-/** The next pass worth looking up for: still to end, earliest start. Null when there is none. */
+/**
+ * How long a crewed station may be later than the earliest pass and still be the one offered.
+ * MEASURED 2026-10-01 on the live site: "the next pass" from San Juan was an SL-16 rocket body.
+ * Correct, and not what anyone came for; a station a couple of hours later is worth the wait.
+ */
+export const CREWED_WAIT_MS = 3 * 3600e3;
+/** Classes offered only when nothing else is up (data/parsers.js classify: station, satellite, rocket, debris). */
+const LAST_RESORT = new Set(['rocket', 'debris']);
+const klassOf = (p) => (p && p.record && p.record.klass) || 'satellite';
+
+/**
+ * The next pass worth looking up for: still to end and visible; rocket bodies and debris only when
+ * nothing else is; otherwise the earliest, unless a crewed station starts within CREWED_WAIT_MS of
+ * it, which wins. Null when there is none.
+ */
 export function nextVisible(passes, observer, nowMs) {
-  return guessFilter(passes, observer)
+  const open = guessFilter(passes, observer)
     .filter((p) => p.endMs > nowMs)
-    .sort((a, b) => a.startMs - b.startMs)[0] || null;
+    .sort((a, b) => a.startMs - b.startMs);
+  const worth = open.filter((p) => !LAST_RESORT.has(klassOf(p)));
+  const pool = worth.length ? worth : open;
+  const first = pool[0];
+  if (!first) return null;
+  return pool.find((p) => klassOf(p) === 'station' && p.startMs - first.startMs <= CREWED_WAIT_MS) || first;
 }
 
 /** 'coming' | 'up' | 'gone' for a pass at nowMs. */
