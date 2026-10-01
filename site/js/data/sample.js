@@ -640,10 +640,17 @@ const ANCHORS = {
 // "left its orbit around Earth-Sun L2 and was placed in a heliocentric disposal orbit" on
 // 2025-03-28, and on 2026-09-22 it was 83 714 436 km from Earth. The card said "Also at Sun–Earth
 // L2" and printed 1.5 million km. It is an osculating row now (OSCULATING_CRAFT).
+//
+// LAUNCH_DATES_READ. Every craft below carries `launched`, the UTC day it lifted off, read from each
+// one's Wikipedia infobox ("Launch date", UTC) on 2026-10-01 and checked for the four whose local
+// date differs (Solar Orbiter, BepiColombo and STEREO-A launched the evening before in local time;
+// Hope the morning after in Japan). The card prints the days since (ui/cards.js, spec 0061 §4: a
+// craft beyond Earth leads with its distance, its speed and its days since launch).
 const ANCHORED_CRAFT = [
   {
     id: 'deep-jwst',
     name: 'James Webb Space Telescope',
+    launched: '2021-12-25',
     klass: 'telescope',
     horizonsId: -170,
     anchor: 'earth',
@@ -656,6 +663,7 @@ const ANCHORED_CRAFT = [
   {
     id: 'deep-soho',
     name: 'SOHO',
+    launched: '1995-12-02',
     klass: 'telescope',
     horizonsId: -21,
     anchor: 'earth',
@@ -703,6 +711,7 @@ const PLANET_ORBITERS = [
   {
     id: 'deep-mro',
     name: 'Mars Reconnaissance Orbiter',
+    launched: '2005-08-12',
     klass: 'probe',
     horizonsId: -74,
     world: 'mars',
@@ -725,6 +734,7 @@ const PLANET_ORBITERS = [
   {
     id: 'deep-mars-express',
     name: 'Mars Express',
+    launched: '2003-06-02',
     klass: 'probe',
     horizonsId: -41,
     world: 'mars',
@@ -748,6 +758,7 @@ const PLANET_ORBITERS = [
   {
     id: 'deep-hope',
     name: 'Hope (Emirates Mars Mission)',
+    launched: '2020-07-19',
     klass: 'probe',
     horizonsId: -62,
     world: 'mars',
@@ -770,6 +781,7 @@ const PLANET_ORBITERS = [
   {
     id: 'deep-juno',
     name: 'Juno',
+    launched: '2011-08-05',
     klass: 'probe',
     horizonsId: -61,
     world: 'jupiter',
@@ -800,6 +812,7 @@ const PLANET_ORBITERS = [
   {
     id: 'deep-lro',
     name: 'Lunar Reconnaissance Orbiter',
+    launched: '2009-06-18',
     klass: 'probe',
     horizonsId: -85,
     world: 'moon',
@@ -832,6 +845,7 @@ const CRUISING_CRAFT = [
   {
     id: 'deep-voyager-1',
     name: 'Voyager 1',
+    launched: '1977-09-05',
     klass: 'probe',
     horizonsId: -31,
     // MEASURED, and the evidence is here because this repo is code only and has no docs/ to
@@ -850,6 +864,7 @@ const CRUISING_CRAFT = [
   {
     id: 'deep-voyager-2',
     name: 'Voyager 2',
+    launched: '1977-08-20',
     klass: 'probe',
     horizonsId: -32,
     // Same query, COMMAND='-32': X=+39.83201, Y=-105.33488, Z=-89.54645 au -> r = 143.88 au.
@@ -864,6 +879,7 @@ const CRUISING_CRAFT = [
   {
     id: 'deep-new-horizons',
     name: 'New Horizons',
+    launched: '2006-01-19',
     klass: 'probe',
     horizonsId: -98,
     // Same query, COMMAND='-98': X=+20.77359, Y=-62.10272, Z=+2.28371 au -> r = 65.52 au.
@@ -885,6 +901,7 @@ const ELLIPTIC_CRAFT = [
   {
     id: 'deep-parker',
     name: 'Parker Solar Probe',
+    launched: '2018-08-12',
     klass: 'probe',
     horizonsId: -96,
     aAu: 0.388,
@@ -899,6 +916,7 @@ const ELLIPTIC_CRAFT = [
   {
     id: 'deep-solar-orbiter',
     name: 'Solar Orbiter',
+    launched: '2020-02-10',
     klass: 'probe',
     horizonsId: null,
     aAu: 0.81,
@@ -934,6 +952,7 @@ const OSCULATING_CRAFT = [
   {
     id: 'deep-psyche',
     name: 'Psyche',
+    launched: '2023-10-13',
     klass: 'probe',
     horizonsId: -255,
     // Horizons -255 header (revised 2026-09-01): Mars flyby 2026-05-15, solar-electric Hall
@@ -950,6 +969,7 @@ const OSCULATING_CRAFT = [
   {
     id: 'deep-lucy',
     name: 'Lucy',
+    launched: '2021-10-16',
     klass: 'probe',
     horizonsId: -49,
     // Horizons -49 header (revised 2025-10-25): 3548 Eurybates on 2027-08-11 is the first of the
@@ -966,6 +986,7 @@ const OSCULATING_CRAFT = [
   {
     id: 'deep-europa-clipper',
     name: 'Europa Clipper',
+    launched: '2024-10-14',
     klass: 'probe',
     horizonsId: -159,
     // Horizons -159 header (revised 2026-08-18): Earth gravity assist 2026-12-03, Jupiter arrival
@@ -984,6 +1005,7 @@ const OSCULATING_CRAFT = [
   {
     id: 'deep-juice',
     name: 'JUICE',
+    launched: '2023-04-14',
     klass: 'probe',
     horizonsId: -28,
     aliases: ['Jupiter Icy Moons Explorer'],
@@ -1005,6 +1027,7 @@ const OSCULATING_CRAFT = [
   {
     id: 'deep-bepicolombo',
     name: 'BepiColombo',
+    launched: '2018-10-20',
     klass: 'probe',
     horizonsId: -121,
     // Horizons -121 header (revised 2026-09-21): six Mercury flybys 2021-2025; the 2024-09-02 note
@@ -1019,6 +1042,7 @@ const OSCULATING_CRAFT = [
   {
     id: 'deep-hera',
     name: 'Hera',
+    launched: '2024-10-07',
     klass: 'probe',
     horizonsId: -91,
     // Horizons -91 header (revised 2026-09-01): its objective is the crater DART left on Dimorphos
@@ -1033,6 +1057,7 @@ const OSCULATING_CRAFT = [
   {
     id: 'deep-osiris-apex',
     name: 'OSIRIS-APEX',
+    launched: '2016-09-08',
     klass: 'probe',
     horizonsId: -64,
     // The same spacecraft under its first mission's name, which is the one people remember.
@@ -1051,6 +1076,7 @@ const OSCULATING_CRAFT = [
   {
     id: 'deep-hayabusa2',
     name: 'Hayabusa2',
+    launched: '2014-12-03',
     klass: 'probe',
     horizonsId: -37,
     // Horizons -37 header (revised 2026-09-01): Ryugu sample returned 2020-12-05, 2001 CC21 flyby
@@ -1066,6 +1092,7 @@ const OSCULATING_CRAFT = [
   {
     id: 'deep-stereo-a',
     name: 'STEREO-A',
+    launched: '2006-10-26',
     klass: 'probe',
     horizonsId: -234,
     // Horizons -234 header (revised 2026-09-01): launched 2006 to watch the Sun and its coronal
@@ -1081,6 +1108,7 @@ const OSCULATING_CRAFT = [
   {
     id: 'deep-gaia',
     name: 'Gaia',
+    launched: '2013-12-19',
     klass: 'telescope',
     horizonsId: -139479,
     // Horizons -139479 header (revised 2025-05-16): science observations ended 2025-01-25, and on
@@ -1129,6 +1157,8 @@ export function sampleDeepSpace() {
         construction: 'anchored',
         anchor: anchor.label,
         note: c.note,
+        // The day it left the ground, UTC (see LAUNCH_DATES_READ): the card counts its days in space.
+        ...(c.launched ? { launchDate: c.launched } : {}),
         periodDays: periodDays(aKm),
         approx: true,
         anchorDrift: anchor.driftNote,
@@ -1168,6 +1198,8 @@ export function sampleDeepSpace() {
         orbits: c.world,
         periodMin: c.periodMin,
         note: c.note,
+        // The day it left the ground, UTC (see LAUNCH_DATES_READ): the card counts its days in space.
+        ...(c.launched ? { launchDate: c.launched } : {}),
         ...(c.aliases ? { aliases: c.aliases } : {}),
         // What the card says once the harvested snapshot draws it instead (data/parsers.js copies
         // it to `orbitKnown`, which ui/cards.js prints after the class line). Written here, beside
@@ -1233,6 +1265,8 @@ export function sampleDeepSpace() {
         escapeLonDeg: c.lonDeg,
         escapeLatDeg: c.latDeg,
         note: c.note,
+        // The day it left the ground, UTC (see LAUNCH_DATES_READ): the card counts its days in space.
+        ...(c.launched ? { launchDate: c.launched } : {}),
         approx: true,
         approxFields: c.distanceMeasured
           ? ['escapeLonDeg', 'escapeLatDeg', 'speedKmS']
@@ -1285,6 +1319,8 @@ export function sampleDeepSpace() {
         inclinationDeg: c.iDeg,
         periodDays: periodDays(aKm),
         note: c.note,
+        // The day it left the ground, UTC (see LAUNCH_DATES_READ): the card counts its days in space.
+        ...(c.launched ? { launchDate: c.launched } : {}),
         approx: true,
         approxFields: ['tpMs', 'aAu', 'eccentricity', 'inclinationDeg', 'nodeDeg', 'argpDeg'],
         why:
@@ -1334,6 +1370,8 @@ export function sampleDeepSpace() {
         inclinationDeg: c.iDeg,
         periodDays: periodDays(aKm),
         note: c.note,
+        // The day it left the ground, UTC (see LAUNCH_DATES_READ): the card counts its days in space.
+        ...(c.launched ? { launchDate: c.launched } : {}),
         ...(c.destination ? { destination: c.destination } : {}),
         // ui/search.js matches meta.aliases at a word start, after the name.
         ...(c.aliases ? { aliases: c.aliases } : {}),
