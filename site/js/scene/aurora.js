@@ -44,7 +44,7 @@
 // why half a degree) and a 64 x 32 sphere of positions and indices only (~50 kB). The fragment cost is where the shell is: two cheap tests discard every pixel whose
 // ray never reaches the oval's latitudes or never leaves daylight, so on a quiet day most of the
 // disc pays a dozen instructions. Steps per tier: TIER_STEPS below. Under the frame latch and on
-// T0 the folds go and the steps drop; under reduced motion the folds hold still.
+// T0 the steps drop; under the latch and reduced motion the folds hold still.
 
 import * as THREE from '../../vendor/three.module.min.js';
 import {
@@ -115,10 +115,13 @@ export const AURORA_GAIN = 0.5;
 /**
  * Steps and step length per tier. The step count follows the ray's path through the shell (a
  * vertical ray is ~250 km and needs few; a grazing ray at the limb is ~4 000 km) up to the cap.
- * T0 and the frame latch: 8 steps, no folds. T1: 16. T2: 24.
+ * T0 and the frame latch: 8 steps. T1: 16. T2: 24. The folds stay on every tier: they cost a few
+ * sines a step, and without them the mean-preserving glow is one flat green plate (measured
+ * 2026-10-01: the latch tripped mid-probe on SwiftShader, the tier fell to 0, and the oval that had
+ * two arcs a second before became a smooth neon disc, which is the look this file exists to avoid).
  */
 export const TIER_STEPS = [
-  { maxSteps: 8, stepKm: 140, folds: false },
+  { maxSteps: 8, stepKm: 140, folds: true },
   { maxSteps: 16, stepKm: 70, folds: true },
   { maxSteps: 24, stepKm: 45, folds: true },
 ];
@@ -801,7 +804,8 @@ export function createAurora({
       const visible = shown > 0 && big && mesh.userData.compiled === true;
       mesh.visible = visible;
       drawing.visible = visible;
-      const cheap = (latched && !probe.ignoreLatch) || tier.value <= 0;
+      const cheapLatch = latched && !probe.ignoreLatch;
+      const cheap = cheapLatch || tier.value <= 0;
       const cfg = cheap ? TIER_STEPS[0] : TIER_STEPS[Math.min(2, tier.value)];
       const u = mesh.material.uniforms;
       u.uSteps.value = cfg.maxSteps;
@@ -811,9 +815,9 @@ export function createAurora({
       drawing.steps = cfg.maxSteps;
       drawing.latched = !!latched;
       // Wall time for the folds, not app time: they are decoration, and a clock scrubbed at 1000x
-      // must not whip them round the oval. Held still under reduced motion, the latch and on T0.
+      // must not whip them round the oval. Held still under reduced motion and the latch.
       if (probe.frozenTime !== null) u.uTime.value = probe.frozenTime;
-      else if (!reducedMotion && cfg.folds) u.uTime.value = (wall / 1000) % 100000;
+      else if (!reducedMotion && !cheapLatch && cfg.folds) u.uTime.value = (wall / 1000) % 100000;
       u.uGain.value = AURORA_GAIN * shown;
     },
     state() {

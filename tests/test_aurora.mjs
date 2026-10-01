@@ -190,7 +190,8 @@ const main = readFileSync(join(JS, 'main.js'), 'utf8');
 check(/addEventListener\('sr:layers-ready', \(\) => ctx\.aurora\.start\(\)/.test(main), 'main.js starts the aurora once the layers have landed, never from boot');
 check(/ctx\.aurora\.tick\(t, \{[\s\S]{0,200}latched: latch\.latched[\s\S]{0,120}reducedMotion/.test(main), 'the frame passes the latch and reduced motion to the aurora');
 const T0 = A.TIER_STEPS[0];
-check(T0.folds === false && T0.maxSteps <= 8 && A.TIER_STEPS[2].maxSteps >= A.TIER_STEPS[1].maxSteps, 'T0 and the latch: fewer steps, no folds');
+check(T0.maxSteps <= 8 && A.TIER_STEPS[2].maxSteps >= A.TIER_STEPS[1].maxSteps && A.TIER_STEPS.every((c) => c.folds), 'T0 and the latch: fewer steps; the folds on every tier (without them the oval is a flat plate)');
+check(/!reducedMotion && !cheapLatch && cfg\.folds\) u\.uTime\.value/.test(auroraSrc), 'the folds hold still under reduced motion and the latch');
 const cards = readFileSync(join(JS, 'ui/cards.js'), 'utf8');
 check(/sr-card__aurora[\s\S]{0,80}ctx\.aurora\.line\(/.test(cards), 'the Earth card prints the aurora line');
 
