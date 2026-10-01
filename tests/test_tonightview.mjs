@@ -47,8 +47,8 @@ check(!/innerHTML/.test(src) && /DOMParser/.test(src), 'the arc goes in through 
 check(/guessObserver\(CITIES\)/.test(src) && /!ctx\.observer/.test(src), 'mounted with no place set, it sets the guess, which says it is one');
 check(!/ctx\.select\(p\.record\)/.test(src) || /p\.record\.satrec/.test(src), 'a list row selects only a record the app can fly to');
 const main = readFileSync(join(JS, 'main.js'), 'utf8');
-const controls = readFileSync(join(JS, 'ui/controls.js'), 'utf8');
-check(!/tonight\.js/.test(main) && !/ui\/tonight|'\.\/tonight\.js'/.test(controls), 'not wired into the old panels: the Tonight tab mounts it (spec 0061)');
+// ui/controls.js is gone (spec 0061 task 1); the Tonight tab mounts the view, loaded on first view.
+check(!/^import[^\n]*tonight\.js/m.test(main) && /mountTab\('tonight'/.test(main), 'mounted in the sidebar\'s Tonight tab, never imported at boot (spec 0061)');
 
 if (problems.length) { console.error('tonight view FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('tonight view ok: a 96 x 48 arc, lit and dashed; renderTonight mounts a worker and one ticker, and destroy() takes all of it down; no geolocation, no innerHTML');

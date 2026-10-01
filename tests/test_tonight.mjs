@@ -126,7 +126,9 @@ check(/^Dark from \d\d:\d\d · Moon \d+ %, /.test(w.dark), `the darkness line ($
 const worker = readFileSync(join(JS, 'sky/passworker.js'), 'utf8');
 check(/self\.onmessage/.test(worker) && /typeof window === 'undefined'/.test(worker), 'passworker.js answers messages only inside a worker');
 const main = readFileSync(join(JS, 'main.js'), 'utf8');
-check(!/tonight|passworker/.test(main), 'nothing at boot yet: the Tonight tab (spec 0061) starts the worker when it mounts');
+// The Tonight tab mounts the view with a dynamic import (main.js, mountTab), so neither the view nor the
+// worker is in the boot graph; a static import of either would put them on every first visit.
+check(!/^import[^\n]*(tonight|passworker)/m.test(main) && /mountTab\('tonight'[\s\S]{0,200}import\('\.\/ui\/tonight\.js'\)/.test(main), 'nothing at boot: main.js mounts the Tonight tab with a dynamic import, and the worker starts when it does');
 const cdp = readFileSync(join(ROOT, 'tools/cdp.mjs'), 'utf8');
 check(/Emulation\.setTimezoneOverride/.test(cdp) && /arg\('timezone'/.test(cdp), 'tools/cdp.mjs --timezone=<IANA> for the acceptance screenshots');
 
