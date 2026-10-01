@@ -232,6 +232,12 @@ export async function boot({ setStatus } = {}) {
   // The sources sheet is built on first opening (ui/shell.js ensureSources says why).
   const shell = createShell(ctx, { loadSources: (host) => import('./ui/status.js').then((m) => m.createStatus(ctx, host)) });
   createExplore(ctx, shell.host('home'));
+  // The Tonight tab (spec 0051 task 2): your sky tonight, the next pass you can see and its countdown.
+  // Imported the first time the tab is shown (explore.mountTab runs it then), so it costs a first
+  // visit nothing.
+  ctx.explore.mountTab('tonight', (host) => {
+    import('./ui/tonight.js').then((m) => m.renderTonight(host, ctx)).catch((e) => console.warn('the Tonight tab did not load', e));
+  }, { replace: true });
   createRail(ctx, shell.railHost);
   createTimePill(ctx, shell.timeHost);
   ctx.mobile = createMobileUI(ctx);
