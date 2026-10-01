@@ -156,7 +156,7 @@ export async function boot({ setStatus } = {}) {
   // listening for `sr:layer` -- and a layer that landed before anybody was listening is a layer
   // the trip would then wait eight seconds for.
   // THE ONE BLACK (spec 0034 req 1): over the canvas and the labels, under every panel, the card
-  // and the trip's letterbox. A stage change in a trip goes through it; the reduced-motion
+  // and the trip's own bars. A stage change in a trip goes through it; the reduced-motion
   // cross-fade is it. Mounted on <body> beside the canvas, because the trip frame is a stacking
   // context of its own and anything inside it sits over the card.
   ctx.veil = createVeil(document.body, {

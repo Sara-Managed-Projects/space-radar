@@ -4,11 +4,12 @@
 //                  soundPanel(ctx) -> HTMLElement      the row at the foot of the controls panel
 //                  creditsText(rows) -> string          "Music and sounds: …", pure
 //
-// Four places carry it: the trip's intro card (`toggle`, "Sound: off"), the letterbox and the
-// phone bar (`mute`), and the controls panel, which is the only one a desktop visitor outside a
-// trip can reach -- without it, a returning visitor whose stored choice is "on" would hear the bed
-// on their first click and have no way to stop it short of starting a trip. Every copy is the same
-// button painted from engine.onChange, so the four can never disagree about whether sound is on.
+// It is carried by the phone bar (`mute`) and the What-to-show popover, which is the one a desktop
+// visitor outside a trip can reach -- without it, a returning visitor whose stored choice is "on"
+// would hear the bed on their first click and have no way to stop it short of starting a trip.
+// Every copy is painted from engine.onChange, so they can never disagree about whether sound is
+// on. A trip draws its own icon toggle on the intro and in its toolbar (ui/tripframe.js
+// paintSound, spec 0061 task 7), read from the same engine.
 //
 // The click IS the gesture the browser wants before it will start an AudioContext; that is why
 // the engine is only ever enabled from here and from the engine's own first-gesture listener.
@@ -48,8 +49,8 @@ export function soundButton(ctx, className, kind = 'toggle') {
     return b;
   }
   b.addEventListener('click', () => audio.toggle());
-  // Unsubscribes itself once it has left the page: the intro card and the letterbox are rebuilt
-  // for every trip, and a listener per rebuild would outlive every button it painted.
+  // Unsubscribes itself once it has left the page: a panel that holds one can be rebuilt, and a
+  // listener per rebuild would outlive every button it painted.
   let seen = false;
   const off = audio.onChange(() => {
     if (b.isConnected) seen = true;

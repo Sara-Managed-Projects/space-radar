@@ -1654,7 +1654,6 @@ export const COPY = {
     // --- the end card --------------------------------------------------------------------
     // An unmarked ending is indistinguishable from a crash. One named next trip, never a menu.
     endMicro: 'End of the trip',
-    endTitle: 'That is the end of the trip.',
     endBody: 'The camera stays where it is. Nothing here goes back.',
     endBodyStage: 'Leaving puts the map back on the world it was centred on before the trip, because out here one step of the map is a different distance. Nothing else goes back.',
     endExplore: 'Explore',

@@ -1,4 +1,4 @@
-// ui/share.js -- one Share control, on the card and in the letterbox (spec 0033, 2026-09-23).
+// ui/share.js -- one Share control, on the card and in a trip's toolbar (spec 0033, 2026-09-23).
 // The link is the state: the hash keys ui/urlstate.js owns, or a trip's own page. The share sheet
 // where the device has one; else the clipboard and a toast (desktop Chrome and Firefox have no
 // sheet). No network, no SDK. The postcard module loads on the first tap only, and this file

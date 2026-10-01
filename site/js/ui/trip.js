@@ -43,8 +43,8 @@
 // a reader's time. Somebody who asked for less motion often needs MORE time, not less.
 //
 // ---------------------------------------------------------------------------------------------
-// WHERE THE FRAME IS. The letterbox, `html.sr-trip`, the panel going `inert`, the controls, the
-// progress row, the ARIA live region and the keyboard bindings are ui/tripframe.js. This file is
+// WHERE THE FRAME IS. The intro and the end, the toolbar, the top bar, the rail and the pill going
+// `inert`, the ARIA live region and the keyboard bindings are ui/tripframe.js. This file is
 // the machine; that one is what a visitor sees of it. The seam between them is deliberately
 // narrow: `state`, `onChange(fn)`, and the same methods a console can call. The frame reads and
 // never writes, so a browser check can drive the trip with the frame absent -- which is how every

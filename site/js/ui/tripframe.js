@@ -791,8 +791,12 @@ export function createTripFrame(ctx) {
       }
       return;
     }
+    // Emptied as well as hidden: an intro's Start left in the document is an ember button and a tab
+    // stop nobody can see.
+    if (!parts.panel.hidden || parts.panel.childElementCount) parts.panel.textContent = '';
     parts.panel.hidden = true;
     parts.panel.dataset.phase = '';
+    parts.sheet.removeAttribute('aria-labelledby');
 
     // Segments: one per stop, position always, and a fill only where something is counting down.
     if (parts.segs.childElementCount !== st.count) {

@@ -82,7 +82,8 @@ const CONTRACT = {
   'ui/place.js': ['createPlace', 'findCity', 'observerFor'],
   'ui/trippicker.js': ['groupTrips', 'nextTripId', 'nextTripOrder', 'tripOrder', 'eventSubtitle'],
   'ui/trip.js': ['createTrip'],
-  'ui/tripframe.js': ['createTripFrame', 'shapeLine', 'eclipseLine', 'stopTimeLine'],
+  // Spec 0061 task 7: what a key does in a trip and the toolbar's counter, pure for test_tripframe.
+  'ui/tripframe.js': ['createTripFrame', 'shapeLine', 'eclipseLine', 'stopTimeLine', 'orbitsLine', 'keyAction', 'progressText'],
   // Spec 0034: the one black over the canvas, and the star-stretch both star draws share.
   'ui/veil.js': ['createVeil', 'VEIL_MS', 'REDUCED_VEIL_MS'],
   // Spec 0035: sound, silent until a gesture. The engine makes no AudioContext at import or at
@@ -2482,7 +2483,7 @@ for (const file of allFiles) {
     const { TOURS } = await import(join(JS, 'data/tours.js'));
     for (const tour of TOURS) {
       const line = shapeLine(tour.stops.length, tour.estimate_ms);
-      const mins = Number((line.match(/about (\d+) minutes/) || [])[1]);
+      const mins = Number((line.match(/(\d+) min\b/) || [])[1]);
       if (Number.isFinite(mins) && mins * 60000 < tour.estimate_ms) {
         problems.push(`TRIP     '${tour.id}' is offered as ${line} but runs ${tour.estimate_ms} ms`);
       }

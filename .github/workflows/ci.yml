@@ -261,6 +261,11 @@ jobs:
         run: node tests/test_stop_time.mjs
       - name: "Trip playback: pause holds advance, back/next step, stop N of M stays visible while paused (spec 0003)"
         run: node tests/test_trip_playback.mjs
+      # Spec 0061 task 7: the trip in the new language. One toolbar of named icon buttons whose
+      # tooltips name their keys, the progress inside it, the keyboard, the intro with one ember
+      # Start and sound as a toggle, the end with one next trip, the top bar of title and Leave.
+      - name: "Trips in the new language: the toolbar, the keyboard, the intro and the end (spec 0061 task 7)"
+        run: node tests/test_tripframe.mjs
       - name: "A year in a minute: four worlds on the Sun's stage, drawn true, at 525 600"
         run: node tests/test_year_trip.mjs
       # Spec 0040: TRAPPIST-1 at its own scale. Kepler's third law on the seven rows, the planets the

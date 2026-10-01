@@ -2015,7 +2015,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  margin-top: var(--sp-1);
+  margin: var(--sp-1) 0 0 calc(-1 * var(--sp-1));
   padding: 0 var(--sp-1);
   font: 400 14px/20px var(--sr-font);
   color: var(--sr-text-soft);
@@ -2263,6 +2263,7 @@ html.sr-phone .sr-trip__toolbar {
   right: 0;
   bottom: 0;
   left: 0;
+  gap: 0;
   justify-content: space-between;
   height: calc(var(--sr-trip-bar-phone) + env(safe-area-inset-bottom, 0px));
   padding: 0 var(--sp-2) env(safe-area-inset-bottom, 0px);

@@ -11,7 +11,7 @@
 // placement inside the black, 350 ms back.
 //
 // CANVAS ONLY. The node sits over the canvas and the labels and under every panel, the card and
-// the letterbox (ui.css `--sr-z-veil`): the words a visitor is reading never blink, which is the
+// the trip's bars (ui.css `--sr-z-veil`): the words a visitor is reading never blink, which is the
 // nit spec 0025 left open. The reduced-motion cross-fade (`fade(ms)`) is the same node, so there is
 // one black in the app and one place its colour and its layer are decided.
 //
