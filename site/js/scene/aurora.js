@@ -163,11 +163,11 @@ export const DIPOLE_POLE = { latDeg: 80.8, lonDeg: -72.7 };
  */
 export const FOLDS = {
   diffuse: 0.72,
-  levels: [0.55, 0.82],
+  levels: [0.45, 0.75],
   levelGain: [1.0, 0.55],
   widthPeak: 0.07,
   kinkPeak: 0.07,
-  arcGain: 2.6,
+  arcGain: 4.5,
   cells: [11, 27, 7, 17, 31],
   drift: 0.02,
 };
