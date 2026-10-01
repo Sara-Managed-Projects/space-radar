@@ -103,8 +103,14 @@ export const NIGHT = { dark: -0.10, lit: 0.02 };
  */
 export const EMISSION = { floor: 0.03, full: 0.12, scale: 0.25, power: 1.5 };
 
-/** The overall brightness a vertical column of full emission draws at, before tone mapping. */
-export const AURORA_GAIN = 0.9;
+/**
+ * The overall brightness a vertical column of full emission draws at, before tone mapping. Set
+ * against the night side's city lights on 2026-10-01's 20 % oval: at 0.9 the oval near the limb of
+ * the default view (where the path through the shell is longest) was a solid green plate brighter
+ * than all of Europe's lights; at 0.5 it is a glow a little brighter than a city. A storm's 60 %
+ * oval is then 2.8 times brighter again, before tone mapping holds it.
+ */
+export const AURORA_GAIN = 0.5;
 
 /**
  * Steps and step length per tier. The step count follows the ray's path through the shell (a
