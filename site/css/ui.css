@@ -2289,6 +2289,22 @@ html.sr-phone .sr-trip__progress {
   padding: 0;
 }
 
+/* Seven 44 px targets and the counter need 372 px. A narrower phone keeps the controls a trip
+   cannot do without and drops what has a key or another door: Replay below 380 px (R, or
+   previous and next), Share below 340 (the end card has it). No horizontal scroll at 320 (SC
+   1.4.10). */
+@media (max-width: 379px) {
+  html.sr-phone .sr-trip__tb--replay {
+    display: none;
+  }
+}
+
+@media (max-width: 339px) {
+  html.sr-phone .sr-trip__tb--share {
+    display: none;
+  }
+}
+
 /* The card folded away: the toolbar is all that is left, and it takes the sheet's lit edge. */
 html.sr-phone.sr-trip-collapsed .sr-trip__toolbar {
   border-top-color: var(--sr-edge-lit);

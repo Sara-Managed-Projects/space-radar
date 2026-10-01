@@ -318,10 +318,10 @@ export function createTripFrame(ctx) {
     progress.appendChild(count);
     progress.appendChild(countText);
     progress.appendChild(segs);
-    const replay = iconButton('sr-trip__tb', 'rotate-ccw', T.replay, T.replayTitle, onReplay);
+    const replay = iconButton('sr-trip__tb sr-trip__tb--replay', 'rotate-ccw', T.replay, T.replayTitle, onReplay);
     // Share (spec 0033): the link to this stop, or to the trip's own page at stop 1. The words are
     // the trip's title and blurb (ui/share.js tripWords).
-    const share = iconButton('sr-trip__tb', 'share', T.share, T.shareTitle, () => shareLink(ctx));
+    const share = iconButton('sr-trip__tb sr-trip__tb--share', 'share', T.share, T.shareTitle, () => shareLink(ctx));
     const collapse = iconButton('sr-trip__tb sr-trip__tb--hide', 'panel-left-close', T.collapse, T.collapseTitle, () =>
       setCollapsed(!collapsed),
     );
