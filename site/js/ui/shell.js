@@ -21,15 +21,17 @@
 //       .sr-side__view[data-view=home]      ui/explore.js
 //       .sr-side__view[data-view=card]      "‹ Explore", then the #sr-card host ui/cards.js fills
 //       .sr-side__view[data-view=sources]   "‹ Explore", then ui/status.js
+//       .sr-side__view[data-view=trip]      a guided trip's sheet: the intro, the stop card, the end
+//                                           (ui/tripframe.js fills it; spec 0061 task 7)
 //       .sr-side__handle                    the 48 px handle while collapsed
 //     #sr-rail         ui/rail.js
 //     #sr-time         ui/timepill.js
 //
 // THE CARD MOVES; ITS CONTENTS DO NOT. ui/cards.js looks its host up by id and builds it on <body>
 // when there is none, so the shell makes `#sr-card` first and seats it: inside the card view on a
-// desktop, on <body> on a phone (where it is still today's bottom sheet, until 0061 task 3) and on
-// <body> during a trip (ui/tripframe.js hides the sidebar, and the trip's card has its own place in
-// the frame -- ui.css `html.sr-trip-mode #sr-card`). appendChild MOVES a node, so the card keeps its
+// desktop, on <body> on a phone (where it is still today's bottom sheet, until 0061 task 3) and,
+// during a trip, in the slot the trip frame hands over with seatTrip(slot): the trip view of this
+// sidebar on a desktop, the trip's own sheet on a phone. appendChild MOVES a node, so the card keeps its
 // listeners, its scroll and its focus across the move. A MutationObserver on its `hidden` attribute
 // is how the shell learns it opened or closed: cards.js is not edited to call the shell, which keeps
 // it one of the two modules a parallel tracking PR is allowed to touch.
@@ -42,6 +44,12 @@
 // THE SCENE MOVES OUT FROM UNDER IT. scene/viewshift.js measures #sr-side and moves the view right
 // by half its right edge (row D draws the Earth 150 px right of the window's middle at 1440); the
 // pill is centred on the same band by --sr-scene-left (ui.css): 380 px open, 0 collapsed or phone.
+//
+// A GUIDED TRIP IS A VIEW (spec 0061 task 7). Ivan, 2026-10-01: the trips were the one place the old
+// design survived -- a card floating mid-scene and two black bars. On a desktop the sidebar now
+// stays up during a trip and shows its `trip` view, pushed over whatever was there and popped when
+// the trip ends; a sidebar the visitor had collapsed opens for the trip without the choice being
+// written down. The rail and the pill go (the trip's toolbar is the controls and it owns the clock).
 //
 // `sr:shell` {view, collapsed} is said on every change, for anything that wants to follow it.
 
@@ -198,6 +206,12 @@ export function createShell(ctx, opts = {}) {
   sources.appendChild(sourcesHost);
   views.set('sources', sources);
 
+  // The trip view: empty until ui/tripframe.js seats its sheet in it (host('trip')).
+  const tripView = el('div', 'sr-side__view sr-side__trip');
+  tripView.dataset.view = 'trip';
+  views.set('trip', tripView);
+  let tripSlot = null;
+
   for (const v of views.values()) side.appendChild(v);
 
   // The collapsed handle: the wordmark's first letter and a chevron, 48 px, in the sidebar's place.
@@ -230,9 +244,25 @@ export function createShell(ctx, opts = {}) {
   const tripOn = () => root.classList.contains(TRIP_CLASS);
 
   function placeCard() {
-    const want = !isPhone() && !tripOn() ? cardSlot : document.body;
+    let want = !isPhone() ? cardSlot : document.body;
+    if (tripOn()) want = tripSlot && tripSlot.isConnected ? tripSlot : document.body;
     if (cardHost.parentNode !== want) want.appendChild(cardHost);
-    cardHost.classList.toggle('is-docked', want === cardSlot);
+    cardHost.classList.toggle('is-docked', want === cardSlot || want === tripSlot);
+  }
+
+  /**
+   * The trip view comes and goes with the trip, on a desktop. A phone keeps its drawer shut and the
+   * trip's sheet is the frame's; a window that crosses 900 px mid-trip gets the right one.
+   */
+  function syncTrip() {
+    const want = tripOn() && !isPhone();
+    if (want && stack.current() !== 'trip') {
+      show('trip');
+    } else if (!want && stack.remove('trip')) {
+      lastDir = 'pop';
+      if (stack.current() === 'home') collapsedNow = collapsedChoice;
+      paint();
+    }
   }
 
   function paint() {
@@ -244,11 +274,12 @@ export function createShell(ctx, opts = {}) {
     }
     side.dataset.view = view;
     side.dataset.dir = lastDir;
-    side.classList.toggle('is-collapsed', collapsedNow && !isPhone());
-    root.classList.toggle(COLLAPSED_CLASS, collapsedNow && !isPhone());
+    const folded = collapsedNow && !isPhone() && view !== 'trip';
+    side.classList.toggle('is-collapsed', folded);
+    root.classList.toggle(COLLAPSED_CLASS, folded);
     handle.setAttribute('aria-expanded', collapsedNow ? 'false' : 'true');
     // A collapsed sidebar's views are out of the tab order as well as out of sight.
-    for (const node of views.values()) node.inert = collapsedNow && !isPhone();
+    for (const node of views.values()) node.inert = folded;
     try {
       window.dispatchEvent(new CustomEvent('sr:shell', { detail: { view, collapsed: collapsedNow } }));
     } catch { /* an old browser still gets the layout */ }
@@ -292,6 +323,7 @@ export function createShell(ctx, opts = {}) {
   // The card opening and closing, read off its own `hidden` attribute.
   function onCardChange() {
     placeCard();
+    syncTrip();
     const open = !cardHost.hidden;
     if (open && !isPhone() && !tripOn()) {
       if (stack.current() !== 'card') show('card');
@@ -334,7 +366,12 @@ export function createShell(ctx, opts = {}) {
     collapse,
     collapsed: () => collapsedNow,
     isPhone,
-    host: (view) => (view === 'home' ? home : view === 'card' ? cardSlot : view === 'sources' ? sourcesHost : null),
+    host: (view) => (view === 'home' ? home : view === 'card' ? cardSlot : view === 'sources' ? sourcesHost : view === 'trip' ? tripView : null),
+    /** Where the card sits while a trip runs (ui/tripframe.js): its sheet's slot, or null for <body>. */
+    seatTrip(slot) {
+      tripSlot = slot || null;
+      placeCard();
+    },
     railHost,
     timeHost,
     /** Open the sources sheet from anywhere: the status line, a scene note, `#sources`. */

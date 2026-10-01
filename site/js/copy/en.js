@@ -1524,8 +1524,10 @@ export const COPY = {
     // working it out, because a count printed before resolution is a guess wearing a fact's
     // clothes -- and this app's whole argument is that those are different things.
     planning: 'Working out what can be shown…',
-    shape: '{count} stops · about {mins} minutes',
-    shapeOneMinute: '{count} stops · about a minute',
+    // Mono and short since spec 0061 task 7, the trip cards' own shape: the minutes are still
+    // ROUNDED UP (ui/tripframe.js shapeLine), so "2 min" is never a promise the trip breaks.
+    shape: '{count} stops · {mins} min',
+    shapeOneMinute: '{count} stops · 1 min',
     startTitle: 'Fly this trip',
     // An event trip's next occurrence under its title (spec 0031 task 5): the date its first
     // `{event:}` stop resolves to, computed here like the Next list's eclipse rows.
@@ -1536,6 +1538,11 @@ export const COPY = {
     // the scene a beat to settle before the first flight.
     introStart: 'Start',
     introSkip: 'Not now',
+    // The intro sheet's microlabel (spec 0061 task 7): what this sheet is, in the sidebar's caps.
+    introMicro: 'Guided trip',
+    // The resolved stops, listed under Start: a row starts the trip at that stop.
+    stopsLabel: 'Stops',
+    startAtTitle: 'Start the trip at stop {n}',
     droppedOne: 'One stop cannot be shown today and is not counted above.',
     droppedMany: '{n} stops cannot be shown today and are not counted above.',
     clockClamped: 'Time has been set back to normal speed for this trip.',
@@ -1595,24 +1602,38 @@ export const COPY = {
     passNight: 'On this pass it is sunlit against a dark sky: you could see it, weather allowing.',
     passDay: 'You would not see this pass: your sky is too light, or the station is in the Earth’s shadow.',
 
-    // --- the letterbox -------------------------------------------------------------------
+    // --- the frame (spec 0061 task 7) ---------------------------------------------------------
+    // A glass toolbar at the foot of the scene with icon buttons, the stop card in the sidebar, and
+    // a thin top bar with the trip's title and Leave. Every icon-only button's name is `label`
+    // (aria-label); its tooltip, `title`, names the key that does the same thing.
     frameLabel: 'guided trip',
     stopRole: 'stop',
     liveLabel: 'stop {n} of {count}: {title}',
+    // The stop card's microlabel, above the stop's title (ui/cards.js, caps in CSS).
+    stopMicro: 'Stop {n} of {count}',
+    // The counter inside the toolbar. Mono, tabular; the readable form is `stopOf`.
+    progressShort: '{n} / {count}',
     pause: 'Pause',
-    pauseTitle: 'Pause the trip',
+    pauseTitle: 'Pause (Space)',
     play: 'Play',
-    playTitle: 'Carry on with the trip',
-    back: 'Back',
-    backTitle: 'The stop before this one',
-    next: 'Next',
-    nextTitle: 'The next stop',
+    playTitle: 'Play (Space)',
+    resume: 'Resume',
+    resumeTitle: 'Fly back to the stop and carry on (Space)',
+    back: 'Previous stop',
+    backTitle: 'Previous stop (←)',
+    next: 'Next stop',
+    nextTitle: 'Next stop (→)',
     replay: 'Replay',
-    replayTitle: 'Fly this move again',
+    replayTitle: 'Fly this move again (R)',
+    share: 'Share',
+    shareTitle: 'Share a link to this stop',
     collapse: 'Hide card',
-    collapseTitle: 'Fold the card away and watch (c)',
+    collapseTitle: 'Hide the card and watch (C)',
     expand: 'Show card',
-    expandTitle: 'Bring the card back (c)',
+    expandTitle: 'Bring the card back (C)',
+    soundOn: 'Sound',
+    soundOnTitle: 'Music and sounds are on: turn them off',
+    soundOffTitle: 'Music and sounds are off: turn them on',
     leave: 'Leave',
     leaveTitle: 'Leave the trip. The camera stays exactly where it is. (Escape)',
     // ...WHICH IS NOT TRUE OF A TRIP THAT MOVED THE MAP'S CENTRE (2026-09-22). A trip may be flown
@@ -1625,22 +1646,24 @@ export const COPY = {
     progressLabel: 'How far through the trip you are',
     controlsLabel: 'Trip controls',
 
-    // The chip beside the progress row when a hand lands on the camera (or Pause). Not a modal:
-    // a modal is what makes people feel caught, and the whole point is that grabbing the camera
-    // never ends the trip. Spec 0003 keeps the stop counter visible with it.
+    // Said to a screen reader when a hand on the camera, or Pause, holds the trip. On screen the
+    // play button turns ember: the one thing to press. Not a modal: grabbing the camera never ends
+    // the trip, and spec 0003 keeps the stop counter visible with it.
     pausedChip: 'Trip paused',
-    resume: 'Resume',
-    resumeTitle: 'Fly back to the stop and carry on',
 
     // --- the end card --------------------------------------------------------------------
-    // An unmarked ending is indistinguishable from a crash. Three offers, and not a menu.
+    // An unmarked ending is indistinguishable from a crash. One named next trip, never a menu.
+    endMicro: 'End of the trip',
     endTitle: 'That is the end of the trip.',
     endBody: 'The camera stays where it is. Nothing here goes back.',
     endBodyStage: 'Leaving puts the map back on the world it was centred on before the trip, because out here one step of the map is a different distance. Nothing else goes back.',
-    endExplore: 'Explore from here',
+    endExplore: 'Explore',
     endExploreTitle: 'Keep this view and carry on by yourself',
     endExploreTitleStage: 'Carry on by yourself, back on the map you started from',
-    endReplay: 'Watch it again',
+    endReplay: 'Watch again',
+    endReplayTitle: 'Watch this trip again from the start',
+    endShareTitle: 'Share a link to this trip',
+    endNextMicro: 'Next trip',
     endNext: 'Next: {title}',
 
     docTitle: 'Space Radar — {title} — stop {n} of {count}',

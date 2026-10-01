@@ -258,20 +258,25 @@ stage.setOrigin(null);
   notify({
     phase: 'dwell', index: 1, count: 5, stopTitle: 'The Moon', estimateMs: 60000,
   });
+  // Spec 0061 task 7: the counter lives in the toolbar as "2 / 4" for the eye and "stop 2 of 5"
+  // for a reader; paused, the play button turns ember and says Resume, and the counter stays.
   const progress = document.body.querySelector('.sr-trip__progress');
   const count = document.body.querySelector('.sr-trip__count');
-  const chip = document.body.querySelector('.sr-trip__chip');
-  check(progress && count, 'the progress row is in the letterbox during a dwell');
-  check(count.textContent === 'stop 2 of 5', `counter during dwell: "${count && count.textContent}"`);
-  check(chip && chip.hidden === true, 'the pause chip is hidden while the trip runs');
+  const said = progress && progress.children.find((n) => n.classList.contains('sr-trip__live'));
+  const play = document.body.querySelector('.sr-trip__tb--play');
+  const toolbar = document.body.querySelector('.sr-trip__toolbar');
+  check(progress && count && said && toolbar, 'the progress is in the toolbar during a dwell');
+  check(count.textContent === '2 / 5', `counter during dwell: "${count && count.textContent}"`);
+  check(said.textContent === 'stop 2 of 5', `read out during dwell: "${said && said.textContent}"`);
+  check(play && !play.classList.contains('is-paused') && play.getAttribute('aria-label') === COPY.trip.pause, 'the play button says Pause while the trip runs');
   trip.pause('control');
-  check(progress.hidden === false, 'progress stays visible while paused');
-  check(count.textContent === 'stop 2 of 5', `counter while paused: "${count.textContent}"`);
-  check(chip.hidden === false, 'the pause chip is shown while paused');
+  check(toolbar.hidden === false && progress.hidden === false, 'the toolbar and its progress stay visible while paused');
+  check(count.textContent === '2 / 5' && said.textContent === 'stop 2 of 5', `counter while paused: "${count.textContent}"`);
+  check(play.classList.contains('is-paused') && play.getAttribute('aria-label') === COPY.trip.resume, 'paused, the play button is the ember one and says Resume');
   trip.resume();
-  check(progress.hidden === false && chip.hidden === true, 'after resume the counter stays and the chip goes');
+  check(toolbar.hidden === false && !play.classList.contains('is-paused'), 'after resume the counter stays and the button says Pause again');
   notify({ phase: 'intro', index: -1, count: 5 });
-  check(progress.hidden === true, 'progress hides on the intro panel');
+  check(toolbar.hidden === true, 'the toolbar hides on the intro sheet');
   frame.dispose();
 }
 

@@ -490,16 +490,6 @@ html.sr-compact .sr-status {
   -webkit-line-clamp: 2;
 }
 
-/* A stop title above already names it (ui/cards.js namedAbove): kept for a screen reader only. */
-.sr-card__header.is-named-above .sr-card__name {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
 /* × : a 36 px disc inside a 44 px target (the padding is the target, the content box the disc). */
 .sr-card__close {
   grid-column: 2;
@@ -957,43 +947,6 @@ html.sr-compact .sr-status {
 
 .sr-card.has-more .sr-card__more {
   opacity: 1;
-}
-
-/* The trip lead -- block 0, and only during a guided trip ----------------------------
- *
- * Enough type to be legible the day it ships, and no more: the stop's words on top, the object's
- * own card underneath, which is exactly what it is. The frame around it is ui/tripframe.js's.
- */
-
-.sr-card__lead {
-  padding: var(--sp-2) 0 var(--sp-3);
-  margin-bottom: var(--sp-1);
-  border-bottom: 1px solid var(--sr-line);
-}
-
-.sr-card__leadtitle {
-  margin: 0 0 var(--sp-2);
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 1.2;
-  overflow-wrap: anywhere;
-}
-
-.sr-card__leadbody {
-  margin: 0;
-  font-size: 15px;
-  line-height: 22px;
-  color: var(--sr-text);
-}
-
-/* The line the trip generates under the stop's words (spec 0038): the visitor's place, the
-   station's distance, its next pass. Quieter than the words, because it is a reading and not the
-   story; no rise animation, because the card repaints with the clock and it would replay. */
-.sr-card__leadnote {
-  margin: var(--sp-2) 0 0;
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--sr-text-dim);
 }
 
 /* "Often said" -- the myth block. Each correction carries its own source line because a debunk
@@ -1524,25 +1477,29 @@ html.sr-clean body > *:not(.sr-scene):not(.sr-veil):not(.sr-over-clean) {
 }
 
 /* ------------------------------------------------------------------------------------ */
-/* The cinematic frame (js/ui/tripframe.js)                                               */
+/* The guided trip (js/ui/tripframe.js, spec 0061 task 7)                                 */
 /*                                                                                        */
 /* A mode is a class on <html>, exactly as ui/mobile.js does it with `sr-phone`: one class */
 /* add, one class remove, no DOM surgery in another module's tree, and it restores exactly.*/
 /* `html[data-trip-phase]` carries the phase, so the few things that differ between a      */
 /* flight and a dwell are one selector each rather than a branch in JS.                    */
 /*                                                                                        */
-/* THE LETTERBOX IS WHERE THE CONTROLS LIVE. The picture keeps its full width and loses    */
-/* about an eighth of its height to furniture that is supposed to be there -- which is why */
-/* the controls cost nothing from the shot.                                                */
+/* NO LETTERBOX ANY MORE. Ivan, 2026-10-01: the trip was the one place the old design      */
+/* survived. The scene keeps the whole window; the controls are ONE glass toolbar where   */
+/* the time pill sits; the top bar is the trip's title and Leave; the intro, the stop card */
+/* and the end are the sidebar's trip view on a desktop and a sheet on a phone.           */
 /* ------------------------------------------------------------------------------------ */
 
 :root {
   --sr-z-trip: 60;
   /* The veil (ui/veil.js, spec 0034): over the canvas and the labels, under every panel, the card
-     and the letterbox. It is mounted on <body> beside the canvas, not inside the trip frame: the
+     and the trip's bars. It is mounted on <body> beside the canvas, not inside the trip frame: the
      frame is its own stacking context at 60, and the old fade in it covered the card too. */
   --sr-z-veil: 8;
-  --sr-letterbox: min(6.5vh, 64px);
+  /* The trip toolbar: 56 px over the scene on a desktop (row D's action buttons), and on a phone
+     a 60 px foot under the trip's sheet (44 px targets and 8 px around them). */
+  --sr-trip-bar: 56px;
+  --sr-trip-bar-phone: 60px;
 }
 
 /* ui/mobile.js appends this to document.body, NOT to the sidebar, so hiding the sidebar alone
@@ -1608,194 +1565,185 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   }
 }
 
+/* THE VEIL (spec 0034, 2026-09-23): one black over the CANVAS, never over the card, the sheet
+   or the controls, or the scene appears to teleport underneath stationary text. A stage change in
+   a trip goes through it at 350 ms each way; under reduced motion it is the rig's 220 ms
+   cross-fade, once. `--sr-space`: the veil is the sky with the stars taken out. */
+.sr-veil {
+  position: fixed;
+  inset: 0;
+  z-index: var(--sr-z-veil);
+  pointer-events: none;
+  background: var(--sr-space);
+  opacity: 0;
+}
+
+.sr-veil.is-on {
+  opacity: 1;
+}
+
 .sr-trip {
   position: fixed;
   inset: 0;
   z-index: var(--sr-z-trip);
   font-family: var(--sr-font);
-  /* The frame is a frame: the scene under it stays draggable, and only the bars take input. */
+  color: var(--sr-text);
+  /* The frame is a frame: the scene under it stays draggable, and only its bars take input. */
   pointer-events: none;
 }
 
-.sr-trip__bar {
-  position: fixed;
-  right: 0;
-  left: 0;
-  display: flex;
-  gap: var(--sr-gap);
-  align-items: center;
-  padding: 0 var(--sr-pad);
-  color: var(--sr-text);
-  /* The letterbox is a frame, not glass: it stays the black of the cinema bars (spec 0034) and
-     takes only the panel's hairline, lit on the edge that faces the picture. */
-  background: var(--sr-space-edge);
-  border-width: 0;
-  border-radius: 0;
+.sr-trip *,
+.sr-tripsheet * {
+  box-sizing: border-box;
+}
+
+.sr-trip__toolbar,
+.sr-trip__top,
+.sr-tripsheet.is-floating {
   pointer-events: auto;
-  transition: transform 400ms var(--sr-ease);
-}
-
-.sr-trip__bar--top {
-  border-bottom-width: 1px;
-  border-bottom-color: var(--sr-edge-lit);
-  top: 0;
-  min-height: var(--sr-letterbox);
-  padding-top: env(safe-area-inset-top, 0px);
-}
-
-.sr-trip__bar--bottom {
-  border-top-width: 1px;
-  bottom: 0;
-  min-height: var(--sr-letterbox);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  flex-wrap: wrap;
-}
-
-.sr-trip__title {
-  flex: 1 1 auto;
-  min-width: 0;
-  margin: 0;
-  overflow: hidden;
-  font-size: 14px;
-  font-weight: 600;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Spec 0030: when the picture is, and how fast it runs, while a stop owns the clock. Beside the
-   title in the top bar; tabular figures so the date does not shimmer sideways as it counts. */
-.sr-trip__time {
-  flex: 0 1 auto;
-  min-width: 0;
-  margin: 0;
-  overflow: hidden;
-  font-size: 13px;
-  color: var(--sr-text-dim);
-  font-variant-numeric: tabular-nums;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.sr-trip__time[hidden] {
-  display: none;
-}
-
-/* Spec 0037: the eclipse stops' honesty line, under the instant. A whole row of its own and
-   allowed to wrap: it is one sentence and a cut one says less than nothing. */
-.sr-trip__eclipse {
-  flex: 1 1 100%;
-  order: 4;
-  margin: 0;
-  padding-bottom: 6px;
-  font-size: 13px;
-  line-height: 1.4;
-  color: var(--sr-text-dim);
-}
-
-.sr-trip__eclipse[hidden] {
-  display: none;
-}
-
-.sr-trip__bar--top:has(.sr-trip__eclipse:not([hidden])) {
-  flex-wrap: wrap;
-  row-gap: 0;
 }
 
 /* `display: flex` on any of these beats the user-agent's `[hidden] { display: none }`, so the
    attribute the JS sets has to be answered here or a hidden row stays on screen. Measured: the
-   intro card shipped for about ten minutes with the pause chip visible behind it. */
-.sr-trip__controls[hidden],
-.sr-trip__progress[hidden],
-.sr-trip__chip[hidden],
-.sr-trip__panel[hidden] {
+   intro card once shipped for about ten minutes with the pause chip visible behind it. */
+.sr-trip__toolbar[hidden],
+.sr-trip__top[hidden],
+.sr-tripsheet__panel[hidden],
+.sr-tripsheet__card[hidden] {
   display: none;
 }
 
-.sr-trip__controls {
+/* --- the toolbar: the time pill's place and shape, icon buttons, the counter inside -------- */
+
+.sr-trip__toolbar {
+  position: fixed;
+  bottom: var(--sp-5);
+  left: calc(50% + var(--sr-scene-left) / 2);
   display: flex;
-  flex: 0 0 auto;
-  gap: 6px;
   align-items: center;
+  gap: var(--sp-1);
+  height: var(--sr-trip-bar);
+  padding: 0 var(--sp-2);
+  white-space: nowrap;
+  border-radius: var(--sr-radius-pill);
+  transform: translateX(-50%);
 }
 
-.sr-trip__btn {
-  appearance: none;
-  min-height: 34px;
-  padding: 0 12px;
-  font: inherit;
-  font-size: 13px;
+/* .sr-float's own transform transition would slide the bar whenever the sidebar folds; the move
+   is the sidebar's, so the bar follows it in the same time. */
+.sr-trip__toolbar.sr-float,
+.sr-trip__top.sr-float {
+  transition:
+    left var(--sr-slow) var(--sr-ease),
+    max-width var(--sr-slow) var(--sr-ease),
+    border-color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-trip__tb {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
   color: var(--sr-text);
   cursor: pointer;
   background: transparent;
-  border: 1px solid var(--sr-line);
-  border-radius: var(--sr-radius-pill);
+  border: 0;
+  border-radius: 50%;
+  transition:
+    background-color var(--sr-fast) var(--sr-ease),
+    color var(--sr-fast) var(--sr-ease);
+  -webkit-tap-highlight-color: transparent;
 }
 
-.sr-trip__btn:hover:not(:disabled) {
-  color: var(--sr-ember);
-  border-color: var(--sr-ember);
+.sr-trip__tb:active:not(:disabled) {
+  background: var(--sr-wash-strong);
 }
 
-.sr-trip__btn:disabled {
-  color: var(--sr-text-dim);
+/* On: the card folded away, the sound playing. The selected state's fill (docs/ui-guide.md §3). */
+.sr-trip__tb[aria-pressed='true'] {
+  background: var(--sr-wash-strong);
+}
+
+.sr-trip__tb:disabled {
   cursor: default;
-  opacity: 0.5;
+  opacity: 0.4;
 }
 
-.sr-trip__btn--ember {
+/* PAUSED, THE PLAY BUTTON IS THE ONE EMBER THING ON SCREEN (principle 3): what to press to carry
+   on, whether Pause or a hand on the camera stopped the trip. */
+.sr-trip__tb--play.is-paused {
   color: var(--sr-ink);
   background: var(--sr-ember);
-  border-color: var(--sr-ember);
 }
 
-.sr-trip__btn--leave,
-.sr-trip__btn--sound,
-.sr-trip__btn--pause {
+.sr-trip__tb--play.is-paused:active {
+  background: var(--sr-ember-light);
+}
+
+@media (hover: hover) {
+  .sr-trip__tb:hover:not(:disabled) {
+    background: var(--sr-wash-hover);
+  }
+
+  .sr-trip__tb--play.is-paused:hover {
+    background: var(--sr-ember-light);
+  }
+}
+
+.sr-trip__sep {
   flex: 0 0 auto;
+  width: 1px;
+  height: 24px;
+  margin: 0 var(--sp-1);
+  background: var(--sr-line);
 }
 
-/* Progress: text AND segments. Dots alone are unreadable to a screen reader and illegible past
-   about eight, so the counter beside them is the one that is announced. */
+/* "2 / 4" over its segments, between previous and next: where you are, and the way on. */
 .sr-trip__progress {
   display: flex;
-  flex: 1 1 200px;
-  gap: var(--sr-gap);
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: var(--sp-1);
   align-items: center;
-  justify-content: flex-end;
-  min-width: 0;
+  justify-content: center;
+  min-width: 64px;
+  padding: 0 var(--sp-1);
 }
 
 .sr-trip__count {
-  flex: 0 0 auto;
-  font-size: 13px;
-  color: var(--sr-text-dim);
+  font: 400 13px/16px var(--sr-font-mono);
   font-variant-numeric: tabular-nums;
+  color: var(--sr-text);
 }
 
 .sr-trip__segs {
   display: flex;
-  flex: 0 1 220px;
-  gap: 4px;
-  padding: 0;
+  gap: 2px;
+  width: 100%;
+  max-width: 64px;
   margin: 0;
+  padding: 0;
   list-style: none;
 }
 
 .sr-trip__seg {
   position: relative;
   flex: 1 1 0;
-  height: 3px;
+  height: 2px;
   overflow: hidden;
-  background: var(--sr-line);
-  border-radius: 2px;
+  background: var(--sr-line-strong);
+  border-radius: var(--sr-radius-sm);
 }
 
+/* Progress is not something to press, so it is drawn in the text colour and not in ember. */
 .sr-trip__seg.is-done::after,
 .sr-trip__seg.is-here::after {
   position: absolute;
   inset: 0;
   content: '';
-  background: var(--sr-ember);
+  background: var(--sr-text);
   transform-origin: left center;
 }
 
@@ -1808,23 +1756,6 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
    the stop, so a pause freezes the bar for the same reason the stop does not end. */
 .sr-trip__seg.is-here::after {
   transform: scaleX(var(--sr-fill, 0));
-  background: var(--sr-ember);
-}
-
-/* With the progress row still up while paused (spec 0003), the chip must not steal the
-   controls' row: grow only as needed on desktop; on a phone it takes the next full row. */
-.sr-trip__chip {
-  display: flex;
-  flex: 0 1 auto;
-  gap: 8px;
-  align-items: center;
-  justify-content: flex-end;
-  min-width: 0;
-}
-
-.sr-trip__chiptext {
-  font-size: 13px;
-  color: var(--sr-stale);
 }
 
 /* The stop's position and title for a screen reader. The CARD is the accessible representation
@@ -1845,75 +1776,28 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   font-size: 13px;
 }
 
-/* The intro and the end card. Centred, over the scene, and the only thing on screen that asks
-   for a decision. */
-.sr-trip__panel {
+/* --- the top bar: the trip's title, its chapter, Leave ------------------------------------ */
+
+.sr-trip__top {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  z-index: 1;
-  width: min(420px, calc(100vw - 32px));
-  padding: 20px;
-  color: var(--sr-text);
-  pointer-events: auto;
-  background: var(--sr-panel);
-  border: 1px solid var(--sr-line);
-  border-radius: var(--sr-radius);
-  transform: translate(-50%, -50%);
-  backdrop-filter: blur(8px);
-}
-
-.sr-trip__paneltitle {
-  margin: 0 0 8px;
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-.sr-trip__panelshape {
-  margin: 0 0 12px;
-  font-size: 13px;
-  color: var(--sr-text-dim);
-}
-
-.sr-trip__panelnote {
-  margin: 0 0 12px;
-  font-size: 13px;
-  color: var(--sr-text-dim);
-}
-
-.sr-trip__panelrow {
+  top: var(--sr-inset);
+  left: calc(50% + var(--sr-scene-left) / 2);
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--sp-3);
+  align-items: center;
+  max-width: min(640px, calc(100vw - var(--sr-scene-left) - 2 * var(--sr-inset)));
+  min-height: 48px;
+  padding: var(--sp-1) var(--sp-1) var(--sp-1) var(--sp-5);
+  border-radius: var(--sr-radius-pill);
+  transform: translateX(-50%);
 }
 
-/* THE VEIL (spec 0034, 2026-09-23): one black over the CANVAS, never over the card, the letterbox
-   or the controls, or the scene appears to teleport underneath stationary text. A stage change in
-   a trip goes through it at 350 ms each way; under reduced motion it is the rig's 220 ms
-   cross-fade, once. `--sr-space` and not `--sr-space-edge`: the veil is the sky with the stars
-   taken out, and the letterbox bars stay a shade darker than it so the frame still reads. */
-.sr-veil {
-  position: fixed;
-  inset: 0;
-  z-index: var(--sr-z-veil);
-  pointer-events: none;
-  background: var(--sr-space);
-  opacity: 0;
-}
-
-.sr-veil.is-on {
-  opacity: 1;
-}
-
-/* THE CHAPTER (spec 0034 req 3): a planetarium's "Chapter two" line, above the trip's title in
-   the top bar. It lands at the stop title's k = 0.6 point with a short rise, and stays while the
-   chapter does -- two stops in one chapter do not re-announce it. */
+/* THE CHAPTER (spec 0034 req 3): a planetarium's "Chapter two" line, above the trip's title. It
+   lands at the stop title's k = 0.6 point with a short rise, and stays while the chapter does --
+   two stops in one chapter do not re-announce it. */
 .sr-trip__titles {
   display: flex;
-  /* A zero basis, not `auto`: with `auto` the title's full width is what the top bar wraps on, and
-     at 390 px it pushed Leave onto a row of its own (measured 2026-09-23, a 75 px top bar). The
-     title ellipsises instead, as it always has, and Leave stays beside it. */
+  /* A zero basis, not `auto`: the title ellipsises, and Leave stays beside it. */
   flex: 1 1 0;
   flex-direction: column;
   justify-content: center;
@@ -1923,10 +1807,9 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
 .sr-trip__chapter {
   margin: 0;
   overflow: hidden;
-  font-size: 13px;
-  line-height: 1.3;
+  font: 600 13px/16px var(--sr-font-hud);
   color: var(--sr-text-dim); /* not ember: ember is the one interactive colour, and this is not */
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1937,7 +1820,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
 }
 
 .sr-trip__chapter.is-new {
-  animation: sr-chapter-in 420ms var(--sr-ease) both;
+  animation: sr-chapter-in var(--sr-slow) var(--sr-ease) both;
 }
 
 @keyframes sr-chapter-in {
@@ -1952,28 +1835,360 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   }
 }
 
-/* The card during a trip -------------------------------------------------------------- */
-
-/* Phone: a bottom sheet that sits ABOVE the bottom letterbox rather than under it. */
-html.sr-trip-mode #sr-card {
-  bottom: calc(var(--sr-letterbox) + 8px);
-  max-height: 38vh;
+.sr-trip__title {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font: 600 14px/20px var(--sr-font);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* While the camera is moving the stop's TITLE is all there is -- ui/trip.js renders the lead
-   alone, so there is no body here to hide. This only takes the chrome off it. */
-html.sr-trip-mode[data-trip-phase='flight'] #sr-card {
-  border-color: transparent;
-  box-shadow: none;
+.sr-trip__leave {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: var(--sp-2);
+  align-items: center;
+  height: 40px;
+  padding: 0 var(--sp-4) 0 var(--sp-3);
+  font: 400 14px/20px var(--sr-font);
+  color: var(--sr-text);
+  cursor: pointer;
+  background: var(--sr-wash);
+  border: 0;
+  border-radius: var(--sr-radius-pill);
+  transition: background-color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-trip__leave:active {
+  background: var(--sr-wash-strong);
+}
+
+@media (hover: hover) {
+  .sr-trip__leave:hover {
+    background: var(--sr-wash-hover);
+  }
+}
+
+/* --- the sheet: the intro, the stop card, the end ------------------------------------------ */
+
+/* In the sidebar's trip view on a desktop (ui/shell.js), which scrolls; the card fills what is
+   left of it, so its honesty line sits at the sidebar's foot as it does in the card view. */
+.sr-side__trip {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.sr-tripsheet {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding-top: var(--sp-4);
+}
+
+.sr-tripsheet__panel {
+  padding: var(--sp-1) var(--sr-inset) var(--sr-inset);
+}
+
+.sr-tripsheet__card {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
+.sr-tripsheet__card > .sr-card.is-docked {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sr-tripsheet__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-2) 0 var(--sp-4);
+}
+
+.sr-tripsheet__micro {
+  margin: 0;
+  font: 600 13px/16px var(--sr-font-hud);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sr-text-dim);
+}
+
+.sr-tripsheet__micro--list {
+  margin: var(--sp-6) 0 var(--sp-2);
+}
+
+/* The card's name, and the same fallback until the serif ships (0061 task 5). */
+.sr-tripsheet__name {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  font: 600 28px/1.1 var(--sr-font);
+  letter-spacing: -0.01em;
+  color: var(--sr-text);
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.sr-tripsheet__name:focus {
+  outline: none;
+}
+
+.sr-tripsheet__meta {
+  margin: var(--sp-1) 0 0;
+  font: 400 13px/16px var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+}
+
+.sr-tripsheet__text {
+  margin: 0 0 var(--sp-3);
+  font: 400 15px/22px var(--sr-font);
+  color: var(--sr-text);
+}
+
+.sr-tripsheet__note {
+  margin: 0 0 var(--sp-3);
+  font: 400 13px/18px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-tripsheet__row {
+  display: flex;
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+}
+
+/* Start: the one ember button on the screen, an icon and a word, the whole row less the sound. */
+.sr-tripsheet__start {
+  display: inline-flex;
+  flex: 1 1 auto;
+  gap: var(--sp-2);
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  padding: 0 var(--sp-4);
+  font: 600 14px/20px var(--sr-font);
+  color: var(--sr-ink);
+  cursor: pointer;
+  background: var(--sr-ember);
+  border: 0;
+  border-radius: var(--sr-radius);
+  transition: background-color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-tripsheet__start:active {
+  background: var(--sr-ember-light);
+}
+
+/* Sound as a toggle: the speaker crossed out until pressed, and pressed it is the selected fill. */
+.sr-tripsheet__sound {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  color: var(--sr-text);
+  cursor: pointer;
+  background: var(--sr-wash);
+  border: 0;
+  border-radius: var(--sr-radius);
+  transition: background-color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-tripsheet__sound[aria-pressed='true'],
+.sr-tripsheet__sound:active {
+  background: var(--sr-wash-strong);
+}
+
+.sr-tripsheet__sound:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+/* "Not now": a quiet text button, the way out that does not compete with Start. */
+.sr-tripsheet__quiet {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: var(--sp-1);
+  padding: 0 var(--sp-1);
+  font: 400 14px/20px var(--sr-font);
+  color: var(--sr-text-soft);
+  cursor: pointer;
   background: transparent;
-  backdrop-filter: none;
+  border: 0;
+  border-radius: var(--sr-radius);
+  transition: color var(--sr-fast) var(--sr-ease);
 }
 
-/* The body arrives at rest: opacity, and 8 px of rise that reduced motion drops. */
-html.sr-trip-mode #sr-card .sr-card__leadbody,
+/* The stops, as list rows (docs/ui-guide.md §3.5): a number in mono, the stop's title. */
+.sr-tripsheet__stops {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sr-tripsheet__stops li + li {
+  border-top: 1px solid var(--sr-line);
+}
+
+.sr-tripsheet__stop {
+  display: flex;
+  gap: var(--sp-3);
+  align-items: baseline;
+  width: calc(100% + 2 * var(--sp-2));
+  min-height: 44px;
+  margin: 0 calc(-1 * var(--sp-2));
+  padding: var(--sp-3) var(--sp-2);
+  font: 400 15px/20px var(--sr-font);
+  color: var(--sr-text);
+  text-align: left;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-radius: var(--sr-radius);
+  transition: background-color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-tripsheet__stopn {
+  flex: 0 0 auto;
+  min-width: 20px;
+  font: 400 13px/20px var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+}
+
+.sr-tripsheet__stoptitle {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* On a wash the dim grey does not read (docs/ui-guide.md §2.1): the number steps up with it. */
+.sr-tripsheet__stop:active {
+  background: var(--sr-wash-strong);
+}
+
+.sr-tripsheet__stop:active .sr-tripsheet__stopn {
+  color: var(--sr-text-soft);
+}
+
+@media (hover: hover) {
+  .sr-tripsheet__start:hover {
+    background: var(--sr-ember-light);
+  }
+
+  .sr-tripsheet__sound:hover:not(:disabled) {
+    background: var(--sr-wash-hover);
+  }
+
+  .sr-tripsheet__quiet:hover {
+    color: var(--sr-text);
+  }
+
+  .sr-tripsheet__stop:hover {
+    background: var(--sr-wash);
+  }
+
+  .sr-tripsheet__stop:hover .sr-tripsheet__stopn {
+    color: var(--sr-text-soft);
+  }
+}
+
+/* The end: the card's action row, three of them, Explore the ember one; then one next trip as
+   the home view's own trip card. */
+.sr-tripsheet__actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-2);
+  padding: var(--sp-1) 0 0;
+}
+
+.sr-side .sr-tripsheet .sr-act {
+  height: 56px;
+}
+
+.sr-tripsheet__nextcard {
+  width: 100%;
+}
+
+/* --- the stop card (ui/cards.js renderStop) ------------------------------------------------ */
+
+.sr-card__header--stop {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.sr-card__header--stop .sr-card__name {
+  -webkit-line-clamp: 3;
+}
+
+/* What the numbers are of, when the stop's title is a line of story and not a name. */
+.sr-card__subject {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+  min-width: 0;
+  margin: var(--sp-1) 0 0;
+  font: 400 15px/20px var(--sr-font);
+  color: var(--sr-text);
+}
+
+.sr-card__subject .sr-swatch {
+  width: 10px;
+  height: 10px;
+}
+
+.sr-card__subjectname {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* When the picture is (spec 0030), written by the frame from the clock. */
+.sr-card__when,
+.sr-card__tripline {
+  margin: var(--sp-1) 0 0;
+  font: 400 13px/18px var(--sr-font);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+}
+
+.sr-card__when[hidden],
+.sr-card__tripline[hidden] {
+  display: none;
+}
+
+.sr-card__tripline {
+  margin-top: var(--sp-2);
+}
+
+/* The stop's words: ONE paragraph under the numbers, and the line the trip generates under it. */
+.sr-card__leadbody {
+  margin: var(--sp-4) 0 0;
+  font: 400 15px/22px var(--sr-font);
+  color: var(--sr-text);
+}
+
+/* Quieter than the words, because it is a reading and not the story; no rise, because the card
+   repaints with the clock and it would replay. */
+.sr-card__leadnote {
+  margin: var(--sp-2) 0 0;
+  font: 400 13px/18px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+/* The body arrives once the camera is at rest: opacity, and 8 px of rise that reduced motion
+   drops. Mid-flight the card is its microlabel and title alone (ui/trip.js paintCard). */
 html.sr-trip-mode #sr-card .sr-card__body,
 html.sr-trip-mode #sr-card .sr-card__foot {
-  animation: sr-trip-rise 200ms var(--sr-ease) both;
+  animation: sr-trip-rise var(--sr-mid) var(--sr-ease) both;
 }
 
 @keyframes sr-trip-rise {
@@ -1988,127 +2203,6 @@ html.sr-trip-mode #sr-card .sr-card__foot {
   }
 }
 
-/* Collapsed: the stop's words stay, everything the object's own card knows folds away. The card
-   is also made `inert` in JS, so what is on screen and what a reader can reach agree. */
-html.sr-trip-collapsed #sr-card .sr-card__header,
-html.sr-trip-collapsed #sr-card .sr-card__body,
-html.sr-trip-collapsed #sr-card .sr-card__foot {
-  display: none;
-}
-
-html.sr-trip-collapsed #sr-card .sr-card__lead {
-  padding-bottom: 0;
-  margin-bottom: 0;
-  border-bottom: 0;
-}
-
-@media (min-width: 900px) {
-  /* Desktop: a right rail, vertically centred, deliberately shorter and narrower than the
-     ordinary card -- the scene is the point and the card covers it. */
-  html.sr-trip-mode #sr-card {
-    top: 50%;
-    right: 24px;
-    bottom: auto;
-    left: auto;
-    width: 360px;
-    max-height: 44vh;
-    overflow-y: auto;
-    transform: translateY(-50%);
-  }
-
-  .sr-trip__title {
-    font-size: 15px;
-  }
-}
-
-/* Phones: 4vh of letterbox would be 32 px, which is not a tap target, so the bottom bar is
-   sized by its controls instead and the top bar stays thin. */
-@media (max-width: 600px) {
-  :root {
-    --sr-letterbox: 40px;
-  }
-
-  .sr-trip__bar--bottom {
-    gap: 8px;
-    padding: 8px var(--sr-pad);
-  }
-
-  /* Six controls since Share joined them (spec 0033). Measured 2026-09-23 at 390 x 844: at 10 px
-     padding "Hide card" broke onto two lines; at 8 px with a 4 px gap the row is 350 px of the
-     362 available, and a narrower phone wraps the row rather than a label. At the 13 px floor
-     (spec 0045, 2026-09-28) 8 px made the row 362 px of 358 and wrapped it at 390; 6 px keeps it
-     on one row. */
-  .sr-trip__controls {
-    flex: 1 1 100%;
-    flex-wrap: wrap;
-    gap: 4px;
-    justify-content: space-between;
-  }
-
-  .sr-trip__btn {
-    padding: 0 6px;
-    min-height: 40px;
-    font-size: 13px;
-    white-space: nowrap;
-  }
-
-  .sr-trip__progress {
-    flex: 1 1 100%;
-    justify-content: space-between;
-  }
-
-  .sr-trip__chip {
-    flex: 1 1 100%;
-    justify-content: space-between;
-  }
-
-  /* The shown-at line takes a row of its own under the title: at 390 px the title, the line and
-     Leave on one row would leave each of them a few words and an ellipsis. */
-  .sr-trip__bar--top {
-    flex-wrap: wrap;
-    row-gap: 0;
-  }
-
-  .sr-trip__time {
-    flex: 1 1 100%;
-    order: 3;
-    padding-bottom: 6px;
-  }
-
-  html.sr-trip-mode #sr-card {
-    bottom: calc(96px + env(safe-area-inset-bottom, 0px));
-    max-height: 38vh;
-    overflow-y: auto;
-  }
-}
-
-/* REDUCED MOTION IS A CUT, NEVER A SHORTER MOVE: compressing a four-second sweep into one raises
-   the angular velocity fourfold, and the trigger scales with rate rather than duration. So the
-   letterbox does not slide, the card does not rise, and the frame cross-fades instead. The DWELL
-   is untouched -- somebody who asked for less motion often needs more time, not less, and
-   ui/trip.js derives it from word count so this file cannot shorten it even by accident. */
-@media (prefers-reduced-motion: reduce) {
-  html.sr-trip-mode #sr-side,
-  html.sr-trip-mode #sr-rail,
-  html.sr-trip-mode #sr-time,
-  html.sr-trip-mode .sr-mobilebar,
-  html.sr-trip-mode #labels,
-  .sr-trip__bar {
-    transition: none;
-  }
-
-  html.sr-trip-mode #sr-card .sr-card__leadbody,
-  html.sr-trip-mode #sr-card .sr-card__body,
-  html.sr-trip-mode #sr-card .sr-card__foot {
-    animation-name: sr-trip-fade;
-  }
-
-  /* Spec 0034 req 5: the chapter appears, it does not rise. */
-  .sr-trip__chapter.is-new {
-    animation: none;
-  }
-}
-
 @keyframes sr-trip-fade {
   from {
     opacity: 0;
@@ -2116,6 +2210,187 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
 
   to {
     opacity: 1;
+  }
+}
+
+/* --- a desktop: the sidebar is the trip's; Hide card folds it away to the left ------------- */
+
+/* The rail and the pill go (ui/tripframe.js CHROME makes them `inert`; this is the picture). The
+   sidebar stays and shows its trip view, until Hide card folds it off to the left -- `visibility`
+   once it has gone, so scene/viewshift.js stops counting it and the subject comes back to the
+   middle of the window. */
+html.sr-trip-mode #sr-rail,
+html.sr-trip-mode #sr-time,
+html.sr-trip-mode.sr-phone #sr-side,
+html.sr-trip-collapsed #sr-side {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity var(--sr-slow) var(--sr-ease),
+    transform var(--sr-slow) var(--sr-ease),
+    visibility 0s linear var(--sr-slow);
+}
+
+html.sr-trip-collapsed:not(.sr-phone) #sr-side {
+  transform: translateX(-110%);
+}
+
+html.sr-trip-mode.sr-phone #sr-side {
+  transform: translateY(102%);
+}
+
+@media (min-width: 900px) {
+  html.sr-trip-collapsed {
+    --sr-scene-left: 0px;
+  }
+}
+
+/* --- a phone: the sheet at the foot, the toolbar under it, the top bar across the top ------ */
+
+html.sr-phone .sr-trip__top {
+  top: calc(var(--sp-2) + env(safe-area-inset-top, 0px));
+  right: var(--sp-4);
+  left: var(--sp-4);
+  max-width: none;
+  padding-left: var(--sp-4);
+  border-radius: var(--sr-radius-shell);
+  transform: none;
+}
+
+/* The toolbar is the sheet's foot: full width, the thumb's row, the glass of the phone sheet. */
+html.sr-phone .sr-trip__toolbar {
+  right: 0;
+  bottom: 0;
+  left: 0;
+  justify-content: space-between;
+  height: calc(var(--sr-trip-bar-phone) + env(safe-area-inset-bottom, 0px));
+  padding: 0 var(--sp-2) env(safe-area-inset-bottom, 0px);
+  background: var(--sr-glass-strong);
+  border-width: 1px 0 0;
+  border-top-color: var(--sr-line);
+  border-radius: 0;
+  box-shadow: none;
+  transform: none;
+}
+
+html.sr-phone .sr-trip__tb {
+  width: 44px;
+  height: 44px;
+}
+
+html.sr-phone .sr-trip__sep {
+  display: none;
+}
+
+html.sr-phone .sr-trip__progress {
+  min-width: 48px;
+  padding: 0;
+}
+
+/* The card folded away: the toolbar is all that is left, and it takes the sheet's lit edge. */
+html.sr-phone.sr-trip-collapsed .sr-trip__toolbar {
+  border-top-color: var(--sr-edge-lit);
+  border-radius: var(--sr-radius-shell) var(--sr-radius-shell) 0 0;
+  box-shadow: var(--sr-edge-glow), var(--sr-shadow);
+}
+
+.sr-tripsheet.is-floating {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  max-height: 64vh;
+  min-height: 0;
+  padding: var(--sp-2) var(--sp-4) calc(var(--sp-4) + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--sr-glass-strong);
+  border-width: 1px 0 0;
+  border-radius: var(--sr-radius-shell) var(--sr-radius-shell) 0 0;
+}
+
+/* While a stop is up, the sheet rests on the toolbar and is shorter: the scene is the point. */
+html[data-trip-phase] .sr-tripsheet.is-floating {
+  bottom: calc(var(--sr-trip-bar-phone) + env(safe-area-inset-bottom, 0px));
+  max-height: 40vh;
+  padding-bottom: var(--sp-3);
+}
+
+html[data-trip-phase='intro'] .sr-tripsheet.is-floating,
+html[data-trip-phase='outro'] .sr-tripsheet.is-floating {
+  bottom: 0;
+  max-height: 64vh;
+  padding-bottom: calc(var(--sp-4) + env(safe-area-inset-bottom, 0px));
+}
+
+html.sr-trip-collapsed .sr-tripsheet.is-floating {
+  display: none;
+}
+
+.sr-tripsheet.is-floating .sr-tripsheet__panel {
+  padding: 0;
+}
+
+.sr-tripsheet.is-floating .sr-card.is-docked {
+  padding: 0;
+}
+
+.sr-tripsheet.is-floating .sr-tripsheet__name,
+.sr-tripsheet.is-floating .sr-card__name {
+  font-size: 22px;
+}
+
+/* A toast during a trip sits over the toolbar on a desktop, under the top bar on a phone. */
+html.sr-trip-mode .sr-toast {
+  top: auto;
+  bottom: calc(var(--sp-5) + var(--sr-trip-bar) + var(--sp-3));
+  left: calc(50% + var(--sr-scene-left) / 2);
+}
+
+html.sr-trip-mode.sr-phone .sr-toast {
+  top: calc(var(--sp-2) + 48px + var(--sp-3) + env(safe-area-inset-top, 0px));
+  bottom: auto;
+  left: 50%;
+}
+
+/* REDUCED MOTION IS A CUT, NEVER A SHORTER MOVE: compressing a four-second sweep into one raises
+   the angular velocity fourfold, and the trigger scales with rate rather than duration. So nothing
+   here slides: every chrome change is the guide's 120 ms fade, the card does not rise, and the
+   sidebar fades out where it is instead of leaving to the left. The DWELL is untouched --
+   somebody who asked for less motion often needs more time, not less, and ui/trip.js derives it
+   from word count so this file cannot shorten it even by accident. */
+@media (prefers-reduced-motion: reduce) {
+  html.sr-trip-mode #sr-side,
+  html.sr-trip-mode #sr-rail,
+  html.sr-trip-mode #sr-time,
+  html.sr-trip-mode .sr-mobilebar,
+  html.sr-trip-mode #labels,
+  html.sr-trip-collapsed #sr-side,
+  .sr-trip__toolbar.sr-float,
+  .sr-trip__top.sr-float,
+  .sr-trip__tb,
+  .sr-trip__leave,
+  .sr-tripsheet__start,
+  .sr-tripsheet__sound,
+  .sr-tripsheet__quiet,
+  .sr-tripsheet__stop {
+    transition: opacity 120ms linear;
+  }
+
+  html.sr-trip-collapsed:not(.sr-phone) #sr-side,
+  html.sr-trip-mode.sr-phone #sr-side {
+    transform: none;
+  }
+
+  html.sr-trip-mode #sr-card .sr-card__body,
+  html.sr-trip-mode #sr-card .sr-card__foot {
+    animation: sr-trip-fade 120ms linear both;
+  }
+
+  /* Spec 0034 req 5: the chapter appears, it does not rise. */
+  .sr-trip__chapter.is-new {
+    animation: none;
   }
 }
 
@@ -2260,14 +2535,9 @@ html.sr-trip-mode .sr-scenenote { display: none; }
 
 /* Share and the postcard (spec 0033, 2026-09-23) ------------------------------------------- */
 
-/* The 44 px tap floor on a phone, for the trip bar's Share. */
-html.sr-phone .sr-trip__btn--share {
-  min-height: 44px;
-}
-
 /* One line, one at a time, over everything including the trip frame, and never a control: it
-   says what just happened ("Link copied") and goes. Top centre, under the letterbox's top bar,
-   because the foot of a phone is the card and the trip's controls. */
+   says what just happened ("Link copied") and goes. Top centre; during a trip, over its toolbar
+   (the trip section). */
 .sr-toast {
   position: fixed;
   top: calc(56px + env(safe-area-inset-top, 0px));
@@ -2292,17 +2562,6 @@ html.sr-phone .sr-trip__btn--share {
 
 /* Sound (spec 0035, 2026-09-23) ------------------------------------------------------------ */
 
-/* On the intro card, a line of its own between the shape of the trip and Start: a choice about
-   how to watch, made before pressing play, and never pressed by accident on the way to Start. */
-.sr-trip__sound {
-  display: block;
-  margin: 0 0 12px;
-}
-.sr-trip__sound.is-on,
-.sr-trip__btn--sound.is-on {
-  color: var(--sr-ember);
-  border-color: var(--sr-ember);
-}
 
 .sr-sound__note {
   margin: 0 0 8px;
@@ -2346,8 +2605,6 @@ html.sr-phone .sr-trip__btn--share {
 }
 
 /* The 44 px tap floor on a phone, as the Share buttons above. */
-html.sr-phone .sr-trip__sound,
-html.sr-phone .sr-trip__bar--top .sr-trip__btn--sound,
 html.sr-phone .sr-sound__btn {
   min-height: 44px;
 }
@@ -2618,6 +2875,9 @@ html.sr-phone .sr-chevron {
      --sr-wash-strong (tests/test_tokens.mjs); and the 90-minute bar's two runs, row D's. */
   --sr-wash-hover: rgba(232, 236, 242, 0.1);
   --sr-text-soft: rgba(232, 236, 242, 0.76);
+  /* docs/ui-guide.md §2.1 glass-strong: small dense surfaces over bright imagery. The trip's phone
+     sheet and its toolbar (spec 0061 task 7), as row D's phone sheet drew it. */
+  --sr-glass-strong: rgba(11, 14, 20, 0.9);
   --sr-sunlit: #ffe2a8;
   --sr-shadowed: #243041;
 }
@@ -3674,18 +3934,8 @@ html.sr-clean #sr-rail .sr-rail__btn--clean:hover,
 html.sr-clean #sr-rail .sr-rail__btn--print:hover,
 html.sr-clean #sr-rail .sr-rail__btn:focus-visible { opacity: 1; }
 
-/* A trip takes the sidebar, the rail and the pill away together (ui/tripframe.js CHROME sets
-   `inert`; this is the picture). The sidebar leaves to the left, as the old panel did. */
-html.sr-trip-mode #sr-side,
-html.sr-trip-mode #sr-rail,
-html.sr-trip-mode #sr-time {
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--sr-slow) var(--sr-ease), transform 400ms var(--sr-ease);
-}
-
-html.sr-trip-mode #sr-side { transform: translateX(-110%); }
-html.sr-trip-mode.sr-phone #sr-side { transform: translateY(102%); }
+/* A trip takes the rail and the pill away, and on a phone the drawer; on a desktop the sidebar
+   stays and shows the trip (the trip section above, spec 0061 task 7). */
 
 @media (prefers-reduced-motion: reduce) {
   .sr-side__view.is-current,

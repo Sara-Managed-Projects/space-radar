@@ -1,54 +1,70 @@
-// ui/tripframe.js -- the cinematic frame around a guided trip.
+// ui/tripframe.js -- what a visitor sees of a guided trip.
 //
 // Contract export: createTripFrame(ctx) -> { dispose() }
+//                  shapeLine(count, estimateMs) -> "4 stops · 2 min", pure
+//                  keyAction(event, state, active) -> what a key does in a trip, pure (spec 0061 task 7)
+//                  progressText(state) -> "2 / 4", pure
 //                  stopTimeLine(state, clock) -> the "Shown at" line, pure (spec 0030)
 //                  eclipseLine(state, drawn) -> the eclipse stops' honesty line, pure (spec 0037)
 //                  orbitsLine(state, stageId) -> "drawn larger than they are", pure (2026-09-23)
 //
-// ui/trip.js flies the camera. This is what a visitor sees of it: the letterbox, the controls in
-// the letterbox, the progress row, the intro and end cards, the keyboard, and the announcement a
-// screen reader gets instead of the picture. It reads the machine through `state` and
-// `onChange(fn)` and drives it through the same methods a console can call, so the trip can be
-// measured in a browser with none of this on screen -- which is how it was.
+// ui/trip.js flies the camera. This is what a visitor sees of it: the intro sheet, the stop card's
+// place, ONE toolbar of icon buttons with the progress inside it, a thin top bar with the trip's
+// title and Leave, the end card, the keyboard, and the announcement a screen reader gets instead of
+// the picture. It reads the machine through `state` and `onChange(fn)` and drives it through the
+// same methods a console can call, so the trip can be measured in a browser with none of this on
+// screen -- which is how it was.
 //
 // ---------------------------------------------------------------------------------------------
-// THE LETTERBOX IS WHERE THE CONTROLS LIVE, AND THAT IS THE WHOLE IDEA.
+// WHY IT LOOKS LIKE THIS (spec 0061 task 7, docs/ui-guide.md). Ivan, 2026-10-01, with screenshots
+// of the live trip: "you did great redesign but not everywhere". The trip was the old design whole:
+// two black letterbox bars, a row of seven text buttons across the bottom one, a prose card
+// floating in the middle of the scene with a second header row under its text, and a centred
+// intro card over the globe. Now it speaks the shell's language:
 //
-// Two bars are the cheapest thing in the world that says "film". Put every control inside them
-// and the controls cost NOTHING from the picture: the scene keeps its full width and loses about
-// an eighth of its height to furniture that is supposed to be there. A control floating over the
-// sky is a control sitting on the thing the visitor came for.
+//   THE SHEET. The intro, each stop and the end live where the card lives. On a desktop that is
+//   the sidebar, which stays up during a trip and shows its `trip` view (ui/shell.js); on a phone
+//   it is a sheet at the foot of the screen. The stop card is the object card's anatomy
+//   (ui/cards.js renderStop): "STOP 2 OF 4", the stop's title, the subject's three numbers, the
+//   stop's words as one paragraph, the honesty line.
+//   THE TOOLBAR. One glass bar at the foot of the scene, the time pill's place (the pill goes:
+//   a trip sets the clock per stop, and two clock controls would be two answers to "when is this").
+//   Icon buttons from the one family with their names as tooltips that say the key; the counter
+//   "2 / 4" and its segments in the middle, between previous and next.
+//   THE TOP BAR. The trip's title (its chapter above it) and Leave. Nothing else.
+//
+// The scene keeps the whole window: nothing here is a bar across it any more, and the subject is
+// kept in the part nobody covers by scene/viewshift.js (the sidebar on a desktop, the sheet and the
+// toolbar on a phone).
 //
 // ---------------------------------------------------------------------------------------------
 // THE CONTROL SET, AND WHY EACH ONE IS HERE (nothing below is taste).
 //
-//   Pause/Play  We default to `pacing: auto`, so card content auto-updates. WCAG 2.2.2 makes a
+//   Play/Pause  We default to `pacing: auto`, so card content auto-updates. WCAG 2.2.2 makes a
 //               pause control mandatory for that and the WAI-ARIA carousel pattern requires it
-//               FIRST IN TAB ORDER -- which is why the bottom bar is before the top bar in the
-//               DOM and put in place by CSS. Tab therefore reaches
-//               Pause, Back, Next, Replay, Share, Hide card, Mute, Leave, then the card.
-//   Back        NASA's Eyes gives back equal visual weight to next: a chevron pair, not a next
-//               button with an escape hatch. Measured in that product, 2026-09-07.
-//   Next        See onNext: it collapses the running flight rather than starting a new one.
+//               FIRST IN TAB ORDER -- which is why it is the toolbar's first button, and why the
+//               toolbar is first in this frame's DOM. Paused, it is the one ember button on the
+//               screen: the thing to press.
+//   Previous    NASA's Eyes gives back equal visual weight to next: a chevron pair, not a next
+//   Next        button with an escape hatch (measured in that product, 2026-09-07). The pair sits
+//               either side of the counter, so "where am I" and "go on" are one glance.
 //   Progress    Google Earth's KML player -- the oldest and by far the most used tour player in
-//               this genre -- ships a counter AND a slider. Twenty years of user pressure. Eyes
-//               ships no progress indicator of any kind, which is its clearest gap and not a
-//               choice worth copying. Text AND segments: dots alone are unreadable to a screen
-//               reader and illegible past about eight.
+//               this genre -- ships a counter AND a slider. Eyes ships no progress indicator of any
+//               kind, which is its clearest gap. Text AND segments: dots alone are unreadable to a
+//               screen reader and illegible past about eight.
 //   Replay      Eyes ships per-stop REPLAY ANIMATION and it is the right answer to "I looked
 //               away". Free here: it is jump(current index).
 //   Share       Spec 0033 (2026-09-23): a trip is the thing most worth sending to somebody, and
 //               the stop you are looking at is the link (ui/share.js).
-//   Mute        Spec 0035 (2026-09-23): sound is off until chosen on the intro card, and a
-//               visitor who chose it must be able to take it back without leaving the trip.
 //   Hide card   The 3D scene is the product and the card covers it. Eyes ships this as "Expand
 //               story panel". Bound to `c`.
-//   Leave       Always visible, never behind a menu -- see GETTING OUT below.
+//   Sound       Spec 0035: sound is off until chosen on the intro, and a visitor who chose it must
+//               be able to take it back without leaving the trip.
+//   Leave       Always visible while a stop is up, never behind a menu -- see GETTING OUT below.
 //
-// NOT SHIPPED, and why: a SCRUBBER (Google Earth needs one because a KML tour is a continuous
-// timeline; ours is a chain of discrete shots, and a scrubber over discrete stops is a worse dot
-// strip) and a LOOP (nothing here is attract mode; it arrives with a registry field the day
-// somebody builds a kiosk).
+// NOT SHIPPED, and why: a SCRUBBER (a KML tour is a continuous timeline; ours is a chain of
+// discrete shots, and a scrubber over discrete stops is a worse dot strip) and a LOOP (nothing here
+// is attract mode; it arrives with a registry field the day somebody builds a kiosk).
 //
 // ---------------------------------------------------------------------------------------------
 // GETTING OUT -- the two traps, and one rule that defeats both.
@@ -61,33 +77,33 @@
 //   > confirmation, and leaves the camera exactly where it is.
 //
 // You cannot lose the trip by accident, because grabbing the camera never ends it -- ui/trip.js's
-// onUserInput hook pauses, and the chip in the bottom bar offers Resume. And you are never
-// captive, because the camera is never disabled and Escape never argues. Eyes falls into trap B:
-// during a story its camera input is inert and Escape does nothing (measured). WorldWide
-// Telescope resolves it the way this does.
+// onUserInput hook pauses, and the toolbar's play button turns ember. And you are never captive,
+// because the camera is never disabled and Escape never argues. Eyes falls into trap B: during a
+// story its camera input is inert and Escape does nothing (measured). WorldWide Telescope resolves
+// it the way this does.
 //
 // WHAT LEAVING LEAVES BEHIND: the camera exactly where it is -- no return flight, because
 // returning home throws away what the trip just spent two minutes earning and is a fourth
 // unrequested camera move after the visitor stopped asking for camera moves. ui/trip.js restores
 // the layers it flipped and the clock it clamped, and re-selects the current object so the card
-// becomes the ordinary object card. This file restores the panel, the mobile bar, the document
-// title, and the focus to the row the trip was started from.
+// becomes the ordinary object card. This file gives back the rail, the pill and the phone's bar,
+// the document title, and the focus to the trip card the trip was started from.
 //
 // ---------------------------------------------------------------------------------------------
 // REDUCED MOTION IS A CUT, NEVER A SHORTER MOVE. Compressing a four-second sweep into one raises
 // the angular velocity fourfold, and a vestibular trigger scales with the RATE of large-field
 // motion rather than its duration -- so the obvious kindness makes it worse. scene/camera.js
 // already cuts and cross-fades; ui/trip.js already forces reader pacing and leaves the dwell
-// alone. What is here: the letterbox does not slide, the card does not rise, and the 220 ms
-// cross-fade the rig has been emitting since it was written finally has a consumer -- over the
-// CANVAS and never over the card, or the scene appears to teleport under stationary text. Since
-// spec 0034 (2026-09-23) that black is ui/veil.js's, the same node a stage change goes through, and
-// the chapter line above the title appears rather than rises.
+// alone. What is here: nothing slides, the card does not rise (css/ui.css turns every chrome
+// transition into a 120 ms fade), and the 220 ms cross-fade the rig emits has a consumer -- over
+// the CANVAS and never over the card, or the scene appears to teleport under stationary text.
+// Since spec 0034 that black is ui/veil.js's, the same node a stage change goes through, and the
+// chapter line above the title appears rather than rises.
 
-import { COPY, t, formatRate, formatShownAt } from '../copy/en.js';
+import { COPY, t, fmt, formatRate, formatShownAt } from '../copy/en.js';
 import { nextTripOrder } from './trippicker.js';
-import { shareButton } from './share.js';
-import { soundButton } from './sound.js';
+import { shareLink } from './share.js';
+import { icon } from './cards.js';
 
 const HOST_ID = 'sr-trip';
 // NOT 'sr-trip'. The host div carries `.sr-trip`, and `.sr-trip` in ui.css sets
@@ -102,18 +118,21 @@ const MODE_CLASS = 'sr-trip-mode';
 const COLLAPSED_CLASS = 'sr-trip-collapsed';
 const PHASE_ATTR = 'data-trip-phase';
 
-// The panels that must not be reachable while the picture is the point. `inert` and not merely
-// `opacity: 0` -- see setChromeHidden().
-// Everything the cinematic mode takes away. ADDING A PIECE OF CHROME IS A ROW HERE -- the
-// GitHub mark was the third, and a mark left sitting in the corner of a full-screen flight
-// is exactly the kind of thing that gets noticed only in a screenshot.
-// Since spec 0061 that is the sidebar (which holds the sources sheet and the GitHub mark), the tool
-// rail, and the time pill: a trip sets its own clock per stop and says it in the letterbox, and a
-// second clock control under the letterbox would be two answers to "when is this".
-const CHROME = ['sr-side', 'sr-rail', 'sr-time'];
+// Everything a trip takes away. ADDING A PIECE OF CHROME IS A ROW HERE -- a control left sitting in
+// a corner of a full-screen flight is exactly the kind of thing that gets noticed only in a
+// screenshot. `inert` and not merely `opacity: 0` -- see setChromeHidden(). Since spec 0061 task 7
+// the sidebar is NOT in the list: on a desktop it is the trip's own view (ui/shell.js), and on a
+// phone, where it is a drawer, seat() makes it inert.
+const CHROME = ['sr-rail', 'sr-time'];
 const MOBILE_BAR = '.sr-mobilebar';
+const SIDE_ID = 'sr-side';
+// The line between the phone's sheet and the desktop's sidebar, as ui/shell.js draws it, for a frame
+// built without a shell (the tests).
+const PHONE_QUERY = '(max-width: 899px)';
 
 const MINUTE_MS = 60000;
+// Phases in which a stop is up: the toolbar and the top bar show, and the keys step.
+const AT_PANEL = ['intro', 'outro'];
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -122,7 +141,26 @@ function el(tag, className, text) {
   return node;
 }
 
-function button(className, text, title, onClick) {
+/** An icon button of the toolbar: a name for a screen reader, a tooltip that says the key. */
+function iconButton(className, iconName, label, title, onClick) {
+  const b = el('button', className);
+  b.type = 'button';
+  b.setAttribute('aria-label', label);
+  b.title = title;
+  b.appendChild(icon(iconName));
+  if (onClick) b.addEventListener('click', onClick);
+  return b;
+}
+
+/** Swap a button's glyph, keeping the node (and the focus on it). */
+function setIcon(b, iconName) {
+  const old = b.querySelector ? b.querySelector('svg') : null;
+  if (old && old.getAttribute && old.getAttribute('class') === `sr-icon sr-icon--${iconName}`) return;
+  if (old) old.remove();
+  b.insertBefore ? b.insertBefore(icon(iconName), b.firstChild) : b.appendChild(icon(iconName));
+}
+
+function textButton(className, text, title, onClick) {
   const b = el('button', className, text);
   b.type = 'button';
   if (title) b.title = title;
@@ -131,7 +169,7 @@ function button(className, text, title, onClick) {
 }
 
 /**
- * "5 stops, about two minutes" -- and never before the stops have been resolved.
+ * "5 stops · 2 min" -- and never before the stops have been resolved.
  *
  * ROUNDED UP, deliberately. The estimate is a floor already: it counts the flights and the dwells
  * and cannot count the time somebody spends paused, or reading, or looking around. Rounding down
@@ -186,10 +224,46 @@ export function orbitsLine(st, stageId) {
   return COPY.trip.orbitsLine;
 }
 
+/** The counter in the toolbar, "2 / 4": mono, short, and read out as "stop 2 of 4" beside it. */
+export function progressText(st) {
+  if (!st || !(st.count > 0) || !(st.index >= 0)) return '';
+  return t(COPY.trip.progressShort, { n: st.index + 1, count: st.count });
+}
+
+function typingIn(node) {
+  if (!node) return false;
+  const tag = node.tagName;
+  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || node.isContentEditable === true;
+}
+
+/**
+ * What a key does during a trip, or null for "not ours". Pure, so tests/test_tripframe.mjs can hold
+ * the whole keyboard without a browser: Escape leaves (but not out of a text field, where it
+ * belongs to the field); ←/→ step; Space plays and pauses (but not on a focused button, which Space
+ * presses); C hides the card; R replays. Only Escape works on the intro and the end card, where
+ * nothing is running; and nothing with a modifier, which is the browser's.
+ */
+export function keyAction(e, st, active) {
+  if (!e || !st || st.phase === 'idle') return null;
+  if (e.metaKey || e.ctrlKey || e.altKey) return null;
+  const typing = typingIn(active);
+  if (e.key === 'Escape') return typing ? null : 'leave';
+  if (typing) return null;
+  const running = !AT_PANEL.includes(st.phase) && st.phase !== 'resolving';
+  if (!running) return null;
+  if (e.key === 'ArrowRight') return 'next';
+  if (e.key === 'ArrowLeft') return 'back';
+  if (e.key === ' ' || e.key === 'Spacebar') return active && active.tagName === 'BUTTON' ? null : 'toggle';
+  if (e.key === 'c' || e.key === 'C') return 'collapse';
+  if (e.key === 'r' || e.key === 'R') return 'replay';
+  return null;
+}
+
 export function createTripFrame(ctx) {
   const trip = ctx && ctx.trip;
   if (!trip) return { dispose() {} };
   const rig = ctx.cameraRig;
+  const root = document.documentElement;
 
   let host = null;
   let parts = null;
@@ -198,15 +272,21 @@ export function createTripFrame(ctx) {
   let savedFocus = null;
   let tourId = null;
   let offFade = null;
+  let offSound = null;
   let raf = 0;
   // Set by Next/Back/Replay and by the arrow keys, cleared by the render that consumes it. Focus
   // moves to the stop heading on a jump the VISITOR asked for, and never on an auto-advance:
   // stealing focus mid-sentence interrupts a screen reader and yanks the arrow keys away.
   let userJumped = false;
   // Bumped whenever an end card is rendered, so a plan() that resolves late cannot append a
-  // button to a panel that has been rebuilt or torn down since it was asked.
+  // card to a panel that has been rebuilt or torn down since it was asked.
   let outroToken = 0;
   let lastIndex = -1;
+
+  function isPhone() {
+    if (ctx.shell && typeof ctx.shell.isPhone === 'function') return ctx.shell.isPhone();
+    return typeof matchMedia === 'function' ? matchMedia(PHONE_QUERY).matches : false;
+  }
 
   // ------------------------------------------------------------------------------------ DOM
 
@@ -216,42 +296,40 @@ export function createTripFrame(ctx) {
     host.id = HOST_ID;
     host.setAttribute('role', 'region');
     host.setAttribute('aria-roledescription', COPY.trip.frameLabel);
+    const T = COPY.trip;
 
-    // BOTTOM BAR FIRST IN THE DOM. CSS puts it at the foot; the APG puts its pause control first
-    // in the tab order. This is the only way to have both without a tabindex, and a positive
-    // tabindex is a worse bug than the one it would fix.
-    const bottom = el('section', 'sr-trip__bar sr-trip__bar--bottom sr-float');
-
-    const controls = el('div', 'sr-trip__controls');
-    controls.setAttribute('aria-label', COPY.trip.controlsLabel);
-    const pause = button('sr-trip__btn sr-trip__btn--pause', COPY.trip.pause, COPY.trip.pauseTitle, togglePause);
-    const back = button('sr-trip__btn', COPY.trip.back, COPY.trip.backTitle, onBack);
-    const next = button('sr-trip__btn', COPY.trip.next, COPY.trip.nextTitle, onNext);
-    const replay = button('sr-trip__btn', COPY.trip.replay, COPY.trip.replayTitle, onReplay);
-    // Share, after Replay (spec 0033, 2026-09-23): the link to this stop, or to the trip's own
-    // page at stop 1. The words are the trip's title and blurb (ui/share.js tripWords).
-    const share = shareButton(ctx, 'sr-trip__btn sr-trip__btn--share');
-    const collapse = button('sr-trip__btn', COPY.trip.collapse, COPY.trip.collapseTitle, () =>
+    // THE TOOLBAR, FIRST IN THE DOM: the APG puts the pause control first in the tab order, and
+    // a positive tabindex is a worse bug than the one it would fix. A `group` with a name and not
+    // a `toolbar`: the toolbar role promises arrow keys inside it, and here ←/→ are the stops.
+    const toolbar = el('div', 'sr-trip__toolbar sr-float');
+    toolbar.setAttribute('role', 'group');
+    toolbar.setAttribute('aria-label', T.controlsLabel);
+    const pause = iconButton('sr-trip__tb sr-trip__tb--play', 'pause', T.pause, T.pauseTitle, togglePause);
+    const back = iconButton('sr-trip__tb', 'chevron-left', T.back, T.backTitle, onBack);
+    const next = iconButton('sr-trip__tb', 'chevron', T.next, T.nextTitle, onNext);
+    const progress = el('div', 'sr-trip__progress');
+    progress.setAttribute('role', 'group');
+    progress.setAttribute('aria-label', T.progressLabel);
+    const count = el('span', 'sr-trip__count');
+    count.setAttribute('aria-hidden', 'true'); // "2 / 4" is for the eye; the next line is for a reader
+    const countText = el('span', 'sr-trip__live');
+    const segs = el('ul', 'sr-trip__segs');
+    segs.setAttribute('aria-hidden', 'true');
+    progress.appendChild(count);
+    progress.appendChild(countText);
+    progress.appendChild(segs);
+    const replay = iconButton('sr-trip__tb', 'rotate-ccw', T.replay, T.replayTitle, onReplay);
+    // Share (spec 0033): the link to this stop, or to the trip's own page at stop 1. The words are
+    // the trip's title and blurb (ui/share.js tripWords).
+    const share = iconButton('sr-trip__tb', 'share', T.share, T.shareTitle, () => shareLink(ctx));
+    const collapse = iconButton('sr-trip__tb sr-trip__tb--hide', 'panel-left-close', T.collapse, T.collapseTitle, () =>
       setCollapsed(!collapsed),
     );
-    for (const b of [pause, back, next, replay, share, collapse]) controls.appendChild(b);
-
-    const progress = el('div', 'sr-trip__progress');
-    const count = el('span', 'sr-trip__count');
-    const segs = el('ul', 'sr-trip__segs');
-    segs.setAttribute('aria-hidden', 'true'); // the counter beside it is the readable one
-    progress.appendChild(count);
-    progress.appendChild(segs);
-    progress.setAttribute('aria-label', COPY.trip.progressLabel);
-
-    // The chip sits WITH the progress row while paused (spec 0003): the counter stays readable.
-    // It is not a modal. Camera input still lands here; Pause/Play in the control row stays too.
-    const chip = el('div', 'sr-trip__chip');
-    chip.appendChild(el('span', 'sr-trip__chiptext', COPY.trip.pausedChip));
-    chip.appendChild(button('sr-trip__btn sr-trip__btn--ember', COPY.trip.resume, COPY.trip.resumeTitle, onResume));
-    const chipLeave = button('sr-trip__btn', COPY.trip.leave, COPY.trip.leaveTitle, leave);
-    chip.appendChild(chipLeave);
-    chip.hidden = true;
+    collapse.setAttribute('aria-pressed', 'false');
+    const sound = iconButton('sr-trip__tb sr-trip__tb--sound', 'volume-x', T.soundOn, T.soundOffTitle, toggleSound);
+    const sep = el('span', 'sr-trip__sep');
+    sep.setAttribute('aria-hidden', 'true');
+    for (const n of [pause, back, progress, next, sep, replay, share, collapse, sound]) toolbar.appendChild(n);
 
     // What a screen reader is told. The CARD is the accessible representation of a stop -- we do
     // not describe a live 3D scene, because that would be asserting a description of pixels
@@ -261,7 +339,7 @@ export function createTripFrame(ctx) {
     const live = el('div', 'sr-trip__live');
     const group = el('div', null);
     group.setAttribute('role', 'group');
-    group.setAttribute('aria-roledescription', COPY.trip.stopRole);
+    group.setAttribute('aria-roledescription', T.stopRole);
     const heading = el('h2', 'sr-trip__stopname');
     heading.tabIndex = -1;
     group.appendChild(heading);
@@ -272,65 +350,75 @@ export function createTripFrame(ctx) {
     const status = el('div', 'sr-trip__live');
     status.setAttribute('role', 'status');
 
-    bottom.appendChild(controls);
-    bottom.appendChild(progress);
-    bottom.appendChild(chip);
-    bottom.appendChild(live);
-    bottom.appendChild(status);
-
-    const top = el('header', 'sr-trip__bar sr-trip__bar--top sr-float');
-    // Spec 0034 req 3: the stop's `chapter:` above the trip's title, the one line of the frame that
-    // changes with the story rather than with the controls. Not a live region: the stop title in
-    // the status below is what a screen reader is told, and a chapter is not news.
+    // THE TOP BAR: the trip's title, its chapter above it (spec 0034 req 3), and Leave.
+    const top = el('header', 'sr-trip__top sr-float');
     const titles = el('div', 'sr-trip__titles');
+    // Not a live region: the stop title in the status is what a screen reader is told, and a
+    // chapter is not news.
     const chapter = el('p', 'sr-trip__chapter');
     chapter.hidden = true;
     const title = el('h1', 'sr-trip__title');
     titles.appendChild(chapter);
     titles.appendChild(title);
     top.appendChild(titles);
-    // Under the trip's title, in the letterbox, because the stop heading below is for a screen
-    // reader only and the card is the stop's own words. Not a live region: at a year a minute it
-    // changes every frame, and a reader is told the instant by reading the line, not interrupted.
-    const clockLine = el('p', 'sr-trip__time');
-    clockLine.hidden = true;
-    top.appendChild(clockLine);
-    // Spec 0037: under the instant, what the eclipse picture is made of. Wraps rather than
-    // truncating: it is a sentence of honesty, and half of one is worse than none.
-    const eclipseText = el('p', 'sr-trip__eclipse');
-    eclipseText.hidden = true;
-    top.appendChild(eclipseText);
-    // Mute (spec 0035, 2026-09-23): the one sound control a visitor mid-trip can reach, since the
-    // panels and the phone bar are inert while the letterbox is up. In the TOP bar beside Leave,
-    // not after Share as the spec drew it: measured at 390 x 844 in headless Chrome, a seventh
-    // button wrapped the bottom row onto a second line (88 px of letterbox instead of 44), and
-    // sound, like Leave, is about the frame rather than about the stop.
-    const sound = soundButton(ctx, 'sr-trip__btn sr-trip__btn--sound', 'mute');
-    top.appendChild(sound);
-    const topLeave = button('sr-trip__btn sr-trip__btn--leave', COPY.trip.leave, COPY.trip.leaveTitle, leave);
+    const topLeave = el('button', 'sr-trip__leave');
+    topLeave.type = 'button';
+    topLeave.title = T.leaveTitle;
+    topLeave.appendChild(icon('x', 16));
+    topLeave.appendChild(el('span', null, T.leave));
+    topLeave.addEventListener('click', leave);
     top.appendChild(topLeave);
 
-    // The intro and the end card. An unmarked ending is indistinguishable from a crash.
-    const panel = el('div', 'sr-trip__panel');
+    // THE SHEET: the intro, the stop card's slot, the end. Seated in the sidebar's trip view on a
+    // desktop and in this frame on a phone (seat()).
+    const sheet = el('section', 'sr-tripsheet');
+    const panel = el('div', 'sr-tripsheet__panel');
     panel.hidden = true;
+    const cardSlot = el('div', 'sr-tripsheet__card');
+    sheet.appendChild(panel);
+    sheet.appendChild(cardSlot);
 
-    host.appendChild(bottom);
+    host.appendChild(toolbar);
+    host.appendChild(live);
+    host.appendChild(status);
     host.appendChild(top);
-    host.appendChild(panel);
     document.body.appendChild(host);
 
     parts = {
-      pause, back, next, replay, share, sound, collapse, controls,
-      progress, count, segs, chip, live, group, heading, status,
-      title, chapter, clockLine, eclipseText, panel, bottom, top, leaveButtons: [topLeave, chipLeave],
+      toolbar, pause, back, next, replay, share, collapse, sound, progress, count, countText, segs,
+      live, group, heading, status, top, title, chapter, sheet, panel, cardSlot, leaveButtons: [topLeave],
     };
+    paintSound();
   }
 
   function destroy() {
     if (!host) return;
+    if (parts && parts.sheet) parts.sheet.remove();
     host.remove();
     host = null;
     parts = null;
+  }
+
+  /**
+   * Put the sheet where the card lives at this width: the sidebar's trip view on a desktop, this
+   * frame on a phone, where it is a sheet of its own and wears the glass. The card goes into its
+   * slot through the shell, which owns where the card sits.
+   */
+  function seat() {
+    if (!parts) return;
+    const phone = isPhone();
+    const shell = ctx.shell;
+    const sideHost = !phone && shell && typeof shell.host === 'function' ? shell.host('trip') : null;
+    const want = sideHost || host;
+    if (parts.sheet.parentNode !== want) want.appendChild(parts.sheet);
+    parts.sheet.classList.toggle('sr-float', want === host);
+    parts.sheet.classList.toggle('is-floating', want === host);
+    if (shell && typeof shell.seatTrip === 'function') shell.seatTrip(parts.cardSlot);
+    // On a phone the sidebar is a drawer the trip keeps shut; on a desktop it is the trip's.
+    const side = document.getElementById(SIDE_ID);
+    if (side) side.inert = phone;
+    // The hide-card glyph says which way the card goes: off to the left, or down.
+    paintCollapse();
   }
 
   // --------------------------------------------------------------------------- the chrome
@@ -339,12 +427,12 @@ export function createTripFrame(ctx) {
    * `inert` and not only `opacity: 0`.
    *
    * THE BUG NOBODY SEES COMING: a panel hidden with opacity and pointer-events stays FULLY
-   * FOCUSABLE. Tab walks into an invisible sidebar and the focus ring is off screen with no way
-   * to tell where it went. `inert` removes the subtree from the tab order AND from the
-   * accessibility tree in one property, which `aria-hidden` alone does not do.
+   * FOCUSABLE. Tab walks into an invisible rail and the focus ring is off screen with no way to
+   * tell where it went. `inert` removes the subtree from the tab order AND from the accessibility
+   * tree in one property, which `aria-hidden` alone does not do.
    *
-   * The mobile bar is the easy one to miss: ui/mobile.js appends it to document.body, not to
-   * #sr-controls, so hiding the panel alone leaves a two-button bar sitting over the picture on
+   * The mobile bar is the easy one to miss: ui/mobile.js appends it to document.body, not to the
+   * shell, so hiding the shell's pieces alone leaves a two-button bar sitting over the picture on
    * a phone.
    */
   function setChromeHidden(hidden) {
@@ -355,18 +443,58 @@ export function createTripFrame(ctx) {
     }
     const bar = document.querySelector(MOBILE_BAR);
     if (bar) bar.inert = hidden;
-    document.documentElement.classList.toggle(MODE_CLASS, hidden);
+    if (!hidden) {
+      const side = document.getElementById(SIDE_ID);
+      if (side) side.inert = false;
+    }
+    root.classList.toggle(MODE_CLASS, hidden);
   }
 
   function setCollapsed(on) {
     collapsed = !!on;
-    document.documentElement.classList.toggle(COLLAPSED_CLASS, collapsed);
+    root.classList.toggle(COLLAPSED_CLASS, collapsed);
     if (!parts) return;
-    parts.collapse.textContent = collapsed ? COPY.trip.expand : COPY.trip.collapse;
-    parts.collapse.title = collapsed ? COPY.trip.expandTitle : COPY.trip.collapseTitle;
+    paintCollapse();
     // The card is folded away visually AND left out of the tab order, so the two agree.
+    parts.sheet.inert = collapsed;
     const card = document.getElementById('sr-card');
     if (card) card.inert = collapsed;
+  }
+
+  function paintCollapse() {
+    if (!parts) return;
+    const T = COPY.trip;
+    const phone = isPhone();
+    setIcon(parts.collapse, collapsed ? (phone ? 'panel-bottom-open' : 'panel-left-open') : (phone ? 'panel-bottom-close' : 'panel-left-close'));
+    parts.collapse.setAttribute('aria-label', collapsed ? T.expand : T.collapse);
+    parts.collapse.title = collapsed ? T.expandTitle : T.collapseTitle;
+    parts.collapse.setAttribute('aria-pressed', collapsed ? 'true' : 'false');
+  }
+
+  // ------------------------------------------------------------------------------ the sound
+
+  function soundOn() {
+    return !!(ctx.audio && typeof ctx.audio.isOn === 'function' && ctx.audio.isOn());
+  }
+
+  function toggleSound() {
+    if (ctx.audio && typeof ctx.audio.toggle === 'function') ctx.audio.toggle();
+    paintSound();
+  }
+
+  /** Every sound toggle the frame has drawn (the toolbar's, the intro's) says the same thing. */
+  function paintSound() {
+    if (!parts) return;
+    const on = soundOn();
+    const T = COPY.trip;
+    const nodes = [parts.sound, ...(parts.panel.querySelectorAll ? [...parts.panel.querySelectorAll('.sr-trip__soundtoggle')] : [])];
+    for (const b of nodes) {
+      if (!b) continue;
+      setIcon(b, on ? 'volume-2' : 'volume-x');
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      b.title = on ? T.soundOnTitle : T.soundOffTitle;
+      b.disabled = !ctx.audio;
+    }
   }
 
   // --------------------------------------------------------------------------- the actions
@@ -405,12 +533,6 @@ export function createTripFrame(ctx) {
 
   // --------------------------------------------------------------------------- the keyboard
 
-  function typingIn(node) {
-    if (!node) return false;
-    const tag = node.tagName;
-    return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || node.isContentEditable === true;
-  }
-
   /**
    * ESCAPE IS REGISTERED IN THE CAPTURE PHASE AND STOPS PROPAGATION.
    *
@@ -419,43 +541,23 @@ export function createTripFrame(ctx) {
    * stays set, the glyph stays lit and `follow` stays installed. A trip module imported later
    * registers later, so in the bubble phase it would run after the card had already gone. The
    * capture phase is the only place the two can be ordered, and stopPropagation is what makes
-   * Escape mean one thing while a trip is running.
+   * Escape mean one thing while a trip is running. (A clear screen takes Escape before this:
+   * ui/cleanview.js, also capture, registered first.)
    */
   function onKey(e) {
-    const st = trip.state;
-    if (st.phase === 'idle') return;
-    const ae = document.activeElement;
-    const typing = typingIn(ae);
-
-    if (e.key === 'Escape') {
-      // Escape inside a text field belongs to that field: ui/search.js preventDefaults it but
-      // does not stop it propagating, so without this guard clearing a search would end a trip.
-      if (typing) return;
+    const what = keyAction(e, trip.state, document.activeElement);
+    if (!what) return;
+    if (what === 'leave') {
       e.stopPropagation();
       e.preventDefault();
       leave();
       return;
     }
-    if (typing) return;
-    const running = st.phase !== 'intro' && st.phase !== 'outro' && st.phase !== 'resolving';
-
-    if (e.key === 'ArrowRight' && running) {
-      e.preventDefault();
-      onNext();
-    } else if (e.key === 'ArrowLeft' && running) {
-      e.preventDefault();
-      onBack();
-    } else if ((e.key === ' ' || e.key === 'Spacebar') && running) {
-      // Space activates a focused button, and every control in this frame is one. Do not steal
-      // it from a button the visitor has deliberately tabbed to.
-      if (ae && ae.tagName === 'BUTTON') return;
-      e.preventDefault();
-      togglePause();
-    } else if ((e.key === 'c' || e.key === 'C') && running) {
-      setCollapsed(!collapsed);
-    } else if ((e.key === 'r' || e.key === 'R') && running) {
-      onReplay();
-    }
+    if (what === 'next') { e.preventDefault(); onNext(); }
+    else if (what === 'back') { e.preventDefault(); onBack(); }
+    else if (what === 'toggle') { e.preventDefault(); togglePause(); }
+    else if (what === 'collapse') setCollapsed(!collapsed);
+    else if (what === 'replay') onReplay();
   }
 
   // A tap on a different object is the most likely accidental exit in the product, and it is also
@@ -471,27 +573,59 @@ export function createTripFrame(ctx) {
     trip.pause('input');
   }
 
-  // ---------------------------------------------------------------------------- the panel
+  // ---------------------------------------------------------------------------- the sheet
 
+  function tourOf(id) {
+    const list = typeof trip.tours === 'function' ? trip.tours() : [];
+    return (list || []).find((x) => x && x.id === id) || null;
+  }
+
+  /** The head every sheet shares: a microlabel and the serif name (row D's card head). */
+  function sheetHead(p, micro, name) {
+    const head = el('header', 'sr-tripsheet__head');
+    head.appendChild(el('p', 'sr-tripsheet__micro', micro));
+    const h = el('h2', 'sr-tripsheet__name', name);
+    h.id = 'sr-trip-sheet-title';
+    h.tabIndex = -1;
+    head.appendChild(h);
+    p.appendChild(head);
+    parts.sheet.setAttribute('aria-labelledby', h.id);
+    return head;
+  }
+
+  /**
+   * THE INTRO (spec 0061 task 7): the trip's name, its shape in mono, one line of what it is, the
+   * one ember Start with sound as a toggle beside it, "Not now" as a quiet text button, and the
+   * stops it will visit. The count is the RESOLVED one, so anything missing is said out loud
+   * rather than quietly subtracted: a shorter trip is fine; a shorter trip nobody mentioned is not.
+   */
   function renderIntro(st) {
     const p = parts.panel;
+    const T = COPY.trip;
     p.textContent = '';
-    p.appendChild(el('h2', 'sr-trip__paneltitle', st.tourTitle));
-    p.appendChild(el('p', 'sr-trip__panelshape', shapeLine(st.count, st.estimateMs)));
+    p.dataset.kind = 'intro';
+    const head = sheetHead(p, T.introMicro, st.tourTitle);
+    head.appendChild(el('p', 'sr-tripsheet__meta', shapeLine(st.count, st.estimateMs)));
+    const tour = tourOf(st.tourId);
+    const blurb = tour && tour.blurb ? String(tour.blurb) : '';
+    if (blurb) p.appendChild(el('p', 'sr-tripsheet__text', blurb));
     const dropped = (st.dropped || []).length;
-    // The count above is the resolved one, so anything missing is said out loud rather than
-    // quietly subtracted. A shorter trip is fine; a shorter trip nobody mentioned is not.
-    if (dropped === 1) p.appendChild(el('p', 'sr-trip__panelnote', COPY.trip.droppedOne));
-    else if (dropped > 1) p.appendChild(el('p', 'sr-trip__panelnote', t(COPY.trip.droppedMany, { n: dropped })));
+    if (dropped === 1) p.appendChild(el('p', 'sr-tripsheet__note', T.droppedOne));
+    else if (dropped > 1) p.appendChild(el('p', 'sr-tripsheet__note', t(T.droppedMany, { n: dropped })));
     // A trip whose stops set the clock says so in one line, and that line is the one that matters:
     // the stops set their own rate, so "set back to normal speed" would be over by the first stop.
-    if (st.clockMoves) p.appendChild(el('p', 'sr-trip__panelnote', COPY.trip.clockMoves));
-    else if (st.clockClamped) p.appendChild(el('p', 'sr-trip__panelnote', COPY.trip.clockClamped));
-    // Sound, off until pressed (spec 0035 req 2). On the intro card because this is the one moment
-    // a visitor is deciding how to watch, and a click here is the gesture a browser wants first.
-    p.appendChild(soundButton(ctx, 'sr-trip__btn sr-trip__sound', 'toggle'));
-    const row = el('div', 'sr-trip__panelrow');
-    const start = button('sr-trip__btn sr-trip__btn--ember', COPY.trip.introStart, COPY.trip.startTitle, () => {
+    // A blurb that already says it (two trips' do) is not said twice.
+    const clockSaid = /\bclock\b/i.test(blurb);
+    if (st.clockMoves && !clockSaid) p.appendChild(el('p', 'sr-tripsheet__note', T.clockMoves));
+    else if (st.clockClamped) p.appendChild(el('p', 'sr-tripsheet__note', T.clockClamped));
+
+    const row = el('div', 'sr-tripsheet__row');
+    const start = el('button', 'sr-tripsheet__start');
+    start.type = 'button';
+    start.title = T.startTitle;
+    start.appendChild(icon('play'));
+    start.appendChild(el('span', null, T.introStart));
+    start.addEventListener('click', () => {
       userJumped = true;
       // A visitor who chose sound on an earlier visit hears it from Start: the click is the
       // gesture the stored choice was waiting for (audio/engine.js).
@@ -499,27 +633,80 @@ export function createTripFrame(ctx) {
       trip.play();
     });
     row.appendChild(start);
-    row.appendChild(button('sr-trip__btn', COPY.trip.introSkip, null, leave));
+    // Sound, off until pressed (spec 0035 req 2). Here because this is the one moment a visitor is
+    // deciding how to watch, and a click here is the gesture a browser wants first.
+    const sound = iconButton('sr-tripsheet__sound sr-trip__soundtoggle', 'volume-x', T.soundOn, T.soundOffTitle, toggleSound);
+    row.appendChild(sound);
     p.appendChild(row);
+    p.appendChild(textButton('sr-tripsheet__quiet', T.introSkip, T.leaveTitle, leave));
+
+    // The stops, as a list a visitor can start from: a row starts the trip at that stop (the same
+    // jumpTo a deep link into a later stop uses).
+    const stops = Array.isArray(st.stops) ? st.stops : [];
+    if (stops.length) {
+      const list = el('ol', 'sr-tripsheet__stops');
+      list.setAttribute('aria-label', T.stopsLabel);
+      stops.forEach((stop, i) => {
+        const li = el('li', null);
+        const b = el('button', 'sr-tripsheet__stop');
+        b.type = 'button';
+        b.appendChild(el('span', 'sr-tripsheet__stopn', fmt.int(i + 1)));
+        b.appendChild(el('span', 'sr-tripsheet__stoptitle', stop.title));
+        b.title = t(T.startAtTitle, { n: i + 1 });
+        b.addEventListener('click', () => {
+          userJumped = true;
+          if (ctx.audio && ctx.audio.isOn()) ctx.audio.enable();
+          if (i > 0) trip.jumpTo(i);
+          trip.play();
+        });
+        li.appendChild(b);
+        list.appendChild(li);
+      });
+      const label = el('p', 'sr-tripsheet__micro sr-tripsheet__micro--list', T.stopsLabel);
+      p.appendChild(label);
+      p.appendChild(list);
+    }
     p.hidden = false;
+    paintSound();
     start.focus();
   }
 
+  /**
+   * THE END. An unmarked ending is indistinguishable from a crash. The trip's name again, what
+   * leaving does, three actions in the card's action row (Explore is the one ember: it is Leave,
+   * named for what comes next), and ONE named next trip as a trip card, never a picker.
+   */
   function renderOutro(st) {
     const p = parts.panel;
+    const T = COPY.trip;
     p.textContent = '';
-    p.appendChild(el('h2', 'sr-trip__paneltitle', COPY.trip.endTitle));
+    p.dataset.kind = 'outro';
+    sheetHead(p, T.endMicro, st.tourTitle);
     // A trip that moved the map's centre cannot promise the camera stays: leaving puts the centre
     // back, and one unit is a different distance there (ui/trip.js `state.stageChanged`).
-    p.appendChild(el('p', 'sr-trip__panelnote', st.stageChanged ? COPY.trip.endBodyStage : COPY.trip.endBody));
+    p.appendChild(el('p', 'sr-tripsheet__note', st.stageChanged ? T.endBodyStage : T.endBody));
     // The clock is put back on leave, not now: the end card is still inside the trip.
-    if (st.clockMoves) p.appendChild(el('p', 'sr-trip__panelnote', COPY.trip.clockRestored));
-    const row = el('div', 'sr-trip__panelrow');
-    const explore = button('sr-trip__btn sr-trip__btn--ember', COPY.trip.endExplore,
-      st.stageChanged ? COPY.trip.endExploreTitleStage : COPY.trip.endExploreTitle, leave);
-    row.appendChild(explore);
-    row.appendChild(button('sr-trip__btn', COPY.trip.endReplay, null, () => trip.start(st.tourId)));
+    if (st.clockMoves) p.appendChild(el('p', 'sr-tripsheet__note', T.clockRestored));
+
+    const row = el('div', 'sr-tripsheet__actions');
+    row.setAttribute('role', 'group');
+    const act = (cls, iconName, label, title, onClick) => {
+      const b = el('button', cls);
+      b.type = 'button';
+      b.title = title;
+      b.appendChild(icon(iconName));
+      b.appendChild(el('span', 'sr-act__label', label));
+      b.addEventListener('click', onClick);
+      row.appendChild(b);
+      return b;
+    };
+    const explore = act('sr-act sr-act--primary', 'compass', T.endExplore,
+      st.stageChanged ? T.endExploreTitleStage : T.endExploreTitle, leave);
+    act('sr-act', 'rotate-ccw', T.endReplay, T.endReplayTitle, () => trip.start(st.tourId));
+    act('sr-act', 'share', T.share, T.endShareTitle, () => shareLink(ctx));
     p.appendChild(row);
+    const nextHost = el('div', 'sr-tripsheet__next');
+    p.appendChild(nextHost);
     p.hidden = false;
     explore.focus();
 
@@ -528,20 +715,21 @@ export function createTripFrame(ctx) {
     // with nothing asked about it, so with CelesTrak unreachable the end card offered "Where
     // people are living in space right now" -- a trip plan() greys out in the Trips panel with
     // its reason -- and pressing it tore the frame down and showed the refusal to nobody. The
-    // button is appended only once a plan says the trip can actually run.
+    // card is added only once a plan says the trip can actually run.
     //
     // Which trip is asked first is the registry's own `next:` (spec 0029; ui/trippicker.js
     // nextTripOrder), then the positional walk it was before the field existed, so a named
     // follow-on that cannot run today falls back to what the card offered before.
-    offerNext(nextTripOrder(trip.tours(), st.tourId), row, st.tourId);
+    offerNext(nextTripOrder(trip.tours(), st.tourId), nextHost, st.tourId);
   }
 
   /**
-   * Walk the other trips in order and append a button for the first one that can be offered.
-   * Asynchronous because plan() resolves layers, and guarded by `outroToken` so an answer that
-   * arrives after the visitor left, replayed, or started something else lands nowhere.
+   * Walk the other trips in order and add a trip card for the first one that can be offered: the
+   * home view's own card (ui/explore.js), its group's tint, its title and its shape. Asynchronous
+   * because plan() resolves layers, and guarded by `outroToken` so an answer that arrives after
+   * the visitor left, replayed, or started something else lands nowhere.
    */
-  function offerNext(ordered, row, fromId) {
+  function offerNext(ordered, nextHost, fromId) {
     const mine = ++outroToken;
     const tryOne = (i) => {
       if (i >= ordered.length) return;
@@ -549,14 +737,19 @@ export function createTripFrame(ctx) {
       Promise.resolve(trip.plan(tour.id))
         .catch(() => null)
         .then((plan) => {
-          if (mine !== outroToken || !parts || !row.isConnected) return;
+          if (mine !== outroToken || !parts || !nextHost.isConnected) return;
           if (trip.state.phase !== 'outro' || trip.state.tourId !== fromId) return;
           if (!plan || !plan.offerable) { tryOne(i + 1); return; }
-          row.appendChild(
-            button('sr-trip__btn', t(COPY.trip.endNext, { title: tour.title }), null, () =>
-              trip.start(tour.id),
-            ),
-          );
+          nextHost.appendChild(el('p', 'sr-tripsheet__micro sr-tripsheet__micro--list', COPY.trip.endNextMicro));
+          const card = el('button', 'sr-tripcard sr-tripsheet__nextcard');
+          card.type = 'button';
+          card.dataset.trip = tour.id;
+          if (tour.group) card.dataset.group = tour.group;
+          card.title = t(COPY.trip.endNext, { title: tour.title });
+          card.appendChild(el('span', 'sr-tripcard__title', tour.title));
+          card.appendChild(el('span', 'sr-tripcard__meta', shapeLine(plan.count, plan.estimateMs)));
+          card.addEventListener('click', () => trip.start(tour.id));
+          nextHost.appendChild(card);
         });
     };
     tryOne(0);
@@ -573,20 +766,24 @@ export function createTripFrame(ctx) {
     if (!host) setup(st);
     if (!parts) return;
 
-    document.documentElement.setAttribute(PHASE_ATTR, st.phase);
+    root.setAttribute(PHASE_ATTR, st.phase);
     host.setAttribute('aria-label', st.tourTitle || '');
+    parts.sheet.setAttribute('aria-label', st.tourTitle || '');
     parts.title.textContent = st.tourTitle || '';
+    parts.title.title = st.tourTitle || '';
     paintChapter(st);
     // The same promise the end card makes, on the button that keeps it.
     const leaveTitle = st.stageChanged ? COPY.trip.leaveTitleStage : COPY.trip.leaveTitle;
     for (const b of parts.leaveButtons) b.title = leaveTitle;
 
-    const showPanel = st.phase === 'intro' || st.phase === 'outro';
-    parts.controls.hidden = showPanel;
-    // Spec 0003: the stop counter stays up while paused; the chip no longer replaces it.
-    parts.progress.hidden = showPanel;
-    parts.chip.hidden = st.phase !== 'paused';
+    const showPanel = AT_PANEL.includes(st.phase);
+    // The toolbar and the top bar are for a running trip; the intro and the end card carry their
+    // own way out (Not now, Explore) and Escape works throughout.
+    parts.toolbar.hidden = showPanel;
+    parts.top.hidden = showPanel;
+    parts.cardSlot.hidden = showPanel;
     if (showPanel) {
+      if (collapsed) setCollapsed(false);
       if (parts.panel.hidden || parts.panel.dataset.phase !== st.phase) {
         parts.panel.dataset.phase = st.phase;
         if (st.phase === 'intro') renderIntro(st);
@@ -610,29 +807,37 @@ export function createTripFrame(ctx) {
     }
 
     const n = st.index + 1;
-    parts.count.textContent = t(COPY.trip.stopOf, { n, count: st.count });
-    parts.pause.textContent = st.phase === 'paused' ? COPY.trip.play : COPY.trip.pause;
-    parts.pause.title = st.phase === 'paused' ? COPY.trip.playTitle : COPY.trip.pauseTitle;
-    parts.pause.setAttribute('aria-pressed', st.phase === 'paused' ? 'true' : 'false');
+    const T = COPY.trip;
+    parts.count.textContent = progressText(st);
+    parts.countText.textContent = t(T.stopOf, { n, count: st.count });
+    // Paused, the play button is the one ember thing on screen: what to press to carry on. Its
+    // name says what it will do, so a reader hears "Resume" and not a state.
+    const paused = st.phase === 'paused';
+    setIcon(parts.pause, paused ? 'play' : 'pause');
+    parts.pause.setAttribute('aria-label', paused ? T.resume : T.pause);
+    parts.pause.title = paused ? T.resumeTitle : T.pauseTitle;
+    parts.pause.classList.toggle('is-paused', paused);
+    parts.toolbar.classList.toggle('is-paused', paused);
     parts.back.disabled = st.index <= 0;
 
-    const stopTitle = st.held ? COPY.trip.heldTitle : st.stopTitle || '';
-    parts.group.setAttribute('aria-label', t(COPY.trip.liveLabel, { n, count: st.count, title: stopTitle }));
+    const stopTitle = st.held ? T.heldTitle : st.stopTitle || '';
+    parts.group.setAttribute('aria-label', t(T.liveLabel, { n, count: st.count, title: stopTitle }));
     parts.heading.textContent = stopTitle;
 
     // The APG rule, exactly: `off` while auto-advance is running, `polite` when it is not.
-    const auto = st.pacing === 'auto' && st.phase !== 'paused';
+    const auto = st.pacing === 'auto' && !paused;
     parts.live.setAttribute('aria-live', auto ? 'off' : 'polite');
-    parts.status.textContent = auto ? stopTitle : '';
+    parts.status.textContent = paused ? T.pausedChip : auto ? stopTitle : '';
 
     if (st.index !== lastIndex) {
       lastIndex = st.index;
-      document.title = t(COPY.trip.docTitle, { title: st.tourTitle, n, count: st.count });
+      document.title = t(T.docTitle, { title: st.tourTitle, n, count: st.count });
     }
     // OUTSIDE the index check, because the two moves that orphaned keyboard focus do not change
-    // the index. Resume destroys the pause chip the Resume button lives in, and Start destroys
-    // the intro panel the Start button lives in; both left `document.activeElement` on BODY, and
-    // a keyboard visitor had to tab in from the top of the document to reach the controls again.
+    // the index. Start destroys the intro panel the Start button lives in, and a stop row likewise;
+    // both left `document.activeElement` on BODY, and a keyboard visitor had to tab in from the top
+    // of the document to reach the controls again. The heading is in this frame, read as
+    // "stop 2 of 4: <title>", and the next Tab lands on the toolbar.
     if (userJumped) parts.heading.focus();
     userJumped = false;
   }
@@ -655,29 +860,42 @@ export function createTripFrame(ctx) {
     }
   }
 
-  function paintClockLine(st) {
+  /**
+   * The two lines the frame writes into the stop card (ui/cards.js renderStop keeps their places
+   * and carries their text across a repaint): when the picture is, under the title, and what an
+   * eclipse or a drawn orbit is made of, at the foot beside the honesty line. Written only when
+   * they change: at 600x the minutes turn over ten times a second, and a text node rewritten every
+   * frame with the same words is layout work for nothing.
+   */
+  function paintCardLines(st) {
     if (!parts) return;
-    const text = stopTimeLine(st, ctx.clock);
-    // Written only when it changes: at 600x the minutes turn over ten times a second, and a text
-    // node rewritten every frame with the same words is layout work for nothing.
-    if (parts.clockLine.textContent !== text) parts.clockLine.textContent = text;
-    parts.clockLine.hidden = !text;
-    const drawn = typeof ctx.eclipseDrawn === 'function' ? ctx.eclipseDrawn() : true;
-    // The eclipse line and the orbits line share the element under the instant: no trip has both,
-    // and two stacked honesty lines would be read as one anyway.
-    const stageId = ctx.stage && ctx.stage.worldId;
-    const ecl = st && st.phase !== 'idle'
-      ? [eclipseLine(st, drawn), orbitsLine(st, stageId)].filter(Boolean).join(' ')
-      : '';
-    if (parts.eclipseText.textContent !== ecl) parts.eclipseText.textContent = ecl;
-    parts.eclipseText.hidden = !ecl;
+    const card = document.getElementById('sr-card');
+    if (!card || card.hidden) return;
+    const whenNode = card.querySelector('.sr-card__when');
+    if (whenNode) {
+      const text = stopTimeLine(st, ctx.clock);
+      if (whenNode.textContent !== text) whenNode.textContent = text;
+      whenNode.hidden = !text;
+    }
+    const lineNode = card.querySelector('.sr-card__tripline');
+    if (lineNode) {
+      const drawn = typeof ctx.eclipseDrawn === 'function' ? ctx.eclipseDrawn() : true;
+      // The eclipse line and the orbits line share the element: no trip has both, and two stacked
+      // honesty lines would be read as one anyway.
+      const stageId = ctx.stage && ctx.stage.worldId;
+      const text = st && st.phase !== 'idle'
+        ? [eclipseLine(st, drawn), orbitsLine(st, stageId)].filter(Boolean).join(' ')
+        : '';
+      if (lineNode.textContent !== text) lineNode.textContent = text;
+      lineNode.hidden = !text;
+    }
   }
 
   function loop() {
     raf = requestAnimationFrame(loop);
     if (!parts) return;
     const st = trip.state;
-    paintClockLine(st);
+    paintCardLines(st);
     if (st.phase !== 'dwell' || st.index < 0) return;
     const seg = parts.segs.children[st.index];
     if (!seg) return;
@@ -688,6 +906,10 @@ export function createTripFrame(ctx) {
 
   // ------------------------------------------------------------------------ setup/teardown
 
+  function onShell() {
+    if (host) seat();
+  }
+
   function setup(st) {
     build();
     savedDocTitle = document.title;
@@ -696,11 +918,14 @@ export function createTripFrame(ctx) {
     savedFocus = active && active !== document.body ? active : null;
     if (ctx.mobile && ctx.mobile.close) ctx.mobile.close();
     setChromeHidden(true);
+    seat();
     setCollapsed(false);
     lastIndex = -1;
     // The cross-fade the rig has emitted since it was written, finally consumed. Subscribed only
     // for the life of a trip, so an ordinary reduced-motion flight outside one does not flash.
     if (rig && rig.onFade) offFade = rig.onFade((ms) => flash(ms));
+    if (ctx.audio && typeof ctx.audio.onChange === 'function') offSound = ctx.audio.onChange(paintSound);
+    if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('sr:shell', onShell);
     if (!raf) raf = requestAnimationFrame(loop);
     // No render() here on purpose: the only caller is render() itself, and painting from inside
     // setup would paint the same state twice.
@@ -712,25 +937,33 @@ export function createTripFrame(ctx) {
       offFade();
       offFade = null;
     }
+    if (offSound) {
+      offSound();
+      offSound = null;
+    }
+    if (typeof window !== 'undefined' && window.removeEventListener) window.removeEventListener('sr:shell', onShell);
     if (raf) {
       cancelAnimationFrame(raf);
       raf = 0;
     }
     setCollapsed(false);
+    // The card out of the sheet BEFORE the sheet goes: a card left inside a detached node is a card
+    // ui/cards.js can no longer find by id, and it would build a second one.
+    if (ctx.shell && typeof ctx.shell.seatTrip === 'function') ctx.shell.seatTrip(null);
     setChromeHidden(false);
-    document.documentElement.removeAttribute(PHASE_ATTR);
+    root.removeAttribute(PHASE_ATTR);
     if (savedDocTitle !== null) document.title = savedDocTitle;
     savedDocTitle = null;
     destroy();
     lastIndex = -1;
-    // Focus goes back to the row the trip was started from -- not to <body>, which is where a
-    // keyboard visitor would otherwise have to start again from the top of the document.
+    // Focus goes back to the trip card the trip was started from -- not to <body>, which is where
+    // a keyboard visitor would otherwise have to start again from the top of the document.
     //
-    // The saved element is the first choice and the row is the fallback, because a trip can be
+    // The saved element is the first choice and the card is the fallback, because a trip can be
     // started by something that never took focus at all: a programmatic click, the console, or
     // whatever entry point arrives next. Measured: a click dispatched from JS leaves
     // document.activeElement on <body>, and focus went nowhere.
-    let back = savedFocus && savedFocus.isConnected ? savedFocus : null;
+    let back = savedFocus && savedFocus.isConnected && !(savedFocus.closest && savedFocus.closest('#sr-trip')) ? savedFocus : null;
     savedFocus = null;
     if (!back && tourId) back = document.querySelector(`#sr-side [data-trip="${tourId}"]`);
     if (back && typeof back.focus === 'function') back.focus();
@@ -747,8 +980,8 @@ export function createTripFrame(ctx) {
   }
 
   /** Cover the canvas instantly, then fade off over the rig's own `ms`. A cut with a fade over it
-   * is the whole of "reduced motion" here; the card underneath never moves and never fades. The
-   * black is ui/veil.js's since spec 0034: one node, over the canvas and under the frame. */
+   * is the whole of "reduced motion" here; the card never moves and never fades. The black is
+   * ui/veil.js's since spec 0034: one node, over the canvas and under every panel. */
   function flash(ms) {
     if (!parts || !ctx.veil || typeof ctx.veil.fade !== 'function') return;
     ctx.veil.fade(ms);

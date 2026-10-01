@@ -263,6 +263,8 @@ export function createTrip(ctx) {
     orbits: [],
     index: -1,
     count: 0,
+    // The resolved stops' ids and titles, in order: the intro sheet lists them (spec 0061 task 7).
+    stops: [],
     estimateMs: 0,
     generation: 0,
     pausedBy: null,
@@ -1160,6 +1162,11 @@ export function createTrip(ctx) {
 
   // --- the card ---------------------------------------------------------------------------
 
+  /** The stop card's microlabel, "Stop 2 of 4" (spec 0061 task 7): where in the trip this card is. */
+  function stopMicro() {
+    return state.index >= 0 && state.count > 0 ? t(COPY.trip.stopMicro, { n: state.index + 1, count: state.count }) : '';
+  }
+
   /**
    * @param {object} entry the resolved stop
    * @param {boolean} [titleOnly] mid-flight: the stop's TITLE and nothing else, rendered through
@@ -1169,7 +1176,7 @@ export function createTrip(ctx) {
    */
   function paintCard(entry, titleOnly) {
     const card = entry.stop.card || {};
-    const lead = { title: card.title, body: titleOnly ? null : card.body };
+    const lead = { micro: stopMicro(), title: card.title, body: titleOnly ? null : card.body };
     // The generated line under the stop's words (spec 0038), a function so ui/cards.js reads it
     // afresh each time it repaints the card on the clock: the station's distance changes by eight
     // kilometres a second. `state.stopNote` holds the last reading, for the frame and a probe.
@@ -1570,6 +1577,7 @@ export function createTrip(ctx) {
     state.tourTitle = tour.title;
     state.orbits = Array.isArray(tour.orbits) ? tour.orbits.slice() : [];
     state.count = resolved.stops.length;
+    state.stops = resolved.stops.map((entry) => ({ id: entry.stop.id, title: (entry.stop.card || {}).title || entry.stop.id }));
     state.estimateMs = estimateOf(resolved.stops);
     state.dropped = resolved.dropped;
     state.pacing = pacingFor(tour);
@@ -1805,7 +1813,7 @@ export function createTrip(ctx) {
     }
     // The card says what happened, in the stop's own place in the trip. A blank card here would
     // be indistinguishable from the app having stopped.
-    showCard(null, ctx, { lead: { title: state.held.title, body: state.held.why } });
+    showCard(null, ctx, { lead: { micro: stopMicro(), title: state.held.title, body: state.held.why } });
     // NEVER auto-advance out of a held stop. The visitor presses Next.
     notify();
   }

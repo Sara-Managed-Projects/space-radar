@@ -30,14 +30,17 @@ export const MAX_SHIFT_FRACTION = 0.3; // never push the centre above 20 % of th
 const FULL_WIDTH = 0.8; // a panel this wide or wider spans the canvas
 
 // The bottom-anchored panels, in no particular order: the object card (a bottom sheet on a phone),
-// the trip's bottom bar, the phone's tab bar, and the two drawers the tab bar opens (Trips &
+// a trip's sheet and the toolbar under it on a phone (spec 0061 task 7; on a desktop the toolbar
+// is a pill a third of the width, which the FULL_WIDTH rule leaves out, and the sheet is in the
+// sidebar), the phone's tab bar, and the two drawers the tab bar opens (Trips &
 // layers, and the sources panel). The drawers were left out until 2026-09-22: with one open, the
 // Earth sat behind it and the free half of the screen above showed empty sky (Ivan's screenshot).
 // Only the PHONE's open drawer: on a desktop the sidebar is a column down the left, which is the
 // horizontal case below, and never a band along the bottom.
 const SELECTORS = [
   '#sr-card',
-  '#sr-trip .sr-trip__bar--bottom',
+  '#sr-trip .sr-trip__toolbar',
+  '#sr-trip .sr-tripsheet',
   '.sr-mobilebar',
   'html.sr-phone #sr-side.sr-drawer-open',
 ];

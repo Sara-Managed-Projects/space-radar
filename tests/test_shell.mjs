@@ -171,7 +171,10 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   check(!/ui\/(status|whattoshow|place|colorkey|github)\.js/.test(html), 'and none of them is preloaded at boot');
   check(!/createControls|createGitHubMark|createPrintButton\(ctx\)|createCleanView\(ctx\)/.test(main), 'the old left panel, the corner mark and the loose corner buttons are not built');
   const frame = readFileSync(join(JS, 'ui/tripframe.js'), 'utf8');
-  check(/const CHROME = \['sr-side', 'sr-rail', 'sr-time'\]/.test(frame), 'a trip hides the sidebar, the rail and the pill');
+  // Spec 0061 task 7: a trip hides the rail and the pill; the sidebar stays and is the trip's own
+  // view on a desktop (seat() makes it inert on a phone, where it is a drawer).
+  check(/const CHROME = \['sr-rail', 'sr-time'\]/.test(frame), 'a trip hides the rail and the pill');
+  check(/shell\.host\('trip'\)/.test(frame) && /seatTrip\(parts\.cardSlot\)/.test(frame) && /side\.inert = phone/.test(frame), 'and seats its sheet in the sidebar\'s trip view, the card in its slot, the drawer out of reach on a phone');
   check(/#sr-side \[data-trip=/.test(frame), 'and Leave gives focus back to the trip card it was started from');
 }
 

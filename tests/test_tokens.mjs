@@ -196,7 +196,9 @@ check(/classList\.add\('sr-card', 'sr-float'\)/.test(js('cards.js')), 'the card 
 check(/el\('aside', 'sr-side sr-float'\)/.test(js('shell.js')), 'the sidebar wears sr-float');
 check(/'sr-rail sr-float'/.test(js('rail.js')) && /'sr-pop sr-float'/.test(js('rail.js')), 'the tool rail and its popover wear sr-float');
 check(/el\('div', 'sr-time sr-float'\)/.test(js('timepill.js')), 'the time pill wears sr-float');
-check(/'sr-trip__bar sr-trip__bar--bottom sr-float'/.test(js('tripframe.js')) && /'sr-trip__bar sr-trip__bar--top sr-float'/.test(js('tripframe.js')), 'both trip bars wear sr-float');
+// Spec 0061 task 7: the trip's toolbar and its top bar; its sheet wears it where it floats (a phone).
+check(/'sr-trip__toolbar sr-float'/.test(js('tripframe.js')) && /'sr-trip__top sr-float'/.test(js('tripframe.js')), 'the trip toolbar and top bar wear sr-float');
+check(/classList\.toggle\('sr-float', want === host\)/.test(js('tripframe.js')), 'the trip sheet wears sr-float where it floats over the scene');
 check(/'sr-search__pop sr-float'/.test(js('search.js')), 'the search results wear sr-float');
 check(/'sr-print-menu sr-float sr-over-clean'/.test(js('printcard.js')), 'the print menu wears sr-float and still shows over a clear screen');
 

@@ -1,12 +1,11 @@
 // ui/cards.js -- the card that opens when anything is tapped.
 //
-// Seated in the sidebar's card view on a desktop (ui/shell.js), a bottom sheet on a phone, a rail
-// in the trip frame (css/ui.css does the placement). Pure DOM, no framework. Every string comes
+// Seated in the sidebar's card view on a desktop (ui/shell.js), a bottom sheet on a phone, and in a
+// guided trip the trip's own view of the sidebar or the trip's sheet on a phone (ui/tripframe.js). Pure DOM, no framework. Every string comes
 // from copy/en.js; every value is written with textContent, never innerHTML, so a name from an
 // upstream feed cannot become markup.
 //
 // THE LAYOUT IS SPEC 0061 §4 AND docs/ui-guide.md §3.10, and its order is fixed:
-//   0. the LEAD, and only during a guided trip: the stop's own title and words, above everything.
 //   1. the microlabel -- what it is and where, four words at most (microLabel) -- and the name.
 //   2. THREE NUMBERS, the three that matter for its kind (heroNumbers): height, speed and a lap
 //      for an Earth orbiter; distance, a turn and a year for a planet; distance, magnitude and
@@ -28,9 +27,10 @@
 //
 // Contract exports: showCard(record, ctx, opts), hideCard(), tagLines(), shortHonesty().
 //
-// `opts.lead` is the trip card, and it is the ordinary card restyled rather than a fork. A stop
+// `opts.lead` is a guided trip's stop ({micro, title, body, note}): the same anatomy with the stop's
+// words in it (renderStop, spec 0061 task 7), built from the same pieces rather than forked. A stop
 // that is a PLACE and not an object -- "pull back until the Earth is a dot" -- has no record at
-// all, so `showCard(null, ctx, { lead })` renders the lead alone. A null record with no lead is
+// all, so `showCard(null, ctx, { lead })` renders the stop alone. A null record with no lead is
 // still hideCard(): the card has nothing to say and says nothing.
 
 import {
@@ -2197,6 +2197,52 @@ const ICONS = {
     ['path', { d: 'm8 21 3.105-6.21' }],
     ['circle', { cx: 12, cy: 13, r: 2 }],
   ],
+  // The trip's toolbar, intro and end card (spec 0061 task 7, ui/tripframe.js): the same family,
+  // so a trip's controls and the card's actions read as one set.
+  play: [['polygon', { points: '6 3 20 12 6 21 6 3' }]],
+  pause: [
+    ['rect', { x: 14, y: 4, width: 4, height: 16, rx: 1 }],
+    ['rect', { x: 6, y: 4, width: 4, height: 16, rx: 1 }],
+  ],
+  'chevron-left': [['path', { d: 'm15 18-6-6 6-6' }]],
+  'rotate-ccw': [
+    ['path', { d: 'M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8' }],
+    ['path', { d: 'M3 3v5h5' }],
+  ],
+  'volume-2': [
+    ['polygon', { points: '11 5 6 9 2 9 2 15 6 15 11 19 11 5' }],
+    ['path', { d: 'M15.54 8.46a5 5 0 0 1 0 7.07' }],
+    ['path', { d: 'M19.07 4.93a10 10 0 0 1 0 14.14' }],
+  ],
+  'volume-x': [
+    ['polygon', { points: '11 5 6 9 2 9 2 15 6 15 11 19 11 5' }],
+    ['line', { x1: 22, x2: 16, y1: 9, y2: 15 }],
+    ['line', { x1: 16, x2: 22, y1: 9, y2: 15 }],
+  ],
+  'panel-left-close': [
+    ['rect', { width: 18, height: 18, x: 3, y: 3, rx: 2 }],
+    ['path', { d: 'M9 3v18' }],
+    ['path', { d: 'm16 15-3-3 3-3' }],
+  ],
+  'panel-left-open': [
+    ['rect', { width: 18, height: 18, x: 3, y: 3, rx: 2 }],
+    ['path', { d: 'M9 3v18' }],
+    ['path', { d: 'm14 9 3 3-3 3' }],
+  ],
+  'panel-bottom-close': [
+    ['rect', { width: 18, height: 18, x: 3, y: 3, rx: 2 }],
+    ['path', { d: 'M3 15h18' }],
+    ['path', { d: 'm15 8-3 3-3-3' }],
+  ],
+  'panel-bottom-open': [
+    ['rect', { width: 18, height: 18, x: 3, y: 3, rx: 2 }],
+    ['path', { d: 'M3 15h18' }],
+    ['path', { d: 'm9 10 3-3 3 3' }],
+  ],
+  compass: [
+    ['path', { d: 'm16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z' }],
+    ['circle', { cx: 12, cy: 12, r: 10 }],
+  ],
 };
 
 /** An icon from ICONS at `size` px. Exported for the test, which holds the guide's drawing rules. */
@@ -2581,33 +2627,16 @@ function seeHint(record, ctx, m, passInfo) {
 // ---------------------------------------------------------------------------------------
 
 /**
- * Block 0. The stop's own title and words during a guided trip.
- *
- * It carries no provenance of its own and it never could: the words are written in
- * registry/tours.yaml by a human, and what the app KNOWS about the object is block 7, which is
- * still printed underneath and is still the record's own class. A lead that stated a class would
- * be a hand-written claim standing in front of a measured one.
+ * The line the trip GENERATES under the stop's words (spec 0038): the visitor's place, the
+ * station's distance from them, its next pass. A function when it changes with the clock, read at
+ * every repaint; the words above it are the registry's and never change.
  */
-function leadBlock(lead) {
-  const wrap = el('section', 'sr-card__lead');
-  if (lead.title) {
-    const title = el('h2', 'sr-card__leadtitle', lead.title);
-    title.id = CARD_LEAD_TITLE_ID;
-    title.tabIndex = -1;
-    wrap.appendChild(title);
-  }
-  if (lead.body) wrap.appendChild(el('p', 'sr-card__leadbody', lead.body));
-  // A line the trip GENERATES under the stop's words (spec 0038): the visitor's place, the
-  // station's distance from them, its next pass. A function when it changes with the clock, read
-  // at every repaint; the words above it are the registry's and never change.
-  let note = '';
+function leadNote(lead) {
   try {
-    note = typeof lead.note === 'function' ? lead.note() : lead.note;
+    return (typeof lead.note === 'function' ? lead.note() : lead.note) || '';
   } catch {
-    note = '';
+    return '';
   }
-  if (note) wrap.appendChild(el('p', 'sr-card__leadnote', note));
-  return wrap;
 }
 
 /**
@@ -2650,17 +2679,116 @@ export function withoutLeadingName(sentence, name) {
   return text;
 }
 
-/** A stop with no object behind it: the lead is the whole card. */
-function renderLeadOnly(lead) {
+/**
+ * The lines the TRIP FRAME writes into the stop card (ui/tripframe.js): when the picture is
+ * (`.sr-card__when`, from the clock, every frame it changes) and what an eclipse or a drawn orbit
+ * is made of (`.sr-card__tripline`, at the foot with the honesty line). The card repaints when the
+ * clock is set, and a repaint must not blank a line for the frame between it and the frame's next
+ * write, so the text is carried across. Returns the function that puts it back.
+ */
+function keepFrameLines(node) {
+  const kept = [];
+  for (const cls of ['sr-card__when', 'sr-card__tripline']) {
+    const old = typeof node.querySelector === 'function' ? node.querySelector(`.${cls}`) : null;
+    if (old && old.textContent) kept.push([cls, old.textContent]);
+  }
+  return () => {
+    for (const [cls, text] of kept) {
+      const now = node.querySelector(`.${cls}`);
+      if (now) { now.textContent = text; now.hidden = false; }
+    }
+  };
+}
+
+/**
+ * THE STOP CARD (spec 0061 task 7): during a guided trip the card IS the stop, in the object
+ * card's anatomy (docs/ui-guide.md §3.10). Top to bottom: the microlabel "STOP 2 OF 4"; the
+ * stop's title as the name; what the stop is looking at, when the title does not already say;
+ * when the picture is (the frame's line); the subject's three numbers, from the builders its own
+ * card uses, so the two can never disagree; the stop's words as ONE paragraph and the line the
+ * trip generates under them; the rows that open in place; the honesty line at the foot.
+ *
+ * WHY. Ivan, 2026-10-01, with a screenshot of the live trip: the stop was a paragraph floating
+ * mid-scene, then a second header row (dot, class chip, Close) under the text, then the object's
+ * whole card again below it. One card, one anatomy, in the place the card lives.
+ *
+ * No action row and no close. The trip's toolbar is the controls: a Follow beside it would be a
+ * second ember on screen and a second owner of the camera, and Hide card folds the card away.
+ *
+ * Mid-flight `lead.body` is null: the microlabel and the title, nothing else (ui/trip.js
+ * paintCard says why a body must not be readable while the camera is still moving). A stop that
+ * is a PLACE has no record: no numbers and no rows, the stop's words are the whole card.
+ */
+function renderStop(record, ctx, opts) {
+  const lead = opts.lead || {};
   const node = ensureHost();
+  const restore = keepPlace(node);
+  const putBack = keepFrameLines(node);
   clear(node);
-  node.dataset.klass = 'world';
-  node.dataset.cls = '';
-  node.appendChild(leadBlock(lead));
+  const m = record ? measure(record, ctx) : null;
+  const klass = record ? klassOf(record) : 'world';
+  node.dataset.klass = klass;
+  node.dataset.cls = record ? String(m.cls || record.cls || '') : '';
+  node.dataset.stop = lead.body ? 'full' : 'title';
+  if (record && !placesMod && isEarthFrame(m.frame) && m.latDeg !== null && !standsStill(record, m)) ensurePlaces();
+
+  const header = el('header', 'sr-card__header sr-card__header--stop');
+  if (lead.micro) header.appendChild(el('p', 'sr-card__micro', lead.micro));
+  const title = el('h2', 'sr-card__name', lead.title);
+  title.id = CARD_LEAD_TITLE_ID;
+  title.tabIndex = -1;
+  title.title = String(lead.title || '');
+  header.appendChild(title);
+  // What the numbers below are OF, when the title is a line of story ("Two places, and only two")
+  // rather than a name: the class swatch and the object's own name, never a chip.
+  const name = record ? displayName(record) : '';
+  const namedAbove = !!(record && sameName(lead.title, name));
+  if (record && !namedAbove) {
+    const subject = el('p', 'sr-card__subject');
+    const dot = el('span', `sr-swatch sr-swatch--${klass}`);
+    dot.setAttribute('aria-hidden', 'true');
+    subject.appendChild(dot);
+    subject.appendChild(el('span', 'sr-card__subjectname', name));
+    header.appendChild(subject);
+  }
+  const when = el('p', 'sr-card__when');
+  when.hidden = true;
+  header.appendChild(when);
+  node.appendChild(header);
+
   bodyEl = null;
+  if (lead.body) {
+    const body = el('div', 'sr-card__body');
+    bodyEl = body;
+    let passInfo = null;
+    let rows = [];
+    if (record) {
+      passInfo = nextPass(record, ctx, m);
+      rows = rightNowRows(record, m, passInfo);
+      const heroes = heroNumbers(record, m, rows);
+      if (heroes.length) body.appendChild(heroBlock(heroes));
+    }
+    body.appendChild(el('p', 'sr-card__leadbody', lead.body));
+    const note = leadNote(lead);
+    if (note) body.appendChild(el('p', 'sr-card__leadnote', note));
+    if (record) body.appendChild(moreSections(record, ctx, m, passInfo, rows, null, namedAbove, opts));
+    node.appendChild(body);
+
+    const foot = el('footer', 'sr-card__foot');
+    if (record) foot.appendChild(el('p', 'sr-card__cls', honestyLine(record, m)));
+    const tripLine = el('p', 'sr-card__tripline');
+    tripLine.hidden = true;
+    foot.appendChild(tripLine);
+    node.appendChild(foot);
+    node.appendChild(moreCue());
+  }
+
+  putBack();
   node.hidden = false;
   node.classList.add('is-open');
   markCardOpen(true);
+  restore();
+  paintMore(node);
 }
 
 /**
@@ -2707,76 +2835,17 @@ function keepPlace(node) {
   };
 }
 
-function render(record, ctx, opts = {}) {
-  const lead = opts.lead;
-  if (!record) {
-    renderLeadOnly(lead);
-    return;
-  }
-  const node = ensureHost();
-  const klass = klassOf(record);
-  const m = measure(record, ctx);
-  const passInfo = nextPass(record, ctx, m);
+/**
+ * Block 5, the rows that open in place: When you can see it, Its path, Who is aboard, About it,
+ * Sources for this record. A function of its own since spec 0061 task 7, because the stop card in
+ * a guided trip carries the same rows under the stop's words (renderStop) and two copies of this
+ * block would drift. `time` is the 90-minute facts, or null where the card does not show them.
+ */
+function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
   const S = COPY.card.sections;
-  const rid = String(record.id || displayName(record));
-  // The first card for something over the Earth fetches the places; the row appears when they land.
-  if (!placesMod && isEarthFrame(m.frame) && m.latDeg !== null && !standsStill(record, m)) ensurePlaces();
-
-  const restore = keepPlace(node);
-  clear(node);
-  node.dataset.klass = klass;
-  node.dataset.cls = String(m.cls || record.cls || '');
-
-  // 0. the trip's own words, above everything and reordering nothing.
-  if (lead) node.appendChild(leadBlock(lead));
-
-  // 1. the microlabel and the name. Under a stop title that already names the subject the name is
-  // kept for a screen reader and not drawn: "The International Space Station", "International
-  // Space Station", "International Space Station is..." was one name three times in 120 px (#279).
+  const klass = klassOf(record);
   const name = displayName(record);
-  const namedAbove = !!(lead && lead.title && sameName(lead.title, name));
-  const header = el('header', namedAbove ? 'sr-card__header is-named-above' : 'sr-card__header');
-  header.appendChild(el('p', 'sr-card__micro', microLabel(record, m)));
-  const title = el('h2', 'sr-card__name', name);
-  // The card is a dialog, and a dialog needs a name: it had role="dialog" and nothing to call it by.
-  title.id = CARD_TITLE_ID;
-  title.tabIndex = -1; // focusable by script only (takeFocus), never a stop in the tab order
-  title.title = name; // two lines, then an ellipsis: the whole name is here
-  header.appendChild(title);
-  const close = el('button', 'sr-card__close');
-  close.type = 'button';
-  close.title = COPY.card.closeTitle;
-  close.setAttribute('aria-label', COPY.card.close);
-  close.dataset.focus = 'close';
-  close.appendChild(icon('x'));
-  close.addEventListener('click', hideCard);
-  header.appendChild(close);
-  node.appendChild(header);
-
-  const body = el('div', 'sr-card__body');
-  bodyEl = body;
-  node.appendChild(body);
-
-  // 2. the three numbers, read off the card's own rows.
-  const rows = rightNowRows(record, m, passInfo);
-  const heroes = heroNumbers(record, m, rows);
-  if (heroes.length) body.appendChild(heroBlock(heroes));
-
-  // 3. the four actions, one of them ember.
-  const actions = el('div', 'sr-card__actions');
-  actions.setAttribute('role', 'group');
-  actions.setAttribute('aria-label', COPY.card.actionsLabel);
-  for (const b of actionButtons(record, ctx, m)) {
-    b.dataset.focus = `act-${b.dataset.action}`;
-    actions.appendChild(b);
-  }
-  body.appendChild(actions);
-
-  // 4. the next 90 minutes in time: light and shadow, the lap (spec 0048)
-  const time = timeFactsSection(record, ctx, m);
-  if (time) { body.appendChild(time.bar); startTimeFacts(); }
-
-  // 5. the sections, each opening in place.
+  const rid = String(record.id || name);
   const more = el('nav', 'sr-card__more-list');
   more.setAttribute('aria-label', S.label);
   const add = (id, label, hint, panel) => {
@@ -2896,7 +2965,72 @@ function render(record, ctx, opts = {}) {
     el('p', 'sr-card__source', sourceLine(record, ctx)),
   ]));
 
-  body.appendChild(more);
+  return more;
+}
+
+function render(record, ctx, opts = {}) {
+  if (opts.lead) {
+    renderStop(record, ctx, opts);
+    return;
+  }
+  if (!record) return;
+  const node = ensureHost();
+  const klass = klassOf(record);
+  const m = measure(record, ctx);
+  const passInfo = nextPass(record, ctx, m);
+  // The first card for something over the Earth fetches the places; the row appears when they land.
+  if (!placesMod && isEarthFrame(m.frame) && m.latDeg !== null && !standsStill(record, m)) ensurePlaces();
+
+  const restore = keepPlace(node);
+  clear(node);
+  node.dataset.klass = klass;
+  node.dataset.cls = String(m.cls || record.cls || '');
+
+  // 1. the microlabel and the name. (A guided trip's stop is renderStop above.)
+  const name = displayName(record);
+  const header = el('header', 'sr-card__header');
+  header.appendChild(el('p', 'sr-card__micro', microLabel(record, m)));
+  const title = el('h2', 'sr-card__name', name);
+  // The card is a dialog, and a dialog needs a name: it had role="dialog" and nothing to call it by.
+  title.id = CARD_TITLE_ID;
+  title.tabIndex = -1; // focusable by script only (takeFocus), never a stop in the tab order
+  title.title = name; // two lines, then an ellipsis: the whole name is here
+  header.appendChild(title);
+  const close = el('button', 'sr-card__close');
+  close.type = 'button';
+  close.title = COPY.card.closeTitle;
+  close.setAttribute('aria-label', COPY.card.close);
+  close.dataset.focus = 'close';
+  close.appendChild(icon('x'));
+  close.addEventListener('click', hideCard);
+  header.appendChild(close);
+  node.appendChild(header);
+
+  const body = el('div', 'sr-card__body');
+  bodyEl = body;
+  node.appendChild(body);
+
+  // 2. the three numbers, read off the card's own rows.
+  const rows = rightNowRows(record, m, passInfo);
+  const heroes = heroNumbers(record, m, rows);
+  if (heroes.length) body.appendChild(heroBlock(heroes));
+
+  // 3. the four actions, one of them ember.
+  const actions = el('div', 'sr-card__actions');
+  actions.setAttribute('role', 'group');
+  actions.setAttribute('aria-label', COPY.card.actionsLabel);
+  for (const b of actionButtons(record, ctx, m)) {
+    b.dataset.focus = `act-${b.dataset.action}`;
+    actions.appendChild(b);
+  }
+  body.appendChild(actions);
+
+  // 4. the next 90 minutes in time: light and shadow, the lap (spec 0048)
+  const time = timeFactsSection(record, ctx, m);
+  if (time) { body.appendChild(time.bar); startTimeFacts(); }
+
+  // 5. the sections, each opening in place.
+  body.appendChild(moreSections(record, ctx, m, passInfo, rows, time, false, opts));
 
   // 6. the honesty line, small, at the foot: how the position was worked out and how old it is.
   const foot = el('footer', 'sr-card__foot');
