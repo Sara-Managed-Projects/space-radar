@@ -226,8 +226,7 @@ export async function boot({ setStatus } = {}) {
 
   // THE AURORA (2026-09-30, scene/aurora.js, spec 0053 task 3): NOAA's OVATION forecast of the next
   // hour, drawn on the night side. Built now so the card, the Sources panel and the layers panel can
-  // ask it; like the clouds it fetches nothing until START_DELAY_MS after this and an idle moment,
-  // builds no mesh and compiles no shader until a forecast has arrived, and never runs on a
+  // ask it; it fetches nothing until the layers have landed (below), builds no mesh and compiles no shader until a forecast has arrived, and never runs on a
   // connection that saves data. Its box is the `aurora` layer (data/layers.js `draw: 'aurora'`).
   ctx.aurora = createAurora({
     earth: () => worlds.meshFor('earth'),
@@ -238,7 +237,11 @@ export async function boot({ setStatus } = {}) {
     // The Earth card rewrites its aurora line on this, as it does its clouds line on sr:clouds.
     onChange: () => window.dispatchEvent(new CustomEvent('sr:aurora')),
   });
-  ctx.aurora.start();
+  // Started once the catalogues have landed, the way the live clouds are on the UI shell (#349): the
+  // map's own data first, the weather after it, so not one forecast byte falls inside the first
+  // visit (registry/budgets.yaml first_visit_bytes). The first look is START_DELAY_MS after this,
+  // in an idle moment. Registered here, before the load starts, so the event cannot be missed.
+  window.addEventListener('sr:layers-ready', () => ctx.aurora.start(), { once: true });
   {
     const layer = LAYERS.find((l) => l.id === 'aurora');
     if (layer) {

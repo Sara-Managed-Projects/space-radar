@@ -38,9 +38,10 @@ export const GRID_H = 181;
  */
 export const REFRESH_MS = 15 * 60 * 1000;
 /**
- * Not before this long after the first frame, and then only in an idle moment: the first visit's
- * byte budget (registry/budgets.yaml first_visit_bytes) is spent by then. Two seconds after the
- * live clouds' first look (data/gibs.js START_DELAY_MS = 6 s), so the two never race for the same idle
+ * Not before this long after the map's own catalogues have landed (main.js starts the aurora on
+ * `sr:layers-ready`, as the live clouds are), and then only in an idle moment: the first visit's
+ * byte budget (registry/budgets.yaml first_visit_bytes) is spent by then. Two seconds after the live
+ * clouds' first look (data/gibs.js START_DELAY_MS = 6 s), so the two never race for the same idle
  * callback on a slow phone.
  */
 export const START_DELAY_MS = 8000;

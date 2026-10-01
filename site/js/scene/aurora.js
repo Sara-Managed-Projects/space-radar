@@ -2,7 +2,7 @@
 //
 // Contract:
 //   createAurora({ earth, renderer?, camera?, scene?, now?, saveData?, tier?, onChange? })
-//     .start()                    schedules the first look START_DELAY_MS after it is called
+//     .start()                    schedules the first look START_DELAY_MS after it is called (main.js: on sr:layers-ready)
 //     .tick(clockMs, opts)        once a frame, after the Earth's update: {on, latched, reducedMotion, discShare}
 //     .state()                    what is held: the forecast's times, its summary, bytes, why not drawn
 //     .line(clockMs)              the Earth card's sentence about its aurora (copy/en.js COPY.aurora)
@@ -39,7 +39,7 @@
 // step (nightMask), the same test the Earth's night lights use in spirit, with its own band.
 //
 // WHAT IT COSTS. Nothing on the boot path: no request, no geometry, no shader until the first
-// forecast has arrived (START_DELAY_MS after the first frame, in an idle moment). Then one draw
+// forecast has arrived (START_DELAY_MS after the layers have landed, in an idle moment). Then one draw
 // call, one 720 x 361 R8 texture (259 920 bytes of GPU memory; data/ovation.js upsampleGrid says
 // why half a degree) and a 64 x 32 sphere of positions and indices only (~50 kB). The fragment cost is where the shell is: two cheap tests discard every pixel whose
 // ray never reaches the oval's latitudes or never leaves daylight, so on a quiet day most of the
@@ -103,7 +103,7 @@ export const NIGHT = { dark: -0.10, lit: 0.02 };
 export const EMISSION = { floor: 0.03, full: 0.12, scale: 0.45 };
 
 /** The overall brightness a vertical column of full emission draws at, before tone mapping. */
-export const AURORA_GAIN = 1.25;
+export const AURORA_GAIN = 0.65;
 
 /**
  * Steps and step length per tier. The step count follows the ray's path through the shell (a
@@ -126,18 +126,26 @@ export const DIPOLE_POLE = { latDeg: 80.8, lonDeg: -72.7 };
 /**
  * The folds (ILLUSTRATIVE). Real aurora seen from orbit is a diffuse glow with a few bright
  * discrete arcs in it, brighter in patches along the oval. So `diffuse` of the forecast's light
- * stays smooth, and the rest is gathered into arcs one every 3.3 degrees of magnetic latitude
- * (arcPerDeg), each about 0.7 degree across (a raised cosine to the power `sharp`), whose brightness
- * comes and goes along the oval (patchK patches a half-oval). Two drafts taught the numbers: an arc
- * every 1.25 degrees smeared into one glow wherever the band was seen at a slant, and waves of
- * 0.9 arc at 5 and 13 a radian drew parallel neon squiggles. The arcs are
+ * stays smooth, and the rest is gathered into arcs one every 5.5 degrees of magnetic latitude
+ * (arcPerDeg), each about 1.3 degrees across (a raised cosine to the power `sharp`), whose
+ * brightness comes and goes along the oval (patchK patches a half-oval). Four drafts taught the
+ * numbers: an arc every 1.25 degrees smeared into one glow wherever the band was seen at a slant;
+ * waves of 0.9 arc at 5 and 13 a radian drew parallel neon squiggles; and an arc every 3.3 degrees
+ * put five concentric neon rings in a 20 % oval. The arcs are
  * bent by two gentle waves along the oval that drift away from magnetic midnight towards noon on both
  * flanks -- the way auroral forms ride the sunward return flow. The drifts are radians of magnetic
  * longitude a second: 0.01 is 25 km/s along an oval at 67 degrees, where the real flow is about
  * 1 km/s and would not move a pixel from this far out. So the motion is a slow shimmer, about a
  * pixel a second at the default view, and not a still. The card says the folds are drawn.
  */
-export const FOLDS = { arcPerDeg: 0.3, sharp: 8, ampA: 0.30, kA: 3.0, ampB: 0.10, kB: 11.0, patchK: 4.0, diffuse: 0.45, driftA: 0.010, driftB: 0.016 };
+export const FOLDS = { arcPerDeg: 0.18, sharp: 6, ampA: 0.25, kA: 3.0, ampB: 0.08, kB: 11.0, patchK: 4.0, diffuse: 0.6, driftA: 0.010, driftB: 0.016 };
+
+/** The mean of ((1 + cos x) / 2)^n over a period: C(2n, n) / 4^n. The arcs divide by it to keep the light. */
+export function arcMean(n) {
+  let c = 1;
+  for (let k = 1; k <= n; k++) c = (c * (n + k)) / k;
+  return c / 4 ** n;
+}
 
 /** The shell is not drawn when the Earth's disc is smaller than this share of half the view. */
 export const MIN_DISC_SHARE = 0.03;
@@ -289,9 +297,9 @@ const float ARC_PER_DEG = ${FOLDS.arcPerDeg.toFixed(4)};
 const float ARC_SHARP = ${FOLDS.sharp.toFixed(1)};
 const float PATCH_K = ${FOLDS.patchK.toFixed(3)};
 const float DIFFUSE = ${FOLDS.diffuse.toFixed(3)};
-// Mean-preserving: a raised cosine to the 8th averages 12870/65536 and a patch 0.5, so the arcs'
-// share is divided by both and the forecast's total light is kept; only where it falls is drawn.
-const float ARC_NORM = ${((1 - FOLDS.diffuse) / ((12870 / 65536) * 0.5)).toFixed(4)};
+// Mean-preserving: the arcs average arcMean(sharp) and a patch 0.5, so the arcs' share is divided
+// by both and the forecast's total light is kept; only where it falls is drawn.
+const float ARC_NORM = ${((1 - FOLDS.diffuse) / (arcMean(FOLDS.sharp) * 0.5)).toFixed(4)};
 const vec4 FOLD = vec4( ${FOLDS.ampA.toFixed(4)}, ${FOLDS.kA.toFixed(4)}, ${FOLDS.ampB.toFixed(4)}, ${FOLDS.kB.toFixed(4)} );
 const vec2 DRIFT = vec2( ${FOLDS.driftA.toFixed(4)}, ${FOLDS.driftB.toFixed(4)} );
 
