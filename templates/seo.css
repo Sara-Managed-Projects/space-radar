@@ -1,0 +1,37 @@
+/* The object pages' and the 404 page's look: the shipped tokens (site/css/ui.css :root, docs/ui-guide.md
+   section 2), inlined by scripts/build_seo.py so a page is one request. Edit here, not in a page. */
+:root{--sr-space:#0b0e14;--sr-text:#e8ecf2;--sr-text-dim:#9aa4b2;--sr-ember:#ff9f43;--sr-ember-light:#ffc28a;--sr-ink:#14100a;--sr-line:rgba(232,236,242,.10);--sr-wash:rgba(232,236,242,.07);--sr-wash-hover:rgba(232,236,242,.10);--sr-radius:6px}
+html{background:var(--sr-space);color:var(--sr-text);font:400 15px/20px Inter,system-ui,-apple-system,sans-serif;-webkit-text-size-adjust:100%}
+body{margin:0}
+.top,main,footer{max-width:720px;margin:0 auto;padding-left:20px;padding-right:20px}
+.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 16px;padding-top:12px;padding-bottom:12px;border-bottom:1px solid var(--sr-line)}
+.top a{display:inline-flex;align-items:center;min-height:44px;color:var(--sr-text);text-decoration:none}
+.mark{font:600 20px/1 'Barlow Semi Condensed',system-ui,sans-serif;letter-spacing:.02em}
+main{padding-top:32px;padding-bottom:32px}
+.micro,h2{font:600 13px/16px 'Barlow Semi Condensed',system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--sr-text-dim)}
+.micro{margin:0 0 8px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
+h1{font:600 30px/1.1 Inter,system-ui,sans-serif;letter-spacing:-.01em;margin:0 0 16px;overflow-wrap:anywhere}
+h2{margin:32px 0 12px;padding-top:16px;border-top:1px solid var(--sr-line)}
+p{margin:0 0 16px;max-width:65ch}
+.lead{font-size:20px;line-height:28px}
+a{color:var(--sr-ember)}
+a:hover{color:var(--sr-ember-light)}
+a:focus-visible{outline:2px solid var(--sr-ember);outline-offset:2px;border-radius:2px}
+.cta{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;margin:24px 0 8px}
+.cta p{margin:0;color:var(--sr-text-dim);font-size:13px;line-height:18px}
+.live{display:inline-flex;align-items:center;min-height:56px;padding:0 24px;border-radius:var(--sr-radius);background:var(--sr-ember);color:var(--sr-ink);font-weight:600;font-size:17px;text-decoration:none}
+.live:hover{background:var(--sr-ember-light);color:var(--sr-ink)}
+dl{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px 24px;margin:0}
+dt{font-size:13px;line-height:18px;color:var(--sr-text-dim)}
+dd{margin:2px 0 0;font:400 15px/20px 'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+ul.links{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:8px}
+ul.links a{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;border-radius:var(--sr-radius);background:var(--sr-wash);color:var(--sr-text);text-decoration:none}
+ul.links a:hover{background:var(--sr-wash-hover)}
+ul.myths{padding-left:20px;margin:0}
+ul.myths li{margin:0 0 12px}
+figure{margin:24px 0}
+figure img{display:block;max-width:100%;height:auto;border-radius:var(--sr-radius)}
+.dim,figcaption{color:var(--sr-text-dim);font-size:13px;line-height:18px}
+footer{padding-top:16px;padding-bottom:32px;border-top:1px solid var(--sr-line)}
+footer p{color:var(--sr-text-dim);font-size:13px;line-height:18px;overflow-wrap:anywhere}

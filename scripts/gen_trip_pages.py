@@ -25,6 +25,12 @@ spec 0033 (2026-09-23) the per-trip pictures are rendered by `scripts/shots.mjs 
 readme-shots workflow and checked in; a trip added since the last run keeps the default until the
 workflow is run again. Re-run this after adding a picture: `--check` then holds the page to it.
 
+SEARCH (spec 0061 task 9). The `<title>` is the trip's title and the site's name when the two fit in
+60 characters, and the title alone when they do not; the description is the blurb, cut at a
+sentence when it is over 160 characters and followed by one plain line when it is under 70, because
+a search result shows those lengths and no others well. scripts/check_seo.py holds every page to
+them. The JSON-LD names the page as part of the site the home page declares.
+
 Same rule as the other generators: the page is a mirror of the registry, in HTML, and CI refuses
 a stale one. A stale page is a share that says the wrong thing about the trip it opens.
 
@@ -36,6 +42,7 @@ Run:  python3 scripts/gen_trip_pages.py                          # write site/t/
 from __future__ import annotations
 
 import html
+import json
 import re
 import sys
 from pathlib import Path
@@ -62,19 +69,22 @@ PAGE = """<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{title} · {site}</title>
-<meta name="description" content="{blurb}">
+<title>{page_title}</title>
+<meta name="description" content="{description}">
 <meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0b0e14">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="{site}">
 <meta property="og:title" content="{title}">
-<meta property="og:description" content="{blurb}">
+<meta property="og:description" content="{description}">
 <meta property="og:image" content="{image}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="{image_alt}">
 <meta property="og:url" content="{url}">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="{url}">
+<script type="application/ld+json">{ld}</script>
 <meta http-equiv="refresh" content="0; url=../#trip={id}">
 </head>
 <body>
@@ -90,9 +100,42 @@ def read_trips() -> list[dict]:
     return list(doc.get("tours") or [])
 
 
+TITLE_MAX = 60
+DESC_MIN = 70
+DESC_MAX = 160
+# Said after a blurb too short for a search result; true of every trip.
+DESC_TAIL = "A guided trip on the live 3D map of space."
+DEFAULT_ALT = "The Earth from space with the satellites around it as points of light, captioned Space Radar."
+
+
 def image_for(trip_id: str, host: str) -> str:
     name = trip_id if (OG / f"{trip_id}.png").is_file() else "default"
     return f"{host}/og/{name}.png"
+
+
+def image_alt_for(trip_id: str, title: str) -> str:
+    # A trip's picture is a view from the trip with its title and blurb printed under it.
+    if (OG / f"{trip_id}.png").is_file():
+        return f"A view from the trip, captioned {title}."
+    return DEFAULT_ALT
+
+
+def page_title_for(title: str) -> str:
+    full = f"{title} · {SITE_NAME}"
+    if len(full) <= TITLE_MAX:
+        return full
+    return title if len(title) <= TITLE_MAX else title[:TITLE_MAX - 1].rstrip() + "…"
+
+
+def description_for(blurb: str) -> str:
+    text = blurb
+    if len(text) < DESC_MIN:
+        text = f"{text} {DESC_TAIL}"
+    if len(text) > DESC_MAX:
+        head = text[:DESC_MAX]
+        end = head.rfind(". ")
+        text = head[:end + 1] if end >= DESC_MIN else head[:head.rfind(" ")].rstrip(",;:") + "…"
+    return text
 
 
 def page_for(trip: dict, host: str) -> str:
@@ -104,13 +147,20 @@ def page_for(trip: dict, host: str) -> str:
     if not title or not blurb:
         raise SystemExit(f"gen_trip_pages: trip {trip_id} has no title or no blurb")
     esc = lambda s: html.escape(s, quote=True)  # noqa: E731
+    url = f"{host}/t/{trip_id}.html"
+    ld = {"@context": "https://schema.org", "@type": "WebPage", "url": url, "name": title,
+          "description": description_for(blurb), "isPartOf": {"@id": f"{host}/#website"}}
     return PAGE.format(
         id=trip_id,
         site=SITE_NAME,
         title=esc(title),
+        page_title=esc(page_title_for(title)),
         blurb=esc(blurb),
+        description=esc(description_for(blurb)),
         image=esc(image_for(trip_id, host)),
-        url=esc(f"{host}/t/{trip_id}.html"),
+        image_alt=esc(image_alt_for(trip_id, title)),
+        url=esc(url),
+        ld=json.dumps(ld, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/"),
     )
 
 

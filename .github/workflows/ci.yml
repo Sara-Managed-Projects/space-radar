@@ -112,6 +112,10 @@ jobs:
         run: python3 scripts/check_copy.py
       - name: A new world is a registry row
         run: python3 tests/test_growth.py
+      # Node for the SEO cases, which start from a fresh build of the object pages (card words are JS).
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
       - name: The validator actually refuses
         run: python3 tests/test_refusals.py
       # The harvester's zip is built on every pull request with no AWS in sight (specs/0003
@@ -126,6 +130,28 @@ jobs:
         run: python3 tests/test_harvester_scripts.py
       - name: A refresh that fails publishes the last good saved copy, never an empty one
         run: python3 tests/test_refresh_keep_good.py
+
+
+  # Spec 0061 task 9: what a search engine reads. The object pages, the sitemap and the 404 page are
+  # built at deploy time and never kept in git, so CI builds them into a temporary directory and
+  # holds that build to check_seo.py. Node, because the pages carry the card's own words.
+  seo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: pip install --disable-pip-version-check pyyaml
+      - name: The home page's search tags and JSON-LD match registry/sources.yaml
+        run: python3 scripts/gen_home_seo.py --check
+      - name: The object pages build, and titles, descriptions, canonicals, pictures, JSON-LD, robots.txt and the sitemap hold
+        run: python3 scripts/build_seo.py --out "$RUNNER_TEMP/seo" && python3 scripts/check_seo.py --out "$RUNNER_TEMP/seo"
+      - name: The SEO build carries the card's words and no live number, and deploy.sh ships it
+        run: python3 tests/test_seo.py
 
   contract:
     runs-on: ubuntu-latest

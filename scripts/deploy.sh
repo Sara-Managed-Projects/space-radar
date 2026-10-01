@@ -12,8 +12,9 @@
 #   --profile NAME        an AWS CLI profile. Default: whatever your environment already uses.
 #   --assets-only         skip the app files; push textures, data, vendor, models, images, the
 #                         share pictures (og/) and the sounds (audio/) only.
-#   --app-only            skip the big assets; push HTML, CSS, JS and the trip pages (t/) only.
-#                         The usual case.
+#   --app-only            skip the big assets; push HTML, CSS, JS, the trip pages (t/), robots.txt
+#                         and the pages scripts/build_seo.py builds (o/, sitemap.xml, 404.html)
+#                         only. The usual case.
 #   --dry-run             print what would be uploaded and change nothing.
 #
 # WHY THIS IS A SCRIPT AND NOT ONE `aws s3 sync`
@@ -161,16 +162,36 @@ if [ "$WHAT" != "assets" ]; then
   # registry must not keep a page that opens the app on nothing.
   "${SYNC[@]}" "$SITE/t"   "s3://$BUCKET/t" \
     --cache-control "no-cache" --content-type "text/html; charset=utf-8" --delete
-  if [ "$DRY_RUN" = "1" ]; then
-    echo "  would upload index.html"
-  else
-    aws s3 cp "$SITE/index.html" "s3://$BUCKET/index.html" --region "$REGION" \
-      --cache-control "no-cache" --content-type "text/html; charset=utf-8"
-  fi
+  # The pages a search engine reads that are not kept in git (spec 0061 task 9): one per notable
+  # object, the sitemap and the 404 page, built here from the records and the card's own words
+  # (scripts/build_seo.py; it needs Node, as the card's words are JavaScript). o/ is synced like
+  # t/: HTML, no-cache, and --delete, so an object that left the registry loses its page.
+  command -v node >/dev/null || die "node is not installed; scripts/build_seo.py needs it for the object pages"
+  BUILT="$(mktemp -d)"
+  trap 'rm -rf "$BUILT"' EXIT
+  python3 "$(dirname "$0")/build_seo.py" --out "$BUILT" || die "scripts/build_seo.py failed"
+  python3 "$(dirname "$0")/check_seo.py" --out "$BUILT" || die "scripts/check_seo.py refused the built pages"
+  "${SYNC[@]}" "$BUILT/o"  "s3://$BUCKET/o" \
+    --cache-control "no-cache" --content-type "text/html; charset=utf-8" --delete
+  # The root files, each with its own type: the CLI guesses from the extension, and a sitemap
+  # served as binary/octet-stream is one a crawler may refuse. No-cache like index.html, so a new
+  # page is in the sitemap the moment it is deployed. 404.html is what CloudFront answers for a
+  # missing path once its error response names it (Ivan's setting, in the SEO pull request).
+  for f in "$SITE/index.html:text/html; charset=utf-8" "$BUILT/404.html:text/html; charset=utf-8" \
+           "$SITE/robots.txt:text/plain; charset=utf-8" "$BUILT/sitemap.xml:application/xml; charset=utf-8"; do
+    path="${f%%:*}"; type="${f#*:}"; name="$(basename "$path")"
+    [ -f "$path" ] || die "$name is missing"
+    if [ "$DRY_RUN" = "1" ]; then
+      echo "  would upload $name ($type)"
+    else
+      aws s3 cp "$path" "s3://$BUCKET/$name" --region "$REGION" \
+        --cache-control "no-cache" --content-type "$type"
+    fi
+  done
 fi
 
 if [ -n "$DISTRIBUTION" ] && [ "$DRY_RUN" != "1" ]; then
-  PATHS=("/" "/index.html" "/js/*" "/css/*" "/t/*")
+  PATHS=("/" "/index.html" "/js/*" "/css/*" "/t/*" "/o/*" "/robots.txt" "/sitemap.xml" "/404.html")
   if [ "$WHAT" != "app" ]; then
     # The data files were just pushed and keep their names: expire the edge copies now.
     PATHS+=("/data/*")

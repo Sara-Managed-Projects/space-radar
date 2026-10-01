@@ -1,0 +1,6 @@
+# spaceradar.ai: every page may be crawled. The sitemap lists the ones worth indexing: the map,
+# one page per notable object (/o/) and one per guided trip (/t/).
+User-agent: *
+Allow: /
+
+Sitemap: https://www.spaceradar.ai/sitemap.xml

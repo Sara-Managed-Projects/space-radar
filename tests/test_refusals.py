@@ -956,6 +956,96 @@ def check_copy_refuses() -> int:
     return failures
 
 
+# scripts/check_seo.py (spec 0061 task 9): what a search engine reads. Each case breaks one rule in a
+# copy of the committed pages (site/) or of a fresh scripts/build_seo.py build (built/); the refusal
+# must name the file that broke it. (name, file, find, replace, the name the refusal must carry)
+SEO_CASES: list[tuple[str, str, str, str, str]] = [
+    ("a title over 60 characters", "built/o/europa.html",
+     "<title>Europa: where it is now | Space Radar</title>",
+     "<title>Europa, one of the four big moons of Jupiter: where it is now | Space Radar</title>", "o/europa.html"),
+    ("a description under 70 characters", "built/o/europa.html",
+     '<meta name="description" content="', '<meta name="description" content="Europa. " data-x="', "o/europa.html"),
+    ("two pages with one title", "built/o/io.html",
+     "<title>Io: where it is now | Space Radar</title>", "<title>Europa: where it is now | Space Radar</title>",
+     "o/io.html"),
+    ("a page with no canonical", "site/t/to-the-edge.html",
+     '<link rel="canonical" href="https://www.spaceradar.ai/t/to-the-edge.html">', "", "t/to-the-edge.html"),
+    ("a canonical that is another page's", "built/o/europa.html",
+     '<link rel="canonical" href="https://www.spaceradar.ai/o/europa.html">',
+     '<link rel="canonical" href="https://www.spaceradar.ai/o/mars.html">', "o/europa.html"),
+    ("an og:image that is not in site/", "built/o/sirius.html",
+     'og:image" content="https://www.spaceradar.ai/og/default.png"',
+     'og:image" content="https://www.spaceradar.ai/og/sirius.png"', "o/sirius.html"),
+    ("JSON-LD that does not parse", "built/o/mars.html",
+     '<script type="application/ld+json">{"@context"', '<script type="application/ld+json">{"@context",', "o/mars.html"),
+    ("a sitemap URL with no page behind it", "built/sitemap.xml",
+     "</urlset>", "<url><loc>https://www.spaceradar.ai/o/nowhere.html</loc><lastmod>2026-10-01</lastmod></url>\n</urlset>",
+     "sitemap.xml"),
+    ("a page the sitemap leaves out", "built/sitemap.xml",
+     "<url><loc>https://www.spaceradar.ai/o/europa.html</loc>", "<url><loc>https://www.spaceradar.ai/o/mars.html</loc>",
+     "o/europa.html"),
+    ("robots.txt that does not name the sitemap", "site/robots.txt",
+     "Sitemap: https://www.spaceradar.ai/sitemap.xml", "", "robots.txt"),
+    ("robots.txt that shuts the site out", "site/robots.txt", "Allow: /", "Disallow: /", "robots.txt"),
+    ("the 404 page in the sitemap", "built/sitemap.xml",
+     "</urlset>", "<url><loc>https://www.spaceradar.ai/404.html</loc><lastmod>2026-10-01</lastmod></url>\n</urlset>",
+     "404.html"),
+]
+
+
+def check_seo_refusals() -> int:
+    """Break each rule scripts/check_seo.py holds; assert it refuses and names the file. The object
+    pages are built at deploy time and not kept in git, so the cases start from a fresh build (which
+    needs Node: the card's words are JavaScript)."""
+    failures = 0
+    with tempfile.TemporaryDirectory() as tmp:
+        clean_tree = Path(tmp) / "clean"
+        site = clean_tree / "site"
+        site.mkdir(parents=True)
+        for name in ("index.html", "robots.txt"):
+            shutil.copy2(ROOT / "site" / name, site / name)
+        for d in ("t", "og", "images"):
+            shutil.copytree(ROOT / "site" / d, site / d)
+        build = subprocess.run([sys.executable, str(ROOT / "scripts/build_seo.py"), "--out", str(clean_tree / "built")],
+                               capture_output=True, text=True)
+        if build.returncode != 0:
+            print("  ** scripts/build_seo.py could not build the pages the SEO cases start from")
+            print(build.stdout + build.stderr)
+            return 1
+
+        def run_check(tree: Path) -> subprocess.CompletedProcess:
+            return subprocess.run([sys.executable, str(ROOT / "scripts/check_seo.py"), "--root", str(tree),
+                                   "--out", str(tree / "built")], capture_output=True, text=True)
+
+        clean = run_check(clean_tree)
+        if clean.returncode != 0:
+            print("  ** check_seo.py fails on the unmutated pages, so every case below is a tautology")
+            print(clean.stdout or clean.stderr)
+            return 1
+        print("  accepted: the pages as built")
+        for name, filename, find, replace, names in SEO_CASES:
+            work = Path(tmp) / "work"
+            if work.exists():
+                shutil.rmtree(work)
+            shutil.copytree(clean_tree, work)
+            path = work / filename
+            text = path.read_text(encoding="utf-8")
+            if find not in text:
+                print(f"BROKEN TEST: {name!r} -- the string it mutates is not in {filename}")
+                failures += 1
+                continue
+            path.write_text(text.replace(find, replace, 1), encoding="utf-8")
+            result = run_check(work)
+            out = result.stdout + result.stderr
+            if result.returncode != 0 and names in out:
+                print(f"  refused: {name}")
+            else:
+                why = "was accepted" if result.returncode == 0 else f"refused without naming {names}"
+                print(f"  ** {name}: {why}")
+                failures += 1
+    return failures
+
+
 def check_models_dir_refuses() -> int:
     """A .glb in site/models/ with no registry row must be refused.
 
@@ -1153,10 +1243,13 @@ def main() -> int:
     print("")
     failures += check_budget_refusals()
 
+    print("")
+    failures += check_seo_refusals()
+
     if failures:
         print(f"\n{failures} guard(s) do not do what they claim")
         return 1
-    refusals = len(CASES) + len(COPY_CASES) + len(TOUR_CASES) + 1 + sum(1 for c in BUDGET_CASES if c[3])
+    refusals = len(CASES) + len(COPY_CASES) + len(TOUR_CASES) + 1 + sum(1 for c in BUDGET_CASES if c[3]) + len(SEO_CASES)
     print(f"\nall {refusals} refusals fire and each names its file, and registry/tours.yaml "
           f"and a site/models that matches the registry are both accepted")
     return 0
