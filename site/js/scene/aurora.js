@@ -79,10 +79,18 @@ export const VIOLET_TO = 0.9;
 
 /**
  * The colours, LINEAR light, of the three lines as cameras record them. Monochromatic 557.7 nm lies
- * outside sRGB; the ISS pictures render it a slightly blue-leaning green, which is this (#4DFF88
- * encoded). 630 nm is a deep red (#FF2A3C) and 427.8 nm a blue violet (#9A6BFF).
+ * outside sRGB; the ISS pictures render the core a soft bright green, which is this (#7DFF9A
+ * encoded; the first draft's #4DFF88 read as neon). 630 nm is a deep red (#FF2A3C) and 427.8 nm a
+ * blue violet (#9A6BFF).
  */
-export const GREEN_557 = [0.074, 1.0, 0.246];
+export const GREEN_557 = [0.205, 1.0, 0.323];
+/**
+ * The faint edge of the band, desaturated towards its own luminance (70 % of the way to the core's
+ * chroma): a dim aurora reads as a soft pale glow in photographs, and only a bright core as the
+ * green of the line. The colour slides from this to GREEN_557 as the emission rises (EDGE_TO_CORE).
+ */
+export const GREEN_EDGE = [0.378, 0.935, 0.461];
+export const EDGE_TO_CORE = [0.12, 0.6];
 export const RED_630 = [1.0, 0.023, 0.045];
 export const VIOLET_428 = [0.323, 0.147, 1.0];
 
@@ -95,13 +103,13 @@ export const NIGHT = { dark: -0.10, lit: 0.02 };
 
 /**
  * Probability to emission (0..1). Below 3 % nothing (OVATION's floor is noise at the oval's edge),
- * the gate full by 12 % (NOAA's own map starts colouring at 10), then 1 - exp(-p^1.5 / 0.25):
+ * the gate full by 15 % (soft, so the band's edge is a fade and not a step), then 1 - exp(-p^1.5 / 0.25):
  * brightness grows with the energy flux the probability stands for, faster than linearly at first
  * so the oval's core stands out from its fringe, and saturates the way a camera does. 10 % draws at
  * 0.12, 20 % at 0.30, 60 % at 0.84: faint is faint (spec 0053 req 5, "never exaggerated"). The
  * first drafts (1 - exp(-p / 0.3), then / 0.45) made a 20 % oval one flat green plate.
  */
-export const EMISSION = { floor: 0.03, full: 0.12, scale: 0.25, power: 1.5 };
+export const EMISSION = { floor: 0.03, full: 0.15, scale: 0.25, power: 1.5 };
 
 /**
  * The overall brightness a vertical column of full emission draws at, before tone mapping. Set
@@ -134,28 +142,35 @@ export const TIER_STEPS = [
 export const DIPOLE_POLE = { latDeg: 80.8, lonDeg: -72.7 };
 
 /**
- * The folds (ILLUSTRATIVE). Real aurora seen from orbit is a diffuse glow with a few bright
- * discrete arcs in it, brighter in patches along the oval. So `diffuse` of the forecast's light
- * stays smooth, and the rest is gathered into arcs one every 5.5 degrees of magnetic latitude
- * (arcPerDeg), each about 1.3 degrees across (a raised cosine to the power `sharp`), whose
- * brightness comes and goes along the oval (patchK patches a half-oval). Four drafts taught the
- * numbers: an arc every 1.25 degrees smeared into one glow wherever the band was seen at a slant;
- * waves of 0.9 arc at 5 and 13 a radian drew parallel neon squiggles; and an arc every 3.3 degrees
- * put five concentric neon rings in a 20 % oval. The arcs are
- * bent by two gentle waves along the oval that drift away from magnetic midnight towards noon on both
- * flanks -- the way auroral forms ride the sunward return flow. The drifts are radians of magnetic
- * longitude a second: 0.01 is 25 km/s along an oval at 67 degrees, where the real flow is about
- * 1 km/s and would not move a pixel from this far out. So the motion is a slow shimmer, about a
- * pixel a second at the default view, and not a still. The card says the folds are drawn.
+ * The folds (ILLUSTRATIVE). Seen from orbit (ISS photographs, VIIRS Day/Night Band) aurora is
+ * mostly a soft luminous band whose brightness follows the precipitation, with one or two brighter
+ * discrete arcs in it that break up, kink and swirl along the oval. So:
+ *   - `diffuse` of the light is the forecast as it is: the smoothed grid, a soft cross-section;
+ *   - the arcs are CONTOURS of the forecast itself, not lines at fixed latitudes: one where the
+ *     probability crosses `levels[0]` of the hemisphere's peak and a fainter one at `levels[1]`,
+ *     each drawn only on the band's EQUATORWARD side (where the bright discrete arc of an evening
+ *     oval sits), so they follow the oval's real shape and are never parallel copies of each other;
+ *   - each arc kinks (its level moves with 1D noise along the oval, about +-0.3 to 0.6 degree of
+ *     latitude on a 20 % oval), changes width (noise again), and comes and goes in beads, gaps and
+ *     brighter patches (a third noise, gated so about half the oval has no arc at all).
+ * Five drafts taught these numbers. Arcs at fixed magnetic latitudes every 1.25, 3.3 and 5.5 degrees
+ * drew smeared glow, concentric neon rings, and finally "two or three regular parallel stripes, like
+ * a decal" (the coordinator's read of the 2026-10-01 north view), whatever the noise on them.
+ * The noise is periodic in magnetic longitude and drifts along the oval: `drift` is noise cells a
+ * second; 0.02 of an 11-cell oval at 67 degrees is about 30 km/s, where the real flow is about
+ * 1 km/s and would not move a pixel from this far out. So the motion is a slow shimmer and not a
+ * still. The card says the folds are drawn.
  */
-export const FOLDS = { arcPerDeg: 0.18, sharp: 6, ampA: 0.25, kA: 3.0, ampB: 0.08, kB: 11.0, patchK: 4.0, patchFloor: 0.4, diffuse: 0.4, driftA: 0.010, driftB: 0.016 };
-
-/** The mean of ((1 + cos x) / 2)^n over a period: C(2n, n) / 4^n. The arcs divide by it to keep the light. */
-export function arcMean(n) {
-  let c = 1;
-  for (let k = 1; k <= n; k++) c = (c * (n + k)) / k;
-  return c / 4 ** n;
-}
+export const FOLDS = {
+  diffuse: 0.72,
+  levels: [0.55, 0.82],
+  levelGain: [1.0, 0.55],
+  widthPeak: 0.07,
+  kinkPeak: 0.07,
+  arcGain: 2.6,
+  cells: [11, 27, 7, 17, 31],
+  drift: 0.02,
+};
 
 /** The shell is not drawn when the Earth's disc is smaller than this share of half the view. */
 export const MIN_DISC_SHARE = 0.03;
@@ -210,7 +225,8 @@ export function auroraColour(hKm, e) {
   const r = profile(EMISSIONS.red, hKm) * EMISSIONS.red.gain;
   const v = profile(EMISSIONS.violet, hKm) * EMISSIONS.violet.gain * smoothstep(VIOLET_FROM, VIOLET_TO, e);
   const k = e / columnKm(EMISSIONS.green);
-  return [0, 1, 2].map((i) => k * (g * GREEN_557[i] + r * RED_630[i] + v * VIOLET_428[i]));
+  const c = smoothstep(EDGE_TO_CORE[0], EDGE_TO_CORE[1], e);
+  return [0, 1, 2].map((i) => k * (g * (GREEN_EDGE[i] + (GREEN_557[i] - GREEN_EDGE[i]) * c) + r * RED_630[i] + v * VIOLET_428[i]));
 }
 
 /** Where a geographic point reads the texture: texel centres every half degree, u east from 0, v north from -90. */
@@ -283,6 +299,7 @@ uniform float uStepKm;         // the tier's step
 uniform float uFolds;          // 0 or 1
 uniform float uTime;           // seconds, wall; held still under reduced motion
 uniform float uMinSinLat;      // sin of the lowest latitude the grid reaches, less a margin
+uniform vec2  uPeak;           // the forecast's peak probability, north and south, 0..1
 
 varying vec3 vPosL;
 
@@ -304,16 +321,17 @@ const vec2 NIGHT = vec2( ${NIGHT.dark.toFixed(4)}, ${NIGHT.lit.toFixed(4)} );
 const vec3 EMISSION = vec3( ${EMISSION.floor.toFixed(4)}, ${EMISSION.full.toFixed(4)}, ${EMISSION.scale.toFixed(4)} );
 const float EMISSION_POWER = ${EMISSION.power.toFixed(3)};
 const vec2 VIOLET_RANGE = vec2( ${VIOLET_FROM.toFixed(3)}, ${VIOLET_TO.toFixed(3)} );
-const float ARC_PER_DEG = ${FOLDS.arcPerDeg.toFixed(4)};
-const float ARC_SHARP = ${FOLDS.sharp.toFixed(1)};
-const float PATCH_K = ${FOLDS.patchK.toFixed(3)};
+const vec3 GREEN_EDGE = ${vec3(GREEN_EDGE)};
+const vec2 EDGE_TO_CORE = vec2( ${EDGE_TO_CORE[0].toFixed(3)}, ${EDGE_TO_CORE[1].toFixed(3)} );
 const float DIFFUSE = ${FOLDS.diffuse.toFixed(3)};
-const float PATCH_FLOOR = ${FOLDS.patchFloor.toFixed(3)};
-// Mean-preserving: the arcs average arcMean(sharp) and a patch (floor + (1 - floor) / 2), so the
-// arcs' share is divided by both and the forecast's total light is kept; only where it falls is drawn.
-const float ARC_NORM = ${((1 - FOLDS.diffuse) / (arcMean(FOLDS.sharp) * (FOLDS.patchFloor + (1 - FOLDS.patchFloor) / 2))).toFixed(4)};
-const vec4 FOLD = vec4( ${FOLDS.ampA.toFixed(4)}, ${FOLDS.kA.toFixed(4)}, ${FOLDS.ampB.toFixed(4)}, ${FOLDS.kB.toFixed(4)} );
-const vec2 DRIFT = vec2( ${FOLDS.driftA.toFixed(4)}, ${FOLDS.driftB.toFixed(4)} );
+const vec2 ARC_LEVELS = vec2( ${FOLDS.levels[0].toFixed(3)}, ${FOLDS.levels[1].toFixed(3)} );
+const vec2 ARC_LEVEL_GAIN = vec2( ${FOLDS.levelGain[0].toFixed(3)}, ${FOLDS.levelGain[1].toFixed(3)} );
+const float ARC_WIDTH = ${FOLDS.widthPeak.toFixed(4)};
+const float ARC_KINK = ${FOLDS.kinkPeak.toFixed(4)};
+const float ARC_GAIN = ${FOLDS.arcGain.toFixed(3)};
+const vec4 CELLS = vec4( ${FOLDS.cells.slice(0, 4).map((c) => c.toFixed(1)).join(', ')} );
+const float CELLS_B = ${FOLDS.cells[4].toFixed(1)};
+const float DRIFT = ${FOLDS.drift.toFixed(4)};
 
 vec2 sphere( vec3 ro, vec3 rd, float r ) {
   float b = dot( ro, rd );
@@ -369,19 +387,41 @@ float emission( float p ) {
   return smoothstep( EMISSION.x, EMISSION.y, p ) * ( 1.0 - exp( -pow( max( p, 0.0 ), EMISSION_POWER ) / EMISSION.z ) );
 }
 
-// The folds' coordinates: x = magnetic latitude in arcs, bent by two waves along the oval that
-// drift away from magnetic midnight on both flanks; y = the along-oval patch phase. ILLUSTRATIVE.
-vec2 arcCoord( vec3 dir ) {
-  float mz = dot( dir, uMagAxis );
-  float mlat = abs( degrees( asin( clamp( mz, -1.0, 1.0 ) ) ) );
-  vec3 q = dir - uMagAxis * mz;
-  vec3 s = -( uSunDirLocal - uMagAxis * dot( uSunDirLocal, uMagAxis ) );
-  float fromMidnight = abs( atan( dot( cross( s, q ), uMagAxis ), dot( s, q ) ) );
-  float x = mlat * ARC_PER_DEG
-    + FOLD.x * sin( fromMidnight * FOLD.y - uTime * DRIFT.x * FOLD.y )
-    + FOLD.z * sin( fromMidnight * FOLD.w + 1.7 - uTime * DRIFT.y * FOLD.w );
-  float y = fromMidnight * PATCH_K + mlat * 0.35 - uTime * DRIFT.x * PATCH_K;
-  return vec2( x, y );
+// Periodic 1D value noise: 'period' lattice cells round the oval, so it closes on itself.
+float hash1( float i ) { return fract( sin( i * 127.1 + 311.7 ) * 43758.5453 ); }
+float vnoise( float x, float period ) {
+  float i = floor( x );
+  float f = x - i;
+  float u = f * f * ( 3.0 - 2.0 * f );
+  return mix( hash1( mod( i, period ) ), hash1( mod( i + 1.0, period ) ), u );
+}
+
+// Magnetic longitude as a fraction of the oval (0..1), for the noise along it. ILLUSTRATIVE.
+float ovalU( vec3 dir ) {
+  vec3 e1 = normalize( cross( uMagAxis, vec3( 0.0, 0.0, 1.0 ) ) );
+  vec3 e2 = cross( uMagAxis, e1 );
+  return atan( dot( dir, e2 ), dot( dir, e1 ) ) / 6.2831853 + 0.5;
+}
+
+// How much of a discrete arc this point is in (0..~1, times its beads), from the forecast p here,
+// pPole half a degree towards the magnetic pole, and peak, the hemisphere's highest probability.
+float arcs( vec3 dir, float p, float pPole, float peak ) {
+  float equatorward = smoothstep( 0.0, 0.02 * peak, pPole - p );   // the band rises towards the pole
+  if ( equatorward <= 0.0 ) return 0.0;
+  float u = ovalU( dir );
+  float t = uTime * DRIFT;
+  float kink = ( vnoise( u * CELLS.x + t, CELLS.x ) - 0.5 ) + 0.5 * ( vnoise( u * CELLS.y + 3.1 + t, CELLS.y ) - 0.5 );
+  float width = ARC_WIDTH * peak * ( 0.55 + 0.9 * vnoise( u * CELLS.w + 7.3 + t, CELLS.w ) );
+  float beads = smoothstep( 0.35, 0.75, vnoise( u * CELLS.z + 1.7 + t, CELLS.z ) ) * ( 0.55 + 0.45 * vnoise( u * CELLS_B + 5.9 + t, CELLS_B ) );
+  float d0 = ( p - ARC_LEVELS.x * peak + ARC_KINK * peak * kink ) / width;
+  float d1 = ( p - ARC_LEVELS.y * peak - ARC_KINK * peak * kink ) / ( width * 0.8 );
+  return equatorward * beads * ( ARC_LEVEL_GAIN.x * exp( -d0 * d0 ) + ARC_LEVEL_GAIN.y * exp( -d1 * d1 ) );
+}
+
+float gridAt( vec3 dir ) {
+  float lat = degrees( asin( clamp( dir.y, -1.0, 1.0 ) ) );
+  float lon = degrees( atan( -dir.z, dir.x ) );
+  return texture2D( uGrid, vec2( ( lon * TEX_PER_DEG + 0.5 ) / TEX_SIZE.x, ( ( lat + 90.0 ) * TEX_PER_DEG + 0.5 ) / TEX_SIZE.y ) ).r;
 }
 
 void main() {
@@ -404,12 +444,11 @@ void main() {
   if ( reach < uMinSinLat ) discard;
   if ( -maxDotOnArc( a, b, -uSunDirLocal ) > NIGHT.y ) discard;
 
-  // Folds: their contrast fades where one arc would be narrower than about two pixels (an arc is a
-  // quarter of its period wide, and fwidth over-reads a slanted gradient by up to 1.4), so a far
-  // view is the smooth forecast and never a shimmer of aliasing. Measured once, at the entry point:
-  // a derivative inside the loop below would be undefined.
+  // Folds: they fade where an arc (about half a degree across) would be narrower than about two
+  // pixels, so a far view is the smooth forecast and never a shimmer of aliasing. Measured once, at
+  // the entry point, in degrees of latitude a pixel: a derivative inside the loop would be undefined.
   float foldK = 0.0;
-  if ( uFolds > 0.5 ) foldK = 1.0 - smoothstep( 0.12, 0.3, fwidth( arcCoord( a ).x ) );
+  if ( uFolds > 0.5 ) foldK = 1.0 - smoothstep( 0.2, 0.45, fwidth( degrees( asin( clamp( dot( a, uMagAxis ), -1.0, 1.0 ) ) ) ) );
 
   float lenKm = ( t1 - t0 ) * A_KM;
   int n = int( clamp( ceil( lenKm / uStepKm ), 2.0, float( uSteps ) ) );
@@ -428,21 +467,21 @@ void main() {
     vec3 dir = normalize( pm );
     float night = 1.0 - smoothstep( NIGHT.x, NIGHT.y, dot( dir, uSunDirLocal ) );
     if ( night <= 0.0 ) continue;
-    float lat = degrees( asin( clamp( dir.y, -1.0, 1.0 ) ) );
-    float lon = degrees( atan( -dir.z, dir.x ) );
-    float p = texture2D( uGrid, vec2( ( lon * TEX_PER_DEG + 0.5 ) / TEX_SIZE.x, ( ( lat + 90.0 ) * TEX_PER_DEG + 0.5 ) / TEX_SIZE.y ) ).r;
+    float p = gridAt( dir );
     float e = emission( p );
     if ( e <= 0.0 ) continue;
     float s = 1.0;
-    if ( foldK > 0.0 ) {
-      vec2 ac = arcCoord( dir );
-      float arc = pow( 0.5 + 0.5 * cos( 6.2831853 * ac.x ), ARC_SHARP );
-      // Never below PATCH_FLOOR: a patch that went to zero left a 20 % oval as one flat glow
-      // wherever the arcs fell in it (2026-10-01, measured: arcs only 2x the diffuse there).
-      float glowPatch = PATCH_FLOOR + ( 1.0 - PATCH_FLOOR ) * ( 0.5 + 0.5 * sin( ac.y ) );
-      s = mix( 1.0, DIFFUSE + ARC_NORM * arc * glowPatch, foldK );
+    float peak = dir.y >= 0.0 ? uPeak.x : uPeak.y;
+    if ( foldK > 0.0 && p > 0.3 * ARC_LEVELS.x * peak ) {
+      // One more fetch, half a degree towards the magnetic pole, says which side of the band this is.
+      float mz = dot( dir, uMagAxis );
+      float pPole = gridAt( normalize( dir + uMagAxis * sign( mz ) * 0.0087 ) );
+      s = mix( 1.0, DIFFUSE + ARC_GAIN * arcs( dir, p, pPole, peak ), foldK );
+    } else if ( foldK > 0.0 ) {
+      s = mix( 1.0, DIFFUSE, foldK );
     }
-    vec3 col = GAINS.x * stepIntegral( P_GREEN, h0, hm, hb, segKm ) * GREEN_557
+    vec3 green = mix( GREEN_EDGE, GREEN_557, smoothstep( EDGE_TO_CORE.x, EDGE_TO_CORE.y, e ) );
+    vec3 col = GAINS.x * stepIntegral( P_GREEN, h0, hm, hb, segKm ) * green
              + GAINS.y * stepIntegral( P_RED, h0, hm, hb, segKm ) * RED_630
              + GAINS.z * stepIntegral( P_VIOLET, h0, hm, hb, segKm ) * VIOLET_428 * smoothstep( VIOLET_RANGE.x, VIOLET_RANGE.y, e );
     acc += col * e * s * night;
@@ -626,6 +665,7 @@ export function createAurora({
         uFolds: { value: 1 },
         uTime: { value: 0 },
         uMinSinLat: { value: 1 },
+        uPeak: { value: new THREE.Vector2(0.1, 0.1) },
       },
       side: THREE.FrontSide,
       transparent: true,
@@ -685,6 +725,13 @@ export function createAurora({
       grid = next;
     }
     mesh.material.uniforms.uMinSinLat.value = Math.sin((reachLatDeg(raw) * Math.PI) / 180);
+    // The arcs are contours at fractions of each hemisphere's peak (FOLDS.levels); never below 5 %,
+    // so an empty hemisphere does not draw contours of its noise floor.
+    const sm = out.summary || {};
+    mesh.material.uniforms.uPeak.value.set(
+      Math.max(0.05, ((sm.north && sm.north.peak) || 0) / 100),
+      Math.max(0.05, ((sm.south && sm.south.peak) || 0) / 100),
+    );
     st.observationMs = out.observationMs;
     st.forecastMs = out.forecastMs;
     st.summary = out.summary;

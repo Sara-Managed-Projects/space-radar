@@ -96,7 +96,7 @@ check(A.NIGHT.lit < 0.12, 'the aurora is gone before the Earth\'s own twilight b
 // ---- 5. the colour ramp by height ----------------------------------------------------------------------
 const col = (h, k) => A.auroraColour(h, k);
 const g120 = col(120, 1);
-check(g120[1] > g120[0] * 5 && g120[1] > g120[2] * 3, `green rules at 120 km (${g120.map((x) => x.toFixed(4))})`);
+check(g120[1] > g120[0] * 4 && g120[1] > g120[2] * 2.5, `green rules at 120 km (${g120.map((x) => x.toFixed(4))})`);
 const r260 = col(260, 1);
 check(r260[0] > r260[1], `red rules above 200 km (${r260.map((x) => x.toFixed(4))})`);
 const v98faint = col(98, 0.3);
@@ -107,7 +107,7 @@ check(col(98, 0.3)[2] <= col(98, 0.3)[1] * 0.6, 'no violet in a faint curtain');
 const column = [0, 0, 0];
 for (let h = A.AURORA_BASE_KM; h <= A.AURORA_TOP_KM; h += 1) { const c = col(h, 1); for (let i = 0; i < 3; i++) column[i] += c[i]; }
 check(near(column[1], A.GREEN_557[1], 0.08), `a vertical column's green is the green line's (${column[1].toFixed(3)})`);
-check(column[0] < column[1] * 0.35, `seen from above it is green, not yellow (${column.map((x) => x.toFixed(3))})`);
+check(column[0] < column[1] * 0.45, `seen from above it is green (#7DFF9A core and a red fringe), not yellow (${column.map((x) => x.toFixed(3))})`);
 // The profile and its integral agree (the shader uses the integral along each step).
 for (const em of Object.values(A.EMISSIONS)) {
   let s = 0;
@@ -182,6 +182,12 @@ const F = A.AURORA_FRAG;
 check(F.includes(`const vec2 NIGHT = vec2( ${A.NIGHT.dark.toFixed(4)}, ${A.NIGHT.lit.toFixed(4)} );`), 'the shader\'s night mask is the JS twin\'s');
 check(F.includes(`vec3( ${A.EMISSIONS.green.peakKm.toFixed(1)}, ${A.EMISSIONS.green.belowKm.toFixed(1)}, ${A.EMISSIONS.green.aboveKm.toFixed(1)} )`), 'the shader\'s green profile is the JS twin\'s');
 check(F.includes('AdditiveBlending') === false && /logdepthbuf_fragment/.test(F) && /tonemapping_fragment/.test(F), 'the shader includes log depth and tone mapping');
+check(A.FOLDS.diffuse >= 0.7 && A.FOLDS.levels.length === 2 && A.FOLDS.levels[0] !== A.FOLDS.levels[1], 'mostly diffuse light, and at most two arcs, at different contour levels (never parallel copies)');
+check(/float arcs\( vec3 dir, float p, float pPole, float peak \)/.test(F) && /equatorward/.test(F), 'the arcs are contours of the forecast on the band\'s equatorward side');
+check(/vnoise\( u \* CELLS\.x/.test(F) && /beads/.test(F), 'the arcs kink and break up along the oval');
+// The faint edge is paler than the core: less chroma at low emission.
+const chroma = (c) => Math.max(...c) - Math.min(...c);
+check(chroma(A.auroraColour(118, 0.08).map((x) => x / 0.08)) < chroma(A.auroraColour(118, 0.8).map((x) => x / 0.8)), 'the faint edge is desaturated, the bright core is the green of the line');
 check(!/\bpatch\b/.test(F.replace(/\/\/.*$/gm, '')), 'no GLSL ES reserved word `patch` (2026-10-01: it failed to compile silently)');
 const auroraSrc = readFileSync(join(JS, 'scene/aurora.js'), 'utf8');
 check(/AdditiveBlending/.test(auroraSrc) && /depthWrite: false/.test(auroraSrc), 'additive, no depth write');
