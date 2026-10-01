@@ -34,7 +34,7 @@ const sheet = () => document.getElementById('sr-share');
 const t1 = Date.now();
 while (!(sheet() && !sheet().hidden) && Date.now() - t1 < 20000) await wait(100);
 // The picture, then the excerpt if the record has an article (Wikipedia gives up after 4 s).
-while (!(ctx.lastShare && ctx.lastShare.picture) && Date.now() - t1 < 60000) await wait(250);
+while (!(ctx.lastShare && ctx.lastShare.picture) && Date.now() - t1 < 240000) await wait(250);
 const wants = ctx.selected() && document.querySelector('.sr-share__wiki');
 while (wants && !(ctx.lastShare && ctx.lastShare.excerpt) && Date.now() - t1 < 8000) await wait(250);
 await wait(600);

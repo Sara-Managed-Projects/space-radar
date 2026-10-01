@@ -177,7 +177,16 @@
 }
 
 .sr-share__wiki[hidden] { display: none; }
-.sr-share__wiki a { color: inherit; }
+.sr-share__wiki a {
+  display: inline-block;
+  min-height: 24px;
+  line-height: 24px;
+  color: inherit;
+}
+
+@media (pointer: coarse) {
+  .sr-share__wiki a { min-height: 44px; line-height: 44px; }
+}
 .sr-share__wiki a:hover { color: var(--sr-text); }
 
 /* Share… across the top, then two by two: Copy text and Email, the two downloads. */

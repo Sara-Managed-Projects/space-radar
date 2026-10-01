@@ -432,7 +432,9 @@ export function createShareSheet(ctx) {
     nets.appendChild(a);
   }
 
-  body.append(pic, tagRow, linkLabel, linkRow, textLabel, textBox, wikiLine, acts, mailNote, netLabel, nets);
+  // The picture and what to do with it first, so the actions are above the fold on a laptop; then
+  // the link and the post itself, which is what Copy, Email and the networks carry.
+  body.append(pic, tagRow, acts, mailNote, netLabel, nets, linkLabel, linkRow, textLabel, textBox, wikiLine);
   root.append(head, body);
   document.body.appendChild(root);
 
