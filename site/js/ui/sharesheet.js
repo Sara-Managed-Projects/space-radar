@@ -437,7 +437,7 @@ export function createShareSheet(ctx) {
   document.body.appendChild(root);
 
   // ------------------------------------------------------------------------------- state
-  let cur = null; // {record, trip, parts, link, made, opener, token}
+  let cur = null; // {record, parts, subject, made, wiki, opener}
   let token = 0;
 
   const fail = (line) => toast(line, 4000);
@@ -481,7 +481,6 @@ export function createShareSheet(ctx) {
     img.hidden = true;
     picNote.hidden = false;
     picNote.textContent = S.drawing;
-    pic.classList.add('is-loading');
     try {
       // A frame for the sheet to land in before the 1800 x 1200 render takes the main thread.
       await new Promise((r) => setTimeout(r, 30));
@@ -494,13 +493,11 @@ export function createShareSheet(ctx) {
       img.src = made.url;
       img.hidden = false;
       picNote.hidden = true;
-      pic.classList.remove('is-loading');
       render();
     } catch (e) {
       if (my !== token) return;
       cur.made = null;
       picNote.textContent = S.noPicture;
-      pic.classList.remove('is-loading');
       if (ctx) ctx.lastPrint = { error: String((e && e.message) || e) };
     }
     jpegBtn.disabled = pdfBtn.disabled = !cur.made;
@@ -534,11 +531,18 @@ export function createShareSheet(ctx) {
   }
 
   async function open(opts = {}) {
+    // The control that opened it, pressed again, closes it (the rail's Share, the card's).
+    if (!root.hidden && cur && opts.opener && cur.opener === opts.opener) { close(); return; }
     await loadCss();
     token += 1;
     const my = token;
     const w = wordsFor(opts);
     if (cur && cur.made && cur.made.url) URL.revokeObjectURL(cur.made.url);
+    if (cur && cur.opener && cur.opener !== opts.opener && cur.opener.hasAttribute('aria-haspopup')) cur.opener.setAttribute('aria-expanded', 'false');
+    // Last time's picture is not this one's: the skeleton until the new one is drawn.
+    img.hidden = true;
+    picNote.hidden = false;
+    picNote.textContent = S.drawing;
     cur = {
       record: w.record,
       parts: { name: w.name, line: w.line, excerpt: '', attribution: '', link: w.link },
@@ -557,7 +561,6 @@ export function createShareSheet(ctx) {
     jpegBtn.disabled = pdfBtn.disabled = true;
     render();
     root.hidden = false;
-    document.documentElement.classList.add('sr-share-open');
     // The rail's What to show is the other popover in that corner: one at a time.
     if (ctx && ctx.rail && typeof ctx.rail.closeShow === 'function') ctx.rail.closeShow();
     title.focus({ preventScroll: true });
@@ -572,7 +575,6 @@ export function createShareSheet(ctx) {
     if (root.hidden) return;
     root.hidden = true;
     token += 1;
-    document.documentElement.classList.remove('sr-share-open');
     const back = cur && cur.opener;
     if (back && back.hasAttribute('aria-haspopup')) back.setAttribute('aria-expanded', 'false');
     if (back && back.isConnected) back.focus({ preventScroll: true });
