@@ -124,16 +124,20 @@ export const TIER_STEPS = [
 export const DIPOLE_POLE = { latDeg: 80.8, lonDeg: -72.7 };
 
 /**
- * The folds (ILLUSTRATIVE): thin arcs along the oval, one every 2.5 degrees of magnetic latitude
- * (arcPerDeg), each about 0.5 degree (55 km) across (a raised cosine to the power `sharp`); the
- * first draft's arc every 1.25 degrees smeared into one glow wherever the band was seen at a slant,
- * bent by two slow waves along the oval that drift away from magnetic midnight towards noon on both
+ * The folds (ILLUSTRATIVE). Real aurora seen from orbit is a diffuse glow with a few bright
+ * discrete arcs in it, brighter in patches along the oval. So `diffuse` of the forecast's light
+ * stays smooth, and the rest is gathered into arcs one every 3.3 degrees of magnetic latitude
+ * (arcPerDeg), each about 0.7 degree across (a raised cosine to the power `sharp`), whose brightness
+ * comes and goes along the oval (patchK patches a half-oval). Two drafts taught the numbers: an arc
+ * every 1.25 degrees smeared into one glow wherever the band was seen at a slant, and waves of
+ * 0.9 arc at 5 and 13 a radian drew parallel neon squiggles. The arcs are
+ * bent by two gentle waves along the oval that drift away from magnetic midnight towards noon on both
  * flanks -- the way auroral forms ride the sunward return flow. The drifts are radians of magnetic
  * longitude a second: 0.01 is 25 km/s along an oval at 67 degrees, where the real flow is about
  * 1 km/s and would not move a pixel from this far out. So the motion is a slow shimmer, about a
  * pixel a second at the default view, and not a still. The card says the folds are drawn.
  */
-export const FOLDS = { arcPerDeg: 0.4, sharp: 8, ampA: 0.9, kA: 5.0, ampB: 0.45, kB: 13.0, driftA: 0.010, driftB: 0.016 };
+export const FOLDS = { arcPerDeg: 0.3, sharp: 8, ampA: 0.30, kA: 3.0, ampB: 0.10, kB: 11.0, patchK: 4.0, diffuse: 0.45, driftA: 0.010, driftB: 0.016 };
 
 /** The shell is not drawn when the Earth's disc is smaller than this share of half the view. */
 export const MIN_DISC_SHARE = 0.03;
@@ -283,6 +287,11 @@ const vec3 EMISSION = vec3( ${EMISSION.floor.toFixed(4)}, ${EMISSION.full.toFixe
 const vec2 VIOLET_RANGE = vec2( ${VIOLET_FROM.toFixed(3)}, ${VIOLET_TO.toFixed(3)} );
 const float ARC_PER_DEG = ${FOLDS.arcPerDeg.toFixed(4)};
 const float ARC_SHARP = ${FOLDS.sharp.toFixed(1)};
+const float PATCH_K = ${FOLDS.patchK.toFixed(3)};
+const float DIFFUSE = ${FOLDS.diffuse.toFixed(3)};
+// Mean-preserving: a raised cosine to the 8th averages 12870/65536 and a patch 0.5, so the arcs'
+// share is divided by both and the forecast's total light is kept; only where it falls is drawn.
+const float ARC_NORM = ${((1 - FOLDS.diffuse) / ((12870 / 65536) * 0.5)).toFixed(4)};
 const vec4 FOLD = vec4( ${FOLDS.ampA.toFixed(4)}, ${FOLDS.kA.toFixed(4)}, ${FOLDS.ampB.toFixed(4)}, ${FOLDS.kB.toFixed(4)} );
 const vec2 DRIFT = vec2( ${FOLDS.driftA.toFixed(4)}, ${FOLDS.driftB.toFixed(4)} );
 
@@ -340,17 +349,19 @@ float emission( float p ) {
   return smoothstep( EMISSION.x, EMISSION.y, p ) * ( 1.0 - exp( -max( p, 0.0 ) / EMISSION.z ) );
 }
 
-// The folds' coordinate: magnetic latitude in arcs, bent by two waves along the oval that drift
-// away from magnetic midnight on both flanks. ILLUSTRATIVE (the header says why).
-float arcCoord( vec3 dir ) {
+// The folds' coordinates: x = magnetic latitude in arcs, bent by two waves along the oval that
+// drift away from magnetic midnight on both flanks; y = the along-oval patch phase. ILLUSTRATIVE.
+vec2 arcCoord( vec3 dir ) {
   float mz = dot( dir, uMagAxis );
-  float mlat = degrees( asin( clamp( mz, -1.0, 1.0 ) ) );
+  float mlat = abs( degrees( asin( clamp( mz, -1.0, 1.0 ) ) ) );
   vec3 q = dir - uMagAxis * mz;
   vec3 s = -( uSunDirLocal - uMagAxis * dot( uSunDirLocal, uMagAxis ) );
   float fromMidnight = abs( atan( dot( cross( s, q ), uMagAxis ), dot( s, q ) ) );
-  return abs( mlat ) * ARC_PER_DEG
+  float x = mlat * ARC_PER_DEG
     + FOLD.x * sin( fromMidnight * FOLD.y - uTime * DRIFT.x * FOLD.y )
     + FOLD.z * sin( fromMidnight * FOLD.w + 1.7 - uTime * DRIFT.y * FOLD.w );
+  float y = fromMidnight * PATCH_K + mlat * 0.35 - uTime * DRIFT.x * PATCH_K;
+  return vec2( x, y );
 }
 
 void main() {
@@ -377,7 +388,7 @@ void main() {
   // view is the smooth forecast and never a shimmer of aliasing. Measured once, at the entry point:
   // a derivative inside the loop below would be undefined.
   float foldK = 0.0;
-  if ( uFolds > 0.5 ) foldK = 1.0 - smoothstep( 0.08, 0.25, fwidth( arcCoord( a ) ) );
+  if ( uFolds > 0.5 ) foldK = 1.0 - smoothstep( 0.06, 0.2, fwidth( arcCoord( a ).x ) );
 
   float lenKm = ( t1 - t0 ) * A_KM;
   int n = int( clamp( ceil( lenKm / uStepKm ), 2.0, float( uSteps ) ) );
@@ -403,11 +414,10 @@ void main() {
     if ( e <= 0.0 ) continue;
     float s = 1.0;
     if ( foldK > 0.0 ) {
-      // The oval's light gathered into arcs: mean-preserving (a raised cosine to the 8th has mean
-      // 12870/65536, so 0.2 + 4.073 * arc averages 1), so the forecast's brightness is kept and only
-      // where inside the band it falls is drawn.
-      float arc = pow( 0.5 + 0.5 * cos( 6.2831853 * arcCoord( dir ) ), ARC_SHARP );
-      s = mix( 1.0, 0.2 + 4.073 * arc, foldK );
+      vec2 ac = arcCoord( dir );
+      float arc = pow( 0.5 + 0.5 * cos( 6.2831853 * ac.x ), ARC_SHARP );
+      float glowPatch = 0.5 + 0.5 * sin( ac.y );
+      s = mix( 1.0, DIFFUSE + ARC_NORM * arc * glowPatch, foldK );
     }
     vec3 col = GAINS.x * stepIntegral( P_GREEN, h0, hm, hb, segKm ) * GREEN_557
              + GAINS.y * stepIntegral( P_RED, h0, hm, hb, segKm ) * RED_630
@@ -625,6 +635,9 @@ export function createAurora({
     if (renderer && camera && typeof renderer.compileAsync === 'function') {
       m.visible = true;
       renderer.compileAsync(m, camera, scene || undefined).catch(() => {}).finally(() => { m.userData.compiled = true; });
+      // A program that fails to link never resolves compileAsync on some drivers; three then logs
+      // the shader error, and drawing it is how that error reaches the console a probe reads.
+      setTimeout(() => { m.userData.compiled = true; }, 3000);
       m.visible = false;
     } else {
       m.userData.compiled = true;
