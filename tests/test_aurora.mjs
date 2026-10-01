@@ -193,7 +193,15 @@ const auroraSrc = readFileSync(join(JS, 'scene/aurora.js'), 'utf8');
 check(/AdditiveBlending/.test(auroraSrc) && /depthWrite: false/.test(auroraSrc), 'additive, no depth write');
 check(!/EffectComposer|UnrealBloomPass|RenderPass/.test(auroraSrc), 'no bloom, no post pass');
 const main = readFileSync(join(JS, 'main.js'), 'utf8');
-check(/addEventListener\('sr:layers-ready', \(\) => ctx\.aurora\.start\(\)/.test(main), 'main.js starts the aurora once the layers have landed, never from boot');
+// Internal #192 item 6: off the first visit. No static import of the module (so it is not in the
+// modulepreload block either), a dynamic one inside the sr:layers-ready handler, and start() told how
+// long after the event it was called, so the first look keeps its START_DELAY_MS.
+check(!/^import[^;]*from '\.\/scene\/aurora\.js'/m.test(main), 'main.js has no static import of scene/aurora.js');
+check(/function loadAuroraLater\(\) \{[\s\S]{0,400}import\('\.\/scene\/aurora\.js'\)[\s\S]{0,800}\.start\(\{ elapsedMs:/.test(main)
+  && /addEventListener\('sr:layers-ready', loadAuroraLater, \{ once: true \}\)/.test(main), 'main.js imports the aurora once the layers have landed and starts it from that moment, never from boot');
+const html = readFileSync(join(JS, '../index.html'), 'utf8');
+check(!/modulepreload" href="js\/(scene\/aurora|data\/ovation)\.js"/.test(html), 'and index.html does not preload it');
+check(/function auroraStandIn\(/.test(main) && /ctx\.aurora = auroraStandIn\(/.test(main), 'until it loads, ctx.aurora is a stand-in the card and the Sources sheet can ask');
 check(/ctx\.aurora\.tick\(t, \{[\s\S]{0,200}latched: latch\.latched[\s\S]{0,120}reducedMotion/.test(main), 'the frame passes the latch and reduced motion to the aurora');
 const T0 = A.TIER_STEPS[0];
 check(T0.maxSteps <= 8 && A.TIER_STEPS[2].maxSteps >= A.TIER_STEPS[1].maxSteps && A.TIER_STEPS.every((c) => c.folds), 'T0 and the latch: fewer steps; the folds on every tier (without them the oval is a flat plate)');

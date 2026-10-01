@@ -58,12 +58,33 @@ import { createTrackLabels } from './ui/tracklabels.js';
 import { createOrbitRings } from './scene/orbitrings.js';
 import { createFrameLatch, shouldSaveData, chooseTier, createTierPromoter } from './scene/quality.js';
 import { createLiveClouds } from './scene/liveclouds.js';
-import { createAurora } from './scene/aurora.js';
 import { createTextureTiers } from './scene/texturetiers.js';
 import { setEarthMap, earthMapsSettled } from './scene/earth.js';
 import { keyById, bucketOf } from './data/colorkeyrules.js';
 
 const MOMENTS = ['wonder', 'now', 'next'];
+/** How long after sr:layers-ready the aurora's module is fetched (OFF THE FIRST VISIT, in boot). */
+const AURORA_IMPORT_MS = 4000;
+
+/**
+ * ctx.aurora until scene/aurora.js has loaded, and for good on a connection that saves data: the
+ * same calls the card, the Sources sheet, the layers panel and the frame loop make, answered with
+ * what is true before any forecast is held. Its words are the real module's (copy/en.js COPY.aurora).
+ */
+function auroraStandIn(saveData, layerOn) {
+  const A = COPY.aurora;
+  const api = {
+    failed: false,
+    start() {},
+    tick() {},
+    setTier() {},
+    state: () => ({ phase: saveData ? 'off' : api.failed ? 'failed' : 'waiting', reason: saveData ? 'saveData' : null, summary: null, visible: false }),
+    line: () => (saveData ? A.saveData : !layerOn() ? A.switchedOff : api.failed ? A.failed : A.waiting),
+    credit: () => [A.credit],
+    peak: () => (saveData || api.failed ? 0 : undefined),
+  };
+  return api;
+}
 
 export async function boot({ setStatus } = {}) {
   const say = setStatus || (() => {});
@@ -224,23 +245,49 @@ export async function boot({ setStatus } = {}) {
   // after it.
 
   // THE AURORA (2026-09-30, scene/aurora.js, spec 0053 task 3): NOAA's OVATION forecast of the next
-  // hour, drawn on the night side. Built now so the card, the Sources panel and the layers panel can
-  // ask it; it fetches nothing until the layers have landed (below), builds no mesh and compiles no shader until a forecast has arrived, and never runs on a
-  // connection that saves data. Its box is the `aurora` layer (data/layers.js `draw: 'aurora'`).
-  ctx.aurora = createAurora({
-    earth: () => worlds.meshFor('earth'),
-    renderer,
-    camera,
-    scene,
-    saveData: typeof navigator !== 'undefined' && shouldSaveData(navigator.connection),
-    // The Earth card rewrites its aurora line on this, as it does its clouds line on sr:clouds.
-    onChange: () => window.dispatchEvent(new CustomEvent('sr:aurora')),
-  });
-  // Started once the catalogues have landed, the way the live clouds are on the UI shell (#349): the
-  // map's own data first, the weather after it, so not one forecast byte falls inside the first
-  // visit (registry/budgets.yaml first_visit_bytes). The first look is START_DELAY_MS after this,
-  // in an idle moment. Registered here, before the load starts, so the event cannot be missed.
-  window.addEventListener('sr:layers-ready', () => ctx.aurora.start(), { once: true });
+  // hour, drawn on the night side. It fetches nothing until the layers have landed, builds no mesh
+  // and compiles no shader until a forecast has arrived, and never runs on a connection that saves
+  // data. Its box is the `aurora` layer (data/layers.js `draw: 'aurora'`).
+  //
+  // OFF THE FIRST VISIT (2026-10-01, internal #192 item 6). scene/aurora.js and data/ovation.js are
+  // 19.5 kB gzip that nothing on the first screen draws, and they were in the boot graph (and its
+  // modulepreload block) all the same. They now arrive by a dynamic import AURORA_IMPORT_MS after
+  // sr:layers-ready, in an idle moment: after the catalogues and the two seconds
+  // tests/test_first_visit_bytes.mjs lets the first visit settle, and before the forecast's first
+  // look (data/ovation.js START_DELAY_MS, 8 s after the same event, which start() keeps). Until then
+  // ctx.aurora is auroraStandIn (above boot), so the Earth card, the Sources sheet and the layers panel ask
+  // it what they always asked and are told "waiting". The import replaces it and says so on
+  // sr:aurora, which they already repaint on. On a connection that saves data the module is never
+  // fetched: the stand-in says why there is no aurora, which is all the real one would say there.
+  const auroraSaveData = typeof navigator !== 'undefined' && shouldSaveData(navigator.connection);
+  ctx.aurora = auroraStandIn(auroraSaveData, () => isLayerOn('aurora'));
+  function loadAuroraLater() {
+    if (auroraSaveData) return;
+    const readyAt = performance.now();
+    const load = () => import('./scene/aurora.js').then((m) => {
+      const aurora = m.createAurora({
+        earth: () => worlds.meshFor('earth'),
+        renderer,
+        camera,
+        scene,
+        saveData: false,
+        // The Earth card rewrites its aurora line on this, as it does its clouds line on sr:clouds.
+        onChange: () => window.dispatchEvent(new CustomEvent('sr:aurora')),
+      });
+      ctx.aurora = aurora;
+      aurora.start({ elapsedMs: performance.now() - readyAt });
+      window.dispatchEvent(new CustomEvent('sr:aurora'));
+    }).catch((e) => {
+      ctx.aurora.failed = true;
+      console.warn('the aurora module did not load', e);
+      window.dispatchEvent(new CustomEvent('sr:aurora'));
+    });
+    setTimeout(() => {
+      if (typeof requestIdleCallback === 'function') requestIdleCallback(load, { timeout: 4000 });
+      else load();
+    }, AURORA_IMPORT_MS);
+  }
+  window.addEventListener('sr:layers-ready', loadAuroraLater, { once: true });
   {
     const layer = LAYERS.find((l) => l.id === 'aurora');
     if (layer) {

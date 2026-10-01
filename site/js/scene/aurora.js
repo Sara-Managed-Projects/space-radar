@@ -2,7 +2,8 @@
 //
 // Contract:
 //   createAurora({ earth, renderer?, camera?, scene?, now?, saveData?, tier?, onChange? })
-//     .start()                    schedules the first look START_DELAY_MS after it is called (main.js: on sr:layers-ready)
+//     .start({elapsedMs?})        schedules the first look START_DELAY_MS after sr:layers-ready (main.js
+//                                 imports this module after that event and says how long ago it was)
 //     .tick(clockMs, opts)        once a frame, after the Earth's update: {on, latched, reducedMotion, discShare}
 //     .state()                    what is held: the forecast's times, its summary, bytes, why not drawn
 //     .line(clockMs)              the Earth card's sentence about its aurora (copy/en.js COPY.aurora)
@@ -815,10 +816,12 @@ export function createAurora({
   }
 
   const api = {
-    start() {
+    start({ elapsedMs = 0 } = {}) {
       if (started || saveData) return;
       started = true;
-      schedule(START_DELAY_MS);
+      // main.js imports this module a few seconds after sr:layers-ready (OFF THE FIRST VISIT there)
+      // and passes how long ago that was, so the first look is still START_DELAY_MS after the event.
+      schedule(Math.max(0, START_DELAY_MS - (Number(elapsedMs) || 0)));
       if (typeof document !== 'undefined') {
         document.addEventListener('visibilitychange', () => {
           if (document.hidden || busy) return;
