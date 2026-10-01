@@ -18,7 +18,21 @@
 //   - A PHASE PER COLOUR. The blue sunset on Mars is its dust sending blue light forward more
 //     narrowly than red (the grains are ~1.5 um: large next to blue light). Three Henyey-Greenstein
 //     asymmetries, one per channel, draw exactly that: a blue aureole around the Sun and butterscotch
-//     everywhere else, from one set of numbers and no special case.
+//     everywhere else, from one set of numbers and no special case. That blue is seen from the
+//     ground, inside the air, within a few degrees of the Sun; from orbit Mars is never blue (below).
+//   - LIGHT SCATTERED MORE THAN ONCE, on Mars only (internal #187, 2026-10-01). Single scattering
+//     with a big light gain drew a backlit Mars as a white-blue ring: at 160 degrees of phase the
+//     forward lobe, times a gain fitted for the day side, swamped everything and clipped to white.
+//     Backlit Mars in MAVEN, Mars Express and Hope images is a reddish-brown crescent with a thin
+//     pale haze at its edge, because a limb ray crosses tens of optical depths of dust and most of
+//     what comes out has been scattered many times, losing blue each time. So Mars's row draws the
+//     single-scattered light at its own small gain and adds the diffuse light: at each step, the
+//     sunlight the dust took out of the beam on its way there, dying with depth at the diffusion
+//     rate sqrt(3 (1 - albedo)(1 - albedo g)) per colour, spread evenly, and met by the albedo at
+//     least twice. Deep in the air that is red; high up, where little was taken out, the thin
+//     single-scattered haze is what is left, and pale. Over the disc it is drawn only for the slant
+//     share of the path, as the dimming is (the map was photographed through the rest). Venus and
+//     Titan have no `multiple` and draw exactly what #342 drew.
 //   - OVER THE DISC TOO. The Earth's shell is BackSide, so its disc behind is hidden by depth and only
 //     the limb pays. This shell is drawn from its FRONT while the camera is outside it: the same
 //     number of fragments (the log depth buffer writes gl_FragDepth, so no early-z culls the hidden
@@ -92,6 +106,9 @@ function chapmanUp(X, h, cosChi) {
  *   dustG        Henyey-Greenstein asymmetry, R G B
  *   heightGain   how much thicker the air is drawn than it is (illustrative, as the Earth's 2.5)
  *   sun          light gain: the shell's brightness against the disc's, fitted by eye
+ *   multiple     (optional) the diffuse light's gain, fitted by eye; with it, what is seen through
+ *                the air is dimmed by the transport extinction ext x (1 - albedo g), the similarity
+ *                relation, since the light scattered forward is drawn back in by this term
  */
 export const ATMO_PARAMS = {
   // MARS. Surface pressure 610 Pa at 210 K: 2.1e23 molecules per m^3, 0.0084 of the Earth's sea level;
@@ -101,6 +118,11 @@ export const ATMO_PARAMS = {
   // Pancam tau record runs 0.3 to 1 outside storms), in the gas's scale height; single-scattering
   // albedo 0.97 red to 0.72 blue, and a forward lobe narrower in blue (illustrative: chosen so the
   // sunlit limb comes out butterscotch and the air toward the Sun blue, as the rovers' skies are).
+  // The light (internal #187): single scattering at 0.3 and the diffuse light at 12, both fitted by
+  // eye in headless Chrome at 0, 90 and 160 degrees of phase, so the day-side limb keeps #342's
+  // butterscotch (B/R 0.51 against 0.47) and the backlit limb is a warm crescent under a pale rim
+  // with nothing clipped to white. Drawn 1.5 times as thick as it is, not 3: the rim is a line, not
+  // a band (at 3 the full-phase limb was a khaki ring a tenth of the radius wide).
   mars: {
     radiusKm: 3389.5,
     topKm: 60,
@@ -110,8 +132,9 @@ export const ATMO_PARAMS = {
     dustTau: 0.5,
     dustAlbedo: [0.97, 0.88, 0.72],
     dustG: [0.62, 0.66, 0.74],
-    heightGain: 3.0,
-    sun: 9.0,
+    heightGain: 1.5,
+    sun: 0.3,
+    multiple: 12,
   },
   // VENUS. The map is the cloud tops, about 70 km up; the shell is what lies above them. CO2 at the
   // cloud tops: about 3 kPa at 230 K (Venus International Reference Atmosphere), 0.038 of the Earth's
@@ -173,7 +196,15 @@ export function atmosphereCoefficients(p) {
   const ext = p.dustTau / hM;
   const extM = [ext, ext, ext];
   const betaM = p.dustAlbedo.map((a) => a * ext);
-  return { top: 1 + (p.topKm * gain) / R, hR, hM, betaR, betaM, extM, g: p.dustG.slice(), sun: p.sun };
+  // LIGHT SCATTERED MORE THAN ONCE (header), for a row with `multiple` (its gain; 0 without): how
+  // fast the diffuse light dies with depth in each colour. Blue, absorbed more, dies first.
+  const multi = p.multiple ? p.multiple : 0;
+  const kappa = p.dustAlbedo.map((a, k) => Math.sqrt(3 * (1 - a) * (1 - a * p.dustG[k])));
+  // What is seen through the particles is dimmed by their extinction less the light they send on
+  // forward (the similarity relation). Only for a row with `multiple`, whose scattered light is
+  // drawn back in; a row without keeps the plain extinction.
+  const extT = multi ? p.dustAlbedo.map((a, k) => ext * (1 - a * p.dustG[k])) : extM.slice();
+  return { top: 1 + (p.topKm * gain) / R, hR, hM, betaR, betaM, extM, extT, g: p.dustG.slice(), sun: p.sun, multi, kappa, tauUp: p.dustTau, albedo: p.dustAlbedo.slice() };
 }
 
 /**
@@ -185,7 +216,7 @@ export function atmosphereCoefficients(p) {
  */
 export function verticalDepth(c, k) {
   const span = c.top - 1;
-  return c.betaR[k] * c.hR * (1 - Math.exp(-span / c.hR)) + c.extM[k] * c.hM * (1 - Math.exp(-span / c.hM));
+  return c.betaR[k] * c.hR * (1 - Math.exp(-span / c.hR)) + c.extT[k] * c.hM * (1 - Math.exp(-span / c.hM));
 }
 
 function sphere(ro, rd, r) {
@@ -218,7 +249,7 @@ export function scatter(p, ro, rd, sunDir) {
   if (!(t1 > t0)) return { rgb: [0, 0, 0], T: 1 };
   const ds = (t1 - t0) / VIEW_STEPS;
   let odR = 0; let odM = 0;
-  const sumR = [0, 0, 0]; const sumM = [0, 0, 0];
+  const sumR = [0, 0, 0]; const sumM = [0, 0, 0]; const sumMS = [0, 0, 0];
   for (let i = 0; i < VIEW_STEPS; i++) {
     const tt = t0 + (i + 0.5) * ds;
     const q = [ro[0] + rd[0] * tt, ro[1] + rd[1] * tt, ro[2] + rd[2] * tt];
@@ -238,15 +269,21 @@ export function scatter(p, ro, rd, sunDir) {
       const att = Math.exp(-(c.betaR[k] * (odR + lR) + c.extM[k] * (odM + lM)));
       sumR[k] += dR * att;
       sumM[k] += dM * att;
+      // LIGHT SCATTERED MORE THAN ONCE (header): the sunlight the dust took out of the beam on its way here, less
+      // what died diffusing this deep (kappa), seen from here on.
+      if (c.multi > 0) sumMS[k] += dM * Math.exp(-(c.betaR[k] * odR + c.extM[k] * odM)) * (1 - Math.exp(-c.extM[k] * lM)) * Math.exp(-c.kappa[k] * c.extM[k] * lM);
     }
   }
   const mu = rd[0] * sunDir[0] + rd[1] * sunDir[1] + rd[2] * sunDir[2];
   const phaseR = (3 / (16 * Math.PI)) * (1 + mu * mu);
-  const rgb = [0, 1, 2].map((k) => c.sun * (sumR[k] * c.betaR[k] * phaseR + sumM[k] * c.betaM[k] * hg(mu, c.g[k])));
   // Over the disc, only the SLANT dims: the map is a photograph taken through this air, so the
   // straight-down column's dimming is already in it (see verticalDepth below).
   const hitsGround = ground[0] > 0 && ground[0] < 1e8; // a miss is (1e9, -1e9), not a hit
-  const Tk = [0, 1, 2].map((k) => Math.exp(-(c.betaR[k] * odR + c.extM[k] * odM) + (hitsGround ? verticalDepth(c, k) : 0)));
+  // And its glow: the diffuse light is drawn only for the share of the path that is slant.
+  const slant = hitsGround ? Math.max(0, Math.min(1, 1 - c.tauUp / Math.max(c.extM[0] * odM, 1e-6))) : 1;
+  const rgb = [0, 1, 2].map((k) => c.sun * (sumR[k] * c.betaR[k] * phaseR + sumM[k] * c.betaM[k] * hg(mu, c.g[k]))
+    + c.multi * slant * sumMS[k] * c.betaM[k] * c.albedo[k] / (4 * Math.PI));
+  const Tk = [0, 1, 2].map((k) => Math.exp(-(c.betaR[k] * odR + c.extT[k] * odM) + (hitsGround ? verticalDepth(c, k) : 0)));
   return { rgb, T: Math.min(1, (Tk[0] + Tk[1] + Tk[2]) / 3) };
 }
 
@@ -277,9 +314,14 @@ uniform float uHM;        // particle scale height, ground radii
 uniform vec3  uBetaR;     // gas scattering at the ground, per ground radius
 uniform vec3  uBetaM;     // particle scattering
 uniform vec3  uExtM;      // particle extinction
+uniform vec3  uExtT;      // particle extinction for what is seen THROUGH the air (atmosphereCoefficients extT)
 uniform vec3  uG;         // particle asymmetry, per colour
 uniform float uSun;
 uniform vec3  uVertical;  // the straight-down optical depth, per colour (verticalDepth)
+uniform float uMulti;     // the light scattered more than once: its gain, or 0 (LIGHT SCATTERED MORE THAN ONCE)
+uniform vec3  uKappa;     // how fast it dies with depth, per colour
+uniform vec3  uAlbedo;    // the particles' albedo: diffuse light has met it at least twice
+uniform float uTauUp;     // the particles' optical depth straight up
 varying vec3 vPosW;
 varying vec3 vCentre;
 varying float vShellR;
@@ -324,7 +366,7 @@ void main() {
 
   float ds = ( t1 - t0 ) / float( VIEW_STEPS );
   float odR = 0.0, odM = 0.0;
-  vec3 sumR = vec3( 0.0 ), sumM = vec3( 0.0 );
+  vec3 sumR = vec3( 0.0 ), sumM = vec3( 0.0 ), sumMS = vec3( 0.0 );
   for ( int i = 0; i < VIEW_STEPS; i++ ) {
     vec3 p = ro + rd * ( t0 + ( float( i ) + 0.5 ) * ds );
     float h = max( length( p ) - 1.0, 0.0 );
@@ -342,14 +384,18 @@ void main() {
     vec3 att = exp( -( uBetaR * ( odR + lR ) + uExtM * ( odM + lM ) ) );
     sumR += dR * att;
     sumM += dM * att;
+    // LIGHT SCATTERED MORE THAN ONCE in scene/atmosphere.js: the sunlight taken out of the beam on its way here.
+    if ( uMulti > 0.0 ) sumMS += dM * exp( -( uBetaR * odR + uExtM * odM ) ) * ( 1.0 - exp( -uExtM * lM ) ) * exp( -uKappa * uExtM * lM );
   }
 
   float mu = dot( rd, uSunDir );
   float phaseR = 3.0 / ( 16.0 * PI ) * ( 1.0 + mu * mu );
-  vec3 colour = uSun * ( sumR * uBetaR * phaseR + sumM * uBetaM * hg( mu, uG ) );
+  bool hitsGround = ground.x > 0.0 && ground.x < 1e8;
+  float slant = hitsGround ? clamp( 1.0 - uTauUp / max( uExtM.x * odM, 1e-6 ), 0.0, 1.0 ) : 1.0;
+  vec3 colour = uSun * ( sumR * uBetaR * phaseR + sumM * uBetaM * hg( mu, uG ) ) + uMulti * slant * sumMS * uBetaM * uAlbedo / ( 4.0 * PI );
   // Over the disc only the slant dims (verticalDepth() in scene/atmosphere.js says why): the map was
   // photographed through the straight-down column already.
-  vec3 T = exp( -( uBetaR * odR + uExtM * odM ) + ( ground.x > 0.0 && ground.x < 1e8 ? uVertical : vec3( 0.0 ) ) );
+  vec3 T = exp( -( uBetaR * odR + uExtT * odM ) + ( ground.x > 0.0 && ground.x < 1e8 ? uVertical : vec3( 0.0 ) ) );
   T = min( T, vec3( 1.0 ) );
 
   // src + dst x T (CustomBlending: One, SrcAlpha): the haze glows and dims what is behind it.
@@ -379,9 +425,14 @@ export function createAirShell(key) {
       uBetaR: { value: new THREE.Vector3(...c.betaR) },
       uBetaM: { value: new THREE.Vector3(...c.betaM) },
       uExtM: { value: new THREE.Vector3(...c.extM) },
+      uExtT: { value: new THREE.Vector3(...c.extT) },
       uG: { value: new THREE.Vector3(...c.g) },
       uSun: { value: c.sun },
       uVertical: { value: new THREE.Vector3(verticalDepth(c, 0), verticalDepth(c, 1), verticalDepth(c, 2)) },
+      uMulti: { value: c.multi },
+      uKappa: { value: new THREE.Vector3(...c.kappa) },
+      uTauUp: { value: c.tauUp },
+      uAlbedo: { value: new THREE.Vector3(...c.albedo) },
     },
     side: THREE.FrontSide,
     transparent: true,

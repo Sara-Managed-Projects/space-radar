@@ -7,8 +7,9 @@
 //   1. the rows: each world's radius is its worlds.js row's; the drawn height changes, the measured
 //      optical depth does not
 //   2. the light path: chapman() against a brute-force integration
-//   3. the colours: Mars butterscotch by day and blue toward the Sun; Venus pale; Titan orange with a
-//      bluer top; nothing on the night side; over the disc only the slant dims
+//   3. the colours: Mars butterscotch by day and, backlit, a warm crescent under a paler rim, never
+//      white-blue (internal #187); Venus pale; Titan orange with a bluer top; nothing on the night
+//      side; over the disc only the slant dims, and only the slant glows
 //   4. the GLSL carries the same formula and the two bounded hit tests
 //   5. in the scene: no shell from the default view, one when the disc is big, the rim back when it is
 //      off, and off for good under the frame latch
@@ -45,7 +46,10 @@ for (const [key, p] of Object.entries(ATMO_PARAMS)) {
   const tau2 = g2.extM[1] * g2.hM * (1 - Math.exp(-(g2.top - 1) / g2.hM));
   check(near(tau2, tauUp, 0.01 * tauUp), `${key}: drawing the air twice as thick does not make it twice as dense`);
   check(p.dustAlbedo.every((a) => a > 0 && a <= 1) && p.dustG.every((g) => g >= 0 && g < 0.9), `${key}: albedos in (0, 1], asymmetries in [0, 0.9)`);
-  check(near(verticalDepth(c, 1), c.betaR[1] * c.hR * (1 - Math.exp(-(c.top - 1) / c.hR)) + tauUp, 1e-9), `${key}: verticalDepth is gas plus particles, straight up`);
+  // The particles' part at the extinction what is behind them sees: the plain one, or for a row
+  // with diffuse light (Mars, #187) the transport one, which is what the slant dimming uses too.
+  const tauSeen = tauUp * (c.extT[1] / c.extM[1]);
+  check(near(verticalDepth(c, 1), c.betaR[1] * c.hR * (1 - Math.exp(-(c.top - 1) / c.hR)) + tauSeen, 1e-9), `${key}: verticalDepth is gas plus particles, straight up`);
 }
 check(ATMO_PARAMS.mars.gasHKm === 11.1, 'Mars: the fact sheet\'s 11.1 km scale height');
 check(ATMO_PARAMS.titan.heightGain === 1, 'Titan\'s haze is drawn at its measured height');
@@ -94,8 +98,23 @@ function limb(key, k, sun) {
   const OVERHEAD = [0, 1, 0]; const BEHIND = [0, 0.05, -1];
   const m = limb('mars', 1, OVERHEAD).rgb;
   check(m[0] > m[1] && m[1] > m[2] && m[2] / m[0] > 0.35 && m[2] / m[0] < 0.6, `Mars's sunlit limb is butterscotch (${f3(m)})`);
-  const mb = limb('mars', 1, BEHIND).rgb;
-  check(mb[2] > mb[0], `Mars's limb with the Sun behind it is blue: the forward lobe narrower in blue (${f3(mb)})`);
+  // Internal #187: backlit Mars was a white-blue ring. From orbit at 160 degrees of phase (the Sun 20
+  // degrees behind the limb) it is warm, and its top, where little light was scattered twice, paler.
+  const a20 = (20 * Math.PI) / 180;
+  const BACKLIT = [0, Math.sin(a20), -Math.cos(a20)];
+  const mb = limb('mars', 1, BACKLIT).rgb;
+  check(mb[0] > mb[1] && mb[1] > mb[2] && mb[2] / mb[0] < 0.65, `backlit, Mars's limb is a warm crescent, not white-blue (${f3(mb)}, B/R ${(mb[2] / mb[0]).toFixed(2)})`);
+  const mbTop = limb('mars', 4, BACKLIT).rgb;
+  check(mbTop[2] / mbTop[0] > mb[2] / mb[0] + 0.1, `and the haze above it is paler (B/R ${(mbTop[2] / mbTop[0]).toFixed(2)} at four scale heights)`);
+  check(Math.max(...mb) < 1, `and it is not the clipped white the single-scattering gain made of it (${f3(mb)})`);
+  const mBehind = limb('mars', 1, BEHIND).rgb;
+  check(mBehind[0] > mBehind[2], `even with the Sun 3 degrees behind the limb, from orbit the limb is not blue (${f3(mBehind)}): that blue is the rovers', inside the air`);
+  check(ATMO_PARAMS.mars.dustG[2] > ATMO_PARAMS.mars.dustG[0], 'the dust\'s forward lobe stays narrower in blue (the rovers\' blue sunset)');
+  // Venus and Titan are untouched by #187: no diffuse term and the plain extinction.
+  for (const key of ['venus', 'titan']) {
+    const c = atmosphereCoefficients(ATMO_PARAMS[key]);
+    check(!ATMO_PARAMS[key].multiple && c.multi === 0 && c.extT.every((x, k) => x === c.extM[k]), `${key} draws single scattering only, as #342 did`);
+  }
   const v = limb('venus', 1, OVERHEAD).rgb;
   check(Math.max(...v) / Math.min(...v) < 1.2, `Venus's sunlit haze is pale, near white (${f3(v)})`);
   const vb = limb('venus', 2, BEHIND).rgb;
@@ -119,7 +138,7 @@ function limb(key, k, sun) {
     const low = limb(key, 0.5, OVERHEAD);
     check(low.T < 0.5, `${key}: a star behind the low air is dimmed (T ${low.T.toFixed(3)})`);
   }
-  measured.push(`Mars limb by day ${f3(m)}, Sun behind ${f3(mb)}; Venus ${f3(v)}, backlit ${f3(vb)}; Titan ${f3(t)}, top ${f3(tTop)}, backlit ${f3(tb)}`);
+  measured.push(`Mars limb by day ${f3(m)}, backlit ${f3(mb)}, its top ${f3(mbTop)}; Venus ${f3(v)}, backlit ${f3(vb)}; Titan ${f3(t)}, top ${f3(tTop)}, backlit ${f3(tb)}`);
 }
 
 // ---- 4. the GLSL --------------------------------------------------------------------------------
@@ -130,6 +149,10 @@ function limb(key, k, sun) {
   check(/if \( sh > 0\.0 && sh < 1e8 \) continue;/.test(AIR_SHELL_FRAG), 'the shadow test does not count a miss (1e9) as a hit');
   check(/ground\.x > 0\.0 && ground\.x < 1e8 \? uVertical/.test(AIR_SHELL_FRAG), 'nor does the over-the-disc test');
   check(/gl_FragColor = vec4\( colour, \( T\.r \+ T\.g \+ T\.b \) \/ 3\.0 \);/.test(AIR_SHELL_FRAG), 'alpha is the grey transmittance');
+  check(/if \( uMulti > 0\.0 \) sumMS \+= dM \* exp\( -\( uBetaR \* odR \+ uExtM \* odM \) \) \* \( 1\.0 - exp\( -uExtM \* lM \) \) \* exp\( -uKappa \* uExtM \* lM \);/.test(AIR_SHELL_FRAG),
+    'the diffuse light is the twin\'s: taken out of the beam, dying with depth at the diffusion rate, and skipped where a row has none');
+  check(/uMulti \* slant \* sumMS \* uBetaM \* uAlbedo \/ \( 4\.0 \* PI \)/.test(AIR_SHELL_FRAG) && /vec3 T = exp\( -\( uBetaR \* odR \+ uExtT \* odM \)/.test(AIR_SHELL_FRAG),
+    'drawn for the slant share over the disc, and what is behind dims by the transport extinction');
   const shell = createAirShell('mars');
   const m = shell.material;
   check(m.blending === THREE.CustomBlending && m.blendSrc === THREE.OneFactor && m.blendDst === THREE.SrcAlphaFactor && m.depthWrite === false,
@@ -186,4 +209,4 @@ if (problems.length) {
   console.log(`air FAILED:\n  ${problems.join('\n  ')}`);
   process.exit(1);
 }
-console.log('air ok: Mars, Venus and Titan wear single-scattering shells with their measured depths, in the colours photographs show, drawn only when the disc can show them and never under the latch');
+console.log('air ok: Mars, Venus and Titan wear scattering shells with their measured depths (Mars with its light scattered more than once), in the colours photographs show, drawn only when the disc can show them and never under the latch');

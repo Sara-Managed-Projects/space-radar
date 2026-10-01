@@ -1903,7 +1903,8 @@ function derivedDrawingLine(record, T) {
     const gain = Number(pick(md, 'earthshineGain'));
     if (gain > 0 && T.worldEarthshine) parts.push(t(T.worldEarthshine, { n: fmt.int(gain) }));
     const air = Number(pick(md, 'airGain'));
-    if (air > 1 && T.worldAir) parts.push(t(T.worldAir, { n: fmt.int(air) }));
+    // 1.5 for Mars since internal #187: fmt.int would round it to "2 times".
+    if (air > 1 && T.worldAir) parts.push(t(T.worldAir, { n: Number.isInteger(air) ? fmt.int(air) : fmt.num(air, 1) }));
     else if (air === 1 && T.worldAirTrue) parts.push(T.worldAirTrue);
     return parts.length ? parts.join(COPY.punctuation.separator) : null;
   }

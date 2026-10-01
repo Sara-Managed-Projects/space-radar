@@ -409,7 +409,7 @@ const MAPPED = ['pluto', 'io', 'europa', 'enceladus', 'triton'];
   }
   // Spec 0054 task 3: Mars has a map and air, and says how it is lit and how its air is drawn.
   const marsLine = drawingLine(recs.find((x) => x.id === 'mars')) || '';
-  check(marsLine.startsWith(COPY.drawing.worldLit) && /drawn 3 times thicker/.test(marsLine) && /illustrative/.test(marsLine),
+  check(marsLine.startsWith(COPY.drawing.worldLit) && /drawn 1\.5 times thicker/.test(marsLine) && /illustrative/.test(marsLine),
     `Mars, which has a map and air, says how it is lit and that its air is drawn thicker than it is: ${marsLine}`);
   check(/haze is drawn at its measured height/.test(drawingLine(recs.find((x) => x.id === 'titan')) || ''), 'Titan says its haze is at its measured height');
   check(drawingLine(recs.find((x) => x.id === 'jupiter')) === COPY.drawing.worldLit, 'Jupiter, with no shell, says only how it is lit');
