@@ -125,6 +125,22 @@ if (glass && thin && solid && text && dim && space) {
   const td = ratio(dim, onThin);
   table.push(`--sr-glass-thin ${thin.a} over space: text-dim ${td.toFixed(2)}`);
   check(td >= 4.5, `--sr-text-dim on --sr-glass-thin over space is ${td.toFixed(2)}:1`);
+  // The card view's secondary text ON a wash (docs/ui-guide.md §2.1, spec 0061 task 2): the hint
+  // and chevron of a pressed or hovered row. --sr-text-dim drops under AA there; --sr-text-soft
+  // must not, on every wash, over the worst cloud.
+  const soft = rgba(token('--sr-text-soft') || '');
+  if (soft) {
+    for (const w of ['--sr-wash', '--sr-wash-hover', '--sr-wash-strong']) {
+      const wash = rgba(token(w) || '');
+      if (!wash) { problems.push(`${w} is not an rgba() this test can read`); continue; }
+      const bg = over(wash, onGlass);
+      const r = ratio(over(soft, bg), bg);
+      table.push(`--sr-text-soft on ${w} over glass over #fff: ${r.toFixed(2)}`);
+      check(r >= 4.5, `--sr-text-soft on ${w} over glass over a white cloud is ${r.toFixed(2)}:1, under AA`);
+    }
+  } else {
+    problems.push('--sr-text-soft is not an rgba() this test can read');
+  }
   const faint = hex(token('--sr-text-faint'));
   if (faint) table.push(`--sr-text-faint on space: ${ratio(faint, space).toFixed(2)} (rules and ticks only)`);
 } else {

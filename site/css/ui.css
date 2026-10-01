@@ -269,8 +269,7 @@ html.sr-compact .sr-status {
 
 .sr-panel__title,
 .sr-status__title,
-.sr-status__subtitle,
-.sr-card__label {
+.sr-status__subtitle {
   margin: 0 0 6px;
   /* Panel titles: Barlow Semi Condensed 600 at 13 px, tracked 0.04 em (spec 0045 req 6). A
      condensed face at the old 11 px read smaller than Inter did there. */
@@ -417,8 +416,13 @@ html.sr-compact .sr-status {
 }
 
 /* ------------------------------------------------------------------------------------ */
-/* The card -- a bottom sheet on a phone                                                  */
+/* The card (ui/cards.js): spec 0061 §4, docs/ui-guide.md §3.10                             */
 /* ------------------------------------------------------------------------------------ */
+/* Row D of the design canvas, HybridIss and HybridPhone: a microlabel, the name, three numbers
+   between two hairlines, four actions, the next 90 minutes, rows that open in place, and the
+   honesty line at the foot. A bottom sheet on a phone (until 0061 task 3 makes the sidebar one
+   sheet), the sidebar's card view on a desktop (`.is-docked`, below the shell section), a rail
+   in the trip frame. Every value here is a token or the 4 px grid. */
 
 .sr-card {
   position: fixed;
@@ -426,11 +430,12 @@ html.sr-compact .sr-status {
   bottom: 0;
   left: 0;
   z-index: var(--sr-z-card);
+  display: flex;
+  flex-direction: column;
   max-height: 72vh;
-  padding: var(--sr-pad);
-  padding-bottom: calc(var(--sr-pad) + env(safe-area-inset-bottom, 0px));
+  padding: var(--sp-2) var(--sp-4) calc(var(--sp-4) + env(safe-area-inset-bottom, 0px));
   border-width: 1px 0 0;
-  border-radius: var(--sr-radius) var(--sr-radius) 0 0;
+  border-radius: var(--sr-radius-shell) var(--sr-radius-shell) 0 0;
   transform: translateY(0);
   transition:
     transform var(--sr-slow) var(--sr-ease),
@@ -450,12 +455,39 @@ html.sr-compact .sr-status {
   border-top-color: var(--sr-line-strong);
 }
 
+/* 1. The microlabel and the name; the close button beside them on a sheet, in the sidebar's bar
+   when docked. */
 .sr-card__header {
-  display: flex;
-  gap: var(--sr-gap);
-  align-items: center;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--sr-line);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: var(--sp-3);
+  row-gap: var(--sp-1);
+  align-items: start;
+  padding: var(--sp-2) 0 var(--sp-4);
+}
+
+.sr-card__micro {
+  grid-column: 1;
+  margin: 0;
+  font: 600 13px/16px var(--sr-font-hud);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sr-text-dim);
+}
+
+/* The serif of row D waits for the font budget (0061 task 5); until then the guide's fallback,
+   Inter 600 at three quarters of its size. Two lines, then an ellipsis; the name is in `title`. */
+.sr-card__name {
+  grid-column: 1;
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  font: 600 22px/1.1 var(--sr-font);
+  letter-spacing: -0.01em;
+  color: var(--sr-text);
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 /* A stop title above already names it (ui/cards.js namedAbove): kept for a screen reader only. */
@@ -468,20 +500,451 @@ html.sr-compact .sr-status {
   white-space: nowrap;
 }
 
-.sr-card__header.is-named-above .sr-card__klass {
-  margin-right: auto;
+/* × : a 36 px disc inside a 44 px target (the padding is the target, the content box the disc). */
+.sr-card__close {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: calc(-1 * var(--sp-1)) calc(-1 * var(--sp-1)) 0 0;
+  padding: var(--sp-1);
+  color: var(--sr-text);
+  background: var(--sr-wash);
+  background-clip: content-box;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color var(--sr-fast) var(--sr-ease);
 }
 
-/* More below: a fade on the bottom edge while the card has somewhere to scroll (#279). */
+.sr-card__close:active {
+  background-color: var(--sr-wash-strong);
+}
+
+/* 2. The three numbers: mono, the unit and what it measures dim under each (principle 4). */
+.sr-hero {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: var(--sp-3);
+  margin: 0;
+  padding: var(--sp-3) 0;
+  list-style: none;
+  border-top: 1px solid var(--sr-line);
+  border-bottom: 1px solid var(--sr-line);
+}
+
+.sr-hero__cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+
+.sr-hero__num {
+  overflow: hidden;
+  font: 400 20px/1.1 var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* A long value (the Moon's distance, a craft's in millions of km) steps down, never out of its
+   column: seven characters fit a 111 px column at 20 px, ten do not. */
+.sr-hero__num[data-long='2'] {
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.sr-hero__cell.is-missing .sr-hero__num {
+  color: var(--sr-text-dim);
+}
+
+.sr-hero__unit {
+  overflow: hidden;
+  font: 400 13px/16px var(--sr-font);
+  color: var(--sr-text-dim);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* 3. Four actions, one of them ember (principle 3): a 20 px icon over a 13 px label. */
+.sr-card__actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-2);
+  margin: 0;
+  padding: var(--sp-4) 0;
+}
+
+.sr-act {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-1);
+  min-width: 0;
+  height: 52px;
+  padding: 0 var(--sp-1);
+  font: 400 13px/16px var(--sr-font);
+  color: var(--sr-text);
+  background: var(--sr-wash);
+  border: 0;
+  border-radius: var(--sr-radius);
+  cursor: pointer;
+  transition: background-color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-act__label {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.sr-act .sr-icon {
+  flex: 0 0 auto;
+}
+
+.sr-act--primary {
+  font-weight: 600;
+  color: var(--sr-ink);
+  background: var(--sr-ember);
+}
+
+.sr-act:active:not(:disabled) {
+  background: var(--sr-wash-strong);
+}
+
+.sr-act--primary:active:not(:disabled) {
+  background: var(--sr-ember-light);
+}
+
+.sr-act:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* 4. The next 90 minutes (spec 0048): the light now and the next change, a 6 px bar, the scale. */
+.sr-card__time {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.sr-light__head,
+.sr-light__axis {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.sr-light__now {
+  font: 400 15px/20px var(--sr-font);
+  color: var(--sr-text);
+}
+
+.sr-light__next,
+.sr-light__axis {
+  font: 400 13px/16px var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+  white-space: nowrap;
+}
+
+/* The shadow is a dark slate that would vanish into the glass, so the bar carries a hairline. */
+.sr-light {
+  display: flex;
+  height: 6px;
+  overflow: hidden;
+  border-radius: var(--sr-radius-sm);
+  outline: 1px solid var(--sr-line-strong);
+  background: var(--sr-shadowed);
+}
+
+.sr-light__seg { height: 100%; }
+.sr-light__seg.is-sunlit { background: var(--sr-sunlit); }
+.sr-light__seg.is-shadow { background: var(--sr-shadowed); }
+
+/* 5. The rows that open in place. */
+.sr-card__more-list {
+  display: flex;
+  flex-direction: column;
+  margin: var(--sp-4) 0 var(--sp-5);
+}
+
+.sr-disc,
+.sr-disc__action {
+  border-top: 1px solid var(--sr-line);
+}
+
+.sr-disc__head,
+.sr-disc__action {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: calc(100% + 2 * var(--sp-2));
+  min-height: 44px;
+  margin: 0 calc(-1 * var(--sp-2));
+  padding: var(--sp-3) var(--sp-2);
+  font: 400 15px/20px var(--sr-font);
+  color: var(--sr-text);
+  text-align: left;
+  background: transparent;
+  border-radius: var(--sr-radius);
+  cursor: pointer;
+  transition: background-color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-disc__head {
+  border: 0;
+}
+
+.sr-disc__action {
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 0;
+  border-radius: 0;
+}
+
+.sr-disc__action:disabled {
+  color: var(--sr-text-dim);
+  cursor: default;
+}
+
+.sr-disc__label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.sr-disc__hint {
+  flex: 0 0 auto;
+  font-size: 13px;
+  line-height: 16px;
+  color: var(--sr-text-dim);
+}
+
+.sr-disc__head .sr-icon {
+  flex: 0 0 auto;
+  color: var(--sr-text-dim);
+  transition: transform var(--sr-fast) var(--sr-ease);
+}
+
+.sr-disc__head[aria-expanded='true'] .sr-icon {
+  transform: rotate(90deg);
+}
+
+/* Pressed is a wash, and on a wash the dim grey does not read (docs/ui-guide.md §2.1): the hint
+   and the chevron step up to the soft grey with it. */
+.sr-disc__head:active,
+.sr-disc__action:active:not(:disabled) {
+  background: var(--sr-wash-strong);
+}
+
+.sr-disc__head:active .sr-disc__hint,
+.sr-disc__head:active .sr-icon {
+  color: var(--sr-text-soft);
+}
+
+.sr-disc__panel {
+  padding: var(--sp-1) 0 var(--sp-4);
+}
+
+.sr-disc__panel[hidden] {
+  display: none;
+}
+
+.sr-disc__body > * {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.sr-disc__body > * + * {
+  margin-top: var(--sp-3);
+}
+
+@media (hover: hover) {
+  .sr-card__close:hover {
+    background-color: var(--sr-wash-hover);
+  }
+
+  .sr-act:hover:not(:disabled) {
+    background: var(--sr-wash-hover);
+  }
+
+  .sr-act--primary:hover:not(:disabled) {
+    background: var(--sr-ember-light);
+  }
+
+  .sr-disc__head:hover,
+  .sr-disc__action:hover:not(:disabled) {
+    background: var(--sr-wash);
+  }
+
+  .sr-disc__head:hover .sr-disc__hint,
+  .sr-disc__head:hover .sr-icon {
+    color: var(--sr-text-soft);
+  }
+}
+
+/* What goes inside them: today's sections, in the guide's type roles. */
+.sr-card__sentence {
+  font-size: 15px;
+  line-height: 22px;
+}
+
+/* The registry's line on why this one is known (ui/cards.js whyLine), under the first sentence:
+   marked as the hand-kept line it is by a rule in a line colour, not ember, which is only for
+   what can be pressed. */
+.sr-card__why {
+  padding-left: var(--sp-3);
+  border-left: 2px solid var(--sr-line-strong);
+  font-size: 15px;
+  line-height: 22px;
+}
+
+/* A photograph of the object, where one exists. Two of the exotics have been photographed and the
+   pictures ship under CC BY 4.0, which asks for the credit "in a clear and readable manner to all
+   users". So the caption is part of the figure, at the 13 px floor, never a tooltip or a hover. */
+.sr-card__photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--sr-radius);
+  background: var(--sr-space-edge); /* these are pictures of the dark; do not flash white while loading */
+}
+
+.sr-card__photo-credit {
+  margin: var(--sp-2) 0 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--sr-text-dim);
+}
+
+.sr-card__label {
+  margin: 0 0 var(--sp-2);
+  font: 600 13px/16px var(--sr-font-hud);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sr-text-dim);
+}
+
+.sr-rows {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: var(--sp-2) var(--sp-3);
+  margin: 0;
+}
+
+.sr-rows__key {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--sr-text-dim);
+}
+
+.sr-rows__val {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+/* A value's number is set like every other number on the card; its unit stays in Inter. */
+.sr-rows__num {
+  font-family: var(--sr-font-mono);
+}
+
+.sr-compare {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sr-compare__item {
+  font-size: 13px;
+  line-height: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-card__seeline {
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.sr-card__facts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.sr-card__fact,
+.sr-card__fact-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-card__fact-note {
+  color: var(--sr-text-dim);
+}
+
+.sr-card__drawn,
+.sr-card__source {
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.sr-card__source {
+  color: var(--sr-text-dim);
+  overflow-wrap: anywhere;
+}
+
+/* 6. The honesty line: small, at the foot, never removed (principle 7). */
+.sr-card__foot {
+  margin-top: auto;
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--sr-line);
+}
+
+.sr-card__cls {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+}
+
+/* The line is composed lower case, because the HUD tag and the postcard print its first clause
+   mid-sentence; on the card it starts one, so its first letter is a capital. */
+.sr-card__cls::first-letter {
+  text-transform: uppercase;
+}
+
+/* More below: a fade on the bottom edge while the sheet has somewhere to scroll (#279). */
 .sr-card__more {
   position: sticky;
-  bottom: calc(-1 * var(--sr-pad));
+  bottom: calc(-1 * var(--sp-4));
+  flex: 0 0 auto;
   height: 44px;
   margin-top: -44px;
   pointer-events: none;
   opacity: 0;
   background: linear-gradient(to bottom, transparent, var(--sr-panel) 85%);
-  transition: opacity var(--sr-fast, 150ms) ease;
+  transition: opacity var(--sr-fast) var(--sr-ease);
 }
 
 .sr-card__more::after {
@@ -500,102 +963,20 @@ html.sr-compact .sr-status {
   opacity: 1;
 }
 
-.sr-card__name {
-  flex: 1 1 auto;
-  min-width: 0;
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 1.25;
-  overflow-wrap: anywhere;
-}
-
-.sr-card__klass {
-  flex: 0 0 auto;
-  padding: 2px 8px;
-  font-size: 13px;
-  color: var(--sr-text-dim);
-  border: 1px solid var(--sr-line);
-  border-radius: var(--sr-radius-pill);
-}
-
-.sr-card__close {
-  flex: 0 0 auto;
-  appearance: none;
-  min-width: 40px;
-  min-height: 40px;
-  font: inherit;
-  font-size: 13px;
-  color: var(--sr-text-dim);
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-}
-
-.sr-card__close:hover {
-  color: var(--sr-ember);
-}
-
-.sr-card__sentence {
-  margin: 12px 0;
-  font-size: 16px;
-  line-height: 1.45;
-}
-
-/* The registry's line on why this one is known (ui/cards.js whyLine), under the first sentence.
- * 2026-09-22: this class name was a leftover with no writer since #31; it has one again. Quieter
- * than the sentence, louder than the rows, and marked as the hand-kept line it is -- in a line
- * colour, not ember, which is only for what can be pressed. */
-.sr-card__why {
-  margin: -4px 0 12px;
-  padding-left: 10px;
-  border-left: 2px solid var(--sr-line-strong);
-  font-size: 14px;
-  line-height: 1.45;
-}
-
-/* A photograph of the object, where one exists ---------------------------------------
- *
- * Two of the exotics have been photographed and the pictures ship under CC BY 4.0, which asks for
- * the credit "in a clear and readable manner to all users". So the caption is part of the figure,
- * at the app's smallest readable size but not smaller, and never a tooltip or a hover. */
-
-.sr-card__figure {
-  margin: 12px 0;
-}
-
-.sr-card__photo {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: var(--sr-radius);
-  background: var(--sr-space-edge); /* these are pictures of the dark; do not flash white while loading */
-}
-
-.sr-card__photo-credit {
-  margin: 6px 0 0;
-  font-size: 13px;
-  line-height: 1.35;
-  color: var(--sr-text-dim);
-}
-
 /* The trip lead -- block 0, and only during a guided trip ----------------------------
  *
- * Enough type to be legible the day it ships, and no more. The cinematic frame around it --
- * the letterbox, the panel going inert, the "More about this" disclosure that folds the
- * ordinary card away behind this one -- is the next spec, and this block is deliberately
- * styled so that it reads correctly WITHOUT any of that: the stop's words on top, the object's
- * own card underneath, which is exactly what it is.
+ * Enough type to be legible the day it ships, and no more: the stop's words on top, the object's
+ * own card underneath, which is exactly what it is. The frame around it is ui/tripframe.js's.
  */
 
 .sr-card__lead {
-  padding-bottom: 12px;
-  margin-bottom: 4px;
+  padding: var(--sp-2) 0 var(--sp-3);
+  margin-bottom: var(--sp-1);
   border-bottom: 1px solid var(--sr-line);
 }
 
 .sr-card__leadtitle {
-  margin: 0 0 8px;
+  margin: 0 0 var(--sp-2);
   font-size: 20px;
   font-weight: 600;
   line-height: 1.2;
@@ -605,7 +986,7 @@ html.sr-compact .sr-status {
 .sr-card__leadbody {
   margin: 0;
   font-size: 15px;
-  line-height: 1.5;
+  line-height: 22px;
   color: var(--sr-text);
 }
 
@@ -613,120 +994,24 @@ html.sr-compact .sr-status {
    station's distance, its next pass. Quieter than the words, because it is a reading and not the
    story; no rise animation, because the card repaints with the clock and it would replay. */
 .sr-card__leadnote {
-  margin: 8px 0 0;
-  font-size: 14px;
-  line-height: 1.45;
+  margin: var(--sp-2) 0 0;
+  font-size: 13px;
+  line-height: 18px;
   color: var(--sr-text-dim);
 }
 
-/* Comparison chips -- at most three, scale first ------------------------------------- */
-
-.sr-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 0 0 14px;
-  padding: 0;
-  list-style: none;
-}
-
-.sr-chip {
-  padding: 4px 10px;
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
-  color: var(--sr-text);
-  background: var(--sr-raise);
-  border: 1px solid var(--sr-line);
-  border-radius: var(--sr-radius-pill);
-}
-
-/* Right now, and see it from here ------------------------------------------------------ */
-
-.sr-card__block {
-  margin: 0 0 14px;
-}
-
-.sr-rows {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
-  gap: 4px 12px;
-  margin: 0;
-}
-
-.sr-rows__key {
-  margin: 0;
-  font-size: 13px;
-  color: var(--sr-text-dim);
-}
-
-.sr-rows__val {
-  margin: 0;
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-  overflow-wrap: anywhere;
-}
-
-.sr-card__seeline {
-  margin: 0;
-  padding: 10px 12px;
-  font-size: 14px;
-  background: var(--sr-raise);
-  border-left: 2px solid var(--sr-ember);
-  border-radius: 0 var(--sr-radius-sm) var(--sr-radius-sm) 0;
-}
-
-/* Actions ------------------------------------------------------------------------------ */
-
-.sr-card__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.sr-card__actions .sr-btn {
-  flex: 1 1 auto;
-}
-
-/* The class line and the source line, in that order ------------------------------------ */
-
-.sr-card__foot {
-  padding-top: 10px;
-  border-top: 1px solid var(--sr-line);
-}
-
-.sr-card__cls,
-.sr-card__drawn,
-.sr-card__source {
-  margin: 0 0 4px;
-  font-size: 13px;
-  line-height: 1.4;
-  color: var(--sr-text-dim);
-}
-
-.sr-card__cls {
-  font-variant-numeric: tabular-nums;
-  color: var(--sr-text);
-}
-
-/* "What you are looking at": the shape's own claim about itself, beside the position class. */
-.sr-card__drawn {
-  color: var(--sr-text);
-}
-
-/* "Often said" -- the myth block. It sits in the body, immediately after the facts it corrects,
-   and each correction carries its own source line because a debunk with no source is a rumour
-   going the other way. */
+/* "Often said" -- the myth block. Each correction carries its own source line because a debunk
+   with no source is a rumour going the other way. */
 .sr-card__myth {
-  margin: 0 0 4px;
-  line-height: 1.45;
+  margin: 0 0 var(--sp-1);
+  font-size: 15px;
+  line-height: 22px;
 }
 
 .sr-card__mythsource {
-  margin: 0 0 10px;
+  margin: 0 0 var(--sp-3);
   font-size: 13px;
-  line-height: 1.4;
+  line-height: 18px;
   color: var(--sr-text-dim);
 }
 
@@ -734,34 +1019,54 @@ html.sr-compact .sr-status {
   margin-bottom: 0;
 }
 
-/* "Also aboard" / "Riding on" -- the link between a spacecraft and the thing bolted to it.
-   Rows here open another card and change nothing else, so they are quieter than an action
-   button and louder than body text: this is a way through the map, not a thing to do. */
+/* "Who is aboard" / "What it rides on" -- the link between a spacecraft and the thing bolted to
+   it. Rows here open another card and change nothing else: a way through the map, not a thing to
+   do, so a list row and not an action button. */
 .sr-card__aboardrow {
-  display: block;
+  display: flex;
+  align-items: center;
   width: 100%;
-  margin: 0 0 6px;
-  padding: 8px 10px;
+  min-height: 44px;
+  margin: 0 0 var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
   font: inherit;
-  font-size: 13px;
+  font-size: 15px;
+  line-height: 20px;
   text-align: left;
   color: var(--sr-text);
-  background: var(--sr-raise);
-  border: 1px solid var(--sr-line);
-  border-radius: var(--sr-radius-sm);
+  background: var(--sr-wash);
+  border: 0;
+  border-radius: var(--sr-radius);
   cursor: pointer;
+  transition: background-color var(--sr-fast) var(--sr-ease);
 }
 
-.sr-card__aboardrow:hover,
-.sr-card__aboardrow:focus-visible {
-  border-color: var(--sr-ember);
+.sr-card__aboardrow:active {
+  background: var(--sr-wash-strong);
+}
+
+@media (hover: hover) {
+  .sr-card__aboardrow:hover {
+    background: var(--sr-wash-hover);
+  }
 }
 
 .sr-card__aboardnote {
   margin: 0;
   font-size: 13px;
-  line-height: 1.4;
+  line-height: 18px;
   color: var(--sr-text-dim);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-act,
+  .sr-card__close,
+  .sr-card__aboardrow,
+  .sr-disc__head,
+  .sr-disc__action,
+  .sr-disc__head .sr-icon {
+    transition: none;
+  }
 }
 
 /* The sections inside a panel (the colour key, density). The left panel they lived in is gone
@@ -945,10 +1250,6 @@ html.sr-compact .sr-status {
     border-width: 1px;
     border-radius: var(--sr-radius);
     padding-bottom: var(--sr-pad);
-  }
-
-  .sr-card__sentence {
-    font-size: 17px;
   }
 
   @starting-style {
@@ -1915,37 +2216,6 @@ html.sr-trip-collapsed #sr-card .sr-card__lead {
 
 /* The card's trajectory chart (spec 0026 req 14) ---------------------------------------- */
 
-/* The next 90 minutes (spec 0048, ui/cards.js timeFactsSection): a bar of sunlight and shadow,
-   sunlit in the text colour and shadowed in the debris slate, "now" at its left end. */
-.sr-light {
-  display: flex;
-  height: 8px;
-  margin: 4px 0 2px;
-  overflow: hidden;
-  border-radius: var(--sr-radius-sm);
-  background: var(--sr-raise);
-}
-.sr-light__seg { height: 100%; }
-.sr-light__seg.is-sunlit { background: var(--sr-text); }
-.sr-light__seg.is-shadow { background: var(--sr-debris); }
-.sr-light__axis {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 6px;
-  font-size: 13px;
-  color: var(--sr-text-dim);
-}
-.sr-card__fact {
-  margin: 0 0 2px;
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
-}
-.sr-card__fact-note {
-  margin: 0 0 4px;
-  font-size: 13px;
-  color: var(--sr-text-dim);
-}
-
 .sr-traj { display: block; width: 100%; height: auto; margin: 4px 0 6px; }
 .sr-traj__axis, .sr-traj__equator { stroke: var(--sr-line); stroke-width: 1; }
 .sr-traj__map { fill: var(--sr-raise); stroke: var(--sr-line); stroke-width: 1; }
@@ -1995,18 +2265,7 @@ html.sr-trip-mode .sr-scenenote { display: none; }
 
 /* Share and the postcard (spec 0033, 2026-09-23) ------------------------------------------- */
 
-/* "Save a picture" sits directly under the action row: one tap more than Share, and quieter,
-   because the actions are capped at three (spec 0013) and this is a fourth thing to do. */
-.sr-card__picture {
-  display: flex;
-  margin: -2px 0 10px;
-}
-.sr-card__picture .sr-btn { flex: 1 1 auto; }
-
-/* The 44 px tap floor on a phone. The card's other buttons are 40 (site.css calls that the
-   outlier); the new ones meet the floor rather than copy it. */
-html.sr-phone .sr-btn--share,
-html.sr-phone .sr-btn--picture,
+/* The 44 px tap floor on a phone, for the trip bar's Share. */
 html.sr-phone .sr-trip__btn--share {
   min-height: 44px;
 }
@@ -2358,6 +2617,14 @@ html.sr-phone .sr-chevron {
   --sr-wash: rgba(232, 236, 242, 0.07);
   --sr-wash-strong: rgba(232, 236, 242, 0.14);
   --sr-hair: rgba(232, 236, 242, 0.08);
+  /* docs/ui-guide.md §2.1, for the card view (spec 0061 task 2). The hover step between rest and
+     pressed (M3's state layers: 0.08 hover, 0.12 pressed); secondary text ON a wash, where
+     --sr-text-dim drops to 3.76:1 over a white cloud and .76 is the lowest alpha that keeps 4.6 on
+     --sr-wash-strong (tests/test_tokens.mjs); and the 90-minute bar's two runs, row D's. */
+  --sr-wash-hover: rgba(232, 236, 242, 0.1);
+  --sr-text-soft: rgba(232, 236, 242, 0.76);
+  --sr-sunlit: #ffe2a8;
+  --sr-shadowed: #243041;
 }
 
 @media (min-width: 900px) {
@@ -2454,7 +2721,7 @@ html.sr-phone .sr-chevron {
   padding: 0 10px 0 4px;
   font: inherit;
   font-size: 14px;
-  color: rgba(232, 236, 242, 0.78);
+  color: var(--sr-text-soft);
   background: transparent;
   border: 0;
   border-radius: var(--sr-radius);
@@ -2462,7 +2729,9 @@ html.sr-phone .sr-chevron {
   transition: color var(--sr-fast) var(--sr-ease);
 }
 
-.sr-side__back:hover { color: var(--sr-ember); }
+@media (hover: hover) {
+  .sr-side__back:hover { color: var(--sr-ember-light); }
+}
 
 .sr-side__chev {
   font-size: 20px;
@@ -3022,15 +3291,22 @@ html.sr-phone .sr-chevron {
 .sr-statusline[data-state='failed'] .sr-statusline__dot { background: var(--sr-ember); }
 
 /* --- the card, seated in the sidebar -------------------------------------------------- */
-/* ui/cards.js is unchanged in this task (0061 task 2 re-lays it out). Docked, it loses its own
-   glass, border and fixed place, and reads as the sidebar's content. */
+/* Docked, the card loses its own glass, border and fixed place and is the card view's content
+   (ui/shell.js): row D's HybridIss. Its × moves up into the "‹ Explore" bar -- positioned against
+   the view, outside the scrolling slot, so it stays put while the card scrolls -- and the honesty
+   line sits at the foot of the sidebar when the card is shorter than it. */
+.sr-side__card {
+  position: relative;
+}
+
 .sr-card.is-docked {
   position: static;
   inset: auto;
   z-index: auto;
   width: auto;
+  min-height: 100%;
   max-height: none;
-  padding: 2px 20px 20px;
+  padding: var(--sp-1) var(--sr-inset) var(--sr-inset);
   overflow: visible;
   background: transparent;
   border: 0;
@@ -3042,7 +3318,36 @@ html.sr-phone .sr-chevron {
 }
 
 .sr-card.is-docked .sr-card__header {
-  padding-top: 0;
+  grid-template-columns: minmax(0, 1fr);
+  padding-top: var(--sp-1);
+}
+
+.sr-card.is-docked .sr-card__close {
+  position: absolute;
+  top: var(--sp-2);
+  right: var(--sp-2);
+  margin: 0;
+}
+
+.sr-card.is-docked .sr-card__name {
+  font-size: 28px;
+}
+
+.sr-card.is-docked .sr-hero__num {
+  font-size: 24px;
+}
+
+.sr-card.is-docked .sr-hero__num[data-long='1'] {
+  font-size: 20px;
+}
+
+.sr-card.is-docked .sr-hero__num[data-long='2'] {
+  font-size: 15px;
+  line-height: 26px;
+}
+
+.sr-card.is-docked .sr-act {
+  height: 56px;
 }
 
 /* --- the sources sheet, as a view ----------------------------------------------------- */

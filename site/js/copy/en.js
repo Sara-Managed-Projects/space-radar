@@ -932,6 +932,17 @@ export const COPY = {
     orbitNote: 'Inferred: the catalogue’s count at the elements’ epoch, plus the laps since.',
     // The year from the international designator ("1998-067A"); the day comes with SATCAT (task 2).
     launched: 'Launched in {year}',
+    // The bar's own two lines on the card view (spec 0061 §4, row D): the light now on the left, the
+    // next change on the right, and under the bar where the lap ends. Short, because they sit beside
+    // a bar 320 px wide; the full sentences above stay in "Its path".
+    nowSunlit: 'In sunlight',
+    nowShadow: 'In Earth’s shadow',
+    shadowIn: 'shadow in {mins}',
+    sunlightIn: 'sunlight in {mins}',
+    shadowAt: 'shadow at {time}',
+    sunlightAt: 'sunlight at {time}',
+    lapEndsIn: 'lap ends in {mmss}',
+    lapEndsAt: 'lap ends at {time}',
   },
   // Spec 0048 req 3 and 8: the followed object's track on the globe, and riding along with it.
   groundTrack: {
@@ -1108,6 +1119,8 @@ export const COPY = {
       },
       stormAlert: { green: 'green', orange: 'orange', red: 'red' },
       kmPerS: '{n} km/s',
+      // The days first, so the card's three numbers read the count and not the day of the month.
+      launchedAgo: '{n} days ago, on {date}',
       au: '{n} astronomical units',
       lightYears: '{n} light-years',
       inSunlight: 'in sunlight',
@@ -1164,6 +1177,93 @@ export const COPY = {
       // Honest, because the feature does not exist yet (specs 0015 and 0016).
       tellMeBeforeDisabled:
         'Reminders are not built yet. There is no sign-up and no email behind this button, so it is switched off rather than pretending.',
+      // The card view's one row of four (spec 0061 §4, docs/ui-guide.md §3.10). Two words at most
+      // on a button; the title says the rest.
+      follow: 'Follow',
+      followTitle: 'Fly to it and keep it in the middle of the view',
+      ride: 'Ride along',
+      seeShort: 'See it',
+      postcard: 'Postcard',
+      share: 'Share',
+    },
+
+    // THE CARD VIEW (spec 0061 §4). Above the numbers: what it is and where, in four words at most,
+    // set in capitals by the stylesheet (the one microlabel style). Below them: the sections that
+    // open in place.
+    micro: '{klass} · {regime}',
+    microKlass: {
+      planet: 'Planet',
+      moon: 'Moon',
+      dwarf: 'Dwarf planet',
+      ourStar: 'Star',
+      exoplanet: 'Exoplanet',
+    },
+    regime: {
+      // Earth orbits by height: under 2 000 km is low, the geostationary ring is 35 786 km up.
+      leo: 'Low Earth orbit',
+      meo: 'Medium Earth orbit',
+      geo: 'Geostationary orbit',
+      heo: 'High Earth orbit',
+      inner: 'Inner solar system',
+      outer: 'Outer solar system',
+      beyondNeptune: 'Beyond Neptune',
+      round: 'Round {world}',
+      inCon: 'In {con}',
+      onWorld: 'On {world}',
+      centre: 'Centre of the solar system',
+      nearby: 'Among the nearest',
+    },
+    // The three numbers: each one is a row the card prints (ui/cards.js heroNumbers), and under it
+    // its unit and what it measures, as short as row D's "km up". `{u}` is the row's own unit,
+    // shortened by `units`.
+    hero: {
+      label: 'In three numbers',
+      missing: '—',
+      captions: {
+        altitude: '{u} up',
+        away: '{u} away',
+        speed: '{u}',
+        period: '{u} a lap',
+        distanceFromSun: '{u} from Sun',
+        distanceFromEarth: '{u} from Earth',
+        lightTime: '{u} each way',
+        spin: '{u} a turn',
+        yearLength: '{u} a year',
+        brightness: 'magnitude',
+        spectralType: 'star class',
+        across: '{u} across',
+        lightLeft: '{u} away',
+        launched: 'days in space',
+        fromYou: '{u} from you',
+        heightAbove: '{u} up',
+        other: '{u}',
+      },
+      units: {
+        'minutes': 'min',
+        'hours': 'h',
+        'days': 'days',
+        'seconds': 's',
+        'milliseconds': 'ms',
+        'astronomical units': 'AU',
+        'light-years': 'ly',
+        'years ago': 'ly',
+        'million years ago': 'million ly',
+        'billion years ago': 'billion ly',
+        'months ago': 'light-months',
+      },
+    },
+    sections: {
+      label: 'More about it',
+      see: 'When you can see it',
+      path: 'Its path',
+      aboard: 'Who is aboard',
+      ridingOn: 'What it rides on',
+      about: 'About it',
+      sources: 'Sources for this record',
+      // The hint at the right of "When you can see it", one or two words.
+      placeGuessed: 'place guessed',
+      needsPlace: 'needs your place',
+      passAt: '{time} UTC',
     },
   },
 

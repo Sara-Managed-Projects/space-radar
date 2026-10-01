@@ -23,6 +23,7 @@ the tree is what the browser runs.
 | meshopt decoder | r185 bundle | MIT | `meshopt_decoder.module.js`, © 2016-2024 Arseny Kapoulkine |
 | satellite.js | 7.1.0 | MIT | © 2013 Shashwat Kandadai, UCSC Jack Baskin School of Engineering | <https://github.com/shashwatak/satellite-js> |
 | astronomy-engine | 2.1.17–2.1.19 (see note) | MIT | © 2019–2023 Don Cross <cosinekitty@gmail.com> | <https://github.com/cosinekitty/astronomy> |
+| Lucide icons (eight, inlined) | `main`, read 2026-10-01 | ISC; the Feather-derived ones MIT | © Lucide Icons and Contributors; Feather © 2013-present Cole Bemis | <https://lucide.dev> |
 
 MIT requires that its copyright notice **and** its permission notice travel with every copy. They
 are reproduced in full in [§6](#6-full-licence-notices).
@@ -47,6 +48,14 @@ ESM build, so the file alone cannot distinguish them. The project's now-removed 
 recorded 2.1.19. The copyright line above is the one **inside the shipped file**, which is the one
 MIT obliges us to carry. Upstream's current `LICENSE` on `master` reads `2019-2025`; that is a later
 edit to a file we do not ship, and does not change the notice attached to this copy.
+
+**Lucide** — eight icons, copied element for element from `icons/<name>.svg` on Lucide's `main` branch
+(<https://github.com/lucide-icons/lucide>, read 2026-10-01) into `site/js/ui/cards.js` (`ICONS`):
+`x`, `crosshair`, `orbit`, `camera`, `share-2`, `chevron-right`, `navigation`, `telescope`. The
+only change is the stroke, 1.75 instead of Lucide's default 2, which `docs/ui-guide.md` §3.16 sets
+for every icon in the app; Lucide draws at any stroke width by design. Four of the eight (`x`,
+`crosshair`, `chevron-right`, `navigation`) are on Lucide's own list of icons derived from Feather,
+which are MIT, © Cole Bemis; the rest are ISC. Both notices are in [§6](#6-full-licence-notices).
 
 ## 2. Textures
 
@@ -816,6 +825,58 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+```
+
+### Lucide — ISC, and MIT for the icons derived from Feather
+
+Applies to the `ICONS` table in `site/js/ui/cards.js`. Lucide's `LICENSE`, as published (its list
+of Feather-derived icons is shortened here to the four this app ships: `x`, `crosshair`,
+`chevron-right`, `navigation`):
+
+```
+ISC License
+
+Copyright (c) 2026 Lucide Icons and Contributors
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+---
+
+The following Lucide icons are derived from the Feather project:
+
+[...] crosshair, [...] chevron-right, [...] navigation, [...] x, [...]
+
+The MIT License (MIT) (for the icons listed above)
+
+Copyright (c) 2013-present Cole Bemis
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 ```
 
 ### satellite.js — MIT

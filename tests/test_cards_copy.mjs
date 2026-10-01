@@ -374,6 +374,149 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
   check(/19 hours old/.test(lines.honesty), 'and it keeps the element age');
 }
 
+// --- the card view (spec 0061 §4): three numbers per class, from the card's own rows -----------
+//
+// The card leads with three numbers, and each one is a row the card prints (and the rows are what
+// the HUD tag reads), so the three can never be a second sum that disagrees with the rest. A row
+// the card does not print is "—" with its caption, never a guess and never left out. The honesty
+// line stays at the foot whatever the layout.
+{
+  const C = await import(join(JS, 'ui/cards.js'));
+  const { COPY } = await import(join(JS, 'copy/en.js'));
+  const { readFileSync } = await import('node:fs');
+  const { parseCelestrakGP } = await import(join(JS, 'data/parsers.js'));
+  const { worldRecords, positionOf } = await import(join(JS, 'scene/worlds.js'));
+  const { sampleDeepSpace } = await import(join(JS, 'data/sample.js'));
+  const MISSING = COPY.card.hero.missing;
+  const gp = JSON.parse(readFileSync(join(ROOT, 'tests/fixtures/harvest/celestrak_gp.json'), 'utf8'));
+  const [issGp] = parseCelestrakGP(gp, { layer: 'stations', source: 'celestrak-stations' });
+  const now = issGp.epoch + 3 * 3600e3;
+  const ctx = { clock: { now: () => now }, worlds: { positionOf: (id, t) => positionOf(id, t) }, selected: () => null };
+  const m0 = (r) => ({ tMs: now, frame: r.frame, ok: true });
+  const words = (r) => C.cardWords(r, ctx);
+  // The three for a record: [num, caption] each, and the rows they must have come from.
+  const three = (r) => {
+    const rows = C.rightNowFor(r, ctx);
+    const w = words(r);
+    return { rows, heroes: C.heroNumbers(r, { ...m0(r), distSunKm: null }, rows), honesty: w.honesty };
+  };
+  const fromRow = (rows, label, num) => rows.some(([k, v]) => k === label && String(v).includes(num));
+  const R = COPY.card.rows;
+  const W = (id) => worldRecords().find((r) => r.id === id);
+  const star = { id: 'hip-32349', name: 'Sirius', klass: 'star', layer: 'stars', propagator: 'static', frame: 'sun-inertial', pos: { x: 8.6 * 9.4607e12, y: 0, z: 0 }, cls: 'measured', meta: { hip: '32349', spect: 'A0m...', distLy: 8.6, mag: -1.44, lum: 22.8 } };
+  const m42 = { id: 'dso-m42', name: 'Great Orion Nebula', klass: 'dso', layer: 'deep-sky', propagator: 'static', frame: 'sun-inertial', pos: { x: 1344 * 9.4607e12, y: 0, z: 0 }, cls: 'measured', meta: { distLy: 1344, distLyLow: 1324, distLyHigh: 1364, kind: 'nebula', typeText: 'H II region nebula', sizeLy: 35, con: 'Orion', mag: 4 } };
+  const voyager = sampleDeepSpace().find((r) => r.id === 'deep-voyager-1');
+  const CASES = [
+    // [what, record, kind, the row each number must come from, in order]
+    ['the ISS (Earth orbiter)', issGp, 'orbiter', [R.altitude, R.speed, R.period]],
+    ['Mars (planet)', W('mars'), 'planet', [R.distanceFromSun, R.spin, R.yearLength]],
+    ['the Moon', W('moon'), 'moon', [R.altitude, R.speed, R.spin]],
+    ['Sirius (star)', star, 'star', [R.distanceFromSun, R.brightness, R.spectralType]],
+    ['M42 (deep sky)', m42, 'dso', [R.lightLeft, R.across, R.brightness]],
+    ['Voyager 1 (craft beyond Earth)', voyager, 'craft', [R.distanceFromEarth, R.speed, R.launched]],
+  ];
+  for (const [what, r, kind, labels] of CASES) {
+    if (!r) { problems.push(`no record for ${what}`); continue; }
+    const { rows, heroes, honesty } = three(r);
+    check(C.heroKind(r, m0(r)) === kind, `${what} is a ${kind} card (${C.heroKind(r, m0(r))})`);
+    check(heroes.length === 3, `${what}: three numbers, not ${heroes.length}`);
+    heroes.forEach((h, i) => {
+      check(!h.missing && h.num !== MISSING, `${what}: number ${i + 1} (${labels[i]}) is there: ${JSON.stringify(h)}`);
+      check(fromRow(rows, labels[i], h.num), `${what}: "${h.num}" is the card's own "${labels[i]}" row (${JSON.stringify(rows.find(([k]) => k === labels[i]))})`);
+      check(typeof h.caption === 'string' && h.caption.length > 0 && h.caption.length <= 18, `${what}: number ${i + 1} has a one-line caption: "${h.caption}"`);
+    });
+    // The honesty line is still on every card, and the tag's short line is still its first clause.
+    check(typeof honesty === 'string' && honesty.length > 0, `${what}: the honesty line stays (${honesty})`);
+    check(honesty.startsWith(C.shortHonesty(r, { ...m0(r), cls: r.cls }).replace(/…$/, '')), `${what}: the tag's short line is the start of the card's honesty line`);
+  }
+  // The units row D draws, from the rows' own units.
+  const issHero = three(issGp).heroes;
+  check(issHero.map((h) => h.caption).join('|') === 'km up|km/h|min a lap', `the ISS reads "km up", "km/h", "min a lap": ${issHero.map((h) => h.caption)}`);
+  const marsHero = three(W('mars')).heroes;
+  check(marsHero[0].caption === 'AU from Sun' && /a turn$/.test(marsHero[1].caption) && /a year$/.test(marsHero[2].caption), `Mars reads AU from Sun, a turn, a year: ${marsHero.map((h) => h.caption)}`);
+  check(/^24\.6$/.test(marsHero[1].num) && marsHero[2].num === '687', `Mars turns in 24.6 hours and goes round in 687 days: ${marsHero.map((h) => h.num)}`);
+  const vHero = three(voyager).heroes;
+  check(vHero[2].num === C.heroSplit(three(voyager).rows.find(([k]) => k === R.launched)[1]).num && Number(vHero[2].num.replace(/ /g, '')) > 17000, `Voyager 1's days since launch are counted from 5 September 1977: ${vHero[2].num}`);
+  // A missing row is "—" with its caption, never a guess and never a hole in the row of three.
+  const bare = { ...star, id: 'hyg-1', meta: { distLy: 30 } };
+  const bh = three(bare).heroes;
+  check(bh.length === 3 && bh[0].num !== MISSING && bh[1].num === MISSING && bh[2].num === MISSING && bh[1].missing && bh[1].caption === COPY.card.hero.captions.brightness,
+    `a star with no magnitude or class keeps three cells, the last two "—": ${JSON.stringify(bh)}`);
+  const noLaunch = { ...voyager, meta: { ...voyager.meta, launchDate: undefined } };
+  const nl = three(noLaunch).heroes;
+  check(nl[2].num === MISSING && nl[2].caption === COPY.card.hero.captions.launched, `a craft with no launch day shows "—" days since launch: ${JSON.stringify(nl[2])}`);
+  const lost = C.heroNumbers(issGp, { tMs: now, frame: 'earth-inertial', ok: false }, [[R.altitude, COPY.card.couldNotLook]]);
+  check(lost.length === 3 && lost.every((h) => h.num === MISSING), `an orbiter the propagator lost is three "—", not three zeroes: ${lost.map((h) => h.num)}`);
+  // One number, not a range or a sentence.
+  check(C.heroSplit('27 556 km/h').num === '27 556' && C.heroSplit('magnitude −1.44').num === '−1.44', 'a value splits into its number and unit, a magnitude included');
+  check(C.heroSplit('1 324 to 1 364 light-years') === null && C.heroSplit(COPY.card.couldNotLook) === null, 'a range or "could not work this out" is not one number');
+  // The microlabel: what and where, four words at most, worked out rather than typed.
+  const iss = C.microLabel(issGp, { ...m0(issGp), altKm: 420 });
+  check(iss === `${COPY.klass.station} · ${COPY.card.regime.leo}`, `the ISS's microlabel is "${COPY.klass.station} · ${COPY.card.regime.leo}": ${iss}`);
+  check(C.microLabel(W('mars'), { ...m0(W('mars')), distSunKm: 1.5 * 149597870.7 }) === `${COPY.card.microKlass.planet} · ${COPY.card.regime.inner}`, 'Mars is a planet in the inner solar system');
+  check(C.microLabel(voyager, { ...m0(voyager), distSunKm: 172 * 149597870.7 }).endsWith(COPY.card.regime.beyondNeptune), 'Voyager 1 is beyond Neptune');
+  check(C.microLabel(m42, m0(m42)) === 'Nebula · In Orion', `M42 is a nebula in Orion: ${C.microLabel(m42, m0(m42))}`);
+  for (const r of [issGp, W('mars'), W('moon'), star, m42, voyager]) {
+    const words4 = C.microLabel(r, { ...m0(r), altKm: 420, distSunKm: 1.5e8 }).split(/\s+/).filter((w) => w !== '·').length;
+    check(words4 <= 5, `${r.name}'s microlabel is short (${words4} words)`);
+  }
+}
+
+// --- the card view's rows that open in place, and its action row ------------------------------
+{
+  // A DOM small enough to press a button in. Nothing here lays anything out.
+  class N {
+    constructor(tag) { this.tagName = String(tag).toUpperCase(); this.children = []; this.attrs = {}; this.dataset = {}; this.hidden = false; this.className = ''; this.id = ''; this._t = ''; this.listeners = {}; this.style = {};
+      const self = this; this.classList = { add: (...c) => { self.className = [...new Set([...self.className.split(/\s+/).filter(Boolean), ...c])].join(' '); }, contains: (c) => self.className.split(/\s+/).includes(c) }; }
+    appendChild(c) { this.children.push(c); c.parentNode = this; return c; }
+    set textContent(v) { this.children = []; this._t = String(v); }
+    get textContent() { return this._t + this.children.map((c) => c.textContent).join(''); }
+    setAttribute(k, v) { this.attrs[k] = String(v); }
+    getAttribute(k) { return k in this.attrs ? this.attrs[k] : null; }
+    addEventListener(t, f) { (this.listeners[t] ||= []).push(f); }
+    click() { if (this.disabled) return; for (const f of this.listeners.click || []) f({ target: this }); }
+    all() { return [this, ...this.children.flatMap((c) => c.all())]; }
+  }
+  const before = globalThis.document;
+  globalThis.document = { createElement: (t) => new N(t), createElementNS: (_n, t) => new N(t) };
+  const C = await import(join(JS, 'ui/cards.js'));
+  const { COPY } = await import(join(JS, 'copy/en.js'));
+  const panel = new N('div');
+  const seen = [];
+  const row = C.disclosure('about', COPY.card.sections.about, null, panel, false, (on) => seen.push(on));
+  const head = row.children[0];
+  check(head.tagName === 'BUTTON' && head.type === 'button', 'a section row is a real button');
+  check(head.getAttribute('aria-expanded') === 'false' && panel.hidden === true, 'it starts shut: aria-expanded="false" and its panel hidden');
+  check(head.getAttribute('aria-controls') === panel.id && panel.getAttribute('aria-labelledby') === head.id && panel.getAttribute('role') === 'region', 'the button controls its panel, and the panel is a region named by the button');
+  head.click();
+  check(head.getAttribute('aria-expanded') === 'true' && panel.hidden === false && seen.join() === 'true', `pressed, it opens in place and says so (${head.getAttribute('aria-expanded')}, hidden ${panel.hidden})`);
+  head.click();
+  check(head.getAttribute('aria-expanded') === 'false' && panel.hidden === true && seen.join() === 'true,false', 'pressed again, it shuts');
+  const reopened = C.disclosure('about', COPY.card.sections.about, COPY.card.sections.placeGuessed, new N('div'), true);
+  check(reopened.children[0].getAttribute('aria-expanded') === 'true' && reopened.children[0].children[1].textContent === COPY.card.sections.placeGuessed, 'a section the visitor left open is built open, with its hint');
+  // Icons are Lucide, drawn the guide's way (docs/ui-guide.md §3.16).
+  const svg = C.icon('crosshair');
+  check(svg.getAttribute('viewBox') === '0 0 24 24' && svg.getAttribute('stroke-width') === '1.75' && svg.getAttribute('stroke-linecap') === 'round' && svg.getAttribute('stroke-linejoin') === 'round' && svg.getAttribute('aria-hidden') === 'true', 'an icon is a 24 box, stroke 1.75, round, hidden from a screen reader');
+  // The action row: Follow and Ride along where the camera may ride, else Fly to it and See it;
+  // Postcard and Share always; exactly one primary.
+  const A = COPY.card.actions;
+  const orbiting = { id: 'sat-25544', klass: 'station', propagator: 'sgp4', frame: 'earth-inertial', meta: {} };
+  const mOk = { ok: true, frame: 'earth-inertial', tMs: Date.UTC(2026, 9, 1) };
+  const ride = { rideAlong: () => true };
+  const labels = (bs) => bs.map((b) => b.children[1].textContent).join();
+  const primaries = (bs) => bs.filter((b) => b.className.split(' ').includes('sr-act--primary')).length;
+  const a1 = C.actionButtons(orbiting, ride, mOk);
+  check(labels(a1) === [A.follow, A.ride, A.postcard, A.share].join() && primaries(a1) === 1 && a1[0].className.includes('primary'), `an Earth orbiter: Follow (the one primary), Ride along, Postcard, Share: ${labels(a1)}`);
+  const a2 = C.actionButtons({ id: 'mars', klass: 'world', propagator: 'body', frame: 'sun-inertial', meta: {} }, ride, { ok: true, frame: 'sun-inertial' });
+  check(labels(a2) === [A.flyTo, A.seeShort, A.postcard, A.share].join() && primaries(a2) === 1, `a planet: Fly to it, See it, Postcard, Share: ${labels(a2)}`);
+  const a3 = C.actionButtons({ id: 'hip-1', klass: 'star', propagator: 'static', frame: 'sun-inertial', meta: {} }, ride, { ok: true, frame: 'sun-inertial' });
+  check(a3[1].disabled !== true, 'See it is on for a star: the sky from your place shows it');
+  const a4 = C.actionButtons({ id: 'deep-voyager-1', klass: 'probe', propagator: 'sampled', frame: 'sun-inertial', meta: {} }, ride, { ok: true, frame: 'sun-inertial' });
+  check(a4[1].disabled === true && a4[1].title === COPY.sky.notVisibleFromGround, `See it is off for a craft beyond Earth, and its tooltip says why: ${a4[1].title}`);
+  check(a1.every((b) => b.title && b.children[0].getAttribute('aria-hidden') === 'true'), 'every action has its words in a tooltip and an icon hidden from a screen reader');
+  globalThis.document = before;
+}
+
 if (problems.length) {
   console.log(`cards copy: ${problems.length} problem(s)`);
   for (const p of problems) console.log('  - ' + p);

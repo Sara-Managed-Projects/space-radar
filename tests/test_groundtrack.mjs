@@ -159,7 +159,7 @@ const main = readFileSync(join(JS, 'main.js'), 'utf8');
 check(/back: 60 \/ u, up: 20 \/ u, lookAhead: 400 \/ u/.test(main), 'main.js asks for 60 km back, 20 km up, 400 km ahead');
 check(/ctx\.groundTrack\.set\(record\)/.test(main) && /ctx\.groundTrack\.set\(null\)/.test(main), 'the track follows select and deselect');
 const cards = readFileSync(join(JS, 'ui/cards.js'), 'utf8');
-check(/G\.lookBeside : G\.rideAlong/.test(cards), 'under reduced motion the button says "Look from beside it"');
+check(/G\.lookBeside : G\.rideAlong/.test(cards), 'under reduced motion Ride along says "Look from beside it" (its tooltip, since the card view keeps labels to two words)');
 
 if (problems.length) {
   console.error('groundtrack FAILED:\n  ' + problems.join('\n  '));

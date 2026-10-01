@@ -259,6 +259,39 @@ function iauAngles(world, tMs) {
 }
 
 /**
+ * How long one turn of a world takes, in hours, from the same IAU rotation model that turns its
+ * globe (spec 0061 §4: a planet's card leads with its distance, its turn and its year). Measured as
+ * the spin angle's change over one hour, which no world turns a whole circle in (Jupiter: 36°), so
+ * the angle never wraps between the two readings; the sign is dropped, because Venus and Uranus
+ * turn backwards and a turn is a turn. This is a SIDEREAL turn, against the stars, and the card
+ * calls it that ("one turn"), not a day: Mercury turns in 59 Earth days and its sunrise-to-sunrise
+ * day is 176. Null for a world with no rotation model.
+ */
+export function spinPeriodHours(world, tMs) {
+  const t = Number.isFinite(tMs) ? tMs : Date.UTC(2000, 0, 1, 12);
+  const a = iauAngles(String(world || '').toLowerCase(), t);
+  const b = iauAngles(String(world || '').toLowerCase(), t + 3600e3);
+  if (!a || !b) return null;
+  const degPerHour = ((((b.spin - a.spin) / DEG) % 360) + 540) % 360 - 180;
+  return Math.abs(degPerHour) > 1e-6 ? 360 / Math.abs(degPerHour) : null;
+}
+
+/**
+ * A planet's year in days: astronomy-engine's mean sidereal orbital period, the same library that
+ * places it. Null for anything that does not go round the Sun on its own (the Sun, the Moon).
+ */
+export function yearDays(world) {
+  const body = bodyForWorld(world);
+  if (!body) return null;
+  try {
+    const d = Astronomy.PlanetOrbitalPeriod(body);
+    return Number.isFinite(d) && d > 0 ? d : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Body-fixed km -> that world's inertial axes, km. Earth keeps GMST; every other world uses the
  * IAU model and lands in ecliptic J2000 axes, which is what `<world>-inertial` means here.
  * Returns null for a world astronomy-engine has no rotation model for -- a third answer.

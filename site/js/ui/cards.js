@@ -1,27 +1,32 @@
 // ui/cards.js -- the card that opens when anything is tapped.
 //
-// A bottom sheet on a phone, a right rail on a desktop (css/ui.css does the placement).
-// Pure DOM, no framework. Every string comes from copy/en.js; every value is written with
-// textContent, never innerHTML, so a name from an upstream feed cannot become markup.
+// Seated in the sidebar's card view on a desktop (ui/shell.js), a bottom sheet on a phone, a rail
+// in the trip frame (css/ui.css does the placement). Pure DOM, no framework. Every string comes
+// from copy/en.js; every value is written with textContent, never innerHTML, so a name from an
+// upstream feed cannot become markup.
 //
-// The order of the blocks is FIXED (spec 0013 design, "Anatomy"):
-//   0. the LEAD, and only during a guided trip: the stop's own title and words. It renders above
-//      block 1 and reorders nothing below it, so everything the card knows -- the freshness
-//      stamp, the provenance class, the myth block -- stays exactly where it was.
-//   1. name and class glyph
-//   2. ONE plain sentence: what it is and why it matters now -- and under it, for a star, an
-//      extreme object or a deep-sky object, the hand-kept line on why this one is known (whyLine)
-//   3. up to three comparison chips, scale first
-//   4. "right now"
-//   4b. "often said" -- the myth block, against the facts it corrects
-//   4c. "also aboard" / "riding on" -- the link between a spacecraft and what is bolted to it
-//   5. "see it from here"
-//   6. up to three actions (the third is Share, spec 0033)
-//   6a. "Save a picture": the postcard, under the actions
-//   7. the class-and-age line
-//   8. the source line
+// THE LAYOUT IS SPEC 0061 §4 AND docs/ui-guide.md §3.10, and its order is fixed:
+//   0. the LEAD, and only during a guided trip: the stop's own title and words, above everything.
+//   1. the microlabel -- what it is and where, four words at most (microLabel) -- and the name.
+//   2. THREE NUMBERS, the three that matter for its kind (heroNumbers): height, speed and a lap
+//      for an Earth orbiter; distance, a turn and a year for a planet; distance, magnitude and
+//      class for a star; distance, size and magnitude for a deep-sky object; distance, speed and
+//      days since launch for a craft beyond Earth. Each is a row this card prints, never a second
+//      sum, and a row that is not there is "—".
+//   3. FOUR ACTIONS in one row, one of them ember: Follow and Ride along where spec 0048 lets the
+//      camera ride (an SGP4 orbit round the Earth), else Fly to it and See it; Postcard and Share.
+//   4. the next 90 minutes (spec 0048): the light now, the next change, the bar, the lap's end.
+//   5. SECTIONS THAT OPEN IN PLACE (disclosure, aria-expanded): When you can see it · Its path ·
+//      Who is aboard · About it · Sources for this record. Their contents are the sections this
+//      card has always had -- the first sentence, the why line, the comparisons, the rows, the
+//      myths, the train, the trajectory, the drawing and source lines -- moved, not rewritten.
+//   6. the honesty line, small, at the foot (spec 0001 principle 2).
 //
-// Contract exports: showCard(record, ctx, opts), hideCard().
+// WHY. Ivan, 2026-09-29: the old card was "ugly and not structured" -- a sentence, sentence-long
+// pills, eleven rows and a button bar, all at once, 1 500 px tall. A card now leads with the three
+// numbers, says the rest when asked, and every number it ever printed is still one tap away.
+//
+// Contract exports: showCard(record, ctx, opts), hideCard(), tagLines(), shortHonesty().
 //
 // `opts.lead` is the trip card, and it is the ordinary card restyled rather than a fork. A stop
 // that is a PLACE and not an object -- "pull back until the Earth is a dot" -- has no record at
@@ -53,6 +58,8 @@ import {
   bodyFixedToSpherical,
   worldRadiusKm,
   toStage,
+  spinPeriodHours,
+  yearDays,
 } from '../propagate/frames.js';
 import { predictPasses } from '../sky/passes.js';
 import { trajectorySection } from './trajectory.js';
@@ -60,13 +67,13 @@ import { hasTimeFacts, timeFacts, mmss, LIGHT_MINUTES } from '../sky/timefacts.j
 import { wantsTrack } from '../scene/groundtrack.js';
 import { trainOf } from '../data/trains.js';
 import { attachedOdditiesFor, attachedOddityRecord } from '../data/attached.js';
-import { shareButton, pictureButton } from './share.js';
+import { shareLink, savePicture } from './share.js';
 import { stage } from '../scene/stage.js';
 import { systemOfRecordId, phaseIsMeasured } from '../scene/systems.js';
 
 const MAX_FIRST_SENTENCE = 160; // spec 0013 requirement 10, enforced by check_copy.py
 const MAX_COMPARISONS = 3; // spec 0013 requirement 2
-const MAX_ACTIONS = 3; // spec 0013 requirement 8
+const MAX_ACTIONS = 4; // spec 0013 requirement 8 said three; spec 0061 §4 adds the postcard to the row
 const MAX_NAME = 72; // keeps the first sentence inside its limit whatever a feed sends
 const PASS_WINDOW_HOURS = 24;
 const REFRESH_MS = 250; // a UI throttle on re-render, not a source of drawn state
@@ -1072,6 +1079,11 @@ function rightNowRows(record, m, passInfo) {
     if (m.speedKmh !== null && m.speedKmh > 0.5) {
       rows.push([R.speed, t(V.kmh, { n: fmt.int(m.speedKmh) })]);
     }
+    // How long a lap takes, from the same elements as the dot (scene/orbitline.js periodMsOf, the
+    // reader the orbit line uses). The card's first sentence said it for a station and nothing said
+    // it for anything else; it is the third of an Earth orbiter's three numbers (spec 0061 §4).
+    const lapMs = !stands && klassOf(record) !== 'world' ? periodMsOf(record) : null;
+    if (lapMs) rows.push([R.period, t(V.minutes, { n: fmt.int(lapMs / 60e3) })]);
     if (!stands) {
       const lit = sunlitState(record, m.tMs);
       if (lit) rows.push([R.sunlight, lit === 'sunlit' ? V.inSunlight : V.inShadow]);
@@ -1222,6 +1234,24 @@ function rightNowRows(record, m, passInfo) {
     }
   }
 
+  // A world's turn and year (spec 0061 §4: a planet leads with its distance, a turn and a year),
+  // from astronomy-engine, the library that places and turns it (propagate/frames.js). A TURN,
+  // against the stars, and the label says so: Mercury turns in 59 days and its day is 176.
+  if (klassOf(record) === 'world') {
+    const hours = spinPeriodHours(record.id, m.tMs);
+    if (hours) rows.push([R.spin, hours >= 72 ? t(V.days, { n: fmt.smart(hours / 24) }) : t(V.hours, { n: fmt.smart(hours) })]);
+    const days = pick(md, 'parent') === 'sun' ? yearDays(record.id) : null;
+    if (days) rows.push([R.yearLength, t(V.days, { n: days >= 100 ? fmt.int(days) : fmt.smart(days) })]);
+  }
+  // A craft beyond Earth: how long it has been out there (data/sample.js `launched`, a UTC day),
+  // and what is bolted to it (data/attached.js carries the day over). An Earth orbiter's launch
+  // year is the time facts' own line, from its designator.
+  if (!isEarthFrame(m.frame)) {
+    const launchMs = pickTime(md, 'launchDate', 'launchMs');
+    const days = launchMs !== null && Number.isFinite(m.tMs) ? Math.floor((m.tMs - launchMs) / 86400e3) : null;
+    if (days !== null && days >= 0) rows.push([R.launched, t(V.launchedAgo, { n: fmt.int(days), date: timeText.utcDate(launchMs) })]);
+  }
+
   if (passInfo.state === PASS_OK) {
     const p = passInfo.pass;
     const fists = fistsWords(p.peakEl * DEG);
@@ -1370,7 +1400,9 @@ export function timeFactWords(facts, tNow, rate = 1) {
   if (!facts || !Number.isFinite(tNow)) return null;
   const T = COPY.timeFacts;
   const fast = Math.abs(Number(rate) || 1) > TIME_FAST_RATE;
-  const out = { bar: [], barLabel: '', light: null, lap: null, orbit: null, orbitNote: null, launched: null };
+  // `now`, `next` and `lapShort` are the bar's own short lines on the card view (spec 0061 §4); the
+  // sentences beside them are the same facts at full length, for "Its path".
+  const out = { bar: [], barLabel: '', light: null, lap: null, orbit: null, orbitNote: null, launched: null, now: null, next: null, lapShort: null };
   const windows = Array.isArray(facts.windows) ? facts.windows : [];
   if (windows.length) {
     const from = Math.max(tNow, windows[0].from);
@@ -1388,18 +1420,23 @@ export function timeFactWords(facts, tNow, rate = 1) {
     out.barLabel = t(T.barLabel, { parts: parts.join(COPY.punctuation.listJoin) });
     const here = windows.find((w) => w.from <= tNow && tNow < w.to) || windows[0];
     const next = windows.find((w) => w.from > tNow);
+    out.now = here.sunlit ? T.nowSunlit : T.nowShadow;
     if (!next) {
       out.light = here.sunlit ? T.allSunlit : T.allShadow;
     } else if (fast) {
-      out.light = t(next.sunlit ? T.entersSunlightAt : T.entersShadowAt, { time: timeText.hhmm(next.from) });
+      const time = timeText.hhmm(next.from);
+      out.light = t(next.sunlit ? T.entersSunlightAt : T.entersShadowAt, { time });
+      out.next = t(next.sunlit ? T.sunlightAt : T.shadowAt, { time });
     } else {
       const ms = next.from - tNow;
       const mins = ms < 60e3 ? T.underAMinute : t(T.minutes, { n: fmt.int(Math.floor(ms / 60e3)) });
       out.light = t(next.sunlit ? T.entersSunlightIn : T.entersShadowIn, { mins });
+      out.next = t(next.sunlit ? T.sunlightIn : T.shadowIn, { mins });
     }
   }
   if (Number.isFinite(facts.lapEndMs) && facts.lapEndMs > tNow) {
     out.lap = fast ? t(T.lapAt, { time: timeText.hhmm(facts.lapEndMs) }) : t(T.lapIn, { mmss: mmss(facts.lapEndMs - tNow) });
+    out.lapShort = fast ? t(T.lapEndsAt, { time: timeText.hhmm(facts.lapEndMs) }) : t(T.lapEndsIn, { mmss: mmss(facts.lapEndMs - tNow) });
   }
   if (facts.orbit && Number.isFinite(facts.orbit.n)) {
     out.orbit = t(T.orbit, { n: fmt.int(facts.orbit.n) });
@@ -1422,35 +1459,54 @@ function freshFacts(record, tNow) {
   return facts;
 }
 
+/** The time facts' full sentences, for "Its path"; the short ones are the bar's (FACT_SHORT). */
+const FACT_LINES = ['light', 'lap', 'orbit', 'orbitNote', 'launched'];
+const FACT_SHORT = ['now', 'next', 'lapShort'];
+
+/**
+ * The next 90 minutes, in two places (spec 0061 §4, row D): `bar` sits under the actions -- the
+ * light now and the next change, the bar, and where the lap ends -- and `lines` are the same facts
+ * as the sentences the card has always printed, which move into "Its path". Both are painted by
+ * paintTimeFacts from one timeFactWords(), so the two can never say different things.
+ */
 function timeFactsSection(record, ctx, m) {
   if (!hasTimeFacts(record) || standsStill(record, m) || !Number.isFinite(m.tMs)) return null;
   const facts = freshFacts(record, m.tMs);
   const words = timeFactWords(facts, m.tMs, ctx && ctx.clock ? ctx.clock.rate : 1);
   if (!words || (!words.bar.length && !words.lap)) return null;
-  const wrap = section('sr-card__block sr-card__time', t(COPY.timeFacts.label, { n: LIGHT_MINUTES }));
+  const wrap = el('section', 'sr-card__time');
+  wrap.setAttribute('aria-label', t(COPY.timeFacts.label, { n: LIGHT_MINUTES }));
+  const head = el('div', 'sr-light__head');
+  head.appendChild(factNode('span', 'sr-light__now', 'now'));
+  head.appendChild(factNode('span', 'sr-light__next', 'next'));
+  wrap.appendChild(head);
   const bar = el('div', 'sr-light');
   bar.setAttribute('role', 'img');
   wrap.appendChild(bar);
   const axis = el('div', 'sr-light__axis');
-  axis.setAttribute('aria-hidden', 'true');
   axis.appendChild(el('span', '', COPY.timeFacts.now));
+  axis.appendChild(factNode('span', 'sr-light__lap', 'lapShort'));
   axis.appendChild(el('span', '', COPY.timeFacts.end));
   wrap.appendChild(axis);
   // The orbit number's note is words on the card, not a tooltip: it is the half of the line that
   // says the number is inferred.
-  for (const key of ['light', 'lap', 'orbit', 'orbitNote', 'launched']) {
-    const line = el('p', key === 'orbitNote' ? 'sr-card__fact-note' : `sr-card__fact sr-card__fact--${key}`);
-    line.dataset.fact = key;
-    wrap.appendChild(line);
-  }
+  const lines = el('div', 'sr-card__facts');
+  for (const key of FACT_LINES) lines.appendChild(factNode('p', key === 'orbitNote' ? 'sr-card__fact-note' : `sr-card__fact sr-card__fact--${key}`, key));
   paintTimeFacts(wrap, words);
-  return wrap;
+  paintTimeFacts(lines, words);
+  return { bar: wrap, lines };
+}
+
+function factNode(tag, className, key) {
+  const node = el(tag, className);
+  node.dataset.fact = key;
+  return node;
 }
 
 /** Write the words into a time-facts block: text only, the bar's runs only when they change. */
-function paintTimeFacts(wrap, words) {
-  if (!wrap || !words) return;
-  const bar = wrap.querySelector('.sr-light');
+function paintTimeFacts(root, words) {
+  if (!root || !words) return;
+  const bar = root.querySelector('.sr-light');
   if (bar) {
     const key = words.bar.map((b) => `${b.sunlit ? 's' : 'd'}${b.share.toFixed(3)}`).join();
     if (bar.dataset.key !== key) {
@@ -1465,8 +1521,8 @@ function paintTimeFacts(wrap, words) {
     if (bar.getAttribute('aria-label') !== words.barLabel) bar.setAttribute('aria-label', words.barLabel);
     bar.hidden = !words.bar.length;
   }
-  for (const key of ['light', 'lap', 'orbit', 'orbitNote', 'launched']) {
-    const line = wrap.querySelector(`[data-fact="${key}"]`);
+  for (const key of [...FACT_LINES, ...FACT_SHORT]) {
+    const line = root.querySelector(`[data-fact="${key}"]`);
     if (!line) continue;
     const text = words[key] || '';
     if (line.textContent !== text) line.textContent = text;
@@ -1477,13 +1533,13 @@ function paintTimeFacts(wrap, words) {
 /** Once a second while a card with time facts is open: the countdowns move with the clock. */
 function tickTimeFacts() {
   if (!current || !host || host.hidden || typeof document === 'undefined') { stopTimeFacts(); return; }
-  const wrap = host.querySelector('.sr-card__time');
-  if (!wrap) { stopTimeFacts(); return; }
+  if (!host.querySelector('.sr-card__time')) { stopTimeFacts(); return; }
   const c = current.ctx;
   let tNow;
   try { tNow = c.clock.now(); } catch { return; }
   const facts = freshFacts(current.record, tNow);
-  paintTimeFacts(wrap, timeFactWords(facts, tNow, c.clock.rate));
+  // The whole card: the bar's short lines and the sentences in "Its path" tick together.
+  paintTimeFacts(host, timeFactWords(facts, tNow, c.clock.rate));
 }
 
 function startTimeFacts() {
@@ -1761,8 +1817,9 @@ function mythSection(record) {
  * Selecting an attached record would ask heroes.js to draw a second spacecraft at the first one's
  * exact position, which is the failure the whole `attached` kind exists to avoid.
  *
- * Returns null for every record that neither carries anything nor rides on anything, which is
- * all but three of them.
+ * Returns {riding, node} -- the section's contents, and which end of the bolt this card is, which
+ * names its row ("Who is aboard" or "What it rides on") -- or null for every record that neither
+ * carries anything nor rides on anything, which is all but three of them.
  */
 function aboardSection(record, ctx) {
   const md = meta(record);
@@ -1772,14 +1829,14 @@ function aboardSection(record, ctx) {
   if (carrierId) {
     const carrier = byId ? byId(carrierId) : null;
     if (!carrier) return null; // the carrier's layer is not loaded: no link rather than a dead one
-    const wrap = section('sr-card__block sr-card__aboard', COPY.aboard.ridingLabel);
+    const wrap = section('sr-card__block sr-card__aboard', null);
     wrap.appendChild(aboardButton(carrier.name, COPY.aboard.backTitle, () => showCard(carrier, ctx)));
-    return wrap;
+    return { riding: true, node: wrap };
   }
 
   const riding = attachedOdditiesFor(record && record.id);
   if (!riding.length) return null;
-  const wrap = section('sr-card__block sr-card__aboard', COPY.aboard.label);
+  const wrap = section('sr-card__block sr-card__aboard', null);
   let wrote = 0;
   for (const entry of riding) {
     const derived = attachedOddityRecord(entry, record);
@@ -1789,7 +1846,7 @@ function aboardSection(record, ctx) {
   }
   if (!wrote) return null;
   wrap.appendChild(el('p', 'sr-card__aboardnote', COPY.aboard.note));
-  return wrap;
+  return { riding: false, node: wrap };
 }
 
 function aboardButton(label, title, onClick) {
@@ -2075,59 +2132,158 @@ function seeFromHere(record, ctx) {
   }
 }
 
-function actionButtons(record, ctx, m) {
+/**
+ * Only for what the sky from your place shows: anything over the Earth, a world, and the stars and
+ * what is among them. Not a craft beyond Earth: nothing in the sky view draws it.
+ */
+const SKY_KLASSES = new Set(['world', 'star', 'dso', 'exotic', 'exoplanet']);
+function canSeeFromHere(record, m) {
+  return isEarthFrame(m.frame) || SKY_KLASSES.has(klassOf(record));
+}
+
+/**
+ * Where spec 0048 lets the camera ride: an SGP4 orbit round the Earth, moving, with a position.
+ * Follow and Ride along lead the action row there; everything else gets Fly to it and See it.
+ * Exported for the test, which holds the row's two shapes.
+ */
+export function followAllowed(record, ctx, m) {
+  return !!(ctx && typeof ctx.rideAlong === 'function' && record && record.propagator === 'sgp4'
+    && m && m.ok && isEarthFrame(m.frame) && !standsStill(record, m));
+}
+
+// ---------------------------------------------------------------------------------------
+// Icons. Lucide (https://lucide.dev, ISC; the Feather-derived ones MIT, Cole Bemis: CREDITS.md),
+// drawn the guide's way (docs/ui-guide.md §3.16): the 24 box, stroke 1.75, round caps and joins,
+// hidden from a screen reader because the button carries the name. Copied from the icons' own
+// files, element for element.
+// ---------------------------------------------------------------------------------------
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const ICONS = {
+  x: [['path', { d: 'M18 6 6 18' }], ['path', { d: 'm6 6 12 12' }]],
+  crosshair: [
+    ['circle', { cx: 12, cy: 12, r: 10 }],
+    ['line', { x1: 22, x2: 18, y1: 12, y2: 12 }],
+    ['line', { x1: 6, x2: 2, y1: 12, y2: 12 }],
+    ['line', { x1: 12, x2: 12, y1: 6, y2: 2 }],
+    ['line', { x1: 12, x2: 12, y1: 22, y2: 18 }],
+  ],
+  orbit: [
+    ['path', { d: 'M20.341 6.484A10 10 0 0 1 10.266 21.85' }],
+    ['path', { d: 'M3.659 17.516A10 10 0 0 1 13.74 2.152' }],
+    ['circle', { cx: 12, cy: 12, r: 3 }],
+    ['circle', { cx: 19, cy: 5, r: 2 }],
+    ['circle', { cx: 5, cy: 19, r: 2 }],
+  ],
+  camera: [
+    ['path', { d: 'M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z' }],
+    ['circle', { cx: 12, cy: 13, r: 3 }],
+  ],
+  share: [
+    ['circle', { cx: 18, cy: 5, r: 3 }],
+    ['circle', { cx: 6, cy: 12, r: 3 }],
+    ['circle', { cx: 18, cy: 19, r: 3 }],
+    ['line', { x1: 8.59, x2: 15.42, y1: 13.51, y2: 17.49 }],
+    ['line', { x1: 15.41, x2: 8.59, y1: 6.51, y2: 10.49 }],
+  ],
+  chevron: [['path', { d: 'm9 18 6-6-6-6' }]],
+  navigation: [['polygon', { points: '3 11 22 2 13 21 11 13 3 11' }]],
+  telescope: [
+    ['path', { d: 'm10.065 12.493-6.18 1.318a.934.934 0 0 1-1.108-.702l-.537-2.15a1.07 1.07 0 0 1 .691-1.265l13.504-4.44' }],
+    ['path', { d: 'm13.56 11.747 4.332-.924' }],
+    ['path', { d: 'm16 21-3.105-6.21' }],
+    ['path', { d: 'M16.485 5.94a2 2 0 0 1 1.455-2.425l1.09-.272a1 1 0 0 1 1.212.727l1.515 6.06a1 1 0 0 1-.727 1.213l-1.09.272a2 2 0 0 1-2.425-1.455z' }],
+    ['path', { d: 'm6.158 8.633 1.114 4.456' }],
+    ['path', { d: 'm8 21 3.105-6.21' }],
+    ['circle', { cx: 12, cy: 13, r: 2 }],
+  ],
+};
+
+/** An icon from ICONS at `size` px. Exported for the test, which holds the guide's drawing rules. */
+export function icon(name, size = 20) {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('width', String(size));
+  svg.setAttribute('height', String(size));
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('stroke', 'currentColor');
+  svg.setAttribute('stroke-width', '1.75');
+  svg.setAttribute('stroke-linecap', 'round');
+  svg.setAttribute('stroke-linejoin', 'round');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('focusable', 'false');
+  svg.setAttribute('class', `sr-icon sr-icon--${name}`);
+  for (const [tag, attrs] of ICONS[name] || []) {
+    const part = document.createElementNS(SVG_NS, tag);
+    for (const [k, v] of Object.entries(attrs)) part.setAttribute(k, String(v));
+    svg.appendChild(part);
+  }
+  return svg;
+}
+
+/** One of the row's four: a 20 px icon over a 13 px label, the whole 56 px button the target. */
+function actionButton(action, label, title, iconName, onClick, primary) {
+  const b = el('button', primary ? 'sr-act sr-act--primary' : 'sr-act');
+  b.type = 'button';
+  b.title = title;
+  b.dataset.action = action;
+  b.appendChild(icon(iconName));
+  b.appendChild(el('span', 'sr-act__label', label));
+  b.addEventListener('click', onClick);
+  return b;
+}
+
+/**
+ * The action row (spec 0061 §4, docs/ui-guide.md §3.10): four buttons, the first the one ember
+ * primary on the screen. Follow is main.js's flight, which follows on arrival (flyTo above), so
+ * it is what "Fly to it" always was, named for what it does to an orbiter; Ride along is spec
+ * 0048's camera behind it. Postcard and Share are spec 0033's, read at the tap, so the words on a
+ * share sheet are the card's at that moment. Exported for the test.
+ */
+export function actionButtons(record, ctx, m) {
   const A = COPY.card.actions;
+  const G = COPY.groundTrack;
   const buttons = [];
-
-  const fly = el('button', 'sr-btn sr-btn--primary', A.flyTo);
-  fly.type = 'button';
-  fly.title = A.flyToTitle;
-  fly.disabled = !m.ok;
-  fly.addEventListener('click', () => flyTo(record, ctx, m));
-  buttons.push(fly);
-
-  const see = el('button', 'sr-btn', A.seeFromHere);
-  see.type = 'button';
-  see.title = A.seeFromHereTitle;
-  see.disabled = !isEarthFrame(m.frame) && klassOf(record) !== 'world';
-  see.addEventListener('click', () => seeFromHere(record, ctx));
-  buttons.push(see);
-
-  // "Tell me before" returns with spec 0015. A disabled button with an apology under it was
-  // honest and was also clutter on every card; the review measured it as such.
-
-  // Share (spec 0033, 2026-09-23): the third action. The words are read at the tap, not now, so
-  // the sentence on the share sheet is the one the card shows at that moment.
-  buttons.push(shareButton(ctx, 'sr-btn sr-btn--share', () => {
+  if (followAllowed(record, ctx, m)) {
+    buttons.push(actionButton('follow', A.follow, A.followTitle, 'crosshair', () => flyTo(record, ctx, m), true));
+    // Under reduced motion the ride is a cut, not a flight, and the tooltip says so: the label
+    // stays two words (docs/ui-guide.md §4).
+    const reduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    buttons.push(actionButton('ride', A.ride, reduced ? G.lookBeside : G.rideAlongTitle, 'orbit', () => {
+      try { ctx.rideAlong(record); } catch { /* the camera stays where it is */ }
+    }));
+  } else {
+    const fly = actionButton('fly', A.flyTo, A.flyToTitle, 'navigation', () => flyTo(record, ctx, m), true);
+    fly.disabled = !m.ok;
+    buttons.push(fly);
+    const see = actionButton('see', A.seeShort, A.seeFromHereTitle, 'telescope', () => seeFromHere(record, ctx));
+    see.disabled = !canSeeFromHere(record, m);
+    // A switched-off control says why (docs/ui-guide.md §3, the standard states).
+    if (see.disabled) see.title = COPY.sky.notVisibleFromGround;
+    buttons.push(see);
+  }
+  buttons.push(actionButton('postcard', A.postcard, COPY.share.pictureTitle, 'camera', () => savePicture(ctx, record)));
+  buttons.push(actionButton('share', A.share, COPY.share.linkTitle, 'share', () => {
     const w = cardWords(record, ctx);
-    return { title: w.name, text: w.sentence };
-  }, record && record.id));
-
+    return shareLink(ctx, { title: w.name, text: w.sentence }, record && record.id);
+  }));
   return buttons.slice(0, MAX_ACTIONS);
 }
 
 /**
- * "Follow it" (spec 0048 req 3, 8): Ride along, and for an orbit above 2 000 km, where the track is
- * off by default, a switch for it. Only for what the propagator flies round the Earth. Under reduced
- * motion the ride is a cut, and the button says "Look from beside it" rather than promise a flight.
+ * Spec 0048 req 3: for an orbit above 2 000 km, where the ground track is off by default, a switch
+ * for it, and the line that says what the track is. Only where the camera may follow. Moved into
+ * "Its path" from the old "Follow it" block, whose Ride along is now in the action row.
  */
-function followSection(record, ctx, m) {
-  if (!ctx || typeof ctx.rideAlong !== 'function' || !record || record.propagator !== 'sgp4') return null;
-  if (!isEarthFrame(m.frame) || standsStill(record, m) || !m.ok) return null;
+function trackControls(record, ctx, m) {
+  if (!followAllowed(record, ctx, m)) return [];
   const G = COPY.groundTrack;
-  const wrap = section('sr-card__block sr-card__follow', G.label);
-  const row = el('div', 'sr-card__actions');
-  const reduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const ride = el('button', 'sr-btn', reduced ? G.lookBeside : G.rideAlong);
-  ride.type = 'button';
-  ride.title = G.rideAlongTitle;
-  ride.addEventListener('click', () => { try { ctx.rideAlong(record); } catch { /* the camera stays where it is */ } });
-  row.appendChild(ride);
+  const out = [];
   const low = wantsTrack(record, m.tMs);
   if (!low && ctx.groundTrack) {
     const st = ctx.groundTrack.state();
     const shown = st.forced && st.id === record.id;
-    const toggle = el('button', 'sr-btn', shown ? G.hideTrack : G.showTrack);
+    const toggle = el('button', 'sr-btn sr-btn--quiet', shown ? G.hideTrack : G.showTrack);
     toggle.type = 'button';
     toggle.setAttribute('aria-pressed', shown ? 'true' : 'false');
     toggle.addEventListener('click', () => {
@@ -2136,11 +2292,288 @@ function followSection(record, ctx, m) {
       toggle.setAttribute('aria-pressed', on ? 'true' : 'false');
       toggle.textContent = on ? G.hideTrack : G.showTrack;
     });
-    row.appendChild(toggle);
+    out.push(toggle);
   }
-  wrap.appendChild(row);
-  wrap.appendChild(el('p', 'sr-card__note', low ? G.trackNote : G.highNote));
+  out.push(el('p', 'sr-card__note', low ? G.trackNote : G.highNote));
+  return out;
+}
+
+// ---------------------------------------------------------------------------------------
+// The card view's top: the microlabel and the three numbers (spec 0061 §4)
+// ---------------------------------------------------------------------------------------
+
+const cap = (s) => (s ? String(s).charAt(0).toUpperCase() + String(s).slice(1) : s);
+
+/** The region of a body going round the Sun, by its distance from it (the bounds farRegion uses). */
+function sunRegion(distSunKm) {
+  if (!Number.isFinite(distSunKm)) return null;
+  const au = distSunKm / UNITS.AU_KM;
+  const G = COPY.card.regime;
+  return au < MARS_APHELION_AU ? G.inner : au < NEPTUNE_APHELION_AU ? G.outer : G.beyondNeptune;
+}
+
+/** Earth orbits by height: low under 2 000 km, the geostationary ring within 500 km of 35 786. */
+function earthOrbitRegime(altKm) {
+  const G = COPY.card.regime;
+  if (!Number.isFinite(altKm)) return null;
+  if (altKm < 2000) return G.leo;
+  if (Math.abs(altKm - 35786) <= 500) return G.geo;
+  return altKm < 35786 ? G.meo : G.heo;
+}
+
+/**
+ * The line above the name: what it is and where, "STATION · LOW EARTH ORBIT", four words at most.
+ * The class word is the card's own badge (klassLabel) except where a finer one is plainer -- a
+ * planet is a planet, not "World" -- and the region is worked out from where it is now, never typed.
+ * Exported for the test.
+ */
+export function microLabel(record, m) {
+  const C = COPY.card;
+  const G = C.regime;
+  const md = meta(record);
+  const klass = klassOf(record);
+  let kind = klassLabel(record, klass);
+  let regime = null;
+  if (klass === 'world') {
+    const id = String(record.id || '').toLowerCase();
+    const parent = pick(md, 'parent');
+    if (id === 'sun') { kind = C.microKlass.ourStar; regime = G.centre; }
+    else if (parent === 'sun') {
+      kind = id === 'pluto' ? C.microKlass.dwarf : C.microKlass.planet;
+      regime = sunRegion(m.distSunKm);
+    } else {
+      kind = C.microKlass.moon;
+      const world = worldName(parent);
+      regime = world ? t(G.round, { world }) : null;
+    }
+  } else if (klass === 'storm' || klass === 'site' || standsStill(record, m)) {
+    const world = m.worldId && m.worldId !== 'earth' ? worldName(m.worldId) : null;
+    regime = world ? t(G.onWorld, { world }) : null;
+  } else if (isEarthFrame(m.frame)) {
+    regime = earthOrbitRegime(m.altKm);
+  } else if (m.worldId && m.worldId !== 'sun') {
+    const world = worldName(m.worldId);
+    regime = world ? t(m.frame === `${m.worldId}-inertial` ? G.round : G.onWorld, { world }) : null;
+  } else if (klass === 'star') {
+    const con = pick(md, 'con');
+    const ly = pickNumber(md, 'distLy');
+    regime = ly !== null && ly < 20 ? G.nearby : con ? t(G.inCon, { con: String(con) }) : null;
+  } else if (klass === 'dso') {
+    const T = COPY.templates.dso;
+    kind = cap(T.kinds[String(pick(md, 'kind') || 'other')] || T.kinds.other);
+    const con = pick(md, 'con');
+    regime = con ? t(G.inCon, { con: String(con) }) : null;
+  } else if (klass === 'exoplanet') {
+    kind = C.microKlass.exoplanet;
+    const host = pick(md, 'host');
+    regime = host ? t(G.round, { world: String(host) }) : null;
+  } else if (klass === 'exotic') {
+    const T = COPY.templates.exotic;
+    const word = T && T.kinds ? T.kinds[String(pick(md, 'kind') || '')] : null;
+    regime = word ? cap(word) : null;
+  } else {
+    regime = sunRegion(m.distSunKm);
+  }
+  return regime ? t(C.micro, { klass: kind, regime }) : kind;
+}
+
+/** The kind of card, for its three numbers. Exported for the test. */
+export function heroKind(record, m) {
+  const klass = klassOf(record);
+  if (klass === 'world') {
+    const id = String(record && record.id || '').toLowerCase();
+    if (id === 'sun') return 'sun';
+    return pick(meta(record), 'parent') === 'sun' ? 'planet' : 'moon';
+  }
+  if (klass === 'star' || klass === 'dso') return klass;
+  const moving = m && !standsStill(record, m);
+  if (moving && isEarthFrame(m.frame) && klass !== 'storm' && klass !== 'site') return 'orbiter';
+  if ((klass === 'probe' || klass === 'telescope') && m && !isEarthFrame(m.frame)) return 'craft';
+  return 'other';
+}
+
+// Each of the three is a ROW the card prints, named by its COPY.card.rows key, first one found
+// wins; `cap` names the caption when it is not the row's own, `unit` the unit a missing one says.
+const HERO_SLOTS = {
+  orbiter: [{ rows: ['altitude'], unit: 'km' }, { rows: ['speed'], unit: 'km/h' }, { rows: ['period'], unit: 'minutes' }],
+  planet: [{ rows: ['distanceFromSun'], unit: 'astronomical units' }, { rows: ['spin'], unit: 'hours' }, { rows: ['yearLength'], unit: 'days' }],
+  moon: [{ rows: ['altitude', 'distanceFromEarth'], cap: 'away', unit: 'km' }, { rows: ['speed'], unit: 'km/h' }, { rows: ['spin'], unit: 'days' }],
+  sun: [{ rows: ['distanceFromEarth'], unit: 'astronomical units' }, { rows: ['lightTime'], unit: 'minutes' }, { rows: ['spin'], unit: 'days' }],
+  star: [{ rows: ['distanceFromSun'], cap: 'away', unit: 'light-years' }, { rows: ['brightness'] }, { rows: ['spectralType'] }],
+  dso: [{ rows: ['distanceFromSun', 'lightLeft'], cap: 'away', unit: 'light-years' }, { rows: ['across'], unit: 'light-years' }, { rows: ['brightness'] }],
+  craft: [{ rows: ['distanceFromEarth'], unit: 'astronomical units' }, { rows: ['speed'], unit: 'km/h' }, { rows: ['launched'] }],
+};
+// For every other kind, the first three of these the card prints: quantities, never a latitude, a
+// catalogue number or a year, which are numbers but not measures of the thing.
+const HERO_ANY = ['altitude', 'heightAbove', 'speed', 'period', 'fromYou', 'distanceFromEarth', 'distanceFromSun',
+  'lightTime', 'lightLeft', 'across', 'spin', 'yearLength', 'planetRadius', 'planetMass', 'mass', 'luminosity',
+  'brightness', 'launched'];
+
+let rowPatterns = null;
+/** A row's COPY.card.rows key from its label, templated labels ("Height above {world}") included. */
+function rowKeyOf(label, m) {
+  if (m && (label === rangeLabel(m) || label === COPY.card.rows.fromYou)) return 'fromYou';
+  if (!rowPatterns) {
+    rowPatterns = Object.entries(COPY.card.rows).map(([k, v]) => [k, v.includes('{')
+      ? new RegExp(`^${v.replace(/[.*+?^$()|[\]\\]/g, '\\$&').replace(/\{\w+\}/g, '.+')}$`)
+      : null, v]);
+  }
+  for (const [k, re, v] of rowPatterns) if (re ? re.test(label) : v === label) return k;
+  return null;
+}
+
+const NUMBER = /[−-]?\d[\d ]*(?:\.\d+)?/;
+/**
+ * A row's value as one number and its unit: "27 556 km/h" -> {num: '27 556', unit: 'km/h'},
+ * "magnitude −1.44" -> {num: '−1.44', unit: 'magnitude'}. A range ("1 324 to 1 364 light-years")
+ * and a value with no number are not one number: null. Exported for the test.
+ */
+export function heroSplit(value) {
+  const s = String(value == null ? '' : value);
+  const hit = NUMBER.exec(s);
+  if (!hit) return null;
+  const before = s.slice(0, hit.index).trim();
+  const after = s.slice(hit.index + hit[0].length).trim();
+  if (/^(?:to|–)\s*[−-]?\d/.test(after)) return null;
+  return { num: hit[0].trim(), unit: (after || before).replace(/,.*$/, '').trim() };
+}
+
+/**
+ * The card's three numbers: [{key, num, caption, missing}], each read off the card's own rows
+ * (rightNowRows, the rows tagLines() reads too), so the numbers, the rows and the HUD tag cannot
+ * disagree. A row the card does not print is "—" with its caption, never a guess and never left
+ * out (docs/ui-guide.md principle 4). Exported for tests/test_cards_copy.mjs.
+ */
+export function heroNumbers(record, m, rows) {
+  const H = COPY.card.hero;
+  const byKey = new Map();
+  for (const [label, value] of rows || []) {
+    const k = rowKeyOf(label, m);
+    if (k && !byKey.has(k)) byKey.set(k, value);
+  }
+  const caption = (key, unit) => t(H.captions[key] || H.captions.other, { u: H.units[unit] || unit || '' }).trim();
+  const cell = (key, value, capKey) => {
+    if (key === 'spectralType') {
+      const v = String(value || '').replace(/[.\s]+$/, '');
+      return v ? { key, num: v.slice(0, 7), caption: caption(key, ''), missing: false } : null;
+    }
+    const split = heroSplit(value);
+    return split ? { key, num: split.num, caption: caption(capKey || key, split.unit), missing: false } : null;
+  };
+  const kind = heroKind(record, m || {});
+  const slots = HERO_SLOTS[kind];
+  if (!slots) {
+    const out = [];
+    for (const key of HERO_ANY) {
+      if (out.length === 3 || !byKey.has(key)) continue;
+      const c = cell(key, byKey.get(key));
+      if (c) out.push(c);
+    }
+    return out;
+  }
+  return slots.map((slot) => {
+    for (const key of slot.rows) {
+      const c = byKey.has(key) ? cell(key, byKey.get(key), slot.cap) : null;
+      if (c) return c;
+    }
+    return { key: slot.rows[0], num: H.missing, caption: caption(slot.cap || slot.rows[0], slot.unit || ''), missing: true };
+  });
+}
+
+function heroBlock(heroes) {
+  const list = el('ul', 'sr-hero');
+  list.setAttribute('aria-label', COPY.card.hero.label);
+  for (const h of heroes) {
+    const item = el('li', h.missing ? 'sr-hero__cell is-missing' : 'sr-hero__cell');
+    item.dataset.row = h.key;
+    const num = el('span', 'sr-hero__num', h.num);
+    // A long value (a spectral class, 2 540 000 light-years) steps down a size, not out of its column.
+    if (String(h.num).length > 6) num.dataset.long = String(h.num).length > 9 ? '2' : '1';
+    item.appendChild(num);
+    item.appendChild(el('span', 'sr-hero__unit', h.caption));
+    list.appendChild(item);
+  }
+  return list;
+}
+
+// ---------------------------------------------------------------------------------------
+// Sections that open in place (spec 0061 §4, docs/ui-guide.md §3.10 item 7)
+// ---------------------------------------------------------------------------------------
+
+/** Which sections the visitor opened, per record, so a repaint (the clock set, the places
+ *  landing) does not close what they opened. */
+const openSections = new Map();
+
+function isOpen(recordId, id) {
+  const set = openSections.get(recordId);
+  return !!(set && set.has(id));
+}
+
+function setOpen(recordId, id, on) {
+  let set = openSections.get(recordId);
+  if (!set) { set = new Set(); openSections.set(recordId, set); }
+  if (on) set.add(id); else set.delete(id);
+}
+
+/**
+ * One row that opens in place: a full-width button with the section's name, an optional one- or
+ * two-word hint and a chevron, `aria-expanded` and `aria-controls` on it, and the panel under it
+ * `hidden` until it opens (the WAI-ARIA disclosure pattern). No navigation, and any number may be
+ * open at once. Exported for the test, which presses it.
+ */
+export function disclosure(id, label, hint, panel, open, onToggle) {
+  const wrap = el('section', 'sr-disc');
+  wrap.dataset.section = id;
+  const head = el('button', 'sr-disc__head');
+  head.type = 'button';
+  head.id = `sr-disc-${id}`;
+  head.dataset.focus = `disc-${id}`;
+  head.setAttribute('aria-expanded', open ? 'true' : 'false');
+  head.setAttribute('aria-controls', `sr-disc-${id}-panel`);
+  head.appendChild(el('span', 'sr-disc__label', label));
+  if (hint) head.appendChild(el('span', 'sr-disc__hint', hint));
+  head.appendChild(icon('chevron', 16));
+  panel.id = `sr-disc-${id}-panel`;
+  panel.classList.add('sr-disc__panel');
+  panel.setAttribute('role', 'region');
+  panel.setAttribute('aria-labelledby', head.id);
+  panel.hidden = !open;
+  head.addEventListener('click', () => {
+    const on = head.getAttribute('aria-expanded') !== 'true';
+    head.setAttribute('aria-expanded', on ? 'true' : 'false');
+    panel.hidden = !on;
+    if (typeof onToggle === 'function') onToggle(on);
+  });
+  wrap.appendChild(head);
+  wrap.appendChild(panel);
   return wrap;
+}
+
+/** The card's rows as a definition list. */
+function rowsList(rows) {
+  const dl = el('dl', 'sr-rows');
+  for (const [label, value] of rows) {
+    dl.appendChild(el('dt', 'sr-rows__key', label));
+    // A value that starts with a number sets the number in the mono face and its unit in Inter, as
+    // the three numbers do: "1.56 astronomical units" in mono did not fit its column.
+    const split = /^[−-]?\d/.test(String(value)) ? /^([−-]?[\d\u202F.,]*\d)(.*)$/.exec(String(value)) : null;
+    const dd = el('dd', 'sr-rows__val', split ? null : value);
+    if (split) {
+      dd.appendChild(el('span', 'sr-rows__num', split[1]));
+      if (split[2]) dd.appendChild(el('span', 'sr-rows__unit', split[2]));
+    }
+    dl.appendChild(dd);
+  }
+  return dl;
+}
+
+/** The hint at the right of "When you can see it": the next pass in UTC, or why there is none. */
+function seeHint(record, ctx, m, passInfo) {
+  const S = COPY.card.sections;
+  if (!isEarthFrame(m.frame) || standsStill(record, m) || klassOf(record) === 'world' || klassOf(record) === 'storm') return null;
+  if (passInfo.state === PASS_OK) return t(S.passAt, { time: new Date(passInfo.pass.startMs).toISOString().slice(11, 16) });
+  if (passInfo.state === PASS_NO_OBSERVER) return S.needsPlace;
+  return ctx && ctx.observer && ctx.observer.source === 'guess' ? S.placeGuessed : null;
 }
 
 // ---------------------------------------------------------------------------------------
@@ -2247,6 +2680,33 @@ function section(className, labelText) {
   return wrap;
 }
 
+/** A panel for a disclosure, from the nodes that go in it; null when there are none. */
+function panelOf(nodes) {
+  const list = nodes.filter(Boolean);
+  if (!list.length) return null;
+  const panel = el('div', 'sr-disc__body');
+  for (const n of list) panel.appendChild(n);
+  return panel;
+}
+
+/**
+ * Before a repaint clears the card: where its scroll was and which control had focus, so the
+ * visitor's place survives the clock being set under them. The card scrolls itself as a sheet and
+ * the sidebar's slot scrolls it when it is docked (ui/shell.js).
+ */
+function keepPlace(node) {
+  const scroller = (node.parentNode && node.parentNode.classList && node.parentNode.classList.contains('sr-side__cardslot')) ? node.parentNode : node;
+  const active = typeof document !== 'undefined' ? document.activeElement : null;
+  const focusKey = active && node.contains(active) && active.dataset ? active.dataset.focus || null : null;
+  const top = scroller.scrollTop || 0;
+  return () => {
+    if (top && scroller.scrollTop !== top) scroller.scrollTop = top;
+    if (!focusKey || typeof node.querySelector !== 'function') return;
+    const again = node.querySelector(`[data-focus="${focusKey}"]`);
+    if (again && typeof again.focus === 'function') again.focus({ preventScroll: true });
+  };
+}
+
 function render(record, ctx, opts = {}) {
   const lead = opts.lead;
   if (!record) {
@@ -2257,9 +2717,12 @@ function render(record, ctx, opts = {}) {
   const klass = klassOf(record);
   const m = measure(record, ctx);
   const passInfo = nextPass(record, ctx, m);
+  const S = COPY.card.sections;
+  const rid = String(record.id || displayName(record));
   // The first card for something over the Earth fetches the places; the row appears when they land.
   if (!placesMod && isEarthFrame(m.frame) && m.latDeg !== null && !standsStill(record, m)) ensurePlaces();
 
+  const restore = keepPlace(node);
   clear(node);
   node.dataset.klass = klass;
   node.dataset.cls = String(m.cls || record.cls || '');
@@ -2267,23 +2730,25 @@ function render(record, ctx, opts = {}) {
   // 0. the trip's own words, above everything and reordering nothing.
   if (lead) node.appendChild(leadBlock(lead));
 
-  // 1. name and class glyph. Under a stop title that already names the subject the name is kept for
-  // a screen reader and not drawn: "The International Space Station", "International Space
-  // Station", "International Space Station is..." was one name three times in 120 px (#279).
-  const namedAbove = !!(lead && lead.title && sameName(lead.title, displayName(record)));
+  // 1. the microlabel and the name. Under a stop title that already names the subject the name is
+  // kept for a screen reader and not drawn: "The International Space Station", "International
+  // Space Station", "International Space Station is..." was one name three times in 120 px (#279).
+  const name = displayName(record);
+  const namedAbove = !!(lead && lead.title && sameName(lead.title, name));
   const header = el('header', namedAbove ? 'sr-card__header is-named-above' : 'sr-card__header');
-  const glyph = el('span', `sr-glyph sr-glyph--${klass}`);
-  glyph.setAttribute('aria-hidden', 'true');
-  header.appendChild(glyph);
-  const title = el('h2', 'sr-card__name', displayName(record));
+  header.appendChild(el('p', 'sr-card__micro', microLabel(record, m)));
+  const title = el('h2', 'sr-card__name', name);
   // The card is a dialog, and a dialog needs a name: it had role="dialog" and nothing to call it by.
   title.id = CARD_TITLE_ID;
   title.tabIndex = -1; // focusable by script only (takeFocus), never a stop in the tab order
+  title.title = name; // two lines, then an ellipsis: the whole name is here
   header.appendChild(title);
-  header.appendChild(el('span', 'sr-card__klass', klassLabel(record, klass)));
-  const close = el('button', 'sr-card__close', COPY.card.close);
+  const close = el('button', 'sr-card__close');
   close.type = 'button';
   close.title = COPY.card.closeTitle;
+  close.setAttribute('aria-label', COPY.card.close);
+  close.dataset.focus = 'close';
+  close.appendChild(icon('x'));
   close.addEventListener('click', hideCard);
   header.appendChild(close);
   node.appendChild(header);
@@ -2292,20 +2757,76 @@ function render(record, ctx, opts = {}) {
   bodyEl = body;
   node.appendChild(body);
 
-  // 2. one plain sentence, and the registry's line on why this one is known (see WHY_KLASSES)
-  const sentence = firstSentence(record, ctx, m, passInfo);
-  body.appendChild(el('p', 'sr-card__sentence', namedAbove ? withoutLeadingName(sentence, displayName(record)) : sentence));
-  const why = whyLine(record);
-  if (why) body.appendChild(el('p', 'sr-card__why', why));
+  // 2. the three numbers, read off the card's own rows.
+  const rows = rightNowRows(record, m, passInfo);
+  const heroes = heroNumbers(record, m, rows);
+  if (heroes.length) body.appendChild(heroBlock(heroes));
 
-  // 2a. THE PHOTOGRAPH, where the registry has one. Two of the twenty exotics have been
+  // 3. the four actions, one of them ember.
+  const actions = el('div', 'sr-card__actions');
+  actions.setAttribute('role', 'group');
+  actions.setAttribute('aria-label', COPY.card.actionsLabel);
+  for (const b of actionButtons(record, ctx, m)) {
+    b.dataset.focus = `act-${b.dataset.action}`;
+    actions.appendChild(b);
+  }
+  body.appendChild(actions);
+
+  // 4. the next 90 minutes in time: light and shadow, the lap (spec 0048)
+  const time = timeFactsSection(record, ctx, m);
+  if (time) { body.appendChild(time.bar); startTimeFacts(); }
+
+  // 5. the sections, each opening in place.
+  const more = el('nav', 'sr-card__more-list');
+  more.setAttribute('aria-label', S.label);
+  const add = (id, label, hint, panel) => {
+    if (!panel) return;
+    more.appendChild(disclosure(id, label, hint, panel, isOpen(rid, id), (on) => setOpen(rid, id, on)));
+  };
+
+  // When you can see it: the see-it line, the next pass, and See it from here where the action
+  // row gave its place to Ride along.
+  // The pass row only when there is a pass: otherwise its words are the see-it line's, twice.
+  const seeRows = passInfo.state === PASS_OK ? rows.filter(([label]) => label === COPY.card.rows.nextPass) : [];
+  const seeNodes = [el('p', 'sr-card__seeline', seeItLine(record, ctx, m, passInfo))];
+  if (seeRows.length) seeNodes.push(rowsList(seeRows));
+  if (followAllowed(record, ctx, m)) {
+    const see = el('button', 'sr-btn sr-btn--quiet', COPY.card.actions.seeFromHere);
+    see.type = 'button';
+    see.title = COPY.card.actions.seeFromHereTitle;
+    see.dataset.focus = 'see-from-here';
+    see.addEventListener('click', () => seeFromHere(record, ctx));
+    seeNodes.push(see);
+  }
+  add('see', S.see, seeHint(record, ctx, m, passInfo), panelOf(seeNodes));
+
+  // Its path: the time facts' sentences, the trajectory (spec 0026 req 14), the ground track's
+  // switch above 2 000 km (spec 0048), and what the line drawn on the scene is.
+  const lap = orbitLineLine(record);
+  add('path', S.path, null, panelOf([
+    time ? time.lines : null,
+    trajectorySection(record, m.tMs),
+    ...trackControls(record, ctx, m),
+    lap ? el('p', 'sr-card__note', lap) : null,
+  ]));
+
+  // Who is aboard: what rides on this, or what this rides on (data/attached.js).
+  const aboard = aboardSection(record, ctx);
+  if (aboard) add('aboard', aboard.riding ? S.ridingOn : S.aboard, null, panelOf([aboard.node]));
+
+  // About it: the first sentence and the line on why it is known, the photograph, a world's own
+  // notes, every row the card prints, the comparisons, the myths and the train -- the sections
+  // the card has always had, in their old order.
+  const sentence = firstSentence(record, ctx, m, passInfo);
+  const why = whyLine(record);
+  const aboutNodes = [el('p', 'sr-card__sentence', namedAbove ? withoutLeadingName(sentence, name) : sentence)];
+  if (why) aboutNodes.push(el('p', 'sr-card__why', why));
+  // THE PHOTOGRAPH, where the registry has one. Two of the twenty exotics have been
   // photographed -- M87* in 2019 and Sgr A* in 2022 -- and spec 0028 asked for their pictures on
-  // the card. Until now the card said "the first black hole anyone photographed" and showed a dot.
-  //
-  // The credit rides WITH the picture, visible, because that is what CC BY 4.0 asks for: "the full
-  // image credit must be presented in a clear and readable manner to all users, with the wording
-  // unaltered". Lazy and async so a card that is never scrolled to costs nothing, and the alt text
-  // comes from the registry row, where somebody wrote it by looking.
+  // the card. The credit rides WITH the picture, visible, because that is what CC BY 4.0 asks for:
+  // "the full image credit must be presented in a clear and readable manner to all users, with the
+  // wording unaltered". Lazy and async so a card that is never opened costs nothing, and the alt
+  // text comes from the registry row, where somebody wrote it by looking.
   const photo = pick(meta(record), 'image');
   if (photo && photo.file && photo.credit && photo.licence) {
     const figure = el('figure', 'sr-card__figure');
@@ -2318,124 +2839,73 @@ function render(record, ctx, opts = {}) {
     figure.appendChild(img);
     figure.appendChild(el('figcaption', 'sr-card__photo-credit',
       t(COPY.card.photoCredit, { credit: String(photo.credit), licence: String(photo.licence) })));
-    body.appendChild(figure);
+    aboutNodes.push(figure);
   }
-
-  // 2b. a world says how it is drawn, and offers to become the centre (spec 0028 step 0). The
-  // compression note is scene/worlds.js's own sentence (`viewScale`), never restated here.
+  // A world says how it is drawn (spec 0028 step 0). The compression note is scene/worlds.js's own
+  // sentence (`viewScale`), never restated here; the Earth's clouds say what they are (COPY.clouds).
   if (klass === 'world') {
     const vs = ctx && ctx.worlds && typeof ctx.worlds.viewScale === 'function' ? ctx.worlds.viewScale(record.id) : null;
-    if (vs && vs.exaggerated && vs.note) body.appendChild(el('p', 'sr-card__note', vs.note));
-    // The Earth's clouds say what they are: today's satellite picture and how old, or illustrative
-    // and why (scene/liveclouds.js, 2026-09-28). The words are copy/en.js COPY.clouds.
+    if (vs && vs.exaggerated && vs.note) aboutNodes.push(el('p', 'sr-card__note', vs.note));
     if (record.id === 'earth' && ctx && ctx.liveClouds && typeof ctx.liveClouds.line === 'function') {
-      body.appendChild(el('p', 'sr-card__note sr-card__clouds', ctx.liveClouds.line(m.tMs)));
+      aboutNodes.push(el('p', 'sr-card__note sr-card__clouds', ctx.liveClouds.line(m.tMs)));
     }
     // And its aurora, in the same style: NOAA's forecast of the next hour, how old, not a photograph
     // (scene/aurora.js, 2026-09-30). The words are copy/en.js COPY.aurora.
     if (record.id === 'earth' && ctx && ctx.aurora && typeof ctx.aurora.line === 'function') {
-      body.appendChild(el('p', 'sr-card__note sr-card__aurora', ctx.aurora.line(m.tMs)));
+      aboutNodes.push(el('p', 'sr-card__note sr-card__aurora', ctx.aurora.line(m.tMs)));
     }
+  }
+  const aboutRows = rows.filter(([label]) => label !== COPY.card.rows.nextPass);
+  if (aboutRows.length) {
+    const now = section('sr-card__block sr-card__now', COPY.card.rightNowLabel);
+    now.appendChild(rowsList(aboutRows));
+    aboutNodes.push(now);
+  }
+  // The comparisons, once sentence-long pills at the top of the card: now a list, here.
+  const chips = comparisons(record, m);
+  if (chips.length) {
+    const feel = section('sr-card__block sr-card__compare', COPY.card.comparisonsLabel);
+    const list = el('ul', 'sr-compare');
+    for (const chip of chips) list.appendChild(el('li', 'sr-compare__item', chip));
+    feel.appendChild(list);
+    aboutNodes.push(feel);
+  }
+  // "Often said" -- the myth block, after the facts it corrects -- and the train this rides in
+  // (spec 0026 req 17): how many launched together, who leads, and whether they still climb as one.
+  aboutNodes.push(mythSection(record), trainSection(record, ctx, m));
+  add('about', S.about, null, panelOf(aboutNodes));
+
+  // Sources for this record: what the drawn shape is, and where the numbers were read.
+  const drawn = drawingLine(record);
+  add('sources', S.sources, null, panelOf([
+    drawn ? el('p', 'sr-card__drawn', drawn) : null,
+    el('p', 'sr-card__source', sourceLine(record, ctx)),
+  ]));
+
+  // A world can become the centre of the map (spec 0028 step 0): a row that acts, under the rest.
+  if (klass === 'world') {
     const isCentre = ctx && ctx.stage && ctx.stage.worldId === record.id;
-    const centre = el('button', 'sr-btn', isCentre
-      ? COPY.card.isCentre
-      : t(COPY.card.makeCentre, { name: displayName(record) }));
+    const centre = el('button', 'sr-disc__action', isCentre ? COPY.card.isCentre : t(COPY.card.makeCentre, { name }));
     centre.type = 'button';
+    centre.dataset.focus = 'centre';
     centre.disabled = isCentre || !(ctx && typeof ctx.setStage === 'function');
     centre.addEventListener('click', () => {
       if (ctx && typeof ctx.setStage === 'function' && ctx.setStage(record.id)) render(record, ctx, opts);
     });
-    const actions = el('div', 'sr-card__actions');
-    actions.appendChild(centre);
-    body.appendChild(actions);
+    more.appendChild(centre);
   }
+  body.appendChild(more);
 
-  // 3. comparison chips, at most three
-  const chips = comparisons(record, m);
-  if (chips.length) {
-    const wrap = el('ul', 'sr-chips');
-    wrap.setAttribute('aria-label', COPY.card.comparisonsLabel);
-    for (const chip of chips) wrap.appendChild(el('li', 'sr-chip', chip));
-    body.appendChild(wrap);
-  }
-
-  // 4. right now
-  const rows = rightNowRows(record, m, passInfo);
-  if (rows.length) {
-    const wrap = section('sr-card__block sr-card__now', COPY.card.rightNowLabel);
-    const dl = el('dl', 'sr-rows');
-    for (const [label, value] of rows) {
-      dl.appendChild(el('dt', 'sr-rows__key', label));
-      dl.appendChild(el('dd', 'sr-rows__val', value));
-    }
-    wrap.appendChild(dl);
-    body.appendChild(wrap);
-  }
-
-  // 4a0. the next 90 minutes in time: light and shadow, the lap, the orbit number (spec 0048)
-  const time = timeFactsSection(record, ctx, m);
-  if (time) { body.appendChild(time); startTimeFacts(); }
-
-  // 4a. its path: height and ground track over the next lap and a half (spec 0026 req 14)
-  const traj = trajectorySection(record, m.tMs);
-  if (traj) body.appendChild(traj);
-
-  // 4a1. follow it: ride along, and the ground track's switch above 2 000 km (spec 0048)
-  const followBlock = followSection(record, ctx, m);
-  if (followBlock) body.appendChild(followBlock);
-
-  // 4b. "Often said" -- the myth block, immediately after the facts it corrects. It renders for
-  // any record carrying myths and nothing at all for the rest.
-  const myths = mythSection(record);
-  if (myths) body.appendChild(myths);
-
-  // 4b2. the train this rides in (spec 0026 req 17): how many launched together, who leads, and
-  // whether they are still climbing as one thing or have spread out.
-  const trainBlock = trainSection(record, ctx, m);
-  if (trainBlock) body.appendChild(trainBlock);
-
-  // 4c. what is riding on this, or what this is riding on. Below the facts because it is a way
-  // OUT of this card rather than a fact about the object, and above "see it from here" because
-  // it is still about the object and not about the visitor.
-  const aboard = aboardSection(record, ctx);
-  if (aboard) body.appendChild(aboard);
-
-  // 5. see it from here
-  const see = section('sr-card__block sr-card__see', COPY.card.seeItLabel);
-  see.appendChild(el('p', 'sr-card__seeline', seeItLine(record, ctx, m, passInfo)));
-  body.appendChild(see);
-
-  // 6. actions
-  const actions = el('div', 'sr-card__actions');
-  actions.setAttribute('aria-label', COPY.card.actionsLabel);
-  for (const b of actionButtons(record, ctx, m)) actions.appendChild(b);
-  body.appendChild(actions);
-  // 6a. the postcard, one tap more than Share and directly under it (spec 0033 req 3). Its own
-  // row and not a fourth action: spec 0013 caps the actions at three.
-  const picture = el('div', 'sr-card__picture');
-  picture.appendChild(pictureButton(ctx, 'sr-btn sr-btn--quiet sr-btn--picture', record));
-  body.appendChild(picture);
-
-  // 7. the class-and-age line
+  // 6. the honesty line, small, at the foot: how the position was worked out and how old it is.
   const foot = el('footer', 'sr-card__foot');
   foot.appendChild(el('p', 'sr-card__cls', honestyLine(record, m)));
-
-  // 7b. what the drawn shape is. Between this and the line above it, the card states that
-  // neither the shape nor the path is a measurement of this particular flight.
-  const drawn = drawingLine(record);
-  if (drawn) foot.appendChild(el('p', 'sr-card__drawn', drawn));
-  // 7c. the orbit line, when there is one (scene/orbitline.js draws it for the selection)
-  const lap = orbitLineLine(record);
-  if (lap) foot.appendChild(el('p', 'sr-card__drawn', lap));
-
-  // 8. the source line
-  foot.appendChild(el('p', 'sr-card__source', sourceLine(record, ctx)));
   node.appendChild(foot);
   node.appendChild(moreCue());
 
   node.hidden = false;
   node.classList.add('is-open');
   markCardOpen(true);
+  restore();
   paintMore(node);
 }
 

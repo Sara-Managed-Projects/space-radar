@@ -149,6 +149,9 @@ export function attachedOddityRecord(entry, carrier) {
       attachedTo: carrier.id,
       attachedToName: carrier.name,
       mountFace: entry.mount.face,
+      // It left the ground bolted to the carrier, so the carrier's launch day is its own, and the
+      // card's "days since launch" is the same number on both (tests/test_contract.mjs ATTACH).
+      ...(meta && meta.launchDate ? { launchDate: meta.launchDate } : {}),
     },
   };
 }

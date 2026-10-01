@@ -24,7 +24,7 @@ const JS = join(ROOT, 'site/js');
 // module path -> exports the contract requires
 const CONTRACT = {
   'clock.js': ['clock'],
-  'propagate/frames.js': ['gmst', 'eciToEcef', 'ecefToEci', 'geodeticToEcef', 'ecefToGeodetic', 'lookAngles', 'toStage'],
+  'propagate/frames.js': ['gmst', 'eciToEcef', 'ecefToEci', 'geodeticToEcef', 'ecefToGeodetic', 'lookAngles', 'toStage', 'spinPeriodHours', 'yearDays'],
   'propagate/index.js': ['propagate', 'PROPAGATORS'],
   'data/sources.js': ['SOURCES', 'load', 'status'],
   'data/parsers.js': ['parseCelestrakGP', 'parseLaunches', 'parseComets', 'parseDsn', 'horizonsSamples', 'parseHorizonsVectors', 'parseNeoApproaches'],
@@ -65,7 +65,10 @@ const CONTRACT = {
   // Spec 0048: the next 90 minutes in time, shared by the card and (later) the follow strip.
   'sky/timefacts.js': ['lightWindows', 'nextAscendingNode', 'orbitNumber', 'launchYear', 'timeFacts', 'hasTimeFacts'],
   'sky/skyview.js': ['createSkyView'],
-  'ui/cards.js': ['showCard', 'hideCard', 'tagLines', 'shortHonesty'],
+  'ui/cards.js': ['showCard', 'hideCard', 'tagLines', 'shortHonesty',
+    // Spec 0061 §4, the card view: its three numbers, its microlabel, its action row and the rows
+    // that open in place, each pure enough for tests/test_cards_copy.mjs to hold.
+    'heroNumbers', 'heroKind', 'heroSplit', 'microLabel', 'actionButtons', 'followAllowed', 'disclosure', 'icon'],
   // Spec 0047: the tracked object's HUD, and its pure placement rules for tests/test_hud.mjs.
   'ui/hud.js': ['createHud', 'reticleBox', 'tagPlacement', 'showTick', 'chevronAt', 'firstDigitChanged'],
   // Spec 0061: the layout. The shell builds the boxes; the explore view is the sidebar's home, the

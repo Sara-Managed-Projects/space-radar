@@ -195,7 +195,8 @@ check(tw && tw.title === tour.title && tw.text === tour.blurb, 'a trip shares it
     const card = document.getElementById('sr-card');
     const text = (cls) => { const n = card && card.all().find((x) => x.className === cls); return n ? n.textContent : null; };
     const cap = postcardCaption(record, ctx, null);
-    check(cap.name === `${text('sr-card__name')}${COPY.punctuation.separator}${text('sr-card__klass')}`, `${id}: the name line is the card's name and badge: "${cap.name}"`);
+    // The card view (spec 0061 §4) sets the class in its microlabel; the caption keeps the badge word.
+    check(cap.name.startsWith(`${text('sr-card__name')}${COPY.punctuation.separator}`), `${id}: the name line starts with the card's name: "${cap.name}"`);
     check(cap.sentence === text('sr-card__sentence'), `${id}: the sentence is the card's first sentence: "${cap.sentence}"`);
     check(cap.honesty === text('sr-card__cls') && cap.honesty.length > 0, `${id}: the honesty line is the card's class-and-age line: "${cap.honesty}" vs "${text('sr-card__cls')}"`);
     check(cap.sources === text('sr-card__source'), `${id}: the sources line is the card's: "${cap.sources}"`);
@@ -205,12 +206,13 @@ check(tw && tw.title === tour.title && tw.text === tour.blurb, 'a trip shares it
     // en-GB prints September as "Sep" or "Sept" depending on the ICU; either is the instant.
     check(/23 Sept? 2026, 14:05 UTC$/.test(cap.where), `${id}: and ends with the instant: "${cap.where}"`);
     check(Object.keys(cap).join() === 'name,where,sentence,honesty,sources,mark' && cap.mark === COPY.share.mark, `${id}: five lines and the mark, in order`);
-    // The card's action row: Fly to it, See it from here, Share. The postcard sits under it.
+    // The card's action row (spec 0061 §4): Fly to it, See it, Postcard, Share -- one row of four,
+    // the postcard in it rather than under it.
     const row = card.all().find((x) => x.className === 'sr-card__actions' && x.getAttribute('aria-label'));
     const labels = row ? row.children.map((b) => b.textContent) : [];
-    check(labels.length === 3 && labels[2] === COPY.share.link, `${id}: the action row has three buttons, Share third: ${labels}`);
-    const pic = card.all().find((x) => x.className === 'sr-card__picture');
-    check(pic && pic.children[0] && pic.children[0].textContent === COPY.share.picture, `${id}: "Save a picture" sits under the actions`);
+    const A = COPY.card.actions;
+    check(labels.join() === [A.flyTo, A.seeShort, A.postcard, A.share].join(), `${id}: the action row is Fly to it, See it, Postcard, Share: ${labels}`);
+    check(row && row.children[2].title === COPY.share.pictureTitle && row.children[3].title === COPY.share.linkTitle, `${id}: Postcard and Share are spec 0033's, by their titles`);
   }
   const place = postcardCaption(null, ctx, { tourTitle: 'A trip', stopTitle: 'A place' });
   check(place.name === 'A trip' && place.sentence === 'A place' && place.honesty === '' && place.sources === '', 'a stop with no record claims nothing it could be wrong about');
