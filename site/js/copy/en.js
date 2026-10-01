@@ -1019,6 +1019,10 @@ export const COPY = {
     leadVerbs: ['is', 'was'],
     makeCentre: 'Make {name} the centre of the map',
     isCentre: 'This is the centre of the map',
+    // The card view's short form, a button inside "About it" (spec 0061 §4: no sentence-long
+    // control on the card); the long one is its tooltip.
+    centreShort: 'Centre the map here',
+    isCentreShort: 'Centred here',
     comparisonsLabel: 'To give you a feel for it',
     rightNowLabel: 'Right now',
     seeItLabel: 'See it from here',

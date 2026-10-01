@@ -2283,7 +2283,7 @@ function trackControls(record, ctx, m) {
   if (!low && ctx.groundTrack) {
     const st = ctx.groundTrack.state();
     const shown = st.forced && st.id === record.id;
-    const toggle = el('button', 'sr-btn sr-btn--quiet', shown ? G.hideTrack : G.showTrack);
+    const toggle = el('button', 'sr-btn sr-btn--quiet sr-card__inline', shown ? G.hideTrack : G.showTrack);
     toggle.type = 'button';
     toggle.setAttribute('aria-pressed', shown ? 'true' : 'false');
     toggle.addEventListener('click', () => {
@@ -2791,7 +2791,7 @@ function render(record, ctx, opts = {}) {
   const seeNodes = [el('p', 'sr-card__seeline', seeItLine(record, ctx, m, passInfo))];
   if (seeRows.length) seeNodes.push(rowsList(seeRows));
   if (followAllowed(record, ctx, m)) {
-    const see = el('button', 'sr-btn sr-btn--quiet', COPY.card.actions.seeFromHere);
+    const see = el('button', 'sr-btn sr-btn--quiet sr-card__inline', COPY.card.actions.seeFromHere);
     see.type = 'button';
     see.title = COPY.card.actions.seeFromHereTitle;
     see.dataset.focus = 'see-from-here';
@@ -2873,6 +2873,20 @@ function render(record, ctx, opts = {}) {
   // "Often said" -- the myth block, after the facts it corrects -- and the train this rides in
   // (spec 0026 req 17): how many launched together, who leads, and whether they still climb as one.
   aboutNodes.push(mythSection(record), trainSection(record, ctx, m));
+  // A world can become the centre of the map (spec 0028 step 0): a quiet button at the end of
+  // "About it", not a sentence-long row under the card. Its tooltip is the long form.
+  if (klass === 'world') {
+    const isCentre = ctx && ctx.stage && ctx.stage.worldId === record.id;
+    const centre = el('button', 'sr-btn sr-btn--quiet sr-card__inline', isCentre ? COPY.card.isCentreShort : COPY.card.centreShort);
+    centre.type = 'button';
+    centre.title = isCentre ? COPY.card.isCentre : t(COPY.card.makeCentre, { name });
+    centre.dataset.focus = 'centre';
+    centre.disabled = isCentre || !(ctx && typeof ctx.setStage === 'function');
+    centre.addEventListener('click', () => {
+      if (ctx && typeof ctx.setStage === 'function' && ctx.setStage(record.id)) render(record, ctx, opts);
+    });
+    aboutNodes.push(centre);
+  }
   add('about', S.about, null, panelOf(aboutNodes));
 
   // Sources for this record: what the drawn shape is, and where the numbers were read.
@@ -2882,18 +2896,6 @@ function render(record, ctx, opts = {}) {
     el('p', 'sr-card__source', sourceLine(record, ctx)),
   ]));
 
-  // A world can become the centre of the map (spec 0028 step 0): a row that acts, under the rest.
-  if (klass === 'world') {
-    const isCentre = ctx && ctx.stage && ctx.stage.worldId === record.id;
-    const centre = el('button', 'sr-disc__action', isCentre ? COPY.card.isCentre : t(COPY.card.makeCentre, { name }));
-    centre.type = 'button';
-    centre.dataset.focus = 'centre';
-    centre.disabled = isCentre || !(ctx && typeof ctx.setStage === 'function');
-    centre.addEventListener('click', () => {
-      if (ctx && typeof ctx.setStage === 'function' && ctx.setStage(record.id)) render(record, ctx, opts);
-    });
-    more.appendChild(centre);
-  }
   body.appendChild(more);
 
   // 6. the honesty line, small, at the foot: how the position was worked out and how old it is.
