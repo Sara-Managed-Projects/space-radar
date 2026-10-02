@@ -12,12 +12,13 @@ import { createRenderer } from './scene/renderer.js';
 import { stage } from './scene/stage.js';
 import { propagate } from './propagate/index.js';
 import { parseFrame } from './propagate/frames.js';
-import { createWorlds, WORLDS } from './scene/worlds.js';
+import { createWorlds, WORLDS, positionOf } from './scene/worlds.js';
 import { createStarfield } from './scene/starfield.js';
 import { createGlyphLayer } from './scene/glyphs.js';
-import { createHeroes, closeUpDistance } from './scene/heroes.js';
+import { createHeroes, closeUpDistance, SELECTED_PX } from './scene/heroes.js';
+import { limbFraming, fitDistance, discDistance } from './scene/framing.js';
 import { createCameraRig, worldFramingDistance } from './scene/camera.js';
-import { createViewShift } from './scene/viewshift.js';
+import { createViewShift, MAX_SHIFT_FRACTION } from './scene/viewshift.js';
 import { readMoment, writeMoment, bootLink, laterLink, read as readUrlKeys, write as writeUrlState, clear as clearUrlState, stopIndex } from './ui/urlstate.js';
 import { guessObserver } from './sky/guessplace.js';
 import { COPY, CITIES } from './copy/en.js';
@@ -54,7 +55,7 @@ import { createHud } from './ui/hud.js';
 import { createOrbitLine } from './scene/orbitline.js';
 import { createGroundTrack } from './scene/groundtrack.js';
 import { createTrackLabels } from './ui/tracklabels.js';
-import { createOrbitRings } from './scene/orbitrings.js';
+import { createOrbitRings, periodMsOfWorld } from './scene/orbitrings.js';
 import { createFrameLatch, shouldSaveData, chooseTier, createTierPromoter } from './scene/quality.js';
 import { createLiveClouds } from './scene/liveclouds.js';
 import { createTextureTiers } from './scene/texturetiers.js';
@@ -543,7 +544,11 @@ export async function boot({ setStatus } = {}) {
     if (record.klass === 'world') worlds.preload(record.id);
     const on = teachRigWorld(record);
     const pos = positionOfRecord(record);
-    if (pos) cameraRig.flyTo({ targetScene: pos, distance: arrivalDistance(record, pos), ms });
+    if (pos) {
+      const distance = arrivalDistance(record, pos);
+      const limb = limbPose(record, pos, distance, on);
+      cameraRig.flyTo({ targetScene: pos, distance: limb ? limb.distance : distance, tilt: limb ? limb.tilt : undefined, ms });
+    }
     // Following something standing on the Moon is following the Moon, which crosses its own
     // radius in about half an hour, so its centre is re-taught with every tick of the target.
     cameraRig.follow(on
@@ -624,7 +629,18 @@ export async function boot({ setStatus } = {}) {
   }
 
   function arrivalDistance(record, pos) {
-    if (record && record.klass === 'world') return Math.max(0.05, worlds.drawnRadiusUnits(record.id) * 3.5);
+    if (record && record.klass === 'world') {
+      // 3.5 radii, or farther when the free part of the screen is narrower than that disc
+      // (scene/framing.js discDistance: the Moon on a phone was wider than the phone).
+      const radius = worlds.drawnRadiusUnits(record.id);
+      const el = ctx.renderer && ctx.renderer.domElement;
+      const room = freeRoom(el);
+      const w = el && el.clientWidth > 0 ? el.clientWidth : window.innerWidth;
+      const h = el && el.clientHeight > 0 ? el.clientHeight : window.innerHeight;
+      const shareV = room ? Math.min(room.above, room.below) / (h / 2) : 1;
+      const shareH = (w - 2 * Math.abs(viewShift.shiftXPx())) / w;
+      return Math.max(0.05, radius * 3.5, discDistance(radius, { fovDeg: camera.fov, aspect: w / h, shareV, shareH }));
+    }
     // On its system's stage a planet is a ball of its own size: eight radii, the trip's framing; the
     // host star is the whole system, every orbit in the picture.
     const inSystem = ctx.systems && ctx.systems.active && ctx.systems.stageOfRecord(record) === stage.worldId;
@@ -647,6 +663,90 @@ export async function boot({ setStatus } = {}) {
     const f = ctx.camera ? ctx.camera.projectionMatrix.elements[5] : 0;
     const close = pos ? closeUpDistance(pos, h, f) : Infinity;
     return Math.max(0.05, Math.min((nearKm * 0.35) / stage.unitKm, close));
+  }
+
+  /**
+   * The arrival's distance and tilt with the limb of the world below in the picture (spec 0061 req
+   * 9, scene/framing.js says why): for anything over or on a world's ground, from the Earth's
+   * satellites to a site on the Moon. Null for everything else -- a world, a star, a probe far from
+   * any world -- whose arrival stays as arrivalDistance and camera.js FRAMING_TILT have it.
+   * `onWorld` is the world teachRigWorld chose (a site on another world's ground), else the stage's.
+   */
+  function limbPose(record, pos, distance, onWorld) {
+    if (!record || !pos || record.klass === 'world') return null;
+    if (['star', 'exoplanet', 'dso', 'exotic'].includes(record.klass)) return null;
+    if (ctx.systems && ctx.systems.active) return null; // a star system's stage frames its own way
+    const worldId = onWorld || stage.worldId;
+    const w = WORLDS.find((x) => x.id === worldId);
+    if (!w || !(w.radiusKm > 0)) return null;
+    const centre = onWorld ? worlds.drawnPositionOf(onWorld) : { x: 0, y: 0, z: 0 };
+    if (!centre) return null;
+    const R = onWorld ? worlds.drawnRadiusUnits(onWorld) : w.radiusKm / stage.unitKm;
+    const r = Math.hypot(pos.x - centre.x, pos.y - centre.y, pos.z - centre.z);
+    if (!(r > 0)) return null;
+    // Where the camera's up is, seen from the subject: framing.js keeps the world below on screen.
+    const up = camera.up;
+    const upLen = Math.hypot(up.x, up.y, up.z) || 1;
+    const upDot = ((pos.x - centre.x) * up.x + (pos.y - centre.y) * up.y + (pos.z - centre.z) * up.z) / (r * upLen);
+    const el = ctx.renderer && ctx.renderer.domElement;
+    const h = el && el.clientHeight > 0 ? el.clientHeight : window.innerHeight;
+    const layer = LAYERS.find((l) => l.id === record.layer);
+    // A model's bounding circle is drawn MODEL_SPAN times SELECTED_PX across: MEASURED 2026-10-02,
+    // the ISS's reticle 356 px at 1440x900 and 351 at 390x844, which is the drawn diameter + 12
+    // (ui/hud.js reticleBox). A thing with no model is its dot inside the reticle.
+    const subjectPx = layer && layer.noModel ? 40 : SELECTED_PX * MODEL_SPAN;
+    return limbFraming({ r, R, distance, fovDeg: camera.fov, heightPx: h, subjectPx, upDot, room: freeRoom(el) });
+  }
+
+  /**
+   * Pixels from where the subject will sit to the nearest chrome above and below it: the phone's
+   * sheet or card along the bottom, its top bar. The limb is placed inside them (scene/framing.js).
+   * MEASURED 2026-10-02 at 390x844 with the ISS card up: the limb was solved for the whole height,
+   * landed 177 px under the station, and that was under the card. Where the subject sits is the
+   * middle of the free band, capped, which is the rule scene/viewshift.js moves the picture by;
+   * it is asked of the page here because the shift itself is still easing in when a flight starts.
+   *
+   * AND THE CARD IS STILL SLIDING IN. A deep link selects at boot, and the card's box is measured
+   * mid-slide, below the screen: MEASURED with `#at=25544` at 390x844, nothing was found covering
+   * the bottom, the limb was put 177 px above a subject that then sat at y = 171, and the station
+   * arrived with the night side filling the whole screen. A selection always opens the card, and
+   * on a phone the card opens at half (docs/ui-guide.md §3.11, 48 % of the height), so that much is
+   * taken as covered whatever the box says this frame.
+   */
+  const MODEL_SPAN = 1.32;
+  const BAND_CHROME = '#sr-side, #sr-card, #sr-top, .sr-mobilebar';
+  const PHONE_CARD_SHARE = 0.48;
+  function freeRoom(el) {
+    if (!el || typeof el.getBoundingClientRect !== 'function') return null;
+    const c = el.getBoundingClientRect();
+    const h = c.height;
+    if (!(h > 0)) return null;
+    let top = 0;
+    let bottom = 0;
+    for (const node of document.querySelectorAll(BAND_CHROME)) {
+      if (node.hidden) continue;
+      const r = node.getBoundingClientRect();
+      // A bar or a sheet spans the view; the desktop's sidebar is a column, and covers neither.
+      if (!(r.width >= c.width * 0.8 && r.height > 0)) continue;
+      if (getComputedStyle(node).visibility === 'hidden') continue;
+      const t = r.top - c.top;
+      const b = r.bottom - c.top;
+      if (b >= h - 4 && t > 0) bottom = Math.max(bottom, h - t);
+      else if (t <= h * 0.25 && b < h * 0.5) top = Math.max(top, b);
+    }
+    const cap = h * MAX_SHIFT_FRACTION;
+    if (c.width < 900) {
+      // The card is half the height at least; it may be more, and then the subject rides as high as
+      // the shift's cap allows, so the room above is counted from there: the limb is then nearer
+      // the subject than planned, never off the top (MEASURED at 390x844 with today's card, 62 %
+      // of the height: the subject sat at y = 169, the cap, not at 220).
+      bottom = Math.max(bottom, h * PHONE_CARD_SHARE);
+      const centre = h / 2 - Math.max(-cap, Math.min(cap, (bottom - top) / 2));
+      const highest = h / 2 - cap;
+      return { above: Math.max(0, highest - top), below: h - bottom - centre };
+    }
+    const centre = h / 2 - Math.max(-cap, Math.min(cap, (bottom - top) / 2));
+    return { above: centre - top, below: h - bottom - centre };
   }
 
   /**
@@ -736,13 +836,70 @@ export async function boot({ setStatus } = {}) {
     cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance, ms: 0 });
     return true;
   };
-  // The Planets tab (spec 0061, ui/explore.js): the Sun's stage framed on the inner planets rather
-  // than on the Sun's own disc, which is what setStage's world framing gives. 700 million km is the
-  // year trip's first stop (registry/tours.yaml a-year-in-a-minute `inner`), measured there to hold
-  // the whole of Mars's orbit on a 1280 x 800 screen.
+  // The Planets tab (spec 0061, ui/explore.js): the Sun's stage with every planet in the picture.
+  //
+  // It was a fixed 700 million km, the year trip's first stop, measured to hold Mars's orbit on a
+  // 1280 x 800 screen. MEASURED 2026-10-02 at 1440x900: Jupiter projected to y = -36 (off the top),
+  // Saturn to x = 3 088 and Neptune to x = 8 351 -- five of the nine worlds the tab lists were off
+  // the screen it opens on, and on a phone's narrow width Mars went too. So the distance is SOLVED:
+  // the camera looks down on the Sun from SYSTEM_POLAR off the pole of the planets' plane, keeps the
+  // side it is on, and stands back exactly far enough for Neptune's whole path, every planet and
+  // Pluto to be inside the part of the screen the chrome leaves (viewshift's band), with a margin
+  // (scene/framing.js fitDistance). The paths are drawn here (SYSTEM_RINGS, below), so the fit is to
+  // the outermost one, not to where Neptune happens to be. The inner planets are close to the Sun
+  // at that size, and that is the honest shape of the Solar System; the labels rank all eight
+  // planets first on this stage (ui/labels.js).
+  const SYSTEM_IDS = ['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'];
+  const OUTER_PATH_SAMPLES = 24;
+  /** Points along the outermost drawn path, one lap from now. */
+  const outerPath = (tMs) => {
+    const period = periodMsOfWorld('neptune');
+    const out = [];
+    if (!period) return out;
+    for (let k = 0; k < OUTER_PATH_SAMPLES; k++) {
+      const t = tMs + (period * k) / OUTER_PATH_SAMPLES;
+      const p = positionOf('neptune', t);
+      const v = p ? stage.toScene(p, p.frame, tMs) : null;
+      if (v) out.push(v);
+    }
+    return out;
+  };
+  const SYSTEM_POLAR = 0.6; // radians off the pole: the orbits read as ellipses, not as a line
+  const _fitCam = new THREE.PerspectiveCamera();
+  const _fitQ = new THREE.Quaternion();
+  const _fitU = new THREE.Vector3();
+  const _fitV = new THREE.Vector3();
   ctx.frameSolarSystem = () => {
     if (stage.worldId !== 'sun') return false;
-    cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance: 700e6 / stage.unitKm, ms: 0 });
+    const pts = SYSTEM_IDS.map((id) => worlds.drawnPositionOf(id)).filter(Boolean).map((p) => p.clone())
+      .concat(outerPath(clock.now()));
+    const azimuth = Number.isFinite(cameraRig.state.azimuth) ? cameraRig.state.azimuth : 0;
+    // The rig's own offset direction for (azimuth, SYSTEM_POLAR), in its up's basis.
+    _fitQ.setFromUnitVectors(new THREE.Vector3(0, 1, 0), camera.up.clone().normalize());
+    _fitU.set(Math.sin(SYSTEM_POLAR) * Math.sin(azimuth), Math.cos(SYSTEM_POLAR), Math.sin(SYSTEM_POLAR) * Math.cos(azimuth)).applyQuaternion(_fitQ);
+    _fitCam.fov = camera.fov;
+    _fitCam.aspect = camera.aspect;
+    _fitCam.near = camera.near;
+    _fitCam.far = camera.far;
+    _fitCam.up.copy(camera.up);
+    _fitCam.updateProjectionMatrix();
+    const project = (p, d) => {
+      _fitCam.position.copy(_fitU).multiplyScalar(d);
+      _fitCam.lookAt(0, 0, 0);
+      _fitCam.updateMatrixWorld();
+      _fitV.copy(p).project(_fitCam);
+      return _fitV.z < 1 ? { x: _fitV.x, y: _fitV.y } : null;
+    };
+    const el = renderer.domElement;
+    const vw = el.clientWidth || window.innerWidth;
+    const vh = el.clientHeight || window.innerHeight;
+    const band = {
+      w: Math.max(0.3, (vw - 2 * Math.abs(viewShift.shiftXPx())) / vw),
+      h: Math.max(0.3, (vh - 2 * Math.abs(viewShift.shiftPx())) / vh),
+    };
+    const fit = pts.length ? fitDistance(pts, project, { lo: 50, hi: 2e5, band }) : null;
+    const distance = Number.isFinite(fit) ? fit : 700e6 / stage.unitKm;
+    cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance, azimuth, polar: SYSTEM_POLAR, ms: 0 });
     return true;
   };
 
@@ -913,6 +1070,13 @@ function createQuality(ctx, renderer, starfield, worlds) {
 
 // --- the loop ----------------------------------------------------------------
 
+/**
+ * The paths the Sun's stage draws outside a trip: the planets'. Not Pluto's: it runs out to 49 AU,
+ * past the frame the whole of Neptune's path is fitted to, and was cut off by the screen's edge.
+ * Pluto keeps its name where it is.
+ */
+const SYSTEM_RINGS = ['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
+
 function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfield, heroes, lod }) {
   let last = performance.now();
   let sinceLayerUpdate = 0;
@@ -1016,7 +1180,11 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     if (ctx.groundTrack) ctx.groundTrack.update(t);
     if (ctx.orbitRings) {
       const st = ctx.trip && ctx.trip.state;
-      ctx.orbitRings.update(t, st && st.phase !== 'idle' ? st.orbits : null);
+      const tripping = st && st.phase !== 'idle';
+      // Outside a trip the Sun's stage IS the Planets tab, framed on the whole system
+      // (frameSolarSystem): at true size every planet there is under a pixel, so their paths and
+      // dots are drawn, and the tab's list says the dots are larger than the planets.
+      ctx.orbitRings.update(t, tripping ? st.orbits : stage.worldId === 'sun' ? SYSTEM_RINGS : null);
     }
 
     // The ladder's level of detail, on the same tick: how far the camera is from the Sun, in km.

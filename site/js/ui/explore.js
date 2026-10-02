@@ -377,6 +377,7 @@ export function createExplore(ctx, host) {
   const worldsSect = section(COPY.explore.worldsTitle, 'sr-worlds');
   const worldsList = el('ul', 'sr-list');
   worldsSect.appendChild(worldsList);
+  worldsSect.appendChild(el('p', 'sr-sect__note', COPY.explore.worldsDrawn));
   planets.appendChild(worldsSect);
   planets.appendChild(tripHosts.get('planets').s);
   const worldRows = new Map();

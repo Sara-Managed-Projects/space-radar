@@ -6,20 +6,37 @@
 //
 // `#labels` has been in index.html since day one with a CSS rule and no writer. This is the writer.
 //
-// WHAT GETS A NAME. Never the catalogue: 17 000 labels is a wall of text and a frame budget. Three
-// kinds of thing, in this order, capped at twelve on screen:
-//   1. the selection -- always, and a trip's subject too, unless it is the ground under the camera.
+// WHAT GETS A NAME. Never the catalogue: 17 000 labels is a wall of text and a frame budget. At
+// most LABEL_CAP (8) on screen, desktop and phone alike (spec 0061 req 10, docs/ui-guide.md §3.13),
+// in this order of rank (labelTier):
+//   0. the selection -- always, and a trip's subject too, unless it is the ground under the camera.
 //      The trip's card names its subject but cannot point at it: MEASURED 2026-09-22 on "To the
 //      edge", Proxima was one unlabelled point among hundreds, and at the Sun the nearest name was
 //      Voyager 1's;
-//   2. the selection's train -- the other members of the same group (a fresh Starlink line is
-//      one card with N members, and the names say which is which);
-//   3. the nearest notable objects: records a hand-kept list gave a reason (`meta.why`), the worlds,
-//      and the crewed stations -- at most ten, nearest to the camera first.
-// Two labels closer than 24 px on screen would overprint, so the later one is dropped; that is the
-// same forgiveness distance a tap uses (scene/pickrank.js), for the same reason. That test is on
+//   1. the selection's train -- a few other members of the same group (a fresh Starlink line is
+//      one card with N members, and the names say which is which), at most TRAIN_CAP of them;
+//   2. the crewed stations;
+//   3. the named storms;
+//   4. the bright planets and the Moon (every planet on the Sun's stage, where they ARE the view);
+//   5. the rest of what is notable -- records a hand-kept list gave a reason (`meta.why`), the other
+//      worlds, the launches -- in scene/pickrank.js order, the one rule for "which of these first".
+// A rocket body or a piece of debris is never named unless it is the selection, or its own layer is
+// one the visitor switched on to see derelicts (isDerelict, mayNameHere). MEASURED 2026-10-02 on
+// the default view at 1440x900 with the saved satellite copy: nine names, two of them "SL-8 rocket
+// body" and "Envisat" (dead since 2012), and the live site printed "Thor Agena D rocket body" at the
+// top of the first screen. The list that gave those a reason is the Famous debris layer's, which is
+// off by default; the same objects arrive on the default-on "Bright enough to see" layer and were
+// named from there.
+// Two labels closer than 24 px on screen would overprint, so the lower-ranked one yields; that is
+// the same forgiveness distance a tap uses (scene/pickrank.js), for the same reason. That test is on
 // ANCHORS, before anything is measured, and a name is a box two hundred pixels wide -- so the boxes
-// are checked again once they are measured and placed (keepClearOf, below).
+// are checked again once they are measured and placed (keepClearOf, below). A box that yields
+// leaves its place to the next candidate: LABEL_POOL are measured so that eight can still be shown.
+//
+// HYSTERESIS. The globe turns and the satellites move, so two candidates of nearly the same rank
+// swap places tick after tick and their names blink in turn. A name shown on the last tick ranks as
+// though it were HYSTERESIS times as far away, so a newcomer must be clearly nearer to take its
+// slot, and among equals the incumbent is placed first, so it is the one that wins an overlap.
 //
 // COST. Candidates are a few hundred records at most (the notable lists, the worlds, the stations,
 // the selection's train), projected in float64 through stage.toScene and camera.project on the
@@ -31,10 +48,33 @@ import { propagate } from '../propagate/index.js';
 import { stage, isLadderStage } from '../scene/stage.js';
 import { realModelFor } from '../scene/realmodels.js';
 import { WORLDS, systemOf } from '../scene/worlds.js';
+import { rankAll } from '../scene/pickrank.js';
 
-export const LABEL_CAP = 12;
-export const NOTABLE_CAP = 10;
+/** Names on screen at once, desktop and phone (spec 0061 req 10). */
+export const LABEL_CAP = 8;
+/** Candidates measured per tick, so a name that yields its box can be replaced by the next one. */
+export const LABEL_POOL = 12;
+/** Members of the selection's train named beside it: enough to say which is which, not the line. */
+export const TRAIN_CAP = 3;
 export const DEDUPE_PX = 24;
+/** A name shown on the last tick ranks as though it were this share of its distance (HYSTERESIS). */
+export const HYSTERESIS = 0.7;
+/**
+ * The worlds bright enough to find by eye, ranked before the rest wherever they are drawn (spec
+ * 0061 req 10, "bright planets"): the Sun, the Moon, the five naked-eye planets -- and the Earth,
+ * the brightest thing in the sky from anywhere else.
+ */
+export const BRIGHT_WORLDS = new Set(['sun', 'moon', 'mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn']);
+/**
+ * Inside the planets' tier, this order before distance: the Earth and the Moon, then the giants.
+ * MEASURED 2026-10-02 on the Planets tab at 390x844: nearest-first named Mercury, whose name over the
+ * crowded inner system covered Saturn's dot, and Saturn went unnamed while Sedna and Quaoar were
+ * named. A moon still follows its planet (half a place behind it), and the Sun, which is a stage's
+ * light more than a thing anybody finds a planet by, is last.
+ */
+export const PLANET_ORDER = ['earth', 'moon', 'jupiter', 'saturn', 'venus', 'mars', 'uranus', 'neptune', 'mercury', 'pluto', 'sun'];
+/** labelTier's ranks, by name, for the tests and the probe. */
+export const TIER = { selection: 0, train: 1, station: 2, storm: 3, planet: 4, rest: 5 };
 // THE RACK-FOCUS SUBSTITUTE (spec 0034 req 4, 2026-09-23). A film pulls focus to the thing the
 // scene is about; this camera never does, because a defocused world is a world drawn wrong. So on
 // arrival the trip's subject's name settles from EMPHASIS_FROM to full size over EMPHASIS_MS and
@@ -46,6 +86,7 @@ export const DIM_OPACITY = 0.6;
 export const SUBJECT_CLASS = 'is-subject';
 export const DIMMED_CLASS = 'is-dimmed';
 const MAX_NAME = 34;
+const HEX = /^#[0-9a-fA-F]{3,8}$/;
 
 /**
  * Launch Library names a launch "Rocket Variant | Mission (Detail)". Over the scene that was cut
@@ -106,6 +147,65 @@ export function isNotable(record) {
 }
 
 /**
+ * Is this a rocket body or a piece of debris: a dead thing, not a working one? Pure.
+ *
+ * The class says so for most of them (data/parsers.js classify: R/B, DEB, FRAG in the catalogue
+ * name). It cannot for a dead satellite: ENVISAT is filed as a satellite by its name, and only the
+ * hand-kept Famous debris list knows it died in 2012, so data/layers.js stamps `meta.derelict` on
+ * that list's rows wherever they arrive. A rocket on its way up (the launches layer, klass rocket)
+ * is a live thing with a crew of engineers watching it, and is not one.
+ */
+export function isDerelict(record) {
+  if (!record) return false;
+  if (record.meta && record.meta.derelict) return true;
+  if (record.klass === 'debris') return true;
+  return record.klass === 'rocket' && record.layer !== 'launches';
+}
+
+/**
+ * May a record of this layer be named at all, before rank? Everything may, except a derelict on a
+ * layer that is not about derelicts: a dead stage on "Bright enough to see" is there because it
+ * catches the light, not because anybody came to read its name. A layer whose own class is debris
+ * (Famous debris, Things that came down) is one the visitor switched on to see exactly those, and
+ * there they are named. The selection is never asked this.
+ */
+export function mayNameHere(record, layer) {
+  if (!isDerelict(record)) return true;
+  return !!(layer && layer.klass === 'debris');
+}
+
+/**
+ * Are this layer's records places of their own from this stage, or inside the Earth's pixel? Pure.
+ * The Earth's satellites, storms and pads are named from the Earth's stage and the Moon's (which
+ * shares its frame); from anywhere else they are one point with the Earth. MEASURED 2026-10-02 on
+ * the Planets tab, the whole Solar System framed: "Tiangong space station" was printed beside the
+ * Sun, where the Earth is, and took the place Saturn's name needed.
+ */
+export function layerNamedFrom(layer, stageId) {
+  if (!layer || !/^earth/.test(String(layer.frame || ''))) return true;
+  return stageId === 'earth' || stageId === 'moon';
+}
+
+/**
+ * Which tier of rank a candidate is in (the header's 0..5). Pure. `opts.allPlanets`: every planet
+ * is in the planets' tier, not only the bright ones -- on the Sun's stage, where they are the view;
+ * `opts.worldsFirst` (a trip on the Sun's stage) puts every world there.
+ */
+export function labelTier(c, opts = {}) {
+  if (!c || !c.record) return TIER.rest;
+  if (c.kind === 'selection') return TIER.selection;
+  if (c.kind === 'train') return TIER.train;
+  const r = c.record;
+  if (r.klass === 'station') return TIER.station;
+  if (r.klass === 'storm') return TIER.storm;
+  if (r.klass === 'world') {
+    if (opts.worldsFirst || BRIGHT_WORLDS.has(r.id)) return TIER.planet;
+    if (opts.allPlanets && r.id && systemOf(r.id) === r.id) return TIER.planet;
+  }
+  return TIER.rest;
+}
+
+/**
  * May this record compete for one of the "nearest notable" labels on this kind of stage? Pure, and
  * the one filter candidatesNow applies, so a test can hold it.
  *
@@ -121,13 +221,25 @@ export function isNotableHere(record, ladder) {
   return record.klass !== 'star';
 }
 
+/** A launch ranks among the rest as though it were this many times as far (chooseLabels says why). */
+export const LAUNCH_SCORE = 2;
+
 /**
  * The choice, pure. `candidates` are already projected: {record, x, y, dist, kind} with x, y in
  * pixels and kind one of 'selection' | 'train' | 'notable'. A candidate may also carry `parentId`:
  * the id of the world it goes round (ui/labels.js sets it from scene/worlds.js systemOf). Returns
- * those that get a label: selection first, then the train, then notable by distance, dropping
- * anything within DEDUPE_PX of a label already kept, capped at LABEL_CAP with at most NOTABLE_CAP
- * notable.
+ * those that get a label, in rank order (labelTier, then distance), dropping anything within
+ * DEDUPE_PX of a label already kept, at most TRAIN_CAP of the train, capped at `opts.cap`
+ * (LABEL_CAP; the live caller asks for LABEL_POOL and shows the first LABEL_CAP whose boxes fit).
+ *
+ * `opts.incumbents`: the ids named on the last tick (the header's HYSTERESIS). `opts.allPlanets`
+ * and `opts.worldsFirst`: labelTier's.
+ *
+ * THE REST, BY PICKRANK. Inside the last tier the order is scene/pickrank.js rankAll's -- the same
+ * function that decides which of several things a tap meant -- with the camera distance as the
+ * score, so nearer is first. A launch's `why` is the honesty note about its drawn climb, not a
+ * reason it is worth naming, so a launch scores as though it were twice as far: the hand-kept
+ * reasons go first, and a pad is still named when there is room.
  *
  * A MOON NEVER OUTRANKS ITS PLANET. Nearest-first is the right order for things at honest
  * distances, but a planet and its moons are drawn on one compressed shell where the moon's drawn
@@ -147,31 +259,49 @@ export function isNotableHere(record, ladder) {
  */
 export function chooseLabels(candidates, opts = {}) {
   const cap = opts.cap || LABEL_CAP;
-  const notableCap = opts.notableCap || NOTABLE_CAP;
+  const trainCap = Number.isFinite(opts.trainCap) ? opts.trainCap : TRAIN_CAP;
   const dedupe = opts.dedupePx || DEDUPE_PX;
-  const order = { selection: 0, train: 1, notable: 2 };
+  const incumbents = opts.incumbents instanceof Set ? opts.incumbents : new Set(Array.isArray(opts.incumbents) ? opts.incumbents : []);
   const clean = (Array.isArray(candidates) ? candidates : [])
     .filter((c) => c && c.record && Number.isFinite(c.x) && Number.isFinite(c.y));
   const distById = new Map(clean.map((c) => [c.record.id, c.dist]));
-  const rankDist = (c) => (c.parentId && distById.has(c.parentId) ? distById.get(c.parentId) : c.dist);
-  const isChild = (c) => (c.parentId && distById.has(c.parentId) ? 1 : 0);
-  const worldRank = (c) => (opts.worldsFirst && c.kind === 'notable' && c.record.klass !== 'world' ? 1 : 0);
-  const list = clean
-    .slice()
-    .sort((a, b) => (order[a.kind] - order[b.kind]) || (worldRank(a) - worldRank(b)) || (rankDist(a) - rankDist(b))
-      || (isChild(a) - isChild(b)) || (a.dist - b.dist));
+  const parentOf = (c) => (c.parentId && distById.has(c.parentId) ? c.parentId : null);
+  // A moon ranks on its planet's distance, and its planet's incumbency: they are one place.
+  const score = (c) => {
+    const parent = parentOf(c);
+    const d = parent ? distById.get(parent) : c.dist;
+    let s = Number.isFinite(d) ? d : Number.MAX_VALUE / 4;
+    if (incumbents.has(parent || c.record.id)) s *= HYSTERESIS;
+    if (c.record.layer === 'launches') s *= LAUNCH_SCORE;
+    return s;
+  };
+  const order = (k) => {
+    if (k.tier !== TIER.planet) return 0;
+    const parent = parentOf(k.c);
+    const i = PLANET_ORDER.indexOf(parent || k.c.record.id);
+    return (i < 0 ? PLANET_ORDER.length : i) + (parent ? 0.5 : 0);
+  };
+  const keyed = clean.map((c) => ({ c, tier: labelTier(c, opts), s: score(c), child: parentOf(c) ? 1 : 0 }));
+  keyed.sort((a, b) => (a.tier - b.tier) || (order(a) - order(b)) || (a.s - b.s) || (a.child - b.child) || (a.c.dist - b.c.dist));
+  const head = keyed.filter((k) => k.tier < TIER.rest).map((k) => k.c);
+  const tail = keyed.filter((k) => k.tier === TIER.rest);
+  // rankAll's sort is stable, so a moon that ties its planet stays behind it, as sorted above.
+  const byRecord = new Map(tail.map((k) => [k.c.record, k.c]));
+  const rest = rankAll(tail.map((k) => ({ record: k.c.record, score: k.s })), [], tail.length)
+    .map((x) => byRecord.get(x.record))
+    .filter(Boolean);
   const out = [];
-  let notable = 0;
-  for (const c of list) {
+  let train = 0;
+  for (const c of head.concat(rest)) {
     if (out.length >= cap) break;
-    if (c.kind === 'notable' && notable >= notableCap) continue;
+    if (c.kind === 'train' && train >= trainCap) continue;
     let clash = false;
     for (const k of out) {
       if (Math.hypot(k.x - c.x, k.y - c.y) < dedupe) { clash = true; break; }
     }
     if (clash) continue;
     out.push(c);
-    if (c.kind === 'notable') notable++;
+    if (c.kind === 'train') train++;
   }
   return out;
 }
@@ -215,8 +345,12 @@ export function clampLabelX(x, boxWidth, hostWidth, pad = LABEL_EDGE_PAD) {
 
 /** Space kept between two label boxes, in CSS pixels. */
 export const LABEL_GAP_PX = 2;
-/** What a label may not print under: the panels, the card, the phone's sheet and top bar. */
-const PANEL_SELECTOR = '#sr-side, #sr-rail, #sr-time, .sr-pop, .sr-panel, .sr-card, #sr-top';
+/**
+ * What a label may not print under: the panels, the card, the phone's sheet and top bar -- and the
+ * HUD's tag and chevron, which name the selection. MEASURED 2026-10-02 at the ISS arrival: "Tiangong
+ * space station" was printed across the ISS's tag, two names on one glass chip.
+ */
+const PANEL_SELECTOR = '#sr-side, #sr-rail, #sr-time, .sr-pop, .sr-panel, .sr-card, #sr-top, .sr-tag, .sr-chevron';
 
 /**
  * Which of these placed boxes to keep, in priority order: the first box always, and each later box
@@ -243,6 +377,20 @@ export function keepClearOf(boxes, gap = LABEL_GAP_PX, blocked = []) {
     if (ok) kept.push(b);
   }
   return out;
+}
+
+/**
+ * The first `cap` of the boxes keepClearOf kept, in rank order; the rest are hidden. Pure. The live
+ * caller measures LABEL_POOL candidates so a name that yields its place under a panel or beside a
+ * wider name is replaced by the next one, and this is where the eight are counted.
+ */
+export function capKept(keep, cap = LABEL_CAP) {
+  let n = 0;
+  return (Array.isArray(keep) ? keep : []).map((k) => {
+    if (!k || n >= cap) return false;
+    n++;
+    return true;
+  });
 }
 
 /**
@@ -300,8 +448,10 @@ export function createLabels(ctx, host) {
   // The id whose label is emphasised, or null. Read by update(), so the classes follow the slot the
   // subject is drawn in whichever of the twelve that turns out to be on the next tick.
   let subjectId = null;
+  // The ids named on the last tick, for chooseLabels' HYSTERESIS.
+  let shownIds = new Set();
   const pool = [];
-  for (let i = 0; i < LABEL_CAP; i++) {
+  for (let i = 0; i < LABEL_POOL; i++) {
     const node = document.createElement('div');
     node.className = 'label';
     node.hidden = true;
@@ -313,11 +463,13 @@ export function createLabels(ctx, host) {
     node.appendChild(dot);
     node.appendChild(text);
     host.appendChild(node);
-    pool.push({ node, dot, text, klass: '' });
+    pool.push({ node, dot, text, klass: '', colour: '' });
   }
   const _v = new THREE.Vector3();
   const _c = new THREE.Vector3();
   let spheres = [];
+  // On the Sun's stage every planet is ranked as a bright one: they are what that view is of.
+  let lastAllPlanets = false;
 
   /** The drawn worlds, as spheres a label can be behind, once per update. */
   function occluders() {
@@ -353,6 +505,24 @@ export function createLabels(ctx, host) {
     return { x, y, dist };
   }
 
+  /**
+   * The colour this record's own dot is drawn in -- scene/glyphs.js colourOf, or the colour key's when
+   * one is on (main.js ctx.colourKeyFn) -- so the dot beside a name, the dot on the globe and the
+   * swatch in What to show are one colour. The label's dot used to be its CLASS colour: a rocket body
+   * on "Bright enough to see" is drawn sky blue there and was labelled with a yellow dot. Empty when
+   * the record's marks are not dots of one colour; the class swatch in the stylesheet stands in.
+   */
+  function dotColour(record, layer = null) {
+    const fn = typeof ctx.colourKeyFn === 'function' ? ctx.colourKeyFn : null;
+    let c = null;
+    try { c = fn ? fn(record) : null; } catch { c = null; }
+    if (!c) {
+      const l = layer || (ctx.layers || []).find((x) => x.id === record.layer);
+      c = (record.meta && record.meta.colour) || record.colour || (l && l.colour) || null;
+    }
+    return typeof c === 'string' && HEX.test(c) ? c : '';
+  }
+
   function candidatesNow(tMs) {
     const camera = ctx.camera;
     if (!camera) return [];
@@ -367,6 +537,7 @@ export function createLabels(ctx, host) {
     const drawable = (layer) => (ctx.isLayerDrawable ? ctx.isLayerDrawable(layer) : ctx.isLayerOn && ctx.isLayerOn(layer.id));
 
     const ladder = isLadderStage(stage.worldId);
+    lastAllPlanets = stage.worldId === 'sun';
     const isGround = (r) => r.klass === 'world' && r.id === stage.worldId;
     // The tracked object's tag (ui/hud.js, spec 0047) names the selection beside its brackets; a
     // label as well would be the same name twice, 30 px apart.
@@ -374,7 +545,7 @@ export function createLabels(ctx, host) {
     if (tagged && selected) seen.add(selected.id); // and not again as one of the notable names
     if (selected && !tagged && !(inTrip && isGround(selected))) {
       const pr = project(selected, tMs, camera, w, h);
-      if (pr) { out.push({ record: selected, kind: 'selection', ...pr }); seen.add(selected.id); }
+      if (pr) { out.push({ record: selected, kind: 'selection', colour: dotColour(selected), ...pr }); seen.add(selected.id); }
     }
     // the selection's train: same layer, same group key
     if (selected) {
@@ -385,7 +556,7 @@ export function createLabels(ctx, host) {
           for (const r of ctx.recordsFor(layer.id) || []) {
             if (r === selected || seen.has(r.id) || layer.groupBy(r) !== key) continue;
             const pr = project(r, tMs, camera, w, h);
-            if (pr) { out.push({ record: r, kind: 'train', ...pr }); seen.add(r.id); }
+            if (pr) { out.push({ record: r, kind: 'train', colour: dotColour(r, layer), ...pr }); seen.add(r.id); }
           }
         }
       }
@@ -396,20 +567,22 @@ export function createLabels(ctx, host) {
       for (const r of ctx.systems.records()) {
         if (seen.has(r.id)) continue;
         const pr = project(r, tMs, camera, w, h);
-        if (pr) { out.push({ record: r, kind: 'notable', ...pr }); seen.add(r.id); }
+        if (pr) { out.push({ record: r, kind: 'notable', colour: dotColour(r), ...pr }); seen.add(r.id); }
       }
     }
     // the nearest notable things among what is drawn
     for (const layer of ctx.layers || []) {
       if (!drawable(layer)) continue;
+      if (!layerNamedFrom(layer, stage.worldId)) continue;
       const records = ctx.recordsFor(layer.id) || [];
       // a layer that is small enough to name entirely, or the hand-kept rows of a big one
       for (const r of records) {
         if (seen.has(r.id) || !isNotableHere(r, ladder)) continue; // on the ladder: not inside the Sun's pixel
         if (isGround(r)) continue; // the ground has no label
+        if (!mayNameHere(r, layer)) continue; // a dead stage on a layer about light, not derelicts
         const pr = project(r, tMs, camera, w, h);
         // A moon says which world it goes round, so chooseLabels can rank it behind that world.
-        if (pr) { out.push({ record: r, kind: 'notable', parentId: labelParentId(r), ...pr }); seen.add(r.id); }
+        if (pr) { out.push({ record: r, kind: 'notable', parentId: labelParentId(r), colour: dotColour(r, layer), ...pr }); seen.add(r.id); }
       }
     }
     // Nothing is named inside the tracked object's brackets while its tag shows. MEASURED
@@ -439,7 +612,13 @@ export function createLabels(ctx, host) {
   function update(tMs) {
     if (host.hidden) return;
     const inTrip = document.documentElement.classList.contains('sr-trip-mode');
-    const chosen = chooseLabels(candidatesNow(tMs), { worldsFirst: inTrip && stage.worldId === 'sun' });
+    const cands = candidatesNow(tMs);
+    const chosen = chooseLabels(cands, {
+      cap: LABEL_POOL,
+      incumbents: shownIds,
+      allPlanets: lastAllPlanets,
+      worldsFirst: inTrip && stage.worldId === 'sun',
+    });
     // Pass one: contents. Pass two: measure and place. Reading offsetWidth invalidates layout, so
     // interleaving it with the writes would re-layout the whole list once per label.
     for (let i = 0; i < pool.length; i++) {
@@ -454,7 +633,12 @@ export function createLabels(ctx, host) {
         slot.dot.className = `dot sr-swatch sr-swatch--${klass}`;
         slot.klass = klass;
       }
+      const colour = c.colour || '';
+      if (slot.colour !== colour) { slot.dot.style.background = colour; slot.colour = colour; }
       slot.node.dataset.kind = c.kind;
+      // What it is, for the probes that count names on the first screen (tests/probes).
+      if (slot.node.dataset.layer !== (c.record.layer || '')) slot.node.dataset.layer = c.record.layer || '';
+      if (slot.node.dataset.klass !== klass) slot.node.dataset.klass = klass;
       const isSubject = subjectId !== null && c.record.id === subjectId;
       setClass(slot.node, SUBJECT_CLASS, isSubject);
       setClass(slot.node, DIMMED_CLASS, subjectId !== null && !isSubject);
@@ -472,18 +656,27 @@ export function createLabels(ctx, host) {
       const x = clampLabelX(c.x, bw, w);
       placed.push({ x, y: c.y, left: x - bw / 2, right: x + bw / 2, top: c.y - 1.4 * bh, bottom: c.y - 0.4 * bh });
     }
-    const keep = keepClearOf(placed, LABEL_GAP_PX, panelRects());
+    const keep = capKept(keepClearOf(placed, LABEL_GAP_PX, panelRects()), LABEL_CAP);
+    const now = new Set();
     for (let i = 0; i < placed.length; i++) {
       const slot = pool[i];
       if (!keep[i]) { slot.node.hidden = true; continue; }
       const b = placed[i];
       slot.node.style.transform = `translate(${Math.round(b.x)}px, ${Math.round(b.y)}px) translate(-50%, -140%)`;
+      now.add(chosen[i].record.id);
     }
+    shownIds = now;
   }
 
   /**
    * The UI's own boxes, in the host's pixels. MEASURED 2026-09-27 (#278): "Hubble Space Telescope"
    * slid under the desktop panel column, and on a phone names ran under the bottom bar.
+   *
+   * NOT `offsetParent`, which is null for every position: fixed element -- the sidebar, the rail,
+   * the pill and the popover all are, so since the shell moved into them none of them was ever
+   * asked about. MEASURED 2026-10-02 on the Stars tab at 1440x900: "Vela Pulsar" and "Southern
+   * Pleiades" ran under the sidebar's right edge, the ends of the names sticking out of the glass.
+   * A display: none element has an empty box, and the visibility of the rest is asked directly.
    */
   function panelRects() {
     const out = [];
@@ -491,9 +684,10 @@ export function createLabels(ctx, host) {
     const origin = host.getBoundingClientRect();
     for (const node of document.querySelectorAll(PANEL_SELECTOR)) {
       if (typeof node.getBoundingClientRect !== 'function') continue;
-      if (node.hidden || node.offsetParent === null) continue;
+      if (node.hidden) continue;
       const r = node.getBoundingClientRect();
       if (!(r.width > 0 && r.height > 0)) continue;
+      if (typeof getComputedStyle === 'function' && getComputedStyle(node).visibility === 'hidden') continue;
       out.push({ left: r.left - origin.left, right: r.right - origin.left, top: r.top - origin.top, bottom: r.bottom - origin.top });
     }
     return out;

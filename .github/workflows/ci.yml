@@ -327,6 +327,10 @@ jobs:
         run: node tests/test_ladder_ui.mjs
       - name: labels name the selection, its train and the nearest notable things, never the catalogue (spec 0026 req 5)
         run: node tests/test_labels.mjs
+      - name: at most eight names on the first screen, ranked, never a rocket body or debris by default, held against flicker (spec 0061 req 10)
+        run: node tests/test_labels_rank.mjs
+      - name: an Earth orbiter arrives with the limb in view, small bodies from a floor, the reticle at every distance, the Planets tab fitted (spec 0061 req 9)
+        run: node tests/test_framing.mjs
       - name: the Next list is built from records already held, nearest in time first (spec 0026 req 6)
         run: node tests/test_next.mjs
       # Eclipses are worked out here with the vendored astronomy-engine and pinned to the dates the

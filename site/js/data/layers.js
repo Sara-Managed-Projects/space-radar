@@ -1140,6 +1140,10 @@ export async function loadLayerDetailed(layer, nowMs) {
     const row = r.meta && NOTABLE_BY_ID.get(r.meta.noradId);
     if (row && r.meta && !r.meta.why) r.meta.why = row.why;
     if (row && r.meta && !r.meta.listName && row.name) r.meta.listName = row.name;
+    // The Famous debris rows are dead whatever layer brings them: ENVISAT is filed as a satellite
+    // by its name, and arrives on the default-on "Bright enough to see" too. ui/labels.js isDerelict
+    // reads this so the first screen does not name a dead thing (spec 0061 req 10).
+    if (r.meta && DEBRIS_IDS.has(r.meta.noradId)) r.meta.derelict = true;
   }
 
   return { records: selected, source: result, error: result ? result.error : null };

@@ -629,8 +629,10 @@ export function createCameraRig(camera, domElement, options = {}) {
   /**
    * Azimuth/polar that put the object's world behind it: the camera sits on the far side of the
    * object from the world centre, tilted off the radial so it does not read as a flat nadir shot.
+   * `tilt` is that angle off the radial, toward the camera's up; scene/framing.js limbFraming solves
+   * it per arrival so the world's limb is in the picture (spec 0061 req 9).
    */
-  function framingAngles(targetVec) {
+  function framingAngles(targetVec, tilt = FRAMING_TILT) {
     syncUpBasis();
     _framing.copy(targetVec).sub(worldCentre);
     if (_framing.lengthSq() < 1e-12) _framing.copy(camera.position).sub(targetVec);
@@ -642,8 +644,8 @@ export function createCameraRig(camera, domElement, options = {}) {
     _perp.projectOnPlane(_framing).normalize();
     _tmp
       .copy(_framing)
-      .multiplyScalar(Math.cos(FRAMING_TILT))
-      .addScaledVector(_perp, Math.sin(FRAMING_TILT))
+      .multiplyScalar(Math.cos(tilt))
+      .addScaledVector(_perp, Math.sin(tilt))
       .applyQuaternion(upQuat);
     const r = _tmp.length();
     return {
@@ -659,6 +661,8 @@ export function createCameraRig(camera, domElement, options = {}) {
    *   ms           600-900 is the design range; default 750. **0 means instant** -- the pose is
    *                set, onArrive('done') fires synchronously, and no flight starts.
    *   azimuth/polar radians; either one missing is supplied by framingAngles().
+   *   tilt         radians off the world-to-object radial for framingAngles() (default FRAMING_TILT);
+   *                ignored when both azimuth and polar are given.
    *   ease         'ui' (default) | 'inout' | 'cruise' | 'linear', or a function k => k'.
    *   targetDelay  0..0.95, default 0.34. The fraction of the flight for which the look-at point
    *                stays put. It is what keeps the world you are leaving in shot, and it is wrong
@@ -682,7 +686,7 @@ export function createCameraRig(camera, domElement, options = {}) {
     let toAz = opts.azimuth;
     let toPolar = opts.polar;
     if (!Number.isFinite(toAz) || !Number.isFinite(toPolar)) {
-      const f = framingAngles(to);
+      const f = framingAngles(to, Number.isFinite(opts.tilt) ? Number(opts.tilt) : FRAMING_TILT);
       if (!Number.isFinite(toAz)) toAz = f.azimuth;
       if (!Number.isFinite(toPolar)) toPolar = f.polar;
     }

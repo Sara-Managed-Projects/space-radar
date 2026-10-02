@@ -17,17 +17,28 @@
 // same way: the next paint shows it.
 //
 // THE SWATCH IS THE LEGEND. Each row's dot is the colour its marks are drawn in (data/layers.js
-// `colour`), so the list of layers is also the key to the dots on the globe -- which is 0061 req 10's
-// "a legend for dot colours lives in What to show" without a second list. "Colour by" (ui/colorkey.js)
-// sits under it, because it recolours those same dots and prints its own legend when it does.
+// `colour`, which scene/glyphs.js colourOf puts before the class's), so the list of layers is also
+// the key to the dots on the globe -- which is 0061 req 10's "a legend for dot colours lives in What
+// to show" without a second list. "Colour by" (ui/colorkey.js) sits under it, because it recolours
+// those same dots and prints its own legend when it does.
+//
+// AND IT ONLY CLAIMS WHAT IS TRUE (2026-10-02). Two rows lied: a layer drawn in many colours had one
+// -- "Stars" a warm white over 109 389 stars drawn by temperature, "Planets and moons" a pale grey
+// over Mars's red disc -- and while "Colour by" was set to anything but "What it is", every swatch
+// still showed the layer's colour over dots that were now the key's. A many-coloured layer now has
+// a ring (MIXED_DRAW) with the words in its title, and a keyed view rings every swatch and says
+// which key the dots are in.
 
 import { COPY, t, fmt } from '../copy/en.js';
 import { tierLine } from '../scene/quality.js';
 import { createColorKey } from './colorkey.js';
+import { COLOR_KEYS } from '../data/colorkeys.js';
 import { soundButton } from './sound.js';
 import { densityPanel } from './density.js';
 
 const REFRESH_MS = 1000;
+/** Layers whose marks are not dots of one colour: the stars by temperature, discs, the galaxy. */
+export const MIXED_DRAW = new Set(['stars3d', 'worlds', 'galaxy', 'systems']);
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -51,13 +62,24 @@ function recordsFor(ctx, id) {
   }
 }
 
-/** The swatch: a class token for the stylesheet, and the layer's own hex when it has one. Pure. */
+/**
+ * The swatch: a class token for the stylesheet, the layer's own hex when it has one, and `mixed`
+ * when its marks are many colours (MIXED_DRAW), so no one colour is claimed for them. Pure.
+ */
 export function layerSwatch(layer) {
   // layers.js gives `colour` as a hex, not a token name, so `sr-swatch--#7FD1FF` matched no rule
   // and every swatch was the fallback grey until the panel learned this (ui/controls.js, 2026-09).
-  const hex = typeof (layer && layer.colour) === 'string' && /^#[0-9a-fA-F]{3,8}$/.test(layer.colour) ? layer.colour : null;
-  const token = (hex ? layer.klass : layer && layer.colour) || (layer && layer.klass) || 'satellite';
-  return { token, hex };
+  const mixed = !!(layer && MIXED_DRAW.has(layer.draw));
+  const hex = !mixed && typeof (layer && layer.colour) === 'string' && /^#[0-9a-fA-F]{3,8}$/.test(layer.colour) ? layer.colour : null;
+  const token = mixed ? 'mixed' : (hex ? layer.klass : layer && layer.colour) || (layer && layer.klass) || 'satellite';
+  return { token, hex, mixed };
+}
+
+/** Is the scene coloured by a key other than "What it is"? Then the swatches are not the key. Pure. */
+export function keyedBy(ctx) {
+  let id = 'class';
+  try { id = ctx && typeof ctx.colourKey === 'function' ? ctx.colourKey() || 'class' : 'class'; } catch { id = 'class'; }
+  return id === 'class' ? null : id;
 }
 
 /**
@@ -102,6 +124,10 @@ export function createWhatToShow(ctx) {
 
   // --- the layers ---------------------------------------------------------------------------------
   root.appendChild(el('h2', 'sr-micro', COPY.controls.layersTitle));
+  // Said only while "Colour by" has taken the dots over (keyedBy).
+  const keyedNote = el('p', 'sr-show__note sr-show__keyed');
+  keyedNote.hidden = true;
+  root.appendChild(keyedNote);
   const list = el('ul', 'sr-show__list');
   root.appendChild(list);
   const rows = new Map();
@@ -112,17 +138,18 @@ export function createWhatToShow(ctx) {
     const box = document.createElement('input');
     box.type = 'checkbox';
     box.className = 'sr-show__box';
-    const { token, hex } = layerSwatch(layer);
+    const { token, hex, mixed } = layerSwatch(layer);
     const swatch = el('span', `sr-swatch sr-swatch--${token}`);
     if (hex) swatch.style.background = hex;
     swatch.setAttribute('aria-hidden', 'true');
+    if (mixed) swatch.title = COPY.controls.swatchMixed;
     const name = el('span', 'sr-show__name', layer.display || layer.id);
     const count = el('span', 'sr-show__count', COPY.controls.layerCountLoading);
     label.append(box, swatch, name, count);
     li.appendChild(label);
     list.appendChild(li);
     box.addEventListener('change', () => { applyLayerOn(ctx, layer, box.checked); paint(); });
-    rows.set(layer.id, { box, count, label, layer });
+    rows.set(layer.id, { box, count, label, layer, swatch, hex, mixed });
   }
   if (!rows.size) list.appendChild(el('li', 'sr-show__empty', COPY.controls.layersEmpty));
 
@@ -163,7 +190,23 @@ export function createWhatToShow(ctx) {
     root.appendChild(density);
   }
 
+  let keyedWas = undefined;
+  /** Ring every swatch while another key colours the dots, and say which; put them back after. */
+  function paintKey() {
+    const keyed = keyedBy(ctx);
+    if (keyed === keyedWas) return;
+    keyedWas = keyed;
+    list.classList.toggle('is-keyed', !!keyed);
+    const k = keyed ? COLOR_KEYS.find((x) => x.id === keyed) : null;
+    keyedNote.textContent = keyed ? t(COPY.controls.keyedNote, { key: (k && k.label ? k.label : keyed).toLowerCase() }) : '';
+    keyedNote.hidden = !keyed;
+    for (const row of rows.values()) {
+      row.swatch.style.background = keyed || !row.hex ? '' : row.hex;
+    }
+  }
+
   function paint() {
+    paintKey();
     const counted = new Map();
     let all = [];
     try { all = typeof ctx.records === 'function' ? ctx.records() : []; } catch { all = []; }
@@ -194,6 +237,7 @@ export function createWhatToShow(ctx) {
   const onAny = () => { if (root.isConnected && !root.closest('[hidden]')) paint(); };
   window.addEventListener('sr:layer', onAny);
   window.addEventListener('sr:moment', onAny);
+  window.addEventListener('sr:colour-key', onAny);
   document.addEventListener('sr:layer-toggle', onAny);
   paint();
 
@@ -210,6 +254,7 @@ export function createWhatToShow(ctx) {
       window.removeEventListener('sr:tier', onTier);
       window.removeEventListener('sr:layer', onAny);
       window.removeEventListener('sr:moment', onAny);
+      window.removeEventListener('sr:colour-key', onAny);
       document.removeEventListener('sr:layer-toggle', onAny);
       key.destroy();
       root.remove();

@@ -3249,6 +3249,14 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   padding: 8px 0 6px;
 }
 
+/* A section's honesty line (principle 7): the Planets tab says its dots are drawn larger. */
+.sr-sect__note {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--sr-text-dim);
+}
+
 /* Right now: the first line large, the rest a name and a mono value. */
 .sr-now__list {
   margin: 0;
@@ -3750,10 +3758,25 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 }
 
 .sr-show__label .sr-swatch {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
 }
+
+/* A layer drawn in many colours, and every layer while "Colour by" has the dots: a ring, not a
+   colour the dots are not (ui/whattoshow.js MIXED_DRAW, keyedBy). The name beside it carries the
+   meaning (SC 1.4.1); the ring is text-dim, 4.56:1 on glass over white. */
+.sr-show__label .sr-swatch--mixed,
+.sr-show__list.is-keyed .sr-swatch {
+  box-sizing: border-box;
+  border: 1.5px solid var(--sr-text-dim);
+  background: transparent;
+}
+
+/* "What it is" rows are counts: the layer swatches above are that key (ui/colorkey.js). */
+.sr-colourkey__row .sr-swatch--none { visibility: hidden; }
+.sr-colourkey__why { margin: 0 0 8px; font-size: 13px; line-height: 1.4; color: var(--sr-text-dim); }
+.sr-colourkey__why:empty { display: none; }
 
 .sr-show__name { font-size: 14px; }
 

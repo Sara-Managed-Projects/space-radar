@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path';
 import { readFileSync } from 'node:fs';
 
 const JS = join(dirname(fileURLToPath(import.meta.url)), '..', 'site/js');
-const { chooseLabels, labelName, labelParentId, isNotable, isOwnPlaceOnLadder, clampLabelX, keepClearOf, behindWorld, LABEL_EDGE_PAD, LABEL_CAP, NOTABLE_CAP } = await import(join(JS, 'ui/labels.js'));
+const { chooseLabels, labelName, labelParentId, isNotable, isOwnPlaceOnLadder, clampLabelX, keepClearOf, behindWorld, LABEL_EDGE_PAD, LABEL_CAP, TRAIN_CAP } = await import(join(JS, 'ui/labels.js'));
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
@@ -19,22 +19,25 @@ check(chooseLabels([near, train, sel]).map((c) => c.record.id).join(',') === 'se
 // 24 px dedupe: a notable 10 px from the selection is dropped
 const clash = { record: rec('c'), kind: 'notable', x: 108, y: 104, dist: 2 };
 check(!chooseLabels([sel, clash]).some((c) => c.record.id === 'c'), 'a label within 24 px of another is dropped');
-// the caps: 40 notable in -> 10 out; 40 notable + selection + 5 train -> 12 total
+// the caps (spec 0061 req 10): 40 notable in -> 8 out; 40 notable + selection + 5 train -> 8 total,
+// three of them the train's
 const many = Array.from({ length: 40 }, (_, i) => ({ record: rec(`m${i}`), kind: 'notable', x: 50 + i * 40, y: 400, dist: i }));
-check(chooseLabels(many).length === NOTABLE_CAP, `at most ${NOTABLE_CAP} notable labels (${chooseLabels(many).length})`);
+check(chooseLabels(many).length === LABEL_CAP, `at most ${LABEL_CAP} notable labels (${chooseLabels(many).length})`);
 // Spec 0030: on a trip on the Sun's stage the worlds are the picture, and take the notable slots
 // before a nearer asteroid or probe (headless Chrome, 2026-09-23: none of the planets was named).
 {
+  // Uranus, not Mars: since spec 0061 req 10 a BRIGHT planet ranks before the rest everywhere
+  // (tests/test_labels_rank.mjs), so the nearest-first rule is shown on one that is not.
   const rock = { record: { id: 'apophis', klass: 'asteroid' }, kind: 'notable', x: 100, y: 100, dist: 10 };
-  const mars = { record: { id: 'mars', klass: 'world' }, kind: 'notable', x: 400, y: 100, dist: 90 };
-  check(chooseLabels([rock, mars], { notableCap: 1 })[0].record.id === 'apophis', 'nearest-first stands everywhere else');
-  check(chooseLabels([rock, mars], { notableCap: 1, worldsFirst: true })[0].record.id === 'mars', 'with worldsFirst a world takes the slot before a nearer asteroid');
+  const mars = { record: { id: 'uranus', klass: 'world' }, kind: 'notable', x: 400, y: 100, dist: 90 };
+  check(chooseLabels([rock, mars], { cap: 1 })[0].record.id === 'apophis', 'nearest-first stands everywhere else');
+  check(chooseLabels([rock, mars], { cap: 1, worldsFirst: true })[0].record.id === 'uranus', 'with worldsFirst a world takes the slot before a nearer asteroid');
   const sel2 = { record: { id: 'sel', klass: 'probe' }, kind: 'selection', x: 700, y: 100, dist: 50 };
   check(chooseLabels([rock, mars, sel2], { worldsFirst: true })[0].record.id === 'sel', 'the selection still leads');
 }
 const trains = Array.from({ length: 5 }, (_, i) => ({ record: rec(`tr${i}`), kind: 'train', x: 50 + i * 40, y: 700, dist: i }));
 const all = chooseLabels([...many, ...trains, sel]);
-check(all.length === LABEL_CAP && all[0].kind === 'selection' && all.filter((c) => c.kind === 'train').length === 5, `the cap is ${LABEL_CAP} with the selection and the whole train kept (${all.length})`);
+check(all.length === LABEL_CAP && all[0].kind === 'selection' && all.filter((c) => c.kind === 'train').length === TRAIN_CAP, `the cap is ${LABEL_CAP} with the selection and ${TRAIN_CAP} of its train (${all.length})`);
 // nearest notable first
 const far = { record: rec('far'), kind: 'notable', x: 10, y: 10, dist: 500 };
 const close = { record: rec('close'), kind: 'notable', x: 700, y: 10, dist: 5 };
@@ -224,7 +227,8 @@ check(!isOwnPlaceOnLadder(null), 'nothing is not a place');
   check(chooseLabels([far, near])[0].record.id === 'venus', 'a planet is not ranked at the Sun\'s distance');
   // a parentId nobody projected this frame falls back to the candidate's own distance
   const orphan = { record: world('titan', 'Titan'), kind: 'notable', x: 300, y: 300, dist: 5, parentId: 'saturn' };
-  check(chooseLabels([near, orphan])[0].record.id === 'titan', 'a moon whose planet is not on screen keeps its own place');
+  const other = { record: world('ceres', 'Ceres'), kind: 'notable', x: 100, y: 100, dist: 344, parentId: null };
+  check(chooseLabels([other, orphan])[0].record.id === 'titan', 'a moon whose planet is not on screen keeps its own place');
 }
 
 // SPEC 0034 REQ 4: THE RACK-FOCUS SUBSTITUTE. emphasise(id) puts `is-subject` on the slot that
@@ -310,4 +314,4 @@ check(!isOwnPlaceOnLadder(null), 'nothing is not a place');
 }
 
 if (problems.length) { console.error('labels FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
-console.log(`labels ok: selection, then its train, then at most ${NOTABLE_CAP} nearest notable; 24 px dedupe; never the catalogue; the box stays on screen; no two boxes overprint, and a moon never takes the name a planet should have had`);
+console.log(`labels ok: selection, then its train, then the ranked rest, at most ${LABEL_CAP}; 24 px dedupe; never the catalogue; the box stays on screen; no two boxes overprint, and a moon never takes the name a planet should have had`);

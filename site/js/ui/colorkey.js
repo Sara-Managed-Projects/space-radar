@@ -54,15 +54,18 @@ export function createColorKey(ctx) {
   function refresh() {
     const key = keyById(current) || COLOR_KEYS[0];
     if (!key) return;
-    why.textContent = '';
     const rows = legendCounts(key, onRecords());
     while (legend.firstChild) legend.removeChild(legend.firstChild);
+    // "What it is" draws each dot in its LAYER's colour (scene/glyphs.js colourOf), not its class's:
+    // a rocket body on "Bright enough to see" is sky blue. A class swatch here would be a key to
+    // colours nobody drew, so those rows are counts, and the line under them says where the key is.
+    const byClass = key.by === 'klass';
+    why.textContent = byClass ? T.byLayer : '';
     for (const row of rows) {
-      if (row.n === 0 && row.id !== 'unknown') continue; // a bucket nothing falls in is not a legend row
-      if (row.n === 0 && row.id === 'unknown') continue;
+      if (row.n === 0) continue; // a bucket nothing falls in is not a legend row
       const li = el('li', 'sr-colourkey__row');
-      const sw = el('span', 'sr-swatch');
-      sw.style.background = row.colour;
+      const sw = el('span', byClass ? 'sr-swatch sr-swatch--none' : 'sr-swatch');
+      if (!byClass) sw.style.background = row.colour;
       sw.setAttribute('aria-hidden', 'true');
       li.appendChild(sw);
       const label = key.by === 'klass'
@@ -78,6 +81,8 @@ export function createColorKey(ctx) {
     current = select.value;
     if (typeof ctx.setColourKey === 'function') ctx.setColourKey(current);
     refresh();
+    // What to show's layer swatches stop being the key while another one is (ui/whattoshow.js).
+    window.dispatchEvent(new CustomEvent('sr:colour-key', { detail: { id: current } }));
   });
   const onLayer = () => refresh();
   window.addEventListener('sr:layer', onLayer);

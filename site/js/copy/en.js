@@ -578,6 +578,9 @@ export const COPY = {
   // The Planets and Stars tabs' lists.
   explore: {
     worldsTitle: 'The worlds',
+    // Under the Planets tab's list: the view it opens on draws each planet's path and a dot at
+    // its place (scene/orbitrings.js), and a dot is the one thing drawn larger than it is.
+    worldsDrawn: 'Planets drawn as dots, larger than they are.',
     farTitle: 'Far places',
     systemsTitle: 'Star systems',
     lightYears: '{n} ly',
@@ -932,6 +935,9 @@ export const COPY = {
     title: 'Colour by',
     unknown: 'not known for these',
     scope: 'Counting what is drawn from here, on the layers that are on.',
+    // "What it is": a dot is drawn in its LAYER's colour (a rocket body on "Bright enough to see"
+    // is sky blue), so the class rows are counts, and the layer swatches above are the key.
+    byLayer: 'Each dot is its layer’s colour, as above.',
   },
   // The card's trajectory chart (spec 0026 req 14).
   trajectory: {
@@ -1815,6 +1821,11 @@ export const COPY = {
       auroraPeak: 'up to {n} % likely',
     },
     layersEmpty: 'No layers are loaded yet.',
+    // What to show's swatches are the key to the dots (spec 0061 req 10). A layer drawn in many
+    // colours (the stars by temperature, the planets as discs) has a ring, not a colour it is not.
+    swatchMixed: 'Drawn in its own colours',
+    // While "Colour by" is not "What it is", the dots are the key's colours, not the layers'.
+    keyedNote: 'Dots coloured by {key}: the key is below.',
     localTimeFallback: 'local',
     locationTitle: 'Where you are',
     locationPlaceholder: 'Type a city',

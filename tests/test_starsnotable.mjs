@@ -22,7 +22,7 @@ const { EXOTICS } = await import(join(JS, 'data/exotics.js'));
 const { recordsFromNames } = await import(join(JS, 'scene/stars3d.js'));
 const { stage } = await import(join(JS, 'scene/stage.js'));
 const { propagate } = await import(join(JS, 'propagate/index.js'));
-const { isNotable, isOwnPlaceOnLadder, isNotableHere, chooseLabels, labelName, NOTABLE_CAP } = await import(join(JS, 'ui/labels.js'));
+const { isNotable, isOwnPlaceOnLadder, isNotableHere, chooseLabels, labelName, LABEL_CAP } = await import(join(JS, 'ui/labels.js'));
 const { whyLine, rightNowFor } = await import(join(JS, 'ui/cards.js'));
 const { buildIndex, findMatches } = await import(join(JS, 'ui/search.js'));
 const { LAYERS } = await import(join(JS, 'data/layers.js'));
@@ -137,7 +137,7 @@ check(whyLine({ klass: 'station', name: 'ISS (ZARYA)', meta: { why: 'Seven peopl
   check(cands.length >= 4, `several famous stars are in view (${cands.map((c) => c.record.name)})`);
   check(chosen.length >= 4 && chosen[0].record.id === 'hip-32349', `Sirius is the nearest labelled star, and not the only one (${chosen.map((c) => c.record.name)})`);
   check(chosen.every((c, i) => i === 0 || c.dist >= chosen[i - 1].dist), 'nearest first');
-  check(chosen.length <= NOTABLE_CAP && chosen.every((c) => c.record.meta.why), 'every star label is a famous star, within the cap');
+  check(chosen.length <= LABEL_CAP && chosen.every((c) => c.record.meta.why), 'every star label is a famous star, within the cap');
   stage.setWorld('earth');
 }
 

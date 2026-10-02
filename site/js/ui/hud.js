@@ -70,6 +70,21 @@ export function reticleBox(dPx, min = RETICLE_MIN_PX, pad = RETICLE_PAD_PX) {
 }
 
 /**
+ * The reticle's side on screen, and whether it is drawn: `{ side, framing }`. Pure.
+ *
+ * A box nearly as big as the view frames nothing, and for a WORLD filling the screen the brackets
+ * go (BOX_MAX_SHARE). For anything else they stay, held at that share of the view: spec 0061 req 9
+ * asks for the reticle at every distance, and a model zoomed in on past the edges of the screen is
+ * still the selection -- the brackets in the corners say so, where nothing at all said it before.
+ */
+export function reticleFit(side, vw, vh, isWorld = false) {
+  const max = BOX_MAX_SHARE * Math.min(vw, vh);
+  if (!(side > max)) return { side, framing: true };
+  if (isWorld) return { side, framing: false };
+  return { side: max, framing: true };
+}
+
+/**
  * Where the tag goes (req 3): up and to the right of the box by preference, flipped left when it
  * would leave the right edge and down when it would leave the top. `area` is the part of the view
  * no panel covers (default: all of it): measured 2026-09-29 at 1440 x 900, the ISS's tag went up and
@@ -561,8 +576,7 @@ export function createHud(ctx, host) {
 
     show(chevron, false);
     const px = { x: ((_ndc.x + 1) / 2) * vw, y: ((1 - _ndc.y) / 2) * vh };
-    const side = reticleBox(drawnDiameterPx(sel, dist));
-    const framing = side <= BOX_MAX_SHARE * Math.min(vw, vh);
+    const { side, framing } = reticleFit(reticleBox(drawnDiameterPx(sel, dist)), vw, vh, sel.klass === 'world');
     show(reticle, framing);
     if (framing) {
       if (cache.get(box) !== side) {

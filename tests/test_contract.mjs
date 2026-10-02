@@ -55,6 +55,10 @@ const CONTRACT = {
   'scene/glyphs.js': ['createGlyphLayer'],
   'scene/models.js': ['modelFor'],
   'scene/camera.js': ['createCameraRig'],
+  // Spec 0061 req 9: an arrival with the world's limb in view, and the Planets tab fitted to its band.
+  'scene/framing.js': ['limbFraming', 'limbAt', 'fitDistance', 'MIN_RADII', 'MIN_UP_ANGLE'],
+  // Spec 0061 req 10: eight names, ranked, no rocket bodies by default (tests/test_labels_rank.mjs).
+  'ui/labels.js': ['createLabels', 'chooseLabels', 'labelTier', 'isDerelict', 'mayNameHere', 'layerNamedFrom', 'capKept', 'keepClearOf', 'LABEL_CAP', 'LABEL_POOL', 'HYSTERESIS'],
   // Spec 0048 task 4: the followed object's track on the globe, and its minute marks.
   'scene/groundtrack.js': ['createGroundTrack', 'trackTimes', 'tickTimes', 'trackPoints', 'wantsTrack'],
   'ui/tracklabels.js': ['createTrackLabels'],
@@ -73,7 +77,7 @@ const CONTRACT = {
     // that open in place, each pure enough for tests/test_cards_copy.mjs to hold.
     'heroNumbers', 'heroKind', 'heroSplit', 'microLabel', 'actionButtons', 'followAllowed', 'disclosure', 'icon'],
   // Spec 0047: the tracked object's HUD, and its pure placement rules for tests/test_hud.mjs.
-  'ui/hud.js': ['createHud', 'reticleBox', 'tagPlacement', 'showTick', 'chevronAt', 'firstDigitChanged'],
+  'ui/hud.js': ['createHud', 'reticleBox', 'reticleFit', 'tagPlacement', 'showTick', 'chevronAt', 'firstDigitChanged'],
   // Spec 0061: the layout. The shell builds the boxes; the explore view is the sidebar's home, the
   // rail holds What to show, Share and Hide, the pill is the clock, and the Tonight tab's
   // place is its own module. ui/controls.js, the left panel they replace, is gone.
@@ -83,7 +87,7 @@ const CONTRACT = {
     'sheetHeights', 'snapDetent', 'cycleDetent', 'stepDetent', 'dragHeight', 'velocityOf'],
   'ui/explore.js': ['createExplore', 'TABS', 'tabTarget', 'tabFor', 'rightNowLines', 'statusSummary', 'tripMeta'],
   'ui/rail.js': ['createRail', 'railKey'],
-  'ui/whattoshow.js': ['createWhatToShow', 'countText', 'layerSwatch', 'applyLayerOn'],
+  'ui/whattoshow.js': ['createWhatToShow', 'countText', 'layerSwatch', 'keyedBy', 'MIXED_DRAW', 'applyLayerOn'],
   'ui/timepill.js': ['createTimePill', 'PILL_RATES', 'nextRate', 'stepMs', 'clampToWindow', 'pillText'],
   'ui/place.js': ['createPlace', 'findCity', 'observerFor'],
   'ui/trippicker.js': ['groupTrips', 'nextTripId', 'nextTripOrder', 'tripOrder', 'eventSubtitle'],
