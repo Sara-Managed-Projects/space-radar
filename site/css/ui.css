@@ -1469,18 +1469,6 @@ html.sr-clean body > *:not(.sr-scene):not(.sr-veil):not(.sr-over-clean) {
   --sr-trip-bar-phone: 60px;
 }
 
-/* ui/mobile.js appends this to document.body, NOT to the sidebar, so hiding the sidebar alone
-   leaves it sitting over the picture. It is the single easiest thing here to get wrong. (The
-   sidebar, the rail and the pill go away in the shell section at the end of this file.) */
-html.sr-trip-mode .sr-mobilebar {
-  opacity: 0;
-  transform: translateY(110%);
-  pointer-events: none;
-  transition:
-    opacity var(--sr-slow) var(--sr-ease),
-    transform 400ms var(--sr-ease);
-}
-
 /* The scene's own labels: gone while the camera is moving, back once it is not -- the subject's
    at full strength, because it is how the card points at what it is about (ui/labels.js), and
    everything else at a whisper. */
@@ -2188,7 +2176,6 @@ html.sr-trip-mode #sr-card .sr-card__foot {
    middle of the window. */
 html.sr-trip-mode #sr-rail,
 html.sr-trip-mode #sr-time,
-html.sr-trip-mode.sr-phone #sr-side,
 html.sr-trip-collapsed #sr-side {
   visibility: hidden;
   opacity: 0;
@@ -2201,10 +2188,6 @@ html.sr-trip-collapsed #sr-side {
 
 html.sr-trip-collapsed:not(.sr-phone) #sr-side {
   transform: translateX(-110%);
-}
-
-html.sr-trip-mode.sr-phone #sr-side {
-  transform: translateY(102%);
 }
 
 @media (min-width: 900px) {
@@ -2380,7 +2363,6 @@ html.sr-trip-mode.sr-phone .sr-toast {
   html.sr-trip-mode #sr-side,
   html.sr-trip-mode #sr-rail,
   html.sr-trip-mode #sr-time,
-  html.sr-trip-mode .sr-mobilebar,
   html.sr-trip-mode #labels,
   html.sr-trip-collapsed #sr-side,
   .sr-trip__toolbar.sr-float,
@@ -2395,7 +2377,7 @@ html.sr-trip-mode.sr-phone .sr-toast {
   }
 
   html.sr-trip-collapsed:not(.sr-phone) #sr-side,
-  html.sr-trip-mode.sr-phone #sr-side {
+  html.sr-phone.sr-trip-collapsed #sr-side {
     transform: none;
   }
 
@@ -3169,7 +3151,7 @@ html.sr-phone .sr-chevron {
   display: none;
 }
 
-.sr-explore.is-searching .sr-tabs {
+html:not(.sr-phone) .sr-explore.is-searching .sr-tabs {
   display: none;
 }
 
@@ -3199,7 +3181,7 @@ html.sr-phone .sr-chevron {
   max-height: none;
 }
 
-.sr-explore.is-searching .sr-explore__body {
+html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   display: none;
 }
 
@@ -3960,66 +3942,511 @@ html.sr-clean #sr-rail .sr-rail__btn:focus-visible { opacity: 1; }
   to { opacity: 1; }
 }
 
-/* Below 900 px the sidebar is today's phone drawer (css/site.css, ui/mobile.js) until 0061 task 3
-   makes it a sheet: full width, from the bottom, its views stacked in one scroll. */
+/* --- the phone: one sheet, a top bar, the pill above the sheet (spec 0061 task 3) ------------
+   docs/ui-guide.md §3.11 and §5, row D's HybridPhone. Under 900 px (ui/shell.js adds `sr-phone`):
+   the scene full-bleed; across the top the search, What to show and More, the live line under
+   them; the sidebar a bottom sheet of three heights (ui/sheet.js) moved by --sr-sheet-y; the pill
+   12 px above the sheet, gone at full and while a card is up. The sheet wears glass-strong, as
+   every small dense surface over bright imagery does (§2.1). */
+
+:root {
+  /* The z ladder (docs/ui-guide.md §2.6), as tokens, for the rules written since it was. */
+  --sr-z-hud: 6;
+  --sr-z-labels: 10;
+  --sr-z-pill: 35;
+  --sr-z-rail: 56;
+  --sr-z-pop: 57;
+  --sr-z-toast: 70;
+  /* The top bar: 8 px under the notch, 48 px tall (§2.3: row D's 46 rounded to the grid), and the
+     two 48 px tools beside the search with a hairline between them. */
+  --sr-top-y: calc(env(safe-area-inset-top, 0px) + var(--sp-2));
+  --sr-top-bar: 48px;
+  --sr-top-end: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-6));
+  /* The sheet: its top at full (the window less 60 px of scene, §3.11), its handle band, and its
+     height now, which ui/sheet.js writes on <html> for the pill and the toasts to follow. */
+  --sr-sheet-gap: 60px;
+  --sr-sheet-handle: 48px;
+  --sr-sheet-h: 96px;
+}
+
+.sr-top,
+.sr-rail__btn--more,
+.sr-more[hidden] {
+  display: none;
+}
+
+.sr-top * {
+  box-sizing: border-box;
+}
+
+/* The top bar: a column of the row and the live line, pinned under the notch, 16 px in from both
+   sides (or the landscape inset). The gaps between its pieces are the scene's: only the pieces
+   take a touch. */
+html.sr-phone .sr-top {
+  position: fixed;
+  top: var(--sr-top-y);
+  right: max(var(--sp-4), env(safe-area-inset-right, 0px));
+  left: max(var(--sp-4), env(safe-area-inset-left, 0px));
+  z-index: var(--sr-z-rail);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  pointer-events: none;
+}
+
+.sr-top__row {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.sr-top__search {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.sr-top__row > *,
+.sr-top__line > * {
+  pointer-events: auto;
+}
+
+/* The search, seated here by the shell: one 48 px glass well with the magnifier, the field at
+   16 px (under 16 iOS zooms the page on focus), and its results dropping from the bar as one glass
+   list over everything below it. The results' box is the bar's, not the field's, so a name and
+   where it is get the bar's whole width. */
+html.sr-phone .sr-top .sr-search,
+html.sr-phone .sr-top .sr-explore__search {
+  position: static;
+  margin: 0;
+}
+
+html.sr-phone .sr-top .sr-search__row {
+  flex-wrap: nowrap;
+  height: var(--sr-top-bar);
+  padding: 0 var(--sp-4);
+  color: var(--sr-text-soft);
+  background: var(--sr-glass-strong);
+  border-color: var(--sr-line);
+  border-top-color: var(--sr-edge-lit);
+  border-radius: var(--sr-radius-shell);
+}
+
+html.sr-phone .sr-top .sr-search__row:focus-within {
+  border-color: var(--sr-line-strong);
+  border-top-color: var(--sr-edge-lit);
+  background: var(--sr-glass-strong);
+}
+
+html.sr-phone .sr-top .sr-search__input {
+  flex: 1 1 auto;
+  font-size: 16px;
+}
+
+html.sr-phone .sr-top .sr-search__input::placeholder {
+  color: var(--sr-text-soft);
+}
+
+html.sr-phone .sr-top .sr-search__pop {
+  position: absolute;
+  top: calc(var(--sr-top-bar) + var(--sp-2));
+  right: 0;
+  left: 0;
+  max-height: calc(100dvh - var(--sr-top-y) - var(--sr-top-bar) - var(--sr-sheet-h) - var(--sp-6));
+  margin: 0;
+  padding: var(--sp-2) var(--sp-4);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--sr-glass-strong);
+  -webkit-backdrop-filter: var(--sr-blur);
+  backdrop-filter: var(--sr-blur);
+  border: 1px solid var(--sr-line);
+  border-top-color: var(--sr-edge-lit);
+  border-radius: var(--sr-radius-shell);
+  box-shadow: var(--sr-edge-glow), var(--sr-shadow);
+}
+
+html.sr-phone .sr-top .sr-search__list {
+  max-height: none;
+}
+
+/* The rail in the bar: What to show and More, one glass object as on a desktop, turned on its side.
+   Share, Hide and the GitHub mark are More's rows (ui/rail.js ON A PHONE); their buttons stay in
+   the rail out of sight, so their keys and the clear screen's way back are the same ones. */
+html.sr-phone .sr-rail {
+  position: static;
+  flex-direction: row;
+  height: var(--sr-top-bar);
+}
+
+html.sr-phone .sr-rail__btn {
+  width: calc(var(--sr-top-bar) - 2px);
+  height: calc(var(--sr-top-bar) - 2px);
+}
+
+html.sr-phone .sr-rail__btn + .sr-rail__btn {
+  border-top: 0;
+  border-left: 1px solid var(--sr-line);
+}
+
+html.sr-phone .sr-rail__btn--share,
+html.sr-phone .sr-rail__btn--clean,
+html.sr-phone .sr-rail__btn--github {
+  display: none;
+}
+
+html.sr-phone .sr-rail__btn--more {
+  display: grid;
+}
+
+/* A clear screen on a phone: the eye comes back where More was, and Share beside it, as on a
+   desktop (the clear-screen rules above dim them). */
+html.sr-phone.sr-clean .sr-rail__btn--clean,
+html.sr-phone.sr-clean .sr-rail__btn--share {
+  display: grid;
+}
+
+html.sr-phone.sr-clean .sr-rail__btn--more {
+  display: none;
+}
+
+/* The live line: the pill's words in its own face, over the scene with the globe labels' halo
+   rather than a third glass panel (row D draws it bare). */
+.sr-liveline {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0 var(--sp-1);
+  font: 500 13px/16px var(--sr-font-mono);
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text);
+  white-space: nowrap;
+  text-shadow: 0 0 2px var(--sr-space), 0 0 2px var(--sr-space), 0 0 4px var(--sr-space);
+}
+
+.sr-liveline.is-away .sr-time__dot {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--sr-ember);
+}
+
+/* At full the sheet's top meets the search row; the line would sit on its handle. */
+html.sr-phone[data-sheet='full'] .sr-top__line {
+  visibility: hidden;
+}
+
+/* The popovers drop from the bar: What to show across it, More as a short menu at its right. */
+html.sr-phone .sr-pop {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2));
+  right: max(var(--sp-4), env(safe-area-inset-right, 0px));
+  left: max(var(--sp-4), env(safe-area-inset-left, 0px));
+  width: auto;
+  max-height: calc(100dvh - var(--sr-top-y) - var(--sr-top-bar) - var(--sp-6));
+}
+
+html.sr-phone .sr-more {
+  left: auto;
+  width: 240px;
+  padding: var(--sp-2);
+}
+
+html.sr-phone .sr-more:not([hidden]) {
+  display: block;
+}
+
+.sr-more__item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: 48px;
+  padding: 0 var(--sp-3);
+  font: 400 15px/20px var(--sr-font);
+  color: var(--sr-text);
+  text-align: left;
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+  border-radius: var(--sr-radius);
+  cursor: pointer;
+  transition: background var(--sr-fast) var(--sr-ease);
+}
+
+.sr-more__item svg {
+  flex: 0 0 auto;
+}
+
+.sr-more__item:active {
+  background: var(--sr-wash-strong);
+}
+
+.sr-more__item:focus-visible {
+  --sr-bracket-out: 0px;
+}
+
+@media (hover: hover) {
+  .sr-more__item:hover {
+    background: var(--sr-wash);
+  }
+}
+
+/* The sheet. Laid out at its full height (top: the 60 px of scene; bottom: the screen's edge, or a
+   trip's toolbar) and moved down by --sr-sheet-y to the height it is at, so a height change is a
+   transform the compositor runs and viewshift measures where it lands. */
 html.sr-phone #sr-side {
-  top: auto;
+  top: calc(env(safe-area-inset-top, 0px) + var(--sr-sheet-gap));
+  right: 0;
+  bottom: 0;
   left: 0;
   width: auto;
-  display: block;
-  padding-left: 0;
-  padding-right: 0;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: var(--sr-glass-strong);
+  border-width: 1px 0 0;
+  border-radius: var(--sr-radius-shell) var(--sr-radius-shell) 0 0;
+  transform: translateY(var(--sr-sheet-y, 100%));
+  transition:
+    transform var(--sr-slow) var(--sr-ease),
+    border-color var(--sr-fast) var(--sr-ease);
+  touch-action: none;
 }
 
-html.sr-phone #sr-side .sr-drawer__head {
-  margin-left: 0;
-  margin-right: 0;
-  padding: 2px 20px;
+html.sr-phone #sr-side.is-dragging {
+  transition: none;
 }
 
-html.sr-phone .sr-side__view,
-html.sr-phone .sr-explore,
-html.sr-phone .sr-explore__body,
-html.sr-phone .sr-side__cardslot,
-html.sr-phone .sr-side__sourceshost {
-  display: block;
-  overflow: visible;
+/* The handle: a 48 px band, the 36 × 4 grabber in it, the whole band a button (44 px and more). */
+.sr-sheet__handle {
+  display: none;
 }
 
-html.sr-phone .sr-side__view[hidden] { display: none; }
-html.sr-phone .sr-explore__head { padding-top: 14px; }
-html.sr-phone .sr-statusline { padding-bottom: 12px; }
-
-/* The rail on a phone: a row across the top right, where the camera and the eye were. */
-html.sr-phone .sr-rail {
-  top: calc(8px + env(safe-area-inset-top, 0px));
-  right: 8px;
-  flex-direction: row;
+html.sr-phone .sr-sheet__handle {
+  display: grid;
+  flex: 0 0 var(--sr-sheet-handle);
+  place-items: center;
+  width: 100%;
+  height: var(--sr-sheet-handle);
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  cursor: grab;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-html.sr-phone .sr-rail__btn { width: 44px; height: 44px; }
-html.sr-phone .sr-rail__btn + .sr-rail__btn { border-top: 0; border-left: 1px solid var(--sr-hair); }
-
-html.sr-phone .sr-pop {
-  top: calc(60px + env(safe-area-inset-top, 0px));
-  right: 8px;
-  left: 8px;
-  width: auto;
-  max-height: calc(100vh - 140px);
+html.sr-phone #sr-side.is-dragging .sr-sheet__handle {
+  cursor: grabbing;
 }
 
-/* The pill sits above the phone's bar, smaller. */
-html.sr-phone .sr-time {
-  bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+.sr-sheet__grabber {
+  width: 36px;
+  height: 4px;
+  border-radius: var(--sr-radius-pill);
+  background: var(--sr-text-faint);
+  transition: background var(--sr-fast) var(--sr-ease);
+}
+
+.sr-sheet__handle:focus-visible {
+  --sr-bracket-out: -4px;
+}
+
+.sr-sheet__handle:focus-visible .sr-sheet__grabber {
+  background: var(--sr-ember);
+}
+
+@media (hover: hover) {
+  .sr-sheet__handle:hover .sr-sheet__grabber {
+    background: var(--sr-text-dim);
+  }
+}
+
+/* Below full nothing in the sheet scrolls (ui/sheet.js THE DRAG): a swipe moves the sheet. At full
+   the views' bodies scroll and only the handle and the heads drag. */
+html.sr-phone #sr-side:not([data-detent='full']) :is(.sr-explore__body, .sr-side__cardslot, .sr-side__sourceshost, .sr-side__trip) {
+  overflow: hidden;
+}
+
+html.sr-phone #sr-side[data-detent='full'] {
+  touch-action: auto;
+}
+
+html.sr-phone #sr-side :is(.sr-explore__head, .sr-side__bar, .sr-card__header, .sr-tripsheet__head) {
+  touch-action: none;
+}
+
+html.sr-phone #sr-side[data-detent='full'] :is(.sr-explore__body, .sr-side__cardslot, .sr-side__sourceshost, .sr-side__trip) {
+  touch-action: pan-y;
+}
+
+/* Peek is the handle and the tabs: the head loses the wordmark (the search's well is where the
+   page starts on a phone) and the tabs grow to 44 px segments in a 48 px track. Collapsing is a
+   desktop idea. */
+html.sr-phone .sr-explore__brand,
+html.sr-phone .sr-explore__collapse {
+  display: none;
+}
+
+html.sr-phone .sr-explore__head {
+  gap: 0;
+  padding: 0 var(--sp-4);
+}
+
+html.sr-phone .sr-tabs {
+  padding: 2px;
+}
+
+html.sr-phone .sr-tabs__tab {
   height: 44px;
-  font-size: 13px;
+  font-size: 14px;
 }
 
-html.sr-phone .sr-time__step { width: 36px; height: 36px; }
-html.sr-phone .sr-time__read { padding: 0 6px; }
-html.sr-phone.sr-card-open .sr-time { display: none; }
-/* Collapsing is a desktop idea: the phone's drawer has its own Close. */
-html.sr-phone .sr-explore__collapse { display: none; }
+html.sr-phone .sr-sect {
+  padding-right: var(--sp-4);
+  padding-left: var(--sp-4);
+}
+
+html.sr-phone .sr-statusline {
+  padding-right: var(--sp-4);
+  padding-left: var(--sp-4);
+}
+
+/* The card at half: row D's phone card. No "‹ Explore" row (the × beside the name is the way back,
+   and peek is one drag down); the name at the phone's size, the numbers at 20, the actions 52. */
+html.sr-phone .sr-side__card > .sr-side__bar {
+  display: none;
+}
+
+html.sr-phone .sr-card.is-docked {
+  padding: 0 var(--sp-4) var(--sp-4);
+}
+
+html.sr-phone .sr-card.is-docked .sr-card__header {
+  padding-top: 0;
+  padding-right: 44px;
+}
+
+html.sr-phone .sr-card.is-docked .sr-card__close {
+  top: 0;
+  right: var(--sp-2);
+}
+
+html.sr-phone .sr-card.is-docked .sr-card__name {
+  font-size: 22px;
+}
+
+html.sr-phone .sr-card.is-docked .sr-hero__num {
+  font-size: 20px;
+}
+
+html.sr-phone .sr-card.is-docked .sr-act {
+  height: 52px;
+}
+
+html.sr-phone .sr-side .sr-status {
+  padding-right: var(--sp-4);
+  padding-left: var(--sp-4);
+}
+
+/* A trip on a phone: the sheet is the trip's (ui/tripframe.js seats its sheet in the trip view),
+   resting on the toolbar while a stop is up; the top bar goes with the rail. */
+html.sr-phone.sr-trip-mode[data-trip-phase]:not([data-trip-phase='intro']):not([data-trip-phase='outro']) #sr-side {
+  bottom: calc(var(--sr-trip-bar-phone) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: 0;
+}
+
+html.sr-trip-mode .sr-top {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--sr-slow) var(--sr-ease), visibility 0s linear var(--sr-slow);
+}
+
+html.sr-phone.sr-trip-collapsed #sr-side {
+  transform: translateY(110%);
+}
+
+/* The pill: 12 px above the sheet wherever the sheet is, moved by the same transform in the same
+   320 ms (and with the finger while it drags); gone at full, and while a card is up (row D's phone
+   card has none: the live line under the search still says the time). */
+html.sr-phone .sr-time {
+  bottom: 0;
+  z-index: var(--sr-z-pill);
+  height: 44px;
+  transform: translate(-50%, calc(-1 * (var(--sr-sheet-h) + var(--sp-3))));
+}
+
+html.sr-phone .sr-time.sr-float {
+  transition:
+    transform var(--sr-slow) var(--sr-ease),
+    opacity var(--sr-fast) var(--sr-ease),
+    border-color var(--sr-fast) var(--sr-ease);
+}
+
+html.sr-phone.sr-sheet-dragging .sr-time.sr-float {
+  transition: none;
+}
+
+html.sr-phone .sr-time__step {
+  width: 44px;
+  height: 44px;
+}
+
+html.sr-phone .sr-time__read {
+  height: 44px;
+  padding: 0 var(--sp-2);
+}
+
+html.sr-phone .sr-time__rate,
+html.sr-phone .sr-time__live {
+  height: 36px;
+}
+
+html.sr-phone[data-sheet='full'] .sr-time,
+html.sr-phone.sr-card-open .sr-time {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* A toast stands above the pill, and so above the sheet; the scene note under the top bar. */
+html.sr-phone .sr-toast {
+  top: auto;
+  bottom: calc(var(--sr-sheet-h) + var(--sp-3) + 44px + var(--sp-3));
+}
+
+html.sr-phone .sr-scenenote {
+  top: var(--sr-top-end);
+}
+
+/* The glass-strong surfaces answer the solid fallback themselves (.sr-float's would be lighter). */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  html.sr-phone #sr-side,
+  html.sr-phone .sr-top .sr-search__row,
+  html.sr-phone .sr-top .sr-search__pop {
+    background: var(--sr-glass-solid);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  html.sr-phone #sr-side,
+  html.sr-phone .sr-top .sr-search__row,
+  html.sr-phone .sr-top .sr-search__pop {
+    background: var(--sr-glass-solid);
+  }
+}
+
+/* Reduced motion: the sheet and the pill jump to their height; the rest is the 120 ms fade. */
+@media (prefers-reduced-motion: reduce) {
+  html.sr-phone #sr-side,
+  html.sr-phone .sr-time.sr-float,
+  html.sr-trip-mode .sr-top {
+    transition: opacity 120ms linear;
+  }
+
+  .sr-sheet__grabber,
+  .sr-more__item {
+    transition: none;
+  }
+}
 /* The Tonight view (spec 0051 task 2, ui/tonight.js): mounted by the sidebar's Tonight tab (spec 0061).
    One pass, its arc and its countdown, the darkness line, and More passes. Type at the 13 px floor;
    the countdown in the mono face with fixed-width digits, so it does not jitter as it ticks. */

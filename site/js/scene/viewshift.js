@@ -5,6 +5,9 @@
 //   coveredFromBottom(rects, w, h) -> how many pixels of the canvas, from the bottom up, are under
 //                                     full-width panels stacked on its bottom edge
 //   coveredFromLeft(rects, w, h)   -> how many, from the left edge, are under a tall docked column
+//   coveredFromTop(rects, w, h)    -> how many, from the top down, are under a wide bar at the top
+//   uncoveredBand(h, top, bottom)  -> {top, bottom, centre, shift}: the band nobody covers, and the
+//                                     view offset that puts the centre of the view in its middle
 //
 // WHY. The camera rig aims at a target and the projection puts that target in the middle of the
 // canvas. On a phone the card is a bottom sheet over the lower half of that canvas, so the thing
@@ -29,21 +32,29 @@ export const EASE_MS = 180;
 export const MAX_SHIFT_FRACTION = 0.3; // never push the centre above 20 % of the height
 const FULL_WIDTH = 0.8; // a panel this wide or wider spans the canvas
 
-// The bottom-anchored panels, in no particular order: the object card (a bottom sheet on a phone),
-// a trip's sheet and the toolbar under it on a phone (spec 0061 task 7; on a desktop the toolbar
-// is a pill a third of the width, which the FULL_WIDTH rule leaves out, and the sheet is in the
-// sidebar), the phone's tab bar, and the two drawers the tab bar opens (Trips &
-// layers, and the sources panel). The drawers were left out until 2026-09-22: with one open, the
-// Earth sat behind it and the free half of the screen above showed empty sky (Ivan's screenshot).
-// Only the PHONE's open drawer: on a desktop the sidebar is a column down the left, which is the
-// horizontal case below, and never a band along the bottom.
+// The bottom-anchored panels, in no particular order: the phone's sheet (spec 0061 task 3: the
+// sidebar at its peek, half or full height, measured where its transform puts it, so a drag moves
+// the scene with it), the card wherever it floats, a trip's toolbar under the sheet on a phone and
+// a trip's sheet where it floats (spec 0061 task 7; on a desktop the toolbar is a pill a third of
+// the width, which the FULL_WIDTH rule leaves out, and the sheet is in the sidebar), and the share
+// sheet, which is a bottom sheet on a phone (spec 0061 task 8). Panels were left out of this list
+// twice and each time the Earth sat behind one while the free part of the screen showed empty sky
+// (Ivan's screenshot, 2026-09-22): a new bottom sheet is a row here. Only the PHONE's sidebar: on a
+// desktop it is a column down the left, which is the horizontal case below.
 const SELECTORS = [
+  'html.sr-phone #sr-side',
   '#sr-card',
   '#sr-trip .sr-trip__toolbar',
   '#sr-trip .sr-tripsheet',
-  '.sr-mobilebar',
-  'html.sr-phone #sr-side.sr-drawer-open',
+  'html.sr-phone #sr-share',
 ];
+
+// THE PHONE'S TOP BAR (spec 0061 task 3): the search, the tools and the live line across the top,
+// and during a trip its own bar of title and Leave. docs/ui-guide.md §5: the subject sits in the
+// middle of the band BETWEEN the top bar and the sheet, not merely above the sheet, or a half
+// sheet puts it under the search box.
+const TOP_SELECTORS = ['html.sr-phone #sr-top', 'html.sr-phone #sr-trip .sr-trip__top'];
+const TOP_REACH = 0.25; // a bar must start in the top quarter to count as docked there
 
 // THE DESKTOP SIDEBAR (spec 0061 req 1). A 360 px column 20 px in from the left covers a quarter of
 // a 1440 px window, and the globe centred on the WINDOW sat with its left limb under it. Row D draws
@@ -93,15 +104,47 @@ export function coveredFromBottom(rects, w, h) {
   return h - edge;
 }
 
+/**
+ * @param {{top:number, bottom:number, width:number}[]} rects  canvas-relative CSS px
+ * @returns {number} px covered from the top edge down by wide bars that start near it
+ */
+export function coveredFromTop(rects, w, h) {
+  if (!(w > 0) || !(h > 0)) return 0;
+  let edge = 0;
+  for (const r of Array.isArray(rects) ? rects : []) {
+    if (!r || r.width < w * FULL_WIDTH || !(r.bottom > r.top) || r.top > h * TOP_REACH) continue;
+    edge = Math.max(edge, Math.min(r.bottom, h * 0.5));
+  }
+  return edge;
+}
+
 /** The view offset for a covered band: half of it, capped. */
 export function shiftFor(coveredPx, h) {
   if (!(coveredPx > 0) || !(h > 0)) return 0;
   return Math.min(coveredPx / 2, h * MAX_SHIFT_FRACTION);
 }
 
+/**
+ * The band nobody covers, between `top` px of bar and `bottom` px of sheet, and the view offset
+ * that moves the centre of the view into its middle: half the difference, capped either way.
+ * Positive moves the picture up. Pure.
+ */
+export function uncoveredBand(h, top, bottom) {
+  const H = Number(h) > 0 ? Number(h) : 0;
+  const t = Math.max(0, Number(top) || 0);
+  const b = Math.max(0, Number(bottom) || 0);
+  const cap = H * MAX_SHIFT_FRACTION;
+  const shift = Math.max(-cap, Math.min(cap, (b - t) / 2));
+  return { top: t, bottom: H - b, centre: H / 2 - shift, shift };
+}
+
 export function createViewShift(camera, canvas, opts = {}) {
   const doc = opts.document || (typeof document !== 'undefined' ? document : null);
   const reduced = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null;
+  // The sheet changing height or a view changing is measured on the next frame, not up to a
+  // quarter-second later: the shift then eases alongside the sheet's own 320 ms snap.
+  const remeasure = () => { sinceMeasure = Infinity; };
+  if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('sr:shell', remeasure);
   let target = 0;
   let current = 0;
   let targetX = 0;
@@ -115,18 +158,24 @@ export function createViewShift(camera, canvas, opts = {}) {
     return !(cs && (cs.display === 'none' || cs.visibility === 'hidden'));
   }
 
-  function measure() {
-    if (!doc || !canvas || !canvas.getBoundingClientRect) return 0;
-    const c = canvas.getBoundingClientRect();
+  function rectsOf(selectors, c) {
     const rects = [];
-    for (const sel of SELECTORS) {
+    for (const sel of selectors) {
       const node = doc.querySelector(sel);
       if (!visible(node)) continue;
       const r = node.getBoundingClientRect();
       if (!(r.height > 0)) continue;
       rects.push({ top: r.top - c.top, bottom: r.bottom - c.top, width: r.width });
     }
-    return shiftFor(coveredFromBottom(rects, c.width, c.height), c.height);
+    return rects;
+  }
+
+  function measure() {
+    if (!doc || !canvas || !canvas.getBoundingClientRect) return 0;
+    const c = canvas.getBoundingClientRect();
+    const bottom = coveredFromBottom(rectsOf(SELECTORS, c), c.width, c.height);
+    const top = coveredFromTop(rectsOf(TOP_SELECTORS, c), c.width, c.height);
+    return Math.round(uncoveredBand(c.height, top, bottom).shift);
   }
 
   function measureLeft() {
@@ -172,6 +221,9 @@ export function createViewShift(camera, canvas, opts = {}) {
     update,
     shiftPx: () => Math.round(current),
     shiftXPx: () => Math.round(currentX),
-    dispose() { camera.clearViewOffset(); },
+    dispose() {
+      camera.clearViewOffset();
+      if (typeof window !== 'undefined' && window.removeEventListener) window.removeEventListener('sr:shell', remeasure);
+    },
   };
 }

@@ -29,7 +29,6 @@ import { createShell } from './ui/shell.js';
 import { createExplore } from './ui/explore.js';
 import { createRail } from './ui/rail.js';
 import { createTimePill } from './ui/timepill.js';
-import { createMobileUI } from './ui/mobile.js';
 import { createSceneNote } from './ui/scenenote.js';
 import { buildIndex, findMatches, LINK_MIN_SCORE } from './ui/search.js';
 import { createDensity } from './ui/density.js';
@@ -330,16 +329,15 @@ export async function boot({ setStatus } = {}) {
   }, { replace: true });
   createRail(ctx, shell.railHost);
   createTimePill(ctx, shell.timeHost);
-  ctx.mobile = createMobileUI(ctx);
   // One line on the scene when no satellite could be read at all (ui/scenenote.js).
   ctx.sceneNote = createSceneNote(ctx);
   // `#sources` opens the sheet (design §6): a link to "what could this page read" is worth having.
   const openSourcesFromHash = () => { if (location.hash === '#sources') shell.openSources(); };
   openSourcesFromHash();
   window.addEventListener('hashchange', openSourcesFromHash);
-  // The trip's frame (the intro, the toolbar, the top bar, the end), after the shell and the mobile
-  // bar exist: it seats its sheet in the sidebar, hides the rail and the pill, and reads ctx.mobile
-  // to close a phone drawer that is standing open when a trip starts. IMPORTED WHEN THE FIRST TRIP
+  // The trip's frame (the intro, the toolbar, the top bar, the end), after the shell exists: it
+  // seats its sheet in the sidebar (the phone's sheet under 900 px) and hides the rail, the pill
+  // and the phone's top bar. IMPORTED WHEN THE FIRST TRIP
   // STARTS, not at boot (spec 0061 task 7): it is 50 kB a visitor who never takes a trip need not
   // download, and the first visit was 160 bytes inside its budget before the frame was rebuilt.
   // The frame paints the state it finds when it is made, so nothing a trip did while it loaded is
@@ -492,8 +490,8 @@ export async function boot({ setStatus } = {}) {
   /**
    * @param {Object} record
    * @param {{fly?: boolean}} [opts]  `fly: false` keeps everything else -- the card, the glyph
-   *   highlight, `follow`, and the real `sr:select` that ui/mobile.js uses to close the phone
-   *   drawers -- and suppresses only the 900 ms flight. A guided trip is already on its way to
+   *   highlight, `follow`, and the real `sr:select` the rest of the page listens for -- and
+   *   suppresses only the 900 ms flight. A guided trip is already on its way to
    *   this object with a flight of its own, and two flights fighting over the camera is what
    *   selecting from inside one used to look like.
    */

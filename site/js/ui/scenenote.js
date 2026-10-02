@@ -80,10 +80,9 @@ export function createSceneNote(ctx) {
   }
 
   why.addEventListener('click', () => {
-    // The sources sheet, a view of the sidebar since spec 0061 (ui/shell.js openSources: the phone's
-    // drawer on a phone, the sidebar's sources view on a desktop).
-    if (ctx.shell) { ctx.shell.openSources(); return; }
-    if (ctx.mobile && ctx.mobile.isPhone) ctx.mobile.setOpen('sources');
+    // The sources sheet, a view of the sidebar since spec 0061 (ui/shell.js openSources: the sheet
+    // at full on a phone, the sidebar's sources view on a desktop).
+    if (ctx.shell) ctx.shell.openSources();
   });
   // Closing the link's line closes only that line; the satellite line is its own dismissal.
   close.addEventListener('click', () => { if (said) said = null; else dismissed = true; check(); });

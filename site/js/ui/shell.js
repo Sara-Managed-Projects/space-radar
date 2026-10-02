@@ -1,7 +1,8 @@
 // ui/shell.js -- the layout: one sidebar, one tool rail, one time pill (spec 0061 §1).
 //
 // Contract: createShell(ctx, opts) -> { el, side, show(view), back(), view(), collapse(on),
-//                                       collapsed(), isPhone(), host(view), railHost, timeHost }
+//                                       collapsed(), isPhone(), host(view), railHost, timeHost,
+//                                       lineHost, seatSearch(node), sheet() }
 // Also exported, pure, for tests/test_shell.mjs:
 //   createViewStack(root)          push / pop / remove over the four views
 //   readCollapsed(storage), writeCollapsed(storage, on)
@@ -24,15 +25,16 @@
 //       .sr-side__view[data-view=trip]      a guided trip's sheet: the intro, the stop card, the end
 //                                           (ui/tripframe.js fills it; spec 0061 task 7)
 //       .sr-side__handle                    the 48 px handle while collapsed
+//     #sr-top          the phone's top bar: the search, the rail, the live line (display: none on a
+//                      desktop, where the search is in the sidebar and the rail in its corner)
 //     #sr-rail         ui/rail.js
 //     #sr-time         ui/timepill.js
 //
 // THE CARD MOVES; ITS CONTENTS DO NOT. ui/cards.js looks its host up by id and builds it on <body>
-// when there is none, so the shell makes `#sr-card` first and seats it: inside the card view on a
-// desktop, on <body> on a phone (where it is still today's bottom sheet, until 0061 task 3) and,
-// during a trip, in the slot the trip frame hands over with seatTrip(slot): the trip view of this
-// sidebar on a desktop, the trip's own sheet on a phone. appendChild MOVES a node, so the card keeps its
-// listeners, its scroll and its focus across the move. A MutationObserver on its `hidden` attribute
+// when there is none, so the shell makes `#sr-card` first and seats it: inside the card view, at
+// every width now that the phone's sidebar is a sheet (0061 task 3), and, during a trip, in the slot
+// the trip frame hands over with seatTrip(slot), which is in the trip view of this sidebar.
+// appendChild MOVES a node, so the card keeps its listeners, its scroll and its focus across the move. A MutationObserver on its `hidden` attribute
 // is how the shell learns it opened or closed: cards.js is not edited to call the shell, which keeps
 // it one of the two modules a parallel tracking PR is allowed to touch.
 //
@@ -51,9 +53,20 @@
 // the trip ends; a sidebar the visitor had collapsed opens for the trip without the choice being
 // written down. The rail and the pill go (the trip's toolbar is the controls and it owns the clock).
 //
-// `sr:shell` {view, collapsed} is said on every change, for anything that wants to follow it.
+// THE PHONE (spec 0061 task 3, docs/ui-guide.md §3.11 and §5). Under 900 px the same sidebar is a
+// bottom sheet of three heights (ui/sheet.js): peek shows its handle and the tabs, half a card,
+// full a page. Nothing is rebuilt for it: the shell seats the same boxes differently. The search
+// box moves from the explore view's head to a top bar (seatSearch), the rail moves into that bar
+// beside it, and the time pill's live line sits under them. Each view picks its height when it
+// comes up: a card at half (its name, numbers and actions, and the scene above), the sources at
+// full (a page of rows), a trip at half; closing a card puts the sheet back at peek. The scene
+// moves up out from under it by scene/viewshift.js, which measures the sheet and the top bar.
+//
+// `sr:shell` {view, collapsed, phone, sheet} is said on every change, for anything that wants to
+// follow it.
 
 import { COPY } from '../copy/en.js';
+import { createSheet } from './sheet.js';
 
 export const SIDE_KEY = 'sr:side';
 export const VIEWS = ['home', 'card', 'sources', 'trip'];
@@ -62,6 +75,23 @@ export const DESKTOP_QUERY = '(min-width: 900px)';
 
 const TRIP_CLASS = 'sr-trip-mode';
 const COLLAPSED_CLASS = 'sr-side-collapsed';
+const PHONE_CLASS = 'sr-phone';
+/** What drags the sheet at full, besides its handle: each view's head (ui/sheet.js THE DRAG). */
+const SHEET_GRAB = '.sr-explore__head, .sr-side__bar, .sr-card__header, .sr-tripsheet__head';
+/** What scrolls in the sheet at full and is put back to its top below it. */
+const SHEET_SCROLL = '.sr-explore__body, .sr-side__cardslot, .sr-side__sourceshost, .sr-side__trip';
+
+/**
+ * The height a view asks for when it comes up on a phone, given the view it replaced. Pure, for
+ * tests/test_sheet.mjs. null keeps the sheet where the visitor left it.
+ */
+export function sheetFor(view, from) {
+  if (view === from) return null;
+  if (view === 'card' || view === 'trip') return 'half';
+  if (view === 'sources') return 'full';
+  if (view === 'home') return from === 'sources' ? 'half' : from ? 'peek' : null;
+  return null;
+}
 
 /** The stored choice. Anything but 'collapsed' is open; a storage that throws is open too. */
 export function readCollapsed(storage) {
@@ -227,6 +257,21 @@ export function createShell(ctx, opts = {}) {
 
   const railHost = el('div', 'sr-rail-host');
   const timeHost = el('div', 'sr-time-host');
+
+  // The phone's top bar: the search, then the rail (What to show and More), then the live line.
+  // First in the DOM, so the tab order on a phone is the order on screen: top, sheet, pill.
+  const top = el('div', 'sr-top');
+  top.id = 'sr-top';
+  top.setAttribute('role', 'group');
+  top.setAttribute('aria-label', COPY.shell.topLabel);
+  const topRow = el('div', 'sr-top__row');
+  const searchSlot = el('div', 'sr-top__search');
+  const toolsSlot = el('div', 'sr-top__tools');
+  const lineHost = el('div', 'sr-top__line');
+  topRow.append(searchSlot, toolsSlot);
+  top.append(topRow, lineHost);
+
+  shell.appendChild(top);
   shell.appendChild(side);
   shell.appendChild(railHost);
   shell.appendChild(timeHost);
@@ -244,18 +289,71 @@ export function createShell(ctx, opts = {}) {
   const tripOn = () => root.classList.contains(TRIP_CLASS);
 
   function placeCard() {
-    let want = !isPhone() ? cardSlot : document.body;
+    let want = cardSlot;
     if (tripOn()) want = tripSlot && tripSlot.isConnected ? tripSlot : document.body;
     if (cardHost.parentNode !== want) want.appendChild(cardHost);
     cardHost.classList.toggle('is-docked', want === cardSlot || want === tripSlot);
   }
 
+  // --- the phone: the sheet, the top bar, the search's seat ----------------------------------------
+  let sheet = null;
+  let searchNode = null;
+  let searchHome = null;
+  let shownView = null;
+
+  /** The explore view hands its search box over once; the shell seats it by the width (ui/explore.js). */
+  function seatSearch(node) {
+    if (!node) return;
+    if (!searchNode) searchHome = { parent: node.parentNode, next: node.nextSibling };
+    searchNode = node;
+    layout();
+  }
+
+  /** Seat the boxes for this width: the sheet and the top bar under 900 px, the sidebar from it. */
+  function layout() {
+    const phone = isPhone();
+    root.classList.toggle(PHONE_CLASS, phone);
+    if (phone) {
+      if (railHost.parentNode !== toolsSlot) toolsSlot.appendChild(railHost);
+      if (searchNode && searchNode.parentNode !== searchSlot) searchSlot.appendChild(searchNode);
+      placeholder(COPY.search.placeholderPhone);
+      if (!sheet) {
+        sheet = createSheet(side, {
+          initial: 'peek',
+          publish: true,
+          grab: SHEET_GRAB,
+          scrollers: SHEET_SCROLL,
+          onChange: (detent) => announce(detent),
+        });
+      }
+    } else {
+      if (railHost.parentNode !== shell) shell.insertBefore(railHost, timeHost);
+      if (searchNode && searchHome && searchNode.parentNode !== searchHome.parent) {
+        const next = searchHome.next && searchHome.next.parentNode === searchHome.parent ? searchHome.next : null;
+        searchHome.parent.insertBefore(searchNode, next);
+      }
+      if (sheet) { sheet.destroy(); sheet = null; }
+      placeholder(COPY.search.placeholder);
+    }
+  }
+
+  function placeholder(words) {
+    const input = searchNode && searchNode.querySelector('input');
+    if (input && words) input.placeholder = words;
+  }
+
+  function announce(detent) {
+    try {
+      window.dispatchEvent(new CustomEvent('sr:shell', { detail: { view: stack.current(), collapsed: collapsedNow, phone: isPhone(), sheet: detent || null } }));
+    } catch { /* an old browser still gets the layout */ }
+  }
+
   /**
-   * The trip view comes and goes with the trip, on a desktop. A phone keeps its drawer shut and the
-   * trip's sheet is the frame's; a window that crosses 900 px mid-trip gets the right one.
+   * The trip view comes and goes with the trip: the sidebar's view on a desktop, the sheet's on a
+   * phone; a window that crosses 900 px mid-trip keeps it.
    */
   function syncTrip() {
-    const want = tripOn() && !isPhone();
+    const want = tripOn();
     if (want && stack.current() !== 'trip') {
       show('trip');
     } else if (!want && stack.remove('trip')) {
@@ -280,9 +378,12 @@ export function createShell(ctx, opts = {}) {
     handle.setAttribute('aria-expanded', collapsedNow ? 'false' : 'true');
     // A collapsed sidebar's views are out of the tab order as well as out of sight.
     for (const node of views.values()) node.inert = folded;
-    try {
-      window.dispatchEvent(new CustomEvent('sr:shell', { detail: { view, collapsed: collapsedNow } }));
-    } catch { /* an old browser still gets the layout */ }
+    // On a phone a view comes up at its own height (sheetFor), and only when it changed.
+    const from = shownView;
+    shownView = view;
+    const want = sheet ? sheetFor(view, from) : null;
+    if (want && sheet.detent() !== want) sheet.set(want);
+    else announce(sheet ? sheet.detent() : null);
   }
 
   function show(view) {
@@ -325,7 +426,7 @@ export function createShell(ctx, opts = {}) {
     placeCard();
     syncTrip();
     const open = !cardHost.hidden;
-    if (open && !isPhone() && !tripOn()) {
+    if (open && !tripOn()) {
       if (stack.current() !== 'card') show('card');
     } else if (!open && stack.remove('card')) {
       lastDir = 'pop';
@@ -344,15 +445,18 @@ export function createShell(ctx, opts = {}) {
       onCardChange();
     }).observe(root, { attributes: true, attributeFilter: ['class'] });
   }
-  if (mm && mm.addEventListener) mm.addEventListener('change', () => { onCardChange(); paint(); });
+  if (mm && mm.addEventListener) mm.addEventListener('change', () => { layout(); onCardChange(); paint(); });
+  // A turned phone or a resized window: the heights are the window's, so they are measured again.
+  window.addEventListener('resize', () => { if (sheet) sheet.refresh(); });
 
   // Escape in the sources sheet goes back to where the visitor was. The card handles its own
   // (ui/cards.js), and a clear screen takes Escape before either (ui/cleanview.js, capture phase).
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape' || e.defaultPrevented) return;
-    if (stack.current() === 'sources' && !isPhone()) { back(); }
+    if (stack.current() === 'sources') { back(); }
   });
 
+  layout();
   placeCard();
   paint();
 
@@ -374,9 +478,13 @@ export function createShell(ctx, opts = {}) {
     },
     railHost,
     timeHost,
+    /** Where the time pill writes its live line: the phone's top bar, under the search. */
+    lineHost,
+    seatSearch,
+    /** The phone's sheet (ui/sheet.js), or null at 900 px and wider. */
+    sheet: () => sheet,
     /** Open the sources sheet from anywhere: the status line, a scene note, `#sources`. */
     openSources() {
-      if (isPhone() && ctx && ctx.mobile && typeof ctx.mobile.setOpen === 'function') { ctx.mobile.setOpen('sources'); return; }
       show('sources');
       return ensureSources().then(() => {
         const head = sourcesHost.querySelector('h2');

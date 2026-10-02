@@ -296,8 +296,14 @@ export function createExplore(ctx, host) {
   const field = searchHost.querySelector('.sr-search__row');
   if (field) field.prepend(svgIcon('M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14Z m9 16-4-4'));
   const input = searchHost.querySelector('.sr-search__input');
-  // While a query is typed the results REPLACE the lists (design §2): one column, one answer.
-  const onType = () => root.classList.toggle('is-searching', !!(input && input.value.trim().length >= 2));
+  // While a query is typed the results REPLACE the lists (design §2): one column, one answer. On a
+  // phone the box is in the top bar and its results drop from it (ui/shell.js seatSearch), so the
+  // flag is on the box as well, where the phone's rules read it.
+  const onType = () => {
+    const on = !!(input && input.value.trim().length >= 2);
+    root.classList.toggle('is-searching', on);
+    searchHost.classList.toggle('is-searching', on);
+  };
   if (input) { input.addEventListener('input', onType); input.addEventListener('change', onType); input.addEventListener('blur', () => setTimeout(onType, 0)); }
   // The named stars and the exoplanets load after the first visit (main.js OFF THE FIRST VISIT);
   // a visitor reaching for the search box wants them now, so the first focus asks for them.
@@ -308,6 +314,8 @@ export function createExplore(ctx, host) {
   tabs.setAttribute('aria-label', COPY.tabs.label);
   head.appendChild(tabs);
   root.appendChild(head);
+  // The shell seats the search: here on a desktop, in the phone's top bar under 900 px.
+  if (ctx && ctx.shell && typeof ctx.shell.seatSearch === 'function') ctx.shell.seatSearch(searchHost);
 
   const body = el('div', 'sr-explore__body');
   root.appendChild(body);

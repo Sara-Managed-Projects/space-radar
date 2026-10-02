@@ -121,10 +121,9 @@ const PHASE_ATTR = 'data-trip-phase';
 // Everything a trip takes away. ADDING A PIECE OF CHROME IS A ROW HERE -- a control left sitting in
 // a corner of a full-screen flight is exactly the kind of thing that gets noticed only in a
 // screenshot. `inert` and not merely `opacity: 0` -- see setChromeHidden(). Since spec 0061 task 7
-// the sidebar is NOT in the list: on a desktop it is the trip's own view (ui/shell.js), and on a
-// phone, where it is a drawer, seat() makes it inert.
-const CHROME = ['sr-rail', 'sr-time'];
-const MOBILE_BAR = '.sr-mobilebar';
+// the sidebar is NOT in the list: it is the trip's own view (ui/shell.js), the sidebar on a desktop
+// and the sheet on a phone (task 3). The phone's top bar is: its search and tools are the rail's.
+const CHROME = ['sr-rail', 'sr-time', 'sr-top'];
 const SIDE_ID = 'sr-side';
 // The line between the phone's sheet and the desktop's sidebar, as ui/shell.js draws it, for a frame
 // built without a shell (the tests).
@@ -399,23 +398,20 @@ export function createTripFrame(ctx) {
   }
 
   /**
-   * Put the sheet where the card lives at this width: the sidebar's trip view on a desktop, this
-   * frame on a phone, where it is a sheet of its own and wears the glass. The card goes into its
-   * slot through the shell, which owns where the card sits.
+   * Put the sheet where the card lives: the sidebar's trip view, which is the sidebar on a desktop
+   * and the one bottom sheet on a phone (spec 0061 task 3: one sheet, not a second one for trips).
+   * Without a shell (the tests, an embed) it floats in this frame and wears the glass. The card
+   * goes into its slot through the shell, which owns where the card sits.
    */
   function seat() {
     if (!parts) return;
-    const phone = isPhone();
     const shell = ctx.shell;
-    const sideHost = !phone && shell && typeof shell.host === 'function' ? shell.host('trip') : null;
+    const sideHost = shell && typeof shell.host === 'function' ? shell.host('trip') : null;
     const want = sideHost || host;
     if (parts.sheet.parentNode !== want) want.appendChild(parts.sheet);
     parts.sheet.classList.toggle('sr-float', want === host);
     parts.sheet.classList.toggle('is-floating', want === host);
     if (shell && typeof shell.seatTrip === 'function') shell.seatTrip(parts.cardSlot);
-    // On a phone the sidebar is a drawer the trip keeps shut; on a desktop it is the trip's.
-    const side = document.getElementById(SIDE_ID);
-    if (side) side.inert = phone;
     // The hide-card glyph says which way the card goes: off to the left, or down.
     paintCollapse();
   }
@@ -429,10 +425,6 @@ export function createTripFrame(ctx) {
    * FOCUSABLE. Tab walks into an invisible rail and the focus ring is off screen with no way to
    * tell where it went. `inert` removes the subtree from the tab order AND from the accessibility
    * tree in one property, which `aria-hidden` alone does not do.
-   *
-   * The mobile bar is the easy one to miss: ui/mobile.js appends it to document.body, not to the
-   * shell, so hiding the shell's pieces alone leaves a two-button bar sitting over the picture on
-   * a phone.
    */
   function setChromeHidden(hidden) {
     for (const id of CHROME) {
@@ -440,8 +432,6 @@ export function createTripFrame(ctx) {
       if (!node) continue;
       node.inert = hidden;
     }
-    const bar = document.querySelector(MOBILE_BAR);
-    if (bar) bar.inert = hidden;
     if (!hidden) {
       const side = document.getElementById(SIDE_ID);
       if (side) side.inert = false;
@@ -942,7 +932,6 @@ export function createTripFrame(ctx) {
     tourId = st.tourId;
     const active = document.activeElement;
     savedFocus = active && active !== document.body ? active : null;
-    if (ctx.mobile && ctx.mobile.close) ctx.mobile.close();
     setChromeHidden(true);
     seat();
     setCollapsed(false);
@@ -1009,13 +998,11 @@ export function createTripFrame(ctx) {
         back.focus({ preventScroll: true });
         return;
       }
-      // ON A PHONE THE PANEL IS A DRAWER, AND setup() CLOSED IT. A control inside a closed drawer
-      // is `visibility: hidden` (site.css) and cannot take focus: measured 2026-09-23 at 390 × 844,
-      // the [data-trip] button was found, focus() was called, and activeElement stayed on <body>.
-      // The bar button that reopens the drawer is where ui/mobile.js's own Close sends focus, so it
-      // is where Leave sends it too; one key then reopens the sheet on the trip just left.
-      const bar = document.querySelector(`${MOBILE_BAR} button[data-panel="home"]`);
-      if (bar && typeof bar.focus === 'function') bar.focus();
+      // Nothing of those on screen (measured 2026-09-23 on the old phone drawer: the [data-trip]
+      // button was found, focus() was called, and activeElement stayed on <body>): the phone's
+      // sheet handle, which is always on screen and raises the sheet on the trip just left.
+      const handle = document.querySelector(`#${SIDE_ID} .sr-sheet__handle`);
+      if (handle && typeof handle.focus === 'function') handle.focus();
     }, 0);
     tourId = null;
   }

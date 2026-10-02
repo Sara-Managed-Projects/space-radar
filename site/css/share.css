@@ -6,8 +6,8 @@
  *
  * Desktop: the rail's popover place (docs/ui-guide.md §3.8), left of the rail, top-aligned with
  * it, as wide as the sidebar (360) so a button's two words and the email line fit on one line,
- * scrolling inside. Phone: a bottom sheet, full width, top corners
- * of the shell's radius, never taller than the screen less 60 px. Above the trip frame, because
+ * scrolling inside. Phone: the phone's one sheet (ui/sheet.js) at half or full, its body scrolling
+ * at full. Above the trip frame, because
  * the trip bar opens it too; under the toasts, which report what it did.
  */
 
@@ -258,32 +258,97 @@
   cursor: not-allowed;
 }
 
-/* --- the phone: a bottom sheet ------------------------------------------------------------ */
+/* --- the phone: the one sheet, at half or full (ui/sheet.js, spec 0061 task 3) -------------- */
 
+/* Laid out at full (the window less 60 px of scene) and moved down to half by --sr-sheet-y, as the
+   sidebar's sheet is; glass-strong, the shell's top corners, the handle band on top. The body
+   scrolls only at full; at half a drag anywhere moves the sheet, and down from half closes it. */
 html.sr-phone .sr-share {
-  top: auto;
+  top: calc(env(safe-area-inset-top, 0px) + var(--sr-sheet-gap));
   right: 0;
   bottom: 0;
   left: 0;
   width: auto;
-  max-height: calc(100% - 60px);
+  max-height: none;
+  overflow: hidden;
   padding-bottom: env(safe-area-inset-bottom, 0px);
-  border-bottom: 0;
+  background: var(--sr-glass-strong);
+  border-width: 1px 0 0;
   border-radius: var(--sr-radius-shell) var(--sr-radius-shell) 0 0;
+  transform: translateY(var(--sr-sheet-y, 0px));
+  transition:
+    transform var(--sr-slow) var(--sr-ease),
+    opacity var(--sr-mid) var(--sr-ease);
+  touch-action: none;
 }
 
-html.sr-phone .sr-share__body { padding: var(--sp-1) var(--sp-4) var(--sp-4); }
-html.sr-phone .sr-share__head { padding-left: var(--sp-4); }
+html.sr-phone .sr-share.is-dragging {
+  transition: none;
+}
 
+html.sr-phone .sr-share__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  padding: var(--sp-1) var(--sp-4) var(--sp-4);
+}
+
+/* A fixed-height body shrinks a flex child to nothing (measured: the picture was 0 px tall at
+   half); everything keeps its own height and the body scrolls instead. */
+html.sr-phone .sr-share__body > * {
+  flex-shrink: 0;
+}
+
+/* A phone's postcard is portrait; at the desktop's 36vh it alone would fill the half sheet. Smaller,
+   so the picture, the tag and Share… are all up at half. */
+html.sr-phone .sr-share__pic.is-portrait {
+  height: min(22vh, 200px);
+}
+
+html.sr-phone .sr-share[data-detent='full'] {
+  touch-action: auto;
+}
+
+html.sr-phone .sr-share[data-detent='full'] .sr-share__body {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+
+html.sr-phone .sr-share__head {
+  padding-top: 0;
+  padding-left: var(--sp-4);
+  touch-action: none;
+}
+
+/* It opens where it rests and fades in: a rise from the desktop's 8 px start would be a transform
+   transition, and the postcard drawn in the same second holds the frames that run it (measured:
+   the sheet sat at full for four seconds before it fell to half). */
 @starting-style {
   html.sr-phone .sr-share.sr-float {
     opacity: 0;
-    transform: translateY(24px);
+    transform: translateY(var(--sr-sheet-y, 0px));
+  }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  html.sr-phone .sr-share {
+    background: var(--sr-glass-solid);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  html.sr-phone .sr-share {
+    background: var(--sr-glass-solid);
   }
 }
 
 /* Reduced motion: .sr-float's 120 ms fade (ui.css) carries the sheet, with no slide. */
 @media (prefers-reduced-motion: reduce) {
+  html.sr-phone .sr-share {
+    transition: opacity 120ms linear;
+  }
+
   .sr-share__btn,
   .sr-share__net,
   .sr-share__close,

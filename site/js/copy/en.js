@@ -530,6 +530,8 @@ export const COPY = {
     handleMark: 'S',
     expand: 'Show the panel',
     collapse: 'Hide the panel',
+    // The phone's top bar: the search, What to show and the More menu, and the live line.
+    topLabel: 'Search and tools',
   },
   // The four tabs (0061 req 3): places, not settings. Choosing one flies there.
   tabs: {
@@ -587,6 +589,12 @@ export const COPY = {
     show: 'What to show (L)',
     // P, because S is the camera's (held, it moves the camera back: scene/camera.js CAMERA_KEYS).
     share: 'Share (P)',
+    // The phone's top bar (spec 0061 task 3): What to show stays, the rest folds into one menu.
+    more: 'More tools',
+    moreLabel: 'More',
+    menuShare: 'Share',
+    menuHide: 'Hide the panels',
+    menuGitHub: 'Source on GitHub',
   },
   // The time pill (0061 §7, ui/timepill.js).
   timePill: {
@@ -1840,6 +1848,9 @@ export const COPY = {
   search: {
     title: 'Find an object',
     placeholder: 'Search planets, stars, satellites',
+    // The phone's top bar leaves the field 250 px at 390 (row D's HybridPhone): the long one ends
+    // mid-word there, and a cut label is a broken one.
+    placeholderPhone: 'Search space',
     inputLabel: 'Search for an object by name or catalogue number',
     listLabel: 'Matching objects',
     fly: 'Fly to it',
@@ -1954,28 +1965,18 @@ export const COPY = {
     ago: '{d} ago',
   },
 
-  // The phone's bottom bar. It lives in ui/mobile.js, which wrote these three strings itself
-  // until scripts/check_copy.py was finally written and found them on its first run.
-  //
-  // `close` / `closeTitle` are the sticky Close row at the top of each drawer. The drawer is 62%
-  // of a phone screen and z-orders OVER the bar that opened it, so before this row the only way
-  // out was to reload: tapping where "Layers" is drawn hit a layer checkbox underneath and
-  // silently turned a layer off. `closeTitle` takes the panel's own label so that adding a
-  // drawer stays one row in ui/mobile.js's PANELS table.
-  //
-  // `controls` names the drawer that holds the trips, the Wonder/Now/Next switch and the layer
-  // list, in that order. It used to say "Layers", which is the LAST thing in it: on a desktop the
-  // trips are the first panel anyone sees, and on a phone -- measured 2026-09-21 at 390 x 844 --
-  // they were behind a button that did not mention them, so a first visit showed the Earth and two
-  // buttons called Layers and Sources, and nothing that said there was a guided trip to take.
-  mobile: {
-    barLabel: 'Panels',
-    // Spec 0061: the drawer is the sidebar's explore view (search, the tabs, Right now, the trips);
-    // the layers moved to the What-to-show button in the corner.
-    controls: 'Explore',
-    sources: 'Sources',
-    close: 'Close',
-    closeTitle: 'Close {panel}',
+  // The phone's sheet (spec 0061 task 3, ui/sheet.js): the sidebar's views at three heights. The
+  // handle is a button named for what it changes; its description says the height it is at.
+  // (Until 2026-10-02 the phone had a bar of two buttons, Explore and Sources, under two drawers;
+  // the sheet replaced both, and its tabs say what Explore had to say in one word.)
+  sheet: {
+    handle: 'Sheet height',
+    closed: 'closed',
+    peek: 'lowered',
+    half: 'half open',
+    full: 'fully open',
+    state: '{height}. Up and down arrows change it',
+    title: 'Sheet height: {height}. Tap or drag to change it',
   },
 
   // The GitHub mark in the top corner. `href` is here rather than in ui/github.js for the same

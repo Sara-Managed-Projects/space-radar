@@ -445,10 +445,10 @@ export function createHud(ctx, host) {
 
   // --- the 4 Hz half: words, velocity, occluders -----------------------------------------------------
 
-  // What the tag may not sit under: the panel rails, the card, the phone's bottom bar.
-  // Since spec 0061: the sidebar (which holds the card on a desktop), the rail, the pill and the
-  // What-to-show popover while it is open.
-  const PANELS = '#sr-side, #sr-rail, #sr-time, #sr-card, #sr-show, .sr-mobilebar';
+  // What the tag may not sit under. Since spec 0061: the sidebar (which holds the card; on a phone
+  // it is the sheet), the rail, the pill, the What-to-show popover while it is open, and the
+  // phone's top bar (task 3).
+  const PANELS = '#sr-side, #sr-rail, #sr-time, #sr-card, #sr-show, #sr-top';
   function panelRects() {
     const out = [];
     if (document.documentElement.classList.contains('sr-clean')) return out;

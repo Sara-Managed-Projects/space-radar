@@ -39,6 +39,11 @@
 // sheet is whole without them. The networks' own pages are plain links; nothing of theirs loads
 // until one is clicked, and no SDK, pixel or tracking parameter is ever added.
 //
+// ON A PHONE it is the phone's one sheet (ui/sheet.js), with two heights and a dismiss: it opens at
+// half, so the picture and the first actions are up and the selection is still on screen above
+// them (scene/viewshift.js counts it), a drag or the handle takes it to full, and a drag down
+// from half closes it, as × and Escape do (spec 0061 task 3).
+//
 // EMAIL is a mailto: link with the subject and the text. A mailto: cannot carry a file, and the
 // sheet says so in one line: the picture goes by Share (where the device can attach it) or by
 // downloading it first.
@@ -47,6 +52,7 @@ import { COPY, t } from '../copy/en.js';
 import { cardWords } from './cards.js';
 import { shareUrl, shareState, tripWords, appBase, toast } from './share.js';
 import { makePostcard, pdfFromJpeg, saveBlob } from './printcompose.js';
+import { createSheet } from './sheet.js';
 import { WIKI_TITLES } from '../data/wikititles.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -565,6 +571,7 @@ export function createShareSheet(ctx) {
     jpegBtn.disabled = pdfBtn.disabled = true;
     render();
     root.hidden = false;
+    seatSheet();
     // The rail's What to show is the other popover in that corner: one at a time.
     if (ctx && ctx.rail && typeof ctx.rail.closeShow === 'function') ctx.rail.closeShow();
     title.focus({ preventScroll: true });
@@ -573,6 +580,26 @@ export function createShareSheet(ctx) {
     const looked = w.record ? lookUp(my, w.record, appBase(), w.live) : null;
     if (looked) await Promise.race([looked, new Promise((r) => setTimeout(r, 1500))]);
     if (my === token) drawPicture(my);
+  }
+
+  // The phone's sheet behaviour, made the first time the sheet opens on a phone and dropped on a
+  // desktop, where the sheet is the rail's popover.
+  let sheet = null;
+  const isPhone = () => document.documentElement.classList.contains('sr-phone');
+  function seatSheet() {
+    if (isPhone() && !sheet) {
+      sheet = createSheet(root, {
+        detents: ['half', 'full'],
+        initial: 'half',
+        grab: '.sr-share__head',
+        scrollers: '.sr-share__body',
+        dismiss: () => close(),
+      });
+    } else if (!isPhone() && sheet) {
+      sheet.destroy();
+      sheet = null;
+    }
+    if (sheet) sheet.set('half');
   }
 
   function close() {

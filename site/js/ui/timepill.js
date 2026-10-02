@@ -20,6 +20,12 @@
 // the one place the pill turns ember (0045: ember is the only interactive colour, and here it also
 // means "this is not the present").
 //
+// THE LIVE LINE (spec 0061 task 3). On a phone the same words are also one line under the top bar's
+// search ("● LIVE · 02 OCT 05:43 UTC"), in the shell's lineHost: the pill hides while a card is up
+// and when the sheet is full, and whether the picture is now is the one thing a visitor must
+// always be able to see (docs/ui-guide.md principle 6). It is text, not a control; the pill is the
+// control. The line is display: none on a desktop, where the pill never goes.
+//
 // It reads ctx.clock and never Date.now(): the present is clock.now() while the clock is live,
 // remembered as the scrub anchor, exactly as the panel's clock did.
 
@@ -109,6 +115,14 @@ export function createTimePill(ctx, host) {
   root.append(prev, read, rateBtn, next, live, say);
   (host || document.body).appendChild(root);
 
+  const lineHost = ctx && ctx.shell && ctx.shell.lineHost;
+  const line = el('p', 'sr-liveline');
+  const lineDot = el('span', 'sr-time__dot');
+  lineDot.setAttribute('aria-hidden', 'true');
+  const lineWords = el('span', 'sr-liveline__words');
+  line.append(lineDot, lineWords);
+  if (lineHost) lineHost.appendChild(line);
+
   let anchorMs = safeNow();
   let pausedRate = null;
 
@@ -124,6 +138,8 @@ export function createTimePill(ctx, host) {
     const rate = Number(clock && clock.rate);
     const text = pillText({ tMs, live: liveNow, rate, anchorMs });
     if (words.textContent !== text) words.textContent = text;
+    if (lineWords.textContent !== text) lineWords.textContent = text;
+    line.classList.toggle('is-away', !liveNow);
     root.classList.toggle('is-live', liveNow);
     root.classList.toggle('is-away', !liveNow);
     root.classList.toggle('is-held', rate === 0);
@@ -222,7 +238,7 @@ export function createTimePill(ctx, host) {
   const api = {
     root,
     paint,
-    destroy() { clearInterval(timer); root.remove(); },
+    destroy() { clearInterval(timer); root.remove(); line.remove(); },
   };
   if (ctx) ctx.timePill = api;
   return api;
