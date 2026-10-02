@@ -20,7 +20,8 @@
 // no allocation) and nothing is touched per frame but a uniform and, in shell mode, the group's
 // position. The binary (2.6 MB) is fetched the first time a star could actually be seen; the
 // names file (3 390 named stars with positions, 0.3 MB) is what search and the card need, and it
-// loads with the layer.
+// loads with the layer -- which since 2026-10-01 is after the first visit (main.js OFF THE FIRST
+// VISIT): a few seconds after the map's other data, or at once on the ladder or in search.
 //
 // HONESTY. Only stars with a measured distance are here; the 10 224 HYG rows without one are
 // counted (`unplaced()`) and never drawn on an invented shell. A tap on an unnamed star yields a
@@ -38,6 +39,12 @@ import { STRETCH_PX, STRETCH_VERT_HEAD, STRETCH_VERT, STRETCH_FRAG_HEAD, STRETCH
 export { STRETCH_PX };
 
 export const LY_KM = 9460730472580.8;
+/**
+ * How many named stars data/stars3d.names.json holds (scripts/build-stars3d.py), shipped here so the
+ * Stars layer can state its number before the file has loaded (main.js OFF THE FIRST VISIT).
+ * tests/test_stars3d.mjs holds it to the file: rebuild one, update the other.
+ */
+export const NAMED_STARS = 3390;
 // The Sun's absolute visual magnitude (IAU 2015 B3's V-band value, 4.83), and its B-V (0.65).
 export const SUN_ABS_MAG = 4.83;
 const SUN_BV = 0.65;

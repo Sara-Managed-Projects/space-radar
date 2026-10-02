@@ -299,6 +299,9 @@ export function createExplore(ctx, host) {
   // While a query is typed the results REPLACE the lists (design §2): one column, one answer.
   const onType = () => root.classList.toggle('is-searching', !!(input && input.value.trim().length >= 2));
   if (input) { input.addEventListener('input', onType); input.addEventListener('change', onType); input.addEventListener('blur', () => setTimeout(onType, 0)); }
+  // The named stars and the exoplanets load after the first visit (main.js OFF THE FIRST VISIT);
+  // a visitor reaching for the search box wants them now, so the first focus asks for them.
+  if (input) input.addEventListener('focus', () => { if (typeof ctx.loadAfterFirstVisit === 'function') ctx.loadAfterFirstVisit(); });
 
   const tabs = el('div', 'sr-tabs');
   tabs.setAttribute('role', 'tablist');
@@ -602,6 +605,8 @@ export function createExplore(ctx, host) {
       card.title = [row.blurb, row.off ? row.reason : ''].filter(Boolean).join(' ');
       card.addEventListener('click', () => {
         if (row.off) return; // greyed WITH its reason (spec 0025 req 6), never started into a refusal
+        // Still waiting for its stars (waitsForLater): they first, then the trip.
+        if (!row.planned && laterPending()) { ctx.loadAfterFirstVisit().then(() => { try { trip.start(row.id); } catch { /* says why itself */ } }); return; }
         try { trip.start(row.id); } catch { /* the trip says why itself */ }
       });
       hostT.grid.appendChild(card);
@@ -614,9 +619,18 @@ export function createExplore(ctx, host) {
   for (const [id, hostT] of tripHosts) {
     hostT.more.addEventListener('click', () => { hostT.expanded = !hostT.expanded; paintTrips(id); });
   }
+  // OFF THE FIRST VISIT (main.js, internal #188): the named stars and the exoplanets land a few
+  // seconds after the rest. A trip with a stop the map does not hold yet, while they are still to
+  // come, waits for them ("working it out") instead of being planned without them and greyed.
+  const laterPending = () => typeof ctx.laterLayersLoaded === 'function' && typeof ctx.loadAfterFirstVisit === 'function' && !ctx.laterLayersLoaded();
+  const waitsForLater = (tour) => laterPending()
+    && (Array.isArray(tour.stops) ? tour.stops : []).some((s) => s && s.record && !ctx.recordById(s.record));
+  const waiting = new Set();
   function planAll(only) {
     for (const tour of tours) {
       if (only && !only(tour)) continue;
+      if (waitsForLater(tour)) { waiting.add(tour.id); continue; }
+      waiting.delete(tour.id);
       Promise.resolve(trip.plan(tour.id))
         .then((p) => { if (p) { plans.set(tour.id, p); paintTrips(current); } })
         .catch(() => { plans.set(tour.id, { offerable: true, failed: true }); paintTrips(current); });
@@ -625,6 +639,7 @@ export function createExplore(ctx, host) {
   if (tours.length) {
     window.addEventListener('sr:layers-ready', () => planAll(), { once: true });
     if (window.__srLayersReady) planAll();
+    window.addEventListener('sr:later-layers', () => { if (waiting.size) planAll((tour) => waiting.has(tour.id)); });
     // A trip from your own place re-plans when the place changes (spec 0038), and only those.
     window.addEventListener('sr:observer', () => { if (plans.size) planAll((tour) => tour.requires_observer); });
   }

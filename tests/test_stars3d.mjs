@@ -10,7 +10,7 @@ const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
 const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
 const { stage } = await import(join(JS, 'scene/stage.js'));
-const { parseStars3d, recordsFromNames, createStars3d, LY_KM, STRETCH_PX } = await import(join(JS, 'scene/stars3d.js'));
+const { parseStars3d, recordsFromNames, createStars3d, LY_KM, STRETCH_PX, NAMED_STARS } = await import(join(JS, 'scene/stars3d.js'));
 const { propagate, PROPAGATORS } = await import(join(JS, 'propagate/index.js'));
 const { LAYERS } = await import(join(JS, 'data/layers.js'));
 const { buildIndex, findMatches } = await import(join(JS, 'ui/search.js'));
@@ -38,6 +38,8 @@ check(far === 0, `no star is on the 100 000 pc "unknown" shell (${far} are)`);
 // 2. records from the names file: propagate places them, and the stellar rung holds them
 const recs = recordsFromNames(namesDoc.rows);
 check(recs.length === namesDoc.rows.length, `one record per named star (${recs.length})`);
+// Internal #188: the layer states this number before the file has loaded (main.js OFF THE FIRST VISIT).
+check(NAMED_STARS === recs.length, `NAMED_STARS (${NAMED_STARS}) is the names file's count (${recs.length}): rebuild one, update the other`);
 const sirius = recs.find((r) => r.name === 'Sirius');
 check(sirius && sirius.klass === 'star' && sirius.propagator === 'static' && sirius.id === 'hip-32349', `Sirius is a star record keyed by HIP (${sirius && sirius.id})`);
 check(sirius.meta.aliases.includes('α CMa') && sirius.meta.aliases.includes('HIP 32349'), `its aliases are the Bayer and HIP names (${sirius.meta.aliases})`);

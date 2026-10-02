@@ -183,6 +183,13 @@ if (BASE || FROM) {
   // The wiring: the flag the real boot waits on, and the CI step that runs the real boot.
   const main = readFileSync(join(ROOT, 'site/js/main.js'), 'utf8');
   check(/window\.__srLayersReady = true;\s*\n\s*window\.dispatchEvent\(new CustomEvent\('sr:layers-ready'\)\)/.test(main), 'main.js sets window.__srLayersReady as it dispatches sr:layers-ready');
+  // Internal #188: the named stars and the exoplanet table are held out of the boot lanes and
+  // loaded after sr:layers-ready (or when the ladder, the search box, a trip or a link needs them).
+  check(/const LATER_LAYERS = new Set\(\['stars', 'exoplanets'\]\);/.test(main) && /if \(LATER_LAYERS\.has\(layer\.id\)\) \{ later\.push\(layer\); continue; \}/.test(main),
+    'main.js keeps the named stars and the exoplanets out of the boot lanes');
+  check(/dispatchEvent\(new CustomEvent\('sr:layers-ready'\)\);\s*\n\s*setTimeout\(\(\) => \{[\s\S]{0,200}loadAfterFirstVisit\(\)[\s\S]{0,120}LATER_LAYERS_MS\)/.test(main),
+    'and loads them LATER_LAYERS_MS after sr:layers-ready');
+  check(/function openAt\(ctx, id\) \{[\s\S]{0,400}loadAfterFirstVisit\(\)\.then/.test(main), 'a link to a star or an exoplanet waits for them rather than saying it names nothing');
   const screens = readFileSync(join(ROOT, '.github/workflows/screens.yml'), 'utf8');
   check(/node tests\/test_first_visit_bytes\.mjs --base=/.test(screens), 'screens.yml boots the app through this test');
   check(BUDGETS.audio_at_boot_bytes === 0 && BUDGETS.og_at_boot_bytes === 0, 'nothing under /audio/ or /og/ at boot, by budget');

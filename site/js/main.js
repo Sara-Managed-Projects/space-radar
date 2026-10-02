@@ -43,7 +43,7 @@ import { rungOf } from './audio/pick.js';
 import { AUDIO } from './data/audio.js';
 import { rankPick, rankAll } from './scene/pickrank.js';
 import { createLod } from './scene/lod.js';
-import { createStars3d } from './scene/stars3d.js';
+import { createStars3d, NAMED_STARS } from './scene/stars3d.js';
 import { createGalaxy } from './scene/galaxy.js';
 import { createDsoGlow } from './scene/dsoglow.js';
 import { isLadderStage, isSystemStage } from './scene/stage.js';
@@ -87,6 +87,19 @@ function auroraStandIn(saveData, layerOn) {
   };
   return api;
 }
+
+/**
+ * OFF THE FIRST VISIT (2026-10-01, internal #188). The named stars (data/stars3d.names.json, 288 kB)
+ * and the exoplanet table (data/exoplanets.csv, 582 kB, the fallback CI and a visit without our
+ * snapshot read) are drawn only from the ladder's rungs and a star system's stage, never on the
+ * Earth the first screen shows. They were 870 kB of the 6.35 MB first visit all the same. They now
+ * load LATER_LAYERS_MS after sr:layers-ready, in an idle moment (past the two seconds
+ * tests/test_first_visit_bytes.mjs lets the first visit settle), or at once when something needs
+ * them sooner: a ladder or system stage, the search box, a trip or an `at` the map cannot resolve
+ * without them (ctx.loadAfterFirstVisit).
+ */
+const LATER_LAYERS = new Set(['stars', 'exoplanets']);
+const LATER_LAYERS_MS = 3000;
 
 export async function boot({ setStatus } = {}) {
   const say = setStatus || (() => {});
@@ -381,7 +394,11 @@ export async function boot({ setStatus } = {}) {
   // A trip the visitor has already started by then outranks the link (ui/urlstate.js laterLink).
   window.addEventListener('sr:layers-ready', () => {
     const tripRunning = !!(ctx.trip && ctx.trip.state && ctx.trip.state.phase !== 'idle');
-    applyUrlState(ctx, laterLink(link, tripRunning));
+    const apply = () => applyUrlState(ctx, laterLink(link, tripRunning));
+    // A trip's stops may be stars or exoplanets (OFF THE FIRST VISIT): those land first. An `at`
+    // waits only if it does not resolve without them (openAt).
+    if (link && link.trip && ctx.loadAfterFirstVisit) ctx.loadAfterFirstVisit().then(apply, apply);
+    else apply();
     // Today's clouds: their first look is START_DELAY_MS after this, never during the first visit.
     ctx.liveClouds.start();
   }, { once: true });
@@ -393,6 +410,15 @@ export async function boot({ setStatus } = {}) {
     // test (spec 0044) waits on it.
     window.__srLayersReady = true;
     window.dispatchEvent(new CustomEvent('sr:layers-ready'));
+    setTimeout(() => {
+      if (typeof requestIdleCallback === 'function') requestIdleCallback(() => ctx.loadAfterFirstVisit(), { timeout: 3000 });
+      else ctx.loadAfterFirstVisit();
+    }, LATER_LAYERS_MS);
+  });
+  // A rung of the ladder or a star system's stage draws them: no waiting for the idle moment.
+  window.addEventListener('sr:stage', (e) => {
+    const id = e && e.detail ? e.detail.worldId : stage.worldId;
+    if ((isLadderStage(id) || isSystemStage(id)) && ctx.loadAfterFirstVisit) ctx.loadAfterFirstVisit();
   });
 
   // The device tier (scene/quality.js, 2026-09-28), decided before the first frame and acted on
@@ -1074,8 +1100,11 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
   const idsOf = (l) => (Array.isArray(l.sources) ? l.sources : l.source ? [l.source] : []);
   const local = [];
   const upstream = [];
+  const later = [];
   for (const layer of ordered) {
     if (layer.deferred) continue; // loads when the visitor switches it on (ctx.loadLayerNow)
+    // OFF THE FIRST VISIT (LATER_LAYERS, top of this file): after sr:layers-ready, or when asked.
+    if (LATER_LAYERS.has(layer.id)) { later.push(layer); continue; }
     // The aurora has no records to load: scene/aurora.js fetches its own forecast, once the layers have landed.
     if (layer.draw === 'aurora') continue;
     const srcs = idsOf(layer);
@@ -1085,6 +1114,20 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
   }
 
   ctx.loadLayerNow = (layer) => { if (layer && layer.deferred) { layer.deferred = false; return one(layer); } return Promise.resolve(); };
+  let laterLoad = null;
+  ctx.laterLayersLoaded = () => later.length === 0 || (laterLoad !== null && later.every((l) => layerRecords.has(l.id)));
+  ctx.loadAfterFirstVisit = () => {
+    if (!laterLoad) {
+      laterLoad = Promise.all(later.map((l) => one(l))).then(() => {
+        window.dispatchEvent(new CustomEvent('sr:later-layers', { detail: { ids: later.map((l) => l.id) } }));
+      });
+    }
+    return laterLoad;
+  };
+  // The Stars layer's number before its names have landed: the count the names file holds, shipped
+  // in scene/stars3d.js (NAMED_STARS, which tests/test_stars3d.mjs holds to the file), so What to
+  // show says "3 390" from the first frame rather than "loading" for a layer that is there.
+  for (const layer of later) if (layer.draw === 'stars3d') layer.count = () => ctx.stars3d.count() ?? NAMED_STARS;
 
   async function one(layer) {
     const gl = glyphLayers.get(layer.id);
@@ -1242,6 +1285,11 @@ function resolveAt(ctx, id) {
 
 function openAt(ctx, id) {
   const record = resolveAt(ctx, id);
+  // A star or an exoplanet before its layer has landed (OFF THE FIRST VISIT): load it, then look again.
+  if (!record && ctx.loadAfterFirstVisit && !ctx.laterLayersLoaded()) {
+    ctx.loadAfterFirstVisit().then(() => openAt(ctx, id), () => openAt(ctx, id));
+    return;
+  }
   if (!record) { linkNote(ctx, COPY.link.unknownAt, ['at']); return; }
   // Spec 0021's rule, as ui/search.js: a record whose layer is off has no mark and no model, so
   // flying to it arrives at empty sky. The layer goes on first, and the panel is told (it paints
