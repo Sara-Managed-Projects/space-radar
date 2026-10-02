@@ -516,6 +516,19 @@ export const COPY = {
     tagline: 'Everything in motion around Earth, where it really is, right now.',
   },
 
+  // ui/subscribe.js (issue #251): email-only alerts for upcoming launches and meteor shower
+  // peaks -- the same for every subscriber, never a per-location pass alert (that is issue #290).
+  subscribe: {
+    heading: 'Get an email for launches and meteor showers',
+    emailPlaceholder: 'you@example.com',
+    launchesLabel: 'Upcoming launches',
+    showersLabel: 'Meteor shower peaks',
+    submit: 'Subscribe',
+    sending: 'Sending…',
+    pending: 'Check your email to confirm.',
+    couldNotReach: 'Could not reach the subscription service.',
+  },
+
   // "Six storms are turning": a count a person reads as a word (ui/explore.js Right now).
   numberWords: SMALL_WORDS,
 

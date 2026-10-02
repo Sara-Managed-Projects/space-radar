@@ -29,6 +29,7 @@ import { showCard, hideCard } from './ui/cards.js';
 import { createShell } from './ui/shell.js';
 import { createExplore } from './ui/explore.js';
 import { createRail } from './ui/rail.js';
+import { createSubscribe } from './ui/subscribe.js';
 import { createTimePill } from './ui/timepill.js';
 import { createSceneNote } from './ui/scenenote.js';
 import { buildIndex, findMatches, LINK_MIN_SCORE } from './ui/search.js';
@@ -332,6 +333,7 @@ export async function boot({ setStatus } = {}) {
     import('./ui/tonight.js').then((m) => m.renderTonight(host, ctx)).catch((e) => console.warn('the Tonight tab did not load', e));
   }, { replace: true });
   createRail(ctx, shell.railHost);
+  createSubscribe(); // issue #251: a standalone email-subscribe form, independent of the shell/rail layout
   createTimePill(ctx, shell.timeHost);
   // THE CONTROLS HINT (spec 0068 task 2, ui/keyhint.js): once per visitor, bottom-right, the keys
   // and the gestures that move the camera. Imported KEYHINT_MS after sr:layers-ready, so the first
