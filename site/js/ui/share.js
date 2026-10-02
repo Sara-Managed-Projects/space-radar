@@ -4,7 +4,7 @@
 //   installShare(ctx) -> ctx.share = { open, close, isOpen }
 //   ctx.share.open({ record, trip, opener }) -> Promise
 //     record  what to share (its tag, words, page); omitted: the selection, else the view
-//     trip    true: the running trip where it is; a tour id or {id}: that trip's page. Beats record.
+//     trip    true, or the running trip's id: it, where it is; another id or {id}: its page. Beats record.
 //     opener  where focus returns on close (default: the focused element)
 // Also: appBase, shareUrl, shareState, tripWords (pure), toast, openShare, savePostcard (the
 // card's Postcard, one press), shareButton (the trip bar's).

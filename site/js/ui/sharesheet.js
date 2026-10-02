@@ -462,8 +462,10 @@ export function createShareSheet(ctx) {
     const st = shareState(ctx, null);
     const live = !st.t || st.t === 'now';
     if (opts.trip) {
-      const id = typeof opts.trip === 'string' ? opts.trip : opts.trip && opts.trip.id;
-      if (id) {
+      const id = typeof opts.trip === 'string' ? opts.trip : opts.trip && (opts.trip.id || opts.trip.tourId);
+      const running = ctx && ctx.trip && ctx.trip.state && ctx.trip.state.phase !== 'idle' ? ctx.trip.state.tourId : null;
+      // The trip that is running is shared where it is (its stop); another one by its own page.
+      if (id && id !== running) {
         const tours = ctx && ctx.trip && typeof ctx.trip.tours === 'function' ? ctx.trip.tours() : [];
         const tour = tours.find((x) => x.id === id);
         return { name: tour ? tour.title : COPY.app.name, line: tour ? tour.blurb : '', link: shareUrl({ trip: id }), record: null };
