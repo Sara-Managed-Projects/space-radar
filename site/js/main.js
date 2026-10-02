@@ -714,7 +714,7 @@ export async function boot({ setStatus } = {}) {
    * taken as covered whatever the box says this frame.
    */
   const MODEL_SPAN = 1.32;
-  const BAND_CHROME = '#sr-side, #sr-card, #sr-top, .sr-mobilebar';
+  const BAND_CHROME = '#sr-side, #sr-card, #sr-top';
   const PHONE_CARD_SHARE = 0.48;
   function freeRoom(el) {
     if (!el || typeof el.getBoundingClientRect !== 'function') return null;
