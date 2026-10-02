@@ -55,6 +55,17 @@ function clear(node) {
   while (node.firstChild) node.removeChild(node.firstChild);
 }
 
+/** An external credit link: opens in a new tab, names itself to a screen reader via `title`. */
+function creditLink(label, href, title) {
+  const a = document.createElement('a');
+  a.href = href;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  a.title = title;
+  a.textContent = label;
+  return a;
+}
+
 function ensureHost(parent) {
   if (host && host.isConnected) return host;
   host = document.getElementById(HOST_ID);
@@ -406,7 +417,27 @@ export function createStatus(ctx, parent) {
 
   // The footer (spec 0061 design §6): the GitHub mark, which used to sit alone in the top corner of
   // the first screen, and what it links to in words. ui/github.js keeps the mark's rules.
+  //
+  // Issue 255: the long credit list above names every source, but the two things a visitor is
+  // actually looking at -- the planets and the Earth -- are Solar System Scope's textures (CC BY
+  // 4.0, which asks for the creator's name and a licence link, not just a mention in a repo file)
+  // and NASA's imagery and models. Named here, in words, with a link each, rather than left to be
+  // found three screens of list items down.
   const foot = el('footer', 'sr-status__foot');
+  const footCredit = el('p', 'sr-status__foot-credit', COPY.status.footCreditsIntro);
+  footCredit.appendChild(document.createTextNode(' '));
+  footCredit.appendChild(creditLink(
+    COPY.status.footCreditsTextures,
+    COPY.status.footCreditsTexturesHref,
+    COPY.status.footCreditsTexturesTitle,
+  ));
+  footCredit.appendChild(document.createTextNode(COPY.status.footCreditsSep));
+  footCredit.appendChild(creditLink(
+    COPY.status.footCreditsNasa,
+    COPY.status.footCreditsNasaHref,
+    COPY.status.footCreditsNasaTitle,
+  ));
+  foot.appendChild(footCredit);
   createGitHubMark(foot);
   node.appendChild(foot);
 
