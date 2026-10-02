@@ -1230,6 +1230,9 @@ export const COPY = {
       follow: 'Follow',
       followTitle: 'Fly to it and keep it in the middle of the view',
       ride: 'Ride along',
+      // Under 360 px a quarter of the row is 64 px and "Ride along" ends in an ellipsis there
+      // (docs/ui-guide.md §5, narrow: icon and one word). Row D's phone card says it this way.
+      rideShort: 'Ride',
       seeShort: 'See it',
       postcard: 'Postcard',
       share: 'Share',

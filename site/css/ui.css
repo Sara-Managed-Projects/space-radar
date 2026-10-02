@@ -597,6 +597,21 @@ html.sr-compact .sr-status {
   text-overflow: ellipsis;
 }
 
+/* Narrow (docs/ui-guide.md §5, under 360 px): icon and one word, where the action has a short one. */
+.sr-act__label--short {
+  display: none;
+}
+
+@media (max-width: 359px) {
+  .sr-act__label--long {
+    display: none;
+  }
+
+  .sr-act__label--short {
+    display: inline;
+  }
+}
+
 .sr-act .sr-icon {
   flex: 0 0 auto;
 }
@@ -4108,20 +4123,24 @@ html.sr-phone.sr-clean .sr-rail__btn--more {
   display: none;
 }
 
-/* The live line: the pill's words in its own face, over the scene with the globe labels' halo
-   rather than a third glass panel (row D draws it bare). */
+/* The live line: the pill's words in its own face, on a small pill of glass-strong. Row D draws it
+   bare; over the white cloud under the ISS it could not be read that way (principle 8 wins). */
 .sr-liveline {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
   margin: 0;
-  padding: 0 var(--sp-1);
+  padding: var(--sp-1) var(--sp-3);
   font: 500 13px/16px var(--sr-font-mono);
   letter-spacing: 0.04em;
   font-variant-numeric: tabular-nums;
   color: var(--sr-text);
   white-space: nowrap;
-  text-shadow: 0 0 2px var(--sr-space), 0 0 2px var(--sr-space), 0 0 4px var(--sr-space);
+}
+
+.sr-liveline.sr-float {
+  background: var(--sr-glass-strong);
+  border-radius: var(--sr-radius-pill);
 }
 
 .sr-liveline.is-away .sr-time__dot {
@@ -4400,6 +4419,18 @@ html.sr-phone .sr-time__live {
   height: 36px;
 }
 
+/* Under 380 px the pill's four parts need 372: the steps go, as the trip's Replay does at that
+   width (ui.css, the trip section). Stepping is still there: drag the readout, or its arrow keys. */
+@media (max-width: 379px) {
+  html.sr-phone .sr-time__step {
+    display: none;
+  }
+
+  html.sr-phone .sr-time {
+    padding: 0 var(--sp-1) 0 var(--sp-2);
+  }
+}
+
 html.sr-phone[data-sheet='full'] .sr-time,
 html.sr-phone.sr-card-open .sr-time {
   visibility: hidden;
@@ -4419,6 +4450,7 @@ html.sr-phone .sr-scenenote {
 
 /* The glass-strong surfaces answer the solid fallback themselves (.sr-float's would be lighter). */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .sr-liveline.sr-float,
   html.sr-phone #sr-side,
   html.sr-phone .sr-top .sr-search__row,
   html.sr-phone .sr-top .sr-search__pop {
@@ -4427,6 +4459,7 @@ html.sr-phone .sr-scenenote {
 }
 
 @media (prefers-reduced-transparency: reduce) {
+  .sr-liveline.sr-float,
   html.sr-phone #sr-side,
   html.sr-phone .sr-top .sr-search__row,
   html.sr-phone .sr-top .sr-search__pop {

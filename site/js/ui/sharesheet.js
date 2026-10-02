@@ -599,7 +599,14 @@ export function createShareSheet(ctx) {
       sheet.destroy();
       sheet = null;
     }
-    if (sheet) sheet.set('half');
+    if (sheet) {
+      // It opens AT half, not on its way there: with no transition for the opening frames, a slide
+      // from wherever the transform last was never runs (measured in headless Chrome: the sheet sat
+      // at full for seconds while the postcard drawing held the frames that would have moved it).
+      root.classList.add('is-dragging');
+      sheet.set('half');
+      requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove('is-dragging')));
+    }
   }
 
   function close() {

@@ -803,6 +803,11 @@ export function createTripFrame(ctx) {
       }
       return;
     }
+    // Leaving the intro on a phone: the sheet goes back to half, whatever height the intro needed
+    // (its Start below half on a 640 px screen raised it to full), because from here the scene is
+    // the trip and the stop card's head is what has to be up (spec 0061 task 3).
+    const phoneSheet = ctx.shell && typeof ctx.shell.sheet === 'function' ? ctx.shell.sheet() : null;
+    if (phoneSheet && !parts.panel.hidden && phoneSheet.detent() !== 'half') phoneSheet.set('half');
     // Emptied as well as hidden: an intro's Start left in the document is an ember button and a tab
     // stop nobody can see.
     if (!parts.panel.hidden || parts.panel.childElementCount) parts.panel.textContent = '';

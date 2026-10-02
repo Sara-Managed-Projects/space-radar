@@ -24,7 +24,8 @@
 // search ("● LIVE · 02 OCT 05:43 UTC"), in the shell's lineHost: the pill hides while a card is up
 // and when the sheet is full, and whether the picture is now is the one thing a visitor must
 // always be able to see (docs/ui-guide.md principle 6). It is text, not a control; the pill is the
-// control. The line is display: none on a desktop, where the pill never goes.
+// control. It sits on a small glass pill of its own: bare over a white cloud (the ISS's card, row
+// D's own picture) the halo the globe labels use was not enough to read it (principle 8). The line is display: none on a desktop, where the pill never goes.
 //
 // It reads ctx.clock and never Date.now(): the present is clock.now() while the clock is live,
 // remembered as the scrub anchor, exactly as the panel's clock did.
@@ -116,7 +117,7 @@ export function createTimePill(ctx, host) {
   (host || document.body).appendChild(root);
 
   const lineHost = ctx && ctx.shell && ctx.shell.lineHost;
-  const line = el('p', 'sr-liveline');
+  const line = el('p', 'sr-liveline sr-float');
   const lineDot = el('span', 'sr-time__dot');
   lineDot.setAttribute('aria-hidden', 'true');
   const lineWords = el('span', 'sr-liveline__words');

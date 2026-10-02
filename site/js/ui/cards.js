@@ -2283,7 +2283,18 @@ function actionButton(action, label, title, iconName, onClick, primary) {
   b.title = title;
   b.dataset.action = action;
   b.appendChild(icon(iconName));
-  b.appendChild(el('span', 'sr-act__label', label));
+  // A one-word label for a narrow phone where the action has one (copy: `<action>Short`); CSS
+  // shows one of the two, and the button's name is the full one either way.
+  const short = COPY.card.actions[`${action}Short`];
+  if (short && short !== label) {
+    b.setAttribute('aria-label', label);
+    b.appendChild(el('span', 'sr-act__label sr-act__label--long', label));
+    const s = el('span', 'sr-act__label sr-act__label--short', short);
+    s.setAttribute('aria-hidden', 'true');
+    b.appendChild(s);
+  } else {
+    b.appendChild(el('span', 'sr-act__label', label));
+  }
   b.addEventListener('click', onClick);
   return b;
 }

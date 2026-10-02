@@ -100,7 +100,7 @@ check(sheetFor('home', null) === null && sheetFor('card', 'card') === null, 'the
 // in the middle of the strip between the top bar's foot and the sheet's top (docs/ui-guide.md §5).
 for (const [W, Hh] of [[390, 844], [320, 640]]) {
   const hs = sheetHeights({ viewH: Hh, fullH: Hh - FULL_GAP_PX });
-  const top = 87; // the top bar and its live line, as measured at 390 x 844 (8 + 48 + 8 + 16 + 7)
+  const top = 90; // the top bar and its live line, as measured at 390 x 844 (8 + 48 + 8 + 26)
   const bar = { top: 8, bottom: top, width: W - 32 };
   check(coveredFromTop([bar], W, Hh) === top, `${W} x ${Hh}: the top bar covers to its foot`);
   for (const d of ['peek', 'half']) {
