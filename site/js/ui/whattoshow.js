@@ -326,7 +326,7 @@ export function createWhatToShow(ctx, opts = {}) {
 
   /** Open or shut each group, or -- while the filter has words -- every group with a match, open. */
   function layout() {
-    const q = filter ? filter.value.trim() : '';
+    const q = filter ? String(filter.value || '').trim() : '';
     let any = false;
     for (const [id, h] of heads) {
       let hits = 0;

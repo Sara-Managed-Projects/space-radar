@@ -283,6 +283,8 @@ jobs:
         run: node tests/test_trip_pictures.mjs
       - name: "The controls hint: once, never on a link or a trip, every keycap a key the app answers (spec 0068)"
         run: node tests/test_keyhint.mjs
+      - name: What to show, grouped, and its Keys row (spec 0068 task 3, issue 321)
+        run: node tests/test_whattoshow.mjs
       - name: "A year in a minute: four worlds on the Sun's stage, drawn true, at 525 600"
         run: node tests/test_year_trip.mjs
       # Spec 0040: TRAPPIST-1 at its own scale. Kepler's third law on the seven rows, the planets the

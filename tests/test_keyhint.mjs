@@ -161,6 +161,12 @@ check(/prefers-reduced-motion: reduce\)\s*\{[\s\S]*?transition: opacity 120ms li
 check(/\.sr-keyhint \{[^}]*right: var\(--sr-inset\);[^}]*bottom: var\(--sr-inset\);/.test(css), 'bottom-right, 20 px in');
 check(read('tests/test_tokens.mjs').includes("'site/css/keyhint.css'"), 'test_tokens.mjs holds keyhint.css to the same rules as ui.css');
 
+// REOPENED FROM WHAT TO SHOW (issue #321): its last row calls ctx.keyhint.show(), named from the
+// hint's own words; tests/test_whattoshow.mjs clicks it in a small DOM.
+const wts = read('site/js/ui/whattoshow.js');
+check(/ctx\.keyhint\.show\(\)/.test(wts) && /sr-show__keys/.test(wts), 'What to show has a Keys row that reopens the hint');
+check(COPY.controls.keysRow && COPY.controls.keysRowTouch, 'and its words are in copy/en.js');
+
 if (problems.length) {
   console.error('keyhint FAILED:\n  ' + problems.join('\n  '));
   process.exit(1);
