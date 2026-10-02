@@ -1032,6 +1032,11 @@ export const COPY = {
     actionsLabel: 'What you can do',
     sourceLabel: 'Where this comes from',
     unknownName: 'Unnamed object',
+    // A record whose klass matches none of COPY.klass -- a bad feed row, a typo in a registry
+    // entry -- has no template to build a sentence from. The card used to borrow the satellite
+    // template's lead and tell a visitor it was "going round the Earth", which is exactly the
+    // invention the honesty rule forbids: true of nothing that is not actually a satellite.
+    unknownKind: '{name} is on the map, but we do not know what kind of object it is',
 
     rows: {
       altitude: 'Height above the ground',

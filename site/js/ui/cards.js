@@ -963,11 +963,11 @@ export function firstSentence(record, ctx, m, passInfo) {
   const builder = TEMPLATES[klass];
   const template = COPY.templates[klass];
   if (!builder || !template) {
-    // No template for this class: say what it is and stop. Never invent.
-    return buildSentence(
-      t(COPY.templates.satellite.lead, { name: displayName(record) }),
-      [],
-    );
+    // No template for this class: say what it is and stop. Never invent -- not even the shape of
+    // the sentence. Borrowing the satellite template's lead told a visitor an object was "going
+    // round the Earth" whatever it actually was, because that is the one klass every record used
+    // to fall back to.
+    return buildSentence(t(COPY.card.unknownKind, { name: displayName(record) }), []);
   }
   const sentence = builder(record, ctx, m, passInfo, template);
   return sentence.length > MAX_FIRST_SENTENCE

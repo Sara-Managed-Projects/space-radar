@@ -289,6 +289,19 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
   check(/is a satellite going round the Earth/.test(String(firstSentence(plain, { ...ctx, records: () => [plain] }, m(plain), { state: 'none' }))), 'a CubeSat with no route is still just a satellite');
 }
 
+// A record whose klass is not one of COPY.klass -- a typo in a feed or a registry row -- had no
+// template, and the card borrowed the satellite template's lead: "WEATHER-BALLOON-1 is a satellite
+// going round the Earth" for a thing that is not a satellite and may not even orbit. Never invent.
+{
+  const now = Date.UTC(2026, 8, 22);
+  const ctx = { clock: { now: () => now }, worlds: null, selected: () => null, records: () => [] };
+  const m = { ok: true, tMs: now, altKm: 1, distSunKm: null, distEarthKm: null, speedKmh: 1 };
+  const mystery = { id: 'x-1', name: 'WEATHER-BALLOON-1', klass: 'balloon', layer: 'misc', meta: {} };
+  const said = String(firstSentence(mystery, ctx, m, { state: 'none' }));
+  check(!/satellite/.test(said) && !/going round the Earth/.test(said), `an unrecognised klass is not called a satellite: "${said}"`);
+  check(/WEATHER-BALLOON-1/.test(said) && /do not know what kind/.test(said), `it says plainly that the kind is not known: "${said}"`);
+}
+
 // "Found: 2 016, Transit" (a year printed as a quantity) and "123P/West-Hartley is a comet on a long
 // loop around the Sun" (a 7.6-year comet) -- both read off the live site, 2026-09-22.
 {
