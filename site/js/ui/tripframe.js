@@ -102,7 +102,7 @@
 
 import { COPY, t, fmt, formatRate, formatShownAt } from '../copy/en.js';
 import { nextTripOrder } from './trippicker.js';
-import { shareLink } from './share.js';
+import { openShare } from './share.js';
 import { icon } from './cards.js';
 
 const HOST_ID = 'sr-trip';
@@ -531,19 +531,14 @@ export function createTripFrame(ctx) {
   }
 
   /**
-   * Share the trip: spec 0061 task 8's share sheet where it is built (`ctx.share.open`, with the
-   * trip and, at a stop, the stop's subject), else spec 0033's link (ui/share.js shareLink: the
-   * link to this stop, or the trip's own page at stop 1, in the trip's title and blurb). Whichever
-   * of the two lands first, the button works.
+   * Share the trip: spec 0061 task 8's one share sheet (ui/share.js openShare installs it if it is
+   * not yet), with the trip and, at a stop, the stop's subject.
    */
   function onShare(atStop) {
     const st = trip.state;
-    if (ctx.share && typeof ctx.share.open === 'function') {
-      const id = atStop && typeof trip.currentRecordId === 'function' ? trip.currentRecordId() : null;
-      const record = id && typeof ctx.recordById === 'function' ? ctx.recordById(id) : null;
-      return ctx.share.open({ trip: st.tourId, record: record || null });
-    }
-    return shareLink(ctx);
+    const id = atStop && typeof trip.currentRecordId === 'function' ? trip.currentRecordId() : null;
+    const record = id && typeof ctx.recordById === 'function' ? ctx.recordById(id) : null;
+    return openShare(ctx, { trip: st.tourId, record: record || null });
   }
 
   // --------------------------------------------------------------------------- the keyboard
