@@ -4390,7 +4390,7 @@ html.sr-phone.sr-trip-collapsed #sr-side {
 html.sr-phone .sr-time {
   bottom: 0;
   z-index: var(--sr-z-pill);
-  height: 44px;
+  height: 48px;
   transform: translate(-50%, calc(-1 * (var(--sr-sheet-h) + var(--sp-3))));
 }
 
@@ -4415,9 +4415,11 @@ html.sr-phone .sr-time__read {
   padding: 0 var(--sp-2);
 }
 
+/* Every part of the pill is a 44 px target on a phone (docs/ui-guide.md §3.9, measured: the rate
+   button was 48 × 36). */
 html.sr-phone .sr-time__rate,
 html.sr-phone .sr-time__live {
-  height: 36px;
+  height: 44px;
 }
 
 /* Under 380 px the pill's four parts need 372: the steps go, as the trip's Replay does at that
@@ -4442,7 +4444,7 @@ html.sr-phone.sr-card-open .sr-time {
 /* A toast stands above the pill, and so above the sheet; the scene note under the top bar. */
 html.sr-phone .sr-toast {
   top: auto;
-  bottom: calc(var(--sr-sheet-h) + var(--sp-3) + 44px + var(--sp-3));
+  bottom: calc(var(--sr-sheet-h) + var(--sp-3) + 48px + var(--sp-3));
 }
 
 html.sr-phone .sr-scenenote {
