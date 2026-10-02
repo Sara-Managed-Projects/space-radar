@@ -4149,9 +4149,19 @@ html.sr-phone.sr-clean .sr-rail__btn--more {
   box-shadow: inset 0 0 0 1.5px var(--sr-ember);
 }
 
-/* At full the sheet's top meets the search row; the line would sit on its handle. */
-html.sr-phone[data-sheet='full'] .sr-top__line {
-  visibility: hidden;
+/* ONE CLOCK ON SCREEN. The pill says the time whenever it is up; the line under the search says it
+   only while the pill is not (a card open), so the phone never shows "LIVE · 02 OCT 07:20 UTC"
+   twice. Driven by the state the shell and the sheet already write on <html> (`sr-card-open`,
+   `data-sheet`), not by a timer. At full the sheet's top meets the search row and the line would
+   sit on its handle, so neither shows there: full is a page, and one drag down brings the pill
+   back. During a trip the whole top bar goes (the trip section). `display`, not `visibility`, so
+   the bar's box shrinks with it and scene/viewshift.js gives the scene the 34 px back. */
+html.sr-phone .sr-top__line {
+  display: none;
+}
+
+html.sr-phone.sr-card-open:not([data-sheet='full']) .sr-top__line {
+  display: block;
 }
 
 /* The popovers drop from the bar: What to show across it, More as a short menu at its right. */

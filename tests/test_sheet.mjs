@@ -100,7 +100,9 @@ check(sheetFor('home', null) === null && sheetFor('card', 'card') === null, 'the
 // in the middle of the strip between the top bar's foot and the sheet's top (docs/ui-guide.md §5).
 for (const [W, Hh] of [[390, 844], [320, 640]]) {
   const hs = sheetHeights({ viewH: Hh, fullH: Hh - FULL_GAP_PX });
-  const top = 90; // the top bar and its live line, as measured at 390 x 844 (8 + 48 + 8 + 26)
+  // The top bar's foot as measured at 390 x 844: 56 (8 + 48) when the pill has the time, 90 with
+  // the live line under it (+ 8 + 26) while a card is open. Both must leave the subject in the band.
+  for (const top of [56, 90]) {
   const bar = { top: 8, bottom: top, width: W - 32 };
   check(coveredFromTop([bar], W, Hh) === top, `${W} x ${Hh}: the top bar covers to its foot`);
   for (const d of ['peek', 'half']) {
@@ -115,6 +117,7 @@ for (const [W, Hh] of [[390, 844], [320, 640]]) {
   }
   const full = uncoveredBand(Hh, top, hs.full);
   check(full.shift === Hh * MAX_SHIFT_FRACTION, `${W} x ${Hh} full: the shift is capped, the scene is not thrown off the top`);
+  }
 }
 check(coveredFromTop([{ top: 400, bottom: 460, width: 390 }], 390, 844) === 0, 'a bar in the middle of the screen is not the top bar');
 check(coveredFromTop([{ top: 8, bottom: 56, width: 120 }], 390, 844) === 0, 'nor is a narrow one (the trip\'s Leave alone)');
@@ -146,7 +149,12 @@ check(uncoveredBand(844, 0, 0).shift === 0, 'nothing covering, nothing moved');
   check(/width: 36px;\s*height: 4px/.test(rule('.sr-sheet__grabber')), 'the grabber is 36 × 4');
   check(/html\.sr-phone #sr-side,[\s\S]{0,120}transition: opacity 120ms linear/.test(css), 'reduced motion: the sheet jumps (no transform transition)');
   check(/calc\(-1 \* \(var\(--sr-sheet-h\) \+ var\(--sp-3\)\)\)/.test(rule('html.sr-phone .sr-time')), 'the pill rides 12 px above the sheet');
-  check(/html\.sr-phone\[data-sheet='full'\] \.sr-time/.test(css), 'and hides at full');
+  check(/html\.sr-phone\[data-sheet='full'\] \.sr-time/.test(css) && /html\.sr-phone\.sr-card-open \.sr-time/.test(css), 'and hides at full and while a card is up');
+  // One clock on screen: the live line under the search shows only while the pill is hidden by a
+  // card, from the same <html> state (no second timer), and never at full, where the sheet meets the bar.
+  check(/html\.sr-phone \.sr-top__line \{\s*display: none;/.test(css), 'the live line is off by default on a phone, where the pill carries the time');
+  check(/html\.sr-phone\.sr-card-open:not\(\[data-sheet='full'\]\) \.sr-top__line \{\s*display: block;/.test(css), 'and on only while a card hides the pill, and not at full');
+  check(!/setInterval/.test(readFileSync(join(JS, 'ui/shell.js'), 'utf8')) && !/sr-top__line|lineHost\.hidden|line\.hidden/.test(readFileSync(join(JS, 'ui/timepill.js'), 'utf8').replace(/lineHost && lineHost\.appendChild\(line\)|const lineHost = [^\n]*/g, '')), 'no script toggles it: CSS reads the state the shell and sheet already write');
   check(/html\.sr-phone \.sr-top \.sr-search__input \{[^}]*font-size: 16px/.test(css), 'the phone\'s search field is 16 px (no zoom on focus)');
   check(/html\.sr-phone \.sr-tabs__tab \{[^}]*height: 44px/.test(css) && /width: calc\(var\(--sr-top-bar\) - 2px\)/.test(css), '44 px targets: the tabs and the top bar\'s tools');
 }
