@@ -2149,7 +2149,7 @@ export const COPY = {
       whyCountdown: 'lifting off {when}',
       whyFlown: 'which lifted off {when}',
       destination: 'heading for {destination}',
-      payload: 'carrying {payload}',
+      missionType: 'a {missionType} mission',
       illustrative: 'the track drawn here is a sketch of the climb, not a measured path',
     },
     probe: {

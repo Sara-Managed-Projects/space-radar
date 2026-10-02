@@ -46,6 +46,7 @@ import {
   UNITS,
  article, typeWords, NAKED_EYE_LIMIT } from '../copy/en.js';
 import { propagate } from '../propagate/index.js';
+import { launchLabel } from './labels.js';
 import { realModelFor } from '../scene/realmodels.js';
 import { sunlitState } from '../scene/shadow.js';
 import { periodMsOf, wholePathKind } from '../scene/orbitline.js';
@@ -174,6 +175,11 @@ function displayName(record) {
   // Then the hand-kept list's own name (data/layers.js NOTABLE), before the catalogue's string.
   if (!name && record && record.meta && record.meta.listName) name = String(record.meta.listName).trim();
   if (!name) name = record && record.name ? String(record.name).trim() : '';
+  // LL2 names a launch "Rocket Variant | Mission (Detail)" (ui/labels.js launchLabel): "Falcon 9
+  // Block 5 | Transporter 18" raw-truncated at MAX_NAME cut mid-word and lost the mission
+  // entirely. The scene label already shortens to "Falcon 9 · Transporter 18" first; the card
+  // gets the same shortened name so it keeps the mission instead of a garbled rocket name.
+  name = launchLabel(name);
   if (!name) return COPY.card.unknownName;
   if (name.length <= MAX_NAME) return name;
   return name.slice(0, MAX_NAME - 1).trimEnd() + COPY.punctuation.ellipsis;
@@ -607,14 +613,17 @@ const TEMPLATES = {
     const upcoming = t0 !== null && m.tMs !== null && t0 >= m.tMs;
     const destination =
       pick(md, 'destination', 'orbitName', 'goesTo') || pick(ascent, 'orbitClass');
-    const payload = pick(md, 'payload', 'mission');
+    // LL2's own mission.type (parsers.js parseLaunches): "Resupply", "Communications", "Human
+    // Exploration". The mission NAME is already in `lead` via launchLabel, so this clause adds
+    // the one LL2 field the lead does not carry rather than repeating it.
+    const missionType = pick(md, 'missionType');
     const lead = pad
       ? t(T.leadWithPad, { name: displayName(record), pad: String(pad) })
       : t(T.lead, { name: displayName(record) });
     return buildSentence(lead, [
       when ? t(upcoming ? T.whyCountdown : T.whyFlown, { when }) : null,
       destination ? t(T.destination, { destination: String(destination) }) : null,
-      payload ? t(T.payload, { payload: String(payload) }) : null,
+      missionType ? t(T.missionType, { missionType: String(missionType) }) : null,
     ]);
   },
 
