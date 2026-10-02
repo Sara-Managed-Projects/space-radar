@@ -586,8 +586,8 @@ CASES: list[tuple[str, str, str, str]] = [
 # scripts/check_copy.py guards a different file for a different reason, so it gets its own list.
 # Every user-visible string lives in site/js/copy/en.js; a literal that reaches the screen from a
 # file under site/js/ui/ is the leak. The check found one on the first run it was ever given --
-# `bar.setAttribute('aria-label', 'Panels')` in ui/mobile.js, plus two labels in a local table --
-# which is why it is a guard and not a comment.
+# `bar.setAttribute('aria-label', 'Panels')` in ui/mobile.js (the phone's old bar, gone since spec
+# 0061 task 3), plus two labels in a local table -- which is why it is a guard and not a comment.
 #
 # (name, file under site/js/ui/, find, replace)
 COPY_CASES: list[tuple[str, str, str, str]] = [
@@ -611,7 +611,7 @@ COPY_CASES: list[tuple[str, str, str, str]] = [
      "search.js", "  instances += 1;",
      "  instances += 1;\n  host.setAttribute('aria-label', 'Find an object by name');"),
     ("a label held in a local table on its way to the DOM",
-     "mobile.js", "  const PANELS = [", "  const PANELS = [\n    { id: 'sr-x', label: 'Everything' },"),
+     "sheet.js", "const HEIGHT_WORDS = [", "const HEIGHT_WORDS = [\n  { id: 'sr-x', label: 'Everything' },"),
     # Not a leak but the same file's other rule: a dash typed as two hyphens prints as two hyphens.
     ("a dash written as two hyphens in the copy",
      "../copy/en.js", "give or take — the date is not fixed yet",

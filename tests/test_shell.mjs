@@ -14,7 +14,7 @@
 //   node tests/test_shell.mjs
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const JS = join(ROOT, 'site/js');
@@ -170,9 +170,11 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
 
   const main = readFileSync(join(JS, 'main.js'), 'utf8');
   const at = (s) => main.indexOf(s);
-  const order = ['createShell(ctx', 'createExplore(ctx, shell.host(\'home\'))', 'createRail(ctx, shell.railHost)', 'createTimePill(ctx, shell.timeHost)', 'createMobileUI(ctx)', 'createTripFrame(ctx)'];
+  const order = ['createShell(ctx', 'createExplore(ctx, shell.host(\'home\'))', 'createRail(ctx, shell.railHost)', 'createTimePill(ctx, shell.timeHost)', 'createTripFrame(ctx)'];
   check(order.every((s) => at(s) > 0), `main.js builds the shell and everything it hosts (${order.filter((s) => at(s) < 0).join(', ') || 'all found'})`);
-  check(order.every((s, i) => i === 0 || at(order[i - 1]) < at(s)), 'in order: the boxes, then their contents, then the phone bar and the trip frame that hide them');
+  check(order.every((s, i) => i === 0 || at(order[i - 1]) < at(s)), 'in order: the boxes, then their contents, then the trip frame that hides them');
+  // Spec 0061 task 3: the phone's bar of two buttons and its drawers are gone; the sheet replaced them.
+  check(!/createMobileUI|ui\/mobile\.js/.test(main) && !existsSync(join(JS, 'ui/mobile.js')), 'the old phone bar is not built, and its module is gone');
   // What the first view does not show is not downloaded for it (0061 req 14): the sources sheet, the
   // What-to-show popover and the Tonight tab are dynamic imports, which scripts/gen_modulepreload.py
   // leaves out of the boot list by design.
@@ -188,9 +190,9 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   check(!/createControls|createGitHubMark|createPrintButton\(ctx\)|createCleanView\(ctx\)/.test(main), 'the old left panel, the corner mark and the loose corner buttons are not built');
   const frame = readFileSync(join(JS, 'ui/tripframe.js'), 'utf8');
   // Spec 0061 task 7: a trip hides the rail and the pill; the sidebar stays and is the trip's own
-  // view on a desktop (seat() makes it inert on a phone, where it is a drawer).
-  check(/const CHROME = \['sr-rail', 'sr-time'\]/.test(frame), 'a trip hides the rail and the pill');
-  check(/shell\.host\('trip'\)/.test(frame) && /seatTrip\(parts\.cardSlot\)/.test(frame) && /side\.inert = phone/.test(frame), 'and seats its sheet in the sidebar\'s trip view, the card in its slot, the drawer out of reach on a phone');
+  // view. Task 3: on a phone too, where the sidebar is the sheet, and the top bar goes with the rail.
+  check(/const CHROME = \['sr-rail', 'sr-time', 'sr-top'\]/.test(frame), 'a trip hides the rail, the pill and the phone\'s top bar');
+  check(/const sideHost = shell && typeof shell\.host === 'function' \? shell\.host\('trip'\)/.test(frame) && /seatTrip\(parts\.cardSlot\)/.test(frame) && !/side\.inert = phone/.test(frame), 'and seats its sheet in the sidebar\'s trip view at every width (one sheet on a phone), the card in its slot');
   check(/#sr-side \[data-trip=/.test(frame), 'and Leave gives focus back to the trip card it was started from');
 }
 

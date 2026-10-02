@@ -2657,7 +2657,7 @@ function leadNote(lead) {
  * not, so the corner it was asked to sit in was empty whenever no card was showing. It cannot read
  * the card with a CSS sibling selector either: the mark is appended at boot and the card host is
  * built lazily on the first showCard(), so the card is always AFTER it in the document. A class on
- * <html> is how ui/mobile.js and ui/tripframe.js already say the same kind of thing.
+ * <html> is how ui/shell.js and ui/tripframe.js already say the same kind of thing.
  */
 function markCardOpen(open) {
   if (typeof document === 'undefined' || !document.documentElement) return;

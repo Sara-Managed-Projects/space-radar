@@ -107,7 +107,7 @@ jobs:
         run: python3 tests/test_harvest.py
       # Every user-visible string lives in site/js/copy/en.js. Three files cited this check by name
       # before it existed; on the first run it was ever given it found three real leaks in
-      # ui/mobile.js, which is the argument for it in one line.
+      # ui/mobile.js (the phone's old bar), which is the argument for it in one line.
       - name: No user-visible string outside copy/en.js
         run: python3 scripts/check_copy.py
       - name: A new world is a registry row
@@ -205,11 +205,14 @@ jobs:
         run: node tests/test_comets_rank.mjs
       - name: The Sources panel says catalogue, not live, for what ships with the app
         run: node tests/test_status_kinds.mjs
-      - name: A phone's sheets move the view up by half of what they cover, the desktop sidebar right by half its edge
+      - name: A phone's sheet and top bar move the view into the band between them, the desktop sidebar right by half its edge
         run: node tests/test_viewshift.mjs
       # Spec 0061 task 1: one sidebar with one view at a time, the tabs as places, the clock as a pill.
       - name: "The shell: views push and pop, collapse remembered, tabs are places, Right now only from live data (spec 0061)"
         run: node tests/test_shell.mjs
+      # Spec 0061 task 3: the phone's one sheet (peek, half, full), its drag and the band it leaves.
+      - name: "The phone's sheet: three heights, flicks carry, a card opens at half, the subject sits between the top bar and the sheet"
+        run: node tests/test_sheet.mjs
       - name: One control hides every panel, and H and Escape work it
         run: node tests/test_cleanview.mjs
       - name: The screen as a printable postcard, JPEG or a well-formed PDF

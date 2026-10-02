@@ -1446,7 +1446,7 @@ html.sr-clean body > *:not(.sr-scene):not(.sr-veil):not(.sr-over-clean) {
 /* ------------------------------------------------------------------------------------ */
 /* The guided trip (js/ui/tripframe.js, spec 0061 task 7)                                 */
 /*                                                                                        */
-/* A mode is a class on <html>, exactly as ui/mobile.js does it with `sr-phone`: one class */
+/* A mode is a class on <html>, exactly as ui/shell.js does it with `sr-phone`: one class   */
 /* add, one class remove, no DOM surgery in another module's tree, and it restores exactly.*/
 /* `html[data-trip-phase]` carries the phase, so the few things that differ between a      */
 /* flight and a dwell are one selector each rather than a branch in JS.                    */

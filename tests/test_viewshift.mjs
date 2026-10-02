@@ -42,13 +42,11 @@ check(shiftFor(523, H) === H * MAX_SHIFT_FRACTION, 'and the shift for it hits th
 {
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(join(ROOT, 'site/js/scene/viewshift.js'), 'utf8');
-  check(/'html\.sr-phone #sr-side\.sr-drawer-open'/.test(src),
-    'the phone drawer is measured from the bottom, and only when open, and only on the phone');
+  check(/'html\.sr-phone #sr-side'/.test(src),
+    'the phone\'s sheet is measured from the bottom, and only on the phone (spec 0061 task 3)');
+  check(/'html\.sr-phone #sr-top'/.test(src), 'and its top bar from the top');
   check(/'html:not\(\.sr-phone\) #sr-side'/.test(src), 'the desktop sidebar is measured from the left, and only on a desktop');
-  const css = readFileSync(join(ROOT, 'site/css/site.css'), 'utf8');
-  const block = css.slice(css.indexOf('html.sr-phone #sr-side {'));
-  check(/padding-top: var\(--sr-pad\);/.test(block.slice(0, block.indexOf('}'))),
-    'the phone sheet resets the top bar\'s safe-area padding, so its head sits flush against its edge');
+  check(!/sr-mobilebar|sr-drawer-open/.test(src), 'the old phone bar and drawers are not measured: they are gone');
 }
 
 if (problems.length) { console.error('viewshift FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }

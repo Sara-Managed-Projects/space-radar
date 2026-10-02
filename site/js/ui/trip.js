@@ -1195,8 +1195,8 @@ export function createTrip(ctx) {
     }
     const record = entry.subject && entry.subject.record;
     if (record) {
-      // The real select: the glyph highlights, `follow` is installed, `sr:select` fires (which is
-      // how ui/mobile.js closes the phone drawers for free) -- and its own 900 ms flight is
+      // The real select: the glyph highlights, `follow` is installed, `sr:select` fires (which the
+      // rest of the page listens for) -- and its own 900 ms flight is
       // suppressed, because we are already on our way there.
       ctx.select(record, { fly: false });
       lastRecord = record;

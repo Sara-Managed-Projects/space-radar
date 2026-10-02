@@ -36,6 +36,9 @@ const CONTRACT = {
   'data/events.js': ['buildEvents', 'nextEvent', 'localCircumstances'],
   'scene/renderer.js': ['createRenderer'],
   'scene/stage.js': ['stage'],
+  // What the chrome covers and where that moves the view: the desktop sidebar, the phone's sheet and
+  // its top bar (spec 0061 tasks 1 and 3).
+  'scene/viewshift.js': ['createViewShift', 'coveredFromBottom', 'coveredFromLeft', 'coveredFromTop', 'shiftFor', 'uncoveredBand', 'MAX_SHIFT_FRACTION', 'MEASURE_MS', 'EASE_MS'],
   // Spec 0054: the one physically lit world material, and the JS twins of its two reflectance laws
   // and of the earthshine share (tests/test_world_light.mjs), the way scene/eclipse.js has one.
   'scene/worlds.js': ['createWorlds', 'worldMaterial', 'WORLD_FRAG', 'orenNayar', 'minnaert', 'earthshineShare', 'EARTHSHINE_GAIN', 'EARTH_GEOMETRIC_ALBEDO', 'MU_FLOOR', 'DEFAULT_ROUGHNESS',
@@ -74,7 +77,10 @@ const CONTRACT = {
   // Spec 0061: the layout. The shell builds the boxes; the explore view is the sidebar's home, the
   // rail holds What to show, Share and Hide, the pill is the clock, and the Tonight tab's
   // place is its own module. ui/controls.js, the left panel they replace, is gone.
-  'ui/shell.js': ['createShell', 'createViewStack', 'readCollapsed', 'writeCollapsed', 'SIDE_KEY', 'VIEWS', 'DESKTOP_QUERY'],
+  'ui/shell.js': ['createShell', 'createViewStack', 'readCollapsed', 'writeCollapsed', 'SIDE_KEY', 'VIEWS', 'DESKTOP_QUERY', 'sheetFor'],
+  // Spec 0061 task 3: the phone's one sheet, its heights and its drag, pure for tests/test_sheet.mjs.
+  'ui/sheet.js': ['createSheet', 'DETENTS', 'PEEK_PX', 'HALF_FRACTION', 'FULL_GAP_PX', 'FLING_PX_PER_MS', 'SLOP_PX',
+    'sheetHeights', 'snapDetent', 'cycleDetent', 'stepDetent', 'dragHeight', 'velocityOf'],
   'ui/explore.js': ['createExplore', 'TABS', 'tabTarget', 'tabFor', 'rightNowLines', 'statusSummary', 'tripMeta'],
   'ui/rail.js': ['createRail', 'railKey'],
   'ui/whattoshow.js': ['createWhatToShow', 'countText', 'layerSwatch', 'applyLayerOn'],
