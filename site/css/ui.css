@@ -4131,7 +4131,8 @@ html.sr-phone.sr-clean .sr-rail__btn--more {
   gap: var(--sp-2);
   margin: 0;
   padding: var(--sp-1) var(--sp-3);
-  font: 500 13px/16px var(--sr-font-mono);
+  /* 400, as the pill's own readout: the 500 face is 9.6 kB more on a first visit for one line. */
+  font: 400 13px/16px var(--sr-font-mono);
   letter-spacing: 0.04em;
   font-variant-numeric: tabular-nums;
   color: var(--sr-text);
