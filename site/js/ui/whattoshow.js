@@ -390,6 +390,7 @@ export function createWhatToShow(ctx, opts = {}) {
   const keys = el('button', 'sr-show__section sr-show__keys', touch ? C.keysRowTouch : C.keysRow);
   keys.type = 'button';
   keys.title = touch ? C.keysRowTitleTouch : C.keysRowTitle;
+  keys.appendChild(el('span', 'sr-show__keysgo')).setAttribute('aria-hidden', 'true');
   keys.addEventListener('click', () => {
     // The popover closes first: the hint sits bottom-right and the popover would hide nothing of
     // it, but two floating panels at once is the clutter the rail was made to end.
