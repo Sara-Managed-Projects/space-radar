@@ -21,7 +21,7 @@ budgets:
   # from a local server as CI runs it, and 3 068 642 B from the live site (compressed, with the saved
   # copy's 651 kB). The design's 2.5 MB was the live number of 2026-09-21 and the live site is over it
   # now; the gate is the number CI sees, with the 6 % margin the design asked for.
-  - {id: first_visit_bytes, value: 6450000, unit: bytes, since: 2026-10-01, reason: "A bridge, not a target: main measured 6 349 479 B on CI with the shell, card, aurora and SEO head, so even the trip-scale bug fix (+3 kB) could not merge. The cut that brings this back down by ~870 kB (stars3d.names.json 288 kB, exoplanets.csv 582 kB off the boot path) is in progress; lower this row in that PR"}
+  - {id: first_visit_bytes, value: 5600000, unit: bytes, since: 2026-10-02, reason: "The bridge (6 450 000, #357) is gone: with the named stars and the exoplanet table off the boot path (main.js OFF THE FIRST VISIT, internal #188) a local boot measured 5 267 127 B at 390x844 as a phone and 5 378 737 B at 1440x900, CelesTrak blocked, 2026-10-02; this is the phone number plus the 6 % margin the design asked for"}
   - {id: audio_at_boot_bytes, value: 0, unit: bytes, since: 2026-09-22, reason: "spec 0035: nothing before a gesture"}
   - {id: og_at_boot_bytes, value: 0, unit: bytes, since: 2026-09-22, reason: "spec 0033: previews and cards only"}
   # WOFF2 is already compressed, so this number is the same on CI's server and the live site.
