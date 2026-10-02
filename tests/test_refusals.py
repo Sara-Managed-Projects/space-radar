@@ -152,6 +152,12 @@ CASES: list[tuple[str, str, str, str]] = [
     ("a site sentence with a thousands comma",
      "sites.yaml", 'doing: "Driving up a mountain of layered rock since 2012."',
      'doing: "Driving up 5,000 metres of layered rock since 2012."'),
+    # What to show's groups (spec 0068 task 3): a layer with none, or one the list does not name,
+    # would fall out of the popover.
+    ("a layer with no What-to-show group",
+     "layers.yaml", "    display: Aurora\n    group: earth\n", "    display: Aurora\n"),
+    ("a layer in a group the list does not name",
+     "layers.yaml", "    display: Aurora\n    group: earth\n", "    display: Aurora\n    group: weather\n"),
     ("a layer loading rule that is not on-demand",
      "layers.yaml", "    load: on-demand\n", "    load: sometimes\n"),
     ("a small layer that hides its data behind its switch",

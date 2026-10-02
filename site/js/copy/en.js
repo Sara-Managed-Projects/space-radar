@@ -1834,6 +1834,28 @@ export const COPY = {
       auroraPeak: 'up to {n} % likely',
     },
     layersEmpty: 'No layers are loaded yet.',
+    // The headings What to show folds the layers under (registry/layers.yaml `groups:`, spec 0068
+    // task 3), in microlabel case. A group the registry names and this does not shows its id.
+    groups: {
+      'around-earth': 'Around Earth',
+      earth: 'Weather and ground',
+      'solar-system': 'Solar system',
+      beyond: 'Stars and beyond',
+    },
+    // How many of a group's layers are on, beside its heading, in mono.
+    groupCount: '{on} of {n}',
+    groupAll: 'All',
+    groupNone: 'None',
+    groupAllLabel: 'Show every layer in {group}',
+    groupNoneLabel: 'Hide every layer in {group}',
+    layerFilter: 'Find a layer',
+    layerFilterEmpty: 'No layer by that name.',
+    // The row that reopens the controls hint (ui/keyhint.js, issue #321): keys on a keyboard,
+    // gestures on a touch screen.
+    keysRow: 'Keys',
+    keysRowTouch: 'Gestures',
+    keysRowTitle: 'Show the keys that move the view',
+    keysRowTitleTouch: 'Show the gestures that move the view',
     // What to show's swatches are the key to the dots (spec 0061 req 10). A layer drawn in many
     // colours (the stars by temperature, the planets as discs) has a ring, not a colour it is not.
     swatchMixed: 'Drawn in its own colours',

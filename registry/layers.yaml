@@ -8,7 +8,16 @@
 # style     `glyph` far, `model` near. near_km is where the model fades in.
 # enabled   absent means on. Off removes the layer from the map, the Next view and the
 #           subscription form at once, because all three read this row.
+# group     which heading of What to show the row sits under (spec 0068 task 3): one of `groups`
+#           below. The titles are copy (copy/en.js COPY.controls.groups); the order here is the
+#           order on screen. scripts/check_registry.py refuses a row with none or an unknown one.
 version: 1
+
+# WHY GROUPS. Twenty-six rows of checkboxes were two screens of a phone, and a visitor looking for
+# the aurora read past ten kinds of satellite to find it. Four headings a person already has in
+# their head -- what circles the Earth, what happens on and above the ground, the planets and what
+# we sent among them, everything further out -- fold the list to one screen.
+groups: [around-earth, earth, solar-system, beyond]
 
 layers:
   # The worlds as a LAYER (spec 0028 step 0). scene/worlds.js already draws them; this row is what
@@ -17,6 +26,7 @@ layers:
   # is never drawn -- data/layers.js marks the row `draw: worlds` and the meshes stand in for glyphs.
   - id: worlds
     display: Planets and moons
+    group: solar-system
     moments: {wonder: on, now: on, next: on}
     source: bundled
     propagator: body
@@ -36,6 +46,7 @@ layers:
   # only once the camera is far enough out for the sky-from-here to have faded (registry/lod.yaml).
   - id: stars
     display: Stars
+    group: beyond
     moments: {wonder: on, now: off, next: off}
     source: bundled
     propagator: static
@@ -49,6 +60,7 @@ layers:
   # a dated bundled copy until the first snapshot lands. Drawn at their stars, as plain glyphs.
   - id: exoplanets
     display: Planets around other stars
+    group: beyond
     moments: {wonder: on, now: off, next: off}
     source: nasa-exoplanet-archive
     propagator: static
@@ -64,6 +76,7 @@ layers:
   # glyph layer: data/layers.js marks the row `draw: systems`.
   - id: systems
     display: Star systems
+    group: beyond
     moments: {wonder: on, now: off, next: off}
     source: bundled
     propagator: static
@@ -77,6 +90,7 @@ layers:
   # built into site/data/dso.json by scripts/build-dso.py. `bundled`: nothing to harvest.
   - id: deep-sky
     display: Nebulae, clusters and galaxies
+    group: beyond
     moments: {wonder: on, now: off, next: off}
     source: bundled
     propagator: static
@@ -90,6 +104,7 @@ layers:
   # cloud (models.yaml galaxy-model), drawn only from the ladder's rungs.
   - id: galaxy
     display: The Milky Way
+    group: beyond
     moments: {wonder: on, now: off, next: off}
     source: bundled
     propagator: static
@@ -102,6 +117,7 @@ layers:
   # Black holes and other extremes (spec 0028 step 7): registry/exotics.yaml, one fact sheet each.
   - id: exotics
     display: Black holes and other extremes
+    group: beyond
     moments: {wonder: on, now: off, next: off}
     source: bundled
     propagator: static
@@ -113,6 +129,7 @@ layers:
 
   - id: stations
     display: Crewed stations
+    group: around-earth
     moments: {wonder: on, now: on, next: off}
     source: celestrak-stations
     propagator: sgp4
@@ -124,6 +141,7 @@ layers:
 
   - id: notable
     display: Satellites worth knowing
+    group: around-earth
     moments: {wonder: on, now: on, next: off}
     source: celestrak-active
     propagator: sgp4
@@ -136,6 +154,7 @@ layers:
 
   - id: starlink-trains
     display: Fresh Starlink trains
+    group: around-earth
     moments: {wonder: on, now: on, next: on}
     source: celestrak-supplemental-starlink
     propagator: sgp4
@@ -151,6 +170,7 @@ layers:
 
   - id: just-launched
     display: Launched in the last two weeks
+    group: around-earth
     moments: {wonder: on, now: on, next: off}
     source: celestrak-active
     propagator: sgp4
@@ -163,6 +183,7 @@ layers:
 
   - id: active
     display: Everything active
+    group: around-earth
     # Off in Wonder by default and one tap away with its count on the control: the calm
     # default is the main lesson from the trackers that came before: correct and overwhelming.
     moments: {wonder: off, now: off, next: off}
@@ -178,6 +199,7 @@ layers:
 
   - id: geo-ring
     display: The geostationary ring
+    group: around-earth
     moments: {wonder: off, now: off, next: off}
     source: celestrak-active
     propagator: sgp4
@@ -189,6 +211,7 @@ layers:
 
   - id: debris-notable
     display: Famous debris
+    group: around-earth
     moments: {wonder: off, now: off, next: off}
     source: celestrak-active
     propagator: sgp4
@@ -200,6 +223,7 @@ layers:
 
   - id: launches
     display: Rockets on their way up
+    group: around-earth
     moments: {wonder: on, now: on, next: on}
     source: ll2-upcoming
     # ALWAYS illustrative. The real track is not published; the orbit field is a class, not
@@ -213,6 +237,7 @@ layers:
 
   - id: asteroids
     display: Asteroids passing by
+    group: solar-system
     moments: {wonder: on, now: off, next: on}
     source: jpl-sbdb-neo
     propagator: kepler
@@ -231,6 +256,7 @@ layers:
   # both conic branches -- 'Oumuamua and Borisov are hyperbolic, which propagate/kepler.js solves.
   - id: far-bodies
     display: Dwarf planets and far travellers
+    group: solar-system
     moments: {wonder: on, now: off, next: off}
     source: bundled
     propagator: kepler
@@ -242,6 +268,7 @@ layers:
 
   - id: comets
     display: Comets
+    group: solar-system
     moments: {wonder: on, now: off, next: on}
     source: jpl-sbdb-comets
     propagator: kepler
@@ -253,6 +280,7 @@ layers:
 
   - id: deep-space
     display: Probes and telescopes
+    group: solar-system
     moments: {wonder: on, now: off, next: off}
     source: horizons-deep-space
     propagator: sampled
@@ -267,6 +295,7 @@ layers:
   # copy is written here on 2026-09-08 (spec 0026 req 8: the mirror is checked both ways now).
   - id: visual
     display: Bright enough to see
+    group: around-earth
     moments: {wonder: on, now: on, next: off}
     source: celestrak-visual
     propagator: sgp4
@@ -278,6 +307,7 @@ layers:
 
   - id: ground-sites
     display: Pads, dishes and observatories
+    group: earth
     moments: {wonder: on, now: on, next: on}
     source: ll2-upcoming
     propagator: fixed
@@ -310,6 +340,7 @@ layers:
   # them. 34 records on 2026-09-22, under the 40 below.
   - id: hand-kept-sites
     display: Dishes, landers and rovers
+    group: earth
     moments: {wonder: on, now: on, next: off}
     source: bundled
     propagator: fixed
@@ -326,6 +357,7 @@ layers:
   # is the advisory's AGE, not GDACS's `iscurrent`, which stays true for storms days over.
   - id: storms
     display: Tropical storms now
+    group: earth
     moments: {wonder: on, now: on, next: off}
     source: gdacs-tc
     propagator: fixed
@@ -345,6 +377,7 @@ layers:
   # stale long before the harvester's next run (data/ovation.js says what was measured).
   - id: aurora
     display: Aurora
+    group: earth
     moments: {wonder: on, now: on, next: off}
     source: swpc-ovation
     propagator: static
@@ -358,6 +391,7 @@ layers:
   # stand-in always (cls sample, every card saying so) until that changes.
   - id: reentries
     display: Things that came down
+    group: around-earth
     moments: {wonder: off, now: off, next: on}
     source: space-track-tip
     propagator: fixed
@@ -369,6 +403,7 @@ layers:
 
   - id: oddities
     display: Odd things we sent
+    group: solar-system
     moments: {wonder: on, now: off, next: off}
     source: bundled
     propagator: per-record

@@ -2915,6 +2915,15 @@ def main() -> int:
             fail(where, "no attribution line -- it goes on the card, not in a footer")
 
     # --- layers ------------------------------------------------------------------
+    # What to show folds the rows under `groups:` (spec 0068 task 3). A row with no group, or one
+    # the list does not name, would fall out of the popover altogether -- a layer nobody can reach.
+    layer_groups = layers_doc.get("groups")
+    if not isinstance(layer_groups, list) or not layer_groups or \
+            not all(isinstance(g, str) and g for g in layer_groups):
+        fail("layers.yaml", "`groups:` must be a non-empty list of group ids (What to show's headings)")
+        layer_groups = []
+    elif len(set(layer_groups)) != len(layer_groups):
+        fail("layers.yaml", "`groups:` names a group twice")
     seen = set()
     for l in layers:
         lid = l.get("id")
@@ -2925,6 +2934,11 @@ def main() -> int:
         if lid in seen:
             fail(where, "duplicate id")
         seen.add(lid)
+        grp = l.get("group")
+        if not grp:
+            fail(where, f"no `group:` -- What to show lists a layer under one of {layer_groups}")
+        elif grp not in layer_groups:
+            fail(where, f"group `{grp}` is not one of `groups:` {layer_groups}")
         src = l.get("source")
         if src != BUNDLED_SOURCE and src not in source_ids:
             fail(where, f"source `{src}` has no sources.yaml row "

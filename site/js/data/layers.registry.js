@@ -7,11 +7,20 @@
 // stand-in) and takes `enabled`, `display` and `moments` from here. A layer switched off in the
 // registry is never loaded, listed or searched.
 
+/** The groups What to show folds the layers into, in screen order. */
+export const LAYER_GROUPS = [
+  "around-earth",
+  "earth",
+  "solar-system",
+  "beyond"
+];
+
 /** Every layer the registry knows, with the fields the registry decides. Order is the registry's. */
 export const LAYER_ROWS = [
   {
     "id": "worlds",
     "display": "Planets and moons",
+    "group": "solar-system",
     "enabled": true,
     "moments": {
       "wonder": true,
@@ -31,6 +40,7 @@ export const LAYER_ROWS = [
   {
     "id": "stars",
     "display": "Stars",
+    "group": "beyond",
     "enabled": true,
     "moments": {
       "wonder": true,
@@ -50,6 +60,7 @@ export const LAYER_ROWS = [
   {
     "id": "exoplanets",
     "display": "Planets around other stars",
+    "group": "beyond",
     "enabled": true,
     "moments": {
       "wonder": true,
@@ -69,6 +80,7 @@ export const LAYER_ROWS = [
   {
     "id": "systems",
     "display": "Star systems",
+    "group": "beyond",
     "enabled": true,
     "moments": {
       "wonder": true,
@@ -88,6 +100,7 @@ export const LAYER_ROWS = [
   {
     "id": "deep-sky",
     "display": "Nebulae, clusters and galaxies",
+    "group": "beyond",
     "enabled": true,
     "moments": {
       "wonder": true,
@@ -107,6 +120,7 @@ export const LAYER_ROWS = [
   {
     "id": "galaxy",
     "display": "The Milky Way",
+    "group": "beyond",
     "enabled": true,
     "moments": {
       "wonder": true,
@@ -126,6 +140,7 @@ export const LAYER_ROWS = [
   {
     "id": "exotics",
     "display": "Black holes and other extremes",
+    "group": "beyond",
     "enabled": true,
     "moments": {
       "wonder": true,
@@ -145,6 +160,7 @@ export const LAYER_ROWS = [
   {
     "id": "stations",
     "display": "Crewed stations",
+    "group": "around-earth",
     "enabled": true,
     "moments": {
       "wonder": true,
@@ -164,6 +180,7 @@ export const LAYER_ROWS = [
   {
     "id": "notable",
     "display": "Satellites worth knowing",
+    "group": "around-earth",
     "enabled": true,
     "moments": {
       "wonder": true,
@@ -183,6 +200,7 @@ export const LAYER_ROWS = [
   {
     "id": "starlink-trains",
     "display": "Fresh Starlink trains",
+    "group": "around-earth",
     "enabled": true,
     "moments": {
       "wonder": true,
@@ -204,6 +222,7 @@ export const LAYER_ROWS = [
   {
     "id": "just-launched",
     "display": "Launched in the last two weeks",
+    "group": "around-earth",
     "enabled": true,
     "moments": {
       "wonder": true,
@@ -223,6 +242,7 @@ export const LAYER_ROWS = [
   {
     "id": "active",
     "display": "Everything active",
+    "group": "around-earth",
     "enabled": true,
     "moments": {
       "wonder": false,
@@ -242,6 +262,7 @@ export const LAYER_ROWS = [
   {
     "id": "geo-ring",
     "display": "The geostationary ring",
+    "group": "around-earth",
     "enabled": true,
     "moments": {
       "wonder": false,
@@ -261,6 +282,7 @@ export const LAYER_ROWS = [
   {
     "id": "debris-notable",
     "display": "Famous debris",
+    "group": "around-earth",
     "enabled": true,
     "moments": {
       "wonder": false,
@@ -280,6 +302,7 @@ export const LAYER_ROWS = [
   {
     "id": "launches",
     "display": "Rockets on their way up",
+    "group": "around-earth",
     "enabled": true,
     "moments": {
       "wonder": true,
@@ -299,6 +322,7 @@ export const LAYER_ROWS = [
   {
     "id": "asteroids",
     "display": "Asteroids passing by",
+    "group": "solar-system",
     "enabled": true,
     "moments": {
       "wonder": true,
@@ -318,6 +342,7 @@ export const LAYER_ROWS = [
   {
     "id": "far-bodies",
     "display": "Dwarf planets and far travellers",
+    "group": "solar-system",
     "enabled": true,
     "moments": {
       "wonder": true,
@@ -337,6 +362,7 @@ export const LAYER_ROWS = [
   {
     "id": "comets",
     "display": "Comets",
+    "group": "solar-system",
     "enabled": true,
     "moments": {
       "wonder": true,
@@ -356,6 +382,7 @@ export const LAYER_ROWS = [
   {
     "id": "deep-space",
     "display": "Probes and telescopes",
+    "group": "solar-system",
     "enabled": true,
     "moments": {
       "wonder": true,
@@ -375,6 +402,7 @@ export const LAYER_ROWS = [
   {
     "id": "visual",
     "display": "Bright enough to see",
+    "group": "around-earth",
     "enabled": true,
     "moments": {
       "wonder": true,
@@ -394,6 +422,7 @@ export const LAYER_ROWS = [
   {
     "id": "ground-sites",
     "display": "Pads, dishes and observatories",
+    "group": "earth",
     "enabled": true,
     "moments": {
       "wonder": true,
@@ -413,6 +442,7 @@ export const LAYER_ROWS = [
   {
     "id": "hand-kept-sites",
     "display": "Dishes, landers and rovers",
+    "group": "earth",
     "enabled": true,
     "moments": {
       "wonder": true,
@@ -432,6 +462,7 @@ export const LAYER_ROWS = [
   {
     "id": "storms",
     "display": "Tropical storms now",
+    "group": "earth",
     "enabled": true,
     "moments": {
       "wonder": true,
@@ -451,6 +482,7 @@ export const LAYER_ROWS = [
   {
     "id": "aurora",
     "display": "Aurora",
+    "group": "earth",
     "enabled": true,
     "moments": {
       "wonder": true,
@@ -470,6 +502,7 @@ export const LAYER_ROWS = [
   {
     "id": "reentries",
     "display": "Things that came down",
+    "group": "around-earth",
     "enabled": true,
     "moments": {
       "wonder": false,
@@ -489,6 +522,7 @@ export const LAYER_ROWS = [
   {
     "id": "oddities",
     "display": "Odd things we sent",
+    "group": "solar-system",
     "enabled": true,
     "moments": {
       "wonder": true,

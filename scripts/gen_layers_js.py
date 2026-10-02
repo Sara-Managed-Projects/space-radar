@@ -29,6 +29,7 @@ def render(doc: dict) -> list:
         rows.append({
             "id": r["id"],
             "display": r.get("display"),
+            "group": r.get("group"),
             "enabled": r.get("enabled", True) is not False,
             "moments": {k: (v is True or v == "on") for k, v in moments.items()},
             "source": r.get("source"),
@@ -41,7 +42,10 @@ def render(doc: dict) -> list:
             "maxItems": (r.get("budget") or {}).get("max_items"),
             "train": r.get("train"),
         })
-    return [("Every layer the registry knows, with the fields the registry decides. Order is the registry's.", "LAYER_ROWS", rows)]
+    # The headings of What to show, in screen order (spec 0068 task 3); the titles are copy/en.js's.
+    groups = [g for g in (doc.get("groups") or []) if isinstance(g, str)]
+    return [("The groups What to show folds the layers into, in screen order.", "LAYER_GROUPS", groups),
+            ("Every layer the registry knows, with the fields the registry decides. Order is the registry's.", "LAYER_ROWS", rows)]
 
 
 HEADER = """// GENERATED from registry/layers.yaml by scripts/gen_layers_js.py. Do not edit.

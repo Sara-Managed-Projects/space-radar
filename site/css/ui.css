@@ -3821,6 +3821,138 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   list-style: none;
 }
 
+/* --- the groups (spec 0068 task 3, ui/whattoshow.js GROUPED) ------------------------------------
+   A heading is one full-width button: chevron, the group's microlabel, "3 of 10" in mono. Shut, a
+   group is one 44 px line, so four of them and the settings are one screen even on a phone. */
+.sr-show__filter {
+  box-sizing: border-box;
+  width: 100%;
+  height: 36px;
+  margin: 10px 0 2px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--sr-text);
+  background: var(--sr-wash);
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius);
+}
+.sr-show__filter::placeholder { color: var(--sr-text-dim); }
+.sr-show__filter:focus-visible { outline: none; border-color: var(--sr-ember); }
+
+.sr-show__group + .sr-show__group { border-top: 1px solid var(--sr-hair); }
+.sr-show__group[hidden] { display: none; }
+
+.sr-show__head {
+  display: grid;
+  grid-template-columns: 16px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0;
+  font: inherit;
+  color: var(--sr-text);
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.sr-show__head:hover .sr-show__gname { color: var(--sr-text); }
+.sr-show__head:focus-visible { outline: 2px solid var(--sr-ember); outline-offset: 2px; border-radius: var(--sr-radius-sm); }
+
+/* A chevron drawn from two borders: right when shut, down when open. */
+.sr-show__chev {
+  width: 6px;
+  height: 6px;
+  margin-left: 4px;
+  border-right: 1.5px solid var(--sr-text-dim);
+  border-bottom: 1.5px solid var(--sr-text-dim);
+  transform: rotate(-45deg);
+  transition: transform var(--sr-fast) var(--sr-ease);
+}
+.sr-show__group.is-open .sr-show__chev { transform: rotate(45deg); }
+
+.sr-show__tally {
+  font: 400 13px/1.3 var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+}
+
+.sr-show__gbody[hidden],
+.sr-show__bulk[hidden],
+.sr-show__row[hidden],
+.sr-show__nomatch[hidden] { display: none; }
+.sr-show__gbody { padding: 0 0 8px; }
+
+.sr-show__bulk {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: -4px;
+}
+.sr-show__bulkbtn {
+  min-width: 44px;
+  height: 28px;
+  padding: 0 10px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--sr-text-soft);
+  background: none;
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius-pill);
+  cursor: pointer;
+}
+.sr-show__bulkbtn:hover { color: var(--sr-text); background: var(--sr-wash-hover); }
+.sr-show__bulkbtn:active { background: var(--sr-wash-strong); }
+.sr-show__bulkbtn:focus-visible { outline: 2px solid var(--sr-ember); outline-offset: 1px; }
+
+.sr-show__rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* "Keys": the last row, a quiet button with a chevron, as a settings list ends (issue #321). */
+.sr-show__keys {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 44px;
+  padding-left: 0;
+  padding-right: 0;
+  padding-bottom: 0;
+  font: inherit;
+  font-size: 14px;
+  color: var(--sr-text);
+  text-align: left;
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--sr-hair);
+  cursor: pointer;
+}
+.sr-show__keys::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  margin-right: 4px;
+  border-right: 1.5px solid var(--sr-text-dim);
+  border-bottom: 1.5px solid var(--sr-text-dim);
+  transform: rotate(-45deg);
+}
+.sr-show__keys:hover { color: var(--sr-ember-light); }
+.sr-show__keys:focus-visible { outline: 2px solid var(--sr-ember); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-show__chev { transition: none; }
+}
+
+@media (pointer: coarse) {
+  .sr-show__bulkbtn { height: 44px; }
+  .sr-show__filter { height: 44px; font-size: 16px; }
+}
+
 .sr-show__label {
   display: grid;
   grid-template-columns: 18px 10px 1fr auto;

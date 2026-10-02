@@ -1008,7 +1008,7 @@ const BY_ID = new Map(LAYERS.map((l) => [l.id, l]));
 
 /** @param {string} id */
 // The registry's half of every row (spec 0026 req 8). `enabled`, `display` and `moments` are the
-// registry's to decide, so they overwrite what is written above; a row here with no registry row,
+// registry's to decide (and `group`, What to show's heading), so they overwrite what is written above; a row here with no registry row,
 // or the other way round, is a drift the test refuses. A layer the registry switches off is marked
 // `enabled: false` and `forcedOff`, and main.js neither creates nor loads it.
 const REGISTRY_BY_ID = new Map(LAYER_ROWS.map((r) => [r.id, r]));
@@ -1018,6 +1018,7 @@ for (const layer of LAYERS) {
   layer.enabled = row.enabled !== false;
   if (!layer.enabled) layer.forcedOff = true;
   if (row.display) layer.display = row.display;
+  if (row.group) layer.group = row.group; // What to show's heading (spec 0068 task 3)
   if (row.moments && Object.keys(row.moments).length) layer.moments = { ...layer.moments, ...row.moments };
   if (row.train) layer.train = row.train;
 }

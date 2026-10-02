@@ -128,7 +128,7 @@ export function createRail(ctx, host) {
     load().then(() => {
       if (pop.hidden || !show) return;
       show.refresh();
-      const first = pop.querySelector('input, button, select');
+      const first = pop.querySelector('[data-autofocus]') || pop.querySelector('input, button, select');
       if (first && (document.activeElement === showBtn || document.activeElement === document.body)) first.focus({ preventScroll: true });
     });
   }
