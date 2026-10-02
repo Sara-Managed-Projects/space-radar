@@ -3,7 +3,7 @@
 // CONTRACT (tests/test_contract.mjs):
 //   export function parseCelestrakGP(json, opts): Record[]
 //   export function parseLaunches(json): {launches: Record[], pads: Record[], events: EventRow[]}
-//   export function parseComets(text): Record[]
+//   export function parseComets(sbdbData): Record[]
 //   export function parseDsn(xmlText): DsnLink[]
 //   export function parseSpaceWeather(json): {kp, forecast}
 //
@@ -539,65 +539,49 @@ function pickWebcast(vidUrls) {
 }
 
 // =================================================================================================
-// Minor Planet Center — CometEls.txt, fixed width
+// JPL Small-Body Database — comets, `{fields:[...], data:[[...],...]}`
 // =================================================================================================
 //
-// Column offsets MEASURED against the live file on 2026-09-06 (163 309 bytes, 961 comets), not
-// taken from the published format note, which is one column adrift on the perihelion date.
-// Zero-based slices:
+// Same query shape as the asteroids above (sb-kind=c, not a; no sb-group), so the same jplTable()
+// reader applies. MEASURED against the live API on 2026-10-02: full_name "    1P/Halley", e
+// "0.9679", a "17.93", q "0.575", tp (perihelion passage, Julian date) "2446469.97", M1 (a comet's
+// total absolute magnitude, not an asteroid's H) "5.5", K1 (magnitude slope) "8.0". Was the Minor
+// Planet Center's CometEls.txt (spec issue #245): same six elements, a different publisher, and
+// `tp` read directly where CometEls.txt gave a perihelion date to parse by hand.
 //
-//   [ 0: 4]  periodic comet number          "0001"           (blank for unnumbered)
-//   [ 4: 5]  orbit type                     C | P | D | X | A | I
-//   [ 5:12]  packed provisional designation "J95O010"
-//   [13:30]  perihelion year, month, day    "2026 09 13.9652"  -- read as three whitespace tokens
-//   [30:39]  perihelion distance q, au      " 1.277791"
-//   [40:49]  eccentricity e                 " 0.934903"
-//   [50:59]  argument of perihelion, deg    " 335.5543"
-//   [60:69]  longitude of ascending node    " 172.3215"
-//   [70:79]  inclination, deg               "  37.8750"
-//   [80:88]  epoch of the elements          "20260906"
-//   [91:95]  absolute magnitude H           " 13.5"
-//   [96:100] slope parameter G              " 4.0"
-//   [102:158] designation and name          "C/1942 EA (Vaisala)"
-//   [159:]   reference                      "MPEC 2026-K60"
-//
-// Verified line: `1P/Halley` reads q = 0.571096 au, e = 0.968021, i = 162.1881 deg.
+// Verified row: `1P/Halley` reads q = 0.575 au, e = 0.9679, i = 162.19 deg.
 
 /**
- * @param {string} text  the raw CometEls.txt
+ * @param {Object} data  the parsed SBDB query response
  * @returns {Array<Object>} Records with propagator 'kepler', frame 'sun-inertial'
  */
-export function parseComets(text) {
-  if (typeof text !== 'string' || text.length === 0) return [];
+export function parseComets(data) {
+  const rows = jplTable(data);
+  if (!rows.length) return [];
   const out = [];
   const seen = new Set();
 
-  for (const raw of text.split(/\r?\n/)) {
-    if (raw.length < 100) continue;
+  for (const b of rows) {
+    const q = num(b.q);
+    const e = num(b.e);
+    if (q == null || e == null || !(q > 0) || !(e >= 0)) continue;
 
-    const q = num(raw.slice(30, 39));
-    const e = num(raw.slice(40, 49));
-    if (q == null || e == null || q <= 0 || e < 0) continue;
+    const incl = num(b.i);
+    const node = num(b.om);
+    const argp = num(b.w);
+    if (incl == null || node == null || argp == null) continue;
 
-    const argp = num(raw.slice(50, 59));
-    const node = num(raw.slice(60, 69));
-    const incl = num(raw.slice(70, 79));
-    if (argp == null || node == null || incl == null) continue;
+    const epochJd = num(b.epoch);
+    if (epochJd == null) continue;
+    const epochMs = jdToMs(epochJd);
 
-    const tpMs = perihelionMs(raw.slice(13, 30));
+    const tpJd = num(b.tp);
+    const tpMs = tpJd != null ? jdToMs(tpJd) : null;
     if (tpMs == null) continue;
 
-    const numberField = raw.slice(0, 4).trim();
-    const orbitType = raw.slice(4, 5).trim() || null;
-    const packed = raw.slice(5, 12).trim() || null;
-    const epochMs = yyyymmddMs(raw.slice(80, 89).trim());
-    const H = num(raw.slice(91, 95));
-    const G = num(raw.slice(96, 100));
-    const full = raw.slice(102, 158).trim();
-    const reference = raw.slice(159).trim() || null;
-
-    const { designation, name } = splitCometName(full, numberField, orbitType);
-    const id = `comet-${(designation || packed || full).replace(/\s+/g, '')}`;
+    const full = String(b.full_name || '').trim();
+    const { designation, name } = splitCometName(full, null, null);
+    const id = `comet-${(designation || full).replace(/\s+/g, '')}`;
     if (!id || seen.has(id)) continue;
     seen.add(id);
 
@@ -607,10 +591,16 @@ export function parseComets(text) {
     const aKm = Math.abs(1 - e) < 1e-9 ? null : qKm / (1 - e);
     const periodDays =
       aKm != null && aKm > 0 ? (2 * Math.PI * Math.sqrt((aKm * aKm * aKm) / MU_SUN)) / 86400 : null;
+    // M1/K1 are a comet's total-magnitude law, null for most of the catalogue (JPL fits it from
+    // few enough observations that most comets do not have one) -- num(), not Number(), or a
+    // null M1 reads as magnitude 0, the brightest comet in the sky.
+    const H = num(b.M1);
+    const G = num(b.K1);
+    const maDeg = num(b.ma);
 
     out.push({
       id,
-      // The WHOLE MPC name field — "1P/Halley", "C/1995 O1 (Hale-Bopp)". The parenthetical is
+      // The WHOLE SBDB name field — "1P/Halley", "C/1995 O1 (Hale-Bopp)". The parenthetical is
       // the discoverer or the survey, not the comet: using it alone labels three hundred
       // different sungrazers "SOHO", which is what the first version of this did.
       name: full || designation,
@@ -621,7 +611,7 @@ export function parseComets(text) {
       // The elements are measured; a two-body position computed from them is not.
       cls: 'inferred',
       epoch: epochMs,
-      source: 'mpc-comets',
+      source: 'jpl-sbdb-comets',
       elements: {
         qKm,
         e,
@@ -636,48 +626,21 @@ export function parseComets(text) {
       meta: {
         designation,
         discoverer: name && name !== designation ? name : null,
-        cometNumber: numberField ? Number(numberField) : null,
-        orbitType,
-        packedDesignation: packed,
         qAu: q,
         eccentricity: e,
         inclinationDeg: incl,
         nodeDeg: node,
         argpDeg: argp,
+        meanAnomalyDeg: maDeg,
         perihelionMs: tpMs,
         periodDays,
         absoluteMagnitude: H,
         slopeParameter: G,
-        reference,
         fullName: full,
       },
     });
   }
   return out;
-}
-
-function perihelionMs(field) {
-  const parts = String(field).trim().split(/\s+/);
-  if (parts.length < 3) return null;
-  const y = Number(parts[0]);
-  const mo = Number(parts[1]);
-  const day = Number(parts[2]);
-  if (!Number.isFinite(y) || !Number.isFinite(mo) || !Number.isFinite(day)) return null;
-  if (mo < 1 || mo > 12 || day < 1 || day >= 32) return null;
-  const base = Date.UTC(y, mo - 1, 1);
-  if (!Number.isFinite(base)) return null;
-  // The MPC's perihelion time is TT. TT - UTC is about 69 s, which is a hundred-thousandth of a
-  // comet's period; it is not corrected for and it is not worth a card line.
-  return base + (day - 1) * DAY_MS;
-}
-
-function yyyymmddMs(s) {
-  if (!/^\d{8}$/.test(s)) return null;
-  const y = Number(s.slice(0, 4));
-  const mo = Number(s.slice(4, 6));
-  const d = Number(s.slice(6, 8));
-  if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
-  return Date.UTC(y, mo - 1, d);
 }
 
 function splitCometName(full, numberField, orbitType) {

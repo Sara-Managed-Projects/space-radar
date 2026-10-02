@@ -294,21 +294,6 @@ export const SOURCES = {
     note: '27.6 kB, the newest 20 storms, measured 2026-09-28. GDACS calls its information "purely indicative".',
   },
 
-  // --- Small bodies -------------------------------------------------------------------------
-  'mpc-comets': {
-    id: 'mpc-comets',
-    registryId: 'mpc-comets',
-    label: 'Minor Planet Center — comet elements',
-    publisher: 'the Minor Planet Center',
-    url: 'https://minorplanetcenter.net/iau/MPCORB/CometEls.txt',
-    cadenceMs: 24 * HOUR,
-    freshnessMaxMs: 168 * HOUR,
-    browser: true,
-    kind: 'text',
-    attribution: 'Comet elements: IAU Minor Planet Center',
-    note: 'Fixed width, one comet per line. 163 309 bytes, 961 comets measured 2026-09-06.',
-  },
-
   // --- Sources a browser cannot reach -------------------------------------------------------
   // Present so the status panel can say "could not look" about them by name, which is a
   // different answer from "stale" and a very different answer from "fine". Every one of these
@@ -325,6 +310,21 @@ export const SOURCES = {
     kind: 'json',
     attribution: 'Orbits: NASA/JPL Small-Body Database',
     note: NO_CORS_REASON + ' Read from our snapshot; sampleAsteroids() stands in only when that is missing.',
+  },
+  'jpl-sbdb-comets': {
+    id: 'jpl-sbdb-comets',
+    registryId: 'jpl-sbdb-comets',
+    label: 'JPL Small-Body Database — comet elements',
+    publisher: 'NASA/JPL',
+    url: 'https://ssd-api.jpl.nasa.gov/sbdb_query.api',
+    cadenceMs: 24 * HOUR,
+    freshnessMaxMs: 168 * HOUR,
+    browser: false,
+    kind: 'json',
+    attribution: 'Orbits: NASA/JPL Small-Body Database',
+    note: NO_CORS_REASON + ' Replaces the Minor Planet Center’s CometEls.txt, which did ' +
+      'allow a direct fetch; JPL does not, so the comets layer is snapshot-only and shows ' +
+      'nothing on a page loaded before the harvester’s first run.',
   },
   'nasa-exoplanet-archive': {
     id: 'nasa-exoplanet-archive',

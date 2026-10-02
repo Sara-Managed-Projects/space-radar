@@ -343,7 +343,7 @@ export const LAYER_ROWS = [
       "now": false,
       "next": true
     },
-    "source": "mpc-comets",
+    "source": "jpl-sbdb-comets",
     "sources": null,
     "propagator": "kepler",
     "frame": "sun-inertial",

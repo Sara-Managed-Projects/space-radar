@@ -104,6 +104,17 @@
       ]
     },
     {
+      "id": "jpl-sbdb-comets",
+      "url": "https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name,e,a,q,i,om,w,ma,tp,epoch,M1,K1&sb-kind=c",
+      "auth": "none",
+      "refresh": "24h",
+      "freshness_max": "168h",
+      "parser": "jpl_sbdb",
+      "outputs": [
+        "comets.json"
+      ]
+    },
+    {
       "id": "nasa-exoplanet-archive",
       "url": "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+pl_name,hostname,ra,dec,sy_dist,pl_rade,pl_bmasse,pl_orbper,disc_year,discoverymethod,st_teff,st_rad,st_spectype+from+pscomppars&format=csv",
       "auth": "none",
@@ -134,17 +145,6 @@
       "parser": "esa_neocc",
       "outputs": [
         "close-approaches-esa.json"
-      ]
-    },
-    {
-      "id": "mpc-comets",
-      "url": "https://minorplanetcenter.net/iau/MPCORB/CometEls.txt",
-      "auth": "none",
-      "refresh": "24h",
-      "freshness_max": "168h",
-      "parser": "mpc_comets",
-      "outputs": [
-        "comets.json"
       ]
     },
     {

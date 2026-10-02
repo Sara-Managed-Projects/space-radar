@@ -875,7 +875,7 @@ export const LAYERS = [
     id: 'comets',
     display: 'Comets',
     klass: 'comet',
-    source: 'mpc-comets',
+    source: 'jpl-sbdb-comets',
     parse: 'comets',
     propagator: 'kepler',
     frame: 'sun-inertial',

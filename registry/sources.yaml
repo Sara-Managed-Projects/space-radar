@@ -125,6 +125,22 @@ sources:
     outputs: [neo-elements.json]
     attribution: "Orbits: NASA/JPL Small-Body Database"
 
+  # Comets, same database and the same query shape as the asteroids above (sb-kind=c instead of
+  # a, no sb-group: a comet is not a NEO filter). Replaces the Minor Planet Center's CometEls.txt
+  # (measured 2026-09-06, 961 comets) with JPL's 4 077, M1/K1 in place of H/G for the brightness
+  # law layers.js cometMagNow already uses, and `tp` (perihelion passage, Julian date) read
+  # directly instead of derived. One parser, jpl_sbdb, reads both rows: it only checks for
+  # full_name/e/a/q/i/om/w/epoch, which this query carries too.
+  - id: jpl-sbdb-comets
+    url: https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name,e,a,q,i,om,w,ma,tp,epoch,M1,K1&sb-kind=c
+    auth: none
+    browser: false
+    cadence: 24h
+    freshness_max: 168h
+    parser: jpl_sbdb
+    outputs: [comets.json]
+    attribution: "Orbits: NASA/JPL Small-Body Database"
+
   # Every confirmed planet around another star (spec 0028 step 4). TAP sync, CSV, the composite
   # parameters table so every planet has one best value per column. No CORS header (measured
   # 2026-09-08), so the browser reads our snapshot; it falls back to the dated copy in
@@ -160,16 +176,6 @@ sources:
     # The second opinion. Where ESA and JPL disagree by more than 10% the card shows both
     # and names them; two sources disagreeing is information, not an error to hide.
     attribution: "Close approaches: ESA NEOCC"
-
-  - id: mpc-comets
-    url: https://minorplanetcenter.net/iau/MPCORB/CometEls.txt
-    auth: none
-    browser: true
-    cadence: 24h
-    freshness_max: 168h
-    parser: mpc_comets
-    outputs: [comets.json]
-    attribution: "Comet elements: IAU Minor Planet Center"
 
   # --- Deep space ----------------------------------------------------------------------
   - id: horizons-deep-space

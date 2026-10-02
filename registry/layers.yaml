@@ -243,7 +243,7 @@ layers:
   - id: comets
     display: Comets
     moments: {wonder: on, now: off, next: on}
-    source: mpc-comets
+    source: jpl-sbdb-comets
     propagator: kepler
     frame: sun-inertial
     style: {kind: model, model: comet-generic, glyph: comet, colour: comet, near_km: 2000000}
