@@ -32,12 +32,14 @@ const INVERTOCAT_24 =
  *   only found -- and the glyph itself is untouched. Without one it is the old corner mark.
  * @returns {HTMLAnchorElement|null}
  */
-export function createGitHubMark(host) {
+export function createGitHubMark(host, opts = {}) {
   if (document.getElementById(HOST_ID)) return null;
 
   const a = document.createElement('a');
   a.id = HOST_ID;
-  a.className = host ? 'sr-mark sr-mark--foot' : 'sr-mark';
+  // opts.className: the tool rail seats the mark as its fourth button (Ivan, 2026-10-02: "missed
+  // GitHub button we had before, I think it could be next icon after an eye").
+  a.className = opts.className || (host ? 'sr-mark sr-mark--foot' : 'sr-mark');
   a.href = COPY.mark.href;
   a.target = '_blank';
   a.rel = 'noopener noreferrer';
@@ -58,7 +60,7 @@ export function createGitHubMark(host) {
   p.setAttribute('fill', 'currentColor');
   svg.appendChild(p);
   a.appendChild(svg);
-  if (host) {
+  if (host && !opts.className) {
     const words = document.createElement('span');
     words.className = 'sr-mark__words';
     words.textContent = COPY.mark.label;

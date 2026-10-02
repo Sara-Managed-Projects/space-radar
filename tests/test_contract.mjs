@@ -1393,10 +1393,11 @@ for (const file of allFiles) {
   const status = readFileSync(join(JS, 'ui/status.js'), 'utf8');
   const main = readFileSync(join(JS, 'main.js'), 'utf8');
   const css = readFileSync(join(ROOT, 'site/css/ui.css'), 'utf8');
-  if (!/createGitHubMark\(foot\)/.test(status)) problems.push('MARK     ui/status.js does not build the GitHub mark into the sources footer');
+  const rail = readFileSync(join(JS, 'ui/rail.js'), 'utf8');
+  if (!/createGitHubMark\(root, \{ className: 'sr-rail__btn sr-rail__btn--github' \}\)/.test(rail)) problems.push('MARK     ui/rail.js does not seat the GitHub mark as its button after the eye');
   if (/createGitHubMark\(/.test(main)) problems.push('MARK     main.js still builds a corner GitHub mark beside the tool rail');
   if (/html\.sr-card-open[^{]*\.sr-mark\s*\{/.test(css)) problems.push('MARK     css/ui.css still moves the mark for an open card; the card is in the sidebar now');
-  if (!problems.some((x) => x.startsWith('MARK'))) notes.push('the GitHub mark is in the sources sheet footer, not the corner');
+  if (!problems.some((x) => x.startsWith('MARK'))) notes.push('the GitHub mark is the tool rail\'s button after the eye');
 }
 
 // 3f. stage.js must REFUSE a vector it cannot convert, not pass it through unchanged. Passing it

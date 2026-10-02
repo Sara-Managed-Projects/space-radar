@@ -7,12 +7,14 @@
 //   [share]    Share: the one share sheet (ui/share.js ctx.share.open, ui/sharesheet.js), with the
 //              postcard, the link and the text (spec 0061 task 8; it was the camera until then)
 //   [eye]      Hide everything: ui/cleanview.js (H)
+//   [github]   The repository, the mark from ui/github.js (Ivan, 2026-10-02: the next icon after the eye)
 //
 // WHY. Three loose icons sat in the top right corner at three different offsets, which moved again
 // when a card opened (ui.css kept `right: calc(var(--sr-card-w) + 128px)` rules for each), with the
 // GitHub mark beside them. The card now lives in the sidebar, so the right edge is always free and
 // the tools can be one object: one column, one glass, hairlines between the buttons, as row D draws
-// it. The GitHub mark went to the sources sheet's footer (ui/status.js).
+// it. The GitHub mark is the rail's last button (it spent 2026-09-30 to 10-02 in the sources footer,
+// where Ivan missed it).
 //
 // KEYS. L opens What to show, P the share sheet; H is ui/cleanview.js's own. Not S for share:
 // S is held to move the camera back (scene/camera.js CAMERA_KEYS), and P was the postcard's key,
@@ -23,6 +25,7 @@
 import { COPY } from '../copy/en.js';
 import { installShare } from './share.js';
 import { createCleanView } from './cleanview.js';
+import { createGitHubMark } from './github.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 // Two stacked leaves: the layers mark every map app uses. Ours, drawn on the 24-unit box.
@@ -142,6 +145,9 @@ export function createRail(ctx, host) {
 
   // --- Hide: the existing module, seated in the rail --------------------------------------------
   createCleanView(ctx, { host: root, className: 'sr-rail__btn sr-rail__btn--clean' });
+
+  // --- The repository: GitHub's own mark, after the eye ---------------------------------------------
+  createGitHubMark(root, { className: 'sr-rail__btn sr-rail__btn--github' });
 
   // Capture phase, as the postcard menu and the clear screen do: Escape must close the popover
   // before the card underneath hears it and closes too.

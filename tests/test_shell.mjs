@@ -184,7 +184,7 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   // The Tonight tab's mount point (spec 0051's ui/tonight.js plugs in here without editing explore.js).
   check(/function mountTab\(id, render, opts = \{\}\)/.test(exploreSrc) && /mountTab \}/.test(exploreSrc), 'the explore view offers mountTab(id, render) for a tab\'s content');
   const html = readFileSync(join(ROOT, 'site/index.html'), 'utf8');
-  check(!/ui\/(status|whattoshow|place|colorkey|github)\.js/.test(html), 'and none of them is preloaded at boot');
+  check(!/ui\/(status|whattoshow|place|colorkey)\.js/.test(html), 'and none of them is preloaded at boot');
   check(!/createControls|createGitHubMark|createPrintButton\(ctx\)|createCleanView\(ctx\)/.test(main), 'the old left panel, the corner mark and the loose corner buttons are not built');
   const frame = readFileSync(join(JS, 'ui/tripframe.js'), 'utf8');
   // Spec 0061 task 7: a trip hides the rail and the pill; the sidebar stays and is the trip's own
