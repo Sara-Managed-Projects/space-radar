@@ -88,6 +88,23 @@ sources:
     outputs: [satcat.json]
     attribution: "Orbital data: CelesTrak (T. S. Kelso)"
 
+  # --- Who is aboard --------------------------------------------------------------------
+  # MEASURED 2026-10-02: `Access-Control-Allow-Origin: *`, so CORS itself allows a page to read
+  # this. But the API has no https endpoint at all (TLS connections are refused outright), and
+  # this app is served over https, so a browser here cannot request it: not a CORS refusal, a
+  # mixed-content one, with the same result for the status panel. The harvester fetches it over
+  # plain HTTP (harvest/fetch.py's urllib has no such restriction) and the browser reads the
+  # saved copy. No documented rate limit; the cadence here is a courtesy, not a measured ceiling.
+  - id: open-notify-astros
+    url: http://api.open-notify.org/astros.json
+    auth: none
+    browser: false
+    cadence: 1h
+    freshness_max: 24h
+    parser: open_notify
+    outputs: [astros.json]
+    attribution: "Who is in space: Open Notify"
+
   # --- Launches and events -----------------------------------------------------------
   # MEASURED live from the API's own throttle endpoint: 15 requests per hour per IP. A
   # runner's IP is shared and rotating, so the budget is not even reliably ours. Three

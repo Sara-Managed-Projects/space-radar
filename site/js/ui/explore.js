@@ -35,6 +35,8 @@ import { STAGES, isLadderStage, isSystemStage } from '../scene/stage.js';
 import { TOUR_GROUPS } from '../data/tours.js';
 import { LADDER_RUNGS, WE_SHOW } from '../data/ladder.js';
 import { SYSTEMS } from '../data/systems.js';
+import { load } from '../data/sources.js';
+import { parseAstros } from '../data/parsers.js';
 import { groupTrips, eventSubtitle } from './trippicker.js';
 import { createSearch } from './search.js';
 import { createNext, auroraItem } from './next.js';
@@ -55,10 +57,15 @@ const TRIPS_SHOWN = 4;
 const COMING_UP_ROWS = 5;
 /** The worlds the Planets tab lists, in order out from the Sun, the Moon after its planet. */
 const PLANET_IDS = ['sun', 'mercury', 'venus', 'moon', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'];
-/** The crewed stations the "People in space" line names, by the record id their elements load as. */
+/**
+ * The crewed stations the "People in space" line names, by the record id their elements load as.
+ * `craft` is Open Notify's own spelling (tests/fixtures/harvest/open_notify.json), the key the
+ * headcount poll below matches against -- kept apart from the display label (copy/en.js R[key]),
+ * which is free to read differently without breaking the match.
+ */
 const CREWED = [
-  { id: 'sat-25544', key: 'iss' },
-  { id: 'sat-48274', key: 'tiangong' },
+  { id: 'sat-25544', key: 'iss', craft: 'ISS' },
+  { id: 'sat-48274', key: 'tiangong', craft: 'Tiangong' },
 ];
 const STORM_RANK = { hurricane: 3, storm: 2, depression: 1 };
 const LY_PER_PC = 3.26156;
@@ -67,6 +74,39 @@ const REFRESH_MS = 30e3;
 const SHOW_ME_MS = 900;
 /** The card's astronomical-unit words, which the list shortens to the symbol. */
 const AU_WORDS = t(COPY.card.values.au, { n: '' }).trim();
+
+/**
+ * Open Notify's headcount per craft (data/parsers.js parseAstros), read once and kept here --
+ * the snapshot is minutes old at most, and `load()` already has its own cache and cadence gate,
+ * so nothing here re-fetches sooner than that. Module-level, not per-instance: the data has no
+ * observer, so two mounted explore views would otherwise poll twice for the same answer.
+ */
+let astrosCounts = null;
+let astrosInFlight = null;
+/** Same craft -> count map, order aside; a changed answer is the only one worth a repaint. */
+function sameCounts(a, b) {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  const ak = Object.keys(a);
+  if (ak.length !== Object.keys(b).length) return false;
+  return ak.every((k) => a[k] === b[k]);
+}
+/**
+ * Kicks off a read of the headcount and repaints Right now once it lands WITH A CHANGED ANSWER;
+ * a no-op mid-flight, and -- since this runs from inside paintNow -- a no-op once loaded and
+ * unchanged, or `onLoaded` calling paintNow would call this again forever.
+ */
+function pollAstros(onLoaded) {
+  if (astrosInFlight) return;
+  astrosInFlight = load('open-notify-astros')
+    .then((res) => {
+      astrosInFlight = null;
+      if (!res || !res.ok || res.data == null) return;
+      const byCraft = parseAstros(res.data);
+      if (byCraft && !sameCounts(byCraft, astrosCounts)) { astrosCounts = byCraft; onLoaded(); }
+    })
+    .catch(() => { astrosInFlight = null; });
+}
 
 /** Where a tab goes. Pure. */
 export function tabTarget(tab) {
@@ -94,7 +134,7 @@ function capitalise(s) {
 /**
  * The Right-now lines, from live state only. Pure.
  *
- * @param {{storms?: Object[], aurora?: {text, value}|null, clouds?: {mode, capturedMs}|null, crewed?: {key, record}[], wallMs?: number}} input
+ * @param {{storms?: Object[], aurora?: {text, value}|null, clouds?: {mode, capturedMs}|null, crewed?: {key, record, count?: number}[], wallMs?: number}} input
  * @returns {{id: string, text: string, value?: string, lead?: boolean, record?: Object}[]} at most three
  *
  * A line whose data is missing is LEFT OUT (0061 design §2): no storms loaded is no storm line, not
@@ -128,7 +168,12 @@ export function rightNowLines(input = {}) {
   }
   const crewed = (Array.isArray(input.crewed) ? input.crewed : []).filter((x) => x && x.record && R[x.key]);
   if (crewed.length) {
-    out.push({ id: 'crew', text: R.people, value: crewed.map((x) => R[x.key]).join(COPY.punctuation.separator), record: crewed[0].record });
+    // The headcount (Open Notify, via explore.js's astros poll) names how many once it has
+    // loaded; a station with no count yet, or Open Notify unreachable, falls back to its bare name.
+    const names = crewed.map((x) => (Number.isFinite(x.count) && x.count > 0)
+      ? t(R.crewAt, { n: fmt.int(x.count), name: R[x.key] })
+      : R[x.key]);
+    out.push({ id: 'crew', text: R.people, value: names.join(COPY.punctuation.separator), record: crewed[0].record });
   }
   const lines = out.slice(0, 3);
   if (lines.length) lines[0].lead = true;
@@ -489,10 +534,11 @@ export function createExplore(ctx, host) {
     const wallMs = Date.now();
     let clouds = null;
     try { clouds = ctx.liveClouds ? ctx.liveClouds.state() : null; } catch { clouds = null; }
+    pollAstros(() => { if (current === 'earth') paintNow(); });
     const crewed = [];
     for (const c of CREWED) {
       const rec = typeof ctx.recordById === 'function' ? ctx.recordById(c.id) : null;
-      if (rec) crewed.push({ key: c.key, record: rec });
+      if (rec) crewed.push({ key: c.key, record: rec, count: astrosCounts ? astrosCounts[c.craft] : undefined });
     }
     const lines = rightNowLines({ storms: ctx.recordsFor ? ctx.recordsFor('storms') : [], aurora: auroraNow(wallMs), clouds, crewed, wallMs });
     while (nowList.firstChild) nowList.removeChild(nowList.firstChild);

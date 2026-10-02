@@ -60,6 +60,7 @@ EXPECTED_COUNTS = {
     "space_track_tip": 1,  # documented shape, not a capture -- CAPTURED.json says so
     "nasa_exoplanet_archive": 12,
     "gdacs_tc": 20,
+    "open_notify": 12,
 }
 
 CELESTRAK_TEXT = "GP data has not updated since your last successful download"

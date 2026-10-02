@@ -112,6 +112,13 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   const auroraLead = rightNowLines({ aurora, crewed, wallMs });
   check(auroraLead[0].id === 'aurora' && auroraLead[0].lead, 'with no storms it leads');
   check(rightNowLines({ aurora: null, crewed }).every((l) => l.id !== 'aurora') && rightNowLines({ aurora: { text: '' } }).length === 0, 'no storm in space, no aurora line');
+  // Open Notify's headcount (explore.js pollAstros), once it has loaded.
+  const counted = [{ key: 'iss', record: iss, count: 9 }, { key: 'tiangong', record: { id: 'sat-48274' }, count: 3 }];
+  const withCount = rightNowLines({ crewed: counted, wallMs });
+  check(withCount[0].id === 'crew' && withCount[0].value === '9 on ISS · 3 on Tiangong', `the headcount names how many once it has loaded (${withCount[0] && withCount[0].value})`);
+  const partialCount = [{ key: 'iss', record: iss, count: 9 }, { key: 'tiangong', record: { id: 'sat-48274' } }];
+  check(rightNowLines({ crewed: partialCount, wallMs })[0].value === '9 on ISS · Tiangong', 'a station with no count yet falls back to its bare name');
+  check(rightNowLines({ crewed: [{ key: 'iss', record: iss, count: 0 }], wallMs })[0].value === 'ISS', 'a zero count (Open Notify answered but named nobody) is treated as no count, not "0 on ISS"');
 }
 
 // --- 5. the status line ----------------------------------------------------------------------------

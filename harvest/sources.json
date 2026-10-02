@@ -70,6 +70,17 @@
       ]
     },
     {
+      "id": "open-notify-astros",
+      "url": "http://api.open-notify.org/astros.json",
+      "auth": "none",
+      "refresh": "1h",
+      "freshness_max": "24h",
+      "parser": "open_notify",
+      "outputs": [
+        "astros.json"
+      ]
+    },
+    {
       "id": "ll2-upcoming",
       "url": "https://ll.thespacedevs.com/2.3.0/launches/upcoming/?limit=50&mode=detailed",
       "auth": "none",

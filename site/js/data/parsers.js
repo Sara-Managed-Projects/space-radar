@@ -1667,3 +1667,32 @@ export function parseGdacsCyclones(json, opts = {}) {
   }
   return out;
 }
+
+// =================================================================================================
+// Open Notify — who is aboard (2026-10-02)
+// =================================================================================================
+//
+// MEASURED 2026-10-02 against registry/sources.yaml open-notify-astros (tests/fixtures/harvest/
+// open_notify.json is that answer, verbatim): `{message: 'success', number: N, people: [{name,
+// craft}, ...]}`. Not a layer -- there is nothing here to draw, only a headcount for the "People in
+// space" Right now line (ui/explore.js) -- so this returns a plain craft -> count map, not records.
+
+/**
+ * @param {*} body
+ * @returns {Record<string, number>|null} a count per craft name, verbatim as Open Notify spells it
+ *   ("ISS", "Tiangong"); null for anything that is not the shape the API documents.
+ */
+export function parseAstros(body) {
+  let doc = body;
+  if (typeof doc === 'string') {
+    try { doc = JSON.parse(doc); } catch { return null; }
+  }
+  if (!doc || typeof doc !== 'object' || doc.message !== 'success' || !Array.isArray(doc.people)) return null;
+  const byCraft = {};
+  for (const p of doc.people) {
+    const craft = p && typeof p.craft === 'string' ? p.craft.trim() : '';
+    if (!craft) continue;
+    byCraft[craft] = (byCraft[craft] || 0) + 1;
+  }
+  return Object.keys(byCraft).length ? byCraft : null;
+}

@@ -64,5 +64,9 @@
   "gdacs_tc.json": {
     "url": "https://www.gdacs.org/gdacsapi/api/events/geteventlist/SEARCH?eventlist=TC&alertlevel=Green;Orange;Red&pageSize=20",
     "note": "verbatim, captured 2026-09-28T22:50:08Z; 20 storms, 6 of them with an advisory in the 5 hours before the capture"
+  },
+  "open_notify.json": {
+    "url": "http://api.open-notify.org/astros.json",
+    "note": "verbatim, captured 2026-10-02; 12 people, 9 on ISS and 3 on Tiangong"
   }
 }

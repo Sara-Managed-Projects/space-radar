@@ -548,6 +548,9 @@ export const COPY = {
     people: 'People in space',
     iss: 'ISS',
     tiangong: 'Tiangong',
+    // Open Notify's headcount (data/parsers.js parseAstros), once it has loaded; a station named
+    // with no count yet (or Open Notify unreachable) falls back to its bare name.
+    crewAt: '{n} on {name}',
   },
   // The one line at the sidebar's foot: how the sources are, and how old the oldest reading is.
   statusLine: {
