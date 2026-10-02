@@ -1752,6 +1752,59 @@ for (const file of allFiles) {
   }
 }
 
+// 3i2. data/layers.js's two hand-kept "famous" lists, NOTABLE and DEBRIS_NOTABLE. Neither is a
+// registry.yaml row, so scripts/check_registry.py never sees them -- this is the only guard they
+// have. The file's own header warns that a wrong catalogue number "silently draws the wrong
+// object, which is the worst failure this app has"; a duplicate id, or an id claimed by both
+// lists, fails exactly as quietly, because NOTABLE_BY_ID (NOTABLE.concat(DEBRIS_NOTABLE)) just
+// lets the later row win with no error -- a satellite cannot be both still working and famous
+// debris.
+{
+  try {
+    const { NOTABLE, DEBRIS_NOTABLE } = await import(join(JS, 'data/layers.js'));
+    const MAX_WHY = 160; // scripts/check_registry.py MAX_SENTENCE: what a card actually prints.
+    const checkList = (list, label) => {
+      const seen = new Set();
+      for (const r of list) {
+        const where = `${label} ${r.name || r.noradId}`;
+        if (!Number.isInteger(r.noradId) || r.noradId <= 0) {
+          problems.push(`NOTABLE  ${where}: noradId must be a positive whole number, got ${r.noradId}`);
+        } else if (seen.has(r.noradId)) {
+          problems.push(`NOTABLE  ${where}: NORAD id ${r.noradId} already has a row in ${label} -- one object, one line`);
+        } else {
+          seen.add(r.noradId);
+        }
+        if (!r.name || !String(r.name).trim()) {
+          problems.push(`NOTABLE  ${where}: no name -- the label and the card need one to print`);
+        }
+        if (!r.why || !String(r.why).trim()) {
+          problems.push(`NOTABLE  ${where}: no why -- the one line is the whole point of the row`);
+        } else {
+          if (r.why.length > MAX_WHY) {
+            problems.push(`NOTABLE  ${where}: why is ${r.why.length} characters, over the card's ${MAX_WHY}`);
+          }
+          if (r.why.includes('--')) {
+            problems.push(`NOTABLE  ${where}: why has '--', which the card prints as two hyphens`);
+          }
+        }
+      }
+      return seen;
+    };
+    const workingIds = checkList(NOTABLE, 'NOTABLE');
+    const debrisIds = checkList(DEBRIS_NOTABLE, 'DEBRIS_NOTABLE');
+    for (const id of debrisIds) {
+      if (workingIds.has(id)) {
+        problems.push(
+          `NOTABLE  NORAD id ${id} is in both NOTABLE and DEBRIS_NOTABLE -- it cannot be both ` +
+            `still working and famous debris, and NOTABLE_BY_ID silently keeps only one row`
+        );
+      }
+    }
+  } catch (e) {
+    problems.push(`NOTABLE  could not check the hand-kept notable lists: ${String(e && e.message)}`);
+  }
+}
+
 // 3i. the two rows that are not objects in space, but parts of objects in space.
 //
 // The Voyager Golden Record and Juno's three LEGO figures are `where.kind: attached`. That word
