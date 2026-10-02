@@ -296,6 +296,8 @@ jobs:
         run: node tests/test_scenenote.mjs
       - name: A shower's radiant is where the sky view marks it
         run: node tests/test_radiants.mjs
+      - name: "The sky from here: a light-pollution glow at night, a risen Moon lifting the dome, neither a flat black slab"
+        run: node tests/test_skyview.mjs
       - name: One mark per object -- a dot yields to its 3D model
         run: node tests/test_onemark.mjs
       - name: A loaded model keeps its colours, and ships no image it cannot use

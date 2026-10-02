@@ -44,6 +44,7 @@ const TOKENS = {
   earthOcean: 0x1b4f8a,
   atmosphere: 0x6ec3ff,
   nightLights: 0xffc98a,
+  moonGlow: 0xaab6d8,
   text: 0xe8ecf2,
   textDim: 0x9aa4b2,
 };
@@ -239,6 +240,32 @@ function skyAt(sunElDeg, out) {
 }
 
 /**
+ * City light pollution, as a band that hugs the WHOLE horizon rather than the sun's own
+ * direction. Visible once the sky is actually dark; the sun's own twilight glow (above, keyed to
+ * its azimuth) takes over as it climbs back toward the horizon, so this fades out by sunset/dawn
+ * rather than stacking with it.
+ * `horizonGlowStrength(-18) === 0.3`, `horizonGlowStrength(0) === 0`.
+ */
+export function horizonGlowStrength(sunElDeg) {
+  if (!Number.isFinite(sunElDeg)) return 0;
+  if (sunElDeg <= -10) return 0.3;
+  if (sunElDeg >= 0) return 0;
+  return 0.3 * (-sunElDeg / 10);
+}
+
+/**
+ * How much the Moon is lifting the sky right now, 0 (not up, new, or below the horizon) to 1
+ * (high and full). Scales with altitude -- full strength by about 30 degrees up, nothing below
+ * the horizon -- and with the illuminated fraction, so a thin crescent barely shows.
+ */
+export function moonBrightness(moonAltDeg, illumFrac) {
+  if (!Number.isFinite(moonAltDeg) || moonAltDeg <= 0) return 0;
+  const frac = Number.isFinite(illumFrac) ? illumFrac : 0;
+  const altFactor = Math.min(1, Math.sin(moonAltDeg * DEG2RAD) * 2);
+  return Math.max(0, Math.min(1, altFactor * frac));
+}
+
+/**
  * A deterministic skyline. Deterministic matters: a profile regenerated per frame would shimmer,
  * and this is meant to read as "the far edge of a town", not as noise.
  * @returns {number} altitude in radians of the top of the silhouette at this azimuth
@@ -338,6 +365,10 @@ export function createSkyView(ctx, options = {}) {
   let sunAzDeg = 0;
   let sunSolvedAtMs = -Infinity;
 
+  let moonElDeg = -90;
+  let moonIllumFrac = 0;
+  let moonSolvedAtMs = -Infinity;
+
   const sky = {
     horizon: new THREE.Color(),
     zenith: new THREE.Color(),
@@ -347,6 +378,8 @@ export function createSkyView(ctx, options = {}) {
     hiZenith: new THREE.Color(),
     alpha: 0.14,
     glow: 0,
+    horizonGlow: 0,
+    moonBright: 0,
     name: 'night',
   };
 
@@ -358,6 +391,8 @@ export function createSkyView(ctx, options = {}) {
   const _p = new THREE.Vector3();
   const _dir = new THREE.Vector3();
   const _basis = new THREE.Matrix4();
+  const _groundColour = new THREE.Color();
+  const _nightLights = new THREE.Color(TOKENS.nightLights);
 
   let parts = null;
 
@@ -427,6 +462,9 @@ export function createSkyView(ctx, options = {}) {
         uZenith: { value: new THREE.Color(TOKENS.spaceEdge) },
         uGlow: { value: new THREE.Color(TOKENS.nightLights) },
         uGlowStrength: { value: 0 },
+        uHorizonGlowStrength: { value: 0 },
+        uMoonGlow: { value: new THREE.Color(TOKENS.moonGlow) },
+        uMoonBrightness: { value: 0 },
         uAlpha: { value: 0.14 },
         uSunDir: { value: new THREE.Vector3(0, -1, 0) },
       },
@@ -440,6 +478,7 @@ export function createSkyView(ctx, options = {}) {
       fragmentShader: `
         uniform vec3 uHorizon; uniform vec3 uZenith; uniform vec3 uGlow;
         uniform float uGlowStrength; uniform float uAlpha; uniform vec3 uSunDir;
+        uniform float uHorizonGlowStrength; uniform vec3 uMoonGlow; uniform float uMoonBrightness;
         varying vec3 vLocal;
         void main() {
           vec3 d = normalize(vLocal);
@@ -447,9 +486,14 @@ export function createSkyView(ctx, options = {}) {
           // pow < 1 keeps the horizon band wide, which is where all the colour is at twilight
           vec3 c = mix(uHorizon, uZenith, pow(t, 0.55));
           float toSun = max(dot(d, normalize(uSunDir)), 0.0);
-          float glow = uGlowStrength * pow(toSun, 5.0) * (1.0 - t * 0.8);
-          c = mix(c, uGlow, clamp(glow, 0.0, 0.85));
+          float sunGlow = uGlowStrength * pow(toSun, 5.0) * (1.0 - t * 0.8);
+          // Light pollution hugs the whole horizon, not just the sun's own bearing.
+          float pollution = uHorizonGlowStrength * pow(1.0 - t, 4.0);
+          c = mix(c, uGlow, clamp(max(sunGlow, pollution), 0.0, 0.85));
+          // Moonlight lifts the whole dome evenly, brightest once the Moon is well clear of the horizon.
+          c = mix(c, uMoonGlow, uMoonBrightness * 0.35);
           float a = uAlpha * mix(1.0, 0.86, t);
+          a = clamp(a + uMoonBrightness * 0.25, 0.0, 1.0);
           gl_FragColor = vec4(c, clamp(a, 0.0, 1.0));
         }
       `,
@@ -723,15 +767,40 @@ export function createSkyView(ctx, options = {}) {
     sunAzDeg = hor.azimuth;
   }
 
+  // Moves 0.5 degrees an hour, far slower than the Sun needs watching for; the same clock-driven
+  // refresh keeps this off the hot path.
+  function solveMoon(tMs) {
+    if (!observerA) return;
+    if (Math.abs(tMs - moonSolvedAtMs) < SUN_REFRESH_MS) return;
+    moonSolvedAtMs = tMs;
+    const date = new Date(tMs);
+    const eq = Astronomy.Equator(Astronomy.Body.Moon, date, observerA, true, true);
+    const hor = Astronomy.Horizon(date, observerA, eq.ra, eq.dec, 'normal');
+    moonElDeg = hor.altitude;
+    moonIllumFrac = Astronomy.Illumination(Astronomy.Body.Moon, date).phase_fraction;
+  }
+
   function applySky() {
     skyAt(sunElDeg, sky);
+    sky.horizonGlow = horizonGlowStrength(sunElDeg);
+    sky.moonBright = moonBrightness(moonElDeg, moonIllumFrac);
     const u = parts?.dome?.material?.uniforms;
-    if (!u) return;
-    u.uHorizon.value.copy(sky.horizon);
-    u.uZenith.value.copy(sky.zenith);
-    u.uAlpha.value = sky.alpha;
-    u.uGlowStrength.value = sky.glow;
-    localDir(sunAzDeg * DEG2RAD, sunElDeg * DEG2RAD, u.uSunDir.value);
+    if (u) {
+      u.uHorizon.value.copy(sky.horizon);
+      u.uZenith.value.copy(sky.zenith);
+      u.uAlpha.value = sky.alpha;
+      u.uGlowStrength.value = sky.glow;
+      u.uHorizonGlowStrength.value = sky.horizonGlow;
+      u.uMoonBrightness.value = sky.moonBright;
+      localDir(sunAzDeg * DEG2RAD, sunElDeg * DEG2RAD, u.uSunDir.value);
+    }
+    // The skyline silhouette picks up the same warmth as the horizon it sits against, so the
+    // ground reads as a lit skyline rather than a flat cut-out at night.
+    const gu = parts?.ground?.material?.uniforms?.uColor;
+    if (gu) {
+      _groundColour.setHex(TOKENS.spaceEdge).lerp(_nightLights, sky.horizonGlow * 0.5);
+      gu.value.copy(_groundColour);
+    }
   }
 
   // ------------------------------------------------------------------ looking around
@@ -798,6 +867,7 @@ export function createSkyView(ctx, options = {}) {
     observer = next;
     observerA = new Astronomy.Observer(observer.latDeg, observer.lonDeg, observer.altKm * 1000);
     sunSolvedAtMs = -Infinity;
+    moonSolvedAtMs = -Infinity;
 
     if (!isActive) {
       saved = {
@@ -838,6 +908,7 @@ export function createSkyView(ctx, options = {}) {
 
     measureFrame();
     solveSun(t);
+    solveMoon(t);
     applySky();
     placeRadiants(t);
 
