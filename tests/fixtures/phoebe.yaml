@@ -60,6 +60,7 @@ sources:
 layers:
   - id: phoebe-orbiters
     display: Spacecraft at Phoebe
+    group: solar-system
     moments: {wonder: on, now: off, next: off}
     source: horizons-phoebe-orbiters
     propagator: sampled
