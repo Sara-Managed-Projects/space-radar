@@ -104,6 +104,7 @@ import { COPY, t, fmt, formatRate, formatShownAt } from '../copy/en.js';
 import { nextTripOrder } from './trippicker.js';
 import { openShare } from './share.js';
 import { icon } from './cards.js';
+import { tripPicture } from './trippics.js';
 
 const HOST_ID = 'sr-trip';
 // NOT 'sr-trip'. The host div carries `.sr-trip`, and `.sr-trip` in ui.css sets
@@ -616,6 +617,9 @@ export function createTripFrame(ctx) {
     const T = COPY.trip;
     p.textContent = '';
     p.dataset.kind = 'intro';
+    // Spec 0068: the trip's picture as the sheet's header, the same file as its card, fading into
+    // the glass under the microlabel and the name (ui.css .sr-tripsheet__pic).
+    if (st.tourId) p.appendChild(tripPicture(st.tourId, 'sr-tripsheet__pic'));
     const head = sheetHead(p, T.introMicro, st.tourTitle);
     head.appendChild(el('p', 'sr-tripsheet__meta', shapeLine(st.count, st.estimateMs)));
     const tour = tourOf(st.tourId);
@@ -758,6 +762,7 @@ export function createTripFrame(ctx) {
           card.dataset.trip = tour.id;
           if (tour.group) card.dataset.group = tour.group;
           card.title = t(COPY.trip.endNext, { title: tour.title });
+          card.appendChild(tripPicture(tour.id, 'sr-tripcard__pic'));
           card.appendChild(el('span', 'sr-tripcard__title', tour.title));
           card.appendChild(el('span', 'sr-tripcard__meta', shapeLine(plan.count, plan.estimateMs)));
           card.addEventListener('click', () => trip.start(tour.id));

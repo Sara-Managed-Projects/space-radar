@@ -85,6 +85,10 @@ jobs:
       # Spec 0044: the gates themselves. A stale mirror is a test holding the previous number.
       - name: The budgets mirror matches the registry (spec 0044)
         run: python3 scripts/gen_budgets_js.py --check
+      # Spec 0068 task 1: one WebP per trip card, the right size and inside trip_picture_bytes. Stdlib
+      # only (the WebP header is read by hand), so the job's one dependency stays PyYAML.
+      - name: Every trip has its card picture, 640 x 360 and inside its budget (spec 0068)
+        run: python3 scripts/build_trip_thumbs.py --check
       # Spec 0045: the ten font subsets are the ones build-fonts.py recorded, fonts.css is what it
       # writes, and the OFL text and a CREDITS.md row travel with each family. Stdlib only.
       - name: The self-hosted faces are the recorded subsets, with their licences (spec 0045)
@@ -273,6 +277,12 @@ jobs:
       # Start and sound as a toggle, the end with one next trip, the top bar of title and Leave.
       - name: "Trips in the new language: the toolbar, the keyboard, the intro and the end (spec 0061 task 7)"
         run: node tests/test_tripframe.mjs
+      # Spec 0068 task 1: the trip's picture under its card and over its intro, lazy and after the
+      # first visit; task 2: the controls hint, once, with keycaps the camera and the chrome answer.
+      - name: "Trip cards with pictures: the files, the fade into glass, nothing before the first visit settles (spec 0068)"
+        run: node tests/test_trip_pictures.mjs
+      - name: "The controls hint: once, never on a link or a trip, every keycap a key the app answers (spec 0068)"
+        run: node tests/test_keyhint.mjs
       - name: "A year in a minute: four worlds on the Sun's stage, drawn true, at 525 600"
         run: node tests/test_year_trip.mjs
       # Spec 0040: TRAPPIST-1 at its own scale. Kepler's third law on the seven rows, the planets the

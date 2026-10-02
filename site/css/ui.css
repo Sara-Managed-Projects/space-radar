@@ -1871,6 +1871,40 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   min-height: 0;
 }
 
+/* Spec 0068: the intro's header is the trip's picture (the card's file), edge to edge across the
+   sidebar's top and fading into its glass by a mask, so what shows through the fade is the glass
+   itself and there is no seam. The head starts where the picture is nearly gone: a microlabel in
+   --sr-text-dim must sit on glass, never on the bright half of a Moon (docs/ui-guide.md §2.1). */
+.sr-tripsheet__pic {
+  display: block;
+  width: calc(100% + 2 * var(--sr-inset));
+  height: 176px;
+  margin: calc(-1 * (var(--sp-4) + var(--sp-1))) calc(-1 * var(--sr-inset)) calc(-1 * var(--sp-4));
+  object-fit: cover;
+  /* The subject is a third of the way down the picture; a wide header keeps that band, not the
+     middle (on a phone the middle cut the Moon lander's legs off its body). */
+  object-position: 50% 20%;
+  opacity: 0;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(180deg, var(--sr-text) 40%, transparent 100%);
+  mask-image: linear-gradient(180deg, var(--sr-text) 40%, transparent 100%);
+  transition: opacity var(--sr-slow) var(--sr-ease);
+}
+
+.sr-tripsheet__pic.is-loaded { opacity: 1; }
+
+.sr-tripsheet.is-floating .sr-tripsheet__pic {
+  width: calc(100% + 2 * var(--sp-4));
+  height: 136px;
+  margin: calc(-1 * var(--sp-2)) calc(-1 * var(--sp-4)) calc(-1 * var(--sp-3));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-tripsheet__pic { transition: opacity 120ms linear; }
+}
+
+.sr-tripsheet__pic + .sr-tripsheet__head { position: relative; }
+
 .sr-tripsheet__head {
   display: flex;
   flex-direction: column;
@@ -3301,28 +3335,35 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   color: var(--sr-text-dim);
 }
 
-/* Trips as cards: two columns of 104 px, a wash of the trip's group colour falling to near-black
-   (row D). The colours are the four groups', derived from the palette's own hues at low alpha. */
+/* Trips as cards: two columns, a wash of the trip's group colour falling to near-black (row D), and
+   since spec 0068 the trip's own picture over that wash, fading into the card's glass under the
+   title (Ivan, 2026-10-02: "gradual image on the grid square"). The wash is what shows until the
+   picture has arrived (ui/trippics.js: after the first visit settles, and only on screen), and
+   what stays if it never does. Three layers, local stacking only: the picture (0), the fade (1),
+   the words (2). The fade reaches --sr-glass-strong where the title starts, so the title and the
+   meta read as they do on glass over the brightest picture (docs/ui-guide.md §2.1). */
 .sr-tripgrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  padding-top: 6px;
+  gap: var(--sp-2);
+  padding-top: var(--sp-2);
 }
 
 .sr-tripcard {
   --sr-trip-hue: 40, 60, 90;
+  position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  gap: 3px;
-  height: 104px;
-  padding: 12px;
+  gap: var(--sp-1);
+  height: 128px;
+  padding: var(--sp-3);
   font: inherit;
   text-align: left;
   color: var(--sr-text);
-  background: linear-gradient(180deg, rgba(var(--sr-trip-hue), 0.5), rgba(8, 10, 14, 0.92));
-  border: 1px solid var(--sr-hair);
+  background: linear-gradient(180deg, rgba(var(--sr-trip-hue), 0.5), var(--sr-glass-strong));
+  border: 1px solid var(--sr-line);
   border-radius: var(--sr-radius);
   cursor: pointer;
   overflow: hidden;
@@ -3335,12 +3376,54 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 
 .sr-tripcard:hover { border-color: var(--sr-line-strong); }
 
+/* The picture fills the card and starts invisible; it fades in once decoded, over the wash. It
+   hangs 14 % above the card's top edge: the render puts the subject a third of the way down, and
+   lifted it sits at about a fifth, clear of most three-line titles without losing the top of a
+   tall subject (the 2026-10-02 screenshots: unlifted, the station sat behind "are"; at 16 % the
+   Moon lander lost its roof). */
+.sr-tripcard__pic {
+  position: absolute;
+  top: -14%;
+  left: 0;
+  z-index: 0;
+  width: 100%;
+  height: 114%;
+  object-fit: cover;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--sr-slow) var(--sr-ease), transform var(--sr-mid) var(--sr-ease);
+}
+
+.sr-tripcard__pic.is-loaded { opacity: 1; }
+
+/* The fade: clear over the top, where the picture's subject sits (tools/trip-pictures.probe.js
+   frames it a third of the way down), into the glass where the words are. */
+.sr-tripcard::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  content: '';
+  background: linear-gradient(180deg, transparent 18%, var(--sr-glass) 56%, var(--sr-glass-strong) 78%);
+  pointer-events: none;
+}
+
+/* Hover (a pointer only): the picture leans in, 4 %, in --sr-mid. Reduced motion: nothing moves. */
+@media (hover: hover) {
+  .sr-tripcard:not(.is-off):hover .sr-tripcard__pic { transform: scale(1.04); }
+}
+
+.sr-tripcard__title,
+.sr-tripcard__meta {
+  position: relative;
+  z-index: 2;
+}
+
 .sr-tripcard__title {
   display: -webkit-box;
   overflow: hidden;
   font-size: 14px;
   font-weight: 600;
-  line-height: 1.25;
+  line-height: 18px;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
 }
@@ -3349,21 +3432,28 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   display: -webkit-box;
   overflow: hidden;
   font-size: 13px;
-  line-height: 1.35;
-  color: rgba(232, 236, 242, 0.66);
+  line-height: 18px;
+  color: var(--sr-text-soft);
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 
 .sr-tripcard__meta:empty { display: none; }
 
-/* Greyed WITH its reason (spec 0025 req 6): readable, not choosable. */
+/* Greyed WITH its reason (spec 0025 req 6): readable, not choosable; its picture greyed with it. */
 .sr-tripcard.is-off {
   cursor: default;
-  background: linear-gradient(180deg, rgba(232, 236, 242, 0.05), rgba(8, 10, 14, 0.92));
+  background: linear-gradient(180deg, var(--sr-wash), var(--sr-glass-strong));
 }
 
+.sr-tripcard.is-off .sr-tripcard__pic { filter: grayscale(1); opacity: 0.4; }
+
 .sr-tripcard.is-off .sr-tripcard__title { color: var(--sr-text-dim); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-tripcard__pic { transition: opacity 120ms linear; }
+  .sr-tripcard:hover .sr-tripcard__pic { transform: none; }
+}
 
 /* "All 9 trips", "Show all 8": a quiet text button under a list. */
 .sr-more {

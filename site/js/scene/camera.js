@@ -182,6 +182,16 @@ export function worldFramingDistance(radius, fovDeg, aspect, radii = 3.5, fill =
   return Math.max(base, radius * Math.sqrt(1 + 1 / (k * k)));
 }
 
+/**
+ * The keys the camera answers (the keyboard section inside createCameraRig says how), exported so
+ * the controls hint (ui/keyhint.js, spec 0068) can be held to them: a keycap on screen that the
+ * camera ignores is a promise the page breaks (tests/test_keyhint.mjs).
+ */
+export const CAMERA_KEYS = new Set([
+  'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+  'PageUp', 'PageDown', 'w', 'W', 's', 'S', '+', '=', '-', '_',
+]);
+
 export function createCameraRig(camera, domElement, options = {}) {
   const target = new THREE.Vector3();
   const pendingPan = new THREE.Vector3();
@@ -527,10 +537,6 @@ export function createCameraRig(camera, domElement, options = {}) {
   /** In log distance: e^0.9 is about 2.5x a second, which is a second and a half from Earth to the ring. */
   const KEY_DOLLY_LOG_PER_S = 0.9;
 
-  const CAMERA_KEYS = new Set([
-    'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
-    'PageUp', 'PageDown', 'w', 'W', 's', 'S', '+', '=', '-', '_',
-  ]);
   const held = new Set();
 
   /** Typing is typing. A key that lands in a field, or that the app already handled, is not ours. */

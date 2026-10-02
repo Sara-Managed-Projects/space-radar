@@ -54,7 +54,7 @@ const CONTRACT = {
   'sky/overplace.js': ['loadPlaces', 'placesNow', 'placeAt', 'decodePng16', 'pngParts'],
   'scene/glyphs.js': ['createGlyphLayer'],
   'scene/models.js': ['modelFor'],
-  'scene/camera.js': ['createCameraRig'],
+  'scene/camera.js': ['createCameraRig', 'CAMERA_KEYS'],
   // Spec 0061 req 9: an arrival with the world's limb in view, and the Planets tab fitted to its band.
   'scene/framing.js': ['limbFraming', 'limbAt', 'fitDistance', 'MIN_RADII', 'MIN_UP_ANGLE'],
   // Spec 0061 req 10: eight names, ranked, no rocket bodies by default (tests/test_labels_rank.mjs).
@@ -129,6 +129,10 @@ const CONTRACT = {
   'ui/status.js': ['createStatus'],
   'ui/github.js': ['createGitHubMark'],
   'ui/cleanview.js': ['createCleanView', 'wantsToggle'],
+  // Spec 0068: the trip cards' pictures, and the controls hint shown once (imported after the
+  // first visit settles); their pure parts for tests/test_trip_pictures.mjs and test_keyhint.mjs.
+  'ui/trippics.js': ['tripPicture', 'tripPictureUrl', 'PICTURE_DELAY_MS'],
+  'ui/keyhint.js': ['createKeyHint', 'decide', 'whyNot', 'readSeen', 'markSeen', 'hintMode', 'capForKey', 'allCaps', 'KEY_ROWS', 'CHROME_KEYS', 'TOUCH_ROWS', 'STORE_KEY', 'AUTO_HIDE_MS', 'MIN_SHOWN_MS', 'KEY_GRACE_MS'],
   // Spec 0045 req 10: Regular and Compact, chosen or automatic below 800 px of height.
   'ui/density.js': ['createDensity', 'densityPanel', 'readDensity', 'writeDensity', 'isCompact', 'DENSITY_KEY', 'CHOICES', 'SHORT_QUERY'],
   'ui/printcompose.js': ['makePostcard', 'saveBlob', 'fileName', 'printSize', 'caption', 'pdfFromJpeg', 'tagText', 'printTag'],

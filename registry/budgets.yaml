@@ -30,6 +30,7 @@ budgets:
   - {id: triangles_per_stop, value: 250000, unit: triangles, since: 2026-09-22, reason: "poes.glb alone was 116 517 before decimation (0027 amendment 1)", pending: "spec 0044 task 3"}
   - {id: bed_kb, value: 600, unit: kB, since: 2026-09-22, reason: "spec 0035: 75 s at 64 kbps Opus"}
   - {id: audio_total_kb, value: 3000, unit: kB, since: 2026-09-22, reason: "spec 0035"}
+  - {id: trip_picture_bytes, value: 24000, unit: bytes, since: 2026-10-02, reason: "spec 0068 task 1: one WebP per trip card (640 x 360), fetched after the first visit settles; scripts/build_trip_thumbs.py --check"}
   - {id: og_png_min_bytes, value: 50000, unit: bytes, since: 2026-09-22, reason: "under 50 kB a 1200x630 frame is empty (#157's lesson)"}
   - {id: home_js_kb, value: 8, unit: kB, since: 2026-09-22, reason: "spec 0042", pending: "spec 0042"}
   # The device tiers (2026-09-29): what a T1 laptop downloads AFTER the first frame, when idle, and the

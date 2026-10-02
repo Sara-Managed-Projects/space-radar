@@ -38,6 +38,7 @@ import { SYSTEMS } from '../data/systems.js';
 import { load } from '../data/sources.js';
 import { parseAstros } from '../data/parsers.js';
 import { groupTrips, eventSubtitle } from './trippicker.js';
+import { tripPicture } from './trippics.js';
 import { createSearch } from './search.js';
 import { createNext, auroraItem } from './next.js';
 import { tagLines } from './cards.js';
@@ -607,6 +608,8 @@ export function createExplore(ctx, host) {
       const card = button('sr-tripcard');
       card.dataset.trip = row.id;
       card.dataset.group = row.group || '';
+      // Spec 0068: the trip's own picture under the glass, fading out under the title.
+      card.appendChild(tripPicture(row.id, 'sr-tripcard__pic'));
       card.appendChild(el('span', 'sr-tripcard__title', row.title));
       const meta = tripMeta(row, eventSubtitle(tour, nowMs, ctx.observer || null));
       card.appendChild(el('span', 'sr-tripcard__meta', meta));

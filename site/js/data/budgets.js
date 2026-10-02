@@ -13,6 +13,7 @@ export const BUDGETS = {
   "triangles_per_stop": 250000,
   "bed_kb": 600,
   "audio_total_kb": 3000,
+  "trip_picture_bytes": 24000,
   "og_png_min_bytes": 50000,
   "home_js_kb": 8,
   "tier1_idle_bytes": 1300000,

@@ -100,6 +100,9 @@ function auroraStandIn(saveData, layerOn) {
  */
 const LATER_LAYERS = new Set(['stars', 'exoplanets']);
 const LATER_LAYERS_MS = 3000;
+/** How long after sr:layers-ready the controls hint is imported and may show (ui/keyhint.js): after
+ * the later layers and the aurora, when the first view has settled and before a visitor gives up. */
+const KEYHINT_MS = 5000;
 
 export async function boot({ setStatus } = {}) {
   const say = setStatus || (() => {});
@@ -330,6 +333,15 @@ export async function boot({ setStatus } = {}) {
   }, { replace: true });
   createRail(ctx, shell.railHost);
   createTimePill(ctx, shell.timeHost);
+  // THE CONTROLS HINT (spec 0068 task 2, ui/keyhint.js): once per visitor, bottom-right, the keys
+  // and the gestures that move the camera. Imported KEYHINT_MS after sr:layers-ready, so the first
+  // visit's bytes are the map's; it decides for itself whether to show (not seen before, not a
+  // trip, not a link). ctx.keyhint.show() opens it on request and imports it if it has to.
+  const arrivedByLink = !!(link && (link.trip || link.at || link.stage)) || location.hash === '#sources';
+  const keyHint = () => import('./ui/keyhint.js').then((m) => m.createKeyHint(ctx, { deepLink: arrivedByLink }));
+  ctx.keyhint = { show: () => keyHint().then((api) => api.show()) };
+  const hintLater = () => setTimeout(() => keyHint().then((api) => api.maybeShow()).catch((e) => console.warn('the controls hint did not load', e)), KEYHINT_MS);
+  window.addEventListener('sr:layers-ready', hintLater, { once: true });
   // One line on the scene when no satellite could be read at all (ui/scenenote.js).
   ctx.sceneNote = createSceneNote(ctx);
   // `#sources` opens the sheet (design §6): a link to "what could this page read" is worth having.
