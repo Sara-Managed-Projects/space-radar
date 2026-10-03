@@ -388,6 +388,25 @@ layers:
     select: {all: true}
     budget: {max_items: 1}
 
+  # Lightning (2026-10-03, spec 0066 task 1): NOAA nowCOAST's strike-density map of the last quarter
+  # hour, drawn as brief flashes on the night side by scene/weather/lightning.js. Like the aurora it
+  # is not glyphs and not records (data/layers.js `draw: lightning`), and the page fetches it itself:
+  # `source: weather` is the reserved literal for that, and the row that carries the host, the day
+  # its CORS header was measured and the licence is registry/weather.yaml `earth-lightning` (the
+  # effect whose `layer:` is this id). Never at tier 0, on a connection that saves data, or with
+  # reduced motion asked for.
+  - id: lightning
+    display: Lightning
+    group: earth
+    moments: {wonder: on, now: on, next: off}
+    source: weather
+    propagator: static
+    frame: earth-fixed
+    style: {kind: glyph, glyph: storm, colour: lightning}
+    card: world
+    select: {all: true}
+    budget: {max_items: 1}
+
   # Things that came down. Space-Track needs a login nobody has registered, so this is the bundled
   # stand-in always (cls sample, every card saying so) until that changes.
   - id: reentries

@@ -648,6 +648,39 @@ CASES: list[tuple[str, str, str, str]] = [
      "tilesets.yaml", "world: mars", "world: vulcan"),
     ("a tile set whose url is not a template",
      "tilesets.yaml", "default028mm/{z}/{y}/{x}.jpg", "default028mm/7/50/32.jpg"),
+    # --- registry/weather.yaml (2026-10-03, spec 0066) ------------------------------------------
+    # Weather is where a map is most tempted to make things up. An effect that does not say how much
+    # of it is known, a measured one whose CORS header nobody measured, an illustrative one with no
+    # reason, one that would be drawn on the slowest phones, a wind faster than any measured, a world
+    # with no line on its card, a layer that claims the page fetches it from nowhere: each is refused.
+    ("a weather effect that does not say how much of it is known",
+     "weather.yaml", "    kind: hexagon\n    class: illustrative", "    kind: hexagon\n    class: pretty"),
+    ("a measured weather effect whose CORS header nobody measured",
+     "weather.yaml", 'cors: "access-control-allow-origin: *"', 'cors: "probably"'),
+    ("a measured weather effect that does not say where its data reaches",
+     "weather.yaml", '    covers: "25 S to 80 N, from 110 E eastward across the Pacific and the Americas to 0 W"\n', ""),
+    ("an illustrative weather effect with no reason",
+     "weather.yaml", '    why: "The map we ship has no pole in it.', '    because: "The map we ship has no pole in it.'),
+    ("a weather effect drawn at the lowest tier",
+     "weather.yaml", "    kind: hexagon\n    class: illustrative\n    off_at: [tier0, save_data]",
+     "    kind: hexagon\n    class: illustrative\n    off_at: [save_data]"),
+    ("lightning that flashes for a visitor who asked for less motion",
+     "weather.yaml", "off_at: [tier0, save_data, reduced_motion]", "off_at: [tier0, save_data]"),
+    ("a wind profile that calls itself measured",
+     "weather.yaml", "    kind: zonal-flow\n    class: modelled\n    off_at: [tier0, save_data]\n    source:\n      name: \"Tollefson",
+     "    kind: zonal-flow\n    class: measured\n    off_at: [tier0, save_data]\n    source:\n      name: \"Tollefson"),
+    ("a wind faster than any measured on a planet",
+     "weather.yaml", "[0, -398]", "[0, -3980]"),
+    ("a wind profile that does not reach the pole",
+     "weather.yaml", "points: [[-90, 0], [-50, 100], [50, 100], [90, 0]]", "points: [[-80, 0], [-50, 100], [50, 100], [90, 0]]"),
+    ("a weather effect with no paper behind it",
+     "weather.yaml", '      url: "https://doi.org/10.1006/icar.1993.1114"\n', ""),
+    ("a weather effect on a world we do not draw",
+     "weather.yaml", "    world: neptune\n    kind: zonal-flow", "    world: vulcan\n    kind: zonal-flow"),
+    ("a frost cap that reaches the tropics",
+     "weather.yaml", "[300, 54]", "[300, 24]"),
+    ("a layer the page is said to fetch, from nowhere the registry names",
+     "weather.yaml", "    layer: lightning\n", ""),
 ]
 
 

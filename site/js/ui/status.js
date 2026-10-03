@@ -400,6 +400,15 @@ export function createStatus(ctx, parent) {
     creditBlock.appendChild(auroraLine);
     for (const line of ctx.aurora.credit()) creditBlock.appendChild(el('p', 'sr-status__intro sr-status__aurora-credit', line));
   }
+  // The lightning (spec 0066, scene/weather/lightning.js) is NOAA's map fetched by the browser, the
+  // same way: its credit and one line saying what the flashes on the night side are right now.
+  let weatherLine = null;
+  if (ctx.weather) {
+    creditBlock.appendChild(el('h4', 'sr-status__subtitle sr-status__weather-title', COPY.status.weatherTitle));
+    weatherLine = el('p', 'sr-status__intro sr-status__weather', '');
+    creditBlock.appendChild(weatherLine);
+    for (const line of ctx.weather.credit()) creditBlock.appendChild(el('p', 'sr-status__intro sr-status__weather-credit', line));
+  }
   // The device tier and the maps it is wearing (scene/texturetiers.js, 2026-09-28): the 4k maps are
   // other people's pictures too, and which ones are on screen depends on the device.
   const maps = el('p', 'sr-status__intro sr-status__maps');
@@ -420,6 +429,7 @@ export function createStatus(ctx, parent) {
       renderAttribution(ctx, creditList);
       if (cloudsLine) cloudsLine.textContent = ctx.liveClouds.line(ctx.clock ? ctx.clock.now() : Date.now());
       if (auroraLine) auroraLine.textContent = ctx.aurora.line(ctx.clock ? ctx.clock.now() : Date.now());
+      if (weatherLine) weatherLine.textContent = ctx.weather.line('earth', ctx.clock ? ctx.clock.now() : Date.now()) || '';
       renderMaps(ctx, maps);
     } catch {
       /* keep the last good panel rather than blanking the one page that says what is wrong */

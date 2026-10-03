@@ -89,6 +89,30 @@ function auroraStandIn(saveData, layerOn) {
   return api;
 }
 
+/** How long after sr:layers-ready the weather's modules are fetched (OFF THE FIRST VISIT, in boot). */
+const WEATHER_IMPORT_MS = 4500;
+
+/**
+ * ctx.weather until scene/weather/index.js has loaded, and for good where weather is not drawn: at
+ * tier 0 and on a connection that saves data (spec 0066 requirement 8). The same calls the card, the
+ * Sources sheet, the layers panel and the frame loop make. A world's line is null -- nothing is
+ * drawn for it yet, so there is nothing to say; the Earth's says why there is no lightning.
+ */
+function weatherStandIn(off, layerOn) {
+  const L = COPY.weather.lightning;
+  const api = {
+    failed: false,
+    start() {},
+    tick() {},
+    latch() {},
+    state: () => ({ phase: off ? 'off' : api.failed ? 'failed' : 'waiting' }),
+    line: (worldId) => (worldId !== 'earth' ? null : off ? L.off : !layerOn() ? L.switchedOff : api.failed ? L.failed : L.waiting),
+    credit: () => [L.credit],
+    perMinute: () => (off || api.failed ? 0 : undefined),
+  };
+  return api;
+}
+
 /**
  * OFF THE FIRST VISIT (2026-10-01, internal #188). The named stars (data/stars3d.names.json, 288 kB)
  * and the exoplanet table (data/exoplanets.csv, 582 kB, the fallback CI and a visit without our
@@ -366,6 +390,54 @@ export async function boot({ setStatus } = {}) {
       // controls.layerCountParts.auroraPeak), not a count of records: it has none.
       layer.count = () => ctx.aurora.peak();
       layer.counts = () => [{ key: 'auroraPeak', n: ctx.aurora.peak() }];
+    }
+  }
+
+  // WEATHER ON EVERY WORLD (2026-10-03, spec 0066, scene/weather/): the Earth's lightning from
+  // NOAA's map, the giants' and Venus's air in motion, Mars's season. OFF THE FIRST VISIT like the
+  // aurora -- one dynamic import WEATHER_IMPORT_MS after sr:layers-ready -- and NEVER at tier 0 or on
+  // a connection that saves data: there ctx.weather stays the stand-in, every world keeps
+  // scene/worlds.js's own shader and nothing is fetched. The tier is the boot tier (ctx.quality is
+  // made below, before the layers land); a device promoted later keeps what it booted with.
+  ctx.weather = weatherStandIn(auroraSaveData, () => isLayerOn('lightning'));
+  function loadWeatherLater() {
+    const off = auroraSaveData || !ctx.quality || ctx.quality.bootTier < 1;
+    if (off) {
+      ctx.weather = weatherStandIn(true, () => isLayerOn('lightning'));
+      window.dispatchEvent(new CustomEvent('sr:weather'));
+      return;
+    }
+    const readyAt = performance.now();
+    const load = () => import('./scene/weather/index.js').then((m) => {
+      const weather = m.createWeather({
+        worlds,
+        camera,
+        reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
+        // A world's card rewrites its weather line on this, as the Earth's does its clouds line.
+        onChange: () => window.dispatchEvent(new CustomEvent('sr:weather')),
+      });
+      if (ctx.latch && ctx.latch.latched) weather.latch();
+      ctx.weather = weather;
+      weather.start({ elapsedMs: performance.now() - readyAt });
+      window.dispatchEvent(new CustomEvent('sr:weather'));
+    }).catch((e) => {
+      ctx.weather.failed = true;
+      console.warn('the weather modules did not load', e);
+      window.dispatchEvent(new CustomEvent('sr:weather'));
+    });
+    setTimeout(() => {
+      if (typeof requestIdleCallback === 'function') requestIdleCallback(load, { timeout: 4000 });
+      else load();
+    }, WEATHER_IMPORT_MS);
+  }
+  window.addEventListener('sr:layers-ready', loadWeatherLater, { once: true });
+  {
+    const layer = LAYERS.find((l) => l.id === 'lightning');
+    if (layer) {
+      // The panel's number for this layer is strikes a minute in NOAA's latest map (copy/en.js
+      // controls.layerCountParts.lightningPerMin), not a count of records: it has none.
+      layer.count = () => ctx.weather.perMinute();
+      layer.counts = () => [{ key: 'lightningPerMin', n: ctx.weather.perMinute() }];
     }
   }
 
@@ -1266,6 +1338,18 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
         discShare: worlds.discShare ? worlds.discShare('earth') : 1,
       });
     }
+    // The weather after the worlds' update too: the clock's time into the bands, and this second's
+    // lightning (scene/weather/). The stand-in's tick is empty.
+    if (ctx.weather) {
+      ctx.weather.tick(t, {
+        on: ctx.isLayerOn('lightning'),
+        latched: latch.latched,
+        reducedMotion: !!(reducedMotionQuery && reducedMotionQuery.matches),
+        discShare: worlds.discShare ? worlds.discShare('earth') : 1,
+        viewportH: ctx.renderer && ctx.renderer.domElement ? ctx.renderer.domElement.height : 800,
+        pixelRatio: ctx.renderer && ctx.renderer.getPixelRatio ? ctx.renderer.getPixelRatio() : 1,
+      });
+    }
 
     // Glyph positions are the expensive part. At 1x they need no more than ~10 Hz to look
     // continuous at orbital speeds; while scrubbing they need every frame or the motion stutters.
@@ -1357,7 +1441,7 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
   for (const layer of ordered) {
     // A layer another module already draws (the worlds' discs) gets no glyph layer: two marks for
     // one planet would be two places to tap and one of them wrong.
-    if (layer.draw === 'worlds' || layer.draw === 'galaxy' || layer.draw === 'stars3d' || layer.draw === 'systems' || layer.draw === 'aurora') continue;
+    if (layer.draw === 'worlds' || layer.draw === 'galaxy' || layer.draw === 'stars3d' || layer.draw === 'systems' || layer.draw === 'aurora' || layer.draw === 'lightning') continue;
     const gl = createGlyphLayer(scene, layer);
     // One mark per object: the dot fades out as that record's 3D model fades in.
     // Read through ctx at call time: this function has no `heroes` of its own (the first version
@@ -1388,7 +1472,7 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
     // OFF THE FIRST VISIT (LATER_LAYERS, top of this file): after sr:layers-ready, or when asked.
     if (LATER_LAYERS.has(layer.id)) { later.push(layer); continue; }
     // The aurora has no records to load: scene/aurora.js fetches its own forecast, once the layers have landed.
-    if (layer.draw === 'aurora') continue;
+    if (layer.draw === 'aurora' || layer.draw === 'lightning') continue;
     const srcs = idsOf(layer);
     // One cached manifest read behind these, not a request per layer.
     const snaps = srcs.length ? await Promise.all(srcs.map((id) => sources.snapshotAvailable(id))) : [];

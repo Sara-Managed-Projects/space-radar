@@ -54,6 +54,8 @@ const C = {
   // Spec 0053 design section 3: the aurora's green, the 557.7 nm line. Only the layers panel's
   // swatch; the shell's own colours are emission light in scene/aurora.js.
   aurora: '#5CFF8A',
+  // Spec 0066: lightning through cloud, the blue-white scene/weather/lightning.js draws a flash in.
+  lightning: '#B8CCFF',
 };
 
 // =================================================================================================
@@ -981,6 +983,33 @@ export const LAYERS = [
     card: 'world',
     priority: 90,
     sentence: 'The northern and southern lights where NOAA’s model expects them in the next hour, on the night side. A forecast, not a photograph.',
+  },
+  {
+    // Mirrors registry/layers.yaml `lightning` (2026-10-03, spec 0066 task 1). Like the aurora: no
+    // glyph layer and no records (`draw: 'lightning'`). scene/weather/lightning.js draws brief
+    // flashes on the Earth's night side where NOAA's strike-density map has lightning, and fetches
+    // that map itself, off the boot path and never at tier 0 or on a connection that saves data.
+    // The panel's number is strikes a minute in the map held (`count`, attached by main.js).
+    id: 'lightning',
+    display: 'Lightning',
+    klass: 'lightning',
+    source: 'weather',
+    parse: null,
+    propagator: 'static',
+    frame: 'earth-fixed',
+    moments: { wonder: true, now: true, next: false },
+    defaultOn: true,
+    draw: 'lightning',
+    noModel: true,
+    sample: () => [],
+    select: all,
+    budget: { maxItems: 1 },
+    colour: C.lightning,
+    glyph: 'storm',
+    nearKm: 0,
+    card: 'world',
+    priority: 90,
+    sentence: 'Flashes on the night side where NOAA counted lightning in the last quarter hour: the Americas and the Pacific. Where and how often are measured; each flash’s instant is drawn.',
   },
   {
     // NOT in registry/layers.yaml. Added because sampleReentries() exists and a reentry is one

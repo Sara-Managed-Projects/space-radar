@@ -2970,6 +2970,16 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
     if (record.id === 'earth' && ctx && ctx.aurora && typeof ctx.aurora.line === 'function') {
       aboutNodes.push(el('p', 'sr-card__note sr-card__aurora', ctx.aurora.line(m.tMs)));
     }
+    // And its weather (spec 0066, scene/weather/): one line saying what is drawn on this world and
+    // whether it is measured, modelled or illustrative (copy/en.js COPY.weather). The line is there
+    // even while it is empty, hidden, so the module arriving a few seconds after the card can fill it.
+    if (ctx && ctx.weather && typeof ctx.weather.line === 'function') {
+      let wx = null;
+      try { wx = ctx.weather.line(record.id, m.tMs); } catch { wx = null; }
+      const line = el('p', 'sr-card__note sr-card__weather', wx || '');
+      line.hidden = !wx;
+      aboutNodes.push(line);
+    }
   }
   const aboutRows = rows.filter(([label]) => label !== COPY.card.rows.nextPass);
   if (aboutRows.length) {
@@ -3139,6 +3149,18 @@ function subscribe(ctx) {
       const line = typeof document !== 'undefined' && document.querySelector('.sr-card__aurora');
       if (!line || !c || !c.aurora || current.record.id !== 'earth') return;
       try { line.textContent = c.aurora.line(c.clock.now()); } catch { /* keep the last line */ }
+    });
+    // The weather line, the same way, on whichever world's card is open: the module arrived, NOAA's
+    // lightning map did, or the clock moved away from it.
+    window.addEventListener('sr:weather', () => {
+      const c = current && current.ctx;
+      const line = typeof document !== 'undefined' && document.querySelector('.sr-card__weather');
+      if (!line || !c || !c.weather || !current.record) return;
+      try {
+        const wx = c.weather.line(current.record.id, c.clock.now());
+        line.textContent = wx || '';
+        line.hidden = !wx;
+      } catch { /* keep the last line */ }
     });
   }
   try {

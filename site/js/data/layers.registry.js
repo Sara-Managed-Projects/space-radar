@@ -500,6 +500,26 @@ export const LAYER_ROWS = [
     "train": null
   },
   {
+    "id": "lightning",
+    "display": "Lightning",
+    "group": "earth",
+    "enabled": true,
+    "moments": {
+      "wonder": true,
+      "now": true,
+      "next": false
+    },
+    "source": "weather",
+    "sources": null,
+    "propagator": "static",
+    "frame": "earth-fixed",
+    "card": "world",
+    "glyph": "storm",
+    "colour": "lightning",
+    "maxItems": 1,
+    "train": null
+  },
+  {
     "id": "reentries",
     "display": "Things that came down",
     "group": "around-earth",

@@ -68,6 +68,10 @@ BUNDLED_SOURCE = "bundled"
 # true of half of them. `deep-space` states `sampled` today while its own records carry `kepler`
 # too; data/layers.js already carries the comment admitting it.
 PER_RECORD = "per-record"
+# And a layer the PAGE fetches for itself, as weather (spec 0066): its host, the day the CORS header
+# was measured and its licence are a registry/weather.yaml row -- the effect whose `layer:` is the
+# layer's id -- not a sources.yaml row, which is a row for the harvester and demands a parser.
+WEATHER_SOURCE = "weather"
 
 # --- registry/oddities.yaml, the whole vocabulary a row may use -----------------------------
 # Frozen for the same reason the rocket sets are: a value that outruns the table must stop the
@@ -2829,6 +2833,125 @@ TILESET_PROJECTIONS = {"equirectangular"}
 TILESET_CORS = re.compile(r"^Access-Control-Allow-Origin: \S+ \(measured \d{4}-\d{2}-\d{2}\)$")
 
 
+# --- registry/weather.yaml (spec 0066) ---------------------------------------------------------
+# Weather is where a map is most tempted to make things up, so every effect is a row that says how
+# much of it is known, and each class has to carry what makes it true: a measured row the host and
+# the CORS header as measured; a modelled row the paper; an illustrative row the reason it can be
+# no better. Every row is off at the lowest tier and on a connection that saves data.
+WEATHER_CLASSES = ("measured", "modelled", "illustrative")
+WEATHER_KINDS = {"lightning", "zonal-flow", "hexagon", "mars-season"}
+WEATHER_OFF = {"tier0", "save_data"}
+WEATHER_CORS = re.compile(r"^access-control-allow-origin: \S+$", re.I)
+# Neptune's 400 m/s is the fastest wind measured on a planet; past 600 is a unit mistake.
+WEATHER_MAX_WIND_MS = 600
+
+
+def check_weather_table(where: str, name: str, table, lo: float, hi: float, span=(0, 360)) -> None:
+    ok = isinstance(table, list) and len(table) >= 2 and all(
+        isinstance(p, list) and len(p) == 2 and all(is_number(v) for v in p) for p in table)
+    if not ok:
+        fail(where, f"`{name}` must be a list of [x, value] pairs")
+        return
+    xs = [p[0] for p in table]
+    if xs != sorted(xs) or len(set(xs)) != len(xs):
+        fail(where, f"`{name}` must run in order: it is read by straight lines between its points")
+    if xs[0] != span[0] or xs[-1] != span[1]:
+        fail(where, f"`{name}` must run from {span[0]} to {span[1]}, got {xs[0]} to {xs[-1]}")
+    bad = [p for p in table if not (lo <= p[1] <= hi)]
+    if bad:
+        fail(where, f"`{name}` has {bad[0]}, outside {lo} to {hi}")
+
+
+def check_weather(world_ids: set, layers: list) -> list:
+    path = REG / "weather.yaml"
+    if not path.exists():
+        return []  # a tree from before spec 0066; the mirror check refuses a mirror without it
+    doc = load("weather.yaml")
+    if list(doc.get("classes") or []) != list(WEATHER_CLASSES):
+        fail("weather.yaml", f"`classes:` must be {list(WEATHER_CLASSES)}: the card has one sentence for each")
+    rows_ = rows(doc, "effects", "weather.yaml")
+    layer_ids = {l.get("id") for l in layers}
+    en_path = ROOT / "site/js/copy/en.js"
+    en = en_path.read_text(encoding="utf-8") if en_path.exists() else ""
+    weather_copy = en[en.find("  weather: {"):] if "  weather: {" in en else ""
+    seen = set()
+    for r in rows_:
+        if not isinstance(r, dict):
+            fail("weather.yaml", f"a row that is not a mapping: {r!r}")
+            continue
+        rid = r.get("id")
+        where = f"weather.yaml[{rid}]"
+        if not rid:
+            fail("weather.yaml", "a row has no id")
+            continue
+        if rid in seen:
+            fail(where, "the id is used twice")
+        seen.add(rid)
+        world = r.get("world")
+        if world not in world_ids:
+            fail(where, f"world {world!r} is not a worlds.yaml row")
+        if r.get("kind") not in WEATHER_KINDS:
+            fail(where, f"kind {r.get('kind')!r} is not one scene/weather/ draws {sorted(WEATHER_KINDS)}")
+        cls = r.get("class")
+        if cls not in WEATHER_CLASSES:
+            fail(where, f"class {cls!r} must be one of {list(WEATHER_CLASSES)} -- say how much of this is known")
+        off = r.get("off_at")
+        if not isinstance(off, list) or not WEATHER_OFF <= set(off):
+            fail(where, f"`off_at:` must list {sorted(WEATHER_OFF)}: no effect is drawn at the lowest tier "
+                        f"or on a connection that saves data (spec 0066 requirement 8)")
+        src = r.get("source") or {}
+        if not isinstance(src, dict) or not src.get("name") or not str(src.get("url") or "").startswith("https://"):
+            fail(where, "no `source:` with a name and an https url -- weather nobody can check is weather made up")
+        elif not src.get("read"):
+            fail(where, "source has no `read:` day -- a page nobody dated is one nobody can re-check")
+        if cls == "measured":
+            if not WEATHER_CORS.match(str(src.get("cors") or "")):
+                fail(where, f"a measured effect is fetched by the page, so `source.cors` must be the header as "
+                            f"curl printed it (`access-control-allow-origin: *`), got {src.get('cors')!r}")
+            if not src.get("licence"):
+                fail(where, "a measured effect has no `source.licence` -- somebody else's data needs its terms")
+            if not r.get("covers"):
+                fail(where, "a measured effect has no `covers:` -- say where the data reaches, so the card can")
+        if cls == "illustrative" and not r.get("why"):
+            fail(where, "an illustrative effect has no `why:` -- say why it can be no better than illustrative")
+        if r.get("kind") == "lightning" and "reduced_motion" not in (off or []):
+            fail(where, "lightning flashes: `off_at:` must list `reduced_motion`")
+        layer = r.get("layer")
+        if layer is not None and layer not in layer_ids:
+            fail(where, f"layer {layer!r} is not a layers.yaml row")
+        if r.get("kind") == "zonal-flow":
+            prof = r.get("profile") or {}
+            if not is_number(prof.get("radius_km")) or not prof.get("radius_km") > 0:
+                fail(where, "profile has no `radius_km` -- a wind in m/s is an angle only on a circle of known size")
+            if prof.get("sense") not in (1, -1):
+                fail(where, "profile.sense must be 1 or -1: which way the planet turns under the IAU's north")
+            if not is_number(prof.get("flattening")) or not 0 <= prof.get("flattening") < 0.2:
+                fail(where, "profile has no `flattening` (0 for a sphere): its latitudes are planetographic")
+            check_weather_table(where, "profile.points", prof.get("points"),
+                                -WEATHER_MAX_WIND_MS, WEATHER_MAX_WIND_MS, span=(-90, 90))
+            if cls == "measured":
+                fail(where, "a wind profile is `modelled`: the jets are published, today's clouds are not")
+        if r.get("kind") == "mars-season":
+            check_weather_table(where, "north_cap", r.get("north_cap"), 45, 90)
+            check_weather_table(where, "south_cap", r.get("south_cap"), -90, -45)
+            check_weather_table(where, "dust", r.get("dust"), 0, 1)
+        if r.get("kind") == "hexagon":
+            hexa = r.get("hexagon") or {}
+            if not is_number(hexa.get("lat_deg")) or hexa.get("sides") != 6:
+                fail(where, "hexagon needs `lat_deg` and `sides: 6`")
+        # The card's one line (spec 0066 requirement 7): every world with an effect has its sentence.
+        if world != "earth" and weather_copy and not re.search(rf"^\s+{re.escape(str(world))}: '", weather_copy, re.M):
+            fail(where, f"copy/en.js COPY.weather.worlds has no line for `{world}` -- the card must say "
+                        f"what is drawn and how much of it is known")
+    # Every layer that says `source: weather` is some measured effect's layer.
+    owned = {r.get("layer") for r in rows_ if isinstance(r, dict) and r.get("class") == "measured"}
+    for l in layers:
+        if l.get("source") == WEATHER_SOURCE and l.get("id") not in owned:
+            fail(f"layers.yaml[{l.get('id')}]", f"`source: {WEATHER_SOURCE}` but no measured weather.yaml effect "
+                                               f"names `layer: {l.get('id')}`, so nothing says where it is fetched from")
+    return rows_
+
+
 def check_tilesets(world_ids: set) -> list:
     path = REG / "tilesets.yaml"
     if not path.exists():
@@ -3180,7 +3303,7 @@ def main() -> int:
         elif grp not in layer_groups:
             fail(where, f"group `{grp}` is not one of `groups:` {layer_groups}")
         src = l.get("source")
-        if src != BUNDLED_SOURCE and src not in source_ids:
+        if src != BUNDLED_SOURCE and src != WEATHER_SOURCE and src not in source_ids:
             fail(where, f"source `{src}` has no sources.yaml row "
                         f"(or the reserved literal `{BUNDLED_SOURCE}`, for records checked into "
                         f"this repository, which have no upstream to describe)")
@@ -3386,6 +3509,7 @@ def main() -> int:
     audio = check_audio()
     check_textures(textures, world_ids)
     check_tilesets(world_ids)
+    weather = check_weather(world_ids, layers)
     ladder = check_stages(world_ids)
     check_system_stage_rows(ladder)
     lod_rules = check_lod()
@@ -3601,7 +3725,7 @@ def main() -> int:
     print(
         f"registry ok: {len(worlds)} worlds, "
         f"{sum(1 for st in ladder if isinstance(st, dict) and st.get('kind') != 'system')} ladder rungs, "
-        f"{len(systems)} star system(s), {len(lod_rules)} lod rules, "
+        f"{len(systems)} star system(s), {len(lod_rules)} lod rules, {len(weather)} weather effects, "
         f"{len(dso_hand)} hand-placed deep-sky objects, {len(nebulae)} nebula pictures, {len(exotics)} exotics, {len(famous_stars)} famous stars, {len(ladder_rungs)} breadcrumb rungs, {len(aliases)} aliases, {len(colorkeys)} colour keys, "
         f"{len(sources)} sources, {len(layers)} layers, "
         f"{len(events)} event types, {len(models)} models, {len(real_models)} real models, "
