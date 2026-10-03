@@ -162,14 +162,53 @@ export function altitudeCapApplies(record) {
   return !(record && record.propagator === 'fixed');
 }
 
-function heroScale(px, d, h, f, pos, reach) {
+function heroScale(px, d, h, f, pos, reach, nearAltitude = Infinity) {
   const want = (px * 2 * d) / (h * f);
-  const R = stageRadiusUnits();
-  if (!(R > 0) || !pos) return want;
-  const altitude = pos.length() - R;
-  if (!(altitude > 0)) return want;
+  if (!pos) return want;
   const r = reach > 0 ? reach : 0.5;
-  return Math.min(want, (altitude * CLEARANCE) / r);
+  // The same rule against a world that is NOT the stage's (capForNeighbour, below).
+  const size = capForNeighbour(want, nearAltitude, r);
+  const R = stageRadiusUnits();
+  if (!(R > 0)) return size;
+  const altitude = pos.length() - R;
+  if (!(altitude > 0)) return size;
+  return Math.min(size, (altitude * CLEARANCE) / r);
+}
+
+/**
+ * THE ALTITUDE CAP, AGAINST A WORLD THAT IS NOT THE STAGE'S. The cap above measures from the origin,
+ * which is the stage world. REPORTED by Ivan on 2026-10-03 with a screenshot of the solar system's
+ * stage (the Sun at the origin) zoomed on Mars: Mars was 250 px across and the Mars Reconnaissance
+ * Orbiter beside it 100 px, a spacecraft a third the size of a planet, with Mars Express the same
+ * below. Both are 84 px "whatever it is", and nothing compared them with the world they orbit
+ * because that world was not the stage's.
+ *
+ * So a model is also no bigger than its clearance above the nearest other world AS DRAWN (worlds.js
+ * enlarges a planet seen from far away and moves its orbiters out with it, so drawn is the frame
+ * both are in). A model this makes a few pixels across is carried by its dot and its label, which
+ * were never wrong about where it is.
+ *
+ * @param {number} want         the scale the pixel budget asks for
+ * @param {number} nearAltitude scene units above the nearest other world's drawn surface; Infinity
+ *                              when there is none, and not above zero when the point is inside it
+ * @param {number} reach        how far the model reaches from its origin at scale 1
+ */
+export function capForNeighbour(want, nearAltitude, reach) {
+  if (!Number.isFinite(nearAltitude) || !(nearAltitude > 0)) return want;
+  return Math.min(want, (nearAltitude * CLEARANCE) / (reach > 0 ? reach : 0.5));
+}
+
+/**
+ * The smallest clearance of `pos` above any drawn world other than the stage's, in scene units.
+ * Pure: `others` is [{centre: Vector3, radius}] as createHeroes gathers it once a frame.
+ */
+export function nearestAltitude(pos, others) {
+  let best = Infinity;
+  for (const o of others) {
+    const a = pos.distanceTo(o.centre) - o.radius;
+    if (a < best) best = a;
+  }
+  return best;
 }
 
 /**
@@ -334,6 +373,25 @@ export function standOnGround(obj) {
 
 export function createHeroes(scene, ctx) {
   const drawnCentre = (id, out) => (ctx.worlds && ctx.worlds.drawnPositionOf ? ctx.worlds.drawnPositionOf(id, out) : null);
+  // The other worlds on this stage, as drawn, gathered once a frame for capForNeighbour.
+  const _others = [];
+  const _otherPool = [];
+  function gatherOthers() {
+    _others.length = 0;
+    const w = ctx.worlds;
+    if (!w || !w.drawnPositionOf || !w.drawnRadiusUnits) return _others;
+    let n = 0;
+    for (const world of WORLDS) {
+      if (world.id === stage.worldId) continue;
+      const slot = _otherPool[n] || (_otherPool[n] = { centre: new THREE.Vector3(), radius: 0 });
+      if (!w.drawnPositionOf(world.id, slot.centre)) continue;
+      slot.radius = w.drawnRadiusUnits(world.id);
+      if (!(slot.radius > 0)) continue;
+      _others.push(slot); n++;
+    }
+    return _others;
+  }
+  const nearAlt = (c) => (altitudeCapApplies(c.record) ? nearestAltitude(c.pos, _others) : Infinity);
   const root = new THREE.Group();
   root.name = 'heroes';
   // Heroes draw after the glyph layers so a model sits over its own dot rather than behind it.
@@ -512,6 +570,7 @@ export function createHeroes(scene, ctx) {
     // selection is never skipped: if you asked for the Dragon, you get the Dragon.
     const f = camera.projectionMatrix.elements[5];
     const h = (ctx.renderer && ctx.renderer.domElement && ctx.renderer.domElement.clientHeight) || 800;
+    gatherOthers();
     const kept = [];
     const hidden = [];
     for (const c of out) {
@@ -521,7 +580,7 @@ export function createHeroes(scene, ctx) {
       // The model may not exist yet on the frame it is first considered; half a unit is the
       // convention every shape is built to, and this only decides which neighbour is hidden.
       const reach = (live.get(c.record.id) || {}).reach || 0.5;
-      c.drawnRadius = heroScale(px, c.d, h, f, altitudeCapApplies(c.record) ? c.pos : null, reach) * reach; // how far it reaches, in world units
+      c.drawnRadius = heroScale(px, c.d, h, f, altitudeCapApplies(c.record) ? c.pos : null, reach, nearAlt(c)) * reach; // how far it reaches, in world units
       const swallowedBy = c.forced ? null : kept.find((k) => k.pos.distanceTo(c.pos) < k.drawnRadius);
       if (swallowedBy) {
         hidden.push({ record: c.record, insideOf: swallowedBy.record });
@@ -596,7 +655,7 @@ export function createHeroes(scene, ctx) {
       obj.position.copy(c.pos);
 
       const px = heroPixels(c.record, c.record.id === selectedId);
-      const size = heroScale(px, c.d, h, f, altitudeCapApplies(c.record) ? c.pos : null, entry.reach);
+      const size = heroScale(px, c.d, h, f, altitudeCapApplies(c.record) ? c.pos : null, entry.reach, nearAlt(c));
       obj.scale.setScalar(size);
 
       // The burn signal. propagate() already returned `phase` and `f` for this record a few

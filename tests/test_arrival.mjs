@@ -12,7 +12,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const JS = join(dirname(fileURLToPath(import.meta.url)), '..', 'site/js');
 const THREE = await import(join(JS, '../vendor/three.module.min.js'));
-const { closeUpDistance, ARRIVAL_REACH } = await import(join(JS, 'scene/heroes.js'));
+const { closeUpDistance, ARRIVAL_REACH, capForNeighbour, nearestAltitude } = await import(join(JS, 'scene/heroes.js'));
 const { stage } = await import(join(JS, 'scene/stage.js'));
 
 const problems = [];
@@ -60,6 +60,26 @@ check(closeUpDistance(at(400), 0, f) === Infinity, 'no viewport, no constraint')
   const phone = worldFramingDistance(R, 45, 390 / 844);
   check(phone > R * 3.5 && Math.abs(halfWidth(phone, 45, 390 / 844) - 0.9) < 1e-6, `a portrait phone stands back until the globe is 90% of the width (${phone.toFixed(1)} units)`);
   check(worldFramingDistance(R, 45, 0) === R * 3.5, 'no aspect yet, the old framing');
+}
+
+// A WORLD THAT IS NOT THE STAGE'S (Ivan, 2026-10-03: on the Sun's stage, zoomed on Mars, two orbiters
+// were drawn a third the size of the planet). A model is no bigger than its clearance above the
+// nearest other world as drawn.
+{
+  const mars = { centre: new THREE.Vector3(1000, 0, 0), radius: 3.39 };
+  const earth = { centre: new THREE.Vector3(-500, 0, 0), radius: 6.37 };
+  const mro = new THREE.Vector3(1000 + 3.39 + 0.3, 0, 0); // 300 km up, in thousand-km units
+  const alt = nearestAltitude(mro, [earth, mars]);
+  check(Math.abs(alt - 0.3) < 1e-9, `the nearest other world is Mars, 0.3 units below (${alt})`);
+  const capped = capForNeighbour(50, alt, 0.5);
+  check(Math.abs(capped - 0.54) < 1e-9 && capped * 0.5 < 0.3, `a model wanting 50 units is held to its clearance (${capped})`);
+  check(capForNeighbour(0.1, alt, 0.5) === 0.1, 'a model already smaller than its clearance is untouched');
+  check(capForNeighbour(50, Infinity, 0.5) === 50, 'no other world drawn: no cap');
+  check(capForNeighbour(50, -1, 0.5) === 50, 'a point inside a drawn world is not shrunk to nothing');
+  check(nearestAltitude(mro, []) === Infinity, 'no worlds, no altitude');
+  const src = (await import('node:fs')).readFileSync(join(JS, 'scene/heroes.js'), 'utf8');
+  check((src.match(/heroScale\(px, c\.d,[^;]*nearAlt\(c\)\)/g) || []).length === 2, 'both heroScale calls pass the neighbour altitude');
+  check(/gatherOthers\(\);\s*\n\s*const kept = \[\];/.test(src), 'the other worlds are gathered once a frame, before the docked-vehicle pass');
 }
 
 if (problems.length) { console.error('arrival FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
