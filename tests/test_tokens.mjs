@@ -388,7 +388,7 @@ for (const r of all) {
     check(prop !== 'font' || /^400 /.test(value), `${r.file} ${r.selector}: the serif is loaded at 400 only (${value})`);
   }
 }
-for (const re of SERIF_ROLES) check(all.some((r) => re.test(r.selector) && /var\(--sr-font-serif\)/.test(r.body)), `no rule ${re} sets the serif: one of its roles lost it`);
+// Ivan, 2026-10-03: the roles went back to the sans; the serif may be used only there, and need not be.
 
 if (problems.length) {
   console.error('tokens FAILED:\n  ' + problems.join('\n  '));

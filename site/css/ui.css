@@ -513,7 +513,7 @@ html.sr-compact .sr-status {
   margin: 0;
   padding-bottom: 2px;
   overflow: hidden;
-  font: 400 30px/1.05 var(--sr-font-serif);
+  font: 600 22px/1.1 var(--sr-font);
   letter-spacing: -0.01em;
   color: var(--sr-text);
   overflow-wrap: anywhere;
@@ -1967,7 +1967,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   margin: 0;
   padding-bottom: 2px;
   overflow: hidden;
-  font: 400 38px/1.05 var(--sr-font-serif);
+  font: 600 28px/1.1 var(--sr-font);
   letter-spacing: -0.01em;
   color: var(--sr-text);
   overflow-wrap: anywhere;
@@ -3157,7 +3157,7 @@ html.sr-phone .sr-chevron {
   width: 100%;
   height: 100%;
   padding: 0;
-  font: 400 28px/1 var(--sr-font-serif);
+  font: 600 22px/1 var(--sr-font-hud);
   color: var(--sr-text);
   background: transparent;
   border: 0;
@@ -3199,7 +3199,7 @@ html.sr-phone .sr-chevron {
    registry/budgets.yaml serif_bytes and fonts_at_boot_bytes). */
 .sr-wordmark {
   margin: 0;
-  font: 400 28px/1 var(--sr-font-serif);
+  font: 600 27px/1 var(--sr-font-hud);
   letter-spacing: 0;
   color: var(--sr-text);
 }
@@ -3476,7 +3476,8 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 /* The lead: the serif at 21 / 1.25, two lines at most (docs/ui-guide.md section 3.4). */
 .sr-now__row.is-lead .sr-now__btn {
   padding-top: 6px;
-  font: 400 21px/1.25 var(--sr-font-serif);
+  font-size: 20px;
+  line-height: 1.25;
   letter-spacing: -0.01em;
 }
 
@@ -5221,3 +5222,8 @@ html.sr-phone .sr-tonight-view__num { font-size: 20px; }
 .sr-arc__shadow { fill: none; stroke: var(--sr-text-dim); stroke-width: 1.5; stroke-dasharray: 3 3; }
 .sr-arc__peak { fill: var(--sr-ember); }
 .sr-arc__cardinal { fill: var(--sr-text-dim); font-size: 11px; font-family: var(--sr-font); }
+
+/* Ivan, 2026-10-03: the serif on names read worse than the sans it replaced, so the five roles are
+   back on their old faces (the face stays defined; nothing uses it). And the card's name is a
+   heading that takes focus for screen readers, not a field: no ring around it. */
+.sr-card__name:focus { outline: none; }
