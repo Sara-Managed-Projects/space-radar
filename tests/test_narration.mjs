@@ -171,10 +171,13 @@ const at = (phase, index, generation = 1, stopId = 'abcde'[index]) => ({ phase, 
       const cues = parseVtt(readFileSync(files[2], 'utf8'));
       const body = sentences(stop.card.body);
       const said = cues.map((c) => c.text);
+      // A stop with its own script for the ear (registry/narration.yaml `say:`) is held by
+      // narrate.py --check alone; every other stop's captions are its card, word for word.
+      const scripted = (NARRATION.scripted || []).includes(key);
       const tail = said.slice(-body.length);
-      check(JSON.stringify(tail) === JSON.stringify(body), `${key}: the captions end with the card's own sentences`);
+      check(scripted || JSON.stringify(tail) === JSON.stringify(body), `${key}: the captions end with the card's own sentences`);
       const lead = said.slice(0, said.length - body.length);
-      check(lead.length <= 1 && (lead.length === 0 || lead[0].replace(/[.!?]$/, '') === stop.card.title.replace(/[.!?]$/, '')),
+      check(scripted || (lead.length <= 1 && (lead.length === 0 || lead[0].replace(/[.!?]$/, '') === stop.card.title.replace(/[.!?]$/, ''))),
         `${key}: what is said before the body is the card's title and nothing else (${lead.join(' | ')})`);
       check(cues.every((c, i) => c.end > c.start && (i === 0 || c.start >= cues[i - 1].end)), `${key}: the cues are in order and do not overlap`);
       check(cues.length > 0 && cues[cues.length - 1].end <= secs + 0.01, `${key}: the last cue ends inside the clip`);
@@ -184,6 +187,7 @@ const at = (phase, index, generation = 1, stopId = 'abcde'[index]) => ({ phase, 
       check(holdFor(secs) >= secs * 1000 + TAIL_MS - 1, `${key}: held for the clip and ${TAIL_MS} ms`);
     }
   }
+  check((NARRATION.scripted || []).length <= 3, `the cards are read as written, bar a few (${(NARRATION.scripted || []).join(', ')})`);
   check(stops === Object.keys(NARRATION.clips).length, `a clip per stop and no orphans (${stops} stops, ${Object.keys(NARRATION.clips).length} clips)`);
   for (const key of Object.keys(NARRATION.clips)) check(live.has(key), `${key}: a clip for a stop the trips still have`);
   const dir = join(SITE, NARRATION.base);

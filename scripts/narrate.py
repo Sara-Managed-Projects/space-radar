@@ -147,7 +147,7 @@ def spoken(text: str) -> str:
     s = re.sub(r"\b(1[5-9]\d\d|20\d\d)\b", lambda m: year_words(int(m.group(1))), s)
     s = re.sub(r"\b\d+\b", lambda m: int_words(int(m.group(0))), s)
     s = re.sub(r"\s+", " ", s).strip()
-    left = re.search(r"[\d%°+=<>&@#/\\]", s)
+    left = re.search(r"[\d%°+=<>&@#/\\{}_]", s)
     if left:
         raise ValueError(f"spoken(): do not know how to say {left.group(0)!r} in {text!r}; "
                          f"teach scripts/narrate.py or give the stop a `say:` in registry/narration.yaml")
@@ -170,7 +170,17 @@ def load_config() -> tuple:
 
 
 def load_tours() -> list:
-    return (yaml.safe_load(TOURS.read_text(encoding="utf-8")) or {}).get("tours") or []
+    """The trips, with each card as the browser shows it: gen_tours_js.py fills `{exoplanet_count}`
+    from the catalogue, and a voice that read the placeholder aloud would say "exoplanet count"."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from gen_tours_js import expand_card
+
+    tours = (yaml.safe_load(TOURS.read_text(encoding="utf-8")) or {}).get("tours") or []
+    for trip in tours:
+        for stop in trip.get("stops") or []:
+            if isinstance(stop.get("card"), dict) and stop["card"].get("body"):
+                stop["card"] = expand_card(stop["card"])
+    return tours
 
 
 def apply_lexicon(text: str, lexicon: dict) -> str:

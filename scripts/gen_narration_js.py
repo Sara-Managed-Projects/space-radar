@@ -31,6 +31,8 @@ def render(doc: dict) -> list:
         "voice": voice.get("id"),
         "credit": voice.get("credit"),
         "base": "audio/narration",
+        # Stops whose voice is given its own words (`say:`), so their captions are not the card's.
+        "scripted": sorted((doc.get("say") or {}).keys()),
         "clips": clips,
     }
     return [(

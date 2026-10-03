@@ -9,6 +9,9 @@ export const NARRATION = {
   "voice": "bf_emma",
   "credit": "Narration: a synthetic voice, Kokoro-82M (bf_emma), Apache-2.0",
   "base": "audio/narration",
+  "scripted": [
+    "travel-to-exoplanets/all"
+  ],
   "clips": {
     "people-in-space/far": 11.29,
     "people-in-space/iss": 16.96,
@@ -32,7 +35,7 @@ export const NARRATION = {
     "to-the-edge/galaxy": 15.51,
     "to-the-edge/andromeda": 12.17,
     "to-the-edge/edge": 43.22,
-    "travel-to-exoplanets/all": 21.91,
+    "travel-to-exoplanets/all": 21.84,
     "travel-to-exoplanets/proxima-b": 14.32,
     "travel-to-exoplanets/trappist": 17.71,
     "travel-to-exoplanets/e": 16.15,
