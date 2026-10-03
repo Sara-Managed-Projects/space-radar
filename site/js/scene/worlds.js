@@ -549,7 +549,9 @@ const BY_ID = new Map(WORLDS.map((w) => [w.id, w]));
 // NO AMBIENT. A night side is black, as it is in a photograph -- except the Moon's, which is lit by
 // the Earth (earthshine, below).
 
-const WORLD_VERT = /* glsl */`
+// Exported with WORLD_FRAG: scene/tiles.js draws a close world's map tiles with this same pair, so a
+// tile is lit exactly as the globe under it (spec 0065).
+export const WORLD_VERT = /* glsl */`
 #include <common>
 #include <logdepthbuf_pars_vertex>
 uniform vec3 uSunDir;

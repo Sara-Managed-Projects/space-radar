@@ -464,6 +464,7 @@ services from their own IP.** Read §4.1 before you deploy.
 | IAU Minor Planet Center | comet orbital elements (`CometEls.txt`) | **Copyrighted**; redistributable only with the source clearly specified (§4.5) | Comet elements: IAU Minor Planet Center | <https://minorplanetcenter.net> |
 | NASA GIBS | today's clouds: GOES-East, GOES-West and Himawari Band 13 infrared, every 10 min | NASA "full and open sharing"; an acknowledgement is asked for (§4.13) | the acknowledgement in §4.13, verbatim, plus NOAA and JMA for the satellites | <https://nasa-gibs.github.io/gibs-api-docs/> |
 | GDACS (EC Joint Research Centre) | tropical cyclones now: centre, status, top wind on the track | EU-owned content, CC BY 4.0 by the Commission's reuse decision; GDACS calls it "purely indicative" (§4.14) | Tropical cyclones: GDACS, European Commission Joint Research Centre (CC BY 4.0) | <https://www.gdacs.org> |
+| NASA Solar System Treks | map tiles of the Moon and Mars, fetched when the camera is close: LRO WAC mosaic (to 83 m per pixel), Viking MDIM 2.1 colour mosaic (to 325 m) | NASA content, "generally are not subject to copyright in the United States" (§4.16) | the two lines in §4.16, in the Sources panel while those tiles are on screen | <https://trek.nasa.gov> |
 
 Also named in `site/js/data/sources.js` so the status panel can say "could not look" about them by
 name, but **not reachable from a browser** (no `Access-Control-Allow-Origin`) and therefore never
@@ -722,6 +723,49 @@ required; this one is given anyway. What we changed: the polygons are rasterised
 form, and areas Natural Earth marks *Disputed* or *Indeterminate* (Antarctica apart) are drawn as
 plain land, so the card says "land" there and never names a claim. The raster is fetched on the
 first card for an Earth orbiter, never at boot.
+
+### 4.16 NASA Solar System Treks — the Moon and Mars close up (2026-10-03)
+
+`site/js/scene/tiles.js` asks NASA's [Solar System Treks](https://trek.nasa.gov) for map tiles of the
+ground under the camera, straight from the visitor's browser, when the camera is close enough to the
+Moon or Mars for our own 4k map to run out of texels — and never on a first visit, on a phone, on a
+connection that asked to save data, or after the frame-rate latch (spec 0065). The sets are rows in
+`registry/tilesets.yaml`:
+
+| World | Mosaic | Made by | Finest level asked for |
+|---|---|---|---|
+| The Moon | `LRO_WAC_Mosaic_Global_303ppd_v02`: Lunar Reconnaissance Orbiter Wide Angle Camera, 643 nm, 100 m per pixel | NASA / Goddard Space Flight Center / Arizona State University | 8 (83 m per pixel on the equator) |
+| Mars | `Mars_Viking_MDIM21_ClrMosaic_global_232m`: Viking Orbiter MDIM 2.1 colour, 232 m per pixel | NASA / JPL / USGS Astrogeology | 7 (325 m per pixel) |
+
+Endpoint: the WMTS RESTful template `https://trek.nasa.gov/tiles/{body}/EQ/{mosaic}/1.0.0/default/default028mm/{level}/{row}/{column}.jpg`,
+256-pixel JPEGs of 10 to 60 KB in plain longitude and latitude; the
+[Trek API page](https://trek.nasa.gov/tiles/apidoc/trekAPI.html?body=moon) (read 2026-10-03) describes
+fetching tiles "without using a WMTS client library". MEASURED 2026-10-03 with
+`curl -sI -H "Origin: https://www.spaceradar.ai"`: `Access-Control-Allow-Origin: *` on tiles and on
+the capabilities files; level 0 is two tiles (`0/0/0`, `0/0/1`; `0/0/2` and `0/1/0` are 404), the Moon
+answers to level 8 and Mars to level 7, and one level further is a 404. A view from a few hundred
+kilometres is 60 to 100 tiles, 2 to 3 MB; the cache holds 160 on a laptop and 384 on a desktop.
+
+NASA's [media usage guidelines](https://www.nasa.gov/nasa-brand-center/images-and-media/) (read
+2026-10-03) say NASA content, "media files used in the rendition of 3-dimensional models, such as
+texture maps and polygon data in any format", is "generally ... not subject to copyright in the
+United States" and ask that NASA be acknowledged as the source. The Sources panel prints, while the
+tiles are on screen:
+
+- The Moon close up: Lunar Reconnaissance Orbiter WAC mosaic, NASA/GSFC/Arizona State University, from NASA Solar System Treks
+- Mars close up: Viking Orbiter MDIM 2.1 colour mosaic, NASA/JPL/USGS, from NASA Solar System Treks
+
+**What is changed.** Each tile is multiplied by three numbers (`grade` in the registry) so the mosaic
+sits at the tone of the Solar System Scope map it replaces and the ground does not change colour as
+the tiles fade in: 3.67, 3.48, 3.45 for the Moon (the WAC mosaic is a reflectance map and far darker
+than a picture), and 2.42, 0.90, 0.42 for Mars, whose Viking colour is greyer than the map under it.
+The mosaics' own shadows and the seams between Viking frames are theirs and are left alone. Nothing
+from Treks is stored in this repository or on our site.
+
+Also measured the same day and not used yet: `LRO_LOLA_ClrShade_Global_128ppd_v04` and
+`Mars_MGS_MOLA_ClrShade_merge_global_463m` (elevation as shaded colour, CORS `*`), for the relief of
+spec 0065 task 3; and NASA GIBS's `BlueMarble_ShadedRelief_Bathymetry` at 500 m for the Earth (CORS
+`*`, 512-pixel tiles on GIBS's own 288-degree grid), which waits for the Earth's shader (task 4).
 
 ## 4.6 Third-party trademarks the app names or draws
 

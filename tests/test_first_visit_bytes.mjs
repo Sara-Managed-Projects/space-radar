@@ -28,6 +28,9 @@ import { readFileSync, writeFileSync } from 'node:fs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const { BUDGETS } = await import(join(ROOT, 'site/js/data/budgets.js'));
+// Spec 0065: the hosts a close world's map tiles come from. A first visit asks none of them for anything.
+const { TILESETS } = await import(join(ROOT, 'site/js/data/tilesets.js'));
+const TILE_HOSTS = new Set(TILESETS.map((s) => new URL(s.url).origin));
 
 const arg = (name) => {
   const hit = process.argv.find((a) => a.startsWith(`--${name}=`));
@@ -50,7 +53,7 @@ const DEFERRABLE = new Set(['stars3d.names.json', 'exoplanets.csv', 'stars.bin']
 
 /** Sum a boot's requests: `[{url, bytes}]` -> the numbers the gate and the log read. */
 function tally(requests, pageOrigin) {
-  const t = { total: 0, count: 0, audio: [], audioBytes: 0, og: [], ogBytes: 0, lazy: [], deferrable: 0, thirdParty: 0, fonts: [], fontBytes: 0, cyrillic: [] };
+  const t = { total: 0, count: 0, audio: [], audioBytes: 0, og: [], ogBytes: 0, lazy: [], deferrable: 0, thirdParty: 0, fonts: [], fontBytes: 0, cyrillic: [], tiles: [] };
   for (const r of requests) {
     const at = sitePath(r.url);
     if (!at) continue; // data: and blob: URLs cross no wire
@@ -59,6 +62,7 @@ function tally(requests, pageOrigin) {
     t.count += 1;
     const file = at.path.split('/').pop();
     const ours = !pageOrigin || at.origin === pageOrigin;
+    if (TILE_HOSTS.has(at.origin)) t.tiles.push(at.origin + at.path);
     if (!ours) { t.thirdParty += bytes; continue; }
     if (at.path.startsWith('/audio/')) { t.audio.push(at.path); t.audioBytes += bytes; }
     if (at.path.startsWith('/og/')) { t.og.push(at.path); t.ogBytes += bytes; }
@@ -85,6 +89,7 @@ function verdict(t, budgets = BUDGETS) {
   // Spec 0045 req 5: the faces the first screen uses, and never a Cyrillic file on an English page.
   if (t.fontBytes > budgets.fonts_at_boot_bytes) out.push(`fonts at boot ${t.fontBytes} B are over fonts_at_boot_bytes ${budgets.fonts_at_boot_bytes} B: ${t.fonts.join(', ')}`);
   if (t.cyrillic.length) out.push(`a Cyrillic face was fetched by an English page: ${t.cyrillic.join(', ')}`);
+  if (t.tiles.length > budgets.planet_tile_requests_first_visit) out.push(`${t.tiles.length} map tile request(s) on a first visit (spec 0065: tiles are for a camera close to a world): ${t.tiles.slice(0, 3).join(', ')}`);
   if (t.lazy.length) out.push(`fetched at boot and meant to wait for the ladder (spec 0028): ${t.lazy.join(', ')}`);
   return out;
 }
@@ -95,7 +100,7 @@ function report(t, where) {
   console.log(`  deferrable at boot (stars3d.names.json + exoplanets.csv + stars.bin): ${t.deferrable} B (${kB(t.deferrable)})`);
   console.log(`  fonts: ${t.fontBytes} B (${kB(t.fontBytes)}) of ${BUDGETS.fonts_at_boot_bytes} B in ${t.fonts.length} file(s)${t.fonts.length ? `: ${t.fonts.join(', ')}` : ''}`);
   console.log(`  from other hosts: ${t.thirdParty} B (${kB(t.thirdParty)})`);
-  console.log(`  under /audio/: ${t.audio.length}; under /og/: ${t.og.length}; galaxy.bin or stars3d.bin: ${t.lazy.length}`);
+  console.log(`  under /audio/: ${t.audio.length}; under /og/: ${t.og.length}; galaxy.bin or stars3d.bin: ${t.lazy.length}; map tiles: ${t.tiles.length}`);
 }
 
 function finish(problems, what) {
@@ -178,6 +183,7 @@ if (BASE || FROM) {
   check(tally(withFonts, O).fontBytes === 28500 && verdict(tally(withFonts, O)).length === 0, 'two Latin faces at boot are counted and pass');
   check(verdict(tally(withFonts, O), { ...BUDGETS, fonts_at_boot_bytes: 20000 }).some((p) => /fonts_at_boot_bytes/.test(p)), 'fonts over their own budget fail');
   check(verdict(tally([...withFonts, { url: `${O}/fonts/inter-400-cyrillic.woff2`, bytes: 6004 }], O)).some((p) => /Cyrillic/.test(p)), 'a Cyrillic face on an English page fails');
+  check(verdict(tally([...visit, { url: 'https://trek.nasa.gov/tiles/Moon/EQ/LRO_WAC_Mosaic_Global_303ppd_v02/1.0.0/default/default028mm/3/2/7.jpg', bytes: 30000 }], O)).some((p) => /map tile request/.test(p)), 'a map tile on a first visit fails (spec 0065)');
   check(verdict(tally([], O)).some((p) => /measured nothing/.test(p)), 'an empty record fails rather than passing as zero bytes');
 
   // The wiring: the flag the real boot waits on, and the CI step that runs the real boot.

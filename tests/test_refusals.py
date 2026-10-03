@@ -586,6 +586,34 @@ CASES: list[tuple[str, str, str, str]] = [
      'original: "http://bjj.mmedia.is/data/mars/mars_map.jpg"'),
     ("a boot map that is not the one models.yaml credits",
      "textures.yaml", "file: site/textures/2k_mars.jpg", "file: site/textures/2k_mercury.jpg"),
+    # --- registry/tilesets.yaml (2026-10-03, spec 0065) -----------------------------------------
+    # Map tiles are fetched by every visitor's browser from somebody else's server. No licence, a
+    # credit CREDITS.md does not carry, a host whose CORS header nobody measured, plain http, a
+    # level the host does not serve, or a projection the addressing cannot do: each is refused.
+    ("a tile set with no licence",
+     "tilesets.yaml", """resolution_m: 83
+    grade: [3.67, 3.48, 3.45]
+    cors: "Access-Control-Allow-Origin: * (measured 2026-10-03)"
+    licence: 'NASA media guidelines: "generally are not subject to copyright in the United States"'""",
+     """resolution_m: 83
+    grade: [3.67, 3.48, 3.45]
+    cors: "Access-Control-Allow-Origin: * (measured 2026-10-03)"
+    licence: ''"""),
+    ("a tile set whose credit CREDITS.md does not carry",
+     "tilesets.yaml", 'credit: "Mars close up: Viking Orbiter MDIM 2.1 colour mosaic, NASA/JPL/USGS, from NASA Solar System Treks"',
+     'credit: "Mars: NASA"'),
+    ("a tile set whose CORS header nobody measured",
+     "tilesets.yaml", 'cors: "Access-Control-Allow-Origin: * (measured 2026-10-03)"', 'cors: "should be fine"'),
+    ("a tile set served over plain http",
+     "tilesets.yaml", 'url: "https://trek.nasa.gov/tiles/Moon/', 'url: "http://trek.nasa.gov/tiles/Moon/'),
+    ("a tile set asked for a level its host does not serve",
+     "tilesets.yaml", "max_level: 7", "max_level: 9"),
+    ("a tile set in a projection the addressing cannot do",
+     "tilesets.yaml", "projection: equirectangular", "projection: polar-stereographic"),
+    ("a tile set on a world we do not draw",
+     "tilesets.yaml", "world: mars", "world: vulcan"),
+    ("a tile set whose url is not a template",
+     "tilesets.yaml", "default028mm/{z}/{y}/{x}.jpg", "default028mm/7/50/32.jpg"),
 ]
 
 

@@ -998,6 +998,9 @@ export async function boot({ setStatus } = {}) {
 
 // --- the device tier ---------------------------------------------------------
 
+/** A world's disc, as a share of half the view's height, at which its map tiles' module is fetched. */
+const PLANET_TILES_AT = 0.5;
+
 function createQuality(ctx, renderer, starfield, worlds) {
   const nav = typeof navigator !== 'undefined' ? navigator : {};
   const mm = (q) => !!(window.matchMedia && window.matchMedia(q).matches);
@@ -1068,6 +1071,32 @@ function createQuality(ctx, renderer, starfield, worlds) {
     },
   });
   const say = () => window.dispatchEvent(new CustomEvent('sr:tier', { detail: api.describe() }));
+  // Spec 0065: a close world drawn from the missions' own map tiles. OFF THE FIRST VISIT, like the
+  // aurora: scene/tiles.js and its two helpers are imported only once a world other than the Earth
+  // is PLANET_TILES_AT of half the view tall -- nobody boots there -- and never at tier 0, on a
+  // connection that saves data, or after the latch. Until then this costs one loop a second.
+  let planetTiles = null;
+  let planetTilesAsked = false;
+  // Read ONCE, as the tier was: Chromium's effectiveType is a running estimate, and a headless boot
+  // that began on "4g" read "3g" twenty seconds later (measured 2026-10-03). A layer that came and
+  // went with the estimate would be the flapping the latch exists to prevent.
+  const tilesSaveData = shouldSaveData(nav.connection);
+  function planetTilesWanted() {
+    if (planetTilesAsked || tilesSaveData || tiers.latched || tiers.tier < 1) return;
+    if (!worlds.ids().some((id) => id !== 'earth' && id !== 'sun' && worlds.discShare(id) >= PLANET_TILES_AT)) return;
+    planetTilesAsked = true;
+    import('./scene/tiles.js').then((m) => {
+      planetTiles = m.createPlanetTiles({
+        worlds,
+        camera: ctx.camera,
+        viewport: () => (renderer.domElement ? renderer.domElement.height : 800),
+        tier: tiers.tier,
+        anisotropy: aniso,
+        onChange: say, // the Sources panel prints the mosaic's credit while its tiles are on screen
+      });
+      if (tiers.latched) planetTiles.latch();
+    }).catch(() => { /* the globe's own map is what is on screen; nothing else depends on this */ });
+  }
   const api = {
     get tier() { return tiers.tier; },
     bootTier: pick.tier,
@@ -1075,18 +1104,20 @@ function createQuality(ctx, renderer, starfield, worlds) {
     reasons: pick.reasons,
     get promoted() { return promoter.promoted; },
     textures: () => tiers.state(),
-    credits: () => tiers.credits(),
+    tiles: () => (planetTiles ? planetTiles.state() : null),
+    credits: () => tiers.credits().concat(planetTiles ? planetTiles.credits() : []),
     describe: () => ({ tier: tiers.tier, bootTier: pick.tier, promoted: promoter.promoted, latched: tiers.latched, reasons: pick.reasons }),
     /** After the first frame (startLoop). */
     start() { tiers.start(); say(); },
     /** Every frame, from startLoop, after the latch has been fed. */
     frame(frameMs, nowMs, latched) {
       const up = promoter.push(frameMs, nowMs, latched);
-      if (up !== null) { tiers.setTier(up); say(); }
+      if (up !== null) { tiers.setTier(up); if (planetTiles) planetTiles.setTier(up); say(); }
+      if (planetTiles) planetTiles.frame(nowMs);
     },
-    tick(nowMs) { tiers.tick(nowMs); },
+    tick(nowMs) { tiers.tick(nowMs); planetTilesWanted(); },
     /** The frame latch tripped: back to the boot maps, for good. */
-    latch() { tiers.latch(); say(); },
+    latch() { tiers.latch(); if (planetTiles) planetTiles.latch(); say(); },
   };
   return api;
 }

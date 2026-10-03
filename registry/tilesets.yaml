@@ -1,0 +1,86 @@
+version: 1
+# Map tiles a world is drawn from when the camera is close (spec 0065, 2026-10-03). The browser reads
+# the mirror, site/js/data/tilesets.js, written by scripts/gen_tilesets_js.py (`--check` in CI);
+# site/js/scene/tiles.js fetches the tiles and site/js/scene/tilemath.js chooses them.
+#
+# NOTHING HERE IS STORED BY US. Each tile is fetched by the visitor's browser from the host named in
+# `url`, only when the camera is close enough to that world for the 4k map to run out of texels, and
+# never on a phone, on a connection that asked to save data, or after the frame latch has tripped.
+# A first visit asks for none (tests/test_tiles.mjs holds the rule; a headless boot measured 0).
+#
+# scripts/check_registry.py check_tilesets() refuses a row without licence, credit or source, a
+# credit CREDITS.md section 4.16 does not carry word for word, a url that is not https or lacks
+# {z}, {y} or {x}, a row whose `cors` does not say when the header was measured, levels out of
+# order or past what the host serves, and a world registry/worlds.yaml does not have.
+#
+#   id           ours
+#   world        a worlds.yaml id
+#   title        what the mosaic is, for a card line later
+#   url          the WMTS RESTful template: {z} TileMatrix, {y} TileRow (0 = north), {x} TileCol
+#   capabilities the host's own description of the pyramid, read on the day in `source`
+#   projection   equirectangular: plain longitude and latitude, west edge at 180 W. The only one
+#                scene/tilemath.js addresses; a polar-stereographic set is refused until it does.
+#   matrix       [columns, rows] at level 0; every level doubles both
+#   tile_px      a tile's side in pixels
+#   levels       [first, last] the host answers, MEASURED by asking for a tile at each end and one past
+#   min_level    the coarsest level drawn: the whole visible ground is covered at this or finer, so
+#                there is no edge where the tiles stop and the base map shows. Level 3 is 4096 pixels
+#                round the equator, the 4k map's own sharpness.
+#   start_level  tiles begin when the ground under the camera asks for this level, i.e. when a
+#                level-(start-1) texel is wider than a screen pixel there
+#   max_level    the finest level asked for; never past `levels`
+#   resolution_m metres per pixel at max_level on the equator, computed: 2 pi R / (matrix x 2^max x tile_px)
+#   grade        [r, g, b], multiplied into the tile in linear light so the mosaic sits at the tone
+#                of the map under it and the ground does not change colour as the tiles fade in.
+#                MEASURED 2026-10-03: the level-2 mosaic (2048 x 1024) against our 4k map, both
+#                reduced to 256 x 128 and linearised, between 60 S and 60 N; each number is
+#                mean(map) / mean(mosaic) for that channel. The Moon's fit is a plain gain (a power
+#                law fitted the same day has exponent 0.98 to 1.01); Mars's is a compromise, because
+#                Solar System Scope's Mars is more saturated than Viking's and no gain makes them one.
+#   cors         the header the host sent to `Origin: https://www.spaceradar.ai`, and the day it was measured
+#   licence      quoted from the page it was read on
+#   credit       the line the Sources panel prints while these tiles are on screen; CREDITS.md 4.16
+#   source       the page, with the day it was read: "URL (read YYYY-MM-DD)"
+#
+# NOT HERE, AND WHY. The Earth: GIBS's BlueMarble_ShadedRelief_Bathymetry (500 m, CORS `*`, measured
+# the same day) would do, but the Earth's shader blends day, night, water and clouds and its tiles
+# are 512 pixels on a 288-degree grid; that is its own task (0065 task 4). LOLA and MOLA elevation
+# (task 3) are separate rows when relief is drawn.
+tilesets:
+  - id: moon-lro-wac
+    world: moon
+    title: "Lunar Reconnaissance Orbiter Wide Angle Camera global mosaic, 100 m per pixel"
+    url: "https://trek.nasa.gov/tiles/Moon/EQ/LRO_WAC_Mosaic_Global_303ppd_v02/1.0.0/default/default028mm/{z}/{y}/{x}.jpg"
+    capabilities: "https://trek.nasa.gov/tiles/Moon/EQ/LRO_WAC_Mosaic_Global_303ppd_v02/1.0.0/WMTSCapabilities.xml"
+    projection: equirectangular
+    matrix: [2, 1]
+    tile_px: 256
+    levels: [0, 8]
+    min_level: 3
+    start_level: 5
+    max_level: 8
+    resolution_m: 83
+    grade: [3.67, 3.48, 3.45]
+    cors: "Access-Control-Allow-Origin: * (measured 2026-10-03)"
+    licence: 'NASA media guidelines: "generally are not subject to copyright in the United States"'
+    credit: "The Moon close up: Lunar Reconnaissance Orbiter WAC mosaic, NASA/GSFC/Arizona State University, from NASA Solar System Treks"
+    source: "https://trek.nasa.gov/tiles/apidoc/trekAPI.html?body=moon (read 2026-10-03)"
+
+  - id: mars-viking-colour
+    world: mars
+    title: "Viking Orbiter MDIM 2.1 colour global mosaic, 232 m per pixel"
+    url: "https://trek.nasa.gov/tiles/Mars/EQ/Mars_Viking_MDIM21_ClrMosaic_global_232m/1.0.0/default/default028mm/{z}/{y}/{x}.jpg"
+    capabilities: "https://trek.nasa.gov/tiles/Mars/EQ/Mars_Viking_MDIM21_ClrMosaic_global_232m/1.0.0/WMTSCapabilities.xml"
+    projection: equirectangular
+    matrix: [2, 1]
+    tile_px: 256
+    levels: [0, 7]
+    min_level: 3
+    start_level: 5
+    max_level: 7
+    resolution_m: 325
+    grade: [2.42, 0.90, 0.42]
+    cors: "Access-Control-Allow-Origin: * (measured 2026-10-03)"
+    licence: 'NASA media guidelines: "generally are not subject to copyright in the United States"'
+    credit: "Mars close up: Viking Orbiter MDIM 2.1 colour mosaic, NASA/JPL/USGS, from NASA Solar System Treks"
+    source: "https://trek.nasa.gov/tiles/apidoc/trekAPI.html?body=mars (read 2026-10-03)"

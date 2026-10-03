@@ -125,6 +125,11 @@ const CONTRACT = {
   'data/ovation.js': ['OVATION_URL', 'parseOvation', 'upsampleGrid', 'summarize', 'auroraMode', 'nextLookMs', 'mayLook', 'REFRESH_MS', 'START_DELAY_MS', 'HOLD_MS'],
   'scene/texturetiers.js': ['createTextureTiers', 'variantFor', 'urlFor', 'bootFiles'],
   'data/textures.js': ['TEXTURES'],
+  // Spec 0065: a close world drawn from map tiles. tilemath.js is the pure half (tests/test_tiles.mjs);
+  // tiles.js is fetched by a dynamic import in main.js and is never part of a first visit.
+  'scene/tilemath.js': ['lonLatToTile', 'tileBounds', 'tileKey', 'tileUrl', 'levelForFootprint', 'selectTiles', 'drawSet', 'underlay', 'createLru', 'patchArrays', 'unitFromLonLat', 'lonLatFromUnit'],
+  'scene/tiles.js': ['createPlanetTiles', 'tileFragment', 'tileVertex', 'DRAW_TILES', 'CACHE_TILES', 'MAX_FETCHES'],
+  'data/tilesets.js': ['TILESETS'],
   // The one owner of the URL hash (spec 0032): main.js and ui/trip.js write
   // through it, and a second dialect is the bug it was written to end.
   'ui/urlstate.js': ['KEYS', 'VERSION', 'read', 'write', 'clear', 'stopIndex', 'readMoment', 'writeMoment'],

@@ -21,5 +21,6 @@ export const BUDGETS = {
   "home_js_kb": 8,
   "tier1_idle_bytes": 1300000,
   "tier1_texture_gpu_mib": 250,
+  "planet_tile_requests_first_visit": 0,
   "reel_heap_growth_pct": 20
 };

@@ -2663,6 +2663,93 @@ def check_textures(model_textures: list, world_ids: set) -> list:
     return rows_
 
 
+# --- registry/tilesets.yaml (2026-10-03, spec 0065) --------------------------------------------
+# Map tiles a close world is drawn from. Nothing is stored here: every visitor's browser asks
+# somebody else's server for somebody else's pictures, so a row is refused unless it names its
+# licence, its credit (carried word for word by CREDITS.md section 4) and the page it was read on
+# with the day; its url is an https template with {z}, {y} and {x}; its `cors` says the header was
+# MEASURED and when (a host without `Access-Control-Allow-Origin` cannot be a WebGL texture at all,
+# and a tile that will not load is a blurred planet nobody can explain); its world is a worlds.yaml
+# row; its projection is one scene/tilemath.js addresses; and its levels are in order and inside
+# what the host serves, so the app never asks for a level that is a 404 on every tile.
+TILESET_FIELDS = ("id", "world", "title", "url", "projection", "matrix", "tile_px", "levels", "min_level",
+                  "start_level", "max_level", "resolution_m", "grade", "cors", "licence", "credit", "source")
+TILESET_PROJECTIONS = {"equirectangular"}
+TILESET_CORS = re.compile(r"^Access-Control-Allow-Origin: \S+ \(measured \d{4}-\d{2}-\d{2}\)$")
+
+
+def check_tilesets(world_ids: set) -> list:
+    path = REG / "tilesets.yaml"
+    if not path.exists():
+        return []  # a tree from before spec 0065; the mirror check refuses a mirror without it
+    doc = load("tilesets.yaml")
+    rows_ = rows(doc, "tilesets", "tilesets.yaml")
+    credits_path = ROOT / "CREDITS.md"
+    credits = credits_path.read_text(encoding="utf-8") if credits_path.exists() else ""
+    section = credits_section(credits, 4) or ""
+    seen = set()
+    for r in rows_:
+        if not isinstance(r, dict):
+            fail("tilesets.yaml", f"a row that is not a mapping: {r!r}")
+            continue
+        rid = r.get("id")
+        where = f"tilesets.yaml[{rid}]"
+        missing = [k for k in TILESET_FIELDS if r.get(k) in (None, "", [])]
+        if missing:
+            fail(where, f"no {', '.join(missing)} -- every tile on a visitor's screen is somebody's picture, "
+                        f"fetched from somebody's server")
+        if rid in seen:
+            fail(where, "the id is used twice")
+        seen.add(rid)
+        if r.get("world") not in world_ids:
+            fail(where, f"world {r.get('world')!r} is not a worlds.yaml row")
+        url = str(r.get("url") or "")
+        if url and not url.startswith("https://"):
+            fail(where, f"url {url!r} must be https: a page served over https cannot fetch it otherwise")
+        lost = [k for k in ("{z}", "{y}", "{x}") if k not in url]
+        if url and lost:
+            fail(where, f"url has no {', '.join(lost)}: it is a template, level / row / column")
+        if r.get("projection") not in TILESET_PROJECTIONS:
+            fail(where, f"projection {r.get('projection')!r} must be one of {sorted(TILESET_PROJECTIONS)}: "
+                        f"it is the only one scene/tilemath.js addresses")
+        cors = str(r.get("cors") or "")
+        if cors and not TILESET_CORS.match(cors):
+            fail(where, f"cors {cors!r} must be `Access-Control-Allow-Origin: <value> (measured YYYY-MM-DD)`: "
+                        f"the header the host really sent, and the day -- a host without it cannot be a texture")
+        src = str(r.get("source") or "")
+        if src and not STAR_SOURCE.match(src):
+            fail(where, f"source {src!r} must be `URL (read YYYY-MM-DD)`")
+        credit = r.get("credit")
+        if credit and str(credit) not in section:
+            fail("CREDITS.md", f"tilesets.yaml credits `{rid}` as {credit!r}, and CREDITS.md section 4 does not "
+                               f"carry that line")
+        if credit and " -- " in str(credit):
+            fail(where, "the credit prints two hyphens as a dash; write a comma")
+        matrix = r.get("matrix")
+        if not (isinstance(matrix, list) and len(matrix) == 2 and all(isinstance(v, int) and v > 0 for v in matrix)):
+            fail(where, f"matrix {matrix!r} must be [columns, rows] at level 0")
+        if not (isinstance(r.get("tile_px"), int) and r.get("tile_px") > 0):
+            fail(where, f"tile_px {r.get('tile_px')!r} must be a positive integer")
+        levels = r.get("levels")
+        ints = [r.get(k) for k in ("min_level", "start_level", "max_level")]
+        if not (isinstance(levels, list) and len(levels) == 2 and all(isinstance(v, int) for v in levels)
+                and 0 <= levels[0] <= levels[1]):
+            fail(where, f"levels {levels!r} must be [first, last], measured against the host")
+        elif all(isinstance(v, int) for v in ints):
+            lo, start, hi = ints
+            if not (levels[0] <= lo <= start <= hi):
+                fail(where, f"min_level {lo}, start_level {start}, max_level {hi} must be in that order, from {levels[0]} up")
+            if hi > levels[1]:
+                fail(where, f"max_level {hi} is past the last level the host serves ({levels[1]}): every tile there is a 404")
+        else:
+            fail(where, f"min_level, start_level and max_level must be integers, got {ints}")
+        grade = r.get("grade")
+        if not (isinstance(grade, list) and len(grade) == 3
+                and all(isinstance(v, (int, float)) and not isinstance(v, bool) and 0 < v <= 8 for v in grade)):
+            fail(where, f"grade {grade!r} must be three gains in (0, 8], measured against the map under the tiles")
+    return rows_
+
+
 def check_sites(sites_doc: dict, sites: list, world_ids: set) -> None:
     """registry/sites.yaml: every row is somewhere real, and every landing says where the number came from.
 
@@ -3145,6 +3232,7 @@ def main() -> int:
     budgets = check_budgets()
     audio = check_audio()
     check_textures(textures, world_ids)
+    check_tilesets(world_ids)
     ladder = check_stages(world_ids)
     check_system_stage_rows(ladder)
     lod_rules = check_lod()
