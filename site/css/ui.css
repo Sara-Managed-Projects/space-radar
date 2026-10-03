@@ -2746,6 +2746,13 @@ html.sr-trip-mode .sr-scenenote { display: none; }
   color: var(--sr-text-soft);
   text-decoration: underline;
 }
+
+/* A finger's target (docs/ui-guide.md principle 9): 44 px on a coarse pointer. */
+@media (pointer: coarse) {
+  .sr-exposure .sr-density__btn {
+    min-height: 44px;
+  }
+}
 .sr-sound__btn.is-on {
   color: var(--sr-ember);
   border-color: var(--sr-ember);
