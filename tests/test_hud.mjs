@@ -19,13 +19,13 @@ const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 const near = (a, b, eps = 1e-6) => Math.abs(a - b) <= eps;
 
-// --- 1. the box: max(28 px, drawn diameter + 12 px) -----------------------------------------------
-check(reticleBox(0) === 28, `a point is boxed at 28 px (${reticleBox(0)})`);
-check(reticleBox(8 * 1.35) === 28, 'a selected 8 px dot (10.8 px) is boxed at 28 px');
-check(reticleBox(16) === 28 && reticleBox(17) === 29, 'the diameter rule takes over above 16 px');
+// --- 1. the box: max(40 px, drawn diameter + 12 px); 40 is docs/ui-guide.md 3.12 (issue #318) ------
+check(reticleBox(0) === 40, `a point is boxed at 40 px (${reticleBox(0)})`);
+check(reticleBox(8 * 1.35) === 40, 'a selected 8 px dot (10.8 px) is boxed at 40 px');
+check(reticleBox(28) === 40 && reticleBox(29) === 41, 'the diameter rule takes over above 28 px');
 check(reticleBox(260) === 272, `a model drawn 260 px wide is boxed at 272 px (${reticleBox(260)})`);
-check(reticleBox(NaN) === 28 && reticleBox(-5) === 28, 'no size, the minimum');
-check(hud.RETICLE_MIN_PX === 28 && hud.RETICLE_PAD_PX === 12, 'the constants are the spec\'s');
+check(reticleBox(NaN) === 40 && reticleBox(-5) === 40, 'no size, the minimum');
+check(hud.RETICLE_MIN_PX === 40 && hud.RETICLE_PAD_PX === 12, 'the constants are the guide\'s minimum and the spec\'s pad');
 
 // --- 2. the tag flips to stay on screen ------------------------------------------------------------
 const VW = 1000;
@@ -60,6 +60,14 @@ check(between.side === 'centre' && between.vert === 'up', `no room either side: 
 check(between.x >= 376 && between.x + 240 <= 1004 && between.y + 60 <= 450 - 175, `and inside the open area, clear of the box (${between.x}, ${between.y})`);
 const railSmall = tagPlacement({ x: 900, y: 450 }, 28, { w: 240, h: 60 }, 1440, 900, 24, 8, rails);
 check(railSmall.side === 'left' && railSmall.x + 240 <= 1004, `a dot near the card's rail flips its tag left, off the card (${railSmall.side} ${railSmall.x})`);
+// Spec 0061's shell at 1440 x 900 with the Moon selected (issue #319): the sidebar, the tool rail
+// and the time pill, which is centred on the scene area and so sits wholly in the right half. It is
+// a bar at the bottom, not a rail: the area stays open between the sidebar and the tool rail, and
+// the Moon's 633 px box sends its tag to the left, clear of the rail it used to run under.
+const shell = hud.openArea([{ left: 20, top: 20, right: 380, bottom: 880 }, { left: 1370, top: 20, right: 1420, bottom: 214 }, { left: 726, top: 828, right: 1094, bottom: 876 }], 1440, 900);
+check(shell.left === 380 && shell.right === 1370 && shell.bottom === 828 && shell.top === 0, `the pill is a bottom bar, the tool rail a right rail (${JSON.stringify(shell)})`);
+const moon = tagPlacement({ x: 910, y: 450 }, 633, { w: 179, h: 64 }, 1440, 900, 24, 8, shell);
+check(moon.x >= 388 && moon.x + 179 <= 1362, `the Moon's tag is clear of the sidebar and the tool rail (${moon.side} ${moon.x})`);
 const phone = hud.openArea([{ left: 0, top: 500, right: 390, bottom: 844 }], 390, 844);
 check(phone.bottom === 500 && phone.left === 0 && phone.right === 390, `a phone's sheet is a bottom edge (${JSON.stringify(phone)})`);
 check(hud.openArea([{ left: 0, top: 0, right: 300, bottom: 844 }], 390, 844).right === 390, 'panels leaving less than a third of the view are ignored');
@@ -185,4 +193,4 @@ if (problems.length) {
   console.error('hud FAILED:\n  ' + problems.join('\n  '));
   process.exit(1);
 }
-console.log('hud ok: box max(28, d + 12); the tag flips at all four corners and stays on screen; the tick from 2 px/s; the chevron on the inset edge for left, right, above, below and behind; the live region on the first digit; the tag\'s numbers are the card\'s');
+console.log('hud ok: box max(40, d + 12); the tag flips at all four corners and stays on screen; the tick from 2 px/s; the chevron on the inset edge for left, right, above, below and behind; the live region on the first digit; the tag\'s numbers are the card\'s');

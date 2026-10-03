@@ -37,8 +37,11 @@ import { stage } from '../scene/stage.js';
 import { WORLDS } from '../scene/worlds.js';
 import { GLYPH_SIZE_PX } from '../scene/glyphs.js';
 
-// Spec 0047 req 1: box side = max(28 px, drawn diameter + 12 px).
-export const RETICLE_MIN_PX = 28;
+// Spec 0047 req 1: box side = max(minimum, drawn diameter + 12 px). The minimum was 28 px; it is
+// the guide's 40 (docs/ui-guide.md section 3.12, row D draws 44) since internal issue #318 found
+// the two documents disagreeing: four 10 px ticks around 28 px left 8 px of gap a side, a box that
+// read as a blob around a dot, and 40 is nearer a finger's target on a phone.
+export const RETICLE_MIN_PX = 40;
 export const RETICLE_PAD_PX = 12;
 // Req 3: the leader runs 24 px out and 24 px up (or down) from the box's corner, at 45 degrees.
 export const LEADER_PX = 24;
@@ -130,13 +133,23 @@ export function tagPlacement(px, box, tag, vw, vh, leader = LEADER_PX, margin = 
 /**
  * The part of the view the panels leave open, from their boxes: a panel wholly in the left half is
  * a left rail, wholly in the right half a right rail, and otherwise a sheet at the top or bottom.
+ *
+ * A RAIL STANDS, OR HUGS ITS EDGE. Since spec 0061 the time pill is centred on the scene area, so
+ * with the sidebar open it sits wholly in the right half: 726 to 1094 px at 1440. Read as a right
+ * rail it closed the area to 346 px, under the third of the view the last line asks for, and the
+ * whole view came back as "open": at the Moon's arrival the tag went up and right, under the tool
+ * rail (internal issue #319, measured 2026-10-03). So a panel in one half is that side's rail only
+ * if it is taller than wide or within RAIL_EDGE of that edge; a wide bar away from the edge is a
+ * bar, at the top or the bottom.
  */
+const RAIL_EDGE = 0.05;
 export function openArea(rects, vw, vh) {
   const a = { left: 0, top: 0, right: vw, bottom: vh };
   for (const r of rects || []) {
     if (!r || !(r.right > r.left) || !(r.bottom > r.top)) continue;
-    if (r.right <= vw / 2) a.left = Math.max(a.left, r.right);
-    else if (r.left >= vw / 2) a.right = Math.min(a.right, r.left);
+    const stands = r.bottom - r.top >= r.right - r.left;
+    if (r.right <= vw / 2 && (stands || r.left <= vw * RAIL_EDGE)) a.left = Math.max(a.left, r.right);
+    else if (r.left >= vw / 2 && (stands || vw - r.right <= vw * RAIL_EDGE)) a.right = Math.min(a.right, r.left);
     else if (r.top >= vh / 2) a.bottom = Math.min(a.bottom, r.top);
     else if (r.bottom <= vh / 2) a.top = Math.max(a.top, r.bottom);
   }

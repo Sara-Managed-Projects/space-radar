@@ -2760,7 +2760,7 @@ html.sr-phone .sr-sound__btn {
 }
 
 /* The reticle is 0045's corner brackets, the same rule as a focused control (the list above), on a
-   box sized to the thing: max(28 px, its drawn diameter + 12 px). Inside its own corners, because
+   box sized to the thing: max(40 px, its drawn diameter + 12 px). Inside its own corners, because
    the box is already the margin. */
 .sr-reticle__box {
   position: relative;
