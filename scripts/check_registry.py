@@ -2712,6 +2712,8 @@ def check_tilesets(world_ids: set) -> list:
         if r.get("projection") not in TILESET_PROJECTIONS:
             fail(where, f"projection {r.get('projection')!r} must be one of {sorted(TILESET_PROJECTIONS)}: "
                         f"it is the only one scene/tilemath.js addresses")
+        if r.get("mode", "colour") not in ("colour", "detail"):
+            fail(where, f"mode {r.get('mode')!r} must be `colour` or `detail`")
         cors = str(r.get("cors") or "")
         if cors and not TILESET_CORS.match(cors):
             fail(where, f"cors {cors!r} must be `Access-Control-Allow-Origin: <value> (measured YYYY-MM-DD)`: "

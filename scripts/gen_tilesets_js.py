@@ -19,7 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _genmirror import Mirror  # noqa: E402
 
 # YAML name -> the name the browser reads.
-FIELDS = (("id", "id"), ("world", "world"), ("title", "title"), ("url", "url"), ("matrix", "matrix"),
+FIELDS = (("id", "id"), ("world", "world"), ("title", "title"), ("url", "url"), ("mode", "mode"), ("matrix", "matrix"),
           ("tile_px", "tilePx"), ("min_level", "minLevel"), ("start_level", "startLevel"),
           ("max_level", "maxLevel"), ("resolution_m", "resolutionM"), ("grade", "grade"),
           ("credit", "credit"))

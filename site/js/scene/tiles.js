@@ -6,7 +6,7 @@
 // 4096 pixels round the equator on a laptop: 2.7 km a texel on the Moon, 5.2 km on Mars. From a few
 // hundred kilometres up a screen pixel is a few hundred METRES of ground, and the map is a blur.
 // NASA's Solar System Treks serves the missions' own mosaics as map tiles, with CORS open (measured
-// 2026-10-03, registry/tilesets.yaml): the Moon to 83 m a pixel, Mars to 325 m. This module fetches
+// 2026-10-03, registry/tilesets.yaml): the Moon to 83 m a pixel, Mars to 162 m. This module fetches
 // the tiles under the camera, at the level the screen can show, and draws them over the globe.
 //
 // HOW A TILE IS DRAWN. Each tile is a small patch of the unit sphere, a CHILD of the world's mesh,
@@ -44,6 +44,13 @@
 //   - A HOST THAT FAILS IS LEFT ALONE. Six failures in a row and nothing is asked for five minutes;
 //     the globe's own map is simply what is on screen. No console noise of ours.
 //
+// COLOUR OR DETAIL. The Moon's mosaic is the ground's picture and replaces the map (graded to its
+// tone). Mars has no seamless colour mosaic: Viking's MDIM 2.1 shows its frames as hard edges and
+// tone steps (shot and rejected 2026-10-03). So Mars's tiles are THEMIS's daytime infrared mosaic,
+// grey and seamless, used as DETAIL: the colour stays our own map's and the tile only multiplies
+// its brightness (tileFragment). The mosaic is already flattened -- its 11-degree means stay within
+// 1.7 % of the global one -- so there is no tone for it to bring.
+//
 // THE TONE. A mission mosaic is not graded like the Solar System Scope map under it, so where tiles
 // stopped there would be an edge. Two things keep it off the screen: the whole visible ground is
 // covered at `minLevel` or finer (scene/tilemath.js selectTiles), and that coarse cover -- three or
@@ -74,6 +81,9 @@ export const MAX_FETCHES = 6;
 export const FADE_MS = 450;
 /** The selection is redone this often; the fades run every frame. */
 export const SELECT_EVERY_MS = 125;
+/** A detail tile brightens or darkens the world's map by no more than this (scene/tiles.js tileFragment). */
+export const DETAIL_MIN = 0.35;
+export const DETAIL_MAX = 2.2;
 /** Failures in a row before the host is left alone, and for how long. */
 export const FAILS_TO_PAUSE = 6;
 export const PAUSE_MS = 5 * 60 * 1000;
@@ -85,19 +95,38 @@ export const VIEW_MARGIN = 0.25;
 export const STOP_HYSTERESIS = 1.2;
 
 const FRAG_OUT = 'gl_FragColor = vec4( colour, 1.0 );';
+const FRAG_BASE = 'vec3 base = mix( uTint, texture2D( uMap, vUv ).rgb * uTint, uHasMap );';
 const VERT_DEPTH = '#include <logdepthbuf_vertex>';
+const VERT_UV = 'vUv = uv;';
 
-/** The world's fragment shader with a fade: the one line that differs. Throws if the line has moved. */
+/**
+ * The world's fragment shader with a fade, and with the two ways a tile is the ground's colour:
+ *   colour (uDetail 0): the tile's own picture times the grade -- the Moon's WAC mosaic;
+ *   detail (uDetail 1): the WORLD'S OWN MAP for the colour, times the tile's brightness over the
+ *     mosaic's mean (uTint.r = 1 / mean) -- Mars, where the only seamless global mosaic is grey.
+ *     The colour never jumps, because it is still our map's; the tile adds what the map is too
+ *     coarse to hold. The factor is clamped so a no-data hole or a saturated texel is a dull spot,
+ *     not a black or a white one.
+ * Throws if the lines it rewrites have moved.
+ */
 export function tileFragment(src = WORLD_FRAG) {
   if (!src.includes(FRAG_OUT)) throw new Error('scene/tiles.js: WORLD_FRAG no longer ends in ' + FRAG_OUT);
+  if (!src.includes(FRAG_BASE)) throw new Error('scene/tiles.js: WORLD_FRAG no longer reads its map with ' + FRAG_BASE);
   return src.replace(FRAG_OUT, 'gl_FragColor = vec4( colour, uFade );')
-    .replace('uniform sampler2D uMap;', 'uniform sampler2D uMap;\nuniform float uFade;');
+    .replace(FRAG_BASE, `vec3 tile = texture2D( uMap, vUv ).rgb;
+  vec3 base = uDetail > 0.5
+    ? texture2D( uBaseMap, vUvGlobe ).rgb * clamp( dot( tile, vec3( 0.2126, 0.7152, 0.0722 ) ) * uTint.r, ${DETAIL_MIN.toFixed(2)}, ${DETAIL_MAX.toFixed(2)} )
+    : tile * uTint;`)
+    .replace('uniform sampler2D uMap;', 'uniform sampler2D uMap;\nuniform sampler2D uBaseMap;\nuniform float uDetail;\nuniform float uFade;\nvarying vec2 vUvGlobe;');
 }
 
-/** The world's vertex shader with the depth pull (DEPTH, above). */
+/** The world's vertex shader with the depth pull (DEPTH, above) and the point's place on the world's own map. */
 export function tileVertex(src = WORLD_VERT) {
   if (!src.includes(VERT_DEPTH)) throw new Error('scene/tiles.js: WORLD_VERT no longer includes the log depth chunk');
-  return src.replace(VERT_DEPTH, VERT_DEPTH + `
+  if (!src.includes(VERT_UV)) throw new Error('scene/tiles.js: WORLD_VERT no longer sets ' + VERT_UV);
+  return src.replace(VERT_UV, VERT_UV + '\n  vUvGlobe = uvGlobe;')
+    .replace('varying vec2 vUv;', 'varying vec2 vUv;\nattribute vec2 uvGlobe;\nvarying vec2 vUvGlobe;')
+    .replace(VERT_DEPTH, VERT_DEPTH + `
   #ifdef USE_LOGARITHMIC_DEPTH_BUFFER
     vFragDepth = 1.0 + gl_Position.w * ${(1 - DEPTH_PULL).toFixed(4)};
   #endif`);
@@ -218,6 +247,7 @@ export function createPlanetTiles(opts = {}) {
     geo.setAttribute('position', new THREE.BufferAttribute(arrays.positions, 3));
     geo.setAttribute('normal', new THREE.BufferAttribute(arrays.positions, 3));
     geo.setAttribute('uv', new THREE.BufferAttribute(arrays.uvs, 2));
+    geo.setAttribute('uvGlobe', new THREE.BufferAttribute(arrays.globe, 2));
     geo.setIndex(new THREE.BufferAttribute(arrays.indices, 1));
     const tex = new THREE.Texture(got.image);
     tex.flipY = got.flipped === false;       // an ImageBitmap was turned over at decode (fetchTile)
@@ -234,7 +264,11 @@ export function createPlanetTiles(opts = {}) {
       vertexShader,
       fragmentShader,
       // The globe's own uniform OBJECTS, so its light is this patch's light; four are the patch's own.
-      uniforms: { ...base, uMap: { value: tex }, uHasMap: { value: 1 }, uTint: { value: layer.tint }, uFade: fade },
+      // uBaseMap is the globe's own uMap OBJECT: when the 4k map replaces the 2k one, a detail tile sees it.
+      uniforms: {
+        ...base, uMap: { value: tex }, uHasMap: { value: 1 }, uTint: { value: layer.tint }, uFade: fade,
+        uBaseMap: base.uMap, uDetail: { value: layer.set.mode === 'detail' ? 1 : 0 },
+      },
       transparent: true,
       depthWrite: false,
     });

@@ -27,10 +27,11 @@ export const TILESETS = [
     "credit": "The Moon close up: Lunar Reconnaissance Orbiter WAC mosaic, NASA/GSFC/Arizona State University, from NASA Solar System Treks"
   },
   {
-    "id": "mars-viking-colour",
+    "id": "mars-themis-day-ir",
     "world": "mars",
-    "title": "Viking Orbiter MDIM 2.1 colour global mosaic, 232 m per pixel",
-    "url": "https://trek.nasa.gov/tiles/Mars/EQ/Mars_Viking_MDIM21_ClrMosaic_global_232m/1.0.0/default/default028mm/{z}/{y}/{x}.jpg",
+    "title": "Mars Odyssey THEMIS daytime infrared global mosaic, 100 m per pixel, as detail over the colour map",
+    "url": "https://trek.nasa.gov/tiles/Mars/EQ/Mars_MO_THEMIS-IR-Day_mosaic_global_100m_v12_clon0_ly/1.0.0/default/default028mm/{z}/{y}/{x}.png",
+    "mode": "detail",
     "matrix": [
       2,
       1
@@ -38,13 +39,13 @@ export const TILESETS = [
     "tilePx": 256,
     "minLevel": 3,
     "startLevel": 5,
-    "maxLevel": 7,
-    "resolutionM": 325,
+    "maxLevel": 8,
+    "resolutionM": 162,
     "grade": [
-      2.42,
-      0.9,
-      0.42
+      4.79,
+      4.79,
+      4.79
     ],
-    "credit": "Mars close up: Viking Orbiter MDIM 2.1 colour mosaic, NASA/JPL/USGS, from NASA Solar System Treks"
+    "credit": "Mars close up: THEMIS daytime infrared mosaic, NASA/JPL-Caltech/Arizona State University, from NASA Solar System Treks, as detail over the colour map"
   }
 ];

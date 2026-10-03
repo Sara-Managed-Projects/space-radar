@@ -53,6 +53,6 @@ budgets:
   # when a world other than the Earth is half the view tall, and asks for nothing until the ground
   # under the camera wants the set's start level. tests/test_tiles.mjs holds the wiring and
   # tests/test_first_visit_bytes.mjs counts requests to the tile hosts in a real boot. At close range
-  # a view is 80 to 100 tiles: 2.6 MB measured 300 km over the Moon at 1440x900 (headless, 2026-10-03).
+  # a view is 55 to 100 tiles: 2.6 MB measured 300 km over the Moon and 3.8 MB 400 km over Mars (PNG) at 1440x900 (headless, 2026-10-03).
   - {id: planet_tile_requests_first_visit, value: 0, unit: requests, since: 2026-10-03, reason: "spec 0065 req 3: nothing before the first frame, and nothing on a visit that never goes close to a world"}
   - {id: reel_heap_growth_pct, value: 20, unit: percent, since: 2026-09-22, reason: "spec 0036 task 4, one hour on SwiftShader", pending: "spec 0036 task 4"}

@@ -57,7 +57,7 @@ check(M.wrapLon(190) === -170 && M.wrapLon(-190) === 170 && M.wrapLon(180) === -
 // --- 2. the level for a pixel's footprint -----------------------------------------------------------
 // The Moon, R = 1737.4 km: a level-8 texel is pi R / (256 x 256) = 83.3 m, the mosaic's own 100 m class.
 check(near(M.texelRad(8) * 1737.4, 0.08329, 1e-4), `a level-8 texel on the Moon is ${(M.texelRad(8) * 1737.4 * 1000).toFixed(1)} m, want 83.3`);
-check(near(M.texelRad(7) * 3389.5, 0.3250, 1e-3), 'a level-7 texel on Mars is 325 m');
+check(near(M.texelRad(8) * 3389.5, 0.1625, 1e-3), 'a level-8 texel on Mars is 162 m');
 {
   // 300 km over the Moon at 900 pixels tall, 45 degrees of view: a pixel is 276 m of ground.
   const pixelRad = (2 * Math.tan((45 * Math.PI) / 360)) / 900;
@@ -128,9 +128,9 @@ const pixelRad = (2 * Math.tan((45 * Math.PI) / 360)) / 900;
   // Over a pole the cap is every longitude.
   const pole = M.selectTiles({ lonDeg: 0, latDeg: 90, dist: view.dist, pixelRad }, MOON).tiles;
   check(new Set(pole.filter((t) => t.y === 0 || M.tileBounds(t.z, t.x, t.y).north === 90).map((t) => Math.sign(M.tileBounds(t.z, t.x, t.y).west + 1e-9))).size === 2, 'over the pole both hemispheres are asked for');
-  // Mars never asks past its level 7.
-  const mars = M.selectTiles({ lonDeg: -133.8, latDeg: 18.65, dist: 1 + 50 / 3389.5, pixelRad }, MARS).tiles;
-  check(Math.max(...mars.map((t) => t.z)) === 7 && mars[0].key === '7/50/32', 'fifty km over Olympus Mons is still level 7: the host has no 8');
+  // A set never asks past its last level, however close the camera.
+  const mars = M.selectTiles({ lonDeg: -133.8, latDeg: 18.65, dist: 1 + 70 / 3389.5, pixelRad }, MARS).tiles;
+  check(Math.max(...mars.map((t) => t.z)) === MARS.maxLevel && mars[0].key === '8/101/65', `seventy km over Olympus Mons is level ${MARS.maxLevel} and no finer: ${mars[0].key}`);
 }
 
 {
@@ -206,6 +206,10 @@ const pixelRad = (2 * Math.tan((45 * Math.PI) / 360)) / 900;
   const b = M.tileBounds(7, 144, 63);
   const a = M.patchArrays(b, 4);
   check(a.positions.length === 75 && a.uvs.length === 50 && a.indices.length === 96, 'a 4-segment patch is 25 vertices and 32 triangles');
+  check(near(a.globe[0], (b.west + 180) / 360, 1e-6) && near(a.globe[1], (b.south + 90) / 180, 1e-6) && near(a.globe[48], (b.east + 180) / 360, 1e-6) && near(a.globe[49], (b.north + 90) / 180, 1e-6),
+    'and each vertex knows its place on the whole map: u from 180 W, v from the south pole');
+  const east = M.patchArrays(M.tileBounds(3, 15, 3), 4);
+  check(near(east.globe[8], 1, 1e-6), 'the tile that ends at 180 E ends at u = 1, not 0: no wrap inside a patch');
   // uv (0, 0) is the south-west corner; (1, 1) the north-east.
   const sw = M.unitFromLonLat(b.west, b.south), ne = M.unitFromLonLat(b.east, b.north);
   check(near(a.positions[0], sw[0], 1e-6) && near(a.positions[1], sw[1], 1e-6) && a.uvs[0] === 0 && a.uvs[1] === 0, 'v = 0 is the south edge');
@@ -222,9 +226,25 @@ const pixelRad = (2 * Math.tan((45 * Math.PI) / 360)) / 900;
 }
 
 // --- 7. the shader is the world's own, with two lines changed ---------------------------------------
-check(T.tileFragment().includes('gl_FragColor = vec4( colour, uFade );') && T.tileFragment().includes('uniform float uFade;'), 'the fragment shader fades');
-check(T.tileFragment().replace('gl_FragColor = vec4( colour, uFade );', 'gl_FragColor = vec4( colour, 1.0 );').replace('uniform sampler2D uMap;\nuniform float uFade;', 'uniform sampler2D uMap;') === WORLD_FRAG, 'and is otherwise WORLD_FRAG, character for character');
-check(T.tileVertex().startsWith(WORLD_VERT.slice(0, WORLD_VERT.indexOf('#include <logdepthbuf_vertex>'))) && /vFragDepth = 1\.0 \+ gl_Position\.w \* 0\.9990;/.test(T.tileVertex()), 'the vertex shader pulls the depth a thousandth nearer');
+{
+  const f = T.tileFragment();
+  check(f.includes('gl_FragColor = vec4( colour, uFade );') && f.includes('uniform float uFade;'), 'the fragment shader fades');
+  check(f.includes('texture2D( uBaseMap, vUvGlobe ).rgb * clamp( dot( tile, vec3( 0.2126, 0.7152, 0.0722 ) ) * uTint.r,') && f.includes(': tile * uTint;'),
+    'a detail tile multiplies the brightness of the world\'s own map; a colour tile is its own picture times the grade');
+  // Everything else is WORLD_FRAG, line for line: only the map read, the output and four declarations differ.
+  const mine = new Set(f.split('\n'));
+  const lost = WORLD_FRAG.split('\n').filter((l) => !mine.has(l));
+  check(lost.length === 2 && lost.some((l) => l.includes('vec3 base = mix(')) && lost.some((l) => l.includes('gl_FragColor = vec4( colour, 1.0 )')), `the tile shader drops ${lost.length} of the world's lines, want the map read and the output only`);
+  const v = T.tileVertex();
+  check(/vFragDepth = 1\.0 \+ gl_Position\.w \* 0\.9990;/.test(v), 'the vertex shader pulls the depth a thousandth nearer');
+  check(v.includes('attribute vec2 uvGlobe;') && v.includes('vUvGlobe = uvGlobe;'), 'and carries the point\'s place on the world\'s own map');
+  const kept = new Set(v.split('\n'));
+  check(WORLD_VERT.split('\n').every((l) => kept.has(l) || l.includes('vUv = uv;')), 'and is otherwise WORLD_VERT');
+  let moved = 0;
+  for (const bad of ['void main() { gl_FragColor = vec4( colour, 1.0 ); }']) { try { T.tileFragment(bad); } catch { moved += 1; } }
+  try { T.tileVertex('#include <logdepthbuf_vertex>'); } catch { moved += 1; }
+  check(moved === 2, 'a shader whose map read or uv line has moved is refused too');
+}
 {
   let threw = false;
   try { T.tileFragment('void main() { gl_FragColor = vec4(1.0); }'); } catch { threw = true; }
@@ -297,6 +317,7 @@ function rig({ tier = 1, saveData = false, altKm = 300, fail = false, hasMap = t
   check(p.material.uniforms.uSunDir === r.mesh.material.uniforms.uSunDir && p.material.uniforms.uEarthshine === r.mesh.material.uniforms.uEarthshine
     && p.material.uniforms.uEclipse === r.mesh.material.uniforms.uEclipse, 'a patch shares the globe\'s light: the same uniform objects');
   check(p.material.uniforms.uMap !== r.mesh.material.uniforms.uMap && p.material.uniforms.uFade.value === 1, 'and has its own map and fade');
+  check(p.material.uniforms.uDetail.value === 0, 'the Moon\'s tiles are their own picture, not detail');
   const tint = p.material.uniforms.uTint.value;
   check(near(tint.r, MOON.grade[0]) && near(tint.g, MOON.grade[1]) && near(tint.b, MOON.grade[2]), 'graded to the map under it (registry grade)');
   // Seen again: nothing more is fetched.
@@ -310,6 +331,19 @@ function rig({ tier = 1, saveData = false, altKm = 300, fail = false, hasMap = t
   check(!gone.on && !gone.showing && gone.cached === 0 && gone.master === 0, 'far away the tiles fade out and are freed');
   check(!r.mesh.children.some((c) => c.name === MOON.id + '-tiles'), 'and their group leaves the mesh');
   check(r.tiles.credits().length === 0 && r.changes() === 2, 'the credit goes with them');
+}
+{
+  // Mars: detail over the globe's own map, whichever map that is at the time.
+  const r = rig({ world: 'mars', radiusKm: 3389.5, altKm: 400 });
+  await r.run(3000);
+  const s = r.tiles.state().sets[MARS.id];
+  check(s.showing && s.drawn === s.wanted && r.asked.every((u) => u.includes('/Mars/EQ/') && u.endsWith('.png')), 'Mars is drawn from its own set, PNG tiles');
+  const p = r.mesh.children.find((c) => c.name === MARS.id + '-tiles').children.find((c) => c.visible);
+  check(MARS.mode === 'detail' && p.material.uniforms.uDetail.value === 1, 'Mars\'s tiles are detail');
+  check(p.material.uniforms.uBaseMap === r.mesh.material.uniforms.uMap, 'over the globe\'s own map: the same uniform object, so a 4k swap reaches the tile');
+  check(near(p.material.uniforms.uTint.value.r, MARS.grade[0]), 'scaled by one over the mosaic\'s mean');
+  check(!!p.geometry.attributes.uvGlobe, 'with the map\'s uv on every vertex');
+  check(JSON.stringify(r.tiles.credits()) === JSON.stringify([MARS.credit]), 'and credited as detail');
 }
 {
   // Hysteresis: on at the start altitude, still on a little above it, off past STOP_HYSTERESIS.

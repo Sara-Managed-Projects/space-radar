@@ -8,7 +8,7 @@
 // west and east, and every level doubles both ways, so level z is 2^(z+1) columns by 2^z rows and a
 // tile is 180 / 2^z degrees on a side. Row 0 is the NORTH edge and column 0 starts at 180 W.
 // Measured 2026-10-03 against trek.nasa.gov: level 0 answers 0/0/0 and 0/0/1 and 404s 0/0/2 and
-// 0/1/0; the Moon's WAC mosaic answers to level 8 and Mars's Viking mosaic to level 7. The
+// 0/1/0; the Moon's WAC mosaic and Mars's THEMIS mosaic both answer to level 8. The
 // commented-out 3 x 2 matrix in the host's own capabilities file is not what it serves.
 //
 // WHICH LEVEL. A tile is fine enough when one of its texels is no wider on the ground than one
@@ -320,12 +320,14 @@ export function lonLatFromUnit(x, y, z) {
 /**
  * The patch of sphere a tile covers, as flat arrays for a BufferGeometry: positions on the unit
  * sphere (which are also the normals), uv with v = 0 on the SOUTH edge (the picture is uploaded
- * bottom row first, as three does), and triangle indices wound to face outward.
+ * bottom row first, as three does), `globe` the same point's place on the world's own whole map, and
+ * triangle indices wound to face outward.
  */
 export function patchArrays(b, segs) {
   const n = segs + 1;
   const positions = new Float32Array(n * n * 3);
   const uvs = new Float32Array(n * n * 2);
+  const globe = new Float32Array(n * n * 2);
   const p = [0, 0, 0];
   for (let j = 0; j < n; j++) {
     const v = j / segs;
@@ -337,6 +339,9 @@ export function patchArrays(b, segs) {
       positions.set(p, k * 3);
       uvs[k * 2] = u;
       uvs[k * 2 + 1] = v;
+      // Where the same point is on the world's own map: for a set that is detail over that map.
+      globe[k * 2] = (b.west + (b.east - b.west) * u + 180) / 360;
+      globe[k * 2 + 1] = (lat + 90) / 180;
     }
   }
   const indices = new Uint16Array(segs * segs * 6);
@@ -351,5 +356,5 @@ export function patchArrays(b, segs) {
       indices[q++] = a; indices[q++] = d; indices[q++] = c;
     }
   }
-  return { positions, uvs, indices };
+  return { positions, uvs, globe, indices };
 }

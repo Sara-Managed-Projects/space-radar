@@ -32,11 +32,15 @@ version: 1
 #   resolution_m metres per pixel at max_level on the equator, computed: 2 pi R / (matrix x 2^max x tile_px)
 #   grade        [r, g, b], multiplied into the tile in linear light so the mosaic sits at the tone
 #                of the map under it and the ground does not change colour as the tiles fade in.
+#                (For `mode: detail`, 1 / the mosaic's mean, three times.)
 #                MEASURED 2026-10-03: the level-2 mosaic (2048 x 1024) against our 4k map, both
 #                reduced to 256 x 128 and linearised, between 60 S and 60 N; each number is
 #                mean(map) / mean(mosaic) for that channel. The Moon's fit is a plain gain (a power
-#                law fitted the same day has exponent 0.98 to 1.01); Mars's is a compromise, because
-#                Solar System Scope's Mars is more saturated than Viking's and no gain makes them one.
+#                law fitted the same day has exponent 0.98 to 1.01); Mars's is in its row.
+#   mode         colour (the default): the tile is the ground's picture, times `grade`.
+#                detail: the tile is grey and only multiplies the brightness of the world's own map,
+#                luminance x grade[0]; the colour stays the map's. For a world whose only seamless
+#                mosaic is not in colour.
 #   cors         the header the host sent to `Origin: https://www.spaceradar.ai`, and the day it was measured
 #   licence      quoted from the page it was read on
 #   credit       the line the Sources panel prints while these tiles are on screen; CREDITS.md 4.16
@@ -66,21 +70,30 @@ tilesets:
     credit: "The Moon close up: Lunar Reconnaissance Orbiter WAC mosaic, NASA/GSFC/Arizona State University, from NASA Solar System Treks"
     source: "https://trek.nasa.gov/tiles/apidoc/trekAPI.html?body=moon (read 2026-10-03)"
 
-  - id: mars-viking-colour
+  # Mars's tiles are DETAIL over our own colour map (mode: detail). Viking's MDIM 2.1 colour mosaic
+  # (Mars_Viking_MDIM21_ClrMosaic_global_232m, CORS `*`, levels 0-7) was the first choice and was
+  # rejected on its screenshots, 2026-10-03: the Viking frames meet in hard straight edges with a
+  # tone step across them, and its colour is greyer than the map under it. THEMIS's global daytime
+  # infrared mosaic is seamless and sharper (100 m), and grey: so the colour stays the map's.
+  # `grade` is 1 / mean of the level-2 mosaic in linear light between 60 S and 60 N (0.2087); the
+  # mosaic's 11-degree means stay within 1.7 % of that, so it carries detail and no tone.
+  # Tiles are PNG with an alpha channel (no-data), 50 to 65 KB. Level 9 is a 404.
+  - id: mars-themis-day-ir
     world: mars
-    title: "Viking Orbiter MDIM 2.1 colour global mosaic, 232 m per pixel"
-    url: "https://trek.nasa.gov/tiles/Mars/EQ/Mars_Viking_MDIM21_ClrMosaic_global_232m/1.0.0/default/default028mm/{z}/{y}/{x}.jpg"
-    capabilities: "https://trek.nasa.gov/tiles/Mars/EQ/Mars_Viking_MDIM21_ClrMosaic_global_232m/1.0.0/WMTSCapabilities.xml"
+    title: "Mars Odyssey THEMIS daytime infrared global mosaic, 100 m per pixel, as detail over the colour map"
+    url: "https://trek.nasa.gov/tiles/Mars/EQ/Mars_MO_THEMIS-IR-Day_mosaic_global_100m_v12_clon0_ly/1.0.0/default/default028mm/{z}/{y}/{x}.png"
+    capabilities: "https://trek.nasa.gov/tiles/Mars/EQ/Mars_MO_THEMIS-IR-Day_mosaic_global_100m_v12_clon0_ly/1.0.0/WMTSCapabilities.xml"
     projection: equirectangular
+    mode: detail
     matrix: [2, 1]
     tile_px: 256
-    levels: [0, 7]
+    levels: [0, 8]
     min_level: 3
     start_level: 5
-    max_level: 7
-    resolution_m: 325
-    grade: [2.42, 0.90, 0.42]
+    max_level: 8
+    resolution_m: 162
+    grade: [4.79, 4.79, 4.79]
     cors: "Access-Control-Allow-Origin: * (measured 2026-10-03)"
     licence: 'NASA media guidelines: "generally are not subject to copyright in the United States"'
-    credit: "Mars close up: Viking Orbiter MDIM 2.1 colour mosaic, NASA/JPL/USGS, from NASA Solar System Treks"
+    credit: "Mars close up: THEMIS daytime infrared mosaic, NASA/JPL-Caltech/Arizona State University, from NASA Solar System Treks, as detail over the colour map"
     source: "https://trek.nasa.gov/tiles/apidoc/trekAPI.html?body=mars (read 2026-10-03)"
