@@ -134,6 +134,13 @@ const SUBSCRIBE_MS = 3000;
 
 export async function boot({ setStatus } = {}) {
   const say = setStatus || (() => {});
+  // RENDER MODE (spec 0070, ui/rendermode.js): `?render=1#trip=<id>` is tools/render-trip.mjs
+  // filming a trip one frame at a time. It takes over what the page calls time, so it is installed
+  // before anything below asks what time it is; the module is imported only for that address
+  // (OFF THE FIRST VISIT, tests/test_first_visit_bytes.mjs).
+  const film = /[?&]render=1(?:&|$)/.test(location.search)
+    ? await import('./ui/rendermode.js').then((m) => m.install(m.renderOptions(location.search)))
+    : null;
   const canvas = document.getElementById('stage');
 
   say('Building the sky…');
@@ -490,11 +497,14 @@ export async function boot({ setStatus } = {}) {
   // lost; its keys work from then on (Escape before it lands is the card's, as it always was).
   let framing = null;
   const offFrame = ctx.trip.onChange((st) => {
-    if (framing || !st || st.phase === 'idle') return;
+    // A film has no toolbar and no intro card: the frame is never fetched (ui/rendermode.js).
+    if (framing || film || !st || st.phase === 'idle') return;
     framing = import('./ui/tripframe.js')
       .then((m) => { ctx.tripFrame = m.createTripFrame(ctx); offFrame(); })
       .catch((e) => { framing = null; console.warn('the trip frame did not load', e); });
   });
+  // The film's cue sheet and its lower third hear the trip from here on (window.__srRender).
+  if (film) film.attach(ctx);
   // Names over the scene (spec 0026 req 5): the selection, its train, the nearest notable things.
   const labels = createLabels(ctx, document.getElementById('labels'));
   ctx.labels = labels;
@@ -1309,7 +1319,9 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     const frameMs = Math.max(0, nowReal - last); // the real duration, before the clamp below
     const dt = Math.min(100, frameMs);           // a backgrounded tab must not lurch on return
     last = nowReal;
-    if (!document.hidden && latch.push(frameMs, nowReal)) degrade();
+    // Not while filming: a film's frames are all one step long (33 ms at 30 fps), which the latch
+    // would read as a slow device and answer by throwing the picture's quality away.
+    if (!document.hidden && !ctx.renderMode && latch.push(frameMs, nowReal)) degrade();
     if (ctx.quality && !document.hidden) {
       ctx.quality.frame(frameMs, nowReal, latch.latched);
       if (nowReal - lastTierTick >= 1000) { lastTierTick = nowReal; ctx.quality.tick(nowReal); }
