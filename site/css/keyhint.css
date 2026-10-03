@@ -25,7 +25,7 @@
   box-sizing: border-box;
   width: 296px;
   padding: var(--sp-3) var(--sp-4) var(--sp-4);
-  font: 400 13px/18px var(--sr-font);
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
   color: var(--sr-text);
   border-radius: var(--sr-radius-shell);
 }
@@ -69,7 +69,7 @@
 
 .sr-keyhint__micro {
   margin: 0;
-  font: 600 13px/16px var(--sr-font-hud);
+  font: 600 var(--sr-fs-sm)/16px var(--sr-font-hud);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--sr-text-dim);
@@ -148,7 +148,7 @@
   min-width: 28px;
   height: 28px;
   padding: 0 var(--sp-1);
-  font: 500 13px/1 var(--sr-font-mono);
+  font: 500 var(--sr-fs-sm)/1 var(--sr-font-mono);
   color: var(--sr-text);
   background: var(--sr-wash);
   border: 1px solid var(--sr-line);

@@ -34,6 +34,10 @@
   --boot-earth-lit: #2e6fb8;
   --boot-earth: #123255;
   --boot-earth-dark: #0c2036;
+  --boot-halo: rgba(110, 195, 255, 0.28);
+  --boot-halo-soft: rgba(110, 195, 255, 0.2);
+  --boot-orbit: rgba(255, 159, 67, 0.75);
+  --boot-orbit-failed: rgba(154, 164, 178, 0.5);
 }
 
 * { box-sizing: border-box; }
@@ -45,7 +49,7 @@ html, body {
   background: var(--space);
   color: var(--text);
   font-family: var(--font);
-  font-size: 15px;
+  font-size: var(--sr-fs-body);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   overscroll-behavior: none;
@@ -85,7 +89,7 @@ html, body {
   display: grid;
   place-items: center;
   background: radial-gradient(120% 90% at 50% 40%, var(--boot-glow) 0%, var(--space) 55%, var(--space-edge) 100%);
-  z-index: 100;
+  z-index: var(--sr-z-boot);
   transition: opacity 600ms ease;
   padding: 24px;
 }
@@ -98,7 +102,7 @@ html, body {
   margin: 0 auto 22px;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 32%, var(--boot-earth-lit), var(--boot-earth) 70%, var(--boot-earth-dark));
-  box-shadow: 0 0 0 1px rgba(110,195,255,.28), 0 0 34px rgba(110,195,255,.20);
+  box-shadow: 0 0 0 1px var(--boot-halo), 0 0 34px var(--boot-halo-soft);
   position: relative;
 }
 .boot-mark::after {
@@ -106,14 +110,14 @@ html, body {
   position: absolute;
   inset: -16px;
   border-radius: 50%;
-  border: 1.5px dashed rgba(255,159,67,.75);
+  border: 1.5px dashed var(--boot-orbit);
   animation: spin 9s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.boot-line { margin: 0; font-size: 16px; color: var(--text); }
-.boot-sub { margin: 8px 0 0; font-size: 13px; color: var(--text-dim); }
-.boot-failed .boot-mark::after { border-color: rgba(154,164,178,.5); animation: none; }
+.boot-line { margin: 0; font-size: var(--sr-fs-input); color: var(--text); }
+.boot-sub { margin: 8px 0 0; font-size: var(--sr-fs-sm); color: var(--text-dim); }
+.boot-failed .boot-mark::after { border-color: var(--boot-orbit-failed); animation: none; }
 .boot-failed .boot-line { color: var(--text); }
 
 @media (prefers-reduced-motion: reduce) {
@@ -123,13 +127,13 @@ html, body {
 
 /* --- labels over the scene -------------------------------------------------- */
 
-.labels { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+.labels { position: fixed; inset: 0; pointer-events: none; z-index: var(--sr-z-labels); }
 .labels .label {
   position: absolute;
   left: 0;
   top: 0;
   will-change: transform;
-  font-size: 13px;
+  font-size: var(--sr-fs-sm);
   color: var(--text);
   /* Dense enough to read over the galaxy models' white clouds, not only over black sky. */
   text-shadow: 0 0 2px var(--space), 0 0 2px var(--space), 0 0 4px var(--space), 0 0 8px var(--space);

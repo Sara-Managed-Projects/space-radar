@@ -70,6 +70,11 @@ const token = (name) => (tokens.get(name) || [])[0]?.value;
 
 // --- 1. the token block (design section 1), each name defined once ---------------------------
 const DESIGN_TOKENS = [
+  '--sr-glass-strong', '--sr-text-soft', '--sr-wash', '--sr-wash-hover', '--sr-wash-strong', '--sr-ember-light',
+  '--sr-fs-unit', '--sr-fs-sm', '--sr-fs-label', '--sr-fs-body', '--sr-fs-input', '--sr-fs-glyph', '--sr-fs-num-sm',
+  '--sr-fs-lead', '--sr-fs-num', '--sr-fs-mark', '--sr-fs-name-sm', '--sr-fs-name',
+  '--sr-z-labels', '--sr-z-hud', '--sr-z-veil', '--sr-z-controls', '--sr-z-pill', '--sr-z-card', '--sr-z-rail',
+  '--sr-z-pop', '--sr-z-trip', '--sr-z-modal', '--sr-z-toast', '--sr-z-boot',
   '--sr-space', '--sr-space-edge', '--sr-ember', '--sr-ink', '--sr-text', '--sr-text-dim',
   '--sr-ember-soft', '--sr-text-faint',
   '--sr-glass', '--sr-glass-thin', '--sr-glass-solid', '--sr-blur',
@@ -213,16 +218,121 @@ for (const r of all) {
   for (const [prop, value] of decls(r.body)) {
     if (prop !== 'border-radius' && !/^border-(top|bottom)-(left|right)-radius$/.test(prop)) continue;
     for (const part of value.split(/\s+|\//).filter(Boolean)) {
-      const ok = /^var\(--sr-radius(-sm|-pill|-shell)?\)$/.test(part) || part === '50%' || part === '0' || (/^[\d.]+px$/.test(part) && parseFloat(part) <= 6);
-      if (!ok) problems.push(`${r.file} ${r.selector}: border-radius ${value}; a corner is a --sr-radius token, a circle, or at most 6 px`);
+      // Tokens only since spec 0061 task 6 (docs/ui-guide.md section 2.3): a literal 5px is a
+      // fifth corner nobody chose. `inherit` is a pseudo-element taking its host's corner.
+      const ok = /^var\(--sr-radius(-sm|-pill|-shell)?\)$/.test(part) || part === '50%' || part === '0' || part === 'inherit';
+      if (!ok) problems.push(`${r.file} ${r.selector}: border-radius ${value}; a corner is --sr-radius-sm, --sr-radius, --sr-radius-shell, --sr-radius-pill, 50% or 0`);
     }
   }
 }
 
-// --- 5. no raw hex colour outside :root ---------------------------------------------------------
+// --- 5. no colour literal outside :root (docs/ui-guide.md section 2 and 7; spec 0061 task 6) ----
+// A hex, an rgb()/rgba()/hsl(), or a named colour in a rule is a colour nobody can find again:
+// issue #197 counted `rgba(232,236,242,.7)`, `.66`, `.5`, `.1`, `.08`, `.06` and `.05` in the
+// shell, seven greys beside the three the contrast table holds, and the `.5` placeholder was
+// 3.31:1 over a cloud. One form is allowed: `rgba(var(--token), a)`, a tint of a named triplet
+// (a trip card's hue).
+const NAMED = /(?:^|[\s,(])(white|black|red|green|blue|gray|grey|silver|orange|yellow|purple|pink|gold|navy|teal|aqua|cyan|magenta|maroon|olive|lime|brown|beige|ivory|tan|coral|salmon|crimson|indigo|violet|khaki)(?=$|[\s,)])/i;
+const COLOUR_PROPS = /^(color|background|background-color|background-image|border|border-(top|right|bottom|left)|border-(top-|right-|bottom-|left-)?color|outline|outline-color|box-shadow|text-shadow|fill|stroke|caret-color|accent-color|text-decoration|text-decoration-color|column-rule|filter|-webkit-text-stroke|-webkit-tap-highlight-color|scrollbar-color)$/;
 for (const r of all) {
   if (r.selector === ':root') continue;
   for (const m of r.body.matchAll(/#[0-9a-f]{3,8}\b/gi)) problems.push(`${r.file} ${r.selector}: raw colour ${m[0]}; name it in :root`);
+  for (const [prop, value] of decls(r.body)) {
+    if (prop.startsWith('--')) continue; // a component's own variable is held where it is used
+    for (const m of value.matchAll(/\b(rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\(\s*([^)]*)/gi)) {
+      if (/^var\(--[\w-]+$/.test(m[2].trim())) continue; // rgba(var(--sr-trip-hue), .5)
+      problems.push(`${r.file} ${r.selector}: ${prop} has the literal ${m[0]}); a colour is a token from :root`);
+    }
+    if (COLOUR_PROPS.test(prop)) {
+      const named = NAMED.exec(value.replace(/var\([^)]*\)/g, ' '));
+      if (named) problems.push(`${r.file} ${r.selector}: ${prop} names the colour "${named[1]}"; a colour is a token from :root`);
+    }
+  }
+}
+// The same promise in the builders: a colour written into `style` from ui/*.js is a literal too.
+// A swatch painted with a record's own class colour (a variable) is data, and passes. The print
+// composer and the postcard draw on a 2D canvas, which cannot read a custom property per call:
+// they are held to the palette by tests/test_printcard.mjs and tests/test_postcard.mjs.
+{
+  const { readdirSync } = await import('node:fs');
+  const dir = join(ROOT, 'site/js/ui');
+  for (const f of readdirSync(dir).filter((n) => n.endsWith('.js'))) {
+    const src = readFileSync(join(dir, f), 'utf8');
+    src.split('\n').forEach((line, i) => {
+      if (/^\s*(\/\/|\*)/.test(line)) return;
+      const m = /\.style\.(?:color|background|backgroundColor|borderColor|fill|stroke|outline|boxShadow)\s*=\s*(['"`])([^'"`]*)\1/.exec(line)
+        || /\.style\.setProperty\(\s*['"](?:color|background|background-color|border-color|fill|stroke)['"]\s*,\s*(['"`])([^'"`]*)\1/.exec(line)
+        || /\.style\.cssText\s*=\s*(['"`])([^'"`]*)\1/.exec(line);
+      if (m && (/#[0-9a-f]{3,8}\b|\b(?:rgba?|hsla?)\(/i.test(m[2]) || NAMED.test(m[2]))) problems.push(`site/js/ui/${f}:${i + 1}: a colour literal in a style assignment ("${m[2]}"); give the element a class and name the colour in :root`);
+    });
+  }
+}
+
+// --- 5b. every text colour is a text token, and every text token reads (section 2.1, task 6) ----
+// `color:` takes --sr-text, --sr-text-soft, --sr-text-dim, the ember and its light, the ink on an
+// ember fill, and the two status hues that pass as text. Each is recomputed on glass over a white
+// cloud above (2b). --sr-unread and --sr-text-faint are graphics (3.04 and 2.44 there): a row that
+// says "never read" in --sr-unread is a sentence at 3:1, and that was on the sources sheet.
+{
+  const TEXT_TOKENS = new Set(['--sr-text', '--sr-text-soft', '--sr-text-dim', '--sr-ember', '--sr-ember-light', '--sr-ink', '--sr-ok', '--sr-stale', '--text', '--text-dim']);
+  for (const r of all) {
+    for (const [prop, value] of decls(r.body)) {
+      if (prop !== 'color') continue;
+      const v = /^var\((--[\w-]+)\)$/.exec(value);
+      const ok = (v && TEXT_TOKENS.has(v[1])) || ['inherit', 'currentColor', 'currentcolor', 'transparent'].includes(value);
+      if (!ok) problems.push(`${r.file} ${r.selector}: color is ${value}; text is --sr-text, --sr-text-soft, --sr-text-dim, the ember or the ink (a status hue only as --sr-ok or --sr-stale)`);
+    }
+  }
+  if (glass && text) {
+    const onW = over(glass, WHITE);
+    for (const name of ['--sr-ok', '--sr-stale']) {
+      const fg = hex(token(name));
+      check(!!fg && ratio(fg, onW) >= 4.5, `${name} as text on glass over a white cloud is ${fg ? ratio(fg, onW).toFixed(2) : '?'}:1, under 4.5:1`);
+    }
+    const soft = rgba(token('--sr-text-soft') || '');
+    const strong = rgba(token('--sr-glass-strong') || '');
+    if (soft && strong) {
+      const bg = over(strong, WHITE);
+      check(ratio(over(soft, bg), bg) >= 4.5, '--sr-text-soft on the strong glass over a white cloud is under 4.5:1');
+    }
+    // An alpha-white text token under .62 is the grey the guide retired (row D's .50 and .55).
+    for (const [name, defs] of tokens) {
+      if (!/^--sr-text/.test(name)) continue;
+      const c = rgba(defs[0].value);
+      if (c) check(c.a >= 0.62, `${name} is text at alpha ${c.a}; no text alpha under 0.62`);
+    }
+  }
+  // --sr-text-dim is for glass. On a wash or the ember wash it drops to 3.76 and 3.40 over a cloud:
+  // a rule that paints one of those and sets the dim grey has put the two together.
+  for (const r of all) {
+    const d = new Map(decls(r.body));
+    const bg = d.get('background') || d.get('background-color') || '';
+    if (/var\(--sr-(wash(-hover|-strong)?|ember-soft)\)/.test(bg) && d.get('color') === 'var(--sr-text-dim)') {
+      problems.push(`${r.file} ${r.selector}: --sr-text-dim on ${bg}; secondary text on a wash is --sr-text-soft`);
+    }
+  }
+}
+
+// --- 5c. z-index from the ladder (section 2.6, task 6) ------------------------------------------
+// One ladder in :root, bottom to top. A rule takes a rung, or 0, 1, 2 or auto for its own layers.
+// `calc(var(--sr-z-card) + 1)` is a rung nobody named: the picker and the toast each had one.
+{
+  const ladder = [...tokens].filter(([n]) => n.startsWith('--sr-z-')).map(([n, d]) => [n, Number(d[0].value)]);
+  check(ladder.length >= 10 && ladder.every(([, v]) => Number.isInteger(v)), `the z ladder is ${ladder.length} integer tokens in :root`);
+  const seen = new Map();
+  for (const [n, v] of ladder) { check(!seen.has(v), `${n} and ${seen.get(v)} are both z-index ${v}: two rungs at one height`); seen.set(v, n); }
+  const z = (n) => (ladder.find(([name]) => name === n) || [0, NaN])[1];
+  check(z('--sr-z-labels') < z('--sr-z-hud') && z('--sr-z-hud') < z('--sr-z-veil') && z('--sr-z-veil') < z('--sr-z-controls'), 'labels, then the HUD, then the veil, then the panels');
+  check(z('--sr-z-controls') < z('--sr-z-pill') && z('--sr-z-pill') < z('--sr-z-card') && z('--sr-z-card') < z('--sr-z-rail') && z('--sr-z-rail') < z('--sr-z-pop'), 'the sidebar, the pill, the card, the rail, its popover');
+  check(z('--sr-z-pop') < z('--sr-z-trip') && z('--sr-z-trip') < z('--sr-z-modal') && z('--sr-z-modal') < z('--sr-z-toast') && z('--sr-z-toast') < z('--sr-z-boot'), 'the trip, the share sheet, a toast, the boot veil');
+  for (const r of all) {
+    for (const [prop, value] of decls(r.body)) {
+      if (prop !== 'z-index') continue;
+      const v = /^var\((--sr-z-[\w-]+)\)$/.exec(value);
+      const ok = (v && tokens.has(v[1])) || ['auto', '0', '1', '2'].includes(value);
+      if (!ok) problems.push(`${r.file} ${r.selector}: z-index ${value}; a layer is a --sr-z-* rung, or 0, 1, 2 or auto inside a component`);
+    }
+  }
 }
 
 // --- 6. the panel chrome ----------------------------------------------------------------------------
@@ -270,19 +380,35 @@ for (const r of all.filter((x) => x.selector === '.sr-door.is-on')) {
   check(!/border-color: var\(--sr-ember\)|inset 0 -2px 0 var\(--sr-ember\)/.test(r.body), 'the mode tile lost its 1 px ember box to the brackets');
 }
 
-// --- 8. the type floor: nothing a person reads under 13 px (issue #315, spec 0045 req 6) -------
-// A unit or caption beside its number may be 11 px: the clock's UTC/Local tag and the trajectory
-// chart's axis captions. Anything else under 13 is a sentence somebody has to squint at.
-const UNIT_SELECTORS = new Set(['.sr-clock__tag', '.sr-traj__label', '.sr-tag__unit', '.sr-arc__cardinal']); // spec 0047: the tag's KM, KM/H; spec 0051: the arc's N E S W
-for (const r of all) {
-  if (r.at.startsWith('@font-face')) continue;
-  for (const [prop, value] of decls(r.body)) {
-    const px = prop === 'font-size' ? /^([\d.]+)px$/.exec(value) : prop === 'font' ? /(?:^|\s)([\d.]+)px/.exec(value) : null;
-    if (!px || parseFloat(px[1]) >= 13) continue;
-    const sels = r.selector.split(',').map((x) => x.trim().replace(/\s+/g, ' '));
-    const unit = sels.every((x) => UNIT_SELECTORS.has(x));
-    if (!unit) problems.push(`${r.file} ${r.selector}: font-size ${value}; reading text is 13 px or more, and only a unit beside its number may be 11`);
-    else if (parseFloat(px[1]) < 11) problems.push(`${r.file} ${r.selector}: a unit at ${value}; 11 px is the smallest`);
+// --- 8. type from the ladder, and its floor (issue #315, spec 0045 req 6; guide section 2.2) -----
+// Every font-size is a --sr-fs-* token (spec 0061 task 6): 13.5, 18, 22 and 27 px were each one
+// rule's own idea. Nothing a person reads is under 13 px. A unit or caption beside its number may
+// be --sr-fs-unit (11): the clock's UTC/Local tag, the trajectory chart's axis captions, the tag's
+// KM (spec 0047) and the arc's N E S W (spec 0051). Anything else under 13 is a sentence somebody
+// has to squint at.
+const UNIT_SELECTORS = new Set(['.sr-clock__tag', '.sr-traj__label', '.sr-tag__unit', '.sr-arc__cardinal']);
+{
+  const sizes = [...tokens].filter(([n]) => n.startsWith('--sr-fs-'));
+  check(sizes.length >= 8, `the type ladder is ${sizes.length} --sr-fs-* tokens in :root`);
+  for (const [n, d] of sizes) {
+    const px = /^([\d.]+)px$/.exec(d[0].value);
+    check(!!px && d.length === 1, `${n} is one px value (${d.map((x) => x.value).join(', ')})`);
+    if (px) check(n === '--sr-fs-unit' ? parseFloat(px[1]) >= 11 : parseFloat(px[1]) >= 13, `${n} is ${d[0].value}; reading text is 13 px or more, a unit 11`);
+  }
+  for (const r of all) {
+    if (r.at.startsWith('@font-face')) continue;
+    for (const [prop, value] of decls(r.body)) {
+      if (prop !== 'font-size' && prop !== 'font') continue;
+      if (['inherit', '0', '100%', '1em'].includes(value)) continue;
+      const used = /var\((--sr-fs-[\w-]+)\)/.exec(value);
+      if (!used || !tokens.has(used[1]) || /(?:^|\s)[\d.]+(px|rem|em|pt|%)(?=$|[\s/])/.test(value.replace(/\/\s*[\d.]+(px|em|%)?/, ''))) {
+        problems.push(`${r.file} ${r.selector}: ${prop}: ${value}; a size is a --sr-fs-* token (the ladder in ui.css :root, docs/ui-guide.md section 2.2)`);
+        continue;
+      }
+      if (used[1] !== '--sr-fs-unit') continue;
+      const sels = r.selector.split(',').map((x) => x.trim().replace(/\s+/g, ' '));
+      if (!sels.every((x) => UNIT_SELECTORS.has(x))) problems.push(`${r.file} ${r.selector}: ${prop}: ${value}; reading text is 13 px or more, and only a unit beside its number may be 11`);
+    }
   }
 }
 
@@ -395,4 +521,4 @@ if (problems.length) {
   if (table.length) console.error('  contrast: ' + table.join('; '));
   process.exit(1);
 }
-console.log(`tokens ok: ${DESIGN_TOKENS.length} tokens defined once, the palette unchanged, 6 px corners, the lit edge and the brackets in place, nothing read under 13 px, Compact and the panel motion defined, four faces self-hosted; contrast ${table.join('; ')}`);
+console.log(`tokens ok: ${DESIGN_TOKENS.length} tokens defined once, the palette unchanged, 6 px corners, the lit edge and the brackets in place, every size, colour, corner and layer a token, nothing read under 13 px, Compact and the panel motion defined, four faces self-hosted; contrast ${table.join('; ')}`);

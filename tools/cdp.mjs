@@ -169,6 +169,27 @@ try {
       }).catch((e) => logs.push('[cdp] cast failed: ' + e.message));
       return;
     }
+    // `await window.cdpInput('mouseMoved', x, y)`, 'mousePressed', 'mouseReleased', or
+    // `cdpInput('key', 'Tab')`: a REAL pointer or key, from the protocol. Added for the UI audit
+    // (spec 0061 task 6): `:hover` and `:active` answer only to the browser's own pointer, and
+    // `:focus-visible` only after a real key, so a probe that calls el.focus() and dispatches
+    // synthetic events photographs the rest state three times and calls them three states.
+    if (m.method === 'Runtime.bindingCalled' && m.params.name === 'cdpInputRaw' && SHOT_DIR) {
+      const { type, x, y, key, token } = JSON.parse(m.params.payload);
+      shotQueue = shotQueue.then(async () => {
+        if (type === 'key') {
+          const code = { Tab: 9, Enter: 13, Escape: 27, ' ': 32, ArrowLeft: 37, ArrowUp: 38, ArrowRight: 39, ArrowDown: 40 }[key] || (key.length === 1 ? key.toUpperCase().charCodeAt(0) : 0);
+          const base = { key, code: key.length === 1 ? 'Key' + key.toUpperCase() : key, windowsVirtualKeyCode: code, nativeVirtualKeyCode: code };
+          await send(ws, 'Input.dispatchKeyEvent', { type: 'rawKeyDown', ...base }, sessionIdRef.id);
+          await send(ws, 'Input.dispatchKeyEvent', { type: 'keyUp', ...base }, sessionIdRef.id);
+        } else {
+          const pressed = type === 'mousePressed' || type === 'mouseReleased';
+          await send(ws, 'Input.dispatchMouseEvent', { type, x, y, button: pressed ? 'left' : 'none', buttons: type === 'mousePressed' ? 1 : 0, clickCount: pressed ? 1 : 0 }, sessionIdRef.id);
+        }
+        await send(ws, 'Runtime.evaluate', { expression: `window.__cdpShotDone && window.__cdpShotDone(${JSON.stringify(token)})` }, sessionIdRef.id);
+      }).catch((e) => logs.push('[cdp] input failed: ' + e.message));
+      return;
+    }
     if (m.method === 'Runtime.bindingCalled' && m.params.name === 'cdpShotRaw' && SHOT_DIR) {
       const { name, token } = JSON.parse(m.params.payload);
       shotQueue = shotQueue.then(async () => {
@@ -234,6 +255,7 @@ try {
   if (SHOT_DIR) {
     await send(ws, 'Runtime.addBinding', { name: 'cdpShotRaw' }, sessionId);
     await send(ws, 'Runtime.addBinding', { name: 'cdpCastRaw' }, sessionId);
+    await send(ws, 'Runtime.addBinding', { name: 'cdpInputRaw' }, sessionId);
     await send(ws, 'Page.addScriptToEvaluateOnNewDocument', { source: `
       (() => {
         const waiting = new Map();
@@ -243,6 +265,11 @@ try {
           const token = 't' + (++n);
           waiting.set(token, resolve);
           window.cdpShotRaw(JSON.stringify({ name, token }));
+        });
+        window.cdpInput = (type, x, y) => new Promise((resolve) => {
+          const token = 'i' + (++n);
+          waiting.set(token, resolve);
+          window.cdpInputRaw(JSON.stringify(type === 'key' ? { type, key: x, token } : { type, x, y, token }));
         });
         window.cdpCast = (cmd, name) => new Promise((resolve) => {
           const token = 'c' + (++n);
