@@ -96,7 +96,7 @@ jobs:
       # only (the WebP header is read by hand), so the job's one dependency stays PyYAML.
       - name: Every trip has its card picture, 640 x 360 and inside its budget (spec 0068)
         run: python3 scripts/build_trip_thumbs.py --check
-      # Spec 0045: the ten font subsets are the ones build-fonts.py recorded, fonts.css is what it
+      # Spec 0045: the eleven font subsets are the ones build-fonts.py recorded, fonts.css is what it
       # writes, and the OFL text and a CREDITS.md row travel with each family. Stdlib only.
       - name: The self-hosted faces are the recorded subsets, with their licences (spec 0045)
         run: python3 scripts/build-fonts.py --check

@@ -10,7 +10,7 @@
 //   node tests/test_tokens.mjs
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, statSync } from 'node:fs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const problems = [];
@@ -76,7 +76,7 @@ const DESIGN_TOKENS = [
   '--sr-line', '--sr-line-strong', '--sr-edge-lit', '--sr-edge-glow', '--sr-shadow',
   '--sr-radius', '--sr-radius-sm', '--sr-radius-pill', '--sr-bracket', '--sr-bracket-w',
   '--sp-1', '--sp-2', '--sp-3', '--sp-4', '--sp-5', '--sp-6', '--sr-pad', '--sr-header-h',
-  '--sr-font', '--sr-font-hud', '--sr-font-mono',
+  '--sr-font', '--sr-font-hud', '--sr-font-mono', '--sr-font-serif',
   '--sr-ease', '--sr-ease-in', '--sr-fast', '--sr-mid', '--sr-slow',
   // the old names, kept as aliases for one release
   '--sr-panel', '--font',
@@ -249,13 +249,13 @@ check(all.some((r) => /prefers-reduced-motion: reduce/.test(r.at) && /\.sr-float
 check(token('--sr-fast') === '140ms' && token('--sr-mid') === '220ms' && token('--sr-slow') === '320ms', 'motion is 140 / 220 / 320 ms');
 check(!/@keyframes\s+[\w-]*(pulse|bounce|glow)/i.test(FILES.map((f) => readFileSync(join(ROOT, f), 'utf8')).join('\n')), 'no bounce and no glow pulse');
 
-// --- 10. faces: exactly the three the amendment names, self-hosted; never Bricolage --------------
+// --- 10. faces: exactly the four (the amendment's three and spec 0061's serif), self-hosted -------
 const fontsCss = readFileSync(join(ROOT, 'site/css/fonts.css'), 'utf8');
 const css = [...FILES.map((f) => readFileSync(join(ROOT, f), 'utf8')), fontsCss].join('\n');
 const faces = [...strip(css).matchAll(/@font-face\s*\{([^}]*)\}/g)].map((m) => m[1]);
 const families = new Set(faces.map((b) => (/font-family:\s*["']?([^;"']+)/.exec(b) || [])[1]).filter(Boolean).map((f) => f.trim()));
-const FACES = ['Inter', 'Barlow Semi Condensed', 'JetBrains Mono'];
-check(families.size === 3 && FACES.every((f) => families.has(f)), `@font-face declares ${[...families].join(', ') || 'nothing'}; exactly Inter, Barlow Semi Condensed and JetBrains Mono`);
+const FACES = ['Inter', 'Barlow Semi Condensed', 'JetBrains Mono', 'Instrument Serif'];
+check(families.size === 4 && FACES.every((f) => families.has(f)), `@font-face declares ${[...families].join(', ') || 'nothing'}; exactly Inter, Barlow Semi Condensed, JetBrains Mono and Instrument Serif`);
 check(!/Bricolage/i.test(strip(css)), 'Bricolage Grotesque is not loaded (design-language amendment 2026-09-28)');
 for (const b of faces) {
   const src = /url\(['"]?\.\.\/fonts\/([^'")]+\.woff2)['"]?\)\s*format\(['"]woff2['"]\)/.exec(b);
@@ -267,10 +267,35 @@ for (const b of faces) {
 check(/^'Inter',/.test(token('--sr-font') || ''), `--sr-font starts with Inter (${token('--sr-font')})`);
 check(/^'JetBrains Mono',/.test(token('--sr-font-mono') || ''), `--sr-font-mono starts with JetBrains Mono (${token('--sr-font-mono')})`);
 check(/^'Barlow Semi Condensed',/.test(token('--sr-font-hud') || ''), `--sr-font-hud starts with Barlow Semi Condensed (${token('--sr-font-hud')})`);
+check(/^'Instrument Serif',.*\bserif$/.test(token('--sr-font-serif') || ''), `--sr-font-serif starts with Instrument Serif and ends in the system's serif (${token('--sr-font-serif')})`);
+
+// The serif (spec 0061 task 5, design section 9): ONE weight, one Latin file inside serif_bytes, and
+// four roles: the wordmark (and its first letter on the collapsed handle), a card's name, a trip's
+// titles and the first Right-now line. A fifth use is a design decision, so it fails here first.
+const serifFaces = faces.filter((b) => /font-family:\s*["']?Instrument Serif/.test(b));
+check(serifFaces.length === 1 && /font-weight:\s*400/.test(serifFaces[0] || ''), `Instrument Serif is one file at weight 400 (found ${serifFaces.length})`);
+{
+  const { BUDGETS } = await import(join(ROOT, 'site/js/data/budgets.js'));
+  const bytes = statSync(join(ROOT, 'site/fonts/instrument-serif-400-latin.woff2')).size;
+  check(bytes <= BUDGETS.serif_bytes, `the serif is ${bytes} B, over serif_bytes ${BUDGETS.serif_bytes} B`);
+}
+const SERIF_ROLES = [
+  /^\.sr-wordmark$/, /^\.sr-side\.is-collapsed \.sr-side__handle$/, /^\.sr-card__name$/,
+  /^\.sr-tripsheet__name$/, /^\.sr-now__row\.is-lead \.sr-now__btn$/,
+];
+for (const r of all) {
+  for (const [prop, value] of decls(r.body)) {
+    if ((prop !== 'font' && prop !== 'font-family') || !/var\(--sr-font-serif\)/.test(value)) continue;
+    const sels = r.selector.split(',').map((x) => x.trim().replace(/\s+/g, ' '));
+    check(sels.every((x) => SERIF_ROLES.some((re) => re.test(x))), `${r.file} ${r.selector}: the serif is for the wordmark, a card's name, a trip's titles and the first Right-now line only`);
+    check(prop !== 'font' || /^400 /.test(value), `${r.file} ${r.selector}: the serif is loaded at 400 only (${value})`);
+  }
+}
+for (const re of SERIF_ROLES) check(all.some((r) => re.test(r.selector) && /var\(--sr-font-serif\)/.test(r.body)), `no rule ${re} sets the serif: one of its roles lost it`);
 
 if (problems.length) {
   console.error('tokens FAILED:\n  ' + problems.join('\n  '));
   if (table.length) console.error('  contrast: ' + table.join('; '));
   process.exit(1);
 }
-console.log(`tokens ok: ${DESIGN_TOKENS.length} tokens defined once, the palette unchanged, 6 px corners, the lit edge and the brackets in place, nothing read under 13 px, Compact and the panel motion defined, three faces self-hosted; contrast ${table.join('; ')}`);
+console.log(`tokens ok: ${DESIGN_TOKENS.length} tokens defined once, the palette unchanged, 6 px corners, the lit edge and the brackets in place, nothing read under 13 px, Compact and the panel motion defined, four faces self-hosted; contrast ${table.join('; ')}`);

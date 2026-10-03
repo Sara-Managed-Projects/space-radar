@@ -136,7 +136,7 @@ if [ "$WHAT" != "app" ]; then
     "${SYNC[@]}" "$SITE/audio" "s3://$BUCKET/audio" --cache-control "$LONG" --delete \
       --exclude "*" --include "*.vtt" --content-type "text/vtt; charset=utf-8"
   fi
-  # The three faces (spec 0045): WOFF2 subsets and the OFL text that has to travel with them.
+  # The four faces (spec 0045, and 0061's serif): WOFF2 subsets and the OFL text that has to travel with them.
   # Long-lived like the models; a face changes only when scripts/build-fonts.py is re-run, and its
   # file name does not change then, so invalidate /fonts/* by hand after a rebuild. By type, as the
   # audio: `.woff2` is missing from older mimetypes tables, and a font served as octet-stream is

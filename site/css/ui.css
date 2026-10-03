@@ -108,7 +108,7 @@
   --sr-z-controls: 30;
   --sr-z-card: 40;
 
-  /* The three faces (spec 0045), self-hosted in site/fonts/ and declared in css/fonts.css. Each
+  /* The four faces (spec 0045, and 0061's serif), self-hosted in site/fonts/ and declared in css/fonts.css. Each
      stack ends in the system's own, which is what shows until the face lands (`swap`) and what
      draws a character the subset does not carry. */
   --sr-font:
@@ -119,6 +119,11 @@
     monospace;
   /* Panel titles and, later, HUD units. No Cyrillic in Barlow: Inter draws it. */
   --sr-font-hud: 'Barlow Semi Condensed', 'Inter', system-ui, sans-serif;
+  /* Instrument Serif 400 (spec 0061 task 5), for four roles and no others: the wordmark, a card's
+     name, a trip's titles and the first Right-now line (docs/ui-guide.md section 2.2). One weight
+     is loaded, so every rule that uses it says 400: a bold would be the browser's smear. No
+     Cyrillic in it: the system's serif draws that. */
+  --sr-font-serif: 'Instrument Serif', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
 
   /* Old names, kept for one release so no rule breaks in the change */
   --sr-panel: var(--sr-glass-solid);
@@ -477,14 +482,15 @@ html.sr-compact .sr-status {
   color: var(--sr-text-dim);
 }
 
-/* The serif of row D waits for the font budget (0061 task 5); until then the guide's fallback,
-   Inter 600 at three quarters of its size. Two lines, then an ellipsis; the name is in `title`. */
+/* Row D's serif (0061 task 5). Two lines, then an ellipsis; the name is in `title`. The bottom
+   padding is the room a clipped box owes the descenders at a 1.05 line. */
 .sr-card__name {
   grid-column: 1;
   display: -webkit-box;
   margin: 0;
+  padding-bottom: 2px;
   overflow: hidden;
-  font: 600 22px/1.1 var(--sr-font);
+  font: 400 30px/1.05 var(--sr-font-serif);
   letter-spacing: -0.01em;
   color: var(--sr-text);
   overflow-wrap: anywhere;
@@ -1932,12 +1938,13 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   margin: var(--sp-6) 0 var(--sp-2);
 }
 
-/* The card's name, and the same fallback until the serif ships (0061 task 5). */
+/* The card's name role: the trip's title on the intro and the end. */
 .sr-tripsheet__name {
   display: -webkit-box;
   margin: 0;
+  padding-bottom: 2px;
   overflow: hidden;
-  font: 600 28px/1.1 var(--sr-font);
+  font: 400 38px/1.05 var(--sr-font-serif);
   letter-spacing: -0.01em;
   color: var(--sr-text);
   overflow-wrap: anywhere;
@@ -2384,7 +2391,7 @@ html.sr-trip-collapsed .sr-tripsheet.is-floating {
 
 .sr-tripsheet.is-floating .sr-tripsheet__name,
 .sr-tripsheet.is-floating .sr-card__name {
-  font-size: 22px;
+  font-size: 30px;
 }
 
 /* The phone's sheet and toolbar take glass-strong over .sr-float's glass, so they answer the solid
@@ -3087,7 +3094,7 @@ html.sr-phone .sr-chevron {
   width: 100%;
   height: 100%;
   padding: 0;
-  font: 600 22px/1 var(--sr-font-hud);
+  font: 400 28px/1 var(--sr-font-serif);
   color: var(--sr-text);
   background: transparent;
   border: 0;
@@ -3125,13 +3132,12 @@ html.sr-phone .sr-chevron {
   justify-content: space-between;
 }
 
-/* The wordmark. Row D sets it in Instrument Serif at 28 px; the serif does not fit the first-visit
-   font budget yet (registry/budgets.yaml fonts_at_boot_bytes, 0061 task 5), so it is Barlow Semi
-   Condensed 600, the instrument's own display face, at the same cap height. */
+/* The wordmark, as row D sets it: Instrument Serif at 28 px (0061 task 5; 13 972 B, inside
+   registry/budgets.yaml serif_bytes and fonts_at_boot_bytes). */
 .sr-wordmark {
   margin: 0;
-  font: 600 27px/1 var(--sr-font-hud);
-  letter-spacing: 0.01em;
+  font: 400 28px/1 var(--sr-font-serif);
+  letter-spacing: 0;
   color: var(--sr-text);
 }
 
@@ -3336,10 +3342,10 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 
 .sr-now__btn:hover .sr-now__text { color: var(--sr-ember-light); }
 
+/* The lead: the serif at 21 / 1.25, two lines at most (docs/ui-guide.md section 3.4). */
 .sr-now__row.is-lead .sr-now__btn {
   padding-top: 6px;
-  font-size: 20px;
-  line-height: 1.25;
+  font: 400 21px/1.25 var(--sr-font-serif);
   letter-spacing: -0.01em;
 }
 
@@ -3710,7 +3716,7 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 }
 
 .sr-card.is-docked .sr-card__name {
-  font-size: 28px;
+  font-size: 38px;
 }
 
 .sr-card.is-docked .sr-hero__num {
@@ -4619,7 +4625,7 @@ html.sr-phone .sr-card.is-docked .sr-card__close {
 }
 
 html.sr-phone .sr-card.is-docked .sr-card__name {
-  font-size: 22px;
+  font-size: 30px;
 }
 
 html.sr-phone .sr-card.is-docked .sr-hero__num {
