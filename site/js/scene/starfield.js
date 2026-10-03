@@ -24,6 +24,9 @@ import { STRETCH_VERT_HEAD, STRETCH_VERT, STRETCH_FRAG_HEAD, STRETCH_FRAG, stret
 const DEG = Math.PI / 180;
 const DEFAULT_RADIUS = 1e5; // scene units; update(camera) clamps this under camera.far
 
+// The panorama's tint at the Camera exposure: what the sky has always been drawn at. setExposure()
+// scales it (scene/exposure.js): dimmer for the eye, lifted for a deep exposure.
+const MILKY_WAY_TINT = [0.42, 0.42, 0.46];
 const RENDER_ORDER_MILKYWAY = -3;
 const RENDER_ORDER_SKY = -2;
 
@@ -219,7 +222,7 @@ function asTexture(src) {
  *   Each source may be a URL string, already-loaded data (ArrayBuffer / parsed JSON /
  *   THREE.Texture), or omitted to use the bundled default path. Loading is fault-tolerant: each
  *   piece appears when it lands and a failure leaves the others drawing.
- * @returns {{setVisible, update, dispose, names, group, ready, setPixelRatio, setFrame, setGain}}
+ * @returns {{setVisible, update, dispose, names, group, ready, setPixelRatio, setFrame, setGain, setExposure}}
  */
 export function createStarfield(scene, opts = {}) {
   const here = import.meta.url;
@@ -276,6 +279,7 @@ export function createStarfield(scene, opts = {}) {
   const state = { stars: null, lines: null, milkyway: null, errors: [] };
   let gain = 1; // setGain's own value; setSkyOpacity multiplies it rather than overwriting it
   let skyOpacity = 1;
+  let milkyWayExposure = 1; // setExposure's factor, kept so a panorama that lands later wears it
   let detailLow = false; // the frame-rate latch hides the picture and the lines, never the stars
   // The figures are a way to read the sky from the ground. From orbit they crossed the whole Earth
   // view like scratches on the glass (#272), so they are drawn only while sky/skyview.js is up.
@@ -325,7 +329,7 @@ export function createStarfield(scene, opts = {}) {
       blendSrcAlpha: THREE.OneFactor,
       blendDstAlpha: THREE.OneMinusSrcAlphaFactor,
       opacity: 1,
-      color: new THREE.Color(0.42, 0.42, 0.46), // a whisper, not a wallpaper
+      color: new THREE.Color(MILKY_WAY_TINT[0], MILKY_WAY_TINT[1], MILKY_WAY_TINT[2]).multiplyScalar(milkyWayExposure), // a whisper, not a wallpaper
     });
     const m = new THREE.Mesh(geo, mat);
     m.name = 'milkyway';
@@ -568,6 +572,16 @@ export function createStarfield(scene, opts = {}) {
       const old = mw.material.map;
       mw.material.map = tex || mw.userData.bootMap;
       return old;
+    },
+    /**
+     * Spec 0067: how long the shutter is open, as a factor on the Milky Way's tint (1 = Camera, the
+     * sky as it always was). The stars are left alone: they are the measured layer, and a sixth-
+     * magnitude limit is already what an eye sees.
+     */
+    setExposure(k) {
+      milkyWayExposure = Math.min(2.2, Math.max(0, Number(k) || 0));
+      const mw = state.milkyway;
+      if (mw && mw.material) mw.material.color.setRGB(MILKY_WAY_TINT[0], MILKY_WAY_TINT[1], MILKY_WAY_TINT[2]).multiplyScalar(milkyWayExposure);
     },
     /** 'low' hides the Milky Way picture and the constellation lines (spec 0026 req 18); the stars stay. */
     setDetail(level) {

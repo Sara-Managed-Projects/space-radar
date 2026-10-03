@@ -1,7 +1,7 @@
 // scene/dsoglow.js -- a deep-sky object drawn as big as it is, when that is bigger than its dot.
 //
-// Contract: createDsoGlow(scene) -> { setRecords(records), rebuild(), update(camera, renderer,
-//   visible), count(), dispose(), group }
+// Contract: createDsoGlow(scene) -> { setRecords(records), setPictured(ids), rebuild(),
+//   update(camera, renderer, visible), count(), dispose(), group }
 // Also exported, pure, for the test: glowFor(record) -> {colour, sizeKm} | null
 //
 // WHY. Every deep-sky object was one 8 px dot whatever its size. On the "To the edge" trip the
@@ -12,7 +12,9 @@
 // WHAT IT IS, AND IS NOT. A soft round glow at the measured distance, the measured size across,
 // coloured by what the thing is. It is not the shape: the file has no minor axis or position angle,
 // so an edge-on galaxy glows round, and the card says "its true shape is not drawn". Dark nebulae
-// get no glow (they are dark), and Andromeda has a model of its own (scene/galaxy.js).
+// get no glow (they are dark), and Andromeda has a model of its own (scene/galaxy.js). An object
+// whose photograph has landed (scene/nebulae.js, spec 0067) drops its glow: a pink disc laid over
+// the Orion Nebula's own picture would tint the thing it stood in for.
 //
 // WHEN. Only on a rung of the ladder, only with the deep-sky layer drawn, and only while the glow is
 // between a few pixels (below that the dot says it all) and a few hundred (above that the camera is
@@ -100,6 +102,7 @@ export function createDsoGlow(scene) {
   let geometry = null;
   let points = null;
   let builtFor = null;
+  let pictured = new Set(); // record ids scene/nebulae.js is drawing as photographs
   const _v = new THREE.Vector3();
 
   function setRecords(records) {
@@ -139,12 +142,19 @@ export function createDsoGlow(scene) {
       const g = glows[i];
       const ok = stage.toSceneInto(g.record.pos, SUN_INERTIAL, _v, stage.tMs);
       pos[i * 3] = ok ? _v.x : 0; pos[i * 3 + 1] = ok ? _v.y : 0; pos[i * 3 + 2] = ok ? _v.z : 0;
-      size[i] = ok ? g.sizeKm / stage.unitKm : 0;
+      size[i] = ok && !pictured.has(g.record.id) ? g.sizeKm / stage.unitKm : 0;
       col[i * 3] = g.colour[0]; col[i * 3 + 1] = g.colour[1]; col[i * 3 + 2] = g.colour[2];
     }
     geometry.getAttribute('position').needsUpdate = true;
     geometry.getAttribute('aSize').needsUpdate = true;
     geometry.getAttribute('aColour').needsUpdate = true;
+  }
+
+  /** The records now drawn as photographs: their glows go (size 0 is below the 4 px floor). */
+  function setPictured(ids) {
+    pictured = new Set(ids || []);
+    builtFor = null;
+    rebuild();
   }
 
   /** Per frame: the viewport and pixel ratio; `visible` is the deep-sky layer's own answer. */
@@ -163,5 +173,5 @@ export function createDsoGlow(scene) {
     geometry = null; points = null; glows = [];
   }
 
-  return { setRecords, rebuild, update, dispose, group, count: () => glows.length };
+  return { setRecords, setPictured, rebuild, update, dispose, group, count: () => glows.length };
 }

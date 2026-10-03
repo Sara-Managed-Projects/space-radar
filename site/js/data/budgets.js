@@ -17,6 +17,8 @@ export const BUDGETS = {
   "narration_trip_kb": 1200,
   "narration_total_kb": 12000,
   "trip_picture_bytes": 24000,
+  "nebula_picture_bytes": 90000,
+  "nebulae_total_bytes": 1700000,
   "og_png_min_bytes": 50000,
   "home_js_kb": 8,
   "tier1_idle_bytes": 1300000,

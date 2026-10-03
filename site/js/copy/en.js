@@ -886,6 +886,28 @@ export const COPY = {
     autoCompact: 'Compact now, because this window is short.',
     autoRegular: 'Regular now; Compact when the window is 800 px tall or less.',
   },
+  // Spec 0067: the shutter. The gas clouds in space pictures are real and faint; a photograph's
+  // colour is minutes of collected light, and sometimes single gases mapped to colours an eye would
+  // not see. The control's line says which exposure is on; the card's lines say how this object's
+  // picture was made (`colours` in registry/nebulae.yaml picks the sentence, `filters` fills it).
+  exposure: {
+    panelTitle: 'Exposure',
+    modes: { eye: 'Eye', camera: 'Camera', deep: 'Deep' },
+    notes: {
+      eye: 'What you would see from a dark place: faint and grey.',
+      camera: 'A long exposure: minutes of light, in true colour.',
+      deep: 'An observatory\u2019s stretch: the faintest gas lifted.',
+    },
+    real: 'The gas is real, and faint: to the eye at a telescope it is a grey glow, because the night eye sees no colour. The picture on the sky is a long exposure.',
+    colours: {
+      broadband: 'It was taken through broad colour filters ({filters}), so the colours are close to what a far more sensitive eye would see.',
+      mixed: 'It was taken through broad colour filters with a narrow one for glowing hydrogen added ({filters}), so the red gas is stronger here than an eye would find it.',
+      narrowband: 'Its colours are mapped: each one is the light of a single gas through a narrow filter ({filters}), chosen to show the structure, not what an eye would see.',
+      unstated: 'Its archive does not say which filters were used, so we do not say whether these are the colours an eye would see.',
+    },
+    creditLead: 'Picture: ',
+    creditTail: ' \u00b7 {licence}, edges faded and sky darkened by us',
+  },
   nextList: {
     // Two rows can name different objects the same way -- CelesTrak calls dozens of stages "SL-8
     // R/B" -- and two identical rows read as a bug. The catalogue number tells them apart.

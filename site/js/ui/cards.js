@@ -69,6 +69,7 @@ import { wantsTrack } from '../scene/groundtrack.js';
 import { trainOf } from '../data/trains.js';
 import { attachedOdditiesFor, attachedOddityRecord } from '../data/attached.js';
 import { openShare, savePostcard } from './share.js';
+import { exposurePanel, pictureNote } from './exposure.js';
 import { stage } from '../scene/stage.js';
 import { systemOfRecordId, phaseIsMeasured } from '../scene/systems.js';
 
@@ -2939,6 +2940,22 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
     figure.appendChild(el('figcaption', 'sr-card__photo-credit',
       t(COPY.card.photoCredit, { credit: String(photo.credit), licence: String(photo.licence) })));
     aboutNodes.push(figure);
+  }
+  // A deep-sky object with a photograph on the sky (spec 0067): how the picture's colours were
+  // made and whose it is, and the shutter, here where the question "is that real?" is asked. The
+  // registry's rows are a dynamic import -- a first visit that never opens such a card never
+  // fetches them -- so the block is an empty box until they land; it sits inside a row that opens
+  // in place, and nothing under it is a control a finger was reaching for.
+  if (klass === 'dso' && ctx && ctx.exposure) {
+    const box = el('div', 'sr-card__exposure');
+    box.dataset.record = rid;
+    aboutNodes.push(box);
+    import('../data/nebulae.js').then((m) => {
+      const row = (m.NEBULAE || []).find((r) => `dso-${r.id}` === rid);
+      if (!row || box.childNodes.length) return;
+      box.appendChild(pictureNote(row));
+      box.appendChild(exposurePanel(ctx.exposure));
+    }).catch(() => { /* no registry, no block: the card is whole without it */ });
   }
   // A world says how it is drawn (spec 0028 step 0). The compression note is scene/worlds.js's own
   // sentence (`viewScale`), never restated here; the Earth's clouds say what they are (COPY.clouds).

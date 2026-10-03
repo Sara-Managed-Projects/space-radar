@@ -39,6 +39,11 @@ budgets:
   - {id: narration_trip_kb, value: 1200, unit: kB, since: 2026-10-03, reason: "spec 0069 req 5: the Opus clips of one trip, what a visitor who hears a whole trip downloads; the largest is outer-solar-system at 976 kB (ten stops, 244 s), measured 2026-10-03, with room for two more stops"}
   - {id: narration_total_kb, value: 12000, unit: kB, since: 2026-10-03, reason: "spec 0069 req 5: everything under site/audio/narration/ (Opus 4 527 kB, the AAC twins 5 858 kB, the captions 20 kB: 10 404 kB), measured 2026-10-03, with 15 % for a tenth trip"}
   - {id: trip_picture_bytes, value: 24000, unit: bytes, since: 2026-10-02, reason: "spec 0068 task 1: one WebP per trip card (640 x 360), fetched after the first visit settles; scripts/build_trip_thumbs.py --check"}
+  # Spec 0067: the photographs of the nebulae (scene/nebulae.js), each fetched only when its object
+  # is in view on a rung of the ladder or selected, never on a first visit. scripts/build_nebulae.py
+  # --check holds both rows.
+  - {id: nebula_picture_bytes, value: 90000, unit: bytes, since: 2026-10-03, reason: "spec 0067: one WebP per object, 512 px on its longer side (640 or 768 for the seven widest); a star field is noise to WebP, and the densest (M17 at 89 874 B, the Cygnus Loop at 89 752 B) set this"}
+  - {id: nebulae_total_bytes, value: 1700000, unit: bytes, since: 2026-10-03, reason: "spec 0067: 27 pictures; what a visitor who flew to every one of them would have downloaded"}
   - {id: og_png_min_bytes, value: 50000, unit: bytes, since: 2026-09-22, reason: "under 50 kB a 1200x630 frame is empty (#157's lesson)"}
   - {id: home_js_kb, value: 8, unit: kB, since: 2026-09-22, reason: "spec 0042", pending: "spec 0042"}
   # The device tiers (2026-09-29): what a T1 laptop downloads AFTER the first frame, when idle, and the

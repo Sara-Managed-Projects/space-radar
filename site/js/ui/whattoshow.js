@@ -38,7 +38,7 @@
 // layers starts open, so the first look is one screen. Which groups a visitor opened is remembered
 // (localStorage `sr:wts-open`; a storage that throws just means the default every time). Past
 // FILTER_MIN_ROWS rows a small field finds a layer by name across every group, the way a settings
-// search does. The settings (Colour by, sound, density) stay rows at the foot, and the last row,
+// search does. The settings (Colour by, sound, exposure, density) stay rows at the foot, and the last row,
 // "Keys" (issue #321), reopens the controls hint (ui/keyhint.js through ctx.keyhint.show()).
 
 import { COPY, t, fmt } from '../copy/en.js';
@@ -47,6 +47,7 @@ import { createColorKey } from './colorkey.js';
 import { COLOR_KEYS } from '../data/colorkeys.js';
 import { soundButton } from './sound.js';
 import { densityPanel } from './density.js';
+import { exposurePanel } from './exposure.js';
 import { LAYER_GROUPS } from '../data/layers.registry.js';
 
 const REFRESH_MS = 1000;
@@ -394,6 +395,12 @@ export function createWhatToShow(ctx, opts = {}) {
   sound.appendChild(el('h2', 'sr-micro', COPY.audio.panelTitle));
   sound.appendChild(soundButton(ctx, 'sr-show__toggle', 'toggle'));
   root.appendChild(sound);
+  // The shutter (spec 0067): Eye, Camera, Deep, in the same row shape as Density below it.
+  if (ctx && ctx.exposure) {
+    const exposure = exposurePanel(ctx.exposure);
+    exposure.classList.add('sr-show__section', 'sr-show__setting');
+    root.appendChild(exposure);
+  }
   if (ctx && ctx.density) {
     const density = densityPanel(ctx.density);
     density.classList.add('sr-show__section', 'sr-show__setting');

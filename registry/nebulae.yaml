@@ -1,0 +1,513 @@
+# The photographs of the nebulae and galaxies (spec 0067 task 1): one licensed picture per deep-sky
+# object, and where on the sky it sits. scene/nebulae.js lays each on the sky from these numbers;
+# scripts/build_nebulae.py fetches and bakes the files; site/js/data/nebulae.js is the mirror the
+# browser reads (scripts/gen_nebulae_js.py).
+#
+# WHY THESE ARCHIVES AND NO SURVEY. A picture here is shipped from our bucket, so it must be ours
+# to redistribute. The three archives below release their images under CC BY 4.0 on a terms page
+# anyone can read (`terms:`, read on `checked:`); the wording that matters is quoted beside each.
+# The Digitized Sky Survey (plates copyright Caltech/ROE/AAO, terms on request) and Mellinger's
+# panorama ("All rights reserved") are NOT allowed (docs/research/2026-10-wwt.md, finding 4), and
+# check_registry.py refuses a credit that names either: several archive pictures are DSS composites
+# with an observatory's name on the page, and the credit line is where that shows. The Finkbeiner
+# H-alpha map's licence was not settled, so nothing here uses it.
+#
+# A ROW
+#   id            the deep-sky object, as in site/data/dso.json (the record is `dso-<id>`).
+#   archive       a key of `archives:`; `image` is the archive's own id for the picture.
+#   credit        the archive's credit line, word for word: the terms ask for the wording unaltered.
+#                 The card prints it with a link to the picture's page, and CREDITS.md section 3g
+#                 lists every row.
+#   ra_deg, dec_deg   the picture's CENTRE, J2000, MEASURED: scripts/build_nebulae.py --solve laid
+#                 the picture over a 2MASS cut-out of the field and found where it fits.
+#   published     the centre the archive's page gives, kept because it is the solver's starting
+#                 point and because the difference is the finding: `solved.moved_arcmin` is how far
+#                 the picture really is from there. 13 of these 27 are more than 1' off (the Cygnus
+#                 Loop by 43', the Rosette by 21'); drawn from the published numbers the Rosette
+#                 would have sat a third of its own width from its stars.
+#   solved        the evidence: the correlation at the solution and of the MIRROR image at the same
+#                 place. check_registry.py refuses a row whose mirror correlates within 1.5x of
+#                 itself: that picture cannot be told from its reflection, so it is not placed
+#                 (the Local Group Survey's M31 strip and Hubble's M82 were dropped for it).
+#   width_arcmin, height_arcmin   the whole picture, on the tangent plane (the archive's numbers,
+#                 confirmed by the solver to a third of a per cent).
+#   north_deg     how far celestial north is turned to the LEFT of the picture's up (the archives'
+#                 AVM Spatial.Rotation; scene/nebulae.js pictureBasis() says what that means).
+#   colours       how the colours were made, which picks the card's sentence (copy/en.js
+#                 exposure.colours): `broadband` (broad colour filters), `mixed` (those plus a narrow
+#                 hydrogen filter), `narrowband` (single gases mapped to colours), `unstated` (the
+#                 page names no filters, and we do not guess). `filters` fills the sentence, from
+#                 the page's own "Colours & filters" table or caption; `colours_note` says where a
+#                 class came from when the page alone does not say it.
+#   px            the baked file's longer side (512 when absent).
+#   file          the baked WebP. checked: the day the page was read.
+version: 1
+
+archives:
+  esahubble:
+    name: ESA/Hubble
+    licence: CC BY 4.0
+    terms: https://esahubble.org/copyright/
+    says: "ESA/Hubble images, videos and web texts are released under the Creative Commons Attribution 4.0 International license and may on a non-exclusive basis be reproduced without fee provided they are clearly and visibly credited."
+    page: "https://esahubble.org/images/{image}/"
+    screen: "https://cdn.esahubble.org/archives/images/screen/{image}.jpg"
+    checked: 2026-10-03
+  eso:
+    name: ESO
+    licence: CC BY 4.0
+    terms: https://www.eso.org/public/copyright/
+    says: "Unless specifically noted, the images, videos, and music distributed on the public ESO website, along with the texts of press releases, announcements, pictures of the week, blog posts and captions, are licensed under a Creative Commons Attribution 4.0 International License, and may on a non-exclusive basis be reproduced without fee provided the credit is clear and visible."
+    page: "https://www.eso.org/public/images/{image}/"
+    screen: "https://cdn.eso.org/images/screen/{image}.jpg"
+    checked: 2026-10-03
+  noirlab:
+    name: NOIRLab
+    licence: CC BY 4.0
+    terms: https://noirlab.edu/public/copyright/
+    says: "Unless specifically noted, the images, and videos distributed on the public NOIRLab website, along with the texts of press releases, announcements, pictures of the week, blog posts and captions, are licensed under a Creative Commons Attribution 4.0 International License, and hence may on a non-exclusive basis be reproduced without fee provided the credit is clear and visible."
+    page: "https://noirlab.edu/public/images/{image}/"
+    screen: "https://noirlab.edu/public/media/archives/images/screen/{image}.jpg"
+    checked: 2026-10-03
+
+pictures:
+  - id: m42
+    archive: eso
+    image: eso1723a
+    credit: "ESO/G. Beccari"
+    ra_deg: 83.78771
+    dec_deg: -5.48198
+    width_arcmin: 59.95
+    height_arcmin: 46.56
+    north_deg: 0.28
+    published: {ra_deg: 83.78442, dec_deg: -5.4787}
+    solved: {moved_arcmin: 0.28, correlation: 27.7, mirror: 4.4}
+    colours: mixed
+    filters: "g, r and i, with H-alpha"
+    px: 640
+    file: site/images/nebulae/m42.webp
+    checked: 2026-10-03
+
+  - id: horsehead-nebula
+    archive: noirlab
+    image: noao0126a
+    credit: "T.A.Rector (NOIRLab/NSF/AURA) and Hubble Heritage Team (STScI/AURA/NASA)"
+    ra_deg: 85.24168
+    dec_deg: -2.48238
+    width_arcmin: 56.58
+    height_arcmin: 57.53
+    north_deg: 89.66
+    published: {ra_deg: 85.22908, dec_deg: -2.71834}
+    solved: {moved_arcmin: 14.18, correlation: 25.5, mirror: 9.8}
+    colours: narrowband
+    filters: "hydrogen red, oxygen green, sulphur blue"
+    file: site/images/nebulae/horsehead-nebula.webp
+    checked: 2026-10-03
+
+  - id: m1
+    archive: esahubble
+    image: heic0515a
+    credit: "NASA, ESA and Allison Loll/Jeff Hester (Arizona State University). Acknowledgement: Davide De Martin (ESA/Hubble)"
+    ra_deg: 83.63554
+    dec_deg: 22.01489
+    width_arcmin: 6.41
+    height_arcmin: 6.41
+    north_deg: -0.1
+    published: {ra_deg: 83.63554, dec_deg: 22.01524}
+    solved: {moved_arcmin: 0.02, correlation: 24.9, mirror: 4.4}
+    colours: narrowband
+    filters: "oxygen in two states and sulphur"
+    file: site/images/nebulae/m1.webp
+    checked: 2026-10-03
+
+  - id: m45
+    archive: noirlab
+    image: noao-m45
+    credit: "NOIRLab/NSF/AURA/T.A. Rector (University of Alaska Anchorage), R. Cool (University of Arizona) and WIYN"
+    ra_deg: 56.58318
+    dec_deg: 24.0988
+    width_arcmin: 68.68
+    height_arcmin: 50.13
+    north_deg: -90.8
+    published: {ra_deg: 56.55438, dec_deg: 24.11007}
+    solved: {moved_arcmin: 1.72, correlation: 36.7, mirror: 8.4}
+    colours: broadband
+    filters: "B, V and I"
+    file: site/images/nebulae/m45.webp
+    checked: 2026-10-03
+
+  - id: california-nebula
+    archive: noirlab
+    image: noao-n1499block
+    credit: "KPNO/NOIRLab/NSF/AURA/Adam Block"
+    ra_deg: 60.23959
+    dec_deg: 36.38382
+    width_arcmin: 102.38
+    height_arcmin: 152.24
+    north_deg: 56.43
+    published: {ra_deg: 59.55875, dec_deg: 36.63297}
+    solved: {moved_arcmin: 36.13, correlation: 41.7, mirror: 6.1}
+    colours: unstated
+    colours_note: "the page (a Kitt Peak visitor-programme picture, 2014) names no filters"
+    file: site/images/nebulae/california-nebula.webp
+    checked: 2026-10-03
+
+  - id: rosette-nebula
+    archive: noirlab
+    image: noao-rosette
+    credit: "KPNO/NOIRLab/NSF/AURA/N. A. Sharp"
+    ra_deg: 98.06061
+    dec_deg: 4.97331
+    width_arcmin: 67.35
+    height_arcmin: 67.28
+    north_deg: 2.0
+    published: {ra_deg: 98.30092, dec_deg: 5.22008}
+    solved: {moved_arcmin: 20.63, correlation: 46.7, mirror: 4.4}
+    colours: unstated
+    colours_note: "the page (Burrell Schmidt, September 1997) names no filters"
+    file: site/images/nebulae/rosette-nebula.webp
+    checked: 2026-10-03
+
+  - id: m8
+    archive: eso
+    image: eso0936a
+    credit: "ESO"
+    ra_deg: 270.95455
+    dec_deg: -24.14153
+    width_arcmin: 93.49
+    height_arcmin: 62.61
+    north_deg: 0.0
+    published: {ra_deg: 270.90413, dec_deg: -24.38694}
+    solved: {moved_arcmin: 14.98, correlation: 22.9, mirror: 4.0}
+    colours: mixed
+    filters: "B, V and R, with H-alpha"
+    px: 640
+    file: site/images/nebulae/m8.webp
+    checked: 2026-10-03
+
+  - id: m20
+    archive: noirlab
+    image: noirlab2521ah
+    credit: "NSF–DOE Vera C. Rubin Observatory/NOIRLab/SLAC/AURA"
+    ra_deg: 270.60111
+    dec_deg: -23.02513
+    width_arcmin: 24.9
+    height_arcmin: 24.9
+    north_deg: -12.4
+    published: {ra_deg: 270.59963, dec_deg: -23.02513}
+    solved: {moved_arcmin: 0.08, correlation: 20.2, mirror: 3.9}
+    colours: broadband
+    filters: "the Rubin camera’s broad survey filters"
+    colours_note: "the page names no filters; LSSTCam carries only the six broad ones (u g r i z y)"
+    file: site/images/nebulae/m20.webp
+    checked: 2026-10-03
+
+  - id: m16
+    archive: eso
+    image: eso0926a
+    credit: "ESO"
+    ra_deg: 274.70727
+    dec_deg: -13.76556
+    width_arcmin: 32.08
+    height_arcmin: 32.08
+    north_deg: 0.01
+    published: {ra_deg: 274.70004, dec_deg: -13.81995}
+    solved: {moved_arcmin: 3.29, correlation: 33.1, mirror: 4.8}
+    colours: broadband
+    filters: "B, V and R"
+    file: site/images/nebulae/m16.webp
+    checked: 2026-10-03
+
+  - id: m17
+    archive: eso
+    image: eso1119a
+    credit: "ESO/INAF-VST/OmegaCAM. Acknowledgement: OmegaCen/Astro-WISE/Kapteyn Institute"
+    ra_deg: 275.2475
+    dec_deg: -16.15069
+    width_arcmin: 53.4
+    height_arcmin: 53.4
+    north_deg: -0.04
+    published: {ra_deg: 275.24446, dec_deg: -16.14777}
+    solved: {moved_arcmin: 0.25, correlation: 33.0, mirror: 4.0}
+    colours: broadband
+    filters: "g, r and i"
+    file: site/images/nebulae/m17.webp
+    checked: 2026-10-03
+
+  - id: cats-paw-nebula
+    archive: eso
+    image: eso1003a
+    credit: "ESO"
+    ra_deg: 260.03917
+    dec_deg: -35.94911
+    width_arcmin: 30.71
+    height_arcmin: 31.91
+    north_deg: 0.1
+    published: {ra_deg: 259.99175, dec_deg: -35.96307}
+    solved: {moved_arcmin: 2.45, correlation: 30.7, mirror: 4.7}
+    colours: mixed
+    filters: "B, V and R, with H-alpha"
+    file: site/images/nebulae/cats-paw-nebula.webp
+    checked: 2026-10-03
+
+  - id: carina-nebula
+    archive: eso
+    image: eso1250a
+    credit: "ESO. Acknowledgement: VPHAS+ Consortium/Cambridge Astronomical Survey Unit"
+    ra_deg: 161.2882
+    dec_deg: -59.86687
+    width_arcmin: 61.82
+    height_arcmin: 66.34
+    north_deg: 0.09
+    published: {ra_deg: 161.27375, dec_deg: -59.86324}
+    solved: {moved_arcmin: 0.49, correlation: 31.3, mirror: 4.0}
+    colours: mixed
+    filters: "B, g and r, with H-alpha"
+    px: 640
+    file: site/images/nebulae/carina-nebula.webp
+    checked: 2026-10-03
+
+  - id: north-america-nebula
+    archive: noirlab
+    image: noao-n7000mosblock
+    credit: "KPNO/NOIRLab/NSF/AURA/Adam Block"
+    ra_deg: 313.25494
+    dec_deg: 44.44772
+    width_arcmin: 250.61
+    height_arcmin: 171.37
+    north_deg: -2.86
+    published: {ra_deg: 313.46612, dec_deg: 44.31067}
+    solved: {moved_arcmin: 12.22, correlation: 29.2, mirror: 4.8}
+    colours: unstated
+    colours_note: "the page (a Kitt Peak visitor-programme mosaic, 2014) names no filters"
+    px: 640
+    file: site/images/nebulae/north-america-nebula.webp
+    checked: 2026-10-03
+
+  - id: veil-nebula
+    archive: noirlab
+    image: noao1209a
+    credit: "T.A. Rector (University of Alaska Anchorage) and WIYN/NOIRLab/NSF/AURA"
+    ra_deg: 312.9181
+    dec_deg: 31.0289
+    width_arcmin: 172.67
+    height_arcmin: 173.53
+    north_deg: -0.87
+    published: {ra_deg: 312.45179, dec_deg: 30.42952}
+    solved: {moved_arcmin: 43.22, correlation: 19.5, mirror: 4.2}
+    colours: narrowband
+    filters: "oxygen blue, sulphur green, hydrogen orange"
+    px: 640
+    file: site/images/nebulae/veil-nebula.webp
+    checked: 2026-10-03
+
+  - id: helix-nebula
+    archive: eso
+    image: eso0907a
+    credit: "ESO"
+    ra_deg: 337.41071
+    dec_deg: -20.82644
+    width_arcmin: 28.02
+    height_arcmin: 25.94
+    north_deg: -0.07
+    published: {ra_deg: 337.41071, dec_deg: -20.83717}
+    solved: {moved_arcmin: 0.64, correlation: 42.0, mirror: 5.7}
+    colours: broadband
+    filters: "B, V and R"
+    file: site/images/nebulae/helix-nebula.webp
+    checked: 2026-10-03
+
+  - id: m27
+    archive: noirlab
+    image: noao-m27-kpno-mayall-4-m
+    credit: "T.A. Rector (University of Alaska Anchorage) and H. Schweiker (WIYN and NOIRLab/NSF/AURA)"
+    ra_deg: 299.90499
+    dec_deg: 22.72051
+    width_arcmin: 20.62
+    height_arcmin: 17.32
+    north_deg: 90.06
+    published: {ra_deg: 299.90621, dec_deg: 22.72164}
+    solved: {moved_arcmin: 0.1, correlation: 55.1, mirror: 6.0}
+    colours: narrowband
+    filters: "oxygen blue, hydrogen red, sulphur green"
+    file: site/images/nebulae/m27.webp
+    checked: 2026-10-03
+
+  - id: m57
+    archive: esahubble
+    image: heic1310a
+    credit: "NASA, ESA, and C. Robert O’Dell (Vanderbilt University)."
+    ra_deg: 283.39685
+    dec_deg: 33.02893
+    width_arcmin: 2.1
+    height_arcmin: 2.1
+    north_deg: 11.2
+    published: {ra_deg: 283.39671, dec_deg: 33.02893}
+    solved: {moved_arcmin: 0.01, correlation: 11.4, mirror: 5.4}
+    colours: narrowband
+    filters: "helium, oxygen, hydrogen, nitrogen and sulphur"
+    file: site/images/nebulae/m57.webp
+    checked: 2026-10-03
+
+  - id: m31
+    archive: noirlab
+    image: noao0001a
+    credit: "Bill Schoening, Vanessa Harvey/REU program/NOIRLab/NSF/AURA"
+    ra_deg: 10.68269
+    dec_deg: 41.26066
+    width_arcmin: 132.04
+    height_arcmin: 132.0
+    north_deg: -0.17
+    published: {ra_deg: 10.67308, dec_deg: 40.61078}
+    solved: {moved_arcmin: 39.0, correlation: 36.4, mirror: 11.2}
+    colours: unstated
+    colours_note: "the page says photographic plates from the Burrell Schmidt and names no filters"
+    px: 640
+    file: site/images/nebulae/m31.webp
+    checked: 2026-10-03
+
+  - id: m33
+    archive: eso
+    image: eso1424a
+    credit: "ESO"
+    ra_deg: 23.47149
+    dec_deg: 30.67022
+    width_arcmin: 68.01
+    height_arcmin: 57.04
+    north_deg: 90.1
+    published: {ra_deg: 23.46717, dec_deg: 30.67394}
+    solved: {moved_arcmin: 0.32, correlation: 47.0, mirror: 8.1}
+    colours: mixed
+    filters: "g and r, with H-alpha"
+    file: site/images/nebulae/m33.webp
+    checked: 2026-10-03
+
+  - id: lmc
+    archive: noirlab
+    image: noirlab2030a
+    credit: "CTIO/NOIRLab/NSF/AURA/SMASH/D. Nidever (Montana State University) Acknowledgment: Image processing: Travis Rector (University of Alaska Anchorage), Mahdi Zamani & Davide de Martin"
+    ra_deg: 78.79643
+    dec_deg: -71.56666
+    width_arcmin: 560.99
+    height_arcmin: 544.25
+    north_deg: -16.82
+    published: {ra_deg: 78.79579, dec_deg: -71.56651}
+    solved: {moved_arcmin: 0.02, correlation: 24.0, mirror: 4.0}
+    colours: broadband
+    filters: "the Dark Energy Camera’s broad survey filters"
+    colours_note: "the page names no filters; SMASH is a DECam survey in u g r i z"
+    px: 768
+    file: site/images/nebulae/lmc.webp
+    checked: 2026-10-03
+
+  - id: smc
+    archive: noirlab
+    image: noirlab2030b
+    credit: "CTIO/NOIRLab/NSF/AURA/SMASH/D. Nidever (Montana State University) Acknowledgment: Image processing: Travis Rector (University of Alaska Anchorage), Mahdi Zamani & Davide de Martin"
+    ra_deg: 13.66179
+    dec_deg: -72.88622
+    width_arcmin: 318.69
+    height_arcmin: 265.64
+    north_deg: 30.12
+    published: {ra_deg: 13.66179, dec_deg: -72.86879}
+    solved: {moved_arcmin: 1.05, correlation: 29.9, mirror: 12.2}
+    colours: broadband
+    filters: "the Dark Energy Camera’s broad survey filters"
+    colours_note: "the page names no filters; SMASH is a DECam survey in u g r i z"
+    file: site/images/nebulae/smc.webp
+    checked: 2026-10-03
+
+  - id: centaurus-a
+    archive: eso
+    image: eso1221a
+    credit: "ESO"
+    ra_deg: 201.38821
+    dec_deg: -43.00265
+    width_arcmin: 33.95
+    height_arcmin: 33.2
+    north_deg: 0.02
+    published: {ra_deg: 201.36542, dec_deg: -43.01932}
+    solved: {moved_arcmin: 1.41, correlation: 50.1, mirror: 8.2}
+    colours: mixed
+    filters: "B, V and R, with H-alpha and an oxygen filter"
+    file: site/images/nebulae/centaurus-a.webp
+    checked: 2026-10-03
+
+  - id: m83
+    archive: eso
+    image: eso0825a
+    credit: "ESO"
+    ra_deg: 204.24824
+    dec_deg: -29.87052
+    width_arcmin: 17.59
+    height_arcmin: 17.59
+    north_deg: 0.02
+    published: {ra_deg: 204.25379, dec_deg: -29.86571}
+    solved: {moved_arcmin: 0.41, correlation: 50.4, mirror: 10.2}
+    colours: broadband
+    filters: "B, V and R"
+    file: site/images/nebulae/m83.webp
+    checked: 2026-10-03
+
+  - id: m104
+    archive: esahubble
+    image: opo0328a
+    credit: "NASA/ESA and The Hubble Heritage Team (STScI/AURA)"
+    ra_deg: 189.99757
+    dec_deg: -11.62327
+    width_arcmin: 9.55
+    height_arcmin: 5.35
+    north_deg: -5.12
+    published: {ra_deg: 189.99704, dec_deg: -11.62275}
+    solved: {moved_arcmin: 0.04, correlation: 14.8, mirror: 8.7}
+    colours: broadband
+    filters: "B, V and far red"
+    file: site/images/nebulae/m104.webp
+    checked: 2026-10-03
+
+  - id: m51
+    archive: esahubble
+    image: heic0506a
+    credit: "NASA, ESA, S. Beckwith (STScI), and The Hubble Heritage Team (STScI/AURA)"
+    ra_deg: 202.46808
+    dec_deg: 47.21265
+    width_arcmin: 9.51
+    height_arcmin: 6.61
+    north_deg: -91.91
+    published: {ra_deg: 202.46808, dec_deg: 47.21317}
+    solved: {moved_arcmin: 0.03, correlation: 22.3, mirror: 6.3}
+    colours: mixed
+    filters: "B, V and I, with H-alpha"
+    file: site/images/nebulae/m51.webp
+    checked: 2026-10-03
+
+  - id: m101
+    archive: esahubble
+    image: heic0602a
+    credit: "Image: European Space Agency & NASA"
+    ra_deg: 210.79926
+    dec_deg: 54.3501
+    width_arcmin: 13.2
+    height_arcmin: 10.32
+    north_deg: -3.44
+    published: {ra_deg: 210.89463, dec_deg: 54.30101}
+    solved: {moved_arcmin: 4.45, correlation: 36.7, mirror: 5.6}
+    colours: broadband
+    filters: "B, V and I"
+    file: site/images/nebulae/m101.webp
+    checked: 2026-10-03
+
+  - id: m81
+    archive: esahubble
+    image: heic0710a
+    credit: "NASA, ESA and the Hubble Heritage Team (STScI/AURA). Acknowledgment: A. Zezas and J. Huchra (Harvard-Smithsonian Center for Astrophysics)"
+    ra_deg: 148.89108
+    dec_deg: 69.07226
+    width_arcmin: 18.85
+    height_arcmin: 12.67
+    north_deg: 114.18
+    published: {ra_deg: 148.89108, dec_deg: 69.07226}
+    solved: {moved_arcmin: 0.0, correlation: 25.7, mirror: 13.4}
+    colours: broadband
+    filters: "B, V and I"
+    file: site/images/nebulae/m81.webp
+    checked: 2026-10-03
