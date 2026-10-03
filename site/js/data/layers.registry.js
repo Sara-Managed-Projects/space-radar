@@ -221,7 +221,7 @@ export const LAYER_ROWS = [
   },
   {
     "id": "just-launched",
-    "display": "Launched in the last two weeks",
+    "display": "Just launched",
     "group": "around-earth",
     "enabled": true,
     "moments": {

@@ -659,7 +659,7 @@ export const LAYERS = [
   },
   {
     id: 'just-launched',
-    display: 'Launched in the last two weeks',
+    display: 'Just launched',
     klass: 'satellite',
     // registry/layers.yaml says celestrak-active. `last-30-days` is 112 kB against 6.9 MB and
     // is the same rule expressed by the publisher, so this row uses it instead.

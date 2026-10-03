@@ -3,7 +3,8 @@
 // Contract: createNext(ctx) -> { root, refresh(), destroy() }
 // Also exported, pure, so the list can be tested without a DOM or a clock:
 //   buildNextItems(records, nowMs, opts) -> [{kind, record, tMs, ...}] sorted by time
-//   rowText(item, nowMs), classText(item, nowMs) -> the row's sentence and the line under it
+//   rowText(item, nowMs), classText(item, nowMs) -> the row's sentence and what its time is
+//   rowParts(item, nowMs) -> {title, detail, value}  the row as drawn: a name, one line, a number
 //
 // Since spec 0031 (2026-09-23) the items come from data/events.js buildEvents(), the one event
 // stream registry/events.yaml describes; this file maps its records to rows and chooses the eight.
@@ -279,6 +280,52 @@ export function classText(item, wallMs = Date.now()) {
   }
 }
 
+/**
+ * The row AS DRAWN (spec 0061 task 5, req 11; docs/ui-guide.md section 3.5): a title on one line,
+ * one line under it, and for a close approach its distance as the row's number. Pure.
+ *
+ * rowText() is a sentence, and a sentence in a 320 px column is three lines: on 2026-10-03 the
+ * Orionids' row was five lines of the sidebar with its class line. The sentence is still the
+ * row's whole account (createNext() gives it to the tooltip and the accessible name, with
+ * classText()), and this is what fits: WHAT on the first line, WHEN and the one thing worth
+ * knowing on the second. A launch keeps "planned" in sight, because its time is the only one on
+ * the list that can move (spec 0031 req 7).
+ */
+export function rowParts(item, nowMs) {
+  const R = COPY.nextList.row;
+  const name = item.label || shownName(item.record) || COPY.card.unknownName;
+  const when = whenText(item.tMs, nowMs);
+  switch (item.kind) {
+    case 'launch':
+      return { title: name, detail: t(item.precision && /^(month|quarter|year|tbd|tba)/i.test(item.precision) ? R.launchRough : R.launch, { when }) };
+    case 'approach':
+      return { title: name, detail: t(R.approach, { when }), value: item.ld !== null && Number.isFinite(item.ld) ? t(R.approachValue, { ld: fmt.smart(item.ld) }) : '' };
+    case 'perihelion':
+      return { title: name, detail: t(R.perihelion, { when }) };
+    case 'pass':
+      return { title: name, detail: t(R.pass, { when }) };
+    case 'train':
+      return { title: t(R.trainTitle, { n: fmt.int(item.count) }), detail: t(R.pass, { when }) };
+    case 'aurora':
+      return item.now
+        ? { title: R.auroraNowTitle, detail: R.auroraNow, value: t(R.kp, { kp: fmt.smart(item.kp) }) }
+        : { title: R.auroraTitle, detail: t(R.aurora, { when }), value: t(R.kp, { kp: fmt.smart(item.kp) }) };
+    case 'shower':
+      return { title: t(R.showerTitle, { name }), detail: t(R.shower, { date: timeText.dateNear(item.tMs, nowMs), zhr: fmt.int(item.zhr) }) };
+    case 'solar-eclipse':
+    case 'lunar-eclipse': {
+      const date = timeText.longDate(item.tMs);
+      const local = item.local;
+      const detail = !local ? t(R.eclipse, { date })
+        : !local.visible ? t(R.eclipseNotHere, { date })
+          : t(R.eclipseHere, { date, begin: timeText.hhmm(local.beginMs), end: timeText.hhmm(local.endMs) });
+      return { title: name, detail };
+    }
+    default:
+      return { title: name, detail: when };
+  }
+}
+
 function el(tag, className, text) {
   const node = document.createElement(tag);
   if (className) node.className = className;
@@ -327,35 +374,46 @@ export function createNext(ctx, opts = {}) {
     more.textContent = expanded ? T.showFewer : t(T.showAll, { n: fmt.int(items.length) });
     more.setAttribute('aria-expanded', expanded ? 'true' : 'false');
     for (const item of shown) {
-      const li = el('li', 'sr-next__row', rowText(item, now));
+      const li = el('li', 'sr-next__row');
       li.dataset.kind = item.kind;
-      const cls = classText(item);
-      if (cls) li.appendChild(el('span', 'sr-next__class', cls));
+      // A row that flies somewhere is a real button (it was an <li> with a role); one that only
+      // tells (a shower, an eclipse) is text. Either way: a title, one line under it, and the
+      // whole sentence with what its time is as the tooltip and the name a screen reader says.
+      const body = item.record ? el('button', 'sr-next__body') : el('div', 'sr-next__body');
       if (item.record) {
-        // A row that flies somewhere is a button to a keyboard too; it was click-only.
-        const go = () => { if (typeof ctx.select === 'function') ctx.select(item.record); };
-        li.tabIndex = 0;
-        li.setAttribute('role', 'button');
-        li.addEventListener('click', go);
-        li.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+        body.type = 'button';
+        body.addEventListener('click', () => { if (typeof ctx.select === 'function') ctx.select(item.record); });
       }
+      const parts = rowParts(item, now);
+      const cls = classText(item);
+      const full = [rowText(item, now), cls].filter(Boolean).join(COPY.punctuation.sentenceJoin);
+      body.title = full;
+      body.setAttribute('aria-label', full);
+      if (!item.record) body.setAttribute('role', 'note');
+      const head = el('span', 'sr-next__head');
+      head.appendChild(el('span', 'sr-next__title', parts.title));
+      if (parts.value) head.appendChild(el('span', 'sr-next__value', parts.value));
+      body.appendChild(head);
+      body.appendChild(el('span', 'sr-next__detail', parts.detail));
+      li.appendChild(body);
       list.appendChild(li);
     }
     // What the list could not look at, said only when the list is empty: under five rows it is a
     // paragraph nobody needs, and with none it is the answer. No "set where you are" either -- a dead
     // end in a list always on screen (0061's critique, item 7); the passes simply join once a place is set.
-    const parts = [];
+    // One line, as every empty state is (docs/ui-guide.md section 3); which feeds are missing is
+    // its tooltip, and the status line at the sidebar's foot is the way to the full account.
+    note.hidden = items.length > 0;
+    note.textContent = items.length ? '' : T.none;
+    note.title = '';
     if (!items.length) {
-      parts.push(T.none);
       const have = loadedIds();
       const missing = FEEDS.filter((id) => !have.has(id)).map((id) => {
         const layer = (ctx.layers || []).find((l) => l.id === id);
         return layer ? layer.display || id : id;
       });
-      if (missing.length) parts.push(t(T.notLoaded, { layers: missing.join(COPY.punctuation.listJoin) }));
+      if (missing.length) note.title = t(T.notLoaded, { layers: missing.join(COPY.punctuation.listJoin) });
     }
-    note.textContent = parts.join(' ');
-    note.hidden = parts.length === 0;
   }
 
   // NOAA's Kp, through the same source row and gate the space-weather line uses, so the list costs

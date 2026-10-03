@@ -275,6 +275,17 @@ function section(title, className) {
   return s;
 }
 
+/**
+ * Whether a key press asks for the search field. Pure, like ui/rail.js railKey: `/` alone, never
+ * while something is being typed, never with a modifier (Ctrl+/ and Cmd+/ are the browser's).
+ */
+export function wantsSearch(event, activeElement) {
+  if (!event || event.defaultPrevented || event.key !== '/') return false;
+  if (event.ctrlKey || event.metaKey || event.altKey) return false;
+  const tag = activeElement && activeElement.tagName ? String(activeElement.tagName).toUpperCase() : '';
+  return !(tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (activeElement && activeElement.isContentEditable));
+}
+
 export function createExplore(ctx, host) {
   const root = el('div', 'sr-explore');
   (host || document.body).appendChild(root);
@@ -297,6 +308,33 @@ export function createExplore(ctx, host) {
   const field = searchHost.querySelector('.sr-search__row');
   if (field) field.prepend(svgIcon('M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14Z m9 16-4-4'));
   const input = searchHost.querySelector('.sr-search__input');
+  // `/` focuses the search (docs/ui-guide.md section 3.1), from anywhere a key is not being typed:
+  // the field's tooltip says so, and on a desktop a small keycap at its end shows it, as the
+  // controls hint draws its keys. The cap is a picture of the key, not a control: hidden from a
+  // screen reader (the tooltip and `aria-keyshortcuts` carry it) and gone while the field is used.
+  if (input) {
+    input.title = COPY.search.inputTitle;
+    input.setAttribute('aria-keyshortcuts', COPY.search.key);
+    const cap = el('kbd', 'sr-search__key', COPY.search.key);
+    cap.setAttribute('aria-hidden', 'true');
+    if (field) field.appendChild(cap);
+  }
+  document.addEventListener('keydown', (e) => {
+    if (!wantsSearch(e, document.activeElement) || !input) return;
+    const cls = document.documentElement.classList;
+    // Not over a clear screen (H owns it) and not in a trip (its sheet has the sidebar).
+    if (cls.contains('sr-clean') || cls.contains('sr-trip-mode')) return;
+    e.preventDefault();
+    const shell = ctx && ctx.shell;
+    if (shell) {
+      // The field lives in the home view: unfold the sidebar and come back to it. The card is left
+      // by putting the selection down, as its own back row does; the sources sheet by going back.
+      if (typeof shell.collapsed === 'function' && shell.collapsed()) shell.collapse(false);
+      if (shell.view() === 'card' && typeof ctx.deselect === 'function') ctx.deselect();
+      while (shell.view() !== 'home' && shell.stack().length > 1) shell.back();
+    }
+    search.focus();
+  });
   // While a query is typed the results REPLACE the lists (design §2): one column, one answer. On a
   // phone the box is in the top bar and its results drop from it (ui/shell.js seatSearch), so the
   // flag is on the box as well, where the phone's rules read it.
@@ -372,6 +410,9 @@ export function createExplore(ctx, host) {
   const next = createNext(ctx, { limit: COMING_UP_ROWS });
   next.root.classList.add('sr-sect');
   earth.appendChild(next.root);
+  // Where the email row sits when there is a notifier (ui/subscribe.js): under the list it is about.
+  const subscribeHost = el('div', 'sr-subscribe-host');
+  next.root.appendChild(subscribeHost);
 
   // --- Planets: the worlds, a live distance from the Earth each -----------------------------------
   const planets = panes.get('planets');
@@ -766,7 +807,7 @@ export function createExplore(ctx, host) {
     return mount;
   }
 
-  const api = { root, tab: () => current, setTab: goTab, refresh, search, mountTab };
+  const api = { root, tab: () => current, setTab: goTab, refresh, search, subscribeHost, mountTab };
   if (ctx) ctx.explore = api;
   return api;
 }

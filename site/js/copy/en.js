@@ -519,14 +519,17 @@ export const COPY = {
   // ui/subscribe.js (issue #251): email-only alerts for upcoming launches and meteor shower
   // peaks -- the same for every subscriber, never a per-location pass alert (that is issue #290).
   subscribe: {
-    heading: 'Get an email for launches and meteor showers',
+    // The row's label under Coming up: one line in a 320 px column (spec 0061 req 11).
+    heading: 'Email me launches and showers',
+    emailLabel: 'Your email address',
     emailPlaceholder: 'you@example.com',
+    pickOne: 'Tick at least one of the two.',
     launchesLabel: 'Upcoming launches',
     showersLabel: 'Meteor shower peaks',
     submit: 'Subscribe',
     sending: 'Sending…',
     pending: 'Check your email to confirm.',
-    couldNotReach: 'Could not reach the subscription service.',
+    couldNotReach: 'That did not send. Try again in a minute.',
   },
 
   // "Six storms are turning": a count a person reads as a word (ui/explore.js Right now).
@@ -943,7 +946,30 @@ export const COPY = {
       passNoAge: 'Worked out here from orbital elements',
       eclipse: 'Worked out here to the minute from the motion of the Sun and Moon',
     },
-    none: 'Nothing is scheduled in what the app has loaded.',
+    // THE ROW AS DRAWN (spec 0061 task 5, ui/next.js rowParts): a title, then one line. The
+    // sentences above are the row's tooltip and its accessible name; these are what fits a 320 px
+    // column on one line each. A launch's line keeps "planned": its time is the one that can move.
+    row: {
+      launch: 'Lifts off {when} · planned',
+      launchRough: 'Around {when} · date not fixed',
+      approach: 'Passes Earth {when}',
+      approachValue: '{ld}× Moon',
+      perihelion: 'Closest to the Sun {when}',
+      pass: 'Comes over you {when}',
+      trainTitle: 'Starlink train of {n}',
+      auroraTitle: 'Aurora forecast',
+      auroraNowTitle: 'Geomagnetic storm now',
+      aurora: 'NOAA forecast, from {when}',
+      auroraNow: 'Measured by NOAA in the last hours',
+      kp: 'Kp {kp}',
+      showerTitle: '{name} meteor shower',
+      shower: 'Peaks around {date} · up to {zhr} an hour',
+      eclipse: '{date} · worked out to the minute',
+      eclipseHere: '{date} · from here {begin} to {end}',
+      eclipseNotHere: '{date} · not visible from here',
+    },
+    // The empty state: one line (docs/ui-guide.md section 3). Which feed is missing is its tooltip.
+    none: 'Nothing coming up in what has loaded.',
     notLoaded: 'Not loaded, so not listed: {layers}.',
   },
   // Colour keys (spec 0026 req 11).
@@ -1830,8 +1856,17 @@ export const COPY = {
     layersTitle: 'What to show',
     layerCount: '{n}',
     layerCountLoading: 'counting',
-    layerCountEmpty: 'nothing loaded',
-    layerWaits: 'loads when switched on',
+    // Three silences, three short words beside the name (spec 0061 req 11: the row is one line at
+    // 390 and at 1440); each one's tooltip is the sentence it stands for.
+    layerCountEmpty: 'empty',
+    layerCountEmptyTitle: 'This layer came back with nothing: its source could not be read, or holds nothing now.',
+    layerWaits: 'not yet',
+    layerWaitsTitle: 'Loaded when you switch it on, to save data.',
+    // The error state, one line with its one action (docs/ui-guide.md section 3): layers that are
+    // on and came back empty. The button opens the sources sheet, where each source says why.
+    layersFailed: '{n} layers came back empty.',
+    layersFailedOne: 'One layer came back empty.',
+    layersFailedWhy: 'See sources',
     // A layer whose members are in more than one state says so on its own tick. Zero parts are
     // dropped, so a layer that grows out of a state stops mentioning it without a code change.
     layerCountParts: {
@@ -1913,32 +1948,41 @@ export const COPY = {
     fly: 'Fly to it',
     flyTitle: 'Move the camera to the highlighted object and open its card',
     hint: 'Two letters is enough. Enter picks the top one.',
-    noMatch: 'Nothing that has loaded matches that.',
-    more: '{n} more match. Type a little more to narrow it.',
-    searching: 'Searching {n} objects.',
-    searchingOne: 'Searching one object.',
-    empty: 'Nothing has loaded yet, so there is nothing to search.',
+    // The empty state (docs/ui-guide.md section 3.2): the query quoted back, then the nearest names.
+    noMatch: 'Nothing called “{q}” here.',
+    closest: 'Closest names',
+    more: '{n} more match. Type more to narrow it.',
+    // One line under the results (spec 0061 req 11). The layers and their reasons are its tooltip.
+    searching: '{n} objects searched.',
+    searchingOne: 'One object searched.',
+    searchingBut: '{n} objects searched, {m} layers not yet.',
+    searchingButOne: '{n} objects searched, one layer not yet.',
+    empty: 'Nothing has loaded yet to search.',
+    // The field's tooltip names its key, as the rail's buttons do.
+    inputTitle: 'Search (/)',
+    key: '/',
     notLoaded: 'Not loaded, so not searched: {layers}.',
     stillLoading: 'Still loading, so not searched yet: {layers}.',
     loadsWhenOn: 'Loaded only when you switch them on, to save data, so not searched yet: {layers}.',
     couldNotRead: 'Could not be read, so not searched: {layers}.',
-    fallback: 'Nothing starts with that, so these merely contain it.',
-    switchedOn: 'Switched on {layer} so you can see it.',
+    fallback: 'Nothing starts with that. These contain it.',
+    switchedOn: 'Switched on: {layer}.',
     notLoadedCount: 'How many objects that leaves out cannot be known until they load.',
   },
 
   // Data-saver and the frame-rate latch (spec 0026 req 18): two things the app decided for the visitor, said out loud.
   quality: {
-    dataSaver: 'Your connection asked for data-saving, so the two biggest catalogues wait until you switch them on.',
-    lowered: 'Frames were taking {ms} ms, so the picture is drawn at one pixel per pixel without the Milky Way backdrop.',
+    // One line each in the popover (spec 0061 req 11).
+    dataSaver: 'Data saver is on: the two biggest lists wait.',
+    lowered: 'Slow frames ({ms} ms), so the picture is simpler.',
     // The device tier (scene/quality.js, 2026-09-28): which maps this device wears, and why.
-    tierPhone: 'Surface maps at 2k, the size a phone has memory for.',
-    tierSaver: 'Surface maps at 2k, because your connection asked to save data.',
-    tierSmall: 'Surface maps at 2k, sized for this device’s graphics memory.',
-    tierLatched: 'Surface maps back at 2k, because frames were slow.',
-    tier1: 'Surface maps at 4k, fetched after the first picture while nothing else was happening.',
-    tier2: 'Surface maps at 4k, with more worlds kept sharp at once.',
-    promoted: 'Raised one step after three seconds of fast frames.',
+    tierPhone: 'Surface maps at 2k, sized for a phone.',
+    tierSaver: 'Surface maps at 2k, to save data.',
+    tierSmall: 'Surface maps at 2k, sized for this device.',
+    tierLatched: 'Surface maps back at 2k: frames were slow.',
+    tier1: 'Surface maps at 4k, fetched when idle.',
+    tier2: 'Surface maps at 4k, more worlds kept sharp.',
+    promoted: 'Raised a step after fast frames.',
     // The Sources panel's credits: the maps the scene is wearing on this device right now.
     mapsWorn: 'Maps on this device: {credits}.',
   },

@@ -275,6 +275,13 @@ for (const r of all) {
     if (/\binfinite\b/.test(bare)) problems.push(`${r.file} ${r.selector}: ${prop} loops; nothing in the chrome loops`);
   }
 }
+// Under reduced motion the tokens themselves are the 120 ms linear fade, so every rule above is.
+{
+  const reducedRoot = all.find((r) => r.selector === ':root' && /prefers-reduced-motion:\s*reduce/.test(r.at));
+  const d = new Map(reducedRoot ? decls(reducedRoot.body) : []);
+  check(['--sr-fast', '--sr-mid', '--sr-slow'].every((n) => d.get(n) === '120ms') && d.get('--sr-ease') === 'linear' && d.get('--sr-ease-in') === 'linear',
+    'under prefers-reduced-motion :root turns --sr-fast, --sr-mid and --sr-slow into 120ms and both curves into linear');
+}
 // Reduced motion reaches every stylesheet that moves anything: a sheet with a transition or an
 // animation and no `prefers-reduced-motion` block has forgotten the people who asked.
 for (const f of FILES) {

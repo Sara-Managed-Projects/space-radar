@@ -4,6 +4,7 @@
 // Also exported, and pure, so the ranking can be measured without a DOM:
 //   buildIndex(records, layers) -> Index
 //   findMatches(index, query, limit) -> { hits, total, query }
+//   closest(index, query, limit) -> hits      the nearest names, for a query that found nothing
 //
 // This module finds a record and hands it to ctx.select(). It does NOT fly the camera and does
 // NOT open the card: main.js's select() already does both, and a second implementation of either
@@ -46,6 +47,7 @@ const MIN_QUERY = 2; // one letter matches thousands of things and helps nobody
 /** Added to an alias's own score so the canonical object outranks anything merely named alike. */
 const ALIAS_BONUS = 10000;
 const MAX_RESULTS = 8; // spec 0021 requirement 7: a list of twelve was still a scroll
+const MISS_QUOTE = 24; // how much of a query that found nothing is quoted back, so the line stays one line
 const INPUT_DEBOUNCE_MS = 120;
 // `sr:layer` fires once per layer, ~15 times over several seconds. Rebuilding 17 000 entries on
 // each is waste; this is the trailing edge of the burst. A query that arrives before it fires
@@ -395,6 +397,77 @@ export function findMatches(index, query, limit = MAX_RESULTS) {
 }
 
 // ---------------------------------------------------------------------------------------
+// Nothing matched: the nearest names (spec 0061 task 5, docs/ui-guide.md section 3.2)
+// ---------------------------------------------------------------------------------------
+
+/** Optimal-string-alignment distance, capped: letters swapped, dropped, added or mistyped. */
+function editDistance(a, b, cap) {
+  const n = a.length;
+  const m = b.length;
+  if (Math.abs(n - m) > cap) return cap + 1;
+  let prev2 = null;
+  let prev = new Array(m + 1);
+  for (let j = 0; j <= m; j += 1) prev[j] = j;
+  for (let i = 1; i <= n; i += 1) {
+    const cur = new Array(m + 1);
+    cur[0] = i;
+    let best = cur[0];
+    for (let j = 1; j <= m; j += 1) {
+      const cost = a.charCodeAt(i - 1) === b.charCodeAt(j - 1) ? 0 : 1;
+      let v = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
+      if (prev2 && i > 1 && j > 1 && a.charCodeAt(i - 1) === b.charCodeAt(j - 2) && a.charCodeAt(i - 2) === b.charCodeAt(j - 1)) v = Math.min(v, prev2[j - 2] + 1);
+      cur[j] = v;
+      if (v < best) best = v;
+    }
+    if (best > cap) return cap + 1;
+    prev2 = prev;
+    prev = cur;
+  }
+  return prev[m];
+}
+
+/**
+ * The names nearest a query that matched nothing: "jupitr" offers Jupiter, "satrun" Saturn. Pure.
+ *
+ * A whole name or one whole word of it, within one slip for a short query and two for a longer
+ * one; never a number (a wrong catalogue number has no neighbour worth offering) and never a
+ * two-letter query, where everything is one slip away. Ordered as the results are: the fewest
+ * slips, then the layer ladder, the brighter, the shorter name. Runs only when the list is empty,
+ * so its cost (one small table per word of the index) is paid on a miss, not on a keystroke.
+ */
+export function closest(index, query, limit = 3) {
+  const q = norm(query);
+  if (!index || !index.n || q.length < 4 || /^[0-9\s]+$/.test(q)) return [];
+  const cap = q.length <= 5 ? 1 : 2;
+  const found = [];
+  for (let i = 0; i < index.n; i += 1) {
+    const name = index.name[i];
+    if (!name) continue;
+    let best = editDistance(q, name, cap);
+    if (best > cap && name.indexOf(' ') >= 0) {
+      for (const word of name.split(/[^a-z0-9]+/)) {
+        if (word.length < 3) continue;
+        const d = editDistance(q, word, cap);
+        if (d < best) best = d;
+      }
+    }
+    if (best <= cap) found.push({ i, d: best });
+  }
+  found.sort((a, b) => (a.d - b.d) || (index.rank[a.i] - index.rank[b.i]) || (index.mag[a.i] - index.mag[b.i])
+    || (index.len[a.i] - index.len[b.i]) || (a.i - b.i));
+  const seen = new Set();
+  const out = [];
+  for (const hit of found) {
+    const record = index.record[hit.i];
+    const id = record && record.id;
+    if (id != null) { if (seen.has(id)) continue; seen.add(id); }
+    out.push({ record, name: record.name || COPY.card.unknownName, where: index.where[hit.i], klass: record.klass || 'unknown', score: 0, at: -1, length: 0 });
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------------------------------
 // The component
 // ---------------------------------------------------------------------------------------
 
@@ -433,6 +506,7 @@ export function createSearch(ctx, host) {
     dirty: true,
     open: false,
     active: -1, // the highlighted row, and what "Fly to it" acts on
+    missed: '', // the query that matched nothing, as typed; the hits are then the nearest names
     hits: [],
     total: 0,
     reported: new Set(), // layer ids that have fired sr:layer, whatever count they carried
@@ -484,6 +558,17 @@ export function createSearch(ctx, host) {
   const foot = el('p', 'sr-search__foot');
   foot.setAttribute('role', 'status');
   foot.setAttribute('aria-live', 'polite');
+  // The empty state (docs/ui-guide.md section 3.2): what was not found, in one line, and under a
+  // microlabel the nearest names as ordinary options. It sits ABOVE the list, where the first
+  // result would have been; a status, so the miss is heard as well as seen.
+  const empty = el('div', 'sr-search__empty');
+  empty.setAttribute('role', 'status');
+  empty.setAttribute('aria-live', 'polite');
+  empty.hidden = true;
+  const emptyLine = el('p', 'sr-search__emptyline');
+  const emptyHint = el('p', 'sr-search__emptyhint');
+  empty.append(emptyLine, emptyHint);
+  pop.appendChild(empty);
   pop.appendChild(list);
   pop.appendChild(foot);
   wrap.appendChild(pop);
@@ -528,20 +613,23 @@ export function createSearch(ctx, host) {
   function paintNote() {
     const split = missingLayers();
     const missing = split.all;
-    const parts = [];
-    parts.push(
-      state.index.n === 0
-        ? COPY.search.empty
-        : t(state.index.n === 1 ? COPY.search.searchingOne : COPY.search.searching, {
-            n: fmt.int(state.index.n),
-          }),
-    );
-    if (split.loading.length) parts.push(t(COPY.search.stillLoading, { layers: split.loading.join(COPY.punctuation.listJoin) }));
-    if (split.deferred.length) parts.push(t(COPY.search.loadsWhenOn, { layers: split.deferred.join(COPY.punctuation.listJoin) }));
-    if (split.unread.length) parts.push(t(COPY.search.couldNotRead, { layers: split.unread.join(COPY.punctuation.listJoin) }));
-    if (missing.length) parts.push(COPY.search.notLoadedCount);
-    if (state.switchedOn) parts.push(t(COPY.search.switchedOn, { layer: state.switchedOn }));
-    note.textContent = parts.join(' ');
+    // ONE LINE in the chrome (spec 0061 req 11): how much is searched and how many layers are not.
+    // Which layers, and which of the three reasons each has, is the same honesty as before, in the
+    // line's tooltip and in What to show, where every one of them has its own row and state.
+    const S = COPY.search;
+    const n = fmt.int(state.index.n);
+    const line = state.switchedOn ? t(S.switchedOn, { layer: state.switchedOn })
+      : state.index.n === 0 ? S.empty
+        : !missing.length ? t(state.index.n === 1 ? S.searchingOne : S.searching, { n })
+          : missing.length === 1 ? t(S.searchingButOne, { n })
+            : t(S.searchingBut, { n, m: fmt.int(missing.length) });
+    const why = [];
+    if (split.loading.length) why.push(t(S.stillLoading, { layers: split.loading.join(COPY.punctuation.listJoin) }));
+    if (split.deferred.length) why.push(t(S.loadsWhenOn, { layers: split.deferred.join(COPY.punctuation.listJoin) }));
+    if (split.unread.length) why.push(t(S.couldNotRead, { layers: split.unread.join(COPY.punctuation.listJoin) }));
+    if (missing.length) why.push(S.notLoadedCount);
+    note.textContent = line;
+    note.title = why.join(' ');
     note.classList.toggle('is-warning', missing.length > 0);
   }
 
@@ -605,13 +693,21 @@ export function createSearch(ctx, host) {
 
     const hidden = state.total - state.hits.length;
     const lines = [];
-    if (!state.hits.length) lines.push(COPY.search.noMatch);
-    else {
+    if (!state.missed) {
       if (state.fallback) lines.push(COPY.search.fallback);
       if (hidden > 0) lines.push(t(COPY.search.more, { n: fmt.int(hidden) }));
     }
     foot.textContent = lines.join(' ');
     foot.hidden = foot.textContent === '';
+    // The miss: the query quoted back (cut, so a pasted paragraph stays one line), and whether
+    // anything is near it. With an empty index the line says that instead: nothing was searched.
+    empty.hidden = !state.missed;
+    if (state.missed) {
+      const shown = state.missed.length > MISS_QUOTE ? `${state.missed.slice(0, MISS_QUOTE)}${COPY.punctuation.ellipsis}` : state.missed;
+      emptyLine.textContent = state.index.n === 0 ? COPY.search.empty : t(COPY.search.noMatch, { q: shown });
+      emptyHint.textContent = state.hits.length ? COPY.search.closest : '';
+      emptyHint.hidden = !state.hits.length;
+    }
   }
 
   function paintActive() {
@@ -637,7 +733,7 @@ export function createSearch(ctx, host) {
   }
 
   function setOpen(open) {
-    state.open = open && state.hits.length > 0;
+    state.open = open && (state.hits.length > 0 || !!state.missed);
     pop.hidden = !state.open;
     input.setAttribute('aria-expanded', state.open ? 'true' : 'false');
     if (!state.open) {
@@ -653,6 +749,7 @@ export function createSearch(ctx, host) {
       input.value = '';
       state.hits = [];
       state.total = 0;
+      state.missed = '';
     }
   }
 
@@ -663,6 +760,7 @@ export function createSearch(ctx, host) {
     if (q.length < MIN_QUERY) {
       state.hits = [];
       state.total = 0;
+      state.missed = '';
       close(false);
       paintList();
       return;
@@ -673,6 +771,9 @@ export function createSearch(ctx, host) {
     state.total = result.total;
     state.fallback = result.fallback === true;
     state.switchedOn = null;
+    // Nothing matched: say so, and offer the nearest names as the options (closest() above).
+    state.missed = result.hits.length ? '' : String(text).trim();
+    if (state.missed) { state.hits = closest(state.index, q); state.total = state.hits.length; }
     paintList();
     // Always open on a real query, even with nothing to show: the footer's "nothing matches" is
     // an answer, and a dropdown that simply does not appear is indistinguishable from a bug.
@@ -680,7 +781,9 @@ export function createSearch(ctx, host) {
     pop.hidden = false;
     input.setAttribute('aria-expanded', 'true');
     // The top row is highlighted for you, so Enter and "Fly to it" both work without an arrow key.
-    setActive(state.hits.length ? 0 : -1);
+    // Not a guess, though: a nearest name is offered, and flying to it on Enter would be answering
+    // a question that was not asked. An arrow key reaches it.
+    setActive(state.hits.length && !state.missed ? 0 : -1);
   }
 
   /**

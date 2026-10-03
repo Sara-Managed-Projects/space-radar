@@ -251,11 +251,25 @@ export function createWhatToShow(ctx, opts = {}) {
   }
   const noMatch = el('p', 'sr-show__note sr-show__nomatch', C.layerFilterEmpty);
   noMatch.hidden = true;
+  // A layer that failed (docs/ui-guide.md section 3, the error state): one line saying how many
+  // layers that are ON came back with nothing, and the one action, the sources sheet, where each
+  // source says what happened to it. The row itself says "empty"; this is where to go about it.
+  const failed = el('p', 'sr-show__note sr-show__failed');
+  const failedText = el('span', 'sr-show__failedtext');
+  const failedWhy = el('button', 'sr-show__failedwhy', C.layersFailedWhy);
+  failedWhy.type = 'button';
+  failedWhy.addEventListener('click', () => {
+    if (ctx && ctx.rail && typeof ctx.rail.closeShow === 'function') ctx.rail.closeShow();
+    if (ctx.shell && typeof ctx.shell.openSources === 'function') ctx.shell.openSources();
+  });
+  failed.append(failedText, failedWhy);
+  failed.hidden = true;
 
   // A list per group, all inside one wrapper the keyed note's ring rule (.is-keyed) hangs off.
   const list = el('div', 'sr-show__list');
   root.appendChild(list);
   root.appendChild(noMatch);
+  root.appendChild(failed);
   const rows = new Map();
   const heads = new Map();
   const remembered = readOpen(storage);
@@ -314,6 +328,7 @@ export function createWhatToShow(ctx, opts = {}) {
       swatch.setAttribute('aria-hidden', 'true');
       if (mixed) swatch.title = C.swatchMixed;
       const lname = el('span', 'sr-show__name', layer.display || layer.id);
+      lname.title = layer.display || layer.id; // one line, so a long name ends in an ellipsis
       const count = el('span', 'sr-show__count', C.layerCountLoading);
       label.append(box, swatch, lname, count);
       li.appendChild(label);
@@ -416,6 +431,7 @@ export function createWhatToShow(ctx, opts = {}) {
 
   function paint() {
     paintKey();
+    let empties = 0;
     const counted = new Map();
     let all = [];
     try { all = typeof ctx.records === 'function' ? ctx.records() : []; } catch { all = []; }
@@ -434,11 +450,17 @@ export function createWhatToShow(ctx, opts = {}) {
           : n === 0 ? COPY.controls.layerCountEmpty : countText(row.layer, recordsFor(ctx, id), n);
       if (row.count.textContent !== text) row.count.textContent = text;
       row.count.classList.toggle('is-empty', !n);
+      const why = waits ? COPY.controls.layerWaitsTitle : n === 0 ? COPY.controls.layerCountEmptyTitle : '';
+      if (row.count.title !== why) row.count.title = why;
+      if (n === 0 && on) empties += 1;
       // A count that is a sentence wraps under the name instead of pushing the row off the edge
       // (measured: the oddities line is 360 px in a 335 px column).
       const split = text.includes(COPY.punctuation.separator.trim());
       row.label.classList.toggle('is-split', split);
     }
+    const failText = !empties ? '' : empties === 1 ? C.layersFailedOne : t(C.layersFailed, { n: fmt.int(empties) });
+    if (failedText.textContent !== failText) failedText.textContent = failText;
+    failed.hidden = !empties;
     for (const h of heads.values()) {
       const { on, n } = groupTally(h.group.layers, isOn);
       const text = t(C.groupCount, { on: fmt.int(on), n: fmt.int(n) });

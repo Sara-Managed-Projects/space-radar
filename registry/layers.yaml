@@ -169,7 +169,8 @@ layers:
     train: {still_raising_below_km: 500}
 
   - id: just-launched
-    display: Launched in the last two weeks
+    # Two words (spec 0061 req 11): the row is one line in a 320 px popover beside its count.
+    display: Just launched
     group: around-earth
     moments: {wonder: on, now: on, next: off}
     source: celestrak-active

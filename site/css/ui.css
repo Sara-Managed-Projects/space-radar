@@ -129,6 +129,20 @@
   --sr-panel: var(--sr-glass-solid);
 }
 
+/* Reduced motion, everywhere at once (spec 0061 req 12, docs/ui-guide.md section 2.5): the three
+   durations become the 120 ms fade and both curves become linear, so a rule written with the
+   tokens is already reduced, and a new one cannot forget. What still MOVES (a slide, a rise, a
+   lean) is taken out by each component's own block below; this is what makes the rest a fade. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --sr-fast: 120ms;
+    --sr-mid: 120ms;
+    --sr-slow: 120ms;
+    --sr-ease: linear;
+    --sr-ease-in: linear;
+  }
+}
+
 /* Compact (spec 0045 req 10, ui/density.js): chosen, or automatic on a window 800 px tall or
    less. Padding, heads and rows get tighter; type stays at or above the 13 px floor. */
 html.sr-compact {
@@ -3225,16 +3239,84 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-tabs {
 }
 
 /* What the search could not look in, said while it is used (spec 0021): quiet, never a boxed
-   warning in the sidebar, where it sits under the results it qualifies. */
+   warning in the sidebar, where it sits under the results it qualifies. One line (0061 req 11):
+   the count of what is and is not searched; which layers, and why, is its tooltip. */
 .sr-explore.is-searching .sr-search__note,
 .sr-explore.is-searching .sr-search__note.is-warning {
   display: block;
-  margin: 10px 2px 0;
-  padding: 0;
-  font-size: 13px;
-  line-height: 1.4;
+  margin: var(--sp-3) 0 0;
+  padding: var(--sp-3) 0 0;
+  overflow: hidden;
+  font: 400 13px/18px var(--sr-font);
   color: var(--sr-text-dim);
+  text-overflow: ellipsis;
+  white-space: nowrap;
   border: 0;
+  border-top: 1px solid var(--sr-line);
+}
+
+/* The key that focuses the field, drawn as the controls hint draws its keycaps (keyhint.css): a
+   picture of `/`, at the field's end, on a desktop with a keyboard. Gone while the field is in use. */
+.sr-search__key {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html:not(.sr-phone) .sr-explore__search .sr-search__key {
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    font: 500 13px/1 var(--sr-font-mono);
+    color: var(--sr-text-soft);
+    background: var(--sr-wash);
+    border: 1px solid var(--sr-line);
+    border-top-color: var(--sr-edge-lit);
+    border-bottom-color: var(--sr-line-strong);
+    border-radius: var(--sr-radius-sm);
+  }
+
+  html:not(.sr-phone) .sr-explore__search .sr-search__row:focus-within .sr-search__key,
+  html:not(.sr-phone) .sr-explore__search.is-searching .sr-search__key {
+    display: none;
+  }
+}
+
+/* The search that found nothing (docs/ui-guide.md section 3.2): one line that quotes the query,
+   then, under a microlabel, the nearest names as ordinary rows. Where the first result would be. */
+.sr-search__empty {
+  padding: var(--sp-3) 0 0;
+}
+
+.sr-search__empty[hidden],
+.sr-search__emptyhint[hidden] {
+  display: none;
+}
+
+.sr-search__emptyline {
+  margin: 0;
+  overflow: hidden;
+  font: 400 15px/20px var(--sr-font);
+  color: var(--sr-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sr-search__emptyhint {
+  margin: var(--sp-5) 0 var(--sp-1);
+  font: 600 13px/16px var(--sr-font-hud);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sr-text-dim);
+}
+
+html.sr-phone .sr-top .sr-search__empty {
+  padding: var(--sp-2) 0;
+}
+
+html.sr-phone .sr-top .sr-search__emptyhint {
+  margin-top: var(--sp-4);
 }
 
 /* The results replace the lists while a query is typed (design §2): in flow, flat, no second glass. */
@@ -3550,30 +3632,144 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   list-style: none;
 }
 
+/* A list row (docs/ui-guide.md section 3.5): the title on one line, one line under it, and a close
+   approach's distance as the row's number. Each ends in an ellipsis rather than a second line;
+   the whole sentence is the row's tooltip and its accessible name (ui/next.js rowParts). */
 .sr-next .sr-next__row {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 10px 0;
-  font-size: 14px;
-  line-height: 1.35;
-  color: var(--sr-text);
-  border-top: 1px solid var(--sr-hair);
-  cursor: pointer;
+  border-top: 1px solid var(--sr-line);
 }
 
 .sr-next .sr-next__row:first-child { border-top: 0; }
-.sr-next .sr-next__row[role='button']:hover:not([data-kind='shower']) { color: var(--sr-ember-light); }
 
-.sr-next .sr-next__class {
-  font-size: 13px;
+.sr-next .sr-next__body {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  min-height: 44px;
+  padding: var(--sp-3) 0;
+  font: inherit;
+  text-align: left;
+  color: var(--sr-text);
+  background: transparent;
+  border: 0;
+}
+
+.sr-next button.sr-next__body {
+  cursor: pointer;
+  transition: color var(--sr-fast) var(--sr-ease);
+}
+
+@media (hover: hover) {
+  .sr-next button.sr-next__body:hover .sr-next__title { color: var(--sr-ember-light); }
+}
+
+.sr-next .sr-next__head {
+  display: flex;
+  gap: var(--sp-3);
+  align-items: baseline;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.sr-next .sr-next__title,
+.sr-next .sr-next__detail {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sr-next .sr-next__title {
+  font: 400 15px/20px var(--sr-font);
+}
+
+.sr-next .sr-next__value {
+  flex: 0 0 auto;
+  font: 400 13px/20px var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
   color: var(--sr-text-dim);
 }
 
+.sr-next .sr-next__detail {
+  font: 400 13px/18px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+/* Email alerts (ui/subscribe.js): a row under the list that opens in place, the card's disclosure
+   row; inside it a field as the search's well, the two boxes as What to show's, one quiet button. */
+.sr-subscribe-host:empty {
+  display: none;
+}
+
+.sr-subscribe__chev {
+  flex: 0 0 auto;
+  color: var(--sr-text-dim);
+}
+
+.sr-subscribe__form {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.sr-subscribe__form[hidden] {
+  display: none;
+}
+
+.sr-subscribe__email {
+  width: 100%;
+  height: 44px;
+  padding: 0 var(--sp-3);
+  font: 400 15px/20px var(--sr-font);
+  color: var(--sr-text);
+  background: var(--sr-wash);
+  border: 1px solid transparent;
+  border-radius: var(--sr-radius);
+}
+
+.sr-subscribe__email::placeholder {
+  color: var(--sr-text-soft);
+}
+
+.sr-subscribe__email:focus-visible {
+  border-color: var(--sr-line-strong);
+  outline: 2px solid var(--sr-ember);
+  outline-offset: 2px;
+}
+
+html.sr-phone .sr-subscribe__email {
+  font-size: 16px;
+}
+
+.sr-subscribe__row {
+  display: flex;
+  gap: var(--sp-3);
+  align-items: center;
+  min-height: 44px;
+  font: 400 15px/20px var(--sr-font);
+  color: var(--sr-text);
+  cursor: pointer;
+}
+
+.sr-subscribe__submit {
+  justify-self: start;
+  min-height: 44px;
+}
+
+.sr-subscribe__status {
+  margin: 0;
+  font: 400 13px/18px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-subscribe__status[hidden] {
+  display: none;
+}
+
+/* Coming up, empty: one line saying what would be here. */
 .sr-next .sr-next__note {
-  margin: 6px 0 0;
-  font-size: 13px;
-  line-height: 1.4;
+  margin: 0;
+  padding: var(--sp-3) 0;
+  font: 400 13px/18px var(--sr-font);
   color: var(--sr-text-dim);
 }
 
@@ -4020,7 +4216,44 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 .sr-colourkey__why { margin: 0 0 8px; font-size: 13px; line-height: 1.4; color: var(--sr-text-dim); }
 .sr-colourkey__why:empty { display: none; }
 
-.sr-show__name { font-size: 14px; }
+/* One line (spec 0061 req 11): the name gives way with an ellipsis, never the row with a wrap. */
+.sr-show__name {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Layers that are on and came back empty: one line and the way to the sources sheet. */
+.sr-show__failed {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: baseline;
+  justify-content: space-between;
+  padding-top: var(--sp-2);
+  color: var(--sr-text);
+  border-top: 1px solid var(--sr-line);
+}
+
+.sr-show__failedwhy {
+  flex: 0 0 auto;
+  min-height: 24px;
+  padding: 0;
+  font: 400 13px/18px var(--sr-font);
+  color: var(--sr-ember);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .sr-show__failedwhy:hover { color: var(--sr-ember-light); }
+}
+
+@media (pointer: coarse) {
+  .sr-show__failedwhy { min-height: 44px; }
+}
 
 .sr-show__count {
   font: 400 13px/1.3 var(--sr-font-mono);
