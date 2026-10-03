@@ -339,3 +339,10 @@ html.sr-phone .sr-keyhint {
     .sr-keyhint.sr-float { transform: none; }
   }
 }
+
+/* A phone's sheet at full height is the whole screen but its top bar: the hint would lie over the
+   list being read, with the pill it sits above already gone (docs/ui-guide.md section 3.11). It
+   steps aside while the sheet is full and is back, if its time is not up, when the sheet comes down. */
+html.sr-phone:has(#sr-side[data-detent='full']) .sr-keyhint {
+  display: none;
+}
