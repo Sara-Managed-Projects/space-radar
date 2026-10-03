@@ -611,7 +611,7 @@ CASES: list[tuple[str, str, str, str]] = [
     ("a tile set in a projection the addressing cannot do",
      "tilesets.yaml", "projection: equirectangular", "projection: polar-stereographic"),
     ("a tile set in a mode the shader does not have",
-     "tilesets.yaml", "mode: detail", "mode: overlay"),
+     "tilesets.yaml", "projection: equirectangular\n    mode: detail", "projection: equirectangular\n    mode: overlay"),
     ("a tile set on a world we do not draw",
      "tilesets.yaml", "world: mars", "world: vulcan"),
     ("a tile set whose url is not a template",
