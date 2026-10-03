@@ -82,12 +82,13 @@ const table = rows.map((r) => `peak ${r.peak}° here -> lowest ${r.min[300]}° /
 // --- the words, the countdown, Up now ------------------------------------------------------------------
 const dark = tn.darkness(chicagoGuess, T0);
 const w = tn.tonightWords({ observer: chicagoGuess, nowMs: first.startMs - 3725e3, ready: true, pass: first, dark });
-check(/^from near Chicago, estimated from your time zone$/.test(w.place), `the place says it is a guess (${w.place})`);
+check(/^Near Chicago, guessed from your time zone$/.test(w.place), `the place says it is a guess (${w.place})`);
 check(w.line.startsWith('International Space Station · ') && w.line.includes(timeText.hhmm(first.startMs)) && /at its highest \(\d+°\) · \d+ min$/.test(w.line), `the pass line (${w.line})`);
 check(w.countdown === '1:02:05' && w.status === 'Starts in 1:02:05', `the countdown in h:mm:ss (${w.status})`);
-check(w.caveat === 'Times may differ by a few minutes where you are.', 'a guessed place carries the caveat');
+check(w.caveat === 'Times can be a few minutes off where you are.', 'a guessed place carries the caveat');
+check(w.parts && w.parts.name === 'International Space Station' && w.parts.time === timeText.hhmm(first.startMs) && /^\d+°$/.test(w.parts.deg) && /^\d+$/.test(w.parts.mins) && /^From \S.* to \S/.test(w.parts.path), `the pass as its parts (${JSON.stringify(w.parts)})`);
 const wSet = tn.tonightWords({ observer: chicagoSet, nowMs: first.startMs - 60e3, ready: true, pass: first, dark });
-check(wSet.caveat === null && /^from Chicago$/.test(wSet.place), 'a set place has no caveat');
+check(wSet.caveat === null && /^From Chicago$/.test(wSet.place), 'a set place has no caveat');
 const up = tn.tonightWords({ observer: chicagoGuess, nowMs: first.startMs + 30e3, ready: true, pass: first, dark });
 check(/^Up now, look /.test(up.status) && up.countdown === null && up.lookDir, `during the pass it says "Up now" (${up.status})`);
 check(tn.passState(first, first.startMs - 1) === 'coming' && tn.passState(first, first.startMs) === 'up' && tn.passState(first, first.endMs) === 'gone', 'coming, up, gone');
@@ -100,7 +101,7 @@ check(tn.countdown(0) === '0:00' && tn.countdown(-5) === '0:00' && tn.countdown(
 // --- nothing tonight: the 72 h search ----------------------------------------------------------------
 const later = visible.filter((p) => p.peakEl * DEG >= 40).slice(-1)[0];
 const none = tn.tonightWords({ observer: chicagoGuess, nowMs: T0, ready: true, pass: null, later, dark });
-check(none.empty === `Nothing bright passes over tonight. Next: ${timeText.dayAndTime(later.startMs)}, International Space Station.`, `nothing tonight names the next one (${none.empty})`);
+check(none.empty === 'Nothing bright passes over tonight.' && none.next === `Next: ${timeText.dayAndTime(later.startMs)} · International Space Station`, `nothing tonight names the next one, on its own line (${none.empty} / ${none.next})`);
 check(tn.tonightWords({ observer: chicagoGuess, nowMs: T0, ready: true, pass: null, later: null }).empty === 'Nothing bright passes over in the next three days.', 'nothing in 72 h says so');
 check(tn.tonightWords({ observer: chicagoGuess, nowMs: T0, ready: false }).empty === 'Working out tonight’s passes…', 'until the worker answers: working');
 check(/Could not look/.test(tn.tonightWords({ observer: chicagoGuess, couldNotLook: true }).empty), 'no catalogue: could not look, never an empty card');

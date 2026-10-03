@@ -795,8 +795,11 @@ export const COPY = {
   // The Next moment's list (spec 0026 req 6): what is coming, from records already loaded.
   // ui/scenenote.js: the one line on the scene when no satellite could be read at all.
   sceneNote: {
-    refused: 'No satellites on the map right now: CelesTrak, which publishes their orbits, could not be read from this connection. The Moon, the planets, the stars and the trips that do not need satellites still work.',
-    why: 'What could not be read',
+    // One line and one action, as a toast is (docs/ui-guide.md section 3.14, spec 0061 req 11). Who
+    // publishes the orbits and what still works is the sources sheet's to say; the button goes there.
+    refused: 'Satellites could not be read.',
+    refusedTitle: 'CelesTrak, which publishes the orbits, could not be read from this connection. The Moon, the planets, the stars and the trips that need no satellites still work.',
+    why: 'Sources',
     close: '×',
     closeTitle: 'Close this note',
   },
@@ -827,6 +830,8 @@ export const COPY = {
     textLabel: 'Text',
     lookingUp: 'Looking it up on Wikipedia…',
     wikiSource: 'The Wikipedia article this quotes',
+    // The empty state: one line where the article's link would be.
+    noWiki: 'No Wikipedia text for this one: the post is shorter.',
     // CC BY-SA asks for the source and the licence beside a quote; the sheet links the article.
     attribution: 'From Wikipedia, CC BY-SA 4.0',
     native: 'Share…',
@@ -1931,7 +1936,7 @@ export const COPY = {
     tonightRow: '{name} at {time}, {dir}, {fists}',
     tonightNone: 'Nothing bright comes over in the next twelve hours.',
     tonightNoObserver: 'Set where you are, or open the Now door, and this will list what comes over.',
-    tonightCouldNotLook: 'Could not look: the satellite catalogue has not loaded.',
+    tonightCouldNotLook: 'Could not look: no satellites have loaded.',
     tonightShowerTail: 'The sky view marks its radiant.',
   },
 
@@ -2113,9 +2118,10 @@ export const COPY = {
   // device's time zone unless the visitor set one, and says so; the Tonight tab (spec 0061) shows it.
   tonight: {
     title: 'Tonight',
-    placeGuess: 'from near {place}, estimated from your time zone',
-    placeSet: 'from {place}',
-    placeShared: 'from {place}, shared with you',
+    // One line each in the sidebar (spec 0061 req 11).
+    placeGuess: 'Near {place}, guessed from your time zone',
+    placeSet: 'From {place}',
+    placeShared: 'From {place}, shared with you',
     noPlace: 'Set where you are to see what passes over.',
     coords: '{lat}, {lon}',
     working: 'Working out tonight’s passes…',
@@ -2128,8 +2134,19 @@ export const COPY = {
     upNow: 'Up now, look {dir}',
     showMe: 'Show me',
     showMeTitle: 'Open the sky from your place, facing where it rises',
-    guessCaveat: 'Times may differ by a few minutes where you are.',
-    nothingThenNext: 'Nothing bright passes over tonight. Next: {when}, {name}.',
+    guessCaveat: 'Times can be a few minutes off where you are.',
+    // THE PASS AS DRAWN (spec 0061 task 5, ui/tonight.js): the name, three numbers with their
+    // units under them, and the way it goes. passLine above stays the whole account: the block's
+    // accessible name and a list row's tooltip.
+    unitRises: 'rises',
+    unitHigh: 'at its highest',
+    unitLong: 'min in view',
+    degrees: '{deg}°',
+    path: 'From {from} to {to}',
+    rowDetail: '{time} · {deg} up · {mins} min',
+    // Nothing tonight: the empty line, and the next one on a line of its own.
+    nothingTonight: 'Nothing bright passes over tonight.',
+    nextPass: 'Next: {when} · {name}',
     nothingAtAll: 'Nothing bright passes over in the next three days.',
     darkFrom: 'Dark from {time}',
     darkUntil: 'Dark until {time}',

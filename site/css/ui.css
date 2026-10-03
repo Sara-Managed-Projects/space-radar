@@ -2583,37 +2583,77 @@ html.sr-trip-mode.sr-phone .sr-toast {
 
 .sr-scenenote {
   position: fixed;
-  top: calc(12px + env(safe-area-inset-top, 0px));
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 30; /* over the scene and its labels, under the panels, the card and the mark */
-  width: min(440px, calc(100vw - 32px));
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 8px 10px;
-  align-items: start;
-  padding: 10px 12px;
-  background: var(--sr-panel);
-  border: 1px solid var(--sr-line);
-  border-radius: var(--sr-radius-sm);
+  top: calc(var(--sr-inset, 20px) + env(safe-area-inset-top, 0px));
+  left: calc(50% + var(--sr-scene-left, 0px) / 2);
+  z-index: var(--sr-z-controls); /* over the scene and its labels, under the card and the rail's popover */
+  display: flex;
+  gap: var(--sp-3);
+  align-items: center;
+  max-width: min(520px, calc(100vw - var(--sr-scene-left, 0px) - 2 * var(--sp-4) - 96px));
+  min-height: 44px;
+  padding: 0 var(--sp-1) 0 var(--sp-4);
+  font: 400 13px/18px var(--sr-font);
   color: var(--sr-text);
-  font-size: 13px;
-  line-height: 1.45;
+  background: var(--sr-glass-strong);
+  transform: translateX(-50%);
 }
+
 .sr-scenenote[hidden] { display: none; }
-.sr-scenenote__text { margin: 0; grid-column: 1; }
+
+/* One line: the satellite line is written to fit; a deep link's own line may run to two. */
+.sr-scenenote__text {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  padding: var(--sp-2) 0;
+}
+
+.sr-scenenote__why,
 .sr-scenenote__close {
-  grid-column: 2; grid-row: 1;
-  appearance: none; background: none; border: 0; color: var(--sr-text-dim);
-  font-size: 18px; line-height: 1; padding: 2px 4px; cursor: pointer;
+  flex: 0 0 auto;
+  min-height: 32px;
+  font: 400 13px/18px var(--sr-font);
+  background: transparent;
+  border: 0;
+  border-radius: var(--sr-radius);
+  cursor: pointer;
+  transition: color var(--sr-fast) var(--sr-ease), background-color var(--sr-fast) var(--sr-ease);
 }
-.sr-scenenote__close:hover { color: var(--sr-ember); }
-.sr-scenenote__why { grid-column: 1; justify-self: start; }
+
+.sr-scenenote__why {
+  padding: 0 var(--sp-1);
+  color: var(--sr-ember);
+}
+
+.sr-scenenote__why[hidden] { display: none; }
+
+.sr-scenenote__close {
+  width: 32px;
+  padding: 0;
+  font-size: 18px;
+  color: var(--sr-text-soft);
+}
+
+@media (hover: hover) {
+  .sr-scenenote__why:hover { color: var(--sr-ember-light); }
+  .sr-scenenote__close:hover { color: var(--sr-text); background-color: var(--sr-wash-hover); }
+}
+
+@media (pointer: coarse) {
+  .sr-scenenote__why,
+  .sr-scenenote__close { min-height: 44px; }
+  .sr-scenenote__close { width: 44px; }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .sr-scenenote { background: var(--sr-glass-solid); }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .sr-scenenote { background: var(--sr-glass-solid); }
+}
+
 html.sr-trip-mode .sr-scenenote { display: none; }
-@media (max-width: 600px) {
-  /* Under the GitHub mark, which sits in the top-right corner of a phone. */
-  .sr-scenenote { top: calc(56px + env(safe-area-inset-top, 0px)); }
-}
 
 /* Share and the postcard (spec 0033, 2026-09-23) ------------------------------------------- */
 
@@ -4957,6 +4997,7 @@ html.sr-phone .sr-toast {
 
 html.sr-phone .sr-scenenote {
   top: var(--sr-top-end);
+  max-width: calc(100vw - 2 * var(--sp-4));
 }
 
 /* The glass-strong surfaces answer the solid fallback themselves (.sr-float's would be lighter). */
@@ -4994,26 +5035,149 @@ html.sr-phone .sr-scenenote {
 /* The Tonight view (spec 0051 task 2, ui/tonight.js): mounted by the sidebar's Tonight tab (spec 0061).
    One pass, its arc and its countdown, the darkness line, and More passes. Type at the 13 px floor;
    the countdown in the mono face with fixed-width digits, so it does not jitter as it ticks. */
-.sr-tonight-view { display: flex; flex-direction: column; gap: var(--sp-2); font-size: 13px; color: var(--sr-text); }
-.sr-tonight-view__title { margin: 0; font: 600 15px/1.3 var(--sr-font-hud); letter-spacing: 0.02em; }
-.sr-tonight-view__place { margin: 0; color: var(--sr-text-dim); }
-.sr-tonight-view__body { display: flex; gap: var(--sp-3); align-items: flex-start; }
-.sr-tonight-view__body[hidden] { display: none; }
-.sr-tonight-view__arc { flex: 0 0 96px; }
-.sr-tonight-view__text { flex: 1 1 auto; min-width: 0; }
-.sr-tonight-view__line { margin: 0 0 2px; line-height: 1.4; }
-.sr-tonight-view__status { margin: 0; font-family: var(--sr-font-mono); font-variant-numeric: tabular-nums; color: var(--sr-ember); }
+.sr-tonight-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  font: 400 13px/18px var(--sr-font);
+  color: var(--sr-text);
+}
+
+/* The view's heading is the tab's own word: a microlabel, as every section of the sidebar has. */
+.sr-tonight-view__title {
+  margin: 0;
+  font: 600 13px/16px var(--sr-font-hud);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sr-text-dim);
+}
+
+.sr-tonight-view__place,
 .sr-tonight-view__caveat,
 .sr-tonight-view__dark,
-.sr-tonight-view__empty { margin: 0; color: var(--sr-text-dim); line-height: 1.4; }
-.sr-tonight-view__actions { display: flex; gap: var(--sp-2); }
+.sr-tonight-view__empty,
+.sr-tonight-view__next,
+.sr-tonight-view__line,
+.sr-tonight-view__name {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sr-tonight-view__place,
+.sr-tonight-view__caveat,
+.sr-tonight-view__dark,
+.sr-tonight-view__line {
+  color: var(--sr-text-dim);
+}
+
+.sr-tonight-view__body {
+  display: grid;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+}
+
+.sr-tonight-view__body[hidden],
+.sr-tonight-view__next[hidden] { display: none; }
+
+.sr-tonight-view__name {
+  font: 400 15px/20px var(--sr-font);
+}
+
+/* Three numbers between two hairlines, the card's own row (.sr-hero): mono, the unit dim under it. */
+.sr-tonight-view__nums {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-2);
+  margin: 0;
+  padding: var(--sp-3) 0;
+  border-top: 1px solid var(--sr-line);
+  border-bottom: 1px solid var(--sr-line);
+}
+
+.sr-tonight-view__cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+
+.sr-tonight-view__num {
+  margin: 0;
+  font: 400 24px/1.1 var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text);
+}
+
+html.sr-phone .sr-tonight-view__num { font-size: 20px; }
+
+.sr-tonight-view__unit {
+  font: 400 13px/16px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-tonight-view__way {
+  display: flex;
+  gap: var(--sp-3);
+  align-items: center;
+}
+
+.sr-tonight-view__arc { flex: 0 0 96px; }
+.sr-tonight-view__text { flex: 1 1 auto; min-width: 0; }
+
+.sr-tonight-view__status {
+  margin: 0;
+  overflow: hidden;
+  font: 400 13px/18px var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-ember);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The empty state: what would be here, and under it the next one. */
+.sr-tonight-view__empty { padding-top: var(--sp-2); font-size: 15px; line-height: 20px; color: var(--sr-text); }
+.sr-tonight-view__empty[hidden] { display: none; }
+.sr-tonight-view__next { color: var(--sr-text-dim); }
+
+.sr-tonight-view__actions { display: flex; gap: var(--sp-2); margin-top: var(--sp-2); }
 .sr-tonight-view__list[hidden] { display: none; }
-.sr-tonight-view__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
-.sr-tonight-view__row { position: relative; }
-.sr-tonight-view__rowbtn { width: 100%; padding: 6px 8px; text-align: left; font: inherit; color: var(--sr-text); background: var(--sr-raise); border: 1px solid var(--sr-line); border-radius: var(--sr-radius-sm); cursor: pointer; }
-.sr-tonight-view__rowbtn:hover { border-color: var(--sr-ember); }
+.sr-tonight-view__list { margin: 0; padding: 0; list-style: none; }
+.sr-tonight-view__row { position: relative; border-top: 1px solid var(--sr-line); }
+.sr-tonight-view__row:first-child { border-top: 0; }
+
+.sr-tonight-view__rowbtn {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  min-height: 44px;
+  padding: var(--sp-3) 0;
+  font: inherit;
+  text-align: left;
+  color: var(--sr-text);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.sr-tonight-view__rowname,
+.sr-tonight-view__rowdetail {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sr-tonight-view__rowname { font: 400 15px/20px var(--sr-font); }
+.sr-tonight-view__rowdetail { font: 400 13px/18px var(--sr-font-mono); color: var(--sr-text-dim); }
+
+@media (hover: hover) {
+  .sr-tonight-view__rowbtn:hover .sr-tonight-view__rowname { color: var(--sr-ember-light); }
+}
+
 /* Each row's own small arc, on hover and focus only (spec 0051 req 9). */
-.sr-tonight-view__rowarc { display: none; position: absolute; right: 6px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+.sr-tonight-view__rowarc { display: none; position: absolute; right: 0; top: 50%; transform: translateY(-50%); pointer-events: none; }
 .sr-tonight-view__row:hover .sr-tonight-view__rowarc,
 .sr-tonight-view__row:focus-within .sr-tonight-view__rowarc { display: block; }
 

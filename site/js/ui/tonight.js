@@ -62,7 +62,24 @@ export function renderTonight(host, ctx) {
   const body = el('div', 'sr-tonight-view__body');
   const arcBox = el('div', 'sr-tonight-view__arc');
   const text = el('div', 'sr-tonight-view__text');
+  // The pass as the card draws an object (docs/ui-guide.md section 3.10, principle 4): its name,
+  // three numbers with their units under them, then the way it goes beside its arc. The sentence
+  // tonightWords() writes is the block's accessible name; nothing on screen is a paragraph.
+  const name = el('p', 'sr-tonight-view__name');
+  const nums = el('dl', 'sr-tonight-view__nums');
+  const cell = (unit) => {
+    const c = el('div', 'sr-tonight-view__cell');
+    const num = el('dd', 'sr-tonight-view__num sr-num');
+    c.append(num, el('dt', 'sr-tonight-view__unit', unit));
+    nums.appendChild(c);
+    return num;
+  };
+  const numTime = cell(T.unitRises);
+  const numDeg = cell(T.unitHigh);
+  const numMins = cell(T.unitLong);
+  const way = el('div', 'sr-tonight-view__way');
   const line = el('p', 'sr-tonight-view__line');
+  const next = el('p', 'sr-tonight-view__next');
   const status = el('p', 'sr-tonight-view__status sr-num');
   status.setAttribute('aria-live', 'off'); // a second-by-second countdown is not an announcement
   const caveat = el('p', 'sr-tonight-view__caveat');
@@ -80,15 +97,20 @@ export function renderTonight(host, ctx) {
   list.hidden = true;
   text.appendChild(line);
   text.appendChild(status);
-  text.appendChild(caveat);
-  body.appendChild(arcBox);
-  body.appendChild(text);
+  way.appendChild(arcBox);
+  way.appendChild(text);
+  body.setAttribute('role', 'group');
+  body.appendChild(name);
+  body.appendChild(nums);
+  body.appendChild(way);
+  body.appendChild(caveat);
   actions.appendChild(showMe);
   actions.appendChild(more);
   root.appendChild(head);
   root.appendChild(place);
   root.appendChild(body);
   root.appendChild(empty);
+  root.appendChild(next);
   root.appendChild(dark);
   root.appendChild(actions);
   root.appendChild(list);
@@ -196,7 +218,16 @@ export function renderTonight(host, ctx) {
     const w = tonightWords({ observer: o, nowMs: now, ready: st.ready || !o, pass, later, dark: st.dark && st.dark.key ? st.dark : null, couldNotLook: st.couldNotLook, scrubbed });
     setText(place, w.place);
     body.hidden = !pass;
-    setText(line, w.line);
+    const parts = w.parts || {};
+    setText(name, parts.name);
+    name.title = parts.name || '';
+    setText(numTime, parts.time);
+    setText(numDeg, parts.deg);
+    setText(numMins, parts.mins);
+    setText(line, parts.path);
+    if (body.getAttribute('aria-label') !== (w.line || '')) body.setAttribute('aria-label', w.line || '');
+    setText(next, w.next);
+    next.hidden = !w.next;
     setText(status, w.status);
     setText(caveat, w.caveat);
     caveat.hidden = !w.caveat;
@@ -233,8 +264,13 @@ export function renderTonight(host, ctx) {
     for (const p of rows) {
       const w = tonightWords({ observer: { ...ctx.observer, source: 'set' }, nowMs: now, ready: true, pass: p });
       const li = el('li', 'sr-tonight-view__row');
-      const b = el('button', 'sr-tonight-view__rowbtn', w.line);
+      // A list row (docs/ui-guide.md section 3.5): the name, and under it when, how high, how long.
+      const b = el('button', 'sr-tonight-view__rowbtn');
       b.type = 'button';
+      b.title = w.line;
+      b.setAttribute('aria-label', w.line);
+      b.appendChild(el('span', 'sr-tonight-view__rowname', w.parts.name));
+      b.appendChild(el('span', 'sr-tonight-view__rowdetail sr-num', t(T.rowDetail, { time: w.parts.time, deg: w.parts.deg, mins: w.parts.mins })));
       b.addEventListener('click', () => { if (p.record && typeof ctx.select === 'function' && p.record.satrec) ctx.select(p.record); });
       // Its own small arc on hover and focus (req 9), drawn once.
       const svg = svgNode(arcSvg(p, 96, 48));

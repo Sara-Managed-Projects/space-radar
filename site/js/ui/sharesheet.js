@@ -522,7 +522,12 @@ export function createShareSheet(ctx) {
     }
     const [summary, index] = await Promise.all([titleW ? wikiSummary(titleW) : null, pages]);
     if (my !== token || !cur) return;
-    wikiLine.hidden = true;
+    // No Wikipedia text (no article named for this record, or the lookup failed): the line stays
+    // and says so, so the shorter post is explained and not a thing that looks half loaded.
+    // With nothing selected there was never an "About it" to miss, and the line is absent.
+    wikiLine.hidden = !record;
+    wikiLine.textContent = record ? S.noWiki : '';
+    wikiLine.classList.toggle('is-empty', !(summary && summary.extract));
     if (summary && summary.extract) {
       cur.parts.excerpt = summary.extract;
       cur.parts.attribution = S.attribution;
