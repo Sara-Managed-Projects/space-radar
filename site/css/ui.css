@@ -3007,7 +3007,7 @@ html.sr-phone .sr-chevron {
   display: none;
 }
 
-/* The push: 220 ms slide and fade in from the side it came from (0061 req 12). Popping comes from
+/* The push: 220 ms, a 12 px slide and a fade in from the side it came from (0061 req 12, guide 2.5). Popping comes from
    the left. Opacity and transform only: #310 found a visibility fade never advanced at low frame
    rates in headless Chrome. */
 .sr-side__view.is-current {
@@ -3019,12 +3019,12 @@ html.sr-phone .sr-chevron {
 }
 
 @keyframes sr-view-in {
-  from { opacity: 0; transform: translateX(16px); }
+  from { opacity: 0; transform: translateX(12px); }
   to { opacity: 1; transform: none; }
 }
 
 @keyframes sr-view-back {
-  from { opacity: 0; transform: translateX(-16px); }
+  from { opacity: 0; transform: translateX(-12px); }
   to { opacity: 1; transform: none; }
 }
 

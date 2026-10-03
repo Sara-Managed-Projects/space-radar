@@ -249,6 +249,48 @@ check(all.some((r) => /prefers-reduced-motion: reduce/.test(r.at) && /\.sr-float
 check(token('--sr-fast') === '140ms' && token('--sr-mid') === '220ms' && token('--sr-slow') === '320ms', 'motion is 140 / 220 / 320 ms');
 check(!/@keyframes\s+[\w-]*(pulse|bounce|glow)/i.test(FILES.map((f) => readFileSync(join(ROOT, f), 'utf8')).join('\n')), 'no bounce and no glow pulse');
 
+// --- 9b. motion from the tokens (docs/ui-guide.md section 2.5 and 7; spec 0061 req 12) ----------
+// Every duration in a transition or an animation is --sr-fast, --sr-mid or --sr-slow, and every
+// curve --sr-ease, --sr-ease-in or linear. A literal is allowed in exactly two places: 120 ms inside
+// `prefers-reduced-motion` (the fade), and scene motion, which keeps its own constants
+// (docs/design-language.md): the boot veil and its one waiting mark in site.css, and a trip
+// subject's label settling over the scene (ui/labels.js EMPHASIS_MS, held by tests/test_labels.mjs).
+const SCENE_MOTION = new Set(['.boot', '.boot-mark::after', '#labels .label.is-subject .label__text', '#labels .label.is-dimmed']);
+const MOTION_PROPS = new Set(['transition', 'transition-duration', 'transition-delay', 'transition-timing-function', 'animation', 'animation-duration', 'animation-delay', 'animation-timing-function']);
+for (const r of all) {
+  if (r.selector.split(',').every((x) => SCENE_MOTION.has(x.trim()))) continue;
+  // `-reduced` in a class is the same promise made from JavaScript (ui/hud.js reads the media query).
+  const reduced = /prefers-reduced-motion:\s*reduce/.test(r.at) || /-reduced\b/.test(r.selector);
+  for (const [prop, value] of decls(r.body)) {
+    if (!MOTION_PROPS.has(prop)) continue;
+    const bare = value.replace(/var\(--[\w-]+\)/g, ' ').replace(/cubic-bezier\([^)]*\)/g, ' cubic-bezier ').replace(/steps\([^)]*\)/g, ' steps ');
+    for (const m of bare.matchAll(/(?:^|[\s,])(-?[\d.]+)(ms|s)\b/g)) {
+      const ms = parseFloat(m[1]) * (m[2] === 's' ? 1000 : 1);
+      if (ms === 0 || (reduced && ms === 120)) continue;
+      problems.push(`${r.file} ${r.selector}: ${prop} has the literal ${m[1]}${m[2]}; a duration is --sr-fast, --sr-mid or --sr-slow${reduced ? '' : ' (120ms only under prefers-reduced-motion)'}`);
+    }
+    for (const m of bare.matchAll(/(?:^|[\s,])(ease(?:-in|-out|-in-out)?|cubic-bezier|steps)(?=$|[\s,])/g)) {
+      problems.push(`${r.file} ${r.selector}: ${prop} uses ${m[1]}; a curve is --sr-ease, --sr-ease-in or linear`);
+    }
+    if (/\binfinite\b/.test(bare)) problems.push(`${r.file} ${r.selector}: ${prop} loops; nothing in the chrome loops`);
+  }
+}
+// Reduced motion reaches every stylesheet that moves anything: a sheet with a transition or an
+// animation and no `prefers-reduced-motion` block has forgotten the people who asked.
+for (const f of FILES) {
+  const mine = all.filter((r) => r.file === f);
+  const moves = mine.some((r) => decls(r.body).some(([p, v]) => (p === 'transition' || p === 'animation') && v !== 'none'));
+  check(!moves || mine.some((r) => /prefers-reduced-motion:\s*reduce/.test(r.at)), `${f} moves things and has no prefers-reduced-motion block`);
+}
+// The sidebar's view push (0061 req 12): 220 ms, a 12 px slide and a fade; back comes from the left.
+{
+  const push = all.find((r) => r.selector === '.sr-side__view.is-current' && r.at === '');
+  check(!!push && /sr-view-in var\(--sr-mid\) var\(--sr-ease\)/.test(push.body), 'the sidebar view push is sr-view-in in --sr-mid with --sr-ease');
+  const raw = FILES.map((f) => strip(readFileSync(join(ROOT, f), 'utf8'))).join('\n');
+  check(/@keyframes sr-view-in\s*\{\s*from\s*\{[^}]*opacity:\s*0[^}]*translateX\(12px\)/.test(raw), 'sr-view-in starts 12 px to the right, from nothing');
+  check(/@keyframes sr-view-back\s*\{\s*from\s*\{[^}]*opacity:\s*0[^}]*translateX\(-12px\)/.test(raw), 'sr-view-back starts 12 px to the left, from nothing');
+}
+
 // --- 10. faces: exactly the four (the amendment's three and spec 0061's serif), self-hosted -------
 const fontsCss = readFileSync(join(ROOT, 'site/css/fonts.css'), 'utf8');
 const css = [...FILES.map((f) => readFileSync(join(ROOT, f), 'utf8')), fontsCss].join('\n');
