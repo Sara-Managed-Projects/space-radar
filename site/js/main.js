@@ -103,6 +103,9 @@ const LATER_LAYERS_MS = 3000;
 /** How long after sr:layers-ready the controls hint is imported and may show (ui/keyhint.js): after
  * the later layers and the aurora, when the first view has settled and before a visitor gives up. */
 const KEYHINT_MS = 5000;
+// The email row under Coming up (ui/subscribe.js) is asked for this long after the layers settle,
+// as the trip pictures are: below the sidebar's fold, and not a first visit's cost.
+const SUBSCRIBE_MS = 3000;
 
 export async function boot({ setStatus } = {}) {
   const say = setStatus || (() => {});
@@ -332,11 +335,14 @@ export async function boot({ setStatus } = {}) {
     import('./ui/tonight.js').then((m) => m.renderTonight(host, ctx)).catch((e) => console.warn('the Tonight tab did not load', e));
   }, { replace: true });
   createRail(ctx, shell.railHost);
-  // Issue #251: email alerts, a row under Coming up, and only where a notifier is deployed for it
-  // to post to (ui/subscribe.js says why); no endpoint, no row and no module.
-  if (window.SPACE_RADAR_NOTIFY_URL) {
-    import('./ui/subscribe.js').then((m) => m.createSubscribe({ parent: ctx.explore.subscribeHost })).catch((e) => console.warn('the subscribe row did not load', e));
-  }
+  // Issue #251: email alerts, a row that opens in place under Coming up (ui/subscribe.js says why
+  // it is there and not over the scene). Imported once the layers have settled: the row is below
+  // the fold of the sidebar, and a first visit's bytes are the map's.
+  window.addEventListener('sr:layers-ready', () => {
+    setTimeout(() => {
+      import('./ui/subscribe.js').then((m) => m.createSubscribe({ parent: ctx.explore.subscribeHost })).catch((e) => console.warn('the subscribe row did not load', e));
+    }, SUBSCRIBE_MS);
+  }, { once: true });
   createTimePill(ctx, shell.timeHost);
   // THE CONTROLS HINT (spec 0068 task 2, ui/keyhint.js): once per visitor, bottom-right, the keys
   // and the gestures that move the camera. Imported KEYHINT_MS after sr:layers-ready, so the first

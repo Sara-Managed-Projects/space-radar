@@ -2,13 +2,14 @@
 // notifier's Function URL (notify/lambda_handler.py's handler_subscribe, issue #251).
 //
 // WHERE IT SITS (spec 0061 task 5). It arrived as a form appended to <body> with no styles: a
-// grey browser button over the globe on every visit, posting to an address this build does not
-// have. The guide's second principle is that nothing new docks: so it is a row that opens in
-// place under Coming up, the list it is about (docs/ui-guide.md section 3.5 and the card's
-// disclosure rows), and it is BUILT ONLY WHEN THERE IS A NOTIFIER TO POST TO. With no endpoint
-// (the default: scripts/provision-notifier.sh is a human's step) there is no row, because a form
-// that can only answer "could not reach the service" is a dead end. main.js imports this module
-// only then, so a first visit does not pay for it either.
+// grey browser button over the globe on every visit. The guide's second principle is that nothing
+// new docks: so it is a row that opens in place under Coming up, the list it is about
+// (docs/ui-guide.md section 3.5 and the card's disclosure rows), in the sidebar on a desktop and
+// in the sheet on a phone, never over the scene. Inside: the field as the search's well, the two
+// boxes as What to show's, one quiet button, a one-line status. What it does is unchanged: the
+// same payload to the same endpoint, and with no endpoint (the default: a human runs
+// scripts/provision-notifier.sh) pressing Subscribe says it could not reach the service.
+// main.js imports this module once the layers have settled, so a first visit does not pay for it.
 
 import { COPY } from '../copy/en.js';
 
@@ -36,7 +37,7 @@ let seq = 0;
 
 export function createSubscribe({ parent, fetchImpl } = {}) {
   const sender = fetchImpl || (typeof fetch !== 'undefined' ? fetch : null);
-  if (!parent || !notifyEndpoint() || !sender) return null;
+  if (!parent) return null;
   const T = COPY.subscribe;
   seq += 1;
   const id = `sr-subscribe-${seq}`;
@@ -98,8 +99,10 @@ export function createSubscribe({ parent, fetchImpl } = {}) {
     const payload = subscribePayload(email.value, launches.box.checked, showers.box.checked);
     if (!payload.email) return;
     if (payload.categories.length === 0) { say(T.pickOne); return; }
+    const endpoint = notifyEndpoint();
+    if (!endpoint || !sender) { say(T.couldNotReach); return; }
     say(T.sending);
-    sender(notifyEndpoint(), {
+    sender(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),

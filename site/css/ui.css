@@ -3752,8 +3752,20 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 }
 
 .sr-subscribe__chev {
+  display: inline-block;
   flex: 0 0 auto;
+  font-size: 18px;
+  line-height: 20px;
   color: var(--sr-text-dim);
+  transition: transform var(--sr-fast) var(--sr-ease);
+}
+
+.sr-subscribe .sr-disc__head[aria-expanded='true'] .sr-subscribe__chev {
+  transform: rotate(90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-subscribe__chev { transition: none; }
 }
 
 .sr-subscribe__form {

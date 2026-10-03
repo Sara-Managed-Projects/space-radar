@@ -529,7 +529,7 @@ export const COPY = {
     submit: 'Subscribe',
     sending: 'Sending…',
     pending: 'Check your email to confirm.',
-    couldNotReach: 'That did not send. Try again in a minute.',
+    couldNotReach: 'Could not reach the subscription service.',
   },
 
   // "Six storms are turning": a count a person reads as a word (ui/explore.js Right now).
