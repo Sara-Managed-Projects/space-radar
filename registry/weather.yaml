@@ -1,0 +1,164 @@
+# Weather on every world (spec 0066). An effect is a ROW: which world, what is drawn, and HOW MUCH
+# OF IT IS KNOWN. The browser's copy is site/js/data/weather.js (scripts/gen_weather_js.py), which
+# only scene/weather/*.js imports -- by a dynamic import, never on the first visit.
+#
+# class       one of three, and the world's card says which in one line (copy/en.js COPY.weather):
+#               measured      drawn from data read today; the row names the host, the day its CORS
+#                             header was measured and what the header was.
+#               modelled      computed from numbers somebody published; the row names the paper.
+#                             What moves is right in direction and speed; where a given cloud is
+#                             today is not known and the card does not say it is.
+#               illustrative  typical for the season, or a shape at a measured place. The row says
+#                             `why:` it can be no better.
+# off_at      where the effect is not drawn. Every row lists `tier0` (the lowest device tier) and
+#             `save_data` (a connection that asks for less): check_registry.py refuses a row
+#             without both (spec 0066 requirement 8).
+# source      name, url and the day it was read. A measured row also carries `cors:` -- the header
+#             as curl printed it with `Origin: https://www.spaceradar.ai`.
+#
+# THE WIND PROFILES ARE SIMPLIFIED, AND SAY SO. `profile.points` is [latitude in degrees, eastward
+# wind in m/s relative to the rotation the globe is drawn with], south to north. Each is the cited
+# paper's jets -- their latitudes and peak speeds, as the paper's text and abstract give them --
+# joined by straight lines; none is the paper's full table (NASA's PDS Atmospheres node, which hosts
+# the Cassini tables, did not answer on 2026-10-03). The class is `modelled` because the jets are
+# published; the internal issue filed with this spec replaces the points with the full tables.
+# The latitudes are planetographic, as the papers give them; `flattening` turns them into the
+# planetocentric ones a map on a sphere is laid out in (scene/weather/flow.js planetocentricDeg).
+# `sense: -1` on Venus and Uranus: both turn backwards under the IAU's north, so a wind blowing with
+# the rotation blows toward the west there.
+version: 1
+
+classes: [measured, modelled, illustrative]
+
+effects:
+  - id: earth-lightning
+    world: earth
+    kind: lightning
+    class: measured
+    layer: lightning
+    off_at: [tier0, save_data, reduced_motion]
+    source:
+      name: "NOAA nowCOAST, Lightning Strike Density (NWS Ocean Prediction Center; ground networks NLDN and GLD360)"
+      url: "https://nowcoast.noaa.gov/geoserver/lightning_detection/wms"
+      read: 2026-10-03
+      cors: "access-control-allow-origin: *"
+      licence: "NOAA product, public domain; the layer's abstract calls it a Level 5 derived product, appropriate for public distribution"
+    covers: "25 S to 80 N, from 110 E eastward across the Pacific and the Americas to 0 W"
+    note: "Where and how often is measured (strikes over fifteen minutes on an 8 km grid). The instant of each flash is not in the map and is drawn at random at the measured rate; a flash is drawn larger than life."
+
+  - id: jupiter-bands
+    world: jupiter
+    kind: zonal-flow
+    class: modelled
+    off_at: [tier0, save_data]
+    source:
+      name: "Tollefson et al. 2017, Changes in Jupiter's Zonal Wind Profile preceding and during the Juno mission, Icarus 296, 163"
+      url: "https://doi.org/10.1016/j.icarus.2017.06.007"
+      read: 2026-10-03
+    profile:
+      radius_km: 71492
+      flattening: 0.0649
+      sense: 1
+      points: [[-90, 0], [-66, 0], [-61, 20], [-57, 0], [-53.5, 30], [-49.5, 10], [-46, 0], [-43.5, 40], [-39.5, -5], [-36.5, 35], [-32.5, -20], [-29.5, 0], [-26.5, 45], [-23, 0], [-20, -50], [-16, 10], [-12, 50], [-7, 150], [0, 80], [7, 100], [13, 40], [17.5, -20], [21, 0], [24, 150], [27, 0], [31.5, -30], [35.5, 35], [39.5, -15], [42.5, 25], [45.5, -5], [48, 30], [52, -5], [56, 20], [60, 0], [65, 15], [70, 0], [90, 0]]
+    # The Great Red Spot, where it is in the map we ship (site/textures/2k_jupiter.jpg, measured on
+    # the picture 2026-10-03): the band's wind goes round it and the oval turns within itself,
+    # anticlockwise, once in about six days (Cassini-era; it has since shrunk and sped up).
+    spot: {u: 0.3635, v: 0.398, half_u: 0.036, half_v: 0.040, period_days: 6}
+    note: "The bands slide past one another at the published jet speeds. The Great Red Spot stays where the map has it; its drift is not modelled."
+
+  - id: saturn-bands
+    world: saturn
+    kind: zonal-flow
+    class: modelled
+    off_at: [tier0, save_data]
+    source:
+      name: "García-Melendo et al. 2011, Saturn's zonal wind profile in 2004-2009 from Cassini ISS images, Icarus 215, 62"
+      url: "https://doi.org/10.1016/j.icarus.2011.07.005"
+      read: 2026-10-03
+    profile:
+      radius_km: 60268
+      flattening: 0.0980
+      sense: 1
+      points: [[-90, 0], [-73, 0], [-70, 80], [-65, 0], [-58, 80], [-52, 0], [-42, 90], [-35, 0], [-28, 60], [-20, 220], [-10, 360], [0, 380], [10, 360], [20, 220], [28, 60], [35, 0], [42, 110], [50, 0], [60, 100], [66, 0], [72, 5], [78.1, 104], [82, 10], [90, 0]]
+    # The two polar vortices (about 150 m/s at 88 degrees) are left out: the map has no pole in it.
+    note: "The equator's jet is some 400 m/s faster than the interior turns; the other jets are narrower."
+
+  - id: saturn-hexagon
+    world: saturn
+    kind: hexagon
+    class: illustrative
+    off_at: [tier0, save_data]
+    source:
+      name: "Sánchez-Lavega et al. 2021, Interaction of Saturn's Hexagon with convective storms, GRL 48 (the jet at 78.1 N planetographic, 104 m/s); Godfrey 1988, Icarus 76, 335 (the discovery)"
+      url: "https://doi.org/10.1029/2021GL092461"
+      read: 2026-10-03
+    hexagon: {lat_deg: 78.1, flattening: 0.0980, sides: 6}
+    why: "The map we ship has no pole in it. The six sides, the latitude and the fact that it barely moves against the planet's rotation are measured; the line drawn there is ours."
+
+  - id: venus-superrotation
+    world: venus
+    kind: zonal-flow
+    class: modelled
+    off_at: [tier0, save_data]
+    source:
+      name: "Sánchez-Lavega et al. 2008, Variable winds on Venus mapped in three dimensions, GRL 35, L13204 (Venus Express VIRTIS, cloud tops)"
+      url: "https://doi.org/10.1029/2008GL033817"
+      read: 2026-10-03
+    profile:
+      radius_km: 6122
+      flattening: 0
+      sense: -1
+      # About 100 m/s with the rotation at the cloud tops from the equator to 50 degrees, falling
+      # to nothing at the poles: once round in 4.4 days at the equator, about 3 at mid-latitudes.
+      points: [[-90, 0], [-50, 100], [50, 100], [90, 0]]
+    note: "The cloud deck goes round in about four days, sixty times faster than the ground under it."
+
+  - id: uranus-drift
+    world: uranus
+    kind: zonal-flow
+    class: modelled
+    off_at: [tier0, save_data]
+    source:
+      name: "Sromovsky et al. 2015, High S/N Keck and Gemini AO imaging of Uranus during 2012-2014, Icarus 258, 192"
+      url: "https://doi.org/10.1016/j.icarus.2015.05.029"
+      read: 2026-10-03
+    profile:
+      radius_km: 25559
+      flattening: 0.0229
+      sense: -1
+      points: [[-90, 0], [-75, 150], [-60, 250], [-45, 200], [-30, 80], [-20, 0], [0, -50], [20, 0], [30, 80], [45, 200], [60, 250], [75, 150], [90, 0]]
+    note: "Against the rotation at the equator, with it nearer the poles."
+
+  - id: neptune-drift
+    world: neptune
+    kind: zonal-flow
+    class: modelled
+    off_at: [tier0, save_data]
+    source:
+      name: "Sromovsky et al. 1993, Dynamics of Neptune's major cloud features, Icarus 105, 110 (Voyager 2; the fit u = -398 + 0.188 lat^2 - 1.2e-5 lat^4 m/s)"
+      url: "https://doi.org/10.1006/icar.1993.1114"
+      read: 2026-10-03
+    profile:
+      radius_km: 24764
+      flattening: 0.0171
+      sense: 1
+      # The fit, sampled every ten degrees to 70 and taken to nothing at the poles, where it was
+      # never measured.
+      points: [[-90, 0], [-80, 150], [-70, 235], [-60, 123], [-50, -3], [-40, -128], [-30, -239], [-20, -325], [-10, -379], [0, -398], [10, -379], [20, -325], [30, -239], [40, -128], [50, -3], [60, 123], [70, 235], [80, 150], [90, 0]]
+    note: "The fastest winds measured on any planet: some 400 m/s against the rotation at the equator."
+
+  - id: mars-season
+    world: mars
+    kind: mars-season
+    class: illustrative
+    off_at: [tier0, save_data]
+    source:
+      name: "Allison and McEwen 2000, Planet. Space Sci. 48, 215 (the season, Ls, from the date); Piqueux et al. 2015, Icarus 251, 164 (the seasonal caps' edges by Ls, MRO MCS); Kass et al. 2016, GRL 43, 6111 (the dusty season)"
+      url: "https://doi.org/10.1016/S0032-0633(99)00092-6"
+      read: 2026-10-03
+    # The edge of each seasonal frost cap by Ls, [Ls in degrees, latitude of the edge in degrees],
+    # a simplification of the published recession curves; and how hazy the air typically is.
+    north_cap: [[0, 60], [30, 66], [60, 74], [90, 82], [150, 82], [200, 68], [240, 58], [300, 54], [330, 55], [360, 60]]
+    south_cap: [[0, -62], [60, -52], [120, -50], [160, -53], [200, -60], [240, -70], [270, -80], [300, -86], [330, -86], [360, -62]]
+    dust: [[0, 0.05], [135, 0.05], [180, 0.2], [225, 0.55], [250, 0.6], [290, 0.35], [320, 0.5], [345, 0.2], [360, 0.05]]
+    why: "No daily global map of Mars answers a web page: MRO MARCI's weekly weather reports are pictures and films with no CORS header (looked for 2026-10-03). The season is computed; the frost edge and the haze are what that season typically brings, not what a camera saw this week."
