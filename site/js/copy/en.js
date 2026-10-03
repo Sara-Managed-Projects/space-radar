@@ -895,7 +895,7 @@ export const COPY = {
     modes: { eye: 'Eye', camera: 'Camera', deep: 'Deep' },
     notes: {
       eye: 'What you would see from a dark place: faint and grey.',
-      camera: 'A long exposure: minutes of light, in true colour.',
+      camera: 'A long exposure: minutes of light, as a camera keeps it.',
       deep: 'An observatory\u2019s stretch: the faintest gas lifted.',
     },
     real: 'The gas is real, and faint: to the eye at a telescope it is a grey glow, because the night eye sees no colour. The picture on the sky is a long exposure.',

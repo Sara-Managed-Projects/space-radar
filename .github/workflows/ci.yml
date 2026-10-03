@@ -96,6 +96,13 @@ jobs:
       # only (the WebP header is read by hand), so the job's one dependency stays PyYAML.
       - name: Every trip has its card picture, 640 x 360 and inside its budget (spec 0068)
         run: python3 scripts/build_trip_thumbs.py --check
+      # Spec 0067: the photographs of the nebulae. The mirror the browser reads, then the files:
+      # one WebP per registry row, its longer side the row's `px`, each inside nebula_picture_bytes
+      # and all of them inside nebulae_total_bytes. Stdlib only, like the trip pictures above.
+      - name: The nebulae mirror matches the registry (spec 0067)
+        run: python3 scripts/gen_nebulae_js.py --check
+      - name: Every nebula has its picture, the right size and inside its budget (spec 0067)
+        run: python3 scripts/build_nebulae.py --check
       # Spec 0045: the eleven font subsets are the ones build-fonts.py recorded, fonts.css is what it
       # writes, and the OFL text and a CREDITS.md row travel with each family. Stdlib only.
       - name: The self-hosted faces are the recorded subsets, with their licences (spec 0045)
@@ -350,6 +357,8 @@ jobs:
         run: node tests/test_dso.mjs
       - name: the Milky Way model is a model, in the right place (spec 0028 step 6)
         run: node tests/test_galaxy.mjs
+      - name: the nebulae's photographs sit where their objects are, and nothing of them loads at boot (spec 0067)
+        run: node tests/test_nebulae.mjs
       - name: every extreme object has a source and sits where its source says (spec 0028 step 7)
         run: node tests/test_exotics.mjs
       - name: every rung of the breadcrumb and every stop of the edge trip names something that exists (spec 0028 step 8)

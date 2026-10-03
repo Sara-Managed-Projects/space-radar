@@ -187,7 +187,6 @@ export async function boot({ setStatus } = {}) {
   ctx.exposure = exposure;
   starfield.setExposure(exposure.look().milkyWay);
   let skyStrength = 1;
-  let modelStrength = 0;
   let nebulaeImport = null;
   ctx.wantNebulae = () => {
     if (nebulaeImport) return nebulaeImport;
@@ -199,7 +198,6 @@ export async function boot({ setStatus } = {}) {
         onPicture: () => dsoGlow.setPictured(nebulae.loaded()),
       });
       nebulae.setSkyOpacity(skyStrength);
-      nebulae.setModelOpacity(modelStrength);
       nebulae.setSkyVisible(!(ctx.latch && ctx.latch.latched));
       nebulae.setRecords(ctx.recordsFor('deep-sky'));
       const s = ctx.selected();
@@ -227,11 +225,7 @@ export async function boot({ setStatus } = {}) {
       if (ctx.nebulae) ctx.nebulae.setSkyOpacity(k);
     },
     'stars-3d': (k) => stars3d.setOpacity(k),
-    'galaxy-model': (k) => {
-      modelStrength = k;
-      galaxy.setOpacity(k);
-      if (ctx.nebulae) ctx.nebulae.setModelOpacity(k);
-    },
+    'galaxy-model': (k) => galaxy.setOpacity(k),
   });
   // A star and its planets at the system's own scale (spec 0040, scene/systems.js): built when its
   // stage is entered, dropped when it is left, nothing at boot.
@@ -626,7 +620,13 @@ export async function boot({ setStatus } = {}) {
     if (pos) {
       const distance = arrivalDistance(record, pos);
       const limb = limbPose(record, pos, distance, on);
-      cameraRig.flyTo({ targetScene: pos, distance: limb ? limb.distance : distance, tilt: limb ? limb.tilt : undefined, ms });
+      // A deep-sky object is approached FROM THE SUN'S SIDE, looking out along the line we see it
+      // on (spec 0067). The rig's default arrival is from beyond the subject, looking back at its
+      // world, which is right for a satellite and here would show a nebula's photograph from
+      // behind, mirrored -- and scene/nebulae.js rightly draws no picture off the line it was
+      // taken along. Pi less a few degrees: the same framing, turned around.
+      const fromHere = record.klass === 'dso' && isLadderStage(stage.worldId) ? Math.PI - 0.1 : undefined;
+      cameraRig.flyTo({ targetScene: pos, distance: limb ? limb.distance : distance, tilt: limb ? limb.tilt : fromHere, ms });
     }
     // Following something standing on the Moon is following the Moon, which crosses its own
     // radius in about half an hour, so its centre is re-taught with every tick of the target.
@@ -1316,7 +1316,11 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     }
     if (ctx.galaxy) ctx.galaxy.update(ctx.camera, ctx.renderer);
     if (ctx.dsoGlow) ctx.dsoGlow.update(ctx.camera, ctx.renderer, ctx.isLayerDrawable(LAYERS.find((l) => l.id === 'deep-sky')));
-    if (ctx.nebulae) ctx.nebulae.update(ctx.camera, ctx.renderer, ctx.isLayerOn('deep-sky'), ctx.isLayerDrawable(LAYERS.find((l) => l.id === 'deep-sky')));
+    if (ctx.nebulae) {
+      ctx.nebulae.update(ctx.camera, ctx.renderer, ctx.isLayerOn('deep-sky'), ctx.isLayerDrawable(LAYERS.find((l) => l.id === 'deep-sky')));
+      // Andromeda's photograph and her stand-in model never draw over each other (scene/galaxy.js).
+      if (ctx.galaxy) ctx.galaxy.setAndromedaShare(1 - ctx.nebulae.drawn('dso-m31'));
+    }
     if (ctx.skyView.active) ctx.skyView.update(t);
     render();
     // After render(), because render() is what brings the camera's matrices up to this frame: placed

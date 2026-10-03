@@ -1245,6 +1245,10 @@ for (const file of allFiles) {
     // the materials are checked in the state they are drawn in, not just the one they start in.
     const worlds = createWorlds(scene, { textureBase: '', loadTexture: (url, onLoad) => { const t = new THREE.Texture(); if (onLoad) onLoad(t); return t; } });
     for (const w of worlds.waitingMaps()) worlds.preload(w);
+    // The nebulae's photographs (spec 0067) are a sky layer built the same way -- depth test off,
+    // additive -- on the sky sphere and at their places; both must stay in the opaque list too.
+    const { createNebulae } = await import(join(JS, 'scene/nebulae.js'));
+    const nebulae = createNebulae(scene, { skyGroup: sky.group, load: () => Promise.resolve(new THREE.Texture()) });
     let checked = 0;
     const named = new Set();
     scene.traverse((o) => {
@@ -1261,10 +1265,11 @@ for (const file of allFiles) {
         }
       }
     });
-    const want = ['milkyway', 'stars', 'earth', 'mars', 'sun'];
+    const want = ['milkyway', 'stars', 'earth', 'mars', 'sun', 'nebula-sky-m42', 'nebula-m42'];
     const missing = want.filter((n) => ![...named].some((x) => x === n || x.startsWith(n)));
     if (missing.length) problems.push(`DRAWORDER the check never saw ${missing.join(', ')}, so it proves nothing about them`);
     else notes.push(`${checked} materials across the sky and the worlds; none draws after the planets with depthTest off`);
+    nebulae.dispose();
     sky.dispose && sky.dispose();
     worlds.dispose();
   } catch (e) {

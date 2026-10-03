@@ -1,7 +1,7 @@
 // scene/galaxy.js -- the Milky Way as a place, and honestly a model (spec 0028 step 6).
 //
-// Contract: createGalaxy(scene, opts) -> { ensureGeometry, setVisible, setOpacity, rebuild, update,
-//   count, dispose, mode }
+// Contract: createGalaxy(scene, opts) -> { ensureGeometry, setVisible, setOpacity, setAndromedaShare,
+//   rebuild, update, count, dispose, mode }
 //
 // site/data/galaxy.bin is a point cloud built by scripts/build-galaxy.py from PUBLISHED NUMBERS --
 // Reid et al. 2019's fitted spiral arms and R0, the disc's measured size, the debated bar taken at
@@ -17,6 +17,11 @@
 // That makes it an illustration twice over: our own galaxy's model, standing in for arms nobody has
 // mapped star by star. The M31 record's card says so (data/parsers.js), as the Milky Way's does.
 // It shares the colours and weights, and costs one more position buffer and no download.
+//
+// AND IT STEPS BACK FOR THE PHOTOGRAPH (spec 0067, 2026-10-03). Along the line we see Andromeda on
+// there is something truer than our own galaxy's arms standing in for hers: a picture of her
+// (scene/nebulae.js). While that is drawn the stand-in is not -- setAndromedaShare(0) -- and off
+// that line, where a flat photograph would be the lie, the model comes back.
 //
 // Static like the stars: one buffer, rebuilt only when the stage changes (140 292 conversions,
 // float64, no allocation), and registry/lod.yaml fades it in as the camera leaves the stellar
@@ -185,8 +190,10 @@ export function createGalaxy(scene, opts = {}) {
   let builtFor = null;
   let loading = null;
   const uniforms = { uPixelRatio: { value: 1 }, uGain: { value: 0 }, uUnitsPerKpc: { value: 1 }, uPatchKpc: { value: 0.15 } };
-  // Andromeda shares every uniform but the patch size, which scales with the model.
-  const twinUniforms = { ...uniforms, uPatchKpc: { value: 0.15 * andromedaDiameterLy() / ANDROMEDA.templateDiameterLy } };
+  // Andromeda shares every uniform but the patch size, which scales with the model, and the gain,
+  // which also carries how much of her the photograph has left to the model (setAndromedaShare).
+  const twinUniforms = { ...uniforms, uGain: { value: 0 }, uPatchKpc: { value: 0.15 * andromedaDiameterLy() / ANDROMEDA.templateDiameterLy } };
+  let twinShare = 1;
 
   function ensureGeometry() {
     if (data) return Promise.resolve(data);
@@ -272,6 +279,7 @@ export function createGalaxy(scene, opts = {}) {
     if (points) points.visible = layerOn && opacity > 0 && isLadderStage(stage.worldId);
     if (twinPoints) twinPoints.visible = !!(points && points.visible);
     uniforms.uGain.value = opacity;
+    twinUniforms.uGain.value = opacity * twinShare;
   }
   function setVisible(on) { layerOn = on !== false; applyVisibility(); if (layerOn && opacity > 0 && isLadderStage(stage.worldId)) ensureGeometry(); }
   /** registry/lod.yaml's `galaxy-model` hook, 0..1. */
@@ -279,6 +287,11 @@ export function createGalaxy(scene, opts = {}) {
     opacity = Math.min(1, Math.max(0, Number(k) || 0));
     applyVisibility();
     if (layerOn && opacity > 0 && isLadderStage(stage.worldId)) ensureGeometry();
+  }
+  /** 1 = the model draws Andromeda; 0 = her photograph does (scene/nebulae.js), and the model waits. */
+  function setAndromedaShare(k) {
+    twinShare = Math.min(1, Math.max(0, Number(k)));
+    twinUniforms.uGain.value = opacity * twinShare;
   }
   function update(camera, renderer) {
     if (!points) return;
@@ -294,7 +307,7 @@ export function createGalaxy(scene, opts = {}) {
     data = null; geometry = null; points = null; builtFor = null;
   }
   return {
-    ensureGeometry, setVisible, setOpacity, rebuild, update, dispose, group,
+    ensureGeometry, setVisible, setOpacity, setAndromedaShare, rebuild, update, dispose, group,
     count: () => (data ? data.count : null),
     mode: () => (points && points.visible ? 'drawn' : 'hidden'),
   };

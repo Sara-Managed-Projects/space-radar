@@ -14,6 +14,7 @@ green check on a documentation change.
 from __future__ import annotations
 
 import datetime
+import math
 import os
 import re
 import subprocess
@@ -1517,6 +1518,156 @@ def check_dso_hand() -> list:
             if isinstance(mid, (int, float)) and row.get("distLy") != round(mid * 1000):
                 fail(where, f"`dist_kly: {d}` but site/data/dso.json draws it at {row.get('distLy')} ly")
     return objects
+
+
+# --- registry/nebulae.yaml (spec 0067, 2026-10-03) -----------------------------------------------
+# A photograph somebody else took, shipped from our bucket and laid on the sky: so it gets the
+# audio's treatment. A row is refused unless its archive's terms are on file with the day they were
+# read, the licence is one we may redistribute under, the credit is the archive's (and names no
+# survey we may not ship: several archive pictures are Digitized Sky Survey composites), the
+# credit is in CREDITS.md section 3g word for word, the file ships -- and the picture is WHERE ITS
+# OBJECT IS: the object's catalogue position must fall inside it, and the solver's evidence must
+# tell the picture from its mirror image. A wrong centre draws Orion's photograph on empty sky and
+# nothing in the browser would say so.
+NEBULA_LICENCES = {"CC BY 4.0", "Public domain"}
+NEBULA_COLOURS = {"broadband", "mixed", "narrowband", "unstated"}
+NEBULA_NOT_OURS = re.compile(r"digiti[sz]ed sky survey|\bDSS\d?\b|mellinger|all rights reserved", re.I)
+NEBULA_MIRROR_MARGIN = 1.5
+
+
+def nebula_inside(row: dict, ra_deg: float, dec_deg: float) -> tuple[float, float] | None:
+    """(u, v) of a sky position in the picture, each 0..1 inside it: scene/nebulae.js
+    skyToPicture(), in Python. None when the position is behind the picture's plane."""
+    rad = math.radians
+    a, d, r = rad(row["ra_deg"]), rad(row["dec_deg"]), rad(row.get("north_deg") or 0)
+    centre = (math.cos(d) * math.cos(a), math.cos(d) * math.sin(a), math.sin(d))
+    east = (-math.sin(a), math.cos(a), 0.0)
+    north = (-math.sin(d) * math.cos(a), -math.sin(d) * math.sin(a), math.cos(d))
+    up = tuple(n * math.cos(r) - e * math.sin(r) for n, e in zip(north, east))
+    right = tuple(-n * math.sin(r) - e * math.cos(r) for n, e in zip(north, east))
+    pa, pd = rad(ra_deg), rad(dec_deg)
+    p = (math.cos(pd) * math.cos(pa), math.cos(pd) * math.sin(pa), math.sin(pd))
+    dot = lambda x, y: sum(i * j for i, j in zip(x, y))  # noqa: E731
+    along = dot(p, centre)
+    if along <= 1e-6:
+        return None
+    hx = math.tan(rad(row["width_arcmin"] / 60) / 2)
+    hy = math.tan(rad(row["height_arcmin"] / 60) / 2)
+    return 0.5 + dot(p, right) / along / hx / 2, 0.5 + dot(p, up) / along / hy / 2
+
+
+def check_nebulae() -> list:
+    """registry/nebulae.yaml: every photograph is licensed, credited, shipped, and where its object is."""
+    name = "nebulae.yaml"
+    path = REG / name
+    if not path.exists():
+        return []
+    try:
+        doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as exc:
+        fail(name, f"will not parse: {exc}")
+        return []
+    archives = doc.get("archives")
+    if not isinstance(archives, dict) or not archives:
+        fail(name, "no `archives:` -- a picture's licence is its archive's terms, and they are written down here")
+        archives = {}
+    for aid, a in archives.items():
+        where = f"{name}[archives.{aid}]"
+        if not isinstance(a, dict):
+            fail(where, "is not a mapping")
+            continue
+        if a.get("licence") not in NEBULA_LICENCES:
+            fail(where, f"licence {a.get('licence')!r} is not one we may redistribute under ({', '.join(sorted(NEBULA_LICENCES))})")
+        if not str(a.get("terms") or "").startswith("https://"):
+            fail(where, "no `terms:` page -- the licence is a claim until somebody can read where it is granted")
+        if not a.get("says"):
+            fail(where, "no `says:` -- quote the sentence of the terms that grants the licence")
+        if not isinstance(a.get("checked"), datetime.date):
+            fail(where, "no `checked:` date -- terms change, so the day they were read is part of the evidence")
+        for key in ("page", "screen"):
+            if "{image}" not in str(a.get(key) or ""):
+                fail(where, f"`{key}:` must be a URL with {{image}} in it")
+        if not a.get("name"):
+            fail(where, "no `name:`")
+    pictures = doc.get("pictures")
+    if not isinstance(pictures, list):
+        fail(name, "`pictures:` must be a list")
+        return []
+    if not 15 <= len(pictures) <= 30:
+        fail(name, f"{len(pictures)} pictures: spec 0067 asks for 15 to 30, and nebulae_total_bytes was set for that")
+    built = ROOT / "site" / "data" / "dso.json"
+    dso = {}
+    if built.exists() and built.stat().st_size > 0:
+        import json
+        dso = {o.get("id"): o for o in json.loads(built.read_text(encoding="utf-8")).get("objects", [])}
+    credits_path = ROOT / "CREDITS.md"
+    section = None
+    if credits_path.exists():
+        m = re.search(r"^## 3g\.[^\n]*\n(.*?)(?=^## |\Z)", credits_path.read_text(encoding="utf-8"), re.M | re.S)
+        section = m.group(1) if m else ""
+    seen = set()
+    for r in pictures:
+        if not isinstance(r, dict) or not r.get("id"):
+            fail(name, "a picture row is not a mapping with an id")
+            continue
+        where = f"{name}[{r['id']}]"
+        if r["id"] in seen:
+            fail(where, "duplicate id: one picture per object")
+        seen.add(r["id"])
+        if r.get("archive") not in archives:
+            fail(where, f"archive {r.get('archive')!r} has no row under `archives:`, so nothing says what its licence is")
+        if not r.get("image"):
+            fail(where, "no `image:` -- the archive's own id for the picture")
+        credit = r.get("credit")
+        if not isinstance(credit, str) or not credit.strip():
+            fail(where, "no `credit:` -- CC BY asks for the archive's credit line, word for word")
+        elif NEBULA_NOT_OURS.search(credit):
+            fail(where, f"the credit names a source we may not redistribute ({credit!r}): the Digitized Sky Survey "
+                        f"and Mellinger's panorama are not ours to ship, whichever observatory's page shows the picture")
+        elif section is not None and credit not in section:
+            fail(where, "its credit is not in CREDITS.md section 3g word for word")
+        numbers = True
+        for key, lo, hi in (("ra_deg", 0, 360), ("dec_deg", -90, 90), ("north_deg", -180, 180),
+                            ("width_arcmin", 0.5, 900), ("height_arcmin", 0.5, 900)):
+            v = r.get(key)
+            if not is_number(v) or not (lo <= v <= hi):
+                fail(where, f"`{key}` must be a number in [{lo}, {hi}] (got {v!r})")
+                numbers = False
+        if r.get("colours") not in NEBULA_COLOURS:
+            fail(where, f"`colours: {r.get('colours')}` is not one of {', '.join(sorted(NEBULA_COLOURS))}: it picks the card's sentence")
+        elif r["colours"] == "unstated":
+            if r.get("filters"):
+                fail(where, "says the filters are unstated and names them")
+            if not r.get("colours_note"):
+                fail(where, "`colours: unstated` needs a `colours_note:` saying what the page does say")
+        elif not r.get("filters"):
+            fail(where, "no `filters:` -- the card's sentence names them; write `colours: unstated` if the page does not")
+        solved = r.get("solved")
+        if not isinstance(solved, dict) or not is_number(solved.get("correlation")) or not is_number(solved.get("mirror")):
+            fail(where, "no `solved: {correlation, mirror}` -- the archives' centres are up to 43' off, so a picture is "
+                        "placed by scripts/build_nebulae.py --solve and carries its evidence")
+        elif solved["correlation"] < 10 or solved["correlation"] < NEBULA_MIRROR_MARGIN * solved["mirror"]:
+            fail(where, f"correlation {solved['correlation']} against its mirror image's {solved['mirror']}: the picture cannot "
+                        f"be told from its reflection (or matches nothing), so it is not placed")
+        f = str(r.get("file") or "")
+        if not re.fullmatch(r"site/images/nebulae/[a-z0-9-]+\.webp", f):
+            fail(where, f"`file: {f}` must be site/images/nebulae/<name>.webp")
+        elif not (ROOT / f).exists():
+            fail(where, f"{f} is not in the tree (scripts/build_nebulae.py --only={r['id']})")
+        if not isinstance(r.get("checked"), datetime.date):
+            fail(where, "no `checked:` date")
+        if "px" in r and (not isinstance(r["px"], int) or not 128 <= r["px"] <= 1024):
+            fail(where, f"`px: {r['px']}` must be a whole number from 128 to 1024")
+        if dso:
+            o = dso.get(r["id"])
+            if o is None:
+                fail(where, "is not a deep-sky object in site/data/dso.json: the picture would belong to no record")
+            elif numbers:
+                at = nebula_inside(r, o["raDeg"], o["decDeg"])
+                if at is None or not (0.02 < at[0] < 0.98 and 0.02 < at[1] < 0.98):
+                    fail(where, f"the object's catalogue position (RA {o['raDeg']}, Dec {o['decDeg']}) is not inside the "
+                                f"picture: it would be drawn on a part of the sky its object is not in")
+    return pictures
 
 
 EXOTIC_KINDS = {"blackhole", "pulsar", "magnetar", "star"}
@@ -3239,6 +3390,7 @@ def main() -> int:
     check_system_stage_rows(ladder)
     lod_rules = check_lod()
     dso_hand = check_dso_hand()
+    nebulae = check_nebulae()
     ladder_rungs = check_ladder(world_ids, layer_ids)
     exotics = check_exotics()
     famous_stars = check_stars_notable(exotics)
@@ -3450,7 +3602,7 @@ def main() -> int:
         f"registry ok: {len(worlds)} worlds, "
         f"{sum(1 for st in ladder if isinstance(st, dict) and st.get('kind') != 'system')} ladder rungs, "
         f"{len(systems)} star system(s), {len(lod_rules)} lod rules, "
-        f"{len(dso_hand)} hand-placed deep-sky objects, {len(exotics)} exotics, {len(famous_stars)} famous stars, {len(ladder_rungs)} breadcrumb rungs, {len(aliases)} aliases, {len(colorkeys)} colour keys, "
+        f"{len(dso_hand)} hand-placed deep-sky objects, {len(nebulae)} nebula pictures, {len(exotics)} exotics, {len(famous_stars)} famous stars, {len(ladder_rungs)} breadcrumb rungs, {len(aliases)} aliases, {len(colorkeys)} colour keys, "
         f"{len(sources)} sources, {len(layers)} layers, "
         f"{len(events)} event types, {len(models)} models, {len(real_models)} real models, "
         f"{len(marks)} third-party marks, {len(sites)} sites, "

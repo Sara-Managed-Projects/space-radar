@@ -1,7 +1,7 @@
 // scene/nebulae.js -- real photographs of the famous nebulae and galaxies, pinned where they are
 // (spec 0067 tasks 1-3).
 //
-// Contract: createNebulae(scene, opts) -> { setExposure(look), setSkyOpacity(k), setModelOpacity(k),
+// Contract: createNebulae(scene, opts) -> { setExposure(look), setSkyOpacity(k), drawn(id),
 //   setRecords(records), setSkyVisible(on), rebuild(), update(camera, renderer, skyOn, placeOn), want(id),
 //   has(id), loaded(), state(), dispose(), group, skyGroup }
 // Pure, for tests/test_nebulae.mjs: pictureBasis(row), pictureCorners(row), skyToPicture(row, ra, dec),
@@ -28,11 +28,12 @@
 // WHAT IT IS NOT. It is a photograph taken from here. Seen from the side it would be a lie -- a
 // nebula is a volume and a galaxy a disc -- so the picture fades out as the camera leaves the line
 // of sight (viewFade) and the object's mark is what is left. The volumes of spec 0067 task 2 are
-// not built. Andromeda's picture also gives way to scene/galaxy.js's model as that fades in.
+// not built. Andromeda has a model (scene/galaxy.js): on the line of sight her photograph is drawn
+// and the model waits (drawn('dso-m31') tells main.js how much), off it the model comes back.
 //
 // NOTHING AT BOOT. main.js imports this file only on a rung of the ladder, when a deep-sky object
 // is selected or when the visitor touches the exposure control; and a picture's file is fetched
-// only once it would be more than a few pixels wide in view, or its object is selected. A first
+// only once it would be 32 px wide in view, or its object is selected. A first
 // visit downloads none of it (tests/test_first_visit_bytes.mjs).
 //
 // THE BLEND. Additive, in the opaque list, depth test off -- the same three choices as the stars,
@@ -51,7 +52,10 @@ const OBLIQUITY = 23.4392911 * D2R; // J2000 mean obliquity, as scene/galaxy.js
 const SUN_INERTIAL = 'sun-inertial';
 const RENDER_ORDER_SKY = -2.5;   // after the Milky Way (-3), before the stars (-2)
 const RENDER_ORDER_PLACE = -1;   // with the deep-sky glows
-const WANT_PX = 10;              // a picture narrower than this on screen is not fetched for it
+// A picture narrower than this on screen is not fetched for it. At 10 px a sweep of the camera
+// across Orion fetched three pictures nobody could see (measured 2026-10-03); 32 px is the size at
+// which a nebula stops being a dot. A selected object's picture is fetched whatever its size.
+const WANT_PX = 32;
 
 /** record id -> registry row: `dso-m42` -> the M42 picture. */
 export const PICTURE_FOR = new Map(NEBULAE.map((row) => [`dso-${row.id}`, row]));
@@ -168,10 +172,11 @@ void main() {
   // The night eye sees no colour: a cool grey, as the rods report it.
   float l = dot( c, vec3( 0.2126, 0.7152, 0.0722 ) );
   c = mix( vec3( l ) * vec3( 0.86, 0.96, 1.0 ), c, uSaturation );
-  // The feather: a rounded rectangle (a superellipse), so no edge and no corner is ever a line.
+  // The feather: a superellipse between a circle and the frame, faded over the outer half, so no
+  // edge and no corner is ever a line. (Exponent 4 read as a rounded square at 100 px.)
   vec2 q = abs( vUv * 2.0 - 1.0 );
-  float e = pow( pow( q.x, 4.0 ) + pow( q.y, 4.0 ), 0.25 );
-  float f = 1.0 - smoothstep( 0.58, 0.98, e );
+  float e = pow( pow( q.x, 3.0 ) + pow( q.y, 3.0 ), 1.0 / 3.0 );
+  float f = 1.0 - smoothstep( 0.5, 0.98, e );
   gl_FragColor = vec4( c * ( f * f * uAlpha ), 1.0 );
 }
 `;
@@ -202,7 +207,6 @@ export function createNebulae(scene, opts = {}) {
   const shared = { uGain: { value: 1 }, uGamma: { value: 1 }, uSaturation: { value: 1 } };
   const geometry = new THREE.PlaneGeometry(2, 2);
   let skyOpacity = 1;
-  let modelOpacity = 0;
   let skyVisible = true;
   let selected = null;
   const sunScene = new THREE.Vector3();
@@ -243,9 +247,10 @@ export function createNebulae(scene, opts = {}) {
     place.renderOrder = RENDER_ORDER_PLACE;
     place.visible = false;
     group.add(place);
-    // The angle the whole picture spans, for "is it worth fetching": its diagonal.
+    // The angles the picture spans: its diagonal (is it in view?) and its width (is it worth fetching?).
     const angle = 2 * Math.atan(Math.hypot(half.x, half.y));
-    return { row, basis, half, sky, place, angle, distKm: null, placed: false, centre: new THREE.Vector3(), widthUnits: 0, tex: null, state: 'idle' };
+    const widthAngle = 2 * Math.atan(half.x);
+    return { row, basis, half, sky, place, angle, widthAngle, distKm: null, placed: false, centre: new THREE.Vector3(), widthUnits: 0, tex: null, state: 'idle' };
   });
   const byId = new Map(pictures.map((p) => [p.row.id, p]));
 
@@ -253,7 +258,11 @@ export function createNebulae(scene, opts = {}) {
     if (p.state !== 'idle') return;
     p.state = 'loading';
     const url = String(new URL(String(p.row.file).replace(/^site\//, ''), base));
-    Promise.resolve().then(() => loader(url)).then((tex) => {
+    // The loader is called NOW (a test counts the calls), and may throw (TextureLoader touches
+    // `document`): either way the answer is a promise.
+    let asked;
+    try { asked = Promise.resolve(loader(url)); } catch (err) { asked = Promise.reject(err); }
+    asked.then((tex) => {
       // Display values in, display values out (FRAG): no sRGB decode on the way.
       tex.colorSpace = THREE.NoColorSpace;
       tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
@@ -338,22 +347,25 @@ export function createNebulae(scene, opts = {}) {
         _sphere.radius = Math.tan(p.angle / 2) * sg.scale.x;
         if (_frustum.intersectsSphere(_sphere)) {
           skyAlpha = skyOpacity;
-          if (p.state === 'idle' && !opts.saveData && p.angle * pxPerRad >= WANT_PX) fetchPicture(p);
+          if (p.state === 'idle' && !opts.saveData && p.widthAngle * pxPerRad >= WANT_PX) fetchPicture(p);
         }
       }
       p.sky.material.uniforms.uAlpha.value = skyAlpha;
       p.sky.visible = skyAlpha > 0 && p.state === 'ready';
       // --- the place
       let alpha = 0;
+      p.px = 0; p.inView = false; p.fade = 0;
       if (layerPlace !== false && ladder && p.placed) {
         _v.copy(p.centre).sub(camera.position);
         const d = _v.length();
         _sphere.center.copy(p.centre);
         _sphere.radius = p.widthUnits;
-        if (d > 0 && _frustum.intersectsSphere(_sphere)) {
+        p.px = d > 0 ? (p.widthUnits / d) * pxPerRad : 0;
+        p.inView = _frustum.intersectsSphere(_sphere);
+        if (d > 0 && p.inView) {
           _n.copy(p.centre).sub(sunScene).normalize();
+          p.fade = viewFade(_v.dot(_n) / d);
           alpha = (1 - skyOpacity) * viewFade(_v.dot(_n) / d) * nearFade(d / p.widthUnits);
-          if (p.row.id === 'm31') alpha *= 1 - modelOpacity;
           if (alpha > 0 && p.state === 'idle' && !opts.saveData && (p.widthUnits / d) * pxPerRad >= WANT_PX) fetchPicture(p);
         }
       }
@@ -382,8 +394,11 @@ export function createNebulae(scene, opts = {}) {
     setExposure, setRecords, rebuild, update, dispose, group, skyGroup,
     /** The sky panorama's strength (registry/lod.yaml `sky-panorama`): the sky pictures follow it, the placed ones take over as it goes. */
     setSkyOpacity(k) { skyOpacity = Math.min(1, Math.max(0, Number(k) || 0)); },
-    /** The galaxy model's strength (`galaxy-model`): Andromeda's picture gives way to its model. */
-    setModelOpacity(k) { modelOpacity = Math.min(1, Math.max(0, Number(k) || 0)); },
+    /** How strongly a record's photograph is being drawn at its place, 0..1: 0 until it has landed. */
+    drawn(recordId) {
+      const p = typeof recordId === 'string' ? byId.get(recordId.slice(4)) : null;
+      return p && p.state === 'ready' && p.place.visible ? p.place.material.uniforms.uAlpha.value : 0;
+    },
     /** The frame-rate latch hides the Milky Way picture; the sky pictures go with it. */
     setSkyVisible(on) { skyVisible = on !== false; },
     /** A record was selected (or null): its picture is fetched now. */
@@ -394,6 +409,6 @@ export function createNebulae(scene, opts = {}) {
     has: (recordId) => PICTURE_FOR.has(recordId),
     /** The record ids whose pictures are on the GPU's doorstep: scene/dsoglow.js drops their glow. */
     loaded: () => pictures.filter((p) => p.state === 'ready').map((p) => `dso-${p.row.id}`),
-    state: () => pictures.map((p) => ({ id: p.row.id, state: p.state, sky: p.sky.visible, place: p.place.visible, alpha: p.place.material.uniforms.uAlpha.value, placed: p.placed })),
+    state: () => pictures.map((p) => ({ id: p.row.id, state: p.state, sky: p.sky.visible, place: p.place.visible, alpha: p.place.material.uniforms.uAlpha.value, placed: p.placed, px: Math.round(p.px || 0), inView: !!p.inView, fade: p.fade || 0 })),
   };
 }

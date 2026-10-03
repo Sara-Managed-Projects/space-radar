@@ -18,7 +18,8 @@
 //
 // Four things must stay at zero whatever the total: anything under /audio/ (spec 0035: nothing before
 // a gesture), anything under /og/ (spec 0033: those are for chat previews), and galaxy.bin and
-// stars3d.bin (spec 0028: fetched when the ladder needs them). The fonts under /fonts/ have their own
+// stars3d.bin (spec 0028: fetched when the ladder needs them), and the nebulae's photographs with the
+// module and registry that draw them (spec 0067: a rung of the ladder, a selection, or the shutter). The fonts under /fonts/ have their own
 // line and budget, and a Cyrillic file on this English page fails (spec 0045 req 5). stars3d.names.json, exoplanets.csv
 // and stars.bin are printed on their own line: they are the one known saving (spec 0044 req 5), and
 // whether to defer them is decided by that line.
@@ -53,7 +54,7 @@ const DEFERRABLE = new Set(['stars3d.names.json', 'exoplanets.csv', 'stars.bin']
 
 /** Sum a boot's requests: `[{url, bytes}]` -> the numbers the gate and the log read. */
 function tally(requests, pageOrigin) {
-  const t = { total: 0, count: 0, audio: [], audioBytes: 0, og: [], ogBytes: 0, lazy: [], deferrable: 0, thirdParty: 0, fonts: [], fontBytes: 0, cyrillic: [], tiles: [] };
+  const t = { total: 0, count: 0, audio: [], audioBytes: 0, og: [], ogBytes: 0, lazy: [], nebulae: [], deferrable: 0, thirdParty: 0, fonts: [], fontBytes: 0, cyrillic: [], tiles: [] };
   for (const r of requests) {
     const at = sitePath(r.url);
     if (!at) continue; // data: and blob: URLs cross no wire
@@ -67,6 +68,7 @@ function tally(requests, pageOrigin) {
     if (at.path.startsWith('/audio/')) { t.audio.push(at.path); t.audioBytes += bytes; }
     if (at.path.startsWith('/og/')) { t.og.push(at.path); t.ogBytes += bytes; }
     if (at.path.startsWith('/data/') && LAZY.has(file)) t.lazy.push(at.path);
+    if (at.path.startsWith('/images/nebulae/') || /^\/js\/(scene|data)\/nebulae\.js$/.test(at.path)) t.nebulae.push(at.path);
     if (at.path.startsWith('/data/') && DEFERRABLE.has(file)) t.deferrable += bytes;
     if (at.path.startsWith('/fonts/') && file.endsWith('.woff2')) {
       t.fonts.push(`${file} ${bytes}`);
@@ -91,6 +93,7 @@ function verdict(t, budgets = BUDGETS) {
   if (t.cyrillic.length) out.push(`a Cyrillic face was fetched by an English page: ${t.cyrillic.join(', ')}`);
   if (t.tiles.length > budgets.planet_tile_requests_first_visit) out.push(`${t.tiles.length} map tile request(s) on a first visit (spec 0065: tiles are for a camera close to a world): ${t.tiles.slice(0, 3).join(', ')}`);
   if (t.lazy.length) out.push(`fetched at boot and meant to wait for the ladder (spec 0028): ${t.lazy.join(', ')}`);
+  if (t.nebulae.length) out.push(`fetched at boot and meant to wait for the ladder, a selection or the shutter (spec 0067): ${t.nebulae.slice(0, 3).join(', ')}`);
   return out;
 }
 
@@ -100,7 +103,7 @@ function report(t, where) {
   console.log(`  deferrable at boot (stars3d.names.json + exoplanets.csv + stars.bin): ${t.deferrable} B (${kB(t.deferrable)})`);
   console.log(`  fonts: ${t.fontBytes} B (${kB(t.fontBytes)}) of ${BUDGETS.fonts_at_boot_bytes} B in ${t.fonts.length} file(s)${t.fonts.length ? `: ${t.fonts.join(', ')}` : ''}`);
   console.log(`  from other hosts: ${t.thirdParty} B (${kB(t.thirdParty)})`);
-  console.log(`  under /audio/: ${t.audio.length}; under /og/: ${t.og.length}; galaxy.bin or stars3d.bin: ${t.lazy.length}; map tiles: ${t.tiles.length}`);
+  console.log(`  under /audio/: ${t.audio.length}; under /og/: ${t.og.length}; galaxy.bin or stars3d.bin: ${t.lazy.length}; map tiles: ${t.tiles.length}; nebula pictures or their module: ${t.nebulae.length}`);
 }
 
 function finish(problems, what) {
@@ -179,6 +182,9 @@ if (BASE || FROM) {
   check(verdict(tally([...visit, { url: `${O}/og/default.png`, bytes: 1 }], O)).some((p) => /\/og\//.test(p)), 'a preview picture at boot fails');
   check(verdict(tally([...visit, { url: `${O}/data/galaxy.bin`, bytes: 1 }], O)).some((p) => /galaxy\.bin/.test(p)), 'the galaxy at boot fails');
   check(verdict(tally([...visit, { url: `${O}/site/data/stars3d.bin`, bytes: 1 }], O)).some((p) => /stars3d\.bin/.test(p)), 'the 3D stars at boot fail, served under /site/ too');
+  check(verdict(tally([...visit, { url: `${O}/images/nebulae/m42.webp`, bytes: 1 }], O)).some((p) => /spec 0067/.test(p)), 'a nebula\'s photograph at boot fails');
+  check(verdict(tally([...visit, { url: `${O}/site/js/scene/nebulae.js`, bytes: 1 }], O)).some((p) => /spec 0067/.test(p)) && verdict(tally([...visit, { url: `${O}/js/data/nebulae.js`, bytes: 1 }], O)).some((p) => /spec 0067/.test(p)), 'and so do the module that draws them and its registry');
+  check(verdict(tally([...visit, { url: `${O}/js/scene/exposure.js`, bytes: 2000 }], O)).length === 0, 'the shutter\'s own small module is on the boot path, by design');
   const withFonts = [...visit, { url: `${O}/fonts/inter-400-latin.woff2`, bytes: 19176 }, { url: `${O}/fonts/jetbrains-mono-400-latin.woff2`, bytes: 9324 }];
   check(tally(withFonts, O).fontBytes === 28500 && verdict(tally(withFonts, O)).length === 0, 'two Latin faces at boot are counted and pass');
   check(verdict(tally(withFonts, O), { ...BUDGETS, fonts_at_boot_bytes: 20000 }).some((p) => /fonts_at_boot_bytes/.test(p)), 'fonts over their own budget fail');
@@ -200,5 +206,5 @@ if (BASE || FROM) {
   check(/node tests\/test_first_visit_bytes\.mjs --base=/.test(screens), 'screens.yml boots the app through this test');
   check(BUDGETS.audio_at_boot_bytes === 0 && BUDGETS.og_at_boot_bytes === 0, 'nothing under /audio/ or /og/ at boot, by budget');
 
-  finish(problems, `the rules hold on fixtures (budget ${BUDGETS.first_visit_bytes} B; ${t.total} B passes, 1 000 000 B fails it; sound, previews, the galaxy, the 3D stars, a Cyrillic face and fonts over their budget each fail)`);
+  finish(problems, `the rules hold on fixtures (budget ${BUDGETS.first_visit_bytes} B; ${t.total} B passes, 1 000 000 B fails it; sound, previews, the galaxy, the 3D stars, the nebulae, a Cyrillic face and fonts over their budget each fail)`);
 }

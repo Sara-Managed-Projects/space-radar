@@ -449,6 +449,64 @@ its credit, its licence and where it came from.
 **What was changed:** nothing but the choice of size. Both are ESO's own "Screensize JPEG"
 downloads, shipped byte for byte.
 
+## 3g. The photographs of the nebulae and galaxies — ESA/Hubble, ESO and NOIRLab, CC BY 4.0
+
+`site/images/nebulae/` holds one photograph per row of `registry/nebulae.yaml` (spec 0067), laid
+on the sky where its object is by `site/js/scene/nebulae.js`. They come from three outreach
+archives whose terms release their images under the Creative Commons Attribution 4.0 International
+licence (each terms page, the sentence that grants it and the day it was read are in the registry's
+`archives:`; read 2026-10-03):
+
+- ESA/Hubble: <https://esahubble.org/copyright/>
+- ESO: <https://www.eso.org/public/copyright/>
+- NOIRLab: <https://noirlab.edu/public/copyright/>
+
+The terms ask for the credit "in a clear and readable manner to all users, with the wording
+unaltered" and not "hidden or disassociated from the image". So each object's card prints its
+picture's credit under "About it", linked to the archive's page for that picture, and every credit
+is listed here word for word (`scripts/check_registry.py` refuses a row whose credit is not).
+No picture is a Digitized Sky Survey composite or from Mellinger's panorama: neither is ours to
+redistribute, and the same check refuses a credit that names either.
+
+**What was changed** (CC BY 4.0 asks that changes be indicated): each picture is the archive's own
+"screen" JPEG, resized so its longer side is 512 to 768 px, its sky background subtracted to
+black, and re-encoded as WebP (`scripts/build_nebulae.py`). In the app its edges are faded, its
+brightness follows the exposure control (Eye, Camera, Deep), and it is drawn over our own star
+field. The pictures' positions on the sky are measured by us against 2MASS (the archives'
+published centres are up to 43 arcminutes off); 2MASS cut-outs are fetched for that comparison by
+the build script and are not shipped. This use does not imply endorsement by ESA/Hubble, ESO or
+NOIRLab.
+
+| file | credit | licence | source | size |
+|---|---|---|---|---|
+| `m42.webp` | **ESO/G. Beccari** | CC BY 4.0 | [eso1723a](https://www.eso.org/public/images/eso1723a/) | 30 574 B |
+| `horsehead-nebula.webp` | **T.A.Rector (NOIRLab/NSF/AURA) and Hubble Heritage Team (STScI/AURA/NASA)** | CC BY 4.0 | [noao0126a](https://noirlab.edu/public/images/noao0126a/) | 19 066 B |
+| `m1.webp` | **NASA, ESA and Allison Loll/Jeff Hester (Arizona State University). Acknowledgement: Davide De Martin (ESA/Hubble)** | CC BY 4.0 | [heic0515a](https://esahubble.org/images/heic0515a/) | 59 714 B |
+| `m45.webp` | **NOIRLab/NSF/AURA/T.A. Rector (University of Alaska Anchorage), R. Cool (University of Arizona) and WIYN** | CC BY 4.0 | [noao-m45](https://noirlab.edu/public/images/noao-m45/) | 23 120 B |
+| `california-nebula.webp` | **KPNO/NOIRLab/NSF/AURA/Adam Block** | CC BY 4.0 | [noao-n1499block](https://noirlab.edu/public/images/noao-n1499block/) | 46 354 B |
+| `rosette-nebula.webp` | **KPNO/NOIRLab/NSF/AURA/N. A. Sharp** | CC BY 4.0 | [noao-rosette](https://noirlab.edu/public/images/noao-rosette/) | 82 326 B |
+| `m8.webp` | **ESO** | CC BY 4.0 | [eso0936a](https://www.eso.org/public/images/eso0936a/) | 75 026 B |
+| `m20.webp` | **NSF–DOE Vera C. Rubin Observatory/NOIRLab/SLAC/AURA** | CC BY 4.0 | [noirlab2521ah](https://noirlab.edu/public/images/noirlab2521ah/) | 83 114 B |
+| `m16.webp` | **ESO** | CC BY 4.0 | [eso0926a](https://www.eso.org/public/images/eso0926a/) | 56 138 B |
+| `m17.webp` | **ESO/INAF-VST/OmegaCAM. Acknowledgement: OmegaCen/Astro-WISE/Kapteyn Institute** | CC BY 4.0 | [eso1119a](https://www.eso.org/public/images/eso1119a/) | 89 874 B |
+| `cats-paw-nebula.webp` | **ESO** | CC BY 4.0 | [eso1003a](https://www.eso.org/public/images/eso1003a/) | 46 740 B |
+| `carina-nebula.webp` | **ESO. Acknowledgement: VPHAS+ Consortium/Cambridge Astronomical Survey Unit** | CC BY 4.0 | [eso1250a](https://www.eso.org/public/images/eso1250a/) | 81 256 B |
+| `north-america-nebula.webp` | **KPNO/NOIRLab/NSF/AURA/Adam Block** | CC BY 4.0 | [noao-n7000mosblock](https://noirlab.edu/public/images/noao-n7000mosblock/) | 87 104 B |
+| `veil-nebula.webp` | **T.A. Rector (University of Alaska Anchorage) and WIYN/NOIRLab/NSF/AURA** | CC BY 4.0 | [noao1209a](https://noirlab.edu/public/images/noao1209a/) | 89 752 B |
+| `helix-nebula.webp` | **ESO** | CC BY 4.0 | [eso0907a](https://www.eso.org/public/images/eso0907a/) | 17 794 B |
+| `m27.webp` | **T.A. Rector (University of Alaska Anchorage) and H. Schweiker (WIYN and NOIRLab/NSF/AURA)** | CC BY 4.0 | [noao-m27-kpno-mayall-4-m](https://noirlab.edu/public/images/noao-m27-kpno-mayall-4-m/) | 81 292 B |
+| `m57.webp` | **NASA, ESA, and C. Robert O’Dell (Vanderbilt University).** | CC BY 4.0 | [heic1310a](https://esahubble.org/images/heic1310a/) | 13 848 B |
+| `m31.webp` | **Bill Schoening, Vanessa Harvey/REU program/NOIRLab/NSF/AURA** | CC BY 4.0 | [noao0001a](https://noirlab.edu/public/images/noao0001a/) | 75 680 B |
+| `m33.webp` | **ESO** | CC BY 4.0 | [eso1424a](https://www.eso.org/public/images/eso1424a/) | 31 986 B |
+| `lmc.webp` | **CTIO/NOIRLab/NSF/AURA/SMASH/D. Nidever (Montana State University) Acknowledgment: Image processing: Travis Rector (University of Alaska Anchorage), Mahdi Zamani & Davide de Martin** | CC BY 4.0 | [noirlab2030a](https://noirlab.edu/public/images/noirlab2030a/) | 87 756 B |
+| `smc.webp` | **CTIO/NOIRLab/NSF/AURA/SMASH/D. Nidever (Montana State University) Acknowledgment: Image processing: Travis Rector (University of Alaska Anchorage), Mahdi Zamani & Davide de Martin** | CC BY 4.0 | [noirlab2030b](https://noirlab.edu/public/images/noirlab2030b/) | 62 348 B |
+| `centaurus-a.webp` | **ESO** | CC BY 4.0 | [eso1221a](https://www.eso.org/public/images/eso1221a/) | 45 944 B |
+| `m83.webp` | **ESO** | CC BY 4.0 | [eso0825a](https://www.eso.org/public/images/eso0825a/) | 28 778 B |
+| `m104.webp` | **NASA/ESA and The Hubble Heritage Team (STScI/AURA)** | CC BY 4.0 | [opo0328a](https://esahubble.org/images/opo0328a/) | 8 388 B |
+| `m51.webp` | **NASA, ESA, S. Beckwith (STScI), and The Hubble Heritage Team (STScI/AURA)** | CC BY 4.0 | [heic0506a](https://esahubble.org/images/heic0506a/) | 20 318 B |
+| `m101.webp` | **Image: European Space Agency & NASA** | CC BY 4.0 | [heic0602a](https://esahubble.org/images/heic0602a/) | 32 054 B |
+| `m81.webp` | **NASA, ESA and the Hubble Heritage Team (STScI/AURA). Acknowledgment: A. Zezas and J. Huchra (Harvard-Smithsonian Center for Astrophysics)** | CC BY 4.0 | [heic0710a](https://esahubble.org/images/heic0710a/) | 8 680 B |
+
 ## 4. Runtime data sources
 
 The app calls these from the visitor's browser. Nothing here is redistributed in this repository —

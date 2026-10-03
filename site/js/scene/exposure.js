@@ -36,7 +36,7 @@ export const EXPOSURE_KEY = 'sr.exposure';
 const LOOKS = {
   eye: { nebulaGain: 0.3, nebulaGamma: 2.2, nebulaSaturation: 0.06, milkyWay: 0.55 },
   camera: { nebulaGain: 1.0, nebulaGamma: 1.0, nebulaSaturation: 1.0, milkyWay: 1.0 },
-  deep: { nebulaGain: 1.3, nebulaGamma: 0.62, nebulaSaturation: 1.25, milkyWay: 1.7 },
+  deep: { nebulaGain: 1.15, nebulaGamma: 0.7, nebulaSaturation: 1.25, milkyWay: 1.7 },
 };
 
 /** The numbers a mode means; an unknown mode is the default's, never a throw. Pure. */

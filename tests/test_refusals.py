@@ -489,6 +489,38 @@ CASES: list[tuple[str, str, str, str]] = [
     ("a deep-sky card line changed in the registry and not in the built file the card reads",
      "dso-hand.yaml", "a small galaxy that kept its jewellery", "a small galaxy that kept its rings"),
 
+    # --- registry/nebulae.yaml (spec 0067, 2026-10-03) ------------------------------------
+    # A photograph somebody else took, shipped from our bucket: licence, credit, and that it is
+    # drawn where its object is.
+    ("a nebula's picture with no credit",
+     "nebulae.yaml", '    credit: "ESO/G. Beccari"\n', ""),
+    ("a picture credited to the Digitized Sky Survey, which is not ours to ship",
+     "nebulae.yaml", 'credit: "ESO/G. Beccari"', 'credit: "ESO and Digitized Sky Survey 2"'),
+    ("a picture whose credit CREDITS.md does not carry",
+     "nebulae.yaml", 'credit: "ESO/G. Beccari"', 'credit: "ESO/G. Beccary"'),
+    ("a picture from an archive whose terms are not on file",
+     "nebulae.yaml", "    archive: eso\n    image: eso1723a", "    archive: wikimedia\n    image: eso1723a"),
+    ("an archive under a licence we may not redistribute under",
+     "nebulae.yaml", "    licence: CC BY 4.0\n    terms: https://www.eso.org/public/copyright/", "    licence: CC BY-NC 4.0\n    terms: https://www.eso.org/public/copyright/"),
+    ("an archive's terms with no day they were read",
+     "nebulae.yaml", '    screen: "https://cdn.eso.org/images/screen/{image}.jpg"\n    checked: 2026-10-03\n', '    screen: "https://cdn.eso.org/images/screen/{image}.jpg"\n'),
+    ("Orion's picture ten degrees from Orion",
+     "nebulae.yaml", "    ra_deg: 83.78771", "    ra_deg: 93.78771"),
+    ("a picture a hundred times too wide",
+     "nebulae.yaml", "    width_arcmin: 59.95", "    width_arcmin: 5995"),
+    ("a picture that cannot be told from its mirror image",
+     "nebulae.yaml", "correlation: 27.7, mirror: 4.4}", "correlation: 27.7, mirror: 26.9}"),
+    ("a picture with no evidence of where it is",
+     "nebulae.yaml", "    solved: {moved_arcmin: 0.28, correlation: 27.7, mirror: 4.4}\n", ""),
+    ("a picture of something that is not a deep-sky object on the map",
+     "nebulae.yaml", "  - id: m42\n", "  - id: m4242\n"),
+    ("a picture whose file is not in the tree",
+     "nebulae.yaml", "    file: site/images/nebulae/m42.webp", "    file: site/images/nebulae/m42-missing.webp"),
+    ("a picture that names its filters and says they are unstated",
+     "nebulae.yaml", "    colours: mixed\n    filters: \"g, r and i, with H-alpha\"", "    colours: unstated\n    filters: \"g, r and i, with H-alpha\""),
+    ("a picture whose colours are a word the card has no sentence for",
+     "nebulae.yaml", "    colours: mixed\n    filters: \"g, r and i, with H-alpha\"", "    colours: pretty\n    filters: \"g, r and i, with H-alpha\""),
+
     # --- registry/stars-notable.yaml (2026-09-22) -----------------------------------------
     # The HIP number is the join to a star record. A number the names file does not have is a line
     # no label and no card will ever print, and nothing in the browser would say so.

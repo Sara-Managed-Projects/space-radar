@@ -71,7 +71,7 @@ export function pictureNote(row) {
   wrap.className = 'sr-card__picture';
   const why = document.createElement('p');
   why.className = 'sr-card__note';
-  why.textContent = `${C.real} ${fill(C.colours[row.colours] || C.colours.unstated, { filters: row.filters || '' })}`;
+  why.textContent = [C.real, fill(C.colours[row.colours] || C.colours.unstated, { filters: row.filters || '' })].join(' ');
   wrap.appendChild(why);
   const credit = document.createElement('p');
   credit.className = 'sr-card__photo-credit';

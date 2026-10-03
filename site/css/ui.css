@@ -2730,6 +2730,22 @@ html.sr-trip-mode .sr-scenenote { display: none; }
   font-size: 13px;
   color: var(--sr-text-dim);
 }
+
+/* The shutter on a deep-sky card (spec 0067): the density row's own look (ui/exposure.js builds it
+   from the same classes), with air between the picture's credit and it, and a credit link in the
+   card's quiet text colour, underlined so it is a link without colour alone saying so. */
+.sr-card__exposure .sr-exposure {
+  margin: var(--sp-4) 0 var(--sp-3);
+}
+
+.sr-card__exposure .sr-panel__title {
+  margin: 0 0 var(--sp-2);
+}
+
+.sr-card__photo-credit a {
+  color: var(--sr-text-soft);
+  text-decoration: underline;
+}
 .sr-sound__btn.is-on {
   color: var(--sr-ember);
   border-color: var(--sr-ember);
