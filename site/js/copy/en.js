@@ -1522,6 +1522,35 @@ export const COPY = {
     showMe: 'Fly to the aurora on the night side',
   },
 
+  // Weather on every world (spec 0066, scene/weather/). ONE LINE A WORLD, and each says which of
+  // three things it is (registry/weather.yaml `class`): MEASURED today, MODELLED from published
+  // numbers, or ILLUSTRATIVE of the season. The Earth's line is written like its clouds and aurora
+  // lines; the other worlds' sit under the note about how the world is drawn.
+  weather: {
+    lightning: {
+      live: 'Lightning: about {n} strikes a minute where NOAA’s map reaches, the Americas and the Pacific (its count to {time}, {ago}). Where and how often are measured; the instant of each flash is drawn, and larger than life.',
+      quiet: 'Lightning: almost none where NOAA’s map reaches, the Americas and the Pacific (its count to {time}, {ago}).',
+      waiting: 'Lightning: NOAA’s map has not arrived yet.',
+      failed: 'Lightning: NOAA’s map could not be read just now, so none is drawn.',
+      away: 'Lightning: not drawn, because the clock is more than an hour from NOAA’s latest map.',
+      off: 'Lightning: not fetched on this device or connection.',
+      reducedMotion: 'Lightning: not drawn, because this device asks for less motion.',
+      switchedOff: 'Lightning: switched off in the layers.',
+      // NOAA's products are works of the US Government and in the public domain; credited all the same.
+      credit: 'Lightning: strike density from NOAA nowCOAST, made by the NWS Ocean Prediction Center from the ground networks NLDN and GLD360 (public domain).',
+    },
+    // {season} is one of `seasons` below, by Mars's own calendar (scene/weather/flow.js marsLs).
+    worlds: {
+      jupiter: 'Weather: the bands slide past each other at the wind speeds measured from Hubble, and the Great Red Spot turns. Modelled motion: no cloud is drawn where it is today.',
+      saturn: 'Weather: the bands move at the wind speeds Cassini measured. Modelled motion, not today’s clouds. The hexagon at the north pole is drawn at its measured place; its look is illustrative.',
+      venus: 'Weather: the cloud deck goes round in about four days, as Venus Express measured, sixty times faster than the ground. Modelled motion, not today’s clouds.',
+      uranus: 'Weather: the air drifts round at the wind speeds measured from Keck and Gemini. Modelled motion, not today’s clouds.',
+      neptune: 'Weather: the air streams round at the wind speeds Voyager 2 measured, the fastest on any planet. Modelled motion, not today’s clouds.',
+      mars: 'Weather: it is {season} on Mars. The frost caps and the dust haze are what that season typically brings: illustrative, not this week’s pictures.',
+    },
+    seasons: ['northern spring', 'northern summer', 'northern autumn', 'northern winter'],
+  },
+
   unplaced: {
     why: '{whyUnknown}',
   },
@@ -1902,6 +1931,8 @@ export const COPY = {
       unplaceable: '{n} we cannot place',
       // The aurora layer's one number: the highest probability in NOAA's forecast (scene/aurora.js peak()).
       auroraPeak: 'up to {n} % likely',
+      // The lightning layer's one number: strikes a minute in NOAA's latest map (scene/weather/lightning.js).
+      lightningPerMin: '{n} strikes a minute',
     },
     layersEmpty: 'No layers are loaded yet.',
     // The headings What to show folds the layers under (registry/layers.yaml `groups:`, spec 0068
@@ -2056,6 +2087,7 @@ export const COPY = {
     attributionIntro: 'The data on this map is other people’s work.',
     cloudsTitle: 'Clouds',
     auroraTitle: 'Aurora',
+    weatherTitle: 'Lightning',
     layersTitle: 'Live or bundled',
     layersIntro:
       'Live is read from its publisher, or worked out for this moment, as you watch. A catalogue ships with the app: stars, galaxies and the dishes and landing sites on the ground do not move while you look. A bundled sample stands in for a source a browser cannot call at all.',
