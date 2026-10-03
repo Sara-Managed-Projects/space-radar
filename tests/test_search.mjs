@@ -2,6 +2,7 @@
 // first, the buried-letters fallback announced, aliases from the registry.
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { readFileSync } from 'node:fs';
 
 const JS = join(dirname(fileURLToPath(import.meta.url)), '..', 'site/js');
 const { buildIndex, findMatches } = await import(join(JS, 'ui/search.js'));
@@ -55,6 +56,27 @@ check(ALIASES.hubble === 'hst' && ALIASES.jwst === 'james webb' && ALIASES.tiang
 const hub = findMatches(index, 'hubble');
 check(hub.hits[0].record.id === 'sat-20580', `"hubble" puts HST first through the alias, above the satellites named after it (${hub.hits[0] && hub.hits[0].record.name})`);
 check(Object.keys(ALIASES).every((k) => k === k.toLowerCase()), 'alias keys are lower-cased');
+// Spec 0061 task 5: a query that matches nothing offers the nearest names (ui/search.js closest).
+{
+  const { closest } = await import(join(JS, 'ui/search.js'));
+  const worlds = buildIndex([
+    { id: 'jupiter', name: 'Jupiter', klass: 'world', layer: 'stations', meta: {} },
+    { id: 'saturn', name: 'Saturn', klass: 'world', layer: 'stations', meta: {} },
+    { id: 'ghost', name: 'Ghost of Jupiter', klass: 'dso', layer: 'active', meta: {} },
+    { id: 'sat-9', name: 'JUPITER 3 (ECHOSTAR 24)', klass: 'satellite', layer: 'active', meta: {} },
+    { id: 'mars', name: 'Mars', klass: 'world', layer: 'stations', meta: {} },
+  ], LAYERS);
+  check(findMatches(worlds, 'jupitr').hits.length === 0, '"jupitr" matches nothing');
+  const near = closest(worlds, 'jupitr');
+  check(near.length === 3 && near[0].record.id === 'jupiter', `and its nearest name is Jupiter, first (${near.map((h) => h.name)})`);
+  check(closest(worlds, 'satrun')[0] && closest(worlds, 'satrun')[0].record.id === 'saturn', 'two letters swapped is one slip: "satrun" offers Saturn');
+  check(closest(worlds, 'xyzzy').length === 0, 'a word near nothing offers nothing');
+  check(closest(worlds, 'mas').length === 0 && closest(worlds, '99999').length === 0, 'never for three letters, never for a number');
+  check(new Set(near.map((h) => h.record.id)).size === near.length, 'one row per object');
+  const src = readFileSync(join(JS, 'ui/search.js'), 'utf8');
+  check(/setActive\(state\.hits\.length && !state\.missed \? 0 : -1\)/.test(src), 'a nearest name is offered, not highlighted: Enter does not fly to a guess');
+  check(/sr-search__empty/.test(src) && /COPY\.search\.noMatch, \{ q: shown \}/.test(src), 'the empty state quotes the query back');
+}
 // requirement 7: eight rows, and the total says how many more
 const star = findMatches(index, 'starlink');
 check(star.hits.length === 8 && star.total === 20, `eight rows shown of ${star.total}`);

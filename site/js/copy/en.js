@@ -831,7 +831,7 @@ export const COPY = {
     lookingUp: 'Looking it up on Wikipedia…',
     wikiSource: 'The Wikipedia article this quotes',
     // The empty state: one line where the article's link would be.
-    noWiki: 'No Wikipedia text for this one: the post is shorter.',
+    noWiki: 'No Wikipedia text here: the post is shorter.',
     // CC BY-SA asks for the source and the licence beside a quote; the sheet links the article.
     attribution: 'From Wikipedia, CC BY-SA 4.0',
     native: 'Share…',
@@ -967,7 +967,7 @@ export const COPY = {
       aurora: 'NOAA forecast, from {when}',
       auroraNow: 'Measured by NOAA in the last hours',
       kp: 'Kp {kp}',
-      showerTitle: '{name} meteor shower',
+      showerTitle: '{name} meteors',
       shower: 'Peaks around {date} · up to {zhr} an hour',
       eclipse: '{date} · worked out to the minute',
       eclipseHere: '{date} · from here {begin} to {end}',
@@ -1104,7 +1104,7 @@ export const COPY = {
     // under the picture and not a tooltip: {credit} is whose it is, {licence} the terms.
     photoCredit: '{credit} · {licence}',
     close: 'Close',
-    closeTitle: 'Close this card',
+    closeTitle: 'Close this card (Escape)',
     // Under a stop title that already named the object, its first sentence does not name it again.
     it: 'It',
     articles: ['The', 'the'],
@@ -1978,8 +1978,8 @@ export const COPY = {
   // Data-saver and the frame-rate latch (spec 0026 req 18): two things the app decided for the visitor, said out loud.
   quality: {
     // One line each in the popover (spec 0061 req 11).
-    dataSaver: 'Data saver is on: the two biggest lists wait.',
-    lowered: 'Slow frames ({ms} ms), so the picture is simpler.',
+    dataSaver: 'Data saver on: the two biggest lists wait.',
+    lowered: 'Slow frames ({ms} ms): a simpler picture.',
     // The device tier (scene/quality.js, 2026-09-28): which maps this device wears, and why.
     tierPhone: 'Surface maps at 2k, sized for a phone.',
     tierSaver: 'Surface maps at 2k, to save data.',
@@ -2147,7 +2147,7 @@ export const COPY = {
     // Nothing tonight: the empty line, and the next one on a line of its own.
     nothingTonight: 'Nothing bright passes over tonight.',
     nextPass: 'Next: {when} · {name}',
-    nothingAtAll: 'Nothing bright passes over in the next three days.',
+    nothingAtAll: 'Nothing bright passes over for three days.',
     darkFrom: 'Dark from {time}',
     darkUntil: 'Dark until {time}',
     darkNow: 'Dark now',

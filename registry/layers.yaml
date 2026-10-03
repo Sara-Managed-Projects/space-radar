@@ -256,7 +256,7 @@ layers:
   # `bundled`: the elements are checked into this repository and nothing is fetched. `kepler` on
   # both conic branches -- 'Oumuamua and Borisov are hyperbolic, which propagate/kepler.js solves.
   - id: far-bodies
-    display: Dwarf planets and far travellers
+    display: Dwarf planets, far travellers
     group: solar-system
     moments: {wonder: on, now: off, next: off}
     source: bundled

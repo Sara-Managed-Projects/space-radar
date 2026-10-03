@@ -22,7 +22,7 @@ const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
 const { createViewStack, readCollapsed, writeCollapsed, SIDE_KEY, VIEWS } = await import(join(JS, 'ui/shell.js'));
-const { TABS, tabTarget, tabFor, rightNowLines, statusSummary, tripMeta } = await import(join(JS, 'ui/explore.js'));
+const { TABS, tabTarget, tabFor, rightNowLines, statusSummary, tripMeta, wantsSearch } = await import(join(JS, 'ui/explore.js'));
 const { nextRate, stepMs, clampToWindow, pillText, PILL_RATES } = await import(join(JS, 'ui/timepill.js'));
 const { railKey } = await import(join(JS, 'ui/rail.js'));
 const { COPY } = await import(join(JS, 'copy/en.js'));
@@ -165,6 +165,17 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   check(railKey({ key: 'p' }, body) === 'share' && railKey({ key: 'P' }, body) === 'share', 'P opens the share sheet (S moves the camera)');
   check(railKey({ key: 's' }, body) === null, 'S stays the camera\'s');
   check(railKey({ key: 'l' }, { tagName: 'INPUT' }) === null, 'typing an l in search is typing');
+  // Spec 0061 task 5: `/` focuses the search, and every key is named where its control is.
+  check(wantsSearch({ key: '/' }, body) === true, '/ asks for the search field');
+  check(wantsSearch({ key: '/' }, { tagName: 'INPUT' }) === false && wantsSearch({ key: '/' }, { tagName: 'TEXTAREA' }) === false, 'a / typed into a field is a /');
+  check(wantsSearch({ key: '/', ctrlKey: true }, body) === false && wantsSearch({ key: '/', metaKey: true }, body) === false, 'Ctrl+/ and Cmd+/ stay the browser\'s');
+  check(wantsSearch({ key: '/', defaultPrevented: true }, body) === false && wantsSearch({ key: '?' }, body) === false, 'a key somebody else took, or another key, is not it');
+  const exploreKeys = readFileSync(join(JS, 'ui/explore.js'), 'utf8');
+  check(/wantsSearch\(e, document\.activeElement\)[\s\S]{0,900}search\.focus\(\)/.test(exploreKeys), 'the explore view listens for it and focuses the field');
+  check(/cls\.contains\('sr-clean'\) \|\| cls\.contains\('sr-trip-mode'\)/.test(exploreKeys), 'never over a clear screen or in a trip');
+  check(/\(L\)/.test(COPY.rail.show) && /\(P\)/.test(COPY.rail.share) && /\(H\)/.test(COPY.clean.hide) && /H or Escape/.test(COPY.clean.show) && /\(\/\)/.test(COPY.search.inputTitle),
+    'the tooltips name their keys: L, P, H, / and Escape');
+  check(/\(Escape\)/.test(COPY.card.closeTitle), 'and the card\'s close names Escape');
   check(railKey({ key: 'p', metaKey: true }, body) === null && railKey({ key: 'l', ctrlKey: true }, body) === null, 'browser shortcuts are the browser\'s');
   check(railKey({ key: 'h' }, body) === null, 'H is the clear screen\'s own (ui/cleanview.js)');
 

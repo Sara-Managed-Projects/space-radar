@@ -47,7 +47,7 @@ const MIN_QUERY = 2; // one letter matches thousands of things and helps nobody
 /** Added to an alias's own score so the canonical object outranks anything merely named alike. */
 const ALIAS_BONUS = 10000;
 const MAX_RESULTS = 8; // spec 0021 requirement 7: a list of twelve was still a scroll
-const MISS_QUOTE = 24; // how much of a query that found nothing is quoted back, so the line stays one line
+const MISS_QUOTE = 18; // how much of a query that found nothing is quoted back, so the line stays one line
 const INPUT_DEBOUNCE_MS = 120;
 // `sr:layer` fires once per layer, ~15 times over several seconds. Rebuilding 17 000 entries on
 // each is waste; this is the trailing edge of the burst. A query that arrives before it fires

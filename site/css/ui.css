@@ -4897,7 +4897,9 @@ html.sr-phone .sr-card.is-docked .sr-card__close {
   right: var(--sp-2);
 }
 
-html.sr-phone .sr-card.is-docked .sr-card__name {
+html.sr-phone .sr-card.is-docked .sr-card__name,
+html.sr-phone .sr-tripsheet__name,
+html.sr-phone .sr-tripsheet .sr-card__name {
   font-size: 30px;
 }
 
@@ -5039,8 +5041,15 @@ html.sr-phone .sr-scenenote {
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
+  min-width: 0;
   font: 400 13px/18px var(--sr-font);
   color: var(--sr-text);
+}
+
+/* A one-line child may not widen the column: it ends in an ellipsis instead. */
+.sr-tonight-view > * {
+  min-width: 0;
+  max-width: 100%;
 }
 
 /* The view's heading is the tab's own word: a microlabel, as every section of the sidebar has. */
@@ -5074,6 +5083,7 @@ html.sr-phone .sr-scenenote {
 
 .sr-tonight-view__body {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-2);
   margin-top: var(--sp-2);
 }

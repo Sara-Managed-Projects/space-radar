@@ -102,7 +102,7 @@ check(tn.countdown(0) === '0:00' && tn.countdown(-5) === '0:00' && tn.countdown(
 const later = visible.filter((p) => p.peakEl * DEG >= 40).slice(-1)[0];
 const none = tn.tonightWords({ observer: chicagoGuess, nowMs: T0, ready: true, pass: null, later, dark });
 check(none.empty === 'Nothing bright passes over tonight.' && none.next === `Next: ${timeText.dayAndTime(later.startMs)} · International Space Station`, `nothing tonight names the next one, on its own line (${none.empty} / ${none.next})`);
-check(tn.tonightWords({ observer: chicagoGuess, nowMs: T0, ready: true, pass: null, later: null }).empty === 'Nothing bright passes over in the next three days.', 'nothing in 72 h says so');
+check(tn.tonightWords({ observer: chicagoGuess, nowMs: T0, ready: true, pass: null, later: null }).empty === 'Nothing bright passes over for three days.', 'nothing in 72 h says so');
 check(tn.tonightWords({ observer: chicagoGuess, nowMs: T0, ready: false }).empty === 'Working out tonight’s passes…', 'until the worker answers: working');
 check(/Could not look/.test(tn.tonightWords({ observer: chicagoGuess, couldNotLook: true }).empty), 'no catalogue: could not look, never an empty card');
 check(tn.SEARCH_HOURS === 24 && tn.LONG_SEARCH_HOURS === 72, '24 h, then 72 h');

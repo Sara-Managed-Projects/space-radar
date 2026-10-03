@@ -848,7 +848,7 @@ export const LAYERS = [
     // at a placeholder perihelion, so on a normal day Ceres was on nobody's map. These stand in
     // for nothing, so they load always, like the oddities. `source: bundled`: nothing to fetch.
     id: 'far-bodies',
-    display: 'Dwarf planets and far travellers',
+    display: 'Dwarf planets, far travellers',
     klass: 'asteroid',
     source: 'bundled',
     parse: null,

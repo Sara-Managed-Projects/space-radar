@@ -341,7 +341,7 @@ export const LAYER_ROWS = [
   },
   {
     "id": "far-bodies",
-    "display": "Dwarf planets and far travellers",
+    "display": "Dwarf planets, far travellers",
     "group": "solar-system",
     "enabled": true,
     "moments": {
