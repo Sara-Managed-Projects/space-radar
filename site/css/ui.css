@@ -248,6 +248,8 @@ html.sr-compact .sr-status {
 .sr-search__option.is-active::after,
 .sr-reticle__box::before,
 .sr-reticle__box::after,
+.sr-search__row:has(:focus-visible)::before,
+.sr-search__row:has(:focus-visible)::after,
 :where(button, a[href], [role='option'], summary):focus-visible::before,
 :where(button, a[href], [role='option'], summary):focus-visible::after {
   content: '';
@@ -264,8 +266,15 @@ html.sr-compact .sr-status {
 .sr-bracketed::after,
 .sr-search__option.is-active::after,
 .sr-reticle__box::after,
+.sr-search__row:has(:focus-visible)::after,
 :where(button, a[href], [role='option'], summary):focus-visible::after {
   transform: scaleY(-1);
+}
+
+/* The search field's well wears the brackets while its input has the keyboard (0061 task 5): an
+   input has no pseudo-elements of its own, and the hairline it had was 1.8:1, under SC 2.4.13. */
+.sr-search__row {
+  position: relative;
 }
 
 .sr-card *,
