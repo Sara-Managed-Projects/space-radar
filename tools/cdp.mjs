@@ -32,7 +32,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const [url, scriptPath] = process.argv.slice(2).filter((a) => !a.startsWith('--'));
-if (!url || !scriptPath) { console.error('usage: node tools/cdp.mjs <url> <script.js> [--width=] [--height=] [--mobile] [--shot=] [--shot-dir=] [--reduced-motion] [--cpuprofile=] [--block=host,...] [--bytes=] [--net=4g|3g] [--timezone=IANA]'); process.exit(2); }
+if (!url || !scriptPath) { console.error('usage: node tools/cdp.mjs <url> <script.js> [--width=] [--height=] [--mobile] [--autoplay] [--shot=] [--shot-dir=] [--reduced-motion] [--cpuprofile=] [--block=host,...] [--bytes=] [--net=4g|3g] [--timezone=IANA]'); process.exit(2); }
 const arg = (n, d) => { const h = process.argv.find((a) => a.startsWith('--' + n + '=')); return h ? h.slice(n.length + 3) : d; };
 const W = Number(arg('width', '1280'));
 const H = Number(arg('height', '800'));
@@ -86,6 +86,11 @@ const NET = arg('net', '');
 // before the app boots (spec 0051: the Tonight card guesses a place from the time zone, and its
 // acceptance screenshots are taken from Chicago without leaving this machine's own zone).
 const TIMEZONE = arg('timezone', '');
+// --autoplay: let an AudioContext run without a user gesture. A click() from the probe is not one,
+// so without this the app's sound is "on" over a suspended context: every fetch can be watched,
+// but no clip is decoded into sound that plays, nothing ducks and no playhead moves (spec 0069's
+// probe). Still muted: nothing is heard.
+const AUTOPLAY = process.argv.includes('--autoplay');
 const trace = (m) => { if (process.env.CDP_TRACE) process.stderr.write('[cdp] ' + m + '\n'); };
 
 const CHROME = process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
@@ -97,6 +102,7 @@ const chrome = spawn(CHROME, [
   '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader',
   '--disable-background-timer-throttling', '--disable-renderer-backgrounding',
   '--disable-backgrounding-occluded-windows', '--no-first-run', '--no-default-browser-check',
+  ...(AUTOPLAY ? ['--autoplay-policy=no-user-gesture-required'] : []),
   'about:blank',
 ], { stdio: ['ignore', 'ignore', 'pipe'] });
 let chromeErr = '';

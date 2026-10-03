@@ -185,7 +185,7 @@ const ctx = {
   audio: {
     isOn: () => soundIsOn,
     toggle() { soundIsOn = !soundIsOn; for (const fn of audioListeners) fn(); },
-    enable() {},
+    enable() { if (!soundIsOn) { soundIsOn = true; for (const fn of audioListeners) fn(); } },
     onChange(fn) { audioListeners.push(fn); return () => {}; },
   },
   mobile: null,
@@ -224,6 +224,20 @@ notify({
   sound.click();
   check(sound.getAttribute('aria-pressed') === 'true' && soundIsOn, 'pressed, sound is on and the toggle says so');
   check(q('.sr-trip__tb--sound').getAttribute('aria-pressed') === 'true', 'and the toolbar\'s sound button agrees');
+  // Spec 0069: the voice, beside sound and inside it (internal #309: music only is a way to watch).
+  const voices = qa('.sr-trip__voicetoggle');
+  const pressed = () => voices.map((b) => b.getAttribute('aria-pressed')).join();
+  check(voices.length === 2 && voices.every((b) => b.getAttribute('aria-label') === T.voice), 'Voice is a toggle on the intro and in the toolbar');
+  check(voices.every((b) => /synthetic/.test(b.title)), `its tooltip says the voice is synthetic: "${voices[0].title}"`);
+  check(pressed() === 'true,true', 'with sound on the voice is on until it is turned off');
+  voices[0].click();
+  check(pressed() === 'false,false' && soundIsOn && voices[0].title === T.voiceOffTitle, 'Voice off leaves the music on: both toggles say so');
+  voices[0].click();
+  check(pressed() === 'true,true' && voices[0].title === T.voiceOnTitle, 'and back on');
+  sound.click();
+  check(pressed() === 'false,false' && !soundIsOn, 'sound off: nothing will be read, and the Voice toggle says so');
+  voices[0].click();
+  check(soundIsOn && pressed() === 'true,true' && sound.getAttribute('aria-pressed') === 'true', 'Voice pressed with sound off turns both on');
   const quiet = q('.sr-tripsheet__quiet');
   check(quiet && quiet.textContent === T.introSkip, '"Not now" is a quiet text button');
   const rows = qa('.sr-tripsheet__stop');
@@ -243,10 +257,10 @@ notify({ phase: 'dwell', index: 0, count: 4, stopTitle: 'Two places, and only tw
   check(toolbar.hidden === false, 'the toolbar is up while a stop is');
   check(toolbar.getAttribute('role') === 'group' && toolbar.getAttribute('aria-label') === T.controlsLabel, 'it is a named group of controls');
   const order = toolbar.children.map((n) => (n.classList.contains('sr-trip__progress') ? 'progress' : n.classList.contains('sr-trip__sep') ? 'sep' : n.getAttribute('aria-label')));
-  const want = [T.pause, T.back, 'progress', T.next, 'sep', T.replay, T.share, T.collapse, T.soundOn];
+  const want = [T.pause, T.back, 'progress', T.next, 'sep', T.replay, T.share, T.collapse, T.soundOn, T.voice];
   check(order.join('|') === want.join('|'), `the toolbar's order: ${order.join(', ')}`);
   const buttons = qa('.sr-trip__tb');
-  check(buttons.length === 7, `seven icon buttons (${buttons.length})`);
+  check(buttons.length === 8, `eight icon buttons, the Voice toggle last (spec 0069) (${buttons.length})`);
   for (const b of buttons) {
     const svg = b.querySelector('svg');
     check(b.tagName === 'BUTTON' && b.type === 'button', `${b.getAttribute('aria-label')} is a real button`);

@@ -1631,6 +1631,14 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   background: var(--sr-wash-strong);
 }
 
+/* THE SENTENCE BEING SAID (spec 0069, ui/voicecue.js): the selected row's wash over the card's
+   own words, painted by the browser from a range, so the card's DOM is not touched. Text on
+   ember-soft stays --sr-text (docs/ui-guide.md §2.1: 7.24 over a cloud). */
+::highlight(sr-voice) {
+  color: var(--sr-text);
+  background-color: var(--sr-ember-soft);
+}
+
 /* On: the card folded away, the sound playing. The selected state's fill (docs/ui-guide.md §3). */
 .sr-trip__tb[aria-pressed='true'] {
   background: var(--sr-wash-strong);
@@ -2304,10 +2312,16 @@ html.sr-phone .sr-trip__progress {
   padding: 0;
 }
 
-/* Seven 44 px targets and the counter need 372 px. A narrower phone keeps the controls a trip
-   cannot do without and drops what has a key or another door: Replay below 380 px (R, or
-   previous and next), Share below 340 (the end card has it). No horizontal scroll at 320 (SC
-   1.4.10). */
+/* Eight 44 px targets and the counter need 416 px. A narrower phone keeps the controls a trip
+   cannot do without and drops what has a key or another door: Voice below 424 px (spec 0069: the
+   intro has it, and Sound silences both), Replay below 380 (R, or previous and next), Share below
+   340 (the end card has it). No horizontal scroll at 320 (SC 1.4.10). */
+@media (max-width: 423px) {
+  html.sr-phone .sr-trip__tb--voice {
+    display: none;
+  }
+}
+
 @media (max-width: 379px) {
   html.sr-phone .sr-trip__tb--replay {
     display: none;

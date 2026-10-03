@@ -30,6 +30,11 @@ budgets:
   - {id: triangles_per_stop, value: 250000, unit: triangles, since: 2026-09-22, reason: "poes.glb alone was 116 517 before decimation (0027 amendment 1)", pending: "spec 0044 task 3"}
   - {id: bed_kb, value: 600, unit: kB, since: 2026-09-22, reason: "spec 0035: 75 s at 64 kbps Opus"}
   - {id: audio_total_kb, value: 3000, unit: kB, since: 2026-09-22, reason: "spec 0035"}
+  # Spec 0069 (2026-10-03): the trips' narration, fetched a clip at a time and only with sound on.
+  # Measured after the first render (62 stops, Kokoro-82M bf_emma at 0.8, Opus 32 kbps mono): the
+  # numbers are in each row's reason; scripts/narrate.py --check holds both.
+  - {id: narration_trip_kb, value: 1000, unit: kB, since: 2026-10-03, reason: "spec 0069 req 5: the Opus clips of one trip, what a visitor who hears a whole trip downloads; the largest (PLACEHOLDER) measured 2026-10-03, with room for a trip of twelve stops"}
+  - {id: narration_total_kb, value: 9000, unit: kB, since: 2026-10-03, reason: "spec 0069 req 5: everything under site/audio/narration/ (Opus, the AAC twins, the captions); PLACEHOLDER measured 2026-10-03"}
   - {id: trip_picture_bytes, value: 24000, unit: bytes, since: 2026-10-02, reason: "spec 0068 task 1: one WebP per trip card (640 x 360), fetched after the first visit settles; scripts/build_trip_thumbs.py --check"}
   - {id: og_png_min_bytes, value: 50000, unit: bytes, since: 2026-09-22, reason: "under 50 kB a 1200x630 frame is empty (#157's lesson)"}
   - {id: home_js_kb, value: 8, unit: kB, since: 2026-09-22, reason: "spec 0042", pending: "spec 0042"}

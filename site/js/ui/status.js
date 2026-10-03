@@ -379,6 +379,8 @@ export function createStatus(ctx, parent) {
   // From the registry mirror, so it lists what ships whether or not anybody turned sound on.
   const soundCredits = creditsText(AUDIO);
   if (soundCredits) creditBlock.appendChild(el('p', 'sr-status__intro sr-status__sound', soundCredits));
+  // Spec 0069 task 5: the trips' voice is synthetic, and the place that names every source says so.
+  creditBlock.appendChild(el('p', 'sr-status__intro sr-status__sound', COPY.audio.narrationCredit));
   // The live clouds (2026-09-28, scene/liveclouds.js) are not a layer or a source row: they are part
   // of the Earth. Their credits are here all the same -- NASA's acknowledgement, verbatim, and the
   // operators of the three satellites -- with one line saying what the clouds are right now.

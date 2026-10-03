@@ -82,6 +82,13 @@ jobs:
       # Spec 0035: the browser reads which file is which bed, and the credit it prints, from this.
       - name: The audio mirror matches the registry (spec 0035)
         run: python3 scripts/gen_audio_js.py --check
+      # Spec 0069: the trips' narration. No TTS here: the clips are rendered by hand and committed;
+      # this refuses a stop whose words changed since its clip was made, a missing file or twin,
+      # captions that are not the card's sentences, and a trip or a total over its budget.
+      - name: Every trip stop has its narration, made from the words it has now (spec 0069)
+        run: python3 scripts/narrate.py --check
+      - name: The narration mirror matches the registry (spec 0069)
+        run: python3 scripts/gen_narration_js.py --check
       # Spec 0044: the gates themselves. A stale mirror is a test holding the previous number.
       - name: The budgets mirror matches the registry (spec 0044)
         run: python3 scripts/gen_budgets_js.py --check
@@ -381,6 +388,11 @@ jobs:
       # failure when a file is missing.
       - name: sound is off until chosen, cross-fades per stage, ducks under a sting, fails quietly (spec 0035)
         run: node tests/test_audio.mjs
+      # Spec 0069: the voice with a stub AudioContext. Nothing fetched with sound off or the voice
+      # off, the bed 10 dB down under a clip and back after, the stop held for the clip and a
+      # second, pause and resume at the same word, a missing clip that stops nothing.
+      - name: a stop is read aloud only when asked, ducks the music, holds the stop, fails quietly (spec 0069)
+        run: node tests/test_narration.mjs
       - name: a shared link is the view and nothing else, and every Share opens the one sheet (spec 0033, 0061 task 8)
         run: node tests/test_share.mjs
       # Spec 0044: the byte gate's rules on fixtures. The real boot is in screens.yml, which has a

@@ -213,6 +213,68 @@ stage.setOrigin(null);
   machine.dispose();
 }
 
+// ------------------------------------------- machine: a stop held for its narration (spec 0069)
+// holdDwell(ms) is how a clip that is being read keeps the camera at the stop: the timer that ends
+// the dwell is pushed out, never pulled in, and the same pause freezes it.
+{
+  let wall = 1000;
+  const realPerformance = globalThis.performance;
+  Object.defineProperty(globalThis, 'performance', { value: { now: () => wall }, configurable: true });
+  clock.live();
+  const ctx = makeCtx();
+  const machine = createTrip(ctx);
+  await machine.start('fx-playback');
+  pump();
+  check(machine.state.stops[0].dwellMs === 8000, 'the state carries each stop\'s own dwell, for the intro\'s length');
+  check(machine.holdDwell(5000) === false, 'holdDwell on the intro holds nothing');
+  machine.play();
+  pump(1);
+  arrive(ctx);
+  wall += 200;
+  pump(2);
+  check(machine.state.phase === 'dwell', `stop 0 is dwelling (${machine.state.phase})`);
+  check(machine.holdDwell(3000) === false, 'a hold shorter than what is left changes nothing');
+  wall += 7000;
+  pump(2);
+  check(machine.state.index === 0 && machine.state.phase === 'dwell', 'still on stop 0 at 7 s of an 8 s dwell');
+  check(machine.holdDwell(5000) === true, 'a hold longer than what is left is taken');
+  const f = machine.dwellFraction();
+  check(f > 0.55 && f < 0.62, `the segment's fill follows the longer dwell (7 of 12 s: ${f})`);
+  wall += 2000;
+  pump(2);
+  check(machine.state.index === 0 && machine.state.phase === 'dwell', 'past the card\'s own 8 s the stop is still up');
+  machine.pause('control');
+  wall += 60000;
+  pump(2);
+  machine.resume();
+  pump(2);
+  check(machine.state.index === 0, 'a pause freezes the held dwell like any other');
+  wall += 3200;
+  pump(3);
+  check(machine.state.index === 1, `and the trip moves on when the hold runs out (index ${machine.state.index})`);
+  // Asked while the camera is still flying or settling: the dwell that follows takes the longer.
+  check(machine.holdDwell(20000) === true, 'a hold asked for before the dwell begins is kept');
+  arrive(ctx);
+  wall += 200;
+  pump(2);
+  wall += 15000;
+  pump(2);
+  check(machine.state.index === 1 && machine.state.phase === 'dwell', 'the stop is held for the 20 s asked, not the card\'s 8');
+  wall += 5200;
+  pump(3);
+  check(machine.state.index === 2, `and then moves on (index ${machine.state.index})`);
+  // A hold does not leak into the next stop.
+  arrive(ctx);
+  wall += 200;
+  pump(2);
+  wall += 8200;
+  pump(3);
+  check(machine.state.phase === 'outro', `the last stop keeps its own 8 s (${machine.state.phase})`);
+  machine.stop('left');
+  machine.dispose();
+  Object.defineProperty(globalThis, 'performance', { value: realPerformance, configurable: true });
+}
+
 // -------------------------------------- frame: counter wording + progress visible while paused
 {
   const listeners = [];

@@ -864,6 +864,9 @@ export const COPY = {
     panelTitle: 'Sound',
     panelNote: 'A quiet score for the map and its trips. Nothing is downloaded until you turn it on.',
     creditsLine: 'Music and sounds: {credits}',
+    // Spec 0069 task 5. The registry's own line (registry/narration.yaml `voice.credit`, carried
+    // by CREDITS.md section 9b): tests/test_narration.mjs holds the three to one string.
+    narrationCredit: 'Narration: a synthetic voice, Kokoro-82M (bf_emma), Apache-2.0',
   },
   // Spec 0045 req 10: how tightly the panels are set. Automatic is Compact on a window 800 px tall
   // or less; the note under the row says which one Automatic picked.
@@ -1705,6 +1708,11 @@ export const COPY = {
     soundOn: 'Sound',
     soundOnTitle: 'Music and sounds are on: turn them off',
     soundOffTitle: 'Music and sounds are off: turn them on',
+    // Spec 0069: the voice that reads each stop. It is synthetic and the control says so, every
+    // time, because a visitor should know before they wonder (the Sources panel names the model).
+    voice: 'Voice',
+    voiceOnTitle: 'A synthetic voice is reading each stop: turn it off and keep the music',
+    voiceOffTitle: 'Have each stop read aloud by a synthetic voice',
     leave: 'Leave',
     leaveTitle: 'Leave the trip. The camera stays exactly where it is. (Escape)',
     // ...WHICH IS NOT TRUE OF A TRIP THAT MOVED THE MAP'S CENTRE (2026-09-22). A trip may be flown

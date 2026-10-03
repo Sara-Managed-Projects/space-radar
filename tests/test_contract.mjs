@@ -103,6 +103,11 @@ const CONTRACT = {
   // construction; beds and stings fetch on first use only.
   'audio/engine.js': ['createAudio', 'readFlag', 'writeFlag', 'STORE_KEY', 'VOLUME'],
   'audio/load.js': ['createLoader'],
+  // Spec 0069: the trips' narration. Loaded with ui/tripframe.js when the first trip starts, never
+  // at boot; tests/test_narration.mjs holds the ducking, the dwell and the toggle.
+  'audio/narration.js': ['createNarration', 'readVoice', 'writeVoice', 'VOICE_KEY', 'DUCK_DB', 'VOICE_DUCK', 'DUCK_IN_S', 'DUCK_BACK_S', 'TAIL_MS', 'KEEP', 'clipKey', 'clipRow', 'holdFor', 'parseVtt', 'cueAt'],
+  'data/narration.js': ['NARRATION'],
+  'ui/voicecue.js': ['cueRange', 'paintCue', 'HIGHLIGHT'],
   'audio/beds.js': ['createBeds', 'XFADE_S'],
   'audio/stings.js': ['createStings', 'DUCK', 'DUCK_IN_S', 'DUCK_BACK_S', 'STING_LEVEL'],
   'audio/pick.js': ['pickFormat', 'rungOf', 'RUNGS', 'OPUS_TYPE', 'AAC_TYPE'],

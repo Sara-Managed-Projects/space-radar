@@ -1387,7 +1387,11 @@ function wireSound(ctx) {
     ctx.trip.onChange((st) => {
       const next = st && st.phase;
       if (next === phase) return;
-      if (next === 'settle') audio.stings.play('arrive');
+      // The arrival chime stands down for a stop that is read aloud (spec 0069): the voice is the
+      // arrival, and a chime under its first words is two things at once. `narration` is put on
+      // the engine by ui/tripframe.js, which is loaded by the time any flight lands.
+      const read = audio.narration && audio.narration.willSpeak(`${st.tourId}/${st.stopId}`);
+      if (next === 'settle') { if (!read) audio.stings.play('arrive'); }
       else if (next === 'outro') audio.stings.play('end');
       phase = next;
     });

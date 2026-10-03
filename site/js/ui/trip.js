@@ -3,7 +3,7 @@
 // Contract exports: createTrip(ctx) -> { start(id), play(), stop(reason), next(), back(),
 //                                        replay(), jumpTo(index), pause(reason), resume(),
 //                                        plan(id), tours(), onChange(fn), dwellFraction(),
-//                                        currentRecordId(), state }
+//                                        holdDwell(ms), currentRecordId(), state }
 //
 // The trips themselves are DATA: registry/tours.yaml, mirrored into data/tours.js by
 // scripts/gen_tours_js.py. Nothing in this file knows about any particular trip, and adding one
@@ -1577,7 +1577,7 @@ export function createTrip(ctx) {
     state.tourTitle = tour.title;
     state.orbits = Array.isArray(tour.orbits) ? tour.orbits.slice() : [];
     state.count = resolved.stops.length;
-    state.stops = resolved.stops.map((entry) => ({ id: entry.stop.id, title: (entry.stop.card || {}).title || entry.stop.id }));
+    state.stops = resolved.stops.map((entry) => ({ id: entry.stop.id, title: (entry.stop.card || {}).title || entry.stop.id, dwellMs: entry.stop.dwell_ms }));
     state.estimateMs = estimateOf(resolved.stops);
     state.dropped = resolved.dropped;
     state.pacing = pacingFor(tour);
@@ -1870,10 +1870,41 @@ export function createTrip(ctx) {
       // Held so the frame can fill one segment over exactly this long, and so that the fill is
       // read from the timer that actually decides when the stop ends rather than from a second
       // clock that would drift away from it the first time somebody paused.
-      run.dwellMs = stop.dwell_ms;
-      run.dwellTimer = after(stop.dwell_ms, () => advance());
+      // The longer of the card's own dwell and what holdDwell() was asked for while the camera
+      // settled (spec 0069: the stop's narration).
+      const floor = run.dwellFloor && run.dwellFloor.index === index && run.dwellFloor.gen === gen ? run.dwellFloor.ms : 0;
+      run.dwellMs = Math.max(stop.dwell_ms, floor);
+      run.dwellTimer = after(run.dwellMs, () => advance());
     }
+    run.dwellFloor = null;
     notify();
+  }
+
+  /**
+   * HOLD THE STOP THAT IS UP FOR AT LEAST `ms` MORE (spec 0069). The dwell is the time a reader
+   * needs for the card; a stop that is being read ALOUD needs the length of its clip, which is
+   * longer, and a voice cut off by the next flight is worse than no voice. So whoever plays the
+   * clip (audio/narration.js, through ui/tripframe.js) says how long is left of it, and the timer
+   * that ends the stop is pushed out to that -- never pulled in: a dwell is only ever lengthened.
+   * Asked before the dwell has begun (the camera is settling), it is kept for dwell() to take.
+   * The same wall-clock timer as ever, so a pause freezes it and the segment's fill reads it.
+   * Reader-paced stops have no timer and nothing to hold. Returns whether anything changed.
+   */
+  function holdDwell(ms) {
+    if (!run || state.index < 0 || !(ms > 0)) return false;
+    const timer = run.dwellTimer;
+    if (timer && timers.indexOf(timer) !== -1) {
+      const left = timer.remaining !== null ? timer.remaining : timer.dueAt - now();
+      if (ms <= left) return false;
+      const spent = Math.max(0, run.dwellMs - left);
+      if (timer.remaining !== null) timer.remaining = ms;
+      else timer.dueAt = now() + ms;
+      run.dwellMs = spent + ms;
+      return true;
+    }
+    if (state.phase !== 'settle' && state.phase !== 'flight') return false;
+    run.dwellFloor = { index: state.index, gen, ms };
+    return true;
   }
 
   /** The id the labels know the stop's subject by: its record's, or the world's own. */
@@ -2313,6 +2344,7 @@ export function createTrip(ctx) {
     plan,
     onChange,
     dwellFraction,
+    holdDwell,
     currentRecordId,
     tours: () => TOURS,
     state,

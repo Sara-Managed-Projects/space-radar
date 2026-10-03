@@ -60,6 +60,11 @@
 //               story panel". Bound to `c`.
 //   Sound       Spec 0035: sound is off until chosen on the intro, and a visitor who chose it must
 //               be able to take it back without leaving the trip.
+//   Voice       Spec 0069: with sound on, each stop is read aloud once the camera has arrived (a
+//               synthetic voice, and its tooltip says so). Its own toggle, inside Sound, because
+//               music with the words left on the card is a way to watch too (internal #309).
+//               Pressed with sound off it turns both on: a control that did nothing until another
+//               was found would be a puzzle.
 //   Leave       Always visible while a stop is up, never behind a menu -- see GETTING OUT below.
 //
 // NOT SHIPPED, and why: a SCRUBBER (a KML tour is a continuous timeline; ours is a chain of
@@ -105,6 +110,12 @@ import { nextTripOrder } from './trippicker.js';
 import { openShare } from './share.js';
 import { icon } from './cards.js';
 import { tripPicture } from './trippics.js';
+// Spec 0069. Static imports, and still not on the first visit: this whole module is imported when
+// the first trip starts (main.js), and these come with it.
+import { createNarration, clipKey } from '../audio/narration.js';
+import { NARRATION } from '../data/narration.js';
+import { paintCue } from './voicecue.js';
+import { shouldSaveData } from '../scene/quality.js';
 
 const HOST_ID = 'sr-trip';
 // NOT 'sr-trip'. The host div carries `.sr-trip`, and `.sr-trip` in ui.css sets
@@ -283,6 +294,22 @@ export function createTripFrame(ctx) {
   let outroToken = 0;
   let lastIndex = -1;
 
+  // THE VOICE (spec 0069, audio/narration.js). One for the page, kept on the engine so main.js can
+  // ask it whether a stop will be read (the arrival chime stands down for the voice). It holds a
+  // stop until its clip has finished through ui/trip.js holdDwell, and on a connection that saves
+  // data or the low tier it fetches each clip when its stop arrives, never ahead.
+  const voice = !ctx.audio ? null : ctx.audio.narration || (ctx.audio.narration = createNarration(ctx.audio, ctx.audio.beds, NARRATION, {
+    hold: (ms) => (typeof trip.holdDwell === 'function' ? trip.holdDwell(ms) : false),
+    lean: () => (ctx.quality && ctx.quality.tier === 0)
+      || (typeof navigator !== 'undefined' && shouldSaveData(navigator.connection)),
+  }));
+
+  /** The clip of the stop after the one that is up, to fetch while this one is read. */
+  function nextKey(st) {
+    const s = st && Array.isArray(st.stops) ? st.stops[st.index + 1] : null;
+    return s ? clipKey(st.tourId, s.id) : '';
+  }
+
   function isPhone() {
     if (ctx.shell && typeof ctx.shell.isPhone === 'function') return ctx.shell.isPhone();
     return typeof matchMedia === 'function' ? matchMedia(PHONE_QUERY).matches : false;
@@ -326,9 +353,10 @@ export function createTripFrame(ctx) {
     );
     collapse.setAttribute('aria-pressed', 'false');
     const sound = iconButton('sr-trip__tb sr-trip__tb--sound', 'volume-x', T.soundOn, T.soundOffTitle, toggleSound);
+    const voiceBtn = iconButton('sr-trip__tb sr-trip__tb--voice sr-trip__voicetoggle', 'speech', T.voice, T.voiceOffTitle, toggleVoice);
     const sep = el('span', 'sr-trip__sep');
     sep.setAttribute('aria-hidden', 'true');
-    for (const n of [pause, back, progress, next, sep, replay, share, collapse, sound]) toolbar.appendChild(n);
+    for (const n of [pause, back, progress, next, sep, replay, share, collapse, sound, voiceBtn]) toolbar.appendChild(n);
 
     // What a screen reader is told. The CARD is the accessible representation of a stop -- we do
     // not describe a live 3D scene, because that would be asserting a description of pixels
@@ -384,7 +412,7 @@ export function createTripFrame(ctx) {
     document.body.appendChild(host);
 
     parts = {
-      toolbar, pause, back, next, replay, share, collapse, sound, progress, count, countText, segs,
+      toolbar, pause, back, next, replay, share, collapse, sound, voice: voiceBtn, progress, count, countText, segs,
       live, group, heading, status, top, title, chapter, sheet, panel, cardSlot, leaveButtons: [topLeave],
     };
     paintSound();
@@ -472,6 +500,24 @@ export function createTripFrame(ctx) {
     paintSound();
   }
 
+  /** Voice lives inside Sound: pressed with sound off, it turns both on (the click is the gesture). */
+  function toggleVoice() {
+    if (!voice) return;
+    if (!soundOn()) {
+      voice.setOn(true);
+      ctx.audio.enable();
+    } else {
+      voice.toggle();
+    }
+    heard();
+  }
+
+  /** What the visitor wants to hear changed: repaint the toggles, and start or stop the voice. */
+  function heard() {
+    paintSound();
+    if (voice) voice.refresh(trip.state, nextKey(trip.state));
+  }
+
   /** Every sound toggle the frame has drawn (the toolbar's, the intro's) says the same thing. */
   function paintSound() {
     if (!parts) return;
@@ -484,6 +530,21 @@ export function createTripFrame(ctx) {
       b.setAttribute('aria-pressed', on ? 'true' : 'false');
       b.title = on ? T.soundOnTitle : T.soundOffTitle;
       b.disabled = !ctx.audio;
+    }
+    // The voice is on only when sound is: one glance says what will be heard.
+    const speaking = on && !!voice && voice.isOn();
+    const voices = [parts.voice, ...(parts.panel.querySelectorAll ? [...parts.panel.querySelectorAll('.sr-trip__voicetoggle')] : [])];
+    for (const b of voices) {
+      if (!b) continue;
+      b.setAttribute('aria-pressed', speaking ? 'true' : 'false');
+      b.title = speaking ? T.voiceOnTitle : T.voiceOffTitle;
+      b.disabled = !voice;
+    }
+    // The intro's promise, kept true: a trip that is read aloud runs as long as its clips.
+    const meta = parts.panel.querySelector ? parts.panel.querySelector('.sr-tripsheet__meta') : null;
+    const st = trip.state;
+    if (meta && st.phase === 'intro') {
+      meta.textContent = shapeLine(st.count, st.estimateMs + (voice ? voice.extraMs(st.tourId, st.stops) : 0));
     }
   }
 
@@ -646,6 +707,9 @@ export function createTripFrame(ctx) {
       // A visitor who chose sound on an earlier visit hears it from Start: the click is the
       // gesture the stored choice was waiting for (audio/engine.js).
       if (ctx.audio && ctx.audio.isOn()) ctx.audio.enable();
+      // The first stop's clip, asked for while the camera flies to it (and not on a lean connection).
+      const first = (st.stops || [])[0];
+      if (voice && first) voice.preload(clipKey(st.tourId, first.id));
       trip.play();
     });
     row.appendChild(start);
@@ -653,6 +717,8 @@ export function createTripFrame(ctx) {
     // deciding how to watch, and a click here is the gesture a browser wants first.
     const sound = iconButton('sr-tripsheet__sound sr-trip__soundtoggle', 'volume-x', T.soundOn, T.soundOffTitle, toggleSound);
     row.appendChild(sound);
+    // The voice, beside it (spec 0069): the same control as the toolbar's, painted by paintSound.
+    row.appendChild(iconButton('sr-tripsheet__sound sr-trip__voicetoggle', 'speech', T.voice, T.voiceOffTitle, toggleVoice));
     p.appendChild(row);
     p.appendChild(textButton('sr-tripsheet__quiet', T.introSkip, T.leaveTitle, leave));
 
@@ -775,6 +841,9 @@ export function createTripFrame(ctx) {
   // ---------------------------------------------------------------------------- the render
 
   function render(st) {
+    // Before anything is painted, and for every phase, `idle` included: the voice follows the trip
+    // (it starts when a flight lands, pauses with the trip, and stops when the camera leaves).
+    if (voice) voice.follow(st, nextKey(st));
     if (st.phase === 'idle') {
       teardown();
       return;
@@ -922,6 +991,8 @@ export function createTripFrame(ctx) {
     if (!parts) return;
     const st = trip.state;
     paintCardLines(st);
+    // The sentence being said, lit in the card's own paragraph (ui/voicecue.js).
+    if (voice) paintCue(document.querySelector('#sr-card .sr-card__leadbody'), voice.cue());
     if (st.phase !== 'dwell' || st.index < 0) return;
     const seg = parts.segs.children[st.index];
     if (!seg) return;
@@ -949,7 +1020,7 @@ export function createTripFrame(ctx) {
     // The cross-fade the rig has emitted since it was written, finally consumed. Subscribed only
     // for the life of a trip, so an ordinary reduced-motion flight outside one does not flash.
     if (rig && rig.onFade) offFade = rig.onFade((ms) => flash(ms));
-    if (ctx.audio && typeof ctx.audio.onChange === 'function') offSound = ctx.audio.onChange(paintSound);
+    if (ctx.audio && typeof ctx.audio.onChange === 'function') offSound = ctx.audio.onChange(heard);
     if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('sr:shell', onShell);
     if (!raf) raf = requestAnimationFrame(loop);
     // No render() here on purpose: the only caller is render() itself, and painting from inside
@@ -970,6 +1041,10 @@ export function createTripFrame(ctx) {
     if (raf) {
       cancelAnimationFrame(raf);
       raf = 0;
+    }
+    if (voice) {
+      voice.stop();
+      paintCue(null, '');
     }
     setCollapsed(false);
     // The card out of the sheet BEFORE the sheet goes: a card left inside a detached node is a card

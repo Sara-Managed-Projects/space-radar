@@ -56,6 +56,7 @@ only change is the stroke, 1.75 instead of Lucide's default 2, which `docs/ui-gu
 for every icon in the app; Lucide draws at any stroke width by design. Four of the eight (`x`,
 `crosshair`, `chevron-right`, `navigation`) are on Lucide's own list of icons derived from Feather,
 which are MIT, © Cole Bemis; the rest are ISC. Both notices are in [§6](#6-full-licence-notices).
+The trip's Voice toggle adds `speech` (spec 0069, read 2026-10-03, ISC), copied the same way.
 
 ## 2. Textures
 
@@ -1015,7 +1016,9 @@ is vendored in the tree.
 | PyYAML | `scripts/check_registry.py`, `tests/` — installed by `ci.yml` | MIT |
 | Playwright | `scripts/shots.mjs`, `screens.yml`, `readme-shots.yml` — from the `mcr.microsoft.com/playwright` image | Apache-2.0 |
 | `actions/checkout`, `actions/setup-python`, `actions/upload-artifact` | `.github/workflows/` | MIT |
-| FFmpeg (with libopus) | `scripts/build-audio.py`, run by hand to make `site/audio/`; not in the tree | LGPL-2.1+ / GPL builds |
+| FFmpeg (with libopus) | `scripts/build-audio.py` and `scripts/narrate.py`, run by hand to make `site/audio/`; not in the tree | LGPL-2.1+ / GPL builds |
+| kokoro-onnx 0.6.1, ONNX Runtime 1.23.2 | `scripts/narrate.py`, run by hand to make `site/audio/narration/`; not in the tree | MIT |
+| misaki 0.9.4 (grapheme-to-phoneme), with spaCy `en_core_web_sm` and espeak-ng as its fallback | the same; words to phonemes, at build time only | Apache-2.0; MIT; GPL-3.0-or-later (espeak-ng: a tool that is run, never linked into or shipped with the app) |
 
 ## 8. Acknowledgements
 
@@ -1062,6 +1065,31 @@ Modified: each bed is a 72 s cut of a 4:04 piece with its last 4 s cross-faded i
 it loops, levelled to −23 LUFS; each sting is trimmed to 2.5–3 s with a fade and levelled to
 −21 LUFS; all are re-encoded to Opus 64 kbps and AAC 64 kbps. The stings are made from Freesound's
 HQ previews, not the uploaded originals.
+
+## 9b. Audio — the trips' narration (a synthetic voice)
+
+Spec 0069 (2026-10-03). Each stop of a guided trip can be read aloud. **The voice is synthetic**:
+the files under `site/audio/narration/` were made offline by `scripts/narrate.py` from the stops'
+own words in `registry/tours.yaml`, and no person recorded them. The app says so on the control
+that turns the voice on and in its Sources panel, which prints this line:
+
+> Narration: a synthetic voice, Kokoro-82M (bf_emma), Apache-2.0
+
+| What | Used for | Licence | Source |
+|---|---|---|---|
+| Kokoro-82M, model weights v1.0 and the voice `bf_emma` (British English) | synthesising every clip, at build time; the model itself is not shipped | Apache-2.0 | <https://huggingface.co/hexgrad/Kokoro-82M> (read 2026-10-03); the ONNX export and `voices-v1.0.bin` from <https://github.com/thewh1teagle/kokoro-onnx/releases/tag/model-files-v1.0> |
+
+The model's card reads: "Kokoro is an open-weight TTS model with 82 million parameters … with
+Apache-licensed weights, Kokoro can be deployed anywhere from production environments to personal
+projects." `registry/narration.yaml` records the SHA-256 of both model files, the versions of the
+tools the render ran with, the pronunciation lexicon, and a hash per clip; `scripts/narrate.py
+--check` refuses a stop whose words have changed since its clip was made. Each clip is levelled to
+−16 LUFS and encoded to Opus 32 kbps mono with an AAC twin; the captions beside it (`.vtt`) are the
+card's own sentences. Nothing here is downloaded until a visitor turns sound on.
+
+Why this model and not another: the spec ordered the choice by licence. XTTS-v2 (Coqui Public Model
+Licence) and F5-TTS (CC BY-NC) forbid commercial use and were refused; Piper (MIT code, per-voice
+licences) was the fallback and was not needed.
 
 ## 10. Fonts
 
