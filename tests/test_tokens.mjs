@@ -149,6 +149,54 @@ if (glass && thin && solid && text && dim && space) {
   problems.push('the glass, text or space tokens are not in a form this test can read (rgba() and #rrggbb)');
 }
 
+// --- 2b. the guide's contrast table, complete (docs/ui-guide.md section 2.1 and 7; 0061 task 5) --
+// What section 2 holds for text and text-dim on glass, held for every role the guide gives a
+// number: text on both grounds and on the stronger glass, the accent and the state colours as
+// marks (3:1, SC 1.4.11) and as text where they are text, ink on an ember fill, the selected row's
+// wash, and every class colour as a swatch on glass over a cloud and on bare space.
+if (glass && text && dim && space) {
+  const onW = over(glass, WHITE);
+  const onK = over(glass, space);
+  const strong = rgba(token('--sr-glass-strong') || '');
+  const need = (name, fg, bg, floor, where) => {
+    if (!fg || !bg) { problems.push(`${name} is not a colour this test can read`); return; }
+    const r = ratio(fg, bg);
+    check(r >= floor, `${name} ${where} is ${r.toFixed(2)}:1, under ${floor}:1`);
+  };
+  for (const [name, fg] of [['--sr-text', text], ['--sr-text-dim', dim]]) {
+    need(name, fg, onW, 4.5, 'on glass over a white cloud');
+    need(name, fg, onK, 4.5, 'on glass over space');
+    if (strong) need(name, fg, over(strong, WHITE), 4.5, 'on the strong glass over a white cloud');
+  }
+  check(!!strong && strong.a >= glass.a && solid.a >= strong.a, 'the glasses are ordered: glass, then glass-strong, then the solid fallback, none lighter than the one before');
+  const soft = rgba(token('--sr-text-soft') || '');
+  if (soft) {
+    need('--sr-text-soft', over(soft, onW), onW, 4.5, 'on glass over a white cloud');
+    check(soft.a >= 0.62, `--sr-text-soft is white at ${soft.a}; no text alpha under 0.62`);
+  }
+  // The accent: 3:1 as a mark, and it is text too (the countdown, a text action, the matched letters).
+  const ember = hex(token('--sr-ember'));
+  need('--sr-ember', ember, onW, 4.5, 'on glass over a white cloud');
+  need('--sr-ember', ember, onK, 4.5, 'on glass over space');
+  need('--sr-ember-light', hex(token('--sr-ember-light')), onW, 4.5, 'on glass over a white cloud');
+  need('--sr-ink on --sr-ember', hex(token('--sr-ink')), ember, 4.5, '(the primary button)');
+  // The selected row: text on the ember wash over glass over a cloud.
+  const emberSoft = rgba(token('--sr-ember-soft') || '');
+  if (emberSoft) need('--sr-text on --sr-ember-soft', text, over(emberSoft, onW), 4.5, 'over glass over a white cloud');
+  // The status dot's colours and "off": graphics, with their words beside them.
+  for (const name of ['--sr-ok', '--sr-stale', '--sr-unread']) need(name, hex(token(name)), onW, 3, 'as a dot on glass over a white cloud');
+  // The class colours, as the swatches in What to show and the search: a 10 px dot beside a name.
+  const CLASSES = ['station', 'satellite', 'debris', 'rocket', 'probe', 'telescope', 'asteroid', 'comet', 'site', 'world', 'star', 'exoplanet', 'dso', 'exotic', 'storm', 'unknown'];
+  let lowest = Infinity;
+  for (const c of CLASSES) {
+    const fg = hex(token(`--sr-${c}`));
+    need(`--sr-${c}`, fg, onW, 3, 'as a swatch on glass over a white cloud');
+    need(`--sr-${c}`, fg, space, 3, 'as a dot on bare space');
+    if (fg) lowest = Math.min(lowest, ratio(fg, onW));
+  }
+  table.push(`ember on glass over #fff: ${ratio(ember, onW).toFixed(2)}; the faintest class swatch there: ${lowest.toFixed(2)}`);
+}
+
 // --- 3. no third grey for text ------------------------------------------------------------------
 for (const r of all) {
   for (const [prop, value] of decls(r.body)) {
