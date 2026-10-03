@@ -45,7 +45,7 @@ check(mid.text.name === lines.name && mid.text.readouts === want, 'printTag() dr
 const off = { ndc: { x: 0.5, y: 0.25 }, aspect: 2, boxPx: 0, viewH: 800 };
 const o = printTag(lines, off, size, measure);
 check(o && near(o.box.x, ((0.5 * 2 / 1.5) + 1) / 2 * 1800) && near(o.box.y, (1 - 0.25) / 2 * 1200), `x is scaled by the ratio of the aspects (${o && [o.box.x.toFixed(1), o.box.y]})`);
-check(o && near(o.box.side, 28 * 1200 / 800), 'no box on the screen: the rule\'s 28 px minimum, scaled');
+check(o && near(o.box.side, 40 * 1200 / 800), 'no box on the screen: the rule\'s 40 px minimum (ui/hud.js RETICLE_MIN_PX, issue #318), scaled');
 // Flips at the print's edges, and stays inside it.
 const inside = (d) => d.tag.x >= 0 && d.tag.y >= 0 && d.tag.x + d.tag.w <= size.w && d.tag.y + d.tag.h <= size.h;
 const corners = [

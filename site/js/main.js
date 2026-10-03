@@ -338,11 +338,11 @@ export async function boot({ setStatus } = {}) {
   // Issue #251: email alerts, a row that opens in place under Coming up (ui/subscribe.js says why
   // it is there and not over the scene). Imported once the layers have settled: the row is below
   // the fold of the sidebar, and a first visit's bytes are the map's.
-  window.addEventListener('sr:layers-ready', () => {
-    setTimeout(() => {
-      import('./ui/subscribe.js').then((m) => m.createSubscribe({ parent: ctx.explore.subscribeHost })).catch((e) => console.warn('the subscribe row did not load', e));
-    }, SUBSCRIBE_MS);
-  }, { once: true });
+  const subscribeLater = () => setTimeout(() => {
+    import('./ui/subscribe.js').then((m) => m.createSubscribe({ parent: ctx.explore.subscribeHost })).catch((e) => console.warn('the subscribe row did not load', e));
+  }, SUBSCRIBE_MS);
+  if (window.__srLayersReady) subscribeLater();
+  else window.addEventListener('sr:layers-ready', subscribeLater, { once: true });
   createTimePill(ctx, shell.timeHost);
   // THE CONTROLS HINT (spec 0068 task 2, ui/keyhint.js): once per visitor, bottom-right, the keys
   // and the gestures that move the camera. Imported KEYHINT_MS after sr:layers-ready, so the first

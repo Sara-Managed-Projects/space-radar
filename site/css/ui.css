@@ -3602,9 +3602,9 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 .sr-tripcard.is-off .sr-tripcard__title { color: var(--sr-text-dim); }
 
 @media (prefers-reduced-motion: reduce) {
-  .sr-tripcard { transition: border-color 120ms linear; }
   .sr-tripcard__pic { transition: opacity 120ms linear; }
   .sr-tripcard:hover .sr-tripcard__pic { transform: none; }
+  .sr-tripcard { transition: border-color 120ms linear; }
 }
 
 /* "All 9 trips", "Show all 8": a quiet text button under a list. */
