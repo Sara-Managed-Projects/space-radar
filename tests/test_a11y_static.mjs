@@ -1,0 +1,181 @@
+// tests/test_a11y_static.mjs -- every control has a name, and every icon is from the one family
+// (docs/ui-guide.md sections 3, 3.16 and 7; spec 0061 task 6).
+//
+// Ivan, 2026-09-30: "put important info to some md so feature agents won't make it shitty again."
+// The md is docs/ui-guide.md; this is the part of it a machine can hold without a browser. It reads
+// site/js/ui/*.js as text and follows every button and link a builder makes to the end of the
+// block that made it:
+//
+//   1. A control has a NAME: text given to the builder, `textContent`, a child appended that is not
+//      an icon, or an `aria-label`. A button with neither is announced as "button".
+//   2. An ICON-ONLY control (it appends an icon and nothing else) has an `aria-label` AND a tooltip
+//      (`title`): a sighted visitor with a mouse cannot read an eye or three stacked layers either
+//      (NN/g: labels beat bare icons for all but a handful of symbols).
+//   3. Names are words from copy/en.js: no quoted literal as an aria-label or a title.
+//   4. Icons: the 24 box, `stroke-width` 1.75, round caps and joins, `aria-hidden`. The shipped
+//      strokes were 1.6, 1.7, 1.75 and 1.8 on the day this was written. The HUD's chevron is a
+//      HUD mark, not an icon (section 3.12), and a chart's lines are a chart's.
+//   5. A tab list says so, and a row that opens in place says whether it is open.
+//   6. No `outline: none` in the stylesheets without a `:focus-visible` rule for the same thing.
+//
+// WHAT TEXT CANNOT SEE the probe does, in a real page: tests/probes/ui_probe.js measures every
+// control drawn (its name, its tooltip, its hit area) through scripts/check-ui.mjs in screens.yml.
+//
+//   node tests/test_a11y_static.mjs
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+import { readFileSync, readdirSync } from 'node:fs';
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+const UI = join(ROOT, 'site/js/ui');
+const problems = [];
+const check = (ok, msg) => { if (!ok) problems.push(msg); };
+
+const files = readdirSync(UI).filter((f) => f.endsWith('.js')).sort();
+const read = (f) => readFileSync(join(UI, f), 'utf8');
+// Comments out, lines kept, so a control described in a comment is not a control.
+const code = (src) => src.replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, ' ')).replace(/^(\s*)\/\/.*$/gm, '$1');
+
+/** The text from `from` to the end of the block that encloses it. */
+function scopeFrom(src, from) {
+  let depth = 0;
+  for (let i = from; i < src.length; i += 1) {
+    const c = src[i];
+    if (c === '{') depth += 1;
+    else if (c === '}') { depth -= 1; if (depth < 0) return src.slice(from, i); }
+  }
+  return src.slice(from);
+}
+/** Split a call's arguments at the top level. */
+function args(text) {
+  const out = [];
+  let depth = 0; let cur = ''; let quote = null;
+  for (const c of text) {
+    if (quote) { cur += c; if (c === quote) quote = null; continue; }
+    if (c === '\'' || c === '"' || c === '`') { quote = c; cur += c; continue; }
+    if ('([{'.includes(c)) depth += 1;
+    if (')]}'.includes(c)) { if (depth === 0) break; depth -= 1; }
+    if (c === ',' && depth === 0) { out.push(cur.trim()); cur = ''; continue; }
+    cur += c;
+  }
+  if (cur.trim()) out.push(cur.trim());
+  return out;
+}
+const empty = (a) => a == null || a === '' || a === '\'\'' || a === '""' || a === 'null' || a === 'undefined';
+
+// The helpers each module wraps `el('button', ...)` in, and which of their arguments is the text,
+// the name and the tooltip. Read from the helper's own body, so a new helper is understood, and a
+// helper that stops setting a name stops being trusted.
+function helpers(src) {
+  const out = new Map();
+  for (const m of src.matchAll(/function (\w+)\(([^)]*)\)\s*\{/g)) {
+    const body = scopeFrom(src, m.index + m[0].length);
+    const made = /(?:const|let) (\w+) = (?:el\('(button|a)'([^)]*)\)|document\.createElement\('(button|a)'\))/.exec(body);
+    if (!made || !new RegExp(`return ${made[1]}\\b`).test(body)) continue;
+    const params = m[2].split(',').map((p) => p.trim().split('=')[0].trim());
+    const v = made[1];
+    const inEl = args(made[3] || '').slice(1);
+    const text = params.findIndex((p) => inEl.includes(p) || new RegExp(`${v}\\.textContent = (?:String\\()?${p}\\b`).test(body) || new RegExp(`${v}\\.appendChild\\(el\\('span', [^)]*\\b${p}\\)`).test(body));
+    const label = params.findIndex((p) => new RegExp(`${v}\\.setAttribute\\('aria-label', ${p}\\)`).test(body));
+    const title = params.findIndex((p) => new RegExp(`${v}\\.title = ${p}\\b`).test(body));
+    const icon = /\.appendChild\((?:icon|svgIcon)\(/.test(body);
+    out.set(m[1], { text, label, title, icon, at: m.index, end: m.index + m[0].length + body.length });
+  }
+  return out;
+}
+
+let controls = 0;
+let iconOnly = 0;
+for (const f of files) {
+  const src = code(read(f));
+  const help = helpers(src);
+  const names = [...help.keys()].join('|');
+  const re = new RegExp(`(?:const|let) (\\w+) = (?:(el)\\('(?:button|a)'|(document\\.createElement)\\('(?:button|a)'\\)${names ? `|(${names})\\(` : ''})`, 'g');
+  for (const m of src.matchAll(re)) {
+    const line = src.slice(0, m.index).split('\n').length;
+    // The helper's own body is the helper, not a control: its callers are checked.
+    if ([...help.values()].some((h) => m.index > h.at && m.index < h.end)) continue;
+    const v = m[1];
+    const scope = scopeFrom(src, m.index);
+    const call = args(src.slice(m.index + m[0].length));
+    const viaHelper = m[4] ? help.get(m[4]) : null;
+    controls += 1;
+    const set = (attr) => new RegExp(`\\b${v}\\.setAttribute\\(\\s*'${attr}'`).test(scope);
+    let hasText = false;
+    let hasLabel = set('aria-label') || set('aria-labelledby');
+    let hasTitle = new RegExp(`\\b${v}\\.title\\s*=`).test(scope) || set('title');
+    let hasIcon = new RegExp(`\\b${v}\\.(?:appendChild|append|prepend|insertBefore)\\(\\s*(?:icon|svgIcon)\\(`).test(scope) || new RegExp(`\\b${v}\\.appendChild\\((?:svg|mark|arrow|glyph)\\b`).test(scope);
+    // el('button', className, text): the match ends after 'button', so the rest reads `, cls, text)`.
+    if (m[2]) hasText = !empty(call[2]);
+    if (viaHelper) {
+      const a = call;
+      if (viaHelper.text >= 0 && !empty(a[viaHelper.text])) hasText = true;
+      if (viaHelper.label >= 0 && !empty(a[viaHelper.label])) hasLabel = true;
+      if (viaHelper.title >= 0 && !empty(a[viaHelper.title])) hasTitle = true;
+      if (viaHelper.icon) hasIcon = true;
+    }
+    if (new RegExp(`\\b${v}\\.textContent\\s*=`).test(scope)) hasText = true;
+    // A child that is not an icon: a span of words, a title, a row of parts.
+    const kids = [...scope.matchAll(new RegExp(`\\b${v}\\.(?:appendChild|append|prepend)\\(\\s*([^;]*)`, 'g'))].map((k) => k[1]);
+    if (kids.some((k) => !/^(?:icon|svgIcon)\(|^(?:svg|mark|arrow|glyph|dot|chev|cap|swatch)\b/.test(k))) hasText = true;
+    const where = `site/js/ui/${f}:${line}: \`${v}\``;
+    if (!hasText && !hasLabel) problems.push(`${where} is a control with no name: give it text or an aria-label from copy/en.js`);
+    if (!hasText && hasIcon) {
+      iconOnly += 1;
+      if (!hasLabel) problems.push(`${where} is an icon-only button without an aria-label`);
+      if (!hasTitle) problems.push(`${where} is an icon-only button without a tooltip (title): say what it does, and its key if it has one`);
+    }
+  }
+  // 3. names are words from the copy file
+  src.split('\n').forEach((text, i) => {
+    const lit = /\.setAttribute\(\s*'(aria-label|title|aria-description)'\s*,\s*(['"`])((?:(?!\2).)*[A-Za-z]{2,}(?:(?!\2).)*)\2\s*\)/.exec(text) || /\.(title|ariaLabel)\s*=\s*(['"])([^'"]*[A-Za-z]{2,}[^'"]*)\2\s*;/.exec(text);
+    if (lit) problems.push(`site/js/ui/${f}:${i + 1}: the ${lit[1]} "${lit[3]}" is written in the builder; words live in copy/en.js`);
+  });
+  // 4. icons
+  for (const m of src.matchAll(/setAttribute\(\s*'stroke-width'\s*,\s*([^)]+)\)|'stroke-width'\s*[:,\]]\s*'?([\d.]+)'?/g)) {
+    const line = src.slice(0, m.index).split('\n').length;
+    const value = (m[1] || m[2] || '').trim();
+    if (f === 'hud.js' || f === 'trajectory.js' || f === 'skyarc.js') continue; // a HUD mark and two charts, not icons
+    check(/^'?1\.75'?$/.test(value), `site/js/ui/${f}:${line}: an icon's stroke-width is ${value}; every icon is 1.75 (docs/ui-guide.md section 3.16)`);
+  }
+  for (const m of src.matchAll(/createElementNS\(SVG_NS, 'svg'\)/g)) {
+    const scope = scopeFrom(src, m.index);
+    const line = src.slice(0, m.index).split('\n').length;
+    if (f === 'trajectory.js') continue; // a chart with role=img and its own title
+    check(/aria-hidden/.test(scope), `site/js/ui/${f}:${line}: an svg without aria-hidden: the button carries the name, the drawing is not read out`);
+    if (f !== 'hud.js') check(/0 0 24 24/.test(scope), `site/js/ui/${f}:${line}: an icon outside the 24 box`);
+  }
+}
+check(controls >= 60, `only ${controls} controls found in ui/*.js: this test has lost its way around the builders`);
+check(iconOnly >= 8, `only ${iconOnly} icon-only buttons found: the rail, the trip toolbar and the close buttons should be among them`);
+
+// 5. roles and states
+{
+  const explore = code(read('explore.js'));
+  check(/setAttribute\('role', 'tablist'\)/.test(explore) && /setAttribute\('role', 'tab'\)/.test(explore) && /aria-selected/.test(explore), 'the tabs are a tablist of tabs with aria-selected');
+  for (const f of ['cards.js', 'subscribe.js', 'whattoshow.js', 'rail.js', 'shell.js']) check(/aria-expanded/.test(code(read(f))), `site/js/ui/${f} opens something in place and never says aria-expanded`);
+  check(/aria-pressed/.test(code(read('tripframe.js'))), 'the trip toolbar\'s toggles say aria-pressed');
+  const credits = readFileSync(join(ROOT, 'CREDITS.md'), 'utf8');
+  check(/Lucide/.test(credits) && /ISC/.test(credits) && /Feather/.test(credits) && /MIT/.test(credits), 'CREDITS.md names Lucide (ISC) and Feather (MIT)');
+}
+
+// 6. a focus ring is never removed without its replacement
+{
+  const CSS = ['site/css/site.css', 'site/css/ui.css', 'site/css/share.css', 'site/css/keyhint.css'];
+  const all = CSS.map((f) => readFileSync(join(ROOT, f), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')).join('\n');
+  check(/:focus-visible/.test(all), 'the stylesheets have :focus-visible rules');
+  for (const m of all.matchAll(/([^{}]+)\{([^{}]*outline:\s*(?:none|0)\b[^{}]*)\}/g)) {
+    const sels = m[1].trim().split(',').map((x) => x.trim()).filter(Boolean);
+    for (const sel of sels) {
+      const base = sel.replace(/:focus(-visible|-within)?/g, '').replace(/::?[\w-]+$/, '').trim();
+      // The replacement: brackets or a border on :focus-visible / :focus-within of the same thing or
+      // of the field's row, or the global bracket rule (`:where(button, ...):focus-visible::before`).
+      const last = base.split(/\s+/).pop().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const has = new RegExp(`${last}[^,{]*:focus-(visible|within)`).test(all) || /(input|textarea|select)/.test(base) || /^(button|a|\[role)/.test(base) || /:where\([^)]*\)/.test(sel);
+      check(has, `"${sel}" removes the outline and nothing draws a focus state for it`);
+    }
+  }
+}
+
+if (problems.length) { console.error('a11y static FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
+console.log(`a11y static ok: ${controls} controls built in ${files.length} ui modules each have a name, ${iconOnly} icon-only ones an aria-label and a tooltip, every icon is the 24 box at stroke 1.75 and hidden from a reader, no name is written outside copy/en.js`);
