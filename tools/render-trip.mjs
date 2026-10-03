@@ -3,7 +3,7 @@
 //
 //   node tools/render-trip.mjs <trip> [--res=1920x1080] [--fps=30] [--out=out]
 //        [--captions] [--stops=N] [--gl=gpu|swiftshader] [--format=jpeg|png] [--crf=18]
-//        [--at=<ISO time>] [--thumb-stop=<stop id>] [--base=http://127.0.0.1:8830] [--port=8830] [--live]
+//        [--at=<ISO time>] [--thumb-stop=<stop id>] [--ui-scale=1.5] [--base=http://127.0.0.1:8830] [--port=8830] [--live]
 //        [--fresh] [--frames-only] [--keep-frames]
 //
 //   out/<trip>.mp4               H.264 yuv420p + AAC, -14 LUFS
@@ -82,8 +82,17 @@ const BASE = arg('base', '');
 // --at=2026-10-03T18:00:00Z: the instant frame 0 is computed for (default: now). The same instant,
 // the same data and the same machine give the same frames.
 const AT = arg('at', '') ? (Number(arg('at', '')) || Date.parse(arg('at', ''))) : 0;
-const THUMB_STOP = arg('thumb-stop', tour.stops[0].id);
-const variant = `${tripId}-${W}x${H}-${FPS}${CAPTIONS ? '-cc' : ''}${STOPS ? '-s' + STOPS : ''}`;
+// The thumbnail's stop: the closest shot the trip has (the subject large, and in this app's
+// framing dark sky beside it for the words), or the first stop when no stop names a distance.
+const closest = tour.stops.filter((s) => Number(s.distance_km) > 0).sort((a, b) => a.distance_km - b.distance_km)[0];
+const THUMB_STOP = arg('thumb-stop', (closest || tour.stops[0]).id);
+// --ui-scale=1.5: the page is laid out 1280 x 720 and drawn at 1.5 device pixels, so the picture is
+// still 1920 x 1080 and the app's own 13 px labels and HUD tag are 20 px of it: the size they are
+// read at on a laptop, which a 1080p video watched on a phone otherwise shrinks to nothing.
+const UI_SCALE = Number(arg('ui-scale', '1.5')) || 1;
+const CSS_W = Math.round(W / UI_SCALE);
+const CSS_H = Math.round(H / UI_SCALE);
+const variant = `${tripId}-${W}x${H}-${FPS}${UI_SCALE !== 1.5 ? '-x' + UI_SCALE : ''}${CAPTIONS ? '-cc' : ''}${STOPS ? '-s' + STOPS : ''}`;
 const CACHE = join(OUT, '.cache', variant);
 const log = (m) => process.stderr.write(`[render ${new Date().toISOString().slice(11, 19)}] ${m}\n`);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -116,7 +125,7 @@ async function render() {
   const debugPort = 9300 + Math.floor(Math.random() * 600);
   const chrome = spawn(CHROME, [
     '--headless=new', '--remote-debugging-port=' + debugPort, '--user-data-dir=' + profile,
-    `--window-size=${W},${H}`, '--hide-scrollbars', '--mute-audio', '--force-device-scale-factor=1',
+    `--window-size=${CSS_W},${CSS_H}`, '--hide-scrollbars', '--mute-audio',
     ...(GL === 'swiftshader' ? ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] : ['--ignore-gpu-blocklist']),
     '--disable-background-timer-throttling', '--disable-renderer-backgrounding',
     '--disable-backgrounding-occluded-windows', '--no-first-run', '--no-default-browser-check',
@@ -176,7 +185,7 @@ async function render() {
     ({ sessionId } = await send('Target.attachToTarget', { targetId, flatten: true }));
     await send('Page.enable');
     await send('Runtime.enable');
-    await send('Emulation.setDeviceMetricsOverride', { width: W, height: H, deviceScaleFactor: 1, mobile: false, screenWidth: W, screenHeight: H });
+    await send('Emulation.setDeviceMetricsOverride', { width: CSS_W, height: CSS_H, deviceScaleFactor: UI_SCALE, mobile: false, screenWidth: CSS_W, screenHeight: CSS_H });
     // Only this machine answers (see NOTHING BUT OUR OWN FILES, above); --live lets the page out.
     if (!flag('live')) await send('Fetch.enable', { patterns: [{ urlPattern: '*' }] });
     const evaluate = async (expression) => {
@@ -269,7 +278,7 @@ function encode() {
   ffmpeg([
     '-framerate', String(FPS), '-start_number', '0', '-i', join(CACHE, 'f%06d.' + EXT), '-frames:v', String(tl.frames),
     '-vf', `scale=${W}:${H}:in_range=full:out_range=tv:${FORMAT === 'jpeg' ? 'in_color_matrix=bt601:' : ''}out_color_matrix=bt709,format=yuv420p`,
-    '-c:v', 'libx264', '-preset', 'slow', '-crf', CRF, '-profile:v', 'high', '-bf', '2', '-g', String(Math.round(FPS / 2)),
+    '-c:v', 'libx264', '-preset', 'medium', '-crf', CRF, '-profile:v', 'high', '-bf', '2', '-g', String(Math.round(FPS / 2)),
     '-color_primaries', 'bt709', '-color_trc', 'bt709', '-colorspace', 'bt709', '-color_range', 'tv',
     '-movflags', '+faststart', video,
   ]);

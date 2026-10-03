@@ -414,6 +414,12 @@ jobs:
       # second, pause and resume at the same word, a missing clip that stops nothing.
       - name: a stop is read aloud only when asked, ducks the music, holds the stop, fails quietly (spec 0069)
         run: node tests/test_narration.mjs
+      # Spec 0070: trips as videos, with no Chrome and no ffmpeg. The film's clock moves only when
+      # stepped and is the same twice; the camera module is not in the boot graph; clips are laid
+      # where the camera arrives; the bed is 10 dB down under each; chapters, captions and the
+      # description are what YouTube reads.
+      - name: a trip's video has a clock of its own, a cue sheet, a ducked bed and YouTube's sidecars (spec 0070)
+        run: node tests/test_render_trip.mjs
       - name: a shared link is the view and nothing else, and every Share opens the one sheet (spec 0033, 0061 task 8)
         run: node tests/test_share.mjs
       # Spec 0044: the byte gate's rules on fixtures. The real boot is in screens.yml, which has a

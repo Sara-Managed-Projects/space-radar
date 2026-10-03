@@ -257,10 +257,10 @@ html.sr-render #boot { display: none !important; }
 #sr-render .rm-third .rm-micro { font-size: 1.9vh; margin-bottom: 0.8vh; color: var(--sr-text, #e8ecf2); opacity: .82; }
 #sr-render .rm-stop { font-size: 5.6vh; line-height: 1.05; }
 #sr-render .rm-mark { position: absolute; right: 5vw; bottom: 9vh; font-size: 2.1vh; opacity: 0; color: var(--sr-text, #e8ecf2); text-shadow: 0 0 1.2vh rgba(11,14,20,.9), 0 0 0.4vh rgba(11,14,20,.9); }
-#sr-render .rm-thumb { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: flex-end; padding: 0 6vw 9vh;
-  background: linear-gradient(90deg, rgba(11,14,20,.86) 0%, rgba(11,14,20,.55) 48%, rgba(11,14,20,0) 78%); }
+#sr-render .rm-thumb { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: center; padding: 0 6vw;
+  background: linear-gradient(90deg, rgba(11,14,20,.80) 0%, rgba(11,14,20,.45) 40%, rgba(11,14,20,0) 66%); }
 #sr-render .rm-thumb .rm-micro { font-size: 3.4vh; margin-bottom: 2.4vh; color: var(--sr-ember, #ff9f43); }
-#sr-render .rm-thumb .rm-title { font-size: 12.5vh; line-height: 1; max-width: 58vw; }
+#sr-render .rm-thumb .rm-title { font-size: 13vh; line-height: 1; max-width: 46vw; }
 html.sr-render-thumb #sr-render > *:not(.rm-thumb) { display: none !important; }
 html.sr-render-thumb #sr-render .rm-thumb { display: flex; }
 html.sr-render-thumb #labels, html.sr-render-thumb #sr-hud { visibility: hidden !important; }
