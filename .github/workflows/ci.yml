@@ -121,6 +121,10 @@ jobs:
       # close-up of the Moon asking a host for a level it does not serve.
       - name: The tile-set mirror matches the registry
         run: python3 scripts/gen_tilesets_js.py --check
+      # 2026-10-03, spec 0066: the wind profiles, Mars's seasonal tables and each effect's class reach
+      # the shader from this mirror, so a stale one is a planet whose weather is not what the registry says.
+      - name: The weather mirror matches the registry
+        run: python3 scripts/gen_weather_js.py --check
       # Every parser against what its source really sends (captured fixtures), the never-worse
       # guard at 0 / 49 % / 50 %, CelesTrak's "has not updated since" as not-modified, a missing
       # secret as a skip, and one whole run into a directory. No network: CelesTrak allows one
@@ -435,6 +439,12 @@ jobs:
       # six fetches at once, none on tier 0, on data-saver or after the latch, a failing host left alone.
       - name: a close Moon or Mars is drawn from map tiles, fetched only when the camera is near and never on a first visit
         run: node tests/test_tiles.mjs
+      # Spec 0066 (2026-10-03): weather on every world. A wind profile to an angular rate against the
+      # papers' jets, the two-phase clock that lets a still map flow, Mars's season against NASA's
+      # dates, NOAA's lightning map (a saved picture) decoded and scheduled, the one-line shader patch,
+      # each world's card line and its class, and none of it at tier 0, on data-saver or on a first visit.
+      - name: weather on every world is measured, modelled or illustrative and says which, and is never on a first visit
+        run: node tests/test_weather.mjs
       - name: colour keys bucket records by fields they hold and count the unknown (spec 0026 req 11)
         run: node tests/test_colorkeys.mjs
       - name: a satellite behind the Earth is in its shadow, one in front is lit (spec 0026 req 12)

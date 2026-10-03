@@ -130,6 +130,14 @@ const CONTRACT = {
   'scene/tilemath.js': ['lonLatToTile', 'tileBounds', 'tileKey', 'tileUrl', 'levelForFootprint', 'selectTiles', 'drawSet', 'underlay', 'createLru', 'patchArrays', 'unitFromLonLat', 'lonLatFromUnit'],
   'scene/tiles.js': ['createPlanetTiles', 'tileFragment', 'tileVertex', 'DRAW_TILES', 'CACHE_TILES', 'MAX_FETCHES'],
   'data/tilesets.js': ['TILESETS'],
+  // Spec 0066: weather on every world. flow.js and data/lightning.js are the pure halves
+  // (tests/test_weather.mjs); index.js is the one door, fetched by a dynamic import in main.js.
+  'scene/weather/flow.js': ['turnsPerDay', 'planetocentricDeg', 'windAt', 'rateTable', 'splitFlow', 'flowPhases', 'rigidTurn', 'marsLs', 'marsSeason', 'RATE_ROWS', 'MAX_SHIFT_TURNS'],
+  'scene/weather/worldweather.js': ['createWorldWeather', 'weatherFragment', 'MAP_LINE', 'hexagonCornerRad', 'effectsByWorld'],
+  'scene/weather/lightning.js': ['createLightning', 'lightningLine', 'flashPosition', 'FLASH_SLOTS', 'FLASH_LIFE_S'],
+  'scene/weather/index.js': ['createWeather', 'seasonName'],
+  'data/lightning.js': ['CAPS_URL', 'mapUrl', 'parseNewestSlot', 'PALETTE', 'paletteRow', 'decodeGrid', 'flashModel', 'flashesInSecond', 'lightningMode', 'REFRESH_MS', 'START_DELAY_MS', 'LIVE_WINDOW_MS'],
+  'data/weather.js': ['WEATHER'],
   // The one owner of the URL hash (spec 0032): main.js and ui/trip.js write
   // through it, and a second dialect is the bug it was written to end.
   'ui/urlstate.js': ['KEYS', 'VERSION', 'read', 'write', 'clear', 'stopIndex', 'readMoment', 'writeMoment'],

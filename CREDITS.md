@@ -522,6 +522,7 @@ services from their own IP.** Read §4.1 before you deploy.
 | IAU Minor Planet Center | comet orbital elements (`CometEls.txt`) | **Copyrighted**; redistributable only with the source clearly specified (§4.5) | Comet elements: IAU Minor Planet Center | <https://minorplanetcenter.net> |
 | NASA GIBS | today's clouds: GOES-East, GOES-West and Himawari Band 13 infrared, every 10 min | NASA "full and open sharing"; an acknowledgement is asked for (§4.13) | the acknowledgement in §4.13, verbatim, plus NOAA and JMA for the satellites | <https://nasa-gibs.github.io/gibs-api-docs/> |
 | GDACS (EC Joint Research Centre) | tropical cyclones now: centre, status, top wind on the track | EU-owned content, CC BY 4.0 by the Commission's reuse decision; GDACS calls it "purely indicative" (§4.14) | Tropical cyclones: GDACS, European Commission Joint Research Centre (CC BY 4.0) | <https://www.gdacs.org> |
+| NOAA nowCOAST | lightning now: strike density over the last fifteen minutes, from the ground networks NLDN and GLD360, 25° S to 80° N and 110° E eastward to 0° W | US Government work, public domain; a "Level 5" derived product "appropriate for public distribution" (§4.17) | Lightning: strike density from NOAA nowCOAST, made by the NWS Ocean Prediction Center | <https://nowcoast.noaa.gov> |
 | NASA Solar System Treks | map tiles of the Moon and Mars, fetched when the camera is close: LRO WAC mosaic (to 83 m per pixel), THEMIS daytime infrared mosaic (to 162 m) as detail over our colour map | NASA content, "generally are not subject to copyright in the United States" (§4.16) | the two lines in §4.16, in the Sources panel while those tiles are on screen | <https://trek.nasa.gov> |
 
 Also named in `site/js/data/sources.js` so the status panel can say "could not look" about them by
@@ -832,6 +833,35 @@ Also measured the same day and not used yet: `LRO_LOLA_ClrShade_Global_128ppd_v0
 `Mars_MOLA_blend200ppx_HRSC_Shade_clon0dd_200mpp_lzw` (a grey hillshade, levels 0 to 8), all CORS `*`, for the relief of
 spec 0065 task 3; and NASA GIBS's `BlueMarble_ShadedRelief_Bathymetry` at 500 m for the Earth (CORS
 `*`, 512-pixel tiles on GIBS's own 288-degree grid), which waits for the Earth's shader (task 4).
+
+### 4.17 NOAA nowCOAST — lightning (2026-10-03)
+
+`https://nowcoast.noaa.gov/geoserver/lightning_detection/wms`, layer `ldn_lightning_strike_density`,
+read by each visitor's browser (never by the harvester, and never at the lowest device tier, on a
+connection that saves data, or with reduced motion asked for): the 10.6 kB capabilities document for
+the newest slot's time, then one 1440 × 420 PNG of about 7 kB, every fifteen minutes while the tab is
+visible. Measured 2026-10-03 with `Origin: https://www.spaceradar.ai`: both answer
+`access-control-allow-origin: *` and `cache-control: max-age=600, public`.
+
+The layer's own abstract (read the same day) says what it is: "the density of lightning strikes …
+during a 15-minute time period at an 8 x 8 km … horizontal resolution observed by ground-based
+lightning detection networks", the U.S. National Lightning Detection Network (NLDN) and the Global
+Lightning Detection Network (GLD360), in "strikes per square km per minute multiplied by a scaling
+factor of 10^3", obtained from the NWS/NCEP Ocean Prediction Center. The networks are Vaisala's and
+their stroke data is not public; this is what NOAA publishes from it: "a derived product or Level 5
+product (NOAA-generated products using lightning data as input but not displaying the contractor
+(Vaisala) transmitted provided lightning data) and is appropriate for public distribution". As a NOAA
+product it is a US Government work (§4.4 has the NWS terms). Credited in the Sources panel all the same.
+
+It covers 25° S to 80° N from 110° E eastward across the Pacific and the Americas to 0° W. Europe,
+Africa east of Greenwich and most of Asia are not in it, and no lightning is drawn there: the Earth's
+card says where the map reaches. Blitzortung's network covers them, but its data may not be reused
+without permission and is not used; GOES's own lightning mapper (GLM) is not served by NASA GIBS,
+which has only the LIS and OTD climatologies. Nothing from nowCOAST is stored in this repository
+beyond one saved picture the test decodes (`tests/fixtures/weather/`).
+
+The winds the other worlds' bands move at, and Mars's seasonal tables, are numbers from published
+papers, each named with its DOI in `registry/weather.yaml`; no data file of theirs is shipped.
 
 ## 4.6 Third-party trademarks the app names or draws
 
