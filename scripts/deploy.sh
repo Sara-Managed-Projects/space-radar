@@ -130,6 +130,11 @@ if [ "$WHAT" != "app" ]; then
       --exclude "*" --include "*.opus" --content-type "audio/ogg"
     "${SYNC[@]}" "$SITE/audio" "s3://$BUCKET/audio" --cache-control "$LONG" --delete \
       --exclude "*" --include "*.m4a" --content-type "audio/mp4"
+    # The narration's captions (spec 0069): the sentence timings beside each clip. A clip keeps its
+    # file name when scripts/narrate.py renders it again, so after a re-render invalidate
+    # /audio/narration/* by hand, as for the models.
+    "${SYNC[@]}" "$SITE/audio" "s3://$BUCKET/audio" --cache-control "$LONG" --delete \
+      --exclude "*" --include "*.vtt" --content-type "text/vtt; charset=utf-8"
   fi
   # The three faces (spec 0045): WOFF2 subsets and the OFL text that has to travel with them.
   # Long-lived like the models; a face changes only when scripts/build-fonts.py is re-run, and its

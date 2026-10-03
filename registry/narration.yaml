@@ -1,0 +1,144 @@
+version: 1
+# Spec 0069: the voice that reads a trip's stops. Ivan, 2026-10-02: "Speech for trips (like in
+# planetarium we want to have a nice speech for tour where each step will be speeches, we will need
+# the best free speech generator, we will regenerate all speeches and download them)."
+#
+# THE VOICE IS SYNTHETIC AND THE APP SAYS SO (the Voice control's tooltip, the Sources panel,
+# CREDITS.md section 9b). It is made offline by scripts/narrate.py and shipped as files; nothing is
+# synthesised on a visitor's device, and nothing under site/audio/ is fetched before they turn
+# sound on (spec 0035 req 1, tests/test_first_visit_bytes.mjs).
+#
+# THE CHOICE (2026-10-03), BY LICENCE FIRST, as the spec orders:
+#   Kokoro-82M   Apache-2.0 weights and voices (hexgrad/Kokoro-82M). Runs on a CPU: about real time
+#                on this x86_64 Mac through ONNX Runtime. TAKEN.
+#   Piper        MIT code, but each voice has its own licence and several English ones are trained
+#                on data that forbids commercial use. The fallback had Kokoro not run; not needed.
+#   Parler-TTS   Apache-2.0, describable voices; a 2 GB model that wants a GPU. Not tried.
+#   XTTS-v2, F5-TTS   refused: Coqui Public Model Licence and CC BY-NC, both non-commercial.
+#
+# THE VOICE: `bf_emma`, British English. The cards are written in British English ("kilometres",
+# "a football pitch", "the centre"), and of Kokoro's British voices this is the one its makers grade
+# highest (B-, VOICES.md in the model's repository). At 0.8 of its natural speed, about 155 words a
+# minute with the pauses: a planetarium is not in a hurry. NOBODY HAS HEARD IT YET. The agent that
+# rendered these files cannot listen; it checked what can be measured (loudness, peak, words a minute, that no clip is silent, and the
+# phonemes of every name in the lexicon below). The blind listening test of spec 0069 task 1 is
+# still owed: `scripts/narrate.py --audition DIR` writes the same three stops in four voices.
+#
+#   engine.id      part of every clip's hash. Change it when the model, the G2P or anything else
+#                  that changes how a word is said changes, and every clip is stale until rendered.
+#   packages       the versions the render ran with; narrate.py refuses to render with others.
+#   timing         the pauses narrate.py puts between the sentences it synthesises one by one.
+#   encode         -16 LUFS is the level spoken word is mastered to for the web (the beds are at
+#                  -23 and duck a further 10 dB under the voice, audio/narration.js); peak_dbfs is
+#                  where narrate.py's limiter holds the few tall peaks a synthetic voice has. Opus
+#                  32 kbps mono; the AAC twin at the model's own 24 kHz for a Safari without Opus.
+#   checks         what --check and the render refuse: a clip outside these words a minute is
+#                  silence or was cut short.
+#   lexicon        word -> phonemes, in the model's own alphabet (misaki's: A = "ay", I = "eye",
+#                  W = "ow", Y = "oy", Q = British "oh", ʧ = "ch", ʤ = "j"). ONLY the names the G2P
+#                  gets wrong; checked and left alone because it says them right: Io, Uranus,
+#                  Europa, Ganymede, Charon, Sedna, Triton, Titan, Pleiades, Sirius, Andromeda,
+#                  Cassini, TRAPPIST, Vikram, Yutu, Gaia, JUICE, Cernan, Aldrin, NASA's.
+#   skip_title     stops whose body repeats the title almost word for word: the voice starts at
+#                  the body. Every other stop is read as its card is: title, then body.
+#   say            trip/stop -> words for the ear, replacing the card's for the voice only (spec
+#                  0069 task 2, internal #259). None yet: the cards are read as written.
+engine:
+  id: "kokoro-82m-v1.0/onnx-fp32/misaki-0.9.4"
+  name: "Kokoro-82M"
+  licence: "Apache-2.0"
+  source: "https://huggingface.co/hexgrad/Kokoro-82M (read 2026-10-03)"
+  model:
+    file: kokoro-v1.0.onnx
+    url: "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx"
+    sha256: 7d5df8ecf7d4b1878015a32686053fd0eebe2bc377234608764cc0ef3636a6c5
+  voices:
+    file: voices-v1.0.bin
+    url: "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin"
+    sha256: bca610b8308e8d99f32e6fe4197e7ec01679264efed0cac9140fe9c29f1fbf7d
+  packages: {kokoro-onnx: "0.6.1", misaki: "0.9.4", onnxruntime: "1.23.2"}
+voice:
+  id: bf_emma
+  lang: en-gb
+  speed: 0.8
+  credit: "Narration: a synthetic voice, Kokoro-82M (bf_emma), Apache-2.0"
+timing: {lead_s: 0.15, title_gap_s: 0.7, gap_s: 0.45, tail_s: 0.25}
+encode: {lufs: -16, peak_dbfs: -1.5, opus_kbps: 32, aac_kbps: 40, aac_rate: 24000}
+checks: {wpm: [110, 200], lufs_tolerance: 1.0, mean_db_floor: -40, max_db_floor: -12}
+lexicon:
+  Tiangong: "tjɛnɡˈʊŋ"
+  Shenzhou: "ʃˌɛnʤˈQ"
+  Queqiao: "ʧwˈɛʧjˌW"
+  Chandrayaan: "ʧˌʌndɹəjˈɑːn"
+  Lunokhod: "lˈuːnəkˌɒd"
+  Beresheet: "bəɹˈɛʃiːt"
+  Huygens: "hˈYɡənz"
+  Eris: "ˈɪəɹɪs"
+  Enceladus: "ɛnsˈɛlədəs"
+skip_title:
+  - strangest-things/golf-balls
+say: {}
+# ---- GENERATED BY scripts/narrate.py BELOW THIS LINE. Do not edit. ----
+clips:
+  - {trip: "people-in-space", stop: "far", hash: "3027b8662e3d5b84", seconds: 11.29, words: 26, lufs: -16.5, opus: 44361, m4a: 58956, vtt: 225}
+  - {trip: "people-in-space", stop: "iss", hash: "575f8204ed0581c4", seconds: 16.96, words: 40, lufs: -16.5, opus: 67744, m4a: 87862, vtt: 314}
+  - {trip: "people-in-space", stop: "tiangong", hash: "bfea276edfc4b05a", seconds: 12.51, words: 30, lufs: -16.7, opus: 49496, m4a: 65259, vtt: 244}
+  - {trip: "people-in-space", stop: "both", hash: "26869dee04d2328e", seconds: 13.53, words: 34, lufs: -16.4, opus: 53746, m4a: 70475, vtt: 266}
+  - {trip: "journey-to-the-station", stop: "ground", hash: "7f51d0b00a51f56a", seconds: 14.59, words: 40, lufs: -16.5, opus: 59450, m4a: 75908, vtt: 289}
+  - {trip: "journey-to-the-station", stop: "air", hash: "2e377cb166021382", seconds: 14.05, words: 36, lufs: -16.7, opus: 55889, m4a: 73083, vtt: 278}
+  - {trip: "journey-to-the-station", stop: "now", hash: "b093b2e6f418829b", seconds: 15.49, words: 36, lufs: -16.4, opus: 61386, m4a: 80472, vtt: 289}
+  - {trip: "journey-to-the-station", stop: "pass", hash: "10004e3acceb60ce", seconds: 15.79, words: 43, lufs: -16.5, opus: 63587, m4a: 81994, vtt: 305}
+  - {trip: "strangest-things", stop: "duke-photo", hash: "c6725f650f672852", seconds: 17.41, words: 42, lufs: -16.4, opus: 69272, m4a: 90252, vtt: 305}
+  - {trip: "strangest-things", stop: "golf-balls", hash: "5d5dfcda614fde5a", seconds: 11.18, words: 26, lufs: -16.5, opus: 45115, m4a: 58522, vtt: 212}
+  - {trip: "strangest-things", stop: "beresheet", hash: "8187a3a9f2bed1cb", seconds: 15.46, words: 35, lufs: -16.4, opus: 61686, m4a: 80255, vtt: 292}
+  - {trip: "strangest-things", stop: "golden-record", hash: "a42cd1deda796f95", seconds: 18.61, words: 39, lufs: -16.6, opus: 76013, m4a: 96338, vtt: 325}
+  - {trip: "strangest-things", stop: "roadster", hash: "a4ac319537e75d40", seconds: 16.14, words: 41, lufs: -16.6, opus: 65803, m4a: 83732, vtt: 287}
+  - {trip: "strangest-things", stop: "pull-back", hash: "31da60a899578ac1", seconds: 11.01, words: 32, lufs: -16.6, opus: 43549, m4a: 57652, vtt: 234}
+  - {trip: "to-the-edge", stop: "sun", hash: "db742bdcd14fd58f", seconds: 18.11, words: 45, lufs: -16.6, opus: 71524, m4a: 93730, vtt: 325}
+  - {trip: "to-the-edge", stop: "proxima", hash: "d236e333e1d3a794", seconds: 15.65, words: 40, lufs: -16.6, opus: 61502, m4a: 81124, vtt: 303}
+  - {trip: "to-the-edge", stop: "sirius", hash: "ed04186242b1fbde", seconds: 13.84, words: 35, lufs: -16.5, opus: 54011, m4a: 71996, vtt: 270}
+  - {trip: "to-the-edge", stop: "pleiades", hash: "2ebe0023e6437e21", seconds: 13.07, words: 26, lufs: -16.6, opus: 51575, m4a: 68084, vtt: 252}
+  - {trip: "to-the-edge", stop: "centre", hash: "e9fd84909efbf717", seconds: 18.49, words: 44, lufs: -16.4, opus: 73803, m4a: 95686, vtt: 336}
+  - {trip: "to-the-edge", stop: "galaxy", hash: "25d8fdfc29760935", seconds: 15.51, words: 33, lufs: -16.6, opus: 61396, m4a: 80472, vtt: 283}
+  - {trip: "to-the-edge", stop: "andromeda", hash: "1f7e473d1dfa4fe1", seconds: 12.17, words: 28, lufs: -16.5, opus: 47931, m4a: 63520, vtt: 242}
+  - {trip: "to-the-edge", stop: "edge", hash: "7a805617b650acdb", seconds: 43.22, words: 103, lufs: -16.5, opus: 172649, m4a: 221522, vtt: 601}
+  - {trip: "travel-to-exoplanets", stop: "all", hash: "855cecef0047e5d5", seconds: 21.91, words: 56, lufs: -16.3, opus: 87959, m4a: 113072, vtt: 376}
+  - {trip: "travel-to-exoplanets", stop: "proxima-b", hash: "b9930b1e73408b22", seconds: 14.32, words: 34, lufs: -16.6, opus: 56639, m4a: 74387, vtt: 262}
+  - {trip: "travel-to-exoplanets", stop: "trappist", hash: "8152d602783779a3", seconds: 17.71, words: 45, lufs: -16.4, opus: 70793, m4a: 91774, vtt: 315}
+  - {trip: "travel-to-exoplanets", stop: "e", hash: "49fe15d1179bd760", seconds: 16.15, words: 43, lufs: -16.6, opus: 63906, m4a: 83732, vtt: 279}
+  - {trip: "travel-to-exoplanets", stop: "b", hash: "b8b0f91d171f5dac", seconds: 15.86, words: 40, lufs: -16.5, opus: 63046, m4a: 82211, vtt: 272}
+  - {trip: "travel-to-exoplanets", stop: "c", hash: "5d4ed164bf6123aa", seconds: 11.59, words: 32, lufs: -16.5, opus: 45355, m4a: 60478, vtt: 232}
+  - {trip: "travel-to-exoplanets", stop: "d", hash: "2f7262ab166015b4", seconds: 10.0, words: 26, lufs: -16.4, opus: 39369, m4a: 52436, vtt: 186}
+  - {trip: "travel-to-exoplanets", stop: "f", hash: "f34d09034e3970a7", seconds: 10.44, words: 27, lufs: -16.4, opus: 41002, m4a: 54610, vtt: 181}
+  - {trip: "travel-to-exoplanets", stop: "g", hash: "8802c6cefa6006de", seconds: 10.36, words: 23, lufs: -16.5, opus: 40306, m4a: 54175, vtt: 201}
+  - {trip: "travel-to-exoplanets", stop: "h", hash: "a13c1ae823b02690", seconds: 12.95, words: 30, lufs: -16.5, opus: 51253, m4a: 67432, vtt: 241}
+  - {trip: "travel-to-exoplanets", stop: "mercury", hash: "c6386cda614555ce", seconds: 18.08, words: 47, lufs: -16.6, opus: 73515, m4a: 93512, vtt: 316}
+  - {trip: "moon-landings", stop: "surveyor-1", hash: "c62e3280da66afa2", seconds: 27.44, words: 64, lufs: -16.7, opus: 111070, m4a: 141326, vtt: 416}
+  - {trip: "moon-landings", stop: "apollo-11", hash: "586528ac4a9f3679", seconds: 19.12, words: 43, lufs: -16.4, opus: 76377, m4a: 98946, vtt: 329}
+  - {trip: "moon-landings", stop: "apollo-12", hash: "42974b6e2654ee59", seconds: 19.12, words: 45, lufs: -16.6, opus: 76379, m4a: 98946, vtt: 317}
+  - {trip: "moon-landings", stop: "lunokhod-1", hash: "0a915bebb4ad097f", seconds: 20.66, words: 49, lufs: -16.6, opus: 82409, m4a: 106770, vtt: 345}
+  - {trip: "moon-landings", stop: "apollo-17", hash: "3521e50d27e96041", seconds: 21.62, words: 47, lufs: -16.5, opus: 86809, m4a: 111551, vtt: 348}
+  - {trip: "moon-landings", stop: "change-4", hash: "06e5fb93c5bb6b81", seconds: 21.8, words: 53, lufs: -16.6, opus: 87269, m4a: 112420, vtt: 395}
+  - {trip: "moon-landings", stop: "chandrayaan-3", hash: "f5af467da8e81550", seconds: 23.96, words: 56, lufs: -16.6, opus: 95448, m4a: 123504, vtt: 340}
+  - {trip: "moon-landings", stop: "im-1", hash: "a4db61657c255404", seconds: 23.3, words: 55, lufs: -16.7, opus: 93231, m4a: 120244, vtt: 368}
+  - {trip: "moon-landings", stop: "blue-ghost-1", hash: "9dfd3e26cbdbf585", seconds: 22.62, words: 56, lufs: -16.4, opus: 90211, m4a: 116767, vtt: 380}
+  - {trip: "moon-landings", stop: "whole-moon", hash: "ad2a438946470cd9", seconds: 24.91, words: 56, lufs: -16.4, opus: 99826, m4a: 128286, vtt: 405}
+  - {trip: "outer-solar-system", stop: "io", hash: "a0a1f5d76653930e", seconds: 19.05, words: 47, lufs: -16.5, opus: 77826, m4a: 98511, vtt: 326}
+  - {trip: "outer-solar-system", stop: "europa", hash: "bf7a050d9933d8f4", seconds: 24.77, words: 56, lufs: -16.5, opus: 99158, m4a: 127634, vtt: 379}
+  - {trip: "outer-solar-system", stop: "saturn", hash: "9c88c40c02be620e", seconds: 21.96, words: 50, lufs: -16.5, opus: 87808, m4a: 113290, vtt: 386}
+  - {trip: "outer-solar-system", stop: "titan", hash: "d0d480eaecde94c3", seconds: 22.64, words: 58, lufs: -16.6, opus: 90036, m4a: 116767, vtt: 399}
+  - {trip: "outer-solar-system", stop: "enceladus", hash: "a1bef3ca26eece34", seconds: 24.98, words: 57, lufs: -16.5, opus: 99478, m4a: 128720, vtt: 406}
+  - {trip: "outer-solar-system", stop: "triton", hash: "8eddc6713ff19c65", seconds: 24.56, words: 52, lufs: -16.4, opus: 97937, m4a: 126547, vtt: 344}
+  - {trip: "outer-solar-system", stop: "pluto", hash: "d96fca3093d6ca9c", seconds: 24.04, words: 56, lufs: -16.5, opus: 96664, m4a: 123939, vtt: 394}
+  - {trip: "outer-solar-system", stop: "sedna", hash: "a28811fd65bf18d4", seconds: 27.52, words: 71, lufs: -16.4, opus: 110780, m4a: 141760, vtt: 459}
+  - {trip: "outer-solar-system", stop: "eris", hash: "5c3c28dd60c374a6", seconds: 27.59, words: 70, lufs: -16.4, opus: 110041, m4a: 141978, vtt: 430}
+  - {trip: "outer-solar-system", stop: "voyager-1", hash: "e04d1600ca0ccf85", seconds: 26.42, words: 63, lufs: -16.7, opus: 105787, m4a: 136110, vtt: 399}
+  - {trip: "a-year-in-a-minute", stop: "inner", hash: "84cd4591c1d63b4c", seconds: 17.36, words: 43, lufs: -16.4, opus: 69314, m4a: 89818, vtt: 307}
+  - {trip: "a-year-in-a-minute", stop: "earth", hash: "db0beca05c1b0f07", seconds: 19.27, words: 50, lufs: -16.3, opus: 81571, m4a: 99598, vtt: 335}
+  - {trip: "a-year-in-a-minute", stop: "mercury", hash: "3c07a669ec0915c7", seconds: 17.33, words: 42, lufs: -16.4, opus: 69339, m4a: 89818, vtt: 291}
+  - {trip: "a-year-in-a-minute", stop: "jupiter", hash: "81b54478d133efc9", seconds: 16.5, words: 44, lufs: -16.6, opus: 66085, m4a: 85471, vtt: 306}
+  - {trip: "chasing-the-solar-eclipse", stop: "arrives", hash: "4537550aec1f0d90", seconds: 17.12, words: 45, lufs: -16.4, opus: 68070, m4a: 88731, vtt: 321}
+  - {trip: "chasing-the-solar-eclipse", stop: "peak", hash: "ec0e31a2de95bfcc", seconds: 15.26, words: 42, lufs: -16.4, opus: 60627, m4a: 79168, vtt: 300}
+  - {trip: "chasing-the-solar-eclipse", stop: "from-the-moon", hash: "0f1c631b35deeea8", seconds: 16.21, words: 44, lufs: -16.6, opus: 66061, m4a: 84167, vtt: 305}
+  - {trip: "chasing-the-solar-eclipse", stop: "ring", hash: "6374b831f2250b08", seconds: 16.75, words: 53, lufs: -16.6, opus: 66936, m4a: 86775, vtt: 322}
+  - {trip: "chasing-the-solar-eclipse", stop: "lunar", hash: "6f2f812fe09b336c", seconds: 14.6, words: 41, lufs: -16.6, opus: 59356, m4a: 75908, vtt: 287}
