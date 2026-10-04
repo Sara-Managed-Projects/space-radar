@@ -19,7 +19,9 @@
 // Four things must stay at zero whatever the total: anything under /audio/ (spec 0035: nothing before
 // a gesture), anything under /og/ (spec 0033: those are for chat previews), and galaxy.bin and
 // stars3d.bin (spec 0028: fetched when the ladder needs them), and the nebulae's photographs with the
-// module and registry that draw them (spec 0067: a rung of the ladder, a selection, or the shutter). The fonts under /fonts/ have their own
+// module and registry that draw them (spec 0067: a rung of the ladder, a selection, or the shutter).
+// The film camera (spec 0070, js/ui/rendermode.js) is for tools/render-trip.mjs alone: a visit that
+// fetches it fails. The fonts under /fonts/ have their own
 // line and budget, and a Cyrillic file on this English page fails (spec 0045 req 5). stars3d.names.json, exoplanets.csv
 // and stars.bin are printed on their own line: they are the one known saving (spec 0044 req 5), and
 // whether to defer them is decided by that line.
@@ -51,10 +53,12 @@ function sitePath(url) {
 
 const LAZY = new Set(['galaxy.bin', 'stars3d.bin']);
 const DEFERRABLE = new Set(['stars3d.names.json', 'exoplanets.csv', 'stars.bin']);
+// Spec 0070: fetched only when the address says `render=1`, which no visitor's does.
+const FILM_ONLY = new Set(['/js/ui/rendermode.js']);
 
 /** Sum a boot's requests: `[{url, bytes}]` -> the numbers the gate and the log read. */
 function tally(requests, pageOrigin) {
-  const t = { total: 0, count: 0, audio: [], audioBytes: 0, og: [], ogBytes: 0, lazy: [], nebulae: [], deferrable: 0, thirdParty: 0, fonts: [], fontBytes: 0, cyrillic: [], tiles: [] };
+  const t = { total: 0, count: 0, audio: [], audioBytes: 0, og: [], ogBytes: 0, lazy: [], nebulae: [], deferrable: 0, thirdParty: 0, fonts: [], fontBytes: 0, cyrillic: [], tiles: [], film: [] };
   for (const r of requests) {
     const at = sitePath(r.url);
     if (!at) continue; // data: and blob: URLs cross no wire
@@ -69,6 +73,7 @@ function tally(requests, pageOrigin) {
     if (at.path.startsWith('/og/')) { t.og.push(at.path); t.ogBytes += bytes; }
     if (at.path.startsWith('/data/') && LAZY.has(file)) t.lazy.push(at.path);
     if (at.path.startsWith('/images/nebulae/') || /^\/js\/(scene|data)\/nebulae\.js$/.test(at.path)) t.nebulae.push(at.path);
+    if ([...FILM_ONLY].some((f) => at.path.endsWith(f))) t.film.push(at.path);
     if (at.path.startsWith('/data/') && DEFERRABLE.has(file)) t.deferrable += bytes;
     if (at.path.startsWith('/fonts/') && file.endsWith('.woff2')) {
       t.fonts.push(`${file} ${bytes}`);
@@ -94,6 +99,7 @@ function verdict(t, budgets = BUDGETS) {
   if (t.tiles.length > budgets.planet_tile_requests_first_visit) out.push(`${t.tiles.length} map tile request(s) on a first visit (spec 0065: tiles are for a camera close to a world): ${t.tiles.slice(0, 3).join(', ')}`);
   if (t.lazy.length) out.push(`fetched at boot and meant to wait for the ladder (spec 0028): ${t.lazy.join(', ')}`);
   if (t.nebulae.length) out.push(`fetched at boot and meant to wait for the ladder, a selection or the shutter (spec 0067): ${t.nebulae.slice(0, 3).join(', ')}`);
+  if (t.film.length) out.push(`fetched at boot and meant for tools/render-trip.mjs only (spec 0070): ${t.film.join(', ')}`);
   return out;
 }
 
@@ -103,7 +109,7 @@ function report(t, where) {
   console.log(`  deferrable at boot (stars3d.names.json + exoplanets.csv + stars.bin): ${t.deferrable} B (${kB(t.deferrable)})`);
   console.log(`  fonts: ${t.fontBytes} B (${kB(t.fontBytes)}) of ${BUDGETS.fonts_at_boot_bytes} B in ${t.fonts.length} file(s)${t.fonts.length ? `: ${t.fonts.join(', ')}` : ''}`);
   console.log(`  from other hosts: ${t.thirdParty} B (${kB(t.thirdParty)})`);
-  console.log(`  under /audio/: ${t.audio.length}; under /og/: ${t.og.length}; galaxy.bin or stars3d.bin: ${t.lazy.length}; map tiles: ${t.tiles.length}; nebula pictures or their module: ${t.nebulae.length}`);
+  console.log(`  under /audio/: ${t.audio.length}; under /og/: ${t.og.length}; galaxy.bin or stars3d.bin: ${t.lazy.length}; map tiles: ${t.tiles.length}; nebula pictures or their module: ${t.nebulae.length}; film camera: ${t.film.length}`);
 }
 
 function finish(problems, what) {
@@ -191,6 +197,7 @@ if (BASE || FROM) {
   check(verdict(tally([...withFonts, { url: `${O}/fonts/inter-400-cyrillic.woff2`, bytes: 6004 }], O)).some((p) => /Cyrillic/.test(p)), 'a Cyrillic face on an English page fails');
   check(verdict(tally([...visit, { url: 'https://trek.nasa.gov/tiles/Moon/EQ/LRO_WAC_Mosaic_Global_303ppd_v02/1.0.0/default/default028mm/3/2/7.jpg', bytes: 30000 }], O)).some((p) => /map tile request/.test(p)), 'a map tile on a first visit fails (spec 0065)');
   check(verdict(tally([], O)).some((p) => /measured nothing/.test(p)), 'an empty record fails rather than passing as zero bytes');
+  check(verdict(tally([...visit, { url: `${O}/js/ui/rendermode.js`, bytes: 1 }], O)).some((p) => /render-trip/.test(p)), 'the film camera at boot fails');
 
   // The wiring: the flag the real boot waits on, and the CI step that runs the real boot.
   const main = readFileSync(join(ROOT, 'site/js/main.js'), 'utf8');
@@ -202,6 +209,10 @@ if (BASE || FROM) {
   check(/dispatchEvent\(new CustomEvent\('sr:layers-ready'\)\);\s*\n\s*setTimeout\(\(\) => \{[\s\S]{0,200}loadAfterFirstVisit\(\)[\s\S]{0,120}LATER_LAYERS_MS\)/.test(main),
     'and loads them LATER_LAYERS_MS after sr:layers-ready');
   check(/function openAt\(ctx, id\) \{[\s\S]{0,400}loadAfterFirstVisit\(\)\.then/.test(main), 'a link to a star or an exoplanet waits for them rather than saying it names nothing');
+  // Spec 0070: the film camera is a dynamic import behind `render=1`, and not in the preload block.
+  check(/\/\[\?&\]render=1\(\?:&\|\$\)\/\.test\(location\.search\)\s*\n\s*\? await import\('\.\/ui\/rendermode\.js'\)/.test(main) && !/^import [^\n]*rendermode/m.test(main),
+    'main.js imports ui/rendermode.js only for an address with render=1');
+  check(!readFileSync(join(ROOT, 'site/index.html'), 'utf8').includes('rendermode'), 'and index.html does not preload it');
   const screens = readFileSync(join(ROOT, '.github/workflows/screens.yml'), 'utf8');
   check(/node tests\/test_first_visit_bytes\.mjs --base=/.test(screens), 'screens.yml boots the app through this test');
   check(BUDGETS.audio_at_boot_bytes === 0 && BUDGETS.og_at_boot_bytes === 0, 'nothing under /audio/ or /og/ at boot, by budget');

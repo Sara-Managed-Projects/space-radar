@@ -16,3 +16,6 @@ node_modules/
 site/data/v1/
 # scripts/package-harvester.sh writes the Lambda zip here; it is a build output.
 dist/
+
+# tools/render-trip.mjs writes its videos and its frame cache here (spec 0070); never committed.
+out/

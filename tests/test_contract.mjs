@@ -150,6 +150,9 @@ const CONTRACT = {
   'ui/status.js': ['createStatus'],
   'ui/github.js': ['createGitHubMark'],
   'ui/cleanview.js': ['createCleanView', 'wantsToggle'],
+  // Spec 0070: the film camera. Imported by main.js only for `?render=1` (tools/render-trip.mjs);
+  // its clock, its cards and its line of truth are pure for tests/test_render_trip.mjs.
+  'ui/rendermode.js': ['renderOptions', 'createVirtualTime', 'install', 'truthLine', 'tripUrl', 'cardOpacity', 'lowerThird', 'TITLE_S', 'END_S', 'FADE_S', 'WARM_S'],
   // Spec 0068: the trip cards' pictures, and the controls hint shown once (imported after the
   // first visit settles); their pure parts for tests/test_trip_pictures.mjs and test_keyhint.mjs.
   'ui/trippics.js': ['tripPicture', 'tripPictureUrl', 'PICTURE_DELAY_MS'],
