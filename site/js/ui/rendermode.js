@@ -33,6 +33,7 @@
 // OFF THE FIRST VISIT: main.js imports this only when the address says `render=1`
 // (tests/test_first_visit_bytes.mjs holds it out of the static graph).
 
+import { COPY } from '../copy/en.js';
 import { TOURS } from '../data/tours.js';
 import { NARRATION } from '../data/narration.js';
 import { clipKey, clipRow, holdFor, parseVtt, cueAt } from '../audio/narration.js';
@@ -478,7 +479,7 @@ export function install(opts, g = window) {
     const root = el('div');
     root.id = 'sr-render';
     const title = el('div', 'rm-card rm-titlecard');
-    title.appendChild(el('div', 'rm-micro', 'Space Radar · a trip'));
+    title.appendChild(el('div', 'rm-micro', COPY.render.eyebrow));
     title.appendChild(el('h1', 'rm-title rm-serif', tour.title));
     if (tour.blurb) title.appendChild(el('p', 'rm-blurb', tour.blurb));
     title.appendChild(el('p', 'rm-truth', truthLine(tour, epochMs)));
@@ -489,17 +490,17 @@ export function install(opts, g = window) {
     third.appendChild(el('div', 'rm-micro', tour.title));
     const stop = el('div', 'rm-stop rm-serif', '');
     third.appendChild(stop);
-    const mark = el('div', 'rm-mark rm-micro', 'spaceradar.ai');
+    const mark = el('div', 'rm-mark rm-micro', COPY.render.site);
     const caption = el('div', 'rm-caption', '');
     const endCard = el('div', 'rm-card rm-end');
-    endCard.appendChild(el('div', 'rm-micro', 'Fly it yourself'));
+    endCard.appendChild(el('div', 'rm-micro', COPY.render.fly));
     endCard.appendChild(el('h1', 'rm-title rm-serif', tour.title));
     endCard.appendChild(el('p', 'rm-url', tripUrl(tour.id)));
-    const credits = [truthLine(tour, epochMs), NARRATION.credit ? `${NARRATION.credit}.` : '', 'Music: John Bartmann, CC0. Full credits at spaceradar.ai.'].filter(Boolean).join(' ');
+    const credits = [truthLine(tour, epochMs), NARRATION.credit ? `${NARRATION.credit}.` : '', COPY.render.music].filter(Boolean).join(' ');
     endCard.appendChild(el('p', 'rm-credits', credits));
     // The thumbnail: the same frame with nothing over it but the trip's name, large (thumb()).
     const thumb = el('div', 'rm-thumb');
-    thumb.appendChild(el('div', 'rm-micro', 'spaceradar.ai'));
+    thumb.appendChild(el('div', 'rm-micro', COPY.render.site));
     thumb.appendChild(el('h1', 'rm-title rm-serif', tour.title));
     for (const node of [scrim, third, mark, caption, title, endCard, thumb]) root.appendChild(node);
     document.body.appendChild(root);

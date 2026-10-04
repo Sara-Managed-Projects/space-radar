@@ -2268,6 +2268,13 @@ export const COPY = {
     title: 'Space Radar source code on GitHub',
     href: 'https://github.com/Sara-Managed-Projects/space-radar',
   },
+  // The film (spec 0070, ui/rendermode.js): title card, lower third, end card, thumbnail.
+  render: {
+    eyebrow: 'Space Radar · a trip',
+    site: 'spaceradar.ai',
+    fly: 'Fly it yourself',
+    music: 'Music: John Bartmann, CC0. Full credits at spaceradar.ai.',
+  },
 
   glossary: {
     title: 'Words on this page',
