@@ -2085,6 +2085,16 @@ export const COPY = {
     errorLabel: 'Last error',
     attributionTitle: 'Credits',
     attributionIntro: 'The data on this map is other people’s work.',
+    // The footer below the full credit list (sr-status__foot): the two biggest providers of what
+    // the planets and the Earth look like, named by license rather than buried in the long list.
+    footCreditsIntro: 'Imagery and textures:',
+    footCreditsTextures: 'Solar System Scope',
+    footCreditsTexturesTitle: 'Planet and star textures, licensed CC BY 4.0',
+    footCreditsTexturesHref: 'https://www.solarsystemscope.com/textures/',
+    footCreditsNasa: 'NASA',
+    footCreditsNasaTitle: 'Cloud, night-side and surface imagery, and the 3D models',
+    footCreditsNasaHref: 'https://www.nasa.gov/',
+    footCreditsSep: ' · ',
     cloudsTitle: 'Clouds',
     auroraTitle: 'Aurora',
     weatherTitle: 'Lightning',
