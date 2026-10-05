@@ -122,6 +122,40 @@ check(closeUpDistance(at(400), 0, f) === Infinity, 'no viewport, no constraint')
     'a planet and the Moon arrive at the size they are drawn');
 }
 
+// ...and on its lit face: the rig stands where it is told to (flyTo's `offset`), and what main.js
+// tells it is scene/framing.js litOffset of the world's own Sun direction (scene/worlds.js sunDirOf).
+{
+  const { createCameraRig } = await import(join(JS, 'scene/camera.js'));
+  const { createWorlds } = await import(join(JS, 'scene/worlds.js'));
+  const { litOffset, ARRIVAL_PHASE } = await import(join(JS, 'scene/framing.js'));
+  stage.setWorld('earth');
+  const camera = new THREE.PerspectiveCamera(45, 1440 / 900, 1e-6, 1e12);
+  camera.position.set(0, 0, 30);
+  const rig = createCameraRig(camera, null);
+  const worlds = createWorlds(new THREE.Scene(), { textureBase: 't/', loadTexture: () => new THREE.Texture(), camera });
+  const t = Date.parse('2026-10-03T12:00:00Z');
+  stage.setTime(t);
+  worlds.update(t);
+  check(worlds.sunDirOf('sun') === null, 'the Sun has no lit side to arrive on');
+  for (const id of ['jupiter', 'saturn', 'mars', 'pluto', 'ganymede', 'moon', 'earth']) {
+    const sun = worlds.sunDirOf(id);
+    check(sun && Math.abs(sun.length() - 1) < 1e-6, `${id} knows where its Sun is`);
+    if (!sun) continue;
+    const target = worlds.drawnPositionOf(id) || new THREE.Vector3();
+    // The old arrival: the rig's own framing, beyond the subject from the stage's world.
+    rig.flyTo({ targetScene: target, distance: 5, ms: 0 });
+    rig.update(0.016);
+    const oldLit = (1 + camera.position.clone().sub(target).normalize().dot(sun)) / 2;
+    rig.flyTo({ targetScene: target, distance: 5, offset: litOffset(sun, camera.up), ms: 0 });
+    rig.update(0.016);
+    const from = camera.position.clone().sub(target).normalize();
+    const lit = (1 + from.dot(sun)) / 2;
+    check(Math.abs(Math.acos(Math.min(1, from.dot(sun))) - ARRIVAL_PHASE) < 0.02, `${id}: the camera stands ${(Math.acos(Math.min(1, from.dot(sun))) * 180 / Math.PI).toFixed(1)} degrees round from the Sun`);
+    check(lit > 0.88, `${id}: ${(lit * 100).toFixed(0)} % of the disc is lit on arrival (the rig's own framing gave ${(oldLit * 100).toFixed(0)} %)`);
+    if (['jupiter', 'saturn', 'pluto', 'ganymede'].includes(id)) check(oldLit < 0.5, `${id}: the old arrival showed mostly night (${(oldLit * 100).toFixed(0)} % lit), which is what the issue saw`);
+  }
+}
+
 if (problems.length) { console.error('arrival FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 const d = closeUpDistance(at(395), 750, f) * stage.unitKm;
 console.log(`arrival ok: Tiangong is reached from ${Math.round(d)} km at 750 px tall (was 7 000), drawn at the full ${SELECTED_PX} px; the old arrival drew ${old.toFixed(0)} px`);
