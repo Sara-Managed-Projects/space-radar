@@ -3903,7 +3903,8 @@ html.sr-phone .sr-subscribe__email {
   outline: 0;
 }
 
-.sr-field:focus { border-color: var(--sr-line-strong); }
+/* The focused field: the ember edge What to show's filter wears (a 22 % hairline was no focus state). */
+.sr-field:focus { border-color: var(--sr-ember); }
 .sr-field::placeholder { color: var(--sr-text-soft); }
 
 .sr-place__chips {

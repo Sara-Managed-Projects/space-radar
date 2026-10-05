@@ -807,10 +807,10 @@ export const COPY = {
   // through the same note; the default view is what is shown, and the line says so rather than
   // leaving a visitor to wonder why a link to the Moon opened on the Earth.
   link: {
-    unknownVersion: 'This link was made by a newer version of the map; showing the default view.',
-    unknownTrip: 'That trip is not on this map any more; showing the default view.',
+    unknownVersion: 'This link is from a newer map. Showing the default view.',
+    unknownTrip: 'That trip is no longer on this map. Showing the default view.',
     unknownAt: 'That object is not on this map; showing the default view.',
-    unknownStage: 'That place is not a centre this map can take; showing the default view.',
+    unknownStage: 'This map cannot centre on that place. Showing the default.',
   },
   // Sharing (spec 0033, spec 0061 task 8): one sheet, ui/sharesheet.js, with the postcard, the link
   // and the text. The text itself is the card's words and Wikipedia's; only the sheet's own words
@@ -1972,8 +1972,8 @@ export const COPY = {
     locationInsecure:
       'The browser only shares your location with pages served over https. This page is on plain http, so the button is switched off. Pick a city instead, or open the https address once there is one.',
     locationUnsupported: 'This browser has no location service. Pick a city instead.',
-    locationDenied: 'The browser said no. Pick a city instead; nothing else changes.',
-    locationFailed: 'The browser could not work out where you are. Pick a city instead.',
+    locationDenied: 'The browser said no. Pick a city instead.',
+    locationFailed: 'The browser could not find you. Pick a city instead.',
     locationAsking: 'Asking the browser',
     locationNone: 'Not set',
     locationSet: '{name}',

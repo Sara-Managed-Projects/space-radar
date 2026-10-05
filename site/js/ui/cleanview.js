@@ -70,7 +70,7 @@ export function createCleanView(ctx, opts = {}) {
   const path = document.createElementNS(SVG_NS, 'path');
   path.setAttribute('fill', 'none');
   path.setAttribute('stroke', 'currentColor');
-  path.setAttribute('stroke-width', opts.host ? '1.6' : '1.8');
+  path.setAttribute('stroke-width', '1.75');
   path.setAttribute('stroke-linecap', 'round');
   path.setAttribute('stroke-linejoin', 'round');
   svg.appendChild(path);

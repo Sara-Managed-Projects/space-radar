@@ -251,7 +251,7 @@ function svgIcon(d, size = 18) {
   p.setAttribute('d', d);
   p.setAttribute('fill', 'none');
   p.setAttribute('stroke', 'currentColor');
-  p.setAttribute('stroke-width', '1.7');
+  p.setAttribute('stroke-width', '1.75');
   p.setAttribute('stroke-linecap', 'round');
   svg.appendChild(p);
   return svg;

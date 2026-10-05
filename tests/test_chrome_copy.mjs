@@ -134,5 +134,65 @@ for (const [key, max] of [['tonight.showMe', 2], ['tonight.more', 2], ['tonight.
   check(typeof v === 'string' && v.trim().split(/\s+/).length <= max, `COPY.${key} ("${v}") is over ${max} word(s)`);
 }
 
+// --- the sweep: every remaining chrome key (docs/ui-guide.md section 7, spec 0061 task 6) --------
+// The 58 lines above are held to a WIDTH, one by one. Internal #336 (1): the rest of the chrome was
+// not swept at all. These sections of COPY are chrome and nothing else (labels, rows, toasts,
+// status words; no card prose, no trip text, no glossary), so every string in them, with its
+// placeholders at their longest, is held to the guide's cap: 60 characters for what is drawn, 90
+// for a tooltip or a reader's name (a `title` or an `aria-label` is not laid out in a column, and
+// names its key). No exclamation mark, no arrow, no double hyphen, no emoji, and no Title Case.
+const CHROME_SECTIONS = ['app', 'subscribe', 'shell', 'tabs', 'rightNow', 'statusLine', 'tripCard', 'explore', 'rail', 'timePill',
+  'moments', 'ladder', 'sceneNote', 'link', 'share', 'audio', 'density', 'nextList', 'colourKey', 'chooser', 'controls', 'search',
+  'quality', 'time', 'sheet', 'print', 'hud', 'tonight', 'clean', 'keyHint', 'mark'];
+const TOOLTIP = /(Title|Label|Alt|Aria|Tip|Hint|Why|Help|Describe|Long)$|^(label|title|aria|hint|why)/;
+// Said in full on purpose, each with its reason. A key here that goes away fails below.
+const LONG_OK = new Map([
+  ['app.tagline', 'the page\'s description and a shared post\'s line, not a line of chrome'],
+  ['sceneNote.refusedTitle', 'a tooltip that explains a refused source in two sentences'],
+  ['audio.panelNote', 'the one note under Sound in What to show: two lines, read once'],
+  ['audio.narrationCredit', 'a credit: the model, the voice and the licence are all owed'],
+  ['controls.locationInsecure', 'a disabled button\'s tooltip: why, and what to do instead'],
+  ['controls.locationGuessed', 'the place row\'s note: how the guess was made is the honest part'],
+  ['controls.locationGuessedByOffset', 'the same, for the rougher guess'],
+  ['controls.tonightNoObserver', 'an empty state in the place panel: two lines'],
+  ['search.loadsWhenOn', 'a tooltip listing layers'],
+  ['search.notLoadedCount', 'a tooltip\'s second sentence'],
+  ['tonight.passLine', 'a pass read out in full for a screen reader; the row draws its parts'],
+  ['tonight.arcLabel', 'the sky arc\'s description for a screen reader'],
+]);
+// An event's full sentence (ui/next.js): the row draws COPY.nextList.row.*, held above to a width;
+// these are the row's tooltip and the event's card, where a sentence is the point.
+const EVENT_SENTENCE = /^nextList\.(launchRough|approach|perihelion|train|shower|showerMoon|showerNoMoon|radiantLow|radiantNeverUp|solarEclipse|solarEclipseGrazing|lunarEclipse|lunarEclipsePenumbral|eclipseLocal|eclipseBelowHorizon|classOf\.\w+)$/;
+// Where the longest value of a placeholder is not the table's: a storm count is two digits and a
+// storm's name one word.
+const WORST_FOR = { 'rightNow.storms': { n: '12', name: 'Humberto' } };
+const PICTO = /\p{Extended_Pictographic}/u;
+let swept = 0;
+const sweep = (node, path) => {
+  if (typeof node === 'string') {
+    const key = path[path.length - 1];
+    const dotted = path.join('.');
+    if (path[0] === 'keyHint' && path[1] === 'caps') return; // a keycap is a picture of a key: ← and → are keys
+    const text = t(node, { ...WORST, ...(WORST_FOR[dotted] || {}) });
+    const n = [...text].length;
+    const cap = LONG_OK.has(dotted) || EVENT_SENTENCE.test(dotted) ? Infinity : TOOLTIP.test(key) || path.some((k) => /^(titles|labels|notes|whys|help)$/i.test(k)) ? 90 : MAX_CHARS;
+    swept += 1;
+    check(n <= cap, `COPY.${dotted} is ${n} characters, over ${cap}: "${text}"`);
+    check(!/!/.test(text) && !/→/.test(text) && !/ -- /.test(text) && !PICTO.test(text.replace(/[©®™↑↓←↔]/g, '')), `COPY.${dotted} has an exclamation mark, an arrow, a double hyphen or an emoji: "${text}"`);
+    // Title Case is asked of the template's own words: a name or a weekday filled in is not its doing.
+    const words = node.replace(/\{\w+\}/g, ' ').split(/\s+/).filter((w) => /^[A-Za-z]/.test(w));
+    if (words.length >= 3 && n <= MAX_CHARS) check(words.filter((w) => /^[A-Z][a-z]/.test(w)).length < words.length, `COPY.${dotted} is in Title Case: "${text}"`);
+    return;
+  }
+  if (Array.isArray(node)) { node.forEach((v, i) => sweep(v, [...path, String(i)])); return; }
+  if (node && typeof node === 'object') for (const [k, v] of Object.entries(node)) sweep(v, [...path, k]);
+};
+for (const sec of CHROME_SECTIONS) {
+  check(COPY[sec] && typeof COPY[sec] === 'object', `COPY.${sec} is gone: the chrome sweep has lost a section`);
+  sweep(COPY[sec], [sec]);
+}
+for (const k of LONG_OK.keys()) check(typeof get(k) === 'string', `LONG_OK names COPY.${k}, which is not a string any more`);
+check(swept >= 300, `only ${swept} chrome strings swept`);
+
 if (problems.length) { console.error('chrome copy FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
-console.log(`chrome copy ok: ${LINES.length} lines of chrome each fit one line with their longest values, none over ${MAX_CHARS} characters; ${layers.length} layer names fit their row`);
+console.log(`chrome copy ok: ${LINES.length} lines of chrome each fit one line with their longest values, none over ${MAX_CHARS} characters; ${swept} more strings in ${CHROME_SECTIONS.length} chrome sections swept (60 drawn, 90 as a tooltip); ${layers.length} layer names fit their row`);

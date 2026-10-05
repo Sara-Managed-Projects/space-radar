@@ -74,7 +74,7 @@ function helpers(src) {
     if (!made || !new RegExp(`return ${made[1]}\\b`).test(body)) continue;
     const params = m[2].split(',').map((p) => p.trim().split('=')[0].trim());
     const v = made[1];
-    const inEl = args(made[3] || '').slice(1);
+    const inEl = args(made[3] || '').slice(2); // el(tag, className, TEXT): the class is not a name
     const text = params.findIndex((p) => inEl.includes(p) || new RegExp(`${v}\\.textContent = (?:String\\()?${p}\\b`).test(body) || new RegExp(`${v}\\.appendChild\\(el\\('span', [^)]*\\b${p}\\)`).test(body));
     const label = params.findIndex((p) => new RegExp(`${v}\\.setAttribute\\('aria-label', ${p}\\)`).test(body));
     const title = params.findIndex((p) => new RegExp(`${v}\\.title = ${p}\\b`).test(body));
@@ -115,9 +115,15 @@ for (const f of files) {
       if (viaHelper.icon) hasIcon = true;
     }
     if (new RegExp(`\\b${v}\\.textContent\\s*=`).test(scope)) hasText = true;
+    // Kept in a table and worded later, when its list is known (`h.more.textContent = ...`).
+    if (new RegExp(`\\.${v}\\.textContent\\s*=`).test(src)) hasText = true;
     // A child that is not an icon: a span of words, a title, a row of parts.
-    const kids = [...scope.matchAll(new RegExp(`\\b${v}\\.(?:appendChild|append|prepend)\\(\\s*([^;]*)`, 'g'))].map((k) => k[1]);
+    // `head.append(chev, name, tally)` is three children: each is asked.
+    const kids = [...scope.matchAll(new RegExp(`\\b${v}\\.(?:appendChild|append|prepend)\\(\\s*([^;]*)`, 'g'))].flatMap((k) => args(k[1]));
     if (kids.some((k) => !/^(?:icon|svgIcon)\(|^(?:svg|mark|arrow|glyph|dot|chev|cap|swatch)\b/.test(k))) hasText = true;
+    // A link made to hand a file to the browser's download and removed in the same breath
+    // (printcompose.js saveBlob) is never on screen and never focused: not a control.
+    if (new RegExp(`\\b${v}\\.hidden = true`).test(scope) && new RegExp(`\\b${v}\\.click\\(\\)`).test(scope) && new RegExp(`\\b${v}\\.remove\\(\\)`).test(scope)) { controls -= 1; continue; }
     const where = `site/js/ui/${f}:${line}: \`${v}\``;
     if (!hasText && !hasLabel) problems.push(`${where} is a control with no name: give it text or an aria-label from copy/en.js`);
     if (!hasText && hasIcon) {
@@ -165,13 +171,21 @@ check(iconOnly >= 8, `only ${iconOnly} icon-only buttons found: the rail, the tr
   const all = CSS.map((f) => readFileSync(join(ROOT, f), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')).join('\n');
   check(/:focus-visible/.test(all), 'the stylesheets have :focus-visible rules');
   for (const m of all.matchAll(/([^{}]+)\{([^{}]*outline:\s*(?:none|0)\b[^{}]*)\}/g)) {
-    const sels = m[1].trim().split(',').map((x) => x.trim()).filter(Boolean);
+    // Split at the top level only: the commas inside :where(button, a) are one selector's.
+    const sels = [];
+    { let depth = 0; let cur = ''; for (const c of m[1].trim()) { if (c === '(') depth += 1; if (c === ')') depth -= 1; if (c === ',' && depth === 0) { sels.push(cur.trim()); cur = ''; } else cur += c; } if (cur.trim()) sels.push(cur.trim()); }
     for (const sel of sels) {
       const base = sel.replace(/:focus(-visible|-within)?/g, '').replace(/::?[\w-]+$/, '').trim();
       // The replacement: brackets or a border on :focus-visible / :focus-within of the same thing or
       // of the field's row, or the global bracket rule (`:where(button, ...):focus-visible::before`).
       const last = base.split(/\s+/).pop().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const has = new RegExp(`${last}[^,{]*:focus-(visible|within)`).test(all) || /(input|textarea|select)/.test(base) || /^(button|a|\[role)/.test(base) || /:where\([^)]*\)/.test(sel);
+      // A HEADING that takes focus from script (tabindex -1, so a screen reader starts reading at the
+      // view's name) is not a stop on the Tab ring: `:focus` on a __name or __title, and nothing else.
+      if (/__(name|title):focus$/.test(sel)) continue;
+      // The same rule may draw the replacement itself: a field whose border turns ember on focus.
+      if (/:focus/.test(sel) && /(?:^|;)\s*(?:border(?:-color)?|box-shadow)\s*:/.test(m[2])) continue;
+      // ...in ANOTHER rule: the one that removes the ring does not count as its own replacement.
+      const has = new RegExp(`${last}[^,{]*:focus(-visible|-within)?\\b`).test(all.replace(m[0], '')) || /(input|textarea|select)/.test(base) || /^(button|a|\[role)/.test(base) || /:where\([^)]*\)/.test(sel);
       check(has, `"${sel}" removes the outline and nothing draws a focus state for it`);
     }
   }
