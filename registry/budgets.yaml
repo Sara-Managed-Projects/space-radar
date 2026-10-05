@@ -41,6 +41,11 @@ budgets:
   # --check holds both rows.
   - {id: nebula_picture_bytes, value: 90000, unit: bytes, since: 2026-10-03, reason: "spec 0067: one WebP per object, 512 px on its longer side (640 or 768 for the seven widest); a star field is noise to WebP, and the densest (M17 at 89 874 B, the Cygnus Loop at 89 752 B) set this"}
   - {id: nebulae_total_bytes, value: 1700000, unit: bytes, since: 2026-10-03, reason: "spec 0067: 27 pictures; what a visitor who flew to every one of them would have downloaded"}
+# 2026-10-05: the moons' and dwarf planets' maps (registry/textures.yaml rows with `coverage:`), each
+  # fetched the first time its world is big enough on screen to show a surface, never on a first
+  # visit. scripts/check_registry.py check_textures() holds both rows.
+  - {id: moon_map_bytes, value: 250000, unit: bytes, since: 2026-10-05, reason: "one WebP per world at 2048 wide or less; Cassini's crater fields are the densest (Iapetus 235 060 B at quality 74, Dione 232 500 B at 1792 wide) and set this"}
+  - {id: moon_maps_total_bytes, value: 3200000, unit: bytes, since: 2026-10-05, reason: "twenty maps, 2 979 639 B measured 2026-10-05; what a visitor who flew to every moon would have downloaded"}
   - {id: og_png_min_bytes, value: 50000, unit: bytes, since: 2026-09-22, reason: "under 50 kB a 1200x630 frame is empty (#157's lesson)"}
   - {id: home_js_kb, value: 8, unit: kB, since: 2026-09-22, reason: "spec 0042", pending: "spec 0042"}
   # The device tiers (2026-09-29): what a T1 laptop downloads AFTER the first frame, when idle, and the

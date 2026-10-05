@@ -807,14 +807,18 @@ export async function boot({ setStatus } = {}) {
     if (record && record.klass === 'world') {
       // 3.5 radii, or farther when the free part of the screen is narrower than that disc
       // (scene/framing.js discDistance: the Moon on a phone was wider than the phone).
-      const radius = worlds.drawnRadiusUnits(record.id);
+      // The radius it will have when the camera is there: a far moon is drawn no smaller than a
+      // pixel, and framing the arrival on that left Ganymede a speck (scene/worlds.js arrivalRadiusUnits).
+      const radius = worlds.arrivalRadiusUnits(record.id);
       const el = ctx.renderer && ctx.renderer.domElement;
       const room = freeRoom(el);
       const w = el && el.clientWidth > 0 ? el.clientWidth : window.innerWidth;
       const h = el && el.clientHeight > 0 ? el.clientHeight : window.innerHeight;
       const shareV = room ? Math.min(room.above, room.below) / (h / 2) : 1;
       const shareH = (w - 2 * Math.abs(viewShift.shiftXPx())) / w;
-      return Math.max(0.05, radius * 3.5, discDistance(radius, { fovDeg: camera.fov, aspect: w / h, shareV, shareH }));
+      // No nearer than three radii, whatever the unit: the old floor of 0.05 scene units is 50 km on
+      // the Earth's stage, which is inside the drawn Deimos's own arrival and outside nothing else.
+      return Math.max(radius * 3.5, discDistance(radius, { fovDeg: camera.fov, aspect: w / h, shareV, shareH }));
     }
     // On its system's stage a planet is a ball of its own size: eight radii, the trip's framing; the
     // host star is the whole system, every orbit in the picture.

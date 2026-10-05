@@ -2814,6 +2814,38 @@ def check_textures(model_textures: list, world_ids: set) -> list:
                 if name != boot:
                     fail(at, f"the tier-0 file `{name}` is not the file models.yaml credits as `{rid}` "
                              f"(`{boot}`): the boot set is one list")
+    # The moons' maps (2026-10-05). A row that says how much of the sphere its map covers is a world's
+    # one map, fetched when the world is first looked at: each file inside `moon_map_bytes`, all of
+    # them inside `moon_maps_total_bytes`, and the share a number, because the card's sentence about
+    # the side nobody has photographed rests on it. And the other way round: a flat-coloured world's
+    # map must say its share, or a half-seen moon could ship as if it were whole.
+    each_max, total_max = budget("moon_map_bytes", 250000), budget("moon_maps_total_bytes", 3200000)
+    moon_total = 0
+    flat_worlds = {w.get("id") for w in (load("worlds.yaml").get("worlds") or [])
+                   if isinstance(w, dict) and isinstance((w.get("look") or {}).get("flat"), str)}
+    for r in rows_:
+        if not isinstance(r, dict):
+            continue
+        where = f"textures.yaml[{r.get('id')}]"
+        cov = r.get("coverage")
+        if cov is None:
+            if r.get("world") in flat_worlds and r.get("slot") == "map":
+                fail(where, "a flat-coloured world's map with no `coverage:` -- the share of the sphere the "
+                            "original has data for, which the card's line about the unseen side rests on")
+            continue
+        if isinstance(cov, bool) or not isinstance(cov, (int, float)) or not 0 < cov <= 1:
+            fail(where, f"coverage {cov!r} must be a share of the sphere, over 0 and at most 1")
+        for f in r.get("files") or []:
+            size = f.get("bytes") if isinstance(f, dict) else None
+            if isinstance(size, int):
+                moon_total += size
+                if size > each_max:
+                    fail(where, f"`{f.get('file')}` is {size} bytes, over the {int(each_max)} a moon's map may be "
+                                f"(`moon_map_bytes` in registry/budgets.yaml): a phone fetches it on the first look")
+    if moon_total > total_max:
+        fail("textures.yaml", f"the moons' maps add up to {moon_total} bytes, over `moon_maps_total_bytes` "
+                              f"({int(total_max)}) in registry/budgets.yaml")
+
     tex_dir = ROOT / "site" / "textures"
     if tex_dir.is_dir():
         for p_ in sorted(tex_dir.rglob("*")):

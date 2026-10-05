@@ -141,6 +141,10 @@ worlds:
   # about them names the page it was read from and the day (check_registry.py refuses a fact
   # without both). Since issue #262 the flat worlds a trip flies to (Pluto, Io, Europa, Enceladus,
   # Triton) also name `textures:`, a public-domain map that replaces the colour once it loads.
+  # Since 2026-10-05 (issues #387 to #415) every flat world but Deimos does: registry/textures.yaml
+  # has each map's source, licence and the share of the sphere it covers, and `look.flat` is still
+  # the colour the world is drawn in until the map arrives, the colour a black-and-white mosaic is
+  # tinted with, and the colour of the parts nobody has photographed.
   #
   # The moons' positions are astronomy-engine's JupiterMoons() (the L1.2 theory of Lainey, Duriez
   # and Vienne) added to Jupiter's own; there is no astronomy-engine Body for them, which is what

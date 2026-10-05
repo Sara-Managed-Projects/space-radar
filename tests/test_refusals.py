@@ -618,6 +618,16 @@ CASES: list[tuple[str, str, str, str]] = [
      'original: "http://bjj.mmedia.is/data/mars/mars_map.jpg"'),
     ("a boot map that is not the one models.yaml credits",
      "textures.yaml", "file: site/textures/2k_mars.jpg", "file: site/textures/2k_mercury.jpg"),
+    # The moons' maps (2026-10-05): one file per world inside its budget, and the share of the
+    # sphere it covers said as a number, because the card's line about the unseen side rests on it.
+    ("a moon's map over the moon_map_bytes budget",
+     "budgets.yaml", "id: moon_map_bytes, value: 250000,", "id: moon_map_bytes, value: 200000,"),
+    ("the moons' maps over their total budget",
+     "budgets.yaml", "id: moon_maps_total_bytes, value: 3200000,", "id: moon_maps_total_bytes, value: 2900000,"),
+    ("a moon's map that covers more than the whole sphere",
+     "textures.yaml", "    world: miranda\n    slot: map\n    when: boot\n    coverage: 0.394", "    world: miranda\n    slot: map\n    when: boot\n    coverage: 1.394"),
+    ("a flat world's map that does not say how much of the sphere it covers",
+     "textures.yaml", "    world: miranda\n    slot: map\n    when: boot\n    coverage: 0.394\n", "    world: miranda\n    slot: map\n    when: boot\n"),
     # --- registry/tilesets.yaml (2026-10-03, spec 0065) -----------------------------------------
     # Map tiles are fetched by every visitor's browser from somebody else's server. No licence, a
     # credit CREDITS.md does not carry, a host whose CORS header nobody measured, plain http, a

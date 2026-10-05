@@ -355,6 +355,16 @@ export const WORLDS = [
   // 1.5 degrees of Charon (tests/test_worlds_layer.mjs measures both). Titan is a
   // trip stop too and stays one colour on purpose: in visible light its haze is all anyone has seen.
   //
+  // TWENTY OF THE TWENTY-ONE CARRY A MAP SINCE 2026-10-05 (issues #387 to #415): all but Deimos, for
+  // which no public-domain mosaic was found. scripts/build-textures.py `--only moons` makes them
+  // and says how; registry/textures.yaml has each one's source and how much of the sphere it
+  // covers. `mapKind` is what kind of picture it is, for the card: `tinted` (a black-and-white
+  // mosaic in the flat colour), `toned` (Cassini's infrared-to-ultraviolet colours at 35 %),
+  // `infrared` (Titan's ground through the haze) or `colour`. Every mapped moon is `locked`:
+  // longitude 0, the middle of its map, toward its planet, and north along the planet's pole
+  // (Iapetus's orbit is tilted 15 degrees to Saturn's equator, so its map is that far off true).
+  // `shape` names a row of data/moonshapes.js: Phobos and Deimos are bent to their measured shapes.
+  //
   // The moons come AFTER Jupiter on purpose: update() places a moon from its planet's drawn disc,
   // so the planet has to have been placed first in the same frame.
   {
@@ -432,8 +442,8 @@ export const WORLDS = [
   },
   {
     // "composed of C-type rock, similar to blackish carbonaceous chondrite asteroids" (NASA
-    // Science, of both moons of Mars). `irregular`: a lumpy rock drawn as a ball of its mean
-    // radius, and its card says the true shape is not drawn.
+    // Science, of both moons of Mars). A lumpy rock: `shape` bends the ball of its mean radius
+    // to Gaskell's model the first time it is looked at, and its card says so.
     id: 'phobos', display: 'Phobos', parent: 'mars', radiusKm: 11.08,
     body: 'Phobos', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
     look: { flat: true, tint: 0x4a4540, map: '2k_phobos_viking.webp', mapKind: 'tinted', albedo: 0.07, shape: 'phobos', rough: 0.5 },
@@ -1327,6 +1337,9 @@ export function createWorlds(scene, opts = {}) {
   // this instant, the unit directions of the ones the compression is about to move, and how close
   // each of those comes to another.
   const truePos = new Map();
+  // A moon's radius at its planet's enlargement, scene units, WITHOUT the one-pixel floor: the size
+  // it is drawn once the camera is near enough for that to be more than a pixel (arrivalRadiusUnits).
+  const systemRadius = new Map();
   const crowd = [];
   const crowdSlot = [];
   const nearest = new Map();
@@ -1337,6 +1350,7 @@ export function createWorlds(scene, opts = {}) {
    * is not drawn this frame or is not enlarged, which leaves nothing to be drawn around.
    */
   function drawWithParent(w, mesh, trueDistKm) {
+    systemRadius.delete(w.id);
     const parentMesh = meshes.get(w.parent);
     const ps = viewState.get(w.parent);
     if (!parentMesh || !parentMesh.visible || !ps || !ps.exaggerated) return false;
@@ -1361,6 +1375,7 @@ export function createWorlds(scene, opts = {}) {
     }
     const floorKm = viewKm * MOON_VIEW.MIN_ANGULAR_RADIUS_RAD;
     const drawnRadiusKm = Math.max(scaledKm, floorKm);
+    systemRadius.set(w.id, scaledKm / stage.unitKm);
     mesh.position.copy(_pos);
     mesh.scale.setScalar(drawnRadiusKm / stage.unitKm);
     viewState.set(w.id, describe(w, trueDistKm, drawnDistKm, drawnRadiusKm, { parent: ps, floored: floorKm > scaledKm }));
@@ -1710,6 +1725,22 @@ export function createWorlds(scene, opts = {}) {
     return mesh ? mesh.scale.x : 0;
   }
 
+  /**
+   * The radius a world will have when the camera has ARRIVED at it, scene units (issue #419).
+   *
+   * A moon of a squeezed planet is never drawn under a pixel: its radius is floored at 0.001 rad AS
+   * SEEN FROM THE CAMERA (drawWithParent), so from the Earth a selected Ganymede is 7.6 times the
+   * size its system's scale gives it. main.js framed the arrival on that -- 3.5 of those radii out --
+   * and the floor shrank with every kilometre of the approach until the moon was its scaled size:
+   * a disc 0.037 rad in radius, 36 pixels of an 800-pixel screen, "a small crescent in a lot of
+   * empty sky" (the issue; the arithmetic is in tests/test_arrival.mjs). This is the radius without
+   * the floor, which is what the camera finds when it gets there. Every other world is as drawn.
+   */
+  function arrivalRadiusUnits(id) {
+    const r = systemRadius.get(id);
+    return r > 0 ? r : drawnRadiusUnits(id);
+  }
+
   const _proj = new THREE.Vector3();
   const _camPos = new THREE.Vector3();
 
@@ -1853,6 +1884,7 @@ export function createWorlds(scene, opts = {}) {
     earthshine,
     drawnPositionOf,
     drawnRadiusUnits,
+    arrivalRadiusUnits,
     preloadShape,
     hasShape,
     sunDirOf,

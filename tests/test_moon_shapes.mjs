@@ -26,6 +26,7 @@ const { WORLDS, createWorlds, worldRecords } = await import(join(JS, 'scene/worl
 const { COPY } = await import(join(JS, 'copy/en.js'));
 const { drawingLine } = await import(join(JS, 'ui/cards.js'));
 const { TEXTURES } = await import(join(JS, 'data/textures.js'));
+const { BUDGETS } = await import(join(JS, 'data/budgets.js'));
 
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
@@ -113,7 +114,8 @@ const rowOf = (id) => WORLDS.find((w) => w.id === id);
 
 // 4. The maps.
 {
-  const MAX = 250000;
+  const MAX = BUDGETS.moon_map_bytes;
+  check(MAX === 250000, `a moon's map may be 250 kB (registry/budgets.yaml moon_map_bytes: ${MAX})`);
   const mine = TEXTURES.filter((t) => t.slot === 'map' && rowOf(t.world) && rowOf(t.world).look.flat);
   const mapped = WORLDS.filter((w) => w.look.flat && w.look.map);
   check(mapped.length === 20 && mine.length === 20, `twenty of the twenty-one flat worlds wear a map (${mapped.length} in worlds.js, ${mine.length} in the registry); Deimos has none`);
