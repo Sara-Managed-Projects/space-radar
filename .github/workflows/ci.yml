@@ -138,6 +138,10 @@ jobs:
         run: python3 scripts/check_copy.py
       - name: A new world is a registry row
         run: python3 tests/test_growth.py
+      # 2026-10-05: nine of the fourteen credit lines in registry/sources.yaml were not in CREDITS.md,
+      # because nothing compared the two. The models, textures and sounds were already held to it.
+      - name: Every data source and model the registries name is credited in CREDITS.md
+        run: python3 tests/test_credits.py
       # Node for the SEO cases, which start from a fresh build of the object pages (card words are JS).
       - uses: actions/setup-node@v4
         with:

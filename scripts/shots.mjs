@@ -1,4 +1,5 @@
-// Take the README's pictures. Runs in CI, in the Playwright container -- the same rule the rest of
+// Take pictures of the real app (and the trips' share pictures, below). The README's own pictures
+// are assets/screenshots/*.webp since 2026-10-05; pass --out, the old default folder is gone. Runs in CI, in the Playwright container -- the same rule the rest of
 // this repo follows: a browser belongs on a runner, not on somebody's laptop.
 //
 //   node scripts/shots.mjs --base=http://127.0.0.1:8177 --out=assets/readme
