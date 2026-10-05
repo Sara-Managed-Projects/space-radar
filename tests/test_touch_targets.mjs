@@ -150,8 +150,9 @@ for (const f of readdirSync(UI).filter((n) => n.endsWith('.js')).sort()) {
     if (cn) add(m.index, cn[1].replace(/\$\{[^}]*\}/g, ' '), false);
   }
 }
-// A tab and a labelled checkbox row are targets too, named here because no button builder makes them.
-for (const cls of ['sr-show__label']) controls.push({ file: '(named)', line: 0, classes: [cls] });
+// A labelled checkbox row, a select and a field are targets too, named here because no button
+// builder makes them (the probe measured the first three under 44 on 2026-10-05).
+for (const cls of ['sr-show__label', 'sr-share__tag', 'sr-colourkey__select', 'sr-show__filter', 'sr-field']) controls.push({ file: '(named)', line: 0, classes: [cls] });
 
 // Not a 44 px target, each with the reason a person can check in the page.
 const NOT_A_TARGET = new Map([

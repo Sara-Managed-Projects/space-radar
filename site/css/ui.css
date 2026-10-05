@@ -5280,7 +5280,8 @@ html.sr-phone .sr-tonight-view__num { font-size: var(--sr-fs-num-sm); }
   .sr-pick__btn,
   .sr-side__back,
   .sr-now__btn,
-  .sr-show__label {
+  .sr-show__label,
+  .sr-colourkey__select {
     min-height: 44px;
   }
 }

@@ -356,3 +356,10 @@ html.sr-phone .sr-share__head {
     transition: opacity 120ms linear;
   }
 }
+
+/* The tag's checkbox row is a finger's target on a phone (measured 24 px, internal #346). */
+@media (pointer: coarse) {
+  .sr-share__tag {
+    min-height: 44px;
+  }
+}
