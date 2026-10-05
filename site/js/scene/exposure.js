@@ -3,7 +3,7 @@
 // Contract: EXPOSURES, EXPOSURE_KEY, DEFAULT_EXPOSURE
 //           exposureLook(mode) -> { nebulaGain, nebulaGamma, nebulaSaturation, milkyWay }   pure
 //           readExposure(storage), writeExposure(storage, mode)
-//           createExposure({ storage }) -> { mode(), look(), set(mode), onChange(f) }
+//           createExposure({ storage }) -> { mode(), look(), set(mode), hold(mode), release(), onChange(f) }
 //
 // WHY. Ivan, 2026-10-02: "usually on pictures we see this nice clouds of gases when space is shown,
 // is it real or not?" It is real and it is faint. A nebula's colour in a photograph is minutes or
@@ -79,16 +79,36 @@ export function writeExposure(storage, mode) {
 export function createExposure(opts = {}) {
   const storage = opts.storage;
   let mode = EXPOSURES.includes(opts.initial) ? opts.initial : readExposure(storage);
+  // A trip stop's own shutter (registry/tours.yaml `exposure:`), for as long as the stop is up.
+  // Never stored: it is the trip's, and the visitor's choice is what comes back when it lets go.
+  let held = null;
   const listeners = new Set();
+  const now = () => held || mode;
+  const tell = (byVisitor) => { for (const f of listeners) f(now(), exposureLook(now()), byVisitor); };
   return {
-    mode: () => mode,
-    look: () => exposureLook(mode),
+    mode: now,
+    look: () => exposureLook(now()),
+    hold(next) {
+      if (!EXPOSURES.includes(next) || held === next) return false;
+      const was = now();
+      held = next;
+      if (was !== now()) tell(false);
+      return true;
+    },
+    release() {
+      if (!held) return false;
+      const was = now();
+      held = null;
+      if (was !== now()) tell(false);
+      return true;
+    },
     /** `byVisitor` is true from the control: main.js loads the pictures then, and not at boot. */
     set(next, byVisitor = true) {
       if (!EXPOSURES.includes(next) || next === mode) return false;
+      const was = now();
       mode = next;
       writeExposure(storage, next);
-      for (const f of listeners) f(mode, exposureLook(mode), byVisitor);
+      if (was !== now()) tell(byVisitor);
       return true;
     },
     onChange(f) { listeners.add(f); return () => listeners.delete(f); },

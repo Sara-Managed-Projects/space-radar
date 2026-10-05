@@ -119,10 +119,18 @@ function skyQuaternion(out = new THREE.Quaternion()) {
     };
     // stage.js returns null for a frame it cannot express. earth-inertial always converts, but
     // asserting that here rather than assuming it is the difference between a wrong sky and none.
+    // A MILLION KM IS NOTHING ON A RUNG OF THE LADDER (2026-10-05). There one unit is a
+    // light-year or more, the three arms below came out 1e-7 units long, the length check under
+    // them took that for "no stage", and the sky sphere was drawn with no rotation at all:
+    // measured on the stellar rung, Orion a quarter of the sky from where its 3D stars are. Nobody
+    // saw it, because registry/lod.yaml has faded the sphere out by 5 000 au and no camera had
+    // stood nearer on a rung. So the arm is as long as the stage's own unit asks for; on a world's
+    // stage (a unit of a thousand km or less) it is the million km it always was.
+    const big = BIG_KM * Math.max(1, (Number(st.unitKm) || 1) / 1000);
     const oKm = st.toScene({ x: 0, y: 0, z: 0 }, EQUATORIAL);
-    const axKm = st.toScene(toTeme({ x: BIG_KM, y: 0, z: 0 }), EQUATORIAL);
-    const ayKm = st.toScene(toTeme({ x: 0, y: BIG_KM, z: 0 }), EQUATORIAL);
-    const azKm = st.toScene(toTeme({ x: 0, y: 0, z: BIG_KM }), EQUATORIAL);
+    const axKm = st.toScene(toTeme({ x: big, y: 0, z: 0 }), EQUATORIAL);
+    const ayKm = st.toScene(toTeme({ x: 0, y: big, z: 0 }), EQUATORIAL);
+    const azKm = st.toScene(toTeme({ x: 0, y: 0, z: big }), EQUATORIAL);
     if (!oKm || !axKm || !ayKm || !azKm) return out.identity();
     const o = new THREE.Vector3().copy(oKm);
     const ax = new THREE.Vector3().copy(axKm).sub(o);
@@ -145,6 +153,7 @@ attribute float aAlpha;
 attribute vec3 aColour;
 uniform float uPixelRatio;
 uniform float uGain;
+uniform float uScale;
 varying vec3 vColour;
 varying float vAlpha;
 ${STRETCH_VERT_HEAD}
@@ -153,7 +162,7 @@ void main() {
   vAlpha = aAlpha * uGain;
   vec4 mv = modelViewMatrix * vec4( position, 1.0 );
   gl_Position = projectionMatrix * mv;
-  float sizePx = aSize * uPixelRatio;
+  float sizePx = aSize * uPixelRatio * uScale;
   // Spec 0034: the same stretch as scene/stars3d.js; at uStretch == 0, gl_PointSize = sizePx.
 ${STRETCH_VERT}
 }
@@ -290,6 +299,9 @@ export function createStarfield(scene, opts = {}) {
   const starUniforms = {
     uPixelRatio: { value: pixelRatio },
     uGain: { value: 1 },
+    // How large a star's point is drawn, as a factor (setPointScale). 1 everywhere but while
+    // constellation figures are up (scene/figures3d.js), where the stars are the subject.
+    uScale: { value: 1 },
     ...stretchUniforms(),
   };
 
@@ -599,6 +611,15 @@ export function createStarfield(scene, opts = {}) {
     stretch() {
       return starUniforms.uStretch.value;
     },
+    /**
+     * How large the stars' points are drawn, 1 = as ever. A point's size was always a drawing
+     * choice (magToSize: a sixth-magnitude star one pixel, Sirius six); when the sky itself is
+     * the subject the same stars are drawn larger, so a first-magnitude star reads as one.
+     */
+    setPointScale(k) {
+      starUniforms.uScale.value = Math.min(3, Math.max(0.5, Number(k) || 1));
+    },
+    pointScale: () => starUniforms.uScale.value,
     /** Overall star brightness, 0..1 — the sky view dims them at dawn. */
     setGain(g) {
       gain = Math.min(1, Math.max(0, g));

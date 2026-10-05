@@ -651,6 +651,7 @@ services from their own IP.** Read §4.1 before you deploy.
 | NOAA SWPC | planetary K-index forecast | US Government work, public domain (§4.4) | Space weather: NOAA SWPC | <https://www.swpc.noaa.gov> |
 | IAU Minor Planet Center | comet orbital elements (`CometEls.txt`) | **Copyrighted**; redistributable only with the source clearly specified (§4.5) | Comet elements: IAU Minor Planet Center | <https://minorplanetcenter.net> |
 | NASA GIBS | today's clouds: GOES-East, GOES-West and Himawari Band 13 infrared, every 10 min | NASA "full and open sharing"; an acknowledgement is asked for (§4.13) | the acknowledgement in §4.13, verbatim, plus NOAA and JMA for the satellites | <https://nasa-gibs.github.io/gibs-api-docs/> |
+| NASA GIBS | Earth data overlays: sea temperature, sea ice, chlorophyll, vegetation, rain, aerosol, water vapour; one picture when a visitor or a trip asks | NASA "full and open sharing"; an acknowledgement is asked for (§4.13) | the acknowledgement in §4.13, and each data set's makers in §4.19 | <https://nasa-gibs.github.io/gibs-api-docs/> |
 | GDACS (EC Joint Research Centre) | tropical cyclones now: centre, status, top wind on the track | EU-owned content, CC BY 4.0 by the Commission's reuse decision; GDACS calls it "purely indicative" (§4.14) | Tropical cyclones: GDACS, European Commission Joint Research Centre (CC BY 4.0) | <https://www.gdacs.org> |
 | NOAA nowCOAST | lightning now: strike density over the last fifteen minutes, from the ground networks NLDN and GLD360, 25° S to 80° N and 110° E eastward to 0° W | US Government work, public domain; a "Level 5" derived product "appropriate for public distribution" (§4.17) | Lightning: strike density from NOAA nowCOAST, made by the NWS Ocean Prediction Center | <https://nowcoast.noaa.gov> |
 | NASA Solar System Treks | map tiles of the Moon and Mars, fetched when the camera is close: LRO WAC mosaic (to 83 m per pixel), THEMIS daytime infrared mosaic (to 162 m) as detail over our colour map | NASA content, "generally are not subject to copyright in the United States" (§4.16) | the two lines in §4.16, in the Sources panel while those tiles are on screen | <https://trek.nasa.gov> |
@@ -1018,6 +1019,33 @@ Exoplanet Archive §4.7, GDACS §4.14) are repeated only where the credit line d
 Comets came from the Minor Planet Center (§4.5) until 2026-10-01 and come from JPL's Small-Body
 Database since; the site's saved copy may still hold an `mpc-comets` file from before, and §4.5's
 condition (name the source) attaches to it for as long as it is served.
+
+### 4.19 NASA GIBS — Earth data overlays (2026-10-05)
+
+`site/js/scene/earthoverlay.js` asks GIBS for ONE picture of the whole globe (WMS GetMap, 2048 × 1024
+PNG, transparent where there is no data) when a trip stop or a visitor in What to show asks for an
+overlay, and never at boot. The rows are `registry/overlays.yaml`. Measured 2026-10-05 with
+`Origin: https://www.spaceradar.ai`: every layer answered `access-control-allow-origin: *` and
+`cache-control: max-age=0, no-store`, 94 to 694 kB, in 1.2 to 2.5 s; a date not made yet returns an
+empty 8 221-byte picture, which the code steps back from. The acknowledgement GIBS asks for is in
+§4.13 and covers these too. The colours are GIBS's own colormaps (v1.3), and each legend in the
+registry is seven stops or fewer read from them; no colormap is copied into the site.
+
+| Overlay | GIBS layer | Whose data | Kind |
+|---|---|---|---|
+| Sea surface temperature | `GHRSST_L4_MUR25_Sea_Surface_Temperature` | GHRSST MUR sea surface temperature, NASA JPL PO.DAAC | daily analysis, gaps filled |
+| Sea ice | `GHRSST_L4_MUR25_Sea_Ice_Concentration` | GHRSST MUR sea ice concentration, NASA JPL PO.DAAC | daily analysis, gaps filled |
+| Plankton (chlorophyll) | `OCI_PACE_Chlorophyll_a` | Chlorophyll a from the Ocean Color Instrument on PACE, NASA Ocean Biology Processing Group | daily, measured where clear |
+| Green land (vegetation) | `MODIS_Terra_NDVI_8Day` | MODIS vegetation index (Terra), NASA LANCE and LP DAAC | rolling eight days, measured |
+| Rain and snow | `IMERG_Precipitation_Rate` | IMERG precipitation, NASA Global Precipitation Measurement mission | daily, merged satellite estimate |
+| Dust, smoke and haze | `MERRA2_Total_Aerosol_Optical_Thickness_550nm_Extinction_Monthly` | MERRA-2 aerosol optical thickness, NASA Global Modeling and Assimilation Office | monthly mean, reanalysis |
+| Water in the air | `MERRA2_Total_Precipitable_Water_Vapor_Monthly` | MERRA-2 total precipitable water vapour, NASA Global Modeling and Assimilation Office | monthly mean, reanalysis |
+
+All are NASA data products. NASA's data use guidance
+(<https://www.earthdata.nasa.gov/engage/open-data-services-software-policies/data-use-guidance>,
+read 2026-10-05) says data from a NASA-led mission are CC0 unless marked otherwise, with "no
+restrictions on the use of these data", and asks that the data sets be cited, which this table does. The stop card and the panel print the legend, the day the picture is of, how it
+was made and this credit.
 
 ## 4.6 Third-party trademarks the app names or draws
 

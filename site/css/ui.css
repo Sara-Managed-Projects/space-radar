@@ -2234,6 +2234,40 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   margin-top: var(--sp-2);
 }
 
+/* An Earth overlay's legend (ui/overlaylegend.js): the name, GIBS's own colour ramp, its two
+   ends in mono. In the stop card's foot above the honesty line, and in What to show. */
+.sr-legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-1) var(--sp-2);
+  margin: var(--sp-2) 0 0;
+  font: 400 13px/18px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-legend[hidden] { display: none; }
+.sr-legend__title { grid-column: 1 / -1; color: var(--sr-text); }
+.sr-legend__ramp { grid-column: 1 / -1; height: 8px; border-radius: var(--sr-radius-sm); }
+
+.sr-legend__low,
+.sr-legend__high {
+  font-family: var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-legend__high { text-align: right; }
+
+/* Constellation figures' names (scene/figures3d.js): the figure in the microlabel role, its
+   stars in the label role, each fading in as the stroke reaches it. */
+#labels .label.sr-sky-label { transition: opacity var(--sr-slow) var(--sr-ease); }
+
+#labels .label.sr-sky-label[data-sky='figure'] {
+  font: 600 13px/16px var(--sr-font-hud);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sr-text-dim);
+}
+
 /* The stop's words: ONE paragraph under the numbers, and the line the trip generates under it. */
 .sr-card__leadbody {
   margin: var(--sp-4) 0 0;

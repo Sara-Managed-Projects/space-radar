@@ -116,6 +116,7 @@ import { createNarration, clipKey } from '../audio/narration.js';
 import { NARRATION } from '../data/narration.js';
 import { paintCue } from './voicecue.js';
 import { shouldSaveData } from '../scene/quality.js';
+import { overlayLine, legendNode, paintLegend } from './overlaylegend.js';
 
 const HOST_ID = 'sr-trip';
 // NOT 'sr-trip'. The host div carries `.sr-trip`, and `.sr-trip` in ui.css sets
@@ -233,6 +234,21 @@ export function eclipseLine(st, drawn) {
 export function orbitsLine(st, stageId) {
   if (!st || !Array.isArray(st.orbits) || !st.orbits.length || stageId !== 'sun') return '';
   return COPY.trip.orbitsLine;
+}
+
+/**
+ * THE FIGURES LINE (2026-10-05): on a stop that draws constellation figures (`figures:`,
+ * scene/figures3d.js), that the figures are a convention drawn by us and what the stars under
+ * them are -- the sky as seen from Earth, or their measured places when the stop shows the depth
+ * -- and what the dashed line is when the ecliptic is drawn. Generated, like the two above.
+ */
+export function figuresLine(st) {
+  const sky = st && st.sky;
+  if (!sky || (!(sky.figures || []).length && !sky.ecliptic)) return '';
+  const parts = [];
+  if ((sky.figures || []).length) parts.push(sky.depth ? COPY.figures.line : COPY.figures.lineSky);
+  if (sky.ecliptic) parts.push(COPY.figures.ecliptic);
+  return parts.join(' ');
 }
 
 /** The counter in the toolbar, "2 / 4": mono, short, and read out as "stop 2 of 4" beside it. */
@@ -983,11 +999,21 @@ export function createTripFrame(ctx) {
       // The eclipse line and the orbits line share the element: no trip has both, and two stacked
       // honesty lines would be read as one anyway.
       const stageId = ctx.stage && ctx.stage.worldId;
+      // An Earth overlay's sentence (what the colours are, the day, whose data) and its legend,
+      // which sits just above the line: the colours on the globe mean nothing without it.
+      const over = st && st.phase !== 'idle' && st.overlay && typeof ctx.overlayState === 'function' ? ctx.overlayState() : null;
       const text = st && st.phase !== 'idle'
-        ? [eclipseLine(st, drawn), orbitsLine(st, stageId)].filter(Boolean).join(' ')
+        ? [eclipseLine(st, drawn), orbitsLine(st, stageId), figuresLine(st), overlayLine(over)].filter(Boolean).join(' ')
         : '';
       if (lineNode.textContent !== text) lineNode.textContent = text;
       lineNode.hidden = !text;
+      let legend = lineNode.previousElementSibling;
+      if (legend && !legend.classList.contains('sr-legend')) legend = null;
+      const keyed = over && over.status === 'shown' && over.legend ? over : null;
+      if (keyed && !legend) {
+        legend = legendNode(keyed);
+        if (legend) lineNode.parentNode.insertBefore(legend, lineNode);
+      } else if (legend) paintLegend(legend, keyed);
     }
   }
 

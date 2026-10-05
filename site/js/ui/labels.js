@@ -634,7 +634,9 @@ export function createLabels(ctx, host) {
   function update(tMs) {
     if (host.hidden) return;
     const inTrip = document.documentElement.classList.contains('sr-trip-mode');
-    const cands = candidatesNow(tMs);
+    // While constellation figures are up they name their own stars (scene/figures3d.js), and a
+    // second name beside one of them would be the wall of text the cap exists to prevent.
+    const cands = ctx.figures && ctx.figures.namesTheSky() ? [] : candidatesNow(tMs);
     const chosen = chooseLabels(cands, {
       cap: LABEL_POOL,
       incumbents: shownIds,

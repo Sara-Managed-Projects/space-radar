@@ -290,6 +290,63 @@ export async function boot({ setStatus } = {}) {
     reducedMotion: () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
   });
   ctx.trip = createTrip(ctx);
+  // WHAT A TRIP STOP ADDS TO THE SCENE (2026-10-05): constellation figures that draw themselves
+  // (scene/figures3d.js), one measured map over the Earth (scene/earthoverlay.js) and the stop's
+  // own shutter. OFF THE FIRST VISIT: both modules are dynamic imports, made when a trip that
+  // needs one reaches its intro, or when a visitor picks an overlay in What to show; the overlay
+  // asks NASA GIBS for its one picture only then. The trip says what it wants in its state
+  // (ui/trip.js `sky`, `overlay`, `exposure`) and this is the one place that acts on it.
+  ctx.figures = null;
+  let figuresImport = null;
+  ctx.wantFigures = () => figuresImport || (figuresImport = import('./scene/figures3d.js')
+    .then((m) => { ctx.figures = m.createFigures3d(ctx); return ctx.figures; })
+    .catch((e) => { console.warn('the constellation figures did not load', e); figuresImport = null; return null; }));
+  ctx.earthOverlay = null;
+  let overlayImport = null;
+  let overlayAsked = null; // the id on the globe now, or wanted on it
+  let overlayOwn = null; // the visitor's own choice, which a trip suspends and leaving puts back
+  const tellOverlay = () => window.dispatchEvent(new CustomEvent('sr:overlay'));
+  const wantOverlay = () => overlayImport || (overlayImport = import('./scene/earthoverlay.js')
+    .then((m) => {
+      ctx.earthOverlay = m.createEarthOverlay({
+        earth: () => worlds.meshFor('earth'),
+        saveData: typeof navigator !== 'undefined' && shouldSaveData(navigator.connection),
+        onChange: tellOverlay,
+      });
+      return ctx.earthOverlay;
+    })
+    .catch((e) => { console.warn('the Earth overlays did not load', e); overlayImport = null; return null; }));
+  const applyOverlay = (id) => {
+    if (id === overlayAsked) return;
+    overlayAsked = id;
+    if (!id && !ctx.earthOverlay) { tellOverlay(); return; }
+    wantOverlay().then((o) => { if (o) o.set(overlayAsked); else tellOverlay(); });
+    tellOverlay();
+  };
+  /** What is on the globe: scene/earthoverlay.js state(), or its stand-in while the module loads. */
+  ctx.overlayState = () => (ctx.earthOverlay ? ctx.earthOverlay.state()
+    : { id: overlayAsked, status: overlayAsked ? 'loading' : 'off' });
+  ctx.setOverlay = (id) => {
+    overlayOwn = id || null;
+    const st = ctx.trip.state;
+    if (!st || st.phase === 'idle') applyOverlay(overlayOwn);
+  };
+  let skyAsked = '';
+  ctx.trip.onChange((st) => {
+    const tripping = st && st.phase !== 'idle';
+    if (tripping && st.wants && st.wants.figures) ctx.wantFigures();
+    if (tripping && st.wants && st.wants.overlay) wantOverlay();
+    const sky = tripping && st.sky ? st.sky : null;
+    const key = sky ? JSON.stringify(sky) : '';
+    if (key !== skyAsked) {
+      skyAsked = key;
+      if (sky) ctx.wantFigures().then((f) => { if (f && skyAsked === key) f.show(sky); });
+      else if (ctx.figures) ctx.figures.clear();
+    }
+    if (tripping && st.exposure) ctx.exposure.hold(st.exposure);
+    else if (ctx.exposure) ctx.exposure.release();
+    applyOverlay(tripping ? st.overlay || null : overlayOwn);
+  });
   // Sound (spec 0035): built now so the panels below can put its button in, and silent until a
   // visitor presses one. Creating it makes no AudioContext and fetches nothing (wireSound).
   ctx.audio = wireSound(ctx);
@@ -1443,6 +1500,19 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     if (heroes) heroes.update(t, { frameMs, latched: latch.latched, saveData });
     if (starfield && starfield.update) starfield.update(ctx.camera);
     if (ctx.stars3d) ctx.stars3d.update(ctx.camera, ctx.renderer);
+    // A sky stop's lens (ui/trip.js `zoom`): eased, so a wider figure opens out and never jumps.
+    {
+      const st = ctx.trip && ctx.trip.state;
+      const want = st && st.phase !== 'idle' && st.zoom > 0 ? st.zoom : 1;
+      if (ctx.camera.zoom !== want) {
+        // By the wall clock, not by the frame: a slow machine opens the lens in the same second.
+        const next = ctx.camera.zoom + (want - ctx.camera.zoom) * (1 - Math.exp(-Math.min(1000, Math.max(0, frameMs)) / 450));
+        ctx.camera.zoom = Math.abs(next - want) < 0.002 ? want : next;
+        ctx.camera.updateProjectionMatrix();
+      }
+    }
+    if (ctx.figures) ctx.figures.update(ctx.camera, ctx.renderer);
+    if (ctx.earthOverlay) ctx.earthOverlay.update();
     if (ctx.systems) {
       ctx.systems.setVisible(ctx.isLayerOn('systems'));
       ctx.systems.update(t, ctx.camera);
