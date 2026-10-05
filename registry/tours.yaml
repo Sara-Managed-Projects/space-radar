@@ -89,6 +89,9 @@
 #                 the edge" opens on the Sun from a light-year, which as a 1200 x 630 picture is a
 #                 field of star-ladder dots. scripts/shots.mjs reads it; check_registry.py refuses
 #                 a number that is not one of the trip's stops.
+#   hides         layer ids switched OFF while the trip runs and back on when it is left, for a
+#                 trip whose picture their marks would litter. Refused when the trip also needs
+#                 the layer on.
 #   orbits        planets (worlds.yaml rows that go round the Sun) whose paths, and a dot at each
 #                 one's true place, are drawn while the trip runs on the Sun stage
 #                 (scene/orbitrings.js). The dot is the one exaggeration, size only, and the frame
@@ -1426,3 +1429,460 @@ tours:
             Now it is the Earth that is in the way. The Moon moves into the Earth's shadow, and
             anyone on the night half of the planet can watch it happen, with nothing but their
             eyes.
+
+  # =============================================================================================
+  # THE CONSTELLATIONS (2026-10-05). Ivan: "a cool planetarium trip about all popular
+  # constellations with cool animation, so it will be like a cool movie", and of Stellarium: "I
+  # want to be better than they are when we are looking on the sky from earth".
+  #
+  # WHERE THE CAMERA IS. On the stellar rung, standing where the Sun is (`target: {sky: [ra,
+  # dec]}`, ui/trip.js SKY_NEAR_KM), so the sky on screen is the one seen from Earth: the 5 044
+  # naked-eye stars and the Milky Way of scene/starfield.js. Each stop turns the camera to a
+  # figure and scene/figures3d.js draws it in one stroke, star to star, then names it and its
+  # brightest stars. Stop 2 is the thing a dome cannot do: the same Orion, with the camera flown
+  # some nine hundred light-years to one side (`depth_ly`, `aside_deg`), where the lines still
+  # join the same stars at their measured distances and the hunter is gone.
+  #
+  # `exposure: deep` on the four stops the Milky Way runs through is the shutter of spec 0067,
+  # held for the stop and never stored; the card says it is a long exposure.
+  #
+  # FACTS. Distances are the map's own (HYG v4.4, site/data/stars3d.names.json, read 2026-10-05):
+  # Bellatrix 252 ly, Betelgeuse 498, Alnilam 1 977; Pollux 33.8, Castor 50.9. Castor's six stars:
+  # the Washington Double Star Catalog's sextuple (IAU WGSN notes). Antares's size: about 680 solar
+  # radii (Ohnaka et al. 2013, A&A 555, A24), 3.2 au against Mars's 1.5. The names other peoples
+  # gave: Osiris (Sah) for Orion, the Pyramid Texts; Las Tres Marias, the belt in Spanish-speaking
+  # America; Subaru and Matariki for the Pleiades (National Astronomical Observatory of Japan; Te
+  # Ara, the Encyclopedia of New Zealand, "Matariki"); the Weaver Girl and the Cowherd (the Qixi
+  # story, in the Shijing's "Da Dong" already); Maui's fish hook, Ka Makau Nui o Maui (Polynesian
+  # Voyaging Society star lines); the Emu in the Sky (Norris and Hamacher 2009, "The astronomy of
+  # Aboriginal Australia", IAU S260). The five flags: each country's own flag law. Thirteen
+  # constellations on the ecliptic: the IAU's 1930 boundaries (Delporte).
+  # =============================================================================================
+  - id: the-constellations
+    title: "The constellations"
+    blurb: "Twelve looks at the night sky, each figure drawn star by star, and once from the side. Leaving brings you back to Earth."
+    group: beyond
+    next: to-the-edge
+    requires: [stars]
+    # The marks of other layers are litter across a figure: every planet of another star is a
+    # green dot here, every nebula a lilac one (looked at 2026-10-05, the first render).
+    hides: [exoplanets, systems, exotics, deep-sky, galaxy]
+    stage: stellar
+    clock: as-found
+    og_stop: 1
+    stops:
+      - id: orion
+        target: {sky: [83.8, 0.0]}
+        zoom: 0.88
+        figures: [Ori]
+        figure_stars: 4
+        drift_deg: 3
+        drift_rate_deg_s: 0.25
+        chapter: "The northern winter sky"
+        card:
+          title: "Orion, the hunter"
+          body: >-
+            Three stars in a row and four more around them: the easiest figure in the sky to find,
+            and one that both halves of the world can see. The Greeks drew a hunter here. In Egypt
+            it was the god Osiris, and across Latin America the three belt stars are the Three
+            Marys.
+
+      - id: orion-from-the-side
+        target: {sky: [83.8, 0.0], depth_ly: 650}
+        distance_km: 10406803519838880
+        aside_deg: 55
+        figures: [Ori]
+        figure_stars: 4
+        drift_deg: 24
+        drift_rate_deg_s: 2
+        chapter: "The northern winter sky"
+        card:
+          title: "Orion, seen from the side"
+          body: >-
+            Now leave home. Bellatrix, the hunter's shoulder, is two hundred and fifty light-years
+            from us. Betelgeuse is five hundred, and the middle star of the belt nearly two
+            thousand. The hunter is a line of sight, not a place: from here, hundreds of
+            light-years to one side, nobody would draw him.
+
+      - id: taurus
+        target: {sky: [64.0, 20.0]}
+        figures: [Tau]
+        figure_stars: 2
+        drift_deg: 3
+        drift_rate_deg_s: 0.25
+        chapter: "The northern winter sky"
+        card:
+          title: "The bull and the Seven Sisters"
+          body: >-
+            Follow Orion's belt up and to the right and you reach the orange eye of the bull,
+            Aldebaran, and past it a small knot of blue stars. They are the Pleiades, a real
+            family of stars that were born together. Japan calls them Subaru, and for Māori their
+            return before dawn, as Matariki, begins the new year.
+
+      - id: gemini
+        target: {sky: [104.0, 23.0]}
+        figures: [Gem]
+        figure_stars: 2
+        drift_deg: 3
+        drift_rate_deg_s: 0.25
+        chapter: "The northern winter sky"
+        card:
+          title: "The twins"
+          body: >-
+            Two bright stars side by side, Castor and Pollux, are the heads of twin brothers
+            standing in the Milky Way. They only look like twins. Pollux is an orange giant
+            thirty-four light-years away. Castor is fifty-one, and is really six stars circling
+            one another.
+
+      - id: leo
+        target: {sky: [160.0, 17.0]}
+        figures: [Leo]
+        figure_stars: 2
+        drift_deg: 3
+        drift_rate_deg_s: 0.25
+        chapter: "The sky of spring"
+        card:
+          title: "The lion"
+          body: >-
+            A backwards question mark for the mane and a triangle for the hindquarters: the lion is
+            one of the few figures that looks like its name. The bright star at its chest is
+            Regulus, the little king. The Sun passes right beside it every August.
+
+      - id: plough
+        target: {sky: [186.0, 69.0]}
+        zoom: 0.78
+        figures: [UMa, UMi]
+        figure_stars: 2
+        drift_deg: 3
+        drift_rate_deg_s: 0.25
+        chapter: "Round the pole"
+        card:
+          title: "The Plough, and the way north"
+          body: >-
+            Seven stars that Britain calls the Plough, America the Big Dipper and much of Europe a
+            wagon: they are the back and tail of the Great Bear. Take the two stars at the end of
+            the bowl and follow them up, five times their own gap. That lone star is Polaris, and it
+            sits almost exactly over the Earth's north pole.
+
+      - id: cassiopeia
+        target: {sky: [15.0, 62.0]}
+        figures: [Cas]
+        figure_stars: 3
+        drift_deg: 3
+        drift_rate_deg_s: 0.25
+        chapter: "Round the pole"
+        card:
+          title: "Cassiopeia, across the pole"
+          body: >-
+            Go straight on past Polaris, as far again, and you meet a letter W of five stars:
+            Cassiopeia, a queen in the Greek story. She and the Plough sit on opposite sides of the
+            pole and swing round it like the two ends of a seesaw, so when one is low the other is
+            high.
+
+      - id: summer-triangle
+        target: {sky: [296.0, 27.0]}
+        zoom: 0.85
+        figures: [Lyr, Cyg, Aql]
+        figure_stars: 1
+        exposure: deep
+        drift_deg: 3
+        drift_rate_deg_s: 0.25
+        chapter: "The northern summer sky"
+        card:
+          title: "The Summer Triangle"
+          body: >-
+            Three bright stars from three different figures: Vega in the Lyre, Deneb in the Swan,
+            Altair in the Eagle. The pale band running between them is the Milky Way, shown as a
+            long exposure would catch it. In China it is the Silver River, which parts the Weaver
+            Girl, Vega, from the Cowherd, Altair.
+
+      - id: scorpius
+        target: {sky: [253.0, -32.0]}
+        zoom: 0.9
+        figures: [Sco]
+        figure_stars: 2
+        exposure: deep
+        drift_deg: 3
+        drift_rate_deg_s: 0.25
+        chapter: "The southern sky"
+        card:
+          title: "The scorpion"
+          body: >-
+            A red heart, and a long curved tail with a sting at the end. The heart is Antares, a
+            star so large that it would swallow the orbit of Mars. In the Greek story this is the
+            scorpion that killed Orion, which is why the two are never in the sky together. In
+            Hawaii the same stars are the fish hook of Maui.
+
+      - id: sagittarius
+        target: {sky: [279.0, -28.0]}
+        figures: [Sgr]
+        figure_stars: 2
+        exposure: deep
+        drift_deg: 3
+        drift_rate_deg_s: 0.25
+        chapter: "The southern sky"
+        card:
+          title: "The teapot, and the centre of the galaxy"
+          body: >-
+            The archer's brightest stars make a teapot, and the Milky Way rises from its spout like
+            steam. Look just past the spout and you are looking at the centre of our galaxy, about
+            twenty-seven thousand light-years away, hidden behind dust. Every star named on this
+            trip is in our own small corner of it.
+
+      - id: southern-cross
+        target: {sky: [196.0, -52.0]}
+        zoom: 0.82
+        figures: [Cru, Cen]
+        figure_stars: 2
+        exposure: deep
+        drift_deg: 3
+        drift_rate_deg_s: 0.25
+        chapter: "The southern sky"
+        card:
+          title: "The Southern Cross"
+          body: >-
+            The smallest of the eighty-eight constellations, and the best known south of the
+            equator. Australia, New Zealand, Brazil, Papua New Guinea and Samoa all fly it on their
+            flags. The two bright stars beside it are the Pointers, and the nearer is Alpha Centauri,
+            the closest star system to the Sun. The dark patch at the foot of the Cross is the head
+            of the Emu that Aboriginal Australians see in the Milky Way.
+
+      - id: zodiac
+        target: {sky: [256.0, -20.0]}
+        zoom: 0.7
+        figures: [Sco, Oph, Sgr, Lib]
+        figure_stars: 0
+        ecliptic: true
+        drift_deg: 8
+        drift_rate_deg_s: 0.5
+        chapter: "The Sun's road"
+        card:
+          title: "The zodiac"
+          body: >-
+            The dashed line is the path the Sun takes across the stars in a year. The Moon and the
+            planets never stray far from it, because the Solar System is nearly flat. The figures
+            along it are the zodiac. Babylonian sky watchers counted twelve; the line really crosses
+            thirteen, and the one left out is here: Ophiuchus, the serpent bearer.
+
+  # =============================================================================================
+  # THE LIVING EARTH (2026-10-05). Ivan: "a trip about earth and its weather ... how other planets
+  # and space affect it, how water flows affect it, how nature affects it ... pollution, plankton,
+  # cycles of the world ... real storms with lightning, real northern lights".
+  #
+  # WHAT IS REAL IN IT. Stops 4 and 10 are today's: the clouds (NASA GIBS, three weather
+  # satellites), the named storms (GDACS), the lightning (NOAA) and the aurora forecast (NOAA
+  # OVATION), each under the sentence its own module writes about its age (`live_note:`). Stops 5 to
+  # 8 lay one measured map over the globe (`overlay:`, registry/overlays.yaml), with its legend,
+  # the day it is of and whose data it is, generated under the card. Stops 1 and 2 are computed:
+  # the Sun's true direction at the two solstices of 2027. The rest is the map as it always is.
+  #
+  # THE TWO SOLSTICES ARE WRITTEN DATES (2027-06-21 and 2027-12-22, USNO "Earth's Seasons"), because
+  # registry/events.yaml has no solstice to refer to; the picture is the same at any year's, and
+  # the frame prints the instant. `over: [lat, lon]` puts the camera above the place a stop is about.
+  #
+  # FACTS. Tilt 23.44 degrees (IAU). Three quarters of the air's mass below about 11 km (US
+  # Standard Atmosphere 1976); 11 km on a 220 mm football is 0.19 mm, two sheets of paper. GOES
+  # and Himawari full discs every ten minutes (NOAA, JMA). About 86 % of evaporation is from the
+  # sea (Trenberth et al. 2007, J. Hydrometeorology 8, 758). Phytoplankton make about half of the
+  # planet's photosynthesis (Field et al. 1998, Science 281, 237). Arctic sea ice: about 15
+  # million km2 at the March maximum, Europe 10.2; the September minimum has fallen by more than a
+  # third since 1979 (NSIDC Sea Ice Index). Saharan dust and the Amazon: Yu et al. 2015, GRL 42,
+  # 1984. Tides and the slowing day: Stephenson, Morrison and Hohenkerk 2016, Proc. R. Soc. A 472.
+  # The Moon and the tilt: Laskar, Joutel and Robutel 1993, Nature 361, 615, which is why the card
+  # says "is thought to". Jupiter, 318 Earth masses; shield or not: Horner and Jones 2008-2010,
+  # Int. J. Astrobiology, who found it does both, which is what the card says. The farthest people
+  # have been: Apollo 13, 400 171 km (NASA).
+  # =============================================================================================
+  - id: the-living-earth
+    title: "The living Earth"
+    blurb: "Tilt, air, today's storms, the sea's heat, plankton, ice, dust and the aurora: one planet's cycles, with today's data. This trip moves the clock."
+    group: earth-orbit
+    next: chasing-the-solar-eclipse
+    requires: [worlds, storms, lightning, aurora]
+    stage: earth
+    clock: as-found
+    og_stop: 5
+    stops:
+      - id: tilt
+        target: {world: earth}
+        frame_radii: 3.4
+        key_light_deg: 90
+        time: 2027-06-21T12:00:00Z
+        rate: 1800
+        drift_deg: 0
+        chapter: "The Sun and the seasons"
+        card:
+          title: "A tilted world"
+          body: >-
+            The Earth leans over by twenty-three degrees, and keeps leaning the same way all year.
+            Here the north is tipped towards the Sun: the Arctic has daylight round the clock, and
+            the line between day and night crosses the map at a slant. That lean, and nothing else,
+            makes the seasons.
+
+      - id: half-a-year-on
+        target: {world: earth}
+        frame_radii: 3.4
+        key_light_deg: 90
+        time: 2027-12-22T12:00:00Z
+        rate: 1800
+        drift_deg: 0
+        chapter: "The Sun and the seasons"
+        card:
+          title: "Half a year on"
+          body: >-
+            Six months later the Earth is on the far side of the Sun, still leaning the same way,
+            so now it is the south that faces the light. Antarctica has the midnight Sun and the
+            Arctic is dark all day. The Sun sends the same energy as before; the tilt decides who
+            gets it.
+
+      - id: air
+        target: {world: earth}
+        frame_radii: 1.45
+        key_light_deg: 150
+        time: now
+        chapter: "Air and water"
+        card:
+          title: "The thin blue line"
+          body: >-
+            Everything we call weather happens inside that blue line. Three quarters of the air is
+            in the first eleven kilometres, a layer so thin that on a globe the size of a football
+            it would be about as thick as two sheets of paper. It is the only air there is.
+
+      - id: weather
+        target: {world: earth}
+        over: [16, -78]
+        frame_radii: 2.6
+        time: now
+        live_note: clouds
+        drift_deg: 20
+        drift_rate_deg_s: 2
+        chapter: "Air and water"
+        card:
+          title: "Today's weather"
+          body: >-
+            These are today's clouds, from weather satellites that take a picture every ten
+            minutes. A tropical storm that has a name today is marked with it. Where thunderstorms
+            are in view over the Americas, the flashes are lightning at the rate it was measured in
+            the last quarter of an hour, drawn larger than life.
+
+      - id: ocean
+        target: {world: earth}
+        over: [32, -48]
+        frame_radii: 2.6
+        overlay: sea-temperature
+        drift_deg: 20
+        drift_rate_deg_s: 2
+        chapter: "Air and water"
+        card:
+          title: "The sea moves the heat"
+          body: >-
+            The colours are the temperature of the sea, measured from orbit. Water warmed in the
+            tropics does not stay there: currents such as the Gulf Stream carry it towards the
+            poles, and it gives up heat and water to the air on the way. Most of the water in the
+            air was lifted off a warm sea.
+
+      - id: plankton
+        target: {world: earth}
+        over: [5, -28]
+        frame_radii: 2.8
+        overlay: chlorophyll
+        drift_deg: 20
+        drift_rate_deg_s: 2
+        chapter: "Life"
+        card:
+          title: "The sea in bloom"
+          body: >-
+            Green and yellow are water rich in plankton, plants too small to see that drift in the
+            sunlit top of the sea. They bloom where currents bring food up from below. Between them
+            they do about half of all the growing on the planet, and with the forests they breathe
+            its carbon in and out every year.
+
+      - id: ice
+        target: {world: earth}
+        over: [80, -20]
+        frame_radii: 2.4
+        overlay: sea-ice
+        drift_deg: 20
+        drift_rate_deg_s: 2
+        chapter: "Life"
+        card:
+          title: "The ice breathes"
+          body: >-
+            The bright colours are sea frozen over. Each winter the ice around the north pole grows
+            until it covers more than the whole of Europe, and each summer about two thirds of it
+            melts again. The summer ice has shrunk by more than a third since satellites began to
+            watch it.
+
+      - id: haze
+        target: {world: earth}
+        over: [18, 15]
+        frame_radii: 2.8
+        overlay: aerosol
+        drift_deg: 20
+        drift_rate_deg_s: 2
+        chapter: "Life"
+        card:
+          title: "Dust, smoke and us"
+          body: >-
+            This is everything fine enough to hang in the air: desert dust, smoke from fires, salt
+            from the sea, and the haze of cities and industry. Dust from the Sahara crosses the
+            Atlantic and feeds the Amazon. The gas that warms the planet most, carbon dioxide, does
+            not show here at all. It is invisible, and it is everywhere.
+
+      - id: moon
+        target: {world: moon}
+        distance_km: 12000
+        behind: earth
+        time: now
+        rate: 60
+        chapter: "From outside"
+        card:
+          title: "The Moon's pull"
+          body: >-
+            The Moon pulls on the sea, and the sea rises towards it and on the far side too, so
+            most coasts have two high tides a day. Over billions of years the same pull has slowed
+            the Earth's spin. And the Moon is thought to hold the Earth's tilt steady, which keeps
+            the seasons mild.
+
+      - id: aurora
+        target: {world: earth}
+        frame_radii: 2.3
+        key_light_deg: 165
+        time: now
+        needs_layer: aurora
+        live_note: aurora
+        chapter: "From outside"
+        card:
+          title: "The Sun's wind"
+          body: >-
+            The Sun blows a thin wind of charged particles past us all the time. The Earth's
+            magnetic field turns most of it aside and funnels some down around the poles, where it
+            makes the upper air glow. The green rings are where the aurora is expected in the next
+            hour, from today's forecast.
+
+      - id: jupiter
+        target: {world: jupiter}
+        stage: jupiter
+        frame_radii: 4
+        chapter: "From outside"
+        card:
+          title: "Jupiter, bodyguard or not"
+          body: >-
+            Jupiter has three hundred times the mass of the Earth, and its pull rules the traffic
+            of comets and asteroids. It throws many of them out of the Solar System before they can
+            reach us, and it also sends some our way. Bodyguard or troublemaker: the sums are still
+            being done.
+
+      - id: home
+        target: {world: earth}
+        frame_radii: 26
+        behind: moon
+        key_light_deg: 60
+        time: now
+        chapter: "From outside"
+        card:
+          title: "One small world"
+          body: >-
+            From here the storms, the currents, the ice and the forests are one thin skin on one
+            small world. Nothing we know of anywhere else has all of them. The Moon, four hundred
+            thousand kilometres off, is the farthest any person has ever been from it.

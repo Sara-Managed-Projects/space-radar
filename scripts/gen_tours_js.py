@@ -47,7 +47,7 @@ from _exo_ids import read_rows  # noqa: E402
 # scripts/shots.mjs reads to take the preview picture at a stop other than the first; `orbits` is
 # what ui/trip.js hands scene/orbitrings.js.
 TRIP_FIELDS = ("id", "title", "blurb", "pacing", "requires", "min_stops", "stage", "clock", "group",
-               "next", "requires_observer", "og_stop", "orbits")
+               "next", "requires_observer", "og_stop", "orbits", "hides")
 # A `groups:` row: the id a trip names, the heading the picker prints, and where it sits.
 GROUP_FIELDS = ("id", "display", "order")
 STOP_FIELDS = (
@@ -82,6 +82,22 @@ STOP_FIELDS = (
     # Spec 0040: the dashed ring at Mercury's distance on a star system's stage, for scale. Drawn by
     # scene/systems.js while this stop is up; check_registry.py allows it only on a system stage.
     "mercury_ring",
+    # 2026-10-05, what a stop adds to the scene. `figures`, `figure_stars`, `ecliptic`: the
+    # constellation figures scene/figures3d.js draws in one stroke, how many of each figure's
+    # brightest stars it names, and the Sun's path. `aside_deg`: on a `{sky:, depth_ly:}` target,
+    # how far round from the line to the Sun the camera stands. `zoom`: the stop's lens, under 1 a wider angle. `exposure`: the shutter of spec
+    # 0067, held while the stop is up. `overlay`: a registry/overlays.yaml map over the Earth.
+    # `over`: the place on the Earth the camera stands above. `live_note`: which live module's
+    # own sentence goes under the card (clouds, aurora, lightning).
+    "figures",
+    "figure_stars",
+    "ecliptic",
+    "aside_deg",
+    "zoom",
+    "exposure",
+    "overlay",
+    "over",
+    "live_note",
     "card",
 )
 

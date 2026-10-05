@@ -908,6 +908,32 @@ export const COPY = {
     creditLead: 'Picture: ',
     creditTail: ' \u00b7 {licence}, edges faded and sky darkened by us',
   },
+  // Earth data overlays (registry/overlays.yaml, scene/earthoverlay.js): one measured map over the
+  // globe, with its legend, the day it is of and whose data it is.
+  overlay: {
+    panelTitle: 'Earth data',
+    none: 'None',
+    loading: 'Asking NASA for the picture.',
+    failed: 'That picture did not arrive. The globe is as it was.',
+    noEarth: 'Shown on the Earth, when it is in view.',
+    // {what} is the registry row's own sentence; {date} "3 October 2026" or "June 2026".
+    line: '{what} {dated} {made} {credit}',
+    dated: { daily: 'The picture is of {date}.', monthly: 'The picture is the mean of {date}.' },
+    made: {
+      measured: 'Measured from orbit; clear where nothing was seen.',
+      analysed: 'Measured, with the gaps filled in.',
+      modelled: 'A weather model fed with measurements, not a direct picture.',
+    },
+    credit: 'Data: {credit}, through NASA GIBS. A map of data, not a photograph.',
+    legendAria: '{title}, from {low} to {high} {unit}',
+    legendHigh: '{high} {unit}',
+  },
+  // Constellation figures that draw themselves (scene/figures3d.js): the line under a stop.
+  figures: {
+    line: 'The figures are a tradition, drawn by us; the stars at their corners are at their measured distances.',
+    lineSky: 'The figures are a tradition, drawn by us, over the stars as they are seen from Earth.',
+    ecliptic: 'The dashed line is the ecliptic, the Sun\u2019s path through the year.',
+  },
   nextList: {
     // Two rows can name different objects the same way -- CelesTrak calls dozens of stages "SL-8
     // R/B" -- and two identical rows read as a bug. The catalogue number tells them apart.

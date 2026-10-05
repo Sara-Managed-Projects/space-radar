@@ -193,7 +193,26 @@ def time_relative(text: str) -> str | None:
     return None
 
 
-TOUR_TARGET_KEYS = ("record", "layer", "world", "site", "observer")
+TOUR_TARGET_KEYS = ("record", "layer", "world", "site", "observer", "sky")
+# --- what a stop adds to the scene (2026-10-05) ---------------------------------------------------
+# `target: {sky: [ra, dec]}` looks at the sky from where the Sun is (ui/trip.js SKY_NEAR_KM), and
+# only the stellar rung has the Sun at its centre and the sky sphere round it. The figures are the
+# ids of site/data/constellations.lines.json (d3-celestial's, the IAU's three letters, with the
+# Serpent in one piece); written out here because the validator runs in trees that carry no
+# site/data. Celestial north is the camera's up on such a stop, so a target within five degrees
+# of a pole has no "sideways" for the rig to turn in.
+TOUR_SKY_STAGE = "stellar"
+TOUR_SKY_MAX_DEC = 85
+TOUR_SKY_MAX_DEPTH_LY = 5000
+TOUR_SKY_MAX_ASIDE_DEG = 120
+TOUR_FIGURES = frozenset("""And Ant Aps Aql Aqr Ara Ari Aur Boo CMa CMi CVn Cae Cam Cap Car Cas Cen Cep Cet Cha Cir Cnc Col Com CrA CrB Crt Cru Crv Cyg Del Dor Dra Equ Eri For Gem Gru Her Hor Hya Hyi Ind LMi Lac Leo Lep Lib Lup Lyn Lyr Men Mic Mon Mus Nor Oct Oph Ori Pav Peg Per Phe Pic PsA Psc Pup Pyx Ret Scl Sco Sct Ser Ser Sex Sge Sgr Tau Tel TrA Tri Tuc UMa UMi Vel Vir Vol Vul""".split())
+TOUR_MAX_FIGURES = 6
+TOUR_MAX_FIGURE_STARS = 5
+TOUR_ZOOM_MIN = 0.6
+TOUR_EXPOSURES = {"eye", "camera", "deep"}
+TOUR_LIVE_NOTES = {"clouds", "aurora", "lightning"}
+# registry/overlays.yaml's rows, id -> world, filled by main() before the trips are read.
+TOUR_OVERLAYS: dict = {}
 TOUR_PACING = {"auto", "reader"}
 TOUR_CLOCKS = {"as-found", "live", "freeze"}
 TOUR_DRIFTS = {"toward-light", "away", "none"}
@@ -558,6 +577,26 @@ def check_tours(oddities_doc: dict, layer_ids: set, world_ids: set, site_ids: se
             if lid not in layer_ids:
                 fail(where, f"requires layer `{lid}`, which has no layers.yaml row")
 
+        # `hides:` (2026-10-05): layers switched OFF while the trip runs. A layer the trip also
+        # needs on is two answers to one question, and so is one a stop is aimed into.
+        hides = tour.get("hides")
+        if hides is not None:
+            if not isinstance(hides, list) or not hides:
+                fail(where, "`hides:` must be a non-empty list of layer ids")
+            else:
+                stop_layers = set()
+                for s in (tour.get("stops") or []):
+                    if isinstance(s, dict):
+                        stop_layers.add(s.get("needs_layer"))
+                        if isinstance(s.get("target"), dict):
+                            stop_layers.add(s["target"].get("layer"))
+                for lid in hides:
+                    if lid not in layer_ids:
+                        fail(where, f"hides layer `{lid}`, which has no layers.yaml row")
+                    elif lid in requires or lid in stop_layers:
+                        fail(where, f"hides layer `{lid}` and also needs it on: a stop would fly to "
+                                    f"something the trip itself switched off")
+
         # Freezing the clock flips it from live to scrub, which drops glyph re-propagation from
         # every 100 ms to EVERY FRAME (site/js/main.js). With `active` on that is eleven thousand
         # SGP4 propagations per frame.
@@ -652,6 +691,146 @@ def check_tours(oddities_doc: dict, layer_ids: set, world_ids: set, site_ids: se
         for n, stop in enumerate(stops, start=1):
             check_tour_stop(tour, stop, n, seen_stops, defaults, unreachable,
                             layer_ids, world_ids, site_ids, glossary)
+
+
+def check_sky_stop(stop: dict, where: str, target: dict, flown_on) -> None:
+    """`target: {sky: [ra, dec]}` (2026-10-05): a look at the sky from where the Sun is, and with
+    `depth_ly` a look at how deep it is. A direction is not a record, so everything a record would
+    have vouched for is checked here."""
+    value = target.get("sky")
+    ok = isinstance(value, list) and len(value) == 2 and all(is_number(v) for v in value)
+    if not ok:
+        fail(where, f"`sky: {value!r}` must be [right ascension, declination] in degrees, two numbers")
+        return
+    ra, dec = value
+    if not 0 <= ra < 360:
+        fail(where, f"`sky:` right ascension {ra:g} is outside 0 to 360 degrees")
+    if abs(dec) > TOUR_SKY_MAX_DEC:
+        fail(where, f"`sky:` declination {dec:g} is within {90 - TOUR_SKY_MAX_DEC} degrees of a pole: "
+                    f"celestial north is the camera's up on a sky stop, and at the pole the rig has "
+                    f"no sideways to turn in. Aim beside the pole")
+    if flown_on != TOUR_SKY_STAGE:
+        fail(where, f"a `sky:` target on the `{flown_on}` stage: the camera stands where the Sun is and "
+                    f"looks out, which only the `{TOUR_SKY_STAGE}` rung has at its centre")
+    extra = sorted(set(target) - {"sky", "depth_ly"})
+    if extra:
+        fail(where, f"`target:` has {extra} beside `sky:`; a sky target takes `depth_ly` and nothing else")
+    depth = target.get("depth_ly")
+    if depth is None:
+        if "distance_km" in stop:
+            fail(where, "`distance_km` on a `sky:` target without `depth_ly`: the camera stands where the "
+                        "Sun is, so the sky is the one seen from Earth, and a distance would move it off")
+        if "aside_deg" in stop:
+            fail(where, "`aside_deg` on a `sky:` target without `depth_ly`: there is no depth to stand "
+                        "aside from")
+        return
+    if not is_number(depth) or not 0 < depth <= TOUR_SKY_MAX_DEPTH_LY:
+        fail(where, f"`depth_ly: {depth!r}` must be a number of light-years up to {TOUR_SKY_MAX_DEPTH_LY}: "
+                    f"beyond that the stars of a figure are behind the camera, not in front of it")
+    if not is_number(stop.get("distance_km")):
+        fail(where, "`depth_ly` without `distance_km`: a look at the depth says how far from the point "
+                    "the camera stands")
+    aside = stop.get("aside_deg")
+    if not is_number(aside) or not 0 < abs(aside) <= TOUR_SKY_MAX_ASIDE_DEG:
+        fail(where, f"`aside_deg: {aside!r}` must be a number of degrees, not zero, up to "
+                    f"{TOUR_SKY_MAX_ASIDE_DEG} either way: at zero the camera is on the line from the "
+                    f"Sun and the depth cannot be seen")
+
+
+def clock_left_elsewhere(tour: dict, n: int):
+    """The id of the stop that left the clock at a written instant or an event before stop `n`, with
+    no `time: now` since, or None. ui/trip.js keeps the clock where a timed stop put it."""
+    last = None
+    for prev in (tour.get("stops") or [])[: n - 1]:
+        if isinstance(prev, dict) and "time" in prev:
+            last = None if prev.get("time") == "now" else prev.get("id")
+    return last
+
+
+def check_stop_extras(tour: dict, stop: dict, n: int, where: str, kind: str, value) -> None:
+    """What a stop adds to the scene (2026-10-05): figures, the ecliptic, a shutter, an overlay, a
+    place to stand over, a live sentence. Each is a promise about the picture, so each is refused
+    where the picture could not keep it."""
+    sky = kind == "sky"
+    figures = stop.get("figures")
+    if figures is not None:
+        if not isinstance(figures, list) or not figures:
+            fail(where, "`figures:` must be a non-empty list of constellation ids")
+        else:
+            for fid in figures:
+                if fid not in TOUR_FIGURES:
+                    fail(where, f"`figures:` names `{fid}`, which is not a figure in "
+                                f"site/data/constellations.lines.json; the stop would draw nothing "
+                                f"where it promised one")
+            if len(set(map(str, figures))) != len(figures):
+                fail(where, "`figures:` names a figure twice")
+            if len(figures) > TOUR_MAX_FIGURES:
+                fail(where, f"`figures:` names {len(figures)} figures, over {TOUR_MAX_FIGURES}: each is "
+                            f"drawn in turn, and the stop would end before the last stroke")
+        if not sky:
+            fail(where, "`figures:` on a stop that is not a `sky:` target: the figures are drawn round "
+                        "the camera's own sky, and no other stop looks at it")
+    stars = stop.get("figure_stars")
+    if stars is not None:
+        if isinstance(stars, bool) or not isinstance(stars, int) or not 0 <= stars <= TOUR_MAX_FIGURE_STARS:
+            fail(where, f"`figure_stars: {stars!r}` must be a whole number from 0 to "
+                        f"{TOUR_MAX_FIGURE_STARS}: eight names is all the screen holds")
+        if figures is None:
+            fail(where, "`figure_stars` without `figures:`: there is no figure whose stars to name")
+    if "ecliptic" in stop:
+        if stop["ecliptic"] is not True:
+            fail(where, f"`ecliptic: {stop['ecliptic']!r}` is `true` or left out")
+        elif not sky:
+            fail(where, "`ecliptic: true` on a stop that is not a `sky:` target: the line is drawn on "
+                        "the camera's own sky")
+    zoom = stop.get("zoom")
+    if zoom is not None:
+        if not is_number(zoom) or not TOUR_ZOOM_MIN <= zoom <= 1:
+            fail(where, f"`zoom: {zoom!r}` must be a number from {TOUR_ZOOM_MIN} to 1: under 1 is a wider "
+                        f"angle, and wider than that the sky at the edges is stretched out of shape")
+        if not sky:
+            fail(where, "`zoom:` on a stop that is not a `sky:` target: everything else is framed by "
+                        "distance, and a lens would change how big a model looks")
+    exposure = stop.get("exposure")
+    if exposure is not None:
+        if exposure not in TOUR_EXPOSURES:
+            fail(where, f"`exposure: {exposure}` is not one of {sorted(TOUR_EXPOSURES)}")
+        if not sky:
+            fail(where, "`exposure:` on a stop that is not a `sky:` target: the shutter is the sky's")
+    stale = clock_left_elsewhere(tour, n)
+    own_time = stop.get("time", "now")
+    overlay = stop.get("overlay")
+    if overlay is not None:
+        if overlay not in TOUR_OVERLAYS:
+            fail(where, f"`overlay: {overlay}` has no registry/overlays.yaml row")
+        elif not (kind == "world" and value == TOUR_OVERLAYS[overlay]):
+            fail(where, f"`overlay: {overlay}` is a map of `{TOUR_OVERLAYS[overlay]}`, and this stop "
+                        f"targets `{kind}: {value}`; the map would be on a world out of shot")
+    over = stop.get("over")
+    if over is not None:
+        ok = isinstance(over, list) and len(over) == 2 and all(is_number(v) for v in over) \
+            and -90 <= over[0] <= 90 and -180 <= over[1] <= 180
+        if not ok:
+            fail(where, f"`over: {over!r}` must be [latitude, longitude] in degrees, north and east positive")
+        if not (kind == "world" and value == "earth"):
+            fail(where, "`over:` on a stop that is not `target: {world: earth}`: it is a place on the Earth")
+    live = stop.get("live_note")
+    if live is not None:
+        if live not in TOUR_LIVE_NOTES:
+            fail(where, f"`live_note: {live}` is not one of {sorted(TOUR_LIVE_NOTES)}")
+        if not (kind == "world" and value == "earth"):
+            fail(where, "`live_note:` on a stop that is not `target: {world: earth}`: the sentence is "
+                        "about the Earth's own weather")
+    for label, has in (("overlay", overlay is not None), ("live_note", live is not None)):
+        if not has:
+            continue
+        if own_time != "now":
+            fail(where, f"`{label}:` on a stop with `time: {own_time}`: the picture is of this week, and "
+                        f"the stop shows another day. Write `time: now` or leave it out")
+        elif "time" not in stop and stale:
+            fail(where, f"`{label}:` after stop `{stale}` moved the clock, with no `time: now` since: "
+                        f"this week's picture would be drawn under another day's Sun. Give this stop, "
+                        f"or one before it, `time: now`")
 
 
 def check_observer_stop(tour: dict, stop: dict, where: str, value) -> None:
@@ -855,6 +1034,8 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
             fail(where, f"targets site `{value}`, which has no sites.yaml row")
     elif kind == "observer":
         check_observer_stop(tour, stop, where, value)
+    elif kind == "sky":
+        check_sky_stop(stop, where, target, flown_on)
     elif kind == "layer":
         if value not in layer_ids:
             fail(where, f"targets layer `{value}`, which has no layers.yaml row")
@@ -914,6 +1095,8 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
             fail(where, f"`behind: {behind}` is drawn nearer and larger than it is from the "
                         f"`{flown_on}` stage, so pointing the camera along the true direction to it "
                         f"would not put it in the picture")
+
+    check_stop_extras(tour, stop, n, where, kind, value)
 
     needs = stop.get("needs_layer")
     if needs is not None and needs not in layer_ids:
@@ -2952,6 +3135,105 @@ def check_weather(world_ids: set, layers: list) -> list:
     return rows_
 
 
+OVERLAY_FIELDS = ("id", "world", "title", "what", "layer", "date", "class", "bytes", "legend", "credit", "colormap")
+OVERLAY_CLASSES = {"measured", "analysed", "modelled"}
+OVERLAY_TITLE_MAX = 40
+OVERLAY_LAYER = re.compile(r"^[A-Za-z0-9_.-]+$")
+
+
+def check_overlays(world_ids: set) -> list:
+    """registry/overlays.yaml (2026-10-05): every map that can be laid over a world is somebody's
+    data, fetched from somebody's server, in somebody's colours. A row may not reach a screen
+    without its measured CORS, its legend, its class and its credit."""
+    path = REG / "overlays.yaml"
+    if not path.exists():
+        return []
+    doc = load("overlays.yaml")
+    service = doc.get("service") or {}
+    where = "overlays.yaml[service]"
+    if not str(service.get("wms") or "").startswith("https://"):
+        fail(where, f"wms {service.get('wms')!r} must be https: a page served over https cannot fetch it otherwise")
+    if not WEATHER_CORS.match(str(service.get("cors") or "")):
+        fail(where, f"cors {service.get('cors')!r} must be the header the host really sent, "
+                    f"`access-control-allow-origin: <value>`: a host without it cannot be a texture")
+    if not STAR_SOURCE.match(str(service.get("source") or "")):
+        fail(where, f"source {service.get('source')!r} must be `URL (read YYYY-MM-DD)`")
+    for key in ("width", "height", "blank_bytes"):
+        v = service.get(key)
+        if isinstance(v, bool) or not isinstance(v, int) or v <= 0:
+            fail(where, f"{key} {v!r} must be a positive integer")
+    credits_path = ROOT / "CREDITS.md"
+    credits = credits_path.read_text(encoding="utf-8") if credits_path.exists() else ""
+    section = credits_section(credits, 4) or ""
+    rows_ = rows(doc, "overlays", "overlays.yaml")
+    seen = set()
+    for r in rows_:
+        if not isinstance(r, dict):
+            fail("overlays.yaml", f"a row that is not a mapping: {r!r}")
+            continue
+        rid = r.get("id")
+        where = f"overlays.yaml[{rid}]"
+        missing = [k for k in OVERLAY_FIELDS if r.get(k) in (None, "", [])]
+        if missing:
+            fail(where, f"no {', '.join(missing)} -- a map over the globe says what it is, whose it is and "
+                        f"what its colours mean")
+            continue
+        if rid in seen:
+            fail(where, "the id is used twice")
+        seen.add(rid)
+        if r["world"] not in world_ids:
+            fail(where, f"world {r['world']!r} is not a worlds.yaml row")
+        if not OVERLAY_LAYER.match(str(r["layer"])):
+            fail(where, f"layer {r['layer']!r} is not a GIBS layer id; it goes into a URL as it is")
+        if len(str(r["title"])) > OVERLAY_TITLE_MAX:
+            fail(where, f"title is {len(str(r['title']))} characters, over {OVERLAY_TITLE_MAX}: it is one "
+                        f"line of a menu and of the legend")
+        what = str(r["what"])
+        if not what.endswith(".") or len(what) > MAX_SENTENCE:
+            fail(where, f"`what` must be one sentence of at most {MAX_SENTENCE} characters, ending in a full stop")
+        if re.search(r"\b(19|20)\d{2}\b", what):
+            fail(where, "`what` names a year: the code prints the date the picture is of")
+        for label in ("title", "what", "credit"):
+            if "--" in str(r[label]):
+                fail(where, f"the {label} has two hyphens for a dash; write a comma")
+        if r["class"] not in OVERLAY_CLASSES:
+            fail(where, f"class {r['class']!r} must be one of {sorted(OVERLAY_CLASSES)}: the legend says "
+                        f"whether the map was measured, filled in or modelled")
+        date = r["date"]
+        rule = date.get("rule") if isinstance(date, dict) else None
+        lag_key = {"daily": "lag_days", "monthly": "lag_months"}.get(rule)
+        if lag_key is None:
+            fail(where, f"date rule {rule!r} must be `daily` or `monthly`")
+        else:
+            lag = date.get(lag_key)
+            if isinstance(lag, bool) or not isinstance(lag, int) or lag < 1:
+                fail(where, f"{lag_key} {lag!r} must be a whole number, 1 or more: the newest picture is "
+                            f"never made yet, and asking for it returns an empty one")
+            tries = date.get("tries")
+            if isinstance(tries, bool) or not isinstance(tries, int) or not 0 <= tries <= 6:
+                fail(where, f"tries {tries!r} must be a whole number from 0 to 6")
+            extra = sorted(set(date) - {"rule", lag_key, "tries"})
+            if extra:
+                fail(where, f"date has {extra}, which a `{rule}` rule does not read")
+        legend = r["legend"]
+        stops = legend.get("stops") if isinstance(legend, dict) else None
+        if not (isinstance(stops, list) and 2 <= len(stops) <= 7 and all(HEX.match(str(c)) for c in stops)):
+            fail(where, f"legend stops {stops!r} must be two to seven #rrggbb colours, low to high")
+        if not isinstance(legend, dict) or any(legend.get(k) in (None, "") for k in ("unit", "low", "high")):
+            fail(where, "the legend needs `unit`, `low` and `high`: a ramp with no numbers is decoration")
+        b = r["bytes"]
+        blank = service.get("blank_bytes") or 0
+        if isinstance(b, bool) or not isinstance(b, int) or b <= blank:
+            fail(where, f"bytes {b!r} must be the measured size of the picture, over the {blank} an empty "
+                        f"one is taken for")
+        if not str(r["colormap"]).startswith("https://gibs.earthdata.nasa.gov/colormaps/"):
+            fail(where, "colormap must be the GIBS colormap the legend's colours were read from")
+        if str(r["credit"]) not in section:
+            fail("CREDITS.md", f"overlays.yaml credits `{rid}` as {r['credit']!r}, and CREDITS.md section 4 "
+                               f"does not carry that line")
+    return rows_
+
+
 def check_tilesets(world_ids: set) -> list:
     path = REG / "tilesets.yaml"
     if not path.exists():
@@ -3509,6 +3791,8 @@ def main() -> int:
     audio = check_audio()
     check_textures(textures, world_ids)
     check_tilesets(world_ids)
+    overlays = check_overlays(world_ids)
+    TOUR_OVERLAYS.update({o.get("id"): o.get("world") for o in overlays if isinstance(o, dict) and o.get("id")})
     weather = check_weather(world_ids, layers)
     ladder = check_stages(world_ids)
     check_system_stage_rows(ladder)

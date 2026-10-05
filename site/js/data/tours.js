@@ -1488,5 +1488,653 @@ export const TOURS = [
       }
     ],
     "estimate_ms": 96849
+  },
+  {
+    "id": "the-constellations",
+    "title": "The constellations",
+    "blurb": "Twelve looks at the night sky, each figure drawn star by star, and once from the side. Leaving brings you back to Earth.",
+    "requires": [
+      "stars"
+    ],
+    "stage": "stellar",
+    "clock": "as-found",
+    "group": "beyond",
+    "next": "to-the-edge",
+    "og_stop": 1,
+    "hides": [
+      "exoplanets",
+      "systems",
+      "exotics",
+      "deep-sky",
+      "galaxy"
+    ],
+    "pacing": "auto",
+    "min_stops": 3,
+    "stops": [
+      {
+        "id": "orion",
+        "target": {
+          "sky": [
+            83.8,
+            0.0
+          ]
+        },
+        "drift_deg": 3,
+        "drift_rate_deg_s": 0.25,
+        "chapter": "The northern winter sky",
+        "figures": [
+          "Ori"
+        ],
+        "figure_stars": 4,
+        "zoom": 0.88,
+        "card": {
+          "title": "Orion, the hunter",
+          "body": "Three stars in a row and four more around them: the easiest figure in the sky to find, and one that both halves of the world can see. The Greeks drew a hunter here. In Egypt it was the god Osiris, and across Latin America the three belt stars are the Three Marys."
+        },
+        "frame_radii": 5.0,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 20000
+      },
+      {
+        "id": "orion-from-the-side",
+        "target": {
+          "sky": [
+            83.8,
+            0.0
+          ],
+          "depth_ly": 650
+        },
+        "distance_km": 10406803519838880,
+        "drift_deg": 24,
+        "drift_rate_deg_s": 2,
+        "chapter": "The northern winter sky",
+        "figures": [
+          "Ori"
+        ],
+        "figure_stars": 4,
+        "aside_deg": 55,
+        "card": {
+          "title": "Orion, seen from the side",
+          "body": "Now leave home. Bellatrix, the hunter's shoulder, is two hundred and fifty light-years from us. Betelgeuse is five hundred, and the middle star of the belt nearly two thousand. The hunter is a line of sight, not a place: from here, hundreds of light-years to one side, nobody would draw him."
+        },
+        "frame_radii": 5.0,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 19483
+      },
+      {
+        "id": "taurus",
+        "target": {
+          "sky": [
+            64.0,
+            20.0
+          ]
+        },
+        "drift_deg": 3,
+        "drift_rate_deg_s": 0.25,
+        "chapter": "The northern winter sky",
+        "figures": [
+          "Tau"
+        ],
+        "figure_stars": 2,
+        "card": {
+          "title": "The bull and the Seven Sisters",
+          "body": "Follow Orion's belt up and to the right and you reach the orange eye of the bull, Aldebaran, and past it a small knot of blue stars. They are the Pleiades, a real family of stars that were born together. Japan calls them Subaru, and for Māori their return before dawn, as Matariki, begins the new year."
+        },
+        "frame_radii": 5.0,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 20000
+      },
+      {
+        "id": "gemini",
+        "target": {
+          "sky": [
+            104.0,
+            23.0
+          ]
+        },
+        "drift_deg": 3,
+        "drift_rate_deg_s": 0.25,
+        "chapter": "The northern winter sky",
+        "figures": [
+          "Gem"
+        ],
+        "figure_stars": 2,
+        "card": {
+          "title": "The twins",
+          "body": "Two bright stars side by side, Castor and Pollux, are the heads of twin brothers standing in the Milky Way. They only look like twins. Pollux is an orange giant thirty-four light-years away. Castor is fifty-one, and is really six stars circling one another."
+        },
+        "frame_radii": 5.0,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 17152
+      },
+      {
+        "id": "leo",
+        "target": {
+          "sky": [
+            160.0,
+            17.0
+          ]
+        },
+        "drift_deg": 3,
+        "drift_rate_deg_s": 0.25,
+        "chapter": "The sky of spring",
+        "figures": [
+          "Leo"
+        ],
+        "figure_stars": 2,
+        "card": {
+          "title": "The lion",
+          "body": "A backwards question mark for the mane and a triangle for the hindquarters: the lion is one of the few figures that looks like its name. The bright star at its chest is Regulus, the little king. The Sun passes right beside it every August."
+        },
+        "frame_radii": 5.0,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 17485
+      },
+      {
+        "id": "plough",
+        "target": {
+          "sky": [
+            186.0,
+            69.0
+          ]
+        },
+        "drift_deg": 3,
+        "drift_rate_deg_s": 0.25,
+        "chapter": "Round the pole",
+        "figures": [
+          "UMa",
+          "UMi"
+        ],
+        "figure_stars": 2,
+        "zoom": 0.78,
+        "card": {
+          "title": "The Plough, and the way north",
+          "body": "Seven stars that Britain calls the Plough, America the Big Dipper and much of Europe a wagon: they are the back and tail of the Great Bear. Take the two stars at the end of the bowl and follow them up, five times their own gap. That lone star is Polaris, and it sits almost exactly over the Earth's north pole."
+        },
+        "frame_radii": 5.0,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 20000
+      },
+      {
+        "id": "cassiopeia",
+        "target": {
+          "sky": [
+            15.0,
+            62.0
+          ]
+        },
+        "drift_deg": 3,
+        "drift_rate_deg_s": 0.25,
+        "chapter": "Round the pole",
+        "figures": [
+          "Cas"
+        ],
+        "figure_stars": 3,
+        "card": {
+          "title": "Cassiopeia, across the pole",
+          "body": "Go straight on past Polaris, as far again, and you meet a letter W of five stars: Cassiopeia, a queen in the Greek story. She and the Plough sit on opposite sides of the pole and swing round it like the two ends of a seesaw, so when one is low the other is high."
+        },
+        "frame_radii": 5.0,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 20000
+      },
+      {
+        "id": "summer-triangle",
+        "target": {
+          "sky": [
+            296.0,
+            27.0
+          ]
+        },
+        "drift_deg": 3,
+        "drift_rate_deg_s": 0.25,
+        "chapter": "The northern summer sky",
+        "figures": [
+          "Lyr",
+          "Cyg",
+          "Aql"
+        ],
+        "figure_stars": 1,
+        "zoom": 0.85,
+        "exposure": "deep",
+        "card": {
+          "title": "The Summer Triangle",
+          "body": "Three bright stars from three different figures: Vega in the Lyre, Deneb in the Swan, Altair in the Eagle. The pale band running between them is the Milky Way, shown as a long exposure would catch it. In China it is the Silver River, which parts the Weaver Girl, Vega, from the Cowherd, Altair."
+        },
+        "frame_radii": 5.0,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 20000
+      },
+      {
+        "id": "scorpius",
+        "target": {
+          "sky": [
+            253.0,
+            -32.0
+          ]
+        },
+        "drift_deg": 3,
+        "drift_rate_deg_s": 0.25,
+        "chapter": "The southern sky",
+        "figures": [
+          "Sco"
+        ],
+        "figure_stars": 2,
+        "zoom": 0.9,
+        "exposure": "deep",
+        "card": {
+          "title": "The scorpion",
+          "body": "A red heart, and a long curved tail with a sting at the end. The heart is Antares, a star so large that it would swallow the orbit of Mars. In the Greek story this is the scorpion that killed Orion, which is why the two are never in the sky together. In Hawaii the same stars are the fish hook of Maui."
+        },
+        "frame_radii": 5.0,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 20000
+      },
+      {
+        "id": "sagittarius",
+        "target": {
+          "sky": [
+            279.0,
+            -28.0
+          ]
+        },
+        "drift_deg": 3,
+        "drift_rate_deg_s": 0.25,
+        "chapter": "The southern sky",
+        "figures": [
+          "Sgr"
+        ],
+        "figure_stars": 2,
+        "exposure": "deep",
+        "card": {
+          "title": "The teapot, and the centre of the galaxy",
+          "body": "The archer's brightest stars make a teapot, and the Milky Way rises from its spout like steam. Look just past the spout and you are looking at the centre of our galaxy, about twenty-seven thousand light-years away, hidden behind dust. Every star named on this trip is in our own small corner of it."
+        },
+        "frame_radii": 5.0,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 20000
+      },
+      {
+        "id": "southern-cross",
+        "target": {
+          "sky": [
+            196.0,
+            -52.0
+          ]
+        },
+        "drift_deg": 3,
+        "drift_rate_deg_s": 0.25,
+        "chapter": "The southern sky",
+        "figures": [
+          "Cru",
+          "Cen"
+        ],
+        "figure_stars": 2,
+        "zoom": 0.82,
+        "exposure": "deep",
+        "card": {
+          "title": "The Southern Cross",
+          "body": "The smallest of the eighty-eight constellations, and the best known south of the equator. Australia, New Zealand, Brazil, Papua New Guinea and Samoa all fly it on their flags. The two bright stars beside it are the Pointers, and the nearer is Alpha Centauri, the closest star system to the Sun. The dark patch at the foot of the Cross is the head of the Emu that Aboriginal Australians see in the Milky Way."
+        },
+        "frame_radii": 5.0,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 20000
+      },
+      {
+        "id": "zodiac",
+        "target": {
+          "sky": [
+            256.0,
+            -20.0
+          ]
+        },
+        "drift_deg": 8,
+        "drift_rate_deg_s": 0.5,
+        "chapter": "The Sun's road",
+        "figures": [
+          "Sco",
+          "Oph",
+          "Sgr",
+          "Lib"
+        ],
+        "figure_stars": 0,
+        "ecliptic": true,
+        "zoom": 0.7,
+        "card": {
+          "title": "The zodiac",
+          "body": "The dashed line is the path the Sun takes across the stars in a year. The Moon and the planets never stray far from it, because the Solar System is nearly flat. The figures along it are the zodiac. Babylonian sky watchers counted twelve; the line really crosses thirteen, and the one left out is here: Ophiuchus, the serpent bearer."
+        },
+        "frame_radii": 5.0,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 20000
+      }
+    ],
+    "estimate_ms": 274320
+  },
+  {
+    "id": "the-living-earth",
+    "title": "The living Earth",
+    "blurb": "Tilt, air, today's storms, the sea's heat, plankton, ice, dust and the aurora: one planet's cycles, with today's data. This trip moves the clock.",
+    "requires": [
+      "worlds",
+      "storms",
+      "lightning",
+      "aurora"
+    ],
+    "stage": "earth",
+    "clock": "as-found",
+    "group": "earth-orbit",
+    "next": "chasing-the-solar-eclipse",
+    "og_stop": 5,
+    "pacing": "auto",
+    "min_stops": 3,
+    "stops": [
+      {
+        "id": "tilt",
+        "target": {
+          "world": "earth"
+        },
+        "frame_radii": 3.4,
+        "drift_deg": 0,
+        "key_light_deg": 90,
+        "time": "2027-06-21T12:00:00Z",
+        "rate": 1800,
+        "chapter": "The Sun and the seasons",
+        "card": {
+          "title": "A tilted world",
+          "body": "The Earth leans over by twenty-three degrees, and keeps leaning the same way all year. Here the north is tipped towards the Sun: the Arctic has daylight round the clock, and the line between day and night crosses the map at a slant. That lean, and nothing else, makes the seasons."
+        },
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 19483
+      },
+      {
+        "id": "half-a-year-on",
+        "target": {
+          "world": "earth"
+        },
+        "frame_radii": 3.4,
+        "drift_deg": 0,
+        "key_light_deg": 90,
+        "time": "2027-12-22T12:00:00Z",
+        "rate": 1800,
+        "chapter": "The Sun and the seasons",
+        "card": {
+          "title": "Half a year on",
+          "body": "Six months later the Earth is on the far side of the Sun, still leaning the same way, so now it is the south that faces the light. Antarctica has the midnight Sun and the Arctic is dark all day. The Sun sends the same energy as before; the tilt decides who gets it."
+        },
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 20000
+      },
+      {
+        "id": "air",
+        "target": {
+          "world": "earth"
+        },
+        "frame_radii": 1.45,
+        "key_light_deg": 150,
+        "time": "now",
+        "chapter": "Air and water",
+        "card": {
+          "title": "The thin blue line",
+          "body": "Everything we call weather happens inside that blue line. Three quarters of the air is in the first eleven kilometres, a layer so thin that on a globe the size of a football it would be about as thick as two sheets of paper. It is the only air there is."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 19483
+      },
+      {
+        "id": "weather",
+        "target": {
+          "world": "earth"
+        },
+        "frame_radii": 2.6,
+        "drift_deg": 20,
+        "drift_rate_deg_s": 2,
+        "time": "now",
+        "chapter": "Air and water",
+        "over": [
+          16,
+          -78
+        ],
+        "live_note": "clouds",
+        "card": {
+          "title": "Today's weather",
+          "body": "These are today's clouds, from weather satellites that take a picture every ten minutes. A tropical storm that has a name today is marked with it. Where thunderstorms are in view over the Americas, the flashes are lightning at the rate it was measured in the last quarter of an hour, drawn larger than life."
+        },
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 20000
+      },
+      {
+        "id": "ocean",
+        "target": {
+          "world": "earth"
+        },
+        "frame_radii": 2.6,
+        "drift_deg": 20,
+        "drift_rate_deg_s": 2,
+        "chapter": "Air and water",
+        "overlay": "sea-temperature",
+        "over": [
+          32,
+          -48
+        ],
+        "card": {
+          "title": "The sea moves the heat",
+          "body": "The colours are the temperature of the sea, measured from orbit. Water warmed in the tropics does not stay there: currents such as the Gulf Stream carry it towards the poles, and it gives up heat and water to the air on the way. Most of the water in the air was lifted off a warm sea."
+        },
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 20000
+      },
+      {
+        "id": "plankton",
+        "target": {
+          "world": "earth"
+        },
+        "frame_radii": 2.8,
+        "drift_deg": 20,
+        "drift_rate_deg_s": 2,
+        "chapter": "Life",
+        "overlay": "chlorophyll",
+        "over": [
+          5,
+          -28
+        ],
+        "card": {
+          "title": "The sea in bloom",
+          "body": "Green and yellow are water rich in plankton, plants too small to see that drift in the sunlit top of the sea. They bloom where currents bring food up from below. Between them they do about half of all the growing on the planet, and with the forests they breathe its carbon in and out every year."
+        },
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 20000
+      },
+      {
+        "id": "ice",
+        "target": {
+          "world": "earth"
+        },
+        "frame_radii": 2.4,
+        "drift_deg": 20,
+        "drift_rate_deg_s": 2,
+        "chapter": "Life",
+        "overlay": "sea-ice",
+        "over": [
+          80,
+          -20
+        ],
+        "card": {
+          "title": "The ice breathes",
+          "body": "The bright colours are sea frozen over. Each winter the ice around the north pole grows until it covers more than the whole of Europe, and each summer about two thirds of it melts again. The summer ice has shrunk by more than a third since satellites began to watch it."
+        },
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 19483
+      },
+      {
+        "id": "haze",
+        "target": {
+          "world": "earth"
+        },
+        "frame_radii": 2.8,
+        "drift_deg": 20,
+        "drift_rate_deg_s": 2,
+        "chapter": "Life",
+        "overlay": "aerosol",
+        "over": [
+          18,
+          15
+        ],
+        "card": {
+          "title": "Dust, smoke and us",
+          "body": "This is everything fine enough to hang in the air: desert dust, smoke from fires, salt from the sea, and the haze of cities and industry. Dust from the Sahara crosses the Atlantic and feeds the Amazon. The gas that warms the planet most, carbon dioxide, does not show here at all. It is invisible, and it is everywhere."
+        },
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 20000
+      },
+      {
+        "id": "moon",
+        "target": {
+          "world": "moon"
+        },
+        "distance_km": 12000,
+        "behind": "earth",
+        "time": "now",
+        "rate": 60,
+        "chapter": "From outside",
+        "card": {
+          "title": "The Moon's pull",
+          "body": "The Moon pulls on the sea, and the sea rises towards it and on the far side too, so most coasts have two high tides a day. Over billions of years the same pull has slowed the Earth's spin. And the Moon is thought to hold the Earth's tilt steady, which keeps the seasons mild."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 20000
+      },
+      {
+        "id": "aurora",
+        "target": {
+          "world": "earth"
+        },
+        "needs_layer": "aurora",
+        "frame_radii": 2.3,
+        "key_light_deg": 165,
+        "time": "now",
+        "chapter": "From outside",
+        "live_note": "aurora",
+        "card": {
+          "title": "The Sun's wind",
+          "body": "The Sun blows a thin wind of charged particles past us all the time. The Earth's magnetic field turns most of it aside and funnels some down around the poles, where it makes the upper air glow. The green rings are where the aurora is expected in the next hour, from today's forecast."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 20000
+      },
+      {
+        "id": "jupiter",
+        "target": {
+          "world": "jupiter"
+        },
+        "stage": "jupiter",
+        "frame_radii": 4,
+        "chapter": "From outside",
+        "card": {
+          "title": "Jupiter, bodyguard or not",
+          "body": "Jupiter has three hundred times the mass of the Earth, and its pull rules the traffic of comets and asteroids. It throws many of them out of the Solar System before they can reach us, and it also sends some our way. Bodyguard or troublemaker: the sums are still being done."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 19483
+      },
+      {
+        "id": "home",
+        "target": {
+          "world": "earth"
+        },
+        "frame_radii": 26,
+        "behind": "moon",
+        "key_light_deg": 60,
+        "time": "now",
+        "chapter": "From outside",
+        "card": {
+          "title": "One small world",
+          "body": "From here the storms, the currents, the ice and the forests are one thin skin on one small world. Nothing we know of anywhere else has all of them. The Moon, four hundred thousand kilometres off, is the farthest any person has ever been from it."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 17818
+      }
+    ],
+    "estimate_ms": 275950
   }
 ];

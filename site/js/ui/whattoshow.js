@@ -48,6 +48,7 @@ import { COLOR_KEYS } from '../data/colorkeys.js';
 import { soundButton } from './sound.js';
 import { densityPanel } from './density.js';
 import { exposurePanel } from './exposure.js';
+import { overlayPanel } from './overlaypanel.js';
 import { LAYER_GROUPS } from '../data/layers.registry.js';
 
 const REFRESH_MS = 1000;
@@ -401,6 +402,13 @@ export function createWhatToShow(ctx, opts = {}) {
     exposure.classList.add('sr-show__section', 'sr-show__setting');
     root.appendChild(exposure);
   }
+  // Earth data (registry/overlays.yaml): one measured map over the globe, and its legend.
+  let overlay = null;
+  if (ctx && typeof ctx.setOverlay === 'function') {
+    overlay = overlayPanel(ctx);
+    overlay.classList.add('sr-show__section');
+    root.appendChild(overlay);
+  }
   if (ctx && ctx.density) {
     const density = densityPanel(ctx.density);
     density.classList.add('sr-show__section', 'sr-show__setting');
@@ -500,6 +508,7 @@ export function createWhatToShow(ctx, opts = {}) {
       window.removeEventListener('sr:colour-key', onAny);
       document.removeEventListener('sr:layer-toggle', onAny);
       key.destroy();
+      if (overlay) overlay.destroy();
       root.remove();
     },
   };

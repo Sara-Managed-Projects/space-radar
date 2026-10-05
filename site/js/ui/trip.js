@@ -65,6 +65,23 @@ import { COPY, CITIES, t, fmt } from '../copy/en.js';
 
 const DEG = Math.PI / 180;
 
+// A STOP THAT LOOKS AT THE SKY (2026-10-05, `target: {sky: [ra, dec]}`). The camera stands where
+// the Sun is and looks out along a direction, so what is on screen is the sky as it is seen from
+// Earth (the two are 8 light-minutes apart; no star moves by a pixel). The rig is an orbit camera
+// and needs a point to look at: one SKY_NEAR_KM out along the direction, with the camera
+// SKY_STAND of the way back, which puts it a little in front of the Sun and the Sun behind it.
+// Sixty au keeps every flight between two such stops inside 500 au, where registry/lod.yaml
+// still draws the sky sphere, so a turn from Orion to the Plough is a turn and never a journey.
+// With `depth_ly` the point is that far out for real, and the stop's `distance_km` and
+// `aside_deg` put the camera off the line from the Sun: the figures come apart.
+const SKY_NEAR_KM = 60 * 149597870.7;
+const SKY_STAND = 0.98;
+const LY_KM = 9460730472580.8;
+const SUN_FRAME = 'sun-inertial';
+// Equatorial J2000 -> ecliptic J2000 (the stage's sun-inertial), the IAU 1976 obliquity.
+const COS_OBLIQUITY = Math.cos(23.4392911 * DEG);
+const SIN_OBLIQUITY = Math.sin(23.4392911 * DEG);
+
 // The phases in which the trip IS at a stop, so the address bar may say which (spec 0032 req 3).
 // The intro names the trip alone; `resolving`, `outro` and `idle` write nothing new.
 const STOP_PHASES = ['veil', 'flight', 'settle', 'dwell', 'held', 'paused'];
@@ -261,6 +278,18 @@ export function createTrip(ctx) {
     // The planets whose paths and dots the Sun stage draws while this trip runs (`orbits:`,
     // scene/orbitrings.js), and which the frame's "drawn larger" line is about. Empty when none.
     orbits: [],
+    // What the stop on screen asks the scene to add (2026-10-05), each null when it asks nothing:
+    // `sky` = { figures, stars, ecliptic } for scene/figures3d.js, `overlay` an id of
+    // registry/overlays.yaml for scene/earthoverlay.js, `exposure` a mode of scene/exposure.js.
+    // main.js applies them (and fetches the modules); leaving puts back what the visitor had.
+    // `wants` says at the intro which of the modules this trip will need, so they are there in time.
+    sky: null,
+    overlay: null,
+    exposure: null,
+    // The stop's lens (`zoom:` on a sky stop): under 1 is a wider angle, for a figure too tall for
+    // the camera's 45 degrees. main.js eases the camera's zoom to it and back to 1 on leave.
+    zoom: 1,
+    wants: { figures: false, overlay: false },
     index: -1,
     count: 0,
     // The resolved stops' ids and titles, in order: the intro sheet lists them (spec 0061 task 7).
@@ -652,8 +681,65 @@ export function createTrip(ctx) {
     };
   }
 
+  const _skyQ = new THREE.Quaternion();
+
+  /** The scene's rotation for a J2000 equatorial direction, as the sky sphere on screen has it. */
+  let skyQuatFor = null;
+  function skyQuat() {
+    const sf = ctx.starfield;
+    if (!sf || !sf.group) return _skyQ.identity();
+    // The sky sphere re-measures its rotation when it is next DRAWN after a stage change, and a
+    // trip composes its first shot in the same tick it changed the stage: asked then, the sphere
+    // still had the last stage's rotation (measured 2026-10-05: the camera looked 90 degrees off).
+    if (skyQuatFor !== stage.worldId && typeof sf.syncFrame === 'function') {
+      sf.syncFrame();
+      skyQuatFor = stage.worldId;
+    }
+    return _skyQ.copy(sf.group.quaternion);
+  }
+
+  /**
+   * `target: {sky: [ra, dec]}`: a direction on the sky, as a subject. Without `depth_ly` it is a
+   * point SKY_NEAR_KM from the Sun along the direction the SKY SPHERE draws (so the frame is
+   * centred on the stars that are on screen); with it, a true place that many light-years out.
+   */
+  function skySubject(target) {
+    const sky = target.sky;
+    if (!Array.isArray(sky) || !isNum(sky[0]) || !isNum(sky[1])) return null;
+    const ra = sky[0] * DEG;
+    const dec = sky[1] * DEG;
+    const eq = new THREE.Vector3(Math.cos(dec) * Math.cos(ra), Math.cos(dec) * Math.sin(ra), Math.sin(dec));
+    const real = isNum(target.depth_ly) && target.depth_ly > 0;
+    const distKm = real ? target.depth_ly * LY_KM : SKY_NEAR_KM;
+    const sunKm = { x: 0, y: 0, z: 0 };
+    return {
+      kind: 'sky',
+      id: `sky-${sky[0]}-${sky[1]}`,
+      name: '',
+      record: null,
+      layerId: null,
+      worldId: 'sun',
+      radiusKm: null,
+      sky: { real, distKm },
+      position(tMs) {
+        const sun = stage.toScene(sunKm, SUN_FRAME, tMs);
+        if (!sun) return null;
+        if (real) {
+          const km = {
+            x: eq.x * distKm,
+            y: (eq.y * COS_OBLIQUITY + eq.z * SIN_OBLIQUITY) * distKm,
+            z: (-eq.y * SIN_OBLIQUITY + eq.z * COS_OBLIQUITY) * distKm,
+          };
+          return stage.toScene(km, SUN_FRAME, tMs);
+        }
+        return eq.clone().applyQuaternion(skyQuat()).multiplyScalar(distKm / stage.unitKm).add(sun);
+      },
+    };
+  }
+
   function resolveTarget(target) {
     if (!target) return null;
+    if (target.sky) return skySubject(target);
     if (target.observer === true) return observerSubject();
     if (target.record) {
       const record = ctx.recordById(target.record);
@@ -1045,6 +1131,9 @@ export function createTrip(ctx) {
   }
 
   function stopDistanceKm(stop, subject) {
+    // A look at the sky stands a little in front of the Sun; a look at its depth stands where the
+    // stop says, and at the Sun's own distance from the point when it says nothing.
+    if (subject.kind === 'sky' && !isNum(stop.distance_km)) return subject.sky.distKm * SKY_STAND;
     // A star system's overview (spec 0040) is never closer than the whole of it fits on THIS screen:
     // a phone held upright is a third as wide as a desktop, and the outer orbit would be cut off.
     if (isNum(stop.distance_km) && typeof subject.fitKm === 'function') return Math.max(stop.distance_km, subject.fitKm(stop));
@@ -1117,7 +1206,8 @@ export function createTrip(ctx) {
       && fromCentre > radius * GROUND_BAND[0] && fromCentre < radius * GROUND_BAND[1]
       ? targetScene.clone().sub(worldCentre).normalize()
       : null;
-    let angles = keyLightAngles(
+    const skyShot = subject.kind === 'sky' ? skyAngles(targetScene, sun, Number(entry.stop.aside_deg) || 0) : null;
+    let angles = skyShot ? skyShot.angles : keyLightAngles(
       targetScene,
       d1,
       worldCentre,
@@ -1131,6 +1221,12 @@ export function createTrip(ctx) {
       // The up this flight lands with off the ground (upFor): the visitor's own.
       (run && run.savedUp) || null,
     );
+    // `over: [lat, lon]` on a stop about the Earth: the camera goes above that place, whatever the
+    // light is doing there, because the stop is about what is on the ground under it.
+    if (Array.isArray(entry.stop.over) && subject.kind === 'world' && subject.id === 'earth') {
+      const above = overAngles(entry.stop.over, targetScene, tMs);
+      if (above) angles = above;
+    }
     if (!angles && subject.kind === 'world' && subject.id === 'sun' && stage.worldId === 'sun') {
       angles = { azimuth: rig.state.azimuth || 0, polar: SUN_OVERVIEW_POLAR };
     }
@@ -1156,7 +1252,45 @@ export function createTrip(ctx) {
       chosenAz: angles ? angles.azimuth : null,
       // The up the camera arrives with: the site's vertical on the ground, and the visitor's own
       // up everywhere else, so a trip that leaves the ground turns the sky back the right way.
-      up: groundUp,
+      up: skyShot ? skyShot.up : groundUp,
+    };
+  }
+
+  /** The rig's angles for a camera straight above a place on the Earth, in the up it arrives with. */
+  function overAngles(over, targetScene, tMs) {
+    if (!isNum(over[0]) || !isNum(over[1])) return null;
+    const p = fixed({ id: 'over', propagator: 'fixed', frame: 'earth-fixed', fixed: { latDeg: over[0], lonDeg: over[1], altKm: 0 } }, tMs);
+    const ground = p ? stage.toScene(p, p.frame, tMs) : null;
+    if (!ground) return null;
+    _b1.copy(ground).sub(targetScene);
+    if (_b1.lengthSq() < 1e-30) return null;
+    _b1.normalize();
+    const up = (run && run.savedUp) || ctx.camera.up;
+    _uq.setFromUnitVectors(_b2.copy(up).normalize(), Y_UP);
+    _b1.applyQuaternion(_uq);
+    return { azimuth: Math.atan2(_b1.x, _b1.z), polar: Math.acos(clamp(_b1.y, -1, 1)) };
+  }
+
+  /**
+   * THE ANGLES OF A LOOK AT THE SKY. The camera goes on the line from the point back to the Sun
+   * (so the sky is the one seen from home), turned `asideDeg` about the celestial pole when the
+   * stop wants to see the depth. Celestial north is up, as on every star chart, and it is the up
+   * the angles are worked out in, because it is the up the flight arrives with (upFor).
+   */
+  function skyAngles(targetScene, sun, asideDeg) {
+    if (!sun) return null;
+    const north = new THREE.Vector3(0, 0, 1).applyQuaternion(skyQuat()).normalize();
+    _b1.copy(sun).sub(targetScene);
+    if (_b1.lengthSq() < 1e-30) return null;
+    _b1.normalize();
+    _uq.setFromUnitVectors(north, Y_UP);
+    _b1.applyQuaternion(_uq);
+    return {
+      up: north,
+      angles: {
+        azimuth: Math.atan2(_b1.x, _b1.z) + asideDeg * DEG,
+        polar: Math.acos(clamp(_b1.y, -1, 1)),
+      },
     };
   }
 
@@ -1228,6 +1362,18 @@ export function createTrip(ctx) {
   function noteFor(entry) {
     const subject = entry.subject;
     if (!subject) return null;
+    // `live_note:` (2026-10-05): the sentence the Earth's own card prints about today's clouds, the
+    // aurora forecast or the lightning -- how old it is, whose it is, why it is not drawn when it is
+    // not -- under a stop that is about that thing. The modules write it; the registry cannot.
+    const live = entry.stop.live_note;
+    if (live) {
+      const say = {
+        clouds: () => (ctx.liveClouds && ctx.liveClouds.line ? ctx.liveClouds.line(ctx.clock.now()) : ''),
+        aurora: () => (ctx.aurora && ctx.aurora.line ? ctx.aurora.line(ctx.clock.now()) : ''),
+        lightning: () => (ctx.weather && ctx.weather.line ? ctx.weather.line('earth', ctx.clock.now()) : ''),
+      }[live];
+      if (say) return () => { try { return say() || ''; } catch { return ''; } };
+    }
     if (subject.kind === 'observer') {
       const line = subject.source === 'guess'
         ? t(COPY.trip.observerGuess, { place: subject.name })
@@ -1523,6 +1669,42 @@ export function createTrip(ctx) {
     }
   }
 
+  /** What a stop asks scene/figures3d.js to draw, or null. */
+  function skyOf(stop) {
+    if (!stop || (!Array.isArray(stop.figures) && !stop.ecliptic)) return null;
+    return {
+      figures: Array.isArray(stop.figures) ? stop.figures.slice() : [],
+      stars: isNum(stop.figure_stars) ? stop.figure_stars : 3,
+      ecliptic: stop.ecliptic === true,
+      // Whether the stop looks at the figures' depth (a sky target with `depth_ly`): the frame's
+      // line says which of the two pictures this is.
+      depth: !!(stop.target && stop.target.sky && isNum(stop.target.depth_ly)),
+    };
+  }
+
+  /**
+   * THE SCENE'S EXTRAS, AS THE FLIGHT TO A STOP BEGINS. A figure both stops share stays up through
+   * the flight (the fly-out from Orion keeps Orion's lines, which is the point of it); one only the
+   * old stop had fades as the camera leaves; the new stop's own are drawn when it ARRIVES
+   * (stopExtrasArrived), so a stroke is never drawn while the camera is still turning. The overlay
+   * and the exposure change now: a picture asked for at take-off has the flight to arrive in.
+   */
+  function stopExtrasLeaving(entry) {
+    const next = skyOf(entry.stop);
+    const prev = state.sky;
+    if (prev && next) {
+      const shared = prev.figures.filter((id) => next.figures.includes(id));
+      state.sky = { ...prev, figures: shared, ecliptic: prev.ecliptic && next.ecliptic, depth: next.depth };
+    } else state.sky = null;
+    state.overlay = entry.stop.overlay || null;
+    state.exposure = entry.stop.exposure || null;
+    state.zoom = isNum(entry.stop.zoom) ? entry.stop.zoom : 1;
+  }
+
+  function stopExtrasArrived(entry) {
+    state.sky = skyOf(entry.stop);
+  }
+
   function begin(resolved) {
     // A trip is a Wonder-moment thing: it flies the free camera between objects. Started from
     // the sky view -- the Now moment's dome, which owns the camera -- the two fought for it.
@@ -1564,6 +1746,11 @@ export function createTrip(ctx) {
     }
     state.stageChanged = !!run.stageChanged;
     for (const id of resolved.layers) if (setLayer(id, true)) run.flipped.push(id);
+    // `hides:` (2026-10-05): layers whose marks would be litter in this trip's picture (the
+    // planets of other stars as green dots across a constellation), off for the trip and back
+    // on the way out, like the ones it switches on.
+    run.hidden = [];
+    for (const id of tour.hides || []) if (setLayer(id, false)) run.hidden.push(id);
     const clockChange = applyClock(tour, run.savedClock);
     run.clockMovedInstant = clockChange.movedInstant;
     state.clockClamped = clockChange.clamped;
@@ -1576,6 +1763,13 @@ export function createTrip(ctx) {
     state.tourId = tour.id;
     state.tourTitle = tour.title;
     state.orbits = Array.isArray(tour.orbits) ? tour.orbits.slice() : [];
+    state.wants = {
+      figures: resolved.stops.some((entry) => skyOf(entry.stop)),
+      overlay: resolved.stops.some((entry) => entry.stop.overlay),
+    };
+    state.sky = null;
+    state.overlay = null;
+    state.exposure = null;
     state.count = resolved.stops.length;
     state.stops = resolved.stops.map((entry) => ({ id: entry.stop.id, title: (entry.stop.card || {}).title || entry.stop.id, dwellMs: entry.stop.dwell_ms }));
     state.estimateMs = estimateOf(resolved.stops);
@@ -1719,6 +1913,7 @@ export function createTrip(ctx) {
 
     state.phase = 'flight';
     entry.shot = shot;
+    stopExtrasLeaving(entry);
     letGoOfTheLastSubject(entry);
     // The camera rides to the subject the stop is ABOUT, re-aimed every frame (camera.js applyFollow
     // keeps a flight's destination on a moving object). arrived() selects it, which installs the
@@ -1829,6 +2024,7 @@ export function createTrip(ctx) {
     // motion ui.css makes that an appearance, not a rise).
     state.chapter = run.stops[index].stop.chapter || null;
     releaseClockHold();
+    stopExtrasArrived(run.stops[index]);
     paintCard(run.stops[index]);
     after(SETTLE_MS, () => dwell(index));
     notify();
@@ -1849,12 +2045,15 @@ export function createTrip(ctx) {
       after(DRIFT_LEAD_MS, () => {
         if (!run || state.phase !== 'dwell' || state.index !== index) return;
         const shot = entry.shot || {};
-        const sign = driftSign(
-          shot.chosenAz ?? rig.state.azimuth,
-          shot.sun,
-          shot.targetScene || rig.state.target,
-          stop.drift === 'away',
-        );
+        // A look at the sky has no light to turn towards: it goes on the way `aside_deg` went.
+        const sign = entry.subject && entry.subject.kind === 'sky'
+          ? ((Number(stop.aside_deg) || 0) < 0 ? -1 : 1)
+          : driftSign(
+            shot.chosenAz ?? rig.state.azimuth,
+            shot.sun,
+            shot.targetScene || rig.state.target,
+            stop.drift === 'away',
+          );
         driftRun = { deg: deg * sign, rate: stop.drift_rate_deg_s || 6, at: now() };
         // Under reduced motion the rig refuses the drift and says so; the dwell is untouched.
         rig.orbit({
@@ -2142,6 +2341,7 @@ export function createTrip(ctx) {
     }
 
     for (const id of run.flipped) setLayer(id, false);
+    for (const id of run.hidden || []) setLayer(id, true);
     restoreClock(run.savedClock, run.clockMovedInstant);
     const stageLeft = !!(run.stageChanged && run.savedStage && typeof ctx.setStage === 'function');
     if (stageLeft) {
@@ -2162,6 +2362,11 @@ export function createTrip(ctx) {
     state.tourId = null;
     state.tourTitle = null;
     state.orbits = [];
+    state.sky = null;
+    state.overlay = null;
+    state.exposure = null;
+    state.zoom = 1;
+    state.wants = { figures: false, overlay: false };
     state.stopId = null;
     state.stopEventType = null;
     state.stopTitle = null;
