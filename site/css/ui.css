@@ -1392,8 +1392,8 @@ html.sr-clean body > *:not(.sr-scene):not(.sr-veil):not(.sr-over-clean) {
   display: flex;
   gap: 8px;
   align-items: center;
-  min-height: 40px; /* a real tap target, the same 40 px as the buttons */
-  padding: 4px 10px;
+  min-height: 44px; /* a list row (docs/ui-guide.md section 3.5): 44 px, 12 px to the side; internal #336 */
+  padding: var(--sp-1) var(--sp-3);
   cursor: pointer;
   border-left: 2px solid transparent;
 }
