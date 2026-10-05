@@ -4773,13 +4773,15 @@ html.sr-phone .sr-pop {
   max-height: calc(100dvh - var(--sr-top-y) - var(--sr-top-bar) - var(--sp-6));
 }
 
-html.sr-phone .sr-more {
+/* The rail's overflow MENU (#sr-more), not the quiet "Show all 8" button under a list, which is
+   also `.sr-more`: scoped by the popover's class, or a phone drew that button as a 240 px block. */
+html.sr-phone .sr-pop.sr-more {
   left: auto;
   width: 240px;
   padding: var(--sp-2);
 }
 
-html.sr-phone .sr-more:not([hidden]) {
+html.sr-phone .sr-pop.sr-more:not([hidden]) {
   display: block;
 }
 
@@ -5266,3 +5268,19 @@ html.sr-phone .sr-tonight-view__num { font-size: var(--sr-fs-num-sm); }
    back on their old faces (and task 6 removed the face). And the card's name is a
    heading that takes focus for screen readers, not a field: no ring around it. */
 .sr-card__name:focus { outline: none; }
+
+/* A FINGER'S TARGET IS 44 PX (docs/ui-guide.md principle 9; internal #346). The controls
+   tests/test_touch_targets.mjs found under it on the phone profile, 2026-10-05: the picker's rows
+   and the place chips at 36, the card's back row at 36, "Show all" at 36, a button at 40, What to
+   show's layer rows at 36, and the Right-now rows, which were 44 only by their padding. */
+@media (pointer: coarse) {
+  .sr-btn,
+  .sr-chip,
+  .sr-more,
+  .sr-pick__btn,
+  .sr-side__back,
+  .sr-now__btn,
+  .sr-show__label {
+    min-height: 44px;
+  }
+}

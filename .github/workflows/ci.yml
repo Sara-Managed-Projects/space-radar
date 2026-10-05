@@ -313,8 +313,16 @@ jobs:
         run: node tests/test_whattoshow.mjs
       # Spec 0061 task 5, req 11: every line of chrome fits one line with its longest values, in
       # the sidebar's 320 px and the popover's 280 px; no browser, the widths are worked out.
-      - name: "A line of chrome is one line: the search, Coming up, What to show, Tonight, the notes (spec 0061)"
+      - name: "A line of chrome is one line, and every chrome string is swept: 60 characters drawn, 90 as a tooltip (spec 0061)"
         run: node tests/test_chrome_copy.mjs
+      # Spec 0061 task 6, docs/ui-guide.md section 7: the guard rails a machine can hold without a
+      # browser. Every control a builder makes has a name, an icon-only one an aria-label and a
+      # tooltip, every icon is the one family's; and every control class resolves to 44 px on the
+      # phone profile, so a new button cannot arrive at 36.
+      - name: "Every control has a name, icon-only buttons an aria-label and a tooltip, one icon family, no focus ring removed (spec 0061 task 6)"
+        run: node tests/test_a11y_static.mjs
+      - name: "A finger's target is 44 px: every control class on the phone profile (spec 0061 task 6)"
+        run: node tests/test_touch_targets.mjs
       - name: "A year in a minute: four worlds on the Sun's stage, drawn true, at 525 600"
         run: node tests/test_year_trip.mjs
       # Spec 0040: TRAPPIST-1 at its own scale. Kepler's third law on the seven rows, the planets the
