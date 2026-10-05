@@ -78,7 +78,8 @@ copy that has grown old can be refreshed the same way.
 
 Measured on 2026-10-05 by serving `site/` locally in headless Chrome with **every** outside host
 blocked: the page was usable in 13 seconds and all layers were in after 29; 166 requests were
-answered from the folder, and the Sources line read "12 sources read · 3 could not be read".
+answered from the folder, the Sources line read "12 sources read · 3 could not be read", about
+11 000 objects were drawn, and a trip started with its narration and music files loading from disk.
 
 | Works with no internet | Needs the internet |
 |---|---|
@@ -91,7 +92,7 @@ answered from the folder, and the Sources line read "12 sources read · 3 could 
 
 **Be honest with your class about age.** A satellite's position is worked out from orbital
 elements measured on a certain day. The saved copy is as old as the day it was made, and the app
-says so on every card ("worked out from orbital elements measured 12 days ago"). After a week or
+says so at the foot of every card ("Position propagated from elements 13 days old"). After a week or
 two, a low satellite such as the ISS can be minutes away from where the app draws it; after a
 launch date has passed, the launch stays in the list until the copy is refreshed. Planets, moons,
 stars and eclipses are computed, not downloaded, and are right for any date. Refresh the copy

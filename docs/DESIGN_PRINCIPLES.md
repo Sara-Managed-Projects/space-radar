@@ -11,7 +11,7 @@ Space Radar is used to learn, so what it shows has to be either true or plainly 
   data of a stated age. *Modelled*: computed from physics or a fitted orbit, with the error
   measured where we could. *Illustrative*: a picture built to explain (the Milky Way's spiral, a
   procedural satellite shape). A card says which, in one small line at its foot.
-- **Age is part of the number.** "Worked out from orbital elements measured 6 days ago" stays on
+- **Age is part of the number.** "Position propagated from elements 6 days old" stays on
   the card. A saved copy is drawn at once and labelled as a copy.
 - **Scale lies are admitted.** A satellite drawn at true size would be invisible; where something
   is drawn larger than life, the app says so.

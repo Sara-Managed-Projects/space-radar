@@ -44,10 +44,18 @@ browser, on public data, and every number on screen says where it came from.
 
 | | |
 |---|---|
-| ![The International Space Station over the Earth, with its trip card](assets/screenshots/station.webp) | ![Saturn and its rings at a stop of the outer solar system trip](assets/screenshots/saturn.webp) |
-| **Follow anything in orbit.** The ISS, Hubble, Starlink trains, debris: where it is, how fast, whether it is in sunlight, and when it passes over you. | **Take a guided trip.** To the Moon landings, out past Jupiter, to the exoplanets, to the edge of the galaxy. Narrated, with captions and music. |
-| ![The Orion Nebula on the sky at Deep exposure](assets/screenshots/nebula.webp) | <img src="assets/screenshots/phone.webp" alt="Space Radar on a phone" width="260"> |
-| **See the deep sky.** Real photographs of 27 nebulae and galaxies in their true places, with an exposure control: Eye, Camera, Deep. | **Use it on a phone.** The same map, one sheet, one thumb. |
+| ![Saturn and its rings, backlit, at a stop of the trip out past Jupiter](assets/screenshots/saturn.webp) | ![The Apollo 11 lunar module on the Moon, a stop of the Moon landings trip](assets/screenshots/moon-landing.webp) |
+| **Take a guided trip.** Out past Jupiter, to the exoplanets, to the edge of the galaxy. Nine trips, narrated, with captions and music. | **Stand where we have landed.** Ten landers on the Moon, each on its own ground, with the facts and their sources on the card. |
+
+<img src="assets/screenshots/phone.webp" alt="Space Radar on a phone: the Earth, the aurora and the satellites above a bottom sheet" width="230" align="right">
+
+- **Follow anything in orbit.** The ISS, Hubble, Starlink trains, debris: where it is, how fast,
+  whether it is in sunlight, and when it passes over you.
+- **See the deep sky.** Real photographs of 27 nebulae and galaxies in their true places, with an
+  exposure control: Eye, Camera, Deep.
+- **Go anywhere, at any time.** Fly from a rooftop to the edge of the Milky Way; run the clock
+  forward to the next eclipse.
+- **Use it on a phone.** The same map, one sheet, one thumb.
 
 Also: live clouds, storms, lightning and the aurora on the Earth · close-up map tiles of the Moon
 and Mars · eclipses computed for any date · tonight's sky from your town · a time control ·
