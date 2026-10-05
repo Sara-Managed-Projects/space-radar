@@ -537,6 +537,11 @@ export function createTrip(ctx) {
 
   function waitForLayer(id) {
     if (!id || landed.has(id)) return Promise.resolve(landed.has(id));
+    // A layer that is DRAWN rather than loaded (the aurora, the lightning: data/layers.js `draw`)
+    // has no records to land, so there is nothing to wait for: measured 2026-10-05, a trip that
+    // required them sat eight seconds on LAYER_DEADLINE_MS before its intro.
+    const row = (ctx.layers || []).find((l) => l.id === id);
+    if (row && row.draw) return Promise.resolve(true);
     if (typeof window === 'undefined') return Promise.resolve(false);
     return new Promise((resolve) => {
       let done = false;
@@ -1750,7 +1755,13 @@ export function createTrip(ctx) {
     // planets of other stars as green dots across a constellation), off for the trip and back
     // on the way out, like the ones it switches on.
     run.hidden = [];
-    for (const id of tour.hides || []) if (setLayer(id, false)) run.hidden.push(id);
+    for (const id of tour.hides || []) {
+      // Asked of the layer itself, not of setLayer's answer: only one that WAS on and now is off
+      // is the trip's to switch back.
+      const was = ctx.isLayerOn(id);
+      setLayer(id, false);
+      if (was && !ctx.isLayerOn(id)) run.hidden.push(id);
+    }
     const clockChange = applyClock(tour, run.savedClock);
     run.clockMovedInstant = clockChange.movedInstant;
     state.clockClamped = clockChange.clamped;
