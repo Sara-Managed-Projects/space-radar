@@ -129,6 +129,21 @@ const T = COPY.trip;
   check(keyAction(key(' '), run, { tagName: 'BUTTON' }) === null, 'Space on a focused button presses the button, not the trip');
   check(keyAction(key('c'), run, body) === 'collapse' && keyAction(key('C'), run, body) === 'collapse', 'C hides the card');
   check(keyAction(key('r'), run, body) === 'replay', 'R replays the stop');
+  // Internal #329: Voice and Sound have a key, named in their tooltips, and a narrow phone keeps Voice.
+  check(keyAction(key('m'), run, body) === 'sound' && keyAction(key('M'), run, body) === 'sound', 'M is Sound');
+  check(keyAction(key('v'), run, body) === 'voice' && keyAction(key('V'), run, body) === 'voice', 'V is Voice');
+  check(keyAction(key('v'), run, { tagName: 'INPUT' }) === null && keyAction({ key: 'v', ctrlKey: true }, run, body) === null, 'not while typing, and Ctrl+V is the browser\'s');
+  {
+    const T2 = COPY.trip;
+    check(/\(M\)/.test(T2.soundOnTitle) && /\(M\)/.test(T2.soundOffTitle) && /\(V\)/.test(T2.voiceOnTitle) && /\(V\)/.test(T2.voiceOffTitle), 'the tooltips name the keys');
+    const { readFileSync: rf } = await import('node:fs');
+    const css = rf(join(JS, '../css/ui.css'), 'utf8');
+    const hiddenAt = (cls) => { const m = new RegExp(`@media \\(max-width: (\\d+)px\\) \\{\\s*html\\.sr-phone \\.sr-trip__tb--${cls} \\{\\s*display: none;`).exec(css); return m ? Number(m[1]) : -1; };
+    check(hiddenAt('voice') < 360 && hiddenAt('voice') >= 320, `Voice stays on the toolbar on a 360 px phone (hidden at ${hiddenAt('voice')} and under)`);
+    check(hiddenAt('replay') > hiddenAt('share') && hiddenAt('share') > hiddenAt('voice'), 'Replay goes first, then Share, Voice last');
+    // What is left must fit: n targets of 44, the 48 px counter and 16 px of padding.
+    for (const [w, n] of [[423, 7], [379, 6], [339, 5]]) check(n * 44 + 48 + 16 <= (w === 339 ? 320 : w === 379 ? 340 : 380), `${n} targets fit the narrowest phone of the ${w} px step`);
+  }
   check(keyAction(key('Escape'), run, body) === 'leave', 'Escape leaves');
   check(keyAction(key('Escape'), run, { tagName: 'INPUT' }) === null, 'Escape in a text field is the field\'s');
   check(keyAction(key('ArrowRight'), run, { tagName: 'INPUT' }) === null, 'arrows in a text field are the field\'s');

@@ -267,6 +267,9 @@ export function keyAction(e, st, active) {
   if (e.key === ' ' || e.key === 'Spacebar') return active && active.tagName === 'BUTTON' ? null : 'toggle';
   if (e.key === 'c' || e.key === 'C') return 'collapse';
   if (e.key === 'r' || e.key === 'R') return 'replay';
+  // Internal #329: the two sound toggles had no key. M as every player has it; V for the voice.
+  if (e.key === 'm' || e.key === 'M') return 'sound';
+  if (e.key === 'v' || e.key === 'V') return 'voice';
   return null;
 }
 
@@ -620,6 +623,8 @@ export function createTripFrame(ctx) {
     else if (what === 'toggle') { e.preventDefault(); togglePause(); }
     else if (what === 'collapse') setCollapsed(!collapsed);
     else if (what === 'replay') onReplay();
+    else if (what === 'sound') toggleSound();
+    else if (what === 'voice') toggleVoice();
   }
 
   // A tap on a different object is the most likely accidental exit in the product, and it is also

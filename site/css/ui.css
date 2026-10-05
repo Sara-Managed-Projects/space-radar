@@ -2366,23 +2366,25 @@ html.sr-phone .sr-trip__progress {
 }
 
 /* Eight 44 px targets and the counter need 416 px. A narrower phone keeps the controls a trip
-   cannot do without and drops what has a key or another door: Voice below 424 px (spec 0069: the
-   intro has it, and Sound silences both), Replay below 380 (R, or previous and next), Share below
-   340 (the end card has it). No horizontal scroll at 320 (SC 1.4.10). */
+   cannot do without and drops what has another door, in this order (internal #329): Replay below
+   424 px (previous then next flies the move again), Share below 380 (the end card has it), Voice
+   below 340 (the intro has it, and Sound silences both). Voice used to go FIRST, so on every phone
+   narrower than 424 px, which is most of them, there was no way mid-trip to keep the music and
+   drop the voice. No horizontal scroll at 320 (SC 1.4.10): five targets and the counter are 284. */
 @media (max-width: 423px) {
-  html.sr-phone .sr-trip__tb--voice {
-    display: none;
-  }
-}
-
-@media (max-width: 379px) {
   html.sr-phone .sr-trip__tb--replay {
     display: none;
   }
 }
 
-@media (max-width: 339px) {
+@media (max-width: 379px) {
   html.sr-phone .sr-trip__tb--share {
+    display: none;
+  }
+}
+
+@media (max-width: 339px) {
+  html.sr-phone .sr-trip__tb--voice {
     display: none;
   }
 }

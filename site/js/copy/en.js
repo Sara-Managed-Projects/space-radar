@@ -1788,13 +1788,13 @@ export const COPY = {
     expand: 'Show card',
     expandTitle: 'Bring the card back (C)',
     soundOn: 'Sound',
-    soundOnTitle: 'Music and sounds are on: turn them off',
-    soundOffTitle: 'Music and sounds are off: turn them on',
+    soundOnTitle: 'Music and sounds are on: turn them off (M)',
+    soundOffTitle: 'Music and sounds are off: turn them on (M)',
     // Spec 0069: the voice that reads each stop. It is synthetic and the control says so, every
     // time, because a visitor should know before they wonder (the Sources panel names the model).
     voice: 'Voice',
-    voiceOnTitle: 'A synthetic voice is reading each stop: turn it off and keep the music',
-    voiceOffTitle: 'Have each stop read aloud by a synthetic voice',
+    voiceOnTitle: 'A synthetic voice is reading each stop: turn it off and keep the music (V)',
+    voiceOffTitle: 'Have each stop read aloud by a synthetic voice (V)',
     leave: 'Leave',
     leaveTitle: 'Leave the trip. The camera stays exactly where it is. (Escape)',
     // ...WHICH IS NOT TRUE OF A TRIP THAT MOVED THE MAP'S CENTRE (2026-09-22). A trip may be flown
