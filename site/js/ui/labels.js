@@ -319,8 +319,26 @@ export function labelParentId(record) {
   return sys === record.id ? null : sys;
 }
 
-/** How far a label keeps off the edge of the window, in CSS pixels. */
-export const LABEL_EDGE_PAD = 4;
+/** How far a label keeps off the edge of the window, in CSS pixels. 12, not 4 (internal #334): at
+ * 4 px a name's first letter sat against the glass of a phone, which read as a name cut off. */
+export const LABEL_EDGE_PAD = 12;
+
+/** Air between a model's silhouette and the name above it, in CSS pixels. */
+export const LABEL_MODEL_GAP = 6;
+
+/**
+ * How far to raise a label so it clears its own MODEL. Pure. A label hangs from 0.4 to 1.4 of its
+ * height above the anchor, which clears a dot and nothing bigger: at the ISS arrival "Terra" was
+ * printed across Terra's own model, 84 px of spacecraft under a name 20 px above its centre
+ * (internal #334). `radiusPx` is the model's reach on screen (scene/heroes.js drawnReach); with no
+ * model it is 0 and the label stays where it always was.
+ */
+export function labelLift(radiusPx, boxHeight, gap = LABEL_MODEL_GAP) {
+  const r = Number.isFinite(radiusPx) && radiusPx > 0 ? Math.min(radiusPx, 200) : 0;
+  if (!r) return 0;
+  const clear = 0.4 * (Number.isFinite(boxHeight) ? boxHeight : 0);
+  return Math.max(0, Math.round(r + gap - clear));
+}
 
 /**
  * Where to centre a label of `boxWidth` anchored at `x`, so the whole box stays on screen.
@@ -497,12 +515,16 @@ export function createLabels(ctx, host) {
     if (!pos) return null;
     if (behindWorld(camera.position, pos, spheres, record.klass === 'world' ? record.id : null)) return null;
     const dist = pos.distanceTo(camera.position);
+    // Its model's reach on screen, when it is drawn as one (labelLift raises the name over it).
+    let r = 0;
+    const reach = ctx.heroes && typeof ctx.heroes.drawnReach === 'function' ? ctx.heroes.drawnReach(record.id) : 0;
+    if (reach > 0 && dist > 0 && camera.isPerspectiveCamera) r = (reach / dist) / Math.tan((camera.fov * Math.PI) / 360) * (h / 2);
     pos.project(camera);
     if (pos.z > 1 || pos.z < -1) return null;
     const x = (pos.x + 1) * 0.5 * w;
     const y = (1 - pos.y) * 0.5 * h;
     if (x < -20 || y < -20 || x > w + 20 || y > h + 20) return null;
-    return { x, y, dist };
+    return { x, y, dist, r };
   }
 
   /**
@@ -654,7 +676,8 @@ export function createLabels(ctx, host) {
       const bw = pool[i].node.offsetWidth;
       const bh = pool[i].node.offsetHeight;
       const x = clampLabelX(c.x, bw, w);
-      placed.push({ x, y: c.y, left: x - bw / 2, right: x + bw / 2, top: c.y - 1.4 * bh, bottom: c.y - 0.4 * bh });
+      const y = c.y - labelLift(c.r, bh);
+      placed.push({ x, y, left: x - bw / 2, right: x + bw / 2, top: y - 1.4 * bh, bottom: y - 0.4 * bh });
     }
     const keep = capKept(keepClearOf(placed, LABEL_GAP_PX, panelRects()), LABEL_CAP);
     const now = new Set();

@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 import { readFileSync } from 'node:fs';
 
 const JS = join(dirname(fileURLToPath(import.meta.url)), '..', 'site/js');
+const { labelLift, LABEL_MODEL_GAP } = await import(join(JS, 'ui/labels.js'));
 const { chooseLabels, labelName, labelParentId, isNotable, isOwnPlaceOnLadder, clampLabelX, keepClearOf, behindWorld, LABEL_EDGE_PAD, LABEL_CAP, TRAIN_CAP } = await import(join(JS, 'ui/labels.js'));
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
@@ -67,6 +68,13 @@ check(labelName({ name: 'A'.repeat(60), meta: {} }).length <= 34, 'a long name i
   // Garbage in: the caller has a NaN projection now and then, and this must not turn it into 4.
   check(Number.isNaN(clampLabelX(NaN, box, W)), 'a NaN anchor stays NaN rather than being placed at the edge');
   check(Number.isFinite(clampLabelX(100, undefined, W)), 'a label whose width is not known yet is still placed');
+  // Internal #334: off the glass's edge, and above its own model.
+  check(LABEL_EDGE_PAD >= 12, `a label keeps ${LABEL_EDGE_PAD} px off the edge; 4 put its first letter against a phone's glass`);
+  check(clampLabelX(5, box, W) - box / 2 === LABEL_EDGE_PAD, 'a label anchored at the left edge starts a pad in');
+  check(labelLift(0, 20) === 0 && labelLift(undefined, 20) === 0 && labelLift(NaN, 20) === 0, 'no model, no lift: a dot\'s label is where it was');
+  check(labelLift(6, 20) === Math.max(0, 6 + LABEL_MODEL_GAP - 8), 'a model smaller than the label\'s own clearance barely moves it');
+  { const bh = 20; const r = 42; const lift = labelLift(r, bh); check((0 - lift) - 0.4 * bh <= -(r + LABEL_MODEL_GAP) + 0.5, `an 84 px model's name sits above its silhouette (bottom ${-lift - 0.4 * bh}, model top ${-r})`); }
+  check(labelLift(5000, 20) <= 200 + LABEL_MODEL_GAP, 'a model that fills the screen does not throw its name off it');
 }
 
 // BOXES, NOT ANCHORS. Seen on the live site on a 390 px phone, 2026-09-21: two payloads from one
