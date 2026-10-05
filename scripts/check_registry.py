@@ -219,6 +219,10 @@ TOUR_WORLD_PARENTS: dict[str, str] = {}
 TOUR_UNSQUEEZED_STAGES = {"sun"}
 TOUR_ALWAYS_TRUE_WORLDS = {"sun", "moon"}
 TOUR_MAX_TITLE = 60
+# The trip's intro shows the blurb in the sidebar and in the phone's sheet, about 40 characters to a
+# line: 80 is two lines. Internal #333 measured four (158 characters) where docs/ui-guide.md 3.17
+# asks for a line or two. The narration reads title + body, never the blurb.
+TOUR_MAX_BLURB = 80
 # Spec 0034 req 3: a stop's `chapter:` is a title card in the letterbox's top bar -- "Chapter two:
 # the ringed planet" -- and not a sentence. Forty characters is what the bar holds on a 390 px
 # phone beside the trip's own title before either is cut with an ellipsis.
@@ -515,6 +519,8 @@ def check_tours(oddities_doc: dict, layer_ids: set, world_ids: set, site_ids: se
             fail(where, f"title is {len(str(title))} characters, over {TOUR_MAX_TITLE}")
         if not tour.get("blurb"):
             fail(where, "no `blurb:` -- one sentence saying what this is")
+        elif len(str(tour.get("blurb"))) > TOUR_MAX_BLURB:
+            fail(where, f"blurb is {len(str(tour.get('blurb')))} characters, over {TOUR_MAX_BLURB}: two lines on the intro, no more")
         for label in ("title", "blurb"):
             if "--" in str(tour.get(label) or ""):
                 fail(where, f"the {label} has \"--\"; {TOUR_DOUBLE_HYPHEN}")

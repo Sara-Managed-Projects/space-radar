@@ -153,7 +153,7 @@ export const TOURS = [
   {
     "id": "journey-to-the-station",
     "title": "From your ground to the space station",
-    "blurb": "Straight up from where you are, out to the station, and on to the minute it next crosses your sky. This trip moves the clock and puts it back when you leave.",
+    "blurb": "Straight up to the station and its next pass. The clock moves, then goes back.",
     "requires": [
       "stations"
     ],
@@ -387,7 +387,7 @@ export const TOURS = [
   {
     "id": "to-the-edge",
     "title": "To the edge of what we know",
-    "blurb": "From the Sun to the first black hole anyone photographed, in eight steps. Leaving brings you back to Earth.",
+    "blurb": "From the Sun to a photographed black hole. Leaving brings you back to Earth.",
     "requires": [
       "stars",
       "deep-sky",
@@ -566,7 +566,7 @@ export const TOURS = [
   {
     "id": "travel-to-exoplanets",
     "title": "Travel to exoplanets",
-    "blurb": "Every planet we know of around another star, then the seven of TRAPPIST-1 one by one, at their own sizes. Leaving brings you back to Earth.",
+    "blurb": "Other stars' planets, then TRAPPIST-1's seven. Leaving brings you back to Earth.",
     "requires": [
       "stars",
       "exoplanets",
@@ -809,7 +809,7 @@ export const TOURS = [
   {
     "id": "moon-landings",
     "title": "Where we have landed on the Moon",
-    "blurb": "The first soft landing, the first people, a rover driven from Earth, the far side, the south pole and the first private landers. Leaving brings you back to Earth.",
+    "blurb": "Landings from the first to the private ones. Leaving brings you back to Earth.",
     "requires": [
       "hand-kept-sites",
       "worlds"
@@ -1026,7 +1026,7 @@ export const TOURS = [
   {
     "id": "outer-solar-system",
     "title": "Out past Jupiter, to the farthest thing we sent",
-    "blurb": "Ten stops through the cold half of the Solar System, each world at its true size. Leaving brings you back to Earth.",
+    "blurb": "Ten stops through the cold outer worlds. Leaving brings you back to Earth.",
     "requires": [
       "worlds",
       "deep-space",
@@ -1254,7 +1254,7 @@ export const TOURS = [
   {
     "id": "a-year-in-a-minute",
     "title": "A year in a minute",
-    "blurb": "The planets going round the Sun, a day every sixth of a second. Leaving puts the clock back and brings you back to Earth.",
+    "blurb": "A year of orbits in a minute. Leaving puts the clock back and you back to Earth.",
     "requires": [
       "worlds"
     ],
@@ -1361,7 +1361,7 @@ export const TOURS = [
   {
     "id": "chasing-the-solar-eclipse",
     "title": "Chasing the solar eclipse",
-    "blurb": "The Moon's shadow crossing the Earth at the next total eclipse, to the minute. This trip moves the clock.",
+    "blurb": "The next total eclipse's shadow crossing the Earth. This trip moves the clock.",
     "requires": [
       "worlds"
     ],
