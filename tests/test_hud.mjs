@@ -170,7 +170,9 @@ const labels = readFileSync(join(JS, 'ui/labels.js'), 'utf8');
 check(/namesSelection\(\)/.test(labels), 'the labels leave the selection\'s name to the tag while it shows');
 
 // --- 9. the CSS: 0045's brackets, the acquire once, the floors ----------------------------------------
-const css = readFileSync(join(ROOT, 'site/css/ui.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+// Tokens written out (tests/helpers/css_tokens.mjs): the numbers below are still the numbers.
+const { resolveTokens } = await import(join(ROOT, 'tests/helpers/css_tokens.mjs'));
+const css = resolveTokens(readFileSync(join(ROOT, 'site/css/ui.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, ''));
 const bracketRule = css.match(/([^{}]*\.sr-bracketed::before[^{}]*)\{/);
 check(bracketRule && /\.sr-reticle__box::before/.test(bracketRule[1]), 'the reticle is the same bracket rule as a focused control (0045)');
 check(/\.sr-reticle__box\.is-acquiring\s*\{[^}]*animation: sr-acquire var\(--sr-mid\) var\(--sr-ease\)/.test(css), 'acquire over --sr-mid on --sr-ease');
