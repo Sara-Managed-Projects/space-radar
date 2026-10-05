@@ -1,0 +1,32 @@
+name: A new trip, object or piece of content
+description: A guided trip, a spacecraft, a landing site, a star, a card that should exist.
+labels: [enhancement]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What is it?
+      options:
+        - A guided trip
+        - A spacecraft, satellite or probe
+        - A place (landing site, launch pad, observatory)
+        - A star, nebula, galaxy or exoplanet
+        - A 3D model or a map for something already in the app
+        - Better words for a card
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What should a visitor see and learn?
+      description: For a trip, list the stops in order, one line each. For an object, say what it is and why it is worth a card.
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Sources
+      description: Links for the facts (positions, sizes, dates) and for any model or picture, with its licence if you know it. Every fact in the app carries its source, so this is the part that makes it buildable.
+    validations:
+      required: true

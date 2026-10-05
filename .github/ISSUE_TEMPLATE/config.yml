@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Run it on your own computer or in a classroom
+    url: https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/RUN_LOCALLY.md
+    about: Step-by-step instructions, offline use and troubleshooting.
+  - name: Report a security problem privately
+    url: https://github.com/Sara-Managed-Projects/space-radar/security/advisories/new
+    about: Please do not open a public issue for a vulnerability.

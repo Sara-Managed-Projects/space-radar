@@ -1,0 +1,191 @@
+# Contributing to Space Radar
+
+Thank you for being here. Space Radar exists so that anyone can learn about space freely and
+simply, and it gets better every time somebody fixes a sentence, corrects a number or teaches it a
+new object. You do not need to be a rendering engineer. Some of the best changes in this project
+are one line of YAML with a source next to it.
+
+Ideas, bug reports, corrections and questions are all welcome as
+[issues](https://github.com/Sara-Managed-Projects/space-radar/issues/new/choose). Working with an
+AI assistant is welcome too; the checks below are what keep everyone, human or not, honest.
+
+- [Your first contribution, in ten minutes](#your-first-contribution-in-ten-minutes)
+- [How the project is put together](#how-the-project-is-put-together)
+- [Recipes](#recipes): a trip, an object, a layer
+- [Tests](#tests)
+- [Style](#style) and [the honesty rules](#the-honesty-rules)
+- [Pull requests](#pull-requests)
+
+## Your first contribution, in ten minutes
+
+You need **git**, **Python 3** with PyYAML (`pip install pyyaml`) and **Node 22+**. There is no
+`npm install` and no build step.
+
+```bash
+git clone https://github.com/<you>/space-radar.git && cd space-radar
+python3 -m http.server 8177 --directory site      # open http://localhost:8177
+```
+
+Now teach the search box a word. People type "station" and mean the ISS; the catalogue calls it
+`ISS (ZARYA)`. `registry/aliases.yaml` is where that is fixed:
+
+```yaml
+  - {say: space telescope, means: hst, why: "what people call Hubble before the name comes back"}
+```
+
+```bash
+python3 scripts/gen_aliases_js.py     # writes the copy the browser reads
+scripts/test.sh aliases registry      # the checks that touch it
+```
+
+Reload the page, type your word, and it is found. Commit both files (the YAML and the generated
+`site/js/data/aliases.js`), open a pull request, and that is a real contribution. Issues labelled
+[good first issue](https://github.com/Sara-Managed-Projects/space-radar/labels/good%20first%20issue)
+are about this size.
+
+## How the project is put together
+
+```
+registry/*.yaml   what exists: worlds, layers, sources, trips, models, sites, budgets ...
+scripts/gen_*.py  turn a registry into the JavaScript the browser reads
+site/             the whole app, served as it is: plain ES modules, three.js, no bundler
+site/js/copy/     every word a visitor reads (en.js)
+tests/            node and python tests; no browser needed for almost all of them
+harvest/          the scheduled job that saves each data source to /data/v1/
+tools/            things run by hand: a local server, headless Chrome, the trip-video renderer
+```
+
+**The registry is the architecture.** A browser does not read YAML, so each registry has a
+*mirror* under `site/js/data/` written by its generator: `registry/tours.yaml` →
+`scripts/gen_tours_js.py` → `site/js/data/tours.js`. The mirror is committed. CI runs every
+generator with `--check` and refuses a mirror that does not match its registry, so the rule is
+simple:
+
+> Edit the YAML, run its generator, commit both. Never edit a file that says GENERATED.
+
+The registries also carry the *evidence*: where a number came from, the day it was read, what the
+page said. Only a whitelisted subset reaches the browser. If you add a fact, add its source in the
+same row; `scripts/check_registry.py` will ask for it.
+
+## Recipes
+
+### Add or fix an object
+
+| You want to | Edit | Then run |
+|---|---|---|
+| Make search find something by another name | `registry/aliases.yaml` | `gen_aliases_js.py` |
+| Add a landing site, a launch pad or a dish | `registry/sites.yaml` | `gen_sites_js.py` |
+| Add a famous star's line | `registry/stars-notable.yaml` | `gen_stars_notable_js.py` |
+| Add a meteor shower | `registry/showers.yaml` | `gen_showers_js.py` |
+| Add a moon or a dwarf planet | `registry/worlds.yaml` (+ `site/js/scene/worlds.js`, the one hand-kept mirror) | `check_registry.py` tells you what is missing |
+| Add a strange thing we sent to space | `registry/oddities.yaml` | `gen_oddities_js.py` |
+| Add a 3D model | `registry/models.yaml` (`real_models:`), the `.glb` in `site/models/`, a row in `CREDITS.md` | `scripts/fetch-model.sh` shows how the existing ones were fetched and slimmed |
+| Fix a card's wording | `site/js/copy/en.js` | `scripts/test.sh copy` |
+
+`tests/test_growth.py` is the proof that this works: it adds a moon of Saturn using registry rows
+only, and fails if doing so ever needs a code change.
+
+### Add a trip
+
+A trip is a row in `registry/tours.yaml`: a title, a blurb, and a list of stops. A stop names a
+target that already exists, how far away the camera stands, and the card to show:
+
+```yaml
+  - id: iss
+    target: {layer: stations, catalog: "25544"}
+    distance_km: 3000
+    card:
+      title: The International Space Station
+      body: "About the size of a football pitch, and moving at nearly eight kilometres a second."
+```
+
+Run `python3 scripts/gen_tours_js.py && python3 scripts/gen_trip_pages.py`, then open
+`http://localhost:8177/#trip=<your-id>` and fly it. Write for a curious twelve-year-old; every
+number in a card needs a source in a comment beside it.
+
+Two things a trip also needs are made with tools you may not have: its card picture
+(`scripts/build_trip_thumbs.py`) and its narration (`scripts/narrate.py`, a local text-to-speech
+model). **Open the pull request as a draft without them.** Those two checks will be red; say so in
+the description, and a maintainer will render the picture and the voice onto your branch.
+
+### Add a data layer
+
+1. The publisher goes in `registry/sources.yaml`: URL, how often to ask, whether a browser may
+   call it (CORS), and the credit line. Read the publisher's terms first and put what they say in
+   `CREDITS.md` §4; `tests/test_credits.py` fails until the credit line is there.
+2. A parser in `harvest/` (for the saved copy) and in `site/js/data/parsers.js` (for the browser),
+   with a captured fixture under `tests/fixtures/` so the test never touches the network.
+3. A row in `registry/layers.yaml`: which source, which propagator, which glyph, which card.
+   Then `python3 scripts/gen_layers_js.py && python3 scripts/gen_sources_json.py`.
+4. New code loads with a dynamic `import()` when the layer is switched on, not at boot: the first
+   visit has a byte budget (`registry/budgets.yaml`) and a test that holds it.
+
+Open an issue before a big one. It is much nicer to agree on the shape first.
+
+## Tests
+
+```bash
+scripts/test.sh                 # everything CI runs, a few minutes
+scripts/test.sh contract        # only items whose name contains "contract"
+scripts/test.sh --list          # what there is
+node tests/test_contract.mjs    # or run one file directly
+```
+
+The tests are plain scripts: no framework, no install. Each prints what it checked. A check that
+cannot fail is not a check, so most of them include a case that breaks the rule on purpose
+(`tests/test_refusals.py` is nothing but those).
+
+To look at your change in a real browser without opening one, `tools/cdp.mjs` drives headless
+Chrome and takes a screenshot; its header comment explains how. Be gentle with the data
+publishers while testing: CelesTrak allows one download per file per two hours. Run
+`python3 scripts/save_offline_data.py` once and your local copy boots from disk instead.
+
+## Style
+
+- **Plain JavaScript**, ES modules, no framework, no transpiler. Match the file you are in.
+- **Comments explain why.** What the code does is in the code; what a reader cannot see is the
+  reason, the measurement behind a constant, and the bug that made a line necessary. Many files
+  start with a short story of what went wrong before. Keep that habit; it is the project's memory.
+- **Every word a visitor reads lives in `site/js/copy/en.js`.** `scripts/check_copy.py` refuses a
+  sentence written inside UI code. Plain words, sentence case, no exclamation marks.
+- **Numbers carry units and honest precision**: `27 576 km/h`, not `27576.3219`.
+- **UI changes follow [docs/DESIGN_PRINCIPLES.md](docs/DESIGN_PRINCIPLES.md)**: the scene comes
+  first, one accent colour, one place for everything.
+- No new runtime dependency and no CDN without a conversation first. Everything is vendored.
+
+## The honesty rules
+
+These are the heart of the project, and CI enforces most of them.
+
+1. **Everything drawn is measured, modelled or illustrative, and says which.** A satellite's dot is
+   worked out from elements of a stated age. The Milky Way is an illustration built from published
+   measurements. The card says so, in small type, and that line is never removed to make a screen
+   prettier.
+2. **Every fact has a source and a date** in its registry row.
+3. **Every asset has a licence and a line in [CREDITS.md](CREDITS.md)**: models, textures,
+   pictures, sounds, fonts, data. No hot-linking somebody's files without their terms allowing it.
+4. **A missing answer is shown as missing.** "Could not look" is a fine thing for the app to say.
+   An empty sky presented as the real one is not.
+5. **No personal data.** The app has no accounts and no tracking; keep it that way.
+
+If you find something on the site that is wrong, a
+[data-accuracy report](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=data-accuracy.yml)
+with a source is one of the most valuable things you can send.
+
+## Pull requests
+
+1. Fork, branch from `main`, make the change, run `scripts/test.sh`.
+2. Open the pull request. **Open it as a draft** while you are still working or want an early look.
+3. CI runs on every push. Read a red check's log; they are written to say what to do.
+4. **A green pull request that is not a draft is merged automatically** (squashed). So "ready for
+   review" means "ready to ship". If you want a human to look first, keep it a draft and ask, or
+   ask a maintainer to add the `no-auto-merge` label.
+5. One topic per pull request. Small ones are merged fastest. The title becomes the changelog line:
+   say what changed for a visitor ("Hubble is found when you type hubble"), not what you did.
+
+Releases are cut about once a month; see [docs/RELEASING.md](docs/RELEASING.md).
+
+By contributing you agree that your work is released under the project's [MIT licence](LICENSE),
+and you agree to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+Have fun. Somewhere a classroom is going to fly to Saturn on your commit.

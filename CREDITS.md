@@ -11,6 +11,40 @@ be verified that way, it says so in plain words. Checked 2026-09-07.
 
 ---
 
+## At a glance
+
+Every row is a section below, with the licence text read from its publisher, what was changed, and
+the credit line to keep. `tests/test_credits.py` and `scripts/check_registry.py` refuse a data
+source, 3D model, texture, picture, tile set, sound or font that ships without its line here.
+
+| What | From | Licence or terms | Section |
+|---|---|---|---|
+| Rendering, orbits, astronomy | three.js, satellite.js, astronomy-engine | MIT | [1](#1-code-libraries) |
+| Icons | Lucide (nine, inlined) | ISC, MIT | [1](#1-code-libraries) |
+| Planet, moon and sky maps | Solar System Scope; NASA, USGS and mission teams | CC BY 4.0; public domain | [2](#2-textures) |
+| Stars and constellations | d3-celestial; HYG v4.4 | BSD-3-Clause; CC BY-SA 4.0 | [3](#3-star-and-constellation-data), [3c](#3c-stars-in-three-dimensions--hyg-cc-by-sa-40) |
+| Deep-sky objects | OpenNGC; Wikipedia for distances | CC BY-SA 4.0; facts, cited per row | [3d](#3d-deep-sky-objects--openngc-cc-by-sa-40-and-the-distances-wikipedias-editors-collected) |
+| The Milky Way | our illustration, from Reid et al. 2019 | measurements, cited | [3e](#3e-the-milky-way-model--an-illustration-built-from-published-measurements) |
+| 3D spacecraft models | NASA 3D Resources | public domain (NASA media guidelines) | [3b](#3b-3d-models--nasa-public-domain) |
+| Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
+| Nebula and galaxy photographs | ESA/Hubble, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-eso-and-noirlab-cc-by-40) |
+| Satellites and their orbits | CelesTrak | free, with an enforced usage policy | [4.1](#41-celestrak--read-this-before-you-deploy-a-fork) |
+| Launches | The Space Devs, Launch Library 2 | free to 15 requests an hour; no published licence | [4.2](#42-the-space-devs--launch-library-2) |
+| Deep-space positions, asteroids, comets, close approaches | NASA/JPL Horizons, Small-Body Database, CNEOS; ESA NEOCC | see the section | [4.18](#418-the-sources-the-harvester-reads) |
+| Space weather and the aurora | NOAA SWPC | public domain | [4.4](#44-noaa-swpc) |
+| Exoplanets | NASA Exoplanet Archive | public; cite the DOI | [4.7](#47-nasa-exoplanet-archive--confirmed-planets) |
+| Today's clouds | NASA GIBS (GOES, Himawari) | open; acknowledgement asked | [4.13](#413-nasa-gibs--todays-clouds-2026-09-28) |
+| Storms, lightning | GDACS; NOAA nowCOAST | CC BY 4.0; public domain | [4.14](#414-gdacs--tropical-cyclones-2026-09-28), [4.17](#417-noaa-nowcoast--lightning-2026-10-03) |
+| Moon and Mars close-up tiles | NASA Solar System Treks | NASA content | [4.16](#416-nasa-solar-system-treks--the-moon-and-mars-close-up-2026-10-03) |
+| Countries and seas | Natural Earth | public domain | [4.15](#415-natural-earth--the-country-or-sea-under-a-satellite-2026-09-29) |
+| Dishes, crews, observatories | NASA DSN Now; Open Notify; Wikidata | see the section; CC0 for Wikidata | [4.3](#43-nasa--dsn-now), [4.18](#418-the-sources-the-harvester-reads) |
+| Music and sounds | John Bartmann (Free Music Archive); Freesound contributors | CC0 1.0 | [9](#9-audio--music-and-sounds) |
+| The trips' voice | Kokoro-82M, a synthetic voice | Apache-2.0 | [9b](#9b-audio--the-trips-narration-a-synthetic-voice) |
+| Typefaces | Inter, Barlow Semi Condensed, JetBrains Mono, Instrument Serif | SIL OFL 1.1 | [10](#10-fonts) |
+| The GitHub mark | GitHub, Inc. | a trademark, used under GitHub's logo rules | [4.6](#46-third-party-trademarks-the-app-names-or-draws) |
+
+---
+
 ## 1. Code libraries
 
 All three are vendored in `site/vendor/`. There is no `package.json` and no build step: what is in
@@ -187,6 +221,10 @@ non-commercial use only").
 | Star catalogue (repacked) | `stars.bin` | BSD-3-Clause | Star data from d3-celestial, © 2015 Olaf Frohn | <https://github.com/ofrohn/d3-celestial> |
 | Constellation lines | `constellations.lines.json` | BSD-3-Clause | Constellation lines from d3-celestial, © 2015 Olaf Frohn | <https://github.com/ofrohn/d3-celestial> |
 | Constellation names | `constellation-names.json` | BSD-3-Clause | Constellation names and label positions from d3-celestial, © 2015 Olaf Frohn | <https://github.com/ofrohn/d3-celestial> |
+
+`registry/models.yaml` (`data:`) carries the same three credits in the short form the app prints:
+"Star catalogue: d3-celestial (Olaf Frohn)", "Constellation lines: d3-celestial (Olaf Frohn)" and
+"Constellation names: d3-celestial (Olaf Frohn)".
 
 Verified against upstream `master`:
 
@@ -863,6 +901,32 @@ beyond one saved picture the test decodes (`tests/fixtures/weather/`).
 The winds the other worlds' bands move at, and Mars's seasonal tables, are numbers from published
 papers, each named with its DOI in `registry/weather.yaml`; no data file of theirs is shipped.
 
+### 4.18 The sources the harvester reads
+
+Added 2026-10-05, when `tests/test_credits.py` first compared `registry/sources.yaml` with this
+file and found nine credit lines missing. The harvester (`harvest/`) reads these on a schedule and
+writes each answer, unchanged, to `/data/v1/<id>.json`; the browser reads that saved copy. **That
+makes spaceradar.ai, and any release zip that includes `site/data/v1/`, a redistributor of them**,
+which the table in §4 (written when the browser fetched everything itself) does not say. The rows
+already covered above (CelesTrak §4.1, Launch Library 2 §4.2, DSN Now §4.3, SWPC's Kp §4.4, the
+Exoplanet Archive §4.7, GDACS §4.14) are repeated only where the credit line differs.
+
+| `sources.yaml` id | Publisher | What it gives | Terms, and how far they were checked | Credit line | Host |
+|---|---|---|---|---|---|
+| `jpl-sbdb-neo`, `jpl-sbdb-comets` | NASA/JPL Solar System Dynamics | orbits of near-Earth asteroids and of comets | NASA/JPL-Caltech; the API's documentation gives no licence text. NASA content is generally not copyrighted in the United States. **Terms page not found in this pass.** | Orbits: NASA/JPL Small-Body Database | `ssd-api.jpl.nasa.gov` |
+| `jpl-cad` | NASA/JPL Center for Near Earth Object Studies | close approaches to the Earth | as above | Close approaches: NASA/JPL CNEOS | `ssd-api.jpl.nasa.gov` |
+| `horizons-deep-space` | NASA/JPL Solar System Dynamics, Horizons | where each deep-space craft is, as vectors | as above | Ephemerides: JPL Horizons | `ssd.jpl.nasa.gov` |
+| `esa-neocc-close` | ESA Near-Earth Object Coordination Centre | ESA's own list of close approaches | The portal's footer reads "Copyright 2000 - 2026 European Space Agency. All rights reserved." (read 2026-10-05). **No reuse licence was found; treat the saved copy as not cleared for redistribution** until ESA's terms are read in full. | Close approaches: ESA NEOCC | `neo.ssa.esa.int` |
+| `swpc-ovation` | NOAA Space Weather Prediction Center | the OVATION aurora forecast | US Government work, public domain (§4.4) | Aurora forecast: NOAA SWPC | `services.swpc.noaa.gov` |
+| `nasa-exoplanet-archive` | NASA Exoplanet Archive, Caltech/IPAC | every confirmed exoplanet | §4.7 | Exoplanets: NASA Exoplanet Archive (Caltech/IPAC), DOI 10.26133/NEA13 | `exoplanetarchive.ipac.caltech.edu` |
+| `open-notify-astros` | Open Notify (a personal open-source project) | who is aboard the ISS and Tiangong | The site calls itself "an open source project" and states no licence for the data (read 2026-10-05); the list is a handful of names and facts. | Who is in space: Open Notify | `api.open-notify.org` |
+| `wikidata-observatories` | Wikidata | where observatories are | CC0 1.0: Wikidata's structured data is dedicated to the public domain | Observatory locations: Wikidata (CC0) | `query.wikidata.org` |
+| `space-track-tip` | 18th Space Defense Squadron, through Space-Track.org | reentry predictions | **Switched off** (`enabled: false`). Space-Track needs an account and its user agreement restricts passing the data on; nothing from it is fetched, saved or shipped. The row exists so the app can say "could not look" about it by name. | Reentry predictions: 18 SDS via Space-Track.org | `www.space-track.org` |
+
+Comets came from the Minor Planet Center (§4.5) until 2026-10-01 and come from JPL's Small-Body
+Database since; the site's saved copy may still hold an `mpc-comets` file from before, and §4.5's
+condition (name the source) attaches to it for as long as it is served.
+
 ## 4.6 Third-party trademarks the app names or draws
 
 None of the marks below is licensed to this project and none is used as a badge of origin. They are
@@ -1172,8 +1236,8 @@ code. No licence attaches; the credit is owed anyway.
 - **SGP4/SDP4**: Hoots & Roehrich, *Spacetrack Report #3*; David Vallado et al., *Revisiting
   Spacetrack Report #3* (AIAA 2006-6753). Reaches this project through satellite.js.
 
-No third-party fonts are used: `site/css/` specifies system font stacks only. No file in the tree
-embeds a base64 asset.
+Fonts are in [§10](#10-fonts). (This paragraph said "no third-party fonts are used" until
+2026-10-05; that stopped being true on 2026-09-28.)
 
 ## 9. Audio — music and sounds
 

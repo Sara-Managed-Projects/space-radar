@@ -1,0 +1,29 @@
+name: An idea or a feature
+description: Something Space Radar should do, show or explain.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: who
+    attributes:
+      label: Who is it for, and what would they do with it?
+      description: "For example: a teacher with a projector wants to play one trip on a loop."
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: Describe it in your own words. A sketch or a link to something that does it well is welcome.
+    validations:
+      required: true
+  - type: textarea
+    id: data
+    attributes:
+      label: Where would the data come from?
+      description: If it needs data, a model or pictures, where are they published and under what licence? Leave empty if you do not know.
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Would you like to build it?
+      options:
+        - label: I would like to try this myself (we will help you get started)

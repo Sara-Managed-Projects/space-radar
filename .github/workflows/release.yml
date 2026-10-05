@@ -1,0 +1,149 @@
+name: release
+
+# A tag `vX.Y.Z` becomes a GitHub Release with one file: space-radar-X.Y.Z.zip, the app as served
+# plus a saved copy of the live data, so a school that downloads it can run it with no internet
+# (docs/RUN_LOCALLY.md). docs/RELEASING.md is the checklist a person follows before pushing the tag.
+#
+# The notes are the tag's own section of CHANGELOG.md, and a tag with no section is refused: a
+# release nobody described is a zip nobody can choose between.
+#
+# `workflow_dispatch` builds the same zip from any branch and keeps it as an artifact, publishing
+# nothing. That is how this workflow is tested without cutting a release.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to build as a dry run (no tag, no release), e.g. 1.0.0"
+        required: true
+        default: "0.0.0-dryrun"
+
+permissions:
+  contents: read
+
+jobs:
+  zip:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # to create the release; nothing else here needs to write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Which version
+        id: v
+        env:
+          # Read by Actions before bash sees the script, so neither value is ever shell-parsed.
+          TAG: ${{ github.ref_name }}
+          EVENT: ${{ github.event_name }}
+          ASKED: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT" = "push" ]; then VERSION="${TAG#v}"; else VERSION="$ASKED"; fi
+          case "$VERSION" in
+            [0-9]*.[0-9]*.[0-9]*) ;;
+            *) echo "::error::'$VERSION' is not MAJOR.MINOR.PATCH (docs/RELEASING.md)"; exit 1 ;;
+          esac
+          case "$VERSION" in *[!0-9A-Za-z.+-]*) echo "::error::unexpected character in '$VERSION'"; exit 1 ;; esac
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      # The section between `## [X.Y.Z]` and the next `## [`. A dry run falls back to Unreleased.
+      - name: Notes from CHANGELOG.md
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          section() { awk -v want="## [$1]" 'index($0, want) == 1 { on = 1; next } on && /^## \[/ { exit } on { print }' CHANGELOG.md; }
+          section "$VERSION" > notes.md
+          if ! grep -q '[^[:space:]]' notes.md; then
+            if [ "$EVENT" = "push" ]; then
+              echo "::error::CHANGELOG.md has no section '## [$VERSION]'. Write it, merge it, then tag (docs/RELEASING.md step 4)."
+              exit 1
+            fi
+            section "Unreleased" > notes.md
+          fi
+          {
+            echo
+            echo "---"
+            echo "**To run it:** download \`space-radar-$VERSION.zip\`, unzip it, and follow \`docs/RUN_LOCALLY.md\` inside. It includes a copy of the data saved on the day of this release, so it starts with no internet."
+          } >> notes.md
+          cat notes.md
+
+      # Only spaceradar.ai is contacted (scripts/save_offline_data.py says why): no publisher's
+      # rate limit is spent on a release. A copy without the stations is not one worth shipping.
+      - name: Save a copy of the live data into site/data/v1/
+        run: |
+          set -euo pipefail
+          python3 scripts/save_offline_data.py
+          test -s site/data/v1/index.json
+          test -s site/data/v1/celestrak-stations.json
+          du -sh site/data/v1
+
+      - name: Build the zip
+        id: zip
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          set -euo pipefail
+          NAME="space-radar-$VERSION"
+          mkdir -p "dist/$NAME/docs" "dist/$NAME/scripts"
+          cp -R site "dist/$NAME/site"
+          cp LICENSE CREDITS.md CHANGELOG.md "dist/$NAME/"
+          cp docs/RUN_LOCALLY.md "dist/$NAME/docs/"
+          cp scripts/save_offline_data.py "dist/$NAME/scripts/"
+          {
+            echo "Space Radar $VERSION"
+            echo
+            echo "1. Open a terminal in this folder."
+            echo "2. Windows:      py -m http.server 8177 --directory site"
+            echo "   macOS, Linux: python3 -m http.server 8177 --directory site"
+            echo "3. Open http://localhost:8177 in your browser."
+            echo
+            echo "It works with no internet. docs/RUN_LOCALLY.md has the details and the troubleshooting."
+            echo "The data in site/data/v1 was saved on $(date -u +%Y-%m-%d); CREDITS.md says whose it is."
+          } > "dist/$NAME/START-HERE.txt"
+          find "dist/$NAME" -name .DS_Store -delete
+          (cd dist && zip -qr -9 "$NAME.zip" "$NAME")
+          (cd dist && sha256sum "$NAME.zip" | tee "$NAME.zip.sha256")
+          ls -l "dist/$NAME.zip"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+
+      # The zip has to serve: index.html and the saved copy's index answer from the unpacked folder.
+      - name: The zip serves
+        env:
+          NAME: ${{ steps.zip.outputs.name }}
+        run: |
+          set -euo pipefail
+          mkdir check && (cd check && unzip -q "../dist/$NAME.zip")
+          nohup python3 -m http.server 8177 --directory "check/$NAME/site" --bind 127.0.0.1 >/tmp/serve.log 2>&1 &
+          for _ in $(seq 1 40); do curl -fsS -o /dev/null http://127.0.0.1:8177/index.html && break; sleep 0.25; done
+          curl -fsS http://127.0.0.1:8177/index.html | grep -q "<canvas\|js/main.js"
+          curl -fsS http://127.0.0.1:8177/data/v1/index.json | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["schema"] == 1 and d["snapshots"], d.keys()'
+          curl -fsS -o /dev/null http://127.0.0.1:8177/js/main.js
+
+      - name: Keep the zip (dry run)
+        if: ${{ github.event_name != 'push' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.zip.outputs.name }}
+          path: dist/*.zip*
+          retention-days: 7
+
+      - name: Publish the release
+        if: ${{ github.event_name == 'push' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          VERSION: ${{ steps.v.outputs.version }}
+          NAME: ${{ steps.zip.outputs.name }}
+        run: |
+          set -euo pipefail
+          PRE=""; case "$VERSION" in *-*) PRE="--prerelease" ;; esac
+          gh release create "$TAG" "dist/$NAME.zip" "dist/$NAME.zip.sha256" \
+            --repo "$GITHUB_REPOSITORY" --title "Space Radar $VERSION" --notes-file notes.md --verify-tag $PRE

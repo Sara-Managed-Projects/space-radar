@@ -1,0 +1,33 @@
+name: A number, name or position is wrong
+description: Space Radar says something that is not true, or draws something in the wrong place.
+labels: [bug, "area:space-accuracy"]
+body:
+  - type: markdown
+    attributes:
+      value: Thank you. Getting it right matters more to this project than anything else.
+  - type: input
+    id: object
+    attributes:
+      label: Which object or card?
+      placeholder: Hubble Space Telescope / the Apollo 12 stop of the Moon trip
+    validations:
+      required: true
+  - type: textarea
+    id: says
+    attributes:
+      label: What does Space Radar say or show?
+      description: Copy the words or attach a screenshot. Include the "Sources for this record" lines from the card if there are any.
+    validations:
+      required: true
+  - type: textarea
+    id: truth
+    attributes:
+      label: What is correct, and who says so?
+      description: A link to the publisher (NASA, ESA, JPL Horizons, a paper, an agency page) and the date you read it.
+    validations:
+      required: true
+  - type: input
+    id: when
+    attributes:
+      label: When did you see it?
+      description: Positions depend on the time. The date and time, or the address from the address bar.

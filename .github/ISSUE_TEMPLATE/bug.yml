@@ -1,0 +1,38 @@
+name: Something is broken
+description: The app did something wrong, looked wrong, or did not load.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you saw, and what you expected instead. A screenshot helps a lot.
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Where?
+      description: The address from the address bar (it records the view), or "my own copy, release 1.2.0".
+      placeholder: https://www.spaceradar.ai/#m=wonder&at=iss
+  - type: input
+    id: device
+    attributes:
+      label: Device and browser
+      placeholder: Windows 11 laptop, Chrome 141 / iPhone 13, Safari
+    validations:
+      required: true
+  - type: dropdown
+    id: network
+    attributes:
+      label: Were you online?
+      options:
+        - "Yes"
+        - "No, running offline from a saved copy"
+        - "Behind a school or office filter"
+        - "Not sure"
+  - type: textarea
+    id: more
+    attributes:
+      label: Anything else
+      description: Does it happen every time? What does the Sources line at the bottom of the sidebar say?
