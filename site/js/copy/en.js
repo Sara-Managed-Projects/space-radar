@@ -808,7 +808,7 @@ export const COPY = {
   // leaving a visitor to wonder why a link to the Moon opened on the Earth.
   link: {
     unknownVersion: 'This link is from a newer map. Showing the default view.',
-    unknownTrip: 'That trip is no longer on this map. Showing the default view.',
+    unknownTrip: 'That trip is gone from this map. Showing the default view.',
     unknownAt: 'That object is not on this map; showing the default view.',
     unknownStage: 'This map cannot centre on that place. Showing the default.',
   },
