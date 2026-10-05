@@ -57,7 +57,7 @@ the tree is what the browser runs.
 | meshopt decoder | r185 bundle | MIT | `meshopt_decoder.module.js`, © 2016-2024 Arseny Kapoulkine |
 | satellite.js | 7.1.0 | MIT | © 2013 Shashwat Kandadai, UCSC Jack Baskin School of Engineering | <https://github.com/shashwatak/satellite-js> |
 | astronomy-engine | 2.1.17–2.1.19 (see note) | MIT | © 2019–2023 Don Cross <cosinekitty@gmail.com> | <https://github.com/cosinekitty/astronomy> |
-| Lucide icons (eight, inlined) | `main`, read 2026-10-01 | ISC; the Feather-derived ones MIT | © Lucide Icons and Contributors; Feather © 2013-present Cole Bemis | <https://lucide.dev> |
+| Lucide icons (inlined; the list is below) | `main`, read 2026-10-01 to 2026-10-05 | ISC; the Feather-derived ones MIT | © Lucide Icons and Contributors; Feather © 2013-present Cole Bemis | <https://lucide.dev> |
 
 MIT requires that its copyright notice **and** its permission notice travel with every copy. They
 are reproduced in full in [§6](#6-full-licence-notices).
@@ -83,14 +83,21 @@ recorded 2.1.19. The copyright line above is the one **inside the shipped file**
 MIT obliges us to carry. Upstream's current `LICENSE` on `master` reads `2019-2025`; that is a later
 edit to a file we do not ship, and does not change the notice attached to this copy.
 
-**Lucide** — eight icons, copied element for element from `icons/<name>.svg` on Lucide's `main` branch
-(<https://github.com/lucide-icons/lucide>, read 2026-10-01) into `site/js/ui/cards.js` (`ICONS`):
-`x`, `crosshair`, `orbit`, `camera`, `share-2`, `chevron-right`, `navigation`, `telescope`. The
-only change is the stroke, 1.75 instead of Lucide's default 2, which `docs/ui-guide.md` §3.16 sets
-for every icon in the app; Lucide draws at any stroke width by design. Four of the eight (`x`,
-`crosshair`, `chevron-right`, `navigation`) are on Lucide's own list of icons derived from Feather,
-which are MIT, © Cole Bemis; the rest are ISC. Both notices are in [§6](#6-full-licence-notices).
-The trip's Voice toggle adds `speech` (spec 0069, read 2026-10-03, ISC), copied the same way.
+**Lucide** — the app's one icon family, copied element for element from `icons/<name>.svg` on
+Lucide's `main` branch (<https://github.com/lucide-icons/lucide>, read 2026-10-01 to 2026-10-03).
+In `site/js/ui/cards.js` (`ICONS`, where `chevron` is Lucide's `chevron-right`): `x`, `crosshair`,
+`orbit`, `camera`, `share`, `chevron-right`, `chevron-left`, `navigation`, `telescope`, `play`,
+`pause`, `rotate-ccw`, `volume-2`, `volume-x`, `speech`, `panel-left-close`, `panel-left-open`,
+`panel-bottom-close`, `panel-bottom-open`, `compass`. In `site/js/ui/sharesheet.js`: `x`, `share`,
+`copy`, `download`, `file-text` (its `file`), `mail`. In `site/js/ui/rail.js`: `share`,
+`ellipsis-vertical`, `eye-off`. In `site/js/ui/keyhint.js`: `move`, `mouse`. The only change is the
+stroke, 1.75 instead of Lucide's default 2, which `docs/ui-guide.md` §3.16 sets for every icon in
+the app (`tests/test_a11y_static.mjs` holds it); Lucide draws at any stroke width by design. These
+are on Lucide's own list of icons derived from Feather (its `LICENSE`, read 2026-10-05), which are
+MIT, © Cole Bemis: `x`, `crosshair`, `chevron-right`, `chevron-left`, `navigation`, `share`,
+`compass`, `copy`, `download`, `move`, and `ellipsis-vertical` under its Feather name
+`more-vertical`; the rest are ISC. Both notices are in [§6](#6-full-licence-notices).
+`tests/test_a11y_static.mjs` refuses an `ICONS` name this paragraph does not list.
 
 ## 2. Textures
 
@@ -1059,7 +1066,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 The following Lucide icons are derived from the Feather project:
 
-[...] crosshair, [...] chevron-right, [...] navigation, [...] x, [...]
+[...] chevron-left, chevron-right, [...] compass, copy, [...] crosshair, [...] download, [...] more-vertical, move, navigation, [...] share, [...] x, [...]
 
 The MIT License (MIT) (for the icons listed above)
 

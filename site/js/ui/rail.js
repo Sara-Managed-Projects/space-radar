@@ -39,9 +39,9 @@ import { createGitHubMark } from './github.js';
 const SVG_NS = 'http://www.w3.org/2000/svg';
 // Two stacked leaves: the layers mark every map app uses. Ours, drawn on the 24-unit box.
 const LAYERS_PATH = ['M12 3 3 8l9 5 9-5-9-5Z', 'M3 13l9 5 9-5'];
-// Lucide `share` (ISC): the arrow out of the tray, the platform mark for "send this somewhere".
+// Lucide `share` (Feather-derived, MIT: CREDITS.md): the arrow out of the tray, the platform mark for "send this somewhere".
 const SHARE_PATH = ['M12 2v13', 'm16 6-4-4-4 4', 'M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8'];
-// Lucide `ellipsis-vertical` (ISC): three dots, the circles written as two arcs each.
+// Lucide `ellipsis-vertical` (Feather's `more-vertical`, MIT): three dots, the circles written as two arcs each.
 const MORE_PATH = ['M12 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z', 'M12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z', 'M12 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z'];
 // Lucide `eye-off` (ISC), for the menu's Hide row.
 const HIDE_PATH = [

@@ -163,6 +163,18 @@ check(iconOnly >= 8, `only ${iconOnly} icon-only buttons found: the rail, the tr
   check(/aria-pressed/.test(code(read('tripframe.js'))), 'the trip toolbar\'s toggles say aria-pressed');
   const credits = readFileSync(join(ROOT, 'CREDITS.md'), 'utf8');
   check(/Lucide/.test(credits) && /ISC/.test(credits) && /Feather/.test(credits) && /MIT/.test(credits), 'CREDITS.md names Lucide (ISC) and Feather (MIT)');
+  // Internal #331: the credit listed eight icons while cards.js shipped twenty. Every name in an
+  // ICONS table is in CREDITS.md's Lucide paragraph, under Lucide's own name for it.
+  const para = (/\*\*Lucide\*\*[\s\S]*?refuses an `ICONS` name/.exec(credits) || [''])[0];
+  const LUCIDE_NAME = { chevron: 'chevron-right', file: 'file-text' };
+  for (const f of ['cards.js', 'sharesheet.js']) {
+    const table = /\nconst ICONS = \{([\s\S]*?)\n\};/.exec(code(read(f)));
+    check(!!table, `site/js/ui/${f} has an ICONS table`);
+    for (const m of (table ? table[1] : '').matchAll(/^  '?([a-z0-9-]+)'?:/gm)) {
+      const name = LUCIDE_NAME[m[1]] || m[1];
+      check(para.includes('`' + name + '`'), `site/js/ui/${f} ships the icon ${name} and CREDITS.md's Lucide paragraph does not list it`);
+    }
+  }
 }
 
 // 6. a focus ring is never removed without its replacement
