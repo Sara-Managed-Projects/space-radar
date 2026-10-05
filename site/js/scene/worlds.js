@@ -230,6 +230,8 @@ export function worldRecords() {
       // `toned`: Cassini's infrared-to-ultraviolet colours, toned down; `infrared`: Titan's ground,
       // seen through the haze at 938 nm; `colour`: the mosaic's own), and whether its shape is the
       // measured one (Phobos, Deimos). The card says each (ui/cards.js derivedDrawingLine).
+      // A moon drawn keeping one face to its planet: its card's turn is its lap (ui/cards.js).
+      locked: w.rotation === 'locked',
       mapKind: w.look.map && w.look.mapKind ? w.look.mapKind : '',
       shaped: !!w.look.shape,
       // Spec 0054: every world drawn with the world material is exposed for its own sunlight, and

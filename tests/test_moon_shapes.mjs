@@ -145,5 +145,26 @@ const rowOf = (id) => WORLDS.find((w) => w.id === id);
   check(phobos.includes(COPY.drawing.worldShaped) && !/no surface map/.test(phobos), `Phobos has both: ${phobos}`);
 }
 
+// 5. The card's third number. A moon's card leads with how far, how fast and "a turn"; every moon
+//    here keeps one face to its planet and is drawn so, and astronomy-engine has a rotation model
+//    only for the Earth's Moon, so the other twenty read "— days a turn" (seen 2026-10-05 on
+//    Ganymede). A locked moon's turn is its lap, measured from where it is drawn.
+{
+  const { moonLapHours } = await import(join(JS, 'propagate/frames.js'));
+  const t = Date.parse('2026-10-05T00:00:00Z');
+  // The published sidereal periods in days, as NASA's planetary satellite fact sheets give them.
+  // Typed from memory, not read off the sheets on the day: the drawn orbits (fitted to JPL Horizons,
+  // propagate/moons.js) agree with every one to 0.4 %, which is what this holds.
+  const DAYS = { io: 1.769138, europa: 3.551181, ganymede: 7.154553, callisto: 16.689017, phobos: 0.31891, deimos: 1.26244, mimas: 0.9424218,
+    enceladus: 1.370218, tethys: 1.887802, dione: 2.736915, rhea: 4.517500, titan: 15.945421, iapetus: 79.330183, miranda: 1.413479,
+    ariel: 2.520379, umbriel: 4.144176, titania: 8.705867, oberon: 13.463234, triton: 5.876854, charon: 6.3872 };
+  for (const [id, days] of Object.entries(DAYS)) {
+    const got = moonLapHours(id, t) / 24;
+    check(Math.abs(got - days) / days < 0.004, `${id} goes round in ${got.toFixed(4)} days as drawn; the published period is ${days}`);
+    check(rowOf(id).rotation === 'locked', `${id} is drawn keeping one face to its planet`);
+  }
+  check(moonLapHours('moon', t) === null && moonLapHours('mars', t) === null && moonLapHours('nothing', t) === null, 'only a planet\'s moon has a lap here');
+}
+
 if (problems.length) { console.error('moon shapes FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('moon shapes ok: Phobos is 27 x 22 x 18 km with its long axis at Mars and Deimos is smaller every way; the sphere is bent along its own radii with its map coordinates, seam and poles intact; nothing is fetched at boot; and twenty flat worlds wear one map each of at most 250 kB that says what kind of picture it is and which side nobody has seen');
