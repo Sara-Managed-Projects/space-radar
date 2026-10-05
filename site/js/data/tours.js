@@ -1912,8 +1912,8 @@ export const TOURS = [
         "target": {
           "world": "earth"
         },
-        "frame_radii": 1.45,
-        "key_light_deg": 150,
+        "frame_radii": 2.1,
+        "key_light_deg": 115,
         "time": "now",
         "chapter": "Air and water",
         "card": {

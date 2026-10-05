@@ -68,6 +68,7 @@ export function angleBetween(a, b) {
  * The figures by their three-letter id. `linesJson` is d3-celestial's GeoJSON (a MultiLineString
  * of [ra, dec] in degrees per figure, right ascension from -180 to 180); `namesJson` the names
  * and label places beside it. A figure with no lines is left out: there is nothing to draw.
+ * 89 features, 88 figures.
  */
 export function parseFigures(linesJson, namesJson) {
   const names = new Map();
@@ -88,6 +89,10 @@ export function parseFigures(linesJson, namesJson) {
       if (pts.length >= 2) lines.push(pts);
     }
     if (!lines.length) continue;
+    // The Serpent is two features with one id, its head and its tail either side of Ophiuchus:
+    // one figure here, drawn in one stroke with the pen lifted across the gap.
+    const had = out.get(String(f.id));
+    if (had) { had.lines.push(...lines); continue; }
     const n = names.get(String(f.id));
     out.set(String(f.id), {
       id: String(f.id),
