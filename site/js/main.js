@@ -16,7 +16,7 @@ import { createWorlds, WORLDS, positionOf } from './scene/worlds.js';
 import { createStarfield } from './scene/starfield.js';
 import { createGlyphLayer } from './scene/glyphs.js';
 import { createHeroes, closeUpDistance, SELECTED_PX } from './scene/heroes.js';
-import { limbFraming, fitDistance, discDistance } from './scene/framing.js';
+import { limbFraming, fitDistance, discDistance, litOffset } from './scene/framing.js';
 import { createCameraRig, worldFramingDistance } from './scene/camera.js';
 import { createViewShift, MAX_SHIFT_FRACTION } from './scene/viewshift.js';
 import { readMoment, writeMoment, bootLink, laterLink, read as readUrlKeys, write as writeUrlState, clear as clearUrlState, stopIndex } from './ui/urlstate.js';
@@ -719,7 +719,10 @@ export async function boot({ setStatus } = {}) {
       // behind, mirrored -- and scene/nebulae.js rightly draws no picture off the line it was
       // taken along. Pi less a few degrees: the same framing, turned around.
       const fromHere = record.klass === 'dso' && isLadderStage(stage.worldId) ? Math.PI - 0.1 : undefined;
-      cameraRig.flyTo({ targetScene: pos, distance: limb ? limb.distance : distance, tilt: limb ? limb.tilt : fromHere, ms });
+      // A world is met on its lit face (issue #419): the rig's default is the far side from the
+      // stage's world, which for everything beyond the Earth is the night side.
+      const lit = record.klass === 'world' ? litOffset(worlds.sunDirOf(record.id), camera.up) : null;
+      cameraRig.flyTo({ targetScene: pos, distance: limb ? limb.distance : distance, tilt: limb ? limb.tilt : fromHere, offset: lit || undefined, ms });
     }
     // Following something standing on the Moon is following the Moon, which crosses its own
     // radius in about half an hour, so its centre is re-taught with every tick of the target.
@@ -1005,7 +1008,9 @@ export async function boot({ setStatus } = {}) {
     cameraRig.setWorldCentre({ x: 0, y: 0, z: 0 });
     cameraRig.stopFollow();
     const distance = w ? worldFramingDistance(r, camera.fov, camera.aspect) : system ? ctx.systems.framingDistanceUnits(stageId) : 5;
-    cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance, ms: 0 });
+    // The new centre of the map is met on its lit face too (the Sun is the light and has none).
+    const lit = w && w.id !== 'sun' ? litOffset(worlds.sunDirOf(w.id), camera.up) : null;
+    cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance, offset: lit || undefined, ms: 0 });
     return true;
   };
   // The Planets tab (spec 0061, ui/explore.js): the Sun's stage with every planet in the picture.

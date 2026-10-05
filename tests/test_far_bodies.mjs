@@ -138,7 +138,10 @@ for (const id of DWARFS) {
   check(whyLine(r) === r.meta.why, `${r.name}'s sourced line is printed under the sentence`);
   const rows = rightNowFor(r, ctx(T_HZ));
   check(rows.some(([k]) => k === 'Moons') && rows.some(([k]) => k === 'Why it is known, read from'), `${r.name}: moons and the line's source are rows (${rows.map(([k]) => k).join(', ')})`);
-  check(/plain round body/.test(drawingLine(r)), `${r.name} is drawn as a round body, not "a generic asteroid": "${drawingLine(r)}"`);
+  // Ceres is drawn from the Dawn team's shape model since 2026-10-05 (issue #420); the others have no
+  // published shape and stay plain round bodies.
+  if (id === 'dwarf-ceres') check(/published model of 1 Ceres/.test(drawingLine(r)), `Ceres is drawn from its shape model: "${drawingLine(r)}"`);
+  else check(/plain round body/.test(drawingLine(r)), `${r.name} is drawn as a round body, not "a generic asteroid": "${drawingLine(r)}"`);
   check(orbitLineLine(r) && /whole orbit/.test(orbitLineLine(r)), `${r.name}'s line is its whole orbit`);
   // The badge: "Asteroid" beside "is a dwarf planet" was the first thing read in the browser.
   check(klassLabel(r) === 'Dwarf planet', `${r.name}'s badge says Dwarf planet, not ${klassLabel(r)}`);

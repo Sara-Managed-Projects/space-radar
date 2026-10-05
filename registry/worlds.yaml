@@ -206,7 +206,7 @@ worlds:
     unit_km: 1000
     ephemeris: {propagator: body, body: Jupiter, moon: ganymede}
     frames: [inertial]
-    look: {flat: "#958b7e"}
+    look: {flat: "#958b7e", textures: ganymede}
     facts:
       radius: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/joviansatfact.html", read: 2026-09-22, says: "radius 2631.2 km (Wikipedia's infobox has 2634.1; one source for all four moons)"}
       albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/joviansatfact.html", read: 2026-09-22, says: "visual geometric albedo 0.44"}
@@ -222,7 +222,7 @@ worlds:
     unit_km: 1000
     ephemeris: {propagator: body, body: Jupiter, moon: callisto}
     frames: [inertial]
-    look: {flat: "#5e564c"}
+    look: {flat: "#5e564c", textures: callisto}
     facts:
       radius: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/joviansatfact.html", read: 2026-09-22, says: "radius 2410.3 km"}
       albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/joviansatfact.html", read: 2026-09-22, says: "visual geometric albedo 0.19"}
@@ -250,7 +250,7 @@ worlds:
     unit_km: 100
     ephemeris: {propagator: body, body: Mars, moon: phobos}
     frames: [inertial]
-    look: {flat: "#4a4540"}
+    look: {flat: "#4a4540", textures: phobos}
     facts:
       radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Phobos 401 ... Mean Radius (km) 11.08"}
       albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html", read: 2026-09-22, says: "Satellites of Mars ... Geometric albedo 0.07 (Phobos)"}
@@ -308,7 +308,7 @@ worlds:
     unit_km: 1000
     ephemeris: {propagator: body, body: Saturn, moon: titan}
     frames: [inertial]
-    look: {flat: "#8f5e26"}
+    look: {flat: "#8f5e26", textures: titan}
     facts:
       radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Titan 606 ... Mean Radius (km) 2574.76"}
       albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturniansatfact.html", read: 2026-09-22, says: "Titan (VI) ... Visual geometric albedo 0.22"}
@@ -341,7 +341,7 @@ worlds:
     unit_km: 1000
     ephemeris: {propagator: body, body: Pluto, moon: charon}
     frames: [inertial]
-    look: {flat: "#8e8a86"}
+    look: {flat: "#8e8a86", textures: charon}
     facts:
       radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Charon 901 ... Mean Radius (km) 606.0"}
       albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/plutofact.html", read: 2026-09-22, says: "Charon (P1) ... Geometric Albedo 0.42"}
@@ -369,7 +369,7 @@ worlds:
     unit_km: 100
     ephemeris: {propagator: body, body: Saturn, moon: mimas}
     frames: [inertial]
-    look: {flat: "#a7aaac"}
+    look: {flat: "#a7aaac", textures: mimas}
     facts:
       radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Mimas 601 ... Mean Radius (km) 198.20"}
       albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturniansatfact.html", read: 2026-09-22, says: "Mimas (I) ... Visual geometric albedo 0.6"}
@@ -386,7 +386,7 @@ worlds:
     unit_km: 1000
     ephemeris: {propagator: body, body: Saturn, moon: tethys}
     frames: [inertial]
-    look: {flat: "#e3e5e7"}
+    look: {flat: "#e3e5e7", textures: tethys}
     facts:
       radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Tethys 603 ... Mean Radius (km) 531.10"}
       albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturniansatfact.html", read: 2026-09-22, says: "Tethys (III) ... Visual geometric albedo 0.8"}
@@ -402,7 +402,7 @@ worlds:
     unit_km: 1000
     ephemeris: {propagator: body, body: Saturn, moon: dione}
     frames: [inertial]
-    look: {flat: "#d4d5d3"}
+    look: {flat: "#d4d5d3", textures: dione}
     facts:
       radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Dione 604 ... Mean Radius (km) 561.40"}
       albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturniansatfact.html", read: 2026-09-22, says: "Dione (IV) ... Visual geometric albedo 0.7"}
@@ -418,7 +418,7 @@ worlds:
     unit_km: 1000
     ephemeris: {propagator: body, body: Saturn, moon: rhea}
     frames: [inertial]
-    look: {flat: "#d5d3cc"}
+    look: {flat: "#d5d3cc", textures: rhea}
     facts:
       radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Rhea 605 ... Mean Radius (km) 763.50"}
       albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturniansatfact.html", read: 2026-09-22, says: "Rhea (V) ... Visual geometric albedo 0.7"}
@@ -437,7 +437,7 @@ worlds:
     unit_km: 1000
     ephemeris: {propagator: body, body: Saturn, moon: iapetus}
     frames: [inertial]
-    look: {flat: "#89735f"}
+    look: {flat: "#89735f", textures: iapetus}
     facts:
       radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Iapetus 608 ... Mean Radius (km) 734.30"}
       albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturniansatfact.html", read: 2026-09-22, says: "Iapetus (VIII) ... Visual geometric albedo 0.05 / 0.5"}
@@ -454,7 +454,7 @@ worlds:
     unit_km: 100
     ephemeris: {propagator: body, body: Uranus, moon: miranda}
     frames: [inertial]
-    look: {flat: "#7d7f81"}
+    look: {flat: "#7d7f81", textures: miranda}
     facts:
       radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Miranda 705 ... Mean Radius (km) 235.8"}
       albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/uraniansatfact.html", read: 2026-09-22, says: "Miranda (UV) ... Visual geometric albedo 0.32"}
@@ -470,7 +470,7 @@ worlds:
     unit_km: 1000
     ephemeris: {propagator: body, body: Uranus, moon: ariel}
     frames: [inertial]
-    look: {flat: "#868786"}
+    look: {flat: "#868786", textures: ariel}
     facts:
       radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Ariel 701 ... Mean Radius (km) 578.9"}
       albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/uraniansatfact.html", read: 2026-09-22, says: "Ariel (UI) ... Visual geometric albedo 0.39"}
@@ -486,7 +486,7 @@ worlds:
     unit_km: 1000
     ephemeris: {propagator: body, body: Uranus, moon: umbriel}
     frames: [inertial]
-    look: {flat: "#616060"}
+    look: {flat: "#616060", textures: umbriel}
     facts:
       radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Umbriel 702 ... Mean Radius (km) 584.7"}
       albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/uraniansatfact.html", read: 2026-09-22, says: "Umbriel (UII) ... Visual geometric albedo 0.21"}
@@ -502,7 +502,7 @@ worlds:
     unit_km: 1000
     ephemeris: {propagator: body, body: Uranus, moon: titania}
     frames: [inertial]
-    look: {flat: "#767573"}
+    look: {flat: "#767573", textures: titania}
     facts:
       radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Titania 703 ... Mean Radius (km) 788.9"}
       albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/uraniansatfact.html", read: 2026-09-22, says: "Titania (UIII) ... Visual geometric albedo 0.27"}
@@ -518,7 +518,7 @@ worlds:
     unit_km: 1000
     ephemeris: {propagator: body, body: Uranus, moon: oberon}
     frames: [inertial]
-    look: {flat: "#7a6a62"}
+    look: {flat: "#7a6a62", textures: oberon}
     facts:
       radius: {source: "https://ssd.jpl.nasa.gov/sats/phys_par/", read: 2026-09-22, says: "Oberon 704 ... Mean Radius (km) 761.4"}
       albedo: {source: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/uraniansatfact.html", read: 2026-09-22, says: "Oberon (UIV) ... Visual geometric albedo 0.23"}

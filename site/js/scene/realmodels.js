@@ -627,6 +627,11 @@ export const REAL_MODELS = {
     // half. The klass gate is load-bearing here: EROS A and EROS B are Israeli imaging satellites,
     // and without it they would be drawn as a 33 km asteroid.
     eros: { file: 'asteroid-eros.glb', colour: 'asteroid', name: '433 Eros', klass: ['asteroid'] },
+    // 2026-10-05: the Dawn team's shape model from the Planetary Data System, thinned from its own
+    // grid by scripts/shape-to-glb.py. Ceres was a faceted icosahedron from the generic builder
+    // (issue #420). Klass-gated like the three above: CERES is also a French satellite series.
+    // Itokawa still waits: Gaskell's model of it has JAXA co-authors (tests/test_station_shapes.mjs).
+    ceres: { file: 'dwarf-ceres.glb', colour: 'asteroid', name: '1 Ceres', klass: ['asteroid'] },
     tdrs: { file: 'tdrs.glb', colour: 'satellite', name: 'Tracking and Data Relay Satellite', klass: ['satellite'] },
     swift: { file: 'swift.glb', colour: 'telescope', name: 'Swift', klass: ['satellite', 'telescope'] },
     tess: { file: 'tess.glb', colour: 'telescope', name: 'TESS', klass: ['satellite', 'telescope'] },

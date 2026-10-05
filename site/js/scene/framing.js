@@ -4,6 +4,7 @@
 // Contract: limbFraming({ r, R, distance, fovDeg, heightPx, subjectPx, upDot, room }) -> { distance, tilt, limb, worldBelow } | null
 //           limbAt(r, R, d, tilt) -> { g, theta, rho, cameraR } | null
 //           fitDistance(points, project, { lo, hi, band, margin }) -> distance
+//           litOffset(sun, up, phase) -> { x, y, z } | null   (unit, from a world's centre to the camera)
 // Pure: plain numbers in, plain numbers out, no three.js, so tests/test_framing.mjs can hold them.
 //
 // WHY LIMB FRAMING. An arrival used to put the camera on the far side of the object from the world,
@@ -206,4 +207,42 @@ export function discDistance(radius, { fovDeg = 45, aspect = 1, shareV = 1, shar
   const v = Math.atan(tanV * Math.max(0.1, Math.min(1, shareV)) * fill);
   const h = Math.atan(tanH * Math.max(0.1, Math.min(1, shareH)) * fill);
   return radius / Math.sin(Math.min(v, h));
+}
+
+/**
+ * How far round from the Sun's side the camera stands when it arrives at a world, radians: 0.6 is a
+ * gibbous disc, 91 % of it lit ((1 + cos 0.6) / 2), with the terminator on screen so craters and
+ * mountains near it throw shadows. Straight down the sunlight (0) is a full disc with no relief.
+ */
+export const ARRIVAL_PHASE = 0.6;
+
+/**
+ * The direction from a world's centre to the arriving camera, so that it meets the LIT face (issue
+ * #419). MEASURED 2026-10-03 on the live map: flying to Jupiter, Saturn, Mars, Pluto and Ganymede
+ * framed the dark hemisphere -- the rig's default arrival is "beyond the subject, looking back at
+ * the stage's world" (camera.js framingAngles), which for anything farther from the Sun than the
+ * stage is the night side. This is the Sun's direction turned `phase` round the camera's up, so
+ * the terminator is upright on the right of the disc and the picture keeps its horizon. Pure.
+ *
+ * @param {{x:number,y:number,z:number}} sun  from the world toward the Sun, any length
+ * @param {{x:number,y:number,z:number}} up   the camera's up, any length
+ * @returns {{x:number,y:number,z:number}|null} unit vector, or null when there is no Sun direction
+ */
+export function litOffset(sun, up, phase = ARRIVAL_PHASE) {
+  if (!sun) return null;
+  const sl = Math.hypot(sun.x, sun.y, sun.z);
+  if (!(sl > 0)) return null;
+  const s = { x: sun.x / sl, y: sun.y / sl, z: sun.z / sl };
+  let u = up && Math.hypot(up.x, up.y, up.z) > 0 ? up : { x: 0, y: 1, z: 0 };
+  // side = up x sun; when the Sun is along up, any perpendicular does.
+  let side = { x: u.y * s.z - u.z * s.y, y: u.z * s.x - u.x * s.z, z: u.x * s.y - u.y * s.x };
+  let l = Math.hypot(side.x, side.y, side.z);
+  if (l < 1e-6) {
+    u = Math.abs(s.x) < 0.9 ? { x: 1, y: 0, z: 0 } : { x: 0, y: 0, z: 1 };
+    side = { x: u.y * s.z - u.z * s.y, y: u.z * s.x - u.x * s.z, z: u.x * s.y - u.y * s.x };
+    l = Math.hypot(side.x, side.y, side.z);
+  }
+  const c = Math.cos(phase);
+  const k = Math.sin(phase) / l;
+  return { x: s.x * c + side.x * k, y: s.y * c + side.y * k, z: s.z * c + side.z * k };
 }

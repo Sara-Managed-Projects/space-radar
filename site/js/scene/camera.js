@@ -667,6 +667,8 @@ export function createCameraRig(camera, domElement, options = {}) {
    *   ms           600-900 is the design range; default 750. **0 means instant** -- the pose is
    *                set, onArrive('done') fires synchronously, and no flight starts.
    *   azimuth/polar radians; either one missing is supplied by framingAngles().
+   *   offset       Vector3-like, scene axes: the direction from the target to the camera. Used when
+   *                neither azimuth nor polar is given; framingAngles() is then not asked.
    *   tilt         radians off the world-to-object radial for framingAngles() (default FRAMING_TILT);
    *                ignored when both azimuth and polar are given.
    *   ease         'ui' (default) | 'inout' | 'cruise' | 'linear', or a function k => k'.
@@ -691,6 +693,14 @@ export function createCameraRig(camera, domElement, options = {}) {
 
     let toAz = opts.azimuth;
     let toPolar = opts.polar;
+    // `offset`: stand on this side of the target (a world's lit face, scene/framing.js litOffset).
+    if (opts.offset && toVector3(opts.offset, _tmp) !== null && _tmp.lengthSq() > 1e-12
+      && !Number.isFinite(toAz) && !Number.isFinite(toPolar)) {
+      syncUpBasis();
+      _tmp.normalize().applyQuaternion(upQuat);
+      toAz = Math.atan2(_tmp.x, _tmp.z);
+      toPolar = Math.acos(THREE.MathUtils.clamp(_tmp.y, -1, 1));
+    }
     if (!Number.isFinite(toAz) || !Number.isFinite(toPolar)) {
       const f = framingAngles(to, Number.isFinite(opts.tilt) ? Number(opts.tilt) : FRAMING_TILT);
       if (!Number.isFinite(toAz)) toAz = f.azimuth;

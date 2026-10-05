@@ -250,7 +250,9 @@ const BOOT_2026_09_28 = {
   'textures/2k_stars_milky_way.webp': 60004,
 };
 const boot = bootFiles(TEXTURES);
-check(boot.length === 19 && boot.every((f) => /^textures\/[12]k_[a-z_]+\.(jpg|webp|png)$/.test(f)), `tier 0 is the nineteen 1k and 2k files (${boot.length})`);
+// 34 since 2026-10-05: fifteen more moons wear a map. A moon's tier-0 file is fetched when the moon is
+// first big enough on screen (scene/worlds.js), so none of them is in the first visit below.
+check(boot.length === 34 && boot.every((f) => /^textures\/[12]k_[a-z_]+\.(jpg|webp|png)$/.test(f)), `tier 0 is the thirty-four 1k and 2k files (${boot.length})`);
 let firstVisit = 0;
 for (const [f, bytes] of Object.entries(BOOT_2026_09_28)) {
   check(boot.includes(f), `${f} is still in the boot set`);

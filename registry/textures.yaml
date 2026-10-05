@@ -331,54 +331,207 @@ textures:
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
 
-  # The moons a trip flies to (#322, 2026-09-28): public-domain NASA/USGS maps, one size for every
-  # device. registry/models.yaml carries the same file, credit and source under the same id.
+  # THE MOONS AND SMALL WORLDS (2026-10-05, issues #387 to #415): one public-domain NASA / USGS map for
+  # every world that was a flat colour, one size for every device. `when: boot` here means "nothing
+  # sharper to fetch later", NOT "fetched at boot": scene/worlds.js fetches a world's map the first
+  # time its disc is big enough to show a surface, or it is selected. registry/models.yaml carries
+  # the same file, credit and source under the same id. `coverage` is the share of the sphere the
+  # original has data for, measured by the build; the rest of the map is the world's flat colour.
+  # Each file is at most 250 kB (tests/test_moon_shapes.mjs). Deimos has no row: no public-domain
+  # mosaic of it was found.
+
   - id: io
     world: io
     slot: map
     when: boot
+    coverage: 1.000
     files:
       - tier: 0
-        file: site/textures/1k_io_usgs.jpg
-        px: [1224, 612]
-        bytes: 118131
+        file: site/textures/2k_io_usgs.webp
+        px: [2048, 1024]
+        bytes: 178088
         format: rgb
-        licence: "Public domain"
-        credit: "Io map: USGS Astrogeology Science Center (Galileo SSI), public domain"
-        source: "https://commons.wikimedia.org/wiki/File:Io_modest_scale_map_Io_SSI-only_color_SIMP0_med.cub.jpg (read 2026-09-28)"
+        licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits)'
+        credit: "Io map: USGS Astrogeology Science Center (Galileo SSI and Voyager), public domain"
+        source: "https://planetarymaps.usgs.gov/mosaic/Io_GalileoSSI-Voyager_Global_Mosaic_ClrMerge_1km.lbl (read 2026-10-05)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Io_GalileoSSI-Voyager_Global_Mosaic_ClrMerge_1km.tif"
+        make: "scripts/build-textures.py moon-io: USGS colour merge, 1 km to 2048 wide, colour kept, mean taken to the flat colour's luminance by a gain 1.69, WebP 82"
 
   - id: europa
     world: europa
     slot: map
     when: boot
+    coverage: 0.995
     files:
       - tier: 0
-        file: site/textures/1k_europa_usgs.jpg
-        px: [1024, 512]
-        bytes: 89436
+        file: site/textures/2k_europa_usgs.webp
+        px: [2048, 1024]
+        bytes: 210708
         format: rgb
-        licence: "Public domain"
-        credit: "Europa map: USGS / PDS (Voyager and Galileo SSI), public domain"
-        source: "https://commons.wikimedia.org/wiki/File:Europa_Voyager_GalileoSSI_global_mosaic.jpg (read 2026-09-28)"
+        licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits)'
+        credit: "Europa map: USGS Astrogeology Science Center (Voyager and Galileo SSI), public domain"
+        source: "https://planetarymaps.usgs.gov/mosaic/Europa_Voyager_GalileoSSI_global_mosaic_500m.lbl (read 2026-10-05)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Europa_Voyager_GalileoSSI_global_mosaic_500m.tif"
+        make: "scripts/build-textures.py moon-europa: USGS mosaic, 500 m to 2048 wide, rolled half a turn so longitude 0 is at the centre, tinted with the world's flat colour, mean taken to the flat colour's luminance by a power 0.33 on the broad brightness with 0.6 of the relief, mean 0.98 of the flat colour's, unimaged areas filled with the flat colour, WebP 82"
+
+  - id: ganymede
+    world: ganymede
+    slot: map
+    when: boot
+    coverage: 0.996
+    files:
+      - tier: 0
+        file: site/textures/2k_ganymede_usgs.webp
+        px: [2048, 1024]
+        bytes: 220436
+        format: rgb
+        licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits)'
+        credit: "Ganymede map: USGS Astrogeology Science Center (Voyager and Galileo SSI), public domain"
+        source: "https://planetarymaps.usgs.gov/mosaic/Ganymede_Voyager_GalileoSSI_global_mosaic_1km.lbl (read 2026-10-05)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Ganymede_Voyager_GalileoSSI_global_mosaic_1km.tif"
+        make: "scripts/build-textures.py moon-ganymede: USGS mosaic, 1 km to 2048 wide, rolled half a turn so longitude 0 is at the centre, tinted with the world's flat colour, mean taken to the flat colour's luminance by a gain 3.97, unimaged areas filled with the flat colour, WebP 66"
+
+  - id: callisto
+    world: callisto
+    slot: map
+    when: boot
+    coverage: 0.991
+    files:
+      - tier: 0
+        file: site/textures/2k_callisto_usgs.webp
+        px: [2048, 1024]
+        bytes: 212040
+        format: rgb
+        licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits)'
+        credit: "Callisto map: USGS Astrogeology Science Center (Voyager and Galileo SSI), public domain"
+        source: "https://planetarymaps.usgs.gov/mosaic/Callisto_Voyager_GalileoSSI_global_mosaic_1km.lbl (read 2026-10-05)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Callisto_Voyager_GalileoSSI_global_mosaic_1km.tif"
+        make: "scripts/build-textures.py moon-callisto: USGS mosaic, 1 km to 2048 wide, rolled half a turn so longitude 0 is at the centre, tinted with the world's flat colour, mean taken to the flat colour's luminance by a gain 2.26, unimaged areas filled with the flat colour, WebP 74"
 
   - id: enceladus
     world: enceladus
     slot: map
     when: boot
+    coverage: 1.000
     files:
       - tier: 0
-        file: site/textures/1k_enceladus_cassini.jpg
-        px: [1024, 512]
-        bytes: 222843
+        file: site/textures/2k_enceladus_cassini.webp
+        px: [1536, 768]
+        bytes: 227872
         format: rgb
-        licence: "Public domain"
+        licence: 'Public domain'
         credit: "Enceladus map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute, public domain"
-        source: "https://commons.wikimedia.org/wiki/File:Enceladus_Color_Map.jpg (read 2026-09-28)"
+        source: "https://commons.wikimedia.org/wiki/File:Enceladus_Color_Map.jpg (read 2026-10-05)"
+        original: "https://commons.wikimedia.org/wiki/Special:FilePath/Enceladus_Color_Map.jpg"
+        make: "scripts/build-textures.py moon-enceladus: 15960 px to 1536 wide, rolled half a turn so longitude 0 is at the centre, 35 % of the saturation kept, mean taken to the flat colour's luminance by a power 0.09 on the broad brightness with 0.6 of the relief, mean 0.89 of the flat colour's, WebP 74"
+
+  - id: mimas
+    world: mimas
+    slot: map
+    when: boot
+    coverage: 1.000
+    files:
+      - tier: 0
+        file: site/textures/2k_mimas_cassini.webp
+        px: [1792, 896]
+        bytes: 231248
+        format: rgb
+        licence: 'Public domain'
+        credit: "Mimas map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18437), public domain"
+        source: "https://commons.wikimedia.org/wiki/File:Map_of_Mimas_colorized_2014-04_PIA18437.jpg (read 2026-10-05)"
+        original: "https://commons.wikimedia.org/wiki/Special:FilePath/Map_of_Mimas_colorized_2014-04_PIA18437.jpg"
+        make: "scripts/build-textures.py moon-mimas: 6356 px to 1792 wide, rolled half a turn so longitude 0 is at the centre, 35 % of the saturation kept, mean taken to the flat colour's luminance by a gain 1.70, WebP 62"
+
+  - id: tethys
+    world: tethys
+    slot: map
+    when: boot
+    coverage: 1.000
+    files:
+      - tier: 0
+        file: site/textures/2k_tethys_cassini.webp
+        px: [1536, 768]
+        bytes: 221400
+        format: rgb
+        licence: 'Public domain'
+        credit: "Tethys map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18439), public domain"
+        source: "https://commons.wikimedia.org/wiki/File:Tethys_Color_Map.jpg (read 2026-10-05)"
+        original: "https://commons.wikimedia.org/wiki/Special:FilePath/Tethys_Color_Map.jpg"
+        make: "scripts/build-textures.py moon-tethys: 13467 px to 1536 wide, rolled half a turn so longitude 0 is at the centre, 35 % of the saturation kept, mean taken to the flat colour's luminance by a power 0.15 on the broad brightness with 0.6 of the relief, mean 0.91 of the flat colour's, WebP 74"
+
+  - id: dione
+    world: dione
+    slot: map
+    when: boot
+    coverage: 1.000
+    files:
+      - tier: 0
+        file: site/textures/2k_dione_cassini.webp
+        px: [1792, 896]
+        bytes: 232500
+        format: rgb
+        licence: 'Public domain'
+        credit: "Dione map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18434), public domain"
+        source: "https://commons.wikimedia.org/wiki/File:Dione_Color_Map.jpg (read 2026-10-05)"
+        original: "https://commons.wikimedia.org/wiki/Special:FilePath/Dione_Color_Map.jpg"
+        make: "scripts/build-textures.py moon-dione: 14134 px to 1792 wide, rolled half a turn so longitude 0 is at the centre, 35 % of the saturation kept, mean taken to the flat colour's luminance by a power 0.25 on the broad brightness with 0.6 of the relief, mean 0.94 of the flat colour's, WebP 70"
+
+  - id: rhea
+    world: rhea
+    slot: map
+    when: boot
+    coverage: 1.000
+    files:
+      - tier: 0
+        file: site/textures/2k_rhea_cassini.webp
+        px: [1536, 768]
+        bytes: 230008
+        format: rgb
+        licence: 'Public domain'
+        credit: "Rhea map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18438), public domain"
+        source: "https://commons.wikimedia.org/wiki/File:Rhea_Color_Map.jpg (read 2026-10-05)"
+        original: "https://commons.wikimedia.org/wiki/Special:FilePath/Rhea_Color_Map.jpg"
+        make: "scripts/build-textures.py moon-rhea: 12015 px to 1536 wide, rolled half a turn so longitude 0 is at the centre, 35 % of the saturation kept, mean taken to the flat colour's luminance by a power 0.25 on the broad brightness with 0.6 of the relief, mean 0.93 of the flat colour's, WebP 70"
+
+  - id: iapetus
+    world: iapetus
+    slot: map
+    when: boot
+    coverage: 1.000
+    files:
+      - tier: 0
+        file: site/textures/2k_iapetus_cassini.webp
+        px: [2048, 1024]
+        bytes: 226040
+        format: rgb
+        licence: 'Public domain'
+        credit: "Iapetus map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18436), public domain"
+        source: "https://commons.wikimedia.org/wiki/File:Iapetus_Color_Map.jpg (read 2026-10-05)"
+        original: "https://commons.wikimedia.org/wiki/Special:FilePath/Iapetus_Color_Map.jpg"
+        make: "scripts/build-textures.py moon-iapetus: 11741 px to 2048 wide, rolled half a turn so longitude 0 is at the centre, 35 % of the saturation kept, mean taken to the flat colour's luminance by a gain 1.12, WebP 58"
+
+  - id: titan
+    world: titan
+    slot: map
+    when: boot
+    coverage: 1.000
+    files:
+      - tier: 0
+        file: site/textures/2k_titan_cassini_iss.webp
+        px: [2048, 1024]
+        bytes: 62786
+        format: rgb
+        licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits)'
+        credit: "Titan map: USGS Astrogeology Science Center and NASA/JPL-Caltech/Space Science Institute (Cassini ISS, 938 nm), public domain"
+        source: "https://planetarymaps.usgs.gov/mosaic/Titan_ISS_P19658_Mosaic_Global_4km.lbl (read 2026-10-05)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Titan_ISS_P19658_Mosaic_Global_4km.tif"
+        make: "scripts/build-textures.py moon-titan: USGS mosaic, 4 km to 2048 wide, rolled half a turn so longitude 0 is at the centre, tinted with the world's flat colour, contrast about the mean times 0.5, mean taken to the flat colour's luminance by a gain 1.12, WebP 82"
 
   - id: triton
     world: triton
     slot: map
     when: boot
+    coverage: 0.700
     files:
       - tier: 0
         file: site/textures/1k_triton_voyager.jpg
@@ -389,16 +542,138 @@ textures:
         credit: "Triton map: NASA/JPL-Caltech/Lunar and Planetary Institute (Voyager 2), public domain"
         source: "https://commons.wikimedia.org/wiki/File:Triton_Map.jpg (read 2026-09-28)"
 
+  - id: miranda
+    world: miranda
+    slot: map
+    when: boot
+    coverage: 0.394
+    files:
+      - tier: 0
+        file: site/textures/1k_miranda_voyager.webp
+        px: [1440, 720]
+        bytes: 49792
+        format: rgb
+        licence: 'Public domain'
+        credit: "Miranda map: NASA/JPL-Caltech/USGS (Voyager 2), public domain"
+        source: "https://commons.wikimedia.org/wiki/File:Miranda_map_JPL_USGS.jpg (read 2026-10-05)"
+        original: "https://commons.wikimedia.org/wiki/Special:FilePath/Miranda_map_JPL_USGS.jpg"
+        make: "scripts/build-textures.py moon-miranda: 1440 px to 1440 wide, tinted with the world's flat colour, mean taken to the flat colour's luminance by a gain 0.97, unimaged areas filled with the flat colour, WebP 82"
+
+  - id: ariel
+    world: ariel
+    slot: map
+    when: boot
+    coverage: 0.337
+    files:
+      - tier: 0
+        file: site/textures/1k_ariel_voyager.webp
+        px: [1440, 720]
+        bytes: 28216
+        format: rgb
+        licence: 'Public domain'
+        credit: "Ariel map: NASA/JPL-Caltech/USGS (Voyager 2), public domain"
+        source: "https://commons.wikimedia.org/wiki/File:Ariel_map_JPL_USGS.jpg (read 2026-10-05)"
+        original: "https://commons.wikimedia.org/wiki/Special:FilePath/Ariel_map_JPL_USGS.jpg"
+        make: "scripts/build-textures.py moon-ariel: 1440 px to 1440 wide, tinted with the world's flat colour, mean taken to the flat colour's luminance by a gain 1.08, unimaged areas filled with the flat colour, WebP 82"
+
+  - id: umbriel
+    world: umbriel
+    slot: map
+    when: boot
+    coverage: 0.369
+    files:
+      - tier: 0
+        file: site/textures/1k_umbriel_voyager.webp
+        px: [1440, 720]
+        bytes: 12276
+        format: rgb
+        licence: 'Public domain'
+        credit: "Umbriel map: NASA/JPL-Caltech/USGS (Voyager 2), public domain"
+        source: "https://commons.wikimedia.org/wiki/File:Umbriel_map_JPL_USGS.jpg (read 2026-10-05)"
+        original: "https://commons.wikimedia.org/wiki/Special:FilePath/Umbriel_map_JPL_USGS.jpg"
+        make: "scripts/build-textures.py moon-umbriel: 1440 px to 1440 wide, tinted with the world's flat colour, mean taken to the flat colour's luminance by a gain 0.40, unimaged areas filled with the flat colour, WebP 82"
+
+  - id: titania
+    world: titania
+    slot: map
+    when: boot
+    coverage: 0.318
+    files:
+      - tier: 0
+        file: site/textures/1k_titania_voyager.webp
+        px: [1440, 720]
+        bytes: 27046
+        format: rgb
+        licence: 'Public domain'
+        credit: "Titania map: NASA/JPL-Caltech/USGS (Voyager 2), public domain"
+        source: "https://commons.wikimedia.org/wiki/File:Titania_map_JPL_USGS.jpg (read 2026-10-05)"
+        original: "https://commons.wikimedia.org/wiki/Special:FilePath/Titania_map_JPL_USGS.jpg"
+        make: "scripts/build-textures.py moon-titania: 1440 px to 1440 wide, tinted with the world's flat colour, mean taken to the flat colour's luminance by a gain 0.50, unimaged areas filled with the flat colour, WebP 82"
+
+  - id: oberon
+    world: oberon
+    slot: map
+    when: boot
+    coverage: 0.340
+    files:
+      - tier: 0
+        file: site/textures/1k_oberon_voyager.webp
+        px: [1440, 720]
+        bytes: 28288
+        format: rgb
+        licence: 'Public domain'
+        credit: "Oberon map: NASA/JPL-Caltech/USGS (Voyager 2), public domain"
+        source: "https://commons.wikimedia.org/wiki/File:Oberon_map_JPL_USGS.jpg (read 2026-10-05)"
+        original: "https://commons.wikimedia.org/wiki/Special:FilePath/Oberon_map_JPL_USGS.jpg"
+        make: "scripts/build-textures.py moon-oberon: 1440 px to 1440 wide, tinted with the world's flat colour, mean taken to the flat colour's luminance by a gain 0.88, unimaged areas filled with the flat colour, WebP 82"
+
   - id: pluto
     world: pluto
     slot: map
     when: boot
+    coverage: 0.769
     files:
       - tier: 0
-        file: site/textures/2k_pluto_newhorizons.jpg
+        file: site/textures/2k_pluto_usgs.webp
         px: [2048, 1024]
-        bytes: 274287
+        bytes: 159498
         format: rgb
-        licence: "Public domain"
-        credit: "Pluto map: NASA/JHUAPL/SwRI (New Horizons, PIA20658), public domain"
-        source: "https://commons.wikimedia.org/wiki/File:PIA20658-Pluto-Global-released20160502.jpg (read 2026-09-28)"
+        licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits)'
+        credit: "Pluto map: USGS Astrogeology Science Center and NASA/JHUAPL/SwRI (New Horizons), public domain"
+        source: "https://planetarymaps.usgs.gov/mosaic/Pluto_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.lbl (read 2026-10-05)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Pluto_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.tif"
+        make: "scripts/build-textures.py moon-pluto: USGS mosaic, 300 m to 2048 wide, rolled half a turn so longitude 0 is at the centre, tinted with the world's flat colour, mean taken to the flat colour's luminance by a power 0.40 on the broad brightness with 0.6 of the relief, mean 0.98 of the flat colour's, unimaged areas filled with the flat colour, WebP 82"
+
+  - id: charon
+    world: charon
+    slot: map
+    when: boot
+    coverage: 0.740
+    files:
+      - tier: 0
+        file: site/textures/2k_charon_usgs.webp
+        px: [2048, 1024]
+        bytes: 159996
+        format: rgb
+        licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits)'
+        credit: "Charon map: USGS Astrogeology Science Center and NASA/JHUAPL/SwRI (New Horizons), public domain"
+        source: "https://planetarymaps.usgs.gov/mosaic/Charon_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.lbl (read 2026-10-05)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Charon_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.tif"
+        make: "scripts/build-textures.py moon-charon: USGS mosaic, 300 m to 2048 wide, tinted with the world's flat colour, mean taken to the flat colour's luminance by a gain 1.04, unimaged areas filled with the flat colour, WebP 82"
+
+  - id: phobos
+    world: phobos
+    slot: map
+    when: boot
+    coverage: 1.000
+    files:
+      - tier: 0
+        file: site/textures/2k_phobos_viking.webp
+        px: [2048, 1024]
+        bytes: 189854
+        format: rgb
+        licence: 'Public domain'
+        credit: "Phobos map: USGS Astrogeology Science Center (Viking Orbiter mosaic, control by P. Stooke), public domain"
+        source: "https://commons.wikimedia.org/wiki/File:Phobos_Viking_Mosaic_DLRcontrol_7200.jpg (read 2026-10-05)"
+        original: "https://commons.wikimedia.org/wiki/Special:FilePath/Phobos_Viking_Mosaic_DLRcontrol_7200.jpg"
+        make: "scripts/build-textures.py moon-phobos: 7200 px to 2048 wide, tinted with the world's flat colour, mean taken to the flat colour's luminance by a gain 0.25, WebP 82"

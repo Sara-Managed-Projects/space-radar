@@ -121,7 +121,7 @@ check(pickWorldDisc([], 1, 1) === null, 'no discs, no pick');
   const lazyWorlds = WORLDS.filter((w) => !w.look.earth && w.look.map);
   check(fetched.length === EAGER.length && EAGER.every((u) => fetched.includes(u)),
     `construction fetches Earth's three maps and the ring strip, nothing else (${JSON.stringify(fetched)})`);
-  check(lazyWorlds.length === 14 && worlds.waitingMaps().length === lazyWorlds.length, `fourteen worlds -- the Sun, the Moon, seven planets and the five moons a trip flies to -- wait for their maps (${worlds.waitingMaps().length})`);
+  check(lazyWorlds.length === 29 && worlds.waitingMaps().length === lazyWorlds.length, `twenty-nine worlds -- the Sun, the Moon, seven planets, Pluto and the nineteen mapped moons -- wait for their maps (${worlds.waitingMaps().length})`);
 
   worlds.update(tMs);
   check(fetched.length === EAGER.length,
@@ -201,8 +201,13 @@ const SIX = ['phobos', 'deimos', 'enceladus', 'titan', 'triton', 'charon'];
 // ...and the ten more it fits the same way (sections 15 to 18).
 const TEN = ['mimas', 'tethys', 'dione', 'rhea', 'iapetus', 'miranda', 'ariel', 'umbriel', 'titania', 'oberon'];
 const rowOf = (id) => WORLDS.find((w) => w.id === id);
-// Issue #262: the flat worlds a trip flies to carry a public-domain map; the rest stay one colour.
-const MAPPED = ['pluto', 'io', 'europa', 'enceladus', 'triton'];
+// Issue #262: the flat worlds a trip flies to carry a public-domain map. 2026-10-05 (issues #387 to
+// #415): so do all the others but Deimos, for which no public-domain mosaic was found
+// (tests/test_moon_shapes.mjs holds each map's file, size and card line).
+const MAPPED = ['pluto', 'io', 'europa', 'ganymede', 'callisto', 'enceladus', 'titan', 'triton', 'charon', 'phobos',
+  'tethys', 'dione', 'rhea', 'mimas', 'iapetus', 'ariel', 'miranda', 'titania', 'oberon', 'umbriel'];
+// What a mapped world's card says about how it is drawn: never that it is a plain ball, always how it is lit.
+const mappedLine = (draw) => !/no surface map|plain ball/.test(draw || '') && (draw || '').includes(COPY.drawing.worldLit);
 {
   const { positionOf } = await import(join(JS, 'scene/worlds.js'));
   const { worldPositionKm } = await import(join(JS, 'propagate/body.js'));
@@ -297,7 +302,7 @@ const MAPPED = ['pluto', 'io', 'europa', 'enceladus', 'triton'];
     'Titan, darkened on 2026-09-22 to make room, still sits above Callisto and a clear step below Oberon');
   for (const id of FLAT) {
     const w = rowOf(id);
-    if (MAPPED.includes(id)) check(w.look.flat === true && /\.jpg$/.test(w.look.map || '') && w.rotation, `${id} keeps its flat colour until its map arrives, and turns so the map faces the right way`);
+    if (MAPPED.includes(id)) check(w.look.flat === true && /\.(jpg|webp)$/.test(w.look.map || '') && w.rotation, `${id} keeps its flat colour until its map arrives, and turns so the map faces the right way`);
     else check(w.look.flat === true && !w.look.map, `${id} is flat and names no map`);
   }
   // No world a trip flies to is drawn untextured, except where the haze IS the picture (Titan).
@@ -399,7 +404,7 @@ const MAPPED = ['pluto', 'io', 'europa', 'enceladus', 'triton'];
       `${id}'s first sentence says what it is and how big, in 160 characters: "${s}"`);
     check(!s.includes(' -- '), `${id}'s sentence writes no double-hyphen dash`);
     // Spec 0054: a mapped world's only drawing line is how it is lit; a flat one says both.
-    if (MAPPED.includes(id)) check(drawingLine(r) === COPY.drawing.worldLit, `${id} has a map, so its card's drawing line is only the exposure: ${drawingLine(r)}`);
+    if (MAPPED.includes(id)) check(mappedLine(drawingLine(r)), `${id} has a map, so its card does not call it a plain ball, and says how it is lit: ${drawingLine(r)}`);
     else check(/no surface map/.test(drawingLine(r) || '') && drawingLine(r).includes(COPY.drawing.worldLit), `${id}'s card says it is a plain ball, exposed for its own sunlight: ${drawingLine(r)}`);
     check(/Astronomy Engine/.test(r.meta.cite) && /read 2026-09-22/.test(r.meta.cite), `${id}'s source line names the ephemeris and the day its facts were read`);
     // "You can see this one with your own eyes" -- every other world's line -- is false of Pluto,
@@ -650,9 +655,12 @@ const PARENT = { phobos: 'mars', deimos: 'mars', enceladus: 'saturn', titan: 'sa
     const see = seeItLine(r, ctx, { ok: true, tMs: now }, { state: 'na' });
     check(!/your own eyes/.test(see) && /^(Not by eye|Barely)/.test(see) && SEE[id].test(see), `${id} says how it can really be seen: "${see}"`);
     const draw = drawingLine(r) || '';
+    // Phobos and Deimos are drawn in their measured shapes since 2026-10-05, and say so; Deimos
+    // still has no map and says that too. Nothing claims a ball is the shape of a lumpy rock.
     const lumpy = id === 'phobos' || id === 'deimos';
-    check(MAPPED.includes(id) ? draw === COPY.drawing.worldLit : /no surface map/.test(draw) && /true shape is not drawn/.test(draw) === lumpy && draw.includes(COPY.drawing.worldLit),
-      `${id}'s drawing line${lumpy ? ' says its true shape is not drawn' : ''}: ${draw}`);
+    check(MAPPED.includes(id) ? mappedLine(draw) : /no surface map/.test(draw) && draw.includes(COPY.drawing.worldLit),
+      `${id}'s drawing line: ${draw}`);
+    check(/measured shape/.test(draw) === lumpy && !/true shape is not drawn/.test(draw), `${id}'s drawing line${lumpy ? ' says its shape is the measured one' : ' says nothing about a shape'}: ${draw}`);
     check(/Astronomy Engine/.test(r.meta.cite) && /JPL Horizons/.test(r.meta.cite) && /read 2026-09-22/.test(r.meta.cite),
       `${id}'s source line names the ephemeris, the fit and the day its facts were read`);
   }
@@ -927,7 +935,7 @@ const TEN_PARENT = { mimas: 'saturn', tethys: 'saturn', dione: 'saturn', rhea: '
         const see = seeItLine(r, ctx, { ok: true, tMs: now }, { state: 'na' });
         check(!/your own eyes/.test(see) && /^(Not by eye|Barely)/.test(see) && SEE[id].test(see), `${id} says how it can really be seen: "${see}"`);
         const draw = drawingLine(r) || '';
-        check(/no surface map/.test(draw) && !/true shape is not drawn/.test(draw), `${id}'s drawing line says it is a plain ball and not that it is lumpy: ${draw}`);
+        check(mappedLine(draw) && !/shape/.test(draw), `${id}'s drawing line says what its map is and nothing about a shape: ${draw}`);
         check(/Astronomy Engine/.test(r.meta.cite) && /JPL Horizons/.test(r.meta.cite) && /read 2026-09-22/.test(r.meta.cite),
           `${id}'s source line names the ephemeris, the fit and the day its facts were read`);
       }
@@ -1118,7 +1126,14 @@ if (problems.length) {
   const w = createWorlds(new THREE.Scene(), { textureBase: 't/', loadTexture: () => new THREE.Texture() });
   const at = (tt) => { stage.setTime(tt); w.update(tt); };
   const rel = (a, b) => w.meshFor(a).position.clone().sub(w.meshFor(b).position);
-  for (const [id, to, sign] of [['io', 'jupiter', 1], ['europa', 'jupiter', 1], ['enceladus', 'saturn', 1], ['triton', 'neptune', -1], ['pluto', 'charon', 1]]) {
+  // 2026-10-05: and every moon mapped since. Uranus's five are like Triton for the opposite reason:
+  // their orbits are prograde, and it is Uranus whose IAU north is the pole it spins backwards about.
+  // Iapetus's orbit is tilted 15 degrees to Saturn's equator, so its north is that far off.
+  const LOCKED = [['io', 'jupiter', 1], ['europa', 'jupiter', 1], ['enceladus', 'saturn', 1], ['triton', 'neptune', -1], ['pluto', 'charon', 1],
+    ['ganymede', 'jupiter', 1], ['callisto', 'jupiter', 1], ['titan', 'saturn', 1], ['mimas', 'saturn', 1], ['tethys', 'saturn', 1],
+    ['dione', 'saturn', 1], ['rhea', 'saturn', 1], ['iapetus', 'saturn', 1], ['charon', 'pluto', 1], ['phobos', 'mars', 1], ['deimos', 'mars', 1],
+    ['miranda', 'uranus', -1], ['ariel', 'uranus', -1], ['umbriel', 'uranus', -1], ['titania', 'uranus', -1], ['oberon', 'uranus', -1]];
+  for (const [id, to, sign] of LOCKED) {
     const orbiter = id === 'pluto' ? 'charon' : id;
     const centre = id === 'pluto' ? 'pluto' : to;
     at(t + 3600e3);

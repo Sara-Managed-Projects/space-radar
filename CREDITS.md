@@ -164,23 +164,60 @@ exact filename match to the published pack (all 14 appear on their download list
 no XMP block at all — the other twelve do — so those two are the weakest links in the chain. If you
 want certainty, re-download the pack by hand and diff.
 
-**Five moon maps are public domain (issue #262, 2026-09-28).** The moons a trip flies to, from
-NASA / USGS mosaics mirrored on Wikimedia Commons. Public-domain works need no credit, but they
-get one anyway. Every map was changed: resized, scaled so its mean has the world's albedo-ordered
-tint (`scene/worlds.js`), and its unimaged areas (black in the source) filled with that tint
-(Pluto's south, Triton's north). Europa and Pluto were greyscale and are tinted. Enceladus and
-Triton are desaturated (Cassini's colour is enhanced with IR/UV filters). Pluto is rolled half a
-turn so longitude 0, the Charon-facing side, is at the centre.
+**Twenty moon and dwarf-planet maps are public domain (issue #262, 2026-09-28; issues #387 to #415,
+2026-10-05).** Every world in `registry/worlds.yaml` that was one flat colour now wears a map, except
+Deimos, for which no public-domain mosaic was found. They come from the USGS Astrogeology Science
+Center's global mosaics (<https://planetarymaps.usgs.gov/mosaic/>; "USGS-authored or produced data
+and information are considered to be in the U.S. Public Domain", usgs.gov, *Copyrights and
+Credits*) and from NASA maps mirrored on Wikimedia Commons, where each file's page says public
+domain. Public-domain works need no credit, but they get one anyway. `scripts/build-textures.py`
+(`--only moons`) remakes every one of them but Triton's from its original, and every map was
+changed:
 
-| File | Used for | Licence | Source |
-|---|---|---|---|
-| `1k_io_usgs.jpg` | Io | Public domain | [USGS Astrogeology, Galileo SSI](https://commons.wikimedia.org/wiki/File:Io_modest_scale_map_Io_SSI-only_color_SIMP0_med.cub.jpg) |
-| `1k_europa_usgs.jpg` | Europa | Public domain | [USGS / PDS, Voyager + Galileo SSI](https://commons.wikimedia.org/wiki/File:Europa_Voyager_GalileoSSI_global_mosaic.jpg) |
-| `1k_enceladus_cassini.jpg` | Enceladus | Public domain | [NASA/JPL-Caltech/SSI/LPI, Cassini](https://commons.wikimedia.org/wiki/File:Enceladus_Color_Map.jpg) |
-| `1k_triton_voyager.jpg` | Triton | Public domain | [NASA/JPL-Caltech/LPI, Voyager 2](https://commons.wikimedia.org/wiki/File:Triton_Map.jpg) |
-| `2k_pluto_newhorizons.jpg` | Pluto | Public domain | [NASA/JHUAPL/SwRI, New Horizons PIA20658](https://commons.wikimedia.org/wiki/File:PIA20658-Pluto-Global-released20160502.jpg) |
+- resized (the width is in `registry/textures.yaml`; no file is over 250 kB) and, where the original
+  is centred on longitude 180, rolled half a turn so longitude 0, the side that faces the planet,
+  is at the centre;
+- **the black-and-white mosaics are tinted** with the world's flat colour, which is chosen from
+  published descriptions: Europa, Ganymede, Callisto, Titan, the five moons of Uranus, Pluto,
+  Charon and Phobos. Only the pattern of light and dark is measured. Charon's red polar cap and
+  Pluto's colours are therefore not shown;
+- **Cassini's colour maps** (Mimas, Enceladus, Tethys, Dione, Rhea, Iapetus; P. Schenk, LPI) are made
+  from infrared, green and ultraviolet pictures and are far more colourful than the eye would see:
+  35 % of their saturation is kept. Triton's is desaturated the same way. Io keeps USGS's colours;
+- **Titan's** is Cassini's 938 nm map, made through the haze, at half its contrast. In visible light
+  nobody has seen Titan's ground, and the card says so;
+- the brightness is taken to the flat colour's luminance, so the light-to-dark order of the worlds
+  still follows their measured albedos (the bright ice moons come out up to 11 % under it: the
+  build prints the figure and `registry/textures.yaml` carries it under `make:`);
+- **where nobody has looked, nothing is drawn.** The areas with no data in the original (the last
+  column below is the share of the sphere that has data) are filled with the world's flat colour:
+  the northern halves of Uranus's moons, which were in darkness when Voyager 2 passed in 1986, the
+  far south of Pluto and Charon, part of Triton. The card of each says so.
 
-**Beyond these five, no tier-0 texture comes from anywhere else.** In particular, `registry/models.yaml` claims
+| File | Used for | Licence | Source | Mapped |
+|---|---|---|---|---|
+| `2k_io_usgs.webp` | Io | Public domain | [USGS Astrogeology Science Center (Galileo SSI and Voyager)](https://planetarymaps.usgs.gov/mosaic/Io_GalileoSSI-Voyager_Global_Mosaic_ClrMerge_1km.lbl): Galileo SSI and Voyager colour mosaic | 100 % |
+| `2k_europa_usgs.webp` | Europa | Public domain | [USGS Astrogeology Science Center (Voyager and Galileo SSI)](https://planetarymaps.usgs.gov/mosaic/Europa_Voyager_GalileoSSI_global_mosaic_500m.lbl): Voyager and Galileo SSI mosaic, greyscale | 100 % |
+| `2k_ganymede_usgs.webp` | Ganymede | Public domain | [USGS Astrogeology Science Center (Voyager and Galileo SSI)](https://planetarymaps.usgs.gov/mosaic/Ganymede_Voyager_GalileoSSI_global_mosaic_1km.lbl): Voyager and Galileo SSI mosaic, greyscale | 100 % |
+| `2k_callisto_usgs.webp` | Callisto | Public domain | [USGS Astrogeology Science Center (Voyager and Galileo SSI)](https://planetarymaps.usgs.gov/mosaic/Callisto_Voyager_GalileoSSI_global_mosaic_1km.lbl): Voyager and Galileo SSI mosaic, greyscale | 99 % |
+| `2k_enceladus_cassini.webp` | Enceladus | Public domain | [NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute](https://commons.wikimedia.org/wiki/File:Enceladus_Color_Map.jpg): Cassini colour map (PIA18435; infrared, green, ultraviolet) | 100 % |
+| `2k_mimas_cassini.webp` | Mimas | Public domain | [NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18437)](https://commons.wikimedia.org/wiki/File:Map_of_Mimas_colorized_2014-04_PIA18437.jpg): Cassini colour map (infrared, green, ultraviolet) | 100 % |
+| `2k_tethys_cassini.webp` | Tethys | Public domain | [NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18439)](https://commons.wikimedia.org/wiki/File:Tethys_Color_Map.jpg): Cassini colour map (infrared, green, ultraviolet) | 100 % |
+| `2k_dione_cassini.webp` | Dione | Public domain | [NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18434)](https://commons.wikimedia.org/wiki/File:Dione_Color_Map.jpg): Cassini colour map (infrared, green, ultraviolet) | 100 % |
+| `2k_rhea_cassini.webp` | Rhea | Public domain | [NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18438)](https://commons.wikimedia.org/wiki/File:Rhea_Color_Map.jpg): Cassini colour map (infrared, green, ultraviolet) | 100 % |
+| `2k_iapetus_cassini.webp` | Iapetus | Public domain | [NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18436)](https://commons.wikimedia.org/wiki/File:Iapetus_Color_Map.jpg): Cassini colour map (infrared, green, ultraviolet) | 100 % |
+| `2k_titan_cassini_iss.webp` | Titan | Public domain | [USGS Astrogeology Science Center and NASA/JPL-Caltech/Space Science Institute (Cassini ISS, 938 nm)](https://planetarymaps.usgs.gov/mosaic/Titan_ISS_P19658_Mosaic_Global_4km.lbl): Cassini ISS near-infrared mosaic (PIA19658), greyscale | 100 % |
+| `1k_triton_voyager.jpg` | Triton | Public domain | [NASA/JPL-Caltech/LPI, Voyager 2](https://commons.wikimedia.org/wiki/File:Triton_Map.jpg) | 70 % |
+| `1k_miranda_voyager.webp` | Miranda | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Miranda_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 39 % |
+| `1k_ariel_voyager.webp` | Ariel | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Ariel_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 34 % |
+| `1k_umbriel_voyager.webp` | Umbriel | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Umbriel_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 37 % |
+| `1k_titania_voyager.webp` | Titania | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Titania_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 32 % |
+| `1k_oberon_voyager.webp` | Oberon | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Oberon_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 34 % |
+| `2k_pluto_usgs.webp` | Pluto | Public domain | [USGS Astrogeology Science Center and NASA/JHUAPL/SwRI (New Horizons)](https://planetarymaps.usgs.gov/mosaic/Pluto_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.lbl): New Horizons LORRI and MVIC mosaic, greyscale | 77 % |
+| `2k_charon_usgs.webp` | Charon | Public domain | [USGS Astrogeology Science Center and NASA/JHUAPL/SwRI (New Horizons)](https://planetarymaps.usgs.gov/mosaic/Charon_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.lbl): New Horizons LORRI and MVIC mosaic, greyscale | 74 % |
+| `2k_phobos_viking.webp` | Phobos | Public domain | [USGS Astrogeology Science Center (Viking Orbiter mosaic, control by P. Stooke)](https://commons.wikimedia.org/wiki/File:Phobos_Viking_Mosaic_DLRcontrol_7200.jpg): Viking Orbiter mosaic, greyscale | 100 % |
+
+**Beyond these twenty, no tier-0 texture comes from anywhere else.** In particular, `registry/models.yaml` claims
 the night-side texture comes from NASA Earth Observatory's Night Lights and the starfield from NASA
 SVS 4851. Neither is what shipped: `2k_earth_nightmap.webp` and `2k_stars_milky_way.webp` are Solar
 System Scope files, by name, size and fingerprint. The registry is wrong and the table above is
@@ -209,11 +246,26 @@ checked against this list by `scripts/check_registry.py`):
 - Earth at night (4k): Black Marble 2016, NASA Earth Observatory
 - Earth water mask (4k): Solar System Scope (solarsystemscope.com), CC BY 4.0
 - Milky Way (4k): NASA/Goddard Space Flight Center Scientific Visualization Studio, Gaia DR2: ESA/Gaia/DPAC
-- Io map: USGS Astrogeology Science Center (Galileo SSI), public domain
-- Europa map: USGS / PDS (Voyager and Galileo SSI), public domain
+- Io map: USGS Astrogeology Science Center (Galileo SSI and Voyager), public domain
+- Europa map: USGS Astrogeology Science Center (Voyager and Galileo SSI), public domain
+- Ganymede map: USGS Astrogeology Science Center (Voyager and Galileo SSI), public domain
+- Callisto map: USGS Astrogeology Science Center (Voyager and Galileo SSI), public domain
 - Enceladus map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute, public domain
+- Mimas map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18437), public domain
+- Tethys map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18439), public domain
+- Dione map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18434), public domain
+- Rhea map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18438), public domain
+- Iapetus map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18436), public domain
+- Titan map: USGS Astrogeology Science Center and NASA/JPL-Caltech/Space Science Institute (Cassini ISS, 938 nm), public domain
 - Triton map: NASA/JPL-Caltech/Lunar and Planetary Institute (Voyager 2), public domain
-- Pluto map: NASA/JHUAPL/SwRI (New Horizons, PIA20658), public domain
+- Miranda map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
+- Ariel map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
+- Umbriel map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
+- Titania map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
+- Oberon map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
+- Pluto map: USGS Astrogeology Science Center and NASA/JHUAPL/SwRI (New Horizons), public domain
+- Charon map: USGS Astrogeology Science Center and NASA/JHUAPL/SwRI (New Horizons), public domain
+- Phobos map: USGS Astrogeology Science Center (Viking Orbiter mosaic, control by P. Stooke), public domain
 
 **Refused by name**, because their terms forbid hosting copies: Björn Jónsson's maps ("please do
 not place a copy of the maps on your website") and Steve Albers' ("intended for personal
@@ -422,6 +474,16 @@ than counted by hand.
 | `asteroid-bennu.glb` | 1999 RQ36 asteroid | Bennu, and the asteroid class | 24 KB |
 | `asteroid-vesta.glb` | Asteroid 4 Vesta (A), from NASA's 3D Printing collection | 4 Vesta | 23 KB |
 | `asteroid-eros.glb` | Gaskell Eros Shape Model V1.1 (NASA PDS, not NASA 3D Resources): Gaskell, R. (2021), doi:10.26033/d0gq-9427. CC0 under NASA's science data policy | 433 Eros | 22 KB |
+| `dwarf-ceres.glb` | Ceres SPC Shape Model Dataset V1.0 (NASA PDS, not NASA 3D Resources): Park, R.S. and Buccino, D.R. (2018), DAWN-A-FC2-5-CERESSHAPESPC-V1.0. CC0 under NASA's science data policy | 1 Ceres | 37 KB |
+
+**The shapes of Phobos and Deimos** are not `.glb` files: `site/js/data/moonshapes.js` holds a radius
+every 5 degrees for each, which `site/js/scene/moonshape.js` bends the moon's sphere to
+(`scripts/build-moon-shapes.py`, 2026-10-05). Phobos: Gaskell, R.W. (2020), *Gaskell Phobos Shape
+Model V1.0*, NASA Planetary Data System, the Q=64 vertex model, binned to the grid. Deimos: Thomas,
+P.C. et al. (2021), *Small Body Optical Shape Models V1.0*, NASA Planetary Data System,
+doi:10.26033/g5e0-kh52, which is already a 5 degree grid; its label does not say which way longitude
+runs and it is taken as west, the convention of the paper it cites (Thomas 1993). Both are CC0 under
+NASA's science data policy, as for Eros.
 
 **Places on a surface**
 

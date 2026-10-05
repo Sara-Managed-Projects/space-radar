@@ -1644,6 +1644,28 @@ export const COPY = {
     // "small and lumpy" (NASA Science, registry/worlds.yaml `facts.shape`); each is drawn as a ball
     // of its mean radius (JPL), and the card says the shape on screen is not theirs.
     worldFlatIrregular: 'drawn as a plain ball the size of its average radius: there is no surface map of {name} here, its one colour is chosen from published descriptions, not measured, and {name} is really a lumpy rock whose true shape is not drawn',
+    // 2026-10-05: Phobos and Deimos are bent to their published shapes (scene/moonshape.js). Deimos
+    // still has no map here: no public-domain mosaic of it was found.
+    worldFlatShaped: 'drawn in its measured shape and in one colour: there is no surface map of {name} here, and the colour is chosen from published descriptions, not measured',
+    worldShaped: 'drawn in its measured shape',
+    // What kind of picture a moon's map is (scene/worlds.js `mapKind`; CREDITS.md section 2 has
+    // every source). `colour` maps (Io) say nothing: the mosaic's own colours are what is drawn.
+    worldMap: {
+      tinted: 'its surface is a black-and-white mosaic, tinted in a colour chosen from published descriptions',
+      toned: 'its colours come from infrared, green and ultraviolet pictures, toned down toward what an eye would see',
+      infrared: 'its surface is a near-infrared map made through the haze, tinted and softened; in visible light the haze hides the ground',
+    },
+    // The side nobody has photographed is left one plain colour, and the card says which side.
+    worldCoverage: {
+      miranda: 'only the southern half was photographed, by Voyager 2 in 1986; the rest is left plain, not guessed',
+      ariel: 'only the southern half was photographed, by Voyager 2 in 1986; the rest is left plain, not guessed',
+      umbriel: 'only the southern half was photographed, by Voyager 2 in 1986; the rest is left plain, not guessed',
+      titania: 'only the southern half was photographed, by Voyager 2 in 1986; the rest is left plain, not guessed',
+      oberon: 'only the southern half was photographed, by Voyager 2 in 1986; the rest is left plain, not guessed',
+      triton: 'Voyager 2 photographed part of it in 1989; the rest is left plain, not guessed',
+      pluto: 'the far south was in winter darkness when New Horizons passed in 2015 and is left plain, not guessed',
+      charon: 'the far south was in winter darkness when New Horizons passed in 2015 and is left plain, not guessed',
+    },
     // Spec 0054 requirement 2: every world but the Earth and the Sun is drawn as bright as a
     // photograph of it would be, not dimmed by its distance from the Sun (Saturn gets 1/90 of the
     // Earth's sunlight). scene/worlds.js says why; this is the card saying it.

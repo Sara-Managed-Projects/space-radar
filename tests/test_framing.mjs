@@ -125,5 +125,29 @@ function holds(name, f, { r, h = 900, subjectPx = 260, upDot = 0, room = null, d
   check(fitDistance([], project) === null, 'no points, no distance');
 }
 
+// Issue #419: a world is met on its lit face. litOffset is the direction from the world's centre to
+// the camera; the share of the disc that is lit from there is (1 + cos(angle to the Sun)) / 2.
+{
+  const dot = (a, b) => a.x * b.x + a.y * b.y + a.z * b.z;
+  const len = (a) => Math.hypot(a.x, a.y, a.z);
+  const up = { x: 0, y: 1, z: 0 };
+  for (const sun of [{ x: 1, y: 0, z: 0 }, { x: -3, y: 0.4, z: 2 }, { x: 0, y: 0, z: -7 }, { x: 0.2, y: 5, z: 0.1 }, { x: 0, y: 1, z: 0 }, { x: 0, y: -2, z: 0 }]) {
+    const o = F.litOffset(sun, up);
+    const lit = (1 + dot(o, sun) / len(sun)) / 2;
+    check(Math.abs(len(o) - 1) < 1e-9, `the offset for a Sun at ${JSON.stringify(sun)} is a unit vector (${len(o)})`);
+    check(lit > 0.88 && lit < 0.94, `the camera sees ${(lit * 100).toFixed(0)} % of the disc lit: gibbous, with the terminator in view`);
+    check(Math.abs(Math.acos(dot(o, sun) / len(sun)) - F.ARRIVAL_PHASE) < 1e-9, 'it stands ARRIVAL_PHASE round from the Sun');
+  }
+  // Turned round the camera's up, so the terminator is upright: the offset is no higher than the Sun.
+  const o = F.litOffset({ x: 1, y: 0, z: 0 }, up);
+  check(Math.abs(o.y) < 1e-12, `with the Sun on the horizon the camera stays on it (${o.y})`);
+  // The old arrival, beyond the subject from the stage's world: for a world farther from the Sun than
+  // the stage that is the night side. Reproduced: a camera on the anti-Sun side sees 0 % lit.
+  const old = { x: -1, y: 0, z: 0 };
+  check((1 + dot(old, { x: 1, y: 0, z: 0 })) / 2 === 0, 'the old arrival, on the far side from the Sun, sees a black disc');
+  check(F.litOffset(null, up) === null && F.litOffset({ x: 0, y: 0, z: 0 }, up) === null, 'no Sun direction, no offset: the rig keeps its own framing');
+  check(Math.abs(len(F.litOffset({ x: 1, y: 2, z: 3 }, null)) - 1) < 1e-9, 'no up is the scene\'s +Y');
+}
+
 if (problems.length) { console.error('framing FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('framing ok: the ISS, a geostationary satellite, a pad, a thing 50 km up and a site on the Moon all arrive with the limb on screen and clear of the model; small bodies from at least 5 % of a radius; the reticle held at every distance; the Planets tab fitted to its band');

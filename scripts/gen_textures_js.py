@@ -19,7 +19,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _genmirror import Mirror, pick  # noqa: E402
 
-ROW_FIELDS = ("id", "world", "slot", "when")
+ROW_FIELDS = ("id", "world", "slot", "when", "coverage")
 FILE_FIELDS = ("tier", "file", "px", "bytes", "format", "monthly", "credit")
 
 

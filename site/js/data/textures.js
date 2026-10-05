@@ -386,17 +386,18 @@ export const TEXTURES = [
     "world": "io",
     "slot": "map",
     "when": "boot",
+    "coverage": 1.0,
     "files": [
       {
         "tier": 0,
-        "file": "textures/1k_io_usgs.jpg",
+        "file": "textures/2k_io_usgs.webp",
         "px": [
-          1224,
-          612
+          2048,
+          1024
         ],
-        "bytes": 118131,
+        "bytes": 178088,
         "format": "rgb",
-        "credit": "Io map: USGS Astrogeology Science Center (Galileo SSI), public domain"
+        "credit": "Io map: USGS Astrogeology Science Center (Galileo SSI and Voyager), public domain"
       }
     ]
   },
@@ -405,17 +406,58 @@ export const TEXTURES = [
     "world": "europa",
     "slot": "map",
     "when": "boot",
+    "coverage": 0.995,
     "files": [
       {
         "tier": 0,
-        "file": "textures/1k_europa_usgs.jpg",
+        "file": "textures/2k_europa_usgs.webp",
         "px": [
-          1024,
-          512
+          2048,
+          1024
         ],
-        "bytes": 89436,
+        "bytes": 210708,
         "format": "rgb",
-        "credit": "Europa map: USGS / PDS (Voyager and Galileo SSI), public domain"
+        "credit": "Europa map: USGS Astrogeology Science Center (Voyager and Galileo SSI), public domain"
+      }
+    ]
+  },
+  {
+    "id": "ganymede",
+    "world": "ganymede",
+    "slot": "map",
+    "when": "boot",
+    "coverage": 0.996,
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/2k_ganymede_usgs.webp",
+        "px": [
+          2048,
+          1024
+        ],
+        "bytes": 220436,
+        "format": "rgb",
+        "credit": "Ganymede map: USGS Astrogeology Science Center (Voyager and Galileo SSI), public domain"
+      }
+    ]
+  },
+  {
+    "id": "callisto",
+    "world": "callisto",
+    "slot": "map",
+    "when": "boot",
+    "coverage": 0.991,
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/2k_callisto_usgs.webp",
+        "px": [
+          2048,
+          1024
+        ],
+        "bytes": 212040,
+        "format": "rgb",
+        "credit": "Callisto map: USGS Astrogeology Science Center (Voyager and Galileo SSI), public domain"
       }
     ]
   },
@@ -424,17 +466,138 @@ export const TEXTURES = [
     "world": "enceladus",
     "slot": "map",
     "when": "boot",
+    "coverage": 1.0,
     "files": [
       {
         "tier": 0,
-        "file": "textures/1k_enceladus_cassini.jpg",
+        "file": "textures/2k_enceladus_cassini.webp",
         "px": [
-          1024,
-          512
+          1536,
+          768
         ],
-        "bytes": 222843,
+        "bytes": 227872,
         "format": "rgb",
         "credit": "Enceladus map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute, public domain"
+      }
+    ]
+  },
+  {
+    "id": "mimas",
+    "world": "mimas",
+    "slot": "map",
+    "when": "boot",
+    "coverage": 1.0,
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/2k_mimas_cassini.webp",
+        "px": [
+          1792,
+          896
+        ],
+        "bytes": 231248,
+        "format": "rgb",
+        "credit": "Mimas map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18437), public domain"
+      }
+    ]
+  },
+  {
+    "id": "tethys",
+    "world": "tethys",
+    "slot": "map",
+    "when": "boot",
+    "coverage": 1.0,
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/2k_tethys_cassini.webp",
+        "px": [
+          1536,
+          768
+        ],
+        "bytes": 221400,
+        "format": "rgb",
+        "credit": "Tethys map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18439), public domain"
+      }
+    ]
+  },
+  {
+    "id": "dione",
+    "world": "dione",
+    "slot": "map",
+    "when": "boot",
+    "coverage": 1.0,
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/2k_dione_cassini.webp",
+        "px": [
+          1792,
+          896
+        ],
+        "bytes": 232500,
+        "format": "rgb",
+        "credit": "Dione map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18434), public domain"
+      }
+    ]
+  },
+  {
+    "id": "rhea",
+    "world": "rhea",
+    "slot": "map",
+    "when": "boot",
+    "coverage": 1.0,
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/2k_rhea_cassini.webp",
+        "px": [
+          1536,
+          768
+        ],
+        "bytes": 230008,
+        "format": "rgb",
+        "credit": "Rhea map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18438), public domain"
+      }
+    ]
+  },
+  {
+    "id": "iapetus",
+    "world": "iapetus",
+    "slot": "map",
+    "when": "boot",
+    "coverage": 1.0,
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/2k_iapetus_cassini.webp",
+        "px": [
+          2048,
+          1024
+        ],
+        "bytes": 226040,
+        "format": "rgb",
+        "credit": "Iapetus map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18436), public domain"
+      }
+    ]
+  },
+  {
+    "id": "titan",
+    "world": "titan",
+    "slot": "map",
+    "when": "boot",
+    "coverage": 1.0,
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/2k_titan_cassini_iss.webp",
+        "px": [
+          2048,
+          1024
+        ],
+        "bytes": 62786,
+        "format": "rgb",
+        "credit": "Titan map: USGS Astrogeology Science Center and NASA/JPL-Caltech/Space Science Institute (Cassini ISS, 938 nm), public domain"
       }
     ]
   },
@@ -443,6 +606,7 @@ export const TEXTURES = [
     "world": "triton",
     "slot": "map",
     "when": "boot",
+    "coverage": 0.7,
     "files": [
       {
         "tier": 0,
@@ -458,21 +622,162 @@ export const TEXTURES = [
     ]
   },
   {
+    "id": "miranda",
+    "world": "miranda",
+    "slot": "map",
+    "when": "boot",
+    "coverage": 0.394,
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/1k_miranda_voyager.webp",
+        "px": [
+          1440,
+          720
+        ],
+        "bytes": 49792,
+        "format": "rgb",
+        "credit": "Miranda map: NASA/JPL-Caltech/USGS (Voyager 2), public domain"
+      }
+    ]
+  },
+  {
+    "id": "ariel",
+    "world": "ariel",
+    "slot": "map",
+    "when": "boot",
+    "coverage": 0.337,
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/1k_ariel_voyager.webp",
+        "px": [
+          1440,
+          720
+        ],
+        "bytes": 28216,
+        "format": "rgb",
+        "credit": "Ariel map: NASA/JPL-Caltech/USGS (Voyager 2), public domain"
+      }
+    ]
+  },
+  {
+    "id": "umbriel",
+    "world": "umbriel",
+    "slot": "map",
+    "when": "boot",
+    "coverage": 0.369,
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/1k_umbriel_voyager.webp",
+        "px": [
+          1440,
+          720
+        ],
+        "bytes": 12276,
+        "format": "rgb",
+        "credit": "Umbriel map: NASA/JPL-Caltech/USGS (Voyager 2), public domain"
+      }
+    ]
+  },
+  {
+    "id": "titania",
+    "world": "titania",
+    "slot": "map",
+    "when": "boot",
+    "coverage": 0.318,
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/1k_titania_voyager.webp",
+        "px": [
+          1440,
+          720
+        ],
+        "bytes": 27046,
+        "format": "rgb",
+        "credit": "Titania map: NASA/JPL-Caltech/USGS (Voyager 2), public domain"
+      }
+    ]
+  },
+  {
+    "id": "oberon",
+    "world": "oberon",
+    "slot": "map",
+    "when": "boot",
+    "coverage": 0.34,
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/1k_oberon_voyager.webp",
+        "px": [
+          1440,
+          720
+        ],
+        "bytes": 28288,
+        "format": "rgb",
+        "credit": "Oberon map: NASA/JPL-Caltech/USGS (Voyager 2), public domain"
+      }
+    ]
+  },
+  {
     "id": "pluto",
     "world": "pluto",
     "slot": "map",
     "when": "boot",
+    "coverage": 0.769,
     "files": [
       {
         "tier": 0,
-        "file": "textures/2k_pluto_newhorizons.jpg",
+        "file": "textures/2k_pluto_usgs.webp",
         "px": [
           2048,
           1024
         ],
-        "bytes": 274287,
+        "bytes": 159498,
         "format": "rgb",
-        "credit": "Pluto map: NASA/JHUAPL/SwRI (New Horizons, PIA20658), public domain"
+        "credit": "Pluto map: USGS Astrogeology Science Center and NASA/JHUAPL/SwRI (New Horizons), public domain"
+      }
+    ]
+  },
+  {
+    "id": "charon",
+    "world": "charon",
+    "slot": "map",
+    "when": "boot",
+    "coverage": 0.74,
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/2k_charon_usgs.webp",
+        "px": [
+          2048,
+          1024
+        ],
+        "bytes": 159996,
+        "format": "rgb",
+        "credit": "Charon map: USGS Astrogeology Science Center and NASA/JHUAPL/SwRI (New Horizons), public domain"
+      }
+    ]
+  },
+  {
+    "id": "phobos",
+    "world": "phobos",
+    "slot": "map",
+    "when": "boot",
+    "coverage": 1.0,
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/2k_phobos_viking.webp",
+        "px": [
+          2048,
+          1024
+        ],
+        "bytes": 189854,
+        "format": "rgb",
+        "credit": "Phobos map: USGS Astrogeology Science Center (Viking Orbiter mosaic, control by P. Stooke), public domain"
       }
     ]
   }
