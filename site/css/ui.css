@@ -5138,6 +5138,15 @@ html.sr-phone .sr-scenenote {
   white-space: nowrap;
 }
 
+/* Where the pass goes is the half an ellipsis cut: "From north-north-west to east-south-…" at both
+   widths (the audit of 2026-10-05). Two lines beside the arc, then the ellipsis. */
+.sr-tonight-view__line {
+  display: -webkit-box;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
 .sr-tonight-view__place,
 .sr-tonight-view__caveat,
 .sr-tonight-view__dark,
