@@ -744,6 +744,10 @@ TOUR_CASES: list[tuple[str, str, str]] = [
      "        target: {record: tesla-roadster}", "        target: {record: bean-astronaut-pin}"),
     ("a trip id that is also a layer id",
      "  - id: people-in-space", "  - id: stations"),
+    # Spec 0061 task 6, internal #333: a blurb is two lines on the intro, 80 characters at most.
+    ("a blurb that would run to three lines on the intro",
+     '    blurb: "A family photograph, two golf balls, a library, a record and a car."',
+     '    blurb: "A family photograph, two golf balls, a library, a record, a car and a good many more words than fit."'),
     ("a target that names two things at once",
      "        target: {record: duke-family-photo}",
      "        target: {record: duke-family-photo, world: earth}"),
