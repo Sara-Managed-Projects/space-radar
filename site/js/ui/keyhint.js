@@ -26,7 +26,7 @@
 //
 // HONEST KEYS. Every keycap names the KeyboardEvent.key values it stands for, and
 // tests/test_keyhint.mjs holds each one to the module that answers it: scene/camera.js CAMERA_KEYS
-// for turning and zooming, ui/cleanview.js for H, ui/rail.js for L and P. A keycap for a key that
+// for turning and zooming, ui/explore.js for /, ui/cleanview.js for H, ui/rail.js for L and P. A keycap for a key that
 // does nothing is the worst thing a hint can show.
 //
 // MOTION. The panel comes up 8 px and fades in (--sr-mid); each keycap presses once, in turn, a
@@ -72,6 +72,7 @@ export const KEY_ROWS = [
 
 /** The chrome's keys, one cap each. */
 export const CHROME_KEYS = [
+  { id: 'slash', keys: ['/'], does: 'search' },
   { id: 'h', keys: ['h', 'H'], does: 'hide' },
   { id: 'l', keys: ['l', 'L'], does: 'show' },
   { id: 'p', keys: ['p', 'P'], does: 'share' },

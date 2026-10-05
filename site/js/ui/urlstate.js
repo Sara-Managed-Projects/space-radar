@@ -13,7 +13,8 @@
 // EVERY KEY, since 2026-09-23 (spec 0032, deep links). `m` the moment; `v` the format version;
 // `trip` and `stop` a trip at a stop (a 1-based number, or a stop id); `at` a record id; `t` an
 // ISO UTC instant, or `now`; `rate` the clock's rate; `stage` the world or rung the map is centred
-// on. A key outside KEYS is dropped on read and never written, so a link made by a newer map with
+// on; `exp` the exposure the sky is drawn at when it is not the default (`eye` or `deep`, public
+// #460: a shared postcard and the link beside it show the same sky). A key outside KEYS is dropped on read and never written, so a link made by a newer map with
 // one more key still opens everything this one understands. A `v` other than VERSION marks the
 // whole state unknown: this reader cannot tell what the keys it does recognise mean in that form.
 //
@@ -26,7 +27,7 @@
 // is not Previous Stop -- and the README states it.
 
 export const HASH_KEY = 'm';
-export const KEYS = ['m', 'v', 'trip', 'stop', 'at', 't', 'rate', 'stage'];
+export const KEYS = ['m', 'v', 'trip', 'stop', 'at', 't', 'rate', 'stage', 'exp'];
 export const VERSION = '1';
 
 export function hashParts() {

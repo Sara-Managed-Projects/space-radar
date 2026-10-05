@@ -10,7 +10,7 @@
 //   node tests/test_tokens.mjs
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { readFileSync, existsSync, statSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const problems = [];
@@ -81,7 +81,7 @@ const DESIGN_TOKENS = [
   '--sr-line', '--sr-line-strong', '--sr-edge-lit', '--sr-edge-glow', '--sr-shadow',
   '--sr-radius', '--sr-radius-sm', '--sr-radius-pill', '--sr-bracket', '--sr-bracket-w',
   '--sp-1', '--sp-2', '--sp-3', '--sp-4', '--sp-5', '--sp-6', '--sr-pad', '--sr-header-h',
-  '--sr-font', '--sr-font-hud', '--sr-font-mono', '--sr-font-serif',
+  '--sr-font', '--sr-font-hud', '--sr-font-mono',
   '--sr-ease', '--sr-ease-in', '--sr-fast', '--sr-mid', '--sr-slow',
   // the old names, kept as aliases for one release
   '--sr-panel', '--font',
@@ -472,13 +472,16 @@ for (const f of FILES) {
   check(/@keyframes sr-view-back\s*\{\s*from\s*\{[^}]*opacity:\s*0[^}]*translateX\(-12px\)/.test(raw), 'sr-view-back starts 12 px to the left, from nothing');
 }
 
-// --- 10. faces: exactly the four (the amendment's three and spec 0061's serif), self-hosted -------
+// --- 10. faces: exactly the three, self-hosted (design-language amendment 2026-09-28) ------------
+// Spec 0061 task 5 added Instrument Serif for names; Ivan rejected it on 2026-10-03 and task 6 took
+// the face, its file, its preload and its token out. A fourth family is a design decision: it fails
+// here first, and so does a font file nobody declares (it would ship, and a preload would fetch it).
 const fontsCss = readFileSync(join(ROOT, 'site/css/fonts.css'), 'utf8');
 const css = [...FILES.map((f) => readFileSync(join(ROOT, f), 'utf8')), fontsCss].join('\n');
 const faces = [...strip(css).matchAll(/@font-face\s*\{([^}]*)\}/g)].map((m) => m[1]);
 const families = new Set(faces.map((b) => (/font-family:\s*["']?([^;"']+)/.exec(b) || [])[1]).filter(Boolean).map((f) => f.trim()));
-const FACES = ['Inter', 'Barlow Semi Condensed', 'JetBrains Mono', 'Instrument Serif'];
-check(families.size === 4 && FACES.every((f) => families.has(f)), `@font-face declares ${[...families].join(', ') || 'nothing'}; exactly Inter, Barlow Semi Condensed, JetBrains Mono and Instrument Serif`);
+const FACES = ['Inter', 'Barlow Semi Condensed', 'JetBrains Mono'];
+check(families.size === 3 && FACES.every((f) => families.has(f)), `@font-face declares ${[...families].join(', ') || 'nothing'}; exactly Inter, Barlow Semi Condensed and JetBrains Mono`);
 check(!/Bricolage/i.test(strip(css)), 'Bricolage Grotesque is not loaded (design-language amendment 2026-09-28)');
 for (const b of faces) {
   const src = /url\(['"]?\.\.\/fonts\/([^'")]+\.woff2)['"]?\)\s*format\(['"]woff2['"]\)/.exec(b);
@@ -490,35 +493,33 @@ for (const b of faces) {
 check(/^'Inter',/.test(token('--sr-font') || ''), `--sr-font starts with Inter (${token('--sr-font')})`);
 check(/^'JetBrains Mono',/.test(token('--sr-font-mono') || ''), `--sr-font-mono starts with JetBrains Mono (${token('--sr-font-mono')})`);
 check(/^'Barlow Semi Condensed',/.test(token('--sr-font-hud') || ''), `--sr-font-hud starts with Barlow Semi Condensed (${token('--sr-font-hud')})`);
-check(/^'Instrument Serif',.*\bserif$/.test(token('--sr-font-serif') || ''), `--sr-font-serif starts with Instrument Serif and ends in the system's serif (${token('--sr-font-serif')})`);
-
-// The serif (spec 0061 task 5, design section 9): ONE weight, one Latin file inside serif_bytes, and
-// four roles: the wordmark (and its first letter on the collapsed handle), a card's name, a trip's
-// titles and the first Right-now line. A fifth use is a design decision, so it fails here first.
-const serifFaces = faces.filter((b) => /font-family:\s*["']?Instrument Serif/.test(b));
-check(serifFaces.length === 1 && /font-weight:\s*400/.test(serifFaces[0] || ''), `Instrument Serif is one file at weight 400 (found ${serifFaces.length})`);
+// No serif anywhere: not a token, not a family in a rule or a builder, not a file, not a preload.
+check(!tokens.has('--sr-font-serif'), '--sr-font-serif is defined; names and titles are sans (Ivan, 2026-10-03)');
 {
-  const { BUDGETS } = await import(join(ROOT, 'site/js/data/budgets.js'));
-  const bytes = statSync(join(ROOT, 'site/fonts/instrument-serif-400-latin.woff2')).size;
-  check(bytes <= BUDGETS.serif_bytes, `the serif is ${bytes} B, over serif_bytes ${BUDGETS.serif_bytes} B`);
-}
-const SERIF_ROLES = [
-  /^\.sr-wordmark$/, /^\.sr-side\.is-collapsed \.sr-side__handle$/, /^\.sr-card__name$/,
-  /^\.sr-tripsheet__name$/, /^\.sr-now__row\.is-lead \.sr-now__btn$/,
-];
-for (const r of all) {
-  for (const [prop, value] of decls(r.body)) {
-    if ((prop !== 'font' && prop !== 'font-family') || !/var\(--sr-font-serif\)/.test(value)) continue;
-    const sels = r.selector.split(',').map((x) => x.trim().replace(/\s+/g, ' '));
-    check(sels.every((x) => SERIF_ROLES.some((re) => re.test(x))), `${r.file} ${r.selector}: the serif is for the wordmark, a card's name, a trip's titles and the first Right-now line only`);
-    check(prop !== 'font' || /^400 /.test(value), `${r.file} ${r.selector}: the serif is loaded at 400 only (${value})`);
+  const { readdirSync } = await import('node:fs');
+  const declared = new Set(faces.map((b) => (/url\(['"]?\.\.\/fonts\/([^'")]+)/.exec(b) || [])[1]).filter(Boolean));
+  for (const f of readdirSync(join(ROOT, 'site/fonts')).filter((n) => n.endsWith('.woff2'))) check(declared.has(f), `site/fonts/${f} ships and no @font-face declares it`);
+  const html = readFileSync(join(ROOT, 'site/index.html'), 'utf8');
+  for (const m of html.matchAll(/<link rel="preload" href="fonts\/([^"]+)"/g)) check(declared.has(m[1]), `index.html preloads fonts/${m[1]}, which no @font-face declares`);
+  for (const r of all) {
+    for (const [prop, value] of decls(r.body)) {
+      if (prop !== 'font' && prop !== 'font-family') continue;
+      const bare = value.replace(/sans-serif/g, '');
+      check(!/serif|Georgia|Palatino|Times|Iowan/i.test(bare), `${r.file} ${r.selector}: ${prop}: ${value}; a serif, and names and titles are sans`);
+      check(/var\(--sr-font(-hud|-mono)?\)|var\(--font\)|^inherit$/.test(value), `${r.file} ${r.selector}: ${prop}: ${value}; a face is --sr-font, --sr-font-hud or --sr-font-mono`);
+    }
   }
+  const uiDir = join(ROOT, 'site/js/ui');
+  for (const f of readdirSync(uiDir).filter((n) => n.endsWith('.js'))) {
+    const src = readFileSync(join(uiDir, f), 'utf8').replace(/sans-serif/g, '');
+    check(!/font-family:[^;}]*serif|Instrument Serif|--sr-font-serif/i.test(src), `site/js/ui/${f} sets a serif; names and titles are sans`);
+  }
+  check(!('serif_bytes' in (await import(join(ROOT, 'site/js/data/budgets.js'))).BUDGETS), 'registry/budgets.yaml still has a serif_bytes row');
 }
-// Ivan, 2026-10-03: the roles went back to the sans; the serif may be used only there, and need not be.
 
 if (problems.length) {
   console.error('tokens FAILED:\n  ' + problems.join('\n  '));
   if (table.length) console.error('  contrast: ' + table.join('; '));
   process.exit(1);
 }
-console.log(`tokens ok: ${DESIGN_TOKENS.length} tokens defined once, the palette unchanged, 6 px corners, the lit edge and the brackets in place, every size, colour, corner and layer a token, nothing read under 13 px, Compact and the panel motion defined, four faces self-hosted; contrast ${table.join('; ')}`);
+console.log(`tokens ok: ${DESIGN_TOKENS.length} tokens defined once, the palette unchanged, 6 px corners, the lit edge and the brackets in place, every size, colour, corner and layer a token, nothing read under 13 px, Compact and the panel motion defined, three faces self-hosted and no serif; contrast ${table.join('; ')}`);

@@ -55,5 +55,21 @@ check(/PDF/.test(COPY.share.pdf) && /JPEG/.test(COPY.share.jpeg), 'the share she
 const named = caption({ clock }, { id: 'sat-25544', name: 'ISS (ZARYA)' }, null, 'International Space Station');
 check(named.title === 'International Space Station', `the caption is the card's name, not the catalogue's (${named.title})`);
 
+// Public #460: the postcard wears the exposure on screen. It can only fail to if the print frame is
+// drawn from anything but the live scene, or if the print path builds a sky of its own: renderTo()
+// renders the SAME scene and camera, whose materials carry the shutter (starfield.setExposure, the
+// nebulae's shared uniforms), and nothing on the way resets it.
+{
+  const { readFileSync } = await import('node:fs');
+  const compose = readFileSync(join(ROOT, 'site/js/ui/printcompose.js'), 'utf8');
+  const renderer = readFileSync(join(ROOT, 'site/js/scene/renderer.js'), 'utf8');
+  const main = readFileSync(join(ROOT, 'site/js/main.js'), 'utf8');
+  check(/const frame = api && typeof api\.renderTo === 'function' \? api\.renderTo\(size\.w, size\.h\) : null;/.test(compose), 'the postcard\'s frame is rendererApi.renderTo() of the live scene');
+  const body = /function renderTo\(width, height\) \{([\s\S]*?)\n  \}\n/.exec(renderer);
+  check(!!body && (body[1].match(/renderer\.render\(scene, camera\)/g) || []).length === 2 && !/new THREE\.Scene|setExposure|toneMappingExposure/.test(body[1]), 'renderTo() draws the one scene with the one camera and touches no exposure');
+  check(!/setExposure|createExposure|exposureLook|DEFAULT_EXPOSURE/.test(compose), 'the print composer never sets a shutter of its own');
+  check(/exposure\.onChange\(\(mode, look, byVisitor\) => \{\s*starfield\.setExposure\(look\.milkyWay\);\s*if \(ctx\.nebulae\) ctx\.nebulae\.setExposure\(look\);/.test(main), 'a change of shutter is written into the live scene\'s materials, which the print reads');
+}
+
 if (problems.length) { console.error('printcard FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('printcard ok: a 6 x 4 in postcard at 300 dpi in the screen\'s orientation, captioned with what it shows and when, as a JPEG or a well-formed one-page PDF');

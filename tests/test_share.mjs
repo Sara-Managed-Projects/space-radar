@@ -127,6 +127,12 @@ for (const k of Object.keys(readBack(leak))) check(['m', 'trip', 'stop', 'at', '
 check(appBase({ origin: 'http://127.0.0.1:8416', pathname: '/site/index.html' }) === 'http://127.0.0.1:8416/site/', 'the base under a local prefix keeps the prefix');
 check(shareUrl({ trip: 'moon-landings', stop: 1 }, 'http://127.0.0.1:8416/site/') === 'http://127.0.0.1:8416/site/t/moon-landings.html', 'the short page is relative to where the app lives');
 
+// The shutter (public #460): a post's picture is drawn from the live scene, so the link beside it
+// names the exposure the scene wears when that is not the default, and never the address bar's echo.
+check(shareUrl({ at: 'dso-m42', exp: 'deep' }, 'https://x.test/') === 'https://x.test/#at=dso-m42&exp=deep', 'a Deep sky is in the link');
+check(shareUrl({ at: 'dso-m42', exp: 'camera' }, 'https://x.test/') === 'https://x.test/#at=dso-m42' && shareUrl({ at: 'dso-m42', exp: 'x' }, 'https://x.test/') === 'https://x.test/#at=dso-m42', 'the default and an unknown mode are not');
+check(shareState({ exposure: { mode: () => 'eye' } }, 'dso-m42').exp === 'eye' && shareUrl(shareState({ exposure: { mode: () => 'eye' } }, 'dso-m42'), 'https://x.test/').endsWith('&exp=eye'), 'shareState reads the live shutter');
+check(!shareUrl(shareState({ exposure: { mode: () => 'camera' } }, 'mars'), 'https://x.test/').includes('exp='), 'and at Camera the link is as it was');
 // ---------------------------------------------------------------------------- shareState()
 const tour = TOURS[0];
 const tripCtx = (phase, index) => ({

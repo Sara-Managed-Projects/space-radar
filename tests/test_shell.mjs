@@ -168,6 +168,16 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   // Spec 0061 task 5: `/` focuses the search, and every key is named where its control is.
   check(wantsSearch({ key: '/' }, body) === true, '/ asks for the search field');
   check(wantsSearch({ key: '/' }, { tagName: 'INPUT' }) === false && wantsSearch({ key: '/' }, { tagName: 'TEXTAREA' }) === false, 'a / typed into a field is a /');
+  // Public #459: every way of typing, by the focused element or by where the key was sent.
+  const attrs = (o) => ({ tagName: 'DIV', getAttribute: (n) => (n in o ? o[n] : null) });
+  check(wantsSearch({ key: '/' }, { tagName: 'SELECT' }) === false && wantsSearch({ key: '/' }, { tagName: 'DIV', isContentEditable: true }) === false, 'nor in a select or an editable region');
+  check(wantsSearch({ key: '/' }, attrs({ contenteditable: '' })) === false && wantsSearch({ key: '/' }, attrs({ contenteditable: 'plaintext-only' })) === false && wantsSearch({ key: '/' }, attrs({ contenteditable: 'false' })) === true, 'contenteditable as an attribute counts, and "false" does not');
+  for (const role of ['textbox', 'searchbox', 'combobox', 'spinbutton']) check(wantsSearch({ key: '/' }, attrs({ role })) === false, `a role=${role} is a text field`);
+  check(wantsSearch({ key: '/' }, attrs({ role: 'button' })) === true, 'a focused button is not');
+  check(wantsSearch({ key: '/', target: { tagName: 'INPUT' } }, body) === false, 'a / sent to a field the document does not report as focused (a frame, a shadow root) is a /');
+  check(wantsSearch({ key: '/', composedPath: () => [{ tagName: 'TEXTAREA' }, { tagName: 'X-HOST' }] }, { tagName: 'X-HOST' }) === false, 'the composed path\'s first element is asked, inside a shadow root');
+  check(wantsSearch({ key: '/', isComposing: true }, body) === false && wantsSearch({ key: '/', keyCode: 229 }, body) === false, 'never mid-composition (an input method)');
+  check(wantsSearch({ key: '/', shiftKey: true }, body) === true, 'Shift stays allowed: on a German keyboard / is Shift+7');
   check(wantsSearch({ key: '/', ctrlKey: true }, body) === false && wantsSearch({ key: '/', metaKey: true }, body) === false, 'Ctrl+/ and Cmd+/ stay the browser\'s');
   check(wantsSearch({ key: '/', defaultPrevented: true }, body) === false && wantsSearch({ key: '?' }, body) === false, 'a key somebody else took, or another key, is not it');
   const exploreKeys = readFileSync(join(JS, 'ui/explore.js'), 'utf8');

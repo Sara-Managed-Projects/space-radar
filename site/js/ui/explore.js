@@ -275,15 +275,35 @@ function section(title, className) {
   return s;
 }
 
+/** Is this element somewhere a person types? A field, an editable region, or an ARIA text box. Pure. */
+export function isTypingIn(node) {
+  if (!node || typeof node !== 'object') return false;
+  const tag = node.tagName ? String(node.tagName).toUpperCase() : '';
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+  if (node.isContentEditable) return true;
+  const attr = (name) => (typeof node.getAttribute === 'function' ? node.getAttribute(name) : null);
+  const editable = attr('contenteditable');
+  if (editable !== null && editable !== undefined && String(editable).toLowerCase() !== 'false') return true;
+  const role = String(attr('role') || '').toLowerCase();
+  return role === 'textbox' || role === 'searchbox' || role === 'combobox' || role === 'spinbutton';
+}
+
 /**
  * Whether a key press asks for the search field. Pure, like ui/rail.js railKey: `/` alone, never
  * while something is being typed, never with a modifier (Ctrl+/ and Cmd+/ are the browser's).
+ *
+ * "Being typed" (public #459) is asked of BOTH the focused element and the element the key was sent
+ * to: they differ when a field lives in a shadow root (document.activeElement is its host) or in a
+ * frame, and a `/` in an email address must stay a `/`. Never mid-composition either: an input
+ * method's `/` belongs to the word being composed.
  */
 export function wantsSearch(event, activeElement) {
   if (!event || event.defaultPrevented || event.key !== '/') return false;
   if (event.ctrlKey || event.metaKey || event.altKey) return false;
-  const tag = activeElement && activeElement.tagName ? String(activeElement.tagName).toUpperCase() : '';
-  return !(tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (activeElement && activeElement.isContentEditable));
+  if (event.isComposing || event.keyCode === 229) return false;
+  const path = typeof event.composedPath === 'function' ? event.composedPath() : [];
+  const sentTo = (path && path[0]) || event.target || null;
+  return !(isTypingIn(activeElement) || isTypingIn(sentTo));
 }
 
 export function createExplore(ctx, host) {

@@ -23,7 +23,7 @@
 //     shows what frame n shows.
 //   * NOTHING BUT THE SCENE AND A LOWER THIRD. The shell, the card, the toolbar, the hint and the
 //     toasts are hidden (a class on <html>, like the clear screen's); the trip frame is never
-//     imported. What is drawn over the scene is the title card, the stop's name in the serif with
+//     imported. What is drawn over the scene is the title card, the stop's name in Inter 600 with
 //     a small "spaceradar.ai", optional captions from the clips' own WebVTT, and the end card.
 //   * THE VOICE IS NOT PLAYED HERE. Each stop is held for its clip (audio/narration.js holdFor,
 //     the same sum the live trip makes) and the tool lays the files on the sound track at the
@@ -242,7 +242,7 @@ html.sr-render, html.sr-render body { cursor: none; }
 html.sr-render body > *:not(.sr-scene):not(.sr-veil):not(#labels):not(#sr-hud):not(#sr-render) { visibility: hidden !important; }
 html.sr-render #boot { display: none !important; }
 #sr-render { position: fixed; inset: 0; z-index: 2147483000; pointer-events: none; color: var(--sr-text, #e8ecf2); font-family: var(--sr-font, 'Inter', system-ui, sans-serif); }
-#sr-render .rm-serif { font-family: var(--sr-font-serif, 'Instrument Serif', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif); font-weight: 400; letter-spacing: -0.01em; }
+#sr-render .rm-name { font-family: var(--sr-font, 'Inter', system-ui, sans-serif); font-weight: 600; letter-spacing: -0.02em; }
 #sr-render .rm-micro { font-family: var(--sr-font-hud, 'Barlow Semi Condensed', 'Inter', system-ui, sans-serif); font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sr-text-dim, #9aa4b2); }
 #sr-render .rm-card { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; padding: 0 9vw; opacity: 0;
   background: linear-gradient(90deg, rgba(11,14,20,.88) 0%, rgba(11,14,20,.72) 45%, rgba(11,14,20,.30) 100%); }
@@ -480,7 +480,7 @@ export function install(opts, g = window) {
     root.id = 'sr-render';
     const title = el('div', 'rm-card rm-titlecard');
     title.appendChild(el('div', 'rm-micro', COPY.render.eyebrow));
-    title.appendChild(el('h1', 'rm-title rm-serif', tour.title));
+    title.appendChild(el('h1', 'rm-title rm-name', tour.title));
     if (tour.blurb) title.appendChild(el('p', 'rm-blurb', tour.blurb));
     title.appendChild(el('p', 'rm-truth', truthLine(tour, epochMs)));
     // The names over the scene would show through a card and under the lower third's words: a
@@ -488,20 +488,20 @@ export function install(opts, g = window) {
     const scrim = el('div', 'rm-scrim');
     const third = el('div', 'rm-third');
     third.appendChild(el('div', 'rm-micro', tour.title));
-    const stop = el('div', 'rm-stop rm-serif', '');
+    const stop = el('div', 'rm-stop rm-name', '');
     third.appendChild(stop);
     const mark = el('div', 'rm-mark rm-micro', COPY.render.site);
     const caption = el('div', 'rm-caption', '');
     const endCard = el('div', 'rm-card rm-end');
     endCard.appendChild(el('div', 'rm-micro', COPY.render.fly));
-    endCard.appendChild(el('h1', 'rm-title rm-serif', tour.title));
+    endCard.appendChild(el('h1', 'rm-title rm-name', tour.title));
     endCard.appendChild(el('p', 'rm-url', tripUrl(tour.id)));
     const credits = [truthLine(tour, epochMs), NARRATION.credit ? `${NARRATION.credit}.` : '', COPY.render.music].filter(Boolean).join(' ');
     endCard.appendChild(el('p', 'rm-credits', credits));
     // The thumbnail: the same frame with nothing over it but the trip's name, large (thumb()).
     const thumb = el('div', 'rm-thumb');
     thumb.appendChild(el('div', 'rm-micro', COPY.render.site));
-    thumb.appendChild(el('h1', 'rm-title rm-serif', tour.title));
+    thumb.appendChild(el('h1', 'rm-title rm-name', tour.title));
     for (const node of [scrim, third, mark, caption, title, endCard, thumb]) root.appendChild(node);
     document.body.appendChild(root);
     ui = { root, title, scrim, third, stop, mark, caption, endCard, over: [document.getElementById('labels'), document.getElementById('sr-hud')].filter(Boolean) };
@@ -560,7 +560,7 @@ export function install(opts, g = window) {
     build();
     if (document.fonts) {
       await Promise.all([
-        document.fonts.load("400 64px 'Instrument Serif'"),
+        document.fonts.load("600 64px 'Inter'"),
         document.fonts.load("600 16px 'Barlow Semi Condensed'"),
         document.fonts.load("400 16px 'Inter'"),
         document.fonts.load("400 16px 'JetBrains Mono'"),

@@ -6,12 +6,11 @@
 //     record  what to share (its tag, words, page); omitted: the selection, else the view
 //     trip    true, or the running trip's id: it, where it is; another id or {id}: its page. Beats record.
 //     opener  where focus returns on close (default: the focused element)
-// Also: appBase, shareUrl, shareState, tripWords (pure), toast, openShare, savePostcard (the
-// card's Postcard, one press), shareButton (the trip bar's).
+// Also: appBase, shareUrl, shareState, tripWords (pure), toast, openShare, savePostcard, shareButton.
 //
-// WHY ONE ENTRY. There were three (a link, a 1080 x 1350 picture, the print). Ivan, 2026-10-01:
-// "full post, postcard, link and full text". This loads with every card, so it is the link rules
-// and the door only: ui/sharesheet.js is imported on the first open, and nothing is fetched before.
+// WHY ONE ENTRY. There were three. Ivan, 2026-10-01: "full post, postcard, link and full text".
+// This loads with every card, so it is the link rules and the door only: ui/sharesheet.js is
+// imported on the first open.
 
 import { COPY } from '../copy/en.js';
 import { read } from './urlstate.js';
@@ -41,10 +40,11 @@ export function shareUrl(st, base = appBase()) {
     put('trip', s.trip);
     put('stop', stop);
   } else put('at', s.at);
-  // No `t` means now and no `rate` means 1, as main.js writes them.
+  // No `t` is now, no `rate` is 1.
   if (s.t && s.t !== 'now') put('t', s.t);
   if (s.rate && Number(s.rate) !== 1) put('rate', s.rate);
   if (!s.trip) put('stage', s.stage); // a trip picks its own stage at every stop
+  if (s.exp === 'eye' || s.exp === 'deep') put('exp', s.exp); // the shutter (#460)
   return keys.length ? `${root}#${keys.join('&')}` : root;
 }
 
@@ -53,6 +53,7 @@ export function shareState(ctx, atId) {
   const st = { ...read() };
   delete st.trip;
   delete st.stop;
+  st.exp = ctx && ctx.exposure ? ctx.exposure.mode() : null; // as it IS
   const trip = ctx && ctx.trip && ctx.trip.state;
   if (trip && trip.phase !== 'idle' && trip.tourId) {
     st.trip = trip.tourId;

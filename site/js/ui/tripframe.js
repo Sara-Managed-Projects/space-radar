@@ -654,7 +654,7 @@ export function createTripFrame(ctx) {
     }, 0);
   }
 
-  /** The head every sheet shares: a microlabel and the serif name (row D's card head). */
+  /** The head every sheet shares: a microlabel and the name (row D's card head). */
   function sheetHead(p, micro, name) {
     const head = el('header', 'sr-tripsheet__head');
     head.appendChild(el('p', 'sr-tripsheet__micro', micro));

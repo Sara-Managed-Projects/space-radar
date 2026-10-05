@@ -263,6 +263,18 @@ check(/\[data-autofocus\]/.test(rail), 'the rail focuses the marked heading on o
 const yaml = readFileSync(join(ROOT, 'registry/layers.yaml'), 'utf8');
 check(/^groups: \[/m.test(yaml), 'layers.yaml lists its groups');
 
+// Public #461: the weather layer of spec 0066 (lightning) sits in the grouped panel, under Weather
+// and ground beside the storms and the aurora, with its own kind of number.
+{
+  const earth = grouped.find((g) => g.id === 'earth');
+  const ids = earth ? earth.layers.map((l) => l.id) : [];
+  check(['storms', 'aurora', 'lightning'].every((id) => ids.includes(id)), `Weather and ground holds the storms, the aurora and the lightning (${ids.join(', ')})`);
+  check(/^  - id: lightning\n    display: [^\n]+\n    group: earth$/m.test(yaml), 'registry/layers.yaml puts lightning in the earth group');
+  const lightning = live.find((l) => l.id === 'lightning');
+  check(!!lightning && W.countText({ counts: () => [{ key: 'lightningPerMin', n: 42 }] }, [], 0).includes('42'), 'its number is strikes a minute, not a count of records');
+  check(!!lightning && W.layerSwatch(lightning).hex === lightning.colour, 'and its swatch is its own colour');
+}
+
 if (problems.length) {
   console.error(`What to show: ${problems.length} problem(s)\n  - ${problems.join('\n  - ')}`);
   process.exit(1);

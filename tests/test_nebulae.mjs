@@ -162,6 +162,14 @@ for (const r of NEBULAE) {
   check(ex.set('deep') === false && ex.set('hubble') === false && heard.length === 1 && heard[0][0] === 'deep' && heard[0][2] === true, 'the same choice and an unknown one change nothing');
   ex.set('camera');
   check(!(EXPOSURE_KEY in s.m), 'the default is stored as nothing');
+  // Public #460: a shared link's shutter is worn for the page and never stored.
+  {
+    const kept = new Map([[EXPOSURE_KEY, 'eye']]);
+    const st = { getItem: (k) => (kept.has(k) ? kept.get(k) : null), setItem: (k, v) => kept.set(k, v), removeItem: (k) => kept.delete(k) };
+    const linked = createExposure({ storage: st, initial: 'deep' });
+    check(linked.mode() === 'deep' && kept.get(EXPOSURE_KEY) === 'eye', 'a link\'s exposure is worn and the visitor\'s own choice stays stored');
+    check(createExposure({ storage: st, initial: 'nonsense' }).mode() === 'eye' && createExposure({ storage: st, initial: undefined }).mode() === 'eye', 'an unknown or missing one is the stored choice');
+  }
   const ex2 = createExposure({ storage: throwing });
   check(ex2.set('eye') === true && ex2.mode() === 'eye', 'with no storage the choice still holds for the page');
   for (const m of EXPOSURES) {

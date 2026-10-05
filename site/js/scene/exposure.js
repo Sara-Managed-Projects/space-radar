@@ -71,10 +71,14 @@ export function writeExposure(storage, mode) {
 /**
  * The one shutter the page has. A browser that throws on localStorage (Safari's private mode) gets
  * the default, and the choice still holds for the page.
+ *
+ * `opts.initial` is a mode a shared link asked for (ui/urlstate.js `exp`, public #460): it is worn
+ * from the first frame and NOT stored, so somebody else's link never rewrites this visitor's own
+ * choice. An unknown value is ignored.
  */
 export function createExposure(opts = {}) {
   const storage = opts.storage;
-  let mode = readExposure(storage);
+  let mode = EXPOSURES.includes(opts.initial) ? opts.initial : readExposure(storage);
   const listeners = new Set();
   return {
     mode: () => mode,

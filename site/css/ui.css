@@ -114,11 +114,11 @@
   --sr-fs-input: 16px; /* a phone's inputs: under 16 px iOS Safari zooms the page on focus */
   --sr-fs-glyph: 20px; /* a chevron or a cross drawn as a character, the size of an icon */
   --sr-fs-num-sm: 20px; /* a card's numbers on a phone, and a long one on a desktop */
-  --sr-fs-lead: 21px; /* the first Right-now line */
+  --sr-fs-lead: 20px; /* the first Right-now line */
   --sr-fs-num: 24px; /* a card's three numbers */
-  --sr-fs-mark: 28px; /* the wordmark, and the sources sheet's title */
-  --sr-fs-name-sm: 30px; /* a card's name on a phone */
-  --sr-fs-name: 38px; /* a card's name */
+  --sr-fs-name-sm: 22px; /* a card's name on a phone and in a floating sheet, and the collapsed handle's letter */
+  --sr-fs-mark: 27px; /* the wordmark, and the sources sheet's title */
+  --sr-fs-name: 28px; /* a card's name, and a trip's title */
 
   /* The z ladder (docs/ui-guide.md section 2.6): one list, bottom to top, and no z-index outside
      it but 0, 1, 2 and auto for a component's own layers. The labels sit UNDER the HUD and the
@@ -137,7 +137,7 @@
   --sr-z-toast: 70;
   --sr-z-boot: 100; /* the boot veil, until the app is up */
 
-  /* The four faces (spec 0045, and 0061's serif), self-hosted in site/fonts/ and declared in css/fonts.css. Each
+  /* The three faces (spec 0045), self-hosted in site/fonts/ and declared in css/fonts.css. Each
      stack ends in the system's own, which is what shows until the face lands (`swap`) and what
      draws a character the subset does not carry. */
   --sr-font:
@@ -148,11 +148,8 @@
     monospace;
   /* Panel titles and, later, HUD units. No Cyrillic in Barlow: Inter draws it. */
   --sr-font-hud: 'Barlow Semi Condensed', 'Inter', system-ui, sans-serif;
-  /* Instrument Serif 400 (spec 0061 task 5), for four roles and no others: the wordmark, a card's
-     name, a trip's titles and the first Right-now line (docs/ui-guide.md section 2.2). One weight
-     is loaded, so every rule that uses it says 400: a bold would be the browser's smear. No
-     Cyrillic in it: the system's serif draws that. */
-  --sr-font-serif: 'Instrument Serif', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+  /* No serif: Ivan rejected Instrument Serif on names on 2026-10-03 and spec 0061 task 6 removed the
+     face. Names and titles are Inter 600, the wordmark Barlow 600 (docs/ui-guide.md section 2.2). */
 
   /* Old names, kept for one release so no rule breaks in the change */
   --sr-panel: var(--sr-glass-solid);
@@ -534,15 +531,15 @@ html.sr-compact .sr-status {
   color: var(--sr-text-dim);
 }
 
-/* Row D's serif (0061 task 5). Two lines, then an ellipsis; the name is in `title`. The bottom
-   padding is the room a clipped box owes the descenders at a 1.05 line. */
+/* The name, in Inter 600 (the serif of 0061 task 5 was rejected on 2026-10-03). Two lines, then an
+   ellipsis; the name is in `title`. The bottom padding is the room a clipped box owes the descenders. */
 .sr-card__name {
   grid-column: 1;
   display: -webkit-box;
   margin: 0;
   padding-bottom: 2px;
   overflow: hidden;
-  font: 600 22px/1.1 var(--sr-font);
+  font: 600 var(--sr-fs-name-sm)/1.1 var(--sr-font);
   letter-spacing: -0.01em;
   color: var(--sr-text);
   overflow-wrap: anywhere;
@@ -1993,7 +1990,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   margin: 0;
   padding-bottom: 2px;
   overflow: hidden;
-  font: 600 28px/1.1 var(--sr-font);
+  font: 600 var(--sr-fs-name)/1.1 var(--sr-font);
   letter-spacing: -0.01em;
   color: var(--sr-text);
   overflow-wrap: anywhere;
@@ -3204,7 +3201,7 @@ html.sr-phone .sr-chevron {
   width: 100%;
   height: 100%;
   padding: 0;
-  font: 600 22px/1 var(--sr-font-hud);
+  font: 600 var(--sr-fs-name-sm)/1 var(--sr-font-hud);
   color: var(--sr-text);
   background: transparent;
   border: 0;
@@ -3242,11 +3239,10 @@ html.sr-phone .sr-chevron {
   justify-content: space-between;
 }
 
-/* The wordmark, as row D sets it: Instrument Serif at 28 px (0061 task 5; 13 972 B, inside
-   registry/budgets.yaml serif_bytes and fonts_at_boot_bytes). */
+/* The wordmark: Barlow Semi Condensed 600 at 27 px. */
 .sr-wordmark {
   margin: 0;
-  font: 600 27px/1 var(--sr-font-hud);
+  font: 600 var(--sr-fs-mark)/1 var(--sr-font-hud);
   letter-spacing: 0;
   color: var(--sr-text);
 }
@@ -3520,10 +3516,10 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 
 .sr-now__btn:hover .sr-now__text { color: var(--sr-ember-light); }
 
-/* The lead: the serif at 21 / 1.25, two lines at most (docs/ui-guide.md section 3.4). */
+/* The lead: Inter at 20 / 1.25, two lines at most (docs/ui-guide.md section 3.4). */
 .sr-now__row.is-lead .sr-now__btn {
   padding-top: 6px;
-  font-size: 20px;
+  font-size: var(--sr-fs-lead);
   line-height: 1.25;
   letter-spacing: -0.01em;
 }
@@ -5264,6 +5260,6 @@ html.sr-phone .sr-tonight-view__num { font-size: var(--sr-fs-num-sm); }
 .sr-arc__cardinal { fill: var(--sr-text-dim); font-size: var(--sr-fs-unit); font-family: var(--sr-font); }
 
 /* Ivan, 2026-10-03: the serif on names read worse than the sans it replaced, so the five roles are
-   back on their old faces (the face stays defined; nothing uses it). And the card's name is a
+   back on their old faces (and task 6 removed the face). And the card's name is a
    heading that takes focus for screen readers, not a field: no ring around it. */
 .sr-card__name:focus { outline: none; }

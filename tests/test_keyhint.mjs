@@ -87,6 +87,13 @@ for (const k of chrome.h.keys) check(wantsToggle({ key: k }, body, false) === 't
 for (const k of chrome.l.keys) check(railKey({ key: k }, body) === 'show', `the L cap's ${k} opens What to show (ui/rail.js)`);
 for (const k of chrome.p.keys) check(railKey({ key: k }, body) === 'share', `the P cap's ${k} opens Share (ui/rail.js)`);
 check(chrome.esc.keys.join() === 'Escape', 'the Esc cap is Escape');
+// Internal #336: `/` focuses the search and the hint did not say so.
+{
+  const { wantsSearch } = await import(pathToFileURL(join(JS, 'ui/explore.js')).href);
+  check(!!chrome.slash && chrome.slash.keys.join() === '/', 'the hint has a cap for /');
+  for (const k of (chrome.slash || { keys: [] }).keys) check(wantsSearch({ key: k }, body) === true, `the / cap's ${k} focuses the search (ui/explore.js wantsSearch)`);
+  check(COPY.keyHint.caps.slash === COPY.search.key && /\(\/\)/.test(COPY.search.inputTitle), 'the cap, the field\'s keycap and its tooltip name the same key');
+}
 check(/\(H\)/.test(COPY.clean.hide) && /\(L\)/.test(COPY.rail.show) && /\(P\)/.test(COPY.rail.share), 'the tooltips name the same letters as the caps');
 for (const row of [...hint.KEY_ROWS, ...hint.CHROME_KEYS, ...hint.TOUCH_ROWS]) {
   check(typeof COPY.keyHint.does[row.does] === 'string', `what ${row.id} does is in COPY.keyHint.does (${row.does})`);

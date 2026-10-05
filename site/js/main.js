@@ -46,7 +46,7 @@ import { createLod } from './scene/lod.js';
 import { createStars3d, NAMED_STARS } from './scene/stars3d.js';
 import { createGalaxy } from './scene/galaxy.js';
 import { createDsoGlow } from './scene/dsoglow.js';
-import { createExposure } from './scene/exposure.js';
+import { createExposure, DEFAULT_EXPOSURE } from './scene/exposure.js';
 import { isLadderStage, isSystemStage } from './scene/stage.js';
 import { createSystems } from './scene/systems.js';
 import { SUN_INERTIAL, STAGES } from './scene/stage.js';
@@ -214,7 +214,10 @@ export async function boot({ setStatus } = {}) {
   // it from the first frame; the photographs of the nebulae (scene/nebulae.js) wear it when they
   // exist, which on a first visit they do not: the module and its pictures are fetched on a rung
   // of the ladder, when a deep-sky object is selected, or when the visitor moves the shutter.
-  const exposure = createExposure();
+  // A shared link carries the shutter it was made at (`exp`, public #460): the picture in the post
+  // and the sky the link opens are the same exposure. For this page only: a friend's link does not
+  // overwrite the visitor's own remembered choice.
+  const exposure = createExposure({ initial: link && !link.unknownVersion ? link.exp : undefined });
   ctx.exposure = exposure;
   starfield.setExposure(exposure.look().milkyWay);
   let skyStrength = 1;
@@ -242,6 +245,8 @@ export async function boot({ setStatus } = {}) {
     starfield.setExposure(look.milkyWay);
     if (ctx.nebulae) ctx.nebulae.setExposure(look);
     else if (byVisitor) ctx.wantNebulae();
+    // The address bar says what is on screen: the key goes when the shutter is back at its default.
+    writeUrlState({ exp: mode === DEFAULT_EXPOSURE ? null : mode });
     window.dispatchEvent(new CustomEvent('sr:exposure', { detail: { mode } }));
   });
   window.addEventListener('sr:select', (e) => {
@@ -467,7 +472,13 @@ export async function boot({ setStatus } = {}) {
   // Issue #251: email alerts, a row that opens in place under Coming up (ui/subscribe.js says why
   // it is there and not over the scene). Imported once the layers have settled: the row is below
   // the fold of the sidebar, and a first visit's bytes are the map's.
+  // NO ENDPOINT, NO ROW (2026-10-05). The notifier is not deployed: ui/subscribe.js notifyEndpoint()
+  // reads window.SPACE_RADAR_NOTIFY_URL, which nothing sets until a human runs
+  // scripts/provision-notifier.sh, and the row answered every address with "Could not reach the
+  // subscription service". A form that can only fail is not offered: without the URL the module is
+  // not even fetched. The code and its tests stay for the day the URL exists.
   const subscribeLater = () => setTimeout(() => {
+    if (!window.SPACE_RADAR_NOTIFY_URL) return;
     import('./ui/subscribe.js').then((m) => m.createSubscribe({ parent: ctx.explore.subscribeHost })).catch((e) => console.warn('the subscribe row did not load', e));
   }, SUBSCRIBE_MS);
   if (window.__srLayersReady) subscribeLater();

@@ -25,9 +25,6 @@
      Latin. The rest load when text on screen asks for them, and a Latin page never asks for a
      Cyrillic file. `crossorigin` because a font is always fetched in CORS mode. -->
 <link rel="preload" href="fonts/inter-400-latin.woff2" as="font" type="font/woff2" crossorigin>
-<!-- The serif (spec 0061 task 5) is above the fold only where the sidebar is: the wordmark. On a
-     phone the sheet opens at its peek and the wordmark is under the fold, so the face waits its turn. -->
-<link rel="preload" href="fonts/instrument-serif-400-latin.woff2" as="font" type="font/woff2" crossorigin media="(min-width: 900px)">
 <link rel="stylesheet" href="css/fonts.css">
 <link rel="stylesheet" href="css/site.css">
 <link rel="stylesheet" href="css/ui.css">
