@@ -84,7 +84,7 @@ check(closeUpDistance(at(400), 0, f) === Infinity, 'no viewport, no constraint')
 
 // Issue #419: a moon is framed on the size it has when the camera gets there, not on its one-pixel floor.
 {
-  const { createWorlds, MOON_VIEW } = await import(join(JS, 'scene/worlds.js'));
+  const { createWorlds, MOON_VIEW, WORLDS: WORLDS_ROWS } = await import(join(JS, 'scene/worlds.js'));
   const { discDistance } = await import(join(JS, 'scene/framing.js'));
   stage.setWorld('earth');
   const camera = new THREE.PerspectiveCamera(45, 1440 / 900, 1e-6, 1e12);
@@ -111,7 +111,9 @@ check(closeUpDistance(at(400), 0, f) === Infinity, 'no viewport, no constraint')
       return (m.scale.x / m.position.distanceTo(camera.position)) / tanHalf; // the disc's share of half the height
     };
     const before = at(floored * 3.5);
-    const after = at(Math.max(real * 3.5, discDistance(real, { fovDeg: 45, aspect: 1440 / 900 })));
+    // Phobos and Deimos are framed on their longest radius, so their MEAN disc is smaller by that much.
+    const reach = WORLDS_ROWS.find((w) => w.id === id).look.reach || 1;
+    const after = at(Math.max(real * 3.5, discDistance(real, { fovDeg: 45, aspect: 1440 / 900 }))) * reach;
     check(before < 0.35, `${id}: the old arrival, framed on the floor, left a disc ${(before * 100).toFixed(0)} % of the half-height`);
     check(after > 0.6 && after < 0.85, `${id}: framed on its real size it fills ${(after * 100).toFixed(0)} % of the half-height, as a planet does`);
     camera.position.set(0, 0, 30);

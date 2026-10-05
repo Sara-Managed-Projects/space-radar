@@ -54,6 +54,7 @@ const rowOf = (id) => WORLDS.find((w) => w.id === id);
       check(toPlanet > along && along > pole - 1.5 && toPlanet > 13 && toPlanet < 17 && pole > 8 && pole < 12.5,
         `Deimos measures ${toPlanet.toFixed(1)} x ${along.toFixed(1)} x ${pole.toFixed(1)} km through its centre; NASA says 15 x 12 x 11`);
     }
+    check(Math.abs(rowOf(id).look.reach - s.maxKm / s.radiusKm) < 0.01, `${id}: scene/worlds.js frames its arrival on its longest radius (reach ${rowOf(id).look.reach}; the model's is ${(s.maxKm / s.radiusKm).toFixed(3)})`);
     check(s.minKm < s.radiusKm && s.maxKm > s.radiusKm && s.minKm > 0.5 * s.radiusKm && s.maxKm < 1.5 * s.radiusKm, `${id}: every radius fits a byte's range (${s.minKm} to ${s.maxKm} km)`);
   }
   check(Math.abs(radiusAt(decodeGrid(MOON_SHAPES.phobos.grid), 5, 12, 359.9) - radiusAt(decodeGrid(MOON_SHAPES.phobos.grid), 5, 12, 0.1)) < 0.01, 'longitude wraps without a step');

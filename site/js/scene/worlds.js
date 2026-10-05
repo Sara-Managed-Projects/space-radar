@@ -365,7 +365,8 @@ export const WORLDS = [
   // `infrared` (Titan's ground through the haze) or `colour`. Every mapped moon is `locked`:
   // longitude 0, the middle of its map, toward its planet, and north along the planet's pole
   // (Iapetus's orbit is tilted 15 degrees to Saturn's equator, so its map is that far off true).
-  // `shape` names a row of data/moonshapes.js: Phobos and Deimos are bent to their measured shapes.
+  // `shape` names a row of data/moonshapes.js: Phobos and Deimos are bent to their measured shapes,
+  // and `reach` is that shape's longest radius over the mean one (tests/test_moon_shapes.mjs).
   //
   // The moons come AFTER Jupiter on purpose: update() places a moon from its planet's drawn disc,
   // so the planet has to have been placed first in the same frame.
@@ -448,13 +449,13 @@ export const WORLDS = [
     // to Gaskell's model the first time it is looked at, and its card says so.
     id: 'phobos', display: 'Phobos', parent: 'mars', radiusKm: 11.08,
     body: 'Phobos', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
-    look: { flat: true, tint: 0x4a4540, map: '2k_phobos_viking.webp', mapKind: 'tinted', albedo: 0.07, shape: 'phobos', rough: 0.5 },
+    look: { flat: true, tint: 0x4a4540, map: '2k_phobos_viking.webp', mapKind: 'tinted', albedo: 0.07, shape: 'phobos', reach: 1.25, rough: 0.5 },
   },
   {
     // The same NASA sentence; a shade lighter than Phobos for its 0.08 against 0.07.
     id: 'deimos', display: 'Deimos', parent: 'mars', radiusKm: 6.2,
     body: 'Deimos', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
-    look: { flat: true, tint: 0x524d47, albedo: 0.08, shape: 'deimos', rough: 0.5 },
+    look: { flat: true, tint: 0x524d47, albedo: 0.08, shape: 'deimos', reach: 1.41, rough: 0.5 },
   },
   // The other five round moons of Saturn, then all five of Uranus's (2026-09-22).
   {
@@ -1740,7 +1741,11 @@ export function createWorlds(scene, opts = {}) {
    */
   function arrivalRadiusUnits(id) {
     const r = systemRadius.get(id);
-    return r > 0 ? r : drawnRadiusUnits(id);
+    // A lumpy moon reaches farther than its mean radius (`look.reach`, the model's longest radius
+    // over the mean: Deimos 1.41), and the arrival has to hold all of it: framed on the mean,
+    // Deimos's long axis ran off the screen (seen 2026-10-06).
+    const w = BY_ID.get(id);
+    return (r > 0 ? r : drawnRadiusUnits(id)) * ((w && w.look.reach) || 1);
   }
 
   const _proj = new THREE.Vector3();
