@@ -1991,7 +1991,12 @@ tours:
     stops:
       - id: above
         target: {observer: true}
-        distance_km: 200
+        # 6 000 km up, not 200: the night map is 10 km to a pixel at its best (20 on a small
+        # GPU), and from 200 km the visitor's own town was sixteen blurred squares across the
+        # whole screen (the regression walk of 2026-10-06: the first picture of a trip the home
+        # view offers). From here it is their part of the world with the dark arriving across
+        # it, which is what the card says it is.
+        distance_km: 6000
         time: tonight
         drift_deg: 20
         chapter: "Before you go outside"
@@ -2071,7 +2076,8 @@ tours:
 
       - id: out
         target: {observer: true}
-        distance_km: 650
+        # As the first stop, and for the same reason: the end card stays on this view.
+        distance_km: 6000
         time: now
         drift_deg: 15
         chapter: "Something that moves"

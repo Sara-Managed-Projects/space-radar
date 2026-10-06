@@ -2176,7 +2176,7 @@ export const TOURS = [
 "target": {
 "observer": true
 },
-"distance_km": 200,
+"distance_km": 6000,
 "drift_deg": 20,
 "time": "tonight",
 "chapter": "Before you go outside",
@@ -2322,7 +2322,7 @@ export const TOURS = [
 "target": {
 "observer": true
 },
-"distance_km": 650,
+"distance_km": 6000,
 "drift_deg": 15,
 "time": "now",
 "chapter": "Something that moves",
