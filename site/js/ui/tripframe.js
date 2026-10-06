@@ -936,6 +936,8 @@ export function createTripFrame(ctx) {
     const explore = act('sr-act sr-act--primary', 'compass', T.endExplore,
       st.stageChanged ? T.endStayTitleStage : T.endExploreTitle, st.stageChanged ? stay : leave);
     if (st.stageChanged) act('sr-act', 'house', T.endHome, T.endExploreTitleStage, leave);
+    // Four actions are two rows of two (ui.css): in one row the labels were cut short.
+    row.classList.toggle('is-four', !!st.stageChanged);
     act('sr-act', 'rotate-ccw', T.endReplay, T.endReplayTitle, () => trip.start(st.tourId));
     act('sr-act', 'share', T.share, T.endShareTitle, () => onShare(false));
     p.appendChild(row);

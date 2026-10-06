@@ -409,6 +409,15 @@ export function createKeyHint(ctx, opts = {}) {
     ctx.trip.onChange((st) => { if (st && st.phase !== 'idle') hide('trip'); });
   }
   win.addEventListener('resize', () => { if (open) place(); });
+  // The phone's sheet moves the pill, and the pill is what the hint stands clear of: placed again
+  // when the shell says it changed, and once more when the pill's own 320 ms move is over.
+  let shellTimer = 0;
+  win.addEventListener('sr:shell', () => {
+    if (!open) return;
+    place();
+    clearTimeout(shellTimer);
+    shellTimer = setTimeout(() => { if (open) place(); }, 380);
+  });
 
   const api = { isReal: true, show, hide, maybeShow, isOpen: () => open, mode: () => mode, el: () => root };
   if (ctx) ctx.keyhint = api;

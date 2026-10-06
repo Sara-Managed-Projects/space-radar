@@ -634,6 +634,8 @@ export const COPY = {
     meta: '{n} stops · {m} min',
     metaOne: 'One stop · {m} min',
     planning: 'Working out the stops',
+    // On the card that was just pressed, until its trip opens (ui/explore.js `starting`).
+    starting: 'Starting…',
     cannotRun: 'Cannot run right now',
     all: 'All {n} trips',
     fewer: 'Fewer trips',

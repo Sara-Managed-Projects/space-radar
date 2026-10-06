@@ -296,13 +296,26 @@
 
 /* --- a phone ------------------------------------------------------------------------------- */
 
+/* On the sheet's top edge wherever the sheet is (`--sr-sheet-h`, ui/sheet.js), which is where the
+   time pill stands: ui/keyhint.js place() then lifts it clear of the pill. It was a fixed 128 px
+   from the bottom, right for the sheet at peek and INSIDE the sheet at half: SEEN 2026-10-06 at
+   390 x 844, a first visit that searched for Jupiter had the hint over the card's numbers and its
+   Fly to it button. And like the pill it steps aside while a card is up or the sheet is full
+   (ui.css, the same two states): what is on screen then is to be read, not turned. */
 html.sr-phone .sr-keyhint {
   right: var(--sp-4);
-  bottom: calc(128px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(var(--sr-sheet-h, 96px) + var(--sp-3));
   left: var(--sp-4);
   width: auto;
   max-width: 400px;
   margin-left: auto;
+}
+
+html.sr-phone[data-sheet='full'] .sr-keyhint,
+html.sr-phone.sr-card-open .sr-keyhint {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
 }
 
 @media (pointer: coarse) {

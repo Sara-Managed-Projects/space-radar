@@ -32,7 +32,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const [url, scriptPath] = process.argv.slice(2).filter((a) => !a.startsWith('--'));
-if (!url || !scriptPath) { console.error('usage: node tools/cdp.mjs <url> <script.js> [--width=] [--height=] [--mobile] [--autoplay] [--shot=] [--shot-dir=] [--reduced-motion] [--cpuprofile=] [--block=host,...] [--bytes=] [--net=4g|3g] [--timezone=IANA] [--profile=dir] [--only-local]'); process.exit(2); }
+if (!url || !scriptPath) { console.error('usage: node tools/cdp.mjs <url> <script.js> [--width=] [--height=] [--mobile] [--autoplay] [--shot=] [--shot-dir=] [--reduced-motion] [--cpuprofile=] [--block=host,...] [--bytes=] [--net=4g|3g] [--timezone=IANA] [--profile=dir] [--only-local] [--gl=gpu]'); process.exit(2); }
 const arg = (n, d) => { const h = process.argv.find((a) => a.startsWith('--' + n + '=')); return h ? h.slice(n.length + 3) : d; };
 const W = Number(arg('width', '1280'));
 const H = Number(arg('height', '800'));
@@ -97,6 +97,11 @@ const trace = (m) => { if (process.env.CDP_TRACE) process.stderr.write('[cdp] ' 
 // SECOND VISIT: the same caches, storage and service worker. Without it every run is a first visit
 // in a profile that is deleted afterwards. Added 2026-10-05 for the offline proof (site/sw.js):
 // run once with the server up, stop the server, run again against the same profile.
+// --gl=gpu: the machine's own GPU instead of SwiftShader (tools/render-trip.mjs does the same). On a
+// laptop a step that takes 30 s in software takes two, and anything timed (a six-second toast, a
+// veil) behaves as it does for a visitor. The default stays software: CI has no GPU, and every
+// pixel number in the reviews was measured there.
+const GL = arg('gl', 'swiftshader');
 const PROFILE = arg('profile', '');
 // --only-local: no name but localhost resolves, for the page AND for its service worker (--block
 // is set on the page's session and a worker's fetches are not in it). The app then has no internet
@@ -108,7 +113,7 @@ const chrome = spawn(CHROME, [
   '--headless=new', '--remote-debugging-port=' + PORT, '--user-data-dir=' + profile,
   '--window-size=' + W + ',' + H, '--hide-scrollbars', '--mute-audio',
   // No GPU in headless: SwiftShader is a software GL that still runs the real three.js pipeline.
-  '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader',
+  ...(GL === 'gpu' ? ['--ignore-gpu-blocklist'] : ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader']),
   '--disable-background-timer-throttling', '--disable-renderer-backgrounding',
   '--disable-backgrounding-occluded-windows', '--no-first-run', '--no-default-browser-check',
   ...(AUTOPLAY ? ['--autoplay-policy=no-user-gesture-required'] : []),

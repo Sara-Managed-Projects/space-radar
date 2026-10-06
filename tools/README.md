@@ -8,6 +8,40 @@ Things run by hand on a laptop. CI does not run them; each file's head comment s
 | `cdp.mjs` | run a script inside the page in a real headless Chrome, with a screenshot |
 | `render-trip.mjs`, `render-trip.lib.mjs` | a trip as a video for YouTube (below) |
 | `sheet-png.mjs`, `*.html`, `trip-pictures.probe.js` | contact sheets and probes |
+| `walk.mjs`, `walk.probe.js` | the regression walk: every flow of the product at two sizes, with contact sheets (below) |
+
+## The regression walk
+
+`node tools/walk.mjs --dir=<tree>` walks the product the way a visitor does, in a real headless
+Chrome at 1440 × 900 and at 390 × 844: the home view (a Today card, the time scrubber dragged and
+put back, a timeline mark, the Undo toast, the controls hint), search, the four tabs and the
+Tonight sky, eight object cards, What to show, the debris view, the share sheet and photo mode,
+four trips from intro to "Keep flying", present mode, six deep links, the lazy stand-ins (a first
+click made the moment the control exists) and a second visit with the server gone. At every step
+it takes a picture and measures: console errors, failed requests, elements wider than the window,
+overlapping chrome, and on the phone targets under 44 px. Unit tests read the code; this is the
+one tool that sees features where they meet. It was written on 2026-10-06, after fourteen pull
+requests merged in a day, and found a toolbar wider than a phone, a toast across the planet it
+announced and a hint over a card's buttons, none of which a test could have seen.
+
+```sh
+python3 scripts/minify_site.py --out /tmp/served --tree          # the tree a deploy serves
+# the saved catalogues (see "Once per checkout" below; --tree links data/ to site/data), and the
+# map from a record to its page, which a deploy builds and the "Its own page" link needs:
+curl -sSf -o /tmp/served/object-pages.json https://www.spaceradar.ai/object-pages.json
+node tools/walk.mjs --dir=/tmp/served                            # both sizes: about 35 min on a Mac
+node tools/walk.mjs --dir=/tmp/served --phone --only=home,trips-old   # one size, two loads: 3 min
+```
+
+It prints one line per finding and writes, under `out/walk/` (or `--out=`): `walk-desktop.json`
+and `walk-phone.json` (every step's measurements), `desktop/` and `phone/` (every picture) and
+`sheet-<size>-NN.png`, twelve pictures to a contact sheet. **Read the sheets**: a black view, a
+label over a card and a blurred close-up pass every measurement. The loads are named at the top
+of `walk.mjs` (`--only=` takes those names or a flow's); the steps are in `walk.probe.js`.
+
+On a Mac it uses the GPU (`--gl=gpu`, two minutes a flow); anywhere else software rendering, which
+is ten times slower: the full walk does not fit a CI job, so it is a local tool, run before a
+release and after a day of merges. It blocks CelesTrak and Launch Library, as every probe here does.
 
 ## Rendering trip videos (spec 0070)
 

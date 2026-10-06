@@ -2207,6 +2207,14 @@ html.sr-present.sr-trip-mode:not([data-trip-names]) #labels .label:not(.is-subje
   padding: var(--sp-1) 0 0;
 }
 
+/* Four of them are two rows of two. In one row each is 73 px wide in the sidebar, and "Keep
+   flying" and "Watch again" were cut to "Keep fly..." and "Watch a..." on the one screen whose
+   whole job is to say what happens next (SEEN 2026-10-06, after public #447 added the fourth). */
+.sr-tripsheet__actions.is-four {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-flow: row;
+}
+
 .sr-side .sr-tripsheet .sr-act {
   height: 56px;
 }
@@ -2431,26 +2439,50 @@ html.sr-phone .sr-trip__progress {
   padding: 0;
 }
 
-/* Eight 44 px targets and the counter need 416 px. A narrower phone keeps the controls a trip
-   cannot do without and drops what has another door, in this order (internal #329): Replay below
-   424 px (previous then next flies the move again), Share below 380 (the end card has it), Voice
-   below 340 (the intro has it, and Sound silences both). Voice used to go FIRST, so on every phone
-   narrower than 424 px, which is most of them, there was no way mid-trip to keep the music and
-   drop the voice. No horizontal scroll at 320 (SC 1.4.10): five targets and the counter are 284. */
-@media (max-width: 423px) {
+/* Nine 44 px targets and the counter need 460 px (Present made nine, public #441; the comment
+   here said eight and 416 until 2026-10-06, and on a 390 px phone the ninth, Present, hung 18 px
+   off the right edge of every stop). A narrower phone keeps the controls a trip cannot do without
+   and drops what has another door, in this order (internal #329): Replay below 460 px (previous
+   then next flies the move again), Share below 416 (the end card has it), Present below 372 (the
+   intro has it), Voice below 328 (the intro has it, and Sound silences both). Voice is LAST: it
+   once went first, and on most phones there was then no way mid-trip to keep the music and drop
+   the voice. No horizontal scroll at 320 (SC 1.4.10): five targets and the counter are 284. */
+@media (max-width: 459px) {
   html.sr-phone .sr-trip__tb--replay {
     display: none;
   }
 }
 
-@media (max-width: 379px) {
+@media (max-width: 415px) {
   html.sr-phone .sr-trip__tb--share {
     display: none;
   }
 }
 
-@media (max-width: 339px) {
+@media (max-width: 371px) {
+  html.sr-phone:not(.sr-present) .sr-trip__tb--present {
+    display: none;
+  }
+}
+
+@media (max-width: 327px) {
   html.sr-phone .sr-trip__tb--voice {
+    display: none;
+  }
+}
+
+/* Present mode has its own nine less three (no Replay, Share or Hide card; Auto and Full screen
+   instead): eight targets, 416 px. Full screen goes below that (a phone's browser already gives
+   the page the screen, and iOS has no such call for a page), then Auto; Present stays at every
+   width, because it is the way back out. */
+@media (max-width: 415px) {
+  html.sr-phone.sr-present .sr-trip__tb--full {
+    display: none;
+  }
+}
+
+@media (max-width: 371px) {
+  html.sr-phone.sr-present .sr-trip__tb--auto {
     display: none;
   }
 }
@@ -2531,7 +2563,9 @@ html.sr-trip-mode .sr-toast {
   left: calc(50% + var(--sr-scene-left) / 2);
 }
 
-html.sr-trip-mode.sr-phone .sr-toast {
+html.sr-trip-mode.sr-phone .sr-toast,
+html.sr-trip-mode.sr-phone.sr-card-open .sr-toast,
+html.sr-trip-mode.sr-phone[data-sheet='full'] .sr-toast {
   top: calc(var(--sp-2) + 52px + var(--sp-3) + env(safe-area-inset-top, 0px));
   bottom: auto;
   left: 50%;
@@ -2689,6 +2723,10 @@ html.sr-trip-mode.sr-phone .sr-toast {
   display: flex;
   gap: var(--sp-3);
   align-items: center;
+  /* Its words' own width, up to the cap: a fixed box at `left: 50%` is otherwise fitted to the
+     half of the window to its right, and on a 390 px phone "Satellites could not be read." came
+     out one word to a line, four lines tall, over the HUD tag (SEEN 2026-10-06). */
+  width: max-content;
   max-width: min(520px, calc(100vw - var(--sr-scene-left, 0px) - 2 * var(--sp-4) - 96px));
   min-height: 44px;
   padding: 0 var(--sp-1) 0 var(--sp-4);
@@ -2758,15 +2796,20 @@ html.sr-trip-mode .sr-scenenote { display: none; }
 /* Share and the postcard (spec 0033, 2026-09-23) ------------------------------------------- */
 
 /* One line, one at a time, over everything including the trip frame, and never a control: it
-   says what just happened ("Link copied") and goes. Top centre; during a trip, over its toolbar
-   (the trip section). */
+   says what just happened ("Link copied") and goes. Bottom centre of the scene area, 12 px above
+   the time pill (docs/ui-guide.md §3.14); during a trip, over its toolbar (the trip section).
+   It was top centre until 2026-10-06, which was harmless while a toast was a rare "Link copied":
+   the undo toast (ui/camundo.js) comes with EVERY search result, list row and link, and up there
+   it lay across the HUD tag of the thing just arrived at (SEEN in the walk of that day: "Moved
+   to Mars" over Mars's name and distance). */
 .sr-toast {
   position: fixed;
-  top: calc(56px + env(safe-area-inset-top, 0px));
-  left: 50%;
+  bottom: calc(var(--sp-5) + var(--sr-time-h) + var(--sp-3) + env(safe-area-inset-bottom, 0px));
+  left: calc(50% + var(--sr-scene-left, 0px) / 2);
   transform: translateX(-50%);
   z-index: var(--sr-z-toast);
-  max-width: min(520px, calc(100vw - 32px));
+  width: max-content;
+  max-width: min(520px, calc(100vw - var(--sr-scene-left, 0px) - 32px));
   padding: 10px 16px;
   /* Opaque: it lands on the scene note's spot on a phone, and two lines of text through one
      another read as neither (measured at 390 x 844, 2026-09-23). */
@@ -2794,6 +2837,9 @@ html.sr-trip-mode .sr-scenenote { display: none; }
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 3px;
+  /* The action is one phrase: on a narrow screen it goes to the next line whole, never
+     "Back to where you / were" in three lines over the subject. */
+  white-space: nowrap;
   cursor: pointer;
 }
 .sr-toast__action:hover { color: var(--sr-text-soft); }
@@ -3722,6 +3768,15 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 }
 
 .sr-tripcard__meta:empty { display: none; }
+
+/* Pressed, and on its way (ui/explore.js `starting`): the line under the title says so. */
+.sr-tripcard.is-starting {
+  cursor: progress;
+}
+
+.sr-tripcard.is-starting .sr-tripcard__meta {
+  color: var(--sr-text);
+}
 
 /* Greyed WITH its reason (spec 0025 req 6): readable, not choosable; its picture greyed with it. */
 .sr-tripcard.is-off {
@@ -5363,6 +5418,17 @@ html.sr-phone.sr-card-open .sr-time {
 html.sr-phone .sr-toast {
   top: auto;
   bottom: calc(var(--sr-sheet-h) + var(--sp-3) + var(--sr-time-h) + var(--sp-3));
+  left: 50%;
+  max-width: calc(100vw - 2 * var(--sp-4));
+}
+
+/* No pill while a card is up or the sheet is full (above): the toast then stands on the sheet
+   itself. Counting the missing pill's height put it in the middle of the free band, which is
+   where the subject is: SEEN 2026-10-06 at 390 x 844, "Moved to Jupiter" across Jupiter. At full
+   the sheet is the screen, so the toast stops under the top bar instead of leaving by the top. */
+html.sr-phone[data-sheet='full'] .sr-toast,
+html.sr-phone.sr-card-open .sr-toast {
+  bottom: min(calc(var(--sr-sheet-h) + var(--sp-3)), calc(100dvh - var(--sr-top-end) - 44px));
 }
 
 html.sr-phone .sr-scenenote {

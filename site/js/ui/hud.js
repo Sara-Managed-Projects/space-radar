@@ -56,6 +56,8 @@ export const CHEVRON_INSET_PX = 16;
 // Req 5: readouts at most four times a second.
 export const READOUT_MS = 250;
 // The selected dot is drawn 1.35x its class size (scene/glyphs.js setSelected).
+/** The tag's units as drawn: the card's short forms, for the one unit that is three words long. */
+const TAG_SHORT = { 'astronomical units': COPY.card.hero.units['astronomical units'] };
 const SELECTED_DOT = 1.35;
 // A box nearly as big as the view (a selected world filling the screen) frames nothing; the
 // brackets and the tick go, and the tag stays, slid inside the edges.
@@ -519,7 +521,11 @@ export function createHud(ctx, host) {
         if (s.num.textContent.length !== r.num.length) measureTag = true;
         s.num.textContent = r.num;
       }
-      if (s.unit.textContent !== r.unit) { s.unit.textContent = r.unit; measureTag = true; }
+      // Drawn short where the card's own numbers are (COPY.card.hero.units): two distances in
+      // "astronomical units" made a line wider than a phone, cut at its right edge (SEEN
+      // 2026-10-06 at 390 px, Jupiter). The accessible name below keeps the words.
+      const unit = TAG_SHORT[r.unit] || r.unit;
+      if (s.unit.textContent !== unit) { s.unit.textContent = unit; measureTag = true; }
       if (s.suffix.textContent !== r.suffix) { s.suffix.textContent = r.suffix; measureTag = true; }
     }
     if (honesty.textContent !== L.honesty) { honesty.textContent = L.honesty; measureTag = true; }

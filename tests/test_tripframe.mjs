@@ -138,11 +138,25 @@ const T = COPY.trip;
     check(/\(M\)/.test(T2.soundOnTitle) && /\(M\)/.test(T2.soundOffTitle) && /\(V\)/.test(T2.voiceOnTitle) && /\(V\)/.test(T2.voiceOffTitle), 'the tooltips name the keys');
     const { readFileSync: rf } = await import('node:fs');
     const css = rf(join(JS, '../css/ui.css'), 'utf8');
-    const hiddenAt = (cls) => { const m = new RegExp(`@media \\(max-width: (\\d+)px\\) \\{\\s*html\\.sr-phone \\.sr-trip__tb--${cls} \\{\\s*display: none;`).exec(css); return m ? Number(m[1]) : -1; };
+    const hiddenAt = (cls, when = '') => { const m = new RegExp(`@media \\(max-width: (\\d+)px\\) \\{\\s*html\\.sr-phone${when} \\.sr-trip__tb--${cls} \\{\\s*display: none;`).exec(css); return m ? Number(m[1]) : -1; };
     check(hiddenAt('voice') < 360 && hiddenAt('voice') >= 320, `Voice stays on the toolbar on a 360 px phone (hidden at ${hiddenAt('voice')} and under)`);
-    check(hiddenAt('replay') > hiddenAt('share') && hiddenAt('share') > hiddenAt('voice'), 'Replay goes first, then Share, Voice last');
-    // What is left must fit: n targets of 44, the 48 px counter and 16 px of padding.
-    for (const [w, n] of [[423, 7], [379, 6], [339, 5]]) check(n * 44 + 48 + 16 <= (w === 339 ? 320 : w === 379 ? 340 : 380), `${n} targets fit the narrowest phone of the ${w} px step`);
+    const present = hiddenAt('present', ':not\\(\\.sr-present\\)');
+    check(hiddenAt('replay') > hiddenAt('share') && hiddenAt('share') > present && present > hiddenAt('voice'), 'Replay goes first, then Share, then Present, Voice last');
+    // What is left must fit: n targets of 44, the 48 px counter and 16 px of padding. NINE targets
+    // since Present joined the bar (public #441): the steps were still cut for eight, and on a
+    // 390 px phone the ninth hung off the right edge (the walk of 2026-10-06).
+    const fits = (n, w) => n * 44 + 48 + 16 <= w;
+    check(!fits(9, hiddenAt('replay')) && fits(9, hiddenAt('replay') + 1), `all nine targets show only where they fit (Replay goes at ${hiddenAt('replay')})`);
+    check(fits(8, hiddenAt('share') + 1) && fits(7, present + 1) && fits(6, hiddenAt('voice') + 1) && fits(5, 320), 'what is left fits at the top of each step, down to 320 px');
+    check(fits(7, 390) && hiddenAt('share') >= 390 && present < 390 && fits(6, 360) && present >= 360, 'a 390 px phone shows seven with Present among them, and a 360 px one six');
+    // Present mode: no Replay, Share or Hide card; Auto and Full screen instead. Eight targets.
+    const full = hiddenAt('full', '\\.sr-present'); const auto = hiddenAt('auto', '\\.sr-present');
+    check(fits(8, full + 1) && fits(7, auto + 1) && full > auto && fits(6, hiddenAt('voice') + 1), `present mode fits too: Full screen goes at ${full}, Auto at ${auto}`);
+    check(!/html\.sr-phone \.sr-trip__tb--present \{\s*display: none/.test(css), 'Present is never hidden in present mode: it is the way out');
+    // The end card's four actions (Keep flying, Go home, Watch again, Share) are two rows of two:
+    // in one row "Keep flying" and "Watch again" were cut to "Keep fly..." and "Watch a...".
+    check(/\.sr-tripsheet__actions\.is-four \{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);[^}]*grid-auto-flow: row;/.test(css), 'four end actions are two rows of two');
+    check(/row\.classList\.toggle\('is-four', !!st\.stageChanged\)/.test(rf(join(JS, 'ui/tripframe.js'), 'utf8')), 'and the end card says when it has four');
   }
   check(keyAction(key('Escape'), run, body) === 'leave', 'Escape leaves');
   check(keyAction(key('Escape'), run, { tagName: 'INPUT' }) === null, 'Escape in a text field is the field\'s');

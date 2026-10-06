@@ -682,6 +682,16 @@ export function createExplore(ctx, host) {
     return Number.isFinite(count) ? { ...row, planned: true, count, estimateMs: tour.estimate_ms } : row;
   };
   const plans = new Map();
+  // The trip a card was just pressed for, until it has started or said why not. The first press of
+  // a visit has ui/trip.js to fetch and the trip's stops to find among catalogues that are still
+  // landing: MEASURED 2026-10-06, a card pressed two seconds into a first visit opened its intro
+  // ten seconds later, and for those ten seconds nothing on the screen had changed (the stand-in,
+  // ui/tripgate.js, has no face). So the card says so itself, at once, and through every repaint.
+  let startingId = null;
+  const starting = (id, on) => {
+    if (on) startingId = id; else if (startingId === id) startingId = null; else return;
+    paintTrips(current);
+  };
   function paintTrips(id) {
     const hostT = tripHosts.get(id);
     if (!hostT) return;
@@ -707,15 +717,20 @@ export function createExplore(ctx, host) {
       // Spec 0068: the trip's own picture under the glass, fading out under the title.
       card.appendChild(tripPicture(row.id, 'sr-tripcard__pic'));
       card.appendChild(el('span', 'sr-tripcard__title', row.title));
-      const meta = tripMeta(unplannedShape(row, tour), eventSubtitle(tour, nowMs, ctx.observer || null));
+      const isStarting = startingId === row.id && !row.off;
+      const meta = isStarting ? COPY.tripCard.starting : tripMeta(unplannedShape(row, tour), eventSubtitle(tour, nowMs, ctx.observer || null));
       card.appendChild(el('span', 'sr-tripcard__meta', meta));
+      if (isStarting) { card.classList.add('is-starting'); card.setAttribute('aria-busy', 'true'); }
       if (row.off) { card.classList.add('is-off'); card.setAttribute('aria-disabled', 'true'); }
       card.title = [row.blurb, row.off ? row.reason : ''].filter(Boolean).join(' ');
       card.addEventListener('click', () => {
         if (row.off) return; // greyed WITH its reason (spec 0025 req 6), never started into a refusal
+        if (startingId === row.id) return; // pressed again while it is on its way: once is enough
+        const go = () => { try { return trip.start(row.id); } catch { return null; /* the trip says why itself */ } };
         // Still waiting for its stars (waitsForLater): they first, then the trip.
-        if (!row.planned && laterPending()) { ctx.loadAfterFirstVisit().then(() => { try { trip.start(row.id); } catch { /* says why itself */ } }); return; }
-        try { trip.start(row.id); } catch { /* the trip says why itself */ }
+        const begun = !row.planned && laterPending() ? ctx.loadAfterFirstVisit().then(go) : go();
+        const done = () => starting(row.id, false);
+        if (begun && typeof begun.then === 'function') { starting(row.id, true); begun.then(done, done); }
       });
       hostT.grid.appendChild(card);
       if (focusedTrip && row.id === focusedTrip) card.focus({ preventScroll: true });
