@@ -3209,7 +3209,7 @@ function render(record, ctx, opts = {}) {
 
   // 2b. a launch within a day counts down (public #289, ui/countdown.js): in the clock's own time,
   // as the scene is, with Launch Library's status and how old it is.
-  if (record.layer === 'launches' && m && Number.isFinite(m.netMs)) {
+  if (record.layer === 'launches' && record.meta && Number.isFinite(record.meta.netMs)) {
     const count = el('div', 'sr-card__count');
     count.hidden = true;
     body.appendChild(count);

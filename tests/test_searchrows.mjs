@@ -16,7 +16,7 @@ const sat = (id, name, layer = 'active', meta = {}, klass = 'satellite') => ({ i
 const world = (id, name) => ({ id, name, klass: 'world', layer: 'planets', meta: {} });
 const recs = [
   sat('sat-25544', 'ISS (ZARYA)', 'stations', { noradId: 25544, why: 'x', displayName: 'International Space Station' }, 'station'),
-  sat('sat-49044', 'ISS (NAUKA)', 'stations', { noradId: 49044, displayName: 'International Space Station' }, 'station'),
+  sat('sat-49044', 'ISS (NAUKA)', 'stations', { noradId: 49044 }, 'station'),
   sat('sat-56757', 'JUPITER 3 (ECHOSTAR 24)', 'active', { noradId: 56757 }),
   world('jupiter', 'Jupiter'), world('io', 'Io'), world('europa', 'Europa'), world('ganymede', 'Ganymede'), world('callisto', 'Callisto'), world('amalthea', 'Amalthea'),
   world('mars', 'Mars'), world('saturn', 'Saturn'),
@@ -46,7 +46,9 @@ check((closest(index, 'satrun')[0] || {}).record.id === 'saturn', '"satrun" offe
   const jup = R.describe(recs[3], up);
   check(jup.kind === 'Planet' && jup.also === '' && jup.where === COPY.searchRows.downNow, `Jupiter under the horizon: ${JSON.stringify(jup)}`);
   check(R.describe(recs[4], null).kind === 'Moon' && R.describe(recs[4], null).where === '', 'Io is a moon, and with no place set there is no "where"');
-  check(R.describe(recs[11], up).where === COPY.searchRows.downNow, 'nine degrees up is not "up": the same ten degrees a pass must clear');
+  check(R.describe(recs[11], up).where === 'low in the east now', `nine degrees up is "low", not "up": the same ten degrees a pass must clear (${R.describe(recs[11], up).where})`);
+  check(R.describe({ id: 'x', name: 'Betelgeuse', klass: 'exotic', meta: { kind: 'star' } }, null).kind === 'Star' && R.describe({ id: 'y', name: 'Sgr A*', klass: 'exotic', meta: { kind: 'blackhole' } }, null).kind === 'Black hole', 'a famous star and a black hole say which they are');
+  check(R.describe({ id: 'a11', name: 'Apollo 11', klass: 'site', frame: 'moon-fixed', meta: {} }, null).kind === COPY.searchRows.kinds.landing && R.describe({ id: 'ksc', name: 'KSC', klass: 'site', frame: 'earth-fixed', meta: {} }, null).kind === 'Place', 'a site on the Moon is a landing site');
   check(R.whereNow(recs[0], { observer: null }) === null && R.whereNow({ id: 'earth', klass: 'world' }, up) === null, 'no place, or the Earth itself: nothing said');
   check(R.whereNow(recs[0], { ...up, satAltAz: () => { throw new Error('x'); } }) === null, 'a position that cannot be worked out says nothing');
   // One row for the station's modules.

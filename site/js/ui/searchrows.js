@@ -3,7 +3,7 @@
 //
 // Contract, all pure but runExtra and whereEnv:
 //   describe(record, env) -> { title, kind, also, where }   the row as drawn
-//   whereNow(record, env) -> { up: boolean, compass: string } | null
+//   whereNow(record, env) -> { up, low, compass } | null
 //   mergeSame(hits) -> hits, one row per drawn name (the ISS's modules are one station)
 //   findExtras(query, limit) -> [{ extra, id, name, sub, record? }]   trips, missions, their events,
 //                                                                    and "Near me tonight"
@@ -28,6 +28,7 @@ import { TOURS_INDEX } from '../data/tours-index.js';
 import { TOUR_WORDS } from '../data/tours-words.js';
 import { MISSIONS } from '../data/missions.js';
 import { editDistance } from './search.js';
+import { parseFrame } from '../propagate/frames.js';
 
 /** Above this, a thing is "up": the same ten degrees a pass must clear (sky/tonightbest.js MIN_ALT_DEG). */
 export const UP_DEG = 10;
@@ -42,6 +43,14 @@ function kindOf(record) {
     if (record.id === 'sun') return K.sun;
     const parent = labelParentId(record);
     return parent ? K.moon : K.planet;
+  }
+  // A black hole, a pulsar, a magnetar or a famous star (data/exotics.js `kind`).
+  if (record.klass === 'exotic') return K[record.meta && record.meta.kind] || '';
+  // A site on another world is where something landed; on the Earth it is a place.
+  if (record.klass === 'site') {
+    let f = null;
+    try { f = parseFrame(record.frame); } catch { f = null; }
+    return f && f.kind === 'fixed' && f.world && f.world !== 'earth' ? K.landing : K.site;
   }
   return K[record.klass] || '';
 }
@@ -61,7 +70,7 @@ export function whereNow(record, env) {
     else if (record.propagator === 'sgp4') at = env.satAltAz(record);
   } catch { at = null; }
   if (!at || !Number.isFinite(at.altDeg) || !Number.isFinite(at.azDeg)) return null;
-  return { up: at.altDeg >= UP_DEG, compass: compassWords(at.azDeg) };
+  return { up: at.altDeg >= UP_DEG, low: at.altDeg >= 0 && at.altDeg < UP_DEG, compass: compassWords(at.azDeg) };
 }
 
 /** The row as drawn. `also` is the catalogue's own string when the name people use differs. */
@@ -71,7 +80,7 @@ export function describe(record, env) {
   const title = labelName(record) || raw || COPY.card.unknownName;
   const also = raw && norm(raw) !== norm(title) && !title.endsWith('…') ? raw : '';
   const w = whereNow(record, env);
-  const where = !w ? '' : w.up ? t(R.upNow, { compass: w.compass }) : R.downNow;
+  const where = !w ? '' : w.up ? t(R.upNow, { compass: w.compass }) : w.low ? t(R.lowNow, { compass: w.compass }) : R.downNow;
   return { title: title.endsWith('…') ? raw || title : title, kind: kindOf(record), also, where };
 }
 
@@ -80,7 +89,11 @@ export function mergeSame(hits) {
   const seen = new Set();
   const out = [];
   for (const h of Array.isArray(hits) ? hits : []) {
-    const key = h && h.row ? norm(h.row.title) : null;
+    // A station's modules are catalogued one by one, "ISS (ZARYA)", "ISS (NAUKA)", "CSS (TIANHE)":
+    // the word before the bracket is the station, and one row stands for all of them.
+    const r = h && h.record;
+    const module = r && r.klass === 'station' ? /^([A-Z0-9]+) \(/.exec(String(r.name || '')) : null;
+    const key = module ? `station:${module[1]}` : h && h.row ? norm(h.row.title) : null;
     if (key) { if (seen.has(key)) continue; seen.add(key); }
     out.push(h);
   }

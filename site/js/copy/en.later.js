@@ -67,10 +67,12 @@ Object.assign(COPY, {
   searchRows: {
     kinds: {
       sun: 'Star', planet: 'Planet', moon: 'Moon', station: 'Space station', satellite: 'Satellite', telescope: 'Space telescope',
-      probe: 'Spacecraft', rocket: 'Rocket', launch: 'Launch', debris: 'Debris', asteroid: 'Asteroid', comet: 'Comet', site: 'Place on the ground',
+      probe: 'Spacecraft', rocket: 'Rocket', launch: 'Launch', debris: 'Debris', asteroid: 'Asteroid', comet: 'Comet', site: 'Place', landing: 'Landing site',
       star: 'Star', exoplanet: 'Planet of another star', dso: 'Deep-sky object', storm: 'Tropical storm', oddity: 'Oddity',
+      blackhole: 'Black hole', pulsar: 'Pulsar', magnetar: 'Magnetar',
     },
     upNow: 'up now, {compass}',
+    lowNow: 'low in the {compass} now',
     downNow: 'below your horizon now',
     trip: 'Trip',
     mission: 'Mission',
@@ -95,7 +97,8 @@ Object.assign(COPY, {
     partial: 'A partial failure',
     byPlan: 'By the plan. No newer word',
     byPlanClimbing: 'By the plan, climbing. No newer word',
-    age: 'read {age} ago',
+    // {age} is ageInWords: "an hour ago".
+    age: 'read {age}',
   },
 
   // The home's dated cards (ui/today.js): generated from what is loaded, never typed.
