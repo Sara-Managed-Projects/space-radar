@@ -11,40 +11,71 @@ tagged, and their dates are the day the last change in each landed.
 
 ## [Unreleased]
 
+Two days, thirteen pull requests: the planetarium grew from nine trips to twenty-five, learned to
+look up from the ground, and learned to work with no network.
+
 ### Added
-- **Ready for contributors**: a new README, [CONTRIBUTING.md](CONTRIBUTING.md), a code of conduct,
-  a security policy, issue and pull-request templates, and a one-page
-  [design bar](docs/DESIGN_PRINCIPLES.md).
-- **Run it anywhere, including offline**: [docs/RUN_LOCALLY.md](docs/RUN_LOCALLY.md) for teachers
-  and non-developers, and `scripts/save_offline_data.py`, which saves a copy of the live data next
-  to the app so it starts with no internet.
-- **Releases**: this changelog, a release workflow that publishes a zip that runs offline, and a
-  monthly cadence.
+- **Sixteen new trips, 25 in all** (195 stops, 65 minutes of narration): the constellations and
+  the living Earth ([#465]); tonight from your street, why the Moon changes shape, the Sun today,
+  the planets tonight and where we have driven on Mars ([#473]); the life of a star, black holes,
+  through a telescope, a dark sky, asteroids that come close, satellites and junk, comets and
+  meteors, the birth of the Solar System and back to the Moon ([#478]).
+- **Present mode** for a classroom or a dome: a trip's words set large, no panels, a clicker's
+  keys, and autoplay; after a trip ends you can keep flying from where it left you ([#473]).
+- **The sky from the ground**: zoom, the air, constellation figures and grids,
+  tonight's best passes and planets, and a red night mode ([#469]).
+- **The nebulae from your own sky**: the 27 photographs show in the sky from the ground, at their
+  true places and sizes, as faint as your sky, the Moon and the shutter make them ([#476]).
+- **Other light**: the whole sky in infrared (WISE), microwaves (WMAP) or gamma rays (Fermi), in
+  orbit and from the ground, false colour and labelled so ([#476]).
+- **Stars are places**: fly to a star and it is a disc of its own size and colour; its card says
+  the width is an estimate ([#476]).
+- **Earth data overlays**: seven maps of measured data from NASA GIBS on the globe (sea
+  temperature, sea ice, chlorophyll, vegetation, rain, aerosols, water vapour), each with its key,
+  its date and its source ([#465]).
+- **Maps for 20 moons**: every moon but Deimos now wears a public-domain map, and Phobos and
+  Deimos have their measured shapes; flying to a world arrives on its lit face ([#464]).
+- **The Earth, the Moon and Mars close up**: Blue Marble tiles for the Earth, shaded relief on the
+  Moon and Mars, and the Sun as a star with today's numbered sunspot groups ([#474]).
+- **Spacecraft in their own colours**: eight new NASA models (54 in all) and 24 rebuilt, lit by
+  the world they are beside, with a contact shadow on the ground ([#466]).
+- **The time scrubber**: a tape you drag, with steps of a minute, an hour or a day; **mission
+  timelines** for eight missions; dated Today cards; an undo toast; and the debris in orbit, by the
+  numbers ([#477]).
+- **Share, embed, photo mode**: a share sheet made for a phone, one live object or one trip as an
+  `<iframe>` ([docs/EMBEDDING.md](docs/EMBEDDING.md)), a photo mode with a frame and a caption, a
+  page for every object, and a press page ([#475]).
 - **Works with no network after one visit**: a service worker keeps the app, and the maps, models
   and sounds you have used; the status line says "Offline: showing saved copies from …" with the
-  age of the oldest copy. Switch it off with `?sw=0`. Push notifications are not part of this.
-- **Installable**: a web manifest and home-screen icons.
-- **Runs from any folder**: a copy served at `http://server/space-radar/` now finds its saved data
-  (every path is relative to the page).
-- **The nebulae from your own sky**: the 27 photographs of nebulae and galaxies now show in the
-  sky from the ground, at their true places and sizes, as faint as your sky, the Moon and the
-  shutter make them. Zoom in on Orion and the nebula is there; tap it for its card.
-- **Other light**: What to show has a new row. See the whole sky in infrared (WISE), microwaves
-  (WMAP) or gamma rays (Fermi), in orbit and from the ground, with a slider between it and the
-  visible sky. Each is false colour and says so; the infrared sky sharpens from the survey's own
-  tiles as you zoom.
-- **Stars are places**: fly to a star and it is a disc of its own size and colour, not a point.
-  Its card says how wide it is, and that the width is an estimate.
-- In the sky from the ground: `+` and `-` zoom, and the search box turns the sky to what it finds.
-- `scripts/test.sh` runs everything CI runs with one command.
-- `scripts/test.sh --quick` runs only the checks that touch the files you changed.
-- `tests/test_credits.py`: every data source and model in the registries must be credited.
+  age of the oldest copy. Switch it off with `?sw=0`. No push notifications ([#467]).
+- **Installable**, with a web manifest and home-screen icons; and a copy served from any folder,
+  such as `http://server/space-radar/`, finds its saved data ([#467]).
+- **Ready for contributors and classrooms**: a new README, [CONTRIBUTING.md](CONTRIBUTING.md), a
+  code of conduct, a security policy, issue and pull-request templates, a one-page
+  [design bar](docs/DESIGN_PRINCIPLES.md), [docs/RUN_LOCALLY.md](docs/RUN_LOCALLY.md) with
+  `scripts/save_offline_data.py`, this changelog and a release workflow that publishes a zip that
+  runs offline ([#463]).
+- `scripts/test.sh` runs everything CI runs with one command ([#463]); `scripts/test.sh --quick`
+  runs only the checks that touch the files you changed ([#467]).
+- `tests/test_credits.py`: every data source and model in the registries must be credited ([#463]).
+- The interface's rules are held by tests in CI ([#462]).
 
 ### Changed
-- [CREDITS.md](CREDITS.md) opens with a summary table and now credits nine data sources the
-  registry used and this file did not name (JPL's Small-Body Database, CNEOS and Horizons, ESA
-  NEOCC, Wikidata, Open Notify and others).
-- Fresh README screenshots under `assets/screenshots/`; the old `assets/readme/` set is gone.
+- Names and titles are set in the sans faces everywhere; the serif is gone ([#462]).
+- The sky from the ground reads a small star file of its own instead of the 2.6 MB
+  three-dimensional catalogue ([#476]).
+- The giant planets are drawn with their flattened shape, and their rings were reworked ([#474]).
+- The email subscription row is offered only where a subscription service is configured ([#462]).
+- The refusals test takes minutes, not an hour ([#467]).
+- [CREDITS.md](CREDITS.md) opens with a summary table and credits nine data sources the registry
+  used and the file did not name ([#463]); README screenshots live under `assets/screenshots/`.
+
+### Fixed
+- Twelve trip stops on the Moon that stood on a black disc are shown in daylight, and the dark
+  planets (Saturn, Jupiter, TRAPPIST-1's seven) are lit from the front ([#473]).
+- A postcard's link now opens the sky at the exposure the picture was taken at ([#462]).
+- Labels keep off the window's edge and rise above their own model; on a small phone the trip
+  toolbar keeps the Voice button ([#462]).
 
 ## [0.5.0] - 2026-10-04
 
@@ -156,3 +187,16 @@ The first public map.
 - No server, no database, no build step.
 
 [Unreleased]: https://github.com/Sara-Managed-Projects/space-radar/commits/main
+[#462]: https://github.com/Sara-Managed-Projects/space-radar/pull/462
+[#463]: https://github.com/Sara-Managed-Projects/space-radar/pull/463
+[#464]: https://github.com/Sara-Managed-Projects/space-radar/pull/464
+[#465]: https://github.com/Sara-Managed-Projects/space-radar/pull/465
+[#466]: https://github.com/Sara-Managed-Projects/space-radar/pull/466
+[#467]: https://github.com/Sara-Managed-Projects/space-radar/pull/467
+[#469]: https://github.com/Sara-Managed-Projects/space-radar/pull/469
+[#473]: https://github.com/Sara-Managed-Projects/space-radar/pull/473
+[#474]: https://github.com/Sara-Managed-Projects/space-radar/pull/474
+[#475]: https://github.com/Sara-Managed-Projects/space-radar/pull/475
+[#476]: https://github.com/Sara-Managed-Projects/space-radar/pull/476
+[#477]: https://github.com/Sara-Managed-Projects/space-radar/pull/477
+[#478]: https://github.com/Sara-Managed-Projects/space-radar/pull/478

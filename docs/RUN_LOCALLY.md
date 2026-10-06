@@ -5,12 +5,21 @@ need an account, a licence key or a build tool. Space Radar is a folder of files
 can serve a folder to a web browser can run it. It also runs **with no internet at all**, with the
 limits listed honestly [below](#3-run-it-with-no-internet).
 
+> **Classroom quick start**
+>
+> 1. **Download** `space-radar-<version>.zip` from the [Releases page](https://github.com/Sara-Managed-Projects/space-radar/releases/latest) and unzip it.
+> 2. **Serve** it: open a terminal in that folder and run `python3 -m http.server 8177 --directory site` (Windows: `py` instead of `python3`).
+> 3. **Open** <http://localhost:8177> in the browser.
+> 4. Pick a trip and press **Present**: large words, no panels, your clicker moves it on.
+> 5. After that first visit it **works offline** on that computer, even with the server stopped.
+
 **What you need**
 
 - A computer from the last eight years or so, with Chrome, Edge, Firefox or Safari.
 - [Python 3](https://www.python.org/downloads/) (3.8 or newer). macOS and most Linux systems already
   have it. On Windows, install it from python.org and tick "Add python.exe to PATH".
-- About 80 MB of disk space.
+- About 110 MB of disk space (the app is 83 MB, 40 MB of it the trips' narration and music; the
+  saved data copy is about 24 MB).
 
 ---
 
@@ -55,9 +64,9 @@ from `file://`. It has to come through a server, even a local one.
 
 Space Radar keeps two kinds of things:
 
-- **What ships in the folder**: the planets, moons and their maps, 119 614 stars, the constellations,
-  nebula photographs, every 3D model, the guided trips with their narration and music, landing
-  sites, and the mathematics that moves it all. This needs no network, ever.
+- **What ships in the folder**: the planets, moons and their maps, 109 389 stars, the constellations,
+  nebula photographs, the sky in infrared, microwaves and gamma rays, every 3D model, all 25
+  guided trips with their narration and music, landing sites, and the mathematics that moves it all. This needs no network, ever.
 - **What changes daily**: the list of satellites and their orbits, upcoming launches, asteroids
   passing by, space weather. The app reads a **saved copy** of these from `site/data/v1/` first,
   and only then asks the publishers for anything newer.
@@ -81,7 +90,7 @@ the app once and it will start again later with the server switched off, the cab
 hill with no signal, and its status line will say `Offline: showing saved copies from 13 days ago`
 with the age of the oldest copy on screen.
 
-- It keeps **what that browser has used**. The whole app is kept at once (about 4.8 MB); a trip's
+- It keeps **what that browser has used**. The whole app is kept at once (about 5.3 MB, 205 files); a trip's
   pictures, a planet's map and a trip's narration are kept the first time they are shown or
   played. To have a trip ready for a room with no network, play it through once on that computer.
 - Browsers only allow this on `https://` addresses and on `localhost`. On pupils' machines that
@@ -114,10 +123,11 @@ answered from the folder, the Sources line read "12 sources read · 3 could not 
 | Works with no internet | Needs the internet |
 |---|---|
 | The Earth, the Moon, every planet and moon, with their maps and air | **Today's clouds**, storms and lightning on the Earth (you get a fixed cloud map instead) |
-| The stars, constellations, the Milky Way, nebula photographs, exoplanets | **Close-up map tiles** of the Moon and Mars (the built-in maps stay; they are just less sharp up close) |
-| All nine guided trips, with narration, captions and music | **Fresh** launches, satellites, asteroid passes and space weather (see below) |
+| The stars, constellations, the Milky Way, nebula photographs, exoplanets | **Close-up map tiles** of the Earth, the Moon and Mars (the built-in maps stay; they are just less sharp up close) |
+| All 25 guided trips, with narration, captions and music | **Fresh** launches, satellites, asteroid passes and space weather (see below) |
 | Satellites, the ISS and Tiangong, from the saved copy | The aurora forecast and the "who is in space right now" crew list, once the copy is old |
-| Search, the object cards, the time control, Tonight's passes | Links out to Wikipedia and the publishers; sharing to social networks |
+| Search, the object cards, the time scrubber, mission timelines, Tonight's passes | **Earth data maps** (sea temperature, rain and the rest), today's sunspot groups, and the sharper zoomed-in tiles of the infrared sky |
+| The sky from the ground, present mode, photo mode | Links out to Wikipedia and the publishers; sharing to social networks |
 | The sky from a city you pick by hand | Your exact location, on some setups (see Troubleshooting) |
 
 **Be honest with your class about age.** A satellite's position is worked out from orbital
@@ -162,15 +172,18 @@ http://localhost:8177/#trip=mars-where-we-have-driven&present=auto
 | `F` | Full screen, and out of it |
 | `A` | Let the trip move on by itself, or wait for you again (`present=auto` starts that way) |
 | `P` | Pause and resume |
+| `M`, `V` | Sound on and off; the voice on and off |
 | `Esc` | Leave the trip |
 
 The words on screen are the captions, so the room does not need sound. For sound, press the
 speaker and the voice button on the first card: a synthetic voice reads each stop, and each stop
 then waits for it to finish. Trips good for a first lesson: `moon-phases` (why the Moon changes
 shape), `planets-tonight`, `tonight-from-your-street`, `the-sun-today`,
-`mars-where-we-have-driven`, `the-constellations`. The three "tonight" trips use the place set under
-**Where you are** (or a guess from the computer's time zone, and they say so): set the school's
-town first.
+`mars-where-we-have-driven`, `the-constellations`, `life-of-a-star`. Six trips start from your own
+place (`tonight-from-your-street`, `planets-tonight`, `moon-phases`, `a-dark-sky`,
+`comets-and-meteors`, `journey-to-the-station`): they use the place set under **Where you are** (or
+a guess from the computer's time zone, and they say so), so set the school's town first. The
+living Earth's data maps need the internet.
 
 **An unattended screen.** There is no attract loop yet. What exists today:
 

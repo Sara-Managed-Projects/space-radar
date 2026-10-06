@@ -79,6 +79,8 @@ same row; `scripts/check_registry.py` will ask for it.
 | Add a meteor shower | `registry/showers.yaml` | `gen_showers_js.py` |
 | Add a moon or a dwarf planet | `registry/worlds.yaml` (+ `site/js/scene/worlds.js`, the one hand-kept mirror) | `check_registry.py` tells you what is missing |
 | Add a strange thing we sent to space | `registry/oddities.yaml` | `gen_oddities_js.py` |
+| Add a dated event to a mission's timeline | `registry/missions.yaml` | `gen_missions_js.py` |
+| Add a map of Earth data from NASA GIBS | `registry/overlays.yaml`, a credit in `CREDITS.md` §4.19 | `gen_overlays_js.py` |
 | Add a 3D model | `registry/models.yaml` (`real_models:`), the `.glb` in `site/models/`, a row in `CREDITS.md` | `scripts/fetch-model.sh` shows how the existing ones were fetched and slimmed |
 | Fix a card's wording | `site/js/copy/en.js` | `scripts/test.sh copy` |
 
@@ -87,26 +89,69 @@ only, and fails if doing so ever needs a code change.
 
 ### Add a trip
 
-A trip is a row in `registry/tours.yaml`: a title, a blurb, and a list of stops. A stop names a
-target that already exists, how far away the camera stands, and the card to show:
+A trip is a row in `registry/tours.yaml`: a title, a blurb, a group, and a list of stops. The long
+comment at the top of that file is the full grammar; this is the short version.
 
 ```yaml
-  - id: iss
-    target: {layer: stations, catalog: "25544"}
-    distance_km: 3000
-    card:
-      title: The International Space Station
-      body: "About the size of a football pitch, and moving at nearly eight kilometres a second."
+  # FACTS, read 2026-10-06: https://www.nasa.gov/international-space-station/ (109 m long,
+  # 7.66 km/s).
+  - id: eyes-in-orbit
+    title: "Eyes in orbit"                      # 60 characters at most
+    blurb: "A station, and the two worlds it flies between."     # one sentence, 80 at most
+    group: earth-orbit                          # earth-orbit | solar-system | beyond | events
+    requires: [stations, worlds]                # the layers its stops need loaded
+    clock: as-found                             # as-found | live | freeze
+    stops:                                      # three at least
+      - id: iss
+        target: {layer: stations, catalog: "25544"}
+        distance_km: 3000
+        chapter: "Where people live"            # optional: the part of the story, not the stop
+        card:
+          title: "The International Space Station"
+          body: >-
+            About the size of a football pitch, and moving at nearly eight kilometres a second.
 ```
 
-Run `python3 scripts/gen_tours_js.py && python3 scripts/gen_trip_pages.py`, then open
-`http://localhost:8177/#trip=<your-id>` and fly it. Write for a curious twelve-year-old; every
-number in a card needs a source in a comment beside it.
+**A stop names exactly one target**, and the rest of the stop says what to do there:
+
+| `target:` | What it is | Often with |
+|---|---|---|
+| `{record: <id>}`, `{layer: <id>, catalog: "<NORAD>"}` | one object in a layer | `distance_km`, `needs_layer` |
+| `{world: <id>}` | a `registry/worlds.yaml` row | `frame_radii`, `over: [lat, lon]`, `behind`, `overlay` (an Earth data map), `live_note` |
+| `{site: <id>}` | a `registry/sites.yaml` row | `time: daylight`, so the ground is lit (also for a world with `over:`) |
+| `{observer: true}` | the visitor's own place (the trip then says `requires_observer: true`) | `look: {world: jupiter}` to stand on the ground and look up, `darkness: city \| town \| dark`, `time: tonight` |
+| `{sky: [ra, dec]}` | a patch of sky, on the `stellar` stage | `figures: [Ori]`, `figure_stars`, `zoom`, `exposure: eye \| camera \| deep` |
+
+`time:` is an instant, `now`, `tonight`, `night`, `daylight`, or the next event from
+`registry/events.yaml`; `rate:` runs the clock while the stop is up. A card may not state a time
+itself: the frame prints "Shown at" from the clock. A stop that cannot be found on the day is
+dropped before the count is shown, so a trip never promises a stop it will not deliver.
+
+**The rules.** `check_registry.py` holds the mechanical ones; a reviewer holds the rest:
+
+- **Facts need a source.** Every number, date and name in a card is listed in a `# FACTS, read
+  <date>: <url>` comment above the trip, as above. A fact nobody can check does not go on a card.
+- **Say what the picture is.** A card may not call a model, an illustration or a false-colour map
+  a photograph. There is no `class:` on a stop: the card prints the record's own.
+- **Write for the ear as well as the eye.** The voice reads the card as it is, title then body:
+  short sentences, plain words, British spelling, written for a curious twelve-year-old.
+  `scripts/narrate.py` refuses a number or unit it does not know how to say, and
+  `registry/narration.yaml` holds the pronunciation of the names the voice gets wrong.
+- The first sentence of a body is at most 160 characters, and no `--`.
+
+```bash
+python3 scripts/gen_tours_js.py && python3 scripts/gen_trip_pages.py
+python3 scripts/check_registry.py          # says what is wrong, and what to do about it
+scripts/test.sh --quick                    # the checks that touch what you changed
+```
+
+Then open `http://localhost:8177/#trip=<your-id>` and fly it, once more with `&present=1`.
 
 Two things a trip also needs are made with tools you may not have: its card picture
 (`scripts/build_trip_thumbs.py`) and its narration (`scripts/narrate.py`, a local text-to-speech
-model). **Open the pull request as a draft without them.** Those two checks will be red; say so in
-the description, and a maintainer will render the picture and the voice onto your branch.
+model; `python3 scripts/narrate.py --check` is the check that goes red when a card's words change).
+**Open the pull request as a draft without them.** Those two checks will be red; say so in the
+description, and a maintainer will render the picture and the voice onto your branch.
 
 ### Add a data layer
 
@@ -126,6 +171,8 @@ Open an issue before a big one. It is much nicer to agree on the shape first.
 
 ```bash
 scripts/test.sh                 # everything CI runs, a few minutes
+scripts/test.sh --quick         # only the checks that touch the files you changed: seconds
+scripts/test.sh --quick main    # ...changed since main, not since your last commit
 scripts/test.sh contract        # only items whose name contains "contract"
 scripts/test.sh --list          # what there is
 node tests/test_contract.mjs    # or run one file directly
@@ -139,6 +186,9 @@ To look at your change in a real browser without opening one, `tools/cdp.mjs` dr
 Chrome and takes a screenshot; its header comment explains how. Be gentle with the data
 publishers while testing: CelesTrak allows one download per file per two hours. Run
 `python3 scripts/save_offline_data.py` once and your local copy boots from disk instead.
+
+The app has a service worker. A clone's worker is unstamped and always asks the server first, so it
+does not hide your edits; if a page ever looks stale, open it once with `?sw=0` to remove it.
 
 ## Style
 
@@ -174,7 +224,7 @@ with a source is one of the most valuable things you can send.
 
 ## Pull requests
 
-1. Fork, branch from `main`, make the change, run `scripts/test.sh`.
+1. Fork, branch from `main`, make the change, run `scripts/test.sh` (`--quick` while you work).
 2. Open the pull request. **Open it as a draft** while you are still working or want an early look.
 3. CI runs on every push. Read a red check's log; they are written to say what to do.
 4. **A green pull request that is not a draft is merged automatically** (squashed). So "ready for

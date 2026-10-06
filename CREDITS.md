@@ -41,7 +41,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | Dishes, crews, observatories | NASA DSN Now; Open Notify; Wikidata | see the section; CC0 for Wikidata | [4.3](#43-nasa--dsn-now), [4.18](#418-the-sources-the-harvester-reads) |
 | Music and sounds | John Bartmann (Free Music Archive); Freesound contributors | CC0 1.0 | [9](#9-audio--music-and-sounds) |
 | The trips' voice | Kokoro-82M, a synthetic voice | Apache-2.0 | [9b](#9b-audio--the-trips-narration-a-synthetic-voice) |
-| Typefaces | Inter, Barlow Semi Condensed, JetBrains Mono, Instrument Serif | SIL OFL 1.1 | [10](#10-fonts) |
+| Typefaces | Inter, Barlow Semi Condensed, JetBrains Mono | SIL OFL 1.1 | [10](#10-fonts) |
 | The GitHub mark | GitHub, Inc. | a trademark, used under GitHub's logo rules | [4.6](#46-third-party-trademarks-the-app-names-or-draws) |
 
 ---

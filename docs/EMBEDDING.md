@@ -25,11 +25,14 @@ All in the query string, after `?embed=1`. Anything not listed is ignored.
 |---|---|---|
 | `embed` | `1` turns the embed on. Required. | `?embed=1` |
 | `at` | The object to open on: a record id, a NORAD catalogue number, or a name as you would type it in the search box. | `at=sat-25544`, `at=25544`, `at=iss`, `at=mars` |
-| `trip` | A guided trip to play instead of one object (the ids are the page names under `/t/`). Wins over `at`. | `trip=moon-landings` |
+| `trip` | A guided trip to play instead of one object: any of the 25 (the ids are the page names under `/t/`, and the `id:` rows of `registry/tours.yaml`). Wins over `at`. | `trip=moon-landings` |
 | `stop` | With `trip`: the stop to start at, counted from 1. | `stop=3` |
 | `t` | The moment to show, as an ISO 8601 UTC instant. Left out, the view is live. | `t=2027-08-02T10:00:00Z` |
 | `stage` | The world the map is centred on. | `stage=mars` |
 | `exp` | The exposure the sky is drawn at when it is not the default: `eye` or `deep`. | `exp=deep` |
+
+Present mode (`present=1`) is not an embed parameter: it belongs to the full app's own links
+(`#trip=moon-phases&present=1`, see [RUN_LOCALLY.md](RUN_LOCALLY.md)).
 
 With `embed=1` alone the frame shows the Earth and what is around it now.
 
@@ -73,4 +76,6 @@ python3 tools/serve.py . 8000
 # then open http://127.0.0.1:8000/tools/embed-test.html
 ```
 
-`tools/embed-test.html` is a host page with a 600 × 400 frame of the local build.
+`tools/embed-test.html` is a host page with a 600 × 400 frame of the local build. It passes its own
+query on to the frame, so `embed-test.html?trip=moon-landings&stop=3` tests that view.
+`node tests/test_embed.mjs` holds the parameters, the snippet and the keys.
