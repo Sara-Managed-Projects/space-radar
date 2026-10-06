@@ -203,5 +203,73 @@ check(iconOnly >= 8, `only ${iconOnly} icon-only buttons found: the rail, the tr
   }
 }
 
+// 7. the page (public #315): skip links, landmarks, the canvas's name, and focus across a view change
+{
+  const html = readFileSync(join(ROOT, 'site/index.html'), 'utf8').replace(/<!--[\s\S]*?-->/g, '');
+  const body = html.slice(html.indexOf('<body'));
+  // 7a. THE SKIP LINKS ARE FIRST IN THE TAB ORDER, the search before the map, and the search is two
+  // presses away: Tab lands on "Skip to search", Enter puts the caret in the field.
+  const firstStop = /<(a|button|input|select|textarea|summary|iframe|[a-z]+[^>]*\stabindex="(?!-1))[^>]*>/i.exec(body);
+  check(firstStop && /id="sr-skip-search"/.test(firstStop[0]), `the first thing Tab reaches in index.html is the skip link to the search (it is ${firstStop ? firstStop[0].slice(0, 80) : 'nothing'})`);
+  const skips = [...body.matchAll(/<a class="sr-skip" id="(sr-skip-[a-z]+)" href="#([\w-]+)">([^<]+)<\/a>/g)].map((m) => ({ id: m[1], to: m[2], text: m[3] }));
+  check(skips.map((x) => x.id).join() === 'sr-skip-search,sr-skip-map', `two skip links, the search first: ${skips.map((x) => x.id)}`);
+  check(skips.every((x) => /^Skip to /.test(x.text)), `each says where it goes: ${skips.map((x) => x.text).join(' / ')}`);
+  check(!/tabindex="[1-9]/.test(body), 'no positive tabindex anywhere in index.html: the order is the document\'s');
+  check(/<main class="sr-scene" id="map">/.test(body) && skips.some((x) => x.id === 'sr-skip-map' && x.to === 'map'), 'the map link points at <main id="map">');
+  const explore = code(read('explore.js'));
+  const toSearch = /const toSearch = \(e\) => \{([\s\S]*?)\n  \};/.exec(explore);
+  check(toSearch && /e\.preventDefault\(\)/.test(toSearch[1]) && /search\.focus\(\)/.test(toSearch[1]) && /shell\.collapse\(false\)/.test(toSearch[1]), 'toSearch opens the panel, comes home and focuses the field');
+  check(/skip\('sr-skip-search', toSearch\)/.test(explore) && /getElementById\(id\)[\s\S]{0,60}addEventListener\('click', go\)/.test(explore), 'Enter on "Skip to search" runs toSearch: Tab, Enter, and the caret is in the field');
+  check(/wantsSearch\(e, document\.activeElement\)\) toSearch\(e\)/.test(explore), 'and `/` runs the same function');
+  const mapSkip = /skip\('sr-skip-map', \(e\) => \{([\s\S]*?)\n  \}\);/.exec(explore);
+  check(mapSkip && /map\.tabIndex = -1/.test(mapSkip[1]) && /map\.focus\(/.test(mapSkip[1]) && /removeAttribute\('tabindex'\)/.test(mapSkip[1]), '"Skip to the map" focuses <main> and gives the tabindex back on blur (a <main> that kept it would take focus on every click)');
+  check(!/<main[^>]*tabindex/.test(body) && !/<canvas[^>]*tabindex/.test(body), 'neither <main> nor the canvas carries a tabindex in the markup');
+  const site = readFileSync(join(ROOT, 'site/css/site.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  const hiddenRule = (/\.sr-skip:not\(:focus\)\s*\{([^}]*)\}/.exec(site) || [])[1] || '';
+  const shownRule = (/\.sr-skip\s*\{([^}]*)\}/.exec(site) || [])[1] || '';
+  check(/clip-path:\s*inset\(50%\)/.test(hiddenRule) && !/display:\s*none|visibility:\s*hidden/.test(hiddenRule), 'a skip link without the focus is clipped, not removed: display:none would take it out of the tab order');
+  check(/position:\s*fixed/.test(shownRule) && /z-index:\s*var\(--sr-z-toast\)/.test(shownRule) && /background:\s*var\(--sr-glass-strong\)/.test(shownRule) && /color:\s*var\(--sr-text\)/.test(shownRule), 'with the focus it is a glass chip over the chrome, in the text colour');
+
+  // 7b. LANDMARKS: one <main> (the map), the sidebar and the card as <aside> with a name, the rail as
+  // <nav> with a name, the phone's top bar a named group. A landmark without a name is "navigation".
+  check((body.match(/<main\b/g) || []).length === 1, 'index.html has exactly one <main>');
+  check(/<h1 class="sr-hidden-text">/.test(body), 'and one h1, inside it');
+  const shell = code(read('shell.js'));
+  check(/const side = el\('aside', [^)]*\);[\s\S]{0,120}side\.setAttribute\('aria-label', COPY\.shell\.sideLabel\)/.test(shell), 'the sidebar is an <aside> named from the copy');
+  const rail = code(read('rail.js'));
+  check(/const root = document\.createElement\('nav'\);[\s\S]{0,200}root\.setAttribute\('aria-label', COPY\.rail\.label\)/.test(rail), 'the rail is a <nav> named from the copy');
+  check(/top\.setAttribute\('role', 'group'\);\s*top\.setAttribute\('aria-label', COPY\.shell\.topLabel\)/.test(shell), 'the phone\'s top bar is a named group');
+  check(/host = el\('aside', 'sr-card'\)/.test(code(read('cards.js'))), 'the card is an <aside>');
+  for (const f of files) check(!/createElement\('main'\)|el\('main'/.test(code(read(f))), `ui/${f} builds a second <main>`);
+
+  // 7c. THE CANVAS HAS A TEXT ALTERNATIVE, one sentence, and it changes on selection only.
+  const canvas = /<canvas id="stage" role="img"\s+aria-label="([^"]+)">/.exec(body);
+  check(canvas && canvas[1].length > 60, 'the canvas is role="img" with a sentence for a name');
+  const main = readFileSync(join(ROOT, 'site/js/main.js'), 'utf8');
+  check(/window\.addEventListener\('sr:select', \(e\) => \{\s*const record = e && e\.detail;\s*if \(stageEl\) stageEl\.setAttribute\('aria-label', record && record\.name \? fill\(COPY\.app\.sceneSelected, \{ name: record\.name \}\) : sceneName\);/.test(main), 'main.js renames the canvas on sr:select, and gives the page\'s own sentence back when the selection is put down');
+  check(!/requestAnimationFrame[\s\S]{0,400}stageEl\.setAttribute\('aria-label'/.test(main) && (main.match(/stageEl\.setAttribute\('aria-label'/g) || []).length === 1, 'and nowhere else: a name that changed per frame would be unusable');
+  const { COPY } = await import(join(ROOT, 'site/js/copy/en.js'));
+  const sentence = COPY.app.sceneSelected || '';
+  check(/\{name\}/.test(sentence) && (sentence.match(/[.!?](\s|$)/g) || []).length === 1, `the selected sentence names the thing and is one sentence: "${sentence}"`);
+
+  // 7d. FOCUS IS NEVER LOST WHEN A VIEW CHANGES: show() and back() ask, before they repaint, whether
+  // the focus was in the sidebar, and land it in the view now showing if so.
+  const fn = (name) => (new RegExp(`\\n  function ${name}\\([^)]*\\) \\{([\\s\\S]*?)\\n  \\}`).exec(shell) || [])[1] || '';
+  for (const name of ['show', 'back']) {
+    const b = fn(name);
+    check(/const held = heldFocus\(\);/.test(b) && b.indexOf('heldFocus()') < b.indexOf('paint()'), `shell.${name}() asks where the focus is BEFORE it repaints`);
+    const paints = (b.match(/paint\(\);/g) || []).length;
+    const lands = (b.match(/if \(held\) landFocus\(\);/g) || []).length;
+    check(lands >= 1 && lands >= paints - (name === 'show' ? 1 : 0), `shell.${name}() lands the focus after every repaint that changed the view (${paints} repaints, ${lands} landings)`);
+  }
+  check(/const heldFocus = \(\) => side\.contains\(document\.activeElement\);/.test(shell), 'held means "inside the sidebar": a focus on the map is never taken');
+  const land = fn('landFocus');
+  check(/a\.isConnected && !a\.closest\('\[hidden\]'\)\) return;/.test(land) && /\[role="tab"\]\[aria-selected="true"\]/.test(land) && /target\.focus\(\{ preventScroll: true \}\)/.test(land), 'landFocus leaves a focus that survived alone, and otherwise lands on the chosen tab or the view\'s first control');
+
+  // 7e. A one-letter name is not a name (internal #375): the X link says "Post to X".
+  const sheet = code(read('sharesheet.js'));
+  check(/a\.setAttribute\('aria-label', t\(S\.networkLabel, \{ network: S\.networks\[n\] \}\)\)/.test(sheet) && /\{network\}/.test(COPY.share.networkLabel || ''), 'each network link has a spoken name from the copy ("Post to X"), not its one letter');
+}
+
 if (problems.length) { console.error('a11y static FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`a11y static ok: ${controls} controls built in ${files.length} ui modules each have a name, ${iconOnly} icon-only ones an aria-label and a tooltip, every icon is the 24 box at stroke 1.75 and hidden from a reader, no name is written outside copy/en.js`);

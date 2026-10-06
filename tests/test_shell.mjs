@@ -188,7 +188,7 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   check(wantsSearch({ key: '/', ctrlKey: true }, body) === false && wantsSearch({ key: '/', metaKey: true }, body) === false, 'Ctrl+/ and Cmd+/ stay the browser\'s');
   check(wantsSearch({ key: '/', defaultPrevented: true }, body) === false && wantsSearch({ key: '?' }, body) === false, 'a key somebody else took, or another key, is not it');
   const exploreKeys = readFileSync(join(JS, 'ui/explore.js'), 'utf8');
-  check(/wantsSearch\(e, document\.activeElement\)[\s\S]{0,900}search\.focus\(\)/.test(exploreKeys), 'the explore view listens for it and focuses the field');
+  check(/const toSearch = \(e\) => \{[\s\S]{0,900}search\.focus\(\);\s*\};\s*document\.addEventListener\('keydown', \(e\) => \{ if \(wantsSearch\(e, document\.activeElement\)\) toSearch\(e\); \}\);/.test(exploreKeys), 'the explore view listens for it and focuses the field');
   check(/cls\.contains\('sr-clean'\) \|\| cls\.contains\('sr-trip-mode'\)/.test(exploreKeys), 'never over a clear screen or in a trip');
   check(/\(L\)/.test(COPY.rail.show) && /\(P\)/.test(COPY.rail.share) && /\(H\)/.test(COPY.clean.hide) && /H or Escape/.test(COPY.clean.show) && /\(\/\)/.test(COPY.search.inputTitle),
     'the tooltips name their keys: L, P, H, / and Escape');
