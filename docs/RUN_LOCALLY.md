@@ -81,7 +81,7 @@ the app once and it will start again later with the server switched off, the cab
 hill with no signal, and its status line will say `Offline: showing saved copies from 13 days ago`
 with the age of the oldest copy on screen.
 
-- It keeps **what that browser has used**. The whole app is kept at once (about 4.5 MB); a trip's
+- It keeps **what that browser has used**. The whole app is kept at once (about 4.8 MB); a trip's
   pictures, a planet's map and a trip's narration are kept the first time they are shown or
   played. To have a trip ready for a room with no network, play it through once on that computer.
 - Browsers only allow this on `https://` addresses and on `localhost`. On pupils' machines that
@@ -98,7 +98,7 @@ with the age of the oldest copy on screen.
 Proved on 2026-10-06 in headless Chrome with every outside host unresolvable: a stamped copy with
 a saved data copy was served at `http://localhost:8391/classroom/space-radar/` (a subfolder),
 opened once, and the server was then stopped. On the second visit the app started from the worker
-(172 app files, 21 maps and bundled data files, and 13 saved data copies kept), the *Moon landings*
+(184 app files, 22 maps and bundled data files, and 13 saved data copies kept), the *Moon landings*
 trip flew its first three stops, the Tonight tab showed the next visible pass, and the status line
 read "Offline: showing saved copies from 14 days ago" (the copy used for the test was that old). Not kept by that first visit: narration and music nobody had played, and
 maps of worlds nobody had visited. `tests/probes/offline-probe.js` is the probe, and its header
