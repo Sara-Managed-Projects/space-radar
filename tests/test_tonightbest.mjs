@@ -60,9 +60,9 @@ const iss = {
   startAz: 225 * R, peakAz: 150 * R, endAz: 62 * R, peakEl: 52.4 * R, visible: true, sunlit: true, magnitude: -3.14,
 };
 const n = T.passNumbers(iss);
-check(n.startMs === iss.visibleStartMs && n.endMs === iss.visibleEndMs && n.peakDeg === 52 && n.fades === true && n.appears === false, 'the row\'s times are of what can be seen, and it says the pass fades into shadow');
+check(n.startMs === iss.startMs && n.endMs === iss.endMs && n.peakMs === iss.peakMs && n.peakDeg === 52 && n.fades === true && n.appears === false, 'the row\'s three moments are the pass\'s own, as its three directions are, and it says the pass fades into shadow');
 const w = T.passWords(iss);
-check(w.line === '19:03 SW · 19:06 52° SSE · 19:08 ENE' && w.side === 'mag −3.1', `the row: start, highest, end, and its magnitude beside the name (${w.line} / ${w.side})`);
+check(w.line === '19:03 SW · 19:06 52° SSE · 19:09 ENE' && w.side === 'mag −3.1', `the row: start, highest, end, and its magnitude beside the name (${w.line} / ${w.side})`);
 check(w.line.length <= 40 && !/\s{2}/.test(w.line), 'one line that fits the sidebar in mono: 40 characters at most');
 check(w.note === COPY.tonight.best.fades && w.aria.includes('highest 19:06 at 52°') && w.aria.endsWith(COPY.tonight.best.fades), 'the sentence for a screen reader says the same and adds the fade');
 check(T.magText(-3.14) === '−3.1' && T.magText(0.04) === '0.0' && T.magText(null) === '—' && T.magText(NaN) === '—', 'a real minus sign, one decimal, and a dash for no number');
@@ -82,6 +82,10 @@ const best = T.tonightBest({ observer: here, nowMs: evening, passes: [faint(1), 
 const kinds = best.rows.map((r) => r.kind);
 check(best.rows.length <= T.MAX_ROWS && kinds.filter((k) => k === 'pass').length === T.MAX_PASSES, `at most seven rows and three passes (${kinds})`);
 check(best.rows[0].kind === 'pass' && best.rows[0].pass === iss, 'the station at magnitude -3 is first');
+{
+  const twice = T.tonightBest({ observer: here, nowMs: evening, passes: [iss, { ...iss, recordId: 'visual-25544', record: { ...iss.record, id: 'visual-25544' } }] });
+  check(twice.rows.filter((r) => r.kind === 'pass').length === 1, 'the same pass from two catalogues is one row');
+}
 for (let i = 0; i + 1 < best.rows.length; i += 1) check(best.rows[i].score >= best.rows[i + 1].score, `row ${i} outranks row ${i + 1}`);
 const ids = best.rows.map((r) => r.kind === 'pass' ? 'pass' : r.id);
 check(ids.includes('jupiter') && ids.includes('saturn') && ids.includes('moon') && !ids.includes('venus'), `Jupiter, Saturn and the Moon are in; Venus, lost in the Sun, is not (${ids})`);

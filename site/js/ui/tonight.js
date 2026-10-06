@@ -29,7 +29,7 @@ import { COPY, CITIES, t, fmt, timeText, compassWords } from '../copy/en.js';
 import { guessObserver } from '../sky/guessplace.js';
 import { nextVisible, passState, darkness, tonightWords, SEARCH_HOURS, LONG_SEARCH_HOURS } from '../sky/tonight.js';
 import { arcSvg } from './skyarc.js';
-import { tonightBest, bestWords, passWords, passNumbers, darkWords, compassShort, standardMagnitude } from '../sky/tonightbest.js';
+import { tonightBest, bestWords, passWords, passNumbers, darkWords, compassShort, standardMagnitude, samePassKey } from '../sky/tonightbest.js';
 import { passTrack } from '../sky/passes.js';
 import { FOV, DARKNESS_IDS } from '../sky/skymath.js';
 
@@ -350,7 +350,9 @@ export function renderTonight(host, ctx) {
   function renderList() {
     while (list.firstChild) list.removeChild(list.firstChild);
     const now = ctx.clock.now();
-    const rows = st.passes.filter((p) => p.visible && p.endMs > now).sort((a, b) => a.startMs - b.startMs).slice(0, ROWS);
+    const seen = new Set();
+    const rows = st.passes.filter((p) => p.visible && p.endMs > now).sort((a, b) => a.startMs - b.startMs)
+      .filter((p) => { const k = samePassKey(p); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, ROWS);
     for (const p of rows) {
       const w = passWords(p);
       if (w) list.appendChild(rowNode({ title: w.name, line: w.line, side: w.side, aria: w.aria }, () => showPass(p), p));

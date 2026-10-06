@@ -158,7 +158,7 @@ varying vec2 vUv;
 varying float vY;
 void main() {
   // The panorama's floor is a dim brown everywhere; only what stands above it is the Milky Way.
-  vec3 c = max(texture2D(uMap, vUv).rgb - 0.05, 0.0) * 1.1;
+  vec3 c = max(texture2D(uMap, vUv).rgb - 0.012, 0.0);
   // The air: nothing of it survives the last few degrees above the horizon.
   float air = smoothstep(0.0, 0.3, vY);
   gl_FragColor = vec4(c * uGain * air, 1.0);

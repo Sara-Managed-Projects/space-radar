@@ -165,14 +165,15 @@ export function phaseName(phaseDeg) {
 
 /**
  * A pass as the numbers a row prints (pub #448): when and where it starts, peaks and ends, how
- * high, how bright, and whether it fades into the Earth's shadow before it sets. The start and end
- * are of what can be SEEN (sunlit, sky dark, above 10 degrees) when the pass has that; else of the
- * whole pass above the horizon.
+ * high, how bright, and whether it fades into the Earth's shadow before it sets. The three moments
+ * are of the whole pass above sky/passes.js's horizon, because the three directions are: a pass
+ * that is lit for only part of that says so in its note (`fades`, `appears`), and its arc on the
+ * sky is drawn solid only where it is lit.
  */
 export function passNumbers(pass) {
   if (!pass || !Number.isFinite(pass.startMs) || !Number.isFinite(pass.endMs)) return null;
-  const startMs = Number.isFinite(pass.visibleStartMs) ? pass.visibleStartMs : pass.startMs;
-  const endMs = Number.isFinite(pass.visibleEndMs) ? pass.visibleEndMs : pass.endMs;
+  const startMs = pass.startMs;
+  const endMs = pass.endMs;
   const peakMs = Math.min(Math.max(Number.isFinite(pass.peakMs) ? pass.peakMs : (startMs + endMs) / 2, startMs), endMs);
   return {
     startMs, peakMs, endMs,
@@ -186,6 +187,11 @@ export function passNumbers(pass) {
     fades: pass.visible === true && Number.isFinite(pass.sunlitEndMs) && pass.sunlitEndMs < pass.endMs - 20e3,
     appears: pass.visible === true && Number.isFinite(pass.sunlitStartMs) && pass.sunlitStartMs > pass.startMs + 20e3,
   };
+}
+
+/** Two passes are the same pass when the name and the minute it starts are the same. */
+export function samePassKey(pass) {
+  return `${plainName(pass && pass.record)}@${Math.round(((pass && pass.startMs) || 0) / 60e3)}`;
 }
 
 /** How easy a pass is to see: brightness first, then height. No magnitude known: height alone. */
@@ -213,9 +219,11 @@ export function tonightBest({ observer, nowMs, passes = [], showers = SHOWERS, m
   const open = (Array.isArray(passes) ? passes : [])
     .filter((p) => p && p.visible === true && p.endMs > nowMs && p.startMs < until)
     .map((p) => ({ kind: 'pass', id: `${p.recordId || (p.record && p.record.id)}:${p.startMs}`, pass: p, score: passScore(p), whenMs: p.startMs }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, MAX_PASSES);
-  rows.push(...open);
+    .sort((a, b) => b.score - a.score);
+  // The same object is in two catalogues (a station is also one of the brightest): one row.
+  const seen = new Set();
+  const once = open.filter((r) => { const k = samePassKey(r.pass); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, MAX_PASSES);
+  rows.push(...once);
   let moon = null;
   if (win) {
     for (const id of NAKED_EYE_PLANETS) {
