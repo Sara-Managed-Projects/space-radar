@@ -26,6 +26,7 @@ import { load } from '../data/sources.js';
 import { parseSpaceWeather } from '../data/parsers.js';
 import { buildEvents, launchItem, approachItem, eclipseSentence } from '../data/events.js';
 import { epochMs } from '../propagate/sgp4.js';
+import { shareUrl, toast } from './share.js';
 
 // Moved to data/events.js with the builders that use them (spec 0031 task 2); still exported from
 // here, where tests/test_next.mjs and tests/test_radiants.mjs have always imported them.
@@ -375,6 +376,55 @@ function el(tag, className, text) {
   return node;
 }
 
+/** Does the row have a time worth a calendar entry? data/ics.js offersIcs decides again when pressed. */
+export function offersCalendar(item) {
+  return !!item && Number.isFinite(item.tMs) && !(item.kind === 'aurora' && item.now);
+}
+
+/** The way back from a calendar entry: a launch's webcast, else the thing's own link, else the map. */
+export function calendarUrl(item) {
+  const r = item && item.record;
+  if (r && r.meta && r.meta.webcastUrl) return String(r.meta.webcastUrl);
+  try { return shareUrl(r && r.id ? { at: r.id } : {}); } catch { return ''; }
+}
+
+/**
+ * ADD TO CALENDAR (public #235): the row as one .ics file, built here in the browser by
+ * data/ics.js (fetched on the first press) and handed over as a download. No server, and nothing
+ * kept: a pass's times are for the visitor's place, and they go into the file and nowhere else.
+ */
+async function saveCalendar(item, nowMs) {
+  const T = COPY.nextList;
+  try {
+    const { toIcs, icsFilename } = await import('../data/ics.js');
+    const parts = rowParts(item, nowMs);
+    const text = toIcs(item, {
+      title: parts.title,
+      description: [rowText(item, nowMs), classText(item)].filter(Boolean).join(COPY.punctuation.sentenceJoin),
+      url: calendarUrl(item),
+    });
+    if (!text) { toast(T.calendarFailed); return false; }
+    const file = icsFilename(item, parts.title);
+    const href = URL.createObjectURL(new Blob([text], { type: 'text/calendar;charset=utf-8' }));
+    const a = document.createElement('a');
+    a.href = href;
+    a.download = file;
+    a.rel = 'noopener';
+    a.hidden = true;
+    a.setAttribute('aria-label', T.calendar);
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(href), 10e3);
+    toast(t(T.calendarSaved, { file }), 3000);
+    return true;
+  } catch (e) {
+    console.warn('the calendar file could not be made', e);
+    toast(T.calendarFailed);
+    return false;
+  }
+}
+
 /**
  * "Coming up" (spec 0061 design §2): always in the explore view, not a door's answer any more. It
  * shows `opts.limit` rows and "Show all" expands the rest in place.
@@ -440,6 +490,16 @@ export function createNext(ctx, opts = {}) {
       body.appendChild(head);
       body.appendChild(el('span', 'sr-next__detail', parts.detail));
       li.appendChild(body);
+      if (offersCalendar(item)) {
+        // Beside the row, not inside it: a button in a button is not a thing, and the row's own
+        // press still flies to the object.
+        const cal = el('button', 'sr-next__cal', T.calendar);
+        cal.type = 'button';
+        cal.title = t(T.calendarTitle, { title: parts.title });
+        cal.setAttribute('aria-label', cal.title);
+        cal.addEventListener('click', (e) => { e.stopPropagation(); saveCalendar(item, now); });
+        li.appendChild(cal);
+      }
       list.appendChild(li);
     }
     // What the list could not look at, said only when the list is empty: under five rows it is a

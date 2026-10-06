@@ -912,6 +912,11 @@ export const COPY = {
     autoRegular: 'Regular now; Compact when the window is 800 px tall or less.',
   },
   nextList: {
+    // Add to calendar (public #235, data/ics.js): one .ics file for the row, made in the browser.
+    calendar: 'Calendar',
+    calendarTitle: 'Add “{title}” to your calendar: downloads one .ics file',
+    calendarSaved: 'Saved {file}',
+    calendarFailed: 'The calendar file could not be made',
     // Two rows can name different objects the same way -- CelesTrak calls dozens of stages "SL-8
     // R/B" -- and two identical rows read as a bug. The catalogue number tells them apart.
     sameName: '{name} ({id})',

@@ -3895,6 +3895,31 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 
 .sr-next .sr-next__row:first-child { border-top: 0; }
 
+/* The row and, beside it, Add to calendar (ui/next.js): a text action, never a second card. */
+.sr-next .sr-next__row {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+}
+
+.sr-next .sr-next__body { flex: 1 1 auto; min-width: 0; }
+
+.sr-next__cal {
+  flex: 0 0 auto;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--sp-1);
+  font: inherit;
+  font-size: var(--sr-fs-sm);
+  color: var(--sr-text-dim);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-next__cal:hover { color: var(--sr-ember); }
+
 .sr-next .sr-next__body {
   display: grid;
   gap: 2px;
