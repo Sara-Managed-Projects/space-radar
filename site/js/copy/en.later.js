@@ -281,7 +281,10 @@ Object.assign(COPY, {
     scope: 'Counting what is drawn from here, on the layers that are on.',
     // "What it is": a dot is drawn in its LAYER's colour (a rocket body on "Bright enough to see"
     // is sky blue), so the class rows are counts, and the layer swatches above are the key.
-    byLayer: 'Each dot is its layer’s colour, as above.',
+    byLayer: 'Shape is what it is; colour is its layer.',
+    // Two shapes that are not classes (scene/glyphatlas.js glyphFor), counted out of the rows above.
+    crewed: 'of those, built to carry a crew',
+    swarm: 'of those, in a big constellation',
   },
 
   // The card's trajectory chart (spec 0026 req 14).

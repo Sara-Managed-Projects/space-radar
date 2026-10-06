@@ -9,7 +9,10 @@
     open http://127.0.0.1:8195/tools/shape-sheet.html?m=telescope:gaia,probe:new-horizons
 
   `m` is a comma-separated list of klass:variant, and defaults to the five shapes that were being
-  reviewed when this was written. It renders one model per cell and leaves the PNG on
+  reviewed when this was written. `shade=N` draws every cell from the Nth on (0-based) INSIDE the
+  Earth's shadow, 400 km up on the midnight side, through the same uniforms the app sets -- so the
+  same model can be listed twice and read lit and eclipsed side by side (internal #388). `aim=1`
+  turns every wing on a pivot to the Sun, as the app does each frame. It renders one model per cell and leaves the PNG on
   `window.__sheet.dataUrl`, so a headless browser can pull the image out without a screenshot.
 
   IT ADDS THE SAME TWO LIGHTS scene/worlds.js adds. A MeshToonMaterial in an unlit scene renders
@@ -22,7 +25,7 @@
 addEventListener('unhandledrejection', (e) => { window.__err = String(e.reason && e.reason.message || e.reason); });
 addEventListener('error', (e) => { window.__err = String(e.message); });
 import * as THREE from '../site/vendor/three.module.min.js';
-import { modelFor, setSunDirection } from '../site/js/scene/models.js';
+import { modelFor, setSunDirection, setPlanetShine } from '../site/js/scene/models.js';
 import { sampleAsteroids } from '../site/js/data/sample.js';
 import { loadRealModel } from '../site/js/scene/realmodels.js';
 
@@ -78,9 +81,20 @@ const cam = new THREE.PerspectiveCamera(30, 1, 0.01, 100);
 cam.position.set(1.5, 1.05, 1.9);
 cam.lookAt(0, 0, 0);
 
+const SHADE_FROM = QS.has('shade') ? Number(QS.get('shade')) : Infinity;
+const SUN = new THREE.Vector3(0.6, 0.5, 0.62).normalize();
+const EARTH_R = 100; // model units; the model sits 6.3 % of a radius up, as the ISS does
 for (const o of scene.children) {
   if (o.userData.cell === undefined) continue;
   const i = o.userData.cell;
+  // The same sum as updateModelAttitude's last step, for a model the sheet has not turned.
+  if (QS.get('aim') === '1' && o.userData.panelPivots) for (const p of o.userData.panelPivots) p.rotation.x = Math.atan2(SUN.z, SUN.y);
+  if (i >= SHADE_FROM) {
+    setPlanetShine('earth', SUN.clone().multiplyScalar(EARTH_R * 1.063), EARTH_R);
+    sun.intensity = 3.0; // the lamp stays on: taking the sunlight away is the shader's job, and this shows it does
+  } else {
+    setPlanetShine(null);
+  }
   const cx = (i % COLS) * CELL, cy = (ROWS - 1 - Math.floor(i / COLS)) * CELL;
   renderer.setViewport(cx, cy, CELL, CELL);
   renderer.setScissor(cx, cy, CELL, CELL);

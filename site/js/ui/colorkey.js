@@ -10,6 +10,27 @@ import { COPY, t, fmt } from '../copy/en.js';
 import '../copy/en.later.js';
 import { COLOR_KEYS } from '../data/colorkeys.js';
 import { keyById, legendCounts } from '../data/colorkeyrules.js';
+import { drawGlyphIcon, glyphFor } from '../scene/glyphatlas.js';
+
+// The shape a class is drawn as in the sky, as a mask the row's own text colour shows through --
+// so the key follows the theme and is never a colour the dots are not (they wear their layer's).
+const iconUrls = new Map();
+function glyphMark(name) {
+  const mark = document.createElement('span');
+  mark.className = 'sr-glyphkey';
+  mark.setAttribute('aria-hidden', 'true');
+  let url = iconUrls.get(name);
+  if (url === undefined) {
+    try {
+      const c = document.createElement('canvas');
+      c.width = c.height = 48;
+      url = `url(${drawGlyphIcon(c, name).toDataURL('image/png')})`;
+    } catch { url = ''; }
+    iconUrls.set(name, url);
+  }
+  if (url) { mark.style.webkitMaskImage = url; mark.style.maskImage = url; }
+  return mark;
+}
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -55,7 +76,8 @@ export function createColorKey(ctx) {
   function refresh() {
     const key = keyById(current) || COLOR_KEYS[0];
     if (!key) return;
-    const rows = legendCounts(key, onRecords());
+    const records = onRecords();
+    const rows = legendCounts(key, records);
     while (legend.firstChild) legend.removeChild(legend.firstChild);
     // "What it is" draws each dot in its LAYER's colour (scene/glyphs.js colourOf), not its class's:
     // a rocket body on "Bright enough to see" is sky blue. A class swatch here would be a key to
@@ -65,16 +87,33 @@ export function createColorKey(ctx) {
     for (const row of rows) {
       if (row.n === 0) continue; // a bucket nothing falls in is not a legend row
       const li = el('li', 'sr-colourkey__row');
-      const sw = el('span', byClass ? 'sr-swatch sr-swatch--none' : 'sr-swatch');
-      if (!byClass) sw.style.background = row.colour;
-      sw.setAttribute('aria-hidden', 'true');
-      li.appendChild(sw);
+      if (byClass) {
+        li.appendChild(glyphMark(row.id));
+      } else {
+        const sw = el('span', 'sr-swatch');
+        sw.style.background = row.colour;
+        sw.setAttribute('aria-hidden', 'true');
+        li.appendChild(sw);
+      }
       const label = key.by === 'klass'
         ? (COPY.klass[row.id] || row.label)
         : row.id === 'unknown' ? T.unknown : row.label;
       li.appendChild(el('span', 'sr-colourkey__label', label));
       li.appendChild(el('span', 'sr-colourkey__count sr-num', fmt.int(row.n)));
       legend.appendChild(li);
+    }
+    if (byClass) {
+      // The two shapes that are not classes, counted out of the rows above them.
+      const extra = { crewed: 0, dot: 0 };
+      for (const r of records) { const g = glyphFor(r); if (g in extra) extra[g] += 1; }
+      for (const [shape, label] of [['crewed', T.crewed], ['dot', T.swarm]]) {
+        if (!extra[shape]) continue;
+        const li = el('li', 'sr-colourkey__row sr-colourkey__row--sub');
+        li.appendChild(glyphMark(shape));
+        li.appendChild(el('span', 'sr-colourkey__label', label));
+        li.appendChild(el('span', 'sr-colourkey__count sr-num', fmt.int(extra[shape])));
+        legend.appendChild(li);
+      }
     }
   }
 

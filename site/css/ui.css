@@ -4461,8 +4461,19 @@ html.sr-phone .sr-subscribe__email {
   background: transparent;
 }
 
-/* "What it is" rows are counts: the layer swatches above are that key (ui/colorkey.js). */
+/* "What it is" rows are counts with the SHAPE each class is drawn as (ui/colorkey.js): the layer
+   swatches above are the key to the colours, so the shape is in the row's own text colour. */
 .sr-colourkey__row .sr-swatch--none { visibility: hidden; }
+.sr-glyphkey {
+  flex: 0 0 auto;
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background: currentColor;
+  -webkit-mask: center / contain no-repeat;
+  mask: center / contain no-repeat;
+}
+.sr-colourkey__row--sub { color: var(--sr-text-dim); }
 .sr-colourkey__why { margin: 0 0 8px; font-size: var(--sr-fs-sm); line-height: 1.4; color: var(--sr-text-dim); }
 .sr-colourkey__why:empty { display: none; }
 

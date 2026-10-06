@@ -22,6 +22,7 @@ import { dotOpacity } from './onemark.js';
 import {
   getGlyphAtlas,
   glyphCell,
+  glyphFor,
   cellUV,
   ATLAS_GRID,
   CELL_PX,
@@ -47,6 +48,11 @@ export const GLYPH_SIZE_PX = {
   // the satellite's 8 px, and on the stellar rung 150 green marks outdrew the stars they belong to
   // -- one sat on top of Sirius from a light-year out (measured 2026-09-22).
   exoplanet: 5,
+  // Shapes that are not classes (glyphatlas.js glyphFor). A crew vehicle is the thing people look
+  // for beside a station, so it is a little larger than the satellites it is filed among; a
+  // constellation's dot is the size the satellite disc was before satellites had wings.
+  crewed: 11,
+  dot: 7,
 };
 
 const DEBRIS_SIZE = 0.6; // 60 % size
@@ -56,6 +62,8 @@ const RENDER_ORDER_GLYPH = 10;
 const PAD = 1.7; // the quad is 1.7x the glyph, leaving room for the sample halo
 const PICK_PX = 24; // the contract's forgiveness rule
 const DEBRIS_PICK_PENALTY = 1.6; // a satellite beats a speck at the same distance
+/** How much of a dot is left in the Earth's shadow, seen from space. Ours, illustrative. */
+export const SHADOW_OPACITY = 0.6;
 const PROVISIONAL_OPACITY = 0.7; // not yet in the public catalogue (spec 0026 req 15)
 
 const VERT = /* glsl */ `
@@ -133,6 +141,8 @@ uniform sampler2D uAtlas;
 uniform vec3 uOutline;
 uniform float uGrid;
 uniform float uInset;
+uniform float uSky;
+uniform float uShadeFade;
 
 varying vec2 vUv;
 varying vec3 vColour;
@@ -155,7 +165,10 @@ void main() {
   // In Earth's shadow the dot goes to a dim version of its colour: still there, still its class,
   // visibly not catching the Sun (spec 0026 req 12). The keyline is untouched so it stays readable.
   vec3 rgb = mix( uOutline, mix( vColour * 0.38, vColour, vLit ), t.r );
-  float a = t.a * vOpacity;
+  // ...and it FADES as well as dims (issue #394): the dim colour alone left a shadowed dot as
+  // solid as a sunlit one over the dark side of the globe. From the ground the vertex shader has
+  // already taken it down much further (uSky), and this is not applied twice.
+  float a = t.a * vOpacity * mix( mix( uShadeFade, 1.0, vLit ), 1.0, uSky );
 
   if ( vHalo > 0.5 ) {
     vec2 d = vUv - 0.5;
@@ -193,7 +206,8 @@ function colourOf(record, layer) {
 }
 
 function sizeOf(record, layer) {
-  const base = record.sizePx || layer.sizePx || GLYPH_SIZE_PX[record.klass] || GLYPH_SIZE_PX.satellite;
+  const shape = glyphFor(record, layer);
+  const base = record.sizePx || layer.sizePx || GLYPH_SIZE_PX[shape] || GLYPH_SIZE_PX[record.klass] || GLYPH_SIZE_PX.satellite;
   return record.klass === 'debris' ? base * DEBRIS_SIZE : base;
 }
 
@@ -234,6 +248,7 @@ export function createGlyphLayer(scene, layer = {}) {
       uInset: { value: 0.5 / CELL_PX },
       uPxScale: { value: 2 / (1.5 * 720) },
       uSky: { value: 0 },
+      uShadeFade: { value: SHADOW_OPACITY },
       uSkyUp: { value: new THREE.Vector3(0, 1, 0) },
     },
     transparent: true,
@@ -375,7 +390,7 @@ export function createGlyphLayer(scene, layer = {}) {
       recSize[i] = sizeOf(r, layer);
       // A provisional object (spec 0026 req 15) is drawn at 70%: there, but visibly not yet a catalogued thing.
       recOpacity[i] = r.klass === 'debris' ? DEBRIS_OPACITY : r.meta && r.meta.provisional ? PROVISIONAL_OPACITY : 1;
-      recCell[i] = glyphCell(r.klass || layer.klass || layer.glyph) + (r.cls === 'sample' ? HALO_BIAS : 0);
+      recCell[i] = glyphCell(glyphFor(r, layer)) + (r.cls === 'sample' ? HALO_BIAS : 0);
     }
     live = [];
     if (geometry) geometry.instanceCount = 0;

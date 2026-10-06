@@ -68,7 +68,11 @@ export const CELL_OF = {
   exoplanet: 11,
   dso: 12,
   exotic: 13,
-  storm: 14, // the fifteenth cell; 15 is the last free one
+  storm: 14, // the fifteenth cell
+  // The sixteenth and last: a spacecraft with people in it (glyphFor below). Not a class -- a
+  // Soyuz is a satellite in the catalogue -- so it has no colour of its own and no row in
+  // GLYPH_CLASSES' consumers; it is a SHAPE, in whatever colour its layer draws.
+  crewed: 15,
 };
 
 export const GLYPH_CLASSES = Object.keys(CELL_OF);
@@ -77,6 +81,9 @@ export const GLYPH_CLASSES = Object.keys(CELL_OF);
 // here, not a tenth shape, because a train of satellites is still a satellite.
 export const GLYPH_ALIASES = {
   train: 'satellite',
+  // A member of a constellation thousands strong stays a plain dot (glyphFor): the `world` cell
+  // is that disc, and the atlas has no seventeenth cell to paint another.
+  dot: 'world',
   // The atlas is a 4x4 grid and HALO_BIAS = 16 consumes the upper half, so there is no eleventh
   // cell to paint. That is what this table is for. `probe` violet reads as "a made thing, out
   // there", is distinct from satellites, and does not carry debris grey's implication of junk.
@@ -91,7 +98,26 @@ export const GLYPH_ALIASES = {
   moon: 'world',
 };
 
-/** Cell index for a class name or a layer's glyph name; anything unknown is a satellite disc. */
+// WHICH SHAPE A RECORD IS DRAWN AS (issue #394). The class decides, with two exceptions that the
+// catalogue's classes cannot make: a crew vehicle is told from the cargo ships and the satellites
+// it is filed among, because "are there people in that one" is the first question anybody asks of
+// a dot near a station; and the mega-constellations keep the plain dot, because nine thousand
+// winged pictograms are a texture, not information. Names, because the catalogue has no field for
+// either. Debris and spent stages never match: they are their own classes.
+const CREWED = /\b(soyuz|crew dragon|shenzhou|starliner|mengzhou)\b/i;
+const SWARM = /^(starlink|oneweb|kuiper|qianfan|guowang|hulianwang)\b/i;
+/** @returns {string} a key of CELL_OF or GLYPH_ALIASES */
+export function glyphFor(record, layer) {
+  const klass = (record && record.klass) || (layer && (layer.klass || layer.glyph));
+  const name = record && record.name;
+  if (name && (klass === 'station' || klass === 'satellite')) {
+    if (CREWED.test(name)) return 'crewed';
+    if (klass === 'satellite' && SWARM.test(name)) return 'dot';
+  }
+  return klass;
+}
+
+/** Cell index for a class name or a layer's glyph name; anything unknown is a satellite. */
 export function glyphCell(klass) {
   const key = GLYPH_ALIASES[klass] || klass;
   const c = CELL_OF[key];
@@ -234,33 +260,48 @@ const SHAPES = {
     paint(ctx, annulus(cx, cy, R * 0.9, R * 0.45), R);
   },
   // a plain disc
+  // A bus between two wings: wider than it is tall, which is the whole of what survives at 8 px
+  // and is enough to tell a working satellite from a shard, a stage or a plain dot.
   satellite(ctx, cx, cy, R) {
-    paint(ctx, disc(cx, cy, R * 0.78), R);
+    const wings = new Path2D();
+    wings.rect(cx - R, cy - R * 0.19, R * 2, R * 0.38);
+    paint(ctx, wings, R);
+    paint(ctx, roundedSquare(cx, cy, R * 0.47, R * 0.14), R);
+  },
+  // A capsule, blunt end down: the one silhouette with a flat base and a round top.
+  crewed(ctx, cx, cy, R) {
+    const p = new Path2D();
+    p.moveTo(cx - R * 0.9, cy + R * 0.62);
+    p.lineTo(cx + R * 0.9, cy + R * 0.62);
+    p.lineTo(cx + R * 0.46, cy - R * 0.5);
+    p.quadraticCurveTo(cx, cy - R * 1.08, cx - R * 0.46, cy - R * 0.5);
+    p.closePath();
+    paint(ctx, p, R);
   },
   // jagged triangle: three spikes, shallow waists
+  // A shard: five corners, no two alike, seeded so it is the same chip on every machine.
   debris(ctx, cx, cy, R) {
-    const pts = [];
-    for (let i = 0; i < 6; i++) {
-      const a = -Math.PI / 2 + (i * Math.PI) / 3;
-      const r = i % 2 === 0 ? R * (0.86 + 0.14 * hash01(i * 7 + 1)) : R * 0.42;
-      pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]);
-    }
+    const pts = [[-0.85, 0.3], [-0.15, -0.82], [0.3, -0.12], [0.88, 0.02], [0.18, 0.8]].map(
+      ([x, y], i) => [cx + x * R * (0.94 + 0.06 * hash01(i * 7 + 1)), cy + y * R],
+    );
     paint(ctx, polygon(pts), R);
   },
-  // disc with a trailing dash
+  // A spent stage: a tube lying at an angle with an engine bell on its low end. The slant is what
+  // tells it from a satellite's level wings when both are 9 px across.
   rocket(ctx, cx, cy, R) {
-    const p = new Path2D();
-    const y = cy;
-    const h = R * 0.17;
-    p.moveTo(cx - R * 0.95, y - h);
-    p.lineTo(cx - R * 0.4, y - h);
-    p.lineTo(cx - R * 0.4, y + h);
-    p.lineTo(cx - R * 0.95, y + h);
-    p.closePath();
-    paint(ctx, p, R * 0.8);
-    paint(ctx, disc(cx + R * 0.2, cy, R * 0.62), R);
+    ctx.translate(cx, cy);
+    ctx.rotate(-Math.PI / 4);
+    const h = R * 0.38;
+    const body = new Path2D();
+    body.moveTo(-R * 0.42, -h);
+    body.lineTo(R * 0.52, -h);
+    body.quadraticCurveTo(R * 0.9, 0, R * 0.52, h);
+    body.lineTo(-R * 0.42, h);
+    body.closePath();
+    const bell = polygon([[-R * 0.42, -R * 0.16], [-R * 0.9, -R * 0.44], [-R * 0.9, R * 0.44], [-R * 0.42, R * 0.16]]);
+    paint(ctx, bell, R);
+    paint(ctx, body, R);
   },
-  // disc with a four-point sparkle
   probe(ctx, cx, cy, R) {
     const w = R * 0.2;
     const p = polygon([
@@ -354,6 +395,35 @@ export function drawGlyphAtlas(canvas) {
     SHAPES[name](ctx, cx, cy, R);
     ctx.restore();
   }
+  return canvas;
+}
+
+/**
+ * One shape alone, in one ink, for a legend: the same drawing the atlas holds, so the key can
+ * never show a shape the sky does not.
+ * @param {HTMLCanvasElement} canvas square
+ * @param {string} name a key of CELL_OF or GLYPH_ALIASES
+ * @param {string} [colour]
+ */
+export function drawGlyphIcon(canvas, name, colour = '#000') {
+  const s = canvas.width;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, s, s);
+  const shape = SHAPES[GLYPH_ALIASES[name] || name] || SHAPES.world; // an unknown bucket is a plain dot
+  ctx.save();
+  shape(ctx, s / 2, s / 2, s * 0.4);
+  ctx.restore();
+  // Keep the fill and drop the keyline (red is 0 on it): inked in as well, a station's ring and
+  // square closed up into a disc, and four classes in the key were the same blob.
+  const img = ctx.getImageData(0, 0, s, s);
+  if (img && img.data) {
+    for (let i = 0; i < img.data.length; i += 4) img.data[i + 3] = (img.data[i + 3] * img.data[i]) / 255;
+    ctx.putImageData(img, 0, 0);
+  }
+  ctx.globalCompositeOperation = 'source-in';
+  ctx.fillStyle = colour;
+  ctx.fillRect(0, 0, s, s);
+  ctx.globalCompositeOperation = 'source-over';
   return canvas;
 }
 

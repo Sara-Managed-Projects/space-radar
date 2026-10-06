@@ -160,8 +160,8 @@ export function setPlanetShine(worldId, centre, radius) {
  * @returns {number} 1 in full sunlight, 0 in the umbra
  */
 export const SUN_ANGULAR_RADIUS = 0.00465;
-export const NIGHT_FLOOR = 0.03;
-export const NIGHT_GLOW = 0.12;
+export const NIGHT_FLOOR = 0.012;
+export const NIGHT_GLOW = 0.035;
 export function worldShadowLit(p, centre, sunDir, radius) {
   if (!(radius > 0)) return 1;
   const x = p.x - centre.x, y = p.y - centre.y, z = p.z - centre.z;
