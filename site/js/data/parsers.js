@@ -643,7 +643,7 @@ export function parseComets(data) {
   return out;
 }
 
-function splitCometName(full, numberField, orbitType) {
+export function splitCometName(full, numberField, orbitType) {
   const s = String(full).trim();
   // "C/1942 EA (Vaisala)" -> designation "C/1942 EA", name "Vaisala"
   const paren = /^(.*?)\s*\(([^()]*)\)\s*$/.exec(s);

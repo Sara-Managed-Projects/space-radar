@@ -185,7 +185,12 @@ function displayName(record) {
   name = launchLabel(name);
   if (!name) return COPY.card.unknownName;
   if (name.length <= MAX_NAME) return name;
-  return name.slice(0, MAX_NAME - 1).trimEnd() + COPY.punctuation.ellipsis;
+  // Too long for the first sentence: cut BETWEEN words, never inside one (public #378: a mission
+  // that ends "Transpor…" is a name nobody can look up), and never leave a joiner dangling.
+  const head = name.slice(0, MAX_NAME - 1);
+  const gap = /\s/.test(name[MAX_NAME - 1]) ? head.length : head.lastIndexOf(' ');
+  const whole = gap > MAX_NAME / 2 ? head.slice(0, gap) : head;
+  return whole.replace(/[\s·,;:&|(/-]+$/, '') + COPY.punctuation.ellipsis;
 }
 
 function klassOf(record) {

@@ -192,3 +192,41 @@ export function laterLink(link, tripRunning) {
   for (const key of ['trip', 'stop', 'at', 'event', 'stage']) delete rest[key];
   return rest;
 }
+
+/**
+ * A link that arrives in a tab that is ALREADY RUNNING: Back, Forward, or an address pasted over
+ * this one (public #331). The app's own writes are replaceState and fire no hashchange, so a
+ * hashchange is always somebody else's link, and the URL is the state: the whole view it names is
+ * applied, not only the selection (which is all main.js did before: Back from a dated view of the
+ * Moon to a live view of the ISS selected the ISS and left the clock in 2027 on the Moon's map).
+ *
+ * Returns what to do, for main.js to carry out, or null when the link names no view at all (a bare
+ * `#sources`, a moment alone, a format this reader does not know): then nothing is touched.
+ *   clock  { goTo: ms, rate } | { live: true } | null    `t` absent means now (spec 0032 req 5)
+ *   stage  the stage id the link names, or null
+ *   trip   { start: id, stop } | { jump: stop } | { stop: true } | null
+ *   event  the mission event, or null
+ *   at     { open: id } | { none: true } | null
+ * A trip owns its clock and its selection, so a link into a trip sets the clock only when it names
+ * an instant, and never `at`. Pure.
+ *
+ * @param {object} link  read()
+ * @param {{at: string|null, trip: string|null, live: boolean}} now  what the app is showing
+ */
+export function linkChange(link, now = {}) {
+  if (!link || link.unknownVersion) return null;
+  if (!['trip', 'stop', 'at', 'event', 't', 'rate', 'stage'].some((k) => link[k] !== undefined)) return null;
+  const out = { clock: null, stage: link.stage || null, trip: null, event: null, at: null };
+  const ms = link.t && link.t !== 'now' ? Date.parse(link.t) : NaN;
+  const rate = Number(link.rate) > 0 ? Number(link.rate) : 1;
+  if (Number.isFinite(ms)) out.clock = { goTo: ms, rate };
+  if (link.trip) {
+    out.trip = now.trip === link.trip ? { jump: link.stop || '1' } : { start: link.trip, stop: link.stop || null };
+    return out;
+  }
+  if (!out.clock && now.live === false) out.clock = { live: true };
+  if (now.trip) out.trip = { stop: true };
+  if (link.event) { out.event = link.event; return out; }
+  if (link.at) { if (link.at !== now.at) out.at = { open: link.at }; } else if (now.at) out.at = { none: true };
+  return out;
+}
