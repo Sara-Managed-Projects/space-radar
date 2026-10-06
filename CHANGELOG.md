@@ -20,7 +20,14 @@ tagged, and their dates are the day the last change in each landed.
   to the app so it starts with no internet.
 - **Releases**: this changelog, a release workflow that publishes a zip that runs offline, and a
   monthly cadence.
+- **Works with no network after one visit**: a service worker keeps the app, and the maps, models
+  and sounds you have used; the status line says "Offline: showing saved copies from …" with the
+  age of the oldest copy. Switch it off with `?sw=0`. Push notifications are not part of this.
+- **Installable**: a web manifest and home-screen icons.
+- **Runs from any folder**: a copy served at `http://server/space-radar/` now finds its saved data
+  (every path is relative to the page).
 - `scripts/test.sh` runs everything CI runs with one command.
+- `scripts/test.sh --quick` runs only the checks that touch the files you changed.
 - `tests/test_credits.py`: every data source and model in the registries must be credited.
 
 ### Changed

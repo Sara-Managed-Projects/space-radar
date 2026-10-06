@@ -222,8 +222,9 @@ self.addEventListener('message', (event) => {
 /**
  * Keep what the page already has. The browser's own cache answers most of these without the
  * network (the textures and models are served with a month's lifetime), so this costs a first
- * visit close to nothing. The saved data copies are left out: data/sources.js already keeps each
- * feed it read, and a second read of a 7 MB catalogue is not close to nothing.
+ * visit close to nothing. The saved data copies are asked for with `only-if-cached`: whatever the
+ * browser still holds is kept, and nothing is downloaded twice (a second read of a 7 MB catalogue
+ * would not be close to nothing; data/sources.js keeps its own copy of most feeds as well).
  */
 async function warm(urls) {
   const base = scope();
@@ -231,7 +232,7 @@ async function warm(urls) {
   const seen = new Set();
   for (const href of urls.slice(0, 600)) {
     const route = routeFor({ url: String(href) }, base);
-    if (route.kind !== 'asset' && !(route.kind === 'shell' && !stamped(BUILD))) continue;
+    if (route.kind === 'pass' || (route.kind === 'shell' && stamped(BUILD))) continue;
     if (seen.has(route.key)) continue;
     seen.add(route.key);
     queue.push(route);
@@ -239,11 +240,14 @@ async function warm(urls) {
   const worker = async () => {
     while (queue.length) {
       const route = queue.shift();
-      const cacheName = route.kind === 'asset' ? ASSET_CACHE : SHELL_CACHE;
+      const cacheName = route.kind === 'asset' ? ASSET_CACHE : route.kind === 'data' ? DATA_CACHE : SHELL_CACHE;
+      const how = route.kind === 'data'
+        ? { credentials: 'same-origin', mode: 'same-origin', cache: 'only-if-cached' }
+        : { credentials: 'same-origin' };
       try {
         const cache = await caches.open(cacheName);
         if (await cache.match(route.key)) continue;
-        await put(cacheName, route.key, await fetch(route.key, { credentials: 'same-origin' }));
+        await put(cacheName, route.key, await fetch(route.key, how));
       } catch {
         /* one file that could not be kept does not stop the rest */
       }

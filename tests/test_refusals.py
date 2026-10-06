@@ -32,31 +32,43 @@ def link(src, dst):
         shutil.copy2(src, dst)
 
 
+def whole_dir(src: Path, dst: Path) -> None:
+    """A directory nothing in a case ever changes, given as ONE symbolic link (a copy where the
+    system has none): 280 files of maps, pictures and sound were 280 links to make and 280 to
+    remove per case, and that was most of what a case cost once the parse was shared."""
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        os.symlink(src, dst, target_is_directory=True)
+    except (OSError, NotImplementedError):
+        shutil.copytree(src, dst, copy_function=link)
+
+
 def textures_into(work: Path) -> None:
     """site/textures/ with its bytes: registry/textures.yaml states each file's size and pixels and
-    the validator reads both from the file (2026-09-28). Hard links where the filesystem allows,
-    because this runs once per case and the tree is 10 MB."""
-    shutil.copytree(ROOT / "site" / "textures", work / "site" / "textures", copy_function=link)
+    the validator reads both from the file (2026-09-28)."""
+    whole_dir(ROOT / "site" / "textures", work / "site" / "textures")
 
 
 def media_into(work: Path) -> None:
-    """site/images/ and site/audio/, hard-linked like the textures (2026-10-05: copying 15 MB of
-    sound per case was most of what a case cost after the parse). registry/exotics.yaml points at
-    the photographs and registry/audio.yaml at the files it names (spec 0035), and the validator
-    checks they are really in the tree, so the tree needs them or every case fails for a reason
-    that has nothing to do with the case under test.
+    """site/images/ and site/audio/. registry/exotics.yaml points at the photographs and
+    registry/audio.yaml at the files it names (spec 0035), and the validator checks they are really
+    in the tree, so the tree needs them or every case fails for a reason that has nothing to do
+    with the case under test.
 
-    EVERY tree a case is given is linked this way, not only these two. So NO CASE MAY WRITE INTO A
-    FILE IT WAS GIVEN: a write through a hard link is a write to the repository. Cases change a
-    file only through mutate() below, which replaces it."""
-    shutil.copytree(ROOT / "site" / "images", work / "site" / "images", copy_function=link)
+    EVERY tree a case is given is a link of one kind or the other (see link() and whole_dir()). So
+    NO CASE MAY WRITE INTO A FILE IT WAS GIVEN: a write through a link is a write to the
+    repository. Cases change a file only through mutate() below, which replaces it, and only under
+    registry/, site/js/ui/ and the SEO pages, none of which is a whole_dir()."""
+    whole_dir(ROOT / "site" / "images", work / "site" / "images")
     if (ROOT / "site" / "audio").is_dir():
-        shutil.copytree(ROOT / "site" / "audio", work / "site" / "audio", copy_function=link)
+        whole_dir(ROOT / "site" / "audio", work / "site" / "audio")
 
 
 def mutate(path: Path, text: str) -> None:
     """Replace a file in a work tree with new text, as a NEW file: unlink first, so that even a
     path that turned out to be a hard link can never write through to the repository."""
+    if any(p.is_symlink() for p in path.parents):
+        raise RuntimeError(f"{path} is inside a linked directory: a case may not change it")
     path.unlink()
     path.write_text(text, encoding="utf-8")
 

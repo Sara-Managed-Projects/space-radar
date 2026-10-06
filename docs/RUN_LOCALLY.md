@@ -44,10 +44,9 @@ Open a terminal **in the folder you unzipped or cloned** (the one that contains 
 Then open **<http://localhost:8177>** in the browser. Leave the terminal window open while you use
 it; press `Ctrl` + `C` in that window to stop.
 
-Any other static file server works just as well (`npx serve site`, nginx, Apache, Caddy, IIS). The
-only rule: **the `site` folder must be the root of the address**, as in `http://localhost:8177/`,
-not `http://server/space-radar/`. The saved data copy is read from `/data/v1/`, and in a subfolder
-the app would not find it. (Everything else would still work.)
+Any other static file server works just as well (`npx serve site`, nginx, Apache, Caddy, IIS), and
+the folder does not have to be the root of the address: `http://server/space-radar/` works exactly
+like `http://localhost:8177/`. Every path the app asks for is beside the page.
 
 Double-clicking `index.html` does **not** work: browsers refuse to load a modern page's scripts
 from `file://`. It has to come through a server, even a local one.
@@ -73,6 +72,37 @@ python3 scripts/save_offline_data.py        # Windows: py scripts\save_offline_d
 It downloads about 24 MB from spaceradar.ai into `site/data/v1/` and contacts nobody else. Then
 disconnect, start the server as in step 2, and it works. The script is in the release zip too, so a
 copy that has grown old can be refreshed the same way.
+
+### After one visit, it starts without the server too
+
+A release zip (and spaceradar.ai itself) carries a **service worker**: a small program the browser
+keeps, which holds on to the page, its code, and the maps, models and sounds you have used. Open
+the app once and it will start again later with the server switched off, the cable out, or on a
+hill with no signal, and its status line will say `Offline: showing saved copies from 13 days ago`
+with the age of the oldest copy on screen.
+
+- It keeps **what that browser has used**. The whole app is kept at once (about 4.5 MB); a trip's
+  pictures, a planet's map and a trip's narration are kept the first time they are shown or
+  played. To have a trip ready for a room with no network, play it through once on that computer.
+- Browsers only allow this on `https://` addresses and on `localhost`. On pupils' machines that
+  open `http://<teacher's computer>:8177` there is no service worker, and they need the teacher's
+  server running. That is the browser's rule, not ours.
+- A clone from git is not stamped with a build, so its worker keeps only what was loaded and always
+  asks the server first. Run `python3 scripts/stamp_sw.py` once to make a clone behave like a
+  release (it rewrites `site/sw.js`; `git checkout site/sw.js` undoes it).
+- **To switch it off**, open the app once with `?sw=0` at the end of the address
+  (`http://localhost:8177/?sw=0`): the worker is removed and everything it kept is deleted.
+- After you replace the folder with a newer release, the app says "A newer version is ready" with
+  a Reload link; it also updates by itself the next time every tab of it has been closed.
+
+Proved on 2026-10-06 in headless Chrome with every outside host unresolvable: a stamped copy with
+a saved data copy was served at `http://localhost:8391/classroom/space-radar/` (a subfolder),
+opened once, and the server was then stopped. On the second visit the app started from the worker
+(172 app files, 18 maps and data files kept), the *Moon landings* trip flew its first three stops,
+the Tonight tab showed the next visible pass, and the status line read "Offline: showing saved
+copies from 13 days ago". Not kept by that first visit: narration and music nobody had played, and
+maps of worlds nobody had visited. `tests/probes/offline-probe.js` is the probe, and its header
+says how to run it again.
 
 ### What works offline, and what does not
 
@@ -137,7 +167,8 @@ welcome). What exists today:
 | It is slow or jerky | Close other tabs; make the window smaller; use Chrome or Edge with hardware acceleration switched on. The app lowers its own detail when frames are slow. |
 | "Use my location" does nothing on pupils' machines | Browsers share a location only over `https` or on `localhost`. Pick the city by hand in **Tonight**; the app otherwise guesses from the time zone and says it is a guess. |
 | No sound | Sound is off until you turn it on, in a trip's toolbar. The first click on the page is needed by the browser before any audio plays. |
-| After updating the folder, the old version still shows | Reload with `Ctrl` + `Shift` + `R` (`Cmd` + `Shift` + `R` on a Mac). |
+| After updating the folder, the old version still shows | Press Reload on the "A newer version is ready" line, or close every tab of the app and open it again. If it still shows the old one, open it once with `?sw=0` at the end of the address. |
+| The status line says "Offline" although the network is fine | The app could not reach its own server (the one started in step 2). Start it again; the line clears on the next read. |
 
 Something else? [Open an issue](https://github.com/Sara-Managed-Projects/space-radar/issues/new/choose)
 and say what computer and browser you have. Reports from real classrooms are the most useful ones
