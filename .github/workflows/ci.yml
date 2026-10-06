@@ -555,3 +555,68 @@ jobs:
         run: node tests/test_manifest.mjs
       - name: the committed sw.js is unstamped
         run: python3 scripts/stamp_sw.py --check
+
+  # THE TESTS NO JOB RAN (2026-10-07, round three package 8). Fourteen test files, tests/test_minify.py
+  # and tests/test_notify.py were in the repository and in the local gate and in no workflow: they
+  # were green on a laptop and unknown here. This job runs them, with the guard rails that landed the
+  # same day, and its last step refuses a test file that no step of this workflow names -- so the
+  # list cannot fall behind again. Node and Python both: two of these call a script of the other.
+  rails:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --disable-pip-version-check pyyaml
+      - name: "what must stay out of the first visit stays out, and its stand-ins hold the door (internal #405)"
+        run: node tests/test_boot_diet.mjs
+      - name: "the constellation figures as strokes, with the stars at their corners"
+        run: node tests/test_figures.mjs
+      - name: "the nebulae's photographs in the sky from the ground"
+        run: node tests/test_groundpictures.mjs
+      - name: "the HEALPix tile addressing a HiPS sky is read with"
+        run: node tests/test_hips.mjs
+      - name: "Phobos and Deimos in their measured shapes, and every moon's map"
+        run: node tests/test_moon_shapes.mjs
+      - name: "the sky in other light: the registry, the baked skies, the chooser, none of it on a first visit"
+        run: node tests/test_otherlight.mjs
+      - name: "Earth data overlays: which day's picture, the address, the sentence under it"
+        run: node tests/test_overlays.mjs
+      - name: "the five trips of 2026-10-06, flown by the real machine"
+        run: node tests/test_planetarium_trips.mjs
+      - name: "the eight shows of 2026-10-06 and the stop grammar they brought"
+        run: node tests/test_remaining_trips.mjs
+      - name: "The constellations and The living Earth, flown by the real machine"
+        run: node tests/test_sky_trips.mjs
+      - name: "the sky from the ground, round two: other peoples' figures, the borders, the pictures"
+        run: node tests/test_skyculture.mjs
+      - name: "the compact star files of the sky from the ground"
+        run: node tests/test_skystars.mjs
+      - name: "a star as a disc of its own size"
+        run: node tests/test_stardisc.mjs
+      - name: "the Sun close up: limb darkening, today's sunspot groups"
+        run: node tests/test_sun.mjs
+      - name: "Use my location is rounded to 0.1 degree before anything keeps, shows or uses it (spec 0051 req 3, internal #137)"
+        run: node tests/test_place_privacy.mjs
+      - name: "?render=1 becomes ready on the sources and on the stripped tree, in the same frames; a link with no trip is refused at once (internal #423)"
+        run: node tests/test_render_ready.mjs
+      - name: "the UI guide: spacing grid, loaded weights, numbers in the copy, one primary, no dim grey inside a wash, no stale counts (internal #375, #198)"
+        run: node tests/test_guide_rails.mjs
+      - name: "the trips walk, the node half: every stop resolves, has its narration and a picture (spec 0044 task 3, internal #123)"
+        run: node tests/test_trips_walk.mjs
+      - name: "Back and Forward over shared views, a tracked object that loses its position, old comet links, the launch card's mission (public #331, #348, #367, #378)"
+        run: node tests/test_regressions.mjs
+      - name: "no spacecraft falls back to a placeholder: every model is on disc, worn, and reached by its own route (public #472)"
+        run: node tests/test_real_models.mjs
+      - name: "the release zip builds, unpacks and holds what it promises (public #471)"
+        run: python3 tests/test_release_zip.py
+      - name: "the stripped tree: the scanner on its hard cases, every module through it"
+        run: python3 tests/test_minify.py
+      - name: "the notifier: digests, showers, subscriptions and tokens"
+        run: python3 tests/test_notify.py
+      - name: "every test file in tests/ is run by this workflow"
+        run: node tests/test_ci_runs_every_test.mjs
