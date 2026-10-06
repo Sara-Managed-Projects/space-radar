@@ -3803,7 +3803,8 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 
 .sr-tripcard.is-off .sr-tripcard__pic { filter: grayscale(1); opacity: 0.4; }
 
-.sr-tripcard.is-off .sr-tripcard__title { color: var(--sr-text-dim); }
+/* On the wash an off card is painted with, the dim grey is 3.76:1 over a cloud: the soft one. */
+.sr-tripcard.is-off .sr-tripcard__title { color: var(--sr-text-soft); }
 
 @media (prefers-reduced-motion: reduce) {
   .sr-tripcard__pic { transition: opacity 120ms linear; }

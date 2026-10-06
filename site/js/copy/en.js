@@ -548,6 +548,9 @@ export const COPY = {
   app: {
     name: 'Space Radar',
     tagline: 'Everything in motion around Earth, where it really is, right now.',
+    // The canvas's spoken name while something is selected (public #315): one sentence, changed
+    // on selection and never per frame. With nothing selected it is the sentence index.html wrote.
+    sceneSelected: 'A map of space drawn at real positions, with {name} selected: its card, in the panel beside the map, says what it is.',
   },
 
 
@@ -756,7 +759,7 @@ export const COPY = {
       // worst error measured there over 2000 to 2050, at instants the fit never saw.
       phobos: 'position: Mars from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 6 km over 2000 to 2050; radius from JPL’s satellite physical parameters, brightness from NASA’s Mars fact sheet, what it is and its colour from NASA Science, all read 2026-09-22',
       deimos: 'position: Mars from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 120 km over 2000 to 2050; radius from JPL’s satellite physical parameters, brightness from NASA’s Mars fact sheet, what it is and its colour from NASA Science, all read 2026-09-22',
-      enceladus: 'position: Saturn from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 1 480 km over 2000 to 2050; radius from JPL’s satellite physical parameters, what it is and its colour from NASA Science, how to see it from Wikipedia, all read 2026-09-22',
+      enceladus: 'position: Saturn from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 1 480 km over 2000 to 2050; radius from JPL’s satellite physical parameters, what it is and its colour from NASA Science, how to see it from Wikipedia, all read 2026-09-22',
       titan: 'position: Saturn from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 840 km over 2000 to 2050; radius from JPL’s satellite physical parameters, what it is from NASA Science, the Huygens landing, its colour and how to see it from Wikipedia, all read 2026-09-22',
       triton: 'position: Neptune from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 10 km over 2000 to 2050; radius from JPL’s satellite physical parameters, what it is from NASA Science, its colour and brightness from Wikipedia, all read 2026-09-22',
       charon: 'position: Pluto from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 1 km over 2000 to 2050; radius from JPL’s satellite physical parameters, brightness from NASA’s Pluto fact sheet, what it is and its colour from NASA Science, all read 2026-09-22',
@@ -766,12 +769,12 @@ export const COPY = {
       tethys: 'position: Saturn from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 120 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Saturnian satellite fact sheet, what it is from NASA Science, its colour and brightness from Wikipedia, all read 2026-09-22',
       dione: 'position: Saturn from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 240 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Saturnian satellite fact sheet, its colour from NASA Science, what it is and its brightness from Wikipedia, all read 2026-09-22',
       rhea: 'position: Saturn from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 200 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Saturnian satellite fact sheet, what it is and its colour from NASA Science, brightness from Wikipedia, all read 2026-09-22',
-      iapetus: 'position: Saturn from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 6 800 km over 2000 to 2050, which is 0.19 per cent of its orbit; radius from JPL’s satellite physical parameters, both albedos from NASA’s Saturnian satellite fact sheet, what it is and its colour from NASA Science, brightness from Wikipedia, all read 2026-09-22',
+      iapetus: 'position: Saturn from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 6 800 km over 2000 to 2050, which is 0.19 per cent of its orbit; radius from JPL’s satellite physical parameters, both albedos from NASA’s Saturnian satellite fact sheet, what it is and its colour from NASA Science, brightness from Wikipedia, all read 2026-09-22',
       miranda: 'position: Uranus from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 120 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Uranian satellite fact sheet, what it is from NASA Science, its colour and brightness from Wikipedia, all read 2026-09-22',
       ariel: 'position: Uranus from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 120 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Uranian satellite fact sheet, what it is and its colour from NASA Science, brightness from Wikipedia, all read 2026-09-22',
       umbriel: 'position: Uranus from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 410 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Uranian satellite fact sheet, what it is from NASA Science, its colour and brightness from Wikipedia, all read 2026-09-22',
-      titania: 'position: Uranus from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 1 000 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Uranian satellite fact sheet, what it is and its colour from NASA Science, brightness from Wikipedia, all read 2026-09-22',
-      oberon: 'position: Uranus from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 1 230 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Uranian satellite fact sheet, what it is from NASA Science, its colour and brightness from Wikipedia, all read 2026-09-22',
+      titania: 'position: Uranus from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 1 000 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Uranian satellite fact sheet, what it is and its colour from NASA Science, brightness from Wikipedia, all read 2026-09-22',
+      oberon: 'position: Uranus from Astronomy Engine (Don Cross, MIT licence), plus an orbit fitted to JPL Horizons and checked against it to within 1 230 km over 2000 to 2050; radius from JPL’s satellite physical parameters, albedo from NASA’s Uranian satellite fact sheet, what it is from NASA Science, its colour and brightness from Wikipedia, all read 2026-09-22',
     },
   },
 
@@ -878,6 +881,8 @@ export const COPY = {
     emailNote: 'Email takes no picture: Share… or download it.',
     networksLabel: 'Post to',
     networkTitle: 'Open {network} with this post, in a new tab',
+    // The link's spoken name: "X" alone is one letter to a screen reader (internal #375).
+    networkLabel: 'Post to {network}',
     networks: { x: 'X', facebook: 'Facebook', linkedin: 'LinkedIn', whatsapp: 'WhatsApp', telegram: 'Telegram', reddit: 'Reddit' },
     // The email's subject when something is selected; with nothing, the app's name alone.
     subject: '{name}, on Space Radar',
@@ -1878,7 +1883,7 @@ export const COPY = {
     // 16.3, mean 15.1 (Wikipedia's infobox) -- 8.6 magnitudes past the 6.5 this file calls the eye's
     // limit, which is 10^(0.4 x 8.6) = 2 750 times fainter.
     worldSee: {
-      pluto: 'Not by eye, and not with binoculars: Pluto is nearly 3 000 times fainter than the faintest star you can see, so it takes a telescope.',
+      pluto: 'Not by eye, and not with binoculars: Pluto is nearly 3 000 times fainter than the faintest star you can see, so it takes a telescope.',
       io: 'Common binoculars show it as a point of light beside Jupiter; by eye it is lost in Jupiter’s glare.',
       europa: 'Common binoculars show it as a point of light beside Jupiter; by eye it is lost in Jupiter’s glare.',
       ganymede: 'Common binoculars show it as a point of light beside Jupiter; by eye it is lost in Jupiter’s glare.',
@@ -1892,7 +1897,7 @@ export const COPY = {
       titan: 'Not by eye: Titan is magnitude 8.2 at its brightest, so it takes a small telescope or strong binoculars, and Saturn’s glare beside it makes even that hard.',
       enceladus: 'Not by eye: Enceladus is magnitude 11.7, and so close to bright Saturn and its rings that it is hard to see even through a small telescope.',
       triton: 'Not by eye or binoculars: Triton is magnitude 13.5, about 600 times fainter than the faintest star you can see, so it takes a telescope.',
-      charon: 'Barely: Charon is magnitude 16.8, 13 000 times fainter than the faintest star you can see, and so close to Pluto that amateurs split the pair in 2008 by photographing them through a 14-inch telescope.',
+      charon: 'Barely: Charon is magnitude 16.8, 13 000 times fainter than the faintest star you can see, and so close to Pluto that amateurs split the pair in 2008 by photographing them through a 14-inch telescope.',
       phobos: 'Not by eye: Phobos is magnitude 11.3 at its best and hugs Mars, whose glare drowns it; it was found in 1877 with a 26-inch telescope.',
       deimos: 'Not by eye: Deimos is magnitude 12.4 at its best and close to Mars, whose glare drowns it; it was found in 1877 with a 26-inch telescope.',
       neptune: 'Not by eye: Neptune is magnitude 7.7 to 7.9, too faint to see without help. Strong binoculars or a telescope show it as a small blue disc.',
@@ -2206,7 +2211,7 @@ export const GLOSSARY = {
   'low Earth orbit':
     'The busy shell from about 200 to 2000 km up. The station, most satellites and most of the debris are here.',
   geostationary:
-    'An orbit 35 786 km up where one lap takes exactly one day, so the satellite seems to hang over one spot.',
+    'An orbit 35 786 km up where one lap takes exactly one day, so the satellite seems to hang over one spot.',
   'polar orbit':
     'An orbit over the poles. The Earth turns underneath, so the satellite eventually sees every part of it.',
   elements:
@@ -2220,7 +2225,7 @@ export const GLOSSARY = {
     'How tilted an orbit is compared with the equator. Ninety degrees goes over the poles.',
   propagated: 'Worked forward from an older measurement. Not a fresh observation, and it drifts.',
   'lunar distance':
-    'The distance from Earth to the Moon, about 384 000 km. A handy ruler for asteroid passes.',
+    'The distance from Earth to the Moon, about 384 000 km. A handy ruler for asteroid passes.',
   'astronomical unit': 'The distance from Earth to the Sun, about 150 million km.',
   'light-time':
     'How long light takes to cross a distance. It is also how long a radio message takes.',

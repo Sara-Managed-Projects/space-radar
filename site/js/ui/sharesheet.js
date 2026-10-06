@@ -457,6 +457,7 @@ export function createShareSheet(ctx) {
     a.rel = 'noopener noreferrer';
     a.referrerPolicy = 'no-referrer';
     a.title = t(S.networkTitle, { network: S.networks[n] });
+    a.setAttribute('aria-label', t(S.networkLabel, { network: S.networks[n] }));
     a.dataset.network = n;
     netLinks[n] = a;
     nets.appendChild(a);

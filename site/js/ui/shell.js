@@ -386,23 +386,34 @@ export function createShell(ctx, opts = {}) {
     else announce(sheet ? sheet.detent() : null);
   }
 
+  // FOCUS IS NEVER LOST WHEN A VIEW CHANGES (public #315). A view that goes takes the focus inside it
+  // to <body>, and a keyboard visitor starts again from the top of the page. So: was the focus in
+  // the sidebar before the change? Then after it, it lands in the view now showing (landFocus,
+  // which leaves a focus that survived alone). A focus that was NOT in the sidebar -- on the map,
+  // in the time pill -- is never taken: a click on a satellite must not hand Space to a Back button.
+  const heldFocus = () => side.contains(document.activeElement);
+
   function show(view) {
-    if (view === 'home') { stack.reset(); lastDir = 'pop'; paint(); return true; }
+    const held = heldFocus();
+    if (view === 'home') { stack.reset(); lastDir = 'pop'; paint(); if (held) landFocus(); return true; }
     if (view === 'sources') ensureSources();
     if (!stack.push(view)) { paint(); return false; }
     lastDir = 'push';
     // A card or the sources sheet opened on a collapsed sidebar opens it for as long as it is up.
     if (collapsedNow) collapsedNow = false;
     paint();
+    if (held) landFocus();
     return true;
   }
 
   function back() {
+    const held = heldFocus();
     const before = stack.current();
     stack.pop();
     lastDir = 'pop';
     if (stack.current() === 'home') collapsedNow = collapsedChoice;
     paint();
+    if (held) landFocus();
     return before !== stack.current();
   }
 

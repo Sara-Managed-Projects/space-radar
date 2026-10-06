@@ -291,8 +291,12 @@ export async function boot({ setStatus } = {}) {
     writeUrlState({ exp: mode === DEFAULT_EXPOSURE ? null : mode });
     window.dispatchEvent(new CustomEvent('sr:exposure', { detail: { mode } }));
   });
+  // The canvas says what is selected (public #315): its name is the page's own sentence until then.
+  const stageEl = document.getElementById('stage');
+  const sceneName = stageEl ? stageEl.getAttribute('aria-label') : '';
   window.addEventListener('sr:select', (e) => {
     const record = e && e.detail;
+    if (stageEl) stageEl.setAttribute('aria-label', record && record.name ? fill(COPY.app.sceneSelected, { name: record.name }) : sceneName);
     if (record && record.klass === 'dso') ctx.wantNebulae().then((n) => { if (n) n.want(record.id); });
     else if (ctx.nebulae) ctx.nebulae.want(null);
   });

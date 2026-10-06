@@ -352,8 +352,9 @@ export function createExplore(ctx, host) {
     cap.setAttribute('aria-hidden', 'true');
     if (field) field.appendChild(cap);
   }
-  document.addEventListener('keydown', (e) => {
-    if (!wantsSearch(e, document.activeElement) || !input) return;
+  // To the search field from wherever the visitor is: `/`, and the page's first skip link.
+  const toSearch = (e) => {
+    if (!input) return;
     const cls = document.documentElement.classList;
     // Not over a clear screen (H owns it) and not in a trip (its sheet has the sidebar).
     if (cls.contains('sr-clean') || cls.contains('sr-trip-mode')) return;
@@ -367,6 +368,20 @@ export function createExplore(ctx, host) {
       while (shell.view() !== 'home' && shell.stack().length > 1) shell.back();
     }
     search.focus();
+  };
+  document.addEventListener('keydown', (e) => { if (wantsSearch(e, document.activeElement)) toSearch(e); });
+  // The skip links of index.html (public #315). "Skip to search" does what `/` does. "Skip to the
+  // map" puts the focus on <main>, which takes it for that moment only: a <main> that kept a
+  // tabindex would take the focus on every click of the map, and the keys would follow it there.
+  const skip = (id, go) => { const a = document.getElementById(id); if (a) a.addEventListener('click', go); };
+  skip('sr-skip-search', toSearch);
+  skip('sr-skip-map', (e) => {
+    const map = document.getElementById('map');
+    if (!map) return;
+    e.preventDefault();
+    map.tabIndex = -1;
+    map.addEventListener('blur', () => map.removeAttribute('tabindex'), { once: true });
+    map.focus({ preventScroll: true });
   });
   // While a query is typed the results REPLACE the lists (design §2): one column, one answer. On a
   // phone the box is in the top bar and its results drop from it (ui/shell.js seatSearch), so the
