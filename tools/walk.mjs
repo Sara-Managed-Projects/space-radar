@@ -12,13 +12,26 @@
 // one line per finding, and exits 1 if any step found a dead control, a page error or a failed
 // request. LOOK AT THE SHEETS: a black view passes every measurement here.
 //
-// It serves --dir itself (tools/serve.py), runs ONE Chrome at a time (tools/cdp.mjs; software GL
-// is slow, and two at once starve each other into timeouts), and blocks CelesTrak and Launch
-// Library so a walk never spends the per-IP budget a real visit needs. The page half is
+// It serves --dir itself (tools/serve.py) on --port (default 8760; its Chromes take the ports from
+// --port + 80 up), and blocks CelesTrak and Launch Library so a walk never spends the per-IP budget
+// a real visit needs.
+//
+// ONE HEADLESS CHROME ON THE MACHINE AT A TIME, NOT ONE PER WALK. Software GL is slow, and two at
+// once starve each other into timeouts that read as dead controls. Every Chrome this starts is
+// started holding a lock: a directory, made with mkdir (which is atomic), holding the pid of its
+// owner. Its place is $SR_CHROME_LOCK, or `space-radar-chrome.lock` in the system's temp folder;
+// anything else on the machine that starts a headless Chrome for this project takes the same lock
+// the same way (wait while the directory exists; take it over when its pid is gone or it has not
+// been touched for six minutes; remove it when done). The holder touches it every 30 s.
+//
+// EXIT STATUS: 0 nothing measured as broken; 1 findings; 2 a load ran out of time (--timeout,
+// seconds a load, default 840) or the lock could not be had in --lock-wait seconds (default 1800).
+// A walk that timed out has not passed, whatever else it found. The page half is
 // tools/walk.probe.js; the offline step reuses tests/probes/offline-probe.js against a stamped
 // copy of --dir with the server stopped.
 import { spawn, execFileSync } from 'node:child_process';
-import { mkdirSync, writeFileSync, readdirSync, cpSync, rmSync, existsSync } from 'node:fs';
+import { mkdirSync, writeFileSync, readdirSync, cpSync, rmSync, existsSync, readFileSync, statSync, utimesSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -62,6 +75,29 @@ const LOADS = [
 const OFFLINE = !has('no-offline') && (!ONLY.length || ONLY.includes('offline'));
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const TIMEOUT_MS = Number(arg('timeout', '840')) * 1000;
+const LOCK = process.env.SR_CHROME_LOCK || join(tmpdir(), 'space-radar-chrome.lock');
+const LOCK_WAIT_MS = Number(arg('lock-wait', '1800')) * 1000;
+const STALE_MS = 6 * 60e3;
+let timedOut = 0;
+let holding = false;
+const alive = (pid) => { try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; } };
+/** Take the machine's one-Chrome lock (see the head of this file), waiting for whoever has it. */
+async function lock() {
+  const t0 = Date.now();
+  for (;;) {
+    try { mkdirSync(LOCK); writeFileSync(join(LOCK, 'pid'), String(process.pid)); holding = true; return; } catch (e) { if (e.code !== 'EEXIST') throw e; }
+    let pid = NaN; let age = 0;
+    try { pid = Number(readFileSync(join(LOCK, 'pid'), 'utf8')); } catch { /* being made, or being removed */ }
+    try { age = Date.now() - statSync(LOCK).mtimeMs; } catch { continue; }
+    if ((Number.isFinite(pid) && pid > 0 && !alive(pid)) || age > STALE_MS) { rmSync(LOCK, { recursive: true, force: true }); continue; }
+    if (Date.now() - t0 > LOCK_WAIT_MS) { console.error(`WALK: another headless Chrome has held ${LOCK} for ${Math.round((Date.now() - t0) / 1000)} s; giving up`); process.exit(2); }
+    await sleep(5000);
+  }
+}
+function unlock() { if (holding) { holding = false; rmSync(LOCK, { recursive: true, force: true }); } }
+process.on('exit', unlock);
+for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { unlock(); process.exit(130); });
 function serve(dir, port) {
   const p = spawn('python3', [join(here, 'serve.py'), dir, String(port)], { stdio: 'ignore' });
   return { stop: () => { try { p.kill('SIGKILL'); } catch { /* gone */ } } };
@@ -71,15 +107,19 @@ async function up(port) {
   throw new Error('the server never answered on ' + port);
 }
 /** One Chrome, one probe; resolves to { value, logs } and never rejects. */
-function chrome(url, probe, flags, ms = 14 * 60e3) {
+async function chrome(url, probe, flags, ms = TIMEOUT_MS) {
+  await lock();
+  const touch = setInterval(() => { try { const now = new Date(); utimesSync(LOCK, now, now); } catch { /* gone: the next lock() makes it */ } }, 30e3);
   return new Promise((done) => {
     const p = spawn(process.execPath, [join(here, 'cdp.mjs'), url, probe, ...flags], { env: { ...process.env, CDP_LOGS: '1' } });
     let out = ''; let err = '';
     p.stdout.on('data', (d) => { out += d; });
     p.stderr.on('data', (d) => { err += d; });
-    const timer = setTimeout(() => { err += '\nWALK: timed out after ' + ms / 1000 + ' s'; p.kill('SIGKILL'); }, ms);
+    const timer = setTimeout(() => { timedOut += 1; err += '\nWALK: timed out after ' + ms / 1000 + ' s'; p.kill('SIGKILL'); }, ms);
     p.on('close', () => {
       clearTimeout(timer);
+      clearInterval(touch);
+      unlock();
       let value = null;
       try { value = JSON.parse(out); } catch { /* the probe threw, or the driver did */ }
       const logs = err.split('\n').filter((l) => /^\[(error|pageerror|assert)\]|PAGE THREW|DRIVER FAILED|WALK:/.test(l)).map((l) => l.slice(0, 300));
@@ -188,4 +228,5 @@ for (const size of SIZES) {
   console.log(`[${size.name}] ${json}\n[${size.name}] ${pngs.length ? pngs.length + ' contact sheets: ' + pngs[0].replace(/01\.png$/, '*.png') : 'no pictures'}`);
 }
 console.log(failed ? `${failed} findings: read them, then read the sheets` : 'nothing measured as broken: now read the sheets');
-process.exit(failed ? 1 : 0);
+if (timedOut) console.log(`${timedOut} load(s) ran out of time (--timeout=${TIMEOUT_MS / 1000}): this walk has not passed`);
+process.exit(timedOut ? 2 : failed ? 1 : 0);

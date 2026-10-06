@@ -24,7 +24,6 @@ export const BUDGETS = {
   "otherlight_sky_bytes": 320000,
   "sky_entry_star_bytes": 110000,
   "og_png_min_bytes": 50000,
-  "home_js_kb": 8,
   "tier1_idle_bytes": 1300000,
   "tier1_texture_gpu_mib": 250,
   "planet_tile_requests_first_visit": 0,

@@ -43,6 +43,36 @@ On a Mac it uses the GPU (`--gl=gpu`, two minutes a flow); anywhere else softwar
 is ten times slower: the full walk does not fit a CI job, so it is a local tool, run before a
 release and after a day of merges. It blocks CelesTrak and Launch Library, as every probe here does.
 
+**Only one headless Chrome may run on a machine at a time.** Two starve each other (software GL
+most of all) into timeouts that read as dead controls, and a day of that is how a walk gets a bad
+name. `walk.mjs` starts every Chrome holding a lock and waits for whoever has it: a directory
+made with `mkdir`, holding its owner's pid, at `$SR_CHROME_LOCK` (default
+`space-radar-chrome.lock` in the system's temp folder). Anything else that starts a headless
+Chrome for this project on the same machine takes the same lock the same way: wait while the
+directory exists, take it over when its pid is gone or it has not been touched for six minutes,
+remove it when done. `cdp.mjs` run by hand does not take it: run one at a time, or wrap it.
+
+| flag | what |
+|---|---|
+| `--port=8760` | the port the walk serves `--dir` on; its Chromes use the ports from `--port` + 80 up |
+| `--timeout=840` | seconds one load may take before its Chrome is killed |
+| `--lock-wait=1800` | seconds to wait for the lock before giving up |
+| `--only=`, `--desktop`, `--phone`, `--out=`, `--gl=`, `--no-offline` | which loads, which sizes, where to write, which GL, skip the second visit |
+
+It exits **0** when nothing measured as broken, **1** with findings, and **2** when a load ran out
+of time or the lock could not be had: a walk that timed out has not passed, whatever else it found.
+
+**The trips walk has two halves.** `tests/test_trips_walk.mjs` is the half CI runs: every stop of
+every trip has a target that resolves, its narration on disc and a picture. The half that needs a
+GPU is `node tools/walk.mjs --only=trips`: at each stop it reads the renderer's own counters and
+reports a stop over `draw_calls_per_stop` or `triangles_per_stop` (`registry/budgets.yaml`), with
+the numbers in `walk-<size>.json` beside the stop's name.
+
+`?render=1` takes its time: `__srRender.ready` is the catalogues landed, the trip at its intro and
+twelve film seconds of warm-up, measured at 44 real seconds on the served tree with the saved
+catalogues on a throttled line. The `link-render` load waits 150 and, if that is not enough, says
+which stage it stopped in (`__srRender.describe().stage`): `layers`, `warming`, `faces`, `settling`.
+
 ## Rendering trip videos (spec 0070)
 
 `node tools/render-trip.mjs <trip>` plays one trip in a headless Chrome a frame at a time, on a

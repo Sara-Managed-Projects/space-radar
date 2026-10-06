@@ -2912,7 +2912,7 @@ def rows(doc: dict, key: str, name: str) -> list[dict]:
 BUDGET_FIELDS = ("id", "value", "unit", "since", "reason")
 # Where a reader may live. The mirror and its generator name every id and read none of them, and
 # test_refusals.py names them to break them.
-BUDGET_READERS = ("tests", "scripts", "site/js")
+BUDGET_READERS = ("tests", "scripts", "site/js", "tools")
 BUDGET_NOT_READERS = {"site/js/data/budgets.js", "scripts/gen_budgets_js.py", "tests/test_refusals.py"}
 # The values the other checks read (check_audio's bed and total), filled by check_budgets().
 BUDGETS: dict[str, float] = {}

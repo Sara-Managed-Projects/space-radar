@@ -225,6 +225,36 @@ async function state(name, opts = {}) {
   if (window.cdpShot) await window.cdpShot(full);
   return s;
 }
+/**
+ * What one frame costs to draw, from the renderer's own counters (spec 0044 task 3): draw calls and
+ * triangles, averaged over a few frames. The app may render more than one pass a frame and three.js
+ * resets its counters at each, so the reset is taken over here for those frames and handed back.
+ */
+async function drawn(frames = 3) {
+  const info = ctx.renderer && ctx.renderer.info;
+  if (!info || !info.render) return null;
+  const raf = () => new Promise((r) => requestAnimationFrame(r));
+  const auto = info.autoReset;
+  info.autoReset = false;
+  try {
+    await raf();
+    info.reset();
+    for (let i = 0; i < frames; i += 1) await raf();
+    return { calls: Math.round(info.render.calls / frames), triangles: Math.round(info.render.triangles / frames) };
+  } finally { info.autoReset = auto; }
+}
+// registry/budgets.yaml, as the page has it: a stop over `draw_calls_per_stop` or
+// `triangles_per_stop` is a finding, with the number.
+let BUDGETS = null;
+try { BUDGETS = (await import(new URL('js/data/budgets.js', document.baseURI).href)).BUDGETS; } catch { BUDGETS = null; }
+async function stopCost(id) {
+  let d = null;
+  try { d = await drawn(); } catch { d = null; }
+  if (!d || !BUDGETS) return {};
+  if (d.calls > BUDGETS.draw_calls_per_stop) dead.push(`trips: ${id} "${ctx.trip.state.stopTitle}" takes ${d.calls} draw calls a frame, over draw_calls_per_stop (${BUDGETS.draw_calls_per_stop})`);
+  if (d.triangles > BUDGETS.triangles_per_stop) dead.push(`trips: ${id} "${ctx.trip.state.stopTitle}" draws ${d.triangles} triangles a frame, over triangles_per_stop (${BUDGETS.triangles_per_stop})`);
+  return d;
+}
 const step = async (name, fn) => { try { await fn(); } catch (e) { dead.push(`${name}: the walk broke here: ${e && e.message}`); } };
 const need = (el, what) => { if (!el) { dead.push(what); return null; } return el; };
 
@@ -611,18 +641,18 @@ const flows = {
       start.click();
       await tripArrive();
       await until(() => vis('.sr-trip__tb')[0], 8000);
-      await state(`${id}-stop-1`, { settle: 5000, facts: { stop: trip.state.stopTitle } });
+      await state(`${id}-stop-1`, { settle: 5000, facts: { stop: trip.state.stopTitle, ...(await stopCost(id)) } });
       for (let n = 2; n <= 4; n += 1) {
         const next = byText('.sr-trip__tb', /next stop/i);
         if (!need(next, `trips: ${id} has no Next on its toolbar at stop ${n - 1}`)) break;
         const was = trip.state.index;
         next.click(); await wait(600); await tripArrive();
         if (trip.state.index === was) dead.push(`trips: ${id} Next at stop ${was + 1} did not advance`);
-        await state(`${id}-stop-${n}`, { settle: 5500, facts: { stop: trip.state.stopTitle, dropped: (trip.state.dropped || []).length || undefined } });
+        await state(`${id}-stop-${n}`, { settle: 5500, facts: { stop: trip.state.stopTitle, dropped: (trip.state.dropped || []).length || undefined, ...(await stopCost(id)) } });
       }
       const count = trip.state.count;
       trip.jumpTo(count - 1); await wait(1200); await tripArrive();
-      await state(`${id}-last-stop`, { settle: 5000, facts: { stop: trip.state.stopTitle } });
+      await state(`${id}-last-stop`, { settle: 5000, facts: { stop: trip.state.stopTitle, ...(await stopCost(id)) } });
       trip.next();
       const end = await until(() => vis('.sr-tripsheet__actions')[0], 30000);
       if (!need(end, `trips: ${id} never showed its end card`)) { trip.stop(); return; }
