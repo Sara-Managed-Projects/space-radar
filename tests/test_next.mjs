@@ -3,6 +3,34 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const JS = join(dirname(fileURLToPath(import.meta.url)), '..', 'site/js');
+
+// THE ZONE IS PINNED (internal #378). A shower's "that night" is the visitor's own night, so the
+// rows below are local on purpose: the Moon at 23:00 on 21 October 2026 is 80 % lit in UTC, 79 % in
+// Jerusalem, 75 % on Kiritimati and 84 % in Pago Pago. This test once asked for one figure and read
+// the machine's zone: green in CI (UTC), red on a laptop the day its zone changed. Now the file runs
+// itself once per zone below, each in its own process (copy/en.js fixes its formatters' zone when it
+// is imported, so the zone cannot be changed half way), and each asks for that zone's exact figure.
+// The machine's own zone and today's date are read nowhere.
+const ZONES = {
+  'UTC': { orionidsMoon: 80 },
+  'Asia/Jerusalem': { orionidsMoon: 79 },
+  'Pacific/Kiritimati': { orionidsMoon: 75 },   // UTC+14, the first night on Earth
+  'Pacific/Pago_Pago': { orionidsMoon: 84 },    // UTC-11, nearly the last
+  'America/Los_Angeles': { orionidsMoon: 82 },
+};
+const ZONE = process.env.SR_NEXT_ZONE;
+if (!ZONE) {
+  const { spawnSync } = await import('node:child_process');
+  const bad = [];
+  for (const zone of Object.keys(ZONES)) {
+    const r = spawnSync(process.execPath, [fileURLToPath(import.meta.url)], { env: { ...process.env, TZ: zone, SR_NEXT_ZONE: zone }, encoding: 'utf8' });
+    if (r.status !== 0) bad.push(`under TZ=${zone}:\n${(r.stderr || r.stdout || '').trim()}`);
+  }
+  if (bad.length) { console.error(bad.join('\n')); process.exit(1); }
+  console.log(`next ok in ${Object.keys(ZONES).length} time zones (${Object.keys(ZONES).join(', ')}): launches, close approaches and perihelia from held records, nearest first, capped, honest about rough dates; a shower's Moon is that zone's own night`);
+  process.exit(0);
+}
+if (Intl.DateTimeFormat().resolvedOptions().timeZone !== ZONE) { console.error(`next FAILED: asked for ${ZONE}, running in ${Intl.DateTimeFormat().resolvedOptions().timeZone}`); process.exit(1); }
 const { buildNextItems, rowText, whenText, NEXT_CAP, balance, PASS_ROWS } = await import(join(JS, 'ui/next.js'));
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
@@ -79,9 +107,9 @@ check(buildNextItems([launch('A', H)], now, { observer: { latRad: 0.9, lonRad: 0
   check(/The Orionids meteor shower peaks around .*21 Oct/.test(text) && /up to 20 an hour/.test(text) && !/\d\d:\d\d/.test(text), `a shower row gives a date, never a time: "${text}"`);
   // The Moon that night (Astronomy Engine): 2026's Orionids fall under a bright Moon, the Perseids
   // under a new one. The fraction is the same wherever you stand, so it needs no place.
-  // 75-89 %: the test's date is local, and the fraction at local midnight moved from 80 to 79 %
-  // when this machine changed time zone (2026-10-05). Bright either way, which is the claim.
-  check(/with the Moon (7[5-9]|8\d)% lit that night/.test(text), `the Orionids row says the Moon will be bright: "${text}"`);
+  // Exact, for the zone this process was started in (see ZONES above).
+  const wantMoon = ZONES[ZONE].orionidsMoon;
+  check(new RegExp(`with the Moon ${wantMoon}% lit that night`).test(text), `in ${ZONE} the Orionids row says the Moon is ${wantMoon}% lit: "${text}"`);
   const pers = showerItems(new Date(2026, 7, 1).getTime(), 30 * D, SHOWERS).find((x) => x.showerId === 'perseids');
   check(pers && /the Moon is nearly new/.test(rt(pers, new Date(2026, 7, 1).getTime())), `and the 2026 Perseids row says the Moon is out of the way: "${pers && rt(pers, new Date(2026, 7, 1).getTime())}"`);
   const onTheDay = showerItems(new Date(2026, 11, 14, 23, 0).getTime(), 30 * D, SHOWERS).map((x) => x.showerId);
@@ -106,7 +134,7 @@ check(buildNextItems([launch('A', H)], now, { observer: { latRad: 0.9, lonRad: 0
   check(urs && urs.altDeg < 0, `the Ursids' radiant (dec +76) never rises from Sydney (${urs && urs.altDeg.toFixed(0)} deg)`);
   const withPlace = rt(showerItems(sept22, 30 * D, SHOWERS, london)[0], sept22);
   check(/From where you are its radiant is highest around \d\d:\d\d/.test(withPlace), `with a place the row says when the radiant is highest: "${withPlace}"`);
-  if (savedTz === undefined) delete process.env.TZ; else process.env.TZ = savedTz;
+  process.env.TZ = savedTz;
   const withShowers = buildNextItems([], sept22, { showers: SHOWERS });
   check(withShowers.length === 1 && withShowers[0].kind === 'shower' && withShowers[0].record === null, 'with nothing else loaded the list still has the shower');
 }
