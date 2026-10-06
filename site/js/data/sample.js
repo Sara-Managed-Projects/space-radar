@@ -1130,6 +1130,23 @@ const PAST_CRAFT = [
       'and found signs of salt water under the ice of Europa.',
     end: 'It was flown into Jupiter on 21 September 2003',
   },
+  // Mars 2020 in flight: the cruise that ended when Perseverance landed. The rover is the Jezero
+  // site's record (registry/sites.yaml); this one exists so the months between the planets have
+  // a spacecraft's card and not a place's. Dates: NSSDCA 2020-052A, read 2026-10-06, the page
+  // registry/missions.yaml cites for Perseverance. No model: NASA's file is the rover, and the
+  // rover flew folded inside an aeroshell, so the craft is drawn as the class's own shape.
+  {
+    id: 'deep-mars-2020',
+    name: 'Mars 2020',
+    launched: '2020-07-30',
+    ended: '2021-02-18',
+    klass: 'probe',
+    horizonsId: -168,
+    aliases: ['Perseverance cruise'],
+    note: 'The spacecraft that carried the Perseverance rover and the Ingenuity helicopter from ' +
+      'Florida to Mars, in seven months.',
+    end: 'It reached Mars on 18 February 2021, and its rover is the Jezero site on this map',
+  },
 ];
 
 /** Orbits given as elements where I am confident of the shape but not of the phase. */

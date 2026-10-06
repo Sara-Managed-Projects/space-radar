@@ -457,7 +457,7 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
 {
   const { sampleDeepSpace } = await import(join(ROOT, 'site/js/data/sample.js'));
   const rows = sampleDeepSpace();
-  check(rows.length === 26, `the deep-space layer holds twenty-six records (found ${rows.length})`);
+  check(rows.length === 27, `the deep-space layer holds twenty-seven records (found ${rows.length})`);
   const want = {
     'deep-jwst': 'jwst.glb', 'deep-soho': 'soho.glb', 'deep-mro': 'mro.glb', 'deep-juno': 'juno.glb',
     'deep-voyager-1': 'voyager.glb', 'deep-voyager-2': 'voyager.glb', 'deep-parker': 'parker.glb',
@@ -472,7 +472,9 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   };
   // The 2026-09-22 twelve, less the three above: generic on purpose, and never another craft's shape.
   const generic = new Set(['deep-psyche', 'deep-lucy', 'deep-europa-clipper', 'deep-juice', 'deep-bepicolombo',
-    'deep-hera', 'deep-hayabusa2', 'deep-hope', 'deep-mars-express']);
+    'deep-hera', 'deep-hayabusa2', 'deep-hope', 'deep-mars-express',
+    // Mars 2020's cruise (2026-10-06): NASA's file is the rover, which flew folded in an aeroshell.
+    'deep-mars-2020']);
   for (const r of rows) {
     const e = realModelFor(r);
     const got = e && e.file ? e.file : e && e.build ? `build:${e.build}` : null;

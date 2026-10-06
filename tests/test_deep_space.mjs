@@ -44,7 +44,7 @@ check(list.every((r) => !r.bad), `every horizons-ids.yaml row reads as {id, name
 const rows = list.filter((r) => !r.bad);
 check(new Set(rows.map((r) => r.id)).size === rows.length, 'no Horizons id is fetched twice');
 
-// ENDED MISSIONS (2026-10-06): Cassini and Galileo are in the layer and are nowhere today. Their
+// ENDED MISSIONS (2026-10-06): Cassini, Galileo and Mars 2020's cruise are in the layer and are nowhere today. Their
 // rows answer null by design and are drawn only from their path files (site/data/eph,
 // tests/test_ephemerides.mjs), so the rules below for a stand-in that must answer today are not
 // theirs; their own are here.
@@ -52,7 +52,7 @@ const everyRecord = sampleDeepSpace();
 const ended = everyRecord.filter((r) => r.meta && r.meta.construction === 'own-path');
 const records = everyRecord.filter((r) => !ended.includes(r));
 const byId = new Map(records.map((r) => [r.id, r]));
-check(JSON.stringify(ended.map((r) => r.id)) === JSON.stringify(['deep-cassini', 'deep-galileo']), `the ended missions are Cassini and Galileo (${ended.map((r) => r.id)})`);
+check(JSON.stringify(ended.map((r) => r.id)) === JSON.stringify(['deep-cassini', 'deep-galileo', 'deep-mars-2020']), `the ended missions are Cassini, Galileo and Mars 2020's cruise (${ended.map((r) => r.id)})`);
 {
   const { EPHEMERIDES } = await import(join(JS, 'data/ephemerides.js'));
   for (const rec of ended) {

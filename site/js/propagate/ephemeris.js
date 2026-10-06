@@ -24,8 +24,11 @@
 // A SEGMENT IS ROUND A WORLD OR ROUND THE SUN. Near a planet the samples are relative to that
 // planet, and the answer is given in that planet's frame, so the craft is drawn exactly as far
 // from the drawn planet as JPL has it from the real one (propagate/orbiter.js measured why: the
-// drawn Jupiter is up to 18 000 km from JPL's). The Earth's inertial frame here is TEME, so an
-// Earth-centred answer is turned from the file's ecliptic J2000 axes.
+// drawn Jupiter is up to 18 000 km from JPL's). Round the EARTH the answer is given round the Sun
+// instead, by adding where this map draws the Earth at that instant: the stage subtracts the same
+// Earth again, so the craft is still exactly as far from the drawn Earth as JPL has it (float64
+// keeps that to a few metres), and the card does not take Webb at L2, or a probe an hour after
+// launch, for a satellite in Earth orbit with a lap time (seen 2026-10-06: "525 972 min a lap").
 //
 // HONEST ABOUT WHAT IT IS: `inferred`, never `measured`. It is JPL's track, interpolated, and the
 // index says how closely the file follows that track (`goodToKm`, held to it by
@@ -34,7 +37,7 @@
 
 import { EPHEMERIDES, EPH_CENTRES } from '../data/ephemerides.js';
 import { EPHEMERIS_OF } from './index.js';
-import { eclipticToEquatorial, j2000ToTeme, worldHelioEclKm } from './frames.js';
+import { worldHelioEclKm } from './frames.js';
 
 export { EPHEMERIDES, EPH_CENTRES };
 
@@ -136,8 +139,9 @@ export function placeAt(eph, tMs) {
   const st = stateAt(eph, tMs);
   if (!st) return null;
   if (st.centre === 'earth') {
-    const r = j2000ToTeme(eclipticToEquatorial(st), tMs);
-    return { x: r.x, y: r.y, z: r.z, frame: 'earth-inertial', cls: 'inferred', eph: true, centre: 'earth', tMs };
+    const e = worldHelioEclKm('earth', tMs);
+    if (!e) return null;
+    return { x: st.x + e.x, y: st.y + e.y, z: st.z + e.z, frame: 'sun-inertial', cls: 'inferred', eph: true, centre: 'earth', tMs };
   }
   return { x: st.x, y: st.y, z: st.z, frame: `${st.centre}-inertial`, cls: 'inferred', eph: true, centre: st.centre, tMs };
 }

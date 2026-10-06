@@ -1533,8 +1533,11 @@ export async function boot({ setStatus } = {}) {
     setMoment(readMomentFromHash(), { silent: true });
     // `at` too, not only at boot: a link opened in a tab that is already running must fly there.
     // The app's own writes use replaceState, which fires no hashchange, so this cannot echo.
-    const at = readUrlKeys().at;
+    const keys = readUrlKeys();
+    const at = keys.at;
     const current = typeof ctx.selected === 'function' ? ctx.selected() : null;
+    // A mission's event the same way (ui/missions.js): it selects its own record and sets the clock.
+    if (keys.event) { ctx.wantMissions().then((m) => { if (!m || !m.openEvent(ctx, keys.event)) linkNote(ctx, COPY.mission.unknown, ['event']); }); return; }
     if (at && (!current || current.id !== at)) openAt(ctx, at);
   });
 

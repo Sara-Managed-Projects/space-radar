@@ -115,7 +115,8 @@ run "scripts/check_registry.py" python3 scripts/check_registry.py
 run "scripts/check_copy.py" python3 scripts/check_copy.py
 for g in scripts/gen_*_js.py scripts/gen_trip_pages.py scripts/gen_sources_json.py \
          scripts/gen_modulepreload.py scripts/gen_home_seo.py scripts/narrate.py \
-         scripts/build_trip_thumbs.py scripts/build_nebulae.py scripts/build-fonts.py scripts/stamp_sw.py; do
+         scripts/build_trip_thumbs.py scripts/build_nebulae.py scripts/build-fonts.py scripts/stamp_sw.py \
+         scripts/build_ephemerides.py; do
   [ -f "$g" ] && run "$g --check" python3 "$g" --check
 done
 

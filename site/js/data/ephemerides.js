@@ -12,7 +12,7 @@ export const EPH_CENTRES = ["sun", "mercury", "venus", "earth", "moon", "mars", 
 export const EPHEMERIDES = {
   "deep-voyager-1": {
     "file": "deep-voyager-1.bin",
-    "bytes": 29892,
+    "bytes": 29736,
     "name": "Voyager 1",
     "from": "1977-09-05T13:59:00Z",
     "to": "2031-01-01T00:00:00Z",
@@ -27,7 +27,7 @@ export const EPHEMERIDES = {
   },
   "deep-voyager-2": {
     "file": "deep-voyager-2.bin",
-    "bytes": 34480,
+    "bytes": 33784,
     "name": "Voyager 2",
     "from": "1977-08-20T15:32:00Z",
     "to": "2031-01-01T00:00:00Z",
@@ -42,7 +42,7 @@ export const EPHEMERIDES = {
   },
   "deep-new-horizons": {
     "file": "deep-new-horizons.bin",
-    "bytes": 17804,
+    "bytes": 17656,
     "name": "New Horizons",
     "from": "2006-01-19T19:51:00Z",
     "to": "2031-01-01T00:00:00Z",
@@ -53,7 +53,7 @@ export const EPHEMERIDES = {
   },
   "deep-juno": {
     "file": "deep-juno.bin",
-    "bytes": 135656,
+    "bytes": 134096,
     "name": "Juno",
     "from": "2011-08-05T17:19:00Z",
     "to": "2026-08-24T00:00:00Z",
@@ -64,7 +64,7 @@ export const EPHEMERIDES = {
   },
   "deep-cassini": {
     "file": "deep-cassini.bin",
-    "bytes": 256644,
+    "bytes": 249976,
     "name": "Cassini",
     "from": "1997-10-15T09:27:00Z",
     "to": "2017-09-15T10:30:00Z",
@@ -75,7 +75,7 @@ export const EPHEMERIDES = {
   },
   "deep-galileo": {
     "file": "deep-galileo.bin",
-    "bytes": 79488,
+    "bytes": 78524,
     "name": "Galileo",
     "from": "1989-10-19T01:29:00Z",
     "to": "2003-09-21T18:00:00Z",
@@ -86,7 +86,7 @@ export const EPHEMERIDES = {
   },
   "deep-pioneer-10": {
     "file": "deep-pioneer-10.bin",
-    "bytes": 27788,
+    "bytes": 27564,
     "name": "Pioneer 10",
     "from": "1972-03-03T02:04:00Z",
     "to": "2031-01-01T00:00:00Z",
@@ -101,7 +101,7 @@ export const EPHEMERIDES = {
   },
   "deep-pioneer-11": {
     "file": "deep-pioneer-11.bin",
-    "bytes": 33424,
+    "bytes": 33180,
     "name": "Pioneer 11",
     "from": "1973-04-06T02:25:00Z",
     "to": "2031-01-01T00:00:00Z",
@@ -125,20 +125,20 @@ export const EPHEMERIDES = {
     "solution": "JWST_merged",
     "retrieved": "2026-10-06"
   },
-  "jezero": {
-    "file": "jezero.bin",
-    "bytes": 3580,
-    "name": "Perseverance",
+  "deep-mars-2020": {
+    "file": "deep-mars-2020.bin",
+    "bytes": 3528,
+    "name": "Mars 2020",
     "from": "2020-07-30T12:52:00Z",
     "to": "2021-02-18T20:30:00Z",
-    "goodToKm": 20.0,
+    "goodToKm": 10.0,
     "horizonsId": "-168",
     "solution": "Mars2020_merged",
     "retrieved": "2026-10-06"
   },
   "asteroid-99942": {
     "file": "asteroid-99942.bin",
-    "bytes": 18492,
+    "bytes": 18532,
     "name": "Apophis",
     "from": "2026-10-01T00:00:00Z",
     "to": "2029-12-31T00:00:00Z",
@@ -153,7 +153,7 @@ export const EPHEMERIDES = {
   },
   "deep-osiris-apex": {
     "file": "deep-osiris-apex.bin",
-    "bytes": 26352,
+    "bytes": 24384,
     "name": "OSIRIS-APEX",
     "from": "2026-10-01T00:00:00Z",
     "to": "2030-03-01T00:00:00Z",

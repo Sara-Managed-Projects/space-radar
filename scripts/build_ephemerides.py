@@ -18,7 +18,7 @@ Run:  python3 scripts/build_ephemerides.py --fetch [--only id,id] [--cache DIR] 
 HOW FEW SAMPLES. The browser joins two samples with a cubic Hermite curve (it has the velocities),
 whose error falls with the fourth power of the step. So the step is adaptive: a grid at one day
 (one hour inside a window), and wherever the curve through every other point misses the point
-between by enough that the grid itself is in doubt, a finer grid there, down to one minute. Then
+between by more than the tolerance, a finer grid there, down to one minute. Then
 a greedy pass keeps the longest stretches whose curve stays within `tol_km` of every fetched
 point it skips. A flyby ends up sampled in minutes and a decade of cruise in months.
 
@@ -376,6 +376,13 @@ def build_segment(hz: Horizons, command: str, seg: dict, log) -> dict:
             fetched_rows += len(rows)
             for r in rows:
                 table[int(round(r[0]))] = r[1:]
+            # THE TAIL. A grid stepped from `ra` need not land on `rb`: an hourly grid from
+            # midnight ends at 20:00 under a segment that stops at 20:30. That last stretch goes
+            # to the next finer grid like any stretch in doubt. Without this it was one
+            # unexamined half-hour, the half-hour before Mars 2020 reached Mars, and a held-out
+            # point in it missed by 38 km on a file fitted to 1 (seen 2026-10-06).
+            if rows and li < len(LEVELS) - 1 and int(round(rows[-1][0])) < rb:
+                nxt.append((int(round(rows[-1][0])), rb))
             if li == len(LEVELS) - 1 or len(rows) < 3:
                 continue
             arr = n.array(rows)
@@ -383,8 +390,15 @@ def build_segment(hz: Horizons, command: str, seg: dict, log) -> dict:
             # the curve through every other point, measured at the point between
             mid = hermite_many(T[:-2], P[:-2], V[:-2], T[2:], P[2:], V[2:], T[1:-1])
             err = n.sqrt(((mid - P[1:-1]) ** 2).sum(axis=1))
-            # a step of h is in doubt where a step of 2h misses by more than 4 tol (h^4: /16)
-            bad = n.nonzero(err > 4 * tol)[0]
+            # A step of h is in doubt where a step of 2h misses by more than tol: by h^4 the step
+            # h itself then misses by tol/16 at most, IF the curve's fourth derivative is steady
+            # across the three points. It is not at the two ends of a range, where a segment
+            # stops minutes before an atmosphere (Mars 2020, Cassini) or starts at separation:
+            # there the limit is tol/8. (With 4 tol everywhere, a held-out point half an hour
+            # before Mars 2020's entry missed by 38 km on a file fitted to 5: seen 2026-10-06.)
+            limit = n.full(err.shape, float(tol))
+            limit[0] = limit[-1] = tol / 8
+            bad = n.nonzero(err > limit)[0]
             for i in bad:
                 nxt.append((int(round(T[i])), int(round(T[i + 2]))))
         if not nxt or li == len(LEVELS) - 1:
@@ -796,9 +810,10 @@ def check(root: Path = ROOT) -> list:
                     if "T" in d and not 0 <= tp - t <= 3 * 3600:
                         problems.append(f"{at}: path_at {e['path_at']} is not within three hours after the event")
                     t = tp
-                span = spans.get(m.get("record"))
+                subject = m.get("path_record") or m.get("record")
+                span = spans.get(subject)
                 if not span:
-                    problems.append(f"{at}: place is path and {m.get('record')} has no file in registry/ephemerides.yaml")
+                    problems.append(f"{at}: place is path and {subject} has no file in registry/ephemerides.yaml")
                 elif not span[0] <= t <= span[1]:
                     problems.append(f"{at}: place is path and {d} is outside the file's span ({iso(span[0])} to {iso(span[1])})")
     return problems

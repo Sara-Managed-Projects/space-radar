@@ -16,7 +16,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _genmirror import Mirror, pick  # noqa: E402
 
-MISSION_FIELDS = ("id", "record", "display", "read", "source")
+MISSION_FIELDS = ("id", "record", "path_record", "display", "read", "source")
 EVENT_FIELDS = ("id", "date", "precision", "title", "text", "place", "path_at", "world", "source")
 
 

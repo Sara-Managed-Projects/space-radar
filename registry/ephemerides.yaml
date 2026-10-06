@@ -163,11 +163,12 @@ craft:
     windows:
       - {centre: earth, from: "2021-12-25T13:01:00Z", to: "2026-10-26T00:00:00Z", tol_km: 10}
 
-  # Mars 2020's cruise, drawn for the Jezero site's record: before it landed the rover was not
-  # in Jezero. prior to 2020-JUL-30 12:51:34 UT: nothing. The file stops at 20:30 UT on landing
-  # day, minutes before entry; after that the record is the place on Mars.
-  - id: jezero
-    name: Perseverance
+  # Mars 2020's cruise: the spacecraft that carried Perseverance, a record of its own
+  # (data/sample.js PAST_CRAFT), because the Jezero site is a place on Mars and its card is a
+  # place's card. prior to 2020-JUL-30 12:51:34 UT: nothing. The file stops at 20:30 UT on landing
+  # day, minutes before entry; after that the rover is the site.
+  - id: deep-mars-2020
+    name: Mars 2020
     command: "-168"
     from: "2020-07-30T12:52:00Z"
     to: "2021-02-18T20:30:00Z"

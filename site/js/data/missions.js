@@ -432,7 +432,7 @@ export const MISSIONS = [
         "title": "Past Earth a second time",
         "text": "A second pass of Earth, 303 km up, sends it on towards Jupiter.",
         "place": "path",
-        "path_at": "1992-12-08T15:09:00Z",
+        "path_at": "1992-12-08T15:10:00Z",
         "world": "earth"
       },
       {
@@ -685,6 +685,7 @@ export const MISSIONS = [
   {
     "id": "perseverance",
     "record": "jezero",
+    "path_record": "deep-mars-2020",
     "display": "Perseverance",
     "read": "2026-10-06",
     "source": {

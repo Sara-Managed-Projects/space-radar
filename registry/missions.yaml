@@ -43,6 +43,9 @@
 #              world in JPL's track on that UTC day, read from the file to the minute. It is a
 #              reading of the track, not a time NASA states, and the card says so.
 #
+# `path_record` on a mission names another record for its `path` events: Perseverance's record is
+# the Jezero site, a place on Mars, and its launch is shown on Mars 2020's cruise, a spacecraft.
+#
 # ADDED 2026-10-06 with the path files: Cassini, Galileo, Pioneer 10 and Pioneer 11, each read
 # that day on the page its row names. Three things worth knowing. NASA Science's Pioneer 10 page
 # writes the launch as "March 2, 1972 / 01:49:04 UT": 01:49 UT is the evening of 2 March in
@@ -135,7 +138,7 @@ missions:
       - {id: venus, date: "1990-02-10", precision: day, title: "Past Venus", text: "It passes Venus 16 000 km up, the first of three gravity assists.", place: path, path_at: "1990-02-10T05:59:00Z", world: venus}
       - {id: earth-1, date: "1990-12-08", precision: day, title: "Back past Earth", text: "It swings past Earth 960 km up, onto a two-year orbit of the Sun.", place: path, path_at: "1990-12-08T20:34:00Z", world: earth}
       - {id: gaspra, date: "1991-10-29", precision: day, title: "The first asteroid visit", text: "It passes 1 601 km from Gaspra, the first spacecraft to meet an asteroid.", place: path}
-      - {id: earth-2, date: "1992-12-08", precision: day, title: "Past Earth a second time", text: "A second pass of Earth, 303 km up, sends it on towards Jupiter.", place: path, path_at: "1992-12-08T15:09:00Z", world: earth}
+      - {id: earth-2, date: "1992-12-08", precision: day, title: "Past Earth a second time", text: "A second pass of Earth, 303 km up, sends it on towards Jupiter.", place: path, path_at: "1992-12-08T15:10:00Z", world: earth}
       - {id: ida, date: "1993-08-28", precision: day, title: "Ida and its moon", text: "It passes the asteroid Ida and finds it has a moon, Dactyl, the first seen round an asteroid.", place: path}
       - {id: arrival, date: "1995-12-07", precision: day, title: "Into orbit round Jupiter", text: "It enters orbit round Jupiter on the day its probe dives into the planet's atmosphere.", place: path, path_at: "1995-12-07T21:54:00Z", world: jupiter}
       - {id: end, date: "2003-09-21", precision: day, title: "Into Jupiter", text: "After 34 orbits it is flown into Jupiter, to keep it from ever striking Europa.", place: path, world: jupiter}
@@ -189,6 +192,7 @@ missions:
 
   - id: perseverance
     record: jezero
+    path_record: deep-mars-2020
     display: Perseverance
     read: 2026-10-06
     source: {name: "NASA NSSDCA, Mars 2020 Perseverance", url: "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2020-052A"}

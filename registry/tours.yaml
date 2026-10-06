@@ -3500,7 +3500,11 @@ tours:
         stage: earth
         time: 2029-04-13T21:45:00Z
         rate: 60
-        distance_km: 45000
+        # The Earth in the picture: without `behind` the first frame had the rock alone, the
+        # Earth exactly behind its model (seen 2026-10-06). 30 000 km back, the Earth is about
+        # twelve degrees across beside it.
+        behind: earth
+        distance_km: 30000
         chapter: "Keeping watch"
         card:
           title: "Apophis passes the Earth"

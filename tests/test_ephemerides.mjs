@@ -135,18 +135,28 @@ check(total <= 2e6, `the files are ${total} bytes in all, over 2 MB`);
   const l2 = at('2022-07-12T12:00:00Z');
   const pj = propagate(jwst, l2);
   const sj = E.stateAt(E.loaded('deep-jwst'), l2);
-  check(pj && pj.frame === 'earth-inertial' && Math.abs(norm(pj) - norm(sj)) < 1e-6 && Math.abs(pj.x - sj.x) > 1, 'a position round the Earth is turned into the Earth\'s inertial frame');
-  check(norm(pj) > 1.2e6 && norm(pj) < 1.8e6, `Webb at L2 is about 1.5 million km from Earth (${Math.round(norm(pj))} km)`);
+  // round the Earth the answer goes out round the Sun, moved by the Earth this map draws, so the
+  // stage's own subtraction of that Earth gives back JPL's offset to within metres
+  const { worldHelioEclKm, toStage } = await import(join(JS, 'propagate/frames.js'));
+  const earth = worldHelioEclKm('earth', l2);
+  const back = { x: pj.x - earth.x, y: pj.y - earth.y, z: pj.z - earth.z };
+  check(pj && pj.frame === 'sun-inertial' && pj.centre === 'earth' && Math.hypot(back.x - sj.x, back.y - sj.y, back.z - sj.z) < 0.01, 'a position kept round the Earth is given round the Sun, and comes back to within ten metres');
+  const onStage = toStage(jwst, pj, { worldId: 'earth' }, l2);
+  check(onStage && Math.abs(norm(onStage) - norm(sj)) < 0.01, 'on the Earth\'s stage it is as far from the Earth as JPL has it');
+  check(norm(sj) > 1.2e6 && norm(sj) < 1.8e6, `Webb at L2 is about 1.5 million km from Earth (${Math.round(norm(sj))} km)`);
   // an ended mission: nothing today, the file inside its years
   const cassini = rec('deep-cassini');
   check(cassini && propagate(cassini, at('2026-10-06T00:00:00Z')) === null, 'Cassini is nowhere today, and nothing is drawn');
   const soi = propagate(cassini, at('2004-07-01T03:00:00Z'));
   check(soi && soi.eph && soi.frame === 'saturn-inertial' && norm(soi) < 200000, `on 1 July 2004 it is at Saturn (${soi && Math.round(norm(soi))} km from its centre)`);
-  // the site record is the cruise before it landed, and the place on Mars after
+  // Mars 2020's cruise is a craft of its own; the Jezero site stays a place on Mars
   const { SITES } = await import(join(JS, 'data/sites.js'));
-  check(SITES.some((s) => s.id === 'jezero'), 'the Jezero site is the record Mars 2020\'s cruise belongs to');
-  const cruise = EPHEMERIS_OF.get('jezero')(at('2020-10-01T00:00:00Z'));
-  check(cruise && cruise.frame === 'sun-inertial' && EPHEMERIS_OF.get('jezero')(at('2021-03-01T00:00:00Z')) === null, 'in October 2020 it is between the planets; after the landing the file is silent');
+  check(SITES.some((s) => s.id === 'jezero') && !E.indexOf('jezero'), 'the Jezero site has no path file: it is a place');
+  const m2020 = rec('deep-mars-2020');
+  const cruise = propagate(m2020, at('2020-10-01T00:00:00Z'));
+  check(cruise && cruise.eph && cruise.frame === 'sun-inertial' && propagate(m2020, at('2021-03-01T00:00:00Z')) === null, 'in October 2020 Mars 2020 is between the planets; after the landing nothing is drawn');
+  const arr = propagate(m2020, at('2021-02-18T20:00:00Z'));
+  check(arr && arr.frame === 'mars-inertial' && norm(arr) < 20000, `half an hour before entry it is ${arr && Math.round(norm(arr))} km from the centre of Mars`);
 }
 
 // --- 4. against NASA's figures ---------------------------------------------------------------------
@@ -183,8 +193,8 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   let moving = 0;
   let pathEvents = 0;
   for (const m of M.MISSIONS) {
-    const record = { id: m.record };
     for (const e of m.events) {
+      const record = { id: M.subjectId(m, e) };
       const where = `${m.id}.${e.id}`;
       const place = M.placement(e, record, M.eventMs(e));
       if (place.moves) moving += 1;
@@ -192,7 +202,7 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
       pathEvents += 1;
       check(place.kind === 'path' && place.moves, `${where}: says the map holds the craft's path and the file does not span ${e.path_at || e.date}`);
       const clock = M.eventClockMs(e);
-      const eph = E.loaded(m.record);
+      const eph = E.loaded(record.id);
       const st = eph ? E.stateAt(eph, clock) : null;
       check(!!st, `${where}: the file answers at the moment the clock is set to`);
       // where the event happened is where the file has the craft: round that world, or the Sun

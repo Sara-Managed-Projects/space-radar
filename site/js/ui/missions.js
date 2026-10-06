@@ -48,7 +48,31 @@ const DAY_MS = 86400e3;
 const KNOT_LEAD_MS = 30 * DAY_MS;
 
 export function missionOf(recordId) {
-  return MISSIONS.find((m) => m.record === recordId) || null;
+  return MISSIONS.find((m) => m.record === recordId || (m.path_record && m.path_record === recordId)) || null;
+}
+
+/**
+ * The id of the record an event is shown on: the mission's own, or its `path_record` for an event
+ * drawn from a path file (Perseverance's launch is Mars 2020's cruise; its landing is the site).
+ */
+export function subjectId(mission, event) {
+  return event && event.place === 'path' && mission.path_record ? mission.path_record : mission.record;
+}
+
+/** That record, turning its layer on if it is off (as a link to an event does). Null if the map has none. */
+function subjectOf(ctx, mission, event, fallback) {
+  const id = subjectId(mission, event);
+  if (fallback && fallback.id === id) return fallback;
+  const record = typeof ctx.recordById === 'function' ? ctx.recordById(id) : null;
+  if (record) showLayer(ctx, record);
+  return record;
+}
+
+function showLayer(ctx, record) {
+  if (record.layer && typeof ctx.isLayerOn === 'function' && !ctx.isLayerOn(record.layer) && typeof ctx.setLayerOn === 'function') {
+    ctx.setLayerOn(record.layer, true);
+    document.dispatchEvent(new CustomEvent('sr:layer-toggle', { detail: { id: record.layer, on: true, handled: true, from: 'link' } }));
+  }
 }
 
 export function eventId(mission, event) {
@@ -190,13 +214,17 @@ function worldRecord(ctx, event) {
 }
 
 /** Go to an event: the clock and the camera when the map can show it; the words either way. */
-function choose(ctx, mission, index, record) {
+function choose(ctx, mission, index, cardRecord) {
   const event = mission.events[index];
   const id = eventId(mission, event);
   const tMs = eventMs(event);
   shown.set(mission.id, index);
-  writeUrl({ event: id });
+  // The record this event is shown on, which for a mission with a `path_record` is not always
+  // the one whose card was open.
+  const record = subjectOf(ctx, mission, event, cardRecord) || cardRecord;
   const place = placement(event, record, tMs);
+  if (record !== cardRecord && !place.moves) ctx.select(record, { undo: false });
+  writeUrl({ event: id });
   if (place.kind === 'path') {
     // The file first: the clock does not move until the map can show the craft there.
     failed.delete(id);
@@ -257,6 +285,13 @@ export function withWorldDistance(d, R) {
   return Math.max(4 * R - d, 0.6 * d);
 }
 
+/**
+ * Radians off the line from the world through the craft that the camera stands: the rig's own 0.6
+ * suits a satellite over a limb and here put Jupiter half out of the top of the frame (seen
+ * 2026-10-06). At 0.3 the world's disc sits beside the craft, its centre about eleven degrees off.
+ */
+const WITH_WORLD_TILT = 0.3;
+
 /** Set the clock to a moment of the craft's own path, go to the world it was at, frame the two. */
 function goToPath(ctx, record, eph, id, tMs) {
   if (typeof ctx.rememberView === 'function') ctx.rememberView();
@@ -273,7 +308,7 @@ function goToPath(ctx, record, eph, id, tMs) {
     const R = worldRadiusKm(centre) / (ctx.stage ? ctx.stage.unitKm : 1);
     const distance = at ? withWorldDistance(Math.hypot(at.x, at.y, at.z), R) : NaN;
     if (at && distance > 0 && ctx.cameraRig) {
-      ctx.cameraRig.flyTo({ targetScene: at, distance, ms: 900 });
+      ctx.cameraRig.flyTo({ targetScene: at, distance, tilt: WITH_WORLD_TILT, ms: 900 });
       ctx.cameraRig.follow(() => ctx.positionOfRecord(record));
     } else if (typeof ctx.flyToRecord === 'function') ctx.flyToRecord(record);
     if (typeof ctx.offerUndo === 'function') ctx.offerUndo(timeText.utcLong(tMs));
@@ -356,7 +391,8 @@ export function mountMission(host, record, ctx) {
   const event = mission.events[index];
   const id = eventId(mission, event);
   const tMs = eventClockMs(event);
-  const place = placement(event, record, eventMs(event));
+  const subject = subjectId(mission, event) === record.id ? record : (typeof ctx.recordById === 'function' ? ctx.recordById(subjectId(mission, event)) : null) || record;
+  const place = placement(event, subject, eventMs(event));
   // "The clock is here" only while it is: within an hour (a day for an event known to the day).
   const slack = event.precision === 'day' ? DAY_MS : 3600e3;
   const here = applied === id && ctx.clock.mode !== 'live' && Math.abs(now - tMs) <= slack;
@@ -393,8 +429,9 @@ export function mountMission(host, record, ctx) {
   host.appendChild(note);
   // Drawn from its own file at the clock's time: how closely, and what JPL says of the track.
   appendPathWords(host, record, now);
-  // On the straight line, the clock being there does not make the place measured: say both.
-  if (here && place.kind === 'cruise') host.appendChild(el('p', 'sr-mission__note', eventNote(mission, event, place)));
+  // On the straight line, the clock being there does not make the place measured: say both. And
+  // where the clock went to a moment that is not the event's own (`path_at`), say which.
+  if (here && (place.kind === 'cruise' || event.path_at)) host.appendChild(el('p', 'sr-mission__note', eventNote(mission, event, place)));
 
   const acts = el('div', 'sr-mission__acts');
   if (place.moves && !here) {
@@ -457,12 +494,8 @@ export function mountMission(host, record, ctx) {
 export function openEvent(ctx, id) {
   const found = findEvent(id);
   if (!found) return false;
-  const record = typeof ctx.recordById === 'function' ? ctx.recordById(found.mission.record) : null;
+  const record = subjectOf(ctx, found.mission, found.event, null);
   if (!record) return false;
-  if (record.layer && typeof ctx.isLayerOn === 'function' && !ctx.isLayerOn(record.layer) && typeof ctx.setLayerOn === 'function') {
-    ctx.setLayerOn(record.layer, true);
-    document.dispatchEvent(new CustomEvent('sr:layer-toggle', { detail: { id: record.layer, on: true, handled: true, from: 'link' } }));
-  }
   shown.set(found.mission.id, found.index);
   const place = placement(found.event, record, eventMs(found.event));
   if (!place.moves) ctx.select(record, { undo: false });
@@ -480,7 +513,7 @@ export function install(ctx) {
     if (!key) return;
     const found = findEvent(key);
     const rec = e && e.detail;
-    if (!found || !rec || rec.id !== found.mission.record) writeUrl({ event: null });
+    if (!found || !rec || (rec.id !== found.mission.record && rec.id !== found.mission.path_record)) writeUrl({ event: null });
   });
   // The line of a craft's path belongs to the selection too.
   window.addEventListener('sr:select', (e) => {

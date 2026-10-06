@@ -66,6 +66,12 @@ jobs:
         run: python3 scripts/gen_showers_js.py --check
       - name: The missions mirror matches the registry (public #452)
         run: python3 scripts/gen_missions_js.py --check
+      # The path files (site/data/eph): the registry, the manifest, each .bin, the browser's mirror
+      # and the held-out Horizons positions agree, with no network (internal #277).
+      - name: The mission path files are the ones their manifest describes
+        run: python3 scripts/build_ephemerides.py --check
+      - name: The path-file guard refuses what it should (tests/test_ephemerides.py)
+        run: python3 tests/test_ephemerides.py
       # Spec 0031: registry/events.yaml had twelve types and no reader until 2026-09-23; the browser
       # now builds its event stream from this mirror, so a stale one is a type switched off in the
       # YAML and still built, or the other way round.
@@ -408,6 +414,8 @@ jobs:
         run: node tests/test_scrubber.mjs
       - name: A mission as a place in time (public #452)
         run: node tests/test_missions.mjs
+      - name: A craft's own path holds the bound its card states, and loads nothing at boot (internal #277)
+        run: node tests/test_ephemerides.mjs
       - name: The home's dated cards and the way back from an automatic move (internal #270, #274)
         run: node tests/test_today.mjs
       - name: Debris as a problem, from the whole catalogue (public #449)

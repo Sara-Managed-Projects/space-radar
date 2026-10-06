@@ -86,6 +86,7 @@ attachable:
   - {id: deep-pioneer-11,    horizons_id: "-24", emitted_by: "sample.js sampleDeepSpace(), CRUISING_CRAFT"}
   - {id: deep-cassini,       horizons_id: "-82", emitted_by: "sample.js sampleDeepSpace(), PAST_CRAFT"}
   - {id: deep-galileo,       horizons_id: "-77", emitted_by: "sample.js sampleDeepSpace(), PAST_CRAFT"}
+  - {id: deep-mars-2020,     horizons_id: "-168", emitted_by: "sample.js sampleDeepSpace(), PAST_CRAFT"}
   - {id: deep-juno,          horizons_id: "-61", emitted_by: "sample.js sampleDeepSpace(), PLANET_ORBITERS"}
   - {id: deep-parker,        horizons_id: "-96", emitted_by: "sample.js sampleDeepSpace(), ELLIPTIC_CRAFT"}
   - {id: deep-jwst,          horizons_id: "-170", emitted_by: "sample.js sampleDeepSpace(), ANCHORED_CRAFT"}

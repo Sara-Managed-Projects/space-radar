@@ -260,6 +260,8 @@ function measure(record, ctx) {
 
   const p = positionAt(record, tMs);
   if (!p) return out;
+  // Drawn from the craft's own path file (propagate/ephemeris.js), not from the record's elements.
+  out.eph = p.eph === true;
   out.ok = true;
   out.posKm = p;
   out.frame = p.frame || record.frame;
@@ -1672,6 +1674,10 @@ export function classLine(record, m) {
       return COPY.cls.measured;
     case 'inferred': {
       const epoch = record ? record.epoch : null;
+      // A craft drawn from its path file was not propagated from the row's elements, whatever the
+      // row has: "from elements 22 years old" was printed under Webb in 2022 (seen 2026-10-06).
+      // The mission box under the card says where the position is from and how good it is.
+      if (m.eph) return COPY.cls.inferredNoElements;
       // "Elements" is a claim about HOW the position was worked out, and a fixed record has none.
       // GP records carry `satrec` (an SGP4 element set), not `elements`; both are elements in
       // the sense this sentence means. MEASURED 2026-09-08: every satellite card said
