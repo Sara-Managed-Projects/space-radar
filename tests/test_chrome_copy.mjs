@@ -151,6 +151,7 @@ const TOOLTIP = /(Title|Label|Alt|Aria|Tip|Hint|Why|Help|Describe|Long)$|^(label
 // Said in full on purpose, each with its reason. A key here that goes away fails below.
 const LONG_OK = new Map([
   ['app.tagline', 'the page\'s description and a shared post\'s line, not a line of chrome'],
+  ['app.sceneSelected', 'the canvas\'s spoken name while something is selected (an aria-label, never drawn): one whole sentence'],
   ['sceneNote.refusedTitle', 'a tooltip that explains a refused source in two sentences'],
   ['audio.panelNote', 'the one note under Sound in What to show: two lines, read once'],
   ['audio.narrationCredit', 'a credit: the model, the voice and the licence are all owed'],

@@ -33,7 +33,7 @@ import {
 } from '../data/gibs.js';
 import { satelliteOpacity, composeClouds, isBlank } from './cloudcompose.js';
 import { setLiveClouds, setLiveCloudsShown } from './earth.js';
-import { COPY, t, ageInWords } from '../copy/en.js';
+import { COPY, t, ageInWords, timeText } from '../copy/en.js';
 
 const FETCH_TIMEOUT_MS = 30000;
 
@@ -293,20 +293,33 @@ export function createLiveClouds({ earth, now = () => Date.now(), fetchImpl = (u
   return api;
 }
 
+/** The clock is "elsewhere" once it is this far from the wall clock: a paused tab is not a scrub. */
+export const CLOCK_ELSEWHERE_MS = 15 * 60000;
+const hhmm = (ms) => new Date(ms).toISOString().slice(11, 16);
+
 /** Pure, for the test: the sentence the Earth card prints about its clouds. */
 export function cloudsLine(s, clockMs, wallMs) {
   const C = COPY.clouds;
   if (!s || s.mode !== 'live' || !Number.isFinite(s.capturedMs)) {
     if (s && s.phase === 'off') return C.illustrativeSaveData;
-    if (s && Number.isFinite(s.capturedMs)) return C.illustrativeScrubbed;
+    // A picture is held and the clock is too far from it: say WHICH picture (public #330).
+    if (s && Number.isFinite(s.capturedMs)) return t(C.illustrativeScrubbed, { date: timeText.utcDate(s.capturedMs), time: hhmm(s.capturedMs) });
     return C.illustrative;
   }
   const names = s.satellites.map((x) => x.name);
   const list = names.length > 1 ? names.slice(0, -1).join(', ') + C.and + names[names.length - 1] : names[0] || '';
-  const hhmm = (ms) => new Date(ms).toISOString().slice(11, 16);
+  // THE PICTURE'S OWN DATE WHEN THE CLOCK IS ELSEWHERE (public #330). The clouds are an observation
+  // and do not follow the clock: within twelve hours of the picture they are still drawn, so a clock
+  // on the next UTC day used to read "seen at 21:20 UTC" under tomorrow's date. The date is said
+  // whenever the clock's day or today's is not the picture's, and a clock that is not now is told
+  // that the clouds stayed behind.
+  const day = (ms) => Math.floor(ms / 86400000);
+  const otherDay = (Number.isFinite(clockMs) && day(clockMs) !== day(s.capturedMs)) || (Number.isFinite(wallMs) && day(wallMs) !== day(s.capturedMs));
+  const date = timeText.utcDate(s.capturedMs);
   const when = Number.isFinite(s.newestMs) && s.newestMs - s.capturedMs >= 10 * 60000
-    ? t(C.between, { from: hhmm(s.capturedMs), to: hhmm(s.newestMs) })
-    : t(C.at, { time: hhmm(s.capturedMs) });
+    ? t(otherDay ? C.betweenDated : C.between, { date, from: hhmm(s.capturedMs), to: hhmm(s.newestMs) })
+    : t(otherDay ? C.atDated : C.at, { date, time: hhmm(s.capturedMs) });
   const ago = Number.isFinite(wallMs) ? ageInWords(Math.max(0, wallMs - s.capturedMs)) : '';
-  return t(C.live, { when, ago, satellites: list });
+  const elsewhere = Number.isFinite(clockMs) && Number.isFinite(wallMs) && Math.abs(clockMs - wallMs) > CLOCK_ELSEWHERE_MS;
+  return t(C.live, { when, ago, satellites: list }) + (elsewhere ? t(C.clockElsewhere, { time: hhmm(clockMs), date: timeText.utcDate(clockMs) }) : '');
 }

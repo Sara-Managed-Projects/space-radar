@@ -520,6 +520,17 @@ export function stormAdvisoryAgo(advisoryMs, tMs) {
   return tMs >= advisoryMs ? ageInWords(tMs - advisoryMs) : inWords(advisoryMs - tMs);
 }
 
+/**
+ * A storm's advisory as a card says it: "21:00 UTC, an hour ago", and with the advisory's own DATE
+ * when the clock stands on another UTC day (public #330): a storm is drawn for twelve hours after
+ * its advisory, so a clock just past midnight used to show yesterday's 21:00 as if it were today's.
+ */
+export function stormAdvisoryText(advisoryMs, tMs, plain = COPY.card.values.stormAdvisory, withDate = COPY.card.values.stormAdvisoryDated) {
+  const day = (ms) => Math.floor(ms / 86400000);
+  const dated = Number.isFinite(tMs) && day(tMs) !== day(advisoryMs);
+  return t(dated && withDate ? withDate : plain, { date: timeText.utcDate(advisoryMs), time: new Date(advisoryMs).toISOString().slice(11, 16), ago: stormAdvisoryAgo(advisoryMs, tMs) });
+}
+
 /** A storm's status word: the basin's own name for hurricane strength, else the status itself. */
 function stormStatusKey(md) {
   const status = pick(md, 'status');
@@ -1072,7 +1083,7 @@ function rightNowRows(record, m, passInfo) {
       rows.push([R.stormWind, cat ? t(V.stormWindCategory, { n: fmt.int(roughly(wind)), cat: fmt.int(cat) }) : t(V.stormWind, { n: fmt.int(roughly(wind)) })]);
     }
     const adv = pickNumber(md, 'advisoryMs');
-    if (adv !== null) rows.push([R.stormAdvisory, t(V.stormAdvisory, { time: new Date(adv).toISOString().slice(11, 16), ago: stormAdvisoryAgo(adv, m.tMs) })]);
+    if (adv !== null) rows.push([R.stormAdvisory, stormAdvisoryText(adv, m.tMs)]);
     if (m.latDeg !== null && m.lonDeg !== null) rows.push([R.stormCentre, t(V.latLon, { lat: latText(m.latDeg), lon: lonText(m.lonDeg) })]);
     const agency = pick(md, 'agency');
     if (agency) rows.push([R.stormAgency, String(agency)]);
@@ -1729,7 +1740,7 @@ export function honestyClause(record, m) {
     const adv = pickNumber(md, 'advisoryMs');
     const tMs = m && Number.isFinite(m.tMs) ? m.tMs : null;
     return adv !== null && tMs !== null
-      ? t(C.stormAdvisory, { time: new Date(adv).toISOString().slice(11, 16), ago: stormAdvisoryAgo(adv, tMs) })
+      ? stormAdvisoryText(adv, tMs, C.stormAdvisory, C.stormAdvisoryDated)
       : null;
   }
 

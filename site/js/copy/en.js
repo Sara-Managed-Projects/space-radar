@@ -1193,6 +1193,8 @@ export const COPY = {
       stormWind: '{n} km/h, forecast included',
       stormWindCategory: '{n} km/h, Category {cat}, forecast included',
       stormAdvisory: '{time} UTC, {ago}',
+      // The advisory's own date, when the clock stands on another day (public #330).
+      stormAdvisoryDated: '{date}, {time} UTC, {ago}',
       stormStatus: {
         hurricane: 'hurricane strength',
         typhoon: 'typhoon strength',
@@ -1375,10 +1377,16 @@ export const COPY = {
     live: 'Clouds: seen {when}, {ago}, in infrared by {satellites}, through NASA GIBS. Over Europe, Africa, the Indian Ocean and the poles, which none of those satellites sees, they are illustrative.',
     at: 'at {time} UTC',
     between: 'between {from} and {to} UTC',
+    // The picture's own DATE (public #330), said whenever the day on the clock, or today, is not the
+    // day the picture was taken: "seen at 21:20 UTC" beside a clock on another day is a wrong date.
+    atDated: 'on {date} at {time} UTC',
+    betweenDated: 'on {date} between {from} and {to} UTC',
+    // And when the clock is not now: the weather does not follow it. After the live line.
+    clockElsewhere: ' The clock is at {time} UTC on {date}; the clouds stay as that picture saw them.',
     and: ' and ',
     illustrative: 'Clouds: illustrative. This is one picture of a day in the past, drifting slowly; it is not today’s weather.',
     illustrativeSaveData: 'Clouds: illustrative. Today’s satellite pictures are not fetched on a connection that saves data.',
-    illustrativeScrubbed: 'Clouds: illustrative, because the clock is more than 12 hours from the latest satellite picture.',
+    illustrativeScrubbed: 'Clouds: illustrative, because the clock is more than 12 hours from the latest satellite picture, of {date} at {time} UTC.',
     // Verbatim, as NASA asks on the GIBS API page (read 2026-09-28). Do not reword it.
     gibsAcknowledgement: "We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS).",
     satelliteCredit: 'Live clouds: GOES-East and GOES-West infrared imagery, NOAA; Himawari infrared imagery, Japan Meteorological Agency (JMA).',

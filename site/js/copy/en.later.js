@@ -416,6 +416,8 @@ Object.assign(COPY, {
     inferredNoElements: 'position worked out rather than measured',
     // A storm's centre is measured, at one moment; this is the half of the line that says which.
     stormAdvisory: 'its centre at the {time} UTC advisory, {ago}; a storm moves, so it has moved since',
+    // With the advisory's date, when the clock stands on another UTC day (public #330).
+    stormAdvisoryDated: 'its centre at the {time} UTC advisory of {date}, {ago}; a storm moves, so it has moved since',
     illustrative: 'drawn to show where it goes; the real track is not public',
     // A dot of the "All tracked debris" layer: its orbit's height and tilt are the catalogue's.
     placeIllustrative: 'its real orbit, from CelesTrak’s catalogue, at a made-up place along it; we hold no current elements for it',

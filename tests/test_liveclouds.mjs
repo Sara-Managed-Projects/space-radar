@@ -23,9 +23,10 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const JS = join(ROOT, 'site/js');
 const G = await import(join(JS, 'data/gibs.js'));
 const C = await import(join(JS, 'scene/cloudcompose.js'));
-const { cloudsLine } = await import(join(JS, 'scene/liveclouds.js'));
+const L = await import(join(JS, 'scene/liveclouds.js'));
+const { cloudsLine } = L;
 const { SURFACE_FRAG } = await import(join(JS, 'scene/earth.js'));
-const { COPY } = await import(join(JS, 'copy/en.js'));
+const { COPY, timeText } = await import(join(JS, 'copy/en.js'));
 
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
@@ -196,7 +197,28 @@ const state = { phase: 'live', mode: 'live', capturedMs: pic - 10 * 60000, newes
 const live = cloudsLine(state, pic + 30 * 60000, pic + 30 * 60000);
 check(live.includes('between 21:20 and 21:30 UTC') && live.includes('40 minutes ago') && live.includes('GOES-West, GOES-East and Himawari')
   && /illustrative/.test(live) && /Europe/.test(live), `the live line says when, how old, which satellites, and where it is not live: ${live}`);
-check(cloudsLine({ ...state, mode: 'illustrative' }, pic, pic) === COPY.clouds.illustrativeScrubbed, 'a picture held but the clock far away: says so');
+// THE PICTURE'S OWN DATE WHEN THE CLOCK IS ELSEWHERE (public #330). `pic` is 21:30 UTC.
+{
+  const H = 3600000;
+  const dateOf = (ms) => timeText.utcDate(ms);
+  check(!live.includes(dateOf(pic)) && !/The clock is at/.test(live), `clock and wall on the picture's day, the clock at now: no date, no note (${live})`);
+  // The clock three hours on, across midnight UTC: still within twelve hours, so still these clouds.
+  const next = cloudsLine(state, pic + 3 * H, pic + 30 * 60000);
+  check(next.includes(`on ${dateOf(pic)} between 21:20 and 21:30 UTC`), `the clock on the next UTC day: the picture says its own date (${next})`);
+  check(next.includes(`The clock is at 00:30 UTC on ${dateOf(pic + 3 * H)}`) && /stay as that picture saw them/.test(next), `and the line says the clouds did not follow the clock (${next})`);
+  // The clock eight hours back, the same UTC day: the date is not needed, the note is.
+  const back = cloudsLine(state, pic - 8 * H, pic + 30 * 60000);
+  check(/seen between 21:20 and 21:30 UTC/.test(back) && back.includes('The clock is at 13:30 UTC'), `a clock elsewhere on the same day: the note, without repeating the date in "seen" (${back})`);
+  // The wall clock a day later (a tab left open): the picture is yesterday's and says so.
+  const stale = cloudsLine({ ...state, newestMs: state.capturedMs }, pic + 5 * H, pic + 5 * H);
+  check(stale.includes(`on ${dateOf(pic)} at 21:20 UTC`) && !/The clock is at/.test(stale), `today is not the picture's day: its date, and no note when the clock is at now (${stale})`);
+  // A clock a few minutes off now (a paused tab) is not "elsewhere".
+  check(!/The clock is at/.test(cloudsLine(state, pic + 30 * 60000 - 10 * 60000, pic + 30 * 60000)), 'ten minutes off now is not a scrub');
+  check(L.CLOCK_ELSEWHERE_MS === 15 * 60000, 'the clock is elsewhere from fifteen minutes');
+  // Too far for these clouds: illustrative, and WHICH picture it is far from.
+  const far = cloudsLine({ ...state, mode: 'illustrative' }, pic + 40 * H, pic);
+  check(/^Clouds: illustrative, because the clock is more than 12 hours from the latest satellite picture/.test(far) && far.includes(`of ${dateOf(pic)} at 21:20 UTC`), `a picture held but the clock far away: says so, with the picture's date (${far})`);
+}
 check(cloudsLine({ phase: 'off', mode: 'illustrative', capturedMs: null, satellites: [] }, pic, pic) === COPY.clouds.illustrativeSaveData, 'saving data: says so');
 check(cloudsLine({ phase: 'failed', mode: 'illustrative', capturedMs: null, satellites: [] }, pic, pic) === COPY.clouds.illustrative, 'nothing held: illustrative');
 check(COPY.clouds.gibsAcknowledgement === "We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS).",
