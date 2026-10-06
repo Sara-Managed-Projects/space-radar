@@ -25,15 +25,20 @@
 // WORDS are sky/tonight.js tonightWords(), from copy/en.js, with the card's own direction and fist
 // words. The place is guessed from the time zone when none is set (main.js, after idle) and said so.
 
-import { COPY, CITIES, t, compassWords } from '../copy/en.js';
+import { COPY, CITIES, t, fmt, timeText, compassWords } from '../copy/en.js';
 import { guessObserver } from '../sky/guessplace.js';
 import { nextVisible, passState, darkness, tonightWords, SEARCH_HOURS, LONG_SEARCH_HOURS } from '../sky/tonight.js';
 import { arcSvg } from './skyarc.js';
+import { tonightBest, bestWords, passWords, passNumbers, darkWords, compassShort, standardMagnitude } from '../sky/tonightbest.js';
+import { passTrack } from '../sky/passes.js';
+import { FOV, DARKNESS_IDS } from '../sky/skymath.js';
 
 const LAYERS = ['stations', 'visual'];
 const REFRESH_MS = 30 * 60e3;
 const DARK_MS = 10 * 60e3;
 const ROWS = 10;
+const BEST_MS = 5 * 60e3; // the ranked list is worked out again this often, and when the passes land
+const SKY_TOGGLES = ['figures', 'names', 'sunPath', 'equator', 'grid', 'starGrid'];
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -95,6 +100,14 @@ export function renderTonight(host, ctx) {
   more.setAttribute('aria-expanded', 'false');
   const list = el('ul', 'sr-tonight-view__list');
   list.hidden = true;
+  // Tonight's best (internal #358): one ranked list for the place, then how dark the night is.
+  const bestTitle = el('h3', 'sr-micro sr-tonight-view__sub', T.best.title);
+  const bestList = el('ul', 'sr-tonight-view__list sr-tonight-view__best');
+  const bestEmpty = el('p', 'sr-tonight-view__next', T.best.nothing);
+  bestEmpty.hidden = true;
+  const bestDark = el('p', 'sr-tonight-view__dark');
+  const bestNote = el('p', 'sr-tonight-view__caveat', T.best.honesty);
+  const skybar = buildSkybar();
   text.appendChild(line);
   text.appendChild(status);
   way.appendChild(arcBox);
@@ -114,6 +127,12 @@ export function renderTonight(host, ctx) {
   root.appendChild(dark);
   root.appendChild(actions);
   root.appendChild(list);
+  root.appendChild(bestTitle);
+  root.appendChild(bestList);
+  root.appendChild(bestEmpty);
+  root.appendChild(bestDark);
+  root.appendChild(bestNote);
+  root.appendChild(skybar.node);
 
   // --- the worker --------------------------------------------------------------------------------------
   const st = {
@@ -176,7 +195,8 @@ export function renderTonight(host, ctx) {
       hours,
       observer: { latRad: o.latRad, lonRad: o.lonRad, latDeg: o.latDeg, lonDeg: o.lonDeg, altKm: o.altKm || 0 },
       // Plain data across: the satrec and what the magnitude reads; the page keeps its records.
-      records: records.map((r) => ({ id: r.id, name: r.name, satrec: r.satrec, meta: { stdMag: r.meta && r.meta.stdMag, standardMagnitude: r.meta && r.meta.standardMagnitude } })),
+      // The standard magnitude is the record's own, or the two stations' (sky/tonightbest.js).
+      records: records.map((r) => ({ id: r.id, name: r.name, satrec: r.satrec, meta: { stdMag: standardMagnitude(r) } })),
     };
     if (worker) {
       try { worker.postMessage(msg); return; } catch { worker = null; }
@@ -200,6 +220,7 @@ export function renderTonight(host, ctx) {
     }
     paint();
     renderList();
+    renderBest();
     window.dispatchEvent(new CustomEvent('sr:tonight'));
   }
 
@@ -234,7 +255,8 @@ export function renderTonight(host, ctx) {
     setText(empty, w.empty);
     empty.hidden = !w.empty;
     setText(dark, w.dark);
-    dark.hidden = !w.dark;
+    // The ranked list has its own, fuller line on how dark the night is; never both.
+    dark.hidden = !w.dark || !bestDark.hidden;
     const id = pass ? `${pass.recordId}:${pass.startMs}` : null;
     if (id !== st.passId) {
       st.passId = id;
@@ -257,27 +279,165 @@ export function renderTonight(host, ctx) {
     if (node.textContent !== v) node.textContent = v;
   }
 
+  /** A row of either list: a name, one mono line under it, and what a press does. */
+  function rowNode(words, onPress, pass) {
+    const li = el('li', 'sr-tonight-view__row');
+    const b = el('button', 'sr-tonight-view__rowbtn');
+    b.type = 'button';
+    b.title = T.best.rowTitle;
+    b.setAttribute('aria-label', words.aria);
+    b.appendChild(el('span', 'sr-tonight-view__rowname', words.title));
+    b.appendChild(el('span', 'sr-tonight-view__rowdetail sr-num', words.line));
+    b.addEventListener('click', onPress);
+    li.appendChild(b);
+    // A pass keeps its small arc on hover and focus (req 9), drawn once.
+    const svg = pass ? svgNode(arcSvg(pass, 96, 48)) : null;
+    if (svg) { const box = el('span', 'sr-tonight-view__rowarc'); box.appendChild(svg); li.appendChild(box); }
+    return li;
+  }
+
+  /**
+   * A pass on the sky (pub #448): the clock goes to where it appears, the view opens wide on its
+   * highest point, and its arc is drawn with its three times. The object itself is then the moving
+   * point on the arc, because the clock runs on from there.
+   */
+  function showPass(p) {
+    const n = passNumbers(p);
+    if (!n || !ctx.observer) return;
+    try {
+      if (ctx.setMoment) ctx.setMoment(COPY.moments.now.id);
+      if (ctx.clock && typeof ctx.clock.goTo === 'function') ctx.clock.goTo(n.startMs);
+      const sky = ctx.skyView;
+      if (!sky || typeof sky.showPass !== 'function') return;
+      const track = p.record && p.record.satrec ? passTrack(p.record, p, ctx.observer, 60) : [];
+      const at = (ms) => track.reduce((best, k) => (!best || Math.abs(k.ms - ms) < Math.abs(best.ms - ms) ? k : best), null);
+      const marks = [];
+      const a = at(n.startMs);
+      const b = at(n.peakMs);
+      const c = at(n.endMs);
+      if (a) marks.push({ azDeg: a.azDeg, altDeg: a.altDeg, text: t(T.best.markEnds, { time: timeText.hhmm(n.startMs), dir: compassShort(a.azDeg) }) });
+      if (b) marks.push({ azDeg: b.azDeg, altDeg: b.altDeg, text: t(T.best.markPeak, { time: timeText.hhmm(n.peakMs), deg: fmt.int(b.altDeg) }) });
+      if (c) marks.push({ azDeg: c.azDeg, altDeg: c.altDeg, text: t(T.best.markEnds, { time: timeText.hhmm(n.endMs), dir: compassShort(c.azDeg) }) });
+      sky.showPass(track, marks);
+      const peak = b || { azDeg: (p.peakAz * 180) / Math.PI, altDeg: (p.peakEl * 180) / Math.PI };
+      sky.pointAt({ azDeg: peak.azDeg, altDeg: Math.max(20, Math.min(50, peak.altDeg * 0.6)) }, { fovDeg: 100, mark: false });
+    } catch { /* the moment doors are the fallback */ }
+  }
+
+  /** A planet, the Moon or a shower's radiant on the sky: now if it is up, else at its best time. */
+  function showBody(row) {
+    try {
+      if (ctx.setMoment) ctx.setMoment(COPY.moments.now.id);
+      const sky = ctx.skyView;
+      if (!sky || typeof sky.pointAt !== 'function') return;
+      if (typeof sky.showPass === 'function') sky.showPass(null);
+      if (row.kind === 'shower') {
+        if (ctx.clock && typeof ctx.clock.goTo === 'function') ctx.clock.goTo(row.bestMs);
+        sky.pointAt({ azDeg: row.azDeg, altDeg: row.altDeg }, { fovDeg: FOV.eye });
+        return;
+      }
+      if (!sky.pointAt({ body: row.id }, { fovDeg: FOV.eye })) {
+        if (ctx.clock && typeof ctx.clock.goTo === 'function') ctx.clock.goTo(row.bestMs);
+        sky.pointAt({ body: row.id }, { fovDeg: FOV.eye });
+      }
+    } catch { /* the moment doors are the fallback */ }
+  }
+
   function renderList() {
     while (list.firstChild) list.removeChild(list.firstChild);
     const now = ctx.clock.now();
     const rows = st.passes.filter((p) => p.visible && p.endMs > now).sort((a, b) => a.startMs - b.startMs).slice(0, ROWS);
     for (const p of rows) {
-      const w = tonightWords({ observer: { ...ctx.observer, source: 'set' }, nowMs: now, ready: true, pass: p });
-      const li = el('li', 'sr-tonight-view__row');
-      // A list row (docs/ui-guide.md section 3.5): the name, and under it when, how high, how long.
-      const b = el('button', 'sr-tonight-view__rowbtn');
-      b.type = 'button';
-      b.title = w.line;
-      b.setAttribute('aria-label', w.line);
-      b.appendChild(el('span', 'sr-tonight-view__rowname', w.parts.name));
-      b.appendChild(el('span', 'sr-tonight-view__rowdetail sr-num', t(T.rowDetail, { time: w.parts.time, deg: w.parts.deg, mins: w.parts.mins })));
-      b.addEventListener('click', () => { if (p.record && typeof ctx.select === 'function' && p.record.satrec) ctx.select(p.record); });
-      // Its own small arc on hover and focus (req 9), drawn once.
-      const svg = svgNode(arcSvg(p, 96, 48));
-      if (svg) { const box = el('span', 'sr-tonight-view__rowarc'); box.appendChild(svg); li.appendChild(box); }
-      li.prepend(b);
-      list.appendChild(li);
+      const w = passWords(p);
+      if (w) list.appendChild(rowNode({ title: w.name, line: w.line, aria: w.aria }, () => showPass(p), p));
     }
+  }
+
+  function renderBest() {
+    st.bestAt = performance.now();
+    while (bestList.firstChild) bestList.removeChild(bestList.firstChild);
+    const o = ctx.observer;
+    const best = o ? tonightBest({ observer: o, nowMs: ctx.clock.now(), passes: st.ready ? st.passes : [] }) : null;
+    st.best = best;
+    const rows = best ? best.rows : [];
+    for (const r of rows) {
+      const w = bestWords(r);
+      if (w) bestList.appendChild(rowNode(w, r.kind === 'pass' ? () => showPass(r.pass) : () => showBody(r), r.kind === 'pass' ? r.pass : null));
+    }
+    bestTitle.hidden = !o;
+    bestEmpty.hidden = !o || rows.length > 0;
+    setText(bestDark, best ? darkWords(best) : '');
+    bestDark.hidden = !best;
+    bestNote.hidden = !o;
+  }
+
+  /**
+   * The sky's controls, in this view because this view is the sky's (docs/ui-guide.md principle 2:
+   * no new panel). Three rows of the density row's buttons: the field of view, what is drawn over
+   * the stars, how dark the visitor's own sky is; then red light, and the honesty line.
+   */
+  function buildSkybar() {
+    const K = T.skybar;
+    const node = el('section', 'sr-skybar');
+    node.setAttribute('aria-labelledby', 'sr-skybar-title');
+    const title = el('h3', 'sr-micro sr-tonight-view__sub', K.title);
+    title.id = 'sr-skybar-title';
+    node.appendChild(title);
+    const row = (label, wrap) => {
+      const r = el('div', 'sr-density__choices' + (wrap ? ' sr-skybar__wrap' : ''));
+      r.setAttribute('role', 'group');
+      r.setAttribute('aria-label', label);
+      node.appendChild(r);
+      return r;
+    };
+    const button = (parent, text, title2, onPress) => {
+      const b = el('button', 'sr-density__btn', text);
+      b.type = 'button';
+      if (title2) b.title = title2;
+      b.setAttribute('aria-pressed', 'false');
+      b.addEventListener('click', onPress);
+      parent.appendChild(b);
+      return b;
+    };
+    const sky = () => ctx.skyView;
+    const fields = new Map();
+    const fieldRow = row(K.field);
+    for (const f of ['eye', 'binoculars', 'telescope']) {
+      fields.set(f, button(fieldRow, K.fields[f], K.fieldNotes[f], () => { if (sky() && sky().setFov) sky().setFov(FOV[f]); }));
+    }
+    const fieldNote = el('p', 'sr-density__note');
+    node.appendChild(fieldNote);
+    const toggles = new Map();
+    const showRow = row(K.show, true);
+    for (const k of SKY_TOGGLES) {
+      toggles.set(k, button(showRow, K.toggles[k], K.toggleTitles[k], () => { if (sky() && sky().setOption) sky().setOption(k, !sky().options[k]); }));
+    }
+    const dark = new Map();
+    const darkRow = row(K.darkness);
+    for (const d of DARKNESS_IDS) {
+      dark.set(d, button(darkRow, K.darknessModes[d], K.darknessNotes[d], () => { if (sky() && sky().setOption) sky().setOption('darkness', d); }));
+    }
+    const darkNote = el('p', 'sr-density__note');
+    node.appendChild(darkNote);
+    const redRow = row(K.red);
+    const red = button(redRow, K.red, K.redTitle, () => { if (sky() && sky().setOption) sky().setOption('red', !sky().options.red); });
+    node.appendChild(el('p', 'sr-tonight-view__caveat', K.honesty));
+    const press = (b, on) => {
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      b.classList.toggle('sr-bracketed', !!on);
+    };
+    const paintBar = () => {
+      const s = sky();
+      const o = s && s.options ? s.options : {};
+      const field = s && s.field ? s.field : 'eye';
+      for (const [f, b] of fields) press(b, f === field);
+      setText(fieldNote, K.fieldNotes[field]);
+      for (const [k, b] of toggles) press(b, !!o[k]);
+      for (const [d, b] of dark) press(b, d === o.darkness);
+      setText(darkNote, K.darknessNotes[o.darkness] || '');
+      press(red, !!o.red);
+    };
+    return { node, paint: paintBar };
   }
 
   more.addEventListener('click', () => {
@@ -302,6 +462,7 @@ export function renderTonight(host, ctx) {
     const now = ctx.clock.now();
     // Outside what was worked out, or stale: ask again (the clock jumped, or half an hour passed).
     if (st.ready && ctx.observer && (now < st.fromMs - 60e3 || now > st.fromMs + (st.hours || SEARCH_HOURS) * 3600e3 - 3600e3 || performance.now() - st.askedAt > REFRESH_MS)) ask(SEARCH_HOURS);
+    if (performance.now() - (st.bestAt || 0) > BEST_MS) renderBest();
     paint();
   }
   function start() { if (!timer && visible()) timer = setInterval(tick, 1000); }
@@ -316,8 +477,11 @@ export function renderTonight(host, ctx) {
     st.ready = false;
     st.darkAt = -Infinity;
     ask(SEARCH_HOURS);
+    renderBest();
     paint();
   };
+  const onSky = () => skybar.paint();
+  window.addEventListener('sr:sky', onSky);
   const idle = (fn) => (typeof requestIdleCallback === 'function' ? requestIdleCallback(fn, { timeout: 3000 }) : setTimeout(fn, 200));
   const onLayersReady = () => idle(() => ask(SEARCH_HOURS));
   const onLayer = (e) => {
@@ -335,6 +499,8 @@ export function renderTonight(host, ctx) {
     if (g) ctx.setObserver(g);
   }
   if (window.__srLayersReady) idle(() => ask(SEARCH_HOURS));
+  renderBest();
+  skybar.paint();
   paint();
   start();
 
@@ -343,6 +509,7 @@ export function renderTonight(host, ctx) {
     document.removeEventListener('visibilitychange', onVisible);
     window.removeEventListener('sr:clean', onVisible);
     window.removeEventListener('sr:observer', onObserver);
+    window.removeEventListener('sr:sky', onSky);
     window.removeEventListener('sr:layers-ready', onLayersReady);
     window.removeEventListener('sr:layer', onLayer);
     if (worker) { try { worker.terminate(); } catch { /* gone */ } worker = null; }
@@ -355,6 +522,8 @@ export function renderTonight(host, ctx) {
     refresh: () => ask(SEARCH_HOURS),
     /** The worker's passes with their records, or null until it has answered: ui/controls.js's list reads these. */
     passes: () => (st.ready ? st.passes : null),
+    best: () => st.best || null,
+    showPass,
     state: () => ({ ready: st.ready, passes: st.passes.length, hours: st.hours, workerMs: st.workerMs, firstLineAt: st.firstLineAt, worker: !!worker, text: root.innerText }),
   };
   return api;

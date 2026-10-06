@@ -358,6 +358,28 @@ export function predictPasses(records, observer, fromMs, hours, options = {}) {
   return passes;
 }
 
+/**
+ * One pass as points across the sky, for drawing its arc on the sky view (pub #448):
+ * `[{ms, azDeg, altDeg, lit}]`, `n` of them from the pass's start to its end, `lit` while the
+ * satellite is in sunlight. Empty when the record cannot be propagated.
+ */
+export function passTrack(record, pass, observer, n = 48) {
+  const satrec = satrecOf(record);
+  const obs = normaliseObserver(observer);
+  if (!satrec || !obs || !pass || !(pass.endMs > pass.startMs)) return [];
+  const out = [];
+  for (let i = 0; i <= n; i += 1) {
+    const ms = pass.startMs + ((pass.endMs - pass.startMs) * i) / n;
+    const look = lookAt(satrec, ms, obs);
+    if (!look) continue;
+    const lit = pass.sunlit !== false
+      && (!Number.isFinite(pass.sunlitStartMs) || ms >= pass.sunlitStartMs - 1)
+      && (!Number.isFinite(pass.sunlitEndMs) || ms <= pass.sunlitEndMs + 1);
+    out.push({ ms, azDeg: look.az * RAD2DEG, altDeg: look.el * RAD2DEG, lit });
+  }
+  return out;
+}
+
 function buildPass(args) {
   const {
     record,

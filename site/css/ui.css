@@ -5284,3 +5284,80 @@ html.sr-phone .sr-tonight-view__num { font-size: 20px; }
    back on their old faces (the face stays defined; nothing uses it). And the card's name is a
    heading that takes focus for screen readers, not a field: no ring around it. */
 .sr-card__name:focus { outline: none; }
+
+/* --- the sky from the ground (sky/groundsky.js, 2026-10-05) ------------------------------
+   Names over the canvas, in the scene labels' own layer (#labels), so every panel is above them.
+   A figure's name wears the microlabel role, as the trips' figures do above; a star's is the
+   label role, a planet's the same at full strength. Nothing here takes a pointer. */
+:root {
+  /* Red light keeps eyes adapted to the dark: one colour, and capped so white is not full red. */
+  --sr-night-red: #c40000;
+  --sr-z-night: 90;
+}
+.sr-skylabels { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.sr-skylabel {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform;
+  white-space: nowrap;
+  font: 400 13px/18px var(--sr-font);
+  color: var(--sr-text-soft);
+  text-shadow: 0 0 2px var(--sr-space), 0 0 2px var(--sr-space), 0 0 4px var(--sr-space), 0 0 8px var(--sr-space);
+}
+.sr-skylabel[hidden], .sr-skymark[hidden] { display: none; }
+.sr-skylabel--con {
+  font: 600 13px/16px var(--sr-font-hud);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sr-text-dim);
+}
+.sr-skylabel--body { color: var(--sr-text); font-weight: 600; }
+.sr-skylabel--pass { color: var(--sr-text); font-family: var(--sr-font-mono); font-variant-numeric: tabular-nums; }
+.sr-skylabel--line { color: var(--sr-text-dim); }
+/* The field of view: one mono line at the top of the sky, clear of the rail and the pill. */
+.sr-skyfov {
+  position: absolute;
+  left: 50%;
+  top: var(--sp-5);
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font: 400 13px/18px var(--sr-font-mono);
+  color: var(--sr-text-soft);
+  text-shadow: 0 0 2px var(--sr-space), 0 0 2px var(--sr-space), 0 0 4px var(--sr-space), 0 0 8px var(--sr-space);
+}
+/* What "show me" turned to: an ember ring with the halo ember wears over the scene. */
+.sr-skymark {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--sr-ember);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--sr-space), inset 0 0 0 1px var(--sr-space);
+}
+/* Red night mode (pub #454): while the sky view is up and the visitor asked for it, everything
+   on the page is multiplied by one red, the canvas included. Chrome keeps its layout, its states
+   and its contrast order; only the colour goes. */
+html.sr-night-red::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: var(--sr-z-night);
+  pointer-events: none;
+  background: var(--sr-night-red);
+  mix-blend-mode: multiply;
+}
+
+/* Tonight's best and the sky's controls, in the Tonight view (ui/tonight.js): the list rows and the
+   density row's buttons that are already there, a microlabel over each block. */
+.sr-tonight-view__sub { margin-top: var(--sp-4); }
+.sr-tonight-view__sub[hidden], .sr-tonight-view__caveat[hidden] { display: none; }
+.sr-skybar { display: flex; flex-direction: column; gap: var(--sp-2); }
+.sr-skybar .sr-density__note { margin: 0; }
+.sr-skybar__wrap { flex-wrap: wrap; }
+.sr-skybar__wrap .sr-density__btn { flex: 1 1 30%; }
+@media (pointer: coarse) {
+  .sr-skybar .sr-density__btn { min-height: 44px; }
+}
