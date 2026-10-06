@@ -722,7 +722,24 @@ export async function boot({ setStatus } = {}) {
       // A world is met on its lit face (issue #419): the rig's default is the far side from the
       // stage's world, which for everything beyond the Earth is the night side.
       const lit = record.klass === 'world' ? litOffset(worlds.sunDirOf(record.id), camera.up) : null;
-      cameraRig.flyTo({ targetScene: pos, distance: limb ? limb.distance : distance, tilt: limb ? limb.tilt : fromHere, offset: lit || undefined, ms });
+      // AND THE DISTANCE IS SOLVED AGAIN ON ARRIVAL, once. A squeezed planet's drawn size depends on
+      // where the camera is (scene/worlds.js: the neighbour cap is measured from the camera when
+      // worlds crowd), and its moons are drawn at its scale: SEEN 2026-10-06, Mimas framed from the
+      // Earth arrived a third wider than the screen's free band, because Saturn's drawn disc, and
+      // Mimas with it, had grown on the way. Two frames after the flight ends the scene has been
+      // placed from the new camera; if the framing is more than 8 % off, a short second move fixes it.
+      const settle = record.klass === 'world' ? (reason) => {
+        if (reason !== 'done' || typeof requestAnimationFrame !== 'function') return;
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          if (selected !== record || cameraRig.state.flying) return;
+          const at = positionOfRecord(record);
+          const again = at ? arrivalDistance(record, at) : NaN;
+          if (!(again > 0) || Math.abs(again / distance - 1) < 0.08) return;
+          const side = litOffset(worlds.sunDirOf(record.id), camera.up);
+          cameraRig.flyTo({ targetScene: at, distance: again, offset: side || undefined, ms: 500, targetDelay: 0 });
+        }));
+      } : undefined;
+      cameraRig.flyTo({ targetScene: pos, distance: limb ? limb.distance : distance, tilt: limb ? limb.tilt : fromHere, offset: lit || undefined, ms, onArrive: settle });
     }
     // Following something standing on the Moon is following the Moon, which crosses its own
     // radius in about half an hour, so its centre is re-taught with every tick of the target.
