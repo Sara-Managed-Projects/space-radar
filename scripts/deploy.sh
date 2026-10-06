@@ -131,8 +131,11 @@ if [ "$WHAT" != "app" ]; then
     "${SYNC[@]}" "$SITE/audio" "s3://$BUCKET/audio" --cache-control "$LONG" --delete \
       --exclude "*" --include "*.m4a" --content-type "audio/mp4"
     # The narration's captions (spec 0069): the sentence timings beside each clip. A clip keeps its
-    # file name when scripts/narrate.py renders it again, so after a re-render invalidate
-    # /audio/narration/* by hand, as for the models.
+    # file name when scripts/narrate.py renders it again, and since internal #327 the app asks for
+    # it as `<stop>.opus?v=<hash>` (site/js/data/narration.js `versions`, from the clip's own hash),
+    # so a re-rendered clip is a new address and needs no invalidation. CloudFront must forward the
+    # query string in the cache key for /audio/* (or ignore it and serve the object: either way the
+    # BROWSER's year-long cache is keyed on the full URL, which is the cache this is about).
     "${SYNC[@]}" "$SITE/audio" "s3://$BUCKET/audio" --cache-control "$LONG" --delete \
       --exclude "*" --include "*.vtt" --content-type "text/vtt; charset=utf-8"
   fi

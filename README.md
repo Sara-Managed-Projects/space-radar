@@ -45,7 +45,7 @@ browser, on public data, and every number on screen says where it came from.
 | | |
 |---|---|
 | ![Saturn and its rings, backlit, at a stop of the trip out past Jupiter](assets/screenshots/saturn.webp) | ![The Apollo 11 lunar module on the Moon, a stop of the Moon landings trip](assets/screenshots/moon-landing.webp) |
-| **Take a guided trip.** Out past Jupiter, through the constellations, round the living Earth, to the edge of the galaxy. Eleven trips, narrated, with captions and music. | **Stand where we have landed.** Ten landers on the Moon, each on its own ground, with the facts and their sources on the card. |
+| **Take a guided trip.** Tonight from your street, why the Moon changes shape, where we have driven on Mars, out past Jupiter, to the edge of the galaxy. Sixteen trips, narrated, with captions and music, and a present mode for a classroom. | **Stand where we have landed.** Ten landers on the Moon, each on its own ground, with the facts and their sources on the card. |
 
 <img src="assets/screenshots/phone.webp" alt="Space Radar on a phone: the Earth, the aurora and the satellites above a bottom sheet" width="230" align="right">
 

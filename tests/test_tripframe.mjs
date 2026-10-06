@@ -184,7 +184,8 @@ const trip = {
   replay() { calls.push('replay'); },
   play() { calls.push('play'); },
   jumpTo(i) { calls.push(`jumpTo:${i}`); },
-  stop(why) { calls.push(`stop:${why}`); notify({ phase: 'idle' }); },
+  stop(why, opts) { calls.push(`stop:${why}${opts && opts.stay ? ':stay' : ''}`); notify({ phase: 'idle' }); },
+  setPacing(mode) { calls.push(`pacing:${mode}`); },
   start(id) { calls.push(`start:${id}`); },
   plan: async (id) => ({ id, count: 6, estimateMs: 125000, offerable: true }),
   tours: () => TOURS,
@@ -396,6 +397,69 @@ frame.dispose();
   late.dispose();
 }
 
+// --- present mode (public #441), and the end of a trip that moved the map's centre (#447, #444)
+{
+  const root = document.documentElement;
+  state = { ...state, phase: 'intro', index: -1, count: 4, estimateMs: 62028, tourId: 'fx-a', stageChanged: true };
+  calls.length = 0;
+  const f = createTripFrame(ctx);
+  const press = (k) => { const e = { key: k, preventDefault() {}, stopPropagation() {} }; for (const fn of docListeners.keydown || []) fn(e); };
+  const intro = q('.sr-tripsheet__present');
+  check(intro && intro.textContent === T.present && intro.getAttribute('aria-pressed') === 'false' && intro.title === T.presentTitle && intro.querySelector('svg'), 'the intro offers Present, a quiet button with an icon, off');
+  check(primaries() === 1, 'Start is still the one ember button on the intro');
+  check(!root.classList.contains('sr-present') && !q('.sr-tripsheet').classList.contains('is-present'), 'nothing is in present mode until it is asked for');
+  intro.click();
+  check(root.classList.contains('sr-present') && q('.sr-tripsheet').classList.contains('is-present') && !q('.sr-tripsheet').classList.contains('is-floating'), 'pressed, the sheet is the room\'s caption panel');
+  check(calls.join() === 'pacing:reader', `and the presenter paces the trip: ${calls.join()}`);
+  check(q('.sr-tripsheet').parentNode === q('#sr-trip'), 'the sheet sits in the frame, not in a sidebar that is gone');
+  calls.length = 0;
+  document.activeElement = document.body;
+  press('PageDown');
+  check(calls.join() === 'play', `the clicker's forward key starts the show from the intro: ${calls.join()}`);
+  calls.length = 0;
+  notify({ phase: 'dwell', index: 0, stopTitle: 'Two places, and only two' });
+  const auto = q('.sr-trip__tb--auto');
+  const present = q('.sr-trip__tb--present');
+  check(auto.hidden === false && auto.getAttribute('aria-pressed') === 'false' && auto.title === T.presentAutoOffTitle, 'the toolbar shows Autoplay in present mode, off');
+  check(present.getAttribute('aria-pressed') === 'true' && present.title === T.presentOffTitle, 'and Present, pressed, is the way out of the mode');
+  // (The frames made earlier in this file still hear the keys, this stub's removeEventListener
+  // being a no-op, and they are not in present mode: they answer Space with a pause. So the checks
+  // are on what THIS frame adds.)
+  press(' ');
+  check(calls.includes('next'), `Space is the clicker's Next in present mode: ${calls.join()}`);
+  calls.length = 0;
+  if (state.phase === 'paused') notify({ phase: 'dwell', pausedBy: null });
+  press('PageUp'); press('PageDown');
+  check(calls.includes('back') && calls.includes('next') && calls.indexOf('back') < calls.lastIndexOf('next'), `Page Up and Page Down step the stops: ${calls.join()}`);
+  calls.length = 0;
+  auto.click();
+  check(calls.join() === 'pacing:auto' && auto.getAttribute('aria-pressed') === 'true' && auto.title === T.presentAutoOnTitle, `Autoplay hands the pacing back to the trip: ${calls.join()}`);
+  press('a');
+  check(calls.filter((c) => c.startsWith('pacing:')).join() === 'pacing:auto,pacing:reader' && auto.getAttribute('aria-pressed') === 'false', 'and A takes it again');
+  calls.length = 0;
+  present.click();
+  check(!root.classList.contains('sr-present') && calls.join() === 'pacing:null' && auto.hidden === true, 'leaving present mode gives the pacing back and puts the panels back');
+  present.click();
+  calls.length = 0;
+
+  notify({ phase: 'outro', index: 3 });
+  await new Promise((r) => setTimeout(r, 0));
+  const acts = q('.sr-tripsheet__actions').querySelectorAll('.sr-act');
+  check(acts.map((a) => a.textContent).join('|') === [T.endExplore, T.endHome, T.endReplay, T.share].join('|'), `after a trip on another world: Keep flying, Go home, Watch again, Share (${acts.map((a) => a.textContent).join(', ')})`);
+  check(acts[0].classList.contains('sr-act--primary') && primaries() === 1 && acts[0].title === T.endStayTitleStage, 'Keep flying is the one ember, and says it stays out there');
+  const send = q('.sr-tripsheet__send');
+  check(send && send.title === T.endSendTitle && send.textContent.includes(T.endSend), 'the end card has a picture to send');
+  acts[0].click();
+  check(calls[0] === 'stop:stayed:stay', `Keep flying leaves and stays: ${calls.join()}`);
+  check(!root.classList.contains('sr-present'), 'present mode ends with the trip');
+  calls.length = 0;
+  notify({ phase: 'outro', index: 3 });
+  q('.sr-tripsheet__actions').querySelectorAll('.sr-act')[1].click();
+  check(calls.includes('stop:left'), `Go home is the ordinary leave: ${calls.join()}`);
+  f.dispose();
+  state = { ...state, stageChanged: false };
+}
+
 // ------------------------------------------------------------------------------ the CSS
 {
   const css = readFileSync(join(ROOT, 'site/css/ui.css'), 'utf8');
@@ -407,6 +471,9 @@ frame.dispose();
   const reduced = css.slice(css.indexOf('REDUCED MOTION IS A CUT, NEVER A SHORTER MOVE: compressing'));
   check(/\.sr-trip__toolbar\.sr-float,[\s\S]*?transition: opacity 120ms linear;/.test(reduced), 'under reduced motion the trip\'s chrome fades in 120 ms and slides nowhere');
   check(/html\.sr-trip-mode #sr-rail,\s*html\.sr-trip-mode #sr-time,/.test(css), 'a trip takes the rail and the pill away');
+  check(/html\.sr-present #sr-side \{\s*display: none;/.test(css) && /html\.sr-present \{[^}]*--sr-scene-left: 0px;/.test(css), 'present mode takes the sidebar away and centres the bars on the whole window');
+  check(/\.sr-tripsheet\.is-present \.sr-card__leadbody,[^{]*\{[^}]*var\(--sr-fs-present\)/.test(css) && /--sr-fs-present: 32px/.test(css), 'a stop\'s words are 32 px in present mode, from a token');
+  check(/html\.sr-present \.sr-trip__tb \{[^}]*width: 56px;[^}]*height: 56px;/.test(css), 'and its targets are 56 px');
   // The frame is 50 kB that a visitor who never takes a trip does not download: main.js imports it
   // when the first trip starts, and index.html does not preload it (the first-visit budget).
   const main = readFileSync(join(JS, 'main.js'), 'utf8');

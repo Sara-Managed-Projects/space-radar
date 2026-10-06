@@ -145,13 +145,37 @@ the folder.
 terminal in that folder on the stick and run the command from step 2. The computer still needs
 Python; the portable ("embeddable") Python for Windows also works from a stick.
 
-**A projector or an unattended screen.** There is no separate kiosk mode yet (it is
-[an open idea](https://github.com/Sara-Managed-Projects/space-radar/issues/441), and help is
-welcome). What exists today:
+**A projector, a classroom, a planetarium: present mode.** One trip for a room: the panels go,
+the words of each stop are set large enough to read from the back, and whoever holds the clicker
+decides when to go on. Add `&present=1` to a trip's link, or press **Present** on the trip's first
+card:
 
+```
+http://localhost:8177/#trip=moon-phases&present=1
+http://localhost:8177/#trip=mars-where-we-have-driven&present=auto
+```
+
+| Key | What it does |
+|---|---|
+| `→`, `Page Down`, `Space` | Next stop (and, on the first card, start). A presenter's clicker sends these. |
+| `←`, `Page Up` | Previous stop |
+| `F` | Full screen, and out of it |
+| `A` | Let the trip move on by itself, or wait for you again (`present=auto` starts that way) |
+| `P` | Pause and resume |
+| `Esc` | Leave the trip |
+
+The words on screen are the captions, so the room does not need sound. For sound, press the
+speaker and the voice button on the first card: a synthetic voice reads each stop, and each stop
+then waits for it to finish. Trips good for a first lesson: `moon-phases` (why the Moon changes
+shape), `planets-tonight`, `tonight-from-your-street`, `the-sun-today`,
+`mars-where-we-have-driven`, `the-constellations`. The three "tonight" trips use the place set under
+**Where you are** (or a guess from the computer's time zone, and they say so): set the school's
+town first.
+
+**An unattended screen.** There is no attract loop yet. What exists today:
+
+- `present=auto` with the voice on flies and reads a whole trip by itself; it stops on the last card.
 - Press **H** (or the eye button) to hide every panel and leave only the scene. `Esc` brings them back.
-- Start a guided trip and turn the voice on: it flies and reads itself, stop by stop.
-- Put the browser in full screen (`F11`, or `Ctrl` + `Cmd` + `F` on a Mac).
 - A link can open at a trip, an object or a moment, for example
   `http://localhost:8177/#trip=moon-landings` or `#trip=outer-solar-system&stop=3`.
 

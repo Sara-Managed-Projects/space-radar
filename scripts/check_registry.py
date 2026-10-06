@@ -1059,6 +1059,16 @@ def check_stop_clock(stop: dict, where: str, kind: str, sgp4: bool, flown_on, to
         if sgp4:
             fail(where, "`time: tonight` on an Earth-orbit target: write `now` or a station pass")
         return
+    # `daylight` (2026-10-06): the next hour the Sun is up over the stop's own ground, so a stop
+    # that has one: a site, a record left on a world, or a world stood `over:` a place.
+    if when == "daylight":
+        grounded = kind in ("site", "record") or (kind == "world" and isinstance(stop.get("over"), list)
+                                                  and is_number(stop["over"][1] if len(stop["over"]) > 1 else None))
+        if not grounded or sgp4:
+            fail(where, "`time: daylight` is the next hour the Sun is up over this stop's ground, and "
+                        "this stop has none: it is for a `site:`, a `record:` standing on a world, or a "
+                        "`world:` with `over: [latitude, longitude]`")
+        return
     # PyYAML reads an unquoted ISO instant as a datetime; a quoted one arrives as a string. Either
     # way the messages below print it the way it was written.
     dt = None
@@ -1361,7 +1371,9 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
 
     check_stop_chapter(stop, where, title)
 
-    if "time" in stop:
+    # Not under `time: daylight`: that instant is chosen for its light and is about nothing in the
+    # card, so "landed in July 1969" under "Shown at 12 Oct 2026" is two different things, both said.
+    if "time" in stop and stop.get("time") != "daylight":
         hit = TOUR_CARD_TIME.search(f"{title or ''} {body}")
         if hit:
             fail(where, f"the card says \"{hit.group(0)}\" on a stop with `time:`: the shown-at "

@@ -394,6 +394,7 @@ tours:
         target: {record: duke-family-photo}
         # A surface stop: close enough that the Moon is the ground and not a ball.
         distance_km: 900
+        time: daylight
         card:
           title: "A photograph lying in the dust"
           # THE TRIP CARD ADDS; IT DOES NOT REPEAT. The object's own card opens right under this one
@@ -410,6 +411,7 @@ tours:
       - id: golf-balls
         target: {record: shepard-golf-balls}
         distance_km: 900
+        time: daylight
         card:
           title: "Two golf balls, twenty-four and forty yards out"
           body: >-
@@ -419,6 +421,7 @@ tours:
       - id: beresheet
         target: {record: beresheet-lunar-library}
         distance_km: 900
+        time: daylight
         card:
           title: "Thirty million pages, and some tardigrades"
           body: >-
@@ -428,6 +431,8 @@ tours:
       - id: golden-record
         target: {record: deep-voyager-1}
         needs_layer: deep-space
+        # Back to the present: the three stops on the Moon are shown in their daylight.
+        time: now
         drift_deg: 20
         card:
           title: "A gold record, further away than anything"
@@ -652,6 +657,7 @@ tours:
         target: {record: exo-trappist-1-e}
         stage: system-trappist-1
         frame_radii: 8
+        key_light_deg: 60
         card:
           title: "TRAPPIST-1 e"
           body: >-
@@ -664,6 +670,7 @@ tours:
         target: {record: exo-trappist-1-b}
         stage: system-trappist-1
         frame_radii: 8
+        key_light_deg: 60
         card:
           title: "TRAPPIST-1 b"
           body: >-
@@ -676,6 +683,7 @@ tours:
         target: {record: exo-trappist-1-c}
         stage: system-trappist-1
         frame_radii: 8
+        key_light_deg: 60
         card:
           title: "TRAPPIST-1 c"
           body: >-
@@ -687,6 +695,7 @@ tours:
         target: {record: exo-trappist-1-d}
         stage: system-trappist-1
         frame_radii: 8
+        key_light_deg: 60
         card:
           title: "TRAPPIST-1 d"
           body: >-
@@ -698,6 +707,7 @@ tours:
         target: {record: exo-trappist-1-f}
         stage: system-trappist-1
         frame_radii: 8
+        key_light_deg: 60
         card:
           title: "TRAPPIST-1 f"
           body: >-
@@ -709,6 +719,7 @@ tours:
         target: {record: exo-trappist-1-g}
         stage: system-trappist-1
         frame_radii: 8
+        key_light_deg: 60
         card:
           title: "TRAPPIST-1 g"
           body: >-
@@ -720,6 +731,7 @@ tours:
         target: {record: exo-trappist-1-h}
         stage: system-trappist-1
         frame_radii: 8
+        key_light_deg: 60
         card:
           title: "TRAPPIST-1 h"
           body: >-
@@ -785,6 +797,8 @@ tours:
       - id: surveyor-1
         target: {site: surveyor-1}
         distance_km: 900
+        # The next hour the Sun is up here (ui/trip.js daylightMs): a lander in its night is a model on a black disc.
+        time: daylight
         # Spec 0034: the part of the story this stop is in, above the trip's title in the
         # letterbox. The stops of one chapter repeat it and the frame keeps it up across them;
         # a new one lands with the stop's title, which for a new stage is just after the black.
@@ -806,6 +820,7 @@ tours:
       - id: apollo-11
         target: {site: apollo-11}
         distance_km: 900
+        time: daylight
         chapter: "Chapter one: the race, 1966 to 1972"
         card:
           title: "The first people"
@@ -821,6 +836,7 @@ tours:
       - id: apollo-12
         target: {site: apollo-12}
         distance_km: 900
+        time: daylight
         chapter: "Chapter one: the race, 1966 to 1972"
         card:
           title: "A visit to an older robot"
@@ -838,6 +854,7 @@ tours:
       - id: lunokhod-1
         target: {site: lunokhod-1}
         distance_km: 900
+        time: daylight
         chapter: "Chapter one: the race, 1966 to 1972"
         card:
           title: "A rover driven from Earth"
@@ -853,6 +870,7 @@ tours:
       - id: apollo-17
         target: {site: apollo-17}
         distance_km: 900
+        time: daylight
         chapter: "Chapter one: the race, 1966 to 1972"
         card:
           title: "Seventy-five hours, then a long quiet"
@@ -870,6 +888,7 @@ tours:
       - id: change-4
         target: {site: change-4}
         distance_km: 900
+        time: daylight
         chapter: "Chapter two: the long quiet ends"
         card:
           title: "The side that never faces us"
@@ -888,6 +907,7 @@ tours:
       - id: chandrayaan-3
         target: {site: chandrayaan-3}
         distance_km: 900
+        time: daylight
         chapter: "Chapter two: the long quiet ends"
         card:
           title: "Near the south pole"
@@ -904,6 +924,7 @@ tours:
       - id: im-1
         target: {site: im-1}
         distance_km: 900
+        time: daylight
         chapter: "Chapter three: the first companies"
         card:
           title: "The first private lander, leaning"
@@ -920,6 +941,7 @@ tours:
       - id: blue-ghost-1
         target: {site: blue-ghost-1}
         distance_km: 900
+        time: daylight
         chapter: "Chapter three: the first companies"
         card:
           title: "An eclipse, seen from the Moon"
@@ -1039,6 +1061,8 @@ tours:
         target: {record: saturn}
         stage: saturn
         frame_radii: 4.5
+        # Lit from the front (public #443): at the default 125 degrees a planet is a fifth lit, a dark disc.
+        key_light_deg: 60
         chapter: "Chapter two: the ringed planet"
         card:
           title: "Saturn, and a ring ten metres thick"
@@ -1109,6 +1133,7 @@ tours:
         # radii drew the moon twice the width of the planet it goes round (browser, 2026-09-22).
         # At 14 they are 69 and 65 px, which is at least the right way round.
         frame_radii: 14
+        key_light_deg: 60
         chapter: "Chapter three: the last planet"
         card:
           title: "Triton, going the wrong way round"
@@ -1130,6 +1155,7 @@ tours:
         # Charon is 19 600 km from Pluto and 606 km in radius. At 9 Pluto radii (10 700 km) the
         # pair is the shot; the moon's own card is one tap away.
         frame_radii: 9
+        key_light_deg: 60
         chapter: "Chapter four: past Neptune"
         card:
           title: "Pluto and Charon, going round each other"
@@ -1466,7 +1492,9 @@ tours:
     requires: [stars]
     # The marks of other layers are litter across a figure: every planet of another star is a
     # green dot here, every nebula a lilac one (looked at 2026-10-05, the first render).
-    hides: [exoplanets, systems, exotics, deep-sky, galaxy]
+    # deep-space and far-bodies since 2026-10-06: the walk of every stop found Voyager's and
+    # Pioneer's models, 260 px wide, sitting in Orion, the Scorpion and the Southern Cross.
+    hides: [exoplanets, systems, exotics, deep-sky, galaxy, deep-space, far-bodies]
     stage: stellar
     clock: as-found
     og_stop: 1
@@ -1875,6 +1903,7 @@ tours:
         target: {world: jupiter}
         stage: jupiter
         frame_radii: 4
+        key_light_deg: 60
         chapter: "From outside"
         card:
           title: "Jupiter, bodyguard or not"
@@ -2126,6 +2155,7 @@ tours:
         target: {world: moon}
         distance_km: 12000
         behind: earth
+        key_light_deg: 50
         rate: 600
         chapter: "Two things people get wrong"
         card:
@@ -2226,7 +2256,7 @@ tours:
         target: {world: earth}
         stage: earth
         frame_radii: 5
-        key_light_deg: 90
+        key_light_deg: 70
         time: now
         live_note: space-weather
         chapter: "What reaches us"
@@ -2317,6 +2347,7 @@ tours:
         target: {world: mercury}
         stage: mercury
         frame_radii: 4
+        key_light_deg: 55
         live_note: tonight
         chapter: "The inner planets"
         card:
@@ -2330,6 +2361,7 @@ tours:
         target: {world: venus}
         stage: venus
         frame_radii: 4
+        key_light_deg: 55
         live_note: tonight
         chapter: "The inner planets"
         card:
@@ -2343,6 +2375,7 @@ tours:
         target: {world: mars}
         stage: mars
         frame_radii: 4
+        key_light_deg: 55
         live_note: tonight
         chapter: "The inner planets"
         card:
@@ -2355,6 +2388,7 @@ tours:
         target: {world: jupiter}
         stage: jupiter
         frame_radii: 4
+        key_light_deg: 55
         live_note: tonight
         chapter: "The giants"
         card:
@@ -2368,6 +2402,7 @@ tours:
         target: {world: saturn}
         stage: saturn
         frame_radii: 5
+        key_light_deg: 55
         live_note: tonight
         chapter: "The giants"
         card:
@@ -2381,6 +2416,7 @@ tours:
         target: {world: uranus}
         stage: uranus
         frame_radii: 4
+        key_light_deg: 55
         live_note: tonight
         chapter: "The giants"
         card:
@@ -2394,6 +2430,7 @@ tours:
         target: {world: neptune}
         stage: neptune
         frame_radii: 4
+        key_light_deg: 55
         live_note: tonight
         chapter: "The giants"
         card:
@@ -2436,6 +2473,7 @@ tours:
       - id: planet
         target: {world: mars}
         frame_radii: 4
+        key_light_deg: 55
         chapter: "The planet"
         card:
           title: "The red planet"
@@ -2448,6 +2486,7 @@ tours:
         target: {world: mars}
         over: [18.65, -133.8]
         frame_radii: 1.6
+        time: daylight
         drift_deg: 10
         drift_rate_deg_s: 1
         chapter: "The planet"
@@ -2462,6 +2501,7 @@ tours:
         target: {world: mars}
         over: [-13.9, -59.2]
         frame_radii: 1.7
+        time: daylight
         drift_deg: 10
         drift_rate_deg_s: 1
         chapter: "The planet"
@@ -2475,6 +2515,7 @@ tours:
       - id: viking-1
         target: {site: viking-1}
         distance_km: 900
+        time: daylight
         chapter: "Where we landed"
         card:
           title: "The first to stay"
@@ -2486,6 +2527,7 @@ tours:
       - id: opportunity
         target: {site: opportunity}
         distance_km: 900
+        time: daylight
         chapter: "Where we landed"
         card:
           title: "Built for ninety days"
@@ -2497,6 +2539,7 @@ tours:
       - id: gale
         target: {site: gale}
         distance_km: 900
+        time: daylight
         chapter: "Where we landed"
         card:
           title: "Curiosity, climbing a mountain"
@@ -2508,6 +2551,7 @@ tours:
       - id: elysium
         target: {site: elysium}
         distance_km: 900
+        time: daylight
         chapter: "Where we landed"
         card:
           title: "InSight, listening"
@@ -2519,6 +2563,7 @@ tours:
       - id: jezero
         target: {site: jezero}
         distance_km: 900
+        time: daylight
         chapter: "Where we landed"
         card:
           title: "Perseverance, and a helicopter"
@@ -2532,6 +2577,7 @@ tours:
         target: {world: phobos}
         frame_radii: 6
         behind: mars
+        key_light_deg: 60
         chapter: "Around it"
         card:
           title: "Phobos, and Deimos"
@@ -2545,6 +2591,7 @@ tours:
         target: {world: mars}
         over: [72, 0]
         frame_radii: 2.6
+        time: daylight
         live_note: season
         chapter: "Around it"
         card:

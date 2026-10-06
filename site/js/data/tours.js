@@ -274,6 +274,7 @@ export const TOURS = [
           "record": "duke-family-photo"
         },
         "distance_km": 900,
+        "time": "daylight",
         "card": {
           "title": "A photograph lying in the dust",
           "body": "His family signed the back and pressed their thumbprints into it. It also says: This is the family of Astronaut Duke from Planet Earth, who landed on the Moon on the twentieth of April 1972."
@@ -293,6 +294,7 @@ export const TOURS = [
           "record": "shepard-golf-balls"
         },
         "distance_km": 900,
+        "time": "daylight",
         "card": {
           "title": "Two golf balls, twenty-four and forty yards out",
           "body": "They went twenty-four and forty yards, not the miles everybody repeats. The brand is unknown: Shepard never said, so that nobody could make money from it."
@@ -312,6 +314,7 @@ export const TOURS = [
           "record": "beresheet-lunar-library"
         },
         "distance_km": 900,
+        "time": "daylight",
         "card": {
           "title": "Thirty million pages, and some tardigrades",
           "body": "Nobody knows where in the wreck the discs ended up; the camera orbiting the Moon cannot pick them out. Nor can anyone say whether the tardigrades survived the crash."
@@ -332,6 +335,7 @@ export const TOURS = [
         },
         "needs_layer": "deep-space",
         "drift_deg": 20,
+        "time": "now",
         "card": {
           "title": "A gold record, further away than anything",
           "body": "Bolted to the side of this spacecraft is a gold-plated record. It carries whale song, greetings in fifty-five languages, and one woman's heartbeat, recorded two days after she decided to get married."
@@ -648,6 +652,7 @@ export const TOURS = [
         },
         "stage": "system-trappist-1",
         "frame_radii": 8,
+        "key_light_deg": 60,
         "chapter": "Chapter two: the seven of TRAPPIST-1",
         "card": {
           "title": "TRAPPIST-1 e",
@@ -656,7 +661,6 @@ export const TOURS = [
         "drift_deg": 34,
         "drift_rate_deg_s": 6,
         "drift": "toward-light",
-        "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
         "dwell_ms": 15820
@@ -668,6 +672,7 @@ export const TOURS = [
         },
         "stage": "system-trappist-1",
         "frame_radii": 8,
+        "key_light_deg": 60,
         "chapter": "Chapter two: the seven of TRAPPIST-1",
         "card": {
           "title": "TRAPPIST-1 b",
@@ -676,7 +681,6 @@ export const TOURS = [
         "drift_deg": 34,
         "drift_rate_deg_s": 6,
         "drift": "toward-light",
-        "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
         "dwell_ms": 14155
@@ -688,6 +692,7 @@ export const TOURS = [
         },
         "stage": "system-trappist-1",
         "frame_radii": 8,
+        "key_light_deg": 60,
         "chapter": "Chapter two: the seven of TRAPPIST-1",
         "card": {
           "title": "TRAPPIST-1 c",
@@ -696,7 +701,6 @@ export const TOURS = [
         "drift_deg": 34,
         "drift_rate_deg_s": 6,
         "drift": "toward-light",
-        "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
         "dwell_ms": 12157
@@ -708,6 +712,7 @@ export const TOURS = [
         },
         "stage": "system-trappist-1",
         "frame_radii": 8,
+        "key_light_deg": 60,
         "chapter": "Chapter two: the seven of TRAPPIST-1",
         "card": {
           "title": "TRAPPIST-1 d",
@@ -716,7 +721,6 @@ export const TOURS = [
         "drift_deg": 34,
         "drift_rate_deg_s": 6,
         "drift": "toward-light",
-        "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
         "dwell_ms": 10159
@@ -728,6 +732,7 @@ export const TOURS = [
         },
         "stage": "system-trappist-1",
         "frame_radii": 8,
+        "key_light_deg": 60,
         "chapter": "Chapter two: the seven of TRAPPIST-1",
         "card": {
           "title": "TRAPPIST-1 f",
@@ -736,7 +741,6 @@ export const TOURS = [
         "drift_deg": 34,
         "drift_rate_deg_s": 6,
         "drift": "toward-light",
-        "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
         "dwell_ms": 10492
@@ -748,6 +752,7 @@ export const TOURS = [
         },
         "stage": "system-trappist-1",
         "frame_radii": 8,
+        "key_light_deg": 60,
         "chapter": "Chapter two: the seven of TRAPPIST-1",
         "card": {
           "title": "TRAPPIST-1 g",
@@ -756,7 +761,6 @@ export const TOURS = [
         "drift_deg": 34,
         "drift_rate_deg_s": 6,
         "drift": "toward-light",
-        "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
         "dwell_ms": 9160
@@ -768,6 +772,7 @@ export const TOURS = [
         },
         "stage": "system-trappist-1",
         "frame_radii": 8,
+        "key_light_deg": 60,
         "chapter": "Chapter two: the seven of TRAPPIST-1",
         "card": {
           "title": "TRAPPIST-1 h",
@@ -776,7 +781,6 @@ export const TOURS = [
         "drift_deg": 34,
         "drift_rate_deg_s": 6,
         "drift": "toward-light",
-        "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
         "dwell_ms": 11491
@@ -827,6 +831,7 @@ export const TOURS = [
           "site": "surveyor-1"
         },
         "distance_km": 900,
+        "time": "daylight",
         "chapter": "Chapter one: the race, 1966 to 1972",
         "card": {
           "title": "The first soft landing anyone can find",
@@ -847,6 +852,7 @@ export const TOURS = [
           "site": "apollo-11"
         },
         "distance_km": 900,
+        "time": "daylight",
         "chapter": "Chapter one: the race, 1966 to 1972",
         "card": {
           "title": "The first people",
@@ -867,6 +873,7 @@ export const TOURS = [
           "site": "apollo-12"
         },
         "distance_km": 900,
+        "time": "daylight",
         "chapter": "Chapter one: the race, 1966 to 1972",
         "card": {
           "title": "A visit to an older robot",
@@ -887,6 +894,7 @@ export const TOURS = [
           "site": "lunokhod-1"
         },
         "distance_km": 900,
+        "time": "daylight",
         "chapter": "Chapter one: the race, 1966 to 1972",
         "card": {
           "title": "A rover driven from Earth",
@@ -907,6 +915,7 @@ export const TOURS = [
           "site": "apollo-17"
         },
         "distance_km": 900,
+        "time": "daylight",
         "chapter": "Chapter one: the race, 1966 to 1972",
         "card": {
           "title": "Seventy-five hours, then a long quiet",
@@ -927,6 +936,7 @@ export const TOURS = [
           "site": "change-4"
         },
         "distance_km": 900,
+        "time": "daylight",
         "chapter": "Chapter two: the long quiet ends",
         "card": {
           "title": "The side that never faces us",
@@ -947,6 +957,7 @@ export const TOURS = [
           "site": "chandrayaan-3"
         },
         "distance_km": 900,
+        "time": "daylight",
         "chapter": "Chapter two: the long quiet ends",
         "card": {
           "title": "Near the south pole",
@@ -967,6 +978,7 @@ export const TOURS = [
           "site": "im-1"
         },
         "distance_km": 900,
+        "time": "daylight",
         "chapter": "Chapter three: the first companies",
         "card": {
           "title": "The first private lander, leaning",
@@ -987,6 +999,7 @@ export const TOURS = [
           "site": "blue-ghost-1"
         },
         "distance_km": 900,
+        "time": "daylight",
         "chapter": "Chapter three: the first companies",
         "card": {
           "title": "An eclipse, seen from the Moon",
@@ -1088,6 +1101,7 @@ export const TOURS = [
         },
         "stage": "saturn",
         "frame_radii": 4.5,
+        "key_light_deg": 60,
         "chapter": "Chapter two: the ringed planet",
         "card": {
           "title": "Saturn, and a ring ten metres thick",
@@ -1096,7 +1110,6 @@ export const TOURS = [
         "drift_deg": 34,
         "drift_rate_deg_s": 6,
         "drift": "toward-light",
-        "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
         "dwell_ms": 16486
@@ -1151,6 +1164,7 @@ export const TOURS = [
         "stage": "neptune",
         "frame_radii": 14,
         "behind": "neptune",
+        "key_light_deg": 60,
         "chapter": "Chapter three: the last planet",
         "card": {
           "title": "Triton, going the wrong way round",
@@ -1159,7 +1173,6 @@ export const TOURS = [
         "drift_deg": 34,
         "drift_rate_deg_s": 6,
         "drift": "toward-light",
-        "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
         "dwell_ms": 15820
@@ -1172,6 +1185,7 @@ export const TOURS = [
         "stage": "pluto",
         "frame_radii": 9,
         "behind": "charon",
+        "key_light_deg": 60,
         "chapter": "Chapter four: past Neptune",
         "card": {
           "title": "Pluto and Charon, going round each other",
@@ -1180,7 +1194,6 @@ export const TOURS = [
         "drift_deg": 34,
         "drift_rate_deg_s": 6,
         "drift": "toward-light",
-        "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
         "dwell_ms": 17485
@@ -1506,7 +1519,9 @@ export const TOURS = [
       "systems",
       "exotics",
       "deep-sky",
-      "galaxy"
+      "galaxy",
+      "deep-space",
+      "far-bodies"
     ],
     "pacing": "auto",
     "min_stops": 3,
@@ -2104,6 +2119,7 @@ export const TOURS = [
         },
         "stage": "jupiter",
         "frame_radii": 4,
+        "key_light_deg": 60,
         "chapter": "From outside",
         "card": {
           "title": "Jupiter, bodyguard or not",
@@ -2112,7 +2128,6 @@ export const TOURS = [
         "drift_deg": 34,
         "drift_rate_deg_s": 6,
         "drift": "toward-light",
-        "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
         "dwell_ms": 19483
@@ -2438,6 +2453,7 @@ export const TOURS = [
         },
         "distance_km": 12000,
         "behind": "earth",
+        "key_light_deg": 50,
         "rate": 600,
         "chapter": "Two things people get wrong",
         "card": {
@@ -2448,7 +2464,6 @@ export const TOURS = [
         "drift_deg": 34,
         "drift_rate_deg_s": 6,
         "drift": "toward-light",
-        "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
         "dwell_ms": 17818
@@ -2599,7 +2614,7 @@ export const TOURS = [
         },
         "stage": "earth",
         "frame_radii": 5,
-        "key_light_deg": 90,
+        "key_light_deg": 70,
         "time": "now",
         "chapter": "What reaches us",
         "live_note": "space-weather",
@@ -2737,6 +2752,7 @@ export const TOURS = [
         },
         "stage": "mercury",
         "frame_radii": 4,
+        "key_light_deg": 55,
         "chapter": "The inner planets",
         "live_note": "tonight",
         "card": {
@@ -2746,7 +2762,6 @@ export const TOURS = [
         "drift_deg": 34,
         "drift_rate_deg_s": 6,
         "drift": "toward-light",
-        "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
         "dwell_ms": 17818
@@ -2758,6 +2773,7 @@ export const TOURS = [
         },
         "stage": "venus",
         "frame_radii": 4,
+        "key_light_deg": 55,
         "chapter": "The inner planets",
         "live_note": "tonight",
         "card": {
@@ -2767,7 +2783,6 @@ export const TOURS = [
         "drift_deg": 34,
         "drift_rate_deg_s": 6,
         "drift": "toward-light",
-        "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
         "dwell_ms": 18817
@@ -2779,6 +2794,7 @@ export const TOURS = [
         },
         "stage": "mars",
         "frame_radii": 4,
+        "key_light_deg": 55,
         "chapter": "The inner planets",
         "live_note": "tonight",
         "card": {
@@ -2788,7 +2804,6 @@ export const TOURS = [
         "drift_deg": 34,
         "drift_rate_deg_s": 6,
         "drift": "toward-light",
-        "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
         "dwell_ms": 13822
@@ -2800,6 +2815,7 @@ export const TOURS = [
         },
         "stage": "jupiter",
         "frame_radii": 4,
+        "key_light_deg": 55,
         "chapter": "The giants",
         "live_note": "tonight",
         "card": {
@@ -2809,7 +2825,6 @@ export const TOURS = [
         "drift_deg": 34,
         "drift_rate_deg_s": 6,
         "drift": "toward-light",
-        "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
         "dwell_ms": 15820
@@ -2821,6 +2836,7 @@ export const TOURS = [
         },
         "stage": "saturn",
         "frame_radii": 5,
+        "key_light_deg": 55,
         "chapter": "The giants",
         "live_note": "tonight",
         "card": {
@@ -2830,7 +2846,6 @@ export const TOURS = [
         "drift_deg": 34,
         "drift_rate_deg_s": 6,
         "drift": "toward-light",
-        "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
         "dwell_ms": 15820
@@ -2842,6 +2857,7 @@ export const TOURS = [
         },
         "stage": "uranus",
         "frame_radii": 4,
+        "key_light_deg": 55,
         "chapter": "The giants",
         "live_note": "tonight",
         "card": {
@@ -2851,7 +2867,6 @@ export const TOURS = [
         "drift_deg": 34,
         "drift_rate_deg_s": 6,
         "drift": "toward-light",
-        "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
         "dwell_ms": 17152
@@ -2863,6 +2878,7 @@ export const TOURS = [
         },
         "stage": "neptune",
         "frame_radii": 4,
+        "key_light_deg": 55,
         "chapter": "The giants",
         "live_note": "tonight",
         "card": {
@@ -2872,7 +2888,6 @@ export const TOURS = [
         "drift_deg": 34,
         "drift_rate_deg_s": 6,
         "drift": "toward-light",
-        "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
         "dwell_ms": 15154
@@ -2926,6 +2941,7 @@ export const TOURS = [
           "world": "mars"
         },
         "frame_radii": 4,
+        "key_light_deg": 55,
         "chapter": "The planet",
         "card": {
           "title": "The red planet",
@@ -2934,7 +2950,6 @@ export const TOURS = [
         "drift_deg": 34,
         "drift_rate_deg_s": 6,
         "drift": "toward-light",
-        "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
         "dwell_ms": 18151
@@ -2947,6 +2962,7 @@ export const TOURS = [
         "frame_radii": 1.6,
         "drift_deg": 10,
         "drift_rate_deg_s": 1,
+        "time": "daylight",
         "chapter": "The planet",
         "over": [
           18.65,
@@ -2970,6 +2986,7 @@ export const TOURS = [
         "frame_radii": 1.7,
         "drift_deg": 10,
         "drift_rate_deg_s": 1,
+        "time": "daylight",
         "chapter": "The planet",
         "over": [
           -13.9,
@@ -2991,6 +3008,7 @@ export const TOURS = [
           "site": "viking-1"
         },
         "distance_km": 900,
+        "time": "daylight",
         "chapter": "Where we landed",
         "card": {
           "title": "The first to stay",
@@ -3011,6 +3029,7 @@ export const TOURS = [
           "site": "opportunity"
         },
         "distance_km": 900,
+        "time": "daylight",
         "chapter": "Where we landed",
         "card": {
           "title": "Built for ninety days",
@@ -3031,6 +3050,7 @@ export const TOURS = [
           "site": "gale"
         },
         "distance_km": 900,
+        "time": "daylight",
         "chapter": "Where we landed",
         "card": {
           "title": "Curiosity, climbing a mountain",
@@ -3051,6 +3071,7 @@ export const TOURS = [
           "site": "elysium"
         },
         "distance_km": 900,
+        "time": "daylight",
         "chapter": "Where we landed",
         "card": {
           "title": "InSight, listening",
@@ -3071,6 +3092,7 @@ export const TOURS = [
           "site": "jezero"
         },
         "distance_km": 900,
+        "time": "daylight",
         "chapter": "Where we landed",
         "card": {
           "title": "Perseverance, and a helicopter",
@@ -3092,6 +3114,7 @@ export const TOURS = [
         },
         "frame_radii": 6,
         "behind": "mars",
+        "key_light_deg": 60,
         "chapter": "Around it",
         "card": {
           "title": "Phobos, and Deimos",
@@ -3100,7 +3123,6 @@ export const TOURS = [
         "drift_deg": 34,
         "drift_rate_deg_s": 6,
         "drift": "toward-light",
-        "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
         "dwell_ms": 19150
@@ -3111,6 +3133,7 @@ export const TOURS = [
           "world": "mars"
         },
         "frame_radii": 2.6,
+        "time": "daylight",
         "chapter": "Around it",
         "over": [
           72,

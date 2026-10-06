@@ -73,9 +73,15 @@ export function clipKey(tourId, stopId) {
   return tourId && stopId ? `${tourId}/${stopId}` : '';
 }
 
-/** A clip as audio/load.js wants it: an id for its cache, the Opus file and its AAC twin. */
-export function clipRow(base, key) {
-  return { id: `voice:${key}`, file: `${base}/${key}.opus`, twin: `${base}/${key}.m4a`, vtt: `${base}/${key}.vtt` };
+/**
+ * A clip as audio/load.js wants it: an id for its cache, the Opus file and its AAC twin. `version`
+ * (internal #327) is the clip's hash from registry/narration.yaml, put on all three URLs as `?v=`:
+ * the files are cached for a year under names that never change, so the address has to change when
+ * the words do. Without one the bare path is asked for, as before.
+ */
+export function clipRow(base, key, version) {
+  const v = version ? `?v=${encodeURIComponent(String(version))}` : '';
+  return { id: `voice:${key}`, file: `${base}/${key}.opus${v}`, twin: `${base}/${key}.m4a${v}`, vtt: `${base}/${key}.vtt${v}` };
 }
 
 /** How long a stop must still be held, in ms: what is left of the clip, and the breath after it. */
@@ -149,6 +155,10 @@ export function createNarration(engine, beds, NARRATION, opts = {}) {
     g.linearRampToValueAtTime(to, t + seconds);
   }
 
+  /** The clip's row, with the version its words were rendered at. */
+  const versions = data.versions || {};
+  const rowOf = (key) => clipRow(base, key, versions[key]);
+
   function remember(key) {
     const i = kept.indexOf(key);
     if (i !== -1) kept.splice(i, 1);
@@ -166,12 +176,12 @@ export function createNarration(engine, beds, NARRATION, opts = {}) {
       cueCache.set(key, []);
       // The captions are a nicety: a failure here is a clip with no sentence lit, never a refusal.
       Promise.resolve()
-        .then(() => doFetch(clipRow(base, key).vtt))
+        .then(() => doFetch(rowOf(key).vtt))
         .then((res) => (res && res.ok !== false ? res.text() : ''))
         .then((text) => cueCache.set(key, parseVtt(text)))
         .catch(() => {});
     }
-    return loader.load(clipRow(base, key));
+    return loader.load(rowOf(key));
   }
 
   /** Fetch a clip ahead of its stop. Not on a lean connection, and never before sound is live. */

@@ -1707,6 +1707,9 @@ export function createTrip(ctx) {
       const ms = tonightMs(placeOf(), nowMs);
       return isNum(ms) ? ms : null;
     }
+    // `daylight` needs the stop's own ground (daylightMs, which applyStopTime asks); asked without
+    // one, when the trip is planned, it always resolves.
+    if (time === 'daylight') return nowMs;
     if (typeof time === 'string') {
       const ms = Date.parse(time);
       return Number.isFinite(ms) ? ms : null;
@@ -1723,6 +1726,59 @@ export function createTrip(ctx) {
       return ev && isNum(ev.t) ? ev.t + (Number(time.offset_s) || 0) * 1000 : null;
     }
     return null;
+  }
+
+  /**
+   * `time: daylight` (2026-10-06, public #443): THE NEXT HOUR THE SUN IS UP OVER THIS STOP'S GROUND.
+   *
+   * A lander stands where it landed, and half the time that is in the dark: the walk of every stop
+   * on 2026-10-06 found five of the Moon trip's nine landers, and all three of the odd things left
+   * on the Moon, standing on a black disc, because Tranquility Base was two days into its night.
+   * No camera angle lights a place the Sun is not shining on. So such a stop is shown at the first
+   * hour from the visitor's clock at which the Sun is at least DAYLIGHT_MIN_DEG above that ground:
+   * now, when it already is, and otherwise up to a lunar day ahead. The frame prints the instant
+   * ("Shown at"), as it does for every stop that moves the clock, so nobody is told this is now.
+   *
+   * The ground is the subject itself when it stands on a world (a site, a thing left there), or the
+   * place a world stop stands `over:`. A stop with neither has no ground and is shown as it is, and
+   * so is one where the Sun does not come up in the search (a pole in its winter).
+   */
+  const DAYLIGHT_MIN_DEG = 14;
+  const DAYLIGHT_STEP_MS = 3600e3;
+  const DAYLIGHT_SEARCH_MS = 30 * 86400e3;
+  function daylightMs(entry, baseMs) {
+    const subject = entry.subject;
+    const stop = entry.stop;
+    if (!subject) return baseMs;
+    const world = worldById.get(subject.worldId);
+    if (!world) return baseMs;
+    const over = subject.kind === 'world' && Array.isArray(stop.over) && isNum(stop.over[0]) && isNum(stop.over[1]) ? stop.over : null;
+    const groundAt = (tMs) => {
+      if (over) {
+        const p = fixed({ id: 'over', propagator: 'fixed', frame: `${subject.id}-fixed`, fixed: { latDeg: over[0], lonDeg: over[1], altKm: 0 } }, tMs);
+        return p ? stage.toScene(p, p.frame, tMs) : null;
+      }
+      return subject.kind === 'world' ? null : subject.position(tMs);
+    };
+    const height = (tMs) => {
+      const at = groundAt(tMs);
+      const centreKm = positionOf(world.id, tMs);
+      const sun = sunScene(tMs);
+      if (!at || !centreKm || !sun) return null;
+      const centre = stage.toScene(centreKm, centreKm.frame, tMs);
+      const up = new THREE.Vector3().copy(at).sub(centre);
+      // Not standing on the world at all (a craft far from it): there is no ground to light.
+      if (!over && Math.abs(up.length() * stage.unitKm - world.radiusKm) > world.radiusKm * 0.1) return null;
+      return up.normalize().dot(new THREE.Vector3().copy(sun).sub(at).normalize());
+    };
+    const want = Math.sin(DAYLIGHT_MIN_DEG * DEG);
+    const first = height(baseMs);
+    if (first === null || first >= want) return baseMs;
+    for (let t = baseMs + DAYLIGHT_STEP_MS; t <= baseMs + DAYLIGHT_SEARCH_MS; t += DAYLIGHT_STEP_MS) {
+      const h = height(t);
+      if (h !== null && h >= want) return t;
+    }
+    return baseMs;
   }
 
   /** The fastest this stop's subject may be shown, on the stage it is flown on. See the caps above. */
@@ -1779,8 +1835,9 @@ export function createTrip(ctx) {
         // the eclipse it was showing, so the next stop's `solar-eclipse.next` counted from there
         // found the following one, a year later. The intro card's count is resolved from the
         // visitor's clock too, so the two now agree.
-        const ms = resolveStopTime(stop.time, run.savedClock ? run.savedClock.t : c.now());
-        entry.event = lastEvent;
+        const base = run.savedClock ? run.savedClock.t : c.now();
+        const ms = stop.time === 'daylight' ? daylightMs(entry, base) : resolveStopTime(stop.time, base);
+        entry.event = stop.time === 'daylight' ? null : lastEvent;
         if (ms === null) return 'unresolved';
         c.goTo(ms);
       }
@@ -2153,9 +2210,20 @@ export function createTrip(ctx) {
   function flyToStop(entry, index) {
     // The stop's own clock, after the stage (the rate cap depends on it) and BEFORE the shot, whose
     // subject, key light and arrival all read ctx.clock.now().
-    if (applyStopTime(entry) === 'unresolved') {
+    const clockChange = applyStopTime(entry);
+    if (clockChange === 'unresolved') {
       holdAt(entry);
       return;
+    }
+    // THE MAP'S ORIGIN FOLLOWS THE CLOCK, AND ONLY ONCE A FRAME (scene/worlds.js update, which
+    // puts the stage's world back at the origin). A stop that has just moved the clock twelve
+    // hours composes its shot in this same tick: on Mars's stage Mars has by then gone a million
+    // kilometres along its orbit and the origin has not, so the shot was aimed a thousand units
+    // from the planet under the camera and the flight took an apex to match (found 2026-10-06 by
+    // tests/test_planetarium_trips.mjs, the first trip to move the clock on a planet's own stage).
+    // So the worlds are brought to the stop's instant before anything is measured.
+    if (clockChange === 'moved' && ctx.worlds && typeof ctx.worlds.update === 'function') {
+      try { ctx.worlds.update(ctx.clock.now()); } catch { /* the next frame does it */ }
     }
 
     if (entry.stop.look && run.ground) {

@@ -1914,7 +1914,7 @@ export const COPY = {
     endHome: 'Go home',
     endExploreTitleStage: 'Carry on by yourself, back on the map you started from',
     // The picture to send (public #444): the share sheet's postcard of the view the camera holds.
-    endSend: 'Send this view as a picture',
+    endSend: 'Send picture',
     endSendTitle: 'Make a postcard of where the trip ended, with its words and a link',
     endReplay: 'Watch again',
     endReplayTitle: 'Watch this trip again from the start',

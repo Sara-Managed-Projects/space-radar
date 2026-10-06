@@ -23,9 +23,16 @@ def render(doc: dict) -> list:
     voice = doc.get("voice") or {}
     engine = doc.get("engine") or {}
     clips = {}
+    versions = {}
     for r in doc.get("clips") or []:
         if isinstance(r, dict) and r.get("trip") and r.get("stop"):
             clips[f"{r['trip']}/{r['stop']}"] = r.get("seconds")
+            # Internal #327: the clip's own hash (its words, voice, speed and pauses), eight
+            # characters of it, goes on the URL as `?v=`. The files are served long-lived and keep
+            # their names, so before this a card whose words changed went on being read in its old
+            # words by every returning visitor until somebody invalidated the path by hand.
+            if r.get("hash"):
+                versions[f"{r['trip']}/{r['stop']}"] = str(r["hash"])[:8]
     value = {
         "engine": engine.get("name"),
         "voice": voice.get("id"),
@@ -34,6 +41,8 @@ def render(doc: dict) -> list:
         # Stops whose voice is given its own words (`say:`), so their captions are not the card's.
         "scripted": sorted((doc.get("say") or {}).keys()),
         "clips": clips,
+        # trip/stop -> the version on that clip's URL (audio/narration.js clipRow).
+        "versions": versions,
     }
     return [(
         "The narration (spec 0069): a synthetic voice, made offline. `clips` is trip/stop -> seconds; "

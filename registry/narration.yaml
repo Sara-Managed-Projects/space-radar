@@ -171,3 +171,43 @@ clips:
   - {trip: "the-living-earth", stop: "aurora", hash: "2bc34f7649b7ec7a", seconds: 22.2, words: 56, lufs: -16.5, opus: 89117, m4a: 114594, vtt: 407}
   - {trip: "the-living-earth", stop: "jupiter", hash: "f14c58c993c8a354", seconds: 22.93, words: 55, lufs: -16.6, opus: 91525, m4a: 118288, vtt: 408}
   - {trip: "the-living-earth", stop: "home", hash: "d3c97b117f8c3807", seconds: 19.51, words: 49, lufs: -16.3, opus: 81205, m4a: 100902, vtt: 370}
+  - {trip: "tonight-from-your-street", stop: "above", hash: "90f4231b03ff9190", seconds: 18.12, words: 51, lufs: -16.6, opus: 72605, m4a: 93730, vtt: 360}
+  - {trip: "tonight-from-your-street", stop: "star", hash: "f55f0d1ef10fe7c1", seconds: 19.38, words: 48, lufs: -16.4, opus: 77024, m4a: 100250, vtt: 372}
+  - {trip: "tonight-from-your-street", stop: "figure", hash: "34b93d625ad14e33", seconds: 19.04, words: 53, lufs: -16.6, opus: 76858, m4a: 98511, vtt: 373}
+  - {trip: "tonight-from-your-street", stop: "moon", hash: "107894699ec3ba6b", seconds: 18.67, words: 46, lufs: -16.6, opus: 75165, m4a: 96555, vtt: 356}
+  - {trip: "tonight-from-your-street", stop: "planet", hash: "0c47b50f288c6744", seconds: 13.55, words: 35, lufs: -16.6, opus: 53605, m4a: 70475, vtt: 264}
+  - {trip: "tonight-from-your-street", stop: "pass", hash: "2372d96b8f28b58c", seconds: 20.07, words: 53, lufs: -16.4, opus: 80127, m4a: 103727, vtt: 388}
+  - {trip: "tonight-from-your-street", stop: "out", hash: "0781a8f108cd06f2", seconds: 19.16, words: 53, lufs: -16.5, opus: 78299, m4a: 99163, vtt: 386}
+  - {trip: "moon-phases", stop: "from-outside", hash: "70eb1e45e9736112", seconds: 19.12, words: 54, lufs: -16.3, opus: 78415, m4a: 98946, vtt: 373}
+  - {trip: "moon-phases", stop: "waxing", hash: "aabba08dd1818ed9", seconds: 21.29, words: 56, lufs: -16.5, opus: 85133, m4a: 109812, vtt: 386}
+  - {trip: "moon-phases", stop: "full", hash: "49851b9b64676276", seconds: 19.57, words: 56, lufs: -16.3, opus: 78457, m4a: 101119, vtt: 388}
+  - {trip: "moon-phases", stop: "waning", hash: "1ec8ea224f96123e", seconds: 15.94, words: 40, lufs: -16.5, opus: 63955, m4a: 82646, vtt: 310}
+  - {trip: "moon-phases", stop: "far-side", hash: "cbbcabe0769e9b22", seconds: 18.32, words: 51, lufs: -16.6, opus: 72375, m4a: 94816, vtt: 345}
+  - {trip: "moon-phases", stop: "shadow", hash: "0491f8573ba227ed", seconds: 19.92, words: 54, lufs: -16.6, opus: 79231, m4a: 102858, vtt: 376}
+  - {trip: "moon-phases", stop: "tonight", hash: "5619b17727c8d1d2", seconds: 17.96, words: 48, lufs: -16.5, opus: 71987, m4a: 93078, vtt: 352}
+  - {trip: "the-sun-today", stop: "star", hash: "bd4ec6631a221617", seconds: 19.01, words: 48, lufs: -16.4, opus: 75431, m4a: 98294, vtt: 346}
+  - {trip: "the-sun-today", stop: "spots", hash: "97f0953263912de3", seconds: 20.15, words: 51, lufs: -16.5, opus: 80151, m4a: 104162, vtt: 383}
+  - {trip: "the-sun-today", stop: "eight-minutes", hash: "0ec2a7dfa112d954", seconds: 19.21, words: 54, lufs: -16.4, opus: 76553, m4a: 99380, vtt: 379}
+  - {trip: "the-sun-today", stop: "wind", hash: "17264fb1092437fd", seconds: 23.4, words: 53, lufs: -16.5, opus: 93186, m4a: 120679, vtt: 431}
+  - {trip: "the-sun-today", stop: "aurora", hash: "61a5befc52712356", seconds: 20.67, words: 53, lufs: -16.6, opus: 82649, m4a: 106770, vtt: 391}
+  - {trip: "the-sun-today", stop: "scale", hash: "c8d9fb8a7f3b9045", seconds: 17.09, words: 44, lufs: -16.5, opus: 70863, m4a: 88514, vtt: 326}
+  - {trip: "the-sun-today", stop: "home", hash: "e4d502283e1fb489", seconds: 19.99, words: 51, lufs: -16.3, opus: 81436, m4a: 103292, vtt: 393}
+  - {trip: "planets-tonight", stop: "where", hash: "66e908ae8cc26fce", seconds: 19.23, words: 57, lufs: -16.6, opus: 76235, m4a: 99380, vtt: 373}
+  - {trip: "planets-tonight", stop: "mercury", hash: "c828daedfb9bdb07", seconds: 17.35, words: 47, lufs: -16.5, opus: 69276, m4a: 89818, vtt: 337}
+  - {trip: "planets-tonight", stop: "venus", hash: "a6a61eedfdec4bca", seconds: 18.84, words: 50, lufs: -16.5, opus: 74844, m4a: 97424, vtt: 367}
+  - {trip: "planets-tonight", stop: "mars", hash: "b02b4a733eb070fb", seconds: 14.23, words: 35, lufs: -16.4, opus: 55145, m4a: 73952, vtt: 257}
+  - {trip: "planets-tonight", stop: "jupiter", hash: "326ff24141ccb73f", seconds: 17.16, words: 41, lufs: -16.3, opus: 67780, m4a: 88948, vtt: 331}
+  - {trip: "planets-tonight", stop: "saturn", hash: "7363396804d948f1", seconds: 18.2, words: 41, lufs: -16.5, opus: 72532, m4a: 94164, vtt: 346}
+  - {trip: "planets-tonight", stop: "uranus", hash: "6b7d657e794639e3", seconds: 18.01, words: 45, lufs: -16.4, opus: 71424, m4a: 93295, vtt: 351}
+  - {trip: "planets-tonight", stop: "neptune", hash: "572c90dcdfff5f0f", seconds: 16.76, words: 39, lufs: -16.6, opus: 65925, m4a: 86775, vtt: 317}
+  - {trip: "planets-tonight", stop: "your-sky", hash: "764e6f5d8baf2d14", seconds: 17.93, words: 46, lufs: -16.3, opus: 72045, m4a: 92860, vtt: 346}
+  - {trip: "mars-where-we-have-driven", stop: "planet", hash: "204b5fff8e15de79", seconds: 19.64, words: 50, lufs: -16.6, opus: 77950, m4a: 101554, vtt: 369}
+  - {trip: "mars-where-we-have-driven", stop: "olympus", hash: "b80fc4f3552af945", seconds: 18.41, words: 43, lufs: -16.5, opus: 73694, m4a: 95251, vtt: 330}
+  - {trip: "mars-where-we-have-driven", stop: "valles", hash: "70b59edf97939bcc", seconds: 19.92, words: 46, lufs: -16.6, opus: 79378, m4a: 102858, vtt: 366}
+  - {trip: "mars-where-we-have-driven", stop: "viking-1", hash: "6380bde19285c071", seconds: 20.24, words: 51, lufs: -16.5, opus: 80301, m4a: 104596, vtt: 380}
+  - {trip: "mars-where-we-have-driven", stop: "opportunity", hash: "4326338de02a995f", seconds: 19.25, words: 44, lufs: -16.5, opus: 76644, m4a: 99598, vtt: 356}
+  - {trip: "mars-where-we-have-driven", stop: "gale", hash: "28612c3fb05d8a7d", seconds: 21.76, words: 54, lufs: -16.4, opus: 87204, m4a: 112420, vtt: 358}
+  - {trip: "mars-where-we-have-driven", stop: "elysium", hash: "263c41d8e2e4cf13", seconds: 21.43, words: 47, lufs: -16.4, opus: 84838, m4a: 110682, vtt: 397}
+  - {trip: "mars-where-we-have-driven", stop: "jezero", hash: "5e6907c5d015c692", seconds: 22.95, words: 50, lufs: -16.5, opus: 91648, m4a: 118288, vtt: 402}
+  - {trip: "mars-where-we-have-driven", stop: "phobos", hash: "ad7cd0c159263997", seconds: 23.38, words: 53, lufs: -16.4, opus: 94640, m4a: 120462, vtt: 427}
+  - {trip: "mars-where-we-have-driven", stop: "seasons", hash: "472efcb52d137783", seconds: 21.08, words: 53, lufs: -16.4, opus: 84173, m4a: 108943, vtt: 373}
