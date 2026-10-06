@@ -527,6 +527,31 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
   const a4 = C.actionButtons({ id: 'deep-voyager-1', klass: 'probe', propagator: 'sampled', frame: 'sun-inertial', meta: {} }, ride, { ok: true, frame: 'sun-inertial' });
   check(a4[1].disabled === true && a4[1].title === COPY.sky.notVisibleFromGround, `See it is off for a craft beyond Earth, and its tooltip says why: ${a4[1].title}`);
   check(a1.every((b) => b.title && b.children[0].getAttribute('aria-hidden') === 'true'), 'every action has its words in a tooltip and an icon hidden from a screen reader');
+  // The flood light (internal #272): one quiet switch on the card of anything drawn as a model,
+  // its note on screen for as long as the lamp is, remembered for the session.
+  {
+    const F = COPY.flood;
+    const store = new Map();
+    const hadStore = Object.getOwnPropertyDescriptor(globalThis, 'sessionStorage');
+    Object.defineProperty(globalThis, 'sessionStorage', { configurable: true, value: { getItem: (k) => (store.has(k) ? store.get(k) : null), setItem: (k, v) => store.set(k, String(v)) } });
+    const calls = [];
+    const fctx = { setFloodLight: (on) => { calls.push(on); return on; } };
+    check(C.offersFlood(orbiting) && C.offersFlood({ id: 'deep-dawn', klass: 'probe', meta: {} }) && C.offersFlood({ id: 'apollo-11', klass: 'site', meta: {} }), 'a station, a probe and a lander on the Moon offer the lamp');
+    check(!C.offersFlood({ id: 'mars', klass: 'world', meta: {} }) && !C.offersFlood({ id: 'hip-1', klass: 'star', meta: {} }) && !C.offersFlood(null), 'a planet and a star do not: their light is not a model\'s');
+    check(C.floodControls({ id: 'mars', klass: 'world', meta: {} }, fctx).length === 0, 'and their cards carry no switch');
+    const [btn, note] = C.floodControls(orbiting, fctx);
+    check(btn.tagName === 'BUTTON' && btn.type === 'button' && btn.textContent === F.on && btn.getAttribute('aria-pressed') === 'false' && btn.title === F.title, `the switch starts off and says "${F.on}"`);
+    check(note.hidden === true && calls.length === 0, 'in the real light there is no note and nothing is switched');
+    btn.click();
+    check(btn.getAttribute('aria-pressed') === 'true' && btn.textContent === F.off && note.hidden === false && note.textContent === F.note && calls.join() === 'true', 'pressed, the lamp is on and the card says it is not the real light');
+    check(store.get('sr.flood') === '1' && C.floodWantedNow() === true, 'and the session remembers');
+    const [btn2, note2] = C.floodControls({ id: 'deep-dawn', klass: 'probe', meta: {} }, fctx);
+    check(btn2.getAttribute('aria-pressed') === 'true' && note2.hidden === false && calls.join() === 'true,true', 'the next card opens lit, with its note');
+    btn2.click();
+    check(btn2.getAttribute('aria-pressed') === 'false' && note2.hidden === true && calls.join() === 'true,true,false' && store.get('sr.flood') === '0', 'pressed again, the real light is back');
+    check(F.on.split(' ').length <= 2 && F.off.split(' ').length <= 2 && /not the light/.test(F.note) && F.note.length <= 80, 'two words a button, and a note that says whose light it is');
+    if (hadStore) Object.defineProperty(globalThis, 'sessionStorage', hadStore); else delete globalThis.sessionStorage;
+  }
   globalThis.document = before;
 }
 

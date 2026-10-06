@@ -224,6 +224,57 @@ assert.equal(colourRoute(root([])), 'class', 'a model with no materials keeps th
   console.log('  a world\'s shadow: the ISS dark at midnight, a night-side lander dark, the same soft edge as the dots, a faint city glow over the Earth only');
 }
 
+// THE FLOOD LIGHT (internal #272): a lamp for looking at a model in shadow, off by default, that
+// only ever lifts a pixel. The shader and floodLit() are the same sum.
+{
+  const M = await import(join(ROOT, 'site/js/scene/models.js'));
+  assert.equal(M.floodLightOn(), false, 'the real light is the default');
+  const dark = 0.8 * M.NIGHT_FLOOR; // a white hull in the Earth's shadow
+  assert.equal(M.floodLit(dark, 0.8, 1), dark, 'off, it changes nothing');
+  assert.equal(M.setFloodLight(true), true);
+  assert.ok(M.floodLightOn());
+  const lit = M.floodLit(dark, 0.8, 1);
+  assert.ok(lit > 0.5 && lit <= 0.8, `on, a hull in shadow that faces the camera can be seen (${lit.toFixed(2)})`);
+  assert.ok(M.floodLit(dark, 0.8, 0) >= 0.8 * 0.45 && M.floodLit(dark, 0.8, 0) < lit, 'and a face edge-on is dimmer, so the shape still reads');
+  assert.equal(M.floodLit(0.95, 0.8, 1), 0.95, 'it never darkens what the Sun lights more brightly');
+  assert.ok(M.FLOOD_LEVEL < 1, 'the lamp stays under full sunlight');
+  const fake = { uniforms: {}, fragmentShader: 'void main() {\n#include <opaque_fragment>\n}' };
+  M.toonMaterial('#FFFFFF', 'body', new Map()).onBeforeCompile(fake);
+  const fs = fake.fragmentShader;
+  assert.ok(fake.uniforms.uFlood && fake.uniforms.uFlood.value === M.FLOOD_LEVEL, 'every toon material reads the one shared lamp');
+  assert.ok(fs.includes('uniform float uFlood;') && fs.includes('max( outgoingLight, diffuseColor.rgb * head * uFlood )'), 'the shader lifts, with max()');
+  assert.ok(fs.indexOf('uFlood > 0.0') > fs.indexOf('mix( night, outgoingLight, sunlit )'), 'and after the world\'s shadow, which would otherwise take it away');
+  assert.equal(M.setFloodLight(false), false);
+  assert.equal(fake.uniforms.uFlood.value, 0, 'off again, the same uniform is 0');
+  console.log('  the flood light: off by default, lifts a shadowed hull to where it can be seen, never darkens, never brighter than day');
+}
+
+// A MODEL NOBODY CAN REACH, AND A ROUTE TO A FILE THAT IS NOT THERE (public #472). A real_models
+// row whose file no route in scene/realmodels.js names is drawn as the generic shape while its
+// model ships; a route naming a file that does not ship is drawn as nothing. Both directions,
+// from the registry and the directory. The one allowed exception says why in its own row.
+{
+  const { readdirSync, readFileSync } = await import('node:fs');
+  const { REAL_MODELS } = await import(join(ROOT, 'site/js/scene/realmodels.js'));
+  const routed = new Set();
+  const walk = (o) => { if (!o || typeof o !== 'object') return; if (typeof o.file === 'string') routed.add(o.file); for (const v of Object.values(o)) walk(v); };
+  walk(REAL_MODELS);
+  // realmodels.js also routes by orbit and by a resolve() function; read the source for those.
+  const src = readFileSync(join(ROOT, 'site/js/scene/realmodels.js'), 'utf8');
+  for (const m of src.matchAll(/file: '([A-Za-z0-9_.-]+\.glb)'/g)) routed.add(m[1]);
+  const shipped = readdirSync(join(ROOT, 'site/models')).filter((n) => n.endsWith('.glb'));
+  const yaml = readFileSync(join(ROOT, 'registry/models.yaml'), 'utf8');
+  const UNROUTED_ON_PURPOSE = { 'maven.glb': /NOTHING YET, on purpose/ };
+  const unreachable = shipped.filter((f) => !routed.has(f) && !UNROUTED_ON_PURPOSE[f]);
+  assert.deepEqual(unreachable, [], 'models that ship and that no record can be drawn with');
+  for (const [f, why] of Object.entries(UNROUTED_ON_PURPOSE)) {
+    const row = yaml.split('\n').find((l) => l.includes(`file: site/models/${f}`)) || '';
+    assert.ok(shipped.includes(f) && !routed.has(f) && why.test(row), `${f} is the stated exception: shipped, not routed, and its row says why`);
+  }
+  assert.deepEqual([...routed].filter((f) => !shipped.includes(f)), [], 'routes to a model file that does not ship');
+  console.log(`  ${shipped.length} model files: every one reachable by a record but maven.glb, which says why; no route to a missing file`);
+}
+
 console.log('model colour: ok');
 
 // A PALETTE NEEDS COORDINATES TO BE READ WITH. Three shipped files (gpm, icon, tselina2) had a

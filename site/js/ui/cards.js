@@ -2438,6 +2438,69 @@ function trackControls(record, ctx, m) {
 }
 
 // ---------------------------------------------------------------------------------------
+// The flood light (internal #272): one quiet switch on the card of anything drawn as a model
+// ---------------------------------------------------------------------------------------
+//
+// A craft on a world's night side is drawn dark because it is dark. This lights the MODEL evenly so
+// that it can be looked at, and says so for as long as it is on: the note is the honesty line of
+// the switch. Remembered for the session only (sessionStorage), so a new visit starts in the real
+// light. scene/models.js is fetched by the click, or by a card that opens with the lamp already
+// on; the card never imports it (tests/test_boot_diet.mjs).
+const FLOOD_KEY = 'sr.flood';
+const FLOOD_KLASSES = new Set(['station', 'satellite', 'probe', 'telescope', 'rocket', 'debris']);
+let floodWanted = null;
+
+/** Is the lamp wanted this session? Exported for the test. */
+export function floodWantedNow() {
+  if (floodWanted === null) {
+    try { floodWanted = globalThis.sessionStorage ? globalThis.sessionStorage.getItem(FLOOD_KEY) === '1' : false; } catch { floodWanted = false; }
+  }
+  return floodWanted;
+}
+
+/** Does this record's card offer the lamp? Anything drawn as a model up close. Exported for the test. */
+export function offersFlood(record) {
+  if (!record) return false;
+  if (FLOOD_KLASSES.has(record.klass)) return true;
+  let entry = null;
+  try { entry = realModelFor(record); } catch { entry = null; }
+  return !!(entry && (entry.file || entry.build));
+}
+
+function applyFlood(on, ctx) {
+  const set = ctx && typeof ctx.setFloodLight === 'function'
+    ? Promise.resolve(ctx.setFloodLight(on))
+    : import('../scene/models.js').then((mod) => mod.setFloodLight(on));
+  return set.then(() => { if (ctx && typeof ctx.requestRender === 'function') ctx.requestRender(); }).catch(() => { /* no lamp: the real light stays */ });
+}
+
+/** The switch and its note, or nothing. Exported for the test. */
+export function floodControls(record, ctx) {
+  if (!offersFlood(record)) return [];
+  const F = COPY.flood;
+  const on = floodWantedNow();
+  const toggle = el('button', 'sr-btn sr-btn--quiet sr-card__inline', on ? F.off : F.on);
+  toggle.type = 'button';
+  toggle.title = F.title;
+  toggle.setAttribute('data-action', 'flood');
+  toggle.setAttribute('aria-pressed', on ? 'true' : 'false');
+  const note = el('p', 'sr-card__note', F.note);
+  note.hidden = !on;
+  toggle.addEventListener('click', () => {
+    const next = toggle.getAttribute('aria-pressed') !== 'true';
+    floodWanted = next;
+    try { if (globalThis.sessionStorage) globalThis.sessionStorage.setItem(FLOOD_KEY, next ? '1' : '0'); } catch { /* private window: this page only */ }
+    toggle.setAttribute('aria-pressed', next ? 'true' : 'false');
+    toggle.textContent = next ? F.off : F.on;
+    note.hidden = !next;
+    applyFlood(next, ctx);
+  });
+  // A card that opens with the lamp already on (a second object in the same session) lights it.
+  if (on) applyFlood(true, ctx);
+  return [toggle, note];
+}
+
+// ---------------------------------------------------------------------------------------
 // The card view's top: the microlabel and the three numbers (spec 0061 §4)
 // ---------------------------------------------------------------------------------------
 
@@ -3244,6 +3307,9 @@ function render(record, ctx, opts = {}) {
   // 4. the next 90 minutes in time: light and shadow, the lap (spec 0048)
   const time = timeFactsSection(record, ctx, m);
   if (time) { body.appendChild(time.bar); startTimeFacts(); }
+
+  // 4b. the flood light, under the light it stands in for (internal #272).
+  for (const n of floodControls(record, ctx)) body.appendChild(n);
 
   // 5. the sections, each opening in place.
   body.appendChild(moreSections(record, ctx, m, passInfo, rows, time, false, opts));

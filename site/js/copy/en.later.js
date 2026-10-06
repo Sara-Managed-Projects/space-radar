@@ -37,6 +37,15 @@ Object.assign(COPY, {
     couldNotReach: 'Could not reach the subscription service.',
   },
 
+  // The flood light on a model's card (ui/cards.js floodControls, scene/models.js setFloodLight;
+  // internal #272). `note` is the honesty line and is on screen for as long as the lamp is.
+  flood: {
+    on: 'Light it',
+    off: 'Real light',
+    title: 'Light the model evenly, so it can be seen in shadow. Not the real light.',
+    note: 'Lit for viewing: this is our lamp, not the light that falls on it now.',
+  },
+
   // A craft drawn from its own path file (propagate/ephemeris.js, ui/missions.js; internal #277).
   // {km} is the bound tests/test_ephemerides.mjs holds the file to against JPL's positions.
   ephemeris: {
