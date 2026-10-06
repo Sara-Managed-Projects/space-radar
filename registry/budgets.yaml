@@ -21,7 +21,11 @@ budgets:
   # from a local server as CI runs it, and 3 068 642 B from the live site (compressed, with the saved
   # copy's 651 kB). The design's 2.5 MB was the live number of 2026-09-21 and the live site is over it
   # now; the gate is the number CI sees, with the 6 % margin the design asked for.
-  - {id: first_visit_bytes, value: 5900000, unit: bytes, since: 2026-10-06, reason: "A bridge, not a target (internal #405): sixteen trips' stops and the narration manifest ride the boot graph, and CI measured 5 625 519 B (uncompressed, as screens.yml counts) with the five new trips, over the 5 600 000 B this row held since 2026-10-02. The cut that brings it back (trip stops and the narration manifest loaded when a trip opens, the card module lazy) is its own package; lower this row in that PR"}
+  # WHICH TREE, SINCE 2026-10-06 (internal #405): the one a deploy uploads. scripts/deploy.sh sends js/
+  # and css/ without their comments (scripts/minify_site.py), screens.yml builds and serves that tree,
+  # and this row is its number. site/ as written is booted beside it for information
+  # (first-visit-source.json: 4 809 696 B that day) and is not held to this row: a comment is free.
+  - {id: first_visit_bytes, value: 4008000, unit: bytes, since: 2026-10-06, reason: "3 817 516 B measured + 5 %, by CI's method (a phone at 390x844, CelesTrak and Launch Library blocked, uncompressed) on the tree a deploy uploads. It was 5 773 324 B on main that morning. The boot diet (internal #405): the card, the trips and their stops, the model shapes, the glTF loader, the deep-sky table and the words of what loads later are fetched when wanted (4 809 696 B as written), and a deploy strips comments and indentation from js/ and css/ (3 817 516 B as served). A laptop at 1440x900 is 3 938 782 B: one more font and the 4k Milky Way"}
   - {id: audio_at_boot_bytes, value: 0, unit: bytes, since: 2026-09-22, reason: "spec 0035: nothing before a gesture"}
   - {id: og_at_boot_bytes, value: 0, unit: bytes, since: 2026-09-22, reason: "spec 0033: previews and cards only"}
   # WOFF2 is already compressed, so this number is the same on CI's server and the live site.

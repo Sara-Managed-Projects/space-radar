@@ -65,7 +65,7 @@ date, and tests hold them. A budget may be raised only by a change that says why
 
 | Budget | Value | Why |
 |---|---|---|
-| Bytes on a first visit | 5.6 MB | It has to open on a school connection. |
+| Bytes on a first visit | 4.0 MB | It has to open on a school connection. Counted uncompressed, on the files a deploy uploads (the source without its comments). |
 | Audio and share pictures at boot | 0 bytes | Nothing is fetched before a visitor asks for it. |
 | Fonts at boot | 90 kB | Latin subsets of the faces the first screen uses. |
 | Map tiles on a first visit | 0 requests | Tiles load only when the camera is close. |
