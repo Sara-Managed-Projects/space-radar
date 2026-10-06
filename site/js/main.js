@@ -572,7 +572,9 @@ export async function boot({ setStatus } = {}) {
   const keyHint = () => import('./ui/keyhint.js').then((m) => m.createKeyHint(ctx, { deepLink: arrivedByLink }));
   ctx.keyhint = { show: () => keyHint().then((api) => api.show()) };
   const hintLater = () => setTimeout(() => keyHint().then((api) => api.maybeShow()).catch((e) => console.warn('the controls hint did not load', e)), KEYHINT_MS);
-  if (!embed) window.addEventListener('sr:layers-ready', hintLater, { once: true });
+  window.addEventListener('sr:layers-ready', hintLater, { once: true });
+  // An embed shows no hint and does not fetch it (ui/embed.js): the listener comes off again.
+  if (embed) window.removeEventListener('sr:layers-ready', hintLater);
   // OFFLINE (site/sw.js, ui/offline.js; issues #290, #453): the service worker is registered
   // OFFLINE_MS after sr:layers-ready, past the keys hint, so nothing it does is a first visit's cost.
   // NEVER IN AN EMBED (public #439): a frame under someone else's headline keeps nothing on the
