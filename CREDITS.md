@@ -327,9 +327,9 @@ The numbers are facts and carry no licence; the arrangement is this project's (M
 
 ## 3b. 3D models — NASA, public domain
 
-Forty-four spacecraft, spacecraft-bus, antenna, rocket-stage and surface models ship in `site/models/`, all
+Fifty-two spacecraft, spacecraft-bus, antenna, rocket-stage and surface models ship in `site/models/`, all
 from **NASA 3D Resources** (<https://github.com/nasa/NASA-3D-Resources>, mirrored from
-<https://science.nasa.gov/3d-resources/>), 6.7 MB in total.
+<https://science.nasa.gov/3d-resources/>), 6.6 MB in total.
 
 NASA's media usage guidelines: material created by NASA is generally **not protected by copyright**
 and may be used without permission. The exceptions are the NASA insignia, logo and seal, which may
@@ -353,7 +353,7 @@ than counted by hand.
 
 | file | NASA model | used for | size |
 |---|---|---|---|
-| `poes.glb` | Polar Operational Environmental Satellite (POES) | NOAA 15, NOAA 18, NOAA 19 — the bus they share | 221 KB |
+| `poes.glb` | Polar Operational Environmental Satellite (POES) | NOAA 15, NOAA 18, NOAA 19 — the bus they share | 162 KB |
 
 **Rocket bodies**
 
@@ -365,14 +365,15 @@ than counted by hand.
 
 | file | NASA model | used for | size |
 |---|---|---|---|
-| `chandra.glb` | Chandra X-ray Observatory | NORAD 25867 (CXO) | 118 KB |
-| `fermi.glb` | Fermi Gamma-ray Large Area Space Telescope | NORAD 33053 (FGRST (GLAST)) | 174 KB |
+| `chandra.glb` | Chandra X-ray Observatory | NORAD 25867 (CXO) | 148 KB |
+| `fermi.glb` | Fermi Gamma-ray Large Area Space Telescope | NORAD 33053 (FGRST (GLAST)) | 142 KB |
 | `hinode.glb` | Hinode (Solar-B) | NORAD 29479 (HINODE (SOLAR-B)) | 103 KB |
-| `hubble.glb` | Hubble Space Telescope (A) | NORAD 20580 | 47 KB |
-| `sdo.glb` | Solar Dynamics Observatory | NORAD 36395 (SDO) | 124 KB |
+| `hubble.glb` | Hubble Space Telescope (A) | NORAD 20580 | 78 KB |
+| `sdo.glb` | Solar Dynamics Observatory | NORAD 36395 (SDO) | 113 KB |
 | `soho.glb` | Solar and Heliospheric Observatory | Horizons -21 | 29 KB |
-| `swift.glb` | Swift | NORAD 28485 (SWIFT) | 152 KB |
+| `swift.glb` | Swift | NORAD 28485 (SWIFT) | 147 KB |
 | `tess.glb` | Transiting Exoplanet Survey Satellite (TESS) (A) | NORAD 43435 (TESS) | 162 KB |
+| `jwst.glb` | James Webb Space Telescope (B) | Horizons -170 (James Webb Space Telescope) | 211 KB |
 
 **Satellites**
 
@@ -384,11 +385,12 @@ than counted by hand.
 | `calipso.glb` | Cloud-Aerosol Lidar and Infrared Pathfinder Satellite (CALIPSO) | catalogue name CALIPSO | 267 KB |
 | `cloudsat.glb` | CloudSat (A) | catalogue name CLOUDSAT | 206 KB |
 | `dscovr.glb` | Deep Space Climate Observatory (DSCOVR) (Triana) | catalogue names containing DSCOVR | 96 KB |
-| `goes.glb` | Geostationary Operational Environmental Satellites | catalogue names containing GOES | 141 KB |
+| `goes.glb` | Geostationary Operational Environmental Satellites | catalogue names containing GOES | 124 KB |
 | `grace.glb` | Gravity Recovery and Climate Experiment (GRACE) (B) | NORAD 43476 (GRACE-FO 1), drawn as its sister ship | 17 KB |
 | `icesat2.glb` | Ice, Clouds, and Land Elevation Satellite-2 (ICESat-2) (A) | NORAD 43613 (ICESAT-2) | 290 KB |
-| `jason.glb` | Ocean Surface Topography Mission (OSTM Jason-2) | NORAD 41240 (JASON-3), drawn as its sister ship | 59 KB |
-| `landsat.glb` | Landsat 7 | NORAD 25682, 39084, 49260 (Landsat 7, 8, 9) | 69 KB |
+| `jason.glb` | Ocean Surface Topography Mission (OSTM Jason-2) | NORAD 41240 (JASON-3), drawn as its sister ship | 123 KB |
+| `landsat.glb` | Landsat 7 | NORAD 25682 (Landsat 7) | 69 KB |
+| `landsat8.glb` | Landsat 8 | NORAD 39084, 49260 (Landsat 8, 9) | 177 KB |
 | `mms.glb` | Magnetospheric Multiscale (MMS) (A) | NORAD 40482-40485 (MMS 1 to MMS 4) | 121 KB |
 | `sentinel6.glb` | Jason Continuity of Service (Sentinel-6) | NORAD 46984 (SENTINEL-6A) | 102 KB |
 | `oco2.glb` | Orbiting Carbon Observatory (OCO) 2 | catalogue name OCO 2 | 189 KB |
@@ -405,10 +407,13 @@ than counted by hand.
 
 | file | NASA model | used for | size |
 |---|---|---|---|
-| `juno.glb` | Juno (B) | Horizons -61 | 111 KB |
-| `mro.glb` | Mars Reconnaissance Orbiter (MRO) (B) | Horizons -74 | 12 KB |
+| `juno.glb` | Juno (B) | Horizons -61 | 146 KB |
+| `lro.glb` | Lunar Reconnaissance Orbiter (A) | Horizons -85 | 187 KB |
+| `mro.glb` | Mars Reconnaissance Orbiter (MRO) (C) | Horizons -74 | 121 KB |
+| `osiris-rex.glb` | Origins, Spectral Interpretation, Resource Identification, and Security - Regolith Explorer (OSIRIS-REx) | Horizons -64 (OSIRIS-APEX, the same spacecraft on its second mission) | 171 KB |
 | `parker.glb` | Parker Solar Probe | Horizons -96 | 180 KB |
-| `voyager.glb` | Voyager Probe (A) | Horizons -31, -32 | 139 KB |
+| `stereo.glb` | Solar TErrestrial RElations Observatory (STEREO) | Horizons -234 (STEREO-A) | 138 KB |
+| `voyager.glb` | Voyager Probe (A) | Horizons -31, -32 | 143 KB |
 
 **Small bodies**
 
@@ -424,9 +429,12 @@ than counted by hand.
 |---|---|---|---|
 | `dsn34.glb` | Deep Space Network 34-meter | the dss-25 antenna, which is 34 m and was wrongly drawn with the 70 m model | 151 KB |
 | `dsn70.glb` | Deep Space Network 70-meter | DEFAULT for ground sites of class `dish` | 149 KB |
-| `lunar-module.glb` | Apollo Lunar Module | the Apollo 11, 12, 14, 15, 16 and 17 landing sites -- one vehicle design, six descent stages | 473 KB |
+| `insight.glb` | InSight Cruise Lander | the InSight landing site at Elysium Planitia | 267 KB |
+| `lunar-module.glb` | Apollo Lunar Module | the Apollo 11, 12, 14, 15, 16 and 17 landing sites -- one vehicle design, six descent stages | 176 KB |
+| `mer.glb` | Mars Exploration Rover - Opportunity (MER-B) | the Opportunity site, and the Spirit site as its twin | 38 KB |
 | `pad.glb` | Mobile Launcher | DEFAULT for every launch pad -- 17 today, more with each Launch Library refresh | 74 KB |
-| `perseverance.glb` | Mars 2020 Perseverance Rover | Jezero crater on Mars | 412 KB |
+| `perseverance.glb` | Mars 2020 Perseverance Rover | Jezero crater on Mars; and Gale crater, where Curiosity is drawn with it as the kind of thing | 256 KB |
+| `viking-lander.glb` | Viking Lander | the Viking 1 and Viking 2 landing sites | 163 KB |
 
 **Credit line:** `3D model: NASA`
 
@@ -470,7 +478,20 @@ credit:
    2 480 KB to 1 211 KB, and `tests/test_model_colour.mjs` fails if a shipped model carries an
    image that is not a palette strip.
 
-They are loaded **on demand**, one file per object, only when the camera is near it. Nobody downloads all 45; the largest single download is `lunar-module.glb` at 473 KB.
+7. **Rebuilt in their own colours**, for twenty-one files, with `scripts/bake-own-colours.mjs`
+   (2026-10-05). Steps 3 to 6 threw the colour away whenever it lived in a texture, and the app
+   then painted the whole spacecraft in one colour for its class: the Apollo lunar module was
+   salmon and Voyager lavender. This pass starts again from NASA's file: it welds and decimates
+   the geometry, then gives every surviving triangle the **flat** colour NASA's own material shows
+   at that place (its stated base colour, times its texture averaged over a 48 px raster), and
+   keeps at most fourteen colours per model. Two things are changed on purpose and are ours, not
+   NASA's: the brightness of each colour is held between 12 % and 93 %, so a stated pure black
+   does not draw as a hole in the sky and a pure white does not glare; and parts smaller than
+   0.4 % of the model are dropped. The photographs, normal maps and metalness are still not
+   shipped, and the toon shading of step 5 is unchanged — the colours are NASA's, the light is
+   ours. `mms.glb` was not rebuilt: NASA's file states no colours at all.
+
+They are loaded **on demand**, one file per object, only when the camera is near it. Nobody downloads all 53; the largest single download is `icesat2.glb` at 290 KB.
 
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 

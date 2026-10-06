@@ -31,7 +31,9 @@ import { loadRealModel } from '../site/js/scene/realmodels.js';
 const byName = new Map(sampleAsteroids().map((r) => [r.name.toLowerCase(), r]));
 
 const WHICH = (new URLSearchParams(location.search).get('m') || 'telescope:gaia,probe:solar-orbiter,probe:new-horizons,probe:default,telescope:default').split(',');
-const CELL = 340, COLS = Math.min(3, WHICH.length);
+// `cols=4` and `cell=300` size the sheet; the defaults are the ones the first sheets were read at.
+const QS = new URLSearchParams(location.search);
+const CELL = Number(QS.get('cell')) || 340, COLS = Math.min(Number(QS.get('cols')) || 3, WHICH.length);
 const ROWS = Math.ceil(WHICH.length / COLS);
 const canvas = document.getElementById('c');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
@@ -54,7 +56,10 @@ for (let i = 0; i < WHICH.length; i++) {
   // `file:asteroid-eros.glb` loads a shipped model through the app's OWN loader, so the sheet shows
   // what the app shows: normalise() and the toon retexture included, not a bare GLTFLoader result.
   if (klass === 'file') {
-    const obj = await loadRealModel({ file: variant, colour: 'asteroid' });
+    // `file:hubble.glb@telescope` names the class colour a file WOULD be painted if it carried no
+    // colours of its own, which is the half of the before/after a recolour is judged by.
+    const [file, colour = 'asteroid'] = variant.split('@');
+    const obj = await loadRealModel({ file, colour });
     if (!obj) throw new Error(`could not load ${variant}`);
     obj.userData.cell = i;
     scene.add(obj);

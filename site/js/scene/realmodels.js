@@ -13,6 +13,17 @@
 //    a tube with a door and a real Voyager is a dish with a boom, and no amount of shading makes a
 //    procedural box read as either. Pass `keepMaterials: true` to opt out.
 //
+//    THE COLOURS ARE REAL TOO, SINCE 2026-10-05, AND THEY ARE FLAT. Shading and colour are two
+//    things, and only the first was ever the brief. Painting a whole spacecraft in its class
+//    colour is what made the Apollo lunar module salmon and Voyager lavender (issues #265, #386,
+//    #418): the gold foil, the white dish and the black blankets ARE the recognition up close, as
+//    much as the outline is. So a file now ships a flat colour per part, baked from NASA's own
+//    materials and textures by scripts/bake-own-colours.mjs, and each goes through the same toon
+//    ramp, the same rim and the same planet-shine as everything else on screen. ONE LOOK: flat
+//    tones, three steps of light, no photographs, no normal maps, no metalness -- a real model
+//    and a procedural one beside it are drawn by the same hand. The class colour is now only what
+//    a file with no colours of its own falls back to (colourRoute, below).
+//
 // 2. NOTHING BLOCKS. A hero appears as procedural geometry immediately and upgrades in place when
 //    its file arrives. A visitor on a slow connection sees a satellite now and a better satellite
 //    a second later, rather than an empty orbit and a spinner. A file that fails to load is simply
@@ -113,8 +124,11 @@ export const REAL_MODELS = {
     57800: { build: 'space-telescope', colour: 'telescope', name: 'a space telescope', catalogue: 'XRISM', generic: true },
     20580: { file: 'hubble.glb', colour: 'telescope', name: 'Hubble Space Telescope', catalogue: 'HST' },
     25682: { file: 'landsat.glb', colour: 'satellite', name: 'Landsat 7', catalogue: 'LANDSAT 7' },
-    39084: { file: 'landsat.glb', colour: 'satellite', name: 'Landsat 8', catalogue: 'LANDSAT 8' },
-    49260: { file: 'landsat.glb', colour: 'satellite', name: 'Landsat 9', catalogue: 'LANDSAT 9', generic: true },
+    // NASA's own Landsat 8, since 2026-10-05. Both were drawn with the Landsat 7 model, which is a
+    // different spacecraft: a boxy 1999 bus, where 8 and 9 are the same Orbital/Northrop bus with
+    // one long wing. Landsat 9 is a near-copy of 8 and stays `generic`, as it was.
+    39084: { file: 'landsat8.glb', colour: 'satellite', name: 'Landsat 8', catalogue: 'LANDSAT 8' },
+    49260: { file: 'landsat8.glb', colour: 'satellite', name: 'Landsat 9', catalogue: 'LANDSAT 9', generic: true },
     25867: { file: 'chandra.glb', colour: 'telescope', name: 'Chandra X-ray Observatory', catalogue: 'CXO' },
     28485: { file: 'swift.glb', colour: 'telescope', name: 'Swift', catalogue: 'SWIFT' },
     43435: { file: 'tess.glb', colour: 'telescope', name: 'TESS', catalogue: 'TESS' },
@@ -388,15 +402,26 @@ export const REAL_MODELS = {
     '-32': { file: 'voyager.glb', colour: 'probe', name: 'Voyager 2' },
     '-61': { file: 'juno.glb', colour: 'probe', name: 'Juno' },
     '-96': { file: 'parker.glb', colour: 'probe', name: 'Parker Solar Probe' },
-    // Procedural, not NASA's file: see buildJwst in scene/models.js. A loaded model is retextured
-    // in one colour for its class, and JWST without the contrast between gold, silver and dark
-    // is a brown lump -- which is what shipped until 2026-09-20.
-    '-170': { build: 'jwst', colour: 'telescope', name: 'James Webb Space Telescope' },
+    // BOTH a build and a file, and this is the one row that has both. Until 2026-10-05 it was the
+    // procedural shape alone (buildJwst in scene/models.js), because a loaded model was painted in
+    // one colour for its class and JWST without the contrast between gold, silver and dark is a
+    // brown lump -- which is what shipped until 2026-09-20. A file now keeps its own colours
+    // (scripts/bake-own-colours.mjs), so NASA's mesh is the picture: eighteen gold segments, the
+    // tripod, the five-layer shield. The build stays as what is drawn while the file is in flight
+    // (heroes.js acquire), so a slow connection sees a Webb-shaped thing and then a better one.
+    '-170': { build: 'jwst', file: 'jwst.glb', colour: 'telescope', name: 'James Webb Space Telescope' },
     '-21': { file: 'soho.glb', colour: 'telescope', name: 'SOHO' },
     '-74': { file: 'mro.glb', colour: 'probe', name: 'Mars Reconnaissance Orbiter' },
     // No NASA model exists for New Horizons, so this names a PROCEDURAL shape instead of a
     // file: `build:` is drawn immediately and has nothing to upgrade to (scene/heroes.js).
     '-98': { build: 'new-horizons', colour: 'probe', name: 'New Horizons' },
+    // Three of the twelve craft added on 2026-09-22 as the generic probe, which NASA publishes a
+    // model of (issue #431). OSIRIS-APEX is the OSIRIS-REx spacecraft under its second mission's
+    // name -- the same vehicle, so this is its model and not a stand-in. NASA's STEREO model is
+    // one drawing for two near-identical craft; STEREO-A is the one still flying.
+    '-85': { file: 'lro.glb', colour: 'probe', name: 'Lunar Reconnaissance Orbiter' },
+    '-64': { file: 'osiris-rex.glb', colour: 'probe', name: 'OSIRIS-APEX' },
+    '-234': { file: 'stereo.glb', colour: 'probe', name: 'STEREO-A' },
   },
   /**
    * Matched on the catalogue NAME rather than a catalogue number, deliberately.
@@ -661,6 +686,23 @@ export const REAL_MODELS = {
   /** Named surface sites, where the thing that landed is the thing worth drawing. */
   bySite: {
     jezero: { file: 'perseverance.glb', colour: 'site', name: 'Perseverance' },
+    // THE REST OF NASA'S LANDED VEHICLES THAT IT PUBLISHES AS glTF (issue #437, 2026-10-05). Each
+    // was the procedural lander or rover: a few boxes under a real name.
+    //
+    // Curiosity is the one that is NOT its own model, and the row says so with `generic`. NASA
+    // publishes Curiosity as a .blend file only, which this pipeline cannot read; Perseverance was
+    // built on Curiosity's chassis -- the same rocker-bogie, deck, mast and RTG -- and differs in
+    // the turret, the wheels and the sample tubes, none of which survive at this size. So the card
+    // reads "drawn as ... the kind of thing, not this exact one", which is the true sentence.
+    gale: { file: 'perseverance.glb', colour: 'site', name: 'a rover of the design Curiosity and Perseverance share', generic: true },
+    // NASA's Mars Exploration Rover model is Opportunity (MER-B). Spirit was its twin, built to the
+    // same drawings, so it wears the same file and says it is the kind of thing.
+    opportunity: { file: 'mer.glb', colour: 'site', name: 'Opportunity' },
+    spirit: { file: 'mer.glb', colour: 'site', name: 'a Mars Exploration Rover, the twin of Opportunity', generic: true },
+    // InSight as it stood on Elysium Planitia: NASA's "arm deployed" variant, both fans open.
+    elysium: { file: 'insight.glb', colour: 'site', name: 'InSight' },
+    'viking-1': { file: 'viking-lander.glb', colour: 'site', name: 'Viking 1 lander' },
+    'viking-2': { file: 'viking-lander.glb', colour: 'site', name: 'Viking 2 lander' },
     // DSS-25 is a 34-metre dish and was being drawn with the 70-metre model. A correctness fix:
     // the two antennas do not look alike and the card names the size.
     'dss-25': { file: 'dsn34.glb', colour: 'site', name: 'a 34-metre Deep Space Network antenna' },
@@ -913,7 +955,11 @@ function applyToon(root, colourToken) {
     if (!n.isMesh) return;
     n.castShadow = false;
     n.receiveShadow = false;
-    const kind = /panel|solar|array/i.test(n.name || '') ? 'panel' : 'body';
+    // The specular family, from the mesh's NAME: a sharp glint on solar cells, a broad soft one
+    // on foil, none on painted structure (models.js SPECULAR). scripts/bake-own-colours.mjs names
+    // its meshes `solar-panel`, `foil` and `body` for exactly this line to read.
+    const name = n.name || '';
+    const kind = /panel|solar|array/i.test(name) ? 'panel' : /foil|mli|kapton|blanket/i.test(name) ? 'foil' : 'body';
     // A model that still carries its baked palette keeps it, and is tinted white so the palette's
     // own colours come through the toon ramp unchanged. Without one, the whole model is the class
     // colour, as before -- which is what makes a decimated mesh read as a single blob.

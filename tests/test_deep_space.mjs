@@ -405,7 +405,19 @@ function horizonsText(t0Ms, r, v) {
     check(hit && hit.record.id === id, `search "${q}" finds ${id} first (got ${hit && hit.record.id})`);
   }
 }
-for (const id of [...ADDED.filter((x) => x !== 'deep-gaia'), 'deep-mars-express', 'deep-lro']) {
+// Three of them got NASA's own model on 2026-10-05 (issue #431): OSIRIS-APEX is the OSIRIS-REx
+// spacecraft, STEREO-A and LRO are published under their own names. A model of the craft itself is
+// not borrowing, so they leave this loop and are held to the opposite claim below it.
+const OWN_MODEL = { 'deep-osiris-apex': 'osiris-rex.glb', 'deep-stereo-a': 'stereo.glb', 'deep-lro': 'lro.glb' };
+for (const [id, file] of Object.entries(OWN_MODEL)) {
+  const rec = byId.get(id);
+  const entry = realModelFor(rec);
+  check(entry && entry.file === file && !entry.generic, `${id} is drawn with ${file}: ${JSON.stringify(entry)}`);
+  const line = drawingLine(rec);
+  check(typeof line === 'string' && line.includes('a published model') && !line.includes('generic'),
+    `${id}: the card says it is a published model of the craft: ${line}`);
+}
+for (const id of [...ADDED.filter((x) => x !== 'deep-gaia'), 'deep-mars-express', 'deep-lro'].filter((x) => !OWN_MODEL[x])) {
   const rec = byId.get(id);
   // No model of its own in the repository, so the generic probe -- and the card says so. (Gaia,
   // in the osculating table since 2026-09-22, keeps the one scene/models.js builds for it.)

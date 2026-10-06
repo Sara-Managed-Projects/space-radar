@@ -34,7 +34,7 @@ const { firstSentence, rightNowFor, drawingLine } = await import(join(JS, 'ui/ca
 const { buildIndex, findMatches } = await import(join(JS, 'ui/search.js'));
 const { LAYERS } = await import(join(JS, 'data/layers.js'));
 const { worldRecords, positionOf } = await import(join(JS, 'scene/worlds.js'));
-const { nadirOf, standOnGround, altitudeCapApplies } = await import(join(JS, 'scene/heroes.js'));
+const { nadirOf, standOnGround, altitudeCapApplies, addContactShadow, groundShadowPose } = await import(join(JS, 'scene/heroes.js'));
 const { stage } = await import(join(JS, 'scene/stage.js'));
 
 const problems = [];
@@ -218,6 +218,36 @@ for (const [shape, id] of [['lander', 'lander-generic'], ['rover', 'rover-generi
   check(/userData\.attitude === 'up'\) standOnGround\(clone\)/.test(heroes), 'GROUND   heroes.js no longer stands a swapped-in ground model up');
 }
 
+// THE CONTACT SHADOW (issue #268). One soft disc under a landed vehicle, on the model's own ground
+// plane: it must not lift the model, must not count toward how far the model reaches (the size
+// caps are computed from that), must lean away from the Sun and must not be a black patch at night.
+{
+  const lander = new THREE.Group();
+  const hull = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.5, 0.6));
+  hull.position.y = 0.25;
+  lander.add(hull);
+  const before = new THREE.Box3().setFromObject(lander);
+  const disc = addContactShadow(lander, 0.5);
+  check(disc && disc.parent === lander && disc.name === 'contact-shadow', 'SHADOW   addContactShadow adds nothing');
+  check(addContactShadow(lander, 0.5) === null && lander.children.length === 2, 'SHADOW   a second call adds a second shadow');
+  check(disc.userData.noReach === true, 'SHADOW   the disc counts toward the reach the altitude caps use');
+  check(disc.position.y > 0 && disc.position.y < 0.03, `SHADOW   the disc is ${disc.position.y} above the ground: under it, or floating`);
+  check(disc.material.depthWrite === false && disc.material.transparent === true, 'SHADOW   the disc writes depth and would cut the ground behind it');
+  check(Math.abs(disc.material.userData.baseOpacity - disc.material.opacity) < 1e-9 && disc.material.opacity <= 0.5, 'SHADOW   the fade-in has no ceiling to stop at');
+  disc.material.opacity = 0.2;
+  check(disc.material.uniforms.opacity.value === 0.2, 'SHADOW   writing material.opacity (the fade-in does) does not reach the shader');
+  check(new THREE.Box3().setFromObject(hull).min.y === before.min.y, 'SHADOW   adding the shadow moved the model');
+  const noon = groundShadowPose({ x: 0, y: 1, z: 0 });
+  check(noon.x === 0 && noon.z === 0 && Math.abs(noon.opacity - 0.5) < 1e-9, `SHADOW   Sun overhead: the shadow is under the feet, ${JSON.stringify(noon)}`);
+  const evening = groundShadowPose({ x: 0.96, y: 0.2, z: -0.2 });
+  check(evening.x < -0.2 && evening.z > 0 && Math.hypot(evening.x, evening.z) <= 0.35 + 1e-9, `SHADOW   a low Sun in +x throws the shadow toward -x, at most 0.35 of the reach: ${JSON.stringify(evening)}`);
+  const night = groundShadowPose({ x: 0.3, y: -0.9, z: 0.3 });
+  check(night.opacity > 0.1 && night.opacity < 0.2, `SHADOW   at night it is a faint patch, not a shadow: ${night.opacity}`);
+  const heroes = readFileSync(join(JS, 'scene/heroes.js'), 'utf8');
+  check(/if \(standsOnBareGround\(record, clone\)\) addContactShadow\(clone, entry\.reach\)/.test(heroes), 'SHADOW   the swapped-in real model loses its contact shadow');
+  check(/entry\.reach = unitReachOf\(clone\);\n\s+if \(standsOnBareGround/.test(heroes), 'SHADOW   the reach must be measured before the shadow is added');
+}
+
 // A SITE IS NEVER SHRUNK TO ITS "ALTITUDE". heroes.js caps a model at its height above the stage
 // world so a satellite cannot reach into the planet, and it used to decide who is on the ground by
 // the sign of |pos| - R: on the Moon's stage Chang'e 4 came out a few centimetres up and was drawn
@@ -242,7 +272,12 @@ for (const r of landings) {
   check(WORLD_WORD[r.meta.world].test(rows), `CARD     ${r.id}'s card never says it is on ${r.meta.world}: ${rows}`);
   check(!/Height above the ground|Passing over/.test(rows), `CARD     ${r.id} gets an Earth row: ${rows}`);
   const line = drawingLine(r) || '';
-  if (r.meta.siteShape === 'lander' || (r.meta.siteShape === 'rover' && !REAL_MODELS.bySite[r.id])) {
+  // A site with a model of its own (bySite, a file) is not a stand-in: InSight and the Vikings are
+  // NASA's meshes since 2026-10-05. One that borrows a relative's file is, and says so below.
+  const own = REAL_MODELS.bySite[r.id];
+  if (own && own.file && own.generic) {
+    check(/not this exact one/.test(line), `CARD     ${r.id} wears another vehicle's model and its card does not say so: ${JSON.stringify(line)}`);
+  } else if (!own && (r.meta.siteShape === 'lander' || r.meta.siteShape === 'rover')) {
     check(line.includes(`a ${r.meta.siteShape}`) && /not this exact one/.test(line),
       `CARD     ${r.id} is a stand-in and its card does not say so: ${JSON.stringify(line)}`);
   }

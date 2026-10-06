@@ -97,4 +97,84 @@ assert.equal(colourRoute(root([])), 'class', 'a model with no materials keeps th
   console.log(`  ${files} shipped models, ${images} images, every one a palette strip the app samples`);
 }
 
+// A MODEL REBUILT IN ITS OWN COLOURS REACHES THE 'own' ROUTE AND NEEDS NOTHING AT LOAD.
+//
+// scripts/bake-own-colours.mjs (2026-10-05, issues #265, #386, #418) writes a flat colour per part.
+// This holds what it promised, read straight out of every file whose registry row says it was
+// built that way: at least two stated colours that are not white (or colourRoute falls back to
+// the class colour, which is the salmon lunar module again), no image at all, a NORMAL on every
+// primitive (tests/test_contract.mjs refuses a new file without one), and no colour outside the
+// value clamp -- a stated black is a hole in the picture against the sky.
+{
+  const { readFileSync } = await import('node:fs');
+  const yaml = readFileSync(join(ROOT, 'registry/models.yaml'), 'utf8');
+  const rows = yaml.split('\n').filter((l) => /file: site\/models\//.test(l) && l.includes('scripts/bake-own-colours.mjs:'));
+  assert.ok(rows.length >= 21, `twenty-one models were rebuilt in their own colours; the registry names ${rows.length}`);
+  const srgb = (c) => (c <= 0.0031308 ? c * 12.92 : 1.055 * c ** (1 / 2.4) - 0.055);
+  const bad = [];
+  const seen = {};
+  for (const row of rows) {
+    const rel = row.match(/file: (site\/models\/[A-Za-z0-9_.-]+\.glb)/)[1];
+    const buf = readFileSync(join(ROOT, rel));
+    const gltf = JSON.parse(buf.toString('utf8', 20, 20 + buf.readUInt32LE(12)));
+    const hexes = (gltf.materials || []).map((m) => {
+      const f = (m.pbrMetallicRoughness && m.pbrMetallicRoughness.baseColorFactor) || [1, 1, 1, 1];
+      return f.slice(0, 3).map(srgb);
+    });
+    const name = rel.split('/').pop();
+    seen[name] = hexes;
+    const stated = new Set(hexes.map((h) => h.map((c) => Math.round(c * 255)).join(',')).filter((h) => h !== '255,255,255'));
+    if (stated.size < 2) bad.push(`${name}: ${stated.size} stated colour(s), so it would be painted its class colour`);
+    if ((gltf.images || []).length) bad.push(`${name}: carries ${gltf.images.length} image(s)`);
+    if ((gltf.meshes || []).some((m) => m.primitives.some((p) => p.attributes.NORMAL === undefined))) bad.push(`${name}: a primitive with no NORMAL`);
+    for (const h of hexes) {
+      const v = Math.max(...h);
+      if (v < 0.12 - 0.01 || v > 0.93 + 0.01) bad.push(`${name}: a colour of brightness ${v.toFixed(2)}, outside the 0.12 to 0.93 clamp`);
+    }
+    for (const m of gltf.meshes || []) if (!/^(body|solar-panel|foil)$/.test(m.name || '')) bad.push(`${name}: a mesh named ${JSON.stringify(m.name)}, which applyToon cannot read a specular family from`);
+  }
+  assert.deepEqual(bad, [], 'rebuilt models that do not keep what the bake promised:\n  ' + bad.join('\n  '));
+  // The two that were reported, by what was wrong with them. Gold foil is an amber: red over
+  // green over blue, well saturated. The lunar module must carry one and Voyager must too.
+  const amber = (h) => h[0] > h[1] && h[1] > h[2] && h[0] - h[2] > 0.3;
+  assert.ok(seen['lunar-module.glb'].some(amber), 'the Apollo lunar module has no gold foil: ' + JSON.stringify(seen['lunar-module.glb']));
+  assert.ok(seen['voyager.glb'].some(amber), 'Voyager has no gold on it');
+  assert.ok(seen['voyager.glb'].some((h) => Math.min(...h) > 0.8), 'Voyager has no white dish');
+  console.log(`  ${rows.length} models rebuilt in their own colours: each has two or more stated colours, no image, normals, and nothing outside the value clamp`);
+}
+
+// PLANET-SHINE (issue #266, spec 0057 task 3): the numbers the shader's three terms come to.
+{
+  const { planetShineStrength, setPlanetShine, PLANET_SHINE, SHINE_GAIN } = await import(join(ROOT, 'site/js/scene/models.js'));
+  const earth = PLANET_SHINE.earth.albedo;
+  assert.equal(earth, 0.294, "Earth's Bond albedo is the NSSDC fact sheet's 0.294");
+  assert.equal(PLANET_SHINE.moon.albedo, 0.11, "and the Moon's is 0.11");
+  for (const [id, row] of Object.entries(PLANET_SHINE)) {
+    assert.ok(row.albedo > 0 && row.albedo < 1 && /^#[0-9A-F]{6}$/i.test(row.colour), `${id}: an albedo between 0 and 1 and a colour`);
+  }
+  assert.equal(PLANET_SHINE.sun, undefined, 'the Sun is the key light, not a world that shines back');
+  const R = 6371;
+  const iss = { albedo: earth, radiusOverDistance: R / (R + 420), dayDot: 1, facingDot: 1 };
+  const full = planetShineStrength(iss);
+  // Face-on to the ground at noon, the ISS gets albedo x gain x (R/d)^2 and nothing else.
+  assert.ok(Math.abs(full - earth * SHINE_GAIN * (R / (R + 420)) ** 2) < 1e-12, `the ISS at noon, facing down: ${full}`);
+  assert.ok(full > 0.25 && full < 0.45, `which is a fill, not a second sun: ${full.toFixed(3)}`);
+  assert.equal(planetShineStrength({ ...iss, dayDot: -1 }), 0, 'over the night side the planet throws nothing back');
+  assert.equal(planetShineStrength({ ...iss, facingDot: -1 }), 0, 'a face turned away from the planet gets none');
+  const side = planetShineStrength({ ...iss, facingDot: 0 });
+  assert.ok(side > 0 && side < full / 2, 'and it fades round the hull instead of cutting at the limb');
+  const geo = planetShineStrength({ ...iss, radiusOverDistance: R / 42164 });
+  assert.ok(geo < full / 30, `at geostationary height it is all but gone (${geo.toFixed(4)})`);
+  assert.ok(Math.abs(planetShineStrength({ ...iss, radiusOverDistance: 1.4 }) - earth * SHINE_GAIN) < 1e-12, 'a rover is lit by its own ground, and no more than fully');
+  assert.equal(setPlanetShine('earth', { x: 0, y: 0, z: 0 }, 1), true);
+  assert.equal(setPlanetShine('sun', { x: 0, y: 0, z: 0 }, 1), false, 'no row, no shine');
+  assert.equal(setPlanetShine('earth', { x: 0, y: 0, z: 0 }, 0), false, 'a world with no radius on this stage turns it off');
+  assert.equal(setPlanetShine(null), false);
+  // The shader and the function are the same sum: if one is edited the other must be.
+  const src = (await import('node:fs')).readFileSync(join(ROOT, 'site/js/scene/models.js'), 'utf8');
+  assert.ok(src.includes("smoothstep( -0.15, 0.55, dot( -D, L ) )") && src.includes('smooth(-0.15, 0.55, dayDot)'), 'the day term is the same in the shader and in planetShineStrength');
+  assert.ok(src.includes('cover * cover * day * facing * facing'), 'and so is the product');
+  console.log('  planet-shine: 0 over the night side, 0 on a face turned away, (R/d)^2 with distance, albedos from the NSSDC fact sheets');
+}
+
 console.log('model colour: ok');

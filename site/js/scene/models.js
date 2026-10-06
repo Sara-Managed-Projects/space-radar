@@ -56,7 +56,78 @@ const SHARED = {
   uSunDir: { value: new THREE.Vector3(1, 0, 0) },
   uRimSun: { value: new THREE.Color('#FFF6EC') },
   uRimShade: { value: new THREE.Color(PALETTE.atmosphere) },
+  // Planet-shine (setPlanetShine below): the world a model is beside, as a second, soft light.
+  uShineCentre: { value: new THREE.Vector3() },
+  uShineRadius: { value: 0 },
+  uShineCol: { value: new THREE.Color(0, 0, 0) },
 };
+
+/**
+ * PLANET-SHINE: THE LIGHT A WORLD THROWS BACK AT WHAT FLIES OVER IT (issue #266, spec 0057 task 3).
+ *
+ * WHY. The Sun was the only thing lighting a model, so the side of the ISS that faces the Earth --
+ * the side every photograph of it shows glowing blue-white -- was the toon ramp's shadow step and
+ * nothing else, and a lander stood on sunlit ground that lit nothing. In low orbit the planet is
+ * the second-brightest thing in the sky by a wide margin and it fills almost half of it.
+ *
+ * WHAT IS MEASURED AND WHAT IS OURS. `albedo` is each world's Bond albedo, the fraction of
+ * sunlight it sends back, from the NSSDC planetary fact sheets
+ * (https://nssdc.gsfc.nasa.gov/planetary/factsheet/, each world's own sheet, read 2026-10-05). `colour` is ours: the tint
+ * of that world's daylit face as this app draws it. So is SHINE_GAIN, and so is the shape of the
+ * three terms below -- they are the right KIND of thing (more shine close in, none over the night
+ * side, most on the faces turned to the ground) and not a radiative-transfer result. Illustrative.
+ *
+ * The three terms, which the shader in toonMaterial repeats and tests/test_model_colour.mjs holds:
+ *   cover  = (R / d)^2       how much sky the world fills: 0.88 for the ISS, 0.02 at geostationary
+ *                            height, 1 for a rover -- so a lander is lit by its own ground
+ *   day    = smoothstep(-0.15, 0.55, up . sun)   is the ground under it in daylight
+ *   facing = (0.5 + 0.5 n . down)^2              wrapped, so it fades round the hull, never cuts
+ */
+export const PLANET_SHINE = {
+  mercury: { albedo: 0.068, colour: '#B9B2A8' },
+  venus: { albedo: 0.77, colour: '#F1E3C0' },
+  earth: { albedo: 0.294, colour: '#A9C8FF' },
+  moon: { albedo: 0.11, colour: '#CFCDC8' },
+  mars: { albedo: 0.25, colour: '#E0A070' },
+  jupiter: { albedo: 0.343, colour: '#E3CDA8' },
+  saturn: { albedo: 0.342, colour: '#EBDDB0' },
+  uranus: { albedo: 0.3, colour: '#BFE6EA' },
+  neptune: { albedo: 0.29, colour: '#9DB8F5' },
+};
+/** Ours, not measured: how far the fill is turned up so it reads through a three-step ramp. */
+export const SHINE_GAIN = 1.2;
+const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+
+/**
+ * The strength of the fill on one face, 0..albedo * SHINE_GAIN. Pure; the same arithmetic as the
+ * shader, kept here so a test can hold the numbers without a GPU.
+ * @param {{albedo:number, radiusOverDistance:number, dayDot:number, facingDot:number}} o
+ *   dayDot = (direction away from the world) . (direction to the Sun); facingDot = normal . (direction to the world)
+ */
+export function planetShineStrength({ albedo, radiusOverDistance, dayDot, facingDot }) {
+  const k = Math.min(1, Math.max(0, radiusOverDistance));
+  const facing = 0.5 + 0.5 * Math.min(1, Math.max(-1, facingDot));
+  return albedo * SHINE_GAIN * k * k * smooth(-0.15, 0.55, dayDot) * facing * facing;
+}
+
+const _shineCol = new THREE.Color();
+/**
+ * Which world shines on the models this frame. ONE world for every model on screen, because the
+ * uniforms are shared: the stage's own, or the nearest drawn one on the Sun's stage (heroes.js
+ * chooses). `null`, an unknown id or a zero radius turns it off -- far from everything, a probe is
+ * lit by the Sun alone, which is true.
+ * @param {string|null} worldId
+ * @param {{x:number,y:number,z:number}} [centre] scene space
+ * @param {number} [radius] scene units, as drawn
+ */
+export function setPlanetShine(worldId, centre, radius) {
+  const row = worldId ? PLANET_SHINE[worldId] : null;
+  if (!row || !centre || !(radius > 0)) { SHARED.uShineRadius.value = 0; return false; }
+  SHARED.uShineCentre.value.set(centre.x, centre.y, centre.z);
+  SHARED.uShineRadius.value = radius;
+  SHARED.uShineCol.value.copy(_shineCol.set(row.colour)).multiplyScalar(row.albedo * SHINE_GAIN);
+  return true;
+}
 
 // specular family per class of surface: panels sharp, foil and radiators broad and soft, bodies none
 const SPECULAR = {
@@ -92,6 +163,9 @@ export function toonMaterial(colour, kind = 'body', pool = materials, map = null
     shader.uniforms.uSunDir = SHARED.uSunDir;
     shader.uniforms.uRimSun = SHARED.uRimSun;
     shader.uniforms.uRimShade = SHARED.uRimShade;
+    shader.uniforms.uShineCentre = SHARED.uShineCentre;
+    shader.uniforms.uShineRadius = SHARED.uShineRadius;
+    shader.uniforms.uShineCol = SHARED.uShineCol;
     shader.uniforms.uRim = { value: 0.35 };
     shader.uniforms.uSpec = { value: s.spec };
     shader.uniforms.uSpecPower = { value: s.power };
@@ -105,6 +179,9 @@ export function toonMaterial(colour, kind = 'body', pool = materials, map = null
           'uniform float uRim;',
           'uniform float uSpec;',
           'uniform float uSpecPower;',
+          'uniform vec3 uShineCentre;',
+          'uniform float uShineRadius;',
+          'uniform vec3 uShineCol;',
           'void main() {',
         ].join('\n')
       )
@@ -120,6 +197,17 @@ export function toonMaterial(colour, kind = 'body', pool = materials, map = null
           '  if ( uSpec > 0.0 ) {',
           '    vec3 H = normalize( L + V );',
           '    outgoingLight += vec3( uSpec ) * pow( max( dot( normal, H ), 0.0 ), uSpecPower ) * lit;',
+          '  }',
+          // Planet-shine: see PLANET_SHINE above, and planetShineStrength for the same sum in JS.
+          // Halved on a face the Sun already lights, so the day side does not wash out.
+          '  if ( uShineRadius > 0.0 ) {',
+          '    vec3 toC = ( viewMatrix * vec4( uShineCentre, 1.0 ) ).xyz + vViewPosition;',
+          '    float dC = max( length( toC ), 1e-9 );',
+          '    vec3 D = toC / dC;',
+          '    float cover = min( uShineRadius / dC, 1.0 );',
+          '    float day = smoothstep( -0.15, 0.55, dot( -D, L ) );',
+          '    float facing = 0.5 + 0.5 * dot( normal, D );',
+          '    outgoingLight += diffuseColor.rgb * uShineCol * cover * cover * day * facing * facing * ( 1.0 - 0.5 * lit );',
           '  }',
           '}',
           '#include <opaque_fragment>',
