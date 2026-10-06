@@ -50,6 +50,8 @@ on:
       # The byte gate (spec 0044) reads its number from the registry and its rules from the test.
       - "registry/budgets.yaml"
       - "tests/test_first_visit_bytes.mjs"
+      # ...and gates on the tree a deploy uploads, which this script builds (internal #405).
+      - "scripts/minify_site.py"
 
 permissions:
   contents: read
@@ -85,6 +87,24 @@ jobs:
             sleep 0.25
           done
           echo "::error::the static server never came up"; cat /tmp/serve.log; exit 1
+
+      # WHAT A VISITOR IS SENT (internal #405). scripts/deploy.sh uploads js/ and css/ without their
+      # comments and indentation (scripts/minify_site.py); the byte gate below is on that tree, so
+      # it is built here exactly as the deploy builds it -- `node --check` on every module -- and
+      # served beside the source. Everything but js/ and css/ is a link to site/.
+      - name: Build and serve what a deploy uploads
+        if: steps.page.outputs.found == '1'
+        run: |
+          set -euo pipefail
+          python3 scripts/minify_site.py --out "$RUNNER_TEMP/served" --tree --node node
+          nohup python3 -m http.server 8178 --directory "$RUNNER_TEMP/served" --bind 127.0.0.1 >/tmp/serve-built.log 2>&1 &
+          for _ in $(seq 1 40); do
+            if curl -fsS -o /dev/null http://127.0.0.1:8178/js/main.js; then
+              echo "serving the stripped tree"; exit 0
+            fi
+            sleep 0.25
+          done
+          echo "::error::the server for the stripped tree never came up"; cat /tmp/serve-built.log; exit 1
 
       # `--network host` so the container can reach the runner's server on 127.0.0.1.
       # HOME is set because `-u 1001` is a uid with no passwd entry, so $HOME resolves to `/`,
@@ -137,6 +157,9 @@ jobs:
       # byte that crossed the wire is summed against `first_visit_bytes` in registry/budgets.yaml.
       # Nothing under /audio/ or /og/, and neither galaxy.bin nor stars3d.bin, may be asked for at
       # all. The total and the deferrable line are in this step's log and in first-visit.json.
+      # THE GATE IS THE STRIPPED TREE (8178), what a visitor is sent. The source (8177) is booted
+      # after it with --info: its total is information, the rules about what may not be asked for
+      # at boot hold for it too, and it is kept as first-visit-source.json.
       - name: A first visit stays inside its byte budget
         if: steps.page.outputs.found == '1'
         run: |
@@ -149,7 +172,8 @@ jobs:
             mcr.microsoft.com/playwright:v1.49.1-jammy \
             bash -c 'set -euo pipefail
               npm install --no-save --no-audit --no-fund playwright@1.49.1
-              node tests/test_first_visit_bytes.mjs --base=http://127.0.0.1:8177 --out=.ci-screens/first-visit.json'
+              node tests/test_first_visit_bytes.mjs --base=http://127.0.0.1:8178 --out=.ci-screens/first-visit.json
+              node tests/test_first_visit_bytes.mjs --base=http://127.0.0.1:8177 --info --out=.ci-screens/first-visit-source.json'
 
       # A shot that exists but is a picture of a failure panel is the thing this job used to
       # produce. The selector wait above is the real guard; this only catches an empty file.
@@ -173,4 +197,5 @@ jobs:
           path: |
             .ci-screens/*.png
             .ci-screens/first-visit.json
+            .ci-screens/first-visit-source.json
           if-no-files-found: error

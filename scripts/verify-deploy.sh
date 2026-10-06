@@ -5,6 +5,11 @@
 #   scripts/verify-deploy.sh --base=URL           # another host (staging, the CloudFront name)
 #   scripts/verify-deploy.sh --skip-large         # leave out files over 1 MB (the star and galaxy bins)
 #   scripts/verify-deploy.sh js/main.js css/ui.css   # just these paths
+#   scripts/verify-deploy.sh --source             # the site was deployed with `deploy.sh --no-minify`
+#
+# js/ and css/ are compared with what deploy.sh uploads, which since 2026-10-06 (internal #405) is
+# scripts/minify_site.py's copy without comments, not the file as written: the same script builds
+# that copy here, in a temp folder, and those two folders are checked against it.
 #
 # WHY. deploy.sh uploads and invalidates, and says "done" -- which is what it did, not what a visitor
 # gets. Every deploy since 2026-09-16 was followed by this check by hand; it caught nothing wrong in
@@ -16,12 +21,14 @@ cd "$(dirname "$0")/.."
 
 BASE="https://www.spaceradar.ai"
 SKIP_LARGE=0
+SOURCE=0
 PATHS=()
 for a in "$@"; do
   case "$a" in
     --base=*) BASE="${a#--base=}" ;;
     --skip-large) SKIP_LARGE=1 ;;
-    -h|--help) sed -n '2,15p' "$0"; exit 0 ;;
+    --source) SOURCE=1 ;;
+    -h|--help) sed -n '2,20p' "$0"; exit 0 ;;
     *) PATHS+=("$a") ;;
   esac
 done
@@ -32,12 +39,21 @@ if [ ${#PATHS[@]} -eq 0 ]; then
   while IFS= read -r f; do PATHS+=("${f#site/}"); done < <(find site -type f ! -name '.DS_Store' | sort)
 fi
 
+MIN=""
+if [ "$SOURCE" = 0 ]; then
+  MIN="$(mktemp -d)"
+  trap 'rm -rf "$MIN"' EXIT
+  python3 scripts/minify_site.py --out "$MIN/min" --quiet
+fi
+
 ok=0; bad=0; skipped=0; pages=0; sounds=0
 for p in "${PATHS[@]}"; do
   local_file="site/$p"
   [ -f "$local_file" ] || { echo "MISSING LOCALLY  $p"; bad=$((bad + 1)); continue; }
   if [ "$SKIP_LARGE" = 1 ] && [ "$(wc -c < "$local_file")" -gt 1048576 ]; then skipped=$((skipped + 1)); continue; fi
-  want=$(hash < "$local_file")
+  served_file="$local_file"
+  case "$p" in js/*.js|css/*.css) [ -n "$MIN" ] && [ -f "$MIN/min/$p" ] && served_file="$MIN/min/$p" ;; esac
+  want=$(hash < "$served_file")
   # A cache-busting query would test the origin, not what visitors get; ask for the path itself.
   got=$(curl -s --compressed --max-time 60 "$BASE/$p" | hash)
   if [ "$want" = "$got" ]; then

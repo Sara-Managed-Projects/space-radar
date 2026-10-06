@@ -5,6 +5,9 @@
 //                                                                 a real boot, in Playwright (screens.yml)
 //   node tests/test_first_visit_bytes.mjs --from=bytes.json       a boot recorded by
 //                                                                 `tools/cdp.mjs --bytes=bytes.json`
+//   ... --info                                                    with --base or --from: the total is
+//                                                                 reported and not held to the budget
+//                                                                 (a boot of site/ as written)
 //
 // The programme adds fonts, sound, pictures and a sheet, each cheap on its own. The first visit was
 // 2.36 MB on the live site on 2026-09-21 and nothing measured it after that, so this does: boot the
@@ -12,9 +15,18 @@
 // (main.js sets it with `sr:layers-ready`) and two seconds more, and sum what crossed the wire.
 //
 // WHAT IS COUNTED. The protocol's `encodedDataLength` per request, headers included: what DevTools
-// calls "transferred". CI serves site/ with python's http.server, which does not compress and has no
-// /data/v1 saved copy, so the CI number is larger than the live one; `first_visit_bytes` in
+// calls "transferred". CI serves the tree with python's http.server, which does not compress and has
+// no /data/v1 saved copy, so the CI number is larger than the live one; `first_visit_bytes` in
 // registry/budgets.yaml is set on the CI number, and its reason says so.
+//
+// WHICH TREE (internal #405, 2026-10-06). The gate is what a visitor is SENT: scripts/deploy.sh
+// uploads js/ and css/ without their comments (scripts/minify_site.py), so screens.yml builds that
+// tree (`minify_site.py --tree`), serves it and gates on it. site/ as written is booted too, with
+// `--info`: its total is printed and kept in first-visit-source.json, the rules about what may not
+// be asked for at boot still fail it, and its size does not -- a comment in the source is free, by
+// design, and a gate on the source's bytes would be a tax on saying why. To measure the same thing
+// on your own machine:
+//   python3 scripts/minify_site.py --out /tmp/served --tree && python3 tools/serve.py /tmp/served 8190
 //
 // Four things must stay at zero whatever the total: anything under /audio/ (spec 0035: nothing before
 // a gesture), anything under /og/ (spec 0033: those are for chat previews), and galaxy.bin and
@@ -87,10 +99,10 @@ function tally(requests, pageOrigin) {
 }
 
 /** What is wrong with a tally, against the budgets; empty when the visit is inside them. */
-function verdict(t, budgets = BUDGETS) {
+function verdict(t, budgets = BUDGETS, { info = false } = {}) {
   const out = [];
   if (!(t.count > 0)) out.push('no requests were recorded: the measurement measured nothing');
-  if (t.total > budgets.first_visit_bytes) out.push(`first visit ${t.total} B is over first_visit_bytes ${budgets.first_visit_bytes} B`);
+  if (!info && t.total > budgets.first_visit_bytes) out.push(`first visit ${t.total} B is over first_visit_bytes ${budgets.first_visit_bytes} B`);
   // A zero budget is "no request at all": a 404 for a sound is still a sound asked for at boot.
   const over = (paths, bytes, cap) => (cap === 0 ? paths.length > 0 : bytes > cap);
   if (over(t.audio, t.audioBytes, budgets.audio_at_boot_bytes)) out.push(`${t.audio.length} request(s) under /audio/ at boot (spec 0035): ${t.audio.slice(0, 3).join(', ')}`);
@@ -160,10 +172,11 @@ if (BASE || FROM) {
       const first = requests.map((r) => sitePath(r.url)).find(Boolean);
       return { requests, origin: first && first.origin };
     })();
+  const INFO = process.argv.includes('--info');
   const t = tally(requests, origin);
-  report(t, BASE || FROM);
-  if (arg('out')) writeFileSync(arg('out'), JSON.stringify({ ...t, budget: BUDGETS.first_visit_bytes, requests }, null, 1));
-  finish(verdict(t), 'inside the budget, and nothing lazy was fetched');
+  report(t, `${BASE || FROM}${INFO ? ', for information: the source as written, not held to the budget' : ''}`);
+  if (arg('out')) writeFileSync(arg('out'), JSON.stringify({ ...t, budget: BUDGETS.first_visit_bytes, info: INFO, requests }, null, 1));
+  finish(verdict(t, BUDGETS, { info: INFO }), INFO ? 'nothing lazy was fetched (the total is information here)' : 'inside the budget, and nothing lazy was fetched');
 } else {
   // --- the rules, on fixtures: no browser, so ci.yml's node job runs it ---------------------------
   const problems = [];
@@ -220,6 +233,16 @@ if (BASE || FROM) {
   check(!readFileSync(join(ROOT, 'site/index.html'), 'utf8').includes('rendermode'), 'and index.html does not preload it');
   const screens = readFileSync(join(ROOT, '.github/workflows/screens.yml'), 'utf8');
   check(/node tests\/test_first_visit_bytes\.mjs --base=/.test(screens), 'screens.yml boots the app through this test');
+  // Internal #405: the gate is on the tree a deploy uploads, and the source is measured beside it.
+  check(/python3 scripts\/minify_site\.py --out "\$RUNNER_TEMP\/served" --tree/.test(screens) && /http\.server 8178 --directory "\$RUNNER_TEMP\/served"/.test(screens),
+    'screens.yml builds the stripped tree and serves it');
+  check(/test_first_visit_bytes\.mjs --base=http:\/\/127\.0\.0\.1:8178 --out=\.ci-screens\/first-visit\.json/.test(screens), 'the gate boots the stripped tree');
+  check(/test_first_visit_bytes\.mjs --base=http:\/\/127\.0\.0\.1:8177 --info --out=\.ci-screens\/first-visit-source\.json/.test(screens), 'and the source is booted for information');
+  check(verdict(t, { ...BUDGETS, first_visit_bytes: 1000000 }, { info: true }).length === 0, 'with --info the total is not held to the budget');
+  check(verdict(tally([...visit, { url: `${O}/audio/bed-earth.opus`, bytes: 1 }], O), BUDGETS, { info: true }).some((p) => /\/audio\//.test(p)), 'and a sound at boot still fails');
+  const deploy = readFileSync(join(ROOT, 'scripts/deploy.sh'), 'utf8');
+  check(/minify_site\.py" --site "\$SITE" --out "\$BUILT\/min" --node node/.test(deploy) && /"\$APP\/js"\s+"s3:\/\/\$BUCKET\/js"/.test(deploy) && /"\$APP\/css" "s3:\/\/\$BUCKET\/css"/.test(deploy),
+    'scripts/deploy.sh uploads the stripped js/ and css/: the tree this test gates is the tree that is served');
   check(BUDGETS.audio_at_boot_bytes === 0 && BUDGETS.og_at_boot_bytes === 0, 'nothing under /audio/ or /og/ at boot, by budget');
 
   finish(problems, `the rules hold on fixtures (budget ${BUDGETS.first_visit_bytes} B; ${t.total} B passes, 1 000 000 B fails it; sound, previews, the galaxy, the 3D stars, the nebulae, a Cyrillic face and fonts over their budget each fail)`);

@@ -3,6 +3,8 @@
 
     python3 scripts/stamp_sw.py --site dist/space-radar-1.2.0/site     # a release zip, in place
     python3 scripts/stamp_sw.py --out "$BUILT/sw.js"                   # a deploy: site/ is not touched
+    python3 scripts/stamp_sw.py --overlay "$BUILT/min" --out "$BUILT/sw.js"   # a deploy that serves
+                                                                       # scripts/minify_site.py's js/ and css/
     python3 scripts/stamp_sw.py --kill --out "$BUILT/sw.js"            # a worker that removes itself
     python3 scripts/stamp_sw.py --check                                # the committed file is unstamped
 
@@ -49,11 +51,22 @@ def shell_files(site: Path) -> list[str]:
     return sorted(set(found) - NOT_SHELL)
 
 
-def build_line(site: Path, kill: bool = False) -> tuple[str, dict]:
+def served(site: Path, overlay: Path | None, rel: str) -> Path:
+    """The file a browser will be sent for `rel`: the overlay's copy when it has one.
+
+    A deploy strips the comments from js/ and css/ into a temp folder (scripts/minify_site.py) and
+    uploads THOSE, so the hash a worker checks its download against must be theirs (internal #405).
+    """
+    if overlay is not None and (overlay / rel).is_file():
+        return overlay / rel
+    return site / rel
+
+
+def build_line(site: Path, kill: bool = False, overlay: Path | None = None) -> tuple[str, dict]:
     if kill:
         build = {"version": "kill", "shell": [], "kill": True}
     else:
-        shell = [[rel, hashlib.sha256((site / rel).read_bytes()).hexdigest()[:HASH_CHARS]] for rel in shell_files(site)]
+        shell = [[rel, hashlib.sha256(served(site, overlay, rel).read_bytes()).hexdigest()[:HASH_CHARS]] for rel in shell_files(site)]
         if not any(rel == "index.html" for rel, _ in shell):
             raise SystemExit(f"{site}: no index.html, so this is not the site folder")
         # The worker's own text is part of the version: a change to its rules is a new build too.
@@ -67,6 +80,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--site", type=Path, default=ROOT / "site", help="the folder that is served (default: site/)")
     ap.add_argument("--out", type=Path, help="write the stamped worker here (default: <site>/sw.js, in place)")
+    ap.add_argument("--overlay", type=Path, help="a folder whose files replace the same paths of --site when hashing (scripts/minify_site.py --out)")
     ap.add_argument("--kill", action="store_true", help="stamp a worker that unregisters itself and deletes its caches")
     ap.add_argument("--check", action="store_true", help="exit 1 unless <site>/sw.js is the unstamped file git keeps")
     args = ap.parse_args()
@@ -90,11 +104,14 @@ def main() -> int:
         print(f"stamp_sw: sw.js is unstamped, and a stamp would name {len(files)} files")
         return 0
 
-    line, build = build_line(args.site, args.kill)
+    if args.overlay is not None and not args.overlay.is_dir():
+        print(f"stamp_sw: --overlay {args.overlay} is not a folder", file=sys.stderr)
+        return 1
+    line, build = build_line(args.site, args.kill, args.overlay)
     out = args.out or source
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(BLOCK.sub(lambda m: m.group(1) + line + m.group(3), text), encoding="utf-8")
-    total = sum((args.site / rel).stat().st_size for rel, _ in build["shell"])
+    total = sum(served(args.site, args.overlay, rel).stat().st_size for rel, _ in build["shell"])
     print(f"stamp_sw: {out} is build {build['version']}: {len(build['shell'])} files, {total / 1e6:.2f} MB before compression")
     return 0
 

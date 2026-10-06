@@ -55,7 +55,9 @@ if (touch && existsSync(join(SITE, touch))) {
 
 // The deploy and the release carry them.
 const deploy = readFileSync(join(ROOT, 'scripts/deploy.sh'), 'utf8');
-check(/stamp_sw\.py" --site "\$SITE" --out "\$BUILT\/sw\.js"/.test(deploy), 'deploy.sh must stamp a COPY of sw.js (never the tree)');
+check(/stamp_sw\.py" --site "\$SITE" [^\n]*--out "\$BUILT\/sw\.js"/.test(deploy), 'deploy.sh must stamp a COPY of sw.js (never the tree)');
+// ...with the hashes of the files it uploads: js/ and css/ go up without their comments (internal #405).
+check(/OVERLAY=\(--overlay "\$BUILT\/min"\)/.test(deploy) && /stamp_sw\.py" --site "\$SITE" \$\{OVERLAY\[@\]\+"\$\{OVERLAY\[@\]\}"\} --out/.test(deploy), 'deploy.sh must stamp the worker with the hashes of the stripped js/ and css/ it uploads');
 check(/"\$BUILT\/sw\.js:text\/javascript; charset=utf-8"/.test(deploy), 'deploy.sh must upload the stamped sw.js as JavaScript');
 check(/"\$SITE\/manifest\.webmanifest:application\/manifest\+json; charset=utf-8"/.test(deploy), 'deploy.sh must upload the manifest with its own type');
 const rootLoop = deploy.slice(deploy.indexOf('for f in "$SITE/index.html'));

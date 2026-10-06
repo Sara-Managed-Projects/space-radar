@@ -151,11 +151,11 @@ const ONE_MOVE_MS = 120;
  * data/tours.js) and the model shapes (scene/models.js) are 640 kB that the first screen -- the
  * Earth and its dots -- does not use. Each is fetched when it is first wanted (a selection, a trip
  * opened or linked, a camera close enough for geometry), and otherwise WARM_MS after
- * sr:layers-ready, one after another in an idle moment, so the first tap does not wait for a
+ * sr:layers-ready, one after another in an idle moment (requestIdleCallback), so the first tap does not wait for a
  * download and the trip cards can be planned against today's sky. Not on a connection that asked
  * to save data: there each waits to be wanted.
  */
-const WARM_MS = 3200;
+const WARM_MS = 3500;
 
 export async function boot({ setStatus } = {}) {
   const say = setStatus || (() => {});
@@ -718,11 +718,18 @@ export async function boot({ setStatus } = {}) {
   // reader's device, and the offline module is not even fetched there.
   // The card, the trips and the model shapes, when idle (WARM_MS, top of this file). In order of
   // what a visitor reaches for first; each is a no-op if a tap or a link already fetched it.
+  // In an IDLE moment, as the later layers are: on a machine still busy with its first frames the
+  // timer alone would put 640 kB beside the work that is already late.
   const warmLater = () => setTimeout(() => {
     if (typeof navigator !== 'undefined' && shouldSaveData(navigator.connection)) return;
-    wantCards().then(() => ctx.trip.warm()).then(() => warmModels());
+    const warm = () => wantCards().then(() => ctx.trip.warm()).then(() => warmModels());
+    if (typeof requestIdleCallback === 'function') requestIdleCallback(warm, { timeout: 4000 });
+    else warm();
   }, WARM_MS);
-  if (window.__srLayersReady) warmLater();
+  // Not in an embed: a frame under someone else's article shows one object or one trip, and
+  // fetches what that needs when it needs it.
+  if (embed) { /* nothing is warmed */ }
+  else if (window.__srLayersReady) warmLater();
   else window.addEventListener('sr:layers-ready', warmLater, { once: true });
   const offlineLater = () => setTimeout(() => {
     import('./ui/offline.js').then((m) => m.createOffline(ctx)).catch((e) => console.warn('the offline module did not load', e));

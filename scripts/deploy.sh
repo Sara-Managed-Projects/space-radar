@@ -16,6 +16,9 @@
 #                         and the pages scripts/build_seo.py builds (o/, sitemap.xml, 404.html,
 #                         object-pages.json)
 #                         only. The usual case.
+#   --no-minify           upload js/ and css/ as they are written. By default a deploy uploads a
+#                         copy without comments and indentation (scripts/minify_site.py); this is
+#                         the way back if that copy is ever in doubt.
 #   --dry-run             print what would be uploaded and change nothing.
 #
 # WHY THIS IS A SCRIPT AND NOT ONE `aws s3 sync`
@@ -44,9 +47,10 @@ DISTRIBUTION=""
 PROFILE=""
 WHAT="all"
 DRY_RUN=0
+MINIFY=1
 
 die() { echo "error: $*" >&2; exit 1; }
-usage() { sed -n '2,27p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
+usage() { sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -56,6 +60,7 @@ while [ $# -gt 0 ]; do
     --profile)      PROFILE="${2:?--profile needs a value}"; shift 2 ;;
     --assets-only)  WHAT="assets"; shift ;;
     --app-only)     WHAT="app"; shift ;;
+    --no-minify)    MINIFY=0; shift ;;
     --dry-run)      DRY_RUN=1; shift ;;
     -h|--help)      usage 0 ;;
     *)              die "unknown option: $1 (try --help)" ;;
@@ -158,11 +163,30 @@ if [ "$WHAT" != "assets" ]; then
   # nothing styles -- which is exactly what a phone was served once, and the trip rows came back
   # as centred grey bullets with their three lines run together. Uploading js first guaranteed
   # the wrong half of that window. Do not swap these back.
-  "${SYNC[@]}" "$SITE/css" "s3://$BUCKET/css" \
+  #
+  # WHAT IS UPLOADED IS NOT WHAT IS WRITTEN (internal #405, 2026-10-06). The source is the project's
+  # documentation and nearly half of its bytes are comments; a visitor downloads the same
+  # statements without them. scripts/minify_site.py writes that copy of js/ and css/ into the temp
+  # folder -- nothing renamed, nothing joined, a file it cannot vouch for shipped as written -- and
+  # `node --check` reads every module of it before anything is uploaded. The service worker below
+  # is stamped with the hashes of THIS copy (stamp_sw.py --overlay), because these are the bytes a
+  # browser will be sent. --no-minify uploads the source instead.
+  command -v node >/dev/null || die "node is not installed; scripts/build_seo.py and scripts/minify_site.py need it"
+  BUILT="$(mktemp -d)"
+  trap 'rm -rf "$BUILT"' EXIT
+  APP="$SITE"
+  OVERLAY=()
+  if [ "$MINIFY" = "1" ]; then
+    python3 "$(dirname "$0")/minify_site.py" --site "$SITE" --out "$BUILT/min" --node node \
+      || die "scripts/minify_site.py produced a file node refuses; nothing was uploaded (--no-minify deploys the source)"
+    APP="$BUILT/min"
+    OVERLAY=(--overlay "$BUILT/min")
+  fi
+  "${SYNC[@]}" "$APP/css" "s3://$BUCKET/css" \
     --cache-control "no-cache" --content-type "text/css; charset=utf-8" --delete
   # --exclude '*.md': the module contract documents the modules for whoever edits them. It is not code
   # and has no business being served as JavaScript.
-  "${SYNC[@]}" "$SITE/js"  "s3://$BUCKET/js" \
+  "${SYNC[@]}" "$APP/js"  "s3://$BUCKET/js" \
     --cache-control "no-cache" --content-type "text/javascript; charset=utf-8" \
     --exclude "*.md" --delete
   # One static page per trip (spec 0032): the share URL a crawler reads, which sends a browser on
@@ -175,9 +199,6 @@ if [ "$WHAT" != "assets" ]; then
   # object, the sitemap and the 404 page, built here from the records and the card's own words
   # (scripts/build_seo.py; it needs Node, as the card's words are JavaScript). o/ is synced like
   # t/: HTML, no-cache, and --delete, so an object that left the registry loses its page.
-  command -v node >/dev/null || die "node is not installed; scripts/build_seo.py needs it for the object pages"
-  BUILT="$(mktemp -d)"
-  trap 'rm -rf "$BUILT"' EXIT
   python3 "$(dirname "$0")/build_seo.py" --out "$BUILT" || die "scripts/build_seo.py failed"
   python3 "$(dirname "$0")/check_seo.py" --out "$BUILT" || die "scripts/check_seo.py refused the built pages"
   "${SYNC[@]}" "$BUILT/o"  "s3://$BUCKET/o" \
@@ -203,7 +224,7 @@ if [ "$WHAT" != "assets" ]; then
   # the install if one does not match, so sw.js goes up after everything it names. No-cache, like
   # index.html: a worker a browser cannot re-read is a release nobody can be moved off. The
   # manifest is no-cache too (a name or an icon list that changed must not wait a month).
-  python3 "$(dirname "$0")/stamp_sw.py" --site "$SITE" --out "$BUILT/sw.js" || die "scripts/stamp_sw.py failed"
+  python3 "$(dirname "$0")/stamp_sw.py" --site "$SITE" ${OVERLAY[@]+"${OVERLAY[@]}"} --out "$BUILT/sw.js" || die "scripts/stamp_sw.py failed"
   for f in "$SITE/index.html:text/html; charset=utf-8" "$BUILT/404.html:text/html; charset=utf-8" \
            "$SITE/robots.txt:text/plain; charset=utf-8" "$BUILT/sitemap.xml:application/xml; charset=utf-8" \
            "$BUILT/object-pages.json:application/json; charset=utf-8" \
