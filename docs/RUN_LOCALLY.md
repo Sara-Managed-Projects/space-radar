@@ -98,9 +98,9 @@ with the age of the oldest copy on screen.
 Proved on 2026-10-06 in headless Chrome with every outside host unresolvable: a stamped copy with
 a saved data copy was served at `http://localhost:8391/classroom/space-radar/` (a subfolder),
 opened once, and the server was then stopped. On the second visit the app started from the worker
-(172 app files, 18 maps and data files kept), the *Moon landings* trip flew its first three stops,
-the Tonight tab showed the next visible pass, and the status line read "Offline: showing saved
-copies from 13 days ago". Not kept by that first visit: narration and music nobody had played, and
+(172 app files, 21 maps and bundled data files, and 13 saved data copies kept), the *Moon landings*
+trip flew its first three stops, the Tonight tab showed the next visible pass, and the status line
+read "Offline: showing saved copies from 14 days ago" (the copy used for the test was that old). Not kept by that first visit: narration and music nobody had played, and
 maps of worlds nobody had visited. `tests/probes/offline-probe.js` is the probe, and its header
 says how to run it again.
 
