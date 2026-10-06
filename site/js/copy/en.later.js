@@ -125,6 +125,85 @@ Object.assign(COPY, {
     debrisTitle: 'Counts everything tracked in orbit. Reads the whole catalogue, about 1.5 MB',
   },
 
+  // The home's first line (ui/sentence.js): ONE sentence that is true now, made of one or two of
+  // these clauses. Each clause starts in lower case (the sentence capitalises its first) and is
+  // filled from loaded data only; `sources` names where each one's data came from, for the tooltip.
+  sentence: {
+    one: '{a}.',
+    two: '{a}, and {b}.',
+    title: 'From {sources}. Press to go there',
+    // How a crewed station is said inside a sentence, by the record its elements load as.
+    names: { 'sat-25544': 'the ISS', 'sat-48274': 'Tiangong' },
+    pass: '{name} passes over you {when}',
+    launch: '{name} lifts off {when}',
+    showerToday: 'the {name} peak today',
+    showerTomorrow: 'the {name} peak tomorrow',
+    moonName: 'The Moon',
+    // By Astronomy Engine's quarter number: only the new and the full Moon are counted down to.
+    moonPhases: ['new', '', 'full', ''],
+    moonToday: 'the Moon is {phase} today',
+    moonOne: 'the Moon is one day from {phase}',
+    moonDays: 'the Moon is {n} days from {phase}',
+    moonLit: 'the Moon is {pct} % lit',
+    crew: '{n} people are in orbit right now',
+    crewOne: 'one person is in orbit right now',
+    storms: '{n} storms are turning',
+    stormOne: 'one storm is turning',
+    approach: '{name} passes Earth {when}',
+    launched: '{n} new objects reached orbit in 30 days',
+    sources: {
+      pass: 'CelesTrak elements',
+      launch: 'Launch Library 2',
+      shower: 'the IMO shower calendar',
+      moon: 'Astronomy Engine',
+      crew: 'Open Notify',
+      storms: 'GDACS',
+      approach: 'NASA JPL',
+      launched: 'CelesTrak',
+    },
+  },
+
+  // The wonder of the day (ui/today.js; the choice is ui/passport.js wonderOfTheDay): one line
+  // over the dated cards, an event inside 30 days or else a famous thing whose turn the day is.
+  wonder: {
+    kicker: 'Wonder of the day',
+    label: 'Wonder of the day: {title}',
+  },
+
+  // "Just happened" (internal #134): one row at the head of Coming up. {age} is ageInWords.
+  happened: {
+    flown: 'Lifted off {age}',
+    lost: 'Launch failed {age}',
+  },
+
+  // The passport (ui/passport.js, spec 0041): where you have been, kept in this browser only.
+  passport: {
+    title: 'Passport',
+    openTitle: 'Where you have been, kept in this browser only',
+    // The row at the home's foot: "12 places · 3 of 25 trips".
+    summary: '{places} · {n} of {total} trips',
+    places: '{n} places',
+    placeOne: '{n} place',
+    // Said once, in the view: what this is and where it lives.
+    kept: 'Kept in this browser only, never sent.',
+    notKept: 'This browser keeps nothing, so nothing is here.',
+    placesTitle: 'Places you opened',
+    tripsTitle: 'Trips finished',
+    outOf: '{n} of {total}',
+    barLabel: '{n} of {total} trips finished',
+    placeTitle: 'Go to {name}',
+    noPlaces: 'No places yet. Open one on the map.',
+    noTrips: 'No trips finished yet.',
+    forget: 'Forget me',
+    forgetConfirm: 'Yes, forget',
+    forgetTitle: 'Clears the passport from this browser',
+    forgotten: 'Forgotten. This browser holds nothing now.',
+    // The end card's stamp: "Trip 7 of 25 · 7 October 2026". {date} is UTC.
+    stamp: 'Trip {n} of {total} · {date}',
+    // A trip card's line for a trip left in the last 24 hours.
+    resume: 'Continue from stop {n}',
+  },
+
   // Debris as a problem (ui/debris.js; the counting is data/satcat.js). Its sentences are filled
   // from CelesTrak's catalogue: none of the numbers is written here.
   debris: {

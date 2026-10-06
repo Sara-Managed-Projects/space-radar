@@ -70,6 +70,9 @@ const DEFERRED = {
   'js/data/missions.js': 'the missions\' events: with ui/missions.js or ui/searchrows.js',
   'js/data/ics.js': 'the calendar file: ui/next.js fetches it when Add to calendar is pressed',
   'js/ui/countdown.js': 'the launch countdown: fetched when a launch is within a day',
+  'js/ui/today.js': 'the home\'s dated cards: main.js fetches them after the first visit has settled',
+  'js/ui/sentence.js': 'the home\'s first line: it arrives with ui/today.js',
+  'js/ui/passport.js': 'the passport: main.js fetches it for the dated cards or the trip frame',
   'js/scene/ephpath.js': 'the line of a craft\'s path: ui/missions.js fetches it with the first file',
 };
 for (const [path, why] of Object.entries(DEFERRED)) {

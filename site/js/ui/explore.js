@@ -1,7 +1,7 @@
 // ui/explore.js -- the sidebar's home: the explore view (spec 0061 req 2 and 3, design §2).
 //
 // Contract: createExplore(ctx, host) -> { root, tab(), setTab(id), refresh(), mountTab(id, render, opts),
-//           next (ui/next.js's list), todayHost (ui/today.js's seat) }
+//           next (ui/next.js's list), todayHost (ui/today.js's seat), crew() }
 // Also exported, pure, for tests/test_shell.mjs:
 //   TABS, tabTarget(tab) -> {stage, moment}, tabFor(stageId, moment) -> tab
 //   rightNowLines({storms, aurora, clouds, crewed, wallMs}) -> at most three {id, text, value, lead}
@@ -746,7 +746,10 @@ export function createExplore(ctx, host) {
       card.appendChild(tripPicture(row.id, 'sr-tripcard__pic'));
       card.appendChild(el('span', 'sr-tripcard__title', row.title));
       const isStarting = startingId === row.id && !row.off;
-      const meta = isStarting ? COPY.tripCard.starting : tripMeta(unplannedShape(row, tour), eventSubtitle(tour, nowMs, ctx.observer || null));
+      // A trip left in the last 24 hours says where it can be picked up (ui/passport.js, once it
+      // is here): the card then starts the trip at that stop.
+      const resume = !row.off && ctx.passport ? ctx.passport.resume(row.id) : null;
+      const meta = isStarting ? COPY.tripCard.starting : resume ? resume.text : tripMeta(unplannedShape(row, tour), eventSubtitle(tour, nowMs, ctx.observer || null));
       card.appendChild(el('span', 'sr-tripcard__meta', meta));
       if (isStarting) { card.classList.add('is-starting'); card.setAttribute('aria-busy', 'true'); }
       if (row.off) { card.classList.add('is-off'); card.setAttribute('aria-disabled', 'true'); }
@@ -757,8 +760,8 @@ export function createExplore(ctx, host) {
         const go = () => { try { return trip.start(row.id); } catch { return null; /* the trip says why itself */ } };
         // Still waiting for its stars (waitsForLater): they first, then the trip.
         const begun = !row.planned && laterPending() ? ctx.loadAfterFirstVisit().then(go) : go();
-        const done = () => starting(row.id, false);
-        if (begun && typeof begun.then === 'function') { starting(row.id, true); begun.then(done, done); }
+        const done = () => { starting(row.id, false); if (resume && trip.state.tourId === row.id) trip.jumpTo(resume.index); };
+        if (begun && typeof begun.then === 'function') { starting(row.id, true); begun.then(done, done); } else if (resume) done();
       });
       hostT.grid.appendChild(card);
       if (focusedTrip && row.id === focusedTrip) card.focus({ preventScroll: true });
@@ -874,6 +877,7 @@ export function createExplore(ctx, host) {
     if (e && e.detail === 'next') revealInColumn(next.root, 8);
   });
   window.addEventListener('sr:layer', () => refresh());
+  window.addEventListener('sr:passport', () => paintTrips(current));
   window.addEventListener('sr:clouds', () => { if (current === 'earth') paintNow(); });
   // The aurora module arrived, or a forecast did: the aurora line can be written.
   window.addEventListener('sr:aurora', () => { if (current === 'earth') paintNow(); });
@@ -918,7 +922,8 @@ export function createExplore(ctx, host) {
     return mount;
   }
 
-  const api = { root, tab: () => current, setTab: goTab, refresh, search, subscribeHost, next, todayHost, mountTab };
+  // `crew` is Open Notify's headcount by craft, or null until it is read (ui/sentence.js).
+  const api = { root, tab: () => current, setTab: goTab, refresh, search, subscribeHost, next, todayHost, crew: () => astrosCounts, mountTab };
   if (ctx) ctx.explore = api;
   return api;
 }

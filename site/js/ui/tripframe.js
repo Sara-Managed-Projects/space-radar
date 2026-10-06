@@ -954,6 +954,18 @@ export function createTripFrame(ctx) {
     p.appendChild(el('p', 'sr-tripsheet__note', st.stageChanged ? T.endBodyStage : T.endBody));
     // The clock is put back on leave, not now: the end card is still inside the trip.
     if (st.clockMoves) p.appendChild(el('p', 'sr-tripsheet__note', T.clockRestored));
+    // THE STAMP (spec 0041 req 3, ui/passport.js): "Trip 7 of 25 · 7 October 2026", counted from
+    // what this browser has kept. Left out where nothing is kept, and until the count is here.
+    const stamp = el('p', 'sr-tripsheet__stamp');
+    stamp.hidden = true;
+    p.appendChild(stamp);
+    if (typeof ctx.wantPassport === 'function') {
+      const total = trip.tours().length;
+      ctx.wantPassport().then((pass) => {
+        const line = pass && stamp.isConnected ? pass.stamp(st.tourId, total) : '';
+        if (line) { stamp.textContent = line; stamp.hidden = false; }
+      });
+    }
 
     const row = el('div', 'sr-tripsheet__actions');
     row.setAttribute('role', 'group');
@@ -1231,6 +1243,8 @@ export function createTripFrame(ctx) {
 
   function setup(st) {
     build();
+    // The passport notes each stop reached (ui/passport.js): here before the first one.
+    if (typeof ctx.wantPassport === 'function') ctx.wantPassport();
     savedDocTitle = document.title;
     tourId = st.tourId;
     const active = document.activeElement;

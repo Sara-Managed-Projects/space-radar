@@ -424,6 +424,11 @@ jobs:
         run: node tests/test_today.mjs
       - name: Debris as a problem, from the whole catalogue (public #449)
         run: node tests/test_debris.mjs
+      # Round three, package 5 (2026-10-07): the passport and the home's first line.
+      - name: The passport, kept in this browser only (spec 0041, public #240)
+        run: node tests/test_passport.mjs
+      - name: One true sentence on the home (public #395, #450)
+        run: node tests/test_sentence.mjs
       # Eclipses are worked out here with the vendored astronomy-engine and pinned to the dates the
       # library gives, which a reviewer checked against NASA GSFC's tables (2026-09-23).
       - name: eclipses are computed in the browser, and one event stream feeds the Next list (spec 0031)

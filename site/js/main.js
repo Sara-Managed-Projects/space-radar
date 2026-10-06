@@ -752,6 +752,12 @@ export async function boot({ setStatus } = {}) {
   const scrubberLater = () => setTimeout(wantScrubber, SCRUBBER_MS);
   if (window.__srLayersReady) scrubberLater();
   else window.addEventListener('sr:layers-ready', scrubberLater, { once: true });
+  // THE PASSPORT (spec 0041, ui/passport.js): where a visitor has been, in this browser only.
+  // Asked for by the dated cards once the first visit has settled, and by the trip frame.
+  let passport = null;
+  ctx.wantPassport = () => passport || (passport = import('./ui/passport.js')
+    .then((m) => m.createPassport(ctx))
+    .catch((e) => { passport = null; console.warn('the passport did not load', e); return null; }));
   // TODAY (internal #270, ui/today.js): the home's dated cards, generated from what is loaded,
   // and under them the way into the debris view (ui/debris.js). TODAY_MS after sr:layers-ready.
   const todayLater = () => setTimeout(() => {

@@ -69,7 +69,7 @@ import { COPY } from '../copy/en.js';
 import { createSheet } from './sheet.js';
 
 export const SIDE_KEY = 'sr:side';
-export const VIEWS = ['home', 'card', 'sources', 'trip'];
+export const VIEWS = ['home', 'card', 'sources', 'trip', 'passport'];
 /** The spec's line between the sidebar and the phone's sheet (0061 req 1 and 8). */
 export const DESKTOP_QUERY = '(min-width: 900px)';
 
@@ -88,8 +88,8 @@ const SHEET_SCROLL = '.sr-explore__body, .sr-side__cardslot, .sr-side__sourcesho
 export function sheetFor(view, from) {
   if (view === from) return null;
   if (view === 'card' || view === 'trip') return 'half';
-  if (view === 'sources') return 'full';
-  if (view === 'home') return from === 'sources' ? 'half' : from ? 'peek' : null;
+  if (view === 'sources' || view === 'passport') return 'full';
+  if (view === 'home') return from === 'sources' || from === 'passport' ? 'half' : from ? 'peek' : null;
   return null;
 }
 
@@ -235,6 +235,15 @@ export function createShell(ctx, opts = {}) {
   const sourcesHost = el('div', 'sr-side__sourceshost');
   sources.appendChild(sourcesHost);
   views.set('sources', sources);
+
+  // The passport (ui/passport.js, spec 0041): a pushed view like the sources sheet, filled by its
+  // own module when it is opened. Its body scrolls as the sources sheet's does.
+  const passport = el('div', 'sr-side__view sr-side__passport');
+  passport.dataset.view = 'passport';
+  passport.appendChild(backRow(COPY.shell.back, () => { back(); landFocus(); }).row);
+  const passportHost = el('div', 'sr-side__sourceshost');
+  passport.appendChild(passportHost);
+  views.set('passport', passport);
 
   // The trip view: empty until ui/tripframe.js seats its sheet in it (host('trip')).
   const tripView = el('div', 'sr-side__view sr-side__trip');
@@ -464,7 +473,7 @@ export function createShell(ctx, opts = {}) {
   // (ui/cards.js), and a clear screen takes Escape before either (ui/cleanview.js, capture phase).
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape' || e.defaultPrevented) return;
-    if (stack.current() === 'sources') { back(); }
+    if (stack.current() === 'sources' || stack.current() === 'passport') { back(); landFocus(); }
   });
 
   layout();
@@ -481,7 +490,7 @@ export function createShell(ctx, opts = {}) {
     collapse,
     collapsed: () => collapsedNow,
     isPhone,
-    host: (view) => (view === 'home' ? home : view === 'card' ? cardSlot : view === 'sources' ? sourcesHost : view === 'trip' ? tripView : null),
+    host: (view) => (view === 'home' ? home : view === 'card' ? cardSlot : view === 'sources' ? sourcesHost : view === 'trip' ? tripView : view === 'passport' ? passportHost : null),
     /** Where the card sits while a trip runs (ui/tripframe.js): its sheet's slot, or null for <body>. */
     seatTrip(slot) {
       tripSlot = slot || null;

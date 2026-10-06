@@ -58,6 +58,25 @@ const LINES = [
   ['search.more', 13, INTER, SIDE],
   ['search.placeholder', 15, INTER, 250], // the well, less its icon and the / keycap; read in the screenshots
   ['search.placeholderPhone', 16, INTER, 190],
+  // The home's first line (ui/sentence.js), at the label size in the sidebar's column: each
+  // clause alone, as a sentence, with the longest values it really takes.
+  ['sentence.pass', 14, INTER, SIDE, { name: 'the ISS', when: 'tomorrow at 21:14' }],
+  ['sentence.launch', 14, INTER, SIDE, { name: 'Falcon 9 Block 5', when: 'tomorrow at 21:14' }],
+  ['sentence.showerTomorrow', 14, INTER, SIDE],
+  ['sentence.moonDays', 14, INTER, SIDE, { n: 'three', phase: 'full' }],
+  ['sentence.moonLit', 14, INTER, SIDE],
+  ['sentence.crew', 14, INTER, SIDE, { n: 'twelve' }],
+  ['sentence.storms', 14, INTER, SIDE, { n: 'twelve' }],
+  ['sentence.approach', 14, INTER, SIDE, { name: '2026 TC12', when: 'tomorrow at 21:14' }],
+  ['sentence.launched', 14, INTER, SIDE, { n: '1 203' }],
+  // The passport: the row at the home's foot, the view's lines, the stamp, a card's resume line
+  ['passport.kept', 13, INTER, SIDE],
+  ['passport.notKept', 13, INTER, SIDE],
+  ['passport.noPlaces', 13, INTER, SIDE],
+  ['passport.forgotten', 13, INTER, SIDE],
+  ['passport.stamp', 13, INTER, SIDE, { n: '25', total: '25', date: '27 September 2026' }],
+  ['passport.resume', 13, INTER, 150, { n: '12' }],
+  ['happened.flown', 13, INTER, SIDE, { age: '47 hours ago' }],
   // Coming up: the row as drawn, and its empty line
   ['nextList.row.launch', 13, INTER, SIDE],
   ['nextList.row.launchRough', 13, INTER, SIDE],
@@ -132,7 +151,7 @@ for (const l of layers) {
 }
 
 // Labels: a button is at most two words, a tab one (docs/ui-guide.md section 4).
-for (const [key, max] of [['tonight.showMe', 2], ['tonight.more', 2], ['tonight.fewer', 2], ['controls.layersFailedWhy', 2], ['subscribe.submit', 1], ['sceneNote.why', 1], ['search.fly', 3]]) {
+for (const [key, max] of [['passport.forget', 2], ['passport.forgetConfirm', 2], ['passport.title', 1], ['tonight.showMe', 2], ['tonight.more', 2], ['tonight.fewer', 2], ['controls.layersFailedWhy', 2], ['subscribe.submit', 1], ['sceneNote.why', 1], ['search.fly', 3]]) {
   const v = get(key);
   check(typeof v === 'string' && v.trim().split(/\s+/).length <= max, `COPY.${key} ("${v}") is over ${max} word(s)`);
 }
@@ -146,7 +165,7 @@ for (const [key, max] of [['tonight.showMe', 2], ['tonight.more', 2], ['tonight.
 // names its key). No exclamation mark, no arrow, no double hyphen, no emoji, and no Title Case.
 const CHROME_SECTIONS = ['app', 'subscribe', 'shell', 'tabs', 'rightNow', 'statusLine', 'tripCard', 'explore', 'rail', 'timePill', 'undo',
   'moments', 'ladder', 'sceneNote', 'link', 'share', 'audio', 'density', 'nextList', 'colourKey', 'chooser', 'controls', 'search',
-  'quality', 'time', 'sheet', 'print', 'hud', 'tonight', 'clean', 'keyHint', 'mark'];
+  'quality', 'time', 'sheet', 'print', 'hud', 'tonight', 'clean', 'keyHint', 'mark', 'sentence', 'wonder', 'happened', 'passport'];
 const TOOLTIP = /(Title|Label|Alt|Aria|Tip|Hint|Why|Help|Describe|Long)$|^(label|title|aria|hint|why)/;
 // Said in full on purpose, each with its reason. A key here that goes away fails below.
 const LONG_OK = new Map([

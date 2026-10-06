@@ -42,6 +42,8 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   check(!s.remove('home') && s.list()[0] === 'home', 'home cannot be removed');
   check(!s.push('nowhere') && !s.push('home'), 'an unknown view, or home, is not pushed');
   check(['home', 'card', 'sources', 'trip'].every((v) => VIEWS.includes(v)), 'the four views of design §1 exist');
+  check(VIEWS.includes('passport') && s.push('passport') && s.current() === 'passport', 'the passport is a pushed view too (spec 0041)');
+  s.pop();
 }
 
 // --- 2. collapse, remembered ------------------------------------------------------------------------
