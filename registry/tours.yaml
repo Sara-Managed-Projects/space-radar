@@ -1460,7 +1460,7 @@ tours:
   # =============================================================================================
   - id: the-constellations
     title: "The constellations"
-    blurb: "Twelve figures of the night sky, drawn star by star, and Orion from the side."
+    blurb: "Twelve figures of the night sky, drawn star by star. Leaving goes back to Earth."
     group: beyond
     next: to-the-edge
     requires: [stars]
@@ -1699,7 +1699,7 @@ tours:
   # =============================================================================================
   - id: the-living-earth
     title: "The living Earth"
-    blurb: "One planet's cycles with today's data: storms, sea, ice, dust and the aurora."
+    blurb: "One planet's cycles with today's data: storms, sea, ice. It moves the clock."
     group: earth-orbit
     next: chasing-the-solar-eclipse
     requires: [worlds, storms, lightning, aurora]
