@@ -5323,13 +5323,13 @@ html.sr-phone .sr-tonight-view__num { font-size: var(--sr-fs-num-sm); }
   top: 0;
   will-change: transform;
   white-space: nowrap;
-  font: 400 13px/18px var(--sr-font);
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
   color: var(--sr-text-soft);
   text-shadow: 0 0 2px var(--sr-space), 0 0 2px var(--sr-space), 0 0 4px var(--sr-space), 0 0 8px var(--sr-space);
 }
 .sr-skylabel[hidden], .sr-skymark[hidden] { display: none; }
 .sr-skylabel--con {
-  font: 600 13px/16px var(--sr-font-hud);
+  font: 600 var(--sr-fs-sm)/16px var(--sr-font-hud);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--sr-text-dim);
@@ -5344,7 +5344,7 @@ html.sr-phone .sr-tonight-view__num { font-size: var(--sr-fs-num-sm); }
   top: var(--sp-5);
   transform: translateX(-50%);
   white-space: nowrap;
-  font: 400 13px/18px var(--sr-font-mono);
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font-mono);
   color: var(--sr-text-soft);
   text-shadow: 0 0 2px var(--sr-space), 0 0 2px var(--sr-space), 0 0 4px var(--sr-space), 0 0 8px var(--sr-space);
 }
@@ -5386,7 +5386,7 @@ html.sr-night-red::after {
 /* A row's name with its brightness at the right, in mono: the number a row is ranked by. */
 .sr-tonight-view__rowhead { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-2); }
 .sr-tonight-view__rowhead .sr-tonight-view__rowname { flex: 1 1 auto; min-width: 0; }
-.sr-tonight-view__rowside { flex: 0 0 auto; font: 400 13px/18px var(--sr-font-mono); color: var(--sr-text-dim); }
+.sr-tonight-view__rowside { flex: 0 0 auto; font: 400 var(--sr-fs-sm)/18px var(--sr-font-mono); color: var(--sr-text-dim); }
 /* On a phone the search bar has the top of the screen: the field of view sits under it. */
 html.sr-phone .sr-skyfov { top: calc(var(--sp-6) * 2 + var(--sp-2)); }
 
