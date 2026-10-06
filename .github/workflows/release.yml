@@ -85,37 +85,18 @@ jobs:
           test -s site/data/v1/celestrak-stations.json
           du -sh site/data/v1
 
-      - name: Build the zip
+      # scripts/build_release.py builds the zip, unpacks it again and holds it to what it promises;
+      # tests/test_release_zip.py runs the same file in CI on every pull request (public #471).
+      - name: Build the zip, and check it
         id: zip
         env:
           VERSION: ${{ steps.v.outputs.version }}
         run: |
           set -euo pipefail
-          NAME="space-radar-$VERSION"
-          mkdir -p "dist/$NAME/docs" "dist/$NAME/scripts"
-          cp -R site "dist/$NAME/site"
-          cp LICENSE CREDITS.md CHANGELOG.md "dist/$NAME/"
-          cp docs/RUN_LOCALLY.md "dist/$NAME/docs/"
-          cp scripts/save_offline_data.py "dist/$NAME/scripts/"
-          {
-            echo "Space Radar $VERSION"
-            echo
-            echo "1. Open a terminal in this folder."
-            echo "2. Windows:      py -m http.server 8177 --directory site"
-            echo "   macOS, Linux: python3 -m http.server 8177 --directory site"
-            echo "3. Open http://localhost:8177 in your browser."
-            echo
-            echo "It works with no internet. docs/RUN_LOCALLY.md has the details and the troubleshooting."
-            echo "The data in site/data/v1 was saved on $(date -u +%Y-%m-%d); CREDITS.md says whose it is."
-          } > "dist/$NAME/START-HERE.txt"
-          find "dist/$NAME" -name .DS_Store -delete
-          # The service worker in the zip is stamped with this build (scripts/stamp_sw.py): after one
-          # visit the copy starts even when the school's server is switched off.
-          python3 scripts/stamp_sw.py --site "dist/$NAME/site"
-          (cd dist && zip -qr -9 "$NAME.zip" "$NAME")
-          (cd dist && sha256sum "$NAME.zip" | tee "$NAME.zip.sha256")
-          ls -l "dist/$NAME.zip"
-          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          python3 scripts/build_release.py --version "$VERSION" --out dist
+          ls -l "dist/space-radar-$VERSION.zip"
+          cat "dist/space-radar-$VERSION.zip.sha256"
+          echo "name=space-radar-$VERSION" >> "$GITHUB_OUTPUT"
 
       # The zip has to serve: index.html and the saved copy's index answer from the unpacked folder.
       - name: The zip serves
