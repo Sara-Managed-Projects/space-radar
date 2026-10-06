@@ -362,9 +362,14 @@ export function inWords(deltaMs) {
   } else if (minutes < 1440) {
     const n = Math.round(minutes / 60);
     body = n === 1 ? COPY.time.anHour : t(COPY.time.hours, { n });
-  } else {
+  } else if (minutes < 1440 * 90) {
     const n = Math.round(minutes / 1440);
     body = n === 1 ? COPY.time.aDay : t(COPY.time.days, { n });
+  } else if (minutes < 1440 * 730) {
+    // Past three months a count of days is a sum nobody does ("in 300 days"); past two years, months are.
+    body = t(COPY.time.months, { n: Math.round(minutes / (1440 * 30.44)) });
+  } else {
+    body = t(COPY.time.years, { n: Math.round(minutes / (1440 * 365.25)) });
   }
   return t(past ? COPY.time.ago : COPY.time.inFuture, { d: body });
 }
@@ -405,6 +410,12 @@ const longDateFmt = new Intl.DateTimeFormat('en-GB', {
   month: 'long',
   day: 'numeric',
 });
+const utcLongFmt = new Intl.DateTimeFormat('en-GB', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
 const clockFmt = new Intl.DateTimeFormat('en-GB', {
   hour: '2-digit',
   minute: '2-digit',
@@ -444,13 +455,31 @@ export const timeText = {
    * "29 SEP 21:14 UTC" -- the time pill's readout (spec 0061 §7). en-US for the month because en-GB
    * now writes "Sept", and the pill is set in capitals where a four-letter month is one too many.
    */
-  pillUtc: (ms) => {
+  pillUtc: (ms, nowMs) => {
     const parts = {};
     for (const p of pillFmt.formatToParts(new Date(ms))) parts[p.type] = p.value;
+    // More than half a year from now the year is the point: "05 MAR 12:05" for Voyager at Jupiter
+    // would read as last spring (the Roadster mistake, dateNear above).
+    const far = Number.isFinite(nowMs) && Math.abs(ms - nowMs) > 180 * 86400e3;
+    const day = `${parts.day} ${String(parts.month || '').toUpperCase()}`;
     return t(COPY.timePill.when, {
-      date: `${parts.day} ${String(parts.month || '').toUpperCase()}`,
+      date: far ? `${day} ${new Date(ms).getUTCFullYear()}` : day,
       time: `${parts.hour === '24' ? '00' : parts.hour}:${parts.minute}`,
     });
+  },
+  /** "5 March 1979", in UTC: a mission's event (ui/missions.js), a dated card (ui/today.js). */
+  utcLong: (ms) => utcLongFmt.format(new Date(ms)),
+  /** "21:30", in UTC: a tick on the timeline (ui/scrubber.js). */
+  utcHm: (ms) => {
+    const parts = {};
+    for (const p of pillFmt.formatToParts(new Date(ms))) parts[p.type] = p.value;
+    return `${parts.hour === '24' ? '00' : parts.hour}:${parts.minute}`;
+  },
+  /** "07 Oct", in UTC: a day on the timeline and on a dated card (set in capitals by their CSS). */
+  utcDay: (ms) => {
+    const parts = {};
+    for (const p of pillFmt.formatToParts(new Date(ms))) parts[p.type] = p.value;
+    return `${parts.day} ${parts.month || ''}`;
   },
   timeZoneName: () => {
     try {
@@ -590,6 +619,91 @@ export const COPY = {
     updateReady: 'A newer version is ready',
     reload: 'Reload',
   },
+  // The toast after the app has moved the view for you (ui/camundo.js, internal #274).
+  undo: {
+    moved: 'Moved to {name}',
+    movedNowhere: 'The view moved',
+    back: 'Back to where you were',
+    done: 'Back where you were',
+  },
+  // A mission's events on its card (ui/missions.js; the events and their sentences are
+  // registry/missions.yaml's). The notes are the honest part: what the map did with the clock.
+  mission: {
+    title: 'Its mission',
+    count: '{i} of {n}',
+    navLabel: 'The events of {name}',
+    prev: 'Earlier event',
+    next: 'Later event',
+    when: '{date}, {time} UTC',
+    go: 'Go to this moment',
+    goTitle: 'Set the clock to this moment and frame it',
+    here: 'The clock is at this moment. Live brings it back.',
+    noteSite: 'The map can show this place on that day, in that day’s light.',
+    notePath: 'The map holds its path for that day.',
+    noteCruise: 'No path of ours for that day: {name} is drawn on the straight line back from where it is measured now, good to about one astronomical unit.',
+    noteNone: 'The map has no path for {name} on that day, so the clock stays where it is.',
+    noteNoneWorld: 'The map has no path for {name} on that day, so the clock stays where it is. The world it met is drawn for any date.',
+    seeWorld: 'See {world} that day',
+    seeWorldTitle: 'Set the clock to that day and go to {world}. {name} itself is not drawn there',
+    all: 'All {n} events',
+    fewer: 'Hide the list',
+    source: 'Dates and figures: ',
+    unknown: 'That link names an event this map does not have.',
+  },
+  // The home's dated cards (ui/today.js): generated from what is loaded, never typed.
+  today: {
+    title: 'Today',
+    moonTitle: '{phase} Moon',
+    moonLine: '{pct} % lit · {next} on {date}',
+    moonNext: ['new Moon', 'first quarter', 'full Moon', 'last quarter'],
+    approachLine: '{value} · {detail}',
+    launchedKicker: 'Last 30 days',
+    launched: '{n} new objects in orbit',
+    launchedLine: 'Newest: {name}',
+    debris: 'Debris, by the numbers',
+    debrisClose: 'Close the debris view',
+    debrisTitle: 'Counts everything tracked in orbit. Reads the whole catalogue, about 1.5 MB',
+  },
+  // Debris as a problem (ui/debris.js; the counting is data/satcat.js). Its sentences are filled
+  // from CelesTrak's catalogue: none of the numbers is written here.
+  debris: {
+    title: 'Debris in orbit',
+    reading: 'Reading the catalogue, about 1.5 MB',
+    failed: 'The catalogue could not be read.',
+    retry: 'Try again',
+    empty: 'The catalogue lists nothing in orbit.',
+    lead: '{gone} of the {total} things tracked in orbit no longer work.',
+    kinds: { debris: 'pieces of debris', rocket: 'spent rocket bodies', dead: 'dead satellites', working: 'working satellites' },
+    bandsTitle: 'By height',
+    bands: {
+      low: 'Under 600 km',
+      crowded: '600 to 1 000 km',
+      upper: '1 000 to 2 000 km',
+      medium: '2 000 to 34 000 km',
+      geo: 'Around 36 000 km',
+      beyond: 'Beyond 37 600 km',
+      stretched: 'Stretched orbits',
+    },
+    bandAria: '{band}: {total} in all. {debris} debris, {rocket} rocket bodies, {dead} dead satellites, {working} working.',
+    show: 'Show on the map',
+    hide: 'Hide from the map',
+    showTitle: 'Every piece of debris and spent rocket, coloured by kind',
+    drawn: '{n} dots: grey is debris, yellow a spent rocket. Each is at its real height and tilt, at a made-up place on its orbit.',
+    storiesTitle: 'From the catalogue',
+    oneObject: 'One object',
+    objects: '{n} objects',
+    oneLaunch: 'one launch',
+    launches: '{n} launches',
+    oneThing: 'One thing',
+    things: '{n} things',
+    storyLaunched: '{objects} from {launches} joined the catalogue in the week to {date}.',
+    storyCameDown: '{things} came down in that week.',
+    storyCameDownBiggest: '{things} came down in that week, the largest of them {name}.',
+    storyCloud: 'The biggest cloud of debris is from {name}: {pieces} pieces still in orbit.',
+    storyClouds: 'The biggest clouds of debris: {name}, {pieces} pieces still up; then {name2}, {pieces2}, and {name3}, {pieces3}.',
+    storyOldest: 'The oldest thing still in orbit is {name}, launched in {year}: {years} years of laps.',
+    honesty: 'Counted from CelesTrak’s catalogue as read on {date}: what radar can track, from about 10 cm across. Smaller pieces are far more numerous and are in no catalogue. Where a dot is along its orbit is illustrative.',
+  },
   // A trip as a card (0061 design §2): the title and one line under it.
   tripCard: {
     title: 'Trips',
@@ -644,6 +758,22 @@ export const COPY = {
     run: 'Click to let time run, drag to move through it',
     localTitle: 'Your time {time}, {zone}. {hold}',
     readLabel: '{text}. {hold}',
+    // The step ‹ and › take (ui/timepill.js): a button that cycles a minute, an hour, a day, and
+    // sets how far the timeline shows (ui/scrubber.js: two hours, a day, a month).
+    units: { minute: '1 min', hour: '1 h', day: '1 day' },
+    unitWords: { minute: 'one minute', hour: 'one hour', day: 'one day' },
+    unitTitle: 'Steps of {unit}. Press for {next}',
+    // The timeline (ui/scrubber.js). It is a slider: its value is the readout's words.
+    tapeLabel: 'Timeline. Drag it, or use the arrow keys',
+    tapeTitle: 'Drag to move through time',
+    now: 'now',
+    nowTitle: 'Back to now',
+    rough: 'rougher',
+    roughTitle: 'Past a week from now a satellite’s place on its orbit is rough',
+    roughSay: 'Satellite places are rough this far from now.',
+    worlds: 'Planets and moons hold for centuries.',
+    markTitle: '{what}. Press to go there',
+    endTitle: 'The timeline ends here: a month back, a year on',
   },
 
   punctuation: {
@@ -1001,6 +1131,12 @@ export const COPY = {
     launchRough: '{name} lifts off {when}, give or take — the date is not fixed yet',
     approach: '{name} passes Earth {when}, {ld}× the Moon’s distance away',
     approachNoDistance: '{name} passes Earth {when}',
+    // How big (public #313): measured where the catalogue has it, else the range its brightness allows.
+    sizeM: 'It is {n} m across',
+    sizeKm: 'It is {n} km across',
+    sizeRangeM: 'About {lo} to {hi} m across, judged from its brightness',
+    sizeRangeKm: 'About {lo} to {hi} km across, judged from its brightness',
+    sizeMixed: 'About {lo} m to {hi} km across, judged from its brightness',
     perihelion: '{name} is closest to the Sun {when}',
     pass: '{name} comes over you {when}',
     train: 'A train of {n} satellites comes over you {when}',
@@ -1057,6 +1193,11 @@ export const COPY = {
       launchRough: 'Around {when} · date not fixed',
       approach: 'Passes Earth {when}',
       approachValue: '{ld}× Moon',
+      approachSized: 'Passes Earth {when} · {size}',
+      sizeM: '{n} m',
+      sizeKm: '{n} km',
+      sizeRangeM: 'about {lo} to {hi} m',
+      sizeRangeKm: 'about {lo} to {hi} km',
       perihelion: 'Closest to the Sun {when}',
       pass: 'Comes over you {when}',
       trainTitle: 'Starlink train of {n}',
@@ -1488,6 +1629,8 @@ export const COPY = {
     // A storm's centre is measured, at one moment; this is the half of the line that says which.
     stormAdvisory: 'its centre at the {time} UTC advisory, {ago}; a storm moves, so it has moved since',
     illustrative: 'drawn to show where it goes; the real track is not public',
+    // A dot of the "All tracked debris" layer: its orbit's height and tilt are the catalogue's.
+    placeIllustrative: 'its real orbit, from CelesTrak’s catalogue, at a made-up place along it; we hold no current elements for it',
     sample: 'bundled sample data, not a live position',
     // spec 0026 req 15: a fresh launch the public catalogue has not numbered yet.
     provisional: 'not yet in the public catalogue — these are the operator’s own elements, published through CelesTrak; a permanent number comes when Space-Track lists it',
@@ -2304,6 +2447,8 @@ export const COPY = {
     hours: '{n} hours',
     aDay: 'a day',
     days: '{n} days',
+    months: '{n} months',
+    years: '{n} years',
     inFuture: 'in {d}',
     ago: '{d} ago',
   },

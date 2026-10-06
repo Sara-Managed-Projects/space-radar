@@ -1680,7 +1680,9 @@ export function classLine(record, m) {
       return t(COPY.cls.inferred, ageParts(Math.max(0, m.tMs - epoch)));
     }
     case 'illustrative':
-      return COPY.cls.illustrative;
+      // The whole tracked population of debris (data/satcat.js): the orbit is the catalogue's, the
+      // place on it is not known to us. "The real track is not public" would be wrong of these.
+      return pick(meta(record), 'placeIllustrative') ? COPY.cls.placeIllustrative : COPY.cls.illustrative;
     case 'sample': {
       const why = pick(meta(record), 'why');
       return COPY.cls.sample + (why ? COPY.punctuation.dash + String(why) : '');
@@ -3170,6 +3172,18 @@ function render(record, ctx, opts = {}) {
     actions.appendChild(b);
   }
   body.appendChild(actions);
+
+  // 3b. a mission's dated events, for the handful of records that have them (ui/missions.js,
+  // registry/missions.yaml; public #452). The module is fetched the first time a card opens
+  // (main.js ctx.wantMissions) and fills this box, at once on every later paint so the focus a
+  // repaint puts back (keepPlace) finds its buttons.
+  const missionBox = el('div', 'sr-card__mission');
+  missionBox.hidden = true;
+  body.appendChild(missionBox);
+  if (ctx && ctx.missions) ctx.missions.mountMission(missionBox, record, ctx);
+  else if (ctx && typeof ctx.wantMissions === 'function') {
+    ctx.wantMissions().then((mod) => { if (mod && missionBox.isConnected) mod.mountMission(missionBox, record, ctx); });
+  }
 
   // 4. the next 90 minutes in time: light and shadow, the lap (spec 0048)
   const time = timeFactsSection(record, ctx, m);

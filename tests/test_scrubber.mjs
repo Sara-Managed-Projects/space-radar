@@ -1,0 +1,129 @@
+// tests/test_scrubber.mjs -- the timeline in the time pill (public #455; ui/scrubber.js, ui/timepill.js).
+//
+// The pure half: where an instant sits on the tape and back, the ticks and their labels on round
+// UTC instants, the marks made from the Coming up list and kept once seen, the tap that means a
+// mark, where the tape is hatched "rougher" and where it ends, the step sizes, and the words for
+// a time far from now. The drag itself is a browser's to test (tools/cdp.mjs).
+//
+//   node tests/test_scrubber.mjs
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+import { readFileSync } from 'node:fs';
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+const JS = join(ROOT, 'site/js');
+const S = await import(join(JS, 'ui/scrubber.js'));
+const P = await import(join(JS, 'ui/timepill.js'));
+const { COPY, inWords, timeText } = await import(join(JS, 'copy/en.js'));
+const problems = [];
+const check = (ok, msg) => { if (!ok) problems.push(msg); };
+const near = (a, b, eps = 1e-6) => Math.abs(a - b) <= eps;
+
+const now = Date.parse('2026-10-06T08:16:00Z');
+const H = 3600e3;
+const D = 86400e3;
+
+// --- the tape: an instant and a pixel ------------------------------------------------------------
+for (const unit of P.PILL_UNITS) {
+  check(near(S.tapeX(now, now, unit, 480), 160), `${unit}: the shown instant is under the fixed line, a third of the way along`);
+  const t = now + 5 * P.UNIT_MS[unit];
+  check(near(S.tapeTime(S.tapeX(t, now, unit, 480), now, unit, 480), t, 1), `${unit}: a pixel maps back to its instant`);
+  check(S.tapeX(t, now, unit, 480) > 160, `${unit}: later is to the right`);
+}
+check(near(S.tapeX(now + H, now, 'hour', 480) - 160, 20) && near(S.tapeX(now + D, now, 'day', 480) - 160, 16) && near(S.tapeX(now + 60e3, now, 'minute', 480) - 160, 4), 'an hour is 20 px, a day 16, a minute 4');
+// A phone's tape (about 250 px) shows about an hour, half a day, two weeks; a desktop's two hours, a day, a month.
+check(near(250 / S.SCALES.minute.pxPerMs / 60e3, 62.5) && near(250 / S.SCALES.hour.pxPerMs / H, 12.5) && near(480 / S.SCALES.day.pxPerMs / D, 30), 'the three units are three views: about an hour, half a day, a month');
+
+// --- ticks and labels on round UTC instants --------------------------------------------------------
+{
+  const plan = S.tickPlan(now, 'hour', 480);
+  check(near(plan.stepPx, 20), 'a tick an hour');
+  const firstTick = S.tapeTime(plan.offsetPx, now, 'hour', 480);
+  check(near(firstTick % H, 0, 1) && plan.offsetPx >= 0 && plan.offsetPx < plan.stepPx, 'the ticks start on a whole hour inside the first step');
+  check(plan.labels.length >= 3 && plan.labels.every((l) => l.tMs % (6 * H) === 0), 'a label every six hours, on 00, 06, 12, 18 UTC');
+  const midnight = plan.labels.find((l) => l.tMs % D === 0);
+  check(midnight && midnight.day && midnight.text === '07 Oct', `midnight is labelled with the day (${midnight && midnight.text})`);
+  check(plan.labels.some((l) => l.text === '12:00' && !l.day), 'and noon with the hour');
+  for (let i = 1; i < plan.labels.length; i += 1) check(plan.labels[i].x - plan.labels[i - 1].x >= 96, 'labels are at least 96 px apart');
+}
+{
+  const plan = S.tickPlan(now, 'day', 480);
+  check(plan.labels.every((l) => l.day && new Date(l.tMs).getUTCDay() === 1 && l.tMs % D === 0), 'the day view labels Mondays, at midnight UTC');
+  check(S.tickPlan(now, 'minute', 480).labels.every((l) => l.tMs % (30 * 60e3) === 0), 'the minute view labels the half hours');
+}
+
+// --- marks ----------------------------------------------------------------------------------------
+const iss = { id: 'sat-25544', name: 'ISS (ZARYA)', klass: 'station', layer: 'stations', meta: {} };
+const items = [
+  { kind: 'pass', record: iss, tMs: now + 2 * H },
+  { kind: 'launch', record: { id: 'l1', name: 'Falcon 9 | Starlink', layer: 'launches', meta: {} }, tMs: now + 30 * H },
+  { kind: 'shower', record: null, label: 'Orionids', tMs: now + 15 * D, zhr: 20 },
+  { kind: 'solar-eclipse', record: null, label: 'Total solar eclipse', eclipseKind: 'total', tMs: Date.parse('2027-08-02T10:07:00Z') },
+  { kind: 'aurora', record: null, tMs: now, now: true, kp: 6 },
+];
+const win = { lo: now - P.SCRUB_BACK_MS, hi: now + P.SCRUB_FORWARD_MS };
+const marks = S.mergeMarks([], items, now, win);
+check(marks.length === 4 && marks.map((m) => m.kind).join(',') === 'pass,launch,shower,eclipse', `a pass, a launch, a shower and an eclipse become marks; a storm under way has no instant to go to (${marks.map((m) => m.kind)})`);
+check(marks[0].record === iss && /comes over you in 2 hours$/.test(marks[0].what), `a mark says what it is, as its row does (${marks[0].what})`);
+check(S.markOf({ kind: 'pass', record: { id: 'x', name: 'SL-8 R/B', klass: 'rocket' }, tMs: now + H }, now) === null, 'a spent rocket body\'s pass is not a mark');
+check(S.CURSOR_AT === 1 / 3 && near(250 * (1 - S.CURSOR_AT) / S.SCALES.hour.pxPerMs / H, 8.33, 0.01), 'two thirds of the tape is what is coming: eight hours of it on a phone');
+check(marks[3].tMs <= win.hi, 'next August\'s eclipse is inside the year the tape runs to');
+{
+  // An hour later the pass is behind the clock and off the list; its mark stays on the tape.
+  const later = S.mergeMarks(marks, items.slice(1), now + 3 * H, win);
+  check(later.length === 4 && later.some((m) => m.id === marks[0].id), 'a mark once seen stays after the clock passes it');
+  const again = S.mergeMarks(later, items, now + 3 * H, win);
+  check(again.length === 4, 'and the same event seen twice is one mark');
+  const far = S.mergeMarks([], [{ kind: 'launch', record: { id: 'x', name: 'X' }, tMs: now + 500 * D }], now, win);
+  check(far.length === 0, 'an event past the end of the tape is not marked');
+}
+{
+  const x = S.tapeX(marks[0].tMs, now, 'hour', 480);
+  check(S.nearestMark(marks, x + 10, now, 'hour', 480) === marks[0], 'a tap within reach of a mark means the mark');
+  check(S.nearestMark(marks, x + 60, now, 'hour', 480) === null, 'a tap on empty tape means the instant under it');
+}
+
+// --- where the tape is rough, and where it ends ----------------------------------------------------
+{
+  const s = S.roughSpans(now, now, 'day', 480);
+  check(s.left && s.right && near(s.right.x, 160 + 7 * 16) && near(s.left.x + s.left.w, 160 - 7 * 16), 'live, in the day view: hatched from a week either side of now');
+  check(!s.endLeft && !s.endRight, 'and neither end of the tape in view');
+  check(!S.roughSpans(now, now, 'hour', 480).left && !S.roughSpans(now, now, 'hour', 480).right, 'the hour view near now is all fine');
+  const end = S.roughSpans(now + P.SCRUB_FORWARD_MS, now, 'day', 480);
+  check(end.endRight && near(end.endRight.x, 160) && end.right && end.right.x === 0 && near(end.right.w, 160), 'at the year\'s end the tape stops under the line and all before it is rough');
+  check(P.FINE_MS === 7 * D && P.SCRUB_BACK_MS === 30 * D && P.SCRUB_FORWARD_MS === 365 * D, 'fine for a week; a month back and a year on');
+}
+
+// --- steps, and a time far from now ----------------------------------------------------------------
+check(P.nextUnit('minute') === 'hour' && P.nextUnit('hour') === 'day' && P.nextUnit('day') === 'minute' && P.nextUnit('fortnight') === 'hour', 'the step cycles a minute, an hour, a day');
+check(P.UNIT_MS.minute === 60e3 && P.UNIT_MS.hour === H && P.UNIT_MS.day === D, 'and they are a minute, an hour and a day');
+check(P.pillText({ tMs: Date.parse('1979-03-05T12:05:00Z'), live: false, rate: 1, anchorMs: now }) === '05 MAR 1979 12:05 UTC · 48 years ago', `a mission's event far from now carries its year (${P.pillText({ tMs: Date.parse('1979-03-05T12:05:00Z'), live: false, rate: 1, anchorMs: now })})`);
+check(P.pillText({ tMs: now + 6 * H, live: false, rate: 1, anchorMs: now }) === '06 OCT 14:16 UTC · in 6 hours', 'a time near now does not');
+check(inWords(45 * D) === 'in 45 days' && inWords(300 * D) === 'in 10 months' && inWords(-3 * 365.25 * D) === '3 years ago', 'days to three months, then months, then years');
+check(timeText.utcHm(now) === '08:16' && timeText.utcDay(now) === '06 Oct' && timeText.utcLong(Date.parse('1969-07-20T20:17:00Z')) === '20 July 1969', 'the tape\'s and the cards\' dates are UTC');
+
+// --- the wiring, as text ---------------------------------------------------------------------------
+const main = readFileSync(join(JS, 'main.js'), 'utf8');
+check(!/^import .*scrubber\.js/m.test(main) && /import\('\.\/ui\/scrubber\.js'\)/.test(main), 'the timeline is a dynamic import, not a first visit\'s cost');
+check(/SCRUBBER_MS = \d{4}/.test(main) && Number(/SCRUBBER_MS = (\d+)/.exec(main)[1]) > 2000, 'and it is asked for after the two seconds the first-visit measure waits');
+const pill = readFileSync(join(JS, 'ui/timepill.js'), 'utf8');
+check(!/import .*scrubber/.test(pill), 'the pill does not import the timeline');
+const scrub = readFileSync(join(JS, 'ui/scrubber.js'), 'utf8');
+check(!/Date\.now\(\)/.test(scrub.replace(/\/\/.*$/gm, '')), 'the timeline never reads the wall clock: now is the pill\'s anchor');
+check(/role', 'slider'/.test(scrub) && /aria-valuetext/.test(scrub) && /'Home'/.test(scrub), 'it is a slider: a value in words, arrows, Home for now');
+check(typeof COPY.timePill.roughTitle === 'string' && /week/.test(COPY.timePill.roughTitle) && /centuries/.test(COPY.timePill.worlds), 'the copy says where accuracy drops, and what holds');
+
+// --- the stylesheet is whole -------------------------------------------------------------------------
+// A merge once dropped one closing brace above the rules this work added (2026-10-06): every rule
+// after it sat inside a phone's media query, and a mission's card drew unstyled on a desktop.
+{
+  const css = readFileSync(join(ROOT, 'site/css/ui.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  let depth = 0; let deepest = 0;
+  for (const c of css) { if (c === '{') depth += 1; else if (c === '}') depth -= 1; deepest = Math.max(deepest, depth); if (depth < 0) break; }
+  check(depth === 0, `ui.css opens and closes the same number of braces (off by ${depth})`);
+  const at = (sel) => { const i = css.indexOf(sel); let d = 0; for (let k = 0; k < i; k += 1) { if (css[k] === '{') d += 1; else if (css[k] === '}') d -= 1; } return i < 0 ? -1 : d; };
+  for (const sel of ['\n.sr-tape {', '\n.sr-today__grid {', '\n.sr-debris {', '\n.sr-mission {']) check(at(sel) === 0, `${sel.trim()} is a top-level rule, not inside a media query`);
+}
+
+if (problems.length) { console.error('scrubber FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
+console.log(`scrubber ok: an hour is 20 px, labels on round UTC instants, ${marks.length} marks from the Coming up list kept once seen, hatched past a week, the tape a month back and a year on`);

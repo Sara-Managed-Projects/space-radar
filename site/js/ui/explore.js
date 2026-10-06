@@ -1,6 +1,7 @@
 // ui/explore.js -- the sidebar's home: the explore view (spec 0061 req 2 and 3, design §2).
 //
-// Contract: createExplore(ctx, host) -> { root, tab(), setTab(id), refresh(), mountTab(id, render, opts) }
+// Contract: createExplore(ctx, host) -> { root, tab(), setTab(id), refresh(), mountTab(id, render, opts),
+//           next (ui/next.js's list), todayHost (ui/today.js's seat) }
 // Also exported, pure, for tests/test_shell.mjs:
 //   TABS, tabTarget(tab) -> {stage, moment}, tabFor(stageId, moment) -> tab
 //   rightNowLines({storms, aurora, clouds, crewed, wallMs}) -> at most three {id, text, value, lead}
@@ -429,6 +430,12 @@ export function createExplore(ctx, host) {
   const nowList = el('ul', 'sr-now__list');
   now.appendChild(nowList);
   earth.appendChild(now);
+  // TODAY (internal #270, public #450 and #395): dated cards made from what is loaded, by
+  // ui/today.js, which main.js fetches after the first visit has settled. Empty and hidden until
+  // then, and whenever there is nothing true to say.
+  const todayHost = el('section', 'sr-sect sr-today');
+  todayHost.hidden = true;
+  earth.appendChild(todayHost);
   const tripHosts = new Map();
   for (const id of TABS) {
     const s = section(COPY.tripCard.title, 'sr-trips2');
@@ -575,8 +582,13 @@ export function createExplore(ctx, host) {
       if (ctx.moment !== target.moment && typeof ctx.setMoment === 'function') ctx.setMoment(target.moment);
     };
     const moves = ctx.stage && ctx.stage.worldId !== tabTarget(id).stage;
-    if (moves && ctx.veil && typeof ctx.veil.through === 'function') ctx.veil.through(apply);
-    else apply();
+    // A tab that changes the stage moves the camera for the visitor: the way back is offered
+    // (internal #274; main.js rememberView and offerUndo, ui/camundo.js).
+    const remember = moves && typeof ctx.rememberView === 'function' && typeof ctx.offerUndo === 'function';
+    if (remember) ctx.rememberView();
+    const run = () => { apply(); if (remember) ctx.offerUndo(COPY.tabs[id]); };
+    if (moves && ctx.veil && typeof ctx.veil.through === 'function') ctx.veil.through(run);
+    else run();
   }
 
   /**
@@ -842,7 +854,7 @@ export function createExplore(ctx, host) {
     return mount;
   }
 
-  const api = { root, tab: () => current, setTab: goTab, refresh, search, subscribeHost, mountTab };
+  const api = { root, tab: () => current, setTab: goTab, refresh, search, subscribeHost, next, todayHost, mountTab };
   if (ctx) ctx.explore = api;
   return api;
 }

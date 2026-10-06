@@ -1,6 +1,6 @@
 // ui/next.js -- the Next moment's list: what is coming, and when, from records the app already holds.
 //
-// Contract: createNext(ctx) -> { root, refresh(), destroy() }
+// Contract: createNext(ctx) -> { root, refresh(), items(), weather(), destroy() }
 // Also exported, pure, so the list can be tested without a DOM or a clock:
 //   buildNextItems(records, nowMs, opts) -> [{kind, record, tMs, ...}] sorted by time
 //   rowText(item, nowMs), classText(item, nowMs) -> the row's sentence and what its time is
@@ -152,7 +152,11 @@ export function balance(items) {
   const allPasses = items.filter((it) => it.kind === 'pass').sort((a, b) => (named(b) - named(a)) || byTime(a, b));
   const passes = [];
   for (const p of allPasses) if (!passes.some((q) => Math.abs(q.tMs - p.tMs) < 60e3)) passes.push(p);
-  passes.sort((a, b) => (crewed(b) - crewed(a)) || byTime(a, b));
+  // A spent rocket body or a fragment comes after everything else that passes (the rule
+  // sky/tonightbest.js keeps for "best"): on 2026-10-06 the list's passes over London were
+  // "SL-8 R/B" and "H-2A R/B" with Tiangong due the next morning.
+  const junk = (it) => /\b(R\/B|DEB)\b/i.test(String((it.record && it.record.name) || '')) || ['rocket', 'debris'].includes(it.record && it.record.klass);
+  passes.sort((a, b) => (crewed(b) - crewed(a)) || (junk(a) - junk(b)) || byTime(a, b));
   const trains = items.filter((it) => it.kind === 'train').sort(byTime);
   const events = items.filter((it) => it.kind !== 'pass' && it.kind !== 'train').sort(byTime);
   const chosen = [...passes.slice(0, PASS_ROWS), ...trains.slice(0, 1)];
@@ -200,10 +204,13 @@ export function rowText(item, nowMs) {
       return item.precision && /^(month|quarter|year|tbd|tba)/i.test(item.precision)
         ? t(T.launchRough, { name, when })
         : t(T.launch, { name, when });
-    case 'approach':
-      return item.ld !== null && Number.isFinite(item.ld)
+    case 'approach': {
+      const line = item.ld !== null && Number.isFinite(item.ld)
         ? t(T.approach, { name, when, ld: fmt.smart(item.ld) })
         : t(T.approachNoDistance, { name, when });
+      const size = sizeText(item.size);
+      return size ? line + COPY.punctuation.sentenceJoin + size : line;
+    }
     case 'perihelion':
       return t(T.perihelion, { name, when });
     case 'pass':
@@ -242,6 +249,38 @@ export function rowText(item, nowMs) {
     default:
       return `${name} ${when}`;
   }
+}
+
+/** Two significant figures, as metres or kilometres: 13 -> "13 m", 1 480 -> "1.5 km". */
+function sizeNumber(m) {
+  if (m >= 1000) return { n: String(Number((m / 1000).toPrecision(2))), km: true };
+  return { n: fmt.int(Number(m.toPrecision(m < 10 ? 1 : 2))), km: false };
+}
+
+/**
+ * "About 8 to 18 m across, judged from its brightness" (public #313): the one other fact that
+ * makes a close approach interesting or dull. Null when the catalogue gives neither a size nor a
+ * brightness. Exported for the test.
+ */
+export function sizeText(size) {
+  const T = COPY.nextList;
+  if (!size || !(size.loM > 0)) return null;
+  const lo = sizeNumber(size.loM);
+  const hi = sizeNumber(size.hiM);
+  if (size.measured) return t(lo.km ? T.sizeKm : T.sizeM, { n: lo.n });
+  if (lo.km !== hi.km) return t(T.sizeMixed, { lo: lo.n, hi: hi.n });
+  return t(hi.km ? T.sizeRangeKm : T.sizeRangeM, { lo: lo.n, hi: hi.n });
+}
+
+/** The size as the row draws it: "340 m", "5 to 11 m", "0.7 to 1.6 km". Null with no number. */
+export function sizeShort(size) {
+  const R = COPY.nextList.row;
+  if (!size || !(size.loM > 0)) return null;
+  const lo = sizeNumber(size.loM);
+  const hi = sizeNumber(size.hiM);
+  if (size.measured) return t(lo.km ? R.sizeKm : R.sizeM, { n: lo.n });
+  if (lo.km !== hi.km) return t(R.sizeRangeKm, { lo: String(Number((size.loM / 1000).toPrecision(1))), hi: hi.n });
+  return t(hi.km ? R.sizeRangeKm : R.sizeRangeM, { lo: lo.n, hi: hi.n });
 }
 
 /** The local line of a solar eclipse row, or null when no place is set (spec 0031 req 6). */
@@ -298,8 +337,11 @@ export function rowParts(item, nowMs) {
   switch (item.kind) {
     case 'launch':
       return { title: name, detail: t(item.precision && /^(month|quarter|year|tbd|tba)/i.test(item.precision) ? R.launchRough : R.launch, { when }) };
-    case 'approach':
-      return { title: name, detail: t(R.approach, { when }), value: item.ld !== null && Number.isFinite(item.ld) ? t(R.approachValue, { ld: fmt.smart(item.ld) }) : '' };
+    case 'approach': {
+      // How big, on the row itself (public #313): "about 5 to 11 m", after when.
+      const size = sizeShort(item.size);
+      return { title: name, detail: size ? t(R.approachSized, { when, size }) : t(R.approach, { when }), value: item.ld !== null && Number.isFinite(item.ld) ? t(R.approachValue, { ld: fmt.smart(item.ld) }) : '' };
+    }
     case 'perihelion':
       return { title: name, detail: t(R.perihelion, { when }) };
     case 'pass':
@@ -357,6 +399,7 @@ export function createNext(ctx, opts = {}) {
   root.appendChild(note);
   const FEEDS = ['launches', 'asteroids', 'comets'];
   let timer = null;
+  let lastItems = [];
 
   function loadedIds() {
     const out = new Set();
@@ -369,6 +412,7 @@ export function createNext(ctx, opts = {}) {
     const now = ctx.clock && typeof ctx.clock.now === 'function' ? ctx.clock.now() : Date.now();
     const observer = ctx.observer && Number.isFinite(ctx.observer.latRad) ? ctx.observer : null;
     const items = buildNextItems(ctx.records(), now, { observer, showers: SHOWERS, spaceWeather: weather, eclipses: true });
+    lastItems = items;
     const shown = expanded ? items : items.slice(0, limit);
     more.hidden = items.length <= limit;
     more.textContent = expanded ? T.showFewer : t(T.showAll, { n: fmt.int(items.length) });
@@ -414,6 +458,9 @@ export function createNext(ctx, opts = {}) {
       });
       if (missing.length) note.title = t(T.notLoaded, { layers: missing.join(COPY.punctuation.listJoin) });
     }
+    // The timeline's marks and the home's dated cards are this same list (ui/scrubber.js,
+    // ui/today.js): they are told when it changes rather than each working it out again.
+    window.dispatchEvent(new CustomEvent('sr:next'));
   }
 
   // NOAA's Kp, through the same source row and gate the space-weather line uses, so the list costs
@@ -439,6 +486,8 @@ export function createNext(ctx, opts = {}) {
     // NOAA's Kp as last read (parseSpaceWeather), or null: the explore view's aurora line reads it
     // rather than asking the source a second time.
     weather: () => weather,
+    /** The list as last built (every row, not only the ones shown), for the timeline and the home. */
+    items: () => lastItems.slice(),
     destroy() {
       window.removeEventListener('sr:layer', onLayer);
       window.removeEventListener('sr:observer', onObserver);

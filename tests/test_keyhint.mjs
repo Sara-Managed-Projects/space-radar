@@ -152,7 +152,7 @@ const delay = /const KEYHINT_MS = (\d+);/.exec(main);
 check(delay && Number(delay[1]) >= 3000, `KEYHINT_MS (${delay && delay[1]}) is past the two seconds the first-visit byte test lets a visit settle, and past the later layers`);
 check(/const hintLater = \(\) => setTimeout\(\(\) => keyHint\(\)\.then\(\(api\) => api\.maybeShow\(\)\)[\s\S]{0,120}KEYHINT_MS\);\s*window\.addEventListener\('sr:layers-ready', hintLater, \{ once: true \}\);/.test(main), 'it decides after sr:layers-ready, by maybeShow()');
 check(/ctx\.keyhint = \{ show:/.test(main), 'ctx.keyhint.show() exists before the module has loaded');
-check(/arrivedByLink = !!\(link && \(link\.trip \|\| link\.at \|\| link\.stage\)\)/.test(main), 'a link with a trip, an object or a stage counts as a deep link');
+check(/arrivedByLink = !!\(link && \(link\.trip \|\| link\.at \|\| link\.event \|\| link\.stage\)\)/.test(main), 'a link with a trip, an object, a mission\'s event or a stage counts as a deep link');
 const html = read('site/index.html');
 check(!/keyhint/.test(html), 'index.html neither preloads keyhint.js nor links keyhint.css');
 const src = read('site/js/ui/keyhint.js');

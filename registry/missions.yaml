@@ -1,0 +1,117 @@
+# Missions as places in time (public #452, internal #269). A handful of flagship missions, each a
+# short list of dated events: the launch, the flybys, the arrival, the moments people remember.
+# The card of the record named by `record` lists them with Prev and Next (ui/missions.js), and
+# `#event=<mission>.<event>` is a link to one.
+#
+# EVERY ROW HAS A SOURCE, and the date and the numbers in its sentence were read on that page on
+# `reviewed_on` (the Voyagers', New Horizons' and Juno's key dates and ranges are quoted from the
+# NASA Science mission pages; Apollo 11's and Webb's clock times are the well-known UTC ones and
+# their pages give the dates). Times are UTC. `precision: day` means the page gives a date and
+# no time worth printing; the clock is then set to noon UTC of that day.
+#
+# `place` SAYS WHETHER THE MAP CAN SHOW THE CRAFT THERE ON THAT DAY, which is the honest part:
+#   site     the record is a place on a world (a landing site): it is where it is on any date,
+#            and the Moon and Mars are worked out for any date. The clock moves, the camera frames it.
+#   cruise   a craft coasting out of the Solar System in a straight line at a steady speed. When
+#            the map holds no path for that date it draws the craft on the line back from its
+#            measured position today, and the card says so. Good to about an astronomical unit
+#            since 1990 for the Voyagers and since 2019 for New Horizons (checked against the
+#            distances NASA gives for these very events: 40.4 au drawn for 40.5 on 1990-02-14).
+#   none     the map has no path for the craft on that date (no ephemeris of our own yet,
+#            internal #277). The event is told on the card and THE CLOCK DOES NOT MOVE.
+# `world` names where a `none` event happened, when that is a world the map draws for any date:
+# the card then offers that world on that day, which is true, with the craft not drawn.
+#
+# Not here: Cassini (the map has no Cassini record; it ended in 2017), and any future event whose
+# date is a plan (those are the launches list's business, from Launch Library).
+version: 1
+reviewed_on: 2026-10-06
+
+missions:
+  - id: voyager-1
+    record: deep-voyager-1
+    display: Voyager 1
+    source: {name: "NASA Science, Voyager 1", url: "https://science.nasa.gov/mission/voyager/voyager-1/"}
+    events:
+      - {id: launch, date: "1977-09-05T12:56:00Z", title: "Launch", text: "Voyager 1 leaves Cape Canaveral on a Titan IIIE, sixteen days after its twin and on a faster path.", place: none, world: earth}
+      - {id: jupiter, date: "1979-03-05T12:05:00Z", title: "Closest to Jupiter", text: "It passes 280 000 km from Jupiter and sees volcanoes erupting on Io, the first seen anywhere but Earth.", place: none, world: jupiter}
+      - {id: saturn, date: "1980-11-12T23:46:00Z", title: "Closest to Saturn", text: "It passes 126 000 km from Saturn after a close look at Titan, which bends its path up out of the plane of the planets.", place: none, world: saturn}
+      - {id: pale-blue-dot, date: "1990-02-14", precision: day, title: "The Pale Blue Dot", text: "From 40 astronomical units it turns its camera round and photographs the planets, Earth less than a pixel across.", place: cruise}
+      - {id: most-distant, date: "1998-02-17", precision: day, title: "The most distant thing we made", text: "At 69 astronomical units it overtakes Pioneer 10 as the farthest human-made object, which it still is.", place: cruise}
+      - {id: termination-shock, date: "2004-12-16", precision: day, title: "The termination shock", text: "The solar wind around it slows abruptly: it has reached the edge of the Sun's bubble and entered the heliosheath.", place: cruise}
+      - {id: interstellar, date: "2012-08-25", precision: day, title: "Into interstellar space", text: "It becomes the first spacecraft to leave the heliosphere and measure the space between the stars.", place: cruise}
+
+  - id: voyager-2
+    record: deep-voyager-2
+    display: Voyager 2
+    source: {name: "NASA Science, Voyager 2", url: "https://science.nasa.gov/mission/voyager/voyager-2/"}
+    events:
+      - {id: launch, date: "1977-08-20T14:29:00Z", title: "Launch", text: "Voyager 2 leaves Cape Canaveral first, on the slower path that will let it reach four planets.", place: none, world: earth}
+      - {id: jupiter, date: "1979-07-09T22:29:00Z", title: "Closest to Jupiter", text: "It passes 645 000 km from Jupiter and finds a thin ring and more of Io's volcanoes.", place: none, world: jupiter}
+      - {id: saturn, date: "1981-08-26T01:21:00Z", title: "Closest to Saturn", text: "It passes 101 000 km from Saturn, whose pull throws it on towards Uranus.", place: none, world: saturn}
+      - {id: uranus, date: "1986-01-24T17:59:00Z", title: "Closest to Uranus", text: "It passes 81 500 km from Uranus, still the only spacecraft to have been there, and finds ten new moons.", place: none, world: uranus}
+      - {id: neptune, date: "1989-08-25T03:56:00Z", title: "Closest to Neptune", text: "It skims 4 800 km over Neptune's cloud tops, its closest pass of any planet, then dives south past Triton.", place: none, world: neptune}
+      - {id: termination-shock, date: "2007-08-30", precision: day, title: "The termination shock", text: "It crosses the edge of the Sun's bubble nearly three years after its twin, and closer in.", place: cruise}
+      - {id: interstellar, date: "2018-11-05", precision: day, title: "Into interstellar space", text: "It leaves the heliosphere with a working plasma instrument, which Voyager 1 no longer had.", place: cruise}
+
+  - id: new-horizons
+    record: deep-new-horizons
+    display: New Horizons
+    source: {name: "NASA Science, New Horizons", url: "https://science.nasa.gov/mission/new-horizons/"}
+    events:
+      - {id: launch, date: "2006-01-19T19:00:00Z", title: "Launch", text: "New Horizons leaves Earth faster than anything before it and crosses the Moon's orbit in nine hours.", place: none, world: earth}
+      - {id: jupiter, date: "2007-02-28T05:43:00Z", title: "Jupiter's push", text: "It swings past Jupiter for a gravity assist that cuts three years off the trip to Pluto.", place: none, world: jupiter}
+      - {id: pluto, date: "2015-07-14T11:49:00Z", title: "Closest to Pluto", text: "After nine and a half years it passes 12 500 km from Pluto and shows a world with mountains of ice and a heart.", place: none, world: pluto}
+      - {id: arrokoth, date: "2019-01-01T05:33:00Z", title: "Arrokoth", text: "It flies past Arrokoth, a two-lobed rock in the Kuiper belt and the farthest thing ever visited.", place: cruise}
+
+  - id: juno
+    record: deep-juno
+    display: Juno
+    source: {name: "NASA Science, Juno", url: "https://science.nasa.gov/mission/juno/"}
+    events:
+      - {id: launch, date: "2011-08-05T16:25:00Z", title: "Launch", text: "Juno leaves on an Atlas V, the first craft to go to Jupiter on solar power.", place: none, world: earth}
+      - {id: earth-flyby, date: "2013-10-09T19:21:00Z", title: "Earth's push", text: "It comes back past Earth, 559 km over the ocean off South Africa, to pick up the speed for Jupiter.", place: none, world: earth}
+      - {id: arrival, date: "2016-07-05T03:53:00Z", title: "Into orbit round Jupiter", text: "A 35-minute engine burn drops it into orbit over Jupiter's poles. It was the evening of 4 July in California.", place: none, world: jupiter}
+
+  - id: webb
+    record: deep-jwst
+    display: James Webb Space Telescope
+    source: {name: "NASA Science, Webb", url: "https://science.nasa.gov/mission/webb/"}
+    events:
+      - {id: launch, date: "2021-12-25T12:20:00Z", title: "Launch", text: "Webb leaves Kourou folded inside an Ariane 5, on a launch so accurate it saved years of fuel.", place: none, world: earth}
+      - {id: mirror, date: "2022-01-08", precision: day, title: "The mirror unfolds", text: "The last wing of the 6.5-metre mirror latches into place, two weeks into the trip and after the sunshield.", place: none}
+      - {id: l2, date: "2022-01-24T19:00:00Z", title: "Arrival at L2", text: "A five-minute burn puts it in orbit round a point 1.5 million km beyond Earth, where it has been since.", place: none}
+      - {id: first-images, date: "2022-07-12", precision: day, title: "The first pictures", text: "The first full-colour images and spectra are shown: a deep field, the Carina nebula, a planet's air.", place: none}
+
+  - id: apollo-11
+    record: apollo-11
+    display: Apollo 11
+    source: {name: "NASA, Apollo 11 mission overview", url: "https://www.nasa.gov/history/apollo-11-mission-overview/"}
+    events:
+      - {id: launch, date: "1969-07-16T13:32:00Z", title: "Launch", text: "Armstrong, Aldrin and Collins leave Cape Kennedy on a Saturn V.", place: none, world: earth}
+      - {id: lunar-orbit, date: "1969-07-19T17:22:00Z", title: "Into orbit round the Moon", text: "Behind the Moon and out of contact, the engine burns to put Columbia and Eagle in lunar orbit.", place: none, world: moon}
+      - {id: landing, date: "1969-07-20T20:17:00Z", title: "The Eagle has landed", text: "Eagle sets down in the Sea of Tranquility with about half a minute of fuel left.", place: site}
+      - {id: first-step, date: "1969-07-21T02:56:00Z", title: "One small step", text: "Armstrong steps onto the surface, watched live by about 650 million people. Aldrin follows nineteen minutes later.", place: site}
+      - {id: liftoff, date: "1969-07-21T17:54:00Z", title: "Leaving the Moon", text: "After 21 and a half hours on the surface, Eagle's upper half lifts off to rejoin Collins in orbit.", place: site}
+      - {id: splashdown, date: "1969-07-24T16:50:00Z", title: "Splashdown", text: "Columbia lands in the Pacific, eight days after leaving. The landing site has been as it was left ever since.", place: none, world: earth}
+
+  - id: perseverance
+    record: jezero
+    display: Perseverance
+    source: {name: "NASA Science, Mars 2020: Perseverance", url: "https://science.nasa.gov/mission/mars-2020-perseverance/"}
+    events:
+      - {id: launch, date: "2020-07-30T11:50:00Z", title: "Launch", text: "Perseverance leaves on an Atlas V with a small helicopter folded under its belly.", place: none, world: earth}
+      - {id: landing, date: "2021-02-18T20:55:00Z", title: "Landing in Jezero", text: "A sky crane lowers the rover into Jezero crater, an old lake bed, and its cameras film the whole descent.", place: site}
+      - {id: first-flight, date: "2021-04-19T07:34:00Z", title: "The first flight on another world", text: "Ingenuity rises three metres, hovers and lands: 39 seconds of powered flight in air a hundredth as thick as ours.", place: site}
+      - {id: first-sample, date: "2021-09-06", precision: day, title: "The first sample", text: "The rover seals its first core of rock in a tube, to be brought back to Earth one day.", place: site}
+
+  - id: iss
+    record: sat-25544
+    display: International Space Station
+    source: {name: "NASA, International Space Station", url: "https://www.nasa.gov/international-space-station/"}
+    events:
+      - {id: zarya, date: "1998-11-20T06:40:00Z", title: "The first piece", text: "Zarya, the first module, is launched from Baikonur. The station is still catalogued under its name.", place: none, world: earth}
+      - {id: unity, date: "1998-12-06", precision: day, title: "Two become one", text: "The shuttle Endeavour's crew join Unity to Zarya: the station is now a station.", place: none}
+      - {id: first-crew, date: "2000-11-02T09:21:00Z", title: "People move in", text: "Expedition 1 docks. Somebody has been living in space every day since.", place: none}
+      - {id: last-shuttle, date: "2011-07-10", precision: day, title: "The last shuttle visit", text: "Atlantis docks on the final Space Shuttle flight, with the station's assembly complete.", place: none}
+      - {id: crew-dragon, date: "2020-05-31T14:16:00Z", title: "The first commercial crew", text: "Crew Dragon Endeavour docks with two astronauts: the first people brought here by a company's spacecraft.", place: none}

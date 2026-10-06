@@ -142,7 +142,7 @@ for (const [key, max] of [['tonight.showMe', 2], ['tonight.more', 2], ['tonight.
 // placeholders at their longest, is held to the guide's cap: 60 characters for what is drawn, 90
 // for a tooltip or a reader's name (a `title` or an `aria-label` is not laid out in a column, and
 // names its key). No exclamation mark, no arrow, no double hyphen, no emoji, and no Title Case.
-const CHROME_SECTIONS = ['app', 'subscribe', 'shell', 'tabs', 'rightNow', 'statusLine', 'tripCard', 'explore', 'rail', 'timePill',
+const CHROME_SECTIONS = ['app', 'subscribe', 'shell', 'tabs', 'rightNow', 'statusLine', 'tripCard', 'explore', 'rail', 'timePill', 'undo',
   'moments', 'ladder', 'sceneNote', 'link', 'share', 'audio', 'density', 'nextList', 'colourKey', 'chooser', 'controls', 'search',
   'quality', 'time', 'sheet', 'print', 'hud', 'tonight', 'clean', 'keyHint', 'mark'];
 const TOOLTIP = /(Title|Label|Alt|Aria|Tip|Hint|Why|Help|Describe|Long)$|^(label|title|aria|hint|why)/;

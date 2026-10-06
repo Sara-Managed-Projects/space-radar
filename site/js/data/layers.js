@@ -747,6 +747,33 @@ export const LAYERS = [
     sentence: 'Dead things with stories, still going round.',
   },
   {
+    // THE WHOLE TRACKED POPULATION OF JUNK (public #449): every piece of debris and spent rocket
+    // body in CelesTrak's catalogue, 14 604 of them on 2026-09-28, each on its own orbit's real
+    // height and tilt at an ILLUSTRATIVE place along it (data/satcat.js says why: the catalogue
+    // gives an orbit's shape, not where on it the thing is, and current elements for debris need
+    // an account we do not have). 6.8 MB, so on demand only: ui/debris.js asks for it.
+    id: 'debris-field',
+    display: 'All tracked debris',
+    klass: 'debris',
+    source: 'celestrak-satcat',
+    parseLazy: (data) => import('./satcat.js').then((m) => m.fieldRecords(m.parseSatcat(data))),
+    propagator: 'kepler',
+    frame: 'earth-inertial',
+    moments: { wonder: false, now: false, next: false },
+    defaultOn: false,
+    select: all,
+    budget: { maxItems: 20000 },
+    colour: C.debris,
+    opacity: 0.7,
+    drawUnder: true,
+    glyph: 'debris',
+    nearKm: 0,
+    card: 'debris',
+    heavy: true,
+    load: 'on-demand',
+    sentence: 'Every tracked piece of debris and spent rocket, at its real height and tilt. Where each is along its orbit is illustrative.',
+  },
+  {
     id: 'launches',
     display: 'Rockets on their way up',
     klass: 'rocket',
@@ -1139,7 +1166,8 @@ export async function loadLayerDetailed(layer, nowMs) {
       if (result.data == null) {
         return { records: [], source: result, error: result.error };
       }
-      parsed = parseFor(layer, result.data);
+      // A parser that is a module of its own, fetched with the data it reads (data/satcat.js).
+      parsed = typeof layer.parseLazy === 'function' ? await layer.parseLazy(result.data) : parseFor(layer, result.data);
     }
   } catch (e) {
     return { records: [], source: result, error: String((e && e.message) || e) };

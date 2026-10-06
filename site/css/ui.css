@@ -142,6 +142,8 @@
   --sr-z-modal: 62; /* the share sheet: over a trip's bars, under a toast */
   --sr-z-toast: 70;
   --sr-z-boot: 100; /* the boot veil, until the app is up */
+  /* The time pill's height with its two rows (ui/timepill.js): what stands above it clears this. */
+  --sr-time-h: 102px;
 
   /* The three faces (spec 0045), self-hosted in site/fonts/ and declared in css/fonts.css. Each
      stack ends in the system's own, which is what shows until the face lands (`swap`) and what
@@ -4533,24 +4535,35 @@ html.sr-phone .sr-subscribe__email {
   left: calc(50% + var(--sr-scene-left) / 2);
   z-index: var(--sr-z-pill);
   display: flex;
-  align-items: center;
-  gap: 4px;
-  height: 48px;
-  padding: 0 6px;
+  flex-direction: column;
+  gap: var(--sp-1);
+  width: min(560px, calc(100vw - var(--sr-scene-left) - 2 * var(--sp-5)));
+  padding: var(--sp-1) var(--sp-2);
   font: 400 var(--sr-fs-sm)/1 var(--sr-font-mono);
   color: var(--sr-text);
   white-space: nowrap;
-  border-radius: var(--sr-radius-pill);
   transform: translateX(-50%);
 }
 
-/* .sr-float's own transform transition would slide the pill whenever the sidebar collapses; the
-   move is the sidebar's, so the pill follows it in the same 220 ms. */
+/* Two rows since 2026-10-06 (ui/timepill.js: the timeline over the readout), so the pill is a
+   small panel and takes the panel's corner: 16 px outside, 6 px inside (docs/ui-guide.md §2.3).
+   .sr-float's own transform transition would slide it whenever the sidebar collapses; the move is
+   the sidebar's, so the pill follows it in the same 220 ms. */
 .sr-time.sr-float {
+  border-radius: var(--sr-radius-shell);
   transition: left var(--sr-mid) var(--sr-ease), border-color var(--sr-fast) var(--sr-ease);
 }
 
+.sr-time__tape-row,
+.sr-time__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+
 .sr-time__step {
+  flex: none;
   width: 40px;
   height: 40px;
   padding: 0;
@@ -4566,15 +4579,17 @@ html.sr-phone .sr-subscribe__email {
 
 .sr-time__read {
   display: inline-flex;
+  flex: 1 1 auto;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-2);
+  min-width: 0;
   height: 40px;
-  padding: 0 10px;
+  padding: 0 var(--sp-2);
   font: inherit;
   color: inherit;
   background: transparent;
   border: 0;
-  border-radius: var(--sr-radius-pill);
+  border-radius: var(--sr-radius);
   cursor: ew-resize;
   touch-action: none;
   user-select: none;
@@ -4582,7 +4597,15 @@ html.sr-phone .sr-subscribe__email {
 
 .sr-time__read:hover { background: var(--sr-wash); }
 
+.sr-time__words {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
 .sr-time__dot {
+  flex: none;
   width: 7px;
   height: 7px;
   border-radius: 50%;
@@ -4594,10 +4617,12 @@ html.sr-phone .sr-subscribe__email {
   box-shadow: inset 0 0 0 1.5px var(--sr-ember);
 }
 
-.sr-time__rate {
+.sr-time__rate,
+.sr-time__unit {
+  flex: none;
   height: 36px;
   min-width: 48px;
-  padding: 0 12px;
+  padding: 0 var(--sp-3);
   font: inherit;
   color: var(--sr-text);
   background: var(--sr-wash);
@@ -4606,7 +4631,8 @@ html.sr-phone .sr-subscribe__email {
   cursor: pointer;
 }
 
-.sr-time__rate:hover { background: var(--sr-wash-strong); }
+.sr-time__rate:hover,
+.sr-time__unit:hover { background: var(--sr-wash-strong); }
 
 /* Not live: the pill's border turns ember and says so, and "Live" appears (§7). */
 .sr-time.is-away,
@@ -4615,9 +4641,9 @@ html.sr-phone .sr-subscribe__email {
 }
 
 .sr-time__live {
+  flex: none;
   height: 36px;
-  margin-left: 2px;
-  padding: 0 14px;
+  padding: 0 var(--sp-3);
   font: 600 var(--sr-fs-sm)/1 var(--sr-font);
   color: var(--sr-ink);
   background: var(--sr-ember);
@@ -4628,6 +4654,184 @@ html.sr-phone .sr-subscribe__email {
 
 .sr-time__live[hidden] { display: none; }
 .sr-time.is-scrubbing .sr-time__read { background: var(--sr-ember-soft); }
+
+/* The timeline (ui/scrubber.js): a tape dragged under a fixed ember line. Top to bottom in its
+   44 px: the tick labels, the marks for what is coming, the ticks. Until the module lands the
+   seat is a plain well between the two steps. */
+.sr-time__tape {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 44px;
+  overflow: hidden;
+  background: var(--sr-wash);
+  border-radius: var(--sr-radius);
+}
+
+.sr-tape {
+  position: absolute;
+  inset: 0;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.sr-tape.is-dragging { cursor: grabbing; }
+
+.sr-tape__ticks {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 8px;
+  background-image: linear-gradient(90deg, var(--sr-line-strong) 1px, transparent 1px);
+  background-repeat: repeat-x;
+  pointer-events: none;
+}
+
+.sr-tape__labels,
+.sr-tape__marks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* A labelled tick: a rule the height of the tape with its hour or its day at the top. */
+.sr-tape__label {
+  position: absolute;
+  text-transform: uppercase;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  padding: var(--sp-1) 0 0 var(--sp-1);
+  font: 400 var(--sr-fs-sm)/1 var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+  border-left: 1px solid var(--sr-line-strong);
+}
+
+.sr-tape__label.is-day { color: var(--sr-text); }
+.sr-tape__label[hidden] { display: none; }
+
+/* Past a week from now a satellite's place is rough: hatched, with the word at the near edge. */
+.sr-tape__rough {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background-image: repeating-linear-gradient(135deg, var(--sr-line) 0 2px, transparent 2px 7px);
+}
+
+.sr-tape__roughword {
+  position: absolute;
+  bottom: var(--sp-2);
+  left: var(--sp-1);
+  font: 400 var(--sr-fs-sm)/1 var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-tape__rough:first-of-type .sr-tape__roughword { right: var(--sp-1); left: auto; }
+
+/* Past the window's ends there is no tape. */
+.sr-tape__end {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: var(--sr-space);
+}
+
+.sr-tape__rough[hidden],
+.sr-tape__end[hidden],
+.sr-tape__now[hidden] { display: none; }
+
+/* A mark for something coming: a button the height of the tape, its glyph over the ticks. The
+   shape says the kind (a dot is a pass, a triangle a launch, a diamond a close approach, a ring an
+   eclipse, a bar a shower's peak), and its name is its tooltip and its accessible name. */
+.sr-tape__mark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 28px;
+  height: 44px;
+  margin-left: -14px;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: var(--sr-radius-sm);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.sr-tape__glyph {
+  position: absolute;
+  top: 21px;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  background: var(--sr-text);
+  border-radius: 50%;
+}
+
+.sr-tape__mark[data-kind='launch'] .sr-tape__glyph {
+  background: var(--sr-launch);
+  border-radius: 0;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.sr-tape__mark[data-kind='approach'] .sr-tape__glyph {
+  background: var(--sr-asteroid);
+  border-radius: 0;
+  transform: rotate(45deg) scale(0.8);
+}
+
+.sr-tape__mark[data-kind='eclipse'] .sr-tape__glyph {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--sr-text);
+}
+
+.sr-tape__mark[data-kind='shower'] .sr-tape__glyph {
+  width: 4px;
+  margin-left: -2px;
+  background: var(--sr-comet);
+  border-radius: var(--sr-radius-sm);
+}
+
+.sr-tape__mark:hover,
+.sr-tape__mark.is-here { background: var(--sr-wash-strong); }
+
+/* Where the real present is, when the tape has been moved off it: a rule and the word. */
+.sr-tape__now {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 44px;
+  padding: 0 var(--sp-2) var(--sp-4) var(--sp-1);
+  font: 600 var(--sr-fs-sm)/1 var(--sr-font);
+  color: var(--sr-text);
+  background: none;
+  border: 0;
+  border-left: 2px solid var(--sr-text);
+  cursor: pointer;
+}
+
+.sr-tape__now:hover { color: var(--sr-ember-light); }
+
+/* The fixed line the tape runs under: the shown instant. Ember, as the selection is. */
+.sr-tape__cursor {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 33.333%; /* ui/scrubber.js CURSOR_AT */
+  margin-left: -1px;
+  border-left: 2px solid var(--sr-ember);
+  pointer-events: none;
+}
+
+@media (pointer: coarse) {
+  .sr-tape__mark { width: 44px; margin-left: -22px; }
+  .sr-tape__now { min-width: 44px; }
+}
 
 /* --- the clear screen, a trip, and the phone ------------------------------------------- */
 
@@ -5106,7 +5310,7 @@ html.sr-phone.sr-trip-collapsed #sr-side {
 html.sr-phone .sr-time {
   bottom: 0;
   z-index: var(--sr-z-pill);
-  height: 48px;
+  width: calc(100vw - 2 * var(--sp-4));
   transform: translate(-50%, calc(-1 * (var(--sr-sheet-h) + var(--sp-3))));
 }
 
@@ -5134,20 +5338,9 @@ html.sr-phone .sr-time__read {
 /* Every part of the pill is a 44 px target on a phone (docs/ui-guide.md §3.9, measured: the rate
    button was 48 × 36). */
 html.sr-phone .sr-time__rate,
+html.sr-phone .sr-time__unit,
 html.sr-phone .sr-time__live {
   height: 44px;
-}
-
-/* Under 380 px the pill's four parts need 372: the steps go, as the trip's Replay does at that
-   width (ui.css, the trip section). Stepping is still there: drag the readout, or its arrow keys. */
-@media (max-width: 379px) {
-  html.sr-phone .sr-time__step {
-    display: none;
-  }
-
-  html.sr-phone .sr-time {
-    padding: 0 var(--sp-1) 0 var(--sp-2);
-  }
 }
 
 html.sr-phone[data-sheet='full'] .sr-time,
@@ -5160,7 +5353,7 @@ html.sr-phone.sr-card-open .sr-time {
 /* A toast stands above the pill, and so above the sheet; the scene note under the top bar. */
 html.sr-phone .sr-toast {
   top: auto;
-  bottom: calc(var(--sr-sheet-h) + var(--sp-3) + 48px + var(--sp-3));
+  bottom: calc(var(--sr-sheet-h) + var(--sp-3) + var(--sr-time-h) + var(--sp-3));
 }
 
 html.sr-phone .sr-scenenote {
@@ -5694,4 +5887,298 @@ html.sr-present .sr-trip__count {
     width: 44px;
     height: 44px;
   }
+}
+
+/* --- Today: the home's dated cards (ui/today.js, internal #270) --------------------------
+   Two columns, as the trip cards are, but plain glass: a date in mono caps, a title, one line.
+   Generated from what is loaded; a card with nothing true to say is not there. */
+.sr-today[hidden] { display: none; }
+
+.sr-today__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-2);
+  padding-top: var(--sp-2);
+}
+
+.sr-today__grid[hidden] { display: none; }
+
+.sr-today__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-height: 96px;
+  padding: var(--sp-3);
+  font: inherit;
+  text-align: left;
+  color: var(--sr-text);
+  background: var(--sr-wash);
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius);
+  cursor: pointer;
+  transition: background-color var(--sr-fast) var(--sr-ease), border-color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-today__card:hover { background: var(--sr-wash-strong); border-color: var(--sr-line-strong); }
+
+.sr-today__kicker {
+  font: 500 var(--sr-fs-sm)/16px var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sr-text-dim);
+}
+
+.sr-today__title {
+  display: -webkit-box;
+  overflow: hidden;
+  font: 600 var(--sr-fs-label)/18px var(--sr-font);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.sr-today__line {
+  display: -webkit-box;
+  overflow: hidden;
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
+  color: var(--sr-text-dim);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+/* --- Debris, by the numbers (ui/debris.js, public #449): opens in place under Today -------- */
+.sr-debris[hidden] { display: none; }
+
+.sr-debris {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-2) 0 var(--sp-3);
+}
+
+.sr-debris .sr-micro { margin: var(--sp-2) 0 0; }
+
+.sr-debris__state,
+.sr-debris__note,
+.sr-debris__honesty,
+.sr-debris__story {
+  margin: 0;
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-debris__lead {
+  margin: 0;
+  font: 400 var(--sr-fs-lead)/1.25 var(--sr-font);
+  color: var(--sr-text);
+}
+
+.sr-debris__nums {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-3) var(--sp-2);
+  margin: 0;
+}
+
+.sr-debris__num { display: flex; flex-direction: column; gap: var(--sp-1); }
+
+.sr-debris__n {
+  margin: 0;
+  font: 400 var(--sr-fs-num-sm)/1.1 var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text);
+}
+
+.sr-debris__k {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-debris__swatch {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: var(--sr-radius-sm);
+  background: var(--sr-debris);
+}
+
+.sr-debris__num[data-kind='rocket'] .sr-debris__swatch,
+.sr-debris__seg[data-kind='rocket'] { background: var(--sr-rocket); }
+
+.sr-debris__num[data-kind='dead'] .sr-debris__swatch,
+.sr-debris__seg[data-kind='dead'] { background: var(--sr-text-faint); }
+
+.sr-debris__num[data-kind='working'] .sr-debris__swatch,
+.sr-debris__seg[data-kind='working'] { background: var(--sr-satellite); }
+
+.sr-debris__bands,
+.sr-debris__stories {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sr-debris__bandhead {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
+  color: var(--sr-text);
+}
+
+.sr-debris__bandn {
+  font-family: var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+}
+
+.sr-debris__bar {
+  display: flex;
+  height: 8px;
+  margin-top: var(--sp-1);
+  overflow: hidden;
+  background: var(--sr-wash);
+  border-radius: var(--sr-radius-sm);
+}
+
+.sr-debris__seg { flex: none; height: 100%; background: var(--sr-debris); }
+.sr-debris__map { align-self: flex-start; min-height: 44px; padding: 0 var(--sp-4); }
+.sr-debris__map[aria-pressed='true'] { color: var(--sr-text); border-color: var(--sr-line-strong); }
+
+/* --- A mission's events on its card (ui/missions.js, public #452) ---------------------------- */
+.sr-card__mission[hidden] { display: none; }
+
+.sr-mission {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--sr-line);
+}
+
+.sr-mission__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.sr-mission__head .sr-micro { margin: 0; }
+
+.sr-mission__count {
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+}
+
+.sr-mission__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.sr-mission__what { flex: 1 1 auto; min-width: 0; }
+
+.sr-mission__when {
+  margin: 0;
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+}
+
+.sr-mission__title {
+  margin: 0;
+  font: 600 var(--sr-fs-body)/20px var(--sr-font);
+  color: var(--sr-text);
+}
+
+.sr-mission__step {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  font: 400 var(--sr-fs-glyph)/1 var(--sr-font);
+  color: var(--sr-text);
+  background: var(--sr-wash);
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.sr-mission__step:hover { background: var(--sr-wash-strong); }
+.sr-mission__step:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.sr-mission__text,
+.sr-mission__note,
+.sr-mission__source {
+  margin: 0;
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-mission__text { font-size: var(--sr-fs-label); line-height: 20px; color: var(--sr-text); }
+.sr-mission__note.is-here { color: var(--sr-text); }
+
+.sr-mission__acts { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.sr-mission__go { min-height: 44px; padding: 0 var(--sp-4); }
+
+.sr-mission__list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sr-mission__list[hidden] { display: none; }
+
+.sr-mission__event {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--sp-2) var(--sp-2);
+  font: inherit;
+  text-align: left;
+  color: var(--sr-text);
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--sr-line);
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.sr-mission__event:hover { background: var(--sr-wash); }
+.sr-mission__event[aria-current='true'] { background: var(--sr-ember-soft); }
+
+.sr-mission__event-when {
+  flex: none;
+  width: 9.5em;
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+}
+
+.sr-mission__event[aria-current='true'] .sr-mission__event-when { color: var(--sr-text); }
+.sr-mission__event-title { font: 400 var(--sr-fs-label)/18px var(--sr-font); }
+
+.sr-mission__link {
+  color: var(--sr-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.sr-mission__link:hover { color: var(--sr-ember-light); }
+
+@media (pointer: coarse) {
+  .sr-mission__link { display: inline-flex; align-items: center; min-height: 44px; }
+  .sr-today__debris { min-height: 44px; }
 }

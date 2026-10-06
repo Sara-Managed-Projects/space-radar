@@ -16,6 +16,18 @@ const comet = (id, dt) => ({ id, name: id, layer: 'comets', klass: 'comet', meta
 const items = buildNextItems([launch('Falcon 9', 5 * H), neo('2026 AB', 2 * H, 3.2), comet('C/2026 X', 10 * D), launch('Past', -2 * H), launch('Far', 60 * D)], now);
 check(items.map((i) => i.record.id).join(',') === '2026 AB,Falcon 9,C/2026 X', `nearest first, past and beyond-horizon dropped (${items.map((i) => i.record.id)})`);
 check(items[0].kind === 'approach' && items[1].kind === 'launch' && items[2].kind === 'perihelion', 'kinds are recognised');
+{
+  // Public #313: the live parser's own field names carry the distance, and the size is said.
+  const live = { id: 'neo-x', name: '2026 SA8', layer: 'asteroids', klass: 'asteroid', meta: { closeApproachMs: now + 3 * 3600e3, closeApproachLunarDistances: 0.99, closeApproachDistanceKm: 380000, absoluteMagnitude: 28.634, diameterKm: null } };
+  const [it] = buildNextItems([live], now);
+  check(it && Math.abs(it.ld - 0.99) < 1e-9, `a close approach parsed from JPL's table carries its distance (${it && it.ld})`);
+  const line = rowText(it, now);
+  check(/the Moon’s distance away\. About 5 to 11 m across, judged from its brightness$/.test(line), `and its size as the range its brightness allows: ${line}`);
+  const { sizeText, sizeShort, rowParts } = await import(join(JS, 'ui/next.js'));
+  check(rowParts(it, now).detail === 'Passes Earth in 3 hours · about 5 to 11 m' && rowParts(it, now).value === '0.990× Moon', `the row as drawn says when, how big and how close (${rowParts(it, now).detail} / ${rowParts(it, now).value})`);
+  check(sizeShort({ loM: 340, hiM: 340, measured: true }) === '340 m' && sizeShort({ loM: 700, hiM: 1560, measured: false }) === 'about 0.7 to 1.6 km' && sizeShort(null) === null, 'the short size: measured, a range across a kilometre in kilometres, or nothing');
+  check(sizeText({ loM: 340, hiM: 340, measured: true }) === 'It is 340 m across' && sizeText({ loM: 700, hiM: 1560, measured: false }) === 'About 700 m to 1.6 km across, judged from its brightness' && sizeText(null) === null, 'a measured size is stated; a range that crosses a kilometre says both units; no number, no line');
+}
 check(rowText(items[0], now).startsWith('2026 AB passes Earth in 2 hours, 3.2') && rowText(items[0], now).endsWith('the Moon’s distance away'), `an approach row reads right: ${rowText(items[0], now)}`);
 check(rowText(items[1], now) === 'Falcon 9 lifts off in 5 hours', `a launch row reads right: ${rowText(items[1], now)}`);
 check(rowText({ kind: 'launch', record: { name: 'Vague' }, tMs: now + 3 * D, precision: 'Month' }, now).includes('not fixed yet'), 'a launch with a rough date says so');

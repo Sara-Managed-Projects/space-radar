@@ -35,7 +35,7 @@ for (const f of ['site/js/ui/whattoshow.js', 'site/js/ui/explore.js']) {
 check(/l\.load === 'on-demand'/.test(main), 'main.js defers a layer whose registry row says load: on-demand');
 const { LAYERS } = await import(join(ROOT, 'site/js/data/layers.js'));
 const onDemand = LAYERS.filter((l) => l.load === 'on-demand');
-check(onDemand.map((l) => l.id).join(',') === 'active', `only the active catalogue loads on demand (${onDemand.map((l) => l.id)})`);
+check(onDemand.map((l) => l.id).join(',') === 'active,debris-field', `only the two catalogues load on demand: everything active, and all tracked debris (${onDemand.map((l) => l.id)})`);
 for (const l of onDemand) check(l.budget && l.budget.maxItems >= 5000, `${l.id} is catalogue-sized`);
 for (const id of ['geo-ring', 'debris-notable', 'reentries']) {
   const l = LAYERS.find((x) => x.id === id);

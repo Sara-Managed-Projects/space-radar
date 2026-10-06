@@ -51,7 +51,7 @@ import { isLadderStage, isSystemStage } from './scene/stage.js';
 import { createSystems } from './scene/systems.js';
 import { SUN_INERTIAL, STAGES } from './scene/stage.js';
 import { showChooser, hideChooser } from './ui/chooser.js';
-import { createLabels } from './ui/labels.js';
+import { createLabels, labelName } from './ui/labels.js';
 import { createHud } from './ui/hud.js';
 import { createOrbitLine } from './scene/orbitline.js';
 import { createGroundTrack } from './scene/groundtrack.js';
@@ -137,6 +137,12 @@ const KEYHINT_MS = 5000;
 const SUBSCRIBE_MS = 3000;
 /** How long after sr:layers-ready the service worker is registered (ui/offline.js): last of all. */
 const OFFLINE_MS = 6000;
+/** The timeline in the time pill (ui/scrubber.js) and the home's dated cards (ui/today.js): after
+ * the two seconds tests/test_first_visit_bytes.mjs waits past sr:layers-ready. */
+const SCRUBBER_MS = 4000;
+const TODAY_MS = 4500;
+/** Two snapshots of the view inside this many ms are one move (a tab sets the stage, then the moment). */
+const ONE_MOVE_MS = 120;
 
 export async function boot({ setStatus } = {}) {
   const say = setStatus || (() => {});
@@ -620,11 +626,29 @@ export async function boot({ setStatus } = {}) {
   else if (window.__srLayersReady) subscribeLater();
   else window.addEventListener('sr:layers-ready', subscribeLater, { once: true });
   createTimePill(ctx, shell.timeHost);
+  // THE TIMELINE (public #455, ui/scrubber.js): the tape in the pill's upper row, with the marks
+  // for what is coming. Imported SCRUBBER_MS after sr:layers-ready, past the two seconds the
+  // first-visit measure waits, or at once when somebody reaches for the empty seat.
+  let scrubber = null;
+  const wantScrubber = () => scrubber || (scrubber = import('./ui/scrubber.js')
+    .then((m) => m.createScrubber(ctx, ctx.timePill))
+    .catch((e) => { scrubber = null; console.warn('the timeline did not load', e); }));
+  ctx.timePill.tapeHost.addEventListener('pointerdown', wantScrubber, { once: true });
+  const scrubberLater = () => setTimeout(wantScrubber, SCRUBBER_MS);
+  if (window.__srLayersReady) scrubberLater();
+  else window.addEventListener('sr:layers-ready', scrubberLater, { once: true });
+  // TODAY (internal #270, ui/today.js): the home's dated cards, generated from what is loaded,
+  // and under them the way into the debris view (ui/debris.js). TODAY_MS after sr:layers-ready.
+  const todayLater = () => setTimeout(() => {
+    import('./ui/today.js').then((m) => m.createToday(ctx, ctx.explore.todayHost)).catch((e) => console.warn('the dated cards did not load', e));
+  }, TODAY_MS);
+  if (window.__srLayersReady) todayLater();
+  else window.addEventListener('sr:layers-ready', todayLater, { once: true });
   // THE CONTROLS HINT (spec 0068 task 2, ui/keyhint.js): once per visitor, bottom-right, the keys
   // and the gestures that move the camera. Imported KEYHINT_MS after sr:layers-ready, so the first
   // visit's bytes are the map's; it decides for itself whether to show (not seen before, not a
   // trip, not a link). ctx.keyhint.show() opens it on request and imports it if it has to.
-  const arrivedByLink = !!(link && (link.trip || link.at || link.stage)) || location.hash === '#sources';
+  const arrivedByLink = !!(link && (link.trip || link.at || link.event || link.stage)) || location.hash === '#sources';
   const keyHint = () => import('./ui/keyhint.js').then((m) => m.createKeyHint(ctx, { deepLink: arrivedByLink }));
   ctx.keyhint = { show: () => keyHint().then((api) => api.show()) };
   const hintLater = () => setTimeout(() => keyHint().then((api) => api.maybeShow()).catch((e) => console.warn('the controls hint did not load', e)), KEYHINT_MS);
@@ -764,13 +788,13 @@ export async function boot({ setStatus } = {}) {
       // A long press on a crowded spot lists everything within reach instead of guessing.
       const all = candidatesAt(ndcX, ndcY, rect);
       const list = rankAll(all.glyphs, all.discs, 6);
-      if (list.length > 1) { showChooser(list, e.clientX, e.clientY, (rec) => select(rec), { layers: LAYERS }); return; }
-      if (list.length === 1) { select(list[0].record); return; }
+      if (list.length > 1) { showChooser(list, e.clientX, e.clientY, (rec) => select(rec, { from: 'pick' }), { layers: LAYERS }); return; }
+      if (list.length === 1) { select(list[0].record, { from: 'pick' }); return; }
       deselect();
       return;
     }
     const hit = pick(ndcX, ndcY, rect) || skyPicturePick(e.clientX, e.clientY);
-    if (hit) select(hit);
+    if (hit) select(hit, { from: 'pick' });
     else deselect();
   });
 
@@ -824,6 +848,13 @@ export async function boot({ setStatus } = {}) {
     // search box turns the sky to what it found (ui/search.js, skyView.pointAtRecord). Without this
     // a star chosen there recentred the whole scene on the stellar rung under the sky view's feet.
     if (ctx.skyView && ctx.skyView.active && opts.fly !== false) opts = { ...opts, fly: false };
+    // A selection made for the visitor from a list, the search, the timeline or a link flies the
+    // camera somewhere they did not point at: the view before it is kept and the way back offered
+    // (internal #274, ui/camundo.js). Not for a tap on the thing itself, which is pointing at it;
+    // not for a trip's own stops; not when the caller is the undo.
+    const offer = record && opts.fly !== false && opts.from !== 'pick' && opts.undo !== false && record !== selected;
+    // `remembered`: the caller took the picture itself, before it moved the clock.
+    if (offer && !opts.remembered) rememberView();
     // A planet with a registry/systems.yaml row, or its host star, is a place on its SYSTEM's stage
     // (spec 0040 req 6), where it is drawn at its own size on its orbit; everywhere else it is a mark
     // at its star. The same rule as a star recentring on the stellar rung below, one scale further in.
@@ -873,7 +904,79 @@ export async function boot({ setStatus } = {}) {
     if (opts.fly !== false) flyToRecord(record);
     else cameraRig.follow(() => positionOfRecord(record));
     window.dispatchEvent(new CustomEvent('sr:select', { detail: record }));
+    if (offer) offerUndo(opts.undoName || labelName(record) || record.name);
   }
+
+  // --- the view before an automatic move, and the way back (internal #274) ------------------------
+  let viewBefore = null;
+  let viewStamp = -Infinity;
+  const inTrip = () => document.documentElement.classList.contains('sr-trip-mode');
+  function viewNow() {
+    return {
+      rig: cameraRig.saveState(), stage: stage.worldId, moment, selected,
+      clock: { mode: clock.mode, t: clock.now(), rate: clock.rate, paused: clock.paused },
+    };
+  }
+  /** Keep the view as it is now, before moving it. Calls within ONE_MOVE_MS are one move. */
+  function rememberView() {
+    if (inTrip()) return null;
+    const at = performance.now();
+    if (viewBefore && at - viewStamp < ONE_MOVE_MS) return viewBefore;
+    viewStamp = at;
+    viewBefore = viewNow();
+    return viewBefore;
+  }
+  function restoreView(b) {
+    if (!b) return;
+    if (b.clock.mode === 'live') { if (clock.mode !== 'live') clock.live(); }
+    else if (clock.mode === 'live' || Math.abs(clock.now() - b.clock.t) > 5 * 60e3) { clock.goTo(b.clock.t); clock.setRate(b.clock.rate); }
+    if (stage.worldId !== b.stage) ctx.setStage(b.stage);
+    if (moment !== b.moment) setMoment(b.moment);
+    if (b.selected) select(b.selected, { fly: false, undo: false });
+    else deselect();
+    cameraRig.restoreState(b.rig, 600);
+  }
+  /** Offer the way back to the last remembered view, in a toast. `name` is where the view went. */
+  function offerUndo(name) {
+    const before = viewBefore;
+    if (!before || inTrip()) return;
+    import('./ui/camundo.js').then((m) => {
+      if (before !== viewBefore || m.sameView(before, viewNow())) return;
+      m.offerUndo(ctx, { name, undo: () => restoreView(before) });
+    }).catch((e) => console.warn('the undo toast did not load', e));
+  }
+  ctx.rememberView = rememberView;
+  ctx.offerUndo = offerUndo;
+  ctx.refreshCard = () => { if (selected) showCard(selected, ctx); };
+  /**
+   * Run `fn` once the scene has been placed at the clock's new time. A world's drawn position,
+   * and so a landing site's, is what the last frame put there: SEEN 2026-10-06, the clock set to
+   * 20 July 1969 and the Apollo 11 site selected in the same tick flew the camera to where the
+   * Moon was in 2026, and it arrived 35 km over the far side with the site behind the Moon. The
+   * frame loop runs these right after it has updated the worlds (startLoop, below), whatever a
+   * frame takes: a timer raced the frame and lost on a slow renderer. A hidden page gets no
+   * frames, and nothing it would show: there it runs at once.
+   */
+  const afterUpdate = [];
+  ctx.afterUpdate = afterUpdate;
+  ctx.afterClockJump = (fn) => {
+    const run = () => { try { fn(); } catch (e) { console.warn('after a clock jump', e); } };
+    if (typeof document !== 'undefined' && document.hidden) { setTimeout(run, 0); return; }
+    afterUpdate.push(run);
+  };
+  /** The whole Earth in view, from wherever the camera is (the debris view asks for it). */
+  ctx.frameEarth = (ms = 900) => {
+    if (stage.worldId !== 'earth') ctx.setStage('earth');
+    if (selected) deselect();
+    cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance: worldFramingDistance(6371 / stage.unitKm, camera.fov, camera.aspect), ms });
+  };
+  // A MISSION'S EVENTS (public #452, ui/missions.js): fetched the first time a card asks, or a
+  // link names an event. ctx.missions is the module once it is here.
+  let missionsImport = null;
+  ctx.missions = null;
+  ctx.wantMissions = () => missionsImport || (missionsImport = import('./ui/missions.js')
+    .then((m) => { m.install(ctx); ctx.missions = m; return m; })
+    .catch((e) => { missionsImport = null; console.warn('the mission events did not load', e); return null; }));
 
   /**
    * Fly to a record and follow it. THE one definition: select() uses it, and so does the card's
@@ -1635,6 +1738,10 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     cameraRig.update(dt);
     worlds.setEclipseAllowed(ctx.eclipseDrawn());
     worlds.update(t);
+    // What waited for the scene to stand at a new time (ctx.afterClockJump): a flight to somewhere
+    // that has just moved. After the worlds, so a world's place is this frame's; the camera's own
+    // update comes round again next frame.
+    if (ctx.afterUpdate && ctx.afterUpdate.length) for (const fn of ctx.afterUpdate.splice(0)) fn();
     // The Sun close up, after the worlds have moved: its grain, its corona's plane and today's
     // spots, counted from the meridian that faces the Earth (scene/sun.js).
     if (ctx.sunDetail) {
@@ -1951,6 +2058,15 @@ function applyUrlState(ctx, st) {
   }
   // A trip that is not on this map is ignored like any other unknown key: `at` still applies.
   if (st.trip && openTrip(ctx, st)) return;
+  // A mission's event (ui/missions.js): it selects its own record, so `at` beside it is not read.
+  if (st.event && typeof ctx.wantMissions === 'function') {
+    ctx.wantMissions().then((m) => {
+      if (m && m.openEvent(ctx, st.event)) return;
+      linkNote(ctx, COPY.mission.unknown, ['event']);
+      if (st.at) openAt(ctx, st.at);
+    });
+    return;
+  }
   if (st.at) openAt(ctx, st.at);
 }
 

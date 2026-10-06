@@ -300,6 +300,26 @@ export const LAYER_ROWS = [
     "train": null
   },
   {
+    "id": "debris-field",
+    "display": "All tracked debris",
+    "group": "around-earth",
+    "enabled": true,
+    "moments": {
+      "wonder": false,
+      "now": false,
+      "next": false
+    },
+    "source": "celestrak-satcat",
+    "sources": null,
+    "propagator": "kepler",
+    "frame": "earth-inertial",
+    "card": "debris",
+    "glyph": "debris",
+    "colour": "debris",
+    "maxItems": 20000,
+    "train": null
+  },
+  {
     "id": "launches",
     "display": "Rockets on their way up",
     "group": "around-earth",

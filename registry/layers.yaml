@@ -222,6 +222,22 @@ layers:
     select: {list: registry/lists/debris.yaml}
     budget: {max_items: 40}
 
+  # Every tracked piece of debris and spent rocket body (public #449), from the catalogue's own
+  # orbit shapes: the count and the heights are measured, the place along each orbit is
+  # illustrative (site/js/data/satcat.js). 6.8 MB, so it loads only when the debris view asks.
+  - id: debris-field
+    display: All tracked debris
+    group: around-earth
+    moments: {wonder: off, now: off, next: off}
+    source: celestrak-satcat
+    propagator: kepler
+    frame: earth-inertial
+    style: {kind: glyph, glyph: debris, colour: debris, opacity: 0.7, draw_under: true}
+    card: debris
+    select: {all: true}
+    budget: {max_items: 20000}
+    load: on-demand
+
   - id: launches
     display: Rockets on their way up
     group: around-earth

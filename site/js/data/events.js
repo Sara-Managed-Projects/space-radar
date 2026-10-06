@@ -163,13 +163,39 @@ export function launchItem(r, nowMs, horizonMs) {
   return null;
 }
 
+/**
+ * How big a passing asteroid is, in metres, as the range its brightness allows: `{loM, hiM,
+ * measured}`. A measured diameter is used when the catalogue has one. Otherwise it is worked out
+ * from the absolute magnitude H for a surface that reflects between a quarter and a twentieth of
+ * the light on it (the usual bounds for near-Earth asteroids): D = 1329 km / sqrt(albedo) x
+ * 10^(-H/5). An estimate, and the row says so. Null with neither number.
+ */
+export function approachSize(m) {
+  if (!m) return null;
+  const d = Number(m.diameterKm);
+  if (m.diameterKm !== null && m.diameterKm !== undefined && d > 0) return { loM: d * 1000, hiM: d * 1000, measured: true };
+  const H = Number(m.absoluteMagnitude);
+  if (m.absoluteMagnitude === null || m.absoluteMagnitude === undefined || !Number.isFinite(H)) return null;
+  const base = 1329e3 * 10 ** (-H / 5);
+  return { loM: base / Math.sqrt(0.25), hiM: base / Math.sqrt(0.05), measured: false };
+}
+
 /** A close approach's row: the walk's second branch, so a launch record never becomes one. */
 export function approachItem(r, nowMs, horizonMs) {
   if (!r || !r.meta || launchItem(r, nowMs, horizonMs)) return null;
   const m = r.meta;
   if (Number.isFinite(m.closeApproachMs) && m.closeApproachMs > nowMs && m.closeApproachMs - nowMs < horizonMs) {
-    const ld = Number.isFinite(m.missDistanceLd) ? m.missDistanceLd : Number.isFinite(m.missDistanceKm) ? m.missDistanceKm / UNITS.LUNAR_DISTANCE_KM : null;
-    return { kind: 'approach', record: r, tMs: m.closeApproachMs, ld };
+    // THE DISTANCE WAS NEVER SHOWN (public #313, found 2026-10-06): data/parsers.js
+    // parseNeoApproaches writes `closeApproachLunarDistances` and `closeApproachDistanceKm`, and
+    // this read `missDistanceLd` and `missDistanceKm`, which only the test's fixtures carried. So
+    // every live row said "passes Earth" and never how close. Both spellings are read now.
+    const firstNumber = (...vs) => { for (const v of vs) if (v !== null && v !== undefined && Number.isFinite(Number(v))) return Number(v); return null; };
+    const km = firstNumber(m.missDistanceKm, m.closeApproachDistanceKm);
+    const ld = firstNumber(m.missDistanceLd, m.closeApproachLunarDistances) ?? (km !== null ? km / UNITS.LUNAR_DISTANCE_KM : null);
+    const item = { kind: 'approach', record: r, tMs: m.closeApproachMs, ld };
+    const size = approachSize(m);
+    if (size) item.size = size;
+    return item;
   }
   return null;
 }

@@ -712,7 +712,7 @@ services from their own IP.** Read §4.1 before you deploy.
 
 | Service | What it provides | Terms | Credit line | Link |
 |---|---|---|---|---|
-| CelesTrak | GP/OMM orbital elements: stations, visual, active, last-30-days, Starlink supplemental | Free; a published usage policy with enforced rate limits (§4.1) | Orbital data: CelesTrak (T. S. Kelso) | <https://celestrak.org> |
+| CelesTrak | GP/OMM orbital elements: stations, visual, active, last-30-days, Starlink supplemental; and the satellite catalogue (`satcat.csv`), read only when the debris view is opened, for its count by height and the orbit each piece of debris is drawn on | Free; a published usage policy with enforced rate limits (§4.1) | Orbital data: CelesTrak (T. S. Kelso) | <https://celestrak.org> |
 | The Space Devs — Launch Library 2 | upcoming launches, pads, providers | Free to 15 requests/hour/IP; **no published licence** (§4.2) | Launch data by The Space Devs | <https://thespacedevs.com/llapi> |
 | NASA — DSN Now | live Deep Space Network dish↔spacecraft links | NASA content is generally not copyrighted; this endpoint is undocumented (§4.3) | NASA Deep Space Network | <https://eyes.nasa.gov/dsn/> |
 | NOAA SWPC | planetary K-index forecast | US Government work, public domain (§4.4) | Space weather: NOAA SWPC | <https://www.swpc.noaa.gov> |
@@ -729,6 +729,13 @@ Also named in `site/js/data/sources.js` so the status panel can say "could not l
 name, but **not reachable from a browser** (no `Access-Control-Allow-Origin`) and therefore never
 actually fetched by the app: NASA/JPL Small-Body Database, JPL Horizons, and Space-Track (which also
 needs a login). Their credit lines are carried in the same file.
+
+**Mission events (not a runtime source).** The dated events on a mission's card
+(`registry/missions.yaml`: the Voyagers, New Horizons, Juno, Webb, Apollo 11, Perseverance, the
+International Space Station) are facts read from NASA's own mission pages on the date in that
+file, each mission's page named in its row and linked from the card ("Dates and figures: NASA
+Science, Voyager 1"). The sentences are ours. NASA content is generally not subject to copyright
+in the United States; nothing of those pages is copied here but dates and distances.
 
 ### 4.1 CelesTrak — read this before you deploy a fork
 

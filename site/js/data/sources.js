@@ -235,6 +235,22 @@ export const SOURCES = {
     note: '264 objects, 112 kB measured 2026-09-06.',
   },
 
+  // The whole catalogue: one line for everything ever tracked in orbit, with the shape of its
+  // orbit and no elements (data/satcat.js). Read only when the debris view is opened.
+  'celestrak-satcat': {
+    id: 'celestrak-satcat',
+    registryId: 'celestrak-satcat',
+    label: 'CelesTrak — the satellite catalogue',
+    publisher: 'CelesTrak',
+    url: 'https://celestrak.org/pub/satcat.csv',
+    cadenceMs: 24 * HOUR,
+    freshnessMaxMs: 168 * HOUR,
+    browser: true,
+    kind: 'text',
+    attribution: 'Orbital data: CelesTrak (T. S. Kelso)',
+    note: '70 813 lines, 6 751 364 bytes measured 2026-09-28. Load only when asked.',
+  },
+
   // --- Launches ---------------------------------------------------------------------------
   'll2-upcoming': {
     id: 'll2-upcoming',

@@ -202,6 +202,32 @@ export function passScore(pass) {
   return 60 + bright + Math.min(10, n.peakDeg / 9);
 }
 
+/**
+ * Is this object junk: a spent rocket body or a piece of debris? By the catalogue's own name
+ * ("SL-16 R/B", "FENGYUN 1C DEB") or the record's class, the rule plainName() words it by.
+ */
+export function isJunk(record) {
+  const raw = String((record && record.name) || '');
+  const klass = record && record.klass;
+  return klass === 'rocket' || klass === 'debris' || /\bR\/B\b/i.test(raw) || /\bDEB\b/i.test(raw);
+}
+
+/** A junk pass is offered only when it is known to be bright: this magnitude or brighter. */
+export const JUNK_MAX_MAG = 3.5;
+
+/**
+ * Does a pass belong on the list of the best things to see? SEEN ON THE LIVE SITE, 2026-10-06:
+ * "Rocket body · Thor Agena D, mag —" among tonight's best. CelesTrak's `visual` group is mostly
+ * spent stages, and with no magnitude a pass scores on height alone, so a tumbling stage straight
+ * overhead outranked Saturn. A stage or a fragment makes the list only with a known magnitude of
+ * JUNK_MAX_MAG or brighter; the stations and the named satellites are untouched. The pass itself
+ * is still on the sky and in the passes list: this is about what is called "best".
+ */
+export function worthARow(pass) {
+  if (!pass || !isJunk(pass.record)) return true;
+  return Number.isFinite(pass.magnitude) && pass.magnitude <= JUNK_MAX_MAG;
+}
+
 function planetScore(p) {
   return 55 + Math.max(-10, Math.min(30, (2 - p.mag) * 5)) + Math.min(10, p.altDeg / 9);
 }
@@ -217,7 +243,7 @@ export function tonightBest({ observer, nowMs, passes = [], showers = SHOWERS, m
   const rows = [];
   const until = win ? win.endMs : nowMs + 24 * 3600e3;
   const open = (Array.isArray(passes) ? passes : [])
-    .filter((p) => p && p.visible === true && p.endMs > nowMs && p.startMs < until)
+    .filter((p) => p && p.visible === true && p.endMs > nowMs && p.startMs < until && worthARow(p))
     .map((p) => ({ kind: 'pass', id: `${p.recordId || (p.record && p.record.id)}:${p.startMs}`, pass: p, score: passScore(p), whenMs: p.startMs }))
     .sort((a, b) => b.score - a.score);
   // The same object is in two catalogues (a station is also one of the brightest): one row.

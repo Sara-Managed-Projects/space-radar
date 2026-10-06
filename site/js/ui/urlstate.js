@@ -11,7 +11,8 @@
 // keyed form is produced.
 //
 // EVERY KEY, since 2026-09-23 (spec 0032, deep links). `m` the moment; `v` the format version;
-// `trip` and `stop` a trip at a stop (a 1-based number, or a stop id); `at` a record id; `t` an
+// `trip` and `stop` a trip at a stop (a 1-based number, or a stop id); `at` a record id; `event` a
+// mission's event, `<mission>.<event>` (registry/missions.yaml, ui/missions.js; 2026-10-06); `t` an
 // ISO UTC instant, or `now`; `rate` the clock's rate; `stage` the world or rung the map is centred
 // on; `exp` the exposure the sky is drawn at when it is not the default (`eye` or `deep`, public
 // #460: a shared postcard and the link beside it show the same sky). A key outside KEYS is dropped on read and never written, so a link made by a newer map with
@@ -28,7 +29,7 @@
 
 export const HASH_KEY = 'm';
 // `present` (2026-10-06, public #441): a trip opened for a room, `1`, or `auto` to advance by itself.
-export const KEYS = ['m', 'v', 'trip', 'stop', 'present', 'at', 't', 'rate', 'stage', 'exp'];
+export const KEYS = ['m', 'v', 'trip', 'stop', 'present', 'at', 'event', 't', 'rate', 'stage', 'exp'];
 export const VERSION = '1';
 
 export function hashParts() {
@@ -188,6 +189,6 @@ export function bootLink(clock, extra = null) {
 export function laterLink(link, tripRunning) {
   if (!link || !tripRunning) return link;
   const rest = { ...link };
-  for (const key of ['trip', 'stop', 'at', 'stage']) delete rest[key];
+  for (const key of ['trip', 'stop', 'at', 'event', 'stage']) delete rest[key];
   return rest;
 }

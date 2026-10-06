@@ -86,6 +86,16 @@ check(best.rows[0].kind === 'pass' && best.rows[0].pass === iss, 'the station at
   const twice = T.tonightBest({ observer: here, nowMs: evening, passes: [iss, { ...iss, recordId: 'visual-25544', record: { ...iss.record, id: 'visual-25544' } }] });
   check(twice.rows.filter((r) => r.kind === 'pass').length === 1, 'the same pass from two catalogues is one row');
 }
+// Junk is not "best" (seen on the live site 2026-10-06: "Rocket body · Thor Agena D, mag —" in the list).
+check(!best.rows.some((r) => r.kind === 'pass' && r.pass === rb), 'a spent rocket body of unknown brightness is not one of the best things to see');
+check(T.isJunk(rb.record) && T.isJunk({ name: 'COSMOS 1408 DEB' }) && T.isJunk({ name: 'X', klass: 'debris' }) && !T.isJunk(iss.record) && !T.isJunk({ name: 'HST' }), 'junk is told by the catalogue name or the class');
+{
+  const brightStage = { ...rb, magnitude: 2.1 };
+  const dimStage = { ...rb, recordId: '1', record: { id: '1', name: 'ATLAS CENTAUR R/B' }, magnitude: 4.4, startMs: t0 + 1800e3, endMs: t0 + 2100e3 };
+  const list = T.tonightBest({ observer: here, nowMs: evening, passes: [brightStage, dimStage, iss] }).rows.filter((r) => r.kind === 'pass').map((r) => r.pass);
+  check(list.includes(brightStage) && !list.includes(dimStage) && list.includes(iss), 'a stage with a known bright magnitude stays; a dim one goes; the station is untouched');
+  check(T.worthARow({ ...iss, magnitude: null, record: { id: '20580', name: 'HST' } }), 'a named satellite with no magnitude is still offered');
+}
 for (let i = 0; i + 1 < best.rows.length; i += 1) check(best.rows[i].score >= best.rows[i + 1].score, `row ${i} outranks row ${i + 1}`);
 const ids = best.rows.map((r) => r.kind === 'pass' ? 'pass' : r.id);
 check(ids.includes('jupiter') && ids.includes('saturn') && ids.includes('moon') && !ids.includes('venus'), `Jupiter, Saturn and the Moon are in; Venus, lost in the Sun, is not (${ids})`);
