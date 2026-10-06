@@ -107,7 +107,9 @@ export function renderTonight(host, ctx) {
   bestEmpty.hidden = true;
   const bestDark = el('p', 'sr-tonight-view__dark');
   const bestNote = el('p', 'sr-tonight-view__caveat', T.best.honesty);
-  const skyControls = buildSkybar();
+  // The node and its painter, apart: until 2026-10-06 the label below was set on the object that held
+  // both, which threw, and the whole Tonight view never appeared.
+  const { node: skyControls, paint: paintSkybar } = buildSkybar();
   // Named twice on purpose: by its heading for a reader, and outright for tests/test_a11y_static.mjs,
   // which reads this file and cannot follow aria-labelledby into the builder.
   skyControls.setAttribute('aria-label', T.skybar.title);
@@ -135,7 +137,7 @@ export function renderTonight(host, ctx) {
   root.appendChild(bestEmpty);
   root.appendChild(bestDark);
   root.appendChild(bestNote);
-  root.appendChild(skyControls.node);
+  root.appendChild(skyControls);
 
   // --- the worker --------------------------------------------------------------------------------------
   const st = {
@@ -491,7 +493,7 @@ export function renderTonight(host, ctx) {
     renderBest();
     paint();
   };
-  const onSky = () => skyControls.paint();
+  const onSky = () => paintSkybar();
   window.addEventListener('sr:sky', onSky);
   const idle = (fn) => (typeof requestIdleCallback === 'function' ? requestIdleCallback(fn, { timeout: 3000 }) : setTimeout(fn, 200));
   const onLayersReady = () => idle(() => ask(SEARCH_HOURS));
@@ -511,7 +513,7 @@ export function renderTonight(host, ctx) {
   }
   if (window.__srLayersReady) idle(() => ask(SEARCH_HOURS));
   renderBest();
-  skyControls.paint();
+  paintSkybar();
   paint();
   start();
 
