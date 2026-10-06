@@ -69,6 +69,64 @@ const mod = read('site/js/ui/embed.js');
 check(/if \(!CAMERA_KEYS\.has\(e\.key\)\) e\.stopImmediatePropagation\(\)/.test(mod), 'only the camera\'s keys are answered inside the frame');
 check(/open\.target = '_blank'/.test(mod) && /open\.rel = 'noopener'/.test(mod), 'the one link opens the full map in a new tab');
 
+// --- the light embed (js/embedlite.js, internal #396) --------------------------------------------
+{
+  const L = await import(join(ROOT, 'site/js/embedlite.js'));
+  const lt = (q) => JSON.stringify(L.liteTarget(q));
+  check(lt('?embed=1&at=moon') === '{"kind":"world","id":"moon"}' && lt('?embed=1&at=Mars') === '{"kind":"world","id":"mars"}', 'a world by its id is the light embed\'s');
+  check(lt('?embed=1&at=25544') === '{"kind":"station","id":"sat-25544"}' && lt('?at=sat-25544&embed=1') === '{"kind":"station","id":"sat-25544"}', 'a catalogue number is asked of the stations\' list');
+  for (const q of ['?embed=1', '?embed=1&at=iss', '?embed=1&trip=moon-landings', '?embed=1&at=moon&t=2027-01-01T00:00:00Z', '?embed=1&at=moon&stage=moon', '?embed=1&at=moon&exp=deep', '?at=moon', '?embed=10&at=moon']) {
+    check(L.liteTarget(q) === null, `${q} is the whole app's (${lt(q)})`);
+  }
+  // the light maps are the registry's tier -1 files, and stand in for the tier-0 file of the same row
+  const yaml = read('registry/textures.yaml');
+  const rows = [...yaml.matchAll(/- tier: -1\n\s+file: site\/textures\/(\S+)/g)].map((m) => m[1]).sort();
+  const mine = Object.values(L.EMBED_MAPS).filter(Boolean).sort();
+  check(JSON.stringify(rows) === JSON.stringify(mine), `EMBED_MAPS names the registry's tier -1 files (${rows} vs ${mine})`);
+  for (const [boot, light] of Object.entries(L.EMBED_MAPS)) {
+    check(yaml.includes(`file: site/textures/${boot}`), `${boot} is a registry file`);
+    if (light) {
+      const at = yaml.indexOf(`file: site/textures/${light}`);
+      const row0 = yaml.lastIndexOf('\n  - id:', at);
+      check(at > 0 && yaml.slice(row0, at).includes(`file: site/textures/${boot}`), `${light} is in the same row as ${boot}`);
+    }
+  }
+  check(L.embedMapFor('textures/2k_earth_daymap.jpg') === 'textures/embed/earth_day.webp' && L.embedMapFor('textures/2k_earth_clouds.webp') === null && L.embedMapFor('textures/2k_mars.jpg') === 'textures/2k_mars.jpg', 'a map with a light copy is swapped, the clouds are not drawn, any other map is its own');
+  // the boot graph: none of the panels, the trips, the sky view or the whole app's entry
+  const STATIC = /(?:\bimport|\bexport)\s*(?:[^'";()]*?\bfrom\s*)?['"](\.{1,2}\/[^'"]+)['"]/g;
+  const seen = new Set();
+  const todo = [join(ROOT, 'site/js/embedlite.js')];
+  while (todo.length) {
+    const p = todo.pop();
+    if (seen.has(p)) continue;
+    let text;
+    try { text = readFileSync(p, 'utf8'); } catch { continue; }
+    seen.add(p);
+    for (const m of text.matchAll(STATIC)) todo.push(join(dirname(p), m[1]));
+  }
+  const graph = [...seen].map((p) => p.slice(join(ROOT, 'site').length + 1));
+  for (const bad of ['js/main.js', 'js/ui/explore.js', 'js/ui/shell.js', 'js/ui/rail.js', 'js/ui/search.js', 'js/ui/trip.js', 'js/ui/tripgate.js', 'js/ui/cards.js', 'js/sky/skyview.js', 'js/scene/heroes.js', 'js/scene/stars3d.js', 'js/scene/galaxy.js', 'js/audio/engine.js', 'js/data/tours.js']) {
+    check(!graph.includes(bad), `the light embed's static graph does not reach ${bad}`);
+  }
+  const main = join(ROOT, 'site/js/main.js');
+  const full = new Set(); const q2 = [main];
+  while (q2.length) { const p = q2.pop(); if (full.has(p)) continue; let text; try { text = readFileSync(p, 'utf8'); } catch { continue; } full.add(p); for (const m of text.matchAll(STATIC)) q2.push(join(dirname(p), m[1])); }
+  check(graph.length < full.size * 0.6, `the light embed's graph is ${graph.length} modules against the app's ${full.size}`);
+  // the page: the modules are preloaded from a template, moved into the head unless the address is an embed's
+  const html = read('site/index.html');
+  const t0 = html.indexOf('<template id="sr-preload">');
+  const t1 = html.indexOf('</template>', t0);
+  const links = [...html.matchAll(/<link rel="modulepreload" href="[^"]+">/g)];
+  check(t0 > 0 && t1 > t0 && links.length > 50 && links.every((m) => m.index > t0 && m.index < t1), 'every modulepreload line is inside the template, where a browser does not fetch it');
+  check(/<\/template>\n<script>if\(!\/\[\?&\]embed=1\(\?:&\|\$\)\/\.test\(location\.search\)\)document\.head\.appendChild\(document\.getElementById\('sr-preload'\)\.content\)<\/script>/.test(html), 'and one line moves them into the head unless the address is an embed\'s');
+  check(/import\('\.\/js\/embedlite\.js'\)\)\.bootLite\(/.test(html) && /if \(!lite && preload\) document\.head\.appendChild\(preload\.content\);/.test(html) && /if \(!lite\) \{\s*const \{ boot \} = await import\('\.\/js\/main\.js'\);/.test(html), 'the page boots the light embed first, and the whole app (with its preloads) when it answers no');
+  const lite = read('site/js/embedlite.js');
+  check(/if \(!record\) return false;/.test(lite) && lite.indexOf('if (!record) return false;') < lite.indexOf('createRenderer(canvas)'), 'an object the light embed cannot find is refused before anything is built');
+  check(!/serviceWorker|offline\.js/.test(lite), 'the light embed registers no service worker');
+  const doc2 = read('docs/EMBEDDING.md');
+  check(/## The light embed, and the whole one/.test(doc2) && doc2.includes('embed_first_visit_bytes') && doc2.includes('`?embed=1&at=moon`') && doc2.includes('3D model'), 'docs/EMBEDDING.md says which links are light and what the light embed leaves out');
+}
+
 // --- the manual ----------------------------------------------------------------------------------
 const doc = read('docs/EMBEDDING.md');
 for (const k of ['embed', ...E.EMBED_KEYS]) check(doc.includes('`' + k + '`'), `docs/EMBEDDING.md does not describe the parameter \`${k}\``);

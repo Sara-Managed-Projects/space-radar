@@ -42,11 +42,24 @@ def graph(entry: Path) -> list:
     return sorted(seen, key=lambda p: p.relative_to(SITE).as_posix())
 
 
+# THE LIGHT EMBED (internal #396, 2026-10-07). `?embed=1&at=moon` boots js/embedlite.js and never asks
+# for main.js, but a <link rel="modulepreload"> in the page is fetched whatever the address says:
+# 112 modules, 2.2 MB, for a frame that draws one object. So the lines sit in a <template>, where a
+# browser neither fetches nor preloads them, and the one-line script after it moves them into the
+# <head> at once unless the address is an embed's. A normal visit asks for them at the same point
+# of the parse as before. The page's boot script moves them itself when an embed turns out to need
+# the whole app after all.
+TEMPLATE_OPEN = '<template id="sr-preload">'
+TEMPLATE_CLOSE = '</template>'
+ACTIVATE = ("<script>if(!/[?&]embed=1(?:&|$)/.test(location.search))"
+            "document.head.appendChild(document.getElementById('sr-preload').content)</script>")
+
+
 def block() -> str:
-    lines = [BEGIN]
+    lines = [BEGIN, TEMPLATE_OPEN]
     for path in graph(ENTRY):
         lines.append(f'<link rel="modulepreload" href="{path.relative_to(SITE).as_posix()}">')
-    lines.append(END)
+    lines += [TEMPLATE_CLOSE, ACTIVATE, END]
     return "\n".join(lines)
 
 

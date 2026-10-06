@@ -159,7 +159,8 @@ export function createShells(scene) {
         sh.mesh.material.opacity = 0.42 * k;
       }
       if (sh.label) {
-        sh.label.visible = k > 0.25;
+        // The words only while the sphere is big enough to be what they point at (a twentieth of the view).
+        sh.label.visible = k > 0.25 && d / r < 25;
         if (sh.label.visible) {
           sh.label.position.copy(_up).multiplyScalar(r * 1.02);
           sh.label.scale.set(h * sh.label.userData.aspect, h, 1);

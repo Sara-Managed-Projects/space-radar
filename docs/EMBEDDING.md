@@ -25,7 +25,7 @@ All in the query string, after `?embed=1`. Anything not listed is ignored.
 |---|---|---|
 | `embed` | `1` turns the embed on. Required. | `?embed=1` |
 | `at` | The object to open on: a record id, a NORAD catalogue number, or a name as you would type it in the search box. | `at=sat-25544`, `at=25544`, `at=iss`, `at=mars` |
-| `trip` | A guided trip to play instead of one object: any of the 25 (the ids are the page names under `/t/`, and the `id:` rows of `registry/tours.yaml`). Wins over `at`. | `trip=moon-landings` |
+| `trip` | A guided trip to play instead of one object: any of the 26 (the ids are the page names under `/t/`, and the `id:` rows of `registry/tours.yaml`). Wins over `at`. | `trip=moon-landings` |
 | `stop` | With `trip`: the stop to start at, counted from 1. | `stop=3` |
 | `t` | The moment to show, as an ISO 8601 UTC instant. Left out, the view is live. | `t=2027-08-02T10:00:00Z` |
 | `stage` | The world the map is centred on. | `stage=mars` |
@@ -47,8 +47,38 @@ address bar, or use **Embed**, which writes the right one for you.
 - Nothing is stored on the reader's device by the embed: no cookie, no tracker, no service worker.
   The page fetches the map's own files and the public catalogues it draws from (see the sources
   sheet in the app).
-- It is a WebGL scene of several megabytes. `loading="lazy"` keeps it from costing a reader who
-  never scrolls to it.
+- It is a WebGL scene. `loading="lazy"` keeps it from costing a reader who never scrolls to it.
+  How much it downloads depends on the link: see the next section.
+
+## The light embed, and the whole one
+
+A link that names **one world or one crewed station and nothing else** boots the light embed
+(`js/embedlite.js`): the scene, that object, the Earth and the other worlds, the naked-eye stars,
+the names and the object's tag. It is held to 2.5 MB uncompressed on a first visit
+(`embed_first_visit_bytes` in `registry/budgets.yaml`; `tests/test_first_visit_bytes.mjs --embed=`
+measures `at=moon` and `at=25544` in CI), about half of that on the wire from the live site, which
+compresses.
+
+| link | what boots |
+|---|---|
+| `?embed=1&at=moon`, `at=mars`, any world by its id | the light embed |
+| `?embed=1&at=25544`, `at=sat-25544`, any crewed station by its catalogue number | the light embed |
+| a name (`at=iss`), any other satellite, a probe, a star | the whole map, as before |
+| any link with `trip`, `stop`, `t`, `stage` or `exp`, or with a `#` part | the whole map, as before |
+
+What the light embed leaves out, so that a reader is not sent what the frame does not draw:
+
+- **The object's 3D model.** A station is its mark, its name and its tag (altitude, speed, how the
+  numbers were worked out). The model is in the full map, one press away.
+- **Clouds, the Milky Way and the constellation lines.** The Earth is its day and night maps.
+- **Sharp maps.** The Earth and the Moon wear 1024-pixel copies of their maps, which is what a
+  600 x 400 frame can show; another world named by `at` wears its usual map when the camera
+  reaches it (Mars is 750 kB more).
+- **Every catalogue but the one the object is in**, the trips, the cards, the sky from the ground,
+  the sources sheet, the layer switches and the service worker.
+
+The whole map inside a frame (the second kind of link) is several megabytes, as a visit to the
+site is. Prefer a world's id or a station's number when the article is about one of them.
 
 ## Attribution
 

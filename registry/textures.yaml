@@ -7,6 +7,10 @@ version: 1
 #   T0  phones, data-saver, small GPUs: the tier-0 file of every row, which is exactly the set every
 #       visitor booted with before tiers existed. A first visit is gated at 2.5 MB with ~140 KB spare,
 #       so tier 0 is never changed by a tier PR; a sharper file is a new row entry under a new name.
+#   -1  the light embed (js/embedlite.js, internal #396): a 1024 x 512 copy of the tier-0 file for the
+#       three maps a 600 x 400 frame of the Moon or a station shows. No device tier wears it
+#       (texturetiers.js variantFor picks the highest tier at or below the device's, which is never
+#       under 0); the embed asks for it by name.
 #   T1  laptops and tablets: tier-1 files. T2 wears tier-1 files too until 8k ships as KTX2 (the
 #       study's arithmetic: an 8k RGBA map with mipmaps is ~171 MB of GPU memory on its own).
 #
@@ -59,6 +63,15 @@ textures:
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+      - tier: -1
+        file: site/textures/embed/earth_day.webp
+        px: [1024, 512]
+        bytes: 47682
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        make: "the tier-0 file resampled to 1024 x 512 (Lanczos), WebP, 2026-10-07: the light embed's map (js/embedlite.js)"
       - tier: 1
         file: site/textures/4k/earth_day_{mm}.webp
         monthly: true
@@ -84,6 +97,15 @@ textures:
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+      - tier: -1
+        file: site/textures/embed/earth_night.webp
+        px: [1024, 512]
+        bytes: 10994
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        make: "the tier-0 file resampled to 1024 x 512 (Lanczos), WebP, 2026-10-07: the light embed's map (js/embedlite.js)"
       - tier: 1
         file: site/textures/4k/earth_night.webp
         px: [4096, 2048]
@@ -165,6 +187,15 @@ textures:
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+      - tier: -1
+        file: site/textures/embed/moon.webp
+        px: [1024, 512]
+        bytes: 80854
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        make: "the tier-0 file resampled to 1024 x 512 (Lanczos), WebP, 2026-10-07: the light embed's map (js/embedlite.js)"
       - tier: 1
         file: site/textures/4k/moon.webp
         px: [4096, 2048]

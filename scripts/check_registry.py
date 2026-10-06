@@ -3143,7 +3143,8 @@ TEXTURE_ROW_FIELDS = ("id", "world", "slot", "when", "files")
 TEXTURE_FILE_FIELDS = ("tier", "file", "px", "bytes", "format", "licence", "credit", "source")
 TEXTURE_WHEN = {"boot", "idle", "near", "asked"}
 TEXTURE_FORMATS = {"rgb", "rgba", "mono"}
-TEXTURE_TIERS = {0, 1, 2}
+# -1 is the light embed's copy (js/embedlite.js): no device tier wears it.
+TEXTURE_TIERS = {-1, 0, 1, 2}
 TEXTURE_REFUSED = ("bjj.mmedia.is", "jonsson", "jónsson", "albers")
 
 

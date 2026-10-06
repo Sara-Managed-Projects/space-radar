@@ -1896,6 +1896,9 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       });
     }
 
+    // A stage hand-off has just changed what one unit is (scene/climb.js): every mark is placed again
+    // on this frame, not on the next tenth of a second.
+    if (ctx.marksStale) { ctx.marksStale = false; sinceLayerUpdate = Infinity; }
     // Glyph positions are the expensive part. At 1x they need no more than ~10 Hz to look
     // continuous at orbital speeds; while scrubbing they need every frame or the motion stutters.
     sinceLayerUpdate += dt;

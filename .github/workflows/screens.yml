@@ -173,6 +173,8 @@ jobs:
             bash -c 'set -euo pipefail
               npm install --no-save --no-audit --no-fund playwright@1.49.1
               node tests/test_first_visit_bytes.mjs --base=http://127.0.0.1:8178 --out=.ci-screens/first-visit.json
+              node tests/test_first_visit_bytes.mjs --base=http://127.0.0.1:8178 --embed=moon --out=.ci-screens/first-visit-embed-moon.json
+              node tests/test_first_visit_bytes.mjs --base=http://127.0.0.1:8178 --embed=25544 --out=.ci-screens/first-visit-embed-25544.json
               node tests/test_first_visit_bytes.mjs --base=http://127.0.0.1:8177 --info --out=.ci-screens/first-visit-source.json'
 
       # A shot that exists but is a picture of a failure panel is the thing this job used to

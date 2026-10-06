@@ -12,6 +12,17 @@ export const TEXTURES = [
     "when": "idle",
     "files": [
       {
+        "tier": -1,
+        "file": "textures/embed/earth_day.webp",
+        "px": [
+          1024,
+          512
+        ],
+        "bytes": 47682,
+        "format": "rgb",
+        "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+      },
+      {
         "tier": 0,
         "file": "textures/2k_earth_daymap.jpg",
         "px": [
@@ -55,6 +66,17 @@ export const TEXTURES = [
     "slot": "night",
     "when": "idle",
     "files": [
+      {
+        "tier": -1,
+        "file": "textures/embed/earth_night.webp",
+        "px": [
+          1024,
+          512
+        ],
+        "bytes": 10994,
+        "format": "rgb",
+        "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+      },
       {
         "tier": 0,
         "file": "textures/2k_earth_nightmap.webp",
@@ -153,6 +175,17 @@ export const TEXTURES = [
     "slot": "map",
     "when": "near",
     "files": [
+      {
+        "tier": -1,
+        "file": "textures/embed/moon.webp",
+        "px": [
+          1024,
+          512
+        ],
+        "bytes": 80854,
+        "format": "rgb",
+        "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+      },
       {
         "tier": 0,
         "file": "textures/2k_moon.jpg",

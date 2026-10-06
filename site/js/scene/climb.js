@@ -178,6 +178,8 @@ export function createClimb(ctx) {
       const layer = (ctx.layers || []).find((l) => l.id === sel.layer);
       if (layer && !ctx.isLayerDrawable(layer) && typeof ctx.deselect === 'function') ctx.deselect();
     }
+    // Every mark (the glyph layers, the labels) is placed in scene units: main.js places them all again on the next frame.
+    ctx.marksStale = true;
     state.crossings += 1;
     state.lastJoin = { from: from.id, to: id, atMs: now(), distanceKm: out ? out.distanceKm : null, kept: !!out };
     if (typeof window !== 'undefined' && window.dispatchEvent) {

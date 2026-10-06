@@ -5,6 +5,10 @@
 //                                                                 a real boot, in Playwright (screens.yml)
 //   node tests/test_first_visit_bytes.mjs --from=bytes.json       a boot recorded by
 //                                                                 `tools/cdp.mjs --bytes=bytes.json`
+//   ... --embed=moon                                              with --base or --from: the light embed
+//                                                                 (`?embed=1&at=moon`, js/embedlite.js),
+//                                                                 held to embed_first_visit_bytes and to
+//                                                                 its own list of what it may not fetch
 //   ... --info                                                    with --base or --from: the total is
 //                                                                 reported and not held to the budget
 //                                                                 (a boot of site/ as written)
@@ -126,6 +130,35 @@ function report(t, where) {
   console.log(`  under /audio/: ${t.audio.length}; under /og/: ${t.og.length}; galaxy.bin or stars3d.bin: ${t.lazy.length}; map tiles: ${t.tiles.length}; nebula pictures or their module: ${t.nebulae.length}; film camera: ${t.film.length}`);
 }
 
+// THE LIGHT EMBED (internal #396, 2026-10-07). `?embed=1&at=<a world or a station>` is booted by
+// js/embedlite.js and draws one object: its own budget row, and a list of what such a frame has no
+// business asking for -- the whole app's entry and its panels, the trips, the sky from the ground,
+// the service worker, the clouds and the Milky Way it does not draw, and the full-size maps of the
+// Earth and the Moon that its 1024-pixel copies stand in for.
+const EMBED_FORBIDDEN = [
+  [/\/js\/main\.js$/, 'the whole app\'s entry'],
+  [/\/js\/ui\/(explore|shell|rail|timepill|search|trip|tripframe|trippicker|sheet|sources|layerspanel|offline)[^/]*\.js$/, 'a panel, the trips or the offline module'],
+  [/\/js\/sky\/skyview\.js$/, 'the sky from the ground'],
+  [/\/js\/data\/tours[^/]*\.js$/, 'the trips'],
+  [/\/sw\.js$/, 'the service worker'],
+  [/\/textures\/2k_earth_(daymap|nightmap|clouds)\.|\/textures\/2k_moon\.|\/textures\/4k\//, 'a full-size map'],
+  [/\/textures\/2k_stars_milky_way\.|\/data\/constellation/, 'the Milky Way or the constellation lines'],
+  [/\/data\/(stars3d|galaxy|exoplanets|dso)[^/]*$/, 'a far catalogue'],
+];
+function embedVerdict(t, requests, budgets = BUDGETS) {
+  const out = [];
+  if (t.total > budgets.embed_first_visit_bytes) out.push(`the light embed's first visit ${t.total} B is over embed_first_visit_bytes ${budgets.embed_first_visit_bytes} B`);
+  for (const r of requests) {
+    const at = sitePath(r.url);
+    if (!at) continue;
+    const hit = EMBED_FORBIDDEN.find(([re]) => re.test(at.path));
+    if (hit) out.push(`the light embed asked for ${at.path} (${hit[1]})`);
+  }
+  if (!requests.some((r) => /\/js\/embedlite\.js(\?|$)/.test(r.url))) out.push('js/embedlite.js was not fetched: this was not the light embed');
+  if (t.audio.length || t.og.length) out.push('the light embed asked for a sound or a preview picture');
+  return out;
+}
+
 function finish(problems, what) {
   if (problems.length) {
     for (const p of problems) console.error(`::error::${p}`);
@@ -135,7 +168,7 @@ function finish(problems, what) {
 }
 
 // --- a real boot, in Playwright (screens.yml) ---------------------------------------------------
-async function boot(base) {
+async function boot(base, path = 'index.html') {
   const { chromium } = await import('playwright');
   const browser = await chromium.launch();
   try {
@@ -153,7 +186,7 @@ async function boot(base) {
     // CelesTrak allows one download per file per IP per two hours, and CI must not be red because
     // somebody else's service is down; blocked, the app behaves as it does when they say no.
     await cdp.send('Network.setBlockedURLs', { urls: ['*celestrak.org*', '*thespacedevs.com*'] });
-    await page.goto(`${base}/index.html`, { waitUntil: 'domcontentloaded', timeout: 60_000 });
+    await page.goto(`${base}/${path}`, { waitUntil: 'domcontentloaded', timeout: 60_000 });
     await page.waitForFunction(() => window.__srLayersReady === true, null, { timeout: 240_000 });
     await page.waitForTimeout(2000);
     return { requests: [...requests.values()], origin: new URL(base).origin };
@@ -164,9 +197,10 @@ async function boot(base) {
 
 const BASE = arg('base');
 const FROM = arg('from');
+const EMBED = arg('embed');
 if (BASE || FROM) {
   const { requests, origin } = BASE
-    ? await boot(BASE)
+    ? await boot(BASE, EMBED ? `index.html?embed=1&at=${encodeURIComponent(EMBED)}` : 'index.html')
     : (() => {
       const requests = JSON.parse(readFileSync(FROM, 'utf8'));
       const first = requests.map((r) => sitePath(r.url)).find(Boolean);
@@ -174,9 +208,15 @@ if (BASE || FROM) {
     })();
   const INFO = process.argv.includes('--info');
   const t = tally(requests, origin);
+  if (EMBED) {
+    console.log(`light embed, at=${EMBED} (${BASE || FROM}): ${t.total} B in ${t.count} requests, budget ${BUDGETS.embed_first_visit_bytes} B`);
+    if (arg('out')) writeFileSync(arg('out'), JSON.stringify({ ...t, budget: BUDGETS.embed_first_visit_bytes, embed: EMBED, requests }, null, 1));
+    finish(INFO ? [] : embedVerdict(t, requests), INFO ? `the light embed's total is information here` : `the light embed is inside its budget and fetched nothing it does not draw`);
+  } else {
   report(t, `${BASE || FROM}${INFO ? ', for information: the source as written, not held to the budget' : ''}`);
   if (arg('out')) writeFileSync(arg('out'), JSON.stringify({ ...t, budget: BUDGETS.first_visit_bytes, info: INFO, requests }, null, 1));
   finish(verdict(t, BUDGETS, { info: INFO }), INFO ? 'nothing lazy was fetched (the total is information here)' : 'inside the budget, and nothing lazy was fetched');
+  }
 } else {
   // --- the rules, on fixtures: no browser, so ci.yml's node job runs it ---------------------------
   const problems = [];
@@ -244,6 +284,27 @@ if (BASE || FROM) {
   check(/minify_site\.py" --site "\$SITE" --out "\$BUILT\/min" --node node/.test(deploy) && /"\$APP\/js"\s+"s3:\/\/\$BUCKET\/js"/.test(deploy) && /"\$APP\/css" "s3:\/\/\$BUCKET\/css"/.test(deploy),
     'scripts/deploy.sh uploads the stripped js/ and css/: the tree this test gates is the tree that is served');
   check(BUDGETS.audio_at_boot_bytes === 0 && BUDGETS.og_at_boot_bytes === 0, 'nothing under /audio/ or /og/ at boot, by budget');
+  // The light embed's own rules (internal #396).
+  {
+    const O2 = 'http://127.0.0.1:8178';
+    const lean = [
+      { url: `${O2}/index.html?embed=1&at=moon`, bytes: 12000 }, { url: `${O2}/js/embedlite.js`, bytes: 9000 },
+      { url: `${O2}/vendor/three.module.min.js`, bytes: 365000 }, { url: `${O2}/textures/embed/moon.webp`, bytes: 81000 },
+    ];
+    const te = tally(lean, O2);
+    check(embedVerdict(te, lean).length === 0, `a light embed inside its budget passes (${embedVerdict(te, lean).join('; ')})`);
+    check(BUDGETS.embed_first_visit_bytes > 0 && BUDGETS.embed_first_visit_bytes <= 2500000, `embed_first_visit_bytes is at most 2.5 MB (${BUDGETS.embed_first_visit_bytes})`);
+    check(BUDGETS.embed_first_visit_bytes < BUDGETS.first_visit_bytes, 'and under the whole app\'s first visit');
+    check(embedVerdict(te, lean, { ...BUDGETS, embed_first_visit_bytes: 100000 }).some((p) => /over embed_first_visit_bytes/.test(p)), 'over its budget fails');
+    for (const [bad, why] of [['js/main.js', 'entry'], ['js/ui/explore.js', 'panel'], ['js/ui/trip.js', 'trips'], ['js/sky/skyview.js', 'ground'], ['sw.js', 'worker'],
+      ['textures/2k_earth_clouds.webp', 'map'], ['textures/2k_moon.jpg', 'map'], ['textures/2k_stars_milky_way.webp', 'Milky Way'], ['data/stars3d.bin', 'catalogue'], ['js/data/tours.js', 'trips']]) {
+      const withBad = [...lean, { url: `${O2}/${bad}`, bytes: 10 }];
+      check(embedVerdict(tally(withBad, O2), withBad).some((p) => p.includes(`/${bad}`)), `a light embed that asks for ${bad} fails (${why})`);
+    }
+    const noLite = lean.filter((r) => !/embedlite/.test(r.url));
+    check(embedVerdict(tally(noLite, O2), noLite).some((p) => /was not the light embed/.test(p)), 'a boot that never fetched js/embedlite.js is not counted as one');
+    check(/test_first_visit_bytes\.mjs --base=http:\/\/127\.0\.0\.1:8178 --embed=moon/.test(screens) && /--embed=25544/.test(screens), 'screens.yml boots the light embed for the Moon and for the station');
+  }
 
   finish(problems, `the rules hold on fixtures (budget ${BUDGETS.first_visit_bytes} B; ${t.total} B passes, 1 000 000 B fails it; sound, previews, the galaxy, the 3D stars, the nebulae, a Cyrillic face and fonts over their budget each fail)`);
 }

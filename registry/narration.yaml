@@ -109,6 +109,14 @@ clips:
   - {trip: "to-the-edge", stop: "edge", hash: "7a805617b650acdb", seconds: 43.22, words: 103, lufs: -16.5, opus: 172649, m4a: 221522, vtt: 601}
   - {trip: "roof-to-the-edge", stop: "roof", hash: "7112d90de305208c", seconds: 17.67, words: 47, lufs: -16.6, opus: 70078, m4a: 91556, vtt: 346}
   - {trip: "roof-to-the-edge", stop: "earth", hash: "19011508d38f1cdc", seconds: 15.59, words: 39, lufs: -16.4, opus: 61328, m4a: 80907, vtt: 290}
+  - {trip: "roof-to-the-edge", stop: "moon-orbit", hash: "e8b2a1737f233a2d", seconds: 18.88, words: 42, lufs: -16.4, opus: 74962, m4a: 97642, vtt: 293}
+  - {trip: "roof-to-the-edge", stop: "planets", hash: "fdd0706c36947283", seconds: 13.77, words: 37, lufs: -16.5, opus: 54322, m4a: 71562, vtt: 262}
+  - {trip: "roof-to-the-edge", stop: "oort", hash: "5e3ffa0ea8b3d9d4", seconds: 20.15, words: 50, lufs: -16.4, opus: 80602, m4a: 104162, vtt: 365}
+  - {trip: "roof-to-the-edge", stop: "nearest-stars", hash: "acd64257c475f1a3", seconds: 19.48, words: 45, lufs: -16.6, opus: 79056, m4a: 100684, vtt: 354}
+  - {trip: "roof-to-the-edge", stop: "radio", hash: "5bca0e62c8a228c8", seconds: 24.11, words: 58, lufs: -16.5, opus: 98558, m4a: 124374, vtt: 425}
+  - {trip: "roof-to-the-edge", stop: "milky-way", hash: "d78db0e30eef9093", seconds: 17.84, words: 39, lufs: -16.6, opus: 70028, m4a: 92426, vtt: 323}
+  - {trip: "roof-to-the-edge", stop: "local-group", hash: "91a620935f81b54d", seconds: 18.9, words: 42, lufs: -16.4, opus: 79562, m4a: 97642, vtt: 318}
+  - {trip: "roof-to-the-edge", stop: "edge", hash: "d4d23bc4d9d60fa9", seconds: 24.56, words: 57, lufs: -16.6, opus: 97151, m4a: 126547, vtt: 411}
   - {trip: "travel-to-exoplanets", stop: "all", hash: "8e4e354da0c2128d", seconds: 21.84, words: 58, lufs: -16.6, opus: 88002, m4a: 112638, vtt: 381}
   - {trip: "travel-to-exoplanets", stop: "proxima-b", hash: "b9930b1e73408b22", seconds: 14.32, words: 34, lufs: -16.6, opus: 56639, m4a: 74387, vtt: 262}
   - {trip: "travel-to-exoplanets", stop: "trappist", hash: "8152d602783779a3", seconds: 17.71, words: 45, lufs: -16.4, opus: 70793, m4a: 91774, vtt: 315}
