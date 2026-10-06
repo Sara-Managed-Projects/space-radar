@@ -33,6 +33,7 @@
 // --sr-fast apart (keyhint.css). Nothing loops. Reduced motion: a 120 ms fade, keycaps still.
 
 import { COPY } from '../copy/en.js';
+import '../copy/en.later.js';
 import { icon } from './cards.js';
 
 export const STORE_KEY = 'sr:keyhint';

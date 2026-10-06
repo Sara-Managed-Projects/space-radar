@@ -16,6 +16,7 @@
 // moves, so it is not a first visit's cost.
 
 import { COPY, t } from '../copy/en.js';
+import '../copy/en.later.js';
 import { toast } from './share.js';
 
 export const UNDO_MS = 6000;

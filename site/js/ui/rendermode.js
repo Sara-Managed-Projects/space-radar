@@ -34,6 +34,7 @@
 // (tests/test_first_visit_bytes.mjs holds it out of the static graph).
 
 import { COPY } from '../copy/en.js';
+import '../copy/en.later.js';
 import { TOURS } from '../data/tours.js';
 import { NARRATION } from '../data/narration.js';
 import { clipKey, clipRow, holdFor, parseVtt, cueAt } from '../audio/narration.js';

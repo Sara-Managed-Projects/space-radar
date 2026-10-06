@@ -60,6 +60,10 @@ GENERATED_TOURS = "site/js/data/tours.js"
 GENERATED_SOURCES = "harvest/sources.json"
 GENERATED_SITES = "site/js/data/sites.js"
 GENERATED_TRIP_PAGES = "site/t"
+# The trips' index (internal #405): scripts/gen_tours_js.py writes it in the same run as tours.js,
+# so it is not a row of MIRRORS (its --check is the same command, already asserted stale and then
+# current). It is the file a first visit reads, so a new trip must be in it too: checked below.
+GENERATED_TOURS_INDEX = "site/js/data/tours-index.js"
 MIRRORS = ((GENERATED, "scripts/gen_rockets_js.py", "rockets"),
            (GENERATED_ODDITIES, "scripts/gen_oddities_js.py", "oddities"),
            (GENERATED_TOURS, "scripts/gen_tours_js.py", "tours"),
@@ -164,6 +168,8 @@ def main() -> int:
             else:
                 shutil.copy2(ROOT / mirror, work / mirror)
 
+        shutil.copy2(ROOT / GENERATED_TOURS_INDEX, work / GENERATED_TOURS_INDEX)
+
         before = snapshot(work)
         apply_fixture(work / "registry", fixture)
 
@@ -200,7 +206,7 @@ def main() -> int:
         # now measured against the tree rather than against the fixture's own key names.
         after = snapshot(work)
         changed = sorted(k for k in set(before) | set(after) if before.get(k) != after.get(k))
-        generated = {m for m, _, _ in MIRRORS}
+        generated = {m for m, _, _ in MIRRORS} | {GENERATED_TOURS_INDEX}
         outside = [f for f in changed
                    if not f.startswith(ALLOWED_PREFIXES) and not any(under(f, m) for m in generated)]
         if outside:
@@ -216,6 +222,12 @@ def main() -> int:
                     print(f"FAIL: {section} row {rid!r} validates but is not in the mirror the "
                           f"browser loads, so nothing would ever draw it.")
                     return 1
+
+        for rid in [r["id"] for r in fixture.get("tours", [])]:
+            if not mirror_has(work, GENERATED_TOURS_INDEX, rid):
+                print(f"FAIL: trip {rid!r} is in tours.js and not in {GENERATED_TOURS_INDEX}, the "
+                      f"file a first visit reads: it would have no card.")
+                return 1
 
         print("registry sections the fixture touched:", ", ".join(sorted(fixture)))
         print("files changed outside registry/:", ", ".join(sorted(generated)),

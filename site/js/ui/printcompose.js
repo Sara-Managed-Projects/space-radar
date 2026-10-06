@@ -47,6 +47,7 @@
 // there is nothing to draw, and nothing is.
 
 import { COPY, t } from '../copy/en.js';
+import '../copy/en.later.js';
 import { tagLines } from './cards.js';
 import { tagPlacement, reticleBox, LEADER_PX } from './hud.js';
 

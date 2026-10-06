@@ -24,6 +24,7 @@
 // says what the manifest said: when it was generated and how many sources it covers.
 
 import { COPY, t, fmt, ageInWords } from '../copy/en.js';
+import '../copy/en.later.js';
 import { createSpaceWeather } from './spaceweather.js';
 import { creditsText } from './sound.js';
 import { AUDIO } from '../data/audio.js';

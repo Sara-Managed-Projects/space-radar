@@ -21,6 +21,7 @@
 
 import * as Astronomy from '../../vendor/astronomy.js';
 import { COPY, t, fmt, timeText } from '../copy/en.js';
+import '../copy/en.later.js';
 import { rowParts } from './next.js';
 import { phaseName, isJunk } from '../sky/tonightbest.js';
 

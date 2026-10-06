@@ -61,6 +61,7 @@
 // downloading it first.
 
 import { COPY, t } from '../copy/en.js';
+import '../copy/en.later.js';
 import { cardWords } from './cards.js';
 import { shareUrl, shareState, tripWords, appBase, toast } from './share.js';
 import { makePostcard, pdfFromJpeg, saveBlob } from './printcompose.js';

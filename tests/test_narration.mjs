@@ -34,6 +34,8 @@ import { AUDIO } from '../site/js/data/audio.js';
 import { BUDGETS } from '../site/js/data/budgets.js';
 import { COPY } from '../site/js/copy/en.js';
 
+import '../site/js/copy/en.later.js'; // the sections outside the first visit (internal #405)
+
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SITE = join(ROOT, 'site');
 

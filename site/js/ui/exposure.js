@@ -13,6 +13,7 @@
 // The state is scene/exposure.js's; every panel built from it repaints when any of them is
 // pressed, because both listen to the same object.
 import { COPY } from '../copy/en.js';
+import '../copy/en.later.js';
 import { EXPOSURES } from '../scene/exposure.js';
 
 /** The settings row: Eye, Camera, Deep; the chosen one wears the brackets. */

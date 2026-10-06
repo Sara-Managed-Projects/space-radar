@@ -8,6 +8,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const JS = join(ROOT, 'site/js');
 const { parseCelestrakGP } = await import(join(JS, 'data/parsers.js'));
 const { COPY } = await import(join(JS, 'copy/en.js'));
+await import(join(JS, 'copy/en.later.js')); // the sections outside the first visit (internal #405)
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 

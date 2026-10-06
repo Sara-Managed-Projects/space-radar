@@ -26,6 +26,7 @@
 // words. The place is guessed from the time zone when none is set (main.js, after idle) and said so.
 
 import { COPY, CITIES, t, fmt, timeText, compassWords } from '../copy/en.js';
+import '../copy/en.later.js';
 import { guessObserver } from '../sky/guessplace.js';
 import { nextVisible, passState, darkness, tonightWords, SEARCH_HOURS, LONG_SEARCH_HOURS } from '../sky/tonight.js';
 import { arcSvg } from './skyarc.js';

@@ -20,6 +20,8 @@ import { dirname, join } from 'node:path';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const { COPY, t } = await import(join(ROOT, 'site/js/copy/en.js'));
+// The sections only a module outside the first visit reads (internal #405): added to the same COPY.
+await import(join(ROOT, 'site/js/copy/en.later.js'));
 const { LAYER_ROWS } = await import(join(ROOT, 'site/js/data/layers.registry.js'));
 
 const problems = [];

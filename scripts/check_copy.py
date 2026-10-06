@@ -87,7 +87,9 @@ PUNCTUATION_ONLY = re.compile(r"^[\s\W]{0,2}$")
 # exotic cards and two lines of copy/en.js, printed as two hyphens mid-sentence. copy/en.js writes
 # a real dash. Checked in the copy and in every data file the cards read; a `source:` or `file:`
 # value is evidence a reviewer reads, never printed, and is exempt.
-SHIPPED_TEXT = [ROOT / "site" / "js" / "copy" / "en.js", *sorted((ROOT / "site" / "js" / "data").glob("*.js"))]
+# copy/*.js: en.js and en.later.js, the sections only a module outside the first visit reads
+# (internal #405).
+SHIPPED_TEXT = [*sorted((ROOT / "site" / "js" / "copy").glob("*.js")), *sorted((ROOT / "site" / "js" / "data").glob("*.js"))]
 # ...and the JSON the cards read beside them: site/data/dso.json carried nine of its own.
 SHIPPED_JSON = sorted((ROOT / "site" / "data").glob("*.json"))
 EVIDENCE_KEYS = {"source", "file", "url", "distanceSource", "positionSource"}

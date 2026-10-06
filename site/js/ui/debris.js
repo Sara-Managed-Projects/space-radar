@@ -24,6 +24,7 @@
 // It opens in place under Today, in the sidebar (docs/ui-guide.md principle 2: no new panel).
 
 import { COPY, t, fmt, timeText } from '../copy/en.js';
+import '../copy/en.later.js';
 import { load } from '../data/sources.js';
 import { parseSatcat, decayedRows, census, stories, KINDS } from '../data/satcat.js';
 

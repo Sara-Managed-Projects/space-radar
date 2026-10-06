@@ -15,6 +15,7 @@
 // the engine is only ever enabled from here and from the engine's own first-gesture listener.
 
 import { COPY, t } from '../copy/en.js';
+import '../copy/en.later.js';
 
 /** The Sources panel's credit line, from the registry mirror's rows. Empty when nothing ships. */
 export function creditsText(rows) {

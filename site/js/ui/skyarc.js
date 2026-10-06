@@ -15,6 +15,7 @@
 // letters; no text from a record goes in.
 
 import { COPY } from '../copy/en.js';
+import '../copy/en.later.js';
 
 const DEG = 180 / Math.PI;
 const N = 24;

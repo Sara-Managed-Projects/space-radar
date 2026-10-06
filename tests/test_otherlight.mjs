@@ -15,6 +15,7 @@ const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
 const { OTHER_LIGHT, HIPS_LICENCE } = await import(join(JS, 'data/otherlight.js'));
 const { BUDGETS } = await import(join(JS, 'data/budgets.js'));
 const { COPY } = await import(join(JS, 'copy/en.js'));
+await import(join(JS, 'copy/en.later.js')); // the sections outside the first visit (internal #405)
 const { createOtherLight, bandOf, skyUv, stretch } = await import(join(JS, 'scene/otherlight.js'));
 const H = await import(join(JS, 'sky/hips.js'));
 const yaml = readFileSync(join(ROOT, 'registry/otherlight.yaml'), 'utf8');

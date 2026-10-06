@@ -24,6 +24,7 @@
 
 import * as Astronomy from '../../vendor/astronomy.js';
 import { COPY, t, fmt, timeText, compassWords, fistsWords } from '../copy/en.js';
+import '../copy/en.later.js';
 import { labelName } from '../ui/labels.js';
 
 export const GUESS_MIN_PEAK_DEG = 40;

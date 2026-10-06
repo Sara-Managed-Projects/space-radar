@@ -42,6 +42,7 @@
 // "Keys" (issue #321), reopens the controls hint (ui/keyhint.js through ctx.keyhint.show()).
 
 import { COPY, t, fmt } from '../copy/en.js';
+import '../copy/en.later.js';
 import { tierLine } from '../scene/quality.js';
 import { createColorKey } from './colorkey.js';
 import { COLOR_KEYS } from '../data/colorkeys.js';

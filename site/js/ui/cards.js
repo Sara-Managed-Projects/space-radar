@@ -45,6 +45,7 @@ import {
   ageInWords,
   UNITS,
  article, typeWords, NAKED_EYE_LIMIT } from '../copy/en.js';
+import '../copy/en.later.js';
 import { propagate } from '../propagate/index.js';
 import { launchLabel } from './labels.js';
 import { realModelFor } from '../scene/realmodels.js';

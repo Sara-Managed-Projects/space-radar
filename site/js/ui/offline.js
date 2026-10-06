@@ -21,6 +21,7 @@
 //     could not reach our own server), and fires `sr:net`; the status line reads it
 //     (ui/explore.js statusSummary: "Offline: showing saved copies from 3 days ago").
 import { COPY } from '../copy/en.js';
+import '../copy/en.later.js';
 import { toast } from './share.js';
 
 /** How often an open page asks whether a newer build exists (the browser also asks on every visit). */

@@ -9,6 +9,7 @@
 // handed, so the two can never disagree about what is on the globe.
 
 import { COPY, t } from '../copy/en.js';
+import '../copy/en.later.js';
 
 /** What the colours are, which day they are of, how they were got and whose they are. */
 export function overlayLine(state) {

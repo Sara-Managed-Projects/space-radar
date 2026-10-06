@@ -30,6 +30,7 @@
 // back to how it was, and focus to whatever opened the share sheet.
 
 import { COPY, t } from '../copy/en.js';
+import '../copy/en.later.js';
 import { toast } from './share.js';
 import { tagLines } from './cards.js';
 import { makePostcard, pictureSize, caption, drawBand, PICTURE_PRESETS } from './printcompose.js';

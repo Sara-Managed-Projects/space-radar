@@ -12,6 +12,7 @@
 // main.js imports this module once the layers have settled, so a first visit does not pay for it.
 
 import { COPY } from '../copy/en.js';
+import '../copy/en.later.js';
 
 function el(tag, className, text) {
   const node = document.createElement(tag);

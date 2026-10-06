@@ -16,6 +16,7 @@
 // is what imports scene/otherlight.js and fetches the band's picture. Nothing is remembered
 // between visits: the visible sky is the sky.
 import { COPY, t } from '../copy/en.js';
+import '../copy/en.later.js';
 import { OTHER_LIGHT } from '../data/otherlight.js';
 
 export function otherLightPanel(ctx) {

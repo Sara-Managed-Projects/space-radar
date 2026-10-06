@@ -36,6 +36,7 @@ const { skyToSunInertialKm } = await import(join(JS, 'data/parsers.js'));
 const { stage } = await import(join(JS, 'scene/stage.js'));
 const { COPY } = await import(join(JS, 'copy/en.js'));
 
+await import(join(JS, 'copy/en.later.js')); // the sections outside the first visit (internal #405)
 const D2R = Math.PI / 180;
 const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 const angle = (a, b) => Math.acos(Math.min(1, Math.max(-1, dot(a, b)))) / D2R;

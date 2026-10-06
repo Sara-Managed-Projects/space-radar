@@ -9,6 +9,7 @@
 // another host for half a megabyte, and that is the visitor's choice each time.
 
 import { COPY } from '../copy/en.js';
+import '../copy/en.later.js';
 import { OVERLAYS } from '../data/overlays.js';
 import { legendNode, paintLegend, overlayLine } from './overlaylegend.js';
 

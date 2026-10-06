@@ -106,6 +106,7 @@
 // chapter line above the title appears rather than rises.
 
 import { COPY, t, fmt, formatRate, formatShownAt } from '../copy/en.js';
+import '../copy/en.later.js';
 import { nextTripOrder } from './trippicker.js';
 import { read as readUrl, write as writeUrl } from './urlstate.js';
 import { openShare } from './share.js';
