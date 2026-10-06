@@ -1547,15 +1547,15 @@ export const TOURS = [
           ],
           "depth_ly": 650
         },
-        "distance_km": 10406803519838880,
-        "drift_deg": 24,
+        "distance_km": 8514657425322720,
+        "drift_deg": 30,
         "drift_rate_deg_s": 2,
         "chapter": "The northern winter sky",
         "figures": [
           "Ori"
         ],
         "figure_stars": 4,
-        "aside_deg": 55,
+        "aside_deg": 20,
         "card": {
           "title": "Orion, seen from the side",
           "body": "Now leave home. Bellatrix, the hunter's shoulder, is two hundred and fifty light-years from us. Betelgeuse is five hundred, and the middle star of the belt nearly two thousand. The hunter is a line of sight, not a place: from here, hundreds of light-years to one side, nobody would draw him."
@@ -1912,8 +1912,8 @@ export const TOURS = [
         "target": {
           "world": "earth"
         },
-        "frame_radii": 2.1,
-        "key_light_deg": 115,
+        "frame_radii": 3.0,
+        "key_light_deg": 95,
         "time": "now",
         "chapter": "Air and water",
         "card": {
@@ -2077,10 +2077,13 @@ export const TOURS = [
           "world": "earth"
         },
         "needs_layer": "aurora",
-        "frame_radii": 2.3,
-        "key_light_deg": 165,
+        "frame_radii": 2.4,
         "time": "now",
         "chapter": "From outside",
+        "over": [
+          70,
+          "midnight"
+        ],
         "live_note": "aurora",
         "card": {
           "title": "The Sun's wind",
@@ -2089,6 +2092,7 @@ export const TOURS = [
         "drift_deg": 34,
         "drift_rate_deg_s": 6,
         "drift": "toward-light",
+        "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
         "dwell_ms": 20000
@@ -2118,7 +2122,7 @@ export const TOURS = [
         "target": {
           "world": "earth"
         },
-        "frame_radii": 26,
+        "frame_radii": 14,
         "behind": "moon",
         "key_light_deg": 60,
         "time": "now",

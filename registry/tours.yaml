@@ -1440,8 +1440,8 @@ tours:
   # naked-eye stars and the Milky Way of scene/starfield.js. Each stop turns the camera to a
   # figure and scene/figures3d.js draws it in one stroke, star to star, then names it and its
   # brightest stars. Stop 2 is the thing a dome cannot do: the same Orion, with the camera flown
-  # some nine hundred light-years to one side (`depth_ly`, `aside_deg`), where the lines still
-  # join the same stars at their measured distances and the hunter is gone.
+  # hundreds of light-years to one side (`depth_ly`, `aside_deg`) and still turning, where the
+  # lines join the same stars at their measured distances and the hunter comes apart.
   #
   # `exposure: deep` on the four stops the Milky Way runs through is the shutter of spec 0067,
   # held for the stop and never stored; the card says it is a long exposure.
@@ -1489,11 +1489,14 @@ tours:
 
       - id: orion-from-the-side
         target: {sky: [83.8, 0.0], depth_ly: 650}
-        distance_km: 10406803519838880
-        aside_deg: 55
+        # Twenty degrees aside to arrive, where the hunter is bent but still a hunter, then the
+        # drift carries on round to fifty and he is streaks. Arriving at fifty-five (rendered
+        # 2026-10-05) showed only the streaks, with nothing to recognise them by.
+        distance_km: 8514657425322720
+        aside_deg: 20
         figures: [Ori]
         figure_stars: 4
-        drift_deg: 24
+        drift_deg: 30
         drift_rate_deg_s: 2
         chapter: "The northern winter sky"
         card:
@@ -1678,7 +1681,8 @@ tours:
   #
   # THE TWO SOLSTICES ARE WRITTEN DATES (2027-06-21 and 2027-12-22, USNO "Earth's Seasons"), because
   # registry/events.yaml has no solstice to refer to; the picture is the same at any year's, and
-  # the frame prints the instant. `over: [lat, lon]` puts the camera above the place a stop is about.
+  # the frame prints the instant. `over: [lat, lon]` puts the camera above the place a stop is about,
+  # and `over: [lat, midnight]` above the meridian that faces away from the Sun.
   #
   # FACTS. Tilt 23.44 degrees (IAU). Three quarters of the air's mass below about 11 km (US
   # Standard Atmosphere 1976); 11 km on a 220 mm football is 0.19 mm, two sheets of paper. GOES
@@ -1737,11 +1741,12 @@ tours:
 
       - id: air
         target: {world: earth}
-        # Side-lit from two radii: the lit limb and its blue line run down the middle of the frame.
-        # At 1.45 radii and 150 degrees the camera sat over the night side and the frame was black
-        # (rendered 2026-10-05).
-        frame_radii: 2.1
-        key_light_deg: 115
+        # Side-lit, the whole disc in frame, so the lit limb and its blue line are in the picture.
+        # Rendered 2026-10-05: at 1.45 radii and 150 degrees the camera sat over the night side and
+        # the frame was black; at 2.1 and 115 the disc overflowed the frame and the limb was under
+        # the card.
+        frame_radii: 3.0
+        key_light_deg: 95
         time: now
         chapter: "Air and water"
         card:
@@ -1849,8 +1854,11 @@ tours:
 
       - id: aurora
         target: {world: earth}
-        frame_radii: 2.3
-        key_light_deg: 165
+        # Above the night side at seventy north, whichever longitude has the night when the
+        # visitor arrives: the whole ring is in the picture. From the equator's side (rendered
+        # 2026-10-05, key light 165) it was a sliver on the limb of a black disc.
+        over: [70, midnight]
+        frame_radii: 2.4
         time: now
         needs_layer: aurora
         live_note: aurora
@@ -1878,7 +1886,7 @@ tours:
 
       - id: home
         target: {world: earth}
-        frame_radii: 26
+        frame_radii: 14
         behind: moon
         key_light_deg: 60
         time: now

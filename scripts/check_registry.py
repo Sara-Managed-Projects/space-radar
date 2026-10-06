@@ -814,10 +814,11 @@ def check_stop_extras(tour: dict, stop: dict, n: int, where: str, kind: str, val
                         f"targets `{kind}: {value}`; the map would be on a world out of shot")
     over = stop.get("over")
     if over is not None:
-        ok = isinstance(over, list) and len(over) == 2 and all(is_number(v) for v in over) \
-            and -90 <= over[0] <= 90 and -180 <= over[1] <= 180
+        ok = isinstance(over, list) and len(over) == 2 and is_number(over[0]) and -90 <= over[0] <= 90 \
+            and (over[1] == "midnight" or (is_number(over[1]) and -180 <= over[1] <= 180))
         if not ok:
-            fail(where, f"`over: {over!r}` must be [latitude, longitude] in degrees, north and east positive")
+            fail(where, f"`over: {over!r}` must be [latitude, longitude] in degrees, north and east "
+                        f"positive, or [latitude, midnight] for the meridian facing away from the Sun")
         if not (kind == "world" and value == "earth"):
             fail(where, "`over:` on a stop that is not `target: {world: earth}`: it is a place on the Earth")
     live = stop.get("live_note")

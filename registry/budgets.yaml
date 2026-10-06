@@ -34,7 +34,11 @@ budgets:
   # Measured after the first render (62 stops, 18.9 min, Kokoro-82M bf_emma at 0.8, Opus 32 kbps
   # mono and AAC 40 kbps): scripts/narrate.py --check and tests/test_narration.mjs hold both.
   - {id: narration_trip_kb, value: 1200, unit: kB, since: 2026-10-03, reason: "spec 0069 req 5: the Opus clips of one trip, what a visitor who hears a whole trip downloads; the largest is outer-solar-system at 976 kB (ten stops, 244 s), measured 2026-10-03, with room for two more stops"}
-  - {id: narration_total_kb, value: 12000, unit: kB, since: 2026-10-03, reason: "spec 0069 req 5: everything under site/audio/narration/ (Opus 4 527 kB, the AAC twins 5 858 kB, the captions 20 kB: 10 404 kB), measured 2026-10-03, with 15 % for a tenth trip"}
+  # 2026-10-05: two more trips ("The constellations", "The living Earth"), 24 stops, 9.0 min more.
+  # 12 000 was 10 404 kB with room for ONE more trip; with two it measures 15 459 kB. Raised by the
+  # change that added them, in the open: nothing here is fetched before a visitor turns sound on,
+  # and then one clip at a time (narration_trip_kb, unchanged, is what one listener downloads).
+  - {id: narration_total_kb, value: 18000, unit: kB, since: 2026-10-05, reason: "spec 0069 req 5: everything under site/audio/narration/ (86 stops: 15 459 kB with the AAC twins and the captions), measured 2026-10-05, with 15 % for a twelfth trip"}
   - {id: trip_picture_bytes, value: 24000, unit: bytes, since: 2026-10-02, reason: "spec 0068 task 1: one WebP per trip card (640 x 360), fetched after the first visit settles; scripts/build_trip_thumbs.py --check"}
   # Spec 0067: the photographs of the nebulae (scene/nebulae.js), each fetched only when its object
   # is in view on a rung of the ladder or selected, never on a first visit. scripts/build_nebulae.py

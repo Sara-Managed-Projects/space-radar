@@ -191,7 +191,7 @@ function arrive(m) {
       check(Math.abs(target.distanceTo(sun) * stage.unitKm / LY_KM - stop.target.depth_ly) < 0.01, `${where}: the point is not ${stop.target.depth_ly} ly out`);
       const aside = m.camera.position.clone().sub(target).angleTo(sun.clone().sub(target)) / DEG;
       check(Math.abs(aside - Math.abs(stop.aside_deg)) < 0.5, `${where}: the camera stands ${aside.toFixed(1)} degrees aside, the stop asks ${stop.aside_deg}`);
-      check(fromSunKm > 500 * LY_KM, `${where}: the camera is only ${(fromSunKm / LY_KM).toFixed(0)} ly from the Sun`);
+      check(fromSunKm > 250 * LY_KM, `${where}: the camera is only ${(fromSunKm / LY_KM).toFixed(0)} ly from the Sun`);
       check(sky.depth === true && figuresLine(m.machine.state).includes(COPY.figures.line), `${where}: the line does not say the stars are at their measured distances`);
       check(JSON.stringify(shared) === JSON.stringify(stop.figures), `${where}: the figure was not kept through the flight out`);
     }
@@ -259,7 +259,18 @@ function arrive(m) {
     } else if (stop.overlay || stop.live_note || stop.time === 'now') {
       check(Math.abs(clock.now() - REAL) < 5 * 60e3, `${where}: a stop about today is shown ${Math.round((clock.now() - REAL) / 3600e3)} h from the present`);
     }
-    if (stop.over) {
+    if (stop.over && stop.over[1] === 'midnight') {
+      // Above the night side at the stop's latitude, on the meridian facing away from the Sun.
+      const ground = stage.toScene({ x: 0, y: 0, z: 0 }, 'earth-fixed', clock.now());
+      const north = stage.toScene({ x: 0, y: 0, z: 6371 }, 'earth-fixed', clock.now()).sub(ground).normalize();
+      const s = positionOf('sun', clock.now());
+      const toSun = stage.toScene(s, s.frame, clock.now()).sub(ground).normalize();
+      const cam = m.camera.position.clone().sub(ground).normalize();
+      const latCam = Math.asin(cam.dot(north)) / DEG;
+      check(Math.abs(latCam - stop.over[0]) < 1.5, `${where}: the camera is over latitude ${latCam.toFixed(1)}, the stop asks ${stop.over[0]}`);
+      const east = new THREE.Vector3().crossVectors(north, toSun).normalize();
+      check(Math.abs(cam.dot(east)) < 0.03 && cam.clone().addScaledVector(north, -cam.dot(north)).dot(toSun) < 0, `${where}: the camera is not over the midnight meridian`);
+    } else if (stop.over) {
       const ground = stage.toScene({ x: 0, y: 0, z: 0 }, 'earth-fixed', clock.now());
       const lat = stop.over[0] * DEG;
       const lon = stop.over[1] * DEG;

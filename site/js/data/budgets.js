@@ -14,7 +14,7 @@ export const BUDGETS = {
   "bed_kb": 600,
   "audio_total_kb": 3000,
   "narration_trip_kb": 1200,
-  "narration_total_kb": 12000,
+  "narration_total_kb": 18000,
   "trip_picture_bytes": 24000,
   "nebula_picture_bytes": 90000,
   "nebulae_total_bytes": 1700000,

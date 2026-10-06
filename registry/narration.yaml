@@ -147,3 +147,27 @@ clips:
   - {trip: "chasing-the-solar-eclipse", stop: "from-the-moon", hash: "0f1c631b35deeea8", seconds: 16.21, words: 44, lufs: -16.6, opus: 66061, m4a: 84167, vtt: 305}
   - {trip: "chasing-the-solar-eclipse", stop: "ring", hash: "6374b831f2250b08", seconds: 16.75, words: 53, lufs: -16.6, opus: 66936, m4a: 86775, vtt: 322}
   - {trip: "chasing-the-solar-eclipse", stop: "lunar", hash: "6f2f812fe09b336c", seconds: 14.6, words: 41, lufs: -16.6, opus: 59356, m4a: 75908, vtt: 287}
+  - {trip: "the-constellations", stop: "orion", hash: "70ef494732e36713", seconds: 22.11, words: 56, lufs: -16.6, opus: 87786, m4a: 114159, vtt: 390}
+  - {trip: "the-constellations", stop: "orion-from-the-side", hash: "40acf0154ac52367", seconds: 23.76, words: 56, lufs: -16.6, opus: 94244, m4a: 122418, vtt: 451}
+  - {trip: "the-constellations", stop: "taurus", hash: "77aa79817e51ff01", seconds: 24.89, words: 64, lufs: -16.6, opus: 102898, m4a: 128286, vtt: 443}
+  - {trip: "the-constellations", stop: "gemini", hash: "8a812bd9387c326d", seconds: 21.66, words: 46, lufs: -16.6, opus: 85940, m4a: 111768, vtt: 401}
+  - {trip: "the-constellations", stop: "leo", hash: "f285f8235ba7d4a3", seconds: 19.43, words: 47, lufs: -16.5, opus: 76496, m4a: 100467, vtt: 357}
+  - {trip: "the-constellations", stop: "plough", hash: "ce4eab137b1b6bd9", seconds: 24.28, words: 67, lufs: -16.4, opus: 98808, m4a: 125243, vtt: 449}
+  - {trip: "the-constellations", stop: "cassiopeia", hash: "0059621cec44bff5", seconds: 21.31, words: 59, lufs: -16.7, opus: 85151, m4a: 110030, vtt: 374}
+  - {trip: "the-constellations", stop: "summer-triangle", hash: "22f30932361d0b43", seconds: 23.16, words: 57, lufs: -16.6, opus: 92514, m4a: 119375, vtt: 423}
+  - {trip: "the-constellations", stop: "scorpius", hash: "9bb28bbc7d17c55b", seconds: 23.84, words: 65, lufs: -16.6, opus: 95042, m4a: 122852, vtt: 449}
+  - {trip: "the-constellations", stop: "sagittarius", hash: "f4633298fa4ba4df", seconds: 24.63, words: 62, lufs: -16.5, opus: 98321, m4a: 126982, vtt: 448}
+  - {trip: "the-constellations", stop: "southern-cross", hash: "fff66e0d759329d8", seconds: 31.06, words: 77, lufs: -16.5, opus: 124548, m4a: 159582, vtt: 560}
+  - {trip: "the-constellations", stop: "zodiac", hash: "203d81ed6e4ebcb3", seconds: 26.59, words: 62, lufs: -16.6, opus: 111485, m4a: 136979, vtt: 477}
+  - {trip: "the-living-earth", stop: "tilt", hash: "1419e925a0f3e81c", seconds: 21.45, words: 54, lufs: -16.4, opus: 85630, m4a: 110682, vtt: 404}
+  - {trip: "the-living-earth", stop: "half-a-year-on", hash: "06c29f2e1a31d6c6", seconds: 21.89, words: 58, lufs: -16.6, opus: 87084, m4a: 113072, vtt: 389}
+  - {trip: "the-living-earth", stop: "air", hash: "790639c67edaa890", seconds: 20.27, words: 55, lufs: -16.3, opus: 86592, m4a: 104814, vtt: 381}
+  - {trip: "the-living-earth", stop: "weather", hash: "fbff8972a1858222", seconds: 23.2, words: 57, lufs: -16.4, opus: 92784, m4a: 119592, vtt: 432}
+  - {trip: "the-living-earth", stop: "ocean", hash: "f7b0e0bd66868909", seconds: 21.8, words: 62, lufs: -16.5, opus: 86784, m4a: 112420, vtt: 416}
+  - {trip: "the-living-earth", stop: "plankton", hash: "30c44782bdd5b2cd", seconds: 21.61, words: 61, lufs: -16.5, opus: 87158, m4a: 111551, vtt: 421}
+  - {trip: "the-living-earth", stop: "ice", hash: "623250fd1bd98524", seconds: 20.65, words: 54, lufs: -16.7, opus: 82195, m4a: 106770, vtt: 395}
+  - {trip: "the-living-earth", stop: "haze", hash: "2023112137d51b05", seconds: 25.79, words: 63, lufs: -16.5, opus: 102754, m4a: 132850, vtt: 472}
+  - {trip: "the-living-earth", stop: "moon", hash: "166dbc1b946b7032", seconds: 21.3, words: 58, lufs: -16.5, opus: 84717, m4a: 110030, vtt: 400}
+  - {trip: "the-living-earth", stop: "aurora", hash: "2bc34f7649b7ec7a", seconds: 22.2, words: 56, lufs: -16.5, opus: 89117, m4a: 114594, vtt: 407}
+  - {trip: "the-living-earth", stop: "jupiter", hash: "f14c58c993c8a354", seconds: 22.93, words: 55, lufs: -16.6, opus: 91525, m4a: 118288, vtt: 408}
+  - {trip: "the-living-earth", stop: "home", hash: "d3c97b117f8c3807", seconds: 19.51, words: 49, lufs: -16.3, opus: 81205, m4a: 100902, vtt: 370}
