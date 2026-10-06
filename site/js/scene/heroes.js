@@ -15,7 +15,29 @@
 // position, to the metre. Only its apparent size is chosen.
 
 import * as THREE from '../../vendor/three.module.min.js';
-import { modelFor, updateModelAttitude, setSunDirection, setPlanetShine, disposeModels, attachOddityModels, builderKlass } from './models.js';
+// THE SHAPES ARE NOT IN THE BOOT GRAPH (2026-10-06, internal #405). scene/models.js is 155 kB of
+// builders and nothing on the first screen is close enough to be drawn as one: MEASURED that day, a
+// first visit fetched it and built no model. It is imported when the first record wants geometry
+// (update(), below) or in an idle moment after the layers settle (main.js calls warmModels), and
+// until it arrives an object stays the dot it already is -- which is what a model that has not
+// faded in yet looks like anyway.
+let M = null;
+let modelsAsked = null;
+let modelsRetryAt = 0;
+export function warmModels() {
+  if (M) return Promise.resolve(M);
+  const now = Date.now();
+  if (!modelsAsked && now >= modelsRetryAt) {
+    modelsAsked = import('./models.js').then((m) => { M = m; return m; }).catch((e) => {
+      // Offline, or a deploy in flight: ask again in a while rather than never.
+      console.warn('the model shapes did not load', e && e.message);
+      modelsAsked = null;
+      modelsRetryAt = Date.now() + 5000;
+      return null;
+    });
+  }
+  return modelsAsked || Promise.resolve(null);
+}
 import { realModelFor, loadRealModel } from './realmodels.js';
 import { propagate } from '../propagate/index.js';
 import { stage } from './stage.js';
@@ -545,15 +567,15 @@ export function createHeroes(scene, ctx) {
     const variant = early && early.build ? early.build : record.meta && record.meta.modelVariant;
     // A routed build is drawn from the row that holds it (models.js builderKlass): a Progress the
     // catalogue files as a satellite is still a Progress.
-    const klass = early && early.build ? builderKlass(record.klass, variant) : record.klass;
-    const obj = modelFor(klass, variant, { record });
+    const klass = early && early.build ? M.builderKlass(record.klass, variant) : record.klass;
+    const obj = M.modelFor(klass, variant, { record });
     obj.userData.recordId = record.id;
     obj.visible = false;
     // Whatever rides on this thing, as children of it. Two records in the app carry anything at
     // all, so this is a no-op for the rest -- but it is here rather than in the upgrade branch
     // below because a visitor on a slow connection should see the Golden Record on the
     // procedural Voyager too, not only on the one that finished downloading.
-    attachOddityModels(obj, record.id);
+    M.attachOddityModels(obj, record.id);
     root.add(obj);
     const entry = { obj, record, fadeStart: null, upgraded: false, reach: unitReachOf(obj) };
     if (standsOnBareGround(record, obj)) addContactShadow(obj, entry.reach);
@@ -586,7 +608,7 @@ export function createHeroes(scene, ctx) {
         clone.quaternion.copy(entry.obj.quaternion);
         clone.visible = entry.obj.visible;
         root.remove(entry.obj);
-        disposeModels(entry.obj);
+        M.disposeModels(entry.obj);
         root.add(clone);
         entry.obj = clone;
         entry.upgraded = true;
@@ -594,7 +616,7 @@ export function createHeroes(scene, ctx) {
         // disposeModels take the whole subtree -- and `loaded` is the CACHED parse that every
         // Voyager clone comes from, so attaching to it instead would put the Golden Record on
         // Voyager 2 as a side effect of Voyager 1 being drawn.
-        attachOddityModels(clone, record.id);
+        M.attachOddityModels(clone, record.id);
         window.dispatchEvent(new CustomEvent('sr:model-upgraded', {
           detail: { id: record.id, name: real.name },
         }));
@@ -607,7 +629,7 @@ export function createHeroes(scene, ctx) {
     const entry = live.get(id);
     if (!entry) return;
     root.remove(entry.obj);
-    disposeModels(entry.obj);
+    M.disposeModels(entry.obj);
     live.delete(id);
   }
 
@@ -766,6 +788,8 @@ export function createHeroes(scene, ctx) {
     let sun = ctx.worlds && ctx.worlds.sunDirScene ? ctx.worlds.sunDirScene() : null;
 
     const want = candidates(tMs);
+    // Nothing is drawn until the shapes are here (warmModels, above); `live` is empty until then.
+    if (!M) { if (want.length) warmModels(); return; }
     const wanted = new Set(want.map((c) => c.record.id));
     // A MODEL NOBODY WANTS ANY MORE IS PUT AWAY. This line was lost on 2026-10-05 (public #466,
     // which moved the lighting below it), and from then on a model, once drawn, stayed drawn where
@@ -794,10 +818,10 @@ export function createHeroes(scene, ctx) {
       if (u && u.value && u.value.lengthSq() > 0) sun = _sunHere.copy(u.value).normalize();
     }
     if (sun) {
-      setSunDirection(sun);
+      M.setSunDirection(sun);
       if (ctx.worlds && ctx.worlds.light) ctx.worlds.light.position.copy(sun).multiplyScalar(1e5);
     }
-    setPlanetShine(lit ? lit.id : null, lit ? lit.centre : null, lit ? lit.radius : 0);
+    M.setPlanetShine(lit ? lit.id : null, lit ? lit.centre : null, lit ? lit.radius : 0);
 
     // pixels = (size / distance) * (viewportHeight / 2) * f, with f = 1 / tan(fovY / 2).
     const f = camera.projectionMatrix.elements[5];
@@ -836,7 +860,7 @@ export function createHeroes(scene, ctx) {
       // the origin for anything on or around the stage's own, the drawn disc for a site on
       // another (nadirOf).
       nadirOf(c.record, c.pos, drawnCentre, _v);
-      updateModelAttitude(obj, c.record, sun, _v);
+      M.updateModelAttitude(obj, c.record, sun, _v);
 
       // The contact shadow leans away from the Sun, in the model's own frame (groundShadowPose).
       const shadow = sun && obj.userData.attitude === 'up' ? obj.getObjectByName(SHADOW_NAME) : null;

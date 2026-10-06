@@ -30,9 +30,27 @@
 //    never upgraded, and the card is unaffected -- the model is a drawing, never the data.
 
 import * as THREE from '../../vendor/three.module.min.js';
-import { GLTFLoader } from '../../vendor/GLTFLoader.js';
-import { MeshoptDecoder } from '../../vendor/meshopt_decoder.module.js';
-import { toonMaterial } from './models.js';
+// THE LOADER IS NOT IN THE BOOT GRAPH (2026-10-06, internal #405). This file is imported at boot for
+// its TABLE: the card, the labels and the hero layer all ask realModelFor() which drawing a record
+// gets. The glTF loader, its geometry helpers and the meshopt decoder (190 kB together) and
+// scene/models.js (155 kB, for toonMaterial) are needed only when a FILE is actually fetched, so
+// loadRealModel() imports them then (loadKit, below). MEASURED that day: a first visit fetched all
+// of it and loaded no model.
+let kit = null;
+let kitAsked = null;
+function loadKit() {
+  if (!kitAsked) {
+    kitAsked = Promise.all([
+      import('../../vendor/GLTFLoader.js'),
+      import('../../vendor/meshopt_decoder.module.js'),
+      import('./models.js'),
+    ]).then(([g, m, models]) => {
+      kit = { GLTFLoader: g.GLTFLoader, MeshoptDecoder: m.MeshoptDecoder, toonMaterial: models.toonMaterial };
+      return kit;
+    }).catch((err) => { kitAsked = null; throw err; });
+  }
+  return kitAsked;
+}
 import { CLASS_COLOURS } from './glyphatlas.js';
 import { isGeostationary } from '../data/parsers.js';
 
@@ -751,12 +769,12 @@ let loader = null;
 
 function gltfLoader() {
   if (!loader) {
-    loader = new GLTFLoader();
+    loader = new kit.GLTFLoader();
     // The models ship meshopt-compressed. NASA publishes them with Draco, which needs a ~300 kB
     // WebAssembly decoder at runtime; re-encoding to meshopt at asset-prep time needs a 29 kB one
     // and made the files SMALLER anyway (Hubble: 1 655 kB of Draco became 163 kB of meshopt).
     // Paying 29 kB once beats 300 kB on a phone.
-    loader.setMeshoptDecoder(MeshoptDecoder);
+    loader.setMeshoptDecoder(kit.MeshoptDecoder);
   }
   return loader;
 }
@@ -984,7 +1002,7 @@ function applyToon(root, colourToken) {
       const own = `#${first.color.getHexString()}`;
       tint = own === '#ffffff' ? UNPAINTED : own;
     }
-    const replacement = toonMaterial(tint, kind, pool, palette);
+    const replacement = kit.toonMaterial(tint, kind, pool, palette);
     if (replacement) {
       // Dispose what NASA shipped: the textures on these can be several megabytes of GPU memory
       // that nothing will ever sample once the material is replaced.
@@ -1016,7 +1034,9 @@ export function loadRealModel(entry, { keepMaterials = false } = {}) {
   if (cache.has(key)) return cache.get(key);
 
   const url = new URL(entry.file, BASE).href;
-  const promise = new Promise((resolve) => {
+  // The loader first (loadKit, at the top): a kit that cannot be fetched is a file that cannot be,
+  // and resolves to null like one. The entry is forgotten then, so the next approach asks again.
+  const promise = loadKit().then(() => new Promise((resolve) => {
     gltfLoader().load(
       url,
       (gltf) => {
@@ -1040,6 +1060,10 @@ export function loadRealModel(entry, { keepMaterials = false } = {}) {
         resolve(null);
       }
     );
+  })).catch((err) => {
+    console.warn(`real model ${entry.file}: the loader did not load`, err && err.message);
+    cache.delete(key);
+    return null;
   });
   cache.set(key, promise);
   return promise;
