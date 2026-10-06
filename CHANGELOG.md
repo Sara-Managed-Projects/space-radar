@@ -61,6 +61,10 @@ look up from the ground, and learned to work with no network.
 - The interface's rules are held by tests in CI ([#462]).
 
 ### Changed
+- **A first visit is a third smaller**: 3.8 MB where it was 5.8 MB, counted uncompressed. The card,
+  the trips, the spacecraft shapes and the deep-sky table are fetched when they are first wanted,
+  and a deploy uploads the code without its comments (`scripts/minify_site.py`; the source in git
+  and a local copy are unchanged, and there is still nothing to build to run it) ([#480]).
 - Names and titles are set in the sans faces everywhere; the serif is gone ([#462]).
 - The sky from the ground reads a small star file of its own instead of the 2.6 MB
   three-dimensional catalogue ([#476]).
@@ -200,3 +204,4 @@ The first public map.
 [#476]: https://github.com/Sara-Managed-Projects/space-radar/pull/476
 [#477]: https://github.com/Sara-Managed-Projects/space-radar/pull/477
 [#478]: https://github.com/Sara-Managed-Projects/space-radar/pull/478
+[#480]: https://github.com/Sara-Managed-Projects/space-radar/pull/480
