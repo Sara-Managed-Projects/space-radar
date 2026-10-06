@@ -213,7 +213,10 @@ export function createOrbitRings(scene, { renderer, camera } = {}) {
     vertexShader: LIT_VERT,
     fragmentShader: LIT_FRAG,
     transparent: true, // drawn in the glyphs' list, as the planets' dots are
-    depthTest: false,  // over the true discs, which from here are smaller than the dots
+    // depthTest stays ON (scripts/check-drawn.mjs refuses a transparent object with it off: it would
+    // paint over every model and world). The true discs are smaller than these dots from here, so a
+    // disc hides only the middle of its own dot.
+    depthTest: true,
     depthWrite: false,
   });
   const litDots = new THREE.Points(litGeometry, litMaterial);
