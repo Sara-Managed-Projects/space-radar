@@ -288,5 +288,19 @@ for (const r of NEBULAE) {
   n.dispose(); n2.dispose();
 }
 
+// --------------------------------------------- 5. the shutter moves the other faint light too
+// Internal #343: Eye, Camera and Deep moved the pictures and the panorama and nothing else. The
+// Milky Way model and the deep-sky glows are the same faint light and wear the same number.
+{
+  const { createGalaxy } = await import(join(JS, 'scene/galaxy.js'));
+  const { createDsoGlow } = await import(join(JS, 'scene/dsoglow.js'));
+  const galaxy = createGalaxy(null);
+  const glow = createDsoGlow(null);
+  check(typeof galaxy.setExposure === 'function' && typeof glow.setExposure === 'function', 'the galaxy model and the glows take the shutter');
+  const main = readFileSync(join(JS, 'main.js'), 'utf8');
+  check((main.match(/galaxy\.setExposure\(/g) || []).length === 2 && (main.match(/dsoGlow\.setExposure\(/g) || []).length === 2, 'main.js hands both the shutter at boot and on every change');
+  check(exposureLook('eye').milkyWay < 1 && exposureLook('deep').milkyWay > 1, 'and the number they are handed is under 1 for Eye, over 1 for Deep');
+}
+
 if (problems.length) { console.error('nebulae FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`nebulae ok: ${NEBULAE.length} licensed pictures inside their objects' fields, the tangent-plane maths, the shutter's three looks, and nothing fetched at boot`);

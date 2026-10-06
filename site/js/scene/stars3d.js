@@ -186,6 +186,44 @@ export function recordsFromNames(rows) {
   return out;
 }
 
+// The Sun's nominal radius, effective temperature and absolute bolometric magnitude (IAU 2015 B3, B2).
+export const SUN_RADIUS_KM = 695700;
+export const SUN_TEFF_K = 5772;
+const SUN_ABS_BOL = 4.74;
+
+/**
+ * The bolometric correction in V for a temperature: Flower (1996, ApJ 469, 355) with the
+ * coefficients as Torres (2010, AJ 140, 1158) corrected them. -0.08 for the Sun, -0.25 at
+ * 10 000 K. Under 3 300 K the polynomial runs away, so it is held there.
+ */
+export function bolometricCorrection(teffK) {
+  const l = Math.log10(Math.max(3300, teffK));
+  const a = l < 3.7 ? [-0.190537291496456e5, 0.155144866764412e5, -0.421278819301717e4, 0.381476328422343e3]
+    : l < 3.9 ? [-0.370510203809015e5, 0.385672629965804e5, -0.150651486316025e5, 0.261724637119416e4, -0.170623810323864e3]
+      : [-0.118115450538963e6, 0.137145973583929e6, -0.636233812100225e5, 0.147412923562646e5, -0.170587278406872e4, 0.78873172180499e2];
+  let bc = 0;
+  for (let i = a.length - 1; i >= 0; i -= 1) bc = bc * l + a[i];
+  return bc;
+}
+
+/**
+ * How wide a star is, worked out from the two numbers the catalogue has for it: its absolute
+ * magnitude and its B-V colour. Colour gives a temperature (starfield.js bvToKelvin), the
+ * temperature a bolometric correction, the two a luminosity, and a black body of that luminosity
+ * and temperature has one radius (Stefan-Boltzmann). Pure.
+ *
+ * AN ESTIMATE, and the card says so. Checked 2026-10-06 against measured radii: Sirius 1.69 Suns
+ * (measured 1.71), the Sun 0.99, Vega 2.5 (2.4 to 2.8, it spins), Arcturus 27 (25). For the reddest
+ * stars B-V stops telling temperatures apart and the answer can be off by a factor of two
+ * (Betelgeuse about 1 550 against 640 to 760 measured, Proxima 0.07 against 0.15).
+ */
+export function starPhysical(absMag, bv) {
+  if (!Number.isFinite(absMag)) return null;
+  const teffK = Math.max(3300, bvToKelvin(Number.isFinite(bv) ? bv : 0.65));
+  const lum = 10 ** (0.4 * (SUN_ABS_BOL - (absMag + bolometricCorrection(teffK))));
+  return { radiusKm: SUN_RADIUS_KM * Math.sqrt(lum) * (SUN_TEFF_K / teffK) ** 2, teffK, how: 'estimated' };
+}
+
 function starRecord(idx, name, ly, meta) {
   return {
     id: meta.hip ? `hip-${meta.hip}` : `hyg-${idx}`,
@@ -440,9 +478,34 @@ export function createStars3d(scene, opts = {}) {
     data = null; geometry = null; points = null; sunPoints = null; builtFor = null;
   }
 
+  // One star's point switched off while scene/stardisc.js draws that star as a disc: the point is a
+  // float32 position a light-year scale away, and beside a disc drawn to the kilometre it sat tens
+  // of degrees off its own star.
+  let hiddenIdx = -1;
+  let hiddenMags = null;
+  function hidePoint(idx) {
+    const next = Number.isInteger(idx) && data && idx >= 0 && idx < data.count ? idx : -1;
+    if (next === hiddenIdx || !geometry) return;
+    if (hiddenIdx >= 0 && hiddenMags) { data.absMag[hiddenIdx] = hiddenMags[0]; data.appMag[hiddenIdx] = hiddenMags[1]; }
+    hiddenIdx = next;
+    hiddenMags = next >= 0 ? [data.absMag[next], data.appMag[next]] : null;
+    if (next >= 0) { data.absMag[next] = 99; data.appMag[next] = 99; }
+    geometry.getAttribute('aAbsMag').needsUpdate = true;
+    geometry.getAttribute('aAppMag').needsUpdate = true;
+  }
+  /** A star record's width and temperature (starPhysical), or null before the catalogue has loaded. */
+  function physicalOf(record) {
+    const idx = record && record.meta ? record.meta.starIndex : null;
+    if (!data || !Number.isInteger(idx) || idx < 0 || idx >= data.count) return null;
+    const absMag = idx === hiddenIdx && hiddenMags ? hiddenMags[0] : data.absMag[idx];
+    return starPhysical(absMag, data.ci[idx]);
+  }
+
   return {
     load,
     ensureGeometry,
+    hidePoint,
+    physicalOf,
     records: () => records,
     count: () => (data ? data.count : namedRows ? null : null),
     unplaced: () => (data ? data.unplaced : null),

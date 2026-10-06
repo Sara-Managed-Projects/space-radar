@@ -43,7 +43,7 @@ import { rungOf } from './audio/pick.js';
 import { AUDIO } from './data/audio.js';
 import { rankPick, rankAll } from './scene/pickrank.js';
 import { createLod } from './scene/lod.js';
-import { createStars3d, NAMED_STARS } from './scene/stars3d.js';
+import { createStars3d, NAMED_STARS, SUN_RADIUS_KM, SUN_TEFF_K } from './scene/stars3d.js';
 import { createGalaxy } from './scene/galaxy.js';
 import { createDsoGlow } from './scene/dsoglow.js';
 import { createExposure, DEFAULT_EXPOSURE } from './scene/exposure.js';
@@ -64,6 +64,10 @@ import { setEarthMap, earthMapsSettled } from './scene/earth.js';
 import { keyById, bucketOf } from './data/colorkeyrules.js';
 
 const MOMENTS = ['wonder', 'now', 'next'];
+// The camera rig's nearest approach in scene units (scene/camera.js's own default), and how far out
+// a star is met when its width is known: twelve radii, a disc a fifth of the screen wide.
+const RIG_MIN_DISTANCE = 1e-4;
+const STAR_ARRIVAL_RADII = 12;
 /** How long after sr:layers-ready the aurora's module is fetched (OFF THE FIRST VISIT, in boot). */
 const AURORA_IMPORT_MS = 4000;
 
@@ -229,6 +233,9 @@ export async function boot({ setStatus } = {}) {
   const exposure = createExposure({ initial: link && !link.unknownVersion ? link.exp : undefined });
   ctx.exposure = exposure;
   starfield.setExposure(exposure.look().milkyWay);
+  // The Milky Way model and the deep-sky glows are the same faint light: one number for all three.
+  galaxy.setExposure(exposure.look().milkyWay);
+  dsoGlow.setExposure(exposure.look().milkyWay);
   let skyStrength = 1;
   let nebulaeImport = null;
   ctx.wantNebulae = () => {
@@ -252,6 +259,8 @@ export async function boot({ setStatus } = {}) {
   };
   exposure.onChange((mode, look, byVisitor) => {
     starfield.setExposure(look.milkyWay);
+    galaxy.setExposure(look.milkyWay);
+    dsoGlow.setExposure(look.milkyWay);
     if (ctx.nebulae) ctx.nebulae.setExposure(look);
     else if (byVisitor) ctx.wantNebulae();
     // The address bar says what is on screen: the key goes when the shutter is back at its default.
@@ -833,6 +842,25 @@ export async function boot({ setStatus } = {}) {
       && !['star', 'exoplanet', 'dso', 'exotic'].includes(record.klass)
       && !(record.klass === 'world' && record.id === 'sun' && isLadderStage(stage.worldId))) ctx.setStage('earth');
     selected = record;
+    // A star's own width, for its card (ui/cards.js prints it as an estimate) and its disc.
+    if (record && record.klass === 'star' && record.meta && !Number.isFinite(record.meta.widthSuns)) {
+      const phys = stars3d.physicalOf(record);
+      if (phys) record.meta.widthSuns = phys.radiusKm / SUN_RADIUS_KM;
+      // The first star chosen from a world's stage is chosen before the catalogue's binary has
+      // landed (it is fetched when the ladder first draws). Its width is known once it has: the
+      // card is repainted with it and the camera goes on in, if this star is still the selection.
+      else if (stage.worldId === 'stellar') {
+        stars3d.ensureGeometry().then(() => {
+          const late = selected === record ? stars3d.physicalOf(record) : null;
+          if (!late) return;
+          record.meta.widthSuns = late.radiusKm / SUN_RADIUS_KM;
+          wantStarDisc(record);
+          showCard(record, ctx);
+          if (opts.fly !== false) flyToRecord(record);
+        });
+      }
+    }
+    wantStarDisc(record);
     // Start the map now, not when the disc grows past the threshold mid-flight: a selected world is
     // about to fill the screen, and a trip's own flight (fly: false) needs it just as much.
     if (record && record.klass === 'world') worlds.preload(record.id);
@@ -947,6 +975,7 @@ export async function boot({ setStatus } = {}) {
    */
   function deselect(opts = {}) {
     selected = null;
+    wantStarDisc(null);
     if (ctx.orbitLine) ctx.orbitLine.setRecord(null);
     if (ctx.groundTrack) ctx.groundTrack.set(null);
     for (const gl of glyphLayers.values()) if (gl.setSelected) gl.setSelected(null);
@@ -971,6 +1000,35 @@ export async function boot({ setStatus } = {}) {
     return stage.toScene(p, p.frame, clock.now());
   }
 
+  /** A star's width and temperature: a catalogue star's worked out, a planet's host from the Archive. */
+  function starPhysicalOf(record) {
+    if (!record || !record.meta) return null;
+    if (record.klass === 'star') return stars3d.physicalOf(record);
+    if (record.klass === 'exoplanet' && record.meta.starRadiusSuns > 0) {
+      return { radiusKm: record.meta.starRadiusSuns * SUN_RADIUS_KM, teffK: record.meta.starTeffK > 0 ? record.meta.starTeffK : SUN_TEFF_K, how: 'measured' };
+    }
+    return null;
+  }
+  ctx.starPhysicalOf = starPhysicalOf;
+  let starDiscImport = null;
+  /** The disc is drawn by a module fetched the first time a star is chosen, never at boot. */
+  function wantStarDisc(record) {
+    const phys = starPhysicalOf(record);
+    // The rig may stand as near as two and a half radii of the star it follows, and no nearer than
+    // its usual floor to anything else.
+    cameraRig.state.minDistance = phys && stage.worldId === 'stellar' ? Math.min(RIG_MIN_DISTANCE, (phys.radiusKm * 2.5) / stage.unitKm) : RIG_MIN_DISTANCE;
+    if (!phys && !ctx.starDisc) return;
+    if (ctx.starDisc) { ctx.starDisc.set(record, phys); return; }
+    if (!starDiscImport) {
+      starDiscImport = import('./scene/stardisc.js').then((m) => {
+        ctx.starDisc = m.createStarDisc(scene);
+        ctx.starDiscHidePx = m.HIDE_POINT_PX;
+        const s = ctx.selected();
+        ctx.starDisc.set(s, starPhysicalOf(s));
+      }).catch((e) => { console.warn('the star disc did not load', e); starDiscImport = null; });
+    }
+  }
+
   function arrivalDistance(record, pos) {
     if (record && record.klass === 'world') {
       // 3.5 radii, or farther when the free part of the screen is narrower than that disc
@@ -992,7 +1050,13 @@ export async function boot({ setStatus } = {}) {
     // host star is the whole system, every orbit in the picture.
     const inSystem = ctx.systems && ctx.systems.active && ctx.systems.stageOfRecord(record) === stage.worldId;
     if (inSystem) return ctx.systems.arrivalDistanceUnits(record);
-    if (record && record.klass === 'star') return 0.4; // a point of light: close, but not inside it
+    // A star whose width is known is met as a disc (scene/stardisc.js, public #436): twelve radii
+    // out it is a fifth of the screen wide. On the stellar rung only, where a unit is a light-year
+    // and the camera's doubles can stand that close; elsewhere, and for a star with no width, it
+    // is a point of light: close, but not inside it.
+    const phys = stage.worldId === 'stellar' ? starPhysicalOf(record) : null;
+    if (phys) return Math.max(1e-9, (phys.radiusKm * STAR_ARRIVAL_RADII) / stage.unitKm);
+    if (record && record.klass === 'star') return 0.4;
     if (record && record.klass === 'exoplanet') return 0.4;
     if (record && record.klass === 'exotic') return 0.4;
     if (record && record.klass === 'dso') {
@@ -1671,6 +1735,13 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       if (ctx.galaxy) ctx.galaxy.setAndromedaShare(1 - ctx.nebulae.drawn('dso-m31'));
     }
     if (ctx.otherLight.layer) ctx.updateOtherLight();
+    if (ctx.starDisc) {
+      ctx.starDisc.update(ctx.camera, ctx.renderer);
+      // Past a few pixels the disc IS the star: the catalogue's point for it is switched off.
+      const st = ctx.starDisc.state();
+      const rec = st.drawn && st.radiusPx >= ctx.starDiscHidePx ? ctx.selected() : null;
+      ctx.stars3d.hidePoint(rec && rec.klass === 'star' && rec.meta ? rec.meta.starIndex : -1);
+    }
     if (ctx.skyView.active) ctx.skyView.update(t);
     render();
     // After render(), because render() is what brings the camera's matrices up to this frame: placed

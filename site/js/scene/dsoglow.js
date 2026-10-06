@@ -173,5 +173,8 @@ export function createDsoGlow(scene) {
     geometry = null; points = null; glows = [];
   }
 
-  return { setRecords, setPictured, rebuild, update, dispose, group, count: () => glows.length };
+  /** The shutter (scene/exposure.js `milkyWay`): a glow is faint light too (internal #343). */
+  function setExposure(k) { uniforms.uGain.value = Number.isFinite(k) && k > 0 ? k : 1; }
+
+  return { setRecords, setPictured, setExposure, rebuild, update, dispose, group, count: () => glows.length };
 }

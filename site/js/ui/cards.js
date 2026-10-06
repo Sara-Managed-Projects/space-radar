@@ -1197,6 +1197,10 @@ function rightNowRows(record, m, passInfo) {
     if (mag !== null) rows.push([R.brightness, t(V.magnitude, { n: fmt.smart(mag) })]);
     const lum = pickNumber(md, 'lum');
     if (lum !== null && lum > 0) rows.push([R.luminosity, t(V.suns, { n: fmt.smart(lum) })]);
+    // Worked out from its brightness and colour (scene/stars3d.js starPhysical), and it says so:
+    // the same number the disc on the scene is drawn from.
+    const width = pickNumber(md, 'widthSuns');
+    if (width !== null && width > 0) rows.push([R.starWidth, t(V.sunsWide, { n: fmt.smart(width) })]);
     const hip = pick(md, 'hip');
     if (hip) rows.push([R.catalogue, `HIP ${hip}`]);
     // The line under the first sentence is registry/stars-notable.yaml's, not HYG's, so it says

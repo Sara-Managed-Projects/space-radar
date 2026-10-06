@@ -1008,17 +1008,19 @@ export function createSkyView(ctx, options = {}) {
         const c = Math.cos(target.decDeg * DEG2RAD);
         d = [c * Math.cos(a), c * Math.sin(a), Math.sin(target.decDeg * DEG2RAD)];
       }
-      const read = () => {
-        if (ground && typeof ground.apparentOfEq === 'function') return ground.apparentOfEq(d);
+      // Worked out here and now, as for a body: the clock may just have jumped, and the ground
+      // sky's own matrix is the last frame's. The ring that follows it reads the ground sky.
+      const now = () => {
         if (!observerA) return null;
         try {
           const date = new Date(ctx.clock?.now?.() ?? Date.now());
-          const raH = ((Math.atan2(d[1], d[0]) * RAD2DEG + 360) % 360) / 15;
-          const hor = Astronomy.Horizon(date, observerA, raH, Math.asin(Math.max(-1, Math.min(1, d[2]))) * RAD2DEG, 'normal');
-          return { azDeg: hor.azimuth, altDeg: hor.altitude };
+          const v = Astronomy.RotateVector(Astronomy.Rotation_EQJ_HOR(date, observerA), new Astronomy.Vector(d[0], d[1], d[2], Astronomy.MakeTime(date)));
+          const hor = Astronomy.HorizonFromVector(v, 'normal');
+          return { azDeg: hor.lon, altDeg: hor.lat };
         } catch { return null; }
       };
-      where = read();
+      const read = () => (ground && typeof ground.apparentOfEq === 'function' ? ground.apparentOfEq(d) : now());
+      where = now() || read();
       if (!where || where.altDeg < 0) return false;
       dirOf = () => { const w = read() || where; const v = new THREE.Vector3(); localDir(w.azDeg * DEG2RAD, w.altDeg * DEG2RAD, v); return [v.x, v.y, v.z]; };
     } else if (Number.isFinite(target.azDeg) && Number.isFinite(target.altDeg)) {

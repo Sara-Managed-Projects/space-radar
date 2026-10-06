@@ -1264,6 +1264,7 @@ export const COPY = {
       spectralType: 'Type of star',
       brightness: 'How bright it looks',
       luminosity: 'Light output',
+      starWidth: 'Width',
       catalogue: 'Catalogue',
       lightTime: 'Radio time each way',
       nextPass: 'Next pass over you',
@@ -1330,6 +1331,8 @@ export const COPY = {
       yearsAgo: '{n} years ago',
       monthsAgo: '{n} months ago',
       suns: '{n}× the Sun',
+      // A star's width worked out from its brightness and colour, not measured (scene/stars3d.js).
+      sunsWide: '{n}× the Sun, estimated',
       earths: '{n}× Earth',
       lightYearsRange: '{lo} to {hi} light-years',
       // Sedna's width is 906 km, +314 / -258: nobody has weighed or resolved it, so the card

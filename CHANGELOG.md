@@ -26,6 +26,16 @@ tagged, and their dates are the day the last change in each landed.
 - **Installable**: a web manifest and home-screen icons.
 - **Runs from any folder**: a copy served at `http://server/space-radar/` now finds its saved data
   (every path is relative to the page).
+- **The nebulae from your own sky**: the 27 photographs of nebulae and galaxies now show in the
+  sky from the ground, at their true places and sizes, as faint as your sky, the Moon and the
+  shutter make them. Zoom in on Orion and the nebula is there; tap it for its card.
+- **Other light**: What to show has a new row. See the whole sky in infrared (WISE), microwaves
+  (WMAP) or gamma rays (Fermi), in orbit and from the ground, with a slider between it and the
+  visible sky. Each is false colour and says so; the infrared sky sharpens from the survey's own
+  tiles as you zoom.
+- **Stars are places**: fly to a star and it is a disc of its own size and colour, not a point.
+  Its card says how wide it is, and that the width is an estimate.
+- In the sky from the ground: `+` and `-` zoom, and the search box turns the sky to what it finds.
 - `scripts/test.sh` runs everything CI runs with one command.
 - `scripts/test.sh --quick` runs only the checks that touch the files you changed.
 - `tests/test_credits.py`: every data source and model in the registries must be credited.

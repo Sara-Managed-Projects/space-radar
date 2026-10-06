@@ -275,12 +275,18 @@ export function createGalaxy(scene, opts = {}) {
     applyVisibility();
   }
 
+  let exposure = 1;
   function applyVisibility() {
     if (points) points.visible = layerOn && opacity > 0 && isLadderStage(stage.worldId);
     if (twinPoints) twinPoints.visible = !!(points && points.visible);
-    uniforms.uGain.value = opacity;
-    twinUniforms.uGain.value = opacity * twinShare;
+    uniforms.uGain.value = opacity * exposure;
+    twinUniforms.uGain.value = opacity * twinShare * exposure;
   }
+  /**
+   * The shutter (scene/exposure.js `milkyWay`: 0.55 Eye, 1 Camera, 1.7 Deep): the model is the same
+   * faint light as the panorama it takes over from, and wears the same number (internal #343).
+   */
+  function setExposure(k) { exposure = Number.isFinite(k) && k > 0 ? k : 1; applyVisibility(); }
   function setVisible(on) { layerOn = on !== false; applyVisibility(); if (layerOn && opacity > 0 && isLadderStage(stage.worldId)) ensureGeometry(); }
   /** registry/lod.yaml's `galaxy-model` hook, 0..1. */
   function setOpacity(k) {
@@ -291,7 +297,7 @@ export function createGalaxy(scene, opts = {}) {
   /** 1 = the model draws Andromeda; 0 = her photograph does (scene/nebulae.js), and the model waits. */
   function setAndromedaShare(k) {
     twinShare = Math.min(1, Math.max(0, Number(k)));
-    twinUniforms.uGain.value = opacity * twinShare;
+    twinUniforms.uGain.value = opacity * twinShare * exposure;
   }
   function update(camera, renderer) {
     if (!points) return;
@@ -307,7 +313,7 @@ export function createGalaxy(scene, opts = {}) {
     data = null; geometry = null; points = null; builtFor = null;
   }
   return {
-    ensureGeometry, setVisible, setOpacity, setAndromedaShare, rebuild, update, dispose, group,
+    ensureGeometry, setVisible, setOpacity, setExposure, setAndromedaShare, rebuild, update, dispose, group,
     count: () => (data ? data.count : null),
     mode: () => (points && points.visible ? 'drawn' : 'hidden'),
   };
