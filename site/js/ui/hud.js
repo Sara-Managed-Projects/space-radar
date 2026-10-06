@@ -30,7 +30,7 @@
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { COPY, t, fmt, UNITS } from '../copy/en.js';
-import { tagLines } from './cards.js';
+import { tagLines } from './cardgate.js';
 import { behindWorld } from './labels.js';
 import { propagate } from '../propagate/index.js';
 import { stage } from '../scene/stage.js';

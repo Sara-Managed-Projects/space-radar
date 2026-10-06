@@ -132,6 +132,9 @@ export function nextTripOrder(tours, fromId) {
  * form, `{event: <type>.next, offset_s}`. Null for a trip with none. Pure.
  */
 export function eventTypeOf(tour) {
+  // A row of data/tours-index.js has no stops and says its type itself (scripts/gen_tours_js.py
+  // event_of, the same rule as below; tests/test_trips_panel.mjs holds the two together).
+  if (tour && typeof tour.event === 'string' && !Array.isArray(tour.stops)) return tour.event;
   for (const stop of (tour && Array.isArray(tour.stops) ? tour.stops : [])) {
     const ref = stop && stop.time && typeof stop.time === 'object' ? stop.time.event : null;
     const m = /^([a-z0-9-]+)\.next$/.exec(String(ref || ''));

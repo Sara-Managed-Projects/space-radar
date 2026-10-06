@@ -33,7 +33,7 @@
 
 import { COPY, t, fmt, ageInWords } from '../copy/en.js';
 import { STAGES, isLadderStage, isSystemStage } from '../scene/stage.js';
-import { TOUR_GROUPS } from '../data/tours.js';
+import { TOUR_GROUPS } from '../data/tours-index.js';
 import { LADDER_RUNGS, WE_SHOW } from '../data/ladder.js';
 import { SYSTEMS } from '../data/systems.js';
 import { load } from '../data/sources.js';
@@ -42,7 +42,7 @@ import { groupTrips, eventSubtitle } from './trippicker.js';
 import { tripPicture } from './trippics.js';
 import { createSearch } from './search.js';
 import { createNext, auroraItem } from './next.js';
-import { tagLines } from './cards.js';
+import { tagLines } from './cardgate.js';
 import { revealInColumn } from './reveal.js';
 
 export const TABS = ['earth', 'planets', 'stars', 'tonight'];
@@ -669,7 +669,18 @@ export function createExplore(ctx, host) {
 
   // Trips: the picker's own planning, drawn as cards.
   const trip = ctx.trip;
-  const tours = trip && typeof trip.tours === 'function' ? trip.tours() : [];
+  // The index until ui/trip.js is here, the trips themselves after (ui/tripgate.js): read again
+  // when `sr:trips-loaded` says so, below.
+  const toursNow = () => (trip && typeof trip.tours === 'function' ? trip.tours() : []);
+  let tours = toursNow();
+  // A card whose trip has not been planned yet says what the registry gives it -- its stops and
+  // its minutes -- rather than "working it out": planning waits for ui/trip.js, which is not in the
+  // first visit (internal #405), and the registry's numbers are what most plans come back with.
+  const unplannedShape = (row, tour) => {
+    if (row.planned || !tour) return row;
+    const count = Number.isFinite(tour.count) ? tour.count : Array.isArray(tour.stops) ? tour.stops.length : NaN;
+    return Number.isFinite(count) ? { ...row, planned: true, count, estimateMs: tour.estimate_ms } : row;
+  };
   const plans = new Map();
   function paintTrips(id) {
     const hostT = tripHosts.get(id);
@@ -696,7 +707,7 @@ export function createExplore(ctx, host) {
       // Spec 0068: the trip's own picture under the glass, fading out under the title.
       card.appendChild(tripPicture(row.id, 'sr-tripcard__pic'));
       card.appendChild(el('span', 'sr-tripcard__title', row.title));
-      const meta = tripMeta(row, eventSubtitle(tour, nowMs, ctx.observer || null));
+      const meta = tripMeta(unplannedShape(row, tour), eventSubtitle(tour, nowMs, ctx.observer || null));
       card.appendChild(el('span', 'sr-tripcard__meta', meta));
       if (row.off) { card.classList.add('is-off'); card.setAttribute('aria-disabled', 'true'); }
       card.title = [row.blurb, row.off ? row.reason : ''].filter(Boolean).join(' ');
@@ -724,6 +735,8 @@ export function createExplore(ctx, host) {
     && (Array.isArray(tour.stops) ? tour.stops : []).some((s) => s && s.record && !ctx.recordById(s.record));
   const waiting = new Set();
   function planAll(only) {
+    // Planning needs the stops and the trip's own resolver: not before ui/trip.js is here.
+    if (trip.loaded === false) return;
     for (const tour of tours) {
       if (only && !only(tour)) continue;
       if (waitsForLater(tour)) { waiting.add(tour.id); continue; }
@@ -736,6 +749,7 @@ export function createExplore(ctx, host) {
   if (tours.length) {
     window.addEventListener('sr:layers-ready', () => planAll(), { once: true });
     if (window.__srLayersReady) planAll();
+    window.addEventListener('sr:trips-loaded', () => { tours = toursNow(); if (window.__srLayersReady) planAll(); });
     window.addEventListener('sr:later-layers', () => { if (waiting.size) planAll((tour) => waiting.has(tour.id)); });
     // A trip from your own place re-plans when the place changes (spec 0038), and only those.
     window.addEventListener('sr:observer', () => { if (plans.size) planAll((tour) => tour.requires_observer); });

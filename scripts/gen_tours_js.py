@@ -28,6 +28,7 @@ Run:  python3 scripts/gen_tours_js.py           # write it
 
 from __future__ import annotations
 
+import re
 import sys
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -269,5 +270,75 @@ MIRROR = Mirror(
 )
 
 
+# ---------------------------------------------------------------------------------------------
+# THE INDEX (2026-10-06, internal #405): what the first visit carries about the trips.
+#
+# tours.js is 128 kB, and a visit that takes no trip needs none of its stops: the home page draws
+# one card per trip. So the boot graph imports tours-index.js -- the picker's headings and one small
+# row per trip -- and tours.js is fetched with ui/trip.js when a trip is opened, deep-linked or
+# planned (ui/tripgate.js). The row is the card's: the title and blurb, the group it is listed
+# under, `next`, how many stops the registry gives it and how long they run (the card's line until
+# the trip has been planned against today's sky), and the event type an event trip is timed by
+# (ui/trippicker.js eventTypeOf, which reads the same thing from a full trip's stops).
+INDEX_FIELDS = ("id", "title", "blurb", "group", "next", "requires_observer", "min_stops")
+EVENT_REF = re.compile(r"^([a-z0-9-]+)\.next$")
+
+
+def event_of(trip: dict):
+    for stop in trip.get("stops") or []:
+        when = stop.get("time")
+        ref = when.get("event") if isinstance(when, dict) else None
+        m = EVENT_REF.match(str(ref or ""))
+        if m:
+            return m.group(1)
+    return None
+
+
+def index_row(trip: dict) -> dict:
+    out = pick(trip, INDEX_FIELDS)
+    out["count"] = len(trip["stops"])
+    out["estimate_ms"] = trip["estimate_ms"]
+    event = event_of(trip)
+    if event:
+        out["event"] = event
+    return out
+
+
+def render_index(doc: dict) -> list[tuple[str, str, object]]:
+    full = render(doc)
+    groups = next(row for row in full if row[1] == "TOUR_GROUPS")
+    tours = next(row for row in full if row[1] == "TOURS")[2]
+    return [
+        groups,
+        (
+            "One row per trip, for its card: no stops. `count` and `estimate_ms` are the registry's, "
+            "before a stop is dropped for today's sky; `event` is the type an event trip is timed by.",
+            "TOURS_INDEX",
+            [index_row(t) for t in tours],
+        ),
+    ]
+
+
+INDEX_HEADER = """// GENERATED from registry/tours.yaml by scripts/gen_tours_js.py. Do not edit.
+//
+// `python3 scripts/gen_tours_js.py --check` fails CI if this file and the YAML disagree.
+//
+// THE TRIPS' INDEX: what a first visit carries about them (internal #405). One small row per trip,
+// enough to draw its card; the stops are in data/tours.js, which is fetched with ui/trip.js when a
+// trip is opened, deep-linked or planned (ui/tripgate.js). Nothing in the boot graph may import
+// data/tours.js: tests/test_first_visit_bytes.mjs counts it.
+"""
+
+INDEX = Mirror(
+    source="registry/tours.yaml",
+    target="site/js/data/tours-index.js",
+    header=INDEX_HEADER,
+    render=render_index,
+    what="tours-index.js",
+    indent=0,
+)
+
+
 if __name__ == "__main__":
-    sys.exit(MIRROR.main(sys.argv[1:]))
+    # Both mirrors, and --check fails if either is stale.
+    sys.exit(max(MIRROR.main(sys.argv[1:]), INDEX.main(sys.argv[1:])))
