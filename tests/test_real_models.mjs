@@ -29,7 +29,10 @@ const { REAL_MODELS, realModelFor } = await import(pathToFileURL(join(ROOT, 'sit
 // --- the registry's rows ---------------------------------------------------------------------------
 const yaml = readFileSync(join(ROOT, 'registry/models.yaml'), 'utf8');
 const section = yaml.slice(yaml.indexOf('\nreal_models:'));
-const rows = [...section.matchAll(/^ {2}- \{id: ([\w-]+), file: site\/models\/([\w.-]+\.glb),/gm)].map((m) => ({ id: m[1], file: m[2] }));
+const rows = [...section.matchAll(/^ {2}- \{id: ([\w-]+), file: site\/models\/([\w.-]+\.glb),(.*)$/gm)].map((m) => ({ id: m[1], file: m[2], usedFor: (/used_for: "([^"]*)"/.exec(m[3]) || [])[1] || '' }));
+// A model may wait for the record that will carry it, IF its row says so in as many words
+// (`used_for: "NOTHING YET, ..."` and the reason): MAVEN, with no path to draw it on since March 2026.
+const waiting = (row) => /^NOTHING YET\b/.test(row.usedFor);
 check(rows.length >= 50, `registry/models.yaml real_models was read (${rows.length} rows)`);
 check(new Set(rows.map((r) => r.file)).size === rows.length, 'no two rows name the same file');
 
@@ -73,7 +76,8 @@ for (const row of rows) {
   const glb = readGlb(path);
   if (glb.why) problems.push(`${row.id}: site/models/${row.file}: ${glb.why}`);
   else triangles += glb.triangles;
-  check(routedFiles.has(row.file), `${row.id}: site/models/${row.file} has a row and no route in scene/realmodels.js: no craft wears it`);
+  if (waiting(row)) check(!routedFiles.has(row.file), `${row.id}: its row says "NOTHING YET" and a route wears it: say what it is used for`);
+  else check(routedFiles.has(row.file), `${row.id}: site/models/${row.file} has a row and no route in scene/realmodels.js: no craft wears it (a model that waits for its record says used_for: "NOTHING YET, ..." and why)`);
 }
 // 3
 const rowFiles = new Set(rows.map((r) => r.file));
@@ -115,4 +119,4 @@ const tessComet = realModelFor({ id: 'comet-C/2019M4', name: 'C/2019 M4 (TESS)',
 check(!tessComet || !tessComet.file || !/tess/i.test(tessComet.file), 'C/2019 M4 (TESS), a comet, does not wear the TESS spacecraft');
 
 if (problems.length) { console.error('real models FAILED:\n  ' + problems.slice(0, 40).join('\n  ') + (problems.length > 40 ? `\n  ... and ${problems.length - 40} more` : '')); process.exit(1); }
-console.log(`real models ok: ${rows.length} models on disc are binary glTF 2 with meshes (${triangles} triangles in all), each worn by a route and each route's file a row; ${own} craft with a route of their own get it from realModelFor, none a generic shape (${generic} routes are a class's shape and say so)`);
+console.log(`real models ok: ${rows.length} models on disc are binary glTF 2 with meshes (${triangles} triangles in all), each worn by a route (${rows.filter(waiting).map((r) => r.id).join(', ') || 'none'} waiting, and saying so) and each route's file a row; ${own} craft with a route of their own get it from realModelFor, none a generic shape (${generic} routes are a class's shape and say so)`);
