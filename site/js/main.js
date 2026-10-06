@@ -259,10 +259,11 @@ export async function boot({ setStatus } = {}) {
   };
   exposure.onChange((mode, look, byVisitor) => {
     starfield.setExposure(look.milkyWay);
-    galaxy.setExposure(look.milkyWay);
-    dsoGlow.setExposure(look.milkyWay);
     if (ctx.nebulae) ctx.nebulae.setExposure(look);
     else if (byVisitor) ctx.wantNebulae();
+    // The Milky Way model and the deep-sky glows are the same faint light (internal #343).
+    galaxy.setExposure(look.milkyWay);
+    dsoGlow.setExposure(look.milkyWay);
     // The address bar says what is on screen: the key goes when the shutter is back at its default.
     writeUrlState({ exp: mode === DEFAULT_EXPOSURE ? null : mode });
     window.dispatchEvent(new CustomEvent('sr:exposure', { detail: { mode } }));
