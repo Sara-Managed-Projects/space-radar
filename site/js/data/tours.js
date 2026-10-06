@@ -2197,6 +2197,7 @@ export const TOURS = [
           "observer": true
         },
         "distance_km": 200,
+        "time": "tonight",
         "chapter": "Looking up",
         "look": {
           "best": "star"
@@ -2220,6 +2221,7 @@ export const TOURS = [
           "observer": true
         },
         "distance_km": 200,
+        "time": "tonight",
         "chapter": "Looking up",
         "look": {
           "best": "figure"
@@ -2243,6 +2245,7 @@ export const TOURS = [
           "observer": true
         },
         "distance_km": 200,
+        "time": "tonight",
         "chapter": "Looking up",
         "zoom": 4,
         "look": {
@@ -2267,6 +2270,7 @@ export const TOURS = [
           "observer": true
         },
         "distance_km": 200,
+        "time": "tonight",
         "chapter": "Looking up",
         "look": {
           "best": "planet"
@@ -2752,6 +2756,7 @@ export const TOURS = [
         "stage": "mercury",
         "frame_radii": 4,
         "key_light_deg": 55,
+        "time": "tonight",
         "chapter": "The inner planets",
         "live_note": "tonight",
         "card": {
@@ -2773,6 +2778,7 @@ export const TOURS = [
         "stage": "venus",
         "frame_radii": 4,
         "key_light_deg": 55,
+        "time": "tonight",
         "chapter": "The inner planets",
         "live_note": "tonight",
         "card": {
@@ -2794,6 +2800,7 @@ export const TOURS = [
         "stage": "mars",
         "frame_radii": 4,
         "key_light_deg": 55,
+        "time": "tonight",
         "chapter": "The inner planets",
         "live_note": "tonight",
         "card": {
@@ -2815,6 +2822,7 @@ export const TOURS = [
         "stage": "jupiter",
         "frame_radii": 4,
         "key_light_deg": 55,
+        "time": "tonight",
         "chapter": "The giants",
         "live_note": "tonight",
         "card": {
@@ -2836,6 +2844,7 @@ export const TOURS = [
         "stage": "saturn",
         "frame_radii": 5,
         "key_light_deg": 55,
+        "time": "tonight",
         "chapter": "The giants",
         "live_note": "tonight",
         "card": {
@@ -2857,6 +2866,7 @@ export const TOURS = [
         "stage": "uranus",
         "frame_radii": 4,
         "key_light_deg": 55,
+        "time": "tonight",
         "chapter": "The giants",
         "live_note": "tonight",
         "card": {
@@ -2878,6 +2888,7 @@ export const TOURS = [
         "stage": "neptune",
         "frame_radii": 4,
         "key_light_deg": 55,
+        "time": "tonight",
         "chapter": "The giants",
         "live_note": "tonight",
         "card": {

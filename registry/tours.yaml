@@ -1996,6 +1996,8 @@ tours:
         target: {observer: true}
         distance_km: 200
         look: {best: star}
+        # On every stop, not only the first: a link into stop 3 starts here, and the sky must still be tonight's.
+        time: tonight
         chapter: "Looking up"
         card:
           title: "The first star you will notice"
@@ -2008,6 +2010,7 @@ tours:
         target: {observer: true}
         distance_km: 200
         look: {best: figure}
+        time: tonight
         chapter: "Looking up"
         card:
           title: "A figure to find"
@@ -2020,6 +2023,7 @@ tours:
         target: {observer: true}
         distance_km: 200
         look: {world: moon}
+        time: tonight
         zoom: 4
         chapter: "Looking up"
         card:
@@ -2033,6 +2037,7 @@ tours:
         target: {observer: true}
         distance_km: 200
         look: {best: planet}
+        time: tonight
         chapter: "Looking up"
         card:
           title: "A planet, if one is up"
@@ -2350,6 +2355,7 @@ tours:
         stage: mercury
         frame_radii: 4
         key_light_deg: 55
+        time: tonight
         live_note: tonight
         chapter: "The inner planets"
         card:
@@ -2364,6 +2370,7 @@ tours:
         stage: venus
         frame_radii: 4
         key_light_deg: 55
+        time: tonight
         live_note: tonight
         chapter: "The inner planets"
         card:
@@ -2378,6 +2385,7 @@ tours:
         stage: mars
         frame_radii: 4
         key_light_deg: 55
+        time: tonight
         live_note: tonight
         chapter: "The inner planets"
         card:
@@ -2391,6 +2399,7 @@ tours:
         stage: jupiter
         frame_radii: 4
         key_light_deg: 55
+        time: tonight
         live_note: tonight
         chapter: "The giants"
         card:
@@ -2405,6 +2414,7 @@ tours:
         stage: saturn
         frame_radii: 5
         key_light_deg: 55
+        time: tonight
         live_note: tonight
         chapter: "The giants"
         card:
@@ -2419,6 +2429,7 @@ tours:
         stage: uranus
         frame_radii: 4
         key_light_deg: 55
+        time: tonight
         live_note: tonight
         chapter: "The giants"
         card:
@@ -2433,6 +2444,7 @@ tours:
         stage: neptune
         frame_radii: 4
         key_light_deg: 55
+        time: tonight
         live_note: tonight
         chapter: "The giants"
         card:
