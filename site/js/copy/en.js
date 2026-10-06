@@ -866,6 +866,23 @@ export const COPY = {
     subject: '{name}, on Space Radar',
     failed: 'Sharing could not open just now',
     mark: 'spaceradar.ai',
+    // Photo mode and the embed (public #288, #439), the sheet's last two actions.
+    photo: 'Photo mode',
+    photoTitle: 'Compose a picture: everything hidden, a frame, a caption',
+    embed: 'Embed',
+    embedTitle: 'Copy the code that puts this live view in a web page',
+    embedCopied: 'Embed code copied',
+    embedRefused: 'Copying was refused just now',
+    // {name} is what the frame shows; a screen reader in the host page reads this.
+    embedFrameTitle: '{name}, live on Space Radar',
+    // The disclosure row over the post's words; closed, the sheet fits a laptop without scrolling.
+    textRow: 'Post text',
+  },
+  // The embed (public #439, ui/embed.js): `?embed=1&at=<id>` in someone else's page.
+  embed: {
+    open: 'Open in Space Radar',
+    openTitle: 'Open this view in the full map, in a new tab',
+    barLabel: 'Space Radar, embedded',
   },
   // Sound (spec 0035): off until the visitor turns it on, and remembered once they have. The words
   // say the state, not the action, on the toggle ("Sound: off"), and the action on the mute in the
@@ -2287,6 +2304,27 @@ export const COPY = {
     fileName: 'space-radar-postcard-{id}-{date}.{ext}',
     when: '{date}, {time} UTC',
     mark: 'spaceradar.ai',
+    // Internal #376: the caption names the shutter when it is not the default (Camera).
+    exposure: { eye: 'As the eye sees it', deep: 'Deep stretch: faint light lifted' },
+  },
+  // Photo mode (public #288, ui/photomode.js): Share's "Photo mode". Everything off the screen, a
+  // frame in one of four shapes, and the picture saved through the postcard's own path.
+  photo: {
+    title: 'Compose a picture',
+    barLabel: 'Picture',
+    shapesLabel: 'Shape',
+    shapes: { '16:9': '16:9', '1:1': '1:1', '4:5': '4:5', '9:16': '9:16' },
+    shapeTitle: 'Frame the picture at {shape}',
+    caption: 'Caption',
+    captionTitle: 'The strip with the name, the date and the address',
+    save: 'Save picture',
+    saveTitle: 'Save what is inside the frame as a JPEG',
+    done: 'Leave photo mode',
+    making: 'Making the picture',
+    saved: 'Picture saved',
+    failed: 'The picture could not be made just now',
+    // The strip's last line: a composed picture travels without the card that says how it was drawn.
+    honesty: 'Drawn from measured positions, not a photograph',
   },
   // ui/cleanview.js: the button beside the GitHub mark, and its keyboard hint (H).
   // Spec 0047: the tracked object's HUD (ui/hud.js). Its numbers and its honesty line are the

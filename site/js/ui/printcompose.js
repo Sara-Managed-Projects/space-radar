@@ -8,7 +8,11 @@
 //   opts.withTag  draw the record's brackets and tag on the picture
 //   opts.save     false makes the picture without saving it (the share sheet's preview); the
 //                 sheet then saves the same bytes with saveBlob() or wraps them with pdfFromJpeg()
-// Also exported: saveBlob(blob, name), and, pure, for the test: printSize(aspect),
+//   opts.size     another picture than the postcard: pictureSize('1:1') (photo mode, ui/photomode.js)
+//   opts.fovScale the share of the screen's height the picture's frame takes (photo mode's frame)
+//   opts.caption  false leaves the band off; opts.honesty adds the line that says it is a drawing
+// Also exported: saveBlob(blob, name), drawBand(g, words, size) (the band alone, for photo mode's
+//   preview), and, pure, for the test: printSize(aspect), pictureSize(preset), PICTURE_PRESETS,
 //   caption(ctx, record, tripState),
 //   pdfFromJpeg(jpegBytes, pxW, pxH, ptW, ptH) -> Uint8Array,
 //   tagText(lines, behind), printTag(lines, at, size, measure) (spec 0047 task 3)
@@ -62,6 +66,18 @@ export function printSize(aspect) {
   return { w: portrait ? short : long, h: portrait ? long : short, ptW: inW * 72, ptH: inH * 72, portrait };
 }
 
+/**
+ * Photo mode's shapes (public #288): the long side at the postcard's 300 dpi scale, each a size a
+ * feed, a story or a slide takes whole. [w, h] in px.
+ */
+export const PICTURE_PRESETS = { '16:9': [2400, 1350], '1:1': [1800, 1800], '4:5': [1440, 1800], '9:16': [1350, 2400] };
+
+/** A preset's size as printSize() gives the postcard's; an unknown preset is the square. Pure. */
+export function pictureSize(preset) {
+  const [w, h] = PICTURE_PRESETS[preset] || PICTURE_PRESETS['1:1'];
+  return { w, h, ptW: (w / PRINT_DPI) * 72, ptH: (h / PRINT_DPI) * 72, portrait: h > w, preset: PICTURE_PRESETS[preset] ? preset : '1:1' };
+}
+
 function whenText(ms) {
   if (!Number.isFinite(ms)) return '';
   const iso = new Date(ms).toISOString();
@@ -73,14 +89,23 @@ function whenText(ms) {
  * ISS is "International Space Station", not its catalogue's "ISS (ZARYA)"), else its own name,
  * else the trip and its stop, else the app.
  */
-export function caption(ctx, record, tripState, name = null) {
+export function caption(ctx, record, tripState, name = null, opts = {}) {
   const nowMs = ctx && ctx.clock && typeof ctx.clock.now === 'function' ? ctx.clock.now() : NaN;
   let title = COPY.app.name;
   if (record && (name || record.name || record.id)) title = String(name || record.name || record.id);
   else if (tripState && tripState.tourTitle && tripState.phase && tripState.phase !== 'idle') {
     title = tripState.stopTitle ? `${tripState.tourTitle}${COPY.punctuation.separator}${tripState.stopTitle}` : tripState.tourTitle;
   }
-  return { title, when: whenText(nowMs), mark: COPY.print.mark };
+  // THE EXPOSURE (internal #376). The picture is drawn at the shutter on screen, and a Deep stretch
+  // of a nebula must not travel as if it were what a camera keeps: any exposure but the default
+  // (Camera) is named beside the instant. Camera is the map's plain look and says nothing.
+  const mode = ctx && ctx.exposure && typeof ctx.exposure.mode === 'function' ? ctx.exposure.mode() : null;
+  const exposure = (mode && mode !== 'camera' && COPY.print.exposure[mode]) || '';
+  const when = whenText(nowMs);
+  const out = { title, when: exposure ? [when, exposure].filter(Boolean).join(COPY.punctuation.separator) : when, mark: COPY.print.mark, exposure };
+  // Photo mode's line (public #288): a composed picture with no panel beside it says what it is.
+  if (opts.honesty) out.honesty = COPY.photo.honesty;
+  return out;
 }
 
 // ------------------------------------------------------------------------------------ the PDF
@@ -230,6 +255,55 @@ function drawTag(g, d, fontFamily) {
 
 // ------------------------------------------------------------------------------ the picture
 
+/**
+ * The band: a darkening up from the lower edge, then the title, the instant and the mark, and
+ * photo mode's honesty line under them when the words carry one. Sizes are fractions of the short
+ * side, so landscape and portrait read the same in the hand. Drawn on the print and, by photo
+ * mode, on its on-screen frame: one function, so the preview is the picture.
+ */
+export function drawBand(g, words, size, font = bandFont()) {
+  const short = Math.min(size.w, size.h);
+  const pad = Math.round(short * 0.04);
+  const big = Math.round(short * 0.042);
+  const small = Math.round(short * 0.026);
+  const foot = words.honesty ? Math.round(small * 1.5) : 0;
+  const bandH = Math.round(short * 0.16) + foot;
+  const grad = g.createLinearGradient(0, size.h - bandH, 0, size.h);
+  grad.addColorStop(0, 'rgba(11,14,20,0)');
+  grad.addColorStop(1, 'rgba(11,14,20,0.82)');
+  g.fillStyle = grad;
+  g.fillRect(0, size.h - bandH, size.w, bandH);
+  g.textBaseline = 'alphabetic';
+  g.fillStyle = '#e8ecf2';
+  g.font = `600 ${big}px ${font}`;
+  g.textAlign = 'left';
+  const fit = (text, maxW) => {
+    let out = String(text || '');
+    while (out.length > 4 && g.measureText(out).width > maxW) out = out.slice(0, -2);
+    return out !== String(text || '') ? out.trimEnd() + '…' : out;
+  };
+  const base = size.h - pad - foot;
+  g.fillText(fit(words.title, size.w - pad * 2), pad, base - small * 1.5);
+  g.font = `400 ${small}px ${font}`;
+  const markW = g.measureText(words.mark).width;
+  g.fillStyle = '#9aa4b2';
+  g.fillText(fit(words.when, size.w - pad * 3 - markW), pad, base);
+  g.textAlign = 'right';
+  g.fillStyle = '#e8ecf2';
+  g.fillText(words.mark, size.w - pad, base);
+  if (words.honesty) {
+    g.textAlign = 'left';
+    g.fillStyle = '#9aa4b2';
+    g.fillText(fit(words.honesty, size.w - pad * 2), pad, size.h - pad);
+  }
+}
+
+function bandFont() {
+  let font = 'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+  try { font = getComputedStyle(document.body).fontFamily || font; } catch { /* the default stack */ }
+  return font;
+}
+
 function compose(frame, words, size, tag = null) {
   const canvas = document.createElement('canvas');
   canvas.width = size.w;
@@ -238,35 +312,8 @@ function compose(frame, words, size, tag = null) {
   g.fillStyle = '#0b0e14';
   g.fillRect(0, 0, size.w, size.h);
   if (frame) g.drawImage(frame, 0, 0, size.w, size.h);
-  // The band: a darkening up from the lower edge, then two lines and the mark. Sizes are fractions
-  // of the short side, so landscape and portrait read the same in the hand.
-  const short = Math.min(size.w, size.h);
-  const bandH = Math.round(short * 0.16);
-  const grad = g.createLinearGradient(0, size.h - bandH, 0, size.h);
-  grad.addColorStop(0, 'rgba(11,14,20,0)');
-  grad.addColorStop(1, 'rgba(11,14,20,0.82)');
-  g.fillStyle = grad;
-  g.fillRect(0, size.h - bandH, size.w, bandH);
-  let font = 'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
-  try { font = getComputedStyle(document.body).fontFamily || font; } catch { /* the default stack */ }
-  const pad = Math.round(short * 0.04);
-  const big = Math.round(short * 0.042);
-  const small = Math.round(short * 0.026);
-  g.textBaseline = 'alphabetic';
-  g.fillStyle = '#e8ecf2';
-  g.font = `600 ${big}px ${font}`;
-  g.textAlign = 'left';
-  const maxW = size.w - pad * 3 - g.measureText(words.mark).width;
-  let title = words.title;
-  while (title.length > 4 && g.measureText(title).width > maxW) title = title.slice(0, -2);
-  if (title !== words.title) title = title.trimEnd() + '…';
-  g.fillText(title, pad, size.h - pad - small * 1.5);
-  g.font = `400 ${small}px ${font}`;
-  g.fillStyle = '#9aa4b2';
-  g.fillText(words.when, pad, size.h - pad);
-  g.textAlign = 'right';
-  g.fillStyle = '#e8ecf2';
-  g.fillText(words.mark, size.w - pad, size.h - pad);
+  const font = bandFont();
+  if (words && !words.off) drawBand(g, words, size, font);
   if (tag) drawTag(g, tag, font);
   return canvas;
 }
@@ -318,6 +365,28 @@ export function fileName(words, ms, ext) {
 }
 
 /**
+ * renderTo() draws with the screen's vertical field of view. Photo mode's frame is a part of the
+ * screen, `fovScale` of its height and centred, so the picture of what is INSIDE the frame is the
+ * same camera with the field of view narrowed by that share (tan of the half angle scales with
+ * the height). Put back, and the live canvas drawn again, before the task ends.
+ */
+function renderFramed(ctx, api, size, fovScale) {
+  const cam = ctx && ctx.camera;
+  const k = Number(fovScale);
+  if (!cam || !(k > 0) || k >= 1 || !Number.isFinite(cam.fov)) return api.renderTo(size.w, size.h);
+  const fov = cam.fov;
+  const rad = Math.PI / 180;
+  try {
+    cam.fov = (2 * Math.atan(Math.tan((fov * rad) / 2) * k)) / rad;
+    return api.renderTo(size.w, size.h);
+  } finally {
+    cam.fov = fov;
+    cam.updateProjectionMatrix();
+    if (typeof api.render === 'function') api.render();
+  }
+}
+
+/**
  * The whole picture, from the live scene: re-rendered at print size, captioned, tagged when asked,
  * as a JPEG or a one-page PDF, and saved on the device. Throws when there is no frame to print.
  */
@@ -326,15 +395,15 @@ export async function makePostcard(ctx, format, opts = {}) {
   const api = ctx && ctx.rendererApi;
   const canvas = ctx && ctx.renderer && ctx.renderer.domElement;
   const aspect = canvas && canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : 1.5;
-  const size = printSize(aspect);
+  const size = opts.size || printSize(aspect);
   const record = opts.record !== undefined ? opts.record : ctx && typeof ctx.selected === 'function' ? ctx.selected() : null;
   // Read on the live camera BEFORE renderTo(), which changes its aspect for the one print frame.
   const at = opts.withTag && record ? liveTagAt(ctx, record) : null;
-  const frame = api && typeof api.renderTo === 'function' ? api.renderTo(size.w, size.h) : null;
+  const frame = api && typeof api.renderTo === 'function' ? renderFramed(ctx, api, size, opts.fovScale) : null;
   if (!frame) throw new Error('no frame: the map is not drawing');
   let lines = null;
   try { lines = record ? tagLines(record, ctx) : null; } catch { lines = null; }
-  const words = caption(ctx, record, ctx && ctx.trip && ctx.trip.state, lines && lines.name);
+  const words = caption(ctx, record, ctx && ctx.trip && ctx.trip.state, lines && lines.name, { honesty: !!opts.honesty });
   let tag = null;
   if (at) {
     const m = document.createElement('canvas').getContext('2d');
@@ -343,7 +412,7 @@ export async function makePostcard(ctx, format, opts = {}) {
     const measure = (text, px, weight) => { m.font = `${weight} ${px}px ${family}`; return m.measureText(text).width; };
     tag = printTag(lines || tagLines(record, ctx), at, size, measure);
   }
-  const picture = compose(frame, words, size, tag);
+  const picture = compose(frame, opts.caption === false ? { off: true } : words, size, tag);
   const jpeg = await blobOf(picture, 'image/jpeg', JPEG_QUALITY);
   const nowMs = ctx && ctx.clock ? ctx.clock.now() : Date.now();
   let blob = jpeg;

@@ -179,7 +179,7 @@ check(iconOnly >= 8, `only ${iconOnly} icon-only buttons found: the rail, the tr
 
 // 6. a focus ring is never removed without its replacement
 {
-  const CSS = ['site/css/site.css', 'site/css/ui.css', 'site/css/share.css', 'site/css/keyhint.css'];
+  const CSS = ['site/css/site.css', 'site/css/ui.css', 'site/css/share.css', 'site/css/keyhint.css', 'site/css/embed.css'];
   const all = CSS.map((f) => readFileSync(join(ROOT, f), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')).join('\n');
   check(/:focus-visible/.test(all), 'the stylesheets have :focus-visible rules');
   for (const m of all.matchAll(/([^{}]+)\{([^{}]*outline:\s*(?:none|0)\b[^{}]*)\}/g)) {

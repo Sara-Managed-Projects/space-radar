@@ -1,0 +1,85 @@
+/* embed.css -- the app inside someone else's page (ui/embed.js, public #439).
+ *
+ * Linked by ui/embed.js for an address with `?embed=1`, never at boot: a normal visit carries none
+ * of it. Tokens only, all from css/ui.css :root; tests/test_tokens.mjs holds this file to the same
+ * rules as ui.css.
+ *
+ * Everything on <body> goes except the scene, the stage-change veil, the boot line (until the first
+ * frame), the labels and the object's own tag (the HUD), and the one link. `visibility`, as the
+ * clear screen does (ui.css, "clean view"), so the phone's view shift, which skips invisible
+ * panels, gives the scene the whole frame; `!important`, because the panels' own rules set
+ * visibility too.
+ */
+
+html.sr-embed body > *:not(.sr-scene):not(.sr-veil):not(#boot):not(#labels):not(#sr-hud):not(#sr-embed) {
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: none !important;
+}
+
+.sr-embed-bar {
+  position: fixed;
+  right: max(var(--sp-3), env(safe-area-inset-right, 0px));
+  bottom: max(var(--sp-3), env(safe-area-inset-bottom, 0px));
+  left: max(var(--sp-3), env(safe-area-inset-left, 0px));
+  z-index: var(--sr-z-controls);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+  pointer-events: none;
+}
+
+.sr-embed-bar > * { pointer-events: auto; }
+
+/* A trip's line, left of the link: its title and the stop it is at, one line, cut with an ellipsis. */
+.sr-embed__what {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin: 0 auto 0 0;
+  padding: var(--sp-3);
+  overflow: hidden;
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--sr-text);
+  background: var(--sr-glass-strong);
+  border-radius: var(--sr-radius);
+}
+
+.sr-embed__what[hidden] { display: none; }
+
+/* One quiet glass link, 44 px for a finger: small dense text over bright imagery, so glass-strong. */
+.sr-embed__open {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
+  white-space: nowrap;
+  text-decoration: none;
+  color: var(--sr-text);
+  background: var(--sr-glass-strong);
+  border-radius: var(--sr-radius);
+  transition: border-color var(--sr-fast) var(--sr-ease);
+}
+
+@media (hover: hover) {
+  .sr-embed__open:hover {
+    border-color: var(--sr-line-strong);
+    color: var(--sr-ember-light);
+  }
+}
+
+.sr-embed__open:focus-visible {
+  outline: 2px solid var(--sr-ember);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-embed__open {
+    transition: opacity 120ms linear;
+  }
+}

@@ -143,6 +143,13 @@ export async function boot({ setStatus } = {}) {
   const film = /[?&]render=1(?:&|$)/.test(location.search)
     ? await import('./ui/rendermode.js').then((m) => m.install(m.renderOptions(location.search)))
     : null;
+  // THE EMBED (public #439, ui/embed.js): `?embed=1&at=<id>` is the map inside someone else's page.
+  // The scene, the object's tag and one link; its module is imported only for that address, and it
+  // hides the panels before any is built. Everything marked `!embed` below is what a frame under
+  // another site's headline does not fetch.
+  const embed = /[?&]embed=1(?:&|$)/.test(location.search)
+    ? await import('./ui/embed.js').then((m) => m.installEmbed(location.search))
+    : null;
   const canvas = document.getElementById('stage');
 
   say('Building the sky…');
@@ -177,7 +184,7 @@ export async function boot({ setStatus } = {}) {
   let moment = readMomentFromHash();
   // The link, read NOW, before any of the app's own writers below can touch the hash; its clock
   // keys are applied here and the rest waits for the layers (ui/urlstate.js bootLink says why).
-  const link = bootLink(clock);
+  const link = bootLink(clock, embed && embed.link);
 
   const ctx = {
     clock, stage, scene, camera, cameraRig, viewShift, worlds, renderer, rendererApi, sources,
@@ -466,7 +473,7 @@ export async function boot({ setStatus } = {}) {
       else load();
     }, AURORA_IMPORT_MS);
   }
-  window.addEventListener('sr:layers-ready', loadAuroraLater, { once: true });
+  if (!embed) window.addEventListener('sr:layers-ready', loadAuroraLater, { once: true });
   {
     const layer = LAYERS.find((l) => l.id === 'aurora');
     if (layer) {
@@ -514,7 +521,7 @@ export async function boot({ setStatus } = {}) {
       else load();
     }, WEATHER_IMPORT_MS);
   }
-  window.addEventListener('sr:layers-ready', loadWeatherLater, { once: true });
+  if (!embed) window.addEventListener('sr:layers-ready', loadWeatherLater, { once: true });
   {
     const layer = LAYERS.find((l) => l.id === 'lightning');
     if (layer) {
@@ -553,7 +560,8 @@ export async function boot({ setStatus } = {}) {
     if (!window.SPACE_RADAR_NOTIFY_URL) return;
     import('./ui/subscribe.js').then((m) => m.createSubscribe({ parent: ctx.explore.subscribeHost })).catch((e) => console.warn('the subscribe row did not load', e));
   }, SUBSCRIBE_MS);
-  if (window.__srLayersReady) subscribeLater();
+  if (embed) embed.attach(ctx);
+  else if (window.__srLayersReady) subscribeLater();
   else window.addEventListener('sr:layers-ready', subscribeLater, { once: true });
   createTimePill(ctx, shell.timeHost);
   // THE CONTROLS HINT (spec 0068 task 2, ui/keyhint.js): once per visitor, bottom-right, the keys
@@ -564,13 +572,16 @@ export async function boot({ setStatus } = {}) {
   const keyHint = () => import('./ui/keyhint.js').then((m) => m.createKeyHint(ctx, { deepLink: arrivedByLink }));
   ctx.keyhint = { show: () => keyHint().then((api) => api.show()) };
   const hintLater = () => setTimeout(() => keyHint().then((api) => api.maybeShow()).catch((e) => console.warn('the controls hint did not load', e)), KEYHINT_MS);
-  window.addEventListener('sr:layers-ready', hintLater, { once: true });
+  if (!embed) window.addEventListener('sr:layers-ready', hintLater, { once: true });
   // OFFLINE (site/sw.js, ui/offline.js; issues #290, #453): the service worker is registered
   // OFFLINE_MS after sr:layers-ready, past the keys hint, so nothing it does is a first visit's cost.
+  // NEVER IN AN EMBED (public #439): a frame under someone else's headline keeps nothing on the
+  // reader's device, and the offline module is not even fetched there.
   const offlineLater = () => setTimeout(() => {
     import('./ui/offline.js').then((m) => m.createOffline(ctx)).catch((e) => console.warn('the offline module did not load', e));
   }, OFFLINE_MS);
-  if (window.__srLayersReady) offlineLater();
+  if (embed) { /* no service worker */ }
+  else if (window.__srLayersReady) offlineLater();
   else window.addEventListener('sr:layers-ready', offlineLater, { once: true });
   // One line on the scene when no satellite could be read at all (ui/scenenote.js).
   ctx.sceneNote = createSceneNote(ctx);
@@ -588,7 +599,8 @@ export async function boot({ setStatus } = {}) {
   let framing = null;
   const offFrame = ctx.trip.onChange((st) => {
     // A film has no toolbar and no intro card: the frame is never fetched (ui/rendermode.js).
-    if (framing || film || !st || st.phase === 'idle') return;
+    // Nor has an embed: its trip plays under one line of caption (ui/embed.js).
+    if (framing || film || embed || !st || st.phase === 'idle') return;
     framing = import('./ui/tripframe.js')
       .then((m) => { ctx.tripFrame = m.createTripFrame(ctx); offFrame(); })
       .catch((e) => { framing = null; console.warn('the trip frame did not load', e); });
@@ -644,7 +656,7 @@ export async function boot({ setStatus } = {}) {
     if (link && link.trip && ctx.loadAfterFirstVisit) ctx.loadAfterFirstVisit().then(apply, apply);
     else apply();
     // Today's clouds: their first look is START_DELAY_MS after this, never during the first visit.
-    ctx.liveClouds.start();
+    if (!embed) ctx.liveClouds.start();
   }, { once: true });
 
   // Data arrives in the background, layer by layer, slowest last. Nothing here is awaited by the
@@ -654,7 +666,8 @@ export async function boot({ setStatus } = {}) {
     // test (spec 0044) waits on it.
     window.__srLayersReady = true;
     window.dispatchEvent(new CustomEvent('sr:layers-ready'));
-    setTimeout(() => {
+    // An embed loads the far catalogues only when its own link names something in them (openAt).
+    if (!embed) setTimeout(() => {
       if (typeof requestIdleCallback === 'function') requestIdleCallback(() => ctx.loadAfterFirstVisit(), { timeout: 3000 });
       else ctx.loadAfterFirstVisit();
     }, LATER_LAYERS_MS);
@@ -1817,6 +1830,8 @@ function openTrip(ctx, st) {
   ctx.trip.start(tour.id).then((plan) => {
     if (!plan || plan.offerable === false) return;
     if (index > 0) ctx.trip.jumpTo(index);
+    // An embed has no intro card to press Start on: the trip plays (ui/embed.js).
+    if (ctx.embed) ctx.trip.play();
   });
   return true;
 }

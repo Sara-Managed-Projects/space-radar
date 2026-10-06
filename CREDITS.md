@@ -90,13 +90,16 @@ In `site/js/ui/cards.js` (`ICONS`, where `chevron` is Lucide's `chevron-right`):
 `pause`, `rotate-ccw`, `volume-2`, `volume-x`, `speech`, `panel-left-close`, `panel-left-open`,
 `panel-bottom-close`, `panel-bottom-open`, `compass`, and for present mode (read 2026-10-06)
 `presentation`, `maximize`, `minimize`, `timer`, `house`. In `site/js/ui/sharesheet.js`: `x`, `share`,
-`copy`, `download`, `file-text` (its `file`), `mail`. In `site/js/ui/rail.js`: `share`,
-`ellipsis-vertical`, `eye-off`. In `site/js/ui/keyhint.js`: `move`, `mouse`. The only change is the
+`copy`, `download`, `file-text` (its `file`), `mail`, `crop`, `code`, `chevron-down`. In
+`site/js/ui/photomode.js`: `x`, `download`. In `site/js/ui/embed.js`: `external-link`. In
+`site/js/ui/rail.js`: `share`, `ellipsis-vertical`, `eye-off`. In `site/js/ui/keyhint.js`: `move`,
+`mouse`. The only change is the
 stroke, 1.75 instead of Lucide's default 2, which `docs/ui-guide.md` §3.16 sets for every icon in
 the app (`tests/test_a11y_static.mjs` holds it); Lucide draws at any stroke width by design. These
 are on Lucide's own list of icons derived from Feather (its `LICENSE`, read 2026-10-05), which are
 MIT, © Cole Bemis: `x`, `crosshair`, `chevron-right`, `chevron-left`, `navigation`, `share`,
-`compass`, `copy`, `download`, `move`, and `ellipsis-vertical` under its Feather name
+`compass`, `copy`, `download`, `move`, `crop`, `code`, `chevron-down`, `external-link`, and
+`ellipsis-vertical` under its Feather name
 `more-vertical`; the rest are ISC. Both notices are in [§6](#6-full-licence-notices).
 `tests/test_a11y_static.mjs` refuses an `ICONS` name this paragraph does not list.
 
@@ -1239,7 +1242,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 The following Lucide icons are derived from the Feather project:
 
-[...] chevron-left, chevron-right, [...] compass, copy, [...] crosshair, [...] download, [...] maximize, [...] minimize, [...] more-vertical, move, navigation, [...] share, [...] x, [...]
+[...] chevron-down, chevron-left, chevron-right, [...] code, [...] compass, copy, [...] crop, crosshair, [...] download, [...] external-link, [...] maximize, [...] minimize, [...] more-vertical, move, navigation, [...] share, [...] x, [...]
 
 The MIT License (MIT) (for the icons listed above)
 

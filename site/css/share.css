@@ -169,6 +169,35 @@
   outline-offset: 2px;
 }
 
+/* The row over the post's words: a list row that opens in place (docs/ui-guide.md §3.5, §3.10). */
+.sr-share__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  width: 100%;
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  font: 400 var(--sr-fs-label)/20px var(--sr-font);
+  text-align: left;
+  color: var(--sr-text);
+  background: var(--sr-wash);
+  border: 0;
+  border-radius: var(--sr-radius);
+  cursor: pointer;
+  transition: background-color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-share__row[aria-expanded='true'] svg { transform: rotate(180deg); }
+
+.sr-share__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.sr-share__panel[hidden] { display: none; }
+
 .sr-share__wiki,
 .sr-share__note {
   margin: calc(-1 * var(--sp-1)) 0 0;
@@ -237,6 +266,7 @@
 @media (hover: hover) {
   .sr-share__btn:hover:not(:disabled),
   .sr-share__net:hover,
+  .sr-share__row:hover,
   .sr-share__iconbtn:hover {
     background: var(--sr-wash-hover);
   }
@@ -249,6 +279,7 @@
 
 .sr-share__btn:active:not(:disabled),
 .sr-share__net:active,
+.sr-share__row:active,
 .sr-share__iconbtn:active {
   background: var(--sr-wash-strong);
 }
@@ -280,6 +311,15 @@ html.sr-phone .sr-share {
     transform var(--sr-slow) var(--sr-ease),
     opacity var(--sr-mid) var(--sr-ease);
   touch-action: none;
+}
+
+/* While it is up it is the only sheet (internal #371): the card's sheet under it is taken off, so
+   its ember action is not a second primary on screen and does not glow through this glass. The
+   scene shows above the sheet instead, with the selection in it (scene/viewshift.js counts this
+   sheet and skips an invisible one). */
+html.sr-phone.sr-sharing #sr-side {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 html.sr-phone .sr-share.is-dragging {
@@ -351,8 +391,12 @@ html.sr-phone .sr-share__head {
 
   .sr-share__btn,
   .sr-share__net,
+  .sr-share__row,
   .sr-share__close,
-  .sr-share__iconbtn {
+  .sr-share__iconbtn,
+  .sr-photo__seg,
+  .sr-photo__btn,
+  .sr-photo__close {
     transition: opacity 120ms linear;
   }
 }
@@ -363,3 +407,138 @@ html.sr-phone .sr-share__head {
     min-height: 44px;
   }
 }
+
+/* --- photo mode (ui/photomode.js, public #288) --------------------------------------------------
+   The clear screen with a frame on it. Four mattes dim what the picture will not hold and pass
+   every press through to the camera; the frame is a hairline with the caption strip drawn inside
+   it by the function that draws it on the picture; one bar at the foot. The frame's box is set by
+   the module as --sr-photo-x / y / w / h. */
+
+.sr-photo {
+  position: fixed;
+  inset: 0;
+  z-index: var(--sr-z-modal);
+  pointer-events: none;
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
+  color: var(--sr-text);
+}
+
+.sr-photo * { box-sizing: border-box; }
+
+.sr-photo__matte {
+  position: absolute;
+  background: var(--sr-glass-thin);
+}
+
+.sr-photo__matte--top { top: 0; right: 0; left: 0; height: var(--sr-photo-y, 0px); }
+.sr-photo__matte--bottom { right: 0; bottom: 0; left: 0; top: calc(var(--sr-photo-y, 0px) + var(--sr-photo-h, 0px)); }
+.sr-photo__matte--left { top: var(--sr-photo-y, 0px); left: 0; width: var(--sr-photo-x, 0px); height: var(--sr-photo-h, 0px); }
+.sr-photo__matte--right { top: var(--sr-photo-y, 0px); right: 0; left: calc(var(--sr-photo-x, 0px) + var(--sr-photo-w, 0px)); height: var(--sr-photo-h, 0px); }
+
+.sr-photo__frame {
+  position: absolute;
+  top: var(--sr-photo-y, 0px);
+  left: var(--sr-photo-x, 0px);
+  width: var(--sr-photo-w, 0px);
+  height: var(--sr-photo-h, 0px);
+  outline: 1px solid var(--sr-line-strong);
+}
+
+.sr-photo__band {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.sr-photo__bar {
+  position: absolute;
+  bottom: max(var(--sr-inset), env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  max-width: calc(100vw - 2 * var(--sp-4));
+  padding: var(--sp-2);
+  background: var(--sr-glass-strong);
+  border-radius: var(--sr-radius-shell);
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+
+.sr-photo__shapes {
+  display: flex;
+  gap: var(--sp-1);
+}
+
+.sr-photo__seg,
+.sr-photo__btn,
+.sr-photo__close {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  font: inherit;
+  white-space: nowrap;
+  color: var(--sr-text-soft);
+  background: var(--sr-wash);
+  border: 0;
+  border-radius: var(--sr-radius);
+  cursor: pointer;
+  transition: background-color var(--sr-fast) var(--sr-ease), color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-photo__seg { font-family: var(--sr-font-mono); font-variant-numeric: tabular-nums; }
+
+.sr-photo__close {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: transparent;
+}
+
+.sr-photo__seg[aria-pressed='true'],
+.sr-photo__btn[aria-pressed='true'] {
+  font-weight: 600;
+  color: var(--sr-text);
+  background: var(--sr-wash-strong);
+}
+
+/* Save picture: the one primary action on this screen (docs/ui-guide.md principle 3). */
+.sr-photo__save {
+  font-weight: 600;
+  color: var(--sr-ink);
+  background: var(--sr-ember);
+}
+
+.sr-photo__save:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@media (hover: hover) {
+  .sr-photo__seg:hover,
+  .sr-photo__btn:not(.sr-photo__save):hover,
+  .sr-photo__close:hover {
+    color: var(--sr-text);
+    background: var(--sr-wash-hover);
+  }
+
+  .sr-photo__save:hover:not(:disabled) { background: var(--sr-ember-light); }
+}
+
+/* A phone: the shapes on a row of their own, four equal, then Caption, Save and leave. */
+html.sr-phone .sr-photo__bar {
+  right: var(--sp-4);
+  left: var(--sp-4);
+  flex-wrap: wrap;
+  max-width: none;
+  transform: none;
+}
+
+html.sr-phone .sr-photo__shapes { flex: 1 0 100%; }
+html.sr-phone .sr-photo__seg { flex: 1 1 0; }
+html.sr-phone .sr-photo__save { flex: 1 1 auto; }

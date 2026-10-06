@@ -151,9 +151,14 @@ export function writeMoment(moment) {
  * `clock` is the app clock (clock.js), passed in so a test can hold it. A link in a format this
  * reader does not know applies nothing, here as at layers-ready. The returned object never carries
  * `t` or `rate`, so the later half cannot move the clock.
+ *
+ * AN EMBED (public #439) names its view in the query, `?embed=1&at=<id>`, because a CMS may strip
+ * the fragment from an iframe's src. `embed` is therefore not one of KEYS: the hash never carries
+ * it, write() never produces it, and the app's own links are unchanged by it.
  */
-export function bootLink(clock) {
-  const st = read();
+export function bootLink(clock, extra = null) {
+  // `extra`: the keys an embed's QUERY carries (ui/embed.js embedLink); the hash wins over them.
+  const st = extra ? { ...extra, ...read() } : read();
   if (clock && !st.unknownVersion) {
     if (st.t && st.t !== 'now') {
       const ms = Date.parse(st.t);

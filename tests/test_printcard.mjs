@@ -64,7 +64,11 @@ check(named.title === 'International Space Station', `the caption is the card's 
   const compose = readFileSync(join(ROOT, 'site/js/ui/printcompose.js'), 'utf8');
   const renderer = readFileSync(join(ROOT, 'site/js/scene/renderer.js'), 'utf8');
   const main = readFileSync(join(ROOT, 'site/js/main.js'), 'utf8');
-  check(/const frame = api && typeof api\.renderTo === 'function' \? api\.renderTo\(size\.w, size\.h\) : null;/.test(compose), 'the postcard\'s frame is rendererApi.renderTo() of the live scene');
+  // Through renderFramed(): photo mode narrows the field of view to its frame (public #288) and
+  // puts it back; with no frame given it is renderTo() and nothing else.
+  check(/const frame = api && typeof api\.renderTo === 'function' \? renderFramed\(ctx, api, size, opts\.fovScale\) : null;/.test(compose), 'the postcard\'s frame is rendererApi.renderTo() of the live scene');
+  const framed = /function renderFramed\(ctx, api, size, fovScale\) \{([\s\S]*?)\n\}\n/.exec(compose);
+  check(!!framed && (framed[1].match(/return api\.renderTo\(size\.w, size\.h\)/g) || []).length === 2 && /finally \{\s*cam\.fov = fov;/.test(framed[1]) && !/new THREE|setExposure|toneMappingExposure/.test(framed[1]), 'renderFramed() is renderTo() of the live scene, with the field of view put back');
   const body = /function renderTo\(width, height\) \{([\s\S]*?)\n  \}\n/.exec(renderer);
   check(!!body && (body[1].match(/renderer\.render\(scene, camera\)/g) || []).length === 2 && !/new THREE\.Scene|setExposure|toneMappingExposure/.test(body[1]), 'renderTo() draws the one scene with the one camera and touches no exposure');
   check(!/setExposure|createExposure|exposureLook|DEFAULT_EXPOSURE/.test(compose), 'the print composer never sets a shutter of its own');
