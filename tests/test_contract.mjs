@@ -2469,6 +2469,13 @@ for (const file of allFiles) {
           // have, so the checkable half is that the LAYER exists and is one the app loads.
           if (layerIds.has(target.layer)) resolvable += 1;
           else problems.push(`TOUR     ${tour.id}/${stop.id}: layer '${target.layer}' is not in LAYERS`);
+        } else if (target.sky !== undefined) {
+          // A look at the sky (2026-10-05): a direction, resolved by ui/trip.js skySubject with no
+          // record behind it. Two numbers, and a declination that leaves the camera a sideways.
+          const ok = Array.isArray(target.sky) && target.sky.length === 2 && target.sky.every((v) => Number.isFinite(v))
+            && target.sky[0] >= 0 && target.sky[0] < 360 && Math.abs(target.sky[1]) <= 85;
+          if (ok) resolvable += 1;
+          else problems.push(`TOUR     ${tour.id}/${stop.id}: sky ${JSON.stringify(target.sky)} is not [right ascension, declination] the camera can aim at`);
         } else if (target.observer !== undefined) {
           // The visitor's own place (spec 0038): no record to find, and it needs no network, only a
           // place set or guessed. It is only legal on a trip that says it needs one.

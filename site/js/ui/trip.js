@@ -1263,9 +1263,26 @@ export function createTrip(ctx) {
 
   /** The rig's angles for a camera straight above a place on the Earth, in the up it arrives with. */
   function overAngles(over, targetScene, tMs) {
-    if (!isNum(over[0]) || !isNum(over[1])) return null;
-    const p = fixed({ id: 'over', propagator: 'fixed', frame: 'earth-fixed', fixed: { latDeg: over[0], lonDeg: over[1], altKm: 0 } }, tMs);
-    const ground = p ? stage.toScene(p, p.frame, tMs) : null;
+    if (!isNum(over[0])) return null;
+    const at = (latDeg, lonDeg) => {
+      const p = fixed({ id: 'over', propagator: 'fixed', frame: 'earth-fixed', fixed: { latDeg, lonDeg, altKm: 0 } }, tMs);
+      return p ? stage.toScene(p, p.frame, tMs) : null;
+    };
+    let ground = null;
+    if (over[1] === 'midnight') {
+      // The meridian where it is midnight now: the one facing away from the Sun. The aurora is a
+      // night thing and which longitude has the night depends on the hour the visitor arrives.
+      const pole = at(90, 0);
+      const sun = sunScene(tMs);
+      if (!pole || !sun) return null;
+      const north = _b2.copy(pole).sub(targetScene).normalize();
+      const away = _b3.copy(targetScene).sub(sun).normalize();
+      away.addScaledVector(north, -away.dot(north));
+      if (away.lengthSq() < 1e-12) return null;
+      away.normalize();
+      const lat = over[0] * DEG;
+      ground = new THREE.Vector3().copy(targetScene).addScaledVector(away, Math.cos(lat)).addScaledVector(north, Math.sin(lat));
+    } else if (isNum(over[1])) ground = at(over[0], over[1]);
     if (!ground) return null;
     _b1.copy(ground).sub(targetScene);
     if (_b1.lengthSq() < 1e-30) return null;
