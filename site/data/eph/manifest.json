@@ -1,0 +1,1724 @@
+{
+ "version": 1,
+ "what": "Each craft's own path, sampled from JPL Horizons and joined by cubic Hermite curves (registry/ephemerides.yaml, scripts/build_ephemerides.py).",
+ "source": {
+  "name": "JPL Horizons",
+  "api": "https://ssd.jpl.nasa.gov/api/horizons.api",
+  "terms": "https://ssd.jpl.nasa.gov/horizons/",
+  "credit": "NASA/JPL-Caltech, Solar System Dynamics Group, Horizons On-Line Ephemeris System"
+ },
+ "frame": "ecliptic J2000 axes (Horizons REF_PLANE=ECLIPTIC, REF_SYSTEM=ICRF), relative to each segment's centre; km and km/s; times UTC (TIME_TYPE=UT)",
+ "retrieved": "2026-10-06",
+ "craft": [
+  {
+   "id": "deep-voyager-1",
+   "name": "Voyager 1",
+   "command": "-31",
+   "file": "deep-voyager-1.bin",
+   "bytes": 29892,
+   "sha256": "cc1c1a5b4a640b633d2137c1c3066d6afedde74ae448e8dfefa1739909f11a02",
+   "span": [
+    "1977-09-05T13:59:00Z",
+    "2031-01-01T00:00:00Z"
+   ],
+   "samples": 841,
+   "solution": "Voyager_1_ST+refit2022_m",
+   "header_revised": "Aug 19, 2022",
+   "retrieved": "2026-10-06",
+   "fit_max_km": 4.998,
+   "heldout": {
+    "n": 48,
+    "max_km": 4.659
+   },
+   "good_to_km": 10.0,
+   "segments": [
+    {
+     "centre": "earth",
+     "from": "1977-09-05T13:59:00Z",
+     "to": "1977-09-09T00:00:00Z",
+     "samples": 20,
+     "tol_km": 1.0,
+     "fit_max_km": 0.978,
+     "fetched": 124,
+     "step_min_s": 300.0,
+     "step_max_s": 79260.0,
+     "steps": {
+      "under 10 min": 3,
+      "10 min to 1 h": 6,
+      "1 h to 6 h": 5,
+      "6 h to 1 d": 5
+     },
+     "closest": {
+      "at": "1977-09-05T13:59:00Z",
+      "km": 7630.9
+     },
+     "passes": 1,
+     "centre_source": "Voyager_1_ST+refit2022_m"
+    },
+    {
+     "centre": "sun",
+     "from": "1977-09-09T00:00:00Z",
+     "to": "1979-02-03T00:00:00Z",
+     "samples": 88,
+     "tol_km": 5.0,
+     "fit_max_km": 4.946,
+     "fetched": 526,
+     "step_min_s": 21600.0,
+     "step_max_s": 1641600.0,
+     "steps": {
+      "6 h to 1 d": 1,
+      "1 d to 10 d": 70,
+      "over 10 d": 16
+     },
+     "centre_source": "Voyager_1_ST+refit2022_m"
+    },
+    {
+     "centre": "jupiter",
+     "from": "1979-02-03T00:00:00Z",
+     "to": "1979-04-04T00:00:00Z",
+     "samples": 166,
+     "tol_km": 1.0,
+     "fit_max_km": 0.997,
+     "fetched": 1526,
+     "step_min_s": 1800.0,
+     "step_max_s": 64800.0,
+     "steps": {
+      "10 min to 1 h": 20,
+      "1 h to 6 h": 40,
+      "6 h to 1 d": 105
+     },
+     "closest": {
+      "at": "1979-03-05T12:00:00Z",
+      "km": 348487.5
+     },
+     "passes": 1,
+     "centre_source": "jup365_merged"
+    },
+    {
+     "centre": "sun",
+     "from": "1979-04-04T00:00:00Z",
+     "to": "1980-10-13T00:00:00Z",
+     "samples": 40,
+     "tol_km": 5.0,
+     "fit_max_km": 4.893,
+     "fetched": 601,
+     "step_min_s": 10800.0,
+     "step_max_s": 2160000.0,
+     "steps": {
+      "1 h to 6 h": 1,
+      "6 h to 1 d": 1,
+      "1 d to 10 d": 12,
+      "over 10 d": 25
+     },
+     "centre_source": "Voyager_1_ST+refit2022_m"
+    },
+    {
+     "centre": "saturn",
+     "from": "1980-10-13T00:00:00Z",
+     "to": "1980-12-12T00:00:00Z",
+     "samples": 139,
+     "tol_km": 1.0,
+     "fit_max_km": 1.0,
+     "fetched": 1564,
+     "step_min_s": 600.0,
+     "step_max_s": 255600.0,
+     "steps": {
+      "10 min to 1 h": 26,
+      "1 h to 6 h": 61,
+      "6 h to 1 d": 27,
+      "1 d to 10 d": 24
+     },
+     "closest": {
+      "at": "1980-11-12T23:45:00Z",
+      "km": 184031.7
+     },
+     "passes": 1,
+     "centre_source": "sat441l"
+    },
+    {
+     "centre": "sun",
+     "from": "1980-12-12T00:00:00Z",
+     "to": "2031-01-01T00:00:00Z",
+     "samples": 388,
+     "tol_km": 5.0,
+     "fit_max_km": 4.998,
+     "fetched": 18354,
+     "step_min_s": 60.0,
+     "step_max_s": 8812800.0,
+     "steps": {
+      "under 10 min": 1,
+      "1 d to 10 d": 31,
+      "over 10 d": 355
+     },
+     "centre_source": "Voyager_1_ST+refit2022_m"
+    }
+   ],
+   "rough": {
+    "until": "1981-01-01T00:00:00Z",
+    "text": "JPL calls its Voyager 1 path before 1981 a mission-design trajectory of rough accuracy, fitted to the encounters; from 1981 it is a refit of the tracking data."
+   }
+  },
+  {
+   "id": "deep-voyager-2",
+   "name": "Voyager 2",
+   "command": "-32",
+   "file": "deep-voyager-2.bin",
+   "bytes": 34480,
+   "sha256": "aad68f0bccd72e06cf8eb084e1f7d4ee9d3d4d015209de2063397f1c0252a96e",
+   "span": [
+    "1977-08-20T15:32:00Z",
+    "2031-01-01T00:00:00Z"
+   ],
+   "samples": 989,
+   "solution": "Voyager_2_ST+refit2022_m",
+   "header_revised": "Aug 19, 2022",
+   "retrieved": "2026-10-06",
+   "fit_max_km": 4.999,
+   "heldout": {
+    "n": 48,
+    "max_km": 4.394
+   },
+   "good_to_km": 10.0,
+   "segments": [
+    {
+     "centre": "earth",
+     "from": "1977-08-20T15:32:00Z",
+     "to": "1977-08-24T00:00:00Z",
+     "samples": 20,
+     "tol_km": 1.0,
+     "fit_max_km": 0.93,
+     "fetched": 122,
+     "step_min_s": 300.0,
+     "step_max_s": 84480.0,
+     "steps": {
+      "under 10 min": 3,
+      "10 min to 1 h": 6,
+      "1 h to 6 h": 5,
+      "6 h to 1 d": 5
+     },
+     "closest": {
+      "at": "1977-08-20T15:32:00Z",
+      "km": 7629.1
+     },
+     "passes": 1,
+     "centre_source": "Voyager_2_ST+refit2022_m"
+    },
+    {
+     "centre": "sun",
+     "from": "1977-08-24T00:00:00Z",
+     "to": "1979-06-09T00:00:00Z",
+     "samples": 105,
+     "tol_km": 5.0,
+     "fit_max_km": 4.914,
+     "fetched": 668,
+     "step_min_s": 21600.0,
+     "step_max_s": 1900800.0,
+     "steps": {
+      "6 h to 1 d": 1,
+      "1 d to 10 d": 80,
+      "over 10 d": 23
+     },
+     "centre_source": "Voyager_2_ST+refit2022_m"
+    },
+    {
+     "centre": "jupiter",
+     "from": "1979-06-09T00:00:00Z",
+     "to": "1979-08-08T00:00:00Z",
+     "samples": 158,
+     "tol_km": 1.0,
+     "fit_max_km": 0.989,
+     "fetched": 1450,
+     "step_min_s": 3600.0,
+     "step_max_s": 64800.0,
+     "steps": {
+      "1 h to 6 h": 51,
+      "6 h to 1 d": 106
+     },
+     "closest": {
+      "at": "1979-07-09T22:00:00Z",
+      "km": 721866.2
+     },
+     "passes": 1,
+     "centre_source": "jup365_merged"
+    },
+    {
+     "centre": "sun",
+     "from": "1979-08-08T00:00:00Z",
+     "to": "1981-07-27T00:00:00Z",
+     "samples": 47,
+     "tol_km": 5.0,
+     "fit_max_km": 4.988,
+     "fetched": 720,
+     "step_min_s": 86400.0,
+     "step_max_s": 2592000.0,
+     "steps": {
+      "1 d to 10 d": 17,
+      "over 10 d": 29
+     },
+     "centre_source": "Voyager_2_ST+refit2022_m"
+    },
+    {
+     "centre": "saturn",
+     "from": "1981-07-27T00:00:00Z",
+     "to": "1981-09-25T00:00:00Z",
+     "samples": 106,
+     "tol_km": 1.0,
+     "fit_max_km": 0.998,
+     "fetched": 1518,
+     "step_min_s": 900.0,
+     "step_max_s": 230400.0,
+     "steps": {
+      "10 min to 1 h": 26,
+      "1 h to 6 h": 30,
+      "6 h to 1 d": 24,
+      "1 d to 10 d": 25
+     },
+     "closest": {
+      "at": "1981-08-26T03:30:00Z",
+      "km": 160828.7
+     },
+     "passes": 1,
+     "centre_source": "sat441l"
+    },
+    {
+     "centre": "sun",
+     "from": "1981-09-25T00:00:00Z",
+     "to": "1986-01-04T00:00:00Z",
+     "samples": 55,
+     "tol_km": 5.0,
+     "fit_max_km": 4.977,
+     "fetched": 1595,
+     "step_min_s": 14400.0,
+     "step_max_s": 5270400.0,
+     "steps": {
+      "1 h to 6 h": 1,
+      "1 d to 10 d": 11,
+      "over 10 d": 42
+     },
+     "centre_source": "Voyager_2_ST+refit2022_m"
+    },
+    {
+     "centre": "uranus",
+     "from": "1986-01-04T00:00:00Z",
+     "to": "1986-02-13T00:00:00Z",
+     "samples": 71,
+     "tol_km": 1.0,
+     "fit_max_km": 1.0,
+     "fetched": 1010,
+     "step_min_s": 900.0,
+     "step_max_s": 140400.0,
+     "steps": {
+      "10 min to 1 h": 12,
+      "1 h to 6 h": 20,
+      "6 h to 1 d": 17,
+      "1 d to 10 d": 21
+     },
+     "closest": {
+      "at": "1986-01-24T18:00:00Z",
+      "km": 107160.2
+     },
+     "passes": 1,
+     "centre_source": "ura184_merged"
+    },
+    {
+     "centre": "sun",
+     "from": "1986-02-13T00:00:00Z",
+     "to": "1989-08-05T00:00:00Z",
+     "samples": 40,
+     "tol_km": 5.0,
+     "fit_max_km": 4.971,
+     "fetched": 1353,
+     "step_min_s": 10800.0,
+     "step_max_s": 6134400.0,
+     "steps": {
+      "1 h to 6 h": 2,
+      "6 h to 1 d": 1,
+      "1 d to 10 d": 7,
+      "over 10 d": 29
+     },
+     "centre_source": "Voyager_2_ST+refit2022_m"
+    },
+    {
+     "centre": "neptune",
+     "from": "1989-08-05T00:00:00Z",
+     "to": "1989-09-14T00:00:00Z",
+     "samples": 89,
+     "tol_km": 1.0,
+     "fit_max_km": 0.993,
+     "fetched": 1104,
+     "step_min_s": 60.0,
+     "step_max_s": 183600.0,
+     "steps": {
+      "under 10 min": 11,
+      "10 min to 1 h": 19,
+      "1 h to 6 h": 20,
+      "6 h to 1 d": 17,
+      "1 d to 10 d": 21
+     },
+     "closest": {
+      "at": "1989-08-25T03:56:00Z",
+      "km": 29239.5
+     },
+     "passes": 1,
+     "centre_source": "nep098_merged"
+    },
+    {
+     "centre": "sun",
+     "from": "1989-09-14T00:00:00Z",
+     "to": "2031-01-01T00:00:00Z",
+     "samples": 298,
+     "tol_km": 5.0,
+     "fit_max_km": 4.999,
+     "fetched": 15085,
+     "step_min_s": 86400.0,
+     "step_max_s": 8640000.0,
+     "steps": {
+      "1 d to 10 d": 16,
+      "over 10 d": 281
+     },
+     "centre_source": "Voyager_2_ST+refit2022_m"
+    }
+   ],
+   "rough": {
+    "until": "1989-08-29T00:00:00Z",
+    "text": "JPL calls its Voyager 2 path before 29 August 1989 a mission-design trajectory of rough accuracy, fitted to the encounters; after it, a refit of the tracking data."
+   }
+  },
+  {
+   "id": "deep-new-horizons",
+   "name": "New Horizons",
+   "command": "-98",
+   "file": "deep-new-horizons.bin",
+   "bytes": 17804,
+   "sha256": "7e6dbdc7666707823c5936bde5eee35f9014f9ae1a97fb115a12e5ac6755b6b6",
+   "span": [
+    "2006-01-19T19:51:00Z",
+    "2031-01-01T00:00:00Z"
+   ],
+   "samples": 492,
+   "solution": "NH_merged",
+   "header_revised": "Sep 01, 2026",
+   "retrieved": "2026-10-06",
+   "fit_max_km": 5.0,
+   "heldout": {
+    "n": 48,
+    "max_km": 4.706
+   },
+   "good_to_km": 10.0,
+   "segments": [
+    {
+     "centre": "earth",
+     "from": "2006-01-19T19:51:00Z",
+     "to": "2006-01-22T00:00:00Z",
+     "samples": 16,
+     "tol_km": 1.0,
+     "fit_max_km": 0.911,
+     "fetched": 80,
+     "step_min_s": 300.0,
+     "step_max_s": 46800.0,
+     "steps": {
+      "under 10 min": 1,
+      "10 min to 1 h": 5,
+      "1 h to 6 h": 5,
+      "6 h to 1 d": 4
+     },
+     "closest": {
+      "at": "2006-01-19T19:51:00Z",
+      "km": 13276.6
+     },
+     "passes": 1,
+     "centre_source": "DE441"
+    },
+    {
+     "centre": "sun",
+     "from": "2006-01-22T00:00:00Z",
+     "to": "2007-02-03T00:00:00Z",
+     "samples": 81,
+     "tol_km": 5.0,
+     "fit_max_km": 4.96,
+     "fetched": 659,
+     "step_min_s": 60.0,
+     "step_max_s": 1231200.0,
+     "steps": {
+      "under 10 min": 2,
+      "1 h to 6 h": 1,
+      "6 h to 1 d": 1,
+      "1 d to 10 d": 68,
+      "over 10 d": 8
+     },
+     "centre_source": "NH_merged"
+    },
+    {
+     "centre": "jupiter",
+     "from": "2007-02-03T00:00:00Z",
+     "to": "2007-03-25T00:00:00Z",
+     "samples": 117,
+     "tol_km": 1.0,
+     "fit_max_km": 0.999,
+     "fetched": 1240,
+     "step_min_s": 60.0,
+     "step_max_s": 57600.0,
+     "steps": {
+      "under 10 min": 1,
+      "1 h to 6 h": 22,
+      "6 h to 1 d": 93
+     },
+     "closest": {
+      "at": "2007-02-28T06:00:00Z",
+      "km": 2304587.1
+     },
+     "passes": 1,
+     "centre_source": "jup365_merged"
+    },
+    {
+     "centre": "sun",
+     "from": "2007-03-25T00:00:00Z",
+     "to": "2015-07-04T00:00:00Z",
+     "samples": 103,
+     "tol_km": 5.0,
+     "fit_max_km": 4.999,
+     "fetched": 3523,
+     "step_min_s": 60.0,
+     "step_max_s": 7257600.0,
+     "steps": {
+      "under 10 min": 4,
+      "6 h to 1 d": 1,
+      "1 d to 10 d": 19,
+      "over 10 d": 78
+     },
+     "centre_source": "NH_merged"
+    },
+    {
+     "centre": "pluto",
+     "from": "2015-07-04T00:00:00Z",
+     "to": "2015-07-24T00:00:00Z",
+     "samples": 36,
+     "tol_km": 1.0,
+     "fit_max_km": 0.997,
+     "fetched": 490,
+     "step_min_s": 3600.0,
+     "step_max_s": 57600.0,
+     "steps": {
+      "1 h to 6 h": 4,
+      "6 h to 1 d": 31
+     },
+     "closest": {
+      "at": "2015-07-14T11:45:00Z",
+      "km": 13975.8
+     },
+     "passes": 1,
+     "centre_source": "NH_merged"
+    },
+    {
+     "centre": "sun",
+     "from": "2015-07-24T00:00:00Z",
+     "to": "2031-01-01T00:00:00Z",
+     "samples": 139,
+     "tol_km": 5.0,
+     "fit_max_km": 5.0,
+     "fetched": 6350,
+     "step_min_s": 60.0,
+     "step_max_s": 8640000.0,
+     "steps": {
+      "under 10 min": 3,
+      "1 h to 6 h": 6,
+      "6 h to 1 d": 2,
+      "1 d to 10 d": 14,
+      "over 10 d": 113
+     },
+     "centre_source": "NH_merged"
+    }
+   ]
+  },
+  {
+   "id": "deep-juno",
+   "name": "Juno",
+   "command": "-61",
+   "file": "deep-juno.bin",
+   "bytes": 135656,
+   "sha256": "bb0e8a03e23f998fd89d4171b758410f45e35276188aa9b43ffa4a93dd4e9b32",
+   "span": [
+    "2011-08-05T17:19:00Z",
+    "2026-08-24T00:00:00Z"
+   ],
+   "samples": 4710,
+   "solution": "Juno_merged",
+   "header_revised": "Sep 30, 2026",
+   "retrieved": "2026-10-06",
+   "fit_max_km": 59.998,
+   "heldout": {
+    "n": 301,
+    "max_km": 59.814
+   },
+   "good_to_km": 100.0,
+   "segments": [
+    {
+     "centre": "earth",
+     "from": "2011-08-05T17:19:00Z",
+     "to": "2011-08-09T00:00:00Z",
+     "samples": 23,
+     "tol_km": 1.0,
+     "fit_max_km": 0.984,
+     "fetched": 124,
+     "step_min_s": 240.0,
+     "step_max_s": 54000.0,
+     "steps": {
+      "under 10 min": 3,
+      "10 min to 1 h": 7,
+      "1 h to 6 h": 7,
+      "6 h to 1 d": 5
+     },
+     "closest": {
+      "at": "2011-08-05T17:19:00Z",
+      "km": 8001.7
+     },
+     "passes": 1,
+     "centre_source": "Juno_merged"
+    },
+    {
+     "centre": "sun",
+     "from": "2011-08-09T00:00:00Z",
+     "to": "2013-10-05T00:00:00Z",
+     "samples": 185,
+     "tol_km": 5.0,
+     "fit_max_km": 4.96,
+     "fetched": 939,
+     "step_min_s": 1800.0,
+     "step_max_s": 1191600.0,
+     "steps": {
+      "10 min to 1 h": 2,
+      "6 h to 1 d": 1,
+      "1 d to 10 d": 170,
+      "over 10 d": 11
+     },
+     "centre_source": "Juno_merged"
+    },
+    {
+     "centre": "earth",
+     "from": "2013-10-05T00:00:00Z",
+     "to": "2013-10-14T00:00:00Z",
+     "samples": 42,
+     "tol_km": 1.0,
+     "fit_max_km": 0.998,
+     "fetched": 318,
+     "step_min_s": 240.0,
+     "step_max_s": 118800.0,
+     "steps": {
+      "under 10 min": 8,
+      "10 min to 1 h": 11,
+      "1 h to 6 h": 10,
+      "6 h to 1 d": 9,
+      "1 d to 10 d": 3
+     },
+     "closest": {
+      "at": "2013-10-09T19:21:00Z",
+      "km": 6939.9
+     },
+     "passes": 1,
+     "centre_source": "Juno_merged"
+    },
+    {
+     "centre": "sun",
+     "from": "2013-10-14T00:00:00Z",
+     "to": "2016-06-05T00:00:00Z",
+     "samples": 119,
+     "tol_km": 5.0,
+     "fit_max_km": 4.983,
+     "fetched": 1050,
+     "step_min_s": 60.0,
+     "step_max_s": 2160000.0,
+     "steps": {
+      "under 10 min": 1,
+      "6 h to 1 d": 2,
+      "1 d to 10 d": 75,
+      "over 10 d": 40
+     },
+     "centre_source": "Juno_merged"
+    },
+    {
+     "centre": "jupiter",
+     "from": "2016-06-05T00:00:00Z",
+     "to": "2026-08-24T00:00:00Z",
+     "samples": 4341,
+     "tol_km": 60.0,
+     "fit_max_km": 59.998,
+     "fetched": 93483,
+     "step_min_s": 600.0,
+     "step_max_s": 489600.0,
+     "steps": {
+      "10 min to 1 h": 888,
+      "1 h to 6 h": 932,
+      "6 h to 1 d": 891,
+      "1 d to 10 d": 1629
+     },
+     "closest": {
+      "at": "2025-06-08T20:30:00Z",
+      "km": 71378.8
+     },
+     "passes": 87,
+     "centre_source": "Juno_merged"
+    }
+   ]
+  },
+  {
+   "id": "deep-cassini",
+   "name": "Cassini",
+   "command": "-82",
+   "file": "deep-cassini.bin",
+   "bytes": 256644,
+   "sha256": "0542437424864fc3d5097a036e819bd17ebeb6e6850845dc3bc84be8b934ea66",
+   "span": [
+    "1997-10-15T09:27:00Z",
+    "2017-09-15T10:30:00Z"
+   ],
+   "samples": 8977,
+   "solution": "cassini_merge",
+   "header_revised": "Sep 28, 2018",
+   "retrieved": "2026-10-06",
+   "fit_max_km": 59.997,
+   "heldout": {
+    "n": 494,
+    "max_km": 62.556
+   },
+   "good_to_km": 100.0,
+   "segments": [
+    {
+     "centre": "earth",
+     "from": "1997-10-15T09:27:00Z",
+     "to": "1997-10-19T00:00:00Z",
+     "samples": 26,
+     "tol_km": 1.0,
+     "fit_max_km": 0.993,
+     "fetched": 121,
+     "step_min_s": 300.0,
+     "step_max_s": 61200.0,
+     "steps": {
+      "under 10 min": 3,
+      "10 min to 1 h": 7,
+      "1 h to 6 h": 10,
+      "6 h to 1 d": 5
+     },
+     "closest": {
+      "at": "1997-10-15T09:27:00Z",
+      "km": 8623.1
+     },
+     "passes": 1,
+     "centre_source": "cassini_merge"
+    },
+    {
+     "centre": "sun",
+     "from": "1997-10-19T00:00:00Z",
+     "to": "1998-04-23T00:00:00Z",
+     "samples": 104,
+     "tol_km": 5.0,
+     "fit_max_km": 4.985,
+     "fetched": 200,
+     "step_min_s": 43200.0,
+     "step_max_s": 345600.0,
+     "steps": {
+      "6 h to 1 d": 1,
+      "1 d to 10 d": 102
+     },
+     "centre_source": "cassini_merge"
+    },
+    {
+     "centre": "venus",
+     "from": "1998-04-23T00:00:00Z",
+     "to": "1998-04-30T00:00:00Z",
+     "samples": 45,
+     "tol_km": 1.0,
+     "fit_max_km": 0.994,
+     "fetched": 266,
+     "step_min_s": 240.0,
+     "step_max_s": 75600.0,
+     "steps": {
+      "under 10 min": 7,
+      "10 min to 1 h": 13,
+      "1 h to 6 h": 14,
+      "6 h to 1 d": 10
+     },
+     "closest": {
+      "at": "1998-04-26T13:45:00Z",
+      "km": 6338.0
+     },
+     "passes": 1,
+     "centre_source": "cassini_merge"
+    },
+    {
+     "centre": "sun",
+     "from": "1998-04-30T00:00:00Z",
+     "to": "1999-06-21T00:00:00Z",
+     "samples": 132,
+     "tol_km": 5.0,
+     "fit_max_km": 4.999,
+     "fetched": 495,
+     "step_min_s": 1800.0,
+     "step_max_s": 749700.0,
+     "steps": {
+      "10 min to 1 h": 1,
+      "1 h to 6 h": 2,
+      "1 d to 10 d": 128
+     },
+     "centre_source": "cassini_merge"
+    },
+    {
+     "centre": "venus",
+     "from": "1999-06-21T00:00:00Z",
+     "to": "1999-06-28T00:00:00Z",
+     "samples": 43,
+     "tol_km": 1.0,
+     "fit_max_km": 0.995,
+     "fetched": 262,
+     "step_min_s": 240.0,
+     "step_max_s": 104400.0,
+     "steps": {
+      "under 10 min": 8,
+      "10 min to 1 h": 11,
+      "1 h to 6 h": 15,
+      "6 h to 1 d": 7,
+      "1 d to 10 d": 1
+     },
+     "closest": {
+      "at": "1999-06-24T20:30:00Z",
+      "km": 6654.7
+     },
+     "passes": 1,
+     "centre_source": "cassini_merge"
+    },
+    {
+     "centre": "sun",
+     "from": "1999-06-28T00:00:00Z",
+     "to": "1999-08-14T00:00:00Z",
+     "samples": 35,
+     "tol_km": 5.0,
+     "fit_max_km": 4.779,
+     "fetched": 256,
+     "step_min_s": 1800.0,
+     "step_max_s": 194400.0,
+     "steps": {
+      "10 min to 1 h": 2,
+      "1 h to 6 h": 2,
+      "6 h to 1 d": 4,
+      "1 d to 10 d": 26
+     },
+     "centre_source": "cassini_merge"
+    },
+    {
+     "centre": "earth",
+     "from": "1999-08-14T00:00:00Z",
+     "to": "1999-08-23T00:00:00Z",
+     "samples": 41,
+     "tol_km": 1.0,
+     "fit_max_km": 0.98,
+     "fetched": 299,
+     "step_min_s": 240.0,
+     "step_max_s": 129600.0,
+     "steps": {
+      "under 10 min": 8,
+      "10 min to 1 h": 9,
+      "1 h to 6 h": 15,
+      "6 h to 1 d": 5,
+      "1 d to 10 d": 3
+     },
+     "closest": {
+      "at": "1999-08-18T03:28:00Z",
+      "km": 7563.0
+     },
+     "passes": 1,
+     "centre_source": "cassini_merge"
+    },
+    {
+     "centre": "sun",
+     "from": "1999-08-23T00:00:00Z",
+     "to": "2000-12-10T00:00:00Z",
+     "samples": 77,
+     "tol_km": 5.0,
+     "fit_max_km": 4.89,
+     "fetched": 489,
+     "step_min_s": 21600.0,
+     "step_max_s": 1468800.0,
+     "steps": {
+      "6 h to 1 d": 1,
+      "1 d to 10 d": 60,
+      "over 10 d": 15
+     },
+     "centre_source": "cassini_merge"
+    },
+    {
+     "centre": "jupiter",
+     "from": "2000-12-10T00:00:00Z",
+     "to": "2001-01-20T00:00:00Z",
+     "samples": 73,
+     "tol_km": 1.0,
+     "fit_max_km": 0.997,
+     "fetched": 985,
+     "step_min_s": 25200.0,
+     "step_max_s": 57600.0,
+     "steps": {
+      "6 h to 1 d": 72
+     },
+     "closest": {
+      "at": "2000-12-30T10:00:00Z",
+      "km": 9794457.4
+     },
+     "passes": 1,
+     "centre_source": "cassini_merge"
+    },
+    {
+     "centre": "sun",
+     "from": "2001-01-20T00:00:00Z",
+     "to": "2004-05-15T00:00:00Z",
+     "samples": 70,
+     "tol_km": 5.0,
+     "fit_max_km": 4.992,
+     "fetched": 1629,
+     "step_min_s": 60.0,
+     "step_max_s": 5529600.0,
+     "steps": {
+      "under 10 min": 3,
+      "6 h to 1 d": 1,
+      "1 d to 10 d": 20,
+      "over 10 d": 45
+     },
+     "centre_source": "cassini_merge"
+    },
+    {
+     "centre": "saturn",
+     "from": "2004-05-15T00:00:00Z",
+     "to": "2017-09-15T10:30:00Z",
+     "samples": 8331,
+     "tol_km": 60.0,
+     "fit_max_km": 59.997,
+     "fetched": 120642,
+     "step_min_s": 900.0,
+     "step_max_s": 799200.0,
+     "steps": {
+      "10 min to 1 h": 320,
+      "1 h to 6 h": 3061,
+      "6 h to 1 d": 3363,
+      "1 d to 10 d": 1586
+     },
+     "closest": {
+      "at": "2017-09-02T13:15:00Z",
+      "km": 61899.1
+     },
+     "passes": 256,
+     "centre_source": "cassini_merge"
+    }
+   ]
+  },
+  {
+   "id": "deep-galileo",
+   "name": "Galileo",
+   "command": "-77",
+   "file": "deep-galileo.bin",
+   "bytes": 79488,
+   "sha256": "e81b0381e04291dd6e68bdf90bdb0c67033a37a743fcfef3c6f4a6d9d3172cd2",
+   "span": [
+    "1989-10-19T01:29:00Z",
+    "2003-09-21T18:00:00Z"
+   ],
+   "samples": 2611,
+   "solution": "galileo_merged",
+   "header_revised": "Feb 23, 2008",
+   "retrieved": "2026-10-06",
+   "fit_max_km": 60.0,
+   "heldout": {
+    "n": 145,
+    "max_km": 71.407
+   },
+   "good_to_km": 200.0,
+   "segments": [
+    {
+     "centre": "earth",
+     "from": "1989-10-19T01:29:00Z",
+     "to": "1989-10-23T00:00:00Z",
+     "samples": 20,
+     "tol_km": 1.0,
+     "fit_max_km": 0.994,
+     "fetched": 112,
+     "step_min_s": 900.0,
+     "step_max_s": 66660.0,
+     "steps": {
+      "10 min to 1 h": 4,
+      "1 h to 6 h": 9,
+      "6 h to 1 d": 6
+     },
+     "closest": {
+      "at": "1989-10-19T01:29:00Z",
+      "km": 30615.4
+     },
+     "passes": 1,
+     "centre_source": "galileo_merged"
+    },
+    {
+     "centre": "sun",
+     "from": "1989-10-23T00:00:00Z",
+     "to": "1990-02-07T00:00:00Z",
+     "samples": 49,
+     "tol_km": 5.0,
+     "fit_max_km": 4.85,
+     "fetched": 129,
+     "step_min_s": 21600.0,
+     "step_max_s": 345600.0,
+     "steps": {
+      "6 h to 1 d": 5,
+      "1 d to 10 d": 43
+     },
+     "centre_source": "galileo_merged"
+    },
+    {
+     "centre": "venus",
+     "from": "1990-02-07T00:00:00Z",
+     "to": "1990-02-14T00:00:00Z",
+     "samples": 41,
+     "tol_km": 1.0,
+     "fit_max_km": 0.977,
+     "fetched": 289,
+     "step_min_s": 60.0,
+     "step_max_s": 71940.0,
+     "steps": {
+      "under 10 min": 2,
+      "10 min to 1 h": 14,
+      "1 h to 6 h": 13,
+      "6 h to 1 d": 11
+     },
+     "closest": {
+      "at": "1990-02-10T06:00:00Z",
+      "km": 22181.3
+     },
+     "passes": 1,
+     "centre_source": "DE441"
+    },
+    {
+     "centre": "sun",
+     "from": "1990-02-14T00:00:00Z",
+     "to": "1990-12-04T00:00:00Z",
+     "samples": 120,
+     "tol_km": 5.0,
+     "fit_max_km": 4.996,
+     "fetched": 601,
+     "step_min_s": 60.0,
+     "step_max_s": 691200.0,
+     "steps": {
+      "under 10 min": 1,
+      "6 h to 1 d": 11,
+      "1 d to 10 d": 107
+     },
+     "centre_source": "galileo_merged"
+    },
+    {
+     "centre": "earth",
+     "from": "1990-12-04T00:00:00Z",
+     "to": "1990-12-13T00:00:00Z",
+     "samples": 46,
+     "tol_km": 1.0,
+     "fit_max_km": 0.996,
+     "fetched": 313,
+     "step_min_s": 240.0,
+     "step_max_s": 118800.0,
+     "steps": {
+      "under 10 min": 7,
+      "10 min to 1 h": 14,
+      "1 h to 6 h": 13,
+      "6 h to 1 d": 8,
+      "1 d to 10 d": 3
+     },
+     "closest": {
+      "at": "1990-12-08T20:35:00Z",
+      "km": 7340.2
+     },
+     "passes": 1,
+     "centre_source": "galileo_merged"
+    },
+    {
+     "centre": "sun",
+     "from": "1990-12-13T00:00:00Z",
+     "to": "1992-12-04T00:00:00Z",
+     "samples": 186,
+     "tol_km": 5.0,
+     "fit_max_km": 4.99,
+     "fetched": 1403,
+     "step_min_s": 60.0,
+     "step_max_s": 1209600.0,
+     "steps": {
+      "under 10 min": 6,
+      "1 h to 6 h": 3,
+      "6 h to 1 d": 8,
+      "1 d to 10 d": 156,
+      "over 10 d": 12
+     },
+     "centre_source": "galileo_merged"
+    },
+    {
+     "centre": "earth",
+     "from": "1992-12-04T00:00:00Z",
+     "to": "1992-12-13T00:00:00Z",
+     "samples": 46,
+     "tol_km": 1.0,
+     "fit_max_km": 0.988,
+     "fetched": 313,
+     "step_min_s": 240.0,
+     "step_max_s": 118800.0,
+     "steps": {
+      "under 10 min": 8,
+      "10 min to 1 h": 11,
+      "1 h to 6 h": 15,
+      "6 h to 1 d": 9,
+      "1 d to 10 d": 2
+     },
+     "closest": {
+      "at": "1992-12-08T15:09:00Z",
+      "km": 6681.0
+     },
+     "passes": 1,
+     "centre_source": "galileo_merged"
+    },
+    {
+     "centre": "sun",
+     "from": "1992-12-13T00:00:00Z",
+     "to": "1995-11-01T00:00:00Z",
+     "samples": 158,
+     "tol_km": 5.0,
+     "fit_max_km": 4.976,
+     "fetched": 2138,
+     "step_min_s": 60.0,
+     "step_max_s": 2160000.0,
+     "steps": {
+      "under 10 min": 6,
+      "10 min to 1 h": 1,
+      "1 h to 6 h": 4,
+      "6 h to 1 d": 8,
+      "1 d to 10 d": 97,
+      "over 10 d": 41
+     },
+     "centre_source": "galileo_merged"
+    },
+    {
+     "centre": "jupiter",
+     "from": "1995-11-01T00:00:00Z",
+     "to": "2003-09-21T18:00:00Z",
+     "samples": 1945,
+     "tol_km": 60.0,
+     "fit_max_km": 60.0,
+     "fetched": 69406,
+     "step_min_s": 900.0,
+     "step_max_s": 468000.0,
+     "steps": {
+      "10 min to 1 h": 31,
+      "1 h to 6 h": 367,
+      "6 h to 1 d": 434,
+      "1 d to 10 d": 1112
+     },
+     "closest": {
+      "at": "2002-11-05T07:30:00Z",
+      "km": 142437.2
+     },
+     "passes": 35,
+     "centre_source": "galileo_merged"
+    }
+   ]
+  },
+  {
+   "id": "deep-pioneer-10",
+   "name": "Pioneer 10",
+   "command": "-23",
+   "file": "deep-pioneer-10.bin",
+   "bytes": 27788,
+   "sha256": "54b9112bfb49d6dd6c27758d73f798541f8f8cb714882d07d3c9075c7b953084",
+   "span": [
+    "1972-03-03T02:04:00Z",
+    "2031-01-01T00:00:00Z"
+   ],
+   "samples": 753,
+   "solution": "pioneer_10_merged",
+   "header_revised": "Jul 27, 2005",
+   "retrieved": "2026-10-06",
+   "fit_max_km": 5.0,
+   "heldout": {
+    "n": 48,
+    "max_km": 4.964
+   },
+   "good_to_km": 10.0,
+   "segments": [
+    {
+     "centre": "earth",
+     "from": "1972-03-03T02:04:00Z",
+     "to": "1972-03-06T00:00:00Z",
+     "samples": 21,
+     "tol_km": 1.0,
+     "fit_max_km": 0.883,
+     "fetched": 116,
+     "step_min_s": 240.0,
+     "step_max_s": 71760.0,
+     "steps": {
+      "under 10 min": 4,
+      "10 min to 1 h": 6,
+      "1 h to 6 h": 6,
+      "6 h to 1 d": 4
+     },
+     "closest": {
+      "at": "1972-03-03T02:04:00Z",
+      "km": 6826.3
+     },
+     "passes": 1,
+     "centre_source": "pioneer_10_merged"
+    },
+    {
+     "centre": "sun",
+     "from": "1972-03-06T00:00:00Z",
+     "to": "1973-11-04T00:00:00Z",
+     "samples": 101,
+     "tol_km": 5.0,
+     "fit_max_km": 4.985,
+     "fetched": 830,
+     "step_min_s": 60.0,
+     "step_max_s": 1900800.0,
+     "steps": {
+      "under 10 min": 4,
+      "6 h to 1 d": 1,
+      "1 d to 10 d": 75,
+      "over 10 d": 20
+     },
+     "centre_source": "pioneer_10_merged"
+    },
+    {
+     "centre": "jupiter",
+     "from": "1973-11-04T00:00:00Z",
+     "to": "1974-01-03T00:00:00Z",
+     "samples": 182,
+     "tol_km": 1.0,
+     "fit_max_km": 1.0,
+     "fetched": 1665,
+     "step_min_s": 60.0,
+     "step_max_s": 57600.0,
+     "steps": {
+      "under 10 min": 4,
+      "10 min to 1 h": 34,
+      "1 h to 6 h": 38,
+      "6 h to 1 d": 105
+     },
+     "closest": {
+      "at": "1973-12-04T02:25:00Z",
+      "km": 203122.9
+     },
+     "passes": 1,
+     "centre_source": "pioneer_10_merged"
+    },
+    {
+     "centre": "sun",
+     "from": "1974-01-03T00:00:00Z",
+     "to": "2031-01-01T00:00:00Z",
+     "samples": 449,
+     "tol_km": 5.0,
+     "fit_max_km": 5.0,
+     "fetched": 20960,
+     "step_min_s": 60.0,
+     "step_max_s": 8726400.0,
+     "steps": {
+      "under 10 min": 2,
+      "6 h to 1 d": 2,
+      "1 d to 10 d": 36,
+      "over 10 d": 408
+     },
+     "centre_source": "pioneer_10_merged"
+    }
+   ],
+   "rough": {
+    "until": "2031-01-01T00:00:00Z",
+    "text": "JPL says of this Pioneer 10 trajectory that it is suitable for general historical purposes; it was built on the planetary ephemeris of the 1970s."
+   }
+  },
+  {
+   "id": "deep-pioneer-11",
+   "name": "Pioneer 11",
+   "command": "-24",
+   "file": "deep-pioneer-11.bin",
+   "bytes": 33424,
+   "sha256": "d8444efc9be8bebcd59d95221d470264d40fd4379860907dc029f3dbd3e05525",
+   "span": [
+    "1973-04-06T02:25:00Z",
+    "2031-01-01T00:00:00Z"
+   ],
+   "samples": 932,
+   "solution": "pioneer_11_merged",
+   "header_revised": "Jun 15, 2007",
+   "retrieved": "2026-10-06",
+   "fit_max_km": 4.999,
+   "heldout": {
+    "n": 48,
+    "max_km": 4.841
+   },
+   "good_to_km": 10.0,
+   "segments": [
+    {
+     "centre": "earth",
+     "from": "1973-04-06T02:25:00Z",
+     "to": "1973-04-09T00:00:00Z",
+     "samples": 21,
+     "tol_km": 1.0,
+     "fit_max_km": 0.994,
+     "fetched": 116,
+     "step_min_s": 240.0,
+     "step_max_s": 59700.0,
+     "steps": {
+      "under 10 min": 4,
+      "10 min to 1 h": 6,
+      "1 h to 6 h": 6,
+      "6 h to 1 d": 4
+     },
+     "closest": {
+      "at": "1973-04-06T02:25:00Z",
+      "km": 6609.7
+     },
+     "passes": 1,
+     "centre_source": "pioneer_11_merged"
+    },
+    {
+     "centre": "sun",
+     "from": "1973-04-09T00:00:00Z",
+     "to": "1974-11-03T00:00:00Z",
+     "samples": 95,
+     "tol_km": 5.0,
+     "fit_max_km": 4.991,
+     "fetched": 728,
+     "step_min_s": 60.0,
+     "step_max_s": 2160000.0,
+     "steps": {
+      "under 10 min": 3,
+      "6 h to 1 d": 1,
+      "1 d to 10 d": 71,
+      "over 10 d": 19
+     },
+     "centre_source": "pioneer_11_merged"
+    },
+    {
+     "centre": "jupiter",
+     "from": "1974-11-03T00:00:00Z",
+     "to": "1975-01-02T00:00:00Z",
+     "samples": 192,
+     "tol_km": 1.0,
+     "fit_max_km": 1.0,
+     "fetched": 1695,
+     "step_min_s": 60.0,
+     "step_max_s": 61200.0,
+     "steps": {
+      "under 10 min": 10,
+      "10 min to 1 h": 36,
+      "1 h to 6 h": 40,
+      "6 h to 1 d": 105
+     },
+     "closest": {
+      "at": "1974-12-03T05:20:00Z",
+      "km": 113555.3
+     },
+     "passes": 1,
+     "centre_source": "pioneer_11_merged"
+    },
+    {
+     "centre": "sun",
+     "from": "1975-01-02T00:00:00Z",
+     "to": "1979-08-02T00:00:00Z",
+     "samples": 114,
+     "tol_km": 5.0,
+     "fit_max_km": 4.999,
+     "fetched": 1816,
+     "step_min_s": 60.0,
+     "step_max_s": 2851200.0,
+     "steps": {
+      "under 10 min": 2,
+      "1 d to 10 d": 19,
+      "over 10 d": 92
+     },
+     "centre_source": "pioneer_11_merged"
+    },
+    {
+     "centre": "saturn",
+     "from": "1979-08-02T00:00:00Z",
+     "to": "1979-10-01T00:00:00Z",
+     "samples": 121,
+     "tol_km": 1.0,
+     "fit_max_km": 0.999,
+     "fetched": 1612,
+     "step_min_s": 60.0,
+     "step_max_s": 252000.0,
+     "steps": {
+      "under 10 min": 2,
+      "10 min to 1 h": 34,
+      "1 h to 6 h": 32,
+      "6 h to 1 d": 26,
+      "1 d to 10 d": 26
+     },
+     "closest": {
+      "at": "1979-09-01T16:30:00Z",
+      "km": 80861.7
+     },
+     "passes": 1,
+     "centre_source": "pioneer_11_merged"
+    },
+    {
+     "centre": "sun",
+     "from": "1979-10-01T00:00:00Z",
+     "to": "2031-01-01T00:00:00Z",
+     "samples": 389,
+     "tol_km": 5.0,
+     "fit_max_km": 4.997,
+     "fetched": 18934,
+     "step_min_s": 60.0,
+     "step_max_s": 8812800.0,
+     "steps": {
+      "under 10 min": 3,
+      "6 h to 1 d": 2,
+      "1 d to 10 d": 27,
+      "over 10 d": 356
+     },
+     "centre_source": "pioneer_11_merged"
+    }
+   ],
+   "rough": {
+    "until": "2031-01-01T00:00:00Z",
+    "text": "JPL says of this Pioneer 11 trajectory that it is suitable for general historical purposes; it was built on the planetary ephemeris of the 1970s."
+   }
+  },
+  {
+   "id": "deep-jwst",
+   "name": "James Webb Space Telescope",
+   "command": "-170",
+   "file": "deep-jwst.bin",
+   "bytes": 12688,
+   "sha256": "5c291eeb39c8e9c73aa99dd1fbf8028f9959abb1b841b2b22ac37e605c601e59",
+   "span": [
+    "2021-12-25T13:01:00Z",
+    "2026-10-26T00:00:00Z"
+   ],
+   "samples": 452,
+   "solution": "JWST_merged",
+   "header_revised": "Sep 30, 2026",
+   "retrieved": "2026-10-06",
+   "fit_max_km": 9.999,
+   "heldout": {
+    "n": 48,
+    "max_km": 9.905
+   },
+   "good_to_km": 20.0,
+   "segments": [
+    {
+     "centre": "earth",
+     "from": "2021-12-25T13:01:00Z",
+     "to": "2026-10-26T00:00:00Z",
+     "samples": 452,
+     "tol_km": 10.0,
+     "fit_max_km": 9.999,
+     "fetched": 42384,
+     "step_min_s": 900.0,
+     "step_max_s": 493200.0,
+     "steps": {
+      "10 min to 1 h": 4,
+      "1 h to 6 h": 6,
+      "6 h to 1 d": 6,
+      "1 d to 10 d": 435
+     },
+     "closest": {
+      "at": "2021-12-25T13:01:00Z",
+      "km": 11782.6
+     },
+     "passes": 1,
+     "centre_source": "DE441"
+    }
+   ]
+  },
+  {
+   "id": "jezero",
+   "name": "Perseverance",
+   "command": "-168",
+   "file": "jezero.bin",
+   "bytes": 3580,
+   "sha256": "ebaff8b22b64b73b1e580e9a3d7206cc04690537a11d701aabee06dd21e0e68f",
+   "span": [
+    "2020-07-30T12:52:00Z",
+    "2021-02-18T20:30:00Z"
+   ],
+   "samples": 101,
+   "solution": "Mars2020_merged",
+   "header_revised": "Feb 18, 2021",
+   "retrieved": "2026-10-06",
+   "fit_max_km": 4.88,
+   "heldout": {
+    "n": 48,
+    "max_km": 12.233
+   },
+   "good_to_km": 20.0,
+   "segments": [
+    {
+     "centre": "earth",
+     "from": "2020-07-30T12:52:00Z",
+     "to": "2020-08-03T00:00:00Z",
+     "samples": 26,
+     "tol_km": 1.0,
+     "fit_max_km": 0.923,
+     "fetched": 118,
+     "step_min_s": 300.0,
+     "step_max_s": 58080.0,
+     "steps": {
+      "under 10 min": 2,
+      "10 min to 1 h": 8,
+      "1 h to 6 h": 10,
+      "6 h to 1 d": 5
+     },
+     "closest": {
+      "at": "2020-07-30T12:52:00Z",
+      "km": 9247.1
+     },
+     "passes": 1,
+     "centre_source": "Mars2020_merged"
+    },
+    {
+     "centre": "sun",
+     "from": "2020-08-03T00:00:00Z",
+     "to": "2021-02-12T00:00:00Z",
+     "samples": 56,
+     "tol_km": 5.0,
+     "fit_max_km": 4.88,
+     "fetched": 207,
+     "step_min_s": 21600.0,
+     "step_max_s": 518400.0,
+     "steps": {
+      "6 h to 1 d": 1,
+      "1 d to 10 d": 54
+     },
+     "centre_source": "Mars2020_merged"
+    },
+    {
+     "centre": "mars",
+     "from": "2021-02-12T00:00:00Z",
+     "to": "2021-02-18T20:30:00Z",
+     "samples": 19,
+     "tol_km": 1.0,
+     "fit_max_km": 0.969,
+     "fetched": 182,
+     "step_min_s": 900.0,
+     "step_max_s": 162000.0,
+     "steps": {
+      "10 min to 1 h": 5,
+      "1 h to 6 h": 6,
+      "6 h to 1 d": 4,
+      "1 d to 10 d": 3
+     },
+     "closest": {
+      "at": "2021-02-18T20:30:00Z",
+      "km": 4437.7
+     },
+     "passes": 1,
+     "centre_source": "Mars2020_merged"
+    }
+   ]
+  },
+  {
+   "id": "asteroid-99942",
+   "name": "Apophis",
+   "command": "99942;",
+   "file": "asteroid-99942.bin",
+   "bytes": 18492,
+   "sha256": "cae0f575ae491e7e551ad46f0c058117adee0e36741b8283520e5e02fec73085",
+   "span": [
+    "2026-10-01T00:00:00Z",
+    "2029-12-31T00:00:00Z"
+   ],
+   "samples": 472,
+   "solution": "JPL#220",
+   "header_revised": null,
+   "solution_date": "2024-Jun-25_10:48:08",
+   "retrieved": "2026-10-06",
+   "fit_max_km": 4.99,
+   "heldout": {
+    "n": 48,
+    "max_km": 3.185
+   },
+   "good_to_km": 10.0,
+   "segments": [
+    {
+     "centre": "sun",
+     "from": "2026-10-01T00:00:00Z",
+     "to": "2029-04-03T00:00:00Z",
+     "samples": 348,
+     "tol_km": 5.0,
+     "fit_max_km": 4.99,
+     "fetched": 916,
+     "step_min_s": 86400.0,
+     "step_max_s": 345600.0,
+     "steps": {
+      "1 d to 10 d": 347
+     },
+     "centre_source": "DE441"
+    },
+    {
+     "centre": "earth",
+     "from": "2029-04-03T00:00:00Z",
+     "to": "2029-04-24T00:00:00Z",
+     "samples": 39,
+     "tol_km": 2.0,
+     "fit_max_km": 1.985,
+     "fetched": 538,
+     "step_min_s": 1800.0,
+     "step_max_s": 223200.0,
+     "steps": {
+      "10 min to 1 h": 7,
+      "1 h to 6 h": 13,
+      "6 h to 1 d": 10,
+      "1 d to 10 d": 8
+     },
+     "closest": {
+      "at": "2029-04-13T21:45:00Z",
+      "km": 38011.4
+     },
+     "passes": 1,
+     "centre_source": "DE441"
+    },
+    {
+     "centre": "sun",
+     "from": "2029-04-24T00:00:00Z",
+     "to": "2029-12-31T00:00:00Z",
+     "samples": 85,
+     "tol_km": 5.0,
+     "fit_max_km": 4.96,
+     "fetched": 252,
+     "step_min_s": 172800.0,
+     "step_max_s": 432000.0,
+     "steps": {
+      "1 d to 10 d": 84
+     },
+     "centre_source": "DE441"
+    }
+   ],
+   "rough": {
+    "until": "2029-12-31T00:00:00Z",
+    "text": "This is a prediction from JPL's orbit solution for Apophis, not a record of what happened."
+   }
+  },
+  {
+   "id": "deep-osiris-apex",
+   "name": "OSIRIS-APEX",
+   "command": "-64",
+   "file": "deep-osiris-apex.bin",
+   "bytes": 26352,
+   "sha256": "23e82f0fa449e781eed732cfe0369413117087206893e10c84187cd405330188",
+   "span": [
+    "2026-10-01T00:00:00Z",
+    "2030-03-01T00:00:00Z"
+   ],
+   "samples": 688,
+   "solution": "ORX_merged",
+   "header_revised": "Sep 18, 2025",
+   "retrieved": "2026-10-06",
+   "fit_max_km": 4.979,
+   "heldout": {
+    "n": 48,
+    "max_km": 4.851
+   },
+   "good_to_km": 10.0,
+   "segments": [
+    {
+     "centre": "sun",
+     "from": "2026-10-01T00:00:00Z",
+     "to": "2027-03-11T00:00:00Z",
+     "samples": 73,
+     "tol_km": 5.0,
+     "fit_max_km": 4.941,
+     "fetched": 162,
+     "step_min_s": 172800.0,
+     "step_max_s": 259200.0,
+     "steps": {
+      "1 d to 10 d": 72
+     },
+     "centre_source": "ORX_merged"
+    },
+    {
+     "centre": "earth",
+     "from": "2027-03-11T00:00:00Z",
+     "to": "2027-03-21T00:00:00Z",
+     "samples": 50,
+     "tol_km": 1.0,
+     "fit_max_km": 0.995,
+     "fetched": 314,
+     "step_min_s": 300.0,
+     "step_max_s": 111600.0,
+     "steps": {
+      "under 10 min": 6,
+      "10 min to 1 h": 16,
+      "1 h to 6 h": 13,
+      "6 h to 1 d": 12,
+      "1 d to 10 d": 2
+     },
+     "closest": {
+      "at": "2027-03-16T03:30:00Z",
+      "km": 10560.7
+     },
+     "passes": 1,
+     "centre_source": "ORX_merged"
+    },
+    {
+     "centre": "sun",
+     "from": "2027-03-21T00:00:00Z",
+     "to": "2029-04-03T00:00:00Z",
+     "samples": 404,
+     "tol_km": 5.0,
+     "fit_max_km": 4.963,
+     "fetched": 1354,
+     "step_min_s": 600.0,
+     "step_max_s": 864000.0,
+     "steps": {
+      "10 min to 1 h": 1,
+      "1 d to 10 d": 401,
+      "over 10 d": 1
+     },
+     "centre_source": "ORX_merged"
+    },
+    {
+     "centre": "earth",
+     "from": "2029-04-03T00:00:00Z",
+     "to": "2029-04-24T00:00:00Z",
+     "samples": 58,
+     "tol_km": 1.0,
+     "fit_max_km": 0.997,
+     "fetched": 605,
+     "step_min_s": 300.0,
+     "step_max_s": 187200.0,
+     "steps": {
+      "under 10 min": 8,
+      "10 min to 1 h": 14,
+      "1 h to 6 h": 14,
+      "6 h to 1 d": 13,
+      "1 d to 10 d": 8
+     },
+     "closest": {
+      "at": "2029-04-13T23:05:00Z",
+      "km": 7527.7
+     },
+     "passes": 1,
+     "centre_source": "ORX_merged"
+    },
+    {
+     "centre": "sun",
+     "from": "2029-04-24T00:00:00Z",
+     "to": "2030-03-01T00:00:00Z",
+     "samples": 103,
+     "tol_km": 5.0,
+     "fit_max_km": 4.979,
+     "fetched": 437,
+     "step_min_s": 1800.0,
+     "step_max_s": 518400.0,
+     "steps": {
+      "10 min to 1 h": 1,
+      "6 h to 1 d": 3,
+      "1 d to 10 d": 98
+     },
+     "centre_source": "ORX_merged"
+    }
+   ],
+   "rough": {
+    "until": "2030-03-01T00:00:00Z",
+    "text": "This is the mission's planned trajectory as JPL holds it, not a record of what happened."
+   }
+  }
+ ]
+}

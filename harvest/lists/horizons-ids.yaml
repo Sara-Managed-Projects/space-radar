@@ -89,6 +89,11 @@ ids:
   - {id: "-31",  name: "Voyager 1",                  app_id: deep-voyager-1}
   - {id: "-32",  name: "Voyager 2",                  app_id: deep-voyager-2}
   - {id: "-98",  name: "New Horizons",               app_id: deep-new-horizons}
+  # The two Pioneers (2026-10-06): Horizons holds both trajectories to 2050. Cassini (-82) and
+  # Galileo (-77) are NOT here and must not be: their trajectories end in 2017 and 2003, so a
+  # request for today is refused. They are drawn from their path files only (site/data/eph).
+  - {id: "-23",  name: "Pioneer 10",                 app_id: deep-pioneer-10}
+  - {id: "-24",  name: "Pioneer 11",                 app_id: deep-pioneer-11}
   - {id: "-96",  name: "Parker Solar Probe",         app_id: deep-parker}
   - {id: "-255", name: "Psyche",                     app_id: deep-psyche}
   - {id: "-49",  name: "Lucy",                       app_id: deep-lucy}

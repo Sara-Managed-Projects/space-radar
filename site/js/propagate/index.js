@@ -25,6 +25,16 @@ export { sgp4, kepler, sampled, body, fixed, ascent, staticPos, orbiter };
 /** The registry. Key = record.propagator. */
 export const PROPAGATORS = { sgp4, kepler, sampled, body, fixed, ascent, static: staticPos, orbiter };
 
+/**
+ * A craft's own path, once its file is here (propagate/ephemeris.js, internal #277): record id ->
+ * (tMs) -> {x, y, z, frame, cls: 'inferred', eph: true} | null. Empty at boot and filled only
+ * when a craft's card opens. Inside the file's span it answers INSTEAD of the record's own
+ * propagator, and with its own honesty: the stand-in a record carries (`sample`, a straight
+ * line) says nothing about a position read from JPL's track, so the record's class is not
+ * applied to it. Outside the span it returns null and the record answers as before.
+ */
+export const EPHEMERIS_OF = new Map();
+
 // Strictest first. A propagator may only move a record down this list, never up.
 const CLASS_ORDER = ['measured', 'inferred', 'illustrative', 'sample'];
 
@@ -43,6 +53,12 @@ function weakest(a, b) {
  */
 export function propagate(record, tMs) {
   if (!record || !Number.isFinite(tMs)) return null;
+  if (EPHEMERIS_OF.size) {
+    const own = EPHEMERIS_OF.get(record.id);
+    let at = null;
+    try { at = own ? own(tMs) : null; } catch (err) { at = null; }
+    if (at && Number.isFinite(at.x) && Number.isFinite(at.y) && Number.isFinite(at.z)) return at;
+  }
   const fn = PROPAGATORS[record.propagator];
   if (typeof fn !== 'function') return null;
 

@@ -27,7 +27,7 @@ const check = (ok, msg) => { if (!ok) problems.push(msg); };
 // --- the registry ----------------------------------------------------------------------------------
 const deep = sampleDeepSpace();
 const known = new Set([...deep.map((r) => r.id), ...SITES.map((s) => s.id), 'sat-25544']);
-const WORLDS = new Set(['earth', 'moon', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto']);
+const WORLDS = new Set(['earth', 'moon', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto']);
 check(M.MISSIONS.length >= 6, `a handful of flagship missions (${M.MISSIONS.length})`);
 const ids = new Set();
 let events = 0;
@@ -49,7 +49,7 @@ for (const m of M.MISSIONS) {
     check(e.title && [...e.title].length <= 34, `${where}: a title that fits one line of the card (${[...String(e.title)].length})`);
     check(e.text && [...e.text].length <= 160 && /\.$/.test(e.text), `${where}: one sentence of 160 characters at most (${[...String(e.text)].length})`);
     check(!/!| -- |→/.test(e.title + e.text), `${where}: no exclamation mark, double hyphen or arrow`);
-    check(['site', 'cruise', 'none'].includes(e.place), `${where}: place is site, cruise or none`);
+    check(['site', 'path', 'cruise', 'none'].includes(e.place), `${where}: place is site, path, cruise or none`);
     check(!e.world || WORLDS.has(e.world), `${where}: its world is one the map draws for any date`);
     check(e.precision === undefined || e.precision === 'day', `${where}: precision is day or absent`);
     check((e.precision === 'day') === !/T/.test(e.date), `${where}: a date without a time says it is known to the day`);
@@ -69,14 +69,19 @@ check(M.nearestIndex(v1, Date.parse('1985-01-01T00:00:00Z')) === 2 && M.nearestI
 const rec = (id) => deep.find((r) => r.id === id);
 const never = () => null;
 const jupiter = v1.events.find((e) => e.id === 'jupiter');
-check(M.placement(jupiter, rec('deep-voyager-1'), M.eventMs(jupiter)).moves === false, 'Voyager 1 at Jupiter: the map has no path for 1979, so the clock does not move');
-check(M.placement(jupiter, rec('deep-voyager-1'), M.eventMs(jupiter), () => ({ x: 1, y: 1, z: 1 })).moves === false, 'not even if something answers for that date: the registry says none');
+// Voyager 1 at Jupiter was `none` until 2026-10-06; it is `path` now (tests/test_ephemerides.mjs
+// holds the path files to their word). What `none` means has not changed:
+const noPath = { ...jupiter, place: 'none' };
+check(M.placement(noPath, rec('deep-voyager-1'), M.eventMs(jupiter)).moves === false, 'an event the registry marks none does not move the clock');
+check(M.placement(noPath, rec('deep-voyager-1'), M.eventMs(jupiter), () => ({ x: 1, y: 1, z: 1 })).moves === false, 'not even if something answers for that date: the registry says none');
+check(M.placement(jupiter, rec('deep-voyager-1'), M.eventMs(jupiter)).kind === 'path', 'Voyager 1 at Jupiter: the map holds its path for 1979, and the clock moves');
 const apollo = M.MISSIONS.find((m) => m.id === 'apollo-11');
 const landing = apollo.events.find((e) => e.id === 'landing');
 check(M.placement(landing, { id: 'apollo-11' }, M.eventMs(landing)).kind === 'site' && M.placement(landing, { id: 'apollo-11' }, M.eventMs(landing)).moves, 'the Apollo 11 landing is a place on the Moon: the clock goes to 1969');
 check(M.placement(apollo.events[0], { id: 'apollo-11' }, M.eventMs(apollo.events[0])).moves === false, 'its launch is not: the craft in flight has no path');
-const interstellar = v1.events.find((e) => e.id === 'interstellar');
+const interstellar = { ...v1.events.find((e) => e.id === 'interstellar'), place: 'cruise' };
 {
+  // The straight line, for a craft with no file: no row uses it today, and the rule stands.
   const live = { id: 'deep-voyager-1', propagator: 'sampled', samples: [{ tMs: Date.parse('2026-09-27T00:00:00Z'), rKm: [-4.81e9, -2.04e10, 1.48e10], vKmS: [-3.2, -13.4, 9.9] }] };
   check(M.placement(interstellar, live, M.eventMs(interstellar), never).kind === 'cruise', 'with a path that covers only this month, 2012 is drawn on the straight line back');
   check(M.placement(interstellar, live, M.eventMs(interstellar), () => ({ x: 1, y: 2, z: 3 })).kind === 'path', 'and on the map\'s own path when it has one');
@@ -111,7 +116,7 @@ check(Math.abs(nhArr - 43.4) < 1.5, `New Horizons at Arrokoth: ${nhArr.toFixed(1
 
 // --- the words -------------------------------------------------------------------------------------
 check(M.eventWhen(jupiter) === '5 March 1979, 12:05 UTC' && M.eventWhen(interstellar) === '25 August 2012' && M.eventMs(M.findEvent('new-horizons.pluto').event) === Date.parse('2015-07-14T12:00:00Z'), `a time in UTC, or the day alone (${M.eventWhen(jupiter)} / ${M.eventWhen(interstellar)})`);
-check(M.eventNote(v1, jupiter, { kind: 'none', moves: false }, 'Jupiter').includes('the clock stays where it is') && M.eventNote(v1, jupiter, { kind: 'none', moves: false }, 'Jupiter').includes('Voyager 1'), 'an event the map cannot place says the clock has not moved, and why');
+check(M.eventNote(v1, noPath, { kind: 'none', moves: false }, 'Jupiter').includes('the clock stays where it is') && M.eventNote(v1, noPath, { kind: 'none', moves: false }, 'Jupiter').includes('Voyager 1'), 'an event the map cannot place says the clock has not moved, and why');
 check(/straight line/.test(M.eventNote(v1, interstellar, { kind: 'cruise', moves: true })) && /astronomical unit/.test(M.eventNote(v1, interstellar, { kind: 'cruise', moves: true })), 'the straight line says it is one, and how good it is');
 check(M.eventNote(apollo, landing, { kind: 'site', moves: true }) === COPY.mission.noteSite, 'a site says the map can show it');
 
@@ -130,7 +135,7 @@ check(/st\.event && typeof ctx\.wantMissions/.test(main) && /COPY\.mission\.unkn
 const cards = readFileSync(join(JS, 'ui/cards.js'), 'utf8');
 check(!/^import .*missions/m.test(cards) && /ctx\.wantMissions\(\)/.test(cards), 'the card asks for them and does not import them');
 const yaml = readFileSync(join(ROOT, 'registry/missions.yaml'), 'utf8');
-check(/internal #277/.test(yaml) && /reviewed_on: 2026-/.test(yaml) && /NOTHING HERE IS FROM MEMORY/.test(yaml), 'the registry says what is missing (our own ephemerides), when its dates were read, and that none is from memory');
+check(/internal #277/.test(yaml) && /reviewed_on: 2026-/.test(yaml) && /NOTHING HERE IS FROM MEMORY/.test(yaml) && /path_at/.test(yaml), 'the registry says where a craft\'s path comes from, when its dates were read, and that none is from memory');
 check(/event\.source \|\| mission\.source/.test(readFileSync(join(JS, 'ui/missions.js'), 'utf8')), 'the card links to the page the shown event was read on');
 
 if (problems.length) { console.error('missions FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }

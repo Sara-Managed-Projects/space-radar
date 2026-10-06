@@ -59,6 +59,10 @@ const DEFERRED = {
   'js/sky/skyculture.js': 'other peoples\' figures, the borders and the pictures: sky/groundsky.js fetches it when one is asked for',
   'js/sky/meteors.js': 'a shower\'s streaks: sky/groundsky.js fetches it when a shower is active',
   'js/sky/skyglow.js': 'the night lights at a place: sky/skyview.js fetches it when the sky view opens',
+  'js/ui/missions.js': 'the mission events: main.js fetches them with the first card',
+  'js/propagate/ephemeris.js': 'the reader of a craft\'s own path file: it arrives with ui/missions.js',
+  'js/data/ephemerides.js': 'the index of the path files: with the reader',
+  'js/scene/ephpath.js': 'the line of a craft\'s path: ui/missions.js fetches it with the first file',
 };
 for (const [path, why] of Object.entries(DEFERRED)) {
   check(!boot.has(path), `${path} is in the boot graph again (a static import reaches it from main.js). ${why}`);

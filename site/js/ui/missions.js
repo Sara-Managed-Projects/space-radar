@@ -20,16 +20,25 @@
 //   cruise  a craft coasting out of the Solar System. If the map holds a path for that date it
 //           is used; if not, the craft is drawn on the straight line back from its measured
 //           position today (cruiseKnot), which the note says, with how good that is.
-//   none    the map has no path for the craft on that date: we have no ephemeris of our own yet
-//           (internal #277). The event is told, THE CLOCK DOES NOT MOVE, and the note says why.
+//   path    the map holds a file of the craft's own path, from JPL Horizons, covering that date
+//           (propagate/ephemeris.js, registry/ephemerides.yaml). The file is fetched, the clock
+//           moves, the map goes to the world the craft was passing and frames the two together,
+//           and the note says how closely the file follows JPL's track. `path_at` is where the
+//           clock goes when that is not the event's own instant: a launch (JPL's track begins some
+//           minutes after liftoff) and a flyby dated to the day (the closest pass in the track).
+//   none    the map has no path for the craft on that date. The event is told, THE CLOCK DOES
+//           NOT MOVE, and the note says why.
 //           Where the event happened at a world the map draws for any date, the card offers
 //           that world on that day instead, which is true: the planet and its moons were there.
 //
 // Nothing here is in the first visit: main.js imports this file the first time a card opens.
 
-import { COPY, t, timeText } from '../copy/en.js';
+import { COPY, t, timeText, fmt } from '../copy/en.js';
+import '../copy/en.later.js';
 import { MISSIONS } from '../data/missions.js';
 import { propagate as propagateRecord } from '../propagate/index.js';
+import { covers, ensure, indexOf, loaded, stateAt } from '../propagate/ephemeris.js';
+import { worldRadiusKm } from '../propagate/frames.js';
 import { write as writeUrl, read as readUrl } from './urlstate.js';
 
 export { MISSIONS };
@@ -61,6 +70,16 @@ export function findEvent(id) {
 export function eventMs(event) {
   const d = String((event && event.date) || '');
   return Date.parse(/T/.test(d) ? d : `${d}T12:00:00Z`);
+}
+
+/**
+ * Where the clock goes for an event: its own instant, or `path_at` (registry/missions.yaml): the
+ * first minute of JPL's track for a launch, the closest pass in that track for a flyby NASA dates
+ * to the day.
+ */
+export function eventClockMs(event) {
+  const from = event && event.path_at ? Date.parse(event.path_at) : NaN;
+  return Number.isFinite(from) ? from : eventMs(event);
 }
 
 /** The last event at or before `tMs`, or the first when the clock is before them all. */
@@ -97,6 +116,9 @@ export function placement(event, record, tMs, propagate = propagateRecord) {
   const no = { kind: 'none', moves: false };
   if (!event || !record || !Number.isFinite(tMs)) return no;
   if (event.place === 'site') return { kind: 'site', moves: true };
+  // The craft's own file, by its index: the registry may say `path` only where the file spans the
+  // date (scripts/build_ephemerides.py --check refuses otherwise), and this asks again.
+  if (event.place === 'path') return covers(record.id, eventClockMs(event)) ? { kind: 'path', moves: true } : no;
   if (event.place !== 'cruise') return no;
   let at = null;
   try { at = propagate(record, tMs); } catch { at = null; }
@@ -124,7 +146,16 @@ export function eventWhen(event) {
 export function eventNote(mission, event, place, worldName) {
   const M = COPY.mission;
   if (place.kind === 'site') return M.noteSite;
-  if (place.kind === 'path') return M.notePath;
+  if (place.kind === 'path') {
+    const row = indexOf(mission.record);
+    if (!row) return M.notePath;
+    const E = COPY.ephemeris;
+    const km = fmt.int(row.goodToKm);
+    if (!event.path_at) return t(E.note, { km });
+    // A day with no time on NASA's page: the clock goes to the closest pass in JPL's track.
+    if (event.precision === 'day') return t(E.noteDay, { time: timeText.utcHm(eventClockMs(event)), km });
+    return t(E.noteLate, { n: fmt.int(Math.round((eventClockMs(event) - eventMs(event)) / 60e3)), km });
+  }
   if (place.kind === 'cruise') return t(M.noteCruise, { name: mission.display });
   return worldName ? t(M.noteNoneWorld, { name: mission.display }) : t(M.noteNone, { name: mission.display });
 }
@@ -135,6 +166,9 @@ export function eventNote(mission, event, place, worldName) {
 const shown = new Map();
 let applied = null; // the event id the clock was last moved to
 const listOpen = new Set();
+/** Events whose path file did not load when asked: the note says so, and choosing again retries. */
+const failed = new Set();
+let asked = 0;
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -163,6 +197,22 @@ function choose(ctx, mission, index, record) {
   shown.set(mission.id, index);
   writeUrl({ event: id });
   const place = placement(event, record, tMs);
+  if (place.kind === 'path') {
+    // The file first: the clock does not move until the map can show the craft there.
+    failed.delete(id);
+    const mine = ++asked;
+    ensure(record.id).then((eph) => {
+      if (mine !== asked) return; // a later choice has been made while this one was fetching
+      if (!eph) {
+        failed.add(id);
+        applied = null;
+        if (typeof ctx.refreshCard === 'function') ctx.refreshCard();
+        return;
+      }
+      goToPath(ctx, record, eph, id, eventClockMs(event));
+    });
+    return;
+  }
   if (place.moves) {
     if (typeof ctx.rememberView === 'function') ctx.rememberView();
     if (place.kind === 'cruise') layCruise(record, tMs);
@@ -183,6 +233,55 @@ function choose(ctx, mission, index, record) {
   }
 }
 
+/**
+ * Which stage an instant of a craft's path is seen from. Round a world, that world's own stage:
+ * there the world is at its true size and the craft exactly as far from it as JPL has it (on the
+ * Earth's stage a planet is drawn nearer and larger than it is, and the craft would be nowhere
+ * near the disc). Round the Sun, the stage stays if it is the Earth's or the Sun's, and another
+ * world's stage gives way to the Sun's. Pure.
+ */
+export function stageForPath(centre, stageNow) {
+  if (centre && centre !== 'sun') return centre;
+  return stageNow === 'earth' || stageNow === 'sun' ? stageNow : 'sun';
+}
+
+/**
+ * How far behind the craft the camera stands so the world it is passing is in the picture: the
+ * rig arrives beyond its subject looking back at the stage's world, so the world sits behind the
+ * craft. `d` is the craft's distance from the world's centre and `R` the world's radius, in the
+ * same unit. Four radii from the world at least (a disc under half the frame's height), and never
+ * closer to the craft than three fifths of its own distance from the world. Pure.
+ */
+export function withWorldDistance(d, R) {
+  if (!(d > 0) || !(R > 0)) return NaN;
+  return Math.max(4 * R - d, 0.6 * d);
+}
+
+/** Set the clock to a moment of the craft's own path, go to the world it was at, frame the two. */
+function goToPath(ctx, record, eph, id, tMs) {
+  if (typeof ctx.rememberView === 'function') ctx.rememberView();
+  applied = id;
+  ctx.clock.goTo(tMs);
+  const st = stateAt(eph, tMs);
+  const centre = st ? st.centre : 'sun';
+  const stageId = stageForPath(centre, ctx.stage ? ctx.stage.worldId : 'earth');
+  if (typeof ctx.selected === 'function' && ctx.selected() !== record) ctx.select(record, { undo: false, fly: false });
+  if (typeof ctx.setStage === 'function' && ctx.stage && ctx.stage.worldId !== stageId) ctx.setStage(stageId);
+  const fly = () => {
+    if (typeof ctx.selected === 'function' && ctx.selected() !== record) ctx.select(record, { undo: false, fly: false });
+    const at = centre !== 'sun' && centre !== 'earth' && typeof ctx.positionOfRecord === 'function' ? ctx.positionOfRecord(record) : null;
+    const R = worldRadiusKm(centre) / (ctx.stage ? ctx.stage.unitKm : 1);
+    const distance = at ? withWorldDistance(Math.hypot(at.x, at.y, at.z), R) : NaN;
+    if (at && distance > 0 && ctx.cameraRig) {
+      ctx.cameraRig.flyTo({ targetScene: at, distance, ms: 900 });
+      ctx.cameraRig.follow(() => ctx.positionOfRecord(record));
+    } else if (typeof ctx.flyToRecord === 'function') ctx.flyToRecord(record);
+    if (typeof ctx.offerUndo === 'function') ctx.offerUndo(timeText.utcLong(tMs));
+    if (typeof ctx.refreshCard === 'function') ctx.refreshCard();
+  };
+  if (typeof ctx.afterClockJump === 'function') ctx.afterClockJump(fly); else fly();
+}
+
 /** A `none` event that happened at a world: that world, on that day. The craft is not drawn. */
 function seeWorld(ctx, event, world) {
   if (typeof ctx.rememberView === 'function') ctx.rememberView();
@@ -192,20 +291,72 @@ function seeWorld(ctx, event, world) {
   if (typeof ctx.afterClockJump === 'function') ctx.afterClockJump(go); else go();
 }
 
+/**
+ * What the card says of a craft drawn from its own file at `tMs`, or null when it is not (no
+ * file here yet, or the clock outside its span). Up to two sentences: how closely the file
+ * follows JPL's track, and what JPL's own header says of that track where it is rough or a plan.
+ * Pure but for `loaded`, which a test fills through ensure().
+ */
+export function pathWords(recordId, tMs) {
+  const row = indexOf(recordId);
+  if (!row || !loaded(recordId) || !covers(recordId, tMs)) return null;
+  const out = [t(COPY.ephemeris.drawn, { km: fmt.int(row.goodToKm) })];
+  if (row.rough && tMs < Date.parse(row.rough.until)) out.push(row.rough.text);
+  return out;
+}
+
+let pathImport = null;
+/** The thin line of the craft's path so far (scene/ephpath.js), fetched with the first file. */
+function showPath(ctx, record, eph) {
+  if (!ctx.scene || !ctx.stage) return;
+  if (!pathImport) {
+    pathImport = import('../scene/ephpath.js').then((m) => { ctx.ephPath = m.createEphPath(ctx.scene, ctx.stage); return ctx.ephPath; })
+      .catch((e) => { pathImport = null; console.warn('the path line did not load', e); return null; });
+  }
+  pathImport.then((line) => { if (line && typeof ctx.selected === 'function' && ctx.selected() === record) line.set(eph, record.klass); });
+}
+
+/** A record with a file: fetch it when its card opens, then draw from it and say so. */
+function wantPath(ctx, record) {
+  const here = loaded(record.id);
+  if (here) { showPath(ctx, record, here); return; }
+  ensure(record.id).then((eph) => {
+    if (!eph || typeof ctx.selected !== 'function' || ctx.selected() !== record) return;
+    showPath(ctx, record, eph);
+    if (typeof ctx.refreshCard === 'function') ctx.refreshCard();
+  });
+}
+
+function appendPathWords(host, record, now) {
+  const words = pathWords(record.id, now);
+  if (!words) return false;
+  for (const w of words) host.appendChild(el('p', 'sr-mission__note sr-mission__path', w));
+  return true;
+}
+
 export function mountMission(host, record, ctx) {
   const mission = record ? missionOf(record.id) : null;
+  const file = record ? indexOf(record.id) : null;
   if (!host) return false;
   host.hidden = !mission;
   while (host.firstChild) host.removeChild(host.firstChild);
-  if (!mission) return false;
+  if (file) wantPath(ctx, record);
+  if (!mission) {
+    // No event list, but its own path (Apophis, OSIRIS-APEX): the card still says what is drawn.
+    if (file) {
+      host.className = 'sr-card__mission sr-mission';
+      host.hidden = !appendPathWords(host, record, ctx.clock.now());
+    }
+    return false;
+  }
   const M = COPY.mission;
   const now = ctx.clock.now();
   if (!shown.has(mission.id)) shown.set(mission.id, nearestIndex(mission, now));
   const index = Math.min(mission.events.length - 1, Math.max(0, shown.get(mission.id)));
   const event = mission.events[index];
   const id = eventId(mission, event);
-  const tMs = eventMs(event);
-  const place = placement(event, record, tMs);
+  const tMs = eventClockMs(event);
+  const place = placement(event, record, eventMs(event));
   // "The clock is here" only while it is: within an hour (a day for an event known to the day).
   const slack = event.precision === 'day' ? DAY_MS : 3600e3;
   const here = applied === id && ctx.clock.mode !== 'live' && Math.abs(now - tMs) <= slack;
@@ -237,9 +388,11 @@ export function mountMission(host, record, ctx) {
   host.appendChild(nav);
 
   host.appendChild(el('p', 'sr-mission__text', event.text));
-  const note = el('p', 'sr-mission__note', here ? M.here : eventNote(mission, event, place, world && world.name));
+  const note = el('p', 'sr-mission__note', here ? M.here : failed.has(id) ? COPY.ephemeris.failed : eventNote(mission, event, place, world && world.name));
   if (here) note.classList.add('is-here');
   host.appendChild(note);
+  // Drawn from its own file at the clock's time: how closely, and what JPL says of the track.
+  appendPathWords(host, record, now);
   // On the straight line, the clock being there does not make the place measured: say both.
   if (here && place.kind === 'cruise') host.appendChild(el('p', 'sr-mission__note', eventNote(mission, event, place)));
 
@@ -328,6 +481,11 @@ export function install(ctx) {
     const found = findEvent(key);
     const rec = e && e.detail;
     if (!found || !rec || rec.id !== found.mission.record) writeUrl({ event: null });
+  });
+  // The line of a craft's path belongs to the selection too.
+  window.addEventListener('sr:select', (e) => {
+    const rec = e && e.detail;
+    if (ctx.ephPath && (!rec || !loaded(rec.id))) ctx.ephPath.set(null);
   });
   // Live again: the clock is no longer at any event.
   if (ctx && ctx.clock && typeof ctx.clock.onChange === 'function') {

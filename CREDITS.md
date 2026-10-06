@@ -481,11 +481,14 @@ than counted by hand.
 
 | file | NASA model | used for | size |
 |---|---|---|---|
+| `cassini.glb` | Cassini-Huygens (A) | Horizons -82 (Cassini, 1997 to 2017) | 171 KB |
+| `galileo.glb` | Galileo | Horizons -77 (Galileo, 1989 to 2003) | 76 KB |
 | `juno.glb` | Juno (B) | Horizons -61 | 146 KB |
 | `lro.glb` | Lunar Reconnaissance Orbiter (A) | Horizons -85 | 187 KB |
 | `mro.glb` | Mars Reconnaissance Orbiter (MRO) (C) | Horizons -74 | 121 KB |
 | `osiris-rex.glb` | Origins, Spectral Interpretation, Resource Identification, and Security - Regolith Explorer (OSIRIS-REx) | Horizons -64 (OSIRIS-APEX, the same spacecraft on its second mission) | 171 KB |
 | `parker.glb` | Parker Solar Probe | Horizons -96 | 180 KB |
+| `pioneer.glb` | Pioneer 10 | Horizons -23 and -24 (Pioneer 10, and Pioneer 11, its sister craft) | 89 KB |
 | `stereo.glb` | Solar TErrestrial RElations Observatory (STEREO) | Horizons -234 (STEREO-A) | 138 KB |
 | `voyager.glb` | Voyager Probe (A) | Horizons -31, -32 | 143 KB |
 
@@ -797,6 +800,17 @@ International Space Station) are facts read from NASA's own pages (NASA Science,
 date in that file, the page named on the mission's row or on the event's own and linked from the card ("Dates and figures: NASA
 Science, Voyager 1"). The sentences are ours. NASA content is generally not subject to copyright
 in the United States; nothing of those pages is copied here but dates and distances.
+
+**Mission paths (bundled data, not a runtime source).** The files in `site/data/eph/`
+(`registry/ephemerides.yaml`, built by `scripts/build_ephemerides.py`) are state vectors from the
+**JPL Horizons On-Line Ephemeris System** (NASA/JPL-Caltech, Solar System Dynamics Group;
+<https://ssd.jpl.nasa.gov/horizons/>), asked for through its public API on the day in
+`site/data/eph/manifest.json`, thinned and packed by this project: the Voyagers, the Pioneers, New
+Horizons, Juno, Cassini, Galileo, Webb, Mars 2020's cruise, OSIRIS-APEX and the asteroid Apophis.
+The manifest names, for each craft, the Horizons id, the trajectory solution Horizons printed, the
+span, and how far the packed file strays from Horizons' own positions. A work of the US
+government, free to use with credit; the card of a craft drawn from its file says "Drawn from JPL
+Horizons". Between samples the curve is ours (cubic Hermite), and the card says how good it is.
 
 ### 4.1 CelesTrak — read this before you deploy a fork
 

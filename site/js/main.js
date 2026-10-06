@@ -1878,6 +1878,8 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     // Labels ride the same tick as the glyphs they sit over, so the two never drift apart.
     if (ctx.labels && sinceLayerUpdate === 0) ctx.labels.update(t);
     if (ctx.orbitLine) ctx.orbitLine.update(t);
+    // A craft's own path so far (scene/ephpath.js): here only once ui/missions.js has fetched one.
+    if (ctx.ephPath) ctx.ephPath.update(t);
     if (ctx.groundTrack) ctx.groundTrack.update(t);
     if (ctx.orbitRings) {
       const st = ctx.trip && ctx.trip.state;

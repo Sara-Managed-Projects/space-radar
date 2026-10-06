@@ -1054,6 +1054,78 @@ const CRUISING_CRAFT = [
     note: 'It crossed Pluto in nine hours in 2015 after a nine-year fall towards it, and ' +
       'in 2019 flew past Arrokoth, a Kuiper belt rock, the farthest thing ever visited.',
   },
+  // The two Pioneers (2026-10-06): silent since 2003 and 1995, still coasting out, and drawn here
+  // because each has a file of its whole path (registry/ephemerides.yaml). The three numbers are
+  // read from that file, which is JPL Horizons' trajectory for -23 and -24, at 2026-10-06 00:00
+  // UTC: Pioneer 10 at 141.96 au, 11.85 km/s, ecliptic longitude 80.2 and latitude +3.0 degrees;
+  // Pioneer 11 at 117.98 au, 11.14 km/s, 284.7 and +13.9. JPL's header says of both
+  // trajectories that they suit "general historical purposes", and the card of each says so.
+  {
+    id: 'deep-pioneer-10',
+    name: 'Pioneer 10',
+    launched: '1972-03-03',
+    klass: 'probe',
+    horizonsId: -23,
+    distanceAu: 142.0,
+    distanceMeasured: true,
+    checkedWords: '6 October 2026',
+    speedKmS: 11.9,
+    lonDeg: 80,
+    latDeg: 3,
+    note: 'The first spacecraft through the asteroid belt and past Jupiter, in 1973. Its last ' +
+      'signal was heard in January 2003.',
+  },
+  {
+    id: 'deep-pioneer-11',
+    name: 'Pioneer 11',
+    launched: '1973-04-06',
+    klass: 'probe',
+    horizonsId: -24,
+    distanceAu: 118.0,
+    distanceMeasured: true,
+    checkedWords: '6 October 2026',
+    speedKmS: 11.1,
+    lonDeg: 285,
+    latDeg: 14,
+    note: 'The first spacecraft to study Saturn up close, in 1979, after passing Jupiter. ' +
+      'Last heard from in 1995.',
+  },
+];
+
+/**
+ * Construction E: ENDED MISSIONS (2026-10-06, internal #406, #389). Cassini was flown into Saturn
+ * and Galileo into Jupiter, so today there is nowhere to draw them and this row draws nothing:
+ * its own propagator has no samples and answers null. What it has instead is a file of its whole
+ * path from JPL Horizons (registry/ephemerides.yaml, site/data/eph/<id>.bin), fetched when its
+ * card opens; inside those years propagate/index.js draws it from the file, and its card lists
+ * the dated events of its mission (registry/missions.yaml), each of which sets the clock.
+ * `launched` and `ended` were read on NASA Science's page for each mission on 2026-10-06
+ * (science.nasa.gov/mission/cassini, .../galileo), the pages registry/missions.yaml cites.
+ */
+const PAST_CRAFT = [
+  {
+    id: 'deep-cassini',
+    name: 'Cassini',
+    launched: '1997-10-15',
+    ended: '2017-09-15',
+    klass: 'probe',
+    horizonsId: -82,
+    aliases: ['Cassini-Huygens'],
+    note: 'The first spacecraft to orbit Saturn, from 2004 to 2017. It carried the Huygens probe ' +
+      'that landed on Titan, and ended by diving into the planet.',
+    end: 'It was flown into Saturn on 15 September 2017',
+  },
+  {
+    id: 'deep-galileo',
+    name: 'Galileo',
+    launched: '1989-10-18',
+    ended: '2003-09-21',
+    klass: 'probe',
+    horizonsId: -77,
+    note: 'It circled Jupiter 34 times from 1995 to 2003, dropped a probe into its atmosphere, ' +
+      'and found signs of salt water under the ice of Europa.',
+    end: 'It was flown into Jupiter on 21 September 2003',
+  },
 ];
 
 /** Orbits given as elements where I am confident of the shape but not of the phase. */
@@ -1437,12 +1509,41 @@ export function sampleDeepSpace() {
           c.distanceAu +
           ' au from the Sun' +
           (c.distanceMeasured
-            ? ' (checked against JPL Horizons on 7 September 2026)'
+            ? ' (checked against JPL Horizons on ' + (c.checkedWords || '7 September 2026') + ')'
             : ' (the published figure, rounded)') +
           ', ' +
           c.speedKmS +
           ' km/s, and an escape direction good to a few degrees. It then moves in a straight ' +
           'line, which at this distance is what it really does.',
+      },
+    });
+  }
+
+  for (const c of PAST_CRAFT) {
+    out.push({
+      id: c.id,
+      name: c.name,
+      layer: 'deep-space',
+      klass: c.klass,
+      // No samples: this row answers null at every instant, and its path file answers inside its
+      // years once it is here (propagate/index.js EPHEMERIS_OF).
+      propagator: 'sampled',
+      frame: 'sun-inertial',
+      cls: 'inferred',
+      epoch: Date.parse(c.ended + 'T00:00:00Z'),
+      source: 'horizons-deep-space',
+      samples: [],
+      meta: {
+        horizonsId: c.horizonsId,
+        construction: 'own-path',
+        note: c.note,
+        launchDate: c.launched,
+        endDate: c.ended,
+        ...(c.aliases ? { aliases: c.aliases } : {}),
+        why: c.end + ', so there is nowhere to draw it today. Between ' + c.launched.slice(0, 4) +
+          ' and ' + c.ended.slice(0, 4) + ' it is drawn from its own path: positions from JPL ' +
+          'Horizons, shipped with the app and fetched when this card opens. Choose an event ' +
+          'of its mission to go there.',
       },
     });
   }

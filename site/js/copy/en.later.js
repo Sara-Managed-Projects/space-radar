@@ -31,6 +31,16 @@ Object.assign(COPY, {
     couldNotReach: 'Could not reach the subscription service.',
   },
 
+  // A craft drawn from its own path file (propagate/ephemeris.js, ui/missions.js; internal #277).
+  // {km} is the bound tests/test_ephemerides.mjs holds the file to against JPL's positions.
+  ephemeris: {
+    drawn: 'Drawn from JPL Horizons, interpolated: within about {km} km of JPL’s own track.',
+    note: 'The map holds its path for that day, from JPL Horizons, good to about {km} km.',
+    noteLate: 'JPL’s track of it begins {n} minutes after this moment, and the clock goes there. Good to about {km} km.',
+    noteDay: 'NASA’s page gives the day. The clock goes to {time} UTC, the closest pass in JPL’s track that day, good to about {km} km.',
+    failed: 'Its path for that day did not load, so the clock stays where it is. Choose it again to retry.',
+  },
+
   // The service worker's one line (ui/offline.js): a newer build is installed and waiting.
   offline: {
     updateReady: 'A newer version is ready',

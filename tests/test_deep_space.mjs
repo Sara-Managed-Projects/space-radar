@@ -44,9 +44,29 @@ check(list.every((r) => !r.bad), `every horizons-ids.yaml row reads as {id, name
 const rows = list.filter((r) => !r.bad);
 check(new Set(rows.map((r) => r.id)).size === rows.length, 'no Horizons id is fetched twice');
 
-const records = sampleDeepSpace();
+// ENDED MISSIONS (2026-10-06): Cassini and Galileo are in the layer and are nowhere today. Their
+// rows answer null by design and are drawn only from their path files (site/data/eph,
+// tests/test_ephemerides.mjs), so the rules below for a stand-in that must answer today are not
+// theirs; their own are here.
+const everyRecord = sampleDeepSpace();
+const ended = everyRecord.filter((r) => r.meta && r.meta.construction === 'own-path');
+const records = everyRecord.filter((r) => !ended.includes(r));
 const byId = new Map(records.map((r) => [r.id, r]));
-check(records.length === 22, `the deep-space layer holds twenty-two records (found ${records.length})`);
+check(JSON.stringify(ended.map((r) => r.id)) === JSON.stringify(['deep-cassini', 'deep-galileo']), `the ended missions are Cassini and Galileo (${ended.map((r) => r.id)})`);
+{
+  const { EPHEMERIDES } = await import(join(JS, 'data/ephemerides.js'));
+  for (const rec of ended) {
+    const md = rec.meta;
+    check(rec.layer === 'deep-space' && rec.propagator === 'sampled' && Array.isArray(rec.samples) && rec.samples.length === 0, `${rec.id}: an ended mission has no samples of its own`);
+    check(propagate(rec, Date.parse('2026-09-22T00:00:00Z')) === null && propagate(rec, Date.parse(md.endDate + 'T00:00:00Z') - 86400e3) === null, `${rec.id}: without its file it is drawn nowhere, today or then`);
+    check(!!EPHEMERIDES[rec.id] && String(EPHEMERIDES[rec.id].horizonsId) === String(md.horizonsId), `${rec.id}: it has a path file, of the same Horizons id`);
+    check(/^\d{4}-\d\d-\d\d$/.test(md.launchDate) && /^\d{4}-\d\d-\d\d$/.test(md.endDate) && EPHEMERIDES[rec.id].to.startsWith(md.endDate), `${rec.id}: launch and end dates, and the file stops on the day it ended`);
+    check(typeof md.note === 'string' && md.note.length > 20 && md.note.length <= 160, `${rec.id}: a note of 160 characters at most`);
+    check(/nowhere to draw it today/.test(md.why) && /JPL Horizons/.test(md.why), `${rec.id}: says why nothing is drawn today, and where its path is from`);
+    check(rows.every((r) => r.id !== String(md.horizonsId)), `${rec.id}: the harvester must not ask Horizons for it today (its trajectory has ended)`);
+  }
+}
+check(records.length === 24, `the deep-space layer holds twenty-four craft that are somewhere today (found ${records.length})`);
 check(byId.size === records.length, 'record ids are unique');
 
 // Every id the harvester fetches has a record under the app id the list names, with the same name.
@@ -75,6 +95,7 @@ check(JSON.stringify(unlisted) === JSON.stringify(['deep-solar-orbiter']),
   `only Solar Orbiter goes without a Horizons id; Gaia has one since 2026-09-22 (found ${unlisted})`);
 // A model keyed on an id the harvester does not fetch would be a model on a stand-in forever.
 for (const key of Object.keys(REAL_MODELS.horizons)) {
+  if (ended.some((r) => String(r.meta.horizonsId) === key)) continue; // drawn from its path file
   check(listed.has(key), `scene/realmodels.js draws Horizons id ${key}, which horizons-ids.yaml does not fetch`);
 }
 
@@ -367,8 +388,9 @@ function horizonsText(t0Ms, r, v) {
   const body = {};
   for (const r of rows) body[r.id] = horizonsText(t0, [AU_KM, 0, 0], [0, 29.8, 0]);
   const live = parseHorizonsVectors(body, sampleDeepSpace());
-  check(live.length === records.length, 'the snapshot drops no record');
+  check(live.length === everyRecord.length, 'the snapshot drops no record');
   for (const rec of live) {
+    if (rec.meta.construction === 'own-path') { check(rec.samples.length === 0, `${rec.id}: an ended mission is left as it is`); continue; }
     const base = byId.get(rec.id);
     if (rec.meta.horizonsId == null || rec.meta.orbits) {
       check(rec.cls === 'sample' && rec.propagator === base.propagator, `${rec.id} has no id, or circles a world, and stays the stand-in`);

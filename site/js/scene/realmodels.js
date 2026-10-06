@@ -419,6 +419,13 @@ export const REAL_MODELS = {
     '-31': { file: 'voyager.glb', colour: 'probe', name: 'Voyager 1' },
     '-32': { file: 'voyager.glb', colour: 'probe', name: 'Voyager 2' },
     '-61': { file: 'juno.glb', colour: 'probe', name: 'Juno' },
+    // Ended missions and the two Pioneers (2026-10-06, issue #431): each has a record now because
+    // each has a file of its own path (site/data/eph, propagate/ephemeris.js). NASA publishes one
+    // Pioneer model, of Pioneer 10; Pioneer 11 is its sister craft of the same design.
+    '-82': { file: 'cassini.glb', colour: 'probe', name: 'Cassini' },
+    '-77': { file: 'galileo.glb', colour: 'probe', name: 'Galileo' },
+    '-23': { file: 'pioneer.glb', colour: 'probe', name: 'Pioneer 10' },
+    '-24': { file: 'pioneer.glb', colour: 'probe', name: 'Pioneer 11' },
     '-96': { file: 'parker.glb', colour: 'probe', name: 'Parker Solar Probe' },
     // BOTH a build and a file, and this is the one row that has both. Until 2026-10-05 it was the
     // procedural shape alone (buildJwst in scene/models.js), because a loaded model was painted in

@@ -1,0 +1,202 @@
+# Our own ephemerides: a craft's whole path, so a flyby can move the clock (internal #277, #406;
+# public #239, #452). One row a craft. scripts/build_ephemerides.py asks JPL Horizons for the
+# vectors, keeps as few of them as the stated tolerance allows, and packs them to
+# site/data/eph/<id>.bin with a manifest (site/data/eph/manifest.json). The browser fetches a
+# craft's file the first time that craft's card opens, never at boot (propagate/ephemeris.js).
+#
+# WHAT A ROW SAYS
+#   id        the record on the map this path belongs to (data/sample.js, registry/sites.yaml).
+#   command   the Horizons COMMAND. A spacecraft is a negative number; `99942;` is the asteroid.
+#   from, to  the span asked for, UTC, on a whole minute. `from` is the first whole minute after
+#             the first instant Horizons holds (read from its own refusal on 2026-10-06, in the
+#             comment on each row), so no file claims the minutes before that.
+#   tol_km    how far the curve through the kept samples may stray from the samples left out.
+#   windows   the stretches kept RELATIVE TO A WORLD and not the Sun. Two reasons, both measured
+#             in propagate/orbiter.js: the planet on the screen is Astronomy Engine's, up to
+#             18 000 km from JPL's at Jupiter, so a heliocentric vector however exact lands off
+#             the drawn planet; and a float32 holds a planet-centred position to under a
+#             kilometre. A window is asked of Horizons with CENTER='500@<world>'.
+#   rough     what Horizons' own header says about the trajectory where it is not a
+#             reconstruction, and until when. The card prints it while the clock is in that part.
+#   max_bytes this craft's file may be this big; 150 000 unless the row says why not.
+#
+# The times are UTC (Horizons TIME_TYPE='UT'), not TDB read as UTC: that mistake is 69 seconds,
+# 1 600 km along Mars's path (propagate/orbiter.js).
+#
+# NOT HERE, AND WHY
+#   Apollo 11. Horizons holds the S-IVB stage (-399110), which went on into an orbit of the Sun,
+#   and no trajectory for the command module or the lander (asked 2026-10-06: the match list for
+#   "Apollo" is five S-IVBs and Apollo 10's lander). The landing site's events still move the clock.
+version: 1
+source:
+  name: JPL Horizons
+  api: https://ssd.jpl.nasa.gov/api/horizons.api
+  terms: https://ssd.jpl.nasa.gov/horizons/
+  credit: "NASA/JPL-Caltech, Solar System Dynamics Group, Horizons On-Line Ephemeris System"
+defaults:
+  tol_km: 5
+  window_tol_km: 1
+  max_bytes: 150000
+total_max_bytes: 2000000
+
+craft:
+  # prior to 1977-SEP-05 13:58:36 UT: nothing.
+  - id: deep-voyager-1
+    name: Voyager 1
+    command: "-31"
+    from: "1977-09-05T13:59:00Z"
+    to: "2031-01-01T00:00:00Z"
+    windows:
+      - {centre: earth, from: "1977-09-05T13:59:00Z", to: "1977-09-09T00:00:00Z"}
+      - {centre: jupiter, from: "1979-02-03T00:00:00Z", to: "1979-04-04T00:00:00Z"}
+      - {centre: saturn, from: "1980-10-13T00:00:00Z", to: "1980-12-12T00:00:00Z"}
+    rough:
+      until: "1981-01-01T00:00:00Z"
+      text: "JPL calls its Voyager 1 path before 1981 a mission-design trajectory of rough accuracy, fitted to the encounters; from 1981 it is a refit of the tracking data."
+
+  # prior to 1977-AUG-20 15:31:44 UT: nothing.
+  - id: deep-voyager-2
+    name: Voyager 2
+    command: "-32"
+    from: "1977-08-20T15:32:00Z"
+    to: "2031-01-01T00:00:00Z"
+    windows:
+      - {centre: earth, from: "1977-08-20T15:32:00Z", to: "1977-08-24T00:00:00Z"}
+      - {centre: jupiter, from: "1979-06-09T00:00:00Z", to: "1979-08-08T00:00:00Z"}
+      - {centre: saturn, from: "1981-07-27T00:00:00Z", to: "1981-09-25T00:00:00Z"}
+      - {centre: uranus, from: "1986-01-04T00:00:00Z", to: "1986-02-13T00:00:00Z"}
+      - {centre: neptune, from: "1989-08-05T00:00:00Z", to: "1989-09-14T00:00:00Z"}
+    rough:
+      until: "1989-08-29T00:00:00Z"
+      text: "JPL calls its Voyager 2 path before 29 August 1989 a mission-design trajectory of rough accuracy, fitted to the encounters; after it, a refit of the tracking data."
+
+  # prior to 2006-JAN-19 19:50:13 UT: nothing.
+  - id: deep-new-horizons
+    name: New Horizons
+    command: "-98"
+    from: "2006-01-19T19:51:00Z"
+    to: "2031-01-01T00:00:00Z"
+    windows:
+      - {centre: earth, from: "2006-01-19T19:51:00Z", to: "2006-01-22T00:00:00Z"}
+      - {centre: jupiter, from: "2007-02-03T00:00:00Z", to: "2007-03-25T00:00:00Z"}
+      - {centre: pluto, from: "2015-07-04T00:00:00Z", to: "2015-07-24T00:00:00Z"}
+
+  # prior to 2011-AUG-05 17:18:06 UT: nothing. The header: reconstructed to 2026-Aug-24, a
+  # prediction after it, so the file stops there and the map's own stand-in takes over.
+  - id: deep-juno
+    name: Juno
+    command: "-61"
+    from: "2011-08-05T17:19:00Z"
+    to: "2026-08-24T00:00:00Z"
+    windows:
+      - {centre: earth, from: "2011-08-05T17:19:00Z", to: "2011-08-09T00:00:00Z"}
+      - {centre: earth, from: "2013-10-05T00:00:00Z", to: "2013-10-14T00:00:00Z"}
+      - {centre: jupiter, from: "2016-06-05T00:00:00Z", to: "2026-08-24T00:00:00Z", tol_km: 60}
+
+  # prior to 1997-OCT-15 09:26:08 UT, after 2017-SEP-15 11:56:50 UT: nothing. The file stops at
+  # 10:30 UT on the last day, a minute before NASA's "atmospheric entry begins".
+  - id: deep-cassini
+    name: Cassini
+    command: "-82"
+    from: "1997-10-15T09:27:00Z"
+    to: "2017-09-15T10:30:00Z"
+    max_bytes: 300000
+    max_bytes_why: "Thirteen years of laps round Saturn, each with a close pass and many with a moon flyby; at 150 kB the curve strays 400 km, wider than the gap the Grand Finale dived through."
+    windows:
+      - {centre: earth, from: "1997-10-15T09:27:00Z", to: "1997-10-19T00:00:00Z"}
+      - {centre: venus, from: "1998-04-23T00:00:00Z", to: "1998-04-30T00:00:00Z"}
+      - {centre: venus, from: "1999-06-21T00:00:00Z", to: "1999-06-28T00:00:00Z"}
+      - {centre: earth, from: "1999-08-14T00:00:00Z", to: "1999-08-23T00:00:00Z"}
+      - {centre: jupiter, from: "2000-12-10T00:00:00Z", to: "2001-01-20T00:00:00Z"}
+      - {centre: saturn, from: "2004-05-15T00:00:00Z", to: "2017-09-15T10:30:00Z", tol_km: 60}
+
+  # prior to 1989-OCT-19 01:28:37 UT: nothing. Horizons runs a prediction on to 30 September
+  # 2003; the craft entered Jupiter on the 21st, so the file stops that day at 18:00 UT.
+  - id: deep-galileo
+    name: Galileo
+    command: "-77"
+    from: "1989-10-19T01:29:00Z"
+    to: "2003-09-21T18:00:00Z"
+    windows:
+      - {centre: earth, from: "1989-10-19T01:29:00Z", to: "1989-10-23T00:00:00Z"}
+      - {centre: venus, from: "1990-02-07T00:00:00Z", to: "1990-02-14T00:00:00Z"}
+      - {centre: earth, from: "1990-12-04T00:00:00Z", to: "1990-12-13T00:00:00Z"}
+      - {centre: earth, from: "1992-12-04T00:00:00Z", to: "1992-12-13T00:00:00Z"}
+      - {centre: jupiter, from: "1995-11-01T00:00:00Z", to: "2003-09-21T18:00:00Z", tol_km: 60}
+
+  # prior to 1972-MAR-03 02:04:00 UT, after 2050-JAN-01: nothing.
+  - id: deep-pioneer-10
+    name: Pioneer 10
+    command: "-23"
+    from: "1972-03-03T02:04:00Z"
+    to: "2031-01-01T00:00:00Z"
+    windows:
+      - {centre: earth, from: "1972-03-03T02:04:00Z", to: "1972-03-06T00:00:00Z"}
+      - {centre: jupiter, from: "1973-11-04T00:00:00Z", to: "1974-01-03T00:00:00Z"}
+    rough:
+      until: "2031-01-01T00:00:00Z"
+      text: "JPL says of this Pioneer 10 trajectory that it is suitable for general historical purposes; it was built on the planetary ephemeris of the 1970s."
+
+  # prior to 1973-APR-06 02:25:00 UT, after 2050-JAN-01: nothing.
+  - id: deep-pioneer-11
+    name: Pioneer 11
+    command: "-24"
+    from: "1973-04-06T02:25:00Z"
+    to: "2031-01-01T00:00:00Z"
+    windows:
+      - {centre: earth, from: "1973-04-06T02:25:00Z", to: "1973-04-09T00:00:00Z"}
+      - {centre: jupiter, from: "1974-11-03T00:00:00Z", to: "1975-01-02T00:00:00Z"}
+      - {centre: saturn, from: "1979-08-02T00:00:00Z", to: "1979-10-01T00:00:00Z"}
+    rough:
+      until: "2031-01-01T00:00:00Z"
+      text: "JPL says of this Pioneer 11 trajectory that it is suitable for general historical purposes; it was built on the planetary ephemeris of the 1970s."
+
+  # prior to 2021-DEC-25 13:00:00 UT: nothing, and at 13:00:00 itself Horizons refuses (its first
+  # state is 13:01:09 TDB, a hair after). The header (revised 2026-Sep-30): as flown to
+  # 2026-Sep-28, a 28-day prediction to 2026-Oct-26, a five-year schedule after it. The file
+  # stops with the 28-day prediction. All of it is kept relative to the Earth: it never leaves.
+  - id: deep-jwst
+    name: James Webb Space Telescope
+    command: "-170"
+    from: "2021-12-25T13:01:00Z"
+    to: "2026-10-26T00:00:00Z"
+    windows:
+      - {centre: earth, from: "2021-12-25T13:01:00Z", to: "2026-10-26T00:00:00Z", tol_km: 10}
+
+  # Mars 2020's cruise, drawn for the Jezero site's record: before it landed the rover was not
+  # in Jezero. prior to 2020-JUL-30 12:51:34 UT: nothing. The file stops at 20:30 UT on landing
+  # day, minutes before entry; after that the record is the place on Mars.
+  - id: jezero
+    name: Perseverance
+    command: "-168"
+    from: "2020-07-30T12:52:00Z"
+    to: "2021-02-18T20:30:00Z"
+    windows:
+      - {centre: earth, from: "2020-07-30T12:52:00Z", to: "2020-08-03T00:00:00Z"}
+      - {centre: mars, from: "2021-02-12T00:00:00Z", to: "2021-02-18T20:30:00Z"}
+
+  # Solution JPL#220. Kept relative to the Earth for the three weeks round 13 April 2029.
+  - id: asteroid-99942
+    name: Apophis
+    command: "99942;"
+    from: "2026-10-01T00:00:00Z"
+    to: "2029-12-31T00:00:00Z"
+    windows:
+      - {centre: earth, from: "2029-04-03T00:00:00Z", to: "2029-04-24T00:00:00Z", tol_km: 2}
+    rough:
+      until: "2029-12-31T00:00:00Z"
+      text: "This is a prediction from JPL's orbit solution for Apophis, not a record of what happened."
+
+  # after 2030-MAR-22 19:58:50 UT: nothing. The header: the cruise to Apophis and the work beside
+  # it are a plan (the Earth flyby of 16 March 2027 among them).
+  - id: deep-osiris-apex
+    name: OSIRIS-APEX
+    command: "-64"
+    from: "2026-10-01T00:00:00Z"
+    to: "2030-03-01T00:00:00Z"
+    windows:
+      - {centre: earth, from: "2027-03-11T00:00:00Z", to: "2027-03-21T00:00:00Z"}
+      - {centre: earth, from: "2029-04-03T00:00:00Z", to: "2029-04-24T00:00:00Z"}
+    rough:
+      until: "2030-03-01T00:00:00Z"
+      text: "This is the mission's planned trajectory as JPL holds it, not a record of what happened."
