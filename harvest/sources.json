@@ -225,6 +225,16 @@
             "app_id": "deep-new-horizons"
           },
           {
+            "id": "-23",
+            "name": "Pioneer 10",
+            "app_id": "deep-pioneer-10"
+          },
+          {
+            "id": "-24",
+            "name": "Pioneer 11",
+            "app_id": "deep-pioneer-11"
+          },
+          {
             "id": "-96",
             "name": "Parker Solar Probe",
             "app_id": "deep-parker"

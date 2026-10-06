@@ -419,10 +419,12 @@ CASES: list[tuple[str, str, str, str]] = [
      "oddities.yaml", "      obs_count: 374\n", ""),
 
     # Attached: the position is the carrier's, and the mount is our drawing
+    # The example was `deep-cassini` until 2026-10-06, when Cassini got a record (drawn from its
+    # path file, site/data/eph). Ulysses has none.
     ("an oddity bolted to a spacecraft the app does not draw",
-     "oddities.yaml", "      to: deep-voyager-1", "      to: deep-cassini"),
+     "oddities.yaml", "      to: deep-voyager-1", "      to: deep-ulysses"),
     ("an oddity also drawn on a second carrier the app does not draw",
-     "oddities.yaml", "      also_on: [deep-voyager-2]", "      also_on: [deep-cassini]"),
+     "oddities.yaml", "      also_on: [deep-voyager-2]", "      also_on: [deep-ulysses]"),
     ("an attached row that will not admit the mount point is our arrangement",
      "oddities.yaml", "      mount_class: illustrative\n", ""),
     ("an attached row carrying its own horizons id, which draws a second Voyager",
