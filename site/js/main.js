@@ -127,7 +127,10 @@ function weatherStandIn(off, layerOn) {
  * them sooner: a ladder or system stage, the search box, a trip or an `at` the map cannot resolve
  * without them (ctx.loadAfterFirstVisit).
  */
-const LATER_LAYERS = new Set(['stars', 'exoplanets']);
+// DEEP SKY TOO (2026-10-06, internal #405): data/dso.json is 116 kB and its layer is `ladderOnly`,
+// drawn from the ladder's rungs like the other two; the ground sky's pictures look their record up
+// when it has landed (sky/groundsky.js), and a trip, a link and the search box already wait here.
+const LATER_LAYERS = new Set(['stars', 'exoplanets', 'deep-sky']);
 const LATER_LAYERS_MS = 3000;
 /** How long after sr:layers-ready the controls hint is imported and may show (ui/keyhint.js): after
  * the later layers and the aurora, when the first view has settled and before a visitor gives up. */
