@@ -235,9 +235,13 @@ export function eclipseLine(st, drawn) {
  * forget it; the house rule is that size may be exaggerated only where the picture says so.
  * Empty off the Sun stage, where nothing is drawn by orbitrings.js. Exported for the test.
  */
-export function orbitsLine(st, stageId) {
-  if (!st || !Array.isArray(st.orbits) || !st.orbits.length || stageId !== 'sun') return '';
-  return COPY.trip.orbitsLine;
+export function orbitsLine(st, stageId, moonDrawn = false) {
+  if (!st || !Array.isArray(st.orbits) || !st.orbits.length) return '';
+  // The Moon's path round the Earth (2026-10-06): only while it is on the screen, which is from
+  // outside the Moon's orbit (scene/orbitrings.js MOON_PATH_FROM_KM), so the stops that look at the
+  // true Moon from close by do not say a dot is drawn.
+  if (stageId === 'earth') return moonDrawn && st.orbits.includes('moon') ? COPY.trip.moonPathLine : '';
+  return stageId === 'sun' ? COPY.trip.orbitsLine : '';
 }
 
 /**
@@ -1156,7 +1160,7 @@ export function createTripFrame(ctx) {
       // which sits just above the line: the colours on the globe mean nothing without it.
       const over = st && st.phase !== 'idle' && st.overlay && typeof ctx.overlayState === 'function' ? ctx.overlayState() : null;
       const text = st && st.phase !== 'idle'
-        ? [eclipseLine(st, drawn), orbitsLine(st, stageId), figuresLine(st), overlayLine(over)].filter(Boolean).join(' ')
+        ? [eclipseLine(st, drawn), orbitsLine(st, stageId, !!(ctx.orbitRings && ctx.orbitRings.visible())), figuresLine(st), overlayLine(over)].filter(Boolean).join(' ')
         : '';
       if (lineNode.textContent !== text) lineNode.textContent = text;
       lineNode.hidden = !text;

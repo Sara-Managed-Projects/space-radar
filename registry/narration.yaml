@@ -178,7 +178,7 @@ clips:
   - {trip: "tonight-from-your-street", stop: "planet", hash: "0c47b50f288c6744", seconds: 13.55, words: 35, lufs: -16.6, opus: 53605, m4a: 70475, vtt: 264}
   - {trip: "tonight-from-your-street", stop: "pass", hash: "2372d96b8f28b58c", seconds: 20.07, words: 53, lufs: -16.4, opus: 80127, m4a: 103727, vtt: 388}
   - {trip: "tonight-from-your-street", stop: "out", hash: "0781a8f108cd06f2", seconds: 19.16, words: 53, lufs: -16.5, opus: 78299, m4a: 99163, vtt: 386}
-  - {trip: "moon-phases", stop: "from-outside", hash: "70eb1e45e9736112", seconds: 19.12, words: 54, lufs: -16.3, opus: 78415, m4a: 98946, vtt: 373}
+  - {trip: "moon-phases", stop: "from-outside", hash: "757b05c92da994d2", seconds: 19.67, words: 56, lufs: -16.5, opus: 87044, m4a: 101771, vtt: 385}
   - {trip: "moon-phases", stop: "waxing", hash: "aabba08dd1818ed9", seconds: 21.29, words: 56, lufs: -16.5, opus: 85133, m4a: 109812, vtt: 386}
   - {trip: "moon-phases", stop: "full", hash: "49851b9b64676276", seconds: 19.57, words: 56, lufs: -16.3, opus: 78457, m4a: 101119, vtt: 388}
   - {trip: "moon-phases", stop: "waning", hash: "1ec8ea224f96123e", seconds: 15.94, words: 40, lufs: -16.5, opus: 63955, m4a: 82646, vtt: 310}
@@ -232,6 +232,7 @@ clips:
   - {trip: "through-a-telescope", stop: "horsehead", hash: "cc67f70a967c4e66", seconds: 21.55, words: 54, lufs: -16.7, opus: 85831, m4a: 111334, vtt: 392}
   - {trip: "through-a-telescope", stop: "carina", hash: "d8221052e0c5d143", seconds: 19.06, words: 43, lufs: -16.6, opus: 75304, m4a: 98511, vtt: 356}
   - {trip: "through-a-telescope", stop: "eagle", hash: "fdb7b14b0a0ab178", seconds: 22.38, words: 52, lufs: -16.5, opus: 89303, m4a: 115463, vtt: 402}
+  - {trip: "through-a-telescope", stop: "webb", hash: "c58c66b83b5e0d5f", seconds: 27.63, words: 66, lufs: -16.4, opus: 110751, m4a: 142195, vtt: 477}
   - {trip: "through-a-telescope", stop: "trifid", hash: "5774847316b0d8e9", seconds: 21.78, words: 50, lufs: -16.7, opus: 87165, m4a: 112420, vtt: 390}
   - {trip: "through-a-telescope", stop: "whirlpool", hash: "1f80fe8f71cc93ee", seconds: 22.07, words: 50, lufs: -16.3, opus: 92184, m4a: 113942, vtt: 408}
   - {trip: "through-a-telescope", stop: "andromeda", hash: "3a8f87f81a238092", seconds: 19.68, words: 50, lufs: -16.6, opus: 78541, m4a: 101771, vtt: 371}

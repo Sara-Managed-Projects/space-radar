@@ -1953,7 +1953,7 @@ export const TOURS = [
 "chapter": "Air and water",
 "over": [
 16,
--78
+"noon"
 ],
 "live_note": "clouds",
 "card": {
@@ -2354,6 +2354,9 @@ export const TOURS = [
 "next": "tonight-from-your-street",
 "requires_observer": true,
 "og_stop": 3,
+"orbits": [
+"moon"
+],
 "pacing": "auto",
 "min_stops": 3,
 "stops": [
@@ -2372,8 +2375,8 @@ export const TOURS = [
 0
 ],
 "card": {
-"title": "The Earth and the Moon, to scale",
-"body": "We are far above the north pole, with both worlds at their true sizes and their true distance. The Moon is the small dot, thirty Earths away, and it takes a month to go once round. The Sun lights half of each of them, all the time."
+"title": "The Moon's month, from above",
+"body": "We are far above the north pole. The ring is the path the Moon takes round the Earth, once a month, thirty Earths out. Both worlds are drawn larger than they are here, so you can see that the Sun lights the same half of each of them, all the time."
 },
 "frame_radii": 5.0,
 "drift_rate_deg_s": 6,
@@ -2381,7 +2384,7 @@ export const TOURS = [
 "key_light_deg": 125,
 "ease": "auto",
 "on_unresolved": "drop",
-"dwell_ms": 18151
+"dwell_ms": 19483
 },
 {
 "id": "waxing",
@@ -2390,7 +2393,7 @@ export const TOURS = [
 },
 "frame_radii": 5.2,
 "drift_deg": 0,
-"time": "2027-01-10T12:00:00Z",
+"time": "2027-01-12T00:00:00Z",
 "rate": 36000,
 "chapter": "The month, as the Earth sees it",
 "seen_from": "earth",
@@ -2524,7 +2527,7 @@ export const TOURS = [
 "dwell_ms": 16819
 }
 ],
-"estimate_ms": 149026
+"estimate_ms": 150358
 },
 {
 "id": "the-sun-today",
@@ -3720,6 +3723,28 @@ export const TOURS = [
 "dwell_ms": 17818
 },
 {
+"id": "webb",
+"target": {
+"record": "dso-tarantula-nebula"
+},
+"needs_layer": "deep-sky",
+"distance_km": 3311255665403280,
+"drift_deg": 4,
+"drift_rate_deg_s": 0.3,
+"key_light_deg": 0,
+"chapter": "Clouds where stars form",
+"exposure": "camera",
+"card": {
+"title": "What Webb saw in the Tarantula",
+"body": "This picture is the Webb telescope's own. It is made in infrared light, which no eye can see, so every colour in it is chosen. Infrared passes through dust, and here it shows tens of thousands of young stars that no telescope had seen before. The picture is 340 light-years across, in a small galaxy beside ours."
+},
+"frame_radii": 5.0,
+"drift": "toward-light",
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 20000
+},
+{
 "id": "trifid",
 "target": {
 "record": "dso-m20"
@@ -3786,7 +3811,7 @@ export const TOURS = [
 "dwell_ms": 16819
 }
 ],
-"estimate_ms": 187848
+"estimate_ms": 211198
 },
 {
 "id": "a-dark-sky",

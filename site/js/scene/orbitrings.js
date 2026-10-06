@@ -1,8 +1,8 @@
 // scene/orbitrings.js -- the planets' paths round the Sun, and a dot for each planet, on the Sun
 // stage while a trip asks for them (registry/tours.yaml `orbits:`).
 //
-// Contract: createOrbitRings(scene, { renderer }) -> { update(tMs, ids), visible(), dispose() }
-// Pure and exported for the test: ringTimes(periodMs, t0Ms, n), periodMsOfWorld(id)
+// Contract: createOrbitRings(scene, { renderer, camera }) -> { update(tMs, ids), visible(), dispose() }
+// Pure and exported for the test: ringTimes(periodMs, t0Ms, n), periodMsOfWorld(id), litShare(n, sun)
 //
 // WHY, measured 2026-09-23 (headless Chrome, 1280 x 800). "A year in a minute" runs on the Sun
 // stage, which squeezes nothing (scene/worlds.js compressesFrom), and looks down from 700 million
@@ -27,6 +27,20 @@
 //
 // Only on the Sun stage. Everywhere else the planets are already floored by worlds.js, and a
 // second dot beside a compressed disc would be two answers to where Mars is.
+//
+// AND THE MOON'S PATH ROUND THE EARTH (2026-10-06, internal #401). "Why the Moon changes shape"
+// opens a million km above the north pole with the Moon's whole month in frame. Both worlds are
+// drawn true there, and true is an Earth nine pixels wide and a Moon of two: the stop that is
+// meant to show why a phase is a point of view showed two specks. So a trip on the Earth's stage
+// may ask for `orbits: [moon]`, and while the camera is further from the Earth than
+// MOON_PATH_FROM_KM (outside the Moon's orbit, looking in) it gets:
+//   - the Moon's path: one sidereal month of worlds.js positionOf, the same ephemeris as the disc;
+//   - a dot at the Earth and a dot at the Moon, EARTH_DOT_PX and MOON_DOT_PX across, each shaded
+//     as a ball lit by the Sun from where the Sun really is (litShare below is the shader's rule):
+//     the half that faces the Sun is bright and the other is dark, so from above the pole every
+//     dot is a half disc turned the same way, and the frame says they are drawn larger than life.
+// Nearer than that the worlds are discs in their own right and nothing here is drawn, so the
+// stops that look at the Moon from the Earth's side are untouched.
 
 import * as THREE from '../../vendor/three.module.min.js';
 import * as Astronomy from '../../vendor/astronomy.js';
@@ -46,6 +60,55 @@ const RENDER_ORDER = 11;
 const DAY = 86400e3;
 /** Only the Sun stage draws these (the header says why). */
 const STAGE = 'sun';
+/** The Moon's path and the two lit dots, on the Earth's stage (the header says why). */
+const MOON_STAGE = 'earth';
+export const MOON_PATH_FROM_KM = 600000;
+export const SIDEREAL_MONTH_MS = 27.321661 * 86400e3;
+export const EARTH_DOT_PX = 30;
+export const MOON_DOT_PX = 14;
+const EARTH_DOT_COLOUR = 0x5b8fd6;
+const MOON_DOT_COLOUR = 0xc9c5c1;
+/** How bright the side of a dot that faces away from the Sun is drawn, as a share of the lit side. */
+export const DOT_NIGHT = 0.07;
+
+/**
+ * How lit a point of a ball is: 1 where its normal faces the Sun, DOT_NIGHT where it faces away,
+ * with a soft edge 0.08 of the radius wide at the terminator. The dots' shader is this, per pixel.
+ */
+export function litShare(nx, ny, nz, sx, sy, sz) {
+  const d = nx * sx + ny * sy + nz * sz;
+  const t = Math.min(1, Math.max(0, (d + 0.04) / 0.08));
+  return DOT_NIGHT + (1 - DOT_NIGHT) * t * t * (3 - 2 * t);
+}
+
+const LIT_VERT = /* glsl */`
+attribute float aSize;
+attribute vec3 color;
+varying vec3 vColour;
+uniform float uPixelRatio;
+void main() {
+  vColour = color;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+  gl_PointSize = aSize * uPixelRatio;
+}
+`;
+const LIT_FRAG = /* glsl */`
+uniform vec3 uSunView;
+varying vec3 vColour;
+void main() {
+  vec2 p = gl_PointCoord * 2.0 - 1.0;
+  p.y = -p.y;
+  float r2 = dot( p, p );
+  if ( r2 > 1.0 ) discard;
+  vec3 n = vec3( p, sqrt( 1.0 - r2 ) );
+  float lit = ${DOT_NIGHT.toFixed(3)} + ${(1 - DOT_NIGHT).toFixed(3)} * smoothstep( -0.04, 0.04, dot( n, uSunView ) );
+  // A dark rim one pixel in from the edge, as the planets' dots have, so the night half of a dot
+  // still reads as a ball against black space.
+  float rim = smoothstep( 0.80, 0.97, r2 );
+  gl_FragColor = vec4( mix( vColour * lit, vec3( 0.16, 0.18, 0.22 ), rim * ( 1.0 - lit ) * 0.9 ), 1.0 );
+  #include <colorspace_fragment>
+}
+`;
 /**
  * Rebuild a path after this much clock time. A planet's path round the Sun changes by arc-seconds
  * a century, so this is about the frame conversion being made at a recent instant, not about the
@@ -97,7 +160,7 @@ function dotTexture() {
   return tex;
 }
 
-export function createOrbitRings(scene, { renderer } = {}) {
+export function createOrbitRings(scene, { renderer, camera } = {}) {
   const group = new THREE.Group();
   group.name = 'orbit-rings';
   group.visible = false;
@@ -134,6 +197,31 @@ export function createOrbitRings(scene, { renderer } = {}) {
   group.add(dots);
 
   const _v = new THREE.Vector3();
+  const _s = new THREE.Vector3();
+
+  // The Earth's and the Moon's lit dots: two points and one direction to the Sun.
+  const litGeometry = new THREE.BufferGeometry();
+  const litPos = new Float32Array(6);
+  const litCol = new Float32Array(6);
+  new THREE.Color(EARTH_DOT_COLOUR).toArray(litCol, 0);
+  new THREE.Color(MOON_DOT_COLOUR).toArray(litCol, 3);
+  litGeometry.setAttribute('position', new THREE.BufferAttribute(litPos, 3));
+  litGeometry.setAttribute('color', new THREE.BufferAttribute(litCol, 3));
+  litGeometry.setAttribute('aSize', new THREE.BufferAttribute(new Float32Array([EARTH_DOT_PX, MOON_DOT_PX]), 1));
+  const litMaterial = new THREE.ShaderMaterial({
+    uniforms: { uSunView: { value: new THREE.Vector3(1, 0, 0) }, uPixelRatio: { value: 1 } },
+    vertexShader: LIT_VERT,
+    fragmentShader: LIT_FRAG,
+    transparent: true, // drawn in the glyphs' list, as the planets' dots are
+    depthTest: false,  // over the true discs, which from here are smaller than the dots
+    depthWrite: false,
+  });
+  const litDots = new THREE.Points(litGeometry, litMaterial);
+  litDots.name = 'orbit-lit-dots';
+  litDots.frustumCulled = false;
+  litDots.renderOrder = RENDER_ORDER;
+  litDots.visible = false;
+  group.add(litDots);
 
   function ringFor(id) {
     let r = rings.get(id);
@@ -162,7 +250,7 @@ export function createOrbitRings(scene, { renderer } = {}) {
   // Every sample converted round TODAY's Sun (frameT = tMs), as orbitline.js does for a whole
   // path: the line is the path in space, and on the Sun stage the origin is the Sun anyway.
   function build(r, id, tMs) {
-    const period = periodMsOfWorld(id);
+    const period = id === 'moon' ? SIDEREAL_MONTH_MS : periodMsOfWorld(id);
     const pos = r.geometry.attributes.position.array;
     let n = 0;
     if (period) {
@@ -186,6 +274,9 @@ export function createOrbitRings(scene, { renderer } = {}) {
 
   /** `ids`: the planets the running trip asks for, or an empty list / null for none. */
   function update(tMs, ids) {
+    if (stage.worldId === MOON_STAGE) return updateMoon(tMs, ids);
+    litDots.visible = false;
+    dots.visible = true;
     const want = stage.worldId === STAGE && Array.isArray(ids) && ids.length ? ids : null;
     group.visible = !!want;
     if (!want) return;
@@ -209,7 +300,36 @@ export function createOrbitRings(scene, { renderer } = {}) {
     dotGeometry.attributes.color.needsUpdate = true;
   }
 
+  /** The Earth's stage: the Moon's path and the two lit dots, from outside the Moon's orbit only. */
+  function updateMoon(tMs, ids) {
+    const asked = Array.isArray(ids) && ids.includes('moon');
+    const far = !!camera && camera.position.length() * stage.unitKm > MOON_PATH_FROM_KM;
+    group.visible = asked && far;
+    if (!group.visible) return;
+    dots.visible = false;
+    litDots.visible = true;
+    for (const [id, r] of rings) r.line.visible = id === 'moon';
+    const r = ringFor('moon');
+    r.line.visible = true;
+    // A month's path is rebuilt every few days of clock: the Moon's orbit turns in space, slowly.
+    if (!Number.isFinite(r.builtAt) || Math.abs(tMs - r.builtAt) > 3 * DAY || r.builtStage !== stage.worldId) build(r, 'moon', tMs);
+    const m = positionOf('moon', tMs);
+    const sun = positionOf('sun', tMs);
+    if (!m || !stage.toSceneInto(m, m.frame, _v, tMs)) { litDots.visible = false; return; }
+    litPos[0] = 0; litPos[1] = 0; litPos[2] = 0; // the Earth is this stage's origin
+    litPos[3] = _v.x; litPos[4] = _v.y; litPos[5] = _v.z;
+    litGeometry.attributes.position.needsUpdate = true;
+    if (sun && stage.toSceneInto(sun, sun.frame, _s, tMs) && _s.lengthSq() > 0) {
+      // The Sun's direction in the camera's own axes, which are the axes a point sprite is drawn in.
+      _s.normalize().transformDirection(camera.matrixWorldInverse);
+      litMaterial.uniforms.uSunView.value.copy(_s);
+    }
+    litMaterial.uniforms.uPixelRatio.value = renderer && renderer.getPixelRatio ? renderer.getPixelRatio() : 1;
+  }
+
   function dispose() {
+    litGeometry.dispose();
+    litMaterial.dispose();
     for (const r of rings.values()) { r.geometry.dispose(); r.material.dispose(); }
     dotGeometry.dispose();
     dotMaterial.dispose();

@@ -201,6 +201,13 @@ const BACKDROP_MAX_OFF_AXIS = 16 * DEG;
 const BACKDROP_CLEAR = 3 * DEG;
 const BACKDROP_RINGS = 3;
 const BACKDROP_STEPS = 24;
+// The phase angle past which a backdrop is given up for the light: at 105 degrees a third of the
+// subject's disc is lit (the lit share is (1 + cos phase) / 2 = 0.37).
+const BACKDROP_MAX_PHASE_DEG = 105;
+// Once given up, the backdrop still tips the choice towards a direction that has it in the frame
+// (within 20 degrees of straight behind the subject), by this much of the light's own score.
+const BACKDROP_IN_FRAME_COS = Math.cos(20 * DEG);
+const BACKDROP_IN_FRAME_BONUS = 0.2;
 
 /**
  * A subject standing ON a world -- a landing site, a golf ball, a photograph in the dust -- is
@@ -990,7 +997,7 @@ export function createTrip(ctx) {
         if (_toTarget.lengthSq() > 1e-18) azNow = Math.atan2(_toTarget.x, _toTarget.z);
       }
       /** The best-lit direction in a list of candidates, or null when every one of them is out. */
-      const pick = (candidates) => {
+      const pick = (candidates, keepInFrame = null) => {
         let best = null;
         for (const c of candidates) {
           offsetDirection(c.azimuth, c.polar, _u);
@@ -998,18 +1005,32 @@ export function createTrip(ctx) {
           if (ground && !seesGround(c.azimuth, c.polar, driftRad || 0, groundUp)) continue;
           const lit = Math.abs(_u.dot(_sun) - want);
           const turn = Math.abs(shortestAngle(azNow, c.azimuth)) / Math.PI;
-          const score = lit + KEY_LIGHT_TURN_WEIGHT * turn;
-          if (!best || score < best.score) best = { azimuth: c.azimuth, polar: c.polar, score };
+          // A backdrop given up for the light is still wanted in the frame when the light allows:
+          // a direction that looks past the subject towards it is preferred, a little.
+          const framed = keepInFrame && -_u.dot(keepInFrame) > BACKDROP_IN_FRAME_COS ? BACKDROP_IN_FRAME_BONUS : 0;
+          const score = lit + KEY_LIGHT_TURN_WEIGHT * turn - framed;
+          if (!best || score < best.score) best = { azimuth: c.azimuth, polar: c.polar, score, sunward: _u.dot(_sun) };
         }
         return best;
       };
       // A stop that named a world to keep behind its subject searches a cone around that direction
       // FIRST; if nothing in the cone survives, the plain search decides and the backdrop is given
       // up rather than the shot.
+      //
+      // AND THE BACKDROP YIELDS TO THE LIGHT (2026-10-06, internal #400). The cone is 22 degrees
+      // wide and knows nothing about the Sun: the walk of every stop found Triton and Pluto as two
+      // black discs, because on that day Neptune and Charon stood on the far side of them from
+      // the Sun and the only directions that kept them behind looked at the night side. A subject
+      // nobody can see is not a shot with a good background. When the best direction in the cone
+      // shows less than about a third of the disc lit (more than BACKDROP_MAX_PHASE_DEG from the
+      // Sun's side, or 25 degrees past the light the stop itself asked for when that is further
+      // round), the plain search decides, as it does when the cone is blocked.
       let best = backdrop
         ? pick(backdropCandidates(backdrop, (subjectRad || 0) + BACKDROP_CLEAR))
         : null;
-      if (!best) best = pick(gridCandidates(ground ? GROUND_POLARS : KEY_LIGHT_POLARS));
+      const yielded = !!best && best.sunward < Math.cos(Math.max(BACKDROP_MAX_PHASE_DEG, (wantDeg ?? 125) + 25) * DEG);
+      if (yielded) best = null;
+      if (!best) best = pick(gridCandidates(ground ? GROUND_POLARS : KEY_LIGHT_POLARS), yielded ? backdrop : null);
       // Every candidate blocked is a real case -- low over the night side, with the planet on
       // every side of you. Fall back to the rig's own framingAngles, which is occlusion-free by
       // construction, and accept flat light. This is a CAMERA choice and never goes on the card.
@@ -1253,14 +1274,17 @@ export function createTrip(ctx) {
       return p ? stage.toScene(p, p.frame, tMs) : null;
     };
     let ground = null;
-    if (over[1] === 'midnight') {
+    if (over[1] === 'midnight' || over[1] === 'noon') {
       // The meridian where it is midnight now: the one facing away from the Sun. The aurora is a
       // night thing and which longitude has the night depends on the hour the visitor arrives.
       const pole = at(90, 0);
       const sun = sunScene(tMs);
       if (!pole || !sun) return null;
       const north = _b2.copy(pole).sub(targetScene).normalize();
+      // `noon` (2026-10-06, internal #400) is the other meridian: the one facing the Sun, for a stop
+      // about what today's daylight shows (the clouds), whichever ocean is under it at this hour.
       const away = _b3.copy(targetScene).sub(sun).normalize();
+      if (over[1] === 'noon') away.negate();
       away.addScaledVector(north, -away.dot(north));
       if (away.lengthSq() < 1e-12) return null;
       away.normalize();

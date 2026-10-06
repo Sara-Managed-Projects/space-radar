@@ -794,7 +794,7 @@ export async function boot({ setStatus } = {}) {
   };
   // The planets' paths and a dot at each, on the Sun stage while a trip names them (`orbits:` in
   // registry/tours.yaml; scene/orbitrings.js says why "A year in a minute" needs them).
-  ctx.orbitRings = createOrbitRings(scene, { renderer });
+  ctx.orbitRings = createOrbitRings(scene, { renderer, camera });
   setMoment(moment, { silent: true });
 
   // The rest of the link is applied ONCE the layers have landed (spec 0032 req 2): a trip

@@ -1785,7 +1785,10 @@ tours:
 
       - id: weather
         target: {world: earth}
-        over: [16, -78]
+        # Above the meridian that has its noon now (2026-10-06, internal #400). It stood over the
+        # Caribbean, which for half of every day is in the dark: the clouds are there at night but
+        # nothing lights them, and the walk of every stop found city lights under this card.
+        over: [16, noon]
         frame_radii: 2.6
         time: now
         live_note: clouds
@@ -2096,8 +2099,12 @@ tours:
   # names its own start, because the voice holds a stop for its clip and the clock would otherwise
   # arrive at the next one wherever the last one's length left it.
   #
-  # THE FIRST PICTURE IS THE HONEST ONE AND IT IS SMALL: from far enough to hold the Moon's whole
-  # path, the Earth is nine pixels and the Moon two. The card says so; that distance is the point.
+  # THE FIRST PICTURE WAS THE HONEST ONE AND IT WAS TWO SPECKS: from far enough to hold the Moon's
+  # whole path the Earth is nine pixels and the Moon two (internal #401). So the trip asks for
+  # `orbits: [moon]`: from outside the Moon's orbit scene/orbitrings.js draws the Moon's computed
+  # path and a dot for each world, larger than life and lit on the side that faces the Sun, which is
+  # what the stop is for. The frame prints that they are drawn larger; the card no longer says "to
+  # scale". The other stops are nearer than that and get the true discs and nothing else.
   # ---------------------------------------------------------------------------------------------
   - id: moon-phases
     title: "Why the Moon changes shape"
@@ -2109,6 +2116,7 @@ tours:
     stage: earth
     clock: as-found
     og_stop: 3
+    orbits: [moon]
     stops:
       - id: from-outside
         target: {world: earth}
@@ -2119,19 +2127,20 @@ tours:
         drift_deg: 0
         chapter: "From outside"
         card:
-          title: "The Earth and the Moon, to scale"
+          title: "The Moon's month, from above"
           body: >-
-            We are far above the north pole, with both worlds at their true sizes and their true
-            distance. The Moon is the small dot, thirty Earths away, and it takes a month to go
-            once round. The Sun lights half of each of them, all the time.
+            We are far above the north pole. The ring is the path the Moon takes round the Earth,
+            once a month, thirty Earths out. Both worlds are drawn larger than they are here, so
+            you can see that the Sun lights the same half of each of them, all the time.
 
       - id: waxing
         target: {world: moon}
         seen_from: earth
         frame_radii: 5.2
-        # Three days after new, 9 % lit: a day earlier the crescent is too thin to draw (the walk of
-        # 2026-10-06 showed a black disc under "a sliver that grows").
-        time: 2027-01-10T12:00:00Z
+        # Four days after new, 19 % lit. It was three days and 9 %, and the second walk of 2026-10-06
+        # still showed a black disc under "a sliver that grows": at that phase the lit edge is a
+        # few pixels of ground the Sun only grazes. From here the stop still ends near full.
+        time: 2027-01-12T00:00:00Z
         rate: 36000
         drift_deg: 0
         chapter: "The month, as the Earth sees it"
@@ -3097,7 +3106,14 @@ tours:
   # ship: ESO's, ESA/Hubble's and NOIRLab's, all CC BY 4.0, registry/nebulae.yaml). The first
   # three stops are one nebula at the three exposures of spec 0067, which is the whole lesson:
   # the colours are real and the eye cannot collect them. The credit under each card is
-  # generated from the picture's own row. We carry no Webb picture yet, and no card says we do.
+  # generated from the picture's own row.
+  #
+  # WEBB'S PICTURE (2026-10-06, internal #413). The Tarantula Nebula from ESA/Webb's archive (CC BY
+  # 4.0, registry/nebulae.yaml `esawebb`), plate-solved like the rest. The stop's facts are that
+  # picture's own page, https://esawebb.org/images/weic2212a/, read 2026-10-06: "this mosaic image
+  # stretching 340 light-years across", "tens of thousands of never-before-seen young stars that
+  # were previously shrouded in cosmic dust". The camera stands 350 light-years from it, on the
+  # line back to the Sun, so the picture fills the frame as the Carina stop's does.
   # ---------------------------------------------------------------------------------------------
   - id: through-a-telescope
     title: "The sky as telescopes see it"
@@ -3207,6 +3223,23 @@ tours:
             telescope made them famous in 1995, and the Webb telescope has since looked
             through their dust in infrared light and found newborn stars inside. This
             picture is from the ground, in visible light.
+
+      - id: webb
+        target: {record: dso-tarantula-nebula}
+        needs_layer: deep-sky
+        distance_km: 3311255665403280
+        key_light_deg: 0
+        exposure: camera
+        drift_deg: 4
+        drift_rate_deg_s: 0.3
+        chapter: "Clouds where stars form"
+        card:
+          title: "What Webb saw in the Tarantula"
+          body: >-
+            This picture is the Webb telescope's own. It is made in infrared light, which
+            no eye can see, so every colour in it is chosen. Infrared passes through dust,
+            and here it shows tens of thousands of young stars that no telescope had seen
+            before. The picture is 340 light-years across, in a small galaxy beside ours.
 
       - id: trifid
         target: {record: dso-m20}
