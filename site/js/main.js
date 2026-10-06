@@ -333,11 +333,24 @@ export async function boot({ setStatus } = {}) {
     const st = ctx.trip.state;
     if (!st || st.phase === 'idle') applyOverlay(overlayOwn);
   };
+  // NOAA's reading of the Earth's magnetic weather, for a stop that prints it (`live_note:
+  // space-weather`, "The Sun today"). The Sources sheet fetches the same row when it is opened;
+  // a trip that wants it asks at its intro, through the same module, and whichever came first the
+  // sentence is the one ui/spaceweather.js writes, with the reading's age and where it came from.
+  let spaceWeatherImport = null;
+  const wantSpaceWeather = () => spaceWeatherImport || (spaceWeatherImport = import('./ui/spaceweather.js')
+    .then((m) => m.readSpaceWeather().then((got) => {
+      if (got && !ctx.spaceWeather) ctx.spaceWeather = got;
+      ctx.spaceWeatherLine = () => (ctx.spaceWeather
+        ? m.spaceWeatherLine(ctx.spaceWeather.parsed, ctx.spaceWeather.result, Date.now()) || '' : '');
+    }))
+    .catch((e) => { console.warn('the space weather did not load', e); spaceWeatherImport = null; }));
   let skyAsked = '';
   ctx.trip.onChange((st) => {
     const tripping = st && st.phase !== 'idle';
     if (tripping && st.wants && st.wants.figures) ctx.wantFigures();
     if (tripping && st.wants && st.wants.overlay) wantOverlay();
+    if (tripping && st.wants && st.wants.spaceWeather) wantSpaceWeather();
     const sky = tripping && st.sky ? st.sky : null;
     const key = sky ? JSON.stringify(sky) : '';
     if (key !== skyAsked) {

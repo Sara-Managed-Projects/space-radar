@@ -98,6 +98,11 @@ STOP_FIELDS = (
     "overlay",
     "over",
     "live_note",
+    # 2026-10-06, the trips a planetarium has. `look`: on a stop at the visitor's place, what the
+    # sky view turns to from their own ground (the Moon, the brightest planet up, a station pass).
+    # `seen_from`: the world the camera stands on the side of, kept there while the clock runs.
+    "look",
+    "seen_from",
     "card",
 )
 

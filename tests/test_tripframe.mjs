@@ -272,10 +272,10 @@ notify({ phase: 'dwell', index: 0, count: 4, stopTitle: 'Two places, and only tw
   check(toolbar.hidden === false, 'the toolbar is up while a stop is');
   check(toolbar.getAttribute('role') === 'group' && toolbar.getAttribute('aria-label') === T.controlsLabel, 'it is a named group of controls');
   const order = toolbar.children.map((n) => (n.classList.contains('sr-trip__progress') ? 'progress' : n.classList.contains('sr-trip__sep') ? 'sep' : n.getAttribute('aria-label')));
-  const want = [T.pause, T.back, 'progress', T.next, 'sep', T.replay, T.share, T.collapse, T.soundOn, T.voice];
+  const want = [T.pause, T.back, 'progress', T.next, 'sep', T.replay, T.share, T.collapse, T.soundOn, T.voice, T.presentAuto, T.fullScreen, T.present];
   check(order.join('|') === want.join('|'), `the toolbar's order: ${order.join(', ')}`);
   const buttons = qa('.sr-trip__tb');
-  check(buttons.length === 8, `eight icon buttons, the Voice toggle last (spec 0069) (${buttons.length})`);
+  check(buttons.length === 11, `eleven icon buttons: the eight, then present mode's three (public #441) (${buttons.length})`);
   for (const b of buttons) {
     const svg = b.querySelector('svg');
     check(b.tagName === 'BUTTON' && b.type === 'button', `${b.getAttribute('aria-label')} is a real button`);

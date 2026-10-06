@@ -27,7 +27,8 @@
 // is not Previous Stop -- and the README states it.
 
 export const HASH_KEY = 'm';
-export const KEYS = ['m', 'v', 'trip', 'stop', 'at', 't', 'rate', 'stage', 'exp'];
+// `present` (2026-10-06, public #441): a trip opened for a room, `1`, or `auto` to advance by itself.
+export const KEYS = ['m', 'v', 'trip', 'stop', 'present', 'at', 't', 'rate', 'stage', 'exp'];
 export const VERSION = '1';
 
 export function hashParts() {

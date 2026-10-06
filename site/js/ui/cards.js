@@ -2274,6 +2274,34 @@ const ICONS = {
     ['path', { d: 'm16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z' }],
     ['circle', { cx: 12, cy: 12, r: 10 }],
   ],
+  // Present mode (ui/tripframe.js, 2026-10-06): a screen on a stand, the corners of a full
+  // screen and of leaving it, a stopwatch for "advance by itself", and a house for the way home.
+  presentation: [
+    ['path', { d: 'M2 3h20' }],
+    ['path', { d: 'M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3' }],
+    ['path', { d: 'm7 21 5-5 5 5' }],
+  ],
+  maximize: [
+    ['path', { d: 'M8 3H5a2 2 0 0 0-2 2v3' }],
+    ['path', { d: 'M21 8V5a2 2 0 0 0-2-2h-3' }],
+    ['path', { d: 'M3 16v3a2 2 0 0 0 2 2h3' }],
+    ['path', { d: 'M16 21h3a2 2 0 0 0 2-2v-3' }],
+  ],
+  minimize: [
+    ['path', { d: 'M8 3v3a2 2 0 0 1-2 2H3' }],
+    ['path', { d: 'M21 8h-3a2 2 0 0 1-2-2V3' }],
+    ['path', { d: 'M3 16h3a2 2 0 0 1 2 2v3' }],
+    ['path', { d: 'M16 21v-3a2 2 0 0 1 2-2h3' }],
+  ],
+  timer: [
+    ['line', { x1: 10, x2: 14, y1: 2, y2: 2 }],
+    ['line', { x1: 12, x2: 15, y1: 14, y2: 11 }],
+    ['circle', { cx: 12, cy: 14, r: 8 }],
+  ],
+  house: [
+    ['path', { d: 'M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8' }],
+    ['path', { d: 'M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' }],
+  ],
 };
 
 /** An icon from ICONS at `size` px. Exported for the test, which holds the guide's drawing rules. */

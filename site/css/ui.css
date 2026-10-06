@@ -119,6 +119,12 @@
   --sr-fs-name-sm: 22px; /* a card's name on a phone and in a floating sheet, and the collapsed handle's letter */
   --sr-fs-mark: 27px; /* the wordmark, and the sources sheet's title */
   --sr-fs-name: 28px; /* a card's name, and a trip's title */
+  /* Present mode (public #441): a trip on a projector, read from the back of a room. About 1/28
+     of a 900 px screen for the words and 1/17 for a title, the sizes a slide is set at; a 1920 px
+     projector takes the next step up (html.sr-present, at the foot of this file). */
+  --sr-fs-present-sm: 22px; /* the microlabel, the generated line, the honesty line */
+  --sr-fs-present: 32px; /* a stop's words */
+  --sr-fs-present-name: 52px; /* a stop's title, and the trip's on its intro */
 
   /* The z ladder (docs/ui-guide.md section 2.6): one list, bottom to top, and no z-index outside
      it but 0, 1, 2 and auto for a component's own layers. The labels sit UNDER the HUD and the
@@ -2170,7 +2176,9 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
    the home view's own trip card. */
 .sr-tripsheet__actions {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* Three, or four after a trip that moved the map's centre (Keep flying, Go home): equal columns. */
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
   gap: var(--sp-2);
   padding: var(--sp-1) 0 0;
 }
@@ -5429,5 +5437,218 @@ html.sr-phone .sr-skyfov { top: calc(var(--sp-6) * 2 + var(--sp-2)); }
   .sr-show__label,
   .sr-colourkey__select {
     min-height: 44px;
+  }
+}
+
+/* ==============================================================================================
+   THE TRIPS OF 2026-10-06: the end card's picture to send, the intro's Present, and present mode.
+   ============================================================================================== */
+
+/* "Not now" and "Present", side by side under Start: two quiet text buttons, 44 px tall. */
+.sr-tripsheet__quietrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  align-items: center;
+}
+
+.sr-tripsheet__present {
+  gap: var(--sp-2);
+}
+
+.sr-tripsheet__present[aria-pressed='true'] {
+  color: var(--sr-text);
+  background: var(--sr-wash-strong);
+}
+
+/* The picture to send (public #444): the trip's own picture as one button, its caption under it. */
+.sr-tripsheet__send {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  margin: var(--sp-4) 0 0;
+  padding: 0;
+  overflow: hidden;
+  font: 400 var(--sr-fs-label)/20px var(--sr-font);
+  color: var(--sr-text);
+  text-align: left;
+  cursor: pointer;
+  background: var(--sr-wash);
+  border: 0;
+  border-radius: var(--sr-radius);
+  transition: background-color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-tripsheet__send:active {
+  background: var(--sr-wash-strong);
+}
+
+@media (hover: hover) {
+  .sr-tripsheet__send:hover {
+    background: var(--sr-wash-hover);
+  }
+}
+
+.sr-tripsheet__sendpic {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.sr-tripsheet__sendcap {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+  padding: var(--sp-3);
+}
+
+/* --- present mode: one trip for a room -------------------------------------------------------
+   The sidebar goes (and with it the left inset every centred bar is offset by), the stop's words
+   are a panel at the foot of the scene on the left, and the toolbar's targets grow: the person
+   pressing them is standing, with a clicker or at arm's length from a laptop. */
+html.sr-present {
+  --sr-scene-left: 0px;
+  --sr-trip-bar: 72px;
+}
+
+html.sr-present #sr-side {
+  display: none;
+}
+
+.sr-tripsheet.is-present {
+  position: fixed;
+  bottom: calc(var(--sp-5) + var(--sr-trip-bar) + var(--sp-4));
+  left: var(--sp-6);
+  width: min(52vw, 1000px);
+  min-height: 0;
+  max-height: 66vh;
+  padding: var(--sp-5) var(--sp-6);
+  overflow-y: auto;
+  pointer-events: auto;
+  border-radius: var(--sr-radius-shell);
+}
+
+.sr-tripsheet.is-present .sr-tripsheet__panel,
+.sr-tripsheet.is-present .sr-card.is-docked {
+  padding: 0;
+}
+
+.sr-tripsheet.is-present .sr-card__name,
+.sr-tripsheet.is-present .sr-tripsheet__name {
+  font: 600 var(--sr-fs-present-name)/1.12 var(--sr-font);
+}
+
+.sr-tripsheet.is-present .sr-card__leadbody,
+.sr-tripsheet.is-present .sr-tripsheet__text {
+  max-width: none;
+  margin-top: var(--sp-4);
+  font: 400 var(--sr-fs-present)/1.38 var(--sr-font);
+}
+
+.sr-tripsheet.is-present .sr-card__micro,
+.sr-tripsheet.is-present .sr-tripsheet__micro,
+.sr-tripsheet.is-present .sr-tripsheet__meta,
+.sr-tripsheet.is-present .sr-tripsheet__note,
+.sr-tripsheet.is-present .sr-card__leadnote,
+.sr-tripsheet.is-present .sr-card__when,
+.sr-tripsheet.is-present .sr-card__tripline,
+.sr-tripsheet.is-present .sr-card__cls,
+.sr-tripsheet.is-present .sr-tripsheet__quiet,
+.sr-tripsheet.is-present .sr-tripsheet__stoptitle,
+.sr-tripsheet.is-present .sr-tripsheet__stopn {
+  font-size: var(--sr-fs-present-sm);
+  line-height: 1.35;
+}
+
+/* A room reads the words, not the instrument: the subject's numbers, its actions and the trip's
+   picture stay in the ordinary view. The honesty lines stay here, at a size that can be read. */
+.sr-tripsheet.is-present .sr-card__subject,
+.sr-tripsheet.is-present .sr-card__nums,
+.sr-tripsheet.is-present .sr-card__actions,
+.sr-tripsheet.is-present .sr-card__more,
+.sr-tripsheet.is-present .sr-card__close,
+.sr-tripsheet.is-present .sr-tripsheet__pic,
+.sr-tripsheet.is-present .sr-tripsheet__send {
+  display: none;
+}
+
+.sr-tripsheet.is-present .sr-tripsheet__start {
+  min-height: 64px;
+  padding: 0 var(--sp-6);
+  font-size: var(--sr-fs-present-sm);
+}
+
+.sr-tripsheet.is-present .sr-tripsheet__sound {
+  width: 64px;
+  height: 64px;
+}
+
+/* The intro lists the stops in two columns here, so Start is not pushed off a 900 px screen. */
+.sr-tripsheet.is-present .sr-tripsheet__stops {
+  columns: 2;
+  column-gap: var(--sp-6);
+}
+
+html.sr-present .sr-trip__tb {
+  width: 56px;
+  height: 56px;
+}
+
+/* Previous and Next are the two a presenter hunts for: wider than the rest, and washed. */
+html.sr-present .sr-trip__tb[class='sr-trip__tb'] {
+  width: 88px;
+  background: var(--sr-wash);
+  border-radius: var(--sr-radius-pill);
+}
+
+html.sr-present .sr-trip__tb--replay,
+html.sr-present .sr-trip__tb--share,
+html.sr-present .sr-trip__tb--hide {
+  display: none;
+}
+
+html.sr-present .sr-trip__count {
+  font-size: var(--sr-fs-num);
+}
+
+html.sr-present .sr-trip__title {
+  font-size: var(--sr-fs-name-sm);
+}
+
+.sr-trip__tb[hidden] {
+  display: none;
+}
+
+/* A projector, 1920 wide and seen from further back: the ladder's next step. */
+@media (min-width: 1800px) {
+  html.sr-present {
+    --sr-fs-present-sm: 26px;
+    --sr-fs-present: 40px;
+    --sr-fs-present-name: 64px;
+  }
+}
+
+/* A phone held up to a small group: the panel is the width of the screen, above the toolbar. */
+@media (max-width: 899px) {
+  .sr-tripsheet.is-present {
+    right: var(--sp-3);
+    bottom: calc(var(--sr-trip-bar-phone) + var(--sp-3) + env(safe-area-inset-bottom, 0px));
+    left: var(--sp-3);
+    width: auto;
+    max-height: 56vh;
+    padding: var(--sp-4);
+  }
+
+  html.sr-present {
+    --sr-fs-present-sm: 15px;
+    --sr-fs-present: 20px;
+    --sr-fs-present-name: 28px;
+  }
+
+  html.sr-present .sr-trip__tb,
+  html.sr-present .sr-trip__tb[class='sr-trip__tb'] {
+    width: 44px;
+    height: 44px;
   }
 }

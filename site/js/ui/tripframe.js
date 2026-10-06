@@ -107,6 +107,7 @@
 
 import { COPY, t, fmt, formatRate, formatShownAt } from '../copy/en.js';
 import { nextTripOrder } from './trippicker.js';
+import { read as readUrl, write as writeUrl } from './urlstate.js';
 import { openShare } from './share.js';
 import { icon } from './cards.js';
 import { tripPicture } from './trippics.js';
@@ -129,6 +130,7 @@ const HOST_ID = 'sr-trip';
 // were live because one class did two jobs.
 const MODE_CLASS = 'sr-trip-mode';
 const COLLAPSED_CLASS = 'sr-trip-collapsed';
+const PRESENT_CLASS = 'sr-present';
 const PHASE_ATTR = 'data-trip-phase';
 
 // Everything a trip takes away. ADDING A PIECE OF CHROME IS A ROW HERE -- a control left sitting in
@@ -270,17 +272,30 @@ function typingIn(node) {
  * presses); C hides the card; R replays. Only Escape works on the intro and the end card, where
  * nothing is running; and nothing with a modifier, which is the browser's.
  */
-export function keyAction(e, st, active) {
+export function keyAction(e, st, active, present = false) {
   if (!e || !st || st.phase === 'idle') return null;
   if (e.metaKey || e.ctrlKey || e.altKey) return null;
   const typing = typingIn(active);
   if (e.key === 'Escape') return typing ? null : 'leave';
   if (typing) return null;
+  const onButton = !!(active && active.tagName === 'BUTTON');
+  const space = e.key === ' ' || e.key === 'Spacebar';
+  // PRESENT MODE (public #441): a presenter's clicker sends Page Down and Page Up, and some send
+  // the arrows or Space. On the intro any "forward" key starts the show; F is the full screen and
+  // A hands the pacing to the trip's own clock and back.
+  if (present) {
+    if (e.key === 'f' || e.key === 'F') return 'fullscreen';
+    if (e.key === 'a' || e.key === 'A') return 'auto';
+    if (st.phase === 'intro' && (e.key === 'PageDown' || e.key === 'ArrowRight' || (space && !onButton))) return 'start';
+  }
   const running = !AT_PANEL.includes(st.phase) && st.phase !== 'resolving';
   if (!running) return null;
-  if (e.key === 'ArrowRight') return 'next';
-  if (e.key === 'ArrowLeft') return 'back';
-  if (e.key === ' ' || e.key === 'Spacebar') return active && active.tagName === 'BUTTON' ? null : 'toggle';
+  if (e.key === 'ArrowRight' || e.key === 'PageDown') return 'next';
+  if (e.key === 'ArrowLeft' || e.key === 'PageUp') return 'back';
+  // Space pauses a trip that plays itself; in front of a room it is the clicker's "next", and P pauses.
+  if (present && space) return onButton ? null : 'next';
+  if (present && (e.key === 'p' || e.key === 'P')) return 'toggle';
+  if (space) return onButton ? null : 'toggle';
   if (e.key === 'c' || e.key === 'C') return 'collapse';
   if (e.key === 'r' || e.key === 'R') return 'replay';
   // Internal #329: the two sound toggles had no key. M as every player has it; V for the voice.
@@ -312,6 +327,15 @@ export function createTripFrame(ctx) {
   // card to a panel that has been rebuilt or torn down since it was asked.
   let outroToken = 0;
   let lastIndex = -1;
+  // PRESENT MODE (public #441, 2026-10-06): one trip for a room. `#trip=<id>&present=1` is the
+  // whole setup, and the intro has a Present button. The sidebar goes; the stop's words sit in a
+  // panel at the foot of the scene in type a back row can read; the presenter paces it (every stop
+  // waits for Next) unless `present=auto` or A hands that back to the trip.
+  let present = false;
+  let presentAuto = false;
+  // Present mode carried from a trip to the one its end card started (the teardown between them
+  // would otherwise drop it): { auto } or null.
+  let carried = null;
 
   // THE VOICE (spec 0069, audio/narration.js). One for the page, kept on the engine so main.js can
   // ask it whether a stop will be read (the arrival chime stands down for the voice). It holds a
@@ -375,7 +399,14 @@ export function createTripFrame(ctx) {
     const voiceBtn = iconButton('sr-trip__tb sr-trip__tb--voice sr-trip__voicetoggle', 'speech', T.voice, T.voiceOffTitle, toggleVoice);
     const sep = el('span', 'sr-trip__sep');
     sep.setAttribute('aria-hidden', 'true');
-    for (const n of [pause, back, progress, next, sep, replay, share, collapse, sound, voiceBtn]) toolbar.appendChild(n);
+    // Present mode's three: into and out of it, by itself or by the clicker, and the full screen.
+    const presentBtn = iconButton('sr-trip__tb sr-trip__tb--present', 'presentation', T.present, T.presentTitle, () => setPresent(!present));
+    presentBtn.setAttribute('aria-pressed', 'false');
+    const autoBtn = iconButton('sr-trip__tb sr-trip__tb--auto', 'timer', T.presentAuto, T.presentAutoOffTitle, () => setPresent(true, !presentAuto));
+    autoBtn.setAttribute('aria-pressed', 'false');
+    const fullBtn = iconButton('sr-trip__tb sr-trip__tb--full', 'maximize', T.fullScreen, T.fullScreenTitle, toggleFullScreen);
+    fullBtn.setAttribute('aria-pressed', 'false');
+    for (const n of [pause, back, progress, next, sep, replay, share, collapse, sound, voiceBtn, autoBtn, fullBtn, presentBtn]) toolbar.appendChild(n);
 
     // What a screen reader is told. The CARD is the accessible representation of a stop -- we do
     // not describe a live 3D scene, because that would be asserting a description of pixels
@@ -432,6 +463,7 @@ export function createTripFrame(ctx) {
 
     parts = {
       toolbar, pause, back, next, replay, share, collapse, sound, voice: voiceBtn, progress, count, countText, segs,
+      presentBtn, autoBtn, fullBtn,
       live, group, heading, status, top, title, chapter, sheet, panel, cardSlot, leaveButtons: [topLeave],
     };
     paintSound();
@@ -454,11 +486,14 @@ export function createTripFrame(ctx) {
   function seat() {
     if (!parts) return;
     const shell = ctx.shell;
-    const sideHost = shell && typeof shell.host === 'function' ? shell.host('trip') : null;
+    // In present mode the sheet leaves the sidebar for the frame: the sidebar is gone, and the
+    // words are a caption panel over the scene (ui.css .sr-tripsheet.is-present).
+    const sideHost = !present && shell && typeof shell.host === 'function' ? shell.host('trip') : null;
     const want = sideHost || host;
     if (parts.sheet.parentNode !== want) want.appendChild(parts.sheet);
     parts.sheet.classList.toggle('sr-float', want === host);
-    parts.sheet.classList.toggle('is-floating', want === host);
+    parts.sheet.classList.toggle('is-floating', want === host && !present);
+    parts.sheet.classList.toggle('is-present', want === host && present);
     if (shell && typeof shell.seatTrip === 'function') shell.seatTrip(parts.cardSlot);
     // The hide-card glyph says which way the card goes: off to the left, or down.
     paintCollapse();
@@ -507,6 +542,74 @@ export function createTripFrame(ctx) {
     parts.collapse.title = collapsed ? T.expandTitle : T.collapseTitle;
     parts.collapse.setAttribute('aria-pressed', collapsed ? 'true' : 'false');
   }
+
+  // ---------------------------------------------------------------------------- present mode
+
+  /** `present=1` or `present=auto` in the link, read when a trip's frame goes up. */
+  function presentFromUrl() {
+    let v = null;
+    try { v = readUrl().present; } catch { v = null; }
+    return v === 'auto' ? { on: true, auto: true } : v ? { on: true, auto: false } : { on: false, auto: false };
+  }
+
+  /**
+   * Into present mode, or out of it; `auto` is whether the trip advances by itself. The link says
+   * which, so the address bar is what a teacher saves. Leaving present mode leaves the full screen
+   * it asked for; a full screen the browser's own key made is the visitor's and is left alone.
+   */
+  function setPresent(on, auto) {
+    present = !!on;
+    presentAuto = present && !!auto;
+    root.classList.toggle(PRESENT_CLASS, present);
+    if (typeof trip.setPacing === 'function') trip.setPacing(present ? (presentAuto ? 'auto' : 'reader') : null);
+    try { writeUrl({ present: present ? (presentAuto ? 'auto' : '1') : null }); } catch { /* no address bar: a test */ }
+    if (!present && fullAsked) exitFullScreen();
+    if (!parts) return;
+    if (present && collapsed) setCollapsed(false);
+    seat();
+    paintPresent();
+  }
+
+  function paintPresent() {
+    if (!parts) return;
+    const T = COPY.trip;
+    parts.presentBtn.setAttribute('aria-pressed', present ? 'true' : 'false');
+    parts.presentBtn.title = present ? T.presentOffTitle : T.presentTitle;
+    parts.autoBtn.hidden = !present;
+    parts.autoBtn.setAttribute('aria-pressed', presentAuto ? 'true' : 'false');
+    parts.autoBtn.title = presentAuto ? T.presentAutoOnTitle : T.presentAutoOffTitle;
+    const full = isFullScreen();
+    parts.fullBtn.hidden = !present || !canFullScreen();
+    setIcon(parts.fullBtn, full ? 'minimize' : 'maximize');
+    parts.fullBtn.setAttribute('aria-pressed', full ? 'true' : 'false');
+    parts.fullBtn.title = full ? T.fullScreenOffTitle : T.fullScreenTitle;
+    const introBtn = parts.panel.querySelector ? parts.panel.querySelector('.sr-tripsheet__present') : null;
+    if (introBtn) {
+      introBtn.setAttribute('aria-pressed', present ? 'true' : 'false');
+      introBtn.title = present ? T.presentOffTitle : T.presentTitle;
+    }
+  }
+
+  // The full screen is asked for, never taken: a browser grants it only inside a click or a key.
+  let fullAsked = false;
+  const canFullScreen = () => typeof root.requestFullscreen === 'function';
+  const isFullScreen = () => typeof document !== 'undefined' && !!document.fullscreenElement;
+  function exitFullScreen() {
+    fullAsked = false;
+    if (isFullScreen() && typeof document.exitFullscreen === 'function') {
+      try { Promise.resolve(document.exitFullscreen()).catch(() => {}); } catch { /* already out */ }
+    }
+  }
+  function toggleFullScreen() {
+    if (isFullScreen()) { exitFullScreen(); return; }
+    if (!canFullScreen()) return;
+    fullAsked = true;
+    try { Promise.resolve(root.requestFullscreen()).catch(() => { fullAsked = false; }); } catch { fullAsked = false; }
+  }
+  const onFullScreenChange = () => {
+    if (!isFullScreen()) fullAsked = false;
+    paintPresent();
+  };
 
   // ------------------------------------------------------------------------------ the sound
 
@@ -601,6 +704,24 @@ export function createTripFrame(ctx) {
     trip.stop('left');
   }
 
+  /** "Keep flying" at the end of a trip that moved the map's centre: leave, and stay out there
+   * (ui/trip.js stop, `stay`). The camera does not move and the map stays on the trip's world. */
+  function stay() {
+    trip.stop('stayed', { stay: true });
+  }
+
+  /** Start the trip from its intro: Start's own click, and the clicker's "forward" in present mode. */
+  function startTrip(st) {
+    userJumped = true;
+    // A visitor who chose sound on an earlier visit hears it from Start: the click is the
+    // gesture the stored choice was waiting for (audio/engine.js).
+    if (ctx.audio && ctx.audio.isOn()) ctx.audio.enable();
+    // The first stop's clip, asked for while the camera flies to it (and not on a lean connection).
+    const first = (st.stops || [])[0];
+    if (voice && first) voice.preload(clipKey(st.tourId, first.id));
+    trip.play();
+  }
+
   /**
    * Share the trip: spec 0061 task 8's one share sheet (ui/share.js openShare installs it if it is
    * not yet), with the trip and, at a stop, the stop's subject.
@@ -626,8 +747,11 @@ export function createTripFrame(ctx) {
    * ui/cleanview.js, also capture, registered first.)
    */
   function onKey(e) {
-    const what = keyAction(e, trip.state, document.activeElement);
+    const what = keyAction(e, trip.state, document.activeElement, present);
     if (!what) return;
+    if (what === 'start') { e.preventDefault(); startTrip(trip.state); return; }
+    if (what === 'fullscreen') { e.preventDefault(); toggleFullScreen(); return; }
+    if (what === 'auto') { e.preventDefault(); setPresent(true, !presentAuto); return; }
     if (what === 'leave') {
       e.stopPropagation();
       e.preventDefault();
@@ -723,16 +847,7 @@ export function createTripFrame(ctx) {
     start.title = T.startTitle;
     start.appendChild(icon('play'));
     start.appendChild(el('span', null, T.introStart));
-    start.addEventListener('click', () => {
-      userJumped = true;
-      // A visitor who chose sound on an earlier visit hears it from Start: the click is the
-      // gesture the stored choice was waiting for (audio/engine.js).
-      if (ctx.audio && ctx.audio.isOn()) ctx.audio.enable();
-      // The first stop's clip, asked for while the camera flies to it (and not on a lean connection).
-      const first = (st.stops || [])[0];
-      if (voice && first) voice.preload(clipKey(st.tourId, first.id));
-      trip.play();
-    });
+    start.addEventListener('click', () => startTrip(st));
     row.appendChild(start);
     // Sound, off until pressed (spec 0035 req 2). Here because this is the one moment a visitor is
     // deciding how to watch, and a click here is the gesture a browser wants first.
@@ -741,7 +856,16 @@ export function createTripFrame(ctx) {
     // The voice, beside it (spec 0069): the same control as the toolbar's, painted by paintSound.
     row.appendChild(iconButton('sr-tripsheet__sound sr-trip__voicetoggle', 'speech', T.voice, T.voiceOffTitle, toggleVoice));
     p.appendChild(row);
-    p.appendChild(textButton('sr-tripsheet__quiet', T.introSkip, T.leaveTitle, leave));
+    // Present (public #441): this trip for a room. Beside "Not now", as quiet as it: most visitors
+    // are one person at a desk, and the one ember thing here is still Start.
+    const quiet = el('div', 'sr-tripsheet__quietrow');
+    quiet.appendChild(textButton('sr-tripsheet__quiet', T.introSkip, T.leaveTitle, leave));
+    const presentBtn = textButton('sr-tripsheet__quiet sr-tripsheet__present', undefined, T.presentTitle, () => setPresent(!present));
+    presentBtn.appendChild(icon('presentation', 16));
+    presentBtn.appendChild(el('span', null, T.present));
+    presentBtn.setAttribute('aria-pressed', present ? 'true' : 'false');
+    quiet.appendChild(presentBtn);
+    p.appendChild(quiet);
 
     // The stops, as a list a visitor can start from: a row starts the trip at that stop (the same
     // jumpTo a deep link into a later stop uses).
@@ -803,11 +927,31 @@ export function createTripFrame(ctx) {
       row.appendChild(b);
       return b;
     };
+    // KEEP FLYING IS THE ONE EMBER (public #447). The camera stays where the trip ended and the
+    // visitor carries on from there. After a trip that moved the map's centre that means staying on
+    // the trip's world (ui/trip.js stop, `stay`), and the way home is its own button beside it; a
+    // trip that never left this map has nothing to go back to, so it has the three it always had.
     const explore = act('sr-act sr-act--primary', 'compass', T.endExplore,
-      st.stageChanged ? T.endExploreTitleStage : T.endExploreTitle, leave);
+      st.stageChanged ? T.endStayTitleStage : T.endExploreTitle, st.stageChanged ? stay : leave);
+    if (st.stageChanged) act('sr-act', 'house', T.endHome, T.endExploreTitleStage, leave);
     act('sr-act', 'rotate-ccw', T.endReplay, T.endReplayTitle, () => trip.start(st.tourId));
     act('sr-act', 'share', T.share, T.endShareTitle, () => onShare(false));
     p.appendChild(row);
+    // THE PICTURE TO SEND (public #444). The trip's own picture, the one its card and its page
+    // carry, as a button: it opens the share sheet, whose postcard is the view the camera is
+    // holding now, the last stop, with the trip's words and the link under it.
+    if (st.tourId) {
+      const send = el('button', 'sr-tripsheet__send');
+      send.type = 'button';
+      send.title = T.endSendTitle;
+      send.appendChild(tripPicture(st.tourId, 'sr-tripsheet__sendpic'));
+      const cap = el('span', 'sr-tripsheet__sendcap');
+      cap.appendChild(icon('share', 16));
+      cap.appendChild(el('span', null, T.endSend));
+      send.appendChild(cap);
+      send.addEventListener('click', () => onShare(false));
+      p.appendChild(send);
+    }
     const nextHost = el('div', 'sr-tripsheet__next');
     p.appendChild(nextHost);
     p.hidden = false;
@@ -874,6 +1018,8 @@ export function createTripFrame(ctx) {
     if (!parts) return;
 
     root.setAttribute(PHASE_ATTR, st.phase);
+    // A stop seen from the visitor's own ground (ui/trip.js `ground`): the card says so in its place.
+    root.classList.toggle('sr-trip-ground', !!st.ground);
     host.setAttribute('aria-label', st.tourTitle || '');
     parts.sheet.setAttribute('aria-label', st.tourTitle || '');
     parts.title.textContent = st.tourTitle || '';
@@ -1045,8 +1191,14 @@ export function createTripFrame(ctx) {
     const active = document.activeElement;
     savedFocus = active && active !== document.body ? active : null;
     setChromeHidden(true);
+    // The link's `present=`, or the mode a trip started from another's end card inherits.
+    const asked = presentFromUrl();
+    if (asked.on || carried) setPresent(true, asked.on ? asked.auto : carried.auto);
+    carried = null;
     seat();
     setCollapsed(false);
+    paintPresent();
+    if (typeof document !== 'undefined') document.addEventListener('fullscreenchange', onFullScreenChange);
     lastIndex = -1;
     // The cross-fade the rig has emitted since it was written, finally consumed. Subscribed only
     // for the life of a trip, so an ordinary reduced-motion flight outside one does not flash.
@@ -1078,6 +1230,12 @@ export function createTripFrame(ctx) {
       paintCue(null, '');
     }
     setCollapsed(false);
+    if (typeof document !== 'undefined') document.removeEventListener('fullscreenchange', onFullScreenChange);
+    root.classList.remove('sr-trip-ground');
+    // Present mode ends with the trip: the class, the pacing, the link's key and the full screen
+    // it asked for. (A trip started from the end card replaces this one without a teardown.)
+    carried = present && trip.state.reason === 'replaced' ? { auto: presentAuto } : null;
+    if (present) setPresent(false);
     // The card out of the sheet BEFORE the sheet goes: a card left inside a detached node is a card
     // ui/cards.js can no longer find by id, and it would build a second one.
     if (ctx.shell && typeof ctx.shell.seatTrip === 'function') ctx.shell.seatTrip(null);

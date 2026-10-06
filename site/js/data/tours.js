@@ -2140,5 +2140,996 @@ export const TOURS = [
       }
     ],
     "estimate_ms": 275950
+  },
+  {
+    "id": "tonight-from-your-street",
+    "title": "Tonight from your street",
+    "blurb": "Your own sky tonight: a star, a figure, the Moon, a planet, the station's pass.",
+    "requires": [
+      "stations"
+    ],
+    "stage": "earth",
+    "clock": "as-found",
+    "group": "earth-orbit",
+    "next": "planets-tonight",
+    "requires_observer": true,
+    "og_stop": 2,
+    "pacing": "auto",
+    "min_stops": 3,
+    "stops": [
+      {
+        "id": "above",
+        "target": {
+          "observer": true
+        },
+        "distance_km": 200,
+        "drift_deg": 20,
+        "time": "tonight",
+        "chapter": "Before you go outside",
+        "card": {
+          "title": "Your street, as tonight begins",
+          "body": "This is your part of the world as tonight's dark arrives. In a moment we go down to the ground and look up. Everything you are about to see is worked out for this place and this night, so you can go outside and check it."
+        },
+        "frame_radii": 5.0,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 17818
+      },
+      {
+        "id": "star",
+        "target": {
+          "observer": true
+        },
+        "distance_km": 200,
+        "chapter": "Looking up",
+        "look": {
+          "best": "star"
+        },
+        "card": {
+          "title": "The first star you will notice",
+          "body": "As the sky darkens, the brightest stars come out first. A star twinkles because its light is a single point, pushed about by moving air. Its colour is its temperature: the bluish ones are hotter than the Sun, the orange ones cooler."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 16486
+      },
+      {
+        "id": "figure",
+        "target": {
+          "observer": true
+        },
+        "distance_km": 200,
+        "chapter": "Looking up",
+        "look": {
+          "best": "figure"
+        },
+        "card": {
+          "title": "A figure to find",
+          "body": "The lines join stars into the figures people have told stories about for thousands of years. Learn one and you can find the next from it, the way you learn a town from one street. The line below names the one that is best placed for you right now."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 18817
+      },
+      {
+        "id": "moon",
+        "target": {
+          "observer": true
+        },
+        "distance_km": 200,
+        "chapter": "Looking up",
+        "zoom": 4,
+        "look": {
+          "world": "moon"
+        },
+        "card": {
+          "title": "The Moon",
+          "body": "The Moon rises about fifty minutes later each night, so it is not always in the evening sky. When it is, point any binoculars at the line between its light and its dark. That is where the mountains and craters throw their longest shadows."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 17152
+      },
+      {
+        "id": "planet",
+        "target": {
+          "observer": true
+        },
+        "distance_km": 200,
+        "chapter": "Looking up",
+        "look": {
+          "best": "planet"
+        },
+        "card": {
+          "title": "A planet, if one is up",
+          "body": "A planet looks like a bright star that does not twinkle. Planets drift against the stars from month to month, which is what the word first meant: a wanderer."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 12157
+      },
+      {
+        "id": "pass",
+        "target": {
+          "observer": true
+        },
+        "needs_layer": "stations",
+        "distance_km": 200,
+        "time": {
+          "event": "station-pass.next",
+          "offset_s": -15
+        },
+        "chapter": "Something that moves",
+        "look": {
+          "pass": true
+        },
+        "card": {
+          "title": "The space station, crossing",
+          "body": "This is the next time the space station comes over your place. When it can be seen, it is a bright, steady light gliding across the sky for a few minutes, with no flashing lights. That light is the Sun on its solar panels, and there are people inside."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 18817
+      },
+      {
+        "id": "out",
+        "target": {
+          "observer": true
+        },
+        "distance_km": 650,
+        "drift_deg": 15,
+        "time": "now",
+        "chapter": "Something that moves",
+        "card": {
+          "title": "Now go and look",
+          "body": "That is tonight, from where you are. The sky you saw is already turning: come back in an hour and every star has moved a hand's width to the west. None of it needs a telescope. It needs ten minutes for your eyes to get used to the dark."
+        },
+        "frame_radii": 5.0,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 18817
+      }
+    ],
+    "estimate_ms": 143514
+  },
+  {
+    "id": "moon-phases",
+    "title": "Why the Moon changes shape",
+    "blurb": "The Moon's month from space, then from your street. This trip moves the clock.",
+    "requires": [
+      "worlds"
+    ],
+    "stage": "earth",
+    "clock": "as-found",
+    "group": "earth-orbit",
+    "next": "tonight-from-your-street",
+    "requires_observer": true,
+    "og_stop": 3,
+    "pacing": "auto",
+    "min_stops": 3,
+    "stops": [
+      {
+        "id": "from-outside",
+        "target": {
+          "world": "earth"
+        },
+        "distance_km": 1150000,
+        "drift_deg": 0,
+        "time": "2027-01-08T12:00:00Z",
+        "rate": 36000,
+        "chapter": "From outside",
+        "over": [
+          90,
+          0
+        ],
+        "card": {
+          "title": "The Earth and the Moon, to scale",
+          "body": "We are far above the north pole, with both worlds at their true sizes and their true distance. The Moon is the small dot, thirty Earths away, and it takes a month to go once round. The Sun lights half of each of them, all the time."
+        },
+        "frame_radii": 5.0,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 18151
+      },
+      {
+        "id": "waxing",
+        "target": {
+          "world": "moon"
+        },
+        "frame_radii": 5.2,
+        "drift_deg": 0,
+        "time": "2027-01-09T08:00:00Z",
+        "rate": 36000,
+        "chapter": "The month, as the Earth sees it",
+        "seen_from": "earth",
+        "card": {
+          "title": "A sliver that grows",
+          "body": "Now the Moon as the Earth sees it, with ten hours passing every second. Just after new Moon it stands almost between us and the Sun, so its lit half faces away and we see only a thin edge. Each evening it has moved a little further round, and shows us more."
+        },
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 19816
+      },
+      {
+        "id": "full",
+        "target": {
+          "world": "moon"
+        },
+        "frame_radii": 5.2,
+        "drift_deg": 0,
+        "time": "2027-01-15T12:00:00Z",
+        "rate": 36000,
+        "chapter": "The month, as the Earth sees it",
+        "seen_from": "earth",
+        "card": {
+          "title": "Half, then full",
+          "body": "A week after new we see half of the lit side. That is called the first quarter. A week later the Moon is on the far side of the Earth from the Sun, and the whole face we see is in daylight. That is full Moon, and it rises as the Sun sets."
+        },
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 20000
+      },
+      {
+        "id": "waning",
+        "target": {
+          "world": "moon"
+        },
+        "frame_radii": 5.2,
+        "drift_deg": 0,
+        "time": "2027-01-23T12:00:00Z",
+        "rate": 36000,
+        "chapter": "The month, as the Earth sees it",
+        "seen_from": "earth",
+        "card": {
+          "title": "And back again",
+          "body": "After full, the dark comes in from the other edge. The Moon rises later every night, until it is a thin crescent in the dawn. Twenty-nine and a half days after it began, it is new again."
+        },
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 14821
+      },
+      {
+        "id": "far-side",
+        "target": {
+          "world": "moon"
+        },
+        "distance_km": 12000,
+        "behind": "earth",
+        "rate": 600,
+        "chapter": "Two things people get wrong",
+        "card": {
+          "title": "The side we never see",
+          "body": "The Moon turns once for every trip round the Earth, so the same face always looks at us. This is the other one. It gets just as much sunlight as the side we know: there is no dark side of the Moon, only a far side."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 17818
+      },
+      {
+        "id": "shadow",
+        "target": {
+          "world": "moon"
+        },
+        "frame_radii": 4,
+        "drift_deg": 0,
+        "key_light_deg": 0,
+        "time": {
+          "event": "lunar-eclipse.next",
+          "kind": "total",
+          "offset_s": -3600
+        },
+        "rate": 600,
+        "chapter": "Two things people get wrong",
+        "seen_from": "earth",
+        "card": {
+          "title": "The phases are not the Earth's shadow",
+          "body": "This is the Earth's shadow on the Moon, and it is rare. The Moon's path is tilted five degrees against ours, so at most full Moons it passes above or below the shadow. A few times a year they line up, and that is a lunar eclipse."
+        },
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 18151
+      },
+      {
+        "id": "tonight",
+        "target": {
+          "observer": true
+        },
+        "distance_km": 200,
+        "time": "tonight",
+        "chapter": "From your street",
+        "zoom": 5,
+        "look": {
+          "world": "moon"
+        },
+        "card": {
+          "title": "The Moon over you tonight",
+          "body": "This is the Moon from your own ground tonight. The lit side always points at the Sun, even when the Sun has set. Look again tomorrow at the same hour: it will be a little further east, and a little different in shape."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 16819
+      }
+    ],
+    "estimate_ms": 149026
+  },
+  {
+    "id": "the-sun-today",
+    "title": "The Sun today",
+    "blurb": "Our star, its wind, and tonight's aurora forecast. Leaving goes back to Earth.",
+    "requires": [
+      "worlds",
+      "aurora"
+    ],
+    "stage": "sun",
+    "clock": "as-found",
+    "group": "solar-system",
+    "next": "planets-tonight",
+    "og_stop": 1,
+    "orbits": [
+      "mercury",
+      "venus",
+      "earth",
+      "mars"
+    ],
+    "pacing": "auto",
+    "min_stops": 3,
+    "stops": [
+      {
+        "id": "star",
+        "target": {
+          "world": "sun"
+        },
+        "frame_radii": 3.2,
+        "time": "now",
+        "rate": 36000,
+        "chapter": "The star itself",
+        "card": {
+          "title": "Our star",
+          "body": "The Sun is a ball of glowing gas about a hundred Earths wide, and it holds nearly all the mass of the Solar System. It turns once in about twenty-five days. The face drawn here is a map of its surface, not a picture taken today."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 17818
+      },
+      {
+        "id": "spots",
+        "target": {
+          "world": "sun"
+        },
+        "frame_radii": 1.7,
+        "drift_deg": 20,
+        "rate": 36000,
+        "chapter": "The star itself",
+        "card": {
+          "title": "Spots, and an eleven-year beat",
+          "body": "Dark spots come and go on this surface. Each is a place where the Sun's magnetism is strong enough to hold back the heat, and many are larger than the Earth. Their number rises and falls about every eleven years, and so do the Sun's outbursts."
+        },
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 17818
+      },
+      {
+        "id": "eight-minutes",
+        "target": {
+          "world": "sun"
+        },
+        "distance_km": 430000000,
+        "drift_deg": 0,
+        "time": "now",
+        "rate": 36000,
+        "chapter": "What reaches us",
+        "card": {
+          "title": "Eight minutes away",
+          "body": "These are the paths of the four inner planets, and the third dot is home. Sunlight takes eight minutes and twenty seconds to get there, so we always see the Sun as it was eight minutes ago. A cloud of gas thrown out by a flare takes one to three days."
+        },
+        "frame_radii": 5.0,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 19483
+      },
+      {
+        "id": "wind",
+        "target": {
+          "world": "earth"
+        },
+        "stage": "earth",
+        "frame_radii": 5,
+        "key_light_deg": 90,
+        "time": "now",
+        "chapter": "What reaches us",
+        "live_note": "space-weather",
+        "card": {
+          "title": "The wind that never stops",
+          "body": "The Sun blows a thin wind of charged particles in every direction, at about four hundred kilometres a second. The Earth's magnetic field turns most of it aside. When a larger cloud arrives, the field shakes. That is a magnetic storm, and it is measured every three hours."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 18484
+      },
+      {
+        "id": "aurora",
+        "target": {
+          "world": "earth"
+        },
+        "stage": "earth",
+        "needs_layer": "aurora",
+        "frame_radii": 2.4,
+        "time": "now",
+        "chapter": "What reaches us",
+        "over": [
+          70,
+          "midnight"
+        ],
+        "live_note": "aurora",
+        "card": {
+          "title": "Where it comes down",
+          "body": "Some of the wind is funnelled down around the magnetic poles, where it makes the upper air glow. The green rings are where the aurora is expected in the next hour, from today's forecast. In a strong storm they widen, and people far from the poles see the lights."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 18817
+      },
+      {
+        "id": "scale",
+        "target": {
+          "world": "sun"
+        },
+        "frame_radii": 6,
+        "time": "now",
+        "chapter": "How big, how long",
+        "card": {
+          "title": "A million Earths",
+          "body": "Jupiter, the largest planet, is a tenth as wide as the Sun. More than a million Earths would fit inside it. No screen can show them side by side: with the Sun at this size, the Earth would be a speck."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 16153
+      },
+      {
+        "id": "home",
+        "target": {
+          "world": "earth"
+        },
+        "stage": "earth",
+        "frame_radii": 14,
+        "key_light_deg": 60,
+        "time": "now",
+        "chapter": "How big, how long",
+        "card": {
+          "title": "Living with a star",
+          "body": "Everything alive here runs on that light. The Sun is about halfway through its life: four and a half billion years old, with some five billion to go. Never look straight at it. The safe way to see the Sun is by its light on everything else."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 18151
+      }
+    ],
+    "estimate_ms": 150174
+  },
+  {
+    "id": "planets-tonight",
+    "title": "The planets tonight",
+    "blurb": "Every planet in turn, then where to look tonight. Leaving goes back to Earth.",
+    "requires": [
+      "worlds"
+    ],
+    "stage": "sun",
+    "clock": "as-found",
+    "group": "solar-system",
+    "next": "mars-where-we-have-driven",
+    "requires_observer": true,
+    "og_stop": 6,
+    "orbits": [
+      "mercury",
+      "venus",
+      "earth",
+      "mars",
+      "jupiter",
+      "saturn"
+    ],
+    "pacing": "auto",
+    "min_stops": 3,
+    "stops": [
+      {
+        "id": "where",
+        "target": {
+          "world": "sun"
+        },
+        "distance_km": 3800000000,
+        "drift_deg": 0,
+        "time": "tonight",
+        "chapter": "From above",
+        "card": {
+          "title": "Where they all are tonight",
+          "body": "This is the Solar System from above, as it is tonight. Each dot is a planet at its true place on its path. Which ones you can see depends on where the Earth is among them: a planet on the far side of the Sun from us is lost in its glare."
+        },
+        "frame_radii": 5.0,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 19816
+      },
+      {
+        "id": "mercury",
+        "target": {
+          "world": "mercury"
+        },
+        "stage": "mercury",
+        "frame_radii": 4,
+        "chapter": "The inner planets",
+        "live_note": "tonight",
+        "card": {
+          "title": "Mercury",
+          "body": "The smallest planet and the closest to the Sun, so it never strays far from the Sun in our sky. It shows only low in the twilight, for a few weeks at a time. One day here, from sunrise to sunrise, lasts two of its years."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 17818
+      },
+      {
+        "id": "venus",
+        "target": {
+          "world": "venus"
+        },
+        "stage": "venus",
+        "frame_radii": 4,
+        "chapter": "The inner planets",
+        "live_note": "tonight",
+        "card": {
+          "title": "Venus",
+          "body": "The brightest thing in the night sky after the Moon, and the one people call the evening star or the morning star. It is the size of the Earth, wrapped in cloud that throws most of its sunlight back. In a small telescope it shows phases, like the Moon."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 18817
+      },
+      {
+        "id": "mars",
+        "target": {
+          "world": "mars"
+        },
+        "stage": "mars",
+        "frame_radii": 4,
+        "chapter": "The inner planets",
+        "live_note": "tonight",
+        "card": {
+          "title": "Mars",
+          "body": "A steady orange point. Mars is bright for a few months every two years, when the Earth catches it up and passes it on the inside, and much fainter the rest of the time."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 13822
+      },
+      {
+        "id": "jupiter",
+        "target": {
+          "world": "jupiter"
+        },
+        "stage": "jupiter",
+        "frame_radii": 4,
+        "chapter": "The giants",
+        "live_note": "tonight",
+        "card": {
+          "title": "Jupiter",
+          "body": "Brighter than any star, and white. Hold binoculars still and you will see up to four small points in a line beside it. They are its largest moons, the ones Galileo found, and they change places from night to night."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 15820
+      },
+      {
+        "id": "saturn",
+        "target": {
+          "world": "saturn"
+        },
+        "stage": "saturn",
+        "frame_radii": 5,
+        "chapter": "The giants",
+        "live_note": "tonight",
+        "card": {
+          "title": "Saturn",
+          "body": "A calm, yellowish point, about as bright as the brightest stars. The rings need a small telescope. About every fifteen years they turn edge-on to us and almost vanish, because they are thousands of times wider than they are thick."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 15820
+      },
+      {
+        "id": "uranus",
+        "target": {
+          "world": "uranus"
+        },
+        "stage": "uranus",
+        "frame_radii": 4,
+        "chapter": "The giants",
+        "live_note": "tonight",
+        "card": {
+          "title": "Uranus",
+          "body": "Just too faint for most eyes, though binoculars will find it if you know where to look. It was the first planet discovered with a telescope. It lies on its side, so each pole has forty-two years of daylight and then forty-two of night."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 17152
+      },
+      {
+        "id": "neptune",
+        "target": {
+          "world": "neptune"
+        },
+        "stage": "neptune",
+        "frame_radii": 4,
+        "chapter": "The giants",
+        "live_note": "tonight",
+        "card": {
+          "title": "Neptune",
+          "body": "Never visible without a telescope. It was found with a pencil first: astronomers worked out where it must be from the way it pulled on Uranus, and there it was. Its light takes four hours to reach us."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 15154
+      },
+      {
+        "id": "your-sky",
+        "target": {
+          "observer": true
+        },
+        "distance_km": 200,
+        "time": "tonight",
+        "chapter": "From your street",
+        "look": {
+          "best": "planet"
+        },
+        "card": {
+          "title": "Your own sky tonight",
+          "body": "This is your sky tonight, facing the brightest planet that is up. The planets all keep close to one line across the sky, the same path the Sun took during the day. Find one, and the others will be somewhere along it."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 16486
+      }
+    ],
+    "estimate_ms": 180855
+  },
+  {
+    "id": "mars-where-we-have-driven",
+    "title": "Mars, where we have driven",
+    "blurb": "A volcano, a canyon, five landing sites and a moon. Leaving goes back to Earth.",
+    "requires": [
+      "hand-kept-sites",
+      "worlds"
+    ],
+    "stage": "mars",
+    "clock": "as-found",
+    "group": "solar-system",
+    "next": "moon-landings",
+    "og_stop": 1,
+    "pacing": "auto",
+    "min_stops": 3,
+    "stops": [
+      {
+        "id": "planet",
+        "target": {
+          "world": "mars"
+        },
+        "frame_radii": 4,
+        "chapter": "The planet",
+        "card": {
+          "title": "The red planet",
+          "body": "Mars is half as wide as the Earth, and its day is forty minutes longer than ours. The red is rust: iron in the dust, which the wind spreads over the whole planet. Machines have been landing here for fifty years, and two rovers are still driving."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 18151
+      },
+      {
+        "id": "olympus",
+        "target": {
+          "world": "mars"
+        },
+        "frame_radii": 1.6,
+        "drift_deg": 10,
+        "drift_rate_deg_s": 1,
+        "chapter": "The planet",
+        "over": [
+          18.65,
+          -133.8
+        ],
+        "card": {
+          "title": "Olympus Mons",
+          "body": "The largest volcano we know of on any planet. It is more than twenty kilometres high, and its base would cover Arizona. Mars has no moving plates, so the lava kept piling up in one place for a very long time."
+        },
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 16153
+      },
+      {
+        "id": "valles",
+        "target": {
+          "world": "mars"
+        },
+        "frame_radii": 1.7,
+        "drift_deg": 10,
+        "drift_rate_deg_s": 1,
+        "chapter": "The planet",
+        "over": [
+          -13.9,
+          -59.2
+        ],
+        "card": {
+          "title": "Valles Marineris",
+          "body": "A canyon nearly four thousand kilometres long, which on Earth would reach from one side of the United States to the other. In places it is nine kilometres deep. It began as a crack, when the volcanoes beside it swelled and the ground split."
+        },
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 17152
+      },
+      {
+        "id": "viking-1",
+        "target": {
+          "site": "viking-1"
+        },
+        "distance_km": 900,
+        "chapter": "Where we landed",
+        "card": {
+          "title": "The first to stay",
+          "body": "Viking 1 landed here in the summer of 1976 and worked for six years. Its twin came down on the other side of the planet six weeks later. They tested the soil for life, and the answer was unclear. That is why we kept coming back."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 17818
+      },
+      {
+        "id": "opportunity",
+        "target": {
+          "site": "opportunity"
+        },
+        "distance_km": 900,
+        "chapter": "Where we landed",
+        "card": {
+          "title": "Built for ninety days",
+          "body": "Opportunity was built to last ninety Martian days. It drove forty-five kilometres in more than fourteen years, and found rocks that could only have formed in water. A dust storm that covered the whole planet ended it in 2018."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 15487
+      },
+      {
+        "id": "gale",
+        "target": {
+          "site": "gale"
+        },
+        "distance_km": 900,
+        "chapter": "Where we landed",
+        "card": {
+          "title": "Curiosity, climbing a mountain",
+          "body": "Curiosity is the size of a small car and runs on the heat of plutonium, so dust on solar panels cannot stop it. Since 2012 it has been climbing a mountain of layered rock in the middle of this crater, reading a wet Mars turning into a dry one."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 18817
+      },
+      {
+        "id": "elysium",
+        "target": {
+          "site": "elysium"
+        },
+        "distance_km": 900,
+        "chapter": "Where we landed",
+        "card": {
+          "title": "InSight, listening",
+          "body": "InSight never moved. It set a seismometer on the ground and listened, and heard more than thirteen hundred marsquakes. From the way they echoed, we know Mars has a core of liquid metal. Dust covered its solar panels, and it fell silent in 2022."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 17152
+      },
+      {
+        "id": "jezero",
+        "target": {
+          "site": "jezero"
+        },
+        "distance_km": 900,
+        "chapter": "Where we landed",
+        "card": {
+          "title": "Perseverance, and a helicopter",
+          "body": "Perseverance landed in this crater in 2021, where a river once ran into a lake. It is filling tubes with rock for a later mission to bring home. It carried a small helicopter, Ingenuity, which made seventy-two flights: the first powered flights on another world."
+        },
+        "frame_radii": 5.0,
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 17485
+      },
+      {
+        "id": "phobos",
+        "target": {
+          "world": "phobos"
+        },
+        "frame_radii": 6,
+        "behind": "mars",
+        "chapter": "Around it",
+        "card": {
+          "title": "Phobos, and Deimos",
+          "body": "Mars has two small moons shaped like potatoes. This is Phobos, about twenty-two kilometres across, so close in that it goes round three times a day. Deimos is half the size and further out. Phobos is slowly falling: in some fifty million years it will break up, or hit Mars."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 19150
+      },
+      {
+        "id": "seasons",
+        "target": {
+          "world": "mars"
+        },
+        "frame_radii": 2.6,
+        "chapter": "Around it",
+        "over": [
+          72,
+          0
+        ],
+        "live_note": "season",
+        "card": {
+          "title": "Ice, and seasons",
+          "body": "Mars is tilted about as much as the Earth, so it has seasons, each nearly twice as long as ours. Every winter part of its thin air freezes onto the pole as dry-ice frost, and every spring it blows away again. Under the frost is a cap of water ice."
+        },
+        "drift_deg": 34,
+        "drift_rate_deg_s": 6,
+        "drift": "toward-light",
+        "key_light_deg": 125,
+        "ease": "auto",
+        "on_unresolved": "drop",
+        "dwell_ms": 19150
+      }
+    ],
+    "estimate_ms": 210015
   }
 ];

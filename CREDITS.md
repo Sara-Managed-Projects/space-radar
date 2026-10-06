@@ -88,7 +88,8 @@ Lucide's `main` branch (<https://github.com/lucide-icons/lucide>, read 2026-10-0
 In `site/js/ui/cards.js` (`ICONS`, where `chevron` is Lucide's `chevron-right`): `x`, `crosshair`,
 `orbit`, `camera`, `share`, `chevron-right`, `chevron-left`, `navigation`, `telescope`, `play`,
 `pause`, `rotate-ccw`, `volume-2`, `volume-x`, `speech`, `panel-left-close`, `panel-left-open`,
-`panel-bottom-close`, `panel-bottom-open`, `compass`. In `site/js/ui/sharesheet.js`: `x`, `share`,
+`panel-bottom-close`, `panel-bottom-open`, `compass`, and for present mode (read 2026-10-06)
+`presentation`, `maximize`, `minimize`, `timer`, `house`. In `site/js/ui/sharesheet.js`: `x`, `share`,
 `copy`, `download`, `file-text` (its `file`), `mail`. In `site/js/ui/rail.js`: `share`,
 `ellipsis-vertical`, `eye-off`. In `site/js/ui/keyhint.js`: `move`, `mouse`. The only change is the
 stroke, 1.75 instead of Lucide's default 2, which `docs/ui-guide.md` §3.16 sets for every icon in
@@ -1193,7 +1194,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 The following Lucide icons are derived from the Feather project:
 
-[...] chevron-left, chevron-right, [...] compass, copy, [...] crosshair, [...] download, [...] more-vertical, move, navigation, [...] share, [...] x, [...]
+[...] chevron-left, chevron-right, [...] compass, copy, [...] crosshair, [...] download, [...] maximize, [...] minimize, [...] more-vertical, move, navigation, [...] share, [...] x, [...]
 
 The MIT License (MIT) (for the icons listed above)
 

@@ -251,7 +251,25 @@ TOUR_MAX_FIGURES = 6
 TOUR_MAX_FIGURE_STARS = 5
 TOUR_ZOOM_MIN = 0.6
 TOUR_EXPOSURES = {"eye", "camera", "deep"}
-TOUR_LIVE_NOTES = {"clouds", "aurora", "lightning"}
+# `live_note:` -> the worlds a stop may be about to carry it, and whether the sentence is about THIS
+# WEEK (so the stop must show now). `season` is the date on the clock's, `tonight` is the visitor's
+# coming night whatever the stop shows, so neither needs `time: now`.
+TOUR_LIVE_NOTES = {
+    "clouds": ({"earth"}, True),
+    "aurora": ({"earth"}, True),
+    "lightning": ({"earth"}, True),
+    "space-weather": ({"earth", "sun"}, True),
+    "season": ({"mars"}, False),
+    "tonight": ({"mercury", "venus", "mars", "jupiter", "saturn", "uranus", "neptune"}, False),
+}
+# --- a stop seen from the visitor's own ground (2026-10-06) ---------------------------------------
+# `look:` on a `target: {observer: true}` stop: the sky view (sky/skyview.js) takes the camera and
+# turns to one thing, which sky/lookfor.js finds for whoever is asking. Exactly one key.
+TOUR_LOOK_KEYS = ("world", "sky", "best", "pass")
+TOUR_LOOK_WORLDS = {"moon", "mercury", "venus", "mars", "jupiter", "saturn", "uranus", "neptune"}
+TOUR_LOOK_BEST = {"planet", "star", "figure"}
+# The ground's lens: the sky view is 72 degrees tall, in which the Moon is five pixels. Up to 6.
+TOUR_LOOK_ZOOM_MAX = 6
 # registry/overlays.yaml's rows, id -> world, filled by main() before the trips are read.
 TOUR_OVERLAYS: dict = {}
 TOUR_PACING = {"auto", "reader"}
@@ -832,10 +850,16 @@ def check_stop_extras(tour: dict, stop: dict, n: int, where: str, kind: str, val
                         "the camera's own sky")
     zoom = stop.get("zoom")
     if zoom is not None:
-        if not is_number(zoom) or not TOUR_ZOOM_MIN <= zoom <= 1:
+        looking = kind == "observer" and "look" in stop
+        if looking:
+            if not is_number(zoom) or not 1 <= zoom <= TOUR_LOOK_ZOOM_MAX:
+                fail(where, f"`zoom: {zoom!r}` on a stop seen from the ground must be a number from 1 to "
+                            f"{TOUR_LOOK_ZOOM_MAX}: the sky view is already a wide lens, and past "
+                            f"{TOUR_LOOK_ZOOM_MAX} times a head turn swings the picture off the screen")
+        elif not is_number(zoom) or not TOUR_ZOOM_MIN <= zoom <= 1:
             fail(where, f"`zoom: {zoom!r}` must be a number from {TOUR_ZOOM_MIN} to 1: under 1 is a wider "
                         f"angle, and wider than that the sky at the edges is stretched out of shape")
-        if not sky:
+        if not sky and not looking:
             fail(where, "`zoom:` on a stop that is not a `sky:` target: everything else is framed by "
                         "distance, and a lens would change how big a model looks")
     exposure = stop.get("exposure")
@@ -860,16 +884,39 @@ def check_stop_extras(tour: dict, stop: dict, n: int, where: str, kind: str, val
         if not ok:
             fail(where, f"`over: {over!r}` must be [latitude, longitude] in degrees, north and east "
                         f"positive, or [latitude, midnight] for the meridian facing away from the Sun")
-        if not (kind == "world" and value == "earth"):
-            fail(where, "`over:` on a stop that is not `target: {world: earth}`: it is a place on the Earth")
+        if kind != "world" or value == "sun":
+            fail(where, "`over:` on a stop that is not a `world:` with a ground: it is a latitude and a "
+                        "longitude on the world the stop is about")
+        elif over[1] == "midnight" and value != "earth":
+            fail(where, "`over: [latitude, midnight]` is the Earth's night side, for the aurora; on "
+                        f"`{value}` write the longitude")
     live = stop.get("live_note")
+    live_now = False
     if live is not None:
         if live not in TOUR_LIVE_NOTES:
             fail(where, f"`live_note: {live}` is not one of {sorted(TOUR_LIVE_NOTES)}")
-        if not (kind == "world" and value == "earth"):
-            fail(where, "`live_note:` on a stop that is not `target: {world: earth}`: the sentence is "
-                        "about the Earth's own weather")
-    for label, has in (("overlay", overlay is not None), ("live_note", live is not None)):
+        else:
+            worlds, live_now = TOUR_LIVE_NOTES[live]
+            if not (kind == "world" and value in worlds):
+                fail(where, f"`live_note: {live}` on a stop that is not `target: {{world: ...}}` for one "
+                            f"of {sorted(worlds)}: the sentence is about that world and no other")
+            if live == "tonight" and tour.get("requires_observer") is not True:
+                fail(where, "`live_note: tonight` is the planet in the VISITOR'S sky, on a trip that "
+                            "does not say it needs a place (`requires_observer: true`)")
+    seen_from = stop.get("seen_from")
+    if seen_from is not None:
+        if kind != "world":
+            fail(where, "`seen_from:` on a stop that is not a `world:` target: it is the side of a "
+                        "world the camera stands on")
+        elif seen_from == value:
+            fail(where, f"`seen_from: {seen_from}` is the stop's own subject")
+        for other in ("over", "behind"):
+            if other in stop:
+                fail(where, f"`seen_from:` and `{other}:` are two answers to where the camera stands. Drop one")
+        if (stop.get("drift_deg", 1) or 0) != 0:
+            fail(where, "`seen_from:` needs `drift_deg: 0`: ui/trip.js re-aims the camera every frame "
+                        "to stay on that side, and a drift would be fighting it")
+    for label, has in (("overlay", overlay is not None), ("live_note", live is not None and live_now)):
         if not has:
             continue
         if own_time != "now":
@@ -898,14 +945,55 @@ def check_observer_stop(tour: dict, stop: dict, where: str, value) -> None:
                     f"from at most 54 degrees above the horizon the camera is under it below "
                     f"{TOUR_OBSERVER_MIN_KM} km")
     when = stop.get("time")
-    if when is not None and when != "now" and not isinstance(when, dict):
+    check_look(tour, stop, where)
+    if when is not None and when not in ("now", "tonight") and not isinstance(when, dict):
         written = when.strftime("%Y-%m-%dT%H:%M:%SZ") if isinstance(when, datetime.datetime) else when
         fail(where, f"`time: {written}` on the visitor's place: its ground does not move but its sky "
                     f"does, and a written date is the same instant for every visitor. Write `now` or "
                     f"an event reference")
 
 
-def check_stop_clock(stop: dict, where: str, kind: str, sgp4: bool, flown_on) -> None:
+def check_look(tour: dict, stop: dict, where: str) -> None:
+    """`look:` on a stop at the visitor's place (2026-10-06): what the sky view turns to."""
+    if "look" not in stop:
+        return
+    look = stop.get("look")
+    named = [k for k in TOUR_LOOK_KEYS if isinstance(look, dict) and k in look]
+    if not isinstance(look, dict) or len(named) != 1 or set(look) - set(TOUR_LOOK_KEYS):
+        fail(where, f"`look: {look!r}` must name exactly one of {list(TOUR_LOOK_KEYS)}: the head turns "
+                    f"to one thing")
+        return
+    key, value = named[0], look[named[0]]
+    if key == "world" and value not in TOUR_LOOK_WORLDS:
+        fail(where, f"`look: {{world: {value}}}` is not one of {sorted(TOUR_LOOK_WORLDS)}: the things "
+                    f"sky/lookfor.js can find in a sky")
+    elif key == "best" and value not in TOUR_LOOK_BEST:
+        fail(where, f"`look: {{best: {value}}}` is not one of {sorted(TOUR_LOOK_BEST)}")
+    elif key == "sky":
+        ok = isinstance(value, list) and len(value) == 2 and all(is_number(v) for v in value) \
+            and 0 <= value[0] < 360 and -90 <= value[1] <= 90
+        if not ok:
+            fail(where, f"`look: {{sky: {value!r}}}` must be [right ascension, declination] in degrees")
+    elif key == "pass":
+        when = stop.get("time")
+        timed = isinstance(when, dict) and str(when.get("event") or "").startswith("station-pass.")
+        if value is not True or not timed:
+            fail(where, "`look: {pass: true}` is the station's next pass, so the stop is timed to it: "
+                        "`time: {event: station-pass.next}`")
+        if "stations" not in (tour.get("requires") or []):
+            fail(where, "`look: {pass: true}` on a trip that does not list `stations` in `requires:`, "
+                        "so it is planned before the station is loaded and its pass cannot be found")
+    # The card is the same card for every visitor, and what is up differs for each: it may not say
+    # which planet, star or figure the view will find.
+    if key == "best":
+        text = " ".join(str(v or "") for v in (stop.get("card") or {}).values())
+        for name in ("Venus", "Jupiter", "Saturn", "Mars", "Mercury", "Sirius", "Vega", "Orion"):
+            if re.search(rf"\b{name}\b", text):
+                fail(where, f"the card names {name} under `look: {{best: {value}}}`: which one is up "
+                            f"is worked out for each visitor, and the line under the card says it")
+
+
+def check_stop_clock(stop: dict, where: str, kind: str, sgp4: bool, flown_on, tour=None) -> None:
     """A stop's `time:` and `rate:` (spec 0030), each capped by what the stop is looking at.
 
     The rate caps are three, in order of what they protect: an Earth-orbit subject whips round the
@@ -962,6 +1050,14 @@ def check_stop_clock(stop: dict, where: str, kind: str, sgp4: bool, flown_on) ->
                         f" and nothing else: elements are only honest within a week")
         return
     if when == "now":
+        return
+    # `tonight` (2026-10-06): the coming dark at the visitor's place, so only a trip that has one.
+    if when == "tonight":
+        if not (tour or {}).get("requires_observer") is True:
+            fail(where, "`time: tonight` on a trip that does not say it needs a place "
+                        "(`requires_observer: true`): whose night would it be")
+        if sgp4:
+            fail(where, "`time: tonight` on an Earth-orbit target: write `now` or a station pass")
         return
     # PyYAML reads an unquoted ISO instant as a datetime; a quoted one arrives as a string. Either
     # way the messages below print it the way it was written.
@@ -1178,7 +1274,16 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
 
     sgp4 = (kind == "layer" and value in TOUR_SGP4_LAYERS) or \
         (kind == "record" and bool(TOUR_SGP4_RECORD.match(str(value))))
-    check_stop_clock(stop, where, kind, sgp4, flown_on)
+    check_stop_clock(stop, where, kind, sgp4, flown_on, tour)
+    if "look" in stop and kind != "observer":
+        fail(where, "`look:` on a stop that is not `target: {observer: true}`: it is what the visitor "
+                    "sees from their own ground")
+    seen_from = stop.get("seen_from")
+    if seen_from is not None and seen_from not in world_ids:
+        fail(where, f"`seen_from: {seen_from}` has no worlds.yaml row")
+    elif seen_from is not None and flown_on in TOUR_STAGES and not tour_drawn_true(seen_from, flown_on):
+        fail(where, f"`seen_from: {seen_from}` is drawn nearer and larger than it is from the "
+                    f"`{flown_on}` stage, so the camera would stand on the side of a drawing")
 
     # An eclipse stop (spec 0037): its instant is an eclipse, so the shot is lit from the front.
     when = stop.get("time")

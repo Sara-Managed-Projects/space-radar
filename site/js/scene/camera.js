@@ -1148,6 +1148,19 @@ export function createCameraRig(camera, domElement, options = {}) {
     applyToCamera();
   }
 
+  /**
+   * Put the camera on a given side of its target, at once, keeping the target and the distance.
+   * For a caller that re-aims every frame (ui/trip.js `seen_from:`, which keeps the camera between
+   * the Moon and the Earth while a month runs): a flyTo per frame would end a flight per frame.
+   * Refused while a flight is running, which owns both angles. Returns whether it was applied.
+   */
+  function setAngles(az, pol) {
+    if (flight) return false;
+    if (Number.isFinite(az)) azimuth = az;
+    if (Number.isFinite(pol)) polar = Math.min(Math.PI - EPS_POLAR, Math.max(EPS_POLAR, pol));
+    return true;
+  }
+
   /** Point the rig at a new target, keeping the camera where it is. */
   function setTarget(v) {
     if (!toVector3(v, target)) return;
@@ -1224,6 +1237,7 @@ export function createCameraRig(camera, domElement, options = {}) {
     setWorldRadius,
     setWorldCentre,
     setTarget,
+    setAngles,
     sync,
     saveState,
     restoreState,

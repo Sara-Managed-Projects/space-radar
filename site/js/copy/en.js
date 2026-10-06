@@ -1814,6 +1814,27 @@ export const COPY = {
     // "night" or "day" alone.
     passNight: 'On this pass it is sunlit against a dark sky: you could see it, weather allowing.',
     passDay: 'You would not see this pass: your sky is too light, or the station is in the Earth’s shadow.',
+    // 2026-10-06: a stop seen from the visitor's own ground (`look:` in registry/tours.yaml). What
+    // the view turned to is worked out for their place and the stop's instant (sky/lookfor.js), so
+    // these are GENERATED and the card above them never names a planet or a star. {alt} and {az}
+    // are sky/skyview.js's own words ("about two fists above the horizon", "south-west").
+    lookMoonUp: 'The Moon is {pct}% lit, {alt} in the {az}.',
+    lookMoonDown: 'The Moon is below your horizon at this hour. It rises at {time}.',
+    lookMoonDownNoRise: 'The Moon is below your horizon at this hour.',
+    lookWorldUp: '{name} is {alt} in the {az}.',
+    lookWorldDown: '{name} is below your horizon at this hour.',
+    lookPlanet: 'The brightest planet up at this hour is {name}: {alt} in the {az}.',
+    lookNoPlanet: 'No planet you could see by eye is up at this hour. The view faces where they will pass.',
+    lookStar: 'The brightest star up at this hour is {name}: {alt} in the {az}.',
+    lookFigure: 'Best placed at this hour: {name}, {alt} in the {az}.',
+    lookNoFigure: 'None of the well-known figures is well placed at this hour.',
+    lookNoPass: 'No pass of the station over your place was found in the next week.',
+    lookDaylight: 'Your sky is not dark at this hour, so there is nothing to pick out yet.',
+    // `live_note: tonight` under a stop about a planet: when and where it is in the visitor's sky
+    // in the coming dark, by their device's clock, or why it is not there.
+    tonightUp: 'From {place} tonight: up from {begin} to {end}, highest at {time}, {alt} in the {az}.',
+    tonightGlare: 'From {place} tonight: {name} is too close to the Sun to be seen.',
+    tonightDown: 'From {place} tonight: {name} is not above the horizon while the sky is dark.',
 
     // --- the frame (spec 0061 task 7) ---------------------------------------------------------
     // A glass toolbar at the foot of the scene with icon buttons, the stop card in the sidebar, and
@@ -1852,6 +1873,17 @@ export const COPY = {
     voice: 'Voice',
     voiceOnTitle: 'A synthetic voice is reading each stop: turn it off and keep the music (V)',
     voiceOffTitle: 'Have each stop read aloud by a synthetic voice (V)',
+    // PRESENT MODE (public #441, 2026-10-06): one trip for a room. The sidebar goes, the words are
+    // set large over the scene, and the person with the clicker decides when to go on.
+    present: 'Present',
+    presentTitle: 'Show this trip to a room: large words, no panels, you press Next',
+    presentOffTitle: 'Leave present mode and bring the panels back',
+    presentAuto: 'Autoplay',
+    presentAutoOffTitle: 'Each stop waits for Next: let the trip move on by itself (A)',
+    presentAutoOnTitle: 'The trip moves on by itself: make each stop wait for Next (A)',
+    fullScreen: 'Full screen',
+    fullScreenTitle: 'Fill the whole screen (F)',
+    fullScreenOffTitle: 'Leave the full screen (F)',
     leave: 'Leave',
     leaveTitle: 'Leave the trip. The camera stays exactly where it is. (Escape)',
     // ...WHICH IS NOT TRUE OF A TRIP THAT MOVED THE MAP'S CENTRE (2026-09-22). A trip may be flown
@@ -1873,10 +1905,17 @@ export const COPY = {
     // An unmarked ending is indistinguishable from a crash. One named next trip, never a menu.
     endMicro: 'End of the trip',
     endBody: 'The camera stays where it is. Nothing here goes back.',
-    endBodyStage: 'Leaving puts the map back on the world it was centred on before the trip, because out here one step of the map is a different distance. Nothing else goes back.',
-    endExplore: 'Explore',
+    endBodyStage: 'Keep flying stays out here. Go home puts the map back on the world it was centred on before the trip.',
+    // "Keep flying" (public #447): the camera stays where the trip ended. After a trip that moved
+    // the map's centre that means staying out there, and the way home is the button beside it.
+    endExplore: 'Keep flying',
     endExploreTitle: 'Keep this view and carry on by yourself',
+    endStayTitleStage: 'Stay out here and fly on from where the trip ended',
+    endHome: 'Go home',
     endExploreTitleStage: 'Carry on by yourself, back on the map you started from',
+    // The picture to send (public #444): the share sheet's postcard of the view the camera holds.
+    endSend: 'Send this view as a picture',
+    endSendTitle: 'Make a postcard of where the trip ended, with its words and a link',
     endReplay: 'Watch again',
     endReplayTitle: 'Watch this trip again from the start',
     endShareTitle: 'Share a link to this trip',
