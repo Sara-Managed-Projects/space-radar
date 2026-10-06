@@ -304,7 +304,7 @@ for (const withSky of [true, false]) {
     const north = stage.toScene({ x: 0, y: 0, z: 6371 }, 'earth-fixed', clock.now()).sub(stage.toScene({ x: 0, y: 0, z: 0 }, 'earth-fixed', clock.now())).normalize();
     const toCam = m.camera.position.clone().sub(earth);
     check(toCam.clone().normalize().dot(north) > 0.999, 'from-outside: the camera is not above the north pole');
-    check(Math.abs(toCam.length() * stage.unitKm - 1150000) < 2000, `from-outside: ${Math.round(toCam.length() * stage.unitKm)} km out`);
+    check(Math.abs(toCam.length() * stage.unitKm - 1000000) < 2000, `from-outside: ${Math.round(toCam.length() * stage.unitKm)} km out`);
     check(Math.abs(clock.now() - Date.parse('2027-01-08T12:00:00Z')) < 12 * HOUR, 'from-outside: shown just after the new Moon of January 2027');
   }
   m.machine.next();

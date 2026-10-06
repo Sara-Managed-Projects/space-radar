@@ -1519,9 +1519,7 @@ export const TOURS = [
       "systems",
       "exotics",
       "deep-sky",
-      "galaxy",
-      "deep-space",
-      "far-bodies"
+      "galaxy"
     ],
     "pacing": "auto",
     "min_stops": 3,
@@ -2359,7 +2357,7 @@ export const TOURS = [
         "target": {
           "world": "earth"
         },
-        "distance_km": 1150000,
+        "distance_km": 1000000,
         "drift_deg": 0,
         "time": "2027-01-08T12:00:00Z",
         "rate": 36000,
@@ -2387,7 +2385,7 @@ export const TOURS = [
         },
         "frame_radii": 5.2,
         "drift_deg": 0,
-        "time": "2027-01-09T08:00:00Z",
+        "time": "2027-01-10T12:00:00Z",
         "rate": 36000,
         "chapter": "The month, as the Earth sees it",
         "seen_from": "earth",
@@ -2453,7 +2451,7 @@ export const TOURS = [
         },
         "distance_km": 12000,
         "behind": "earth",
-        "key_light_deg": 50,
+        "time": "2027-02-05T12:00:00Z",
         "rate": 600,
         "chapter": "Two things people get wrong",
         "card": {
@@ -2464,6 +2462,7 @@ export const TOURS = [
         "drift_deg": 34,
         "drift_rate_deg_s": 6,
         "drift": "toward-light",
+        "key_light_deg": 125,
         "ease": "auto",
         "on_unresolved": "drop",
         "dwell_ms": 17818
@@ -3112,9 +3111,8 @@ export const TOURS = [
         "target": {
           "world": "phobos"
         },
-        "frame_radii": 6,
-        "behind": "mars",
-        "key_light_deg": 60,
+        "frame_radii": 5,
+        "key_light_deg": 50,
         "chapter": "Around it",
         "card": {
           "title": "Phobos, and Deimos",

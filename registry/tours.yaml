@@ -1492,9 +1492,7 @@ tours:
     requires: [stars]
     # The marks of other layers are litter across a figure: every planet of another star is a
     # green dot here, every nebula a lilac one (looked at 2026-10-05, the first render).
-    # deep-space and far-bodies since 2026-10-06: the walk of every stop found Voyager's and
-    # Pioneer's models, 260 px wide, sitting in Orion, the Scorpion and the Southern Cross.
-    hides: [exoplanets, systems, exotics, deep-sky, galaxy, deep-space, far-bodies]
+    hides: [exoplanets, systems, exotics, deep-sky, galaxy]
     stage: stellar
     clock: as-found
     og_stop: 1
@@ -2094,7 +2092,7 @@ tours:
       - id: from-outside
         target: {world: earth}
         over: [90, 0]
-        distance_km: 1150000
+        distance_km: 1000000
         time: 2027-01-08T12:00:00Z
         rate: 36000
         drift_deg: 0
@@ -2110,7 +2108,9 @@ tours:
         target: {world: moon}
         seen_from: earth
         frame_radii: 5.2
-        time: 2027-01-09T08:00:00Z
+        # Three days after new, 9 % lit: a day earlier the crescent is too thin to draw (the walk of
+        # 2026-10-06 showed a black disc under "a sliver that grows").
+        time: 2027-01-10T12:00:00Z
         rate: 36000
         drift_deg: 0
         chapter: "The month, as the Earth sees it"
@@ -2155,7 +2155,9 @@ tours:
         target: {world: moon}
         distance_km: 12000
         behind: earth
-        key_light_deg: 50
+        # The day before the next new Moon, when the far side is the lit one. Written, because the
+        # stops before it run the clock for as long as their words take, which nobody can know here.
+        time: 2027-02-05T12:00:00Z
         rate: 600
         chapter: "Two things people get wrong"
         card:
@@ -2575,9 +2577,10 @@ tours:
 
       - id: phobos
         target: {world: phobos}
-        frame_radii: 6
-        behind: mars
-        key_light_deg: 60
+        frame_radii: 5
+        # Not `behind: mars`: with Mars held behind it the camera was on the night side of both,
+        # two black discs (the walk of 2026-10-06). Lit from the front, Mars is in shot when it is.
+        key_light_deg: 50
         chapter: "Around it"
         card:
           title: "Phobos, and Deimos"
