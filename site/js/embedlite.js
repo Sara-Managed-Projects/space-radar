@@ -93,6 +93,13 @@ export async function bootLite() {
   } catch {
     record = null;
   }
+  // The stations' list could not be read at all (CelesTrak said no and there is no saved copy): the
+  // whole app could not find the station either, and would cost four megabytes to say so. The frame
+  // shows the Earth, which is where the station is. A list that WAS read and does not hold the
+  // number is another matter: the object may be in another catalogue, and that is the full app's.
+  if (!record && target.kind === 'station' && !(layerRecords.get('stations') || []).length) {
+    record = (layerRecords.get('worlds') || []).find((r) => r.id === 'earth') || null;
+  }
   if (!record) return false;
 
   const embed = await installEmbed(location.search);

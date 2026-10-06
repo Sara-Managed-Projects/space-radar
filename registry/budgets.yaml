@@ -31,7 +31,7 @@ budgets:
   # `?embed=1&at=moon` and `?embed=1&at=25544` (tests/test_first_visit_bytes.mjs --embed=). Before:
   # the whole first visit and every catalogue, 163 requests and about 9.6 MB with the saved copies
   # mirrored (internal #396's measurement), 3.9 MB by this method without them.
-  - {id: embed_first_visit_bytes, value: 2500000, unit: bytes, since: 2026-10-07, reason: "EMBED_MEASURED"}
+  - {id: embed_first_visit_bytes, value: 2500000, unit: bytes, since: 2026-10-07, reason: "internal #396: 2 464 627 B in 81 requests for at=moon and 2 376 088 B in 80 for at=25544 (with the saved stations list), measured 2026-10-07 in headless Chrome as a phone at 390x844 on the stripped tree, uncompressed; the target was 2.5 MB and the margin is 1.4 %, so a module added to js/embedlite.js's graph is a decision"}
   - {id: audio_at_boot_bytes, value: 0, unit: bytes, since: 2026-09-22, reason: "spec 0035: nothing before a gesture"}
   - {id: og_at_boot_bytes, value: 0, unit: bytes, since: 2026-09-22, reason: "spec 0033: previews and cards only"}
   # WOFF2 is already compressed, so this number is the same on CI's server and the live site.

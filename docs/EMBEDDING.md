@@ -77,6 +77,10 @@ What the light embed leaves out, so that a reader is not sent what the frame doe
 - **Every catalogue but the one the object is in**, the trips, the cards, the sky from the ground,
   the sources sheet, the layer switches and the service worker.
 
+If the stations' list cannot be read at all (CelesTrak refuses and there is no saved copy), a
+station's light embed shows the Earth, where the station is, instead of loading the whole map to
+find nothing.
+
 The whole map inside a frame (the second kind of link) is several megabytes, as a visit to the
 site is. Prefer a world's id or a station's number when the article is about one of them.
 
