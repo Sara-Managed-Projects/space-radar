@@ -24,6 +24,47 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
+
+
+# ONE PARSER, ASKED ONCE PER TEXT (2026-10-05). The pure-Python YAML scanner was three quarters of
+# this script's run time: tours.yaml alone was parsed by twelve checks, and tests/test_refusals.py
+# runs the whole script once per broken rule, 300-odd times. So: libyaml's loader when PyYAML was
+# built with it (the same safe schema, the same data; the wheels CI installs have it), each
+# distinct text parsed once per run, and -- only when $REGISTRY_YAML_CACHE names a directory, which
+# the refusals harness does for its own temporary one -- the parse kept on disk under the SHA-256
+# of the text, so a case that breaks one file does not pay again for the twenty it left alone.
+# A parse is handed out as a deep copy, so no check can see another's edits to a document.
+_YAML_LOADER = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+_YAML_MEMO: dict = {}
+
+
+def yaml_load(text):
+    import copy
+    import hashlib
+    import pickle
+    if not isinstance(text, str):
+        return yaml.load(text, Loader=_YAML_LOADER)
+    if text in _YAML_MEMO:
+        return copy.deepcopy(_YAML_MEMO[text])
+    cache_dir = os.environ.get("REGISTRY_YAML_CACHE")
+    cached = Path(cache_dir) / (hashlib.sha256(text.encode("utf-8")).hexdigest() + ".pickle") if cache_dir else None
+    doc, hit = None, False
+    if cached is not None and cached.is_file():
+        try:
+            doc, hit = pickle.loads(cached.read_bytes()), True
+        except Exception:  # a torn or foreign file is a miss, never an answer
+            hit = False
+    if not hit:
+        doc = yaml.load(text, Loader=_YAML_LOADER)  # a YAMLError is the caller's to report, and is never cached
+        if cached is not None:
+            try:
+                tmp = cached.with_name(f"{cached.name}.{os.getpid()}.tmp")
+                tmp.write_bytes(pickle.dumps(doc))
+                os.replace(tmp, cached)
+            except OSError:
+                pass
+    _YAML_MEMO[text] = doc
+    return copy.deepcopy(doc)
 REG = ROOT / "registry"
 
 # The six propagators of spec 0002. A seventh is a new file under app/propagators/ AND a
@@ -466,7 +507,7 @@ def check_tours(oddities_doc: dict, layer_ids: set, world_ids: set, site_ids: se
     if not path.exists():
         return
     try:
-        doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        doc = yaml_load(path.read_text(encoding="utf-8")) or {}
     except yaml.YAMLError as exc:
         fail("tours.yaml", f"will not parse: {exc}")
         return
@@ -1404,7 +1445,7 @@ def check_stages(world_ids: set) -> list:
     if not path.exists():
         return []
     try:
-        doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        doc = yaml_load(path.read_text(encoding="utf-8")) or {}
     except yaml.YAMLError as exc:
         fail("stages.yaml", f"will not parse: {exc}")
         return []
@@ -1520,7 +1561,7 @@ def check_systems() -> list:
     if not path.exists():
         return []
     try:
-        doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        doc = yaml_load(path.read_text(encoding="utf-8")) or {}
     except yaml.YAMLError as exc:
         fail("systems.yaml", f"will not parse: {exc}")
         return []
@@ -1641,7 +1682,7 @@ def check_dso_hand() -> list:
     if not path.exists():
         return []
     try:
-        doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        doc = yaml_load(path.read_text(encoding="utf-8")) or {}
     except yaml.YAMLError as exc:
         fail("dso-hand.yaml", f"will not parse: {exc}")
         return []
@@ -1757,7 +1798,7 @@ def check_nebulae() -> list:
     if not path.exists():
         return []
     try:
-        doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        doc = yaml_load(path.read_text(encoding="utf-8")) or {}
     except yaml.YAMLError as exc:
         fail(name, f"will not parse: {exc}")
         return []
@@ -1873,7 +1914,7 @@ def check_exotics() -> list:
     if not path.exists():
         return []
     try:
-        doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        doc = yaml_load(path.read_text(encoding="utf-8")) or {}
     except yaml.YAMLError as exc:
         fail("exotics.yaml", f"will not parse: {exc}")
         return []
@@ -1956,7 +1997,7 @@ def check_stars_notable(exotics: list) -> list:
     if not path.exists():
         return []
     try:
-        doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        doc = yaml_load(path.read_text(encoding="utf-8")) or {}
     except yaml.YAMLError as exc:
         fail("stars-notable.yaml", f"will not parse: {exc}")
         return []
@@ -2045,7 +2086,7 @@ def check_ladder(world_ids: set, layer_ids: set) -> list:
     if not path.exists():
         return []
     try:
-        doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        doc = yaml_load(path.read_text(encoding="utf-8")) or {}
     except yaml.YAMLError as exc:
         fail("ladder.yaml", f"will not parse: {exc}")
         return []
@@ -2092,7 +2133,7 @@ def check_aliases() -> list:
     if not path.exists():
         return []
     try:
-        doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        doc = yaml_load(path.read_text(encoding="utf-8")) or {}
     except yaml.YAMLError as exc:
         fail("aliases.yaml", f"will not parse: {exc}")
         return []
@@ -2131,7 +2172,7 @@ def check_colorkeys() -> list:
     if not path.exists():
         return []
     try:
-        doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        doc = yaml_load(path.read_text(encoding="utf-8")) or {}
     except yaml.YAMLError as exc:
         fail("colorkeys.yaml", f"will not parse: {exc}")
         return []
@@ -2189,7 +2230,7 @@ def check_lod() -> list:
     if not path.exists():
         return []
     try:
-        doc = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        doc = yaml_load(path.read_text(encoding="utf-8")) or {}
     except yaml.YAMLError as exc:
         fail("lod.yaml", f"will not parse: {exc}")
         return []
@@ -2597,7 +2638,7 @@ def load(name: str) -> dict:
         fail(name, "missing")
         return {}
     try:
-        return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        return yaml_load(path.read_text(encoding="utf-8")) or {}
     except yaml.YAMLError as exc:
         fail(name, f"will not parse: {exc}")
         return {}
@@ -2643,7 +2684,7 @@ def budget_base_rows() -> list | None:
     if out.returncode != 0:
         return None
     try:
-        return (yaml.safe_load(out.stdout) or {}).get("budgets") or []
+        return (yaml_load(out.stdout) or {}).get("budgets") or []
     except yaml.YAMLError:
         return None
 
@@ -2697,7 +2738,8 @@ def check_budgets() -> list:
                 fail(where, f"raised from {old['value']} to {value} with `since` still {since}: a raised gate "
                             f"is a decision, so it carries the day it was made and what was measured")
         if readers is not None:
-            read = re.search(rf"\b{re.escape(str(bid))}\b", readers) is not None
+            # The substring test first: the regex over three megabytes of readers was 4 s of every run.
+            read = str(bid) in readers and re.search(rf"\b{re.escape(str(bid))}\b", readers) is not None
             if not read and not r.get("pending"):
                 fail(where, "nothing in tests/, scripts/ or site/js/ reads it: a budget nobody checks is a "
                             "decoration (write `pending:` with the spec task that will read it)")

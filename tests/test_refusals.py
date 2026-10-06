@@ -11,6 +11,8 @@ that does not say where is a refusal somebody will switch off.
 
 from __future__ import annotations
 
+import argparse
+import concurrent.futures
 import os
 import re
 import shutil
@@ -22,16 +24,78 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 
+def link(src, dst):
+    """A hard link where the filesystem allows, a copy where it does not."""
+    try:
+        os.link(src, dst)
+    except OSError:
+        shutil.copy2(src, dst)
+
+
 def textures_into(work: Path) -> None:
     """site/textures/ with its bytes: registry/textures.yaml states each file's size and pixels and
     the validator reads both from the file (2026-09-28). Hard links where the filesystem allows,
     because this runs once per case and the tree is 10 MB."""
-    def link(src, dst):
-        try:
-            os.link(src, dst)
-        except OSError:
-            shutil.copy2(src, dst)
     shutil.copytree(ROOT / "site" / "textures", work / "site" / "textures", copy_function=link)
+
+
+def media_into(work: Path) -> None:
+    """site/images/ and site/audio/, hard-linked like the textures (2026-10-05: copying 15 MB of
+    sound per case was most of what a case cost after the parse). registry/exotics.yaml points at
+    the photographs and registry/audio.yaml at the files it names (spec 0035), and the validator
+    checks they are really in the tree, so the tree needs them or every case fails for a reason
+    that has nothing to do with the case under test.
+
+    EVERY tree a case is given is linked this way, not only these two. So NO CASE MAY WRITE INTO A
+    FILE IT WAS GIVEN: a write through a hard link is a write to the repository. Cases change a
+    file only through mutate() below, which replaces it."""
+    shutil.copytree(ROOT / "site" / "images", work / "site" / "images", copy_function=link)
+    if (ROOT / "site" / "audio").is_dir():
+        shutil.copytree(ROOT / "site" / "audio", work / "site" / "audio", copy_function=link)
+
+
+def mutate(path: Path, text: str) -> None:
+    """Replace a file in a work tree with new text, as a NEW file: unlink first, so that even a
+    path that turned out to be a hard link can never write through to the repository."""
+    path.unlink()
+    path.write_text(text, encoding="utf-8")
+
+
+# HOW THIS RUNS IN TWO MINUTES AND NOT FIFTY (2026-10-05). Every case still runs the real validator
+# as its own process in its own tree: nothing about what is proved has changed. What changed is the
+# waiting. Cases run `--jobs` at a time (default: the CPU count), each in a directory of its own;
+# the big media are hard links; and the validator's YAML parses are shared through
+# $REGISTRY_YAML_CACHE (scripts/check_registry.py, keyed by the SHA-256 of the text, so a case that
+# breaks one file parses that one file). Output is printed in the order the cases are written,
+# whatever order they finish in.
+JOBS = os.cpu_count() or 2
+ENV: dict = dict(os.environ)
+
+
+def run_cases(fn, cases, tmp: Path) -> int:
+    """fn(case, work_dir) -> (lines, failures) for each case, JOBS at a time, printed in order."""
+    def one(numbered):
+        i, case = numbered
+        work = tmp / f"case-{i}" / "work"
+        work.mkdir(parents=True)
+        try:
+            return fn(case, work)
+        except Exception as exc:  # a harness that dies must fail the run, not vanish in a thread
+            return [f"  ** {case[0]}: the harness raised {type(exc).__name__}: {exc}"], 1
+        finally:
+            shutil.rmtree(work.parent, ignore_errors=True)
+    failures = 0
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, JOBS)) as pool:
+        for lines, bad in pool.map(one, list(enumerate(cases))):
+            for line in lines:
+                print(line)
+            failures += bad
+    return failures
+
+
+def validator(work: Path, script: str = "scripts/check_registry.py", env: dict | None = None):
+    return subprocess.run([sys.executable, script], cwd=work, capture_output=True, text=True, env=env or ENV)
+
 
 CASES: list[tuple[str, str, str, str]] = [
     # (name, file, find, replace)
@@ -1003,114 +1067,83 @@ TOUR_CASES: list[tuple[str, str, str]] = [
 
 def check_tour_refusals() -> int:
     """Break each registry/tours.yaml rule on purpose, then assert the real file is accepted."""
-    failures = 0
+    def one(case, work: Path):
+        name, find, replace = case
+        shutil.copytree(ROOT / "registry", work / "registry", copy_function=link)
+        shutil.copytree(ROOT / "scripts", work / "scripts", copy_function=link,
+                        ignore=shutil.ignore_patterns("__pycache__"))
+        media_into(work)
+        link(ROOT / "CREDITS.md", work / "CREDITS.md")
+        # The bundled cities a visitor can pick (spec 0038): a card on a trip from the visitor's
+        # place may not name one, and the checker reads them from here.
+        (work / "site" / "js" / "copy").mkdir(parents=True, exist_ok=True)
+        link(ROOT / "site" / "js" / "copy" / "en.js", work / "site" / "js" / "copy" / "en.js")
+        shutil.copytree(ROOT / "harvest", work / "harvest",
+                        ignore=shutil.ignore_patterns("__pycache__"), copy_function=link)
+        # A COMPLETE tree, unlike the mutation harness above, because the last case asserts
+        # the validator ACCEPTS the file -- and an accept case cannot be run in a tree the
+        # validator already rejects for missing model files. Names, not bytes: the question is
+        # whether a row is refused, not whether a GLB parses.
+        textures_into(work)
+        for src in ("site/models", "site/data"):
+            d = work / src
+            d.mkdir(parents=True, exist_ok=True)
+            for f in (ROOT / src).glob("*"):
+                if f.is_file():
+                    (d / f.name).touch()
+
+        path = work / "registry" / "tours.yaml"
+        want_refused = bool(find)
+        if want_refused:
+            text = path.read_text(encoding="utf-8")
+            if find not in text:
+                return [f"BROKEN TEST: {name!r} -- the string it mutates is not in tours.yaml"], 1
+            mutate(path, text.replace(find, replace, 1))
+
+        result = validator(work)
+        out = result.stdout + result.stderr
+        refused = result.returncode != 0
+        if want_refused and refused and "tours.yaml" in out:
+            return [f"  refused: {name}"], 0
+        if not want_refused and not refused:
+            return [f"  accepted: {name}"], 0
+        if want_refused:
+            why = "was accepted" if not refused else "refused without naming tours.yaml"
+            return [f"  ** {name}: {why}"], 1
+        return ([f"  ** {name}: the shipped registry/tours.yaml does not validate, so every "
+                 f"case above is a tautology"] + ["     " + line for line in out.strip().splitlines()]), 1
+
     with tempfile.TemporaryDirectory() as tmp:
-        for name, find, replace in TOUR_CASES + [("the file as it stands", "", "")]:
-            work = Path(tmp) / "work"
-            if work.exists():
-                shutil.rmtree(work)
-            work.mkdir()
-            shutil.copytree(ROOT / "registry", work / "registry")
-            shutil.copytree(ROOT / "scripts", work / "scripts")
-            # registry/exotics.yaml points at the two photographs and the validator checks
-            # they are really in the tree, so the tree needs them or every case fails for a
-            # reason that has nothing to do with the case under test.
-            shutil.copytree(ROOT / "site" / "images", work / "site" / "images")
-            # ...and registry/audio.yaml against the files it names (spec 0035).
-            if (ROOT / "site" / "audio").is_dir():
-                shutil.copytree(ROOT / "site" / "audio", work / "site" / "audio")
-            shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")
-            # The bundled cities a visitor can pick (spec 0038): a card on a trip from the visitor's
-            # place may not name one, and the checker reads them from here.
-            (work / "site" / "js" / "copy").mkdir(parents=True, exist_ok=True)
-            shutil.copy2(ROOT / "site" / "js" / "copy" / "en.js", work / "site" / "js" / "copy" / "en.js")
-            shutil.copytree(ROOT / "harvest", work / "harvest",
-                            ignore=shutil.ignore_patterns("__pycache__"))
-            # A COMPLETE tree, unlike the mutation harness above, because the last case asserts
-            # the validator ACCEPTS the file -- and an accept case cannot be run in a tree the
-            # validator already rejects for missing model files. Names, not bytes: the question is
-            # whether a row is refused, not whether a GLB parses.
-            textures_into(work)
-            for src in ("site/models", "site/data"):
-                d = work / src
-                d.mkdir(parents=True, exist_ok=True)
-                for f in (ROOT / src).glob("*"):
-                    if f.is_file():
-                        (d / f.name).touch()
-
-            path = work / "registry" / "tours.yaml"
-            want_refused = bool(find)
-            if want_refused:
-                text = path.read_text(encoding="utf-8")
-                if find not in text:
-                    print(f"BROKEN TEST: {name!r} -- the string it mutates is not in tours.yaml")
-                    failures += 1
-                    continue
-                path.write_text(text.replace(find, replace, 1), encoding="utf-8")
-
-            result = subprocess.run(
-                [sys.executable, "scripts/check_registry.py"],
-                cwd=work, capture_output=True, text=True,
-            )
-            out = result.stdout + result.stderr
-            refused = result.returncode != 0
-            if want_refused and refused and "tours.yaml" in out:
-                print(f"  refused: {name}")
-            elif not want_refused and not refused:
-                print(f"  accepted: {name}")
-            elif want_refused:
-                why = "was accepted" if not refused else "refused without naming tours.yaml"
-                print(f"  ** {name}: {why}")
-                failures += 1
-            else:
-                print(f"  ** {name}: the shipped registry/tours.yaml does not validate, so every "
-                      f"case above is a tautology")
-                for line in out.strip().splitlines():
-                    print("     " + line)
-                failures += 1
-    return failures
+        return run_cases(one, TOUR_CASES + [("the file as it stands", "", "")], Path(tmp))
 
 
 def check_copy_refuses() -> int:
     """Break the no-literals rule, the dash rule and the placeholder rule; assert check_copy.py names the file."""
-    failures = 0
+    def one(case, work: Path):
+        name, filename, find, replace = case
+        (work / "site" / "js").mkdir(parents=True)
+        shutil.copytree(ROOT / "site/js/ui", work / "site/js/ui", copy_function=link)
+        shutil.copytree(ROOT / "site/js/copy", work / "site/js/copy", copy_function=link)
+        shutil.copytree(ROOT / "site/js/data", work / "site/js/data", copy_function=link)
+        shutil.copytree(ROOT / "scripts", work / "scripts", copy_function=link,
+                        ignore=shutil.ignore_patterns("__pycache__"))
+        media_into(work)
+
+        path = work / "site" / "js" / "ui" / filename
+        text = path.read_text(encoding="utf-8")
+        if find not in text:
+            return [f"BROKEN TEST: {name!r} -- the string it mutates is not in ui/{filename}"], 1
+        mutate(path, text.replace(find, replace, 1))
+
+        result = validator(work, "scripts/check_copy.py")
+        out = result.stdout + result.stderr
+        if result.returncode != 0 and Path(filename).name in out:
+            return [f"  refused: {name}"], 0
+        why = "was accepted" if result.returncode == 0 else f"refused without naming {filename}"
+        return [f"  ** {name}: {why}"], 1
+
     with tempfile.TemporaryDirectory() as tmp:
-        for name, filename, find, replace in COPY_CASES:
-            work = Path(tmp) / "work"
-            if work.exists():
-                shutil.rmtree(work)
-            (work / "site" / "js").mkdir(parents=True)
-            shutil.copytree(ROOT / "site/js/ui", work / "site/js/ui")
-            shutil.copytree(ROOT / "site/js/copy", work / "site/js/copy")
-            shutil.copytree(ROOT / "site/js/data", work / "site/js/data")
-            shutil.copytree(ROOT / "scripts", work / "scripts")
-            # registry/exotics.yaml points at the two photographs and the validator checks
-            # they are really in the tree, so the tree needs them or every case fails for a
-            # reason that has nothing to do with the case under test.
-            shutil.copytree(ROOT / "site" / "images", work / "site" / "images")
-            # ...and registry/audio.yaml against the files it names (spec 0035).
-            if (ROOT / "site" / "audio").is_dir():
-                shutil.copytree(ROOT / "site" / "audio", work / "site" / "audio")
-
-            path = work / "site" / "js" / "ui" / filename
-            text = path.read_text(encoding="utf-8")
-            if find not in text:
-                print(f"BROKEN TEST: {name!r} -- the string it mutates is not in ui/{filename}")
-                failures += 1
-                continue
-            path.write_text(text.replace(find, replace, 1), encoding="utf-8")
-
-            result = subprocess.run(
-                [sys.executable, "scripts/check_copy.py"],
-                cwd=work, capture_output=True, text=True,
-            )
-            out = result.stdout + result.stderr
-            if result.returncode != 0 and Path(filename).name in out:
-                print(f"  refused: {name}")
-            else:
-                why = "was accepted" if result.returncode == 0 else f"refused without naming {filename}"
-                print(f"  ** {name}: {why}")
-                failures += 1
+        failures = run_cases(one, COPY_CASES, Path(tmp))
 
     # And the check must PASS on the tree as it stands, or the mutations above prove nothing.
     clean = subprocess.run(
@@ -1164,15 +1197,14 @@ def check_seo_refusals() -> int:
     """Break each rule scripts/check_seo.py holds; assert it refuses and names the file. The object
     pages are built at deploy time and not kept in git, so the cases start from a fresh build (which
     needs Node: the card's words are JavaScript)."""
-    failures = 0
     with tempfile.TemporaryDirectory() as tmp:
         clean_tree = Path(tmp) / "clean"
         site = clean_tree / "site"
         site.mkdir(parents=True)
         for name in ("index.html", "robots.txt"):
-            shutil.copy2(ROOT / "site" / name, site / name)
+            link(ROOT / "site" / name, site / name)
         for d in ("t", "og", "images"):
-            shutil.copytree(ROOT / "site" / d, site / d)
+            shutil.copytree(ROOT / "site" / d, site / d, copy_function=link)
         build = subprocess.run([sys.executable, str(ROOT / "scripts/build_seo.py"), "--out", str(clean_tree / "built")],
                                capture_output=True, text=True)
         if build.returncode != 0:
@@ -1190,27 +1222,24 @@ def check_seo_refusals() -> int:
             print(clean.stdout or clean.stderr)
             return 1
         print("  accepted: the pages as built")
-        for name, filename, find, replace, names in SEO_CASES:
-            work = Path(tmp) / "work"
-            if work.exists():
-                shutil.rmtree(work)
-            shutil.copytree(clean_tree, work)
+
+        def one(case, work: Path):
+            name, filename, find, replace, names = case
+            work.rmdir()
+            shutil.copytree(clean_tree, work, copy_function=link)
             path = work / filename
             text = path.read_text(encoding="utf-8")
             if find not in text:
-                print(f"BROKEN TEST: {name!r} -- the string it mutates is not in {filename}")
-                failures += 1
-                continue
-            path.write_text(text.replace(find, replace, 1), encoding="utf-8")
+                return [f"BROKEN TEST: {name!r} -- the string it mutates is not in {filename}"], 1
+            mutate(path, text.replace(find, replace, 1))
             result = run_check(work)
             out = result.stdout + result.stderr
             if result.returncode != 0 and names in out:
-                print(f"  refused: {name}")
-            else:
-                why = "was accepted" if result.returncode == 0 else f"refused without naming {names}"
-                print(f"  ** {name}: {why}")
-                failures += 1
-    return failures
+                return [f"  refused: {name}"], 0
+            why = "was accepted" if result.returncode == 0 else f"refused without naming {names}"
+            return [f"  ** {name}: {why}"], 1
+
+        return run_cases(one, SEO_CASES, Path(tmp))
 
 
 def check_models_dir_refuses() -> int:
@@ -1226,7 +1255,6 @@ def check_models_dir_refuses() -> int:
     never opens a file, and writing 6.7 MB of real models into a temporary tree to prove that
     would be testing shutil.
     """
-    failures = 0
     listed = sorted(
         re.findall(r"file: site/models/([A-Za-z0-9_.-]+\.glb)", (ROOT / "registry/models.yaml").read_text(encoding="utf-8"))
     )
@@ -1234,51 +1262,38 @@ def check_models_dir_refuses() -> int:
         print("  ** models directory: no real_models rows found, so this guard was not exercised")
         return 1
 
-    for label, extra in (("the directory as the registry lists it", None),
-                         ("one .glb with no row", "unlisted-and-uncredited.glb")):
-        with tempfile.TemporaryDirectory() as tmp:
-            work = Path(tmp) / "work"
-            work.mkdir()
-            shutil.copytree(ROOT / "registry", work / "registry")
-            shutil.copytree(ROOT / "scripts", work / "scripts")
-            # registry/exotics.yaml points at the two photographs and the validator checks
-            # they are really in the tree, so the tree needs them or every case fails for a
-            # reason that has nothing to do with the case under test.
-            shutil.copytree(ROOT / "site" / "images", work / "site" / "images")
-            # ...and registry/audio.yaml against the files it names (spec 0035).
-            if (ROOT / "site" / "audio").is_dir():
-                shutil.copytree(ROOT / "site" / "audio", work / "site" / "audio")
-            shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")
-            shutil.copytree(ROOT / "harvest", work / "harvest",
-                            ignore=shutil.ignore_patterns("__pycache__"))
-            textures_into(work)
-            models = work / "site" / "models"
-            models.mkdir(parents=True)
-            for name in listed:
-                (models / name).write_bytes(b"")
-            if extra:
-                (models / extra).write_bytes(b"")
+    def one(case, work: Path):
+        label, extra = case
+        shutil.copytree(ROOT / "registry", work / "registry", copy_function=link)
+        shutil.copytree(ROOT / "scripts", work / "scripts", copy_function=link,
+                        ignore=shutil.ignore_patterns("__pycache__"))
+        media_into(work)
+        link(ROOT / "CREDITS.md", work / "CREDITS.md")
+        shutil.copytree(ROOT / "harvest", work / "harvest",
+                        ignore=shutil.ignore_patterns("__pycache__"), copy_function=link)
+        textures_into(work)
+        models = work / "site" / "models"
+        models.mkdir(parents=True)
+        for name in listed:
+            (models / name).write_bytes(b"")
+        if extra:
+            (models / extra).write_bytes(b"")
 
-            result = subprocess.run(
-                [sys.executable, "scripts/check_registry.py"],
-                cwd=work, capture_output=True, text=True,
-            )
-            out = result.stdout + result.stderr
-            refused = result.returncode != 0
-            if extra is None:
-                if refused:
-                    print(f"  ** models directory: {label} was refused\n{out.strip()[:400]}")
-                    failures += 1
-                else:
-                    print(f"  accepted: {label}")
-            else:
-                if refused and "site/models" in out and extra in out:
-                    print(f"  refused: {label}")
-                else:
-                    why = "was accepted" if not refused else "refused without naming the file"
-                    print(f"  ** models directory: {label} {why}")
-                    failures += 1
-    return failures
+        result = validator(work)
+        out = result.stdout + result.stderr
+        refused = result.returncode != 0
+        if extra is None:
+            if refused:
+                return [f"  ** models directory: {label} was refused\n{out.strip()[:400]}"], 1
+            return [f"  accepted: {label}"], 0
+        if refused and "site/models" in out and extra in out:
+            return [f"  refused: {label}"], 0
+        why = "was accepted" if not refused else "refused without naming the file"
+        return [f"  ** models directory: {label} {why}"], 1
+
+    with tempfile.TemporaryDirectory() as tmp:
+        return run_cases(one, [("the directory as the registry lists it", None),
+                               ("one .glb with no row", "unlisted-and-uncredited.glb")], Path(tmp))
 
 
 # The raise needs a base to compare with, so these run in a git checkout of their own; and the
@@ -1299,119 +1314,125 @@ BUDGET_CASES: list[tuple[str, str, str, bool]] = [
 
 
 def check_budget_refusals() -> int:
-    failures = 0
     git = ["git", "-c", "user.name=refusals", "-c", "user.email=refusals@example.invalid", "-c", "commit.gpgsign=false"]
-    for name, find, replace, want_refused in BUDGET_CASES:
-        with tempfile.TemporaryDirectory() as tmp:
-            work = Path(tmp) / "work"
-            work.mkdir()
-            for d in ("registry", "scripts", "tests", "harvest", "site/js", "site/images", "site/audio"):
-                if (ROOT / d).is_dir():
-                    shutil.copytree(ROOT / d, work / d, ignore=shutil.ignore_patterns("__pycache__"))
-            shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")
-            (work / "site" / "data").mkdir(parents=True, exist_ok=True)
-            for f in ("dso.json", "stars3d.names.json", "exoplanets.csv"):
-                shutil.copy2(ROOT / "site" / "data" / f, work / "site" / "data" / f)
-            subprocess.run(git[:1] + ["init", "-q"], cwd=work, check=True)
-            subprocess.run(git + ["add", "registry/budgets.yaml"], cwd=work, check=True)
-            subprocess.run(git + ["commit", "-q", "-m", "base"], cwd=work, check=True)
 
-            path = work / "registry" / "budgets.yaml"
-            text = path.read_text(encoding="utf-8")
-            if find not in text:
-                print(f"BROKEN TEST: {name!r} -- the string it mutates is not in budgets.yaml")
-                failures += 1
-                continue
-            path.write_text(text.replace(find, replace, 1), encoding="utf-8")
-            result = subprocess.run([sys.executable, "scripts/check_registry.py"], cwd=work,
-                                    capture_output=True, text=True, env={**os.environ, "BUDGETS_BASE": "HEAD"})
-            said = [line for line in (result.stdout + result.stderr).splitlines() if "budgets.yaml" in line]
-            if want_refused and result.returncode != 0 and said:
-                print(f"  refused: {name}")
-            elif not want_refused and not said:
-                print(f"  accepted: {name}")
-            else:
-                print(f"  ** {name}: {'was accepted' if want_refused else 'was refused: ' + '; '.join(said)}")
-                failures += 1
-    return failures
+    def one(case, work: Path):
+        name, find, replace, want_refused = case
+        for d in ("registry", "scripts", "tests", "harvest", "site/js"):
+            if (ROOT / d).is_dir():
+                shutil.copytree(ROOT / d, work / d, ignore=shutil.ignore_patterns("__pycache__"), copy_function=link)
+        media_into(work)
+        link(ROOT / "CREDITS.md", work / "CREDITS.md")
+        (work / "site" / "data").mkdir(parents=True, exist_ok=True)
+        for f in ("dso.json", "stars3d.names.json", "exoplanets.csv"):
+            link(ROOT / "site" / "data" / f, work / "site" / "data" / f)
+        subprocess.run(git[:1] + ["init", "-q"], cwd=work, check=True)
+        subprocess.run(git + ["add", "registry/budgets.yaml"], cwd=work, check=True)
+        subprocess.run(git + ["commit", "-q", "-m", "base"], cwd=work, check=True)
+
+        path = work / "registry" / "budgets.yaml"
+        text = path.read_text(encoding="utf-8")
+        if find not in text:
+            return [f"BROKEN TEST: {name!r} -- the string it mutates is not in budgets.yaml"], 1
+        mutate(path, text.replace(find, replace, 1))
+        result = validator(work, env={**ENV, "BUDGETS_BASE": "HEAD"})
+        said = [line for line in (result.stdout + result.stderr).splitlines() if "budgets.yaml" in line]
+        if want_refused and result.returncode != 0 and said:
+            return [f"  refused: {name}"], 0
+        if not want_refused and not said:
+            return [f"  accepted: {name}"], 0
+        return [f"  ** {name}: {'was accepted' if want_refused else 'was refused: ' + '; '.join(said)}"], 1
+
+    with tempfile.TemporaryDirectory() as tmp:
+        return run_cases(one, BUDGET_CASES, Path(tmp))
+
+
+def check_registry_refusals(tmp: Path) -> int:
+    pristine = tmp / "pristine"
+    shutil.copytree(ROOT / "registry", pristine, copy_function=link)
+
+    def one(case, work: Path):
+        name, filename, find, replace = case
+        shutil.copytree(pristine, work / "registry", copy_function=link)
+        shutil.copytree(ROOT / "scripts", work / "scripts", copy_function=link,
+                        ignore=shutil.ignore_patterns("__pycache__"))
+        media_into(work)
+        # The validator cross-checks registry/models.yaml against CREDITS.md, so a tree
+        # without it fails for a reason that has nothing to do with the case under test.
+        link(ROOT / "CREDITS.md", work / "CREDITS.md")
+        # ...and registry/sources.yaml against harvest/parsers/ and the list/query files.
+        shutil.copytree(ROOT / "harvest", work / "harvest",
+                        ignore=shutil.ignore_patterns("__pycache__"), copy_function=link)
+        # ...and registry/dso-hand.yaml against the built site/data/dso.json the card reads.
+        (work / "site" / "data").mkdir(parents=True, exist_ok=True)
+        link(ROOT / "site" / "data" / "dso.json", work / "site" / "data" / "dso.json")
+        # ...and registry/stars-notable.yaml against the names file the star records come from.
+        link(ROOT / "site" / "data" / "stars3d.names.json", work / "site" / "data" / "stars3d.names.json")
+        # ...and registry/systems.yaml against the exoplanet table its planets are records of.
+        link(ROOT / "site" / "data" / "exoplanets.csv", work / "site" / "data" / "exoplanets.csv")
+        # ...and registry/textures.yaml against the maps it names.
+        textures_into(work)
+        # ...and registry/worlds.yaml against its two hand mirrors in the browser.
+        (work / "site" / "js" / "scene").mkdir(parents=True, exist_ok=True)
+        for js in ("worlds.js", "stage.js"):
+            link(ROOT / "site" / "js" / "scene" / js, work / "site" / "js" / "scene" / js)
+
+        path = work / "registry" / filename
+        text = path.read_text(encoding="utf-8")
+        if find not in text:
+            return [f"BROKEN TEST: {name!r} -- the string it mutates is not in {filename}"], 1
+        mutate(path, text.replace(find, replace, 1))
+
+        result = validator(work)
+        out = result.stdout + result.stderr
+        refused = result.returncode != 0
+        if refused and filename in out:
+            return [f"  refused: {name}"], 0
+        why = "was accepted" if not refused else f"refused without naming {filename}"
+        return [f"  ** {name}: {why}"], 1
+
+    return run_cases(one, CASES, tmp)
 
 
 def main() -> int:
+    global JOBS
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("--jobs", "-j", type=int, default=JOBS,
+                    help="cases to run at once (default: the CPU count, %(default)s here)")
+    JOBS = max(1, ap.parse_args().jobs)
+
     failures = 0
     with tempfile.TemporaryDirectory() as tmp:
-        pristine = Path(tmp) / "pristine"
-        shutil.copytree(ROOT / "registry", pristine)
+        # One parse per distinct YAML text for the whole run (scripts/check_registry.py). The
+        # unbroken tree is checked first, alone, so the cache is warm before the pool starts and a
+        # registry that does not validate is said once, here, and not three hundred times.
+        cache = Path(tmp) / "yaml-cache"
+        cache.mkdir()
+        ENV["REGISTRY_YAML_CACHE"] = str(cache)
+        warm = subprocess.run([sys.executable, "scripts/check_registry.py"], cwd=ROOT,
+                              capture_output=True, text=True, env=ENV)
+        if warm.returncode != 0:
+            print("  ** scripts/check_registry.py fails on the unbroken tree, so every refusal below "
+                  "would be a tautology")
+            print((warm.stdout + warm.stderr).strip())
+            return 1
 
-        for name, filename, find, replace in CASES:
-            work = Path(tmp) / "work"
-            if work.exists():
-                shutil.rmtree(work)
-            work.mkdir()
-            shutil.copytree(pristine, work / "registry")
-            shutil.copytree(ROOT / "scripts", work / "scripts")
-            # registry/exotics.yaml points at the two photographs and the validator checks
-            # they are really in the tree, so the tree needs them or every case fails for a
-            # reason that has nothing to do with the case under test.
-            shutil.copytree(ROOT / "site" / "images", work / "site" / "images")
-            # ...and registry/audio.yaml against the files it names (spec 0035).
-            if (ROOT / "site" / "audio").is_dir():
-                shutil.copytree(ROOT / "site" / "audio", work / "site" / "audio")
-            # The validator cross-checks registry/models.yaml against CREDITS.md, so a tree
-            # without it fails for a reason that has nothing to do with the case under test.
-            shutil.copy2(ROOT / "CREDITS.md", work / "CREDITS.md")
-            # ...and registry/sources.yaml against harvest/parsers/ and the list/query files.
-            shutil.copytree(ROOT / "harvest", work / "harvest",
-                            ignore=shutil.ignore_patterns("__pycache__"))
-            # ...and registry/dso-hand.yaml against the built site/data/dso.json the card reads.
-            (work / "site" / "data").mkdir(parents=True, exist_ok=True)
-            shutil.copy2(ROOT / "site" / "data" / "dso.json", work / "site" / "data" / "dso.json")
-            # ...and registry/stars-notable.yaml against the names file the star records come from.
-            shutil.copy2(ROOT / "site" / "data" / "stars3d.names.json", work / "site" / "data" / "stars3d.names.json")
-            # ...and registry/systems.yaml against the exoplanet table its planets are records of.
-            shutil.copy2(ROOT / "site" / "data" / "exoplanets.csv", work / "site" / "data" / "exoplanets.csv")
-            # ...and registry/textures.yaml against the maps it names.
-            textures_into(work)
-            # ...and registry/worlds.yaml against its two hand mirrors in the browser.
-            (work / "site" / "js" / "scene").mkdir(parents=True, exist_ok=True)
-            for js in ("worlds.js", "stage.js"):
-                shutil.copy2(ROOT / "site" / "js" / "scene" / js, work / "site" / "js" / "scene" / js)
+        failures += check_registry_refusals(Path(tmp))
 
-            path = work / "registry" / filename
-            text = path.read_text(encoding="utf-8")
-            if find not in text:
-                print(f"BROKEN TEST: {name!r} -- the string it mutates is not in {filename}")
-                failures += 1
-                continue
-            path.write_text(text.replace(find, replace, 1), encoding="utf-8")
+        print("")
+        failures += check_tour_refusals()
 
-            result = subprocess.run(
-                [sys.executable, "scripts/check_registry.py"],
-                cwd=work, capture_output=True, text=True,
-            )
-            out = result.stdout + result.stderr
-            refused = result.returncode != 0
-            names_the_file = filename in out
-            if refused and names_the_file:
-                print(f"  refused: {name}")
-            else:
-                why = "was accepted" if not refused else f"refused without naming {filename}"
-                print(f"  ** {name}: {why}")
-                failures += 1
+        print("")
+        failures += check_copy_refuses()
 
-    print("")
-    failures += check_tour_refusals()
+        print("")
+        failures += check_models_dir_refuses()
 
-    print("")
-    failures += check_copy_refuses()
+        print("")
+        failures += check_budget_refusals()
 
-    print("")
-    failures += check_models_dir_refuses()
-
-    print("")
-    failures += check_budget_refusals()
-
-    print("")
-    failures += check_seo_refusals()
+        print("")
+        failures += check_seo_refusals()
 
     if failures:
         print(f"\n{failures} guard(s) do not do what they claim")
