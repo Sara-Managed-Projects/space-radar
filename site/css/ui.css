@@ -5280,11 +5280,6 @@ html.sr-phone .sr-tonight-view__num { font-size: 20px; }
 .sr-arc__peak { fill: var(--sr-ember); }
 .sr-arc__cardinal { fill: var(--sr-text-dim); font-size: 11px; font-family: var(--sr-font); }
 
-/* Ivan, 2026-10-03: the serif on names read worse than the sans it replaced, so the five roles are
-   back on their old faces (the face stays defined; nothing uses it). And the card's name is a
-   heading that takes focus for screen readers, not a field: no ring around it. */
-.sr-card__name:focus { outline: none; }
-
 /* --- the sky from the ground (sky/groundsky.js, 2026-10-05) ------------------------------
    Names over the canvas, in the scene labels' own layer (#labels), so every panel is above them.
    A figure's name wears the microlabel role, as the trips' figures do above; a star's is the
@@ -5367,3 +5362,8 @@ html.sr-night-red::after {
 .sr-tonight-view__rowside { flex: 0 0 auto; font: 400 13px/18px var(--sr-font-mono); color: var(--sr-text-dim); }
 /* On a phone the search bar has the top of the screen: the field of view sits under it. */
 html.sr-phone .sr-skyfov { top: calc(var(--sp-6) * 2 + var(--sp-2)); }
+
+/* Ivan, 2026-10-03: the serif on names read worse than the sans it replaced, so the five roles are
+   back on their old faces (the face stays defined; nothing uses it). And the card's name is a
+   heading that takes focus for screen readers, not a field: no ring around it. */
+.sr-card__name:focus { outline: none; }
