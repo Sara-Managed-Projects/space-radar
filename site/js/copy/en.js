@@ -702,6 +702,9 @@ export const COPY = {
     storyCloud: 'The biggest cloud of debris is from {name}: {pieces} pieces still in orbit.',
     storyClouds: 'The biggest clouds of debris: {name}, {pieces} pieces still up; then {name2}, {pieces2}, and {name3}, {pieces3}.',
     storyOldest: 'The oldest thing still in orbit is {name}, launched in {year}: {years} years of laps.',
+    // "From about 10 cm": NASA's Orbital Debris Program Office FAQ, read 2026-10-06 ("Large orbital
+    // debris (> 10 cm) is tracked routinely by the U.S. Space Surveillance Network"),
+    // https://orbitaldebris.jsc.nasa.gov/faq/. No other number in these sentences is written here.
     honesty: 'Counted from CelesTrak’s catalogue as read on {date}: what radar can track, from about 10 cm across. Smaller pieces are far more numerous and are in no catalogue. Where a dot is along its orbit is illustrative.',
   },
   // A trip as a card (0061 design §2): the title and one line under it.

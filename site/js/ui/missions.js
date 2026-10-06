@@ -286,8 +286,10 @@ export function mountMission(host, record, ctx) {
 
   const src = el('p', 'sr-mission__source');
   src.appendChild(document.createTextNode(M.source));
-  const a = el('a', 'sr-mission__link', mission.source.name);
-  a.href = mission.source.url;
+  // The page this event was read on: its own where it names one, else the mission's.
+  const source = event.source || mission.source;
+  const a = el('a', 'sr-mission__link', source.name);
+  a.href = source.url;
   a.target = '_blank';
   a.rel = 'noopener noreferrer';
   src.appendChild(a);

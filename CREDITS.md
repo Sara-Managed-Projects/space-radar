@@ -732,8 +732,8 @@ needs a login). Their credit lines are carried in the same file.
 
 **Mission events (not a runtime source).** The dated events on a mission's card
 (`registry/missions.yaml`: the Voyagers, New Horizons, Juno, Webb, Apollo 11, Perseverance, the
-International Space Station) are facts read from NASA's own mission pages on the date in that
-file, each mission's page named in its row and linked from the card ("Dates and figures: NASA
+International Space Station) are facts read from NASA's own pages (NASA Science, nasa.gov and the NSSDCA catalogue) on the
+date in that file, the page named on the mission's row or on the event's own and linked from the card ("Dates and figures: NASA
 Science, Voyager 1"). The sentences are ours. NASA content is generally not subject to copyright
 in the United States; nothing of those pages is copied here but dates and distances.
 

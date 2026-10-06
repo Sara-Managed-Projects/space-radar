@@ -16,8 +16,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _genmirror import Mirror, pick  # noqa: E402
 
-MISSION_FIELDS = ("id", "record", "display", "source")
-EVENT_FIELDS = ("id", "date", "precision", "title", "text", "place", "world")
+MISSION_FIELDS = ("id", "record", "display", "read", "source")
+EVENT_FIELDS = ("id", "date", "precision", "title", "text", "place", "world", "source")
 
 
 def render(doc: dict) -> list:

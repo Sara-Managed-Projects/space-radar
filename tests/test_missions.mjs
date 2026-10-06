@@ -34,7 +34,8 @@ let events = 0;
 for (const m of M.MISSIONS) {
   check(!ids.has(m.id), `${m.id}: one row a mission`); ids.add(m.id);
   check(known.has(m.record), `${m.id}: its record ${m.record} is one the map has`);
-  check(m.source && /^https:\/\//.test(m.source.url) && m.source.name.length > 3, `${m.id}: a source with a name and a link`);
+  check(m.source && /^https:\/\/([a-z0-9-]+\.)*nasa\.gov\//.test(m.source.url) && m.source.name.length > 3, `${m.id}: a source with a name and a link to a NASA page`);
+  check(/^2026-\d\d-\d\d$/.test(String(m.read)), `${m.id}: the day its events were read on their pages`);
   check(m.events.length >= 3, `${m.id}: at least three events`);
   let last = -Infinity;
   const seen = new Set();
@@ -54,6 +55,7 @@ for (const m of M.MISSIONS) {
     check((e.precision === 'day') === !/T/.test(e.date), `${where}: a date without a time says it is known to the day`);
     check(ms < Date.parse('2026-10-06T00:00:00Z'), `${where}: it has happened (a planned date is the launches list's business)`);
     check(M.findEvent(where) && M.findEvent(where).event === e, `${where}: found by its link id`);
+    check(e.source === undefined || (/^https:\/\/([a-z0-9-]+\.)*nasa\.gov\//.test(e.source.url) && e.source.name.length > 3), `${where}: an event read on another page names that NASA page`);
   }
   // A landing site's events on the ground are placeable; nothing else claims to be a site.
   for (const e of m.events) if (e.place === 'site') check(SITES.some((s) => s.id === m.record), `${m.id}.${e.id}: only a landing site is a site`);
@@ -108,7 +110,7 @@ check(Math.abs(nhArr - 43.4) < 1.5, `New Horizons at Arrokoth: ${nhArr.toFixed(1
 }
 
 // --- the words -------------------------------------------------------------------------------------
-check(M.eventWhen(jupiter) === '5 March 1979, 12:05 UTC' && M.eventWhen(interstellar) === '25 August 2012', `a time in UTC, or the day alone (${M.eventWhen(jupiter)} / ${M.eventWhen(interstellar)})`);
+check(M.eventWhen(jupiter) === '5 March 1979, 12:05 UTC' && M.eventWhen(interstellar) === '25 August 2012' && M.eventMs(M.findEvent('new-horizons.pluto').event) === Date.parse('2015-07-14T12:00:00Z'), `a time in UTC, or the day alone (${M.eventWhen(jupiter)} / ${M.eventWhen(interstellar)})`);
 check(M.eventNote(v1, jupiter, { kind: 'none', moves: false }, 'Jupiter').includes('the clock stays where it is') && M.eventNote(v1, jupiter, { kind: 'none', moves: false }, 'Jupiter').includes('Voyager 1'), 'an event the map cannot place says the clock has not moved, and why');
 check(/straight line/.test(M.eventNote(v1, interstellar, { kind: 'cruise', moves: true })) && /astronomical unit/.test(M.eventNote(v1, interstellar, { kind: 'cruise', moves: true })), 'the straight line says it is one, and how good it is');
 check(M.eventNote(apollo, landing, { kind: 'site', moves: true }) === COPY.mission.noteSite, 'a site says the map can show it');
@@ -128,7 +130,8 @@ check(/st\.event && typeof ctx\.wantMissions/.test(main) && /COPY\.mission\.unkn
 const cards = readFileSync(join(JS, 'ui/cards.js'), 'utf8');
 check(!/^import .*missions/m.test(cards) && /ctx\.wantMissions\(\)/.test(cards), 'the card asks for them and does not import them');
 const yaml = readFileSync(join(ROOT, 'registry/missions.yaml'), 'utf8');
-check(/internal #277/.test(yaml) && /reviewed_on: 2026-/.test(yaml), 'the registry says what is missing (our own ephemerides) and when its dates were read');
+check(/internal #277/.test(yaml) && /reviewed_on: 2026-/.test(yaml) && /NOTHING HERE IS FROM MEMORY/.test(yaml), 'the registry says what is missing (our own ephemerides), when its dates were read, and that none is from memory');
+check(/event\.source \|\| mission\.source/.test(readFileSync(join(JS, 'ui/missions.js'), 'utf8')), 'the card links to the page the shown event was read on');
 
 if (problems.length) { console.error('missions FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`missions ok: ${M.MISSIONS.length} missions, ${events} dated events each with a source; a site moves the clock, a flyby with no path does not; the straight line puts Voyager 1 at ${v1Out.toFixed(1)} au in August 2012 (121.6) and New Horizons at ${nhArr.toFixed(1)} at Arrokoth (43.4)`);
