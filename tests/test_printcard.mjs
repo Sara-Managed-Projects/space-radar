@@ -86,5 +86,28 @@ check(named.title === 'International Space Station', `the caption is the card's 
   check(/exposure\.onChange\(\(mode, look, byVisitor\) => \{\s*starfield\.setExposure\(look\.milkyWay\);\s*if \(ctx\.nebulae\) ctx\.nebulae\.setExposure\(look\);/.test(main), 'a change of shutter is written into the live scene\'s materials, which the print reads');
 }
 
+// THE FACES BEFORE THE DRAWING (spec 0045 task 4, internal #430): a canvas does not wait for a web
+// font. The composer asks for both weights of the band's face and waits at most a second.
+{
+  const { facesReady } = await import(join(ROOT, 'site/js/ui/printcompose.js'));
+  const { readFileSync } = await import('node:fs');
+  const asked = [];
+  const quick = { fonts: { load: (f) => { asked.push(f); return Promise.resolve([]); } } };
+  const t0 = Date.now();
+  check(await facesReady("'Inter', system-ui, sans-serif", quick, 1000) === true && Date.now() - t0 < 200, 'faces that load are waited for, and no longer');
+  check(asked.join(' | ') === "600 16px 'Inter' | 400 16px 'Inter'", `the band's two weights of its first family are asked for: ${asked.join(' | ')}`);
+  const never = { fonts: { load: () => new Promise(() => {}) } };
+  const t1 = Date.now();
+  const late = await facesReady("'Inter'", never, 60);
+  check(late === false && Date.now() - t1 >= 50 && Date.now() - t1 < 500, `a face that never loads holds the picture for the limit and not longer (${Date.now() - t1} ms)`);
+  const broken = { fonts: { load: () => Promise.reject(new Error('no')) } };
+  check(await facesReady("'Inter'", broken, 60) === true, 'a face that fails to load does not throw: the fallback is drawn');
+  check(await facesReady("'Inter'", {}, 60) === false && await facesReady("'Inter'", null, 60) === false, 'no font loader, no wait');
+  const src = readFileSync(join(ROOT, 'site/js/ui/printcompose.js'), 'utf8');
+  const make = src.slice(src.indexOf('export async function makePostcard'));
+  check(make.indexOf('await facesReady();') > 0 && make.indexOf('await facesReady();') < make.indexOf('const picture = compose(') && make.indexOf('await facesReady();') < make.indexOf('measureText'), 'makePostcard waits for the faces before it measures the tag and before it composes');
+  check(make.indexOf('renderFramed(') < make.indexOf('await facesReady();'), 'and after the frame is taken: the scene is photographed at the press, not a second later');
+}
+
 if (problems.length) { console.error('printcard FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('printcard ok: a 6 x 4 in postcard at 300 dpi in the screen\'s orientation, captioned with what it shows and when, as a JPEG or a well-formed one-page PDF');

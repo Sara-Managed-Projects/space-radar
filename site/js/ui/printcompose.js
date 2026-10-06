@@ -305,6 +305,20 @@ function bandFont() {
   return font;
 }
 
+/**
+ * The faces the band and the tag are written in, loaded before a canvas draws with them (spec 0045
+ * task 4): a canvas does not wait for a web font, it draws the fallback and never redraws, so a
+ * postcard made before Inter's 600 had been asked for came out in the system face. Raced against
+ * `ms` (one second, as ui/rendermode.js does for its cards): a face that will not load must not
+ * hold the picture. Resolves true when the faces are in, false when time ran out or none exist.
+ */
+export async function facesReady(family = bandFont(), doc = typeof document !== 'undefined' ? document : null, ms = 1000) {
+  if (!doc || !doc.fonts || typeof doc.fonts.load !== 'function') return false;
+  const first = String(family).split(',')[0].trim();
+  const asked = Promise.all(['600', '400'].map((w) => Promise.resolve(doc.fonts.load(`${w} 16px ${first}`)).catch(() => null))).then(() => true);
+  return Promise.race([asked, new Promise((r) => setTimeout(() => r(false), ms))]);
+}
+
 function compose(frame, words, size, tag = null) {
   const canvas = document.createElement('canvas');
   canvas.width = size.w;
@@ -405,6 +419,7 @@ export async function makePostcard(ctx, format, opts = {}) {
   let lines = null;
   try { lines = record ? tagLines(record, ctx) : null; } catch { lines = null; }
   const words = caption(ctx, record, ctx && ctx.trip && ctx.trip.state, lines && lines.name, { honesty: !!opts.honesty });
+  await facesReady();
   let tag = null;
   if (at) {
     const m = document.createElement('canvas').getContext('2d');

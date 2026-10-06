@@ -160,7 +160,7 @@ const CONTRACT = {
   'ui/keyhint.js': ['createKeyHint', 'decide', 'whyNot', 'readSeen', 'markSeen', 'hintMode', 'capForKey', 'allCaps', 'KEY_ROWS', 'CHROME_KEYS', 'TOUCH_ROWS', 'STORE_KEY', 'AUTO_HIDE_MS', 'MIN_SHOWN_MS', 'KEY_GRACE_MS'],
   // Spec 0045 req 10: Regular and Compact, chosen or automatic below 800 px of height.
   'ui/density.js': ['createDensity', 'densityPanel', 'readDensity', 'writeDensity', 'isCompact', 'DENSITY_KEY', 'CHOICES', 'SHORT_QUERY'],
-  'ui/printcompose.js': ['makePostcard', 'saveBlob', 'fileName', 'printSize', 'caption', 'pdfFromJpeg', 'tagText', 'printTag'],
+  'ui/printcompose.js': ['makePostcard', 'saveBlob', 'fileName', 'printSize', 'caption', 'pdfFromJpeg', 'tagText', 'printTag', 'facesReady'],
   'copy/en.js': ['COPY', 'compare'],
 };
 
