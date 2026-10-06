@@ -66,7 +66,7 @@ async function twoVisits({ withCaches }) {
   const upstream = { 1: 0, 2: 0 };
   globalThis.fetch = async (url) => {
     url = String(url);
-    if (url.includes('/data/v1/')) return new Response('forbidden', { status: 403 }); // no harvester
+    if (url.includes('data/v1/')) return new Response('forbidden', { status: 403 }); // no harvester
     const key = Object.keys(SIZE).find((k) => url.includes(k));
     if (!key) return new Response('{}', { status: 404 });
     upstream[visit] += 1;
@@ -132,7 +132,7 @@ async function twoVisits({ withCaches }) {
   let mode = 'fail';
   let upstream = 0;
   globalThis.fetch = async (url) => {
-    if (String(url).includes('/data/v1/')) return new Response('no', { status: 403 });
+    if (String(url).includes('data/v1/')) return new Response('no', { status: 403 });
     upstream += 1;
     if (mode === 'fail') return new Response('GP data has not updated since your last successful download', { status: 403 });
     return new Response(JSON.stringify([omm(1), omm(2)]), { status: 200, headers: { 'content-type': 'application/json' } });
@@ -183,10 +183,10 @@ async function savedCopy({ validMinutes, liveOk, id = 'celestrak-stations' }) {
   let upstream = 0;
   globalThis.fetch = async (url) => {
     const u = String(url);
-    if (u.endsWith('/data/v1/index.json')) {
+    if (u.endsWith('data/v1/index.json')) {
       return new Response(JSON.stringify({ schema: 1, snapshots: { [id]: { status: 'ok', fetched_at: fetched, valid_until: valid } } }), { status: 200 });
     }
-    if (u.includes('/data/v1/')) {
+    if (u.includes('data/v1/')) {
       return new Response(JSON.stringify({ schema: 1, source: id, fetched_at: fetched, valid_until: valid, body: [omm(1)] }), { status: 200 });
     }
     upstream += 1;

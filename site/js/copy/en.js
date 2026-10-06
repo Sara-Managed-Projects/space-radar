@@ -580,6 +580,15 @@ export const COPY = {
     oldest: 'oldest {age}',
     open: 'Open the sources',
     label: '{text}. Open the sources',
+    // No network (ui/offline.js): what is drawn comes from copies kept on this device, and the age
+    // is the oldest of them. Said in words, with the stale dot: an old copy is not a failure.
+    offline: 'Offline: showing saved copies from {age}',
+    offlineNone: 'Offline: no saved copies on this device',
+  },
+  // The service worker's one line (ui/offline.js): a newer build is installed and waiting.
+  offline: {
+    updateReady: 'A newer version is ready',
+    reload: 'Reload',
   },
   // A trip as a card (0061 design §2): the title and one line under it.
   tripCard: {

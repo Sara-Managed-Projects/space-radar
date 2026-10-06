@@ -128,6 +128,12 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   const fresh = [{ fetchedAt: 1, ageMs: 60e3 }, { fetchedAt: 1, ageMs: 2 * day }, { attempted: false }];
   const a = statusSummary(fresh);
   check(a.state === 'ok' && a.text === '2 sources read · oldest 2 days ago', `all fresh: count and the oldest (${a.text})`);
+  // No network (ui/offline.js): the line says so, with the age of the oldest copy on screen.
+  const off = statusSummary([{ fetchedAt: 1, ageMs: 3 * 86400e3 }, { fetchedAt: 1, ageMs: 60e3 }, { attempted: true, fetchedAt: null }], { offline: true });
+  check(off.state === 'stale' && off.text === 'Offline: showing saved copies from 3 days ago' && off.text.length <= 60,
+    `offline, the status line names the oldest saved copy; got ${JSON.stringify(off)}`);
+  const offNone = statusSummary([{ attempted: true, fetchedAt: null }], { offline: true });
+  check(offNone.state === 'failed' && offNone.text === COPY.statusLine.offlineNone, 'offline with nothing kept, it says there are no saved copies');
   const b = statusSummary([{ fetchedAt: 1, ageMs: 60e3 }, { fetchedAt: 1, ageMs: 7 * day, stale: true }]);
   check(b.state === 'stale' && b.text === '2 sources read · 1 stale · oldest 7 days ago', `something stale: amber and says how many (${b.text})`);
   const c = statusSummary([{ fetchedAt: 1, ageMs: 60e3 }, { attempted: true, fetchedAt: null }]);

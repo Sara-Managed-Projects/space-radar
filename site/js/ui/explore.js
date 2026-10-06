@@ -186,9 +186,21 @@ export function rightNowLines(input = {}) {
  * `rows` are data/sources.js status() rows. Only the sources this page has asked for count, as in
  * the sheet itself (ui/status.js askedRows): a source nothing has asked for has not failed.
  */
-export function statusSummary(rows) {
+export function statusSummary(rows, opts = {}) {
   const S = COPY.statusLine;
   const asked = (Array.isArray(rows) ? rows : []).filter((r) => r && (r.attempted || r.fetchedAt != null));
+  // With no network (ui/offline.js keeps ctx.net) the honest sentence is not "3 could not be read":
+  // it is that nothing can be, and how old the copies on screen are (the oldest, as below).
+  if (opts && opts.offline) {
+    let oldestKept = null;
+    for (const r of asked) {
+      const age = Number(r.ageMs);
+      if (Number(r.fetchedAt) > 0 && Number.isFinite(age) && (oldestKept === null || age > oldestKept)) oldestKept = age;
+    }
+    return oldestKept === null
+      ? { state: 'failed', text: S.offlineNone }
+      : { state: 'stale', text: t(S.offline, { age: ageInWords(oldestKept) }) };
+  }
   if (!asked.length) return { state: 'wait', text: S.reading };
   let read = 0;
   let stale = 0;
@@ -752,7 +764,8 @@ export function createExplore(ctx, host) {
   function paintStatus() {
     let rows = [];
     try { rows = ctx.sources && typeof ctx.sources.status === 'function' ? ctx.sources.status() : []; } catch { rows = []; }
-    const s = statusSummary(rows);
+    const offline = (typeof navigator !== 'undefined' && navigator.onLine === false) || !!(ctx.net && ctx.net.offline);
+    const s = statusSummary(rows, { offline });
     if (footText.textContent !== s.text) footText.textContent = s.text;
     foot.dataset.state = s.state;
     foot.setAttribute('aria-label', t(COPY.statusLine.label, { text: s.text }));
@@ -788,6 +801,8 @@ export function createExplore(ctx, host) {
   window.addEventListener('sr:clouds', () => { if (current === 'earth') paintNow(); });
   // The aurora module arrived, or a forecast did: the aurora line can be written.
   window.addEventListener('sr:aurora', () => { if (current === 'earth') paintNow(); });
+  // The network went, or came back (ui/offline.js; the browser's own events before that module lands).
+  for (const name of ['sr:net', 'online', 'offline']) window.addEventListener(name, () => paintStatus());
   setInterval(refresh, REFRESH_MS);
   // The status line settles over the first seconds as the sources answer; a quicker look then.
   let early = 0;

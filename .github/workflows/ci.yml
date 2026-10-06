@@ -510,3 +510,15 @@ jobs:
       # schedule, and the card's "not a photograph".
       - name: the aurora is NOAA's forecast of the next hour, night side only, coloured by height, carded as a forecast (spec 0053 task 3)
         run: node tests/test_aurora.mjs
+      # 2026-10-05, offline (issues #290, #453; internal 369): the service worker's routing table at the
+      # root and in a subfolder, with the stamp scripts/stamp_sw.py writes at deploy and release time;
+      # no path in the app starting at the root of the host; and the manifest with icons of the sizes
+      # they claim. The committed sw.js stays unstamped.
+      - name: the service worker routes shell, assets and saved data as documented, and the stamp names the app and only the app
+        run: node tests/test_sw_routes.mjs
+      - name: nothing under site/ asks for a path from the root of the host, so a copy in a subfolder works
+        run: node tests/test_relative_urls.mjs
+      - name: the manifest is installable, its icons are the sizes they claim, and the deploy carries it and the worker no-cache
+        run: node tests/test_manifest.mjs
+      - name: the committed sw.js is unstamped
+        run: python3 scripts/stamp_sw.py --check

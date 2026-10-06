@@ -156,6 +156,7 @@ const CONTRACT = {
   // Spec 0068: the trip cards' pictures, and the controls hint shown once (imported after the
   // first visit settles); their pure parts for tests/test_trip_pictures.mjs and test_keyhint.mjs.
   'ui/trippics.js': ['tripPicture', 'tripPictureUrl', 'PICTURE_DELAY_MS'],
+  'ui/offline.js': ['createOffline', 'swWanted', 'warmList', 'UPDATE_CHECK_MS'],
   'ui/keyhint.js': ['createKeyHint', 'decide', 'whyNot', 'readSeen', 'markSeen', 'hintMode', 'capForKey', 'allCaps', 'KEY_ROWS', 'CHROME_KEYS', 'TOUCH_ROWS', 'STORE_KEY', 'AUTO_HIDE_MS', 'MIN_SHOWN_MS', 'KEY_GRACE_MS'],
   // Spec 0045 req 10: Regular and Compact, chosen or automatic below 800 px of height.
   'ui/density.js': ['createDensity', 'densityPanel', 'readDensity', 'writeDensity', 'isCompact', 'DENSITY_KEY', 'CHOICES', 'SHORT_QUERY'],
@@ -2638,7 +2639,7 @@ for (const file of allFiles) {
       forgetIndex();
       for (const id of ids) forget(id);
     };
-    const upstreamSeen = () => seen.filter((u) => !u.startsWith('/data/v1/'));
+    const upstreamSeen = () => seen.filter((u) => !u.startsWith('data/v1/'));
 
     // A body shaped like CelesTrak's, a harvester read ten minutes ago, a fresher copy promised
     // in three hours. Real wall-clock times, because `stale` and `overdue` are measured against it.
@@ -2671,8 +2672,8 @@ for (const file of allFiles) {
     // (a) manifest + file -> via snapshot; the upstream is not asked; the age is the harvester's
     reset('celestrak-stations');
     routes = new Map([
-      ['/data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('ok') }))],
-      ['/data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp))],
+      ['data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('ok') }))],
+      ['data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp))],
     ]);
     let r = await load('celestrak-stations', { await: true });
     if (r.via !== 'snapshot' || !r.ok) {
@@ -2696,8 +2697,8 @@ for (const file of allFiles) {
     // (a2) past valid_until: said as overdue, and the stale ladder is still the source's own
     reset('celestrak-stations');
     routes = new Map([
-      ['/data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('not-due', { valid_until: anHourAgo }) }))],
-      ['/data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp, { valid_until: anHourAgo }))],
+      ['data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('not-due', { valid_until: anHourAgo }) }))],
+      ['data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp, { valid_until: anHourAgo }))],
     ]);
     r = await load('celestrak-stations', { await: true });
     if (r.via !== 'snapshot') problems.push(`SNAPSHOT a not-due row still has its file from the earlier run; got via=${r.via} snapshot=${r.snapshot}`);
@@ -2718,8 +2719,8 @@ for (const file of allFiles) {
     // an OLDER snapshot than the attempt: still inside the gate, still no upstream call
     const older = new Date(t0 - 60 * 1000).toISOString();
     routes = new Map([
-      ['/data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('ok', { fetched_at: older }) }))],
-      ['/data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp, { fetched_at: older }))],
+      ['data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('ok', { fetched_at: older }) }))],
+      ['data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp, { fetched_at: older }))],
     ]);
     r = await load('celestrak-stations', { await: true, now: t0 + 6 * 60 * 1000 });
     if (r.via === 'snapshot') problems.push('SNAPSHOT (a3) a snapshot OLDER than the failed attempt must not reopen the gate');
@@ -2727,8 +2728,8 @@ for (const file of allFiles) {
     // a NEWER snapshot: taken, within the cadence, with no upstream call
     const newer = new Date(t0 + 3 * 60 * 1000).toISOString();
     routes = new Map([
-      ['/data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('ok', { fetched_at: newer }) }))],
-      ['/data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp, { fetched_at: newer }))],
+      ['data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('ok', { fetched_at: newer }) }))],
+      ['data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp, { fetched_at: newer }))],
     ]);
     forgetIndex();
     r = await load('celestrak-stations', { await: true, now: t0 + 7 * 60 * 1000 });
@@ -2738,12 +2739,12 @@ for (const file of allFiles) {
     // (b) the manifest is keyed by REGISTRY id, which is not always this module's id
     reset('celestrak-starlink');
     routes = new Map([
-      ['/data/v1/index.json', json(manifest({ 'celestrak-supplemental-starlink': snapRow('ok') }))],
-      ['/data/v1/celestrak-supplemental-starlink.json', json(snapFile('celestrak-supplemental-starlink', gp))],
+      ['data/v1/index.json', json(manifest({ 'celestrak-supplemental-starlink': snapRow('ok') }))],
+      ['data/v1/celestrak-supplemental-starlink.json', json(snapFile('celestrak-supplemental-starlink', gp))],
     ]);
     r = await load('celestrak-starlink', { await: true });
     if (r.via !== 'snapshot') {
-      problems.push(`SNAPSHOT celestrak-starlink must read /data/v1/${SOURCES['celestrak-starlink'].registryId}.json; got via=${r.via} snapshot=${r.snapshot}`);
+      problems.push(`SNAPSHOT celestrak-starlink must read data/v1/${SOURCES['celestrak-starlink'].registryId}.json; got via=${r.via} snapshot=${r.snapshot}`);
     }
 
     // (c) no manifest, browser: true -> live, and it says why the snapshot was not the source
@@ -2770,7 +2771,7 @@ for (const file of allFiles) {
     // (e) a manifest that says skipped (no credentials), browser: false -> could not look, untouched
     reset('space-track-tip');
     routes = new Map([
-      ['/data/v1/index.json', json(manifest({ 'space-track-tip': snapRow('skipped', { fetched_at: null, valid_until: null }) }))],
+      ['data/v1/index.json', json(manifest({ 'space-track-tip': snapRow('skipped', { fetched_at: null, valid_until: null }) }))],
       [tip.url, json([{ NORAD_CAT_ID: '1' }])],
     ]);
     r = await load('space-track-tip', { await: true });
@@ -2782,8 +2783,8 @@ for (const file of allFiles) {
     // (f) a snapshot file of unknown schema is a snapshot we do not have: browser:true -> live
     reset('celestrak-stations');
     routes = new Map([
-      ['/data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('ok') }))],
-      ['/data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp, { schema: 2 }))],
+      ['data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('ok') }))],
+      ['data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp, { schema: 2 }))],
       [stations.url, json(gp)],
     ]);
     r = await load('celestrak-stations', { await: true });
@@ -2792,7 +2793,7 @@ for (const file of allFiles) {
     // (g) a manifest of unknown schema is no manifest
     reset('celestrak-stations');
     routes = new Map([
-      ['/data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('ok') }, 2))],
+      ['data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('ok') }, 2))],
       [stations.url, json(gp)],
     ]);
     r = await load('celestrak-stations', { await: true });
@@ -2802,13 +2803,13 @@ for (const file of allFiles) {
     // (h) a refused harvest on a browser:true row -> live; the file the guard kept is not read
     reset('celestrak-stations');
     routes = new Map([
-      ['/data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('refused', { last_error: 'never-worse: 3 of 22' }) }))],
-      ['/data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp))],
+      ['data/v1/index.json', json(manifest({ 'celestrak-stations': snapRow('refused', { last_error: 'never-worse: 3 of 22' }) }))],
+      ['data/v1/celestrak-stations.json', json(snapFile('celestrak-stations', gp))],
       [stations.url, json(gp)],
     ]);
     r = await load('celestrak-stations', { await: true });
     if (r.via !== 'live' || r.snapshot !== 'refused') problems.push(`SNAPSHOT a refused harvest should fall back to live as refused; got via=${r.via} snapshot=${r.snapshot}`);
-    if (seen.includes('/data/v1/celestrak-stations.json')) problems.push('SNAPSHOT a refused snapshot file must not be read');
+    if (seen.includes('data/v1/celestrak-stations.json')) problems.push('SNAPSHOT a refused snapshot file must not be read');
 
     reset('celestrak-stations', 'celestrak-starlink', 'jpl-sbdb-neo', 'space-track-tip');
     notes.push(

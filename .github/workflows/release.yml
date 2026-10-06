@@ -109,6 +109,9 @@ jobs:
             echo "The data in site/data/v1 was saved on $(date -u +%Y-%m-%d); CREDITS.md says whose it is."
           } > "dist/$NAME/START-HERE.txt"
           find "dist/$NAME" -name .DS_Store -delete
+          # The service worker in the zip is stamped with this build (scripts/stamp_sw.py): after one
+          # visit the copy starts even when the school's server is switched off.
+          python3 scripts/stamp_sw.py --site "dist/$NAME/site"
           (cd dist && zip -qr -9 "$NAME.zip" "$NAME")
           (cd dist && sha256sum "$NAME.zip" | tee "$NAME.zip.sha256")
           ls -l "dist/$NAME.zip"
@@ -126,6 +129,8 @@ jobs:
           curl -fsS http://127.0.0.1:8177/index.html | grep -q "<canvas\|js/main.js"
           curl -fsS http://127.0.0.1:8177/data/v1/index.json | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["schema"] == 1 and d["snapshots"], d.keys()'
           curl -fsS -o /dev/null http://127.0.0.1:8177/js/main.js
+          curl -fsS http://127.0.0.1:8177/manifest.webmanifest | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["start_url"] == "./" and d["icons"], d'
+          curl -fsS http://127.0.0.1:8177/sw.js | grep -q '^const BUILD = {"version":"[0-9a-f]\{16\}"'
 
       - name: Keep the zip (dry run)
         if: ${{ github.event_name != 'push' }}

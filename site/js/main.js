@@ -131,6 +131,8 @@ const KEYHINT_MS = 5000;
 // The email row under Coming up (ui/subscribe.js) is asked for this long after the layers settle,
 // as the trip pictures are: below the sidebar's fold, and not a first visit's cost.
 const SUBSCRIBE_MS = 3000;
+/** How long after sr:layers-ready the service worker is registered (ui/offline.js): last of all. */
+const OFFLINE_MS = 6000;
 
 export async function boot({ setStatus } = {}) {
   const say = setStatus || (() => {});
@@ -550,6 +552,13 @@ export async function boot({ setStatus } = {}) {
   ctx.keyhint = { show: () => keyHint().then((api) => api.show()) };
   const hintLater = () => setTimeout(() => keyHint().then((api) => api.maybeShow()).catch((e) => console.warn('the controls hint did not load', e)), KEYHINT_MS);
   window.addEventListener('sr:layers-ready', hintLater, { once: true });
+  // OFFLINE (site/sw.js, ui/offline.js; issues #290, #453): the service worker is registered
+  // OFFLINE_MS after sr:layers-ready, past the keys hint, so nothing it does is a first visit's cost.
+  const offlineLater = () => setTimeout(() => {
+    import('./ui/offline.js').then((m) => m.createOffline(ctx)).catch((e) => console.warn('the offline module did not load', e));
+  }, OFFLINE_MS);
+  if (window.__srLayersReady) offlineLater();
+  else window.addEventListener('sr:layers-ready', offlineLater, { once: true });
   // One line on the scene when no satellite could be read at all (ui/scenenote.js).
   ctx.sceneNote = createSceneNote(ctx);
   // `#sources` opens the sheet (design §6): a link to "what could this page read" is worth having.

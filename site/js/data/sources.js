@@ -60,9 +60,13 @@ const NO_CORS_REASON =
   'This publisher does not let a page on another website read it (it sends no CORS header), so a ' +
   'browser cannot. Bundled sample data stands in for it.';
 
-// Where the harvester puts its files (amendment 1 §3). Absolute on purpose: the contract is a
-// path on the site's own origin, and a same-origin read needs CORS from nobody.
-const SNAPSHOT_BASE = '/data/v1/';
+// Where the harvester puts its files (amendment 1 §3): beside the page, on the site's own origin,
+// so the read needs CORS from nobody. RELATIVE TO THE PAGE, like every other path the app uses
+// (2026-10-05, internal issue 369): it was the absolute `/data/v1/`, and a school that served the
+// folder at http://server/space-radar/ got an app that never found its saved copy. The app only
+// ever runs at its index, so the page's folder is the site's folder.
+// tests/test_relative_urls.mjs refuses an absolute site path anywhere under site/.
+const SNAPSHOT_BASE = 'data/v1/';
 const SNAPSHOT_INDEX_URL = SNAPSHOT_BASE + 'index.json';
 const SNAPSHOT_SCHEMA = 1;
 // The manifest is re-read at most this often, and only when a source is due or the page is new.

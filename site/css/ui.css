@@ -2749,6 +2749,26 @@ html.sr-trip-mode .sr-scenenote { display: none; }
   user-select: text;
 }
 .sr-toast[hidden] { display: none; }
+/* The toast's one text action (ui-guide §3.14; ui/offline.js "Reload"): text, not a filled button. */
+.sr-toast__action {
+  margin-left: var(--sp-3);
+  padding: var(--sp-1) var(--sp-2);
+  min-height: 24px;
+  background: none;
+  border: 0;
+  border-radius: var(--sr-radius-sm);
+  color: var(--sr-text);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.sr-toast__action:hover { color: var(--sr-text-soft); }
+.sr-toast__action:active { color: var(--sr-text-dim); }
+@media (pointer: coarse) {
+  .sr-toast__action { min-height: 44px; min-width: 44px; }
+}
 
 /* Sound (spec 0035, 2026-09-23) ------------------------------------------------------------ */
 

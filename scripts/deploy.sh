@@ -184,9 +184,18 @@ if [ "$WHAT" != "assets" ]; then
   # page is in the sitemap the moment it is deployed. 404.html is what CloudFront answers for a
   # missing path once its error response names it (Ivan's setting, in the SEO pull request).
   # object-pages.json is the share sheet's map from a record to its page (ui/sharesheet.js).
+  # THE SERVICE WORKER, LAST, AND THE ORDER IS THE POINT (site/sw.js, scripts/stamp_sw.py). The
+  # copy uploaded is stamped with this build: the SHA-256 of every file of the app as it is in
+  # site/ right now. A browser that reads the new sw.js downloads exactly those files and refuses
+  # the install if one does not match, so sw.js goes up after everything it names. No-cache, like
+  # index.html: a worker a browser cannot re-read is a release nobody can be moved off. The
+  # manifest is no-cache too (a name or an icon list that changed must not wait a month).
+  python3 "$(dirname "$0")/stamp_sw.py" --site "$SITE" --out "$BUILT/sw.js" || die "scripts/stamp_sw.py failed"
   for f in "$SITE/index.html:text/html; charset=utf-8" "$BUILT/404.html:text/html; charset=utf-8" \
            "$SITE/robots.txt:text/plain; charset=utf-8" "$BUILT/sitemap.xml:application/xml; charset=utf-8" \
-           "$BUILT/object-pages.json:application/json; charset=utf-8"; do
+           "$BUILT/object-pages.json:application/json; charset=utf-8" \
+           "$SITE/manifest.webmanifest:application/manifest+json; charset=utf-8" \
+           "$BUILT/sw.js:text/javascript; charset=utf-8"; do
     path="${f%%:*}"; type="${f#*:}"; name="$(basename "$path")"
     [ -f "$path" ] || die "$name is missing"
     if [ "$DRY_RUN" = "1" ]; then
@@ -199,7 +208,7 @@ if [ "$WHAT" != "assets" ]; then
 fi
 
 if [ -n "$DISTRIBUTION" ] && [ "$DRY_RUN" != "1" ]; then
-  PATHS=("/" "/index.html" "/js/*" "/css/*" "/t/*" "/o/*" "/robots.txt" "/sitemap.xml" "/404.html" "/object-pages.json")
+  PATHS=("/" "/index.html" "/js/*" "/css/*" "/t/*" "/o/*" "/robots.txt" "/sitemap.xml" "/404.html" "/object-pages.json" "/manifest.webmanifest" "/sw.js")
   if [ "$WHAT" != "app" ]; then
     # The data files were just pushed and keep their names: expire the edge copies now.
     PATHS+=("/data/*")
