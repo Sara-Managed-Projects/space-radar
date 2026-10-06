@@ -1,0 +1,18 @@
+Constellation figures in this folder (*.webp)
+=============================================
+
+Author of the originals: Johan Meuris (http://www.johanmeuris.eu/), drawn for Stellarium.
+Originals: https://github.com/Stellarium/stellarium/tree/a8469197a65de582f6b0ebd82b85173145241b79/skycultures/modern/illustrations
+           (85 PNG files; Stellarium's description of the sky culture says "Illustrations: Free Art
+           License", and its CREDITS.md says "Constellation art ... created by Johan Meuris ...
+           License: released under the Free Art License").
+Modified by: the Space Radar contributors, 2026-10-06. What was changed: each PNG was re-encoded as a
+           WebP at its original pixel size (scripts/build-skycultures.py). Nothing was redrawn,
+           cropped or recoloured. index.json beside them repeats, as sky coordinates, the three
+           anchor stars Stellarium's index.json gives for each picture (text and data: CC BY-SA 4.0).
+
+Copyleft: these are free works, you can copy, distribute, and modify them under the terms of the
+Free Art License https://artlibre.org/licence/lal/en/
+
+These files, and anything made from them, stay under the Free Art License. The MIT licence of
+Space Radar's code does not apply to them.

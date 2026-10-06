@@ -165,6 +165,7 @@ what we changed. None of these organisations endorses Space Radar.
   the registries and these documents) is **[MIT](LICENSE)**.
 - **Data and assets keep their owners' licences**: vendored libraries (MIT, ISC, BSD), planet maps
   (CC BY 4.0 and public domain), star catalogues (CC BY-SA 4.0, BSD), photographs (CC BY 4.0), the other-light sky tiles (ODbL 1.0),
+  the constellation pictures (Free Art License 1.3, copyleft: `site/data/skyart/LICENSE.txt`), other peoples' sky figures (CC BY-SA 4.0),
   NASA models (public domain), fonts (SIL OFL 1.1), music (CC0). Data fetched live or saved under
   `site/data/v1/` belongs to its publisher under the publisher's terms. [CREDITS.md](CREDITS.md)
   is the full list, including the few terms we have not been able to confirm.

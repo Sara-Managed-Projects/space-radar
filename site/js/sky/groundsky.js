@@ -3,9 +3,10 @@
 //
 // Contract: createGroundSky(ctx, env) -> { update(frame), setOptions(o), showPass(track, marks),
 //             clearPass(), mark(azDeg, altDeg), apparentOf(id), apparentOfEq(dirEq), pickAt(x, y, camera),
+//             whatAt(x, y, camera, rect), showTag(what, text, onOpen), hideTag(), meteorNow(),
 //             stats(), pictures(), otherLight(), dispose(), ready }
 //   env:   { group, radius, observer, domElement, options }   group is sky/skyview.js's local frame
-//   frame: { tMs, fovDeg, sunAltDeg, sunAzDeg, moonBright, camera, renderer }
+//   frame: { tMs, fovDeg, sunAltDeg, sunAzDeg, moonBright, camera, renderer, showers }
 // Loaded by sky/skyview.js with a dynamic import the first time the sky view opens: none of this,
 // and none of the data it reads, is on the first visit.
 //
@@ -29,7 +30,14 @@
 //                   a disc at its true apparent size once the field is narrow enough, lit from
 //                   where the Sun really is, turned by its IAU rotation model; Saturn's rings at
 //                   their real tilt; Jupiter's four moons as points.
-//   lines           the 89 figures, and on request the Sun's path, the sky's equator and two grids.
+//   lines           the 89 figures, and on request the Sun's path, the sky's equator and two grids
+//                   with the sky's pole marked on them. Another people's figures instead of the
+//                   western ones, the IAU borders and the constellation pictures come from
+//                   sky/skyculture.js, imported when a visitor asks for one of them.
+//   meteors         a shower's streaks at the rate this sky would show (sky/meteors.js, imported
+//                   the first time a shower is active): illustrative, and off under reduced motion.
+//   what is that    a tap names the nearest star, planet or deep-sky object in a small tag
+//                   (whatAt, showTag); the tag, or a second tap, opens its card.
 //   the deep sky    the 27 photographs of nebulae and galaxies (sky/groundpictures.js, imported
 //                   when idle): at their true places and sizes, as faint as the sky makes them.
 //   other light     the sky in infrared, microwaves or gamma rays (scene/otherlight.js, imported
@@ -51,14 +59,17 @@ import { bvToKelvin, kelvinToRgb } from '../scene/starfield.js';
 import { COPY, t } from '../copy/en.js';
 import {
   GLSL_AIR, DARKNESS, DEFAULT_DARKNESS, refractionDeg, airmass, extinctionTint, flattening,
-  limitingMagnitude, fovName, pixelsPerDegree,
+  limitingMagnitude, fovName, pixelsPerDegree, FOV,
 } from './skymath.js';
 import { BODIES, bodyView, jupiterMoons, eqjToLocal, localOf, altAzOf } from './skybodies.js';
 import { eclToEq, eclipticRing } from './figures.js';
 
 const DEG = Math.PI / 180;
 const EXT_K = 0.2;
-const RO = { milkyway: -99, otherLight: -98.8, pictures: -98.5, stars: -98, lines: -97, points: -96, discs: -95, arc: 99 };
+const RO = { milkyway: -99, otherLight: -98.8, art: -98.6, pictures: -98.5, stars: -98, lines: -97, points: -96, discs: -95, meteors: -94, arc: 99 };
+// The constellation pictures: how strong at night in a wide field, and the fields they fade out over.
+const ART_GAIN = 0.42;
+const TAG_MS = 9000;
 const LABEL_POOL = 44;
 const BODY_REFRESH_MS = 1000; // of the clock; a tenth of that once the field is narrow
 const LABEL_REFRESH_MS = 250; // of the wall clock: which names are shown, not where
@@ -383,7 +394,7 @@ export function createGroundSky(ctx, env) {
   const observerA = new Astronomy.Observer(observer.latDeg, observer.lonDeg, (observer.altKm || 0) * 1000);
   const here = import.meta.url;
   const url = (p) => new URL(p, here);
-  const options = { figures: true, names: true, grid: false, starGrid: false, sunPath: false, equator: false, darkness: DEFAULT_DARKNESS, ...(env.options || {}) };
+  const options = { figures: true, names: true, grid: false, starGrid: false, sunPath: false, equator: false, art: false, bounds: false, meteors: true, culture: 'western', darkness: DEFAULT_DARKNESS, ...(env.options || {}) };
   const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   let disposed = false;
   const stats = { stars: 0, drawn: 0, limit: 0, bytes: 0, deep: false, tier: 0, labels: 0 };
@@ -524,8 +535,75 @@ export function createGroundSky(ctx, env) {
     }
     return v;
   })(), 0x9aa4b2, 0.4, false);
-  lines.figures = null;
+  // The pole of the sky, on either grid (internal #356): a small cross where the sky turns, as
+  // high as the place's latitude, due north (or due south, below the equator). Of date, not J2000.
+  const poleAlt = Math.abs(observer.latDeg) + refractionDeg(Math.abs(observer.latDeg));
+  const poleAz = observer.latDeg >= 0 ? 0 : 180;
+  const poleLocal = localFromAltAz(poleAz, poleAlt);
+  lines.pole = lineObject('sky-pole', (() => {
+    const arm = 0.9;
+    const wide = arm / Math.max(0.05, Math.cos(poleAlt * DEG));
+    return [
+      ...localFromAltAz(poleAz - wide, poleAlt), ...localFromAltAz(poleAz + wide, poleAlt),
+      ...localFromAltAz(poleAz, poleAlt - arm), ...localFromAltAz(poleAz, Math.min(89.9, poleAlt + arm)),
+    ];
+  })(), 0xe8ecf2, 0.7, false);
   let arc = null;
+
+  // ---- another people's figures, the borders, the pictures (sky/skyculture.js) -------------------
+  // `western` is filled by the first data below; every other culture is a file fetched when chosen.
+  const cultures = new Map([['western', { obj: null, names: [] }]]);
+  const cultureAsked = new Set(['western']);
+  let cultureShown = 'western';
+  let cultureMod = null;
+  let cultureModAsked = null;
+  const withCulture = () => {
+    if (!cultureModAsked) cultureModAsked = import('./skyculture.js').then((m) => { cultureMod = m; return m; });
+    return cultureModAsked;
+  };
+  function askCulture(id) {
+    if (cultureAsked.has(id) || disposed || !/^[a-z]{2,24}$/.test(id)) return;
+    cultureAsked.add(id);
+    Promise.all([withCulture(), fetchJson(`../../data/skycultures/${id}.json`)]).then(([m, doc]) => {
+      if (disposed) return;
+      const f = m.cultureFigures(doc);
+      cultures.set(id, { obj: lineObject(`sky-figures-${id}`, f.verts, 0x9aa4b2, 0.34, true), names: f.names });
+      labels.at = -Infinity;
+    }).catch((e) => { cultureAsked.delete(id); cultureModAsked = cultureMod ? cultureModAsked : null; console.warn('ground sky: that sky culture did not load', e); });
+  }
+  let boundsAsked = false;
+  function askBounds() {
+    if (boundsAsked || disposed) return;
+    boundsAsked = true;
+    Promise.all([withCulture(), fetchBytes('../../data/constellation-bounds.bin')]).then(([m, buf]) => {
+      if (disposed) return;
+      // Quiet: the moon-glow blue at a fifth, under the figures it fences.
+      lines.bounds = lineObject('sky-bounds', m.parseBounds(buf), 0xaab6d8, 0.2, true);
+    }).catch((e) => { boundsAsked = false; cultureModAsked = cultureMod ? cultureModAsked : null; console.warn('ground sky: the borders did not load', e); });
+  }
+  let art = null;
+  let artAsked = false;
+  function askArt() {
+    if (artAsked || disposed || typeof document === 'undefined') return;
+    artAsked = true;
+    withCulture().then((m) => {
+      if (disposed) return;
+      // A phone holds fewer: a 512 px picture with its mipmaps is 1.4 MiB of GPU memory.
+      art = m.createSkyArt({ root, radius: R * 0.987, eqToLocal, renderOrder: RO.art, cap: typeof innerWidth === 'number' && innerWidth < 900 ? 6 : 12 });
+    }).catch((e) => { artAsked = false; cultureModAsked = null; console.warn('ground sky: the constellation pictures did not load', e); });
+  }
+
+  // ---- meteors (sky/meteors.js): only once a shower is active, never under reduced motion --------
+  let meteors = null;
+  let meteorsAsked = false;
+  function askMeteors() {
+    if (meteorsAsked || disposed || reducedMotion || typeof document === 'undefined') return;
+    meteorsAsked = true;
+    import('./meteors.js').then((m) => {
+      if (disposed) return;
+      meteors = m.createMeteors({ root, radius: R * 0.972, renderOrder: RO.meteors });
+    }).catch((e) => { meteorsAsked = false; console.warn('ground sky: the meteors did not load', e); });
+  }
 
   // ---- the Milky Way ----------------------------------------------------------------------------
   let milkyWay = null;
@@ -767,8 +845,8 @@ export function createGroundSky(ctx, env) {
   }
 
   // ---- names ------------------------------------------------------------------------------------
-  const labels = { host: null, pool: [], fov: null, mark: null, cands: [], at: -Infinity, markUntil: 0, markDir: null };
-  let conNames = [];
+  const labels = { host: null, pool: [], fov: null, mark: null, eyepiece: null, cands: [], at: -Infinity, markUntil: 0, markDir: null };
+  const tag = { node: null, name: null, sub: null, what: null, dir: null, until: 0, onOpen: null };
   let starNames = [];
   const passMarks = [];
   if (typeof document !== 'undefined') {
@@ -789,9 +867,27 @@ export function createGroundSky(ctx, env) {
     labels.mark.className = 'sr-skymark';
     labels.mark.hidden = true;
     host.appendChild(labels.mark);
+    // The eyepiece (internal #351): at a telescope's field the sky is seen through a round stop.
+    labels.eyepiece = document.createElement('div');
+    labels.eyepiece.className = 'sr-skyeyepiece';
+    labels.eyepiece.hidden = true;
+    host.insertBefore(labels.eyepiece, host.firstChild);
+    // "What is that": a real button, so it is outside the labels' aria-hidden layer.
+    tag.node = document.createElement('button');
+    tag.node.type = 'button';
+    tag.node.className = 'sr-skytag';
+    tag.node.hidden = true;
+    tag.name = document.createElement('span');
+    tag.name.className = 'sr-skytag__name';
+    tag.sub = document.createElement('span');
+    tag.sub.className = 'sr-skytag__sub sr-num';
+    tag.node.append(tag.name, tag.sub);
+    tag.node.addEventListener('click', () => { const open = tag.onOpen; if (open) open(tag.what); });
     // In the scene labels' own layer (index.html #labels), so the panels, the veil and H treat them alike.
     (document.getElementById('labels') || document.body).appendChild(host);
     labels.host = host;
+    // Beside the labels' layer, not in it: that layer takes no pointer and is hidden from a reader.
+    (host.parentNode && host.parentNode.parentNode ? host.parentNode.parentNode : document.body).appendChild(tag.node);
   }
 
   const _w = new THREE.Vector3();
@@ -825,7 +921,7 @@ export function createGroundSky(ctx, env) {
       const off = Math.max(8, d.diameterPx / 2 * (d.look.rings ? 2.3 : 1) + 6);
       out.push({ kind: 'body', text: B[b.id] || b.body, local: d.apparent.local, pri: 1000 - d.view.mag, dy: off });
     }
-    for (const m of passMarks) out.push({ kind: 'pass', text: m.text, local: localFromAltAz(m.azDeg, m.altDeg), pri: 900, dy: 10 });
+    for (const m of passMarks) out.push({ kind: 'pass', text: m.text, local: localFromAltAz(m.azDeg, m.altDeg + refractionDeg(m.altDeg)), pri: 900, dy: 10 });
     if (options.names) {
       const nameLimit = Math.min(starNameLimit(frame.fovDeg), limit - 0.5);
       for (const s of starNames) {
@@ -836,7 +932,7 @@ export function createGroundSky(ctx, env) {
       }
       if (pictures) pictures.labels(out, limit, lastPxPerDeg);
       if (frame.fovDeg >= 20) {
-        for (const c of conNames) {
+        for (const c of (cultures.get(cultureShown) || cultures.get('western')).names) {
           const l = localOf(m9, c.dir);
           if (l[1] < 0.1) continue;
           out.push({ kind: 'con', text: c.name, local: l, pri: 100, dy: 0 });
@@ -856,6 +952,7 @@ export function createGroundSky(ctx, env) {
       }
       if (best) out.push({ kind: 'line', text, local: best.l, pri: 300, dy: 10 });
     };
+    if ((options.grid || options.starGrid) && L.poleNorth) out.push({ kind: 'line', text: observer.latDeg >= 0 ? L.poleNorth : L.poleSouth, local: poleLocal, pri: 320, dy: 12 });
     lineLabel(options.sunPath, L.sunPath, eclRing);
     lineLabel(options.equator, L.equator, eqRing);
     labels.cands = out.sort((a, b) => b.pri - a.pri);
@@ -902,11 +999,36 @@ export function createGroundSky(ctx, env) {
 
     // The field of view, one mono line: the number is the hero (docs/ui-guide.md principle 4).
     const F = COPY.sky.fov || {};
-    const name = (F.names || {})[fovName(frame.fovDeg)] || '';
-    const text = frame.fovDeg >= 1
-      ? t(F.degrees || '{deg}°', { deg: frame.fovDeg >= 10 ? Math.round(frame.fovDeg) : frame.fovDeg.toFixed(1), name })
-      : t(F.arcmin || '{min}′', { min: Math.round(frame.fovDeg * 60), name });
+    const field = fovName(frame.fovDeg);
+    const name = (F.names || {})[field] || '';
+    // Through a telescope the field is the round one an eyepiece shows: a circle nine tenths of
+    // the screen's short side, and the number is the width of that circle, not of the screen.
+    const eyepiece = field === 'telescope';
+    const stopPx = Math.round(0.9 * Math.min(w, h));
+    const shownDeg = eyepiece ? frame.fovDeg * stopPx / h : frame.fovDeg;
+    const text = shownDeg >= 1
+      ? t(F.degrees || '{deg}°', { deg: shownDeg >= 10 ? Math.round(shownDeg) : shownDeg.toFixed(1), name })
+      : t(F.arcmin || '{min}′', { min: Math.round(shownDeg * 60), name });
     if (labels.fov.textContent !== text) labels.fov.textContent = text;
+    if (labels.eyepiece.hidden === eyepiece) labels.eyepiece.hidden = !eyepiece;
+    if (eyepiece && labels.eyepiece.dataset.px !== String(stopPx)) {
+      labels.eyepiece.dataset.px = String(stopPx);
+      labels.eyepiece.style.width = `${stopPx}px`;
+      labels.eyepiece.style.height = `${stopPx}px`;
+    }
+    stats.eyepiece = eyepiece ? shownDeg : 0;
+
+    // The tag of what was tapped: under the thing itself, for a few seconds, while it is in view.
+    if (tag.node && tag.what) {
+      const p = now < tag.until && tag.dir ? toScreen(tag.dir(), camera, w, h) : null;
+      if (!p) hideTag();
+      else {
+        const tw = tag.node.offsetWidth || 160;
+        const x = Math.max(8 + tw / 2, Math.min(w - 8 - tw / 2, p.x));
+        const below = p.y + 14 + 48 < h - 8;
+        tag.node.style.transform = `translate(${Math.round(x)}px, ${Math.round(below ? p.y + 14 : p.y - 14 - 48)}px) translateX(-50%)`;
+      }
+    }
 
     // The mark: a ring on what "show me" turned to, for a few seconds.
     if (labels.markDir && now < labels.markUntil) {
@@ -917,6 +1039,90 @@ export function createGroundSky(ctx, env) {
       labels.mark.hidden = true;
       labels.markDir = null;
     }
+  }
+
+  function hideTag() {
+    if (!tag.node || !tag.what) return;
+    tag.what = null;
+    tag.dir = null;
+    tag.node.hidden = true;
+  }
+
+  // ---- what is that (check 6 against Stellarium) ------------------------------------------------
+  const dsoDirs = new Map();
+  function dsoDir(r) {
+    let d = dsoDirs.get(r.id);
+    if (d === undefined) {
+      const p = r.pos;
+      const n = p ? Math.hypot(p.x, p.y, p.z) : 0;
+      // `sun-inertial` is ecliptic J2000; the catalogue frame here is equatorial J2000.
+      d = n > 0 ? eclToEq([p.x / n, p.y / n, p.z / n]) : null;
+      dsoDirs.set(r.id, d);
+    }
+    return d;
+  }
+  /**
+   * The nearest thing this layer draws to a point of the screen: a body, a star, or a deep-sky
+   * object, within a finger's reach (26 px, never under 0.6 or over 4 degrees). A body wins a tie,
+   * then the brighter star. Returns { kind, id, name, mag, dirEq, sepDeg } or null.
+   */
+  function whatAt(clientX, clientY, camera, rect) {
+    if (!camera || !rect || !(rect.width > 0)) return null;
+    const ndcX = ((clientX - rect.left) / rect.width) * 2 - 1;
+    const ndcY = -((clientY - rect.top) / rect.height) * 2 + 1;
+    _look.set(ndcX, ndcY, 0.5).unproject(camera).sub(camera.position).normalize().applyQuaternion(_inv.copy(group.quaternion).invert());
+    const seen = [_look.x, _look.y, _look.z];
+    if (seen[1] < -0.01) return null; // the ground
+    const reach = Math.min(4, Math.max(0.6, 26 / Math.max(1, lastPxPerDeg)));
+    const sepOf = (a, b) => Math.acos(Math.max(-1, Math.min(1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2]))) / DEG;
+    let best = null;
+    const offer = (score, what) => { if (!best || score < best.score) best = { score, what }; };
+    const B = COPY.sky.bodies || {};
+    for (const b of BODIES) {
+      const d = discs.get(b.id);
+      if (!d.view || !d.apparent || d.apparent.altDeg < -0.5) continue;
+      const sep = Math.max(0, sepOf(seen, d.apparent.local) - d.view.diameterDeg / 2);
+      if (sep > reach) continue;
+      if (b.id !== 'sun' && b.id !== 'moon' && d.view.mag > starUniforms.uLimit.value + 1.5 && d.diameterPx < 3) continue;
+      offer(sep / reach - 0.35, { kind: 'body', id: b.id, name: B[b.id] || b.body, mag: d.view.mag, dirEq: d.view.dir, sepDeg: sep });
+    }
+    // The point as the catalogue has it: the air's lift taken off, then back to J2000.
+    const aa = altAzOf(seen);
+    const tl = localFromAltAz(aa.azDeg, aa.altDeg - refractionDeg(aa.altDeg));
+    const eq = [m9[0] * tl[0] + m9[3] * tl[1] + m9[6] * tl[2], m9[1] * tl[0] + m9[4] * tl[1] + m9[7] * tl[2], m9[2] * tl[0] + m9[5] * tl[1] + m9[8] * tl[2]];
+    if (stars) {
+      const pos = stars.points.geometry.attributes.position.array;
+      const cosReach = Math.cos(reach * DEG);
+      const n = Math.min(stats.drawn || 0, stars.mag.length);
+      for (let i = 0; i < n; i += 1) {
+        const c = pos[i * 3] * eq[0] + pos[i * 3 + 1] * eq[1] + pos[i * 3 + 2] * eq[2];
+        if (c < cosReach) continue;
+        const sep = Math.acos(Math.min(1, c)) / DEG;
+        const dir = [pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2]];
+        offer(sep / reach + Math.max(0, stars.mag[i] - 1.5) * 0.07, { kind: 'star', id: null, name: null, mag: stars.mag[i], dirEq: dir, sepDeg: sep });
+      }
+    }
+    const dsos = typeof ctx.recordsFor === 'function' ? ctx.recordsFor('deep-sky') : [];
+    for (const r of dsos || []) {
+      const d = r && dsoDir(r);
+      if (!d) continue;
+      const mag = r.meta && Number.isFinite(r.meta.mag) ? r.meta.mag : NaN;
+      // Named only when this sky could show it: within three magnitudes of the faintest star drawn.
+      if (!(mag <= starUniforms.uLimit.value + 3)) continue;
+      const sep = sepOf(eq, d);
+      if (sep > reach) continue;
+      offer(sep / reach + 0.25, { kind: 'dso', id: r.id, name: r.name, mag, dirEq: d, sepDeg: sep });
+    }
+    if (!best) return null;
+    const what = best.what;
+    if (what.kind === 'star') {
+      // A proper name, when the star has one (the 549 of skystars.names.json).
+      for (const s of starNames) {
+        if (s.mag > what.mag + 0.6) break;
+        if (sepOf(s.dir, what.dirEq) < 0.05) { what.name = s.name; break; }
+      }
+    }
+    return what;
   }
 
   // ---- data -------------------------------------------------------------------------------------
@@ -931,11 +1137,11 @@ export function createGroundSky(ctx, env) {
           const multi = !g ? [] : g.type === 'MultiLineString' ? g.coordinates : g.type === 'LineString' ? [g.coordinates] : [];
           for (const line of multi) for (let i = 0; i + 1 < line.length; i += 1) v.push(...radecDir(line[i][0], line[i][1]), ...radecDir(line[i + 1][0], line[i + 1][1]));
         }
-        lines.figures = lineObject('sky-figures', v, 0x9aa4b2, 0.34, true);
+        cultures.get('western').obj = lineObject('sky-figures', v, 0x9aa4b2, 0.34, true);
       }),
       fetchJson('../../data/constellation-names.json').then((rows) => {
         if (!Array.isArray(rows)) return;
-        conNames = rows.filter((r) => r && typeof r.ra === 'number').map((r) => ({ name: r.name, dir: radecDir(r.ra, r.dec) }));
+        cultures.get('western').names = rows.filter((r) => r && typeof r.ra === 'number').map((r) => ({ name: r.name, dir: radecDir(r.ra, r.dec) }));
       }),
     ];
     await Promise.allSettled(jobs);
@@ -1007,7 +1213,27 @@ export function createGroundSky(ctx, env) {
       obj.visible = !!on;
       obj.material.uniforms.uOpacity.value = obj.userData.opacity * lineNight;
     };
-    setLine(lines.figures, options.figures);
+    // The figures of the people chosen; until their file lands, the ones that were up stay up.
+    const wantCulture = cultureAsked.has(options.culture) || /^[a-z]{2,24}$/.test(options.culture || '') ? options.culture : 'western';
+    if (cultures.has(wantCulture)) cultureShown = wantCulture;
+    else askCulture(wantCulture);
+    for (const [id, c] of cultures) setLine(c.obj, options.figures && id === cultureShown);
+    if (options.bounds && !boundsAsked) askBounds();
+    setLine(lines.bounds, options.bounds);
+    setLine(lines.pole, options.grid || options.starGrid);
+    // The pictures belong to the western figures; they leave as the field closes on one star.
+    const artOn = !!options.art && cultureShown === 'western';
+    if (artOn && !artAsked) askArt();
+    if (art) art.update({ on: artOn, dirEq: lookEq(frame.camera), fovDeg: frame.fovDeg, aspect: w / Math.max(1, h), strength: ART_GAIN * lineNight * Math.max(0, Math.min(1, (frame.fovDeg - 4) / 10)) });
+    // Meteors: at the rate the naked eye would count under this sky, whatever the zoom.
+    const showers = options.meteors && !reducedMotion && Array.isArray(frame.showers) ? frame.showers : [];
+    if (showers.length && !meteorsAsked) askMeteors();
+    if (meteors) {
+      const eye = limitingMagnitude({ fovDeg: FOV.eye, darkness: options.darkness, sunAltDeg: frame.sunAltDeg, moon: frame.moonBright });
+      const up = [];
+      for (const sh of showers) if (sh.altDeg > 0) up.push({ ...sh, local: localFromAltAz(sh.azDeg, sh.altDeg) });
+      meteors.update({ showers: up, limitMag: eye, pxPerDeg, strength: night });
+    }
     setLine(lines.sunPath, options.sunPath);
     setLine(lines.equator, options.equator);
     setLine(lines.starGrid, options.starGrid);
@@ -1044,6 +1270,27 @@ export function createGroundSky(ctx, env) {
       const ndcY = -((clientY - rect.top) / rect.height) * 2 + 1;
       return pictures.pickEq(lookEq(camera, ndcX, ndcY));
     },
+    whatAt,
+    /** Name what was tapped: `dir` is a function giving its local direction now; `onOpen(what)` on a press. */
+    showTag(what, text, onOpen) {
+      if (!tag.node || !what) return;
+      tag.what = what;
+      tag.onOpen = onOpen || null;
+      tag.dir = what.kind === 'body'
+        ? () => { const d = discs.get(what.id); return d && d.apparent ? d.apparent.local : null; }
+        : () => lift(localOf(m9, what.dirEq));
+      tag.until = performance.now() + TAG_MS;
+      tag.name.textContent = text.name;
+      tag.sub.textContent = text.sub;
+      tag.node.setAttribute('aria-label', text.label);
+      tag.node.title = text.title || '';
+      tag.node.hidden = false;
+    },
+    hideTag,
+    /** What the tag is naming now, or null. */
+    tagged: () => tag.what,
+    /** One meteor now, from the first active shower: for the probe and a trip stop. Null when none can be drawn. */
+    meteorNow: (i = 0, opts) => (meteors ? meteors.spawn(i, opts) : null),
     pictures: () => (pictures ? pictures.state() : null),
     otherLight: () => (other ? other.state() : null),
     /** A pass across the sky: `track` [{azDeg, altDeg, lit}], `marks` [{azDeg, altDeg, text}]. */
@@ -1055,7 +1302,8 @@ export function createGroundSky(ctx, env) {
       for (let i = 0; i + 1 < track.length; i += 1) {
         const a = track[i];
         const b = track[i + 1];
-        (a.lit && b.lit ? lit : dark).push(...localFromAltAz(a.azDeg, a.altDeg), ...localFromAltAz(b.azDeg, b.altDeg));
+        // Where the eye sees it: the air lifts a satellite as it lifts a star (internal #393).
+        (a.lit && b.lit ? lit : dark).push(...localFromAltAz(a.azDeg, a.altDeg + refractionDeg(a.altDeg)), ...localFromAltAz(b.azDeg, b.altDeg + refractionDeg(b.altDeg)));
       }
       arc = [];
       if (lit.length) arc.push(lineObject('sky-pass-lit', lit, 0xe8ecf2, 0.9, false, RO.arc));
@@ -1074,10 +1322,13 @@ export function createGroundSky(ctx, env) {
       labels.markDir = typeof dir === 'function' ? dir : () => dir;
       labels.markUntil = performance.now() + ms;
     },
-    stats: () => ({ ...stats }),
+    stats: () => ({ ...stats, culture: cultureShown, bounds: !!lines.bounds, art: art ? art.state() : null, meteors: meteors ? meteors.state() : null }),
     dispose() {
       disposed = true;
       if (pictures) { pictures.dispose(); pictures = null; }
+      if (art) { art.dispose(); art = null; }
+      if (meteors) { meteors.dispose(); meteors = null; }
+      if (tag.node) tag.node.remove();
       if (other) { other.dispose(); other = null; }
       root.traverse((o) => {
         if (o.geometry && o.geometry !== quad) o.geometry.dispose();

@@ -12,6 +12,7 @@ export const SHOWERS = [
     "zhr": 110,
     "ra_h": 15.33,
     "dec": 49.5,
+    "v_kms": 41,
     "parent": "asteroid 2003 EH1",
     "note": "A sharp peak only a few hours wide, so the date matters more than for any other shower."
   },
@@ -22,6 +23,7 @@ export const SHOWERS = [
     "zhr": 18,
     "ra_h": 18.17,
     "dec": 34.0,
+    "v_kms": 49,
     "parent": "comet Thatcher",
     "note": "Modest most years, with occasional outbursts nobody predicts."
   },
@@ -32,6 +34,7 @@ export const SHOWERS = [
     "zhr": 50,
     "ra_h": 22.5,
     "dec": -1.0,
+    "v_kms": 66,
     "parent": "comet Halley",
     "note": "Dust from Halley's comet. Much better from the southern hemisphere."
   },
@@ -42,6 +45,7 @@ export const SHOWERS = [
     "zhr": 100,
     "ra_h": 3.22,
     "dec": 58.0,
+    "v_kms": 59,
     "parent": "comet Swift-Tuttle",
     "note": "The one most people have heard of, and warm enough in the north to sit outside for."
   },
@@ -52,6 +56,7 @@ export const SHOWERS = [
     "zhr": 20,
     "ra_h": 6.35,
     "dec": 16.0,
+    "v_kms": 66,
     "parent": "comet Halley",
     "note": "Halley's dust again, from the other side of its orbit."
   },
@@ -62,6 +67,7 @@ export const SHOWERS = [
     "zhr": 15,
     "ra_h": 10.28,
     "dec": 21.0,
+    "v_kms": 71,
     "parent": "comet Tempel-Tuttle",
     "note": "Quiet now, but it produces a storm roughly every 33 years."
   },
@@ -72,6 +78,7 @@ export const SHOWERS = [
     "zhr": 150,
     "ra_h": 7.47,
     "dec": 33.0,
+    "v_kms": 35,
     "parent": "asteroid 3200 Phaethon",
     "note": "The best of the year, and one of two major showers whose parent is an asteroid rather than a comet; the Quadrantids are the other."
   },
@@ -82,6 +89,7 @@ export const SHOWERS = [
     "zhr": 10,
     "ra_h": 14.6,
     "dec": 76.0,
+    "v_kms": 33,
     "parent": "comet Tuttle",
     "note": "Small, and circumpolar from the north, so the radiant never sets."
   }

@@ -16,7 +16,8 @@
 import * as THREE from '../../vendor/three.module.min.js';
 import * as propagateMod from '../propagate/index.js';
 import * as stageMod from './stage.js';
-import { inEarthShadow, sunAndEarthScene, orbitsEarth } from './shadow.js';
+import { earthShadowLit, sunAndEarthScene, orbitsEarth } from './shadow.js';
+import { GLSL_AIR } from '../sky/skymath.js';
 import { dotOpacity } from './onemark.js';
 import {
   getGlyphAtlas,
@@ -69,6 +70,8 @@ attribute float iRing;     // the sample halo's own opacity: what iOpacity was b
 uniform float uPxScale;   // world units per CSS pixel, per unit of view depth
 uniform float uGrid;
 uniform float uPad;
+uniform float uSky;       // 1 while the camera stands on the ground (sky/skyview.js), else 0
+uniform vec3 uSkyUp;      // the observer's zenith, in view space
 
 varying vec2 vUv;
 varying vec3 vColour;
@@ -80,6 +83,7 @@ varying vec2 vCell0;
 
 #include <common>
 #include <logdepthbuf_pars_vertex>
+${GLSL_AIR}
 
 void main() {
   vUv = uv;
@@ -97,6 +101,24 @@ void main() {
   vCell0 = vec2( col / uGrid, 1.0 - ( row + 1.0 ) / uGrid );
 
   vec4 mv = modelViewMatrix * vec4( iOffset, 1.0 );
+  // FROM THE GROUND a satellite is in the same air as the stars (internal #393): lifted by
+  // refraction, half a degree on the horizon, and dimmed by the air it is seen through. The dot is
+  // a mark, not a magnitude, so the air takes it down to a third and no further; and one the Earth's
+  // shadow has taken is a ghost of itself, because in the sky that is when it goes out.
+  if ( uSky > 0.5 ) {
+    float dist = length( mv.xyz );
+    vec3 d = mv.xyz / max( dist, 1e-9 );
+    float sinAlt = clamp( dot( d, uSkyUp ), -1.0, 1.0 );
+    float altDeg = degrees( asin( sinAlt ) );
+    float lifted = radians( altDeg + airRefractionDeg( altDeg ) );
+    vec3 level = d - sinAlt * uSkyUp;
+    float ll = length( level );
+    if ( ll > 1e-6 ) mv.xyz = ( level / ll * cos( lifted ) + uSkyUp * sin( lifted ) ) * dist;
+    float air = pow( 10.0, -0.4 * 0.2 * ( airMass( sin( lifted ) ) - 1.0 ) );
+    float seen = max( 0.33, air ) * mix( 0.16, 1.0, iLit );
+    vOpacity *= seen;
+    vRing *= seen;
+  }
   float px = clamp( iSize, 4.0, 14.0 ) * uPad;
   float s = px * uPxScale * max( -mv.z, 1e-6 );
   mv.xy += position.xy * s;
@@ -211,6 +233,8 @@ export function createGlyphLayer(scene, layer = {}) {
       uPad: { value: PAD },
       uInset: { value: 0.5 / CELL_PX },
       uPxScale: { value: 2 / (1.5 * 720) },
+      uSky: { value: 0 },
+      uSkyUp: { value: new THREE.Vector3(0, 1, 0) },
     },
     transparent: true,
     depthTest: true,
@@ -419,7 +443,7 @@ export function createGlyphLayer(scene, layer = {}) {
         attrColour.array[o + 2] = recColour[i * 3 + 2];
       }
       // Sunlit or in Earth's shadow, for the things that go round the Earth; everything else is lit.
-      attrLit.array[k] = shadowRef && orbitsEarth(rec) && inEarthShadow(v, shadowRef.earth, shadowRef.sun, shadowRef.radius) ? 0 : 1;
+      attrLit.array[k] = shadowRef && orbitsEarth(rec) ? earthShadowLit(v, shadowRef.earth, shadowRef.sun, shadowRef.radius) : 1;
       attrSize.array[k] = selected ? recSize[i] * 1.35 : recSize[i];
       // An object is drawn once. While its model is on screen the dot yields to it -- by the
       // model's own fade, so neither blinks -- and it stays in `live`, so it is still there to
@@ -548,6 +572,14 @@ export function createGlyphLayer(scene, layer = {}) {
     recolour,
     setVisible(b) {
       if (mesh) mesh.visible = !!b;
+    },
+    /**
+     * The view from the ground (sky/skyview.js): `up` is the observer's zenith in VIEW space, and
+     * the shader then lifts and dims every dot as the air does a star. `null` is the orbital view.
+     */
+    setSky(up) {
+      material.uniforms.uSky.value = up ? 1 : 0;
+      if (up) material.uniforms.uSkyUp.value.copy(up);
     },
     dispose() {
       if (mesh) scene.remove(mesh);

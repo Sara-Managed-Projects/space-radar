@@ -131,6 +131,8 @@ function placeWords(observer) {
   const T = COPY.tonight;
   if (!observer) return T.noPlace;
   const name = observer.name || t(T.coords, { lat: fmt.num(observer.latDeg, 1), lon: fmt.num(observer.lonDeg, 1) });
+  // The browser's coordinates come with no name of their own (ui/place.js gives them the button's).
+  if (observer.source === 'geolocation') return T.placeMine;
   if (observer.source === 'guess') return t(T.placeGuess, { place: name });
   if (observer.source === 'shared') return t(T.placeShared, { place: name });
   return t(T.placeSet, { place: name });

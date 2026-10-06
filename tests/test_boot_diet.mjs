@@ -55,6 +55,10 @@ const DEFERRED = {
   'vendor/meshopt_decoder.module.js': 'the meshopt decoder: with the glTF loader',
   'vendor/BufferGeometryUtils.js': 'the glTF loader\'s helper',
   'js/copy/en.later.js': 'the words of what loads later',
+  'js/sky/groundsky.js': 'the sky from the ground: sky/skyview.js fetches it when the sky view opens',
+  'js/sky/skyculture.js': 'other peoples\' figures, the borders and the pictures: sky/groundsky.js fetches it when one is asked for',
+  'js/sky/meteors.js': 'a shower\'s streaks: sky/groundsky.js fetches it when a shower is active',
+  'js/sky/skyglow.js': 'the night lights at a place: sky/skyview.js fetches it when the sky view opens',
 };
 for (const [path, why] of Object.entries(DEFERRED)) {
   check(!boot.has(path), `${path} is in the boot graph again (a static import reaches it from main.js). ${why}`);

@@ -37,6 +37,29 @@ export function inEarthShadow(sat, earth, sun, radius) {
   return perp2 < radius * radius;
 }
 
+/** The Sun's angular radius from the Earth, as a tangent: how fast the penumbra widens behind it. */
+const SUN_SPREAD = 0.00465;
+
+/**
+ * Pure: how much of the Sun a satellite still sees, 0 (the umbra) to 1 (full sunlight), with the
+ * penumbra between: the band at the cylinder's edge that widens with distance behind the Earth,
+ * tens of kilometres deep on the far side of a low orbit. The same arguments as inEarthShadow, which is this at a
+ * hard edge. A satellite crossing it fades over seconds, as one does in the sky (internal #393).
+ */
+export function earthShadowLit(sat, earth, sun, radius) {
+  _d.set(sat.x - earth.x, sat.y - earth.y, sat.z - earth.z);
+  _s.set(sun.x - earth.x, sun.y - earth.y, sun.z - earth.z);
+  const len = _s.length();
+  if (!(len > 0)) return 1;
+  _s.multiplyScalar(1 / len);
+  const along = _d.dot(_s);
+  if (along >= 0) return 1;
+  const perp = Math.sqrt(Math.max(0, _d.lengthSq() - along * along));
+  const half = Math.max(1e-9, -along * SUN_SPREAD);
+  const k = (perp - (radius - half)) / (2 * half);
+  return k <= 0 ? 0 : k >= 1 ? 1 : k * k * (3 - 2 * k);
+}
+
 /**
  * Earth's centre and the Sun in scene units for the current stage and time, or null when the stage
  * cannot express Earth's frame. Cached per tMs so a layer of twenty thousand asks once.

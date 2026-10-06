@@ -1802,7 +1802,21 @@ export const COPY = {
       names: { eye: 'eye', binoculars: 'binoculars', telescope: 'telescope' },
     },
     // A line is named once, in plain words, where it climbs from the horizon (internal #356).
-    lines: { sunPath: 'Path of the Sun', equator: 'Sky equator' },
+    lines: { sunPath: 'Path of the Sun', equator: 'Sky equator', poleNorth: 'North pole of the sky', poleSouth: 'South pole of the sky' },
+    // "What is that" (sky/skyview.js tapSky): the tag under what was tapped. `mag` is its
+    // magnitude now; `open` and `plain` are the tag's accessible name, with and without a card.
+    what: {
+      star: 'Star',
+      starMag: 'star · mag {mag}',
+      planet: 'planet · mag {mag}',
+      sun: 'our star',
+      moon: 'Earth’s moon',
+      dso: 'deep sky',
+      dsoMag: '{kind} · mag {mag}',
+      open: '{name}, {sub}. Open its card.',
+      plain: '{name}, {sub}.',
+      openTitle: 'Open its card',
+    },
     // Sixteen compass points as a pass row spells them (sky/tonightbest.js compassShort).
     compassShort: ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'],
     // The copy pattern that is the actual feature (docs/design-language.md).

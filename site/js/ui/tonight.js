@@ -39,7 +39,8 @@ const REFRESH_MS = 30 * 60e3;
 const DARK_MS = 10 * 60e3;
 const ROWS = 10;
 const BEST_MS = 5 * 60e3; // the ranked list is worked out again this often, and when the passes land
-const SKY_TOGGLES = ['figures', 'names', 'sunPath', 'equator', 'grid', 'starGrid'];
+const SKY_TOGGLES = ['figures', 'names', 'art', 'bounds', 'sunPath', 'equator', 'grid', 'starGrid', 'meteors'];
+const SKY_CULTURES = ['western', 'chinese', 'maori', 'hawaiian'];
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -425,8 +426,25 @@ export function renderTonight(host, ctx) {
     for (const k of SKY_TOGGLES) {
       toggles.set(k, button(showRow, K.toggles[k], K.toggleTitles[k], () => { if (sky() && sky().setOption) sky().setOption(k, !sky().options[k]); }));
     }
+    const meteorNote = el('p', 'sr-density__note');
+    meteorNote.hidden = true;
+    node.appendChild(meteorNote);
+    const meteorHonest = el('p', 'sr-tonight-view__caveat', K.meteorHonest);
+    meteorHonest.hidden = true;
+    node.appendChild(meteorHonest);
+    // Whose sky: the figures and names of another people instead of the western ones (internal #355).
+    const cultures = new Map();
+    const cultureRow = row(K.culture, true);
+    for (const c of SKY_CULTURES) {
+      cultures.set(c, button(cultureRow, K.cultures[c], K.cultureNotes[c], () => { if (sky() && sky().setOption) sky().setOption('culture', c); }));
+    }
+    const cultureNote = el('p', 'sr-density__note');
+    node.appendChild(cultureNote);
+    const cultureCredit = el('p', 'sr-tonight-view__caveat');
+    node.appendChild(cultureCredit);
     const dark = new Map();
-    const darkRow = row(K.darkness);
+    const darkRow = row(K.darkness, true);
+    const darkAuto = button(darkRow, K.darknessAuto, K.darknessAutoTitle, () => { if (sky() && sky().setOption) sky().setOption('darknessBy', 'place'); });
     for (const d of DARKNESS_IDS) {
       dark.set(d, button(darkRow, K.darknessModes[d], K.darknessNotes[d], () => { if (sky() && sky().setOption) sky().setOption('darkness', d); }));
     }
@@ -446,8 +464,29 @@ export function renderTonight(host, ctx) {
       for (const [f, b] of fields) press(b, f === field);
       setText(fieldNote, K.fieldNotes[field]);
       for (const [k, b] of toggles) press(b, !!o[k]);
-      for (const [d, b] of dark) press(b, d === o.darkness);
-      setText(darkNote, K.darknessNotes[o.darkness] || '');
+      const culture = o.culture || 'western';
+      for (const [c, b] of cultures) press(b, c === culture);
+      setText(cultureNote, K.cultureNotes[culture] || '');
+      setText(cultureCredit, K.cultureCredits[culture] || '');
+      // The pictures are drawn for the western figures: the button says so and waits.
+      const artBtn = toggles.get('art');
+      artBtn.disabled = culture !== 'western';
+      artBtn.title = culture !== 'western' ? K.artWesternOnly : K.toggleTitles.art;
+      // How dark: the map's estimate while Auto is on, the visitor's own pick once they make one.
+      const now = s && s.darkness ? s.darkness : { id: o.darkness, by: 'you' };
+      press(darkAuto, o.darknessBy === 'place');
+      for (const [d, b] of dark) press(b, o.darknessBy !== 'place' && d === o.darkness);
+      const how = now.by === 'you' ? '' : (K.darknessBy[now.by] || '');
+      const kind = now.by === 'reading' || now.by === 'unread' ? '' : (K.darknessNotes[now.id] || '');
+      setText(darkNote, [kind, how].filter(Boolean).join(' '));
+      // A shower near its peak: what this sky would show an hour, and that the streaks are drawn.
+      const m = o.meteors && s && s.meteors ? s.meteors : null;
+      meteorNote.hidden = !m || (!m.down && m.perHour === null);
+      if (!meteorNote.hidden) {
+        const n = Math.round(m.perHour || 0);
+        setText(meteorNote, t(m.down ? K.meteorDown : n >= 1 ? K.meteorNote : K.meteorFew, { name: m.showers[0], n: fmt.int(n) }));
+      }
+      meteorHonest.hidden = meteorNote.hidden || m.down;
       press(red, !!o.red);
     };
     return { node, paint: paintBar };
@@ -478,6 +517,7 @@ export function renderTonight(host, ctx) {
     // Worked out again every few minutes, and at once when the clock has been moved.
     if (performance.now() - (st.bestAt || 0) > BEST_MS || Math.abs(now - (st.bestClock || 0)) > 20 * 60e3 + (performance.now() - (st.bestAt || 0)) * Math.abs(ctx.clock.rate || 1)) renderBest();
     paint();
+    paintSkybar(); // the meteors' line follows the radiant and the sky
   }
   function start() { if (!timer && visible()) timer = setInterval(tick, 1000); }
   function stop() { if (timer) { clearInterval(timer); timer = 0; } }

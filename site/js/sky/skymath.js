@@ -31,6 +31,8 @@ export const DARKNESS = {
   dark: { limit: 6.5, glow: 0.04, milkyWay: 1.0 },
 };
 export const DARKNESS_IDS = ['city', 'town', 'dark'];
+/** The sky cultures a visitor can choose (registry/skycultures.yaml; scripts/build-skycultures.py --check holds the two together). */
+export const CULTURE_IDS = ['western', 'chinese', 'maori', 'hawaiian'];
 export const DEFAULT_DARKNESS = 'dark';
 
 /**

@@ -1,0 +1,44 @@
+# The sky cultures the sky from the ground can draw (internal #355), and the constellation pictures
+# (internal #354, #383). Lines and names only for every culture but the western one, which also has
+# its pictures and the IAU boundaries.
+#
+# Every row but `western` is cut from Stellarium's sky-culture folder of that name by
+# scripts/build-skycultures.py: Hipparcos numbers become J2000 places from HYG v4.4, a line through
+# a star HYG does not have (a Gaia number, a cluster) is cut there. Each culture carries its OWN
+# licence in its description.md; only those that say CC BY-SA 4.0 are here. Read 2026-10-06 and
+# left out: navajo and egyptian (GNU GPL v2.0), arabic_indigenous (CC BY-NC-ND 4.0),
+# babylonian_mulapin (CC BY-ND 4.0), lokono (no licence section).
+#
+# These are living traditions and documented reconstructions, not "the" sky of a people: the
+# description of each says whose reading it is, and `note` is the line the app shows.
+version: 1
+read_on: 2026-10-06
+stellarium_commit: a8469197a65de582f6b0ebd82b85173145241b79
+cultures:
+  - id: western
+    display: Western
+    licence: BSD-3-Clause (lines), Free Art License 1.3 (pictures)
+    source: https://github.com/Stellarium/stellarium/tree/a8469197a65de582f6b0ebd82b85173145241b79/skycultures/modern
+    credit: "Constellation pictures: Johan Meuris, for Stellarium, Free Art License 1.3"
+    note: "The 88 constellations astronomers agreed on in 1922, with their borders of 1930. The lines are one convention among several; the pictures are Johan Meuris's, drawn for Stellarium."
+  - id: chinese
+    display: Chinese
+    stellarium: chinese
+    licence: CC BY-SA 4.0
+    source: https://github.com/Stellarium/stellarium/tree/a8469197a65de582f6b0ebd82b85173145241b79/skycultures/chinese
+    credit: "Chinese sky culture: Karrie Berglund (Digitalis Education Solutions) and Sun Shuwei, for Stellarium, CC BY-SA 4.0"
+    note: "The traditional Chinese sky: about 300 small asterisms in three enclosures and twenty-eight mansions. This is Sun Shuwei's reconstruction for Stellarium, after Yi Shitong's star catalogue; other sources draw some of them differently."
+  - id: maori
+    display: Māori
+    stellarium: maori
+    licence: CC BY-SA 4.0
+    source: https://github.com/Stellarium/stellarium/tree/a8469197a65de582f6b0ebd82b85173145241b79/skycultures/maori
+    credit: "Māori sky culture: Dan Smale, for Stellarium, CC BY-SA 4.0"
+    note: "Six figures of the Māori sky as Dan Smale documented them for Stellarium. Names and stories differ between iwi; these are the better-known ones, and the tradition is a living one."
+  - id: hawaiian
+    display: Hawaiian star lines
+    stellarium: hawaiian_starlines
+    licence: CC BY-SA 4.0
+    source: https://github.com/Stellarium/stellarium/tree/a8469197a65de582f6b0ebd82b85173145241b79/skycultures/hawaiian_starlines
+    credit: "Hawaiian star lines: after Nainoa Thompson, put into Stellarium by Darren Kamalu, Christopher Blake and the Celestial Navigation class at Kamehameha Schools Kapālama, CC BY-SA 4.0"
+    note: "The star lines Nainoa Thompson taught for steering Hōkūle‘a without instruments, as a class at Kamehameha Schools Kapālama put them into Stellarium in 2017. A navigator's working sky, still in use."

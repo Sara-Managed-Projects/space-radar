@@ -29,6 +29,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
+| Constellation pictures, borders, other peoples' skies | Johan Meuris and the sky-culture authors, through Stellarium; CDS catalogue VI/49 | Free Art License 1.3; CC BY-SA 4.0; a public catalogue, cited | [3i](#3i-constellation-pictures-borders-and-other-peoples-skies--stellarium-and-cds) |
 | Satellites and their orbits | CelesTrak | free, with an enforced usage policy | [4.1](#41-celestrak--read-this-before-you-deploy-a-fork) |
 | Launches | The Space Devs, Launch Library 2 | free to 15 requests an hour; no published licence | [4.2](#42-the-space-devs--launch-library-2) |
 | Deep-space positions, asteroids, comets, close approaches | NASA/JPL Horizons, Small-Body Database, CNEOS; ESA NEOCC | see the section | [4.18](#418-the-sources-the-harvester-reads) |
@@ -710,6 +711,59 @@ header): the Digitized Sky Survey and Mellinger's panorama (not ours to use); Pl
 "EUROPEAN SPACE AGENCY. ALL RIGHTS RESERVED" on release 3, no licence text found for release 2:
 WMAP is NASA's microwave sky); Finkbeiner's H-alpha composite and ROSAT (no licence text found);
 GALEX (NASA's, but its order-3 sky is 4.9 MB of survey masks along the Galactic plane).
+
+## 3i. Constellation pictures, borders and other peoples' skies — Stellarium and CDS
+
+Everything here is drawn only in the sky from the ground, and fetched only when a visitor asks for
+it (`site/js/sky/skyculture.js`). `scripts/build-skycultures.py` writes every file from sources
+read on 2026-10-06; `registry/skycultures.yaml` pins the Stellarium commit
+(`a8469197a65de582f6b0ebd82b85173145241b79`) and carries each credit line; `--check` holds the
+files, the budgets and these lines together.
+
+| Files | What | Source | Licence, as the source states it | Changes |
+|---|---|---|---|---|
+| `site/data/skyart/*.webp` (85) | the western constellation figures as drawings | Stellarium, `skycultures/modern/illustrations/` (<https://github.com/Stellarium/stellarium/tree/a8469197a65de582f6b0ebd82b85173145241b79/skycultures/modern>), drawn by Johan Meuris (<http://www.johanmeuris.eu/>) | `description.md`: "Illustrations: Free Art License"; Stellarium's `CREDITS.md`: "Constellation art ... created by Johan Meuris ... License: released under the Free Art License" | each PNG re-encoded as a WebP at its original 128, 256 or 512 px; nothing redrawn, cropped or recoloured |
+| `site/data/skyart/index.json` | which constellation each picture belongs to and the three stars that pin it | the same folder's `index.json` ("Text and data: CC BY-SA 4.0"); star places from HYG v4.4 (§3c) | CC BY-SA 4.0 | Hipparcos numbers replaced by J2000 places; pixel positions as fractions |
+| `site/data/constellation-bounds.bin` | the IAU constellation borders (Delporte 1930) | CDS catalogue VI/49, *Constellation Boundary Data*, Davenhall A.C., Leggett S.K., Royal Observatory Edinburgh 1989 (<https://cdsarc.cds.unistra.fr/ftp/VI/49/>), file `constbnd.dat` (prepared in 2007 by Bill J. Gray, Project Pluto) | a catalogue CDS distributes for scientific use, with no licence text of its own; the borders themselves are the IAU's definition. Cited, as CDS asks of its catalogues | each border kept once, cut into steps of a degree or less along its B1875 meridian or parallel, precessed to J2000 (IAU 1976), packed as 16-bit pairs. Checked against the catalogue's own J2000 file `bound_20.dat`: every corner within 0.003° |
+| `site/data/skycultures/chinese.json` | the traditional Chinese asterisms: lines and names | Stellarium, `skycultures/chinese/` | `description.md`: "CC BY-SA 4.0" | Hipparcos numbers replaced by J2000 places (HYG v4.4); a line through a star HYG does not have is cut there (10 such ends); one name place per figure; no pictures |
+| `site/data/skycultures/maori.json` | six Māori figures: lines and names | Stellarium, `skycultures/maori/` | `description.md`: "CC BY-SA 4.0" | the same |
+| `site/data/skycultures/hawaiian.json` | the Hawaiian star lines: lines and names | Stellarium, `skycultures/hawaiian_starlines/` | `description.md`: "CC BY-SA 4.0" | the same |
+
+**Credit lines to keep** (the controls show a short form of each beside the culture's name):
+
+- Constellation pictures: Johan Meuris, for Stellarium, Free Art License 1.3
+- Chinese sky culture: Karrie Berglund (Digitalis Education Solutions) and Sun Shuwei, for Stellarium, CC BY-SA 4.0
+- Māori sky culture: Dan Smale, for Stellarium, CC BY-SA 4.0
+- Hawaiian star lines: after Nainoa Thompson, put into Stellarium by Darren Kamalu, Christopher Blake and the Celestial Navigation class at Kamehameha Schools Kapālama, CC BY-SA 4.0
+- Constellation borders: Davenhall and Leggett 1989, CDS catalogue VI/49
+
+**The Free Art License and this repository.** The pictures are free works under a copyleft licence:
+they may be copied, distributed and modified provided the licence travels with them, the authors
+are named, the originals can be found, and what is made from them stays under the same licence
+(articles 2.2 and 2.3, read at <https://artlibre.org/licence/lal/en/> on 2026-10-06). Article 4
+allows a work to be part of a larger one that is not under the licence as long as it can still be
+got at on its own: here each picture is its own file. So the WebP files are under the Free Art
+License and nothing else in the repository is; the notice is `site/data/skyart/LICENSE.txt`, served
+beside the pictures, and §6 below. Stellarium's files name the licence without a version; article 9
+lets a recipient use the version a work came under or any later one, and 1.3 is the current text.
+
+**The sky cultures are living traditions and documented reconstructions.** Each file is one
+contributor's reading, named above: Sun Shuwei's of the Chinese sky after Yi Shitong's catalogue,
+Dan Smale's of the better-known Māori names (which differ between iwi), and a class's record of the
+star lines Nainoa Thompson taught for sailing Hōkūle‘a. The controls say so in a line under each.
+Read on the same day and **not** shipped, because their licences do not allow it alongside the
+rest or are missing: `navajo` and `egyptian` (GNU GPL v2.0), `arabic_indigenous` (CC BY-NC-ND 4.0),
+`babylonian_mulapin` (CC BY-ND 4.0), `lokono` (no licence section).
+
+**Two more things the sky view reads, and one it could not.** The kind of sky a place is given by
+default (City, Town or Dark place) is read off one pixel and its ring in `4k/earth_night.webp`, §2's
+Black Marble 2016 map: an estimate from upward light, said as one, and overruled by any choice the
+visitor makes (`site/js/sky/skyglow.js`); nothing is sent anywhere. A meteor shower's streaks are
+drawn at the rate the observers' formula gives, ZHR × sin(radiant altitude) × r^(limiting magnitude
+− 6.5) (Wikipedia, "Zenithal hourly rate", read 2026-10-06), with each shower's entry speed from the
+table in Wikipedia's "List of meteor showers" (read the same day; `registry/showers.yaml` `v_kms`).
+The International Meteor Organization's own table of population indices could not be read that day
+(imo.net was being rebuilt), so one value, r = 2.5, stands in for every shower and the code says so.
 
 ## 4. Runtime data sources
 
@@ -1454,6 +1508,34 @@ Licensed under the Creative Commons Attribution-ShareAlike 4.0 International Lic
 https://creativecommons.org/licenses/by-sa/4.0/
 Modified: reduced to the 110 Messier objects; coordinates converted to degrees and to positions in
 light-years using distances from the sources each row names; fields reduced to those the card prints.
+```
+
+### Constellation figures by Johan Meuris — Free Art License 1.3
+
+Applies to `site/data/skyart/*.webp`, and to nothing else in this repository.
+
+```
+Constellation figures, drawn for Stellarium by Johan Meuris (http://www.johanmeuris.eu/).
+Originals: https://github.com/Stellarium/stellarium/tree/a8469197a65de582f6b0ebd82b85173145241b79/skycultures/modern/illustrations
+Modified by the Space Radar contributors, 2026-10-06: each PNG re-encoded as a WebP at its
+original pixel size; nothing redrawn, cropped or recoloured.
+
+Copyleft: these are free works, you can copy, distribute, and modify them under the terms of the
+Free Art License https://artlibre.org/licence/lal/en/
+```
+
+### Stellarium sky cultures — CC BY-SA 4.0
+
+Applies to `site/data/skyart/index.json`, `site/data/skycultures/chinese.json`,
+`site/data/skycultures/maori.json`, `site/data/skycultures/hawaiian.json`.
+
+```
+Sky-culture data from Stellarium (https://github.com/Stellarium/stellarium, skycultures/), by the
+contributors named in §3i, adapted by the Space Radar contributors (2026-10-06): star numbers
+replaced by sky coordinates, lines only.
+
+Licensed under the Creative Commons Attribution-ShareAlike 4.0 International License.
+https://creativecommons.org/licenses/by-sa/4.0/
 ```
 
 ## 7. Build and CI only

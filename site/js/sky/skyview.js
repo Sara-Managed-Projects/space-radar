@@ -29,8 +29,8 @@ import * as THREE from '../../vendor/three.module.min.js';
 import * as Astronomy from '../../vendor/astronomy.js';
 import { SHOWERS } from '../data/showers.js';
 import { activeShowers, radiantAltAz } from './radiants.js';
-import { COPY, t } from '../copy/en.js';
-import { twilightPhase, DARKNESS, DARKNESS_IDS, DEFAULT_DARKNESS, FOV, clampFov, zoomFov, fovName } from './skymath.js';
+import { COPY, t, fmt } from '../copy/en.js';
+import { twilightPhase, DARKNESS, DARKNESS_IDS, CULTURE_IDS, DEFAULT_DARKNESS, FOV, clampFov, zoomFov, fovName } from './skymath.js';
 
 const DEG2RAD = Math.PI / 180;
 const RAD2DEG = 180 / Math.PI;
@@ -88,8 +88,12 @@ const SKY_STOPS = [
 export const SKY_OPTIONS_KEY = 'sr.sky';
 export const SKY_OPTION_DEFAULTS = Object.freeze({
   figures: true, names: true, grid: false, starGrid: false, sunPath: false, equator: false,
-  darkness: DEFAULT_DARKNESS, red: false,
+  art: false, bounds: false, meteors: true, culture: 'western',
+  // `darknessBy`: 'place' reads the kind of sky off the night lights at the place (sky/skyglow.js);
+  // 'you' is the visitor's own pick of `darkness`, which always wins once made.
+  darkness: DEFAULT_DARKNESS, darknessBy: 'place', red: false,
 });
+const DARKNESS_BY = ['place', 'you'];
 
 /** The stored choices over the defaults; anything unknown or unreadable is the default. Pure. */
 export function readSkyOptions(storage) {
@@ -100,8 +104,12 @@ export function readSkyOptions(storage) {
     if (got && typeof got === 'object') {
       for (const k of Object.keys(SKY_OPTION_DEFAULTS)) {
         if (k === 'darkness') { if (DARKNESS_IDS.includes(got[k])) out[k] = got[k]; }
+        else if (k === 'culture') { if (CULTURE_IDS.includes(got[k])) out[k] = got[k]; }
+        else if (k === 'darknessBy') { if (DARKNESS_BY.includes(got[k])) out[k] = got[k]; }
         else if (typeof got[k] === 'boolean') out[k] = got[k];
       }
+      // Stored before there was a map to read: a kind of sky other than the default was a choice.
+      if (!DARKNESS_BY.includes(got.darknessBy) && out.darkness !== DEFAULT_DARKNESS) out.darknessBy = 'you';
     }
   } catch { /* a storage that throws, or a value that is not JSON: the defaults */ }
   return out;
@@ -404,7 +412,19 @@ export function createSkyView(ctx, options = {}) {
   // sky for "the same patch from a city, a town and a dark place", and one shower's radiant to
   // mark whatever the date. Never stored: letting go puts back exactly what they chose.
   let held = null;
-  const worn = () => (held && held.darkness ? { ...skyOptions, darkness: held.darkness } : skyOptions);
+  // The kind of sky the night lights at this place suggest, once read: { key, id, lights } or null.
+  let placeSky = null;
+  let placeSkyAsked = '';
+  const darknessNow = () => {
+    if (held && held.darkness) return { id: held.darkness, by: 'trip' };
+    if (skyOptions.darknessBy === 'place') return placeSky && placeSky.id ? { id: placeSky.id, by: 'place', lights: placeSky.lights } : { id: skyOptions.darkness, by: placeSky ? 'unread' : 'reading' };
+    return { id: skyOptions.darkness, by: 'you' };
+  };
+  const worn = () => ({ ...skyOptions, darkness: darknessNow().id });
+  // The showers whose meteors may be drawn now, with where each radiant is (placeRadiants()).
+  let showersNow = [];
+  const _upView = new THREE.Vector3();
+  const _viewInv = new THREE.Matrix4();
   // sky/groundsky.js, once it has loaded; null before that and in a test with no DOM.
   let ground = null;
   let groundAsked = 0;
@@ -814,10 +834,13 @@ export function createSkyView(ctx, options = {}) {
     if (tMs - radiantsAt < 60e3 && tMs >= radiantsAt) return;
     radiantsAt = tMs;
     const where = { latRad: observer.latDeg * DEG2RAD, lonRad: observer.lonDeg * DEG2RAD };
+    showersNow = [];
     for (const sprite of parts.radiants.children) {
-      const aa = radiantAltAz(sprite.userData.shower, tMs, where);
+      const sh = sprite.userData.shower;
+      const aa = radiantAltAz(sh, tMs, where);
       sprite.visible = !!aa && aa.altDeg > 0;
       if (!aa) continue;
+      showersNow.push({ id: sh.id, display: sh.display, zhr: sh.zhr, vKms: sh.v_kms, altDeg: aa.altDeg, azDeg: aa.azDeg });
       localDir(aa.azDeg * DEG2RAD, aa.altDeg * DEG2RAD, _dir).multiplyScalar(parts.R * 0.94);
       sprite.position.copy(_dir);
     }
@@ -835,6 +858,7 @@ export function createSkyView(ctx, options = {}) {
       }
     });
     if (ground) { try { ground.dispose(); } catch { /* already gone */ } ground = null; }
+    lastTap = null;
     veilWorlds(false);
     groundAsked += 1; // an import still in flight belongs to a view that has closed
     group.parent?.remove(group);
@@ -931,11 +955,48 @@ export function createSkyView(ctx, options = {}) {
     if (root) root.visible = !on;
   }
 
+  /**
+   * The satellites' dots in the same air as the stars (internal #393): scene/glyphs.js lifts and
+   * dims them in its shader once it knows which way is up for the eye. `null` hands them back.
+   */
+  function skyGlyphs(on) {
+    const layers = ctx.glyphLayers;
+    if (!layers || typeof layers.values !== 'function') return;
+    if (on) {
+      _viewInv.copy(camera.matrixWorld).invert();
+      _upView.copy(_up).transformDirection(_viewInv);
+    }
+    for (const gl of layers.values()) if (gl && typeof gl.setSky === 'function') gl.setSky(on ? _upView : null);
+  }
+
+  /**
+   * How dark the sky of this place is likely to be, from the night lights of the Earth
+   * (sky/skyglow.js), asked once per place and only while the visitor has not chosen for themselves.
+   * Nothing is sent anywhere: the map is one of the site's own textures.
+   */
+  function askPlaceSky() {
+    if (typeof document === 'undefined' || !observer || skyOptions.darknessBy !== 'place' || options.glow === false) return;
+    const key = `${observer.latDeg.toFixed(3)},${observer.lonDeg.toFixed(3)}`;
+    if (placeSkyAsked === key) return;
+    placeSkyAsked = key;
+    placeSky = null;
+    const saving = typeof navigator !== 'undefined' && !!(navigator.connection && navigator.connection.saveData);
+    if (saving) { placeSky = { key, id: null, lights: null }; tell(); return; }
+    const at = observer;
+    import('./skyglow.js').then(async (m) => {
+      const lights = await m.sampleNightLights(String(new URL('../../textures/4k/earth_night.webp', import.meta.url)), at.latDeg, at.lonDeg);
+      if (placeSkyAsked !== key) return;
+      placeSky = { key, id: m.darknessFromLights(lights), lights };
+      if (ground) ground.setOptions(worn());
+      tell();
+    }).catch(() => { if (placeSkyAsked === key) { placeSky = { key, id: null, lights: null }; tell(); } });
+  }
+
   /** Say what changed, to whoever draws the controls (ui/tonight.js): the field and the choices. */
   function tell() {
     fovTold = fov;
     if (typeof window === 'undefined' || typeof CustomEvent === 'undefined') return;
-    window.dispatchEvent(new CustomEvent('sr:sky', { detail: { fovDeg: fovWant, field: fovName(fovWant), options: { ...skyOptions }, active: isActive } }));
+    window.dispatchEvent(new CustomEvent('sr:sky', { detail: { fovDeg: fovWant, field: fovName(fovWant), options: { ...skyOptions }, darkness: darknessNow(), active: isActive } }));
   }
 
   function applyRed() {
@@ -946,9 +1007,15 @@ export function createSkyView(ctx, options = {}) {
   function setOption(key, value) {
     if (!(key in SKY_OPTION_DEFAULTS)) return false;
     if (key === 'darkness') { if (!DARKNESS_IDS.includes(value)) return false; }
+    else if (key === 'culture') { if (!CULTURE_IDS.includes(value)) return false; }
+    else if (key === 'darknessBy') { if (!DARKNESS_BY.includes(value)) return false; }
     else value = !!value;
-    if (skyOptions[key] === value) return false;
+    // Picking a kind of sky is the visitor overruling the map, even when it is the one the map chose.
+    const overrule = key === 'darkness' && skyOptions.darknessBy !== 'you';
+    if (skyOptions[key] === value && !overrule) return false;
     skyOptions[key] = value;
+    if (key === 'darkness') skyOptions.darknessBy = 'you';
+    if (key === 'darknessBy' && value === 'place' && isActive) askPlaceSky();
     writeSkyOptions(storage, skyOptions);
     if (ground) ground.setOptions(worn());
     applyRed();
@@ -1080,6 +1147,71 @@ export function createSkyView(ctx, options = {}) {
     const n = Math.hypot(p.x, p.y, p.z);
     const dirEq = [p.x / n, (p.y * COS_OBLIQUITY - p.z * SIN_OBLIQUITY) / n, (p.y * SIN_OBLIQUITY + p.z * COS_OBLIQUITY) / n];
     return pointAt({ dirEq }, opts) ? 'shown' : 'below';
+  }
+
+  /**
+   * WHAT IS THAT (check 6 against Stellarium). A tap on the sky names the nearest star, planet or
+   * deep-sky object in a small tag under it; the same thing tapped again, or the tag pressed, opens
+   * its card. Returns true when the tap was answered here (main.js then leaves the selection alone).
+   * A star has a card when it is one of the 3 390 with a name; the rest are named by their magnitude.
+   */
+  let lastTap = null;
+  let starDirs = null;
+  function recordOf(what) {
+    if (what.kind === 'body' || what.kind === 'dso') return typeof ctx.recordById === 'function' ? ctx.recordById(what.id) : null;
+    const list = ctx.stars3d && typeof ctx.stars3d.records === 'function' ? ctx.stars3d.records() : [];
+    if (!list || !list.length) return null;
+    if (!starDirs || starDirs.n !== list.length) {
+      const dirs = new Float32Array(list.length * 3);
+      list.forEach((r, i) => {
+        const p = r.pos || {};
+        const n = Math.hypot(p.x, p.y, p.z) || 1;
+        // `sun-inertial` is ecliptic J2000; the sky's catalogue frame is equatorial J2000.
+        dirs[i * 3] = p.x / n;
+        dirs[i * 3 + 1] = (p.y * COS_OBLIQUITY - p.z * SIN_OBLIQUITY) / n;
+        dirs[i * 3 + 2] = (p.y * SIN_OBLIQUITY + p.z * COS_OBLIQUITY) / n;
+      });
+      starDirs = { n: list.length, dirs };
+    }
+    let best = -1;
+    let bestCos = Math.cos(0.05 * DEG2RAD);
+    const d = what.dirEq;
+    for (let i = 0; i < starDirs.n; i += 1) {
+      const c = starDirs.dirs[i * 3] * d[0] + starDirs.dirs[i * 3 + 1] * d[1] + starDirs.dirs[i * 3 + 2] * d[2];
+      if (c > bestCos) { bestCos = c; best = i; }
+    }
+    return best >= 0 ? list[best] : null;
+  }
+  function tagWords(what, record) {
+    const W = COPY.sky.what;
+    const mag = Number.isFinite(what.mag) ? fmt.num(what.mag, 1) : null;
+    const name = what.name || (record && record.name) || W.star;
+    let sub;
+    if (what.kind === 'body') sub = what.id === 'sun' ? W.sun : what.id === 'moon' ? W.moon : t(W.planet, { mag });
+    else if (what.kind === 'star') sub = t(W.starMag, { mag });
+    else sub = mag ? t(W.dsoMag, { kind: (record && record.meta && record.meta.typeText) || W.dso, mag }) : ((record && record.meta && record.meta.typeText) || W.dso);
+    return { name, sub, label: t(record ? W.open : W.plain, { name, sub }), title: record ? W.openTitle : '' };
+  }
+  function openTagged(what) {
+    const record = what && what.record;
+    if (record && typeof ctx.select === 'function') ctx.select(record, { from: 'pick' });
+    if (ground) ground.hideTag();
+    lastTap = null;
+  }
+  function tapSky(clientX, clientY) {
+    if (!isActive || !ground || typeof ground.whatAt !== 'function' || !domElement?.getBoundingClientRect) return false;
+    const what = ground.whatAt(clientX, clientY, camera, domElement.getBoundingClientRect());
+    if (!what) { ground.hideTag(); lastTap = null; return false; }
+    const key = what.kind === 'star' ? `star:${what.dirEq.map((v) => v.toFixed(5)).join(',')}` : `${what.kind}:${what.id}`;
+    if (lastTap && lastTap.key === key && ground.tagged()) {
+      const again = lastTap.what;
+      if (again.record) { openTagged(again); return true; }
+      return true; // no card to open: the tag stays, and says all there is
+    }
+    what.record = recordOf(what);
+    ground.showTag(what, tagWords(what, what.record), openTagged);
+    lastTap = { key, what };
+    return true;
   }
 
   /** A deep-sky picture under a tap, as a record id (`dso-m42`), or null: main.js opens its card. */
@@ -1225,6 +1357,7 @@ export function createSkyView(ctx, options = {}) {
     isActive = true;
     ctx.starfield?.setLines?.(true);
     askGround();
+    askPlaceSky();
     applyRed();
     update(ctx.clock?.now?.() ?? 0);
     tell();
@@ -1271,8 +1404,14 @@ export function createSkyView(ctx, options = {}) {
     camera.lookAt(_p.copy(_o).addScaledVector(_dir, parts?.R ?? 1));
     camera.updateMatrixWorld?.(true);
 
+    // A radiant's name keeps its size on the screen as the field closes (it is a mark, not a thing).
+    if (parts && parts.radiants.children.length) {
+      const k = parts.R * 0.05 * Math.min(1, fov / SKY_FOV_DEG);
+      for (const sprite of parts.radiants.children) sprite.scale.set(k * 8, k, 1);
+    }
+    skyGlyphs(true);
     if (ground) {
-      ground.update({ tMs: t, fovDeg: fov, sunAltDeg: sunElDeg, sunAzDeg, moonBright: sky.moonBright, camera, renderer: ctx.renderer });
+      ground.update({ tMs: t, fovDeg: fov, sunAltDeg: sunElDeg, sunAzDeg, moonBright: sky.moonBright, camera, renderer: ctx.renderer, showers: showersNow });
     }
   }
 
@@ -1280,6 +1419,8 @@ export function createSkyView(ctx, options = {}) {
     if (!isActive) return;
     isActive = false;
     held = null;
+    showersNow = [];
+    skyGlyphs(false);
     ctx.starfield?.setLines?.(false);
     detachInput();
     disposeGroup();
@@ -1341,6 +1482,20 @@ export function createSkyView(ctx, options = {}) {
     pointAt,
     pointAtRecord,
     pickSky,
+    tapSky,
+    /** The kind of sky drawn now and who chose it: { id, by: 'place' | 'you' | 'trip' | 'reading' | 'unread', lights }. */
+    get darkness() {
+      return darknessNow();
+    },
+    /** The showers whose meteors are being drawn and how many an hour this sky would show, or null. */
+    get meteors() {
+      if (!showersNow.length) return null;
+      const m = ground ? ground.stats().meteors : null;
+      const up = showersNow.filter((s) => s.altDeg > 0);
+      return { showers: (up.length ? up : showersNow).map((s) => s.display), down: !up.length, perHour: m ? m.perHour : null, drawn: m ? m.drawn : 0, last: m ? m.last : null };
+    },
+    /** Draw one meteor now: for the probe and a trip stop. */
+    meteorNow: (i, opts) => (ground ? ground.meteorNow(i, opts) : null),
     showPass,
     /** True while the ground sky is drawing the stars and planets itself (ui/labels.js asks). */
     get ownsSky() {

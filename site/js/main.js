@@ -214,6 +214,8 @@ export async function boot({ setStatus } = {}) {
     layers: LAYERS,
     records: () => [...layerRecords.values()].flat(),
     recordsFor: (id) => layerRecords.get(id) || [],
+    // The dot layers, for one reader: sky/skyview.js puts them in the same air as the stars.
+    glyphLayers,
     recordById: (id) => ctx.records().find((r) => r.id === id) || null,
     selected: () => selected,
     select,
@@ -865,7 +867,15 @@ export async function boot({ setStatus } = {}) {
       deselect();
       return;
     }
-    const hit = pick(ndcX, ndcY, rect) || skyPicturePick(e.clientX, e.clientY);
+    let hit = pick(ndcX, ndcY, rect);
+    // From the ground a tap asks "what is that" (sky/skyview.js tapSky): a satellite's dot or a
+    // photograph answers as before with its card; a star, a planet or anything else in the sky is
+    // named in a tag first, and the same thing tapped again is its card.
+    if (ctx.skyView && ctx.skyView.ownsSky) {
+      if (hit && (hit.klass === 'world' || hit.klass === 'star' || hit.klass === 'dso')) hit = null;
+      hit = hit || skyPicturePick(e.clientX, e.clientY);
+      if (!hit && typeof ctx.skyView.tapSky === 'function' && ctx.skyView.tapSky(e.clientX, e.clientY)) return;
+    }
     if (hit) select(hit, { from: 'pick' });
     else deselect();
   });

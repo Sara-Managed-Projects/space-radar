@@ -5631,6 +5631,44 @@ html.sr-phone .sr-tonight-view__num { font-size: var(--sr-fs-num-sm); }
   border-radius: 50%;
   box-shadow: 0 0 0 1px var(--sr-space), inset 0 0 0 1px var(--sr-space);
 }
+/* The eyepiece (internal #351): at a telescope's field the sky is seen through a round stop. The
+   ring is the field's edge; outside it the sky is dimmed, not hidden, so a drag still reads. */
+.sr-skyeyepiece {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--sr-line-strong);
+  border-radius: 50%;
+  box-shadow: 0 0 0 100vmax color-mix(in srgb, var(--sr-space) 62%, transparent);
+}
+.sr-skyeyepiece[hidden] { display: none; }
+/* "What is that": the name of what was tapped, under it. A button: pressing it opens the card. */
+.sr-skytag {
+  appearance: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: var(--sr-z-labels);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  min-width: 44px;
+  max-width: min(320px, calc(100vw - 16px));
+  padding: var(--sp-1) var(--sp-3);
+  font: inherit;
+  color: var(--sr-text);
+  background: var(--sr-panel);
+  border: 1px solid var(--sr-line-strong);
+  border-radius: var(--sr-radius-sm);
+  cursor: pointer;
+  will-change: transform;
+}
+.sr-skytag[hidden] { display: none; }
+.sr-skytag__name { font: 600 var(--sr-fs-sm)/18px var(--sr-font); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.sr-skytag__sub { font: 400 var(--sr-fs-sm)/16px var(--sr-font-mono); color: var(--sr-text-dim); white-space: nowrap; }
 /* Red night mode (pub #454): while the sky view is up and the visitor asked for it, everything
    on the page is multiplied by one red, the canvas included. Chrome keeps its layout, its states
    and its contrast order; only the colour goes. */

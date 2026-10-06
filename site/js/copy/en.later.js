@@ -443,6 +443,8 @@ Object.assign(COPY, {
     // One line each in the sidebar (spec 0061 req 11).
     placeGuess: 'Near {place}, guessed from your time zone',
     placeSet: 'From {place}',
+    // The browser gave the coordinates and no name: the place is the visitor's own.
+    placeMine: 'From your place',
     placeShared: 'From {place}, shared with you',
     noPlace: 'Set where you are to see what passes over.',
     coords: '{lat}, {lon}',
@@ -529,7 +531,7 @@ Object.assign(COPY, {
         telescope: 'A 1° field: planets become discs.',
       },
       show: 'Lines and names',
-      toggles: { figures: 'Figures', names: 'Names', sunPath: 'Sun’s path', equator: 'Equator', grid: 'Grid', starGrid: 'Star grid' },
+      toggles: { figures: 'Figures', names: 'Names', art: 'Pictures', bounds: 'Borders', sunPath: 'Sun’s path', equator: 'Equator', grid: 'Grid', starGrid: 'Star grid', meteors: 'Meteors' },
       toggleTitles: {
         figures: 'The constellation figures',
         names: 'Names of constellations and bright stars',
@@ -537,9 +539,45 @@ Object.assign(COPY, {
         equator: 'The sky’s equator, above the Earth’s',
         grid: 'Height and direction, with the north-south line',
         starGrid: 'The grid the stars are mapped on',
+        art: 'The western figures as drawings, by Johan Meuris',
+        bounds: 'The official borders of the 88 constellations',
+        meteors: 'Streaks from a shower near its peak, at its rate',
       },
+      artWesternOnly: 'Pictures belong to the western figures',
+      // Whose sky (internal #355). Each note says whose reading the figures are and under which
+      // licence; registry/skycultures.yaml has the full credit, CREDITS.md repeats it.
+      culture: 'Whose sky',
+      cultures: { western: 'Western', chinese: 'Chinese', maori: 'Māori', hawaiian: 'Hawaiian' },
+      cultureNotes: {
+        western: 'The 88 constellations astronomers agreed on in 1922.',
+        chinese: 'About 300 small asterisms. One reading of a living sky.',
+        maori: 'Six figures. Names differ between iwi; the sky is living.',
+        hawaiian: 'A navigator’s star lines, still used to steer by.',
+      },
+      // Whose work each is, and its licence: owed in full, so these run longer than a line of chrome.
+      cultureCredits: {
+        western: 'Pictures: Johan Meuris, for Stellarium, Free Art License.',
+        chinese: 'Figures: Sun Shuwei and Karrie Berglund, for Stellarium, CC BY-SA 4.0. A documented reconstruction.',
+        maori: 'Figures: Dan Smale, for Stellarium, CC BY-SA 4.0. A documented reconstruction.',
+        hawaiian: 'Figures: after Nainoa Thompson, by Kamehameha Schools Kapālama, for Stellarium, CC BY-SA 4.0.',
+      },
+      // Meteors (internal #352): {n} is sky/meteors.js visibleRate() for this sky, rounded.
+      meteorNote: '{name}: about {n} an hour in this sky.',
+      meteorFew: '{name}: under one an hour in this sky.',
+      meteorDown: '{name}: the radiant is down, no streaks.',
+      meteorHonest: 'Peak rate. Streaks are illustrative, each one random.',
       darkness: 'Your sky',
       darknessModes: { city: 'City', town: 'Town', dark: 'Dark place' },
+      // Auto reads the kind of sky off NASA's map of the Earth's night lights at the place
+      // (sky/skyglow.js): an estimate, said as one, and any of the three overrules it.
+      darknessAuto: 'Auto',
+      darknessAutoTitle: 'Read the kind of sky from the night lights at your place',
+      darknessBy: {
+        place: 'Estimated from NASA’s map of night lights at your place.',
+        reading: 'Reading the night lights at your place.',
+        unread: 'The night-lights map could not be read: pick your sky.',
+        trip: 'Held by this stop of the trip.',
+      },
       darknessNotes: {
         city: 'City: stars to magnitude 4, no Milky Way.',
         town: 'Town edge: stars to magnitude 5.3.',
