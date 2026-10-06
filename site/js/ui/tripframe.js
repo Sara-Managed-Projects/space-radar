@@ -412,7 +412,20 @@ export function createTripFrame(ctx) {
     autoBtn.setAttribute('aria-pressed', 'false');
     const fullBtn = iconButton('sr-trip__tb sr-trip__tb--full', 'maximize', T.fullScreen, T.fullScreenTitle, toggleFullScreen);
     fullBtn.setAttribute('aria-pressed', 'false');
-    for (const n of [pause, back, progress, next, sep, replay, share, collapse, sound, voiceBtn, autoBtn, fullBtn, presentBtn]) toolbar.appendChild(n);
+    // THE VOLUME (public #298): beside the sound toggle, shown while sound is on, kept across
+    // visits by the engine. A native range: arrows, Home and End work, and it is a 44 px target.
+    const volume = document.createElement('input');
+    volume.type = 'range';
+    volume.className = 'sr-trip__vol';
+    volume.min = '0';
+    volume.max = '100';
+    volume.step = '5';
+    volume.setAttribute('aria-label', T.volume);
+    volume.title = T.volumeTitle;
+    volume.addEventListener('input', () => { if (ctx.audio && typeof ctx.audio.setVolume === 'function') ctx.audio.setVolume(Number(volume.value) / 100); });
+    // The trip's own keys (arrows step the stops) are not the slider's.
+    volume.addEventListener('keydown', (e) => e.stopPropagation());
+    for (const n of [pause, back, progress, next, sep, replay, share, collapse, sound, volume, voiceBtn, autoBtn, fullBtn, presentBtn]) toolbar.appendChild(n);
 
     // What a screen reader is told. The CARD is the accessible representation of a stop -- we do
     // not describe a live 3D scene, because that would be asserting a description of pixels
@@ -468,7 +481,7 @@ export function createTripFrame(ctx) {
     document.body.appendChild(host);
 
     parts = {
-      toolbar, pause, back, next, replay, share, collapse, sound, voice: voiceBtn, progress, count, countText, segs,
+      toolbar, pause, back, next, replay, share, collapse, sound, volume, voice: voiceBtn, progress, count, countText, segs,
       presentBtn, autoBtn, fullBtn,
       live, group, heading, status, top, title, chapter, sheet, panel, cardSlot, leaveButtons: [topLeave],
     };
@@ -659,6 +672,14 @@ export function createTripFrame(ctx) {
       b.title = on ? T.soundOnTitle : T.soundOffTitle;
       b.disabled = !ctx.audio;
     }
+    if (parts.volume) {
+      parts.volume.hidden = !on || !ctx.audio || typeof ctx.audio.volume !== 'function';
+      if (!parts.volume.hidden) {
+        const pct = Math.round(ctx.audio.volume() * 100);
+        if (document.activeElement !== parts.volume) parts.volume.value = String(pct);
+        parts.volume.setAttribute('aria-valuetext', t(T.volumeValue, { pct: fmt.int(pct) }));
+      }
+    }
     // The voice is on only when sound is: one glance says what will be heard.
     const speaking = on && !!voice && voice.isOn();
     const voices = [parts.voice, ...(parts.panel.querySelectorAll ? [...parts.panel.querySelectorAll('.sr-trip__voicetoggle')] : [])];
@@ -671,6 +692,16 @@ export function createTripFrame(ctx) {
     // The intro's promise, kept true: a trip that is read aloud runs as long as its clips.
     const meta = parts.panel.querySelector ? parts.panel.querySelector('.sr-tripsheet__meta') : null;
     const st = trip.state;
+    // THE VOICE, OFFERED (public #446): a visitor could ride every trip in silence and never learn
+    // one exists. A trip that has clips says so on its start card, in one line, and that the
+    // voice is synthetic; pressing Start is still the only thing that makes a sound.
+    const offer = parts.panel.querySelector ? parts.panel.querySelector('.sr-tripsheet__voiceoffer') : null;
+    if (offer) {
+      const first = st.stops && st.stops[0];
+      const hasVoice = !!(voice && first && voice.has(clipKey(st.tourId, first.id)));
+      offer.hidden = !hasVoice;
+      if (hasVoice) offer.textContent = speaking ? T.voiceWill : T.voiceCan;
+    }
     if (meta && st.phase === 'intro') {
       meta.textContent = shapeLine(st.count, st.estimateMs + (voice ? voice.extraMs(st.tourId, st.stops) : 0));
     }
@@ -862,6 +893,9 @@ export function createTripFrame(ctx) {
     // The voice, beside it (spec 0069): the same control as the toolbar's, painted by paintSound.
     row.appendChild(iconButton('sr-tripsheet__sound sr-trip__voicetoggle', 'speech', T.voice, T.voiceOffTitle, toggleVoice));
     p.appendChild(row);
+    const offer = el('p', 'sr-tripsheet__voiceoffer sr-tripsheet__note');
+    offer.hidden = true;
+    p.appendChild(offer);
     // Present (public #441): this trip for a room. Beside "Not now", as quiet as it: most visitors
     // are one person at a desk, and the one ember thing here is still Start.
     const quiet = el('div', 'sr-tripsheet__quietrow');

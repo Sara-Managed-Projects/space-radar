@@ -1939,9 +1939,18 @@ export function createTrip(ctx) {
     return 'moved';
   }
 
+  /** A stop whose clock runs faster than real time is held still for a visitor who asked for less motion. */
+  function holdsUnderReducedMotion() {
+    return reducedMotion() && ctx.clock.rate > 1;
+  }
+
   /** The camera has arrived: the clock the flight was holding runs again, unless the trip is paused. */
   function releaseClockHold() {
     if (!run || !run.ownsClock || state.phase === 'paused') return;
+    // UNDER REDUCED MOTION A TIMED STOP DOES NOT RUN (public #236, locked decision 3): it lands
+    // on its composed instant and stays there, the clock paused; the card and the still picture
+    // carry the stop, and the visitor's own scrub still works. A year racing by is motion.
+    if (holdsUnderReducedMotion()) return;
     if (ctx.clock.paused) ctx.clock.setPaused(false);
   }
 
@@ -2814,7 +2823,7 @@ export function createTrip(ctx) {
     releaseTimers();
     // The other half of pause(): a flight or a held stop re-flies above, and applyStopTime() sets
     // the clock for it again; a dwell carries on, and so does the clock under it.
-    if (run.ownsClock && ctx.clock.paused) ctx.clock.setPaused(false);
+    if (run.ownsClock && ctx.clock.paused && !holdsUnderReducedMotion()) ctx.clock.setPaused(false);
     // MEASURED IN A BROWSER: the most likely pause is a visitor tapping something else, and that
     // tap replaces the card with that object's own. Resuming a dwell used to leave it there, so
     // the trip counted down to the next stop while the card on screen was about something else

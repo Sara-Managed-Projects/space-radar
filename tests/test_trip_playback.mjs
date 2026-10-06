@@ -344,6 +344,20 @@ stage.setOrigin(null);
 
 Date.now = realDateNow;
 
+// Public #236, locked decision 3: under reduced motion a stop that runs the clock lands on its
+// instant and stays there. Held in the source, where the two places a dwell lets the clock go are.
+{
+  const fs = await import('node:fs');
+  const url = await import('node:url');
+  const src = fs.readFileSync(url.fileURLToPath(new URL('../site/js/ui/trip.js', import.meta.url)), 'utf8');
+  const guard = /function holdsUnderReducedMotion\(\) \{\s*return reducedMotion\(\) && ctx\.clock\.rate > 1;/;
+  const ok = guard.test(src)
+    && /if \(holdsUnderReducedMotion\(\)\) return;\s*if \(ctx\.clock\.paused\) ctx\.clock\.setPaused\(false\);/.test(src)
+    && /run\.ownsClock && ctx\.clock\.paused && !holdsUnderReducedMotion\(\)\) ctx\.clock\.setPaused\(false\)/.test(src);
+  if (!ok) problems.push('under reduced motion a timed stop must not release its clock: on arrival, or on resume');
+  if ((src.match(/ctx\.clock\.setPaused\(false\)/g) || []).length !== 2) problems.push('a third place lets a trip\'s clock run: guard it for reduced motion too');
+}
+
 if (problems.length) {
   console.error(`trip playback FAILED (${problems.length}):`);
   for (const p of problems) console.error('  -', p);

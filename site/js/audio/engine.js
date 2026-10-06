@@ -53,6 +53,28 @@ export function writeFlag(storage, on) {
   }
 }
 
+/** Where the visitor's volume is kept (public #298): a number 0..1, beside the on/off choice. */
+export const VOLUME_KEY = 'sr.audio.volume';
+
+/** The stored volume, or `fallback` when there is none, it is not a number, or storage refuses. */
+export function readVolume(storage, fallback = VOLUME) {
+  try {
+    const s = storage === undefined ? globalThis.localStorage : storage;
+    const raw = s ? s.getItem(VOLUME_KEY) : null;
+    const v = raw === null || raw === '' ? NaN : Number(raw);
+    return Number.isFinite(v) && v >= 0 && v <= 1 ? v : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+export function writeVolume(storage, v) {
+  try {
+    const s = storage === undefined ? globalThis.localStorage : storage;
+    if (s) s.setItem(VOLUME_KEY, String(Math.round(v * 100) / 100));
+  } catch { /* a private window keeps it for this page only */ }
+}
+
 export function createAudio(opts = {}) {
   const storage = opts.storage;
   const doc = opts.document !== undefined ? opts.document : (typeof document !== 'undefined' ? document : null);
@@ -64,7 +86,7 @@ export function createAudio(opts = {}) {
   let context = null;
   let master = null;
   let on = readFlag(storage);
-  let volume = Number.isFinite(opts.volume) ? opts.volume : VOLUME;
+  let volume = Number.isFinite(opts.volume) ? opts.volume : readVolume(storage);
   let armed = false;
   const listeners = new Set();
 
@@ -161,6 +183,9 @@ export function createAudio(opts = {}) {
   function setVolume(v) {
     volume = Math.max(0, Math.min(1, Number(v) || 0));
     if (on) rampMaster(volume, 0.1);
+    // Kept across visits, and every control that shows it is told (public #298).
+    writeVolume(storage, volume);
+    emit();
   }
 
   // The first gesture after a page load, for a visitor whose stored choice is "on". Capture phase
@@ -200,6 +225,8 @@ export function createAudio(opts = {}) {
     suspend,
     resume,
     setVolume,
+    /** The master volume, 0..1: the visitor's, kept across visits. */
+    volume: () => volume,
     /** The visitor's choice: what every control paints. */
     isOn: () => on,
     /** On AND a context to play in: what beds and stings ask before they fetch anything. */

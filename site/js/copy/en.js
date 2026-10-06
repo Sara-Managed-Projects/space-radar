@@ -1751,6 +1751,12 @@ export const COPY = {
     expand: 'Show card',
     expandTitle: 'Bring the card back (C)',
     soundOn: 'Sound',
+    // The volume beside it (public #298), and the voice offered on a trip's start card (public #446).
+    volume: 'Volume',
+    volumeTitle: 'Volume of the music, the sounds and the voice',
+    volumeValue: '{pct} percent',
+    voiceWill: 'A voice will read this. It is synthetic.',
+    voiceCan: 'A synthetic voice can read this: press Voice.',
     soundOnTitle: 'Music and sounds are on: turn them off (M)',
     soundOffTitle: 'Music and sounds are off: turn them on (M)',
     // Spec 0069: the voice that reads each stop. It is synthetic and the control says so, every

@@ -281,6 +281,24 @@ console.log('8. the shipped rows');
   check(stingIds.every((id) => ['arrive', 'stage', 'end'].includes(id)), `every sting is one main.js plays (${stingIds.join(', ') || 'none yet'})`);
 }
 
+// The volume is the visitor's, kept across visits (public #298).
+{
+  const { readVolume, writeVolume, VOLUME_KEY } = await import('../site/js/audio/engine.js');
+  const store = memoryStorage({});
+  check(readVolume(store) === VOLUME, 'no stored volume is the default');
+  const a = createAudio({ AudioContext: StubContext, storage: store, document: fakeDocument() });
+  let told = 0;
+  a.onChange(() => { told += 1; });
+  a.setVolume(0.35);
+  check(a.volume() === 0.35 && store.getItem(VOLUME_KEY) === '0.35' && told === 1, 'setVolume keeps it and tells every control');
+  const b = createAudio({ AudioContext: StubContext, storage: store, document: fakeDocument() });
+  check(b.volume() === 0.35, 'and the next visit starts from it');
+  a.setVolume(7);
+  check(a.volume() === 1, 'never above full');
+  for (const bad of ['loud', '-1', '3', '']) { store.setItem(VOLUME_KEY, bad); check(readVolume(store) === VOLUME, `a stored "${bad}" is not a volume`); }
+  check(readVolume({ getItem() { throw new Error('private'); } }) === VOLUME && (writeVolume({ setItem() { throw new Error('private'); } }, 0.5), true), 'storage that refuses is the default, and no throw');
+}
+
 if (failures) {
   console.log(`\n${failures} of ${checks} audio checks failed`);
   process.exit(1);
