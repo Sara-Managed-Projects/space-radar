@@ -67,7 +67,10 @@ check(rootLoop.indexOf('sw.js') > rootLoop.indexOf('index.html') && deploy.index
   'sw.js is uploaded after the files it names');
 check(/"\/sw\.js"/.test(deploy) && /"\/manifest\.webmanifest"/.test(deploy), 'deploy.sh must invalidate /sw.js and /manifest.webmanifest');
 const release = readFileSync(join(ROOT, '.github/workflows/release.yml'), 'utf8');
-check(/stamp_sw\.py --site "dist\/\$NAME\/site"/.test(release), 'release.yml must stamp the worker in the zip');
+// The zip is built by scripts/build_release.py since public #471 (tests/test_release_zip.py unpacks
+// one and reads the stamp); the workflow must call it, and it must stamp the copy, never site/.
+const buildRelease = readFileSync(join(ROOT, 'scripts/build_release.py'), 'utf8');
+check(/python3 scripts\/build_release\.py --version "\$VERSION" --out dist/.test(release) && /"stamp_sw\.py"\), "--site", str\(top \/ "site"\)/.test(buildRelease), 'release.yml must stamp the worker in the zip');
 
 if (problems.length) {
   for (const p of problems) console.error('FAIL ' + p);
