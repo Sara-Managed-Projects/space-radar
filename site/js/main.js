@@ -16,9 +16,9 @@ import { createWorlds, WORLDS, positionOf } from './scene/worlds.js';
 import { createStarfield } from './scene/starfield.js';
 import { createGlyphLayer } from './scene/glyphs.js';
 import { createHeroes, closeUpDistance, SELECTED_PX, warmModels } from './scene/heroes.js';
-import { limbFraming, fitDistance, discDistance, litOffset } from './scene/framing.js';
+import { limbFraming, fitDistance, discDistance, litOffset, groundDistanceKm, nightGroundPose, openingPlan, OPENING_KEY } from './scene/framing.js';
 import { createCameraRig, worldFramingDistance } from './scene/camera.js';
-import { createViewShift, MAX_SHIFT_FRACTION } from './scene/viewshift.js';
+import { createViewShift, MAX_SHIFT_FRACTION, PILL_GAP_PX } from './scene/viewshift.js';
 import { readMoment, writeMoment, bootLink, laterLink, read as readUrlKeys, write as writeUrlState, clear as clearUrlState, stopIndex } from './ui/urlstate.js';
 import { guessObserver } from './sky/guessplace.js';
 import { COPY, CITIES, t as fill } from './copy/en.js';
@@ -532,7 +532,29 @@ export async function boot({ setStatus } = {}) {
   cameraRig.setWorldCentre({ x: 0, y: 0, z: 0 });
   cameraRig.setTarget({ x: 0, y: 0, z: 0 });
   // 3.5 radii (22 units), or further on a screen too narrow to show the whole globe at that.
-  cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance: worldFramingDistance(6371 / stage.unitKm, camera.fov, camera.aspect), ms: 0 });
+  const homeDistance = worldFramingDistance(6371 / stage.unitKm, camera.fov, camera.aspect);
+  // THE OPENING (public #287, scene/framing.js openingPlan): a first visit starts farther out and
+  // eases in once the boot screen lifts (startOpening, called beside fadeBoot).
+  let opening = null;
+  try {
+    const store = window.localStorage;
+    opening = openingPlan({
+      seen: !!store.getItem(OPENING_KEY),
+      link: !!(link && Object.keys(link).length) || location.hash.length > 1,
+      reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
+      embed: !!embed,
+      hidden: document.hidden,
+    });
+    if (opening) store.setItem(OPENING_KEY, '1');
+  } catch { opening = null; /* no storage: no way to play it once, so it is not played */ }
+  cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance: homeDistance * (opening ? opening.from : 1), ms: 0 });
+  const startOpening = () => {
+    if (!opening) return;
+    // Only if the camera is still where the boot left it: a trip or a selection made meanwhile
+    // has a flight of its own.
+    if (!cameraRig.state.flying && !ctx.selected()) cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance: homeDistance, ms: opening.ms, ease: 'inout', targetDelay: 0 });
+    opening = null;
+  };
   render();
   revealUI();
 
@@ -875,6 +897,7 @@ export async function boot({ setStatus } = {}) {
 
   startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfield, heroes, lod });
   fadeBoot();
+  startOpening();
 
   // --- interaction ----------------------------------------------------------
 
@@ -1020,7 +1043,12 @@ export async function boot({ setStatus } = {}) {
     if (opts.fly !== false) flyToRecord(record);
     else cameraRig.follow(() => positionOfRecord(record));
     window.dispatchEvent(new CustomEvent('sr:select', { detail: record }));
-    if (offer) offerUndo(opts.undoName || labelName(record) || record.name);
+    // A place met on the night side is met from the whole Earth's distance, and the toast says why
+    // (flyToRecord): with the way back when the view was moved for the visitor, alone when they
+    // pointed at the place themselves.
+    const night = !!record && nightArrival === record && opts.fly !== false;
+    if (offer) offerUndo(opts.undoName || labelName(record) || record.name, night);
+    else if (night && !inTrip()) import('./ui/camundo.js').then((m) => m.sayNight(labelName(record) || record.name)).catch(() => {});
   }
 
   // --- the view before an automatic move, and the way back (internal #274) ------------------------
@@ -1053,12 +1081,12 @@ export async function boot({ setStatus } = {}) {
     cameraRig.restoreState(b.rig, 600);
   }
   /** Offer the way back to the last remembered view, in a toast. `name` is where the view went. */
-  function offerUndo(name) {
+  function offerUndo(name, night = false) {
     const before = viewBefore;
     if (!before || inTrip()) return;
     import('./ui/camundo.js').then((m) => {
       if (before !== viewBefore || m.sameView(before, viewNow())) return;
-      m.offerUndo(ctx, { name, undo: () => restoreView(before) });
+      m.offerUndo(ctx, { name, night, undo: () => restoreView(before) });
     }).catch((e) => console.warn('the undo toast did not load', e));
   }
   ctx.rememberView = rememberView;
@@ -1109,6 +1137,20 @@ export async function boot({ setStatus } = {}) {
     if (record.klass === 'world') worlds.preload(record.id);
     const on = teachRigWorld(record);
     const pos = positionOfRecord(record);
+    groundArrival = pos && onEarthsGround(record, pos) ? record : null;
+    nightArrival = null;
+    // A PLACE ON THE NIGHT SIDE IS SHOWN WITH THE EDGE OF DAYLIGHT IN THE PICTURE (internal #420,
+    // scene/framing.js nightGroundPose): the whole Earth, as the home view has it, turned so the
+    // place and the terminator are both on the disc. The camera looks at the Earth, not at the
+    // place: the mark and the reticle say where it is, and the card says why the view is wide.
+    const night = groundArrival ? nightGroundPose(pos, worlds.sunDirOf('earth') || worlds.drawnPositionOf('sun')) : null;
+    if (night) {
+      teachRigWorld(record);
+      cameraRig.stopFollow();
+      cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance: worldFramingDistance(6371 / stage.unitKm, camera.fov, camera.aspect), offset: night.offset, ms });
+      nightArrival = record;
+      return true;
+    }
     if (pos) {
       const distance = arrivalDistance(record, pos);
       const limb = limbPose(record, pos, distance, on);
@@ -1194,6 +1236,12 @@ export async function boot({ setStatus } = {}) {
    *   stop's title replaces it.
    */
   function deselect(opts = {}) {
+    // Leaving a place on the Earth's ground gives the whole Earth back (internal #420): the camera
+    // was a few thousand kilometres over a storm or a pad, or turned to the night side, and that
+    // is not a home view. Not for a trip's own stops, nor from the ground's sky.
+    const wasGround = groundArrival && groundArrival === selected && (!opts || opts.keepCard !== true)
+      && stage.worldId === 'earth' && !inTrip() && !(ctx.skyView && ctx.skyView.active);
+    groundArrival = null;
     selected = null;
     wantStarDisc(null);
     if (ctx.orbitLine) ctx.orbitLine.setRecord(null);
@@ -1202,6 +1250,7 @@ export async function boot({ setStatus } = {}) {
     if (ctx.hud) ctx.hud.clear();
     if (!opts || opts.keepCard !== true) hideCard();
     cameraRig.stopFollow();
+    if (wasGround) cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance: worldFramingDistance(6371 / stage.unitKm, camera.fov, camera.aspect), ms: 900 });
     window.dispatchEvent(new CustomEvent('sr:select', { detail: null }));
   }
 
@@ -1284,6 +1333,12 @@ export async function boot({ setStatus } = {}) {
       const sizeLy = record.meta && Number.isFinite(record.meta.sizeLy) ? record.meta.sizeLy : 20;
       return Math.max(1, (sizeLy * 9460730472580.8 * 2.5) / stage.unitKm);
     }
+    // A point on the Earth's own ground (a storm, a launch pad, a site) is met from no nearer than
+    // the map can bear (internal #420, scene/framing.js groundDistanceKm).
+    if (onEarthsGround(record, pos)) {
+      const cv = ctx.renderer && ctx.renderer.domElement;
+      return groundDistanceKm(cv && cv.clientHeight > 0 ? cv.clientHeight : window.innerHeight, camera.fov) / stage.unitKm;
+    }
     const layer = LAYERS.find((l) => l.id === record.layer);
     const nearKm = (layer && layer.nearKm) || 2000;
     // No farther than the selected model can be drawn at full size (scene/heroes.js
@@ -1295,6 +1350,22 @@ export async function boot({ setStatus } = {}) {
     const close = pos ? closeUpDistance(pos, h, f) : Infinity;
     return Math.max(0.05, Math.min((nearKm * 0.35) / stage.unitKm, close));
   }
+
+  /**
+   * Is this thing on the Earth's own ground, on the Earth's stage: a storm, a rocket still on its
+   * pad, a ground site? Within GROUND_SKIN_KM of the surface; a climbing rocket leaves the rule as
+   * it leaves the ground, and a site on the Moon is the Moon's (surfaceWorldOf).
+   */
+  const GROUND_SKIN_KM = 50;
+  function onEarthsGround(record, pos) {
+    if (!record || !pos || stage.worldId !== 'earth' || record.klass === 'world') return false;
+    if (surfaceWorldOf(record)) return false;
+    return Math.hypot(pos.x, pos.y, pos.z) * stage.unitKm - 6371 < GROUND_SKIN_KM;
+  }
+  /** The ground arrival whose card is open, so that leaving it gives the whole Earth back. */
+  let groundArrival = null;
+  /** And the one that was met from the night side's wide view: the toast says so (select()). */
+  let nightArrival = null;
 
   /**
    * The arrival's distance and tilt with the limb of the world below in the picture (spec 0061 req
@@ -1345,7 +1416,10 @@ export async function boot({ setStatus } = {}) {
    * taken as covered whatever the box says this frame.
    */
   const MODEL_SPAN = 1.32;
-  const BAND_CHROME = '#sr-side, #sr-card, #sr-top';
+  // The time pill too (internal #421): 560 px of a desktop's width is no bar by the 80 % rule, and
+  // it is 102 px tall under the middle of the scene, where every world's lower limb was. And the
+  // phone trip's own top bar.
+  const BAND_CHROME = '#sr-side, #sr-card, #sr-top, #sr-time, #sr-trip .sr-trip__top';
   const PHONE_CARD_SHARE = 0.48;
   function freeRoom(el) {
     if (!el || typeof el.getBoundingClientRect !== 'function') return null;
@@ -1358,10 +1432,14 @@ export async function boot({ setStatus } = {}) {
       if (node.hidden) continue;
       const r = node.getBoundingClientRect();
       // A bar or a sheet spans the view; the desktop's sidebar is a column, and covers neither.
-      if (!(r.width >= c.width * 0.8 && r.height > 0)) continue;
-      if (getComputedStyle(node).visibility === 'hidden') continue;
+      // The pill counts when it lies under the subject's column (scene/viewshift.js pillCovers).
+      const isPill = node.id === 'sr-time';
+      const mid = c.left + c.width / 2 + viewShift.shiftXPx();
+      if (!(r.height > 0 && (r.width >= c.width * 0.8 || (isPill && r.left <= mid && r.right >= mid)))) continue;
+      const cs = getComputedStyle(node);
+      if (cs.visibility === 'hidden' || cs.display === 'none') continue;
       const t = r.top - c.top;
-      const b = r.bottom - c.top;
+      const b = r.bottom - c.top + (isPill ? PILL_GAP_PX : 0);
       if (b >= h - 4 && t > 0) bottom = Math.max(bottom, h - t);
       else if (t <= h * 0.25 && b < h * 0.5) top = Math.max(top, b);
     }

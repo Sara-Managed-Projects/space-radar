@@ -23,12 +23,21 @@ export const UNDO_MS = 6000;
 let serial = 0;
 
 /** The toast's line. A name too long for one line is cut at a word, with an ellipsis. */
-export function undoWords(name) {
+export function undoWords(name, night = false) {
   const U = COPY.undo;
   let n = String(name || '').trim();
   if (!n) return U.movedNowhere;
   if ([...n].length > 34) n = `${[...n].slice(0, 33).join('').replace(/\s+\S*$/, '')}${COPY.punctuation.ellipsis}`;
-  return t(U.moved, { name: n });
+  // A place on the night side is shown from the whole Earth's distance (internal #420, main.js
+  // flyToRecord): the line says so, because the camera is not where "moved to" would have it.
+  return t(night ? U.night : U.moved, { name: n });
+}
+
+/** The same line with no way back: the visitor pointed at the place themselves. */
+export function sayNight(name) {
+  const node = toast(undoWords(name, true), UNDO_MS);
+  if (node) delete node.dataset.undo;
+  return node;
 }
 
 /** Are two pictures of the view the same place? Then there is nothing to go back to. */
@@ -42,7 +51,7 @@ export function sameView(a, b) {
 export function offerUndo(ctx, opts = {}) {
   if (typeof document === 'undefined' || typeof opts.undo !== 'function') return null;
   const U = COPY.undo;
-  const node = toast(undoWords(opts.name), 0);
+  const node = toast(undoWords(opts.name, opts.night === true), 0);
   if (!node) return null;
   const mine = String(serial += 1);
   node.dataset.undo = mine;

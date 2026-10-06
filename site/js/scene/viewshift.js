@@ -6,6 +6,7 @@
 //                                     full-width panels stacked on its bottom edge
 //   coveredFromLeft(rects, w, h)   -> how many, from the left edge, are under a tall docked column
 //   coveredFromTop(rects, w, h)    -> how many, from the top down, are under a wide bar at the top
+//   pillCovers(rect, w, centreX)   -> the time pill as a bar, when it lies under the subject
 //   uncoveredBand(h, top, bottom)  -> {top, bottom, centre, shift}: the band nobody covers, and the
 //                                     view offset that puts the centre of the view in its middle
 //
@@ -48,6 +49,25 @@ const SELECTORS = [
   '#sr-trip .sr-tripsheet',
   'html.sr-phone #sr-share',
 ];
+
+// THE TIME PILL (internal #421). It became two rows on 2026-10-06 (48 px to 102 px) and nothing
+// here knew: on a desktop a world's lower limb sat under it, and on a phone at peek it and the
+// sheet covered the lower third of the Earth. It is not a full-width bar (560 px on a desktop), so
+// the FULL_WIDTH rule leaves it out; what matters is whether it lies under where the subject is
+// drawn, the middle of the band the sidebar leaves (pillCovers). It floats PILL_GAP_PX above the
+// edge, or the sheet, and that gap is counted as its own.
+const PILL_SELECTORS = ['#sr-time'];
+export const PILL_GAP_PX = 28;
+
+/**
+ * A floating pill as the bar it amounts to: null when it does not lie under the subject's column
+ * (`centreX`, canvas px), else its box widened to the canvas and lowered by its gap. Pure.
+ */
+export function pillCovers(rect, w, centreX) {
+  if (!rect || !(w > 0) || !(rect.bottom > rect.top)) return null;
+  if (!(rect.left <= centreX && rect.right >= centreX)) return null;
+  return { top: rect.top, bottom: rect.bottom + PILL_GAP_PX, width: w };
+}
 
 // THE PHONE'S TOP BAR (spec 0061 task 3): the search, the tools and the live line across the top,
 // and during a trip its own bar of title and Leave. docs/ui-guide.md §5: the subject sits in the
@@ -173,7 +193,15 @@ export function createViewShift(camera, canvas, opts = {}) {
   function measure() {
     if (!doc || !canvas || !canvas.getBoundingClientRect) return 0;
     const c = canvas.getBoundingClientRect();
-    const bottom = coveredFromBottom(rectsOf(SELECTORS, c), c.width, c.height);
+    const rects = rectsOf(SELECTORS, c);
+    for (const sel of PILL_SELECTORS) {
+      const node = doc.querySelector(sel);
+      if (!visible(node)) continue;
+      const r = node.getBoundingClientRect();
+      const bar = pillCovers({ left: r.left - c.left, right: r.right - c.left, top: r.top - c.top, bottom: r.bottom - c.top }, c.width, c.width / 2 + targetX);
+      if (bar) rects.push(bar);
+    }
+    const bottom = coveredFromBottom(rects, c.width, c.height);
     const top = coveredFromTop(rectsOf(TOP_SELECTORS, c), c.width, c.height);
     return Math.round(uncoveredBand(c.height, top, bottom).shift);
   }
@@ -196,8 +224,8 @@ export function createViewShift(camera, canvas, opts = {}) {
     sinceMeasure += dtMs;
     if (sinceMeasure >= MEASURE_MS) {
       sinceMeasure = 0;
+      targetX = measureLeft(); // first: the pill is judged against the column the subject is in
       target = measure();
-      targetX = measureLeft();
     }
     const w = canvas.clientWidth | 0;
     const h = canvas.clientHeight | 0;

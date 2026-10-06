@@ -316,16 +316,24 @@ export function createKeyHint(ctx, opts = {}) {
     autoTimer = setTimeout(() => { if (!held) hide('timeout'); }, AUTO_HIDE_MS);
   }
 
-  /** Out of the time pill's way: where they would overlap (a narrow scene, a phone), it rises above. */
+  /**
+   * Out of the time pill's way, and a toast's: where they would overlap (a narrow scene, a phone,
+   * the undo toast with a long name: internal #419 item 3), it rises above them.
+   */
   function place() {
     root.style.removeProperty('bottom');
-    const pill = document.querySelector('.sr-time');
-    if (!pill) return;
-    const b = pill.getBoundingClientRect();
-    if (!(b.width > 0)) return; // hidden (a trip, a clear screen): nothing to avoid
-    const a = root.getBoundingClientRect();
-    const overlap = a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
-    if (overlap) root.style.bottom = `${Math.round(win.innerHeight - b.top + 12)}px`;
+    let a = root.getBoundingClientRect();
+    for (const sel of ['.sr-time', '.sr-toast']) {
+      const node = document.querySelector(sel);
+      if (!node || node.hidden) continue;
+      const b = node.getBoundingClientRect();
+      if (!(b.width > 0)) continue; // hidden (a trip, a clear screen): nothing to avoid
+      // Eight pixels of air: the toast was 5 px INTO the hint, and touching is no better.
+      const overlap = a.left < b.right + 8 && b.left - 8 < a.right && a.top < b.bottom && b.top < a.bottom;
+      if (!overlap) continue;
+      root.style.bottom = `${Math.round(win.innerHeight - b.top + 12)}px`;
+      a = root.getBoundingClientRect();
+    }
   }
 
   async function show() {
@@ -409,6 +417,7 @@ export function createKeyHint(ctx, opts = {}) {
     ctx.trip.onChange((st) => { if (st && st.phase !== 'idle') hide('trip'); });
   }
   win.addEventListener('resize', () => { if (open) place(); });
+  win.addEventListener('sr:toast', () => { if (open) place(); });
   // The phone's sheet moves the pill, and the pill is what the hint stands clear of: placed again
   // when the shell says it changed, and once more when the pill's own 320 ms move is over.
   let shellTimer = 0;

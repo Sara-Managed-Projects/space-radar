@@ -57,6 +57,8 @@ Object.assign(COPY, {
   undo: {
     moved: 'Moved to {name}',
     movedNowhere: 'The view moved',
+    // A storm or a launch pad on the night side: the camera stands back to the whole Earth.
+    night: 'Night at {name}: the whole Earth, with daylight in view',
     back: 'Back to where you were',
     done: 'Back where you were',
   },

@@ -49,5 +49,22 @@ check(shiftFor(523, H) === H * MAX_SHIFT_FRACTION, 'and the shift for it hits th
   check(!/sr-mobilebar|sr-drawer-open/.test(src), 'the old phone bar and drawers are not measured: they are gone');
 }
 
+// THE TIME PILL (internal #421): 560 px wide and 102 px tall, 24 px above a desktop's bottom edge,
+// in the middle of the band the sidebar leaves. It is a bar where it lies under the subject.
+{
+  const { pillCovers, PILL_GAP_PX } = await import(join(ROOT, 'site/js/scene/viewshift.js'));
+  const pill = { left: 630, right: 1190, top: 774, bottom: 876 };
+  const bar = pillCovers(pill, 1440, 720 + 190);
+  check(bar && bar.width === 1440 && bar.bottom === 876 + PILL_GAP_PX, 'the pill under the subject counts as a bar, its gap with it');
+  check(coveredFromBottom([bar], 1440, 900) === 126, `a desktop's pill covers 126 px from the bottom (${coveredFromBottom([bar], 1440, 900)})`);
+  check(shiftFor(126, 900) === 63, 'so the Earth moves up 63 px and its lower limb is clear of the pill');
+  check(pillCovers(pill, 1440, 400) === null, 'a pill beside the subject covers nothing of it');
+  check(pillCovers(null, 1440, 720) === null && pillCovers({ left: 0, right: 10, top: 5, bottom: 5 }, 1440, 5) === null, 'no pill, no bar');
+  // A phone at peek: the pill 12 px above a 96 px sheet. Both are counted, stacked.
+  const sheet = { top: 748, bottom: 844, width: 390 };
+  const phonePill = pillCovers({ left: 16, right: 374, top: 634, bottom: 736 }, 390, 195);
+  check(coveredFromBottom([sheet, phonePill], 390, 844) === 210, `a phone's pill is stacked on its sheet (${coveredFromBottom([sheet, phonePill], 390, 844)})`);
+}
+
 if (problems.length) { console.error('viewshift FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('viewshift ok: sheets stacked on the bottom edge are measured, a side panel is not, and the view moves up by half of what they cover');

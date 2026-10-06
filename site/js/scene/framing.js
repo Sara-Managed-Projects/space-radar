@@ -246,3 +246,84 @@ export function litOffset(sun, up, phase = ARRIVAL_PHASE) {
   const k = Math.sin(phase) / l;
   return { x: s.x * c + side.x * k, y: s.y * c + side.y * k, z: s.z * c + side.z * k };
 }
+
+// --- an arrival at a point on the Earth's own ground (internal #420) -----------------------------
+//
+// SEEN 2026-10-06 by the regression walk: the home's first line flew to a storm on the night side
+// and showed a black screen with a label on nothing; a launch from Coming up arrived a few tens of
+// kilometres over its pad, where the day map (about 5 km to a pixel at its best) is a blur. Both
+// are the first things a visitor presses. Two rules, pure, and main.js flyToRecord applies them:
+//
+//   1. NO NEARER THAN THE MAP CAN BEAR: the distance at which one screen pixel is one map pixel.
+//   2. AT NIGHT THE WHOLE EARTH, TURNED SO THE EDGE OF DAYLIGHT IS IN THE PICTURE: the camera looks
+//      at the Earth's centre from the home view's distance, over the point when it is in twilight,
+//      and leaning toward the Sun by as much as it takes (and no more than NIGHT_MAX_LEAN, past
+//      which the point is on the limb) when it is deeper in the night. Nothing is lit that the Sun
+//      does not light: the point is where its mark and the city lights say, and the day is beside it.
+
+/** The day map's ground sample at its best, kilometres to a pixel, as internal #420 measured it. */
+export const GROUND_KM_PER_PX = 5;
+/** The floor and the ceiling of a ground arrival, kilometres above the ground. */
+export const GROUND_MIN_KM = 3000;
+export const GROUND_MAX_KM = 8000;
+/** Below this cosine of the Sun's zenith angle (96 degrees: the end of civil twilight) the ground is dark. */
+export const NIGHT_COS = Math.cos((96 * Math.PI) / 180);
+/** Where the camera's own ground point is kept, as a zenith angle of the Sun: the terminator is then 25 degrees from the disc's middle. */
+export const NIGHT_VIEW_ZENITH = (115 * Math.PI) / 180;
+/** The camera never leans farther from the point than this: at 55 degrees it is 82 % of the way to the limb. */
+export const NIGHT_MAX_LEAN = (55 * Math.PI) / 180;
+
+/** How far above the ground the camera stands for one screen pixel to be one map pixel. Pure, kilometres. */
+export function groundDistanceKm(heightPx, fovDeg = 45, kmPerPx = GROUND_KM_PER_PX) {
+  const h = heightPx > 0 ? heightPx : 800;
+  const d = (kmPerPx * h) / (2 * Math.tan(((fovDeg * Math.PI) / 180) / 2));
+  return Math.max(GROUND_MIN_KM, Math.min(GROUND_MAX_KM, d));
+}
+
+/**
+ * The night arrival: null in daylight and twilight, else the unit direction from the Earth's
+ * centre to the camera and how far it leans from the point toward the Sun. Pure.
+ * @param {{x,y,z}} point  from the world's centre to the place, any length
+ * @param {{x,y,z}} sun    from the world toward the Sun, any length
+ * @returns {{offset:{x:number,y:number,z:number}, lean:number, zenith:number}|null}
+ */
+export function nightGroundPose(point, sun) {
+  if (!point || !sun) return null;
+  const pl = Math.hypot(point.x, point.y, point.z);
+  const sl = Math.hypot(sun.x, sun.y, sun.z);
+  if (!(pl > 0) || !(sl > 0)) return null;
+  const p = { x: point.x / pl, y: point.y / pl, z: point.z / pl };
+  const s = { x: sun.x / sl, y: sun.y / sl, z: sun.z / sl };
+  const cosZ = Math.max(-1, Math.min(1, p.x * s.x + p.y * s.y + p.z * s.z));
+  if (cosZ >= NIGHT_COS) return null;
+  const zenith = Math.acos(cosZ);
+  const lean = Math.max(0, Math.min(NIGHT_MAX_LEAN, zenith - NIGHT_VIEW_ZENITH));
+  // The part of the Sun's direction square to the point; at local midnight any perpendicular does.
+  let q = { x: s.x - cosZ * p.x, y: s.y - cosZ * p.y, z: s.z - cosZ * p.z };
+  let ql = Math.hypot(q.x, q.y, q.z);
+  if (ql < 1e-6) {
+    const a = Math.abs(p.y) < 0.9 ? { x: 0, y: 1, z: 0 } : { x: 1, y: 0, z: 0 };
+    q = { x: a.y * p.z - a.z * p.y, y: a.z * p.x - a.x * p.z, z: a.x * p.y - a.y * p.x };
+    ql = Math.hypot(q.x, q.y, q.z);
+  }
+  const c = Math.cos(lean);
+  const k = Math.sin(lean) / ql;
+  return { offset: { x: p.x * c + q.x * k, y: p.y * c + q.y * k, z: p.z * c + q.z * k }, lean, zenith };
+}
+
+// --- the opening (public #287) -------------------------------------------------------------------
+//
+// A first visit used to land on a still Earth. It now eases in: the same scene, from OPENING_FROM
+// times the home view's distance, in OPENING_MS. No splash, no words, nothing to press; a touch on
+// the camera ends it where it is. Never under reduced motion, never for a link to somewhere (the
+// link's own flight is the arrival), never in an embed, and once per visitor.
+
+export const OPENING_FROM = 2.4;
+export const OPENING_MS = 2400;
+export const OPENING_KEY = 'sr:opening';
+
+/** Whether the opening plays, and how: null, or { from, ms }. Pure. */
+export function openingPlan({ seen = false, link = false, reducedMotion = false, embed = false, hidden = false } = {}) {
+  if (seen || link || reducedMotion || embed || hidden) return null;
+  return { from: OPENING_FROM, ms: OPENING_MS };
+}

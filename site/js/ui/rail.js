@@ -121,6 +121,9 @@ export function createRail(ctx, host) {
   function openShow() {
     if (!pop.hidden) return;
     if (ctx && ctx.share) ctx.share.close();
+    // The controls hint goes, as it does for a trip: its close button showed beside this panel
+    // (internal #419 item 5).
+    if (ctx && ctx.keyhint && typeof ctx.keyhint.hide === 'function') ctx.keyhint.hide('popover');
     if (!menu.hidden) closeMore(false);
     pop.hidden = false;
     showBtn.setAttribute('aria-expanded', 'true');

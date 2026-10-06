@@ -149,5 +149,40 @@ function holds(name, f, { r, h = 900, subjectPx = 260, upDot = 0, room = null, d
   check(Math.abs(len(F.litOffset({ x: 1, y: 2, z: 3 }, null)) - 1) < 1e-9, 'no up is the scene\'s +Y');
 }
 
+// AN ARRIVAL ON THE EARTH'S GROUND (internal #420): no nearer than the map can bear, and at night
+// the whole Earth turned so the edge of daylight is in the picture.
+{
+  const { groundDistanceKm, nightGroundPose, GROUND_MIN_KM, GROUND_MAX_KM, NIGHT_MAX_LEAN, NIGHT_VIEW_ZENITH, openingPlan, OPENING_MS } = F;
+  const d900 = groundDistanceKm(900, 45);
+  check(Math.abs(d900 - 5432) < 5, `at 900 px one screen pixel is one 5 km map pixel from 5 432 km (${d900.toFixed(0)})`);
+  check(groundDistanceKm(300, 45) === GROUND_MIN_KM && groundDistanceKm(4000, 45) === GROUND_MAX_KM, 'and never nearer than the floor nor farther than the ceiling');
+  check(d900 > 100 * 35, 'a launch pad is met from a hundred times farther than the 35 km it was');
+  const dot = (a, b) => a.x * b.x + a.y * b.y + a.z * b.z;
+  const at = (zenDeg) => ({ x: Math.cos((zenDeg * Math.PI) / 180), y: 0, z: Math.sin((zenDeg * Math.PI) / 180) });
+  const sun = { x: 150e6, y: 0, z: 0 };
+  check(nightGroundPose(at(40), sun) === null && nightGroundPose(at(92), sun) === null, 'daylight and civil twilight keep the ordinary arrival');
+  const dusk = nightGroundPose(at(105), sun);
+  check(dusk && dusk.lean === 0 && Math.abs(dot(dusk.offset, at(105)) - 1) < 1e-9, 'just past twilight the camera is over the place: the terminator is 15 degrees from it');
+  for (const z of [120, 150, 179, 180]) {
+    const n = nightGroundPose(at(z), sun);
+    const len = n && Math.hypot(n.offset.x, n.offset.y, n.offset.z);
+    check(n && Math.abs(len - 1) < 1e-9, `zenith ${z}: a unit direction`);
+    if (!n) continue;
+    const camZen = Math.acos(dot(n.offset, { x: 1, y: 0, z: 0 }));
+    const fromPlace = Math.acos(Math.max(-1, Math.min(1, dot(n.offset, at(z)))));
+    check(fromPlace <= NIGHT_MAX_LEAN + 1e-9, `zenith ${z}: the place stays on the disc (${deg(fromPlace)} degrees from its middle)`);
+    // From 3.5 radii the limb is 73.4 degrees from the camera's own ground point: the terminator
+    // (90 degrees from the Sun) is on the disc when that point is nearer the Sun than 163 degrees.
+    check(camZen - Math.acos(1 / 3.5) < Math.PI / 2 - 0.3, `zenith ${z}: at least 17 degrees of daylight on the disc (camera over zenith ${deg(camZen)})`);
+    check(z < 170 ? Math.abs(camZen - Math.max(NIGHT_VIEW_ZENITH, (z * Math.PI) / 180 - NIGHT_MAX_LEAN)) < 1e-6 : true, `zenith ${z}: it leans toward the Sun, by no more than it must`);
+  }
+  check(nightGroundPose(null, sun) === null && nightGroundPose(at(150), { x: 0, y: 0, z: 0 }) === null, 'no place, or no Sun, no pose');
+  // The opening (public #287).
+  check(openingPlan({}) && openingPlan({}).ms === OPENING_MS && OPENING_MS <= 3000, 'a first visit eases in, in under three seconds');
+  for (const no of [{ seen: true }, { link: true }, { reducedMotion: true }, { embed: true }, { hidden: true }]) {
+    check(openingPlan(no) === null, `no opening when ${Object.keys(no)[0]}`);
+  }
+}
+
 if (problems.length) { console.error('framing FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('framing ok: the ISS, a geostationary satellite, a pad, a thing 50 km up and a site on the Moon all arrive with the limb on screen and clear of the model; small bodies from at least 5 % of a radius; the reticle held at every distance; the Planets tab fitted to its band');
