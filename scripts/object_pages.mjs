@@ -60,11 +60,10 @@ const readJson = (rel) => JSON.parse(readFileSync(join(ROOT, rel), 'utf8'));
 // out of date. The card never prints a satellite's `why` for this reason ("a count that changes
 // with every crew", ui/cards.js WHY_KLASSES); a page that does must leave these out until the rows
 // are fixed at their source. Each entry says why.
-const DATED_WHY = new Map([
-  [25544, 'a crew count, which changes with every crew'],
-  [20580, 'an age in years ("Thirty-five years"), which is one more every April'],
-  [41866, 'GOES 16 handed the Atlantic watch to GOES 19 in April 2025'],
-]);
+// Empty since 2026-10-07 (internal #198): the three lines it held back -- the ISS's crew count,
+// Hubble's age in years, GOES 16 as the Atlantic watch -- were rewritten in data/layers.js to say
+// dates instead of counts, which do not go stale. A `why` that does goes here, with the reason.
+const DATED_WHY = new Map([]);
 
 function satelliteRecords() {
   const out = [];

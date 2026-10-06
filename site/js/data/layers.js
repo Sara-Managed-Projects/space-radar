@@ -71,9 +71,9 @@ const C = {
 
 /** @type {Array<{noradId:number, name:string, why:string}>} */
 export const NOTABLE = [
-  { noradId: 25544, name: 'ISS (Zarya)', why: 'Seven people live here. It is the brightest thing in the sky after the Moon and Venus.' },
+  { noradId: 25544, name: 'ISS (Zarya)', why: 'People have lived here without a break since November 2000. It is the brightest thing in the sky after the Moon and Venus.' },
   { noradId: 48274, name: 'CSS (Tianhe)', why: "The core of China's space station, permanently crewed since 2021." },
-  { noradId: 20580, name: 'Hubble Space Telescope', why: 'Thirty-five years of the pictures everybody has seen. Still working.' },
+  { noradId: 20580, name: 'Hubble Space Telescope', why: 'In orbit since April 1990, and the source of the pictures everybody has seen. Still working.' },
   { noradId: 25867, name: 'Chandra X-ray Observatory', why: 'It sees the X-rays from black holes eating. Its orbit reaches a third of the way to the Moon.' },
   { noradId: 25989, name: 'XMM-Newton', why: "Europe's X-ray telescope, and the largest satellite ESA has ever launched." },
   { noradId: 43435, name: 'TESS', why: 'It found thousands of planets around other stars by watching them dim their own suns.' },
@@ -95,10 +95,10 @@ export const NOTABLE = [
   { noradId: 43613, name: 'ICESat-2', why: 'It fires 10 000 laser pulses a second at the ice sheets and counts the photons that come back.' },
   { noradId: 43476, name: 'GRACE-FO 1', why: 'Two satellites chasing each other, weighing groundwater by how the gap between them changes.' },
   { noradId: 40376, name: 'SMAP', why: 'It measures how wet the soil is, everywhere, every three days.' },
-  { noradId: 41866, name: 'GOES 16', why: 'The hurricane satellite over the Atlantic. It sits still over one spot, 35 786 km up.' },
+  { noradId: 41866, name: 'GOES 16', why: 'A weather satellite that sits still over one spot, 35 786 km up. It kept the Atlantic hurricane watch until GOES 19 took over in April 2025.' },
   { noradId: 43226, name: 'GOES 17', why: 'Its Pacific counterpart, now the on-orbit spare.' },
   { noradId: 51850, name: 'GOES 18', why: 'The one watching the US west coast and the Pacific storms.' },
-  { noradId: 60133, name: 'GOES 19', why: 'The newest of them, and the current Atlantic watch.' },
+  { noradId: 60133, name: 'GOES 19', why: 'The newest of them. It took over the Atlantic hurricane watch in April 2025.' },
   { noradId: 38771, name: 'MetOp-B', why: "Europe's polar weather satellite. Its soundings do more for a 3-day forecast than any other instrument." },
   { noradId: 43689, name: 'MetOp-C', why: 'The last of that series, flying in formation with its sisters.' },
   { noradId: 37846, name: 'GSAT0101 (Galileo-PFM)', why: "The first satellite of Europe's own version of GPS. Your phone probably uses it." },

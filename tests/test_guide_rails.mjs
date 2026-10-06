@@ -164,6 +164,25 @@ const OFF_GRID_KNOWN = { 6: 18, 10: 17, 14: 10, 3: 6, 5: 4, 7: 3, 22: 2, 18: 2, 
   check(strings.some(([k, v]) => k.startsWith('timePill.') && /\{time\} UTC/.test(v)), 'the time pill has a time, and it says UTC');
 }
 
+// --- 3b. no count or age that goes stale in the hand-kept "why" lines (internal #198) ---------------
+// "Seven people live here" was wrong with the next crew and "Thirty-five years" with the next April:
+// the object pages had to leave both lines out. A date does not go stale; a count of years or of
+// people does.
+{
+  const { NOTABLE, DEBRIS_NOTABLE } = await import(join(ROOT, 'site/js/data/layers.js'));
+  const NUM = '(?:\\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|thirty|forty|fifty|sixty)(?:-(?:one|two|three|four|five|six|seven|eight|nine))?';
+  const stale = new RegExp(`\\b${NUM}\\s+(?:people|astronauts|cosmonauts|taikonauts|crew)\\b|\\b${NUM}\\s+years\\s+(?:of|old|in orbit|later)\\b|\\bfor\\s+${NUM}\\s+years\\b`, 'i');
+  const rows = [...NOTABLE, ...(DEBRIS_NOTABLE || [])];
+  check(rows.length > 30, `the hand-kept lists were read (${rows.length})`);
+  for (const r of rows) {
+    const m = stale.exec(String(r.why || ''));
+    if (m) problems.push(`data/layers.js ${r.name}: "${m[0]}" is a count that goes stale; say the date it started from instead ("since November 2000")`);
+  }
+  check(stale.test('Seven people live here.') && stale.test('Thirty-five years of the pictures') && !stale.test('People have lived here without a break since November 2000.'), 'the check reads the two lines it was written for, and passes a date');
+  const pages = readFileSync(join(ROOT, 'scripts/object_pages.mjs'), 'utf8');
+  check(/const DATED_WHY = new Map\(\[\]\);/.test(pages), 'scripts/object_pages.mjs holds no `why` back as dated any more');
+}
+
 // --- 4. one primary (guide section 2.1): the ember is a fill in a few named places -----------------
 // The guide's four first; then what the sheets also fill with ember, each with what it is. A new
 // ember fill is refused: a second orange button on a surface is two primaries.

@@ -68,6 +68,17 @@ Also: live clouds, storms, lightning and the aurora on the Earth · close-up map
 the Moon and Mars · today's sunspot groups · eclipses computed for any date · 54 spacecraft and
 shape models · shareable links, postcards and a photo mode · full keyboard control.
 
+### Links
+
+The address bar is the view: what is selected, the moment on the clock, the map and the trip stop
+are all in it, so copying it is sharing what you see. A trip has two link forms. `/t/<trip>.html`
+is a small page of its own with the trip's picture and words, the one to paste into a chat or a
+post so it unfurls; it opens the app at the trip. `#trip=<trip>&stop=<n>` is the app itself at
+that stop, the one the address bar shows while you fly. Moving through a trip does not add to the
+browser's history: Back is not "previous stop", it leaves the trip for the page you came from (the
+trip has its own Previous). Back and Forward between two links you opened put the whole view back
+each time: the selection, the clock, the map and the stop.
+
 ## Run it locally
 
 ```bash
