@@ -182,6 +182,16 @@ if [ "$WHAT" != "assets" ]; then
   python3 "$(dirname "$0")/check_seo.py" --out "$BUILT" || die "scripts/check_seo.py refused the built pages"
   "${SYNC[@]}" "$BUILT/o"  "s3://$BUCKET/o" \
     --cache-control "no-cache" --content-type "text/html; charset=utf-8" --delete
+  # The press page (public #293, scripts/build_press.py): the page, the README's screenshots and
+  # the mark as SVG, built beside the object pages and not kept under site/. HTML no-cache like
+  # the other pages; the pictures and the SVGs each by their own type, as the textures are.
+  python3 "$(dirname "$0")/build_press.py" --out "$BUILT" || die "scripts/build_press.py failed"
+  "${SYNC[@]}" "$BUILT/press" "s3://$BUCKET/press" --cache-control "no-cache" \
+    --exclude "*" --include "*.html" --content-type "text/html; charset=utf-8" --delete
+  "${SYNC[@]}" "$BUILT/press" "s3://$BUCKET/press" --cache-control "no-cache" \
+    --exclude "*" --include "*.webp" --content-type "image/webp" --delete
+  "${SYNC[@]}" "$BUILT/press" "s3://$BUCKET/press" --cache-control "no-cache" \
+    --exclude "*" --include "*.svg" --content-type "image/svg+xml" --delete
   # The root files, each with its own type: the CLI guesses from the extension, and a sitemap
   # served as binary/octet-stream is one a crawler may refuse. No-cache like index.html, so a new
   # page is in the sitemap the moment it is deployed. 404.html is what CloudFront answers for a
@@ -211,7 +221,7 @@ if [ "$WHAT" != "assets" ]; then
 fi
 
 if [ -n "$DISTRIBUTION" ] && [ "$DRY_RUN" != "1" ]; then
-  PATHS=("/" "/index.html" "/js/*" "/css/*" "/t/*" "/o/*" "/robots.txt" "/sitemap.xml" "/404.html" "/object-pages.json" "/manifest.webmanifest" "/sw.js")
+  PATHS=("/" "/index.html" "/js/*" "/css/*" "/t/*" "/o/*" "/press/*" "/robots.txt" "/sitemap.xml" "/404.html" "/object-pages.json" "/manifest.webmanifest" "/sw.js")
   if [ "$WHAT" != "app" ]; then
     # The data files were just pushed and keep their names: expire the edge copies now.
     PATHS+=("/data/*")

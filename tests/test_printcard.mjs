@@ -26,6 +26,17 @@ check(printSize(NaN).w === 1800, 'an unknown aspect is landscape');
 const clock = { now: () => Date.UTC(2027, 7, 2, 10, 6, 35) };
 const a = caption({ clock }, { id: 'europa', name: 'Europa' }, null);
 check(a.title === 'Europa' && a.when === '2027-08-02, 10:06 UTC' && a.mark === 'spaceradar.ai', `a selection names itself and the instant (${JSON.stringify(a)})`);
+// Internal #376: a picture drawn at another shutter than the camera's says so beside the instant.
+{
+  const rec = { id: 'm42', name: 'Orion Nebula' };
+  const at = (mode) => caption({ clock, exposure: { mode: () => mode } }, rec, null);
+  check(at('camera').when === '2027-08-02, 10:06 UTC' && at('camera').exposure === '', 'the default exposure (Camera) adds nothing to the caption');
+  check(/Deep stretch/.test(at('deep').when) && at('deep').when.startsWith('2027-08-02, 10:06 UTC') && at('deep').exposure, `a Deep picture says so (${at('deep').when})`);
+  check(/eye/.test(at('eye').when) && at('eye').exposure, `an Eye picture says so (${at('eye').when})`);
+  check(at('nonsense').when === '2027-08-02, 10:06 UTC', 'an unknown mode adds nothing');
+  const honest = caption({ clock }, rec, null, null, { honesty: true });
+  check(/not a photograph/.test(honest.honesty) && caption({ clock }, rec, null).honesty === undefined, 'photo mode\'s strip says it is a drawing; the postcard\'s band is as it was');
+}
 const b = caption({ clock }, null, { phase: 'dwell', tourTitle: 'Chasing the solar eclipse', stopTitle: 'The shadow on the ground' });
 check(/Chasing the solar eclipse/.test(b.title) && /The shadow on the ground/.test(b.title), `a trip names the trip and its stop (${b.title})`);
 const c = caption({ clock }, null, { phase: 'idle', tourTitle: 'Old trip' });

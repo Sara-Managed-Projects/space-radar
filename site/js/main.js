@@ -666,8 +666,8 @@ export async function boot({ setStatus } = {}) {
     // test (spec 0044) waits on it.
     window.__srLayersReady = true;
     window.dispatchEvent(new CustomEvent('sr:layers-ready'));
-    // An embed loads the far catalogues only when its own link names something in them (openAt).
-    if (!embed) setTimeout(() => {
+    setTimeout(() => {
+      if (embed) return; // an embed: only what its link names (openAt)
       if (typeof requestIdleCallback === 'function') requestIdleCallback(() => ctx.loadAfterFirstVisit(), { timeout: 3000 });
       else ctx.loadAfterFirstVisit();
     }, LATER_LAYERS_MS);

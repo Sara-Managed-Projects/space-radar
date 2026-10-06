@@ -160,7 +160,15 @@ for (const f of ['main.js', 'ui/cards.js', 'ui/rail.js', 'ui/shell.js']) check(!
 // The only fetch in the sheet is fetchJson, and its only callers are the two look-ups, which only
 // lookUp() calls, which only open() calls.
 check((sheetSrc.match(/\bfetch\(/g) || []).length === 1 && /return fetch\(url, \{ \.\.\.opts, signal/.test(sheetSrc), 'one fetch in the sheet, in fetchJson');
-check((sheetSrc.match(/fetchJson\(/g) || []).length === 3, 'fetchJson is called twice (the summary, the index)');
+check((sheetSrc.match(/fetchJson\(/g) || []).length === 2, 'fetchJson is called once (the summary)');
+// The index of object pages is ui/objectpage.js's (internal #199: a card's About it asks it too):
+// one fetch there, of object-pages.json, made when asked and never at import.
+{
+  const pageSrc = readFileSync(join(ROOT, 'site/js/ui/objectpage.js'), 'utf8');
+  check((pageSrc.match(/\bfetch\(/g) || []).length === 1 && /pagesIndex = fetch\(`\$\{base\}\$\{PAGES_INDEX\}`/.test(pageSrc), 'one fetch in ui/objectpage.js, of the index, inside objectPages()');
+  for (const f of ['main.js', 'ui/rail.js', 'ui/shell.js', 'ui/share.js']) check(!/objectpage\.js/.test(src(f)), `${f} does not import ui/objectpage.js`);
+  check(/import\('\.\/objectpage\.js'\)/.test(src('ui/cards.js')) && !/from '\.\/objectpage\.js'/.test(src('ui/cards.js')), 'the card asks for its page by a dynamic import, when About it opens');
+}
 check((sheetSrc.match(/\blookUp\(/g) || []).length === 2 && /const looked = w\.record \? lookUp\(/.test(sheetSrc), 'the look-ups run from open() only');
 check(/credentials: 'omit'/.test(sheetSrc) && /referrerPolicy: 'no-referrer'/.test(sheetSrc), 'Wikipedia is asked with no cookies and no referrer');
 check(/rest_v1\/page\/summary\//.test(sheetSrc), 'the REST summary endpoint');
@@ -173,6 +181,22 @@ const ctx = {};
 const api = installShare(ctx);
 check(ctx.share === api && typeof api.open === 'function' && typeof api.close === 'function' && typeof api.isOpen === 'function' && api.isOpen() === false, 'installShare puts open, close and isOpen on ctx.share, closed');
 check(fetched.length === 0, `nothing was fetched by any of this: ${fetched.join(', ')}`);
+
+// Internal #371: the phone sheet's half ends on a whole row, never through one.
+{
+  const { wholeRowHeight, HALF_CAP, HALF_FLOOR } = await import(join(ROOT, 'site/js/ui/sharesheet.js'));
+  const feet = [282, 338, 394, 446, 498, 550];
+  const opts = { cap: Math.round(844 * HALF_CAP), floor: Math.round(844 * HALF_FLOOR), pad: 16, fallback: 405 };
+  const h = wholeRowHeight(feet, opts);
+  check(feet.some((f) => f + 16 === h) && h <= opts.cap, `half is a row's foot plus the padding, inside the cap (${h})`);
+  check(wholeRowHeight(feet, { ...opts, cap: 300 }) === 405, 'when no row ends inside the band, the plain half');
+  check(wholeRowHeight([], opts) === 405 && wholeRowHeight([NaN, 9999], opts) === 405, 'nothing measured is the plain half');
+  check(HALF_CAP <= 0.62 && HALF_FLOOR >= 0.3, 'the selection keeps a third of the screen above the sheet');
+  const src = readFileSync(join(ROOT, 'site/js/ui/sharesheet.js'), 'utf8');
+  const css = readFileSync(join(ROOT, 'site/css/share.css'), 'utf8');
+  check(/classList\.add\('sr-sharing'\)/.test(src) && /classList\.remove\('sr-sharing'\)/.test(src) && /html\.sr-phone\.sr-sharing #sr-side \{\s*visibility: hidden;/.test(css), 'on a phone the card\'s sheet is off while the share sheet is up: one ember, nothing glowing through');
+  check(/textPanel\.hidden = true/.test(src) && /setAttribute\('aria-expanded', on \? 'true' : 'false'\)/.test(src), 'the post\'s words open in place, closed at first (internal #202)');
+}
 
 if (problems.length) {
   console.error(`sharesheet: ${problems.length} problem(s)`);

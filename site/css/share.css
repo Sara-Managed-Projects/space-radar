@@ -345,6 +345,13 @@ html.sr-phone .sr-share__pic.is-portrait {
   height: min(22vh, 200px);
 }
 
+/* At half the sheet ends on a whole row (ui/sharesheet.js phoneHeights): the body is clipped just
+   under it, so the padding and a phone's safe area show glass, not the top edge of the next row.
+   Not while a finger is moving it: the rows come up with the sheet. */
+html.sr-phone .sr-share[data-detent='half']:not(.is-dragging) .sr-share__body {
+  clip-path: inset(0 0 calc(100% - var(--sr-share-cut, 100%)) 0);
+}
+
 html.sr-phone .sr-share[data-detent='full'] {
   touch-action: auto;
 }

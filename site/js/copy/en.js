@@ -1188,6 +1188,9 @@ export const COPY = {
     // The card view's short form, a button inside "About it" (spec 0061 §4: no sentence-long
     // control on the card); the long one is its tooltip.
     centreShort: 'Centre the map here',
+    // Internal #199: the last line of About it, where the deploy built a page for this object.
+    ownPage: 'Its own page',
+    ownPageTitle: 'A page about it you can link to, in a new tab',
     isCentreShort: 'Centred here',
     comparisonsLabel: 'To give you a feel for it',
     rightNowLabel: 'Right now',

@@ -3079,7 +3079,22 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
     });
     aboutNodes.push(centre);
   }
+  // ITS OWN PAGE (internal #199): the static page the deploy built for this object (`/o/<slug>.html`,
+  // scripts/build_seo.py), which says the same words and links back with "See it live". Asked for
+  // when About it is first open, never before: ui/objectpage.js and its index are not a card's cost.
+  const page = el('a', 'sr-card__page', COPY.card.ownPage);
+  page.hidden = true;
+  page.target = '_blank';
+  page.rel = 'noopener';
+  page.title = COPY.card.ownPageTitle;
+  aboutNodes.push(page);
   add('about', S.about, null, panelOf(aboutNodes));
+  const aboutHead = more.querySelector('[data-section="about"] .sr-disc__head');
+  const findPage = () => import('./objectpage.js').then((m) => m.pageFor(record)).then((url) => {
+    if (url) { page.href = url; page.hidden = false; }
+  }).catch(() => { /* no page: no link */ });
+  if (aboutHead && aboutHead.getAttribute('aria-expanded') === 'true') findPage();
+  else if (aboutHead) aboutHead.addEventListener('click', findPage, { once: true });
 
   // Sources for this record: what the drawn shape is, and where the numbers were read.
   const drawn = drawingLine(record);

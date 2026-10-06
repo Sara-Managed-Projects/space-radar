@@ -1,0 +1,77 @@
+<!doctype html>
+<!-- Built by scripts/build_press.py from templates/press.html at deploy time (public #293): the
+     press page. Not in git; do not edit the built copy. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Press kit: Space Radar</title>
+<meta name="description" content="What Space Radar is, five facts, pictures you may use, the mark and the wordmark, the licence and the credits.">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0b0e14">
+<link rel="canonical" href="{{host}}/press/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Space Radar">
+<meta property="og:title" content="Press kit: Space Radar">
+<meta property="og:description" content="What Space Radar is, five facts, pictures you may use, the mark and the wordmark, the licence and the credits.">
+<meta property="og:url" content="{{host}}/press/index.html">
+<meta property="og:image" content="{{host}}/og/default.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="space-radar-mark.svg">
+<link rel="preload" href="../fonts/inter-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/fonts.css">
+<style>
+{{style}}
+ol.facts{margin:0;padding:0 0 0 20px;max-width:65ch}
+ol.facts li{margin:0 0 12px}
+.shots{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin:0}
+.shots figure{margin:0}
+.shots img,.marks img{display:block;width:100%;height:auto;border-radius:var(--sr-radius);border:1px solid var(--sr-line)}
+.shots figcaption,.marks figcaption{margin-top:8px;font-size:13px;line-height:18px;color:var(--sr-text-dim)}
+.marks{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin:0}
+.marks figure{margin:0}
+.marks .light{background:#f2f4f7}
+.marks img{padding:16px;box-sizing:border-box}
+</style>
+</head>
+<body>
+<header class="top"><a class="mark" href="../">Space Radar</a><a href="../">Open the live map</a></header>
+<main>
+<p class="micro">Press kit</p>
+<h1>Space Radar</h1>
+<p class="lead">A live 3D map of space in a browser: satellites and the space station, launches, probes, planets, stars and galaxies, each drawn where it really is, with where the numbers come from.</p>
+<div class="cta"><a class="live" href="../">Open the live map</a><p>{{host_bare}} · free, no account</p></div>
+
+<h2>What it is</h2>
+<p>Space Radar is a web page. It reads public catalogues (orbital elements, ephemerides, launch schedules, space weather) and works out, in the visitor's own browser, where each thing is this second. A visitor can search for an object, follow it, read a short card about it, see when it passes over them, or take a guided trip that flies the camera from stop to stop.</p>
+<p>It is built to be honest about what it shows. Every drawn thing is measured, modelled or illustrative, and says which; every number names its source and how old it is.</p>
+
+<h2>Five facts</h2>
+<ol class="facts">
+{{facts}}</ol>
+
+<h2>Pictures</h2>
+<p>Screenshots of the app, free to use in coverage of Space Radar with the credit "Space Radar (spaceradar.ai)". They are drawings from measured positions, not photographs: please caption them as such. Planet and Earth textures in them are from the sources listed in the credits.</p>
+<div class="shots">
+{{shots}}</div>
+
+<h2>Mark and wordmark</h2>
+<p>SVG, for use when writing about the project. Please do not redraw or recolour them.</p>
+<div class="marks">
+{{marks}}</div>
+
+<h2>Embed one live object</h2>
+<p>A story can carry one live object in a frame: the scene, the object's tag and a link back. The <a href="https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/EMBEDDING.md">embedding guide</a> has the snippet and the parameters; in the app it is Share, then Embed.</p>
+
+<h2>Licence and credits</h2>
+<p>The code is open source under the {{licence}}. Textures, 3D models, sounds, fonts and data keep their own licences, each listed with its source in <a href="https://github.com/Sara-Managed-Projects/space-radar/blob/main/CREDITS.md">CREDITS.md</a>.</p>
+
+<h2>Contact</h2>
+<p>Questions, corrections and press requests go through the project's GitHub: <a href="https://github.com/Sara-Managed-Projects/space-radar/issues/new">open an issue</a> or start a <a href="https://github.com/Sara-Managed-Projects/space-radar/discussions">discussion</a>. A correction to a fact on a card is always welcome there.</p>
+</main>
+<footer>
+<p>Built {{built}} from the project's registry; the counts above are read from it.</p>
+<p><a href="../">Open the live map</a> · <a href="https://github.com/Sara-Managed-Projects/space-radar">Source code</a></p>
+</footer>
+</body>
+</html>

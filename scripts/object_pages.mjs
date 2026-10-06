@@ -40,6 +40,7 @@ const SRC = await import(join(JS, 'data/sources.js'));
 const { recordsFromNames } = await import(join(JS, 'scene/stars3d.js'));
 const { COPY, fmt } = await import(join(JS, 'copy/en.js'));
 const { SYSTEMS } = await import(join(JS, 'data/systems.js'));
+const { WIKI_TITLES } = await import(join(JS, 'data/wikititles.js'));
 
 // The card's path for "no position": measure() catches the throw and returns its empty readings.
 const CTX = { clock: { now() { throw new Error('a static page has no clock'); } }, layers: L.LAYERS, sources: SRC };
@@ -228,10 +229,16 @@ function seeLine(r, klass, m) {
   return line === COPY.sky.worldNoRise ? `${line.split('. ')[0]}.` : line;
 }
 
-/** The URL in a source line, for JSON-LD sameAs; Wikipedia's only, which names the thing itself. */
-function sameAsOf(text) {
+/**
+ * JSON-LD sameAs: the Wikipedia article ABOUT the thing. The hand-checked table the share sheet
+ * quotes from first (data/wikititles.js), then the URL in the record's own source line, unless
+ * that is a list: 40 Messier pages said they were the same thing as `List_of_Messier_objects`,
+ * which is where their distance was read and not what they are (internal #202). None is honest.
+ */
+function sameAsOf(id, text) {
+  if (Object.prototype.hasOwnProperty.call(WIKI_TITLES, String(id))) return `https://en.wikipedia.org/wiki/${WIKI_TITLES[String(id)]}`;
   const m = /https:\/\/en\.wikipedia\.org\/wiki\/[^\s,;)]+/.exec(String(text || ''));
-  return m ? m[0] : null;
+  return m && !/\/wiki\/List_of_/i.test(m[0]) ? m[0] : null;
 }
 
 // --- build --------------------------------------------------------------------------------------
@@ -313,7 +320,7 @@ const pages = picked.map(({ group, r, m, name, slug }) => {
     image,
     og: (r.klass === 'site' && md.world === 'moon') || (klass === 'oddity' && md.whereKind !== 'in_orbit' && /moon|lunar/i.test(`${md.cite} ${md.fact} ${r.name}`)) ? 'moon-landings'
       : klass === 'station' ? 'people-in-space' : 'default',
-    sameAs: sameAsOf(md.source || md.cite || md.whySource),
+    sameAs: sameAsOf(r.id, md.source || md.cite || md.whySource),
     place: klass === 'site',
   };
 });

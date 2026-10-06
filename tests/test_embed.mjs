@@ -1,0 +1,97 @@
+// tests/test_embed.mjs -- one live object in someone else's page (ui/embed.js, public #439), and
+// photo mode's frame (ui/photomode.js, public #288).
+//
+// Asserted, without a browser:
+//   - the embed's address is a query (`?embed=1&at=<id>`), read through a whitelist: an unknown key
+//     or a value that is not an id, a number or an instant never reaches the app;
+//   - the snippet is one <iframe> with a title, lazy loading, fullscreen and nothing else allowed,
+//     and its attributes are escaped;
+//   - "Open in Space Radar" is the same view in the whole app, in the app's own hash form;
+//   - what an embed carries of the view on screen: a trip, else the selection; never a place;
+//   - NOTHING OF IT AT BOOT: main.js imports ui/embed.js only for `?embed=1`, the offline module
+//     (the service worker) and the later fetches are skipped there, and docs/EMBEDDING.md names
+//     every key the reader takes;
+//   - photo mode's frame is centred, inside its margins, of the preset's shape, and its share of
+//     the screen's height is what narrows the camera; every preset is a print-sized picture.
+//
+//   node tests/test_embed.mjs
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+const problems = [];
+const check = (ok, msg) => { if (!ok) problems.push(msg); };
+const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
+
+const E = await import(join(ROOT, 'site/js/ui/embed.js'));
+const { KEYS } = await import(join(ROOT, 'site/js/ui/urlstate.js'));
+
+// --- the address ---------------------------------------------------------------------------------
+check(E.isEmbed('?embed=1') && E.isEmbed('?at=iss&embed=1') && E.isEmbed('?embed=1&at=iss'), 'embed=1 anywhere in the query is an embed');
+check(!E.isEmbed('') && !E.isEmbed('?embed=0') && !E.isEmbed('?embed=10') && !E.isEmbed('?xembed=1') && !E.isEmbed('?render=1'), 'nothing else is');
+const link = E.embedLink('?embed=1&at=sat-25544&t=2027-08-02T10:00:00Z&evil=1&stage=%3Cscript%3E');
+check(link.at === 'sat-25544' && link.t === '2027-08-02T10:00:00Z' && !('evil' in link) && !('stage' in link) && !('embed' in link), `the query is read through a whitelist (${JSON.stringify(link)})`);
+check(JSON.stringify(E.embedLink('?embed=1')) === '{}', 'an embed with no view is the home view');
+check(E.EMBED_KEYS.every((k) => KEYS.includes(k)), 'every key an embed reads is one the app\'s own link has (ui/urlstate.js KEYS)');
+check(!KEYS.includes('embed'), '`embed` is a query flag, never a hash key the app writes');
+
+// --- what it carries -----------------------------------------------------------------------------
+const st = E.embedState({ at: 'sat-25544', t: 'now', stage: 'earth', exp: 'camera', m: 'wonder', rate: 60, observer: 'x' });
+check(JSON.stringify(st) === JSON.stringify({ at: 'sat-25544', stage: 'earth' }), `the selection and the stage; no default moment or exposure, no rate, no place (${JSON.stringify(st)})`);
+check(JSON.stringify(E.embedState({ at: 'm42', exp: 'deep', t: '2027-01-01T00:00:00Z' })) === JSON.stringify({ at: 'm42', t: '2027-01-01T00:00:00Z', exp: 'deep' }), 'a moment and a shutter that are not the defaults are kept');
+check(JSON.stringify(E.embedState({ trip: 'moon-landings', stop: 3, at: 'x' })) === JSON.stringify({ trip: 'moon-landings', stop: '3' }), 'a running trip is carried at its stop, and beats the selection');
+check(JSON.stringify(E.embedState({ at: 'x' }, 'to-the-edge')) === JSON.stringify({ trip: 'to-the-edge' }), 'another trip is carried from its start');
+
+// --- the links -----------------------------------------------------------------------------------
+check(E.embedUrl({ at: 'sat-25544' }) === 'https://www.spaceradar.ai/?embed=1&at=sat-25544', `the embed's address (${E.embedUrl({ at: 'sat-25544' })})`);
+check(E.embedUrl({}, 'http://127.0.0.1:8000/site') === 'http://127.0.0.1:8000/site/?embed=1', 'the home view, on any base');
+check(E.fullUrl({ at: 'sat-25544', exp: 'deep' }) === 'https://www.spaceradar.ai/#at=sat-25544&exp=deep' && E.fullUrl({}) === 'https://www.spaceradar.ai/', 'Open in Space Radar is the app\'s own link for the view');
+const snip = E.embedSnippet({ at: 'sat-25544' }, { title: 'A "station" <live>' });
+check(/^<iframe src="https:\/\/www\.spaceradar\.ai\/\?embed=1&amp;at=sat-25544" title="A &quot;station&quot; &lt;live&gt;" width="600" height="400" loading="lazy" allow="fullscreen" style="border:0;max-width:100%"><\/iframe>$/.test(snip), `the snippet (${snip})`);
+check(!/allow="[^"]*(camera|microphone|geolocation|autoplay)/.test(snip) && !/sandbox|referrerpolicy="unsafe/.test(snip), 'the frame asks for fullscreen and nothing else');
+
+// --- never at boot -------------------------------------------------------------------------------
+const main = read('site/js/main.js');
+check(!/^import [^\n]*ui\/(embed|photomode)\.js/m.test(main), 'main.js does not import the embed or photo mode statically');
+check(/const embed = \/\[\?&\]embed=1\(\?:&\|\$\)\/\.test\(location\.search\)\s*\? await import\('\.\/ui\/embed\.js'\)/.test(main), 'main.js imports ui/embed.js only for ?embed=1');
+check(/if \(embed\) \{ \/\* no service worker \*\/ \}\s*else if \(window\.__srLayersReady\) offlineLater\(\);/.test(main), 'an embed never registers the service worker (ui/offline.js is not fetched)');
+for (const what of ['loadAuroraLater', 'loadWeatherLater', 'hintLater']) check(new RegExp(`if \\(!embed\\) window\\.addEventListener\\('sr:layers-ready', ${what}`).test(main), `an embed does not fetch ${what}'s module`);
+check(/if \(!embed\) ctx\.liveClouds\.start\(\)/.test(main) && /setTimeout\(\(\) => \{\s*if \(embed\) return;[^\n]*\n\s*if \(typeof requestIdleCallback/.test(main), 'nor today\'s clouds, nor the far catalogues unless its link names one');
+const preload = read('site/index.html');
+check(!/modulepreload" href="js\/ui\/(embed|photomode|sharesheet|printcompose)\.js"/.test(preload), 'none of it is preloaded');
+const sheet = read('site/js/ui/sharesheet.js');
+check(/import\('\.\/photomode\.js'\)/.test(sheet) && !/^import [^\n]*photomode/m.test(sheet), 'photo mode is imported when its button is pressed');
+const css = read('site/css/embed.css');
+check(/html\.sr-embed body > \*:not\(\.sr-scene\):not\(\.sr-veil\):not\(#boot\):not\(#labels\):not\(#sr-hud\):not\(#sr-embed\)\s*\{\s*visibility: hidden !important;/.test(css), 'in an embed everything but the scene, the tag and the one link is off the screen');
+const mod = read('site/js/ui/embed.js');
+check(/if \(!CAMERA_KEYS\.has\(e\.key\)\) e\.stopImmediatePropagation\(\)/.test(mod), 'only the camera\'s keys are answered inside the frame');
+check(/open\.target = '_blank'/.test(mod) && /open\.rel = 'noopener'/.test(mod), 'the one link opens the full map in a new tab');
+
+// --- the manual ----------------------------------------------------------------------------------
+const doc = read('docs/EMBEDDING.md');
+for (const k of ['embed', ...E.EMBED_KEYS]) check(doc.includes('`' + k + '`'), `docs/EMBEDDING.md does not describe the parameter \`${k}\``);
+check(doc.includes(E.embedSnippet({ at: 'sat-25544' }, { title: 'The International Space Station, live on Space Radar' })), 'docs/EMBEDDING.md shows the snippet the app copies');
+check(/attribution/i.test(doc) && /Open in Space Radar/.test(doc), 'docs/EMBEDDING.md says what attribution an embed carries');
+
+// --- photo mode's frame --------------------------------------------------------------------------
+const P = await import(join(ROOT, 'site/js/ui/photomode.js'));
+const C = await import(join(ROOT, 'site/js/ui/printcompose.js'));
+check(JSON.stringify(P.SHAPES) === JSON.stringify(['16:9', '1:1', '4:5', '9:16']), `the four shapes, in order (${P.SHAPES})`);
+for (const [vw, vh] of [[1440, 900], [390, 844], [844, 390], [320, 568]]) {
+  for (const shape of P.SHAPES) {
+    const m = { x: 16, y: 96 };
+    const r = P.frameRect(vw, vh, shape, m);
+    const [a, b] = shape.split(':').map(Number);
+    check(Math.abs(r.w / r.h - a / b) < 0.02, `${shape} at ${vw}x${vh}: the frame is ${r.w}x${r.h}`);
+    check(Math.abs(r.x * 2 + r.w - vw) <= 1 && Math.abs(r.y * 2 + r.h - vh) <= 1, `${shape} at ${vw}x${vh}: the frame is centred`);
+    check(r.w <= vw - 2 * m.x + 1 && r.h <= vh - 2 * m.y + 1 && r.w > 0 && r.h > 0, `${shape} at ${vw}x${vh}: the frame is inside its margins`);
+    check(Math.abs(r.fovScale - r.h / vh) < 1e-9 && r.fovScale > 0 && r.fovScale < 1, `${shape} at ${vw}x${vh}: fovScale is the frame's share of the height`);
+    const s = C.pictureSize(shape);
+    check(Math.abs(s.w / s.h - a / b) < 0.001 && Math.max(s.w, s.h) >= 1800 && s.portrait === (s.h > s.w), `${shape}: the picture is ${s.w}x${s.h}`);
+  }
+}
+check(C.pictureSize('7:3').preset === '1:1', 'an unknown shape is the square');
+
+if (problems.length) { console.error('embed FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
+console.log(`embed ok: ?embed=1 read through a whitelist of ${E.EMBED_KEYS.length} keys, the snippet one titled lazy iframe, nothing of it at boot and no service worker in a frame; photo mode's frame centred in ${P.SHAPES.length} shapes`);

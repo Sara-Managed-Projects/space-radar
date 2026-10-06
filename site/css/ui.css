@@ -858,6 +858,19 @@ html.sr-compact .sr-status {
   border-radius: var(--sr-radius);
 }
 
+/* The object's own page (internal #199): one quiet link at the foot of About it. */
+.sr-card__page {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 44px;
+  font-size: var(--sr-fs-sm);
+  color: var(--sr-text-dim);
+}
+
+.sr-card__page[hidden] { display: none; }
+.sr-card__page:hover { color: var(--sr-ember-light); }
+
 /* What goes inside them: today's sections, in the guide's type roles. */
 .sr-card__sentence {
   font-size: var(--sr-fs-body);

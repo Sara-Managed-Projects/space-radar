@@ -28,8 +28,9 @@
 // one (a second, smaller app would be a second thing to keep honest). What it skips is everything
 // the full map fetches AFTER its first view: the controls hint, the subscribe row, the aurora, the
 // weather, today's clouds and the idle load of the far catalogues (main.js, each `!embed`), which
-// load only if the link itself names something in them. No service worker is registered here or
-// anywhere: the app has none, and an embed must never be the page that adds one to a host's origin.
+// load only if the link itself names something in them. And no service worker: ui/offline.js is
+// not fetched for an embed, so a frame under someone else's headline stores nothing on the
+// reader's device (a worker already installed by a visit to the full map still serves its files).
 //
 // THE KEYBOARD is the host page's. Inside the frame only the camera's own keys are let through
 // (scene/camera.js CAMERA_KEYS); H, P, L, / and Escape do nothing, because the panels they open

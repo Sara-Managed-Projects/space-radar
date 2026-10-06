@@ -10,7 +10,7 @@
 //   xLength(text)                    a post's length as X counts it
 //   excerptOf(extract, max)          the "About it": whole sentences, at most `max` characters
 //   wikiTitleOf(record)              the record's English Wikipedia article, or null
-//   objectPageUrl(record, pages, base)  the object's own page, else the app at `#at=<id>`
+//   objectPageUrl(record, pages, base)  the object's own page, else the app at `#at=<id>` (ui/objectpage.js)
 //   networkUrl(network, parts), mailtoUrl(subject, body), NETWORKS, LIMITS
 //   wholeRowHeight(feet, opts)       the phone sheet's half: a height that ends on a whole row
 //
@@ -66,14 +66,14 @@ import { shareUrl, shareState, tripWords, appBase, toast } from './share.js';
 import { makePostcard, pdfFromJpeg, saveBlob } from './printcompose.js';
 import { createSheet, sheetHeights } from './sheet.js';
 import { embedSnippet, embedState } from './embed.js';
+import { objectPages, objectPageUrl, PAGES_INDEX } from './objectpage.js';
+
+export { objectPageUrl, PAGES_INDEX };
 import { WIKI_TITLES } from '../data/wikititles.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const WIKI_REST = 'https://en.wikipedia.org/api/rest_v1/page/summary/';
 const WIKI_TIMEOUT_MS = 8000;
-const PAGES_TIMEOUT_MS = 3000;
-/** Written by scripts/build_seo.py at deploy time beside sitemap.xml: {record id: page slug}. */
-export const PAGES_INDEX = 'object-pages.json';
 export const EXCERPT_MAX = 280;
 
 // ------------------------------------------------------------------------------- the words
@@ -228,20 +228,6 @@ export function wikiTitleOf(record) {
   return null;
 }
 
-/**
- * The object's own page when the deploy built one (`pages` is object-pages.json, {id: slug}), else
- * the app opened on it. Pure. The slug is scripts/object_pages.mjs's, read from what it built, so
- * a link here can never name a page that does not exist.
- */
-export function objectPageUrl(record, pages, base = 'https://www.spaceradar.ai/') {
-  const root = String(base).endsWith('/') ? String(base) : `${base}/`;
-  const id = record && record.id != null ? String(record.id) : '';
-  if (!id) return root;
-  const slug = pages && Object.prototype.hasOwnProperty.call(pages, id) ? pages[id] : null;
-  if (slug && /^[a-z0-9][a-z0-9-]*$/.test(slug)) return `${root}o/${slug}.html`;
-  return `${root}#at=${encodeURIComponent(id)}`;
-}
-
 /** A network's public share page for this post. No SDK, no tracking parameter. */
 export function networkUrl(network, parts) {
   const e = encodeURIComponent;
@@ -288,11 +274,12 @@ export function wholeRowHeight(feet, { cap, floor = 0, pad = 0, fallback = 0 } =
 /** The share of the window the half sheet may take: the selection stays in view above it. */
 export const HALF_CAP = 0.6;
 export const HALF_FLOOR = 0.36;
+/** How far under the last whole row the half sheet's body is clipped: inside the gap to the next. */
+const CUT_SLACK_PX = 4;
 
 // ------------------------------------------------------------------------------ the network
 
 const wikiCache = new Map(); // title -> Promise<{extract, url} | null>
-let pagesIndex = null; // Promise<{id: slug} | null>, once a visit
 
 function fetchJson(url, ms, opts = {}) {
   if (typeof fetch !== 'function') return Promise.resolve(null);
@@ -319,14 +306,6 @@ export function wikiSummary(title) {
     wikiCache.set(title, got);
   }
   return wikiCache.get(title);
-}
-
-function objectPages(base) {
-  if (!pagesIndex) {
-    pagesIndex = fetchJson(`${base}${PAGES_INDEX}`, PAGES_TIMEOUT_MS, { credentials: 'same-origin' })
-      .then((d) => (d && typeof d === 'object' && !Array.isArray(d) ? d : null));
-  }
-  return pagesIndex;
 }
 
 // ------------------------------------------------------------------------------- the DOM
@@ -649,6 +628,10 @@ export function createShareSheet(ctx) {
       pad: pad + safe,
       fallback: base.half,
     });
+    // The padding under the last whole row is taller than the gap to the next one, and a safe
+    // area is taller still: at half the body is clipped just under that row (css/share.css), so
+    // what shows below it is glass and not the top of a row that is not there yet.
+    root.style.setProperty('--sr-share-cut', `${Math.max(0, half - pad - safe - body.offsetTop + CUT_SLACK_PX)}px`);
     return { half, full: base.full };
   }
 

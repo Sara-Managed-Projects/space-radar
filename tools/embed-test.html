@@ -1,0 +1,41 @@
+<!doctype html>
+<!-- tools/embed-test.html: a host page for the embed (docs/EMBEDDING.md, public #439).
+     Serve the repository root (python3 tools/serve.py . 8000) and open /tools/embed-test.html;
+     add ?at=<id> or ?trip=<id> to try another view. Not deployed: tools/ is not under site/. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Embed test: a news story with one live object</title>
+<style>
+  body { margin: 0; font: 17px/1.55 Georgia, serif; color: #1c1c1c; background: #faf9f6; }
+  main { max-width: 640px; margin: 0 auto; padding: 24px 20px 48px; }
+  h1 { font: 700 30px/1.15 Georgia, serif; margin: 0 0 8px; }
+  .by { font: 13px/1.4 system-ui, sans-serif; color: #666; margin: 0 0 20px; }
+  figure { margin: 20px 0; }
+  figcaption { font: 13px/1.4 system-ui, sans-serif; color: #555; margin-top: 6px; }
+  #keys { font: 13px/1.4 ui-monospace, monospace; color: #555; }
+</style>
+</head>
+<body>
+<main>
+  <h1>The station passes overhead tonight</h1>
+  <p class="by">A host page for testing. The frame below is the local build.</p>
+  <p>The paragraph a reader sees before the map. Nothing in the frame should take a key from this page.</p>
+  <figure>
+    <iframe id="frame" title="The International Space Station, live on Space Radar" width="600" height="400" loading="lazy" allow="fullscreen" style="border:0;max-width:100%"></iframe>
+    <figcaption>Space Radar (spaceradar.ai). A drawing from measured positions, not a photograph.</figcaption>
+  </figure>
+  <p>And the paragraph after it. Keys heard by this page: <span id="keys">none yet</span></p>
+</main>
+<script>
+  // The view comes from this page's own query, through a whitelist; the default is the ISS.
+  const q = new URLSearchParams(location.search);
+  const keep = ['at', 'trip', 'stop', 't', 'stage', 'exp'].filter((k) => /^[A-Za-z0-9._:+\- ]{1,80}$/.test(q.get(k) || ''));
+  const view = keep.length ? keep.map((k) => k + '=' + encodeURIComponent(q.get(k))).join('&') : 'at=sat-25544';
+  document.getElementById('frame').src = '../site/?embed=1&' + view;
+  const heard = [];
+  addEventListener('keydown', (e) => { heard.push(e.key); document.getElementById('keys').textContent = heard.slice(-8).join(' '); });
+</script>
+</body>
+</html>
