@@ -549,7 +549,7 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
     check(btn2.getAttribute('aria-pressed') === 'true' && note2.hidden === false && calls.join() === 'true,true', 'the next card opens lit, with its note');
     btn2.click();
     check(btn2.getAttribute('aria-pressed') === 'false' && note2.hidden === true && calls.join() === 'true,true,false' && store.get('sr.flood') === '0', 'pressed again, the real light is back');
-    check(F.on.split(' ').length <= 2 && F.off.split(' ').length <= 2 && /not the light/.test(F.note) && F.note.length <= 80, 'two words a button, and a note that says whose light it is');
+    check(F.on.split(' ').length <= 2 && F.off.split(' ').length <= 2 && /not the real light/.test(F.note) && F.note.length <= 40, 'two words a button, and a note of one line that says whose light it is');
     if (hadStore) Object.defineProperty(globalThis, 'sessionStorage', hadStore); else delete globalThis.sessionStorage;
   }
   globalThis.document = before;

@@ -12,7 +12,8 @@
   reviewed when this was written. `shade=N` draws every cell from the Nth on (0-based) INSIDE the
   Earth's shadow, 400 km up on the midnight side, through the same uniforms the app sets -- so the
   same model can be listed twice and read lit and eclipsed side by side (internal #388). `aim=1`
-  turns every wing on a pivot to the Sun, as the app does each frame. It renders one model per cell and leaves the PNG on
+  turns every wing on a pivot to the Sun, as the app does each frame. `flood=N` draws every cell from
+  the Nth on with the flood light (internal #272), so a model can be read in shadow and then lit for viewing. It renders one model per cell and leaves the PNG on
   `window.__sheet.dataUrl`, so a headless browser can pull the image out without a screenshot.
 
   IT ADDS THE SAME TWO LIGHTS scene/worlds.js adds. A MeshToonMaterial in an unlit scene renders
@@ -25,7 +26,7 @@
 addEventListener('unhandledrejection', (e) => { window.__err = String(e.reason && e.reason.message || e.reason); });
 addEventListener('error', (e) => { window.__err = String(e.message); });
 import * as THREE from '../site/vendor/three.module.min.js';
-import { modelFor, setSunDirection, setPlanetShine } from '../site/js/scene/models.js';
+import { modelFor, setSunDirection, setPlanetShine, setFloodLight } from '../site/js/scene/models.js';
 import { sampleAsteroids } from '../site/js/data/sample.js';
 import { loadRealModel } from '../site/js/scene/realmodels.js';
 
@@ -82,6 +83,7 @@ cam.position.set(1.5, 1.05, 1.9);
 cam.lookAt(0, 0, 0);
 
 const SHADE_FROM = QS.has('shade') ? Number(QS.get('shade')) : Infinity;
+const FLOOD_FROM = QS.has('flood') ? Number(QS.get('flood')) : Infinity;
 const SUN = new THREE.Vector3(0.6, 0.5, 0.62).normalize();
 const EARTH_R = 100; // model units; the model sits 6.3 % of a radius up, as the ISS does
 for (const o of scene.children) {
@@ -95,6 +97,7 @@ for (const o of scene.children) {
   } else {
     setPlanetShine(null);
   }
+  setFloodLight(i >= FLOOD_FROM);
   const cx = (i % COLS) * CELL, cy = (ROWS - 1 - Math.floor(i / COLS)) * CELL;
   renderer.setViewport(cx, cy, CELL, CELL);
   renderer.setScissor(cx, cy, CELL, CELL);

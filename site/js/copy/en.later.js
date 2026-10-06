@@ -43,7 +43,7 @@ Object.assign(COPY, {
     on: 'Light it',
     off: 'Real light',
     title: 'Light the model evenly, so it can be seen in shadow. Not the real light.',
-    note: 'Lit for viewing: this is our lamp, not the light that falls on it now.',
+    note: 'Our lamp, not the real light.',
   },
 
   // A craft drawn from its own path file (propagate/ephemeris.js, ui/missions.js; internal #277).

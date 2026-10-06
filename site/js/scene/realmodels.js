@@ -744,7 +744,7 @@ export const REAL_MODELS = {
     // the turret, the wheels and the sample tubes, none of which survive at this size. So the card
     // reads "drawn as ... the kind of thing, not this exact one", which is the true sentence.
     // Ingenuity, where its last flight ended (registry/sites.yaml, from NASA's waypoint file).
-    ingenuity: { file: 'ingenuity.glb', colour: 'site', name: 'the Ingenuity helicopter' },
+    ingenuity: { file: 'ingenuity.glb', colour: 'site', name: 'Ingenuity' },
     gale: { file: 'perseverance.glb', colour: 'site', name: 'a rover of the design Curiosity and Perseverance share', generic: true },
     // NASA's Mars Exploration Rover model is Opportunity (MER-B). Spirit was its twin, built to the
     // same drawings, so it wears the same file and says it is the kind of thing.
