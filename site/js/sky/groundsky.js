@@ -952,7 +952,7 @@ export function createGroundSky(ctx, env) {
       }
       if (best) out.push({ kind: 'line', text, local: best.l, pri: 300, dy: 10 });
     };
-    if ((options.grid || options.starGrid) && L.poleNorth) out.push({ kind: 'line', text: observer.latDeg >= 0 ? L.poleNorth : L.poleSouth, local: poleLocal, pri: 320, dy: 12 });
+    if ((options.grid || options.starGrid) && L.poleNorth) out.push({ kind: 'line', text: observer.latDeg >= 0 ? L.poleNorth : L.poleSouth, local: poleLocal, pri: 520, dy: -26 });
     lineLabel(options.sunPath, L.sunPath, eclRing);
     lineLabel(options.equator, L.equator, eqRing);
     labels.cands = out.sort((a, b) => b.pri - a.pri);
