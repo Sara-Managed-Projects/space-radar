@@ -227,8 +227,8 @@ export const TOURS_INDEX = [
 "group": "beyond",
 "next": "a-dark-sky",
 "min_stops": 3,
-"count": 10,
-"estimate_ms": 211198
+"count": 9,
+"estimate_ms": 190030
 },
 {
 "id": "a-dark-sky",

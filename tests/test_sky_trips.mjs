@@ -259,7 +259,9 @@ function arrive(m) {
     } else if (stop.overlay || stop.live_note || stop.time === 'now') {
       check(Math.abs(clock.now() - REAL) < 5 * 60e3, `${where}: a stop about today is shown ${Math.round((clock.now() - REAL) / 3600e3)} h from the present`);
     }
-    if (stop.over && stop.over[1] === 'midnight') {
+    if (stop.over && (stop.over[1] === 'midnight' || stop.over[1] === 'noon')) {
+      // `noon` (2026-10-06) is the meridian facing the Sun, for the stop about today's clouds.
+      const side = stop.over[1] === 'noon' ? -1 : 1;
       // Above the night side at the stop's latitude, on the meridian facing away from the Sun.
       const ground = stage.toScene({ x: 0, y: 0, z: 0 }, 'earth-fixed', clock.now());
       const north = stage.toScene({ x: 0, y: 0, z: 6371 }, 'earth-fixed', clock.now()).sub(ground).normalize();
@@ -269,7 +271,7 @@ function arrive(m) {
       const latCam = Math.asin(cam.dot(north)) / DEG;
       check(Math.abs(latCam - stop.over[0]) < 1.5, `${where}: the camera is over latitude ${latCam.toFixed(1)}, the stop asks ${stop.over[0]}`);
       const east = new THREE.Vector3().crossVectors(north, toSun).normalize();
-      check(Math.abs(cam.dot(east)) < 0.03 && cam.clone().addScaledVector(north, -cam.dot(north)).dot(toSun) < 0, `${where}: the camera is not over the midnight meridian`);
+      check(Math.abs(cam.dot(east)) < 0.03 && side * cam.clone().addScaledVector(north, -cam.dot(north)).dot(toSun) < 0, `${where}: the camera is not over the ${stop.over[1]} meridian`);
     } else if (stop.over) {
       const ground = stage.toScene({ x: 0, y: 0, z: 0 }, 'earth-fixed', clock.now());
       const lat = stop.over[0] * DEG;

@@ -231,7 +231,6 @@ clips:
   - {trip: "through-a-telescope", stop: "deep", hash: "78f0284d09c9bdcf", seconds: 16.61, words: 39, lufs: -16.5, opus: 66521, m4a: 86123, vtt: 315}
   - {trip: "through-a-telescope", stop: "horsehead", hash: "cc67f70a967c4e66", seconds: 21.55, words: 54, lufs: -16.7, opus: 85831, m4a: 111334, vtt: 392}
   - {trip: "through-a-telescope", stop: "carina", hash: "d8221052e0c5d143", seconds: 19.06, words: 43, lufs: -16.6, opus: 75304, m4a: 98511, vtt: 356}
-  - {trip: "through-a-telescope", stop: "eagle", hash: "fdb7b14b0a0ab178", seconds: 22.38, words: 52, lufs: -16.5, opus: 89303, m4a: 115463, vtt: 402}
   - {trip: "through-a-telescope", stop: "webb", hash: "c58c66b83b5e0d5f", seconds: 27.63, words: 66, lufs: -16.4, opus: 110751, m4a: 142195, vtt: 477}
   - {trip: "through-a-telescope", stop: "trifid", hash: "5774847316b0d8e9", seconds: 21.78, words: 50, lufs: -16.7, opus: 87165, m4a: 112420, vtt: 390}
   - {trip: "through-a-telescope", stop: "whirlpool", hash: "1f80fe8f71cc93ee", seconds: 22.07, words: 50, lufs: -16.3, opus: 92184, m4a: 113942, vtt: 408}

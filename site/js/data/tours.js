@@ -3701,28 +3701,6 @@ export const TOURS = [
 "dwell_ms": 15820
 },
 {
-"id": "eagle",
-"target": {
-"record": "dso-m16"
-},
-"needs_layer": "deep-sky",
-"distance_km": 946073047258080,
-"drift_deg": 4,
-"drift_rate_deg_s": 0.3,
-"key_light_deg": 0,
-"chapter": "Clouds where stars form",
-"exposure": "camera",
-"card": {
-"title": "The Eagle, and its pillars",
-"body": "The dark fingers in the middle are the Pillars of Creation. The Hubble telescope made them famous in 1995, and the Webb telescope has since looked through their dust in infrared light and found newborn stars inside. This picture is from the ground, in visible light."
-},
-"frame_radii": 5.0,
-"drift": "toward-light",
-"ease": "auto",
-"on_unresolved": "drop",
-"dwell_ms": 17818
-},
-{
 "id": "webb",
 "target": {
 "record": "dso-tarantula-nebula"
@@ -3811,7 +3789,7 @@ export const TOURS = [
 "dwell_ms": 16819
 }
 ],
-"estimate_ms": 211198
+"estimate_ms": 190030
 },
 {
 "id": "a-dark-sky",

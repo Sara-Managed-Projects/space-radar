@@ -286,7 +286,13 @@ for (let q = 0; q < 4; q += 1) {
       const range = toBackdrop.length();
       const off = (Math.acos(Math.max(-1, Math.min(1, view.dot(toBackdrop.normalize())))) * 180) / Math.PI;
       const half = (Math.asin(Math.min(1, worlds.drawnRadiusUnits(stop.behind) / range)) * 180) / Math.PI;
-      check(off - half < FOV / 2, `${where}: ${stop.behind} is ${off.toFixed(0)} degrees off the middle of the frame with a ${half.toFixed(1)} degree disc, so the stop's \`behind:\` is out of shot`);
+      // ...unless it yielded to the light (ui/trip.js BACKDROP_MAX_PHASE_DEG, 2026-10-06, internal
+      // #400): on a day the only directions that keep the backdrop behind look at the subject's
+      // night side, the shot keeps the subject lit and gives the backdrop up. Then at least a
+      // third of the disc must be lit from where the camera stands.
+      const sunDir = typeof worlds.sunDirOf === 'function' ? worlds.sunDirOf(record.id) : null;
+      const litShare = sunDir ? (1 + new THREE.Vector3().subVectors(camera.position, subject).normalize().dot(sunDir)) / 2 : 0;
+      check(off - half < FOV / 2 || litShare > 0.35, `${where}: ${stop.behind} is ${off.toFixed(0)} degrees off the middle of the frame with a ${half.toFixed(1)} degree disc, so the stop's \`behind:\` is out of shot, and only ${(litShare * 100).toFixed(0)} % of ${record.id} is lit`);
       const view2 = worlds.viewScale(stop.behind);
       check(view2 && !view2.exaggerated, `${where}: ${stop.behind} is drawn squeezed, so the direction the camera took to it is not where it is drawn`);
     }

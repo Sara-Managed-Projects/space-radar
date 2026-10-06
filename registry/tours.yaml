@@ -3207,23 +3207,6 @@ tours:
             the gas into the shapes you see: walls, pillars and hollows, lit from
             within.
 
-      - id: eagle
-        target: {record: dso-m16}
-        needs_layer: deep-sky
-        distance_km: 946073047258080
-        key_light_deg: 0
-        exposure: camera
-        drift_deg: 4
-        drift_rate_deg_s: 0.3
-        chapter: "Clouds where stars form"
-        card:
-          title: "The Eagle, and its pillars"
-          body: >-
-            The dark fingers in the middle are the Pillars of Creation. The Hubble
-            telescope made them famous in 1995, and the Webb telescope has since looked
-            through their dust in infrared light and found newborn stars inside. This
-            picture is from the ground, in visible light.
-
       - id: webb
         target: {record: dso-tarantula-nebula}
         needs_layer: deep-sky
