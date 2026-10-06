@@ -187,10 +187,10 @@ export const WEATHER = [
       ]
     },
     "spot": {
-      "u": 0.3635,
-      "v": 0.398,
-      "half_u": 0.036,
-      "half_v": 0.04,
+      "u": 0.6058,
+      "v": 0.3878,
+      "half_u": 0.019,
+      "half_v": 0.024,
       "period_days": 6
     },
     "source": "Tollefson et al. 2017, Changes in Jupiter's Zonal Wind Profile preceding and during the Juno mission, Icarus 296, 163"

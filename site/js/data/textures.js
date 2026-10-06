@@ -278,25 +278,25 @@ export const TEXTURES = [
     "files": [
       {
         "tier": 0,
-        "file": "textures/2k_jupiter.jpg",
+        "file": "textures/2k_jupiter_opal_2025.webp",
         "px": [
           2048,
           1024
         ],
-        "bytes": 498976,
+        "bytes": 63500,
         "format": "rgb",
-        "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        "credit": "Giant planet maps: NASA, ESA, A.A. Simon, M.H. Wong (Hubble OPAL programme, doi:10.17909/T9G593), CC BY 4.0, adapted"
       },
       {
         "tier": 1,
-        "file": "textures/4k/jupiter.webp",
+        "file": "textures/4k/jupiter_opal_2025.webp",
         "px": [
-          4096,
-          2048
+          3600,
+          1800
         ],
-        "bytes": 351130,
+        "bytes": 144310,
         "format": "rgb",
-        "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        "credit": "Giant planet maps: NASA, ESA, A.A. Simon, M.H. Wong (Hubble OPAL programme, doi:10.17909/T9G593), CC BY 4.0, adapted"
       }
     ]
   },
@@ -365,14 +365,14 @@ export const TEXTURES = [
     "files": [
       {
         "tier": 0,
-        "file": "textures/2k_saturn.jpg",
+        "file": "textures/2k_saturn_opal_2025.webp",
         "px": [
           2048,
           1024
         ],
-        "bytes": 199916,
+        "bytes": 21186,
         "format": "rgb",
-        "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        "credit": "Giant planet maps: NASA, ESA, A.A. Simon, M.H. Wong (Hubble OPAL programme, doi:10.17909/T9G593), CC BY 4.0, adapted"
       }
     ]
   },
@@ -403,14 +403,14 @@ export const TEXTURES = [
     "files": [
       {
         "tier": 0,
-        "file": "textures/2k_uranus.jpg",
+        "file": "textures/1k_uranus_opal_2025.webp",
         "px": [
-          2048,
-          1024
+          1024,
+          512
         ],
-        "bytes": 77751,
+        "bytes": 3552,
         "format": "rgb",
-        "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        "credit": "Giant planet maps: NASA, ESA, A.A. Simon, M.H. Wong (Hubble OPAL programme, doi:10.17909/T9G593), CC BY 4.0, adapted"
       }
     ]
   },
@@ -422,14 +422,14 @@ export const TEXTURES = [
     "files": [
       {
         "tier": 0,
-        "file": "textures/2k_neptune.jpg",
+        "file": "textures/1k_neptune_opal_2025.webp",
         "px": [
-          2048,
-          1024
+          1024,
+          512
         ],
-        "bytes": 241580,
+        "bytes": 4766,
         "format": "rgb",
-        "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        "credit": "Giant planet maps: NASA, ESA, A.A. Simon, M.H. Wong (Hubble OPAL programme, doi:10.17909/T9G593), CC BY 4.0, adapted"
       }
     ]
   },

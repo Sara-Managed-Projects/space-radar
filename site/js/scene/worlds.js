@@ -388,25 +388,30 @@ export const WORLDS = [
   // read 2026-10-06): Jupiter 0.06487, Saturn 0.09796, Uranus 0.02293, Neptune 0.01708. They spin
   // in ten to seventeen hours and bulge: Saturn is a tenth wider than it is tall, which anyone can
   // see in a photograph and a sphere cannot show. oblateRadii() makes the mesh that shape.
+  // THEIR MAPS (2026-10-07, public #401, #407, #411) are Hubble's OPAL maps of 2025, built from the
+  // calibrated FITS files by scripts/build-textures.py (`--only giants`): `tint` is each map's mean
+  // colour, which the build prints, so the planet does not change colour when its map arrives, and
+  // `mapKind` is the card's sentence about which day's face it is (copy/en.js drawing.worldMap).
+  // The rows are planetocentric latitude, the one scene/weather/flow.js moves its winds by.
   {
     id: 'jupiter', display: 'Jupiter', parent: 'sun', radiusKm: 69911.0,
     body: 'Jupiter', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_jupiter.jpg', tint: 0xb3aba1, limb: 1.05, oblate: 0.06487 },
+    look: { map: '2k_jupiter_opal_2025.webp', mapKind: 'hubbleJupiter', tint: 0xc1bb9d, limb: 1.05, oblate: 0.06487 },
   },
   {
     id: 'saturn', display: 'Saturn', parent: 'sun', radiusKm: 58232.0,
     body: 'Saturn', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_saturn.jpg', tint: 0xdfcca8, limb: 1.05, oblate: 0.09796, ring: { innerKm: 74500, outerKm: 140220, map: '2k_saturn_ring_alpha.png' } },
+    look: { map: '2k_saturn_opal_2025.webp', mapKind: 'hubbleSaturn', tint: 0xc0aa79, limb: 1.05, oblate: 0.09796, ring: { innerKm: 74500, outerKm: 140220, map: '2k_saturn_ring_alpha.png' } },
   },
   {
     id: 'uranus', display: 'Uranus', parent: 'sun', radiusKm: 25362.0,
     body: 'Uranus', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_uranus.jpg', tint: 0x9eced5, limb: 1.2, oblate: 0.02293, rim: { colour: 0xc8f4ff, gain: 0.35 }, ring: URANUS_RINGS },
+    look: { map: '1k_uranus_opal_2025.webp', mapKind: 'hubbleUranus', tint: 0x94b7c5, limb: 1.2, oblate: 0.02293, rim: { colour: 0xc8f4ff, gain: 0.35 }, ring: URANUS_RINGS },
   },
   {
     id: 'neptune', display: 'Neptune', parent: 'sun', radiusKm: 24622.0,
     body: 'Neptune', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_neptune.jpg', tint: 0x395eb7, limb: 1.15, oblate: 0.01708, rim: { colour: 0x9cc0ff, gain: 0.35 }, ring: NEPTUNE_RINGS },
+    look: { map: '1k_neptune_opal_2025.webp', mapKind: 'hubbleNeptune', tint: 0x83aec4, limb: 1.15, oblate: 0.01708, rim: { colour: 0x9cc0ff, gain: 0.35 }, ring: NEPTUNE_RINGS },
   },
   // THE FLAT ONES. No map ships for these five and none is fetched (`flat: true`, no `map`), so the
   // tint is not a texture's mean like the rows above: it is a HUE from a published description,
