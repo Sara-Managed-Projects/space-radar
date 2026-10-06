@@ -600,6 +600,13 @@ its credit, its licence and where it came from.
 **What was changed:** nothing but the choice of size. Both are ESO's own "Screensize JPEG"
 downloads, shipped byte for byte.
 
+**In the scene (2026-10-06):** the trip "Black holes" also draws each picture at its black hole's
+place while the stop about it is up (`site/js/scene/portraits.js`). The file is the same one; in
+the browser its dark sky is taken to black and its edge is faded, so that adding it to the sky
+adds the ring and not a rectangle, and it is drawn far larger than it would look from the camera.
+The line under the stop says all three and carries the credit and the licence
+(`copy/en.js` `trip.portraitLine`).
+
 ## 3g. The photographs of the nebulae and galaxies — ESA/Hubble, ESO and NOIRLab, CC BY 4.0
 
 `site/images/nebulae/` holds one photograph per row of `registry/nebulae.yaml` (spec 0067), laid

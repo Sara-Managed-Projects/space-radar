@@ -2439,6 +2439,9 @@ for (const file of allFiles) {
       // harvester's snapshot is missing, so its planets resolve with no network (spec 0040's trip).
       ...parseExoplanets(readFileSync(join(ROOT, 'site/data/exoplanets.csv'), 'utf8')).map((r) => r.id),
       ...LAYERS.filter((l) => l.source === 'bundled' && typeof l.sample === 'function' && !l.parse).flatMap((l) => l.sample()).map((r) => r.id),
+      // The rows a layer carries whatever its source said (2026-10-06, data/layers.js `always:`): the
+      // five named asteroids and Halley, each on JPL's orbit with its phase (data/sample.js).
+      ...LAYERS.filter((l) => typeof l.always === 'function').flatMap((l) => l.always()).map((r) => r.id),
     ]);
     const layerIds = new Set(LAYERS.map((l) => l.id));
     const worldIds = new Set(WORLDS.map((w) => w.id));

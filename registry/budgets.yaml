@@ -38,7 +38,7 @@ budgets:
   # 12 000 was 10 404 kB with room for ONE more trip; with two it measures 15 459 kB. Raised by the
   # change that added them, in the open: nothing here is fetched before a visitor turns sound on,
   # and then one clip at a time (narration_trip_kb, unchanged, is what one listener downloads).
-  - {id: narration_total_kb, value: 26000, unit: kB, since: 2026-10-06, reason: "spec 0069 req 5: everything under site/audio/narration/ (126 stops over sixteen trips: 22 490 kB with the AAC twins and the captions), measured 2026-10-06 after the five planetarium trips, with 15 % for the next two. Was 18 000 for eleven trips. Nothing of it is fetched before sound is on, and then a clip at a time"}
+  - {id: narration_total_kb, value: 40000, unit: kB, since: 2026-10-06, reason: "spec 0069 req 5: everything under site/audio/narration/ (195 stops over twenty-five trips: 35 845 kB with the AAC twins and the captions), measured 2026-10-06 after the nine trips of the remaining planetarium shows, with 11 % for the next two. Was 26 000 for sixteen trips and 18 000 for eleven. Nothing of it is fetched before sound is on, and then a clip at a time (narration_trip_kb, unchanged: the largest trip is still the constellations at 1 153 kB)"}
   - {id: trip_picture_bytes, value: 24000, unit: bytes, since: 2026-10-02, reason: "spec 0068 task 1: one WebP per trip card (640 x 360), fetched after the first visit settles; scripts/build_trip_thumbs.py --check"}
   # Spec 0067: the photographs of the nebulae (scene/nebulae.js), each fetched only when its object
   # is in view on a rung of the ladder or selected, never on a first visit. scripts/build_nebulae.py

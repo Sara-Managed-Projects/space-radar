@@ -400,6 +400,11 @@ export function createSkyView(ctx, options = {}) {
   let fovTold = NaN;
   const storage = options.storage !== undefined ? options.storage : (typeof localStorage !== 'undefined' ? localStorage : null);
   const skyOptions = readSkyOptions(storage);
+  // WHAT A TRIP STOP HOLDS OVER THE VISITOR'S OWN CHOICES (2026-10-06, hold() below): a kind of
+  // sky for "the same patch from a city, a town and a dark place", and one shower's radiant to
+  // mark whatever the date. Never stored: letting go puts back exactly what they chose.
+  let held = null;
+  const worn = () => (held && held.darkness ? { ...skyOptions, darkness: held.darkness } : skyOptions);
   // sky/groundsky.js, once it has loaded; null before that and in a test with no DOM.
   let ground = null;
   let groundAsked = 0;
@@ -784,10 +789,14 @@ export function createSkyView(ctx, options = {}) {
   let radiantsAt = -Infinity;
   function placeRadiants(tMs) {
     if (!parts || !parts.radiants || !observer) return;
-    const day = new Date(tMs).toDateString();
+    const day = `${new Date(tMs).toDateString()}|${(held && held.radiant) || ''}`;
     if (radiantsFor !== day) {
       for (const s of [...parts.radiants.children]) { s.material.map?.dispose?.(); s.material.dispose(); parts.radiants.remove(s); }
-      for (const sh of activeShowers(tMs, SHOWERS)) {
+      // The showers near their peak, and the one a trip stop is about (hold()) whatever the date.
+      const marked = activeShowers(tMs, SHOWERS);
+      const asked = held && held.radiant ? SHOWERS.find((sh) => sh.id === held.radiant) : null;
+      if (asked && !marked.includes(asked)) marked.push(asked);
+      for (const sh of marked) {
         const tex = makeRadiantTexture(t(COPY.sky.radiant, { name: sh.display }));
         if (!tex) continue;
         const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false }));
@@ -863,7 +872,7 @@ export function createSkyView(ctx, options = {}) {
 
   function applySky() {
     skyAt(sunElDeg, sky);
-    sky.horizonGlow = horizonGlowStrength(sunElDeg, ground ? skyOptions.darkness : undefined);
+    sky.horizonGlow = horizonGlowStrength(sunElDeg, ground ? worn().darkness : undefined);
     sky.moonBright = moonBrightness(moonElDeg, moonIllumFrac);
     const u = parts?.dome?.material?.uniforms;
     if (u) {
@@ -904,7 +913,7 @@ export function createSkyView(ctx, options = {}) {
     const forObserver = observer;
     import('./groundsky.js').then((m) => {
       if (mine !== groundAsked || !isActive || !group || !parts || observer !== forObserver) return;
-      ground = m.createGroundSky(ctx, { group, radius: parts.R, observer, domElement, options: skyOptions });
+      ground = m.createGroundSky(ctx, { group, radius: parts.R, observer, domElement, options: worn() });
       veilWorlds(true);
       if (pendingPass) { ground.showPass(pendingPass.track, pendingPass.marks); }
       tell();
@@ -941,9 +950,25 @@ export function createSkyView(ctx, options = {}) {
     if (skyOptions[key] === value) return false;
     skyOptions[key] = value;
     writeSkyOptions(storage, skyOptions);
-    if (ground) ground.setOptions(skyOptions);
+    if (ground) ground.setOptions(worn());
     applyRed();
     tell();
+    return true;
+  }
+
+  /**
+   * Hold a kind of sky and a shower's radiant for a trip stop, or let both go with `null`:
+   * `{ darkness: 'city' | 'town' | 'dark', radiant: <registry/showers.yaml id> }`, either or
+   * neither. The visitor's stored choices are not touched and the panel still shows them.
+   */
+  function hold(over) {
+    const darkness = over && DARKNESS_IDS.includes(over.darkness) ? over.darkness : null;
+    const radiant = over && typeof over.radiant === 'string' && SHOWERS.some((sh) => sh.id === over.radiant) ? over.radiant : null;
+    const next = darkness || radiant ? { darkness, radiant } : null;
+    if ((held && held.darkness) === (next && next.darkness) && (held && held.radiant) === (next && next.radiant)) return false;
+    held = next;
+    radiantsFor = null;
+    if (ground) ground.setOptions(worn());
     return true;
   }
 
@@ -1254,6 +1279,7 @@ export function createSkyView(ctx, options = {}) {
   function exit() {
     if (!isActive) return;
     isActive = false;
+    held = null;
     ctx.starfield?.setLines?.(false);
     detachInput();
     disposeGroup();
@@ -1307,6 +1333,11 @@ export function createSkyView(ctx, options = {}) {
       return { ...skyOptions };
     },
     setOption,
+    hold,
+    /** What a trip stop is holding over the stored choices, or null: for the test and a probe. */
+    get held() {
+      return held ? { ...held } : null;
+    },
     pointAt,
     pointAtRecord,
     pickSky,

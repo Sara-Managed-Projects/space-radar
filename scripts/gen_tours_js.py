@@ -103,6 +103,12 @@ STOP_FIELDS = (
     # `seen_from`: the world the camera stands on the side of, kept there while the clock runs.
     "look",
     "seen_from",
+    # 2026-10-06, the remaining shows. `portrait`: the Event Horizon Telescope's picture drawn at a
+    # black hole's place (scene/portraits.js). `darkness`: the kind of sky a `look:` stop wears.
+    # `names`: keep the other objects' names up in present mode, where a stop shows its own only.
+    "portrait",
+    "darkness",
+    "names",
     "card",
 )
 
@@ -257,6 +263,9 @@ MIRROR = Mirror(
     header=HEADER,
     render=render,
     what="tours.js",
+    # No leading spaces (2026-10-06): this file is in the first visit's bytes, and at two spaces a
+    # level 38 kB of its 167 were indentation (registry/budgets.yaml first_visit_bytes).
+    indent=0,
 )
 
 

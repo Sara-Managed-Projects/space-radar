@@ -2049,6 +2049,24 @@ export const COPY = {
     lookNoFigure: 'None of the well-known figures is well placed at this hour.',
     lookNoPass: 'No pass of the station over your place was found in the next week.',
     lookDaylight: 'Your sky is not dark at this hour, so there is nothing to pick out yet.',
+    // 2026-10-06, the remaining shows. The Milky Way's best-placed stretch (sky/lookfor.js
+    // MILKY_WAY names it), and the next meteor shower (registry/showers.yaml: its name, its peak
+    // date and its best hourly rate, which is under a dark sky with the radiant overhead).
+    lookMilkyWay: 'The view faces the Milky Way where it runs through {name}, {alt} in the {az}. The three skies are a model of an average clear night.',
+    lookNoMilkyWay: 'The Milky Way is low on your horizon at this hour, so the view faces high in the sky instead.',
+    lookShower: 'The next shower is the {name}, at its best around {date}.',
+    lookShowerUp: 'Its radiant is {alt} in the {az} at this hour.',
+    lookShowerDown: 'Its radiant is below your horizon at this hour; the view faces where it will rise.',
+    lookShowerRate: 'At the peak, from a dark place with the radiant high: about {rate} meteors an hour.',
+    // `live_note: close-approach` and `live_note: satellites`: counted from the records on screen.
+    approachNext: 'Next in NASA JPL\u2019s table: {name}, on {date}, at {ld} times the Moon\u2019s distance.',
+    approachNextFar: 'Next in NASA JPL\u2019s table: {name}, on {date}.',
+    approachNone: 'NASA JPL\u2019s table of close passes has not loaded, so no next pass is named.',
+    satellitesCount: '{n} working satellites in the catalogue this page loaded from CelesTrak, {starlink} of them Starlink.',
+    satellitesLoading: 'The catalogue is still loading; the count appears when it has.',
+    // Under a stop at a nebula or a galaxy with a photograph, and under a black hole's portrait.
+    pictureLine: 'A real photograph, placed where it is in the sky. Picture: {credit} \u00b7 {licence}, edges faded and sky darkened by us.',
+    portraitLine: 'The ring is the Event Horizon Telescope\u2019s picture, made with radio waves. It is drawn far larger than it would look from here; the place is measured. Picture: {credit} \u00b7 {licence}, sky darkened and edges faded by us.',
     // `live_note: tonight` under a stop about a planet: when and where it is in the visitor's sky
     // in the coming dark, by their device's clock, or why it is not there.
     tonightUp: 'From {place} tonight: up from {begin} to {end}, highest at {time}, {alt} in the {az}.',

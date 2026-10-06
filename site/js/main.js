@@ -21,7 +21,7 @@ import { createCameraRig, worldFramingDistance } from './scene/camera.js';
 import { createViewShift, MAX_SHIFT_FRACTION } from './scene/viewshift.js';
 import { readMoment, writeMoment, bootLink, laterLink, read as readUrlKeys, write as writeUrlState, clear as clearUrlState, stopIndex } from './ui/urlstate.js';
 import { guessObserver } from './sky/guessplace.js';
-import { COPY, CITIES } from './copy/en.js';
+import { COPY, CITIES, t as fill } from './copy/en.js';
 import { LAYERS, loadLayer } from './data/layers.js';
 import * as sources from './data/sources.js';
 import { createSkyView } from './sky/skyview.js';
@@ -414,9 +414,52 @@ export async function boot({ setStatus } = {}) {
         ? m.spaceWeatherLine(ctx.spaceWeather.parsed, ctx.spaceWeather.result, Date.now()) || '' : '');
     }))
     .catch((e) => { console.warn('the space weather did not load', e); spaceWeatherImport = null; }));
+  // A BLACK HOLE'S PICTURE AT ITS PLACE (scene/portraits.js), for a trip stop that says
+  // `portrait: true`, and the sentence under that stop: what the picture is, that it is drawn far
+  // larger than it would look, and whose it is (the row's own credit, registry/exotics.yaml).
+  ctx.portraits = null;
+  let portraitsImport = null;
+  let portraitAsked = '';
+  const wantPortraits = () => portraitsImport || (portraitsImport = import('./scene/portraits.js')
+    .then((m) => { ctx.portraits = m.createPortraits(scene); return ctx.portraits; })
+    .catch((e) => { console.warn('the black hole pictures did not load', e); portraitsImport = null; return null; }));
+  ctx.portraitLine = (id) => {
+    const record = ctx.recordById(id);
+    const image = record && record.meta && record.meta.image;
+    return image ? fill(COPY.trip.portraitLine, { credit: String(image.credit), licence: String(image.licence) }) : '';
+  };
+  // WHOSE PHOTOGRAPH IT IS, under a trip stop at a nebula or a galaxy that has one on the sky: the
+  // archives' terms ask for the credit beside the picture, and in present mode the object's own
+  // card (which prints it) is not on the screen. The rows are the dynamic import ui/cards.js makes.
+  let pictureRows = null;
+  let pictureRowsImport = null;
+  const wantPictureRows = () => pictureRowsImport || (pictureRowsImport = import('./data/nebulae.js')
+    .then((m) => { pictureRows = new Map((m.NEBULAE || []).map((row) => [`dso-${row.id}`, row])); })
+    .catch((e) => { console.warn('the photographs\u2019 credits did not load', e); pictureRowsImport = null; }));
+  ctx.pictureLine = (id) => {
+    const row = pictureRows && pictureRows.get(id);
+    return row ? fill(COPY.trip.pictureLine, { credit: String(row.credit), licence: String(row.licence) }) : '';
+  };
   let skyAsked = '';
+  let picturesAsked = null;
   ctx.trip.onChange((st) => {
     const tripping = st && st.phase !== 'idle';
+    if (tripping && st.wants && st.wants.portrait) wantPortraits();
+    if (tripping && st.wants && st.wants.pictures) {
+      wantPictureRows();
+      // And the pictures themselves, asked for at the intro so each is there when its stop lands.
+      const ids = st.wants.pictures;
+      if (ids !== picturesAsked) {
+        picturesAsked = ids;
+        ctx.wantNebulae().then((n) => { if (n && typeof n.prefetch === 'function') n.prefetch(ids); });
+      }
+    }
+    const portrait = tripping && st.portrait ? st.portrait.id : '';
+    if (portrait !== portraitAsked) {
+      portraitAsked = portrait;
+      if (portrait) wantPortraits().then((p) => { if (p && portraitAsked === portrait) p.show(ctx.recordById(portrait)); });
+      else if (ctx.portraits) ctx.portraits.clear();
+    }
     if (tripping && st.wants && st.wants.figures) ctx.wantFigures();
     if (tripping && st.wants && st.wants.overlay) wantOverlay();
     if (tripping && st.wants && st.wants.spaceWeather) wantSpaceWeather();
@@ -1830,6 +1873,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       }
     }
     if (ctx.figures) ctx.figures.update(ctx.camera, ctx.renderer);
+    if (ctx.portraits) ctx.portraits.update(ctx.camera, t, frameMs);
     if (ctx.earthOverlay) ctx.earthOverlay.update();
     if (ctx.systems) {
       ctx.systems.setVisible(ctx.isLayerOn('systems'));

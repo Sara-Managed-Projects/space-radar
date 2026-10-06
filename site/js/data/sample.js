@@ -508,7 +508,12 @@ const FAR_BODIES = [
  * @returns {Array<Object>} 10 records
  */
 export function farBodies() {
-  return FAR_BODIES.map((b) => {
+  return FAR_BODIES.map((b) => sbdbBody(b, 'far-bodies'));
+}
+
+/** One JPL small-body row (FAR_BODIES, NAMED_ASTEROIDS) as a record of `layer`, with its phase. */
+function sbdbBody(b, layer) {
+  {
     const aKm = b.aAu * AU_KM; // negative on a hyperbola, which kepler.js expects
     const qKm = aKm * (1 - b.e);
     const epochMs = jdToMs(b.epochJd);
@@ -517,7 +522,7 @@ export function farBodies() {
     return {
       id: b.id,
       name: b.name,
-      layer: 'far-bodies',
+      layer,
       klass: b.klass,
       propagator: 'kepler',
       frame: 'sun-inertial',
@@ -558,7 +563,7 @@ export function farBodies() {
         diameterHighKm: b.diameterHighKm ?? null,
         moons: Array.isArray(b.moons) ? b.moons.slice() : null,
         // Never near Earth: the asteroid card's near-Earth sentence reads this, as for Vesta.
-        neo: false,
+        neo: b.neo === true,
         why: b.why,
         whySource: b.whySource,
         // Noon UTC, so "6 June 2026" is 6 June in every time zone a visitor reads it from.
@@ -574,7 +579,162 @@ export function farBodies() {
         wholePath: true,
       },
     };
-  });
+  }
+}
+
+// =================================================================================================
+// The asteroids a visitor asks for by name (2026-10-06)
+// =================================================================================================
+//
+// Apophis, Bennu, Didymos, Vesta and Phaethon, each on JPL's orbit WITH ITS PHASE, so each is drawn
+// where it is today: the same construction as the dwarf planets above, cls 'inferred'. They are
+// rows of the `asteroids` layer ALWAYS, beside whatever JPL's close-approach table holds that
+// week (data/layers.js `always:`). Until now they existed only as the stand-ins at the top of
+// this file, parked at a placeholder perihelion and shown only when the snapshot was missing,
+// which on the live site is never: a trip about Apophis flew to nothing (public #239).
+//
+//   Elements   https://ssd-api.jpl.nasa.gov/sbdb.api?sstr=<number>&phys-par=1&full-prec=1, read
+//              2026-10-06, heliocentric ecliptic J2000, kept to ten significant figures. Bennu's
+//              row says why it is Horizons' instead.
+//   Checked    against JPL Horizons heliocentric vectors for 2026-10-06 00:00 TDB: two-body motion
+//              from these elements lands within 0.0001 au for all five (each row has its number),
+//              and tests/test_remaining_trips.mjs holds them there.
+//   NOT        a close approach. Two-body motion knows nothing of the Earth's pull, so Apophis's
+//              pass of 13 April 2029 cannot be flown from this row and no card or trip says it is.
+/** @type {Array<Object>} the same columns as FAR_BODIES, with `neo` */
+const NAMED_ASTEROIDS = [
+  {
+    id: 'asteroid-99942',
+    name: 'Apophis',
+    designation: '99942 Apophis',
+    aliases: ['99942 Apophis', '2004 MN4'],
+    klass: 'asteroid',
+    neo: true,
+    // sstr=99942. Orbit 220, solved 2024-06-25, observations 2004-03-15 to 2022-04-09.
+    // Against Horizons on 2026-10-06 00:00 TDB: 5e-05 au off, at 0.839 au from the Sun.
+    aAu: 0.9223592207, e: 0.191149228, iDeg: 3.34099688, nodeDeg: 203.8936514, argpDeg: 126.6795707,
+    maDeg: 175.3304027, epochJd: 2461200.5, tpJd: 2461042.9192,
+    solution: '2024-06-25', lastObs: '2022-04-09',
+    hMag: 19.09,
+    diameterKm: 0.34,
+    moons: null,
+    why: "A rock about 340 metres across that will pass about 32 000 km above the ground on 13 April 2029, closer than the geostationary satellites. It will miss. This page draws where it is today and does not attempt that pass.",
+    whySource: "NASA Science, Apophis (science.nasa.gov/solar-system/asteroids/apophis) and the JPL Small-Body Database (size), read 6 October 2026",
+  },
+  {
+    id: 'asteroid-101955',
+    name: 'Bennu',
+    designation: '101955 Bennu',
+    aliases: ['101955 Bennu', '1999 RQ36'],
+    klass: 'asteroid',
+    neo: true,
+    // sstr=101955. Orbit 118, solved 2021-01-07, observations 1999-09-11 to 2020-10-03.
+    // The SBDB states this orbit at a 2011 epoch (two-body motion from there misses Horizons by 0.042 au
+    // today), so these are JPL HORIZONS' osculating elements of the same solution at JD 2461200.5
+    // (EPHEM_TYPE=ELEMENTS, CENTER=500@10, ecliptic J2000).
+    // Against Horizons on 2026-10-06 00:00 TDB: 5e-05 au off, at 1.353 au from the Sun.
+    aAu: 1.125950726, e: 0.2036821439, iDeg: 6.032966275, nodeDeg: 1.966574037, argpDeg: 66.41055452,
+    maDeg: 72.45176655, epochJd: 2461200.5, tpJd: 2461112.67382,
+    solution: '2021-01-07', lastObs: '2020-10-03',
+    hMag: 20.21,
+    diameterKm: 0.484,
+    moons: null,
+    why: "About half a kilometre wide. NASA’s OSIRIS-REx collected 121.6 grams of it and brought them back to the Utah desert on 24 September 2023, the largest asteroid sample ever collected in space.",
+    whySource: "NASA Science, OSIRIS-REx (science.nasa.gov/mission/osiris-rex) and the JPL Small-Body Database (size, Daly et al. 2020), read 6 October 2026",
+  },
+  {
+    id: 'asteroid-65803',
+    name: 'Didymos',
+    designation: '65803 Didymos',
+    aliases: ['65803 Didymos', '1996 GT', 'Dimorphos'],
+    klass: 'asteroid',
+    neo: true,
+    // sstr=65803. Orbit 240, solved 2026-03-01, observations 2022-09-27 to 2025-03-11.
+    // Against Horizons on 2026-10-06 00:00 TDB: 3e-05 au off, at 1.357 au from the Sun.
+    aAu: 1.642709609, e: 0.3831233243, iDeg: 3.413876519, nodeDeg: 72.98582362, argpDeg: 319.5807001,
+    maDeg: 260.8612886, epochJd: 2461200.5, tpJd: 2461412.27778,
+    solution: '2026-03-01', lastObs: '2025-03-11',
+    hMag: 18.11,
+    diameterKm: 0.78,
+    moons: null,
+    why: "An asteroid 780 metres across with a small moon, Dimorphos. NASA’s DART was flown into the moon in September 2022 and shortened its orbit by 32 minutes. ESA’s Hera is due there in November 2026.",
+    whySource: "NASA Science, DART (science.nasa.gov/planetary-defense-dart), ESA, Hera (esa.int/Space_Safety/Hera) and the JPL Small-Body Database (size, Naidu et al. 2020), read 6 October 2026",
+  },
+  {
+    id: 'asteroid-4',
+    name: 'Vesta',
+    designation: '4 Vesta',
+    aliases: ['4 Vesta', 'A807 FA'],
+    klass: 'asteroid',
+    neo: false,
+    // sstr=4. Orbit 36, solved 2021-04-13, observations 1950-09-23 to 2021-03-17.
+    // Against Horizons on 2026-10-06 00:00 TDB: 2e-05 au off, at 2.462 au from the Sun.
+    aAu: 2.361365965, e: 0.09020374383, iDeg: 7.143925545, nodeDeg: 103.7012933, argpDeg: 151.4686478,
+    maDeg: 81.19015608, epochJd: 2461200.5, tpJd: 2460901.58738,
+    solution: '2021-04-13', lastObs: '2021-03-17',
+    hMag: 3.25,
+    diameterKm: 522.8,
+    moons: null,
+    why: "The second most massive body in the asteroid belt, 523 km across. NASA’s Dawn orbited it from July 2011 to September 2012, and three groups of meteorites found on Earth appear to come from it.",
+    whySource: "NASA Science, 4 Vesta (science.nasa.gov/solar-system/asteroids/4-vesta) and the JPL Small-Body Database (size, Park et al. 2025), read 6 October 2026",
+  },
+  {
+    id: 'asteroid-3200',
+    name: 'Phaethon',
+    designation: '3200 Phaethon',
+    aliases: ['3200 Phaethon', '1983 TB'],
+    klass: 'asteroid',
+    neo: true,
+    // sstr=3200. Orbit 1007, solved 2026-10-05, observations 1983-10-27 to 2026-10-04.
+    // Against Horizons on 2026-10-06 00:00 TDB: 4e-05 au off, at 0.916 au from the Sun.
+    aAu: 1.271464621, e: 0.8896722844, iDeg: 22.31052728, nodeDeg: 265.098806, argpDeg: 322.3001685,
+    maDeg: 301.4858235, epochJd: 2461200.5, tpJd: 2461285.61644,
+    solution: '2026-10-05', lastObs: '2026-10-04',
+    hMag: 14.38,
+    diameterKm: 6.25,
+    moons: null,
+    why: "The Geminid meteors of December come from this one. Its path takes it closer to the Sun than Mercury’s does, and nobody is sure whether it is a rock or a dead comet.",
+    whySource: "NASA Science, Geminids (science.nasa.gov/solar-system/meteors-meteorites/geminids) and the JPL Small-Body Database (orbit, and the size, Taylor et al. 2019), read 6 October 2026",
+  },
+];
+
+// HALLEY, for the same reason: the comets layer is JPL's snapshot or nothing, and the one comet
+// everybody knows is far outside what that table selects (it is 35 au out, past Neptune, and
+// will not be back until 2061). JPL Horizons' osculating elements of solution JPL#75 at
+// JD 2461200.5 (COMMAND='DES=1P;CAP', EPHEM_TYPE=ELEMENTS, CENTER=500@10, ecliptic J2000; read
+// 2026-10-06); two-body motion from them is within 0.0001 au of Horizons' own vector for
+// 2026-10-06 (tests/test_remaining_trips.mjs). JPL's solution 75 was made on 2025-11-21 from
+// observations of 1835 to 1994. The nucleus: 11 km across (Lamy et al. 2004, Comets II), 14.9 x
+// 8.2 km as Giotto saw it (Keller et al. 1987, A&A 187, 807), both from the SBDB. The tail scene/models.js gives every selected comet is a
+// drawing; at this distance the real one has none, and the row's `departure` line says so.
+const NAMED_COMETS = [
+  {
+    id: 'comet-1P',
+    name: '1P/Halley',
+    designation: '1P',
+    aliases: ['Halley', 'Halley\u2019s Comet', 'Comet Halley', '1P'],
+    klass: 'comet',
+    neo: false,
+    aAu: 17.85907724, e: 0.9680203461, iDeg: 162.1787514, nodeDeg: 59.36033415, argpDeg: 112.2600251,
+    maDeg: 192.2751783, epochJd: 2461200.5, tpJd: 2474043.95264,
+    solution: '2025-11-21', lastObs: '1994-01-11',
+    hMag: 5.5,
+    diameterKm: 11,
+    moons: null,
+    why: "The comet everybody has heard of. It comes round every 76 years on average, was last near the Sun in 1986, and is now out past Neptune. It returns in 2061. Its dust makes two meteor showers a year, in May and in October.",
+    whySource: "NASA Science, 1P/Halley (science.nasa.gov/solar-system/comets/1p-halley), and JPL Horizons for where it is, read 6 October 2026",
+    departure: 'the tail is part of the drawing: this far from the Sun the comet is a dark, frozen lump with no tail at all',
+  },
+];
+
+/** The comets layer's always-present row: Halley, where it is today. */
+export function namedComets() {
+  return NAMED_COMETS.map((b) => sbdbBody(b, 'comets'));
+}
+
+/** The asteroids layer's always-present rows: five famous ones, each where it is today. */
+export function namedAsteroids() {
+  return NAMED_ASTEROIDS.map((b) => sbdbBody(b, 'asteroids'));
 }
 
 // =================================================================================================

@@ -132,6 +132,7 @@ const MODE_CLASS = 'sr-trip-mode';
 const COLLAPSED_CLASS = 'sr-trip-collapsed';
 const PRESENT_CLASS = 'sr-present';
 const PHASE_ATTR = 'data-trip-phase';
+const NAMES_ATTR = 'data-trip-names';
 
 // Everything a trip takes away. ADDING A PIECE OF CHROME IS A ROW HERE -- a control left sitting in
 // a corner of a full-screen flight is exactly the kind of thing that gets noticed only in a
@@ -1018,6 +1019,9 @@ export function createTripFrame(ctx) {
     if (!parts) return;
 
     root.setAttribute(PHASE_ATTR, st.phase);
+    // A stop that keeps the other objects' names up in present mode (`names: true`); see ui.css.
+    if (st.names) root.setAttribute(NAMES_ATTR, '');
+    else root.removeAttribute(NAMES_ATTR);
     // A stop seen from the visitor's own ground (ui/trip.js `ground`): the card says so in its place.
     root.classList.toggle('sr-trip-ground', !!st.ground);
     host.setAttribute('aria-label', st.tourTitle || '');
@@ -1241,6 +1245,7 @@ export function createTripFrame(ctx) {
     if (ctx.shell && typeof ctx.shell.seatTrip === 'function') ctx.shell.seatTrip(null);
     setChromeHidden(false);
     root.removeAttribute(PHASE_ATTR);
+    root.removeAttribute(NAMES_ATTR);
     if (savedDocTitle !== null) document.title = savedDocTitle;
     savedDocTitle = null;
     destroy();

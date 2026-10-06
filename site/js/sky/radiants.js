@@ -3,6 +3,7 @@
 // Pure, for sky/skyview.js and the test:
 //   activeShowers(tMs, showers, days) -> the showers whose peak is within `days` of tMs's local date
 //   radiantAltAz(shower, tMs, observer) -> { altDeg, azDeg } (azimuth from north, through east)
+//   nextShower(tMs, showers) -> { shower, peakMs } the next peak, or the one whose night this is
 //
 // "Coming up" names a shower's peak (ui/next.js); standing under the sky in the Now moment, the
 // useful thing is WHERE to look. A shower's meteors appear to come from its radiant, so the sky
@@ -47,4 +48,26 @@ export function radiantAltAz(shower, tMs, observer) {
   const alt = Math.asin(Math.max(-1, Math.min(1, sinAlt)));
   const az = Math.atan2(-Math.cos(dec) * Math.sin(H), Math.cos(lat) * Math.sin(dec) - Math.sin(lat) * Math.cos(dec) * Math.cos(H));
   return { altDeg: alt / DEG, azDeg: ((az / DEG) % 360 + 360) % 360 };
+}
+
+/**
+ * The shower a visitor should be told about at `tMs`: the one peaking tonight or last night if
+ * there is one, else the next to come. `peakMs` is local midnight at the start of its peak date,
+ * this year's or next. For a trip stop that says "the next shower" (ui/trip.js `look: {shower: next}`).
+ */
+export function nextShower(tMs, showers) {
+  const today = localMidnight(tMs);
+  const year = new Date(tMs).getFullYear();
+  let best = null;
+  for (const sh of Array.isArray(showers) ? showers : []) {
+    const m = /^(\d{2})-(\d{2})$/.exec(String((sh && sh.peak) || ''));
+    if (!m) continue;
+    for (const y of [year, year + 1]) {
+      const peakMs = new Date(y, Number(m[1]) - 1, Number(m[2])).getTime();
+      if (peakMs < today - DAY) continue;
+      if (!best || peakMs < best.peakMs) best = { shower: sh, peakMs };
+      break;
+    }
+  }
+  return best;
 }

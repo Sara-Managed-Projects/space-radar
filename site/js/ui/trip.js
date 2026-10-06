@@ -61,9 +61,11 @@ import { write as writeUrl, clear as clearUrl } from './urlstate.js';
 import { nextEvent } from '../data/events.js';
 import { guessObserver } from '../sky/guessplace.js';
 import { SELECTED_PX } from '../scene/heroes.js';
-import { lookTarget, tonightMs, planetTonight } from '../sky/lookfor.js';
+import { lookTarget, tonightMs, deepNightMs, midnightMs, planetTonight } from '../sky/lookfor.js';
+import { nextShower } from '../sky/radiants.js';
+import { SHOWERS } from '../data/showers.js';
 import { azimuthInWords, altitudeInWords } from '../sky/skyview.js';
-import { COPY, CITIES, t, fmt, timeText } from '../copy/en.js';
+import { COPY, CITIES, UNITS, t, fmt, timeText } from '../copy/en.js';
 
 const DEG = Math.PI / 180;
 
@@ -291,7 +293,12 @@ export function createTrip(ctx) {
     // The stop's lens (`zoom:` on a sky stop): under 1 is a wider angle, for a figure too tall for
     // the camera's 45 degrees. main.js eases the camera's zoom to it and back to 1 on leave.
     zoom: 1,
-    wants: { figures: false, overlay: false, spaceWeather: false },
+    // 2026-10-06, the remaining shows. `portrait`: the record whose picture scene/portraits.js draws
+    // at its place while the stop is up (a black hole with the Event Horizon Telescope's picture),
+    // or null. `names`: the stop keeps the other objects' names up in present mode (`names: true`).
+    portrait: null,
+    names: false,
+    wants: { figures: false, overlay: false, spaceWeather: false, portrait: false, pictures: false },
     // The stop on screen is seen from the visitor's own ground (`look:`, 2026-10-06): the sky view
     // has the camera, and the frame and the present mode read this to say so.
     ground: false,
@@ -523,8 +530,12 @@ export function createTrip(ctx) {
   // eight kilometres a second and the clock does not tell the card it is running.
   const NOTE_REFRESH_MS = 1000;
   let noteAt = 0;
+  // Whether the stop on screen HAS a generated line, said or not yet: a photograph's credit and the
+  // catalogue's count are empty until their rows have loaded, and a line that began empty was
+  // never read again (2026-10-06).
+  let noteLive = false;
   function refreshNote() {
-    if (!state.stopNote || (state.phase !== 'dwell' && state.phase !== 'settle')) return;
+    if (!(state.stopNote || noteLive) || (state.phase !== 'dwell' && state.phase !== 'settle')) return;
     const n = now();
     if (n - noteAt < NOTE_REFRESH_MS) return;
     noteAt = n;
@@ -1245,6 +1256,15 @@ export function createTrip(ctx) {
       const from = seenFromAngles(entry.stop.seen_from, targetScene, tMs);
       if (from) angles = from;
     }
+    // A PHOTOGRAPH IS SEEN FROM THE SIDE IT WAS TAKEN FROM (2026-10-06). A stop at a deep-sky object
+    // with `key_light_deg: 0` goes on the line from the object back to the Sun, exactly: the key
+    // light's search looks from level with the ecliptic or above it and never from below, so for
+    // the Whirlpool (51 degrees north of it) the nearest direction it had was 52 degrees off the
+    // line, where scene/nebulae.js rightly draws no picture at all (viewFade is gone by 50).
+    if (entry.stop.key_light_deg === 0 && subject.record && subject.record.klass === 'dso' && sun) {
+      const home = towardAngles(sun, targetScene);
+      if (home) angles = home;
+    }
     if (!angles && subject.kind === 'world' && subject.id === 'sun' && stage.worldId === 'sun') {
       angles = { azimuth: rig.state.azimuth || 0, polar: SUN_OVERVIEW_POLAR };
     }
@@ -1380,6 +1400,7 @@ export function createTrip(ctx) {
     // afresh each time it repaints the card on the clock: the station's distance changes by eight
     // kilometres a second. `state.stopNote` holds the last reading, for the frame and a probe.
     const noted = titleOnly ? null : noteFor(entry);
+    noteLive = !!noted;
     if (noted) {
       lead.note = () => {
         const text = noted();
@@ -1387,7 +1408,7 @@ export function createTrip(ctx) {
         return text;
       };
       state.stopNote = noted();
-    }
+    } else if (!titleOnly) state.stopNote = null; // a stop with no line does not keep the last stop's
     if (titleOnly) {
       showCard(null, ctx, { lead });
       return;
@@ -1444,6 +1465,10 @@ export function createTrip(ctx) {
         season: () => (ctx.weather && ctx.weather.line ? ctx.weather.line(subject.id, ctx.clock.now()) : ''),
         'space-weather': () => (typeof ctx.spaceWeatherLine === 'function' ? ctx.spaceWeatherLine() : ''),
         tonight: () => tonightLine(entry),
+        // 2026-10-06: the next pass in JPL's table as the asteroids layer loaded it, and the count
+        // of the catalogue on screen. Counted here from the records, so no card types either.
+        'close-approach': () => closeApproachLine(),
+        satellites: () => satellitesLine(),
       }[live];
       if (say) return () => { try { return say() || ''; } catch { return ''; } };
     }
@@ -1458,6 +1483,15 @@ export function createTrip(ctx) {
       return () => line;
     }
     const record = subject.record;
+    // A stop at a nebula or a galaxy that has a photograph says whose photograph it is (the
+    // archives' terms ask for the credit beside the picture), and one that draws a portrait says
+    // what the portrait is. main.js answers once the pictures' own rows have loaded.
+    if (record && entry.stop.portrait && typeof ctx.portraitLine === 'function') {
+      return () => { try { return ctx.portraitLine(record.id) || ''; } catch { return ''; } };
+    }
+    if (record && record.klass === 'dso' && typeof ctx.pictureLine === 'function') {
+      return () => { try { return ctx.pictureLine(record.id) || ''; } catch { return ''; } };
+    }
     if (!record || !run || !run.tour.requires_observer || !/^earth-/.test(String(record.frame || ''))) return null;
     const ev = entry.event;
     if (isEventTime(entry.stop.time) && ev && ev.pass) {
@@ -1482,6 +1516,47 @@ export function createTrip(ctx) {
       const km = Math.round((a.distanceTo(b) * stage.unitKm) / 10) * 10;
       return t(COPY.trip.stationFromYou, { km: fmt.int(km) });
     };
+  }
+
+  /** `live_note: close-approach`: the next asteroid to pass, from the records the layer holds. */
+  function closeApproachLine() {
+    const now = ctx.clock.now();
+    let best = null;
+    for (const r of (typeof ctx.recordsFor === 'function' ? ctx.recordsFor('asteroids') : []) || []) {
+      const m = r && r.meta;
+      if (!m || !isNum(m.closeApproachMs) || m.closeApproachMs <= now) continue;
+      if (!best || m.closeApproachMs < best.meta.closeApproachMs) best = r;
+    }
+    if (!best) return COPY.trip.approachNone;
+    const m = best.meta;
+    const ld = isNum(m.missDistanceLd) ? m.missDistanceLd : isNum(m.missDistanceKm) ? m.missDistanceKm / UNITS.LUNAR_DISTANCE_KM : null;
+    const say = { name: best.name || best.designation || best.id, date: timeText.dateNear(m.closeApproachMs, now) };
+    return ld === null ? t(COPY.trip.approachNextFar, say) : t(COPY.trip.approachNext, { ...say, ld: fmt.num(ld, 1) });
+  }
+
+  /** `live_note: satellites`: how many records the active catalogue holds, and how many are Starlink. */
+  function satellitesLine() {
+    const records = (typeof ctx.recordsFor === 'function' ? ctx.recordsFor('active') : []) || [];
+    if (!records.length) return COPY.trip.satellitesLoading;
+    let starlink = 0;
+    for (const r of records) if (/^STARLINK/i.test(String((r && r.name) || ''))) starlink += 1;
+    return t(COPY.trip.satellitesCount, { n: fmt.int(records.length), starlink: fmt.int(starlink) });
+  }
+
+  /** The shower a `look: {shower: next}` stop is about, found once for the visitor's own date. */
+  function showerOf(entry) {
+    if (!entry || !entry.stop.look || !entry.stop.look.shower) return null;
+    if (entry.shower === undefined) {
+      const base = run && run.savedClock && isNum(run.savedClock.t) ? run.savedClock.t : ctx.clock.now();
+      entry.shower = nextShower(base, SHOWERS) || null;
+    }
+    return entry.shower;
+  }
+
+  /** A stop's `look:` as sky/lookfor.js reads it: the next shower is a place on the sky like any other. */
+  function lookOf(entry) {
+    const found = showerOf(entry);
+    return found ? { sky: [Number(found.shower.ra_h) * 15, Number(found.shower.dec)] } : entry.stop.look;
   }
 
   /**
@@ -1532,10 +1607,18 @@ export function createTrip(ctx) {
         { state: 'ok', pass: { ...pass, sunlit: null } });
       return [see, pass.visible ? T.passNight : T.passDay].join(' ');
     }
-    const aim = lookTarget(look, place, ctx.clock.now(), pass);
+    const aim = lookTarget(lookOf(entry), place, ctx.clock.now(), pass);
     if (!aim) return '';
     const where = { alt: altitudeInWords(aim.altDeg), az: azimuthInWords(aim.azDeg) };
+    if (look.shower) {
+      const found = showerOf(entry);
+      if (!found) return '';
+      const base = run && run.savedClock && isNum(run.savedClock.t) ? run.savedClock.t : ctx.clock.now();
+      const say = { name: found.shower.display, date: timeText.dateNear(found.peakMs, base), rate: fmt.int(found.shower.zhr), ...where };
+      return [t(T.lookShower, say), t(aim.up ? T.lookShowerUp : T.lookShowerDown, say), t(T.lookShowerRate, say)].join(' ');
+    }
     if (aim.daylight) return T.lookDaylight;
+    if (aim.kind === 'milky-way') return aim.up ? t(T.lookMilkyWay, { ...where, name: aim.name }) : T.lookNoMilkyWay;
     if (aim.kind === 'world' && aim.id === 'moon') {
       if (aim.up) return t(T.lookMoonUp, { ...where, pct: fmt.int(aim.percent ?? 0) });
       return isNum(aim.riseMs) ? t(T.lookMoonDown, { time: timeText.hhmm(aim.riseMs) }) : T.lookMoonDownNoRise;
@@ -1705,6 +1788,17 @@ export function createTrip(ctx) {
     // the line that names the place are about the same ground.
     if (time === 'tonight') {
       const ms = tonightMs(placeOf(), nowMs);
+      return isNum(ms) ? ms : null;
+    }
+    // `night` (2026-10-06): the first full dark of that same night, for a stop about how dark a sky
+    // can be. At dusk, which is what `tonight` is, the Milky Way is not out yet anywhere.
+    if (time === 'night') {
+      const ms = deepNightMs(placeOf(), nowMs);
+      return isNum(ms) ? ms : null;
+    }
+    // `midnight`: the middle of that night, when a shower's radiant is high.
+    if (time === 'midnight') {
+      const ms = midnightMs(placeOf(), nowMs);
       return isNum(ms) ? ms : null;
     }
     // `daylight` needs the stop's own ground (daylightMs, which applyStopTime asks); asked without
@@ -1879,6 +1973,12 @@ export function createTrip(ctx) {
     }
   }
 
+  /** The deep-sky records a trip stops at (their photographs are asked for at the intro), or null. */
+  function picturedStops(stops) {
+    const ids = [...new Set(stops.map((entry) => String((entry.stop.target || {}).record || '')).filter((id) => /^dso-/.test(id)))];
+    return ids.length ? ids : null;
+  }
+
   /** What a stop asks scene/figures3d.js to draw, or null. */
   function skyOf(stop) {
     if (!stop || (!Array.isArray(stop.figures) && !stop.ecliptic)) return null;
@@ -1909,10 +2009,16 @@ export function createTrip(ctx) {
     state.overlay = entry.stop.overlay || null;
     state.exposure = entry.stop.exposure || null;
     state.zoom = isNum(entry.stop.zoom) ? entry.stop.zoom : 1;
+    // The portrait of the stop being left goes at take-off (it is pinned to that object and would
+    // slide across the flight); the next stop's own arrives with the camera.
+    state.portrait = null;
+    state.names = entry.stop.names === true;
   }
 
   function stopExtrasArrived(entry) {
     state.sky = skyOf(entry.stop);
+    const record = entry.subject && entry.subject.record;
+    state.portrait = entry.stop.portrait === true && record ? { id: record.id } : null;
   }
 
   function begin(resolved) {
@@ -1983,7 +2089,12 @@ export function createTrip(ctx) {
       figures: resolved.stops.some((entry) => skyOf(entry.stop)),
       overlay: resolved.stops.some((entry) => entry.stop.overlay),
       spaceWeather: resolved.stops.some((entry) => entry.stop.live_note === 'space-weather'),
+      portrait: resolved.stops.some((entry) => entry.stop.portrait === true),
+      // A stop at a deep-sky object: its photograph's row (the credit) is wanted before it lands.
+      pictures: picturedStops(resolved.stops),
     };
+    state.portrait = null;
+    state.names = false;
     run.ground = false;
     state.ground = false;
     state.sky = null;
@@ -2182,8 +2293,14 @@ export function createTrip(ctx) {
   function aimGround(entry) {
     const place = placeOf();
     const pass = entry.event && entry.event.pass ? entry.event.pass : null;
-    const aim = place ? lookTarget(entry.stop.look, place, ctx.clock.now(), pass) : null;
+    const aim = place ? lookTarget(lookOf(entry), place, ctx.clock.now(), pass) : null;
     entry.aim = aim;
+    // The kind of sky the stop is about (`darkness:`), and the radiant of the shower it looks for,
+    // held over the visitor's own choices for the stop and let go by the next one (or by exit()).
+    if (ctx.skyView && typeof ctx.skyView.hold === 'function') {
+      const found = showerOf(entry);
+      ctx.skyView.hold({ darkness: entry.stop.darkness || null, radiant: found ? found.shower.id : null });
+    }
     if (aim && ctx.skyView && typeof ctx.skyView.lookAtDeg === 'function') {
       ctx.skyView.lookAtDeg(aim.azDeg, aim.up ? clamp(aim.altDeg, 6, 80) : 8);
     }
@@ -2702,7 +2819,9 @@ export function createTrip(ctx) {
     state.overlay = null;
     state.exposure = null;
     state.zoom = 1;
-    state.wants = { figures: false, overlay: false, spaceWeather: false };
+    state.portrait = null;
+    state.names = false;
+    state.wants = { figures: false, overlay: false, spaceWeather: false, portrait: false, pictures: false };
     state.ground = false;
     state.stopId = null;
     state.stopEventType = null;

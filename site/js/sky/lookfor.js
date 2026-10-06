@@ -1,6 +1,8 @@
 // sky/lookfor.js -- what is up from one place at one instant, for a trip stop that looks at it.
 //
 // Exports (all pure: a place, an instant, numbers out; no DOM, no three.js, no clock of its own):
+//   deepNightMs(place, nowMs)          the first full dark of that night (the Sun 18 degrees down)
+//   midnightMs(place, nowMs)           the middle of that night
 //   tonightMs(place, nowMs)            the instant "tonight" means from here: now when the sky is
 //                                      already dark, else the coming dusk
 //   nightWindow(place, ms)             { fromMs, untilMs } of the dark that holds, or follows, ms
@@ -9,6 +11,7 @@
 //   moonAt(place, ms)                  { altDeg, azDeg, percent, riseMs }
 //   planetTonight(id, place, ms)       when and where one planet is in that night's dark sky
 //   bestPlanet / bestStar / bestFigure the one a beginner should be pointed at, at that instant
+//   bestMilkyWay(place, ms)            the stretch of the Milky Way best placed at that instant
 //   lookTarget(look, place, ms, pass)  a stop's `look:` resolved to where the head turns
 //
 // WHY IT EXISTS (2026-10-06). Two trips end, or happen, on the visitor's own ground: "Tonight from
@@ -175,6 +178,41 @@ export function tonightMs(place, nowMs) {
   return Math.min(w.fromMs + 45 * 60e3, (w.fromMs + w.untilMs) / 2);
 }
 
+/** Full night: the Sun eighteen degrees down, when the sky is as dark as that place gets. */
+export const DEEP_SUN_ALT_DEG = -18;
+
+/**
+ * "The dead of tonight", as an instant: the first moment of the coming night (or of this one, when
+ * it is already dark) with the Sun eighteen degrees down, and where it never gets that far (a
+ * summer night at 55 degrees north) the moment the Sun is lowest. For a stop about how dark a sky
+ * can be: at dusk, which is what `tonight` means, the Milky Way is not out yet anywhere.
+ */
+export function deepNightMs(place, nowMs) {
+  const start = tonightMs(place, nowMs);
+  if (!isNum(start) || !observerOf(place)) return isNum(nowMs) ? nowMs : null;
+  let best = null;
+  for (let ms = start; ms <= start + 14 * HOUR; ms += SAMPLE_MS) {
+    const sun = altAzOfBody('sun', place, ms);
+    if (!sun) break;
+    if (sun.altDeg <= DEEP_SUN_ALT_DEG) return ms;
+    if (!best || sun.altDeg < best.alt) best = { ms, alt: sun.altDeg };
+    else if (sun.altDeg > best.alt + 2) break; // past the bottom of the night and climbing
+  }
+  return best ? best.ms : start;
+}
+
+/**
+ * The middle of the coming night (or of this one): for a meteor shower, whose radiant is highest,
+ * and whose side of the Earth faces the way it travels, in the small hours. Where it never gets
+ * dark this week, now.
+ */
+export function midnightMs(place, nowMs) {
+  const w = nightWindow(place, nowMs);
+  if (!w || w.never) return isNum(nowMs) ? nowMs : null;
+  const mid = (w.fromMs + w.untilMs) / 2;
+  return w.darkNow && isNum(nowMs) && nowMs > mid ? nowMs : mid;
+}
+
 /** The Moon from `place` at `ms`: where, how much of it is lit, and when it next rises if it is down. */
 export function moonAt(place, ms) {
   const obs = observerOf(place);
@@ -277,6 +315,35 @@ export function bestFigure(place, ms) {
   return best;
 }
 
+// The Milky Way's band, as the stretches a person can be pointed at: a figure it runs through and
+// a point on the galactic equator there (J2000 degrees). `rich` is how much there is to see, the
+// centre in Sagittarius most and the thin outer band through Auriga least; it breaks a tie between
+// two stretches that are both well up, and never lifts one that is low over one that is high.
+export const MILKY_WAY = [
+  { name: 'Sagittarius', ra: 271, dec: -24, rich: 3 },
+  { name: 'the Eagle', ra: 287, dec: 6, rich: 2 },
+  { name: 'the Swan', ra: 306, dec: 40, rich: 2.5 },
+  { name: 'Cassiopeia', ra: 10, dec: 62, rich: 1.5 },
+  { name: 'Perseus and the Charioteer', ra: 75, dec: 42, rich: 1 },
+  { name: 'Orion\u2019s raised arm and the Twins\u2019 feet', ra: 95, dec: 18, rich: 1 },
+  { name: 'the Stern, east of the Great Dog', ra: 118, dec: -27, rich: 1.5 },
+  { name: 'the Keel', ra: 160, dec: -59, rich: 2.5 },
+  { name: 'the Southern Cross', ra: 190, dec: -62, rich: 2.5 },
+  { name: 'the Scorpion\u2019s tail', ra: 255, dec: -40, rich: 3 },
+];
+
+/** The MILKY_WAY stretch best placed from `place` at `ms`, if one is 20 degrees up; or null. */
+export function bestMilkyWay(place, ms) {
+  let best = null;
+  for (const part of MILKY_WAY) {
+    const at = altAzOfSky(part.ra, part.dec, place, ms);
+    if (!at || at.altDeg < 20) continue;
+    const score = Math.min(at.altDeg, 60) + 8 * part.rich;
+    if (!best || score > best.score) best = { name: part.name, score, ...at };
+  }
+  return best;
+}
+
 /**
  * A stop's `look:` as a place to turn the head to: `{ kind, id, name, azDeg, altDeg, up, ... }`.
  * `up: false` means the thing asked for is under the horizon (or there is none): the heading is
@@ -311,6 +378,10 @@ export function lookTarget(look, place, ms, pass = null) {
   if (look.best === 'star') {
     const s = bestStar(place, ms);
     return s ? { kind: 'star', id: null, ...s, up: true } : { kind: 'star', id: null, ...fallback, up: false };
+  }
+  if (look.best === 'milky-way') {
+    const m = bestMilkyWay(place, ms);
+    return m ? { kind: 'milky-way', id: null, ...m, up: true } : { kind: 'milky-way', id: null, ...fallback, altDeg: 45, up: false };
   }
   if (look.best === 'figure') {
     const f = bestFigure(place, ms);

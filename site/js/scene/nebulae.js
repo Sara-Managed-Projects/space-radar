@@ -3,7 +3,7 @@
 //
 // Contract: createNebulae(scene, opts) -> { setExposure(look), setSkyOpacity(k), drawn(id),
 //   setRecords(records), setSkyVisible(on), rebuild(), update(camera, renderer, skyOn, placeOn), want(id),
-//   has(id), loaded(), state(), dispose(), group, skyGroup }
+//   prefetch(ids), has(id), loaded(), state(), dispose(), group, skyGroup }
 // Pure, for tests/test_nebulae.mjs: pictureBasis(row), pictureCorners(row), skyToPicture(row, ra, dec),
 //   pictureHalfExtent(row), eqToEcl(v), viewFade(cos), nearFade(distOverWidth), PICTURE_FOR
 //
@@ -405,6 +405,17 @@ export function createNebulae(scene, opts = {}) {
     want(recordId) {
       selected = typeof recordId === 'string' && recordId.startsWith('dso-') && byId.has(recordId.slice(4)) ? recordId.slice(4) : null;
       if (selected) fetchPicture(byId.get(selected));
+    },
+    /**
+     * A trip that will stop at these objects asks for their pictures at its intro (ui/trip.js
+     * `wants.pictures`), so a stop does not arrive at a mark and wait for its photograph: measured
+     * 2026-10-06, the Crab's file landed after the card had been up six seconds.
+     */
+    prefetch(recordIds) {
+      for (const id of Array.isArray(recordIds) ? recordIds : []) {
+        const p = typeof id === 'string' && id.startsWith('dso-') ? byId.get(id.slice(4)) : null;
+        if (p) fetchPicture(p);
+      }
     },
     has: (recordId) => PICTURE_FOR.has(recordId),
     /** The record ids whose pictures are on the GPU's doorstep: scene/dsoglow.js drops their glow. */

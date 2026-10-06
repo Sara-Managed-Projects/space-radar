@@ -1108,6 +1108,28 @@ TOUR_CASES: list[tuple[str, str, str]] = [
      "        time: 2027-01-10T12:00:00Z\n        rate: 36000\n        drift_deg: 20\n"),
     ("a place to stand over on the Sun, which has no ground",
      "        target: {world: sun}\n        frame_radii: 6\n", "        target: {world: sun}\n        frame_radii: 6\n        over: [10, 10]\n"),
+    # --- 2026-10-06, the remaining shows: a portrait, a kind of sky, the next shower, counted lines --
+    ("a portrait of a black hole nobody has photographed",
+     "        target: {record: exotic-cygnus-x-1}\n        needs_layer: exotics\n",
+     "        target: {record: exotic-cygnus-x-1}\n        needs_layer: exotics\n        portrait: true\n"),
+    ("a portrait that is not a yes",
+     "        portrait: true\n", "        portrait: big\n"),
+    ("a kind of sky the ground view does not have",
+     "        darkness: town\n", "        darkness: village\n"),
+    ("a kind of sky on a stop that is not seen from the ground",
+     "        distance_km: 900\n        time: tonight\n", "        distance_km: 900\n        darkness: dark\n        time: tonight\n"),
+    ("a shower the card picked, when which one is next depends on the visitor's date",
+     "        look: {shower: next}", "        look: {shower: perseids}"),
+    ("a count from a catalogue the trip never loads",
+     "        needs_layer: active\n        frame_radii: 1.7\n", "        frame_radii: 1.7\n"),
+    ("the next close pass under a stop that shows another day",
+     "        time: now\n        live_note: close-approach\n", "        time: 2027-01-01T00:00:00Z\n        live_note: close-approach\n"),
+    ("names kept up by a word that is not a yes",
+     "        names: true\n        chapter: \"The belt\"", "        names: some\n        chapter: \"The belt\""),
+    ("the middle of the night on a trip that has no place to have a night at",
+     "        key_light_deg: 60\n        time: now\n        chapter: \"Keeping watch\"", "        key_light_deg: 60\n        time: midnight\n        chapter: \"Keeping watch\""),
+    ("a shutter on a stop at a world, which wears none",
+     "        target: {world: sun}\n        stage: sun\n        frame_radii: 3.6\n", "        target: {world: sun}\n        stage: sun\n        frame_radii: 3.6\n        exposure: deep\n"),
 ]
 
 

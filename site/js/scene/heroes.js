@@ -767,6 +767,12 @@ export function createHeroes(scene, ctx) {
 
     const want = candidates(tMs);
     const wanted = new Set(want.map((c) => c.record.id));
+    // A MODEL NOBODY WANTS ANY MORE IS PUT AWAY. This line was lost on 2026-10-05 (public #466,
+    // which moved the lighting below it), and from then on a model, once drawn, stayed drawn where
+    // it had last been placed: Sedna, Eris and Voyager 1 from the trip past Jupiter hung in Orion
+    // on the next trip, and a trip's `hides:` could not remove them because nothing could
+    // (internal #400). tests/test_remaining_trips.mjs holds the line.
+    for (const id of [...live.keys()]) if (!wanted.has(id)) release(id);
 
     // WHICH WORLD LIGHTS THE MODELS: the one whose drawn surface is nearest the camera. After
     // candidates(), because that is what gathers the other worlds.

@@ -261,13 +261,28 @@ TOUR_LIVE_NOTES = {
     "space-weather": ({"earth", "sun"}, True),
     "season": ({"mars"}, False),
     "tonight": ({"mercury", "venus", "mars", "jupiter", "saturn", "uranus", "neptune"}, False),
+    # 2026-10-06, the remaining shows. `close-approach`: the next pass in JPL's table, as the
+    # `asteroids` layer loaded it, so it is this week's and the stop shows now. `satellites`: the
+    # count of the `active` catalogue on screen; that trip may not move the clock at all (the
+    # freeze refusal), so the stop is at the visitor's own instant without saying so.
+    "close-approach": ({"earth"}, True),
+    "satellites": ({"earth"}, False),
 }
+# The layer a live sentence counts from, which the trip must therefore load.
+TOUR_LIVE_NOTE_LAYERS = {"close-approach": "asteroids", "satellites": "active"}
 # --- a stop seen from the visitor's own ground (2026-10-06) ---------------------------------------
 # `look:` on a `target: {observer: true}` stop: the sky view (sky/skyview.js) takes the camera and
 # turns to one thing, which sky/lookfor.js finds for whoever is asking. Exactly one key.
-TOUR_LOOK_KEYS = ("world", "sky", "best", "pass")
+TOUR_LOOK_KEYS = ("world", "sky", "best", "pass", "shower")
 TOUR_LOOK_WORLDS = {"moon", "mercury", "venus", "mars", "jupiter", "saturn", "uranus", "neptune"}
-TOUR_LOOK_BEST = {"planet", "star", "figure"}
+TOUR_LOOK_BEST = {"planet", "star", "figure", "milky-way"}
+# `look: {shower: next}` (2026-10-06): the radiant of the next shower in registry/showers.yaml.
+TOUR_LOOK_SHOWERS = {"next"}
+# `darkness:` on a stop seen from the ground: the three skies of site/js/sky/skymath.js DARKNESS.
+TOUR_DARKNESS = {"city", "town", "dark"}
+# `portrait: true`: the registry/exotics.yaml rows that carry a picture (`image:`), as record ids;
+# filled in main(). The picture is drawn at the object's place, far larger than it would look.
+TOUR_PORTRAITS: set = set()
 # The ground's lens: the sky view is 72 degrees tall, in which the Moon is five pixels. Up to 6.
 TOUR_LOOK_ZOOM_MAX = 6
 # registry/overlays.yaml's rows, id -> world, filled by main() before the trips are read.
@@ -866,8 +881,12 @@ def check_stop_extras(tour: dict, stop: dict, n: int, where: str, kind: str, val
     if exposure is not None:
         if exposure not in TOUR_EXPOSURES:
             fail(where, f"`exposure: {exposure}` is not one of {sorted(TOUR_EXPOSURES)}")
-        if not sky:
-            fail(where, "`exposure:` on a stop that is not a `sky:` target: the shutter is the sky's")
+        looking = kind == "observer" and "look" in stop
+        pictured = kind == "record" and str(value).startswith("dso-")
+        if not sky and not looking and not pictured:
+            fail(where, "`exposure:` on a stop that is not a `sky:` target, a look from the ground or a "
+                        "deep-sky object (`record: dso-...`): the shutter is the sky's and its "
+                        "photographs', and nothing else on the map wears it")
     stale = clock_left_elsewhere(tour, n)
     own_time = stop.get("time", "now")
     overlay = stop.get("overlay")
@@ -900,9 +919,30 @@ def check_stop_extras(tour: dict, stop: dict, n: int, where: str, kind: str, val
             if not (kind == "world" and value in worlds):
                 fail(where, f"`live_note: {live}` on a stop that is not `target: {{world: ...}}` for one "
                             f"of {sorted(worlds)}: the sentence is about that world and no other")
+            needs = TOUR_LIVE_NOTE_LAYERS.get(live)
+            if needs and needs not in (tour.get("requires") or []) and stop.get("needs_layer") != needs:
+                fail(where, f"`live_note: {live}` counts from the `{needs}` layer, which neither the "
+                            f"trip's `requires:` nor this stop's `needs_layer:` loads: the sentence "
+                            f"would have nothing to count")
             if live == "tonight" and tour.get("requires_observer") is not True:
                 fail(where, "`live_note: tonight` is the planet in the VISITOR'S sky, on a trip that "
                             "does not say it needs a place (`requires_observer: true`)")
+    # --- 2026-10-06, the remaining shows -----------------------------------------------------------
+    if "portrait" in stop:
+        if stop["portrait"] is not True:
+            fail(where, f"`portrait: {stop['portrait']!r}` is `true` or left out")
+        elif not (kind == "record" and value in TOUR_PORTRAITS):
+            fail(where, f"`portrait: true` on a stop that is not at one of {sorted(TOUR_PORTRAITS)}: "
+                        f"only a registry/exotics.yaml row with an `image:` has a picture to draw, "
+                        f"and a ring pasted on anything else would be a fiction")
+    if "darkness" in stop:
+        if stop["darkness"] not in TOUR_DARKNESS:
+            fail(where, f"`darkness: {stop['darkness']!r}` is not one of {sorted(TOUR_DARKNESS)}")
+        if not (kind == "observer" and "look" in stop):
+            fail(where, "`darkness:` on a stop that is not seen from the visitor's ground (`look:`): "
+                        "it is the kind of sky the ground view wears, and no other view has one")
+    if "names" in stop and stop["names"] is not True:
+        fail(where, f"`names: {stop['names']!r}` is `true` or left out")
     seen_from = stop.get("seen_from")
     if seen_from is not None:
         if kind != "world":
@@ -946,7 +986,7 @@ def check_observer_stop(tour: dict, stop: dict, where: str, value) -> None:
                     f"{TOUR_OBSERVER_MIN_KM} km")
     when = stop.get("time")
     check_look(tour, stop, where)
-    if when is not None and when not in ("now", "tonight") and not isinstance(when, dict):
+    if when is not None and when not in ("now", "tonight", "night", "midnight") and not isinstance(when, dict):
         written = when.strftime("%Y-%m-%dT%H:%M:%SZ") if isinstance(when, datetime.datetime) else when
         fail(where, f"`time: {written}` on the visitor's place: its ground does not move but its sky "
                     f"does, and a written date is the same instant for every visitor. Write `now` or "
@@ -969,6 +1009,9 @@ def check_look(tour: dict, stop: dict, where: str) -> None:
                     f"sky/lookfor.js can find in a sky")
     elif key == "best" and value not in TOUR_LOOK_BEST:
         fail(where, f"`look: {{best: {value}}}` is not one of {sorted(TOUR_LOOK_BEST)}")
+    elif key == "shower" and value not in TOUR_LOOK_SHOWERS:
+        fail(where, f"`look: {{shower: {value}}}` is not one of {sorted(TOUR_LOOK_SHOWERS)}: which "
+                    f"shower is next is worked out for the visitor's date, and the card may not pick one")
     elif key == "sky":
         ok = isinstance(value, list) and len(value) == 2 and all(is_number(v) for v in value) \
             and 0 <= value[0] < 360 and -90 <= value[1] <= 90
@@ -1052,12 +1095,14 @@ def check_stop_clock(stop: dict, where: str, kind: str, sgp4: bool, flown_on, to
     if when == "now":
         return
     # `tonight` (2026-10-06): the coming dark at the visitor's place, so only a trip that has one.
-    if when == "tonight":
+    # `night` (2026-10-06): the first full dark of that same night (the Sun eighteen degrees down);
+    # `midnight`: its middle, when a meteor shower's radiant is high.
+    if when in ("tonight", "night", "midnight"):
         if not (tour or {}).get("requires_observer") is True:
-            fail(where, "`time: tonight` on a trip that does not say it needs a place "
+            fail(where, f"`time: {when}` on a trip that does not say it needs a place "
                         "(`requires_observer: true`): whose night would it be")
         if sgp4:
-            fail(where, "`time: tonight` on an Earth-orbit target: write `now` or a station pass")
+            fail(where, f"`time: {when}` on an Earth-orbit target: write `now` or a station pass")
         return
     # `daylight` (2026-10-06): the next hour the Sun is up over the stop's own ground, so a stop
     # that has one: a site, a record left on a world, or a world stood `over:` a place.
@@ -2851,7 +2896,13 @@ def check_budgets() -> list:
         old = base.get(bid)
         if old and is_number(old.get("value")) and value > old["value"]:
             old_since = old.get("since")
-            if not (isinstance(since, datetime.date) and isinstance(old_since, datetime.date) and since > old_since):
+            dated = isinstance(since, datetime.date) and isinstance(old_since, datetime.date)
+            # A SECOND RAISE ON THE SAME DAY (2026-10-06: two packages of trips landed, hours apart,
+            # each with its own measured total) cannot carry a later day without lying about it. It
+            # carries the same day and a NEW reason, which is where the measurement is written; the
+            # same day with the old reason word for word is still refused, as is an earlier day.
+            again = dated and since == old_since and str(r.get("reason") or "").strip() != str(old.get("reason") or "").strip()
+            if not (dated and (since > old_since or again)):
                 fail(where, f"raised from {old['value']} to {value} with `since` still {since}: a raised gate "
                             f"is a decision, so it carries the day it was made and what was measured")
         if readers is not None:
@@ -4045,6 +4096,8 @@ def main() -> int:
     nebulae = check_nebulae()
     ladder_rungs = check_ladder(world_ids, layer_ids)
     exotics = check_exotics()
+    TOUR_PORTRAITS.update(f"exotic-{r.get('id')}" for r in exotics
+                          if isinstance(r, dict) and r.get('id') and isinstance(r.get('image'), dict))
     famous_stars = check_stars_notable(exotics)
     aliases = check_aliases()
     colorkeys = check_colorkeys()

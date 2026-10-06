@@ -20,6 +20,8 @@ import { load } from './sources.js';
 import { parseCelestrakGP, parseLaunches, parseComets, parseHorizonsVectors, parseNeoApproaches, parseExoplanets, parseDso, parseGdacsCyclones, isGeostationary, skyToSunInertialKm } from './parsers.js';
 import {
   sampleAsteroids,
+  namedAsteroids,
+  namedComets,
   sampleDeepSpace,
   sampleReentries,
   handKeptSites,
@@ -910,6 +912,8 @@ export const LAYERS = [
     frame: 'sun-inertial',
     moments: { wonder: true, now: false, next: true },
     defaultOn: false,
+    // Halley, where it is today, whatever the snapshot holds (and when there is none at all).
+    always: namedComets,
     select: cometsWorthDrawing,
     budget: { maxItems: 60, rank: byBrightNow },
     colour: C.comet,
@@ -928,6 +932,9 @@ export const LAYERS = [
     sources: ['jpl-cad', 'jpl-sbdb-neo'],
     parse: 'neo-approaches',
     sample: sampleAsteroids,
+    // The five a visitor asks for by name (Apophis, Bennu, Didymos, Vesta, Phaethon), each on JPL's
+    // orbit with its phase: rows of this layer whatever the week's close-approach table holds.
+    always: namedAsteroids,
     propagator: 'kepler',
     frame: 'sun-inertial',
     moments: { wonder: true, now: false, next: true },
@@ -1164,13 +1171,27 @@ export async function loadLayerDetailed(layer, nowMs) {
     } else {
       result = await load(layer.source);
       if (result.data == null) {
-        return { records: [], source: result, error: result.error };
+        // A layer with rows of its own (`always:`) still has those when its source is missing.
+        if (typeof layer.always !== 'function') return { records: [], source: result, error: result.error };
+        parsed = [];
+      } else {
+        // A parser that is a module of its own, fetched with the data it reads (data/satcat.js).
+        parsed = typeof layer.parseLazy === 'function' ? await layer.parseLazy(result.data) : parseFor(layer, result.data);
       }
-      // A parser that is a module of its own, fetched with the data it reads (data/satcat.js).
-      parsed = typeof layer.parseLazy === 'function' ? await layer.parseLazy(result.data) : parseFor(layer, result.data);
     }
   } catch (e) {
     return { records: [], source: result, error: String((e && e.message) || e) };
+  }
+
+  // `always:` rows are the layer's own whatever the source said: they replace a parsed or stand-in
+  // row of the same id (the stand-in Apophis sits at a placeholder; this one is where it is).
+  if (typeof layer.always === 'function') {
+    try {
+      const own = layer.always();
+      const ids = new Set(own.map((r) => r.id));
+      const names = new Set(own.map((r) => r.name));
+      parsed = parsed.filter((r) => !ids.has(r.id) && !names.has(r.name)).concat(own);
+    } catch { /* the source's rows stand as they are */ }
   }
 
   let selected;

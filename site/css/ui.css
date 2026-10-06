@@ -1591,6 +1591,15 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   transition: opacity 200ms var(--sr-ease);
 }
 
+/* IN PRESENT MODE A STOP SHOWS ITS OWN NAME AND NO OTHER (internal #400, 2026-10-06). On a wall,
+   under a caption, "Ryugu", "Eros" and "Hubble Space Telescope" floating round a stop about the
+   Moon read as part of the lesson. The stop's subject keeps its name, a figure keeps its own (the
+   sky labels are the stop's picture), and a stop that is ABOUT several things says `names: true`
+   in registry/tours.yaml, which ui/tripframe.js puts on <html> as data-trip-names. */
+html.sr-present.sr-trip-mode:not([data-trip-names]) #labels .label:not(.is-subject):not(.sr-sky-label):not([data-kind='selection']) {
+  opacity: 0;
+}
+
 @keyframes sr-label-in {
   from {
     transform: scale(0.92);
