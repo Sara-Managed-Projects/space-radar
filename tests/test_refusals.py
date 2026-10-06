@@ -67,8 +67,8 @@ def media_into(work: Path) -> None:
 def mutate(path: Path, text: str) -> None:
     """Replace a file in a work tree with new text, as a NEW file: unlink first, so that even a
     path that turned out to be a hard link can never write through to the repository."""
-    if any(p.is_symlink() for p in path.parents):
-        raise RuntimeError(f"{path} is inside a linked directory: a case may not change it")
+    if ROOT in Path(os.path.realpath(path)).parents:
+        raise RuntimeError(f"{path} is inside a linked directory of the repository: a case may not change it")
     path.unlink()
     path.write_text(text, encoding="utf-8")
 
