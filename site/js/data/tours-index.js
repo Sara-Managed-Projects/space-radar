@@ -249,7 +249,7 @@ export const TOURS_INDEX = [
 "next": "comets-and-meteors",
 "min_stops": 3,
 "count": 8,
-"estimate_ms": 179185
+"estimate_ms": 180035
 },
 {
 "id": "satellites-and-junk",

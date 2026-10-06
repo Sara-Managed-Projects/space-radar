@@ -732,6 +732,14 @@ export function createTrip(ctx) {
       if (stop.target && stop.target.layer) needed.add(stop.target.layer);
     }
     await Promise.all([...needed].map(waitForLayer));
+    // A stop at a dated instant, on a record that has a file of its own path (Apophis on 13 April
+    // 2029; propagate/ephemeris.js): the file is fetched now, so the flight is composed on where
+    // the record WAS, not on its stand-in. A file that does not load leaves the stop as it was.
+    const dated = tour.stops.filter((s) => s.target && s.target.record && typeof s.time === 'string' && /^\d{4}-\d\d-\d\d/.test(s.time)).map((s) => s.target.record);
+    if (dated.length) {
+      const eph = await import('../propagate/ephemeris.js').catch(() => null);
+      if (eph) await Promise.all(dated.map((id) => eph.ensure(id)));
+    }
 
     const stops = [];
     const dropped = [];

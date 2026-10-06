@@ -457,7 +457,7 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
 {
   const { sampleDeepSpace } = await import(join(ROOT, 'site/js/data/sample.js'));
   const rows = sampleDeepSpace();
-  check(rows.length === 22, `the deep-space layer holds twenty-two records (found ${rows.length})`);
+  check(rows.length === 26, `the deep-space layer holds twenty-six records (found ${rows.length})`);
   const want = {
     'deep-jwst': 'jwst.glb', 'deep-soho': 'soho.glb', 'deep-mro': 'mro.glb', 'deep-juno': 'juno.glb',
     'deep-voyager-1': 'voyager.glb', 'deep-voyager-2': 'voyager.glb', 'deep-parker': 'parker.glb',
@@ -465,6 +465,10 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
     'deep-solar-orbiter': 'build:solar-orbiter',
     // 2026-10-05: three of the twelve that NASA publishes a model of (issue #431).
     'deep-lro': 'lro.glb', 'deep-osiris-apex': 'osiris-rex.glb', 'deep-stereo-a': 'stereo.glb',
+    // 2026-10-06: the craft that came with the path files (site/data/eph). One Pioneer model for
+    // the two sister craft, which is what NASA publishes.
+    'deep-cassini': 'cassini.glb', 'deep-galileo': 'galileo.glb',
+    'deep-pioneer-10': 'pioneer.glb', 'deep-pioneer-11': 'pioneer.glb',
   };
   // The 2026-09-22 twelve, less the three above: generic on purpose, and never another craft's shape.
   const generic = new Set(['deep-psyche', 'deep-lucy', 'deep-europa-clipper', 'deep-juice', 'deep-bepicolombo',

@@ -600,7 +600,11 @@ function sbdbBody(b, layer) {
 //              from these elements lands within 0.0001 au for all five (each row has its number),
 //              and tests/test_remaining_trips.mjs holds them there.
 //   NOT        a close approach. Two-body motion knows nothing of the Earth's pull, so Apophis's
-//              pass of 13 April 2029 cannot be flown from this row and no card or trip says it is.
+//              pass of 13 April 2029 cannot be flown from this ROW. Since 2026-10-06 the record
+//              also has a file of its path from JPL Horizons, 2026 to 2029, kept relative to the
+//              Earth round the pass (registry/ephemerides.yaml); once that file is here it
+//              answers instead of the row (propagate/index.js EPHEMERIS_OF), and the trip
+//              `asteroids-that-come-close` flies the pass from it.
 /** @type {Array<Object>} the same columns as FAR_BODIES, with `neo` */
 const NAMED_ASTEROIDS = [
   {
@@ -618,7 +622,7 @@ const NAMED_ASTEROIDS = [
     hMag: 19.09,
     diameterKm: 0.34,
     moons: null,
-    why: "A rock about 340 metres across that will pass about 32 000 km above the ground on 13 April 2029, closer than the geostationary satellites. It will miss. This page draws where it is today and does not attempt that pass.",
+    why: "A rock about 340 metres across that will pass about 32 000 km above the ground on 13 April 2029, closer than the geostationary satellites. It will miss. Set the clock to that evening and it is drawn on JPL's predicted path.",
     whySource: "NASA Science, Apophis (science.nasa.gov/solar-system/asteroids/apophis) and the JPL Small-Body Database (size), read 6 October 2026",
   },
   {

@@ -245,10 +245,10 @@ clips:
   - {trip: "asteroids-that-come-close", stop: "belt", hash: "0078793b2c305544", seconds: 23.0, words: 59, lufs: -16.4, opus: 91627, m4a: 118506, vtt: 414}
   - {trip: "asteroids-that-come-close", stop: "ceres", hash: "9e1e28777ae010ae", seconds: 23.97, words: 56, lufs: -16.6, opus: 95575, m4a: 123504, vtt: 401}
   - {trip: "asteroids-that-come-close", stop: "near", hash: "79b941fb540858d4", seconds: 21.53, words: 55, lufs: -16.6, opus: 86078, m4a: 111116, vtt: 432}
-  - {trip: "asteroids-that-come-close", stop: "apophis", hash: "46433cf25895d733", seconds: 25.2, words: 52, lufs: -16.6, opus: 98917, m4a: 129807, vtt: 433}
   - {trip: "asteroids-that-come-close", stop: "didymos", hash: "ce938b4f584f6dad", seconds: 23.11, words: 51, lufs: -16.5, opus: 91774, m4a: 119158, vtt: 415}
   - {trip: "asteroids-that-come-close", stop: "hera", hash: "965a7a09bbad40a4", seconds: 22.78, words: 55, lufs: -16.6, opus: 91194, m4a: 117419, vtt: 371}
   - {trip: "asteroids-that-come-close", stop: "bennu", hash: "178c3f4876d05981", seconds: 23.79, words: 55, lufs: -16.6, opus: 94927, m4a: 122635, vtt: 413}
+  - {trip: "asteroids-that-come-close", stop: "apophis", hash: "3113af0b2171e8ae", seconds: 29.42, words: 61, lufs: -16.4, opus: 116979, m4a: 151323, vtt: 505}
   - {trip: "asteroids-that-come-close", stop: "home", hash: "1bf79a170ce27042", seconds: 20.99, words: 52, lufs: -16.4, opus: 82799, m4a: 108291, vtt: 407}
   - {trip: "satellites-and-junk", stop: "one", hash: "2dafc86fd2cb88ac", seconds: 20.81, words: 45, lufs: -16.7, opus: 82198, m4a: 107422, vtt: 396}
   - {trip: "satellites-and-junk", stop: "all", hash: "6d7b14e1692a36a8", seconds: 17.38, words: 41, lufs: -16.4, opus: 72337, m4a: 90035, vtt: 314}

@@ -3996,7 +3996,7 @@ export const TOURS = [
 "clock": "as-found",
 "group": "solar-system",
 "next": "comets-and-meteors",
-"og_stop": 5,
+"og_stop": 4,
 "orbits": [
 "earth",
 "mars",
@@ -4071,27 +4071,6 @@ export const TOURS = [
 "dwell_ms": 19150
 },
 {
-"id": "apophis",
-"target": {
-"record": "asteroid-99942"
-},
-"needs_layer": "asteroids",
-"distance_km": 400000,
-"chapter": "Near the Earth",
-"card": {
-"title": "Apophis",
-"body": "This rock is about three hundred and forty metres across. In April 2029, on Friday the thirteenth, it will pass about thirty-two thousand kilometres above the ground, closer than the satellites that carry television. It will miss. Here it is where it is today; this map cannot fly that pass."
-},
-"frame_radii": 5.0,
-"drift_deg": 34,
-"drift_rate_deg_s": 6,
-"drift": "toward-light",
-"key_light_deg": 125,
-"ease": "auto",
-"on_unresolved": "drop",
-"dwell_ms": 19150
-},
-{
 "id": "didymos",
 "target": {
 "record": "asteroid-65803"
@@ -4155,6 +4134,30 @@ export const TOURS = [
 "dwell_ms": 18484
 },
 {
+"id": "apophis",
+"target": {
+"record": "asteroid-99942"
+},
+"stage": "earth",
+"needs_layer": "asteroids",
+"distance_km": 45000,
+"time": "2029-04-13T21:45:00Z",
+"rate": 60,
+"chapter": "Keeping watch",
+"card": {
+"title": "Apophis passes the Earth",
+"body": "One pass is already in the calendar. This rock, Apophis, is about three hundred and forty metres across, and this is the evening it comes closest: about thirty-two thousand kilometres above the ground, inside the ring of satellites that carry television. It will miss. The path drawn here is the one predicted at NASA's Jet Propulsion Laboratory."
+},
+"frame_radii": 5.0,
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 20000
+},
+{
 "id": "home",
 "target": {
 "world": "earth"
@@ -4176,7 +4179,7 @@ export const TOURS = [
 "dwell_ms": 18817
 }
 ],
-"estimate_ms": 179185
+"estimate_ms": 180035
 },
 {
 "id": "satellites-and-junk",

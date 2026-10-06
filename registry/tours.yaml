@@ -3396,7 +3396,7 @@ tours:
     stage: sun
     clock: as-found
     orbits: [earth, mars, jupiter]
-    og_stop: 5
+    og_stop: 4
     stops:
       - id: belt
         target: {world: sun}
@@ -3441,19 +3441,6 @@ tours:
             Telescopes find them, and each one's path is worked out for a hundred years
             ahead. The line below names the next one to pass.
 
-      - id: apophis
-        target: {record: asteroid-99942}
-        needs_layer: asteroids
-        distance_km: 400000
-        chapter: "Near the Earth"
-        card:
-          title: "Apophis"
-          body: >-
-            This rock is about three hundred and forty metres across. In April 2029, on
-            Friday the thirteenth, it will pass about thirty-two thousand kilometres
-            above the ground, closer than the satellites that carry television. It will
-            miss. Here it is where it is today; this map cannot fly that pass.
-
       - id: didymos
         target: {record: asteroid-65803}
         needs_layer: asteroids
@@ -3492,6 +3479,37 @@ tours:
             hundred and twenty grams, and dropped them in the Utah desert in 2023: the
             largest asteroid sample ever brought home. In that dust were sugars and
             other molecules that, on Earth, are key to life.
+
+      # THE PASS OF 13 APRIL 2029, FLOWN (public #239, internal #413). Until 2026-10-06 this stop
+      # showed Apophis where it is today and said the map could not fly the pass: the row was
+      # two-body motion, which knows nothing of the Earth's pull. The record now has a file of
+      # its path from JPL Horizons (registry/ephemerides.yaml, solution JPL#220, kept relative to
+      # the Earth for the three weeks round the pass, held to 10 km of Horizons by
+      # tests/test_ephemerides.mjs). ui/trip.js fetches it before the trip is offered. The clock
+      # goes to 21:45 UTC, the closest minute IN THAT FILE: 31 633 km over the ground (38 011 from
+      # the Earth's centre), which is NASA's "about 20,000 miles (32,000 kilometers) from our
+      # planet's surface", read on science.nasa.gov/solar-system/asteroids/apophis on 2026-10-06
+      # with "closer than ... many satellites in geosynchronous orbit" and "no risk ... for at
+      # least 100 years". The size is the JPL Small-Body Database's, as on the record's card.
+      # It is a prediction and the card says so. It is the stop before the last because it moves
+      # the clock to 2029: the last stop is `time: now` and brings it back, and no card after
+      # this one is read in the wrong year. (It was the fourth stop until then.)
+      - id: apophis
+        target: {record: asteroid-99942}
+        needs_layer: asteroids
+        stage: earth
+        time: 2029-04-13T21:45:00Z
+        rate: 60
+        distance_km: 45000
+        chapter: "Keeping watch"
+        card:
+          title: "Apophis passes the Earth"
+          body: >-
+            One pass is already in the calendar. This rock, Apophis, is about three
+            hundred and forty metres across, and this is the evening it comes closest:
+            about thirty-two thousand kilometres above the ground, inside the ring of
+            satellites that carry television. It will miss. The path drawn here is the
+            one predicted at NASA's Jet Propulsion Laboratory.
 
       - id: home
         target: {world: earth}
