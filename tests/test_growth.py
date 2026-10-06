@@ -64,6 +64,9 @@ GENERATED_TRIP_PAGES = "site/t"
 # so it is not a row of MIRRORS (its --check is the same command, already asserted stale and then
 # current). It is the file a first visit reads, so a new trip must be in it too: checked below.
 GENERATED_TOURS_INDEX = "site/js/data/tours-index.js"
+# And the words a trip is found by (public #312): the third file of that same run, read by the
+# search box when it is first focused.
+GENERATED_TOURS_WORDS = "site/js/data/tours-words.js"
 MIRRORS = ((GENERATED, "scripts/gen_rockets_js.py", "rockets"),
            (GENERATED_ODDITIES, "scripts/gen_oddities_js.py", "oddities"),
            (GENERATED_TOURS, "scripts/gen_tours_js.py", "tours"),
@@ -169,6 +172,7 @@ def main() -> int:
                 shutil.copy2(ROOT / mirror, work / mirror)
 
         shutil.copy2(ROOT / GENERATED_TOURS_INDEX, work / GENERATED_TOURS_INDEX)
+        shutil.copy2(ROOT / GENERATED_TOURS_WORDS, work / GENERATED_TOURS_WORDS)
 
         before = snapshot(work)
         apply_fixture(work / "registry", fixture)
@@ -206,7 +210,7 @@ def main() -> int:
         # now measured against the tree rather than against the fixture's own key names.
         after = snapshot(work)
         changed = sorted(k for k in set(before) | set(after) if before.get(k) != after.get(k))
-        generated = {m for m, _, _ in MIRRORS} | {GENERATED_TOURS_INDEX}
+        generated = {m for m, _, _ in MIRRORS} | {GENERATED_TOURS_INDEX, GENERATED_TOURS_WORDS}
         outside = [f for f in changed
                    if not f.startswith(ALLOWED_PREFIXES) and not any(under(f, m) for m in generated)]
         if outside:

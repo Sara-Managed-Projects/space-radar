@@ -53,6 +53,10 @@ export function offerUndo(ctx, opts = {}) {
   const U = COPY.undo;
   const node = toast(undoWords(opts.name, opts.night === true), 0);
   if (!node) return null;
+  // The controls hint stands clear of this toast as it does of the pill (ui/keyhint.js place();
+  // internal #419 item 3). Said from here, not from toast(): ui/share.js loads with every card
+  // and is held under 6 kB.
+  window.dispatchEvent(new CustomEvent('sr:toast'));
   const mine = String(serial += 1);
   node.dataset.undo = mine;
   const button = document.createElement('button');

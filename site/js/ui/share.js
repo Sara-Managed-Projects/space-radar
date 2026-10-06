@@ -87,8 +87,6 @@ export function toast(line, ms = 2000) {
   toastNode.hidden = !line;
   clearTimeout(toastTimer);
   if (ms > 0) toastTimer = setTimeout(() => { toastNode.hidden = true; }, ms);
-  // The controls hint stands clear of a toast as it does of the pill (ui/keyhint.js place()).
-  if (line && typeof window !== 'undefined' && typeof CustomEvent === 'function') window.dispatchEvent(new CustomEvent('sr:toast'));
   return toastNode;
 }
 
