@@ -219,7 +219,8 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   // Spec 0061 task 7: a trip hides the rail and the pill; the sidebar stays and is the trip's own
   // view. Task 3: on a phone too, where the sidebar is the sheet, and the top bar goes with the rail.
   check(/const CHROME = \['sr-rail', 'sr-time', 'sr-top'\]/.test(frame), 'a trip hides the rail, the pill and the phone\'s top bar');
-  check(/const sideHost = shell && typeof shell\.host === 'function' \? shell\.host\('trip'\)/.test(frame) && /seatTrip\(parts\.cardSlot\)/.test(frame) && !/side\.inert = phone/.test(frame), 'and seats its sheet in the sidebar\'s trip view at every width (one sheet on a phone), the card in its slot');
+  // (Except in present mode, public #441, where the sidebar is gone and the sheet is the room's caption.)
+  check(/const sideHost = (!present && )?shell && typeof shell\.host === 'function' \? shell\.host\('trip'\)/.test(frame) && /seatTrip\(parts\.cardSlot\)/.test(frame) && !/side\.inert = phone/.test(frame), 'and seats its sheet in the sidebar\'s trip view at every width (one sheet on a phone), the card in its slot');
   check(/#sr-side \[data-trip=/.test(frame), 'and Leave gives focus back to the trip card it was started from');
 }
 
