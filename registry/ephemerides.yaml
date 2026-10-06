@@ -176,6 +176,23 @@ craft:
       - {centre: earth, from: "2020-07-30T12:52:00Z", to: "2020-08-03T00:00:00Z"}
       - {centre: mars, from: "2021-02-12T00:00:00Z", to: "2021-02-18T20:30:00Z"}
 
+  # Dawn (2026-10-07). prior to 2007-SEP-27 12:39:44 UT: nothing. Horizons' header: "Final
+  # reconstruction from tracking data 2007-Sep-27 2018-Oct-31", a prediction after it "that does
+  # not reflect delta-V perturbations caused by any EOM safing events", so the file stops where
+  # the tracking does. Vesta and Ceres are not worlds this format knows (a window is a planet,
+  # the Moon or Pluto), so the years in orbit round them are kept relative to the Sun at the
+  # widest tolerance the format allows: the curve follows the laps wider than that and cuts
+  # across the tighter ones, and the card of the craft says "at Vesta", never how high.
+  - id: deep-dawn
+    name: Dawn
+    command: "-203"
+    from: "2007-09-27T12:40:00Z"
+    to: "2018-10-31T00:00:00Z"
+    tol_km: 1000
+    windows:
+      - {centre: earth, from: "2007-09-27T12:40:00Z", to: "2007-10-01T00:00:00Z"}
+      - {centre: mars, from: "2009-02-14T00:00:00Z", to: "2009-02-22T00:00:00Z"}
+
   # Solution JPL#220. Kept relative to the Earth for the three weeks round 13 April 2029.
   - id: asteroid-99942
     name: Apophis

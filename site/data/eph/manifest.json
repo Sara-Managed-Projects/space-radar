@@ -1537,6 +1537,111 @@
    ]
   },
   {
+   "id": "deep-dawn",
+   "name": "Dawn",
+   "command": "-203",
+   "file": "deep-dawn.bin",
+   "bytes": 149404,
+   "sha256": "a9332806aef96244fa22aac62c41655581bff4de1cd37af01d93ce00f09f5d43",
+   "span": [
+    "2007-09-27T12:40:00Z",
+    "2018-10-31T00:00:00Z"
+   ],
+   "samples": 3752,
+   "solution": "dawn_final",
+   "header_revised": "Jan 03, 2019",
+   "retrieved": "2026-10-06",
+   "fit_max_km": 999.88,
+   "heldout": {
+    "n": 48,
+    "max_km": 992.568
+   },
+   "good_to_km": 2000.0,
+   "segments": [
+    {
+     "centre": "earth",
+     "from": "2007-09-27T12:40:00Z",
+     "to": "2007-10-01T00:00:00Z",
+     "samples": 25,
+     "tol_km": 1.0,
+     "fit_max_km": 0.994,
+     "fetched": 161,
+     "step_min_s": 360.0,
+     "step_max_s": 50400.0,
+     "steps": {
+      "under 10 min": 2,
+      "10 min to 1 h": 7,
+      "1 h to 6 h": 9,
+      "6 h to 1 d": 6
+     },
+     "closest": {
+      "at": "2007-09-27T12:40:00Z",
+      "km": 8437.6
+     },
+     "passes": 1,
+     "centre_source": "dawn_final"
+    },
+    {
+     "centre": "sun",
+     "from": "2007-10-01T00:00:00Z",
+     "to": "2009-02-14T00:00:00Z",
+     "samples": 33,
+     "tol_km": 1000.0,
+     "fit_max_km": 995.62,
+     "fetched": 503,
+     "step_min_s": 604800.0,
+     "step_max_s": 2419200.0,
+     "steps": {
+      "1 d to 10 d": 4,
+      "over 10 d": 28
+     },
+     "centre_source": "dawn_final"
+    },
+    {
+     "centre": "mars",
+     "from": "2009-02-14T00:00:00Z",
+     "to": "2009-02-22T00:00:00Z",
+     "samples": 40,
+     "tol_km": 1.0,
+     "fit_max_km": 0.971,
+     "fetched": 316,
+     "step_min_s": 420.0,
+     "step_max_s": 93600.0,
+     "steps": {
+      "under 10 min": 4,
+      "10 min to 1 h": 12,
+      "1 h to 6 h": 12,
+      "6 h to 1 d": 10,
+      "1 d to 10 d": 1
+     },
+     "closest": {
+      "at": "2009-02-18T00:28:00Z",
+      "km": 3938.6
+     },
+     "passes": 1,
+     "centre_source": "mar099"
+    },
+    {
+     "centre": "sun",
+     "from": "2009-02-22T00:00:00Z",
+     "to": "2018-10-31T00:00:00Z",
+     "samples": 3654,
+     "tol_km": 1000.0,
+     "fit_max_km": 999.88,
+     "fetched": 26677,
+     "step_min_s": 10800.0,
+     "step_max_s": 3974400.0,
+     "steps": {
+      "1 h to 6 h": 2067,
+      "6 h to 1 d": 1284,
+      "1 d to 10 d": 200,
+      "over 10 d": 102
+     },
+     "centre_source": "dawn_final"
+    }
+   ]
+  },
+  {
    "id": "asteroid-99942",
    "name": "Apophis",
    "command": "99942;",

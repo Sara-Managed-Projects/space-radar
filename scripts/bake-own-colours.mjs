@@ -15,6 +15,21 @@
 //                          collapse a part it is not connected to)
 //          --no-guess      tag `panel` and `foil` from names only, never from the colour
 //          --crease=DEG    the angle above which an edge stays sharp (default 40)
+//          --skip=REGEX    leave out every node whose name matches, and all below it (the ISS file
+//                          is 2.7 million triangles and more than half of them are in nodes named
+//                          `..._Details` and `..._Handrails`: bolts, cables and grab bars)
+//          --keep=REGEX    ...except a node whose name matches this (`Radiator`: the station's
+//                          radiators are filed under `Details`)
+//          --recolour=A=#hex[:tag];B=#hex   OUR colour in place of the file's, and the only way
+//                          this script departs from what NASA stated on purpose. A is a regular
+//                          expression on "node mesh material", or `#rrggbb` to match a stated base
+//                          colour. Every use is written into the model's `modified:` line in
+//                          registry/models.yaml with the photograph the colour was read from.
+//          --crop=F        keep only what lies within F times the model's area-weighted RMS radius
+//                          of its area-weighted centre (MMS is a 3.5 m drum on 15 m booms: whole,
+//                          the drum is an eighth of the picture; say what was cut in `modified:`)
+//          --gain=G        multiply every sampled colour (a texture that is a photograph of
+//                          crinkled silver foil averages to dark grey; say so in `modified:`)
 //
 // WHY THIS EXISTS (issues #265, #386, #418; spec 0057 task 2). The first pipeline was three
 // scripts -- fetch-model.sh, decimate-model.mjs, flatten-textures.mjs -- and the middle one welds on
@@ -77,6 +92,17 @@ const COLOURS = Number(opt('colours', '14'));
 const ERROR = Number(opt('error', '0.004'));
 const MIN_PART = Number(opt('min-part', '0.004'));
 const GUESS = !process.argv.includes('--no-guess');
+const SKIP = opt('skip', '') ? new RegExp(opt('skip', ''), 'i') : null;
+const KEEP = opt('keep', '') ? new RegExp(opt('keep', ''), 'i') : null;
+const GAIN = Number(opt('gain', '1'));
+const CROP = Number(opt('crop', '0'));
+const hexToLinear = (h) => [1, 3, 5].map((i) => { const c = parseInt(h.slice(i, i + 2), 16) / 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; });
+const RECOLOUR = opt('recolour', '').split(';').filter(Boolean).map((rule) => {
+  const at = rule.lastIndexOf('=');
+  const [hex, tag] = rule.slice(at + 1).split(':');
+  const key = rule.slice(0, at);
+  return { hex: /^#[0-9a-f]{6}$/i.test(key) ? key.toLowerCase() : null, re: /^#[0-9a-f]{6}$/i.test(key) ? null : new RegExp(key, 'i'), rgb: hexToLinear(hex), tag: tag ? ['body', 'panel', 'foil'].indexOf(tag) : -1, hits: 0 };
+});
 const CREASE_COS = Math.cos((Number(opt('crease', '40')) * Math.PI) / 180);
 const V_MIN = 0.12, V_MAX = 0.93; // sRGB, brightest channel: see THE VALUE CLAMP
 const RASTER = 48;                // px a texture is averaged down to before it is sampled
@@ -126,7 +152,16 @@ const raw = []; // [ax,ay,az,bx,by,bz,cx,cy,cz, r,g,b, tag]
 
 const scene = doc.getRoot().getDefaultScene() || doc.getRoot().listScenes()[0];
 const jobs = [];
-scene.traverse((node) => { if (node.getMesh()) jobs.push(node); });
+const skipped = (node) => {
+  if (!SKIP) return false;
+  for (let n = node; n && n.getName; n = n.getParentNode ? n.getParentNode() : null) {
+    const name = n.getName() || '';
+    if (SKIP.test(name) && !(KEEP && KEEP.test(name))) return true;
+  }
+  return false;
+};
+let skippedNodes = 0;
+scene.traverse((node) => { if (!node.getMesh()) return; if (skipped(node)) { skippedNodes++; return; } jobs.push(node); });
 for (const node of jobs) {
   const M = node.getWorldMatrix();
   const mesh = node.getMesh();
@@ -141,7 +176,10 @@ for (const node of jobs) {
     if (factor[3] < 0.1) continue; // glass that is all but invisible
     const px = mat ? await rasterOf(mat.getBaseColorTexture()) : null;
     const names = `${node.getName()} ${mesh.getName()} ${mat ? mat.getName() : ''}`;
-    const tag = PANEL_NAME.test(names) ? 1 : FOIL_NAME.test(names) ? 2 : 0;
+    let tag = PANEL_NAME.test(names) ? 1 : FOIL_NAME.test(names) ? 2 : 0;
+    const statedHex = `#${factor.slice(0, 3).map((v) => Math.round(toSrgb(v) * 255).toString(16).padStart(2, '0')).join('')}`;
+    const ours = RECOLOUR.find((r) => (r.hex ? r.hex === statedHex : r.re.test(names)));
+    if (ours && ours.tag >= 0) tag = ours.tag;
     const n = pa.getCount();
     const xyz = new Float64Array(n * 3);
     const e = [];
@@ -166,6 +204,8 @@ for (const node of jobs) {
         for (let k = 0; k < 3; k++) ca.getElement(v[k], vc[k]);
         for (let k = 0; k < 3; k++) c[k] *= (vc[0][k] + vc[1][k] + vc[2][k]) / 3;
       }
+      if (GAIN !== 1) c = c.map((x) => Math.min(1, x * GAIN));
+      if (ours) { c = ours.rgb.slice(); ours.hits++; }
       const row = new Float64Array(13);
       for (let k = 0; k < 3; k++) for (let j = 0; j < 3; j++) row[k * 3 + j] = xyz[v[k] * 3 + j];
       row[9] = c[0]; row[10] = c[1]; row[11] = c[2]; row[12] = tag;
@@ -175,6 +215,21 @@ for (const node of jobs) {
   }
 }
 if (!raw.length) { console.error('no triangles in that file'); process.exit(1); }
+let cropped = 0;
+if (CROP > 0) {
+  const cross = (a, b, c) => { const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2], vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2]; return [uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx]; };
+  const mid = (r) => [(r[0] + r[3] + r[6]) / 3, (r[1] + r[4] + r[7]) / 3, (r[2] + r[5] + r[8]) / 3];
+  const areaOf = (r) => Math.hypot(...cross([r[0], r[1], r[2]], [r[3], r[4], r[5]], [r[6], r[7], r[8]])) / 2;
+  let w = 0; const c = [0, 0, 0];
+  for (const r of raw) { const a = areaOf(r), m = mid(r); w += a; for (let k = 0; k < 3; k++) c[k] += m[k] * a; }
+  for (let k = 0; k < 3; k++) c[k] /= w || 1;
+  let rr = 0;
+  for (const r of raw) { const m = mid(r); rr += areaOf(r) * ((m[0] - c[0]) ** 2 + (m[1] - c[1]) ** 2 + (m[2] - c[2]) ** 2); }
+  const limit = CROP * Math.sqrt(rr / (w || 1));
+  const keep = raw.filter((r) => { const m = mid(r); return Math.hypot(m[0] - c[0], m[1] - c[1], m[2] - c[2]) <= limit; });
+  cropped = raw.length - keep.length;
+  raw.length = 0; for (const r of keep) raw.push(r);
+}
 
 const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
 for (const r of raw) for (let k = 0; k < 9; k++) { lo[k % 3] = Math.min(lo[k % 3], r[k]); hi[k % 3] = Math.max(hi[k % 3], r[k]); }
@@ -472,5 +527,9 @@ report.sort((a, b) => b.share - a.share);
 console.log(
   `${OUT.split('/').pop()}: triangles ${srcTris} -> welded ${welded} (${small.size} loose parts dropped) -> ${nT}` +
   `${usedError ? ` at error ${usedError}` : ''}${reweld ? ` after re-welding on a 2^${reweld} grid` : ''}; ${report.length} colours; ${Math.round(statSync(OUT).size / 1024)} kB\n  ` +
-  report.map((r) => `${r.hex}${r.tag === 'body' ? '' : `[${r.tag}]`} ${(r.share * 100).toFixed(0)}%`).join('  ')
+  report.map((r) => `${r.hex}${r.tag === 'body' ? '' : `[${r.tag}]`} ${(r.share * 100).toFixed(0)}%`).join('  ') +
+  (skippedNodes ? `\n  --skip left out ${skippedNodes} nodes` : '') +
+  (RECOLOUR.length ? `\n  --recolour (OUR colours, not the file's): ${RECOLOUR.map((r) => `${r.hex || r.re.source} on ${r.hits} triangles`).join(', ')}` : '') +
+  (cropped ? `\n  --crop ${CROP} left out ${cropped} triangles far from the body` : '') +
+  (GAIN !== 1 ? `\n  --gain ${GAIN} on every sampled colour` : '')
 );

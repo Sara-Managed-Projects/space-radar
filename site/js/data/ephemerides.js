@@ -136,6 +136,17 @@ export const EPHEMERIDES = {
     "solution": "Mars2020_merged",
     "retrieved": "2026-10-06"
   },
+  "deep-dawn": {
+    "file": "deep-dawn.bin",
+    "bytes": 149404,
+    "name": "Dawn",
+    "from": "2007-09-27T12:40:00Z",
+    "to": "2018-10-31T00:00:00Z",
+    "goodToKm": 2000.0,
+    "horizonsId": "-203",
+    "solution": "dawn_final",
+    "retrieved": "2026-10-06"
+  },
   "asteroid-99942": {
     "file": "asteroid-99942.bin",
     "bytes": 18532,

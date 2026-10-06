@@ -99,6 +99,14 @@ references:
     read: 2026-09-22
     says: "PDS Geosciences Node, Analyst's Notebook, Phoenix mission overview: '68.22 degrees N,
            234.25 degrees East Areocentric'. JPL's PIA13804 caption gives the same two numbers."
+  m20-heli-waypoints:
+    url: "https://mars.nasa.gov/mmgis-maps/M20/Layers/json/m20_heli_waypoints.json"
+    read: 2026-10-07
+    says: "NASA/JPL-Caltech, the helicopter waypoints layer of the Mars 2020 mission map ('Where
+           is Perseverance?'): one point a flight, 0 to 72. The last, flight 72, Earth date 'Jan.
+           18, 2024', from and to 'Airfield Chi', is Lon 77.32253449, Lat 18.49726866 (planetocentric,
+           east-positive, the convention of the rover's own waypoints), total 18.139 km and
+           128.92 minutes over all flights."
   pds-msl:
     url: "https://an.rsl.wustl.edu/help/Content/About%20the%20mission/MSL/MSL%20mission.htm"
     read: 2026-09-22
@@ -327,6 +335,10 @@ sites:
   # --- On Mars ------------------------------------------------------------------------
   # Uncited: NASA's landing announcement numbers, not matched to a reference in this change.
   - {id: jezero, display: "Perseverance, Jezero crater", class: surface, world: mars, lat: 18.4447, lon: 77.4508, landed: 2021-02-18, shape: rover, source: uncited, aliases: ["Octavia E. Butler Landing"], doing: "A rover the size of a car, collecting rock samples in a crater that was once a river delta."}
+  # Ingenuity where it stopped (2026-10-07; public #437, internal #389): the last row of NASA's own
+  # waypoint file for the helicopter, flight 72 on 18 January 2024, at Airfield Chi. NASA named
+  # the place Valinor Hills. 7.4 km west of the rover's landing site on this map.
+  - {id: ingenuity, display: "Ingenuity, Valinor Hills", class: surface, world: mars, lat: 18.4973, lon: 77.3225, landed: 2024-01-18, shape: lander, source: m20-heli-waypoints, aliases: ["Mars Helicopter", "Airfield Chi"], doing: "The first aircraft to fly on another world: 72 flights from 2021 to 2024. It stands where the last one ended."}
   - {id: gale, display: "Curiosity, Gale crater", class: surface, world: mars, lat: -4.5895, lon: 137.4417, landed: 2012-08-06, shape: rover, source: pds-msl, aliases: ["Bradbury Landing"], doing: "Driving up a mountain of layered rock since 2012."}
   # Uncited: Wikipedia gives the same pair and cites Parker et al. (2019), which was not read here.
   - {id: elysium, display: "InSight, Elysium Planitia", class: surface, world: mars, lat: 4.5024, lon: 135.6234, landed: 2018-11-26, shape: lander, source: uncited, doing: "Listened to marsquakes until its solar panels were covered in dust in 2022."}

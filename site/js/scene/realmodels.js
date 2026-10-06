@@ -447,6 +447,19 @@ export const REAL_MODELS = {
     '-85': { file: 'lro.glb', colour: 'probe', name: 'Lunar Reconnaissance Orbiter' },
     '-64': { file: 'osiris-rex.glb', colour: 'probe', name: 'OSIRIS-APEX' },
     '-234': { file: 'stereo.glb', colour: 'probe', name: 'STEREO-A' },
+    // 2026-10-07 (internal #389, public #438 and #431): five craft that each got a record the day
+    // their NASA mesh did. Spitzer and Kepler are switched off and still in their orbits of the
+    // Sun; Roman launched on 30 August 2026; Mars Odyssey circles Mars; Dawn is drawn inside
+    // the years of its own path (site/data/eph), like Cassini.
+    '-79': { file: 'spitzer.glb', colour: 'telescope', name: 'Spitzer Space Telescope' },
+    '-227': { file: 'kepler.glb', colour: 'telescope', name: 'Kepler' },
+    '-211': { file: 'roman.glb', colour: 'telescope', name: 'Nancy Grace Roman Space Telescope' },
+    '-53': { file: 'odyssey.glb', colour: 'probe', name: 'Mars Odyssey' },
+    '-203': { file: 'dawn.glb', colour: 'probe', name: 'Dawn' },
+    // Mars 2020 in cruise: NASA's file is the rover, and what flew between the planets was a
+    // closed capsule under a ring of solar cells. A procedural shape from the one published
+    // length (scene/models.js buildMars2020Cruise), with nothing to upgrade to.
+    '-168': { build: 'mars-2020-cruise', colour: 'probe', name: 'Mars 2020 in cruise' },
   },
   /**
    * Matched on the catalogue NAME rather than a catalogue number, deliberately.
@@ -730,6 +743,8 @@ export const REAL_MODELS = {
     // built on Curiosity's chassis -- the same rocker-bogie, deck, mast and RTG -- and differs in
     // the turret, the wheels and the sample tubes, none of which survive at this size. So the card
     // reads "drawn as ... the kind of thing, not this exact one", which is the true sentence.
+    // Ingenuity, where its last flight ended (registry/sites.yaml, from NASA's waypoint file).
+    ingenuity: { file: 'ingenuity.glb', colour: 'site', name: 'the Ingenuity helicopter' },
     gale: { file: 'perseverance.glb', colour: 'site', name: 'a rover of the design Curiosity and Perseverance share', generic: true },
     // NASA's Mars Exploration Rover model is Opportunity (MER-B). Spirit was its twin, built to the
     // same drawings, so it wears the same file and says it is the kind of thing.

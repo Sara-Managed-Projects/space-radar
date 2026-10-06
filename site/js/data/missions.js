@@ -465,6 +465,66 @@ export const MISSIONS = [
     ]
   },
   {
+    "id": "dawn",
+    "record": "deep-dawn",
+    "display": "Dawn",
+    "read": "2026-10-07",
+    "source": {
+      "name": "NASA NSSDCA, Dawn",
+      "url": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2007-043A"
+    },
+    "events": [
+      {
+        "id": "launch",
+        "date": "2007-09-27T11:34:00Z",
+        "title": "Launch",
+        "text": "Dawn leaves Cape Canaveral on a Delta II, bound for the asteroid belt.",
+        "place": "path",
+        "path_at": "2007-09-27T12:40:00Z",
+        "world": "earth"
+      },
+      {
+        "id": "mars",
+        "date": "2009-02-18T00:28:00Z",
+        "title": "Past Mars",
+        "text": "It passes within 542 km of the surface of Mars, which bends its path outwards.",
+        "place": "path",
+        "world": "mars"
+      },
+      {
+        "id": "vesta",
+        "date": "2011-07-16",
+        "precision": "day",
+        "title": "Into orbit round Vesta",
+        "text": "Dawn reaches the asteroid Vesta and uses its thrusters to go into orbit.",
+        "place": "path"
+      },
+      {
+        "id": "leaves-vesta",
+        "date": "2012-09-05T06:26:00Z",
+        "title": "Leaving Vesta",
+        "text": "It departs Vesta for Ceres.",
+        "place": "path"
+      },
+      {
+        "id": "ceres",
+        "date": "2015-03-06T12:29:00Z",
+        "title": "Into orbit round Ceres",
+        "text": "It enters its first orbit round the dwarf planet Ceres.",
+        "place": "path"
+      },
+      {
+        "id": "end",
+        "date": "2018-10-31",
+        "precision": "day",
+        "title": "The last contact",
+        "text": "Communications end. Dawn stays in orbit round Ceres.",
+        "place": "path",
+        "path_at": "2018-10-31T00:00:00Z"
+      }
+    ]
+  },
+  {
     "id": "pioneer-10",
     "record": "deep-pioneer-10",
     "display": "Pioneer 10",

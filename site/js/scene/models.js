@@ -53,6 +53,7 @@ function gradientMap() {
 
 // One shared uniform object, so a single write in updateModelAttitude() reaches every material.
 const SHARED = {
+  uFlood: { value: 0 },
   uSunDir: { value: new THREE.Vector3(1, 0, 0) },
   uRimSun: { value: new THREE.Color('#FFF6EC') },
   uRimShade: { value: new THREE.Color(PALETTE.atmosphere) },
@@ -211,6 +212,7 @@ export function toonMaterial(colour, kind = 'body', pool = materials, map = null
     shader.uniforms.uShineCol = SHARED.uShineCol;
     shader.uniforms.uShadeRadius = SHARED.uShadeRadius;
     shader.uniforms.uNightCol = SHARED.uNightCol;
+    shader.uniforms.uFlood = SHARED.uFlood;
     shader.uniforms.uRim = { value: 0.35 };
     shader.uniforms.uSpec = { value: s.spec };
     shader.uniforms.uSpecPower = { value: s.power };
@@ -229,6 +231,7 @@ export function toonMaterial(colour, kind = 'body', pool = materials, map = null
           'uniform vec3 uShineCol;',
           'uniform float uShadeRadius;',
           'uniform vec3 uNightCol;',
+          'uniform float uFlood;',
           'void main() {',
         ].join('\n')
       )
@@ -272,6 +275,13 @@ export function toonMaterial(colour, kind = 'body', pool = materials, map = null
           '      outgoingLight = mix( night, outgoingLight, sunlit );',
           '    }',
           '  }',
+          // The flood light (setFloodLight below), after the shadow, because it is not the Sun's:
+          // an even lamp at the camera, so a craft on a night side or with its back to the Sun
+          // can be looked at. It only ever lifts a pixel, never darkens one.
+          '  if ( uFlood > 0.0 ) {',
+          '    float head = 0.55 + 0.45 * clamp( dot( normal, V ), 0.0, 1.0 );',
+          '    outgoingLight = max( outgoingLight, diffuseColor.rgb * head * uFlood );',
+          '  }',
           '}',
           '#include <opaque_fragment>',
         ].join('\n')
@@ -280,6 +290,28 @@ export function toonMaterial(colour, kind = 'body', pool = materials, map = null
   m.customProgramCacheKey = () => `sr-toon-${kind}`;
   pool.set(key, m);
   return m;
+}
+
+/**
+ * THE FLOOD LIGHT (internal #272). NOT THE REAL LIGHT, and the card that switches it on says so.
+ * A craft in a world's shadow is drawn dark because it is dark (worldShadowLit above); this is the
+ * lamp a planetarium turns on to show the model anyway. One shared uniform: every toon material
+ * reads it, so it lights whichever model is on screen and costs nothing when it is 0.
+ * FLOOD_LEVEL is the lamp's strength where the surface faces the camera; 0.9 keeps a white hull
+ * under the bright step of the sunlit ramp, so "lit for viewing" never reads brighter than day.
+ */
+export const FLOOD_LEVEL = 0.9;
+export function setFloodLight(on) {
+  SHARED.uFlood.value = on ? FLOOD_LEVEL : 0;
+  return SHARED.uFlood.value > 0;
+}
+export function floodLightOn() {
+  return SHARED.uFlood.value > 0;
+}
+/** The same sum as the shader's, for the tests: what a pixel of `albedo` facing `facing` shows. */
+export function floodLit(outgoing, albedo, facing, flood = SHARED.uFlood.value) {
+  if (!(flood > 0)) return outgoing;
+  return Math.max(outgoing, albedo * (0.55 + 0.45 * Math.min(1, Math.max(0, facing))) * flood);
 }
 
 /** Update the Sun direction every material's rim and specular use. Scene space, unit, toward the Sun. */
@@ -2355,6 +2387,54 @@ function buildNewHorizons() {
   return g;
 }
 
+// Mars 2020 in cruise (internal #424): what flew from Earth to Mars was not a rover but a closed
+// capsule under a ring of solar panels, spinning. NASA publishes the rover as a mesh and not this.
+//
+// ONE LENGTH IS PUBLISHED AND THE REST ARE OURS. The heat shield is 4.5 m across ("the 4.5 m (15 ft)
+// diameter heat shield, which is the largest heat shield ever flown in space": the Mars Science
+// Laboratory aeroshell, which Mars 2020 flew again; Wikipedia's Mars Science Laboratory article,
+// read 2026-10-07). The heights, the slope of the backshell and the 4 m of the cruise stage are
+// read off NASA's pictures of the stacked spacecraft before launch and are this project's.
+function buildMars2020Cruise() {
+  const g = new THREE.Group();
+  const M = 4.5; // the published diameter, and the longest thing on the model
+  g.userData.realSizeM = M;
+  const S = 1 / M;
+  const R = 2.25 * S;
+  // The heat shield: a blunt cone, tan (the colour of its ablator before entry), nose towards -Y.
+  const shield = cyl(R, 0.35 * S, 0.75 * S, 28, '#B58E63', 'body', 'heat-shield');
+  shield.position.y = -0.95 * S;
+  g.add(shield);
+  const nose = cyl(0.35 * S, 0.02 * S, 0.1 * S, 16, '#B58E63', 'body', 'heat-shield-nose');
+  nose.position.y = -1.375 * S;
+  g.add(nose);
+  // The backshell: white, narrowing in two steps to the parachute cone.
+  const back = cyl(1.05 * S, R, 1.35 * S, 28, HULL_WHITE, 'body', 'backshell');
+  back.position.y = 0.1 * S;
+  g.add(back);
+  const cone = cyl(0.45 * S, 1.05 * S, 0.35 * S, 20, HULL_WHITE, 'body', 'parachute-cone');
+  cone.position.y = 0.95 * S;
+  g.add(cone);
+  // The cruise stage: a 4 m ring on top, solar cells on its outward face, radiators round its rim.
+  const ring = cyl(2.0 * S, 2.0 * S, 0.3 * S, 28, HULL_GREY, 'body', 'cruise-stage');
+  ring.position.y = 1.275 * S;
+  g.add(ring);
+  const cells = cyl(1.9 * S, 1.9 * S, 0.02 * S, 28, PANEL_BLUE, 'panel', 'solar-panel');
+  cells.position.y = 1.435 * S;
+  g.add(cells);
+  const hub = cyl(0.6 * S, 0.6 * S, 0.12 * S, 16, FOIL, 'foil', 'hub');
+  hub.position.y = 1.485 * S;
+  g.add(hub);
+  for (let i = 0; i < 10; i++) {
+    const a = (i / 10) * Math.PI * 2;
+    const rad = box(0.5 * S, 0.24 * S, 0.03 * S, RADIATOR, 'radiator', 'radiator');
+    rad.position.set(Math.cos(a) * 2.02 * S, 1.275 * S, Math.sin(a) * 2.02 * S);
+    rad.rotation.y = Math.PI / 2 - a;
+    g.add(rad);
+  }
+  return g;
+}
+
 // ------------------------------------------------------------------------------------ asteroid
 
 /**
@@ -3336,7 +3416,7 @@ const BUILDERS = {
   },
   debris: { default: buildDebris },
   rocket: rocketVariants(),
-  probe: { default: buildProbe, 'new-horizons': buildNewHorizons, 'solar-orbiter': buildSolarOrbiter },
+  probe: { default: buildProbe, 'new-horizons': buildNewHorizons, 'solar-orbiter': buildSolarOrbiter, 'mars-2020-cruise': buildMars2020Cruise },
   telescope: { default: buildTelescope, tube: buildTelescope, hex: buildJwst, jwst: buildJwst, gaia: buildGaia },
   asteroid: { default: buildAsteroid },
   comet: { default: buildComet },

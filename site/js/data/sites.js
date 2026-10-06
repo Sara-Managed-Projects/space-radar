@@ -300,6 +300,20 @@ export const SITES = [
     "doing": "A rover the size of a car, collecting rock samples in a crater that was once a river delta."
   },
   {
+    "id": "ingenuity",
+    "display": "Ingenuity, Valinor Hills",
+    "class": "surface",
+    "world": "mars",
+    "lat": 18.4973,
+    "lon": 77.3225,
+    "shape": "lander",
+    "aliases": [
+      "Mars Helicopter",
+      "Airfield Chi"
+    ],
+    "doing": "The first aircraft to fly on another world: 72 flights from 2021 to 2024. It stands where the last one ended."
+  },
+  {
     "id": "gale",
     "display": "Curiosity, Gale crater",
     "class": "surface",

@@ -108,3 +108,11 @@ ids:
   - {id: "-41",  name: "Mars Express",               app_id: deep-mars-express, center: "'500@499'"}
   - {id: "-85",  name: "Lunar Reconnaissance Orbiter", app_id: deep-lro, center: "'500@301'"}
   - {id: "-139479", name: "Gaia",                    app_id: deep-gaia}
+  # Added 2026-10-07 with their models (internal #389). Each header was read that day: Roman's
+  # file is a flight-dynamics prediction that ends 2026-10-26 (the anchor stays the stand-in
+  # after it), Odyssey's is fitted to 2026-09-23, Spitzer's and Kepler's are long predictions for
+  # two craft that are switched off. THE HARVESTER NEEDS A REDEPLOY to fetch these.
+  - {id: "-211", name: "Nancy Grace Roman Space Telescope", app_id: deep-roman}
+  - {id: "-53",  name: "Mars Odyssey",               app_id: deep-mars-odyssey, center: "'500@499'"}
+  - {id: "-79",  name: "Spitzer Space Telescope",    app_id: deep-spitzer}
+  - {id: "-227", name: "Kepler",                     app_id: deep-kepler}

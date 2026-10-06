@@ -405,9 +405,9 @@ The numbers are facts and carry no licence; the arrangement is this project's (M
 
 ## 3b. 3D models — NASA, public domain
 
-Fifty-two spacecraft, spacecraft-bus, antenna, rocket-stage and surface models ship in `site/models/`, all
+Sixty-three spacecraft, spacecraft-bus, antenna, rocket-stage and surface models ship in `site/models/`, all
 from **NASA 3D Resources** (<https://github.com/nasa/NASA-3D-Resources>, mirrored from
-<https://science.nasa.gov/3d-resources/>), 6.5 MB in total.
+<https://science.nasa.gov/3d-resources/>), 8.1 MB in total.
 
 NASA's media usage guidelines: material created by NASA is generally **not protected by copyright**
 and may be used without permission. The exceptions are the NASA insignia, logo and seal, which may
@@ -425,7 +425,7 @@ than counted by hand.
 
 | file | NASA model | used for | size |
 |---|---|---|---|
-| `iss.glb` | International Space Station (ISS) (A) | NORAD 25544 | 34 KB |
+| `iss.glb` | International Space Station (ISS) (D) (IGOAL) | NORAD 25544 | 280 KB |
 
 **Weather satellites**
 
@@ -445,7 +445,10 @@ than counted by hand.
 | `chandra.glb` | Chandra X-ray Observatory | NORAD 25867 (CXO) | 148 KB |
 | `fermi.glb` | Fermi Gamma-ray Large Area Space Telescope | NORAD 33053 (FGRST (GLAST)) | 142 KB |
 | `hinode.glb` | Hinode (Solar-B) | NORAD 29479 (HINODE (SOLAR-B)) | 103 KB |
-| `hubble.glb` | Hubble Space Telescope (A) | NORAD 20580 | 78 KB |
+| `hubble.glb` | Hubble Space Telescope (A) | NORAD 20580 | 76 KB |
+| `kepler.glb` | Kepler (A) | Horizons -227 (Kepler) | 96 KB |
+| `roman.glb` | Nancy Grace Roman Space Telescope (B) | Horizons -211 (Nancy Grace Roman Space Telescope) | 162 KB |
+| `spitzer.glb` | Spitzer Space Telescope | Horizons -79 (Spitzer) | 166 KB |
 | `sdo.glb` | Solar Dynamics Observatory | NORAD 36395 (SDO) | 113 KB |
 | `soho.glb` | Solar and Heliospheric Observatory | Horizons -21 | 29 KB |
 | `swift.glb` | Swift | NORAD 28485 (SWIFT) | 147 KB |
@@ -468,7 +471,7 @@ than counted by hand.
 | `jason.glb` | Ocean Surface Topography Mission (OSTM Jason-2) | NORAD 41240 (JASON-3), drawn as its sister ship | 123 KB |
 | `landsat.glb` | Landsat 7 | NORAD 25682 (Landsat 7) | 69 KB |
 | `landsat8.glb` | Landsat 8 | NORAD 39084, 49260 (Landsat 8, 9) | 177 KB |
-| `mms.glb` | Magnetospheric Multiscale (MMS) (A) | NORAD 40482-40485 (MMS 1 to MMS 4) | 121 KB |
+| `mms.glb` | Magnetospheric Multiscale (MMS) (B) | NORAD 40482-40485 (MMS 1 to MMS 4) | 177 KB |
 | `sentinel6.glb` | Jason Continuity of Service (Sentinel-6) | NORAD 46984 (SENTINEL-6A) | 102 KB |
 | `oco2.glb` | Orbiting Carbon Observatory (OCO) 2 | catalogue name OCO 2 | 189 KB |
 | `suomi.glb` | Suomi National Polar-orbiting Partnership (Suomi NPP) | NORAD 37849 (SUOMI NPP) | 27 KB |
@@ -485,6 +488,9 @@ than counted by hand.
 | file | NASA model | used for | size |
 |---|---|---|---|
 | `cassini.glb` | Cassini-Huygens (A) | Horizons -82 (Cassini, 1997 to 2017) | 171 KB |
+| `dawn.glb` | Dawn | Horizons -203 (Dawn, 2007 to 2018) | 116 KB |
+| `maven.glb` | Mars Atmosphere and Volatile EvolutioN (MAVEN) (B) | no record yet: MAVEN has had no position source since 2026-03-01 | 179 KB |
+| `odyssey.glb` | Mars Odyssey | Horizons -53 (Mars Odyssey) | 95 KB |
 | `galileo.glb` | Galileo | Horizons -77 (Galileo, 1989 to 2003) | 76 KB |
 | `juno.glb` | Juno (B) | Horizons -61 | 146 KB |
 | `lro.glb` | Lunar Reconnaissance Orbiter (A) | Horizons -85 | 187 KB |
@@ -520,7 +526,8 @@ NASA's science data policy, as for Eros.
 | `dsn34.glb` | Deep Space Network 34-meter | the dss-25 antenna, which is 34 m and was wrongly drawn with the 70 m model | 151 KB |
 | `dsn70.glb` | Deep Space Network 70-meter | DEFAULT for ground sites of class `dish` | 149 KB |
 | `insight.glb` | InSight Cruise Lander | the InSight landing site at Elysium Planitia | 267 KB |
-| `lunar-module.glb` | Apollo Lunar Module | the Apollo 11, 12, 14, 15, 16 and 17 landing sites -- one vehicle design, six descent stages | 176 KB |
+| `ingenuity.glb` | Ingenuity Mars Helicopter | the Ingenuity site at Valinor Hills | 86 KB |
+| `lunar-module.glb` | Apollo Lunar Module | the Apollo 11, 12, 14, 15, 16 and 17 landing sites -- one vehicle design, six descent stages | 203 KB |
 | `mer.glb` | Mars Exploration Rover - Opportunity (MER-B) | the Opportunity site, and the Spirit site as its twin | 38 KB |
 | `pad.glb` | Mobile Launcher | DEFAULT for every launch pad -- 17 today, more with each Launch Library refresh | 74 KB |
 | `perseverance.glb` | Mars 2020 Perseverance Rover | Jezero crater on Mars; and Gale crater, where Curiosity is drawn with it as the kind of thing | 256 KB |
@@ -581,9 +588,27 @@ credit:
    shipped, and the toon shading of step 5 is unchanged — the colours are NASA's, the light is
    ours. Three of the twenty-four (`gpm.glb`, `icon.glb`, `tselina2.glb`) had a palette strip and
    no texture coordinates to read it with, so each was drawn in the strip's first colour; they are
-   rebuilt the same way. `mms.glb` was not rebuilt: NASA's file states no colours at all.
+   rebuilt the same way. `mms.glb` was not rebuilt then: NASA's (A) file states no colours at all.
 
-They are loaded **on demand**, one file per object, only when the camera is near it. Nobody downloads all 53; the largest single download is `icesat2.glb` at 290 KB.
+8. **Twelve more, the same way** (2026-10-07): `iss.glb` from NASA's IGOAL model of the whole
+   station, `hubble.glb`, `lunar-module.glb`, `galileo.glb` and `mms.glb` rebuilt, and `spitzer.glb`,
+   `kepler.glb`, `roman.glb`, `dawn.glb`, `maven.glb`, `odyssey.glb` and `ingenuity.glb` new. Five
+   of them depart from NASA's file on purpose, and each departure is ours, not NASA's:
+   - `iss.glb` leaves out the nodes the file names details, handrails and payload sites (bolts,
+     cables, grab bars), all but the radiators: 592 thousand of its 2.7 million triangles go into
+     the bake.
+   - `hubble.glb` is 1.5 times brighter than the average of NASA's textures, which are photographs
+     of crinkled foil and average to dark grey.
+   - `galileo.glb`: the material the file names `bus:black` is stated blue-violet in the file and
+     is drawn charcoal.
+   - `dawn.glb`: the cell face of the solar wings is an untextured light grey in the file and is
+     drawn the dark blue of the cells in NASA's photographs.
+   - `mms.glb` is NASA's (B) file, which has colours, with the outer lengths of its booms cut
+     off so that the body can be seen.
+   `maven.glb` is not drawn anywhere yet: MAVEN has not been heard from since December 2025 and
+   JPL publishes no path for it after 1 March 2026.
+
+They are loaded **on demand**, one file per object, only when the camera is near it. Nobody downloads all 63; the largest single download is `icesat2.glb` at 290 KB.
 
 ## 3f. The two photographs — Event Horizon Telescope, CC BY 4.0
 

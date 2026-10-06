@@ -838,6 +838,26 @@ const ANCHORED_CRAFT = [
     offset: 'It orbits the Sun–Earth L1 point, 1.5 million km SUNWARD of Earth. Drawn on ' +
       "Earth's orbit; the offset is smaller than the dot.",
   },
+  // Added 2026-10-07 (internal #389, public #438). Horizons -211 header (revised 2026-09-30): "It
+  // launched 2026-Aug-30 11:26:04 UTC on a Falcon Heavy from Kennedy Space Center (LC-39A) and
+  // will orbit the Earth-Sun L2 point", a 2.4 m primary mirror. Horizons, VECTORS, CENTER='500@399':
+  // 1 271 353 km from Earth on 2026-09-22 and 1 457 793 km on 2026-10-07. Its trajectory file is
+  // the flight dynamics team's prediction and ends 2026-10-26; the harvester asks for it and the
+  // anchor stays the stand-in when Horizons has nothing.
+  {
+    id: 'deep-roman',
+    name: 'Nancy Grace Roman Space Telescope',
+    launched: '2026-08-30',
+    klass: 'telescope',
+    horizonsId: -211,
+    anchor: 'earth',
+    earthRangeKm: 1.5e6,
+    note: 'Launched in August 2026 with a mirror as wide as Hubble’s, 2.4 metres, to survey ' +
+      'the sky in infrared light from beyond the Moon.',
+    offset: 'It is on its way into an orbit of the Sun–Earth L2 point, 1.5 million km beyond Earth ' +
+      '(JPL Horizons had it 1.46 million km out on 7 October 2026). It is drawn here on ' +
+      "Earth's orbit; the offset is smaller than the dot.",
+  },
 ];
 
 /**
@@ -918,6 +938,32 @@ const PLANET_ORBITERS = [
       'day, and after two days where it is on that orbit is not known.',
     // 88 km (2026-10-08 02:50).
     arc: 'within about 90 km of JPL’s own track',
+  },
+  // Added 2026-10-07 (internal #389). Horizons -53 header (revised 2026-09-30): launched
+  // 2001-04-07 15:02 UTC on a Delta II, Mars arrival 2001-10-24, "has supported ongoing exploration
+  // of Mars by relaying 95% of the data from the Mars rovers"; trajectory "fit to data through
+  // 2026-Sep-23, prediction after that". Same queries as the rows above, on 2026-10-07.
+  {
+    id: 'deep-mars-odyssey',
+    name: 'Mars Odyssey',
+    launched: '2001-04-07',
+    klass: 'probe',
+    horizonsId: -53,
+    world: 'mars',
+    aliases: ['2001 Mars Odyssey'],
+    note: 'In orbit since October 2001, longer than any other craft at another planet. It found ' +
+      'water ice under the ground and relays what the rovers say.',
+    rKm: [3664.181, -1037.886, -178.823],
+    vKmS: [-0.293632, -0.372025, -3.312939],
+    periodMin: 118.6,
+    // 3 762..3 834 km from Mars's centre over 2026-09-22..10-22; 97.5 degrees to the ecliptic.
+    orbit: 'circles Mars over the poles every 119 minutes, about 370 to 445 km up',
+    // Worst within a day 63 km, within a week 362, within two weeks 690, within 30 days 1 533.
+    drift: 'Checked against JPL’s own forecast, the dot stays within 100 km of it for a day and ' +
+      'is about 700 km off after two weeks.',
+    // 227 km (2026-10-04 15:00) from the nearer six-hourly state alone; the blend of the two is
+    // no worse than that.
+    arc: 'within about 250 km of JPL’s own track',
   },
   {
     id: 'deep-hope',
@@ -1147,6 +1193,22 @@ const PAST_CRAFT = [
       'Florida to Mars, in seven months.',
     end: 'It reached Mars on 18 February 2021, and its rover is the Jezero site on this map',
   },
+  // Dawn (2026-10-07, internal #389, public #431). NSSDCA 2007-043A, read 2026-10-07: launched
+  // 27 September 2007 at 11:34 UT; "communications ended on 31 October 2018", and "after the end
+  // of the mission Dawn remained in orbit around Ceres". JPL's reconstruction ends that day
+  // (Horizons -203 header); what it prints after is a prediction it says does not model the
+  // last events, so the craft is drawn only inside its tracked years.
+  {
+    id: 'deep-dawn',
+    name: 'Dawn',
+    launched: '2007-09-27',
+    ended: '2018-10-31',
+    klass: 'probe',
+    horizonsId: -203,
+    note: 'The first spacecraft to orbit two worlds beyond Earth: the asteroid Vesta in 2011 and ' +
+      '2012, then the dwarf planet Ceres from 2015.',
+    end: 'It fell silent on 31 October 2018, out of fuel, in an orbit of Ceres nobody has tracked since',
+  },
 ];
 
 /** Orbits given as elements where I am confident of the shape but not of the phase. */
@@ -1374,6 +1436,42 @@ const OSCULATING_CRAFT = [
     // Nothing steers it now: 277 km at 30 days, 1 663 at 60, 20 184 at 180, 75 806 at a year.
     drift: 'Checked against JPL’s own forecast, it stays within 2 000 km for two months and ' +
       '20 000 km for six.',
+  },
+  // Two telescopes that are switched off and still there (2026-10-07; internal #389, public #438).
+  // Same query as the rows above, fetched 2026-10-07.
+  {
+    id: 'deep-spitzer',
+    name: 'Spitzer Space Telescope',
+    launched: '2003-08-25',
+    klass: 'telescope',
+    horizonsId: -79,
+    // Horizons -79 header (revised 2021-09-13): launched Aug 25, 2003; "On 2020-Jan-30, the
+    // mission was completed, the spacecraft decommissioned"; it "will drift in its Earth trailing
+    // orbit until eventually returning to the vicinity of Earth in ~2051". The trajectory after
+    // 2020-01-30 is "a nominal long-term prediction". 2.00 au from Earth on 2026-09-22.
+    note: 'An infrared telescope that worked from 2003 to 2020. Switched off, it still circles ' +
+      'the Sun on Earth’s track, now on the far side of the Sun from us.',
+    aAu: 1.014174, e: 0.01128, iDeg: 1.1331, nodeDeg: 316.2451, argpDeg: 195.7813, maDeg: 35.5983,
+    // Nothing steers it: 531 km at 90 days, 6 928 at 180, 32 513 at a year.
+    drift: 'Checked against JPL’s own forecast, which is itself a prediction since 2020, it stays ' +
+      'within 1 000 km for three months and 7 000 km for six.',
+  },
+  {
+    id: 'deep-kepler',
+    name: 'Kepler',
+    launched: '2009-03-07',
+    klass: 'telescope',
+    horizonsId: -227,
+    aliases: ['Kepler space telescope', 'K2'],
+    // Horizons -227 header (revised 2019-02-22): launched 2009-Mar-7 03:49 UTC to an
+    // "Earth-trailing heliocentric orbit"; "Mission completed 2018-Oct-30 due to depletion of
+    // fuel"; "Kepler reported detections of 2662 planets". 1.76 au from Earth on 2026-09-22.
+    note: 'It found more than 2 600 planets round other stars before its fuel ran out in 2018. ' +
+      'It still follows Earth round the Sun, falling further behind.',
+    aAu: 1.013113, e: 0.03609, iDeg: 0.4483, nodeDeg: 154.1122, argpDeg: 294.1403, maDeg: 150.3521,
+    // 2 494 km at 90 days, 15 456 at 180.
+    drift: 'Checked against JPL’s own forecast, which is a prediction since 2018, it stays ' +
+      'within 3 000 km for three months and 16 000 km for six.',
   },
 ];
 

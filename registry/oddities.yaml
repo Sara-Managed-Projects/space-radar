@@ -87,6 +87,12 @@ attachable:
   - {id: deep-cassini,       horizons_id: "-82", emitted_by: "sample.js sampleDeepSpace(), PAST_CRAFT"}
   - {id: deep-galileo,       horizons_id: "-77", emitted_by: "sample.js sampleDeepSpace(), PAST_CRAFT"}
   - {id: deep-mars-2020,     horizons_id: "-168", emitted_by: "sample.js sampleDeepSpace(), PAST_CRAFT"}
+  # 2026-10-07, with their NASA models.
+  - {id: deep-dawn,          horizons_id: "-203", emitted_by: "sample.js sampleDeepSpace(), PAST_CRAFT"}
+  - {id: deep-roman,         horizons_id: "-211", emitted_by: "sample.js sampleDeepSpace(), ANCHORED_CRAFT"}
+  - {id: deep-mars-odyssey,  horizons_id: "-53", emitted_by: "sample.js sampleDeepSpace(), PLANET_ORBITERS"}
+  - {id: deep-spitzer,       horizons_id: "-79", emitted_by: "sample.js sampleDeepSpace(), OSCULATING_CRAFT"}
+  - {id: deep-kepler,        horizons_id: "-227", emitted_by: "sample.js sampleDeepSpace(), OSCULATING_CRAFT"}
   - {id: deep-juno,          horizons_id: "-61", emitted_by: "sample.js sampleDeepSpace(), PLANET_ORBITERS"}
   - {id: deep-parker,        horizons_id: "-96", emitted_by: "sample.js sampleDeepSpace(), ELLIPTIC_CRAFT"}
   - {id: deep-jwst,          horizons_id: "-170", emitted_by: "sample.js sampleDeepSpace(), ANCHORED_CRAFT"}

@@ -52,7 +52,7 @@ const everyRecord = sampleDeepSpace();
 const ended = everyRecord.filter((r) => r.meta && r.meta.construction === 'own-path');
 const records = everyRecord.filter((r) => !ended.includes(r));
 const byId = new Map(records.map((r) => [r.id, r]));
-check(JSON.stringify(ended.map((r) => r.id)) === JSON.stringify(['deep-cassini', 'deep-galileo', 'deep-mars-2020']), `the ended missions are Cassini, Galileo and Mars 2020's cruise (${ended.map((r) => r.id)})`);
+check(JSON.stringify(ended.map((r) => r.id)) === JSON.stringify(['deep-cassini', 'deep-galileo', 'deep-mars-2020', 'deep-dawn']), `the ended missions are Cassini, Galileo, Mars 2020's cruise and Dawn (${ended.map((r) => r.id)})`);
 {
   const { EPHEMERIDES } = await import(join(JS, 'data/ephemerides.js'));
   for (const rec of ended) {
@@ -66,7 +66,7 @@ check(JSON.stringify(ended.map((r) => r.id)) === JSON.stringify(['deep-cassini',
     check(rows.every((r) => r.id !== String(md.horizonsId)), `${rec.id}: the harvester must not ask Horizons for it today (its trajectory has ended)`);
   }
 }
-check(records.length === 24, `the deep-space layer holds twenty-four craft that are somewhere today (found ${records.length})`);
+check(records.length === 28, `the deep-space layer holds twenty-eight craft that are somewhere today (found ${records.length})`);
 check(byId.size === records.length, 'record ids are unique');
 
 // Every id the harvester fetches has a record under the app id the list names, with the same name.
@@ -147,15 +147,21 @@ const HORIZONS = {
   // Gaia joined this table on 2026-09-22, when it turned out to have left L2 in March 2025. Same
   // query, COMMAND='-139479'.
   'deep-gaia': { epoch: '2026-09-22', at: { '2026-09-22': [135000631, -85879500, -160555], '2026-11-21': [151241804, 55026517, -217869], '2027-03-21': [-95522318, 122030231, 98154] },
-    claims: [['2026-11-21', 0, 2000, 'within 2 000 km for two months'], ['2027-03-21', 15000, 22000, '20 000 km for six']] },
+    claims: [['2026-11-21', 0, 2000, 'within 2 000 km for two months'], ['2027-03-21', 15000, 22000, '20 000 km for six']] },  // Spitzer and Kepler joined on 2026-10-07: switched off, still in their orbits. Same query,
+  // COMMAND='-79' and '-227', fetched that day.
+  'deep-spitzer': { epoch: '2026-09-22', at: { '2026-09-22': [-148709665, -21907989, -2347092], '2026-12-21': [14800423, -151918614, -1967846], '2027-03-21': [153194659, 1859554, 2121970] },
+    claims: [['2026-12-21', 0, 1000, 'within 1 000 km for three months'], ['2027-03-21', 5000, 8000, '7 000 km for six']] },
+  'deep-kepler': { epoch: '2026-09-22', at: { '2026-09-22': [-76820248, -136181611, 1221120], '2026-12-21': [122189358, -94795044, 249860], '2027-03-21': [94467965, 112870596, -1117433] },
+    claims: [['2026-12-21', 0, 3000, 'within 3 000 km for three months'], ['2027-03-21', 12000, 17000, '16 000 km for six']] },
 };
-const ADDED = [...Object.keys(HORIZONS), 'deep-hope'];
+const TELESCOPES = new Set(['deep-gaia', 'deep-spitzer', 'deep-kepler']);
+const ADDED = [...Object.keys(HORIZONS).filter((id) => id !== 'deep-spitzer' && id !== 'deep-kepler'), 'deep-hope'];
 
 for (const [id, h] of Object.entries(HORIZONS)) {
   const rec = byId.get(id);
   check(rec, `${id} is in the layer`);
   if (!rec) continue;
-  check(rec.klass === (id === 'deep-gaia' ? 'telescope' : 'probe'), `${id} is a ${rec.klass}`);
+  check(rec.klass === (TELESCOPES.has(id) ? 'telescope' : 'probe'), `${id} is a ${rec.klass}`);
   check(rec.propagator === 'kepler' && rec.meta.construction === 'osculating', `${id} is drawn from its osculating elements`);
   check(Number.isFinite(rec.elements.maRad) && rec.elements.tpMs === undefined, `${id} carries a mean anomaly, so its phase is real`);
   check(rec.elements.epochMs === at(h.epoch), `${id}: element epoch is ${new Date(rec.elements.epochMs).toISOString()}, not ${h.epoch}`);
@@ -201,6 +207,31 @@ const ROUND_HORIZONS = {
 };
 // The UTC instant of 00:00 TDB on a date: the orbiters are on the UTC clock (data/parsers.js).
 const atTdb = (iso) => at(iso) - TDB_MINUS_UTC_MS;
+// Mars Odyssey joined on 2026-10-07 (COMMAND='-53', same query). It is held to rule 1 here: on
+// Horizons' state at its epoch, and straying as its card says. The snapshot fixture above was cut
+// before it existed, so rules 2 to 6 are not run on it; the parser treats it as it treats MRO.
+{
+  const rec = byId.get('deep-mars-odyssey');
+  check(rec && rec.propagator === 'orbiter' && rec.frame === 'mars-inertial' && rec.meta.orbits === 'mars' && rec.meta.construction === 'round-a-world',
+    'Mars Odyssey is drawn from Mars');
+  if (rec) {
+    const H = { '2026-09-22': [3664.2, -1037.9, -178.8], '2026-09-23': [2008.0, -943.0, -3064.2], '2026-10-06': [3698.4, -630.0, -645.2] };
+    const p0 = propagate(rec, atTdb('2026-09-22'));
+    const d0 = p0 ? dist(p0, H['2026-09-22']) : Infinity;
+    check(d0 < 1, `deep-mars-odyssey: ${d0.toFixed(2)} km from Horizons at its own epoch`);
+    for (const [iso, lo, hi, says] of [['2026-09-23', 0, 100, 'within 100 km of it for a day'], ['2026-10-06', 400, 800, 'about 700 km off after two weeks']]) {
+      const p = propagate(rec, atTdb(iso));
+      const d = p ? dist(p, H[iso]) : Infinity;
+      check(d >= lo && d <= hi, `deep-mars-odyssey: the card says "${says}", and on ${iso} it is ${Math.round(d)} km`);
+      check(rec.meta.why.includes(says.split(' ').slice(0, 3).join(' ')), `deep-mars-odyssey: the card carries "${says}"`);
+    }
+    const R = WORLD_RADIUS_KM.mars;
+    for (let t = atTdb('2026-09-23'); t < atTdb('2026-09-25'); t += 60000) {
+      const p = propagate(rec, t);
+      if (!p || Math.hypot(p.x, p.y, p.z) < R + 100) { check(false, `deep-mars-odyssey is drawn ${p ? Math.round(Math.hypot(p.x, p.y, p.z) - R) : '?'} km up at ${new Date(t).toISOString()}`); break; }
+    }
+  }
+}
 const jdTdbToUtcMs = (jd) => (jd - 2440587.5) * 86400000 - TDB_MINUS_UTC_MS;
 const MIN = 60000;
 const HOUR = 3600000;

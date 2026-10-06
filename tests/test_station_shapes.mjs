@@ -535,7 +535,7 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
 {
   const { sampleDeepSpace } = await import(join(ROOT, 'site/js/data/sample.js'));
   const rows = sampleDeepSpace();
-  check(rows.length === 27, `the deep-space layer holds twenty-seven records (found ${rows.length})`);
+  check(rows.length === 32, `the deep-space layer holds thirty-two records (found ${rows.length})`);
   const want = {
     'deep-jwst': 'jwst.glb', 'deep-soho': 'soho.glb', 'deep-mro': 'mro.glb', 'deep-juno': 'juno.glb',
     'deep-voyager-1': 'voyager.glb', 'deep-voyager-2': 'voyager.glb', 'deep-parker': 'parker.glb',
@@ -547,12 +547,14 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
     // the two sister craft, which is what NASA publishes.
     'deep-cassini': 'cassini.glb', 'deep-galileo': 'galileo.glb',
     'deep-pioneer-10': 'pioneer.glb', 'deep-pioneer-11': 'pioneer.glb',
+    // 2026-10-07: five that got a record with their NASA mesh, and Mars 2020's cruise, whose
+    // mesh NASA does not publish (its file is the rover), as a shape from the published 4.5 m.
+    'deep-spitzer': 'spitzer.glb', 'deep-kepler': 'kepler.glb', 'deep-roman': 'roman.glb',
+    'deep-mars-odyssey': 'odyssey.glb', 'deep-dawn': 'dawn.glb', 'deep-mars-2020': 'build:mars-2020-cruise',
   };
   // The 2026-09-22 twelve, less the three above: generic on purpose, and never another craft's shape.
   const generic = new Set(['deep-psyche', 'deep-lucy', 'deep-europa-clipper', 'deep-juice', 'deep-bepicolombo',
-    'deep-hera', 'deep-hayabusa2', 'deep-hope', 'deep-mars-express',
-    // Mars 2020's cruise (2026-10-06): NASA's file is the rover, which flew folded in an aeroshell.
-    'deep-mars-2020']);
+    'deep-hera', 'deep-hayabusa2', 'deep-hope', 'deep-mars-express']);
   for (const r of rows) {
     const e = realModelFor(r);
     const got = e && e.file ? e.file : e && e.build ? `build:${e.build}` : null;
@@ -570,7 +572,8 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   check(!comet || comet.build !== 'solar-orbiter', `a comet named Solar Orbiter must not get the spacecraft: ${JSON.stringify(comet)}`);
   // The three new shapes are real variants, inside budget, at the size their sources publish.
   for (const [klass, variant, sizeM] of [['telescope', 'gaia', 10.2], ['probe', 'solar-orbiter', 18],
-                                         ['probe', 'new-horizons', 3.2], ['telescope', 'jwst', 21.197]]) {
+                                         ['probe', 'new-horizons', 3.2], ['telescope', 'jwst', 21.197],
+                                         ['probe', 'mars-2020-cruise', 4.5]]) {
     const o = modelFor(klass, variant);
     const b = budgetOf(`${klass}-${variant}`);
     check(!o.userData.generic, `${klass}:${variant} is a real variant, not a fallback`);
