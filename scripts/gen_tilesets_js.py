@@ -22,14 +22,22 @@ from _genmirror import Mirror  # noqa: E402
 FIELDS = (("id", "id"), ("world", "world"), ("title", "title"), ("url", "url"), ("mode", "mode"), ("matrix", "matrix"),
           ("tile_px", "tilePx"), ("min_level", "minLevel"), ("start_level", "startLevel"),
           ("max_level", "maxLevel"), ("resolution_m", "resolutionM"), ("grade", "grade"),
-          ("credit", "credit"))
+          ("credit", "credit"), ("level0_span_deg", "span0"), ("grade_sea", "gradeSea"),
+          ("baked_relief", "bakedRelief"))
+# A row's `relief:` block (the shaded-relief pyramid re-lit by the Sun), the same way.
+RELIEF_FIELDS = (("title", "title"), ("url", "url"), ("max_level", "maxLevel"),
+                 ("light_azimuth_deg", "lightAzimuthDeg"), ("flat", "flat"), ("gain", "gain"),
+                 ("credit", "credit"))
 
 
 def render(doc: dict) -> list:
     rows = []
     for r in doc.get("tilesets") or []:
         if isinstance(r, dict):
-            rows.append({js: r[y] for y, js in FIELDS if y in r})
+            row = {js: r[y] for y, js in FIELDS if y in r}
+            if isinstance(r.get("relief"), dict):
+                row["relief"] = {js: r["relief"][y] for y, js in RELIEF_FIELDS if y in r["relief"]}
+            rows.append(row)
     return [("Map tiles a world is drawn from when the camera is close (scene/tiles.js, scene/tilemath.js).",
              "TILESETS", rows)]
 

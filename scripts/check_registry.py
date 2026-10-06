@@ -3210,6 +3210,7 @@ def check_textures(model_textures: list, world_ids: set) -> list:
 # what the host serves, so the app never asks for a level that is a 404 on every tile.
 TILESET_FIELDS = ("id", "world", "title", "url", "projection", "matrix", "tile_px", "levels", "min_level",
                   "start_level", "max_level", "resolution_m", "grade", "cors", "licence", "credit", "source")
+TILESET_RELIEF_FIELDS = ("title", "url", "capabilities", "levels", "max_level", "light_azimuth_deg", "flat", "gain", "cors", "licence", "credit", "source")
 TILESET_PROJECTIONS = {"equirectangular"}
 TILESET_CORS = re.compile(r"^Access-Control-Allow-Origin: \S+ \(measured \d{4}-\d{2}-\d{2}\)$")
 
@@ -3503,6 +3504,51 @@ def check_tilesets(world_ids: set) -> list:
         if not (isinstance(grade, list) and len(grade) == 3
                 and all(isinstance(v, (int, float)) and not isinstance(v, bool) and 0 < v <= 8 for v in grade)):
             fail(where, f"grade {grade!r} must be three gains in (0, 8], measured against the map under the tiles")
+        # 2026-10-06: the Earth's second gain, a grid that is not Trek's, and a row's relief pyramid.
+        sea = r.get("grade_sea")
+        if sea is not None and not (isinstance(sea, list) and len(sea) == 3
+                                    and all(isinstance(v, (int, float)) and not isinstance(v, bool) and 0 < v <= 10 for v in sea)):
+            fail(where, f"grade_sea {sea!r} must be three gains in (0, 10], measured against the map's water")
+        span0 = r.get("level0_span_deg")
+        if span0 is not None and not (isinstance(span0, (int, float)) and not isinstance(span0, bool) and 180 <= span0 <= 360):
+            fail(where, f"level0_span_deg {span0!r} must be a level-0 tile's side in degrees, 180 to 360")
+        if "baked_relief" in r and not isinstance(r.get("baked_relief"), bool):
+            fail(where, "baked_relief must be true or false")
+        rel = r.get("relief")
+        if rel is not None:
+            rwhere = f"{where}.relief"
+            if not isinstance(rel, dict):
+                fail(rwhere, "must be a mapping")
+                continue
+            lost = [k for k in TILESET_RELIEF_FIELDS if rel.get(k) in (None, "", [])]
+            if lost:
+                fail(rwhere, f"no {', '.join(lost)} -- a relief tile is somebody's picture too, and its light must be measured")
+            rurl = str(rel.get("url") or "")
+            if rurl and (not rurl.startswith("https://") or any(k not in rurl for k in ("{z}", "{y}", "{x}"))):
+                fail(rwhere, f"url {rurl!r} must be an https template with {{z}}, {{y}} and {{x}}")
+            if rel.get("cors") and not TILESET_CORS.match(str(rel.get("cors"))):
+                fail(rwhere, f"cors {rel.get('cors')!r} must be `Access-Control-Allow-Origin: <value> (measured YYYY-MM-DD)`")
+            if rel.get("source") and not STAR_SOURCE.match(str(rel.get("source"))):
+                fail(rwhere, f"source {rel.get('source')!r} must be `URL (read YYYY-MM-DD)`")
+            if rel.get("credit") and str(rel.get("credit")) not in section:
+                fail("CREDITS.md", f"tilesets.yaml credits the relief of `{rid}` as {rel.get('credit')!r}, and CREDITS.md "
+                                   f"section 4 does not carry that line")
+            if rel.get("credit") and " -- " in str(rel.get("credit")):
+                fail(rwhere, "the credit prints two hyphens as a dash; write a comma")
+            rl = rel.get("levels")
+            if not (isinstance(rl, list) and len(rl) == 2 and all(isinstance(v, int) for v in rl) and 0 <= rl[0] <= rl[1]):
+                fail(rwhere, f"levels {rl!r} must be [first, last], measured against the host")
+            elif not (isinstance(rel.get("max_level"), int) and rl[0] <= rel.get("max_level") <= rl[1]):
+                fail(rwhere, f"max_level {rel.get('max_level')!r} must be a level the host serves, {rl[0]} to {rl[1]}")
+            az = rel.get("light_azimuth_deg")
+            if not (isinstance(az, (int, float)) and not isinstance(az, bool) and 0 <= az < 360):
+                fail(rwhere, f"light_azimuth_deg {az!r} must be degrees east of north, 0 to 360, measured")
+            flat = rel.get("flat")
+            if not (isinstance(flat, (int, float)) and not isinstance(flat, bool) and 0.2 <= flat <= 0.95):
+                fail(rwhere, f"flat {flat!r} must be the picture's value on level ground, 0.2 to 0.95")
+            gain = rel.get("gain")
+            if not (isinstance(gain, (int, float)) and not isinstance(gain, bool) and 0 < gain <= 4):
+                fail(rwhere, f"gain {gain!r} must be in (0, 4]: the card prints it as the exaggeration")
     return rows_
 
 

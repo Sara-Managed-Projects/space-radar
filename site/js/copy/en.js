@@ -1520,6 +1520,14 @@ export const COPY = {
   // Nobody knows where this is, so it is not on the map."
   // The Earth's clouds (2026-09-28, scene/liveclouds.js). One line on the Earth's card, and the
   // credits NASA and the satellite operators ask for in the Sources panel.
+  // The Sun close up (scene/sun.js). The spots' line is on the Sun's card while NOAA's list for
+  // today is drawn; {n} groups, {date} the list's own day (UTC). The credit is for the Sources panel.
+  sun: {
+    spots: '{n} sunspot groups are drawn, from NOAA’s list for {date}: each as one round spot at its reported place and size, carried round by the Sun’s turning since then.',
+    spotsOne: 'One sunspot group is drawn, from NOAA’s list for {date}: as one round spot at its reported place and size, carried round by the Sun’s turning since then.',
+    regionsCredit: 'Today’s sunspot groups: NOAA Space Weather Prediction Center, solar region summary',
+  },
+
   clouds: {
     live: 'Clouds: seen {when}, {ago}, in infrared by {satellites}, through NASA GIBS. Over Europe, Africa, the Indian Ocean and the poles, which none of those satellites sees, they are illustrative.',
     at: 'at {time} UTC',
@@ -1713,6 +1721,19 @@ export const COPY = {
     // haze, are not, and the card says both. {n} is the row's heightGain.
     worldAir: 'its air is drawn {n} times thicker than it is so that it shows at this size, and the colour of its haze is illustrative',
     worldAirTrue: 'its haze is drawn at its measured height, and its colour is illustrative',
+    // The Sun close up (scene/sun.js, spec 0055 task 3): which parts of the picture are a model and
+    // which are there to be seen.
+    worldSun: 'close up, its edge darkens and reddens as a model of its atmosphere says it should; the grain stands for its churning surface and is drawn far coarser than the real granules; the corona is illustrative, and drawn far brighter than it is so that it can be seen',
+    // Spec 0065 requirement 4 (internal #337): while a close world is drawn from map tiles, the card
+    // names the mosaic under the camera. {title} is the registry row's (registry/tilesets.yaml), {res}
+    // the metres one pixel of the finest tiles on screen covers. `Detail`: Mars, where the mosaic is
+    // grey and only sharpens our own colour map.
+    worldMosaic: 'Under the camera now: {title}, drawn here at about {res} a pixel.',
+    worldMosaicDetail: 'Under the camera now: {title}, sharpening the colour map at about {res} a pixel.',
+    // ...and what the relief is (spec 0065 task 3). The shaded-relief mosaic has one light; only the
+    // slopes along that light are in it. {n} is the row's `gain`.
+    worldRelief: 'Its relief is from {title}: a drawing of slopes under one fixed light. The slopes along that light are lit again by the Sun where it is now, {n} times steeper than measured; slopes across it are not drawn.',
+    worldReliefBaked: 'Its hills are shaded into this map under a fixed light, not by the Sun where it is now.',
     mount: 'where we hang it on the model is our own arrangement, and it is drawn far bigger than it is — at true size it would be too small to see',
   },
 

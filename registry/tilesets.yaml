@@ -46,10 +46,35 @@ version: 1
 #   credit       the line the Sources panel prints while these tiles are on screen; CREDITS.md 4.16
 #   source       the page, with the day it was read: "URL (read YYYY-MM-DD)"
 #
-# NOT HERE, AND WHY. The Earth: GIBS's BlueMarble_ShadedRelief_Bathymetry (500 m, CORS `*`, measured
-# the same day) would do, but the Earth's shader blends day, night, water and clouds and its tiles
-# are 512 pixels on a 288-degree grid; that is its own task (0065 task 4). LOLA and MOLA elevation
-# (task 3) are separate rows when relief is drawn.
+#
+# ADDED 2026-10-06 (spec 0065 tasks 3 and 4):
+#   level0_span_deg  the side of a level-0 tile in degrees, for a pyramid that is not Trek's. NASA
+#                GIBS cuts the Earth into 288-degree tiles at level 0 (2 x 1, hanging past 180 E and
+#                90 S), 3 x 2 at level 1, 5 x 3, 10 x 5 ... (scene/tilemath.js, A SECOND GRID).
+#                `matrix` stays the host's own level-0 count.
+#   grade_sea    the Earth only: the gain for the tile's WATER texels; `grade` is then the land's.
+#                Blue Marble's sea is a quarter as bright as our day map's and its land half, so
+#                one gain cannot sit both at the map's tone (the numbers are in the row).
+#   baked_relief true when the mosaic itself carries shaded relief under a fixed light, so the
+#                card can say that its hills are shaded by the map's light and not by today's Sun.
+#   relief       a second pyramid on the same grid: a SHADED-RELIEF mosaic made from a laser
+#                altimeter. scene/tiles.js takes from it the slope along its light's direction and
+#                re-lights that with the real Sun. Its own fields:
+#       title, url, capabilities, levels, cors, licence, credit, source   as a row's
+#       max_level           the finest level asked for; a finer colour tile uses its ancestor here
+#       light_azimuth_deg   where the picture's light comes FROM, degrees east of north. MEASURED
+#                           2026-10-06, not read: three level-5 tiles of the shaded relief were
+#                           regressed on the east and north gradients of the same tiles of the
+#                           host's elevation mosaic (LRO_LOLA_DEM_Global_128ppd_v04,
+#                           Mars_MGS_MOLA_DEM_mosaic_global_463m_8); the numbers are in each row.
+#       flat                the picture's value on level ground, 0 to 1: the regression's constant
+#       gain                how many times steeper the slopes are drawn than the picture has them;
+#                           the card prints it
+#
+# NOT HERE, AND WHY. Relief from ELEVATION (true normals, both directions): Trek's elevation tiles
+# are 8 bits and stop at level 5, 78 m a step on the Moon -- a mare is one flat value with contour
+# steps across it (43 distinct values in a 170 km tile, measured 2026-10-06). A seamless COLOUR
+# mosaic of Mars: Trek has Viking's alone (rejected, see Mars's row; internal #339).
 tilesets:
   - id: moon-lro-wac
     world: moon
@@ -69,6 +94,22 @@ tilesets:
     licence: 'NASA media guidelines: "generally are not subject to copyright in the United States"'
     credit: "The Moon close up: Lunar Reconnaissance Orbiter WAC mosaic, NASA/GSFC/Arizona State University, from NASA Solar System Treks"
     source: "https://trek.nasa.gov/tiles/apidoc/trekAPI.html?body=moon (read 2026-10-03)"
+    # The light, measured 2026-10-06 on tiles 5/12/8, 5/20/50 and 5/10/30: from azimuth 270.6, 269.1
+    # and 281.2 degrees (correlation 0.84, 0.83, 0.48), level ground at 153, 163 and 179 of 255.
+    # PNG, grey with alpha, 43 to 65 KB a tile. Level 7 is a 404.
+    relief:
+      title: "Lunar Orbiter Laser Altimeter shaded relief, 118 m per pixel"
+      url: "https://trek.nasa.gov/tiles/Moon/EQ/LRO_LOLA_Shade_Global_256ppd_v06/1.0.0/default/default028mm/{z}/{y}/{x}.png"
+      capabilities: "https://trek.nasa.gov/tiles/Moon/EQ/LRO_LOLA_Shade_Global_256ppd_v06/1.0.0/WMTSCapabilities.xml"
+      levels: [0, 6]
+      max_level: 6
+      light_azimuth_deg: 270
+      flat: 0.65
+      gain: 1.5
+      cors: "Access-Control-Allow-Origin: * (measured 2026-10-06)"
+      licence: 'USGS Astrogeology, Moon LRO LOLA DEM 118m: "Access Constraints public domain", "Use Constraints Please cite authors"'
+      credit: "The Moon's relief: Lunar Orbiter Laser Altimeter shaded relief, LOLA Science Team, NASA/GSFC, from NASA Solar System Treks"
+      source: "https://astrogeology.usgs.gov/search/map/moon_lro_lola_dem_118m (read 2026-10-06)"
 
   # Mars's tiles are DETAIL over our own colour map (mode: detail). Viking's MDIM 2.1 colour mosaic
   # (Mars_Viking_MDIM21_ClrMosaic_global_232m, CORS `*`, levels 0-7) was the first choice and was
@@ -97,3 +138,54 @@ tilesets:
     licence: 'NASA media guidelines: "generally are not subject to copyright in the United States"'
     credit: "Mars close up: THEMIS daytime infrared mosaic, NASA/JPL-Caltech/Arizona State University, from NASA Solar System Treks, as detail over the colour map"
     source: "https://trek.nasa.gov/tiles/apidoc/trekAPI.html?body=mars (read 2026-10-03)"
+    # The light, measured 2026-10-06 on tiles 5/12/8, 5/20/50 and 5/10/30: from azimuth 301.5, 315.6
+    # and 312.5 degrees (correlation 0.89, 0.40, 0.60), level ground at 172, 175 and 176 of 255.
+    # JPEG, grey, 24 to 49 KB a tile; the host answers to level 8 and level 7 (200 m) is the data's own.
+    relief:
+      title: "Mars Orbiter Laser Altimeter and HRSC blended shaded relief, 200 m per pixel"
+      url: "https://trek.nasa.gov/tiles/Mars/EQ/Mars_MOLA_blend200ppx_HRSC_Shade_clon0dd_200mpp_lzw/1.0.0/default/default028mm/{z}/{y}/{x}.jpg"
+      capabilities: "https://trek.nasa.gov/tiles/Mars/EQ/Mars_MOLA_blend200ppx_HRSC_Shade_clon0dd_200mpp_lzw/1.0.0/WMTSCapabilities.xml"
+      levels: [0, 8]
+      max_level: 7
+      light_azimuth_deg: 315
+      flat: 0.68
+      gain: 1.5
+      cors: "Access-Control-Allow-Origin: * (measured 2026-10-06)"
+      licence: 'USGS Astrogeology, Mars MGS MOLA - MEX HRSC Blended DEM Global 200m: "Access Constraints MOLA (CC0) and HRSC (CC BY-SA 3.0 IGO)", "Use Constraints Please cite authors"'
+      credit: "Mars's relief: MOLA and HRSC blended shaded relief, NASA/GSFC (MOLA, CC0) and ESA/DLR/FU Berlin (HRSC, CC BY-SA 3.0 IGO), USGS Astrogeology, from NASA Solar System Treks"
+      source: "https://astrogeology.usgs.gov/search/map/mars_mgs_mola_mex_hrsc_blended_dem_global_200m (read 2026-10-06)"
+
+  # The Earth (spec 0065 task 4). Blue Marble is cloud-free, so it goes under our own clouds, and it
+  # is one picture for every month: the 4k day map under it changes with the month and this does
+  # not, so in a northern winter the snow line steps back as the tiles fade in. The card says the
+  # mosaic's name. Its relief is shaded into the picture under a fixed light (`baked_relief`).
+  # MEASURED 2026-10-06 against gibs.earthdata.nasa.gov: 0/0/0 and 0/0/1 answer, 0/0/2 and 0/1/0
+  # are 400; level 1 is three columns by two rows; 7/79/159 is the last tile, 7/80/0 and 8/0/0 are
+  # 400. Tiles are JPEG, 512 pixels, 12 to 54 KB.
+  # `grade`, land and sea, is mean(our 4k day map) / mean(level-1 mosaic) per channel in linear
+  # light between 60 S and 60 N, both reduced to 512 x 256, the sea taken as our map's blue more
+  # than 0.06 over its red: land 1.90, 2.20, 2.31 against August's map and 2.10, 2.39, 2.67 against
+  # October's (January's, with its snow, 2.66, 3.18, 4.43, is not fitted); sea 8.3, 5.7, 4.7 against
+  # all three. Start_level 5: the tiles begin when a level-4 texel (3.9 km) is wider than a screen
+  # pixel, about 4 200 km up at 900 pixels -- far inside where a first visit starts.
+  - id: earth-blue-marble
+    world: earth
+    title: "Blue Marble with shaded relief and the sea floor (MODIS), 500 m per pixel"
+    url: "https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/BlueMarble_ShadedRelief_Bathymetry/default/500m/{z}/{y}/{x}.jpeg"
+    capabilities: "https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/1.0.0/WMTSCapabilities.xml"
+    projection: equirectangular
+    matrix: [2, 1]
+    level0_span_deg: 288
+    tile_px: 512
+    levels: [0, 7]
+    min_level: 3
+    start_level: 5
+    max_level: 7
+    resolution_m: 489
+    grade: [2.0, 2.3, 2.5]
+    grade_sea: [8.3, 5.7, 4.7]
+    baked_relief: true
+    cors: "Access-Control-Allow-Origin: * (measured 2026-10-06)"
+    licence: 'GIBS API page: "NASA promotes full and open sharing of data"; an acknowledgement is asked for, and the credit carries it word for word'
+    credit: "The Earth close up: Blue Marble with shaded relief and bathymetry, NASA Earth Observatory. We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS)."
+    source: "https://nasa-gibs.github.io/gibs-api-docs/ (read 2026-10-06)"

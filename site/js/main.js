@@ -1257,6 +1257,18 @@ export async function boot({ setStatus } = {}) {
 
 /** A world's disc, as a share of half the view's height, at which its map tiles' module is fetched. */
 const PLANET_TILES_AT = 0.5;
+/**
+ * The Earth's own mark (2026-10-06): its disc 1.2 times half the view's height, which at this camera's
+ * 45 degrees is about 6 400 km up -- outside where its tiles start (registry/tilesets.yaml: about
+ * 4 200 km at 900 pixels) and far inside where a first visit stands, so a boot never crosses it.
+ */
+const EARTH_TILES_AT = 1.2;
+/**
+ * The Sun's disc, as a share of half the view's height, at which scene/sun.js is fetched (its own
+ * SUN_DETAIL_AT; written here too because importing the number would import the module). From the
+ * Earth the Sun is 0.011 of half the view: a first visit is five times too far.
+ */
+const SUN_DETAIL_AT = 0.06;
 
 function createQuality(ctx, renderer, starfield, worlds) {
   const nav = typeof navigator !== 'undefined' ? navigator : {};
@@ -1329,8 +1341,8 @@ function createQuality(ctx, renderer, starfield, worlds) {
   });
   const say = () => window.dispatchEvent(new CustomEvent('sr:tier', { detail: api.describe() }));
   // Spec 0065: a close world drawn from the missions' own map tiles. OFF THE FIRST VISIT, like the
-  // aurora: scene/tiles.js and its two helpers are imported only once a world other than the Earth
-  // is PLANET_TILES_AT of half the view tall -- nobody boots there -- and never at tier 0, on a
+  // aurora: scene/tiles.js and its two helpers are imported only once a world is PLANET_TILES_AT of
+  // half the view tall (the Earth, where every visit starts: EARTH_TILES_AT) -- nobody boots there -- and never at tier 0, on a
   // connection that saves data, or after the latch. Until then this costs one loop a second.
   let planetTiles = null;
   let planetTilesAsked = false;
@@ -1340,7 +1352,7 @@ function createQuality(ctx, renderer, starfield, worlds) {
   const tilesSaveData = shouldSaveData(nav.connection);
   function planetTilesWanted() {
     if (planetTilesAsked || tilesSaveData || tiers.latched || tiers.tier < 1) return;
-    if (!worlds.ids().some((id) => id !== 'earth' && id !== 'sun' && worlds.discShare(id) >= PLANET_TILES_AT)) return;
+    if (!worlds.ids().some((id) => id !== 'sun' && worlds.discShare(id) >= (id === 'earth' ? EARTH_TILES_AT : PLANET_TILES_AT))) return;
     planetTilesAsked = true;
     import('./scene/tiles.js').then((m) => {
       planetTiles = m.createPlanetTiles({
@@ -1354,6 +1366,30 @@ function createQuality(ctx, renderer, starfield, worlds) {
       if (tiers.latched) planetTiles.latch();
     }).catch(() => { /* the globe's own map is what is on screen; nothing else depends on this */ });
   }
+  // The Sun as a star (2026-10-06, spec 0055 task 3, scene/sun.js): limb darkening, grain, today's
+  // sunspot groups and a corona, OFF THE FIRST VISIT like the tiles -- the module is fetched the first
+  // time the Sun's disc is SUN_DETAIL_AT of half the view, and NOAA's list of today's groups once,
+  // then, unless the connection asked to save data. Under the latch the flat disc comes back.
+  let sunAsked = false;
+  function sunWanted() {
+    if (sunAsked || tiers.latched || worlds.discShare('sun') < SUN_DETAIL_AT) return;
+    sunAsked = true;
+    import('./scene/sun.js').then((m) => {
+      const detail = m.createSunDetail({ mesh: worlds.meshFor('sun'), camera: ctx.camera, tier: tiers.tier });
+      if (!detail) return;
+      if (tiers.latched) detail.latch();
+      ctx.sunDetail = detail;
+      if (tilesSaveData || tiers.latched) return;
+      import('./data/sunregions.js').then((r) => fetch(r.SUN_REGIONS_URL, { mode: 'cors', credentials: 'omit' })
+        .then((res) => (res.ok ? res.json() : Promise.reject(new Error('HTTP ' + res.status))))
+        .then((json) => {
+          const list = r.parseSunRegions(json);
+          detail.setRegions(list);
+          ctx.sunRegions = list;
+          say(); // the Sun's card and the Sources panel read it
+        })).catch(() => { /* a Sun with no spots drawn is what the card then describes */ });
+    }).catch(() => { sunAsked = false; /* the flat disc is what is on screen; ask again later */ });
+  }
   const api = {
     get tier() { return tiers.tier; },
     bootTier: pick.tier,
@@ -1362,7 +1398,10 @@ function createQuality(ctx, renderer, starfield, worlds) {
     get promoted() { return promoter.promoted; },
     textures: () => tiers.state(),
     tiles: () => (planetTiles ? planetTiles.state() : null),
-    credits: () => tiers.credits().concat(planetTiles ? planetTiles.credits() : []),
+    /** The mosaics on screen now, for a world's card (ui/cards.js): scene/tiles.js mosaics(). */
+    mosaics: () => (planetTiles ? planetTiles.mosaics() : []),
+    credits: () => tiers.credits().concat(planetTiles ? planetTiles.credits() : [],
+      ctx.sunDetail && ctx.sunDetail.state().spots > 0 ? [COPY.sun.regionsCredit] : []),
     describe: () => ({ tier: tiers.tier, bootTier: pick.tier, promoted: promoter.promoted, latched: tiers.latched, reasons: pick.reasons }),
     /** After the first frame (startLoop). */
     start() { tiers.start(); say(); },
@@ -1372,9 +1411,9 @@ function createQuality(ctx, renderer, starfield, worlds) {
       if (up !== null) { tiers.setTier(up); if (planetTiles) planetTiles.setTier(up); say(); }
       if (planetTiles) planetTiles.frame(nowMs);
     },
-    tick(nowMs) { tiers.tick(nowMs); planetTilesWanted(); },
+    tick(nowMs) { tiers.tick(nowMs); planetTilesWanted(); sunWanted(); },
     /** The frame latch tripped: back to the boot maps, for good. */
-    latch() { tiers.latch(); if (planetTiles) planetTiles.latch(); say(); },
+    latch() { tiers.latch(); if (planetTiles) planetTiles.latch(); if (ctx.sunDetail) ctx.sunDetail.latch(); say(); },
   };
   return api;
 }
@@ -1455,6 +1494,12 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     cameraRig.update(dt);
     worlds.setEclipseAllowed(ctx.eclipseDrawn());
     worlds.update(t);
+    // The Sun close up, after the worlds have moved: its grain, its corona's plane and today's
+    // spots, counted from the meridian that faces the Earth (scene/sun.js).
+    if (ctx.sunDetail) {
+      const earth = worlds.meshFor('earth');
+      ctx.sunDetail.update(t, worlds.discShare('sun'), earth ? earth.position : null);
+    }
     // Live or static clouds, by how far the clock is from the picture (data/gibs.js cloudMode).
     if (ctx.liveClouds) ctx.liveClouds.tick(t);
     // The aurora after the Earth's update (it reads the Earth's rotation and Sun): its box, the

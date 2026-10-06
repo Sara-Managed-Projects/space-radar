@@ -1923,6 +1923,8 @@ function derivedDrawingLine(record, T) {
     if (kind) parts.push(kind);
     const part = T.worldCoverage && T.worldCoverage[record.id];
     if (part && pick(md, 'flat') !== true) parts.push(part);
+    // The Sun close up (scene/sun.js): what is modelled, what is illustrative. The spots have their own line.
+    if (record.id === 'sun' && T.worldSun) parts.push(T.worldSun);
     if (pick(md, 'exposed') === true && T.worldLit) parts.push(T.worldLit);
     const gain = Number(pick(md, 'earthshineGain'));
     if (gain > 0 && T.worldEarthshine) parts.push(t(T.worldEarthshine, { n: fmt.int(gain) }));
@@ -3022,6 +3024,22 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
       line.hidden = !wx;
       aboutNodes.push(line);
     }
+    // The Sun's spots, when NOAA's list for today is drawn (main.js ctx.sunRegions, scene/sun.js).
+    if (record.id === 'sun' && ctx && ctx.sunDetail && typeof ctx.sunDetail.state === 'function') {
+      const words = sunSpotsLine(ctx);
+      const line = el('p', 'sr-card__note sr-card__sunspots', words || '');
+      line.hidden = !words;
+      aboutNodes.push(line);
+    }
+    // And the mosaic under the camera (spec 0065 requirement 4, internal #337): while a close world
+    // is drawn from map tiles, which mission's mosaic that is, how fine, and what its relief is.
+    // Hidden while empty, like the weather's line: the tiles come and go with the camera (`sr:tier`).
+    if (ctx && ctx.quality && typeof ctx.quality.mosaics === 'function') {
+      const words = mosaicLine(record, ctx);
+      const line = el('p', 'sr-card__note sr-card__mosaic', words || '');
+      line.hidden = !words;
+      aboutNodes.push(line);
+    }
   }
   const aboutRows = rows.filter(([label]) => label !== COPY.card.rows.nextPass);
   if (aboutRows.length) {
@@ -3169,6 +3187,36 @@ function paintMore(node) {
   if (node.classList.contains('has-more') !== more) node.classList.toggle('has-more', more);
 }
 
+/** The Sun's card: how many of today's sunspot groups are drawn and whose list it is, or null. */
+export function sunSpotsLine(ctx) {
+  let st = null;
+  try { st = ctx.sunDetail.state(); } catch { st = null; }
+  if (!st || !(st.spots > 0) || !Number.isFinite(st.observedMs) || !COPY.sun) return null;
+  const day = new Date(st.observedMs).toISOString().slice(0, 10);
+  return t(st.spots === 1 ? COPY.sun.spotsOne : COPY.sun.spots, { n: fmt.int(st.spots), date: day });
+}
+
+/**
+ * The line that says which mosaic a close world is drawn from right now (scene/tiles.js mosaics()),
+ * or null when it is drawn from its own map. Exported for tests/test_cards_copy.mjs.
+ */
+export function mosaicLine(record, ctx) {
+  let list = [];
+  try { list = ctx.quality.mosaics() || []; } catch { list = []; }
+  const m = record && list.find((x) => x && x.world === record.id);
+  const T = COPY.drawing;
+  if (!m || !T.worldMosaic) return null;
+  const parts = [t(m.mode === 'detail' ? T.worldMosaicDetail : T.worldMosaic, {
+    title: String(m.title),
+    res: m.metresPerPixel > 0 ? fmt.metres(m.metresPerPixel >= 100 ? Math.round(m.metresPerPixel / 10) * 10 : m.metresPerPixel) : '',
+  })];
+  if (m.relief && T.worldRelief) {
+    const n = Number(m.relief.gain) || 1;
+    parts.push(t(T.worldRelief, { title: String(m.relief.title), n: Number.isInteger(n) ? fmt.int(n) : fmt.num(n, 1) }));
+  } else if (m.bakedRelief && T.worldReliefBaked) parts.push(T.worldReliefBaked);
+  return parts.join(' ');
+}
+
 function subscribe(ctx) {
   if (subscribed || !ctx || !ctx.clock || !ctx.clock.onChange) return;
   subscribed = true;
@@ -3191,6 +3239,24 @@ function subscribe(ctx) {
       const line = typeof document !== 'undefined' && document.querySelector('.sr-card__aurora');
       if (!line || !c || !c.aurora || current.record.id !== 'earth') return;
       try { line.textContent = c.aurora.line(c.clock.now()); } catch { /* keep the last line */ }
+    });
+    // The Sun's spots line: NOAA's list arrived (main.js `say`).
+    window.addEventListener('sr:tier', () => {
+      const c = current && current.ctx;
+      const line = typeof document !== 'undefined' && document.querySelector('.sr-card__sunspots');
+      if (!line || !c || !c.sunDetail) return;
+      try { const words = sunSpotsLine(c); line.textContent = words || ''; line.hidden = !words; } catch { /* keep the last line */ }
+    });
+    // The mosaic line: map tiles came on screen, changed or left (main.js `say`, from scene/tiles.js).
+    window.addEventListener('sr:tier', () => {
+      const c = current && current.ctx;
+      const line = typeof document !== 'undefined' && document.querySelector('.sr-card__mosaic');
+      if (!line || !c || !c.quality || !current.record) return;
+      try {
+        const words = mosaicLine(current.record, c);
+        line.textContent = words || '';
+        line.hidden = !words;
+      } catch { /* keep the last line */ }
     });
     // The weather line, the same way, on whichever world's card is open: the module arrived, NOAA's
     // lightning map did, or the clock moved away from it.

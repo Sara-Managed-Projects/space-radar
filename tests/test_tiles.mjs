@@ -234,7 +234,10 @@ const pixelRad = (2 * Math.tan((45 * Math.PI) / 360)) / 900;
   // Everything else is WORLD_FRAG, line for line: only the map read, the output and four declarations differ.
   const mine = new Set(f.split('\n'));
   const lost = WORLD_FRAG.split('\n').filter((l) => !mine.has(l));
-  check(lost.length === 2 && lost.some((l) => l.includes('vec3 base = mix(')) && lost.some((l) => l.includes('gl_FragColor = vec4( colour, 1.0 )')), `the tile shader drops ${lost.length} of the world's lines, want the map read and the output only`);
+  check(lost.length === 3 && lost.some((l) => l.includes('vec3 base = mix(')) && lost.some((l) => l.includes('gl_FragColor = vec4( colour, 1.0 )'))
+    && lost.some((l) => l.includes('vec3 colour = base * direct * uSunIrradiance * ringShade;')), `the tile shader drops ${lost.length} of the world's lines, want the map read, the lit ground and the output only`);
+  check(f.includes('vec3 colour = base * direct * uSunIrradiance * ringShade * relief;') && f.includes('uniform sampler2D uReliefMap;'), 'the lit ground is the world\'s, times the relief');
+  check(!/\bflat\b/.test(f.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n')), '`flat` is a reserved word in GLSL ES 3: the shader must not name a variable that');
   const v = T.tileVertex();
   check(/vFragDepth = 1\.0 \+ gl_Position\.w \* 0\.9990;/.test(v), 'the vertex shader pulls the depth a thousandth nearer');
   check(v.includes('attribute vec2 uvGlobe;') && v.includes('vUvGlobe = uvGlobe;'), 'and carries the point\'s place on the world\'s own map');
@@ -307,7 +310,13 @@ function rig({ tier = 1, saveData = false, altKm = 300, fail = false, hasMap = t
   check(moon.level === 7 && moon.loading === 0 && moon.drawn === moon.wanted, `every wanted tile is drawn and nothing else: level ${moon.level}, ${moon.drawn} of ${moon.wanted}`);
   check(moon.wanted <= T.DRAW_TILES[1], `within the T1 draw budget: ${moon.wanted}`);
   check(s.bytes === s.loaded * 25000 && s.failed === 0, 'bytes are counted as they arrive');
-  check(JSON.stringify(r.tiles.credits()) === JSON.stringify([MOON.credit]) && r.changes() === 1, 'the credit is the registry\'s line, announced once');
+  check(JSON.stringify(r.tiles.credits()) === JSON.stringify([MOON.credit, MOON.relief.credit]) && r.changes() >= 1 && r.changes() <= 2, `the credits are the registry's lines, the mosaic's and its relief's: ${r.changes()} announcements`);
+  // RELIEF: one shaded-relief tile over each colour tile, shared below the relief pyramid's last level.
+  check(moon.relief === true && moon.reliefs > 0 && moon.reliefs <= moon.cached, `relief is on, ${moon.reliefs} relief tiles under ${moon.cached} colour tiles`);
+  check(r.asked.some((u) => u.includes('LRO_LOLA_Shade_Global_256ppd_v06') && u.endsWith('.png')) && !r.asked.some((u) => /LOLA_Shade[^?]*\/(7|8)\/\d+\/\d+\.png$/.test(u)), 'relief tiles come from the row\'s relief pyramid and never past its last level');
+  const mos = r.tiles.mosaics();
+  check(mos.length === 1 && mos[0].world === 'moon' && mos[0].title === MOON.title && mos[0].level === 7 && near(mos[0].metresPerPixel, MOON.resolutionM * 2)
+    && mos[0].relief && mos[0].relief.gain === MOON.relief.gain, `mosaics() names what is under the camera: ${JSON.stringify(mos)}`);
   const group = r.mesh.children.find((c) => c.name === MOON.id + '-tiles');
   const patches = group ? group.children.filter((c) => c.visible) : [];
   check(patches.length === moon.drawn, `${patches.length} patches are visible children of the world's own mesh`);
@@ -318,6 +327,19 @@ function rig({ tier = 1, saveData = false, altKm = 300, fail = false, hasMap = t
     && p.material.uniforms.uEclipse === r.mesh.material.uniforms.uEclipse, 'a patch shares the globe\'s light: the same uniform objects');
   check(p.material.uniforms.uMap !== r.mesh.material.uniforms.uMap && p.material.uniforms.uFade.value === 1, 'and has its own map and fade');
   check(p.material.uniforms.uDetail.value === 0, 'the Moon\'s tiles are their own picture, not detail');
+  {
+    // A level-7 patch reads its level-6 relief tile through a quarter-size window; the picture's
+    // light is the row's measured azimuth, as (east, north), and its level-ground value.
+    const fine = patches.find((c) => /:7\//.test(c.name));
+    const [, y7, x7] = fine.name.split(':')[1].split('/').map(Number);
+    const xf = fine.material.uniforms.uReliefXf.value;
+    check(near(xf.x, 0.5) && near(xf.y, 0.5) && near(xf.z, (x7 % 2) / 2) && near(xf.w, 1 - ((y7 % 2) + 1) / 2), `a level-7 tile's window in its level-6 relief tile: ${xf.toArray()}`);
+    const light = fine.material.uniforms.uReliefLight.value;
+    const az = MOON.relief.lightAzimuthDeg * Math.PI / 180;
+    check(near(light.x, Math.sin(az), 1e-9) && near(light.y, Math.cos(az), 1e-9) && light.z === MOON.relief.flat, 'the relief\'s light is the registry\'s measured azimuth and level');
+    check(fine.material.uniforms.uRelief.value.x === 1 && fine.material.uniforms.uRelief.value.y === MOON.relief.gain, 'faded in, at the exaggeration the card prints');
+    check(fine.material.uniforms.uReliefMap.value.format === THREE.RedFormat, 'a relief tile is one channel on the GPU');
+  }
   const tint = p.material.uniforms.uTint.value;
   check(near(tint.r, MOON.grade[0]) && near(tint.g, MOON.grade[1]) && near(tint.b, MOON.grade[2]), 'graded to the map under it (registry grade)');
   // Seen again: nothing more is fetched.
@@ -337,13 +359,13 @@ function rig({ tier = 1, saveData = false, altKm = 300, fail = false, hasMap = t
   const r = rig({ world: 'mars', radiusKm: 3389.5, altKm: 400 });
   await r.run(3000);
   const s = r.tiles.state().sets[MARS.id];
-  check(s.showing && s.drawn === s.wanted && r.asked.every((u) => u.includes('/Mars/EQ/') && u.endsWith('.png')), 'Mars is drawn from its own set, PNG tiles');
+  check(s.showing && s.drawn === s.wanted && r.asked.every((u) => u.includes('/Mars/EQ/') && (u.endsWith('.png') || u.includes('_Shade_'))), 'Mars is drawn from its own set, PNG tiles, and its relief pyramid');
   const p = r.mesh.children.find((c) => c.name === MARS.id + '-tiles').children.find((c) => c.visible);
   check(MARS.mode === 'detail' && p.material.uniforms.uDetail.value === 1, 'Mars\'s tiles are detail');
   check(p.material.uniforms.uBaseMap === r.mesh.material.uniforms.uMap, 'over the globe\'s own map: the same uniform object, so a 4k swap reaches the tile');
   check(near(p.material.uniforms.uTint.value.r, MARS.grade[0]), 'scaled by one over the mosaic\'s mean');
   check(!!p.geometry.attributes.uvGlobe, 'with the map\'s uv on every vertex');
-  check(JSON.stringify(r.tiles.credits()) === JSON.stringify([MARS.credit]), 'and credited as detail');
+  check(JSON.stringify(r.tiles.credits()) === JSON.stringify([MARS.credit, MARS.relief.credit]), 'and credited as detail, with its relief');
 }
 {
   // Hysteresis: on at the start altitude, still on a little above it, off past STOP_HYSTERESIS.
@@ -405,6 +427,134 @@ function rig({ tier = 1, saveData = false, altKm = 300, fail = false, hasMap = t
   check(group.children.length === s.sets[MOON.id].cached, 'an evicted tile\'s patch has left the scene with it');
 }
 
+// --- 8b. the Earth: GIBS's grid, the ellipsoid, the Earth's own shader -------------------------------
+const EARTH = TILESETS.find((s) => s.world === 'earth');
+{
+  check(!!EARTH && EARTH.span0 === 288 && EARTH.tilePx === 512, 'the Earth has a tile set on a 288-degree grid of 512-pixel tiles');
+  const G = M.gridOf(EARTH);
+  // GIBS's own capabilities, read 2026-10-06: 2x1, 3x2, 5x3, 10x5, 20x10, 40x20, 80x40, 160x80.
+  const want = [[2, 1], [3, 2], [5, 3], [10, 5], [20, 10], [40, 20], [80, 40], [160, 80]];
+  check(want.every(([c, r], z) => { const m = M.matrixAt(z, G); return m.cols === c && m.rows === r; }), `the grid's matrices are GIBS's: ${want.map((_, z) => { const m = M.matrixAt(z, G); return m.cols + 'x' + m.rows; })}`);
+  check(M.tileSpanDeg(0, G) === 288 && M.tileSpanDeg(3, G) === 36 && M.tileSpanDeg(7, G) === 2.25, 'a tile is 288 / 2^z degrees');
+  check(near(M.texelRad(7, 512, G) * 6378.137, 0.4892, 1e-3), `a level-7 texel is ${(M.texelRad(7, 512, G) * 6378137).toFixed(0)} m, want 489`);
+  check(JSON.stringify(M.matrixAt(3)) === '{"cols":16,"rows":8}' && M.texelRad(8) === Math.PI / (256 * 256), 'and Trek\'s grid is what it was');
+  // A level-0 tile hangs past the edges; its bounds are cut and it uses that share of its picture.
+  const b0 = M.tileBounds(0, 1, 0, G);
+  check(b0.west === 108 && b0.east === 180 && b0.north === 90 && b0.south === -90 && near(b0.uMax, 0.25) && near(b0.vMin, 0.375), `0/0/1 is 108 E to 180 E, a quarter of its width and five eighths of its height: ${JSON.stringify(b0)}`);
+  const cut = M.patchArrays(b0, 4);
+  check(near(cut.uvs[8], 0.25) && near(cut.uvs[1], 0.375) && near(cut.uvs[49], 1), 'and its patch reads only that part of the picture');
+  const whole = M.tileBounds(3, 9, 4, G);
+  check(whole.uMax === 1 && whole.vMin === 0 && whole.east - whole.west === 36, 'from level 3 every tile is whole');
+  // Lisbon, 9.14 W 38.72 N, level 7: column floor(170.86 / 2.25) = 75, row floor(51.28 / 2.25) = 22.
+  const t = M.lonLatToTile(-9.14, 38.72, 7, G);
+  check(t.x === 75 && t.y === 22, `Lisbon at level 7: column ${t.x}, row ${t.y}; want 75, 22`);
+  check(M.tileUrl(EARTH.url, 7, 75, 22).endsWith('/500m/7/22/75.jpeg'), 'and its address is level / row / column');
+  // 400 km over Lisbon at 900 pixels: a pixel is 368 m, level 7; covered once, nothing past the grid.
+  const view = { lonDeg: -9.14, latDeg: 38.72, dist: 1 + 400 / 6378.137, pixelRad };
+  const { tiles } = M.selectTiles(view, EARTH);
+  check(tiles[0].key === '7/22/75' && tiles.every((x) => x.z >= EARTH.minLevel && x.z <= EARTH.maxLevel), `the tile under the camera is 7/22/75: ${tiles[0].key}`);
+  check(tiles.every((x) => { const m = M.matrixAt(x.z, G); return x.x < m.cols && x.y < m.rows; }), 'no tile outside the grid is asked for');
+  let holes = 0, doubles = 0, n = 0;
+  const horizon = M.horizonArc(view.dist);
+  for (let lat = 20; lat <= 58; lat += 0.9) for (let lon = -32; lon <= 14; lon += 0.9) {
+    const p1 = lat * Math.PI / 180, p0 = view.latDeg * Math.PI / 180;
+    const arc = Math.acos(Math.sin(p1) * Math.sin(p0) + Math.cos(p1) * Math.cos(p0) * Math.cos((lon - view.lonDeg) * Math.PI / 180));
+    if (arc > horizon * 0.98) continue;
+    n += 1;
+    const hit = tiles.filter((x) => { const b = M.tileBounds(x.z, x.x, x.y, G); return lon >= b.west && lon < b.east && lat > b.south && lat <= b.north; }).length;
+    if (hit === 0) holes += 1;
+    if (hit > 1) doubles += 1;
+  }
+  check(n > 300 && holes === 0 && doubles === 0, `the visible ground is covered once: ${n} points, ${holes} in no tile, ${doubles} in two`);
+  // Whole-globe selections at every level cover the south pole and 180 E without asking past them.
+  const far = M.selectTiles({ lonDeg: 170, latDeg: -80, dist: 1.5, pixelRad }, { ...EARTH, minLevel: 0 }).tiles;
+  check(far.length > 0 && far.every((x) => { const m = M.matrixAt(x.z, G); return x.x < m.cols && x.y < m.rows; }), 'near the south pole and 180 E too');
+  // Where the tiles start: a level-4 texel (3.9 km) wider than a pixel, about 4 200 km up at 900 px.
+  const startKm = (M.texelRad(EARTH.startLevel - 1, 512, G) / pixelRad) * 6378.137;
+  check(startKm > 3800 && startKm < 4700, `the Earth's tiles start ${startKm.toFixed(0)} km up at 900 px`);
+  check(M.nadirLevel({ dist: 1 + (startKm * 0.99) / 6378.137, pixelRad }, EARTH) === EARTH.startLevel && M.nadirLevel({ dist: 1 + (startKm * 1.01) / 6378.137, pixelRad }, EARTH) === EARTH.startLevel - 1, 'nadirLevel crosses the start level there');
+}
+{
+  // The patch lies on the ellipsoid the Earth's own mesh is (scene/earth.js ellipsoidGeometry).
+  const { createEarth, SURFACE_FRAG, SURFACE_VERT, WGS84_A_KM, WGS84_B_KM } = await import(join(JS, 'scene/earth.js'));
+  const earth = createEarth({});
+  const pos = earth.geometry.attributes.position, uv = earth.geometry.attributes.uv, nrm = earth.geometry.attributes.normal;
+  let worst = 0, worstN = 0;
+  for (let i = 0; i < pos.count; i += 7) {
+    const lon = (uv.getX(i) - 0.5) * 360, lat = (uv.getY(i) - 0.5) * 180;
+    const p = M.ellipsoidFromLonLat(lon, lat, T.EARTH_E2);
+    worst = Math.max(worst, Math.hypot(p[0] - pos.getX(i), p[1] - pos.getY(i), p[2] - pos.getZ(i)));
+    const q = M.unitFromLonLat(lon, lat);
+    worstN = Math.max(worstN, Math.hypot(q[0] - nrm.getX(i), q[1] - nrm.getY(i), q[2] - nrm.getZ(i)));
+  }
+  check(worst < 1e-6 && worstN < 1e-6, `an Earth patch's points and normals are the Earth mesh's own (worst ${worst.toExponential(1)}, ${worstN.toExponential(1)})`);
+  check(near(M.ellipsoidFromLonLat(0, 90, T.EARTH_E2)[1], WGS84_B_KM / WGS84_A_KM, 1e-9) && near(M.ellipsoidFromLonLat(0, 0, T.EARTH_E2)[0], 1, 1e-12), 'the pole is at b / a and the equator at 1');
+  const a = M.patchArrays(M.tileBounds(7, 75, 22, M.gridOf(EARTH)), 4, T.EARTH_E2);
+  check(a.normals !== a.positions && a.normals.length === a.positions.length, 'on the ellipsoid the normals are their own array');
+  { const sph = M.patchArrays(M.tileBounds(7, 144, 63), 4); check(sph.normals === sph.positions, 'on a sphere they are the positions'); }
+  // The shader is the Earth's own with the lit ground's colour changed, and nothing else.
+  const f = T.earthTileFragment();
+  const mine = new Set(f.split('\n'));
+  const lost = SURFACE_FRAG.split('\n').filter((l) => !mine.has(l));
+  check(lost.length === 1 && lost[0].includes('vec3 ground = dayTex * ('), `the Earth's tile shader drops ${lost.length} of the Earth's lines, want the lit ground only`);
+  check(f.includes('vec3 ground = mix( dayTex, tile * mix( uTileGrade, uTileGradeSea, tileSea ), uFade ) * ('), 'the tile is the DAY term only, mixed in by the fade');
+  for (const kept of ['vec3 cities = uNightTint', 'float cloud  = cloudCover( vUv );', 'eclObscuration(', 'float oceanReal = texture2D( uWater, vUv ).r', 'colour = mix( colour, cloudLight']) {
+    check(f.includes(kept), `night lights, clouds, the water mask and the eclipse are still in the patch: ${kept}`);
+  }
+  const v = T.earthTileVertex();
+  check(v.includes('attribute vec2 uvTile;') && v.includes('vUvTile = uvTile;') && /vFragDepth = 1\.0 \+ gl_Position\.w \* 0\.9990;/.test(v), 'the vertex shader carries the tile\'s uv and the depth pull');
+  check(SURFACE_VERT.split('\n').every((l) => new Set(v.split('\n')).has(l) || l.includes('vUv = uv;')), 'and is otherwise the Earth\'s');
+  let threw = 0;
+  try { T.earthTileFragment('void main() {}'); } catch { threw += 1; }
+  try { T.earthTileVertex('void main() {}'); } catch { threw += 1; }
+  check(threw === 2, 'an Earth shader whose lines have moved is refused');
+
+  // The module, 400 km over Lisbon on a laptop.
+  earth.scale.setScalar(6.378137);
+  earth.material.uniforms.uHasDay.value = 1;
+  const camera = new THREE.PerspectiveCamera(45, 1.6, 0.001, 1e7);
+  const place = (km) => { const p = M.unitFromLonLat(-9.14, 38.72).map((x) => x * (6378.137 + km) / 1000); camera.position.set(p[0], p[1], p[2]); camera.lookAt(0, 0, 0); camera.updateMatrixWorld(true); };
+  place(400);
+  const asked = [];
+  const pending = [];
+  const tiles = T.createPlanetTiles({
+    worlds: { meshFor: (id) => (id === 'earth' ? earth : null), hasMap: () => false },
+    camera, viewport: () => 900, tier: 1,
+    loadTile: (url) => new Promise((resolve) => { asked.push(url); pending.push(() => resolve({ image: { width: 512, height: 512, close() {} }, bytes: 40000 })); }),
+  });
+  let now = 1000;
+  const run = async (ms) => { for (let t = 0; t < ms; t += 50) { now += 50; tiles.frame(now); for (const j of pending.splice(0)) j(); await new Promise((r) => setImmediate(r)); } };
+  await run(3000);
+  const st = tiles.state().sets[EARTH.id];
+  check(st.showing && st.level === 7 && st.drawn === st.wanted && st.loading === 0, `the Earth's tiles are on screen at level ${st.level}: ${st.drawn} of ${st.wanted}`);
+  check(asked.every((u) => u.startsWith('https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/BlueMarble_ShadedRelief_Bathymetry/default/500m/') && u.endsWith('.jpeg')), 'from GIBS\'s Blue Marble and nowhere else');
+  check(st.wanted <= T.DRAW_TILES[1] / 4 && near(T.tileShare(EARTH), 0.25), `512-pixel tiles: a quarter of the draw budget, ${st.wanted} of ${T.DRAW_TILES[1] / 4}`);
+  const group = earth.children.find((c) => c.name === EARTH.id + '-tiles');
+  const p = group.children.find((c) => c.visible);
+  check(p.material.name === 'earth-tile' && p.material.transparent === false && p.material.depthWrite === false && p.material.depthTest === true, 'an Earth patch is opaque, tests depth and never writes it');
+  const U = p.material.uniforms, E = earth.material.uniforms;
+  check(U.uSunDir === E.uSunDir && U.uNight === E.uNight && U.uClouds === E.uClouds && U.uLiveA === E.uLiveA && U.uEclipse === E.uEclipse && U.uWater === E.uWater && U.uDay === E.uDay,
+    'it shares the globe\'s Sun, night lights, clouds, water and eclipse: the same uniform objects');
+  check(U.uFade.value === 1 && near(U.uTileGrade.value.r, EARTH.grade[0]) && near(U.uTileGradeSea.value.b, EARTH.gradeSea[2]), 'with its own tile, fade and the two grades');
+  check(!!p.geometry.attributes.uvTile && !p.geometry.attributes.uvGlobe, 'its `uv` is the globe\'s and the tile has its own');
+  check(tiles.credits().length === 1 && tiles.credits()[0].includes('Global Imagery Browse Services (GIBS)'), 'the credit carries GIBS\'s acknowledgement');
+  const m = tiles.mosaics()[0];
+  check(m.world === 'earth' && m.bakedRelief === true && m.relief === null && near(m.metresPerPixel, EARTH.resolutionM), 'mosaics() says its relief is the map\'s own');
+  // Before the Earth's own day map has arrived: nothing.
+  const cold = createEarth({});
+  cold.scale.setScalar(6.378137);
+  const asked2 = [];
+  const t2 = T.createPlanetTiles({ worlds: { meshFor: () => cold }, camera, viewport: () => 900, tier: 1, sets: [EARTH], loadTile: (url) => { asked2.push(url); return new Promise(() => {}); } });
+  t2.frame(1000); t2.frame(1100);
+  check(asked2.length === 0, 'no tile is asked for before the Earth\'s own day map is in');
+  // From where a first visit stands (and well inside it): nothing.
+  place(9000); await run(2000);
+  const n0 = asked.length;
+  check(!tiles.state().sets[EARTH.id].on && tiles.state().sets[EARTH.id].cached === 0, 'from 9 000 km the Earth\'s tiles are off and freed');
+  await run(500);
+  check(asked.length === n0, 'and nothing more is fetched');
+}
+
 // --- 9. the budgets ----------------------------------------------------------------------------------
 {
   check(T.CACHE_TILES[0] === 0 && T.DRAW_TILES[0] === 0, 'tier 0 has no tiles');
@@ -414,6 +564,8 @@ function rig({ tier = 1, saveData = false, altKm = 300, fail = false, hasMap = t
   let gpu = (2048 * 1024 * 4 * 4) / 3 / 1048576;
   for (const row of TEXTURES.filter((x) => x.world === 'earth' || x.world === 'sky' || x.id === 'saturn-ring')) { const f = variantFor(row, 1); if (f) gpu += mib(f); }
   gpu += TIER_PLANET_SLOTS[1] * Math.max(...TEXTURES.filter((x) => x.when === 'near').map((x) => mib(variantFor(x, 1))));
+  // A set with relief keeps 0.8 as many colour tiles and at worst as many one-channel relief tiles.
+  check(TILESETS.every((s) => !s.relief || near(T.tileShare(s) * 1.25, 1)), 'a relief set\'s colour and relief tiles together are one cache\'s memory');
   const cache = T.CACHE_TILES[1] * T.TILE_GPU_MIB;
   check(near(T.TILE_GPU_MIB, 1 / 3, 1e-3), 'a 256-pixel RGBA tile with mipmaps is a third of a MiB');
   check(gpu + cache <= BUDGETS.tier1_texture_gpu_mib, `T1 maps (${gpu.toFixed(1)} MiB) and a full tile cache (${cache.toFixed(1)} MiB) are over tier1_texture_gpu_mib ${BUDGETS.tier1_texture_gpu_mib}`);

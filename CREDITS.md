@@ -35,7 +35,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | Exoplanets | NASA Exoplanet Archive | public; cite the DOI | [4.7](#47-nasa-exoplanet-archive--confirmed-planets) |
 | Today's clouds | NASA GIBS (GOES, Himawari) | open; acknowledgement asked | [4.13](#413-nasa-gibs--todays-clouds-2026-09-28) |
 | Storms, lightning | GDACS; NOAA nowCOAST | CC BY 4.0; public domain | [4.14](#414-gdacs--tropical-cyclones-2026-09-28), [4.17](#417-noaa-nowcoast--lightning-2026-10-03) |
-| Moon and Mars close-up tiles | NASA Solar System Treks | NASA content | [4.16](#416-nasa-solar-system-treks--the-moon-and-mars-close-up-2026-10-03) |
+| Moon and Mars close-up tiles and relief; the Earth close up | NASA Solar System Treks; USGS Astrogeology; NASA GIBS | NASA content; HRSC's share of Mars's relief CC BY-SA 3.0 IGO | [4.16](#416-nasa-solar-system-treks--the-moon-and-mars-close-up-2026-10-03) |
 | Countries and seas | Natural Earth | public domain | [4.15](#415-natural-earth--the-country-or-sea-under-a-satellite-2026-09-29) |
 | Dishes, crews, observatories | NASA DSN Now; Open Notify; Wikidata | see the section; CC0 for Wikidata | [4.3](#43-nasa--dsn-now), [4.18](#418-the-sources-the-harvester-reads) |
 | Music and sounds | John Bartmann (Free Music Archive); Freesound contributors | CC0 1.0 | [9](#9-audio--music-and-sounds) |
@@ -664,12 +664,14 @@ services from their own IP.** Read §4.1 before you deploy.
 | The Space Devs — Launch Library 2 | upcoming launches, pads, providers | Free to 15 requests/hour/IP; **no published licence** (§4.2) | Launch data by The Space Devs | <https://thespacedevs.com/llapi> |
 | NASA — DSN Now | live Deep Space Network dish↔spacecraft links | NASA content is generally not copyrighted; this endpoint is undocumented (§4.3) | NASA Deep Space Network | <https://eyes.nasa.gov/dsn/> |
 | NOAA SWPC | planetary K-index forecast | US Government work, public domain (§4.4) | Space weather: NOAA SWPC | <https://www.swpc.noaa.gov> |
+| NOAA SWPC | today's sunspot groups (the solar region summary as JSON), fetched once when the camera is close to the Sun | US Government work, public domain (§4.4) | Today’s sunspot groups: NOAA Space Weather Prediction Center, solar region summary | <https://services.swpc.noaa.gov/json/solar_regions.json> |
 | IAU Minor Planet Center | comet orbital elements (`CometEls.txt`) | **Copyrighted**; redistributable only with the source clearly specified (§4.5) | Comet elements: IAU Minor Planet Center | <https://minorplanetcenter.net> |
 | NASA GIBS | today's clouds: GOES-East, GOES-West and Himawari Band 13 infrared, every 10 min | NASA "full and open sharing"; an acknowledgement is asked for (§4.13) | the acknowledgement in §4.13, verbatim, plus NOAA and JMA for the satellites | <https://nasa-gibs.github.io/gibs-api-docs/> |
+| NASA GIBS | the Earth close up: Blue Marble with shaded relief and bathymetry, 500 m, map tiles fetched when the camera is within about 4 000 km of the ground | NASA "full and open sharing"; an acknowledgement is asked for (§4.13) | the line in §4.16, which carries the acknowledgement | <https://nasa-gibs.github.io/gibs-api-docs/> |
 | NASA GIBS | Earth data overlays: sea temperature, sea ice, chlorophyll, vegetation, rain, aerosol, water vapour; one picture when a visitor or a trip asks | NASA "full and open sharing"; an acknowledgement is asked for (§4.13) | the acknowledgement in §4.13, and each data set's makers in §4.19 | <https://nasa-gibs.github.io/gibs-api-docs/> |
 | GDACS (EC Joint Research Centre) | tropical cyclones now: centre, status, top wind on the track | EU-owned content, CC BY 4.0 by the Commission's reuse decision; GDACS calls it "purely indicative" (§4.14) | Tropical cyclones: GDACS, European Commission Joint Research Centre (CC BY 4.0) | <https://www.gdacs.org> |
 | NOAA nowCOAST | lightning now: strike density over the last fifteen minutes, from the ground networks NLDN and GLD360, 25° S to 80° N and 110° E eastward to 0° W | US Government work, public domain; a "Level 5" derived product "appropriate for public distribution" (§4.17) | Lightning: strike density from NOAA nowCOAST, made by the NWS Ocean Prediction Center | <https://nowcoast.noaa.gov> |
-| NASA Solar System Treks | map tiles of the Moon and Mars, fetched when the camera is close: LRO WAC mosaic (to 83 m per pixel), THEMIS daytime infrared mosaic (to 162 m) as detail over our colour map | NASA content, "generally are not subject to copyright in the United States" (§4.16) | the two lines in §4.16, in the Sources panel while those tiles are on screen | <https://trek.nasa.gov> |
+| NASA Solar System Treks | map tiles of the Moon and Mars, fetched when the camera is close: LRO WAC mosaic (to 83 m per pixel), THEMIS daytime infrared mosaic (to 162 m) as detail over our colour map, and the LOLA and MOLA-HRSC shaded relief re-lit by the Sun | NASA content; HRSC CC BY-SA 3.0 IGO, "generally are not subject to copyright in the United States" (§4.16) | the two lines in §4.16, in the Sources panel while those tiles are on screen | <https://trek.nasa.gov> |
 
 Also named in `site/js/data/sources.js` so the status panel can say "could not look" about them by
 name, but **not reachable from a browser** (no `Access-Control-Allow-Origin`) and therefore never
@@ -740,6 +742,16 @@ Per the [NWS disclaimer](https://www.weather.gov/disclaimer):
 > content and then present it as official government material.
 
 The NWS name and visual identifier are trademarks and are not used here beyond naming the source.
+
+**Today's sunspot groups (2026-10-06).** `site/js/scene/sun.js` draws the Sun's numbered active
+regions from `https://services.swpc.noaa.gov/json/solar_regions.json`, which the visitor's browser
+fetches once, the first time the camera is close to the Sun, and never on a connection that asked to
+save data. Measured 2026-10-06 with `curl -s -D - -H "Origin: https://www.spaceradar.ai"`:
+`access-control-allow-origin: *`, `cache-control: max-age=60`, 126 108 bytes. What is changed: each
+group is drawn as ONE round spot at its reported latitude, distance from the central meridian and
+area, and is carried west by the Sun's turning (13.2 degrees a day) from the list's day to the
+clock's; the spots' darkness is chosen. The Sun's card says so, and the Sources panel prints
+"Today’s sunspot groups: NOAA Space Weather Prediction Center, solar region summary" while they are drawn.
 
 ### 4.5 IAU Minor Planet Center — more restrictive than you would guess
 
@@ -974,11 +986,44 @@ Measured and rejected for Mars the same day: `Mars_Viking_MDIM21_ClrMosaic_globa
 MDIM 2.1 colour, CORS `*`, levels 0 to 7). Its frames meet in hard straight edges with a tone step
 across them, visible from 400 km.
 
-Also measured the same day and not used yet: `LRO_LOLA_ClrShade_Global_128ppd_v04`,
-`Mars_MGS_MOLA_ClrShade_merge_global_463m` (elevation as shaded colour) and
-`Mars_MOLA_blend200ppx_HRSC_Shade_clon0dd_200mpp_lzw` (a grey hillshade, levels 0 to 8), all CORS `*`, for the relief of
-spec 0065 task 3; and NASA GIBS's `BlueMarble_ShadedRelief_Bathymetry` at 500 m for the Earth (CORS
-`*`, 512-pixel tiles on GIBS's own 288-degree grid), which waits for the Earth's shader (task 4).
+Also measured the same day and not used: `LRO_LOLA_ClrShade_Global_128ppd_v04` and
+`Mars_MGS_MOLA_ClrShade_merge_global_463m` (elevation as shaded colour), CORS `*`.
+
+#### Relief on the Moon and Mars, and the Earth close up (2026-10-06)
+
+Three more pyramids are rows in `registry/tilesets.yaml` since 2026-10-06 (spec 0065 tasks 3 and 4),
+fetched under the same rules: never on a first visit, on a phone, with Save-Data, or after the latch.
+
+| World | Mosaic | Made by | Terms | Finest level asked for |
+|---|---|---|---|---|
+| The Moon, relief | `LRO_LOLA_Shade_Global_256ppd_v06`: shaded relief from the Lunar Orbiter Laser Altimeter, 118 m per pixel | LOLA Science Team, NASA / Goddard Space Flight Center | USGS Astrogeology: "Access Constraints public domain", "Use Constraints Please cite authors" ([page](https://astrogeology.usgs.gov/search/map/moon_lro_lola_dem_118m), read 2026-10-06) | 6 (333 m per pixel; level 7 is a 404) |
+| Mars, relief | `Mars_MOLA_blend200ppx_HRSC_Shade_clon0dd_200mpp_lzw`: shaded relief from the MOLA and HRSC blended elevation model, 200 m per pixel | USGS Astrogeology; MOLA: NASA / Goddard Space Flight Center; HRSC: ESA / DLR / FU Berlin | USGS Astrogeology: "Access Constraints MOLA (CC0) and HRSC (CC BY-SA 3.0 IGO)", "Use Constraints Please cite authors" ([page](https://astrogeology.usgs.gov/search/map/mars_mgs_mola_mex_hrsc_blended_dem_global_200m), read 2026-10-06) | 7 (325 m per pixel) |
+| The Earth | `BlueMarble_ShadedRelief_Bathymetry` from NASA GIBS: MODIS Blue Marble, cloud-free, with shaded relief and the sea floor, 500 m per pixel | NASA Earth Observatory; served by NASA GIBS / ESDIS | "NASA promotes full and open sharing of data"; the acknowledgement of §4.13 is asked for | 7 (489 m per pixel; level 8 is a 400) |
+
+MEASURED 2026-10-06 with `curl -s -D - -H "Origin: https://www.spaceradar.ai"`: `Access-Control-Allow-Origin: *`
+on all three. GIBS's grid is not Trek's: a level-0 tile is 288 degrees on a side and 512 pixels, level 0
+is two tiles (`0/0/2` and `0/1/0` are 400), level 1 is three by two, and `7/79/159` is the last tile.
+Relief tiles are 24 to 65 KB (PNG for the Moon, JPEG for Mars), the Earth's 12 to 54 KB (JPEG). The
+Sources panel prints, while they are on screen:
+
+- The Moon's relief: Lunar Orbiter Laser Altimeter shaded relief, LOLA Science Team, NASA/GSFC, from NASA Solar System Treks
+- Mars's relief: MOLA and HRSC blended shaded relief, NASA/GSFC (MOLA, CC0) and ESA/DLR/FU Berlin (HRSC, CC BY-SA 3.0 IGO), USGS Astrogeology, from NASA Solar System Treks
+- The Earth close up: Blue Marble with shaded relief and bathymetry, NASA Earth Observatory. We acknowledge the use of imagery provided by services from NASA's Global Imagery Browse Services (GIBS), part of NASA's Earth Science Data and Information System (ESDIS).
+
+**What is changed.** The two relief mosaics are never shown as pictures. Each is a drawing of slopes
+under one fixed light; the direction of that light was measured against the host's elevation tiles
+(from the west on the Moon's, from the north-west on Mars's: the numbers are in the registry rows).
+`scene/tiles.js` takes the slope along that one direction and re-lights it with the Sun where it
+really is, 1.5 times steeper than the mosaic has it, clamped to 0.3 to 2.2 of the ground's
+brightness. The slope across that direction is not in the mosaic and is not drawn, and the world's
+card says both. HRSC's share of Mars's relief is CC BY-SA 3.0 IGO: it is fetched by the visitor's
+browser from NASA's server, not copied, changed into another file or redistributed by us. The
+Earth's tiles are multiplied by two sets of three numbers, land (2.0, 2.3, 2.5) and sea (8.3, 5.7,
+4.7), chosen per pixel from the tile's own colour, so Blue Marble sits at the tone of the day map
+under it; they replace the day map's colour only where the ground is lit, and the night lights, the
+clouds, the glint and the Moon's shadow are drawn over them as before. Blue Marble's hills are
+shaded into the picture under a fixed light, not by our Sun, and it is one picture for every month.
+Nothing from Treks or GIBS is stored in this repository or on our site.
 
 ### 4.17 NOAA nowCOAST — lightning (2026-10-03)
 

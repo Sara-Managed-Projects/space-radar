@@ -29,15 +29,36 @@
 
 const RAD = Math.PI / 180;
 
+// A SECOND GRID (2026-10-06, the Earth). NASA GIBS serves the Earth in the same plain longitude and
+// latitude, but its level-0 tile is 288 degrees on a side, not 180: its pyramid is cut so that a
+// 512-pixel tile is a round number of arc-seconds at the bottom, and the top is whatever that leaves.
+// Level z is ceil(360 / span) columns by ceil(180 / span) rows, span = 288 / 2^z: 2 x 1, 3 x 2,
+// 5 x 3, 10 x 5, 20 x 10 ... (GIBS's own capabilities, read and measured 2026-10-06: level 0 answers
+// 0/0/0 and 0/0/1, level 1 answers three columns and two rows, 7/79/159 is the last tile). The tiles
+// on the east and south edges of levels 0 to 2 hang past 180 E and 90 S; from level 3 every tile is
+// whole. Every function here takes the grid where it took `matrix`: [columns, rows] is Trek's
+// (span 180 / rows), and { span0: degrees } is one like GIBS's.
+
+/** A level-0 tile's side in degrees: 180 / rows for a [columns, rows] matrix, or the grid's own `span0`. */
+export function span0Of(matrix = [2, 1]) {
+  if (matrix && !Array.isArray(matrix) && matrix.span0 > 0) return matrix.span0;
+  return 180 / matrix[1];
+}
+
+/** The grid a registry row describes: its `span0` when it has one, its `matrix` otherwise. */
+export function gridOf(set) {
+  return set && set.span0 > 0 ? { span0: set.span0 } : (set && set.matrix) || [2, 1];
+}
+
 /** Columns and rows at a level: two tiles by one at level 0 (`matrix` in registry/tilesets.yaml). */
 export function matrixAt(z, matrix = [2, 1]) {
-  const n = 2 ** z;
-  return { cols: matrix[0] * n, rows: matrix[1] * n };
+  const span = tileSpanDeg(z, matrix);
+  return { cols: Math.ceil(360 / span - 1e-9), rows: Math.ceil(180 / span - 1e-9) };
 }
 
 /** A tile's side in degrees at a level. */
 export function tileSpanDeg(z, matrix = [2, 1]) {
-  return 180 / (matrix[1] * 2 ** z);
+  return span0Of(matrix) / 2 ** z;
 }
 
 /** East longitude in [-180, 180). */
@@ -56,12 +77,18 @@ export function lonLatToTile(lonDeg, latDeg, z, matrix = [2, 1]) {
   return { z, x, y };
 }
 
-/** A tile's edges in degrees. */
+/**
+ * A tile's edges in degrees, cut at 180 E and at the south pole, and how much of the picture that
+ * leaves: `uMax` the share of its width, `vMin` where its south edge is (v = 0 is the picture's
+ * bottom row). 1 and 0 for a whole tile, which is every tile of Trek's grid.
+ */
 export function tileBounds(z, x, y, matrix = [2, 1]) {
   const span = tileSpanDeg(z, matrix);
   const west = -180 + x * span;
   const north = 90 - y * span;
-  return { west, east: west + span, south: north - span, north };
+  const east = Math.min(180, west + span);
+  const south = Math.max(-90, north - span);
+  return { west, east, south, north, uMax: (east - west) / span, vMin: 1 - (north - south) / span };
 }
 
 /** The cache key, in the order the URL carries them: level / row / column. */
@@ -92,7 +119,7 @@ export function isDescendant(a, b) {
 
 /** One texel's width on the ground, in radians of arc (multiply by the radius for km). */
 export function texelRad(z, tilePx = 256, matrix = [2, 1]) {
-  return Math.PI / (matrix[1] * 2 ** z * tilePx);
+  return (span0Of(matrix) * RAD) / (2 ** z * tilePx);
 }
 
 /**
@@ -101,7 +128,7 @@ export function texelRad(z, tilePx = 256, matrix = [2, 1]) {
  */
 export function levelForFootprint(footprintRad, { tilePx = 256, matrix = [2, 1], min = 0, max = 30 } = {}) {
   if (!(footprintRad > 0)) return max;
-  const z = Math.ceil(Math.log2(Math.PI / (matrix[1] * tilePx * footprintRad)) - 1e-9);
+  const z = Math.ceil(Math.log2((span0Of(matrix) * RAD) / (tilePx * footprintRad)) - 1e-9);
   return Math.min(max, Math.max(min, z));
 }
 
@@ -151,7 +178,7 @@ export function cosEmission(dist, arc) {
  */
 export function nadirLevel(view, set) {
   const foot = (view.dist - 1) * view.pixelRad;
-  return levelForFootprint(foot, { tilePx: set.tilePx, matrix: set.matrix, min: 0, max: set.maxLevel });
+  return levelForFootprint(foot, { tilePx: set.tilePx, matrix: gridOf(set), min: 0, max: set.maxLevel });
 }
 
 /**
@@ -183,13 +210,15 @@ export function selectTiles(view, set, opts = {}) {
 }
 
 function pass(view, set, detail) {
-  const matrix = set.matrix || [2, 1];
+  const matrix = gridOf(set);
   const tilePx = set.tilePx || 256;
   const horizon = horizonArc(view.dist);
   const out = [];
   const root = matrixAt(0, matrix);
   const visit = (z, x, y) => {
+    // A grid whose level-0 tile hangs past the map's edge (GIBS's) has children that do not exist.
     const b = tileBounds(z, x, y, matrix);
+    if (!(b.east > b.west) || !(b.north > b.south)) return;
     const arc = arcToTile(view.lonDeg, view.latDeg, b);
     // The margin covers arcToTile's clamp and keeps a tile that only just clears the limb.
     if (arc - 0.05 * (b.north - b.south) * RAD > horizon) return;
@@ -286,6 +315,24 @@ export function createLru(capacity) {
   };
 }
 
+/**
+ * A point of an ellipsoid of revolution from east longitude and GEODETIC latitude, in the same axes
+ * and in units of the equatorial radius: where scene/earth.js puts the Earth's own vertices
+ * (propagate/frames.js geodeticToEcef at height 0, then x, z, -y). `e2` is the first eccentricity
+ * squared, 1 - (b / a)^2; 0 gives unitFromLonLat's sphere.
+ */
+export function ellipsoidFromLonLat(lonDeg, latDeg, e2, out = [0, 0, 0]) {
+  const lon = lonDeg * RAD;
+  const lat = latDeg * RAD;
+  const s = Math.sin(lat);
+  const n = 1 / Math.sqrt(1 - e2 * s * s);
+  const c = n * Math.cos(lat);
+  out[0] = c * Math.cos(lon);
+  out[1] = n * (1 - e2) * s;
+  out[2] = -c * Math.sin(lon);
+  return out;
+}
+
 /** Segments along each side of a tile's patch: about one per 0.75 degrees, 4 to 24. */
 export function patchSegments(z, matrix = [2, 1]) {
   return Math.min(24, Math.max(4, Math.ceil(tileSpanDeg(z, matrix) / 0.75)));
@@ -321,11 +368,16 @@ export function lonLatFromUnit(x, y, z) {
  * The patch of sphere a tile covers, as flat arrays for a BufferGeometry: positions on the unit
  * sphere (which are also the normals), uv with v = 0 on the SOUTH edge (the picture is uploaded
  * bottom row first, as three does), `globe` the same point's place on the world's own whole map, and
- * triangle indices wound to face outward.
+ * triangle indices wound to face outward. `e2` > 0 puts the patch on an ellipsoid (the Earth's), with
+ * `normals` its geodetic verticals; on a sphere `normals` IS `positions`.
  */
-export function patchArrays(b, segs) {
+export function patchArrays(b, segs, e2 = 0) {
   const n = segs + 1;
+  const uMax = b.uMax === undefined ? 1 : b.uMax;
+  const vMin = b.vMin === undefined ? 0 : b.vMin;
   const positions = new Float32Array(n * n * 3);
+  // On a sphere the point is its own normal; on an ellipsoid the normal is the geodetic vertical.
+  const normals = e2 > 0 ? new Float32Array(n * n * 3) : positions;
   const uvs = new Float32Array(n * n * 2);
   const globe = new Float32Array(n * n * 2);
   const p = [0, 0, 0];
@@ -334,11 +386,17 @@ export function patchArrays(b, segs) {
     const lat = b.south + (b.north - b.south) * v;
     for (let i = 0; i < n; i++) {
       const u = i / segs;
-      unitFromLonLat(b.west + (b.east - b.west) * u, lat, p);
+      const lon = b.west + (b.east - b.west) * u;
       const k = j * n + i;
-      positions.set(p, k * 3);
-      uvs[k * 2] = u;
-      uvs[k * 2 + 1] = v;
+      if (e2 > 0) {
+        positions.set(ellipsoidFromLonLat(lon, lat, e2, p), k * 3);
+        normals.set(unitFromLonLat(lon, lat, p), k * 3);
+      } else {
+        positions.set(unitFromLonLat(lon, lat, p), k * 3);
+      }
+      // A tile cut at 180 E or at the south pole (tileBounds) uses only that much of its picture.
+      uvs[k * 2] = u * uMax;
+      uvs[k * 2 + 1] = vMin + v * (1 - vMin);
       // Where the same point is on the world's own map: for a set that is detail over that map.
       globe[k * 2] = (b.west + (b.east - b.west) * u + 180) / 360;
       globe[k * 2 + 1] = (lat + 90) / 180;
@@ -356,5 +414,5 @@ export function patchArrays(b, segs) {
       indices[q++] = a; indices[q++] = d; indices[q++] = c;
     }
   }
-  return { positions, uvs, globe, indices };
+  return { positions, normals, uvs, globe, indices };
 }

@@ -146,7 +146,8 @@ const DEFAULT_UNIFORMS = {
 // Textures come in with colorSpace = SRGBColorSpace, which three uploads as SRGB8_ALPHA8 on
 // WebGL2, so texture2D() already returns linear light here. All the maths below is linear.
 
-const SURFACE_VERT = /* glsl */`
+/** Exported with SURFACE_FRAG: scene/tiles.js draws the Earth's close-up tiles with this same pair. */
+export const SURFACE_VERT = /* glsl */`
 #include <common>
 #include <logdepthbuf_pars_vertex>
 

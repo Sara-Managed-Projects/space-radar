@@ -33,7 +33,9 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const { BUDGETS } = await import(join(ROOT, 'site/js/data/budgets.js'));
 // Spec 0065: the hosts a close world's map tiles come from. A first visit asks none of them for anything.
 const { TILESETS } = await import(join(ROOT, 'site/js/data/tilesets.js'));
-const TILE_HOSTS = new Set(TILESETS.map((s) => new URL(s.url).origin));
+// By the address up to the level, not by the host: the Earth's tiles (2026-10-06) come from NASA GIBS,
+// which today's clouds also come from, on a first visit and by design.
+const TILE_PREFIXES = TILESETS.flatMap((s) => [s.url, s.relief && s.relief.url]).filter(Boolean).map((u) => u.slice(0, u.indexOf('{')));
 
 const arg = (name) => {
   const hit = process.argv.find((a) => a.startsWith(`--${name}=`));
@@ -67,7 +69,7 @@ function tally(requests, pageOrigin) {
     t.count += 1;
     const file = at.path.split('/').pop();
     const ours = !pageOrigin || at.origin === pageOrigin;
-    if (TILE_HOSTS.has(at.origin)) t.tiles.push(at.origin + at.path);
+    if (TILE_PREFIXES.some((p) => (at.origin + at.path).startsWith(p))) t.tiles.push(at.origin + at.path);
     if (!ours) { t.thirdParty += bytes; continue; }
     if (at.path.startsWith('/audio/')) { t.audio.push(at.path); t.audioBytes += bytes; }
     if (at.path.startsWith('/og/')) { t.og.push(at.path); t.ogBytes += bytes; }
@@ -196,6 +198,9 @@ if (BASE || FROM) {
   check(verdict(tally(withFonts, O), { ...BUDGETS, fonts_at_boot_bytes: 20000 }).some((p) => /fonts_at_boot_bytes/.test(p)), 'fonts over their own budget fail');
   check(verdict(tally([...withFonts, { url: `${O}/fonts/inter-400-cyrillic.woff2`, bytes: 6004 }], O)).some((p) => /Cyrillic/.test(p)), 'a Cyrillic face on an English page fails');
   check(verdict(tally([...visit, { url: 'https://trek.nasa.gov/tiles/Moon/EQ/LRO_WAC_Mosaic_Global_303ppd_v02/1.0.0/default/default028mm/3/2/7.jpg', bytes: 30000 }], O)).some((p) => /map tile request/.test(p)), 'a map tile on a first visit fails (spec 0065)');
+  check(verdict(tally([...visit, { url: 'https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/BlueMarble_ShadedRelief_Bathymetry/default/500m/3/2/5.jpeg', bytes: 40000 }], O)).some((p) => /map tile request/.test(p)), 'and so does one of the Earth\'s, from NASA GIBS');
+  check(verdict(tally([...visit, { url: 'https://trek.nasa.gov/tiles/Moon/EQ/LRO_LOLA_Shade_Global_256ppd_v06/1.0.0/default/default028mm/3/2/7.png', bytes: 40000 }], O)).some((p) => /map tile request/.test(p)), 'and a relief tile');
+  check(!verdict(tally([...visit, { url: 'https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/GOES-East_ABI_Band13_Clean_Infrared/default/2026-10-06T00:00:00Z/2km/2/1/1.png', bytes: 40000 }], O)).some((p) => /map tile request/.test(p)), 'today\'s clouds, from the same host, are not map tiles');
   check(verdict(tally([], O)).some((p) => /measured nothing/.test(p)), 'an empty record fails rather than passing as zero bytes');
   check(verdict(tally([...visit, { url: `${O}/js/ui/rendermode.js`, bytes: 1 }], O)).some((p) => /render-trip/.test(p)), 'the film camera at boot fails');
 
