@@ -1016,6 +1016,10 @@ tours:
         target: {record: io}
         behind: jupiter
         stage: jupiter
+        # 60 since 2026-10-06 (internal #400), as Triton and Pluto have: with the default back
+        # light the moon is a crescent at best, and `behind:` could not yield to a light the stop
+        # had itself asked to stand against.
+        key_light_deg: 60
         # 12 Io radii: at 5 the moon fills the frame and Jupiter, 5.9 Jupiter radii away, is
         # whatever the key light leaves behind it. Checked in the browser, 2026-09-22.
         frame_radii: 12
@@ -1040,6 +1044,10 @@ tours:
         target: {record: europa}
         behind: jupiter
         stage: jupiter
+        # 60 since 2026-10-06 (internal #400), as Triton and Pluto have: with the default back
+        # light the moon is a crescent at best, and `behind:` could not yield to a light the stop
+        # had itself asked to stand against.
+        key_light_deg: 60
         frame_radii: 12
         chapter: "Chapter one: Jupiter's moons"
         card:
@@ -1104,6 +1112,10 @@ tours:
         target: {record: enceladus}
         behind: saturn
         stage: saturn
+        # 60 since 2026-10-06 (internal #400), as Triton and Pluto have: with the default back
+        # light the moon is a crescent at best, and `behind:` could not yield to a light the stop
+        # had itself asked to stand against.
+        key_light_deg: 60
         # Enceladus is 252 km in radius and 238 000 km from Saturn. MEASURED in the browser,
         # 2026-09-22: at 5 radii the moon came out 193 px across against a Saturn 235 px across,
         # which reads as two bodies of a size. At 12 it is 85 px against the same 250 px, and

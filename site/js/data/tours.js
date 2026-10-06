@@ -1061,6 +1061,7 @@ export const TOURS = [
 "stage": "jupiter",
 "frame_radii": 12,
 "behind": "jupiter",
+"key_light_deg": 60,
 "chapter": "Chapter one: Jupiter's moons",
 "card": {
 "title": "Io, the moon Jupiter never lets rest",
@@ -1069,7 +1070,6 @@ export const TOURS = [
 "drift_deg": 34,
 "drift_rate_deg_s": 6,
 "drift": "toward-light",
-"key_light_deg": 125,
 "ease": "auto",
 "on_unresolved": "drop",
 "dwell_ms": 15820
@@ -1082,6 +1082,7 @@ export const TOURS = [
 "stage": "jupiter",
 "frame_radii": 12,
 "behind": "jupiter",
+"key_light_deg": 60,
 "chapter": "Chapter one: Jupiter's moons",
 "card": {
 "title": "Europa, and the two ships on their way",
@@ -1090,7 +1091,6 @@ export const TOURS = [
 "drift_deg": 34,
 "drift_rate_deg_s": 6,
 "drift": "toward-light",
-"key_light_deg": 125,
 "ease": "auto",
 "on_unresolved": "drop",
 "dwell_ms": 17818
@@ -1144,6 +1144,7 @@ export const TOURS = [
 "stage": "saturn",
 "frame_radii": 12,
 "behind": "saturn",
+"key_light_deg": 60,
 "chapter": "Chapter two: the ringed planet",
 "card": {
 "title": "Enceladus, spraying its ocean into space",
@@ -1152,7 +1153,6 @@ export const TOURS = [
 "drift_deg": 34,
 "drift_rate_deg_s": 6,
 "drift": "toward-light",
-"key_light_deg": 125,
 "ease": "auto",
 "on_unresolved": "drop",
 "dwell_ms": 18484

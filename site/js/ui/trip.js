@@ -1028,7 +1028,9 @@ export function createTrip(ctx) {
       let best = backdrop
         ? pick(backdropCandidates(backdrop, (subjectRad || 0) + BACKDROP_CLEAR))
         : null;
-      const yielded = !!best && best.sunward < Math.cos(Math.max(BACKDROP_MAX_PHASE_DEG, (wantDeg ?? 125) + 25) * DEG);
+      // Never when the backdrop IS the light (`behind: sun`): that shot is against the Sun on purpose.
+      const againstSun = !!backdrop && backdrop.dot(_sun) > 0.9;
+      const yielded = !!best && !againstSun && best.sunward < Math.cos(Math.max(BACKDROP_MAX_PHASE_DEG, (wantDeg ?? 125) + 25) * DEG);
       if (yielded) best = null;
       if (!best) best = pick(gridCandidates(ground ? GROUND_POLARS : KEY_LIGHT_POLARS), yielded ? backdrop : null);
       // Every candidate blocked is a real case -- low over the night side, with the planet on
