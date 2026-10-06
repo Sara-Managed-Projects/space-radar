@@ -60,6 +60,7 @@ export const CURSOR_AT = 1 / 3;
 const SNAP_PX = 6;
 const TAP_PX = 4;
 const MARK_REACH_PX = 22;
+const MARK_EDGE_PX = 22;
 const MARKS_KEPT = 40;
 const DAY_MS = 86400e3;
 
@@ -251,7 +252,10 @@ export function createScrubber(ctx, pill) {
     const seen = new Set();
     for (const m of marks) {
       const x = tapeX(m.tMs, tMs, unit, width);
-      if (x < -MARK_REACH_PX || x > width + MARK_REACH_PX) continue;
+      // Not in the tape's last MARK_EDGE_PX either side: there the mark's 44 px target is clipped
+      // by the tape and shares its pixels with the step button beside it, so a tap on a launch
+      // eight hours off was "forward one hour" (internal #419 item 6, seen at 390 px).
+      if (x < MARK_EDGE_PX || x > width - MARK_EDGE_PX) continue;
       seen.add(m.id);
       let b = markNodes.get(m.id);
       if (!b) {

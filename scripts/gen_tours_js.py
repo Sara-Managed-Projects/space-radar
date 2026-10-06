@@ -344,6 +344,58 @@ INDEX = Mirror(
 )
 
 
+# ---------------------------------------------------------------------------------------------
+# THE WORDS A TRIP IS FOUND BY (2026-10-07, public #312): its stops' titles, for the search box.
+#
+# "apollo" should find "Where we have landed on the Moon", and neither that title nor its blurb
+# says Apollo: its stops do. The index above is in the first visit's bytes and stays as small as
+# the card needs; this third mirror is fetched with ui/searchrows.js when the search field is first
+# focused. One lower-cased string per trip: the stops' titles and what they are about, each word once.
+def words_row(trip: dict) -> str:
+    seen: list[str] = []
+    for stop in trip.get("stops") or []:
+        card = stop.get("card") or {}
+        title = card.get("title") if isinstance(card, dict) else None
+        # And what the stop is about: its own id and its target's (`apollo-11`, `lunokhod-1`), which
+        # is where the names are when the title is "The first people to visit".
+        target = stop.get("target") if isinstance(stop.get("target"), dict) else {}
+        about = " ".join(str(v) for k, v in target.items() if k in ("id", "name", "world") and isinstance(v, str))
+        for word in re.findall(r"[a-z0-9]+", f"{title or ''} {stop.get('id') or ''} {about}".lower()):
+            if len(word) > 2 and word not in seen:
+                seen.append(word)
+    return " ".join(seen)
+
+
+def render_words(doc: dict) -> list[tuple[str, str, object]]:
+    tours = next(row for row in render(doc) if row[1] == "TOURS")[2]
+    return [
+        (
+            "A trip's id -> the words of its stops' titles, lower-cased, each once.",
+            "TOUR_WORDS",
+            {t["id"]: words_row(t) for t in tours},
+        ),
+    ]
+
+
+WORDS_HEADER = """// GENERATED from registry/tours.yaml by scripts/gen_tours_js.py. Do not edit.
+//
+// `python3 scripts/gen_tours_js.py --check` fails CI if this file and the YAML disagree.
+//
+// THE WORDS A TRIP IS FOUND BY (public #312): its stops' titles, so that "apollo" finds the trip to
+// the Moon's landing sites. Fetched with ui/searchrows.js on the search field's first focus; never
+// in the boot graph (tests/test_boot_diet.mjs).
+"""
+
+WORDS = Mirror(
+    source="registry/tours.yaml",
+    target="site/js/data/tours-words.js",
+    header=WORDS_HEADER,
+    render=render_words,
+    what="tours-words.js",
+    indent=0,
+)
+
+
 if __name__ == "__main__":
-    # Both mirrors, and --check fails if either is stale.
-    sys.exit(max(MIRROR.main(sys.argv[1:]), INDEX.main(sys.argv[1:])))
+    # All three mirrors, and --check fails if any is stale.
+    sys.exit(max(MIRROR.main(sys.argv[1:]), INDEX.main(sys.argv[1:]), WORDS.main(sys.argv[1:])))

@@ -58,9 +58,27 @@ Object.assign(COPY, {
     moved: 'Moved to {name}',
     movedNowhere: 'The view moved',
     // A storm or a launch pad on the night side: the camera stands back to the whole Earth.
-    night: 'Night at {name}: the whole Earth, with daylight in view',
+    night: 'Night at {name}: the wide view',
     back: 'Back to where you were',
     done: 'Back where you were',
+  },
+
+  // What a search row says under the name, and the rows that are not objects (ui/searchrows.js).
+  searchRows: {
+    kinds: {
+      sun: 'Star', planet: 'Planet', moon: 'Moon', station: 'Space station', satellite: 'Satellite', telescope: 'Space telescope',
+      probe: 'Spacecraft', rocket: 'Rocket', launch: 'Launch', debris: 'Debris', asteroid: 'Asteroid', comet: 'Comet', site: 'Place on the ground',
+      star: 'Star', exoplanet: 'Planet of another star', dso: 'Deep-sky object', storm: 'Tropical storm', oddity: 'Oddity',
+    },
+    upNow: 'up now, {compass}',
+    downNow: 'below your horizon now',
+    trip: 'Trip',
+    mission: 'Mission',
+    eventName: '{mission}: {title}',
+    event: 'Mission event · {date}',
+    eventNoDate: 'Mission event',
+    nearMe: 'Near me tonight',
+    nearMeSub: 'What is up in your sky',
   },
 
   // The home's dated cards (ui/today.js): generated from what is loaded, never typed.

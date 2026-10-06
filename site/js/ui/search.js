@@ -35,6 +35,7 @@
 
 import { COPY, t, fmt } from '../copy/en.js';
 import { ALIASES } from '../data/aliases.js';
+import { labelParentId } from './labels.js';
 
 // Ids are per instance, not per module. aria-controls and aria-activedescendant are id
 // REFERENCES, so two panels sharing one id silently point a screen reader at the other panel's
@@ -66,6 +67,8 @@ const OTHER_CONTAINS = 500; // designator or operator
 // digit at a time. Without it "2554" finds nothing at all and "25544" finds the station, which
 // reads as the search being broken rather than as the number being incomplete.
 const CAT_PREFIX = 400;
+/** How many of a planet's moons follow it when it is named exactly. */
+export const MOONS_AFTER = 4;
 /** The weakest hit a `#at=` link will fly to (main.js resolveAt): the start of a word or better. */
 export const LINK_MIN_SCORE = WORD_PREFIX;
 
@@ -177,6 +180,8 @@ export function buildIndex(records, layers) {
     picked: [], // on the hand-kept list; a tie-break, see below
     mag: [], // apparent magnitude where the record has one, else Infinity; brighter first, see below
     where: [], // the layer's display name, for the quiet right-hand label
+    pop: [], // a world or a station: what people mean by a name before anything that shares it
+    kids: new Map(), // a world's id -> the entries of its moons, in the registry's order
     layers: displayOf,
   };
 
@@ -213,6 +218,9 @@ export function buildIndex(records, layers) {
     const mag = Number.isFinite(meta.vmag) ? meta.vmag : Number.isFinite(meta.mag) ? meta.mag : Infinity;
     index.mag.push(mag);
     index.where.push(displayOf.get(record.layer) || '');
+    index.pop.push(record.klass === 'world' || record.klass === 'station' ? 1 : 0);
+    const parent = labelParentId(record);
+    if (parent) { if (!index.kids.has(parent)) index.kids.set(parent, []); index.kids.get(parent).push(index.n); }
     index.n += 1;
   }
   return index;
@@ -323,6 +331,19 @@ export function findMatches(index, query, limit = MAX_RESULTS) {
     }
     if (score > 0) found.push({ i, score });
   }
+  // A PLANET'S MOONS COME AFTER IT (internal #419 item 10): "jupiter" offered JUPITER 3 (ECHOSTAR
+  // 24), a television satellite, second, above Io and Europa. A world named exactly brings its
+  // first MOONS_AFTER moons in one point under it, which is above anything that merely starts with
+  // the word.
+  for (const hit of found.slice()) {
+    if (hit.score !== NAME_EXACT || index.record[hit.i].klass !== 'world') continue;
+    const kids = index.kids.get(index.record[hit.i].id) || [];
+    for (const k of kids.slice(0, MOONS_AFTER)) {
+      const had = found.find((f) => f.i === k);
+      if (had) had.score = Math.max(had.score, NAME_EXACT - 1);
+      else found.push({ i: k, score: NAME_EXACT - 1, kid: true });
+    }
+  }
   if (!found.length && buried.length) { found.push(...buried); out.fallback = true; }
   buried = null;
   out.total = found.length;
@@ -332,6 +353,10 @@ export function findMatches(index, query, limit = MAX_RESULTS) {
   // "ISS DEB (CZ-4 R/B)" when both merely contain the letters.
   found.sort((a, b) => {
     if (a.score !== b.score) return b.score - a.score;
+    // A moon brought in by its planet keeps the registry's order: Io, Europa, Ganymede, Callisto.
+    if (a.kid && b.kid) return a.i - b.i;
+    // A world or a station before anything else that matched as well: the popular thing first.
+    if (index.pop[a.i] !== index.pop[b.i]) return index.pop[b.i] - index.pop[a.i];
     if (index.rank[a.i] !== index.rank[b.i]) return index.rank[a.i] - index.rank[b.i];
     // Brighter first: "andromeda" means the galaxy, not Andromeda II. A record with no magnitude
     // (Infinity) sorts after one that has a magnitude -- MEASURED live: "carina" put the Carina
@@ -401,7 +426,7 @@ export function findMatches(index, query, limit = MAX_RESULTS) {
 // ---------------------------------------------------------------------------------------
 
 /** Optimal-string-alignment distance, capped: letters swapped, dropped, added or mistyped. */
-function editDistance(a, b, cap) {
+export function editDistance(a, b, cap) {
   const n = a.length;
   const m = b.length;
   if (Math.abs(n - m) > cap) return cap + 1;
@@ -453,7 +478,7 @@ export function closest(index, query, limit = 3) {
     }
     if (best <= cap) found.push({ i, d: best });
   }
-  found.sort((a, b) => (a.d - b.d) || (index.rank[a.i] - index.rank[b.i]) || (index.mag[a.i] - index.mag[b.i])
+  found.sort((a, b) => (a.d - b.d) || (index.pop[b.i] - index.pop[a.i]) || (index.rank[a.i] - index.rank[b.i]) || (index.mag[a.i] - index.mag[b.i])
     || (index.len[a.i] - index.len[b.i]) || (a.i - b.i));
   const seen = new Set();
   const out = [];
@@ -512,7 +537,28 @@ export function createSearch(ctx, host) {
     reported: new Set(), // layer ids that have fired sr:layer, whatever count they carried
     inputTimer: 0,
     rebuildTimer: 0,
+    more: null, // ui/searchrows.js, once the field has been focused: what a row says, and the extras
+    env: null, // where things are in the visitor's sky, for the rows
   };
+
+  // WHAT A ROW SAYS, AND TRIPS, MISSIONS AND EVENTS (public #312): fetched on the first focus, never
+  // at boot (ui/searchrows.js says why). Until it lands the list is a name and its layer.
+  let moreImport = null;
+  const refreshEnv = () => {
+    if (!state.more) return;
+    state.more.whereEnv(ctx).then((env) => { state.env = env; if (state.open && input.value) run(input.value); }).catch(() => { state.env = null; });
+  };
+  function wantMore() {
+    if (moreImport) return moreImport;
+    moreImport = import('./searchrows.js').then((m) => {
+      state.more = m;
+      refreshEnv();
+      if (state.open && input.value) run(input.value);
+      else if (document.activeElement === input && !input.value) suggest();
+      return m;
+    }).catch((e) => { moreImport = null; console.warn('the search rows did not load', e); return null; });
+    return moreImport;
+  }
 
   // --- structure ------------------------------------------------------------------------
 
@@ -666,11 +712,24 @@ export function createSearch(ctx, host) {
       // The class dot. The swatch tokens in ui.css are scene/glyphatlas.js's CLASS_COLOURS
       // verbatim, so the dot is the colour the object is drawn in without this panel importing
       // the atlas -- and with it, three.js.
-      const dot = el('span', `sr-swatch sr-swatch--${hit.klass}`);
+      const dot = el('span', `sr-swatch sr-swatch--${hit.extra ? 'oddity' : hit.klass}`);
       dot.setAttribute('aria-hidden', 'true');
       item.appendChild(dot);
-      item.appendChild(nameNode(hit));
-      if (hit.where) item.appendChild(el('span', 'sr-search__where', hit.where));
+      if (hit.row || hit.extra) {
+        // Two lines: the name people use, and under it what it is, the catalogue's own string
+        // when that differs, and where it is in the visitor's sky now.
+        item.classList.add('sr-search__option--rich');
+        if (hit.extra) item.dataset.extra = hit.extra;
+        const text = el('span', 'sr-search__text');
+        text.appendChild(nameNode(hit));
+        const sub = hit.extra ? [hit.sub] : [hit.row.kind, hit.row.also, hit.row.where];
+        const line = sub.filter(Boolean).join(COPY.punctuation.separator);
+        if (line) text.appendChild(el('span', 'sr-search__what', line));
+        item.appendChild(text);
+      } else {
+        item.appendChild(nameNode(hit));
+        if (hit.where) item.appendChild(el('span', 'sr-search__where', hit.where));
+      }
       // pointerdown would blur the input before the click lands, closing the list under the
       // finger. Suppressing the default keeps focus where the ARIA state says it is.
       item.addEventListener('pointerdown', (event) => event.preventDefault());
@@ -682,12 +741,12 @@ export function createSearch(ctx, host) {
       item.addEventListener('pointerup', (event) => {
         if (event.button !== undefined && event.button !== 0) return;
         state.pickedAt = performance.now();
-        pick(hit.record);
+        pickHit(hit);
       });
       item.addEventListener('click', () => {
         if (state.pickedAt && performance.now() - state.pickedAt < 700) return; // pointerup did it
         setActive(i);
-        pick(hit.record);
+        pickHit(hit);
       });
       list.appendChild(item);
     }
@@ -764,6 +823,7 @@ export function createSearch(ctx, host) {
       state.missed = '';
       close(false);
       paintList();
+      if (!q && document.activeElement === input) suggest();
       return;
     }
     ensureIndex();
@@ -776,6 +836,21 @@ export function createSearch(ctx, host) {
     // Nothing matched: say so, and offer the nearest names as the options (closest() above).
     state.missed = result.hits.length ? '' : String(text).trim();
     if (state.missed) { state.hits = closest(state.index, q); state.total = state.hits.length; }
+    if (state.more) {
+      // The rows' words, one row per drawn name, and under the objects the trips, missions and
+      // events the query names. A query that names only those is not a miss.
+      const m = state.more;
+      const rows = m.mergeSame(state.hits.map((h) => ({ ...h, name: undefined, row: m.describe(h.record, state.env) })).map((h) => {
+        const at = h.row.title.toLowerCase().indexOf(q);
+        return { ...h, name: h.row.title, at, length: q.length };
+      }));
+      const merged = state.hits.length - rows.length;
+      const extras = m.findExtras(q).filter((x) => !(x.extra === 'mission' && rows.some((h) => h.record && h.record.id === x.record)));
+      if (extras.length && state.missed && !rows.length) state.missed = '';
+      state.total = Math.max(0, state.total - merged);
+      state.hits = rows.slice(0, MAX_RESULTS - Math.min(extras.length, rows.length ? extras.length : 0)).concat(state.missed ? [] : extras);
+      state.total += state.missed ? 0 : extras.length;
+    }
     paintList();
     // Always open on a real query, even with nothing to show: the footer's "nothing matches" is
     // an answer, and a dropdown that simply does not appear is indistinguishable from a bug.
@@ -798,6 +873,25 @@ export function createSearch(ctx, host) {
    * off until controls.js listens for this event. That is the integrator's one line, not a
    * reason to reach into another module's DOM from here.
    */
+  /** A row is an object, or one of ui/searchrows.js's extras: a trip, a mission, an event, a suggestion. */
+  function pickHit(hit) {
+    if (!hit) return;
+    if (!hit.extra) { pick(hit.record); return; }
+    if (state.more && state.more.runExtra(ctx, hit)) { close(true); paintList(); input.blur(); }
+  }
+
+  /** Before anything is typed: what the field can do that a name cannot ask for ("Near me tonight"). */
+  function suggest() {
+    if (!state.more || input.value) return;
+    state.hits = state.more.suggestions();
+    state.total = state.hits.length;
+    state.missed = '';
+    state.fallback = false;
+    paintList();
+    setOpen(true);
+    setActive(-1);
+  }
+
   function pick(record) {
     if (!record) return;
     try {
@@ -862,7 +956,7 @@ export function createSearch(ctx, host) {
       case 'Enter': {
         if (state.open && state.active >= 0 && state.hits[state.active]) {
           event.preventDefault();
-          pick(state.hits[state.active].record);
+          pickHit(state.hits[state.active]);
         }
         return;
       }
@@ -897,12 +991,15 @@ export function createSearch(ctx, host) {
   };
 
   const onFocusIn = () => {
-    if (!state.open && state.hits.length) setOpen(true);
+    wantMore();
+    refreshEnv();
+    if (!state.open && state.hits.length && input.value) setOpen(true);
+    else if (!input.value) suggest();
   };
 
   const onFly = () => {
     if (state.active < 0 || !state.hits[state.active]) return;
-    pick(state.hits[state.active].record);
+    pickHit(state.hits[state.active]);
   };
 
   const onLayer = (event) => {
@@ -922,6 +1019,7 @@ export function createSearch(ctx, host) {
   fly.addEventListener('click', onFly);
   window.addEventListener('sr:layer', onLayer);
   window.addEventListener('sr:layers-ready', onLayer);
+  window.addEventListener('sr:observer', refreshEnv);
   if (reduceMotion.addEventListener) reduceMotion.addEventListener('change', onMotion);
 
   rebuild();
@@ -947,6 +1045,7 @@ export function createSearch(ctx, host) {
       fly.removeEventListener('click', onFly);
       window.removeEventListener('sr:layer', onLayer);
       window.removeEventListener('sr:layers-ready', onLayer);
+      window.removeEventListener('sr:observer', refreshEnv);
       if (reduceMotion.removeEventListener) reduceMotion.removeEventListener('change', onMotion);
       if (wrap.parentNode) wrap.parentNode.removeChild(wrap);
     },

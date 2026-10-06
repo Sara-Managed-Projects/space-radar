@@ -65,6 +65,11 @@ const DEFERRED = {
   'js/ui/missions.js': 'the mission events: main.js fetches them with the first card',
   'js/propagate/ephemeris.js': 'the reader of a craft\'s own path file: it arrives with ui/missions.js',
   'js/data/ephemerides.js': 'the index of the path files: with the reader',
+  'js/ui/searchrows.js': 'what a search row says, and the trips, missions and events it finds: ui/search.js fetches it on the field\'s first focus',
+  'js/data/tours-words.js': 'the words a trip is found by: with ui/searchrows.js',
+  'js/data/missions.js': 'the missions\' events: with ui/missions.js or ui/searchrows.js',
+  'js/data/ics.js': 'the calendar file: ui/next.js fetches it when Add to calendar is pressed',
+  'js/ui/countdown.js': 'the launch countdown: fetched when a launch is within a day',
   'js/scene/ephpath.js': 'the line of a craft\'s path: ui/missions.js fetches it with the first file',
 };
 for (const [path, why] of Object.entries(DEFERRED)) {

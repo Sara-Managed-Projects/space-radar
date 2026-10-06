@@ -1443,6 +1443,23 @@ html.sr-clean body > *:not(.sr-scene):not(.sr-veil):not(.sr-over-clean) {
   white-space: nowrap;
 }
 
+/* A row that says what it is (ui/searchrows.js): the name, and one quiet line under it. */
+.sr-search__text {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sr-search__what {
+  font-size: var(--sr-fs-sm);
+  color: var(--sr-text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* The matched letters. `mark` arrives yellow-on-black from the browser, which is neither in
    the palette nor legible on this panel; ember is the one interactive colour, so it is ember. */
 .sr-search__hit {
@@ -5886,7 +5903,8 @@ html.sr-present #sr-side {
      counts as covered: the subject is lifted into the part of the window above the words. */
   min-height: 0;
   max-height: 50vh;
-  padding: var(--sp-5) var(--sp-6) calc(var(--sp-5) + var(--sr-trip-bar) + var(--sp-4));
+  /* A four-line card ended 6 px above the toolbar (internal #419 item 4): a step more under it. */
+  padding: var(--sp-5) var(--sp-6) calc(var(--sp-5) + var(--sr-trip-bar) + var(--sp-6));
   overflow-y: auto;
   pointer-events: auto;
   border-width: 1px 0 0;
@@ -6306,3 +6324,8 @@ html.sr-present .sr-trip__count {
   .sr-mission__link { display: inline-flex; align-items: center; min-height: 44px; }
   .sr-today__debris { min-height: 44px; }
 }
+
+/* Two small targets on a phone that were real (internal #419 item 9): "Sound: off" in What to show
+   was 32 px tall, and Eye / Binoculars / Telescope 42 px wide. */
+html.sr-phone .sr-show__toggle { min-height: 44px; }
+html.sr-phone .sr-skybar__wrap .sr-density__btn { min-width: 44px; min-height: 44px; }
