@@ -179,7 +179,7 @@ function holds(name, f, { r, h = 900, subjectPx = 260, upDot = 0, room = null, d
   check(nightGroundPose(null, sun) === null && nightGroundPose(at(150), { x: 0, y: 0, z: 0 }) === null, 'no place, or no Sun, no pose');
   // The opening (public #287).
   check(openingPlan({}) && openingPlan({}).ms === OPENING_MS && OPENING_MS <= 3000, 'a first visit eases in, in under three seconds');
-  for (const no of [{ seen: true }, { link: true }, { reducedMotion: true }, { embed: true }, { hidden: true }]) {
+  for (const no of [{ seen: true }, { link: true }, { reducedMotion: true }, { embed: true }, { automated: true }, { hidden: true }]) {
     check(openingPlan(no) === null, `no opening when ${Object.keys(no)[0]}`);
   }
 }
