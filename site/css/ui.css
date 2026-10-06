@@ -2241,7 +2241,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
   grid-template-columns: 1fr 1fr;
   gap: var(--sp-1) var(--sp-2);
   margin: var(--sp-2) 0 0;
-  font: 400 13px/18px var(--sr-font);
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
   color: var(--sr-text-dim);
 }
 
@@ -2262,7 +2262,7 @@ html.sr-trip-mode[data-trip-phase='paused'] #labels .label:not([data-kind='selec
 #labels .label.sr-sky-label { transition: opacity var(--sr-slow) var(--sr-ease); }
 
 #labels .label.sr-sky-label[data-sky='figure'] {
-  font: 600 13px/16px var(--sr-font-hud);
+  font: 600 var(--sr-fs-sm)/16px var(--sr-font-hud);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--sr-text-dim);

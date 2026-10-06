@@ -1492,7 +1492,7 @@ export const TOURS = [
   {
     "id": "the-constellations",
     "title": "The constellations",
-    "blurb": "Twelve looks at the night sky, each figure drawn star by star, and once from the side. Leaving brings you back to Earth.",
+    "blurb": "Twelve figures of the night sky, drawn star by star, and Orion from the side.",
     "requires": [
       "stars"
     ],
@@ -1850,7 +1850,7 @@ export const TOURS = [
   {
     "id": "the-living-earth",
     "title": "The living Earth",
-    "blurb": "Tilt, air, today's storms, the sea's heat, plankton, ice, dust and the aurora: one planet's cycles, with today's data. This trip moves the clock.",
+    "blurb": "One planet's cycles with today's data: storms, sea, ice, dust and the aurora.",
     "requires": [
       "worlds",
       "storms",
