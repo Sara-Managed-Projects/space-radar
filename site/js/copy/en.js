@@ -1886,6 +1886,18 @@ export const COPY = {
   sky: {
     // A shower's radiant, marked in the sky view for the nights around its peak (sky/radiants.js).
     radiant: '{name} radiant',
+    // The sky from the ground (sky/groundsky.js): the names drawn on it.
+    bodies: { sun: 'Sun', moon: 'Moon', mercury: 'Mercury', venus: 'Venus', mars: 'Mars', jupiter: 'Jupiter', saturn: 'Saturn', uranus: 'Uranus', neptune: 'Neptune' },
+    // The field of view, one mono line over the sky; under a degree it is in arcminutes (U+2032).
+    fov: {
+      degrees: '{deg}° field · {name}',
+      arcmin: '{min}′ field · {name}',
+      names: { eye: 'eye', binoculars: 'binoculars', telescope: 'telescope' },
+    },
+    // A line is named once, in plain words, where it climbs from the horizon (internal #356).
+    lines: { sunPath: 'Path of the Sun', equator: 'Sky equator' },
+    // Sixteen compass points as a pass row spells them (sky/tonightbest.js compassShort).
+    compassShort: ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'],
     // The copy pattern that is the actual feature (docs/design-language.md).
     lookLine: 'Look {dir}, {fists}, at {time}. It moves for about {mins} minutes.',
     lookLineNoDuration: 'Look {dir}, {fists}, at {time}.',
@@ -2262,6 +2274,73 @@ export const COPY = {
     arcLabel: 'Its path across the sky: rises in the {from}, highest {deg}° up, sets in the {to}',
     // The arc's compass letters (ui/skyarc.js), as the trajectory chart spells its N and S.
     cardinals: { N: 'N', E: 'E', S: 'S', W: 'W' },
+    // TONIGHT'S BEST (internal #358, sky/tonightbest.js): one ranked list, one line a row. A pass
+    // is its three moments in one mono line (pub #448): appears, highest, gone.
+    best: {
+      title: 'Tonight’s best',
+      nothing: 'Nothing stands out tonight.',
+      rowTitle: 'Show it on the sky',
+      passLine: '{t0} {d0} · {t1} {deg}° {d1} · {t2} {d2}',
+      // Brightness, at the right of a row's name: lower is brighter, and a dash is "not known".
+      mag: 'mag {mag}',
+      passAria: '{name}: appears {t0} {d0}, highest {t1} at {deg}° {d1}, gone {t2} {d2}, magnitude {mag}.',
+      fades: 'It fades into the Earth’s shadow before it sets.',
+      appears: 'It comes out of the Earth’s shadow part-way up.',
+      notVisible: 'Not visible: the sky is bright or it is in shadow.',
+      rocket: 'Rocket body · {name}',
+      debris: 'Debris · {name}',
+      planetLine: 'best {time} · {deg}° up, {dir}',
+      moonTitle: 'Moon · {phase} · {pct} %',
+      moonSets: 'sets {time}',
+      moonRises: 'rises {time}',
+      moonAllNight: 'up all night',
+      phases: {
+        new: 'new', waxingCrescent: 'waxing crescent', firstQuarter: 'first quarter', waxingGibbous: 'waxing gibbous',
+        full: 'full', waningGibbous: 'waning gibbous', lastQuarter: 'last quarter', waningCrescent: 'waning crescent',
+      },
+      showerLine: 'up to {zhr} an hour · best {time}, {dir}',
+      darkHours: 'Dark {from} to {to}',
+      moonless: 'no Moon, a dark night',
+      moonBright: 'Moon {pct} % hides faint stars',
+      moonFaint: 'Moon {pct} %, little light',
+      neverDark: 'It does not get dark tonight.',
+      // The three names drawn on a pass's arc across the sky.
+      markEnds: '{time} {dir}',
+      markPeak: '{time} {deg}°',
+      honesty: 'Computed for your place. Brightness is an estimate.',
+    },
+    // THE SKY'S CONTROLS (internal #351, #356, #357; pub #454), in the Tonight view: the field of
+    // view, what is drawn over the stars, how dark the visitor's own sky is, and red light.
+    skybar: {
+      title: 'The sky',
+      field: 'Field of view',
+      fields: { eye: 'Eye', binoculars: 'Binoculars', telescope: 'Telescope' },
+      fieldNotes: {
+        eye: 'As wide as you see. Scroll or pinch to zoom.',
+        binoculars: 'A 7° field: fainter stars come out.',
+        telescope: 'A 1° field: planets become discs.',
+      },
+      show: 'Lines and names',
+      toggles: { figures: 'Figures', names: 'Names', sunPath: 'Sun’s path', equator: 'Equator', grid: 'Grid', starGrid: 'Star grid' },
+      toggleTitles: {
+        figures: 'The constellation figures',
+        names: 'Names of constellations and bright stars',
+        sunPath: 'The path the Sun, the Moon and the planets keep to',
+        equator: 'The sky’s equator, above the Earth’s',
+        grid: 'Height and direction, with the north-south line',
+        starGrid: 'The grid the stars are mapped on',
+      },
+      darkness: 'Your sky',
+      darknessModes: { city: 'City', town: 'Town', dark: 'Dark place' },
+      darknessNotes: {
+        city: 'City: stars to magnitude 4, no Milky Way.',
+        town: 'Town edge: stars to magnitude 5.3.',
+        dark: 'Dark place: stars to 6.5 and the Milky Way.',
+      },
+      red: 'Red light',
+      redTitle: 'Turn the page red to keep your eyes used to the dark',
+      honesty: 'Stars measured, planets computed; air and skyline drawn.',
+    },
   },
   clean: {
     hide: 'Hide all panels (H)',

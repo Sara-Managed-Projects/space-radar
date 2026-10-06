@@ -1041,6 +1041,9 @@ export async function boot({ setStatus } = {}) {
   const SYSTEM_SCALE_LAYERS = new Set(['stars', 'systems']);
   function isLayerDrawable(layer) {
     if (!layer || !isLayerOn(layer.id)) return false;
+    // From the ground (sky/groundsky.js) a pad or a dish is under the horizon, and the landers
+    // drew as dots across the face of the sky view's own Moon: no site is drawn there.
+    if (layer.klass === 'site' && ctx.skyView && ctx.skyView.ownsSky) return false;
     if (isSystemStage(stage.worldId)) return SYSTEM_SCALE_LAYERS.has(layer.id);
     const ladder = isLadderStage(stage.worldId);
     if (layer.ladderOnly && !ladder) return false;

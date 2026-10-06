@@ -503,6 +503,10 @@ export function createLabels(ctx, host) {
   }
 
   function project(record, tMs, camera, w, h) {
+    // From the ground the sky view names the Sun, the Moon, the planets and the stars itself, where
+    // the air puts them (sky/groundsky.js); a second name at the orbital scene's place for the same
+    // thing would sit beside it, up to half a degree off on the horizon.
+    if ((record.klass === 'world' || record.klass === 'star') && ctx.skyView && ctx.skyView.ownsSky) return null;
     const p = propagate(record, tMs);
     if (!p) return null;
     // A world's DISC may sit nearer than its true position (scene/worlds.js compresses the planets

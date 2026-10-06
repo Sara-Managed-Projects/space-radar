@@ -338,6 +338,10 @@ jobs:
         run: node tests/test_radiants.mjs
       - name: "The sky from here: a light-pollution glow at night, a risen Moon lifting the dome, neither a flat black slab"
         run: node tests/test_skyview.mjs
+      - name: The air and the eye as numbers; the planets against Astronomy Engine (pub 454)
+        run: node tests/test_skymath.mjs
+      - name: Tonight's best and a pass as a row (pub 448)
+        run: node tests/test_tonightbest.mjs
       - name: One mark per object -- a dot yields to its 3D model
         run: node tests/test_onemark.mjs
       - name: A loaded model keeps its colours, and ships no image it cannot use

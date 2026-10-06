@@ -341,6 +341,20 @@ sky sphere uses (§3).
 code that reads them. HYG's own upstream: Hipparcos (ESA 1997), Yale Bright Star Catalog 5th ed.,
 Gliese Catalog 3rd ed., and Gaia DR3 distances via the AT-HYG work.
 
+
+## 3d. The sky from the ground — the same files, and three formulas
+
+The sky view (`site/js/sky/groundsky.js`) ships no new asset. Its stars are §3's `stars.bin` and
+§3c's `stars3d.bin` (HYG v4.4, CC BY-SA 4.0); its Milky Way, Moon, Mars, Jupiter and Saturn maps are
+the textures already credited above; the positions, sizes and phases of the Sun, the Moon and the
+planets, the Moon's libration and the tilt of Saturn's rings are computed by Astronomy Engine (MIT).
+Refraction is Sæmundsson's formula (Sky & Telescope 72, 1986); air mass is Kasten and Young (Applied
+Optics 28, 1989); a star's colour is §3's two formulas. The standard magnitudes of the two crewed
+stations (ISS −1.8, Tiangong 0.0, at 1 000 km and half lit) are the "intrinsic brightness" on their
+Heavens-Above pages (<https://www.heavens-above.com/SatInfo.aspx?satid=25544>, `satid=48274`), read
+2026-10-05: two numbers, cited in `site/js/sky/tonightbest.js`; nothing is fetched from that site.
+The skyline is generated, not a photograph of anywhere.
+
 ## 3d. Deep-sky objects — OpenNGC, CC BY-SA 4.0, and the distances Wikipedia's editors collected
 
 `site/data/dso.json` is built by `scripts/build-dso.py` from two inputs:
