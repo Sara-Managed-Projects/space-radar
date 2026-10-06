@@ -620,7 +620,8 @@ tours:
     requires_observer: true
     stage: earth
     clock: as-found
-    orbits: [mercury, venus, earth, mars, jupiter, saturn, uranus, neptune]
+    # The Moon's path on the Earth's stage (drawn from outside its orbit), the planets' on the Sun's.
+    orbits: [moon, mercury, venus, earth, mars, jupiter, saturn, uranus, neptune]
     og_stop: 8
     stops:
       - id: roof

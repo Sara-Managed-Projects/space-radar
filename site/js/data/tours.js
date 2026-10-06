@@ -583,6 +583,7 @@ export const TOURS = [
 "requires_observer": true,
 "og_stop": 8,
 "orbits": [
+"moon",
 "mercury",
 "venus",
 "earth",

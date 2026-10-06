@@ -767,7 +767,10 @@ def check_tours(oddities_doc: dict, layer_ids: set, world_ids: set, site_ids: se
                     fail(where, f"`orbits:` on a trip on the `{stage}` stage; the paths are drawn "
                                 f"on the Sun stage only, so the trip would promise lines it never "
                                 f"shows")
-                for wid in ([] if stage == "earth" else orbits):
+                for wid in ([] if stage == "earth" and not on_sun else orbits):
+                    # A trip on the Earth's stage that also passes through the Sun's may name the Moon as well.
+                    if wid == "moon" and stage == "earth":
+                        continue
                     if wid not in world_ids:
                         fail(where, f"`orbits:` names `{wid}`, which has no worlds.yaml row")
                     elif TOUR_WORLD_PARENTS.get(wid) != "sun" or wid == "sun":
