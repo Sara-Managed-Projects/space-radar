@@ -5505,7 +5505,7 @@ html.sr-phone .sr-skyfov { top: calc(var(--sp-6) * 2 + var(--sp-2)); }
 
 /* --- present mode: one trip for a room -------------------------------------------------------
    The sidebar goes (and with it the left inset every centred bar is offset by), the stop's words
-   are a panel at the foot of the scene on the left, and the toolbar's targets grow: the person
+   are a caption across the foot of the scene, and the toolbar's targets grow: the person
    pressing them is standing, with a clicker or at arm's length from a laptop. */
 html.sr-present {
   --sr-scene-left: 0px;
@@ -5518,15 +5518,24 @@ html.sr-present #sr-side {
 
 .sr-tripsheet.is-present {
   position: fixed;
-  bottom: calc(var(--sp-5) + var(--sr-trip-bar) + var(--sp-4));
-  left: var(--sp-6);
-  width: min(52vw, 1000px);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  /* A caption across the foot of the scene, the lower third a film uses. It reaches the window's
+     bottom edge, with the toolbar resting on its foot, because that is what scene/viewshift.js
+     counts as covered: the subject is lifted into the part of the window above the words. */
   min-height: 0;
-  max-height: 66vh;
-  padding: var(--sp-5) var(--sp-6);
+  max-height: 50vh;
+  padding: var(--sp-5) var(--sp-6) calc(var(--sp-5) + var(--sr-trip-bar) + var(--sp-4));
   overflow-y: auto;
   pointer-events: auto;
-  border-radius: var(--sr-radius-shell);
+  border-width: 1px 0 0;
+  border-radius: var(--sr-radius-shell) var(--sr-radius-shell) 0 0;
+}
+
+html.sr-present .sr-trip__toolbar {
+  z-index: 1;
 }
 
 .sr-tripsheet.is-present .sr-tripsheet__panel,
@@ -5612,10 +5621,6 @@ html.sr-present .sr-trip__count {
   font-size: var(--sr-fs-num);
 }
 
-html.sr-present .sr-trip__title {
-  font-size: var(--sr-fs-name-sm);
-}
-
 .sr-trip__tb[hidden] {
   display: none;
 }
@@ -5632,12 +5637,8 @@ html.sr-present .sr-trip__title {
 /* A phone held up to a small group: the panel is the width of the screen, above the toolbar. */
 @media (max-width: 899px) {
   .sr-tripsheet.is-present {
-    right: var(--sp-3);
-    bottom: calc(var(--sr-trip-bar-phone) + var(--sp-3) + env(safe-area-inset-bottom, 0px));
-    left: var(--sp-3);
-    width: auto;
     max-height: 56vh;
-    padding: var(--sp-4);
+    padding: var(--sp-4) var(--sp-4) calc(var(--sr-trip-bar-phone) + var(--sp-3) + env(safe-area-inset-bottom, 0px));
   }
 
   html.sr-present {
