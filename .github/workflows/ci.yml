@@ -186,6 +186,13 @@ jobs:
       # build_seo.py writes (object-pages.json); its post fits each network with the link last.
       - name: "The share sheet: the post per network (X 280, link 23), the excerpt with its attribution, the object page's link, nothing fetched before it opens"
         run: node tests/test_sharesheet.mjs
+      # Public #439 and #288: the embed's address, its snippet and its manual; nothing of it at
+      # boot and no service worker in a frame; photo mode's frame.
+      - name: "The embed and photo mode: ?embed=1 through a whitelist, the snippet, nothing at boot, the frame centred"
+        run: node tests/test_embed.mjs
+      # Public #293: the press page builds from the registry's own counts, with no personal data.
+      - name: "The press page: five counted facts, the README's pictures, every link resolving"
+        run: python3 tests/test_press.py
 
   contract:
     runs-on: ubuntu-latest
