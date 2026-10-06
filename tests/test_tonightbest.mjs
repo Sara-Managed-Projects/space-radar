@@ -113,6 +113,7 @@ check(/tonightBest\(\{ observer: o, nowMs: ctx\.clock\.now\(\), passes:/.test(ui
 check(/sky\.showPass\(track, marks\)/.test(ui) && /ctx\.clock\.goTo\(n\.startMs\)/.test(ui), 'a pass row puts the clock at the pass and draws its arc on the sky');
 check(/sky\(\)\.setOption\('red'/.test(ui) && /sky\(\)\.setOption\('darkness', d\)/.test(ui) && /sky\(\)\.setFov\(FOV\[f\]\)/.test(ui), 'the sky\'s controls: red light, the kind of sky, the field of view');
 check(/removeEventListener\('sr:sky', onSky\)/.test(ui), 'destroy() stops listening to the sky');
+check(/meta: m === null \? \{\} : \{ stdMag: m \}/.test(ui), 'a record with no standard magnitude sends none to the worker: a null there would be read as magnitude 0');
 const css = readFileSync(join(ROOT, 'site/css/ui.css'), 'utf8');
 check(/html\.sr-night-red::after \{[^}]*mix-blend-mode: multiply/.test(css) && /--sr-night-red: #c40000;/.test(css), 'red light is one red multiplied over the whole page, capped under full red');
 const K = COPY.tonight.skybar;

@@ -5365,3 +5365,5 @@ html.sr-night-red::after {
 .sr-tonight-view__rowhead { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-2); }
 .sr-tonight-view__rowhead .sr-tonight-view__rowname { flex: 1 1 auto; min-width: 0; }
 .sr-tonight-view__rowside { flex: 0 0 auto; font: 400 13px/18px var(--sr-font-mono); color: var(--sr-text-dim); }
+/* On a phone the search bar has the top of the screen: the field of view sits under it. */
+html.sr-phone .sr-skyfov { top: calc(var(--sp-6) * 2 + var(--sp-2)); }

@@ -85,7 +85,7 @@ void main() {
   float x = airMass(d.y) - 1.0;
   float f = uLimit - (aMag + uExtK * x);
   float alpha = clamp((f + 0.6) / 2.2, 0.0, 1.0);
-  float size = min(10.0, 1.5 * pow(1.28, max(f, 0.0)));
+  float size = min(12.0, 1.5 * pow(1.32, max(f, 0.0)));
   float glare = clamp((f - 4.5) / 4.0, 0.0, 1.0);
   float ph = fract(sin(dot(position.xy, vec2(12.9898, 78.233))) * 43758.5453) * 6.2832;
   float amp = uTwinkle * clamp(0.05 * x, 0.0, 0.5);
@@ -107,7 +107,7 @@ varying float vGlare;
 void main() {
   float r = length(gl_PointCoord - 0.5) * 2.0;
   float coreR = 1.0 / (1.0 + 2.2 * vGlare);
-  float core = 1.0 - smoothstep(coreR * 0.35, coreR, r);
+  float core = 1.0 - smoothstep(coreR * 0.45, coreR, r);
   float halo = vGlare * 0.3 * pow(max(0.0, 1.0 - r), 2.5);
   float a = (core + halo) * vAlpha;
   if (a <= 0.002) discard;
@@ -157,7 +157,8 @@ uniform float uGain;
 varying vec2 vUv;
 varying float vY;
 void main() {
-  vec3 c = texture2D(uMap, vUv).rgb;
+  // The panorama's floor is a dim brown everywhere; only what stands above it is the Milky Way.
+  vec3 c = max(texture2D(uMap, vUv).rgb - 0.05, 0.0) * 1.1;
   // The air: nothing of it survives the last few degrees above the horizon.
   float air = smoothstep(0.0, 0.3, vY);
   gl_FragColor = vec4(c * uGain * air, 1.0);
@@ -765,7 +766,8 @@ export function createGroundSky(ctx, env) {
     const now = performance.now();
     if (now - labels.at > LABEL_REFRESH_MS) { labels.at = now; gatherLabels(frame); }
     // The field-of-view line has its place first; no name is drawn under it.
-    const placed = [{ x0: w / 2 - 110, x1: w / 2 + 110, y0: 16, y1: 48 }];
+    const fovTop = labels.fov.offsetTop || 24;
+    const placed = [{ x0: w / 2 - 110, x1: w / 2 + 110, y0: fovTop - 8, y1: fovTop + 26 }];
     const cap = w < 600 ? 16 : 30;
     let slot = 0;
     for (const c of labels.cands) {
@@ -885,7 +887,9 @@ export function createGroundSky(ctx, env) {
       const u = milkyWay.material.uniforms;
       u.uRot.value.copy(eqToLocal).multiply(galBasis);
       const exposure = ctx.exposure && typeof ctx.exposure.look === 'function' ? (ctx.exposure.look().milkyWay || 1) : 1;
-      u.uGain.value = MILKY_WAY_GAIN * exposure * sky.milkyWay * night * (1 - 0.85 * frame.moonBright);
+      // A 2k panorama is a wash once the field is a few degrees: it leaves as the field closes.
+      const wide = Math.max(0, Math.min(1, (frame.fovDeg - 4) / 16));
+      u.uGain.value = MILKY_WAY_GAIN * exposure * sky.milkyWay * night * (1 - 0.85 * frame.moonBright) * wide;
       milkyWay.visible = u.uGain.value > 0.004;
     }
 

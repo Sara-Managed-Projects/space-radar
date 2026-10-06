@@ -19,7 +19,7 @@
 const DEG = Math.PI / 180;
 
 /** Field of view, vertical, in degrees: the widest, the eye's, the two named instruments, the narrowest. */
-export const FOV = { max: 120, eye: 72, binoculars: 7, telescope: 1, min: 0.1 };
+export const FOV = { max: 120, eye: 72, binoculars: 7, telescope: 1, min: 0.05 };
 
 /**
  * Three kinds of sky (internal #357), in words rather than Bortle numbers: the faintest star at the
@@ -28,7 +28,7 @@ export const FOV = { max: 120, eye: 72, binoculars: 7, telescope: 1, min: 0.1 };
 export const DARKNESS = {
   city: { limit: 4.0, glow: 1.0, milkyWay: 0.0 },
   town: { limit: 5.3, glow: 0.55, milkyWay: 0.35 },
-  dark: { limit: 6.5, glow: 0.12, milkyWay: 1.0 },
+  dark: { limit: 6.5, glow: 0.04, milkyWay: 1.0 },
 };
 export const DARKNESS_IDS = ['city', 'town', 'dark'];
 export const DEFAULT_DARKNESS = 'dark';
@@ -160,11 +160,11 @@ export function limitingMagnitude({ fovDeg = FOV.eye, darkness = DEFAULT_DARKNES
 /**
  * How big a star of magnitude `mag` is drawn when the limit is `limit`, in CSS pixels, and how
  * strongly: the same curve the vertex shader runs. A star at the limit is a 1.5 px speck at a
- * third strength; five magnitudes brighter it is 5 px and solid; the very brightest get a glare.
+ * third strength; five magnitudes brighter it is 6 px and solid; the very brightest get a glare.
  */
 export function starLook(mag, limit) {
   const f = limit - mag;
-  const size = Math.min(10, 1.5 * Math.pow(1.28, Math.max(0, f)));
+  const size = Math.min(12, 1.5 * Math.pow(1.32, Math.max(0, f)));
   const alpha = Math.max(0, Math.min(1, (f + 0.6) / 2.2));
   const glare = Math.max(0, Math.min(1, (f - 4.5) / 4));
   return { size, alpha, glare };

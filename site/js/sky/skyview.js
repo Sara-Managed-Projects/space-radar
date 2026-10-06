@@ -553,7 +553,8 @@ export function createSkyView(ctx, options = {}) {
           float toSun = max(dot(d, sun), 0.0);
           c += uGlow * uSunHalo * (0.9 * pow(toSun, 900.0) + 0.3 * pow(toSun, 90.0) + 0.12 * pow(toSun, 10.0));
           // Light pollution hugs the whole horizon, not just the sun's own bearing.
-          float pollution = uHorizonGlowStrength * pow(1.0 - t, 5.0);
+          // The mix is of light, not of screen values: two per cent here is already a visible band.
+          float pollution = uHorizonGlowStrength * pow(1.0 - t, 8.0);
           c = mix(c, uPollution, clamp(pollution, 0.0, 0.85));
           // Moonlight lifts the whole dome a little and most of all around the Moon itself.
           float toMoon = max(dot(d, normalize(uMoonDir)), 0.0);
@@ -580,8 +581,8 @@ export function createSkyView(ctx, options = {}) {
   function buildGround(R) {
     const seg = HORIZON_SEGMENTS;
     const rings = [
-      { d: 1.4 * DEG2RAD, alpha: 0.0 }, // above the silhouette: fades out
-      { d: 0.0, alpha: 0.72 },
+      { d: 0.1 * DEG2RAD, alpha: 0.0 }, // a tenth of a degree of soft edge, so it is a skyline and not a haze
+      { d: 0.0, alpha: 1.0 },
       { d: -1.6 * DEG2RAD, alpha: 1.0 },
     ];
     const pos = [];

@@ -196,7 +196,8 @@ export function renderTonight(host, ctx) {
       observer: { latRad: o.latRad, lonRad: o.lonRad, latDeg: o.latDeg, lonDeg: o.lonDeg, altKm: o.altKm || 0 },
       // Plain data across: the satrec and what the magnitude reads; the page keeps its records.
       // The standard magnitude is the record's own, or the two stations' (sky/tonightbest.js).
-      records: records.map((r) => ({ id: r.id, name: r.name, satrec: r.satrec, meta: { stdMag: standardMagnitude(r) } })),
+      // A record with none sends no key at all: across the worker a null would read as zero.
+      records: records.map((r) => { const m = standardMagnitude(r); return { id: r.id, name: r.name, satrec: r.satrec, meta: m === null ? {} : { stdMag: m } }; }),
     };
     if (worker) {
       try { worker.postMessage(msg); return; } catch { worker = null; }

@@ -342,9 +342,7 @@ layers:
   - id: hand-kept-sites
     display: Dishes, landers and rovers
     group: earth
-    # Off in Now since 2026-10-05: from the ground the dishes are under the horizon and the landers
-    # drew as dots across the face of the sky view's own Moon (sky/groundsky.js).
-    moments: {wonder: on, now: off, next: off}
+    moments: {wonder: on, now: on, next: off}
     source: bundled
     propagator: fixed
     frame: earth-fixed
