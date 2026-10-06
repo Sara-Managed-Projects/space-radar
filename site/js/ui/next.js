@@ -400,7 +400,9 @@ async function saveCalendar(item, nowMs) {
     const parts = rowParts(item, nowMs);
     const text = toIcs(item, {
       title: parts.title,
-      description: [rowText(item, nowMs), classText(item)].filter(Boolean).join(COPY.punctuation.sentenceJoin),
+      // What it is and what its time is; never the row's "in 5 hours", which is wrong the moment
+      // the file is saved (SEEN in the first file made, 2026-10-07).
+      description: [parts.title, classText(item)].filter(Boolean).join(COPY.punctuation.sentenceJoin),
       url: calendarUrl(item),
     });
     if (!text) { toast(T.calendarFailed); return false; }
