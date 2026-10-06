@@ -177,6 +177,53 @@ assert.equal(colourRoute(root([])), 'class', 'a model with no materials keeps th
   console.log('  planet-shine: 0 over the night side, 0 on a face turned away, (R/d)^2 with distance, albedos from the NSSDC fact sheets');
 }
 
+// A WORLD'S SHADOW ON A MODEL (internal #388): the function the shader repeats, held to the one
+// the dots and the pass predictions already use, so a dot and its model go dark together.
+{
+  const M = await import(join(ROOT, 'site/js/scene/models.js'));
+  const { earthShadowLit } = await import(join(ROOT, 'site/js/scene/shadow.js'));
+  const R = 6371;
+  const O = { x: 0, y: 0, z: 0 };
+  const sunDir = { x: 1, y: 0, z: 0 };
+  const sunFar = { x: 1.496e8, y: 0, z: 0 };
+  const lit = (x, y, z) => M.worldShadowLit({ x, y, z }, O, sunDir, R);
+  assert.equal(lit(R + 420, 0, 0), 1, 'the ISS at noon is in sunlight');
+  assert.equal(lit(-(R + 420), 0, 0), 0, 'the ISS at midnight is in the umbra');
+  assert.equal(lit(0, R + 420, 0), 1, 'over the terminator it is still lit');
+  assert.equal(lit(-R * 0.8, R * 0.6, 0), 0, 'a lander on the night side stands in the same shadow');
+  assert.equal(lit(R * 0.8, R * 0.6, 0), 1, 'and one on the day side does not');
+  assert.equal(lit(-42164, 0, 0), 0, 'a geostationary satellite behind the Earth at an equinox midnight is eclipsed');
+  assert.equal(lit(-42164, 7000, 0), 1, 'and one 7 000 km off the axis is not');
+  assert.equal(M.worldShadowLit({ x: -1, y: 0, z: 0 }, O, sunDir, 0), 1, 'no world, no shadow');
+  let edge = 0;
+  for (let i = 0; i < 400; i += 1) {
+    const along = -(500 + i * 211.7);
+    const perp = R - 300 + (i % 40) * 15;
+    const a = M.worldShadowLit({ x: along, y: perp, z: 0 }, O, sunDir, R);
+    const b = earthShadowLit({ x: along, y: perp, z: 0 }, O, sunFar, R);
+    assert.ok(Math.abs(a - b) < 1e-6, `the model's shadow and the dot's agree at (${along}, ${perp}): ${a} vs ${b}`);
+    if (a > 0.01 && a < 0.99) edge += 1;
+  }
+  assert.ok(edge > 0, 'and the comparison crossed the soft edge, not only the two flat ends');
+  // The uniforms: a world with no albedo row still casts a shadow, and nothing near means none.
+  const fake = { uniforms: {}, fragmentShader: 'void main() {\n#include <opaque_fragment>\n}' };
+  M.toonMaterial('#FFFFFF', 'body', new Map()).onBeforeCompile(fake);
+  assert.equal(M.setPlanetShine('pluto', O, 2), false, 'Pluto has no albedo row, so no planet-shine');
+  assert.equal(fake.uniforms.uShadeRadius.value, 2, 'but it is still in the way of the Sun');
+  M.setPlanetShine('earth', O, 3);
+  assert.equal(fake.uniforms.uShadeRadius.value, 3);
+  assert.ok(fake.uniforms.uNightCol.value.r > 0 && fake.uniforms.uNightCol.value.r < 0.2, "the Earth's night side glows faintly, in the city-light colour");
+  M.setPlanetShine('mars', O, 3);
+  assert.equal(fake.uniforms.uNightCol.value.r, 0, "and Mars's does not");
+  M.setPlanetShine(null);
+  assert.equal(fake.uniforms.uShadeRadius.value, 0, 'far from every world a model is lit by the Sun alone');
+  const fs = fake.fragmentShader;
+  assert.ok(fs.includes('mix( night, outgoingLight, sunlit )') && fs.includes(`-along * ${M.SUN_ANGULAR_RADIUS}`), 'the shader takes the sunlight away by the same edge');
+  assert.ok(fs.indexOf('uShadeRadius > 0.0') > fs.indexOf('uShineCol * cover'), 'and does it after the planet-shine, which is sunlight too');
+  assert.ok(M.NIGHT_FLOOR > 0 && M.NIGHT_FLOOR <= 0.05, 'what is left in the dark is a silhouette, not a second light');
+  console.log('  a world\'s shadow: the ISS dark at midnight, a night-side lander dark, the same soft edge as the dots, a faint city glow over the Earth only');
+}
+
 console.log('model colour: ok');
 
 // A PALETTE NEEDS COORDINATES TO BE READ WITH. Three shipped files (gpm, icon, tselina2) had a

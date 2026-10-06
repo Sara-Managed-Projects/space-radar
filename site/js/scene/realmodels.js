@@ -131,7 +131,7 @@ export const REAL_MODELS = {
     // into orbit -- the first hydrogen engine fired in space -- so the catalogue calls the stage the
     // payload and its name carries no R/B. It was drawn, and its card described it, as "a generic
     // satellite". It is a spent upper stage and is drawn as one.
-    694: { file: 'rocket-body.glb', colour: 'rocket', name: 'a spent rocket stage', catalogue: 'ATLAS CENTAUR 2', generic: true },
+    694: { build: 'stage', colour: 'rocket', name: 'a spent rocket stage', catalogue: 'ATLAS CENTAUR 2', generic: true },
     // SPACE TELESCOPES WITH NO MODEL OF THEIR OWN, drawn as the generic telescope rather than as a
     // communications satellite with a dish, which is what the satellite default is. The card says
     // "a space telescope -- the kind of thing, not this exact one", which is now true of the shape.
@@ -459,13 +459,15 @@ export const REAL_MODELS = {
   named: {
     // Every spent stage on the visible layer -- SL-16, CZ-2C, Centaur, Delta, H10 -- was drawn as
     // a LAUNCHING rocket: fairing, nose, plume. A spent stage is a tube with a nozzle, tumbling.
-    // NASA's Shuttle solid rocket booster is public-domain geometry with exactly that
-    // silhouette, so it stands in for the class; `generic: true` is what makes the card say
+    // NASA's Shuttle solid rocket booster stood in for the class until 2026-10-07 (issue #410): a
+    // booster is a segmented tube with a nose cone, and a spent upper stage is a tank and a bell.
+    // models.js buildUpperStage draws that now, from one real stage's published dimensions, and
+    // it tumbles. `generic: true` is what makes the card say
     // "drawn as a spent rocket stage -- the kind of thing, not this exact one". parsers.js
     // classifies R/B, ROCKET BODY, AKM, PKM and UPPER STAGE as klass `rocket`, and only those.
-    'r/b': { file: 'rocket-body.glb', colour: 'rocket', name: 'a spent rocket stage', klass: ['rocket'], generic: true },
-    'rocket body': { file: 'rocket-body.glb', colour: 'rocket', name: 'a spent rocket stage', klass: ['rocket'], generic: true },
-    'upper stage': { file: 'rocket-body.glb', colour: 'rocket', name: 'a spent rocket stage', klass: ['rocket'], generic: true },
+    'r/b': { build: 'stage', colour: 'rocket', name: 'a spent rocket stage', klass: ['rocket'], generic: true },
+    'rocket body': { build: 'stage', colour: 'rocket', name: 'a spent rocket stage', klass: ['rocket'], generic: true },
+    'upper stage': { build: 'stage', colour: 'rocket', name: 'a spent rocket stage', klass: ['rocket'], generic: true },
     // NOAA 15, 18 and 19 are the Advanced TIROS-N / POES bus and among the brightest things a
     // person can see pass over. Matched on the full name, whole words, klass satellite: "NOAA 15"
     // yes, "NOAA 15 DEB" no (klass debris), NOAA 20 no (a JPSS bus, already mapped by id to the
@@ -629,6 +631,9 @@ export const REAL_MODELS = {
     },
     flock: { build: 'cubesat', colour: 'satellite', name: 'a Dove, a 3U CubeSat', klass: ['satellite'], generic: true },
     lemur: { build: 'cubesat', colour: 'satellite', name: 'a Lemur, a 3U CubeSat', klass: ['satellite'], generic: true },
+    // NASA's Starling: four 6U CubeSats flying as a swarm since 2023 (nasa.gov/smallspacecraft/starling).
+    // The one 6U route, because it is the one constellation whose size its operator states plainly.
+    starling: { build: 'cubesat-6u', colour: 'satellite', name: 'a Starling, a 6U CubeSat', klass: ['satellite'], generic: true },
     // AST SpaceMobile's BlueBirds: nine of them on the `visual` layer as of 2026-09-12, which is
     // more objects than any other unshaped thing on it, and they are among the brightest things
     // in the sky because the array is a sheet the size of a studio apartment. The catalogue calls
@@ -637,7 +642,8 @@ export const REAL_MODELS = {
     // the launch's debris and spent stage keep their own shapes.
     spacemobile: { build: 'spacemobile', colour: 'satellite', name: 'a BlueBird direct-to-phone satellite', klass: ['satellite'], generic: true },
     'crew dragon': { build: 'dragon', colour: 'station', name: 'a Dragon spacecraft', klass: ['station', 'satellite'], generic: true },
-    'dragon crs': { build: 'dragon', colour: 'station', name: 'a Dragon spacecraft', klass: ['station', 'satellite'], generic: true },
+    // The cargo vehicle flies without the escape engines, so without their pods and the trunk's fins.
+    'dragon crs': { build: 'dragon-cargo', colour: 'station', name: 'a Cargo Dragon spacecraft', klass: ['station', 'satellite'], generic: true },
     soyuz: { build: 'soyuz', colour: 'station', name: 'a Soyuz spacecraft', klass: ['station', 'satellite'], generic: true },
     // Cygnus: the round UltraFlex fans are the recognition; nothing free exists (spec 0027), so
     // procedural. Klass-gated so the Cygnus Loop and anything else named Cygnus stay untouched.

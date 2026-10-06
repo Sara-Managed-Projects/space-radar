@@ -437,7 +437,6 @@ than counted by hand.
 
 | file | NASA model | used for | size |
 |---|---|---|---|
-| `rocket-body.glb` | Space Shuttle Parts / Solid Rocket Booster | every spent stage (catalogue names with R/B, ROCKET BODY, UPPER STAGE), as a class default the card names | 41 KB |
 
 **Telescopes and observatories**
 

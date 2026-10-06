@@ -14,14 +14,14 @@ const check = (ok, msg) => { if (!ok) problems.push(msg); };
 const tris = (obj) => { let n = 0; obj.traverse((o) => { if (o.isMesh && o.geometry) { const g = o.geometry; n += g.index ? g.index.count / 3 : g.attributes.position.count / 3; } }); return n; };
 const budgetOf = (id) => Number(((yaml.split('\n').find((l) => l.includes(`id: ${id},`)) || '').match(/budget_tris:\s*(\d+)/) || [])[1] || 0);
 
-for (const v of ['soyuz', 'progress', 'cygnus', 'tiangong', 'tiangong-module', 'shenzhou', 'tianzhou', 'dragon']) {
+for (const v of ['soyuz', 'progress', 'cygnus', 'tiangong', 'tiangong-module', 'shenzhou', 'tianzhou', 'dragon', 'dragon-cargo']) {
   check(modelVariants().station.includes(v), `station variant ${v} is registered`);
   const obj = modelFor('station', v);
   check(!obj.userData.generic, `${v} is a real variant, not a fallback`);
   const n = tris(obj); const b = budgetOf(`station-${v}`);
   check(b > 0, `models.yaml has a budget for station-${v}`);
   check(n > 0 && n <= b, `${v} builds ${n} triangles within its budget of ${b}`);
-  const expect = v.startsWith('tiangong') ? [50, 60] : v === 'shenzhou' ? [16, 18] : v === 'tianzhou' ? [14, 16] : v === 'dragon' ? [7, 9] : [10, 12];
+  const expect = v.startsWith('tiangong') ? [50, 60] : v === 'shenzhou' ? [16, 18] : v === 'tianzhou' ? [14, 16] : v.startsWith('dragon') ? [7, 9] : [10, 12];
   check(obj.userData.realSizeM > expect[0] && obj.userData.realSizeM < expect[1], `${v} size ${obj.userData.realSizeM} m is within ${expect}`);
   disposeModels(obj);
 }
@@ -106,7 +106,7 @@ for (const n of ['FLOCK 4Q-16', 'FLOCK 4V-1', 'LEMUR-2-GREENBERG', 'LEMUR-1']) {
   check(e?.build === 'cubesat' && e.generic === true, `${n} is drawn as the 3U CubeSat it is`);
 }
 check(realModelFor({ id: 'c-deb', name: 'FLOCK 2E-1 DEB', klass: 'debris', layer: 'active', meta: { noradId: 90002 } }) === null, 'Flock debris keeps the debris shape');
-check(realModelFor({ id: 'c-rb', name: 'FALCON 9 R/B', klass: 'rocket', layer: 'active', meta: { noradId: 90003 } })?.file === 'rocket-body.glb', 'the stage that launched them is still a rocket body');
+check(realModelFor({ id: 'c-rb', name: 'FALCON 9 R/B', klass: 'rocket', layer: 'active', meta: { noradId: 90003 } })?.build === 'stage', 'the stage that launched them is still a rocket body');
 // ACS3 and the nine laser-ranging spheres, both procedural, both `norad:` rows.
 { const o = modelFor('satellite', 'solarsail'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-solarsail') && Math.abs(o.userData.realSizeM - 9 * Math.SQRT2) < 0.01, `solarsail builds inside budget at the 9 m sail's diagonal (${tris(o)} tris)`); disposeModels(o); }
 { const o = modelFor('satellite', 'sphere'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-sphere') && Math.abs(o.userData.realSizeM - 2.15) < 0.01, `sphere builds inside budget at AJISAI's 2.15 m (${tris(o)} tris)`); disposeModels(o); }
@@ -169,10 +169,10 @@ for (const n of ['SPACEMOBILE-001', 'SPACEMOBILE-006', 'SPACEMOBILE-010']) {
   check(realModelFor({ id: `sm-${n}`, name: n, klass: 'satellite', layer: 'visual', meta: { noradId: 16 } })?.build === 'spacemobile', `${n} gets the BlueBird shape`);
 }
 check(realModelFor({ id: 'smd', name: 'SPACEMOBILE-001 DEB', klass: 'debris', layer: 'active', meta: { noradId: 17 } }) === null, 'SpaceMobile debris keeps the debris shape');
-check(realModelFor({ id: 'smr', name: 'FALCON 9 R/B', klass: 'rocket', layer: 'visual', meta: { noradId: 18 } })?.file === 'rocket-body.glb', 'the BlueBird launcher stage stays a rocket body');
+check(realModelFor({ id: 'smr', name: 'FALCON 9 R/B', klass: 'rocket', layer: 'visual', meta: { noradId: 18 } })?.build === 'stage', 'the BlueBird launcher stage stays a rocket body');
 check(realModelFor({ id: 'i2', name: 'IRIDIUM 33 DEB', klass: 'debris', layer: 'active', meta: { noradId: 15 } }) === null, 'Iridium 33 debris keeps the debris shape');
 check(realModelFor({ id: 'd1', name: 'CREW DRAGON 12', klass: 'satellite', layer: 'stations', meta: { noradId: 11 } })?.build === 'dragon', 'a Crew Dragon gets its shape');
-check(realModelFor({ id: 'd2', name: 'DRAGON CRS-33', klass: 'satellite', layer: 'stations', meta: { noradId: 12 } })?.build === 'dragon', 'a cargo Dragon gets its shape');
+check(realModelFor({ id: 'd2', name: 'DRAGON CRS-33', klass: 'satellite', layer: 'stations', meta: { noradId: 12 } })?.build === 'dragon-cargo', 'a cargo Dragon gets its own shape, without the crew vehicle\'s pods and fins');
 check(realModelFor({ id: 's6', name: 'SENTINEL-6A', klass: 'satellite', layer: 'notable', meta: { noradId: 46984 } })?.file === 'sentinel6.glb', 'Sentinel-6A gets its own file by id');
 check(realModelFor({ id: 'oco', name: 'OCO 2', klass: 'satellite', layer: 'active', meta: { noradId: 21 } })?.file === 'oco2.glb', 'OCO 2 gets its model by name');
 check(realModelFor({ id: 'ocod', name: 'OCO 2 DEB', klass: 'debris', layer: 'active', meta: { noradId: 22 } }) === null, 'OCO 2 debris keeps the debris shape');
@@ -214,7 +214,7 @@ check(realModelFor({ id: 'n-41889', name: 'CYGFM06', klass: 'satellite', layer: 
 check(realModelFor({ id: 'd3', name: 'DRAGON 12 DEB', klass: 'debris', layer: 'active', meta: { noradId: 13 } }) === null, 'Dragon debris keeps the debris shape');
 check(realModelFor({ id: 'z1', name: 'SHENZHOU-21 (SZ-21)', klass: 'satellite', layer: 'stations', meta: { noradId: 8 } })?.build === 'shenzhou', 'a Shenzhou gets its shape');
 check(realModelFor({ id: 'z2', name: 'TIANZHOU-9', klass: 'satellite', layer: 'stations', meta: { noradId: 9 } })?.build === 'tianzhou', 'a Tianzhou gets its shape');
-check(realModelFor({ id: 'z3', name: 'CZ-2F R/B', klass: 'rocket', layer: 'active', meta: { noradId: 10 } })?.file === 'rocket-body.glb', 'the Shenzhou launcher stage is a rocket body, not a Shenzhou');
+check(realModelFor({ id: 'z3', name: 'CZ-2F R/B', klass: 'rocket', layer: 'active', meta: { noradId: 10 } })?.build === 'stage', 'the Shenzhou launcher stage is a rocket body, not a Shenzhou');
 check(realModelFor(wentian)?.build === 'tiangong-module', 'CSS (WENTIAN) draws a single lab module');
 const e5 = realModelFor(cyg);
 check(e5 && e5.build === 'cygnus' && e5.generic === true, `CYGNUS NG-24 -> build cygnus: ${JSON.stringify(e5)}`);
@@ -438,6 +438,84 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   if (!problems.length) console.log(`  each of ${checked} shapes is ONE connected object; the loosest joint is ${worst.id} "${worst.part}" at ${(worst.gap * 100).toFixed(1)} %`);
 }
 
+// ------------------------------------------------- BUILT TO THE METRES ITS BUILDER PUBLISHES
+//
+// The art pass of 2026-10-07 rebuilt the craft nobody has published a mesh of from their published
+// dimensions. "One unit" above says the longest dimension is right; this says the OTHER two are,
+// which is what a silhouette is. Each row is the overall span, and the hull's own width, height
+// and length -- the group every builder names `hull` -- in metres, as the builder's comment cites
+// them. Six per cent, because a sixteen-sided cylinder is 2 % narrower across its flats than the
+// circle it stands for and a docking port or a seam ring is a real thing that sticks out.
+{
+  const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
+  const DIMS = {
+    // id: [span X, hull X, hull Y, hull Z]   (null = not a published number, not asserted)
+    'station:soyuz': [10.7, 2.72, 2.72, 7.48],
+    'station:progress': [10.6, 2.72, 2.72, 7.23],
+    'station:shenzhou': [17, 2.8, 2.8, 9.25],
+    'station:tianzhou': [14.9, 3.35, 3.35, 10.6],
+    'station:dragon': [4.0, 4.0, 4.0, 8.1],
+    'station:dragon-cargo': [4.0, 4.0, 4.0, 8.1],
+    'station:cygnus': [11.5, 3.07, 3.07, 6.39],
+    'station:tiangong-module': [55.6, 4.2, 4.2, 17.9],
+    'satellite:starlink-v1': [9, 1.4, 2.8, null],
+    'satellite:starlink-v2': [30, 2.7, 4.1, null],
+    'satellite:cubesat': [0.5, 0.1, 0.1, 0.3],
+    'satellite:cubesat-6u': [0.6, 0.2, 0.1, 0.3],
+    'satellite:iridium': [9.4, 2.4, 3.1, 1.5],
+    'rocket:stage': [3.05, 3.05, 12.68, 3.05],
+  };
+  const within = (got, want) => Math.abs(got - want) <= want * 0.06;
+  const sizeOf = (o) => new THREE.Box3().setFromObject(o).getSize(new THREE.Vector3());
+  for (const [id, [span, hx, hy, hz]] of Object.entries(DIMS)) {
+    const [klass, variant] = id.split(':');
+    const obj = modelFor(klass, variant);
+    obj.updateMatrixWorld(true);
+    const m = obj.userData.realSizeM;
+    const hull = obj.getObjectByName('hull');
+    check(!!hull, `${id} names its hull, so its proportions can be measured`);
+    if (hull) {
+      const all = sizeOf(obj);
+      const h = sizeOf(hull);
+      check(within(all.x * m, span), `${id} spans ${(all.x * m).toFixed(2)} m where ${span} m is published`);
+      for (const [axis, got, want] of [['wide', h.x * m, hx], ['high', h.y * m, hy], ['long', h.z * m, hz]]) {
+        if (want != null) check(within(got, want), `${id}: the hull is ${got.toFixed(2)} m ${axis} where ${want} m is published`);
+      }
+      check(tris(obj) <= 3000, `${id} is ${tris(obj)} triangles, over the 3 000 an art-pass shape may cost`);
+    }
+    disposeModels(obj);
+  }
+  // Tiangong is three hulls. 55.6 m across the laboratories' wings, about 39 m across the two
+  // laboratories and the hub, and each module its published length and 4.2 m.
+  {
+    const obj = modelFor('station', 'tiangong');
+    obj.updateMatrixWorld(true);
+    const m = obj.userData.realSizeM;
+    const all = sizeOf(obj);
+    check(within(all.z * m, 55.6), `tiangong is ${(all.z * m).toFixed(1)} m across the laboratories' wings, published 55.6`);
+    check(within(all.x * m, 39), `tiangong is ${(all.x * m).toFixed(1)} m across the two laboratories, published about 39`);
+    const core = sizeOf(obj.getObjectByName('hull'));
+    check(within(core.z * m, 16.6) && within(core.x * m, 4.2), `Tianhe is ${(core.z * m).toFixed(1)} x ${(core.x * m).toFixed(1)} m, published 16.6 x 4.2`);
+    for (const name of ['wentian', 'mengtian']) {
+      const lab = sizeOf(obj.getObjectByName(name));
+      check(within(lab.x * m, 17.9) && within(lab.z * m, 4.2), `${name} is ${(lab.x * m).toFixed(1)} x ${(lab.z * m).toFixed(1)} m, published 17.9 x 4.2`);
+    }
+    check(obj.userData.panelPivots.length === 2, 'both of Tiangong\'s wing sets turn to the Sun');
+    disposeModels(obj);
+  }
+  // The crew Dragon carries what the cargo one does not, and a Shenzhou has ONE pair of wings.
+  const names = (o) => { const s = new Set(); o.traverse((n) => { if (n.name) s.add(n.name); }); return s; };
+  const crew = names(modelFor('station', 'dragon')); const cargo = names(modelFor('station', 'dragon-cargo'));
+  check(crew.has('superdraco-pod') && crew.has('fin') && crew.has('window'), 'a Crew Dragon has its engine pods, windows and fins');
+  check(!cargo.has('superdraco-pod') && !cargo.has('fin') && !cargo.has('window'), 'a Cargo Dragon has none of them');
+  check(![...names(modelFor('station', 'shenzhou'))].some((n) => n.startsWith('fwdwing')), 'a Shenzhou since 2011 has one pair of wings, not two');
+  // A spent stage tumbles, and a rocket on the way up does not.
+  check(modelFor('rocket', 'stage').userData.attitude === 'tumble', 'a spent stage tumbles');
+  check(modelFor('rocket', 'default').userData.attitude === 'ascent', 'a launching rocket still flies its arc');
+  check(realModelFor({ id: 'st1', name: 'STARLING-2', klass: 'satellite', layer: 'active', meta: { noradId: 91001 } })?.build === 'cubesat-6u', 'a Starling is drawn as the 6U CubeSat it is');
+  if (!problems.length) console.log(`  ${Object.keys(DIMS).length + 1} art-pass shapes are within 6 % of their published width, height and length`);
+}
+
 // THE DEEP-SPACE LAYER'S OWN SPACECRAFT.
 //
 // `deep-space` held ten records. Seven have a NASA model; Gaia, Solar Orbiter and New Horizons had
@@ -516,7 +594,7 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
     check(e?.file === 'iss.glb' && !e.generic, `${name} is part of the ISS and is drawn as it: ${JSON.stringify(e)}`);
   }
   const stage = realModelFor(rec(694, 'ATLAS CENTAUR 2', 'satellite', 'visual'));
-  check(stage?.file === 'rocket-body.glb' && stage.generic === true, `ATLAS CENTAUR 2 is a spent Centaur stage: ${JSON.stringify(stage)}`);
+  check(stage?.build === 'stage' && stage.generic === true, `ATLAS CENTAUR 2 is a spent Centaur stage: ${JSON.stringify(stage)}`);
   for (const [id, name] of [[3597, 'OAO 2'], [6153, 'OAO 3 (COPERNICUS)'], [41337, 'ASTRO-H (HITOMI)'], [42758, 'HXMT (HUIYAN)'], [57800, 'XRISM']]) {
     const e = realModelFor(rec(id, name, 'satellite', 'visual'));
     check(e?.build === 'space-telescope' && e.generic === true, `${name} is drawn as a space telescope: ${JSON.stringify(e)}`);

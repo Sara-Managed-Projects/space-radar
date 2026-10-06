@@ -860,7 +860,7 @@ export function createHeroes(scene, ctx) {
       // the origin for anything on or around the stage's own, the drawn disc for a site on
       // another (nadirOf).
       nadirOf(c.record, c.pos, drawnCentre, _v);
-      M.updateModelAttitude(obj, c.record, sun, _v);
+      M.updateModelAttitude(obj, c.record, sun, _v, tMs);
 
       // The contact shadow leans away from the Sun, in the model's own frame (groundShadowPose).
       const shadow = sun && obj.userData.attitude === 'up' ? obj.getObjectByName(SHADOW_NAME) : null;
