@@ -323,7 +323,9 @@ export const OPENING_MS = 2400;
 export const OPENING_KEY = 'sr:opening';
 
 /** Whether the opening plays, and how: null, or { from, ms }. Pure. */
-export function openingPlan({ seen = false, link = false, reducedMotion = false, embed = false, hidden = false } = {}) {
-  if (seen || link || reducedMotion || embed || hidden) return null;
+export function openingPlan({ seen = false, link = false, reducedMotion = false, embed = false, hidden = false, automated = false } = {}) {
+  // `automated`: a browser driven by a test or a screenshot job (navigator.webdriver) wants the settled
+  // home view on its first frame. CI's "is the Earth drawn" check read a globe 3.9 % of the frame mid-opening.
+  if (seen || link || reducedMotion || embed || hidden || automated) return null;
   return { from: OPENING_FROM, ms: OPENING_MS };
 }

@@ -544,6 +544,7 @@ export async function boot({ setStatus } = {}) {
       reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
       embed: !!embed,
       hidden: document.hidden,
+      automated: navigator.webdriver === true,
     });
     if (opening) store.setItem(OPENING_KEY, '1');
   } catch { opening = null; /* no storage: no way to play it once, so it is not played */ }
