@@ -419,7 +419,9 @@ const mappedLine = (draw) => !/no surface map|plain ball/.test(draw || '') && (d
   check(/haze is drawn at its measured height/.test(drawingLine(recs.find((x) => x.id === 'titan')) || ''), 'Titan says its haze is at its measured height');
   check(drawingLine(recs.find((x) => x.id === 'jupiter')) === COPY.drawing.worldLit, 'Jupiter, with no shell, says only how it is lit');
   // The Earth has its own shader and its own sunlight is the reference; the Sun is the light.
-  check(drawingLine(recs.find((x) => x.id === 'earth')) === null && drawingLine(recs.find((x) => x.id === 'sun')) === null,
+  // 2026-10-06: the Sun says what its close-up picture is (scene/sun.js), and still nothing about exposure.
+  check(drawingLine(recs.find((x) => x.id === 'earth')) === null && drawingLine(recs.find((x) => x.id === 'sun')) === COPY.drawing.worldSun
+    && !COPY.drawing.worldSun.includes(COPY.drawing.worldLit),
     'the Earth and the Sun carry no exposure line');
   const moonLine = drawingLine(recs.find((x) => x.id === 'moon')) || '';
   check(moonLine.startsWith(COPY.drawing.worldLit) && /earthshine/.test(moonLine) && /250 times brighter/.test(moonLine),

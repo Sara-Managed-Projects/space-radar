@@ -31,7 +31,7 @@ export const TILESETS = [
       "maxLevel": 6,
       "lightAzimuthDeg": 270,
       "flat": 0.65,
-      "gain": 1.5,
+      "gain": 1,
       "credit": "The Moon's relief: Lunar Orbiter Laser Altimeter shaded relief, LOLA Science Team, NASA/GSFC, from NASA Solar System Treks"
     }
   },
@@ -62,7 +62,7 @@ export const TILESETS = [
       "maxLevel": 7,
       "lightAzimuthDeg": 315,
       "flat": 0.68,
-      "gain": 1.5,
+      "gain": 1,
       "credit": "Mars's relief: MOLA and HRSC blended shaded relief, NASA/GSFC (MOLA, CC0) and ESA/DLR/FU Berlin (HRSC, CC BY-SA 3.0 IGO), USGS Astrogeology, from NASA Solar System Treks"
     }
   },

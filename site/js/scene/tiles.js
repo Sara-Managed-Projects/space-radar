@@ -72,8 +72,8 @@
 // that faces away darkens, more as the Sun sinks -- so craters cast their shading the right way
 // round at the terminator. The slope across that direction is not in the picture and is not drawn;
 // the card says so, and by how much the slopes are exaggerated (copy/en.js drawing.worldRelief).
-// A relief tile is shared by the colour tiles inside it (it stops at a coarser level), is one
-// channel on the GPU, and is fetched after its colour tile through the same six slots.
+// A relief tile is shared by the sixteen colour tiles inside it (RELIEF_COARSER), is one channel on
+// the GPU, and is fetched after its colour tile through the same six slots.
 //
 // THE TONE. A mission mosaic is not graded like the Solar System Scope map under it, so where tiles
 // stopped there would be an edge. Two things keep it off the screen: the whole visible ground is
@@ -132,6 +132,15 @@ export const STOP_HYSTERESIS = 1.2;
 /** The re-lit relief brightens or darkens the ground by no more than this (RELIEF, above). */
 export const RELIEF_MIN = 0.3;
 export const RELIEF_MAX = 2.2;
+/**
+ * A relief tile is this many levels coarser than the colour tile over it: one relief tile under
+ * sixteen colour tiles. MEASURED 2026-10-06, 300 km over the Moon at 1440 x 900: with a relief tile
+ * at the colour tile's own level (to the pyramid's last) the view asked for 44 relief tiles on top
+ * of 92 colour ones and 6.1 MB in all, twice what the picture alone costs. The relief is a broad
+ * shading under a photograph that already holds the fine detail; two levels coarser it is a tenth
+ * of the bytes.
+ */
+export const RELIEF_COARSER = 2;
 /** The Sun's height (its cosine to the vertical) below which the re-lighting stops growing. */
 export const RELIEF_SUN_FLOOR = 0.1;
 /** WGS84's first eccentricity squared: the Earth's patches lie on the ellipsoid its mesh is. */
@@ -409,12 +418,12 @@ export function createPlanetTiles(opts = {}) {
   }
 
   /**
-   * The relief tile over a colour tile: the tile itself down to the relief pyramid's last level, its
-   * ancestor there below that, and where the colour tile sits inside it (scale, then offset, in uv
+   * The relief tile over a colour tile: its ancestor RELIEF_COARSER levels up (never past the relief
+   * pyramid's last level), and where the colour tile sits inside it (scale, then offset, in uv
    * with v = 0 at the south edge). One entry per relief tile, counted by the patches that use it.
    */
   function reliefFor(layer, t) {
-    const rz = Math.min(t.z, layer.relief.maxLevel);
+    const rz = Math.max(0, Math.min(t.z - RELIEF_COARSER, layer.relief.maxLevel));
     const up = t.z - rz;
     const rx = t.x >> up;
     const ry = t.y >> up;

@@ -1721,6 +1721,10 @@ export const COPY = {
     // haze, are not, and the card says both. {n} is the row's heightGain.
     worldAir: 'its air is drawn {n} times thicker than it is so that it shows at this size, and the colour of its haze is illustrative',
     worldAirTrue: 'its haze is drawn at its measured height, and its colour is illustrative',
+    // The narrow rings of Uranus and Neptune (scene/worlds.js URANUS_RINGS, NEPTUNE_RINGS): the radii
+    // are measured; {w} times wider, {d} times more opaque and the brightness are so that they show.
+    worldRings: 'its rings are at their measured distances, drawn {w} times wider and far brighter than they are so that they show: the real ones are threads as dark as charcoal',
+    worldRingsDense: 'its rings are at their measured distances, drawn {w} times wider, {d} times more opaque and far brighter than they are so that they show: the real ones are faint threads as dark as charcoal',
     // The Sun close up (scene/sun.js, spec 0055 task 3): which parts of the picture are a model and
     // which are there to be seen.
     worldSun: 'close up, its edge darkens and reddens as a model of its atmosphere says it should; the grain stands for its churning surface and is drawn far coarser than the real granules; the corona is illustrative, and drawn far brighter than it is so that it can be seen',
@@ -1731,8 +1735,9 @@ export const COPY = {
     worldMosaic: 'Under the camera now: {title}, drawn here at about {res} a pixel.',
     worldMosaicDetail: 'Under the camera now: {title}, sharpening the colour map at about {res} a pixel.',
     // ...and what the relief is (spec 0065 task 3). The shaded-relief mosaic has one light; only the
-    // slopes along that light are in it. {n} is the row's `gain`.
+    // slopes along that light are in it. {n} is the row's `gain`; `True` is for a gain of 1.
     worldRelief: 'Its relief is from {title}: a drawing of slopes under one fixed light. The slopes along that light are lit again by the Sun where it is now, {n} times steeper than measured; slopes across it are not drawn.',
+    worldReliefTrue: 'Its relief is from {title}: a drawing of slopes under one fixed light. The slopes along that light are lit again by the Sun where it is now; slopes across it are not drawn.',
     worldReliefBaked: 'Its hills are shaded into this map under a fixed light, not by the Sun where it is now.',
     mount: 'where we hang it on the model is our own arrangement, and it is drawn far bigger than it is — at true size it would be too small to see',
   },

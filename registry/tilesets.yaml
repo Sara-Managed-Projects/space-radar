@@ -69,7 +69,8 @@ version: 1
 #                           Mars_MGS_MOLA_DEM_mosaic_global_463m_8); the numbers are in each row.
 #       flat                the picture's value on level ground, 0 to 1: the regression's constant
 #       gain                how many times steeper the slopes are drawn than the picture has them;
-#                           the card prints it
+#                           the card prints it when it is not 1. 1.5 was tried on the Moon on
+#                           2026-10-06 and read as harsh under a Sun 22 degrees up; 1 is the mosaic's own.
 #
 # NOT HERE, AND WHY. Relief from ELEVATION (true normals, both directions): Trek's elevation tiles
 # are 8 bits and stop at level 5, 78 m a step on the Moon -- a mare is one flat value with contour
@@ -105,7 +106,7 @@ tilesets:
       max_level: 6
       light_azimuth_deg: 270
       flat: 0.65
-      gain: 1.5
+      gain: 1
       cors: "Access-Control-Allow-Origin: * (measured 2026-10-06)"
       licence: 'USGS Astrogeology, Moon LRO LOLA DEM 118m: "Access Constraints public domain", "Use Constraints Please cite authors"'
       credit: "The Moon's relief: Lunar Orbiter Laser Altimeter shaded relief, LOLA Science Team, NASA/GSFC, from NASA Solar System Treks"
@@ -149,7 +150,7 @@ tilesets:
       max_level: 7
       light_azimuth_deg: 315
       flat: 0.68
-      gain: 1.5
+      gain: 1
       cors: "Access-Control-Allow-Origin: * (measured 2026-10-06)"
       licence: 'USGS Astrogeology, Mars MGS MOLA - MEX HRSC Blended DEM Global 200m: "Access Constraints MOLA (CC0) and HRSC (CC BY-SA 3.0 IGO)", "Use Constraints Please cite authors"'
       credit: "Mars's relief: MOLA and HRSC blended shaded relief, NASA/GSFC (MOLA, CC0) and ESA/DLR/FU Berlin (HRSC, CC BY-SA 3.0 IGO), USGS Astrogeology, from NASA Solar System Treks"

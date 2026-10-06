@@ -231,13 +231,14 @@ void main() {
   // Streamers: a few broad ones, kept to low latitudes, and a finer set that breaks their outline.
   float broad = ring( turn, 5.0 );
   float fine  = ring( turn, 13.0 );
-  float reach = clamp( ( 0.25 + 0.75 * broad * broad ) * mix( 0.25, 1.0, equator ) + 0.25 * ( fine - 0.5 ), 0.0, 1.0 );
+  float reach = clamp( ( 0.15 + 0.85 * smoothstep( 0.25, 0.85, broad ) ) * mix( 0.2, 1.0, equator ) + 0.3 * ( fine - 0.5 ), 0.0, 1.0 );
   // Polar rays: thin, many, only where the streamers are not.
   float rays = 0.75 + 0.25 * ring( turn, 96.0 ) * ( 1.0 - equator );
-  float fall = pow( r, -mix( 6.5, 2.4, reach ) );    // steep over a hole, shallow along a streamer
+  // Steep over a hole, shallow along a streamer; and thinned with distance so the far field is sky, not haze.
+  float fall = pow( r, -mix( 6.0, 2.6, reach ) ) / ( 1.0 + 0.15 * r * r );
   float inner = pow( r, -16.0 );                     // the bright ring at the limb
   float edge = 1.0 - smoothstep( ${(CORONA_RADII * 0.6).toFixed(2)}, ${CORONA_RADII.toFixed(2)}, r );
-  float light = ( 0.55 * inner + 0.45 * fall * rays ) * edge * smoothstep( 0.98, 1.01, r );
+  float light = ( 0.45 * inner + 0.4 * fall * rays ) * edge * smoothstep( 0.98, 1.01, r );
   vec3 pearl = mix( vec3( 1.0, 0.93, 0.82 ), vec3( 0.86, 0.91, 1.0 ), smoothstep( 1.0, 2.5, r ) );
   gl_FragColor = vec4( pearl * light * ${CORONA_GAIN.toFixed(2)} * uOpacity, 1.0 );
   #include <colorspace_fragment>

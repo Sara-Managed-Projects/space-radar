@@ -312,7 +312,7 @@ function rig({ tier = 1, saveData = false, altKm = 300, fail = false, hasMap = t
   check(s.bytes === s.loaded * 25000 && s.failed === 0, 'bytes are counted as they arrive');
   check(JSON.stringify(r.tiles.credits()) === JSON.stringify([MOON.credit, MOON.relief.credit]) && r.changes() >= 1 && r.changes() <= 2, `the credits are the registry's lines, the mosaic's and its relief's: ${r.changes()} announcements`);
   // RELIEF: one shaded-relief tile over each colour tile, shared below the relief pyramid's last level.
-  check(moon.relief === true && moon.reliefs > 0 && moon.reliefs <= moon.cached, `relief is on, ${moon.reliefs} relief tiles under ${moon.cached} colour tiles`);
+  check(moon.relief === true && moon.reliefs > 0 && moon.reliefs <= moon.cached / 3, `relief is on, ${moon.reliefs} relief tiles under ${moon.cached} colour tiles: far fewer`);
   check(r.asked.some((u) => u.includes('LRO_LOLA_Shade_Global_256ppd_v06') && u.endsWith('.png')) && !r.asked.some((u) => /LOLA_Shade[^?]*\/(7|8)\/\d+\/\d+\.png$/.test(u)), 'relief tiles come from the row\'s relief pyramid and never past its last level');
   const mos = r.tiles.mosaics();
   check(mos.length === 1 && mos[0].world === 'moon' && mos[0].title === MOON.title && mos[0].level === 7 && near(mos[0].metresPerPixel, MOON.resolutionM * 2)
@@ -328,12 +328,12 @@ function rig({ tier = 1, saveData = false, altKm = 300, fail = false, hasMap = t
   check(p.material.uniforms.uMap !== r.mesh.material.uniforms.uMap && p.material.uniforms.uFade.value === 1, 'and has its own map and fade');
   check(p.material.uniforms.uDetail.value === 0, 'the Moon\'s tiles are their own picture, not detail');
   {
-    // A level-7 patch reads its level-6 relief tile through a quarter-size window; the picture's
+    // A level-7 patch reads its level-5 relief tile through a window a quarter of its side; the picture's
     // light is the row's measured azimuth, as (east, north), and its level-ground value.
     const fine = patches.find((c) => /:7\//.test(c.name));
     const [, y7, x7] = fine.name.split(':')[1].split('/').map(Number);
     const xf = fine.material.uniforms.uReliefXf.value;
-    check(near(xf.x, 0.5) && near(xf.y, 0.5) && near(xf.z, (x7 % 2) / 2) && near(xf.w, 1 - ((y7 % 2) + 1) / 2), `a level-7 tile's window in its level-6 relief tile: ${xf.toArray()}`);
+    check(T.RELIEF_COARSER === 2 && near(xf.x, 0.25) && near(xf.y, 0.25) && near(xf.z, (x7 % 4) / 4) && near(xf.w, 1 - ((y7 % 4) + 1) / 4), `a level-7 tile's window in its level-5 relief tile: ${xf.toArray()}`);
     const light = fine.material.uniforms.uReliefLight.value;
     const az = MOON.relief.lightAzimuthDeg * Math.PI / 180;
     check(near(light.x, Math.sin(az), 1e-9) && near(light.y, Math.cos(az), 1e-9) && light.z === MOON.relief.flat, 'the relief\'s light is the registry\'s measured azimuth and level');

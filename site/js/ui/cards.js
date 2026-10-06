@@ -1928,6 +1928,12 @@ function derivedDrawingLine(record, T) {
     if (pick(md, 'exposed') === true && T.worldLit) parts.push(T.worldLit);
     const gain = Number(pick(md, 'earthshineGain'));
     if (gain > 0 && T.worldEarthshine) parts.push(t(T.worldEarthshine, { n: fmt.int(gain) }));
+    // The narrow rings of Uranus and Neptune: at measured radii, and drawn so that they show.
+    const widen = Number(pick(md, 'ringsWiden'));
+    const dense = Number(pick(md, 'ringsDense'));
+    if (widen > 0 && T.worldRings) {
+      parts.push(dense > 1 ? t(T.worldRingsDense, { w: fmt.int(widen), d: fmt.int(dense) }) : t(T.worldRings, { w: fmt.int(widen) }));
+    }
     const air = Number(pick(md, 'airGain'));
     // 1.5 for Mars since internal #187: fmt.int would round it to "2 times".
     if (air > 1 && T.worldAir) parts.push(t(T.worldAir, { n: Number.isInteger(air) ? fmt.int(air) : fmt.num(air, 1) }));
@@ -3212,7 +3218,8 @@ export function mosaicLine(record, ctx) {
   })];
   if (m.relief && T.worldRelief) {
     const n = Number(m.relief.gain) || 1;
-    parts.push(t(T.worldRelief, { title: String(m.relief.title), n: Number.isInteger(n) ? fmt.int(n) : fmt.num(n, 1) }));
+    parts.push(n === 1 && T.worldReliefTrue ? t(T.worldReliefTrue, { title: String(m.relief.title) })
+      : t(T.worldRelief, { title: String(m.relief.title), n: Number.isInteger(n) ? fmt.int(n) : fmt.num(n, 1) }));
   } else if (m.bakedRelief && T.worldReliefBaked) parts.push(T.worldReliefBaked);
   return parts.join(' ');
 }

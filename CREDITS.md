@@ -1014,7 +1014,7 @@ Sources panel prints, while they are on screen:
 under one fixed light; the direction of that light was measured against the host's elevation tiles
 (from the west on the Moon's, from the north-west on Mars's: the numbers are in the registry rows).
 `scene/tiles.js` takes the slope along that one direction and re-lights it with the Sun where it
-really is, 1.5 times steeper than the mosaic has it, clamped to 0.3 to 2.2 of the ground's
+really is, as steep as the mosaic has it, clamped to 0.3 to 2.2 of the ground's
 brightness. The slope across that direction is not in the mosaic and is not drawn, and the world's
 card says both. HRSC's share of Mars's relief is CC BY-SA 3.0 IGO: it is fetched by the visitor's
 browser from NASA's server, not copied, changed into another file or redistributed by us. The

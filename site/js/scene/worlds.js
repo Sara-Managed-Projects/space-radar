@@ -243,6 +243,10 @@ export function worldRecords() {
       // Spec 0054 task 3: how much thicker than it is the air is drawn (1 = its measured height), for
       // the card's line that says so and that the haze's colour is chosen.
       airGain: w.look.air && ATMO_PARAMS[w.look.air] ? ATMO_PARAMS[w.look.air].heightGain : 0,
+      // 2026-10-06: narrow rings at measured radii, drawn wider (and for Neptune denser) than they
+      // are so that they show; the card says by how much (ui/cards.js derivedDrawingLine).
+      ringsWiden: w.look.ring && w.look.ring.bands ? w.look.ring.widen || 1 : 0,
+      ringsDense: w.look.ring && w.look.ring.bands ? w.look.ring.dense || 1 : 0,
     },
   }));
 }
@@ -273,6 +277,60 @@ export function pickWorldDisc(candidates, tapX, tapY, forgivePx = 24) {
 // averaging in LINEAR light before converting back to sRGB -- the shader works in linear, so an
 // sRGB average would draw the flat disc darker than the textured one it stands in for. Re-measure
 // it if a texture changes; a Mars dot the wrong red is exactly the kind of thing nobody notices.
+
+// THE NARROW RINGS (2026-10-06, public #416 and #407). Uranus's and Neptune's rings are not Saturn's
+// sheet: they are a handful of threads, each at a radius measured to the kilometre and a few
+// kilometres wide, as dark as charcoal. The radii, widths and optical depths below are NASA's ring
+// fact sheets' (nssdc.gsfc.nasa.gov/planetary/factsheet/uranringfact.html and nepringfact.html,
+// read 2026-10-06); a width or depth given as a range is its middle. `bands` is [radius km, width
+// km, normal optical depth].
+//
+// WHAT IS NOT MEASURED, and the card says so (copy/en.js drawing.worldRings): drawn at their real
+// width and darkness nobody would see them -- Uranus's epsilon ring, the widest, is under a pixel
+// with the planet 600 pixels across, and all of them reflect 1.5 % of the light that reaches them.
+// So each is drawn `widen` times wider, `dense` times more opaque (Neptune's are also nearly
+// transparent), and in `colour`, far brighter than charcoal. The RADII are the measurement. They
+// cast no shadow on the globe: a shadow ten times too wide would be a second untruth. Neptune's
+// two broad sheets, Galle and Lassell, have an optical depth of 0.0001 and are left out, and so
+// are the arcs in the Adams ring.
+export const URANUS_RINGS = {
+  innerKm: 41000, outerKm: 52000, widen: 10, dense: 1, colour: 0x8f9da3,
+  bands: [
+    [41837, 1.5, 0.3], [42234, 2, 0.5], [42571, 2, 0.3],      // 6, 5, 4
+    [44718, 7, 0.4], [45661, 8, 0.3],                          // alpha, beta
+    [47176, 1.6, 0.4], [47627, 2.5, 0.3], [48300, 5, 0.5],     // eta, gamma, delta
+    [50024, 2, 0.1], [51149, 58, 1.4],                         // lambda, epsilon
+  ],
+};
+export const NEPTUNE_RINGS = {
+  innerKm: 52000, outerKm: 64000, widen: 20, dense: 10, colour: 0x8f9da3,
+  bands: [
+    [53200, 50, 0.01],   // Le Verrier ("< 100" km wide)
+    [57200, 50, 0.005],  // Arago ("< 100" km; the sheet gives no depth: half Le Verrier's, chosen)
+    [62933, 15, 0.05],   // Adams (0.01 to 0.1)
+  ],
+};
+/** The narrow rings' strip, texels from the inner edge to the outer. */
+export const RING_BANDS_PX = 1024;
+
+/**
+ * The strip a narrow ring set is drawn from: RING_BANDS_PX RGBA texels, white, alpha the opacity
+ * seen face-on, 1 - exp(-tau), which is how RING_FRAG reads a ring map's alpha back into an optical
+ * depth. A band covers its widened width, and at least one texel. Pure but for the array.
+ */
+export function ringBandsStrip(ring, px = RING_BANDS_PX) {
+  const data = new Uint8Array(px * 4);
+  for (let i = 0; i < px; i++) { data[i * 4] = 255; data[i * 4 + 1] = 255; data[i * 4 + 2] = 255; }
+  const kmPerPx = (ring.outerKm - ring.innerKm) / px;
+  for (const [rKm, widthKm, tau] of ring.bands) {
+    const half = Math.max(kmPerPx, widthKm * (ring.widen || 1)) / 2;
+    const a = 1 - Math.exp(-tau * (ring.dense || 1));
+    const from = Math.max(0, Math.floor((rKm - half - ring.innerKm) / kmPerPx));
+    const to = Math.min(px - 1, Math.ceil((rKm + half - ring.innerKm) / kmPerPx) - 1);
+    for (let i = from; i <= Math.max(from, to); i++) data[i * 4 + 3] = Math.max(data[i * 4 + 3], Math.round(a * 255));
+  }
+  return data;
+}
 
 export const WORLDS = [
   {
@@ -323,25 +381,30 @@ export const WORLDS = [
     body: 'Mars', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
     look: { map: '2k_mars.jpg', tint: 0xb75d41, rough: 0.35, air: 'mars', rim: { colour: 0xe8b089, gain: 0.3 } },
   },
+  // `oblate` (2026-10-06) is the giant's flattening, (equatorial - polar) / equatorial, from NASA's
+  // planetary fact sheets (nssdc.gsfc.nasa.gov/planetary/factsheet/, "Ellipticity (Flattening)",
+  // read 2026-10-06): Jupiter 0.06487, Saturn 0.09796, Uranus 0.02293, Neptune 0.01708. They spin
+  // in ten to seventeen hours and bulge: Saturn is a tenth wider than it is tall, which anyone can
+  // see in a photograph and a sphere cannot show. oblateRadii() makes the mesh that shape.
   {
     id: 'jupiter', display: 'Jupiter', parent: 'sun', radiusKm: 69911.0,
     body: 'Jupiter', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_jupiter.jpg', tint: 0xb3aba1, limb: 1.05 },
+    look: { map: '2k_jupiter.jpg', tint: 0xb3aba1, limb: 1.05, oblate: 0.06487 },
   },
   {
     id: 'saturn', display: 'Saturn', parent: 'sun', radiusKm: 58232.0,
     body: 'Saturn', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_saturn.jpg', tint: 0xdfcca8, limb: 1.05, ring: { innerKm: 74500, outerKm: 140220, map: '2k_saturn_ring_alpha.png' } },
+    look: { map: '2k_saturn.jpg', tint: 0xdfcca8, limb: 1.05, oblate: 0.09796, ring: { innerKm: 74500, outerKm: 140220, map: '2k_saturn_ring_alpha.png' } },
   },
   {
     id: 'uranus', display: 'Uranus', parent: 'sun', radiusKm: 25362.0,
     body: 'Uranus', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_uranus.jpg', tint: 0x9eced5, limb: 1.2, rim: { colour: 0xc8f4ff, gain: 0.35 } },
+    look: { map: '2k_uranus.jpg', tint: 0x9eced5, limb: 1.2, oblate: 0.02293, rim: { colour: 0xc8f4ff, gain: 0.35 }, ring: URANUS_RINGS },
   },
   {
     id: 'neptune', display: 'Neptune', parent: 'sun', radiusKm: 24622.0,
     body: 'Neptune', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_neptune.jpg', tint: 0x395eb7, limb: 1.15, rim: { colour: 0x9cc0ff, gain: 0.35 } },
+    look: { map: '2k_neptune.jpg', tint: 0x395eb7, limb: 1.15, oblate: 0.01708, rim: { colour: 0x9cc0ff, gain: 0.35 }, ring: NEPTUNE_RINGS },
   },
   // THE FLAT ONES. No map ships for these five and none is fetched (`flat: true`, no `map`), so the
   // tint is not a texture's mean like the rows above: it is a HUE from a published description,
@@ -579,7 +642,7 @@ uniform vec3 uSunDir;
 varying vec2 vUv;
 varying vec3 vNormalW;
 varying vec3 vPosW;
-varying vec3 vPosL;   // on the unit sphere, body-fixed: +Y is the pole, the ring plane is y = 0
+varying vec3 vPosL;   // on the body (a unit sphere, or a giant's spheroid), body-fixed: +Y is the pole, the ring plane is y = 0
 varying vec3 vSunL;
 void main() {
   vUv = uv;
@@ -935,6 +998,46 @@ export function worldMaterial(map, tint) {
   });
 }
 
+/**
+ * A spheroid's equatorial and polar radii in units of its MEAN radius (the radius of the sphere of
+ * the same volume, which is what a row's `radiusKm` is and what the mesh is scaled by): with
+ * flattening f, polar = equatorial x (1 - f) and equatorial^2 x polar = 1. Jupiter: 1.0226 and
+ * 0.9563, which times 69 911 km are the fact sheet's 71 492 and 66 854. Pure.
+ */
+export function oblateRadii(f) {
+  const k = Math.min(0.5, Math.max(0, Number(f) || 0));
+  const eq = Math.pow(1 - k, -1 / 3);
+  return { eq, pol: eq * (1 - k) };
+}
+
+/**
+ * A unit sphere pressed into that spheroid, +Y the pole: SphereGeometry's vertices, faces and
+ * texture coordinates (the map lands where it did, in planetocentric latitude), with the spheroid's
+ * own normals, so the light and the limb are the flattened body's.
+ */
+export function oblateGeometry(f, widthSegments = 64, heightSegments = 48) {
+  const { eq, pol } = oblateRadii(f);
+  const geo = new THREE.SphereGeometry(1, widthSegments, heightSegments);
+  const pos = geo.attributes.position;
+  const nrm = geo.attributes.normal;
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i) * eq;
+    const y = pos.getY(i) * pol;
+    const z = pos.getZ(i) * eq;
+    pos.setXYZ(i, x, y, z);
+    // The gradient of x^2/a^2 + y^2/c^2 + z^2/a^2.
+    const nx = x / (eq * eq);
+    const ny = y / (pol * pol);
+    const nz = z / (eq * eq);
+    const len = Math.hypot(nx, ny, nz) || 1;
+    nrm.setXYZ(i, nx / len, ny / len, nz / len);
+  }
+  pos.needsUpdate = true;
+  nrm.needsUpdate = true;
+  geo.computeBoundingSphere();
+  return geo;
+}
+
 /** Opacity of a ring at full alpha: the ring's own material and its shadow on the globe share it. */
 export const RING_OPACITY = 0.92;
 
@@ -1004,6 +1107,7 @@ uniform vec3 uColour;
 uniform float uOpacity;
 uniform vec2 uRingRadii;
 uniform vec4 uRingWarp;
+uniform vec2 uGlobe;          // the globe's equatorial and polar radii (oblateRadii); 1, 1 for a sphere
 varying vec2 vUv;
 varying vec3 vPosL;
 varying vec3 vSunL;
@@ -1027,10 +1131,14 @@ void main() {
   #include <logdepthbuf_fragment>
   // The map through the warp that puts its Cassini Division on Cassini's radii.
   vec4 tex = mix( vec4( 1.0 ), texture2D( uMap, vec2( ringMapU( length( vPosL.xy ) ), 0.5 ) ), uHasMap );
-  // The globe (radius 1 here) between this point and the Sun: the ray's closest approach to the
-  // centre, only on the Sun-facing half of the ray. A 2 % soft edge stands in for the penumbra.
-  float b = dot( vPosL, vSunL );
-  float closest = sqrt( max( dot( vPosL, vPosL ) - b * b, 0.0 ) );
+  // The globe between this point and the Sun: the ray's closest approach to the centre, only on the
+  // Sun-facing half of the ray. The globe is a spheroid (uGlobe), so the test is made in the space
+  // where it is a unit sphere: the ring's plane divided by the equatorial radius, its normal by the
+  // polar one. A 2 % soft edge stands in for the penumbra.
+  vec3 gp = vec3( vPosL.xy / uGlobe.x, vPosL.z / uGlobe.y );
+  vec3 gs = normalize( vec3( vSunL.xy / uGlobe.x, vSunL.z / uGlobe.y ) );
+  float b = dot( gp, gs );
+  float closest = sqrt( max( dot( gp, gp ) - b * b, 0.0 ) );
   float shade = b < 0.0 ? smoothstep( 0.98, 1.02, closest ) : 1.0;
 
   // The slab: the map's alpha is the opacity face-on, so its normal optical depth is -ln(1 - alpha).
@@ -1083,6 +1191,7 @@ function ringMaterial(map, inner, outer, warp) {
       uRadii: { value: new THREE.Vector2(inner, outer) },
       uRingRadii: { value: new THREE.Vector2(inner, outer) },
       uRingWarp: { value: new THREE.Vector4(...warp) },
+      uGlobe: { value: new THREE.Vector2(1, 1) },
     },
   });
 }
@@ -1239,7 +1348,7 @@ export function createWorlds(scene, opts = {}) {
         clouds: texture(w.look.clouds),
       })
       : new THREE.Mesh(
-        new THREE.SphereGeometry(1, 64, 48),
+        w.look.oblate ? oblateGeometry(w.look.oblate, 64, 48) : new THREE.SphereGeometry(1, 64, 48),
         // The Sun is not lit by anything, so it does not get the world material: a flat disc of
         // its own texture, out of the tone mapper's way so it stays white rather than grey.
         w.look.emissive
@@ -1290,11 +1399,12 @@ export function createWorlds(scene, opts = {}) {
     }
 
     if (w.look.ring) {
-      const ringMap = texture(w.look.ring.map);
+      const ringMap = w.look.ring.bands ? bandsTexture(w.look.ring) : texture(w.look.ring.map);
       const ring = ringMesh(w, ringMap);
       mesh.add(ring);
       mesh.userData.ring = ring;
-      const u = mesh.material.uniforms;
+      // The narrow rings (Uranus, Neptune) are drawn wider than they are and cast no shadow on the globe.
+      const u = w.look.ring.bands ? null : mesh.material.uniforms;
       if (u) {
         u.uRingOn.value = 1;
         u.uRingRadii.value.copy(ring.material.uniforms.uRadii.value);
@@ -1946,6 +2056,17 @@ export function createWorlds(scene, opts = {}) {
     };
   }
 
+  /** The narrow rings' strip as a texture: mipmapped, so a thread thinner than a pixel fades and does not shimmer. */
+  function bandsTexture(ring) {
+    const tex = new THREE.DataTexture(ringBandsStrip(ring), RING_BANDS_PX, 1, THREE.RGBAFormat);
+    tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.magFilter = THREE.LinearFilter;
+    tex.minFilter = THREE.LinearMipmapLinearFilter;
+    tex.generateMipmaps = true;
+    tex.needsUpdate = true;
+    return tex;
+  }
+
   function ringMesh(w, map) {
     const r = w.look.ring;
     const inner = r.innerKm / w.radiusKm;   // the ring is a child, so radii are in planet radii
@@ -1960,7 +2081,14 @@ export function createWorlds(scene, opts = {}) {
       uv.setXY(i, (d - inner) / (outer - inner), 0.5);
     }
     uv.needsUpdate = true;
-    const mesh = new THREE.Mesh(geo, ringMaterial(map, inner, outer, ringWarpUniform(w.radiusKm)));
+    // Saturn's map is warped onto Cassini's radii; a strip made from measured radii needs no warp,
+    // which for RING_U_GLSL's three straight pieces is the two thirds laid where they already are.
+    const warp = r.bands
+      ? [inner + (outer - inner) / 3, inner + (2 * (outer - inner)) / 3, 1 / 3, 2 / 3]
+      : ringWarpUniform(w.radiusKm);
+    const mesh = new THREE.Mesh(geo, ringMaterial(map, inner, outer, warp));
+    if (r.bands && r.colour !== undefined) mesh.material.uniforms.uColour.value.set(r.colour);
+    if (w.look.oblate) { const g = oblateRadii(w.look.oblate); mesh.material.uniforms.uGlobe.value.set(g.eq, g.pol); }
     mesh.rotation.x = -Math.PI / 2;  // RingGeometry lies in XY; the ring is the planet's equator
     mesh.renderOrder = 1;
     mesh.name = `${w.id}-ring`;
