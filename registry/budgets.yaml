@@ -53,7 +53,7 @@ budgets:
   # fetched the first time its world is big enough on screen to show a surface, never on a first
   # visit. scripts/check_registry.py check_textures() holds both rows.
   - {id: moon_map_bytes, value: 250000, unit: bytes, since: 2026-10-05, reason: "one WebP per world at 2048 wide or less; Cassini's crater fields are the densest (Iapetus 235 060 B at quality 74, Dione 232 500 B at 1792 wide) and set this"}
-  - {id: moon_maps_total_bytes, value: 3200000, unit: bytes, since: 2026-10-05, reason: "twenty maps, 2 979 639 B measured 2026-10-05; what a visitor who flew to every moon would have downloaded"}
+  - {id: moon_maps_total_bytes, value: 3000000, unit: bytes, since: 2026-10-06, reason: "twenty maps, 2 789 768 B measured 2026-10-06 (it was 3 200 000 for 2 979 639 B: the colour maps of Pluto and Charon are smoother than the black-and-white ones they replace); what a visitor who flew to every moon would have downloaded"}
   # 2026-10-06: the sky in other light (registry/otherlight.yaml), one whole-sky picture per band,
   # fetched when a visitor picks the band and never before. scripts/build_otherlight.py --check and
   # tests/test_otherlight.mjs hold the row.
