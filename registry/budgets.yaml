@@ -50,6 +50,14 @@ budgets:
   # visit. scripts/check_registry.py check_textures() holds both rows.
   - {id: moon_map_bytes, value: 250000, unit: bytes, since: 2026-10-05, reason: "one WebP per world at 2048 wide or less; Cassini's crater fields are the densest (Iapetus 235 060 B at quality 74, Dione 232 500 B at 1792 wide) and set this"}
   - {id: moon_maps_total_bytes, value: 3200000, unit: bytes, since: 2026-10-05, reason: "twenty maps, 2 979 639 B measured 2026-10-05; what a visitor who flew to every moon would have downloaded"}
+  # 2026-10-06: the sky in other light (registry/otherlight.yaml), one whole-sky picture per band,
+  # fetched when a visitor picks the band and never before. scripts/build_otherlight.py --check and
+  # tests/test_otherlight.mjs hold the row.
+  - {id: otherlight_sky_bytes, value: 320000, unit: bytes, since: 2026-10-06, reason: "one 2048 x 1024 WebP per band at quality 78; Fermi's sky of point sources is the densest and sets this"}
+  # 2026-10-06 (internal #392): what the sky from the ground fetches for its stars when it opens, beyond the
+  # naked-eye file the first visit already has. It was stars3d.bin and its names: 2 913 592 B.
+  # scripts/build-skystars.py writes the files; tests/test_skystars.mjs holds the row.
+  - {id: sky_entry_star_bytes, value: 110000, unit: bytes, since: 2026-10-06, reason: "skystars-1.bin (81 624 B: the stars from magnitude 6.0 to 7.0) and skystars.names.json (14 847 B), measured 2026-10-06, with room"}
   - {id: og_png_min_bytes, value: 50000, unit: bytes, since: 2026-09-22, reason: "under 50 kB a 1200x630 frame is empty (#157's lesson)"}
   - {id: home_js_kb, value: 8, unit: kB, since: 2026-09-22, reason: "spec 0042", pending: "spec 0042"}
   # The device tiers (2026-09-29): what a T1 laptop downloads AFTER the first frame, when idle, and the

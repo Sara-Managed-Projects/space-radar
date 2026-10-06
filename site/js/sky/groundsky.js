@@ -2,7 +2,8 @@
 // internal #351 zoom, #352 the air, #353 fainter stars, #356 grids, #357 how dark the sky is).
 //
 // Contract: createGroundSky(ctx, env) -> { update(frame), setOptions(o), showPass(track, marks),
-//             clearPass(), mark(azDeg, altDeg), apparentOf(id), stats(), dispose(), ready }
+//             clearPass(), mark(azDeg, altDeg), apparentOf(id), apparentOfEq(dirEq), pickAt(x, y, camera),
+//             stats(), pictures(), otherLight(), dispose(), ready }
 //   env:   { group, radius, observer, domElement, options }   group is sky/skyview.js's local frame
 //   frame: { tMs, fovDeg, sunAltDeg, sunAzDeg, moonBright, camera, renderer }
 // Loaded by sky/skyview.js with a dynamic import the first time the sky view opens: none of this,
@@ -16,8 +17,11 @@
 //   the Milky Way   the scene's own panorama, turned with the stars, faded by the Moon, twilight,
 //                   the horizon's air and the kind of sky chosen
 //   the stars       ONE draw call: points with a shader. To magnitude 6 at once (data/stars.bin,
-//                   80 kB, already in the cache), then the 109 389 of data/stars3d.bin (HYG v4.4,
-//                   2.6 MB, fetched here and only here unless the Stars layer has it already).
+//                   80 kB, already in the cache), then to 7 (data/skystars-1.bin, 82 kB), and the
+//                   rest of HYG v4.4's 109 389 (data/skystars-2.bin, 754 kB) only once the field
+//                   has closed enough to show one of them: compact files of direction, magnitude
+//                   and colour that scripts/build-skystars.py cuts from stars3d.bin (internal
+//                   #392: the sky view used to fetch that file's 2.6 MB on entry).
 //                   The limit is sky/skymath.js limitingMagnitude(): the eye's in a wide field,
 //                   deeper as the field narrows. The shader lifts each star by refraction, dims and
 //                   reddens it by its air mass, and makes it twinkle near the horizon.
@@ -26,7 +30,13 @@
 //                   where the Sun really is, turned by its IAU rotation model; Saturn's rings at
 //                   their real tilt; Jupiter's four moons as points.
 //   lines           the 89 figures, and on request the Sun's path, the sky's equator and two grids.
-//   names           HTML over the canvas: figures, the brightest stars, the bodies.
+//   the deep sky    the 27 photographs of nebulae and galaxies (sky/groundpictures.js, imported
+//                   when idle): at their true places and sizes, as faint as the sky makes them.
+//   other light     the sky in infrared, microwaves or gamma rays (scene/otherlight.js, imported
+//                   when a visitor picks a band): over the Milky Way, under the stars.
+//   names           HTML over the canvas: figures, the brightest stars, the bodies, the pictures.
+//                   ONE placement: the scene's own labels (ui/labels.js, a selected satellite) are
+//                   placed first and every name here keeps clear of them (internal #393).
 //
 // WHAT IS MEASURED, COMPUTED, DRAWN. Star positions, magnitudes and colours are catalogue
 // measurements. Planet positions, sizes, phases and the ring tilt are computed (Astronomy Engine).
@@ -48,7 +58,7 @@ import { eclToEq, eclipticRing } from './figures.js';
 
 const DEG = Math.PI / 180;
 const EXT_K = 0.2;
-const RO = { milkyway: -99, stars: -98, lines: -97, points: -96, discs: -95, arc: 99 };
+const RO = { milkyway: -99, otherLight: -98.8, pictures: -98.5, stars: -98, lines: -97, points: -96, discs: -95, arc: 99 };
 const LABEL_POOL = 44;
 const BODY_REFRESH_MS = 1000; // of the clock; a tenth of that once the field is narrow
 const LABEL_REFRESH_MS = 250; // of the wall clock: which names are shown, not where
@@ -314,6 +324,27 @@ export function parseDeep(buffer, fainterThan = -Infinity) {
   return packStars(rows);
 }
 
+/**
+ * data/skystars-1.bin and -2.bin (scripts/build-skystars.py): eight bytes a star, brightest first.
+ * Right ascension and declination as 24-bit steps, magnitude in steps of 0.08 from -1.5, B-V in
+ * steps of 0.02 from -0.5 (255 = not measured).
+ */
+export function parseSkyStars(buffer) {
+  const dv = new DataView(buffer);
+  const magic = String.fromCharCode(dv.getUint8(0), dv.getUint8(1), dv.getUint8(2), dv.getUint8(3));
+  if (magic !== 'SRSK' || dv.getUint16(6, true) !== 8) throw new Error('skystars: not the file this was written for');
+  const count = dv.getUint32(8, true);
+  const rows = [];
+  for (let i = 0; i < count; i += 1) {
+    const o = 16 + i * 8;
+    const ra = (dv.getUint8(o) | (dv.getUint8(o + 1) << 8) | (dv.getUint8(o + 2) << 16)) / 16777216 * 360;
+    const dec = (dv.getUint8(o + 3) | (dv.getUint8(o + 4) << 8) | (dv.getUint8(o + 5) << 16)) / 16777215 * 180 - 90;
+    const bv = dv.getUint8(o + 7);
+    rows.push({ dir: radecDir(ra, dec), mag: dv.getUint8(o + 6) / 12.5 - 1.5, bv: bv === 255 ? NaN : bv / 50 - 0.5 });
+  }
+  return packStars(rows);
+}
+
 function packStars(rows) {
   rows.sort((a, b) => a.mag - b.mag);
   const n = rows.length;
@@ -355,7 +386,7 @@ export function createGroundSky(ctx, env) {
   const options = { figures: true, names: true, grid: false, starGrid: false, sunPath: false, equator: false, darkness: DEFAULT_DARKNESS, ...(env.options || {}) };
   const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   let disposed = false;
-  const stats = { stars: 0, drawn: 0, limit: 0, bytes: 0, deep: false, labels: 0 };
+  const stats = { stars: 0, drawn: 0, limit: 0, bytes: 0, deep: false, tier: 0, labels: 0 };
 
   const root = new THREE.Group();
   root.name = 'ground-sky';
@@ -413,18 +444,25 @@ export function createGroundSky(ctx, env) {
     return JSON.parse(text);
   }
 
-  let deepAsked = false;
-  /** The 109 389: asked for once, after the naked-eye sky is up. Saving data waits for a zoom. */
-  function askDeep() {
-    if (deepAsked || disposed || !nakedEye) return;
-    deepAsked = true;
-    fetchBytes('../../data/stars3d.bin').then((buf) => {
+  // The faint stars, in two tiers (internal #392). Tier 1 is everything a dark sky shows before
+  // any zoom; tier 2 the rest, asked for only when the limit reaches past what tier 1 holds.
+  const tiers = [null, null];
+  const tierAsked = [false, false];
+  const TIER_FILES = ['../../data/skystars-1.bin', '../../data/skystars-2.bin'];
+  function askTier(i) {
+    if (tierAsked[i] || disposed || !nakedEye || (i === 1 && !tiers[0])) return;
+    tierAsked[i] = true;
+    fetchBytes(TIER_FILES[i]).then((buf) => {
       if (disposed) return;
-      const maxNaked = nakedEye.mag[nakedEye.count - 1];
-      setStars(joinStars(nakedEye, parseDeep(buf, maxNaked)));
+      tiers[i] = parseSkyStars(buf);
+      let all = joinStars(nakedEye, tiers[0]);
+      if (tiers[1]) all = joinStars(all, tiers[1]);
+      setStars(all);
       stats.deep = true;
-    }).catch((e) => { deepAsked = false; console.warn('ground sky: the faint stars did not load', e); });
+      stats.tier = tiers[1] ? 2 : 1;
+    }).catch((e) => { tierAsked[i] = false; console.warn('ground sky: the faint stars did not load', e); });
   }
+  const tierFaintest = (i) => (tiers[i] ? tiers[i].mag[tiers[i].count - 1] : Infinity);
 
   // ---- lines -----------------------------------------------------------------------------------
   const lineMaterial = (colour, opacity, useEq) => new THREE.ShaderMaterial({
@@ -663,6 +701,71 @@ export function createGroundSky(ctx, env) {
     col.needsUpdate = true;
   }
 
+  // ---- the deep sky: photographs (sky/groundpictures.js) ----------------------------------------
+  const saving = typeof navigator !== 'undefined' && !!(navigator.connection && navigator.connection.saveData);
+  let pictures = null;
+  let picturesAsked = false;
+  let lastPxPerDeg = 10;
+  const dsoRecords = new Map();
+  /** The deep-sky record of a picture, once the layer's records have landed (they do, on or off). */
+  function dsoRecord(id) {
+    if (dsoRecords.has(id)) return dsoRecords.get(id);
+    const list = typeof ctx.recordsFor === 'function' ? ctx.recordsFor('deep-sky') : [];
+    if (!list || !list.length) return null;
+    for (const r of list) if (r && typeof r.id === 'string') dsoRecords.set(r.id.slice(4), r);
+    return dsoRecords.get(id) || null;
+  }
+  const plainName = (id) => (/^(m|ngc|ic)\d+$/.test(id) ? id.replace(/^([a-z]+)(\d+)$/, (_, a, b) => `${a.toUpperCase()} ${b}`) : id.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' '));
+  function askPictures() {
+    if (picturesAsked || disposed || typeof document === 'undefined') return;
+    picturesAsked = true;
+    import('./groundpictures.js').then((m) => {
+      if (disposed) return;
+      pictures = m.createGroundPictures({
+        root, radius: R * 0.986, eqToLocal, renderOrder: RO.pictures, saveData: saving,
+        // A phone holds fewer: 27 pictures at 512 to 768 px would be 40 MiB of GPU memory (#345).
+        cap: typeof innerWidth === 'number' && innerWidth < 900 ? 6 : 10,
+        exposure: () => (ctx.exposure && typeof ctx.exposure.look === 'function' ? ctx.exposure.look() : null),
+        nameOf: (id) => { const r = dsoRecord(id); return (r && r.name) || plainName(id); },
+        magOf: (id) => { const r = dsoRecord(id); return r && r.meta && Number.isFinite(r.meta.mag) ? r.meta.mag : NaN; },
+      });
+      labels.at = -Infinity;
+    }).catch((e) => { picturesAsked = false; console.warn('ground sky: the deep-sky pictures did not load', e); });
+  }
+
+  // ---- other light (scene/otherlight.js): only once a visitor has picked a band ------------------
+  let other = null;
+  let otherAsked = false;
+  const _look = new THREE.Vector3();
+  const _inv = new THREE.Quaternion();
+  /** Where the camera looks, as a J2000 direction (the air's lift is ignored: it is under a degree). */
+  function lookEq(camera, ndcX = 0, ndcY = 0) {
+    if (ndcX === 0 && ndcY === 0) camera.getWorldDirection(_look);
+    else _look.set(ndcX, ndcY, 0.5).unproject(camera).sub(camera.position).normalize();
+    _look.applyQuaternion(_inv.copy(group.quaternion).invert());
+    // m9 is a rotation: its transpose takes the ground's frame back to the catalogue's.
+    return [
+      m9[0] * _look.x + m9[3] * _look.y + m9[6] * _look.z,
+      m9[1] * _look.x + m9[4] * _look.y + m9[7] * _look.z,
+      m9[2] * _look.x + m9[5] * _look.y + m9[8] * _look.z,
+    ];
+  }
+  function updateOtherLight(frame, w, h) {
+    const ol = ctx.otherLight;
+    if (!ol) return;
+    if (ol.band && !other && !otherAsked) {
+      otherAsked = true;
+      import('../scene/otherlight.js').then((m) => {
+        if (disposed) return;
+        other = m.createOtherLight({ parent: root, rot: eqToLocal, radius: R * 0.988, ground: true, transparent: true, renderOrder: RO.otherLight, saveData: saving });
+      }).catch((e) => { otherAsked = false; console.warn('ground sky: the other-light layer did not load', e); });
+    }
+    if (!other) return;
+    other.set(ol.band);
+    other.setMix(ol.mix);
+    other.update({ dirEq: lookEq(frame.camera), fovDeg: frame.fovDeg, heightPx: h, aspect: w / Math.max(1, h) });
+  }
+
   // ---- names ------------------------------------------------------------------------------------
   const labels = { host: null, pool: [], fov: null, mark: null, cands: [], at: -Infinity, markUntil: 0, markDir: null };
   let conNames = [];
@@ -731,6 +834,7 @@ export function createGroundSky(ctx, env) {
         if (l[1] < 0.03) continue;
         out.push({ kind: 'star', text: s.name, local: lift(l), pri: 500 - s.mag * 10, dy: 9 });
       }
+      if (pictures) pictures.labels(out, limit, lastPxPerDeg);
       if (frame.fovDeg >= 20) {
         for (const c of conNames) {
           const l = localOf(m9, c.dir);
@@ -768,7 +872,12 @@ export function createGroundSky(ctx, env) {
     // The field-of-view line has its place first; no name is drawn under it.
     const fovTop = labels.fov.offsetTop || 24;
     const placed = [{ x0: w / 2 - 110, x1: w / 2 + 110, y0: fovTop - 8, y1: fovTop + 26 }];
-    const cap = w < 600 ? 16 : 30;
+    // The scene's own names (ui/labels.js: the selection, a station) were placed before these and
+    // keep their place; a figure's or a star's name gives way (internal #393 finding 2).
+    const theirs = ctx.labels && typeof ctx.labels.boxes === 'function' ? ctx.labels.boxes() : [];
+    for (const b of theirs) placed.push({ x0: b.left - 4, x1: b.right + 4, y0: b.top - 2, y1: b.bottom + 2 });
+    const reserved = placed.length;
+    const cap = (w < 600 ? 16 : 30) + reserved - 1;
     let slot = 0;
     for (const c of labels.cands) {
       if (slot >= labels.pool.length || placed.length >= cap) break;
@@ -789,7 +898,7 @@ export function createGroundSky(ctx, env) {
       s.node.style.transform = `translate(${Math.round(p.x)}px, ${Math.round(p.y + c.dy)}px) translateX(-50%)`;
     }
     for (; slot < labels.pool.length; slot += 1) if (!labels.pool[slot].node.hidden) labels.pool[slot].node.hidden = true;
-    stats.labels = placed.length - 1;
+    stats.labels = placed.length - reserved;
 
     // The field of view, one mono line: the number is the hero (docs/ui-guide.md principle 4).
     const F = COPY.sky.fov || {};
@@ -834,21 +943,13 @@ export function createGroundSky(ctx, env) {
     // The names of the stars and the faint stars come after the first sky is on screen.
     const later = () => {
       if (disposed) return;
-      fetchJson('../../data/stars3d.names.json').then((json) => {
+      // The proper names only: [name, raDeg, decDeg, mag], brightest first (15 kB, not 288).
+      fetchJson('../../data/skystars.names.json').then((json) => {
         const rows = (json && json.rows) || [];
-        const out = [];
-        for (const r of rows) {
-          const proper = r[1];
-          const mag = r[7];
-          if (!proper || !(mag <= 6.5)) continue;
-          const n = Math.hypot(r[9], r[10], r[11]);
-          if (!(n > 0)) continue;
-          out.push({ name: proper, mag, dir: eclToEq([r[9] / n, r[10] / n, r[11] / n]) });
-        }
-        starNames = out.sort((a, b) => a.mag - b.mag);
+        starNames = rows.filter((r) => r && r[0] && Number.isFinite(r[3])).map((r) => ({ name: r[0], mag: r[3], dir: radecDir(r[1], r[2]) })).sort((a, b) => a.mag - b.mag);
       }).catch(() => {});
-      const saving = typeof navigator !== 'undefined' && navigator.connection && navigator.connection.saveData;
-      if (!saving) askDeep();
+      if (!saving) askTier(0);
+      askPictures();
     };
     if (typeof requestIdleCallback === 'function') requestIdleCallback(later, { timeout: 1500 });
     else setTimeout(later, 300);
@@ -878,7 +979,13 @@ export function createGroundSky(ctx, env) {
       stars.points.geometry.setDrawRange(0, n);
       stats.drawn = n;
     }
-    if (!deepAsked && frame.fovDeg < 40) askDeep();
+    if (!tierAsked[0] && frame.fovDeg < 40) askTier(0);
+    // The rest of the catalogue, once the sky is deep enough to show a star tier 1 does not have.
+    if (tiers[0] && !tierAsked[1] && limit + 0.3 > tierFaintest(0)) askTier(1);
+    if (!picturesAsked && frame.fovDeg < 40) askPictures();
+    lastPxPerDeg = pxPerDeg;
+    if (pictures) pictures.update(frame, m9, limit, pxPerDeg, group);
+    updateOtherLight(frame, w, h);
 
     // How much of a night it is: 1 once the Sun is 16 degrees down, 0 from 8 degrees down.
     const night = Math.max(0, Math.min(1, (-8 - frame.sunAltDeg) / 8));
@@ -925,6 +1032,20 @@ export function createGroundSky(ctx, env) {
       if (!d) return null;
       return d.apparent ? { azDeg: d.apparent.azDeg, altDeg: d.apparent.altDeg, diameterDeg: d.view.diameterDeg, mag: d.view.mag } : null;
     },
+    /** Where a J2000 direction is as the eye sees it now: {azDeg, altDeg, local}, the air's lift included. */
+    apparentOfEq(dirEq) {
+      const l = lift(localOf(m9, dirEq));
+      return { ...altAzOf(l), local: l };
+    },
+    /** What of this layer is under a tap (client pixels): a deep-sky picture's record id, or null. */
+    pickAt(clientX, clientY, camera, rect) {
+      if (!pictures || !camera || !rect || !(rect.width > 0)) return null;
+      const ndcX = ((clientX - rect.left) / rect.width) * 2 - 1;
+      const ndcY = -((clientY - rect.top) / rect.height) * 2 + 1;
+      return pictures.pickEq(lookEq(camera, ndcX, ndcY));
+    },
+    pictures: () => (pictures ? pictures.state() : null),
+    otherLight: () => (other ? other.state() : null),
     /** A pass across the sky: `track` [{azDeg, altDeg, lit}], `marks` [{azDeg, altDeg, text}]. */
     showPass(track, marks) {
       this.clearPass();
@@ -956,6 +1077,8 @@ export function createGroundSky(ctx, env) {
     stats: () => ({ ...stats }),
     dispose() {
       disposed = true;
+      if (pictures) { pictures.dispose(); pictures = null; }
+      if (other) { other.dispose(); other = null; }
       root.traverse((o) => {
         if (o.geometry && o.geometry !== quad) o.geometry.dispose();
         if (o.material) {

@@ -618,7 +618,8 @@ export function createSearch(ctx, host) {
     // line's tooltip and in What to show, where every one of them has its own row and state.
     const S = COPY.search;
     const n = fmt.int(state.index.n);
-    const line = state.switchedOn ? t(S.switchedOn, { layer: state.switchedOn })
+    const line = state.skyNote ? state.skyNote
+      : state.switchedOn ? t(S.switchedOn, { layer: state.switchedOn })
       : state.index.n === 0 ? S.empty
         : !missing.length ? t(state.index.n === 1 ? S.searchingOne : S.searching, { n })
           : missing.length === 1 ? t(S.searchingButOne, { n })
@@ -771,6 +772,7 @@ export function createSearch(ctx, host) {
     state.total = result.total;
     state.fallback = result.fallback === true;
     state.switchedOn = null;
+    state.skyNote = '';
     // Nothing matched: say so, and offer the nearest names as the options (closest() above).
     state.missed = result.hits.length ? '' : String(text).trim();
     if (state.missed) { state.hits = closest(state.index, q); state.total = state.hits.length; }
@@ -814,6 +816,16 @@ export function createSearch(ctx, host) {
       }
     } catch {
       /* a layer that refuses to switch on still gets the camera and the card below */
+    }
+    // From the ground the search box turns the sky to what it found (internal #393 finding 7), or
+    // says that it is under the horizon; main.js's select() opens the card and flies nowhere.
+    try {
+      const sky = ctx.skyView;
+      const shown = sky && sky.active && typeof sky.pointAtRecord === 'function' ? sky.pointAtRecord(record) : null;
+      state.skyNote = shown === 'below' ? t(COPY.search.belowHorizon, { name: record.name || '' }) : '';
+      if (state.skyNote) paintNote();
+    } catch {
+      /* the card still opens */
     }
     try {
       if (typeof ctx.select === 'function') ctx.select(record);

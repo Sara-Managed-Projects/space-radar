@@ -47,6 +47,7 @@ const LINES = [
   ['search.noMatch', 15, INTER, SIDE],
   ['search.closest', 13, INTER, SIDE],
   ['search.searching', 13, INTER, SIDE],
+  ['search.belowHorizon', 13, INTER, SIDE],
   ['search.searchingOne', 13, INTER, SIDE],
   ['search.searchingBut', 13, INTER, SIDE],
   ['search.searchingButOne', 13, INTER, SIDE],

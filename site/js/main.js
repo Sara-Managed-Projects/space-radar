@@ -263,6 +263,52 @@ export async function boot({ setStatus } = {}) {
     if (record && record.klass === 'dso') ctx.wantNebulae().then((n) => { if (n) n.want(record.id); });
     else if (ctx.nebulae) ctx.nebulae.want(null);
   });
+  // OTHER LIGHT (public #456, scene/otherlight.js): the sky in infrared, microwaves or gamma rays,
+  // faded over the visible one. This is the whole of it at boot: two values and who listens. The
+  // layer, its registry and its pictures are imported when a visitor first picks a band in What to
+  // show (ui/otherlight.js); sky/groundsky.js reads the same two values for the sky from the ground.
+  const otherLight = {
+    band: null,
+    mix: 1,
+    layer: null,
+    listeners: new Set(),
+    set(band, mix) {
+      const nextMix = Number.isFinite(mix) ? Math.min(1, Math.max(0, mix)) : this.mix;
+      if (band === this.band && nextMix === this.mix) return;
+      this.band = band || null;
+      this.mix = nextMix;
+      if (this.band && !this.layer && !this.asked) {
+        this.asked = import('./scene/otherlight.js').then((m) => {
+          this.layer = m.createOtherLight({ parent: starfield.group, saveData: typeof navigator !== 'undefined' && shouldSaveData(navigator.connection) });
+        }).catch((e) => { console.warn('the other-light layer did not load', e); this.asked = null; });
+      }
+      for (const f of this.listeners) f(this.band, this.mix);
+    },
+    onChange(f) { this.listeners.add(f); return () => this.listeners.delete(f); },
+  };
+  ctx.otherLight = otherLight;
+  const _olDir = new THREE.Vector3();
+  const _olQ = new THREE.Quaternion();
+  function updateOtherLight() {
+    const layer = otherLight.layer;
+    if (!layer) return;
+    layer.set(otherLight.band);
+    layer.setMix(otherLight.mix);
+    // The star sphere's own axes are equatorial J2000: the camera's direction, turned into them.
+    ctx.camera.getWorldDirection(_olDir).applyQuaternion(starfield.group.getWorldQuaternion(_olQ).invert());
+    const el = renderer.domElement;
+    layer.update({
+      dirEq: [_olDir.x, _olDir.y, _olDir.z],
+      fovDeg: ctx.camera.fov,
+      heightPx: el.clientHeight || 800,
+      aspect: ctx.camera.aspect,
+      // It fades with the star sphere it lies on (registry/lod.yaml `sky-panorama`), and under the
+      // sky view's veil the ground sky draws its own.
+      strength: ctx.skyView && ctx.skyView.ownsSky ? 0 : skyStrength,
+    });
+  }
+  ctx.updateOtherLight = updateOtherLight;
+
   const lod = createLod({
     'sky-panorama': (k) => {
       skyStrength = k;
@@ -713,10 +759,17 @@ export async function boot({ setStatus } = {}) {
       deselect();
       return;
     }
-    const hit = pick(ndcX, ndcY, rect);
+    const hit = pick(ndcX, ndcY, rect) || skyPicturePick(e.clientX, e.clientY);
     if (hit) select(hit);
     else deselect();
   });
+
+  /** From the ground, a tap on a nebula's or a galaxy's photograph opens its card (sky/groundpictures.js). */
+  function skyPicturePick(clientX, clientY) {
+    if (!ctx.skyView || !ctx.skyView.ownsSky || typeof ctx.skyView.pickSky !== 'function') return null;
+    const id = ctx.skyView.pickSky(clientX, clientY);
+    return id ? (ctx.recordsFor('deep-sky').find((r) => r.id === id) || null) : null;
+  }
 
   /** Everything within the forgiveness rule, from every layer that is on, unranked. */
   function candidatesAt(ndcX, ndcY, rect) {
@@ -757,6 +810,10 @@ export async function boot({ setStatus } = {}) {
    *   selecting from inside one used to look like.
    */
   function select(record, opts = {}) {
+    // From the ground nothing flies: the visitor is standing in a field. The card opens, and the
+    // search box turns the sky to what it found (ui/search.js, skyView.pointAtRecord). Without this
+    // a star chosen there recentred the whole scene on the stellar rung under the sky view's feet.
+    if (ctx.skyView && ctx.skyView.active && opts.fly !== false) opts = { ...opts, fly: false };
     // A planet with a registry/systems.yaml row, or its host star, is a place on its SYSTEM's stage
     // (spec 0040 req 6), where it is drawn at its own size on its orbit; everywhere else it is a mark
     // at its star. The same rule as a star recentring on the stellar rung below, one scale further in.
@@ -1081,6 +1138,10 @@ export async function boot({ setStatus } = {}) {
     // From the ground (sky/groundsky.js) a pad or a dish is under the horizon, and the landers
     // drew as dots across the face of the sky view's own Moon: no site is drawn there.
     if (layer.klass === 'site' && ctx.skyView && ctx.skyView.ownsSky) return false;
+    // Nor a launch: its record is a drawing of an ascent from a pad that is somewhere else on the
+    // globe, and from the ground it hung in the sky as an orange dot with a rocket's name, 20
+    // degrees up (internal #393 finding 3, seen with the clock on 12 August 2026).
+    if (layer.id === 'launches' && ctx.skyView && ctx.skyView.ownsSky) return false;
     if (isSystemStage(stage.worldId)) return SYSTEM_SCALE_LAYERS.has(layer.id);
     const ladder = isLadderStage(stage.worldId);
     if (layer.ladderOnly && !ladder) return false;
@@ -1609,6 +1670,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       // Andromeda's photograph and her stand-in model never draw over each other (scene/galaxy.js).
       if (ctx.galaxy) ctx.galaxy.setAndromedaShare(1 - ctx.nebulae.drawn('dso-m31'));
     }
+    if (ctx.otherLight.layer) ctx.updateOtherLight();
     if (ctx.skyView.active) ctx.skyView.update(t);
     render();
     // After render(), because render() is what brings the camera's matrices up to this frame: placed

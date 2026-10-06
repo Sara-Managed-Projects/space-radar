@@ -44,6 +44,14 @@ const SKY_FOV_DEG = 72;
 // How often the Sun is re-solved, in clock milliseconds. It moves 15 arcseconds a second.
 const SUN_REFRESH_MS = 5000;
 
+// One press of + or - : the field closes or opens by this ratio (four presses halve it).
+const KEY_ZOOM = 1.19;
+// J2000 mean obliquity, as scene/galaxy.js: `sun-inertial` (ecliptic) to the sky's equatorial frame.
+const COS_OBLIQUITY = Math.cos(23.4392911 * DEG2RAD);
+const SIN_OBLIQUITY = Math.sin(23.4392911 * DEG2RAD);
+// The bodies sky/skybodies.js solves; the other worlds have no place in the sky from the ground.
+const SKY_BODIES = new Set(['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune']);
+
 const HORIZON_SEGMENTS = 720;
 const DOME_SEGMENTS = 64;
 
@@ -991,6 +999,28 @@ export function createSkyView(ctx, options = {}) {
       }
       if (!where || where.altDeg < 0) return false;
       dirOf = () => { const w = read() || where; const v = new THREE.Vector3(); localDir(w.azDeg * DEG2RAD, w.altDeg * DEG2RAD, v); return [v.x, v.y, v.z]; };
+    } else if (Array.isArray(target.dirEq) || (Number.isFinite(target.raDeg) && Number.isFinite(target.decDeg))) {
+      // A place among the stars (J2000): a star, a nebula, a galaxy. The ground sky knows where the
+      // air puts it; before it has loaded, Astronomy Engine's horizon is within a degree of that.
+      let d = target.dirEq;
+      if (!d) {
+        const a = target.raDeg * DEG2RAD;
+        const c = Math.cos(target.decDeg * DEG2RAD);
+        d = [c * Math.cos(a), c * Math.sin(a), Math.sin(target.decDeg * DEG2RAD)];
+      }
+      const read = () => {
+        if (ground && typeof ground.apparentOfEq === 'function') return ground.apparentOfEq(d);
+        if (!observerA) return null;
+        try {
+          const date = new Date(ctx.clock?.now?.() ?? Date.now());
+          const raH = ((Math.atan2(d[1], d[0]) * RAD2DEG + 360) % 360) / 15;
+          const hor = Astronomy.Horizon(date, observerA, raH, Math.asin(Math.max(-1, Math.min(1, d[2]))) * RAD2DEG, 'normal');
+          return { azDeg: hor.azimuth, altDeg: hor.altitude };
+        } catch { return null; }
+      };
+      where = read();
+      if (!where || where.altDeg < 0) return false;
+      dirOf = () => { const w = read() || where; const v = new THREE.Vector3(); localDir(w.azDeg * DEG2RAD, w.altDeg * DEG2RAD, v); return [v.x, v.y, v.z]; };
     } else if (Number.isFinite(target.azDeg) && Number.isFinite(target.altDeg)) {
       where = target;
       const v = new THREE.Vector3();
@@ -1001,6 +1031,50 @@ export function createSkyView(ctx, options = {}) {
     if (Number.isFinite(opts.fovDeg)) setFov(opts.fovDeg, { instant: opts.instant === true });
     if (ground && opts.mark !== false) ground.mark(dirOf);
     return true;
+  }
+
+  /**
+   * Turn the sky to a record (the search box, internal #393 finding 7): the Sun, the Moon or a
+   * planet where it is now; a star, a nebula, a galaxy or a planet of another star at its place
+   * among the stars. Returns 'shown', 'below' (it is under the horizon now) or null (not a thing
+   * with a place in this sky: a satellite, whose own glyph is already there).
+   */
+  function pointAtRecord(record, opts = {}) {
+    if (!record || !isActive) return null;
+    if (record.klass === 'world') {
+      if (record.id === 'earth') return null;
+      if (!SKY_BODIES.has(record.id)) return null;
+      return pointAt({ body: record.id }, opts) ? 'shown' : 'below';
+    }
+    if (!['star', 'dso', 'exoplanet', 'exotic'].includes(record.klass)) return null;
+    const p = record.pos;
+    if (!p || !(Math.hypot(p.x, p.y, p.z) > 0)) return null;
+    // `sun-inertial` is ecliptic J2000; the sky's catalogue frame is equatorial J2000.
+    const n = Math.hypot(p.x, p.y, p.z);
+    const dirEq = [p.x / n, (p.y * COS_OBLIQUITY - p.z * SIN_OBLIQUITY) / n, (p.y * SIN_OBLIQUITY + p.z * COS_OBLIQUITY) / n];
+    return pointAt({ dirEq }, opts) ? 'shown' : 'below';
+  }
+
+  /** A deep-sky picture under a tap, as a record id (`dso-m42`), or null: main.js opens its card. */
+  function pickSky(clientX, clientY) {
+    if (!isActive || !ground || typeof ground.pickAt !== 'function' || !domElement?.getBoundingClientRect) return null;
+    return ground.pickAt(clientX, clientY, camera, domElement.getBoundingClientRect());
+  }
+
+  /**
+   * + and - zoom the sky, as the wheel does (internal #393 finding 7). The orbital camera reads the
+   * same keys as "nearer" and "farther" (scene/camera.js); here the camera has no distance, so the
+   * keys close and open the field instead. Not while typing, and not with a modifier (the
+   * browser's own zoom).
+   */
+  function onKeyDown(e) {
+    if (!isActive || e.ctrlKey || e.metaKey || e.altKey || e.defaultPrevented) return;
+    const tag = e.target && e.target.tagName ? String(e.target.tagName).toUpperCase() : '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target && e.target.isContentEditable)) return;
+    if (e.key === '+' || e.key === '=') setFov(zoomFov(fovWant, 1 / KEY_ZOOM));
+    else if (e.key === '-' || e.key === '_') setFov(zoomFov(fovWant, KEY_ZOOM));
+    else return;
+    e.preventDefault?.();
   }
 
   /** A pass drawn across the sky (ui/tonight.js works the track out): see groundsky.showPass. */
@@ -1064,6 +1138,7 @@ export function createSkyView(ctx, options = {}) {
     domElement.addEventListener('pointerup', onPointerUp);
     domElement.addEventListener('pointercancel', onPointerUp);
     domElement.addEventListener('wheel', onWheel, { capture: true, passive: false });
+    if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('keydown', onKeyDown);
   }
   function detachInput() {
     if (!domElement?.removeEventListener) return;
@@ -1072,6 +1147,7 @@ export function createSkyView(ctx, options = {}) {
     domElement.removeEventListener('pointerup', onPointerUp);
     domElement.removeEventListener('pointercancel', onPointerUp);
     domElement.removeEventListener('wheel', onWheel, { capture: true });
+    if (typeof window !== 'undefined' && window.removeEventListener) window.removeEventListener('keydown', onKeyDown);
     touches.clear();
     pinch = null;
     drag = null;
@@ -1230,6 +1306,8 @@ export function createSkyView(ctx, options = {}) {
     },
     setOption,
     pointAt,
+    pointAtRecord,
+    pickSky,
     showPass,
     /** True while the ground sky is drawing the stars and planets itself (ui/labels.js asks). */
     get ownsSky() {
@@ -1237,6 +1315,9 @@ export function createSkyView(ctx, options = {}) {
     },
     /** What the ground sky has drawn and fetched, or null before it loads: for the probes. */
     groundStats: () => (ground ? ground.stats() : null),
+    /** The deep-sky pictures and the other-light layer as the ground sky draws them, for the probes. */
+    groundPictures: () => (ground && ground.pictures ? ground.pictures() : null),
+    groundOtherLight: () => (ground && ground.otherLight ? ground.otherLight() : null),
     dispose() {
       exit();
       detachInput();

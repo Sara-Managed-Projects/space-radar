@@ -934,6 +934,30 @@ export const COPY = {
     creditLead: 'Picture: ',
     creditTail: ' \u00b7 {licence}, edges faded and sky darkened by us',
   },
+  // The sky in other light (registry/otherlight.yaml, scene/otherlight.js): the chooser in What to
+  // show. Each note is the honest line: which light, and that its colours are not an eye's.
+  otherLight: {
+    panelTitle: 'Other light',
+    bands: { visible: 'Visible', infrared: 'Infrared', microwave: 'Microwave', gamma: 'Gamma rays' },
+    notes: {
+      visible: 'The sky as eyes and cameras see it.',
+      infrared: 'The sky in infrared, false colour: warm dust and cool stars.',
+      microwave: 'Microwaves, as brightness: the Galaxy over the oldest light.',
+      gamma: 'Gamma rays, false colour: pulsars, blazars, cosmic-ray glow.',
+    },
+    // What the survey's own composite shows as red, green and blue (the buttons' tooltips).
+    colours: {
+      infrared: 'Red is 22 µm, green 4.6 µm, blue 3.4 µm (WISE)',
+      microwave: 'One band, 94 GHz, drawn as brightness (WMAP)',
+      gamma: 'Red is 0.3 to 1 GeV, green 1 to 3, blue above 3 (Fermi)',
+    },
+    mixLabel: 'From the visible sky to {band}',
+    mixValue: '{pct} % {band}',
+    loading: 'Fetching the picture of the whole sky.',
+    failed: 'That picture did not arrive. The sky is as it was.',
+    creditLead: 'Survey: ',
+    creditTail: '. Tiles: CDS, Strasbourg.',
+  },
   // Earth data overlays (registry/overlays.yaml, scene/earthoverlay.js): one measured map over the
   // globe, with its legend, the day it is of and whose data it is.
   overlay: {
@@ -2179,6 +2203,8 @@ export const COPY = {
     couldNotRead: 'Could not be read, so not searched: {layers}.',
     fallback: 'Nothing starts with that. These contain it.',
     switchedOn: 'Switched on: {layer}.',
+    // From the ground, a thing found that the sky cannot be turned to (ui/search.js).
+    belowHorizon: '{name} is under the horizon.',
     notLoadedCount: 'How many objects that leaves out cannot be known until they load.',
   },
 

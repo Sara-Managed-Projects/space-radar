@@ -4497,6 +4497,33 @@ html.sr-phone .sr-subscribe__email {
 
 .sr-show__setting .sr-density__choices { display: flex; gap: 4px; }
 .sr-show__setting .sr-density__note { flex-basis: 100%; margin: 0; font-size: var(--sr-fs-sm); color: var(--sr-text-dim); }
+/* Other light (ui/otherlight.js): four choices take the row's whole width, under the title; then
+   the one slider in the app, a native range between two words, and the survey's credit as a link
+   that is underlined so colour alone does not say so. */
+.sr-otherlight .sr-density__choices { flex-basis: 100%; flex-wrap: wrap; }
+.sr-otherlight .sr-density__btn { flex: 1 1 40%; }
+.sr-otherlight__mix {
+  flex-basis: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--sr-fs-sm);
+  color: var(--sr-text-dim);
+}
+.sr-otherlight__mix[hidden], .sr-otherlight__credit[hidden] { display: none; }
+.sr-otherlight__slider {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 24px;
+  margin: 0;
+  accent-color: var(--sr-text-soft);
+  cursor: pointer;
+}
+.sr-otherlight__slider:focus-visible { outline: 2px solid var(--sr-ember); outline-offset: 2px; }
+.sr-otherlight__credit a { color: var(--sr-text-soft); text-decoration: underline; }
+@media (pointer: coarse) {
+  .sr-otherlight__slider { min-height: 44px; }
+}
 
 /* --- the time pill -------------------------------------------------------------------- */
 
@@ -5378,6 +5405,8 @@ html.sr-phone .sr-tonight-view__num { font-size: var(--sr-fs-num-sm); }
 .sr-skylabel--body { color: var(--sr-text); font-weight: 600; }
 .sr-skylabel--pass { color: var(--sr-text); font-family: var(--sr-font-mono); font-variant-numeric: tabular-nums; }
 .sr-skylabel--line { color: var(--sr-text-dim); }
+/* A nebula's or a galaxy's name under its photograph (sky/groundpictures.js). */
+.sr-skylabel--dso { color: var(--sr-text-soft); font-style: italic; }
 /* The field of view: one mono line at the top of the sky, clear of the rail and the pill. */
 .sr-skyfov {
   position: absolute;

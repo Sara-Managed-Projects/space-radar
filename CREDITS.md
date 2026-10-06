@@ -28,6 +28,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | 3D spacecraft models | NASA 3D Resources | public domain (NASA media guidelines) | [3b](#3b-3d-models--nasa-public-domain) |
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
 | Nebula and galaxy photographs | ESA/Hubble, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-eso-and-noirlab-cc-by-40) |
+| The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
 | Satellites and their orbits | CelesTrak | free, with an enforced usage policy | [4.1](#41-celestrak--read-this-before-you-deploy-a-fork) |
 | Launches | The Space Devs, Launch Library 2 | free to 15 requests an hour; no published licence | [4.2](#42-the-space-devs--launch-library-2) |
 | Deep-space positions, asteroids, comets, close approaches | NASA/JPL Horizons, Small-Body Database, CNEOS; ESA NEOCC | see the section | [4.18](#418-the-sources-the-harvester-reads) |
@@ -348,8 +349,10 @@ Gliese Catalog 3rd ed., and Gaia DR3 distances via the AT-HYG work.
 
 ## 3d. The sky from the ground — the same files, and three formulas
 
-The sky view (`site/js/sky/groundsky.js`) ships no new asset. Its stars are §3's `stars.bin` and
-§3c's `stars3d.bin` (HYG v4.4, CC BY-SA 4.0); its Milky Way, Moon, Mars, Jupiter and Saturn maps are
+The sky view (`site/js/sky/groundsky.js`) ships no new source. Its stars are §3's `stars.bin` and
+`skystars-1.bin`, `skystars-2.bin` and `skystars.names.json`, which `scripts/build-skystars.py`
+cuts from §3c's `stars3d.bin` (HYG v4.4, CC BY-SA 4.0: the same stars, as a direction, a magnitude
+and a colour each; the same licence); its nebulae and galaxies are §3g's photographs; its Milky Way, Moon, Mars, Jupiter and Saturn maps are
 the textures already credited above; the positions, sizes and phases of the Sun, the Moon and the
 planets, the Moon's libration and the tilt of Saturn's rings are computed by Astronomy Engine (MIT).
 Refraction is Sæmundsson's formula (Sky & Telescope 72, 1986); air mass is Kasten and Young (Applied
@@ -654,6 +657,52 @@ NOIRLab.
 | `m51.webp` | **NASA, ESA, S. Beckwith (STScI), and The Hubble Heritage Team (STScI/AURA)** | CC BY 4.0 | [heic0506a](https://esahubble.org/images/heic0506a/) | 20 318 B |
 | `m101.webp` | **Image: European Space Agency & NASA** | CC BY 4.0 | [heic0602a](https://esahubble.org/images/heic0602a/) | 32 054 B |
 | `m81.webp` | **NASA, ESA and the Hubble Heritage Team (STScI/AURA). Acknowledgment: A. Zezas and J. Huchra (Harvard-Smithsonian Center for Astrophysics)** | CC BY 4.0 | [heic0710a](https://esahubble.org/images/heic0710a/) | 8 680 B |
+
+## 3h. The sky in other light — NASA's WISE, WMAP and Fermi, through CDS HiPS
+
+"Other light" in What to show (`site/js/scene/otherlight.js`, `registry/otherlight.yaml`) draws the
+whole sky as three space telescopes mapped it, in false colour. Each band is one picture of the
+whole sky shipped from our bucket (`site/images/otherlight/`, baked by
+`scripts/build_otherlight.py` from the survey's order-3 HiPS tiles), and, for a survey that goes
+deeper, the survey's own tiles streamed from CDS when the field of view is narrow
+(`site/js/sky/hips.js`).
+
+| band | survey (HiPS id) | mission and credit | terms | what the colours are | baked file |
+|---|---|---|---|---|---|
+| Infrared | `CDS/P/allWISE/color` | **NASA/JPL-Caltech/UCLA (WISE)** | [AllWISE release](https://irsa.ipac.caltech.edu/data/WISE/docs/release/All-Sky/) | red 22 µm, green 4.6 µm, blue 3.4 µm | `infrared.webp`, 62 570 B; tiles streamed to order 8 |
+| Microwave | `CDS/P/WMAP/W/9yr` | **NASA/WMAP Science Team (LAMBDA)** | [WMAP nine-year maps](https://lambda.gsfc.nasa.gov/product/wmap/dr5/maps_band_r9_i_9yr_get.html) | one band, 94 GHz, as brightness | `microwave.webp`, 186 852 B |
+| Gamma rays | `CDS/P/Fermi/color` | **NASA/DOE/Fermi LAT Collaboration** | [Fermi data policy](https://fermi.gsfc.nasa.gov/ssc/data/policy/) | red 0.3 to 1 GeV, green 1 to 3 GeV, blue 3 to 300 GeV | `gamma.webp`, 222 396 B |
+
+**The data** are NASA's: each survey's HiPS `properties` file names NASA's archive as its origin
+(`obs_copyright` / `prov_progenitor`: IPAC/NASA, HEASARC/LAMBDA, NASA/HEASARC; read 2026-10-06 and
+quoted per band in the registry), and NASA does not claim copyright on its missions' data. NASA
+asks to be acknowledged, so the chooser prints the mission's credit under the band, linked to the
+mission's page. WISE: "This publication makes use of data products from the Wide-field Infrared
+Survey Explorer, which is a joint project of the University of California, Los Angeles, and the Jet
+Propulsion Laboratory/California Institute of Technology, funded by the National Aeronautics and
+Space Administration." WMAP: "We acknowledge the use of the Legacy Archive for Microwave Background
+Data Analysis (LAMBDA), part of the High Energy Astrophysics Science Archive Center (HEASARC)."
+
+**The tiles** are the work of the Centre de Données astronomiques de Strasbourg: every `properties`
+file says `hips_copyright = CNRS/Unistra` and `hips_license = ODbL-1.0`. The Open Database License
+allows using the tiles and making pictures from them ("Produced Works") with a notice of where they
+came from, which is this one: the baked skies **contain information from the HiPS surveys
+`CDS/P/allWISE/color`, `CDS/P/WMAP/W/9yr` and `CDS/P/Fermi/color`, made available by CDS under the
+ODbL 1.0** (<https://opendatacommons.org/licenses/odbl/1-0/>). This work has made use of CDS HiPS
+(Aladin, <https://aladin.cds.unistra.fr/hips/>; Fernique et al. 2015, A&A 578, A114), CDS,
+Strasbourg Astronomical Observatory, France. Every tile URL answered `200` with
+`Access-Control-Allow-Origin: *` to a request carrying this site's `Origin` on 2026-10-06.
+
+**What was changed.** The order-3 tiles were re-projected from HEALPix to a 2048 × 1024
+equirectangular picture in equatorial J2000 and saved as WebP; the shader applies a display stretch
+(`gain`). The square patches in the infrared sky near the Galactic centre and its long faint
+stripes are the survey's own: WISE's 1.56-degree atlas frames and its scan pattern.
+
+**Not used, and why** (so nobody adds them without new evidence; the list is in the registry's
+header): the Digitized Sky Survey and Mellinger's panorama (not ours to use); Planck (`obs_copyright`
+"EUROPEAN SPACE AGENCY. ALL RIGHTS RESERVED" on release 3, no licence text found for release 2:
+WMAP is NASA's microwave sky); Finkbeiner's H-alpha composite and ROSAT (no licence text found);
+GALEX (NASA's, but its order-3 sky is 4.9 MB of survey masks along the Galactic plane).
 
 ## 4. Runtime data sources
 

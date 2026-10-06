@@ -49,6 +49,7 @@ import { soundButton } from './sound.js';
 import { densityPanel } from './density.js';
 import { exposurePanel } from './exposure.js';
 import { overlayPanel } from './overlaypanel.js';
+import { otherLightPanel } from './otherlight.js';
 import { LAYER_GROUPS } from '../data/layers.registry.js';
 
 const REFRESH_MS = 1000;
@@ -402,6 +403,13 @@ export function createWhatToShow(ctx, opts = {}) {
     exposure.classList.add('sr-show__section', 'sr-show__setting');
     root.appendChild(exposure);
   }
+  // Other light (registry/otherlight.yaml): the sky in infrared, microwaves or gamma rays.
+  let otherLight = null;
+  if (ctx && ctx.otherLight) {
+    otherLight = otherLightPanel(ctx);
+    otherLight.classList.add('sr-show__section', 'sr-show__setting');
+    root.appendChild(otherLight);
+  }
   // Earth data (registry/overlays.yaml): one measured map over the globe, and its legend.
   let overlay = null;
   if (ctx && typeof ctx.setOverlay === 'function') {
@@ -509,6 +517,7 @@ export function createWhatToShow(ctx, opts = {}) {
       document.removeEventListener('sr:layer-toggle', onAny);
       key.destroy();
       if (overlay) overlay.destroy();
+      if (otherLight) otherLight.destroy();
       root.remove();
     },
   };

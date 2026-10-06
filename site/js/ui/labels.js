@@ -57,6 +57,8 @@ export const LABEL_POOL = 12;
 /** Members of the selection's train named beside it: enough to say which is which, not the line. */
 export const TRAIN_CAP = 3;
 export const DEDUPE_PX = 24;
+/** Names this layer may show in the sky from the ground, where the sky names itself (internal #393). */
+export const SKY_VIEW_CAP = 4;
 /** A name shown on the last tick ranks as though it were this share of its distance (HYSTERESIS). */
 export const HYSTERESIS = 0.7;
 /**
@@ -490,6 +492,8 @@ export function createLabels(ctx, host) {
   let lastAllPlanets = false;
 
   /** The drawn worlds, as spheres a label can be behind, once per update. */
+  let lastBoxes = [];
+
   function occluders() {
     const out = [];
     const worlds = ctx.worlds;
@@ -636,17 +640,22 @@ export function createLabels(ctx, host) {
    * being centred on nothing.
    */
   function update(tMs) {
-    if (host.hidden) return;
+    if (host.hidden) { lastBoxes = []; return; }
     const inTrip = document.documentElement.classList.contains('sr-trip-mode');
     // While constellation figures are up they name their own stars (scene/figures3d.js), and a
     // second name beside one of them would be the wall of text the cap exists to prevent.
     const cands = ctx.figures && ctx.figures.namesTheSky() ? [] : candidatesNow(tMs);
-    const chosen = chooseLabels(cands, {
+    let chosen = chooseLabels(cands, {
       cap: LABEL_POOL,
       incumbents: shownIds,
       allPlanets: lastAllPlanets,
       worldsFirst: inTrip && stage.worldId === 'sun',
     });
+    // FROM THE GROUND THE SKY NAMES ITSELF (sky/groundsky.js: figures, stars, planets, nebulae), and
+    // these names were a second layer that knew nothing of that one: "GRACE-FO" sat on "SERPENS
+    // CAUDA" (internal #393). There this layer names only what was asked for, the selection and its
+    // train, and the crewed stations; the ground sky reads boxes() and keeps its own names clear.
+    if (ctx.skyView && ctx.skyView.ownsSky) chosen = chosen.filter((c) => labelTier(c) <= TIER.station).slice(0, SKY_VIEW_CAP);
     // Pass one: contents. Pass two: measure and place. Reading offsetWidth invalidates layout, so
     // interleaving it with the writes would re-layout the whole list once per label.
     for (let i = 0; i < pool.length; i++) {
@@ -686,6 +695,7 @@ export function createLabels(ctx, host) {
       placed.push({ x, y, left: x - bw / 2, right: x + bw / 2, top: y - 1.4 * bh, bottom: y - 0.4 * bh });
     }
     const keep = capKept(keepClearOf(placed, LABEL_GAP_PX, panelRects()), LABEL_CAP);
+    lastBoxes = placed.filter((_, i) => keep[i]);
     const now = new Set();
     for (let i = 0; i < placed.length; i++) {
       const slot = pool[i];
@@ -747,5 +757,5 @@ export function createLabels(ctx, host) {
     }
   }
 
-  return { update, destroy, emphasise, clearEmphasis, subject: () => subjectId };
+  return { update, destroy, emphasise, clearEmphasis, subject: () => subjectId, boxes: () => lastBoxes };
 }
