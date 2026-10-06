@@ -1669,7 +1669,7 @@ export const COPY = {
     // set by hand, one the device gave, or a guess from the clock, which says it is one.
     yourPlace: 'Your place',
     observerSet: 'Your place: {place}, set by you.',
-    observerDevice: 'Your place: where your device says you are.',
+    observerDevice: 'Your place: near where your device says you are.',
     observerGuess: 'Your place is a guess from your clock’s time zone: {place}. Set it under Where you are for a better one.',
     needsPlace: 'Needs a place. Set where you are first.',
     // Recomputed while the stop is up: the station moves eight kilometres every second.

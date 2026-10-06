@@ -14,6 +14,7 @@ import { COPY, CITIES, t, fmt, timeText, compassWords, fistsWords } from '../cop
 import { predictPasses } from '../sky/passes.js';
 import { showerItems, rowText as nextRowText } from './next.js';
 import { SHOWERS } from '../data/showers.js';
+import { roundPlace } from '../sky/guessplace.js';
 
 const DEG_TO_RAD = Math.PI / 180;
 const DEG = 180 / Math.PI;
@@ -30,6 +31,18 @@ function button(className, text, title) {
   b.type = 'button';
   if (title) b.title = title;
   return b;
+}
+
+/**
+ * The place the browser answered with, rounded to 0.1 degree before it becomes anything else. This
+ * is the ONLY function that reads `position.coords` (tests/test_place_privacy.mjs holds that), and
+ * it keeps neither the accuracy nor the altitude, heading or speed the browser may also send.
+ */
+export function placeFromPosition(position, name) {
+  const c = (position && position.coords) || {};
+  const { latDeg, lonDeg } = roundPlace({ latDeg: c.latitude, lonDeg: c.longitude });
+  if (!Number.isFinite(latDeg) || !Number.isFinite(lonDeg)) return null;
+  return { name, country: '', latDeg, lonDeg, source: 'geolocation' };
 }
 
 export function observerFor(city) {
@@ -117,8 +130,10 @@ export function createPlace(ctx) {
     note.classList.remove('is-warning');
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        const place = placeFromPosition(position, COPY.controls.locationUseMine);
+        if (!place) { warn(COPY.controls.locationFailed); return; }
         warn('');
-        setPlace({ name: COPY.controls.locationUseMine, country: '', latDeg: position.coords.latitude, lonDeg: position.coords.longitude, source: 'geolocation' });
+        setPlace(place);
       },
       (error) => warn(error && error.code === 1 ? COPY.controls.locationDenied : COPY.controls.locationFailed),
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 },

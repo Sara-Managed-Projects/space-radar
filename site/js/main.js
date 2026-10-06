@@ -20,7 +20,7 @@ import { limbFraming, fitDistance, discDistance, litOffset, groundDistanceKm, ni
 import { createCameraRig, worldFramingDistance } from './scene/camera.js';
 import { createViewShift, MAX_SHIFT_FRACTION, PILL_GAP_PX } from './scene/viewshift.js';
 import { readMoment, writeMoment, bootLink, laterLink, read as readUrlKeys, write as writeUrlState, clear as clearUrlState, stopIndex } from './ui/urlstate.js';
-import { guessObserver } from './sky/guessplace.js';
+import { guessObserver, roundPlace } from './sky/guessplace.js';
 import { COPY, CITIES, t as fill } from './copy/en.js';
 import { LAYERS, loadLayer } from './data/layers.js';
 import * as sources from './data/sources.js';
@@ -222,7 +222,9 @@ export async function boot({ setStatus } = {}) {
     deselect,
     flyToRecord: (record, ms) => flyToRecord(record, ms),
     get observer() { return observer; },
-    setObserver: (o) => { observer = o; window.dispatchEvent(new CustomEvent('sr:observer', { detail: o })); },
+    // The one door a place comes in by. The browser's own answer is rounded here as well as where it
+    // is read (ui/place.js), so no caller can hand the app a precise position (spec 0051 req 3).
+    setObserver: (o) => { observer = o && o.source === 'geolocation' ? roundPlace(o) : o; window.dispatchEvent(new CustomEvent('sr:observer', { detail: observer })); },
     get moment() { return moment; },
     setMoment,
     isSecure: window.isSecureContext === true,

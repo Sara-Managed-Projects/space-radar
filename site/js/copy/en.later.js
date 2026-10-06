@@ -528,8 +528,9 @@ Object.assign(COPY, {
     // One line each in the sidebar (spec 0061 req 11).
     placeGuess: 'Near {place}, guessed from your time zone',
     placeSet: 'From {place}',
-    // The browser gave the coordinates and no name: the place is the visitor's own.
-    placeMine: 'From your place',
+    // The browser gave the coordinates and no name: the place is the visitor's own, and "near"
+    // because the app keeps it only to a tenth of a degree, about 11 km (spec 0051 req 3).
+    placeMine: 'From near your place',
     placeShared: 'From {place}, shared with you',
     noPlace: 'Set where you are to see what passes over.',
     coords: '{lat}, {lon}',
