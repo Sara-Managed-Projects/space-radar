@@ -343,6 +343,8 @@ jobs:
         run: node tests/test_sgp4.mjs
       - name: The scene says so when no satellite could be read
         run: node tests/test_scenenote.mjs
+      - name: "The passing chrome stands clear: the toast above the pill, the hint off the card, a pressed trip card says so"
+        run: node tests/test_chrome_places.mjs
       - name: A shower's radiant is where the sky view marks it
         run: node tests/test_radiants.mjs
       - name: "The sky from here: a light-pollution glow at night, a risen Moon lifting the dome, neither a flat black slab"
