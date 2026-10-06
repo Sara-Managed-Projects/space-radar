@@ -108,6 +108,9 @@ export function renderTonight(host, ctx) {
   const bestDark = el('p', 'sr-tonight-view__dark');
   const bestNote = el('p', 'sr-tonight-view__caveat', T.best.honesty);
   const skyControls = buildSkybar();
+  // Named twice on purpose: by its heading for a reader, and outright for tests/test_a11y_static.mjs,
+  // which reads this file and cannot follow aria-labelledby into the builder.
+  skyControls.setAttribute('aria-label', T.skybar.title);
   text.appendChild(line);
   text.appendChild(status);
   way.appendChild(arcBox);
