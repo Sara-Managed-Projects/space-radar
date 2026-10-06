@@ -312,7 +312,7 @@ const FADE_MS = 200;
 const _v = new THREE.Vector3();
 const _camPos = new THREE.Vector3();
 const _climb = new THREE.Vector3();
-const _origin = new THREE.Vector3();
+const _sunHere = new THREE.Vector3();
 const _sunLocal = new THREE.Vector3();
 const _q = new THREE.Quaternion();
 const _ground = new THREE.Vector3();
@@ -408,23 +408,37 @@ function shadowGeometry() {
   _shadowGeometry = g;
   return g;
 }
+// The falloff, as an alpha map: dark in the middle, gone by the rim. A texture on a BUILT-IN
+// material and not a few lines of ShaderMaterial, because the renderer uses a logarithmic depth
+// buffer (scene/renderer.js) and a custom shader without the logdepthbuf chunks z-fights every
+// built-in material around it -- the ground it lies on first of all.
+let _shadowAlpha = null;
+function shadowAlpha() {
+  if (_shadowAlpha) return _shadowAlpha;
+  const N = 64;
+  const px = new Uint8Array(N * N * 4);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const r = Math.hypot((x + 0.5) / N - 0.5, (y + 0.5) / N - 0.5) * 2;
+    const t = Math.min(1, Math.max(0, (r - 0.25) / 0.75));
+    const a = 1 - t * t * (3 - 2 * t);
+    const v = Math.round(a * a * 255);
+    px.set([v, v, v, 255], (y * N + x) * 4);
+  }
+  _shadowAlpha = new THREE.DataTexture(px, N, N, THREE.RGBAFormat);
+  _shadowAlpha.magFilter = THREE.LinearFilter;
+  _shadowAlpha.minFilter = THREE.LinearFilter;
+  _shadowAlpha.needsUpdate = true;
+  return _shadowAlpha;
+}
 export function addContactShadow(obj, reach = 0.5) {
   if (!obj || obj.getObjectByName(SHADOW_NAME)) return null;
-  const material = new THREE.ShaderMaterial({
-    transparent: true, depthWrite: false,
-    uniforms: { opacity: { value: SHADOW_OPACITY } },
-    vertexShader: 'varying vec2 vP; void main() { vP = position.xz; gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 ); }',
-    // Dark in the middle, gone by the rim: 1 - smoothstep is the whole "blur".
-    fragmentShader: 'uniform float opacity; varying vec2 vP; void main() { float a = 1.0 - smoothstep( 0.25, 1.0, length( vP ) ); gl_FragColor = vec4( 0.0, 0.0, 0.0, a * a * opacity ); }',
+  // One material per model, like every other material on a hero: the fade-in in update() writes
+  // material.opacity, up to `baseOpacity`.
+  const material = new THREE.MeshBasicMaterial({
+    color: 0x000000, alphaMap: shadowAlpha(), transparent: true, depthWrite: false, opacity: SHADOW_OPACITY,
   });
-  // The fade-in in update() writes material.opacity up to `baseOpacity`; a ShaderMaterial reads
-  // its own uniform, so the two are tied together here once.
   material.userData.baseOpacity = SHADOW_OPACITY;
   material.userData.perModel = true;
-  Object.defineProperty(material, 'opacity', {
-    get() { return material.uniforms.opacity.value; },
-    set(v) { material.uniforms.opacity.value = v; },
-  });
   const disc = new THREE.Mesh(shadowGeometry(), material);
   disc.name = SHADOW_NAME;
   disc.userData.reach = reach;
@@ -478,6 +492,22 @@ export function createHeroes(scene, ctx) {
     return _others;
   }
   const nearAlt = (c) => (altitudeCapApplies(c.record) ? nearestAltitude(c.pos, _others) : Infinity);
+  // The stage's own world and the others, by clearance above the drawn surface. The Sun is never
+  // the answer: it is the key light, and PLANET_SHINE has no row for it.
+  const _stageWorld = { id: '', centre: new THREE.Vector3(), radius: 0 };
+  function nearestWorldToCamera(camera) {
+    let near = null, best = Infinity;
+    if (stage.worldId !== 'sun' && stageRadiusUnits() > 0) {
+      _stageWorld.id = stage.worldId; _stageWorld.radius = stageRadiusUnits();
+      near = _stageWorld; best = camera.position.length() - _stageWorld.radius;
+    }
+    for (const o of _others) {
+      if (o.id === 'sun') continue;
+      const a = camera.position.distanceTo(o.centre) - o.radius;
+      if (a < best) { best = a; near = o; }
+    }
+    return near;
+  }
   const root = new THREE.Group();
   root.name = 'heroes';
   // Heroes draw after the glyph layers so a model sits over its own dot rather than behind it.
@@ -486,6 +516,7 @@ export function createHeroes(scene, ctx) {
 
   /** The last update()'s clock, so drawnOpacity() reads the same fade the frame drew. */
   let lastTMs = 0;
+  let fadeNow = 0; // milliseconds of frames drawn: what the fade-in counts (see update)
   /** id -> {obj, record, fadeStart} */
   const live = new Map();
   // The adaptive pool (nextHeroCap above): the cap the device has earned, how long the camera has
@@ -684,7 +715,14 @@ export function createHeroes(scene, ctx) {
   }
 
   function update(tMs, at = {}) {
-    lastTMs = tMs;
+    // THE FADE RUNS ON FRAMES, NOT ON THE CLOCK. It was `tMs`, which is the app's clock: with time
+    // paused that never advances, so a model acquired while paused stayed at opacity 0 for good --
+    // pause, fly to a lander, and there is a dot where the lander should be. MEASURED in headless
+    // Chrome on 2026-10-05 (clock.setPaused(true), then select: six models, six at opacity 0). At
+    // 1000x it was the other failure, a fade over in one frame. `frameMs` is the real frame
+    // length main.js already passes (and the film's virtual one, so a rendered trip is unchanged).
+    fadeNow += Number.isFinite(at.frameMs) && at.frameMs > 0 ? Math.min(at.frameMs, 100) : 16;
+    lastTMs = fadeNow;
     const camera = ctx.camera;
     if (!camera) return;
 
@@ -725,26 +763,35 @@ export function createHeroes(scene, ctx) {
       return;
     }
 
-    const sun = ctx.worlds && ctx.worlds.sunDirScene ? ctx.worlds.sunDirScene() : null;
-    if (sun) setSunDirection(sun);
+    let sun = ctx.worlds && ctx.worlds.sunDirScene ? ctx.worlds.sunDirScene() : null;
 
     const want = candidates(tMs);
     const wanted = new Set(want.map((c) => c.record.id));
 
-    // Planet-shine, after candidates() because that is what gathers the other worlds. The stage's
-    // own world when it has one; on the Sun's stage, the drawn world whose surface is nearest the
-    // camera -- which is the one the visitor is looking at a spacecraft beside (models.js
-    // setPlanetShine: one world a frame, because the uniforms are shared).
-    if (stage.worldId !== 'sun') setPlanetShine(stage.worldId, _origin, stageRadiusUnits());
-    else {
-      let near = null, best = Infinity;
-      for (const o of _others) {
-        const a = camera.position.distanceTo(o.centre) - o.radius;
-        if (a < best) { best = a; near = o; }
-      }
-      setPlanetShine(near ? near.id : null, near ? near.centre : null, near ? near.radius : 0);
+    // WHICH WORLD LIGHTS THE MODELS: the one whose drawn surface is nearest the camera. After
+    // candidates(), because that is what gathers the other worlds.
+    //
+    // It decides two things, and the second was simply wrong before 2026-10-05. (1) Planet-shine
+    // (models.js setPlanetShine: one world a frame, because the uniforms are shared). (2) WHERE
+    // THE SUN IS. The models were lit from the direction of the Sun as seen from the STAGE's
+    // origin. Every landing site is reached on the Earth's stage, and from Mars the Sun is tens of
+    // degrees from where the Earth sees it -- MEASURED in headless Chrome that day: InSight and
+    // Curiosity stood in full sunlight, lit from overhead, on a Mars that was black with night all
+    // the way to the horizon. worlds.js already works out the Sun's direction at each world for
+    // that world's own shader, so the models beside a world now use the same vector, and the one
+    // directional light that built-in materials read is turned to match (worlds.update points it
+    // from the stage origin again at the top of every frame, so this never sticks).
+    const lit = nearestWorldToCamera(camera);
+    if (lit && lit.id !== stage.worldId && ctx.worlds.meshFor) {
+      const mesh = ctx.worlds.meshFor(lit.id);
+      const u = mesh && mesh.material && mesh.material.uniforms && mesh.material.uniforms.uSunDir;
+      if (u && u.value && u.value.lengthSq() > 0) sun = _sunHere.copy(u.value).normalize();
     }
-    for (const id of [...live.keys()]) if (!wanted.has(id)) release(id);
+    if (sun) {
+      setSunDirection(sun);
+      if (ctx.worlds && ctx.worlds.light) ctx.worlds.light.position.copy(sun).multiplyScalar(1e5);
+    }
+    setPlanetShine(lit ? lit.id : null, lit ? lit.centre : null, lit ? lit.radius : 0);
 
     // pixels = (size / distance) * (viewportHeight / 2) * f, with f = 1 / tan(fovY / 2).
     const f = camera.projectionMatrix.elements[5];
@@ -798,12 +845,12 @@ export function createHeroes(scene, ctx) {
 
       if (!obj.visible) {
         obj.visible = true;
-        entry.fadeStart = tMs;
+        entry.fadeStart = fadeNow;
       }
       // Fade by opacity where the material allows it; a model that pops is the tell that this is
       // a swap rather than an approach.
       if (entry.fadeStart != null) {
-        const k = Math.min(1, Math.abs(tMs - entry.fadeStart) / FADE_MS);
+        const k = Math.min(1, Math.abs(fadeNow - entry.fadeStart) / FADE_MS);
         obj.traverse((n) => {
           if (n.material && n.material.transparent !== undefined) {
             // A material that was DESIGNED translucent -- the additive plume at 0.55 -- keeps

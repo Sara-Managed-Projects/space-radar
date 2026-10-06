@@ -234,8 +234,7 @@ for (const [shape, id] of [['lander', 'lander-generic'], ['rover', 'rover-generi
   check(disc.position.y > 0 && disc.position.y < 0.03, `SHADOW   the disc is ${disc.position.y} above the ground: under it, or floating`);
   check(disc.material.depthWrite === false && disc.material.transparent === true, 'SHADOW   the disc writes depth and would cut the ground behind it');
   check(Math.abs(disc.material.userData.baseOpacity - disc.material.opacity) < 1e-9 && disc.material.opacity <= 0.5, 'SHADOW   the fade-in has no ceiling to stop at');
-  disc.material.opacity = 0.2;
-  check(disc.material.uniforms.opacity.value === 0.2, 'SHADOW   writing material.opacity (the fade-in does) does not reach the shader');
+  check(disc.material.isMeshBasicMaterial === true && disc.material.alphaMap, 'SHADOW   the disc must be a built-in material: a custom shader without the log-depth chunks z-fights the ground');
   check(new THREE.Box3().setFromObject(hull).min.y === before.min.y, 'SHADOW   adding the shadow moved the model');
   const noon = groundShadowPose({ x: 0, y: 1, z: 0 });
   check(noon.x === 0 && noon.z === 0 && Math.abs(noon.opacity - 0.5) < 1e-9, `SHADOW   Sun overhead: the shadow is under the feet, ${JSON.stringify(noon)}`);
