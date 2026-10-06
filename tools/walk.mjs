@@ -110,7 +110,7 @@ ${chunk.map((f) => `<figure><figcaption>${f.replace(/\.png$/, '').replace(/^\d+-
     const page = join(dir, '..', `sheet-${size.name}-${String(p + 1).padStart(2, '0')}.html`);
     const png = page.replace(/\.html$/, '.png');
     writeFileSync(page, html);
-    await chrome(pathToFileURL(page).href, probe, [`--width=${per * (tileW + 8) + 8}`, `--height=${Math.ceil(chunk.length / per) * (tileH + 24) + 8}`, `--shot=${png}`, `--port=${PORT + 900 + p}`, GL], 2 * 60e3);
+    await chrome(pathToFileURL(page).href, probe, [`--width=${per * (tileW + 8) + 8}`, `--height=${Math.ceil(chunk.length / per) * (tileH + 24) + 8}`, `--shot=${png}`, GL], 2 * 60e3); // no --port: cdp.mjs picks a free-ish one, and a fixed one was once somebody else's
     rmSync(page, { force: true });
     if (existsSync(png)) out.push(png);
   }

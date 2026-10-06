@@ -331,9 +331,19 @@ const flows = {
       await state('scrub-live', { settle: 1500, facts: { mode: ctx.clock.mode } });
     });
     await step('mark', async () => {
-      const marks = vis('.sr-tape__mark').filter((m) => { const r = m.getBoundingClientRect(); return r.left > 0 && r.right < innerWidth; });
+      // A mark whose centre is well inside the tape: one at the tape's very edge shares its
+      // pixels with the step button beside it, and a tap there is the button's (on a 390 px phone
+      // the tape is 244 px, and a launch eight hours off sits exactly on its right edge).
+      let tape = vis('.sr-tape')[0];
+      const inside = () => vis('.sr-tape__mark').filter((m) => { const r = m.getBoundingClientRect(); const t = tape.getBoundingClientRect(); const c = r.left + r.width / 2; return c > t.left + 24 && c < t.right - 24; });
+      let marks = tape ? inside() : [];
+      if (tape && !marks.length) {
+        // None in the day the tape shows: a week of tape has more.
+        const unit = vis('.sr-time__unit')[0];
+        if (unit) { unit.click(); await wait(800); marks = inside(); }
+      }
       const mark = marks[marks.length - 1];
-      if (!need(mark, 'home: no timeline mark to tap')) return;
+      if (!mark) { states.push({ name: `${FLOW}-mark-skipped`, facts: { why: 'no timeline mark well inside the tape at this hour' } }); return; }
       const said = (mark.getAttribute('aria-label') || '').slice(0, 70);
       const before = ctx.clock.now();
       await tap(mark);
@@ -446,6 +456,15 @@ const flows = {
       await sheetTo('half');
       const s = await state(`${tag}-card`, { settle: 5000, facts: cardFacts() });
       if (s.view !== 'card') dead.push(`cards: ${tag} selected but the view is ${s.view}`);
+      // "Its own page" is asked for when About it first opens (ui/cards.js), and exists only where
+      // the deploy's object-pages.json does: no file, no link, and that is not a finding.
+      const about = document.getElementById('sr-disc-about');
+      if (about && shown(about)) {
+        about.click();
+        const page = await until(() => { const a = $('#sr-card a.sr-card__page'); return a && !a.hidden && a.getAttribute('href') && a; }, 4000);
+        s.facts.ownPage = page ? page.getAttribute('href') : null;
+        if (about.getAttribute('aria-expanded') === 'true') about.click();
+      }
       if (more) await more(rec);
     });
     const fly = async (tag, ms = 7000) => {
