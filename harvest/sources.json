@@ -306,6 +306,27 @@
             "id": "-139479",
             "name": "Gaia",
             "app_id": "deep-gaia"
+          },
+          {
+            "id": "-211",
+            "name": "Nancy Grace Roman Space Telescope",
+            "app_id": "deep-roman"
+          },
+          {
+            "id": "-53",
+            "name": "Mars Odyssey",
+            "app_id": "deep-mars-odyssey",
+            "center": "'500@499'"
+          },
+          {
+            "id": "-79",
+            "name": "Spitzer Space Telescope",
+            "app_id": "deep-spitzer"
+          },
+          {
+            "id": "-227",
+            "name": "Kepler",
+            "app_id": "deep-kepler"
           }
         ]
       }
