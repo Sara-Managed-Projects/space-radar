@@ -569,6 +569,259 @@ export const TOURS = [
 "estimate_ms": 141556
 },
 {
+"id": "roof-to-the-edge",
+"title": "From your roof to the edge",
+"blurb": "One flight out past the Moon, the planets and the stars. Leaving returns you.",
+"requires": [
+"stars",
+"galaxy"
+],
+"stage": "earth",
+"clock": "as-found",
+"group": "beyond",
+"next": "to-the-edge",
+"requires_observer": true,
+"og_stop": 8,
+"orbits": [
+"mercury",
+"venus",
+"earth",
+"mars",
+"jupiter",
+"saturn",
+"uranus",
+"neptune"
+],
+"pacing": "auto",
+"min_stops": 3,
+"stops": [
+{
+"id": "roof",
+"target": {
+"observer": true
+},
+"distance_km": 200,
+"time": "tonight",
+"chapter": "From the ground",
+"look": {
+"best": "star"
+},
+"card": {
+"title": "Your roof, tonight",
+"body": "This is the sky over your own place as tonight's dark arrives. Every point of light up there is somewhere. We are going to fly out past all of them, and after the first lift off the ground the camera will not cut once."
+},
+"frame_radii": 5.0,
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 17152
+},
+{
+"id": "earth",
+"target": {
+"world": "earth"
+},
+"frame_radii": 6,
+"drift_deg": 12,
+"chapter": "From the ground",
+"card": {
+"title": "The Earth",
+"body": "Everyone you know is on this ball, 12 742 kilometres across. The satellites round it are where they are right now. From here on, keep your eye on the middle of the screen."
+},
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 13489
+},
+{
+"id": "moon-orbit",
+"target": {
+"world": "earth"
+},
+"stage": "earth",
+"distance_km": 850000,
+"drift": "none",
+"chapter": "The Solar System",
+"climb": true,
+"card": {
+"title": "The Moon's orbit",
+"body": "The Moon goes round the Earth about 384 400 kilometres out, once in 27.3 days. Light crosses that gap in 1.3 seconds. Nobody has travelled further from home than this."
+},
+"frame_radii": 5.0,
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 12490
+},
+{
+"id": "planets",
+"target": {
+"world": "sun"
+},
+"stage": "sun",
+"distance_km": 11000000000,
+"drift": "none",
+"chapter": "The Solar System",
+"climb": true,
+"card": {
+"title": "The planets",
+"body": "The Earth has shrunk to a dot on the third ring. Neptune, on the outer ring, is thirty times as far from the Sun as we are, and sunlight takes four hours to reach it."
+},
+"frame_radii": 5.0,
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 14155
+},
+{
+"id": "oort",
+"target": {
+"world": "sun"
+},
+"stage": "stellar",
+"distance_km": 7479893535000,
+"drift": "none",
+"chapter": "The Solar System",
+"climb": true,
+"card": {
+"title": "The Oort cloud's distance",
+"body": "The planets are now inside one pixel. Comets come from a cloud of icy bodies thought to lie between 5 000 and 100 000 times the Earth's distance from the Sun. Nothing is drawn here because none of them has ever been seen in place."
+},
+"frame_radii": 5.0,
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 17485
+},
+{
+"id": "nearest-stars",
+"target": {
+"world": "sun"
+},
+"stage": "stellar",
+"needs_layer": "stars",
+"distance_km": 170293148506454,
+"drift_deg": 10,
+"chapter": "The stars",
+"climb": true,
+"card": {
+"title": "The nearest stars",
+"body": "The Sun is one star among its neighbours. The nearest, Proxima Centauri, is 4.2 light-years away, and its two companions are the nearest stars you can see without a telescope. Each point here is a star at its measured distance."
+},
+"frame_radii": 5.0,
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 15820
+},
+{
+"id": "radio",
+"target": {
+"world": "sun"
+},
+"stage": "stellar",
+"needs_layer": "stars",
+"distance_km": 4730365236290400,
+"drift": "none",
+"chapter": "The stars",
+"climb": true,
+"card": {
+"title": "How far our radio has got",
+"body": "The sphere marks how far radio from the Earth can have travelled since Marconi's signal crossed the Atlantic on 12 December 1901. It grows by one light-year a year. Out here the signal is far too faint to pick up. Everything humans have ever broadcast is inside it."
+},
+"frame_radii": 5.0,
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 18484
+},
+{
+"id": "milky-way",
+"target": {
+"record": "dso-milky-way"
+},
+"stage": "galaxy",
+"needs_layer": "galaxy",
+"distance_km": 1419109570887120000,
+"drift_deg": 10,
+"chapter": "The galaxies",
+"climb": true,
+"card": {
+"title": "The Milky Way",
+"body": "Between one and four hundred billion stars, and the Sun is one of them, about 27 000 light-years from the centre. The shape is a model built from measurements. Nobody has seen our galaxy from outside."
+},
+"frame_radii": 5.0,
+"drift_rate_deg_s": 6,
+"drift": "toward-light",
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 14488
+},
+{
+"id": "local-group",
+"target": {
+"world": "sun"
+},
+"stage": "local-group",
+"needs_layer": "deep-sky",
+"distance_km": 56764382835484800000,
+"drift": "none",
+"chapter": "The galaxies",
+"climb": true,
+"card": {
+"title": "The Local Group",
+"body": "Our galaxy and Andromeda, 2.5 million light-years apart, are the two large members of a group of more than a hundred galaxies, most of them small. Gravity holds this group together while the universe around it expands."
+},
+"frame_radii": 5.0,
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 14821
+},
+{
+"id": "edge",
+"target": {
+"world": "sun"
+},
+"stage": "local-group",
+"distance_km": 1500000000000000000000000,
+"drift": "none",
+"chapter": "The edge",
+"climb": true,
+"card": {
+"title": "The oldest light",
+"body": "The sphere is the edge of what can be seen at all. The microwave background, light released about 380 000 years after the Big Bang, reaches us from this surface, now 46.5 billion light-years away. It is a horizon around us, not a wall. Every place has its own."
+},
+"frame_radii": 5.0,
+"drift_deg": 34,
+"drift_rate_deg_s": 6,
+"key_light_deg": 125,
+"ease": "auto",
+"on_unresolved": "drop",
+"dwell_ms": 18817
+}
+],
+"estimate_ms": 190701
+},
+{
 "id": "travel-to-exoplanets",
 "title": "Travel to exoplanets",
 "blurb": "Other stars' planets, then TRAPPIST-1's seven. Leaving brings you back to Earth.",

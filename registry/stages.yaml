@@ -52,3 +52,31 @@ stages:
     frame: sun-inertial
     centre: star-trappist-1
     reaches: "Seven planets, all of them closer to their star than Mercury is to the Sun."
+
+# THE JOINS OF ONE CONTINUOUS FLIGHT (internal #410, public #451). The chain a camera passes through
+# when it keeps going out from the Earth, or keeps coming in from the Local Group, and where each
+# hand-off is. scene/handoff.js JOINS mirrors these rows (check_registry.py and tests/test_handoff.mjs
+# refuse drift); scene/climb.js changes the stage there and keeps the camera's place, its look-at
+# point and its up, converted in kilometres.
+#
+#   from, to   two stages; each row's `from` is the row before's `to`
+#   anchor     the world the way back is measured from (the Earth for the first join: coming in
+#              toward the Sun must not land on the Earth's stage)
+#   out_km     going out on `from`: past this distance from its centre the camera belongs to `to`
+#   in_km      coming back on `to`: nearer than this to `anchor` it belongs to `from`. Always under
+#              out_km, so a camera resting between the two does not flip.
+#
+# WHERE, AND WHY THERE.
+#   earth -> sun      1.4 million km: past the Moon's orbit (384 400 km), short of the nearest
+#                     place the Earth's stage draws a planet at (scene/worlds.js PLANET_VIEW squeezes
+#                     them to 1.45 to 4.7 million km, and the camera should not fly through them).
+#   sun -> stellar    1e12 km (6 700 au): past the 500 to 5 000 au band where registry/lod.yaml has
+#                     already swapped the sky sphere for the stars in three dimensions.
+#   stellar -> galaxy 10 000 light-years: past the 500 to 5 000 light-year band where the galaxy's
+#                     model has come in.
+#   galaxy -> local-group  300 000 light-years: the whole disc is a few degrees wide.
+joins:
+  - {from: earth, to: sun, anchor: earth, out_km: 1400000, in_km: 900000}
+  - {from: sun, to: stellar, anchor: sun, out_km: 1000000000000, in_km: 600000000000}
+  - {from: stellar, to: galaxy, anchor: sun, out_km: 94607304725808000, in_km: 56764382835484800}
+  - {from: galaxy, to: local-group, anchor: sun, out_km: 2838219141774240000, in_km: 1892146094516160000}

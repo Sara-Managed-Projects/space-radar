@@ -45,6 +45,9 @@ function graph(entry) {
 }
 const boot = new Set([...graph(join(JS, 'main.js'))].map(rel));
 const DEFERRED = {
+  'js/scene/handoff.js': 'the stage hand-off\'s maths: scene/climb.js imports it',
+  'js/scene/climb.js': 'the continuous flight: main.js fetches it on the first long dolly, the ladder\'s control or a climb stop',
+  'js/scene/shells.js': 'the radio bubble and the microwave background: fetched on a rung of the ladder',
   'js/ui/cards.js': 'the card: ui/cardgate.js fetches it on the first selection',
   'js/ui/trip.js': 'the trip: ui/tripgate.js fetches it when a trip is opened, linked or planned',
   'js/data/tours.js': 'the trips\' stops: they arrive with ui/trip.js; the cards read data/tours-index.js',

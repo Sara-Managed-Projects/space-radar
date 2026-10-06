@@ -479,6 +479,19 @@ export function createExplore(ctx, host) {
   farSect.appendChild(farList);
   stars.appendChild(farSect);
   const farRows = [];
+  // ONE FLIGHT, BOTH WAYS (internal #410, public #451): from wherever the camera is on the ladder
+  // out to the edge of what the map draws, or back down to the Earth, without a cut. The camera's
+  // module (scene/climb.js) is fetched on the press. Off a stage the flight cannot pass through (a
+  // planet's own, a star system's) the two rows are disabled, and say why.
+  const flightRows = [['edge', 'toEdge'], ['home', 'toHome']].map(([key, method]) => {
+    const r = rowButton(COPY.ladder[key], COPY.ladder[`${key}How`], () => {
+      if (typeof ctx.wantClimb !== 'function') return;
+      if (ctx.selected && ctx.selected() && typeof ctx.deselect === 'function') ctx.deselect();
+      ctx.wantClimb().then((climb) => { if (climb) climb[method](); });
+    });
+    farList.appendChild(r.li);
+    return { key, r };
+  });
   for (const rung of LADDER_RUNGS) {
     if (!rung.target || !rung.target.record) continue; // the worlds are the Planets tab's
     const r = rowButton(rung.label, rung.distance, () => {
@@ -789,6 +802,13 @@ export function createExplore(ctx, host) {
   }
 
   function paintStars() {
+    const id = ctx.stage && ctx.stage.worldId;
+    const onChain = id === 'earth' || id === 'sun' || isLadderStage(id);
+    for (const { key, r } of flightRows) {
+      const ok = onChain && typeof ctx.wantClimb === 'function';
+      r.b.disabled = !ok;
+      r.b.title = ok ? COPY.ladder[`${key}Title`] : COPY.ladder.flightOff;
+    }
     for (const { rung, r } of farRows) {
       const ok = !!(typeof ctx.recordById === 'function' && ctx.recordById(rung.target.record));
       r.b.disabled = !ok;

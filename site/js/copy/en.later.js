@@ -15,6 +15,12 @@
 import { COPY, article } from './en.js';
 
 Object.assign(COPY, {
+  // scene/shells.js (internal #306): two distances drawn as wire spheres on the ladder's rungs.
+  // Each label says what the sphere is and how far, in words the scene can carry on one line.
+  shells: {
+    radio: 'Radio from Earth has reached {n} light-years',
+    cmb: 'The microwave background: 46.5 billion light-years',
+  },
   // ui/subscribe.js (issue #251): email-only alerts for upcoming launches and meteor shower
   // peaks -- the same for every subscriber, never a per-location pass alert (that is issue #290).
   subscribe: {

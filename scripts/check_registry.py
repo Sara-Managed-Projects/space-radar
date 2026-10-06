@@ -754,12 +754,16 @@ def check_tours(oddities_doc: dict, layer_ids: set, world_ids: set, site_ids: se
             if not isinstance(orbits, list) or not orbits:
                 fail(where, "`orbits:` must be a non-empty list of planets")
             else:
+                # 2026-10-07: a trip with a stop of its own on the Sun's stage (the one flight from
+                # the ground to the edge passes through it) may name the planets too; orbitrings.js
+                # and the frame's line both read the stage the map is on, not the trip's.
+                on_sun = stage == "sun" or any(isinstance(sp, dict) and sp.get("stage") == "sun" for sp in stops)
                 # 2026-10-06: the Earth's stage draws one path, the Moon's (scene/orbitrings.js).
-                if stage == "earth":
+                if stage == "earth" and not on_sun:
                     if orbits != ["moon"]:
                         fail(where, f"`orbits: {orbits!r}` on the Earth's stage; the one path drawn "
                                     f"there is the Moon's: write `orbits: [moon]`")
-                elif stage != "sun":
+                elif not on_sun:
                     fail(where, f"`orbits:` on a trip on the `{stage}` stage; the paths are drawn "
                                 f"on the Sun stage only, so the trip would promise lines it never "
                                 f"shows")
@@ -1278,6 +1282,27 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
                         f"scene/systems.js on a star system's stage and nowhere else, where it would be a "
                         f"promise the picture does not keep")
 
+    # `climb: true` (internal #305, #410): the stop is reached by the one continuous flight, which
+    # changes stage at the joins of registry/stages.yaml and keeps the camera's pose. Its stage must
+    # be on that chain, and its distance must be one the chain holds on that stage whichever way the
+    # camera came, or the stop would arrive on the wrong side of a join.
+    if "climb" in stop:
+        if stop["climb"] is not True:
+            fail(where, f"`climb: {stop['climb']!r}` is `true` or left out")
+        elif flown_on not in JOIN_BANDS:
+            fail(where, f"`climb: true` on the `{flown_on}` stage, which is not on the chain of "
+                        f"registry/stages.yaml `joins:` ({', '.join(JOIN_BANDS) or 'no joins'})")
+        elif "look" in stop:
+            fail(where, "`climb: true` with `look:`: a stop seen from the ground has no flight to it")
+        else:
+            lo, hi = JOIN_BANDS[flown_on]
+            d = stop.get("distance_km")
+            if not isinstance(d, (int, float)) or isinstance(d, bool):
+                fail(where, "`climb: true` needs `distance_km`: the flight is to a distance")
+            elif not lo < d < hi:
+                fail(where, f"`climb: true` at {d} km on the `{flown_on}` stage: the chain holds that "
+                            f"stage between {lo} and {hi} km, so the camera would arrive on another")
+
     # A world's own record (`{record: titan}`) is flown to as the world, so the same rule holds.
     if kind in ("world", "record") and value in world_ids and flown_on in TOUR_STAGES \
             and not tour_drawn_true(value, flown_on):
@@ -1656,6 +1681,8 @@ def check_stages(world_ids: set) -> list:
         if not st.get("reaches"):
             fail(where, "no `reaches:` line -- the breadcrumb has nothing to say about this rung")
 
+    check_joins(doc.get("joins"), seen | set(world_ids), world_ids)
+
     # The hand mirror in scene/stage.js. tests/test_growth.py runs this checker on a copy of the
     # tree that holds only registry/ and scripts/, so a missing mirror is "cannot look", not a fail.
     js_path = ROOT / "site/js/scene/stage.js"
@@ -1678,6 +1705,58 @@ def check_stages(world_ids: set) -> list:
         if sid not in seen:
             fail("stage.js", f"STAGES row `{sid}` is a ladder rung or a system stage with no stages.yaml row")
     return stages
+
+
+# THE JOINS OF THE CONTINUOUS FLIGHT (internal #410): registry/stages.yaml `joins:`, mirrored by hand
+# in site/js/scene/handoff.js JOINS. Filled here for check_tours(): stage id -> (min_km, max_km), the
+# distances at which a camera rests on that stage whichever way it came (a `climb:` stop must be inside).
+JOIN_BANDS: dict[str, tuple] = {}
+
+
+def check_joins(joins, stage_ids: set, world_ids: set) -> None:
+    where = "stages.yaml[joins]"
+    if joins is None:
+        return
+    if not isinstance(joins, list) or not joins:
+        fail(where, "`joins:` must be a non-empty list")
+        return
+    rows = []
+    for i, j in enumerate(joins):
+        at = f"{where}[{i}]"
+        if not isinstance(j, dict) or set(j) != {"from", "to", "anchor", "out_km", "in_km"}:
+            fail(at, "a join is exactly {from, to, anchor, out_km, in_km}")
+            continue
+        for key in ("from", "to"):
+            if j[key] not in stage_ids:
+                fail(at, f"`{key}: {j[key]}` is neither a world nor a rung")
+        if j["anchor"] not in world_ids:
+            fail(at, f"anchor `{j['anchor']}` has no worlds.yaml row")
+        out_km, in_km = j["out_km"], j["in_km"]
+        if not all(isinstance(v, (int, float)) and not isinstance(v, bool) and v > 0 for v in (out_km, in_km)):
+            fail(at, "out_km and in_km must be positive numbers")
+            continue
+        if not in_km <= 0.8 * out_km:
+            fail(at, f"in_km {in_km} must be at most 80 % of out_km {out_km}: without the gap a camera "
+                     f"resting at the join flips between the two stages")
+        if rows and rows[-1]["to"] != j["from"]:
+            fail(at, f"the chain is broken: the row before ends on `{rows[-1]['to']}` and this one starts on `{j['from']}`")
+        if rows and not in_km > 10 * rows[-1]["out_km"]:
+            fail(at, "a join must be well past the one before it (ten times its out_km)")
+        rows.append(j)
+    for i, j in enumerate(rows):
+        lo = rows[i - 1]["out_km"] if i > 0 else 0
+        JOIN_BANDS[j["from"]] = (lo, j["in_km"])
+    if rows:
+        JOIN_BANDS[rows[-1]["to"]] = (rows[-1]["out_km"], float("inf"))
+    js_path = ROOT / "site/js/scene/handoff.js"
+    if not js_path.exists():
+        return
+    js = js_path.read_text(encoding="utf-8")
+    mirror = [(m.group(1), m.group(2), m.group(3), float(m.group(4)), float(m.group(5))) for m in re.finditer(
+        r"\{\s*from:\s*'([\w-]+)',\s*to:\s*'([\w-]+)',\s*anchor:\s*'([\w-]+)',\s*out_km:\s*([0-9.e+]+),\s*in_km:\s*([0-9.e+]+)\s*\}", js)]
+    mine = [(j["from"], j["to"], j["anchor"], float(j["out_km"]), float(j["in_km"])) for j in rows]
+    if mirror != mine:
+        fail(where, f"site/js/scene/handoff.js JOINS does not match these rows -- the mirror is stale ({len(mirror)} rows there, {len(mine)} here)")
 
 
 # A SYSTEM STAGE (spec 0040). One unit is 100 000 km on every one of them, exactly: the ladder's unit

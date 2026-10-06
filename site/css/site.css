@@ -147,3 +147,15 @@ html, body {
 /* --- the phone ------------------------------------------------------------------------------
    Under 900 px the sidebar is one bottom sheet of three heights and the tools a top bar (ui/shell.js,
    ui/sheet.js, spec 0061 task 3). Its rules are css/ui.css's, with the rest of the shell's. */
+
+/* The outgoing stage's last frame, faded out over the incoming one at a join of the ladder
+   (js/scene/climb.js). Straight after the canvas in the document, under the labels and all chrome. */
+#sr-handoff {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+#sr-handoff[hidden] { display: none; }

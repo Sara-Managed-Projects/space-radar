@@ -377,6 +377,33 @@ export async function boot({ setStatus } = {}) {
   });
   // ui/tripgate.js: the trip's own object once a trip is wanted, an idle stand-in until then.
   ctx.trip = createTripGate(ctx);
+  // ONE FLIGHT UP THE LADDER (internal #410, public #451; scene/climb.js). Scrolling out from the
+  // Earth hands the camera to the Sun's stage, the stellar rung, the galaxy and the Local Group with
+  // its place and direction kept, and scrolling back in hands it back. Never at boot: the module is
+  // fetched the first time a visitor's own dolly has taken the camera away from the Earth's
+  // neighbourhood (or off the Earth's stage), or when the ladder's control or a trip stop asks.
+  let climbLoad = null;
+  ctx.wantClimb = () => {
+    if (!climbLoad) {
+      climbLoad = import('./scene/climb.js').then((m) => {
+        ctx.climb = m.createClimb(ctx);
+        return ctx.climb;
+      }).catch((e) => { console.warn('the continuous flight did not load', e); climbLoad = null; return null; });
+    }
+    return climbLoad;
+  };
+  const CLIMB_WANTED_UNITS = 200; // 200 000 km from the Earth: half way to the Moon
+  cameraRig.onUserInput((kind) => {
+    const dolly = kind === 'dolly' || kind === 'pinch' || kind === 'keys';
+    if (ctx.climb) {
+      if (dolly) ctx.climb.noteDolly();
+      else ctx.climb.cancel('cancelled');
+      return;
+    }
+    if (dolly && (stage.worldId !== 'earth' || camera.position.length() > CLIMB_WANTED_UNITS)) {
+      ctx.wantClimb().then((c) => { if (c) c.noteDolly(); });
+    }
+  });
   // WHAT A TRIP STOP ADDS TO THE SCENE (2026-10-05): constellation figures that draw themselves
   // (scene/figures3d.js), one measured map over the Earth (scene/earthoverlay.js) and the stop's
   // own shutter. OFF THE FIRST VISIT: both modules are dynamic imports, made when a trip that
@@ -828,10 +855,17 @@ export async function boot({ setStatus } = {}) {
       else ctx.loadAfterFirstVisit();
     }, LATER_LAYERS_MS);
   });
+  let shellsLoad = null;
   // A rung of the ladder or a star system's stage draws them: no waiting for the idle moment.
   window.addEventListener('sr:stage', (e) => {
     const id = e && e.detail ? e.detail.worldId : stage.worldId;
     if ((isLadderStage(id) || isSystemStage(id)) && ctx.loadAfterFirstVisit) ctx.loadAfterFirstVisit();
+    // The radio bubble and the microwave background's surface (scene/shells.js, internal #306):
+    // two wire spheres, fetched with the first rung and drawn only on rungs.
+    if (isLadderStage(id) && !ctx.shells && !shellsLoad) {
+      shellsLoad = import('./scene/shells.js').then((m) => { ctx.shells = m.createShells(scene); })
+        .catch((err) => { console.warn('the shells did not load', err); shellsLoad = null; });
+    }
   });
 
   // The device tier (scene/quality.js, 2026-09-28), decided before the first frame and acted on
@@ -1820,6 +1854,8 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
 
     resize();
     if (ctx.viewShift) ctx.viewShift.update(dt);
+    // A running climb puts the camera where it has got to, before the rig reads it (scene/climb.js).
+    if (ctx.climb) ctx.climb.tick(frameMs);
     cameraRig.update(dt);
     worlds.setEclipseAllowed(ctx.eclipseDrawn());
     worlds.update(t);
@@ -1924,6 +1960,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       ctx.systems.update(t, ctx.camera);
     }
     if (ctx.galaxy) ctx.galaxy.update(ctx.camera, ctx.renderer);
+    if (ctx.shells) ctx.shells.update(ctx.camera, t);
     if (ctx.dsoGlow) ctx.dsoGlow.update(ctx.camera, ctx.renderer, ctx.isLayerDrawable(LAYERS.find((l) => l.id === 'deep-sky')));
     if (ctx.nebulae) {
       ctx.nebulae.update(ctx.camera, ctx.renderer, ctx.isLayerOn('deep-sky'), ctx.isLayerDrawable(LAYERS.find((l) => l.id === 'deep-sky')));
@@ -1942,6 +1979,8 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     render();
     // After render(), because render() is what brings the camera's matrices up to this frame: placed
     // before it, the brackets trailed the station by one frame of camera motion.
+    // The hand-off between two stages, straight after the frame it copies was drawn (scene/climb.js).
+    if (ctx.climb) ctx.climb.afterRender();
     if (ctx.hud) ctx.hud.frame(t);
     // The track's minute marks, on this frame's camera (render() brought its matrices up to date).
     if (ctx.trackLabels) ctx.trackLabels.update();

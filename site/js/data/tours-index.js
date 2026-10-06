@@ -76,6 +76,17 @@ export const TOURS_INDEX = [
 "estimate_ms": 141556
 },
 {
+"id": "roof-to-the-edge",
+"title": "From your roof to the edge",
+"blurb": "One flight out past the Moon, the planets and the stars. Leaving returns you.",
+"group": "beyond",
+"next": "to-the-edge",
+"requires_observer": true,
+"min_stops": 3,
+"count": 10,
+"estimate_ms": 190701
+},
+{
 "id": "travel-to-exoplanets",
 "title": "Travel to exoplanets",
 "blurb": "Other stars' planets, then TRAPPIST-1's seven. Leaving brings you back to Earth.",

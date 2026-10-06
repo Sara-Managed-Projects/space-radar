@@ -110,6 +110,11 @@ STOP_FIELDS = (
     "portrait",
     "darkness",
     "names",
+    # 2026-10-07 (internal #305, #410): the stop is reached by the one continuous flight up the
+    # ladder (scene/climb.js), which hands the camera from stage to stage with its pose kept,
+    # instead of by a cut through the veil. check_registry.py holds its stage and distance to the
+    # chain of registry/stages.yaml `joins:`.
+    "climb",
     "card",
 )
 

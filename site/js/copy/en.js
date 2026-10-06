@@ -809,6 +809,14 @@ export const COPY = {
     notLoaded: 'still loading',
     weShowTitle: 'What this map draws of what is known',
     weShowRow: '{n} {what} — of {of}',
+    // One flight without a cut (scene/climb.js): two rows at the head of the far places.
+    edge: 'The edge of the map',
+    edgeHow: 'fly out',
+    edgeTitle: 'One flight from here out to the edge of what this map draws',
+    home: 'The Earth',
+    homeHow: 'fly home',
+    homeTitle: 'One flight from here back down to the Earth',
+    flightOff: 'Not from this place: go to Earth, Planets or Stars first',
   },
   // The Next moment's list (spec 0026 req 6): what is coming, from records already loaded.
   // ui/scenenote.js: the one line on the scene when no satellite could be read at all.

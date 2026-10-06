@@ -67,6 +67,7 @@ import { nextShower } from '../sky/radiants.js';
 import { SHOWERS } from '../data/showers.js';
 import { azimuthInWords, altitudeInWords } from '../sky/skyview.js';
 import { COPY, CITIES, UNITS, t, fmt, timeText } from '../copy/en.js';
+import { CHAIN } from '../scene/handoff.js';
 
 const DEG = Math.PI / 180;
 
@@ -126,6 +127,12 @@ const DRIFT_LEAD_MS = 400;
 // a vestibular problem. Under reduced motion there is no flight to be six tenths of the way
 // through, and the two arrive together.
 const TITLE_AT = 0.6;
+// A `climb: true` stop (internal #305, #410): how long each factor of ten of distance takes, and
+// the shortest and longest such flight. Slower than the ladder's own control (900 ms a decade): a
+// trip's flight is watched, and a rung is read as it goes by.
+const CLIMB_MS_PER_DECADE = 1700;
+const CLIMB_MIN_MS = 3000;
+const CLIMB_MAX_MS = 9000;
 // The same number scripts/gen_tours_js.py uses to compute `estimate_ms`, and it has to be, or the
 // length a row promises and the length the generator wrote into the mirror are two numbers.
 const FLIGHT_ESTIMATE_MS = 3200;
@@ -336,6 +343,8 @@ export function createTrip(ctx) {
   // stage (enterStage) and the trip's stage on begin.
   let leaving = false;
   let switching = false;
+  // A third: a `climb:` stop's flight hands the camera from stage to stage as it goes (scene/climb.js).
+  let climbing = false;
 
   // Which layers have LANDED, as opposed to which are switched on. main.js fires `sr:layer` once
   // per layer whether it loaded rows or failed, so this is the honest answer to "has that layer
@@ -2209,6 +2218,14 @@ export function createTrip(ctx) {
     // the ground with a wider lens: there is no flight between a camera in orbit and one in a
     // garden that is not a fall, so it goes through the same black a stage change does.
     const toGround = wantsGround(entry);
+    // ONE TAKE (internal #305, #410). A stop that says `climb: true` is reached by the continuous
+    // flight: the camera dollies by ratio from where it is, and scene/climb.js hands it from stage to
+    // stage at the joins with its place and direction kept, under a short cross-fade of the two
+    // stages' pictures. No veil and no cut. Not to or from the ground, which is still a cut (above).
+    if (wantsClimb(entry, nextStage, toGround)) {
+      climbToStop(entry, index, nextStage);
+      return;
+    }
     if (wantsVeil(nextStage) || (toGround !== !!run.ground && canVeil())) {
       state.phase = 'veil';
       // The card of the stop being LEFT goes as the black comes up (2026-09-23): the veil sits under
@@ -2245,6 +2262,83 @@ export function createTrip(ctx) {
   /** Whether reaching this stop changes the map's centre, and the veil should cover it. */
   function wantsVeil(nextStage) {
     return !!(run && nextStage && nextStage !== stage.worldId && typeof ctx.setStage === 'function' && canVeil());
+  }
+
+  /** Whether this stop is reached by the continuous flight: it asks, and both ends are on the chain. */
+  function wantsClimb(entry, nextStage, toGround) {
+    return !!(run && entry && entry.stop && entry.stop.climb === true && !toGround && !run.ground
+      && typeof ctx.wantClimb === 'function' && CHAIN.includes(stage.worldId) && CHAIN.includes(nextStage));
+  }
+
+  /** Stop a climb where it is (a pause, a jump, leaving), without its callbacks. */
+  function dropClimb() {
+    climbing = false;
+    if (ctx.climb && ctx.climb.state.active) ctx.climb.cancel('cancelled');
+  }
+
+  /**
+   * THE FLIGHT OF A `climb:` STOP. The stop's clock first, as any stop; then one dolly, by ratio, to
+   * the stop's distance from its subject, with the look-at point carried from the last subject to
+   * this one as the distance allows (scene/handoff.js targetShare). The stage is whatever the
+   * camera's distance says on the way and the stop's own on arrival. Under reduced motion it is one
+   * cut under one fade. Arrival is the same arrived() every stop uses.
+   */
+  function climbToStop(entry, index, nextStage) {
+    const clockChange = applyStopTime(entry);
+    if (clockChange === 'unresolved') {
+      holdAt(entry);
+      return;
+    }
+    if (clockChange === 'moved' && ctx.worlds && typeof ctx.worlds.update === 'function') {
+      try { ctx.worlds.update(ctx.clock.now()); } catch { /* the next frame does it */ }
+    }
+    state.phase = 'flight';
+    entry.shot = null;
+    stopExtrasLeaving(entry);
+    letGoOfTheLastSubject(entry);
+    rig.stopOrbit('replaced');
+    driftRun = null;
+    upTween = null;
+    climbing = true;
+    const mine = gen;
+    const dKm = stopDistanceKm(entry.stop, entry.subject);
+    const fromKm = Math.max(1e-6, rig.state.distance * stage.unitKm);
+    const ms = reducedMotion() ? 0 : clamp(Math.abs(Math.log10(dKm / fromKm)) * CLIMB_MS_PER_DECADE, CLIMB_MIN_MS, CLIMB_MAX_MS);
+    const before = stage.worldId;
+    ctx.wantClimb().then((climb) => {
+      if (mine !== gen || !run || state.index !== index || state.phase !== 'flight') return;
+      if (!climb) {
+        // The module did not arrive: the stop is reached the old way, by a cut.
+        climbing = false;
+        enterStage(nextStage);
+        flyToStop(entry, index);
+        return;
+      }
+      climb.to({
+        distanceKm: dKm,
+        stage: nextStage,
+        toPos: () => entry.subject.position(ctx.clock.now()),
+        ms,
+        onArrive: guarded(() => {
+          climbing = false;
+          if (stage.worldId !== before || stage.worldId !== run.savedStage) {
+            run.stageChanged = true;
+            state.stageChanged = true;
+          }
+          schedule(() => arrived(index, 'done'));
+        }),
+        onCancel: guarded(() => { climbing = false; }),
+      });
+      if (ms > 0) {
+        after(ms * TITLE_AT, () => {
+          if (!run || state.phase !== 'flight' || state.index !== index) return;
+          paintCard(entry, true);
+          state.chapter = entry.stop.chapter || null;
+          notify();
+        });
+      }
+    });
+    notify();
   }
 
   /** Whether this stop is seen from the visitor's ground: it says `look:`, and there is a sky view and a place. */
@@ -2598,6 +2692,8 @@ export function createTrip(ctx) {
     // with it, or the end state is read in a basis half way round.
     if (upTween) settleUp(upTween.to);
     if (rig.finishFlight) rig.finishFlight();
+    // A climb is not collapsed onto its end: the next stop's flight starts from where it has got to.
+    dropClimb();
     state.pausedBy = null;
     pausedDuring = null;
     goTo(clamp(to, 0, run.stops.length - 1));
@@ -2685,7 +2781,7 @@ export function createTrip(ctx) {
     // A flight to exactly the present pose, instantly. It supersedes the running flight -- which
     // is told 'replaced' rather than dropped -- and moves the camera nowhere, which is the
     // difference between this and finishFlight(): the visitor asked to stop, not to arrive.
-    if (pausedDuring === 'flight') freezeFlight();
+    if (pausedDuring === 'flight') { freezeFlight(); dropClimb(); }
     endStretch();
     // The up stops where it is, with the camera; resuming re-flies the stop and turns it from here.
     upTween = null;
@@ -2755,6 +2851,7 @@ export function createTrip(ctx) {
     state.generation = gen;
     leaving = true;
     clearTimers();
+    dropClimb();
     // Up off the ground first: the sky view gives the camera back where the trip had it before.
     setGround(false);
     if (ctx.labels && ctx.labels.clearEmphasis) ctx.labels.clearEmphasis();
@@ -2930,7 +3027,7 @@ export function createTrip(ctx) {
   const onStage = () => {
     // Not while the trip is moving the centre itself: `leaving` is stop() putting the visitor's
     // stage back, `switching` is a stop arriving on its own (enterStage, and begin).
-    if (!run || leaving || switching || state.index < 0) return;
+    if (!run || leaving || switching || climbing || state.index < 0) return;
     gen += 1;
     state.generation = gen;
     clearTimers();
