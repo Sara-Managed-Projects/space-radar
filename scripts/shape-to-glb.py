@@ -18,6 +18,20 @@ integers and normals as 8-bit (KHR_mesh_quantization, which three.js reads witho
 vertices on the faces' shared edges welded so the smooth normals have no seams, the body's own
 axes (+z its north pole). Every triangle is checked to face outward. No material: realmodels.js
 dresses every loaded mesh in the project's toon material.
+
+`--uv` (2026-10-07, internal #382) also writes texture coordinates, for a body that wears a map
+(Ceres, Vesta): u = 0.5 + east longitude / 360, v = 0.5 - planetocentric latitude / 180, read from
+each vertex's own direction in the body's frame, so a cylindrical map with longitude 0 in its
+middle and north at its top lands where the mapmakers put it. A vertex on the 180th meridian is
+written twice (u and u + 1: the texture must repeat in u) and a pole once per triangle, or the
+whole map would be squeezed into the one strip of triangles that crosses the seam.
+
+    python3 scripts/shape-to-glb.py --from-dtm DTM.tif [--sphere-m 255000] --q 64 OUT.ICQ
+
+makes the grid itself, for a body whose published shape is a map of radii, or of heights above a sphere with `--sphere-m` (DLR's
+stereo model of Vesta, on the same grid of longitudes as DLR's mosaic of it): six faces of a cube
+pushed out to that sphere plus the height under each vertex, in km, written in the ICQ layout so
+the same thinning and the same checks apply. Needs Pillow and NumPy; the rest does not.
 """
 from __future__ import annotations
 
@@ -44,12 +58,59 @@ def read_grid(path: Path):
     return q, pts
 
 
+def grid_from_dtm(dtm: Path, out: Path, sphere_m: float, q: int) -> int:
+    """A height map (metres above a sphere, simple cylindrical, longitude 0 in the middle, east
+    positive, north at the top) as an ICQ grid in km."""
+    import numpy as np
+    from PIL import Image
+    Image.MAX_IMAGE_PIXELS = None
+    im = Image.open(dtm)
+    # Averaged down to a quarter of a degree first: a vertex stands for the ground around it, and a
+    # single pixel of a 48-pixel-per-degree map is one boulder.
+    w, h = 1440, 720
+    small = np.asarray(im.resize((w, h), Image.BOX), dtype=np.float64)
+    lines = [str(q)]
+    lo, hi = float("inf"), float("-inf")
+    t = np.tan(np.linspace(-1, 1, q + 1) * math.pi / 4)   # equal angles across a face, not equal lengths
+    faces = (lambda a, b: (a, b, 1.0), lambda a, b: (1.0, a, -b), lambda a, b: (-a, 1.0, -b),
+             lambda a, b: (-1.0, -a, -b), lambda a, b: (a, -1.0, -b), lambda a, b: (a, -b, -1.0))
+    for face in faces:
+        for j in range(q + 1):
+            for i in range(q + 1):
+                x, y, z = face(t[i], t[j])
+                n = math.sqrt(x * x + y * y + z * z)
+                x, y, z = x / n, y / n, z / n
+                lon, lat = math.atan2(y, x), math.asin(z)
+                fx = (lon / (2 * math.pi) + 0.5) * w - 0.5
+                fy = min(max((0.5 - lat / math.pi) * h - 0.5, 0), h - 1)
+                x0, y0 = math.floor(fx), min(int(fy), h - 2)
+                tx, ty = fx - x0, fy - y0
+                r0 = small[y0, x0 % w] * (1 - tx) + small[y0, (x0 + 1) % w] * tx
+                r1 = small[y0 + 1, x0 % w] * (1 - tx) + small[y0 + 1, (x0 + 1) % w] * tx
+                r = (sphere_m + r0 * (1 - ty) + r1 * ty) / 1000
+                lo, hi = min(lo, r), max(hi, r)
+                lines.append(f"{x * r:.5f} {y * r:.5f} {z * r:.5f}")
+    out.write_text("\n".join(lines) + "\n")
+    print(f"{out.name}: Q {q}, {6 * (q + 1) ** 2} vertices from {dtm.name}; radius {lo:.1f} to {hi:.1f} km")
+    return 0
+
+
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("src", type=Path)
+    ap.add_argument("src", type=Path, nargs="?")
     ap.add_argument("out", type=Path)
     ap.add_argument("--keep", type=int, default=16)
+    ap.add_argument("--uv", action="store_true")
+    ap.add_argument("--from-dtm", type=Path)
+    ap.add_argument("--sphere-m", type=float, default=0.0)
+    ap.add_argument("--q", type=int, default=64)
     args = ap.parse_args(argv)
+    if args.from_dtm:
+        if args.src and not args.out:
+            raise SystemExit("--from-dtm takes one path: the grid to write")
+        return grid_from_dtm(args.from_dtm, args.out, args.sphere_m, args.q)
+    if not args.src:
+        raise SystemExit("an ICQ file to read, then the .glb to write")
     q, pts = read_grid(args.src)
     if q % args.keep:
         raise SystemExit(f"--keep {args.keep} does not divide the model's Q of {q}")
@@ -99,6 +160,37 @@ def main(argv: list[str]) -> int:
             normals[vtx][0] += nx
             normals[vtx][1] += ny
             normals[vtx][2] += nz
+    uvs = None
+    if args.uv:
+        # Each output vertex becomes (source vertex, u): the seam's and the poles' are written more than once.
+        split: dict[tuple[int, int], int] = {}
+        nverts, nnormals, uvs, ntris = [], [], [], []
+        for tri in out_tris:
+            us = []
+            for vtx in tri:
+                x, y, z = verts[vtx]
+                # Within a degree of the axis is the pole: a measured shape's polar vertex is never exactly on it,
+                # and its own longitude would wrap the whole map round the triangles that meet there.
+                us.append(None if math.hypot(x, y) < 0.02 * math.sqrt(x * x + y * y + z * z) else 0.5 + math.atan2(y, x) / (2 * math.pi))
+            ref = next(u for u in us if u is not None)
+            us = [u if u is None else u - 1 if u - ref > 0.5 else u + 1 if u - ref < -0.5 else u for u in us]
+            if min(u for u in us if u is not None) < 0:
+                us = [u if u is None else u + 1 for u in us]
+            known = [u for u in us if u is not None]
+            us = [sum(known) / len(known) if u is None else u for u in us]
+            corner = []
+            for vtx, u in zip(tri, us):
+                key = (vtx, round(u * 65536))
+                if key not in split:
+                    x, y, z = verts[vtx]
+                    split[key] = len(nverts)
+                    nverts.append(verts[vtx])
+                    nnormals.append(normals[vtx])
+                    uvs.append((u, 0.5 - math.asin(z / math.sqrt(x * x + y * y + z * z)) / math.pi))
+                corner.append(split[key])
+            ntris.append(tuple(corner))
+        extra = len(nverts) - len(verts)
+        verts, normals, out_tris = nverts, nnormals, ntris
     lo = [min(p[k] for p in verts) for k in range(3)]
     hi = [max(p[k] for p in verts) for k in range(3)]
     centre = [(lo[k] + hi[k]) / 2 for k in range(3)]
@@ -119,8 +211,11 @@ def main(argv: list[str]) -> int:
         raise SystemExit("more than 65 535 vertices: lower --keep")
     idx += b"\0" * (-len(idx) % 4)
     views, offset = [], 0
-    for blob, extra in ((idx, {"target": 34963}), (bytes(nrm), {"byteStride": 4, "target": 34962}), (bytes(pos), {"byteStride": 8, "target": 34962})):
-        views.append({"buffer": 0, "byteOffset": offset, "byteLength": len(blob), **extra})
+    blobs = [(idx, {"target": 34963}), (bytes(nrm), {"byteStride": 4, "target": 34962}), (bytes(pos), {"byteStride": 8, "target": 34962})]
+    if uvs:
+        blobs.append((b"".join(struct.pack("<ff", *uv) for uv in uvs), {"byteStride": 8, "target": 34962}))
+    for blob, more in blobs:
+        views.append({"buffer": 0, "byteOffset": offset, "byteLength": len(blob), **more})
         offset += len(blob)
     doc = {
         "asset": {"version": "2.0", "generator": "space-radar scripts/shape-to-glb.py"},
@@ -133,19 +228,22 @@ def main(argv: list[str]) -> int:
             {"bufferView": 1, "componentType": 5120, "normalized": True, "count": len(verts), "type": "VEC3"},
             {"bufferView": 2, "componentType": 5122, "normalized": True, "count": len(verts), "type": "VEC3", "min": qmin, "max": qmax},
         ],
-        "meshes": [{"name": "body", "primitives": [{"attributes": {"NORMAL": 1, "POSITION": 2}, "indices": 0, "mode": 4}]}],
+        "meshes": [{"name": "body", "primitives": [{"attributes": {"NORMAL": 1, "POSITION": 2, **({"TEXCOORD_0": 3} if uvs else {})}, "indices": 0, "mode": 4}]}],
         "nodes": [{"name": "body", "mesh": 0, "translation": centre, "scale": [half, half, half]}],
         "scenes": [{"nodes": [0]}],
         "scene": 0,
     }
+    if uvs:
+        doc["accessors"].append({"bufferView": 3, "componentType": 5126, "count": len(uvs), "type": "VEC2",
+                                 "min": [min(u for u, _ in uvs), min(v for _, v in uvs)], "max": [max(u for u, _ in uvs), max(v for _, v in uvs)]})
     js = json.dumps(doc, separators=(",", ":")).encode()
     js += b" " * (-len(js) % 4)
-    binary = idx + bytes(nrm) + bytes(pos)
+    binary = b"".join(blob for blob, _ in blobs)
     total = 12 + 8 + len(js) + 8 + len(binary)
     args.out.write_bytes(struct.pack("<III", 0x46546C67, 2, total) + struct.pack("<II", len(js), 0x4E4F534A) + js
                          + struct.pack("<II", len(binary), 0x004E4942) + binary)
     print(f"{args.out.name}: Q {q} -> {args.keep}, {len(verts)} vertices, {len(out_tris)} triangles ({flipped} turned outward), "
-          f"{total} bytes; extent {' x '.join(f'{hi[k] - lo[k]:.3f}' for k in range(3))}, volume {volume:.4g} (the model's units)")
+          f"{f'{extra} of them written again for the map seam and the poles, ' if uvs else ''}{total} bytes; extent {' x '.join(f'{hi[k] - lo[k]:.3f}' for k in range(3))}, volume {volume:.4g} (the model's units)")
     return 0
 
 

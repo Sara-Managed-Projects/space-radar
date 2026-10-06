@@ -3190,6 +3190,10 @@ def texture_paths(f: dict) -> list[str]:
     return [name]
 
 
+# Small bodies that wear a map on their shape model (2026-10-07, internal #382): textures.yaml `world` -> models.yaml real model.
+SMALL_BODY_MAPS = {"ceres": "dwarf-ceres", "vesta": "asteroid-vesta"}
+
+
 def check_textures(model_textures: list, world_ids: set) -> list:
     path = REG / "textures.yaml"
     if not path.exists():
@@ -3215,7 +3219,16 @@ def check_textures(model_textures: list, world_ids: set) -> list:
             fail(where, "the id is used twice")
         seen.add(rid)
         world = r.get("world")
-        if world not in world_ids and world != "sky":
+        if world in SMALL_BODY_MAPS:
+            # A small body drawn from its shape model (scene/realmodels.js), not a worlds.yaml row: the
+            # model it is laid on must be one we ship, and its file must carry texture coordinates.
+            model_row = next((x for x in (load("models.yaml").get("real_models") or []) if isinstance(x, dict) and x.get("id") == SMALL_BODY_MAPS[world]), None)
+            glb = ROOT / str((model_row or {}).get("file") or "")
+            if not model_row or not glb.is_file():
+                fail(where, f"`{SMALL_BODY_MAPS[world]}` is not a real model we ship: the map has no shape to lie on")
+            elif b'"TEXCOORD_0"' not in glb.read_bytes()[:4096]:
+                fail(where, f"`{glb.name}` has no texture coordinates: remake it with scripts/shape-to-glb.py --uv")
+        elif world not in world_ids and world != "sky":
             fail(where, f"world {world!r} is neither a worlds.yaml row nor `sky`")
         when = r.get("when")
         if when not in TEXTURE_WHEN:

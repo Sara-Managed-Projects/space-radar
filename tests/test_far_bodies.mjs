@@ -23,7 +23,7 @@ const { farBodies, sampleAsteroids, sampleDeepSpace, sampleOddities } = await im
 const { propagate } = await import(join(JS, 'propagate/index.js'));
 const { elementsToState, solveKeplerHyperbolic } = await import(join(JS, 'propagate/kepler.js'));
 const { LAYERS, loadLayer } = await import(join(JS, 'data/layers.js'));
-const { firstSentence, whyLine, rightNowFor, drawingLine, orbitLineLine, farRegion, klassLabel } = await import(join(JS, 'ui/cards.js'));
+const { firstSentence, whyLine, rightNowFor, drawingLine, orbitLineLine, farRegion, klassLabel, microLabel } = await import(join(JS, 'ui/cards.js'));
 const { buildIndex, findMatches } = await import(join(JS, 'ui/search.js'));
 const { wholePathTimes, wholePathKind, createOrbitLine, SAMPLES } = await import(join(JS, 'scene/orbitline.js'));
 const { stage } = await import(join(JS, 'scene/stage.js'));
@@ -140,7 +140,14 @@ for (const id of DWARFS) {
   check(rows.some(([k]) => k === 'Moons') && rows.some(([k]) => k === 'Why it is known, read from'), `${r.name}: moons and the line's source are rows (${rows.map(([k]) => k).join(', ')})`);
   // Ceres is drawn from the Dawn team's shape model since 2026-10-05 (issue #420); the others have no
   // published shape and stay plain round bodies.
-  if (id === 'dwarf-ceres') check(/published model of 1 Ceres/.test(drawingLine(r)), `Ceres is drawn from its shape model: "${drawingLine(r)}"`);
+  if (id === 'dwarf-ceres') {
+    check(/published model of 1 Ceres/.test(drawingLine(r)), `Ceres is drawn from its shape model: "${drawingLine(r)}"`);
+    // 2026-10-07 (internal #382): it wears Dawn's mosaic and says whose picture that is; and its card is
+    // headed by where it is, the asteroid belt, not by 'Outer solar system' (2.8 au is past Mars).
+    check(/Dawn spacecraft’s black-and-white mosaic/.test(drawingLine(r)) && /grey we chose/.test(drawingLine(r)), `Ceres names its mosaic: "${drawingLine(r)}"`);
+    const head = microLabel(r, { distSunKm: 2.8 * 149597870.7, frame: 'sun-inertial' });
+    check(/Asteroid belt$/.test(head) && !/Outer/.test(head), `Ceres's card is headed by the asteroid belt: "${head}"`);
+  }
   else check(/plain round body/.test(drawingLine(r)), `${r.name} is drawn as a round body, not "a generic asteroid": "${drawingLine(r)}"`);
   check(orbitLineLine(r) && /whole orbit/.test(orbitLineLine(r)), `${r.name}'s line is its whole orbit`);
   // The badge: "Asteroid" beside "is a dwarf planet" was the first thing read in the browser.
@@ -161,6 +168,51 @@ check(farRegion({ meta: { qAu: 29.7, aphelionAu: 49.3 } }) === null, 'a Pluto-li
 check(/Sedna/.test(byId.get('dwarf-sedna').name) && rightNowFor(byId.get('dwarf-sedna'), ctx(T_HZ)).some(([k, v]) => k === 'Across' && /648 to 1 ?\s?220 km/.test(v)),
   'Sedna, which nobody has resolved, gets the range and not a middle');
 check(/egg/.test(drawingLine(byId.get('dwarf-haumea'))), 'Haumea says it is not round');
+
+// --- the maps on the shapes of Ceres and Vesta (2026-10-07, internal #382) ------------------------
+// scripts/shape-to-glb.py --uv writes each vertex's longitude and latitude as its texture
+// coordinates. Read back here from the shipped files: every vertex's u and v are its own direction's,
+// no triangle spans the map (the seam's vertices are written twice), and both stay inside the rock budget.
+{
+  const { readFileSync } = await import('node:fs');
+  for (const [file, name] of [['dwarf-ceres.glb', 'Ceres'], ['asteroid-vesta.glb', 'Vesta']]) {
+    const buf = readFileSync(join(ROOT, 'site/models', file));
+    const jsonLen = buf.readUInt32LE(12);
+    const doc = JSON.parse(buf.subarray(20, 20 + jsonLen).toString('utf8'));
+    const bin = buf.subarray(20 + jsonLen + 8);
+    const prim = doc.meshes[0].primitives[0];
+    const acc = (i) => ({ a: doc.accessors[i], v: doc.bufferViews[doc.accessors[i].bufferView] });
+    check(prim.attributes.TEXCOORD_0 !== undefined, `${name}: the shape carries texture coordinates`);
+    if (prim.attributes.TEXCOORD_0 === undefined) continue;
+    const P = acc(prim.attributes.POSITION), U = acc(prim.attributes.TEXCOORD_0), I = acc(prim.indices);
+    const node = doc.nodes[0];
+    const pos = (k) => [0, 1, 2].map((c) => (bin.readInt16LE(P.v.byteOffset + k * 8 + c * 2) / 32767) * node.scale[c] + node.translation[c]);
+    const uv = (k) => [bin.readFloatLE(U.v.byteOffset + k * 8), bin.readFloatLE(U.v.byteOffset + k * 8 + 4)];
+    let worst = 0;
+    let poles = 0;
+    for (let k = 0; k < P.a.count; k++) {
+      const [x, y, z] = pos(k);
+      const r = Math.hypot(x, y, z);
+      const [u, v] = uv(k);
+      worst = Math.max(worst, Math.abs(v - (0.5 - Math.asin(z / r) / Math.PI)));
+      if (Math.hypot(x, y) < 0.02 * r) { poles++; continue; }   // a pole has no longitude of its own
+      const want = 0.5 + Math.atan2(y, x) / (2 * Math.PI);
+      const du = Math.abs(u - want);
+      worst = Math.max(worst, Math.min(du, Math.abs(du - 1)));
+    }
+    check(worst < 2e-3, `${name}: every vertex's map coordinates are its own longitude and latitude (worst ${worst.toExponential(1)})`);
+    let widest = 0;
+    for (let t = 0; t < I.a.count; t += 3) {
+      const us = [0, 1, 2].map((c) => uv(bin.readUInt16LE(I.v.byteOffset + (t + c) * 2))[0]);
+      widest = Math.max(widest, Math.max(...us) - Math.min(...us));
+    }
+    // A quarter of a turn is the widest honest triangle: the one across a cube face's corner from the pole.
+    check(widest < 0.3, `${name}: no triangle is stretched across the map's seam (widest ${widest.toFixed(3)} of a turn)`);
+    check(I.a.count / 3 <= 5000 && buf.length < 60000, `${name}: ${I.a.count / 3} triangles and ${buf.length} B, inside a rock's budget`);
+    check(poles >= 2, `${name}: both poles are in the mesh (${poles} pole vertices, one per triangle that meets there)`);
+  }
+}
+
 check(/tails are part of the drawing/.test(drawingLine(byId.get('interstellar-2i'))), 'Borisov says its drawn tails are not seen');
 for (const id of VISITORS) {
   const r = byId.get(id);

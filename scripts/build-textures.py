@@ -578,7 +578,21 @@ MOONS = {
     # contrast raised, which gives the whole moon a green cast no eye would see. BALANCED, below.
     "triton":    ("Triton_Voyager2_ClrMosaic_GlobalFill_600m.tif", "triton_voyager.webp", False, 0.3, 1.0, 0),
     "phobos":    ("commons_phobos.jpg", "phobos_viking.webp", False, None, 1.0, -1),
+    # 2026-10-07 (internal #382): Dawn's Framing Camera mosaics, made by DLR for the Dawn team and
+    # hosted by USGS. Black-and-white photographs under a low Sun, so the craters' shadows are in
+    # them. Ceres's has longitude 180 in the middle (rolled); Vesta's has 0 there already, on the
+    # grid of longitudes of DLR's height model, from which site/models/asteroid-vesta.glb is made
+    # (scripts/shape-to-glb.py --from-dtm). These two are not rows of registry/worlds.yaml: they are
+    # drawn by scene/realmodels.js, on their shape models, and their tint is SMALL_BODY_TINT.
+    "ceres":     ("Ceres_Dawn_FC_DLR_global_20ppd_Oct2015.tif", "ceres_dawn.webp", True, None, 1.0, 0),
+    "vesta":     ("Vesta_Dawn_FC_HAMO_Mosaic_Global_74ppd.tif", "vesta_dawn.webp", False, None, 1.0, 0),
 }
+# The greys the two are tinted with: chosen by us, a neutral grey with the warmth of rock, Ceres the
+# darker because it is (its albedo is about a fifth of Vesta's: 0.09 against 0.42 in JPL's Small-Body
+# Database, as remembered -- the API did not answer on 2026-10-07, so the card gives no number and
+# says only that the colour is chosen). Neither is as dark on screen as it is in space: at Ceres's
+# true albedo the map would be coal on a black sky.
+SMALL_BODY_TINT = {"ceres": "#8a8580", "vesta": "#b0aaa0"}
 # A colour mosaic whose overall colour is the filters' and not the world's: its area-weighted mean
 # colour is taken to the hue of `look.flat` by a gain per channel, in linear light, before anything
 # else. The pattern of colour differences across the map is kept; the cast is not.
@@ -639,9 +653,10 @@ def flat_colour(world: str):
     import re
     text = (ROOT / "registry" / "worlds.yaml").read_text(encoding="utf-8")
     m = re.search(r"^  - id: %s\n(?:(?!^  - id: ).*\n)*?    look: \{flat: \"#([0-9a-fA-F]{6})\"" % re.escape(world), text, re.M)
-    if not m:
+    if not m and world not in SMALL_BODY_TINT:
         raise SystemExit(f"registry/worlds.yaml: no `look.flat` for {world}")
-    srgb = np.array([int(m.group(1)[i:i + 2], 16) for i in (0, 2, 4)], np.float64) / 255
+    hexa = m.group(1) if m else SMALL_BODY_TINT[world][1:]
+    srgb = np.array([int(hexa[i:i + 2], 16) for i in (0, 2, 4)], np.float64) / 255
     return np.where(srgb <= 0.04045, srgb / 12.92, ((srgb + 0.055) / 1.055) ** 2.4)
 
 

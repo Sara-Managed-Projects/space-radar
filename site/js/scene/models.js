@@ -50,6 +50,27 @@ function gradientMap() {
   rampTexture.needsUpdate = true;
   return rampTexture;
 }
+// A WORLD IS NOT A TOY (2026-10-07, internal #382). A small body that wears a photographic map --
+// Ceres, Vesta -- is shaded by the same material with a smooth ramp instead of the three steps:
+// three flat bands across a mosaic of craters read as a printing fault, and the map's own
+// shadows already say "rock". Lambert's cosine from the terminator to the subsolar point, and a
+// floor on the night side a little under the steps' own (it is a photograph, and space is dark).
+let worldRampTexture = null;
+function worldRamp() {
+  if (worldRampTexture) return worldRampTexture;
+  const n = 64;
+  const data = new Uint8Array(n);
+  for (let i = 0; i < n; i++) {
+    const cos = (2 * (i + 0.5)) / n - 1;   // MeshToonMaterial reads the ramp at dot(N, L) / 2 + 1/2
+    data[i] = Math.round(255 * Math.max(0.06, Math.min(1, cos * 1.05)));
+  }
+  worldRampTexture = new THREE.DataTexture(data, n, 1, THREE.RedFormat);
+  worldRampTexture.minFilter = THREE.LinearFilter;
+  worldRampTexture.magFilter = THREE.LinearFilter;
+  worldRampTexture.generateMipmaps = false;
+  worldRampTexture.needsUpdate = true;
+  return worldRampTexture;
+}
 
 // One shared uniform object, so a single write in updateModelAttitude() reaches every material.
 const SHARED = {
@@ -200,7 +221,7 @@ export function toonMaterial(colour, kind = 'body', pool = materials, map = null
   const hit = pool.get(key);
   if (hit) return hit;
   const s = SPECULAR[kind] || SPECULAR.body;
-  const m = new THREE.MeshToonMaterial({ color: colour, gradientMap: gradientMap(), map });
+  const m = new THREE.MeshToonMaterial({ color: colour, gradientMap: kind === 'world' ? worldRamp() : gradientMap(), map });
   m.userData.kind = kind;
   m.userData.perModel = pool !== materials;
   m.onBeforeCompile = (shader) => {

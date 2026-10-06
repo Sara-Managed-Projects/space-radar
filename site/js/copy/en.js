@@ -1296,6 +1296,8 @@ export const COPY = {
       heo: 'High Earth orbit',
       inner: 'Inner solar system',
       outer: 'Outer solar system',
+      // A body whose whole orbit lies between Mars's and Jupiter's (ui/cards.js farRegion): Ceres, Vesta.
+      belt: 'Asteroid belt',
       beyondNeptune: 'Beyond Neptune',
       round: 'Round {world}',
       inCon: 'In {con}',
@@ -1496,6 +1498,13 @@ export const COPY = {
     // drawing was made. Source-agnostic on purpose: the next one of these may be a CC BY model
     // from somebody else, and CREDITS.md is where whose it is belongs.
     objectModel: 'drawn from a published model of {name}',
+    // 2026-10-07 (internal #382): a small body whose shape model wears a map (scene/realmodels.js
+    // `mapped`). Dawn's Framing Camera mosaics of Ceres (2015) and Vesta (2011 to 2012), made by DLR:
+    // black-and-white photographs, so the shadows in them are the Sun's on the days of the pictures
+    // and do not move with the Sun drawn here; the grey is chosen (scripts/build-textures.py).
+    objectMapped: {
+      dawn: 'its surface is the Dawn spacecraft’s black-and-white mosaic, tinted in a grey we chose; the shadows in its craters are the ones Dawn photographed and do not move with the Sun here',
+    },
     objectFamily: 'drawn as {name} — the kind of thing, not this exact one',
     objectGeneric: 'drawn as a generic object; we have no shape for {name}',
     // The procedural shape a class falls back to when nothing more specific is known. Used

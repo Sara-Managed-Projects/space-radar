@@ -55,6 +55,7 @@ import { CLASS_COLOURS } from './glyphatlas.js';
 import { isGeostationary } from '../data/parsers.js';
 
 const BASE = new URL('../../models/', import.meta.url);
+const TEXTURES = new URL('../../textures/', import.meta.url);
 
 /**
  * Which record gets which file. Keyed by the identifier that is stable for that object:
@@ -666,7 +667,12 @@ export const REAL_MODELS = {
     // Dawn's shape model, from NASA's 3D Printing collection. The same collection has Eros and
     // Itokawa, and neither is used: both are cut in half for printing and laid out as two pieces.
     // Klass-gated like Bennu, so nothing but the asteroid called Vesta can wear it.
-    vesta: { file: 'asteroid-vesta.glb', colour: 'asteroid', name: '4 Vesta', klass: ['asteroid'] },
+    // 2026-10-07 (internal #382): remade from DLR's height model of Vesta (Dawn's stereo pictures), on
+    // the grid of longitudes of DLR's mosaic, which it now wears: `map` is a file of site/textures/
+    // (registry/textures.yaml), fetched with the shape and never before, and laid on by the texture
+    // coordinates scripts/shape-to-glb.py --uv writes. NASA's 3D-printing model it replaces had no
+    // stated axes to lay a map by.
+    vesta: { file: 'asteroid-vesta.glb', colour: 'asteroid', name: '4 Vesta', klass: ['asteroid'], map: '2k_vesta_dawn.webp', mapped: 'dawn' },
     // Gaskell's shape model from the PDS archive, in ONE piece -- NASA's 3D Printing Eros is cut in
     // half. The klass gate is load-bearing here: EROS A and EROS B are Israeli imaging satellites,
     // and without it they would be drawn as a 33 km asteroid.
@@ -675,7 +681,8 @@ export const REAL_MODELS = {
     // grid by scripts/shape-to-glb.py. Ceres was a faceted icosahedron from the generic builder
     // (issue #420). Klass-gated like the three above: CERES is also a French satellite series.
     // Itokawa still waits: Gaskell's model of it has JAXA co-authors (tests/test_station_shapes.mjs).
-    ceres: { file: 'dwarf-ceres.glb', colour: 'asteroid', name: '1 Ceres', klass: ['asteroid'] },
+    // 2026-10-07: and it wears Dawn's mosaic (`map`, as Vesta above).
+    ceres: { file: 'dwarf-ceres.glb', colour: 'asteroid', name: '1 Ceres', klass: ['asteroid'], map: '2k_ceres_dawn.webp', mapped: 'dawn' },
     tdrs: { file: 'tdrs.glb', colour: 'satellite', name: 'Tracking and Data Relay Satellite', klass: ['satellite'] },
     swift: { file: 'swift.glb', colour: 'telescope', name: 'Swift', klass: ['satellite', 'telescope'] },
     tess: { file: 'tess.glb', colour: 'telescope', name: 'TESS', klass: ['satellite', 'telescope'] },
@@ -994,7 +1001,7 @@ export function colourRoute(root) {
   return stated.size >= 2 ? 'own' : 'class';
 }
 
-function applyToon(root, colourToken) {
+function applyToon(root, colourToken, surface = null) {
   const hex = CLASS_COLOURS[colourToken] || CLASS_COLOURS.satellite;
   // Measured once per model, not per mesh: the question is whether the FILE carries variation.
   const route = colourRoute(root);
@@ -1030,7 +1037,10 @@ function applyToon(root, colourToken) {
       const own = `#${first.color.getHexString()}`;
       tint = own === '#ffffff' ? UNPAINTED : own;
     }
-    const replacement = kit.toonMaterial(tint, kind, pool, palette);
+    // A body with a map of its surface (Ceres, Vesta): the map is the colour, on the smooth ramp.
+    const replacement = surface && n.geometry && n.geometry.attributes.uv
+      ? kit.toonMaterial('#ffffff', 'world', pool, surface)
+      : kit.toonMaterial(tint, kind, pool, palette);
     if (replacement) {
       // Dispose what NASA shipped: the textures on these can be several megabytes of GPU memory
       // that nothing will ever sample once the material is replaced.
@@ -1075,8 +1085,21 @@ export function loadRealModel(entry, { keepMaterials = false } = {}) {
           // this guards -- and before normalise(), which only moves the result around.
           const fixed = ensureNormals(scene);
           if (fixed) console.info(`real model ${entry.file}: computed normals for ${fixed} mesh(es)`);
-          if (!keepMaterials) applyToon(scene, entry.colour);
-          resolve(normalise(scene));
+          if (keepMaterials) return resolve(normalise(scene));
+          if (!entry.map) { applyToon(scene, entry.colour); return resolve(normalise(scene)); }
+          // The map first, then the material: a body shown plain and then repainted would flash.
+          // A map that does not arrive leaves the body in its class colour, as it was before.
+          const done = (tex) => {
+            try { applyToon(scene, entry.colour, tex); resolve(normalise(scene)); }
+            catch (err) { console.warn(`real model ${entry.file}: ${err.message}`); resolve(null); }
+          };
+          new THREE.TextureLoader().load(new URL(entry.map, TEXTURES).href, (tex) => {
+            tex.colorSpace = THREE.SRGBColorSpace;
+            tex.flipY = false;                     // glTF's v runs down the picture, as the file's does
+            tex.wrapS = THREE.RepeatWrapping;      // the seam's vertices are written at u and u + 1
+            tex.anisotropy = 4;
+            done(tex);
+          }, undefined, () => done(null));
         } catch (err) {
           console.warn(`real model ${entry.file}: ${err.message}`);
           resolve(null);

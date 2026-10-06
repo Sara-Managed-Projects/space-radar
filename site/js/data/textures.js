@@ -654,6 +654,46 @@ export const TEXTURES = [
     ]
   },
   {
+    "id": "ceres",
+    "world": "ceres",
+    "slot": "map",
+    "when": "boot",
+    "coverage": 0.996,
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/2k_ceres_dawn.webp",
+        "px": [
+          1536,
+          768
+        ],
+        "bytes": 227830,
+        "format": "rgb",
+        "credit": "Ceres map: NASA/JPL-Caltech/UCLA/MPS/DLR/IDA (Dawn Framing Camera, global mosaic by DLR), hosted by USGS Astrogeology Science Center"
+      }
+    ]
+  },
+  {
+    "id": "vesta",
+    "world": "vesta",
+    "slot": "map",
+    "when": "boot",
+    "coverage": 1.0,
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/2k_vesta_dawn.webp",
+        "px": [
+          2048,
+          1024
+        ],
+        "bytes": 230890,
+        "format": "rgb",
+        "credit": "Vesta map and shape: NASA/JPL-Caltech/UCLA/MPS/DLR/IDA (Dawn Framing Camera, HAMO mosaic and stereo height model by DLR), hosted by USGS Astrogeology Science Center"
+      }
+    ]
+  },
+  {
     "id": "triton",
     "world": "triton",
     "slot": "map",

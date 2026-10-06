@@ -20,7 +20,7 @@ export const BUDGETS = {
   "nebula_picture_bytes": 90000,
   "nebulae_total_bytes": 1700000,
   "moon_map_bytes": 250000,
-  "moon_maps_total_bytes": 3000000,
+  "moon_maps_total_bytes": 3300000,
   "otherlight_sky_bytes": 320000,
   "sky_entry_star_bytes": 110000,
   "og_png_min_bytes": 50000,

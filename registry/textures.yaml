@@ -588,6 +588,46 @@ textures:
         original: "https://planetarymaps.usgs.gov/mosaic/Titan_ISS_P19658_Mosaic_Global_4km.tif"
         make: "scripts/build-textures.py moon-titan: USGS mosaic, 4 km to 2048 wide, rolled half a turn so longitude 0 is at the centre, tinted with the world's flat colour, contrast about the mean times 0.5, mean taken to the flat colour's luminance by a gain 1.12, WebP 82"
 
+  # CERES AND VESTA (2026-10-07, internal #382) are not rows of registry/worlds.yaml: they are dots of
+  # the far-bodies and asteroid layers, drawn close up from their shape models by scene/realmodels.js
+  # (site/models/dwarf-ceres.glb, asteroid-vesta.glb), and these maps are laid on those shapes by the
+  # texture coordinates scripts/shape-to-glb.py --uv writes. Fetched with the shape, when one of the
+  # two is approached, never before. scripts/check_registry.py SMALL_BODY_MAPS names the model each
+  # belongs to. They count against the moons' byte budgets like every other small world's map.
+  - id: ceres
+    world: ceres
+    slot: map
+    when: boot
+    coverage: 0.996
+    files:
+      - tier: 0
+        file: site/textures/2k_ceres_dawn.webp
+        px: [1536, 768]
+        bytes: 227830
+        format: rgb
+        licence: "NASA Images and Media Usage Guidelines (nasa.gov/nasa-brand-center/images-and-media, read 2026-10-07): NASA content, including media files used in the rendition of 3-dimensional models such as texture maps, \"generally are not subject to copyright in the United States\". The mosaic was assembled at DLR for the Dawn mission and is hosted by USGS Astrogeology"
+        credit: "Ceres map: NASA/JPL-Caltech/UCLA/MPS/DLR/IDA (Dawn Framing Camera, global mosaic by DLR), hosted by USGS Astrogeology Science Center"
+        source: "https://planetarymaps.usgs.gov/mosaic/Ceres_Dawn_FC_DLR_global_20ppd_Oct2015.lbl (read 2026-10-07)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Ceres_Dawn_FC_DLR_global_20ppd_Oct2015.tif"
+        make: "scripts/build-textures.py moon-ceres: 7383 px to 1536 wide (the crater field would not fit the byte cap at 2048), rolled half a turn so longitude 0 is at the centre, tinted with the grey scripts/build-textures.py SMALL_BODY_TINT chose, mean taken to that grey's luminance by a gain 1.03, the 0.4 % with no data filled with the grey, WebP 74"
+
+  - id: vesta
+    world: vesta
+    slot: map
+    when: boot
+    coverage: 1.000
+    files:
+      - tier: 0
+        file: site/textures/2k_vesta_dawn.webp
+        px: [2048, 1024]
+        bytes: 230890
+        format: rgb
+        licence: "NASA Images and Media Usage Guidelines (nasa.gov/nasa-brand-center/images-and-media, read 2026-10-07): NASA content, including media files used in the rendition of 3-dimensional models such as texture maps, \"generally are not subject to copyright in the United States\". The mosaic was assembled at DLR for the Dawn mission and is hosted by USGS Astrogeology"
+        credit: "Vesta map and shape: NASA/JPL-Caltech/UCLA/MPS/DLR/IDA (Dawn Framing Camera, HAMO mosaic and stereo height model by DLR), hosted by USGS Astrogeology Science Center"
+        source: "https://planetarymaps.usgs.gov/mosaic/Vesta_Dawn_FC_HAMO_Mosaic_Global_74ppd.lbl (read 2026-10-07)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Vesta_Dawn_FC_HAMO_Mosaic_Global_74ppd.tif"
+        make: "scripts/build-textures.py moon-vesta: 26704 px to 2048 wide, longitude 0 already at the centre, tinted with the grey scripts/build-textures.py SMALL_BODY_TINT chose, mean taken to that grey's luminance by a gain 4.61 (the far north was in winter shadow and is nearly black in the mosaic), WebP 58"
+
   - id: triton
     world: triton
     slot: map

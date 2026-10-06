@@ -1978,7 +1978,10 @@ function derivedDrawingLine(record, T) {
     // A `file:` entry is somebody's model, loaded; a `build:` entry is scene/models.js working
     // from published metres. Both were printing "drawn from published dimensions", which is true
     // of one of them. See COPY.drawing.objectModel.
-    return t(entry.file ? T.objectModel : T.objectVariant, { name: String(entry.name) });
+    const line = t(entry.file ? T.objectModel : T.objectVariant, { name: String(entry.name) });
+    // 2026-10-07: a small body that wears a map on its shape (Ceres, Vesta) names the mosaic.
+    const mapped = entry.mapped && T.objectMapped ? T.objectMapped[entry.mapped] : null;
+    return mapped ? line + COPY.punctuation.separator + mapped : line;
   }
   // An extreme object that is a star (Betelgeuse) is drawn like the others, but the reason is
   // different: it has a shape, it is just a point at this scale.
@@ -2590,7 +2593,10 @@ export function microLabel(record, m) {
     const word = T && T.kinds ? T.kinds[String(pick(md, 'kind') || '')] : null;
     regime = word ? cap(word) : null;
   } else {
-    regime = sunRegion(m.distSunKm);
+    // Internal #382: Ceres's card was headed 'Outer solar system', which is what 2.8 au is by the
+    // planets' bounds and not what anybody calls the belt. A body whose whole orbit lies between
+    // Mars's and Jupiter's (farRegion, from its own elements) is in the asteroid belt and says so.
+    regime = farRegion(record) === 'belt' && G.belt ? G.belt : sunRegion(m.distSunKm);
   }
   return regime ? t(C.micro, { klass: kind, regime }) : kind;
 }
