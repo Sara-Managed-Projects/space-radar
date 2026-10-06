@@ -147,6 +147,22 @@ function holds(name, f, { r, h = 900, subjectPx = 260, upDot = 0, room = null, d
   check((1 + dot(old, { x: 1, y: 0, z: 0 })) / 2 === 0, 'the old arrival, on the far side from the Sun, sees a black disc');
   check(F.litOffset(null, up) === null && F.litOffset({ x: 0, y: 0, z: 0 }, up) === null, 'no Sun direction, no offset: the rig keeps its own framing');
   check(Math.abs(len(F.litOffset({ x: 1, y: 2, z: 3 }, null)) - 1) < 1e-9, 'no up is the scene\'s +Y');
+  // 2026-10-07 (internal #426): a world may name the face it is known by. When that face is lit the
+  // camera takes the side of the Sun's direction that sees more of it; a face in the dark changes
+  // nothing, and either way the disc is as lit as before.
+  {
+    const sun = { x: 1, y: 0, z: 0 };
+    const plain = F.litOffset(sun, up);
+    const dot = (a, b) => a.x * b.x + a.y * b.y + a.z * b.z;
+    const near = { x: 0.5, y: 0.1, z: -Math.sign(plain.z) };   // lit, and on the side the plain arrival turns away from
+    const turned = F.litOffset(sun, up, undefined, near);
+    check(Math.sign(turned.z) === -Math.sign(plain.z) && dot(turned, near) > dot(plain, near), 'a lit face on the other side turns the arrival toward it');
+    check(Math.abs(dot(turned, sun) - dot(plain, sun)) < 1e-12 && Math.abs(len(turned) - 1) < 1e-9, 'and the disc is exactly as lit as before');
+    const same = F.litOffset(sun, up, undefined, { x: 0.5, y: 0, z: Math.sign(plain.z) });
+    check(same.z === plain.z, 'a lit face already on the arrival side changes nothing');
+    const dark = F.litOffset(sun, up, undefined, { x: -0.5, y: 0, z: -Math.sign(plain.z) });
+    check(dark.z === plain.z && dark.x === plain.x, 'a face in the dark changes nothing: the lit side is the rule');
+  }
 }
 
 // AN ARRIVAL ON THE EARTH'S GROUND (internal #420): no nearer than the map can bear, and at night

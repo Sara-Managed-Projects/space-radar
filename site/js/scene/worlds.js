@@ -446,7 +446,10 @@ export const WORLDS = [
     // "charcoal black, to dark orange and white" (Wikipedia): a light orange-tan.
     id: 'pluto', display: 'Pluto', parent: 'sun', radiusKm: 1188.3,
     body: 'Pluto', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { flat: true, tint: 0xb4926f, map: '2k_pluto_nh_colour.webp', mapKind: 'redblue', albedo: 0.52, rough: 0.3 },
+    // `face` (2026-10-07, internal #426): the heart, the face Pluto is known by, as east longitude and
+    // latitude -- the brightest 12-degree patch of the map we ship, measured on it that day (201 E,
+    // 21 N: the bright ice of Tombaugh Regio). An arrival prefers the lit side that shows it (faceDirOf).
+    look: { flat: true, tint: 0xb4926f, map: '2k_pluto_nh_colour.webp', mapKind: 'redblue', albedo: 0.52, rough: 0.3, face: { lonDeg: 201, latDeg: 21 } },
   },
   {
     // "shades of yellow, red, white, black, and green, largely due to ... sulfur" (Wikipedia).
@@ -500,7 +503,7 @@ export const WORLDS = [
     // ground, is what anyone has seen of Titan in visible light. Darkened 2026-09-22, same hue.
     id: 'titan', display: 'Titan', parent: 'saturn', radiusKm: 2574.76,
     body: 'Titan', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
-    look: { flat: true, tint: 0x8f5e26, map: '2k_titan_cassini_iss.webp', mapKind: 'infrared', albedo: 0.22, haze: true, limb: 0.9, air: 'titan', rim: { colour: 0xe0a050, gain: 0.7 } },
+    look: { flat: true, tint: 0x8f5e26, map: '2k_titan_cassini_2018.webp', mapKind: 'infrared', albedo: 0.22, haze: true, limb: 0.9, air: 'titan', rim: { colour: 0xe0a050, gain: 0.7 } },
   },
   {
     // "Triton's reddish color" (Wikipedia) on frost with "an icy sheen" (NASA Science): a pale pink.
@@ -1775,6 +1778,18 @@ export function createWorlds(scene, opts = {}) {
     return u.value.clone();
   }
 
+  /**
+   * The unit vector from a world's centre to the face it is known by (`look.face`), in scene axes,
+   * as the world is turned this frame; null for a world that names none or has not been placed.
+   * The mesh has longitude 0 on its +X and north on its +Y, east toward -Z (SphereGeometry's u).
+   */
+  function faceDirOf(id) {
+    const w = BY_ID.get(id);
+    const mesh = meshes.get(id);
+    if (!w || !w.look.face || !mesh) return null;
+    return faceVector(w.look.face.lonDeg, w.look.face.latDeg).applyQuaternion(mesh.quaternion);
+  }
+
   /** Bend a moon to its measured shape now. A promise of true once it is; null if it has none waiting. */
   function preloadShape(id) { return fetchShape(id); }
   /** True once a world wears its measured shape rather than a ball. */
@@ -2051,6 +2066,7 @@ export function createWorlds(scene, opts = {}) {
     preloadShape,
     hasShape,
     sunDirOf,
+    faceDirOf,
     pick,
     pickAll,
     dispose,
@@ -2310,6 +2326,13 @@ function applyIauOrientation(mesh, bodyName, tMs, worldId) {
   _m4.makeBasis(_bx, _bz, _by);
   mesh.quaternion.setFromRotationMatrix(_m4);
   return true;
+}
+
+/** A point of a world's map, east longitude and latitude in degrees, as a unit vector in its mesh's own axes. */
+export function faceVector(lonDeg, latDeg) {
+  const lon = (lonDeg * Math.PI) / 180;
+  const lat = (latDeg * Math.PI) / 180;
+  return new THREE.Vector3(Math.cos(lat) * Math.cos(lon), Math.sin(lat), -Math.cos(lat) * Math.sin(lon));
 }
 
 /**

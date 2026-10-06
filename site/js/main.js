@@ -1175,7 +1175,7 @@ export async function boot({ setStatus } = {}) {
       const fromHere = record.klass === 'dso' && isLadderStage(stage.worldId) ? Math.PI - 0.1 : undefined;
       // A world is met on its lit face (issue #419): the rig's default is the far side from the
       // stage's world, which for everything beyond the Earth is the night side.
-      const lit = record.klass === 'world' ? litOffset(worlds.sunDirOf(record.id), camera.up) : null;
+      const lit = record.klass === 'world' ? litOffset(worlds.sunDirOf(record.id), camera.up, undefined, worlds.faceDirOf(record.id)) : null;
       // AND THE DISTANCE IS SOLVED AGAIN ON ARRIVAL, once. A squeezed planet's drawn size depends on
       // where the camera is (scene/worlds.js: the neighbour cap is measured from the camera when
       // worlds crowd), and its moons are drawn at its scale: SEEN 2026-10-06, Mimas framed from the
@@ -1189,7 +1189,7 @@ export async function boot({ setStatus } = {}) {
           const at = positionOfRecord(record);
           const again = at ? arrivalDistance(record, at) : NaN;
           if (!(again > 0) || Math.abs(again / distance - 1) < 0.08) return;
-          const side = litOffset(worlds.sunDirOf(record.id), camera.up);
+          const side = litOffset(worlds.sunDirOf(record.id), camera.up, undefined, worlds.faceDirOf(record.id));
           cameraRig.flyTo({ targetScene: at, distance: again, offset: side || undefined, ms: 500, targetDelay: 0 });
         }));
       } : undefined;
@@ -1563,7 +1563,7 @@ export async function boot({ setStatus } = {}) {
     cameraRig.stopFollow();
     const distance = w ? worldFramingDistance(r, camera.fov, camera.aspect) : system ? ctx.systems.framingDistanceUnits(stageId) : 5;
     // The new centre of the map is met on its lit face too (the Sun is the light and has none).
-    const lit = w && w.id !== 'sun' ? litOffset(worlds.sunDirOf(w.id), camera.up) : null;
+    const lit = w && w.id !== 'sun' ? litOffset(worlds.sunDirOf(w.id), camera.up, undefined, worlds.faceDirOf(w.id)) : null;
     cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance, offset: lit || undefined, ms: 0 });
     return true;
   };

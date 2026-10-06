@@ -565,7 +565,10 @@ MOONS = {
     "rhea":      ("commons_rhea.jpg", "rhea_cassini.webp", True, 0.35, 1.0, -1),
     "iapetus":   ("commons_iapetus.jpg", "iapetus_cassini.webp", True, 0.35, 1.0, -1),
     # 938 nm, through the haze. Half the contrast: the picture is of a surface no eye has seen.
-    "titan":     ("Titan_ISS_P19658_Mosaic_Global_4km.tif", "titan_cassini_iss.webp", True, None, 0.5, 0),
+    # 2026-10-07 (internal #426): the 2018 mosaic (PIA22770, 9 873 pictures averaged, "a mosaic without
+    # image seams" in its caption) instead of USGS's copy of the 2015 one (PIA19658), whose pictures'
+    # outlines showed as arcs and steps of tone across the globe. Same layout: longitude 180 in the middle.
+    "titan":     ("PIA22770.tif", "titan_cassini_2018.webp", True, None, 0.5, 0),
     "miranda":   ("commons_miranda.jpg", "miranda_voyager.webp", False, None, 1.0, 6),
     "ariel":     ("commons_ariel.jpg", "ariel_voyager.webp", False, None, 1.0, 6),
     "umbriel":   ("commons_umbriel.jpg", "umbriel_voyager.webp", False, None, 1.0, 6),

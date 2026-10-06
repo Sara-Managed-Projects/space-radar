@@ -4,7 +4,7 @@
 // Contract: limbFraming({ r, R, distance, fovDeg, heightPx, subjectPx, upDot, room }) -> { distance, tilt, limb, worldBelow } | null
 //           limbAt(r, R, d, tilt) -> { g, theta, rho, cameraR } | null
 //           fitDistance(points, project, { lo, hi, band, margin }) -> distance
-//           litOffset(sun, up, phase) -> { x, y, z } | null   (unit, from a world's centre to the camera)
+//           litOffset(sun, up, phase, prefer) -> { x, y, z } | null   (unit, from a world's centre to the camera)
 // Pure: plain numbers in, plain numbers out, no three.js, so tests/test_framing.mjs can hold them.
 //
 // WHY LIMB FRAMING. An arrival used to put the camera on the far side of the object from the world,
@@ -224,11 +224,21 @@ export const ARRIVAL_PHASE = 0.6;
  * stage is the night side. This is the Sun's direction turned `phase` round the camera's up, so
  * the terminator is upright on the right of the disc and the picture keeps its horizon. Pure.
  *
+ * WHICH SIDE OF THE SUN'S DIRECTION (2026-10-07, internal #426). Turning the other way round the
+ * same up is as good a picture -- the terminator upright on the LEFT -- and shows a different
+ * quarter of the world. Pluto arrived with its heart behind the limb, on a day the heart was in
+ * sunlight. So a world may name the face it is known by (`prefer`, from its centre, any length:
+ * scene/worlds.js faceDirOf), and when that face is on the lit hemisphere the camera takes
+ * whichever of the two sides sees more of it. A face in the dark changes nothing: the lit side is
+ * the rule and the face is only the tie-break.
+ *
  * @param {{x:number,y:number,z:number}} sun  from the world toward the Sun, any length
  * @param {{x:number,y:number,z:number}} up   the camera's up, any length
+ * @param {number} [phase]
+ * @param {{x:number,y:number,z:number}|null} [prefer]  from the world's centre to the face it is known by
  * @returns {{x:number,y:number,z:number}|null} unit vector, or null when there is no Sun direction
  */
-export function litOffset(sun, up, phase = ARRIVAL_PHASE) {
+export function litOffset(sun, up, phase = ARRIVAL_PHASE, prefer = null) {
   if (!sun) return null;
   const sl = Math.hypot(sun.x, sun.y, sun.z);
   if (!(sl > 0)) return null;
@@ -243,7 +253,9 @@ export function litOffset(sun, up, phase = ARRIVAL_PHASE) {
     l = Math.hypot(side.x, side.y, side.z);
   }
   const c = Math.cos(phase);
-  const k = Math.sin(phase) / l;
+  let k = Math.sin(phase) / l;
+  if (prefer && prefer.x * s.x + prefer.y * s.y + prefer.z * s.z > 0
+    && prefer.x * side.x + prefer.y * side.y + prefer.z * side.z < 0) k = -k;
   return { x: s.x * c + side.x * k, y: s.y * c + side.y * k, z: s.z * c + side.z * k };
 }
 

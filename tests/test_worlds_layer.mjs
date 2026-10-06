@@ -1155,6 +1155,22 @@ if (problems.length) {
     const pole = new THREE.Vector3(0, 1, 0).applyQuaternion(m.quaternion).dot(h) * sign;
     check(off < 2 && pole > 0.9, `${id}'s longitude 0 faces ${to} (${off.toFixed(1)} deg off) and its north is the right pole (${pole.toFixed(2)})`);
   }
+  // 2026-10-07 (internal #426): Pluto names the face it is known by, the heart, and an arrival prefers
+  // the lit side that shows it (scene/framing.js litOffset). The heart is on the hemisphere that
+  // never sees Charon, in the north; and a point of a map is +X at longitude 0, east toward -Z.
+  {
+    const { faceVector } = await import(join(JS, 'scene/worlds.js'));
+    const v = (lon, lat) => faceVector(lon, lat);
+    check(v(0, 0).distanceTo(new THREE.Vector3(1, 0, 0)) < 1e-9 && v(90, 0).distanceTo(new THREE.Vector3(0, 0, -1)) < 1e-9 && v(0, 90).distanceTo(new THREE.Vector3(0, 1, 0)) < 1e-9,
+      'a point of a map: longitude 0 on +X, 90 east on -Z, the north pole on +Y');
+    at(t);
+    const heart = w.faceDirOf('pluto');
+    const toCharon = w.meshFor('charon').position.clone().sub(w.meshFor('pluto').position).normalize();
+    const north = new THREE.Vector3(0, 1, 0).applyQuaternion(w.meshFor('pluto').quaternion);
+    check(heart && Math.abs(heart.length() - 1) < 1e-9 && heart.dot(toCharon) < -0.8 && heart.dot(north) > 0.2,
+      `Pluto's heart faces away from Charon, in the north (${heart && heart.dot(toCharon).toFixed(2)}, ${heart && heart.dot(north).toFixed(2)})`);
+    check(w.faceDirOf('jupiter') === null && w.faceDirOf('nowhere') === null, 'a world that names no face has none');
+  }
 }
 
 console.log(`worlds layer ok: ${recs.length} worlds are records, searchable by name and alias, and the smaller disc wins a tap, and a planet's map waits until its disc can show it; Pluto and Jupiter's four big moons sit where NASA's numbers put them, the moons drawn around the drawn Jupiter, and each card says what it is, how big, how far and that it is a plain ball; Phobos, Deimos, Enceladus, Titan, Triton and Charon sit within 0.3 % of their orbits of where JPL Horizons puts them, and Neptune's card no longer claims the naked eye; Saturn's Mimas, Tethys, Dione, Rhea and Iapetus and Uranus's five sit within 0.45 %, with their planets' own poles, and their cards say what each is, how to see it and that Iapetus has two faces; and from Saturn, Pluto, Titan, Enceladus and Jupiter no compressed world's disc reaches another's, while the Earth stage draws every one of them at exactly the floor it always did`);

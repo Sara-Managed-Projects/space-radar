@@ -642,14 +642,14 @@ export const TEXTURES = [
     "files": [
       {
         "tier": 0,
-        "file": "textures/2k_titan_cassini_iss.webp",
+        "file": "textures/2k_titan_cassini_2018.webp",
         "px": [
           2048,
           1024
         ],
-        "bytes": 62786,
+        "bytes": 43396,
         "format": "rgb",
-        "credit": "Titan map: USGS Astrogeology Science Center and NASA/JPL-Caltech/Space Science Institute (Cassini ISS, 938 nm), public domain"
+        "credit": "Titan map: NASA/JPL-Caltech/Univ. Arizona (Cassini ISS, 938 nm, PIA22770), public domain"
       }
     ]
   },
