@@ -541,7 +541,7 @@ export function createGroundSky(ctx, env) {
   const poleAz = observer.latDeg >= 0 ? 0 : 180;
   const poleLocal = localFromAltAz(poleAz, poleAlt);
   lines.pole = lineObject('sky-pole', (() => {
-    const arm = 0.9;
+    const arm = 0.5;
     const wide = arm / Math.max(0.05, Math.cos(poleAlt * DEG));
     return [
       ...localFromAltAz(poleAz - wide, poleAlt), ...localFromAltAz(poleAz + wide, poleAlt),
@@ -952,7 +952,7 @@ export function createGroundSky(ctx, env) {
       }
       if (best) out.push({ kind: 'line', text, local: best.l, pri: 300, dy: 10 });
     };
-    if ((options.grid || options.starGrid) && L.poleNorth) out.push({ kind: 'line', text: observer.latDeg >= 0 ? L.poleNorth : L.poleSouth, local: poleLocal, pri: 520, dy: -26 });
+    if ((options.grid || options.starGrid) && L.poleNorth) out.push({ kind: 'line', text: observer.latDeg >= 0 ? L.poleNorth : L.poleSouth, local: poleLocal, pri: 520, dy: -30 });
     lineLabel(options.sunPath, L.sunPath, eclRing);
     lineLabel(options.equator, L.equator, eqRing);
     labels.cands = out.sort((a, b) => b.pri - a.pri);
@@ -1023,10 +1023,12 @@ export function createGroundSky(ctx, env) {
       const p = now < tag.until && tag.dir ? toScreen(tag.dir(), camera, w, h) : null;
       if (!p) hideTag();
       else {
-        const tw = tag.node.offsetWidth || 160;
+        const tw = tag.node.offsetWidth || Math.max(120, 7.4 * Math.max(tag.name.textContent.length, tag.sub.textContent.length) + 26);
         const x = Math.max(8 + tw / 2, Math.min(w - 8 - tw / 2, p.x));
         const below = p.y + 14 + 48 < h - 8;
         tag.node.style.transform = `translate(${Math.round(x)}px, ${Math.round(below ? p.y + 14 : p.y - 14 - 48)}px) translateX(-50%)`;
+        // Shown only once it has a place: until this frame it would sit in the page's corner.
+        if (tag.node.hidden) tag.node.hidden = false;
       }
     }
 
@@ -1284,7 +1286,7 @@ export function createGroundSky(ctx, env) {
       tag.sub.textContent = text.sub;
       tag.node.setAttribute('aria-label', text.label);
       tag.node.title = text.title || '';
-      tag.node.hidden = false;
+      tag.node.hidden = true; // paintLabels() shows it where the thing is, on the next frame
     },
     hideTag,
     /** What the tag is naming now, or null. */
