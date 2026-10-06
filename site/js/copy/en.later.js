@@ -81,6 +81,23 @@ Object.assign(COPY, {
     nearMeSub: 'What is up in your sky',
   },
 
+  // A launch within a day (ui/countdown.js). The states are Launch Library's own status field;
+  // it has no "scrubbed", so neither does this.
+  countdown: {
+    go: 'Go for launch',
+    tbc: 'Time to be confirmed',
+    tbd: 'Time not settled',
+    hold: 'On hold: the count is paused',
+    inFlight: 'In flight',
+    success: 'Launched',
+    deployed: 'Payload deployed',
+    failure: 'The launch failed',
+    partial: 'A partial failure',
+    byPlan: 'By the plan. No newer word',
+    byPlanClimbing: 'By the plan, climbing. No newer word',
+    age: 'read {age} ago',
+  },
+
   // The home's dated cards (ui/today.js): generated from what is loaded, never typed.
   today: {
     title: 'Today',

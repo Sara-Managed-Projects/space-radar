@@ -24,6 +24,7 @@ import { COPY, t, fmt, timeText } from '../copy/en.js';
 import '../copy/en.later.js';
 import { rowParts } from './next.js';
 import { phaseName, isJunk } from '../sky/tonightbest.js';
+import { mountCountdown, launchAgeMs, COUNT_WITHIN_MS } from './countdown.js';
 
 export const MAX_CARDS = 4;
 const DAY_MS = 86400e3;
@@ -192,6 +193,7 @@ export function createToday(ctx, host) {
     const items = live && next && typeof next.items === 'function' ? next.items() : lastItems;
     lastItems = items;
     const cards = todayCards({ items, nowMs, launched: launched() });
+    while (counts.length) counts.pop()();
     while (grid.firstChild) grid.removeChild(grid.firstChild);
     host.hidden = false;
     grid.hidden = !cards.length;
@@ -202,12 +204,20 @@ export function createToday(ctx, host) {
       b.appendChild(el('span', 'sr-today__kicker', card.kicker));
       b.appendChild(el('span', 'sr-today__title', card.title));
       if (card.line) b.appendChild(el('span', 'sr-today__line', card.line));
+      // A launch within a day counts down (public #289, ui/countdown.js), from the real present.
+      if (card.record && card.record.layer === 'launches' && Number.isFinite(card.tMs) && card.tMs - nowMs < COUNT_WITHIN_MS) {
+        const count = el('span', 'sr-today__count');
+        b.appendChild(count);
+        counts.push(mountCountdown(count, card.record, { now: realNow, ageMs: () => launchAgeMs(ctx) }));
+      }
       b.title = [card.title, card.line].filter(Boolean).join(COPY.punctuation.sentenceJoin);
       b.addEventListener('click', () => go(card));
       grid.appendChild(b);
     }
   }
   let lastItems = [];
+  const counts = []; // the running countdowns' stop functions
+  const realNow = () => (ctx.timePill && typeof ctx.timePill.anchor === 'function' ? ctx.timePill.anchor() : Date.now());
 
   const onData = () => refresh();
   window.addEventListener('sr:next', onData);
@@ -217,6 +227,6 @@ export function createToday(ctx, host) {
   return {
     root: host,
     refresh,
-    destroy() { window.removeEventListener('sr:next', onData); window.removeEventListener('sr:layer', onData); clearInterval(timer); },
+    destroy() { while (counts.length) counts.pop()(); window.removeEventListener('sr:next', onData); window.removeEventListener('sr:layer', onData); clearInterval(timer); },
   };
 }

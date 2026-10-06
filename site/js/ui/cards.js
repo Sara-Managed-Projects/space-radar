@@ -3207,6 +3207,18 @@ function render(record, ctx, opts = {}) {
   const heroes = heroNumbers(record, m, rows);
   if (heroes.length) body.appendChild(heroBlock(heroes));
 
+  // 2b. a launch within a day counts down (public #289, ui/countdown.js): in the clock's own time,
+  // as the scene is, with Launch Library's status and how old it is.
+  if (record.layer === 'launches' && m && Number.isFinite(m.netMs)) {
+    const count = el('div', 'sr-card__count');
+    count.hidden = true;
+    body.appendChild(count);
+    import('./countdown.js').then((mod) => {
+      if (!count.isConnected) return;
+      mod.mountCountdown(count, record, { now: () => (ctx && ctx.clock ? ctx.clock.now() : Date.now()), ageMs: () => mod.launchAgeMs(ctx) });
+    }).catch((e) => console.warn('the countdown did not load', e));
+  }
+
   // 3. the four actions, one of them ember.
   const actions = el('div', 'sr-card__actions');
   actions.setAttribute('role', 'group');
