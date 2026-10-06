@@ -381,6 +381,10 @@ jobs:
         run: node tests/test_pickrank.mjs
       - name: the scale ladder's rungs and the sky-from-here fade (spec 0028 step 2)
         run: node tests/test_ladder.mjs
+      - name: The stage hand-off keeps the pose (internal #410)
+        run: node tests/test_handoff.mjs
+      - name: The continuous flight, flown frame by frame
+        run: node tests/test_climb.mjs
       - name: the stars are places (spec 0028 step 3)
         run: node tests/test_stars3d.mjs
       # registry/stars-notable.yaml: before it, no star record carried a `why`, so on the ladder a
