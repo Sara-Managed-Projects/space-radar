@@ -105,8 +105,17 @@ if (FLOW === 'link' && /[?&]render=1/.test(location.search)) {
   if (api && api.ready && typeof api.ready.then === 'function') {
     // Real seconds, from a worker: this page's own timers are film time, and stand still.
     const real = (ms) => new Promise((res) => { const w = new Worker(URL.createObjectURL(new Blob([`setTimeout(() => postMessage(1), ${ms})`]))); w.onmessage = () => { w.terminate(); res(`not within ${ms / 1000} real seconds`); }; });
-    facts.ready = await Promise.race([api.ready.then(() => 'resolved', (e) => 'rejected: ' + (e && e.message)), real(45000)]);
-    if (facts.ready !== 'resolved') dead.push('link: __srRender.ready ' + facts.ready);
+    // HOW LONG IS FAIR (internal #423). `ready` is the catalogues landed, the trip at its intro, twelve
+    // film seconds of warm-up (360 frames at 30) and the faces: MEASURED 44.5 real seconds on the
+    // tree a deploy serves with the saved catalogues mirrored, 27 of them the catalogues coming down
+    // a 4G line (film time stands still while anything loads). This step used to give up at 45 and
+    // call it "never". Now it waits 150 and, if that is not enough, says which stage it stopped in.
+    const READY_S = 150;
+    facts.ready = await Promise.race([api.ready.then(() => 'resolved', (e) => 'rejected: ' + (e && e.message)), real(READY_S * 1000)]);
+    let d0 = null; try { d0 = api.describe(); } catch { d0 = null; }
+    facts.stage = d0 ? d0.stage : null;
+    facts.warmed = d0 ? `${d0.warmed}/${d0.warmFrames}` : null;
+    if (facts.ready !== 'resolved') dead.push(`link: __srRender.ready ${facts.ready} (stage ${facts.stage}, warm-up ${facts.warmed}, ${d0 ? d0.pending : '?'} loading)`);
     else { try { const d = api.describe(); facts.stops = d && d.stops ? d.stops.length : null; } catch (e) { facts.describe = String(e && e.message); } }
   }
   return { flow: FLOW, viewport: [innerWidth, innerHeight], ms: Date.now() - t0, dead, states: [{ name: '01-link-render', facts, errors: errors.splice(0), bad: badRequests() }] };

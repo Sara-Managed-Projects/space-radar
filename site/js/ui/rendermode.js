@@ -423,6 +423,11 @@ export function install(opts, g = window) {
     done: false,
     error: null,
     ready: null,
+    // Where the warm-up is, for whoever waits on `ready` (internal #423: forty-four real seconds
+    // of loading and warming looked exactly like a hang from outside, and was reported as one).
+    // 'installed' -> 'layers' -> 'warming' -> 'faces' -> 'settling' -> 'ready', or 'failed'.
+    stage: 'installed',
+    warmed: 0,
     attach,
     frame,
     /** The thumbnail's dressing on (or off) over the frame that is up: the tool photographs it between two frames. */
@@ -432,6 +437,7 @@ export function install(opts, g = window) {
       trip: tour ? tour.id : null, title: tour ? tour.title : null, fps, epochMs, titleFrames, endFrames,
       totalFrames: mode.totalFrames, done: mode.done, stops: stops.map((s) => ({ ...s })), beds: beds.slice(),
       truth: tour ? truthLine(tour, epochMs) : '', pending,
+      stage: mode.stage, warmed: mode.warmed, warmFrames: Math.round(WARM_S * fps), error: mode.error,
     }),
   };
 
@@ -538,6 +544,12 @@ export function install(opts, g = window) {
     // Until the catalogues have landed and the link has put the trip at its intro. Film time moves
     // only while nothing is loading, so no deadline in the app fires because a disc was slow.
     let since = null;
+    mode.stage = 'layers';
+    // The trip is read from the hash (ui/urlstate.js). `?render=1&trip=<id>` is not a link form,
+    // and used to wait thirty film seconds before saying something else was wrong (internal #423).
+    if (g.location && !/(?:^#?|&)trip=[^&]/.test(String(g.location.hash || ''))) {
+      throw new Error('no trip in the link: render mode reads it from the hash, ?render=1#trip=<id>');
+    }
     for (let i = 0; ; i += 1) {
       await advance();
       const st = ctx.trip.state;
@@ -550,7 +562,8 @@ export function install(opts, g = window) {
     }
     tour = TOURS.find((t) => t.id === ctx.trip.state.tourId);
     if (!tour) throw new Error('no such trip: ' + ctx.trip.state.tourId);
-    for (let i = 0; i < Math.round(WARM_S * fps); i += 1) await advance();
+    mode.stage = 'warming';
+    for (let i = 0; i < Math.round(WARM_S * fps); i += 1) { await advance(); mode.warmed = i + 1; }
     if (opts.captions) {
       await Promise.all(tour.stops.map((s) => {
         const key = clipKey(tour.id, s.id);
@@ -559,6 +572,7 @@ export function install(opts, g = window) {
       }));
     }
     build();
+    mode.stage = 'faces';
     if (document.fonts) {
       await Promise.all([
         document.fonts.load("600 64px 'Inter'"),
@@ -570,6 +584,7 @@ export function install(opts, g = window) {
     }
     // A dynamic import() cannot be counted; a real second and a half is every module the boot's
     // timers asked for, landed.
+    mode.stage = 'settling';
     await realWait(1500);
     await settle(5);
     // FRAME 0 IS THE SAME TWO NUMBERS WHATEVER THE BOOT TOOK. performance.now() jumps forward to
@@ -585,6 +600,7 @@ export function install(opts, g = window) {
     });
     filming = true;
     paint(0);
+    mode.stage = 'ready';
     return mode.describe();
   }
 
@@ -593,7 +609,7 @@ export function install(opts, g = window) {
     ctx = context;
     ctx.renderMode = mode;
     ctx.trip.onChange(onTrip);
-    mode.ready = warmUp().catch((e) => { mode.error = String((e && e.message) || e); throw e; });
+    mode.ready = warmUp().catch((e) => { mode.error = String((e && e.message) || e); mode.stage = 'failed'; throw e; });
     // Never an unhandled rejection: the boot panel would say "Something broke" over the scene.
     mode.ready.catch(() => {});
     return mode;
