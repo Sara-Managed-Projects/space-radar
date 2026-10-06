@@ -1029,7 +1029,7 @@ export function createTrip(ctx) {
         ? pick(backdropCandidates(backdrop, (subjectRad || 0) + BACKDROP_CLEAR))
         : null;
       // Never when the backdrop IS the light (`behind: sun`): that shot is against the Sun on purpose.
-      const againstSun = !!backdrop && backdrop.dot(_sun) > 0.9;
+      const againstSun = !!backdrop && backdrop.isTheSun === true;
       const yielded = !!best && !againstSun && best.sunward < Math.cos(Math.max(BACKDROP_MAX_PHASE_DEG, (wantDeg ?? 125) + 25) * DEG);
       if (yielded) best = null;
       if (!best) best = pick(gridCandidates(ground ? GROUND_POLARS : KEY_LIGHT_POLARS), yielded ? backdrop : null);
@@ -1113,7 +1113,13 @@ export function createTrip(ctx) {
     const at = p ? stage.toScene(p, p.frame, tMs) : null;
     if (!at) return null;
     const dir = at.sub(subjectScene);
-    return dir.lengthSq() > 1e-18 ? dir.normalize() : null;
+    if (dir.lengthSq() <= 1e-18) return null;
+    dir.normalize();
+    // keyLightAngles never gives up a backdrop that is the light itself (`behind: sun`). Told by
+    // name and not by direction: a planet that stands between its moon and the Sun is in the
+    // Sun's direction too, and that is exactly the dark shot the rule exists to refuse.
+    dir.isTheSun = id === 'sun';
+    return dir;
   }
 
   /** Which way round the arc turns: toward the light opens the subject up over the dwell. */
