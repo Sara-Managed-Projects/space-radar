@@ -107,7 +107,7 @@ export function renderTonight(host, ctx) {
   bestEmpty.hidden = true;
   const bestDark = el('p', 'sr-tonight-view__dark');
   const bestNote = el('p', 'sr-tonight-view__caveat', T.best.honesty);
-  const skybar = buildSkybar();
+  const skyControls = buildSkybar();
   text.appendChild(line);
   text.appendChild(status);
   way.appendChild(arcBox);
@@ -132,7 +132,7 @@ export function renderTonight(host, ctx) {
   root.appendChild(bestEmpty);
   root.appendChild(bestDark);
   root.appendChild(bestNote);
-  root.appendChild(skybar.node);
+  root.appendChild(skyControls.node);
 
   // --- the worker --------------------------------------------------------------------------------------
   const st = {
@@ -488,7 +488,7 @@ export function renderTonight(host, ctx) {
     renderBest();
     paint();
   };
-  const onSky = () => skybar.paint();
+  const onSky = () => skyControls.paint();
   window.addEventListener('sr:sky', onSky);
   const idle = (fn) => (typeof requestIdleCallback === 'function' ? requestIdleCallback(fn, { timeout: 3000 }) : setTimeout(fn, 200));
   const onLayersReady = () => idle(() => ask(SEARCH_HOURS));
@@ -508,7 +508,7 @@ export function renderTonight(host, ctx) {
   }
   if (window.__srLayersReady) idle(() => ask(SEARCH_HOURS));
   renderBest();
-  skybar.paint();
+  skyControls.paint();
   paint();
   start();
 
