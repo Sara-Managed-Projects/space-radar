@@ -286,7 +286,10 @@ export function renderTonight(host, ctx) {
     b.type = 'button';
     b.title = T.best.rowTitle;
     b.setAttribute('aria-label', words.aria);
-    b.appendChild(el('span', 'sr-tonight-view__rowname', words.title));
+    const head = el('span', 'sr-tonight-view__rowhead');
+    head.appendChild(el('span', 'sr-tonight-view__rowname', words.title));
+    if (words.side) head.appendChild(el('span', 'sr-tonight-view__rowside sr-num', words.side));
+    b.appendChild(head);
     b.appendChild(el('span', 'sr-tonight-view__rowdetail sr-num', words.line));
     b.addEventListener('click', onPress);
     li.appendChild(b);
@@ -349,12 +352,13 @@ export function renderTonight(host, ctx) {
     const rows = st.passes.filter((p) => p.visible && p.endMs > now).sort((a, b) => a.startMs - b.startMs).slice(0, ROWS);
     for (const p of rows) {
       const w = passWords(p);
-      if (w) list.appendChild(rowNode({ title: w.name, line: w.line, aria: w.aria }, () => showPass(p), p));
+      if (w) list.appendChild(rowNode({ title: w.name, line: w.line, side: w.side, aria: w.aria }, () => showPass(p), p));
     }
   }
 
   function renderBest() {
     st.bestAt = performance.now();
+    st.bestClock = ctx.clock.now();
     while (bestList.firstChild) bestList.removeChild(bestList.firstChild);
     const o = ctx.observer;
     const best = o ? tonightBest({ observer: o, nowMs: ctx.clock.now(), passes: st.ready ? st.passes : [] }) : null;
@@ -462,7 +466,8 @@ export function renderTonight(host, ctx) {
     const now = ctx.clock.now();
     // Outside what was worked out, or stale: ask again (the clock jumped, or half an hour passed).
     if (st.ready && ctx.observer && (now < st.fromMs - 60e3 || now > st.fromMs + (st.hours || SEARCH_HOURS) * 3600e3 - 3600e3 || performance.now() - st.askedAt > REFRESH_MS)) ask(SEARCH_HOURS);
-    if (performance.now() - (st.bestAt || 0) > BEST_MS) renderBest();
+    // Worked out again every few minutes, and at once when the clock has been moved.
+    if (performance.now() - (st.bestAt || 0) > BEST_MS || Math.abs(now - (st.bestClock || 0)) > 20 * 60e3 + (performance.now() - (st.bestAt || 0)) * Math.abs(ctx.clock.rate || 1)) renderBest();
     paint();
   }
   function start() { if (!timer && visible()) timer = setInterval(tick, 1000); }

@@ -228,8 +228,7 @@ void main() {
     cover = max(cover, dens);
   }
   if (cover <= 0.002) discard;
-  // Premultiplied: light is added, and what is behind is hidden by uCover (1 at night, 0 by day,
-  // when the unlit part of the Moon is the colour of the sky and not black).
+  // Premultiplied: light is added, and what is behind is hidden only where uCover says (the Sun).
   gl_FragColor = vec4(col * uTint * uGain * cover * uOpacity, cover * uCover * uOpacity);
   #include <colorspace_fragment>
 }
@@ -580,7 +579,7 @@ export function createGroundSky(ctx, env) {
   const UP = new THREE.Vector3(0, 1, 0);
   const toSquare = (v3, out) => out.set(v3.dot(_x), v3.dot(_y), v3.dot(_z));
 
-  function placeBodies(frame, pxPerDeg, nightCover) {
+  function placeBodies(frame, pxPerDeg) {
     const pos = bodyGeo.attributes.position;
     const mag = bodyGeo.attributes.aMag;
     const col = bodyGeo.attributes.aColour;
@@ -634,7 +633,9 @@ export function createGroundSky(ctx, env) {
       // kept gentle for it so it does not vanish before it sets.
       u.uGain.value = b.id === 'sun' ? 0.55 + 0.45 * Math.sqrt(dim) : 0.35 + 0.65 * dim;
       u.uOpacity.value = isLight ? 1 : Math.max(0, Math.min(1, (d.diameterPx - 2) / 3));
-      u.uCover.value = b.id === 'sun' ? 1 : nightCover;
+      // Light is added to the sky. Only the Sun hides what is behind it: the unlit part of the
+      // Moon is the colour of the sky it stands in, by day and by moonlight alike.
+      u.uCover.value = b.id === 'sun' ? 1 : 0;
       if (!d.mapAsked && d.look.map && loader && d.diameterPx >= MAP_AT_PX) {
         d.mapAsked = true;
         loader.load(String(url(`../../textures/${d.look.map}`)), (tex) => {
@@ -888,7 +889,8 @@ export function createGroundSky(ctx, env) {
       milkyWay.visible = u.uGain.value > 0.004;
     }
 
-    const lineNight = Math.max(0.25, Math.min(1, (-2 - frame.sunAltDeg) / 8));
+    // Lines go with the stars they join: faint in twilight, a trace by day.
+    const lineNight = Math.max(0.15, Math.min(1, (-4 - frame.sunAltDeg) / 10));
     const setLine = (obj, on) => {
       if (!obj) return;
       obj.visible = !!on;
@@ -902,7 +904,7 @@ export function createGroundSky(ctx, env) {
     setLine(lines.meridian, options.grid);
 
     solveBodies(frame.tMs, frame.fovDeg);
-    placeBodies(frame, pxPerDeg, Math.max(0, Math.min(1, (-4 - frame.sunAltDeg) / 8)));
+    placeBodies(frame, pxPerDeg);
     paintLabels(frame, w, h);
   }
 

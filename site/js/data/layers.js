@@ -794,7 +794,9 @@ export const LAYERS = [
     sample: handKeptSites,
     propagator: 'fixed',
     frame: 'earth-fixed',
-    moments: { wonder: true, now: true, next: false },
+    // Not in Now: from the ground the dishes are under the horizon, and the landers drew as dots
+    // across the face of the sky view's own Moon (sky/groundsky.js).
+    moments: { wonder: true, now: false, next: false },
     defaultOn: true,
     select: all,
     budget: { maxItems: 40 },

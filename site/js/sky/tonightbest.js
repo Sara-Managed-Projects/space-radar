@@ -192,7 +192,7 @@ export function passNumbers(pass) {
 export function passScore(pass) {
   const n = passNumbers(pass);
   if (!n || !n.visible) return 0;
-  const bright = n.mag === null ? 0 : Math.max(-10, Math.min(25, (2 - n.mag) * 5));
+  const bright = n.mag === null ? 0 : Math.max(-10, Math.min(35, (2 - n.mag) * 5));
   return 60 + bright + Math.min(10, n.peakDeg / 9);
 }
 
@@ -272,7 +272,8 @@ export function plainName(record) {
 
 /**
  * A pass as a row: its name, and one mono line of the three moments.
- * "21:03 SW · 21:06 52° S · 21:09 NE · mag −3.1". `aria` is the same as a sentence.
+ * "21:03 SW · 21:06 52° S · 21:09 NE", with "mag −3.1" for the row's right side. `aria` is the
+ * same as a sentence.
  */
 export function passWords(pass) {
   const B = COPY.tonight.best;
@@ -288,7 +289,8 @@ export function passWords(pass) {
   const note = !n.visible ? B.notVisible : n.fades ? B.fades : n.appears ? B.appears : '';
   return {
     name,
-    line: t(B.passLine, vars).replace(/\s+·/g, ' ·').replace(/\s{2,}/g, ' '),
+    line: t(B.passLine, vars).replace(/\s+·/g, ' ·').replace(/\s{2,}/g, ' ').trim(),
+    side: t(B.mag, vars),
     note,
     aria: t(B.passAria, { name, ...vars }) + (note ? ` ${note}` : ''),
   };
@@ -300,12 +302,13 @@ export function bestWords(row) {
   if (!row) return null;
   if (row.kind === 'pass') {
     const w = passWords(row.pass);
-    return w ? { title: w.name, line: w.line, aria: w.aria } : null;
+    return w ? { title: w.name, line: w.line, side: w.side, aria: w.aria } : null;
   }
   if (row.kind === 'planet') {
     const title = (COPY.sky.bodies || {})[row.id] || row.id;
-    const line = t(B.planetLine, { time: timeText.hhmm(row.bestMs), deg: fmt.int(row.altDeg), dir: compassShort(row.azDeg), mag: magText(row.mag) });
-    return { title, line, aria: `${title}: ${line}` };
+    const line = t(B.planetLine, { time: timeText.hhmm(row.bestMs), deg: fmt.int(row.altDeg), dir: compassShort(row.azDeg) });
+    const side = t(B.mag, { mag: magText(row.mag) });
+    return { title, line, side, aria: `${title}: ${line}, ${side}` };
   }
   if (row.kind === 'moon') {
     const title = t(B.moonTitle, { phase: B.phases[row.phase] || '', pct: fmt.int(row.percent) });

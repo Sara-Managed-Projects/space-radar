@@ -557,7 +557,7 @@ export function createSkyView(ctx, options = {}) {
           c = mix(c, uPollution, clamp(pollution, 0.0, 0.85));
           // Moonlight lifts the whole dome a little and most of all around the Moon itself.
           float toMoon = max(dot(d, normalize(uMoonDir)), 0.0);
-          c = mix(c, uMoonGlow, uMoonBrightness * (0.05 + 0.06 * pow(toMoon, 6.0) + 0.16 * pow(toMoon, 300.0)));
+          c = mix(c, uMoonGlow, uMoonBrightness * (0.05 + 0.06 * pow(toMoon, 6.0) + 0.1 * pow(toMoon, 300.0)));
           float a = uAlpha * mix(1.0, 0.86, t);
           a = clamp(a + uMoonBrightness * 0.25, 0.0, 1.0);
           if (uAlpha >= 0.999) a = 1.0;

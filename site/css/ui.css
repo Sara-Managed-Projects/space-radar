@@ -5361,3 +5361,7 @@ html.sr-night-red::after {
 @media (pointer: coarse) {
   .sr-skybar .sr-density__btn { min-height: 44px; }
 }
+/* A row's name with its brightness at the right, in mono: the number a row is ranked by. */
+.sr-tonight-view__rowhead { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-2); }
+.sr-tonight-view__rowhead .sr-tonight-view__rowname { flex: 1 1 auto; min-width: 0; }
+.sr-tonight-view__rowside { flex: 0 0 auto; font: 400 13px/18px var(--sr-font-mono); color: var(--sr-text-dim); }
