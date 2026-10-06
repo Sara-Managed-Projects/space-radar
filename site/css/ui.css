@@ -5660,12 +5660,12 @@ html.sr-phone .sr-tonight-view__num { font-size: var(--sr-fs-num-sm); }
   padding: var(--sp-1) var(--sp-3);
   font: inherit;
   color: var(--sr-text);
-  background: var(--sr-panel);
-  border: 1px solid var(--sr-line-strong);
-  border-radius: var(--sr-radius-sm);
   cursor: pointer;
   will-change: transform;
+  /* The glass is .sr-float's; it follows a star, so its place is never eased. */
+  transition: border-color var(--sr-fast) var(--sr-ease);
 }
+.sr-skytag:hover, .sr-skytag:active { border-color: var(--sr-line-strong); }
 .sr-skytag[hidden] { display: none; }
 .sr-skytag__name { font: 600 var(--sr-fs-sm)/18px var(--sr-font); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .sr-skytag__sub { font: 400 var(--sr-fs-sm)/16px var(--sr-font-mono); color: var(--sr-text-dim); white-space: nowrap; }

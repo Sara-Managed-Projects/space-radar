@@ -875,7 +875,7 @@ export function createGroundSky(ctx, env) {
     // "What is that": a real button, so it is outside the labels' aria-hidden layer.
     tag.node = document.createElement('button');
     tag.node.type = 'button';
-    tag.node.className = 'sr-skytag';
+    tag.node.className = 'sr-skytag sr-float';
     tag.node.hidden = true;
     tag.name = document.createElement('span');
     tag.name.className = 'sr-skytag__name';
