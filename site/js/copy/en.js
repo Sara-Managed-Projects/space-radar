@@ -1518,6 +1518,10 @@ export const COPY = {
     worldMap: {
       tinted: 'its surface is a black-and-white mosaic, tinted in a colour chosen from published descriptions',
       toned: 'its colours come from infrared, green and ultraviolet pictures, toned down toward what an eye would see',
+      // 2026-10-06: New Horizons' colour camera had red and blue filters and no green one (Pluto, Charon).
+      redblue: 'its colours come from New Horizons’ red and blue pictures, with green taken halfway between them and the colour made half as strong again; the parts photographed only in black and white are given the map’s average colour',
+      // Voyager 2's map of Triton, whose published version has a green cast (USGS, P. Schenk).
+      balanced: 'its colours come from orange, green and blue pictures, balanced to its published colour and toned down toward what an eye would see',
       infrared: 'its surface is a near-infrared map made through the haze, tinted and softened; in visible light the haze hides the ground',
     },
     // The side nobody has photographed is left one plain colour, and the card says which side.
@@ -1629,6 +1633,8 @@ export const COPY = {
     // A trip with `orbits:` on the Sun stage (scene/orbitrings.js, 2026-09-23): the dots are the one
     // exaggeration, size only. Under the instant on every stop, generated, never typed in a card.
     orbitsLine: 'Planets drawn larger than they are, as dots; their places and paths are computed.',
+    // `orbits: [moon]` on the Earth's stage (2026-10-06): the same exaggeration, and the dots are lit.
+    moonPathLine: 'The Earth and the Moon are drawn larger than they are, as dots, each lit on the side that faces the Sun. The Moon’s place and its path are computed.',
     // Spec 0040 req 8: every card on a star system's own stage says what is measured and what is
     // drawn. Generated (ui/cards.js drawingLine), never typed in the registry. {phase} is empty when
     // every planet's place on its orbit comes from a transit time (scene/systems.js

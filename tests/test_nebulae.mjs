@@ -57,7 +57,7 @@ for (const r of NEBULAE) {
   check(r.licence === 'CC BY 4.0', `${where}: licence is CC BY 4.0 (${r.licence})`);
   check(typeof r.credit === 'string' && r.credit.length > 2, `${where}: has a credit`);
   check(!/digitized sky survey|\bDSS\b|mellinger/i.test(r.credit), `${where}: the credit does not name a survey we may not ship`);
-  check(/^https:\/\/(esahubble\.org|www\.eso\.org|noirlab\.edu)\/public\/images\/|^https:\/\/esahubble\.org\/images\//.test(r.page), `${where}: links to its archive page (${r.page})`);
+  check(/^https:\/\/(esahubble\.org|www\.eso\.org|noirlab\.edu)\/public\/images\/|^https:\/\/(esahubble|esawebb)\.org\/images\//.test(r.page), `${where}: links to its archive page (${r.page})`);
   check(Object.keys(COPY.exposure.colours).includes(r.colours), `${where}: colours is one of the card's sentences (${r.colours})`);
   check(r.colours === 'unstated' ? !r.filters : typeof r.filters === 'string' && r.filters.length > 0, `${where}: names its filters, unless it says they are unstated`);
   check(r.width_arcmin > 0.5 && r.width_arcmin < 900 && r.height_arcmin > 0.5 && r.height_arcmin < 900, `${where}: a sane size (${r.width_arcmin} x ${r.height_arcmin} arcmin)`);
@@ -75,7 +75,7 @@ for (const r of NEBULAE) {
     // ...and the picture is of a size that could be this object: not a tenth of it, not thirty times it.
     if (o.majAxArcmin > 0) {
       const k = Math.max(r.width_arcmin, r.height_arcmin) / o.majAxArcmin;
-      check(k > 0.25 && k < 30, `${where}: ${Math.max(r.width_arcmin, r.height_arcmin)} arcmin of picture for an object ${o.majAxArcmin} arcmin across`);
+      check(k > (r.part ? 0.1 : 0.25) && k < 30, `${where}: ${Math.max(r.width_arcmin, r.height_arcmin)} arcmin of picture for an object ${o.majAxArcmin} arcmin across`);
     }
   }
 }

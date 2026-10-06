@@ -754,11 +754,16 @@ def check_tours(oddities_doc: dict, layer_ids: set, world_ids: set, site_ids: se
             if not isinstance(orbits, list) or not orbits:
                 fail(where, "`orbits:` must be a non-empty list of planets")
             else:
-                if stage != "sun":
+                # 2026-10-06: the Earth's stage draws one path, the Moon's (scene/orbitrings.js).
+                if stage == "earth":
+                    if orbits != ["moon"]:
+                        fail(where, f"`orbits: {orbits!r}` on the Earth's stage; the one path drawn "
+                                    f"there is the Moon's: write `orbits: [moon]`")
+                elif stage != "sun":
                     fail(where, f"`orbits:` on a trip on the `{stage}` stage; the paths are drawn "
                                 f"on the Sun stage only, so the trip would promise lines it never "
                                 f"shows")
-                for wid in orbits:
+                for wid in ([] if stage == "earth" else orbits):
                     if wid not in world_ids:
                         fail(where, f"`orbits:` names `{wid}`, which has no worlds.yaml row")
                     elif TOUR_WORLD_PARENTS.get(wid) != "sun" or wid == "sun":
@@ -899,15 +904,16 @@ def check_stop_extras(tour: dict, stop: dict, n: int, where: str, kind: str, val
     over = stop.get("over")
     if over is not None:
         ok = isinstance(over, list) and len(over) == 2 and is_number(over[0]) and -90 <= over[0] <= 90 \
-            and (over[1] == "midnight" or (is_number(over[1]) and -180 <= over[1] <= 180))
+            and (over[1] in ("midnight", "noon") or (is_number(over[1]) and -180 <= over[1] <= 180))
         if not ok:
             fail(where, f"`over: {over!r}` must be [latitude, longitude] in degrees, north and east "
-                        f"positive, or [latitude, midnight] for the meridian facing away from the Sun")
+                        f"positive, or [latitude, midnight] / [latitude, noon] for the meridian facing "
+                        f"away from the Sun or towards it")
         if kind != "world" or value == "sun":
             fail(where, "`over:` on a stop that is not a `world:` with a ground: it is a latitude and a "
                         "longitude on the world the stop is about")
-        elif over[1] == "midnight" and value != "earth":
-            fail(where, "`over: [latitude, midnight]` is the Earth's night side, for the aurora; on "
+        elif over[1] in ("midnight", "noon") and value != "earth":
+            fail(where, f"`over: [latitude, {over[1]}]` is the Earth's night or day side, for the aurora and the clouds; on "
                         f"`{value}` write the longitude")
     live = stop.get("live_note")
     live_now = False
@@ -1927,7 +1933,7 @@ def check_dso_hand() -> list:
 # tell the picture from its mirror image. A wrong centre draws Orion's photograph on empty sky and
 # nothing in the browser would say so.
 NEBULA_LICENCES = {"CC BY 4.0", "Public domain"}
-NEBULA_COLOURS = {"broadband", "mixed", "narrowband", "unstated"}
+NEBULA_COLOURS = {"broadband", "mixed", "narrowband", "infrared", "unstated"}
 NEBULA_NOT_OURS = re.compile(r"digiti[sz]ed sky survey|\bDSS\d?\b|mellinger|all rights reserved", re.I)
 NEBULA_MIRROR_MARGIN = 1.5
 
@@ -3056,7 +3062,7 @@ def check_audio() -> list:
 # too: a file under site/textures/ that no row names ships uncredited, and is refused.
 TEXTURE_ROW_FIELDS = ("id", "world", "slot", "when", "files")
 TEXTURE_FILE_FIELDS = ("tier", "file", "px", "bytes", "format", "licence", "credit", "source")
-TEXTURE_WHEN = {"boot", "idle", "near"}
+TEXTURE_WHEN = {"boot", "idle", "near", "asked"}
 TEXTURE_FORMATS = {"rgb", "rgba", "mono"}
 TEXTURE_TIERS = {0, 1, 2}
 TEXTURE_REFUSED = ("bjj.mmedia.is", "jonsson", "jónsson", "albers")

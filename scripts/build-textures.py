@@ -78,7 +78,6 @@ ORIGINALS = {
     "milky": "svs_milkyway_2020_4k_gal.exr",
     "moon": "sss_8k_moon.jpg",
     "mars": "sss_8k_mars.jpg",
-    "mercury": "sss_8k_mercury.jpg",
     "jupiter": "sss_8k_jupiter.jpg",
 }
 
@@ -87,7 +86,7 @@ MONTHS: list[int] = []  # --months 9 builds one, for looking at
 Q = {"day": 86, "night": 80, "milky": 90, "planet": 84, "dense": 72}
 # The Moon's and Mercury's maps are crater fields to the pixel: at 84 they cost 2.5 and 2.2 MB; at 72,
 # 1.8 MB, with no difference visible on a disc filling a 1440 x 900 screen.
-DENSE = {"moon", "mercury"}
+DENSE = {"moon"}
 
 
 def lazy():
@@ -259,6 +258,129 @@ def build_planet(orig: Path, key: str, report: dict) -> None:
     report[f"{key}.webp"] = save_webp(img, OUT / f"{key}.webp", Q["dense" if key in DENSE else "planet"])
 
 
+# --- Mercury and Venus's ground, from USGS's mosaics (2026-10-06, public #404 and #417) ------------
+
+MERCURY_ORIGINAL = "Mercury_MESSENGER_MDIS_Basemap_MD3Color_Mosaic_Global_665m.tif"
+MERCURY_TINT = (0x84, 0x83, 0x83)   # scene/worlds.js `tint`: what Mercury is drawn in before its map arrives
+MERCURY_SATURATION = 0.35
+MERCURY_4K_MAX_BYTES = 1_400_000
+VENUS_ORIGINAL = "Venus_Magellan_C3-MDIR_Global_Mosaic_2025m.tif"
+VENUS_SURFACE_TINT = (0xd8, 0x92, 0x4c)
+VENUS_SURFACE_MAX_BYTES = 300_000
+
+
+def _to_linear(x):
+    return np.where(x <= 0.04045, x / 12.92, ((x + 0.055) / 1.055) ** 2.4)
+
+
+def _to_srgb8(x):
+    x = np.clip(x, 0, 1)
+    return np.clip(np.where(x <= 0.0031308, x * 12.92, 1.055 * x ** (1 / 2.4) - 0.055) * 255 + 0.5, 0, 255).astype(np.uint8)
+
+
+def _shrink(src, w, h):
+    """A mosaic whose 0 is "no data", box-filtered to w x h in linear light without dragging the
+    gaps' black into their edges. Returns (linear pixels, share of each pixel that has data)."""
+    a = np.asarray(src)
+    lum = a if a.ndim == 2 else a.max(axis=2)
+    v = np.asarray(Image.fromarray(((lum > 0) * 255).astype(np.uint8)).resize((w, h), Image.BOX), dtype=np.float64) / 255
+    small = np.asarray(src.resize((w, h), Image.BOX), dtype=np.float64) / 255
+    if small.ndim == 2:
+        small = small[..., None]
+    return _to_linear(np.clip(small / np.maximum(v, 1e-3)[..., None], 0, 1)), v
+
+
+def _fill_gaps(lin, v, radius):
+    """Where there is no data, the data around it, blurred `radius` pixels (weighted by where there
+    is data, wrapping in longitude). Nothing is invented: a gap becomes the average of its edges."""
+    from PIL import ImageFilter
+
+    def blur(x):
+        # Three box passes each way: close to a Gaussian, and numpy only (PIL has no blur for reals).
+        def box(z, axis):
+            pad = [(0, 0), (0, 0)]
+            pad[axis] = (radius + 1, radius)
+            c = np.cumsum(np.pad(z, pad, mode="wrap" if axis == 1 else "edge"), axis=axis)
+            n = z.shape[axis]
+            return (np.take(c, np.arange(n) + 2 * radius + 1, axis=axis) - np.take(c, np.arange(n), axis=axis)) / (2 * radius + 1)
+        for _ in range(3):
+            x = box(box(x, 0), 1)
+        return x
+    den = blur(v)
+    out = lin.copy()
+    hard = Image.fromarray(((v > 0.98) * 255).astype(np.uint8)).filter(ImageFilter.MinFilter(3)).filter(ImageFilter.GaussianBlur(2))
+    keep = np.asarray(hard, dtype=np.float64) / 255
+    for c in range(lin.shape[2]):
+        num = blur(lin[..., c] * v)
+        far = num / np.maximum(den, 1e-6)
+        # A gap wider than the blur has no neighbours within reach: the map's own mean there.
+        far = np.where(den > 1e-3, far, float((lin[..., c] * v).sum() / v.sum()))
+        out[..., c] = lin[..., c] * keep + far * (1 - keep)
+    return out
+
+
+def build_mercury(orig: Path, report: dict) -> None:
+    """MESSENGER's three-colour map (MDIS, 1000, 750 and 430 nm shown as red, green and blue; USGS).
+
+    Those are not the eye's three colours and the mosaic's are far stronger than Mercury's, which
+    is a grey-brown world: MERCURY_SATURATION of the saturation is kept. The mean is taken to the
+    luminance of the colour the planet is drawn in before the map arrives, so the swap adds craters
+    and not a jump in brightness. The 3 % of the map with no data (strips at the poles) is filled
+    from its edges."""
+    src = Image.open(orig / MERCURY_ORIGINAL).convert("RGB")
+    lin, v = _shrink(src, W, H)
+    coverage_w = np.cos((np.arange(H) + 0.5) / H * np.pi - np.pi / 2)[:, None] * np.ones((1, W))
+    coverage = float((coverage_w * v).sum() / coverage_w.sum())
+    lin = _fill_gaps(lin, v, 24)
+    y = np.clip(lin @ np.array(LUMA), 1e-6, 1)
+    rgb = np.maximum(y[..., None] + (lin - y[..., None]) * MERCURY_SATURATION, 0)
+    target = float(_to_linear(np.array(MERCURY_TINT) / 255) @ np.array(LUMA))
+    gain = target / float((y * coverage_w).sum() / coverage_w.sum())
+    img = Image.fromarray(_to_srgb8(rgb * gain))
+    clipped = float((rgb.max(axis=2) * gain > 1).mean())
+    # No heavier than the 4k map it replaces (1 389 708 B): MESSENGER's map is sharp to the pixel,
+    # so the quality comes down from the dense maps' 72 until it fits.
+    import io
+    q = Q["dense"]
+    while q > 40:
+        buf = io.BytesIO()
+        img.save(buf, "WEBP", quality=q, method=4)
+        if buf.tell() <= MERCURY_4K_MAX_BYTES:
+            break
+        q -= 4
+    report["mercury.webp"] = save_webp(img, OUT / "mercury.webp", q)
+    small = img.resize((2048, 1024), Image.LANCZOS)
+    report["2k_mercury_messenger.webp"] = save_webp(small, ROOT / "site" / "textures" / "2k_mercury_messenger.webp", 78)
+    print(f"  mercury: data over {coverage * 100:.1f} % of the sphere, gain {gain:.2f}, clipped {clipped * 100:.2f} %, 4k WebP {q}", flush=True)
+
+
+def build_venus_surface(orig: Path, report: dict) -> None:
+    """Venus's ground as Magellan's radar saw it (C3-MIDR mosaic, USGS; 1990 to 1994).
+
+    A radar picture: bright is rough or tilted towards the radar, dark is smooth, and none of it
+    is colour. It is tinted the orange NASA's own renderings of it use, and the card says the
+    colour is added. Magellan left gaps (7.7 % of this mosaic); they are filled from their edges."""
+    import io
+    src = Image.open(orig / VENUS_ORIGINAL).convert("L")
+    w, h = 2048, 1024
+    lin, v = _shrink(src, w, h)
+    weight = np.cos((np.arange(h) + 0.5) / h * np.pi - np.pi / 2)[:, None] * np.ones((1, w))
+    coverage = float((weight * v).sum() / weight.sum())
+    y = _fill_gaps(lin, v, 12)[..., 0]
+    tint = _to_linear(np.array(VENUS_SURFACE_TINT) / 255)
+    y = y * (0.42 / float((y * weight).sum() / weight.sum()))
+    img = Image.fromarray(_to_srgb8(y[..., None] * (tint / tint.max())[None, None, :]))
+    q = 84
+    while q > 50:
+        buf = io.BytesIO()
+        img.save(buf, "WEBP", quality=q, method=4)
+        if buf.tell() <= VENUS_SURFACE_MAX_BYTES:
+            break
+        q -= 4
+    report["2k_venus_magellan.webp"] = save_webp(img, ROOT / "site" / "textures" / "2k_venus_magellan.webp", q)
+    print(f"  venus surface: data over {coverage * 100:.1f} % of the sphere, WebP {q}", flush=True)
+
+
 # --- the moons and small worlds -------------------------------------------------------------------
 #
 # key: (original's basename under --originals, output name, roll half a turn, saturation kept or
@@ -281,13 +403,67 @@ MOONS = {
     "umbriel":   ("commons_umbriel.jpg", "umbriel_voyager.webp", False, None, 1.0, 6),
     "titania":   ("commons_titania.jpg", "titania_voyager.webp", False, None, 1.0, 6),
     "oberon":    ("commons_oberon.jpg", "oberon_voyager.webp", False, None, 1.0, 6),
-    "pluto":     ("Pluto_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.tif", "pluto_usgs.webp", True, None, 1.0, 0),
-    "charon":    ("Charon_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.tif", "charon_usgs.webp", False, None, 1.0, 0),
+    # New Horizons MVIC's colour mosaics (PDS Small Bodies Node, 2026-10-06): see pds_colour() below.
+    "pluto":     ("nh_pluto_color_mosaic.img", "pluto_nh_colour.webp", True, 1.5, 1.0, 0),
+    "charon":    ("nh_charon_color_mosaic.img", "charon_nh_colour.webp", False, 1.5, 1.0, 0),
+    # USGS's copy of P. Schenk's Voyager 2 map (PIA18668): orange, green and blue pictures with the
+    # contrast raised, which gives the whole moon a green cast no eye would see. BALANCED, below.
+    "triton":    ("Triton_Voyager2_ClrMosaic_GlobalFill_600m.tif", "triton_voyager.webp", False, 0.3, 1.0, 0),
     "phobos":    ("commons_phobos.jpg", "phobos_viking.webp", False, None, 1.0, -1),
 }
+# A colour mosaic whose overall colour is the filters' and not the world's: its area-weighted mean
+# colour is taken to the hue of `look.flat` by a gain per channel, in linear light, before anything
+# else. The pattern of colour differences across the map is kept; the cast is not.
+BALANCED = {"triton"}
+# Where nobody has looked, these maps are filled with THEIR OWN mean colour instead of `look.flat`:
+# the colour is measured now, and a band of the old hand-chosen colour across Pluto's south would
+# be a seam that is not there.
+FILL_OWN_MEAN = {"pluto", "charon"}
+# New Horizons photographed more of Pluto and Charon in black and white (LORRI, on the way in) than
+# in colour. Where the colour mosaic has nothing and USGS's black-and-white one has, that one fills
+# the gap: scaled to the colour map's brightness where the two overlap, given the colour map's mean
+# colour, and at PAN_FILL_CONTRAST of its own contrast -- those are the far-side pictures from
+# hundreds of thousands of km, which USGS stretched hard and which read as blotches at full strength.
+PAN_FILL = {
+    "pluto": "Pluto_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.tif",
+    "charon": "Charon_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.tif",
+}
+PAN_FILL_CONTRAST = 0.5
 MOON_MAX_BYTES = 250_000
 MOON_MIN_Q = 58
 RELIEF_KEPT = 0.6
+
+
+def pds_colour(path: Path):
+    """A New Horizons MVIC colour mosaic (PDS3, four bands of 32-bit reals, band sequential, simple
+    cylindrical: CH4 895 nm, NIR 870 nm, RED 625 nm, BLUE 475 nm) as an sRGB picture at most 4096 wide.
+
+    MVIC has no green filter. Red is RED, blue is BLUE and green is the mean of the two: the nearest
+    thing to what an eye would see that the instrument allows, and what the card says. The values
+    are near I/F, linear; they are scaled so the 99.8th percentile is white and encoded as sRGB, and
+    a pixel missing in either band is 0 (every valid pixel is at least 2, so 0 means only that)."""
+    import re
+    label = path.with_suffix(".lbl").read_text(encoding="latin-1")
+    num = lambda k: int(re.search(r"^\s*%s\s*=\s*(\d+)" % k, label, re.M).group(1))
+    lines, samples, bands = num("LINES"), num("LINE_SAMPLES"), num("BANDS")
+    cube = np.memmap(path, dtype="<f4", mode="r", shape=(bands, lines, samples))
+    f = -(-samples // 4096)
+    hh, ww = lines // f, samples // f
+    def band(i):
+        b = np.asarray(cube[i, :hh * f, :ww * f], dtype=np.float64)
+        ok = np.isfinite(b) & (b > -1e30) & (b < 1e30)
+        b = np.where(ok, b, 0.0).reshape(hh, f, ww, f).sum(axis=(1, 3))
+        n = ok.reshape(hh, f, ww, f).sum(axis=(1, 3))
+        return b / np.maximum(n, 1), n == f * f
+    red, ok_r = band(2)
+    blue, ok_b = band(3)
+    ok = ok_r & ok_b
+    rgb = np.stack([red, (red + blue) / 2, blue], axis=-1)
+    rgb = np.clip(rgb / np.percentile(rgb.max(axis=2)[ok], 99.8), 0, 1)
+    enc = np.where(rgb <= 0.0031308, rgb * 12.92, 1.055 * rgb ** (1 / 2.4) - 0.055)
+    out = np.clip(enc * 255 + 0.5, 2, 255).astype(np.uint8)
+    out[~ok] = 0
+    return Image.fromarray(out)
 
 
 def flat_colour(world: str):
@@ -306,7 +482,7 @@ LUMA = (0.2126, 0.7152, 0.0722)
 
 def build_moon(orig: Path, key: str, report: dict) -> None:
     name, out_name, roll, keep_sat, contrast, nodata = MOONS[key]
-    src = Image.open(orig / name)
+    src = pds_colour(orig / name) if name.endswith(".img") else Image.open(orig / name)
     src = src.convert("L" if keep_sat is None else "RGB")
     w = min(2048, src.width)
     h = w // 2
@@ -321,6 +497,23 @@ def build_moon(orig: Path, key: str, report: dict) -> None:
     small = small / np.maximum(v, 1e-3)[..., None] if nodata >= 0 else small
     small = np.clip(small, 0, 1)
     lin = np.where(small <= 0.04045, small / 12.92, ((small + 0.055) / 1.055) ** 2.4)
+    if key in PAN_FILL:
+        from PIL import ImageFilter
+        pan = Image.open(orig / PAN_FILL[key]).convert("L")
+        pv = np.asarray(Image.fromarray(((np.asarray(pan) > 0) * 255).astype(np.uint8)).resize((w, h), Image.BOX), dtype=np.float64) / 255
+        ps = np.clip(np.asarray(pan.resize((w, h), Image.BOX), dtype=np.float64) / 255 / np.maximum(pv, 1e-3), 0, 1)
+        pl = np.where(ps <= 0.04045, ps / 12.92, ((ps + 0.055) / 1.055) ** 2.4)
+        both = (v > 0.99) & (pv > 0.99)
+        ycol = lin @ np.array(LUMA)
+        mean_y = float(ycol[both].mean())
+        pl = mean_y + (pl * (mean_y / float(pl[both].mean())) - mean_y) * PAN_FILL_CONTRAST
+        chroma = lin[v > 0.99].mean(axis=0)
+        chroma = chroma / float(chroma @ np.array(LUMA))
+        keep = Image.fromarray(((v > 0.98) * 255).astype(np.uint8)).filter(ImageFilter.MinFilter(9)).filter(ImageFilter.GaussianBlur(w / 200))
+        k = (np.asarray(keep, dtype=np.float64) / 255)[..., None]
+        lin = np.clip(lin * k + np.clip(pl, 0, 1)[..., None] * chroma[None, None, :] * (1 - k), 0, 1)
+        print(f"  {key}: colour over {float((v > 0.99).mean()) * 100:.1f} % of the map's pixels, black-and-white fill over {float(((pv > 0.99) & ~(v > 0.99)).mean()) * 100:.1f} %", flush=True)
+        v = np.maximum(v * (k[..., 0] > 0), pv)
     tint = flat_colour(key)
     tint_y = float(tint @ np.array(LUMA))
     weight = np.cos((np.arange(h) + 0.5) / h * np.pi - np.pi / 2)[:, None] * np.ones((1, w))
@@ -383,8 +576,11 @@ def build_moon(orig: Path, key: str, report: dict) -> None:
         y2, how = to_mean(y, peak)
         rgb = y2[..., None] * (tint / peak)[None, None, :]
     else:
+        if key in BALANCED:
+            mean_rgb = (lin * (weight * solid)[..., None]).sum(axis=(0, 1)) / (weight * solid).sum()
+            lin = np.clip(lin * (tint / tint.max() / (mean_rgb / mean_rgb.max()))[None, None, :], 0, 1)
         y = np.clip(lin @ np.array(LUMA), 1e-6, 1)
-        rgb = y[..., None] + (lin - y[..., None]) * keep_sat
+        rgb = np.maximum(y[..., None] + (lin - y[..., None]) * keep_sat, 0)
         y2, how = to_mean(y, tint_y)
         rgb = rgb * (y2 / y)[..., None]
     clipped = float((rgb.max(axis=2) > 1)[solid].mean())
@@ -393,9 +589,12 @@ def build_moon(orig: Path, key: str, report: dict) -> None:
     if coverage < 0.9995:
         from PIL import ImageFilter
         hard = Image.fromarray(((v > 0.98) * 255).astype(np.uint8))
-        soft = hard.filter(ImageFilter.MinFilter(5)).filter(ImageFilter.GaussianBlur(w / 400))
+        soft = hard.filter(ImageFilter.MinFilter(5)).filter(ImageFilter.GaussianBlur(w / (150 if key in FILL_OWN_MEAN else 400)))
     m = (np.asarray(soft, dtype=np.float64) / 255)[..., None]
-    rgb = np.clip(rgb, 0, 1) * m + tint[None, None, :] * (1 - m)
+    fill = tint
+    if key in FILL_OWN_MEAN:
+        fill = (np.clip(rgb, 0, 1) * (weight * solid)[..., None]).sum(axis=(0, 1)) / (weight * solid).sum()
+    rgb = np.clip(rgb, 0, 1) * m + fill[None, None, :] * (1 - m)
     out = np.where(rgb <= 0.0031308, rgb * 12.92, 1.055 * rgb ** (1 / 2.4) - 0.055)
     if roll:
         out = np.roll(out, w // 2, axis=1)
@@ -433,11 +632,12 @@ STEPS = {
     "milky-way": build_milky_way,
     "moon": lambda o, r: build_planet(o, "moon", r),
     "mars": lambda o, r: build_planet(o, "mars", r),
-    "mercury": lambda o, r: build_planet(o, "mercury", r),
+    "mercury": build_mercury,
+    "venus-surface": build_venus_surface,
     "jupiter": lambda o, r: build_planet(o, "jupiter", r),
     **{f"moon-{k}": (lambda o, r, k=k: build_moon(o, k, r)) for k in MOONS},
 }
-TIER1 = [k for k in STEPS if not k.startswith("moon-")]
+TIER1 = [k for k in STEPS if not k.startswith("moon-") and k != "venus-surface"]
 
 
 def main(argv: list[str]) -> int:

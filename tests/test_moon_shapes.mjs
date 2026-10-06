@@ -129,7 +129,7 @@ const rowOf = (id) => WORLDS.find((w) => w.id === id);
     check(size === f.bytes && size <= MAX, `${w.id}: ${f.file} is ${size} bytes, the registry's ${f.bytes}, and at most ${MAX}`);
     check(row.when === 'boot' && row.files.length === 1, `${w.id}: one file for every device, fetched when the moon is first big enough (scene/worlds.js), not a tier`);
     check(typeof row.coverage === 'number' && row.coverage > 0.3 && row.coverage <= 1, `${w.id}: the row says how much of the sphere the map covers (${row.coverage})`);
-    check(['tinted', 'toned', 'colour', 'infrared'].includes(w.look.mapKind), `${w.id}: its row says what kind of picture the map is (${w.look.mapKind})`);
+    check(['tinted', 'toned', 'colour', 'infrared', 'redblue', 'balanced'].includes(w.look.mapKind), `${w.id}: its row says what kind of picture the map is (${w.look.mapKind})`);
     check(w.rotation === 'locked' || w.rotation === 'iau', `${w.id}: a mapped world turns, so the map faces the right way`);
     // A side nobody has photographed is said on the card; a whole map says nothing about coverage.
     const rec = worldRecords().find((r) => r.id === w.id);

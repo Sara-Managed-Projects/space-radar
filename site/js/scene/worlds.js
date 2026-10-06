@@ -357,7 +357,7 @@ export const WORLDS = [
   {
     id: 'mercury', display: 'Mercury', parent: 'sun', radiusKm: 2439.7,
     body: 'Mercury', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_mercury.jpg', tint: 0x848383, rough: 0.45 },
+    look: { map: '2k_mercury_messenger.webp', tint: 0x848383, rough: 0.45 },
   },
   // `rim` is a thin scattering rim where there is air, in the colour photographs show at the limb
   // (#318). `air` names a scene/atmosphere.js ATMO_PARAMS row (spec 0054 task 3): Mars, Venus and
@@ -374,7 +374,9 @@ export const WORLDS = [
   {
     id: 'venus', display: 'Venus', parent: 'sun', radiusKm: 6051.8,
     body: 'Venus', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_venus_atmosphere.jpg', tint: 0xe6bf81, limb: 0.9, air: 'venus', rim: { colour: 0xfff0c8, gain: 0.5 } },
+    // `faces`: a second map the visitor may ask for on the card (setFace, 2026-10-06, public #417):
+    // the ground under the clouds, as Magellan's radar mapped it. Fetched when asked and not before.
+    look: { map: '2k_venus_atmosphere.jpg', tint: 0xe6bf81, limb: 0.9, air: 'venus', rim: { colour: 0xfff0c8, gain: 0.5 }, faces: { surface: '2k_venus_magellan.webp' } },
   },
   {
     id: 'mars', display: 'Mars', parent: 'sun', radiusKm: 3389.5,
@@ -439,7 +441,7 @@ export const WORLDS = [
     // "charcoal black, to dark orange and white" (Wikipedia): a light orange-tan.
     id: 'pluto', display: 'Pluto', parent: 'sun', radiusKm: 1188.3,
     body: 'Pluto', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { flat: true, tint: 0xb4926f, map: '2k_pluto_usgs.webp', mapKind: 'tinted', albedo: 0.52, rough: 0.3 },
+    look: { flat: true, tint: 0xb4926f, map: '2k_pluto_nh_colour.webp', mapKind: 'redblue', albedo: 0.52, rough: 0.3 },
   },
   {
     // "shades of yellow, red, white, black, and green, largely due to ... sulfur" (Wikipedia).
@@ -499,14 +501,14 @@ export const WORLDS = [
     // "Triton's reddish color" (Wikipedia) on frost with "an icy sheen" (NASA Science): a pale pink.
     id: 'triton', display: 'Triton', parent: 'neptune', radiusKm: 1352.6,
     body: 'Triton', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
-    look: { flat: true, tint: 0xe3d4cc, map: '1k_triton_voyager.jpg', mapKind: 'toned', albedo: 0.72 },
+    look: { flat: true, tint: 0xe3d4cc, map: '2k_triton_voyager.webp', mapKind: 'balanced', albedo: 0.72 },
   },
   {
     // "Charon's color palette is not as diverse as Pluto's. Most striking is the reddish north
     // (top) polar region" (NASA Science): a grey, faintly warm.
     id: 'charon', display: 'Charon', parent: 'pluto', radiusKm: 606.0,
     body: 'Charon', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
-    look: { flat: true, tint: 0x8e8a86, map: '2k_charon_usgs.webp', mapKind: 'tinted', albedo: 0.42, rough: 0.3 },
+    look: { flat: true, tint: 0x8e8a86, map: '2k_charon_nh_colour.webp', mapKind: 'redblue', albedo: 0.42, rough: 0.3 },
   },
   {
     // "composed of C-type rock, similar to blackish carbonaceous chondrite asteroids" (NASA
@@ -1363,6 +1365,8 @@ export function createWorlds(scene, opts = {}) {
           if (!tex) return;
           bootMap.set(w.id, tex);
           current.set(w.id, tex);
+          // A face asked for before the map it replaces had arrived: now it can be worn.
+          if (faceWanted.get(w.id)) Promise.resolve().then(() => setFace(w.id, faceWanted.get(w.id)));
           if (material.uniforms) {
             material.uniforms.uMap.value = tex;
             material.uniforms.uHasMap.value = 1;
@@ -1774,6 +1778,38 @@ export function createWorlds(scene, opts = {}) {
   /** The worlds still drawn in their mean colour, for the test and the status panel. */
   function waitingMaps() { return [...waiting.keys()]; }
 
+  // --- a world's second face (2026-10-06, public #417) -------------------------------------------
+  //
+  // Venus is its cloud tops to every eye and telescope, and its ground only to radar. A world row
+  // with `look.faces` has a second map that its card offers (ui/cards.js): `setFace(id, 'surface')`
+  // fetches it the first time and swaps it in with setMap, `setFace(id, null)` puts the world's own
+  // map back. Nothing is fetched until somebody asks. The air shell and the limb stay as they are:
+  // the picture is "the ground, if the clouds were not there", not a world without air.
+  const faceWanted = new Map(); // id -> face name, or null
+  const faceTex = new Map();    // `${id}/${face}` -> THREE.Texture
+  function facesOf(id) {
+    const w = BY_ID.get(id);
+    return w && w.look.faces ? Object.keys(w.look.faces) : [];
+  }
+  function faceOf(id) { return faceWanted.get(id) || null; }
+  function setFace(id, face) {
+    const w = BY_ID.get(id);
+    const name = face && w && w.look.faces ? w.look.faces[face] : null;
+    faceWanted.set(id, name ? face : null);
+    if (!name) { setMap(id, null); return true; }
+    if (!bootMap.has(id)) { fetchMap(id); return false; } // its own map first; apply() calls back
+    const key = `${id}/${face}`;
+    const have = faceTex.get(key);
+    if (have) { setMap(id, have); return true; }
+    if (!load || faceTex.has(key)) return false;
+    faceTex.set(key, null); // asked for: a second press does not fetch it twice
+    load(base + name, (tex) => {
+      faceTex.set(key, configure(tex));
+      if (faceWanted.get(id) === face) setMap(id, tex);
+    });
+    return false;
+  }
+
   // --- the texture tiers (scene/texturetiers.js, 2026-09-28) ------------------------------------
 
   /** True once a world's boot map has arrived: only then is there anything to sharpen. */
@@ -1992,6 +2028,9 @@ export function createWorlds(scene, opts = {}) {
     waitingMaps,
     hasMap,
     setMap,
+    facesOf,
+    faceOf,
+    setFace,
     discShare,
     meshFor,
     positionOf,

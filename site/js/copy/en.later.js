@@ -181,6 +181,20 @@ Object.assign(COPY, {
     narrationCredit: 'Narration: a synthetic voice, Kokoro-82M (bf_emma), Apache-2.0',
   },
 
+  // A world with a second face on its card (scene/worlds.js `faces`, 2026-10-06, public #417).
+  // Venus: NASA's Magellan page, read 2026-10-06, has the radar mapping begin on 15 September 1990
+  // and "finished coverage at 98%" in September 1992.
+  worldFace: {
+    venus: {
+      title: 'Venus, two ways',
+      modes: { own: 'Clouds', surface: 'Ground' },
+      notes: {
+        own: 'The cloud tops, which is all an eye or a telescope ever sees of Venus.',
+        surface: 'The ground under the clouds, mapped by radar from orbit by NASA\u2019s Magellan between 1990 and 1992. Bright is rough ground and dark is smooth. The orange is added, and the strips Magellan missed are filled in from their edges.',
+      },
+    },
+  },
+
   // Spec 0067: the shutter. The gas clouds in space pictures are real and faint; a photograph's
   // colour is minutes of collected light, and sometimes single gases mapped to colours an eye would
   // not see. The control's line says which exposure is on; the card's lines say how this object's
@@ -198,8 +212,11 @@ Object.assign(COPY, {
       broadband: 'It was taken through broad colour filters ({filters}), so the colours are close to what a far more sensitive eye would see.',
       mixed: 'It was taken through broad colour filters with a narrow one for glowing hydrogen added ({filters}), so the red gas is stronger here than an eye would find it.',
       narrowband: 'Its colours are mapped: each one is the light of a single gas through a narrow filter ({filters}), chosen to show the structure, not what an eye would see.',
+      // Webb's pictures (2026-10-06): light no eye sees at all, so every colour is a choice.
+      infrared: 'It was taken in infrared light, which no eye can see ({filters}), so every colour here is chosen: it shows what is there, not what an eye would see.',
       unstated: 'Its archive does not say which filters were used, so we do not say whether these are the colours an eye would see.',
     },
+    part: 'It shows {part}, not the whole of it.',
     creditLead: 'Picture: ',
     creditTail: ' \u00b7 {licence}, edges faded and sky darkened by us',
   },

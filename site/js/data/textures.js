@@ -185,14 +185,14 @@ export const TEXTURES = [
     "files": [
       {
         "tier": 0,
-        "file": "textures/2k_mercury.jpg",
+        "file": "textures/2k_mercury_messenger.webp",
         "px": [
           2048,
           1024
         ],
-        "bytes": 872555,
+        "bytes": 560552,
         "format": "rgb",
-        "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        "credit": "Mercury map: USGS Astrogeology Science Center and NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington (MESSENGER MDIS), public domain"
       },
       {
         "tier": 1,
@@ -201,9 +201,9 @@ export const TEXTURES = [
           4096,
           2048
         ],
-        "bytes": 1389708,
+        "bytes": 1277368,
         "format": "rgb",
-        "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        "credit": "Mercury map: USGS Astrogeology Science Center and NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington (MESSENGER MDIS), public domain"
       }
     ]
   },
@@ -302,6 +302,25 @@ export const TEXTURES = [
         "bytes": 229696,
         "format": "rgb",
         "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+      }
+    ]
+  },
+  {
+    "id": "venus-surface",
+    "world": "venus",
+    "slot": "surface",
+    "when": "asked",
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/2k_venus_magellan.webp",
+        "px": [
+          2048,
+          1024
+        ],
+        "bytes": 225388,
+        "format": "rgb",
+        "credit": "Venus surface map: USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan radar, C3-MIDR mosaic), public domain"
       }
     ]
   },
@@ -606,18 +625,18 @@ export const TEXTURES = [
     "world": "triton",
     "slot": "map",
     "when": "boot",
-    "coverage": 0.7,
+    "coverage": 0.669,
     "files": [
       {
         "tier": 0,
-        "file": "textures/1k_triton_voyager.jpg",
+        "file": "textures/2k_triton_voyager.webp",
         "px": [
-          1024,
-          512
+          2048,
+          1024
         ],
-        "bytes": 71547,
+        "bytes": 80414,
         "format": "rgb",
-        "credit": "Triton map: NASA/JPL-Caltech/Lunar and Planetary Institute (Voyager 2), public domain"
+        "credit": "Triton map: USGS Astrogeology Science Center and NASA/JPL-Caltech/Lunar and Planetary Institute (Voyager 2, P. Schenk, PIA18668), public domain"
       }
     ]
   },
@@ -730,14 +749,14 @@ export const TEXTURES = [
     "files": [
       {
         "tier": 0,
-        "file": "textures/2k_pluto_usgs.webp",
+        "file": "textures/2k_pluto_nh_colour.webp",
         "px": [
           2048,
           1024
         ],
-        "bytes": 159498,
+        "bytes": 75378,
         "format": "rgb",
-        "credit": "Pluto map: USGS Astrogeology Science Center and NASA/JHUAPL/SwRI (New Horizons), public domain"
+        "credit": "Pluto map: NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System) and USGS Astrogeology Science Center (LORRI mosaic), public domain"
       }
     ]
   },
@@ -750,14 +769,14 @@ export const TEXTURES = [
     "files": [
       {
         "tier": 0,
-        "file": "textures/2k_charon_usgs.webp",
+        "file": "textures/2k_charon_nh_colour.webp",
         "px": [
           2048,
           1024
         ],
-        "bytes": 159996,
+        "bytes": 45378,
         "format": "rgb",
-        "credit": "Charon map: USGS Astrogeology Science Center and NASA/JHUAPL/SwRI (New Horizons), public domain"
+        "credit": "Charon map: NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System) and USGS Astrogeology Science Center (LORRI mosaic), public domain"
       }
     ]
   },

@@ -3025,6 +3025,43 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
   if (klass === 'world') {
     const vs = ctx && ctx.worlds && typeof ctx.worlds.viewScale === 'function' ? ctx.worlds.viewScale(record.id) : null;
     if (vs && vs.exaggerated && vs.note) aboutNodes.push(el('p', 'sr-card__note', vs.note));
+    // A world with a second face (Venus: its clouds, or the ground under them by radar). The row
+    // is the exposure control's, class for class (ui/exposure.js), so it brings no new look; the
+    // line under it says what the chosen picture is and that the ground's colour is added.
+    const faces = ctx && ctx.worlds && typeof ctx.worlds.facesOf === 'function' ? ctx.worlds.facesOf(record.id) : [];
+    const F = COPY.worldFace && COPY.worldFace[record.id];
+    if (faces.length && F) {
+      const box = el('div', 'sr-card__exposure');
+      const wrap = el('section', 'sr-panel sr-density sr-exposure');
+      wrap.appendChild(el('h2', 'sr-panel__title', F.title));
+      const row = el('div', 'sr-density__choices');
+      row.setAttribute('role', 'group');
+      row.setAttribute('aria-label', F.title);
+      const note = el('p', 'sr-density__note');
+      const buttons = [];
+      const paint = () => {
+        const now = ctx.worlds.faceOf(record.id) || 'own';
+        for (const b of buttons) {
+          b.setAttribute('aria-pressed', b.dataset.face === now ? 'true' : 'false');
+          b.classList.toggle('sr-bracketed', b.dataset.face === now);
+        }
+        note.textContent = F.notes[now] || '';
+      };
+      for (const face of ['own', ...faces]) {
+        const b = el('button', 'sr-density__btn', F.modes[face] || face);
+        b.type = 'button';
+        b.dataset.face = face;
+        b.title = F.notes[face] || '';
+        b.addEventListener('click', () => { ctx.worlds.setFace(record.id, face === 'own' ? null : face); paint(); });
+        buttons.push(b);
+        row.appendChild(b);
+      }
+      wrap.appendChild(row);
+      wrap.appendChild(note);
+      paint();
+      box.appendChild(wrap);
+      aboutNodes.push(box);
+    }
     if (record.id === 'earth' && ctx && ctx.liveClouds && typeof ctx.liveClouds.line === 'function') {
       aboutNodes.push(el('p', 'sr-card__note sr-card__clouds', ctx.liveClouds.line(m.tMs)));
     }

@@ -27,7 +27,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | The Milky Way | our illustration, from Reid et al. 2019 | measurements, cited | [3e](#3e-the-milky-way-model--an-illustration-built-from-published-measurements) |
 | 3D spacecraft models | NASA 3D Resources | public domain (NASA media guidelines) | [3b](#3b-3d-models--nasa-public-domain) |
 | Black-hole photographs | Event Horizon Telescope | CC BY 4.0 | [3f](#3f-the-two-photographs--event-horizon-telescope-cc-by-40) |
-| Nebula and galaxy photographs | ESA/Hubble, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-eso-and-noirlab-cc-by-40) |
+| Nebula and galaxy photographs | ESA/Hubble, ESA/Webb, ESO, NOIRLab | CC BY 4.0 | [3g](#3g-the-photographs-of-the-nebulae-and-galaxies--esahubble-esawebb-eso-and-noirlab-cc-by-40) |
 | The sky in other light | NASA's WISE, WMAP and Fermi, as HiPS from CDS | NASA data, no copyright claimed; tiles ODbL 1.0 | [3h](#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips) |
 | Constellation pictures, borders, other peoples' skies | Johan Meuris and the sky-culture authors, through Stellarium; CDS catalogue VI/49 | Free Art License 1.3; CC BY-SA 4.0; a public catalogue, cited | [3i](#3i-constellation-pictures-borders-and-other-peoples-skies--stellarium-and-cds) |
 | Satellites and their orbits | CelesTrak | free, with an enforced usage policy | [4.1](#41-celestrak--read-this-before-you-deploy-a-fork) |
@@ -149,7 +149,8 @@ satisfies that with:
 | File | Used for | Licence | Source |
 |---|---|---|---|
 | `2k_sun.jpg` | the Sun | CC BY 4.0 | Solar System Scope |
-| `2k_mercury.jpg` | Mercury | CC BY 4.0 | Solar System Scope |
+| `2k_mercury_messenger.webp` | Mercury | Public domain | [USGS Astrogeology Science Center and NASA/JHUAPL/Carnegie Institution of Washington (MESSENGER MDIS three-colour mosaic)](https://planetarymaps.usgs.gov/mosaic/Mercury_MESSENGER_MDIS_Basemap_MD3Color_Mosaic_Global_665m.lbl), toned down |
+| `2k_venus_magellan.webp` | Venus, the ground by radar (when asked for on its card) | Public domain | [USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan C3-MIDR mosaic)](https://planetarymaps.usgs.gov/mosaic/Venus_Magellan_C3-MDIR_Global_Mosaic_2025m.lbl), tinted |
 | `2k_venus_atmosphere.jpg` | Venus | CC BY 4.0 | Solar System Scope |
 | `2k_earth_daymap.jpg` | Earth, day side | CC BY 4.0 | Solar System Scope |
 | `2k_earth_nightmap.webp` | Earth, night side | CC BY 4.0 | Solar System Scope |
@@ -213,14 +214,14 @@ changed:
 | `2k_rhea_cassini.webp` | Rhea | Public domain | [NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18438)](https://commons.wikimedia.org/wiki/File:Rhea_Color_Map.jpg): Cassini colour map (infrared, green, ultraviolet) | 100 % |
 | `2k_iapetus_cassini.webp` | Iapetus | Public domain | [NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18436)](https://commons.wikimedia.org/wiki/File:Iapetus_Color_Map.jpg): Cassini colour map (infrared, green, ultraviolet) | 100 % |
 | `2k_titan_cassini_iss.webp` | Titan | Public domain | [USGS Astrogeology Science Center and NASA/JPL-Caltech/Space Science Institute (Cassini ISS, 938 nm)](https://planetarymaps.usgs.gov/mosaic/Titan_ISS_P19658_Mosaic_Global_4km.lbl): Cassini ISS near-infrared mosaic (PIA19658), greyscale | 100 % |
-| `1k_triton_voyager.jpg` | Triton | Public domain | [NASA/JPL-Caltech/LPI, Voyager 2](https://commons.wikimedia.org/wiki/File:Triton_Map.jpg) | 70 % |
+| `2k_triton_voyager.webp` | Triton | Public domain | [USGS Astrogeology Science Center and NASA/JPL-Caltech/Lunar and Planetary Institute (Voyager 2, P. Schenk, PIA18668)](https://planetarymaps.usgs.gov/mosaic/Triton_Voyager2_ClrMosaic_GlobalFill_600m.lbl): Voyager 2 colour map (orange, green, blue), colour balanced and toned down; the north is unseen | 67 % |
 | `1k_miranda_voyager.webp` | Miranda | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Miranda_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 39 % |
 | `1k_ariel_voyager.webp` | Ariel | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Ariel_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 34 % |
 | `1k_umbriel_voyager.webp` | Umbriel | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Umbriel_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 37 % |
 | `1k_titania_voyager.webp` | Titania | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Titania_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 32 % |
 | `1k_oberon_voyager.webp` | Oberon | Public domain | [NASA/JPL-Caltech/USGS (Voyager 2)](https://commons.wikimedia.org/wiki/File:Oberon_map_JPL_USGS.jpg): Voyager 2 mosaic, greyscale; the north is unseen | 34 % |
-| `2k_pluto_usgs.webp` | Pluto | Public domain | [USGS Astrogeology Science Center and NASA/JHUAPL/SwRI (New Horizons)](https://planetarymaps.usgs.gov/mosaic/Pluto_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.lbl): New Horizons LORRI and MVIC mosaic, greyscale | 77 % |
-| `2k_charon_usgs.webp` | Charon | Public domain | [USGS Astrogeology Science Center and NASA/JHUAPL/SwRI (New Horizons)](https://planetarymaps.usgs.gov/mosaic/Charon_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.lbl): New Horizons LORRI and MVIC mosaic, greyscale | 74 % |
+| `2k_pluto_nh_colour.webp` | Pluto | Public domain | [NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System)](https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_pluto_color_mosaic.lbl) and [USGS Astrogeology Science Center (LORRI mosaic)](https://planetarymaps.usgs.gov/mosaic/Pluto_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.lbl): colour from the red and blue filters, green between them; black-and-white fill where there is no colour | 77 % |
+| `2k_charon_nh_colour.webp` | Charon | Public domain | [NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System)](https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_charon_color_mosaic.lbl) and [USGS Astrogeology Science Center (LORRI mosaic)](https://planetarymaps.usgs.gov/mosaic/Charon_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.lbl): colour from the red and blue filters, green between them; black-and-white fill where there is no colour | 74 % |
 | `2k_phobos_viking.webp` | Phobos | Public domain | [USGS Astrogeology Science Center (Viking Orbiter mosaic, control by P. Stooke)](https://commons.wikimedia.org/wiki/File:Phobos_Viking_Mosaic_DLRcontrol_7200.jpg): Viking Orbiter mosaic, greyscale | 100 % |
 
 **Beyond these twenty, no tier-0 texture comes from anywhere else.** In particular, `registry/models.yaml` claims
@@ -242,12 +243,15 @@ original by `scripts/build-textures.py --originals DIR`; the originals are not c
 | `4k/earth_night.webp` | Earth's night lights | Black Marble 2016, greyscale, 13500 × 6750 (<https://science.nasa.gov/earth/earth-observatory/earth-at-night/maps/>) | NASA Images and Media Usage Guidelines: texture maps "generally are not subject to copyright in the United States" | resampled to 4096 × 2048, levels matched to the 2k map, one grey channel, WebP 80 |
 | `4k/earth_water.webp` | the ocean glint's land/water mask | Solar System Scope `8k_earth_specular_map.tif` | CC BY 4.0, as tier 0 | box-filtered to 4096 × 2048, lossless WebP |
 | `4k/milky_way.webp` | the Milky Way sky sphere | NASA SVS Deep Star Maps 2020, `milkyway_2020_4k_gal.exr`, the background without the Hipparcos and Tycho stars (<https://svs.gsfc.nasa.gov/4851/>) | "Please give credit for this item to: NASA/Goddard Space Flight Center Scientific Visualization Studio. Gaia DR2: ESA/Gaia/DPAC." | flipped top to bottom, brightness matched to the 2k map, 60 % saturation, sRGB, WebP 90 |
-| `4k/moon.webp`, `4k/mercury.webp`, `4k/mars.webp`, `4k/jupiter.webp` | those worlds, close up | Solar System Scope `8k_moon.jpg`, `8k_mercury.jpg`, `8k_mars.jpg`, `8k_jupiter.jpg` (Jupiter's is 4096 wide) | CC BY 4.0, as tier 0 | resampled to 4096 × 2048, WebP (72 for the Moon and Mercury, 84 otherwise) |
+| `4k/moon.webp`, `4k/mars.webp`, `4k/jupiter.webp` | those worlds, close up | Solar System Scope `8k_moon.jpg`, `8k_mars.jpg`, `8k_jupiter.jpg` (Jupiter's is 4096 wide) | CC BY 4.0, as tier 0 | resampled to 4096 × 2048, WebP (72 for the Moon, 84 otherwise) |
+| `4k/mercury.webp` | Mercury, close up | USGS MESSENGER MDIS three-colour mosaic, 665 m (<https://planetarymaps.usgs.gov/mosaic/Mercury_MESSENGER_MDIS_Basemap_MD3Color_Mosaic_Global_665m.lbl>) | Public domain (USGS) | 4096 × 2048, 35 % of the saturation kept, WebP 40 |
 
 **Credit lines printed in the app** (the Sources panel lists the ones in use on the device; each is
 checked against this list by `scripts/check_registry.py`):
 
 - Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0
+- Mercury map: USGS Astrogeology Science Center and NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington (MESSENGER MDIS), public domain
+- Venus surface map: USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan radar, C3-MIDR mosaic), public domain
 - Earth by day (4k): Blue Marble Next Generation, NASA Earth Observatory
 - Earth at night (4k): Black Marble 2016, NASA Earth Observatory
 - Earth water mask (4k): Solar System Scope (solarsystemscope.com), CC BY 4.0
@@ -263,14 +267,14 @@ checked against this list by `scripts/check_registry.py`):
 - Rhea map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18438), public domain
 - Iapetus map: NASA/JPL-Caltech/Space Science Institute/Lunar and Planetary Institute (Cassini, PIA18436), public domain
 - Titan map: USGS Astrogeology Science Center and NASA/JPL-Caltech/Space Science Institute (Cassini ISS, 938 nm), public domain
-- Triton map: NASA/JPL-Caltech/Lunar and Planetary Institute (Voyager 2), public domain
+- Triton map: USGS Astrogeology Science Center and NASA/JPL-Caltech/Lunar and Planetary Institute (Voyager 2, P. Schenk, PIA18668), public domain
 - Miranda map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
 - Ariel map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
 - Umbriel map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
 - Titania map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
 - Oberon map: NASA/JPL-Caltech/USGS (Voyager 2), public domain
-- Pluto map: USGS Astrogeology Science Center and NASA/JHUAPL/SwRI (New Horizons), public domain
-- Charon map: USGS Astrogeology Science Center and NASA/JHUAPL/SwRI (New Horizons), public domain
+- Pluto map: NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System) and USGS Astrogeology Science Center (LORRI mosaic), public domain
+- Charon map: NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System) and USGS Astrogeology Science Center (LORRI mosaic), public domain
 - Phobos map: USGS Astrogeology Science Center (Viking Orbiter mosaic, control by P. Stooke), public domain
 
 **Refused by name**, because their terms forbid hosting copies: Björn Jónsson's maps ("please do
@@ -611,15 +615,16 @@ adds the ring and not a rectangle, and it is drawn far larger than it would look
 The line under the stop says all three and carries the credit and the licence
 (`copy/en.js` `trip.portraitLine`).
 
-## 3g. The photographs of the nebulae and galaxies — ESA/Hubble, ESO and NOIRLab, CC BY 4.0
+## 3g. The photographs of the nebulae and galaxies — ESA/Hubble, ESA/Webb, ESO and NOIRLab, CC BY 4.0
 
 `site/images/nebulae/` holds one photograph per row of `registry/nebulae.yaml` (spec 0067), laid
-on the sky where its object is by `site/js/scene/nebulae.js`. They come from three outreach
+on the sky where its object is by `site/js/scene/nebulae.js`. They come from four outreach
 archives whose terms release their images under the Creative Commons Attribution 4.0 International
 licence (each terms page, the sentence that grants it and the day it was read are in the registry's
-`archives:`; read 2026-10-03):
+`archives:`; read 2026-10-03, ESA/Webb's on 2026-10-06):
 
 - ESA/Hubble: <https://esahubble.org/copyright/>
+- ESA/Webb: <https://esawebb.org/copyright/> (the three James Webb Space Telescope pictures)
 - ESO: <https://www.eso.org/public/copyright/>
 - NOIRLab: <https://noirlab.edu/public/copyright/>
 
@@ -636,8 +641,8 @@ black, and re-encoded as WebP (`scripts/build_nebulae.py`). In the app its edges
 brightness follows the exposure control (Eye, Camera, Deep), and it is drawn over our own star
 field. The pictures' positions on the sky are measured by us against 2MASS (the archives'
 published centres are up to 43 arcminutes off); 2MASS cut-outs are fetched for that comparison by
-the build script and are not shipped. This use does not imply endorsement by ESA/Hubble, ESO or
-NOIRLab.
+the build script and are not shipped. This use does not imply endorsement by ESA/Hubble, ESA/Webb,
+ESO or NOIRLab.
 
 | file | credit | licence | source | size |
 |---|---|---|---|---|
@@ -668,6 +673,9 @@ NOIRLab.
 | `m51.webp` | **NASA, ESA, S. Beckwith (STScI), and The Hubble Heritage Team (STScI/AURA)** | CC BY 4.0 | [heic0506a](https://esahubble.org/images/heic0506a/) | 20 318 B |
 | `m101.webp` | **Image: European Space Agency & NASA** | CC BY 4.0 | [heic0602a](https://esahubble.org/images/heic0602a/) | 32 054 B |
 | `m81.webp` | **NASA, ESA and the Hubble Heritage Team (STScI/AURA). Acknowledgment: A. Zezas and J. Huchra (Harvard-Smithsonian Center for Astrophysics)** | CC BY 4.0 | [heic0710a](https://esahubble.org/images/heic0710a/) | 8 680 B |
+| `southern-ring-nebula.webp` | **NASA, ESA, CSA, STScI, and the Webb ERO Production Team** | CC BY 4.0 | [weic2207b](https://esawebb.org/images/weic2207b/) | 26 942 B |
+| `ngc-1300.webp` | **NASA, ESA, CSA, STScI, J. Lee (STScI), T. Williams (Oxford), PHANGS Team** | CC BY 4.0 | [weic2403e](https://esawebb.org/images/weic2403e/) | 30 646 B |
+| `tarantula-nebula.webp` | **NASA, ESA, CSA, and STScI** | CC BY 4.0 | [weic2212a](https://esawebb.org/images/weic2212a/) | 74 048 B |
 
 ## 3h. The sky in other light — NASA's WISE, WMAP and Fermi, through CDS HiPS
 
@@ -1480,8 +1488,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 ### Solar System Scope textures — CC BY 4.0
 
-Applies to the 14 files at the top of `site/textures/`, and to `4k/earth_water.webp`, `4k/moon.webp`,
-`4k/mercury.webp`, `4k/mars.webp` and `4k/jupiter.webp`.
+Applies to the 13 Solar System Scope files at the top of `site/textures/`, and to `4k/earth_water.webp`, `4k/moon.webp`,
+`4k/mars.webp` and `4k/jupiter.webp`.
 
 ```
 Planet and star textures © Solar System Scope — https://www.solarsystemscope.com/textures/

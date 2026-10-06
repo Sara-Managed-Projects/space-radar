@@ -39,6 +39,10 @@
 #                 page names no filters, and we do not guess). `filters` fills the sentence, from
 #                 the page's own "Colours & filters" table or caption; `colours_note` says where a
 #                 class came from when the page alone does not say it.
+#   part          when the picture is of a PART of its object (Webb's field is a few arcminutes and
+#                 the Tarantula is forty): the words for which part, which the card prints as "It
+#                 shows {part}, not the whole of it." tests/test_nebulae.mjs refuses a picture
+#                 under a quarter of its object's width without one.
 #   px            the baked file's longer side (512 when absent).
 #   file          the baked WebP. checked: the day the page was read.
 version: 1
@@ -68,6 +72,17 @@ archives:
     page: "https://noirlab.edu/public/images/{image}/"
     screen: "https://noirlab.edu/public/media/archives/images/screen/{image}.jpg"
     checked: 2026-10-03
+  # Webb's pictures (2026-10-06, internal #413): the ESA side of the telescope's outreach, whose
+  # terms are ESA/Hubble's word for word. NASA's own Webb pages (webbtelescope.org, STScI) say their
+  # material is free to use with credit and state no licence by name, so the pictures are taken from here.
+  esawebb:
+    name: ESA/Webb
+    licence: CC BY 4.0
+    terms: https://esawebb.org/copyright/
+    says: "ESA/Webb images, videos and web texts are released under the Creative Commons Attribution 4.0 International license and may on a non-exclusive basis be reproduced without fee provided they are clearly and visibly credited."
+    page: "https://esawebb.org/images/{image}/"
+    screen: "https://cdn.esawebb.org/archives/images/screen/{image}.jpg"
+    checked: 2026-10-06
 
 pictures:
   - id: m42
@@ -511,3 +526,57 @@ pictures:
     filters: "B, V and I"
     file: site/images/nebulae/m81.webp
     checked: 2026-10-03
+
+  - id: southern-ring-nebula
+    archive: esawebb
+    image: weic2207b
+    credit: "NASA, ESA, CSA, STScI, and the Webb ERO Production Team"
+    ra_deg: 151.756
+    dec_deg: -40.43603
+    width_arcmin: 2.41
+    height_arcmin: 2.24
+    north_deg: -112.1
+    published: {ra_deg: 151.75704, dec_deg: -40.43643}
+    solved: {moved_arcmin: 0.05, correlation: 17.4, mirror: 5.3}
+    colours: infrared
+    filters: "0.9 to 4.7 micrometres, Webb's NIRCam; shorter waves blue, longer ones red"
+    file: site/images/nebulae/southern-ring-nebula.webp
+    checked: 2026-10-06
+
+  - id: ngc-1300
+    archive: esawebb
+    image: weic2403e
+    credit: "NASA, ESA, CSA, STScI, J. Lee (STScI), T. Williams (Oxford), PHANGS Team"
+    ra_deg: 49.921
+    dec_deg: -19.41027
+    width_arcmin: 3.72
+    height_arcmin: 2.24
+    north_deg: 19.7
+    published: {ra_deg: 49.92079, dec_deg: -19.41007}
+    solved: {moved_arcmin: 0.02, correlation: 14.0, mirror: 8.5}
+    colours: infrared
+    filters: "3 to 21 micrometres, Webb's NIRCam and MIRI; shorter waves blue, longer ones red"
+    file: site/images/nebulae/ngc-1300.webp
+    checked: 2026-10-06
+
+  # The page gives this mosaic a centre and neither a field nor an orientation. Both were found
+  # before the solve: the picture was laid over 2MASS at every turn in steps of 3 degrees, mirrored
+  # and not, at 0.9, 1.0 and 1.1 of 7.28' wide (14 557 px at NIRCam's 0.03" a pixel), and one answer
+  # stood out (correlation 22 at 12 to 15 degrees, not mirrored; the next unrelated one under 11).
+  - id: tarantula-nebula
+    archive: esawebb
+    image: weic2212a
+    credit: "NASA, ESA, CSA, and STScI"
+    ra_deg: 84.69838
+    dec_deg: -69.09527
+    width_arcmin: 7.28
+    height_arcmin: 4.21
+    north_deg: 13.4
+    published: {ra_deg: 84.69838, dec_deg: -69.09527}
+    solved: {moved_arcmin: 0.0, correlation: 33.8, mirror: 6.6}
+    colours: infrared
+    filters: "0.9 to 4.7 micrometres, Webb's NIRCam; shorter waves blue, longer ones red"
+    part: "the nebula's bright centre, 340 light-years across"
+    px: 768
+    file: site/images/nebulae/tarantula-nebula.webp
+    checked: 2026-10-06

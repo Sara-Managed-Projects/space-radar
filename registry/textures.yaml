@@ -18,10 +18,11 @@ version: 1
 #
 #   id        registry/models.yaml's texture id where there is one (worlds.yaml dresses worlds by it)
 #   world     a worlds.yaml id, or `sky` for the Milky Way
-#   slot      what it is on that world: day | night | water | clouds | map | ring
+#   slot      what it is on that world: day | night | water | clouds | map | ring | surface
 #   when      boot  -- nothing sharper; the tier-0 file is all there is
 #             idle  -- on screen from the first frame: fetched after it, when the browser is idle
 #             near  -- fetched when the world's disc is big enough for 4k to show, or it is selected
+#             asked -- a second face of a world (slot `surface`), fetched when its card asks for it
 #   boot      `none` when a phone does without the map altogether (the Earth's water mask)
 #   files     one per tier:
 #     tier      0 | 1 | 2
@@ -181,23 +182,25 @@ textures:
     when: near
     files:
       - tier: 0
-        file: site/textures/2k_mercury.jpg
+        file: site/textures/2k_mercury_messenger.webp
         px: [2048, 1024]
-        bytes: 872555
+        bytes: 560552
         format: rgb
-        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
-        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
-        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits)'
+        credit: "Mercury map: USGS Astrogeology Science Center and NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington (MESSENGER MDIS), public domain"
+        source: "https://planetarymaps.usgs.gov/mosaic/Mercury_MESSENGER_MDIS_Basemap_MD3Color_Mosaic_Global_665m.lbl (read 2026-10-06)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Mercury_MESSENGER_MDIS_Basemap_MD3Color_Mosaic_Global_665m.tif"
+        make: "scripts/build-textures.py mercury: USGS's MESSENGER three-colour mosaic (1000, 750 and 430 nm as red, green and blue), 23040 px to 4096 wide in linear light, the 0.1 % with no data filled from its edges, 35 % of the saturation kept, mean taken to the luminance of the planet's plain colour by a gain 1.47, then to 2048 wide (Lanczos), WebP 78"
       - tier: 1
         file: site/textures/4k/mercury.webp
         px: [4096, 2048]
-        bytes: 1389708
+        bytes: 1277368
         format: rgb
-        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
-        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
-        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
-        original: "https://www.solarsystemscope.com/textures/download/8k_mercury.jpg"
-        make: "scripts/build-textures.py mercury: resampled to 4096 x 2048 (Lanczos), WebP 72"
+        licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits)'
+        credit: "Mercury map: USGS Astrogeology Science Center and NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington (MESSENGER MDIS), public domain"
+        source: "https://planetarymaps.usgs.gov/mosaic/Mercury_MESSENGER_MDIS_Basemap_MD3Color_Mosaic_Global_665m.lbl (read 2026-10-06)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Mercury_MESSENGER_MDIS_Basemap_MD3Color_Mosaic_Global_665m.tif"
+        make: "scripts/build-textures.py mercury: as tier 0, at 4096 x 2048, WebP 40 (the highest quality no heavier than the 4k map it replaces)"
 
   - id: mars
     world: mars
@@ -274,6 +277,24 @@ textures:
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+
+  # The ground under the clouds (2026-10-06, public #417): `when: asked`, fetched when a visitor
+  # presses Ground on Venus's card (scene/worlds.js setFace) and never before.
+  - id: venus-surface
+    world: venus
+    slot: surface
+    when: asked
+    files:
+      - tier: 0
+        file: site/textures/2k_venus_magellan.webp
+        px: [2048, 1024]
+        bytes: 225388
+        format: rgb
+        licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits)'
+        credit: "Venus surface map: USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan radar, C3-MIDR mosaic), public domain"
+        source: "https://planetarymaps.usgs.gov/mosaic/Venus_Magellan_C3-MDIR_Global_Mosaic_2025m.lbl (read 2026-10-06)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Venus_Magellan_C3-MDIR_Global_Mosaic_2025m.tif"
+        make: "scripts/build-textures.py venus-surface: USGS's Magellan radar mosaic, 2025 m to 2048 wide in linear light, the 2.9 % of the sphere Magellan missed filled from its edges, tinted orange (the colour is added: radar has none), WebP 84"
 
   - id: saturn
     world: saturn
@@ -531,16 +552,18 @@ textures:
     world: triton
     slot: map
     when: boot
-    coverage: 0.700
+    coverage: 0.669
     files:
       - tier: 0
-        file: site/textures/1k_triton_voyager.jpg
-        px: [1024, 512]
-        bytes: 71547
+        file: site/textures/2k_triton_voyager.webp
+        px: [2048, 1024]
+        bytes: 80414
         format: rgb
-        licence: "Public domain"
-        credit: "Triton map: NASA/JPL-Caltech/Lunar and Planetary Institute (Voyager 2), public domain"
-        source: "https://commons.wikimedia.org/wiki/File:Triton_Map.jpg (read 2026-09-28)"
+        licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits)'
+        credit: "Triton map: USGS Astrogeology Science Center and NASA/JPL-Caltech/Lunar and Planetary Institute (Voyager 2, P. Schenk, PIA18668), public domain"
+        source: "https://planetarymaps.usgs.gov/mosaic/Triton_Voyager2_ClrMosaic_GlobalFill_600m.lbl (read 2026-10-06)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Triton_Voyager2_ClrMosaic_GlobalFill_600m.tif"
+        make: "scripts/build-textures.py moon-triton: USGS's copy of P. Schenk's map (orange, green and blue pictures, contrast raised), 600 m to 2048 wide, its mean colour taken to the hue of the world's flat colour by a gain per channel (the original's overall cast is green), 30 % of the saturation kept, mean taken to the flat colour's luminance by a power 0.31 on the broad brightness with 0.6 of the relief, mean 0.97 of the flat colour's, unimaged areas (33 % of the sphere, the north Voyager 2 saw in darkness) filled with the flat colour, WebP 82"
 
   - id: miranda
     world: miranda
@@ -634,15 +657,15 @@ textures:
     coverage: 0.769
     files:
       - tier: 0
-        file: site/textures/2k_pluto_usgs.webp
+        file: site/textures/2k_pluto_nh_colour.webp
         px: [2048, 1024]
-        bytes: 159498
+        bytes: 75378
         format: rgb
-        licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits)'
-        credit: "Pluto map: USGS Astrogeology Science Center and NASA/JHUAPL/SwRI (New Horizons), public domain"
-        source: "https://planetarymaps.usgs.gov/mosaic/Pluto_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.lbl (read 2026-10-05)"
-        original: "https://planetarymaps.usgs.gov/mosaic/Pluto_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.tif"
-        make: "scripts/build-textures.py moon-pluto: USGS mosaic, 300 m to 2048 wide, rolled half a turn so longitude 0 is at the centre, tinted with the world's flat colour, mean taken to the flat colour's luminance by a power 0.40 on the broad brightness with 0.6 of the relief, mean 0.98 of the flat colour's, unimaged areas filled with the flat colour, WebP 82"
+        licence: 'Public domain: "NASA content ... generally are not subject to copyright in the United States" (nasa.gov, Images and Media usage guidelines)'
+        credit: "Pluto map: NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System) and USGS Astrogeology Science Center (LORRI mosaic), public domain"
+        source: "https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_pluto_color_mosaic.lbl (read 2026-10-06)"
+        original: "https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_pluto_color_mosaic.img and https://planetarymaps.usgs.gov/mosaic/Pluto_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.tif"
+        make: "scripts/build-textures.py moon-pluto: the PDS colour mosaic (MVIC, 4 bands of reals), red from the RED band (625 nm), blue from BLUE (475 nm), green the mean of the two, 11487 px to 2048 wide, rolled half a turn so longitude 0 is at the centre, saturation times 1.5, mean taken to the flat colour's luminance by a gain 0.68; where it has no data and USGS's black-and-white mosaic has (3.4 % of the map), that mosaic at half its contrast in the colour map's mean colour; the rest (23 % of the sphere, the south in its winter night) filled with the map's own mean colour, WebP 82"
 
   - id: charon
     world: charon
@@ -651,15 +674,15 @@ textures:
     coverage: 0.740
     files:
       - tier: 0
-        file: site/textures/2k_charon_usgs.webp
+        file: site/textures/2k_charon_nh_colour.webp
         px: [2048, 1024]
-        bytes: 159996
+        bytes: 45378
         format: rgb
-        licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits)'
-        credit: "Charon map: USGS Astrogeology Science Center and NASA/JHUAPL/SwRI (New Horizons), public domain"
-        source: "https://planetarymaps.usgs.gov/mosaic/Charon_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.lbl (read 2026-10-05)"
-        original: "https://planetarymaps.usgs.gov/mosaic/Charon_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.tif"
-        make: "scripts/build-textures.py moon-charon: USGS mosaic, 300 m to 2048 wide, tinted with the world's flat colour, mean taken to the flat colour's luminance by a gain 1.04, unimaged areas filled with the flat colour, WebP 82"
+        licence: 'Public domain: "NASA content ... generally are not subject to copyright in the United States" (nasa.gov, Images and Media usage guidelines)'
+        credit: "Charon map: NASA/JHUAPL/SwRI (New Horizons MVIC colour mosaic, NASA Planetary Data System) and USGS Astrogeology Science Center (LORRI mosaic), public domain"
+        source: "https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_charon_color_mosaic.lbl (read 2026-10-06)"
+        original: "https://pds-smallbodies.astro.umd.edu/holdings/nh-p_psa-leisa_mvic-5-comp-v1.0/data/mosaic/nh_charon_color_mosaic.img and https://planetarymaps.usgs.gov/mosaic/Charon_NewHorizons_Global_Mosaic_300m_Jul2017_8bit.tif"
+        make: "scripts/build-textures.py moon-charon: the PDS colour mosaic (MVIC, 4 bands of reals), red from the RED band (625 nm), blue from BLUE (475 nm), green the mean of the two, 3808 px to 2048 wide, saturation times 1.5, mean taken to the flat colour's luminance by a gain 0.46; where it has no data and USGS's black-and-white mosaic has (9.4 % of the map), that mosaic at half its contrast in the colour map's mean colour; the rest (26 % of the sphere) filled with the map's own mean colour, WebP 82"
 
   - id: phobos
     world: phobos

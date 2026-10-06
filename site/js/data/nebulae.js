@@ -378,5 +378,48 @@ export const NEBULAE = [
     "credit": "NASA, ESA and the Hubble Heritage Team (STScI/AURA). Acknowledgment: A. Zezas and J. Huchra (Harvard-Smithsonian Center for Astrophysics)",
     "licence": "CC BY 4.0",
     "page": "https://esahubble.org/images/heic0710a/"
+  },
+  {
+    "id": "southern-ring-nebula",
+    "file": "site/images/nebulae/southern-ring-nebula.webp",
+    "ra_deg": 151.756,
+    "dec_deg": -40.43603,
+    "width_arcmin": 2.41,
+    "height_arcmin": 2.24,
+    "north_deg": -112.1,
+    "colours": "infrared",
+    "filters": "0.9 to 4.7 micrometres, Webb's NIRCam; shorter waves blue, longer ones red",
+    "credit": "NASA, ESA, CSA, STScI, and the Webb ERO Production Team",
+    "licence": "CC BY 4.0",
+    "page": "https://esawebb.org/images/weic2207b/"
+  },
+  {
+    "id": "ngc-1300",
+    "file": "site/images/nebulae/ngc-1300.webp",
+    "ra_deg": 49.921,
+    "dec_deg": -19.41027,
+    "width_arcmin": 3.72,
+    "height_arcmin": 2.24,
+    "north_deg": 19.7,
+    "colours": "infrared",
+    "filters": "3 to 21 micrometres, Webb's NIRCam and MIRI; shorter waves blue, longer ones red",
+    "credit": "NASA, ESA, CSA, STScI, J. Lee (STScI), T. Williams (Oxford), PHANGS Team",
+    "licence": "CC BY 4.0",
+    "page": "https://esawebb.org/images/weic2403e/"
+  },
+  {
+    "id": "tarantula-nebula",
+    "file": "site/images/nebulae/tarantula-nebula.webp",
+    "ra_deg": 84.69838,
+    "dec_deg": -69.09527,
+    "width_arcmin": 7.28,
+    "height_arcmin": 4.21,
+    "north_deg": 13.4,
+    "colours": "infrared",
+    "filters": "0.9 to 4.7 micrometres, Webb's NIRCam; shorter waves blue, longer ones red",
+    "part": "the nebula's bright centre, 340 light-years across",
+    "credit": "NASA, ESA, CSA, and STScI",
+    "licence": "CC BY 4.0",
+    "page": "https://esawebb.org/images/weic2212a/"
   }
 ];

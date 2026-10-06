@@ -72,7 +72,8 @@ export function pictureNote(row) {
   wrap.className = 'sr-card__picture';
   const why = document.createElement('p');
   why.className = 'sr-card__note';
-  why.textContent = [C.real, fill(C.colours[row.colours] || C.colours.unstated, { filters: row.filters || '' })].join(' ');
+  // A picture of part of its object says which part (registry/nebulae.yaml `part:`, 2026-10-06).
+  why.textContent = [C.real, fill(C.colours[row.colours] || C.colours.unstated, { filters: row.filters || '' }), row.part ? fill(C.part, { part: row.part }) : ''].filter(Boolean).join(' ');
   wrap.appendChild(why);
   const credit = document.createElement('p');
   credit.className = 'sr-card__photo-credit';

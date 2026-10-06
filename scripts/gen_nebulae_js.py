@@ -20,7 +20,7 @@ from _genmirror import Mirror, pick  # noqa: E402
 # `published` (the archive's own centre, kept as the solver's starting point), `solved` and
 # `checked` are a reviewer's evidence; a phone needs none of them.
 FIELDS = ("id", "file", "ra_deg", "dec_deg", "width_arcmin", "height_arcmin", "north_deg",
-          "colours", "filters", "credit", "licence", "page")
+          "colours", "filters", "part", "credit", "licence", "page")
 
 
 def render(doc: dict) -> list:
