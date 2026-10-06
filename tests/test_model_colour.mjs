@@ -109,7 +109,7 @@ assert.equal(colourRoute(root([])), 'class', 'a model with no materials keeps th
   const { readFileSync } = await import('node:fs');
   const yaml = readFileSync(join(ROOT, 'registry/models.yaml'), 'utf8');
   const rows = yaml.split('\n').filter((l) => /file: site\/models\//.test(l) && l.includes('scripts/bake-own-colours.mjs:'));
-  assert.ok(rows.length >= 21, `twenty-one models were rebuilt in their own colours; the registry names ${rows.length}`);
+  assert.ok(rows.length >= 24, `twenty-four models were rebuilt in their own colours; the registry names ${rows.length}`);
   const srgb = (c) => (c <= 0.0031308 ? c * 12.92 : 1.055 * c ** (1 / 2.4) - 0.055);
   const bad = [];
   const seen = {};
@@ -178,3 +178,26 @@ assert.equal(colourRoute(root([])), 'class', 'a model with no materials keeps th
 }
 
 console.log('model colour: ok');
+
+// A PALETTE NEEDS COORDINATES TO BE READ WITH. Three shipped files (gpm, icon, tselina2) had a
+// palette strip on every material and no TEXCOORD_0 on any primitive: colourRoute said 'palette',
+// every vertex sampled the texel at (0, 0), and the whole satellite was drawn in the strip's first
+// colour -- found 2026-10-05 by reading each file's JSON, not by looking, because one flat colour
+// is exactly what a class-coloured model looked like. They were rebuilt; this keeps it found.
+{
+  const { readdirSync, readFileSync } = await import('node:fs');
+  const DIR = join(ROOT, 'site/models');
+  const blind = [];
+  for (const f of readdirSync(DIR).filter((n) => n.endsWith('.glb'))) {
+    const buf = readFileSync(join(DIR, f));
+    const gltf = JSON.parse(buf.toString('utf8', 20, 20 + buf.readUInt32LE(12)));
+    const mats = gltf.materials || [];
+    for (const mesh of gltf.meshes || []) for (const p of mesh.primitives || []) {
+      const m = p.material === undefined ? null : mats[p.material];
+      const textured = m && m.pbrMetallicRoughness && m.pbrMetallicRoughness.baseColorTexture;
+      if (textured && (p.attributes || {}).TEXCOORD_0 === undefined) { blind.push(f); break; }
+    }
+  }
+  assert.deepEqual([...new Set(blind)], [], 'models whose materials read a texture their primitives have no coordinates for');
+  console.log('  no shipped model reads a palette without the coordinates to read it with');
+}

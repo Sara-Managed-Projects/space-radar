@@ -329,7 +329,7 @@ The numbers are facts and carry no licence; the arrangement is this project's (M
 
 Fifty-two spacecraft, spacecraft-bus, antenna, rocket-stage and surface models ship in `site/models/`, all
 from **NASA 3D Resources** (<https://github.com/nasa/NASA-3D-Resources>, mirrored from
-<https://science.nasa.gov/3d-resources/>), 6.6 MB in total.
+<https://science.nasa.gov/3d-resources/>), 6.5 MB in total.
 
 NASA's media usage guidelines: material created by NASA is generally **not protected by copyright**
 and may be used without permission. The exceptions are the NASA insignia, logo and seal, which may
@@ -397,11 +397,11 @@ than counted by hand.
 | `suomi.glb` | Suomi National Polar-orbiting Partnership (Suomi NPP) | NORAD 37849 (SUOMI NPP) | 27 KB |
 | `tdrs.glb` | Tracking and Data Relay Satellites (TDRS) (A) | catalogue names containing TDRS | 11 KB |
 | `cygnss.glb` | Cyclone Global Navigation Satellite System (CYGNSS) | NORAD 41884-41891, the seven CYGNSS microsatellites still in the catalogue | 34 KB |
-| `gpm.glb` | Global Precipitation Measurement | NORAD 39574 (GPM-CORE) | 222 KB |
-| `icon.glb` | Ionospheric Connection Explorer (ICON) | NORAD 44628 (ICON) | 244 KB |
+| `gpm.glb` | Global Precipitation Measurement | NORAD 39574 (GPM-CORE) | 162 KB |
+| `icon.glb` | Ionospheric Connection Explorer (ICON) | NORAD 44628 (ICON) | 207 KB |
 | `seastar.glb` | SeaStar | NORAD 24883 (ORBVIEW 2 (SEASTAR)) | 12 KB |
 | `terra.glb` | Terra | NORAD 25994 (TERRA) | 20 KB |
-| `tselina2.glb` | Tselina-2 | the eighteen Tselina-2 ELINT satellites in the catalogue, by NORAD id | 122 KB |
+| `tselina2.glb` | Tselina-2 | the eighteen Tselina-2 ELINT satellites in the catalogue, by NORAD id | 113 KB |
 
 **Probes**
 
@@ -478,7 +478,7 @@ credit:
    2 480 KB to 1 211 KB, and `tests/test_model_colour.mjs` fails if a shipped model carries an
    image that is not a palette strip.
 
-7. **Rebuilt in their own colours**, for twenty-one files, with `scripts/bake-own-colours.mjs`
+7. **Rebuilt in their own colours**, for twenty-four files, with `scripts/bake-own-colours.mjs`
    (2026-10-05). Steps 3 to 6 threw the colour away whenever it lived in a texture, and the app
    then painted the whole spacecraft in one colour for its class: the Apollo lunar module was
    salmon and Voyager lavender. This pass starts again from NASA's file: it welds and decimates
@@ -489,7 +489,9 @@ credit:
    does not draw as a hole in the sky and a pure white does not glare; and parts smaller than
    0.4 % of the model are dropped. The photographs, normal maps and metalness are still not
    shipped, and the toon shading of step 5 is unchanged — the colours are NASA's, the light is
-   ours. `mms.glb` was not rebuilt: NASA's file states no colours at all.
+   ours. Three of the twenty-four (`gpm.glb`, `icon.glb`, `tselina2.glb`) had a palette strip and
+   no texture coordinates to read it with, so each was drawn in the strip's first colour; they are
+   rebuilt the same way. `mms.glb` was not rebuilt: NASA's file states no colours at all.
 
 They are loaded **on demand**, one file per object, only when the camera is near it. Nobody downloads all 53; the largest single download is `icesat2.glb` at 290 KB.
 
