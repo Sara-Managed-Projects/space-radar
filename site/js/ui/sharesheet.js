@@ -761,7 +761,7 @@ export function createShareSheet(ctx) {
     if (!cur) return;
     const st = embedState(shareState(ctx, cur.record ? cur.record.id : null), cur.trip);
     const html = embedSnippet(st, { base: appBase(), title: t(S.embedFrameTitle, { name: cur.parts.name }) });
-    if (ctx) ctx.lastShare = { ...ctx.lastShare, embed: html };
+    if (ctx) ctx.lastEmbed = html; // for a browser check: the clipboard cannot be read back there
     try {
       await navigator.clipboard.writeText(html);
       toast(S.embedCopied);
