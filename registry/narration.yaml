@@ -240,11 +240,11 @@ clips:
   - {trip: "tonight-from-your-street", stop: "moon", hash: "73af1dea299dbc6b", seconds: 18.67, words: 46, lufs: -16.6, opus: 75165, m4a: 96555, vtt: 356}
   - {trip: "tonight-from-your-street", stop: "planet", hash: "78b3125ce1844555", seconds: 13.0, words: 35, lufs: -16.7, opus: 51297, m4a: 67650, vtt: 264}
   - {trip: "tonight-from-your-street", stop: "pass", hash: "6c38d6704ae5ec9c", seconds: 19.69, words: 53, lufs: -16.4, opus: 78509, m4a: 101771, vtt: 388}
-  - {trip: "tonight-from-your-street", stop: "out", hash: "0781a8f108cd06f2", seconds: 19.16, words: 53, lufs: -16.5, opus: 78299, m4a: 99163, vtt: 386}
-  - {trip: "moon-phases", stop: "from-outside", hash: "757b05c92da994d2", seconds: 19.67, words: 56, lufs: -16.5, opus: 87044, m4a: 101771, vtt: 385}
-  - {trip: "moon-phases", stop: "waxing", hash: "aabba08dd1818ed9", seconds: 21.29, words: 56, lufs: -16.5, opus: 85133, m4a: 109812, vtt: 386}
-  - {trip: "moon-phases", stop: "full", hash: "49851b9b64676276", seconds: 19.57, words: 56, lufs: -16.3, opus: 78457, m4a: 101119, vtt: 388}
-  - {trip: "moon-phases", stop: "waning", hash: "1ec8ea224f96123e", seconds: 15.94, words: 40, lufs: -16.5, opus: 63955, m4a: 82646, vtt: 310}
+  - {trip: "tonight-from-your-street", stop: "out", hash: "ee53e6e4c4f0cbfa", seconds: 18.61, words: 53, lufs: -16.5, opus: 75778, m4a: 96338, vtt: 386}
+  - {trip: "moon-phases", stop: "from-outside", hash: "d0d388ac6b2fa78a", seconds: 19.17, words: 56, lufs: -16.3, opus: 81411, m4a: 99163, vtt: 385}
+  - {trip: "moon-phases", stop: "waxing", hash: "c97cc1132be334c5", seconds: 20.34, words: 56, lufs: -16.4, opus: 81276, m4a: 105031, vtt: 386}
+  - {trip: "moon-phases", stop: "full", hash: "34d88dc10fc5c891", seconds: 18.94, words: 56, lufs: -16.5, opus: 74309, m4a: 97859, vtt: 388}
+  - {trip: "moon-phases", stop: "waning", hash: "e8a898df9fc27b69", seconds: 15.37, words: 40, lufs: -16.4, opus: 61140, m4a: 79820, vtt: 310}
   - {trip: "moon-phases", stop: "far-side", hash: "cbbcabe0769e9b22", seconds: 18.32, words: 51, lufs: -16.6, opus: 72375, m4a: 94816, vtt: 345}
   - {trip: "moon-phases", stop: "shadow", hash: "0491f8573ba227ed", seconds: 19.92, words: 54, lufs: -16.6, opus: 79231, m4a: 102858, vtt: 376}
   - {trip: "moon-phases", stop: "tonight", hash: "5619b17727c8d1d2", seconds: 17.96, words: 48, lufs: -16.5, opus: 71987, m4a: 93078, vtt: 352}
