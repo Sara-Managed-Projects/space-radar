@@ -211,7 +211,7 @@ clips:
   - {trip: "chasing-the-solar-eclipse", stop: "ring", hash: "b1c64a34c8d9648b", seconds: 16.19, words: 53, lufs: -16.6, opus: 64869, m4a: 83950, vtt: 322}
   - {trip: "chasing-the-solar-eclipse", stop: "lunar", hash: "9ce23011f0823db9", seconds: 13.9, words: 41, lufs: -16.5, opus: 56225, m4a: 72214, vtt: 287}
   - {trip: "the-constellations", stop: "orion", hash: "eb4895de3cdfcc68", seconds: 21.02, words: 56, lufs: -16.6, opus: 84923, m4a: 108508, vtt: 390}
-  - {trip: "the-constellations", stop: "orion-from-the-side", hash: "40acf0154ac52367", seconds: 23.76, words: 56, lufs: -16.6, opus: 94244, m4a: 122418, vtt: 451}
+  - {trip: "the-constellations", stop: "orion-from-the-side", hash: "97aa9b2ac070aa7a", seconds: 23.16, words: 56, lufs: -16.7, opus: 91933, m4a: 119375, vtt: 451}
   - {trip: "the-constellations", stop: "taurus", hash: "77aa79817e51ff01", seconds: 24.89, words: 64, lufs: -16.6, opus: 102898, m4a: 128286, vtt: 443}
   - {trip: "the-constellations", stop: "gemini", hash: "8a812bd9387c326d", seconds: 21.66, words: 46, lufs: -16.6, opus: 85940, m4a: 111768, vtt: 401}
   - {trip: "the-constellations", stop: "leo", hash: "f285f8235ba7d4a3", seconds: 19.43, words: 47, lufs: -16.5, opus: 76496, m4a: 100467, vtt: 357}
