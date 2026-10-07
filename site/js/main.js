@@ -156,6 +156,31 @@ const ONE_MOVE_MS = 120;
  * to save data: there each waits to be wanted.
  */
 const WARM_MS = 3500;
+/** How long after sr:layers-ready a laptop's sharper maps may start to come (scene/texturetiers.js). */
+const TIERS_MS = 3000;
+
+/**
+ * WHERE THE FIRST VISIT ENDS (2026-10-07, internal #415 item 3). Everything that is not the first
+ * screen's waits for sr:layers-ready and then some seconds more: the far catalogues, the aurora, the
+ * weather, the timeline, the dated cards, the keys hint, the card and the trips, the 4k maps, the
+ * service worker. Each had its own setTimeout, some with an idle callback and some bare, and
+ * tests/test_first_visit_bytes.mjs measured "sr:layers-ready and two seconds" on ITS clock: on a busy
+ * machine the page's three seconds could end inside the test's two, and the gate read megabytes
+ * that no first visit pays. So there is one way to wait, and it does two things:
+ *   - the moment the first of these timers fires, it writes `window.__srFirstVisitOver` (the wall
+ *     clock, ms). A request that starts after that is not the first visit's, and the byte test and
+ *     tools/cdp.mjs --bytes leave it out by that mark, not by their own stopwatch;
+ *   - the work itself runs in an idle moment (requestIdleCallback, 4 s at most), so on a machine
+ *     still busy with its first frames it does not land beside work that is already late.
+ * No delay handed to it is under 3 s: tests/test_boot_diet.mjs reads the constants.
+ */
+function afterFirstVisit(ms, run) {
+  return setTimeout(() => {
+    if (typeof window !== 'undefined' && !window.__srFirstVisitOver) window.__srFirstVisitOver = Date.now();
+    if (typeof requestIdleCallback === 'function') requestIdleCallback(() => run(), { timeout: 4000 });
+    else run();
+  }, ms);
+}
 
 export async function boot({ setStatus } = {}) {
   const say = setStatus || (() => {});
@@ -645,10 +670,7 @@ export async function boot({ setStatus } = {}) {
       console.warn('the aurora module did not load', e);
       window.dispatchEvent(new CustomEvent('sr:aurora'));
     });
-    setTimeout(() => {
-      if (typeof requestIdleCallback === 'function') requestIdleCallback(load, { timeout: 4000 });
-      else load();
-    }, AURORA_IMPORT_MS);
+    afterFirstVisit(AURORA_IMPORT_MS, load);
   }
   if (!embed) window.addEventListener('sr:layers-ready', loadAuroraLater, { once: true });
   {
@@ -693,10 +715,7 @@ export async function boot({ setStatus } = {}) {
       console.warn('the weather modules did not load', e);
       window.dispatchEvent(new CustomEvent('sr:weather'));
     });
-    setTimeout(() => {
-      if (typeof requestIdleCallback === 'function') requestIdleCallback(load, { timeout: 4000 });
-      else load();
-    }, WEATHER_IMPORT_MS);
+    afterFirstVisit(WEATHER_IMPORT_MS, load);
   }
   if (!embed) window.addEventListener('sr:layers-ready', loadWeatherLater, { once: true });
   {
@@ -733,10 +752,10 @@ export async function boot({ setStatus } = {}) {
   // scripts/provision-notifier.sh, and the row answered every address with "Could not reach the
   // subscription service". A form that can only fail is not offered: without the URL the module is
   // not even fetched. The code and its tests stay for the day the URL exists.
-  const subscribeLater = () => setTimeout(() => {
+  const subscribeLater = () => afterFirstVisit(SUBSCRIBE_MS, () => {
     if (!window.SPACE_RADAR_NOTIFY_URL) return;
     import('./ui/subscribe.js').then((m) => m.createSubscribe({ parent: ctx.explore.subscribeHost })).catch((e) => console.warn('the subscribe row did not load', e));
-  }, SUBSCRIBE_MS);
+  });
   if (embed) embed.attach(ctx);
   else if (window.__srLayersReady) subscribeLater();
   else window.addEventListener('sr:layers-ready', subscribeLater, { once: true });
@@ -749,7 +768,7 @@ export async function boot({ setStatus } = {}) {
     .then((m) => m.createScrubber(ctx, ctx.timePill))
     .catch((e) => { scrubber = null; console.warn('the timeline did not load', e); }));
   ctx.timePill.tapeHost.addEventListener('pointerdown', wantScrubber, { once: true });
-  const scrubberLater = () => setTimeout(wantScrubber, SCRUBBER_MS);
+  const scrubberLater = () => afterFirstVisit(SCRUBBER_MS, wantScrubber);
   if (window.__srLayersReady) scrubberLater();
   else window.addEventListener('sr:layers-ready', scrubberLater, { once: true });
   // THE PASSPORT (spec 0041, ui/passport.js): where a visitor has been, in this browser only.
@@ -760,9 +779,9 @@ export async function boot({ setStatus } = {}) {
     .catch((e) => { passport = null; console.warn('the passport did not load', e); return null; }));
   // TODAY (internal #270, ui/today.js): the home's dated cards, generated from what is loaded,
   // and under them the way into the debris view (ui/debris.js). TODAY_MS after sr:layers-ready.
-  const todayLater = () => setTimeout(() => {
+  const todayLater = () => afterFirstVisit(TODAY_MS, () => {
     import('./ui/today.js').then((m) => m.createToday(ctx, ctx.explore.todayHost)).catch((e) => console.warn('the dated cards did not load', e));
-  }, TODAY_MS);
+  });
   if (window.__srLayersReady) todayLater();
   else window.addEventListener('sr:layers-ready', todayLater, { once: true });
   // THE CONTROLS HINT (spec 0068 task 2, ui/keyhint.js): once per visitor, bottom-right, the keys
@@ -772,7 +791,7 @@ export async function boot({ setStatus } = {}) {
   const arrivedByLink = !!(link && (link.trip || link.at || link.event || link.stage)) || location.hash === '#sources';
   const keyHint = () => import('./ui/keyhint.js').then((m) => m.createKeyHint(ctx, { deepLink: arrivedByLink }));
   ctx.keyhint = { show: () => keyHint().then((api) => api.show()) };
-  const hintLater = () => setTimeout(() => keyHint().then((api) => api.maybeShow()).catch((e) => console.warn('the controls hint did not load', e)), KEYHINT_MS);
+  const hintLater = () => afterFirstVisit(KEYHINT_MS, () => keyHint().then((api) => api.maybeShow()).catch((e) => console.warn('the controls hint did not load', e)));
   window.addEventListener('sr:layers-ready', hintLater, { once: true });
   // An embed shows no hint and does not fetch it (ui/embed.js): the listener comes off again.
   if (embed) window.removeEventListener('sr:layers-ready', hintLater);
@@ -784,20 +803,18 @@ export async function boot({ setStatus } = {}) {
   // what a visitor reaches for first; each is a no-op if a tap or a link already fetched it.
   // In an IDLE moment, as the later layers are: on a machine still busy with its first frames the
   // timer alone would put 640 kB beside the work that is already late.
-  const warmLater = () => setTimeout(() => {
+  const warmLater = () => afterFirstVisit(WARM_MS, () => {
     if (typeof navigator !== 'undefined' && shouldSaveData(navigator.connection)) return;
-    const warm = () => wantCards().then(() => ctx.trip.warm()).then(() => warmModels());
-    if (typeof requestIdleCallback === 'function') requestIdleCallback(warm, { timeout: 4000 });
-    else warm();
-  }, WARM_MS);
+    wantCards().then(() => ctx.trip.warm()).then(() => warmModels());
+  });
   // Not in an embed: a frame under someone else's article shows one object or one trip, and
   // fetches what that needs when it needs it.
   if (embed) { /* nothing is warmed */ }
   else if (window.__srLayersReady) warmLater();
   else window.addEventListener('sr:layers-ready', warmLater, { once: true });
-  const offlineLater = () => setTimeout(() => {
+  const offlineLater = () => afterFirstVisit(OFFLINE_MS, () => {
     import('./ui/offline.js').then((m) => m.createOffline(ctx)).catch((e) => console.warn('the offline module did not load', e));
-  }, OFFLINE_MS);
+  });
   if (embed) { /* no service worker */ }
   else if (window.__srLayersReady) offlineLater();
   else window.addEventListener('sr:layers-ready', offlineLater, { once: true });
@@ -884,11 +901,8 @@ export async function boot({ setStatus } = {}) {
     // test (spec 0044) waits on it.
     window.__srLayersReady = true;
     window.dispatchEvent(new CustomEvent('sr:layers-ready'));
-    setTimeout(() => {
-      if (embed) return; // an embed: only what its link names (openAt)
-      if (typeof requestIdleCallback === 'function') requestIdleCallback(() => ctx.loadAfterFirstVisit(), { timeout: 3000 });
-      else ctx.loadAfterFirstVisit();
-    }, LATER_LAYERS_MS);
+    // An embed: only what its link names (openAt).
+    if (!embed) afterFirstVisit(LATER_LAYERS_MS, () => ctx.loadAfterFirstVisit());
   });
   let shellsLoad = null;
   // A rung of the ladder or a star system's stage draws them: no waiting for the idle moment.
@@ -2095,7 +2109,17 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     // The track's minute marks, on this frame's camera (render() brought its matrices up to date).
     if (ctx.trackLabels) ctx.trackLabels.update();
     // The first frame is on screen: from now on the sharper maps may come, when the browser is idle.
-    if (!tiersStarted && ctx.quality) { tiersStarted = true; ctx.quality.start(); }
+    // AFTER THE FIRST VISIT TOO (2026-10-07, internal #415 item 3): the 4k maps are megabytes, and a
+    // laptop used to start fetching them beside the catalogues, inside the stretch the byte gate
+    // measures -- headless SwiftShader reads as a laptop, so one local run in twelve was 1.3 MB
+    // over with no change to the boot graph. They wait for sr:layers-ready and TIERS_MS like
+    // everything else that is not the first screen's; a phone (tier 0) fetches none either way.
+    if (!tiersStarted && ctx.quality) {
+      tiersStarted = true;
+      const go = () => afterFirstVisit(TIERS_MS, () => ctx.quality.start());
+      if (window.__srLayersReady) go();
+      else window.addEventListener('sr:layers-ready', go, { once: true });
+    }
   }
   let tiersStarted = false;
   let lastTierTick = 0;

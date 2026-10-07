@@ -76,10 +76,13 @@ const FILM_ONLY = new Set(['/js/ui/rendermode.js']);
 
 /** Sum a boot's requests: `[{url, bytes}]` -> the numbers the gate and the log read. */
 function tally(requests, pageOrigin) {
-  const t = { total: 0, count: 0, audio: [], audioBytes: 0, og: [], ogBytes: 0, lazy: [], nebulae: [], deferrable: 0, thirdParty: 0, fonts: [], fontBytes: 0, cyrillic: [], tiles: [], film: [] };
+  const t = { total: 0, count: 0, after: 0, audio: [], audioBytes: 0, og: [], ogBytes: 0, lazy: [], nebulae: [], deferrable: 0, thirdParty: 0, fonts: [], fontBytes: 0, cyrillic: [], tiles: [], film: [] };
   for (const r of requests) {
     const at = sitePath(r.url);
     if (!at) continue; // data: and blob: URLs cross no wire
+    // Started after the app said the first visit was over (js/main.js afterFirstVisit, internal
+    // #415 item 3): the warm-up, the far catalogues, a laptop's 4k maps. Not this visit's.
+    if (r.after) { t.after += 1; continue; }
     const bytes = Number(r.bytes) || 0;
     t.total += bytes;
     t.count += 1;
@@ -123,7 +126,7 @@ function verdict(t, budgets = BUDGETS, { info = false } = {}) {
 
 const kB = (n) => `${(n / 1000).toFixed(1)} kB`;
 function report(t, where) {
-  console.log(`first visit (${where}): ${t.total} B in ${t.count} requests, budget ${BUDGETS.first_visit_bytes} B`);
+  console.log(`first visit (${where}): ${t.total} B in ${t.count} requests, budget ${BUDGETS.first_visit_bytes} B${t.after ? `; ${t.after} request(s) that started after the app's own end-of-first-visit mark are left out` : ''}`);
   console.log(`  deferrable at boot (stars3d.names.json + exoplanets.csv + stars.bin): ${t.deferrable} B (${kB(t.deferrable)})`);
   console.log(`  fonts: ${t.fontBytes} B (${kB(t.fontBytes)}) of ${BUDGETS.fonts_at_boot_bytes} B in ${t.fonts.length} file(s)${t.fonts.length ? `: ${t.fonts.join(', ')}` : ''}`);
   console.log(`  from other hosts: ${t.thirdParty} B (${kB(t.thirdParty)})`);
@@ -178,7 +181,7 @@ async function boot(base, path = 'index.html') {
     // tools/cdp.mjs --bytes takes, so a local or live measurement and CI's agree on what a byte is.
     const cdp = await context.newCDPSession(page);
     const requests = new Map();
-    cdp.on('Network.requestWillBeSent', (e) => requests.set(e.requestId, { url: e.request.url, bytes: 0 }));
+    cdp.on('Network.requestWillBeSent', (e) => requests.set(e.requestId, { url: e.request.url, bytes: 0, at: Math.round((e.wallTime || 0) * 1000) }));
     const done = (e) => { const q = requests.get(e.requestId); if (q) q.bytes = e.encodedDataLength || 0; };
     cdp.on('Network.loadingFinished', done);
     cdp.on('Network.loadingFailed', done);
@@ -189,6 +192,11 @@ async function boot(base, path = 'index.html') {
     await page.goto(`${base}/${path}`, { waitUntil: 'domcontentloaded', timeout: 60_000 });
     await page.waitForFunction(() => window.__srLayersReady === true, null, { timeout: 240_000 });
     await page.waitForTimeout(2000);
+    // THE APP'S OWN MARK (internal #415 item 3). Two seconds on this clock and three on the page's
+    // are not the same two seconds on a busy runner: when the page's after-the-first-visit timers
+    // have already fired, what started after the mark they wrote is left out (tally()).
+    const over = await page.evaluate(() => Number(window.__srFirstVisitOver) || 0).catch(() => 0);
+    if (over) for (const q of requests.values()) if (q.at > over) q.after = true;
     return { requests: [...requests.values()], origin: new URL(base).origin };
   } finally {
     await browser.close();
@@ -264,8 +272,25 @@ if (BASE || FROM) {
   // loaded after sr:layers-ready (or when the ladder, the search box, a trip or a link needs them).
   check(/const LATER_LAYERS = new Set\(\['stars', 'exoplanets', 'deep-sky'\]\);/.test(main) && /if \(LATER_LAYERS\.has\(layer\.id\)\) \{ later\.push\(layer\); continue; \}/.test(main),
     'main.js keeps the named stars and the exoplanets out of the boot lanes');
-  check(/dispatchEvent\(new CustomEvent\('sr:layers-ready'\)\);\s*\n\s*setTimeout\(\(\) => \{[\s\S]{0,200}loadAfterFirstVisit\(\)[\s\S]{0,120}LATER_LAYERS_MS\)/.test(main),
+  check(/dispatchEvent\(new CustomEvent\('sr:layers-ready'\)\);\s*\n[^\n]*\n\s*if \(!embed\) afterFirstVisit\(LATER_LAYERS_MS, \(\) => ctx\.loadAfterFirstVisit\(\)\);/.test(main),
     'and loads them LATER_LAYERS_MS after sr:layers-ready');
+  // Internal #415 item 3: one way to wait, which marks where the first visit ends; nothing that
+  // waits for sr:layers-ready is on a bare timer, and a row that started after the mark is not counted.
+  check(/function afterFirstVisit\(ms, run\) \{\s*\n\s*return setTimeout\(\(\) => \{\s*\n[^\n]*window\.__srFirstVisitOver = Date\.now\(\);\s*\n[^\n]*requestIdleCallback\(\(\) => run\(\), \{ timeout: 4000 \}\)/.test(main),
+    'main.js afterFirstVisit() writes window.__srFirstVisitOver when its timer fires and runs the work in an idle moment');
+  {
+    const bare = main.split('\n').filter((l) => /setTimeout\(/.test(l) && /_MS\)/.test(l) && !/ONE_MOVE_MS/.test(l));
+    check(bare.length === 0, `main.js waits for a named delay on a bare setTimeout (use afterFirstVisit): ${bare.map((l) => l.trim().slice(0, 80)).join(' | ')}`);
+    const named = [...main.matchAll(/afterFirstVisit\(([A-Z_]+_MS),/g)].map((m) => m[1]);
+    check(named.length >= 10, `only ${named.length} things wait through afterFirstVisit(): ${named.join(', ')}`);
+    for (const name of new Set(named)) {
+      const ms = new RegExp(`const ${name} = (\\d+);`).exec(main);
+      check(ms && Number(ms[1]) >= 3000, `${name} is ${ms && ms[1]} ms: under the two seconds the byte test waits plus a second's margin`);
+    }
+    check(/afterFirstVisit\(TIERS_MS, \(\) => ctx\.quality\.start\(\)\)/.test(main), 'the sharper maps wait for the first visit to be over too');
+    const late = tally([...visit, { url: `${O}/textures/4k/earth_day_10.webp`, bytes: 1300000, after: true }, { url: `${O}/audio/bed-earth.opus`, bytes: 1, after: true }], O);
+    check(late.total === t.total && late.after === 2 && verdict(late).length === 0, 'a request that started after the app\'s end-of-first-visit mark is neither summed nor judged');
+  }
   check(/function openAt\(ctx, id\) \{[\s\S]{0,400}loadAfterFirstVisit\(\)\.then/.test(main), 'a link to a star or an exoplanet waits for them rather than saying it names nothing');
   // Spec 0070: the film camera is a dynamic import behind `render=1`, and not in the preload block.
   check(/\/\[\?&\]render=1\(\?:&\|\$\)\/\.test\(location\.search\)\s*\n\s*\? await import\('\.\/ui\/rendermode\.js'\)/.test(main) && !/^import [^\n]*rendermode/m.test(main),

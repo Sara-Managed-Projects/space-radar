@@ -58,7 +58,7 @@ check(/const embed = \/\[\?&\]embed=1\(\?:&\|\$\)\/\.test\(location\.search\)\s*
 check(/if \(embed\) \{ \/\* no service worker \*\/ \}\s*else if \(window\.__srLayersReady\) offlineLater\(\);/.test(main), 'an embed never registers the service worker (ui/offline.js is not fetched)');
 check(/if \(embed\) window\.removeEventListener\('sr:layers-ready', hintLater\);/.test(main), 'an embed does not fetch the controls hint');
 for (const what of ['loadAuroraLater', 'loadWeatherLater']) check(new RegExp(`if \\(!embed\\) window\\.addEventListener\\('sr:layers-ready', ${what}`).test(main), `an embed does not fetch ${what}'s module`);
-check(/if \(!embed\) ctx\.liveClouds\.start\(\)/.test(main) && /setTimeout\(\(\) => \{\s*if \(embed\) return;[^\n]*\n\s*if \(typeof requestIdleCallback/.test(main), 'nor today\'s clouds, nor the far catalogues unless its link names one');
+check(/if \(!embed\) ctx\.liveClouds\.start\(\)/.test(main) && /if \(!embed\) afterFirstVisit\(LATER_LAYERS_MS, \(\) => ctx\.loadAfterFirstVisit\(\)\);/.test(main), 'nor today\'s clouds, nor the far catalogues unless its link names one');
 const preload = read('site/index.html');
 check(!/modulepreload" href="js\/ui\/(embed|photomode|sharesheet|printcompose)\.js"/.test(preload), 'none of it is preloaded');
 const sheet = read('site/js/ui/sharesheet.js');

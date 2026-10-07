@@ -74,6 +74,11 @@ const SHOT_DIR = arg('shot-dir', '');
 // compressed). Added for spec 0044 (2026-09-28): `node tests/test_first_visit_bytes.mjs
 // --from=out.json` sums it with the same rules CI applies, so the live site and a local server can
 // be measured the way screens.yml measures the CI server.
+// Each row also has `at`, the wall clock (ms) the request started, and `after: true` when that is
+// past `window.__srFirstVisitOver` -- the mark js/main.js writes when the first of its
+// after-the-first-visit timers fires (internal #415 item 3). The test leaves those rows out, so a
+// probe may go on to walk the app after the boot it measures, and a slow machine cannot push the
+// warm-up into the number.
 const BYTES = arg('bytes', '');
 const requests = new Map();
 // --net=4g|3g: a known connection. Headless Chrome's network-quality estimate at boot is whatever it
@@ -216,7 +221,7 @@ try {
       return;
     }
     if (BYTES && m.method === 'Network.requestWillBeSent') {
-      requests.set(m.params.requestId, { url: m.params.request.url, status: 0, bytes: 0 });
+      requests.set(m.params.requestId, { url: m.params.request.url, status: 0, bytes: 0, at: Math.round((m.params.wallTime || 0) * 1000) });
       return;
     }
     if (BYTES && m.method === 'Network.responseReceived') {
@@ -337,6 +342,12 @@ try {
     for (const [k, ms] of top) console.error(`${ms.toFixed(0).padStart(7)} ms  ${(100 * ms / total).toFixed(1).padStart(5)} %  ${k}`);
   }
   if (BYTES) {
+    let over = 0;
+    try {
+      const r = await send(ws, 'Runtime.evaluate', { expression: 'Number(window.__srFirstVisitOver) || 0', returnByValue: true }, sessionId);
+      over = Number(r && r.result && r.result.value) || 0;
+    } catch { /* the page is gone: every row is counted, as before */ }
+    if (over) for (const q of requests.values()) if (q.at > over) q.after = true;
     writeFileSync(BYTES, JSON.stringify([...requests.values()], null, 1));
     trace('wrote ' + BYTES + ': ' + requests.size + ' requests');
   }
