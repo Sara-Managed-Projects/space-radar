@@ -108,6 +108,11 @@ jobs:
       # this holds the parts that decide what counts as the same words.
       - name: "The listening check: numbers and spellings compared as words, the word error rate, the guard"
         run: python3 tests/test_listen_check.py
+      # Internal #441: a title said alone gained a vowel at each end, so it is said in one pass
+      # with the sentence after it. No TTS here: which sentences go together, where the pass is
+      # cut, and the caption times that come out of the sample counts.
+      - name: "A short sentence is never said alone: the passes, the cut and the cue times"
+        run: python3 tests/test_narrate_join.py
       # Spec 0044: the gates themselves. A stale mirror is a test holding the previous number.
       - name: The budgets mirror matches the registry (spec 0044)
         run: python3 scripts/gen_budgets_js.py --check

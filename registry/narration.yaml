@@ -27,7 +27,14 @@ version: 1
 #   engine.id      part of every clip's hash. Change it when the model, the G2P or anything else
 #                  that changes how a word is said changes, and every clip is stale until rendered.
 #   packages       the versions the render ran with; narrate.py refuses to render with others.
-#   timing         the pauses narrate.py puts between the sentences it synthesises one by one.
+#   timing         the pauses narrate.py puts between the sentences.
+#     join         internal #441: a short sentence said alone gains a vowel at each end ("Venus."
+#                  was heard as "a Venusa"), so a title, and any sentence of `words` words or
+#                  fewer, is said in ONE pass with its neighbour and the pass is cut at the model's
+#                  own pause. `joiners` are tried in order between the two sentences until the
+#                  pause is at least `min_pause_s` (a dash lengthens it); the pause is looked for
+#                  between `window` x the short sentence's length when said alone, as the longest
+#                  run under `quiet` (of full scale). A pass over `max_chars` is not made.
 #   encode         -16 LUFS is the level spoken word is mastered to for the web (the beds are at
 #                  -23 and duck a further 10 dB under the voice, audio/narration.js); peak_dbfs is
 #                  where narrate.py's limiter holds the few tall peaks a synthetic voice has. Opus
@@ -79,7 +86,12 @@ voice:
   lang: en-gb
   speed: 0.8
   credit: "Narration: a synthetic voice, Kokoro-82M (bf_emma), Apache-2.0"
-timing: {lead_s: 0.15, title_gap_s: 0.7, gap_s: 0.45, tail_s: 0.25}
+timing:
+  lead_s: 0.15
+  title_gap_s: 0.7
+  gap_s: 0.45
+  tail_s: 0.25
+  join: {words: 4, joiners: [" — ", "; — "], window: [0.45, 1.15], quiet: 0.01, min_pause_s: 0.08, max_chars: 420}
 encode: {lufs: -16, peak_dbfs: -1.5, opus_kbps: 32, aac_kbps: 40, aac_rate: 24000}
 checks: {wpm: [110, 200], lufs_tolerance: 1.0, mean_db_floor: -40, max_db_floor: -12}
 lexicon:

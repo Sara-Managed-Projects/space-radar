@@ -22,9 +22,16 @@ WRITTEN FOR THE EYE, READ FOR THE EAR. spoken() turns what a synthesiser trips o
 REFUSES a digit it does not know how to say, rather than leaving the model to guess. Names the
 grapheme-to-phoneme step gets wrong are in the registry's `lexicon`, as phonemes.
 
-ONE CLIP PER STOP, ONE CUE PER SENTENCE. Each sentence is synthesised on its own and the clip is
+ONE CLIP PER STOP, ONE CUE PER SENTENCE. A long sentence is synthesised on its own and the clip is
 the sentences joined with pauses this script chooses, so the WebVTT timings are sample counts and
-not an aligner's guess. Levelled to -16 LUFS (a gain and a peak limiter, encode() says why), then
+not an aligner's guess.
+
+A SHORT SENTENCE IS NEVER SAID ALONE (internal #441). Given two or three words and a full stop,
+the model puts a vowel-like sound before them and another after: "Venus." came out as "a Venusa",
+"Why it is flat." as "why it is flatter", in most of the first 195 clips. So the title (and any
+sentence of `timing.join.words` words or fewer) is said IN ONE PASS with its neighbour (passes()),
+and the pass is cut where the model itself paused (find_pause()): the cue times are still sample
+counts, and the pause between the two is still the registry's, not the model's. Levelled to -16 LUFS (a gain and a peak limiter, encode() says why), then
 Opus at 32 kbps mono and an AAC twin for a Safari that cannot decode Opus (audio/pick.js).
 
 IDEMPOTENT BY HASH. A clip's hash is its spoken script, the voice, the speed, the engine's id and
@@ -233,6 +240,92 @@ def every_stop(tours: list):
             yield trip, stop
 
 
+# ---------------------------------------------------------- one pass for a short sentence (#441)
+
+JOIN_DEFAULT = {"words": 0, "joiners": [" "], "window": [0.45, 1.15], "quiet": 0.01, "min_pause_s": 0.08,
+                "max_chars": 420}
+
+
+def join_rules(cfg: dict) -> dict:
+    return {**JOIN_DEFAULT, **((cfg.get("timing") or {}).get("join") or {})}
+
+
+def plain_words(marked: str) -> int:
+    """Words in a script line, the lexicon's markup counted as the word it wraps."""
+    return len(re.findall(r"[A-Za-z']+(?:-[A-Za-z']+)*", re.sub(r"\[([^\]]+)\]\(/[^)]*/\)", r"\1", marked)))
+
+
+def passes(marked: list, has_title: bool, rules: dict) -> list:
+    """Which sentences the voice is given together: [[0, 1], [2], [3, 4]]. Pure.
+
+    A title, and a sentence of `words` words or fewer, is short. A short sentence goes in one pass
+    with the sentence after it; the last sentence, if short, with the one before. A pass that
+    would be longer than `max_chars` is not made: the model splits a long input itself, and then
+    the short sentence is alone again."""
+    n = len(marked)
+    short = [(has_title and i == 0) or plain_words(m) <= int(rules["words"]) for i, m in enumerate(marked)]
+    room = int(rules["max_chars"])
+    out = []
+    i = 0
+    while i < n:
+        group = [i]
+        while short[group[-1]] and group[-1] + 1 < n \
+                and sum(len(marked[k]) for k in group) + len(marked[group[-1] + 1]) <= room:
+            group.append(group[-1] + 1)
+        out.append(group)
+        i = group[-1] + 1
+    if len(out) >= 2 and len(out[-1]) == 1 and short[out[-1][0]] \
+            and sum(len(marked[k]) for k in out[-2]) + len(marked[out[-1][0]]) <= room:
+        last = out.pop()
+        out[-1] += last
+    return out
+
+
+def pass_text(marked: list, joiner: str) -> str:
+    """What the voice is given for one pass: the sentences, each with its own full stop, and the
+    joiner between them (a dash makes the model pause longer, which is where the pass is cut)."""
+    return joiner.join(m.strip() for m in marked)
+
+
+def find_pause(env: list, frame_s: float, lo_s: float, hi_s: float, quiet: float):
+    """The model's own pause: the longest run of quiet frames that starts between lo_s and hi_s.
+    -> (start_s, end_s) or None. `env` is the peak of each frame. Pure."""
+    best = None
+    i = 0
+    n = len(env)
+    while i < n:
+        if env[i] < quiet:
+            j = i
+            while j < n and env[j] < quiet:
+                j += 1
+            if lo_s <= i * frame_s <= hi_s and (best is None or j - i > best[1] - best[0]):
+                best = (i, j)
+            i = j
+        else:
+            i += 1
+    return None if best is None else (best[0] * frame_s, best[1] * frame_s)
+
+
+def gaps_for(n: int, has_title: bool, timing: dict) -> list:
+    """The silence after each of a clip's n sentences, in seconds. Pure."""
+    return [timing["tail_s"] if i == n - 1 else (timing["title_gap_s"] if has_title and i == 0 else timing["gap_s"])
+            for i in range(n)]
+
+
+def lay_out(lengths: list, gaps: list, lead_s: float, rate: int) -> tuple:
+    """Where each sentence starts and ends in the clip, from sample counts. Pure.
+    -> ([(start_s, end_s)], [silence in samples: the lead, then one after each sentence], total samples)"""
+    at = int(rate * lead_s)
+    silences = [at]
+    timed = []
+    for size, gap in zip(lengths, gaps):
+        timed.append((at / rate, (at + size) / rate))
+        hush = int(rate * gap)
+        silences.append(hush)
+        at += size + hush
+    return timed, silences, at
+
+
 # ------------------------------------------------------------------------------------- the files
 
 def paths(trip_id: str, stop_id: str) -> dict:
@@ -429,15 +522,20 @@ class Voice:
         ph, _ = self.g2p(marked)
         return ph
 
-    def say(self, marked: str, voice_id: str | None = None):
-        """One sentence -> float32 samples at 24 kHz, trimmed to the speech, edges faded."""
+    def raw(self, marked: str, voice_id: str | None = None):
+        """What the model makes of one input, untrimmed: float32 samples at 24 kHz."""
         np = self.np
         v = self.cfg["voice"]
         audio, rate = self.kokoro.create(
             self.phonemes(marked), voice=voice_id or v["id"], speed=float(v["speed"]), lang=v["lang"],
             is_phonemes=True, trim=False, sentence_pause=0, clause_pause=0,
         )
-        audio = np.asarray(audio, dtype=np.float32).reshape(-1)
+        return np.asarray(audio, dtype=np.float32).reshape(-1), rate
+
+    def tidy(self, audio, rate: int):
+        """Trimmed to the speech, edges faded."""
+        np = self.np
+        audio = np.array(audio, dtype=np.float32)
         loud = np.flatnonzero(np.abs(audio) > 0.004)
         if loud.size:
             pad = int(rate * 0.03)
@@ -447,26 +545,85 @@ class Voice:
             ramp = np.linspace(0, 1, fade, dtype=np.float32)
             audio[:fade] *= ramp
             audio[-fade:] *= ramp[::-1]
-        return audio, rate
+        return audio
+
+    def say(self, marked: str, voice_id: str | None = None):
+        """One sentence -> float32 samples at 24 kHz, trimmed to the speech, edges faded."""
+        audio, rate = self.raw(marked, voice_id)
+        return self.tidy(audio, rate), rate
+
+    def say_pass(self, marked: list, voice_id: str | None = None) -> tuple:
+        """Several sentences in one pass, cut apart at the model's own pauses (internal #441).
+        -> ([samples for each sentence], rate, the shortest pause that was cut at in seconds, or
+        None when a pause was not found and the sentences were said alone after all)."""
+        np = self.np
+        if len(marked) == 1:
+            audio, rate = self.say(marked[0], voice_id)
+            return [audio], rate, None
+        rules = join_rules(self.cfg)
+        frame_s = 0.005
+        alone = [self.say(m, voice_id) for m in marked[:-1]]
+        rate = alone[0][1]
+        frame = int(rate * frame_s)
+        best = None
+        for joiner in rules["joiners"]:
+            audio, rate = self.raw(pass_text(marked, joiner), voice_id)
+            loud = np.flatnonzero(np.abs(audio) > 0.004)
+            if not loud.size:
+                continue
+            audio = audio[max(0, loud[0] - int(rate * 0.03)): min(audio.size, loud[-1] + int(rate * 0.03))]
+            n = audio.size // frame
+            env = np.abs(audio[: n * frame]).reshape(n, frame).max(axis=1).tolist()
+            cuts, at = [], 0.0
+            for own, _ in alone:
+                length = own.size / rate
+                lo, hi = rules["window"]
+                found = find_pause(env, frame_s, at + lo * length, at + hi * length, float(rules["quiet"]))
+                if not found:
+                    cuts = None
+                    break
+                cuts.append(found)
+                at = found[1]
+            if cuts is None:
+                continue
+            shortest = min(b - a for a, b in cuts)
+            if best is None or shortest > best[0]:
+                best = (shortest, audio, cuts)
+            if shortest >= float(rules["min_pause_s"]):
+                break
+        if best is None:
+            return [a for a, _ in alone] + [self.say(marked[-1], voice_id)[0]], rate, None
+        shortest, audio, cuts = best
+        parts, start = [], 0
+        for a, b in cuts:
+            keep = min(0.03, (b - a) / 2)          # a little of the pause stays on each side
+            parts.append(self.tidy(audio[start: int((a + keep) * rate)], rate))
+            start = int((b - keep) * rate)
+        parts.append(self.tidy(audio[start:], rate))
+        return parts, rate, shortest
 
     def clip(self, cues: list, has_title: bool, voice_id: str | None = None):
-        """All the sentences of a stop, joined with the registry's pauses. -> samples, rate, timings."""
+        """All the sentences of a stop, joined with the registry's pauses.
+        -> samples, rate, timings, and what say_pass() reported for each pass of two or more."""
         np = self.np
         t = self.cfg["timing"]
         rate = 24000
-        parts = [np.zeros(int(rate * t["lead_s"]), dtype=np.float32)]
-        timed = []
-        at = float(t["lead_s"])
-        for i, (shown, marked) in enumerate(cues):
-            audio, rate = self.say(marked, voice_id)
-            timed.append((at, at + audio.size / rate, shown))
-            parts.append(audio)
-            at += audio.size / rate
-            last = i == len(cues) - 1
-            gap = t["tail_s"] if last else (t["title_gap_s"] if has_title and i == 0 else t["gap_s"])
-            parts.append(np.zeros(int(rate * gap), dtype=np.float32))
-            at += int(rate * gap) / rate
-        return np.concatenate(parts), rate, timed
+        marked = [m for _, m in cues]
+        spoken_parts, notes = [], []
+        for group in passes(marked, has_title, join_rules(self.cfg)):
+            parts, rate, shortest = self.say_pass([marked[i] for i in group], voice_id)
+            spoken_parts += parts
+            if len(group) > 1:
+                notes.append((group, shortest))
+        spans, silences, total = lay_out([p.size for p in spoken_parts], gaps_for(len(cues), has_title, t),
+                                         float(t["lead_s"]), rate)
+        pieces = [np.zeros(silences[0], dtype=np.float32)]
+        for part, hush in zip(spoken_parts, silences[1:]):
+            pieces += [part, np.zeros(hush, dtype=np.float32)]
+        audio = np.concatenate(pieces)
+        assert audio.size == total
+        timed = [(a, b, shown) for (a, b), (shown, _) in zip(spans, cues)]
+        return audio, rate, timed, notes
 
 
 def encode(ff: str, aac: str, wav: Path, cfg: dict, opus: Path, m4a: Path) -> dict:
@@ -543,7 +700,7 @@ def render(args) -> int:
     with tempfile.TemporaryDirectory() as tmp:
         for trip, stop, key, cues, h, p in todo:
             has_title = key not in (cfg.get("skip_title") or []) and key not in (cfg.get("say") or {})
-            audio, rate, timed = voice.clip(cues, has_title)
+            audio, rate, timed, notes = voice.clip(cues, has_title)
             wav = Path(tmp) / "clip.wav"
             sf.write(str(wav), audio, rate, subtype="FLOAT")
             stats = encode(ff, aac, wav, cfg, p["opus"], p["m4a"])
@@ -565,10 +722,15 @@ def render(args) -> int:
                     problems.append(f"{name} {stats[name]}")
             if stats["mean_db"] < float(checks.get("mean_db_floor", -40)) or stats["max_db"] < float(checks.get("max_db_floor", -12)):
                 problems.append(f"near silent (mean {stats['mean_db']} dB, max {stats['max_db']} dB)")
+            for group, shortest in notes:
+                if shortest is None:
+                    problems.append(f"sentences {group} could not be cut at a pause and were said alone")
+            joined = "; ".join(f"{g} cut at a {int(round(sh * 1000))} ms pause" for g, sh in notes if sh is not None)
             bad += 1 if problems else 0
             print(f"{'BAD ' if problems else 'ok  '}{key}: {seconds:.1f} s, {words} words, {wpm:.0f} wpm, "
                   f"{stats['lufs']} LUFS, peak {stats['peak']} dBFS, {rows[key]['opus'] / 1000:.1f} kB opus, "
-                  f"{rows[key]['m4a'] / 1000:.1f} kB m4a{' -- ' + '; '.join(problems) if problems else ''}", flush=True)
+                  f"{rows[key]['m4a'] / 1000:.1f} kB m4a{'; ' + joined if joined else ''}"
+                  f"{' -- ' + '; '.join(problems) if problems else ''}", flush=True)
             # After every clip, so a render that is interrupted keeps what it finished.
             order = [k for k in (f"{t['id']}/{s['id']}" for t, s in every_stop(tours)) if k in rows]
             write_registry(head, [rows[k] for k in order])
@@ -597,7 +759,7 @@ def audition(args) -> int:
                 continue
             cues = cues_for(trip, stop, cfg)
             for vid in args.voices.split(","):
-                audio, rate, _ = voice.clip(cues, True, vid)
+                audio, rate, _, _ = voice.clip(cues, True, vid)
                 wav = Path(tmp) / "a.wav"
                 sf.write(str(wav), audio, rate, subtype="FLOAT")
                 dest = out / f"{trip['id']}--{stop['id']}--{vid}.m4a"
