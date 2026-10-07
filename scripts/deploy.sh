@@ -10,9 +10,11 @@
 #   --distribution ID     optional. Without it nothing is invalidated, so a deploy can take up to
 #                         the cache lifetime to appear.
 #   --profile NAME        an AWS CLI profile. Default: whatever your environment already uses.
-#   --assets-only         skip the app files; push textures, data, vendor, models, images, the
+#   --assets-only         skip the app files; push textures, data, models, images, the
 #                         share pictures (og/) and the sounds (audio/) only.
-#   --app-only            skip the big assets; push HTML, CSS, JS, the trip pages (t/), robots.txt
+#   --app-only            skip the big assets; push HTML, CSS, JS, the vendored libraries (vendor/,
+#                         since 2026-10-07: they are code, stripped and stamped with the app),
+#                         the trip pages (t/), robots.txt
 #                         and the pages scripts/build_seo.py builds (o/, sitemap.xml, 404.html,
 #                         object-pages.json)
 #                         only. The usual case.
@@ -103,7 +105,7 @@ LONG="public, max-age=2592000"
 DATA="public, max-age=3600"
 
 if [ "$WHAT" != "app" ]; then
-  echo "==> textures, data, vendored libraries"
+  echo "==> textures, data"
   "${SYNC[@]}" "$SITE/textures" "s3://$BUCKET/textures" --cache-control "$LONG" --delete --exclude "*.webp"
   # WebP by its own type: the CLI guesses a Content-Type from the extension, and a guess that comes
   # back binary/octet-stream is served as a download to anything that asks what the bytes are. The
@@ -113,7 +115,7 @@ if [ "$WHAT" != "app" ]; then
   # data/v1/ is the harvester's (spec 0003 amendment 1): it is never in site/, and --delete would
   # otherwise remove every snapshot on each deploy. The filter keeps it out of the upload too.
   "${SYNC[@]}" "$SITE/data"     "s3://$BUCKET/data"     --cache-control "$DATA" --delete --exclude "v1/*"
-  "${SYNC[@]}" "$SITE/vendor"   "s3://$BUCKET/vendor"   --cache-control "$LONG" --delete
+  # vendor/ is NOT here any more: it is uploaded with the app below (internal #415, 2026-10-07).
   # The spacecraft models. Content type matters: CloudFront will not compress an octet-stream, and
   # a .glb served as one is a few hundred KB that could have been fewer.
   "${SYNC[@]}" "$SITE/models"   "s3://$BUCKET/models"   --cache-control "$LONG" \
@@ -189,6 +191,19 @@ if [ "$WHAT" != "assets" ]; then
   "${SYNC[@]}" "$APP/js"  "s3://$BUCKET/js" \
     --cache-control "no-cache" --content-type "text/javascript; charset=utf-8" \
     --exclude "*.md" --delete
+  # THE VENDORED LIBRARIES GO UP WITH THE APP, FROM THE SAME COPY (internal #415, 2026-10-07).
+  # vendor/astronomy.js is 412 kB as its author ships it and 177 kB without its documentation (the
+  # licence header stays: minify_site.py keeps any comment that names a licence or a copyright).
+  # The first boot diet left vendor/ in the assets block above, and so could not strip it: the
+  # worker's stamp hashes vendor/ on every deploy, and an --app-only deploy would have stamped
+  # stripped files the bucket did not hold -- a worker that refuses to install. So the rule is now
+  # the one js/ follows: what is stamped is $APP, and $APP is what is uploaded, in the same block.
+  # Still a month's cache (the names carry the library's release, the bytes change only when a
+  # library is replaced), and /vendor/* is invalidated below with the app so the edge never holds
+  # a copy the stamp does not describe; the worker fetches with `cache: 'no-cache'` at install, so
+  # a browser's month-old copy is revalidated, not trusted.
+  "${SYNC[@]}" "$APP/vendor" "s3://$BUCKET/vendor" \
+    --cache-control "$LONG" --content-type "text/javascript; charset=utf-8" --delete
   # One static page per trip (spec 0032): the share URL a crawler reads, which sends a browser on
   # to `/#trip=<id>`. HTML, no-cache, like index.html: a page that says the wrong thing about a
   # trip for a cache lifetime is a share that lies. --delete, because a trip that left the
@@ -242,11 +257,11 @@ if [ "$WHAT" != "assets" ]; then
 fi
 
 if [ -n "$DISTRIBUTION" ] && [ "$DRY_RUN" != "1" ]; then
-  PATHS=("/" "/index.html" "/js/*" "/css/*" "/t/*" "/o/*" "/press/*" "/robots.txt" "/sitemap.xml" "/404.html" "/object-pages.json" "/manifest.webmanifest" "/sw.js")
+  PATHS=("/" "/index.html" "/js/*" "/css/*" "/vendor/*" "/t/*" "/o/*" "/press/*" "/robots.txt" "/sitemap.xml" "/404.html" "/object-pages.json" "/manifest.webmanifest" "/sw.js")
   if [ "$WHAT" != "app" ]; then
     # The data files were just pushed and keep their names: expire the edge copies now.
     PATHS+=("/data/*")
-    echo "==> invalidating the app and the data (textures, vendor and models keep their cache)"
+    echo "==> invalidating the app and the data (textures and models keep their cache)"
   else
     echo "==> invalidating the app (assets keep their cache)"
   fi
@@ -254,10 +269,10 @@ if [ -n "$DISTRIBUTION" ] && [ "$DRY_RUN" != "1" ]; then
     --paths "${PATHS[@]}" \
     --output text --query 'Invalidation.Id'
   if [ "$WHAT" != "app" ]; then
-    echo "    NOTE: textures, vendor, models, images, og and audio were uploaded but NOT invalidated --"
+    echo "    NOTE: textures, models, images, og and audio were uploaded but NOT invalidated --"
     echo "    their names are not content-hashed, so nothing expires them early. If you changed one, run:"
     echo "      aws cloudfront create-invalidation --distribution-id $DISTRIBUTION \\"
-    echo "        --paths '/textures/*' '/vendor/*' '/models/*' '/images/*' '/og/*' '/audio/*'"
+    echo "        --paths '/textures/*' '/models/*' '/images/*' '/og/*' '/audio/*'"
   fi
 fi
 

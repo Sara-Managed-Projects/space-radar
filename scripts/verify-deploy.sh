@@ -52,7 +52,7 @@ for p in "${PATHS[@]}"; do
   [ -f "$local_file" ] || { echo "MISSING LOCALLY  $p"; bad=$((bad + 1)); continue; }
   if [ "$SKIP_LARGE" = 1 ] && [ "$(wc -c < "$local_file")" -gt 1048576 ]; then skipped=$((skipped + 1)); continue; fi
   served_file="$local_file"
-  case "$p" in js/*.js|css/*.css) [ -n "$MIN" ] && [ -f "$MIN/min/$p" ] && served_file="$MIN/min/$p" ;; esac
+  case "$p" in js/*.js|css/*.css|vendor/*.js) [ -n "$MIN" ] && [ -f "$MIN/min/$p" ] && served_file="$MIN/min/$p" ;; esac
   want=$(hash < "$served_file")
   # A cache-busting query would test the origin, not what visitors get; ask for the path itself.
   got=$(curl -s --compressed --max-time 60 "$BASE/$p" | hash)

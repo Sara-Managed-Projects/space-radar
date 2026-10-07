@@ -174,6 +174,44 @@ with tempfile.TemporaryDirectory() as tmp:
         got = (out / "css" / path.name).read_text(encoding="utf-8")
         check("/*" not in re.sub(r"""url\([^)]*\)|"[^"\n]*"|'[^'\n]*'""", "", got) or "licen" in got.lower() or "/*!" in got,
               f"css/{path.name} still has a comment")
+    # THE VENDORED LIBRARIES (internal #415, 2026-10-07): stripped like the app's own files, with
+    # every line of somebody else's terms kept, and astronomy.js -- the one that is shipped with its
+    # documentation -- giving the same numbers after as before.
+    from minify_site import KEEP  # noqa: E402
+    vendor_before = vendor_after = 0
+    for path in sorted((ROOT / "site" / "vendor").glob("*.js")):
+        src = path.read_text(encoding="utf-8")
+        target = out / "vendor" / path.name
+        check(target.is_file() and not target.is_symlink(), f"vendor/{path.name} is not in the stripped copy")
+        if not target.is_file():
+            continue
+        got = target.read_text(encoding="utf-8")
+        vendor_before += len(src.encode())
+        vendor_after += len(got.encode())
+        check(_code_tokens(got) == _code_tokens(src), f"vendor/{path.name}: the stripped file does not hold the same code")
+        # A licence comment is kept whole, so each of its lines is in the output (ends aside).
+        kept_lines = {ln.strip() for ln in got.split("\n")}
+        for m in re.finditer(r"/\*.*?\*/|//[^\n]*", src[:4000], re.S):
+            if KEEP.search(m.group(0)):
+                for ln in m.group(0).split("\n"):
+                    check(ln.strip() in kept_lines or not ln.strip(), f"vendor/{path.name} lost a line of its licence header: {ln.strip()[:60]!r}")
+    astro = out / "vendor" / "astronomy.js"
+    check(astro.stat().st_size < 200_000, f"vendor/astronomy.js is {astro.stat().st_size} B stripped: its comments are being shipped again")
+    check("Copyright (c) 2019-2023 Don Cross" in astro.read_text(encoding="utf-8") and "Permission is hereby granted" in astro.read_text(encoding="utf-8"),
+          "vendor/astronomy.js keeps its MIT licence text")
+    if node:
+        probe = Path(tmp) / "astro.mjs"
+        twin = Path(tmp) / "astro-stripped.mjs"
+        shutil.copyfile(astro, twin)
+        probe.write_text(
+            "import * as A from %s; import * as B from %s;\n"
+            "const t = new Date('2026-10-07T00:00:00Z'); const out = [];\n"
+            "for (const L of [A, B]) { const s = L.GeoVector(L.Body.Sun, t, true), m = L.GeoMoon(L.MakeTime(t)), j = L.HelioVector(L.Body.Jupiter, t);\n"
+            "  out.push(JSON.stringify([s.x, s.y, s.z, m.x, m.y, m.z, j.x, j.y, j.z, L.MoonPhase(t), L.SiderealTime(t), Object.keys(L).length])); }\n"
+            "if (out[0] !== out[1]) { console.error(out.join('\\n')); process.exit(1); }\n"
+            % (json.dumps((ROOT / "site/vendor/astronomy.js").as_uri()), json.dumps(twin.as_uri())), encoding="utf-8")
+        done = subprocess.run([node, str(probe)], capture_output=True, text=True)
+        check(done.returncode == 0, f"the stripped astronomy.js does not give the source's numbers: {done.stderr[:300]}")
     check(modules > 150, f"only {modules} modules were read: the test is looking at the wrong folder")
     check(after < before * 0.7, f"the stripped site is {after} B of {before} B: comments are no longer being removed")
     check(shader_lines > 100, f"only {shader_lines} indented lines survived: the shaders' template literals are not being kept verbatim")
@@ -184,4 +222,4 @@ if failures:
     sys.exit(1)
 print(f"minify ok: 16 hard cases, 3 refusals, and {modules} modules of site/js go from {before} B to {after} B "
       f"with the same code tokens{' and pass node --check' if node else ' (node not installed: syntax not checked)'}; "
-      f"{shader_lines} template-literal lines are kept byte for byte; --tree serves whole and stamp_sw.py --overlay hashes what is served")
+      f"{shader_lines} template-literal lines are kept byte for byte; vendor/ goes from {vendor_before} B to {vendor_after} B with its licence headers; --tree serves whole and stamp_sw.py --overlay hashes what is served")

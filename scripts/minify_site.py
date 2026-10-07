@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Strip comments and indentation from the app's JavaScript and CSS, into a folder that is deployed.
 
-    python3 scripts/minify_site.py --out "$BUILT/min"            # js/ and css/ only (scripts/deploy.sh)
-    python3 scripts/minify_site.py --out /tmp/served --tree      # a whole served tree: js/ and css/
-                                                                 # stripped, everything else linked
+    python3 scripts/minify_site.py --out "$BUILT/min"            # js/, css/ and vendor/ only (scripts/deploy.sh)
+    python3 scripts/minify_site.py --out /tmp/served --tree      # a whole served tree: js/, css/ and
+                                                                 # vendor/ stripped, everything else linked
                                                                  # (screens.yml measures this one)
     python3 scripts/minify_site.py --out /tmp/x --node node      # and `node --check` every output
 
@@ -55,6 +55,11 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+
+# The folders this writes. vendor/ joined js/ and css/ on 2026-10-07 (internal #415): astronomy.js is
+# shipped by its author with its documentation, 412 kB of which 235 kB are comments, and it was the
+# third largest request of a first visit. Its licence header, and every other library's, stays (KEEP).
+STRIPPED = ("js", "css", "vendor")
 
 # A comment that must travel with the code: somebody else's terms.
 KEEP = re.compile(r"licen[cs]e|copyright|@preserve|SPDX|\(c\)", re.I)
@@ -346,14 +351,14 @@ def strip_css(text: str) -> str:
 
 
 def build(site: Path, out: Path, tree: bool = False, node: str | None = None, quiet: bool = False) -> int:
-    """Write the stripped js/ and css/ under `out`. Returns 0, or 1 when --node refuses a file."""
+    """Write the stripped js/, css/ and vendor/ under `out`. Returns 0, or 1 when --node refuses a file."""
     if out.exists() and any(out.iterdir()):
         raise SystemExit(f"minify_site: {out} is not empty; give it a new folder")
     out.mkdir(parents=True, exist_ok=True)
     before = after = 0
     kept: list[tuple[str, str]] = []
     written: list[Path] = []
-    for sub, suffix, strip in (("js", ".js", strip_js), ("css", ".css", strip_css)):
+    for sub, suffix, strip in (("js", ".js", strip_js), ("css", ".css", strip_css), ("vendor", ".js", strip_js)):
         for path in sorted((site / sub).rglob("*")):
             if not path.is_file():
                 continue
@@ -382,7 +387,7 @@ def build(site: Path, out: Path, tree: bool = False, node: str | None = None, qu
         # Everything else the bucket serves, as links: the textures and models are hundreds of
         # megabytes and are not changed by this.
         for entry in sorted(site.iterdir()):
-            if entry.name in ("js", "css") or entry.name.startswith("."):
+            if entry.name in STRIPPED or entry.name.startswith("."):
                 continue
             os.symlink(entry.resolve(), out / entry.name)
     for rel, why in kept:
