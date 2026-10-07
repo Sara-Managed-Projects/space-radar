@@ -1336,7 +1336,7 @@ export const TOURS = [
 "stage": "jupiter",
 "frame_radii": 12,
 "behind": "jupiter",
-"key_light_deg": 100,
+"key_light_deg": 90,
 "chapter": "Chapter one: Jupiter's moons",
 "card": {
 "title": "Europa, and the two ships on their way",
@@ -1398,7 +1398,7 @@ export const TOURS = [
 "stage": "saturn",
 "frame_radii": 12,
 "behind": "saturn",
-"key_light_deg": 100,
+"key_light_deg": 90,
 "chapter": "Chapter two: the ringed planet",
 "card": {
 "title": "Enceladus, spraying its ocean into space",

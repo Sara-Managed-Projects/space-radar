@@ -63,7 +63,7 @@ SPACE, FG, DIM = (0x0B, 0x0E, 0x14), (0xE8, 0xEC, 0xF2), (0x9A, 0xA4, 0xB2)
 CAPTION_KEY = "sr:caption"
 # A frame with less of it lit than this is a photograph of an empty sky (the first render of "A
 # year in a minute" was 0.6 %: five hairline orbits). Refused when a picture is built.
-EMPTY_BELOW = 0.008
+EMPTY_BELOW = 0.004
 
 
 def arg(name: str, default: str = "") -> str:
@@ -259,21 +259,23 @@ def encode(im, trip: dict, limit: int) -> tuple[bytes, str]:
     im.save(buf, "PNG", optimize=True, pnginfo=info)
     if buf.tell() <= limit:
         return buf.getvalue(), "truecolour"
-    # A field of star points: 256 colours chosen for this picture, no dither (dither is noise, and
-    # noise is what did not fit). The band is redrawn by --reband from these same rows.
-    pal = im.quantize(colors=256, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
-    buf = io.BytesIO()
-    pal.save(buf, "PNG", optimize=True, pnginfo=info)
-    if buf.tell() > limit:
-        raise SystemExit(f"{trip['id']}: {buf.tell()} B even with a palette, over og_png_max_bytes ({limit} B)")
-    return buf.getvalue(), "256 colours"
+    # Too heavy (a field of star points, the Earth close up): 256 colours chosen for this picture.
+    # Dithered when that fits, because a globe's gradients band without it; undithered when not,
+    # because dither is noise and noise is what did not fit. --reband reads these same rows back.
+    for dither, how in ((Image.Dither.FLOYDSTEINBERG, "256 colours, dithered"), (Image.Dither.NONE, "256 colours")):
+        pal = im.quantize(colors=256, method=Image.Quantize.MEDIANCUT, dither=dither)
+        buf = io.BytesIO()
+        pal.save(buf, "PNG", optimize=True, pnginfo=info)
+        if buf.tell() <= limit:
+            return buf.getvalue(), how
+    raise SystemExit(f"{trip['id']}: {buf.tell()} B even with a palette, over og_png_max_bytes ({limit} B)")
 
 
 def lit_share(frame) -> float:
-    """The share of the frame brighter than the sky: under one in a hundred is an empty picture."""
-    grey = frame.convert("L").resize((240, 101))
-    data = grey.getdata()
-    return sum(1 for v in data if v > 40) / len(data)
+    """The share of the frame's pixels brighter than the sky, counted at full size so that a figure
+    of thin lines is not averaged away."""
+    hist = frame.convert("L").histogram()
+    return sum(hist[41:]) / max(1, sum(hist))
 
 
 def build() -> int:

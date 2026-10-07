@@ -1233,13 +1233,15 @@ tours:
         target: {record: europa}
         behind: jupiter
         stage: jupiter
-        # 100 since 2026-10-07 (internal #426). It was 60 for a day (internal #400), so that
+        # 90 since 2026-10-07 (internal #426). It was 60 for a day (internal #400), so that
         # `behind:` would give the planet up as soon as a third of the moon was dark: that lost
-        # Jupiter on every third day, and the card is about the two of them. `behind:` yields
-        # 25 degrees past the light a stop asks for (ui/trip.js keyLightAngles), so at 100 the
-        # planet stays until the moon is a fifth lit, and the two are side-lit together, which is
-        # how Cassini and Voyager photographed them. The default 125 would keep it to a sliver.
-        key_light_deg: 100
+        # Jupiter on about every third day, and the card is about the two of them. `behind:`
+        # yields 25 degrees past the light a stop asks for (ui/trip.js keyLightAngles), so at 90
+        # the planet stays until the moon is under three tenths lit. At 100 it stayed to a fifth,
+        # and the frame of 2026-10-07 was a sliver of Europa before a black Jupiter: the dark
+        # discs #400 was filed for. The days in between still lose the planet; keeping both then
+        # needs a wider search in the engine, not a number here.
+        key_light_deg: 90
         frame_radii: 12
         chapter: "Chapter one: Jupiter's moons"
         card:
@@ -1304,13 +1306,15 @@ tours:
         target: {record: enceladus}
         behind: saturn
         stage: saturn
-        # 100 since 2026-10-07 (internal #426). It was 60 for a day (internal #400), so that
+        # 90 since 2026-10-07 (internal #426). It was 60 for a day (internal #400), so that
         # `behind:` would give the planet up as soon as a third of the moon was dark: that lost
-        # Saturn on every third day, and the card is about the two of them. `behind:` yields
-        # 25 degrees past the light a stop asks for (ui/trip.js keyLightAngles), so at 100 the
-        # planet stays until the moon is a fifth lit, and the two are side-lit together, which is
-        # how Cassini and Voyager photographed them. The default 125 would keep it to a sliver.
-        key_light_deg: 100
+        # Saturn on about every third day, and the card is about the two of them. `behind:`
+        # yields 25 degrees past the light a stop asks for (ui/trip.js keyLightAngles), so at 90
+        # the planet stays until the moon is under three tenths lit. At 100 it stayed to a fifth,
+        # and the frame of 2026-10-07 was a sliver of Europa before a black Jupiter: the dark
+        # discs #400 was filed for. The days in between still lose the planet; keeping both then
+        # needs a wider search in the engine, not a number here.
+        key_light_deg: 90
         # Enceladus is 252 km in radius and 238 000 km from Saturn. MEASURED in the browser,
         # 2026-09-22: at 5 radii the moon came out 193 px across against a Saturn 235 px across,
         # which reads as two bodies of a size. At 12 it is 85 px against the same 250 px, and
