@@ -61,6 +61,9 @@ BLURB = {"px": 19, "lh": 1.25, "font": "inter-400-latin.woff2", "max": 2, "gap":
 # site/css/ui.css: --sr-space, --sr-text, --sr-text-dim.
 SPACE, FG, DIM = (0x0B, 0x0E, 0x14), (0xE8, 0xEC, 0xF2), (0x9A, 0xA4, 0xB2)
 CAPTION_KEY = "sr:caption"
+# A frame with less of it lit than this is a photograph of an empty sky (the first render of "A
+# year in a minute" was 0.6 %: five hairline orbits). Refused when a picture is built.
+EMPTY_BELOW = 0.008
 
 
 def arg(name: str, default: str = "") -> str:
@@ -308,6 +311,10 @@ def build() -> int:
     for tid, (frame, what) in sources.items():
         if only and tid not in only:
             continue
+        lit = lit_share(frame)
+        if lit < EMPTY_BELOW:
+            raise SystemExit(f"{tid}: {lit * 100:.2f} % of the frame is lit ({what}): an empty picture; "
+                             f"take another stop or a tighter lens (the probe's `trip:stop:zoom`)")
         im, lines = compose(frame, rows[tid])
         data, how = encode(im, rows[tid], limit)
         (OG / f"{tid}.png").write_bytes(data)

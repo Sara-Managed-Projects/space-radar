@@ -55,7 +55,9 @@ const list = (q.get('pics') || '').split(',').filter(Boolean).map((s) => {
 const out = { frames: [], left: [], log: [], at: null };
 const until = async (fn, ms) => {
   const t0 = performance.now();
-  while (performance.now() - t0 < ms) {
+  // Nothing waits past the budget by more than a few seconds: a run under a hard cap that is
+  // killed hands back nothing at all (lost 2026-10-07, on a machine at a load of 90).
+  while (performance.now() - t0 < ms && elapsed() < budget + 12) {
     let ok = false;
     try { ok = fn(); } catch { /* not there yet */ }
     if (ok) return true;

@@ -199,6 +199,17 @@ def main(argv: list[str]) -> int:
     if check:
         stale = sorted(n for n in want if have.get(n) != want[n])
         extra = sorted(n for n in have if n not in want)
+        # EVERY TRIP'S PAGE NAMES ITS OWN PICTURE (2026-10-07). Until then a trip without
+        # site/og/<id>.png fell back to default.png and passed: twenty of twenty-six did, so a
+        # shared trip showed the home page's picture. The fallback stays in image_for() for a
+        # local run; the check refuses it, and scripts/build_trip_og.py says how to make one.
+        generic = sorted(n for n, text in want.items()
+                         if f'property="og:image" content="{host}/og/{n[:-5]}.png"' not in text)
+        for n in generic:
+            print(f"{rel}/{n} would show og/default.png: site/og/{n[:-5]}.png does not exist "
+                  f"(tools/trip-frames.probe.js, then scripts/build_trip_og.py --from=).")
+        if generic:
+            return 1
         if not stale and not extra:
             print(f"trip pages are current ({len(want)} pages under {rel}/, one per trip in {SOURCE.relative_to(ROOT)})")
             return 0

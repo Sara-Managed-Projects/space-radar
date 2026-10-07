@@ -109,6 +109,11 @@ jobs:
       # only (the WebP header is read by hand), so the job's one dependency stays PyYAML.
       - name: Every trip has its card picture, 640 x 360 and inside its budget (spec 0068)
         run: python3 scripts/build_trip_thumbs.py --check
+      # 2026-10-07: one share picture per trip (site/og/<id>.png, 1200 x 630), inside its byte budget
+      # and printing the title and blurb the registry has today (a text chunk in the PNG says what
+      # was printed). Stdlib only, like the card pictures above.
+      - name: Every trip has its share picture, printing today's blurb
+        run: python3 scripts/build_trip_og.py --check
       # Spec 0067: the photographs of the nebulae. The mirror the browser reads, then the files:
       # one WebP per registry row, its longer side the row's `px`, each inside nebula_picture_bytes
       # and all of them inside nebulae_total_bytes. Stdlib only, like the trip pictures above.
@@ -327,6 +332,8 @@ jobs:
       # first visit; task 2: the controls hint, once, with keycaps the camera and the chrome answer.
       - name: "Trip cards with pictures: the files, the fade into glass, nothing before the first visit settles (spec 0068)"
         run: node tests/test_trip_pictures.mjs
+      - name: "Trip share pictures: one per trip, today's title and blurb printed, each page naming its own"
+        run: node tests/test_trip_og.mjs
       - name: "The controls hint: once, never on a link or a trip, every keycap a key the app answers (spec 0068)"
         run: node tests/test_keyhint.mjs
       - name: What to show, grouped, and its Keys row (spec 0068 task 3, issue 321)

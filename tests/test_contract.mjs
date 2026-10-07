@@ -2878,16 +2878,38 @@ for (const file of allFiles) {
 //
 // Every PNG under site/og/ is what a chat or a feed shows for a shared link, so each is held to the
 // size its page's tags claim (1200 x 630, read from the PNG header) and to more than
-// `og_png_min_bytes` of registry/budgets.yaml (50 000 bytes):
+// `og_png_min_bytes` of registry/budgets.yaml:
 // a 1200 x 630 frame of black sky with one world in it is 60-200 kB, and less means an empty frame
-// (the failure #157 taught). A trip with no picture of its own is NOTED, not failed: its page falls
-// back to default.png (scripts/gen_trip_pages.py), and a trip added by another change should not
-// turn this red until the readme-shots workflow has rendered it (2026-09-23).
+// (the failure #157 taught). And since 2026-10-07 EVERY trip has one: a trip without a picture of
+// its own was noted and let through, and twenty of twenty-six shared the home page's. Each is under
+// `og_png_max_bytes`, and each prints today's title and blurb: scripts/build_trip_og.py writes what
+// it printed into the PNG (a text chunk, `sr:caption`), and a blurb edited since is refused here by
+// name (internal #373: seven pictures went on printing blurbs that had been shortened). default.png
+// is the home page's and is composed elsewhere, so it is held to the size and the floor only.
 {
   try {
     const { TOURS } = await import(join(JS, 'data/tours.js'));
     const { BUDGETS } = await import(join(JS, 'data/budgets.js'));
     const minBytes = BUDGETS.og_png_min_bytes;
+    const maxBytes = BUDGETS.og_png_max_bytes;
+    if (!(maxBytes > minBytes)) problems.push('OGIMAGE  registry/budgets.yaml has no og_png_max_bytes above og_png_min_bytes');
+    /** The text chunk a PNG carries under `key` (tEXt is Latin-1, iTXt UTF-8 and uncompressed here), or null. */
+    const pngText = (png, key) => {
+      for (let at = 8; at + 8 <= png.length;) {
+        const len = png.readUInt32BE(at);
+        const kind = png.slice(at + 4, at + 8).toString('latin1');
+        const body = png.slice(at + 8, at + 8 + len);
+        if (kind === 'IDAT') break;
+        if ((kind === 'tEXt' || kind === 'iTXt') && body.slice(0, key.length + 1).toString('latin1') === `${key}\0`) {
+          if (kind === 'tEXt') return body.slice(key.length + 1).toString('latin1');
+          const rest = body.slice(key.length + 3);
+          const lang = rest.indexOf(0);
+          return rest.slice(rest.indexOf(0, lang + 1) + 1).toString('utf8');
+        }
+        at += 12 + len;
+      }
+      return null;
+    };
     const dir = join(ROOT, 'site/og');
     const pngs = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.png')) : [];
     if (!pngs.includes('default.png')) problems.push('OGIMAGE  site/og/default.png is missing: the root and every trip without its own picture use it');
@@ -2899,8 +2921,14 @@ for (const file of allFiles) {
       if (png.slice(1, 4).toString() !== 'PNG' || w !== 1200 || h !== 630) problems.push(`OGIMAGE  site/og/${f} is ${w} x ${h}, not a 1200 x 630 PNG`);
       if (!(png.length > minBytes)) problems.push(`OGIMAGE  site/og/${f} is ${png.length} bytes: an empty frame, not a picture`);
       if (!known.has(f.replace(/\.png$/, ''))) problems.push(`OGIMAGE  site/og/${f} names no trip in the registry`);
+      const trip = TOURS.find((t) => `${t.id}.png` === f);
+      if (!trip) continue;
+      if (png.length > maxBytes) problems.push(`OGIMAGE  site/og/${f} is ${png.length} bytes, over og_png_max_bytes (${maxBytes})`);
+      const printed = pngText(png, 'sr:caption');
+      if (printed !== `${trip.title}\n${trip.blurb}`) problems.push(`OGIMAGE  site/og/${f} prints ${JSON.stringify(printed)} and the trip now says ${JSON.stringify(`${trip.title}\n${trip.blurb}`)}: run scripts/build_trip_og.py --reband --only=${trip.id}`);
     }
     const without = TOURS.filter((t) => !pngs.includes(`${t.id}.png`)).map((t) => t.id);
+    for (const id of without) problems.push(`OGIMAGE  site/og/${id}.png is missing: a shared link to the trip would show default.png (tools/trip-frames.probe.js, then scripts/build_trip_og.py --from=)`);
     notes.push(`trip pictures: ${pngs.length} under site/og/, each 1200 x 630 and over ${minBytes / 1000} kB${without.length ? `; still on default.png: ${without.join(', ')}` : '; every trip has its own'}`);
   } catch (e) {
     problems.push(`OGIMAGE  could not check the trip pictures: ${String(e)}`);
