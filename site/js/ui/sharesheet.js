@@ -64,6 +64,7 @@ import { COPY, t } from '../copy/en.js';
 import '../copy/en.later.js';
 import { cardWords } from './cards.js';
 import { shareUrl, shareState, tripWords, appBase, toast } from './share.js';
+import { camValue } from './urlstate.js';
 import { makePostcard, pdfFromJpeg, saveBlob } from './printcompose.js';
 import { createSheet, sheetHeights } from './sheet.js';
 import { embedSnippet, embedState } from './embed.js';
@@ -374,6 +375,23 @@ const FOCUSABLE = 'button:not([disabled]), a[href], input:not([disabled]), [tabi
 
 // --------------------------------------------------------------------------------- the sheet
 
+/**
+ * A view's link with where the camera stands now (internal #397; ui/urlstate.js `cam`, which
+ * main.js applies once the link's own flight has landed), so the link reopens this framing and
+ * not the default one. Only a link into the app's own hash can carry it: a trip's short page and
+ * a trip's stop frame themselves. The commas stay commas (legal in a fragment), so
+ * `cam=40,62,26540` can be read by a person. Here and not in ui/share.js, which loads with
+ * every card and is held under 6 kB. Pure but for ctx.camPose().
+ */
+export function withCam(link, ctx) {
+  const url = String(link || '');
+  if (!url || /\/t\/[^/#]+\.html/.test(url) || /[#&]trip=/.test(url) || /[#&]cam=/.test(url)) return url;
+  let cam = '';
+  try { cam = ctx && typeof ctx.camPose === 'function' ? camValue(ctx.camPose()) : ''; } catch { cam = ''; }
+  if (!cam) return url;
+  return `${url}${url.includes('#') ? '&' : '#'}cam=${cam}`;
+}
+
 export function createShareSheet(ctx) {
   const S = COPY.share;
   const root = el('div', 'sr-share sr-float sr-over-clean');
@@ -507,10 +525,10 @@ export function createShareSheet(ctx) {
       if (w) return { name: w.title, line: w.text, link: shareUrl(st), record: null, trip: st.trip || null };
     }
     const record = opts.record !== undefined ? opts.record : ctx && typeof ctx.selected === 'function' ? ctx.selected() : null;
-    if (!record) return { name: COPY.app.name, line: COPY.app.tagline, link: shareUrl(st), record: null };
+    if (!record) return { name: COPY.app.name, line: COPY.app.tagline, link: withCam(shareUrl(st), ctx), record: null };
     let w = null;
     try { w = cardWords(record, ctx); } catch { w = null; }
-    const link = shareUrl(shareState(ctx, record.id));
+    const link = withCam(shareUrl(shareState(ctx, record.id)), ctx);
     return { name: (w && w.name) || String(record.name || record.id), line: (w && w.sentence) || '', link, record, live };
   }
 

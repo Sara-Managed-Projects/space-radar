@@ -19,7 +19,7 @@ import { createHeroes, closeUpDistance, SELECTED_PX, warmModels } from './scene/
 import { limbFraming, fitDistance, discDistance, litOffset, groundDistanceKm, nightGroundPose, openingPlan, OPENING_KEY } from './scene/framing.js';
 import { createCameraRig, worldFramingDistance } from './scene/camera.js';
 import { createViewShift, MAX_SHIFT_FRACTION, PILL_GAP_PX } from './scene/viewshift.js';
-import { readMoment, writeMoment, bootLink, laterLink, linkChange, read as readUrlKeys, write as writeUrlState, clear as clearUrlState, stopIndex } from './ui/urlstate.js';
+import { readMoment, writeMoment, bootLink, laterLink, linkChange, read as readUrlKeys, write as writeUrlState, clear as clearUrlState, stopIndex, parseCam } from './ui/urlstate.js';
 import { guessObserver, roundPlace } from './sky/guessplace.js';
 import { COPY, CITIES, t as fill } from './copy/en.js';
 import { LAYERS, loadLayer } from './data/layers.js';
@@ -464,6 +464,12 @@ export async function boot({ setStatus } = {}) {
   // THE WIND (internal #362) is one of the overlays to the visitor and a module of its own here:
   // scene/wind.js, fetched when "Wind" is chosen, which then asks a NOAA-funded server for one
   // forecast hour (data/wind.js). One overlay at a time: choosing it takes a GIBS map away.
+  /** Where the camera stands round its target, for a link's `cam` (ui/share.js shareState). */
+  ctx.camPose = () => {
+    const s = cameraRig.saveState();
+    const deg = 180 / Math.PI;
+    return { azimuthDeg: s.azimuth * deg, polarDeg: s.polar * deg, distanceKm: s.distance * stage.unitKm };
+  };
   ctx.wind = null;
   let windImport = null;
   const WIND_OVERLAY = 'wind';
@@ -1717,6 +1723,7 @@ export async function boot({ setStatus } = {}) {
     if (plan.event) { ctx.wantMissions().then((m) => { if (!m || !m.openEvent(ctx, plan.event)) linkNote(ctx, COPY.mission.unknown, ['event']); }); return; }
     if (plan.at && plan.at.open) openAt(ctx, plan.at.open);
     else if (plan.at) ctx.deselect();
+    if (keys.cam) applyCam(ctx, keys.cam);
   });
 
   // THE URL IS THE STATE (spec 0017's rule, spec 0032's keys). Two more writers beside the moment,
@@ -2353,6 +2360,33 @@ function applyUrlState(ctx, st) {
     return;
   }
   if (st.at) openAt(ctx, st.at);
+  if (st.cam) applyCam(ctx, st.cam);
+}
+
+/**
+ * A link's `cam` (internal #397): once the flight the link started has landed, stand where the
+ * link's camera stood round the same target. The key then leaves the address bar: from here on
+ * the camera is the visitor's, and a link copied later says where it is then (ui/share.js).
+ * A trip frames its own stops, so a link into one never carries `cam` (ui/urlstate.js laterLink).
+ */
+const CAM_QUIET_CHECKS = 3;
+const CAM_CHECK_MS = 250;
+const CAM_GIVE_UP = 80;
+function applyCam(ctx, text) {
+  const pose = parseCam(text);
+  clearUrlState(['cam']);
+  const rig = ctx.cameraRig;
+  if (!pose || !rig || typeof rig.flyTo !== 'function') return;
+  const rad = Math.PI / 180;
+  let quiet = 0;
+  let checks = 0;
+  const look = () => {
+    checks += 1;
+    quiet = rig.state && rig.state.flying ? 0 : quiet + 1;
+    if (quiet < CAM_QUIET_CHECKS && checks < CAM_GIVE_UP) { setTimeout(look, CAM_CHECK_MS); return; }
+    rig.flyTo({ azimuth: pose.azimuthDeg * rad, polar: pose.polarDeg * rad, distance: pose.distanceKm / stage.unitKm, ms: 600 });
+  };
+  setTimeout(look, CAM_CHECK_MS);
 }
 
 /** @returns {boolean} whether the link named a trip this map has (and so is starting it). */

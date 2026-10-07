@@ -198,6 +198,18 @@ check(fetched.length === 0, `nothing was fetched by any of this: ${fetched.join(
   check(/textPanel\.hidden = true/.test(src) && /setAttribute\('aria-expanded', on \? 'true' : 'false'\)/.test(src), 'the post\'s words open in place, closed at first (internal #202)');
 }
 
+// The camera's place in a view's link (internal #397).
+{
+  const pose = { camPose: () => ({ azimuthDeg: 40.04, polarDeg: 61.96, distanceKm: 26543.21 }) };
+  const B = 'https://www.spaceradar.ai/';
+  check(sheet.withCam(`${B}#at=europa`, pose) === `${B}#at=europa&cam=40,62,26540`, `a view's link carries where the camera stood: ${sheet.withCam(`${B}#at=europa`, pose)}`);
+  check(sheet.withCam(B, pose) === `${B}#cam=40,62,26540`, 'the bare app link too');
+  check(sheet.withCam(`${B}t/moon-landings.html`, pose) === `${B}t/moon-landings.html` && sheet.withCam(`${B}#trip=moon-landings&stop=3`, pose) === `${B}#trip=moon-landings&stop=3`, 'a trip\'s page and a trip\'s stop frame themselves');
+  check(sheet.withCam(`${B}#at=mars`, { camPose: () => { throw new Error('no rig'); } }) === `${B}#at=mars` && sheet.withCam(`${B}#at=mars`, {}) === `${B}#at=mars` && sheet.withCam(`${B}#at=mars&cam=1,2,3`, pose) === `${B}#at=mars&cam=1,2,3`, 'a camera that cannot be read leaves the link as it was, and it is never added twice');
+  const src = readFileSync(join(JS, 'ui/sharesheet.js'), 'utf8');
+  check((src.match(/withCam\(shareUrl\(/g) || []).length === 2, 'the sheet\'s own links for a record and for the bare view go through it');
+}
+
 if (problems.length) {
   console.error(`sharesheet: ${problems.length} problem(s)`);
   for (const p of problems) console.error(`  - ${p}`);

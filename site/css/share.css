@@ -500,6 +500,29 @@ html.sr-phone .sr-share__head {
 
 .sr-photo__seg { font-family: var(--sr-font-mono); font-variant-numeric: tabular-nums; }
 
+/* The lens: a word, a slider and its value in degrees (ui/photomode.js LENS). */
+.sr-photo__lens {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 44px;
+  padding: 0 var(--sp-2);
+  color: var(--sr-text-soft);
+}
+
+.sr-photo__lens[hidden] { display: none; }
+
+.sr-photo__range {
+  width: 96px;
+  height: 44px;
+  margin: 0;
+  accent-color: var(--sr-ember);
+  cursor: pointer;
+}
+
+.sr-photo__lensval { min-width: 32px; color: var(--sr-text); text-align: right; }
+
 .sr-photo__close {
   width: 44px;
   height: 44px;
@@ -549,3 +572,5 @@ html.sr-phone .sr-photo__bar {
 html.sr-phone .sr-photo__shapes { flex: 1 0 100%; }
 html.sr-phone .sr-photo__seg { flex: 1 1 0; }
 html.sr-phone .sr-photo__save { flex: 1 1 auto; }
+html.sr-phone .sr-photo__lens { flex: 1 0 100%; }
+html.sr-phone .sr-photo__range { flex: 1 1 auto; width: auto; }

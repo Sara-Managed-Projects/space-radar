@@ -153,6 +153,25 @@ check(clock.mode === 'live' && newer.unknownVersion === true, 'a newer format ap
 clock.live();
 setHash('');
 
+// `cam` (internal #397): where the camera stands round its target, in a link.
+{
+  const U = await import(join(JS, 'ui/urlstate.js'));
+  const v = U.camValue({ azimuthDeg: 40.04, polarDeg: 61.96, distanceKm: 26543.21 });
+  check(v === '40,62,26540' && KEYS[KEYS.length - 1] === 'cam', `a pose is three numbers a person can read: ${v}`);
+  check(U.camValue({ azimuthDeg: -90, polarDeg: 200, distanceKm: 1.23456e9 }) === '270,179.9,1235000000', `angles are brought into range and the distance kept to four figures (${U.camValue({ azimuthDeg: -90, polarDeg: 200, distanceKm: 1.23456e9 })})`);
+  check(U.camValue({ azimuthDeg: 1, polarDeg: 2 }) === '' && U.camValue({ azimuthDeg: 1, polarDeg: 2, distanceKm: 0 }) === '' && U.camValue(null) === '', 'half a pose is no pose');
+  const p = U.parseCam(v);
+  check(p && p.azimuthDeg === 40 && p.polarDeg === 62 && p.distanceKm === 26540, 'and reads back');
+  for (const bad of ['', '1,2', '1,2,3,4', 'a,b,c', '10,0,5', '10,180,5', '10,90,-1', '10,90,0', '1;2;3', '10,90,5<script>']) check(U.parseCam(bad) === null, `not a pose: ${JSON.stringify(bad)}`);
+  write({ at: 'europa', cam: v });
+  check(location.hash.endsWith('&cam=40%2C62%2C26540') && read().cam === v, `the key is read back whole (${location.hash})`);
+  check(laterLink({ at: 'europa', cam: v, m: 'wonder' }, true).cam === undefined, 'a link\'s camera is not applied over a trip the visitor started');
+  clear(['at', 'cam']);
+  const main = (await import('node:fs')).readFileSync(join(JS, 'main.js'), 'utf8');
+  check(/function applyCam\(ctx, text\)/.test(main) && /clearUrlState\(\['cam'\]\)/.test(main) && /rig\.state\.flying/.test(main) && /pose\.distanceKm \/ stage\.unitKm/.test(main), 'main.js applies it after the link\'s own flight has landed, in the stage\'s units, and takes the key out of the address');
+  check(/if \(st\.cam\) applyCam\(ctx, st\.cam\)/.test(main) && /if \(keys\.cam\) applyCam\(ctx, keys\.cam\)/.test(main), 'at boot and for a link pasted into a running tab');
+}
+
 // laterLink(): a trip the visitor started before the layers landed outranks the link.
 {
   const link = { m: 'wonder', trip: 'moon-landings', stop: '3', at: 'iss', stage: 'saturn' };

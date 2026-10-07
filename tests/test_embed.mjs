@@ -151,6 +151,16 @@ for (const [vw, vh] of [[1440, 900], [390, 844], [844, 390], [320, 568]]) {
   }
 }
 check(C.pictureSize('7:3').preset === '1:1', 'an unknown shape is the square');
+// The lens, and PNG (internal #397).
+check(P.LENS.min === 15 && P.LENS.max === 75 && P.clampLens(45) === 45 && P.clampLens(3) === 15 && P.clampLens(120) === 75 && P.clampLens('30.4') === 30 && P.clampLens('x', 45) === 45, 'the lens is held between 15 and 75 degrees, and a value that is not a number is the map\'s own');
+{
+  const photo = readFileSync(join(ROOT, 'site/js/ui/photomode.js'), 'utf8');
+  check(/cam\.fov = clampLens\(deg, ownFov\)/.test(photo) && /cam\.fov !== ownFov\) \{ cam\.fov = ownFov/.test(photo), 'the lens moves the camera\'s field of view, and leaving puts the map\'s own back');
+  check(/makePostcard\(ctx, asPng \? 'png' : 'jpeg'/.test(photo) && /lensInput\.type = 'range'/.test(photo) && /aria-pressed', asPng/.test(photo), 'Save writes a PNG when PNG is pressed, and the lens is a slider');
+  const compose = readFileSync(join(ROOT, 'site/js/ui/printcompose.js'), 'utf8');
+  check(/format === 'png'\) blob = await blobOf\(picture, 'image\/png'\)/.test(compose) && /format === 'png' \? 'png' : 'jpg'/.test(compose), 'a PNG is the composed picture as image/png, named .png');
+  check(/CAMERA_FOV_DEG = 45\b/.test(readFileSync(join(ROOT, 'site/js/scene/renderer.js'), 'utf8')), 'and 45 degrees is the map\'s own lens');
+}
 
 if (problems.length) { console.error('embed FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`embed ok: ?embed=1 read through a whitelist of ${E.EMBED_KEYS.length} keys, the snippet one titled lazy iframe, nothing of it at boot and no service worker in a frame; photo mode's frame centred in ${P.SHAPES.length} shapes`);

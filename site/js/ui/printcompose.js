@@ -436,7 +436,9 @@ export async function makePostcard(ctx, format, opts = {}) {
     const bytes = new Uint8Array(await jpeg.arrayBuffer());
     blob = new Blob([pdfFromJpeg(bytes, size.w, size.h, size.ptW, size.ptH)], { type: 'application/pdf' });
   }
-  const name = fileName(words, nowMs, format === 'pdf' ? 'pdf' : 'jpg');
+  // PNG (internal #397): the same composed picture, lossless, for somebody who will edit it.
+  if (format === 'png') blob = await blobOf(picture, 'image/png');
+  const name = fileName(words, nowMs, format === 'pdf' ? 'pdf' : format === 'png' ? 'png' : 'jpg');
   if (opts.save !== false) saveBlob(blob, name);
   const out = { format, bytes: blob.size, width: size.w, height: size.h, fileName: name, words, tag: tag ? { text: tag.text, box: tag.box, place: tag.tag } : null, ms: Math.round(performance.now() - t0) };
   return { blob, jpeg, name, out, size, nowMs };

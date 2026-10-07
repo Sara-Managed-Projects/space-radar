@@ -7,11 +7,13 @@
 // Also exported, pure, for tests/test_photomode.mjs:
 //   SHAPES                               the four presets, in the order the bar shows them
 //   frameRect(viewW, viewH, shape, margin) -> { x, y, w, h, fovScale }
+//   LENS, clampLens(deg, own)            the lens slider's range, and a value held inside it
 //
 // WHAT IT IS. The clear screen (ui/cleanview.js, H) with a frame on it. The camera stays free:
 // drag, pinch, the arrow keys, all as ever, because nothing here sits over the canvas but four
 // dimmed mattes that pass every press through. One bar at the foot: the shape (16:9, 1:1, 4:5,
-// 9:16), the caption strip on or off, Save picture (the one ember), and leave.
+// 9:16), the lens (the field of view, 15 to 75 degrees, put back on leaving), the caption strip
+// on or off, PNG instead of JPEG, Save picture (the one ember), and leave.
 //
 // THE PICTURE IS THE FRAME. Save goes through the postcard's own path (ui/printcompose.js
 // makePostcard): the scene drawn again at the preset's size, not a crop of the screen. The frame
@@ -36,6 +38,17 @@ import { tagLines } from './cards.js';
 import { makePostcard, pictureSize, caption, drawBand, PICTURE_PRESETS } from './printcompose.js';
 
 export const SHAPES = Object.keys(PICTURE_PRESETS);
+/**
+ * The lens (internal #397): the camera's vertical field of view, in degrees. 45 is the map's own
+ * (scene/renderer.js). 15 is a long lens that flattens a planet against its moons; 75 takes in
+ * a horizon. Put back when photo mode is left.
+ */
+export const LENS = { min: 15, max: 75, step: 1 };
+/** A lens inside the range, or the map's own when it is not a number. Pure. */
+export function clampLens(deg, own = 45) {
+  const v = Number(deg);
+  return Number.isFinite(v) ? Math.min(LENS.max, Math.max(LENS.min, Math.round(v))) : own;
+}
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const MAX_DPR = 2;
 
@@ -103,6 +116,9 @@ export function openPhotoMode(ctx, opts = {}) {
   const wasClean = !!(clean && clean.isOn());
   let shape = SHAPES.includes(opts.shape) ? opts.shape : '1:1';
   let withCaption = opts.caption !== false;
+  let asPng = opts.format === 'png';
+  const cam = ctx && ctx.camera;
+  const ownFov = cam && Number.isFinite(cam.fov) ? cam.fov : null;
   let rect = null;
   let busy = false;
   let open = true;
@@ -130,12 +146,34 @@ export function openPhotoMode(ctx, opts = {}) {
     shapes.appendChild(b);
     return b;
   });
+  // The lens: a slider, because a field of view is a quantity and the picture answers as it moves.
+  const lens = el('label', 'sr-photo__lens');
+  const lensWord = el('span', 'sr-photo__label', P.lens);
+  const lensInput = el('input', 'sr-photo__range');
+  lensInput.type = 'range';
+  lensInput.min = String(LENS.min);
+  lensInput.max = String(LENS.max);
+  lensInput.step = String(LENS.step);
+  lensInput.value = String(clampLens(ownFov, 45));
+  const lensOut = el('span', 'sr-photo__lensval sr-num');
+  lens.append(lensWord, lensInput, lensOut);
+  lens.hidden = ownFov === null;
+  const setLens = (deg) => {
+    if (!cam || ownFov === null) return;
+    cam.fov = clampLens(deg, ownFov);
+    if (typeof cam.updateProjectionMatrix === 'function') cam.updateProjectionMatrix();
+    paint();
+  };
+  lensInput.addEventListener('input', () => setLens(lensInput.value));
   const captionBtn = button('sr-photo__btn', P.caption, P.captionTitle, '');
   captionBtn.addEventListener('click', () => { withCaption = !withCaption; paint(); });
+  // PNG: the same picture without JPEG's loss, for somebody who will edit it. Off by default: it is several times the bytes.
+  const pngBtn = button('sr-photo__btn', P.png, P.pngTitle, '');
+  pngBtn.addEventListener('click', () => { asPng = !asPng; paint(); });
   const saveBtn = button('sr-photo__btn sr-photo__save', P.save, P.saveTitle, 'download');
   const closeBtn = button('sr-photo__close', '', P.done, 'x');
   closeBtn.setAttribute('aria-label', P.done);
-  bar.append(shapes, captionBtn, saveBtn, closeBtn);
+  bar.append(shapes, lens, captionBtn, pngBtn, saveBtn, closeBtn);
   root.append(...mattes, frame, bar);
   document.body.appendChild(root);
 
@@ -156,6 +194,16 @@ export function openPhotoMode(ctx, opts = {}) {
     for (const [k, v] of [['x', rect.x], ['y', rect.y], ['w', rect.w], ['h', rect.h]]) root.style.setProperty(`--sr-photo-${k}`, `${v}px`);
     for (const b of shapeBtns) b.setAttribute('aria-pressed', b.dataset.shape === shape ? 'true' : 'false');
     captionBtn.setAttribute('aria-pressed', withCaption ? 'true' : 'false');
+    pngBtn.setAttribute('aria-pressed', asPng ? 'true' : 'false');
+    saveBtn.title = asPng ? P.saveTitlePng : P.saveTitle;
+    if (cam && ownFov !== null) {
+      const deg = clampLens(cam.fov, ownFov);
+      if (lensInput.value !== String(deg)) lensInput.value = String(deg);
+      const text = t(P.lensValue, { n: String(deg) });
+      if (lensOut.textContent !== text) lensOut.textContent = text;
+      lensInput.setAttribute('aria-label', t(P.lensTitle, { n: String(deg) }));
+      lens.title = lensInput.getAttribute('aria-label');
+    }
     const dpr = Math.min(MAX_DPR, window.devicePixelRatio || 1);
     band.width = Math.round(rect.w * dpr);
     band.height = Math.round(rect.h * dpr);
@@ -172,11 +220,11 @@ export function openPhotoMode(ctx, opts = {}) {
     saveBtn.disabled = true;
     toast(P.making, 0);
     try {
-      const made = await makePostcard(ctx, 'jpeg', {
+      const made = await makePostcard(ctx, asPng ? 'png' : 'jpeg', {
         record, withTag: false, size: pictureSize(shape), fovScale: rect.fovScale, caption: withCaption, honesty: true,
       });
       toast(P.saved);
-      if (ctx) ctx.lastPhoto = { ...made.out, shape, caption: withCaption, fovScale: rect.fovScale };
+      if (ctx) ctx.lastPhoto = { ...made.out, shape, caption: withCaption, fovScale: rect.fovScale, lens: cam ? cam.fov : null };
     } catch (e) {
       toast(P.failed, 4000);
       if (ctx) ctx.lastPhoto = { error: String((e && e.message) || e) };
@@ -198,6 +246,8 @@ export function openPhotoMode(ctx, opts = {}) {
     window.removeEventListener('resize', paint);
     window.removeEventListener('sr:clean', onClean);
     root.remove();
+    // The lens was photo mode's: the map gets its own back.
+    if (cam && ownFov !== null && cam.fov !== ownFov) { cam.fov = ownFov; if (typeof cam.updateProjectionMatrix === 'function') cam.updateProjectionMatrix(); }
     if (current === api) current = null;
     if (clean && !wasClean && !cleanAlreadyOff) clean.set(false);
     const back = opts.opener;
@@ -211,7 +261,7 @@ export function openPhotoMode(ctx, opts = {}) {
   paint();
   saveBtn.focus({ preventScroll: true });
 
-  const api = { close: () => close(), save, state: () => ({ open, shape, caption: withCaption, rect, words: withCaption ? words() : null }), root };
+  const api = { close: () => close(), save, state: () => ({ open, shape, caption: withCaption, rect, words: withCaption ? words() : null, format: asPng ? 'png' : 'jpeg', lens: cam ? cam.fov : null }), setLens, root };
   current = api;
   if (ctx) ctx.photo = api;
   return api;

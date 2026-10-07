@@ -29,8 +29,33 @@
 
 export const HASH_KEY = 'm';
 // `present` (2026-10-06, public #441): a trip opened for a room, `1`, or `auto` to advance by itself.
-export const KEYS = ['m', 'v', 'trip', 'stop', 'present', 'at', 'event', 't', 'rate', 'stage', 'exp'];
+// `cam` (2026-10-07, internal #397): where the camera stands round what it looks at, so a shared
+// view reopens as it was framed: `<azimuth>,<polar>,<distance in km>`, angles in degrees.
+export const KEYS = ['m', 'v', 'trip', 'stop', 'present', 'at', 'event', 't', 'rate', 'stage', 'exp', 'cam'];
 export const VERSION = '1';
+
+/**
+ * A camera pose as the `cam` key's value. Angles in degrees to a tenth, the distance in
+ * kilometres to four figures (so the link means the same on any stage's units). The lens is not
+ * in it: photo mode's lens is put back when photo mode is left, so a link never needs one.
+ * '' when the pose is not one. Pure.
+ */
+export function camValue(pose) {
+  const p = pose || {};
+  if (![p.azimuthDeg, p.polarDeg, p.distanceKm].every(Number.isFinite) || !(p.distanceKm > 0)) return '';
+  const deg = (v) => String(Math.round(v * 10) / 10);
+  const parts = [deg(((p.azimuthDeg % 360) + 360) % 360), deg(Math.min(179.9, Math.max(0.1, p.polarDeg))), String(Number(p.distanceKm.toPrecision(4)))];
+  return parts.join(',');
+}
+
+/** And back: {azimuthDeg, polarDeg, distanceKm}, or null for anything that is not a pose. Pure. */
+export function parseCam(text) {
+  const parts = String(text == null ? '' : text).split(',');
+  if (parts.length !== 3 || parts.some((x) => !/^-?\d+(\.\d+)?(e[+-]?\d+)?$/i.test(x.trim()))) return null;
+  const [az, pol, dist] = parts.map(Number);
+  if (!(pol > 0 && pol < 180) || !(dist > 0) || !Number.isFinite(az)) return null;
+  return { azimuthDeg: ((az % 360) + 360) % 360, polarDeg: pol, distanceKm: dist };
+}
 
 export function hashParts() {
   const raw = (typeof location !== 'undefined' ? location.hash : '') || '';
@@ -189,7 +214,7 @@ export function bootLink(clock, extra = null) {
 export function laterLink(link, tripRunning) {
   if (!link || !tripRunning) return link;
   const rest = { ...link };
-  for (const key of ['trip', 'stop', 'at', 'event', 'stage']) delete rest[key];
+  for (const key of ['trip', 'stop', 'at', 'event', 'stage', 'cam']) delete rest[key];
   return rest;
 }
 
@@ -215,7 +240,7 @@ export function laterLink(link, tripRunning) {
  */
 export function linkChange(link, now = {}) {
   if (!link || link.unknownVersion) return null;
-  if (!['trip', 'stop', 'at', 'event', 't', 'rate', 'stage'].some((k) => link[k] !== undefined)) return null;
+  if (!['trip', 'stop', 'at', 'event', 't', 'rate', 'stage', 'cam'].some((k) => link[k] !== undefined)) return null;
   const out = { clock: null, stage: link.stage || null, trip: null, event: null, at: null };
   const ms = link.t && link.t !== 'now' ? Date.parse(link.t) : NaN;
   const rate = Number(link.rate) > 0 ? Number(link.rate) : 1;
