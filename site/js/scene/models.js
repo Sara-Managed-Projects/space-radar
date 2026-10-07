@@ -53,8 +53,11 @@ function gradientMap() {
 // A WORLD IS NOT A TOY (2026-10-07, internal #382). A small body that wears a photographic map --
 // Ceres, Vesta -- is shaded by the same material with a smooth ramp instead of the three steps:
 // three flat bands across a mosaic of craters read as a printing fault, and the map's own
-// shadows already say "rock". Lambert's cosine from the terminator to the subsolar point, and a
-// floor on the night side a little under the steps' own (it is a photograph, and space is dark).
+// shadows already say "rock". The same three levels as the steps (RAMP_STEPS: 88, 178, 255 of 255),
+// joined by a smooth curve, so a mapped body is as bright as every other model beside it and its
+// night side is as readable: SEEN 2026-10-07 with a true cosine and a floor of 6 %, Ceres and
+// Vesta arrived as two black discs with a thin lit edge, because a model is met from wherever the
+// camera was and not from its lit side. The night side is lighter than it is, like every model's.
 let worldRampTexture = null;
 function worldRamp() {
   if (worldRampTexture) return worldRampTexture;
@@ -62,7 +65,8 @@ function worldRamp() {
   const data = new Uint8Array(n);
   for (let i = 0; i < n; i++) {
     const cos = (2 * (i + 0.5)) / n - 1;   // MeshToonMaterial reads the ramp at dot(N, L) / 2 + 1/2
-    data[i] = Math.round(255 * Math.max(0.06, Math.min(1, cos * 1.05)));
+    const s = Math.max(0, Math.min(1, (cos + 0.5) / 1.2));   // night's level until 30 degrees past the terminator, full by 45 from the Sun
+    data[i] = Math.round(RAMP_STEPS[0] + (RAMP_STEPS[2] - RAMP_STEPS[0]) * s * s * (3 - 2 * s));
   }
   worldRampTexture = new THREE.DataTexture(data, n, 1, THREE.RedFormat);
   worldRampTexture.minFilter = THREE.LinearFilter;
@@ -234,7 +238,8 @@ export function toonMaterial(colour, kind = 'body', pool = materials, map = null
     shader.uniforms.uShadeRadius = SHARED.uShadeRadius;
     shader.uniforms.uNightCol = SHARED.uNightCol;
     shader.uniforms.uFlood = SHARED.uFlood;
-    shader.uniforms.uRim = { value: 0.35 };
+    // A mapped world has no air to glow at its limb: a third of the models' rim, enough to part it from the sky.
+    shader.uniforms.uRim = { value: kind === 'world' ? 0.12 : 0.35 };
     shader.uniforms.uSpec = { value: s.spec };
     shader.uniforms.uSpecPower = { value: s.power };
     shader.fragmentShader = shader.fragmentShader
