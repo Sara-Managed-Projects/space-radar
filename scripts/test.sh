@@ -55,7 +55,7 @@ site/manifest.webmanifest|tests/test_manifest.mjs
 site/images/icons/|tests/test_manifest.mjs
 site/textures/|scripts/check_registry.py tests/test_refusals.py
 site/models/|scripts/check_registry.py tests/test_refusals.py
-site/audio/|scripts/check_registry.py scripts/narrate.py
+site/audio/|scripts/check_registry.py scripts/narrate.py tests/test_listen_check.py
 site/fonts/|scripts/build-fonts.py
 site/t/|scripts/gen_trip_pages.py tests/test_seo.py
 scripts/check_registry.py|scripts/check_registry.py tests/test_refusals.py

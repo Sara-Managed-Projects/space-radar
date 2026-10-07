@@ -97,6 +97,11 @@ jobs:
         run: python3 scripts/narrate.py --check
       - name: The narration mirror matches the registry (spec 0069)
         run: python3 scripts/gen_narration_js.py --check
+      # Internal #326: every clip went through a speech recogniser and came back as its script.
+      # No model here: narrate.py --check above already refuses a clip with no listening record;
+      # this holds the parts that decide what counts as the same words.
+      - name: "The listening check: numbers and spellings compared as words, the word error rate, the guard"
+        run: python3 tests/test_listen_check.py
       # Spec 0044: the gates themselves. A stale mirror is a test holding the previous number.
       - name: The budgets mirror matches the registry (spec 0044)
         run: python3 scripts/gen_budgets_js.py --check

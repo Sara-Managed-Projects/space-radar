@@ -47,6 +47,17 @@ version: 1
 #                  gen_tours_js.py), which changes whenever the catalogue is refreshed. A clip that
 #                  said the number would go stale, and fail CI, on a data refresh nobody connected
 #                  with the voice; so the voice rounds it. Every other card is read as written.
+#   listen         internal #326: every clip is put through a speech recogniser by
+#                  scripts/listen_check.py (faster-whisper, MIT, with Whisper's `small.en` weights,
+#                  MIT), and each row below records what came back: `wer` the word error against
+#                  the script, `heard` a hash of the transcript, `voice` the findings blamed on the
+#                  voice and not the recogniser. A row without them is a clip nothing has listened
+#                  to, and --check refuses it.
+#                  max_wer   the line; over it a clip is fixed or accepted below.
+#                  names     proper nouns the recogniser cannot be expected to spell, beyond the
+#                            lexicon and the words the trips only ever write with a capital.
+#                  accept    trip/stop -> why a clip over the line, or with a voice finding, ships.
+#                  A machine heard them; a person has still not (internal #325).
 engine:
   id: "kokoro-82m-v1.0/onnx-fp32/misaki-0.9.4"
   name: "Kokoro-82M"
@@ -79,6 +90,11 @@ lexicon:
   Huygens: "hˈYɡənz"
   Eris: "ˈɪəɹɪs"
   Enceladus: "ɛnsˈɛlədəs"
+listen:
+  model: small.en
+  max_wer: 0.1
+  names: []
+  accept: {}
 skip_title:
   - strangest-things/golf-balls
 say:

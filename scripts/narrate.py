@@ -31,6 +31,10 @@ IDEMPOTENT BY HASH. A clip's hash is its spoken script, the voice, the speed, th
 the pauses. A stop whose hash is in the manifest and whose files are there is left alone; change a
 card's words and --check fails until that one stop is rendered again.
 
+HEARD BY A MACHINE. Loudness and pace do not notice a name said wrong. scripts/listen_check.py
+puts every clip through a speech recogniser and records the word error on the clip's row; --check
+here refuses a row without that record, so a clip rendered again has to be listened to again.
+
 The render needs: kokoro-onnx, misaki[en], soundfile, numpy, PyYAML, an ffmpeg with libopus, and
 the two model files (kokoro-v1.0.onnx, voices-v1.0.bin) whose sha256 the registry records.
 """
@@ -334,6 +338,11 @@ def check() -> int:
             errors.append(f"{trip_id}: {size / 1000:.0f} kB of Opus is over narration_trip_kb ({trip_gate})")
     if total_gate is not None and total / 1000 > total_gate:
         errors.append(f"narration is {total / 1000:.0f} kB in all, over narration_total_kb ({total_gate})")
+    # Internal #326: a clip nothing has listened to cannot ship. listen_check.py records, on each
+    # row, what a speech recogniser heard (`wer`, `heard`, `voice`); a render writes a fresh row
+    # without them. Pure: no model is loaded here.
+    from listen_check import guard
+    errors += guard(cfg)
     if errors:
         print("narration is NOT current:\n  " + "\n  ".join(errors))
         return 1
