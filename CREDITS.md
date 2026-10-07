@@ -84,6 +84,9 @@ ESM build, so the file alone cannot distinguish them. The project's now-removed 
 recorded 2.1.19. The copyright line above is the one **inside the shipped file**, which is the one
 MIT obliges us to carry. Upstream's current `LICENSE` on `master` reads `2019-2025`; that is a later
 edit to a file we do not ship, and does not change the notice attached to this copy.
+Since 2026-10-07 a deploy uploads this file without its documentation comments
+(`scripts/minify_site.py`); the licence header above is kept word for word, and the file in git is
+still the published one.
 
 **Lucide** — the app's one icon family, copied element for element from `icons/<name>.svg` on
 Lucide's `main` branch (<https://github.com/lucide-icons/lucide>, read 2026-10-01 to 2026-10-03).

@@ -54,7 +54,7 @@ address bar, or use **Embed**, which writes the right one for you.
 
 A link that names **one world or one crewed station and nothing else** boots the light embed
 (`js/embedlite.js`): the scene, that object, the Earth and the other worlds, the naked-eye stars,
-the names and the object's tag. It is held to 2.5 MB uncompressed on a first visit
+the names and the object's tag. It is held to 2.35 MB uncompressed on a first visit
 (`embed_first_visit_bytes` in `registry/budgets.yaml`; `tests/test_first_visit_bytes.mjs --embed=`
 measures `at=moon` and `at=25544` in CI), about half of that on the wire from the live site, which
 compresses.

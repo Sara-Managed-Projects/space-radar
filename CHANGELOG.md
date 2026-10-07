@@ -65,6 +65,10 @@ look up from the ground, and learned to work with no network.
   the trips, the spacecraft shapes and the deep-sky table are fetched when they are first wanted,
   and a deploy uploads the code without its comments (`scripts/minify_site.py`; the source in git
   and a local copy are unchanged, and there is still nothing to build to run it) ([#480]).
+- **And half a megabyte lighter again**: 3.3 MB where it was 3.9 MB. The astronomy library is
+  uploaded without its documentation (its licence stays), the cloud layer is the same picture at a
+  lower WebP quality, and the byte gate no longer depends on how fast the machine that measures
+  it is. An embedded frame of the Moon is 2.2 MB where it was 2.5 MB.
 - Names and titles are set in the sans faces everywhere; the serif is gone ([#462]).
 - The sky from the ground reads a small star file of its own instead of the 2.6 MB
   three-dimensional catalogue ([#476]).
