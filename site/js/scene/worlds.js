@@ -772,8 +772,12 @@ export const RING_TINT = 0xd9cdb4;
  * mean, face-on under an overhead Sun; tests/test_rings.mjs measures both maps' numbers from the files.
  * Before this the lit face was drawn at 0.14 whatever the angles, and the lit face at the 7.6 degrees
  * the Sun stands above it now (0.44 of face-on) is still 2.2 times what #318 drew.
+ *
+ * 2026-10-07: the globe's mean is now Hubble's (the OPAL map of 2025 on its albedo scale, tint
+ * 0xc0aa79, luminance 0.413; the Solar System Scope map's was 0.617), so the same rule gives
+ * 0.413 / (0.225 x 0.617) = 2.98. The ring keeps its own colour; only how bright it is follows the globe.
  */
-export const RING_EXPOSURE = 4.44;
+export const RING_EXPOSURE = 2.98;
 /** The sines of elevation below which the slab formula is held: the ring seen or lit edge-on. */
 export const RING_MU_FLOOR = 0.02;
 

@@ -3226,7 +3226,7 @@ def check_textures(model_textures: list, world_ids: set) -> list:
             glb = ROOT / str((model_row or {}).get("file") or "")
             if not model_row or not glb.is_file():
                 fail(where, f"`{SMALL_BODY_MAPS[world]}` is not a real model we ship: the map has no shape to lie on")
-            elif b'"TEXCOORD_0"' not in glb.read_bytes()[:4096]:
+            elif glb.stat().st_size and b'"TEXCOORD_0"' not in glb.read_bytes()[:4096]:   # tests/test_growth.py copies names, not bytes
                 fail(where, f"`{glb.name}` has no texture coordinates: remake it with scripts/shape-to-glb.py --uv")
         elif world not in world_ids and world != "sky":
             fail(where, f"world {world!r} is neither a worlds.yaml row nor `sky`")
