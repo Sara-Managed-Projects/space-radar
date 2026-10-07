@@ -52,6 +52,7 @@ import shutil
 import subprocess
 import sys
 import time
+import unicodedata
 from decimal import Decimal
 from pathlib import Path
 
@@ -266,7 +267,8 @@ def _dates(tokens: list) -> list:
 
 def canon(text: str) -> list:
     """The words of `text` in the one spelling both sides are compared in. Pure, stdlib only."""
-    s = str(text).lower()
+    s = unicodedata.normalize("NFKD", str(text).lower())
+    s = "".join(ch for ch in s if not unicodedata.combining(ch))       # "Māori" is "maori"
     s = s.replace("’", "'").replace("‘", "'")
     for ch in "   ":
         s = s.replace(ch, " ")

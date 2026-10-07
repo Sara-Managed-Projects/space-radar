@@ -65,6 +65,7 @@ for script, heard in [
     ("The centre of the galaxy. Its colour is grey.", "the center of the galaxy, its color is gray"),
     ("the Earth's neighbourhood", "the earths neighborhood"),
     ("the other one's", "the other ones"),
+    ("the Māori call them Matariki", "the Maori call them Matariki"),
     ("light-years", "light years"),
     ("eleven thousand and one", "11,001"),
     ("three quarters of the Earth's width", "Three quarters of the Earths width."),
