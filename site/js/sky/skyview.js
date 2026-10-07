@@ -922,6 +922,9 @@ export function createSkyView(ctx, options = {}) {
       gu.value.copy(_groundColour);
     }
     if (parts) {
+      // The ground sky brings its own air and land (sky/skyair.js, sky/landscape.js).
+      parts.dome.visible = !ground;
+      parts.ground.visible = !ground;
       // The 30 and 60 degree arcs were the only grid there was; the ground sky has its own.
       parts.ticks.visible = !ground;
       parts.arcs.visible = !ground;

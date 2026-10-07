@@ -63,10 +63,13 @@ import {
 } from './skymath.js';
 import { BODIES, bodyView, jupiterMoons, eqjToLocal, localOf, altAzOf } from './skybodies.js';
 import { eclToEq, eclipticRing } from './figures.js';
+import { GLSL_SKY, exposureFor, twilightFloor } from './skyair.js';
+import { createLandscape, landscapeKind, sampleSea, seedOf, seaWords } from './landscape.js';
+import { horizonGlowStrength } from './skyview.js';
 
 const DEG = Math.PI / 180;
 const EXT_K = 0.2;
-const RO = { milkyway: -99, otherLight: -98.8, art: -98.6, pictures: -98.5, stars: -98, lines: -97, points: -96, discs: -95, meteors: -94, arc: 99 };
+const RO = { dome: -100, milkyway: -99, otherLight: -98.8, art: -98.6, pictures: -98.5, stars: -98, lines: -97, points: -96, discs: -95, meteors: -94, arc: 99 };
 // The constellation pictures: how strong at night in a wide field, and the fields they fade out over.
 const ART_GAIN = 0.42;
 const TAG_MS = 9000;
@@ -133,6 +136,42 @@ void main() {
   float a = (core + halo) * vAlpha;
   if (a <= 0.002) discard;
   gl_FragColor = vec4(mix(vColour, vec3(1.0), core * 0.35 * vGlare), a);
+  #include <colorspace_fragment>
+}
+`;
+
+// The dome: sky/skyair.js's single scattering, summed at each vertex and shaded at each pixel, then
+// the light that model lacks (the blue hour and the night's floor), the town's glow and the Moon's.
+const DOME_VERT = /* glsl */ `
+uniform vec3 uSun;
+varying vec3 vDir;
+varying vec3 vR;
+varying vec3 vM;
+${GLSL_SKY}
+void main() {
+  vDir = normalize(position);
+  skyScatter(vDir, uSun, vR, vM);
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`;
+const DOME_FRAG = /* glsl */ `
+uniform vec3 uSun; uniform vec3 uMoonDir; uniform vec3 uFloorZ; uniform vec3 uFloorH;
+uniform vec3 uPollution; uniform vec3 uMoonGlow;
+uniform float uExposure; uniform float uHorizonGlow; uniform float uMoonBright;
+varying vec3 vDir;
+varying vec3 vR;
+varying vec3 vM;
+${GLSL_SKY}
+void main() {
+  vec3 d = normalize(vDir);
+  float t = clamp(d.y, 0.0, 1.0);
+  vec3 c = skyShade(vR, vM, dot(normalize(vec3(d.x, max(d.y, 0.0), d.z)), uSun), uExposure);
+  c += mix(uFloorH, uFloorZ, pow(t, 0.5));
+  // A town's light hugs the whole horizon; the Moon lifts the whole dome and most around itself.
+  c = mix(c, uPollution, clamp(uHorizonGlow * pow(1.0 - t, 8.0), 0.0, 0.85));
+  float toMoon = max(dot(d, normalize(uMoonDir)), 0.0);
+  c = mix(c, uMoonGlow, uMoonBright * (0.05 + 0.06 * pow(toMoon, 6.0) + 0.1 * pow(toMoon, 300.0)));
+  gl_FragColor = vec4(c, 1.0);
   #include <colorspace_fragment>
 }
 `;
@@ -405,6 +444,69 @@ export function createGroundSky(ctx, env) {
 
   const eqToLocal = new THREE.Matrix3();
   let m9 = [1, 0, 0, 0, 1, 0, 0, 0, 1];
+
+  // ---- the air and the land (sky/skyair.js, sky/landscape.js) -----------------------------------
+  // Rings of the dome crowd towards the horizon, where the colour changes within a degree.
+  const dome = (() => {
+    const seg = 96;
+    const alts = [-4, -1.5];
+    for (let j = 0; j <= 38; j += 1) alts.push(90 * Math.pow(j / 38, 2.2));
+    const pos = [];
+    const idx = [];
+    for (const alt of alts) for (let i = 0; i <= seg; i += 1) pos.push(...localFromAltAz((i / seg) * 360, alt).map((v) => v * R));
+    for (let j = 0; j + 1 < alts.length; j += 1) {
+      for (let i = 0; i < seg; i += 1) {
+        const a = j * (seg + 1) + i;
+        const b = a + seg + 1;
+        idx.push(a, a + 1, b, a + 1, b + 1, b);
+      }
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    geo.setIndex(idx);
+    const mesh = new THREE.Mesh(geo, new THREE.ShaderMaterial({
+      vertexShader: DOME_VERT, fragmentShader: DOME_FRAG,
+      uniforms: {
+        uSun: { value: new THREE.Vector3(0, -1, 0) }, uMoonDir: { value: new THREE.Vector3(0, -1, 0) },
+        uFloorZ: { value: new THREE.Vector3() }, uFloorH: { value: new THREE.Vector3() },
+        uPollution: { value: new THREE.Color(0xffc98a) }, uMoonGlow: { value: new THREE.Color(0xaab6d8) },
+        uExposure: { value: 0 }, uHorizonGlow: { value: 0 }, uMoonBright: { value: 0 },
+      },
+      // In the transparent pass although it is opaque: that pass is the one render orders sort, and
+      // this must be drawn before the orbital scene's own sky is veiled by it.
+      side: THREE.DoubleSide, transparent: true, depthTest: false, depthWrite: false, toneMapped: false,
+    }));
+    mesh.name = 'ground-dome';
+    mesh.frustumCulled = false;
+    mesh.renderOrder = RO.dome;
+    root.add(mesh);
+    return mesh;
+  })();
+  const land = createLandscape({ root, radius: R * 0.99, glsl: GLSL_SKY });
+  const landSeed = seedOf(observer.latDeg, observer.lonDeg);
+  let sea = null;
+  const HAZE = { city: 0.5, town: 0.38, dark: 0.26 };
+  function updateAir(frame) {
+    const sun = localFromAltAz(frame.sunAzDeg, frame.sunAltDeg);
+    const exposure = exposureFor(frame.sunAltDeg);
+    const floor = twilightFloor(frame.sunAltDeg);
+    const glow = horizonGlowStrength(frame.sunAltDeg, options.darkness);
+    const u = dome.material.uniforms;
+    u.uSun.value.set(sun[0], sun[1], sun[2]);
+    u.uExposure.value = exposure;
+    u.uFloorZ.value.set(floor.zenith[0], floor.zenith[1], floor.zenith[2]);
+    u.uFloorH.value.set(floor.horizon[0], floor.horizon[1], floor.horizon[2]);
+    u.uHorizonGlow.value = glow;
+    u.uMoonBright.value = frame.moonBright || 0;
+    const moon = discs.get('moon');
+    if (moon && moon.apparent) u.uMoonDir.value.set(moon.apparent.local[0], moon.apparent.local[1], moon.apparent.local[2]);
+    const kind = landscapeKind({ darkness: options.darkness, sea });
+    land.set(kind, landSeed, sea);
+    const day = Math.max(0, Math.min(1, (frame.sunAltDeg + 8) / 14));
+    land.update({ sun, exposure, floorHorizon: floor.horizon, day, glow, haze: (HAZE[options.darkness] || HAZE.dark) * (1 - 0.6 * day) });
+    stats.landscape = kind;
+    stats.sea = kind === 'coast' ? seaWords(sea) : -1;
+  }
 
   // ---- stars -----------------------------------------------------------------------------------
   const starUniforms = {
@@ -1157,6 +1259,8 @@ export function createGroundSky(ctx, env) {
         starNames = rows.filter((r) => r && r[0] && Number.isFinite(r[3])).map((r) => ({ name: r[0], mag: r[3], dir: radecDir(r[1], r[2]) })).sort((a, b) => a.mag - b.mag);
       }).catch(() => {});
       if (!saving) askTier(0);
+      // Where the water is, for the horizon: the Earth's own water mask, read at this place.
+      if (!saving) sampleSea(String(url('../../textures/4k/earth_water.webp')), observer.latDeg, observer.lonDeg).then((got) => { if (!disposed && got) sea = got; });
       askPictures();
     };
     if (typeof requestIdleCallback === 'function') requestIdleCallback(later, { timeout: 1500 });
@@ -1244,6 +1348,7 @@ export function createGroundSky(ctx, env) {
 
     solveBodies(frame.tMs, frame.fovDeg);
     placeBodies(frame, pxPerDeg);
+    updateAir(frame);
     paintLabels(frame, w, h);
   }
 
@@ -1344,6 +1449,7 @@ export function createGroundSky(ctx, env) {
       quad.dispose();
       group.remove(root);
       if (labels.host) labels.host.remove();
+      land.dispose();
     },
   };
 }
