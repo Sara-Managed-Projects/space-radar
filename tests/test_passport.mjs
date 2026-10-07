@@ -102,7 +102,7 @@ check(P.KEY === 'sr:passport', 'one key, sr:passport');
   let p = P.emptyPassport();
   check(P.stampLine(p, 26, now) === '', 'no trip finished, no stamp');
   for (const id of ['a', 'b', 'c', 'd', 'e', 'f', 'g']) p = P.recordComplete(p, id, now);
-  check(P.stampLine(p, 25, now) === 'Trip 7 of 25 · 7 October 2026', `the stamp: ${P.stampLine(p, 25, now)}`);
+  check(/^Trip 7 of 25 · [6-8] October 2026$/.test(P.stampLine(p, 25, now)), `the stamp, dated the visitor's own day: ${P.stampLine(p, 25, now)}`);
   check(P.stampLine(p, 3, now) === '' && P.stampLine(p, NaN, now) === '', 'a total that cannot be right prints nothing');
 }
 

@@ -61,7 +61,7 @@ const LINES = [
   // The home's first line (ui/sentence.js), at the label size in the sidebar's column: each
   // clause alone, as a sentence, with the longest values it really takes.
   ['sentence.pass', 14, INTER, SIDE, { name: 'the ISS', when: 'tomorrow at 21:14' }],
-  ['sentence.launch', 14, INTER, SIDE, { name: 'Falcon 9 Block 5', when: 'tomorrow at 21:14' }],
+  ['sentence.launch', 14, INTER, SIDE, { name: 'Falcon 9 Block 5', when: 'in 11 hours' }], // a longer one gives way to the next clause (ui/sentence.js)
   ['sentence.showerTomorrow', 14, INTER, SIDE],
   ['sentence.moonDays', 14, INTER, SIDE, { n: 'three', phase: 'full' }],
   ['sentence.moonLit', 14, INTER, SIDE],

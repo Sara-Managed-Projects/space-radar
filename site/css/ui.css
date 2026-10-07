@@ -6426,6 +6426,12 @@ html.sr-phone .sr-trip__vol { width: 56px; }
 
 html.sr-phone .sr-sentence {
   min-height: 44px;
+  padding: 0 var(--sp-4);
+}
+
+html.sr-phone .sr-passport {
+  padding-right: var(--sp-4);
+  padding-left: var(--sp-4);
 }
 
 @media (pointer: coarse) {
@@ -6435,6 +6441,7 @@ html.sr-phone .sr-sentence {
 /* The wonder of the day: a dated card, the shelf's full width, over the shelf. */
 .sr-wonder {
   width: 100%;
+  min-height: 44px;
   margin-top: var(--sp-2);
 }
 
@@ -6579,7 +6586,7 @@ html.sr-phone .sr-sentence {
 .sr-tripsheet__stamp {
   align-self: flex-start;
   width: fit-content;
-  margin: var(--sp-3) 0 0;
+  margin: 0 0 var(--sp-3);
   padding: var(--sp-1) var(--sp-2);
   font: 600 var(--sr-fs-sm)/16px var(--sr-font-hud);
   letter-spacing: 0.12em;

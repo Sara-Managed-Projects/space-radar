@@ -167,11 +167,14 @@ export function continuable(p, tripId, nowMs) {
 export const tripsDone = (p) => Object.values(p.trips).filter((row) => row.done > 0).length;
 export const placesSeen = (p) => Object.keys(p.visited).length;
 
-/** "Trip 7 of 25 · 7 October 2026": how many different trips are finished, and today. */
+/**
+ * "Trip 7 of 25 · 7 October 2026": how many different trips are finished, and today. The date is
+ * the visitor's own day, not UTC's: a stamp dated yesterday at one in the morning reads as a bug.
+ */
 export function stampLine(p, total, nowMs) {
   const n = tripsDone(p);
   if (!n || !Number.isFinite(total) || total < n) return '';
-  return t(COPY.passport.stamp, { n: fmt.int(n), total: fmt.int(total), date: timeText.utcLong(nowMs) });
+  return t(COPY.passport.stamp, { n: fmt.int(n), total: fmt.int(total), date: timeText.longDate(nowMs) });
 }
 
 /** Which kinds of place lead the grid: a world before a station before a far thing before a dot. */
@@ -285,7 +288,10 @@ export function createPassport(ctx, opts = {}) {
   openBtn.append(openName, openValue);
   openBtn.title = P.openTitle;
   openBtn.addEventListener('click', () => open());
-  if (pane) pane.appendChild(openBtn);
+  // In a section of its own, for the pane's side padding.
+  const openSect = el('section', 'sr-sect sr-passport-sect');
+  openSect.appendChild(openBtn);
+  if (pane) pane.appendChild(openSect);
 
   const counts = () => ({ places: placesSeen(p), trips: tripsDone(p), total: tours().length });
   const placesText = (n) => t(n === 1 ? P.placeOne : P.places, { n: fmt.int(n) });
@@ -369,7 +375,7 @@ export function createPassport(ctx, opts = {}) {
         if (!tour) continue;
         const li = el('li', 'sr-list__row sr-list__static');
         li.appendChild(el('span', 'sr-list__name', tour.title));
-        li.appendChild(el('span', 'sr-list__value', timeText.utcDay(row.doneAt)));
+        li.appendChild(el('span', 'sr-list__value', timeText.localDate(row.doneAt)));
         list.appendChild(li);
       }
       trips.appendChild(list);
@@ -449,7 +455,7 @@ export function createPassport(ctx, opts = {}) {
     destroy() {
       if (typeof window !== 'undefined') window.removeEventListener('sr:select', onSelect);
       if (typeof offTrip === 'function') offTrip();
-      openBtn.remove();
+      openSect.remove();
     },
   };
   // What is already open, and a trip already under way, when this arrives.

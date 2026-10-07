@@ -135,7 +135,8 @@ Object.assign(COPY, {
     // How a crewed station is said inside a sentence, by the record its elements load as.
     names: { 'sat-25544': 'the ISS', 'sat-48274': 'Tiangong' },
     pass: '{name} passes over you {when}',
-    launch: '{name} lifts off {when}',
+    // "Is due to": a launch time is a plan, and the sentence must stay true if it slips.
+    launch: '{name} is due to launch {when}',
     showerToday: 'the {name} peak today',
     showerTomorrow: 'the {name} peak tomorrow',
     moonName: 'The Moon',
@@ -198,7 +199,7 @@ Object.assign(COPY, {
     forgetConfirm: 'Yes, forget',
     forgetTitle: 'Clears the passport from this browser',
     forgotten: 'Forgotten. This browser holds nothing now.',
-    // The end card's stamp: "Trip 7 of 25 · 7 October 2026". {date} is UTC.
+    // The end card's stamp: "Trip 7 of 25 · 7 October 2026". {date} is the visitor's own day.
     stamp: 'Trip {n} of {total} · {date}',
     // A trip card's line for a trip left in the last 24 hours.
     resume: 'Continue from stop {n}',

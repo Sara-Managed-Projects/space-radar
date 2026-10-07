@@ -197,13 +197,23 @@ export function createSentence(ctx, opts = {}) {
     if (!made) { root.hidden = true; lead = null; return; }
     root.hidden = false;
     text.textContent = made.text;
-    // Two clauses wider than the column: the lead alone, which the copy test holds to one line.
-    if (made.parts.length > 1 && text.scrollWidth > text.clientWidth + 1) {
-      made = compose([made.parts[0]]);
+    // Wider than the column: the first clause that fits it alone, in rank order (a long rocket
+    // name with "tomorrow at 21:14" can be). If none does, the best one, cut with an ellipsis and
+    // whole in the tooltip.
+    const clipped = () => text.scrollWidth > text.clientWidth + 1;
+    if (clipped()) {
+      const best = compose([made.parts[0]]);
+      made = best;
+      for (const c of candidates) {
+        const alone = compose([c]);
+        if (!alone) continue;
+        text.textContent = alone.text;
+        if (!clipped()) { made = alone; break; }
+      }
       text.textContent = made.text;
     }
     lead = made.parts[0];
-    root.title = t(S.title, { sources: made.sources.join(COPY.punctuation.separator) });
+    root.title = [made.text, t(S.title, { sources: made.sources.join(COPY.punctuation.separator) })].join(' ');
     root.setAttribute('aria-label', made.text);
     root.classList.add('is-in');
   }

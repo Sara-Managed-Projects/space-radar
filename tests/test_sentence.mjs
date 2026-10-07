@@ -50,7 +50,7 @@ const ids = (list) => list.map((c) => c.id).join();
   const plain = S.sentenceCandidates({ ...full, nowMs: Date.parse('2026-10-15T09:00:00Z'), items: [] });
   check(ids(plain) === 'crew,storms,launched,moon', `and on a plain day the Moon is last (${ids(plain)})`);
   check(c[0].record === iss && c[0].clause === 'the ISS passes over you in 3 hours', `the pass is the station's, never the spent stage an hour sooner (${c[0].clause})`);
-  check(c[1].clause === 'Falcon 9 Block 5 lifts off in 6 hours', `a launch is its rocket (${c[1].clause})`);
+  check(c[1].clause === 'Falcon 9 Block 5 is due to launch in 6 hours', `a launch is its rocket, and its time a plan (${c[1].clause})`);
   check(c.find((x) => x.id === 'crew').clause === 'ten people are in orbit right now', `the crew is the sum of the headcount, in words (${c.find((x) => x.id === 'crew').clause})`);
   check(c.find((x) => x.id === 'storms').clause === 'three storms are turning', 'the storms are counted');
   check(c.find((x) => x.id === 'launched').clause === '70 new objects reached orbit in 30 days', 'what went up is the layer\'s count, and says over how long');
@@ -119,7 +119,7 @@ const ids = (list) => list.map((c) => c.id).join();
   check(!/sentence\.js/.test(main), 'main.js does not import it: it arrives with the dated cards, after the first visit has settled');
   check(/import \{ createSentence \} from '\.\/sentence\.js';/.test(readFileSync(join(JS, 'ui/today.js'), 'utf8')), 'ui/today.js brings it');
   check(Object.keys(COPY.sentence.sources).sort().join() === 'approach,crew,launch,launched,moon,pass,shower,storms', 'eight kinds of clause, eight sources');
-  check(/scrollWidth > text\.clientWidth/.test(src), 'the element measures its own line and drops to the lead when two clauses are too wide');
+  check(/scrollWidth > text\.clientWidth/.test(src) && /for \(const c of candidates\)/.test(src), 'the element measures its own line: two clauses, else the first one that fits alone');
 }
 
 if (problems.length) { console.error('sentence FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
