@@ -980,7 +980,9 @@ export async function boot({ setStatus } = {}) {
       deselect();
       return;
     }
-    let hit = pick(ndcX, ndcY, rect);
+    // From the ground the air lifts what is low (internal #418): the pick looks where the thing is before the air.
+    const [pickX, pickY] = ctx.skyView && ctx.skyView.trueNdc ? ctx.skyView.trueNdc(ndcX, ndcY) : [ndcX, ndcY];
+    let hit = pick(pickX, pickY, rect);
     // From the ground a tap asks "what is that" (sky/skyview.js tapSky): a satellite's dot or a
     // photograph answers as before with its card; a star, a planet or anything else in the sky is
     // named in a tag first, and the same thing tapped again is its card.

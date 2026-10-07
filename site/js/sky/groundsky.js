@@ -676,13 +676,13 @@ export function createGroundSky(ctx, env) {
   let conMod = null;
   const conNames = new Map();
   const conVerts = new Map();
-  const here = { id: null, obj: null };
+  const hereCon = { id: null, obj: null };
   function showHere(id) {
-    if (id === here.id) return;
-    if (here.obj) { here.obj.geometry.dispose(); here.obj.material.dispose(); root.remove(here.obj); here.obj = null; }
-    here.id = id;
+    if (id === hereCon.id) return;
+    if (hereCon.obj) { hereCon.obj.geometry.dispose(); hereCon.obj.material.dispose(); root.remove(hereCon.obj); hereCon.obj = null; }
+    hereCon.id = id;
     const v = id ? conVerts.get(id) : null;
-    if (v && v.length) here.obj = lineObject('sky-figure-here', v, 0xe8ecf2, 0.62, true, RO.lines + 0.5);
+    if (v && v.length) hereCon.obj = lineObject('sky-figure-here', v, 0xe8ecf2, 0.62, true, RO.lines + 0.5);
   }
 
   // ---- lines -----------------------------------------------------------------------------------
@@ -1149,7 +1149,7 @@ export function createGroundSky(ctx, env) {
       if (frame.fovDeg >= 8) {
         for (const c of (cultures.get(cultureShown) || cultures.get('western')).names) {
           // The constellation the view is centred in is named first, and brighter, at any field.
-          const isHere = cultureShown === 'western' && c.id && c.id === here.id;
+          const isHere = cultureShown === 'western' && c.id && c.id === hereCon.id;
           if (!isHere && frame.fovDeg < 20) continue;
           const l = localOf(m9, c.dir);
           if (l[1] < 0.1) continue;
@@ -1496,7 +1496,7 @@ export function createGroundSky(ctx, env) {
       const st = meteors.state();
       stats.meteorNote = lead ? { showers: [lead.display], down: !(lead.altDeg > 0), perHour: st.perHour, drawn: st.drawn, last: st.last, activity: lead.activity, sporadic: !!lead.sporadic, sources: sources.map((x) => ({ id: x.id, zhr: x.zhr, r: x.r, altDeg: x.altDeg })) } : null;
     }
-    setLine(here.obj, options.figures && cultureShown === 'western' && frame.fovDeg >= 8);
+    setLine(hereCon.obj, options.figures && cultureShown === 'western' && frame.fovDeg >= 8);
     if (options.trails && !trails) buildTrails();
     if (trails) trails.visible = !!options.trails && night > 0.05;
     setLine(lines.sunPath, options.sunPath);

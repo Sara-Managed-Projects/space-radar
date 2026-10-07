@@ -124,6 +124,29 @@ export function labelName(record) {
   return name;
 }
 
+/**
+ * The names a list of records is labelled with, none twice (internal #372: "GOES weather
+ * satellite" stood twice on the Tonight sky, 100 px apart). Records that share a display name are
+ * told apart by the catalogue's own name ("GOES 16", "GOES 18") when that differs; where even that
+ * is the same, the later one gets null and is not labelled. Pure.
+ */
+export function distinctNames(records) {
+  const names = records.map((r) => labelName(r));
+  const seen = new Map();
+  names.forEach((n, i) => seen.set(n, (seen.get(n) || []).concat(i)));
+  for (const idx of seen.values()) {
+    if (idx.length < 2) continue;
+    const used = new Set();
+    for (const i of idx) {
+      let own = launchLabel(String((records[i] && records[i].name) || '').trim());
+      if (own.length > MAX_NAME) own = own.slice(0, MAX_NAME - 1).trimEnd() + '…';
+      names[i] = own && !used.has(own) && (own === names[i] || !seen.has(own)) ? own : null;
+      if (names[i] !== null) used.add(own);
+    }
+  }
+  return names;
+}
+
 // Classes that are places on the ladder's own scale. On a ladder stage everything else -- the
 // planets, the probes, the asteroids -- sits inside one pixel of the Sun, where a label names
 // whichever happened to be first: "Uranus" for the Sun from the Pleiades, "Voyager 1" from a
@@ -522,6 +545,8 @@ export function createLabels(ctx, host) {
     if (!pos) pos = stage.toSceneInto(p, p.frame, _v, tMs);
     if (!pos) return null;
     if (behindWorld(camera.position, pos, spheres, record.klass === 'world' ? record.id : null)) return null;
+    // From the ground the air lifts a satellite's dot (scene/glyphs.js); its name goes with it (internal #418).
+    if (ctx.skyView && ctx.skyView.ownsSky && ctx.skyView.apparent) ctx.skyView.apparent(pos);
     const dist = pos.distanceTo(camera.position);
     // Its model's reach on screen, when it is drawn as one (labelLift raises the name over it).
     let r = 0;
@@ -656,6 +681,10 @@ export function createLabels(ctx, host) {
     // CAUDA" (internal #393). There this layer names only what was asked for, the selection and its
     // train, and the crewed stations; the ground sky reads boxes() and keeps its own names clear.
     if (ctx.skyView && ctx.skyView.ownsSky) chosen = chosen.filter((c) => labelTier(c) <= TIER.station).slice(0, SKY_VIEW_CAP);
+    // Two things with one name read as a bug (internal #372): each says what tells it apart, or the second goes.
+    const names = distinctNames(chosen.map((c) => c.record));
+    chosen = chosen.filter((c, i) => names[i] !== null);
+    const shown = names.filter((n) => n !== null);
     // Pass one: contents. Pass two: measure and place. Reading offsetWidth invalidates layout, so
     // interleaving it with the writes would re-layout the whole list once per label.
     for (let i = 0; i < pool.length; i++) {
@@ -663,7 +692,7 @@ export function createLabels(ctx, host) {
       const c = chosen[i];
       if (!c) { if (!slot.node.hidden) slot.node.hidden = true; continue; }
       slot.node.hidden = false;
-      const name = labelName(c.record);
+      const name = shown[i];
       if (slot.text.textContent !== name) slot.text.textContent = name;
       const klass = c.record.klass || 'satellite';
       if (slot.klass !== klass) {

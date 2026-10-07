@@ -1,7 +1,8 @@
 // sky/tonightbest.js -- what is worth looking at tonight from your place, ranked (internal #358),
 // and a pass as a row a person can use (pub #448).
 //
-// Contract: nightWindow(observer, nowMs), planetTonight(id, observer, win), moonTonight(observer, win),
+// Contract: nightWindow(observer, nowMs), nightMoments(observer, nowMs), deepSkyTonight(opts),
+//           planetTonight(id, observer, win), moonTonight(observer, win),
 //           passNumbers(pass), passScore(pass), tonightBest({observer, nowMs, passes, showers, max}),
 //           bestWords(row), passWords(pass), darkWords(best), plainName(record), magText(mag)
 // Pure: no DOM, no clock of its own, no fetch. Astronomy Engine works out the planets, the Moon
@@ -14,6 +15,13 @@
 // hourly rate, halved by a bright Moon. At most seven rows, and never more than three passes: this
 // is a list of what to look at, not a timetable. tests/test_tonightbest.mjs holds the order.
 //
+// THE DEEP SKY (internal #358, check 17 against Stellarium). Two or three nebulae, clusters and
+// galaxies of the ones the site has a photograph of: those that climb at least DSO_MIN_ALT_DEG
+// while the sky is dark and that this sky can show (the place's kind of sky, less what a bright
+// Moon takes). Ranked by brightness, then height; each says whether the eye is enough or
+// binoculars are needed. They score under the planets, so two places are kept for them: a list
+// of seven that was all satellites and planets would never name a galaxy.
+//
 // EVERYTHING IS COMPUTED FOR THE PLACE, AND SAYS SO: the list's last line is the honesty line.
 
 import * as Astronomy from '../../vendor/astronomy.js';
@@ -22,6 +30,7 @@ import '../copy/en.later.js';
 import { SHOWERS } from '../data/showers.js';
 import { activeShowers, radiantAltAz } from './radiants.js';
 import { labelName } from '../ui/labels.js';
+import { DARKNESS, DEFAULT_DARKNESS } from './skymath.js';
 
 const DEG = 180 / Math.PI;
 const STEP_MS = 10 * 60e3;
@@ -50,6 +59,12 @@ export function standardMagnitude(record) {
 
 export const MAX_ROWS = 7;
 export const MAX_PASSES = 3;
+/** Deep-sky rows: how high one must climb in the dark, how many are offered, how many places are kept for them. */
+export const DSO_MIN_ALT_DEG = 25;
+export const MAX_DSO = 3;
+export const KEPT_FOR_DSO = 2;
+/** Binoculars show about this many magnitudes past the eye (sky/skymath.js: a 7 degree field is 2.8 deeper). */
+export const BINOCULAR_GAIN = 2.8;
 
 function observerOf(o) {
   const latDeg = Number.isFinite(o && o.latDeg) ? o.latDeg : o && o.latRad * DEG;
@@ -88,6 +103,60 @@ export function nightWindow(observer, nowMs) {
   } catch {
     return null;
   }
+}
+
+/**
+ * The moments of tonight a visitor jumps to (check 15): the end of civil twilight in the evening,
+ * the middle of the night, and the start of civil twilight in the morning. In the small hours
+ * "tonight" is the night already under way, so dusk is the one behind. `{duskMs, midnightMs,
+ * dawnMs}` or null where the Sun does not get 6 degrees down.
+ */
+export function nightMoments(observer, nowMs) {
+  const obs = observerOf(observer);
+  const win = nightWindow(observer, nowMs);
+  if (!obs || !win) return null;
+  let duskMs = win.startMs;
+  if (win.darkNow) {
+    try {
+      const dusk = Astronomy.SearchAltitude('Sun', obs, -1, new Date(win.endMs - 24 * 3600e3), 1, -6);
+      if (dusk && dusk.date.getTime() <= nowMs) duskMs = dusk.date.getTime();
+    } catch { /* the window's own start */ }
+  }
+  return { duskMs, midnightMs: (duskMs + win.endMs) / 2, dawnMs: win.endMs };
+}
+
+/**
+ * The deep-sky objects worth a look tonight. `objects` are `{ id, name, raDeg, decDeg, mag,
+ * sizeDeg, kind }` (the photographs of registry/nebulae.yaml with their catalogue rows);
+ * `darkness` is the kind of sky ('city', 'town', 'dark'); `moon` is moonTonight(). Each row:
+ * `{ kind: 'dso', id, name, raDeg, decDeg, mag, sizeDeg, bestMs, altDeg, azDeg, needs: 'eye' |
+ * 'binoculars', score }`, best first, at most MAX_DSO.
+ */
+export function deepSkyTonight({ observer, win, objects = [], darkness = DEFAULT_DARKNESS, moon = null, max = MAX_DSO } = {}) {
+  if (!win || !observer || !Array.isArray(objects)) return [];
+  const latDeg = Number.isFinite(observer.latDeg) ? observer.latDeg : observer.latRad * DEG;
+  const lonDeg = Number.isFinite(observer.lonDeg) ? observer.lonDeg : observer.lonRad * DEG;
+  const where = { latRad: latDeg / DEG, lonRad: lonDeg / DEG };
+  const sky = DARKNESS[darkness] || DARKNESS[DEFAULT_DARKNESS];
+  // A Moon that is up takes up to a magnitude and a half off the faintest thing seen.
+  const eye = sky.limit - (moon && moon.upTonight ? 1.5 * (moon.percent / 100) : 0);
+  const out = [];
+  for (const o of objects) {
+    if (!o || !Number.isFinite(o.raDeg) || !Number.isFinite(o.decDeg) || !Number.isFinite(o.mag)) continue;
+    if (o.mag > eye + BINOCULAR_GAIN) continue; // not for this sky without a telescope
+    let best = null;
+    for (let ms = win.startMs; ms <= win.endMs; ms += 2 * STEP_MS) {
+      const aa = radiantAltAz({ ra_h: o.raDeg / 15, dec: o.decDeg }, ms, where);
+      if (aa && (!best || aa.altDeg > best.altDeg)) best = { ms, ...aa };
+    }
+    if (!best || best.altDeg < DSO_MIN_ALT_DEG) continue;
+    // A nebula's magnitude is all of its light spread over its area: it needs a sky a magnitude deeper than a star's.
+    const needs = o.mag + 1 <= eye ? 'eye' : 'binoculars';
+    const score = 30 + Math.max(0, 9 - o.mag) * 2.5 + Math.min(10, best.altDeg / 9) - (needs === 'eye' ? 0 : 6);
+    out.push({ kind: 'dso', id: o.id, name: o.name, raDeg: o.raDeg, decDeg: o.decDeg, mag: o.mag, sizeDeg: o.sizeDeg, type: o.kind || '', bestMs: best.ms, altDeg: best.altDeg, azDeg: best.azDeg, whenMs: best.ms, needs, score });
+  }
+  out.sort((a, b) => b.score - a.score || a.mag - b.mag);
+  return out.slice(0, max);
 }
 
 /**
@@ -239,7 +308,7 @@ function planetScore(p) {
  * made the list, for the "how dark" line. Null window: the Sun does not set far enough, and the
  * only rows are passes.
  */
-export function tonightBest({ observer, nowMs, passes = [], showers = SHOWERS, max = MAX_ROWS } = {}) {
+export function tonightBest({ observer, nowMs, passes = [], showers = SHOWERS, max = MAX_ROWS, deepSky = [], darkness = DEFAULT_DARKNESS } = {}) {
   const win = nightWindow(observer, nowMs);
   const rows = [];
   const until = win ? win.endMs : nowMs + 24 * 3600e3;
@@ -273,7 +342,12 @@ export function tonightBest({ observer, nowMs, passes = [], showers = SHOWERS, m
     }
   }
   rows.sort((a, b) => b.score - a.score || a.whenMs - b.whenMs);
-  return { window: win, rows: rows.slice(0, max), moon, moonLight: moon ? moon.upTonight && moon.percent >= 35 : false };
+  // The deep sky: its places are kept, then the list is in one order again.
+  const dso = win ? deepSkyTonight({ observer, win, objects: deepSky, darkness, moon }) : [];
+  const kept = Math.min(KEPT_FOR_DSO, dso.length);
+  const head = rows.slice(0, max - kept);
+  const list = head.concat(dso.slice(0, Math.max(kept, max - head.length))).sort((a, b) => b.score - a.score || a.whenMs - b.whenMs);
+  return { window: win, rows: list, moon, moonLight: moon ? moon.upTonight && moon.percent >= 35 : false };
 }
 
 // ------------------------------------------------------------------------------------- words
@@ -351,6 +425,12 @@ export function bestWords(row) {
       : row.riseMs ? t(B.moonRises, { time: timeText.hhmm(row.riseMs) })
         : B.moonAllNight;
     return { title, line, aria: `${title}: ${line}` };
+  }
+  if (row.kind === 'dso') {
+    const title = row.name;
+    const line = t(B.dsoLine, { time: timeText.hhmm(row.bestMs), deg: fmt.int(row.altDeg), dir: compassShort(row.azDeg), how: B.dsoNeeds[row.needs] || '' });
+    const side = t(B.mag, { mag: magText(row.mag) });
+    return { title, line, side, aria: `${title}: ${line}, ${side}` };
   }
   if (row.kind === 'shower') {
     const title = row.shower.display;

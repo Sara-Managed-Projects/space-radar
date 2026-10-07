@@ -5770,6 +5770,7 @@ html.sr-phone .sr-tonight-view__num { font-size: var(--sr-fs-num-sm); }
   text-transform: uppercase;
   color: var(--sr-text-dim);
 }
+.sr-skylabel--here { color: var(--sr-text); }
 .sr-skylabel--body { color: var(--sr-text); font-weight: 600; }
 .sr-skylabel--pass { color: var(--sr-text); font-family: var(--sr-font-mono); font-variant-numeric: tabular-nums; }
 .sr-skylabel--line { color: var(--sr-text-dim); }
@@ -5855,6 +5856,9 @@ html.sr-night-red::after {
 .sr-skybar { display: flex; flex-direction: column; gap: var(--sp-2); }
 .sr-skybar .sr-density__note { margin: 0; }
 .sr-skybar__wrap { flex-wrap: wrap; }
+/* The sky's own time: a strip to drag (ui/tonight.js), in the density button's look. */
+.sr-skytime { display: flex; flex: none; justify-content: space-between; align-items: center; cursor: ew-resize; touch-action: none; user-select: none; }
+.sr-skytime__at { color: var(--sr-text); }
 .sr-skybar__wrap .sr-density__btn { flex: 1 1 30%; }
 @media (pointer: coarse) {
   .sr-skybar .sr-density__btn { min-height: 44px; }

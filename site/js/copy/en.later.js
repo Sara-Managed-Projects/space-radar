@@ -758,6 +758,9 @@ Object.assign(COPY, {
         full: 'full', waningGibbous: 'waning gibbous', lastQuarter: 'last quarter', waningCrescent: 'waning crescent',
       },
       showerLine: 'up to {zhr} an hour · best {time}, {dir}',
+      // A nebula, a cluster or a galaxy the site has a photograph of (sky/tonightbest.js deepSkyTonight).
+      dsoLine: 'best {time} · {deg}° up, {dir} · {how}',
+      dsoNeeds: { eye: 'by eye', binoculars: 'binoculars' },
       darkHours: 'Dark {from} to {to}',
       moonless: 'no Moon, a dark night',
       moonBright: 'Moon {pct} % hides faint stars',
@@ -780,7 +783,7 @@ Object.assign(COPY, {
         telescope: 'A 1° field: planets become discs.',
       },
       show: 'Lines and names',
-      toggles: { figures: 'Figures', names: 'Names', art: 'Pictures', bounds: 'Borders', sunPath: 'Sun’s path', equator: 'Equator', grid: 'Grid', starGrid: 'Star grid', meteors: 'Meteors' },
+      toggles: { figures: 'Figures', names: 'Names', art: 'Pictures', bounds: 'Borders', sunPath: 'Sun’s path', equator: 'Equator', grid: 'Grid', starGrid: 'Star grid', meteors: 'Meteors', trails: 'Trails' },
       toggleTitles: {
         figures: 'The constellation figures',
         names: 'Names of constellations and bright stars',
@@ -790,7 +793,36 @@ Object.assign(COPY, {
         starGrid: 'The grid the stars are mapped on',
         art: 'The western figures as drawings, by Johan Meuris',
         bounds: 'The official borders of the 88 constellations',
-        meteors: 'Streaks from a shower near its peak, at its rate',
+        meteors: 'Streaks from the showers active tonight, at tonight’s rate',
+        trails: 'Each bright star’s last hour, as a one-hour exposure records it',
+      },
+      // The sky's own time (check 15): the night's three moments, and a strip to drag.
+      time: 'Time in the sky',
+      timeNow: 'Now',
+      timeNowTitle: 'Back to the present',
+      timeDusk: 'Dusk',
+      timeMidnight: 'Midnight',
+      timeDawn: 'Dawn',
+      timeTitles: { dusk: 'The end of civil twilight this evening', midnight: 'The middle of the night', dawn: 'The start of civil twilight in the morning' },
+      timeStrip: 'Drag to turn the sky',
+      timeStripAria: 'The sky’s time: drag, or use the arrow keys, ten minutes a step',
+      timeAt: '{time} · {phase}',
+      timePhases: { day: 'day', golden: 'low Sun', civil: 'civil twilight', nautical: 'nautical twilight', astronomical: 'last twilight', night: 'night' },
+      timeNoNight: 'It does not get dark here tonight.',
+      // The eyepiece (internal #351): three round fields through a telescope.
+      eyepiece: 'Eyepiece',
+      eyepieces: { low: 'Low · 1°', medium: 'Medium · 30′', high: 'High · 12′' },
+      eyepieceTitles: { low: 'A one-degree field: two full Moons wide', medium: 'Half a degree: the whole Moon', high: 'A fifth of a degree: planets as discs' },
+      // What is at the centre (internal #418): the tag without a pointer.
+      centre: 'What is at the centre',
+      centreTitle: 'Name what the middle of the view is on; Enter opens its card',
+      // Which constellation a tap fell in (sky/constellation.js), and after a thing's own words.
+      con: { kind: 'constellation', label: '{name}, a constellation.', inside: 'in {name}' },
+      // The land under the sky (sky/landscape.js): which of three was drawn, and why.
+      landscape: {
+        city: 'Skyline: a city’s, drawn. Not your street.',
+        hills: 'Skyline: hills, drawn. Not your own.',
+        coast: 'Skyline: the sea to the {dir}, from the Earth’s water map; the land is drawn.',
       },
       artWesternOnly: 'Pictures belong to the western figures',
       // Whose sky (internal #355). Each note says whose reading the figures are and under which
@@ -814,7 +846,8 @@ Object.assign(COPY, {
       meteorNote: '{name}: about {n} an hour in this sky.',
       meteorFew: '{name}: under one an hour in this sky.',
       meteorDown: '{name}: the radiant is down, no streaks.',
-      meteorHonest: 'Peak rate. Streaks are illustrative, each one random.',
+      meteorHonest: 'Tonight’s rate, modelled from the IMO’s list. Streaks are illustrative.',
+      meteorSporadic: 'No shower tonight: the antihelion source, about {n} an hour.',
       darkness: 'Your sky',
       darknessModes: { city: 'City', town: 'Town', dark: 'Dark place' },
       // Auto reads the kind of sky off NASA's map of the Earth's night lights at the place
@@ -834,7 +867,7 @@ Object.assign(COPY, {
       },
       red: 'Red light',
       redTitle: 'Turn the page red to keep your eyes used to the dark',
-      honesty: 'Stars measured, planets computed; air and skyline drawn.',
+      honesty: 'Stars measured, planets computed; the air modelled, the skyline drawn.',
     },
   },
 

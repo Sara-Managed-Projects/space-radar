@@ -30,7 +30,7 @@ import * as Astronomy from '../../vendor/astronomy.js';
 import { SHOWERS } from '../data/showers.js';
 import { activeShowers, radiantAltAz } from './radiants.js';
 import { COPY, t, fmt } from '../copy/en.js';
-import { twilightPhase, DARKNESS, DARKNESS_IDS, CULTURE_IDS, DEFAULT_DARKNESS, FOV, clampFov, zoomFov, fovName } from './skymath.js';
+import { twilightPhase, DARKNESS, DARKNESS_IDS, CULTURE_IDS, DEFAULT_DARKNESS, FOV, clampFov, zoomFov, fovName, refractionDeg } from './skymath.js';
 
 const DEG2RAD = Math.PI / 180;
 const RAD2DEG = 180 / Math.PI;
@@ -973,6 +973,30 @@ export function createSkyView(ctx, options = {}) {
   }
 
   /**
+   * ONE APPARENT PLACE (internal #418): where the air puts something. `apparent(p)` lifts a scene
+   * position in place, as scene/glyphs.js's shader lifts a satellite's dot, so its name (ui/labels.js)
+   * sits on the dot; `trueNdc(x, y)` takes a tap the other way, to where the thing under it is
+   * before the air, so the pick (main.js) finds what the eye was on.
+   */
+  function airShift(p, sign) {
+    const d = _dir.copy(p).sub(_o);
+    const dist = d.length();
+    if (!(dist > 0)) return p;
+    d.divideScalar(dist);
+    const sinAlt = THREE.MathUtils.clamp(d.dot(_up), -1, 1);
+    const alt = Math.asin(sinAlt);
+    const to = alt + sign * refractionDeg(alt * RAD2DEG) * DEG2RAD;
+    const level = d.addScaledVector(_up, -sinAlt);
+    const n = level.length();
+    if (n < 1e-6) return p;
+    return p.copy(level).multiplyScalar(Math.cos(to) / n).addScaledVector(_up, Math.sin(to)).multiplyScalar(dist).add(_o);
+  }
+  function trueNdc(x, y) {
+    airShift(_p.set(x, y, 0.5).unproject(camera), -1).project(camera);
+    return [_p.x, _p.y];
+  }
+
+  /**
    * How dark the sky of this place is likely to be, from the night lights of the Earth
    * (sky/skyglow.js), asked once per place and only while the visitor has not chosen for themselves.
    * Nothing is sent anywhere: the map is one of the site's own textures.
@@ -1485,6 +1509,8 @@ export function createSkyView(ctx, options = {}) {
     },
     pointAt,
     pointAtRecord,
+    apparent: (p) => (isActive && ground ? airShift(p, 1) : p),
+    trueNdc: (x, y) => (isActive && ground ? trueNdc(x, y) : [x, y]),
     pickSky,
     tapSky,
     /** The kind of sky drawn now and who chose it: { id, by: 'place' | 'you' | 'trip' | 'reading' | 'unread', lights }. */
