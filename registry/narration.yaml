@@ -166,8 +166,8 @@ clips:
   - {trip: "roof-to-the-edge", stop: "planets", hash: "cab9b40e5c253df1", seconds: 13.2, words: 37, lufs: -16.5, opus: 51911, m4a: 68736, vtt: 262}
   - {trip: "roof-to-the-edge", stop: "oort", hash: "a8d4fb1a58c3494a", seconds: 19.75, words: 50, lufs: -16.4, opus: 78864, m4a: 101988, vtt: 365}
   - {trip: "roof-to-the-edge", stop: "nearest-stars", hash: "c825f4586b95f05c", seconds: 18.94, words: 45, lufs: -16.6, opus: 76757, m4a: 97859, vtt: 354}
-  - {trip: "roof-to-the-edge", stop: "radio", hash: "5bca0e62c8a228c8", seconds: 24.11, words: 58, lufs: -16.5, opus: 98558, m4a: 124374, vtt: 425}
-  - {trip: "roof-to-the-edge", stop: "milky-way", hash: "d78db0e30eef9093", seconds: 17.84, words: 39, lufs: -16.6, opus: 70028, m4a: 92426, vtt: 323}
+  - {trip: "roof-to-the-edge", stop: "radio", hash: "2f3bae95a9a92113", seconds: 23.23, words: 58, lufs: -16.6, opus: 93288, m4a: 119810, vtt: 425}
+  - {trip: "roof-to-the-edge", stop: "milky-way", hash: "50cce40366681c12", seconds: 16.74, words: 39, lufs: -16.7, opus: 69111, m4a: 86775, vtt: 323}
   - {trip: "roof-to-the-edge", stop: "local-group", hash: "91a620935f81b54d", seconds: 18.9, words: 42, lufs: -16.4, opus: 79562, m4a: 97642, vtt: 318}
   - {trip: "roof-to-the-edge", stop: "edge", hash: "d4d23bc4d9d60fa9", seconds: 24.56, words: 57, lufs: -16.6, opus: 97151, m4a: 126547, vtt: 411}
   - {trip: "travel-to-exoplanets", stop: "all", hash: "8e4e354da0c2128d", seconds: 21.84, words: 58, lufs: -16.6, opus: 88002, m4a: 112638, vtt: 381}
