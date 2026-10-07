@@ -4915,6 +4915,12 @@ html.sr-phone .sr-subscribe__email {
   border-radius: var(--sr-radius-sm);
 }
 
+/* A phase of the Moon: a ring half filled, quieter than a thing that passes. */
+.sr-tape__mark[data-kind='moon'] .sr-tape__glyph {
+  background: linear-gradient(to right, var(--sr-text-dim) 50%, transparent 50%);
+  box-shadow: inset 0 0 0 1px var(--sr-text-dim);
+}
+
 .sr-tape__mark:hover,
 .sr-tape__mark.is-here { background: var(--sr-wash-strong); }
 

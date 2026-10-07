@@ -1,7 +1,7 @@
 // ui/timepill.js -- the clock, as one pill at the foot of the scene (spec 0061 req 6, design §7).
 //
 // Contract: createTimePill(ctx, host) -> { root, paint(), destroy(), tapeHost, anchor(), unit(),
-//           setUnit(u), goTo(ms), step(dir), toLive(), words(), onPaint(fn) }
+//           setUnit(u), goTo(ms), step(dir), toLive(), words(), onPaint(fn), setEventStep(fn) }
 // Also exported, pure, for tests/test_shell.mjs:
 //   PILL_RATES, nextRate(rate), stepMs(rate), clampToWindow(tMs, anchorMs, fromMs), pillText(state),
 //   PILL_UNITS, UNIT_MS, nextUnit(unit), SCRUB_BACK_MS, SCRUB_FORWARD_MS, FINE_MS
@@ -25,8 +25,9 @@
 //   ● LIVE · 29 SEP 21:14 UTC      1 h    1×               live: an ember dot, a quiet border
 //   ○ 30 SEP 03:40 UTC · in 6 hours  1 h  60×   Live       not live: ember border and "Live" back
 //
-// WHAT EACH PART DOES. ‹ and › step by the chosen size: a minute, an hour or a day (the unit
-// button cycles them, and the tape shows two hours, a day or a month to match). The readout is a
+// WHAT EACH PART DOES. ‹ and › step by the chosen size: a minute, an hour, a day, or to the event
+// before and after (the unit button cycles them, and the tape shows two hours, a day or a month to
+// match). The readout is a
 // button: a click holds time still or lets it run (the old Pause), Left and Right on it step, and
 // a drag along it scrubs, one step per 48 px. The rate button cycles 1× · 60× · 600× · 3600×.
 // "Live" appears only when the picture is not now, and is the one place the pill turns ember
@@ -61,8 +62,12 @@ export const SCRUB_BACK_MS = 30 * 86400e3; // a month back (spec 0005 had a week
 export const SCRUB_FORWARD_MS = 365 * 86400e3; // a year on (spec 0005 had thirty days)
 /** Inside this of now a satellite's drawn place is good; beyond it the tape says "rougher". */
 export const FINE_MS = 7 * 86400e3;
-export const PILL_UNITS = ['minute', 'hour', 'day'];
-export const UNIT_MS = { minute: 60e3, hour: 3600e3, day: 86400e3 };
+// `event` (internal #408, #269's Prev/Next): ‹ and › go to the mark before and the mark after on
+// the timeline, instead of a fixed step. It is a fourth stop of the same button so the pill grows
+// no wider on a phone. The tape shows what the day view shows (a month), a drag along the readout
+// moves by days, and until ui/scrubber.js has landed with the marks a step is a day.
+export const PILL_UNITS = ['minute', 'hour', 'day', 'event'];
+export const UNIT_MS = { minute: 60e3, hour: 3600e3, day: 86400e3, event: 86400e3 };
 const DEFAULT_UNIT = 'hour';
 
 /** The step size after this one; anything unknown goes to the default. */
@@ -174,6 +179,7 @@ export function createTimePill(ctx, host) {
   let anchorMs = safeNow();
   let pausedRate = null;
   let unit = DEFAULT_UNIT;
+  let eventStep = null; // ui/scrubber.js: (dir) -> whether there was a mark that way to go to
   const painters = [];
 
   function safeNow() {
@@ -206,6 +212,13 @@ export function createTimePill(ctx, host) {
     const unitLabel = t(T.unitTitle, { unit: T.unitWords[unit], next: T.unitWords[nextUnit(unit)] });
     if (unitBtn.title !== unitLabel) { unitBtn.title = unitLabel; unitBtn.setAttribute('aria-label', unitLabel); }
     root.dataset.unit = unit;
+    const byEvent = unit === 'event';
+    const prevLabel = byEvent ? T.prevEvent : T.prevTitle;
+    if (prev.title !== prevLabel) {
+      prev.title = prevLabel; prev.setAttribute('aria-label', prevLabel);
+      const nextLabel = byEvent ? T.nextEvent : T.nextTitle;
+      next.title = nextLabel; next.setAttribute('aria-label', nextLabel);
+    }
     for (const fn of painters) { try { fn(); } catch (e) { console.warn('a time pill painter failed', e); } }
   }
 
@@ -216,6 +229,11 @@ export function createTimePill(ctx, host) {
   }
 
   function step(dir) {
+    if (unit === 'event' && eventStep) {
+      // The scrubber moves the clock, selects the thing and says its words; nothing that way is said too.
+      if (!eventStep(dir)) say.textContent = dir < 0 ? T.noEventBack : T.noEventOn;
+      return;
+    }
     goTo(safeNow() + dir * UNIT_MS[unit]);
     say.textContent = words.textContent;
   }
@@ -316,6 +334,7 @@ export function createTimePill(ctx, host) {
     toLive,
     words: () => words.textContent,
     say: (text) => { say.textContent = text || ''; },
+    setEventStep: (fn) => { eventStep = typeof fn === 'function' ? fn : null; },
     onPaint: (fn) => { if (typeof fn === 'function') painters.push(fn); },
   };
   if (ctx) ctx.timePill = api;

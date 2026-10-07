@@ -95,7 +95,27 @@ check(marks[3].tMs <= win.hi, 'next August\'s eclipse is inside the year the tap
 }
 
 // --- steps, and a time far from now ----------------------------------------------------------------
-check(P.nextUnit('minute') === 'hour' && P.nextUnit('hour') === 'day' && P.nextUnit('day') === 'minute' && P.nextUnit('fortnight') === 'hour', 'the step cycles a minute, an hour, a day');
+check(P.nextUnit('minute') === 'hour' && P.nextUnit('hour') === 'day' && P.nextUnit('day') === 'event' && P.nextUnit('event') === 'minute' && P.nextUnit('fortnight') === 'hour', 'the step cycles a minute, an hour, a day, an event');
+
+// --- Prev and Next event (internal #408): the step "Event" goes from mark to mark ------------------
+{
+  const list = [{ id: 'a', tMs: now - 3 * D }, { id: 'b', tMs: now + 2 * H }, { id: 'c', tMs: now + 5 * D }];
+  check(S.stepMark(list, now, 1).id === 'b' && S.stepMark(list, now, -1).id === 'a', 'from now: the mark after, and the mark before');
+  check(S.stepMark(list, now + 2 * H, 1).id === 'c' && S.stepMark(list, now + 2 * H, -1).id === 'a', 'standing on a mark, a step leaves it: it is not its own next');
+  check(S.stepMark(list, now + 6 * D, 1) === null && S.stepMark(list, now - 4 * D, -1) === null && S.stepMark([], now, 1) === null && S.stepMark(list, NaN, 1) === null, 'nothing that way is null, and the pill says so');
+  check(S.SCALES.event === S.SCALES.day && P.UNIT_MS.event === D, 'stepping by event shows the month view, and a drag along the readout moves by days');
+  const pill = readFileSync(join(ROOT, 'site/js/ui/timepill.js'), 'utf8');
+  check(/unit === 'event' && eventStep/.test(pill) && /T\.noEventBack : T\.noEventOn/.test(pill) && /setEventStep/.test(readFileSync(join(ROOT, 'site/js/ui/scrubber.js'), 'utf8')), 'the pill asks the timeline for the mark, and says when there is none');
+  // The Moon's phases as marks: real instants, in order, about a week apart, each with its words.
+  const moon = S.moonMarks(now);
+  check(moon.length === 10 && moon.every((m, i) => i === 0 || (m.tMs - moon[i - 1].tMs > 6 * D && m.tMs - moon[i - 1].tMs < 9 * D)), `ten phases of the Moon round now, a week apart (${moon.length})`);
+  check(moon.filter((m) => m.tMs < now).length >= 1 && moon.filter((m) => m.tMs > now).length >= 8, 'at least one behind and eight ahead');
+  // A regression pin, not an outside source: astronomy-engine's own instant for the next full Moon.
+  const full = moon.find((m) => m.label === 'full' && m.tMs > now);
+  check(full && Math.abs(full.tMs - Date.parse('2026-10-26T04:12:00Z')) < 5 * 60e3, `the next full Moon is 26 October 2026 at 04:12 UTC (${full && new Date(full.tMs).toISOString()})`);
+  const mk = S.markOf(moon[3], now);
+  check(mk && mk.kind === 'moon' && /^The Moon is (new|first quarter|full|last quarter), /.test(mk.what) && mk.record === null, `a phase is a mark with its own words and nothing to select (${mk && mk.what})`);
+}
 check(P.UNIT_MS.minute === 60e3 && P.UNIT_MS.hour === H && P.UNIT_MS.day === D, 'and they are a minute, an hour and a day');
 check(P.pillText({ tMs: Date.parse('1979-03-05T12:05:00Z'), live: false, rate: 1, anchorMs: now }) === '05 MAR 1979 12:05 UTC · 48 years ago', `a mission's event far from now carries its year (${P.pillText({ tMs: Date.parse('1979-03-05T12:05:00Z'), live: false, rate: 1, anchorMs: now })})`);
 check(P.pillText({ tMs: now + 6 * H, live: false, rate: 1, anchorMs: now }) === '06 OCT 14:16 UTC · in 6 hours', 'a time near now does not');

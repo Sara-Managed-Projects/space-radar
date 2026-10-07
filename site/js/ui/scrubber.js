@@ -5,7 +5,8 @@
 //   SCALES, tapeX(tMs, centreMs, unit, width), tapeTime(x, centreMs, unit, width),
 //   tickPlan(centreMs, unit, width) -> {stepPx, offsetPx, labels: [{x, text, day}]},
 //   markOf(item, nowMs) -> {id, tMs, kind, what, record} | null, mergeMarks(known, items, nowMs, window),
-//   nearestMark(marks, x, centreMs, unit, width, reachPx), roughSpans(centreMs, anchorMs, unit, width)
+//   nearestMark(marks, x, centreMs, unit, width, reachPx), roughSpans(centreMs, anchorMs, unit, width),
+//   stepMark(marks, tMs, dir) -> the mark before or after | null, moonMarks(nowMs) -> items
 //
 // WHY A TAPE AND NOT A THUMB. The window is a month back and a year on (ui/timepill.js says why),
 // and the things worth scrubbing to are a pass in forty minutes and an eclipse in ten months. On
@@ -22,7 +23,8 @@
 //             within a few pixels of it is Live too: "now" snaps.
 //   marks     what is coming, from the same list "Coming up" shows (ui/next.js, through
 //             ctx.explore.next.items()): the next pass over your place, launches, a close
-//             approach, a shower's peak, an eclipse. Each is a button: it moves the clock there
+//             approach, a shower's peak, an eclipse; and the Moon's four named phases, worked out
+//             here (moonMarks), which move the clock and select nothing. Each is a button: it moves the clock there
 //             and, when the event is a thing on the map, selects it. A mark once seen stays on
 //             the tape after the clock passes it, so jumping to one does not make it vanish.
 //   rougher   past a week either side of now a satellite's place along its orbit is not to be
@@ -40,6 +42,8 @@ import { COPY, t, timeText } from '../copy/en.js';
 import { UNIT_MS, SCRUB_BACK_MS, SCRUB_FORWARD_MS, FINE_MS } from './timepill.js';
 import { rowText } from './next.js';
 import { isJunk } from '../sky/tonightbest.js';
+import '../copy/en.later.js';
+import * as Astronomy from '../../vendor/astronomy.js';
 
 /**
  * Per unit: how many pixels one unit of time takes, the minor tick, and the labelled tick.
@@ -51,6 +55,8 @@ export const SCALES = {
   hour: { pxPerMs: 20 / 3600e3, tickMs: 3600e3, labelMs: 6 * 3600e3 },
   day: { pxPerMs: 16 / 86400e3, tickMs: 86400e3, labelMs: 7 * 86400e3 },
 };
+// Stepping by event (ui/timepill.js PILL_UNITS): the widest view, where the most marks are in sight.
+SCALES.event = SCALES.day;
 /**
  * Where on the tape the fixed line stands: a third of the way along, not the middle. What is
  * coming is what people scrub to, and with the line in the middle half of a phone's tape was the
@@ -98,7 +104,50 @@ export function tickPlan(centreMs, unit, width) {
   return { stepPx, offsetPx, labels };
 }
 
-const MARK_KINDS = { 'launch': 'launch', 'approach': 'approach', 'perihelion': 'approach', 'pass': 'pass', 'train': 'pass', 'shower': 'shower', 'solar-eclipse': 'eclipse', 'lunar-eclipse': 'eclipse' };
+/** A step by event ignores a mark this close to the clock: it is the one the clock is already at. */
+const EVENT_SLACK_MS = 60e3;
+/** The Moon's phases on the tape: this many before now and after (four are one month). */
+const MOON_BACK = 2;
+const MOON_ON = 8;
+const QUARTERS = ['new', 'firstQuarter', 'full', 'lastQuarter'];
+
+/**
+ * The mark before (`dir` < 0) or after the instant `tMs`, or null: what ‹ and › go to when the
+ * step is "Event" (internal #408). `marks` is sorted by time, as mergeMarks leaves it.
+ */
+export function stepMark(marks, tMs, dir, slackMs = EVENT_SLACK_MS) {
+  const list = Array.isArray(marks) ? marks : [];
+  if (!Number.isFinite(tMs)) return null;
+  if (dir < 0) {
+    for (let i = list.length - 1; i >= 0; i -= 1) if (list[i].tMs < tMs - slackMs) return list[i];
+    return null;
+  }
+  for (const m of list) if (m.tMs > tMs + slackMs) return m;
+  return null;
+}
+
+/**
+ * The Moon's named phases round `nowMs` as items for the tape (internal #408: "a quiet week shows
+ * two marks"). Worked out here from the same theory that draws the Moon (astronomy-engine,
+ * SearchMoonQuarter), so they cost no request; good to the minute for centuries. Not on the Coming
+ * up list: a phase is on the Tonight tab already, and the list is for things that pass.
+ */
+export function moonMarks(nowMs, back = MOON_BACK, on = MOON_ON) {
+  const out = [];
+  if (!Number.isFinite(nowMs)) return out;
+  try {
+    let q = Astronomy.SearchMoonQuarter(new Date(nowMs - (back * 29.53 / 4 + 1) * DAY_MS));
+    for (let i = 0; i < back + on + 2 && out.length < back + on; i += 1) {
+      const tMs = q.time.date.getTime();
+      const phase = COPY.tonight.best.phases[QUARTERS[q.quarter]];
+      out.push({ kind: 'moon', tMs, label: QUARTERS[q.quarter], what: t(COPY.timePill.moonMark, { phase, date: timeText.dateNear(tMs, nowMs) }) });
+      q = Astronomy.NextMoonQuarter(q);
+    }
+  } catch { /* no phases on the tape; everything else stands */ }
+  return out;
+}
+
+const MARK_KINDS = { 'launch': 'launch', 'approach': 'approach', 'perihelion': 'approach', 'pass': 'pass', 'train': 'pass', 'shower': 'shower', 'solar-eclipse': 'eclipse', 'lunar-eclipse': 'eclipse', 'moon': 'moon' };
 
 /** One "Coming up" item as a mark, or null for what has no instant to go to (a storm under way). */
 export function markOf(item, nowMs) {
@@ -109,7 +158,8 @@ export function markOf(item, nowMs) {
   if (kind === 'pass' && isJunk(item.record)) return null;
   const rid = item.record ? item.record.id : item.label || item.kind;
   let what = '';
-  try { what = rowText(item, nowMs); } catch { what = ''; }
+  // An item that brings its own words (a Moon phase) keeps them; the rest are Coming up's rows.
+  try { what = item.what || rowText(item, nowMs); } catch { what = ''; }
   return { id: `${item.kind}:${rid}:${Math.round(item.tMs / 60e3)}`, tMs: item.tMs, kind, what: what.replace(/\.$/, ''), record: item.record || null };
 }
 
@@ -285,7 +335,7 @@ export function createScrubber(ctx, pill) {
     const next = ctx.explore && ctx.explore.next;
     const items = next && typeof next.items === 'function' ? next.items() : [];
     const anchor = pill.anchor();
-    marks = mergeMarks(marks, items, now(), { lo: anchor - SCRUB_BACK_MS, hi: anchor + SCRUB_FORWARD_MS });
+    marks = mergeMarks(marks, items.concat(moonMarks(anchor)), now(), { lo: anchor - SCRUB_BACK_MS, hi: anchor + SCRUB_FORWARD_MS });
     paint();
   }
 
@@ -305,6 +355,15 @@ export function createScrubber(ctx, pill) {
     // where the thing is then and not where it was a moment ago.
     const go = () => ctx.select(m.record, { remembered: true });
     if (typeof ctx.afterClockJump === 'function') ctx.afterClockJump(go); else go();
+  }
+
+  // ‹ and › with the step at "Event" (ui/timepill.js): the mark before or after the clock.
+  if (typeof pill.setEventStep === 'function') {
+    pill.setEventStep((dir) => {
+      const m = stepMark(marks, now(), dir);
+      if (m) goToMark(m);
+      return !!m;
+    });
   }
 
   // --- the drag: the tape follows the finger, so a drag to the left goes forward in time ---------
@@ -395,6 +454,7 @@ export function createScrubber(ctx, pill) {
       window.removeEventListener('sr:layer', onData);
       window.removeEventListener('sr:observer', onData);
       window.removeEventListener('sr:next', onData);
+      if (typeof pill.setEventStep === 'function') pill.setEventStep(null);
       host.classList.remove('has-tape');
       root.remove();
     },

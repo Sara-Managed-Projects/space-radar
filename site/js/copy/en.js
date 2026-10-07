@@ -691,8 +691,15 @@ export const COPY = {
     readLabel: '{text}. {hold}',
     // The step ‹ and › take (ui/timepill.js): a button that cycles a minute, an hour, a day, and
     // sets how far the timeline shows (ui/scrubber.js: two hours, a day, a month).
-    units: { minute: '1 min', hour: '1 h', day: '1 day' },
-    unitWords: { minute: 'one minute', hour: 'one hour', day: 'one day' },
+    units: { minute: '1 min', hour: '1 h', day: '1 day', event: 'Event' },
+    unitWords: { minute: 'one minute', hour: 'one hour', day: 'one day', event: 'one event' },
+    // With the step at "Event", ‹ and › go to the mark before and after on the timeline.
+    prevEvent: 'The event before',
+    nextEvent: 'The next event',
+    noEventBack: 'No earlier event on the timeline.',
+    noEventOn: 'No later event on the timeline.',
+    // A mark for one of the Moon's four named phases (ui/scrubber.js moonMarks).
+    moonMark: 'The Moon is {phase}, {date}',
     unitTitle: 'Steps of {unit}. Press for {next}',
     // The timeline (ui/scrubber.js). It is a slider: its value is the readout's words.
     tapeLabel: 'Timeline. Drag it, or use the arrow keys',
