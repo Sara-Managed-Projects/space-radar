@@ -1233,10 +1233,13 @@ tours:
         target: {record: europa}
         behind: jupiter
         stage: jupiter
-        # 60 since 2026-10-06 (internal #400), as Triton and Pluto have: with the default back
-        # light the moon is a crescent at best, and `behind:` could not yield to a light the stop
-        # had itself asked to stand against.
-        key_light_deg: 60
+        # 100 since 2026-10-07 (internal #426). It was 60 for a day (internal #400), so that
+        # `behind:` would give the planet up as soon as a third of the moon was dark: that lost
+        # Jupiter on every third day, and the card is about the two of them. `behind:` yields
+        # 25 degrees past the light a stop asks for (ui/trip.js keyLightAngles), so at 100 the
+        # planet stays until the moon is a fifth lit, and the two are side-lit together, which is
+        # how Cassini and Voyager photographed them. The default 125 would keep it to a sliver.
+        key_light_deg: 100
         frame_radii: 12
         chapter: "Chapter one: Jupiter's moons"
         card:
@@ -1301,10 +1304,13 @@ tours:
         target: {record: enceladus}
         behind: saturn
         stage: saturn
-        # 60 since 2026-10-06 (internal #400), as Triton and Pluto have: with the default back
-        # light the moon is a crescent at best, and `behind:` could not yield to a light the stop
-        # had itself asked to stand against.
-        key_light_deg: 60
+        # 100 since 2026-10-07 (internal #426). It was 60 for a day (internal #400), so that
+        # `behind:` would give the planet up as soon as a third of the moon was dark: that lost
+        # Saturn on every third day, and the card is about the two of them. `behind:` yields
+        # 25 degrees past the light a stop asks for (ui/trip.js keyLightAngles), so at 100 the
+        # planet stays until the moon is a fifth lit, and the two are side-lit together, which is
+        # how Cassini and Voyager photographed them. The default 125 would keep it to a sliver.
+        key_light_deg: 100
         # Enceladus is 252 km in radius and 238 000 km from Saturn. MEASURED in the browser,
         # 2026-09-22: at 5 radii the moon came out 193 px across against a Saturn 235 px across,
         # which reads as two bodies of a size. At 12 it is 85 px against the same 250 px, and
@@ -1335,7 +1341,10 @@ tours:
         # radii drew the moon twice the width of the planet it goes round (browser, 2026-09-22).
         # At 14 they are 69 and 65 px, which is at least the right way round.
         frame_radii: 14
-        key_light_deg: 60
+        # 100 since 2026-10-07 (internal #426), as Europa above: Neptune stays in the picture.
+        # Triton's path is tipped so far from the Sun's direction that at 100 `behind:` never has
+        # to yield (the line to Neptune is at most 140 degrees from the Sun's; the cone reaches 16).
+        key_light_deg: 100
         chapter: "Chapter three: the last planet"
         card:
           title: "Triton, going the wrong way round"
@@ -1931,6 +1940,10 @@ tours:
     group: earth-orbit
     next: satellites-and-junk
     requires: [worlds, storms, lightning, aurora]
+    # The first two stops move the clock to 2027, and a launch pad's label ("in 3 days") drawn at a
+    # date eight months on is a mark about another day (internal #400, #426). The satellites'
+    # marks stay: the trip is about one planet with today's sky round it.
+    hides: [launches, just-launched, starlink-trains]
     stage: earth
     clock: as-found
     og_stop: 5
@@ -2338,10 +2351,11 @@ tours:
         target: {world: moon}
         seen_from: earth
         frame_radii: 5.2
-        # Four days after new, 19 % lit. It was three days and 9 %, and the second walk of 2026-10-06
-        # still showed a black disc under "a sliver that grows": at that phase the lit edge is a
-        # few pixels of ground the Sun only grazes. From here the stop still ends near full.
-        time: 2027-01-12T00:00:00Z
+        # Five days after new (7 January 2027, 20:24 UTC), 27 % lit. It was three days and 9 %,
+        # then four and 19 %, and each walk still read the first frame as a black disc with a
+        # hairline (internal #400, #426): the lit edge at that phase is ground the Sun only
+        # grazes. A crescent a quarter lit is still a sliver, and the stop still ends near full.
+        time: 2027-01-13T00:00:00Z
         rate: 36000
         drift_deg: 0
         chapter: "The month, as the Earth sees it"

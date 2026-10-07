@@ -1336,7 +1336,7 @@ export const TOURS = [
 "stage": "jupiter",
 "frame_radii": 12,
 "behind": "jupiter",
-"key_light_deg": 60,
+"key_light_deg": 100,
 "chapter": "Chapter one: Jupiter's moons",
 "card": {
 "title": "Europa, and the two ships on their way",
@@ -1398,7 +1398,7 @@ export const TOURS = [
 "stage": "saturn",
 "frame_radii": 12,
 "behind": "saturn",
-"key_light_deg": 60,
+"key_light_deg": 100,
 "chapter": "Chapter two: the ringed planet",
 "card": {
 "title": "Enceladus, spraying its ocean into space",
@@ -1419,7 +1419,7 @@ export const TOURS = [
 "stage": "neptune",
 "frame_radii": 14,
 "behind": "neptune",
-"key_light_deg": 60,
+"key_light_deg": 100,
 "chapter": "Chapter three: the last planet",
 "card": {
 "title": "Triton, going the wrong way round",
@@ -2130,6 +2130,11 @@ export const TOURS = [
 "group": "earth-orbit",
 "next": "satellites-and-junk",
 "og_stop": 5,
+"hides": [
+"launches",
+"just-launched",
+"starlink-trains"
+],
 "pacing": "auto",
 "min_stops": 3,
 "stops": [
@@ -2647,7 +2652,7 @@ export const TOURS = [
 },
 "frame_radii": 5.2,
 "drift_deg": 0,
-"time": "2027-01-12T00:00:00Z",
+"time": "2027-01-13T00:00:00Z",
 "rate": 36000,
 "chapter": "The month, as the Earth sees it",
 "seen_from": "earth",
