@@ -31,7 +31,7 @@ budgets:
   # that a deploy strips vendor/ like js/, licence headers kept), and the cloud mask at WebP quality
   # 90 (575 032 -> 282 674 B at quality 50, same pixels). The number no longer depends on the
   # runner's clock either: what starts after the app's own end-of-first-visit mark is not counted.
-  - {id: first_visit_bytes, value: 3507000, unit: bytes, since: 2026-10-07, reason: "3 339 538 B measured + 5 %, by CI's method (a phone at 390x844, CelesTrak and Launch Library blocked, uncompressed) on the tree a deploy uploads. It was 4 008 000 (3 817 516 B measured on 2026-10-06, 3 861 587 B the morning of 2026-10-07) and 5 773 324 B before the first diet. The second diet (internal #415): vendor/ stripped at deploy (astronomy.js -234 622 B) and the cloud mask re-encoded (-292 358 B)"}
+  - {id: first_visit_bytes, value: 3517000, unit: bytes, since: 2026-10-07, reason: "3 349 349 B + 5 %: 3 339 538 B measured on #489's main, plus the 9 811 B of boot JavaScript and CSS that #491 to #493 added since (summed over the stripped boot graph, not booted again), by CI's method (a phone at 390x844, CelesTrak and Launch Library blocked, uncompressed) on the tree a deploy uploads. It was 4 008 000 (3 817 516 B measured on 2026-10-06, 3 861 587 B the morning of 2026-10-07) and 5 773 324 B before the first diet. The second diet (internal #415): vendor/ stripped at deploy (astronomy.js -234 622 B) and the cloud mask re-encoded (-292 358 B)"}
   # THE LIGHT EMBED (internal #396, 2026-10-07): `?embed=1&at=<a world or a station>`, booted by
   # js/embedlite.js instead of main.js. Same method and same tree as the row above, for
   # `?embed=1&at=moon` and `?embed=1&at=25544` (tests/test_first_visit_bytes.mjs --embed=). Before:
