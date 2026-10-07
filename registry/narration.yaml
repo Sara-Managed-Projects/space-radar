@@ -225,9 +225,9 @@ clips:
   - {trip: "the-living-earth", stop: "tilt", hash: "d3a80c1e770bd055", seconds: 20.73, words: 54, lufs: -16.5, opus: 82640, m4a: 106987, vtt: 404}
   - {trip: "the-living-earth", stop: "half-a-year-on", hash: "c10118d67fc0ea42", seconds: 21.08, words: 58, lufs: -16.4, opus: 87350, m4a: 108943, vtt: 389}
   - {trip: "the-living-earth", stop: "air", hash: "d6eac002bcc4cf11", seconds: 19.64, words: 55, lufs: -16.6, opus: 82528, m4a: 101554, vtt: 381}
-  - {trip: "the-living-earth", stop: "weather", hash: "fbff8972a1858222", seconds: 23.2, words: 57, lufs: -16.4, opus: 92784, m4a: 119592, vtt: 432}
-  - {trip: "the-living-earth", stop: "ocean", hash: "f7b0e0bd66868909", seconds: 21.8, words: 62, lufs: -16.5, opus: 86784, m4a: 112420, vtt: 416}
-  - {trip: "the-living-earth", stop: "plankton", hash: "30c44782bdd5b2cd", seconds: 21.61, words: 61, lufs: -16.5, opus: 87158, m4a: 111551, vtt: 421}
+  - {trip: "the-living-earth", stop: "weather", hash: "aac4a4e335747462", seconds: 22.31, words: 57, lufs: -16.7, opus: 89403, m4a: 115028, vtt: 432}
+  - {trip: "the-living-earth", stop: "ocean", hash: "0576b48abeadd335", seconds: 20.98, words: 62, lufs: -16.5, opus: 83446, m4a: 108291, vtt: 416}
+  - {trip: "the-living-earth", stop: "plankton", hash: "a060b8355846631e", seconds: 21.09, words: 61, lufs: -16.5, opus: 85212, m4a: 108943, vtt: 421}
   - {trip: "the-living-earth", stop: "ice", hash: "623250fd1bd98524", seconds: 20.65, words: 54, lufs: -16.7, opus: 82195, m4a: 106770, vtt: 395}
   - {trip: "the-living-earth", stop: "haze", hash: "2023112137d51b05", seconds: 25.79, words: 63, lufs: -16.5, opus: 102754, m4a: 132850, vtt: 472}
   - {trip: "the-living-earth", stop: "moon", hash: "166dbc1b946b7032", seconds: 21.3, words: 58, lufs: -16.5, opus: 84717, m4a: 110030, vtt: 400}
