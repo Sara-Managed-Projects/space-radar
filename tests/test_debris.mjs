@@ -108,6 +108,14 @@ check(layer && /illustrative/.test(layer.sentence) && typeof layer.parseLazy ===
 check(SOURCES['celestrak-satcat'] && SOURCES['celestrak-satcat'].kind === 'text' && /Kelso/.test(SOURCES['celestrak-satcat'].attribution), 'the catalogue is a source with its credit');
 const layersSrc = readFileSync(join(JS, 'data/layers.js'), 'utf8');
 check(!/^import .*satcat/m.test(layersSrc) && !/^import .*(debris|satcat)/m.test(readFileSync(join(JS, 'main.js'), 'utf8')), 'neither the catalogue\'s parser nor the view is in the first visit');
+// What cannot be tracked (internal #407): ESA's modelled counts, with their page and the day read.
+{
+  const words = V.untrackedWords();
+  check(/about 1\.5 million pieces of 1 to 10 cm and 230 million of 1 mm to 1 cm/.test(words) && /February 2026/.test(words) && /An estimate, not a count\.$/.test(words), `the panel says what ESA's model counts below radar: ${words}`);
+  check(V.ESA_MODEL.url === 'https://sdup.esoc.esa.int/discosweb/statistics/' && V.ESA_MODEL.read === '2026-10-07' && V.ESA_MODEL.overTenCm === 68450, 'the numbers carry their page and the day they were read');
+  const srcD = readFileSync(join(JS, 'ui/debris.js'), 'utf8');
+  check(/MASTER-8, reference population 02\/2026/.test(srcD) && /link\.href = ESA_MODEL\.url/.test(srcD) && /noopener noreferrer/.test(srcD), 'the source is quoted in the code and linked from the panel');
+}
 check(/10 cm/.test(COPY.debris.honesty) && /illustrative/.test(COPY.debris.honesty) && /no catalogue/.test(COPY.debris.honesty), 'the panel says what the count is, what it leaves out, and that the places are illustrative');
 
 if (problems.length) { console.error('debris FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }

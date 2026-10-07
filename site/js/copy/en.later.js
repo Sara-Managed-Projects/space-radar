@@ -263,6 +263,10 @@ Object.assign(COPY, {
     // "From about 10 cm": NASA's Orbital Debris Program Office FAQ, read 2026-10-06 ("Large orbital
     // debris (> 10 cm) is tracked routinely by the U.S. Space Surveillance Network"),
     // https://orbitaldebris.jsc.nasa.gov/faq/. No other number in these sentences is written here.
+    // What is too small to track: ESA's modelled counts (ui/debris.js ESA_MODEL carries the numbers,
+    // the page and the day it was read). {mid} and {small} are millions.
+    untracked: 'Too small to track, by ESA’s model: about {mid} million pieces of 1 to 10 cm and {small} million of 1 mm to 1 cm, as of {when}. An estimate, not a count.',
+    untrackedSource: 'ESA space environment statistics',
     honesty: 'Counted from CelesTrak’s catalogue as read on {date}: what radar can track, from about 10 cm across. Smaller pieces are far more numerous and are in no catalogue. Where a dot is along its orbit is illustrative.',
   },
 

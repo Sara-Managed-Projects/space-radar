@@ -32,6 +32,37 @@ const LAYER = 'debris-field';
 const DAY_MS = 86400e3;
 const SHOWN_KINDS = ['debris', 'rocket', 'dead', 'working'];
 
+/**
+ * WHAT CANNOT BE TRACKED (internal #407). The catalogue stops at about 10 cm; below that the
+ * numbers are a model's. ESA's Space Debris Office publishes them: "The number of objects
+ * estimated based on statistical models to be in orbit (MASTER-8, reference population 02/2026):
+ * 68450 space objects greater than 10 cm (including approx. 11300 active payloads); 1.5 million
+ * space debris objects from greater than 1 cm to 10 cm; 230 million space debris objects from
+ * greater than 1 mm to 1 cm". Read 2026-10-07 on ESA's Space Debris User Portal, "Space
+ * Environment Statistics", last update 31 July 2026 (the page esa.int's "Space debris by the
+ * numbers" is fed from; that page itself is drawn by script and gave no text to curl that day).
+ * A modelled estimate, and the line says so. Refresh by reading the page again.
+ */
+export const ESA_MODEL = {
+  url: 'https://sdup.esoc.esa.int/discosweb/statistics/',
+  read: '2026-10-07',
+  population: Date.UTC(2026, 1, 1),
+  overTenCm: 68450,
+  oneToTenCmMillion: 1.5,
+  oneMmToOneCmMillion: 230,
+};
+
+const MONTH = new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+
+/** "Too small to track, by ESA's model: about 1.5 million pieces of 1 to 10 cm ..." Pure. */
+export function untrackedWords(model = ESA_MODEL) {
+  return t(COPY.debris.untracked, {
+    mid: fmt.num(model.oneToTenCmMillion, 1),
+    small: fmt.int(model.oneMmToOneCmMillion),
+    when: MONTH.format(new Date(model.population)),
+  });
+}
+
 /** "17 461 of the 34 533 things tracked in orbit no longer work." */
 export function leadWords(c) {
   const D = COPY.debris;
@@ -205,6 +236,14 @@ export function createDebris(ctx, host, opts = {}) {
       root.appendChild(list);
     }
     root.appendChild(el('p', 'sr-debris__honesty', t(D.honesty, { date: timeText.utcLong(st.data.asOfMs) })));
+    // What no catalogue holds, from ESA's model, with the page it was read on.
+    const more = el('p', 'sr-debris__honesty sr-debris__untracked', untrackedWords() + ' ');
+    const link = el('a', 'sr-link', D.untrackedSource);
+    link.href = ESA_MODEL.url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    more.appendChild(link);
+    root.appendChild(more);
   }
 
   function open() {
