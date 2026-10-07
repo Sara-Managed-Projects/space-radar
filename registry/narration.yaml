@@ -101,6 +101,7 @@ listen:
   max_wer: 0.1
   names: []
   accept:
+    mars-where-we-have-driven/valles: "small.en hears the title's first word, Valles, as 'Vols'; a Latin name, and the title-said-alone fault of internal #441 is in every title; to be heard by a person"
     life-of-a-star/sun: "small.en hears one extra word, 'millions', after the last sentence at 0:21; not re-checked with a second recogniser, to be heard by a person (internal #441)"
 skip_title:
   - strangest-things/golf-balls
@@ -234,11 +235,11 @@ clips:
   - {trip: "planets-tonight", stop: "uranus", hash: "7977ccf24b4322dc", seconds: 22.6, words: 61, lufs: -16.7, opus: 90124, m4a: 116550, vtt: 420}
   - {trip: "planets-tonight", stop: "neptune", hash: "572c90dcdfff5f0f", seconds: 16.76, words: 39, lufs: -16.6, opus: 65925, m4a: 86775, vtt: 317}
   - {trip: "planets-tonight", stop: "your-sky", hash: "764e6f5d8baf2d14", seconds: 17.93, words: 46, lufs: -16.3, opus: 72045, m4a: 92860, vtt: 346}
-  - {trip: "mars-where-we-have-driven", stop: "planet", hash: "204b5fff8e15de79", seconds: 19.64, words: 50, lufs: -16.6, opus: 77950, m4a: 101554, vtt: 369}
-  - {trip: "mars-where-we-have-driven", stop: "olympus", hash: "b80fc4f3552af945", seconds: 18.41, words: 43, lufs: -16.5, opus: 73694, m4a: 95251, vtt: 330}
-  - {trip: "mars-where-we-have-driven", stop: "valles", hash: "70b59edf97939bcc", seconds: 19.92, words: 46, lufs: -16.6, opus: 79378, m4a: 102858, vtt: 366}
-  - {trip: "mars-where-we-have-driven", stop: "viking-1", hash: "6380bde19285c071", seconds: 20.24, words: 51, lufs: -16.5, opus: 80301, m4a: 104596, vtt: 380}
-  - {trip: "mars-where-we-have-driven", stop: "opportunity", hash: "4326338de02a995f", seconds: 19.25, words: 44, lufs: -16.5, opus: 76644, m4a: 99598, vtt: 356}
+  - {trip: "mars-where-we-have-driven", stop: "planet", hash: "204b5fff8e15de79", seconds: 19.64, words: 50, lufs: -16.6, opus: 77950, m4a: 101554, vtt: 369, wer: 0.02, heard: "c2397b37f09cdfeb", voice: 0}
+  - {trip: "mars-where-we-have-driven", stop: "olympus", hash: "b80fc4f3552af945", seconds: 18.41, words: 43, lufs: -16.5, opus: 73694, m4a: 95251, vtt: 330, wer: 0.0233, heard: "1deaecfb71d91b19", voice: 0}
+  - {trip: "mars-where-we-have-driven", stop: "valles", hash: "70b59edf97939bcc", seconds: 19.92, words: 46, lufs: -16.6, opus: 79378, m4a: 102858, vtt: 366, wer: 0.0222, heard: "35dace6d39a2e947", voice: 1}
+  - {trip: "mars-where-we-have-driven", stop: "viking-1", hash: "6380bde19285c071", seconds: 20.24, words: 51, lufs: -16.5, opus: 80301, m4a: 104596, vtt: 380, wer: 0.02, heard: "a9b9e6d597987132", voice: 0}
+  - {trip: "mars-where-we-have-driven", stop: "opportunity", hash: "4326338de02a995f", seconds: 19.25, words: 44, lufs: -16.5, opus: 76644, m4a: 99598, vtt: 356, wer: 0.0, heard: "5f865f1b6070c6b6", voice: 0}
   - {trip: "mars-where-we-have-driven", stop: "gale", hash: "28612c3fb05d8a7d", seconds: 21.76, words: 54, lufs: -16.4, opus: 87204, m4a: 112420, vtt: 358}
   - {trip: "mars-where-we-have-driven", stop: "elysium", hash: "263c41d8e2e4cf13", seconds: 21.43, words: 47, lufs: -16.4, opus: 84838, m4a: 110682, vtt: 397}
   - {trip: "mars-where-we-have-driven", stop: "jezero", hash: "5e6907c5d015c692", seconds: 22.95, words: 50, lufs: -16.5, opus: 91648, m4a: 118288, vtt: 402}
