@@ -85,7 +85,7 @@ check(near(lum(A.twilightFloor(-18).zenith), lum(night.zenith), 1e-9), 'and astr
 // The shader carries the same numbers: they are written from AIR, not typed twice.
 check(A.GLSL_SKY.includes(`const float SKY_HR = ${A.AIR.rayleighScaleKm}.0;`) && A.GLSL_SKY.includes('0.005802') && A.GLSL_SKY.includes(`i < ${A.SKY_STEPS}`), 'the shader\'s constants are the JS constants');
 const ground = readFileSync(join(JS, 'sky/groundsky.js'), 'utf8');
-check(/skyScatter\(vDir, uSun, vR, vM\)/.test(ground) && /exposureFor\(frame\.sunAltDeg\)/.test(ground), 'sky/groundsky.js draws its dome with this model');
+check(/skyScatter\(vDir, uSun, sumR, sumM\)/.test(ground) && /exposureFor\(frame\.sunAltDeg\)/.test(ground), 'sky/groundsky.js draws its dome with this model');
 
 // --- the land ----------------------------------------------------------------------------------
 check(L.landscapeKind({ darkness: 'city', sea: new Array(16).fill(1) }) === 'city', 'a city is a city, by the sea or not');

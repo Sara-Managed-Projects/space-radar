@@ -153,7 +153,11 @@ varying vec3 vM;
 ${GLSL_SKY}
 void main() {
   vDir = normalize(position);
-  skyScatter(vDir, uSun, vR, vM);
+  vec3 sumR;
+  vec3 sumM;
+  skyScatter(vDir, uSun, sumR, sumM);
+  vR = sumR;
+  vM = sumM;
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }
 `;
