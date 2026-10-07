@@ -461,16 +461,39 @@ export async function boot({ setStatus } = {}) {
       return ctx.earthOverlay;
     })
     .catch((e) => { console.warn('the Earth overlays did not load', e); overlayImport = null; return null; }));
+  // THE WIND (internal #362) is one of the overlays to the visitor and a module of its own here:
+  // scene/wind.js, fetched when "Wind" is chosen, which then asks a NOAA-funded server for one
+  // forecast hour (data/wind.js). One overlay at a time: choosing it takes a GIBS map away.
+  ctx.wind = null;
+  let windImport = null;
+  const WIND_OVERLAY = 'wind';
+  const wantWind = () => windImport || (windImport = import('./scene/wind.js')
+    .then((m) => {
+      ctx.wind = m.createWind({
+        earth: () => worlds.meshFor('earth'),
+        saveData: typeof navigator !== 'undefined' && shouldSaveData(navigator.connection),
+        reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
+        onChange: tellOverlay,
+      });
+      return ctx.wind;
+    })
+    .catch((e) => { console.warn('the wind did not load', e); windImport = null; return null; }));
   const applyOverlay = (id) => {
     if (id === overlayAsked) return;
     overlayAsked = id;
-    if (!id && !ctx.earthOverlay) { tellOverlay(); return; }
-    wantOverlay().then((o) => { if (o) o.set(overlayAsked); else tellOverlay(); });
+    const windOn = id === WIND_OVERLAY;
+    if (windOn) wantWind().then((w) => { if (w) w.set(overlayAsked === WIND_OVERLAY); else tellOverlay(); });
+    else if (ctx.wind) ctx.wind.set(false);
+    const map = windOn ? null : id;
+    if (!map && !ctx.earthOverlay) { tellOverlay(); return; }
+    wantOverlay().then((o) => { if (o) o.set(overlayAsked === WIND_OVERLAY ? null : overlayAsked); else tellOverlay(); });
     tellOverlay();
   };
-  /** What is on the globe: scene/earthoverlay.js state(), or its stand-in while the module loads. */
-  ctx.overlayState = () => (ctx.earthOverlay ? ctx.earthOverlay.state()
-    : { id: overlayAsked, status: overlayAsked ? 'loading' : 'off' });
+  /** What is on the globe: the scene module's state(), or its stand-in while the module loads. */
+  ctx.overlayState = () => (overlayAsked === WIND_OVERLAY
+    ? (ctx.wind ? { ...ctx.wind.state(), id: WIND_OVERLAY } : { id: WIND_OVERLAY, kind: 'wind', status: 'loading' })
+    : ctx.earthOverlay ? ctx.earthOverlay.state()
+      : { id: overlayAsked, status: overlayAsked ? 'loading' : 'off' });
   ctx.setOverlay = (id) => {
     overlayOwn = id || null;
     const st = ctx.trip.state;
@@ -2079,6 +2102,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     if (ctx.figures) ctx.figures.update(ctx.camera, ctx.renderer);
     if (ctx.portraits) ctx.portraits.update(ctx.camera, t, frameMs);
     if (ctx.earthOverlay) ctx.earthOverlay.update();
+    if (ctx.wind) ctx.wind.update();
     if (ctx.systems) {
       ctx.systems.setVisible(ctx.isLayerOn('systems'));
       ctx.systems.update(t, ctx.camera);

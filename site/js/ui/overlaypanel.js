@@ -13,6 +13,9 @@ import '../copy/en.later.js';
 import { OVERLAYS } from '../data/overlays.js';
 import { legendNode, paintLegend, overlayLine } from './overlaylegend.js';
 
+/** The overlay id main.js hands to scene/wind.js instead of scene/earthoverlay.js. */
+export const WIND_OPTION = 'wind';
+
 export function overlayPanel(ctx) {
   const C = COPY.overlay;
   const wrap = document.createElement('section');
@@ -34,6 +37,11 @@ export function overlayPanel(ctx) {
     o.textContent = row.title;
     select.appendChild(o);
   }
+  // The wind is not a GIBS picture: scene/wind.js draws it from NOAA's model (ctx.setOverlay knows the id).
+  const wind = document.createElement('option');
+  wind.value = WIND_OPTION;
+  wind.textContent = C.wind.title;
+  select.appendChild(wind);
   wrap.appendChild(select);
   const legend = legendNode(null);
   wrap.appendChild(legend);

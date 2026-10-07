@@ -454,6 +454,18 @@ Object.assign(COPY, {
       modelled: 'A weather model fed with measurements, not a direct picture.',
     },
     credit: 'Data: {credit}, through NASA GIBS. A map of data, not a photograph.',
+    // The wind (scene/wind.js, data/wind.js): NOAA's forecast model, drawn as moving streaks.
+    wind: {
+      title: 'Wind',
+      loading: 'Asking for the wind field.',
+      failed: 'The wind field did not arrive. The globe is as it was.',
+      what: 'The wind ten metres above the ground; colour is its speed.',
+      dated: 'The forecast is for {date}, {time} UTC.',
+      mean: 'About {mean} m/s on average, up to {max}.',
+      sped: 'The streaks move {n} hours of wind in a second.',
+      still: 'Each streak is a piece of the flow, standing still.',
+      credit: 'Data: {credit}. A weather model, not a measurement.',
+    },
     legendAria: '{title}, from {low} to {high} {unit}',
     legendHigh: '{high} {unit}',
   },

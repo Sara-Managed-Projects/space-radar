@@ -8,13 +8,14 @@
 // (ui/tripframe.js) and What to show (ui/overlaypanel.js) both print from the state they are
 // handed, so the two can never disagree about what is on the globe.
 
-import { COPY, t } from '../copy/en.js';
+import { COPY, t, timeText, fmt } from '../copy/en.js';
 import '../copy/en.later.js';
 
 /** What the colours are, which day they are of, how they were got and whose they are. */
 export function overlayLine(state) {
   const C = COPY.overlay;
   if (!state || !state.id) return '';
+  if (state.kind === 'wind') return windLine(state);
   if (state.status === 'loading') return C.loading;
   if (state.status === 'failed') return C.failed;
   if (state.status === 'no-earth') return C.noEarth;
@@ -26,6 +27,31 @@ export function overlayLine(state) {
     made: C.made[state.cls] || '',
     credit: t(C.credit, { credit: state.credit }),
   }).replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * The wind's sentence (scene/wind.js): what the streaks are, which forecast hour, that it is a
+ * model, how much the motion is sped up (or that it stands still), and whose it is.
+ */
+function windLine(state) {
+  const W = COPY.overlay.wind;
+  if (state.status === 'loading') return W.loading;
+  if (state.status === 'failed') return W.failed;
+  if (state.status === 'no-earth') return COPY.overlay.noEarth;
+  if (state.status !== 'shown' || !Number.isFinite(state.date)) return '';
+  const hours = Math.round(state.speedup / 3600);
+  return [
+    W.what,
+    t(W.dated, { date: timeText.utcLong(state.date), time: timeText.utcHm(state.date) }),
+    Number.isFinite(state.meanSpeed) ? t(W.mean, { mean: fmt.int(Math.round(state.meanSpeed)), max: fmt.int(Math.round(state.maxSpeed)) }) : '',
+    state.still ? W.still : t(W.sped, { n: fmt.int(hours) }),
+    t(W.credit, { credit: state.credit }),
+  ].filter(Boolean).join(' ');
+}
+
+/** The legend's title: the registry row's for a GIBS map, the copy's for the wind. */
+function titleOf(state) {
+  return state && state.kind === 'wind' ? COPY.overlay.wind.title : state ? state.title : '';
 }
 
 function sig(state) {
@@ -42,12 +68,12 @@ export function paintLegend(node, state) {
   node.hidden = !l;
   if (!l) return;
   const [title, ramp, low, high] = node.children;
-  title.textContent = state.title;
+  title.textContent = titleOf(state);
   // The ramp is the registry's own colours (GIBS's colormap), which is why it is a style here.
   ramp.style.background = `linear-gradient(to right, ${(l.stops || []).join(', ')})`;
   low.textContent = l.low;
   high.textContent = t(COPY.overlay.legendHigh, { high: l.high, unit: l.unit });
-  node.setAttribute('aria-label', t(COPY.overlay.legendAria, { title: state.title, low: l.low, high: l.high, unit: l.unit }));
+  node.setAttribute('aria-label', t(COPY.overlay.legendAria, { title: titleOf(state), low: l.low, high: l.high, unit: l.unit }));
 }
 
 export function legendNode(state) {

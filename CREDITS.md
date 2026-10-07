@@ -38,6 +38,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | Today's clouds | NASA GIBS (GOES, Himawari) | open; acknowledgement asked | [4.13](#413-nasa-gibs--todays-clouds-2026-09-28) |
 | Storms, lightning | GDACS; NOAA nowCOAST | CC BY 4.0; public domain | [4.14](#414-gdacs--tropical-cyclones-2026-09-28), [4.17](#417-noaa-nowcoast--lightning-2026-10-03) |
 | Fires, volcanoes and icebergs | NASA EONET | NASA service; its disclaimer | [4.20](#420-nasa-eonet--fires-volcanoes-and-icebergs-2026-10-07) |
+| The wind | NOAA/NCEP GFS, through PacIOOS ERDDAP | free to use and redistribute | [4.21](#421-noaa-gfs-through-pacioos--the-wind-2026-10-07) |
 | Moon and Mars close-up tiles and relief; the Earth close up | NASA Solar System Treks; USGS Astrogeology; NASA GIBS | NASA content; HRSC's share of Mars's relief CC BY-SA 3.0 IGO | [4.16](#416-nasa-solar-system-treks--the-moon-and-mars-close-up-2026-10-03) |
 | Countries and seas | Natural Earth | public domain | [4.15](#415-natural-earth--the-country-or-sea-under-a-satellite-2026-09-29) |
 | Dishes, crews, observatories | NASA DSN Now; Open Notify; Wikidata | see the section; CC0 for Wikidata | [4.3](#43-nasa--dsn-now), [4.18](#418-the-sources-the-harvester-reads) |
@@ -1327,6 +1328,32 @@ names on each one and the card repeats: IRWIN (the US Integrated Reporting of Wi
 Information), GDACS, the Smithsonian Institution's Global Volcanism Program, and the US National
 Ice Center. Only an event's title, place, date and reported size are shown; nothing is copied
 into this repository except nine events in `tests/fixtures/eonet/` for the tests.
+
+### 4.21 NOAA GFS through PacIOOS — the wind (2026-10-07)
+
+`site/js/data/wind.js` asks the PacIOOS ERDDAP server
+(<https://pae-paha.pacioos.hawaii.edu/erddap/griddap/ncep_global.html>, read 2026-10-07) for one
+forecast hour of the wind ten metres above the ground, every fifth degree over the whole globe
+(37 × 72 points, two components), when a visitor chooses "Wind" under Earth data in What to show,
+and never at boot. One request, no key, no credentials, no referrer. Measured 2026-10-07 with
+`Origin: https://www.spaceradar.ai`: `Access-Control-Allow-Origin: *`, gzip, 169 kB of JSON as
+text, about 2 s. `site/js/scene/wind.js` draws it as moving streaks.
+
+The data is the NOAA/NCEP Global Forecast System, a numerical weather model ("8-day, 3-hourly
+forecast for the globe at approximately 50-km or 0.5-deg resolution"), served by the Pacific
+Islands Ocean Observing System at the University of Hawaii, which NOAA funds through IOOS. The
+dataset's licence attribute, in full: "The data may be used and redistributed for free but is not
+intended for legal use, since it may contain inaccuracies. Neither the data Contributor,
+University of Hawaii, PacIOOS, NOAA, State of Hawaii nor the United States Government, nor any of
+their employees or contractors, makes any warranty, express or implied, including warranties of
+merchantability and fitness for a particular purpose, or assumes any legal liability for the
+accuracy, completeness, or usefulness, of this information." The legend's sentence names the
+model, the forecast hour and the server, and says it is a model and not a measurement. Nothing is
+copied into this repository except four rows in `tests/fixtures/wind/head.json`.
+
+Tested the same day and not used: NOAA CoastWatch's ERDDAP copy of the dataset (no
+`Access-Control-Allow-Origin` header), NOAA NOMADS (GRIB2 files; its filter script did not
+answer), and Open-Meteo (its free API is for non-commercial use only).
 
 ## 4.6 Third-party trademarks the app names or draws
 

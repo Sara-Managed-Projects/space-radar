@@ -559,6 +559,10 @@ jobs:
       # answered on 2026-10-07 (no network here): the records, the card, the two requests, nothing at boot.
       - name: fires, volcanoes and icebergs are EONET's points with their dates, fetched only when asked
         run: node tests/test_eonet.mjs
+      # Internal #362: the wind, NOAA's GFS through PacIOOS ERDDAP, as moving streaks (no network here):
+      # the one request, a grid refused unless whole, the step along the wind, the drawing, nothing at boot.
+      - name: the wind is one request for a whole grid, drawn as streaks that move with it, or stand still when asked
+        run: node tests/test_wind.mjs
       # Spec 0053 task 3: the aurora, NOAA's OVATION forecast on the night side, against the answer NOAA
       # really gave on 2026-09-30 (saved): the decode, the night mask and colour ramp twins, the
       # schedule, and the card's "not a photograph".

@@ -80,6 +80,9 @@ const DEFERRED = {
   'js/ui/today.js': 'the dated cards: TODAY_MS after sr:layers-ready',
   'js/ui/offline.js': 'the service worker\'s module: OFFLINE_MS after sr:layers-ready',
   'js/scene/aurora.js': 'the aurora: AURORA_IMPORT_MS after sr:layers-ready',
+  'js/scene/wind.js': 'the wind: main.js fetches it when Wind is chosen under Earth data',
+  'js/data/wind.js': 'the wind field\'s request and arithmetic: with scene/wind.js',
+  'js/data/eonet.js': 'fires, volcanoes and icebergs: data/layers.js fetches it when the layer is ticked',
 };
 for (const [path, why] of Object.entries(DEFERRED)) {
   check(!boot.has(path), `${path} is in the boot graph again (a static import reaches it from main.js). ${why}`);
