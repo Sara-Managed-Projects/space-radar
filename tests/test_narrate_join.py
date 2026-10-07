@@ -123,16 +123,19 @@ check([t for _, _, t in back] == ["Venus.", "One.", "Two."] and abs(back[0][1] -
 # 5. the registry as committed
 _, cfg = narrate.load_config()
 rules = narrate.join_rules(cfg)
-check(int(rules["words"]) >= 1 and len(rules["joiners"]) >= 1, "registry/narration.yaml has the join rules")
+check("join" in cfg["timing"] and len(rules["joiners"]) >= 1 and float(rules["min_pause_s"]) > 0, "registry/narration.yaml has the join rules")
 skip = set(cfg.get("skip_title") or [])
 say = set((cfg.get("say") or {}).keys())
 alone = []
+untitled = []
 stops = 0
 for trip, stop in narrate.every_stop(narrate.load_tours()):
     key = f"{trip['id']}/{stop['id']}"
     cues = narrate.cues_for(trip, stop, cfg)
     stops += 1
-    has_title = key not in skip and key not in say
+    has_title = narrate.titled(key, stop.get("card"), cfg, cues)
+    if key not in skip and len(cues) > 1 and not has_title:
+        untitled.append(key)
     groups = narrate.passes([m for _, m in cues], has_title, rules)
     if has_title and len(cues) > 1 and len(groups[0]) < 2:
         alone.append(key)
@@ -141,6 +144,14 @@ for trip, stop in narrate.every_stop(narrate.load_tours()):
             alone.append(f"{key} sentence {group[0]}")
 check(stops > 150, f"the trips have their stops ({stops})")
 check(not alone, f"no title and no short sentence is said alone ({alone[:6]})")
+check(not untitled, f"every clip but the skip_title ones opens with its card's title, `say` scripts too ({untitled[:6]})")
+card = {"title": "Venus", "body": "x"}
+two = [("Venus.", "Venus."), ("The brightest thing.", "The brightest thing.")]
+check(narrate.titled("t/s", card, {}, two), "a card's title, then its body: titled")
+check(not narrate.titled("t/s", card, {"skip_title": ["t/s"]}, two), "skip_title: not titled")
+check(not narrate.titled("t/s", card, {}, two[:1]), "one sentence: nothing to say it with")
+check(not narrate.titled("t/s", card, {"say": {"t/s": "x"}}, [("Something else.", ""), ("More.", "")]), "a `say` that does not open with the title: not titled")
+check(not narrate.titled("t/s", {"body": "x"}, {}, two), "no title on the card: not titled")
 other = {**cfg, "timing": {**cfg["timing"], "join": {**rules, "words": int(rules["words"]) + 1}}}
 some = [("Venus.", "Venus."), ("The brightest thing.", "The brightest thing.")]
 check(narrate.clip_hash(some, cfg) != narrate.clip_hash(some, other), "the join rules are part of a clip's hash")

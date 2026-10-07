@@ -219,6 +219,16 @@ def cues_for(trip: dict, stop: dict, cfg: dict) -> list:
     return [(text, apply_lexicon(spoken(text), lexicon)) for text in shown]
 
 
+def titled(key: str, card: dict, cfg: dict, cues: list) -> bool:
+    """Does this stop's clip open with the card's title? Then the title's pause follows it, and
+    the title is said in one pass with the sentence after it (passes()). A `say` script counts
+    when its first sentence is the card's title, which is how every one of them is written."""
+    title = str((card or {}).get("title") or "").strip().rstrip(".!?")
+    if not title or len(cues) < 2 or key in (cfg.get("skip_title") or []):
+        return False
+    return cues[0][0].strip().rstrip(".!?") == title
+
+
 def clip_hash(cues: list, cfg: dict) -> str:
     voice = cfg.get("voice") or {}
     payload = [
@@ -699,7 +709,7 @@ def render(args) -> int:
     bad = 0
     with tempfile.TemporaryDirectory() as tmp:
         for trip, stop, key, cues, h, p in todo:
-            has_title = key not in (cfg.get("skip_title") or []) and key not in (cfg.get("say") or {})
+            has_title = titled(key, stop.get("card"), cfg, cues)
             audio, rate, timed, notes = voice.clip(cues, has_title)
             wav = Path(tmp) / "clip.wav"
             sf.write(str(wav), audio, rate, subtype="FLOAT")
@@ -759,7 +769,7 @@ def audition(args) -> int:
                 continue
             cues = cues_for(trip, stop, cfg)
             for vid in args.voices.split(","):
-                audio, rate, _, _ = voice.clip(cues, True, vid)
+                audio, rate, _, _ = voice.clip(cues, titled(key, stop.get("card"), cfg, cues), vid)
                 wav = Path(tmp) / "a.wav"
                 sf.write(str(wav), audio, rate, subtype="FLOAT")
                 dest = out / f"{trip['id']}--{stop['id']}--{vid}.m4a"
