@@ -135,8 +135,10 @@ check("now" not in lc.rare_names(["Now leave. Go now."]), "and not a sentence's 
 r = lc.canon("Venus. The brightest thing in the night sky.")
 cues = [(0.15, 0.9, 1), (1.6, 4.0, 7)]
 check(lc.misplaced(r, r, [0.2, 1.7, 1.9, 2.3, 2.6, 2.8, 3.0, 3.3], cues) == [], "every word on its own side of the pause")
-got = lc.misplaced(r, r, [0.2, 0.7, 1.9, 2.3, 2.6, 2.8, 3.0, 3.3], cues)
-check(len(got) == 1 and "before" in got[0]["why"], "a sentence's first word said before the pause is found")
+check(lc.misplaced(r, r, [0.2, 0.7, 1.9, 2.3, 2.6, 2.8, 3.0, 3.3], cues) == [],
+      "a first word the recogniser dates from the start of the pause is not a finding")
+got = lc.misplaced(r, r, [0.2, 0.6, 0.8, 2.3, 2.6, 2.8, 3.0, 3.3], cues)
+check(len(got) == 1 and "before" in got[0]["why"], "two words of a sentence said before the pause are found")
 got = lc.misplaced(r, r, [1.7, 1.8, 1.9, 2.3, 2.6, 2.8, 3.0, 3.3], cues)
 check(len(got) == 1 and "after" in got[0]["why"], "a title's last word said after the pause is found")
 

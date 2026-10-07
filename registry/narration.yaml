@@ -115,11 +115,11 @@ clips:
   - {trip: "journey-to-the-station", stop: "air", hash: "2e377cb166021382", seconds: 14.05, words: 36, lufs: -16.7, opus: 55889, m4a: 73083, vtt: 278, wer: 0.0, heard: "0208d60a02bca605", voice: 0}
   - {trip: "journey-to-the-station", stop: "now", hash: "b093b2e6f418829b", seconds: 15.49, words: 36, lufs: -16.4, opus: 61386, m4a: 80472, vtt: 289, wer: 0.0, heard: "0e0dae3a7903731a", voice: 0}
   - {trip: "journey-to-the-station", stop: "pass", hash: "10004e3acceb60ce", seconds: 15.79, words: 43, lufs: -16.5, opus: 63587, m4a: 81994, vtt: 305, wer: 0.0, heard: "9102bcfc8c5f7624", voice: 0}
-  - {trip: "strangest-things", stop: "duke-photo", hash: "c6725f650f672852", seconds: 17.41, words: 42, lufs: -16.4, opus: 69272, m4a: 90252, vtt: 305}
-  - {trip: "strangest-things", stop: "golf-balls", hash: "5d5dfcda614fde5a", seconds: 11.18, words: 26, lufs: -16.5, opus: 45115, m4a: 58522, vtt: 212}
-  - {trip: "strangest-things", stop: "beresheet", hash: "8187a3a9f2bed1cb", seconds: 15.46, words: 35, lufs: -16.4, opus: 61686, m4a: 80255, vtt: 292}
-  - {trip: "strangest-things", stop: "golden-record", hash: "a42cd1deda796f95", seconds: 18.61, words: 39, lufs: -16.6, opus: 76013, m4a: 96338, vtt: 325}
-  - {trip: "strangest-things", stop: "roadster", hash: "a4ac319537e75d40", seconds: 16.14, words: 41, lufs: -16.6, opus: 65803, m4a: 83732, vtt: 287}
+  - {trip: "strangest-things", stop: "duke-photo", hash: "c6725f650f672852", seconds: 17.41, words: 42, lufs: -16.4, opus: 69272, m4a: 90252, vtt: 305, wer: 0.0, heard: "883f63c441cc3772", voice: 0}
+  - {trip: "strangest-things", stop: "golf-balls", hash: "5d5dfcda614fde5a", seconds: 11.18, words: 26, lufs: -16.5, opus: 45115, m4a: 58522, vtt: 212, wer: 0.0, heard: "8e5525aa7e9010c5", voice: 0}
+  - {trip: "strangest-things", stop: "beresheet", hash: "8187a3a9f2bed1cb", seconds: 15.46, words: 35, lufs: -16.4, opus: 61686, m4a: 80255, vtt: 292, wer: 0.0, heard: "38da0b4cd85e3d25", voice: 0}
+  - {trip: "strangest-things", stop: "golden-record", hash: "a42cd1deda796f95", seconds: 18.61, words: 39, lufs: -16.6, opus: 76013, m4a: 96338, vtt: 325, wer: 0.0, heard: "004e60231d0577ea", voice: 0}
+  - {trip: "strangest-things", stop: "roadster", hash: "a4ac319537e75d40", seconds: 16.14, words: 41, lufs: -16.6, opus: 65803, m4a: 83732, vtt: 287, wer: 0.0, heard: "8f57df6f595e0020", voice: 0}
   - {trip: "strangest-things", stop: "pull-back", hash: "31da60a899578ac1", seconds: 11.01, words: 32, lufs: -16.6, opus: 43549, m4a: 57652, vtt: 234}
   - {trip: "to-the-edge", stop: "sun", hash: "db742bdcd14fd58f", seconds: 18.11, words: 45, lufs: -16.6, opus: 71524, m4a: 93730, vtt: 325}
   - {trip: "to-the-edge", stop: "proxima", hash: "d236e333e1d3a794", seconds: 15.65, words: 40, lufs: -16.6, opus: 61502, m4a: 81124, vtt: 303}
@@ -243,9 +243,9 @@ clips:
   - {trip: "mars-where-we-have-driven", stop: "jezero", hash: "5e6907c5d015c692", seconds: 22.95, words: 50, lufs: -16.5, opus: 91648, m4a: 118288, vtt: 402}
   - {trip: "mars-where-we-have-driven", stop: "phobos", hash: "ad7cd0c159263997", seconds: 23.38, words: 53, lufs: -16.4, opus: 94640, m4a: 120462, vtt: 427}
   - {trip: "mars-where-we-have-driven", stop: "seasons", hash: "472efcb52d137783", seconds: 21.08, words: 53, lufs: -16.4, opus: 84173, m4a: 108943, vtt: 373}
-  - {trip: "life-of-a-star", stop: "nursery", hash: "b5b4c9cd141169ea", seconds: 21.65, words: 52, lufs: -16.5, opus: 85873, m4a: 111768, vtt: 418}
-  - {trip: "life-of-a-star", stop: "young", hash: "acd2a48beef61719", seconds: 20.38, words: 53, lufs: -16.7, opus: 81268, m4a: 105248, vtt: 386}
-  - {trip: "life-of-a-star", stop: "sun", hash: "a76e46d25ecdf2e5", seconds: 22.64, words: 60, lufs: -16.4, opus: 90500, m4a: 116767, vtt: 410}
+  - {trip: "life-of-a-star", stop: "nursery", hash: "b5b4c9cd141169ea", seconds: 21.65, words: 52, lufs: -16.5, opus: 85873, m4a: 111768, vtt: 418, wer: 0.0, heard: "6e2c317ca11a8d74", voice: 0}
+  - {trip: "life-of-a-star", stop: "young", hash: "acd2a48beef61719", seconds: 20.38, words: 53, lufs: -16.7, opus: 81268, m4a: 105248, vtt: 386, wer: 0.0, heard: "957f008307c34ed3", voice: 0}
+  - {trip: "life-of-a-star", stop: "sun", hash: "a76e46d25ecdf2e5", seconds: 22.64, words: 60, lufs: -16.4, opus: 90500, m4a: 116767, vtt: 410, wer: 0.0167, heard: "70f7a89a9875973a", voice: 1}
   - {trip: "life-of-a-star", stop: "giant", hash: "14430653c0a2aa04", seconds: 21.38, words: 54, lufs: -16.4, opus: 84797, m4a: 110464, vtt: 405}
   - {trip: "life-of-a-star", stop: "supergiant", hash: "1f445444212ea0e0", seconds: 22.41, words: 53, lufs: -16.6, opus: 89508, m4a: 115680, vtt: 409}
   - {trip: "life-of-a-star", stop: "letting-go", hash: "e48a5f220a4ebd16", seconds: 22.74, words: 56, lufs: -16.6, opus: 90075, m4a: 117202, vtt: 415}

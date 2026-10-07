@@ -390,10 +390,13 @@ def misplaced(ref: list, hyp: list, times: list, cues: list, slack: float = 0.6)
     for k, (start, end, count) in enumerate(cues):
         first, last = at, at + count - 1
         at += count
-        if k > 0 and first in pair and pair[first] < len(times) and times[pair[first]] < start - slack:
-            out.append({"blame": "voice", "why": f"heard {start - times[pair[first]]:.1f} s before the sentence it "
-                        f"opens: a pause in the wrong place", "script": ref[first], "heard": ref[first],
-                        "at": first, "hyp_at": pair[first], "t": times[pair[first]]})
+        # The sentence's SECOND word: a recogniser often dates the first word after a pause from
+        # the start of the pause ("bolted" 0.9 s early in strangest-things/golden-record).
+        second = first + 1
+        if k > 0 and count >= 2 and second in pair and pair[second] < len(times) and times[pair[second]] < start - slack:
+            out.append({"blame": "voice", "why": f"heard {start - times[pair[second]]:.1f} s before the sentence it "
+                        f"belongs to: a pause in the wrong place", "script": ref[second], "heard": ref[second],
+                        "at": second, "hyp_at": pair[second], "t": times[pair[second]]})
         if k < len(cues) - 1 and last in pair and pair[last] < len(times) and times[pair[last]] > end + slack:
             out.append({"blame": "voice", "why": f"heard {times[pair[last]] - end:.1f} s after the sentence it "
                         f"closes: a pause in the wrong place", "script": ref[last], "heard": ref[last],
@@ -588,6 +591,14 @@ def listen(args) -> int:
 
     ears = {}
 
+    def cached(key: str, name: str) -> bool:
+        trip_id, stop_id = key.split("/")
+        return (cache_dir / f"{file_hash(narrate.paths(trip_id, stop_id)['opus'])}-{name}.json").exists()
+
+    if args.cached_only:
+        todo = [k for k in todo if cached(k, model)]
+        print(f"{len(todo)} of them already heard and kept in {cache_dir}", flush=True)
+
     def hear(key: str, name: str) -> dict:
         trip_id, stop_id = key.split("/")
         opus = narrate.paths(trip_id, stop_id)["opus"]
@@ -707,6 +718,7 @@ def main(argv: list) -> int:
     ap.add_argument("--json", help="write a machine-readable summary here")
     ap.add_argument("--cache", help="where transcripts are kept between runs (default: MODELS/listen-cache)")
     ap.add_argument("--no-cache", action="store_true")
+    ap.add_argument("--cached-only", action="store_true", help="judge only the clips whose transcript is kept; no model")
     ap.add_argument("--threads", type=int, default=4)
     ap.add_argument("--ffmpeg", default=shutil.which("ffmpeg") or "ffmpeg")
     args = ap.parse_args(argv)
