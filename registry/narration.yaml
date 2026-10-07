@@ -281,7 +281,7 @@ clips:
   - {trip: "life-of-a-star", stop: "supergiant", hash: "543595ef630981bf", seconds: 21.38, words: 53, lufs: -16.5, opus: 84952, m4a: 110464, vtt: 409}
   - {trip: "life-of-a-star", stop: "letting-go", hash: "b0f060c15dd060e7", seconds: 22.19, words: 56, lufs: -16.6, opus: 87850, m4a: 114594, vtt: 415}
   - {trip: "life-of-a-star", stop: "white-dwarf", hash: "fd24b4b8f2519064", seconds: 19.94, words: 57, lufs: -16.6, opus: 79700, m4a: 103075, vtt: 384}
-  - {trip: "life-of-a-star", stop: "explosion", hash: "f3bfb50513e654c4", seconds: 23.45, words: 56, lufs: -16.6, opus: 92904, m4a: 120896, vtt: 415}
+  - {trip: "life-of-a-star", stop: "explosion", hash: "165ce36af8cad06f", seconds: 22.74, words: 56, lufs: -16.4, opus: 89831, m4a: 117202, vtt: 415}
   - {trip: "life-of-a-star", stop: "pulsar", hash: "9c5c9d4b3d8aee4d", seconds: 22.65, words: 62, lufs: -16.4, opus: 89925, m4a: 116767, vtt: 439}
   - {trip: "black-holes", stop: "swan", hash: "1248cb56224a62a5", seconds: 24.62, words: 61, lufs: -16.5, opus: 97240, m4a: 126982, vtt: 448}
   - {trip: "black-holes", stop: "what", hash: "2f6f6a3d94c3ef05", seconds: 23.91, words: 61, lufs: -16.7, opus: 94316, m4a: 123287, vtt: 466}
