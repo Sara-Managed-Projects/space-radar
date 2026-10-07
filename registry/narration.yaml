@@ -236,10 +236,10 @@ clips:
   - {trip: "the-living-earth", stop: "home", hash: "26c04b1b47be54f1", seconds: 18.69, words: 49, lufs: -16.3, opus: 75119, m4a: 96555, vtt: 370}
   - {trip: "tonight-from-your-street", stop: "above", hash: "9735616eb52d2244", seconds: 17.62, words: 51, lufs: -16.4, opus: 69973, m4a: 91339, vtt: 360}
   - {trip: "tonight-from-your-street", stop: "star", hash: "b88f9b822687be8e", seconds: 18.99, words: 48, lufs: -16.4, opus: 75516, m4a: 98294, vtt: 372}
-  - {trip: "tonight-from-your-street", stop: "figure", hash: "34b93d625ad14e33", seconds: 19.04, words: 53, lufs: -16.6, opus: 76858, m4a: 98511, vtt: 373}
-  - {trip: "tonight-from-your-street", stop: "moon", hash: "107894699ec3ba6b", seconds: 18.67, words: 46, lufs: -16.6, opus: 75165, m4a: 96555, vtt: 356}
-  - {trip: "tonight-from-your-street", stop: "planet", hash: "0c47b50f288c6744", seconds: 13.55, words: 35, lufs: -16.6, opus: 53605, m4a: 70475, vtt: 264}
-  - {trip: "tonight-from-your-street", stop: "pass", hash: "2372d96b8f28b58c", seconds: 20.07, words: 53, lufs: -16.4, opus: 80127, m4a: 103727, vtt: 388}
+  - {trip: "tonight-from-your-street", stop: "figure", hash: "ff842a7f16a7769f", seconds: 18.29, words: 53, lufs: -16.4, opus: 73476, m4a: 94599, vtt: 373}
+  - {trip: "tonight-from-your-street", stop: "moon", hash: "73af1dea299dbc6b", seconds: 18.67, words: 46, lufs: -16.6, opus: 75165, m4a: 96555, vtt: 356}
+  - {trip: "tonight-from-your-street", stop: "planet", hash: "78b3125ce1844555", seconds: 13.0, words: 35, lufs: -16.7, opus: 51297, m4a: 67650, vtt: 264}
+  - {trip: "tonight-from-your-street", stop: "pass", hash: "6c38d6704ae5ec9c", seconds: 19.69, words: 53, lufs: -16.4, opus: 78509, m4a: 101771, vtt: 388}
   - {trip: "tonight-from-your-street", stop: "out", hash: "0781a8f108cd06f2", seconds: 19.16, words: 53, lufs: -16.5, opus: 78299, m4a: 99163, vtt: 386}
   - {trip: "moon-phases", stop: "from-outside", hash: "757b05c92da994d2", seconds: 19.67, words: 56, lufs: -16.5, opus: 87044, m4a: 101771, vtt: 385}
   - {trip: "moon-phases", stop: "waxing", hash: "aabba08dd1818ed9", seconds: 21.29, words: 56, lufs: -16.5, opus: 85133, m4a: 109812, vtt: 386}
