@@ -388,30 +388,31 @@ export const WORLDS = [
   // read 2026-10-06): Jupiter 0.06487, Saturn 0.09796, Uranus 0.02293, Neptune 0.01708. They spin
   // in ten to seventeen hours and bulge: Saturn is a tenth wider than it is tall, which anyone can
   // see in a photograph and a sphere cannot show. oblateRadii() makes the mesh that shape.
-  // THEIR MAPS (2026-10-07, public #401, #407, #411) are Hubble's OPAL maps of 2025, built from the
-  // calibrated FITS files by scripts/build-textures.py (`--only giants`): `tint` is each map's mean
-  // colour, which the build prints, so the planet does not change colour when its map arrives, and
-  // `mapKind` is the card's sentence about which day's face it is (copy/en.js drawing.worldMap).
-  // The rows are planetocentric latitude, the one scene/weather/flow.js moves its winds by.
+  // A SECOND FACE (2026-10-07, public #401, #407, #411): `faces.hubble` is Hubble's OPAL map of 2025,
+  // built from the calibrated FITS files by scripts/build-textures.py (`--only giants`), offered on
+  // the card as "As Hubble saw it" and fetched only then (setFace). It is not the first face: the
+  // true maps are plain beside the artist's. Its rows are planetocentric latitude, the one
+  // scene/weather/flow.js moves its winds by; `faceSpot` is where the Great Red Spot is in THAT
+  // map (measured on it), so the flow goes round the right oval whichever face is worn.
   {
     id: 'jupiter', display: 'Jupiter', parent: 'sun', radiusKm: 69911.0,
     body: 'Jupiter', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_jupiter_opal_2025.webp', mapKind: 'hubbleJupiter', tint: 0xc1bb9d, limb: 1.05, oblate: 0.06487 },
+    look: { map: '2k_jupiter.jpg', tint: 0xb3aba1, limb: 1.05, oblate: 0.06487, faces: { hubble: '2k_jupiter_opal_2025.webp' }, faceSpot: { hubble: { u: 0.6058, v: 0.3878, half_u: 0.019, half_v: 0.024 } } },
   },
   {
     id: 'saturn', display: 'Saturn', parent: 'sun', radiusKm: 58232.0,
     body: 'Saturn', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_saturn_opal_2025.webp', mapKind: 'hubbleSaturn', tint: 0xc0aa79, limb: 1.05, oblate: 0.09796, ring: { innerKm: 74500, outerKm: 140220, map: '2k_saturn_ring_alpha.png' } },
+    look: { map: '2k_saturn.jpg', tint: 0xdfcca8, faces: { hubble: '2k_saturn_opal_2025.webp' }, limb: 1.05, oblate: 0.09796, ring: { innerKm: 74500, outerKm: 140220, map: '2k_saturn_ring_alpha.png' } },
   },
   {
     id: 'uranus', display: 'Uranus', parent: 'sun', radiusKm: 25362.0,
     body: 'Uranus', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '1k_uranus_opal_2025.webp', mapKind: 'hubbleUranus', tint: 0x94b7c5, limb: 1.2, oblate: 0.02293, rim: { colour: 0xc8f4ff, gain: 0.35 }, ring: URANUS_RINGS },
+    look: { map: '2k_uranus.jpg', tint: 0x9eced5, faces: { hubble: '1k_uranus_opal_2025.webp' }, limb: 1.2, oblate: 0.02293, rim: { colour: 0xc8f4ff, gain: 0.35 }, ring: URANUS_RINGS },
   },
   {
     id: 'neptune', display: 'Neptune', parent: 'sun', radiusKm: 24622.0,
     body: 'Neptune', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '1k_neptune_opal_2025.webp', mapKind: 'hubbleNeptune', tint: 0x83aec4, limb: 1.15, oblate: 0.01708, rim: { colour: 0x9cc0ff, gain: 0.35 }, ring: NEPTUNE_RINGS },
+    look: { map: '2k_neptune.jpg', tint: 0x395eb7, faces: { hubble: '1k_neptune_opal_2025.webp' }, limb: 1.15, oblate: 0.01708, rim: { colour: 0x9cc0ff, gain: 0.35 }, ring: NEPTUNE_RINGS },
   },
   // THE FLAT ONES. No map ships for these five and none is fetched (`flat: true`, no `map`), so the
   // tint is not a texture's mean like the rows above: it is a HUE from a published description,
@@ -772,12 +773,8 @@ export const RING_TINT = 0xd9cdb4;
  * mean, face-on under an overhead Sun; tests/test_rings.mjs measures both maps' numbers from the files.
  * Before this the lit face was drawn at 0.14 whatever the angles, and the lit face at the 7.6 degrees
  * the Sun stands above it now (0.44 of face-on) is still 2.2 times what #318 drew.
- *
- * 2026-10-07: the globe's mean is now Hubble's (the OPAL map of 2025 on its albedo scale, tint
- * 0xc0aa79, luminance 0.413; the Solar System Scope map's was 0.617), so the same rule gives
- * 0.413 / (0.225 x 0.617) = 2.98. The ring keeps its own colour; only how bright it is follows the globe.
  */
-export const RING_EXPOSURE = 2.98;
+export const RING_EXPOSURE = 4.44;
 /** The sines of elevation below which the slab formula is held: the ring seen or lit edge-on. */
 export const RING_MU_FLOOR = 0.02;
 
@@ -1816,11 +1813,32 @@ export function createWorlds(scene, opts = {}) {
     return w && w.look.faces ? Object.keys(w.look.faces) : [];
   }
   function faceOf(id) { return faceWanted.get(id) || null; }
+  // A sharper copy of a world's OWN map (scene/texturetiers.js, through main.js) must not replace a
+  // second face the visitor chose: it is kept, and worn when they go back to the world's own face.
+  const tierMap = new Map();   // id -> THREE.Texture | null
+  function setTierMap(id, tex) {
+    tierMap.set(id, tex || null);
+    return faceWanted.get(id) ? null : setMap(id, tex);
+  }
+  // The weather's pinned oval (scene/weather/worldweather.js uWxSpot) is a place in a map: a face
+  // whose spot is elsewhere (`look.faceSpot`) moves it, and the world's own face puts it back.
+  const ownSpot = new Map();
+  function faceSpot(id, face) {
+    const w = BY_ID.get(id);
+    const mesh = meshes.get(id);
+    const u = mesh && mesh.material && mesh.material.uniforms && mesh.material.uniforms.uWxSpot;
+    if (!w || !w.look.faceSpot || !u || !u.value) return;
+    if (!ownSpot.has(id)) ownSpot.set(id, { ...u.value });
+    const s = face && w.look.faceSpot[face];
+    const to = s ? { x: s.u, y: s.v, z: s.half_u, w: s.half_v } : ownSpot.get(id);
+    u.value.x = to.x; u.value.y = to.y; u.value.z = to.z; u.value.w = to.w;
+  }
   function setFace(id, face) {
     const w = BY_ID.get(id);
     const name = face && w && w.look.faces ? w.look.faces[face] : null;
     faceWanted.set(id, name ? face : null);
-    if (!name) { setMap(id, null); return true; }
+    faceSpot(id, name ? face : null);
+    if (!name) { setMap(id, tierMap.get(id) || null); return true; }
     if (!bootMap.has(id)) { fetchMap(id); return false; } // its own map first; apply() calls back
     const key = `${id}/${face}`;
     const have = faceTex.get(key);
@@ -2055,6 +2073,7 @@ export function createWorlds(scene, opts = {}) {
     facesOf,
     faceOf,
     setFace,
+    setTierMap,
     discShare,
     meshFor,
     positionOf,

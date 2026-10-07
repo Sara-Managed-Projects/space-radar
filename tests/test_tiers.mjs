@@ -192,7 +192,7 @@ function rig(opts = {}) {
   r.select('jupiter');
   r.px.mars = 0;
   r.tiers.tick(24000); await r.settle();
-  check(r.worlds.maps.jupiter && r.worlds.maps.jupiter.url === 'textures/4k/jupiter_opal_2025.webp' && r.worlds.maps.mars === null,
+  check(r.worlds.maps.jupiter && r.worlds.maps.jupiter.url === 'textures/4k/jupiter.webp' && r.worlds.maps.mars === null,
     'a selected world gets 4k whatever its size, and takes the slot from one that has gone small');
 
   // The latch: everything back, for good.
@@ -253,7 +253,7 @@ const boot = bootFiles(TEXTURES);
 // 34 since 2026-10-05: fifteen more moons wear a map. A moon's tier-0 file is fetched when the moon is
 // first big enough on screen (scene/worlds.js), so none of them is in the first visit below.
 // 35 since 2026-10-06: Venus's ground by radar, fetched when its card asks for it (`when: asked`).
-check(boot.length === 37 && boot.every((f) => /^textures\/[12]k_[a-z0-9_]+\.(jpg|webp|png)$/.test(f)), `tier 0 is the thirty-seven 1k and 2k files (${boot.length})`);
+check(boot.length === 41 && boot.every((f) => /^textures\/[12]k_[a-z0-9_]+\.(jpg|webp|png)$/.test(f)), `tier 0 is the forty-one 1k and 2k files (${boot.length})`);
 let firstVisit = 0;
 for (const [f, bytes] of Object.entries(BOOT_2026_09_28)) {
   check(boot.includes(f), `${f} is still in the boot set`);
@@ -269,11 +269,10 @@ for (const w of WORLDS) {
   const names = [w.look.map, w.look.day, w.look.night, w.look.clouds, w.look.ring && w.look.ring.map].filter(Boolean);
   for (const n of names) check(boot.includes('textures/' + n), `worlds.js boots ${w.id} from ${n}, which is not a tier-0 file`);
 }
-// Every tier-1 file is 4096 x 2048 and nothing larger ships: 8k waits for KTX2. One is smaller since
-// 2026-10-07: Hubble's OPAL map of Jupiter is 3600 x 1800 as published, and stretching it would add bytes and no detail.
+// Every tier-1 file is 4096 x 2048 and nothing larger ships: 8k waits for KTX2.
 for (const row of TEXTURES) {
   for (const f of row.files) {
-    if (f.tier > 0) check((f.px[0] === 4096 && f.px[1] === 2048) || (row.id === 'jupiter' && f.px[0] === 3600 && f.px[1] === 1800), `${row.id} tier ${f.tier} is ${f.px}, not 4096 x 2048`);
+    if (f.tier > 0) check(f.px[0] === 4096 && f.px[1] === 2048, `${row.id} tier ${f.tier} is ${f.px}, not 4096 x 2048`);
     check(f.px[0] <= 4096, `${row.id}: ${f.px[0]} wide is over what any tier may ship without KTX2`);
   }
 }

@@ -328,6 +328,43 @@ Object.assign(COPY, {
         surface: 'The ground under the clouds, mapped by radar from orbit by NASA\u2019s Magellan between 1990 and 1992. Bright is rough ground and dark is smooth. The orange is added, and the strips Magellan missed are filled in from their edges.',
       },
     },
+    // 2026-10-07: the four giants' second face, Hubble's yearly OPAL maps (registry/textures.yaml
+    // `<id>-hubble`; the dates are the FITS headers' DATE-OBS and the READMEs', read 2026-10-07 at
+    // https://archive.stsci.edu/hlsp/opal). A giant has no surface: the map is one day's clouds.
+    // What Hubble could not see from the Earth is said, because it is filled and not measured. The
+    // credit is in the note because CC BY 4.0 asks for it beside the picture.
+    jupiter: {
+      title: 'Jupiter, two ways',
+      modes: { own: 'Artist\u2019s map', hubble: 'As Hubble saw it' },
+      notes: {
+        own: 'An artist\u2019s map, made from spacecraft pictures and smoothed (Solar System Scope). It is the picture most people know.',
+        hubble: 'Jupiter as Hubble mapped it on 11 December 2025. The bands are where they were that day, and no cloud is where it is today. The colours are Hubble\u2019s red, green and violet filters, a little yellower than an eye would see. NASA, ESA, A.A. Simon, M.H. Wong (OPAL), CC BY 4.0, adapted.',
+      },
+    },
+    saturn: {
+      title: 'Saturn, two ways',
+      modes: { own: 'Artist\u2019s map', hubble: 'As Hubble saw it' },
+      notes: {
+        own: 'An artist\u2019s map, made from spacecraft pictures and smoothed (Solar System Scope). It is the picture most people know.',
+        hubble: 'Saturn as Hubble mapped it on 29 August 2025, in its red, green and violet filters, a little yellower than an eye would see. The strip at the equator that the rings hid that day is filled in from the clouds either side of it. NASA, ESA, A.A. Simon, M.H. Wong (OPAL), CC BY 4.0, adapted.',
+      },
+    },
+    uranus: {
+      title: 'Uranus, two ways',
+      modes: { own: 'Artist\u2019s map', hubble: 'As Hubble saw it' },
+      notes: {
+        own: 'An artist\u2019s map, made from spacecraft pictures and smoothed (Solar System Scope). It is the picture most people know.',
+        hubble: 'Uranus as Hubble mapped it on 23 October 2025. The planet lies on its side with its north pole toward us, so Hubble saw only the northern half; the southern half is given the colour of the equator, not guessed. NASA, ESA, A.A. Simon, M.H. Wong (OPAL), CC BY 4.0, adapted.',
+      },
+    },
+    neptune: {
+      title: 'Neptune, two ways',
+      modes: { own: 'Artist\u2019s map', hubble: 'As Hubble saw it' },
+      notes: {
+        own: 'An artist\u2019s map, made from spacecraft pictures and smoothed (Solar System Scope). It is the picture most people know.',
+        hubble: 'Neptune as Hubble mapped it on 24 August 2025: paler than the famous pictures. The far north was out of Hubble\u2019s sight and is given the colour of the last clouds it saw, not guessed. NASA, ESA, A.A. Simon, M.H. Wong (OPAL), CC BY 4.0, adapted.',
+      },
+    },
   },
 
   // Spec 0067: the shutter. The gas clouds in space pictures are real and faint; a photograph's

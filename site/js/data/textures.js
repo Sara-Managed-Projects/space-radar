@@ -278,23 +278,42 @@ export const TEXTURES = [
     "files": [
       {
         "tier": 0,
+        "file": "textures/2k_jupiter.jpg",
+        "px": [
+          2048,
+          1024
+        ],
+        "bytes": 498976,
+        "format": "rgb",
+        "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+      },
+      {
+        "tier": 1,
+        "file": "textures/4k/jupiter.webp",
+        "px": [
+          4096,
+          2048
+        ],
+        "bytes": 351130,
+        "format": "rgb",
+        "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+      }
+    ]
+  },
+  {
+    "id": "jupiter-hubble",
+    "world": "jupiter",
+    "slot": "surface",
+    "when": "asked",
+    "files": [
+      {
+        "tier": 0,
         "file": "textures/2k_jupiter_opal_2025.webp",
         "px": [
           2048,
           1024
         ],
         "bytes": 63500,
-        "format": "rgb",
-        "credit": "Giant planet maps: NASA, ESA, A.A. Simon, M.H. Wong (Hubble OPAL programme, doi:10.17909/T9G593), CC BY 4.0, adapted"
-      },
-      {
-        "tier": 1,
-        "file": "textures/4k/jupiter_opal_2025.webp",
-        "px": [
-          3600,
-          1800
-        ],
-        "bytes": 144310,
         "format": "rgb",
         "credit": "Giant planet maps: NASA, ESA, A.A. Simon, M.H. Wong (Hubble OPAL programme, doi:10.17909/T9G593), CC BY 4.0, adapted"
       }
@@ -365,6 +384,25 @@ export const TEXTURES = [
     "files": [
       {
         "tier": 0,
+        "file": "textures/2k_saturn.jpg",
+        "px": [
+          2048,
+          1024
+        ],
+        "bytes": 199916,
+        "format": "rgb",
+        "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+      }
+    ]
+  },
+  {
+    "id": "saturn-hubble",
+    "world": "saturn",
+    "slot": "surface",
+    "when": "asked",
+    "files": [
+      {
+        "tier": 0,
         "file": "textures/2k_saturn_opal_2025.webp",
         "px": [
           2048,
@@ -380,7 +418,7 @@ export const TEXTURES = [
     "id": "saturn-ring",
     "world": "saturn",
     "slot": "ring",
-    "when": "boot",
+    "when": "asked",
     "files": [
       {
         "tier": 0,
@@ -403,6 +441,25 @@ export const TEXTURES = [
     "files": [
       {
         "tier": 0,
+        "file": "textures/2k_uranus.jpg",
+        "px": [
+          2048,
+          1024
+        ],
+        "bytes": 77751,
+        "format": "rgb",
+        "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+      }
+    ]
+  },
+  {
+    "id": "uranus-hubble",
+    "world": "uranus",
+    "slot": "surface",
+    "when": "asked",
+    "files": [
+      {
+        "tier": 0,
         "file": "textures/1k_uranus_opal_2025.webp",
         "px": [
           1024,
@@ -419,6 +476,25 @@ export const TEXTURES = [
     "world": "neptune",
     "slot": "map",
     "when": "boot",
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/2k_neptune.jpg",
+        "px": [
+          2048,
+          1024
+        ],
+        "bytes": 241580,
+        "format": "rgb",
+        "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+      }
+    ]
+  },
+  {
+    "id": "neptune-hubble",
+    "world": "neptune",
+    "slot": "surface",
+    "when": "asked",
     "files": [
       {
         "tier": 0,

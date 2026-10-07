@@ -157,11 +157,15 @@ satisfies that with:
 | `2k_earth_clouds.webp` | Earth cloud layer | CC BY 4.0 | Solar System Scope |
 | `2k_moon.jpg` | the Moon | CC BY 4.0 | Solar System Scope |
 | `2k_mars.jpg` | Mars | CC BY 4.0 | Solar System Scope |
-| `2k_jupiter_opal_2025.webp` | Jupiter | CC BY 4.0 | [NASA, ESA, A.A. Simon, M.H. Wong: Hubble OPAL programme, WFC3/UVIS, 11 December 2025](https://archive.stsci.edu/hlsp/opal/opal-jupiter-cycle-32), adapted: calibrated, gap-filled at the poles, resampled; 63 500 B |
-| `2k_saturn_opal_2025.webp` | Saturn | CC BY 4.0 | [NASA, ESA, A.A. Simon, M.H. Wong: Hubble OPAL programme, WFC3/UVIS, 29 August 2025](https://archive.stsci.edu/hlsp/opal/opal-saturn-cycle-32), adapted: calibrated, the strip the rings hid and the poles filled, resampled; 21 186 B |
+| `2k_jupiter.jpg` | Jupiter | CC BY 4.0 | Solar System Scope |
+| `2k_jupiter_opal_2025.webp` | Jupiter, as Hubble saw it (when asked for on its card) | CC BY 4.0 | [NASA, ESA, A.A. Simon, M.H. Wong: Hubble OPAL programme, WFC3/UVIS, 11 December 2025](https://archive.stsci.edu/hlsp/opal/opal-jupiter-cycle-32), adapted: calibrated, gap-filled at the poles, resampled; 63 500 B |
+| `2k_saturn.jpg` | Saturn | CC BY 4.0 | Solar System Scope |
+| `2k_saturn_opal_2025.webp` | Saturn, as Hubble saw it (when asked for on its card) | CC BY 4.0 | [NASA, ESA, A.A. Simon, M.H. Wong: Hubble OPAL programme, WFC3/UVIS, 29 August 2025](https://archive.stsci.edu/hlsp/opal/opal-saturn-cycle-32), adapted: calibrated, the strip the rings hid and the poles filled, resampled; 21 186 B |
 | `2k_saturn_ring_alpha.png` | Saturn's rings | CC BY 4.0 | Solar System Scope |
-| `1k_uranus_opal_2025.webp` | Uranus | CC BY 4.0 | [NASA, ESA, A.A. Simon, M.H. Wong: Hubble OPAL programme, WFC3/UVIS, 23 October 2025](https://archive.stsci.edu/hlsp/opal/opal-uranus-cycle-33), adapted: calibrated, the unseen southern half filled with the equator's colour; 3 552 B |
-| `1k_neptune_opal_2025.webp` | Neptune | CC BY 4.0 | [NASA, ESA, A.A. Simon, M.H. Wong: Hubble OPAL programme, WFC3/UVIS, 24 August 2025](https://archive.stsci.edu/hlsp/opal/opal-neptune-cycle-32), adapted: calibrated, the unseen far north filled; 4 766 B |
+| `2k_uranus.jpg` | Uranus | CC BY 4.0 | Solar System Scope |
+| `1k_uranus_opal_2025.webp` | Uranus, as Hubble saw it (when asked for on its card) | CC BY 4.0 | [NASA, ESA, A.A. Simon, M.H. Wong: Hubble OPAL programme, WFC3/UVIS, 23 October 2025](https://archive.stsci.edu/hlsp/opal/opal-uranus-cycle-33), adapted: calibrated, the unseen southern half filled with the equator's colour; 3 552 B |
+| `2k_neptune.jpg` | Neptune | CC BY 4.0 | Solar System Scope |
+| `1k_neptune_opal_2025.webp` | Neptune, as Hubble saw it (when asked for on its card) | CC BY 4.0 | [NASA, ESA, A.A. Simon, M.H. Wong: Hubble OPAL programme, WFC3/UVIS, 24 August 2025](https://archive.stsci.edu/hlsp/opal/opal-neptune-cycle-32), adapted: calibrated, the unseen far north filled; 4 766 B |
 | `2k_stars_milky_way.webp` | the Milky Way sky sphere | CC BY 4.0 | Solar System Scope |
 
 **What could not be verified, stated plainly.** solarsystemscope.com answers HTTP 403 to scripted
@@ -169,10 +173,10 @@ downloads, so these files could not be byte-compared against the origin. Provena
 exact filename match to the published pack (all 14 appear on their download list), the matching
 2048 × 1024 dimensions, and the shared XMP fingerprint. `2k_uranus.jpg` and `2k_neptune.jpg` carry
 no XMP block at all — the other twelve do — so those two are the weakest links in the chain. If you
-want certainty, re-download the pack by hand and diff. (Since 2026-10-07 those two, and the Jupiter and
-Saturn maps, are no longer shipped: see the next paragraph.)
+want certainty, re-download the pack by hand and diff.
 
-**The four giants are Hubble's (2026-10-07).** Jupiter, Saturn, Uranus and Neptune wear the global maps of
+**The four giants have a second face, Hubble's (2026-10-07).** They are met in the Solar System Scope maps
+above; on the card, "As Hubble saw it" fetches and puts on the global maps of
 the Outer Planet Atmospheres Legacy programme (OPAL; PI Amy Simon; Simon et al. 2015, Wong et al. 2020),
 a High-Level Science Product at MAST, <https://archive.stsci.edu/hlsp/opal>, doi:10.17909/T9G593, read
 2026-10-07. Licence: MAST's data-use page says "Some data products, such as high-level science products
@@ -265,8 +269,7 @@ original by `scripts/build-textures.py --originals DIR`; the originals are not c
 | `4k/earth_night.webp` | Earth's night lights | Black Marble 2016, greyscale, 13500 × 6750 (<https://science.nasa.gov/earth/earth-observatory/earth-at-night/maps/>) | NASA Images and Media Usage Guidelines: texture maps "generally are not subject to copyright in the United States" | resampled to 4096 × 2048, levels matched to the 2k map, one grey channel, WebP 80 |
 | `4k/earth_water.webp` | the ocean glint's land/water mask | Solar System Scope `8k_earth_specular_map.tif` | CC BY 4.0, as tier 0 | box-filtered to 4096 × 2048, lossless WebP |
 | `4k/milky_way.webp` | the Milky Way sky sphere | NASA SVS Deep Star Maps 2020, `milkyway_2020_4k_gal.exr`, the background without the Hipparcos and Tycho stars (<https://svs.gsfc.nasa.gov/4851/>) | "Please give credit for this item to: NASA/Goddard Space Flight Center Scientific Visualization Studio. Gaia DR2: ESA/Gaia/DPAC." | flipped top to bottom, brightness matched to the 2k map, 60 % saturation, sRGB, WebP 90 |
-| `4k/jupiter_opal_2025.webp` | Jupiter, close up | Hubble OPAL, Cycle 32, 11 December 2025 (<https://archive.stsci.edu/hlsp/opal/opal-jupiter-cycle-32>) | CC BY 4.0 (MAST data-use page; the FITS headers) | as the 2k map above, at the 3600 × 1800 Hubble published, WebP 90; 144 310 B |
-| `4k/moon.webp`, `4k/mars.webp` | those worlds, close up | Solar System Scope `8k_moon.jpg`, `8k_mars.jpg` | CC BY 4.0, as tier 0 | resampled to 4096 × 2048, WebP (72 for the Moon, 84 otherwise) |
+| `4k/moon.webp`, `4k/mars.webp`, `4k/jupiter.webp` | those worlds, close up | Solar System Scope `8k_moon.jpg`, `8k_mars.jpg`, `8k_jupiter.jpg` (Jupiter's is 4096 wide) | CC BY 4.0, as tier 0 | resampled to 4096 × 2048, WebP (72 for the Moon, 84 otherwise) |
 | `4k/mercury.webp` | Mercury, close up | USGS MESSENGER MDIS three-colour mosaic, 665 m (<https://planetarymaps.usgs.gov/mosaic/Mercury_MESSENGER_MDIS_Basemap_MD3Color_Mosaic_Global_665m.lbl>) | Public domain (USGS) | 4096 × 2048, 35 % of the saturation kept, WebP 40 |
 
 **Credit lines printed in the app** (the Sources panel lists the ones in use on the device; each is
@@ -1538,8 +1541,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 ### Solar System Scope textures — CC BY 4.0
 
-Applies to the 9 Solar System Scope files at the top of `site/textures/`, and to `4k/earth_water.webp`, `4k/moon.webp`
-and `4k/mars.webp`.
+Applies to the 13 Solar System Scope files at the top of `site/textures/`, and to `4k/earth_water.webp`, `4k/moon.webp`,
+`4k/mars.webp` and `4k/jupiter.webp`.
 
 ```
 Planet and star textures © Solar System Scope — https://www.solarsystemscope.com/textures/

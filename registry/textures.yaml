@@ -41,14 +41,17 @@ version: 1
 #               every tier-1 file from these with `--originals DIR`
 #     make      tier 1+: what the build did to it
 #
-# THE GIANTS (2026-10-07): Jupiter, Saturn, Uranus and Neptune wear Hubble's OPAL maps of 2025, built
-# from the calibrated FITS files (scripts/build-textures.py GIANTS says how). Hubble's map of Jupiter
-# is 3600 wide and that is its tier 1; Saturn's is 1800 and Uranus's and Neptune's 721, so there is
-# nothing sharper to fetch for them. Every file is lighter than the Solar System Scope one it
-# replaced (498 976, 351 130, 199 916, 77 751 and 241 580 B). The share of the sphere Hubble saw is in
-# each row's `make:` and on the card, not in `coverage:`, which is the moons' byte budget.
+# THE GIANTS' SECOND FACE (2026-10-07): Jupiter, Saturn, Uranus and Neptune keep the Solar System Scope
+# maps as the face they are met with, and each has a row `<id>-hubble` (slot `surface`, `when: asked`):
+# Hubble's OPAL map of 2025, built from the calibrated FITS files (scripts/build-textures.py GIANTS
+# says how), fetched when a visitor presses "As Hubble saw it" on the card (scene/worlds.js setFace)
+# and never before. Hubble's maps are honest and plain -- Saturn's bands are faint, Uranus and Neptune
+# nearly featureless -- which is why they are the second face and not the first. The share of the
+# sphere Hubble saw is in each row's `make:` and in the card's note, not in `coverage:`.
 #
-# NOT HERE, AND WHY. Venus and the Sun keep their 2k maps. The Moon's NASA SVS CGI Moon
+# NOT HERE, AND WHY. Saturn, Uranus, Neptune, Venus and the Sun keep their 2k maps: the larger Solar
+# System Scope maps of them carry no detail the 2k ones lack (Saturn's "8k" is 4096 wide and differs
+# from its own 2k upsample by 0.57 grey levels RMS, measured 2026-09-28). The Moon's NASA SVS CGI Moon
 # Kit map is a flat albedo map: it wants the LOLA normal map beside it, which belongs with the
 # physical-lighting PR, and without it the Moon would lose the relief the 2k map carries. USGS's
 # Viking Mars mosaic is 12 GB at its one published resolution. Bjorn Jonsson's and Steve Albers'
@@ -268,6 +271,30 @@ textures:
     when: near
     files:
       - tier: 0
+        file: site/textures/2k_jupiter.jpg
+        px: [2048, 1024]
+        bytes: 498976
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+      - tier: 1
+        file: site/textures/4k/jupiter.webp
+        px: [4096, 2048]
+        bytes: 351130
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        original: "https://www.solarsystemscope.com/textures/download/8k_jupiter.jpg"
+        make: "scripts/build-textures.py jupiter: resampled to 4096 x 2048 (Lanczos), WebP 84"
+
+  - id: jupiter-hubble
+    world: jupiter
+    slot: surface
+    when: asked
+    files:
+      - tier: 0
         file: site/textures/2k_jupiter_opal_2025.webp
         px: [2048, 1024]
         bytes: 63500
@@ -277,16 +304,7 @@ textures:
         source: "https://archive.stsci.edu/missions/hlsp/opal/cycle32/jupiter/hlsp_opal_hst_wfc3-uvis_jupiter-2025_all_v1_readme.txt (read 2026-10-07)"
         original: "https://archive.stsci.edu/missions/hlsp/opal/cycle32/jupiter/hlsp_opal_hst_wfc3-uvis_jupiter-2025a_<filter>_v1_globalmap.fits for f631n, f502n, f395n (observed 11 December 2025)"
         make: "scripts/build-textures.py jupiter: Hubble's OPAL maps at 631, 502 and 395 nm as red, green and blue (the filters OPAL's own colour map uses), each FITS value times the README's I/F factor and 2/(2k+1) for its Minnaert k, so the three are one albedo scale (mean 0.49; the fact sheet's geometric albedo is 0.538); data from 79.6 S to 83.2 N, 98.8 % of the sphere, the caps beyond filled with the last row's mean colour; rows resampled from planetographic to planetocentric latitude (f = 0.0649), rolled half a turn so System III longitude 0 is the middle, WebP 90"
-      - tier: 1
-        file: site/textures/4k/jupiter_opal_2025.webp
-        px: [3600, 1800]
-        bytes: 144310
-        format: rgb
-        licence: 'CC BY 4.0: "Some data products, such as high-level science products (HLSPs) which are created by the community and are made available through MAST, are covered under a Creative Commons Attribution license (CC BY 4.0)" (archive.stsci.edu/publishing/data-use); the 2025 FITS files of Jupiter and Uranus say it themselves: LICENSE = CC BY 4.0, LIC_ATTR = NASA, ESA, A.A. Simon, M.H. Wong'
-        credit: "Giant planet maps: NASA, ESA, A.A. Simon, M.H. Wong (Hubble OPAL programme, doi:10.17909/T9G593), CC BY 4.0, adapted"
-        source: "https://archive.stsci.edu/missions/hlsp/opal/cycle32/jupiter/hlsp_opal_hst_wfc3-uvis_jupiter-2025_all_v1_readme.txt (read 2026-10-07)"
-        original: "https://archive.stsci.edu/missions/hlsp/opal/cycle32/jupiter/hlsp_opal_hst_wfc3-uvis_jupiter-2025a_<filter>_v1_globalmap.fits for f631n, f502n, f395n (observed 11 December 2025)"
-        make: "scripts/build-textures.py jupiter: as tier 0, at the 3600 x 1800 Hubble published, WebP 90"
+
   - id: sun
     world: sun
     slot: map
@@ -300,6 +318,7 @@ textures:
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+
 
   - id: venus
     world: venus
@@ -339,6 +358,21 @@ textures:
     when: boot
     files:
       - tier: 0
+        file: site/textures/2k_saturn.jpg
+        px: [2048, 1024]
+        bytes: 199916
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+
+
+  - id: saturn-hubble
+    world: saturn
+    slot: surface
+    when: asked
+    files:
+      - tier: 0
         file: site/textures/2k_saturn_opal_2025.webp
         px: [2048, 1024]
         bytes: 21186
@@ -351,7 +385,7 @@ textures:
   - id: saturn-ring
     world: saturn
     slot: ring
-    when: boot
+    when: asked
     files:
       - tier: 0
         file: site/textures/2k_saturn_ring_alpha.png
@@ -368,6 +402,21 @@ textures:
     when: boot
     files:
       - tier: 0
+        file: site/textures/2k_uranus.jpg
+        px: [2048, 1024]
+        bytes: 77751
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+
+
+  - id: uranus-hubble
+    world: uranus
+    slot: surface
+    when: asked
+    files:
+      - tier: 0
         file: site/textures/1k_uranus_opal_2025.webp
         px: [1024, 512]
         bytes: 3552
@@ -381,6 +430,21 @@ textures:
     world: neptune
     slot: map
     when: boot
+    files:
+      - tier: 0
+        file: site/textures/2k_neptune.jpg
+        px: [2048, 1024]
+        bytes: 241580
+        format: rgb
+        licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
+        credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
+        source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+
+
+  - id: neptune-hubble
+    world: neptune
+    slot: surface
+    when: asked
     files:
       - tier: 0
         file: site/textures/1k_neptune_opal_2025.webp

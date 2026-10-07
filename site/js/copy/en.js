@@ -1558,14 +1558,6 @@ export const COPY = {
       // Voyager 2's map of Triton, whose published version has a green cast (USGS, P. Schenk).
       balanced: 'its colours come from orange, green and blue pictures, balanced to its published colour and toned down toward what an eye would see',
       infrared: 'its surface is a near-infrared map made through the haze, tinted and softened; in visible light the haze hides the ground',
-      // 2026-10-07: the four giants wear Hubble's yearly OPAL maps (registry/textures.yaml has each
-      // one's files; the dates are the FITS headers' DATE-OBS and the READMEs', read 2026-10-07 at
-      // https://archive.stsci.edu/hlsp/opal). A giant has no surface: the map is one day's clouds.
-      // What Hubble could not see from the Earth is said, because it is filled and not measured.
-      hubbleJupiter: 'its face is Jupiter as Hubble mapped it on 11 December 2025; the bands are where they were that day and no cloud is where it is today, and the colours are Hubble’s red, green and violet filters, a little yellower than an eye would see',
-      hubbleSaturn: 'its face is Saturn as Hubble mapped it on 29 August 2025, in Hubble’s red, green and violet filters, a little yellower than an eye would see; the strip at the equator that the rings hid that day is filled in from the clouds either side of it',
-      hubbleUranus: 'its face is Uranus as Hubble mapped it on 23 October 2025; the planet lies on its side with its north pole toward us, so Hubble saw only the northern half, and the southern half is given the colour of the equator, not guessed',
-      hubbleNeptune: 'its face is Neptune as Hubble mapped it on 24 August 2025; the far north was out of Hubble’s sight and is given the colour of the last clouds it saw, not guessed',
     },
     // The side nobody has photographed is left one plain colour, and the card says which side.
     worldCoverage: {

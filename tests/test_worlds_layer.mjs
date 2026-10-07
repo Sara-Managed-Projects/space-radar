@@ -155,7 +155,7 @@ check(pickWorldDisc([], 1, 1) === null, 'no discs, no pick');
     'when it arrives the map replaces the mean colour, untinted');
 
   // Selecting a world starts its map at once, whatever size it is drawn.
-  check(worlds.preload('saturn') === true && fetched.includes('t/2k_saturn_opal_2025.webp'), 'preload(saturn) fetches Saturn now');
+  check(worlds.preload('saturn') === true && fetched.includes('t/2k_saturn.jpg'), 'preload(saturn) fetches Saturn now');
   check(worlds.preload('saturn') === false, 'and a second preload does not fetch it again');
   pending.get('t/2k_sun.jpg');
   check(worlds.preload('sun') === true, 'the Sun can be preloaded too');
@@ -417,13 +417,17 @@ const mappedLine = (draw) => !/no surface map|plain ball/.test(draw || '') && (d
   check(marsLine.startsWith(COPY.drawing.worldLit) && /drawn 1\.5 times thicker/.test(marsLine) && /illustrative/.test(marsLine),
     `Mars, which has a map and air, says how it is lit and that its air is drawn thicker than it is: ${marsLine}`);
   check(/haze is drawn at its measured height/.test(drawingLine(recs.find((x) => x.id === 'titan')) || ''), 'Titan says its haze is at its measured height');
-  // 2026-10-07: the giants say which day's face Hubble's map is, then how they are lit; no shell, so nothing about air.
-  const jupiterLine = drawingLine(recs.find((x) => x.id === 'jupiter')) || '';
-  check(jupiterLine === COPY.drawing.worldMap.hubbleJupiter + COPY.punctuation.separator + COPY.drawing.worldLit && /11 December 2025/.test(jupiterLine),
-    `Jupiter, with no shell, says which day's face it wears and how it is lit: ${jupiterLine}`);
-  for (const id of ['saturn', 'uranus', 'neptune']) {
-    const line = drawingLine(recs.find((x) => x.id === id)) || '';
-    check(/as Hubble mapped it on \d+ [A-Z][a-z]+ 2025/.test(line), `${id} says which day's face it wears: ${line}`);
+  check(drawingLine(recs.find((x) => x.id === 'jupiter')) === COPY.drawing.worldLit, 'Jupiter, with no shell, says only how it is lit');
+  // 2026-10-07: each giant offers Hubble's map of 2025 as a second face, with its day and its credit in the note.
+  {
+    await import(join(JS, 'copy/en.later.js'));
+    const FACE = COPY.worldFace || {};
+    for (const id of ['jupiter', 'saturn', 'uranus', 'neptune']) {
+      const row = WORLDS.find((x) => x.id === id);
+      const F = FACE[id];
+      check(row.look.faces && /opal_2025\.webp$/.test(row.look.faces.hubble || '') && /\.jpg$/.test(row.look.map), `${id} is met in its own map and offers Hubble's`);
+      check(F && /as Hubble mapped it on \d+ [A-Z][a-z]+ 2025/.test(F.notes.hubble) && /CC BY 4\.0/.test(F.notes.hubble) && F.modes.hubble && F.notes.own, `${id}'s card names the day of Hubble's map and its licence`);
+    }
   }
   // The Earth has its own shader and its own sunlight is the reference; the Sun is the light.
   // 2026-10-06: the Sun says what its close-up picture is (scene/sun.js), and still nothing about exposure.

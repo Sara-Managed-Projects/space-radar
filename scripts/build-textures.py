@@ -36,7 +36,10 @@ WHY EACH MAP IS TREATED AS IT IS
   moon, mars  Solar System Scope's own 8k maps resampled to 4096 x 2048: the same pictures as the 2k
               maps, so nothing changes but the detail. Venus and the Sun are left at 2k.
   jupiter, saturn, uranus, neptune  (`--only giants`, 2026-10-07)
-              Hubble's OPAL maps of 2025, from the calibrated FITS files: see GIANTS below.
+              Hubble's OPAL maps of 2025, from the calibrated FITS files: see GIANTS below. They are
+              each giant's SECOND face (registry/textures.yaml `<id>-hubble`, asked for on the card);
+              the face a giant is met with is still Solar System Scope's 2k map, and Jupiter's 4k
+              one (`4k/jupiter.webp`, made by an earlier version of this script from their 8k file).
 
 THE MOONS AND SMALL WORLDS (2026-10-05, `--only moons` or `--only moon-ganymede,...`)
   One map per world, written to site/textures/ under a NEW name (2k_<world>_<source>.webp, or 1k_ when the
@@ -417,7 +420,7 @@ def build_venus_surface(orig: Path, report: dict) -> None:
 #       trim deg, (width, name, byte cap) per output)
 GIANTS = {
     "jupiter": ("jupiter-2025a", (("f631n", .00383, .999), ("f502n", .00386, .95), ("f395n", .00365, .85)), 1 - 66854 / 71492, 1.5,
-                ((2048, "2k_jupiter_opal_2025.webp", 498_976), (3600, "4k/jupiter_opal_2025.webp", 351_130))),
+                ((2048, "2k_jupiter_opal_2025.webp", 498_976),)),   # Hubble's map is 3600 wide; add (3600, "4k/...", cap) here if it ever becomes a tier
     "saturn":  ("saturn-2025a", (("f631n", .00362, .80), ("f502n", .00285, .65), ("f395n", .00231, .40)), 1 - 54364 / 60268, 2.0,
                 ((2048, "2k_saturn_opal_2025.webp", 199_916),)),
     "uranus":  ("uranus-2025a", (("f657n", .00440, .57), ("f547m", .00266, .80), ("f467m", .00317, .85)), 1 - 24973 / 25559, 9.0,

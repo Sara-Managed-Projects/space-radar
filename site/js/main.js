@@ -1799,7 +1799,7 @@ function createQuality(ctx, renderer, starfield, worlds) {
       },
       worlds: {
         ready: (id) => worlds.hasMap(id),
-        set: (id, tex) => worlds.setMap(id, tex),
+        set: (id, tex) => worlds.setTierMap(id, tex),
         // Device pixels of radius: the share of half the view's height, times half the drawing buffer.
         px: (id) => worlds.discShare(id) * (renderer.domElement ? renderer.domElement.height / 2 : 400),
         selected: () => {

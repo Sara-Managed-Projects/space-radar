@@ -48,12 +48,13 @@ const row = (id) => WEATHER.find((r) => r.id === id);
   check(near(F.windAt(jup, F.planetocentricDeg(-20, jup.flattening)), -50, 1e-6), 'Jupiter: the 20 S jet blows west at 50 m/s');
   // 2026-10-07: THE MAP AND THE WINDS AGREE. The Great Red Spot is an anticyclone caught between the
   // westward jet on its north side and the eastward one on its south, and where it sits in the map
-  // we ship (Hubble's OPAL map of December 2025, `spot` measured on the picture) is independent of
+  // offer as Jupiter's second face (Hubble's OPAL map of December 2025, scene/worlds.js `faceSpot`, measured on the picture) is independent of
   // the wind table (Tollefson et al. 2017). If the map's rows were laid out in another latitude than
   // the flow reads them in, the oval would sit inside one jet. It does not: the wind at its centre
   // is near zero, west on its north edge and east on its south.
   {
-    const spot = row('jupiter-bands').spot;
+    const { WORLDS: W_ } = await import(join(JS, 'scene/worlds.js'));
+    const spot = W_.find((x) => x.id === 'jupiter').look.faceSpot.hubble;
     const lat = (spot.v - 0.5) * 180;
     const half = spot.half_v * 180;
     const [south, mid, north] = [lat - half, lat, lat + half].map((x) => F.windAt(jup, x));

@@ -100,9 +100,8 @@ models:
 # cards and CREDITS.md carries the full licence.
 #
 # NOT byte-verified: the source site refuses scripted downloads, so provenance rests on exact
-# filename and dimension matches against their published 2k pack. (The two that carried
-# no embedded metadata at all, `2k_uranus.jpg` and `2k_neptune.jpg`, are gone: since 2026-10-07 the four
-# giants wear Hubble's OPAL maps, rebuilt from MAST's FITS files by scripts/build-textures.py.)
+# filename and dimension matches against their published 2k pack. `2k_uranus.jpg` and
+# `2k_neptune.jpg` carry no embedded metadata at all and are the least certain of the fourteen.
   # The Milky Way point cloud (spec 0028 step 6). `kind: illustrative`: built from published numbers by
   # scripts/build-galaxy.py, and a shape nobody has photographed. The card for the galaxy says so.
   - {id: galaxy-model, file: site/data/galaxy.bin, kind: illustrative, source: "scripts/build-galaxy.py from Reid et al. 2019 (ApJ 885:131) Table 2 and R0; Wikipedia 'Milky Way' disc size; Wikipedia 'Galactic Center' bar range", licence: "MIT (this project); the measurements are facts", budget_tris: 0, for: {layer: galaxy}}
@@ -117,11 +116,11 @@ textures:
   - {id: mercury,       file: 2k_mercury_messenger.webp, source: "https://planetarymaps.usgs.gov/mosaic/Mercury_MESSENGER_MDIS_Basemap_MD3Color_Mosaic_Global_665m.lbl", licence: "Public domain (USGS)", credit: "Mercury map: USGS Astrogeology Science Center and NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington (MESSENGER MDIS), public domain"}
   - {id: venus,         file: 2k_venus_atmosphere.jpg,    source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
   - {id: mars,          file: 2k_mars.jpg,                source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
-  - {id: jupiter, file: 2k_jupiter_opal_2025.webp, source: "https://archive.stsci.edu/hlsp/opal/opal-jupiter-cycle-32", licence: "CC BY 4.0", credit: "Giant planet maps: NASA, ESA, A.A. Simon, M.H. Wong (Hubble OPAL programme, doi:10.17909/T9G593), CC BY 4.0, adapted"}
-  - {id: saturn, file: 2k_saturn_opal_2025.webp, source: "https://archive.stsci.edu/hlsp/opal/opal-saturn-cycle-32", licence: "CC BY 4.0", credit: "Giant planet maps: NASA, ESA, A.A. Simon, M.H. Wong (Hubble OPAL programme, doi:10.17909/T9G593), CC BY 4.0, adapted"}
+  - {id: jupiter,       file: 2k_jupiter.jpg,             source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
+  - {id: saturn,        file: 2k_saturn.jpg,              source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
   - {id: saturn-ring,   file: 2k_saturn_ring_alpha.png,   source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
-  - {id: uranus, file: 1k_uranus_opal_2025.webp, source: "https://archive.stsci.edu/hlsp/opal/opal-uranus-cycle-33", licence: "CC BY 4.0", credit: "Giant planet maps: NASA, ESA, A.A. Simon, M.H. Wong (Hubble OPAL programme, doi:10.17909/T9G593), CC BY 4.0, adapted"}
-  - {id: neptune, file: 1k_neptune_opal_2025.webp, source: "https://archive.stsci.edu/hlsp/opal/opal-neptune-cycle-32", licence: "CC BY 4.0", credit: "Giant planet maps: NASA, ESA, A.A. Simon, M.H. Wong (Hubble OPAL programme, doi:10.17909/T9G593), CC BY 4.0, adapted"}
+  - {id: uranus,        file: 2k_uranus.jpg,              source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
+  - {id: neptune,       file: 2k_neptune.jpg,             source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
   - {id: starfield,     file: 2k_stars_milky_way.webp,     source: "https://www.solarsystemscope.com/textures/", licence: "CC BY 4.0", credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"}
   # Issue #262 and 2026-10-05: the moons and small worlds. Public domain; resized, recoloured and gap-filled (CREDITS.md §2).
   - {id: io, file: 2k_io_usgs.webp, source: "https://planetarymaps.usgs.gov/mosaic/Io_GalileoSSI-Voyager_Global_Mosaic_ClrMerge_1km.lbl", licence: "Public domain (USGS)", credit: "Io map: USGS Astrogeology Science Center (Galileo SSI and Voyager), public domain"}
