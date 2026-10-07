@@ -545,6 +545,19 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
     check(C.overlayBlock({ id: 'mars', klass: 'world', meta: {} }, octx) === null && C.overlayBlock(earth, {}) === null, 'no other card has it');
     check(/addEventListener\('sr:overlay'/.test(readFileSync(join(JS, 'ui/cards.js'), 'utf8')), 'and it is repainted when the overlay changes');
   }
+  // A rock on its ellipse close to the Earth says its place is approximate (internal #298).
+  {
+    const rock = { id: 'asteroid-x', name: '2026 XX', klass: 'asteroid', propagator: 'kepler', frame: 'sun-inertial', cls: 'inferred', meta: {} };
+    const close = { ok: true, frame: 'sun-inertial', tMs: Date.UTC(2026, 9, 7), distEarthKm: 0.01 * 149597870.7 };
+    const far = { ...close, distEarthKm: 0.4 * 149597870.7 };
+    check(C.nearEarthOnEllipse(rock, close) === true && C.nearEarthOnEllipse(rock, far) === false && C.NEAR_EARTH_KM === 0.05 * 149597870.7, 'inside 0.05 au of the Earth a two-body rock is flagged, and not beyond');
+    check(C.honestyClause(rock, close) === COPY.cls.nearEarthApprox && /approximate/.test(COPY.cls.nearEarthApprox) && /Earth’s pull/.test(COPY.cls.nearEarthApprox) && C.honestyClause(rock, far) !== COPY.cls.nearEarthApprox, `its card says so, and why: ${C.honestyClause(rock, close)}`);
+    check(C.nearEarthOnEllipse({ ...rock, klass: 'probe' }, close) === false && C.nearEarthOnEllipse({ ...rock, propagator: 'sampled' }, close) === false && C.nearEarthOnEllipse({ ...rock, frame: 'earth-inertial' }, close) === false, 'not a spacecraft, not a sampled track, not an Earth orbit');
+    const { EPHEMERIS_OF } = await import(join(JS, 'propagate/index.js'));
+    EPHEMERIS_OF.set('asteroid-x', (tMs) => (tMs > Date.UTC(2026, 0, 1) ? { x: 1, y: 2, z: 3, frame: 'sun-inertial' } : null));
+    check(C.nearEarthOnEllipse(rock, close) === false && C.nearEarthOnEllipse(rock, { ...close, tMs: Date.UTC(2020, 0, 1) }) === true, 'a rock drawn from its own path file at that moment is not flagged: the pull is in the path');
+    EPHEMERIS_OF.delete('asteroid-x');
+  }
   // An ended craft after its end (internal #424): Fly to it is off and says the day; the row is "Ended".
   {
     const cassini = { id: 'deep-cassini', name: 'Cassini', klass: 'probe', propagator: 'sampled', frame: 'sun-inertial', samples: [], meta: { endDate: '2017-09-15' } };

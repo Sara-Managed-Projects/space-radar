@@ -46,7 +46,7 @@ import {
   UNITS,
  article, typeWords, NAKED_EYE_LIMIT } from '../copy/en.js';
 import '../copy/en.later.js';
-import { propagate } from '../propagate/index.js';
+import { propagate, EPHEMERIS_OF } from '../propagate/index.js';
 import { launchLabel } from './labels.js';
 import { realModelFor } from '../scene/realmodels.js';
 import { sunlitState } from '../scene/shadow.js';
@@ -1796,6 +1796,21 @@ export function classLine(record, m) {
  * Returns null when the record has nothing extra to admit, which is most of them. Exported for the
  * test (tests/test_deep_space.mjs reads the craft round other worlds through it).
  */
+/** Inside this of the Earth a two-body orbit round the Sun is not to be trusted: 0.05 au, the distance that makes an asteroid "potentially hazardous". */
+export const NEAR_EARTH_KM = 0.05 * 149597870.7;
+
+/** Whether this is an asteroid or comet drawn from its ellipse round the Sun while that close to the Earth. Exported for the test. */
+export function nearEarthOnEllipse(record, m) {
+  if (!record || !m || record.propagator !== 'kepler' || record.frame !== 'sun-inertial') return false;
+  const k = klassOf(record);
+  if (k !== 'asteroid' && k !== 'comet') return false;
+  if (!Number.isFinite(m.distEarthKm) || m.distEarthKm > NEAR_EARTH_KM) return false;
+  // Drawn from its own file right now? Then the Earth's pull is in the path.
+  const own = EPHEMERIS_OF.get(record.id);
+  if (own && Number.isFinite(m.tMs)) { try { if (own(m.tMs)) return false; } catch { /* the ellipse it is */ } }
+  return true;
+}
+
 export function honestyClause(record, m) {
   const md = meta(record);
   const C = COPY.cls;
@@ -1826,6 +1841,11 @@ export function honestyClause(record, m) {
     if (would) parts.push(t(COPY.card.wouldNeed, { wouldNeed: String(would) }));
     return parts.length ? parts.join(' ') : null;
   }
+
+  // A rock on a two-body orbit, close to the Earth (internal #298, TheSkyLive's own caveat): the
+  // ellipse leaves out the Earth's pull, which is what bends a close pass. Not said of a record
+  // drawn from its own path file at this moment (Apophis in 2029), where the pull is in the path.
+  if (nearEarthOnEllipse(record, m)) return C.nearEarthApprox;
 
   // Not yet in the public catalogue (spec 0026 req 15): the elements are the operator's own, so
   // the position is inferred whatever their age, and the card says where the number will come from.

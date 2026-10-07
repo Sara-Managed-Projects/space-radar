@@ -558,6 +558,8 @@ Object.assign(COPY, {
 
   // Spec 0013 requirement 4, and spec 0001 principle 2 made visible.
   cls: {
+    // An asteroid or comet on its two-body ellipse while within 0.05 au of the Earth (ui/cards.js nearEarthOnEllipse).
+    nearEarthApprox: 'This close to the Earth its place is approximate: the orbit drawn is round the Sun alone and leaves out the Earth’s pull.',
     label: 'How we know where it is',
     measured: 'measured position',
     inferred: 'position propagated from elements {n} {unit} old',
