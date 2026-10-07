@@ -212,12 +212,12 @@ clips:
   - {trip: "chasing-the-solar-eclipse", stop: "lunar", hash: "9ce23011f0823db9", seconds: 13.9, words: 41, lufs: -16.5, opus: 56225, m4a: 72214, vtt: 287}
   - {trip: "the-constellations", stop: "orion", hash: "eb4895de3cdfcc68", seconds: 21.02, words: 56, lufs: -16.6, opus: 84923, m4a: 108508, vtt: 390}
   - {trip: "the-constellations", stop: "orion-from-the-side", hash: "97aa9b2ac070aa7a", seconds: 23.16, words: 56, lufs: -16.7, opus: 91933, m4a: 119375, vtt: 451}
-  - {trip: "the-constellations", stop: "taurus", hash: "77aa79817e51ff01", seconds: 24.89, words: 64, lufs: -16.6, opus: 102898, m4a: 128286, vtt: 443}
-  - {trip: "the-constellations", stop: "gemini", hash: "8a812bd9387c326d", seconds: 21.66, words: 46, lufs: -16.6, opus: 85940, m4a: 111768, vtt: 401}
-  - {trip: "the-constellations", stop: "leo", hash: "f285f8235ba7d4a3", seconds: 19.43, words: 47, lufs: -16.5, opus: 76496, m4a: 100467, vtt: 357}
-  - {trip: "the-constellations", stop: "plough", hash: "ce4eab137b1b6bd9", seconds: 24.28, words: 67, lufs: -16.4, opus: 98808, m4a: 125243, vtt: 449}
-  - {trip: "the-constellations", stop: "cassiopeia", hash: "0059621cec44bff5", seconds: 21.31, words: 59, lufs: -16.7, opus: 85151, m4a: 110030, vtt: 374}
-  - {trip: "the-constellations", stop: "summer-triangle", hash: "22f30932361d0b43", seconds: 23.16, words: 57, lufs: -16.6, opus: 92514, m4a: 119375, vtt: 423}
+  - {trip: "the-constellations", stop: "taurus", hash: "4e971f5bc5afa6b3", seconds: 23.8, words: 64, lufs: -16.4, opus: 100175, m4a: 122635, vtt: 443}
+  - {trip: "the-constellations", stop: "gemini", hash: "1c585102b14860ec", seconds: 20.96, words: 46, lufs: -16.5, opus: 83128, m4a: 108291, vtt: 401}
+  - {trip: "the-constellations", stop: "leo", hash: "1118645b0dc803a7", seconds: 18.13, words: 47, lufs: -16.4, opus: 75284, m4a: 93730, vtt: 357}
+  - {trip: "the-constellations", stop: "plough", hash: "8fac056a996e6999", seconds: 23.7, words: 67, lufs: -16.6, opus: 97341, m4a: 122200, vtt: 449}
+  - {trip: "the-constellations", stop: "cassiopeia", hash: "aff01d824e9e1c1c", seconds: 20.57, words: 59, lufs: -16.6, opus: 82779, m4a: 106335, vtt: 374}
+  - {trip: "the-constellations", stop: "summer-triangle", hash: "38b03a10206611ce", seconds: 22.45, words: 57, lufs: -16.6, opus: 90010, m4a: 115898, vtt: 423}
   - {trip: "the-constellations", stop: "scorpius", hash: "9bb28bbc7d17c55b", seconds: 23.84, words: 65, lufs: -16.6, opus: 95042, m4a: 122852, vtt: 449}
   - {trip: "the-constellations", stop: "sagittarius", hash: "f4633298fa4ba4df", seconds: 24.63, words: 62, lufs: -16.5, opus: 98321, m4a: 126982, vtt: 448}
   - {trip: "the-constellations", stop: "southern-cross", hash: "fff66e0d759329d8", seconds: 31.06, words: 77, lufs: -16.5, opus: 124548, m4a: 159582, vtt: 560}
