@@ -177,11 +177,11 @@ clips:
   - {trip: "travel-to-exoplanets", stop: "b", hash: "033f11774732959f", seconds: 15.9, words: 40, lufs: -16.4, opus: 62879, m4a: 82428, vtt: 272}
   - {trip: "travel-to-exoplanets", stop: "c", hash: "d16c16094307cd3a", seconds: 11.4, words: 32, lufs: -16.4, opus: 44730, m4a: 59608, vtt: 232}
   - {trip: "travel-to-exoplanets", stop: "d", hash: "6ef3e2d4350abf23", seconds: 9.49, words: 26, lufs: -16.2, opus: 37548, m4a: 49828, vtt: 186}
-  - {trip: "travel-to-exoplanets", stop: "f", hash: "f34d09034e3970a7", seconds: 10.44, words: 27, lufs: -16.4, opus: 41002, m4a: 54610, vtt: 181}
-  - {trip: "travel-to-exoplanets", stop: "g", hash: "8802c6cefa6006de", seconds: 10.36, words: 23, lufs: -16.5, opus: 40306, m4a: 54175, vtt: 201}
-  - {trip: "travel-to-exoplanets", stop: "h", hash: "a13c1ae823b02690", seconds: 12.95, words: 30, lufs: -16.5, opus: 51253, m4a: 67432, vtt: 241}
-  - {trip: "travel-to-exoplanets", stop: "mercury", hash: "c6386cda614555ce", seconds: 18.08, words: 47, lufs: -16.6, opus: 73515, m4a: 93512, vtt: 316}
-  - {trip: "moon-landings", stop: "surveyor-1", hash: "c62e3280da66afa2", seconds: 27.44, words: 64, lufs: -16.7, opus: 111070, m4a: 141326, vtt: 416}
+  - {trip: "travel-to-exoplanets", stop: "f", hash: "31a1f1c8750df82a", seconds: 9.5, words: 27, lufs: -16.6, opus: 37682, m4a: 49828, vtt: 181}
+  - {trip: "travel-to-exoplanets", stop: "g", hash: "ec670b81c9bd8784", seconds: 9.74, words: 23, lufs: -16.4, opus: 37779, m4a: 51132, vtt: 201}
+  - {trip: "travel-to-exoplanets", stop: "h", hash: "c12cbeb6ad600e5c", seconds: 12.11, words: 30, lufs: -16.5, opus: 47775, m4a: 63086, vtt: 241}
+  - {trip: "travel-to-exoplanets", stop: "mercury", hash: "3717f691d302eb17", seconds: 17.66, words: 47, lufs: -16.6, opus: 70592, m4a: 91339, vtt: 316}
+  - {trip: "moon-landings", stop: "surveyor-1", hash: "229024af1ddd60f7", seconds: 27.06, words: 64, lufs: -16.4, opus: 110542, m4a: 139370, vtt: 416}
   - {trip: "moon-landings", stop: "apollo-11", hash: "586528ac4a9f3679", seconds: 19.12, words: 43, lufs: -16.4, opus: 76377, m4a: 98946, vtt: 329}
   - {trip: "moon-landings", stop: "apollo-12", hash: "42974b6e2654ee59", seconds: 19.12, words: 45, lufs: -16.6, opus: 76379, m4a: 98946, vtt: 317}
   - {trip: "moon-landings", stop: "lunokhod-1", hash: "0a915bebb4ad097f", seconds: 20.66, words: 49, lufs: -16.6, opus: 82409, m4a: 106770, vtt: 345}
