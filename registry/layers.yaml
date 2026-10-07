@@ -423,6 +423,26 @@ layers:
     select: {all: true}
     budget: {max_items: 1}
 
+  # What is happening on the ground now (2026-10-07, internal #281): wildfires, erupting volcanoes
+  # and the big icebergs from NASA's EONET, each a mark at its last reported place with a card
+  # that names who reported it and when. `source: weather`: the page fetches it itself, and the
+  # host, the CORS header as measured and the terms are registry/weather.yaml `earth-events`.
+  # `load: on-demand`: off in every moment and not asked for until its box is ticked (two
+  # requests to NASA, about 290 kB). `fixed` in `earth-fixed`, as a storm's advisory is.
+  - id: earth-events
+    display: Fires, volcanoes and icebergs
+    group: earth
+    moments: {wonder: off, now: off, next: off}
+    source: weather
+    propagator: fixed
+    frame: earth-fixed
+    style: {kind: glyph, glyph: site, colour: site}
+    card: earthevent
+    select: {all: true}
+    # 115 on 2026-10-07 (50 fires, 32 volcanoes, 33 icebergs); the newest by last report are kept.
+    budget: {max_items: 200}
+    load: on-demand
+
   # Things that came down. Space-Track needs a login nobody has registered, so this is the bundled
   # stand-in always (cls sample, every card saying so) until that changes.
   - id: reentries

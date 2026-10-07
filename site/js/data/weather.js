@@ -23,6 +23,18 @@ export const WEATHER = [
     "source": "NOAA nowCOAST, Lightning Strike Density (NWS Ocean Prediction Center; ground networks NLDN and GLD360)"
   },
   {
+    "id": "earth-events",
+    "world": "earth",
+    "kind": "events",
+    "class": "measured",
+    "layer": "earth-events",
+    "off_at": [
+      "tier0",
+      "save_data"
+    ],
+    "source": "NASA EONET v3, the Earth Observatory Natural Event Tracker (NASA GSFC ESDIS); events from IRWIN, GDACS, the Smithsonian Global Volcanism Program and the US National Ice Center"
+  },
+  {
     "id": "jupiter-bands",
     "world": "jupiter",
     "kind": "zonal-flow",

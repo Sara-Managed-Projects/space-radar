@@ -37,6 +37,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | Exoplanets | NASA Exoplanet Archive | public; cite the DOI | [4.7](#47-nasa-exoplanet-archive--confirmed-planets) |
 | Today's clouds | NASA GIBS (GOES, Himawari) | open; acknowledgement asked | [4.13](#413-nasa-gibs--todays-clouds-2026-09-28) |
 | Storms, lightning | GDACS; NOAA nowCOAST | CC BY 4.0; public domain | [4.14](#414-gdacs--tropical-cyclones-2026-09-28), [4.17](#417-noaa-nowcoast--lightning-2026-10-03) |
+| Fires, volcanoes and icebergs | NASA EONET | NASA service; its disclaimer | [4.20](#420-nasa-eonet--fires-volcanoes-and-icebergs-2026-10-07) |
 | Moon and Mars close-up tiles and relief; the Earth close up | NASA Solar System Treks; USGS Astrogeology; NASA GIBS | NASA content; HRSC's share of Mars's relief CC BY-SA 3.0 IGO | [4.16](#416-nasa-solar-system-treks--the-moon-and-mars-close-up-2026-10-03) |
 | Countries and seas | Natural Earth | public domain | [4.15](#415-natural-earth--the-country-or-sea-under-a-satellite-2026-09-29) |
 | Dishes, crews, observatories | NASA DSN Now; Open Notify; Wikidata | see the section; CC0 for Wikidata | [4.3](#43-nasa--dsn-now), [4.18](#418-the-sources-the-harvester-reads) |
@@ -1306,6 +1307,26 @@ All are NASA data products. NASA's data use guidance
 read 2026-10-05) says data from a NASA-led mission are CC0 unless marked otherwise, with "no
 restrictions on the use of these data", and asks that the data sets be cited, which this table does. The stop card and the panel print the legend, the day the picture is of, how it
 was made and this credit.
+
+### 4.20 NASA EONET — fires, volcanoes and icebergs (2026-10-07)
+
+`site/js/data/eonet.js` asks NASA's Earth Observatory Natural Event Tracker
+(<https://eonet.gsfc.nasa.gov/docs/v3>, read 2026-10-07) for its open wildfires with a report in
+the last thirty days, and its open volcanoes and sea-ice events, when a visitor ticks "Fires,
+volcanoes and icebergs" in What to show, and never at boot. Two requests, no key, no credentials,
+no referrer. Measured 2026-10-07 with `Origin: https://www.spaceradar.ai`: both answered
+`Access-Control-Allow-Origin: *`, 130 kB (50 fires) and 158 kB (32 volcanoes, 33 icebergs), in 1
+to 4 s. The row is `registry/weather.yaml` `earth-events`.
+
+EONET publishes no licence beyond its disclaimer (<https://eonet.gsfc.nasa.gov/what-is-eonet>, read
+the same day): "All EONET metadata and services are intended to be used for visualization and
+general information purposes only and should not be construed as 'official' with regards to
+spatial or temporal extent." Each card says so in its own words, with the date of the event's
+last report and the day it was read. The events themselves are reported by others, whom EONET
+names on each one and the card repeats: IRWIN (the US Integrated Reporting of Wildland Fire
+Information), GDACS, the Smithsonian Institution's Global Volcanism Program, and the US National
+Ice Center. Only an event's title, place, date and reported size are shown; nothing is copied
+into this repository except nine events in `tests/fixtures/eonet/` for the tests.
 
 ## 4.6 Third-party trademarks the app names or draws
 

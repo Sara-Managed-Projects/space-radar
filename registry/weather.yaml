@@ -46,6 +46,30 @@ effects:
     covers: "25 S to 80 N, from 110 E eastward across the Pacific and the Americas to 0 W"
     note: "Where and how often is measured (strikes over fifteen minutes on an 8 km grid). The instant of each flash is not in the map and is drawn at random at the measured rate; a flash is drawn larger than life."
 
+  # Natural events on the ground (internal #281, 2026-10-07): wildfires, erupting volcanoes and the
+  # big icebergs, from NASA's EONET. Not an effect scene/weather/ draws: the events are records of
+  # the `earth-events` layer (site/js/data/eonet.js says how they are asked for and why in two
+  # requests), and this row is that layer's evidence. MEASURED 2026-10-07 with curl and
+  # `Origin: https://www.spaceradar.ai`: both URLs answered `Access-Control-Allow-Origin: *`,
+  # 130 kB (50 fires) and 158 kB (32 volcanoes, 33 icebergs) uncompressed, in 1 to 4 s. No key.
+  # The terms are the disclaimer on https://eonet.gsfc.nasa.gov/what-is-eonet, quoted in `licence`.
+  # `off_at` lists the two every row must; the layer goes further and is fetched only when its
+  # box is ticked (`load: on-demand`), on any tier.
+  - id: earth-events
+    world: earth
+    kind: events
+    class: measured
+    layer: earth-events
+    off_at: [tier0, save_data]
+    source:
+      name: "NASA EONET v3, the Earth Observatory Natural Event Tracker (NASA GSFC ESDIS); events from IRWIN, GDACS, the Smithsonian Global Volcanism Program and the US National Ice Center"
+      url: "https://eonet.gsfc.nasa.gov/api/v3/events"
+      read: 2026-10-07
+      cors: "access-control-allow-origin: *"
+      licence: "NASA service, no key; its disclaimer: 'intended to be used for visualization and general information purposes only and should not be construed as official with regards to spatial or temporal extent'"
+    covers: "the whole Earth, as far as its sources report: fires are US federal incidents and the large ones GDACS lists, not every fire"
+    note: "Each event is one point and the date of its last report. The extent on the ground is not drawn, and a point is drawn for three days after it was read."
+
   - id: jupiter-bands
     world: jupiter
     kind: zonal-flow

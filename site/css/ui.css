@@ -467,6 +467,11 @@ html.sr-compact .sr-status {
 .sr-swatch--exotic {
   background: var(--sr-exotic);
 }
+.sr-glyph--earthevent,
+.sr-swatch--earthevent {
+  background: var(--sr-site);
+}
+
 .sr-glyph--storm,
 .sr-swatch--storm {
   background: var(--sr-storm);

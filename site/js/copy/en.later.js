@@ -78,6 +78,7 @@ Object.assign(COPY, {
       sun: 'Star', planet: 'Planet', moon: 'Moon', station: 'Space station', satellite: 'Satellite', telescope: 'Space telescope',
       probe: 'Spacecraft', rocket: 'Rocket', launch: 'Launch', debris: 'Debris', asteroid: 'Asteroid', comet: 'Comet', site: 'Place', landing: 'Landing site',
       star: 'Star', exoplanet: 'Planet of another star', dso: 'Deep-sky object', storm: 'Tropical storm', oddity: 'Oddity',
+      earthevent: 'Event on Earth',
       blackhole: 'Black hole', pulsar: 'Pulsar', magnetar: 'Magnetar',
     },
     upNow: 'up now, {compass}',
@@ -281,6 +282,8 @@ Object.assign(COPY, {
     dso: 'Deep-sky object',
     exotic: 'Extreme object',
     storm: 'Tropical cyclone',
+    // A wildfire, an erupting volcano or an iceberg from NASA's EONET (data/eonet.js).
+    earthevent: 'Event on Earth',
     // Not a physical class -- a curatorial one. A golf ball, a car and a photograph have nothing
     // in common except that somebody sent them and nobody had to.
     oddity: 'Oddity',
@@ -875,7 +878,31 @@ Object.assign(COPY, {
   // in order while the sentence stays under 160 characters, and never invents a number.
   // The "why now" clause is first in every list, per spec 0013's template table.
   // ------------------------------------------------------------------------------------
+  // The card of a wildfire, a volcano or an iceberg (ui/cards.js; data/eonet.js says what each
+  // field is). Nothing here is a number: the dates, the size and the names are EONET's.
+  earthEvent: {
+    kinds: { wildfire: 'Fire', volcano: 'Erupting volcano', iceberg: 'Iceberg' },
+    rows: { kind: 'What it is', reported: 'Last report', since: 'Erupting since', first: 'First reported', size: 'Size', where: 'Where', by: 'Reported by' },
+    sizeValue: '{n} km²',
+    sizeSmall: 'under 1 km²',
+    // {agencies} are the ids EONET gives its sources (IRWIN, GDACS, SIVolcano, NATICE).
+    by: '{agencies}, through NASA EONET',
+    sky: 'It is on the ground. From orbit a fire is a plume of smoke, a volcano a column of ash, an iceberg a white slab on dark water.',
+    drawn: 'drawn as a mark at its last reported place; its extent on the ground is not drawn',
+    // The honesty line: what the point is, whose it is, and the publisher's own caveat in plain words.
+    honesty: 'One point from NASA’s EONET, last reported {date} and read {read}. For looking, not an official record of where or when.',
+  },
+
   templates: {
+    // A wildfire, a volcano or an iceberg's first sentence (data/eonet.js): what, and as of when.
+    earthevent: {
+      lead: {
+        wildfire: '{name} is a fire that was here at its last report, {date}',
+        volcano: '{name} has been erupting since {date}',
+        iceberg: '{name} was here at its last report, {date}',
+      },
+      size: 'about {n} km² at that report',
+    },
     // A tropical cyclone's first sentence (2026-09-28). "whose centre was here" and not "is here":
     // the point is the latest advisory's, and the card's honesty line says how old that is.
     storm: {

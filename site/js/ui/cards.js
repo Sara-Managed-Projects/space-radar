@@ -539,7 +539,50 @@ function stormStatusKey(md) {
   return status || null;
 }
 
+/** A size in km² as the card writes it; under one square kilometre is said, not rounded to 0. */
+function eventSizeText(km2) {
+  const E = COPY.earthEvent;
+  if (!Number.isFinite(km2) || km2 <= 0) return null;
+  return km2 < 1 ? E.sizeSmall : t(E.sizeValue, { n: fmt.int(roughly(km2)) });
+}
+
+/**
+ * The rows of a wildfire, a volcano or an iceberg (data/eonet.js): what it is, when it was last
+ * reported, how big that report said, where, and who reported it. Exported for the test.
+ */
+export function earthEventRows(record) {
+  const E = COPY.earthEvent;
+  const md = meta(record);
+  const rows = [];
+  const kind = pick(md, 'kind');
+  if (kind && E.kinds[kind]) rows.push([E.rows.kind, E.kinds[kind]]);
+  const reported = pickNumber(md, 'reportedMs');
+  if (reported !== null) rows.push([kind === 'volcano' ? E.rows.since : E.rows.reported, timeText.utcLong(reported)]);
+  const first = pickNumber(md, 'firstMs');
+  if (first !== null && reported !== null && reported - first > 86400e3) rows.push([E.rows.first, timeText.utcLong(first)]);
+  const size = eventSizeText(pickNumber(md, 'sizeKm2'));
+  if (size) rows.push([E.rows.size, size]);
+  const lat = pickNumber(md, 'latDeg');
+  const lon = pickNumber(md, 'lonDeg');
+  if (lat !== null && lon !== null) rows.push([E.rows.where, t(COPY.card.values.latLon, { lat: latText(lat), lon: lonText(lon) })]);
+  const agencies = pick(md, 'agencies');
+  if (Array.isArray(agencies) && agencies.length) rows.push([E.rows.by, t(E.by, { agencies: agencies.slice(0, 3).join(COPY.punctuation.listJoin) })]);
+  return rows;
+}
+
 const TEMPLATES = {
+  earthevent(record, ctx, m, passInfo, T) {
+    const md = meta(record);
+    const kind = pick(md, 'kind');
+    const reported = pickNumber(md, 'reportedMs');
+    if (!T.lead[kind] || reported === null) return buildSentence(t(COPY.card.unknownKind, { name: displayName(record) }), []);
+    const km2 = pickNumber(md, 'sizeKm2');
+    return buildSentence(
+      t(T.lead[kind], { name: displayName(record), date: timeText.utcLong(reported) }),
+      [km2 !== null && km2 >= 1 ? t(T.size, { n: fmt.int(roughly(km2)) }) : null],
+    );
+  },
+
   storm(record, ctx, m, passInfo, T) {
     const md = meta(record);
     const key = stormStatusKey(md);
@@ -1004,7 +1047,7 @@ export function firstSentence(record, ctx, m, passInfo) {
 function comparisons(record, m) {
   const md = meta(record);
   // A storm is weather, standing on the Earth like a site: "0 km up" is a chip that says nothing.
-  const onTheGround = klassOf(record) === 'site' || klassOf(record) === 'storm';
+  const onTheGround = klassOf(record) === 'site' || klassOf(record) === 'storm' || klassOf(record) === 'earthevent';
   // Never the heliocentric distance: "8 light-minutes away" for an asteroid one AU from
   // the SUN is false, because the asteroid may be on the far side of it. A distance chip
   // is only written when the distance from the observer's own world is known.
@@ -1089,6 +1132,8 @@ function rightNowRows(record, m, passInfo) {
     rows.push([R.altitude, COPY.card.couldNotLook]);
     return rows;
   }
+  // An event on the ground: its report's rows. No height and no speed, as for a storm.
+  if (klassOf(record) === 'earthevent') return earthEventRows(record);
   if (isEarthFrame(m.frame) && klassOf(record) === 'storm') {
     // A storm's rows are the advisory's (data/parsers.js parseGdacsCyclones says what each field is):
     // what it was at the latest one, the one wind number GDACS gives and what that number covers,
@@ -1615,6 +1660,7 @@ export function seeItLine(record, ctx, m, passInfo) {
   const klass = klassOf(record);
   if (pick(meta(record), 'unplaceable')) return COPY.sky.nowhereToLook;
   if (klass === 'storm') return COPY.sky.storm;
+  if (klass === 'earthevent') return COPY.earthEvent.sky;
   // Standing still, whatever class it is: a dish, a landing site, a lightsaber in a case in Houston,
   // or a rocket before T-0 (standsStill). Without this a museum exhibit got "too far away to pick
   // out by eye", and a rocket on its pad got "Set where you are and this line will tell you where
@@ -1752,6 +1798,15 @@ export function classLine(record, m) {
 export function honestyClause(record, m) {
   const md = meta(record);
   const C = COPY.cls;
+
+  // An event from EONET is one point and one date; say both, when it was read, and the publisher's caveat.
+  if (klassOf(record) === 'earthevent') {
+    const reported = pickNumber(md, 'reportedMs');
+    const read = pickNumber(md, 'readMs');
+    return reported !== null && read !== null
+      ? t(COPY.earthEvent.honesty, { date: timeText.utcLong(reported), read: timeText.utcLong(read) })
+      : null;
+  }
 
   // A storm's centre is measured at one advisory; say which, and how long before the moment shown.
   if (klassOf(record) === 'storm') {
@@ -1989,6 +2044,7 @@ function derivedDrawingLine(record, T) {
   }
   if (!klass) return null;
   if (klass === 'storm') return T.storm;
+  if (klass === 'earthevent') return COPY.earthEvent.drawn;
   let entry = null;
   try { entry = realModelFor(record); } catch { entry = null; }
   if (entry && entry.name) {
@@ -2445,7 +2501,7 @@ export function microLabel(record, m) {
       const world = worldName(parent);
       regime = world ? t(G.round, { world }) : null;
     }
-  } else if (klass === 'storm' || klass === 'site' || standsStill(record, m)) {
+  } else if (klass === 'storm' || klass === 'earthevent' || klass === 'site' || standsStill(record, m)) {
     const world = m.worldId && m.worldId !== 'earth' ? worldName(m.worldId) : null;
     regime = world ? t(G.onWorld, { world }) : null;
   } else if (isEarthFrame(m.frame)) {
@@ -2489,7 +2545,7 @@ export function heroKind(record, m) {
   }
   if (klass === 'star' || klass === 'dso') return klass;
   const moving = m && !standsStill(record, m);
-  if (moving && isEarthFrame(m.frame) && klass !== 'storm' && klass !== 'site') return 'orbiter';
+  if (moving && isEarthFrame(m.frame) && klass !== 'storm' && klass !== 'earthevent' && klass !== 'site') return 'orbiter';
   if ((klass === 'probe' || klass === 'telescope') && m && !isEarthFrame(m.frame)) return 'craft';
   return 'other';
 }
@@ -2672,7 +2728,7 @@ function rowsList(rows) {
 /** The hint at the right of "When you can see it": the next pass in UTC, or why there is none. */
 function seeHint(record, ctx, m, passInfo) {
   const S = COPY.card.sections;
-  if (!isEarthFrame(m.frame) || standsStill(record, m) || klassOf(record) === 'world' || klassOf(record) === 'storm') return null;
+  if (!isEarthFrame(m.frame) || standsStill(record, m) || klassOf(record) === 'world' || klassOf(record) === 'storm' || klassOf(record) === 'earthevent') return null;
   if (passInfo.state === PASS_OK) return t(S.passAt, { time: new Date(passInfo.pass.startMs).toISOString().slice(11, 16) });
   if (passInfo.state === PASS_NO_OBSERVER) return S.needsPlace;
   return ctx && ctx.observer && ctx.observer.source === 'guess' ? S.placeGuessed : null;

@@ -3374,7 +3374,9 @@ TILESET_CORS = re.compile(r"^Access-Control-Allow-Origin: \S+ \(measured \d{4}-\
 # the CORS header as measured; a modelled row the paper; an illustrative row the reason it can be
 # no better. Every row is off at the lowest tier and on a connection that saves data.
 WEATHER_CLASSES = ("measured", "modelled", "illustrative")
-WEATHER_KINDS = {"lightning", "zonal-flow", "hexagon", "mars-season"}
+# `events` (internal #281) is not drawn by scene/weather/: it is the evidence row of a records layer
+# the page fetches for itself (site/js/data/eonet.js).
+WEATHER_KINDS = {"lightning", "zonal-flow", "hexagon", "mars-season", "events"}
 WEATHER_OFF = {"tier0", "save_data"}
 WEATHER_CORS = re.compile(r"^access-control-allow-origin: \S+$", re.I)
 # Neptune's 400 m/s is the fastest wind measured on a planet; past 600 is a unit mistake.
@@ -4026,9 +4028,11 @@ def main() -> int:
         load_mode = l.get("load")
         if load_mode is not None and load_mode != "on-demand":
             fail(where, f"`load: {load_mode}` is not `on-demand` (the only value; leave it out to load at boot)")
-        if load_mode == "on-demand" and not ((l.get("budget") or {}).get("max_items", 0) >= 5000):
-            fail(where, "`load: on-demand` is for a catalogue-sized layer (budget.max_items >= 5000); "
-                        "a small one loads at boot like everything else")
+        # ... or for a layer the page fetches from another host for itself (`source: weather`,
+        # 2026-10-07): a request to somebody else's server is the visitor's choice, whatever its size.
+        if load_mode == "on-demand" and l.get("source") != WEATHER_SOURCE and not ((l.get("budget") or {}).get("max_items", 0) >= 5000):
+            fail(where, "`load: on-demand` is for a catalogue-sized layer (budget.max_items >= 5000) or one the "
+                        "page fetches for itself (`source: weather`); a small one loads at boot like everything else")
 
     # --- events ------------------------------------------------------------------
     seen = set()

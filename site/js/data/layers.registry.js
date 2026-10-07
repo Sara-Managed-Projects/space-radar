@@ -540,6 +540,26 @@ export const LAYER_ROWS = [
     "train": null
   },
   {
+    "id": "earth-events",
+    "display": "Fires, volcanoes and icebergs",
+    "group": "earth",
+    "enabled": true,
+    "moments": {
+      "wonder": false,
+      "now": false,
+      "next": false
+    },
+    "source": "weather",
+    "sources": null,
+    "propagator": "fixed",
+    "frame": "earth-fixed",
+    "card": "earthevent",
+    "glyph": "site",
+    "colour": "site",
+    "maxItems": 200,
+    "train": null
+  },
+  {
     "id": "reentries",
     "display": "Things that came down",
     "group": "around-earth",

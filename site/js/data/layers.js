@@ -1046,6 +1046,31 @@ export const LAYERS = [
     sentence: 'Flashes on the night side where NOAA counted lightning in the last quarter hour: the Americas and the Pacific. Where and how often are measured; each flash’s instant is drawn.',
   },
   {
+    // Mirrors registry/layers.yaml `earth-events` (2026-10-07, internal #281): wildfires, erupting
+    // volcanoes and the big icebergs from NASA's EONET. `fetchLazy`: the module that asks NASA and
+    // reads the answer is fetched with the layer (data/eonet.js), so neither it nor the two
+    // requests are a first visit's cost, and `load: 'on-demand'` keeps them until the box is ticked.
+    id: 'earth-events',
+    display: 'Fires, volcanoes and icebergs',
+    klass: 'earthevent',
+    source: 'weather',
+    parse: null,
+    fetchLazy: () => import('./eonet.js').then((m) => m.fetchEarthEvents()),
+    propagator: 'fixed',
+    frame: 'earth-fixed',
+    moments: { wonder: false, now: false, next: false },
+    defaultOn: false,
+    select: all,
+    budget: { maxItems: 200, rank: (a, b) => (b.epoch || 0) - (a.epoch || 0) },
+    colour: C.site,
+    glyph: 'site',
+    noModel: true,
+    nearKm: 0,
+    card: 'earthevent',
+    load: 'on-demand',
+    sentence: 'Wildfires, erupting volcanoes and the big icebergs NASA’s EONET lists as open, each at its last reported place. Not every fire: the US ones and the large ones.',
+  },
+  {
     // NOT in registry/layers.yaml. Added because sampleReentries() exists and a reentry is one
     // of the three things spec 0011 promises. Off by default: these are historic, not news.
     id: 'reentries',
@@ -1134,7 +1159,13 @@ export async function loadLayerDetailed(layer, nowMs) {
     // `bundled` is the registry's reserved literal for records that live in this repository; it is
     // not a source to fetch, so it is not an id here and the bundledText path below is what runs.
     const ids = (Array.isArray(layer.sources) ? layer.sources : layer.source ? [layer.source] : []).filter((id) => id !== 'bundled');
-    if (typeof layer.sample === 'function') {
+    if (typeof layer.fetchLazy === 'function') {
+      // A layer the page fetches for itself, with a module of its own (`source: 'weather'`,
+      // data/eonet.js): the module asks the publisher and hands back records. A failure is the
+      // catch below: no records, and the reason.
+      parsed = await layer.fetchLazy();
+      result = { id: layer.source, data: true, error: null, fetchedAt: Date.now() };
+    } else if (typeof layer.sample === 'function') {
       // A source a browser cannot call. The harvester (spec 0003 amendment 1 §4) writes it to
       // /data/v1/ and load() reads that snapshot -- for a `browser: false` row it never goes
       // upstream -- so: the real body first, through the layer's parser, and the bundled
