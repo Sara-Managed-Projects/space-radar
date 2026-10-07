@@ -218,9 +218,9 @@ clips:
   - {trip: "the-constellations", stop: "plough", hash: "8fac056a996e6999", seconds: 23.7, words: 67, lufs: -16.6, opus: 97341, m4a: 122200, vtt: 449}
   - {trip: "the-constellations", stop: "cassiopeia", hash: "aff01d824e9e1c1c", seconds: 20.57, words: 59, lufs: -16.6, opus: 82779, m4a: 106335, vtt: 374}
   - {trip: "the-constellations", stop: "summer-triangle", hash: "38b03a10206611ce", seconds: 22.45, words: 57, lufs: -16.6, opus: 90010, m4a: 115898, vtt: 423}
-  - {trip: "the-constellations", stop: "scorpius", hash: "9bb28bbc7d17c55b", seconds: 23.84, words: 65, lufs: -16.6, opus: 95042, m4a: 122852, vtt: 449}
-  - {trip: "the-constellations", stop: "sagittarius", hash: "f4633298fa4ba4df", seconds: 24.63, words: 62, lufs: -16.5, opus: 98321, m4a: 126982, vtt: 448}
-  - {trip: "the-constellations", stop: "southern-cross", hash: "fff66e0d759329d8", seconds: 31.06, words: 77, lufs: -16.5, opus: 124548, m4a: 159582, vtt: 560}
+  - {trip: "the-constellations", stop: "scorpius", hash: "080e6f5e63781f11", seconds: 23.25, words: 65, lufs: -16.6, opus: 94064, m4a: 119810, vtt: 449}
+  - {trip: "the-constellations", stop: "sagittarius", hash: "569b3cde302967b2", seconds: 23.96, words: 62, lufs: -16.5, opus: 96006, m4a: 123504, vtt: 448}
+  - {trip: "the-constellations", stop: "southern-cross", hash: "5afa508144a41fda", seconds: 27.38, words: 68, lufs: -16.4, opus: 110125, m4a: 140891, vtt: 513}
   - {trip: "the-constellations", stop: "zodiac", hash: "203d81ed6e4ebcb3", seconds: 26.59, words: 62, lufs: -16.6, opus: 111485, m4a: 136979, vtt: 477}
   - {trip: "the-living-earth", stop: "tilt", hash: "1419e925a0f3e81c", seconds: 21.45, words: 54, lufs: -16.4, opus: 85630, m4a: 110682, vtt: 404}
   - {trip: "the-living-earth", stop: "half-a-year-on", hash: "06c29f2e1a31d6c6", seconds: 21.89, words: 58, lufs: -16.6, opus: 87084, m4a: 113072, vtt: 389}
