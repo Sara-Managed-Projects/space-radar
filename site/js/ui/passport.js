@@ -117,8 +117,24 @@ export function writePassport(storage, p) {
   }
 }
 
+/**
+ * The sound choices this browser keeps (audio/engine.js STORE_KEY and VOLUME_KEY, audio/narration.js
+ * VOICE_KEY). Written out here, not imported: this file must not pull the audio engine in.
+ * tests/test_passport.mjs holds the three to those constants.
+ */
+export const SOUND_KEYS = ['sr.audio', 'sr.audio.volume', 'sr.voice'];
+
+/**
+ * Forget me (spec 0041 task 4, internal #437): the passport and the sound choices go. What is
+ * left is how the panels were arranged, which says nothing about where anybody has been.
+ */
 export function forgetPassport(storage) {
-  try { if (storage) storage.removeItem(KEY); return !!storage; } catch { return false; }
+  try {
+    if (!storage) return false;
+    storage.removeItem(KEY);
+    for (const k of SOUND_KEYS) storage.removeItem(k);
+    return true;
+  } catch { return false; }
 }
 
 function touch(p, nowMs) {

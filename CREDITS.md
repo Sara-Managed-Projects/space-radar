@@ -96,7 +96,9 @@ In `site/js/ui/cards.js` (`ICONS`, where `chevron` is Lucide's `chevron-right`):
 `panel-bottom-close`, `panel-bottom-open`, `compass`, and for present mode (read 2026-10-06)
 `presentation`, `maximize`, `minimize`, `timer`, `house`. In `site/js/ui/sharesheet.js`: `x`, `share`,
 `copy`, `download`, `file-text` (its `file`), `mail`, `crop`, `code`, `chevron-down`. In
-`site/js/ui/photomode.js`: `x`, `download`. In `site/js/ui/embed.js`: `external-link`. In
+`site/js/ui/photomode.js`: `x`, `download`. In `site/js/ui/searchrows.js` (`ROW_ICONS`, from
+`lucide-static` 0.544.0, read 2026-10-07): `satellite`, `rocket`, `globe`, `moon`, `star`, `sun`,
+`sparkles`, `map-pin`, `tornado`, `flag`. In `site/js/ui/embed.js`: `external-link`. In
 `site/js/ui/rail.js`: `share`, `ellipsis-vertical`, `eye-off`. In `site/js/ui/keyhint.js`: `move`,
 `mouse`. The only change is the
 stroke, 1.75 instead of Lucide's default 2, which `docs/ui-guide.md` §3.16 sets for every icon in

@@ -539,6 +539,7 @@ export function createSearch(ctx, host) {
     rebuildTimer: 0,
     more: null, // ui/searchrows.js, once the field has been focused: what a row says, and the extras
     env: null, // where things are in the visitor's sky, for the rows
+    group: null, // {id, q}: a constellation's row the visitor pressed, listed while the query stands
   };
 
   // WHAT A ROW SAYS, AND TRIPS, MISSIONS AND EVENTS (public #312): fetched on the first focus, never
@@ -712,9 +713,20 @@ export function createSearch(ctx, host) {
       // The class dot. The swatch tokens in ui.css are scene/glyphatlas.js's CLASS_COLOURS
       // verbatim, so the dot is the colour the object is drawn in without this panel importing
       // the atlas -- and with it, three.js.
-      const dot = el('span', `sr-swatch sr-swatch--${hit.extra ? 'oddity' : hit.klass}`);
-      dot.setAttribute('aria-hidden', 'true');
-      item.appendChild(dot);
+      const klass = hit.extra && hit.extra !== 'group' ? 'oddity' : hit.klass;
+      // An icon in the class colour where the family has an honest one (searchrows.js rowIcon),
+      // else the dot as before; and the dot until that module has landed.
+      const glyph = state.more && typeof state.more.rowIcon === 'function' ? state.more.rowIcon(hit) : null;
+      if (glyph) {
+        const mark = el('span', `sr-search__icon sr-ink--${klass}`);
+        mark.setAttribute('aria-hidden', 'true');
+        mark.appendChild(glyph);
+        item.appendChild(mark);
+      } else {
+        const dot = el('span', `sr-swatch sr-swatch--${klass}`);
+        dot.setAttribute('aria-hidden', 'true');
+        item.appendChild(dot);
+      }
       if (hit.row || hit.extra) {
         // Two lines: the name people use, and under it what it is, the catalogue's own string
         // when that differs, and where it is in the visitor's sky now.
@@ -844,7 +856,14 @@ export function createSearch(ctx, host) {
         const at = h.row.title.toLowerCase().indexOf(q);
         return { ...h, name: h.row.title, at, length: q.length };
       }));
-      const merged = state.hits.length - rows.length;
+      // A constellation is one row until it is pressed (searchrows.js groupRows).
+      if (state.group && state.group.q !== q) state.group = null;
+      const before = rows.length;
+      const grouped = m.groupRows(rows, (g) => recordsOf(ctx).filter((r) => r && g.test.test(String(r.name || ''))).length, state.group && state.group.id);
+      rows.length = 0;
+      rows.push(...grouped);
+      state.total = Math.max(0, state.total - (before - rows.length));
+      const merged = state.hits.length - before;
       const extras = m.findExtras(q).filter((x) => !(x.extra === 'mission' && rows.some((h) => h.record && h.record.id === x.record)));
       if (extras.length && state.missed && !rows.length) state.missed = '';
       state.total = Math.max(0, state.total - merged);
@@ -877,6 +896,8 @@ export function createSearch(ctx, host) {
   function pickHit(hit) {
     if (!hit) return;
     if (!hit.extra) { pick(hit.record); return; }
+    // A constellation's row: list its satellites in place, and stay open.
+    if (hit.extra === 'group') { state.group = { id: hit.id, q: norm(input.value) }; run(input.value); return; }
     if (state.more && state.more.runExtra(ctx, hit)) { close(true); paintList(); input.blur(); }
   }
 

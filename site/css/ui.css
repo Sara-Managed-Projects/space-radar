@@ -1419,6 +1419,32 @@ html.sr-clean body > *:not(.sr-scene):not(.sr-veil):not(.sr-over-clean) {
   border-left: 2px solid transparent;
 }
 
+/* A row's class icon (ui/searchrows.js rowIcon): 16 px in the class colour, in the seat the 9 px
+   dot had, so the names still line up under each other. */
+.sr-search__icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  margin: 0 -4px;
+}
+
+/* The ink is the class colour, as the dot's fill was (a stroke, not text: the icon is a mark). */
+.sr-search__icon .sr-icon { stroke: var(--sr-unknown); }
+
+.sr-ink--station .sr-icon { stroke: var(--sr-station); }
+.sr-ink--satellite .sr-icon { stroke: var(--sr-satellite); }
+.sr-ink--rocket .sr-icon { stroke: var(--sr-rocket); }
+.sr-ink--probe .sr-icon { stroke: var(--sr-probe); }
+.sr-ink--telescope .sr-icon { stroke: var(--sr-telescope); }
+.sr-ink--site .sr-icon { stroke: var(--sr-site); }
+.sr-ink--world .sr-icon { stroke: var(--sr-world); }
+.sr-ink--star .sr-icon { stroke: var(--sr-star); }
+.sr-ink--exoplanet .sr-icon { stroke: var(--sr-exoplanet); }
+.sr-ink--dso .sr-icon { stroke: var(--sr-dso); }
+.sr-ink--storm .sr-icon { stroke: var(--sr-storm); }
+.sr-ink--oddity .sr-icon { stroke: var(--sr-probe); }
+
 .sr-search__option + .sr-search__option {
   border-top: 1px solid var(--sr-line);
 }

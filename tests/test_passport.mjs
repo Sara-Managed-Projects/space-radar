@@ -10,7 +10,7 @@
 //   node tests/test_passport.mjs
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const JS = join(ROOT, 'site/js');
@@ -70,6 +70,20 @@ check(P.KEY === 'sr:passport', 'one key, sr:passport');
   check(JSON.stringify(P.readPassport(throwing)) === JSON.stringify(P.emptyPassport()), 'a storage that throws reads as the empty passport');
   check(P.writePassport(throwing, P.recordVisit(P.emptyPassport(), 'moon', now)) === false, 'a write that throws is swallowed, and says it was not kept');
   check(P.forgetPassport(throwing) === false, 'so is a forget');
+  // Forget me also clears the sound choices (internal #437), and nothing else.
+  {
+    const kept = new Map([[P.KEY, '{}'], ['sr.audio', 'on'], ['sr.audio.volume', '0.4'], ['sr.voice', 'off'], ['sr:side', 'open']]);
+    const st = { getItem: (k) => (kept.has(k) ? kept.get(k) : null), setItem: (k, v) => kept.set(k, v), removeItem: (k) => kept.delete(k) };
+    check(P.forgetPassport(st) === true && [...kept.keys()].join() === 'sr:side', `Forget me clears the passport and the three sound keys and leaves the layout (${[...kept.keys()]})`);
+    const engine = readFileSync(join(JS, 'audio/engine.js'), 'utf8');
+    const narration = readFileSync(join(JS, 'audio/narration.js'), 'utf8');
+    check(engine.includes("STORE_KEY = 'sr.audio'") && engine.includes("VOLUME_KEY = 'sr.audio.volume'") && narration.includes("VOICE_KEY = 'sr.voice'") && P.SOUND_KEYS.join() === 'sr.audio,sr.audio.volume,sr.voice', 'the sound keys Forget me clears are the audio engine\'s own');
+    // The Sources sheet says what is kept, and its claims are the code's.
+    const status = readFileSync(join(JS, 'ui/status.js'), 'utf8');
+    const all = readdirSync(join(JS, 'ui')).concat(readdirSync(join(JS, 'scene')).map((f) => '../scene/' + f)).filter((f) => f.endsWith('.js')).map((f) => readFileSync(join(JS, 'ui', f), 'utf8')).join('\n');
+    check(/COPY\.kept\.title/.test(status) && /COPY\.kept\.lines/.test(status) && /COPY\.kept\.none/.test(status), 'the Sources sheet has the section "What this site keeps on your device"');
+    check(!/document\.cookie|sendBeacon|gtag\(/.test(all), 'no cookies and no analytics, as that section says');
+  }
   check(JSON.stringify(P.readPassport(null)) === JSON.stringify(P.emptyPassport()) && P.writePassport(null, P.emptyPassport()) === false, 'no storage at all is a first visit');
   check(P.safeStorage({ get localStorage() { throw new Error('SecurityError'); } }) === null, 'a window whose storage throws when asked for has none');
 }

@@ -416,6 +416,17 @@ export function createStatus(ctx, parent) {
   creditBlock.appendChild(maps);
   node.appendChild(creditBlock);
 
+  // What the site keeps in this browser (spec 0041 task 4): the words only; Forget me is the
+  // Passport's, where what it clears can be seen.
+  const keptBlock = el('section', 'sr-status__block sr-status__kept');
+  keptBlock.appendChild(el('h3', 'sr-status__subtitle', COPY.kept.title));
+  const keptList = el('ul', 'sr-status__credits');
+  for (const line of COPY.kept.lines) keptList.appendChild(el('li', 'sr-status__credit', line));
+  keptBlock.appendChild(keptList);
+  keptBlock.appendChild(el('p', 'sr-status__intro', COPY.kept.place));
+  keptBlock.appendChild(el('p', 'sr-status__intro', COPY.kept.none));
+  node.appendChild(keptBlock);
+
   // The footer (spec 0061 design §6): the GitHub mark, which used to sit alone in the top corner of
   // the first screen, and what it links to in words. ui/github.js keeps the mark's rules.
   const foot = el('footer', 'sr-status__foot');

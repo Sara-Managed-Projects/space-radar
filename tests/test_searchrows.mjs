@@ -3,6 +3,8 @@
 // query names (ui/searchrows.js, ui/search.js).
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { readFileSync } from 'node:fs';
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 const JS = join(dirname(fileURLToPath(import.meta.url)), '..', 'site/js');
 const { buildIndex, findMatches, closest, MOONS_AFTER } = await import(join(JS, 'ui/search.js'));
@@ -77,6 +79,33 @@ check((closest(index, 'satrun')[0] || {}).record.id === 'saturn', '"satrun" offe
   for (const x of [apollo.find((e) => e.extra === 'trip'), apollo.find((e) => e.extra === 'mission'), apollo.find((e) => e.extra === 'event'), R.suggestions()[0]]) check(R.runExtra(ctx, x) === true, `the ${x.extra} row is followed`);
   check(calls.map((c) => c[0]).join() === 'trip,select,event,tab' && calls[3][1] === 'tonight', `each in its own way (${JSON.stringify(calls)})`);
   check(R.runExtra({}, apollo[0]) === false, 'and a row that cannot be followed says so');
+}
+
+// --- a class icon for a row, and a constellation as one row (internal #432) -------------------------
+{
+  const name = (r) => R.rowIconName({ record: r });
+  check(name({ id: 'sat-1', klass: 'satellite' }) === 'satellite' && name({ id: 'sat-25544', klass: 'station' }) === 'satellite' && name({ id: 'x', klass: 'telescope' }) === 'telescope' && name({ id: 'l', klass: 'rocket' }) === 'rocket', 'a satellite, a station, a telescope and a rocket have their icons');
+  check(name({ id: 'sun', klass: 'world' }) === 'sun' && name({ id: 'mars', klass: 'world' }) === 'globe' && name({ id: 'moon', klass: 'world', meta: { parent: 'earth' } }) === 'moon', `the Sun, a planet and a moon differ (${name({ id: 'moon', klass: 'world', meta: { parent: 'earth' } })})`);
+  check(name({ id: 's', klass: 'star' }) === 'star' && name({ id: 'm31', klass: 'dso' }) === 'sparkles' && name({ id: 'p', klass: 'site' }) === 'map-pin' && name({ id: 'st', klass: 'storm' }) === 'tornado', 'a star, a deep-sky object, a place and a storm');
+  check(name({ id: 'd', klass: 'debris' }) === null && name({ id: 'a', klass: 'asteroid' }) === null && name({ id: 'c', klass: 'comet' }) === null && name({ id: 'e', klass: 'exotic' }) === null, 'the classes with no honest icon keep the dot');
+  check(R.rowIconName({ extra: 'trip' }) === 'play' && R.rowIconName({ extra: 'event' }) === 'flag' && R.rowIconName({ extra: 'suggest' }) === 'compass' && R.rowIconName({ extra: 'group' }) === 'satellite', 'a trip, an event, the suggestion and a constellation have theirs');
+  const src = readFileSync(join(ROOT, 'site/js/ui/searchrows.js'), 'utf8');
+  const kept = [...src.matchAll(/^  '?([a-z-]+)'?: \[$/gm)].map((m) => m[1]);
+  check(kept.join() === 'satellite,rocket,globe,moon,star,sun,sparkles,map-pin,tornado,flag', `the icons this module keeps are the ten CREDITS.md names (${kept})`);
+  const credits = readFileSync(join(ROOT, 'CREDITS.md'), 'utf8');
+  check(kept.every((k) => credits.includes('`' + k + '`')) && /site\/js\/ui\/searchrows\.js/.test(credits), 'each is named in CREDITS.md under Lucide');
+  check(!/^import .*searchrows/m.test(readFileSync(join(ROOT, 'site/js/ui/search.js'), 'utf8')), 'and none of them is in the boot graph');
+
+  const sat = (n, name) => ({ record: { id: `sat-${n}`, name, klass: 'satellite' }, row: { title: name } });
+  const hits = [sat(1, 'STARLINK-1008'), sat(2, 'STARLINK-31234'), { record: { id: 'x', name: 'STARLETTE', klass: 'satellite' }, row: { title: 'Starlette' } }, sat(3, 'STARLINK-5'), sat(4, 'STARLINK-77')];
+  const g = R.groupRows(hits, () => 6123, null);
+  check(g.length === 2 && g[0].extra === 'group' && g[0].id === 'starlink' && g[0].name === 'Starlink' && g[1].record.id === 'x', `four Starlinks are one row, where the first stood, and Starlette is still itself (${g.map((h) => h.name || h.record.name)})`);
+  check(/^Constellation · 6\s123 satellites on the map · press to list them$/u.test(g[0].sub) && !g[0].sub.includes('6123'), `the row says how many the map holds, thousands grouped (${g[0].sub})`);
+  check(R.groupRows(hits, () => 6123, 'starlink').length === 5, 'pressed, the constellation is listed as before');
+  check(R.groupRows(hits.slice(0, 2), () => 6123, null).length === 2, 'two of a kind are not folded');
+  check(R.groupRows(hits, () => 0, null)[0].sub.includes('4 satellites'), 'the count is never less than the rows it replaces');
+  const search = readFileSync(join(ROOT, 'site/js/ui/search.js'), 'utf8');
+  check(/hit\.extra === 'group'/.test(search) && /m\.groupRows\(/.test(search) && /state\.more\.rowIcon\(hit\)/.test(search), 'the field folds the rows, opens the group on a press, and draws the icon');
 }
 
 if (problems.length) { console.error('searchrows FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }

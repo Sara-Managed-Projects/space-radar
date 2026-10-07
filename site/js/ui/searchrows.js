@@ -8,6 +8,8 @@
 //   findExtras(query, limit) -> [{ extra, id, name, sub, record? }]   trips, missions, their events,
 //                                                                    and "Near me tonight"
 //   suggestions() -> the rows offered before anything is typed
+//   rowIconName(hit) -> an icon's name | null,  rowIcon(hit) -> SVGElement | null (the dot stays)
+//   groupRows(hits, countOf, open) -> hits, a constellation's satellites folded into one row
 //   runExtra(ctx, hit) -> does it;  whereEnv(ctx) -> a promise of describe()'s env
 //
 // WHY A SECOND FILE. ui/search.js is in the boot graph: the field is on the first screen. None of
@@ -21,7 +23,7 @@
 // rule), says what kind of thing it is, keeps the catalogue's string beside it when that differs,
 // and, when a place is set, whether it is in that sky now and which way to look.
 
-import { COPY, t, compassWords, timeText } from '../copy/en.js';
+import { COPY, t, compassWords, timeText, fmt } from '../copy/en.js';
 import '../copy/en.later.js';
 import { labelName, labelParentId } from './labels.js';
 import { TOURS_INDEX } from '../data/tours-index.js';
@@ -29,6 +31,7 @@ import { TOUR_WORDS } from '../data/tours-words.js';
 import { MISSIONS } from '../data/missions.js';
 import { editDistance } from './search.js';
 import { parseFrame } from '../propagate/frames.js';
+import { icon, iconFrom } from './icons.js';
 
 /** Above this, a thing is "up": the same ten degrees a pass must clear (sky/tonightbest.js MIN_ALT_DEG). */
 export const UP_DEG = 10;
@@ -71,6 +74,140 @@ export function whereNow(record, env) {
   } catch { at = null; }
   if (!at || !Number.isFinite(at.altDeg) || !Number.isFinite(at.azDeg)) return null;
   return { up: at.altDeg >= UP_DEG, low: at.altDeg >= 0 && at.altDeg < UP_DEG, compass: compassWords(at.azDeg) };
+}
+
+// --- a class icon for a row (internal #432) --------------------------------------------------------
+//
+// The row's mark was a 9 px dot in the class colour, which tells a satellite from a star only to
+// somebody who has learned the colours. These are Lucide's (https://lucide.dev, ISC; CREDITS.md),
+// copied element for element from lucide-static 0.544.0 on 2026-10-07, drawn by ui/icons.js the
+// guide's way and inked in the class colour. THE CLASSES WITH NO HONEST ICON KEEP THE DOT: debris,
+// an asteroid, a comet, an oddity and the exotic stars have nothing in the family that is not a
+// joke or a guess (a trash can, a gem), and a dot is not wrong.
+const ROW_ICONS = {
+  satellite: [
+    ['path', { d: 'm13.5 6.5-3.148-3.148a1.205 1.205 0 0 0-1.704 0L6.352 5.648a1.205 1.205 0 0 0 0 1.704L9.5 10.5' }],
+    ['path', { d: 'M16.5 7.5 19 5' }],
+    ['path', { d: 'm17.5 10.5 3.148 3.148a1.205 1.205 0 0 1 0 1.704l-2.296 2.296a1.205 1.205 0 0 1-1.704 0L13.5 14.5' }],
+    ['path', { d: 'M9 21a6 6 0 0 0-6-6' }],
+    ['path', { d: 'M9.352 10.648a1.205 1.205 0 0 0 0 1.704l2.296 2.296a1.205 1.205 0 0 0 1.704 0l4.296-4.296a1.205 1.205 0 0 0 0-1.704l-2.296-2.296a1.205 1.205 0 0 0-1.704 0z' }],
+  ],
+  rocket: [
+    ['path', { d: 'M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z' }],
+    ['path', { d: 'm12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z' }],
+    ['path', { d: 'M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0' }],
+    ['path', { d: 'M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5' }],
+  ],
+  globe: [
+    ['circle', { cx: '12', cy: '12', r: '10' }],
+    ['path', { d: 'M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20' }],
+    ['path', { d: 'M2 12h20' }],
+  ],
+  moon: [
+    ['path', { d: 'M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401' }],
+  ],
+  star: [
+    ['path', { d: 'M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z' }],
+  ],
+  sun: [
+    ['circle', { cx: '12', cy: '12', r: '4' }],
+    ['path', { d: 'M12 2v2' }],
+    ['path', { d: 'M12 20v2' }],
+    ['path', { d: 'm4.93 4.93 1.41 1.41' }],
+    ['path', { d: 'm17.66 17.66 1.41 1.41' }],
+    ['path', { d: 'M2 12h2' }],
+    ['path', { d: 'M20 12h2' }],
+    ['path', { d: 'm6.34 17.66-1.41 1.41' }],
+    ['path', { d: 'm19.07 4.93-1.41 1.41' }],
+  ],
+  sparkles: [
+    ['path', { d: 'M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z' }],
+    ['path', { d: 'M20 2v4' }],
+    ['path', { d: 'M22 4h-4' }],
+    ['circle', { cx: '4', cy: '20', r: '2' }],
+  ],
+  'map-pin': [
+    ['path', { d: 'M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0' }],
+    ['circle', { cx: '12', cy: '10', r: '3' }],
+  ],
+  tornado: [
+    ['path', { d: 'M21 4H3' }],
+    ['path', { d: 'M18 8H6' }],
+    ['path', { d: 'M19 12H9' }],
+    ['path', { d: 'M16 16h-6' }],
+    ['path', { d: 'M11 20H9' }],
+  ],
+  flag: [
+    ['path', { d: 'M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528' }],
+  ],
+};
+
+/** Which icon a row wears: a name in ROW_ICONS or in ui/icons.js, or null for the dot. Pure. */
+export function rowIconName(hit) {
+  if (!hit) return null;
+  if (hit.extra === 'trip') return 'play';
+  if (hit.extra === 'mission' || hit.extra === 'event') return 'flag';
+  if (hit.extra === 'suggest') return 'compass';
+  if (hit.extra === 'group') return 'satellite';
+  const r = hit.record;
+  if (!r) return null;
+  switch (r.klass) {
+    case 'world': return r.id === 'sun' ? 'sun' : labelParentId(r) ? 'moon' : 'globe';
+    case 'station': case 'satellite': case 'probe': return 'satellite';
+    case 'telescope': return 'telescope';
+    case 'rocket': case 'launch': return 'rocket';
+    case 'star': return 'star';
+    case 'exoplanet': return 'globe';
+    case 'dso': return 'sparkles';
+    case 'site': return 'map-pin';
+    case 'storm': return 'tornado';
+    default: return null;
+  }
+}
+
+/** The icon as a node (16 px, hidden from a screen reader: the row's second line says the kind), or null. */
+export function rowIcon(hit) {
+  const name = rowIconName(hit);
+  if (!name || typeof document === 'undefined') return null;
+  return ROW_ICONS[name] ? iconFrom(name, ROW_ICONS[name], 16) : icon(name, 16);
+}
+
+// --- a constellation as one row (internal #432) ----------------------------------------------------
+//
+// "starlink" gave eight rows of STARLINK-31234, eight of some thousands, and no way to tell why
+// those. One row now stands for the constellation and says how many of its satellites the map
+// holds; pressing it lists them as before. The count is of what is loaded, not of what flies.
+export const GROUPS = [
+  { id: 'starlink', name: 'Starlink', test: /^starlink[- ]?\d/i },
+  { id: 'oneweb', name: 'OneWeb', test: /^oneweb[- ]?\d/i },
+];
+/** Fewer rows than this of one constellation are left as they are. */
+export const GROUP_MIN = 3;
+
+/**
+ * Fold the rows of one constellation into a single row, where it first appears. `countOf(group)`
+ * is how many of its satellites the map holds; `open` is the id of a group the visitor has asked
+ * to see listed. Pure.
+ */
+export function groupRows(hits, countOf, open) {
+  const list = Array.isArray(hits) ? hits : [];
+  const R = COPY.searchRows;
+  let out = list;
+  for (const g of GROUPS) {
+    if (g.id === open) continue;
+    const of = (h) => !!(h && h.record && !h.extra && g.test.test(String(h.record.name || '')));
+    const n = out.filter(of).length;
+    if (n < GROUP_MIN) continue;
+    const total = Math.max(n, Number(typeof countOf === 'function' ? countOf(g) : 0) || 0);
+    let placed = false;
+    out = out.filter((h) => {
+      if (!of(h)) return true;
+      if (placed) return false;
+      placed = true;
+      return true;
+    }).map((h) => (of(h) ? { extra: 'group', id: g.id, klass: 'satellite', name: g.name, sub: t(R.group, { n: fmt.int(total) }), record: null, at: -1, length: 0 } : h));
+  }
+  return out;
 }
 
 /** The row as drawn. `also` is the catalogue's own string when the name people use differs. */

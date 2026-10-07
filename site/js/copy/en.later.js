@@ -88,6 +88,8 @@ Object.assign(COPY, {
     eventName: '{mission}: {title}',
     event: 'Mission event · {date}',
     eventNoDate: 'Mission event',
+    // One row for a constellation's satellites; {n} is how many the map holds.
+    group: 'Constellation · {n} satellites on the map · press to list them',
     nearMe: 'Near me tonight',
     nearMeSub: 'What is up in your sky',
   },
@@ -197,12 +199,26 @@ Object.assign(COPY, {
     noTrips: 'No trips finished yet.',
     forget: 'Forget me',
     forgetConfirm: 'Yes, forget',
-    forgetTitle: 'Clears the passport from this browser',
+    forgetTitle: 'Clears the passport and the sound choice from this browser',
     forgotten: 'Forgotten. This browser holds nothing now.',
     // The end card's stamp: "Trip 7 of 25 · 7 October 2026". {date} is the visitor's own day.
     stamp: 'Trip {n} of {total} · {date}',
     // A trip card's line for a trip left in the last 24 hours.
     resume: 'Continue from stop {n}',
+  },
+
+  // The Sources sheet's last section (ui/status.js; spec 0041 task 4, internal #437): what the site
+  // keeps in this browser, in the place that already says where everything comes from. Each line
+  // is held to the code by tests/test_passport.mjs and tests/test_place_privacy.mjs.
+  kept: {
+    title: 'What this site keeps on your device',
+    lines: [
+      'Your passport: the places you opened and the trips you finished.',
+      'Your sound and voice choice, and how you left the panels.',
+      'A copy of the data it last read, so the map opens without a connection.',
+    ],
+    place: 'Your place is rounded to a tenth of a degree and held only while this page is open.',
+    none: 'No account, no cookies, no analytics. Forget me, in the Passport, clears the passport and the sound choice.',
   },
 
   // Debris as a problem (ui/debris.js; the counting is data/satcat.js). Its sentences are filled

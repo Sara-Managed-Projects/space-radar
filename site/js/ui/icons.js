@@ -6,6 +6,7 @@
 // they import nothing, and the card imports them like everyone else.
 //
 //   icon(name, size = 20) -> SVGElement
+//   iconFrom(name, shapes, size = 20) -> SVGElement   the same drawing, for shapes kept elsewhere
 //
 // Lucide (https://lucide.dev, ISC; the Feather-derived ones MIT, Cole Bemis: CREDITS.md),
 // drawn the guide's way (docs/ui-guide.md §3.16): the 24 box, stroke 1.75, round caps and joins,
@@ -135,6 +136,14 @@ const ICONS = {
 
 /** An icon from ICONS at `size` px. Exported for the test, which holds the guide's drawing rules. */
 export function icon(name, size = 20) {
+  return iconFrom(name, ICONS[name], size);
+}
+
+/**
+ * The same drawing for shapes a module that loads later keeps for itself (ui/searchrows.js: the
+ * class icons of a search row), so they are not a first visit's bytes.
+ */
+export function iconFrom(name, shapes, size = 20) {
   const svg = document.createElementNS(SVG_NS, 'svg');
   svg.setAttribute('viewBox', '0 0 24 24');
   svg.setAttribute('width', String(size));
@@ -147,7 +156,7 @@ export function icon(name, size = 20) {
   svg.setAttribute('aria-hidden', 'true');
   svg.setAttribute('focusable', 'false');
   svg.setAttribute('class', `sr-icon sr-icon--${name}`);
-  for (const [tag, attrs] of ICONS[name] || []) {
+  for (const [tag, attrs] of shapes || []) {
     const part = document.createElementNS(SVG_NS, tag);
     for (const [k, v] of Object.entries(attrs)) part.setAttribute(k, String(v));
     svg.appendChild(part);
