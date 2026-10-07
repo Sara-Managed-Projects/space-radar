@@ -232,10 +232,10 @@ clips:
   - {trip: "the-living-earth", stop: "haze", hash: "3161b8e700811871", seconds: 25.15, words: 63, lufs: -16.4, opus: 100566, m4a: 129590, vtt: 472}
   - {trip: "the-living-earth", stop: "moon", hash: "96dcac21212409c6", seconds: 20.45, words: 58, lufs: -16.3, opus: 85353, m4a: 105683, vtt: 400}
   - {trip: "the-living-earth", stop: "aurora", hash: "c6120f16efcbe635", seconds: 21.66, words: 56, lufs: -16.7, opus: 86818, m4a: 111768, vtt: 407}
-  - {trip: "the-living-earth", stop: "jupiter", hash: "f14c58c993c8a354", seconds: 22.93, words: 55, lufs: -16.6, opus: 91525, m4a: 118288, vtt: 408}
-  - {trip: "the-living-earth", stop: "home", hash: "d3c97b117f8c3807", seconds: 19.51, words: 49, lufs: -16.3, opus: 81205, m4a: 100902, vtt: 370}
-  - {trip: "tonight-from-your-street", stop: "above", hash: "90f4231b03ff9190", seconds: 18.12, words: 51, lufs: -16.6, opus: 72605, m4a: 93730, vtt: 360}
-  - {trip: "tonight-from-your-street", stop: "star", hash: "f55f0d1ef10fe7c1", seconds: 19.38, words: 48, lufs: -16.4, opus: 77024, m4a: 100250, vtt: 372}
+  - {trip: "the-living-earth", stop: "jupiter", hash: "9df2468ac1e79505", seconds: 22.24, words: 55, lufs: -16.6, opus: 89344, m4a: 114811, vtt: 408}
+  - {trip: "the-living-earth", stop: "home", hash: "26c04b1b47be54f1", seconds: 18.69, words: 49, lufs: -16.3, opus: 75119, m4a: 96555, vtt: 370}
+  - {trip: "tonight-from-your-street", stop: "above", hash: "9735616eb52d2244", seconds: 17.62, words: 51, lufs: -16.4, opus: 69973, m4a: 91339, vtt: 360}
+  - {trip: "tonight-from-your-street", stop: "star", hash: "b88f9b822687be8e", seconds: 18.99, words: 48, lufs: -16.4, opus: 75516, m4a: 98294, vtt: 372}
   - {trip: "tonight-from-your-street", stop: "figure", hash: "34b93d625ad14e33", seconds: 19.04, words: 53, lufs: -16.6, opus: 76858, m4a: 98511, vtt: 373}
   - {trip: "tonight-from-your-street", stop: "moon", hash: "107894699ec3ba6b", seconds: 18.67, words: 46, lufs: -16.6, opus: 75165, m4a: 96555, vtt: 356}
   - {trip: "tonight-from-your-street", stop: "planet", hash: "0c47b50f288c6744", seconds: 13.55, words: 35, lufs: -16.6, opus: 53605, m4a: 70475, vtt: 264}
