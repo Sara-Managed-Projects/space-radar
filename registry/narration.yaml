@@ -188,17 +188,17 @@ clips:
   - {trip: "moon-landings", stop: "apollo-17", hash: "92ea8f0e3dcbeb5f", seconds: 20.77, words: 47, lufs: -16.4, opus: 83754, m4a: 107204, vtt: 348}
   - {trip: "moon-landings", stop: "change-4", hash: "aa6a0e3d298ebce0", seconds: 21.22, words: 53, lufs: -16.6, opus: 84910, m4a: 109595, vtt: 395}
   - {trip: "moon-landings", stop: "chandrayaan-3", hash: "2313eb1e15bd8006", seconds: 22.84, words: 56, lufs: -16.6, opus: 92010, m4a: 117854, vtt: 340}
-  - {trip: "moon-landings", stop: "im-1", hash: "a4db61657c255404", seconds: 23.3, words: 55, lufs: -16.7, opus: 93231, m4a: 120244, vtt: 368}
-  - {trip: "moon-landings", stop: "blue-ghost-1", hash: "9dfd3e26cbdbf585", seconds: 22.62, words: 56, lufs: -16.4, opus: 90211, m4a: 116767, vtt: 380}
-  - {trip: "moon-landings", stop: "whole-moon", hash: "ad2a438946470cd9", seconds: 24.91, words: 56, lufs: -16.4, opus: 99826, m4a: 128286, vtt: 405}
-  - {trip: "outer-solar-system", stop: "io", hash: "a0a1f5d76653930e", seconds: 19.05, words: 47, lufs: -16.5, opus: 77826, m4a: 98511, vtt: 326}
-  - {trip: "outer-solar-system", stop: "europa", hash: "bf7a050d9933d8f4", seconds: 24.77, words: 56, lufs: -16.5, opus: 99158, m4a: 127634, vtt: 379}
-  - {trip: "outer-solar-system", stop: "saturn", hash: "9c88c40c02be620e", seconds: 21.96, words: 50, lufs: -16.5, opus: 87808, m4a: 113290, vtt: 386}
-  - {trip: "outer-solar-system", stop: "titan", hash: "d0d480eaecde94c3", seconds: 22.64, words: 58, lufs: -16.6, opus: 90036, m4a: 116767, vtt: 399}
-  - {trip: "outer-solar-system", stop: "enceladus", hash: "a1bef3ca26eece34", seconds: 24.98, words: 57, lufs: -16.5, opus: 99478, m4a: 128720, vtt: 406}
-  - {trip: "outer-solar-system", stop: "triton", hash: "8eddc6713ff19c65", seconds: 24.56, words: 52, lufs: -16.4, opus: 97937, m4a: 126547, vtt: 344}
-  - {trip: "outer-solar-system", stop: "pluto", hash: "d96fca3093d6ca9c", seconds: 24.04, words: 56, lufs: -16.5, opus: 96664, m4a: 123939, vtt: 394}
-  - {trip: "outer-solar-system", stop: "sedna", hash: "a28811fd65bf18d4", seconds: 27.52, words: 71, lufs: -16.4, opus: 110780, m4a: 141760, vtt: 459}
+  - {trip: "moon-landings", stop: "im-1", hash: "035ab6df598acf9f", seconds: 22.61, words: 55, lufs: -16.7, opus: 91183, m4a: 116767, vtt: 368}
+  - {trip: "moon-landings", stop: "blue-ghost-1", hash: "4ad2848e58e2ecea", seconds: 22.26, words: 56, lufs: -16.6, opus: 88758, m4a: 114811, vtt: 380}
+  - {trip: "moon-landings", stop: "whole-moon", hash: "3127a321dc28ab92", seconds: 23.98, words: 56, lufs: -16.4, opus: 96100, m4a: 123722, vtt: 405}
+  - {trip: "outer-solar-system", stop: "io", hash: "e06986c3deb9406b", seconds: 18.22, words: 47, lufs: -16.6, opus: 74281, m4a: 94164, vtt: 326}
+  - {trip: "outer-solar-system", stop: "europa", hash: "45ab37d75ac1ba36", seconds: 23.99, words: 56, lufs: -16.4, opus: 96819, m4a: 123722, vtt: 379}
+  - {trip: "outer-solar-system", stop: "saturn", hash: "4cbd53e6159a6217", seconds: 21.2, words: 50, lufs: -16.4, opus: 85057, m4a: 109378, vtt: 386}
+  - {trip: "outer-solar-system", stop: "titan", hash: "24178f951d2732a5", seconds: 21.93, words: 58, lufs: -16.5, opus: 87533, m4a: 113072, vtt: 399}
+  - {trip: "outer-solar-system", stop: "enceladus", hash: "23259481bbc93efd", seconds: 24.41, words: 57, lufs: -16.5, opus: 97715, m4a: 125678, vtt: 406}
+  - {trip: "outer-solar-system", stop: "triton", hash: "536fc97e78a34ab7", seconds: 23.88, words: 52, lufs: -16.5, opus: 95723, m4a: 123070, vtt: 344}
+  - {trip: "outer-solar-system", stop: "pluto", hash: "e2225b1b261d614d", seconds: 23.5, words: 56, lufs: -16.4, opus: 94522, m4a: 121114, vtt: 394}
+  - {trip: "outer-solar-system", stop: "sedna", hash: "2c05f9e853428ed5", seconds: 26.66, words: 71, lufs: -16.4, opus: 107622, m4a: 137196, vtt: 459}
   - {trip: "outer-solar-system", stop: "eris", hash: "5c3c28dd60c374a6", seconds: 27.59, words: 70, lufs: -16.4, opus: 110041, m4a: 141978, vtt: 430}
   - {trip: "outer-solar-system", stop: "voyager-1", hash: "e04d1600ca0ccf85", seconds: 26.42, words: 63, lufs: -16.7, opus: 105787, m4a: 136110, vtt: 399}
   - {trip: "a-year-in-a-minute", stop: "inner", hash: "84cd4591c1d63b4c", seconds: 17.36, words: 43, lufs: -16.4, opus: 69314, m4a: 89818, vtt: 307}
