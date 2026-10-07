@@ -228,10 +228,10 @@ clips:
   - {trip: "the-living-earth", stop: "weather", hash: "aac4a4e335747462", seconds: 22.31, words: 57, lufs: -16.7, opus: 89403, m4a: 115028, vtt: 432}
   - {trip: "the-living-earth", stop: "ocean", hash: "0576b48abeadd335", seconds: 20.98, words: 62, lufs: -16.5, opus: 83446, m4a: 108291, vtt: 416}
   - {trip: "the-living-earth", stop: "plankton", hash: "a060b8355846631e", seconds: 21.09, words: 61, lufs: -16.5, opus: 85212, m4a: 108943, vtt: 421}
-  - {trip: "the-living-earth", stop: "ice", hash: "623250fd1bd98524", seconds: 20.65, words: 54, lufs: -16.7, opus: 82195, m4a: 106770, vtt: 395}
-  - {trip: "the-living-earth", stop: "haze", hash: "2023112137d51b05", seconds: 25.79, words: 63, lufs: -16.5, opus: 102754, m4a: 132850, vtt: 472}
-  - {trip: "the-living-earth", stop: "moon", hash: "166dbc1b946b7032", seconds: 21.3, words: 58, lufs: -16.5, opus: 84717, m4a: 110030, vtt: 400}
-  - {trip: "the-living-earth", stop: "aurora", hash: "2bc34f7649b7ec7a", seconds: 22.2, words: 56, lufs: -16.5, opus: 89117, m4a: 114594, vtt: 407}
+  - {trip: "the-living-earth", stop: "ice", hash: "a331d73f64c58f0a", seconds: 20.05, words: 54, lufs: -16.6, opus: 79618, m4a: 103727, vtt: 395}
+  - {trip: "the-living-earth", stop: "haze", hash: "3161b8e700811871", seconds: 25.15, words: 63, lufs: -16.4, opus: 100566, m4a: 129590, vtt: 472}
+  - {trip: "the-living-earth", stop: "moon", hash: "96dcac21212409c6", seconds: 20.45, words: 58, lufs: -16.3, opus: 85353, m4a: 105683, vtt: 400}
+  - {trip: "the-living-earth", stop: "aurora", hash: "c6120f16efcbe635", seconds: 21.66, words: 56, lufs: -16.7, opus: 86818, m4a: 111768, vtt: 407}
   - {trip: "the-living-earth", stop: "jupiter", hash: "f14c58c993c8a354", seconds: 22.93, words: 55, lufs: -16.6, opus: 91525, m4a: 118288, vtt: 408}
   - {trip: "the-living-earth", stop: "home", hash: "d3c97b117f8c3807", seconds: 19.51, words: 49, lufs: -16.3, opus: 81205, m4a: 100902, vtt: 370}
   - {trip: "tonight-from-your-street", stop: "above", hash: "90f4231b03ff9190", seconds: 18.12, words: 51, lufs: -16.6, opus: 72605, m4a: 93730, vtt: 360}
