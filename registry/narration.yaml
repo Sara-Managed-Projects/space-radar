@@ -174,9 +174,9 @@ clips:
   - {trip: "travel-to-exoplanets", stop: "proxima-b", hash: "004d20f5e937af6d", seconds: 13.51, words: 34, lufs: -16.6, opus: 54010, m4a: 70258, vtt: 262}
   - {trip: "travel-to-exoplanets", stop: "trappist", hash: "6da7341a8af0a46f", seconds: 17.02, words: 45, lufs: -16.4, opus: 68137, m4a: 88079, vtt: 315}
   - {trip: "travel-to-exoplanets", stop: "e", hash: "3283fd97d8a77eee", seconds: 15.6, words: 43, lufs: -16.4, opus: 61705, m4a: 80907, vtt: 279}
-  - {trip: "travel-to-exoplanets", stop: "b", hash: "b8b0f91d171f5dac", seconds: 15.86, words: 40, lufs: -16.5, opus: 63046, m4a: 82211, vtt: 272}
-  - {trip: "travel-to-exoplanets", stop: "c", hash: "5d4ed164bf6123aa", seconds: 11.59, words: 32, lufs: -16.5, opus: 45355, m4a: 60478, vtt: 232}
-  - {trip: "travel-to-exoplanets", stop: "d", hash: "2f7262ab166015b4", seconds: 10.0, words: 26, lufs: -16.4, opus: 39369, m4a: 52436, vtt: 186}
+  - {trip: "travel-to-exoplanets", stop: "b", hash: "033f11774732959f", seconds: 15.9, words: 40, lufs: -16.4, opus: 62879, m4a: 82428, vtt: 272}
+  - {trip: "travel-to-exoplanets", stop: "c", hash: "d16c16094307cd3a", seconds: 11.4, words: 32, lufs: -16.4, opus: 44730, m4a: 59608, vtt: 232}
+  - {trip: "travel-to-exoplanets", stop: "d", hash: "6ef3e2d4350abf23", seconds: 9.49, words: 26, lufs: -16.2, opus: 37548, m4a: 49828, vtt: 186}
   - {trip: "travel-to-exoplanets", stop: "f", hash: "f34d09034e3970a7", seconds: 10.44, words: 27, lufs: -16.4, opus: 41002, m4a: 54610, vtt: 181}
   - {trip: "travel-to-exoplanets", stop: "g", hash: "8802c6cefa6006de", seconds: 10.36, words: 23, lufs: -16.5, opus: 40306, m4a: 54175, vtt: 201}
   - {trip: "travel-to-exoplanets", stop: "h", hash: "a13c1ae823b02690", seconds: 12.95, words: 30, lufs: -16.5, opus: 51253, m4a: 67432, vtt: 241}
