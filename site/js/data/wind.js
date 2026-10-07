@@ -136,10 +136,29 @@ export function stepWind(grid, latDeg, lonDeg, seconds) {
   return { latDeg: Math.max(-89.5, Math.min(89.5, lat)), lonDeg: ((lon + 540) % 360) - 180, speed: w.speed };
 }
 
-const FETCH_TIMEOUT_MS = 25000;
+// HOW DEPENDABLE IT IS, SEEN THE SAME DAY. At 11:25 and 12:04 UTC on 2026-10-07 the request
+// answered in about 2 s. Between 12:12 and 12:20 UTC the same URL took 35 s, answered 404 twice
+// and then did not answer in 60 s, while the server's `info` page kept answering. It is one
+// university server. So: a long wait, one second try, and a plain sentence when it does not come
+// (COPY.overlay.wind.failed). The dependable route is our own saved copy made by the harvester
+// (/data/v1/, as every other source has); that needs a harvester row and a deploy, and is the
+// open half of internal #362.
+const FETCH_TIMEOUT_MS = 40000;
+const RETRY_AFTER_MS = 3000;
 
 /** The field for the forecast hour at `nowMs`. Rejects when the server or the grid is not as asked. */
 export async function fetchWind(opts = {}) {
+  try {
+    return await fetchWindOnce(opts);
+  } catch (first) {
+    // Not for a grid that came and was wrong: asking again would bring the same grid.
+    if (/not the grid/.test(String(first && first.message))) throw first;
+    await new Promise((r) => setTimeout(r, Number.isFinite(opts.retryMs) ? opts.retryMs : RETRY_AFTER_MS));
+    return fetchWindOnce(opts);
+  }
+}
+
+async function fetchWindOnce(opts) {
   const fetchImpl = opts.fetch || globalThis.fetch;
   const nowMs = Number.isFinite(opts.nowMs) ? opts.nowMs : Date.now();
   const ctl = typeof AbortController === 'function' ? new AbortController() : null;

@@ -178,7 +178,7 @@ export function createWind(opts = {}) {
     if (grid && Math.abs(nowMs() - grid.timeMs) < WIND.cadenceMs) { status = 'shown'; fade = { from: lines.material.opacity, to: OPACITY, at: tick() }; onChange(); return; }
     status = 'loading';
     onChange();
-    fetchWind({ fetch: opts.fetch, nowMs: nowMs() }).then((g) => {
+    fetchWind({ fetch: opts.fetch, nowMs: nowMs(), retryMs: opts.retryMs }).then((g) => {
       if (my !== token) return;
       grid = g;
       seed();

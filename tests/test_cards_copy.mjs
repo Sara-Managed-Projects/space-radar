@@ -567,6 +567,7 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
     check(C.endedWords(cassini, after) === '15 September 2017' && C.endedWords(cassini, { ok: true, tMs: Date.UTC(2010, 0, 1) }) === null && C.endedWords(cassini, { ok: false, tMs: Date.UTC(1990, 0, 1) }) === null, 'ended is said only after the end, and never while the craft is drawn');
     const rows = C.rightNowFor(cassini, { clock: { now: () => Date.UTC(2026, 9, 7) } });
     check(rows.length === 1 && rows[0][0] === COPY.card.rows.ended && rows[0][1] === '15 September 2017', `its rows are one line, Ended and the day, not "could not work this out" (${JSON.stringify(rows)})`);
+    check(/ended \? \[\] : heroNumbers\(record, m, rows\)/.test(readFileSync(join(JS, 'ui/cards.js'), 'utf8')) && COPY.card.endedLine.includes('{date}'), 'and one line stands where its three numbers would be dashes');
     const a6 = C.actionButtons({ id: 'x', klass: 'probe', propagator: 'sampled', frame: 'sun-inertial', meta: {} }, ride, { ok: false, frame: 'sun-inertial' });
     check(a6[0].disabled === true && a6[0].title === A.flyNowhere, 'any other switched-off Fly to it says why');
   }

@@ -3244,8 +3244,12 @@ function render(record, ctx, opts = {}) {
 
   // 2. the three numbers, read off the card's own rows.
   const rows = rightNowRows(record, m, passInfo);
-  const heroes = heroNumbers(record, m, rows);
+  // An ended craft after its end has no numbers to lead with: three dashes said nothing (seen
+  // 2026-10-07 on Cassini's card). One line says when it ended instead (internal #424).
+  const ended = endedWords(record, m);
+  const heroes = ended ? [] : heroNumbers(record, m, rows);
   if (heroes.length) body.appendChild(heroBlock(heroes));
+  if (ended) body.appendChild(el('p', 'sr-card__sentence sr-card__ended', t(COPY.card.endedLine, { date: ended })));
 
   // 2b. a launch within a day counts down (public #289, ui/countdown.js): in the clock's own time,
   // as the scene is, with Launch Library's status and how old it is.

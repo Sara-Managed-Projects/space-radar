@@ -103,9 +103,19 @@ check((closest(index, 'satrun')[0] || {}).record.id === 'saturn', '"satrun" offe
   check(/^Constellation · 6\s123 satellites on the map · press to list them$/u.test(g[0].sub) && !g[0].sub.includes('6123'), `the row says how many the map holds, thousands grouped (${g[0].sub})`);
   check(R.groupRows(hits, () => 6123, 'starlink').length === 5, 'pressed, the constellation is listed as before');
   check(R.groupRows(hits.slice(0, 2), () => 6123, null).length === 2, 'two of a kind are not folded');
+  {
+    // The field writes the answer back over the list it passed in (ui/search.js): with nothing to
+    // fold, the answer must not be that same list, or emptying one empties both ("mars" lost Mars).
+    const plain = [{ record: { id: 'mars', name: 'Mars', klass: 'world' }, row: { title: 'Mars' } }];
+    const same = R.groupRows(plain, () => 0, null);
+    check(same !== plain && same.length === 1 && same[0] === plain[0], 'with nothing to fold the rows come back as they were, in a list of their own');
+    const rows = plain.slice();
+    rows.splice(0, rows.length, ...R.groupRows(rows, () => 0, null));
+    check(rows.length === 1 && rows[0].record.id === 'mars', 'and written back over the list they came from, Mars is still there');
+  }
   check(R.groupRows(hits, () => 0, null)[0].sub.includes('4 satellites'), 'the count is never less than the rows it replaces');
   const search = readFileSync(join(ROOT, 'site/js/ui/search.js'), 'utf8');
-  check(/hit\.extra === 'group'/.test(search) && /m\.groupRows\(/.test(search) && /state\.more\.rowIcon\(hit\)/.test(search), 'the field folds the rows, opens the group on a press, and draws the icon');
+  check(/hit\.extra === 'group'/.test(search) && /m\.groupRows\(/.test(search) && /rows\.splice\(0, rows\.length, \.\.\.grouped\)/.test(search) && !/rows\.length = 0/.test(search) && /state\.more\.rowIcon\(hit\)/.test(search), 'the field folds the rows, opens the group on a press, and draws the icon');
 }
 
 if (problems.length) { console.error('searchrows FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }

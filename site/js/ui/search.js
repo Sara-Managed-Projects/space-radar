@@ -860,8 +860,9 @@ export function createSearch(ctx, host) {
       if (state.group && state.group.q !== q) state.group = null;
       const before = rows.length;
       const grouped = m.groupRows(rows, (g) => recordsOf(ctx).filter((r) => r && g.test.test(String(r.name || ''))).length, state.group && state.group.id);
-      rows.length = 0;
-      rows.push(...grouped);
+      // groupRows hands back a new list; emptying `rows` first would empty an alias of it
+      // (seen 2026-10-07: "mars" found three trips and no planet).
+      rows.splice(0, rows.length, ...grouped);
       state.total = Math.max(0, state.total - (before - rows.length));
       const merged = state.hits.length - before;
       const extras = m.findExtras(q).filter((x) => !(x.extra === 'mission' && rows.some((h) => h.record && h.record.id === x.record)));

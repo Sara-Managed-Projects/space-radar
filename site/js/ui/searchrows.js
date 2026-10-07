@@ -192,7 +192,8 @@ export const GROUP_MIN = 3;
 export function groupRows(hits, countOf, open) {
   const list = Array.isArray(hits) ? hits : [];
   const R = COPY.searchRows;
-  let out = list;
+  // Always a new list: the caller writes the answer back over the one it passed in.
+  let out = list.slice();
   for (const g of GROUPS) {
     if (g.id === open) continue;
     const of = (h) => !!(h && h.record && !h.extra && g.test.test(String(h.record.name || '')));

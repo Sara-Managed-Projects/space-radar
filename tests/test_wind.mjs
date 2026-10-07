@@ -141,11 +141,26 @@ check(Number.isFinite(W.sampleWind(grid, 90, 0).u) && Number.isFinite(W.sampleWi
   calm.dispose();
 
   // A server that fails: said, and nothing drawn.
-  const broken = S.createWind({ earth: () => earth, now: () => NOW, fetch: async () => ({ ok: false, status: 503, text: async () => '' }) });
+  let tries = 0;
+  const broken = S.createWind({ earth: () => earth, now: () => NOW, retryMs: 5, fetch: async () => { tries += 1; return { ok: false, status: 503, text: async () => '' }; } });
   const warn = console.warn; console.warn = () => {};
   broken.set(true);
-  await new Promise((r) => setTimeout(r, 20));
+  await new Promise((r) => setTimeout(r, 60));
   console.warn = warn;
+  check(tries === 2, `a server that fails is asked once more, and no more (${tries})`);
+  {
+    // A slow day at the server (seen 2026-10-07: a 404, then an answer): the second try draws.
+    let n = 0;
+    const flaky = S.createWind({ earth: () => earth, now: () => NOW, retryMs: 5, fetch: async () => { n += 1; return n === 1 ? { ok: false, status: 404, text: async () => '' } : { ok: true, status: 200, text: async () => body }; } });
+    flaky.set(true);
+    await new Promise((r) => setTimeout(r, 60));
+    check(flaky.state().status === 'shown' && n === 2, 'a 404 and then an answer is the wind, shown');
+    flaky.dispose();
+    let m = 0;
+    let threw = null;
+    try { await W.fetchWind({ retryMs: 5, fetch: async () => { m += 1; return { ok: true, status: 200, text: async () => JSON.stringify(head) }; } }); } catch (e) { threw = e; }
+    check(threw && m === 1, 'a grid that came and was not the one asked for is not asked for again');
+  }
   check(broken.state().status === 'failed' && L.overlayLine({ ...broken.state() }) === COPY.overlay.wind.failed, 'a server that fails is said, in the legend\'s line');
   broken.dispose();
 }
@@ -158,6 +173,7 @@ check(Number.isFinite(W.sampleWind(grid, 90, 0).u) && Number.isFinite(W.sampleWi
   const panel = src('site/js/ui/overlaypanel.js');
   check(/WIND_OPTION = 'wind'/.test(panel) && /C\.wind\.title/.test(panel) && S.WIND_ID === 'wind', 'the panel offers it under Earth data');
   const data = src('site/js/data/wind.js');
+  check(/HOW DEPENDABLE IT IS/.test(data) && /harvester/.test(data), 'and how dependable the server was that day, and what would make it so');
   check(/Access-Control-Allow-Origin:\s*\n?\/\/\s*\*|Access-Control-Allow-Origin: \*/.test(data.replace(/\n\/\/\s+/g, ' ')) && /TESTED ON 2026-10-07/.test(data) && /NOMADS/.test(data) && /CoastWatch/.test(data) && /Open-Meteo/.test(data) && /may be used and redistributed for free/.test(data), 'data/wind.js says what was tested, what was kept, what was not and the terms');
   const credits = src('CREDITS.md');
   check(/pae-paha\.pacioos\.hawaii\.edu/.test(credits) && /Global Forecast System/.test(credits), 'CREDITS.md names the model and the server');
