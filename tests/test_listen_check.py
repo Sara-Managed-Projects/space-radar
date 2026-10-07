@@ -156,6 +156,10 @@ ok["listen"]["accept"] = {"t/zz": "a long enough reason for a clip that is not t
 check(any("not a clip" in e for e in lc.guard(ok)), "an accepted clip that does not exist is refused")
 check(len(lc.guard({"clips": [{"trip": "t", "stop": "a", "wer": 0.11, "heard": "x"}]})) == 1, "the line is 10 % when the registry names none")
 
+check(lc.guard({"listen": {"required": False}, "clips": [{"trip": "t", "stop": "a"}]}) == [],
+      "with listen.required off, an unheard clip is let through")
+check(len(lc.guard({"listen": {"required": False}, "clips": [{"trip": "t", "stop": "a", "wer": 0.5, "heard": "x"}]})) == 1,
+      "but a clip that was heard and is over the line is still refused")
 _, cfg = narrate.load_config()
 live = lc.guard(cfg)
 check(live == [], "the committed manifest: " + "; ".join(live[:3]))
@@ -164,10 +168,12 @@ check(isinstance((cfg.get("listen") or {}).get("max_wer"), float), "registry/nar
 row = dict(cfg["clips"][0])
 for k in ("wer", "heard", "voice"):
     row.pop(k, None)
-check(len(lc.guard({"listen": cfg.get("listen"), "clips": [row]})) == 1, "a freshly rendered row is unheard")
+check(len(lc.guard({"listen": {**(cfg.get("listen") or {}), "required": True}, "clips": [row]})) == 1,
+      "a freshly rendered row is unheard")
 
 if failures:
     for f in failures:
         print(f"FAIL: {f}")
     sys.exit(1)
-print(f"listen_check ok: {checks} checks; {len(cfg['clips'])} clips carry a listening record")
+heard = sum(1 for r in cfg["clips"] if r.get("wer") is not None)
+print(f"listen_check ok: {checks} checks; {heard} of {len(cfg['clips'])} clips carry a listening record")

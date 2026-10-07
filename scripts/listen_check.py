@@ -35,8 +35,8 @@ With --recheck a "voice" finding stands only if the second model also stumbles a
 THE GUARD (--check, also run by scripts/narrate.py --check). Every clip's row in
 registry/narration.yaml carries `wer` and `heard` (a hash of what the recogniser heard) and
 `voice` (findings blamed on the voice). narrate.py writes a fresh row without them when it renders
-a clip, so a clip nothing has listened to cannot ship. Over `listen.max_wer`, or with a voice
-finding, a clip needs a line in `listen.accept` that says why.
+a clip, so with `listen.required` on a clip nothing has listened to cannot ship. Over
+`listen.max_wer`, or with a voice finding, a clip needs a line in `listen.accept` that says why.
 
 It does not replace a person listening (internal #325). It says where to listen.
 """
@@ -433,12 +433,15 @@ def guard(cfg: dict) -> list:
     listen = cfg.get("listen") or {}
     limit = float(listen.get("max_wer", 0.1))
     accept = listen.get("accept") or {}
+    required = bool(listen.get("required", True))
     errors = []
     keys = set()
     for row in cfg.get("clips") or []:
         key = f"{row.get('trip')}/{row.get('stop')}"
         keys.add(key)
         if row.get("wer") is None or not row.get("heard"):
+            if not required:
+                continue
             errors.append(f"{key}: nothing has listened to this clip. Run scripts/listen_check.py --models DIR "
                           f"--only {key} --write")
             continue
@@ -464,9 +467,11 @@ def check() -> int:
         print("the narration has NOT been listened to:\n  " + "\n  ".join(errors))
         return 1
     rows = cfg.get("clips") or []
-    mean = sum(float(r["wer"]) for r in rows) / max(1, len(rows))
-    print(f"every clip has been listened to ({len(rows)} clips, mean word error {mean:.1%}, "
-          f"{len((cfg.get('listen') or {}).get('accept') or {})} accepted with a reason)")
+    heard = [r for r in rows if r.get("wer") is not None and r.get("heard")]
+    mean = sum(float(r["wer"]) for r in heard) / max(1, len(heard))
+    print(f"{len(heard)} of {len(rows)} clips have been listened to (mean word error {mean:.1%}, "
+          f"{len((cfg.get('listen') or {}).get('accept') or {})} accepted with a reason)"
+          + ("" if len(heard) == len(rows) else "; listen.required is off, so the rest still ship unheard"))
     return 0
 
 
