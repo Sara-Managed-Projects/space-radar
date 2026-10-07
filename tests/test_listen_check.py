@@ -171,7 +171,7 @@ check(isinstance((cfg.get("listen") or {}).get("max_wer"), float), "registry/nar
 row = dict(cfg["clips"][0])
 for k in ("wer", "heard", "voice"):
     row.pop(k, None)
-check(len(lc.guard({"listen": {**(cfg.get("listen") or {}), "required": True}, "clips": [row]})) == 1,
+check(len(lc.guard({"listen": {"max_wer": cfg["listen"]["max_wer"], "required": True}, "clips": [row]})) == 1,
       "a freshly rendered row is unheard")
 
 if failures:

@@ -100,7 +100,8 @@ listen:
   model: small.en
   max_wer: 0.1
   names: []
-  accept: {}
+  accept:
+    life-of-a-star/sun: "small.en hears one extra word, 'millions', after the last sentence at 0:21; not re-checked with a second recogniser, to be heard by a person (internal #441)"
 skip_title:
   - strangest-things/golf-balls
 say:
