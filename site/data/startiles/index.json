@@ -1,0 +1,32 @@
+{
+ "version": 1,
+ "source": "AT-HYG v4.0 (David Nash), data/subsets/athyg_40_reduced_m11.csv.gz, https://codeberg.org/astronexus/athyg",
+ "licence": "CC BY-SA 4.0",
+ "read": "2026-10-07",
+ "mag_max": 10.5,
+ "already_in_hyg_files": 104709,
+ "levels": [
+  {
+   "nside": 2,
+   "from": 6.0,
+   "to": 9.0,
+   "dir": "n2",
+   "tiles": 48,
+   "stars": 45080,
+   "bytes": 271440,
+   "largest_tile_bytes": 14462
+  },
+  {
+   "nside": 8,
+   "from": 9.0,
+   "to": 10.5,
+   "dir": "n8",
+   "tiles": 768,
+   "stars": 390064,
+   "bytes": 2355744,
+   "largest_tile_bytes": 14480
+  }
+ ],
+ "stars": 435144,
+ "bytes": 2627184
+}

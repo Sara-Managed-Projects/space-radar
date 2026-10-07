@@ -20,7 +20,9 @@
 //   the stars       ONE draw call: points with a shader. To magnitude 6 at once (data/stars.bin,
 //                   80 kB, already in the cache), then to 7 (data/skystars-1.bin, 82 kB), and the
 //                   rest of HYG v4.4's 109 389 (data/skystars-2.bin, 754 kB) only once the field
-//                   has closed enough to show one of them: compact files of direction, magnitude
+//                   has closed enough to show one of them; past those, AT-HYG's stars to magnitude
+//                   10.5 in HEALPix tiles by where the view looks (sky/startiles.js, internal #353):
+//                   compact files of direction, magnitude
 //                   and colour that scripts/build-skystars.py cuts from stars3d.bin (internal
 //                   #392: the sky view used to fetch that file's 2.6 MB on entry).
 //                   The limit is sky/skymath.js limitingMagnitude(): the eye's in a wide field,
@@ -57,6 +59,7 @@ import * as THREE from '../../vendor/three.module.min.js';
 import * as Astronomy from '../../vendor/astronomy.js';
 import { bvToKelvin, kelvinToRgb } from '../scene/starfield.js';
 import { COPY, t } from '../copy/en.js';
+import '../copy/en.later.js';
 import {
   GLSL_AIR, DARKNESS, DEFAULT_DARKNESS, refractionDeg, airmass, extinctionTint, flattening,
   limitingMagnitude, fovName, pixelsPerDegree, FOV,
@@ -175,6 +178,45 @@ void main() {
   #include <colorspace_fragment>
 }
 `;
+
+// Star trails: each bright star's last hour, as an hour's exposure would record it. The arc is the
+// star's own place turned back about the sky's pole (aK of uSpan), then through the same air.
+const TRAIL_VERT = /* glsl */ `
+attribute float aMag;
+attribute vec3 aColour;
+attribute float aK;
+uniform mat3 uEqToLocal;
+uniform float uLimit, uSpan, uAir, uRadius, uExtK;
+varying vec3 vColour;
+varying float vAlpha;
+${GLSL_AIR}
+void main() {
+  float a = aK * uSpan;
+  float c = cos(a);
+  float s = sin(a);
+  vec3 p = vec3(position.x * c - position.y * s, position.x * s + position.y * c, position.z);
+  vec3 d = airLift(uEqToLocal * p, uAir);
+  float x = airMass(d.y) - 1.0;
+  float f = uLimit - (aMag + uExtK * x);
+  vAlpha = clamp((f + 0.6) / 2.2, 0.0, 1.0) * (0.3 + 0.5 * clamp(f / 5.0, 0.0, 1.0)) * (1.0 - 0.7 * aK);
+  if (d.y < -0.03) vAlpha = 0.0;
+  vColour = aColour * vec3(1.0, exp(-0.045 * x), exp(-0.11 * x));
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(d * uRadius, 1.0);
+}
+`;
+const TRAIL_FRAG = /* glsl */ `
+varying vec3 vColour;
+varying float vAlpha;
+void main() {
+  if (vAlpha <= 0.003) discard;
+  gl_FragColor = vec4(vColour, vAlpha);
+  #include <colorspace_fragment>
+}
+`;
+/** How long an exposure the trails stand for, in hours, and how faint a star leaves one. */
+export const TRAIL_HOURS = 1;
+export const TRAIL_MAG = 4.6;
+const TRAIL_STEPS = 12;
 
 const LINE_VERT = /* glsl */ `
 uniform mat3 uEqToLocal;
@@ -433,7 +475,7 @@ export function createGroundSky(ctx, env) {
   const observerA = new Astronomy.Observer(observer.latDeg, observer.lonDeg, (observer.altKm || 0) * 1000);
   const here = import.meta.url;
   const url = (p) => new URL(p, here);
-  const options = { figures: true, names: true, grid: false, starGrid: false, sunPath: false, equator: false, art: false, bounds: false, meteors: true, culture: 'western', darkness: DEFAULT_DARKNESS, ...(env.options || {}) };
+  const options = { figures: true, names: true, grid: false, starGrid: false, sunPath: false, equator: false, art: false, bounds: false, meteors: true, trails: false, culture: 'western', darkness: DEFAULT_DARKNESS, ...(env.options || {}) };
   const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   let disposed = false;
   const stats = { stars: 0, drawn: 0, limit: 0, bytes: 0, deep: false, tier: 0, labels: 0 };
@@ -576,6 +618,72 @@ export function createGroundSky(ctx, env) {
     }).catch((e) => { tierAsked[i] = false; console.warn('ground sky: the faint stars did not load', e); });
   }
   const tierFaintest = (i) => (tiers[i] ? tiers[i].mag[tiers[i].count - 1] : Infinity);
+
+  // The stars HYG does not have, to magnitude 10.5 (sky/startiles.js): tiles asked for by where
+  // the view looks, once the sky is deep enough to show one. Never on a data-saving connection.
+  let starTiles = null;
+  let starTilesAsked = false;
+  function askStarTiles() {
+    if (starTilesAsked || disposed || saving) return;
+    starTilesAsked = true;
+    import('./startiles.js').then((m) => {
+      if (disposed) return;
+      starTiles = m.createStarTiles({
+        root, radius: R, renderOrder: RO.stars, material: () => pointMaterial(starUniforms), fetchBytes, colour: starColour,
+        cap: typeof innerWidth === 'number' && innerWidth < 900 ? 24 : 60,
+      });
+    }).catch((e) => { starTilesAsked = false; console.warn('ground sky: the star tiles did not load', e); });
+  }
+
+  // Star trails (check 15): built the first time they are switched on, from the naked-eye file.
+  let trails = null;
+  function buildTrails() {
+    if (trails || !nakedEye || disposed) return;
+    const n = countBrighter(nakedEye.mag, TRAIL_MAG);
+    const per = TRAIL_STEPS * 2;
+    const pos = new Float32Array(n * per * 3);
+    const col = new Float32Array(n * per * 3);
+    const mag = new Float32Array(n * per);
+    const k = new Float32Array(n * per);
+    for (let i = 0; i < n; i += 1) {
+      for (let j = 0; j < per; j += 1) {
+        const o = i * per + j;
+        pos.set(nakedEye.pos.subarray(i * 3, i * 3 + 3), o * 3);
+        col.set(nakedEye.col.subarray(i * 3, i * 3 + 3), o * 3);
+        mag[o] = nakedEye.mag[i];
+        k[o] = ((j >> 1) + (j & 1)) / TRAIL_STEPS;
+      }
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('aColour', new THREE.BufferAttribute(col, 3));
+    geo.setAttribute('aMag', new THREE.BufferAttribute(mag, 1));
+    geo.setAttribute('aK', new THREE.BufferAttribute(k, 1));
+    trails = new THREE.LineSegments(geo, new THREE.ShaderMaterial({
+      vertexShader: TRAIL_VERT, fragmentShader: TRAIL_FRAG,
+      uniforms: { uEqToLocal: { value: eqToLocal }, uLimit: starUniforms.uLimit, uSpan: { value: TRAIL_HOURS * 15 * DEG }, uAir: { value: 1 }, uRadius: { value: R * 0.984 }, uExtK: { value: EXT_K } },
+      transparent: true, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false,
+    }));
+    trails.name = 'ground-trails';
+    trails.frustumCulled = false;
+    trails.renderOrder = RO.stars - 0.1;
+    root.add(trails);
+    stats.trails = n;
+  }
+
+  // Which constellation (sky/constellation.js): the one under the centre of the view is drawn
+  // brighter and named first, and a tap's tag says which one it fell in.
+  let conMod = null;
+  const conNames = new Map();
+  const conVerts = new Map();
+  const here = { id: null, obj: null };
+  function showHere(id) {
+    if (id === here.id) return;
+    if (here.obj) { here.obj.geometry.dispose(); here.obj.material.dispose(); root.remove(here.obj); here.obj = null; }
+    here.id = id;
+    const v = id ? conVerts.get(id) : null;
+    if (v && v.length) here.obj = lineObject('sky-figure-here', v, 0xe8ecf2, 0.62, true, RO.lines + 0.5);
+  }
 
   // ---- lines -----------------------------------------------------------------------------------
   const lineMaterial = (colour, opacity, useEq) => new THREE.ShaderMaterial({
@@ -886,6 +994,7 @@ export function createGroundSky(ctx, env) {
   let pictures = null;
   let picturesAsked = false;
   let lastPxPerDeg = 10;
+  let lastFov = FOV.eye;
   const dsoRecords = new Map();
   /** The deep-sky record of a picture, once the layer's records have landed (they do, on or off). */
   function dsoRecord(id) {
@@ -1033,14 +1142,21 @@ export function createGroundSky(ctx, env) {
         out.push({ kind: 'star', text: s.name, local: lift(l), pri: 500 - s.mag * 10, dy: 9 });
       }
       if (pictures) pictures.labels(out, limit, lastPxPerDeg);
-      if (frame.fovDeg >= 20) {
+      if (frame.fovDeg >= 8) {
         for (const c of (cultures.get(cultureShown) || cultures.get('western')).names) {
+          // The constellation the view is centred in is named first, and brighter, at any field.
+          const isHere = cultureShown === 'western' && c.id && c.id === here.id;
+          if (!isHere && frame.fovDeg < 20) continue;
           const l = localOf(m9, c.dir);
           if (l[1] < 0.1) continue;
-          out.push({ kind: 'con', text: c.name, local: l, pri: 100, dy: 0 });
+          out.push({ kind: isHere ? 'con sr-skylabel--here' : 'con', text: c.name, local: l, pri: isHere ? 650 : 100, dy: 0 });
         }
       }
     }
+    // Where the view is centred, for the figure drawn brighter (frame.camera is this frame's).
+    const centre = conMod ? conMod.constellationAt(lookEq(frame.camera)) : null;
+    stats.con = centre;
+    showHere(options.figures && cultureShown === 'western' ? centre : null);
     const L = COPY.sky.lines || {};
     const lineLabel = (on, text, ring) => {
       if (!on || !text) return;
@@ -1082,7 +1198,7 @@ export function createGroundSky(ctx, env) {
       if (slot >= labels.pool.length || placed.length >= cap) break;
       const p = toScreen(c.local, camera, w, h);
       if (!p) continue;
-      const tw = c.text.length * (c.kind === 'con' ? 8.2 : 7.2) + 8;
+      const tw = c.text.length * (c.kind.startsWith('con') ? 8.2 : 7.2) + 8;
       const box = { x0: p.x - tw / 2, x1: p.x + tw / 2, y0: p.y + c.dy - 2, y1: p.y + c.dy + 18 };
       if (box.x0 < 4 || box.x1 > w - 4 || box.y1 > h - 4 || box.y0 < 4) continue;
       let clash = false;
@@ -1194,18 +1310,18 @@ export function createGroundSky(ctx, env) {
     const aa = altAzOf(seen);
     const tl = localFromAltAz(aa.azDeg, aa.altDeg - refractionDeg(aa.altDeg));
     const eq = [m9[0] * tl[0] + m9[3] * tl[1] + m9[6] * tl[2], m9[1] * tl[0] + m9[4] * tl[1] + m9[7] * tl[2], m9[2] * tl[0] + m9[5] * tl[1] + m9[8] * tl[2]];
-    if (stars) {
-      const pos = stars.points.geometry.attributes.position.array;
-      const cosReach = Math.cos(reach * DEG);
-      const n = Math.min(stats.drawn || 0, stars.mag.length);
+    const cosReach = Math.cos(reach * DEG);
+    const scan = (pos, mags, n) => {
       for (let i = 0; i < n; i += 1) {
         const c = pos[i * 3] * eq[0] + pos[i * 3 + 1] * eq[1] + pos[i * 3 + 2] * eq[2];
         if (c < cosReach) continue;
         const sep = Math.acos(Math.min(1, c)) / DEG;
         const dir = [pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2]];
-        offer(sep / reach + Math.max(0, stars.mag[i] - 1.5) * 0.07, { kind: 'star', id: null, name: null, mag: stars.mag[i], dirEq: dir, sepDeg: sep });
+        offer(sep / reach + Math.max(0, mags[i] - 1.5) * 0.07, { kind: 'star', id: null, name: null, mag: mags[i], dirEq: dir, sepDeg: sep });
       }
-    }
+    };
+    if (stars) scan(stars.points.geometry.attributes.position.array, stars.mag, Math.min(stats.drawn || 0, stars.mag.length));
+    if (starTiles) starTiles.each(scan);
     const dsos = typeof ctx.recordsFor === 'function' ? ctx.recordsFor('deep-sky') : [];
     for (const r of dsos || []) {
       const d = r && dsoDir(r);
@@ -1217,8 +1333,17 @@ export function createGroundSky(ctx, env) {
       if (sep > reach) continue;
       offer(sep / reach + 0.25, { kind: 'dso', id: r.id, name: r.name, mag, dirEq: d, sepDeg: sep });
     }
-    if (!best) return null;
+    const con = conMod ? conMod.constellationAt(best ? best.what.dirEq : eq) : null;
+    const conName = con ? (conNames.get(con) || con) : '';
+    if (!best) {
+      // Nothing within reach: the tap still fell in a constellation, and the tag says which.
+      if (!con) return null;
+      const C = COPY.tonight.skybar.con;
+      return { kind: 'sky', id: con, name: conName, mag: NaN, dirEq: eq, con, conName, words: { name: conName, sub: C.kind, label: t(C.label, { name: conName }), title: '' } };
+    }
     const what = best.what;
+    what.con = con;
+    what.conName = conName;
     if (what.kind === 'star') {
       // A proper name, when the star has one (the 549 of skystars.names.json).
       for (const s of starNames) {
@@ -1239,13 +1364,17 @@ export function createGroundSky(ctx, env) {
         for (const f of json.features) {
           const g = f && f.geometry;
           const multi = !g ? [] : g.type === 'MultiLineString' ? g.coordinates : g.type === 'LineString' ? [g.coordinates] : [];
-          for (const line of multi) for (let i = 0; i + 1 < line.length; i += 1) v.push(...radecDir(line[i][0], line[i][1]), ...radecDir(line[i + 1][0], line[i + 1][1]));
+          const own = [];
+          for (const line of multi) for (let i = 0; i + 1 < line.length; i += 1) own.push(...radecDir(line[i][0], line[i][1]), ...radecDir(line[i + 1][0], line[i + 1][1]));
+          for (const x of own) v.push(x);
+          if (f.id) conVerts.set(f.id, (conVerts.get(f.id) || []).concat(own));
         }
         cultures.get('western').obj = lineObject('sky-figures', v, 0x9aa4b2, 0.34, true);
       }),
       fetchJson('../../data/constellation-names.json').then((rows) => {
         if (!Array.isArray(rows)) return;
-        cultures.get('western').names = rows.filter((r) => r && typeof r.ra === 'number').map((r) => ({ name: r.name, dir: radecDir(r.ra, r.dec) }));
+        cultures.get('western').names = rows.filter((r) => r && typeof r.ra === 'number').map((r) => ({ id: r.id, name: r.name, dir: radecDir(r.ra, r.dec) }));
+        for (const r of rows) if (r && r.id && !conNames.has(r.id)) conNames.set(r.id, r.name);
       }),
     ];
     await Promise.allSettled(jobs);
@@ -1259,6 +1388,7 @@ export function createGroundSky(ctx, env) {
         starNames = rows.filter((r) => r && r[0] && Number.isFinite(r[3])).map((r) => ({ name: r[0], mag: r[3], dir: radecDir(r[1], r[2]) })).sort((a, b) => a.mag - b.mag);
       }).catch(() => {});
       if (!saving) askTier(0);
+      import('./constellation.js').then((m) => { if (!disposed) conMod = m; }).catch(() => {});
       // Where the water is, for the horizon: the Earth's own water mask, read at this place.
       if (!saving) sampleSea(String(url('../../textures/4k/earth_water.webp')), observer.latDeg, observer.lonDeg).then((got) => { if (!disposed && got) sea = got; });
       askPictures();
@@ -1294,8 +1424,15 @@ export function createGroundSky(ctx, env) {
     if (!tierAsked[0] && frame.fovDeg < 40) askTier(0);
     // The rest of the catalogue, once the sky is deep enough to show a star tier 1 does not have.
     if (tiers[0] && !tierAsked[1] && limit + 0.3 > tierFaintest(0)) askTier(1);
+    if (!starTilesAsked && limit > 7.3) askStarTiles();
+    if (starTiles) {
+      // The cone the screen's corners reach, and a degree for the air's lift.
+      const half = Math.atan(Math.tan(frame.fovDeg / 2 * DEG) * Math.hypot(1, w / Math.max(1, h))) / DEG + 1;
+      stats.tileStars = starTiles.update(lookEq(frame.camera), half, limit);
+    }
     if (!picturesAsked && frame.fovDeg < 40) askPictures();
     lastPxPerDeg = pxPerDeg;
+    lastFov = frame.fovDeg;
     if (pictures) pictures.update(frame, m9, limit, pxPerDeg, group);
     updateOtherLight(frame, w, h);
 
@@ -1340,6 +1477,9 @@ export function createGroundSky(ctx, env) {
       for (const sh of showers) if (sh.altDeg > 0) up.push({ ...sh, local: localFromAltAz(sh.azDeg, sh.altDeg) });
       meteors.update({ showers: up, limitMag: eye, pxPerDeg, strength: night });
     }
+    setLine(here.obj, options.figures && cultureShown === 'western' && frame.fovDeg >= 8);
+    if (options.trails && !trails) buildTrails();
+    if (trails) trails.visible = !!options.trails && night > 0.05;
     setLine(lines.sunPath, options.sunPath);
     setLine(lines.equator, options.equator);
     setLine(lines.starGrid, options.starGrid);
@@ -1375,8 +1515,14 @@ export function createGroundSky(ctx, env) {
       if (!pictures || !camera || !rect || !(rect.width > 0)) return null;
       const ndcX = ((clientX - rect.left) / rect.width) * 2 - 1;
       const ndcY = -((clientY - rect.top) / rect.height) * 2 + 1;
-      return pictures.pickEq(lookEq(camera, ndcX, ndcY));
+      const id = pictures.pickEq(lookEq(camera, ndcX, ndcY));
+      // A tap on a picture frames it (internal #358): the field closes until the picture fills a third of it.
+      const f = id && typeof pictures.frameOf === 'function' ? pictures.frameOf(id.slice(4)) : null;
+      if (f && typeof env.pointAt === 'function' && lastFov > f.fovDeg * 1.4) env.pointAt({ raDeg: f.raDeg, decDeg: f.decDeg }, { fovDeg: f.fovDeg, mark: false });
+      return id;
     },
+    /** The field that frames a picture, and where it is: { raDeg, decDeg, fovDeg } or null. */
+    frameOf: (id) => (pictures && typeof pictures.frameOf === 'function' ? pictures.frameOf(id) : null),
     whatAt,
     /** Name what was tapped: `dir` is a function giving its local direction now; `onOpen(what)` on a press. */
     showTag(what, text, onOpen) {
@@ -1387,9 +1533,11 @@ export function createGroundSky(ctx, env) {
         ? () => { const d = discs.get(what.id); return d && d.apparent ? d.apparent.local : null; }
         : () => lift(localOf(m9, what.dirEq));
       tag.until = performance.now() + TAG_MS;
+      // "You are in Orion": the constellation the thing is in, after what it is.
+      const inCon = what.kind !== 'sky' && what.conName ? t(COPY.tonight.skybar.con.inside, { name: what.conName }) : '';
       tag.name.textContent = text.name;
-      tag.sub.textContent = text.sub;
-      tag.node.setAttribute('aria-label', text.label);
+      tag.sub.textContent = inCon ? `${text.sub} · ${inCon}` : text.sub;
+      tag.node.setAttribute('aria-label', inCon ? `${text.label} ${inCon}.` : text.label);
       tag.node.title = text.title || '';
       tag.node.hidden = true; // paintLabels() shows it where the thing is, on the next frame
     },
@@ -1429,12 +1577,13 @@ export function createGroundSky(ctx, env) {
       labels.markDir = typeof dir === 'function' ? dir : () => dir;
       labels.markUntil = performance.now() + ms;
     },
-    stats: () => ({ ...stats, culture: cultureShown, bounds: !!lines.bounds, art: art ? art.state() : null, meteors: meteors ? meteors.state() : null }),
+    stats: () => ({ ...stats, tiles: starTiles ? starTiles.state() : null, culture: cultureShown, bounds: !!lines.bounds, art: art ? art.state() : null, meteors: meteors ? meteors.state() : null }),
     dispose() {
       disposed = true;
       if (pictures) { pictures.dispose(); pictures = null; }
       if (art) { art.dispose(); art = null; }
       if (meteors) { meteors.dispose(); meteors = null; }
+      if (starTiles) { starTiles.dispose(); starTiles = null; }
       if (tag.node) tag.node.remove();
       if (other) { other.dispose(); other = null; }
       root.traverse((o) => {

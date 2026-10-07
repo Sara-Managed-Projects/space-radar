@@ -88,7 +88,7 @@ const SKY_STOPS = [
 export const SKY_OPTIONS_KEY = 'sr.sky';
 export const SKY_OPTION_DEFAULTS = Object.freeze({
   figures: true, names: true, grid: false, starGrid: false, sunPath: false, equator: false,
-  art: false, bounds: false, meteors: true, culture: 'western',
+  art: false, bounds: false, meteors: true, trails: false, culture: 'western',
   // `darknessBy`: 'place' reads the kind of sky off the night lights at the place (sky/skyglow.js);
   // 'you' is the visitor's own pick of `darkness`, which always wins once made.
   darkness: DEFAULT_DARKNESS, darknessBy: 'place', red: false,
@@ -940,7 +940,7 @@ export function createSkyView(ctx, options = {}) {
     const forObserver = observer;
     import('./groundsky.js').then((m) => {
       if (mine !== groundAsked || !isActive || !group || !parts || observer !== forObserver) return;
-      ground = m.createGroundSky(ctx, { group, radius: parts.R, observer, domElement, options: worn() });
+      ground = m.createGroundSky(ctx, { group, radius: parts.R, observer, domElement, options: worn(), pointAt });
       veilWorlds(true);
       if (pendingPass) { ground.showPass(pendingPass.track, pendingPass.marks); }
       tell();
@@ -1186,6 +1186,7 @@ export function createSkyView(ctx, options = {}) {
     return best >= 0 ? list[best] : null;
   }
   function tagWords(what, record) {
+    if (what.words) return what.words; // a tap on empty sky: the constellation (sky/groundsky.js)
     const W = COPY.sky.what;
     const mag = Number.isFinite(what.mag) ? fmt.num(what.mag, 1) : null;
     const name = what.name || (record && record.name) || W.star;
@@ -1214,7 +1215,7 @@ export function createSkyView(ctx, options = {}) {
     what.record = recordOf(what);
     ground.showTag(what, tagWords(what, what.record), openTagged);
     lastTap = { key, what };
-    return true;
+    return what.kind !== 'sky'; // empty sky is named, and still deselects (main.js)
   }
 
   /** A deep-sky picture under a tap, as a record id (`dso-m42`), or null: main.js opens its card. */

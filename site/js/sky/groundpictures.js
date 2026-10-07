@@ -277,6 +277,13 @@ export function createGroundPictures(env) {
       }
       return best ? `dso-${best.row.id}` : null;
     },
+    /** The field of view that frames a picture (three times its longer side, never under a third of a degree), and its place. */
+    frameOf(id) {
+      const p = pictures.find((q) => q.row.id === id);
+      if (!p) return null;
+      const side = Math.max(p.row.width_arcmin, p.row.height_arcmin) / 60;
+      return { raDeg: p.row.ra_deg, decDeg: p.row.dec_deg, fovDeg: Math.max(0.33, Math.min(40, side * 3)) };
+    },
     state: () => pictures.map((p) => ({ id: p.row.id, state: p.state, strength: p.strength, widthPx: Math.round(p.widthPx), altDeg: p.altDeg, inView: p.inView, drawn: p.mesh.visible })),
     held: () => pictures.filter((p) => p.state === 'ready').length,
     dispose() {
