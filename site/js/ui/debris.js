@@ -238,7 +238,8 @@ export function createDebris(ctx, host, opts = {}) {
     root.appendChild(el('p', 'sr-debris__honesty', t(D.honesty, { date: timeText.utcLong(st.data.asOfMs) })));
     // What no catalogue holds, from ESA's model, with the page it was read on.
     const more = el('p', 'sr-debris__honesty sr-debris__untracked', untrackedWords() + ' ');
-    const link = el('a', 'sr-link', D.untrackedSource);
+    // The mission card's link style: ember underlined, a 44 px target on a phone (ui.css).
+    const link = el('a', 'sr-mission__link', D.untrackedSource);
     link.href = ESA_MODEL.url;
     link.target = '_blank';
     link.rel = 'noopener noreferrer';

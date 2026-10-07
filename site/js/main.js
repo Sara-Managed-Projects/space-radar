@@ -2369,24 +2369,24 @@ function applyUrlState(ctx, st) {
  * the camera is the visitor's, and a link copied later says where it is then (ui/share.js).
  * A trip frames its own stops, so a link into one never carries `cam` (ui/urlstate.js laterLink).
  */
-const CAM_QUIET_CHECKS = 3;
-const CAM_CHECK_MS = 250;
-const CAM_GIVE_UP = 80;
+// Counted in frames, not in timers: the camera only moves on a frame, so "the flight has landed"
+// is "the rig has not been flying for this many frames in a row". Given up after twenty seconds.
+const CAM_QUIET_FRAMES = 20;
+const CAM_GIVE_UP_MS = 20000;
 function applyCam(ctx, text) {
   const pose = parseCam(text);
   clearUrlState(['cam']);
   const rig = ctx.cameraRig;
-  if (!pose || !rig || typeof rig.flyTo !== 'function') return;
+  if (!pose || !rig || typeof rig.flyTo !== 'function' || typeof requestAnimationFrame !== 'function') return;
   const rad = Math.PI / 180;
+  const began = performance.now();
   let quiet = 0;
-  let checks = 0;
   const look = () => {
-    checks += 1;
     quiet = rig.state && rig.state.flying ? 0 : quiet + 1;
-    if (quiet < CAM_QUIET_CHECKS && checks < CAM_GIVE_UP) { setTimeout(look, CAM_CHECK_MS); return; }
+    if (quiet < CAM_QUIET_FRAMES && performance.now() - began < CAM_GIVE_UP_MS) { requestAnimationFrame(look); return; }
     rig.flyTo({ azimuth: pose.azimuthDeg * rad, polar: pose.polarDeg * rad, distance: pose.distanceKm / stage.unitKm, ms: 600 });
   };
-  setTimeout(look, CAM_CHECK_MS);
+  requestAnimationFrame(look);
 }
 
 /** @returns {boolean} whether the link named a trip this map has (and so is starting it). */
