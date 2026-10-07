@@ -252,9 +252,9 @@ clips:
   - {trip: "the-sun-today", stop: "spots", hash: "dd292a2db5d41550", seconds: 19.73, words: 51, lufs: -16.6, opus: 78433, m4a: 101988, vtt: 383}
   - {trip: "the-sun-today", stop: "eight-minutes", hash: "e594d15accf2966e", seconds: 19.28, words: 57, lufs: -16.6, opus: 76909, m4a: 99598, vtt: 394}
   - {trip: "the-sun-today", stop: "wind", hash: "08f8a1d143892a0c", seconds: 22.61, words: 53, lufs: -16.4, opus: 90696, m4a: 116550, vtt: 431}
-  - {trip: "the-sun-today", stop: "aurora", hash: "61a5befc52712356", seconds: 20.67, words: 53, lufs: -16.6, opus: 82649, m4a: 106770, vtt: 391}
-  - {trip: "the-sun-today", stop: "scale", hash: "c8d9fb8a7f3b9045", seconds: 17.09, words: 44, lufs: -16.5, opus: 70863, m4a: 88514, vtt: 326}
-  - {trip: "the-sun-today", stop: "home", hash: "e4d502283e1fb489", seconds: 19.99, words: 51, lufs: -16.3, opus: 81436, m4a: 103292, vtt: 393}
+  - {trip: "the-sun-today", stop: "aurora", hash: "a9d8d2db896c91f3", seconds: 19.62, words: 53, lufs: -16.4, opus: 78693, m4a: 101336, vtt: 391}
+  - {trip: "the-sun-today", stop: "scale", hash: "9240c7e2881dfa23", seconds: 16.44, words: 44, lufs: -16.5, opus: 69268, m4a: 85254, vtt: 326}
+  - {trip: "the-sun-today", stop: "home", hash: "1bfed80179b3eecb", seconds: 19.56, words: 51, lufs: -16.6, opus: 76874, m4a: 101119, vtt: 393}
   - {trip: "planets-tonight", stop: "where", hash: "66e908ae8cc26fce", seconds: 19.23, words: 57, lufs: -16.6, opus: 76235, m4a: 99380, vtt: 373}
   - {trip: "planets-tonight", stop: "mercury", hash: "c828daedfb9bdb07", seconds: 17.35, words: 47, lufs: -16.5, opus: 69276, m4a: 89818, vtt: 337}
   - {trip: "planets-tonight", stop: "venus", hash: "7faa0b7e84994482", seconds: 18.38, words: 50, lufs: -16.5, opus: 72956, m4a: 95034, vtt: 367}
