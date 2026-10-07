@@ -182,12 +182,12 @@ clips:
   - {trip: "travel-to-exoplanets", stop: "h", hash: "c12cbeb6ad600e5c", seconds: 12.11, words: 30, lufs: -16.5, opus: 47775, m4a: 63086, vtt: 241}
   - {trip: "travel-to-exoplanets", stop: "mercury", hash: "3717f691d302eb17", seconds: 17.66, words: 47, lufs: -16.6, opus: 70592, m4a: 91339, vtt: 316}
   - {trip: "moon-landings", stop: "surveyor-1", hash: "229024af1ddd60f7", seconds: 27.06, words: 64, lufs: -16.4, opus: 110542, m4a: 139370, vtt: 416}
-  - {trip: "moon-landings", stop: "apollo-11", hash: "586528ac4a9f3679", seconds: 19.12, words: 43, lufs: -16.4, opus: 76377, m4a: 98946, vtt: 329}
-  - {trip: "moon-landings", stop: "apollo-12", hash: "42974b6e2654ee59", seconds: 19.12, words: 45, lufs: -16.6, opus: 76379, m4a: 98946, vtt: 317}
-  - {trip: "moon-landings", stop: "lunokhod-1", hash: "0a915bebb4ad097f", seconds: 20.66, words: 49, lufs: -16.6, opus: 82409, m4a: 106770, vtt: 345}
-  - {trip: "moon-landings", stop: "apollo-17", hash: "3521e50d27e96041", seconds: 21.62, words: 47, lufs: -16.5, opus: 86809, m4a: 111551, vtt: 348}
-  - {trip: "moon-landings", stop: "change-4", hash: "06e5fb93c5bb6b81", seconds: 21.8, words: 53, lufs: -16.6, opus: 87269, m4a: 112420, vtt: 395}
-  - {trip: "moon-landings", stop: "chandrayaan-3", hash: "f5af467da8e81550", seconds: 23.96, words: 56, lufs: -16.6, opus: 95448, m4a: 123504, vtt: 340}
+  - {trip: "moon-landings", stop: "apollo-11", hash: "dacf447b9e788e60", seconds: 18.32, words: 43, lufs: -16.5, opus: 73065, m4a: 94816, vtt: 329}
+  - {trip: "moon-landings", stop: "apollo-12", hash: "84d37bf2f683ba3d", seconds: 18.05, words: 45, lufs: -16.5, opus: 72676, m4a: 93295, vtt: 317}
+  - {trip: "moon-landings", stop: "lunokhod-1", hash: "d3f774f0042cb953", seconds: 20.02, words: 49, lufs: -16.6, opus: 79643, m4a: 103510, vtt: 345}
+  - {trip: "moon-landings", stop: "apollo-17", hash: "92ea8f0e3dcbeb5f", seconds: 20.77, words: 47, lufs: -16.4, opus: 83754, m4a: 107204, vtt: 348}
+  - {trip: "moon-landings", stop: "change-4", hash: "aa6a0e3d298ebce0", seconds: 21.22, words: 53, lufs: -16.6, opus: 84910, m4a: 109595, vtt: 395}
+  - {trip: "moon-landings", stop: "chandrayaan-3", hash: "2313eb1e15bd8006", seconds: 22.84, words: 56, lufs: -16.6, opus: 92010, m4a: 117854, vtt: 340}
   - {trip: "moon-landings", stop: "im-1", hash: "a4db61657c255404", seconds: 23.3, words: 55, lufs: -16.7, opus: 93231, m4a: 120244, vtt: 368}
   - {trip: "moon-landings", stop: "blue-ghost-1", hash: "9dfd3e26cbdbf585", seconds: 22.62, words: 56, lufs: -16.4, opus: 90211, m4a: 116767, vtt: 380}
   - {trip: "moon-landings", stop: "whole-moon", hash: "ad2a438946470cd9", seconds: 24.91, words: 56, lufs: -16.4, opus: 99826, m4a: 128286, vtt: 405}
