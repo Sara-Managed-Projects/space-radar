@@ -336,6 +336,8 @@ jobs:
       # the hands-on and hands-off machine, the reload rule, and the controller on a stub trip.
       - name: "A screen that plays on its own: the reel, the watchdog, the take-over (spec 0036)"
         run: node tests/test_autopilot.mjs
+      - name: "The reel on the real trip machine: two laps, a refusal, the take-over, a lost arrival (spec 0036)"
+        run: node tests/test_autopilot_trip.mjs
       # Spec 0068 task 1: the trip's picture under its card and over its intro, lazy and after the
       # first visit; task 2: the controls hint, once, with keycaps the camera and the chrome answer.
       - name: "Trip cards with pictures: the files, the fade into glass, nothing before the first visit settles (spec 0068)"
