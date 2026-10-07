@@ -74,6 +74,7 @@ import { openShare, savePostcard } from './share.js';
 import { exposurePanel, pictureNote } from './exposure.js';
 import { stage } from '../scene/stage.js';
 import { icon } from './icons.js';
+import { overlayLine, legendNode, paintLegend } from './overlaylegend.js';
 import { systemOfRecordId, phaseIsMeasured } from '../scene/systems.js';
 
 const MAX_FIRST_SENTENCE = 160; // spec 0013 requirement 10, enforced by check_copy.py
@@ -3266,6 +3267,9 @@ function render(record, ctx, opts = {}) {
 
   // 4b. the flood light, under the light it stands in for (internal #272).
   for (const n of floodControls(record, ctx)) body.appendChild(n);
+  // The Earth's card carries the legend of whatever map is laid over it (internal #386 item 1).
+  const over = overlayBlock(record, ctx);
+  if (over) body.appendChild(over);
 
   // 5. the sections, each opening in place.
   body.appendChild(moreSections(record, ctx, m, passInfo, rows, time, false, opts));
@@ -3305,6 +3309,35 @@ function paintMore(node) {
 }
 
 /** The Sun's card: how many of today's sunspot groups are drawn and whose list it is, or null. */
+/**
+ * The Earth data overlay on the globe, on the Earth's own card: its legend and its one sentence
+ * (ui/overlaylegend.js, the words the trip's stop card and What to show print). Without it an
+ * overlay chosen in What to show was colours with no key once that popover shut (internal #386).
+ * Above the sections, not inside one: a key nobody has to open. Null for any other record; an
+ * empty, hidden block when no overlay is up, so `sr:overlay` has something to fill.
+ * Exported for the test.
+ */
+export function overlayBlock(record, ctx) {
+  if (!record || record.id !== 'earth' || !ctx || typeof ctx.overlayState !== 'function' || typeof document === 'undefined') return null;
+  const box = el('div', 'sr-card__overlay');
+  box.appendChild(legendNode(null));
+  box.appendChild(el('p', 'sr-card__note sr-card__overlayline'));
+  paintOverlayBlock(box, ctx);
+  return box;
+}
+
+function paintOverlayBlock(box, ctx) {
+  let st = null;
+  try { st = ctx.overlayState(); } catch { st = null; }
+  const on = !!(st && st.id);
+  const [legend, line] = box.children;
+  paintLegend(legend, on ? st : null);
+  const words = on ? overlayLine(st) : '';
+  if (line.textContent !== words) line.textContent = words;
+  line.hidden = !words;
+  box.hidden = !on;
+}
+
 export function sunSpotsLine(ctx) {
   let st = null;
   try { st = ctx.sunDetail.state(); } catch { st = null; }
@@ -3350,6 +3383,13 @@ function subscribe(ctx) {
       const line = typeof document !== 'undefined' && document.querySelector('.sr-card__clouds');
       if (!line || !c || !c.liveClouds || current.record.id !== 'earth') return;
       try { line.textContent = c.liveClouds.line(c.clock.now()); } catch { /* keep the last line */ }
+    });
+    // The overlay's legend on the Earth's card: a map was chosen, arrived, failed or was taken away.
+    window.addEventListener('sr:overlay', () => {
+      const c = current && current.ctx;
+      const box = typeof document !== 'undefined' && document.querySelector('.sr-card__overlay');
+      if (!box || !c || typeof c.overlayState !== 'function') return;
+      try { paintOverlayBlock(box, c); } catch { /* keep the last legend */ }
     });
     // The aurora line, the same way: a forecast arrived, failed, or the clock moved away from it.
     window.addEventListener('sr:aurora', () => {

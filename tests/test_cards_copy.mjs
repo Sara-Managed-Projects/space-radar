@@ -2,6 +2,7 @@
 // lies the 2026-09-08 review measured, each now asserted so it cannot come back.
 //
 //   node tests/test_cards_copy.mjs
+import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -526,6 +527,24 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
   check(a3[1].disabled !== true, 'See it is on for a star: the sky from your place shows it');
   const a4 = C.actionButtons({ id: 'deep-voyager-1', klass: 'probe', propagator: 'sampled', frame: 'sun-inertial', meta: {} }, ride, { ok: true, frame: 'sun-inertial' });
   check(a4[1].disabled === true && a4[1].title === COPY.sky.notVisibleFromGround, `See it is off for a craft beyond Earth, and its tooltip says why: ${a4[1].title}`);
+  // The Earth's card carries the legend of the map over the globe (internal #386 item 1).
+  {
+    const earth = { id: 'earth', klass: 'world', meta: {} };
+    const shown = { id: 'sea-temperature', status: 'shown', title: 'Sea surface temperature', what: 'The temperature of the sea.', cls: 'analysed', rule: 'daily', dateWords: '5 October 2026', credit: 'GHRSST', legend: { unit: '°C', low: '0', high: '32', stops: ['#2b001a', '#6b0200'] } };
+    let st = shown;
+    const octx = { overlayState: () => st };
+    const box = C.overlayBlock(earth, octx);
+    check(box && box.hidden === false && box.children[0].children[0].textContent === 'Sea surface temperature' && box.children[0].children[3].textContent === '32 °C', `with a map up, the Earth's card shows its legend (${box && box.children[0].children[0].textContent})`);
+    check(/The picture is of 5 October 2026\./.test(box.children[1].textContent) && /GHRSST/.test(box.children[1].textContent), `and its sentence: the day and whose data (${box.children[1].textContent})`);
+    st = { id: null, status: 'off' };
+    const off = C.overlayBlock(earth, octx);
+    check(off && off.hidden === true && off.children[1].textContent === '', 'with none, the block is there and hidden, for the next one to fill');
+    st = { id: 'wind', kind: 'wind', status: 'shown', cls: 'modelled', date: Date.UTC(2026, 9, 7, 12), speedup: 10800, meanSpeed: 7.2, maxSpeed: 28, still: false, credit: 'NOAA', legend: { unit: 'm/s', low: '0', high: '25', stops: ['#5E78C8', '#FFD166'] } };
+    const wind = C.overlayBlock(earth, octx);
+    check(wind.children[0].children[0].textContent === 'Wind' && /3 hours of wind in a second/.test(wind.children[1].textContent), 'the wind is keyed the same way');
+    check(C.overlayBlock({ id: 'mars', klass: 'world', meta: {} }, octx) === null && C.overlayBlock(earth, {}) === null, 'no other card has it');
+    check(/addEventListener\('sr:overlay'/.test(readFileSync(join(JS, 'ui/cards.js'), 'utf8')), 'and it is repainted when the overlay changes');
+  }
   // An ended craft after its end (internal #424): Fly to it is off and says the day; the row is "Ended".
   {
     const cassini = { id: 'deep-cassini', name: 'Cassini', klass: 'probe', propagator: 'sampled', frame: 'sun-inertial', samples: [], meta: { endDate: '2017-09-15' } };

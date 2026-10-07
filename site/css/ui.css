@@ -2334,6 +2334,15 @@ html.sr-present.sr-trip-mode:not([data-trip-names]) #labels .label:not(.is-subje
 }
 
 .sr-legend[hidden] { display: none; }
+
+/* The same legend on the Earth's card while a map is over the globe (ui/cards.js overlayBlock). */
+.sr-card__overlay {
+  display: grid;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+
+.sr-card__overlay[hidden] { display: none; }
 .sr-legend__title { grid-column: 1 / -1; color: var(--sr-text); }
 .sr-legend__ramp { grid-column: 1 / -1; height: 8px; border-radius: var(--sr-radius-sm); }
 
