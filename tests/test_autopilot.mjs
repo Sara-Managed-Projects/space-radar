@@ -602,6 +602,25 @@ function rig({ link = { ambient: 'a-year-in-a-minute,back-to-the-moon,the-living
   r.done();
 }
 
+// 7j. reduced motion: the machine waits for Next at every stop, and the reel presses it on time.
+{
+  const r = rig();
+  const real = r.trip.onChange;
+  // The stub trip as ui/trip.js is under prefers-reduced-motion: `reader` pacing, no dwell timer.
+  r.trip.state.pacing = 'reader';
+  await r.timers.advance(9000 + 3 * 15150 + 1500 + 500);
+  check(r.what('stop').length >= 3 && r.what('watchdog').length === 0, 'under reduced motion the reel paces the stops itself; the watchdog is not what moves them');
+  check(r.trip.calls.filter((c) => c[0] === 'next').length >= 2 && typeof real === 'function', 'it presses Next when the stop\'s time is up');
+  r.done();
+
+  const other = rig();
+  await other.timers.advance(9000 + 5000);
+  check(other.pilot.start({ ambient: 'outer-solar-system,the-living-earth,back-to-the-moon' }) === true, 'another reel asked for over a running one');
+  await other.timers.advance(1000);
+  check(other.pilot.state().reel === 'outer-solar-system,the-living-earth,back-to-the-moon' && other.trip.calls.filter((c) => c[0] === 'start').pop()[1] === 'outer-solar-system', '...replaces it');
+  other.done();
+}
+
 // --- 8. the seams ------------------------------------------------------------------------------------------
 {
   const read = (p) => readFileSync(join(ROOT, p), 'utf8');

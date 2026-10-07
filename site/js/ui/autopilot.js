@@ -450,7 +450,10 @@ export function createAutopilot(ctx, env = {}) {
       say('stop', { trip: playing.id, n: st.index + 1, of: st.count, id: st.stopId });
     } else if (st.phase === 'dwell') {
       playing.dwellMs = paced(expectedDwell(st), opts.pace);
-      if (opts.pace > 1) {
+      // The reel paces the stop itself at the test pace, and under prefers-reduced-motion, where
+      // ui/trip.js makes every stop wait for Next (a cut arriving unbidden is its rule for a
+      // visitor; a wall has nobody to press it). The flights are still cuts and nothing drifts.
+      if (opts.pace > 1 || st.pacing === 'reader') {
         const index = st.index;
         timers.clear(paceTimer);
         paceTimer = timers.set(() => {
@@ -640,10 +643,12 @@ export function createAutopilot(ctx, env = {}) {
     const ids = tours().map((x) => x.id);
     const o = readOptions(link, REELS, AUTOPILOT, ids);
     if (!o.on) { if (engaged) stop(); return false; }
-    if (engaged) {
+    if (engaged && opts && o.reel.id === opts.reel.id) {
       if (mode.mode === 'manual') { mode = { mode: 'ambient', until: null }; back(); }
       return true;
     }
+    // Another reel asked for over a running one: the first is put down, the address is kept.
+    if (engaged) stop(true);
     opts = o;
     from = origin === 'row' ? 'row' : 'link';
     engaged = true;
@@ -656,7 +661,8 @@ export function createAutopilot(ctx, env = {}) {
     view.onInput((kind) => step({ type: kind, at: timers.now() }));
     view.setMode('ambient');
     view.captions(o.captions);
-    try { writeUrl({ ambient: link && link.ambient ? link.ambient : '1' }); } catch { /* no address bar */ }
+    // The row's reel is in the address too, so the page's own reload keeps playing it.
+    try { if (from === 'row') writeUrl({ ambient: link && link.ambient ? link.ambient : '1' }); } catch { /* no address bar */ }
     wake();
     if (doc && doc.addEventListener) doc.addEventListener('visibilitychange', onVisible);
     if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('sr:webgl', onWebgl);
@@ -680,7 +686,8 @@ export function createAutopilot(ctx, env = {}) {
     return true;
   }
 
-  function stop() {
+  /** Out of the mode. `keepAddress`: another reel is about to start from the same link. */
+  function stop(keepAddress) {
     if (!engaged && !playing) return;
     say('stop-reel');
     engaged = false;
@@ -697,13 +704,13 @@ export function createAutopilot(ctx, env = {}) {
     if (typeof window !== 'undefined' && window.removeEventListener) window.removeEventListener('sr:webgl', onWebgl);
     sleep();
     view.unmount();
-    try { clearUrl(URL_KEYS); } catch { /* no address bar */ }
+    try { if (keepAddress !== true) clearUrl(URL_KEYS); } catch { /* no address bar */ }
     if (was) { try { ctx.trip.stop('left', { stay: true }); } catch { /* nothing was running */ } }
   }
 
   const api = {
     start,
-    stop,
+    stop: () => stop(),
     /** The reel has the screen right now (not the visitor): ui/tripframe.js and ui/offline.js ask. */
     active: false,
     get engaged() { return engaged; },
