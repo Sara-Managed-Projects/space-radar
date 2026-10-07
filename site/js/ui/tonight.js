@@ -30,7 +30,7 @@ import '../copy/en.later.js';
 import { guessObserver } from '../sky/guessplace.js';
 import { nextVisible, passState, darkness, tonightWords, SEARCH_HOURS, LONG_SEARCH_HOURS } from '../sky/tonight.js';
 import { arcSvg } from './skyarc.js';
-import { tonightBest, bestWords, passWords, passNumbers, darkWords, compassShort, standardMagnitude, samePassKey, nightMoments } from '../sky/tonightbest.js';
+import { tonightBest, bestWords, passWords, passNumbers, darkWords, compassShort, standardMagnitude, samePassKey, nightMoments, FACINGS, VIEW_HEIGHTS } from '../sky/tonightbest.js';
 import { passTrack } from '../sky/passes.js';
 import { FOV, DARKNESS_IDS, twilightPhase } from '../sky/skymath.js';
 import { NEBULAE } from '../data/nebulae.js';
@@ -47,6 +47,19 @@ export const STRIP_KEY_MIN = 10;
 /** Three eyepieces: the width of the round field each shows, in degrees. */
 export const EYEPIECES = { low: 1, medium: 0.5, high: 0.2 };
 const SKY_CULTURES = ['western', 'chinese', 'maori', 'hawaiian'];
+/** Where the "My view" choice is kept: { facing: 'any' | 'n' | 'e' | 's' | 'w', minAltDeg: 0 | 15 | 30 }. */
+export const VIEW_KEY = 'sr.tonight.view';
+
+/** The stored view over the default; anything unknown or unreadable is the whole sky. Pure. */
+export function readView(storage) {
+  const out = { facing: 'any', minAltDeg: 0 };
+  try {
+    const got = JSON.parse((storage && storage.getItem(VIEW_KEY)) || 'null');
+    if (got && Object.prototype.hasOwnProperty.call(FACINGS, got.facing)) out.facing = got.facing;
+    if (got && VIEW_HEIGHTS.includes(got.minAltDeg)) out.minAltDeg = got.minAltDeg;
+  } catch { /* a storage that throws, or not JSON: the whole sky */ }
+  return out;
+}
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -113,6 +126,31 @@ export function renderTonight(host, ctx) {
   const bestList = el('ul', 'sr-tonight-view__list sr-tonight-view__best');
   const bestEmpty = el('p', 'sr-tonight-view__next', T.best.nothing);
   bestEmpty.hidden = true;
+  // My view (internal #300): a direction and a height, in the density row's buttons, kept between visits.
+  const storage = (() => { try { return window.localStorage; } catch { return null; } })();
+  const view = readView(storage);
+  const viewBox = el('div', 'sr-skybar');
+  const viewButtons = [];
+  const viewRow = (label, entries, key) => {
+    const r = el('div', 'sr-density__choices sr-skybar__wrap');
+    r.setAttribute('role', 'group');
+    r.setAttribute('aria-label', label);
+    for (const [value, text, title] of entries) {
+      const b = el('button', 'sr-density__btn', text);
+      b.type = 'button';
+      if (title) b.title = title;
+      b.addEventListener('click', () => {
+        view[key] = value;
+        try { if (storage) storage.setItem(VIEW_KEY, JSON.stringify(view)); } catch { /* private mode */ }
+        renderBest();
+      });
+      viewButtons.push({ b, key, value });
+      r.appendChild(b);
+    }
+    viewBox.appendChild(r);
+  };
+  viewRow(T.best.view, Object.keys(FACINGS).map((f) => [f, T.best.facings[f], T.best.facingTitles[f]]), 'facing');
+  viewRow(T.best.viewHeight, VIEW_HEIGHTS.map((h) => [h, T.best.heights[h], '']), 'minAltDeg');
   const bestDark = el('p', 'sr-tonight-view__dark');
   const bestNote = el('p', 'sr-tonight-view__caveat', T.best.honesty);
   // The node and its painter, apart: until 2026-10-06 the label below was set on the object that held
@@ -141,6 +179,7 @@ export function renderTonight(host, ctx) {
   root.appendChild(actions);
   root.appendChild(list);
   root.appendChild(bestTitle);
+  root.appendChild(viewBox);
   root.appendChild(bestList);
   root.appendChild(bestEmpty);
   root.appendChild(bestDark);
@@ -408,7 +447,11 @@ export function renderTonight(host, ctx) {
     while (bestList.firstChild) bestList.removeChild(bestList.firstChild);
     const o = ctx.observer;
     const kind = ctx.skyView && ctx.skyView.darkness ? ctx.skyView.darkness.id : undefined;
-    const best = o ? tonightBest({ observer: o, nowMs: ctx.clock.now(), passes: st.ready ? st.passes : [], deepSky: deepObjects(), darkness: kind }) : null;
+    const best = o ? tonightBest({ observer: o, nowMs: ctx.clock.now(), passes: st.ready ? st.passes : [], deepSky: deepObjects(), darkness: kind, facing: view.facing, minAltDeg: view.minAltDeg }) : null;
+    const limited = view.facing !== 'any' || view.minAltDeg > 0;
+    for (const v of viewButtons) { const on = view[v.key] === v.value; v.b.setAttribute('aria-pressed', on ? 'true' : 'false'); v.b.classList.toggle('sr-bracketed', on); }
+    viewBox.hidden = !o;
+    setText(bestEmpty, limited ? T.best.viewNothing : T.best.nothing);
     st.best = best;
     const rows = best ? best.rows : [];
     for (const r of rows) {

@@ -761,6 +761,13 @@ Object.assign(COPY, {
       // A nebula, a cluster or a galaxy the site has a photograph of (sky/tonightbest.js deepSkyTonight).
       dsoLine: 'best {time} · {deg}° up, {dir} · {how}',
       dsoNeeds: { eye: 'by eye', binoculars: 'binoculars' },
+      // "My view faces west" (internal #300): the list limited to a window's part of the sky.
+      view: 'My view',
+      viewHeight: 'How high it must be',
+      facings: { any: 'All round', n: 'North', e: 'East', s: 'South', w: 'West' },
+      facingTitles: { any: 'The whole sky', n: 'Only what is best in the north', e: 'Only what is best in the east', s: 'Only what is best in the south', w: 'Only what is best in the west' },
+      heights: { 0: 'Any height', 15: 'Above 15°', 30: 'Above 30°' },
+      viewNothing: 'Nothing passes through that part of the sky tonight.',
       darkHours: 'Dark {from} to {to}',
       moonless: 'no Moon, a dark night',
       moonBright: 'Moon {pct} % hides faint stars',

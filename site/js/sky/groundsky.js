@@ -1487,7 +1487,11 @@ export function createGroundSky(ctx, env) {
         sourcesAt = frame.tMs;
         sources = meteorsOn ? meteorsMod.sourcesAt(frame.tMs, observer) : [];
         for (const sh of (meteorsOn && Array.isArray(frame.showers) ? frame.showers : [])) {
-          if (sh.held && !sources.some((x) => x.id === sh.id)) sources.push({ ...sh, peakZhr: sh.zhr, activity: 1 });
+          if (!sh.held) continue;
+          const at = sources.findIndex((x) => x.id === sh.id);
+          // The stop's shower goes first (meteorNow(0) is its), at its peak rate whatever the date.
+          const own = at >= 0 ? sources.splice(at, 1)[0] : null;
+          sources.unshift({ ...(own || {}), ...sh, r: own ? own.r : undefined, peakZhr: sh.zhr, activity: 1 });
         }
       }
       const up = [];

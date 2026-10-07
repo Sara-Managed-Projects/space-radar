@@ -303,12 +303,43 @@ function planetScore(p) {
 }
 
 /**
+ * "My view faces west" (internal #300): most people watch from a window or a balcony. A facing
+ * takes in 135 degrees, its compass point and 67.5 degrees either side, because a window shows
+ * more than a quarter of the horizon; `minAltDeg` is the roofline opposite.
+ */
+export const FACINGS = { any: null, n: 0, e: 90, s: 180, w: 270 };
+export const VIEW_HEIGHTS = [0, 15, 30];
+export const FACING_HALF_DEG = 67.5;
+
+/** Where a row is at its best: `{azDeg, altDeg}`. A pass is where it is highest. */
+export function rowWhere(row) {
+  if (!row) return null;
+  if (row.kind === 'pass') {
+    const n = passNumbers(row.pass);
+    return n ? { azDeg: n.peakAzDeg, altDeg: n.peakDeg } : null;
+  }
+  return { azDeg: row.azDeg, altDeg: row.altDeg };
+}
+
+/** Is a row inside the view a visitor has: facing 'any', 'n', 'e', 's' or 'w', at or above `minAltDeg`? */
+export function inView(row, facing = 'any', minAltDeg = 0) {
+  const at = rowWhere(row);
+  if (!at) return false;
+  if (minAltDeg > 0 && !(at.altDeg >= minAltDeg)) return false;
+  const centre = FACINGS[facing];
+  if (centre === null || centre === undefined) return true;
+  // Straight overhead is in every view that reaches that high; a direction unknown is not judged.
+  if (!Number.isFinite(at.azDeg) || at.altDeg >= 75) return true;
+  return Math.abs(((at.azDeg - centre + 540) % 360) - 180) <= FACING_HALF_DEG;
+}
+
+/**
  * The list: `{window, rows, moon, moonLight}`. `rows` are at most `max`, best first, each
  * `{kind: 'pass'|'planet'|'moon'|'shower', score, ...}`; `moon` is moonTonight() whether or not it
  * made the list, for the "how dark" line. Null window: the Sun does not set far enough, and the
  * only rows are passes.
  */
-export function tonightBest({ observer, nowMs, passes = [], showers = SHOWERS, max = MAX_ROWS, deepSky = [], darkness = DEFAULT_DARKNESS } = {}) {
+export function tonightBest({ observer, nowMs, passes = [], showers = SHOWERS, max = MAX_ROWS, deepSky = [], darkness = DEFAULT_DARKNESS, facing = 'any', minAltDeg = 0 } = {}) {
   const win = nightWindow(observer, nowMs);
   const rows = [];
   const until = win ? win.endMs : nowMs + 24 * 3600e3;
@@ -341,9 +372,12 @@ export function tonightBest({ observer, nowMs, passes = [], showers = SHOWERS, m
       rows.push({ kind: 'shower', id: sh.id, shower: sh, bestMs: best.ms, altDeg: best.altDeg, azDeg: best.azDeg, whenMs: best.ms, score: 35 + Math.min(40, (Number(sh.zhr) || 0) / 3) * moonCost });
     }
   }
+  const inside = (r) => inView(r, facing, minAltDeg);
+  const limited = facing !== 'any' || minAltDeg > 0;
+  if (limited) { const keep = rows.filter(inside); rows.length = 0; rows.push(...keep); }
   rows.sort((a, b) => b.score - a.score || a.whenMs - b.whenMs);
   // The deep sky: its places are kept, then the list is in one order again.
-  const dso = win ? deepSkyTonight({ observer, win, objects: deepSky, darkness, moon }) : [];
+  const dso = (win ? deepSkyTonight({ observer, win, objects: deepSky, darkness, moon, max: limited ? 99 : MAX_DSO }) : []).filter(inside).slice(0, MAX_DSO);
   const kept = Math.min(KEPT_FOR_DSO, dso.length);
   const head = rows.slice(0, max - kept);
   const list = head.concat(dso.slice(0, Math.max(kept, max - head.length))).sort((a, b) => b.score - a.score || a.whenMs - b.whenMs);

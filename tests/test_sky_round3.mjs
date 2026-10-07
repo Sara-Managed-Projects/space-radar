@@ -70,6 +70,22 @@ const none = T.tonightBest({ observer: here, nowMs: afternoon, passes });
 check(none.rows.every((r) => r.kind !== 'dso'), 'with no objects handed in the list is what it was');
 const w = T.bestWords(dark[0]);
 check(w && w.title === 'Pleiades' && /^best \d\d:\d\d · \d+° up, [NESW]+ · by eye$/.test(w.line) && /^mag /.test(w.side), `a deep-sky row is one mono line (${w && w.line})`);
+// --- my view faces west (internal #300) -------------------------------------------------------------------
+check(T.inView({ kind: 'planet', azDeg: 250, altDeg: 30 }, 'w', 0) && !T.inView({ kind: 'planet', azDeg: 250, altDeg: 30 }, 'e', 0), 'west-south-west is in a west view and not in an east one');
+check(T.inView({ kind: 'planet', azDeg: 350, altDeg: 30 }, 'n', 0) && T.inView({ kind: 'planet', azDeg: 20, altDeg: 30 }, 'n', 0), 'north wraps through zero');
+check(!T.inView({ kind: 'planet', azDeg: 180, altDeg: 12 }, 's', 15) && T.inView({ kind: 'planet', azDeg: 180, altDeg: 12 }, 's', 0), 'a minimum height is a roofline');
+check(T.inView({ kind: 'dso', azDeg: 10, altDeg: 88 }, 's', 30), 'straight overhead is in every view that reaches it');
+check(T.inView({ kind: 'pass', pass: passes[0] }, 'any', 30) && T.rowWhere({ kind: 'pass', pass: passes[0] }).altDeg === 57, 'a pass is judged where it is highest');
+const south = T.tonightBest({ observer: here, nowMs: afternoon, passes: [], deepSky: objects, darkness: 'dark', facing: 's', minAltDeg: 15 });
+const north = T.tonightBest({ observer: here, nowMs: afternoon, passes: [], deepSky: objects, darkness: 'dark', facing: 'n', minAltDeg: 15 });
+check(south.rows.length > 0 && south.rows.every((r) => T.inView(r, 's', 15)) && south.rows.some((r) => r.id === 'saturn'), `facing south: Saturn and what else is best there (${south.rows.map((r) => r.id)})`);
+check(north.rows.every((r) => T.inView(r, 'n', 15)) && !north.rows.some((r) => r.id === 'saturn'), `facing north: no Saturn (${north.rows.map((r) => r.id)})`);
+{
+  const { readView, VIEW_KEY } = await import(join(JS, 'ui/tonight.js'));
+  const store = (v) => ({ getItem: (k) => (k === VIEW_KEY ? v : null) });
+  check(readView(store('{"facing":"w","minAltDeg":15}')).facing === 'w' && readView(store('{"facing":"w","minAltDeg":15}')).minAltDeg === 15, 'the view is kept between visits');
+  check(readView(store('{"facing":"up","minAltDeg":7}')).facing === 'any' && readView(store('nonsense')).minAltDeg === 0 && readView(null).facing === 'any', 'and anything unknown is the whole sky');
+}
 // Every photograph has a place and a size the Tonight view can frame.
 check(NEBULAE.length >= 20 && NEBULAE.every((n) => Number.isFinite(n.ra_deg) && Number.isFinite(n.dec_deg) && n.width_arcmin > 0 && n.height_arcmin > 0), 'every photograph has a place and a size');
 
