@@ -53,6 +53,7 @@ for script, heard in [
     ("nineteen oh five", "1905"),
     ("nought point one two of a pixel", "0.12 of a pixel"),
     ("M eighty-seven", "M87"),
+    ("twenty kilometres across", "20km across"),
     ("a hundred times", "100 times"),
     ("the twenty-first century", "the 21st century"),
     ("the third of February", "the 3rd of February"),

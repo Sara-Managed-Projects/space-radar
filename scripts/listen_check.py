@@ -282,6 +282,8 @@ def canon(text: str) -> list:
     s = s.replace("'", "")
     s = re.sub(r"[^a-z0-9.]+", " ", s)
     s = re.sub(r"(?<!\d)\.|\.(?!\d)", " ", s)
+    # "20km", as a recogniser sometimes writes "twenty kilometres"
+    s = re.sub(r"(\d)(km|kg|cm|mm)\b", r"\1 \2", s)
     # "m87" is "m 87"; "22nd" stays
     s = re.sub(r"\b([a-z]+)(\d+)\b", r"\1 \2", s)
     tokens = [ABBREVIATED.get(t, t) for t in s.split()]

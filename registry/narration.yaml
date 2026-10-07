@@ -199,18 +199,18 @@ clips:
   - {trip: "outer-solar-system", stop: "triton", hash: "536fc97e78a34ab7", seconds: 23.88, words: 52, lufs: -16.5, opus: 95723, m4a: 123070, vtt: 344}
   - {trip: "outer-solar-system", stop: "pluto", hash: "e2225b1b261d614d", seconds: 23.5, words: 56, lufs: -16.4, opus: 94522, m4a: 121114, vtt: 394}
   - {trip: "outer-solar-system", stop: "sedna", hash: "2c05f9e853428ed5", seconds: 26.66, words: 71, lufs: -16.4, opus: 107622, m4a: 137196, vtt: 459}
-  - {trip: "outer-solar-system", stop: "eris", hash: "5c3c28dd60c374a6", seconds: 27.59, words: 70, lufs: -16.4, opus: 110041, m4a: 141978, vtt: 430}
-  - {trip: "outer-solar-system", stop: "voyager-1", hash: "e04d1600ca0ccf85", seconds: 26.42, words: 63, lufs: -16.7, opus: 105787, m4a: 136110, vtt: 399}
-  - {trip: "a-year-in-a-minute", stop: "inner", hash: "84cd4591c1d63b4c", seconds: 17.36, words: 43, lufs: -16.4, opus: 69314, m4a: 89818, vtt: 307}
-  - {trip: "a-year-in-a-minute", stop: "earth", hash: "db0beca05c1b0f07", seconds: 19.27, words: 50, lufs: -16.3, opus: 81571, m4a: 99598, vtt: 335}
-  - {trip: "a-year-in-a-minute", stop: "mercury", hash: "3c07a669ec0915c7", seconds: 17.33, words: 42, lufs: -16.4, opus: 69339, m4a: 89818, vtt: 291}
-  - {trip: "a-year-in-a-minute", stop: "jupiter", hash: "81b54478d133efc9", seconds: 16.5, words: 44, lufs: -16.6, opus: 66085, m4a: 85471, vtt: 306}
-  - {trip: "chasing-the-solar-eclipse", stop: "arrives", hash: "4537550aec1f0d90", seconds: 17.12, words: 45, lufs: -16.4, opus: 68070, m4a: 88731, vtt: 321}
-  - {trip: "chasing-the-solar-eclipse", stop: "peak", hash: "ec0e31a2de95bfcc", seconds: 15.26, words: 42, lufs: -16.4, opus: 60627, m4a: 79168, vtt: 300}
-  - {trip: "chasing-the-solar-eclipse", stop: "from-the-moon", hash: "0f1c631b35deeea8", seconds: 16.21, words: 44, lufs: -16.6, opus: 66061, m4a: 84167, vtt: 305}
-  - {trip: "chasing-the-solar-eclipse", stop: "ring", hash: "6374b831f2250b08", seconds: 16.75, words: 53, lufs: -16.6, opus: 66936, m4a: 86775, vtt: 322}
-  - {trip: "chasing-the-solar-eclipse", stop: "lunar", hash: "6f2f812fe09b336c", seconds: 14.6, words: 41, lufs: -16.6, opus: 59356, m4a: 75908, vtt: 287}
-  - {trip: "the-constellations", stop: "orion", hash: "70ef494732e36713", seconds: 22.11, words: 56, lufs: -16.6, opus: 87786, m4a: 114159, vtt: 390}
+  - {trip: "outer-solar-system", stop: "eris", hash: "4d58094ebb506804", seconds: 27.09, words: 70, lufs: -16.5, opus: 108496, m4a: 139587, vtt: 430}
+  - {trip: "outer-solar-system", stop: "voyager-1", hash: "4223755e06888f70", seconds: 25.46, words: 63, lufs: -16.6, opus: 102717, m4a: 131111, vtt: 399}
+  - {trip: "a-year-in-a-minute", stop: "inner", hash: "d0700c2b615863ae", seconds: 16.58, words: 43, lufs: -16.4, opus: 66385, m4a: 85906, vtt: 307}
+  - {trip: "a-year-in-a-minute", stop: "earth", hash: "d2b66663ad14a977", seconds: 18.72, words: 50, lufs: -16.5, opus: 80059, m4a: 96772, vtt: 335}
+  - {trip: "a-year-in-a-minute", stop: "mercury", hash: "8d2f014c6a26d62a", seconds: 16.63, words: 42, lufs: -16.4, opus: 66825, m4a: 86123, vtt: 291}
+  - {trip: "a-year-in-a-minute", stop: "jupiter", hash: "faebb6dd7042511f", seconds: 16.3, words: 44, lufs: -16.7, opus: 65241, m4a: 84602, vtt: 306}
+  - {trip: "chasing-the-solar-eclipse", stop: "arrives", hash: "6082d0dc090f9533", seconds: 16.42, words: 45, lufs: -16.4, opus: 65393, m4a: 85036, vtt: 321}
+  - {trip: "chasing-the-solar-eclipse", stop: "peak", hash: "3cd1674ec1cc06b0", seconds: 14.58, words: 42, lufs: -16.3, opus: 58633, m4a: 75691, vtt: 300}
+  - {trip: "chasing-the-solar-eclipse", stop: "from-the-moon", hash: "0f4b2fee22f7a241", seconds: 15.37, words: 44, lufs: -16.4, opus: 65395, m4a: 79820, vtt: 305}
+  - {trip: "chasing-the-solar-eclipse", stop: "ring", hash: "b1c64a34c8d9648b", seconds: 16.19, words: 53, lufs: -16.6, opus: 64869, m4a: 83950, vtt: 322}
+  - {trip: "chasing-the-solar-eclipse", stop: "lunar", hash: "9ce23011f0823db9", seconds: 13.9, words: 41, lufs: -16.5, opus: 56225, m4a: 72214, vtt: 287}
+  - {trip: "the-constellations", stop: "orion", hash: "eb4895de3cdfcc68", seconds: 21.02, words: 56, lufs: -16.6, opus: 84923, m4a: 108508, vtt: 390}
   - {trip: "the-constellations", stop: "orion-from-the-side", hash: "40acf0154ac52367", seconds: 23.76, words: 56, lufs: -16.6, opus: 94244, m4a: 122418, vtt: 451}
   - {trip: "the-constellations", stop: "taurus", hash: "77aa79817e51ff01", seconds: 24.89, words: 64, lufs: -16.6, opus: 102898, m4a: 128286, vtt: 443}
   - {trip: "the-constellations", stop: "gemini", hash: "8a812bd9387c326d", seconds: 21.66, words: 46, lufs: -16.6, opus: 85940, m4a: 111768, vtt: 401}
