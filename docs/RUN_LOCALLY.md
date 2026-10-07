@@ -185,12 +185,93 @@ place (`tonight-from-your-street`, `planets-tonight`, `moon-phases`, `a-dark-sky
 a guess from the computer's time zone, and they say so), so set the school's town first. The
 living Earth's data maps need the internet.
 
-**An unattended screen.** There is no attract loop yet. What exists today:
+### A screen in a corridor
 
-- `present=auto` with the voice on flies and reads a whole trip by itself; it stops on the last card.
-- Press **H** (or the eye button) to hide every panel and leave only the scene. `Esc` brings them back.
-- A link can open at a trip, an object or a moment, for example
-  `http://localhost:8177/#trip=moon-landings` or `#trip=outer-solar-system&stop=3`.
+A screen nobody is standing at: a corridor, a lobby, a museum wall, an observatory's waiting room.
+Add `#ambient=1` to the address and Space Radar plays its trips one after another, with the words
+of each stop as captions, until somebody takes the controls. The **Play on its own** row under the
+trips does the same on your own computer.
+
+```
+http://localhost:8177/#ambient=lobby
+http://localhost:8177/#ambient=classroom-45&sound=1
+http://localhost:8177/#ambient=tonight
+http://localhost:8177/#ambient=moon-landings,the-sun-today,black-holes
+```
+
+| Reel | What plays | One lap |
+|---|---|---|
+| `lobby` (what `#ambient=1` plays) | Fourteen of the most visual trips, good with no sound. It starts silent. | about 50 min |
+| `classroom-45` | Twelve school favourites, from the living Earth to the edge of what we can see. It asks for sound. | about 45 min |
+| `tonight` | The seven trips that start from your own ground: tonight's sky, the planets, the Moon. Set the place under **Where you are** first; with no place it plays `lobby` instead. | about 20 min |
+| trip names with commas | Your own list, in your order. | |
+
+Every reel goes round again when it ends. `#autopilot=` is the same key under another name.
+
+| Add to the address | What it does |
+|---|---|
+| `&shuffle=1` | A new order every lap |
+| `&sound=1` | Ask for sound (see below); `&sound=0` keeps it silent whatever the browser remembered |
+| `&voice=0` | Music only: no narrator, and each stop stays up for as long as its words take to read |
+| `&captions=0` | No words on screen (only sensible with the voice on) |
+
+**Sound needs one key press.** A browser plays nothing until somebody has touched the page. So a
+reel that wants sound shows one card, "Press any key to start with sound", for ten seconds, and
+then starts silent with captions. Start Chrome with the autoplay flag below and the card never
+shows: the sound starts by itself.
+
+**Somebody walks up.** Any key or touch shows **Take the controls** for ten seconds; `Esc` takes
+them at once. The trip stops where it is and the whole app is theirs. Two minutes after the last
+touch the screen goes back to its reel, at the next trip. (Started from the **Play on its own**
+row instead of the address, taking the controls simply ends it.)
+
+**Start the browser as a kiosk.** Quit Chrome completely first, or the flags are ignored.
+
+```bash
+# Windows (one line, in a shortcut's Target or a .bat file in the Startup folder)
+"C:\Program Files\Google\Chrome\Application\chrome.exe" --kiosk --no-first-run --autoplay-policy=no-user-gesture-required "http://localhost:8177/#ambient=lobby"
+
+# macOS
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --kiosk --no-first-run --autoplay-policy=no-user-gesture-required "http://localhost:8177/#ambient=lobby"
+
+# Linux (the binary is google-chrome, chromium or chromium-browser, depending on the system)
+chromium --kiosk --no-first-run --autoplay-policy=no-user-gesture-required "http://localhost:8177/#ambient=lobby"
+```
+
+`--kiosk` is full screen with no address bar (`Alt+F4`, or `Cmd+Q` on a Mac, leaves it).
+`--autoplay-policy=no-user-gesture-required` lets the sound start with nobody there; leave it out
+for a silent screen. Start the server from step 2 first, at login, the same way. Switch the
+computer's own screen saver and sleep off: the page asks the browser to keep the screen awake, and
+a browser may refuse.
+
+**What it does when things go wrong**, with nobody there to press a button:
+
+- A stop that has not arrived, or has not moved on, inside its time is skipped. A trip that fails
+  twice is left for the next one.
+- A trip whose data is not there (no network and no saved copy, or no place set for a trip that
+  starts from your ground) is left out of the lap. Nothing is said on screen.
+- If the graphics card drops the page's picture and does not give it back within five seconds,
+  the page reloads and goes on from the same stop.
+- A newer version of the app never interrupts a trip and never asks: it takes over between two.
+- After twelve hours the page reloads itself between two trips, to start clean. On a screen whose
+  sound was started by a key press, that reload waits for 02:00 to 05:00, because after it the
+  screen is silent until somebody presses a key again (the autoplay flag avoids that).
+- What happened is kept as a short log in the browser's console (`F12`), never on the screen.
+
+**With no internet.** Follow step 3 (a release zip already has the saved data copy). Then, with
+the network still on, let the reel play one whole lap on that computer in that browser: the
+service worker keeps each map, model and narration clip the first time it is used, so after one
+lap everything the reel shows is on the disk. After that the cable can come out. *The living
+Earth* shows its fixed cloud map instead of today's, and its data-map stops are left out.
+
+**A Raspberry Pi.** Not measured: nobody has run Space Radar on one yet, so we cannot tell you a
+frame rate. It needs WebGL 2 in the browser, and the app lowers its own detail on a slow graphics
+chip, but a trip to the Milky Way draws 109 389 stars. Try `#ambient=lobby` for ten minutes before
+you mount anything on a wall; a second-hand small PC is the safer choice until somebody measures it.
+
+**One trip, by itself, once.** `present=auto` with the voice on still flies and reads a single
+trip and stops on its last card; press **H** (or the eye button) to hide every panel and leave
+only the scene.
 
 ## 5. Troubleshooting
 

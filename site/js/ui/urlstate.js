@@ -31,7 +31,10 @@ export const HASH_KEY = 'm';
 // `present` (2026-10-06, public #441): a trip opened for a room, `1`, or `auto` to advance by itself.
 // `cam` (2026-10-07, internal #397): where the camera stands round what it looks at, so a shared
 // view reopens as it was framed: `<azimuth>,<polar>,<distance in km>`, angles in degrees.
-export const KEYS = ['m', 'v', 'trip', 'stop', 'present', 'at', 'event', 't', 'rate', 'stage', 'exp', 'cam'];
+// `ambient` and the five after it (spec 0036, ui/autopilot.js): a screen that plays on its own.
+// `ambient` is `1`, a reel's id (registry/autopilot.yaml) or trip ids with commas; `autopilot` is
+// the same key under the name people guess, and read() hands it back as `ambient`.
+export const KEYS = ['m', 'v', 'ambient', 'autopilot', 'shuffle', 'sound', 'voice', 'captions', 'pace', 'trip', 'stop', 'present', 'at', 'event', 't', 'rate', 'stage', 'exp', 'cam'];
 export const VERSION = '1';
 
 /**
@@ -90,6 +93,7 @@ export function read() {
     if (KEYS.includes(key)) out[key] = decode(part.slice(eq + 1));
   }
   if (out.m === undefined && bare !== null) out.m = bare;
+  if (out.autopilot !== undefined) { if (out.ambient === undefined) out.ambient = out.autopilot; delete out.autopilot; }
   if (out.v !== undefined && out.v !== VERSION) out.unknownVersion = true;
   return out;
 }

@@ -109,6 +109,8 @@ export async function createOffline(ctx) {
   let reloading = false;
   sw.addEventListener('controllerchange', () => {
     if (!controlledAtStart || reloading) return;
+    // A screen playing on its own never reloads mid-trip: ui/autopilot.js does it between two.
+    if (ctx && ctx.autopilot && ctx.autopilot.engaged) { ctx.autopilot.controllerChanged(); return; }
     reloading = true;
     location.reload();
   });
@@ -124,6 +126,8 @@ export async function createOffline(ctx) {
 
   const offer = (waiting) => {
     if (!waiting || !sw.controller) return;
+    // ...and is never asked: the newer build takes over between two trips (spec 0036).
+    if (ctx && ctx.autopilot && ctx.autopilot.engaged) { ctx.autopilot.updateWaiting(waiting); return; }
     const node = toast(COPY.offline.updateReady, TOAST_MS);
     if (!node) return;
     const button = document.createElement('button');

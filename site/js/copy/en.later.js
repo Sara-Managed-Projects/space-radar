@@ -61,6 +61,17 @@ Object.assign(COPY, {
     updateReady: 'A newer version is ready',
     reload: 'Reload',
   },
+  // ui/autopilot.js (spec 0036): a screen that plays the trips on its own. The mark is the only
+  // chrome besides the captions; the gate is the one question it ever asks.
+  autopilot: {
+    mark: 'spaceradar.ai',
+    gateTitle: 'Press any key to start with sound',
+    gateNote: 'With nobody here it starts silent, with captions, in {n} seconds.',
+    upNext: 'Next trip',
+    shape: '{n} stops · {m} min',
+    take: 'Take the controls',
+    takeTitle: 'Stop the trips and move the map yourself',
+  },
 
   // The toast after the app has moved the view for you (ui/camundo.js, internal #274).
   undo: {

@@ -1,0 +1,182 @@
+/* autopilot.css -- a screen that plays on its own (ui/autopilot.js, spec 0036).
+ *
+ * Linked by ui/autopilot.js when the mode starts, never at boot: a first visit carries none of it
+ * (registry/budgets.yaml first_visit_bytes). The two rules that must hold before this file can
+ * arrive (the panels a kiosk never shows) are in css/ui.css under `html.sr-ambient`. Tokens only,
+ * all from css/ui.css :root; tests/test_tokens.mjs holds this file to the same rules as ui.css.
+ *
+ * WHAT IS ON SCREEN in this mode: the scene, the stop's words as a caption (the trip frame's own
+ * present-mode sheet, docs/ui-guide.md 3.17 and 2.2), the small mark, and one of two things at a
+ * time: the card (the sound question, or the next trip's title) or "Take the controls". No
+ * toolbar, no top bar, no toast, no hint, no pointer after three seconds.
+ */
+
+.sr-ambient__host {
+  position: fixed;
+  inset: 0;
+  z-index: var(--sr-z-toast);
+  pointer-events: none;
+}
+
+.sr-ambient__host[hidden] {
+  display: none;
+}
+
+/* Over everything: a hand on the screen offers the controls, it does not swing the camera. */
+.sr-ambient__shield {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.sr-ambient__shield.is-still {
+  cursor: none;
+}
+
+.sr-ambient__mark {
+  position: absolute;
+  top: var(--sp-5);
+  right: var(--sp-6);
+  font: 600 var(--sr-fs-present-sm)/1 var(--sr-font-hud);
+  letter-spacing: 0.04em;
+  color: var(--sr-text-soft);
+}
+
+/* The card: the same lower third the captions use, so the eye is already there. */
+.sr-ambient__card {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  box-sizing: border-box;
+  padding: var(--sp-5) var(--sp-6) var(--sp-6);
+  color: var(--sr-text);
+  background: var(--sr-glass-strong);
+  border-width: 1px 0 0;
+  border-radius: var(--sr-radius-shell) var(--sr-radius-shell) 0 0;
+}
+
+.sr-ambient__card[hidden],
+.sr-ambient__card [hidden],
+.sr-ambient__take[hidden] {
+  display: none;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .sr-ambient__card.sr-float,
+  .sr-ambient__take.sr-float { background: var(--sr-glass-solid); }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .sr-ambient__card.sr-float,
+  .sr-ambient__take.sr-float { background: var(--sr-glass-solid); }
+}
+
+.sr-ambient__micro {
+  font-size: var(--sr-fs-present-sm);
+}
+
+.sr-ambient__title {
+  margin: var(--sp-2) 0 0;
+  font: 600 var(--sr-fs-present-name)/1.12 var(--sr-font);
+  letter-spacing: -0.01em;
+}
+
+.sr-ambient__meta {
+  margin: var(--sp-3) 0 0;
+  font: 400 var(--sr-fs-present-sm)/1.35 var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text-dim);
+}
+
+.sr-ambient__text {
+  max-width: 44em;
+  margin: var(--sp-3) 0 0;
+  font: 400 var(--sr-fs-present)/1.38 var(--sr-font);
+}
+
+/* "Take the controls": the one control of the mode, at the top so it never covers the words. */
+.sr-ambient__take {
+  position: absolute;
+  top: var(--sp-5);
+  left: 50%;
+  min-height: 64px;
+  padding: 0 var(--sp-6);
+  font: 600 var(--sr-fs-present-sm)/1.2 var(--sr-font);
+  color: var(--sr-text);
+  pointer-events: auto;
+  cursor: pointer;
+  background: var(--sr-glass-strong);
+  translate: -50% 0;
+}
+
+.sr-ambient__take:hover {
+  background: var(--sr-wash-strong);
+}
+
+.sr-ambient__take:active {
+  background: var(--sr-wash);
+}
+
+/* --- the trip frame in this mode: its caption and nothing else ------------------------------- */
+
+html.sr-ambient.sr-present {
+  --sr-trip-bar: 0px;
+}
+
+html.sr-ambient .sr-trip__toolbar,
+html.sr-ambient .sr-trip__top,
+html.sr-ambient .sr-tripsheet__panel,
+html.sr-ambient[data-trip-phase='intro'] .sr-tripsheet,
+html.sr-ambient[data-trip-phase='outro'] .sr-tripsheet,
+html.sr-ambient--nocaptions .sr-tripsheet {
+  display: none;
+}
+
+/* The caption keeps clear of the mark's corner and is never a thing to press here. */
+html.sr-ambient .sr-tripsheet.is-present {
+  padding-bottom: var(--sp-6);
+  pointer-events: none;
+}
+
+/* A projector, and a phone on a stand: the present-mode ladder, for the card between two trips
+   too (the frame's own class is off then). */
+@media (min-width: 1800px) {
+  html.sr-ambient {
+    --sr-fs-present-sm: 26px;
+    --sr-fs-present: 40px;
+    --sr-fs-present-name: 64px;
+  }
+}
+
+@media (max-width: 899px) {
+  html.sr-ambient {
+    --sr-fs-present-sm: 15px;
+    --sr-fs-present: 20px;
+    --sr-fs-present-name: 28px;
+  }
+
+  .sr-ambient__card {
+    padding: var(--sp-4) var(--sp-4) calc(var(--sp-4) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .sr-ambient__mark {
+    top: calc(var(--sp-3) + env(safe-area-inset-top, 0px));
+    right: var(--sp-4);
+  }
+
+  .sr-ambient__take {
+    top: calc(var(--sp-6) + var(--sp-5) + env(safe-area-inset-top, 0px));
+    min-height: 48px;
+    padding: 0 var(--sp-5);
+    white-space: nowrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-ambient__card.sr-float,
+  .sr-ambient__take.sr-float {
+    transition: opacity 120ms linear;
+  }
+}

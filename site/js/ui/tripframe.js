@@ -564,8 +564,12 @@ export function createTripFrame(ctx) {
 
   // ---------------------------------------------------------------------------- present mode
 
+  const ambient = () => !!(ctx.autopilot && ctx.autopilot.active);
+
   /** `present=1` or `present=auto` in the link, read when a trip's frame goes up. */
   function presentFromUrl() {
+    // A reel (ui/autopilot.js, spec 0036) is present mode that paces itself, whatever the link says.
+    if (ambient()) return { on: true, auto: true };
     let v = null;
     try { v = readUrl().present; } catch { v = null; }
     return v === 'auto' ? { on: true, auto: true } : v ? { on: true, auto: false } : { on: false, auto: false };
@@ -581,7 +585,8 @@ export function createTripFrame(ctx) {
     presentAuto = present && !!auto;
     root.classList.toggle(PRESENT_CLASS, present);
     if (typeof trip.setPacing === 'function') trip.setPacing(present ? (presentAuto ? 'auto' : 'reader') : null);
-    try { writeUrl({ present: present ? (presentAuto ? 'auto' : '1') : null }); } catch { /* no address bar: a test */ }
+    // Not while a reel runs: its address says `ambient=`, and `present=` beside it would outlive it.
+    try { if (!ambient()) writeUrl({ present: present ? (presentAuto ? 'auto' : '1') : null }); } catch { /* no address bar: a test */ }
     if (!present && fullAsked) exitFullScreen();
     if (!parts) return;
     if (present && collapsed) setCollapsed(false);

@@ -457,7 +457,11 @@ export function createExplore(ctx, host) {
     const grid = el('div', 'sr-tripgrid');
     const more = button('sr-more');
     more.hidden = true;
-    s.append(grid, more);
+    // The trips one after another, hands off: a screen in a corridor (ui/autopilot.js, spec 0036).
+    const own = button('sr-more', COPY.tripCard.onItsOwn);
+    own.title = COPY.tripCard.onItsOwnTitle;
+    own.addEventListener('click', () => { if (typeof ctx.wantAutopilot === 'function') ctx.wantAutopilot({ ambient: '1' }, 'row'); });
+    s.append(grid, more, own);
     tripHosts.set(id, { s, grid, more, expanded: false });
   }
   earth.appendChild(tripHosts.get('earth').s);

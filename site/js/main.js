@@ -233,6 +233,10 @@ export async function boot({ setStatus } = {}) {
   // The link, read NOW, before any of the app's own writers below can touch the hash; its clock
   // keys are applied here and the rest waits for the layers (ui/urlstate.js bootLink says why).
   const link = bootLink(clock, embed && embed.link);
+  // A SCREEN THAT PLAYS ON ITS OWN (spec 0036): `#ambient=…`. The class goes on before anything is
+  // built, so a kiosk never shows the panels it is about to hide; ui/autopilot.js does the rest.
+  const ambient = !embed && !!(link && link.ambient && link.ambient !== '0');
+  if (ambient) document.documentElement.classList.add('sr-ambient');
 
   const ctx = {
     clock, stage, scene, camera, cameraRig, viewShift, worlds, renderer, rendererApi, sources,
@@ -803,6 +807,12 @@ export async function boot({ setStatus } = {}) {
   // THE PASSPORT (spec 0041, ui/passport.js): where a visitor has been, in this browser only.
   // Asked for by the dated cards once the first visit has settled, and by the trip frame.
   let passport = null;
+  // The reel (ui/autopilot.js): fetched when the link says `ambient=` or the Trips section's
+  // "Play on its own" is pressed, never at boot. `from` is 'row' for the button.
+  let autopilot = null;
+  ctx.wantAutopilot = (keys, from) => (autopilot || (autopilot = import('./ui/autopilot.js').then((m) => (ctx.autopilot = m.createAutopilot(ctx)))))
+    .then((a) => { a.start(keys, from); return a; })
+    .catch((e) => { autopilot = null; document.documentElement.classList.remove('sr-ambient'); console.warn('the autopilot did not load', e); return null; });
   ctx.wantPassport = () => passport || (passport = import('./ui/passport.js')
     .then((m) => m.createPassport(ctx))
     .catch((e) => { passport = null; console.warn('the passport did not load', e); return null; }));
@@ -817,7 +827,7 @@ export async function boot({ setStatus } = {}) {
   // and the gestures that move the camera. Imported KEYHINT_MS after sr:layers-ready, so the first
   // visit's bytes are the map's; it decides for itself whether to show (not seen before, not a
   // trip, not a link). ctx.keyhint.show() opens it on request and imports it if it has to.
-  const arrivedByLink = !!(link && (link.trip || link.at || link.event || link.stage)) || location.hash === '#sources';
+  const arrivedByLink = !!(link && (link.trip || link.at || link.event || link.stage || ambient)) || location.hash === '#sources';
   const keyHint = () => import('./ui/keyhint.js').then((m) => m.createKeyHint(ctx, { deepLink: arrivedByLink }));
   ctx.keyhint = { show: () => keyHint().then((api) => api.show()) };
   const hintLater = () => afterFirstVisit(KEYHINT_MS, () => keyHint().then((api) => api.maybeShow()).catch((e) => console.warn('the controls hint did not load', e)));
@@ -914,7 +924,8 @@ export async function boot({ setStatus } = {}) {
   // A trip the visitor has already started by then outranks the link (ui/urlstate.js laterLink).
   window.addEventListener('sr:layers-ready', () => {
     const tripRunning = !!(ctx.trip && ctx.trip.state && ctx.trip.state.phase !== 'idle');
-    const apply = () => applyUrlState(ctx, laterLink(link, tripRunning));
+    // A reel starts its own trips (and picks up the one a reloaded page's address names).
+    const apply = () => (ambient ? ctx.wantAutopilot(link) : applyUrlState(ctx, laterLink(link, tripRunning)));
     // A trip's stops may be stars or exoplanets (OFF THE FIRST VISIT): those land first. An `at`
     // waits only if it does not resolve without them (openAt).
     if (link && link.trip && ctx.loadAfterFirstVisit) ctx.loadAfterFirstVisit().then(apply, apply);
@@ -1707,6 +1718,9 @@ export async function boot({ setStatus } = {}) {
     // linkChange decides; this carries it out. The app's own writes use replaceState, which fires
     // no hashchange, so this cannot echo.
     const keys = readUrlKeys();
+    // `#ambient=…` pasted over a running page starts the reel; taken out of it, stops it.
+    const reel = !!(keys.ambient && keys.ambient !== '0');
+    if (reel || (ctx.autopilot && ctx.autopilot.engaged)) { ctx.wantAutopilot(keys); if (reel) return; }
     const current = typeof ctx.selected === 'function' ? ctx.selected() : null;
     const running = ctx.trip && ctx.trip.state && ctx.trip.state.phase !== 'idle' ? ctx.trip.state : null;
     const plan = linkChange(keys, { at: current ? current.id : null, trip: running ? running.tourId : null, live: clock.mode === 'live' });

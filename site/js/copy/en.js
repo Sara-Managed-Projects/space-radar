@@ -644,6 +644,9 @@ export const COPY = {
     cannotRun: 'Cannot run right now',
     all: 'All {n} trips',
     fewer: 'Fewer trips',
+    // Under the cards: the trips one after another, hands off (ui/autopilot.js, spec 0036).
+    onItsOwn: 'Play on its own',
+    onItsOwnTitle: 'The trips play one after another until you take the controls',
   },
   // The Planets and Stars tabs' lists.
   explore: {

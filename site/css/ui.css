@@ -2613,6 +2613,16 @@ html.sr-trip-collapsed .sr-tripsheet.is-floating {
   }
 }
 
+/* A screen that plays on its own (ui/autopilot.js, spec 0036; the rest is css/autopilot.css,
+   linked with it). Here because main.js sets the class before the first panel is built. */
+html.sr-ambient {
+  --sr-scene-left: 0px;
+}
+
+html.sr-ambient :is(#sr-side, #sr-rail, #sr-time, .sr-top, .sr-toast, .sr-scenenote, .sr-keyhint) {
+  display: none;
+}
+
 /* A toast during a trip sits over the toolbar on a desktop, under the top bar on a phone. */
 html.sr-trip-mode .sr-toast {
   top: auto;
