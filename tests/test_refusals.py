@@ -716,7 +716,7 @@ CASES: list[tuple[str, str, str, str]] = [
     ("a moon's map over the moon_map_bytes budget",
      "budgets.yaml", "id: moon_map_bytes, value: 250000,", "id: moon_map_bytes, value: 200000,"),
     ("the moons' maps over their total budget",
-     "budgets.yaml", "id: moon_maps_total_bytes, value: 3000000,", "id: moon_maps_total_bytes, value: 2700000,"),
+     "budgets.yaml", "id: moon_maps_total_bytes, value: 3300000,", "id: moon_maps_total_bytes, value: 3000000,"),
     ("a moon's map that covers more than the whole sphere",
      "textures.yaml", "    world: miranda\n    slot: map\n    when: boot\n    coverage: 0.394", "    world: miranda\n    slot: map\n    when: boot\n    coverage: 1.394"),
     ("a flat world's map that does not say how much of the sphere it covers",
