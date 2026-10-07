@@ -840,7 +840,7 @@ export function createSkyView(ctx, options = {}) {
       const aa = radiantAltAz(sh, tMs, where);
       sprite.visible = !!aa && aa.altDeg > 0;
       if (!aa) continue;
-      showersNow.push({ id: sh.id, display: sh.display, zhr: sh.zhr, vKms: sh.v_kms, altDeg: aa.altDeg, azDeg: aa.azDeg });
+      showersNow.push({ id: sh.id, display: sh.display, zhr: sh.zhr, vKms: sh.v_kms, altDeg: aa.altDeg, azDeg: aa.azDeg, held: !!held && held.radiant === sh.id });
       localDir(aa.azDeg * DEG2RAD, aa.altDeg * DEG2RAD, _dir).multiplyScalar(parts.R * 0.94);
       sprite.position.copy(_dir);
     }
@@ -1493,6 +1493,9 @@ export function createSkyView(ctx, options = {}) {
     },
     /** The showers whose meteors are being drawn and how many an hour this sky would show, or null. */
     get meteors() {
+      // The ground sky's own count of every source active tonight (sky/meteors.js), once it is up.
+      const note = ground ? ground.stats().meteorNote : null;
+      if (note) return note;
       if (!showersNow.length) return null;
       const m = ground ? ground.stats().meteors : null;
       const up = showersNow.filter((s) => s.altDeg > 0);

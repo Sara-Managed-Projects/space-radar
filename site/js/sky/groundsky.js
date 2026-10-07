@@ -805,12 +805,16 @@ export function createGroundSky(ctx, env) {
 
   // ---- meteors (sky/meteors.js): only once a shower is active, never under reduced motion --------
   let meteors = null;
+  let meteorsMod = null;
   let meteorsAsked = false;
+  let sources = [];
+  let sourcesAt = -Infinity;
   function askMeteors() {
     if (meteorsAsked || disposed || reducedMotion || typeof document === 'undefined') return;
     meteorsAsked = true;
     import('./meteors.js').then((m) => {
       if (disposed) return;
+      meteorsMod = m;
       meteors = m.createMeteors({ root, radius: R * 0.972, renderOrder: RO.meteors });
     }).catch((e) => { meteorsAsked = false; console.warn('ground sky: the meteors did not load', e); });
   }
@@ -1469,13 +1473,28 @@ export function createGroundSky(ctx, env) {
     if (artOn && !artAsked) askArt();
     if (art) art.update({ on: artOn, dirEq: lookEq(frame.camera), fovDeg: frame.fovDeg, aspect: w / Math.max(1, h), strength: ART_GAIN * lineNight * Math.max(0, Math.min(1, (frame.fovDeg - 4) / 10)) });
     // Meteors: at the rate the naked eye would count under this sky, whatever the zoom.
-    const showers = options.meteors && !reducedMotion && Array.isArray(frame.showers) ? frame.showers : [];
-    if (showers.length && !meteorsAsked) askMeteors();
-    if (meteors) {
+    // Every source the IMO lists as active tonight, at tonight's rate (sky/meteors.js sourcesAt);
+    // a trip stop's own shower (frame.showers, held whatever the date) at its peak rate.
+    const meteorsOn = options.meteors && !reducedMotion;
+    if (meteorsOn && night > 0.05 && !meteorsAsked) askMeteors();
+    if (meteors && meteorsMod) {
       const eye = limitingMagnitude({ fovDeg: FOV.eye, darkness: options.darkness, sunAltDeg: frame.sunAltDeg, moon: frame.moonBright });
+      if (Math.abs(frame.tMs - sourcesAt) > 60e3) {
+        sourcesAt = frame.tMs;
+        sources = meteorsOn ? meteorsMod.sourcesAt(frame.tMs, observer) : [];
+        for (const sh of (meteorsOn && Array.isArray(frame.showers) ? frame.showers : [])) {
+          if (sh.held && !sources.some((x) => x.id === sh.id)) sources.push({ ...sh, peakZhr: sh.zhr, activity: 1 });
+        }
+      }
       const up = [];
-      for (const sh of showers) if (sh.altDeg > 0) up.push({ ...sh, local: localFromAltAz(sh.azDeg, sh.altDeg) });
-      meteors.update({ showers: up, limitMag: eye, pxPerDeg, strength: night });
+      for (const sh of sources) if (sh.altDeg > 0) up.push(Object.assign(sh, { local: localFromAltAz(sh.azDeg, sh.altDeg) }));
+      meteors.update({ showers: meteorsOn ? up : [], limitMag: eye, pxPerDeg, strength: night });
+      // What the controls say: the strongest source that is up, or the strongest one that is down.
+      const named = sources.filter((x) => !x.sporadic);
+      const best = (list) => list.slice().sort((p, q) => (q.perHour || 0) - (p.perHour || 0) || q.zhr - p.zhr)[0] || null;
+      const lead = best(named.filter((x) => x.altDeg > 0)) || best(named) || best(sources.filter((x) => x.altDeg > 0));
+      const st = meteors.state();
+      stats.meteorNote = lead ? { showers: [lead.display], down: !(lead.altDeg > 0), perHour: st.perHour, drawn: st.drawn, last: st.last, activity: lead.activity, sporadic: !!lead.sporadic, sources: sources.map((x) => ({ id: x.id, zhr: x.zhr, r: x.r, altDeg: x.altDeg })) } : null;
     }
     setLine(here.obj, options.figures && cultureShown === 'western' && frame.fovDeg >= 8);
     if (options.trails && !trails) buildTrails();
@@ -1498,6 +1517,7 @@ export function createGroundSky(ctx, env) {
     setOptions(o) {
       Object.assign(options, o || {});
       labels.at = -Infinity;
+      sourcesAt = -Infinity;
     },
     /** Where a body is as the eye sees it: {azDeg, altDeg} with the air's lift, or null. */
     apparentOf(id) {
