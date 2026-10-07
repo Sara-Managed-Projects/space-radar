@@ -34,7 +34,7 @@
 
 import { COPY } from '../copy/en.js';
 import '../copy/en.later.js';
-import { icon } from './cards.js';
+import { icon } from './icons.js';
 
 export const STORE_KEY = 'sr:keyhint';
 /** Untouched, it goes by itself (about twelve seconds is two slow reads of it). */

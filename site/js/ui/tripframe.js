@@ -110,7 +110,7 @@ import '../copy/en.later.js';
 import { nextTripOrder } from './trippicker.js';
 import { read as readUrl, write as writeUrl } from './urlstate.js';
 import { openShare } from './share.js';
-import { icon } from './cards.js';
+import { icon } from './icons.js';
 import { tripPicture } from './trippics.js';
 // Spec 0069. Static imports, and still not on the first visit: this whole module is imported when
 // the first trip starts (main.js), and these come with it.

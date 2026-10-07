@@ -167,7 +167,7 @@ check(iconOnly >= 8, `only ${iconOnly} icon-only buttons found: the rail, the tr
   // ICONS table is in CREDITS.md's Lucide paragraph, under Lucide's own name for it.
   const para = (/\*\*Lucide\*\*[\s\S]*?refuses an `ICONS` name/.exec(credits) || [''])[0];
   const LUCIDE_NAME = { chevron: 'chevron-right', file: 'file-text' };
-  for (const f of ['cards.js', 'sharesheet.js']) {
+  for (const f of ['icons.js', 'sharesheet.js']) {
     const table = /\nconst ICONS = \{([\s\S]*?)\n\};/.exec(code(read(f)));
     check(!!table, `site/js/ui/${f} has an ICONS table`);
     for (const m of (table ? table[1] : '').matchAll(/^  '?([a-z0-9-]+)'?:/gm)) {

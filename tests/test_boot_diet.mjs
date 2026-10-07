@@ -74,6 +74,12 @@ const DEFERRED = {
   'js/ui/sentence.js': 'the home\'s first line: it arrives with ui/today.js',
   'js/ui/passport.js': 'the passport: main.js fetches it for the dated cards or the trip frame',
   'js/scene/ephpath.js': 'the line of a craft\'s path: ui/missions.js fetches it with the first file',
+  'js/ui/keyhint.js': 'the keys hint: main.js fetches it KEYHINT_MS after sr:layers-ready',
+  'js/ui/icons.js': 'the icons: they arrive with the first module that draws one (the keys hint, the card, the trip frame)',
+  'js/ui/scrubber.js': 'the timeline: SCRUBBER_MS after sr:layers-ready, or on a touch of its seat',
+  'js/ui/today.js': 'the dated cards: TODAY_MS after sr:layers-ready',
+  'js/ui/offline.js': 'the service worker\'s module: OFFLINE_MS after sr:layers-ready',
+  'js/scene/aurora.js': 'the aurora: AURORA_IMPORT_MS after sr:layers-ready',
 };
 for (const [path, why] of Object.entries(DEFERRED)) {
   check(!boot.has(path), `${path} is in the boot graph again (a static import reaches it from main.js). ${why}`);
@@ -196,6 +202,12 @@ const { idleTripState } = await import(join(JS, 'ui/tripstate.js'));
   const main = readFileSync(join(JS, 'main.js'), 'utf8');
   check(/from '\.\/ui\/cardgate\.js'/.test(main) && !/from '\.\/ui\/cards\.js'/.test(main), 'main.js shows the card through ui/cardgate.js');
   check(/from '\.\/ui\/tripgate\.js'/.test(main) && !/from '\.\/ui\/trip\.js'/.test(main), 'main.js makes ctx.trip through ui/tripgate.js');
+  // The keys hint does not bring the card (internal #415 item 5): on a connection that saves data the
+  // warm-up does not run, and the hint used to fetch 188 kB of card for one icon function.
+  const hint = new Set([...graph(join(JS, 'ui/keyhint.js'))].map(rel));
+  check(!hint.has('js/ui/cards.js') && hint.has('js/ui/icons.js'), 'ui/keyhint.js draws its icons from ui/icons.js and does not import the card');
+  check(!/from '\.\/cards\.js'/.test(readFileSync(join(JS, 'ui/tripframe.js'), 'utf8')), 'ui/tripframe.js takes its icons from ui/icons.js too');
+  check(graph(join(JS, 'ui/icons.js')).size === 1, 'ui/icons.js imports nothing');
   // The warm-up is past the two seconds tests/test_first_visit_bytes.mjs waits after sr:layers-ready.
   const warm = /const WARM_MS = (\d+);/.exec(main);
   check(warm && Number(warm[1]) >= 3000, 'main.js warms the deferred modules at least 3 s after sr:layers-ready');
