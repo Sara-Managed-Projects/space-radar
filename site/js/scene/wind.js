@@ -4,7 +4,7 @@
 //             { set(on), state(), update(), dispose() }
 //   state() -> the same shape as scene/earthoverlay.js state(), with id 'wind', so the legend and
 //   the one honest sentence (ui/overlaylegend.js) print it as they print a GIBS map.
-// Also exported, pure, for tests/test_wind.mjs: WIND_ID, SPEEDUP, COUNT, TRAIL, localOf(lat, lon,
+// Also exported, pure, for tests/test_wind.mjs: WIND_ID, SPEEDUP, COUNT, TRAIL, TRAIL_DT, localOf(lat, lon,
 //   out, at), rampAt(speed) -> [r, g, b], WIND_LEGEND
 //
 // OFF THE FIRST VISIT. main.js imports this file when "Wind" is chosen under Earth data in What
@@ -13,8 +13,8 @@
 //
 // WHAT IS DRAWN. A few hundred streaks, each a short tail behind a point that the model's wind
 // carries: where the air ten metres up would go. Colour is speed, on the legend's ramp. THE
-// MOTION IS SPED UP, and the sentence under the legend says by how much: at true speed a gale
-// crosses a pixel in minutes. A streak lives a few seconds and starts again somewhere else, so
+// MOTION IS SPED UP, and the sentence under the legend says by how much (a day of wind a second):
+// at true speed a gale crosses a pixel in minutes. A streak lives a few seconds and starts again somewhere else, so
 // the picture is a texture of the flow, not parcels of air anybody tracked. With reduced motion
 // asked for nothing moves: each streak is drawn once, as a longer piece of the same flow line.
 //
@@ -25,16 +25,22 @@ import * as THREE from '../../vendor/three.module.min.js';
 import { WIND, fetchWind, stepWind, sampleWind } from '../data/wind.js';
 
 export const WIND_ID = WIND.id;
-/** How much faster than the air the streaks move: one second on screen is three hours of wind. */
-export const SPEEDUP = 10800;
-/** How many streaks, and how many pieces in each tail. */
-export const COUNT = 900;
-export const TRAIL = 6;
+/**
+ * How much faster than the air the streaks move: one second on screen is a day of wind. At three
+ * hours a second (the first cut, seen in headless Chrome 2026-10-07) a mean wind of 6 m/s moved a
+ * streak half a degree in a second, three pixels on a whole Earth, and the globe looked untouched.
+ * At a day a second it is five degrees: the trades and the westerlies read as currents.
+ */
+export const SPEEDUP = 86400;
+/** How many streaks, how many pieces in each tail, and how often a tail gains a piece (seconds). */
+export const COUNT = 1200;
+export const TRAIL = 8;
+export const TRAIL_DT = 0.12;
 /** Just above the data overlays' shell (scene/earthoverlay.js SHELL_SCALE 1.003). */
 export const SHELL_SCALE = 1.006;
 const LIFE_S = [2.5, 6];
 const FADE_MS = 900;
-const OPACITY = 0.85;
+const OPACITY = 0.95;
 /** The legend's ramp: calm air in the storm layer's periwinkle, through white, to rocket yellow. */
 export const WIND_LEGEND = { unit: 'm/s', low: '0', high: String(WIND.speedMax), stops: ['#5E78C8', '#9DB4FF', '#E8ECF2', '#FFD166'] };
 
@@ -89,6 +95,7 @@ export function createWind(opts = {}) {
   const speeds = new Float32Array(count);
   const age = new Float32Array(count);
   const life = new Float32Array(count);
+  let tailClock = 0; // seconds since the tails last gained a piece
   const pos = new Float32Array(count * TRAIL * 2 * 3);
   const col = new Float32Array(count * TRAIL * 2 * 4);
 
@@ -102,6 +109,7 @@ export function createWind(opts = {}) {
     lines = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0, depthWrite: false, toneMapped: false }));
     lines.name = 'earth:wind';
     lines.renderOrder = 2;
+    lines.scale.setScalar(SHELL_SCALE);
     lines.frustumCulled = false;
     lines.visible = false;
     earth.add(lines);
@@ -115,13 +123,20 @@ export function createWind(opts = {}) {
     age[i] = 0;
     life[i] = LIFE_S[0] + rand() * (LIFE_S[1] - LIFE_S[0]);
     speeds[i] = sampleWind(grid, p.latDeg, p.lonDeg).speed;
-    // Standing still (reduced motion), or on the first frame: the tail is the flow line already.
-    if (seedTrail) for (let k = 0; k < TRAIL * (still ? 3 : 1); k += 1) advance(i, still ? 0.25 : 0.1);
+    // Standing still (reduced motion), or on the first frame: the tail is the flow line already,
+    // a piece every TRAIL_DT as it would be in motion (twice as long when it will not move).
+    if (seedTrail) for (let k = 0; k < TRAIL; k += 1) { grow(i); advance(i, TRAIL_DT * (still ? 2 : 1)); }
   }
 
-  function advance(i, dtS) {
+  /** The tail gains a piece where the head is now, and loses its oldest. */
+  function grow(i) {
     const base = i * (TRAIL + 1) * 2;
     for (let k = TRAIL; k > 0; k -= 1) { places[base + k * 2] = places[base + (k - 1) * 2]; places[base + k * 2 + 1] = places[base + (k - 1) * 2 + 1]; }
+  }
+
+  /** The head moves with the wind; the tail stays where the air has been. */
+  function advance(i, dtS) {
+    const base = i * (TRAIL + 1) * 2;
     const to = stepWind(grid, places[base], places[base + 1], dtS * SPEEDUP);
     places[base] = to.latDeg;
     places[base + 1] = to.lonDeg;
@@ -191,10 +206,13 @@ export function createWind(opts = {}) {
     const dtS = Math.min(0.1, Math.max(0, (now - last) / 1000));
     last = now;
     if (dtS <= 0) return;
+    tailClock += dtS;
+    const piece = tailClock >= TRAIL_DT;
+    if (piece) tailClock = 0;
     for (let i = 0; i < count; i += 1) {
       age[i] += dtS;
       if (age[i] >= life[i]) spawn(i, false);
-      else advance(i, dtS);
+      else { if (piece) grow(i); advance(i, dtS); }
       write(i);
     }
     lines.geometry.attributes.position.needsUpdate = true;

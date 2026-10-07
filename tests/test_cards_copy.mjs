@@ -539,9 +539,9 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
     st = { id: null, status: 'off' };
     const off = C.overlayBlock(earth, octx);
     check(off && off.hidden === true && off.children[1].textContent === '', 'with none, the block is there and hidden, for the next one to fill');
-    st = { id: 'wind', kind: 'wind', status: 'shown', cls: 'modelled', date: Date.UTC(2026, 9, 7, 12), speedup: 10800, meanSpeed: 7.2, maxSpeed: 28, still: false, credit: 'NOAA', legend: { unit: 'm/s', low: '0', high: '25', stops: ['#5E78C8', '#FFD166'] } };
+    st = { id: 'wind', kind: 'wind', status: 'shown', cls: 'modelled', date: Date.UTC(2026, 9, 7, 12), speedup: 86400, meanSpeed: 7.2, maxSpeed: 28, still: false, credit: 'NOAA', legend: { unit: 'm/s', low: '0', high: '25', stops: ['#5E78C8', '#FFD166'] } };
     const wind = C.overlayBlock(earth, octx);
-    check(wind.children[0].children[0].textContent === 'Wind' && /3 hours of wind in a second/.test(wind.children[1].textContent), 'the wind is keyed the same way');
+    check(wind.children[0].children[0].textContent === 'Wind' && /a day of wind in a second/.test(wind.children[1].textContent), 'the wind is keyed the same way');
     check(C.overlayBlock({ id: 'mars', klass: 'world', meta: {} }, octx) === null && C.overlayBlock(earth, {}) === null, 'no other card has it');
     check(/addEventListener\('sr:overlay'/.test(readFileSync(join(JS, 'ui/cards.js'), 'utf8')), 'and it is repainted when the overlay changes');
   }

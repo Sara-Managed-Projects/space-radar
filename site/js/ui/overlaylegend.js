@@ -44,7 +44,7 @@ function windLine(state) {
     W.what,
     t(W.dated, { date: timeText.utcLong(state.date), time: timeText.utcHm(state.date) }),
     Number.isFinite(state.meanSpeed) ? t(W.mean, { mean: fmt.int(Math.round(state.meanSpeed)), max: fmt.int(Math.round(state.maxSpeed)) }) : '',
-    state.still ? W.still : t(W.sped, { n: fmt.int(hours) }),
+    state.still ? W.still : hours === 24 ? W.spedDay : t(W.sped, { n: fmt.int(hours) }),
     t(W.credit, { credit: state.credit }),
   ].filter(Boolean).join(' ');
 }

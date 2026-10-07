@@ -467,6 +467,7 @@ Object.assign(COPY, {
       dated: 'The forecast is for {date}, {time} UTC.',
       mean: 'About {mean} m/s on average, up to {max}.',
       sped: 'The streaks move {n} hours of wind in a second.',
+      spedDay: 'The streaks move a day of wind in a second.',
       still: 'Each streak is a piece of the flow, standing still.',
       credit: 'Data: {credit}. A weather model, not a measurement.',
     },

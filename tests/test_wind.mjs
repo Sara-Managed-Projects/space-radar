@@ -84,7 +84,7 @@ check(Number.isFinite(W.sampleWind(grid, 90, 0).u) && Number.isFinite(W.sampleWi
   check(/-cl \* Math\.sin\(lonRad\)/.test(src('site/js/scene/earth.js')), 'which is the frame scene/earth.js lays its map in');
   const hex = (c) => '#' + c.map((x) => Math.round(x * 255).toString(16).padStart(2, '0')).join('').toUpperCase();
   check(hex(S.rampAt(0)) === S.WIND_LEGEND.stops[0].toUpperCase() && hex(S.rampAt(25)) === S.WIND_LEGEND.stops[3].toUpperCase() && hex(S.rampAt(99)) === S.WIND_LEGEND.stops[3].toUpperCase(), 'a streak\'s colour is its speed on the legend\'s own ramp');
-  check(S.WIND_LEGEND.high === '25' && S.WIND_LEGEND.unit === 'm/s' && S.SPEEDUP === 10800, 'the legend runs to 25 m/s, and a second on screen is three hours of wind');
+  check(S.WIND_LEGEND.high === '25' && S.WIND_LEGEND.unit === 'm/s' && S.SPEEDUP === 86400, 'the legend runs to 25 m/s, and a second on screen is a day of wind');
 
   const earth = new THREE.Object3D();
   let n = 0;
@@ -99,14 +99,20 @@ check(Number.isFinite(W.sampleWind(grid, 90, 0).u) && Number.isFinite(W.sampleWi
   check(wind.state().status === 'loading' && wind.state().id === 'wind', 'asked for: loading');
   await new Promise((r) => setTimeout(r, 20));
   const st = wind.state();
-  check(st.status === 'shown' && st.kind === 'wind' && st.cls === 'modelled' && st.date === grid.timeMs && st.legend === S.WIND_LEGEND && near(st.maxSpeed, grid.maxSpeed, 1e-4) && st.speedup === 10800 && st.still === false, `shown, with the forecast hour and what the legend needs (${JSON.stringify({ ...st, legend: undefined })})`);
+  check(st.status === 'shown' && st.kind === 'wind' && st.cls === 'modelled' && st.date === grid.timeMs && st.legend === S.WIND_LEGEND && near(st.maxSpeed, grid.maxSpeed, 1e-4) && st.speedup === 86400 && st.still === false, `shown, with the forecast hour and what the legend needs (${JSON.stringify({ ...st, legend: undefined })})`);
   check(asked && asked.u === url && asked.init.credentials === 'omit' && asked.init.referrerPolicy === 'no-referrer', 'one request, with no credentials and no referrer');
   const lines = wind.lines();
   const pos = lines.geometry.attributes.position;
   check(earth.children[0] === lines && lines.isLineSegments && pos.count === S.COUNT * S.TRAIL * 2 && lines.geometry.attributes.color.itemSize === 4, `${S.COUNT} streaks of ${S.TRAIL} pieces, children of the Earth's mesh so they turn with it`);
   let onSphere = true;
   for (let i = 0; i < pos.count; i += 97) onSphere = onSphere && near(Math.hypot(pos.getX(i), pos.getY(i), pos.getZ(i)), 1, 1e-4);
-  check(onSphere && lines.scale.x === 1 && S.SHELL_SCALE > 1.003, 'every vertex on the unit sphere of the mesh');
+  check(onSphere && lines.scale.x === S.SHELL_SCALE && S.SHELL_SCALE > 1.003, 'every vertex on the unit sphere of the mesh, and the mesh lifted clear of the ground and the data overlays');
+  {
+    // A streak has length: at a day a second the mean tail is degrees long, not a dot (seen 2026-10-07).
+    let long = 0;
+    for (let i = 0; i < S.COUNT; i += 1) { const a = i * S.TRAIL * 6; const b = a + (S.TRAIL - 1) * 6 + 3; const d = Math.hypot(pos.array[a] - pos.array[b], pos.array[a + 1] - pos.array[b + 1], pos.array[a + 2] - pos.array[b + 2]); if (d > 0.02) long += 1; }
+    check(long > S.COUNT / 2, `most streaks are more than a degree long when they are first drawn (${long} of ${S.COUNT})`);
+  }
   const before = Array.from(pos.array.slice(0, 600));
   await new Promise((r) => setTimeout(r, 60));
   wind.update();
@@ -115,7 +121,7 @@ check(Number.isFinite(W.sampleWind(grid, 90, 0).u) && Number.isFinite(W.sampleWi
   const moved = before.filter((x, i) => Math.abs(x - pos.array[i]) > 1e-7).length;
   check(moved > 100 && lines.visible && lines.material.opacity > 0 && lines.material.transparent && lines.material.depthWrite === false, `the streaks move with the wind and fade in (${moved} of 600 numbers changed)`);
   const line = L.overlayLine(wind.state());
-  check(/^The wind ten metres above the ground; colour is its speed\. The forecast is for 7 October 2026, 12:00 UTC\. About \d+ m\/s on average, up to 10\. The streaks move 3 hours of wind in a second\. Data: NOAA\/NCEP Global Forecast System, through PacIOOS ERDDAP \(University of Hawaii\)\. A weather model, not a measurement\.$/.test(line), `the legend's sentence: ${line}`);
+  check(/^The wind ten metres above the ground; colour is its speed\. The forecast is for 7 October 2026, 12:00 UTC\. About \d+ m\/s on average, up to 10\. The streaks move a day of wind in a second\. Data: NOAA\/NCEP Global Forecast System, through PacIOOS ERDDAP \(University of Hawaii\)\. A weather model, not a measurement\.$/.test(line), `the legend's sentence: ${line}`);
   check(L.overlayLine({ id: 'wind', kind: 'wind', status: 'loading' }) === COPY.overlay.wind.loading && L.overlayLine({ id: 'wind', kind: 'wind', status: 'failed' }) === COPY.overlay.wind.failed, 'loading and failed have their own words');
   wind.set(false);
   check(wind.state().id === null && wind.state().status === 'off', 'taken away again');
