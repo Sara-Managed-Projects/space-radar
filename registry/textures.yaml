@@ -151,8 +151,9 @@ textures:
       - tier: 0
         file: site/textures/2k_earth_clouds.webp
         px: [2048, 1024]
-        bytes: 575032
+        bytes: 282674
         format: mono
+        make: "Solar System Scope's 2k cloud JPEG (943 kB, in git before #157) as one grey channel, WebP quality 50, PIL method 6, 2026-10-07: 31.9 dB against the JPEG. It was quality 90 and 575 kB, the largest request of a first visit, for a mask that drifts and that the day's live clouds replace seconds later (internal #415 item 2)"
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
