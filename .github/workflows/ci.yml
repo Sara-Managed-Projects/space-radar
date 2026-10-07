@@ -66,6 +66,8 @@ jobs:
         run: python3 scripts/gen_showers_js.py --check
       - name: "The showers' activity mirror matches the registry (internal #416)"
         run: python3 scripts/gen_showers_activity_js.py --check
+      - name: The reels mirror matches the registry (spec 0036)
+        run: python3 scripts/gen_autopilot_js.py --check
       - name: The missions mirror matches the registry (public #452)
         run: python3 scripts/gen_missions_js.py --check
       # The path files (site/data/eph): the registry, the manifest, each .bin, the browser's mirror
@@ -330,6 +332,10 @@ jobs:
       # Start and sound as a toggle, the end with one next trip, the top bar of title and Leave.
       - name: "Trips in the new language: the toolbar, the keyboard, the intro and the end (spec 0061 task 7)"
         run: node tests/test_tripframe.mjs
+      # Spec 0036: the reel's order, the dwell with and without the voice, the watchdog's decisions,
+      # the hands-on and hands-off machine, the reload rule, and the controller on a stub trip.
+      - name: "A screen that plays on its own: the reel, the watchdog, the take-over (spec 0036)"
+        run: node tests/test_autopilot.mjs
       # Spec 0068 task 1: the trip's picture under its card and over its intro, lazy and after the
       # first visit; task 2: the controls hint, once, with keycaps the camera and the chrome answer.
       - name: "Trip cards with pictures: the files, the fade into glass, nothing before the first visit settles (spec 0068)"

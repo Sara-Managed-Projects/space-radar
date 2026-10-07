@@ -1,0 +1,95 @@
+version: 1
+# THE REELS (spec 0036, internal #114, public #238): what a screen plays when nobody is at it.
+#
+# A reel is a PLAYLIST OF TRIPS, not a new kind of choreography: every stop, word, clip and camera
+# move is a trip's own (registry/tours.yaml), so a reel cannot say anything a trip does not, and a
+# trip that is fixed is fixed here too. `#ambient=<id>` (or `#autopilot=<id>`) plays one;
+# `#ambient=1` plays `default`. ui/autopilot.js runs them, ui/autopilotplan.js is the arithmetic,
+# docs/RUN_LOCALLY.md ("A screen in a corridor") is what a school reads.
+#
+# Spec 0036 as designed on 2026-09-22 drew a reel as wordless waypoints. By the time it was built
+# there were 26 narrated trips with a present mode, and Ivan asked for those to play back to back
+# (2026-10-07); the spec's design.md carries the change.
+#
+# A row:
+#   id        what the link names. Not a trip's id and not a layer's (scripts/check_registry.py).
+#   title     the name on the "Play on its own" menu and in the docs.
+#   blurb     one line: who it is for.
+#   minutes   one lap, about, WITH the voice. Checked against the trips' own lengths: the silent
+#             lap may not be longer than this by more than 10 %, nor this longer than 1.4 silent laps.
+#   sound     `ask`: one card asks for a key press to start the sound (a browser plays nothing
+#             before one) and the reel starts silent, with captions, after `gate_s`.
+#             `off`: it starts silent at once; `&sound=1` in the link still asks.
+#   place     true when every trip starts from the visitor's own ground: such a reel says so, and
+#             a screen with no place set falls back to `default` (ui/autopilot.js).
+#   trips     trip ids, in order. A trip that cannot run today (its data is not here, the network
+#             is gone, it needs a place) is skipped without a word on screen.
+#
+# Every reel loops. Nothing here starts on its own: a link or the "Play on its own" row does.
+default: lobby
+
+# Seconds, read by ui/autopilotplan.js. The watchdog's budgets are the longest a healthy stop was
+# ever seen to take, doubled; see the comments there before changing one.
+timing:
+  title_s: 8          # the card between two trips
+  gate_s: 10          # how long the sound card waits for a key
+  offer_s: 10         # how long "Take the controls" stays up after a key or a touch
+  idle_s: 120         # hands off for this long and the reel takes the screen back
+  cursor_s: 3         # the pointer hides after this long still
+  reload_h: 12        # a full reload between two trips once the page is this old
+
+reels:
+  - id: classroom-45
+    title: "A lesson's worth"
+    blurb: "Twelve school favourites, from the living Earth to the edge of what we can see."
+    minutes: 45
+    sound: ask
+    trips:
+      - the-living-earth
+      - people-in-space
+      - satellites-and-junk
+      - moon-landings
+      - mars-where-we-have-driven
+      - a-year-in-a-minute
+      - outer-solar-system
+      - the-sun-today
+      - the-constellations
+      - life-of-a-star
+      - black-holes
+      - to-the-edge
+
+  - id: lobby
+    title: "For a lobby or a corridor"
+    blurb: "The most visual trips, good with no sound, round and round for as long as it is on."
+    minutes: 50
+    sound: "off"
+    trips:
+      - a-year-in-a-minute
+      - back-to-the-moon
+      - the-living-earth
+      - outer-solar-system
+      - the-constellations
+      - mars-where-we-have-driven
+      - the-sun-today
+      - to-the-edge
+      - moon-landings
+      - life-of-a-star
+      - birth-of-the-solar-system
+      - through-a-telescope
+      - asteroids-that-come-close
+      - travel-to-exoplanets
+
+  - id: tonight
+    title: "Tonight, from here"
+    blurb: "The trips that start from your own ground, for an evening at an observatory."
+    minutes: 20
+    sound: ask
+    place: true
+    trips:
+      - tonight-from-your-street
+      - planets-tonight
+      - moon-phases
+      - a-dark-sky
+      - comets-and-meteors
+      - journey-to-the-station
+      - roof-to-the-edge

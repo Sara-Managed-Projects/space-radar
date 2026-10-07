@@ -3029,6 +3029,107 @@ def credits_section(text: str, number: int) -> str | None:
     return m.group(1) if m else None
 
 
+# --- registry/autopilot.yaml (spec 0036: the reels a screen plays on its own) -------------------
+# A reel is a list of trip ids, so the only lies it can tell are about the trips: one that does not
+# exist, the same one twice, a length that is not the trips' own, a "from your own ground" that is
+# not. Every refusal below is one of those. tests/test_refusals.py breaks each on purpose.
+AUTOPILOT_SOUND = ("ask", "off")
+AUTOPILOT_MIN_TRIPS = 3
+AUTOPILOT_TIMING = {  # key: (lowest, highest) -- a kiosk that reloads every minute, or never, is a bug
+    "title_s": (3, 30), "gate_s": (5, 60), "offer_s": (5, 60), "idle_s": (30, 1800),
+    "cursor_s": (1, 30), "reload_h": (1, 168),
+}
+
+
+def check_autopilot(layer_ids: set) -> list:
+    path = REG / "autopilot.yaml"
+    if not path.exists():
+        return []
+    doc = load("autopilot.yaml")
+    reels = rows(doc, "reels", "autopilot.yaml")
+    tours_doc = load("tours.yaml") if (REG / "tours.yaml").exists() else {}
+    tours = {t.get("id"): t for t in (tours_doc.get("tours") or []) if isinstance(t, dict)}
+
+    def silent_s(trip: dict) -> float:
+        # The trip's own stated length (scripts/gen_tours_js.py trip_of): its dwells and a flight each.
+        stops = [s for s in (trip.get("stops") or []) if isinstance(s, dict)]
+        return sum(tour_dwell_ms((s.get("card") or {}).get("body")) + 3350 for s in stops) / 1000.0
+
+    timing = doc.get("timing")
+    if not isinstance(timing, dict):
+        fail("autopilot.yaml", "no `timing:` block -- the seconds ui/autopilotplan.js reads")
+        timing = {}
+    for key, (lo, hi) in AUTOPILOT_TIMING.items():
+        v = timing.get(key)
+        if not is_number(v) or not lo <= v <= hi:
+            fail("autopilot.yaml[timing]", f"`{key}` is {v!r}; it must be a number from {lo} to {hi}")
+    for key in timing:
+        if key not in AUTOPILOT_TIMING:
+            fail("autopilot.yaml[timing]", f"`{key}` is read by nothing")
+    title_s = timing.get("title_s") if is_number(timing.get("title_s")) else 0
+
+    seen: set = set()
+    for r in reels:
+        if not isinstance(r, dict):
+            fail("autopilot.yaml", f"a row that is not a mapping: {r!r}")
+            continue
+        rid = r.get("id")
+        where = f"autopilot.yaml[{rid}]"
+        if not isinstance(rid, str) or not re.fullmatch(r"[a-z][a-z0-9-]*", rid):
+            fail(where, "the id is what a link carries (`#ambient=<id>`): lower-case letters, digits and hyphens")
+            continue
+        if rid in seen:
+            fail(where, "the id is used twice")
+        seen.add(rid)
+        if rid in tours:
+            fail(where, "the id is also a trip's -- `#ambient=<id>` could not tell a reel from one trip played alone")
+        if rid in layer_ids:
+            fail(where, "the id is also a layer's -- two registries, one name")
+        if rid in ("off", "on"):
+            fail(where, "that word is what switches the mode on and off in the link")
+        for key in ("title", "blurb"):
+            text = r.get(key)
+            if not isinstance(text, str) or not text.strip():
+                fail(where, f"no `{key}`")
+            elif "--" in text:
+                fail(where, f"`{key}` has ` -- ` in it; write a comma or a colon")
+        if r.get("sound") not in AUTOPILOT_SOUND:
+            fail(where, f"`sound` is {r.get('sound')!r}; it is one of {', '.join(AUTOPILOT_SOUND)} "
+                        "(quote \"off\": bare, YAML reads it as false)")
+        trips = r.get("trips")
+        if not isinstance(trips, list) or len(trips) < AUTOPILOT_MIN_TRIPS:
+            fail(where, f"fewer than {AUTOPILOT_MIN_TRIPS} trips -- that is one trip on repeat, and `present=auto` is that")
+            continue
+        total = 0.0
+        own_ground = []
+        for tid in trips:
+            trip = tours.get(tid)
+            if trip is None:
+                fail(where, f"`{tid}` is not a trip in registry/tours.yaml")
+                continue
+            total += silent_s(trip) + title_s
+            own_ground.append(bool(trip.get("requires_observer")))
+        if len(set(trips)) != len(trips):
+            fail(where, "a trip is listed twice -- a lap that repeats itself reads as a stuck screen")
+        if own_ground and all(own_ground) != bool(r.get("place")):
+            fail(where, "`place: true` is for a reel whose every trip starts from the visitor's own ground, "
+                        "and only for that one: the screen says so, and falls back when no place is set")
+        minutes = r.get("minutes")
+        if not is_number(minutes) or minutes <= 0:
+            fail(where, "no `minutes` -- the lap's length is the one promise a reel makes")
+        elif total and not (total / 60.0 <= minutes * 1.1 and minutes <= total / 60.0 * 1.4):
+            fail(where, f"`minutes: {minutes}` and the trips' own lengths disagree: a silent lap is "
+                        f"{total / 60.0:.1f} min, and the voice adds up to two fifths. One promise, one number")
+    default = doc.get("default")
+    if reels and default not in seen:
+        fail("autopilot.yaml", f"`default: {default}` names no reel -- it is what `#ambient=1` plays")
+    else:
+        row = next((r for r in reels if isinstance(r, dict) and r.get("id") == default), None)
+        if row and row.get("place"):
+            fail("autopilot.yaml", "the default reel needs a place -- a screen nobody set up would have nothing to play")
+    return reels
+
+
 def check_audio() -> list:
     path = REG / "audio.yaml"
     if not path.exists():
@@ -4190,6 +4291,7 @@ def main() -> int:
     systems = check_systems()
     budgets = check_budgets()
     audio = check_audio()
+    check_autopilot({l.get("id") for l in layers})
     check_textures(textures, world_ids)
     check_tilesets(world_ids)
     overlays = check_overlays(world_ids)

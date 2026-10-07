@@ -655,6 +655,29 @@ CASES: list[tuple[str, str, str, str]] = [
      "stages.yaml", "centre: star-trappist-1", "centre: sun"),
     ("a system stage in a unit other than 100 000 km, the 1 000-times slip spec 0028 made twice",
      "stages.yaml", "unit_km: 100000              #", "unit_km: 100000000           #"),
+    # --- registry/autopilot.yaml (spec 0036) --------------------------------------------------
+    # A reel is a list of trips, and each case is a way it could promise something the trips do
+    # not hold: a trip that is not there, one twice, a wrong length, a place it does not need.
+    ("a reel naming a trip that does not exist",
+     "autopilot.yaml", "      - back-to-the-moon\n", "      - back-to-the-mooon\n"),
+    ("a reel with the same trip twice",
+     "autopilot.yaml", "      - back-to-the-moon\n", "      - a-year-in-a-minute\n"),
+    ("a reel whose id is a trip's",
+     "autopilot.yaml", "  - id: lobby\n", "  - id: moon-landings\n"),
+    ("a reel whose stated minutes are not its trips'",
+     "autopilot.yaml", "    minutes: 45\n", "    minutes: 15\n"),
+    ("a reel of two trips",
+     "autopilot.yaml", "      - tonight-from-your-street\n      - planets-tonight\n      - moon-phases\n      - a-dark-sky\n      - comets-and-meteors\n", ""),
+    ("a reel marked `place` that does not start from the visitor's ground",
+     "autopilot.yaml", '    sound: "off"\n', '    sound: "off"\n    place: true\n'),
+    ("a default that names no reel",
+     "autopilot.yaml", "default: lobby", "default: foyer"),
+    ("a default reel that needs a place",
+     "autopilot.yaml", "default: lobby", "default: tonight"),
+    ("a reel's sound written bare, which YAML reads as false",
+     "autopilot.yaml", 'sound: "off"', "sound: off"),
+    ("a reload every quarter of an hour",
+     "autopilot.yaml", "reload_h: 12 ", "reload_h: 0.25 "),
     # --- registry/audio.yaml (spec 0035) ------------------------------------------------------
     # Sound is somebody else's recording, and the one asset a visitor cannot see is credited. Each
     # case is a way a row could ship a file with no credit, over the budget, on a rung the engine
