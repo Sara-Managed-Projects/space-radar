@@ -245,13 +245,13 @@ clips:
   - {trip: "moon-phases", stop: "waxing", hash: "c97cc1132be334c5", seconds: 20.34, words: 56, lufs: -16.4, opus: 81276, m4a: 105031, vtt: 386}
   - {trip: "moon-phases", stop: "full", hash: "34d88dc10fc5c891", seconds: 18.94, words: 56, lufs: -16.5, opus: 74309, m4a: 97859, vtt: 388}
   - {trip: "moon-phases", stop: "waning", hash: "e8a898df9fc27b69", seconds: 15.37, words: 40, lufs: -16.4, opus: 61140, m4a: 79820, vtt: 310}
-  - {trip: "moon-phases", stop: "far-side", hash: "cbbcabe0769e9b22", seconds: 18.32, words: 51, lufs: -16.6, opus: 72375, m4a: 94816, vtt: 345}
-  - {trip: "moon-phases", stop: "shadow", hash: "0491f8573ba227ed", seconds: 19.92, words: 54, lufs: -16.6, opus: 79231, m4a: 102858, vtt: 376}
-  - {trip: "moon-phases", stop: "tonight", hash: "5619b17727c8d1d2", seconds: 17.96, words: 48, lufs: -16.5, opus: 71987, m4a: 93078, vtt: 352}
-  - {trip: "the-sun-today", stop: "star", hash: "bd4ec6631a221617", seconds: 19.01, words: 48, lufs: -16.4, opus: 75431, m4a: 98294, vtt: 346}
-  - {trip: "the-sun-today", stop: "spots", hash: "97f0953263912de3", seconds: 20.15, words: 51, lufs: -16.5, opus: 80151, m4a: 104162, vtt: 383}
-  - {trip: "the-sun-today", stop: "eight-minutes", hash: "598f16af239653f7", seconds: 20.22, words: 57, lufs: -16.4, opus: 80776, m4a: 104379, vtt: 394}
-  - {trip: "the-sun-today", stop: "wind", hash: "17264fb1092437fd", seconds: 23.4, words: 53, lufs: -16.5, opus: 93186, m4a: 120679, vtt: 431}
+  - {trip: "moon-phases", stop: "far-side", hash: "fcf6c9cce6d044b2", seconds: 17.36, words: 51, lufs: -16.6, opus: 68764, m4a: 89818, vtt: 345}
+  - {trip: "moon-phases", stop: "shadow", hash: "ae209792a7422e36", seconds: 19.31, words: 54, lufs: -16.6, opus: 78780, m4a: 99815, vtt: 376}
+  - {trip: "moon-phases", stop: "tonight", hash: "700b1dd03b06aef2", seconds: 17.38, words: 48, lufs: -16.5, opus: 74089, m4a: 90035, vtt: 352}
+  - {trip: "the-sun-today", stop: "star", hash: "e536eb9c56132326", seconds: 18.42, words: 48, lufs: -16.4, opus: 72978, m4a: 95251, vtt: 346}
+  - {trip: "the-sun-today", stop: "spots", hash: "dd292a2db5d41550", seconds: 19.73, words: 51, lufs: -16.6, opus: 78433, m4a: 101988, vtt: 383}
+  - {trip: "the-sun-today", stop: "eight-minutes", hash: "e594d15accf2966e", seconds: 19.28, words: 57, lufs: -16.6, opus: 76909, m4a: 99598, vtt: 394}
+  - {trip: "the-sun-today", stop: "wind", hash: "08f8a1d143892a0c", seconds: 22.61, words: 53, lufs: -16.4, opus: 90696, m4a: 116550, vtt: 431}
   - {trip: "the-sun-today", stop: "aurora", hash: "61a5befc52712356", seconds: 20.67, words: 53, lufs: -16.6, opus: 82649, m4a: 106770, vtt: 391}
   - {trip: "the-sun-today", stop: "scale", hash: "c8d9fb8a7f3b9045", seconds: 17.09, words: 44, lufs: -16.5, opus: 70863, m4a: 88514, vtt: 326}
   - {trip: "the-sun-today", stop: "home", hash: "e4d502283e1fb489", seconds: 19.99, words: 51, lufs: -16.3, opus: 81436, m4a: 103292, vtt: 393}
