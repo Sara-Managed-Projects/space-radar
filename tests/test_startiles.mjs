@@ -78,7 +78,10 @@ const index = JSON.parse(readFileSync(join(ROOT, 'site/data/startiles/index.json
 check(index.licence === 'CC BY-SA 4.0' && /AT-HYG v4\.0/.test(index.source), 'the index names AT-HYG and its licence');
 check(index.levels.length === T.LEVELS.length && index.levels.every((l, i) => l.nside === T.LEVELS[i].nside && l.dir === T.LEVELS[i].dir && l.from === T.LEVELS[i].from && l.to === T.LEVELS[i].to), 'the script\'s levels are the reader\'s');
 check(index.stars > 400000 && index.bytes < 3000000, `over 400 000 stars in under 3 MB (${index.stars} in ${index.bytes})`);
-check(index.levels.every((l) => l.largest_tile_bytes < 20000), 'no tile is over 20 kB');
+const budgets = readFileSync(join(ROOT, 'registry/budgets.yaml'), 'utf8');
+const budget = (id) => Number((new RegExp(`id: ${id}, value: (\\d+)`).exec(budgets) || [])[1]);
+check(budget('star_tile_bytes') > 0 && index.levels.every((l) => l.largest_tile_bytes <= budget('star_tile_bytes')), `no tile is over the budget (${budget('star_tile_bytes')} B)`);
+check(budget('star_tiles_total_bytes') > 0 && index.bytes <= budget('star_tiles_total_bytes'), `all the tiles together are inside theirs (${index.bytes} of ${budget('star_tiles_total_bytes')} B)`);
 // Orion's tile, read back: every star in its own tile, inside the level's magnitudes, brightest first.
 for (const level of T.LEVELS) {
   const pix = T.ang2pix(level.nside, radec(83.8, -5.4));

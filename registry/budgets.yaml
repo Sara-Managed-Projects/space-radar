@@ -74,6 +74,11 @@ budgets:
   # naked-eye file the first visit already has. It was stars3d.bin and its names: 2 913 592 B.
   # scripts/build-skystars.py writes the files; tests/test_skystars.mjs holds the row.
   - {id: sky_entry_star_bytes, value: 110000, unit: bytes, since: 2026-10-06, reason: "skystars-1.bin (81 624 B: the stars from magnitude 6.0 to 7.0) and skystars.names.json (14 847 B), measured 2026-10-06, with room"}
+  # 2026-10-07 (internal #353): the stars past HYG, in HEALPix tiles a view asks for by where it looks
+  # and only once the field has closed far enough to show one. scripts/build-startiles.py writes them;
+  # tests/test_startiles.mjs holds both rows.
+  - {id: star_tile_bytes, value: 20000, unit: bytes, since: 2026-10-07, reason: "one tile: the densest are 14 462 B (nside 2, to magnitude 9) and 14 480 B (nside 8, 9 to 10.5), both in the Milky Way"}
+  - {id: star_tiles_total_bytes, value: 2700000, unit: bytes, since: 2026-10-07, reason: "816 tiles, 435 144 stars at six bytes each: 2 627 184 B measured 2026-10-07; what a visitor who swept the whole sky with binoculars would have downloaded"}
   - {id: og_png_min_bytes, value: 25000, unit: bytes, since: 2026-10-07, reason: "under this a 1200x630 frame is empty (#157's lesson). It was 50 000 while a browser's canvas wrote the PNGs; scripts/build_trip_og.py writes them optimised, and one small lit world on black (Didymos, M87's ring) is 33 to 35 kB, where the band's words over an empty frame are about 10"}
   - {id: og_png_max_bytes, value: 400000, unit: bytes, since: 2026-10-07, reason: "one share picture per trip, 26 of them: a 1200x630 PNG of a world on black is 60 to 300 kB and the heaviest truecolour one is the Moon's ground at 298 kB; a frame of star points that does not fit is written with a 256-colour palette (scripts/build_trip_og.py). Never fetched by the app (og_at_boot_bytes)"}
   # home_js_kb (8 kB, pending on spec 0042) was removed on 2026-10-07: spec 0042 was superseded by

@@ -23,6 +23,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | Icons | Lucide (nine, inlined) | ISC, MIT | [1](#1-code-libraries) |
 | Planet, moon and sky maps | Solar System Scope; NASA, USGS and mission teams | CC BY 4.0; public domain | [2](#2-textures) |
 | Stars and constellations | d3-celestial; HYG v4.4 | BSD-3-Clause; CC BY-SA 4.0 | [3](#3-star-and-constellation-data), [3c](#3c-stars-in-three-dimensions--hyg-cc-by-sa-40) |
+| Fainter stars, which constellation, meteor activity | AT-HYG v4.0; CDS VI/42; the IMO's 2027 calendar | CC BY-SA 4.0; a catalogue; facts, cited | [3j](#3j-the-sky-from-the-ground-round-three--at-hyg-cds-vi42-the-imos-working-list-and-a-model-of-the-air) |
 | Deep-sky objects | OpenNGC; Wikipedia for distances | CC BY-SA 4.0; facts, cited per row | [3d](#3d-deep-sky-objects--openngc-cc-by-sa-40-and-the-distances-wikipedias-editors-collected) |
 | The Milky Way | our illustration, from Reid et al. 2019 | measurements, cited | [3e](#3e-the-milky-way-model--an-illustration-built-from-published-measurements) |
 | 3D spacecraft models | NASA 3D Resources | public domain (NASA media guidelines) | [3b](#3b-3d-models--nasa-public-domain) |
@@ -834,7 +835,50 @@ drawn at the rate the observers' formula gives, ZHR × sin(radiant altitude) × 
 − 6.5) (Wikipedia, "Zenithal hourly rate", read 2026-10-06), with each shower's entry speed from the
 table in Wikipedia's "List of meteor showers" (read the same day; `registry/showers.yaml` `v_kms`).
 The International Meteor Organization's own table of population indices could not be read that day
-(imo.net was being rebuilt), so one value, r = 2.5, stands in for every shower and the code says so.
+(imo.net was being rebuilt), so one value, r = 2.5, stood in for every shower until §3j.
+
+## 3j. The sky from the ground, round three — AT-HYG, CDS VI/42, the IMO's working list, and a model of the air
+
+Everything here is drawn only in the sky from the ground and fetched only there
+(`site/js/sky/`); none of it is on a first visit. Sources read on 2026-10-07.
+
+| Files | What | Source | Licence or terms, as the source states them | Changes |
+|---|---|---|---|---|
+| `site/data/startiles/n2/*.bin` (48), `n8/*.bin` (768), `index.json` | 435 144 stars to magnitude 10.5 that the HYG files (§3c) do not have, drawn when the field of view has closed far enough to show them | **AT-HYG v4.0**, "Augmented Tycho - HYG", by David Nash (<https://codeberg.org/astronexus/athyg>), subset `data/subsets/athyg_40_reduced_m11.csv.gz`. Its own sources, from its `ACKNOWLEDGMENTS.md`: the Hipparcos and Tycho-2 catalogues (ESA 1997, SP-1200), Gaia DR3 (ESA/Gaia/DPAC), the Yale Bright Star Catalogue, the Gliese-Jahreiss catalogue | README: "This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License" (v3.0 and later) | `scripts/build-startiles.py`: cut at magnitude 10.5; every star within 20 arcseconds and 1.5 magnitudes of one already in `stars.bin` or `skystars-*.bin` left out (104 709); a direction, a magnitude and a B-V each, six bytes, by HEALPix tile (RING, nside 2 and 8) |
+| `site/js/sky/constellation.js` (the table inside it) | which of the 88 constellations a point of the sky is in | CDS catalogue VI/42, *Identification of a Constellation From Position*, Nancy G. Roman, PASP 99, 695 (1987) (<https://cdsarc.cds.unistra.fr/ftp/VI/42/>, file `data.dat`): the IAU's borders (Delporte 1930) as 357 rows | a catalogue CDS distributes for scientific use, with no licence text of its own; the borders are a definition, as §3i says of VI/49 | the 357 rows kept as they are, numbers shortened; precession to 1875.0 by the IAU 1976 rotation, as Roman's own program |
+| `registry/showers.yaml` (`r`, `active_from`, `active_to`, `sol`, `antihelion`), mirrored to `site/js/data/showers-activity.js` | each shower's population index, activity period and the Sun's longitude at its maximum; the antihelion source | International Meteor Organization, *2027 Meteor Shower Calendar* (IMO INFO(3-26), edited by Jürgen Rendtel), Table 5, "Working List of Visual Meteor Showers" (<https://www.imo.net/ShCal27s.pdf>) | facts, cited; no text or table layout is reproduced | eight of the table's rows and its first (the antihelion source) |
+
+**AT-HYG and Gaia, and what was refused.** The brief for this round named ESA's Gaia archive as
+the source for fainter stars. Its terms were read on 2026-10-07
+(<https://www.cosmos.esa.int/web/gaia-users/license>,
+<https://www.cosmos.esa.int/web/esdc/terms-and-conditions>): data from ESA's science archives are
+distributed under **CC BY-NC 3.0 IGO**, with commercial use only by request to ESA. This site ships
+nothing under a non-commercial licence (the same rule that left out one sky culture in §3i and two
+voices in §9), so nothing was downloaded from the Gaia archive and nothing here is a cut of it.
+AT-HYG is a compilation its author publishes under CC BY-SA 4.0, as he does the HYG database of
+§3c; its positions and magnitudes for these stars are Tycho-2's and Hipparcos's, and it uses Gaia
+DR3 for distances, which these files do not carry. **If you build something commercial on this
+repository, read both sets of terms yourself**: a share-alike compilation does not settle what
+ESA's terms mean for the catalogues inside it, and we are not lawyers. Credit to keep wherever
+the stars are shown with credits: *Stars: HYG v4.4 and AT-HYG v4.0, David Nash, CC BY-SA 4.0;
+from the Hipparcos and Tycho-2 catalogues (ESA).*
+
+**The colour of the sky** (`site/js/sky/skyair.js`) is computed, not a picture: sunlight scattered
+once by air (Rayleigh) and haze (Mie) with ozone's absorption, using the coefficients the graphics
+literature has used since Nishita et al., *Display of the Earth taking into account atmospheric
+scattering* (SIGGRAPH 1993), Bruneton and Neyret, *Precomputed atmospheric scattering* (EGSR 2008)
+and Hillaire, *A scalable and production ready sky and atmosphere rendering technique* (EGSR 2020),
+and Schüler's closed form of the Chapman function (*GPU Pro 3*, 2012). No code of theirs is used.
+What that model cannot give (the blue of late twilight, which is light scattered twice) is a drawn
+stand-in and the file says where. **The land** (`site/js/sky/landscape.js`) is drawn: hills and
+roofs generated from the place's coordinates. Two things in it are read from maps this file
+already credits: whether the place is a city (§2's night lights, through the kind of sky) and in
+which directions there is open water within 25 km (§2's Earth water mask, Solar System Scope,
+CC BY 4.0, read in the visitor's browser; the place is never sent anywhere). **A shower's rate
+away from its peak** (`site/js/sky/meteors.js`) is a model: the IMO lists no slopes, so the curve
+is a two-sided exponential from the peak's ZHR to one an hour on the activity period's first and
+last day (the form is Jenniskens, *Meteor stream activity I*, A&A 287, 990, 1994; the slopes are
+ours). The antihelion source is drawn as the IMO lists it; the random background is not drawn.
 
 ## 4. Runtime data sources
 
