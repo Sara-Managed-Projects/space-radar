@@ -64,7 +64,7 @@ jobs:
         run: python3 scripts/gen_aliases_js.py --check
       - name: The showers mirror matches the registry
         run: python3 scripts/gen_showers_js.py --check
-      - name: The showers' activity mirror matches the registry (internal #416)
+      - name: "The showers' activity mirror matches the registry (internal #416)"
         run: python3 scripts/gen_showers_activity_js.py --check
       - name: The missions mirror matches the registry (public #452)
         run: python3 scripts/gen_missions_js.py --check
@@ -623,6 +623,16 @@ jobs:
         run: node tests/test_skyculture.mjs
       - name: "the compact star files of the sky from the ground"
         run: node tests/test_skystars.mjs
+      - name: "The sky's colour from the air, and the land under it: the model's limits (sky round three)"
+        run: node tests/test_skyair.mjs
+      - name: "Star tiles, which constellation, star trails (internal #353, #417)"
+        run: node tests/test_startiles.mjs
+      - name: "A shower over its whole activity period, each with its own r (internal #416)"
+        run: node tests/test_meteors.mjs
+      - name: "The deep sky tonight, the night's moments, my view, one apparent place, no label twice (internal #358, #300, #418, #372)"
+        run: node tests/test_sky_round3.mjs
+      - name: "The sky from the ground built and run for a night without a browser"
+        run: node tests/test_groundsky_smoke.mjs
       - name: "a star as a disc of its own size"
         run: node tests/test_stardisc.mjs
       - name: "the Sun close up: limb darkening, today's sunspot groups"

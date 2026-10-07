@@ -801,7 +801,7 @@ Object.assign(COPY, {
         art: 'The western figures as drawings, by Johan Meuris',
         bounds: 'The official borders of the 88 constellations',
         meteors: 'Streaks from the showers active tonight, at tonight’s rate',
-        trails: 'Each bright star’s last hour, as a one-hour exposure records it',
+        trails: 'Each bright star’s last hour, as a long exposure',
       },
       // The sky's own time (check 15): the night's three moments, and a strip to drag.
       time: 'Time in the sky',
@@ -829,7 +829,7 @@ Object.assign(COPY, {
       landscape: {
         city: 'Skyline: a city’s, drawn. Not your street.',
         hills: 'Skyline: hills, drawn. Not your own.',
-        coast: 'Skyline: the sea to the {dir}, from the Earth’s water map; the land is drawn.',
+        coast: 'Sea to the {dir}, from the water map. Land drawn.',
       },
       artWesternOnly: 'Pictures belong to the western figures',
       // Whose sky (internal #355). Each note says whose reading the figures are and under which
@@ -853,8 +853,8 @@ Object.assign(COPY, {
       meteorNote: '{name}: about {n} an hour in this sky.',
       meteorFew: '{name}: under one an hour in this sky.',
       meteorDown: '{name}: the radiant is down, no streaks.',
-      meteorHonest: 'Tonight’s rate, modelled from the IMO’s list. Streaks are illustrative.',
-      meteorSporadic: 'No shower tonight: the antihelion source, about {n} an hour.',
+      meteorHonest: 'Tonight’s rate is a model. Streaks are illustrative.',
+      meteorSporadic: 'No shower tonight. Antihelion source: {n} an hour.',
       darkness: 'Your sky',
       darknessModes: { city: 'City', town: 'Town', dark: 'Dark place' },
       // Auto reads the kind of sky off NASA's map of the Earth's night lights at the place
@@ -874,7 +874,7 @@ Object.assign(COPY, {
       },
       red: 'Red light',
       redTitle: 'Turn the page red to keep your eyes used to the dark',
-      honesty: 'Stars measured, planets computed; the air modelled, the skyline drawn.',
+      honesty: 'Stars measured, planets computed, air modelled, land drawn.',
     },
   },
 
