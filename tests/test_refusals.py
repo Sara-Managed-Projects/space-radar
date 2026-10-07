@@ -1106,8 +1106,8 @@ TOUR_CASES: list[tuple[str, str, str]] = [
      "        seen_from: earth\n        frame_radii: 5.2\n",
      "        seen_from: moon\n        frame_radii: 5.2\n"),
     ("a camera held on one side and told to drift as well",
-     "        time: 2027-01-12T00:00:00Z\n        rate: 36000\n        drift_deg: 0\n",
-     "        time: 2027-01-12T00:00:00Z\n        rate: 36000\n        drift_deg: 20\n"),
+     "        time: 2027-01-13T00:00:00Z\n        rate: 36000\n        drift_deg: 0\n",
+     "        time: 2027-01-13T00:00:00Z\n        rate: 36000\n        drift_deg: 20\n"),
     ("a place to stand over on the Sun, which has no ground",
      "        target: {world: sun}\n        frame_radii: 6\n", "        target: {world: sun}\n        frame_radii: 6\n        over: [10, 10]\n"),
     # --- 2026-10-06, the remaining shows: a portrait, a kind of sky, the next shower, counted lines --
