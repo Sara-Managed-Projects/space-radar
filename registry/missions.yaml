@@ -56,6 +56,12 @@
 #
 # Not here: any future event whose date is a plan (those are the launches list's business, from
 # Launch Library).
+#
+# `predicted: true` (2026-10-07, internal #424) IS THE ONE EXCEPTION, and it is not a plan: a pass
+# that celestial mechanics has already fixed and NASA publishes as a date. The card writes
+# "(predicted)" after the date, the event must be `place: path` (so the path file's own "this is a
+# prediction" line is under it), and tests/test_missions.mjs refuses a future date on any other
+# row. One row today: Apophis on 13 April 2029.
 version: 1
 reviewed_on: 2026-10-07
 
@@ -227,3 +233,19 @@ missions:
       - {id: unity, date: "1998-12-06", precision: day, title: "Two become one", text: "The shuttle Endeavour's robot arm captures Zarya and mates it to Unity: the first two modules are joined.", place: none, source: {name: "NASA, STS-88", url: "https://www.nasa.gov/mission/sts-88/"}}
       - {id: first-crew, date: "2000-11-02", precision: day, title: "People move in", text: "Expedition 1 docks. The station has been continuously inhabited since.", place: none}
       - {id: last-shuttle, date: "2011-07-08", precision: day, title: "The last shuttle sets off", text: "Atlantis launches on STS-135, the final Space Shuttle mission, with supplies and spare parts for the station.", place: none, source: {name: "NASA, STS-135", url: "https://www.nasa.gov/mission/sts-135/"}}
+
+  # Apophis has no spacecraft and one date everybody asks about (internal #424). Read 2026-10-07 on
+  # NASA's page: "will safely pass close to Earth on April 13, 2029", "about 20,000 miles (32,000
+  # kilometers) from our planet's surface -- closer than the distance of many satellites in
+  # geosynchronous orbit". NASA gives the day; `path_at` is the closest minute in JPL's track
+  # (registry/ephemerides.yaml asteroid-99942, solution JPL#220), as the asteroid trip's stop uses.
+  - id: apophis
+    record: asteroid-99942
+    display: Apophis
+    read: 2026-10-07
+    source: {name: "NASA Science, Apophis", url: "https://science.nasa.gov/solar-system/asteroids/apophis/"}
+    events:
+      # "discovered on June 19, 2004, by astronomers Roy Tucker, David Tholen, and Fabrizio Bernardi
+      # at the Kitt Peak National Observatory in Tucson, Arizona" (the same page, the same day).
+      - {id: discovery, date: "2004-06-19", precision: day, title: "Discovered", text: "Roy Tucker, David Tholen and Fabrizio Bernardi find it from Kitt Peak National Observatory in Arizona.", place: none}
+      - {id: earth-2029, date: "2029-04-13", precision: day, predicted: true, title: "Past Earth", text: "Apophis passes about 32 000 km above the ground, closer than many satellites in geosynchronous orbit. It will miss.", place: path, path_at: "2029-04-13T21:45:00Z", world: earth}

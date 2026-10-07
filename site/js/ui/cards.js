@@ -1054,6 +1054,20 @@ export function rightNowFor(record, ctx) {
   return rightNowRows(record, m, nextPass(record, ctx, m));
 }
 
+/**
+ * An ended craft at a clock after its end (Cassini today): the day it ended, in words; else null.
+ * The row carries `endDate` (data/sample.js PAST_CRAFT, read on NASA's page for each). Inside its
+ * years the craft is drawn from its own path and `m.ok` is true, so this answers null there.
+ */
+export function endedWords(record, m) {
+  const end = pick(meta(record), 'endDate');
+  if (!end || (m && m.ok)) return null;
+  const ms = Date.parse(`${end}T00:00:00Z`);
+  if (!Number.isFinite(ms)) return null;
+  const tMs = m && Number.isFinite(m.tMs) ? m.tMs : Date.now();
+  return tMs >= ms ? timeText.utcLong(ms) : null;
+}
+
 function rightNowRows(record, m, passInfo) {
   const R = COPY.card.rows;
   const V = COPY.card.values;
@@ -1069,6 +1083,9 @@ function rightNowRows(record, m, passInfo) {
     return rows;
   }
   if (!m.ok) {
+    // A craft whose mission is over (internal #424): the day it ended, not a failed sum.
+    const ended = endedWords(record, m);
+    if (ended) { rows.push([R.ended, ended]); return rows; }
     rows.push([R.altitude, COPY.card.couldNotLook]);
     return rows;
   }
@@ -2267,6 +2284,11 @@ export function actionButtons(record, ctx, m) {
   } else {
     const fly = actionButton('fly', A.flyTo, A.flyToTitle, 'navigation', () => flyTo(record, ctx, m), true);
     fly.disabled = !m.ok;
+    // Nowhere to fly: say why on the switched-off control (docs/ui-guide.md §3, the standard
+    // states). An ended craft names its last day; its mission's events below are the way there.
+    const ended = endedWords(record, m);
+    if (ended) { fly.title = t(A.flyEnded, { date: ended }); fly.setAttribute('aria-label', fly.title); }
+    else if (fly.disabled) fly.title = A.flyNowhere;
     buttons.push(fly);
     const see = actionButton('see', A.seeShort, A.seeFromHereTitle, 'telescope', () => seeFromHere(record, ctx));
     see.disabled = !canSeeFromHere(record, m);

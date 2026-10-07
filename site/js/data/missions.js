@@ -833,5 +833,36 @@ export const MISSIONS = [
         }
       }
     ]
+  },
+  {
+    "id": "apophis",
+    "record": "asteroid-99942",
+    "display": "Apophis",
+    "read": "2026-10-07",
+    "source": {
+      "name": "NASA Science, Apophis",
+      "url": "https://science.nasa.gov/solar-system/asteroids/apophis/"
+    },
+    "events": [
+      {
+        "id": "discovery",
+        "date": "2004-06-19",
+        "precision": "day",
+        "title": "Discovered",
+        "text": "Roy Tucker, David Tholen and Fabrizio Bernardi find it from Kitt Peak National Observatory in Arizona.",
+        "place": "none"
+      },
+      {
+        "id": "earth-2029",
+        "date": "2029-04-13",
+        "precision": "day",
+        "title": "Past Earth",
+        "text": "Apophis passes about 32 000 km above the ground, closer than many satellites in geosynchronous orbit. It will miss.",
+        "place": "path",
+        "path_at": "2029-04-13T21:45:00Z",
+        "world": "earth",
+        "predicted": true
+      }
+    ]
   }
 ];

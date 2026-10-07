@@ -616,6 +616,8 @@ export const COPY = {
     prev: 'Earlier event',
     next: 'Later event',
     when: '{date}, {time} UTC',
+    // An event that has not happened yet (Apophis in 2029): a date somebody worked out.
+    predicted: '{when} (predicted)',
     go: 'Go to this moment',
     goTitle: 'Set the clock to this moment and frame it',
     here: 'The clock is at this moment. Live brings it back.',
@@ -1151,6 +1153,7 @@ export const COPY = {
       crew: 'People aboard',
       operator: 'Operated by',
       launched: 'Launched',
+      ended: 'Ended',
       period: 'One lap takes',
       location: 'Where it stands',
       onWorld: 'Standing on',
@@ -1258,6 +1261,8 @@ export const COPY = {
     actions: {
       flyTo: 'Fly to it',
       flyToTitle: 'Move the camera to this object',
+      flyEnded: 'It ended on {date}. Choose an event of its mission to go there',
+      flyNowhere: 'There is no position for this object at this moment',
       seeFromHere: 'See it from here',
       seeFromHereTitle: 'Look up from your own place on Earth',
       tellMeBefore: 'Tell me before',

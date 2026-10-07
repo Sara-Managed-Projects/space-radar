@@ -526,6 +526,18 @@ check(compare('magnitude', 2.0) === 'as bright as an ordinary star' && compare('
   check(a3[1].disabled !== true, 'See it is on for a star: the sky from your place shows it');
   const a4 = C.actionButtons({ id: 'deep-voyager-1', klass: 'probe', propagator: 'sampled', frame: 'sun-inertial', meta: {} }, ride, { ok: true, frame: 'sun-inertial' });
   check(a4[1].disabled === true && a4[1].title === COPY.sky.notVisibleFromGround, `See it is off for a craft beyond Earth, and its tooltip says why: ${a4[1].title}`);
+  // An ended craft after its end (internal #424): Fly to it is off and says the day; the row is "Ended".
+  {
+    const cassini = { id: 'deep-cassini', name: 'Cassini', klass: 'probe', propagator: 'sampled', frame: 'sun-inertial', samples: [], meta: { endDate: '2017-09-15' } };
+    const after = { ok: false, frame: 'sun-inertial', tMs: Date.UTC(2026, 9, 7) };
+    const a5 = C.actionButtons(cassini, ride, after);
+    check(a5[0].disabled === true && a5[0].title === 'It ended on 15 September 2017. Choose an event of its mission to go there', `an ended craft: Fly to it is off and says when it ended (${a5[0].title})`);
+    check(C.endedWords(cassini, after) === '15 September 2017' && C.endedWords(cassini, { ok: true, tMs: Date.UTC(2010, 0, 1) }) === null && C.endedWords(cassini, { ok: false, tMs: Date.UTC(1990, 0, 1) }) === null, 'ended is said only after the end, and never while the craft is drawn');
+    const rows = C.rightNowFor(cassini, { clock: { now: () => Date.UTC(2026, 9, 7) } });
+    check(rows.length === 1 && rows[0][0] === COPY.card.rows.ended && rows[0][1] === '15 September 2017', `its rows are one line, Ended and the day, not "could not work this out" (${JSON.stringify(rows)})`);
+    const a6 = C.actionButtons({ id: 'x', klass: 'probe', propagator: 'sampled', frame: 'sun-inertial', meta: {} }, ride, { ok: false, frame: 'sun-inertial' });
+    check(a6[0].disabled === true && a6[0].title === A.flyNowhere, 'any other switched-off Fly to it says why');
+  }
   check(a1.every((b) => b.title && b.children[0].getAttribute('aria-hidden') === 'true'), 'every action has its words in a tooltip and an icon hidden from a screen reader');
   // The flood light (internal #272): one quiet switch on the card of anything drawn as a model,
   // its note on screen for as long as the lamp is, remembered for the session.

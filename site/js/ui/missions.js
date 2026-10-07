@@ -163,7 +163,9 @@ function layCruise(record, tMs) {
 export function eventWhen(event) {
   const ms = eventMs(event);
   const date = timeText.utcLong(ms);
-  return event.precision === 'day' ? date : t(COPY.mission.when, { date, time: timeText.utcHm(ms) });
+  const when = event.precision === 'day' ? date : t(COPY.mission.when, { date, time: timeText.utcHm(ms) });
+  // `predicted: true` (registry/missions.yaml): the one kind of event that is not a record.
+  return event.predicted ? t(COPY.mission.predicted, { when }) : when;
 }
 
 /** The honesty line under an event: what the map did with the clock, and why. */

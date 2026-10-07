@@ -18,7 +18,7 @@ globalThis.history = { replaceState(_a, _b, url) { location.hash = url.includes(
 const M = await import(join(JS, 'ui/missions.js'));
 const { COPY } = await import(join(JS, 'copy/en.js'));
 const { KEYS, read, write, laterLink } = await import(join(JS, 'ui/urlstate.js'));
-const { sampleDeepSpace } = await import(join(JS, 'data/sample.js'));
+const { sampleDeepSpace, namedAsteroids } = await import(join(JS, 'data/sample.js'));
 const { propagate } = await import(join(JS, 'propagate/index.js'));
 const { SITES } = await import(join(JS, 'data/sites.js'));
 const problems = [];
@@ -26,7 +26,7 @@ const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
 // --- the registry ----------------------------------------------------------------------------------
 const deep = sampleDeepSpace();
-const known = new Set([...deep.map((r) => r.id), ...SITES.map((s) => s.id), 'sat-25544']);
+const known = new Set([...deep.map((r) => r.id), ...namedAsteroids().map((r) => r.id), ...SITES.map((s) => s.id), 'sat-25544']);
 const WORLDS = new Set(['earth', 'moon', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto']);
 check(M.MISSIONS.length >= 6, `a handful of flagship missions (${M.MISSIONS.length})`);
 const ids = new Set();
@@ -36,7 +36,8 @@ for (const m of M.MISSIONS) {
   check(known.has(m.record), `${m.id}: its record ${m.record} is one the map has`);
   check(m.source && /^https:\/\/([a-z0-9-]+\.)*nasa\.gov\//.test(m.source.url) && m.source.name.length > 3, `${m.id}: a source with a name and a link to a NASA page`);
   check(/^2026-\d\d-\d\d$/.test(String(m.read)), `${m.id}: the day its events were read on their pages`);
-  check(m.events.length >= 3, `${m.id}: at least three events`);
+  // A rock nobody flew has no launch and no arrival: its discovery and its predicted pass are the list.
+  check(m.events.length >= 3 || m.events.some((e) => e.predicted), `${m.id}: at least three events`);
   let last = -Infinity;
   const seen = new Set();
   for (const e of m.events) {
@@ -53,7 +54,12 @@ for (const m of M.MISSIONS) {
     check(!e.world || WORLDS.has(e.world), `${where}: its world is one the map draws for any date`);
     check(e.precision === undefined || e.precision === 'day', `${where}: precision is day or absent`);
     check((e.precision === 'day') === !/T/.test(e.date), `${where}: a date without a time says it is known to the day`);
-    check(ms < Date.parse('2026-10-06T00:00:00Z'), `${where}: it has happened (a planned date is the launches list's business)`);
+    // `predicted: true` (internal #424): a pass celestial mechanics has fixed, not a plan. It must be
+    // in the future, drawn from a path file, and the card's date says "(predicted)".
+    if (e.predicted) {
+      check(e.predicted === true && ms > Date.parse('2026-10-06T00:00:00Z') && e.place === 'path', `${where}: a predicted event is in the future and on a path file`);
+      check(M.eventWhen(e).endsWith('(predicted)'), `${where}: its date says it is predicted (${M.eventWhen(e)})`);
+    } else check(ms < Date.parse('2026-10-06T00:00:00Z'), `${where}: it has happened (a planned date is the launches list's business)`);
     check(M.findEvent(where) && M.findEvent(where).event === e, `${where}: found by its link id`);
     check(e.source === undefined || (/^https:\/\/([a-z0-9-]+\.)*nasa\.gov\//.test(e.source.url) && e.source.name.length > 3), `${where}: an event read on another page names that NASA page`);
   }
@@ -119,6 +125,15 @@ check(M.eventWhen(jupiter) === '5 March 1979, 12:05 UTC' && M.eventWhen(interste
 check(M.eventNote(v1, noPath, { kind: 'none', moves: false }, 'Jupiter').includes('the clock stays where it is') && M.eventNote(v1, noPath, { kind: 'none', moves: false }, 'Jupiter').includes('Voyager 1'), 'an event the map cannot place says the clock has not moved, and why');
 check(/straight line/.test(M.eventNote(v1, interstellar, { kind: 'cruise', moves: true })) && /astronomical unit/.test(M.eventNote(v1, interstellar, { kind: 'cruise', moves: true })), 'the straight line says it is one, and how good it is');
 check(M.eventNote(apollo, landing, { kind: 'site', moves: true }) === COPY.mission.noteSite, 'a site says the map can show it');
+
+// --- Apophis: one predicted event, reachable from its card (internal #424) --------------------------
+{
+  const ap = M.missionOf('asteroid-99942');
+  const pass = ap && ap.events.find((e) => e.predicted);
+  check(ap && pass && pass.id === 'earth-2029' && M.eventClockMs(pass) === Date.parse('2029-04-13T21:45:00Z'), 'Apophis has its 2029 pass as an event, and the clock goes to the closest minute of the path file');
+  check(M.eventWhen(pass) === '13 April 2029 (predicted)', `the card dates it as predicted (${pass && M.eventWhen(pass)})`);
+  check(M.findEvent('apophis.earth-2029') && M.nearestIndex(ap, Date.now()) === 0, 'the link #event=apophis.earth-2029 exists, and today the card opens on the discovery');
+}
 
 // --- the link --------------------------------------------------------------------------------------
 check(KEYS.includes('event') && KEYS.indexOf('event') > KEYS.indexOf('at'), '`event` is a key of the hash, after `at`');
