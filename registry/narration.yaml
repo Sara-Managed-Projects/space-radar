@@ -221,10 +221,10 @@ clips:
   - {trip: "the-constellations", stop: "scorpius", hash: "080e6f5e63781f11", seconds: 23.25, words: 65, lufs: -16.6, opus: 94064, m4a: 119810, vtt: 449}
   - {trip: "the-constellations", stop: "sagittarius", hash: "569b3cde302967b2", seconds: 23.96, words: 62, lufs: -16.5, opus: 96006, m4a: 123504, vtt: 448}
   - {trip: "the-constellations", stop: "southern-cross", hash: "5afa508144a41fda", seconds: 27.38, words: 68, lufs: -16.4, opus: 110125, m4a: 140891, vtt: 513}
-  - {trip: "the-constellations", stop: "zodiac", hash: "203d81ed6e4ebcb3", seconds: 26.59, words: 62, lufs: -16.6, opus: 111485, m4a: 136979, vtt: 477}
-  - {trip: "the-living-earth", stop: "tilt", hash: "1419e925a0f3e81c", seconds: 21.45, words: 54, lufs: -16.4, opus: 85630, m4a: 110682, vtt: 404}
-  - {trip: "the-living-earth", stop: "half-a-year-on", hash: "06c29f2e1a31d6c6", seconds: 21.89, words: 58, lufs: -16.6, opus: 87084, m4a: 113072, vtt: 389}
-  - {trip: "the-living-earth", stop: "air", hash: "790639c67edaa890", seconds: 20.27, words: 55, lufs: -16.3, opus: 86592, m4a: 104814, vtt: 381}
+  - {trip: "the-constellations", stop: "zodiac", hash: "6b4e6a06565b43df", seconds: 26.03, words: 62, lufs: -16.4, opus: 106135, m4a: 134154, vtt: 477}
+  - {trip: "the-living-earth", stop: "tilt", hash: "d3a80c1e770bd055", seconds: 20.73, words: 54, lufs: -16.5, opus: 82640, m4a: 106987, vtt: 404}
+  - {trip: "the-living-earth", stop: "half-a-year-on", hash: "c10118d67fc0ea42", seconds: 21.08, words: 58, lufs: -16.4, opus: 87350, m4a: 108943, vtt: 389}
+  - {trip: "the-living-earth", stop: "air", hash: "d6eac002bcc4cf11", seconds: 19.64, words: 55, lufs: -16.6, opus: 82528, m4a: 101554, vtt: 381}
   - {trip: "the-living-earth", stop: "weather", hash: "fbff8972a1858222", seconds: 23.2, words: 57, lufs: -16.4, opus: 92784, m4a: 119592, vtt: 432}
   - {trip: "the-living-earth", stop: "ocean", hash: "f7b0e0bd66868909", seconds: 21.8, words: 62, lufs: -16.5, opus: 86784, m4a: 112420, vtt: 416}
   - {trip: "the-living-earth", stop: "plankton", hash: "30c44782bdd5b2cd", seconds: 21.61, words: 61, lufs: -16.5, opus: 87158, m4a: 111551, vtt: 421}
