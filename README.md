@@ -4,7 +4,7 @@
 
 **A free, open planetarium in your browser.**<br>
 Every satellite at its real position right now, the planets and their moons, 109 389 stars,
-and 25 narrated trips that fly you there.
+and 26 narrated trips that fly you there.
 
 ### [Open it: www.spaceradar.ai](https://www.spaceradar.ai)
 
@@ -25,8 +25,8 @@ Space Radar is a living 3D map of space. It draws the Earth with today's clouds,
 satellites where they are this minute, the space stations and who is aboard, rockets about to
 launch, probes on their way out, every planet and 21 moons (20 of them with a real map), the stars
 in three dimensions, nebulae as telescopes photographed them, and the Milky Way from outside. Step
-down to the ground and it is tonight's sky from your own street. Twenty-five guided trips, read
-aloud, fly the camera for you. It is a static website: the physics runs in your browser, on public
+down to the ground and it is tonight's sky from your own street. Twenty-six guided trips, read
+aloud, fly the camera for you; forty nearby star systems have a stage you can fly into. It is a static website: the physics runs in your browser, on public
 data, and every number on screen says where it came from.
 
 ## Why
@@ -46,7 +46,7 @@ data, and every number on screen says where it came from.
 | | |
 |---|---|
 | ![Saturn and its rings, backlit, at a stop of the trip out past Jupiter](assets/screenshots/saturn.webp) | ![The Apollo 11 lunar module on the Moon, a stop of the Moon landings trip](assets/screenshots/moon-landing.webp) |
-| **Take a guided trip.** Tonight from your street, why the Moon changes shape, the life of a star, black holes, back to the Moon with Artemis. 25 trips and 195 stops, with 65 minutes of narration, captions and music. | **Stand where we have been.** Twenty places on the Moon and eleven on Mars that spacecraft reached, each on its own ground, with the facts and their sources on the card. |
+| **Take a guided trip.** Tonight from your street, why the Moon changes shape, the life of a star, black holes, back to the Moon with Artemis. 26 trips and 205 stops, with about 65 minutes of narration, captions and music. | **Stand where we have been.** Twenty places on the Moon and eleven on Mars that spacecraft reached, each on its own ground, with the facts and their sources on the card. |
 | ![The sky from the ground: constellations, the Milky Way and tonight's satellites over the southern horizon](assets/screenshots/sky-from-the-ground.webp) | ![The Earth coloured by the temperature of the sea, a stop of the trip The living Earth](assets/screenshots/living-earth.webp) |
 | **Look up from your own street.** The sky from the ground: figures, grids, tonight's best passes and planets, a city, town or dark sky, and a red night mode. | **Read the living Earth.** Seven maps of data measured from orbit, from NASA: sea temperature, sea ice, rain, plant life and more, each with its key and its source. |
 
@@ -65,8 +65,11 @@ data, and every number on screen says where it came from.
 - **Use it on a phone.** The same map, one sheet, one thumb.
 
 Also: live clouds, storms, lightning and the aurora on the Earth · close-up map tiles of the Earth,
-the Moon and Mars · today's sunspot groups · eclipses computed for any date · 54 spacecraft and
-shape models · shareable links, postcards and a photo mode · full keyboard control.
+the Moon and Mars · today's sunspot groups · eclipses computed for any date · 70 spacecraft and
+shape models · fires, volcanoes and icebergs from NASA's EONET and the wind from NOAA's GFS ·
+"Point your phone" at the sky · a passport of places opened and one true sentence on the home ·
+reels that play on their own on a screen in a lobby (spec 0036) · artist's impressions, labelled
+so, of planets nobody has seen · shareable links, postcards and a photo mode · full keyboard control.
 
 ### Links
 
@@ -148,7 +151,7 @@ Space Radar stands on data and work that other people publish for free. Thank yo
 
 [![HYG](https://img.shields.io/badge/stars-HYG%20v4.4%20%C2%B7%20d3--celestial-8250df)](https://codeberg.org/astronexus/hyg)
 [![OpenNGC](https://img.shields.io/badge/deep%20sky-OpenNGC%20%C2%B7%20Wikipedia-8250df)](https://github.com/mattiaverga/OpenNGC)
-[![NASA 3D Resources](https://img.shields.io/badge/54%203D%20models-NASA%203D%20Resources%20%C2%B7%20PDS-8250df)](https://github.com/nasa/NASA-3D-Resources)
+[![NASA 3D Resources](https://img.shields.io/badge/70%203D%20models-NASA%203D%20Resources%20%C2%B7%20PDS-8250df)](https://github.com/nasa/NASA-3D-Resources)
 [![Solar System Scope](https://img.shields.io/badge/planet%20maps-Solar%20System%20Scope%20%C2%B7%20NASA%20%C2%B7%20USGS-8250df)](https://www.solarsystemscope.com/textures/)
 [![Natural Earth](https://img.shields.io/badge/countries-Natural%20Earth-8250df)](https://www.naturalearthdata.com)
 [![Other light](https://img.shields.io/badge/other%20light-WISE%20%C2%B7%20WMAP%20%C2%B7%20Fermi%20via%20CDS-8250df)](CREDITS.md#3h-the-sky-in-other-light--nasas-wise-wmap-and-fermi-through-cds-hips)
