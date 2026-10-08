@@ -314,6 +314,7 @@ export async function boot({ setStatus } = {}) {
         skyGroup: starfield.group,
         look: exposure.look(),
         saveData: typeof navigator !== 'undefined' && shouldSaveData(navigator.connection),
+        maxResident: m.residentPictures(ctx.quality ? ctx.quality.bootTier : 1),
       });
       nebulae.setSkyOpacity(skyStrength);
       nebulae.setSkyVisible(!(ctx.latch && ctx.latch.latched));
@@ -2361,8 +2362,9 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       // Asked four times a second; the glow's buffer is rewritten only when the answer changes.
       if (ctx.dsoGlow && nowReal - picturedAt > 250) {
         picturedAt = nowReal;
-        const now = ctx.nebulae.loaded().filter((id) => ctx.nebulae.drawn(id) > 0.3);
-        const key = now.join(' ');
+        const now = new Map();
+        for (const id of ctx.nebulae.loaded()) { const share = Math.round(ctx.nebulae.drawn(id) * 10) / 10; if (share > 0) now.set(id, share); }
+        const key = [...now].join(' ');
         if (key !== picturedKey) { picturedKey = key; ctx.dsoGlow.setPictured(now); }
       }
     }

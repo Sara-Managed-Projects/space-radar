@@ -137,6 +137,7 @@ export function glowFor(record) {
 
 const VERT = /* glsl */ `
 attribute float aSize;
+attribute float aKeep;
 attribute vec3 aColour;
 attribute vec3 aMajor;   // where the major axis ends, as an offset in scene units; zero for a round glow
 attribute float aRatio;  // minor over major; 0 for a round glow
@@ -169,6 +170,7 @@ void main() {
   float px = aSize / d * projectionMatrix[1][1] * 0.5 * uViewportH;
   vAlpha = uGain * smoothstep( 4.0, 14.0, px ) * ( 1.0 - smoothstep( 220.0, 420.0, px ) );
   if ( aRatio > 0.0 ) vAlpha *= uShaped;
+  vAlpha *= aKeep;
   gl_PointSize = clamp( px, 1.0, 420.0 ) * uPixelRatio;
   vColour = aColour;
   // Under 24 px a profile is a few pixels of noise: the plain glow until then.
@@ -252,6 +254,13 @@ void main() {
 }
 `;
 
+/** How much of a mark stays while its photograph is drawn at this share: 1 with none, 0 with all, in tenths. Pure. */
+export function glowKeep(share) {
+  const k = Number(share);
+  if (!Number.isFinite(k) || k <= 0) return 1;
+  return Math.max(0, Math.min(1, 1 - Math.round(Math.min(1, k) * 10) / 10));
+}
+
 export function createDsoGlow(scene) {
   const group = new THREE.Group();
   group.name = 'dso-glow';
@@ -262,7 +271,7 @@ export function createDsoGlow(scene) {
   let geometry = null;
   let points = null;
   let builtFor = null;
-  let pictured = new Set(); // record ids scene/nebulae.js is drawing as photographs
+  let pictured = new Map(); // record id -> how much of its photograph is drawn (0..1), for the ones scene/nebulae.js draws
   const _v = new THREE.Vector3();
   const _w = new THREE.Vector3();
   const _tip = { x: 0, y: 0, z: 0 };
@@ -287,6 +296,7 @@ export function createDsoGlow(scene) {
       geometry = new THREE.BufferGeometry();
       geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
       geometry.setAttribute('aSize', new THREE.BufferAttribute(new Float32Array(n), 1));
+      geometry.setAttribute('aKeep', new THREE.BufferAttribute(new Float32Array(n), 1));
       geometry.setAttribute('aColour', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
       geometry.setAttribute('aMajor', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
       geometry.setAttribute('aRatio', new THREE.BufferAttribute(new Float32Array(n), 1));
@@ -302,6 +312,7 @@ export function createDsoGlow(scene) {
     }
     const pos = geometry.getAttribute('position').array;
     const size = geometry.getAttribute('aSize').array;
+    const keep = geometry.getAttribute('aKeep').array;
     const col = geometry.getAttribute('aColour').array;
     const major = geometry.getAttribute('aMajor').array;
     const ratio = geometry.getAttribute('aRatio').array;
@@ -322,11 +333,14 @@ export function createDsoGlow(scene) {
       major[i * 3] = shaped ? _w.x : 0; major[i * 3 + 1] = shaped ? _w.y : 0; major[i * 3 + 2] = shaped ? _w.z : 0;
       ratio[i] = shaped ? g.shape.ratio : 0;
       pos[i * 3] = ok ? _v.x : 0; pos[i * 3 + 1] = ok ? _v.y : 0; pos[i * 3 + 2] = ok ? _v.z : 0;
-      size[i] = ok && !pictured.has(g.record.id) ? g.sizeKm / stage.unitKm : 0;
+      // The mark gives way to its photograph by degrees: a half-drawn picture leaves half the mark.
+      keep[i] = glowKeep(pictured.get(g.record.id));
+      size[i] = ok && keep[i] > 0 ? g.sizeKm / stage.unitKm : 0;
       col[i * 3] = g.colour[0]; col[i * 3 + 1] = g.colour[1]; col[i * 3 + 2] = g.colour[2];
     }
     geometry.getAttribute('position').needsUpdate = true;
     geometry.getAttribute('aSize').needsUpdate = true;
+    geometry.getAttribute('aKeep').needsUpdate = true;
     geometry.getAttribute('aColour').needsUpdate = true;
     geometry.getAttribute('aMajor').needsUpdate = true;
     geometry.getAttribute('aRatio').needsUpdate = true;
@@ -335,7 +349,8 @@ export function createDsoGlow(scene) {
 
   /** The records now drawn as photographs: their glows go (size 0 is below the 4 px floor). */
   function setPictured(ids) {
-    pictured = new Set(ids || []);
+    // Ids alone mean wholly drawn; a Map of id -> share lets the mark fade as the picture does.
+    pictured = ids instanceof Map ? new Map(ids) : new Map(Array.isArray(ids) ? ids.map((id) => [id, 1]) : []);
     builtFor = null;
     rebuild();
   }
