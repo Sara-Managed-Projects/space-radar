@@ -2136,6 +2136,13 @@ export function createTrip(ctx) {
 
   function stepTrueSize() {
     const rings = ctx.orbitRings;
+    // Only while the stop that asked for it is up. A cut to the next stop's stage does not pass
+    // through stopExtrasLeaving, and the line then spoke of the Earth's own stage (seen 2026-10-08:
+    // "True size: Earth is 621 px wide here" under the stop after).
+    if (state.trueSize) {
+      const here = run && run.stops[state.index] && run.stops[state.index].stop;
+      if (!(here && here.true_size === true && (state.phase === 'dwell' || state.phase === 'paused'))) setTrueSize(false);
+    }
     if (trueSize.k !== trueSize.want) {
       const u = Math.min(1, (now() - trueSize.at) / TRUE_SIZE_TWEEN_MS);
       trueSize.k = u >= 1 ? trueSize.want : trueSize.from + (trueSize.want - trueSize.from) * (1 - (1 - u) ** 3);

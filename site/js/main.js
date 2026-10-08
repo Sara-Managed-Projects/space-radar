@@ -1896,7 +1896,7 @@ export async function boot({ setStatus } = {}) {
     if (world || (ctx.imagine && ctx.imagine.active)) { ctx.wantImagine(keys.imagine); if (world) return; }
     const current = typeof ctx.selected === 'function' ? ctx.selected() : null;
     const running = ctx.trip && ctx.trip.state && ctx.trip.state.phase !== 'idle' ? ctx.trip.state : null;
-    const plan = linkChange(keys, { at: current ? current.id : null, trip: running ? running.tourId : null, live: clock.mode === 'live' });
+    const plan = linkChange(keys, { at: current ? current.id : null, trip: running ? running.tourId : null, live: clock.mode === 'live', stage: stage.worldId });
     if (!plan) return;
     if (plan.clock && plan.clock.live) clock.live();
     else if (plan.clock) { clock.goTo(plan.clock.goTo); if (clock.rates().includes(plan.clock.rate)) clock.setRate(plan.clock.rate); }

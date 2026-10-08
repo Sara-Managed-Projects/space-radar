@@ -67,9 +67,6 @@ const JD_UNIX_EPOCH = 2440587.5;
 // https://nssdc.gsfc.nasa.gov/planetary/factsheet/, read 2026-09-23): 0.387 au. The last stop of the
 // trip draws a dashed ring this size around the star, labelled as Mercury's orbit, for scale.
 export const MERCURY_A_AU = 57.909e6 / AU_KM;
-// Light-years in a parsec: 648 000/pi au (IAU 2015 Resolution B2) over the light-year, which is
-// 9 460 730 472 580.8 km exactly (the Julian year times c, IAU 1976). 3.2616.
-export const LY_PER_PC = ((AU_KM * 648000) / Math.PI) / 9460730472580.8;
 
 /** The floor, from the camera: a ball is never drawn under one pixel of radius (#214's rule). */
 export const SYSTEM_VIEW = { MIN_ANGULAR_RADIUS_RAD: MOON_VIEW.MIN_ANGULAR_RADIUS_RAD };

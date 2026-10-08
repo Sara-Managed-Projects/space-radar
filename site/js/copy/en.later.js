@@ -30,8 +30,6 @@ Object.assign(COPY, {
     },
     rows: {
       known: 'What is known',
-      // "You are 41 light-years from Earth" (internal #280), as a row of the card.
-      fromEarth: 'From Earth',
       orbit: 'Distance from its star',
       temperature: 'Temperature, computed',
       zone: 'Habitable zone, computed',
@@ -72,7 +70,6 @@ Object.assign(COPY, {
       twoStars: 'Not computed: it orbits two stars and the catalogue describes one',
     },
     zoneRange: '{a} to {b} au from the star (Kopparapu et al. 2014)',
-    lightYears: '{n} light-years',
     // The two things a visitor lays over a system's view on demand (internal #280), on the card of
     // its star and of each planet: the row's title, the two buttons, and the line under them.
     overlay: {

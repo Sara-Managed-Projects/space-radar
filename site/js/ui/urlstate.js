@@ -43,6 +43,8 @@ export const HASH_KEY = 'm';
 // carries the ordinary `at=` and a link copied from there is the ordinary link.
 export const KEYS = ['m', 'v', 'ambient', 'autopilot', 'shuffle', 'sound', 'voice', 'captions', 'pace', 'trip', 'stop', 'present', 'at', 'go', 'event', 't', 'rate', 'stage', 'exp', 'p', 'imagine', 'cam'];
 export const VERSION = '1';
+/** The map's centre on a first visit, which an address with no keys at all means. */
+export const DEFAULT_STAGE = 'earth';
 
 /**
  * A camera pose as the `cam` key's value. Angles in degrees to a tenth, the distance in
@@ -249,11 +251,24 @@ export function laterLink(link, tripRunning) {
  * an instant, and never `at`. Pure.
  *
  * @param {object} link  read()
- * @param {{at: string|null, trip: string|null, live: boolean}} now  what the app is showing
+ * @param {{at: string|null, trip: string|null, live: boolean, stage?: string}} now  what the app is showing
  */
 export function linkChange(link, now = {}) {
   if (!link || link.unknownVersion) return null;
-  if (!['trip', 'stop', 'at', 'event', 't', 'rate', 'stage', 'cam'].some((k) => link[k] !== undefined)) return null;
+  // THE EMPTY ADDRESS (internal #460, seen in a real tab on 2026-10-08). Back to the address the
+  // visit began at, with no keys at all, changed nothing: the station stayed selected, on the
+  // Moon's map, over an address that says "the default view". An address with no keys IS a view,
+  // the one a first visit opens on: nothing selected, the Earth's map, now. (A link that names an
+  // object and no `stage=` is NOT read as "the Earth's map": the app itself never writes `stage=`,
+  // so its absence says nothing. That case is left as it was, and has its own issue.)
+  // `now.stage` is the map's centre now; a caller that does not say is asked for nothing new.
+  const elsewhere = typeof now.stage === 'string' && now.stage !== DEFAULT_STAGE;
+  const named = ['trip', 'stop', 'at', 'event', 't', 'rate', 'stage', 'cam'].some((k) => link[k] !== undefined);
+  if (!named) {
+    const bare = !KEYS.some((k) => link[k] !== undefined);
+    if (!bare || !(elsewhere || now.at || now.trip || now.live === false)) return null;
+    return { clock: now.live === false ? { live: true } : null, stage: elsewhere ? DEFAULT_STAGE : null, trip: now.trip ? { stop: true } : null, event: null, at: now.at ? { none: true } : null };
+  }
   const out = { clock: null, stage: link.stage || null, trip: null, event: null, at: null };
   const ms = link.t && link.t !== 'now' ? Date.parse(link.t) : NaN;
   const rate = Number(link.rate) > 0 ? Number(link.rate) : 1;

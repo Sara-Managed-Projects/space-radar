@@ -87,10 +87,20 @@ const code = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/
   }
   check(linkChange({ at: 'moon' }, { at: 'moon', trip: null, live: true }).at === null, 'the selection already up is not opened again');
   check(linkChange({ t: 'not a date', at: 'moon' }, { at: null, trip: null, live: false }).clock.live === true, 'an instant that does not parse is no instant: the clock goes back to now');
+  // Seen in a real tab, 2026-10-08 (internal #460): the empty address.
+  check(linkChange({ at: 'phobos' }, { at: 'deimos', trip: null, live: true, stage: 'mars' }).stage === null, 'a link that names an object and no stage leaves the map where it is: the app never writes `stage=`');
+  check(linkChange({ at: 'moon', stage: 'moon' }, { at: null, trip: null, live: true, stage: 'mars' }).stage === 'moon', 'a link that names its stage keeps it');
+  check(linkChange({ trip: 'moon-landings' }, { at: null, trip: null, live: true, stage: 'moon' }).stage === null, 'a trip sets its own stage');
+  {
+    const home = linkChange({}, { at: 'sat-25544', trip: null, live: false, stage: 'moon' });
+    check(home && home.at.none === true && home.stage === 'earth' && home.clock.live === true && home.trip === null, 'Back to an address with no keys is the default view: nothing selected, the Earth, now');
+    check(linkChange({}, { at: null, trip: null, live: true, stage: 'earth' }) === null, 'which is nothing to do when it is what is showing');
+    check(linkChange({ m: 'now' }, { at: 'moon', trip: null, live: true, stage: 'earth' }) === null, 'a moment alone still names no view');
+  }
   // main.js carries the plan out, in this order, on hashchange.
   const main = code(readFileSync(join(JS, 'main.js'), 'utf8'));
   const h = (/window\.addEventListener\('hashchange', \(\) => \{\s*setMoment\(([\s\S]*?)\n  \}\);/.exec(main) || [])[1] || '';
-  check(/const plan = linkChange\(keys, \{ at: current \? current\.id : null, trip: running \? running\.tourId : null, live: clock\.mode === 'live' \}\);/.test(h), 'main.js asks linkChange on hashchange, with what is selected, the trip running and whether the clock is live');
+  check(/const plan = linkChange\(keys, \{ at: current \? current\.id : null, trip: running \? running\.tourId : null, live: clock\.mode === 'live', stage: stage\.worldId \}\);/.test(h), 'main.js asks linkChange on hashchange, with what is selected, the trip running and whether the clock is live');
   const order = ['clock.live()', 'clock.goTo(plan.clock.goTo)', 'ctx.setStage(plan.stage)', 'openTrip(ctx, keys)', 'ctx.trip.jumpTo(index)', 'ctx.trip.stop()', 'openEvent(ctx, plan.event)', 'openAt(ctx, plan.at.open)', 'ctx.deselect()'];
   const at = order.map((s) => h.indexOf(s));
   check(at.every((i) => i >= 0) && at.every((i, k) => k === 0 || i > at[k - 1]), `and carries out the clock, the stage, the trip, the event and the selection, in that order (${at})`);
