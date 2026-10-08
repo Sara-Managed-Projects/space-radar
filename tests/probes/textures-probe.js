@@ -22,8 +22,10 @@ async function visit(id, name) {
   const rec = ctx.recordById(id);
   if (!rec) { out.steps.push({ id, missing: true }); return; }
   ctx.select(rec, { fly: true });
-  await wait(600);
+  await wait(1200);
   await until(() => !(ctx.cameraRig.state && ctx.cameraRig.state.flying) || (ctx.cameraRig.finishFlight && (ctx.cameraRig.finishFlight(), false)), 20000);
+  // Arrived means the disc fills a good part of the view; a flight that had not begun at the first look is waited for.
+  await until(() => ctx.worlds.discShare(id) > 0.3 || (ctx.cameraRig.state && ctx.cameraRig.state.flying && ctx.cameraRig.finishFlight && (ctx.cameraRig.finishFlight(), false)), 8000);
   const had = id === 'earth' ? true : !!(await until(() => ctx.worlds.hasMap(id), 20000));
   await wait(2500);
   const g = ctx.gpu();
@@ -32,8 +34,11 @@ async function visit(id, name) {
   await log(name || id, step);
   if (window.cdpShot) await window.cdpShot(name || id);
 }
-for (const id of ['earth', 'moon', 'mars', 'jupiter', 'saturn', 'sun', 'venus', 'uranus', 'neptune']) await visit(id);
-await visit('moon', 'moon-again');
+// `&only=earth,moon` walks those alone; `&tier=0` (the app's own switch) shows the tier-0 maps on a
+// machine that would otherwise sharpen the Earth and the Moon to 4k before the photograph.
+const only = (/[?&]only=([\w,-]+)/.exec(location.search) || [0, ''])[1].split(',').filter(Boolean);
+for (const id of only.length ? only : ['earth', 'moon', 'mars', 'jupiter', 'saturn', 'sun', 'venus', 'uranus', 'neptune']) await visit(id);
+if (!only.length) await visit('moon', 'moon-again');
 out.mostHeld = Math.max(...out.steps.map((s) => (s.held || []).length));
 out.mostMiB = Math.max(...out.steps.map((s) => s.mapsMiB || 0));
 out.mostTextures = Math.max(...out.steps.map((s) => s.textures || 0));
