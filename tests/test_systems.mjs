@@ -330,6 +330,19 @@ Date.now = realDateNow;
   check(/polar: overview/.test(main) && /record\.klass === 'star' && ctx\.systems && ctx\.systems\.active/.test(main), 'flyToRecord passes the overview polar for a system host');
 }
 
+// --- the Explore list names all forty (internal #473) -------------------------------------------
+{
+  const { systemGroups } = await import(join(JS, 'ui/explore.js'));
+  const { SYSTEM_INDEX } = await import(join(JS, 'data/systems-index.js'));
+  const g = systemGroups(SYSTEM_INDEX);
+  check(g.temperate.length + g.extreme.length === SYSTEM_INDEX.length && SYSTEM_INDEX.length >= 39, `every generated system is in a group (${g.temperate.length} + ${g.extreme.length} of ${SYSTEM_INDEX.length})`);
+  check(g.temperate.every((x, i) => i === 0 || g.temperate[i - 1].distPc <= x.distPc), 'each group is nearest first');
+  check(g.temperate[0].name === 'Proxima Centauri', `the nearest mild system first (${g.temperate[0].name})`);
+  check(systemGroups(null).temperate.length === 0 && systemGroups([{ hostId: 'x', why: 'other' }]).extreme.length === 0, 'bad input is an empty list');
+  const ex = readFileSync(join(ROOT, 'site/js/ui/explore.js'), 'utf8');
+  check(/import\('\.\.\/data\/systems-index\.js'\)/.test(ex) && !/from '\.\.\/data\/systems-index\.js'/.test(ex), 'the index is fetched late, never at boot');
+}
+
 if (problems.length) {
   console.error(`systems FAILED (${problems.length}):\n  ` + problems.join('\n  '));
   process.exit(1);
