@@ -64,6 +64,10 @@ jobs:
         run: python3 scripts/gen_aliases_js.py --check
       - name: The showers mirror matches the registry
         run: python3 scripts/gen_showers_js.py --check
+      - name: The links-out mirror matches the registry (spec 0050 req 8)
+        run: python3 scripts/gen_links_js.py --check
+      - name: The oldest-things notes mirror matches the registry (spec 0050 req 7)
+        run: python3 scripts/gen_oldest_notes_js.py --check
       - name: "The showers' activity mirror matches the registry (internal #416)"
         run: python3 scripts/gen_showers_activity_js.py --check
       - name: The reels mirror matches the registry (spec 0036)
@@ -291,6 +295,11 @@ jobs:
       # Spec 0048 task 1: shadow edges and the lap's end to 1 s against a scan a second at a time.
       - name: "Time facts on the card: the next 90 minutes of light, the lap countdown, the orbit number"
         run: node tests/test_timefacts.mjs
+      # Cards and live facts (2026-10-08): the pure pieces behind the card's newer blocks.
+      - name: "The ticking distance, the six-year curve, Up for N years, the crew joined to docked vehicles"
+        run: node tests/test_cardlive.mjs
+      - name: "Rises, highest and sets for a comet or an asteroid agree with the astronomy library"
+        run: node tests/test_riseany.mjs
       # Spec 0048 task 4: the ticks at the chart's sub-satellite points; the ride's pose and its way out.
       - name: "The ground track on the globe and ride along: 5-minute ticks, rebuilds, 60 km behind"
         run: node tests/test_groundtrack.mjs

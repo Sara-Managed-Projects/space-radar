@@ -87,7 +87,7 @@ export function findCity(query, cities = CITIES) {
   return null;
 }
 
-export function createPlace(ctx) {
+export function createPlace(ctx, opts = {}) {
   const root = el('section', 'sr-place');
   root.appendChild(el('h2', 'sr-micro', COPY.controls.locationTitle));
 
@@ -192,7 +192,8 @@ export function createPlace(ctx) {
   const list = el('ul', 'sr-list sr-tonight__list');
   const empty = el('p', 'sr-tonight__note', COPY.controls.tonightNoObserver);
   tonight.append(shower, list, empty);
-  root.appendChild(tonight);
+  // Under ui/tonight.js (opts.placeOnly) the passes are that view's: this list is not built or shown.
+  if (!opts.placeOnly) root.appendChild(tonight);
 
   const observerNow = () => (ctx && ctx.observer ? ctx.observer : null);
   const withRad = (o) => (Number.isFinite(o.latRad) ? o : { ...o, latRad: o.latDeg * DEG_TO_RAD, lonRad: o.lonDeg * DEG_TO_RAD });
@@ -233,6 +234,7 @@ export function createPlace(ctx) {
   }
 
   function renderTonight() {
+    if (opts.placeOnly) return;
     while (list.firstChild) list.removeChild(list.firstChild);
     const o = observerNow();
     renderShower(o);

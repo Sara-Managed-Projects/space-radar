@@ -592,8 +592,11 @@ export function createExplore(ctx, host) {
   tonight.appendChild(placeHost);
   tonight.appendChild(tripHosts.get('tonight').s);
   let placeLoad = null;
+  let tonightMounted = false;
   const loadPlace = () => placeLoad || (placeLoad = import('./place.js').then((m) => {
-    const place = m.createPlace(ctx);
+    // `placeOnly` once ui/tonight.js has the tab (mountTab below): that view lists the passes, and
+    // this one is then only where a place is set, kept and shared.
+    const place = m.createPlace(ctx, { placeOnly: tonightMounted });
     placeHost.replaceWith(place.root);
     place.root.classList.add('sr-sect');
   }).catch((e) => { placeLoad = null; console.warn('the Tonight tab did not load', e); }));
@@ -945,7 +948,11 @@ export function createExplore(ctx, host) {
       for (const child of [...pane.children]) {
         if (child !== mount && child !== tripHosts.get(id).s) child.hidden = true;
       }
-      if (id === 'tonight') { placeLoad = Promise.resolve(); placeHost.hidden = true; }
+      // The place panel stays (2026-10-08, internal #137): when ui/tonight.js took this tab over
+      // the panel was hidden with everything else, and with it the only control in the app that
+      // sets a place ("Use my location", the city box). It now sits under the Tonight view, without
+      // its own list of passes, and carries Remember this place and Share this place.
+      if (id === 'tonight') { tonightMounted = true; placeHost.hidden = false; }
     }
     let done = false;
     const run = () => {
