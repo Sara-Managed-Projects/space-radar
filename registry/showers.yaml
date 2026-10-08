@@ -17,23 +17,26 @@
 # (equinox 2000.0), which fixes the hour of the peak in any year. site/js/sky/meteors.js draws a
 # shower over its whole activity period with these (internal #416). `antihelion` is the same
 # table's first row: the year-round low source 15 degrees east of the point opposite the Sun.
-# `peak` and `zhr` are the same table's too, since 2026-10-08 (the PDF read again that day): the
-# whole row is one calendar's. The table writes 80+ for the Quadrantids, 110+ for the Perseids and
-# 15+ for the Leonids ("can vary"); the plus is dropped here. `peak` is the maximum's date IN 2027,
-# and the table says its dates are "accurate only for 2027": the same solar longitude falls about
-# six hours later each year and a day earlier after a leap day, so site/js/sky/radiants.js works
-# each year's date out from `sol` and uses `peak` only for a row without one.
+# `zhr` is the same table's too, since 2026-10-08 (the PDF read again that day). The table writes
+# 80+ for the Quadrantids, 110+ for the Perseids and 15+ for the Leonids ("can vary"); the plus is
+# dropped here. `peak` is still the maximum's date IN 2026: the 2027 table says its dates are
+# "accurate only for 2027" (4 January, 23 April, 13 August, 22 October, 18 November, 23 December
+# for the six that move), and the mailer (scripts/notify, tests/test_notify.py) sends this date as
+# written for the showers still to come this year. The site does not read it for the date:
+# site/js/sky/radiants.js works each year's out from `sol` (the same solar longitude falls about
+# six hours later each year and a day earlier after a leap day) and uses `peak` only to know
+# roughly where in the year to look. December's review moves `peak` to the 2027 dates.
 version: 1
 antihelion: {display: "Antihelion source", zhr: 4, r: 3.0, v_kms: 30, active_from: "12-10", active_to: "09-20", ahead_deg: 195}
-reviewed_against: "IMO Meteor Shower Calendar 2027"
+reviewed_against: "IMO Meteor Shower Calendar 2027 (zhr, r, activity, sol); 2026 (peak)"
 reviewed_on: 2026-10-08
 
 showers:
-  - {id: quadrantids,   display: Quadrantids,   peak: "01-04", zhr: 80,  ra_h: 15.33, dec: 49.5, v_kms: 41, r: 2.1, active_from: "12-28", active_to: "01-12", sol: 283.15, parent: "asteroid 2003 EH1", note: "A sharp peak only a few hours wide, so the date matters more than for any other shower."}
-  - {id: lyrids,        display: Lyrids,        peak: "04-23", zhr: 18,  ra_h: 18.17, dec: 34.0, v_kms: 49, r: 2.1, active_from: "04-14", active_to: "04-30", sol: 32.32, parent: "comet Thatcher",     note: "Modest most years, with occasional outbursts nobody predicts."}
+  - {id: quadrantids,   display: Quadrantids,   peak: "01-03", zhr: 80,  ra_h: 15.33, dec: 49.5, v_kms: 41, r: 2.1, active_from: "12-28", active_to: "01-12", sol: 283.15, parent: "asteroid 2003 EH1", note: "A sharp peak only a few hours wide, so the date matters more than for any other shower."}
+  - {id: lyrids,        display: Lyrids,        peak: "04-22", zhr: 18,  ra_h: 18.17, dec: 34.0, v_kms: 49, r: 2.1, active_from: "04-14", active_to: "04-30", sol: 32.32, parent: "comet Thatcher",     note: "Modest most years, with occasional outbursts nobody predicts."}
   - {id: eta-aquariids, display: Eta Aquariids, peak: "05-06", zhr: 50,  ra_h: 22.50, dec: -1.0, v_kms: 66, r: 2.4, active_from: "04-19", active_to: "05-28", sol: 45.5, parent: "comet Halley",       note: "Dust from Halley's comet. Much better from the southern hemisphere."}
-  - {id: perseids,      display: Perseids,      peak: "08-13", zhr: 110, ra_h: 3.22,  dec: 58.0, v_kms: 59, r: 2.2, active_from: "07-17", active_to: "08-24", sol: 140.0, parent: "comet Swift-Tuttle", note: "The one most people have heard of, and warm enough in the north to sit outside for."}
-  - {id: orionids,      display: Orionids,      peak: "10-22", zhr: 20,  ra_h: 6.35,  dec: 16.0, v_kms: 66, r: 2.5, active_from: "10-02", active_to: "11-07", sol: 208.0, parent: "comet Halley",       note: "Halley's dust again, from the other side of its orbit."}
-  - {id: leonids,       display: Leonids,       peak: "11-18", zhr: 15,  ra_h: 10.28, dec: 21.0, v_kms: 71, r: 2.5, active_from: "11-06", active_to: "11-30", sol: 235.27, parent: "comet Tempel-Tuttle", note: "Quiet now, but it produces a storm roughly every 33 years."}
+  - {id: perseids,      display: Perseids,      peak: "08-12", zhr: 110, ra_h: 3.22,  dec: 58.0, v_kms: 59, r: 2.2, active_from: "07-17", active_to: "08-24", sol: 140.0, parent: "comet Swift-Tuttle", note: "The one most people have heard of, and warm enough in the north to sit outside for."}
+  - {id: orionids,      display: Orionids,      peak: "10-21", zhr: 20,  ra_h: 6.35,  dec: 16.0, v_kms: 66, r: 2.5, active_from: "10-02", active_to: "11-07", sol: 208.0, parent: "comet Halley",       note: "Halley's dust again, from the other side of its orbit."}
+  - {id: leonids,       display: Leonids,       peak: "11-17", zhr: 15,  ra_h: 10.28, dec: 21.0, v_kms: 71, r: 2.5, active_from: "11-06", active_to: "11-30", sol: 235.27, parent: "comet Tempel-Tuttle", note: "Quiet now, but it produces a storm roughly every 33 years."}
   - {id: geminids,      display: Geminids,      peak: "12-14", zhr: 150, ra_h: 7.47,  dec: 33.0, v_kms: 35, r: 2.6, active_from: "12-04", active_to: "12-20", sol: 262.2, parent: "asteroid 3200 Phaethon", note: "The best of the year, and one of two major showers whose parent is an asteroid rather than a comet; the Quadrantids are the other."}
-  - {id: ursids,        display: Ursids,        peak: "12-23", zhr: 10,  ra_h: 14.60, dec: 76.0, v_kms: 33, r: 2.8, active_from: "12-17", active_to: "12-26", sol: 270.7, parent: "comet Tuttle",       note: "Small, and circumpolar from the north, so the radiant never sets."}
+  - {id: ursids,        display: Ursids,        peak: "12-22", zhr: 10,  ra_h: 14.60, dec: 76.0, v_kms: 33, r: 2.8, active_from: "12-17", active_to: "12-26", sol: 270.7, parent: "comet Tuttle",       note: "Small, and circumpolar from the north, so the radiant never sets."}

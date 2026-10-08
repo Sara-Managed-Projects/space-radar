@@ -8,7 +8,7 @@ export const SHOWERS = [
   {
     "id": "quadrantids",
     "display": "Quadrantids",
-    "peak": "01-04",
+    "peak": "01-03",
     "zhr": 80,
     "ra_h": 15.33,
     "dec": 49.5,
@@ -20,7 +20,7 @@ export const SHOWERS = [
   {
     "id": "lyrids",
     "display": "Lyrids",
-    "peak": "04-23",
+    "peak": "04-22",
     "zhr": 18,
     "ra_h": 18.17,
     "dec": 34.0,
@@ -44,7 +44,7 @@ export const SHOWERS = [
   {
     "id": "perseids",
     "display": "Perseids",
-    "peak": "08-13",
+    "peak": "08-12",
     "zhr": 110,
     "ra_h": 3.22,
     "dec": 58.0,
@@ -56,7 +56,7 @@ export const SHOWERS = [
   {
     "id": "orionids",
     "display": "Orionids",
-    "peak": "10-22",
+    "peak": "10-21",
     "zhr": 20,
     "ra_h": 6.35,
     "dec": 16.0,
@@ -68,7 +68,7 @@ export const SHOWERS = [
   {
     "id": "leonids",
     "display": "Leonids",
-    "peak": "11-18",
+    "peak": "11-17",
     "zhr": 15,
     "ra_h": 10.28,
     "dec": 21.0,
@@ -92,7 +92,7 @@ export const SHOWERS = [
   {
     "id": "ursids",
     "display": "Ursids",
-    "peak": "12-23",
+    "peak": "12-22",
     "zhr": 10,
     "ra_h": 14.6,
     "dec": 76.0,
