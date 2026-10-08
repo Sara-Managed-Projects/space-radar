@@ -167,6 +167,12 @@ for (const key of ['asOf', 'stale', 'joined', 'unmatched']) check(COPY.crew[key]
   check(fromPlaceWords(null, 'Quito') === null, 'no answer, no words');
 }
 
+// --- the ticking distance is for the Solar System only (internal #476) ---------------------------
+{
+  const far = (id, klass) => ({ id, klass, frame: 'sun-inertial', meta: {} });
+  for (const k of ['star', 'exoplanet', 'dso', 'exotic']) check(earthDistanceAt(far('x-' + k, k), {}) === null, `a ${k} has no ticking kilometres`);
+}
+
 if (problems.length) {
   console.error('cardlive FAILED:\n  ' + problems.join('\n  '));
   process.exit(1);

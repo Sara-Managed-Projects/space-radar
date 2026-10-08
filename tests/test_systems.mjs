@@ -322,6 +322,14 @@ if (trip) {
 }
 
 Date.now = realDateNow;
+// --- the host star is met from over its orbits (internal #476) ---------------------------------
+{
+  const main = readFileSync(join(ROOT, 'site/js/main.js'), 'utf8');
+  const m = /const SYSTEM_OVERVIEW_POLAR = \(([0-9]+) \* Math\.PI\) \/ 180;/.exec(main);
+  check(!!m && Math.abs((Number(m[1]) * Math.PI) / 180 - S.OVERVIEW_POLAR) < 1e-12, 'main.js meets a host star at scene/systems.js OVERVIEW_POLAR');
+  check(/polar: overview/.test(main) && /record\.klass === 'star' && ctx\.systems && ctx\.systems\.active/.test(main), 'flyToRecord passes the overview polar for a system host');
+}
+
 if (problems.length) {
   console.error(`systems FAILED (${problems.length}):\n  ` + problems.join('\n  '));
   process.exit(1);

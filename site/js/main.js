@@ -70,6 +70,9 @@ const MOMENTS = ['wonder', 'now', 'next'];
 // a star is met when its width is known: twelve radii, a disc a fifth of the screen wide.
 const RIG_MIN_DISTANCE = 1e-4;
 const STAR_ARRIVAL_RADII = 12;
+// The camera's co-latitude over a star system's orbits; the same 40 degrees as scene/systems.js OVERVIEW_POLAR.
+const SYSTEM_OVERVIEW_POLAR = (40 * Math.PI) / 180;
+
 /** How long after sr:layers-ready the aurora's module is fetched (OFF THE FIRST VISIT, in boot). */
 const AURORA_IMPORT_MS = 4000;
 
@@ -1420,7 +1423,11 @@ export async function boot({ setStatus } = {}) {
           cameraRig.flyTo({ targetScene: at, distance: again, offset: side || undefined, ms: 500, targetDelay: 0 });
         }));
       } : undefined;
-      cameraRig.flyTo({ targetScene: pos, distance: limb ? limb.distance : distance, tilt: limb ? limb.tilt : fromHere, offset: lit || undefined, ms, onArrive: settle });
+      // A system's host star is met from over its orbits, as the trips meet it (40 degrees from the
+      // pole, scene/systems.js OVERVIEW_POLAR), not from whatever tilt the camera happened to have
+      // (internal #476: Kepler-16 arrived edge-on, LHS 1140 straight down).
+      const overview = record.klass === 'star' && ctx.systems && ctx.systems.active && ctx.systems.stageOfRecord(record) === stage.worldId && !limb ? SYSTEM_OVERVIEW_POLAR : undefined;
+      cameraRig.flyTo({ targetScene: pos, distance: limb ? limb.distance : distance, tilt: limb ? limb.tilt : fromHere, polar: overview, offset: lit || undefined, ms, onArrive: settle });
     }
     // Following something standing on the Moon is following the Moon, which crosses its own
     // radius in about half an hour, so its centre is re-taught with every tick of the target.
