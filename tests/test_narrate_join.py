@@ -155,6 +155,12 @@ check(not narrate.titled("t/s", {"body": "x"}, {}, two), "no title on the card: 
 other = {**cfg, "timing": {**cfg["timing"], "join": {**rules, "words": int(rules["words"]) + 1}}}
 some = [("Venus.", "Venus."), ("The brightest thing.", "The brightest thing.")]
 check(narrate.clip_hash(some, cfg) != narrate.clip_hash(some, other), "the join rules are part of a clip's hash")
+own = {**cfg, "join_short": {"t/s": 3}}
+check(narrate.join_rules(own, "t/s")["words"] == 3 and narrate.join_rules(own, "t/x")["words"] == int(rules["words"]), "join_short raises `words` for the stop it names and no other")
+check(narrate.clip_hash(some, own, "t/s") != narrate.clip_hash(some, cfg, "t/s"), "a stop named in join_short gets a new hash")
+check(narrate.clip_hash(some, own, "t/x") == narrate.clip_hash(some, cfg, "t/x") == narrate.clip_hash(some, cfg), "and no other stop's clip goes stale")
+for key in cfg.get("join_short") or {}:
+    check(any(f"{t['id']}/{s['id']}" == key for t, s in narrate.every_stop(narrate.load_tours())), f"join_short names a stop that exists ({key})")
 
 if failures:
     print(f"FAIL {len(failures)} of {checks}:\n  " + "\n  ".join(failures))

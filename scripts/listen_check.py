@@ -153,7 +153,10 @@ def _numbers(tokens: list) -> list:
         while i < n:
             tok = tokens[i]
             nxt = tokens[i + 1] if i + 1 < n else ""
-            if tok == "and" and started and last in ("hundred", "scale") \
+            # "five thousand and one hundred thousand" is two numbers: after a thousand, "and"
+            # joins only what is under a hundred.
+            after = tokens[i + 2] if i + 2 < n else ""
+            if tok == "and" and started and last in ("hundred", "scale") and not (last == "scale" and after == "hundred") \
                     and ((nxt in UNITS and nxt != "oh") or nxt in TENS or re.fullmatch(r"\d{1,2}", nxt)):
                 i += 1
                 continue

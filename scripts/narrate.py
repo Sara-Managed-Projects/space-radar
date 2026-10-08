@@ -229,12 +229,15 @@ def titled(key: str, card: dict, cfg: dict, cues: list) -> bool:
     return cues[0][0].strip().rstrip(".!?") == title
 
 
-def clip_hash(cues: list, cfg: dict) -> str:
+def clip_hash(cues: list, cfg: dict, key: str | None = None) -> str:
     voice = cfg.get("voice") or {}
     payload = [
         (cfg.get("engine") or {}).get("id"), voice.get("id"), voice.get("lang"), voice.get("speed"),
         cfg.get("timing"), cfg.get("encode"), [spoken_text for _, spoken_text in cues],
     ]
+    own = (cfg.get("join_short") or {}).get(key) if key else None
+    if own is not None:            # only the stops it names: nobody else's clip goes stale
+        payload.append({"join_short": int(own)})
     blob = json.dumps(payload, ensure_ascii=False, sort_keys=True).encode("utf-8")
     return hashlib.sha256(blob).hexdigest()[:16]
 
@@ -256,8 +259,14 @@ JOIN_DEFAULT = {"words": 0, "joiners": [" "], "window": [0.45, 1.15], "quiet": 0
                 "max_chars": 420}
 
 
-def join_rules(cfg: dict) -> dict:
-    return {**JOIN_DEFAULT, **((cfg.get("timing") or {}).get("join") or {})}
+def join_rules(cfg: dict, key: str | None = None) -> dict:
+    """The rules for one stop. `join_short` in the registry raises `words` for the stops it names:
+    "It will miss." said alone was heard as "It will miss us" by two recognisers."""
+    rules = {**JOIN_DEFAULT, **((cfg.get("timing") or {}).get("join") or {})}
+    own = (cfg.get("join_short") or {}).get(key) if key else None
+    if own is not None:
+        rules["words"] = int(own)
+    return rules
 
 
 def plain_words(marked: str) -> int:
@@ -403,7 +412,7 @@ def check() -> int:
         if not row:
             errors.append(f"{key}: no narration. Render it: scripts/narrate.py --models DIR --only {key}")
             continue
-        if row.get("hash") != clip_hash(cues, cfg):
+        if row.get("hash") != clip_hash(cues, cfg, key):
             errors.append(f"{key}: the card's words, the voice or the engine changed since this clip was "
                           f"rendered. Render it again: scripts/narrate.py --models DIR --only {key}")
         p = paths(trip["id"], stop["id"])
@@ -562,7 +571,7 @@ class Voice:
         audio, rate = self.raw(marked, voice_id)
         return self.tidy(audio, rate), rate
 
-    def say_pass(self, marked: list, voice_id: str | None = None) -> tuple:
+    def say_pass(self, marked: list, voice_id: str | None = None, rules: dict | None = None) -> tuple:
         """Several sentences in one pass, cut apart at the model's own pauses (internal #441).
         -> ([samples for each sentence], rate, the shortest pause that was cut at in seconds, or
         None when a pause was not found and the sentences were said alone after all)."""
@@ -570,7 +579,7 @@ class Voice:
         if len(marked) == 1:
             audio, rate = self.say(marked[0], voice_id)
             return [audio], rate, None
-        rules = join_rules(self.cfg)
+        rules = rules or join_rules(self.cfg)
         frame_s = 0.005
         alone = [self.say(m, voice_id) for m in marked[:-1]]
         rate = alone[0][1]
@@ -617,7 +626,7 @@ class Voice:
         parts.append(self.tidy(audio[start:], rate))
         return parts, rate, shortest
 
-    def clip(self, cues: list, has_title: bool, voice_id: str | None = None):
+    def clip(self, cues: list, has_title: bool, voice_id: str | None = None, key: str | None = None):
         """All the sentences of a stop, joined with the registry's pauses.
         -> samples, rate, timings, and what say_pass() reported for each pass of two or more."""
         np = self.np
@@ -625,8 +634,9 @@ class Voice:
         rate = 24000
         marked = [m for _, m in cues]
         spoken_parts, notes = [], []
-        for group in passes(marked, has_title, join_rules(self.cfg)):
-            parts, rate, shortest = self.say_pass([marked[i] for i in group], voice_id)
+        rules = join_rules(self.cfg, key)
+        for group in passes(marked, has_title, rules):
+            parts, rate, shortest = self.say_pass([marked[i] for i in group], voice_id, rules)
             spoken_parts += parts
             if len(group) > 1:
                 notes.append((group, shortest))
@@ -693,7 +703,7 @@ def render(args) -> int:
         if args.only and not (key == args.only or trip["id"] == args.only):
             continue
         cues = cues_for(trip, stop, cfg)
-        h = clip_hash(cues, cfg)
+        h = clip_hash(cues, cfg, key)
         p = paths(trip["id"], stop["id"])
         fresh = key in rows and rows[key].get("hash") == h and all(f.exists() for f in p.values())
         if args.force or not fresh:
@@ -715,7 +725,7 @@ def render(args) -> int:
     with tempfile.TemporaryDirectory() as tmp:
         for trip, stop, key, cues, h, p in todo:
             has_title = titled(key, stop.get("card"), cfg, cues)
-            audio, rate, timed, notes = voice.clip(cues, has_title)
+            audio, rate, timed, notes = voice.clip(cues, has_title, key=key)
             wav = Path(tmp) / "clip.wav"
             sf.write(str(wav), audio, rate, subtype="FLOAT")
             stats = encode(ff, aac, wav, cfg, p["opus"], p["m4a"])

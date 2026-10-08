@@ -54,6 +54,7 @@ for script, heard in [
     ("nought point one two of a pixel", "0.12 of a pixel"),
     ("M eighty-seven", "M87"),
     ("twenty kilometres across", "20km across"),
+    ("between five thousand and one hundred thousand times", "between 5 ,000 and 100 ,000 times"),
     ("a hundred times", "100 times"),
     ("the twenty-first century", "the 21st century"),
     ("the third of February", "the 3rd of February"),
