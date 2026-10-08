@@ -565,6 +565,30 @@ jobs:
         run: node tests/test_shadow.mjs
       - name: the Moon's shadow lands on the library's greatest-eclipse point, and the GLSL is the JS formula (spec 0037)
         run: node tests/test_eclipse.mjs
+
+      # Public #273: where the shadow's axis meets the ground, held to Astronomy Engine's own point at
+      # greatest eclipse, the shadow's two radii, and the ribbon drawn across the globe.
+      - name: The eclipse's path lands where the library says, and the ribbon is as wide as the core
+        run: node tests/test_eclipse_path.mjs
+
+      # Public #404, #411, #417: Mercury's relief, Saturn's contrast and Venus's soft terminator are each
+      # behind a uniform that is off on every other world, and each card says what is adjusted.
+      - name: Three worlds' own looks are off everywhere else, and said on the card
+        run: node tests/test_world_looks.mjs
+
+      # Public #271: the Pleiades' catalogue stars are gathered at the cluster's distance, in their
+      # measured directions, and nothing else moves.
+      - name: The Pleiades are gathered from their catalogue stars
+        run: node tests/test_clusters.mjs
+
+      # Public #271: a star's light is a peak and a glow, the same in all three star draws, never a flat disc.
+      - name: A star is a peak with a glow, not a disc
+        run: node tests/test_star_light.mjs
+
+      # Public #426: a pulsar blinks at its period times the least power of ten an eye can follow, and
+      # the card says by how much; the photographed black holes are drawn while their cards are open.
+      - name: A pulsar's pulse is slowed by a power of ten and says so
+        run: node tests/test_pulse.mjs
       # Spec 0054 task 1: the worlds are physically lit. No cel bands left in the shader, the JS twins
       # of Oren-Nayar and Minnaert hold their physics, every world is exposed for its own sunlight,
       # and the Moon's earthshine is NASA's geometric albedo worked through the Lambert phase law.
