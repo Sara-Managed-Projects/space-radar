@@ -235,7 +235,7 @@ const lc = readFileSync(join(JS, 'scene/liveclouds.js'), 'utf8');
 check(/ctx\.liveClouds\.start\(\)/.test(main) && G.START_DELAY_MS >= 5000, 'main.js starts the live clouds, and the first look waits at least 5 s');
 // 2026-10-01: started from boot, the pictures fell inside a slow first visit (594 kB on CI). They start
 // when the catalogues have landed, inside main.js's sr:layers-ready handler.
-check(/addEventListener\('sr:layers-ready'[\s\S]{0,600}ctx\.liveClouds\.start\(\)/.test(main), 'the live clouds start after the layers are ready, never during the first visit');
+check(/addEventListener\('sr:layers-ready'[\s\S]{0,700}ctx\.liveClouds\.start\(\)/.test(main), 'the live clouds start after the layers are ready, never during the first visit');
 {
   // 2026-09-28: the card said "illustrative" beside live pictures, because nothing told an open card
   // they had arrived. main.js turns onChange into `sr:clouds` and the card rewrites its line on it.

@@ -55,6 +55,7 @@ const DEFERRED = {
   'js/data/tours.js': 'the trips\' stops: they arrive with ui/trip.js; the cards read data/tours-index.js',
   'js/data/narration.js': 'the narration manifest: it arrives with the trip frame',
   'js/ui/tripframe.js': 'the trip frame: imported when the first trip starts',
+  'js/ui/golink.js': 'the push-in a `#go=` link lands with: main.js fetches it for that link alone',
   'js/ui/autopilot.js': 'a screen that plays on its own: main.js fetches it for `#ambient=` or the Trips section\'s row',
   'js/ui/autopilotplan.js': 'the reel\'s arithmetic: with ui/autopilot.js',
   'js/data/autopilot.js': 'the reels: with ui/autopilot.js',

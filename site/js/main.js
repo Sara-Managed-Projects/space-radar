@@ -239,6 +239,8 @@ export async function boot({ setStatus } = {}) {
   // The link, read NOW, before any of the app's own writers below can touch the hash; its clock
   // keys are applied here and the rest waits for the layers (ui/urlstate.js bootLink says why).
   const link = bootLink(clock, embed && embed.link);
+  // `go=` is read here, raw: ui/urlstate.js hands it on as `at`, and the landing needs to know which it was.
+  const goId = (() => { const m = /(?:^#|&)go=([^&]+)/.exec(location.hash || ''); try { return m ? decodeURIComponent(m[1]) : ''; } catch { return ''; } })();
   // A SCREEN THAT PLAYS ON ITS OWN (spec 0036): `#ambient=…`. The class goes on before anything is
   // built, so a kiosk never shows the panels it is about to hide; ui/autopilot.js does the rest.
   const ambient = !embed && !!(link && link.ambient && link.ambient !== '0');
@@ -1032,6 +1034,7 @@ export async function boot({ setStatus } = {}) {
   });
   // The film's cue sheet and its lower third hear the trip from here on (window.__srRender).
   if (film) film.attach(ctx);
+  ctx.openAt = (id) => openAt(ctx, id);
   // Names over the scene (spec 0026 req 5): the selection, its train, the nearest notable things.
   const labels = createLabels(ctx, document.getElementById('labels'));
   ctx.labels = labels;
@@ -1073,9 +1076,17 @@ export async function boot({ setStatus } = {}) {
   // the app's own clock, up to a second stale, and re-applying it undid a visitor's first scrub).
   // Registered before the load starts so the event cannot be missed.
   // A trip the visitor has already started by then outranks the link (ui/urlstate.js laterLink).
+  // `#go=<id>` (internal #466): the short link a post ends on. The rest of the link applies as
+  // ever; the place it names is met by one slow push-in (ui/golink.js), fetched for it. Returns
+  // the landing's promise, or null when the link is not one (a film being made reads no link).
+  const goLanding = (tripRunning) => {
+    if (film || !goId || tripRunning || !link || link.unknownVersion || link.trip) return null;
+    applyUrlState(ctx, { ...link, at: undefined, cam: undefined });
+    return import('./ui/golink.js').then((m) => m.land(ctx, goId), () => openAt(ctx, goId));
+  };
   window.addEventListener('sr:layers-ready', () => {
     const tripRunning = !!(ctx.trip && ctx.trip.state && ctx.trip.state.phase !== 'idle');
-    const apply = () => (ambient ? startReel() : applyUrlState(ctx, laterLink(link, tripRunning)));
+    const apply = () => (ambient ? startReel() : goLanding(tripRunning) || applyUrlState(ctx, laterLink(link, tripRunning)));
     // A trip's stops may be stars or exoplanets (OFF THE FIRST VISIT): those land first. An `at`
     // waits only if it does not resolve without them (openAt).
     if (link && link.trip && ctx.loadAfterFirstVisit) ctx.loadAfterFirstVisit().then(apply, apply);

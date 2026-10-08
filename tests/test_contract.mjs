@@ -157,6 +157,8 @@ const CONTRACT = {
   // Spec 0070: the film camera. Imported by main.js only for `?render=1` (tools/render-trip.mjs);
   // its clock, its cards and its line of truth are pure for tests/test_render_trip.mjs.
   'ui/rendermode.js': ['renderOptions', 'createVirtualTime', 'install', 'truthLine', 'tripUrl', 'cardOpacity', 'lowerThird', 'TITLE_S', 'END_S', 'FADE_S', 'WARM_S'],
+  // Internal #466: `#go=<id>` lands with one push-in; its plan is pure for tests/test_golink.mjs.
+  'ui/golink.js': ['land', 'landingPlan', 'zoomAt', 'LAND_FROM', 'LAND_MS'],
   // Spec 0068: the trip cards' pictures, and the controls hint shown once (imported after the
   // first visit settles); their pure parts for tests/test_trip_pictures.mjs and test_keyhint.mjs.
   'ui/trippics.js': ['tripPicture', 'tripPictureUrl', 'PICTURE_DELAY_MS'],

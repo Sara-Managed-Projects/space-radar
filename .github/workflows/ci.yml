@@ -528,6 +528,9 @@ jobs:
       # description are what YouTube reads.
       - name: a trip's video has a clock of its own, a cue sheet, a ducked bed and YouTube's sidecars (spec 0070)
         run: node tests/test_render_trip.mjs
+      # Internal #466: the landing's move, and the film clock handed to a tool, with no browser.
+      - name: "#go= lands with one interruptible push-in, and the film's clock can be had without a trip (internal #466)"
+        run: node tests/test_golink.mjs
       - name: a shared link is the view and nothing else, and every Share opens the one sheet (spec 0033, 0061 task 8)
         run: node tests/test_share.mjs
       # Spec 0044: the byte gate's rules on fixtures. The real boot is in screens.yml, which has a
