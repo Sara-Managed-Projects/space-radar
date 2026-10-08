@@ -41,7 +41,7 @@ export function lightTimeText(km) {
   const L = COPY.live;
   const s = km / LIGHT_KM_PER_S;
   if (s < 60) return t(L.seconds, { s: fmt.num(s, s < 10 ? 1 : 0) });
-  const whole = Math.floor(s);
+  const whole = Math.floor(s + 1e-6); // a whole second is not lost to the division
   const sec = whole % 60;
   const min = Math.floor(whole / 60) % 60;
   const h = Math.floor(whole / 3600);
@@ -144,7 +144,7 @@ export function closestDistanceText(km) {
 export function closestWords(min, approximate = false) {
   if (!min || !Number.isFinite(min.tMs) || !Number.isFinite(min.km)) return '';
   const L = COPY.live;
-  return t(approximate ? L.closestAbout : L.closest, { date: timeText.longDate(min.tMs), dist: closestDistanceText(min.km) });
+  return t(approximate ? L.closestAbout : L.closest, { date: timeText.utcLong(min.tMs), dist: closestDistanceText(min.km) });
 }
 
 /** Whole years since launch, or null (no date, or a date after the clock). */
@@ -161,7 +161,7 @@ export function upForWords(launchMs, year, nowMs) {
   const L = COPY.live;
   const n = upFor(launchMs, nowMs);
   if (n !== null) {
-    const date = timeText.longDate(launchMs);
+    const date = timeText.utcLong(launchMs);
     if (n < 1) return t(L.upUnderAYear, { date });
     return t(n === 1 ? L.upOneYear : L.upYears, { n: fmt.int(n), date });
   }

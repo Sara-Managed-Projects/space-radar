@@ -164,7 +164,7 @@ export function crewRows(crew, fetchedAtMs, wallMs) {
     const v = { agency: p.agency, days: days === null ? '' : fmt.int(days) };
     return [p.name, days === null ? p.agency : t(p.agency ? C.person : C.personNoAgency, v)];
   });
-  const docked = crew.docked.map((d) => [d.vehicle, t(C.docked, { port: d.port, date: d.dockedMs !== null ? timeText.longDate(d.dockedMs) : '' })]);
+  const docked = crew.docked.map((d) => [d.vehicle, t(C.docked, { port: d.port, date: d.dockedMs !== null ? timeText.utcLong(d.dockedMs) : '' })]);
   const age = Number.isFinite(fetchedAtMs) && Number.isFinite(wallMs) ? wallMs - fetchedAtMs : null;
   const stale = age !== null && age > CREW_STALE_MS;
   return {
@@ -174,7 +174,7 @@ export function crewRows(crew, fetchedAtMs, wallMs) {
     docked,
     unmatched: n !== null && n > 0 && !crew.matched,
     stale,
-    asOf: age === null ? '' : stale ? t(C.stale, { date: timeText.longDate(fetchedAtMs) }) : t(C.asOf, { age: ageInWords(age) }),
+    asOf: age === null ? '' : stale ? t(C.stale, { date: timeText.utcLong(fetchedAtMs) }) : t(C.asOf, { age: ageInWords(age) }),
   };
 }
 

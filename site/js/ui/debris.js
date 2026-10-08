@@ -254,7 +254,7 @@ export function createDebris(ctx, host, opts = {}) {
           name.title = O.showTitle;
           name.addEventListener('click', () => { if (typeof ctx.select === 'function') ctx.select(rec); });
         }
-        li.append(name, el('span', 'sr-debris__oldyears', t(O.row, { years: fmt.int(row.years), date: timeText.longDate(row.launchMs) })));
+        li.append(name, el('span', 'sr-debris__oldyears', t(O.row, { years: fmt.int(row.years), date: timeText.utcLong(row.launchMs) })));
         const note = Object.prototype.hasOwnProperty.call(OLDEST_NOTES, String(row.id)) ? OLDEST_NOTES[String(row.id)] : null;
         if (note && note.line) li.appendChild(el('span', 'sr-debris__oldnote', note.line));
         list.appendChild(li);
