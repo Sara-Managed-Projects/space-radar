@@ -1398,6 +1398,8 @@ Object.assign(COPY, {
     label: 'From Earth now',
     km: 'km',
     light: 'Light takes',
+    lightYears: 'light-years',
+    noteFar: 'Worked out from the position drawn, to three figures. It does not tick.',
     note: 'Worked out from the orbit drawn. The last digits show it moving, not its place to a kilometre.',
     seconds: '{s} s',
     minSec: '{min} min {s} s',

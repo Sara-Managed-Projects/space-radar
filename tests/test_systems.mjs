@@ -321,6 +321,14 @@ if (trip) {
   worlds.dispose();
 }
 
+// internal #476: a plain selection of a system's star arrives looking down on its orbits.
+{
+  const main = readFileSync(join(ROOT, 'site/js/main.js'), 'utf8');
+  check(/ctx\.systems\.subjectFor\(record\)/.test(main) && /polar: hostPolar/.test(main), 'flyToRecord gives a system host the overview polar that a trip stop has');
+  const sys = readFileSync(join(ROOT, 'site/js/scene/systems.js'), 'utf8');
+  check(/polar: planet \? null : OVERVIEW_POLAR/.test(sys), 'and that polar is the host subject\'s own, null for a planet');
+}
+
 Date.now = realDateNow;
 if (problems.length) {
   console.error(`systems FAILED (${problems.length}):\n  ` + problems.join('\n  '));

@@ -33,6 +33,20 @@ check(w && w.km === `312${NN}456${NN}789`, `kilometres to the last one, in group
 check(w && w.light === '17 min 22 s', `and its light time (${w && w.light})`);
 check(live.liveDistanceWords(null) === null && live.liveDistanceWords(0) === null, 'nothing to give is null, never a zero');
 
+// --- 1b. another star's planet: light-years, three figures, no ticking (internal #476) ----------------
+{
+  const trappist = 40.7 * live.LIGHT_YEAR_KM;
+  const f = live.liveDistanceWords(trappist);
+  check(f && f.far === true && f.km === '40.7' && f.light === f.km, `TRAPPIST-1 at 40.7 light-years reads 40.7, not a kilometre count (${f && f.km})`);
+  const g = live.liveDistanceWords(trappist + 5e6);
+  check(g.km === f.km, 'five million kilometres later it is the same words: it does not tick');
+  check(live.liveDistanceWords(4.2465 * live.LIGHT_YEAR_KM).km === '4.25', 'under ten, two decimals');
+  check(live.liveDistanceWords(2.5e10).far === undefined, 'Voyager 1 (about 165 au) is still kilometres');
+  check(Math.abs(live.LIGHT_YEAR_KM - 9.4607304725808e12) < 1e3, 'a light-year is 9.4607e12 km');
+  const extras = readFileSync(new URL('../site/js/ui/cardextras.js', import.meta.url), 'utf8');
+  check(/words\.far/.test(extras) && /L\.lightYears/.test(extras) && /L\.noteFar/.test(extras), 'the card block gives the far words one row and its note');
+}
+
 // --- 2. it ticks once a second, and stands still under reduced motion ----------------------------
 const T = Date.UTC(2026, 9, 8, 12, 0, 0);
 check(live.liveKey(T + 999) === T && live.liveKey(T + 1000) === T + 1000, 'the shown instant is the whole second');
