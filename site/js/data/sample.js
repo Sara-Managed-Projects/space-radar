@@ -1209,6 +1209,72 @@ const PAST_CRAFT = [
       '2012, then the dwarf planet Ceres from 2015.',
     end: 'It fell silent on 31 October 2018, out of fuel, in an orbit of Ceres nobody has tracked since',
   },
+  // Four more ended missions with their NASA meshes (2026-10-08, public #431). Dates as read that
+  // day. Rosetta: JPL Horizons' header for -226 ("Launch (Ariane-5G)= Mar 2, 2004 07:17:51 UTC";
+  // "On 2016-September-30 @ 10:39:28 UTC, the Rosetta spacecraft ended its mission by landing on
+  // the comet"; orbit from 2014-Aug-6, Philae released November 12); NSSDCA's page for it did not
+  // load. NEAR: NSSDCA 1996-008A (launch date 1996-02-17; "the mission ended with a touchdown in
+  // the saddle region of Eros on 12 February 2001"; "the final contact was made on 28 February";
+  // orbit insertion 14 February 2000). Stardust: NSSDCA 1999-003A (launch date 1999-02-07; coma of
+  // Wild 2 entered 31 December 2003, closest 2 January 2004; capsule landed 15 January 2006; past
+  // Tempel 1 on 15 February 2011 UT; "commanded into safe mode with its transmitter off on 25
+  // March 2011 at 00:30 UT"). Deep Impact: NSSDCA 2005-001A (launched 12 January 2005; the
+  // impactor struck on 4 July; Hartley 2 on 4 November 2010; "end of mission was announced on 19
+  // September" 2013) and Horizons' header for -140 ("Contact was lost Aug 11-14, 2013";
+  // "w/data to 2012-Jan-24").
+  {
+    id: 'deep-rosetta',
+    name: 'Rosetta',
+    launched: '2004-03-02',
+    ended: '2016-09-30',
+    klass: 'probe',
+    horizonsId: -226,
+    note: 'A European Space Agency mission. It went into orbit round comet 67P/Churyumov-Gerasimenko ' +
+      'in 2014 and released the lander Philae onto it.',
+    end: 'It ended its mission by landing on the comet on 30 September 2016',
+  },
+  {
+    id: 'deep-near',
+    name: 'NEAR Shoemaker',
+    launched: '1996-02-17',
+    ended: '2001-02-12',
+    klass: 'probe',
+    horizonsId: -93,
+    aliases: ['NEAR', 'Near Earth Asteroid Rendezvous'],
+    note: 'The first spacecraft to orbit an asteroid and the first to touch down on one: 433 Eros, ' +
+      'which it circled for a year from February 2000.',
+    end: 'It touched down on Eros on 12 February 2001 and was last heard from on 28 February',
+  },
+  // `pathEnds`: JPL's file for the Stardust bus stops on 12 March 2011 (Horizons: "No ephemeris
+  // ... after A.D. 2011-MAR-12 23:58:53"), twelve days before the end, so the path does too.
+  {
+    id: 'deep-stardust',
+    name: 'Stardust',
+    launched: '1999-02-07',
+    ended: '2011-03-25',
+    pathEnds: '2011-03-12',
+    pathEndsWhy: 'The path JPL holds for it stops on 12 March 2011, and stretches of it are ' +
+      'JPL’s predictions, not tracking.',
+    klass: 'probe',
+    horizonsId: -29,
+    aliases: ['Stardust-NExT'],
+    note: 'It flew through the coma of comet Wild 2 in January 2004, sent a capsule of comet dust ' +
+      'back to Earth in 2006, then flew past comet Tempel 1 in 2011.',
+    end: 'Its transmitter was switched off on 25 March 2011',
+  },
+  {
+    id: 'deep-deep-impact',
+    name: 'Deep Impact',
+    launched: '2005-01-12',
+    ended: '2013-09-19',
+    klass: 'probe',
+    horizonsId: -140,
+    aliases: ['EPOXI'],
+    note: 'It released an impactor that struck comet Tempel 1 on 4 July 2005, then flew past comet ' +
+      'Hartley 2 in November 2010.',
+    end: 'Contact was lost in August 2013 and NASA declared the mission over on 19 September 2013 ' +
+      '(its path after January 2012 is JPL’s prediction, not tracking)',
+  },
 ];
 
 /** Orbits given as elements where I am confident of the shape but not of the phase. */
@@ -1658,11 +1724,12 @@ export function sampleDeepSpace() {
         note: c.note,
         launchDate: c.launched,
         endDate: c.ended,
+        ...(c.pathEnds ? { pathEndDate: c.pathEnds } : {}),
         ...(c.aliases ? { aliases: c.aliases } : {}),
         why: c.end + ', so there is nowhere to draw it today. Between ' + c.launched.slice(0, 4) +
           ' and ' + c.ended.slice(0, 4) + ' it is drawn from its own path: positions from JPL ' +
           'Horizons, shipped with the app and fetched when this card opens. Choose an event ' +
-          'of its mission to go there.',
+          'of its mission to go there.' + (c.pathEndsWhy ? ' ' + c.pathEndsWhy : ''),
       },
     });
   }

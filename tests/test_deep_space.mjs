@@ -52,7 +52,7 @@ const everyRecord = sampleDeepSpace();
 const ended = everyRecord.filter((r) => r.meta && r.meta.construction === 'own-path');
 const records = everyRecord.filter((r) => !ended.includes(r));
 const byId = new Map(records.map((r) => [r.id, r]));
-check(JSON.stringify(ended.map((r) => r.id)) === JSON.stringify(['deep-cassini', 'deep-galileo', 'deep-mars-2020', 'deep-dawn']), `the ended missions are Cassini, Galileo, Mars 2020's cruise and Dawn (${ended.map((r) => r.id)})`);
+check(JSON.stringify(ended.map((r) => r.id)) === JSON.stringify(['deep-cassini', 'deep-galileo', 'deep-mars-2020', 'deep-dawn', 'deep-rosetta', 'deep-near', 'deep-stardust', 'deep-deep-impact']), `the ended missions are Cassini, Galileo, Mars 2020's cruise and Dawn (${ended.map((r) => r.id)})`);
 {
   const { EPHEMERIDES } = await import(join(JS, 'data/ephemerides.js'));
   for (const rec of ended) {
@@ -60,7 +60,9 @@ check(JSON.stringify(ended.map((r) => r.id)) === JSON.stringify(['deep-cassini',
     check(rec.layer === 'deep-space' && rec.propagator === 'sampled' && Array.isArray(rec.samples) && rec.samples.length === 0, `${rec.id}: an ended mission has no samples of its own`);
     check(propagate(rec, Date.parse('2026-09-22T00:00:00Z')) === null && propagate(rec, Date.parse(md.endDate + 'T00:00:00Z') - 86400e3) === null, `${rec.id}: without its file it is drawn nowhere, today or then`);
     check(!!EPHEMERIDES[rec.id] && String(EPHEMERIDES[rec.id].horizonsId) === String(md.horizonsId), `${rec.id}: it has a path file, of the same Horizons id`);
-    check(/^\d{4}-\d\d-\d\d$/.test(md.launchDate) && /^\d{4}-\d\d-\d\d$/.test(md.endDate) && EPHEMERIDES[rec.id].to.startsWith(md.endDate), `${rec.id}: launch and end dates, and the file stops on the day it ended`);
+    check(/^\d{4}-\d\d-\d\d$/.test(md.launchDate) && /^\d{4}-\d\d-\d\d$/.test(md.endDate) && EPHEMERIDES[rec.id].to.startsWith(md.pathEndDate || md.endDate), `${rec.id}: launch and end dates, and the file stops on the day it ended`);
+    // Stardust (2026-10-08): JPL's file stops twelve days before the transmitter went off. The row says so, in words the card prints.
+    if (md.pathEndDate) check(md.pathEndDate < md.endDate && Date.parse(md.endDate) - Date.parse(md.pathEndDate) < 14 * 86400e3 && /stops on 12 March 2011/.test(md.why), `${rec.id}: a path that stops before the end stops days before, and the card says when`);
     check(typeof md.note === 'string' && md.note.length > 20 && md.note.length <= 160, `${rec.id}: a note of 160 characters at most`);
     check(/nowhere to draw it today/.test(md.why) && /JPL Horizons/.test(md.why), `${rec.id}: says why nothing is drawn today, and where its path is from`);
     check(rows.every((r) => r.id !== String(md.horizonsId)), `${rec.id}: the harvester must not ask Horizons for it today (its trajectory has ended)`);

@@ -541,6 +541,10 @@ than counted by hand.
 | `odyssey.glb` | Mars Odyssey | Horizons -53 (Mars Odyssey) | 95 KB |
 | `saturn-v.glb` | Saturn V (NASA/Michael D. Carbajal) | TO BE WIRED by branch models3-close-issues | 96 KB |
 | `shuttle-stack.glb` | Space Shuttle (A) (NASA/Michael D. Carbajal): the orbiter on its tank and boosters | TO BE WIRED by branch models3-close-issues | 130 KB |
+| `rosetta.glb` | Rosetta | Horizons -226 (Rosetta, 2004 to 2016) | 125 KB |
+| `near.glb` | NEAR Shoemaker | Horizons -93 (NEAR Shoemaker, 1996 to 2001) | 88 KB |
+| `stardust.glb` | Stardust (NASA/Brian E. Kumanchik; NASA/Christian A. Lopez) | Horizons -29 (Stardust, 1999 to 2011) | 111 KB |
+| `deep-impact.glb` | Deep Impact (EPOXI) (NASA/Brian E. Kumanchik; NASA/Christian A. Lopez) | Horizons -140 (Deep Impact, 2005 to 2013) | 73 KB |
 | `galileo.glb` | Galileo | Horizons -77 (Galileo, 1989 to 2003) | 76 KB |
 | `juno.glb` | Juno (B) | Horizons -61 | 146 KB |
 | `lro.glb` | Lunar Reconnaissance Orbiter (A) | Horizons -85 | 187 KB |
