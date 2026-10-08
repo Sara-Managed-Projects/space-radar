@@ -27,7 +27,7 @@
 // BUDGET YOUR BOOTS. Each boot of the app pulls the live catalogues. About fifteen in an hour got
 // this machine a 403 from CelesTrak on 2026-09-17, which then looks exactly like an empty layer.
 import { spawn } from 'node:child_process';
-import { readFileSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync, mkdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -69,6 +69,9 @@ const REDUCED = process.argv.includes('--reduced-motion');
 // compositor produced in between as name-<n>-<epoch ms>.png -- the frames a visitor would have
 // seen, stamped, to line up with Date.now() read in the page.
 const SHOT_DIR = arg('shot-dir', '');
+// The folder is made here: writing into one that did not exist threw inside the binding's handler,
+// `cdpShot` never resolved and the run died at its cap with no output (internal #454, one run lost).
+if (SHOT_DIR) mkdirSync(SHOT_DIR, { recursive: true });
 // --bytes=out.json: every request the page made, as `{url, status, bytes}` with `bytes` the
 // protocol's encodedDataLength (what crossed the wire, headers included, compressed if the server
 // compressed). Added for spec 0044 (2026-09-28): `node tests/test_first_visit_bytes.mjs

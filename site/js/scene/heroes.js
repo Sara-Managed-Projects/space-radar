@@ -74,8 +74,23 @@ export const SELECTED_PX = 260;
 const REF_M = 60; // roughly the Falcon 9 / Ariane 6 median
 /** An unselected hero must be nearer the camera than this share of the camera's distance to the stage's world. */
 const FOCUS_SHARE = 0.3;
-function heroPixels(record, selected) {
-  const base = selected ? SELECTED_PX : TARGET_PX;
+/** A model's bounding circle is drawn this many times its pixel size across (MEASURED 2026-10-02, main.js). */
+export const MODEL_SPAN = 1.32;
+/** The share of the uncovered band a selected model's circle may fill: a little air above and below. */
+const BAND_FILL = 0.9;
+/**
+ * The pixel size of the SELECTED model in a band `bandPx` tall (the part of the view no chrome
+ * covers: scene/viewshift.js bandHeightPx). 260 wherever its 343 px circle fits; smaller in a
+ * narrower band, so the phone trip's top bar and the HUD tag no longer lie across an Apollo module
+ * (internal #421, #432: at 390 x 844 with the trip's sheet up the band is under 300 px). Never
+ * smaller than an unselected model. Pure. No band known (0, NaN): the full size.
+ */
+export function selectedPixels(bandPx) {
+  if (!(bandPx > 0)) return SELECTED_PX;
+  return Math.max(TARGET_PX, Math.min(SELECTED_PX, Math.floor((bandPx * BAND_FILL) / MODEL_SPAN)));
+}
+function heroPixels(record, selected, selectedPx = SELECTED_PX) {
+  const base = selected ? selectedPx : TARGET_PX;
   const m = record && record.meta && record.meta.sizeM;
   if (!Number.isFinite(m)) return base;
   return base * Math.min(1.45, Math.max(0.62, Math.sqrt(m / REF_M)));
@@ -493,6 +508,7 @@ function standsOnBareGround(record, obj) {
 }
 
 export function createHeroes(scene, ctx) {
+  let selectedPx = SELECTED_PX; // per frame: selectedPixels(the uncovered band), update() below
   const drawnCentre = (id, out) => (ctx.worlds && ctx.worlds.drawnPositionOf ? ctx.worlds.drawnPositionOf(id, out) : null);
   // The other worlds on this stage, as drawn, gathered once a frame for capForNeighbour.
   const _others = [];
@@ -717,7 +733,7 @@ export function createHeroes(scene, ctx) {
     for (const c of out) {
       // The SAME heroPixels() as the scale below, or a big Starship is drawn large and still
       // swallows its neighbours as though it were small. One function, two call sites.
-      const px = heroPixels(c.record, c.forced);
+      const px = heroPixels(c.record, c.forced, selectedPx);
       // The model may not exist yet on the frame it is first considered; half a unit is the
       // convention every shape is built to, and this only decides which neighbour is hidden.
       const reach = (live.get(c.record.id) || {}).reach || 0.5;
@@ -743,6 +759,7 @@ export function createHeroes(scene, ctx) {
     // Chrome on 2026-10-05 (clock.setPaused(true), then select: six models, six at opacity 0). At
     // 1000x it was the other failure, a fade over in one frame. `frameMs` is the real frame
     // length main.js already passes (and the film's virtual one, so a rendered trip is unchanged).
+    selectedPx = selectedPixels(at.bandPx);
     fadeNow += Number.isFinite(at.frameMs) && at.frameMs > 0 ? Math.min(at.frameMs, 100) : 16;
     lastTMs = fadeNow;
     const camera = ctx.camera;
@@ -833,7 +850,7 @@ export function createHeroes(scene, ctx) {
       const obj = entry.obj;
       obj.position.copy(c.pos);
 
-      const px = heroPixels(c.record, c.record.id === selectedId);
+      const px = heroPixels(c.record, c.record.id === selectedId, selectedPx);
       const size = heroScale(px, c.d, h, f, altitudeCapApplies(c.record) ? c.pos : null, entry.reach, nearAlt(c));
       obj.scale.setScalar(size);
 

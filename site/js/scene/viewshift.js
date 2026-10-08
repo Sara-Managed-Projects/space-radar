@@ -194,6 +194,7 @@ export function createViewShift(camera, canvas, opts = {}) {
     return rects;
   }
 
+  let bandPx = 0;
   function measure() {
     if (!doc || !canvas || !canvas.getBoundingClientRect) return 0;
     const c = canvas.getBoundingClientRect();
@@ -207,6 +208,7 @@ export function createViewShift(camera, canvas, opts = {}) {
     }
     const bottom = coveredFromBottom(rects, c.width, c.height);
     const top = coveredFromTop(rectsOf(TOP_SELECTORS, c), c.width, c.height);
+    bandPx = Math.max(0, Math.round(c.height - top - bottom));
     return Math.round(uncoveredBand(c.height, top, bottom).shift);
   }
 
@@ -253,6 +255,8 @@ export function createViewShift(camera, canvas, opts = {}) {
     update,
     shiftPx: () => Math.round(current),
     shiftXPx: () => Math.round(currentX),
+    /** How tall the band no chrome covers is, px, as last measured; 0 before the first measure. */
+    bandHeightPx: () => bandPx,
     dispose() {
       camera.clearViewOffset();
       if (typeof window !== 'undefined' && window.removeEventListener) window.removeEventListener('sr:shell', remeasure);
