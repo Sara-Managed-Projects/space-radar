@@ -43,6 +43,8 @@ const BEST_MS = 5 * 60e3; // the ranked list is worked out again this often, and
 const SKY_TOGGLES = ['figures', 'names', 'art', 'bounds', 'sunPath', 'equator', 'grid', 'starGrid', 'meteors', 'seeThrough', 'trails'];
 /** The time strip: minutes of the sky's time to a pixel of drag, and to a press of an arrow key. */
 export const STRIP_MIN_PER_PX = 2;
+/** propagate/sgp4.js MAX_AGE_MS: past this from today the saved orbits are refused and no satellite is drawn. */
+export const SAT_FAR_MS = 30 * 24 * 3600e3;
 export const STRIP_KEY_MIN = 10;
 /** Three eyepieces: the width of the round field each shows, in degrees. */
 export const EYEPIECES = { low: 1, medium: 0.5, high: 0.2 };
@@ -618,6 +620,11 @@ export function renderTonight(host, ctx) {
       e.stopPropagation();
       goTo(ctx.clock.now() + step * (e.shiftKey ? 6 : 1) * STRIP_KEY_MIN * 60e3);
     });
+    // Why the sky has no satellites (internal #418 item 3): the propagator refuses orbital elements
+    // more than thirty days from their measurement, so a clock moved that far shows none. Said once.
+    const farNote = el('p', 'sr-density__note', K.timeFar);
+    farNote.hidden = true;
+    node.appendChild(farNote);
     const fields = new Map();
     const fieldRow = row(K.field);
     for (const f of ['eye', 'binoculars', 'telescope']) {
@@ -696,6 +703,7 @@ export function renderTonight(host, ctx) {
       strip.setAttribute('aria-valuetext', stripTime.textContent);
       press(timeNow, ctx.clock.mode === 'live');
       paintTicks(nowMs);
+      farNote.hidden = !(Math.abs(nowMs - Date.now()) > SAT_FAR_MS);
       paintPoint();
       // The land: which of the three was drawn, and where the water map puts the sea.
       const g = s && typeof s.groundStats === 'function' ? s.groundStats() : null;

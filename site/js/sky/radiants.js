@@ -4,6 +4,7 @@
 //   activeShowers(tMs, showers, days) -> the showers whose peak is within `days` of tMs's local date
 //   radiantAltAz(shower, tMs, observer) -> { altDeg, azDeg } (azimuth from north, through east)
 //   nextShower(tMs, showers) -> { shower, peakMs } the next peak, or the one whose night this is
+//   peakInstant(shower, year) -> ms of the maximum that year, from the Sun's longitude (`sol`)
 //
 // "Coming up" names a shower's peak (ui/next.js); standing under the sky in the Now moment, the
 // useful thing is WHERE to look. A shower's meteors appear to come from its radiant, so the sky
@@ -20,15 +21,48 @@ function localMidnight(ms) {
   return d.getTime();
 }
 
+/**
+ * The instant of a shower's maximum in the year its calendar date `peak` falls in `year`: when the
+ * Sun's longitude (equinox 2000.0, as the IMO lists it) is the row's `sol`. Null for a row with no
+ * `sol`. The same longitude comes about six hours later each year and jumps back after a leap day,
+ * which is why the Orionids' maximum is 21 October in 2026 and 22 October in 2027.
+ */
+const _peaks = new Map();
+export function peakInstant(sh, year) {
+  const m = /^(\d{2})-(\d{2})$/.exec(String((sh && sh.peak) || ''));
+  const sol = Number(sh && sh.sol);
+  if (!m || !Number.isFinite(sol) || sh.sol === null || sh.sol === undefined) return null;
+  const key = `${sh.id}:${year}:${sol}`;
+  if (_peaks.has(key)) return _peaks.get(key);
+  let ms = null;
+  try {
+    const near = Date.UTC(year, Number(m[1]) - 1, Number(m[2]), 12);
+    // Astronomy Engine's longitude is of the date's own equinox: precession has moved that
+    // 1.397 degrees a century from 2000.0's.
+    const ofDate = sol + 1.396971 * ((near - Date.UTC(2000, 0, 1, 12)) / (36525 * DAY));
+    const got = Astronomy.SearchSunLongitude(((ofDate % 360) + 360) % 360, new Date(near - 6 * DAY), 12);
+    ms = got ? got.date.getTime() : null;
+  } catch { ms = null; }
+  _peaks.set(key, ms);
+  return ms;
+}
+
+/** Local midnight at the start of a shower's peak date in a year: from its `sol`, else its `peak`. */
+function peakDay(sh, year) {
+  const at = peakInstant(sh, year);
+  if (at !== null) return localMidnight(at);
+  const m = /^(\d{2})-(\d{2})$/.exec(String((sh && sh.peak) || ''));
+  return m ? new Date(year, Number(m[1]) - 1, Number(m[2])).getTime() : null;
+}
+
 export function activeShowers(tMs, showers, days = 2) {
   const out = [];
   const today = localMidnight(tMs);
   const year = new Date(tMs).getFullYear();
   for (const sh of Array.isArray(showers) ? showers : []) {
-    const m = /^(\d{2})-(\d{2})$/.exec(String(sh && sh.peak || ''));
-    if (!m) continue;
     for (const y of [year - 1, year, year + 1]) {
-      const peak = new Date(y, Number(m[1]) - 1, Number(m[2])).getTime();
+      const peak = peakDay(sh, y);
+      if (peak === null) break;
       if (Math.abs(Math.round((peak - today) / DAY)) <= days) { out.push(sh); break; }
     }
   }
@@ -60,10 +94,9 @@ export function nextShower(tMs, showers) {
   const year = new Date(tMs).getFullYear();
   let best = null;
   for (const sh of Array.isArray(showers) ? showers : []) {
-    const m = /^(\d{2})-(\d{2})$/.exec(String((sh && sh.peak) || ''));
-    if (!m) continue;
     for (const y of [year, year + 1]) {
-      const peakMs = new Date(y, Number(m[1]) - 1, Number(m[2])).getTime();
+      const peakMs = peakDay(sh, y);
+      if (peakMs === null) break;
       if (peakMs < today - DAY) continue;
       if (!best || peakMs < best.peakMs) best = { shower: sh, peakMs };
       break;

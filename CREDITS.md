@@ -24,6 +24,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | Planet, moon and sky maps | Solar System Scope; NASA, USGS and mission teams | CC BY 4.0; public domain | [2](#2-textures) |
 | Stars and constellations | d3-celestial; HYG v4.4 | BSD-3-Clause; CC BY-SA 4.0 | [3](#3-star-and-constellation-data), [3c](#3c-stars-in-three-dimensions--hyg-cc-by-sa-40) |
 | Fainter stars, which constellation, meteor activity | AT-HYG v4.0; CDS VI/42; the IMO's 2027 calendar | CC BY-SA 4.0; a catalogue; facts, cited | [3j](#3j-the-sky-from-the-ground-round-three--at-hyg-cds-vi42-the-imos-working-list-and-a-model-of-the-air) |
+| Magnetic declination, for "Point your phone" | World Magnetic Model 2025 (NOAA NCEI, BGS) | public domain (US government) | [3k](#3k-point-your-phone--the-world-magnetic-model-2025-noaa-ncei-and-the-british-geological-survey-public-domain) |
 | Deep-sky objects | OpenNGC; Wikipedia for distances | CC BY-SA 4.0; facts, cited per row | [3d](#3d-deep-sky-objects--openngc-cc-by-sa-40-and-the-distances-wikipedias-editors-collected) |
 | The Milky Way | our illustration, from Reid et al. 2019 | measurements, cited | [3e](#3e-the-milky-way-model--an-illustration-built-from-published-measurements) |
 | 3D spacecraft models | NASA 3D Resources | public domain (NASA media guidelines) | [3b](#3b-3d-models--nasa-public-domain) |
@@ -879,6 +880,23 @@ away from its peak** (`site/js/sky/meteors.js`) is a model: the IMO lists no slo
 is a two-sided exponential from the peak's ZHR to one an hour on the activity period's first and
 last day (the form is Jenniskens, *Meteor stream activity I*, A&A 287, 990, 1994; the slopes are
 ours). The antihelion source is drawn as the IMO lists it; the random background is not drawn.
+
+## 3k. Point your phone — the World Magnetic Model 2025, NOAA NCEI and the British Geological Survey, public domain
+
+"Point your phone" (`site/js/sky/pointing.js`, internal #450) turns a phone's compass heading,
+which is from magnetic north, into one from true north with the magnetic declination at the
+visitor's place.
+
+| | |
+|---|---|
+| What | The World Magnetic Model WMM2025: 90 rows of Gauss coefficients and their yearly change, degree and order 1 to 12, valid 2025.0 to 2030.0 |
+| Who | Produced for the US National Geospatial-Intelligence Agency and the UK Defence Geographic Centre; developed jointly by NOAA's National Centers for Environmental Information (NCEI) and the British Geological Survey (BGS) |
+| Files | `registry/wmm/WMM2025.COF` (NOAA's `WMM.COF`, unchanged, header `2025.0 WMM-2025 11/13/2024`) and `registry/wmm/WMM2025_TEST_VALUES.txt` (NOAA's test values); `site/js/data/wmm2025.js` is generated from the first by `scripts/gen_wmm_js.py` |
+| From | <https://www.ncei.noaa.gov/products/world-magnetic-model> (the coefficient file `WMM2025COF.zip` and `WMM2025_TEST_VALUES.txt`), fetched 2026-10-08 |
+| Licence, as read on that page on 2026-10-08 | "The WMM source code is in the public domain and not licensed or under copyright. The information and software may be used freely by the public." The page asks that works made predominantly of US government material say so (17 U.S.C. 403): this section is that notice. The coefficients are US government material and are not subject to copyright protection. |
+| Cite, as the page asks | Chulliat, A., W. Brown, M. Nair, N. Gomez Perez, L.-Y. Young, C. Watson, N. Boneh, C. Beggan, B. Meyer and M. Paniccia, 2025. The US/UK World Magnetic Model for 2025-2030: Technical Report, National Centers for Environmental Information, NOAA. <https://doi.org/10.25923/prbc-s316>. The model itself: NOAA NCEI and the British Geological Survey, 2024, World Magnetic Model 2025, <https://doi.org/10.25921/aqfd-sd83>. |
+| What we do with it | Sum the series ourselves (`declinationDeg`, the model's own recipe) for one place and today's date. `tests/test_pointing.mjs` holds the result to 0.011 degree of all twelve published test values. Nothing is fetched at run time and the place is sent nowhere. |
+| What it is not | A measurement at the visitor's spot. The model is the Earth's main field: it knows nothing of the steel in a building, a car or a phone case, which indoors can turn a compass by tens of degrees. The switch says so, and "Line it up" is the remedy. After 2030.0 the last year's value is held; the next model replaces the file. |
 
 ## 4. Runtime data sources
 

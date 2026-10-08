@@ -830,6 +830,7 @@ Object.assign(COPY, {
       timeAt: '{time} · {phase}',
       timePhases: { day: 'day', golden: 'low Sun', civil: 'civil twilight', nautical: 'nautical twilight', astronomical: 'last twilight', night: 'night' },
       timeNoNight: 'It does not get dark here tonight.',
+      timeFar: 'No satellites this far from today: their orbits go stale.',
       // The eyepiece (internal #351): three round fields through a telescope.
       eyepiece: 'Eyepiece',
       eyepieces: { low: 'Low · 1°', medium: 'Medium · 30′', high: 'High · 12′' },

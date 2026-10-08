@@ -118,8 +118,10 @@ const neg = (v) => v.map((c) => -c);
     worst = Math.max(worst, err);
     check(err <= 0.011, `declination at ${r[2]}, ${r[3]}, ${r[1]} km in ${r[0]}: ${d.toFixed(3)} against the published ${r[10]}`);
   }
-  // Three places a visitor stands in, against NOAA's calculator's order of size (WMM2025, 2026):
-  // London about +1, Flagstaff about +9.5, Sydney about +12.7; the sign and size are what matter.
+  // Three places a visitor stands in. The bounds are the sign and rough size from the model's
+  // declination chart as remembered (London a degree or so east, Arizona nine to ten east, Sydney
+  // about thirteen east), NOT values read from NOAA's calculator: the published test values above
+  // are the check of the arithmetic; these only catch a flipped sign or longitude.
   const lon = P.declinationDeg(51.5, -0.1, 0, 2026.8);
   const flag = P.declinationDeg(35.2, -111.7, 2.1, 2026.8);
   const syd = P.declinationDeg(-33.9, 151.2, 0, 2026.8);
