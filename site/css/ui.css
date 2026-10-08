@@ -4976,6 +4976,13 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 
 .sr-tape.is-dragging { cursor: grabbing; }
 
+/* The slider fills the tape and sits under the marks (they are its siblings, internal #472). */
+.sr-tape__slider {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--sr-radius);
+}
+
 .sr-tape__ticks {
   position: absolute;
   right: 0;

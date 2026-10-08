@@ -143,6 +143,20 @@ check(P.KEY === 'sr:passport', 'one key, sr:passport');
   check(P.placesSeen(p) === 5, 'but it is still counted');
 }
 
+// --- the wonder shows to those who come back (public #240, internal #472) ----------------------------
+{
+  const day = P.dayNumberOf(now);
+  const D1 = 86400000;
+  check(P.isReturning(P.emptyPassport(), day) === false, 'an empty passport is a first visit');
+  check(P.isReturning({ ...P.emptyPassport(), wonder: { day, id: 'moon' } }, day) === false, 'a wonder chosen today, reloaded, is still the first day');
+  check(P.isReturning({ ...P.emptyPassport(), wonder: { day: day - 1, id: 'moon' } }, day) === true, 'a wonder chosen yesterday means somebody came back');
+  check(P.isReturning(P.recordVisit(P.emptyPassport(), 'moon', now - 3 * D1), day) === true, 'a place opened three days ago too');
+  check(P.isReturning(P.recordVisit(P.emptyPassport(), 'moon', now), day) === false, 'a place opened today is not a return');
+  check(P.isReturning(null, day) === false && P.isReturning(P.emptyPassport(), NaN) === false, 'nothing, or no day, is no return');
+  const today = readFileSync(join(JS, 'ui/today.js'), 'utf8');
+  check(/pass\.returning\(day\)/.test(today) && /pass\.wonderSeen\(day, pick\.id\)/.test(today), 'today.js shows the wonder only on a return, and remembers it on the first day too');
+}
+
 // --- the wonder of the day ---------------------------------------------------------------------------
 {
   const day = P.dayNumberOf(now);

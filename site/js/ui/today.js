@@ -278,10 +278,13 @@ export function createToday(ctx, host) {
     const pass = ctx.passport || null;
     const records = typeof ctx.records === 'function' ? ctx.records() : [];
     const pick = wonderOfTheDay({ events: wonderEvents(items, nowMs), famous: famousThings(records), dayNumber: day, prev: pass ? pass.wonderPrev() : null });
-    wonderCard = pick ? pick.item : null;
+    // Chosen and remembered on a first day too, so the next day is a return; shown only on a return
+    // (public #240). With no passport (a browser that keeps nothing) it is shown: nothing to ask.
+    const back = !pass || typeof pass.returning !== 'function' || pass.available === false || pass.returning(day);
+    if (pick && pass) pass.wonderSeen(day, pick.id);
+    wonderCard = pick && back ? pick.item : null;
     wonder.hidden = !wonderCard;
     if (!wonderCard) return null;
-    if (pass) pass.wonderSeen(day, pick.id);
     wonderKicker.textContent = [COPY.wonder.kicker, wonderCard.kicker].filter(Boolean).join(COPY.punctuation.separator);
     wonderTitle.textContent = wonderCard.title;
     wonderLine.textContent = wonderCard.line || '';
