@@ -324,7 +324,7 @@ CASES: list[tuple[str, str, str, str]] = [
      "    stands_for: probably\n    height_m: 46.3\n"),
     ("a shape with no evidence behind it",
      "rockets.yaml",
-     '    source: "Wikipedia Rocket Lab Electron and Rutherford, reporting the payload user\'s guide (the PUG itself returns 403): 18 m, 1.2 m, \'eight engines surrounding a central ninth\'"\n',
+     '    source: "Wikipedia Rocket Lab Electron and Rutherford, reporting the payload user\'s guide (the PUG itself returns 403): 18 m, 1.2 m, \'eight engines surrounding a central ninth\'. Read again 2026-10-08: first stage 12.1 m, second stage 2.4 m, \'The Electron payload Fairing is 2.5 m ... in length with a 1.2 m ... diameter\'"\n',
      ""),
     ("a livery with a colour but no class",
      "rockets.yaml", '    livery: {body: "#C6CBD1", class: measured}\n',
