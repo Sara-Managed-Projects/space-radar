@@ -82,9 +82,10 @@ check(Number.isFinite(BUDGETS.draw_calls_per_stop) && Number.isFinite(BUDGETS.tr
   check((probe.match(/\.\.\.\(await stopCost\(id\)\)/g) || []).length >= 3, 'at the first stop, each next stop and the last');
   check(/info\.autoReset = false;[\s\S]{0,200}info\.reset\(\);[\s\S]{0,300}finally \{ info\.autoReset = auto; \}/.test(probe), 'the counters are taken over for the frames measured and handed back');
   const walk = readFileSync(join(ROOT, 'tools/walk.mjs'), 'utf8');
-  check(/process\.env\.SR_CHROME_LOCK \|\| join\(tmpdir\(\), 'space-radar-chrome\.lock'\)/.test(walk) && /mkdirSync\(LOCK\)/.test(walk), 'tools/walk.mjs takes the one-Chrome lock by mkdir');
+  const lockSrc = readFileSync(join(ROOT, 'tools/chromelock.mjs'), 'utf8');
+  check(/process\.env\.SR_CHROME_LOCK \|\| join\(tmpdir\(\), 'space-radar-chrome\.lock'\)/.test(lockSrc) && /mkdirSync\(path\)/.test(lockSrc) && /createChromeLock\(\{ waitMs: LOCK_WAIT_MS \}\)/.test(walk), 'tools/walk.mjs takes the one-Chrome lock by mkdir (tools/chromelock.mjs)');
   check(/async function chrome\([^)]*\) \{\s*await lock\(\);/.test(walk) && /clearInterval\(touch\);\s*unlock\(\);/.test(walk), 'every Chrome it starts is started holding the lock, and gives it back');
-  check(/!alive\(pid\)\) \|\| age > STALE_MS/.test(walk), 'a lock whose owner is gone, or that nobody touched for six minutes, is taken over');
+  check(/if \(!state\.alive\) return 'its owner is gone';/.test(lockSrc) && /state\.ageMs > staleMs/.test(lockSrc), 'a lock whose owner is gone, or that has no owner and nobody touched for six minutes, is taken over (tests/test_chromelock.mjs holds the rule)');
   check(/const PORT = Number\(arg\('port'/.test(walk) && /arg\('timeout', '840'\)/.test(walk), 'it takes --port and --timeout');
   check(/process\.exit\(timedOut \? 2 : failed \? 1 : 0\)/.test(walk) && /timedOut \+= 1/.test(walk), 'a load that ran out of time makes the exit status 2');
   const readme = readFileSync(join(ROOT, 'tools/README.md'), 'utf8');

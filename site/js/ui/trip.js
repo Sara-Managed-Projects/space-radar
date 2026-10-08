@@ -1381,7 +1381,10 @@ export function createTrip(ctx) {
     // towardAngles gave the Sun's own direction; the far side of the world from it is opposite.
     const azAnti = anti.azimuth + Math.PI;
     const polar = clamp(Math.PI - anti.polar, SUNRISE_POLAR_MIN, Math.PI - SUNRISE_POLAR_MIN);
-    const sep = Math.max(0, rho - SUNRISE_HIDDEN_DEG * DEG);
+    // UNDER REDUCED MOTION THE RIG REFUSES THE DRIFT (scene/camera.js), and a sunrise that never
+    // comes is a black disc: the camera then stands where the drift would have brought the Sun out
+    // by the same two degrees, and the stop is that still frame.
+    const sep = reducedMotion() ? rho + SUNRISE_HIDDEN_DEG * DEG : Math.max(0, rho - SUNRISE_HIDDEN_DEG * DEG);
     const sin2 = Math.sin(polar) ** 2;
     const d = Math.acos(clamp((Math.cos(sep) - Math.cos(polar) ** 2) / sin2, -1, 1));
     const side = shortestAngle(azAnti, rig.state.azimuth || 0) >= 0 ? 1 : -1;

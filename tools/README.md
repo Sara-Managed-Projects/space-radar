@@ -10,6 +10,7 @@ Things run by hand on a laptop. CI does not run them; each file's head comment s
 | `sheet-png.mjs`, `*.html`, `trip-pictures.probe.js` | contact sheets and probes |
 | `systems.probe.js` | the star systems walk: six systems framed, a planet's card, the `#go=` link on a phone (its header says how) |
 | `walk.mjs`, `walk.probe.js` | the regression walk: every flow of the product at two sizes, with contact sheets (below) |
+| `chromelock.mjs` | the one-Chrome-on-the-machine lock `walk.mjs` takes; `node tools/chromelock.mjs --wait=20` says who holds it and starts no Chrome |
 
 ## The regression walk
 

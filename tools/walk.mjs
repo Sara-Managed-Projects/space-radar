@@ -21,8 +21,9 @@
 // started holding a lock: a directory, made with mkdir (which is atomic), holding the pid of its
 // owner. Its place is $SR_CHROME_LOCK, or `space-radar-chrome.lock` in the system's temp folder;
 // anything else on the machine that starts a headless Chrome for this project takes the same lock
-// the same way (wait while the directory exists; take it over when its pid is gone or it has not
-// been touched for six minutes; remove it when done). The holder touches it every 30 s.
+// the same way (wait while the directory exists; remove it when done). The holder touches it every
+// 30 s. When a lock may be taken from its owner is tools/chromelock.mjs's rule: at once when the
+// owner's pid is gone, and never from a live owner short of thirty minutes, however long untouched.
 //
 // EXIT STATUS: 0 nothing measured as broken; 1 findings; 2 a load ran out of time (--timeout,
 // seconds a load, default 840) or the lock could not be had in --lock-wait seconds (default 1800).
@@ -30,8 +31,8 @@
 // tools/walk.probe.js; the offline step reuses tests/probes/offline-probe.js against a stamped
 // copy of --dir with the server stopped.
 import { spawn, execFileSync } from 'node:child_process';
-import { mkdirSync, writeFileSync, readdirSync, cpSync, rmSync, existsSync, readFileSync, statSync, utimesSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, writeFileSync, readdirSync, cpSync, rmSync, existsSync, readFileSync } from 'node:fs';
+import { createChromeLock } from './chromelock.mjs';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -76,31 +77,29 @@ const OFFLINE = !has('no-offline') && (!ONLY.length || ONLY.includes('offline'))
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const TIMEOUT_MS = Number(arg('timeout', '840')) * 1000;
-const LOCK = process.env.SR_CHROME_LOCK || join(tmpdir(), 'space-radar-chrome.lock');
 const LOCK_WAIT_MS = Number(arg('lock-wait', '1800')) * 1000;
-const STALE_MS = 6 * 60e3;
 let timedOut = 0;
-let holding = false;
-const alive = (pid) => { try { process.kill(pid, 0); return true; } catch (e) { return e.code === 'EPERM'; } };
-/** Take the machine's one-Chrome lock (see the head of this file), waiting for whoever has it. */
+// The machine's one-Chrome lock (tools/chromelock.mjs says when a lock is somebody else's to take).
+const chromeLock = createChromeLock({ waitMs: LOCK_WAIT_MS });
+const LOCK = chromeLock.path;
+// Every server this walk started, so that leaving by any door stops them: giving up on the lock
+// used to exit from inside the `try` and leave serve.py running on the walk's port (found
+// 2026-10-08, the first time the lock was exercised against a second Chrome; internal #460).
+const servers = new Set();
+/** Take the lock, waiting for whoever has it; exit 2 when the wait runs out. */
 async function lock() {
-  const t0 = Date.now();
-  for (;;) {
-    try { mkdirSync(LOCK); writeFileSync(join(LOCK, 'pid'), String(process.pid)); holding = true; return; } catch (e) { if (e.code !== 'EEXIST') throw e; }
-    let pid = NaN; let age = 0;
-    try { pid = Number(readFileSync(join(LOCK, 'pid'), 'utf8')); } catch { /* being made, or being removed */ }
-    try { age = Date.now() - statSync(LOCK).mtimeMs; } catch { continue; }
-    if ((Number.isFinite(pid) && pid > 0 && !alive(pid)) || age > STALE_MS) { rmSync(LOCK, { recursive: true, force: true }); continue; }
-    if (Date.now() - t0 > LOCK_WAIT_MS) { console.error(`WALK: another headless Chrome has held ${LOCK} for ${Math.round((Date.now() - t0) / 1000)} s; giving up`); process.exit(2); }
-    await sleep(5000);
-  }
+  if (await chromeLock.take()) return;
+  console.error(`WALK: another headless Chrome has held ${LOCK} for ${Math.round(chromeLock.waitedMs / 1000)} s; giving up`);
+  process.exit(2);
 }
-function unlock() { if (holding) { holding = false; rmSync(LOCK, { recursive: true, force: true }); } }
-process.on('exit', unlock);
-for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { unlock(); process.exit(130); });
+function unlock() { chromeLock.release(); }
+process.on('exit', () => { unlock(); for (const s of servers) s.stop(); });
+for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => { process.exit(130); });
 function serve(dir, port) {
   const p = spawn('python3', [join(here, 'serve.py'), dir, String(port)], { stdio: 'ignore' });
-  return { stop: () => { try { p.kill('SIGKILL'); } catch { /* gone */ } } };
+  const server = { stop: () => { servers.delete(server); try { p.kill('SIGKILL'); } catch { /* gone */ } } };
+  servers.add(server);
+  return server;
 }
 async function up(port) {
   for (let i = 0; i < 80; i += 1) { try { const r = await fetch(`http://127.0.0.1:${port}/index.html`); if (r.ok) return true; } catch { /* not yet */ } await sleep(150); }
@@ -109,7 +108,7 @@ async function up(port) {
 /** One Chrome, one probe; resolves to { value, logs } and never rejects. */
 async function chrome(url, probe, flags, ms = TIMEOUT_MS) {
   await lock();
-  const touch = setInterval(() => { try { const now = new Date(); utimesSync(LOCK, now, now); } catch { /* gone: the next lock() makes it */ } }, 30e3);
+  const touch = setInterval(() => chromeLock.touch(), 30e3);
   return new Promise((done) => {
     const p = spawn(process.execPath, [join(here, 'cdp.mjs'), url, probe, ...flags], { env: { ...process.env, CDP_LOGS: '1' } });
     let out = ''; let err = '';
