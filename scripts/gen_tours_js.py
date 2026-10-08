@@ -48,7 +48,10 @@ from _exo_ids import read_rows  # noqa: E402
 # scripts/shots.mjs reads to take the preview picture at a stop other than the first; `orbits` is
 # what ui/trip.js hands scene/orbitrings.js.
 TRIP_FIELDS = ("id", "title", "blurb", "pacing", "requires", "min_stops", "stage", "clock", "group",
-               "next", "requires_observer", "og_stop", "orbits", "hides")
+               "next", "requires_observer", "og_stop", "orbits", "hides",
+               # `return: true`: after the last stop, one continuous flight home before the end card
+               # (ui/trip.js flyHome, internal #304).
+               "return")
 # A `groups:` row: the id a trip names, the heading the picker prints, and where it sits.
 GROUP_FIELDS = ("id", "display", "order")
 STOP_FIELDS = (
@@ -143,6 +146,8 @@ DWELL_MAX_MS = 20000
 # distance actually travelled, which this cannot know; 3.2 s is the middle of the 1.5-6.0 s band
 # the rig is given, and the estimate is printed to the nearest half minute anyway.
 FLIGHT_ESTIMATE_MS = 3200
+# The return flight of a `return: true` trip: fifteen decades at ui/trip.js RETURN_MS_PER_DECADE.
+RETURN_ESTIMATE_MS = 16000
 SETTLE_MS = 150
 
 
@@ -222,6 +227,9 @@ def trip_of(trip: dict, defaults: dict) -> dict:
     out["estimate_ms"] = sum(
         s["dwell_ms"] + FLIGHT_ESTIMATE_MS + SETTLE_MS for s in out["stops"]
     )
+    # The way home is part of the trip's stated length.
+    if out.get("return") is True:
+        out["estimate_ms"] += RETURN_ESTIMATE_MS
     return out
 
 

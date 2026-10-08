@@ -35,6 +35,8 @@ export function idleTripState() {
     // The stop on screen is seen from the visitor's own ground (`look:`, 2026-10-06): the sky view
     // has the camera, and the frame and the present mode read this to say so.
     ground: false,
+    // The last stop is over and the trip is flying home in one flight (`return: true`, ui/trip.js flyHome).
+    returning: false,
     index: -1,
     count: 0,
     // The resolved stops' ids and titles, in order: the intro sheet lists them (spec 0061 task 7).

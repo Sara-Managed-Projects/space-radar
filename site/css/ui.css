@@ -2576,6 +2576,14 @@ html[data-trip-phase] .sr-tripsheet.is-floating {
   padding-bottom: var(--sp-3);
 }
 
+/* THE WAY HOME (`return: true`, internal #304): the last stop's words are put down for the one
+   flight back, and the end card comes up at home. */
+html[data-trip-returning] .sr-tripsheet {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 400ms linear;
+}
+
 html[data-trip-phase='intro'] .sr-tripsheet.is-floating,
 html[data-trip-phase='outro'] .sr-tripsheet.is-floating {
   bottom: 0;

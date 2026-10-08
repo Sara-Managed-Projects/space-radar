@@ -78,13 +78,13 @@ export const TOURS_INDEX = [
 {
 "id": "roof-to-the-edge",
 "title": "From your roof to the edge",
-"blurb": "One flight out past the Moon, the planets and the stars. Leaving returns you.",
+"blurb": "One flight out past the Moon, the planets and the stars, and one flight home.",
 "group": "beyond",
 "next": "to-the-edge",
 "requires_observer": true,
 "min_stops": 3,
 "count": 10,
-"estimate_ms": 190701
+"estimate_ms": 206701
 },
 {
 "id": "travel-to-exoplanets",

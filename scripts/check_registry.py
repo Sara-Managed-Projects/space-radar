@@ -745,6 +745,23 @@ def check_tours(oddities_doc: dict, layer_ids: set, world_ids: set, site_ids: se
             fail(where, f"`og_stop: {og_stop!r}` is not one of its {len(stops)} stops (1 to "
                         f"{len(stops)}); the preview picture would be of a stop nobody chose")
 
+        # `return: true` (internal #304): after the last stop the camera flies home in one continuous
+        # flight (scene/climb.js toHome). That flight exists only along the chain of
+        # registry/stages.yaml `joins:`; from a planet's own stage or a star system's there is no
+        # way home but a cut, and a trip that promised "one flight home" there would end on a cut.
+        if "return" in tour:
+            if tour["return"] is not True:
+                fail(where, f"`return: {tour['return']!r}` is `true` or left out")
+            else:
+                last = stops[-1] if stops else {}
+                on = (last.get("stage") if isinstance(last, dict) else None) or tour.get("stage", defaults.get("stage"))
+                if on not in JOIN_BANDS:
+                    fail(where, f"`return: true` on a trip that ends on the `{on}` stage, which is not on the "
+                                f"chain of registry/stages.yaml `joins:`: there is no continuous flight home "
+                                f"from there")
+                elif isinstance(last, dict) and "look" in last:
+                    fail(where, "`return: true` on a trip that ends on the ground: it is home already")
+
         # `orbits:` (2026-09-23): planets whose paths and dots scene/orbitrings.js draws. It draws
         # on the Sun stage only -- everywhere else worlds.js already floors the planets, and a dot
         # beside a squeezed disc is two answers to where Mars is -- and only a world that goes

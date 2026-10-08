@@ -1144,6 +1144,27 @@ export async function loadLayer(layer, nowMs) {
 }
 
 /**
+ * The layer's budget, with the layer's OWN rows (`always:`) kept whatever the select and the rank
+ * say. Pure, and exported for tests/test_remaining_trips.mjs.
+ *
+ * `always` meant "whatever the source said" and stopped short of the two filters after it. Halley
+ * is 35 au out: the comets' select keeps it (H 5.5) and the budget's rank, brightest in the sky
+ * now first, puts it last, so with more than sixty comets in the snapshot the one comet a trip
+ * flies to was cut and both of its stops were dropped (internal #444: every headless boot with a
+ * saved copy; the live site showed it only because its comet snapshot was missing).
+ */
+export function withinBudget(selected, own, budget) {
+  const mine = Array.isArray(own) ? own : [];
+  let out = selected.slice();
+  for (const r of mine) if (!out.includes(r)) out.push(r);
+  const max = (budget && budget.maxItems) || Infinity;
+  if (out.length <= max) return out;
+  const rest = out.filter((r) => !mine.includes(r));
+  if (budget && typeof budget.rank === 'function') rest.sort(budget.rank);
+  return rest.slice(0, Math.max(0, max - mine.length)).concat(mine);
+}
+
+/**
  * Not in the module contract. Same work as loadLayer, but hands back the source result too, so the
  * control's count can say "80 of them, from a copy four hours old" instead of just a number.
  * @returns {Promise<{records: Array<Object>, source: Object|null, error: string|null}>}
@@ -1216,9 +1237,10 @@ export async function loadLayerDetailed(layer, nowMs) {
 
   // `always:` rows are the layer's own whatever the source said: they replace a parsed or stand-in
   // row of the same id (the stand-in Apophis sits at a placeholder; this one is where it is).
+  let own = [];
   if (typeof layer.always === 'function') {
     try {
-      const own = layer.always();
+      own = layer.always();
       const ids = new Set(own.map((r) => r.id));
       const names = new Set(own.map((r) => r.name));
       parsed = parsed.filter((r) => !ids.has(r.id) && !names.has(r.name)).concat(own);
@@ -1233,12 +1255,7 @@ export async function loadLayerDetailed(layer, nowMs) {
   }
   if (!Array.isArray(selected)) selected = [];
 
-  const max = (layer.budget && layer.budget.maxItems) || Infinity;
-  if (selected.length > max) {
-    const rank = layer.budget && layer.budget.rank;
-    if (typeof rank === 'function') selected = selected.slice().sort(rank);
-    selected = selected.slice(0, max);
-  }
+  selected = withinBudget(selected, own, layer.budget);
 
   // Stamp the layer on, and attach the list's reason where there is one -- and its NAME. The rows
   // were written by hand ("Envisat", "Atlas Centaur 2", "Thor Agena D rocket body") and the labels

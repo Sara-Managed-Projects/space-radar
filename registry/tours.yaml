@@ -613,13 +613,16 @@ tours:
   # =============================================================================================
   - id: roof-to-the-edge
     title: "From your roof to the edge"
-    blurb: "One flight out past the Moon, the planets and the stars. Leaving returns you."
+    blurb: "One flight out past the Moon, the planets and the stars, and one flight home."
     group: beyond
     next: to-the-edge
     requires: [stars, galaxy]
     requires_observer: true
     stage: earth
     clock: as-found
+    # After the last stop the camera comes home by the same continuous flight, and the end card is
+    # shown over the Earth (internal #304; ui/trip.js flyHome). Every stop is on the ladder's chain.
+    return: true
     # The Moon's path on the Earth's stage (drawn from outside its orbit), the planets' on the Sun's.
     orbits: [moon, mercury, venus, earth, mars, jupiter, saturn, uranus, neptune]
     og_stop: 8

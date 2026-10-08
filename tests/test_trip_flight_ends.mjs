@@ -15,6 +15,8 @@
 //   6. LEAVE AND START, at once and in every phase, forty times with frames of 16 to 900 ms: no
 //      stop of the second trip is in `flight` longer than the bound, and the trip reaches its end.
 //   7. A PAUSE mid-flight stays a pause: the flight the pause ends is not flown again under it.
+//   8. THE WAY HOME (`return: true`, internal #304): one flight after the last stop, then the end
+//      card; Next skips it; a pause holds it; a flight home that never lands still ends.
 import { TOURS, tripWorld, fixture, stopRow, time, tripModule, createCameraRig, THREE, FLIGHT_STEP_CAP_MS } from './helpers/trip_world.mjs';
 
 const problems = [];
@@ -192,9 +194,93 @@ for (const [frameMs, label] of [[333, '3 fps'], [5000, '5 s stalls']]) {
   w.done();
 }
 
+// --- 8. the way home (internal #304) ---------------------------------------------------------------------------------
+{
+  TOURS.push(fixture('fe-home', { return: true }));
+  // A climb that takes `takes` ms and then says it arrived (the real one is held by tests/test_climb.mjs).
+  const withClimb = (w, takes) => {
+    const calls = [];
+    let pending = null;
+    w.ctx.wantClimb = () => Promise.resolve({
+      state: { get active() { return !!pending; } },
+      cancel() { pending = null; },
+      toHome(opts) { calls.push(opts); pending = { at: time.wall + takes, opts }; return true; },
+    });
+    w.land = () => { if (pending && time.wall >= pending.at) { const p = pending; pending = null; p.opts.onArrive('done'); } };
+    return calls;
+  };
+  const lastDwell = (w) => w.machine.state.index === 2 && w.machine.state.phase === 'dwell';
+  {
+    const w = tripWorld();
+    const calls = withClimb(w, 6000);
+    await begin(w, 'fe-home');
+    await w.pass(60000, 100, () => { w.land(); return !(w.machine.state.phase === 'flight' && w.machine.state.returning); });
+    check(w.machine.state.returning === true && w.machine.state.index === 2 && calls.length === 1, `after the last stop's own time the trip flies home, as a flight of the last stop (${w.machine.state.phase}, returning ${w.machine.state.returning}, ${calls.length} flight)`);
+    check(calls[0] && calls[0].msPerDecade >= 900, 'by the continuous flight, no faster than a climb between stops');
+    await w.pass(5000, 100, () => { w.land(); return true; });
+    check(w.machine.state.phase === 'flight', 'the end card waits for the flight');
+    await w.pass(3000, 100, () => { w.land(); return w.machine.state.phase !== 'outro'; });
+    check(w.machine.state.phase === 'outro' && w.machine.state.returning === false, `home: the end card (${w.machine.state.phase})`);
+    w.done();
+  }
+  {
+    const w = tripWorld();
+    const calls = withClimb(w, 6000);
+    await begin(w, 'fe-home');
+    await w.pass(60000, 100, () => !lastDwell(w));
+    w.machine.next();
+    check(w.machine.state.phase === 'outro' && calls.length === 0, `Next on the last stop is the end, at once, with no flight (${w.machine.state.phase})`);
+    w.done();
+  }
+  {
+    const w = tripWorld();
+    const calls = withClimb(w, 6000);
+    await begin(w, 'fe-home');
+    await w.pass(60000, 100, () => { w.land(); return !w.machine.state.returning; });
+    await w.pass(1000);
+    w.machine.pause('input');
+    await w.pass(40000);
+    check(w.machine.state.phase === 'paused', 'a pause on the way home holds');
+    w.machine.resume();
+    await w.step(16);
+    check(w.machine.state.phase === 'flight' && w.machine.state.returning && w.machine.state.index === 2 && calls.length === 2, `resuming flies home again, not back to the last stop (${w.machine.state.phase}, ${calls.length} flights)`);
+    await w.pass(8000, 100, () => { w.land(); return w.machine.state.phase !== 'outro'; });
+    check(w.machine.state.phase === 'outro', 'and ends at home');
+    w.done();
+  }
+  {
+    // A way home that never arrives, and one whose module never comes.
+    const w = tripWorld();
+    withClimb(w, 1e9);
+    await begin(w, 'fe-home');
+    await w.pass(60000, 100, () => !w.machine.state.returning);
+    const from = time.wall;
+    await w.pass(40000, 100, () => w.machine.state.phase !== 'outro');
+    check(w.machine.state.phase === 'outro' && time.wall - from <= 30000 + 300, `a flight home that never lands ends on the end card anyway (${time.wall - from} ms)`);
+    w.done();
+    const v = tripWorld();
+    v.ctx.wantClimb = () => Promise.resolve(null);
+    await begin(v, 'fe-home');
+    await v.pass(60000, 100, () => v.machine.state.phase !== 'outro');
+    check(v.machine.state.phase === 'outro', 'without the climb\'s module the trip ends where it is, as it did');
+    v.done();
+  }
+  {
+    const w = tripWorld();
+    const calls = withClimb(w, 6000);
+    await begin(w, 'fe-a');
+    await w.pass(60000, 100, () => w.machine.state.phase !== 'outro');
+    check(w.machine.state.phase === 'outro' && calls.length === 0, 'a trip that does not ask for it ends where its last stop is');
+    w.done();
+  }
+  const roof = TOURS.find((x) => x.id === 'roof-to-the-edge');
+  check(roof && roof.return === true && /one flight home/.test(roof.blurb) && roof.blurb.length <= 80, `the roof trip asks for the way home and its blurb says so (${roof && roof.blurb})`);
+  check(TOURS.filter((x) => x.return === true && !x.id.startsWith('fe-')).length === 1, 'and it is the only one that does');
+}
+
 if (problems.length) {
   console.error(`trip flights FAILED (${problems.length}):`);
   for (const p of problems) console.error('  -', p);
   process.exit(1);
 }
-console.log('trip flights ok: wall-time flights at 3 fps and through stalls, a replaced flight flown again, a lost arrival landed, a throwing card survived, 40 leave-and-start rounds, a pause held');
+console.log('trip flights ok: wall-time flights at 3 fps and through stalls, a replaced flight flown again, a lost arrival landed, a throwing card survived, 40 leave-and-start rounds, a pause held, the way home flown, skipped, paused and timed out');

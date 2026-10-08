@@ -1042,6 +1042,12 @@ TOUR_CASES: list[tuple[str, str, str]] = [
     # --- 2026-09-23: the preview picture's stop, and the Sun stage's paths ----------------------
     ("a preview picture at a stop the trip does not have",
      "    og_stop: 1\n", "    og_stop: 9\n"),
+    # internal #304: the one flight home.
+    ("a way home that is a number, not a yes",
+     "    return: true\n", "    return: 2\n"),
+    ("a way home promised from the Moon's own stage, which no continuous flight leaves",
+     "    requires: [hand-kept-sites, worlds]\n    stage: moon\n    clock: as-found\n",
+     "    requires: [hand-kept-sites, worlds]\n    stage: moon\n    clock: as-found\n    return: true\n"),
     ("a preview picture at stop zero, which is not 1-based",
      "    og_stop: 1\n", "    og_stop: 0\n"),
     ("paths drawn for a moon, which has none round the Sun",

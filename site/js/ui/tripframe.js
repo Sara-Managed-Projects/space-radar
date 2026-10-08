@@ -1077,6 +1077,8 @@ export function createTripFrame(ctx) {
     if (!parts) return;
 
     root.setAttribute(PHASE_ATTR, st.phase);
+    // The flight home after the last stop (ui/trip.js flyHome): that stop's words go, the scene is alone.
+    if (st.returning) root.setAttribute('data-trip-returning', ''); else root.removeAttribute('data-trip-returning');
     // A stop that keeps the other objects' names up in present mode (`names: true`); see ui.css.
     if (st.names) root.setAttribute(NAMES_ATTR, '');
     else root.removeAttribute(NAMES_ATTR);
@@ -1305,6 +1307,7 @@ export function createTripFrame(ctx) {
     if (ctx.shell && typeof ctx.shell.seatTrip === 'function') ctx.shell.seatTrip(null);
     setChromeHidden(false);
     root.removeAttribute(PHASE_ATTR);
+    root.removeAttribute('data-trip-returning');
     root.removeAttribute(NAMES_ATTR);
     if (savedDocTitle !== null) document.title = savedDocTitle;
     savedDocTitle = null;

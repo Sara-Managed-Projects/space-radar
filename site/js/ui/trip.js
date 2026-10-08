@@ -146,6 +146,10 @@ const HIDDEN_RESUME_MS = 600;
 export const FLIGHT_GRACE_MS = 4000;
 // How often a stop's flight is flown again after somebody else's flight replaced it, before it cuts.
 const REFLY_MAX = 2;
+// The way home (`return: true`): slower than a climb between stops, because nothing is read on it,
+// and never longer than this whatever the frames cost.
+const RETURN_MS_PER_DECADE = 1100;
+const RETURN_MAX_MS = 30000;
 // At 36000x an orbit of the station is 0.15 s of real time and `follow` keeps the camera locked
 // on: the object whips around the planet and that is not a shot. Anything at or below a minute a
 // second is left exactly as the visitor set it.
@@ -2641,7 +2645,7 @@ export function createTrip(ctx) {
       stopExtrasArrived(run.stops[index]);
       paintCard(run.stops[index]);
     } catch (err) {
-      console.warn('trip: the stop arrived and its card could not be painted', err);
+      console.warn('trip: the stop arrived and its card could not be painted:', err && err.message);
     }
     notify();
   }
@@ -2745,7 +2749,7 @@ export function createTrip(ctx) {
   function advance() {
     if (!run) return;
     if (state.index + 1 >= run.stops.length) {
-      finish();
+      if (!flyHome()) finish();
       return;
     }
     clearTimers();
@@ -2754,7 +2758,66 @@ export function createTrip(ctx) {
     goTo(state.index + 1);
   }
 
+  /**
+   * THE WAY HOME, IN ONE FLIGHT (internal #304; `return: true` on a trip, registry/tours.yaml).
+   *
+   * A trip that climbed the whole ladder ended on its last rung, with the end card over the Local
+   * Group, and "Leave" then cut to the Earth: the one part of the journey a planetarium film never
+   * skips, because the return is where the scale lands. A trip that asks for it comes back the way
+   * it went, by the same continuous flight (scene/climb.js toHome: the whole Earth with room round
+   * it, on the Earth's stage), and the end card is shown at home.
+   *
+   * It is a flight of the last stop, not a stop: `flight` at the last index with `state.returning`
+   * set, the last card put down, nothing new to read. Only when the trip's own pacing ends the last
+   * stop: Next on the last stop is a visitor asking for the end, and gets it at once (next()).
+   * Under reduced motion there is no flight; the end card comes where the trip is, as before, and
+   * leaving cuts home. A pause holds it and resuming flies it again from where it stopped.
+   * Returns whether a flight began.
+   */
+  function flyHome() {
+    if (!run || run.tour.return !== true || reducedMotion() || run.ground) return false;
+    if (typeof ctx.wantClimb !== 'function' || !CHAIN.includes(stage.worldId)) return false;
+    clearTimers();
+    rig.stopOrbit('replaced');
+    driftRun = null;
+    upTween = null;
+    const index = state.index;
+    run.returning = true;
+    state.returning = true;
+    state.phase = 'flight';
+    state.chapter = null;
+    state.sky = null;
+    state.overlay = null;
+    state.portrait = null;
+    state.zoom = 1;
+    if (ctx.labels && ctx.labels.clearEmphasis) ctx.labels.clearEmphasis();
+    if (typeof ctx.deselect === 'function') ctx.deselect();
+    else hideCard();
+    climbing = true;
+    run.flightSeq = (run.flightSeq || 0) + 1;
+    const seq = run.flightSeq;
+    const mine = gen;
+    const home = () => {
+      if (mine !== gen || !run || run.flightSeq !== seq) return;
+      climbing = false;
+      run.returning = false;
+      state.returning = false;
+      if (stage.worldId !== run.savedStage) { run.stageChanged = true; state.stageChanged = true; }
+      finish();
+    };
+    ctx.wantClimb().then((climb) => {
+      if (mine !== gen || !run || state.phase !== 'flight' || state.index !== index || run.flightSeq !== seq) return;
+      if (!climb || typeof climb.toHome !== 'function') { home(); return; }
+      climb.toHome({ msPerDecade: RETURN_MS_PER_DECADE, onArrive: () => schedule(home), onCancel: () => schedule(home) });
+    }, home);
+    // Overdue, like any flight (#322): the end card comes where the camera has got to.
+    after(RETURN_MAX_MS, home);
+    notify();
+    return true;
+  }
+
   function finish() {
+    if (run) { run.returning = false; state.returning = false; if (climbing) dropClimb(); }
     // The camera does NOT move at the end. Returning home throws away what the trip just spent two
     // minutes earning and is a fourth unrequested camera move after the visitor stopped asking
     // for camera moves. It also does not KEEP moving: Next on the last stop lands here mid-sweep,
@@ -2787,6 +2850,8 @@ export function createTrip(ctx) {
     if (rig.finishFlight) rig.finishFlight();
     // A climb is not collapsed onto its end: the next stop's flight starts from where it has got to.
     dropClimb();
+    run.returning = false;
+    state.returning = false;
     state.pausedBy = null;
     pausedDuring = null;
     goTo(clamp(to, 0, run.stops.length - 1));
@@ -2898,6 +2963,14 @@ export function createTrip(ctx) {
     state.pausedBy = null;
     const was = pausedDuring;
     pausedDuring = null;
+    if (was === 'flight' && run.returning) {
+      // The way home was paused: it goes on from where it stopped (flyHome), not back to the stop.
+      gen += 1;
+      state.generation = gen;
+      clearTimers();
+      if (!flyHome()) finish();
+      return;
+    }
     if (was === 'flight' || was === 'held') {
       // Resume flies back to the stop it left, from wherever the visitor moved the camera to.
       jump(state.index);
@@ -3007,6 +3080,7 @@ export function createTrip(ctx) {
     state.clockMoves = false;
     state.clockOwned = false;
     state.stageChanged = false;
+    state.returning = false;
     state.chapter = null;
     state.pausedBy = null;
     state.held = null;
