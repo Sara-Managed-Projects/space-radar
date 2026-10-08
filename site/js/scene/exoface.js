@@ -627,7 +627,9 @@ ${AIR_GLSL}
 // The ground's height, 0..1, and (tiers 1 and 2) the height a short step toward the star: the
 // difference is the slope the light sees. NOT the screen-space derivative of the height: a
 // filtered look-up moves in 1/256 steps of a lattice cell, and close up its derivative is a
-// stipple of two-pixel blocks (seen 2026-10-08, run 3).
+// stipple of two-pixel blocks (seen 2026-10-08, run 3). The step is a long one for the same reason:
+// over a short step the two look-ups differ by a few of those steps and the slope comes out in
+// ripples (run 6); over a long one it is the lie of the land, which is what a globe shows.
 const float STRETCH = 1.8;
 float terrain( vec3 q, vec3 toStar, out float ahead ) {
   vec3 w = q * 1.2 + uSeed;
@@ -637,7 +639,7 @@ float terrain( vec3 q, vec3 toStar, out float ahead ) {
   float h = fbm( w );
   ahead = h;
   #if TIER >= 1
-  ahead = fbm( w + toStar * 0.016 );
+  ahead = fbm( w + toStar * 0.05 );
   #endif
   #if TIER >= 2
   h += 0.03 * ( fbm3( q * 21.0 + uSeed.yzx ) - 0.5 );
@@ -740,7 +742,7 @@ void main() {
   // Relief: ground that rises toward the star faces away from it. The sea is flat, the ice smoother.
   float relief = 0.0;
   #if TIER >= 1
-  relief = ( max( ahead, sea ) - max( h, sea ) ) * 16.0 * uBump * ( 1.0 - ice * 0.5 );
+  relief = ( max( ahead, sea ) - max( h, sea ) ) * 3.2 * uBump * ( 1.0 - ice * 0.5 );
   #endif
 
   // The clouds, and the shade they throw toward the night side.
@@ -758,7 +760,7 @@ void main() {
   #endif
 
   // Light. A hard terminator, a little twilight carried round by the air.
-  float lit = max( mu0 - relief * ( 0.35 + 0.65 * smoothstep( 0.0, 0.3, mu0 ) ), 0.0 ) * smoothstep( -0.02, 0.06, mu0 );
+  float lit = max( mu0, 0.0 ) * clamp( 1.0 - relief, 0.5, 1.4 );
   float dusk = smoothstep( -0.1, 0.03, mu0 ) * ( 1.0 - smoothstep( 0.0, 0.22, mu0 ) );
   vec3 sun = uLight * uGain * mix( vec3( 1.0 ), vec3( 1.0, 0.62, 0.38 ), uAtmK * exp( -max( mu0, 0.0 ) * 9.0 ) * 0.75 );
   vec3 col = surf * sun * ( lit * shade + 0.03 * dusk * uAtmK );

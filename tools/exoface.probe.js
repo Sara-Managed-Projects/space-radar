@@ -66,6 +66,20 @@ if (set === 'sheet') {
   await wait(2500);
   out.live = st.state();
 }
+if (set !== 'sheet') {
+  // Close, to look at the ground itself, and what the frames cost on this device.
+  st.start(3);
+  st.setView({ fill: 2.2, phaseDeg: 70 });
+  await frame(); await frame();
+  await window.cdpShot('imagine-3-close');
+  out.timing = { full: st.measure(30) };
+  st.setView({ fill: 0.7, phaseDeg: 52 });
+  await frame();
+  out.timing.disc70 = st.measure(30);
+  st.freeze(null);
+  await wait(2500);
+  out.live = st.state();
+}
 out.gl = (() => { try { const gl = window.spaceRadar.renderer.getContext(); const e = gl.getExtension('WEBGL_debug_renderer_info'); return e ? gl.getParameter(e.UNMASKED_RENDERER_WEBGL) : 'unknown'; } catch { return 'unknown'; } })();
 out.errors = window.__exofaceErrors || [];
 return out;
