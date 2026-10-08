@@ -29,6 +29,9 @@ export const BUDGETS = {
   "og_png_max_bytes": 400000,
   "tier1_idle_bytes": 1300000,
   "tier1_texture_gpu_mib": 250,
+  "tier0_texture_gpu_mib": 150,
+  "tier2_texture_gpu_mib": 400,
+  "repo_textures_mb": 80,
   "planet_tile_requests_first_visit": 0,
   "reel_heap_growth_pct": 20
 };

@@ -1261,6 +1261,25 @@ export const TEXTURE_AT_HALF_VIEW = 0.015;
  */
 export const AIR_AT_HALF_VIEW = TEXTURE_AT_HALF_VIEW;
 
+/** A world that has its map counts as on screen down to this share of half the view (see MAPS_HELD). */
+export const MAP_KEPT_AT = TEXTURE_AT_HALF_VIEW * 0.8;
+
+/**
+ * How many worlds other than the Earth may keep their boot map on the GPU at once, by device tier
+ * (scene/quality.js): [T0, T1, T2]. Spec 0056 requirement 4, internal #157.
+ *
+ * A map used to load once and stay. That was written when there were fourteen maps; there are
+ * thirty-seven now, a 2048 x 1024 map is 10.7 MiB of GPU memory with its mipmaps, and a visitor
+ * who flew to every world held 364 MiB on a phone whose budget for everything is 150 (computed
+ * 2026-10-08, tests/test_texture_budget.mjs). So a world that has gone back to being a dot gives its
+ * map up -- the one that has been small the longest, and only past this count -- and wears its
+ * measured mean colour again, exactly as before the map first came. Coming back fetches the map
+ * again, from the browser's cache. A world that is big on screen now, or wearing a sharper map or
+ * another face, is never asked: so more than this many are held only while more than this many
+ * are big at once. The numbers are what registry/budgets.yaml's three GPU rows leave room for.
+ */
+export const MAPS_HELD = [5, 5, 12];
+
 export function createWorlds(scene, opts = {}) {
   const base = opts.textureBase === undefined ? 'textures/' : opts.textureBase;
   // No document means no image decoding: a headless test builds every mesh and every
@@ -1302,6 +1321,12 @@ export function createWorlds(scene, opts = {}) {
   // once and stays. Earth's three maps and the Milky Way are still fetched at once: they are on
   // screen from the first frame.
   const waiting = new Map(); // world id -> { name, apply(tex) }
+  // Every world's job, kept: a map that is released (MAPS_HELD) goes back to `waiting` from here.
+  const jobs = new Map();
+  // The frame each world's disc was last big enough to show a surface, and the count of frames.
+  const lastBig = new Map();
+  let frameNo = 0;
+  let mapsHeldMax = MAPS_HELD[0];
   // The map each world is wearing now, and the one it booted with (scene/texturetiers.js swaps a
   // 4k map in over the 2k one, and a latched device goes back to the 2k one). id -> THREE.Texture.
   const current = new Map();
@@ -1368,7 +1393,7 @@ export function createWorlds(scene, opts = {}) {
       );
     if (!w.look.earth && w.look.map) {
       const material = mesh.material;
-      waiting.set(w.id, {
+      const job = {
         name: w.look.map,
         apply(tex) {
           if (!tex) return;
@@ -1385,8 +1410,11 @@ export function createWorlds(scene, opts = {}) {
             material.color.set(0xffffff);
             material.needsUpdate = true; // a map where there was none is a different shader
           }
+          lastBig.set(w.id, frameNo); // newly arrived: not the first to go
         },
-      });
+      };
+      jobs.set(w.id, job);
+      waiting.set(w.id, job);
     }
 
     mesh.name = w.id;
@@ -1531,6 +1559,7 @@ export function createWorlds(scene, opts = {}) {
 
   function update(tMs) {
     stage.setTime(tMs);
+    frameNo += 1;
 
     // 0. Every world's TRUE position, once. The crowding pre-pass in step 2b and the loop in step 3
     //    both want them, and an ephemeris is the expensive thing in this function -- asking twice
@@ -1751,6 +1780,17 @@ export function createWorlds(scene, opts = {}) {
         const tanHalfFov = Math.tan(((camera.fov || 45) * Math.PI) / 360);
         if (!(dist > 0) || mesh.scale.x / dist / tanHalfFov >= TEXTURE_AT_HALF_VIEW) fetchMap(w.id);
       }
+      // 5b. ...and a world that HAS its map and is still big enough to show it is marked, so the
+      //     trim below never takes a map that is on screen. A little under the fetch threshold
+      //     (MAP_KEPT_AT), so a disc hovering at it does not fetch and release in turn -- and not
+      //     much under: a planet seen from the Earth is held at 0.0035 rad, which is 0.0085 of half
+      //     the view, and a dot that size must count as a dot.
+      if (camera && mesh.visible && bootMap.has(w.id)) {
+        camera.getWorldPosition(_camPosU);
+        const dist = mesh.position.distanceTo(_camPosU);
+        const tanHalfFov = Math.tan(((camera.fov || 45) * Math.PI) / 360);
+        if (!(dist > 0) || mesh.scale.x / dist / tanHalfFov >= MAP_KEPT_AT) lastBig.set(w.id, frameNo);
+      }
       if (camera && mesh.visible && shapeWaiting.has(w.id)) {
         camera.getWorldPosition(_camPosU);
         const dist = mesh.position.distanceTo(_camPosU);
@@ -1758,7 +1798,65 @@ export function createWorlds(scene, opts = {}) {
         if (!(dist > 0) || mesh.scale.x / dist / tanHalfFov >= TEXTURE_AT_HALF_VIEW) fetchShape(w.id);
       }
     }
+    // 6. Past the count this device may hold, the world that has been a dot the longest gives its
+    //    map back (MAPS_HELD).
+    trimMaps();
   }
+
+  /**
+   * Give one world's map back: its GPU memory freed, the world in its mean colour again and
+   * waiting, as it was before the map first came. Its other faces go with it. False when the world
+   * has no map of its own to give, or is wearing something else (a sharper map, another face).
+   */
+  function releaseMap(id) {
+    const tex = bootMap.get(id);
+    const mesh = meshes.get(id);
+    const w = BY_ID.get(id);
+    const job = jobs.get(id);
+    if (!tex || !mesh || !w || !job) return false;
+    if (current.get(id) !== tex || tierMap.get(id)) return false;
+    const m = mesh.material;
+    const tint = w.look.tint === undefined ? 0xffffff : w.look.tint;
+    if (m.uniforms && m.uniforms.uMap) {
+      m.uniforms.uMap.value = null;
+      m.uniforms.uHasMap.value = 0;
+      m.uniforms.uTint.value.set(tint);
+    } else {
+      m.map = null;
+      m.color.set(tint);
+      m.needsUpdate = true;
+    }
+    bootMap.delete(id);
+    current.delete(id);
+    if (tex.dispose) tex.dispose();
+    for (const [key, face] of faceTex) {
+      if (!key.startsWith(`${id}/`)) continue;
+      if (face && face.dispose) face.dispose();
+      faceTex.delete(key);
+    }
+    waiting.set(id, job);
+    return true;
+  }
+
+  /** Past MAPS_HELD: the held world that has been small the longest gives its map up. One a frame. */
+  function trimMaps() {
+    if (bootMap.size <= mapsHeldMax) return;
+    let victim = null;
+    let oldest = Infinity;
+    for (const id of bootMap.keys()) {
+      const seen = lastBig.has(id) ? lastBig.get(id) : -1;
+      if (seen >= frameNo) continue; // big on screen this frame
+      if (current.get(id) !== bootMap.get(id) || tierMap.get(id)) continue;
+      if (seen < oldest) { oldest = seen; victim = id; }
+    }
+    if (victim) releaseMap(victim);
+  }
+
+  /** main.js, when the device's tier is known or changes: how many worlds may keep a map (MAPS_HELD). */
+  function setMapsHeld(n) { if (Number.isFinite(n) && n >= 1) mapsHeldMax = Math.floor(n); }
+
+  /** The worlds holding their own map now, for the probes and `spaceRadar.gpu()`. */
+  function mapsHeld() { return [...bootMap.keys()]; }
 
   /**
    * Fetch a world's map now, whatever size it is drawn. main.js calls this when a world is
@@ -2067,6 +2165,9 @@ export function createWorlds(scene, opts = {}) {
   return {
     update,
     preload,
+    releaseMap,
+    setMapsHeld,
+    mapsHeld,
     waitingMaps,
     hasMap,
     setMap,

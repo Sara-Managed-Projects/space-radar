@@ -12,7 +12,7 @@ import { createRenderer } from './scene/renderer.js';
 import { stage } from './scene/stage.js';
 import { propagate } from './propagate/index.js';
 import { parseFrame } from './propagate/frames.js';
-import { createWorlds, WORLDS, positionOf } from './scene/worlds.js';
+import { createWorlds, WORLDS, positionOf, MAPS_HELD } from './scene/worlds.js';
 import { createStarfield } from './scene/starfield.js';
 import { createGlyphLayer } from './scene/glyphs.js';
 import { createHeroes, closeUpDistance, SELECTED_PX, MODEL_SPAN, warmModels } from './scene/heroes.js';
@@ -60,7 +60,8 @@ import { createTrackLabels } from './ui/tracklabels.js';
 import { createOrbitRings, periodMsOfWorld } from './scene/orbitrings.js';
 import { createFrameLatch, shouldSaveData, chooseTier, createTierPromoter } from './scene/quality.js';
 import { createLiveClouds } from './scene/liveclouds.js';
-import { createTextureTiers } from './scene/texturetiers.js';
+import { createTextureTiers, gpuMiB, variantFor, LIVE_CLOUDS_MIB } from './scene/texturetiers.js';
+import { TEXTURES } from './data/textures.js';
 import { setEarthMap, earthMapsSettled } from './scene/earth.js';
 import { keyById, bucketOf } from './data/colorkeyrules.js';
 
@@ -1884,6 +1885,9 @@ function createQuality(ctx, renderer, starfield, worlds) {
       },
     },
   });
+  // How many worlds may keep a map of their own on this tier (scene/worlds.js MAPS_HELD, internal #157).
+  const holdFor = (tier) => worlds.setMapsHeld(MAPS_HELD[Math.min(Math.max(0, tier), MAPS_HELD.length - 1)]);
+  holdFor(pick.tier);
   const say = () => window.dispatchEvent(new CustomEvent('sr:tier', { detail: api.describe() }));
   // Spec 0065: a close world drawn from the missions' own map tiles. OFF THE FIRST VISIT, like the
   // aurora: scene/tiles.js and its two helpers are imported only once a world is PLANET_TILES_AT of
@@ -1953,13 +1957,37 @@ function createQuality(ctx, renderer, starfield, worlds) {
     /** Every frame, from startLoop, after the latch has been fed. */
     frame(frameMs, nowMs, latched) {
       const up = promoter.push(frameMs, nowMs, latched);
-      if (up !== null) { tiers.setTier(up); if (planetTiles) planetTiles.setTier(up); say(); }
+      if (up !== null) { tiers.setTier(up); holdFor(up); if (planetTiles) planetTiles.setTier(up); say(); }
       if (planetTiles) planetTiles.frame(nowMs);
     },
     tick(nowMs) { tiers.tick(nowMs); planetTilesWanted(); sunWanted(); },
     /** The frame latch tripped: back to the boot maps, for good. */
-    latch() { tiers.latch(); if (planetTiles) planetTiles.latch(); if (ctx.sunDetail) ctx.sunDetail.latch(); say(); },
+    latch() { tiers.latch(); holdFor(0); if (planetTiles) planetTiles.latch(); if (ctx.sunDetail) ctx.sunDetail.latch(); say(); },
+    /**
+     * What the maps hold on the GPU now, by arithmetic from registry/textures.yaml (gpuMiB: pixels,
+     * four bytes, a third for mipmaps), beside the renderer's own count of textures. `window.spaceRadar.gpu()`.
+     * An estimate of the maps only: models, star buffers and the map tiles of a close world are not in it.
+     */
+    gpu() {
+      const applied = new Map(tiers.state().applied.map((a) => [a.id, a.tier]));
+      const byRow = {};
+      let mib = 0;
+      const add = (id, file) => { const m = gpuMiB(file); if (m > 0) { byRow[id] = Math.round(m * 10) / 10; mib += m; } };
+      const held = new Set(worlds.mapsHeld());
+      for (const row of TEXTURES) {
+        const onScreen = row.world === 'earth' || row.world === 'sky' || row.id === 'saturn-ring';
+        if (applied.has(row.id)) add(row.id, variantFor(row, applied.get(row.id)));
+        else if (onScreen ? !!variantFor(row, 0) : row.when !== 'asked' && held.has(row.world)) add(row.id, variantFor(row, 0));
+      }
+      if (ctx.liveClouds && ctx.liveClouds.state && ctx.liveClouds.state().mode !== 'illustrative') { byRow['live-clouds'] = Math.round(LIVE_CLOUDS_MIB * 10) / 10; mib += LIVE_CLOUDS_MIB; }
+      return {
+        tier: tiers.tier, mapsMiB: Math.round(mib * 10) / 10, byRow,
+        worldMaps: [...held], worldMapsMax: MAPS_HELD[Math.min(tiers.tier, MAPS_HELD.length - 1)],
+        textures: renderer.info && renderer.info.memory ? renderer.info.memory.textures : null,
+      };
+    },
   };
+  ctx.gpu = () => api.gpu();
   return api;
 }
 
