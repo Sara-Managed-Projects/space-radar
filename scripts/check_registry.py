@@ -2430,6 +2430,88 @@ def check_aliases() -> list:
     return rows_
 
 
+def check_links() -> list:
+    """registry/links.yaml: every link out was opened on a date, names its publisher, and is https."""
+    path = REG / "links.yaml"
+    if not path.exists():
+        return []
+    try:
+        doc = yaml_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as exc:
+        fail("links.yaml", f"will not parse: {exc}")
+        return []
+    rows_ = doc.get("links")
+    if not isinstance(rows_, list) or not rows_:
+        fail("links.yaml", "no `links:` list")
+        return []
+    seen = set()
+    for r in rows_:
+        if not isinstance(r, dict):
+            fail("links.yaml", "a row is not a mapping")
+            continue
+        lid = str(r.get("id") or "").strip()
+        where = f"links.yaml[{lid or '?'}]"
+        if not lid:
+            fail("links.yaml", "a row has no `id:`")
+            continue
+        if lid in seen:
+            fail(where, "duplicate `id:`")
+        seen.add(lid)
+        if not str(r.get("for") or "").strip():
+            fail(where, "no `for:` -- the record whose card shows the link")
+        words = str(r.get("words") or "").strip()
+        if not words or len(words) > 24:
+            fail(where, "`words:` is the link's text: needed, and at most 24 characters")
+        if not str(r.get("publisher") or "").strip():
+            fail(where, "no `publisher:` -- the card names whose page it opens")
+        url = str(r.get("url") or "")
+        if not url.startswith("https://"):
+            fail(where, "`url:` must be an https address")
+        if not str(r.get("saw") or "").strip():
+            fail(where, "no `saw:` -- what was on the page the day it was checked")
+        checked = r.get("checked")
+        if not isinstance(checked, datetime.date):
+            fail(where, "no `checked:` date -- a link nobody opened is a link that may be dead")
+        elif (datetime.date.today() - checked).days > 180:
+            print(f"finding: {where} was last opened on {checked}: open it again and move the date")
+    return rows_
+
+
+def check_oldest_notes() -> list:
+    """registry/oldest-notes.yaml: a line about an old satellite cites the page it was read on."""
+    path = REG / "oldest-notes.yaml"
+    if not path.exists():
+        return []
+    try:
+        doc = yaml_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as exc:
+        fail("oldest-notes.yaml", f"will not parse: {exc}")
+        return []
+    rows_ = doc.get("notes")
+    if not isinstance(rows_, list):
+        fail("oldest-notes.yaml", "no `notes:` list")
+        return []
+    seen = set()
+    for r in rows_:
+        if not isinstance(r, dict) or not isinstance(r.get("norad"), int):
+            fail("oldest-notes.yaml", "a row has no `norad:` catalogue number")
+            continue
+        where = f"oldest-notes.yaml[{r['norad']}]"
+        if r["norad"] in seen:
+            fail(where, "duplicate `norad:`")
+        seen.add(r["norad"])
+        line = str(r.get("line") or "").strip()
+        if not line or len(line) > 120:
+            fail(where, "`line:` is needed and is at most 120 characters")
+        if not str(r.get("source") or "").startswith("https://"):
+            fail(where, "no https `source:` -- a line nobody can check is a rumour")
+        if not isinstance(r.get("read"), datetime.date):
+            fail(where, "no `read:` date -- the day the page said this")
+        if not str(r.get("quote") or "").strip():
+            fail(where, "no `quote:` -- the page's own words behind the line")
+    return rows_
+
+
 COLORKEY_FIELDS = {"klass", "perigee_km", "inclination_deg", "launch_year"}
 
 
@@ -4325,6 +4407,8 @@ def main() -> int:
                           if isinstance(r, dict) and r.get('id') and isinstance(r.get('image'), dict))
     famous_stars = check_stars_notable(exotics)
     aliases = check_aliases()
+    check_links()
+    check_oldest_notes()
     colorkeys = check_colorkeys()
     TOUR_STAGES.update(world_ids)
     TOUR_STAGES.update(st.get('id') for st in ladder if isinstance(st, dict) and st.get('id'))

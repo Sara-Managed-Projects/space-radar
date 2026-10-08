@@ -245,3 +245,32 @@ export function fieldRecords(rows, opts = {}) {
   }
   return out;
 }
+
+// The launch dates of the catalogue last parsed, by catalogue number: kept so a satellite's card
+// can say "Up for 28 years" once the debris view has read the 1.5 MB file, without the card ever
+// asking for it (internal #127). Empty until then; the card falls back to the designator's year.
+const LAUNCHES = new Map();
+
+/** Remember each row's launch date. Called by whoever parsed the catalogue (ui/debris.js). */
+export function rememberLaunches(rows) {
+  for (const r of rows || []) if (r && Number.isFinite(r.id) && r.launchMs !== null) LAUNCHES.set(r.id, r.launchMs);
+  return LAUNCHES.size;
+}
+
+/** The catalogue's launch date for this catalogue number, ms, or null when it is not at hand. */
+export function launchMsOf(norad) {
+  const id = Number(norad);
+  return Number.isFinite(id) && LAUNCHES.has(id) ? LAUNCHES.get(id) : null;
+}
+
+/**
+ * The things up the longest: payloads and rocket bodies still in orbit, by launch date then
+ * catalogue number, the first `n` (spec 0050 requirement 7). Years are whole, to `asOfMs`.
+ */
+export function oldestRows(rows, asOfMs, n = 10) {
+  return (rows || [])
+    .filter((r) => r.launchMs !== null && r.kind !== 'debris' && r.kind !== 'other')
+    .sort((a, b) => a.launchMs - b.launchMs || a.id - b.id)
+    .slice(0, n)
+    .map((r) => ({ id: r.id, name: r.name, intl: r.intl, kind: r.kind, launchMs: r.launchMs, years: Math.floor((asOfMs - r.launchMs) / (365.25 * DAY_MS)) }));
+}

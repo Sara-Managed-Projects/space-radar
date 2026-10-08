@@ -129,6 +129,48 @@ sources:
     outputs: [events-ll2.json]
     attribution: "Launch data by The Space Devs"
 
+  # WHO IS ABOARD, AND WHAT IS DOCKED (internal #133, spec 0050; read 2026-10-08).
+  # TERMS, as the publisher states them today on https://thespacedevs.com/llapi : "all the API data
+  # is available at no cost for up to 15 non-authenticated requests per hour", and "the entire
+  # database is accessible to everyone, for free". That page states no licence and no attribution
+  # wording; the credit below is the one this registry already gives Launch Library.
+  # BUDGET: these three rows are one call each every 6 h; with the two rows above (one each every
+  # 2 h) that is 1.5 calls an hour against 15. `browser: false`: a visitor's browser never calls
+  # LL2 for these, so a busy day here cannot spend the publisher's limit; the page reads our saved
+  # copy, says its age, and says so when it is more than 48 h old.
+  # The stations answer has the docked set itself (each port's `currently_docked`), so no hand-kept
+  # registry/docked.yaml is needed (spec 0050 requirement 2's first branch).
+  - id: ll2-stations
+    url: https://ll.thespacedevs.com/2.3.0/space_stations/?status=1&mode=detailed
+    auth: none
+    browser: false
+    cadence: 6h
+    freshness_max: 48h
+    parser: ll2_stations
+    outputs: [stations-docked.json]
+    attribution: "Crew and docked vehicles: Launch Library 2, The Space Devs"
+
+  - id: ll2-astronauts
+    url: https://ll.thespacedevs.com/2.3.0/astronauts/?in_space=true&limit=30
+    auth: none
+    browser: false
+    cadence: 6h
+    freshness_max: 48h
+    parser: ll2_crew
+    outputs: [crew.json]
+    attribution: "Crew and docked vehicles: Launch Library 2, The Space Devs"
+
+  # The launches of the last days, for "Just happened" (internal #134). Same terms and budget.
+  - id: ll2-previous
+    url: https://ll.thespacedevs.com/2.3.0/launches/previous/?limit=30
+    auth: none
+    browser: false
+    cadence: 6h
+    freshness_max: 48h
+    parser: ll2_previous
+    outputs: [launches-previous.json]
+    attribution: "Launch data by The Space Devs"
+
   # --- Small bodies --------------------------------------------------------------------
   # MEASURED: no Access-Control-Allow-Origin on any JPL endpoint, so these could not be
   # called from the page even if the rate limits allowed it.

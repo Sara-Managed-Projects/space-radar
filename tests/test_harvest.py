@@ -61,6 +61,9 @@ EXPECTED_COUNTS = {
     "nasa_exoplanet_archive": 12,
     "gdacs_tc": 20,
     "open_notify": 12,
+    "ll2_crew": 15,       # LL2's flag, Starman and four who had landed included; the page joins
+    "ll2_stations": 7,    # vehicles docked now, over two stations
+    "ll2_previous": 6,
 }
 
 CELESTRAK_TEXT = "GP data has not updated since your last successful download"

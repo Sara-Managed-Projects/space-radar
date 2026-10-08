@@ -26,7 +26,8 @@
 import { COPY, t, fmt, timeText } from '../copy/en.js';
 import '../copy/en.later.js';
 import { load } from '../data/sources.js';
-import { parseSatcat, decayedRows, census, stories, KINDS } from '../data/satcat.js';
+import { parseSatcat, decayedRows, census, stories, KINDS, rememberLaunches, oldestRows } from '../data/satcat.js';
+import { OLDEST_NOTES } from '../data/oldestnotes.js';
 
 const LAYER = 'debris-field';
 const DAY_MS = 86400e3;
@@ -161,7 +162,8 @@ export function createDebris(ctx, host, opts = {}) {
     const asOfMs = Number.isFinite(result.fetchedAt) ? result.fetchedAt : ctx.clock.now();
     const rows = parseSatcat(body);
     if (!rows.length) { st.phase = 'failed'; paint(); return; }
-    st.data = { asOfMs, census: census(rows), stories: stories(rows, decayedRows(body, asOfMs - 7 * DAY_MS), asOfMs) };
+    rememberLaunches(rows); // a satellite's card can now say how long it has been up (internal #127)
+    st.data = { asOfMs, census: census(rows), stories: stories(rows, decayedRows(body, asOfMs - 7 * DAY_MS), asOfMs), oldest: oldestRows(rows, asOfMs, 10) };
     st.phase = 'ready';
     paint();
   }
@@ -234,6 +236,31 @@ export function createDebris(ctx, host, opts = {}) {
       const list = el('ul', 'sr-debris__stories');
       for (const line of lines) list.appendChild(el('li', 'sr-debris__story', line));
       root.appendChild(list);
+    }
+    // Up the longest (spec 0050 requirement 7): the ten oldest payloads and rocket bodies still in
+    // orbit, the years computed from the catalogue's launch date, a sourced line where the
+    // registry has one. A row whose dot is on the map opens its card.
+    if (st.data.oldest && st.data.oldest.length) {
+      const O = COPY.oldest;
+      root.appendChild(el('h3', 'sr-micro', O.label));
+      const list = el('ol', 'sr-debris__stories sr-debris__oldest');
+      for (const row of st.data.oldest) {
+        const li = el('li', 'sr-debris__story');
+        const rec = typeof ctx.recordById === 'function' ? ctx.recordById(`sat-${row.id}`) : null;
+        const name = rec ? el('button', 'sr-debris__oldname') : el('span', 'sr-debris__oldname');
+        name.textContent = row.name;
+        if (rec) {
+          name.type = 'button';
+          name.title = O.showTitle;
+          name.addEventListener('click', () => { if (typeof ctx.select === 'function') ctx.select(rec); });
+        }
+        li.append(name, el('span', 'sr-debris__oldyears', t(O.row, { years: fmt.int(row.years), date: timeText.longDate(row.launchMs) })));
+        const note = Object.prototype.hasOwnProperty.call(OLDEST_NOTES, String(row.id)) ? OLDEST_NOTES[String(row.id)] : null;
+        if (note && note.line) li.appendChild(el('span', 'sr-debris__oldnote', note.line));
+        list.appendChild(li);
+      }
+      root.appendChild(list);
+      root.appendChild(el('p', 'sr-debris__honesty', O.note));
     }
     root.appendChild(el('p', 'sr-debris__honesty', t(D.honesty, { date: timeText.utcLong(st.data.asOfMs) })));
     // What no catalogue holds, from ESA's model, with the page it was read on.

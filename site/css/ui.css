@@ -6703,3 +6703,56 @@ html.sr-phone .sr-passport {
 }
 
 .sr-tripsheet__stamp[hidden] { display: none; }
+
+/* Cards and live facts (2026-10-08). The distance that ticks: mono, tabular, so no digit moves
+   its neighbours (docs/ui-guide.md 2.2, value numerals). */
+.sr-live__row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  margin: 0;
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-live__num {
+  font: 400 var(--sr-fs-num-sm)/1.1 var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text);
+}
+
+.sr-live .sr-card__aboardnote,
+.sr-spark .sr-card__aboardnote,
+.sr-crew > .sr-card__aboardnote { margin-top: var(--sp-2); }
+
+/* The six-year curve of distance from the Earth. */
+.sr-spark__svg {
+  display: block;
+  width: 100%;
+  height: 56px;
+  margin-bottom: var(--sp-1);
+}
+
+.sr-spark__path { fill: none; stroke: var(--sr-text); stroke-width: 1.5; }
+.sr-spark__base { stroke: var(--sr-line-strong); stroke-width: 1; }
+.sr-spark__now { stroke: var(--sr-text-dim); stroke-width: 1; }
+.sr-spark__min { stroke: var(--sr-ember); stroke-width: 2; }
+.sr-spark__go { margin-top: var(--sp-2); text-align: left; }
+
+.sr-crew { display: flex; flex-direction: column; gap: var(--sp-3); }
+.sr-card__out { color: var(--sr-text-soft); }
+.sr-card__aboardnote.is-stale { color: var(--sr-text-soft); }
+
+/* Up the longest, in the debris view. */
+.sr-debris__oldest .sr-debris__story { display: flex; flex-direction: column; }
+.sr-debris__oldname {
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  font: 400 var(--sr-fs-body)/20px var(--sr-font);
+  color: var(--sr-text);
+}
+button.sr-debris__oldname { min-height: 24px; cursor: pointer; text-decoration: underline; text-decoration-color: var(--sr-line-strong); }
+button.sr-debris__oldname:hover { color: var(--sr-ember-light); }
+.sr-debris__oldyears { font-family: var(--sr-font-mono); font-variant-numeric: tabular-nums; }

@@ -932,6 +932,9 @@ export const COPY = {
     autoRegular: 'Regular now; Compact when the window is 800 px tall or less.',
   },
   nextList: {
+    // The last seven days, asked for by a press (ui/justhappened.js, internal #134).
+    justHappened: 'Just happened',
+    justHappenedTitle: 'Launches and re-entries of the last seven days',
     // Add to calendar (public #235, data/ics.js): one .ics file for the row, made in the browser.
     calendar: 'Calendar',
     calendarTitle: 'Add “{title}” to your calendar: downloads one .ics file',

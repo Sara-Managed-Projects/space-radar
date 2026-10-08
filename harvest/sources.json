@@ -104,6 +104,39 @@
       ]
     },
     {
+      "id": "ll2-stations",
+      "url": "https://ll.thespacedevs.com/2.3.0/space_stations/?status=1&mode=detailed",
+      "auth": "none",
+      "refresh": "6h",
+      "freshness_max": "48h",
+      "parser": "ll2_stations",
+      "outputs": [
+        "stations-docked.json"
+      ]
+    },
+    {
+      "id": "ll2-astronauts",
+      "url": "https://ll.thespacedevs.com/2.3.0/astronauts/?in_space=true&limit=30",
+      "auth": "none",
+      "refresh": "6h",
+      "freshness_max": "48h",
+      "parser": "ll2_crew",
+      "outputs": [
+        "crew.json"
+      ]
+    },
+    {
+      "id": "ll2-previous",
+      "url": "https://ll.thespacedevs.com/2.3.0/launches/previous/?limit=30",
+      "auth": "none",
+      "refresh": "6h",
+      "freshness_max": "48h",
+      "parser": "ll2_previous",
+      "outputs": [
+        "launches-previous.json"
+      ]
+    },
+    {
       "id": "jpl-sbdb-neo",
       "url": "https://ssd-api.jpl.nasa.gov/sbdb_query.api?fields=full_name,spkid,e,a,q,i,om,w,ma,epoch,H,diameter,class&sb-kind=a&sb-group=neo",
       "auth": "none",

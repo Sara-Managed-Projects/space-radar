@@ -78,6 +78,9 @@ import { stage } from '../scene/stage.js';
 import { icon } from './icons.js';
 import { overlayLine, legendNode, paintLegend } from './overlaylegend.js';
 import { systemOfRecordId, phaseIsMeasured } from '../scene/systems.js';
+import { liveBlock, paintLive, sparkBlock, crewBlock, hasCrewSource, linkNodes } from './cardextras.js';
+import { upForWords } from './cardlive.js';
+import { launchMsOf } from '../data/satcat.js';
 
 const MAX_FIRST_SENTENCE = 160; // spec 0013 requirement 10, enforced by check_copy.py
 const MAX_COMPARISONS = 3; // spec 0013 requirement 2
@@ -98,6 +101,8 @@ let lastPaint = 0;
 // never as it runs, and a countdown that stands still is not a countdown.
 let timeTimer = 0;
 let timeState = null; // {record, ctx, facts}
+// The distance from the Earth, rewritten once a second while its card is open (internal #295).
+let liveTimer = 0;
 
 // ---------------------------------------------------------------------------------------
 // DOM helpers. Nothing here ever touches innerHTML.
@@ -386,6 +391,57 @@ function heliocentricEarth(ctx, tMs) {
   } catch {
     return null;
   }
+}
+
+/**
+ * This record's distance from the Earth as a function of time, km, from the same propagation the
+ * card's rows use (measure above); null where the card has no computed distance to give: the Earth
+ * itself, anything in the Earth's own frame, and a craft whose range is a number on its record
+ * (a Lagrange-point stand-in, see measure). The ticking row and the six-year curve both read it.
+ */
+export function earthDistanceAt(record, ctx) {
+  if (!record || record.id === 'earth' || isEarthFrame(record.frame)) return null;
+  if (pickNumber(meta(record), 'earthRangeKm') !== null) return null;
+  return (tMs) => {
+    const p = positionAt(record, tMs);
+    if (!p) return null;
+    const frame = p.frame || record.frame;
+    if (frame === 'sun-inertial') {
+      const earth = heliocentricEarth(ctx, tMs);
+      return earth ? Math.hypot(p.x - earth.x, p.y - earth.y, p.z - earth.z) : null;
+    }
+    if (isEarthFrame(frame) || !frameWorld(frame)) return null;
+    try {
+      const geo = toStage(record, p, { worldId: 'earth', frame: 'earth-inertial', tMs }, tMs);
+      return geo && Number.isFinite(geo.x) ? Math.hypot(geo.x, geo.y, geo.z) : null;
+    } catch {
+      return null;
+    }
+  };
+}
+
+function reducedMotion() {
+  return typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+/** Once a second while a card with the ticking distance is open; never under reduced motion. */
+function tickLive() {
+  if (!current || !current.record || !host || host.hidden) { stopLive(); return; }
+  const box = host.querySelector('.sr-live');
+  if (!box) { stopLive(); return; }
+  let tNow;
+  try { tNow = current.ctx.clock.now(); } catch { return; }
+  paintLive(box, earthDistanceAt(current.record, current.ctx), tNow, false);
+}
+
+function startLive() {
+  if (liveTimer || typeof setInterval !== 'function' || reducedMotion()) return;
+  liveTimer = setInterval(tickLive, 1000);
+}
+
+function stopLive() {
+  if (liveTimer) clearInterval(liveTimer);
+  liveTimer = 0;
 }
 
 const PASS_NO_OBSERVER = 'no-observer';
@@ -1544,7 +1600,12 @@ export function timeFactWords(facts, tNow, rate = 1) {
     out.orbit = t(T.orbit, { n: fmt.int(facts.orbit.n) });
     out.orbitNote = T.orbitNote;
   }
-  if (Number.isFinite(facts.launchYear)) out.launched = t(T.launched, { year: String(facts.launchYear) });
+  // "Up for 28 years" from the catalogue's launch date when the catalogue has been read this
+  // visit (data/satcat.js launchMsOf: the debris view reads it, the card never does for one line),
+  // else from the designator's year, said as "about" (internal #127).
+  if (Number.isFinite(facts.launchMs) || Number.isFinite(facts.launchYear)) {
+    out.launched = upForWords(facts.launchMs, facts.launchYear, tNow) || t(T.launched, { year: String(facts.launchYear) });
+  }
   return out;
 }
 
@@ -1557,6 +1618,7 @@ function freshFacts(record, tNow) {
   if (ok) return st.facts;
   let facts = null;
   try { facts = timeFacts(record, tNow); } catch { facts = null; }
+  if (facts) facts.launchMs = launchMsOf(pickNumber(meta(record), 'noradId', 'norad', 'NORAD_CAT_ID'));
   timeState = { record, facts };
   return facts;
 }
@@ -3051,11 +3113,18 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
     trajectorySection(record, m.tMs),
     ...trackControls(record, ctx, m),
     lap ? el('p', 'sr-card__note', lap) : null,
+    distanceCurve(record, ctx, m),
   ]));
 
   // Who is aboard: what rides on this, or what this rides on (data/attached.js).
+  // On a station Launch Library follows, the people and the docked vehicles come first (#133).
   const aboard = aboardSection(record, ctx);
-  if (aboard) add('aboard', aboard.riding ? S.ridingOn : S.aboard, null, panelOf([aboard.node]));
+  const crew = crewBlock(record, rowsList, () => {
+    if (current && current.record === record) { try { render(current.record, current.ctx, current.opts); } catch { /* keep the card */ } }
+  });
+  if (aboard || crew) {
+    add('aboard', aboard && aboard.riding ? S.ridingOn : S.aboard, crew ? crew.hint : null, panelOf([crew ? crew.node : null, aboard ? aboard.node : null]));
+  }
 
   // About it: the first sentence and the line on why it is known, the photograph, a world's own
   // notes, every row the card prints, the comparisons, the myths and the train -- the sections
@@ -3183,6 +3252,11 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
     now.appendChild(rowsList(aboutRows));
     aboutNodes.push(now);
   }
+  // The distance that ticks (internal #295): kilometres and light time, once a second.
+  if (klass !== 'site' && !standsStill(record, m)) {
+    const live = liveBlock(earthDistanceAt(record, ctx), m.tMs, reducedMotion());
+    if (live) { aboutNodes.push(live); startLive(); }
+  }
   // The comparisons, once sentence-long pills at the top of the card: now a list, here.
   const chips = comparisons(record, m);
   if (chips.length) {
@@ -3218,6 +3292,8 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
   page.rel = 'noopener';
   page.title = COPY.card.ownPageTitle;
   aboutNodes.push(page);
+  // Links out to live pictures (spec 0050 requirement 8): the publisher's own page, never an embed.
+  aboutNodes.push(...linkNodes(record));
   add('about', S.about, null, panelOf(aboutNodes));
   const aboutHead = more.querySelector('[data-section="about"] .sr-disc__head');
   const findPage = () => import('./objectpage.js').then((m) => m.pageFor(record)).then((url) => {
@@ -3234,6 +3310,22 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
   ]));
 
   return more;
+}
+
+/**
+ * The six-year curve of distance from the Earth, for what goes round the Sun and is not a world:
+ * asteroids, comets and craft beyond the Earth (internal #296). The closest approach it names
+ * carries #298's caveat when the path there is the ellipse that leaves the Earth's pull out.
+ */
+function distanceCurve(record, ctx, m) {
+  const klass = klassOf(record);
+  if (klass === 'world' || klass === 'site' || m.frame !== 'sun-inertial' || !Number.isFinite(m.tMs) || endedWords(record, m)) return null;
+  try {
+    return sparkBlock(record, earthDistanceAt(record, ctx), m.tMs, ctx,
+      (min) => nearEarthOnEllipse(record, { tMs: min.tMs, distEarthKm: min.km }));
+  } catch {
+    return null;
+  }
 }
 
 function render(record, ctx, opts = {}) {
@@ -3581,6 +3673,7 @@ export function refreshLeadNote() {
 export function hideCard() {
   current = null;
   stopTimeFacts();
+  stopLive();
   timeState = null;
   if (!host) return;
   // Give focus back to where the visitor was -- the search box, a list row -- if it is still there

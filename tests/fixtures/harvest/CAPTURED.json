@@ -68,5 +68,17 @@
   "open_notify.json": {
     "url": "http://api.open-notify.org/astros.json",
     "note": "verbatim, captured 2026-10-02; 12 people, 9 on ISS and 3 on Tiangong"
+  },
+  "ll2_crew.json": {
+    "url": "https://ll.thespacedevs.com/2.3.0/astronauts/?in_space=true&limit=30",
+    "note": "captured 2026-10-08; every row kept, with the pictures, biographies, descriptions and link lists removed from each (keys: bio, country, description, image, images, info_url, info_urls, infographic, logo, map_image, mission_patches, nation_url, nationality, program, social_logo, social_media_links, timeline, total_landing_count, total_launch_count, updates, vid_urls, wiki, wiki_url)"
+  },
+  "ll2_stations.json": {
+    "url": "https://ll.thespacedevs.com/2.3.0/space_stations/?status=1&mode=detailed",
+    "note": "captured 2026-10-08; every row kept, with the pictures, biographies, descriptions and link lists removed from each (keys: bio, country, description, image, images, info_url, info_urls, infographic, logo, map_image, mission_patches, nation_url, nationality, program, social_logo, social_media_links, timeline, total_landing_count, total_launch_count, updates, vid_urls, wiki, wiki_url)"
+  },
+  "ll2_previous.json": {
+    "url": "https://ll.thespacedevs.com/2.3.0/launches/previous/?limit=30",
+    "note": "captured 2026-10-08; the first 6 of 30 rows, with the pictures, biographies, descriptions and link lists removed from each (keys: bio, country, description, image, images, info_url, info_urls, infographic, logo, map_image, mission_patches, nation_url, nationality, program, social_logo, social_media_links, timeline, total_landing_count, total_launch_count, updates, vid_urls, wiki, wiki_url)"
   }
 }

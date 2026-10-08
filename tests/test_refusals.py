@@ -110,6 +110,17 @@ def validator(work: Path, script: str = "scripts/check_registry.py", env: dict |
 
 
 CASES: list[tuple[str, str, str, str]] = [
+    ("a line about an old satellite that cites no page",
+     "oldest-notes.yaml", '    source: "https://en.wikipedia.org/wiki/Vanguard_1"\n', ""),
+    ("a line about an old satellite with no day it was read",
+     "oldest-notes.yaml", "    read: 2026-10-08\n    quote: \"The spacecraft", "    quote: \"The spacecraft"),
+    # --- registry/links.yaml, links out (spec 0050 requirement 8, internal #136) --------
+    ("a link out nobody says they opened",
+     "links.yaml", "    url: \"https://www.nasa.gov/live/\"\n    checked: 2026-10-08\n", "    url: \"https://www.nasa.gov/live/\"\n"),
+    ("a link out that does not name whose page it is",
+     "links.yaml", "    publisher: NASA EPIC\n", ""),
+    ("a link out that is not https",
+     "links.yaml", "https://epic.gsfc.nasa.gov/", "http://epic.gsfc.nasa.gov/"),
     # (name, file, find, replace)
     ("layer names a source that does not exist",
      "layers.yaml", "source: celestrak-stations", "source: celestrak-stationz"),

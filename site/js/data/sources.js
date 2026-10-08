@@ -318,6 +318,27 @@ export const SOURCES = {
       'even though it sends Access-Control-Allow-Origin `*`. Read from our snapshot only.',
   },
 
+  // Launch Library 2's stations, crew and past launches (registry/sources.yaml says the terms and
+  // the budget). Snapshot-only on purpose: a visitor never spends the publisher's 15 calls an hour.
+  'll2-stations': {
+    id: 'll2-stations', registryId: 'll2-stations', label: 'Launch Library 2 — stations and docked vehicles', publisher: 'The Space Devs',
+    url: 'https://ll.thespacedevs.com/2.3.0/space_stations/?status=1&mode=detailed',
+    cadenceMs: 6 * HOUR, freshnessMaxMs: 48 * HOUR, browser: false, kind: 'json',
+    attribution: 'Crew and docked vehicles: Launch Library 2, The Space Devs',
+  },
+  'll2-astronauts': {
+    id: 'll2-astronauts', registryId: 'll2-astronauts', label: 'Launch Library 2 — people in space', publisher: 'The Space Devs',
+    url: 'https://ll.thespacedevs.com/2.3.0/astronauts/?in_space=true&limit=30',
+    cadenceMs: 6 * HOUR, freshnessMaxMs: 48 * HOUR, browser: false, kind: 'json',
+    attribution: 'Crew and docked vehicles: Launch Library 2, The Space Devs',
+  },
+  'll2-previous': {
+    id: 'll2-previous', registryId: 'll2-previous', label: 'Launch Library 2 — launches that happened', publisher: 'The Space Devs',
+    url: 'https://ll.thespacedevs.com/2.3.0/launches/previous/?limit=30',
+    cadenceMs: 6 * HOUR, freshnessMaxMs: 48 * HOUR, browser: false, kind: 'json',
+    attribution: 'Launch data by The Space Devs',
+  },
+
   // --- Weather on Earth ---------------------------------------------------------------------
   // registry/sources.yaml gdacs-tc says why this URL, this cadence and this licence.
   'gdacs-tc': {
