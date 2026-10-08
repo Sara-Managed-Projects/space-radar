@@ -92,10 +92,11 @@ void main() {
   // reports a light too bright to resolve. At -1.5 and fainter nothing changes: glare is 0.
   float glare = clamp( ( -1.5 - m ) / 6.0, 0.0, 1.0 );
   // A GLOW ROUND THE BRIGHT ONES (public #271, scene/stretch.js A STAR'S LIGHT): from magnitude 2.5
-  // up to -1.5 the sprite grows to six times the core, a magnitude earlier than scene/starfield.js, so
+  // up to -1.5 the sprite grows to five times the core, a magnitude earlier than scene/starfield.js, so
   // the cluster a camera stands beside is a handful of lights and not a handful of dots.
   float glow = clamp( ( 2.5 - m ) / 4.0, 0.0, 1.0 );
-  float size = core * ( 1.0 + 5.0 * glow ) + 26.0 * glare;
+  core *= 1.0 + 0.8 * glow;   // and the peak itself a little wider, or a first-magnitude star is still a speck
+  float size = core * ( 1.0 + 4.0 * glow ) + 26.0 * glare;
   float sizePx = size * uPixelRatio;
   // Spec 0034: during a ladder flight the point becomes a capsule along its own screen motion;
   // at uStretch == 0 this is gl_PointSize = sizePx, as before.
