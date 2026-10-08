@@ -41,6 +41,11 @@ export const ROCKETS = [
       "count": 9,
       "pattern": "octaweb"
     },
+    "stage1_len_m": 41.2,
+    "recovery": {
+      "legs": 4,
+      "grid_fins": 4
+    },
     "livery": {
       "body": "#EEF2F7",
       "interstage": "#1B1D21",
@@ -208,6 +213,7 @@ export const ROCKETS = [
       "count": 9,
       "pattern": "octaweb"
     },
+    "stage1_len_m": 12.1,
     "livery": {
       "body": "#22262B",
       "class": "inferred"
@@ -900,6 +906,7 @@ export const ROCKETS = [
       "count": 4,
       "pattern": "unknown"
     },
+    "stage1_len_m": 27.91,
     "livery": "unknown",
     "class": "measured"
   },
@@ -956,6 +963,7 @@ export const ROCKETS = [
       "count": 2,
       "pattern": "twin"
     },
+    "stage1_len_m": 33.16,
     "livery": "unknown",
     "class": "measured"
   },
