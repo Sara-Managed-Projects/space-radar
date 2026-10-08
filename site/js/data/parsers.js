@@ -1488,6 +1488,14 @@ const DSO_DRAWN = {
     departure: 'a soft glow 16.22\u2032 by 9.59\u2032 turned 170\u00b0 east of north, as OpenNGC lists it, ' +
       'seen flat from our side; not a picture of it',
   },
+  // The Pleiades' catalogued stars are gathered at the cluster's distance (scene/clusters.js): the
+  // card's "drawn as" line gains this sentence (ui/cards.js appends a row's own `departure`).
+  m45: {
+    departure: 'its catalogued stars are each drawn in their measured direction but gathered at ' +
+      'this one distance, because the catalogue\u2019s distances to single stars scatter by more ' +
+      'than the cluster is deep; their depth inside it is not measured, and a few may be stars in ' +
+      'front or behind',
+  },
 };
 
 export function parseDso(doc) {

@@ -32,7 +32,8 @@ import { stage, isLadderStage } from './stage.js';
 import { bvToKelvin, kelvinToRgb } from './starfield.js';
 import { COPY, t } from '../copy/en.js';
 import { STARS_NOTABLE } from '../data/starsnotable.js';
-import { STRETCH_PX, STRETCH_VERT_HEAD, STRETCH_VERT, STRETCH_FRAG_HEAD, STRETCH_FRAG, stretchUniforms, writeStretch } from './stretch.js';
+import { drawnPositions } from './clusters.js';
+import { STRETCH_PX, STRETCH_VERT_HEAD, STRETCH_VERT, STRETCH_FRAG_HEAD, STRETCH_FRAG, STAR_LIGHT_GLSL, stretchUniforms, writeStretch } from './stretch.js';
 
 // Spec 0034: the star-stretch's length lives in scene/stretch.js (both star draws read it) and is
 // re-exported here, where docs/design-language.md's table says to look for it.
@@ -67,6 +68,7 @@ varying vec3 vColour;
 varying float vAlpha;
 varying float vCore;
 varying float vGlare;
+varying float vGlow;
 ${STRETCH_VERT_HEAD}
 void main() {
   vec4 mv = modelViewMatrix * vec4( position, 1.0 );
@@ -89,13 +91,18 @@ void main() {
   // 2026-09-22). So past -1.5 the core stays its size and a glare grows round it, the way the eye
   // reports a light too bright to resolve. At -1.5 and fainter nothing changes: glare is 0.
   float glare = clamp( ( -1.5 - m ) / 6.0, 0.0, 1.0 );
-  float size = core + 26.0 * glare;
+  // A GLOW ROUND THE BRIGHT ONES (public #271, scene/stretch.js A STAR'S LIGHT): from magnitude 2.5
+  // up to -1.5 the sprite grows to four times the core, a magnitude earlier than scene/starfield.js, so
+  // the cluster a camera stands beside is a handful of lights and not a handful of dots.
+  float glow = clamp( ( 2.5 - m ) / 4.0, 0.0, 1.0 );
+  float size = core * ( 1.0 + 3.0 * glow ) + 26.0 * glare;
   float sizePx = size * uPixelRatio;
   // Spec 0034: during a ladder flight the point becomes a capsule along its own screen motion;
   // at uStretch == 0 this is gl_PointSize = sizePx, as before.
 ${STRETCH_VERT}
   vCore = core / size;
   vGlare = glare;
+  vGlow = glow;
   vAlpha = ( m > 7.5 ) ? 0.0 : ( 0.35 + 0.65 * tt ) * uGain;
   vColour = aColour;
 }
@@ -106,20 +113,23 @@ varying vec3 vColour;
 varying float vAlpha;
 varying float vCore;
 varying float vGlare;
+varying float vGlow;
 ${STRETCH_FRAG_HEAD}
 #include <common>
+${STAR_LIGHT_GLSL}
 void main() {
   if ( vAlpha <= 0.0 ) discard;
   // The distance to the star's segment (a point when it is not stretched), in the disc's units.
 ${STRETCH_FRAG}
-  // The core in its own units, so it is the same number of pixels with or without a glare.
-  float a = 1.0 - smoothstep( 0.12, 0.5, d / max( vCore, 1e-3 ) );
+  // The core in its own units, so it is the same number of pixels with or without a glow.
+  vec2 light = starLight( d, vCore, vGlow );
+  float a = light.x + light.y;
   if ( vGlare > 0.0 ) {
     float e = 1.0 - clamp( d / 0.5, 0.0, 1.0 );
     a = max( a, vGlare * 0.8 * e * e );
   }
-  if ( a <= 0.0 ) discard;
-  gl_FragColor = vec4( vColour, a * vAlpha * taper );
+  if ( a <= 0.003 ) discard;
+  gl_FragColor = vec4( mix( vColour, vec3( 1.0 ), 0.6 * light.x * max( vGlow, vGlare ) ), a * vAlpha * taper );
   #include <colorspace_fragment>
 }
 `;
@@ -284,6 +294,7 @@ export function createStars3d(scene, opts = {}) {
     const doc = opts.namesDoc || await fetchJson(src.names);
     namedRows = Array.isArray(doc && doc.rows) ? doc.rows : [];
     records = recordsFromNames(namedRows);
+    regroupRecords();
     return records;
   }
 
@@ -294,12 +305,27 @@ export function createStars3d(scene, opts = {}) {
     loadingBin = (opts.binBuffer ? Promise.resolve(opts.binBuffer) : fetchBin(src.bin))
       .then((buf) => {
         data = parseStars3d(buf);
+        // The Pleiades' stars, gathered at the cluster's distance (scene/clusters.js says why).
+        // data.posLy stays the catalogue's; drawLy is what the buffers and the taps use.
+        Object.assign(data, drawnPositions(data.posLy, data.count));
+        regroupRecords();
         buildPoints();
         rebuild();
         return data;
       })
       .catch((err) => { console.warn('stars3d: could not load', err); loadingBin = null; return null; });
     return loadingBin;
+  }
+
+  /** A named member of a regrouped cluster is marked where it is drawn; its card keeps the catalogue's distance. */
+  function regroupRecords() {
+    if (!data || !data.moved || !data.moved.size) return;
+    for (const rec of records) {
+      const i = rec && rec.meta ? rec.meta.starIndex : -1;
+      if (!data.moved.has(i) || rec.meta.drawnIn) continue;
+      rec.pos = { x: data.drawLy[i * 3] * LY_KM, y: data.drawLy[i * 3 + 1] * LY_KM, z: data.drawLy[i * 3 + 2] * LY_KM };
+      rec.meta.drawnIn = `dso-${data.moved.get(i)}`;
+    }
   }
 
   function buildPoints() {
@@ -369,9 +395,9 @@ export function createStars3d(scene, opts = {}) {
     const n = data.count;
     let bad = 0;
     for (let i = 0; i < n; i++) {
-      _km.x = data.posLy[i * 3] * LY_KM;
-      _km.y = data.posLy[i * 3 + 1] * LY_KM;
-      _km.z = data.posLy[i * 3 + 2] * LY_KM;
+      _km.x = data.drawLy[i * 3] * LY_KM;
+      _km.y = data.drawLy[i * 3 + 1] * LY_KM;
+      _km.z = data.drawLy[i * 3 + 2] * LY_KM;
       if (!stage.toSceneInto(_km, SUN_INERTIAL, _v, tMs)) { bad++; pos[i * 3] = pos[i * 3 + 1] = pos[i * 3 + 2] = 0; continue; }
       if (mode === 'shell') _v.normalize().multiplyScalar(SHELL_UNITS);
       pos[i * 3] = _v.x; pos[i * 3 + 1] = _v.y; pos[i * 3 + 2] = _v.z;
@@ -463,7 +489,9 @@ export function createStars3d(scene, opts = {}) {
     }
     const x = data.posLy[i * 3], y = data.posLy[i * 3 + 1], z = data.posLy[i * 3 + 2];
     const distLy = Math.hypot(x, y, z);
-    return starRecord(i, t(COPY.stars.unnamed, { n: String(i) }), { x, y, z }, {
+    // The card's distance is the catalogue's; the mark goes where the star is drawn (scene/clusters.js).
+    const at = data.moved.has(i) ? { x: data.drawLy[i * 3], y: data.drawLy[i * 3 + 1], z: data.drawLy[i * 3 + 2] } : { x, y, z };
+    return starRecord(i, t(COPY.stars.unnamed, { n: String(i) }), at, {
       distLy: Math.round(distLy * 100) / 100,
       mag: Math.round(data.appMag[i] * 100) / 100,
       named: false,

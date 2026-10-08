@@ -58,6 +58,7 @@
 import * as THREE from '../../vendor/three.module.min.js';
 import * as Astronomy from '../../vendor/astronomy.js';
 import { bvToKelvin, kelvinToRgb } from '../scene/starfield.js';
+import { STAR_LIGHT_GLSL } from '../scene/stretch.js';
 import { COPY, t } from '../copy/en.js';
 import '../copy/en.later.js';
 import {
@@ -108,6 +109,8 @@ uniform float uLimit, uPx, uTime, uTwinkle, uExtK, uAir, uRadius, uBelow;
 varying vec3 vColour;
 varying float vAlpha;
 varying float vGlare;
+varying float vCore;
+varying float vGlow;
 ${GLSL_AIR}
 void main() {
   vec3 d = airLift(uEqToLocal * position, uAir);
@@ -125,7 +128,14 @@ void main() {
   vAlpha = alpha;
   vGlare = glare;
   gl_Position = projectionMatrix * modelViewMatrix * vec4(d * uRadius, 1.0);
-  gl_PointSize = max(1.5, size * (1.0 + 2.2 * glare) * uPx);
+  // A STAR'S LIGHT (scene/stretch.js, public #271): the core is a peak at most 4.5 to 6 px across
+  // however bright the star, and the brightness past that is a glow in the rest of the sprite.
+  // Until 2026-10-08 the core grew with the sprite and Sirius was a flat white counter.
+  float spritePx = max(1.5, size * (1.0 + 2.2 * glare) * uPx);
+  float corePx = min(size, 4.5 + 1.5 * glare) * uPx;
+  vCore = clamp(corePx / spritePx, 0.05, 1.0);
+  vGlow = max(glare, 0.6 * clamp((size - 4.5) / 11.5, 0.0, 1.0));
+  gl_PointSize = spritePx;
   // Under the horizon, or too faint to see: off the screen, so it costs no fragments.
   if (alpha <= 0.004 || d.y < uBelow) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
 }
@@ -135,12 +145,13 @@ const STAR_FRAG = /* glsl */ `
 varying vec3 vColour;
 varying float vAlpha;
 varying float vGlare;
+varying float vCore;
+varying float vGlow;
+${STAR_LIGHT_GLSL}
 void main() {
-  float r = length(gl_PointCoord - 0.5) * 2.0;
-  float coreR = 1.0 / (1.0 + 2.2 * vGlare);
-  float core = 1.0 - smoothstep(coreR * 0.55, coreR, r);
-  float halo = vGlare * 0.3 * pow(max(0.0, 1.0 - r), 2.5);
-  float a = (core + halo) * vAlpha;
+  vec2 light = starLight(length(gl_PointCoord - 0.5), vCore, vGlow);
+  float core = light.x;
+  float a = (core + light.y) * vAlpha;
   if (a <= 0.002) discard;
   // A star is a light: its colour is a tint on white, not a paint (B-V of 1.5 is still mostly white to the eye).
   gl_FragColor = vec4(mix(vColour, vec3(1.0), 0.25 + core * 0.35 * vGlare), a);

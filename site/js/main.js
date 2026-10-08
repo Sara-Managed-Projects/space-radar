@@ -311,7 +311,6 @@ export async function boot({ setStatus } = {}) {
         skyGroup: starfield.group,
         look: exposure.look(),
         saveData: typeof navigator !== 'undefined' && shouldSaveData(navigator.connection),
-        onPicture: () => dsoGlow.setPictured(nebulae.loaded()),
       });
       nebulae.setSkyOpacity(skyStrength);
       nebulae.setSkyVisible(!(ctx.latch && ctx.latch.latched));
@@ -2078,6 +2077,8 @@ const SYSTEM_RINGS = ['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 
 
 function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfield, heroes, lod }) {
   let last = performance.now();
+  let picturedAt = 0;
+  let picturedKey = '';
   let sinceLayerUpdate = 0;
   // The frame-rate latch (spec 0026 req 18): twenty-frame median over 33 ms for three seconds ->
   // one device pixel per CSS pixel and no Milky Way picture, once, said in the panel.
@@ -2258,6 +2259,15 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       if (ctx.galaxy) ctx.galaxy.setAndromedaShare(1 - ctx.nebulae.drawn('dso-m31'));
       // Her two companions' ellipses step back with it: the photograph holds them (scene/dsoglow.js).
       if (ctx.dsoGlow) ctx.dsoGlow.setShapedShare(1 - ctx.nebulae.drawn('dso-m31'));
+      // A glow gives way to a photograph only while the photograph is being drawn (scene/dsoglow.js):
+      // off the line of sight from the Sun the picture fades and the mark of its kind comes back.
+      // Asked four times a second; the glow's buffer is rewritten only when the answer changes.
+      if (ctx.dsoGlow && nowReal - picturedAt > 250) {
+        picturedAt = nowReal;
+        const now = ctx.nebulae.loaded().filter((id) => ctx.nebulae.drawn(id) > 0.3);
+        const key = now.join(' ');
+        if (key !== picturedKey) { picturedKey = key; ctx.dsoGlow.setPictured(now); }
+      }
     }
     if (ctx.otherLight.layer) ctx.updateOtherLight();
     if (ctx.starDisc) {

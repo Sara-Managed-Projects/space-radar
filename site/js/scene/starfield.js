@@ -19,7 +19,7 @@ import * as THREE from '../../vendor/three.module.min.js';
 import * as frames from '../propagate/frames.js';
 import * as stageMod from './stage.js';
 import { PALETTE } from './glyphatlas.js';
-import { STRETCH_VERT_HEAD, STRETCH_VERT, STRETCH_FRAG_HEAD, STRETCH_FRAG, stretchUniforms, writeStretch } from './stretch.js';
+import { STRETCH_VERT_HEAD, STRETCH_VERT, STRETCH_FRAG_HEAD, STRETCH_FRAG, STAR_LIGHT_GLSL, stretchUniforms, writeStretch } from './stretch.js';
 
 const DEG = Math.PI / 180;
 const DEFAULT_RADIUS = 1e5; // scene units; update(camera) clamps this under camera.far
@@ -154,15 +154,22 @@ attribute vec3 aColour;
 uniform float uPixelRatio;
 uniform float uGain;
 uniform float uScale;
+uniform float uGlow;
 varying vec3 vColour;
 varying float vAlpha;
+varying float vCore;
+varying float vGlow;
 ${STRETCH_VERT_HEAD}
 void main() {
   vColour = aColour;
   vAlpha = aAlpha * uGain;
   vec4 mv = modelViewMatrix * vec4( position, 1.0 );
   gl_Position = projectionMatrix * mv;
-  float sizePx = aSize * uPixelRatio * uScale;
+  // The brightest stars (magnitude 1.5 and brighter: aSize over 3.2) get a soft glow round a core
+  // that stays its size (scene/stretch.js, A STAR'S LIGHT): up to four times the sprite at Sirius.
+  vGlow = uGlow * smoothstep( 3.2, 6.0, aSize );
+  float sizePx = aSize * ( 1.0 + 3.0 * vGlow ) * uPixelRatio * uScale;
+  vCore = 1.0 / ( 1.0 + 3.0 * vGlow );
   // Spec 0034: the same stretch as scene/stars3d.js; at uStretch == 0, gl_PointSize = sizePx.
 ${STRETCH_VERT}
 }
@@ -171,13 +178,18 @@ ${STRETCH_VERT}
 const STAR_FRAG = /* glsl */ `
 varying vec3 vColour;
 varying float vAlpha;
+varying float vCore;
+varying float vGlow;
 ${STRETCH_FRAG_HEAD}
 #include <common>
+${STAR_LIGHT_GLSL}
 void main() {
 ${STRETCH_FRAG}
-  float a = 1.0 - smoothstep( 0.12, 0.5, d );
-  if ( a <= 0.0 ) discard;
-  gl_FragColor = vec4( vColour, a * vAlpha * taper );
+  vec2 light = starLight( d, vCore, vGlow );
+  float a = light.x + light.y;
+  if ( a <= 0.003 ) discard;
+  // The peak of a bright star goes to white, as any light too bright for its colour does; the glow keeps the colour.
+  gl_FragColor = vec4( mix( vColour, vec3( 1.0 ), 0.6 * light.x * vGlow ), a * vAlpha * taper );
   #include <colorspace_fragment>
 }
 `;
@@ -302,6 +314,8 @@ export function createStarfield(scene, opts = {}) {
     // How large a star's point is drawn, as a factor (setPointScale). 1 everywhere but while
     // constellation figures are up (scene/figures3d.js), where the stars are the subject.
     uScale: { value: 1 },
+    // The glow round the brightest stars (scene/stretch.js, A STAR'S LIGHT); 0 under the frame latch.
+    uGlow: { value: 1 },
     ...stretchUniforms(),
   };
 
@@ -598,6 +612,7 @@ export function createStarfield(scene, opts = {}) {
     /** 'low' hides the Milky Way picture and the constellation lines (spec 0026 req 18); the stars stay. */
     setDetail(level) {
       detailLow = level === 'low';
+      starUniforms.uGlow.value = detailLow ? 0 : 1;
       this.setSkyOpacity(skyOpacity);
     },
     /**
