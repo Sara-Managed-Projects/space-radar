@@ -47,10 +47,14 @@ export function peakInstant(sh, year) {
   return ms;
 }
 
-/** Local midnight at the start of a shower's peak date in a year: from its `sol`, else its `peak`. */
+/**
+ * Local midnight at the start of a shower's peak date in a year: the maximum's date in UT (the date
+ * the IMO's calendar prints for that year), read as the visitor's own calendar date, as `peak`
+ * always was; from `sol`, else `peak` itself.
+ */
 function peakDay(sh, year) {
   const at = peakInstant(sh, year);
-  if (at !== null) return localMidnight(at);
+  if (at !== null) { const d = new Date(at); return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()).getTime(); }
   const m = /^(\d{2})-(\d{2})$/.exec(String((sh && sh.peak) || ''));
   return m ? new Date(year, Number(m[1]) - 1, Number(m[2])).getTime() : null;
 }

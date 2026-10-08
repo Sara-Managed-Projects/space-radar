@@ -189,7 +189,7 @@ const OFF_GRID_KNOWN = { 6: 18, 10: 17, 14: 10, 3: 6, 5: 4, 7: 3, 22: 2, 18: 2, 
 const EMBER_FILLS = [
   [/^\.sr-btn--primary$/, 'the primary button'],
   [/^\.sr-time__dot$/, "the time pill's dot"],
-  [/\.sr-bracketed::(before|after)|\.sr-search__option\.is-active::|\.sr-search__row:has\(:focus-visible\)::|^:where\(.*\):focus-visible::(before|after)$|\.sr-tick$|\.sr-reticle/, 'the bracket ticks: selection, focus, the reticle'],
+  [/\.sr-bracketed::(before|after)|\.sr-search__option\.is-active::|\.sr-search__row:has\(:focus-visible\)::|^:where\(.*\):focus-visible::(before|after)$|\.sr-tick$|\.sr-reticle|\.sr-skyreticle/, 'the bracket ticks: selection, focus, the reticle, and what the phone points at in the sky'],
   [/^\.sr-act--primary$/, "the card's one primary action (the same button, on the card)"],
   [/^\.sr-tripsheet__start$/, "the trip sheet's Start (its one primary)"],
   [/^\.sr-trip__tb--play\.is-paused$/, 'Play while a trip is paused (the one thing to press)'],

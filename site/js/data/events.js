@@ -30,6 +30,7 @@ import { EVENT_TYPES } from './events.registry.js';
 import { SHOWERS } from './showers.js';
 import { trainsFrom } from './trains.js';
 import { predictPasses } from '../sky/passes.js';
+import { peakInstant } from '../sky/radiants.js';
 import { COPY, CITIES, t, fmt, timeText, UNITS } from '../copy/en.js';
 
 const HOUR = 3600e3;
@@ -121,7 +122,12 @@ export function showerItems(nowMs, horizonMs, showers, observer = null) {
     if (!m) continue;
     const year = new Date(nowMs).getFullYear();
     for (const y of [year, year + 1]) {
-      const at = new Date(y, Number(m[1]) - 1, Number(m[2]), 12, 0, 0, 0).getTime(); // local noon of the date
+      // The year's own date, from the Sun's longitude at the maximum (sky/radiants.js peakInstant):
+      // the registry's `peak` is the IMO's date for one year and is a day off in another.
+      const inst = peakInstant(sh, y);
+      const day = inst !== null ? new Date(inst) : null;
+      // The calendar's date is the maximum's date in UT, as the IMO prints it, read as the visitor's own.
+      const at = day ? new Date(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), 12, 0, 0, 0).getTime() : new Date(y, Number(m[1]) - 1, Number(m[2]), 12, 0, 0, 0).getTime(); // local noon of the date
       if (startOfDay(at) < today) continue;
       if (at - nowMs < horizonMs) out.push({ kind: 'shower', record: null, label: sh.display, tMs: at, zhr: sh.zhr, showerId: sh.id, moonLit: moonLitThatNight(at), radiant: radiantThatNight(sh, at, observer) });
       break;
