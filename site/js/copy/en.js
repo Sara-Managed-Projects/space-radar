@@ -1907,6 +1907,19 @@ export const COPY = {
     onAnotherWorld:
       'This one is standing on {world}. You will not pick it out by eye from here, however clear the night.',
     worldRise: 'From where you are it comes up at {time}.',
+    // Rises, highest and sets from the visitor's place (internal #299; sky/riseset.js). {place} is
+    // the place's name or `worldHere`; {alt} is altitudeInWords(); directions are compass words.
+    // Longer than a line of chrome: it is the card's see-it sentence, not a label.
+    worldHere: 'where you are',
+    worldFrom: {
+      down: 'From {place}: rises {rise} in the {riseDir}, highest {highTime}, {highAlt}; sets {set} in the {setDir}.',
+      downNoSet: 'From {place}: rises {rise} in the {riseDir}, highest {highTime}, {highAlt}.',
+      up: 'From {place}: up now, {alt}, in the {dir}. Highest {highTime}, {highAlt}; sets {set} in the {setDir}.',
+      upPast: 'From {place}: up now, {alt}, in the {dir}. Past its highest; sets {set} in the {setDir}.',
+      never: 'From {place} it does not rise in the next day and a half.',
+      always: 'From {place}: up now, {alt}, in the {dir}. It does not set today.',
+      honest: 'Worked out for a sea-level horizon; hills and houses are not in it.',
+    },
     // Rise and set for a world needs 0014's sky maths. Say that, rather than imply it is
     // invisible: the Moon and the planets are the easiest things in the sky to find.
     worldNoRise:

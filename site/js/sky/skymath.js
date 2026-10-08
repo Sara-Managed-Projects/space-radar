@@ -31,6 +31,18 @@ export const DARKNESS = {
   dark: { limit: 6.5, glow: 0.04, milkyWay: 1.0 },
 };
 export const DARKNESS_IDS = ['city', 'town', 'dark'];
+
+/**
+ * How strong the glow on the horizon is at a place, 0 to 1, from its night-lights reading
+ * (sky/skyglow.js, 0 to 1): nothing under 0.1 (a dark place), a trace at a dark-sky town's 0.2 to
+ * 0.3, the city's whole glow from 0.9. Squared, because a town's light falls away faster than its
+ * pixel's brightness. Drawn from an estimate: the map is upward light, not sky brightness.
+ */
+export function glowOfLights(lights) {
+  if (!Number.isFinite(lights)) return 0;
+  const x = Math.max(0, Math.min(1, (lights - 0.1) / 0.8));
+  return x * x;
+}
 /** The sky cultures a visitor can choose (registry/skycultures.yaml; scripts/build-skycultures.py --check holds the two together). */
 export const CULTURE_IDS = ['western', 'chinese', 'maori', 'hawaiian'];
 export const DEFAULT_DARKNESS = 'dark';
@@ -161,13 +173,15 @@ export function limitingMagnitude({ fovDeg = FOV.eye, darkness = DEFAULT_DARKNES
 
 /**
  * How big a star of magnitude `mag` is drawn when the limit is `limit`, in CSS pixels, and how
- * strongly: the same curve the vertex shader runs. A star at the limit is a 1.5 px speck at a
- * third strength; five magnitudes brighter it is 6 px and solid; the very brightest get a glare.
+ * strongly: the same curve the vertex shader runs. A star at the limit is a 1.9 px speck at a
+ * third strength; four magnitudes brighter it is 6.5 px and solid; the very brightest get a glare.
+ * (2026-10-08, internal #447: it was 1.5 px growing by 1.32 a magnitude, and at a 72 degree field
+ * the constellation lines read before the stars they join. Stars first, lines second.)
  */
 export function starLook(mag, limit) {
   const f = limit - mag;
-  const size = Math.min(12, 1.5 * Math.pow(1.32, Math.max(0, f)));
-  const alpha = Math.max(0, Math.min(1, (f + 0.6) / 2.2));
+  const size = Math.min(13, 1.9 * Math.pow(1.36, Math.max(0, f)));
+  const alpha = Math.max(0, Math.min(1, (f + 0.6) / 1.8));
   const glare = Math.max(0, Math.min(1, (f - 4.5) / 4));
   return { size, alpha, glare };
 }

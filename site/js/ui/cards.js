@@ -65,6 +65,8 @@ import {
   yearDays,
 } from '../propagate/frames.js';
 import { predictPasses } from '../sky/passes.js';
+import { riseHighestSet, RISE_SET_BODIES } from '../sky/riseset.js';
+import { altitudeInWords, azimuthInWords } from '../sky/skyview.js';
 import { trajectorySection } from './trajectory.js';
 import { hasTimeFacts, timeFacts, mmss, LIGHT_MINUTES } from '../sky/timefacts.js';
 import { wantsTrack } from '../scene/groundtrack.js';
@@ -1656,6 +1658,34 @@ function stopTimeFacts() {
 // Block 5: "see it from here" -- the copy pattern that is the actual feature
 // ---------------------------------------------------------------------------------------
 
+/**
+ * "From London: rises 09:46 in the east, highest 14:42, about two fists above the horizon; sets
+ * 19:38 in the west." Null without a place, or for a world the library does not solve.
+ */
+export function worldFromLine(record, ctx, m) {
+  const o = ctx && ctx.observer;
+  const id = String((record && record.id) || '').toLowerCase();
+  if (!o || !RISE_SET_BODIES.includes(id)) return null;
+  const latDeg = Number.isFinite(o.latDeg) ? o.latDeg : Number.isFinite(o.latRad) ? o.latRad * 180 / Math.PI : NaN;
+  const lonDeg = Number.isFinite(o.lonDeg) ? o.lonDeg : Number.isFinite(o.lonRad) ? o.lonRad * 180 / Math.PI : NaN;
+  let tMs = m && Number.isFinite(m.tMs) ? m.tMs : NaN;
+  if (!Number.isFinite(tMs)) { try { tMs = ctx.clock.now(); } catch { tMs = Date.now(); } }
+  const r = riseHighestSet(id, { latDeg, lonDeg, altKm: o.altKm }, tMs);
+  if (!r) return null;
+  const W = COPY.sky.worldFrom;
+  const v = {
+    place: typeof o.name === 'string' && o.name ? o.name : COPY.sky.worldHere,
+    alt: altitudeInWords(r.altDeg), dir: azimuthInWords(r.azDeg),
+    rise: r.riseMs !== null ? timeText.hhmm(r.riseMs) : '', riseDir: r.riseAzDeg !== null ? azimuthInWords(r.riseAzDeg) : '',
+    highTime: r.highMs !== null ? timeText.hhmm(r.highMs) : '', highAlt: r.highAltDeg !== null ? altitudeInWords(r.highAltDeg) : '',
+    set: r.setMs !== null ? timeText.hhmm(r.setMs) : '', setDir: r.setAzDeg !== null ? azimuthInWords(r.setAzDeg) : '',
+  };
+  if (r.never) return t(W.never, v);
+  if (r.upNow) return t(r.always ? W.always : r.highMs !== null ? W.up : W.upPast, v);
+  if (r.highMs === null) return null;
+  return t(r.setMs !== null ? W.down : W.downNoSet, v);
+}
+
 /** The see-it-from-here sentence. Exported for the tests. */
 export function seeItLine(record, ctx, m, passInfo) {
   const klass = klassOf(record);
@@ -1674,6 +1704,14 @@ export function seeItLine(record, ctx, m, passInfo) {
   if (klass === 'world') {
     const riseMs = pickTime(meta(record), 'riseMs', 'riseTime');
     if (riseMs !== null) return t(COPY.sky.worldRise, { time: timeText.hhmm(riseMs) });
+    // Rises, highest and sets from the visitor's place (internal #299), for the ten the
+    // astronomy library solves. What the eye needs to see it (worldSee) still comes first.
+    const from = worldFromLine(record, ctx, m);
+    if (from) {
+      const wid = String(record.id || '').toLowerCase();
+      const needs = Object.prototype.hasOwnProperty.call(COPY.sky.worldSee, wid) ? COPY.sky.worldSee[wid] : '';
+      return [needs, from, COPY.sky.worldFrom.honest].filter(Boolean).join(' ');
+    }
     // "You can see this one with your own eyes" is not true of Pluto, of any moon but ours, or of
     // Neptune; copy/en.js worldSee says what is.
     const id = String(record.id || '').toLowerCase();
@@ -2287,6 +2325,8 @@ function seeFromHere(record, ctx) {
     // main.js spells it `skyView`; accept both rather than silently do nothing.
     const sky = ctx && (ctx.skyview || ctx.skyView);
     if (sky && sky.enter && ctx.observer) sky.enter(ctx.observer);
+    // "Show me in the sky" (internal #299): a world, a star or a nebula is turned to and ringed.
+    if (sky && sky.active && typeof sky.pointAtRecord === 'function') sky.pointAtRecord(record);
   } catch {
     /* the moment switcher is the fallback and it is always on screen */
   }

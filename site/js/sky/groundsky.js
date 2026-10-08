@@ -75,6 +75,8 @@ const EXT_K = 0.2;
 const RO = { dome: -100, milkyway: -99, otherLight: -98.8, art: -98.6, pictures: -98.5, stars: -98, lines: -97, points: -96, discs: -95, meteors: -94, arc: 99 };
 // The constellation pictures: how strong at night in a wide field, and the fields they fade out over.
 const ART_GAIN = 0.42;
+// The figures' lines: under the stars they join, not over them (internal #447; it was 0.34).
+const FIGURE_LINE = 0.22;
 const TAG_MS = 9000;
 const LABEL_POOL = 44;
 const BODY_REFRESH_MS = 1000; // of the clock; a tenth of that once the field is narrow
@@ -102,7 +104,7 @@ const STAR_VERT = /* glsl */ `
 attribute float aMag;
 attribute vec3 aColour;
 uniform mat3 uEqToLocal;
-uniform float uLimit, uPx, uTime, uTwinkle, uExtK, uAir, uRadius;
+uniform float uLimit, uPx, uTime, uTwinkle, uExtK, uAir, uRadius, uBelow;
 varying vec3 vColour;
 varying float vAlpha;
 varying float vGlare;
@@ -110,9 +112,11 @@ ${GLSL_AIR}
 void main() {
   vec3 d = airLift(uEqToLocal * position, uAir);
   float x = airMass(d.y) - 1.0;
+  // Seen through the ground (uBelow far down): no air to dim it, it is a mark of where it is.
+  if (d.y < 0.0 && uBelow < -0.5) x = 1.5;
   float f = uLimit - (aMag + uExtK * x);
-  float alpha = clamp((f + 0.6) / 2.2, 0.0, 1.0);
-  float size = min(12.0, 1.5 * pow(1.32, max(f, 0.0)));
+  float alpha = clamp((f + 0.6) / 1.8, 0.0, 1.0);
+  float size = min(13.0, 1.9 * pow(1.36, max(f, 0.0)));
   float glare = clamp((f - 4.5) / 4.0, 0.0, 1.0);
   float ph = fract(sin(dot(position.xy, vec2(12.9898, 78.233))) * 43758.5453) * 6.2832;
   float amp = uTwinkle * clamp(0.05 * x, 0.0, 0.5);
@@ -123,7 +127,7 @@ void main() {
   gl_Position = projectionMatrix * modelViewMatrix * vec4(d * uRadius, 1.0);
   gl_PointSize = max(1.5, size * (1.0 + 2.2 * glare) * uPx);
   // Under the horizon, or too faint to see: off the screen, so it costs no fragments.
-  if (alpha <= 0.004 || d.y < -0.03) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+  if (alpha <= 0.004 || d.y < uBelow) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
 }
 `;
 
@@ -134,11 +138,12 @@ varying float vGlare;
 void main() {
   float r = length(gl_PointCoord - 0.5) * 2.0;
   float coreR = 1.0 / (1.0 + 2.2 * vGlare);
-  float core = 1.0 - smoothstep(coreR * 0.45, coreR, r);
+  float core = 1.0 - smoothstep(coreR * 0.55, coreR, r);
   float halo = vGlare * 0.3 * pow(max(0.0, 1.0 - r), 2.5);
   float a = (core + halo) * vAlpha;
   if (a <= 0.002) discard;
-  gl_FragColor = vec4(mix(vColour, vec3(1.0), core * 0.35 * vGlare), a);
+  // A star is a light: its colour is a tint on white, not a paint (B-V of 1.5 is still mostly white to the eye).
+  gl_FragColor = vec4(mix(vColour, vec3(1.0), 0.25 + core * 0.35 * vGlare), a);
   #include <colorspace_fragment>
 }
 `;
@@ -479,7 +484,7 @@ export function createGroundSky(ctx, env) {
   const observerA = new Astronomy.Observer(observer.latDeg, observer.lonDeg, (observer.altKm || 0) * 1000);
   const here = import.meta.url;
   const url = (p) => new URL(p, here);
-  const options = { figures: true, names: true, grid: false, starGrid: false, sunPath: false, equator: false, art: false, bounds: false, meteors: true, trails: false, culture: 'western', darkness: DEFAULT_DARKNESS, ...(env.options || {}) };
+  const options = { figures: true, names: true, grid: false, starGrid: false, sunPath: false, equator: false, art: false, bounds: false, meteors: true, trails: false, seeThrough: false, lights: null, culture: 'western', darkness: DEFAULT_DARKNESS, ...(env.options || {}) };
   const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   let disposed = false;
   const stats = { stars: 0, drawn: 0, limit: 0, bytes: 0, deep: false, tier: 0, labels: 0 };
@@ -515,7 +520,7 @@ export function createGroundSky(ctx, env) {
       uniforms: {
         uSun: { value: new THREE.Vector3(0, -1, 0) }, uMoonDir: { value: new THREE.Vector3(0, -1, 0) },
         uFloorZ: { value: new THREE.Vector3() }, uFloorH: { value: new THREE.Vector3() },
-        uPollution: { value: new THREE.Color(0xffc98a) }, uMoonGlow: { value: new THREE.Color(0xaab6d8) },
+        uPollution: { value: new THREE.Color(0x9a6a40) }, uMoonGlow: { value: new THREE.Color(0xaab6d8) },
         uExposure: { value: 0 }, uHorizonGlow: { value: 0 }, uMoonBright: { value: 0 },
       },
       // In the transparent pass although it is opaque: that pass is the one render orders sort, and
@@ -536,7 +541,8 @@ export function createGroundSky(ctx, env) {
     const sun = localFromAltAz(frame.sunAzDeg, frame.sunAltDeg);
     const exposure = exposureFor(frame.sunAltDeg);
     const floor = twilightFloor(frame.sunAltDeg);
-    const glow = horizonGlowStrength(frame.sunAltDeg, options.darkness);
+    const glow = horizonGlowStrength(frame.sunAltDeg, options.darkness, options.lights);
+    stats.glow = glow;
     const u = dome.material.uniforms;
     u.uSun.value.set(sun[0], sun[1], sun[2]);
     u.uExposure.value = exposure;
@@ -549,7 +555,7 @@ export function createGroundSky(ctx, env) {
     const kind = landscapeKind({ darkness: options.darkness, sea });
     land.set(kind, landSeed, sea);
     const day = Math.max(0, Math.min(1, (frame.sunAltDeg + 8) / 14));
-    land.update({ sun, exposure, floorHorizon: floor.horizon, day, glow, haze: (HAZE[options.darkness] || HAZE.dark) * (1 - 0.6 * day) });
+    land.update({ sun, exposure, floorHorizon: floor.horizon, day, glow, see: options.seeThrough ? 0.4 : 1, haze: (HAZE[options.darkness] || HAZE.dark) * (1 - 0.6 * day) });
     stats.landscape = kind;
     stats.sea = kind === 'coast' ? seaWords(sea) : -1;
   }
@@ -564,6 +570,7 @@ export function createGroundSky(ctx, env) {
     uExtK: { value: EXT_K },
     uAir: { value: 1 },
     uRadius: { value: R * 0.985 },
+    uBelow: { value: -0.03 },
   };
   const pointMaterial = (uniforms) => new THREE.ShaderMaterial({
     vertexShader: STAR_VERT, fragmentShader: STAR_FRAG, uniforms,
@@ -686,7 +693,7 @@ export function createGroundSky(ctx, env) {
     if (hereCon.obj) { hereCon.obj.geometry.dispose(); hereCon.obj.material.dispose(); root.remove(hereCon.obj); hereCon.obj = null; }
     hereCon.id = id;
     const v = id ? conVerts.get(id) : null;
-    if (v && v.length) hereCon.obj = lineObject('sky-figure-here', v, 0xe8ecf2, 0.62, true, RO.lines + 0.5);
+    if (v && v.length) hereCon.obj = lineObject('sky-figure-here', v, 0xe8ecf2, 0.5, true, RO.lines + 0.5);
   }
 
   // ---- lines -----------------------------------------------------------------------------------
@@ -781,7 +788,7 @@ export function createGroundSky(ctx, env) {
     Promise.all([withCulture(), fetchJson(`../../data/skycultures/${id}.json`)]).then(([m, doc]) => {
       if (disposed) return;
       const f = m.cultureFigures(doc);
-      cultures.set(id, { obj: lineObject(`sky-figures-${id}`, f.verts, 0x9aa4b2, 0.34, true), names: f.names });
+      cultures.set(id, { obj: lineObject(`sky-figures-${id}`, f.verts, 0x9aa4b2, FIGURE_LINE, true), names: f.names });
       labels.at = -Infinity;
     }).catch((e) => { cultureAsked.delete(id); cultureModAsked = cultureMod ? cultureModAsked : null; console.warn('ground sky: that sky culture did not load', e); });
   }
@@ -850,7 +857,7 @@ export function createGroundSky(ctx, env) {
   }
 
   // ---- the bodies -------------------------------------------------------------------------------
-  const bodyUniforms = { ...starUniforms, uTwinkle: { value: 0 }, uEqToLocal: { value: eqToLocal } };
+  const bodyUniforms = { ...starUniforms, uTwinkle: { value: 0 }, uEqToLocal: { value: eqToLocal }, uBelow: { value: -0.03 } };
   const POINTS = BODIES.length + 4; // seven planets (the Sun and the Moon are never points) and four moons
   const bodyGeo = new THREE.BufferGeometry();
   bodyGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(POINTS * 3), 3));
@@ -941,7 +948,7 @@ export function createGroundSky(ctx, env) {
       }
       // The disc. The Sun and the Moon are always one; a planet from two pixels up.
       const minPx = isLight ? 0 : 2;
-      const show = altApp > -1.5 && d.diameterPx >= minPx;
+      const show = (altApp > -1.5 || !!options.seeThrough) && d.diameterPx >= minPx;
       d.mesh.visible = show;
       if (!show) continue;
       _f.set(l[0], l[1], l[2]);
@@ -1135,7 +1142,7 @@ export function createGroundSky(ctx, env) {
     const B = COPY.sky.bodies || {};
     for (const b of BODIES) {
       const d = discs.get(b.id);
-      if (!d.view || !d.apparent || d.apparent.altDeg < 0.3) continue;
+      if (!d.view || !d.apparent || (d.apparent.altDeg < 0.3 && !options.seeThrough)) continue;
       if (b.id !== 'sun' && b.id !== 'moon' && d.view.mag > limit + 0.3 && d.diameterPx < 3) continue;
       const off = Math.max(8, d.diameterPx / 2 * (d.look.rings ? 2.3 : 1) + 6);
       out.push({ kind: 'body', text: B[b.id] || b.body, local: d.apparent.local, pri: 1000 - d.view.mag, dy: off });
@@ -1300,7 +1307,7 @@ export function createGroundSky(ctx, env) {
     const ndcY = -((clientY - rect.top) / rect.height) * 2 + 1;
     _look.set(ndcX, ndcY, 0.5).unproject(camera).sub(camera.position).normalize().applyQuaternion(_inv.copy(group.quaternion).invert());
     const seen = [_look.x, _look.y, _look.z];
-    if (seen[1] < -0.01) return null; // the ground
+    if (seen[1] < -0.01 && !options.seeThrough) return null; // the ground
     const reach = Math.min(4, Math.max(0.6, 26 / Math.max(1, lastPxPerDeg)));
     const sepOf = (a, b) => Math.acos(Math.max(-1, Math.min(1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2]))) / DEG;
     let best = null;
@@ -1308,7 +1315,7 @@ export function createGroundSky(ctx, env) {
     const B = COPY.sky.bodies || {};
     for (const b of BODIES) {
       const d = discs.get(b.id);
-      if (!d.view || !d.apparent || d.apparent.altDeg < -0.5) continue;
+      if (!d.view || !d.apparent || (d.apparent.altDeg < -0.5 && !options.seeThrough)) continue;
       const sep = Math.max(0, sepOf(seen, d.apparent.local) - d.view.diameterDeg / 2);
       if (sep > reach) continue;
       if (b.id !== 'sun' && b.id !== 'moon' && d.view.mag > starUniforms.uLimit.value + 1.5 && d.diameterPx < 3) continue;
@@ -1377,7 +1384,7 @@ export function createGroundSky(ctx, env) {
           for (const x of own) v.push(x);
           if (f.id) conVerts.set(f.id, (conVerts.get(f.id) || []).concat(own));
         }
-        cultures.get('western').obj = lineObject('sky-figures', v, 0x9aa4b2, 0.34, true);
+        cultures.get('western').obj = lineObject('sky-figures', v, 0x9aa4b2, FIGURE_LINE, true);
       }),
       fetchJson('../../data/constellation-names.json').then((rows) => {
         if (!Array.isArray(rows)) return;
@@ -1423,6 +1430,7 @@ export function createGroundSky(ctx, env) {
     stats.limit = limit;
     starUniforms.uLimit.value = limit;
     starUniforms.uPx.value = dpr;
+    bodyUniforms.uBelow.value = options.seeThrough ? -2 : -0.03;
     starUniforms.uTime.value = (performance.now() / 1000) % 3600;
     if (stars) {
       const n = countBrighter(stars.mag, limit + 0.6);

@@ -318,7 +318,8 @@ export const SILENT_MS = 2500;
  * one of 'denied' (the visitor or the browser said no), 'none' (no sensor answered), 'unsupported'.
  * `sample(nowMs)` is the smoothed attitude with the offset, or null before the first reading.
  *
- * @param {object} env { win, observer: {latDeg, lonDeg, altKm}, startLook: {azDeg, altDeg}, reduced, onChange }
+ * @param {object} env { win, observer: {latDeg, lonDeg, altKm}, startLook: {azDeg, altDeg}, reduced, onChange,
+ *   permission: the promise of DeviceOrientationEvent.requestPermission() when the caller asked already }
  */
 export function createPointing(env = {}) {
   const win = env.win || (typeof window !== 'undefined' ? window : null);
@@ -381,10 +382,11 @@ export function createPointing(env = {}) {
     if (on) return { ok: true };
     if (!win || typeof win.DeviceOrientationEvent === 'undefined') return { ok: false, why: 'unsupported' };
     const ask = win.DeviceOrientationEvent.requestPermission;
-    if (typeof ask === 'function') {
-      // iOS Safari 13 and later: only from a tap, and the answer is remembered for the page.
+    if (env.permission || typeof ask === 'function') {
+      // iOS Safari 13 and later: only from a tap, and the answer is remembered for the page. The
+      // sky view asks inside the tap, before this module has loaded, and hands the answer in.
       let got = 'denied';
-      try { got = await ask.call(win.DeviceOrientationEvent); } catch { got = 'denied'; }
+      try { got = await (env.permission || ask.call(win.DeviceOrientationEvent)); } catch { got = 'denied'; }
       if (got !== 'granted') return { ok: false, why: 'denied' };
     }
     on = true;

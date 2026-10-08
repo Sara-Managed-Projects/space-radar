@@ -9,7 +9,7 @@
 //   sampleSea(url, latDeg, lonDeg)       -> Promise<number[16] | null>
 //   createLandscape(env)                 -> { set(kind, seed, sea), update(frame), state(), dispose() }
 //     env:   { root, radius, glsl }      glsl is sky/skyair.js GLSL_SKY
-//     frame: { sun: [x, y, z], exposure, floorHorizon: [3], day, glow, haze }
+//     frame: { sun: [x, y, z], exposure, floorHorizon: [3], day, glow, haze, see }
 // Loaded with sky/groundsky.js; the water mask is fetched only when the sky view opens (it is the
 // map the Earth already wears, textures/4k/earth_water.webp, and nothing about the place is sent).
 //
@@ -234,6 +234,7 @@ uniform float uHaze;
 uniform float uWindows;
 uniform float uBand;
 uniform float uGlow;
+uniform float uSee;
 varying vec3 vSky;
 varying float vDown;
 varying float vTop;
@@ -260,7 +261,7 @@ void main() {
     float lit = step(0.84, h21(cell)) * step(0.25, in01.x) * step(in01.x, 0.75) * step(0.3, in01.y) * step(in01.y, 0.8);
     c += uLights * uWindows * wall * lit * (0.5 + 0.5 * h21(cell + 7.0));
   }
-  gl_FragColor = vec4(c, vAlpha);
+  gl_FragColor = vec4(c, vAlpha * uSee);
   #include <colorspace_fragment>
 }
 `;
@@ -276,6 +277,8 @@ export function createLandscape(env) {
     uSeaColour: { value: new THREE.Color(0x03060c) },
     uLights: { value: new THREE.Color().setRGB(1, 0.79, 0.54, THREE.SRGBColorSpace) },
     uGlow: { value: 0 },
+    // 1 is solid land; under 1 the land is see-through, to find what has set (internal #450).
+    uSee: { value: 1 },
   };
   const material = (over) => new THREE.ShaderMaterial({
     vertexShader: VERT(env.glsl), fragmentShader: FRAG,
@@ -379,6 +382,7 @@ export function createLandscape(env) {
     shared.uLand.value.copy(_night).lerp(_day, frame.day);
     shared.uSeaColour.value.copy(_seaNight).lerp(_seaDay, frame.day);
     shared.uGlow.value = frame.glow;
+    shared.uSee.value = Number.isFinite(frame.see) ? frame.see : 1;
     const [band, , near] = meshes;
     band.material.uniforms.uBand.value = Math.max(0.02, frame.haze);
     // Windows are lit from dusk; by day a wall is a wall.

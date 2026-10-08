@@ -30,7 +30,7 @@ import * as Astronomy from '../../vendor/astronomy.js';
 import { SHOWERS } from '../data/showers.js';
 import { activeShowers, radiantAltAz } from './radiants.js';
 import { COPY, t, fmt } from '../copy/en.js';
-import { twilightPhase, DARKNESS, DARKNESS_IDS, CULTURE_IDS, DEFAULT_DARKNESS, FOV, clampFov, zoomFov, fovName, refractionDeg } from './skymath.js';
+import { twilightPhase, glowOfLights, DARKNESS, DARKNESS_IDS, CULTURE_IDS, DEFAULT_DARKNESS, FOV, clampFov, zoomFov, fovName, refractionDeg } from './skymath.js';
 
 const DEG2RAD = Math.PI / 180;
 const RAD2DEG = 180 / Math.PI;
@@ -89,6 +89,8 @@ export const SKY_OPTIONS_KEY = 'sr.sky';
 export const SKY_OPTION_DEFAULTS = Object.freeze({
   figures: true, names: true, grid: false, starGrid: false, sunPath: false, equator: false,
   art: false, bounds: false, meteors: true, trails: false, culture: 'western',
+  // The land drawn see-through, so what is under the horizon can be found (internal #450 req 8).
+  seeThrough: false,
   // `darknessBy`: 'place' reads the kind of sky off the night lights at the place (sky/skyglow.js);
   // 'you' is the visitor's own pick of `darkness`, which always wins once made.
   darkness: DEFAULT_DARKNESS, darknessBy: 'place', red: false,
@@ -301,9 +303,11 @@ function skyAt(sunElDeg, out) {
  * With a kind of sky (sky/skymath.js DARKNESS: 'city', 'town', 'dark') the band is that sky's:
  * strong over a city, a trace in a dark place. Without one it is the 0.3 it was drawn at first.
  */
-export function horizonGlowStrength(sunElDeg, darkness) {
+export function horizonGlowStrength(sunElDeg, darkness, lights) {
   if (!Number.isFinite(sunElDeg)) return 0;
-  const full = DARKNESS[darkness] ? 0.5 * DARKNESS[darkness].glow : 0.3;
+  // With the place's own night-lights reading (sky/skyglow.js, 0 to 1) the band is that place's,
+  // not its word's: a dark-sky town like Flagstaff reads 'town' and has next to no glow.
+  const full = Number.isFinite(lights) ? 0.5 * glowOfLights(lights) : DARKNESS[darkness] ? 0.5 * DARKNESS[darkness].glow : 0.3;
   if (sunElDeg <= -10) return full;
   if (sunElDeg >= 0) return 0;
   return full * (-sunElDeg / 10);
@@ -420,7 +424,14 @@ export function createSkyView(ctx, options = {}) {
     if (skyOptions.darknessBy === 'place') return placeSky && placeSky.id ? { id: placeSky.id, by: 'place', lights: placeSky.lights } : { id: skyOptions.darkness, by: placeSky ? 'unread' : 'reading' };
     return { id: skyOptions.darkness, by: 'you' };
   };
-  const worn = () => ({ ...skyOptions, darkness: darknessNow().id });
+  const worn = () => { const d = darknessNow(); return { ...skyOptions, darkness: d.id, lights: d.by === 'place' && Number.isFinite(d.lights) ? d.lights : null }; };
+  // "Point your phone" (internal #450): sky/pointing.js once the switch has been pressed, or null.
+  let pointing = null;
+  let pointAsked = 0;
+  let pointWhy = '';
+  let reticle = null;
+  let centreAt = 0;
+  const _q = new THREE.Quaternion();
   // The showers whose meteors may be drawn now, with where each radiant is (placeRadiants()).
   let showersNow = [];
   const _upView = new THREE.Vector3();
@@ -1023,7 +1034,7 @@ export function createSkyView(ctx, options = {}) {
   function tell() {
     fovTold = fov;
     if (typeof window === 'undefined' || typeof CustomEvent === 'undefined') return;
-    window.dispatchEvent(new CustomEvent('sr:sky', { detail: { fovDeg: fovWant, field: fovName(fovWant), options: { ...skyOptions }, darkness: darknessNow(), active: isActive } }));
+    window.dispatchEvent(new CustomEvent('sr:sky', { detail: { fovDeg: fovWant, field: fovName(fovWant), options: { ...skyOptions }, darkness: darknessNow(), active: isActive, pointing: pointingNow() } }));
   }
 
   function applyRed() {
@@ -1080,6 +1091,8 @@ export function createSkyView(ctx, options = {}) {
   }
 
   function lookAtAngles(azR, altR) {
+    // While the phone is the view, the visitor turns to a thing; the ring still marks it.
+    if (pointing) return;
     if (Number.isFinite(azR)) {
       dAz = 0;
       azRad = azR;
@@ -1242,6 +1255,88 @@ export function createSkyView(ctx, options = {}) {
     return what.kind !== 'sky'; // empty sky is named, and still deselects (main.js)
   }
 
+  /**
+   * POINT YOUR PHONE (internal #450). `pointPhone(true)` must be called from the tap itself: iOS
+   * gives its permission prompt only to a user gesture, so the request is made here and now, before
+   * the module (sky/pointing.js, with the magnetic model) has even been fetched. Resolves to
+   * { ok: true } or { ok: false, why: 'denied' | 'none' | 'unsupported' | 'place' }; a refusal
+   * leaves the drag view exactly as it was. `pointPhone(false)` lets go of the sensor and the wake lock.
+   */
+  function pointingNow() {
+    const s = pointing ? pointing.state : null;
+    return s ? { ...s, why: '' } : { on: false, why: pointWhy };
+  }
+  function showReticle(on) {
+    if (typeof document === 'undefined' || !document.createElement) return;
+    if (on && !reticle) {
+      reticle = document.createElement('div');
+      reticle.className = 'sr-skyreticle';
+      reticle.setAttribute('aria-hidden', 'true');
+      (domElement && domElement.parentNode ? domElement.parentNode : document.body).appendChild(reticle);
+    }
+    if (reticle) reticle.hidden = !on;
+    if (document.documentElement && document.documentElement.classList) document.documentElement.classList.toggle('sr-pointing', !!on);
+  }
+  function pointPhone(want) {
+    if (!want) {
+      pointAsked += 1;
+      const was = pointing;
+      pointing = null;
+      if (was) { try { was.stop(); } catch { /* gone */ } }
+      showReticle(false);
+      if (was && lastTap && lastTap.auto && ground) { ground.hideTag(); lastTap = null; }
+      if (was) tell();
+      return Promise.resolve({ ok: true });
+    }
+    if (pointing) return Promise.resolve({ ok: true });
+    const fail = (why) => { pointWhy = why; tell(); return { ok: false, why }; };
+    if (!isActive || !observer) return Promise.resolve(fail('place'));
+    const D = typeof window !== 'undefined' ? window.DeviceOrientationEvent : undefined;
+    if (typeof D === 'undefined') return Promise.resolve(fail('unsupported'));
+    let permission = null;
+    if (typeof D.requestPermission === 'function') {
+      try { permission = Promise.resolve(D.requestPermission()).catch(() => 'denied'); } catch { permission = Promise.resolve('denied'); }
+    }
+    const mine = ++pointAsked;
+    const forObserver = observer;
+    const reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    return import('./pointing.js').then(async (m) => {
+      const src = m.createPointing({
+        observer: forObserver, permission, reduced,
+        startLook: { azDeg: azRad * RAD2DEG, altDeg: altRad * RAD2DEG },
+        onChange: () => { if (pointing === src) tell(); },
+      });
+      const got = await src.start();
+      if (!got.ok) return mine === pointAsked ? fail(got.why) : got;
+      if (mine !== pointAsked || !isActive || observer !== forObserver) { src.stop(); return { ok: false, why: 'stopped' }; }
+      pointing = src;
+      pointWhy = '';
+      showReticle(true);
+      tell();
+      return got;
+    }).catch(() => fail('unsupported'));
+  }
+  /**
+   * What the phone is pointing at, named in the tag without a tap, twice a second: the same tag a
+   * tap makes, so pressing it opens the card. Empty sky takes an automatic tag away again.
+   */
+  function nameCentre() {
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    if (now - centreAt < 500 || !ground || typeof ground.whatAt !== 'function' || !domElement?.getBoundingClientRect) return;
+    centreAt = now;
+    const r = domElement.getBoundingClientRect();
+    const what = ground.whatAt(r.left + r.width / 2, r.top + r.height / 2, camera, r);
+    if (!what || what.kind === 'sky') {
+      if (lastTap && lastTap.auto) { ground.hideTag(); lastTap = null; }
+      return;
+    }
+    const key = what.kind === 'star' ? `star:${what.dirEq.map((v) => v.toFixed(5)).join(',')}` : `${what.kind}:${what.id}`;
+    if (lastTap && lastTap.key === key && ground.tagged()) return;
+    what.record = recordOf(what);
+    ground.showTag(what, tagWords(what, what.record), openTagged);
+    lastTap = { key, what, auto: true };
+  }
+
   /** A deep-sky picture under a tap, as a record id (`dso-m42`), or null: main.js opens its card. */
   function pickSky(clientX, clientY) {
     if (!isActive || !ground || typeof ground.pickAt !== 'function' || !domElement?.getBoundingClientRect) return null;
@@ -1299,7 +1394,9 @@ export function createSkyView(ctx, options = {}) {
     const h = domElement?.clientHeight || 800;
     // The sky follows the finger: a pixel is the same angle whatever the field is.
     const perPx = (fov * DEG2RAD) / h;
-    lookBy(-(e.clientX - drag.x) * perPx, (e.clientY - drag.y) * perPx);
+    // With the phone as the view a drag is "Line it up": the offset between its compass and the sky.
+    if (pointing) pointing.dragBy(-(e.clientX - drag.x) * perPx * RAD2DEG, (e.clientY - drag.y) * perPx * RAD2DEG);
+    else lookBy(-(e.clientX - drag.x) * perPx, (e.clientY - drag.y) * perPx);
     drag.x = e.clientX;
     drag.y = e.clientY;
   }
@@ -1365,6 +1462,8 @@ export function createSkyView(ctx, options = {}) {
     // A new place is a new sky: the ground layer is built for one observer.
     const key = `${observer.latDeg.toFixed(4)},${observer.lonDeg.toFixed(4)}`;
     if (ground && groundKey !== key) { try { ground.dispose(); } catch { /* gone */ } ground = null; veilWorlds(false); }
+    // The declination was this place's: a new place switches the phone off rather than point wrong.
+    if (pointing && groundKey !== key) pointPhone(false);
     groundKey = key;
     if (!group) build();
     if (group.parent !== scene) scene.add(group);
@@ -1428,9 +1527,23 @@ export function createSkyView(ctx, options = {}) {
 
     camera.position.copy(_o);
     camera.up.copy(_up);
-    localDir(azRad, altRad, _dir).applyQuaternion(group.quaternion);
-    camera.lookAt(_p.copy(_o).addScaledVector(_dir, parts?.R ?? 1));
+    const aimed = pointing ? pointing.sample(typeof performance !== 'undefined' ? performance.now() : Date.now()) : null;
+    if (aimed) {
+      // The phone's attitude in the local frame (east, up, south), roll and all; the angles are
+      // read back from it so `look`, the labels and switching off all carry on from where it points.
+      _q.set(aimed[0], aimed[1], aimed[2], aimed[3]);
+      _dir.set(0, 0, -1).applyQuaternion(_q);
+      altRad = Math.asin(THREE.MathUtils.clamp(_dir.y, -1, 1));
+      if (Math.hypot(_dir.x, _dir.z) > 1e-4) azRad = Math.atan2(_dir.x, -_dir.z);
+      dAz = 0;
+      dAlt = 0;
+      camera.quaternion.copy(group.quaternion).multiply(_q);
+    } else {
+      localDir(azRad, altRad, _dir).applyQuaternion(group.quaternion);
+      camera.lookAt(_p.copy(_o).addScaledVector(_dir, parts?.R ?? 1));
+    }
     camera.updateMatrixWorld?.(true);
+    if (aimed) nameCentre();
 
     // A radiant's name keeps its size on the screen as the field closes (it is a mark, not a thing).
     if (parts && parts.radiants.children.length) {
@@ -1445,6 +1558,7 @@ export function createSkyView(ctx, options = {}) {
 
   function exit() {
     if (!isActive) return;
+    pointPhone(false);
     isActive = false;
     held = null;
     showersNow = [];
@@ -1489,6 +1603,13 @@ export function createSkyView(ctx, options = {}) {
     },
     lookBy,
     lookAtDeg,
+    pointPhone,
+    /** The phone as the view: { on, kind, accuracyDeg, declinationDeg, offsetAzDeg, offsetTiltDeg, why }. */
+    get pointing() {
+      return pointingNow();
+    },
+    /** Forget "Line it up": the compass's own north again. */
+    resetPointing: () => { if (pointing) pointing.resetOffset(); },
     // the field of view, the choices, and what the Tonight list asks for (2026-10-05)
     get fovDeg() {
       return fovWant;
