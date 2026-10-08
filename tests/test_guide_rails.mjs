@@ -79,7 +79,11 @@ export function offGrid(ruleList) {
 }
 // The debt, by size, counted 2026-10-07. LOWER a number when you move a value onto the grid; never
 // raise one, and never add a size. (A token, `var(--sp-3)`, is on the grid by construction.)
-const OFF_GRID_KNOWN = { 6: 18, 10: 17, 14: 10, 3: 6, 5: 4, 7: 3, 22: 2, 18: 2, 9: 1, 0.75: 1, 11: 1 };
+// 2026-10-08 (internal #434): 65 -> 22. Forty-three moved onto --sp-* (the sources sheet, the search
+// field and its list, the picker, the colour key, the card's bar, What to show, the place chips);
+// what is left is geometry (a tape mark's half width, the tick, the HUD tag and chevron, the tab
+// track's 3 px inset the guide names) and four paddings that set every section's height.
+const OFF_GRID_KNOWN = { 6: 7, 10: 3, 14: 2, 3: 3, 5: 3, 22: 2, 9: 1, 0.75: 1 };
 {
   const found = offGrid(all);
   const bySize = new Map();

@@ -337,7 +337,7 @@ html.sr-compact .sr-status {
 .sr-panel__title,
 .sr-status__title,
 .sr-status__subtitle {
-  margin: 0 0 6px;
+  margin: 0 0 var(--sp-2);
   /* Panel titles: Barlow Semi Condensed 600 at 13 px, tracked 0.04 em (spec 0045 req 6). A
      condensed face at the old 11 px read smaller than Inter did there. */
   font-family: var(--sr-font-hud);
@@ -357,7 +357,7 @@ html.sr-compact .sr-status {
 .sr-btn {
   appearance: none;
   min-height: 40px;
-  padding: 0 14px;
+  padding: 0 var(--sp-3);
   font: inherit;
   font-weight: 500;
   color: var(--sr-text);
@@ -1129,7 +1129,7 @@ html.sr-compact .sr-status {
 /* ------------------------------------------------------------------------------------ */
 
 .sr-status__intro {
-  margin: 0 0 10px;
+  margin: 0 0 var(--sp-2);
   font-size: var(--sr-fs-sm);
   line-height: 1.4;
   color: var(--sr-text-dim);
@@ -1138,7 +1138,7 @@ html.sr-compact .sr-status {
 /* What the harvester's manifest said. Dim like the intro; the slate of "never read" when it
    could not be read at all, because every source below is then live or absent. */
 .sr-status__harvest {
-  margin: -4px 0 10px;
+  margin: -4px 0 var(--sp-2);
   font-size: var(--sr-fs-sm);
   line-height: 1.4;
   color: var(--sr-text-dim);
@@ -1146,7 +1146,7 @@ html.sr-compact .sr-status {
 
 
 .sr-status__block {
-  margin-top: 14px;
+  margin-top: var(--sp-3);
   padding-top: 12px;
   border-top: 1px solid var(--sr-line);
 }
@@ -1160,7 +1160,7 @@ html.sr-compact .sr-status {
 }
 
 .sr-source {
-  padding: 7px 0;
+  padding: var(--sp-2) 0;
   border-bottom: 1px solid var(--sr-line);
 }
 
@@ -1190,7 +1190,7 @@ html.sr-compact .sr-status {
 }
 
 .sr-source__error {
-  margin: 3px 0 0;
+  margin: var(--sp-1) 0 0;
   font-size: var(--sr-fs-sm);
   line-height: 1.35;
   color: var(--sr-text-dim);
@@ -1231,7 +1231,7 @@ html.sr-compact .sr-status {
   display: flex;
   gap: 8px;
   align-items: baseline;
-  padding: 5px 0;
+  padding: var(--sp-1) 0;
 }
 
 .sr-kind__name {
@@ -1268,7 +1268,7 @@ html.sr-compact .sr-status {
 }
 
 .sr-credit {
-  padding: 3px 0;
+  padding: var(--sp-1) 0;
   font-size: var(--sr-fs-sm);
   line-height: 1.4;
   color: var(--sr-text-dim);
@@ -1366,7 +1366,7 @@ html.sr-clean body > *:not(.sr-scene):not(.sr-veil):not(.sr-over-clean) {
 
 .sr-search__row {
   display: flex;
-  gap: 6px;
+  gap: var(--sp-2);
   align-items: stretch;
 }
 
@@ -1374,7 +1374,7 @@ html.sr-clean body > *:not(.sr-scene):not(.sr-veil):not(.sr-over-clean) {
   flex: 1 1 140px;
   min-width: 0;
   min-height: 40px;
-  padding: 0 10px;
+  padding: 0 var(--sp-3);
   font: inherit;
   color: var(--sr-text);
   background: var(--sr-wash);
@@ -1399,7 +1399,7 @@ html.sr-clean body > *:not(.sr-scene):not(.sr-veil):not(.sr-over-clean) {
 
 /* The glass, edge and corners are .sr-float's. */
 .sr-search__pop {
-  margin-top: 6px;
+  margin-top: var(--sp-2);
   overflow: hidden;
 }
 
@@ -1517,7 +1517,7 @@ html.sr-clean body > *:not(.sr-scene):not(.sr-veil):not(.sr-over-clean) {
 /* The footer: what the list could not show, and what the index could not see. */
 .sr-search__foot {
   margin: 0;
-  padding: 7px 10px;
+  padding: var(--sp-2) var(--sp-3);
   font-size: var(--sr-fs-sm);
   line-height: 1.4;
   color: var(--sr-text-dim);
@@ -2699,7 +2699,7 @@ html.sr-trip-mode.sr-phone[data-sheet='full'] .sr-toast {
 /* A world's note about how it is drawn (spec 0028 step 0) ------------------------------- */
 
 .sr-card__note {
-  margin: 0 0 10px;
+  margin: 0 0 var(--sp-2);
   font-size: var(--sr-fs-sm);
   line-height: 1.45;
   color: var(--sr-text-dim);
@@ -2713,7 +2713,7 @@ html.sr-trip-mode.sr-phone[data-sheet='full'] .sr-toast {
   min-width: 220px;
   max-width: min(320px, calc(100vw - 16px));
   margin: 0;
-  padding: 6px;
+  padding: var(--sp-2);
   list-style: none;
   background: var(--sr-wash);
   border: 1px solid var(--sr-line-strong);
@@ -2748,7 +2748,7 @@ html.sr-trip-mode.sr-phone[data-sheet='full'] .sr-toast {
 .sr-pick__where { flex: 0 0 auto; font-size: var(--sr-fs-sm); color: var(--sr-text-dim); }
 
 .sr-pick__hint {
-  padding: 6px 8px 2px;
+  padding: var(--sp-2) var(--sp-2) 2px;
   font-size: var(--sr-fs-sm);
   color: var(--sr-text-dim);
 }
@@ -2779,17 +2779,17 @@ html.sr-trip-mode.sr-phone[data-sheet='full'] .sr-toast {
 
 .sr-colourkey__legend { margin: 0; padding: 0; list-style: none; }
 
-.sr-colourkey__row { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: var(--sr-fs-sm); }
+.sr-colourkey__row { display: flex; align-items: center; gap: 8px; padding: var(--sp-1) 0; font-size: var(--sr-fs-sm); }
 
 .sr-colourkey__label { flex: 1 1 auto; color: var(--sr-text-dim); }
 
 .sr-colourkey__count { flex: 0 0 auto; }
-.sr-colourkey__scope { margin: 6px 0 0; font-size: var(--sr-fs-sm); line-height: 1.4; color: var(--sr-text-dim); }
-.sr-colourkey__scope { margin: 6px 0 0; font-size: var(--sr-fs-sm); line-height: 1.4; color: var(--sr-text-dim); }
+.sr-colourkey__scope { margin: var(--sp-2) 0 0; font-size: var(--sr-fs-sm); line-height: 1.4; color: var(--sr-text-dim); }
+.sr-colourkey__scope { margin: var(--sp-2) 0 0; font-size: var(--sr-fs-sm); line-height: 1.4; color: var(--sr-text-dim); }
 
 /* The card's trajectory chart (spec 0026 req 14) ---------------------------------------- */
 
-.sr-traj { display: block; width: 100%; height: auto; margin: 4px 0 6px; }
+.sr-traj { display: block; width: 100%; height: auto; margin: var(--sp-1) 0 var(--sp-2); }
 .sr-traj__axis, .sr-traj__equator { stroke: var(--sr-line); stroke-width: 1; }
 .sr-traj__map { fill: var(--sr-wash); stroke: var(--sr-line); stroke-width: 1; }
 .sr-traj__line { fill: none; stroke: var(--sr-satellite); stroke-width: 1.5; }
@@ -2798,7 +2798,7 @@ html.sr-trip-mode.sr-phone[data-sheet='full'] .sr-toast {
 
 /* Space weather, one line (spec 0026 req 16) ----------------------------------------------- */
 
-.sr-status__weather { margin: 0 0 10px; font-size: var(--sr-fs-sm); line-height: 1.45; color: var(--sr-text); }
+.sr-status__weather { margin: 0 0 var(--sp-2); font-size: var(--sr-fs-sm); line-height: 1.45; color: var(--sr-text); }
 
 /* The note on the scene when no satellite could be read (ui/scenenote.js) ------------------ */
 
@@ -3361,15 +3361,15 @@ html.sr-phone .sr-chevron {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
-  padding: 14px 16px 0;
+  padding: var(--sp-3) var(--sp-4) 0;
 }
 
 .sr-side__back {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-2);
   height: 36px;
-  padding: 0 10px 0 4px;
+  padding: 0 var(--sp-3) 0 var(--sp-1);
   font: inherit;
   font-size: var(--sr-fs-label);
   color: var(--sr-text-soft);
@@ -3450,7 +3450,7 @@ html.sr-phone .sr-chevron {
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--sp-3);
   padding: 20px 20px 14px;
 }
 
@@ -3506,9 +3506,9 @@ html.sr-phone .sr-chevron {
 .sr-explore__search .sr-search__row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--sp-2);
   height: 44px;
-  padding: 0 14px;
+  padding: 0 var(--sp-3);
   background: var(--sr-wash);
   border: 1px solid transparent;
   border-radius: var(--sr-radius);
@@ -3926,7 +3926,7 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   gap: 12px;
   width: 100%;
   min-height: 44px;
-  padding: 11px 0;
+  padding: var(--sp-3) 0;
   font: inherit;
   font-size: var(--sr-fs-body);
   line-height: 1.3;
@@ -3948,7 +3948,7 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 
 .sr-list--quiet .sr-list__static {
   min-height: 0;
-  padding: 7px 0;
+  padding: var(--sp-2) 0;
   font-size: var(--sr-fs-sm);
   color: var(--sr-text-dim);
 }
@@ -4145,7 +4145,7 @@ html.sr-phone .sr-subscribe__email {
 .sr-field {
   width: 100%;
   height: 44px;
-  padding: 0 14px;
+  padding: 0 var(--sp-3);
   font: inherit;
   font-size: var(--sr-fs-body);
   color: var(--sr-text);
@@ -4168,7 +4168,7 @@ html.sr-phone .sr-subscribe__email {
 
 .sr-chip {
   height: 36px;
-  padding: 0 14px;
+  padding: 0 var(--sp-3);
   font: inherit;
   font-size: var(--sr-fs-sm);
   color: var(--sr-text);
@@ -4299,7 +4299,7 @@ html.sr-phone .sr-subscribe__email {
 
 /* --- the sources sheet, as a view ----------------------------------------------------- */
 .sr-side .sr-status {
-  padding: 6px 20px 20px;
+  padding: var(--sp-2) 20px 20px;
   overflow: visible;
 }
 
@@ -4326,7 +4326,7 @@ html.sr-phone .sr-subscribe__email {
   position: static;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--sp-2);
   width: auto;
   height: 44px;
   padding: 0 4px;
@@ -4389,7 +4389,7 @@ html.sr-phone .sr-subscribe__email {
   max-height: calc(100vh - 2 * var(--sr-inset));
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 18px 20px 20px;
+  padding: 20px;
   border-radius: var(--sr-radius-shell);
   font-size: var(--sr-fs-label);
   line-height: 1.45;
@@ -4411,7 +4411,7 @@ html.sr-phone .sr-subscribe__email {
   box-sizing: border-box;
   width: 100%;
   height: 36px;
-  margin: 10px 0 2px;
+  margin: var(--sp-2) 0 2px;
   padding: 0 12px;
   font: inherit;
   font-size: var(--sr-fs-label);
@@ -4478,7 +4478,7 @@ html.sr-phone .sr-subscribe__email {
   position: relative;
   min-width: 44px;
   height: 28px;
-  padding: 0 10px;
+  padding: 0 var(--sp-2);
   font: inherit;
   font-size: var(--sr-fs-sm);
   color: var(--sr-text-soft);
@@ -4540,7 +4540,7 @@ html.sr-phone .sr-subscribe__email {
   display: grid;
   grid-template-columns: 18px 10px 1fr auto;
   align-items: center;
-  gap: 10px;
+  gap: var(--sp-2);
   min-height: 36px;
   padding: 4px 0;
   cursor: pointer;
@@ -4650,7 +4650,7 @@ html.sr-phone .sr-subscribe__email {
 
 .sr-show__section {
   margin-top: 16px;
-  padding-top: 14px;
+  padding-top: var(--sp-3);
   border-top: 1px solid var(--sr-line);
 }
 
