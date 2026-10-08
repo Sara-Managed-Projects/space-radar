@@ -756,6 +756,16 @@ jobs:
         run: node tests/test_launchchip.mjs
       - name: "a first visit: once, three lines that fit, two buttons, one ember (public #241, #287)"
         run: node tests/test_welcome.mjs
+      - name: "the opening shot: six to ten seconds, never twice, any input lands it, the words are the home's (public #287)"
+        run: node tests/test_opening.mjs
+      - name: "a calm deep sky: exoplanet marks off until asked for, a star's colour reads (public #271)"
+        run: node tests/test_calm_sky.mjs
+      - name: "model light: the world's phase as the craft sees it, the Sun's rim, the panels' glint, by tier (public #266)"
+        run: node tests/test_model_light.mjs
+      - name: "a reason to come back: Remind me as a calendar file, a Seen it tick in the passport (public #395)"
+        run: node tests/test_comeback.mjs
+      - name: "this week's story out of the catalogue: four rules, their numbers, nothing typed (public #450)"
+        run: node tests/test_story.mjs
       - name: "Return to base: what away is, what coming home does, where the house lives (public #241)"
         run: node tests/test_base.mjs
       - name: "every test file in tests/ is run by this workflow"

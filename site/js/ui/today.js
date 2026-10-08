@@ -34,6 +34,7 @@ import { phaseName, isJunk } from '../sky/tonightbest.js';
 import { mountCountdown, launchAgeMs, COUNT_WITHIN_MS } from './countdown.js';
 import { createSentence } from './sentence.js';
 import { wonderOfTheDay, dayNumberOf } from './passport.js';
+import { weeklyStory } from './story.js';
 
 export const MAX_CARDS = 4;
 const DAY_MS = 86400e3;
@@ -190,6 +191,32 @@ export function createToday(ctx, host) {
   wonder.append(wonderKicker, wonderTitle, wonderLine);
   let wonderCard = null;
   wonder.addEventListener('click', () => { if (wonderCard) go(wonderCard); });
+  // This week's story out of the catalogue (ui/story.js, public #450): the same card, with the
+  // rule that produced it as its last line.
+  const story = el('button', 'sr-today__card sr-wonder sr-story');
+  story.type = 'button';
+  story.hidden = true;
+  const storyKicker = el('span', 'sr-today__kicker');
+  const storyTitle = el('span', 'sr-today__title');
+  const storyLine = el('span', 'sr-today__line');
+  const storyRule = el('span', 'sr-today__line sr-story__rule');
+  story.append(storyKicker, storyTitle, storyLine, storyRule);
+  let storyCard = null;
+  story.addEventListener('click', () => { if (storyCard && storyCard.record) go({ act: 'select', record: storyCard.record }); });
+  function paintStory(nowMs) {
+    let made = null;
+    try { made = weeklyStory(typeof ctx.records === 'function' ? ctx.records() : [], nowMs); } catch { made = null; }
+    storyCard = made;
+    story.hidden = !made;
+    if (!made) return;
+    storyKicker.textContent = made.kicker;
+    storyTitle.textContent = made.title;
+    storyLine.textContent = made.line;
+    storyRule.textContent = made.rule;
+    story.dataset.rule = made.ruleId;
+    story.title = [made.title, made.line, t(COPY.story.ruleTitle, { rule: made.rule })].join(COPY.punctuation.sentenceJoin);
+    story.setAttribute('aria-label', t(COPY.story.label, { title: made.title }));
+  }
   const grid = el('div', 'sr-today__grid');
   const debrisBtn = el('button', 'sr-more sr-today__debris', T.debris);
   debrisBtn.type = 'button';
@@ -198,7 +225,7 @@ export function createToday(ctx, host) {
   const debrisHost = el('div', 'sr-debris-host');
   debrisHost.id = 'sr-debris';
   debrisBtn.setAttribute('aria-controls', debrisHost.id);
-  host.append(title, wonder, grid, debrisBtn, debrisHost);
+  host.append(title, wonder, grid, story, debrisBtn, debrisHost);
 
   let debris = null;
   debrisBtn.addEventListener('click', () => {
@@ -302,6 +329,7 @@ export function createToday(ctx, host) {
     lastItems = items;
     const skipId = paintWonder(items, nowMs);
     paintHappened(nowMs);
+    paintStory(nowMs);
     const cards = todayCards({ items, nowMs, launched: launched(), skipId });
     while (counts.length) counts.pop()();
     while (grid.firstChild) grid.removeChild(grid.firstChild);

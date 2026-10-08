@@ -6687,6 +6687,11 @@ html.sr-phone .sr-passport {
 
 .sr-wonder[hidden] { display: none; }
 
+/* This week's story (ui/story.js): the rule that produced it, as the card's caption. */
+.sr-story__rule {
+  color: var(--sr-text-dim);
+}
+
 /* The passport's row at the home's foot: a name and what it holds, as a Right-now row. */
 .sr-passport-open {
   display: flex;

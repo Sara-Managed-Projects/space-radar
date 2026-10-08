@@ -251,6 +251,38 @@ Object.assign(COPY, {
     label: 'Wonder of the day: {title}',
   },
 
+  // This week's story out of the catalogue (ui/story.js, public #450). Every {…} is computed from
+  // the element sets loaded; `rule` is the question that was asked of them, printed under the answer.
+  // "Our catalogue" is those sets and no more: Vanguard 1 is older than any active satellite, and
+  // a title that said "the oldest thing in orbit" of a list it is not in would be a typed claim.
+  story: {
+    kicker: 'This week’s story · week {week}',
+    label: 'This week’s story: {title}',
+    ruleTitle: 'How it was worked out: {rule}',
+    lowest: {
+      title: 'Lowest in our catalogue: {name}',
+      line: 'Never above {apogee} km, down to {perigee} km, a lap in {min} min.',
+      rule: 'Lowest highest point of {n} element sets under 7 days old',
+    },
+    farthest: {
+      title: 'Farthest out in our catalogue: {name}',
+      line: 'Out to {apogee} km, back to {perigee} km, one lap in {lap}.',
+      hours: '{n} hours',
+      days: '{n} days',
+      rule: 'Highest point of {n} element sets under 7 days old',
+    },
+    busiest: {
+      title: 'Busiest height we hold: {lo} to {hi} km',
+      line: '{n} of the {total} objects we hold fly there: {pct} in 100.',
+      rule: 'Fullest {band} km of mean height in {n} sets under 7 days old',
+    },
+    oldest: {
+      title: 'Oldest launch in our catalogue: {name}',
+      line: 'Launched in {year}, {years} years up, a lap in {min} min.',
+      rule: 'Earliest launch year of {n} element sets under 7 days old',
+    },
+  },
+
   // "Just happened" (internal #134): one row at the head of Coming up. {age} is ageInWords.
   happened: {
     flown: 'Lifted off {age}',
