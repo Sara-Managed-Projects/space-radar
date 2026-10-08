@@ -98,6 +98,8 @@ with tempfile.TemporaryDirectory() as tmp:
     ok(len(o_sync) == 1 and "text/html" in o_sync[0] and "--delete" in o_sync[0] and "no-cache" in o_sync[0],
        f"the built o/ is synced as no-cache HTML with --delete ({o_sync})")
     ok("SEO ok" in r.stdout, "deploy.sh builds the pages and holds them to check_seo.py before it uploads")
+    smap = (BUILT / "sitemap.xml").read_text(encoding="utf-8") if (BUILT / "sitemap.xml").is_file() else ""
+    ok("/press/index.html</loc>" in smap, "the sitemap names the press page (internal #398)")
     for name, typ in (("robots.txt", "text/plain"), ("sitemap.xml", "application/xml"),
                       ("404.html", "text/html"), ("index.html", "text/html")):
         ok(re.search(rf"would upload {re.escape(name)} \({re.escape(typ)}", r.stdout) is not None,

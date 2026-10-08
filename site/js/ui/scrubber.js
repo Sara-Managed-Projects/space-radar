@@ -147,7 +147,44 @@ export function moonMarks(nowMs, back = MOON_BACK, on = MOON_ON) {
   return out;
 }
 
-const MARK_KINDS = { 'launch': 'launch', 'approach': 'approach', 'perihelion': 'approach', 'pass': 'pass', 'train': 'pass', 'shower': 'shower', 'solar-eclipse': 'eclipse', 'lunar-eclipse': 'eclipse', 'moon': 'moon' };
+/** Sunrises and sunsets on the tape: from this long before now to this long after. */
+const SUN_BACK_MS = 12 * 3600e3;
+const SUN_ON_MS = 48 * 3600e3;
+
+/**
+ * Sunrise and sunset at the visitor's place as items for the tape (internal #408). Worked out from
+ * the same theory that draws the Sun (astronomy-engine SearchRiseSet: the upper limb on the
+ * horizon, with standard refraction), so they cost no request. Half a day behind and two days on:
+ * the hour view holds them, and the month view is not filled with sixty dots. No place, no marks;
+ * a place that was only guessed says so in the mark's words. Where the Sun does not rise or set
+ * (a polar summer), the search finds nothing and there are none.
+ */
+export function sunMarks(nowMs, observer, back = SUN_BACK_MS, on = SUN_ON_MS) {
+  const out = [];
+  if (!Number.isFinite(nowMs) || !observer) return out;
+  const latDeg = Number.isFinite(observer.latDeg) ? observer.latDeg : observer.latRad * 180 / Math.PI;
+  const lonDeg = Number.isFinite(observer.lonDeg) ? observer.lonDeg : observer.lonRad * 180 / Math.PI;
+  if (!Number.isFinite(latDeg) || !Number.isFinite(lonDeg)) return out;
+  const T = COPY.timePill;
+  try {
+    const obs = new Astronomy.Observer(latDeg, lonDeg, 0);
+    for (const [dir, kind] of [[+1, 'sunrise'], [-1, 'sunset']]) {
+      let from = new Date(nowMs - back);
+      for (let i = 0; i < 4; i += 1) {
+        const hit = Astronomy.SearchRiseSet(Astronomy.Body.Sun, obs, dir, from, 2);
+        if (!hit) break;
+        const tMs = hit.date.getTime();
+        if (tMs > nowMs + on) break;
+        const words = t(observer.source === 'guess' ? T.sunMarkGuess : T.sunMark, { what: T.sunWords[kind], date: timeText.pillUtc(tMs, nowMs) });
+        out.push({ kind, tMs, label: kind, what: words });
+        from = new Date(tMs + 3600e3);
+      }
+    }
+  } catch { /* no sunrise on the tape; everything else stands */ }
+  return out.sort((a, b) => a.tMs - b.tMs);
+}
+
+const MARK_KINDS = { 'launch': 'launch', 'approach': 'approach', 'perihelion': 'approach', 'pass': 'pass', 'train': 'pass', 'shower': 'shower', 'solar-eclipse': 'eclipse', 'lunar-eclipse': 'eclipse', 'moon': 'moon', 'sunrise': 'sun', 'sunset': 'sun' };
 
 /** One "Coming up" item as a mark, or null for what has no instant to go to (a storm under way). */
 export function markOf(item, nowMs) {
@@ -335,7 +372,7 @@ export function createScrubber(ctx, pill) {
     const next = ctx.explore && ctx.explore.next;
     const items = next && typeof next.items === 'function' ? next.items() : [];
     const anchor = pill.anchor();
-    marks = mergeMarks(marks, items.concat(moonMarks(anchor)), now(), { lo: anchor - SCRUB_BACK_MS, hi: anchor + SCRUB_FORWARD_MS });
+    marks = mergeMarks(marks, items.concat(moonMarks(anchor), sunMarks(anchor, ctx.observer)), now(), { lo: anchor - SCRUB_BACK_MS, hi: anchor + SCRUB_FORWARD_MS });
     paint();
   }
 

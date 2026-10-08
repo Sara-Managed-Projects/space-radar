@@ -184,7 +184,10 @@ def lastmod() -> str:
 
 def sitemap(host: str, slugs: list[str]) -> str:
     date = lastmod()
-    urls = [f"{host}/"] + [f"{host}/t/{f.name}" for f in sorted((SITE / "t").glob("*.html"))] \
+    # The press page is built beside these at deploy (scripts/build_press.py) and has had no way in
+    # for a crawler (internal #398): named here by its full address, as the origin serves no index
+    # documents below the root.
+    urls = [f"{host}/", f"{host}/press/index.html"] + [f"{host}/t/{f.name}" for f in sorted((SITE / "t").glob("*.html"))] \
         + [f"{host}/o/{s}.html" for s in sorted(slugs)]
     rows = "\n".join(f"<url><loc>{esc(u)}</loc><lastmod>{date}</lastmod></url>" for u in urls)
     return ('<?xml version="1.0" encoding="UTF-8"?>\n'

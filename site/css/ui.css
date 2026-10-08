@@ -4329,6 +4329,7 @@ html.sr-phone .sr-subscribe__email {
 }
 
 .sr-mark--foot:hover { color: var(--sr-text); }
+.sr-status__press { margin-left: auto; }
 
 /* --- the tool rail -------------------------------------------------------------------- */
 
@@ -4977,6 +4978,13 @@ html.sr-phone .sr-subscribe__email {
   margin-left: -2px;
   background: var(--sr-comet);
   border-radius: var(--sr-radius-sm);
+}
+
+/* Sunrise and sunset where the visitor is: a half disc on the horizon, the quietest mark. */
+.sr-tape__mark[data-kind='sun'] .sr-tape__glyph {
+  background: var(--sr-text-dim);
+  border-radius: 0;
+  clip-path: circle(50% at 50% 100%);
 }
 
 /* A phase of the Moon: a ring half filled, quieter than a thing that passes. */

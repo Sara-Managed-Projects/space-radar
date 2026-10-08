@@ -431,6 +431,11 @@ export function createStatus(ctx, parent) {
   // the first screen, and what it links to in words. ui/github.js keeps the mark's rules.
   const foot = el('footer', 'sr-status__foot');
   createGitHubMark(foot);
+  // The press kit (public #293): built at deploy beside the object pages, linked from here in words.
+  const press = el('a', 'sr-mark sr-mark--foot sr-status__press', COPY.mark.press);
+  press.href = COPY.mark.pressHref;
+  press.title = COPY.mark.pressTitle;
+  foot.appendChild(press);
   node.appendChild(foot);
 
   const paint = () => {

@@ -706,6 +706,10 @@ export const COPY = {
     noEventOn: 'No later event on the timeline.',
     // A mark for one of the Moon's four named phases (ui/scrubber.js moonMarks).
     moonMark: 'The Moon is {phase}, {date}',
+    // Sunrise and sunset at the visitor's place (ui/scrubber.js sunMarks); a guessed place says so.
+    sunMark: '{what} where you are, {date}',
+    sunMarkGuess: '{what} at the place guessed for you, {date}',
+    sunWords: { sunrise: 'Sunrise', sunset: 'Sunset' },
     unitTitle: 'Steps of {unit}. Press for {next}',
     // The timeline (ui/scrubber.js). It is a slider: its value is the readout's words.
     tapeLabel: 'Timeline. Drag it, or use the arrow keys',
@@ -2240,6 +2244,9 @@ export const COPY = {
     label: 'Source on GitHub',
     title: 'Space Radar source code on GitHub',
     href: 'https://github.com/Sara-Managed-Projects/space-radar',
+    press: 'Press kit',
+    pressTitle: 'What it is, pictures and the mark to use',
+    pressHref: 'press/index.html',
   },
 
 

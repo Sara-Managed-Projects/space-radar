@@ -116,6 +116,25 @@ check(P.nextUnit('minute') === 'hour' && P.nextUnit('hour') === 'day' && P.nextU
   const mk = S.markOf(moon[3], now);
   check(mk && mk.kind === 'moon' && /^The Moon is (new|first quarter|full|last quarter), /.test(mk.what) && mk.record === null, `a phase is a mark with its own words and nothing to select (${mk && mk.what})`);
 }
+// --- Sunrise and sunset at the visitor's place as marks (internal #408) ------------------------
+{
+  const Astronomy = await import(join(ROOT, 'site/vendor/astronomy.js'));
+  const quito = { latDeg: -0.2, lonDeg: -78.5, name: 'Quito', source: 'city' };
+  const sun = S.sunMarks(now, quito);
+  check(sun.length >= 4 && sun.length <= 6, `two and a half days of the Sun at Quito are four to six marks (${sun.length})`);
+  check(sun.every((m, i) => i === 0 || (m.kind !== sun[i - 1].kind && Math.abs(m.tMs - sun[i - 1].tMs - 12 * H) < 30 * 60e3)), 'on the equator a rise and a set alternate, twelve hours apart to half an hour');
+  const obs = new Astronomy.Observer(quito.latDeg, quito.lonDeg, 0);
+  const altAt = (tMs) => { const eq = Astronomy.Equator(Astronomy.Body.Sun, new Date(tMs), obs, true, true); return Astronomy.Horizon(new Date(tMs), obs, eq.ra, eq.dec, 'normal').altitude; };
+  check(sun.every((m) => Math.abs(altAt(m.tMs)) < 1), `at each mark the Sun's centre is within a degree of the horizon (${sun.map((m) => altAt(m.tMs).toFixed(2)).join(', ')})`);
+  check(sun.every((m) => m.tMs > now - 12 * H - 1 && m.tMs < now + 48 * H + 1), 'none further than half a day behind or two days on');
+  const mk = S.markOf(sun[0], now);
+  check(mk && mk.kind === 'sun' && /^Sun(rise|set) where you are, \d\d [A-Z]{3} \d\d:\d\d UTC$/.test(mk.what) && mk.record === null, `a sunrise is a mark with its own words and nothing to select (${mk && mk.what})`);
+  const guessed = S.sunMarks(now, { ...quito, source: 'guess' });
+  check(guessed.length === sun.length && /at the place guessed for you/.test(guessed[0].what), 'a guessed place says it was guessed');
+  check(S.sunMarks(now, null).length === 0, 'no place, no sunrise');
+  // 80 N on the June solstice: the Sun does not set; the search finds nothing in the window.
+  check(S.sunMarks(Date.parse('2027-06-21T12:00:00Z'), { latDeg: 80, lonDeg: 0 }).length === 0, 'in a polar summer there is no sunrise to mark');
+}
 check(P.UNIT_MS.minute === 60e3 && P.UNIT_MS.hour === H && P.UNIT_MS.day === D, 'and they are a minute, an hour and a day');
 check(P.pillText({ tMs: Date.parse('1979-03-05T12:05:00Z'), live: false, rate: 1, anchorMs: now }) === '05 MAR 1979 12:05 UTC · 48 years ago', `a mission's event far from now carries its year (${P.pillText({ tMs: Date.parse('1979-03-05T12:05:00Z'), live: false, rate: 1, anchorMs: now })})`);
 check(P.pillText({ tMs: now + 6 * H, live: false, rate: 1, anchorMs: now }) === '06 OCT 14:16 UTC · in 6 hours', 'a time near now does not');
