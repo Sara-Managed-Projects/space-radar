@@ -457,6 +457,10 @@ Object.assign(COPY, {
   // globe, with its legend, the day it is of and whose data it is.
   overlay: {
     panelTitle: 'Earth data',
+    // ui/overlaykey.js: the key in the sidebar while a map is over the globe.
+    keyTitle: 'On the globe now',
+    keyOff: 'Take it off',
+    keyOffTitle: 'Show the Earth as it is',
     none: 'None',
     loading: 'Asking NASA for the picture.',
     failed: 'That picture did not arrive. The globe is as it was.',

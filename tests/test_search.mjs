@@ -102,5 +102,43 @@ check(JSON.stringify(findMatches(index, 'starlink').hits.map((h) => h.record.id)
   check(!cov.all.includes('Everything active') && !cov.all.includes('Gone'), 'a layer the registry switched off is not "still loading"');
 }
 
+// --- at full scale (spec 0049 req 9, task 4; internal #131, #432) ---------------------------------
+// 5 000 names shaped like the active catalogue: the station, the two UME satellites that carry
+// "ISS" in brackets, three hundred ISS DEB pieces, rocket bodies and a few thousand payloads.
+{
+  const big = [
+    rec('sat-25544', 'ISS (ZARYA)', 'stations', { noradId: 25544, why: 'people live here' }),
+    rec('sat-8709', 'UME 1 (ISS 1)', 'active', { noradId: 8709 }),
+    rec('sat-10674', 'UME 2 (ISS-B)', 'active', { noradId: 10674 }),
+    ...Array.from({ length: 300 }, (_, i) => ({ ...rec(`deb-${i}`, 'ISS DEB', 'debris-field', { noradId: 47000 + i }), klass: 'debris' })),
+    ...Array.from({ length: 400 }, (_, i) => ({ ...rec(`rb-${i}`, `CZ-${2 + (i % 5)}C R/B`, 'debris-field', { noradId: 50000 + i }), klass: 'debris' })),
+    ...Array.from({ length: 2600 }, (_, i) => rec(`sl-${i}`, `STARLINK-${1000 + i}`, 'starlink', { noradId: 60000 + i })),
+    ...Array.from({ length: 600 }, (_, i) => rec(`ow-${i}`, `ONEWEB-${String(i).padStart(4, '0')}`, 'active', { noradId: 70000 + i })),
+    ...Array.from({ length: 1097 }, (_, i) => rec(`misc-${i}`, `${['COSMOS', 'IRIDIUM', 'FLOCK 4Q', 'LEMUR-2', 'YAOGAN', 'GLOBALSTAR M'][i % 6]} ${100 + i}`, 'active', { noradId: 80000 + i })),
+  ];
+  check(big.length === 5000, `the fixture is 5 000 names (${big.length})`);
+  const bigIndex = buildIndex(big, LAYERS);
+  const got = findMatches(bigIndex, 'iss').hits.map((h) => h.record);
+  const at = (id) => got.findIndex((r) => r.id === id);
+  check(got[0] && got[0].id === 'sat-25544', `at 5 000 names "iss" still puts the station first (${got[0] && got[0].name})`);
+  check(at('sat-8709') !== 0 && at('sat-10674') !== 0, 'UME 1 (ISS 1) and UME 2 (ISS-B) never outrank ISS (ZARYA)');
+  const firstDeb = got.findIndex((r) => r.klass === 'debris');
+  const lastPayload = Math.max(at('sat-8709'), at('sat-10674'));
+  check(firstDeb === -1 || lastPayload === -1 || firstDeb > lastPayload, `debris of the same score sorts below payloads (first piece at ${firstDeb}, last payload at ${lastPayload})`);
+  // The timing: every query a visitor types on the way to a name, each run five times, the median
+  // of each held under 50 ms. Node on a laptop measures 1 to 5 ms; the bound is CI's.
+  const queries = ['i', 'is', 'iss', 'star', 'starlink-12', 'cosmos 5', 'oneweb-0420', '25544', 'zzzz', 'hubble'];
+  let worst = 0;
+  let worstQ = '';
+  for (const q of queries) {
+    const runs = [];
+    for (let i = 0; i < 5; i += 1) { const t0 = performance.now(); findMatches(bigIndex, q); runs.push(performance.now() - t0); }
+    runs.sort((x, y) => x - y);
+    if (runs[2] > worst) { worst = runs[2]; worstQ = q; }
+  }
+  check(worst <= 50, `a query over 5 000 names answers in 50 ms or less (the slowest median: "${worstQ}" at ${worst.toFixed(1)} ms)`);
+  console.log(`  at 5 000 names the slowest of ${queries.length} queries is "${worstQ}", ${worst.toFixed(1)} ms (median of 5)`);
+}
+
 if (problems.length) { console.error('search FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('search ok: whole words first, buried letters only as an announced fallback, eight rows, aliases from the registry');

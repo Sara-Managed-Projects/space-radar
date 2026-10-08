@@ -2346,6 +2346,13 @@ html.sr-present.sr-trip-mode:not([data-trip-names]) #labels .label:not(.is-subje
 }
 
 .sr-card__overlay[hidden] { display: none; }
+
+/* And in the sidebar's Earth tab, when no card and no panel shows it (ui/overlaykey.js). */
+.sr-overlaykey { display: grid; gap: var(--sp-2); }
+.sr-overlaykey[hidden] { display: none; }
+.sr-overlaykey__line { margin: 0; font: 400 var(--sr-fs-sm)/18px var(--sr-font); color: var(--sr-text-dim); }
+.sr-overlaykey__line[hidden] { display: none; }
+.sr-overlaykey > .sr-more { justify-self: start; margin-top: 0; }
 .sr-legend__title { grid-column: 1 / -1; color: var(--sr-text); }
 .sr-legend__ramp { grid-column: 1 / -1; height: 8px; border-radius: var(--sr-radius-sm); }
 
@@ -4330,6 +4337,7 @@ html.sr-phone .sr-subscribe__email {
 
 .sr-mark--foot:hover { color: var(--sr-text); }
 .sr-status__press { margin-left: auto; }
+@media (pointer: coarse) { .sr-status__press { min-height: 44px; } }
 
 /* --- the tool rail -------------------------------------------------------------------- */
 

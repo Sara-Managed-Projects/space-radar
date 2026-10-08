@@ -463,7 +463,13 @@ export async function boot({ setStatus } = {}) {
   let overlayImport = null;
   let overlayAsked = null; // the id on the globe now, or wanted on it
   let overlayOwn = null; // the visitor's own choice, which a trip suspends and leaving puts back
-  const tellOverlay = () => window.dispatchEvent(new CustomEvent('sr:overlay'));
+  // The key in the sidebar's Earth tab (ui/overlaykey.js, internal #386): fetched the first time a
+  // map is asked for, so a visit that never lays one on never pays for it.
+  let overlayKey = null;
+  const wantOverlayKey = () => overlayKey || (overlayKey = import('./ui/overlaykey.js')
+    .then((m) => m.mountOverlayKey(ctx))
+    .catch((e) => { console.warn('the overlay key did not load', e); overlayKey = null; return null; }));
+  const tellOverlay = () => { if (overlayAsked) wantOverlayKey(); window.dispatchEvent(new CustomEvent('sr:overlay')); };
   const wantOverlay = () => overlayImport || (overlayImport = import('./scene/earthoverlay.js')
     .then((m) => {
       ctx.earthOverlay = m.createEarthOverlay({

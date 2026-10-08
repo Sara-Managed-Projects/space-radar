@@ -45,6 +45,7 @@ function graph(entry) {
 }
 const boot = new Set([...graph(join(JS, 'main.js'))].map(rel));
 const DEFERRED = {
+  'js/ui/overlaykey.js': 'the key of an Earth data map in the sidebar: main.js fetches it the first time a map is asked for',
   'js/scene/handoff.js': 'the stage hand-off\'s maths: scene/climb.js imports it',
   'js/scene/climb.js': 'the continuous flight: main.js fetches it on the first long dolly, the ladder\'s control or a climb stop',
   'js/scene/shells.js': 'the radio bubble and the microwave background: fetched on a rung of the ladder',

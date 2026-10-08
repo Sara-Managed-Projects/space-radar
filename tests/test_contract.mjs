@@ -94,6 +94,7 @@ const CONTRACT = {
     'OPEN_KEY', 'FILTER_MIN_ROWS', 'groupLayers', 'groupTally', 'defaultOpen', 'readOpen', 'writeOpen', 'matchesFilter', 'setGroupOn'],
   'ui/timepill.js': ['createTimePill', 'PILL_RATES', 'nextRate', 'stepMs', 'clampToWindow', 'pillText'],
   'ui/place.js': ['createPlace', 'findCity', 'observerFor'],
+  'ui/overlaykey.js': ['mountOverlayKey', 'keyShown'],
   'ui/trippicker.js': ['groupTrips', 'nextTripId', 'nextTripOrder', 'tripOrder', 'eventSubtitle'],
   'ui/trip.js': ['createTrip'],
   // Spec 0061 task 7: what a key does in a trip and the toolbar's counter, pure for test_tripframe.
