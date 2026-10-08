@@ -1,7 +1,7 @@
 // scene/exostage.js -- the plain star stage a drawn world is shown on (internal plan 2026-10-08
 // section 4.4, issue #466 phase B).
 //
-// Contract: createImagineStage(ctx, { onChange }) -> { start(n), show(spec), stop(), render(nowMs),
+// Contract: createImagineStage(ctx, { scene, onChange }) -> { start(n), show(spec), stop(), render(nowMs),
 //   active, setView({ phaseDeg, elevationDeg, fill }), setTier(n), freeze(timeS|null), measure(frames),
 //   state(), dispose() }
 //
@@ -15,8 +15,9 @@
 // Earth radii, a 25-day year. The surface is imagined."): what the reel renderer (plan 4.5) frames
 // before a system has a stage of its own, and what this package's own pictures were taken with.
 //
-// HOW IT DRAWS. The app's renderer, a scene and a camera of its own: main.js calls render() instead
-// of its own while the stage is up, so nothing of the Solar System is drawn or paid for. The planet
+// HOW IT DRAWS. The app's renderer, a scene and a camera of its own: while the stage is up the
+// map's scene is hidden and main.js calls render() here after its own, so nothing of the Solar
+// System is drawn or paid for. The planet
 // is a unit sphere at the origin; its star stands where the row puts it, at its true size in planet
 // radii. The stars behind are a seeded scatter of points, the same for the same world.
 //
@@ -201,6 +202,8 @@ export function createImagineStage(ctx, opts = {}) {
 
   function setActive(on) {
     active = on;
+    // The map's scene is not drawn while the stage is up: main.js's render() then only clears.
+    if (opts.scene) opts.scene.visible = !on;
     doc.documentElement.classList.toggle('sr-imagine-on', on);
     if (ui) ui.root.hidden = !on;
   }

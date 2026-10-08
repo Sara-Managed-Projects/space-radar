@@ -835,9 +835,9 @@ export async function boot({ setStatus } = {}) {
     .catch((e) => { autopilot = null; document.documentElement.classList.remove('sr-ambient'); console.warn('the autopilot did not load', e); return null; });
   // A DRAWN WORLD ON A PLAIN STAR STAGE (scene/exostage.js, internal #466): `#imagine=N` opens "An
   // imagined world no. N", an invented and labelled planet. Fetched for that link, never at boot;
-  // while it is up the loop below draws its scene in place of the map's.
+  // while it is up the map's scene is hidden and the loop below draws the stage's after it.
   let imagine = null;
-  ctx.wantImagine = (n) => (imagine || (imagine = import('./scene/exostage.js').then((m) => (ctx.imagine = m.createImagineStage(ctx, { onChange: (v) => writeUrlState({ imagine: v }) })))))
+  ctx.wantImagine = (n) => (imagine || (imagine = import('./scene/exostage.js').then((m) => (ctx.imagine = m.createImagineStage(ctx, { scene, onChange: (v) => writeUrlState({ imagine: v }) })))))
     .then((s) => { if (n && n !== '0') s.start(n); else s.stop(); return s; })
     .catch((e) => { imagine = null; document.documentElement.classList.remove('sr-imagine-on'); console.warn('the imagined world did not load', e); return null; });
   if (!embed && link && link.imagine && link.imagine !== '0') { document.documentElement.classList.add('sr-imagine-on'); ctx.wantImagine(link.imagine); }
@@ -2256,8 +2256,10 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       ctx.stars3d.hidePoint(rec && rec.klass === 'star' && rec.meta ? rec.meta.starIndex : -1);
     }
     if (ctx.skyView.active) ctx.skyView.update(t);
+    render();
+    // A drawn world on its plain stage is drawn over the frame; the map's own scene is hidden while
+    // it is up (scene/exostage.js), so that render() above clears and draws nothing.
     if (ctx.imagine && ctx.imagine.active) ctx.imagine.render(t);
-    else render();
     // After render(), because render() is what brings the camera's matrices up to this frame: placed
     // before it, the brackets trailed the station by one frame of camera motion.
     // The hand-off between two stages, straight after the frame it copies was drawn (scene/climb.js).
