@@ -422,7 +422,11 @@ export function createSystems(scene, ctx = {}) {
       const n = built.basisScene;
       built.north = new THREE.Vector3().crossVectors(new THREE.Vector3(n.u.x, n.u.y, n.u.z), new THREE.Vector3(n.v.x, n.v.y, n.v.z)).normalize();
       for (const entry of built.planets) {
-        const face = m.faceFor(m.rowOf(entry.planet, built.system.star));
+        // A generated row knows how the planet was found (internal #466): the face then tells a
+        // radius forecast from a mass apart from a mass forecast from a radius.
+        const row = m.rowOf(entry.planet, built.system.star);
+        if (entry.planet.method) row.method = entry.planet.method;
+        const face = m.faceFor(row);
         entry.toon = { geometry: entry.mesh.geometry, material: entry.mesh.material };
         entry.face = m.applyFace(entry.mesh, face, { tier });
         FACE_LINES.set(entry.planet.id, entry.face.label.line);
