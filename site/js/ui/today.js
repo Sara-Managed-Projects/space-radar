@@ -214,8 +214,8 @@ export function createToday(ctx, host) {
     storyLine.textContent = made.line;
     storyRule.textContent = made.rule;
     story.dataset.rule = made.ruleId;
-    // The line ends its own sentence; the rule follows it.
-    story.title = `${[made.title, made.line].join(COPY.punctuation.sentenceJoin)} ${t(COPY.story.ruleTitle, { rule: made.rule })}`;
+    // The line ends its own sentence: its full stop is dropped before the three are joined.
+    story.title = [made.title, made.line.replace(/\.$/, ''), t(COPY.story.ruleTitle, { rule: made.rule })].join(COPY.punctuation.sentenceJoin);
     story.setAttribute('aria-label', t(COPY.story.label, { title: made.title }));
   }
   const grid = el('div', 'sr-today__grid');
