@@ -38,9 +38,18 @@ try {
     const look = tgt ? norm(V(tgt.x - cam.x, tgt.y - cam.y, tgt.z - cam.z)) : null;
     out.issPose = { intoSun: look ? +(look.x * s.x + look.y * s.y + look.z * s.z).toFixed(2) : null, distance: ctx.cameraRig.state.distance };
     await shot('iss-backlit-tier2', 3000);
-    want = 0;
+    // The same pose without the rim and the glint: the frame-rate latch is what takes them away
+    // (scene/heroes.js reads ctx.latch each frame), so the probe says it has tripped, then untrips it.
+    ctx.latch = { latched: true, force() { return true; } };
+    out.latchSet = ctx.latch.latched === true;
     await shot('iss-backlit-tier0', 2500);
-    want = 2;
+    ctx.latch = { latched: false, force() { return false; } };
+    // Closer, where an edge is more than a pixel.
+    ctx.cameraRig.flyTo({ offset: back, distance: ctx.cameraRig.state.distance * 0.45, ms: 0 });
+    await shot('iss-backlit-close-tier2', 3000);
+    ctx.latch = { latched: true, force() { return true; } };
+    await shot('iss-backlit-close-tier0', 2500);
+    ctx.latch = { latched: false, force() { return false; } };
     ctx.cameraRig.flyTo({ offset: norm(mix(s, 1, side, 0.5)), ms: 0 });
     await shot('iss-frontlit-tier2', 3000);
   }
@@ -51,7 +60,7 @@ try {
   if (ctx.deselect) ctx.deselect();
   if (!ctx.isLayerOn('hand-kept-sites')) ctx.setLayerOn('hand-kept-sites', true);
   const mesh0 = () => ctx.worlds.meshFor('mars');
-  for (const id of ['viking-1', 'gale']) {
+  for (const id of (window.__probeSkipMars ? [] : ['viking-1', 'gale'])) {
     if (!(await goTo(id, 30000))) continue;
     const now = ctx.clock.now();
     const c = mesh0().getWorldPosition(new THREE.Vector3());
