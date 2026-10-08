@@ -61,7 +61,8 @@ const { sort, KNOWN } = await import(pathToFileURL(join(ROOT, 'scripts', 'check-
   new AsyncFunction(probe);
   assert.ok(/BUDGETS\.draw_calls_per_stop/.test(probe) && /BUDGETS\.triangles_per_stop/.test(probe), 'the walk reads both rows from data/budgets.js');
   assert.ok(/ctx\.trip\.tours\(\)/.test(probe) && /for \(let i = 0; i < count; i \+= 1\)/.test(probe), 'every stop of every trip');
-  assert.ok(/ONE_COLOUR_MAX = 0\.95/.test(probe), 'and a frame that is 95 % one colour is a finding');
+  assert.ok(/ONE_COLOUR_MAX = 0\.9998/.test(probe) && /imageSmoothingEnabled = false/.test(probe), 'and an empty frame is a finding: every pixel read, the star field\'s own floor');
+  assert.ok(/skipped\.push/.test(probe), 'a trip that cannot be offered without the catalogues is skipped and named');
   const { BUDGETS } = await import(pathToFileURL(join(ROOT, 'site', 'js', 'data', 'budgets.js')).href);
   assert.ok(BUDGETS.draw_calls_per_stop > 0 && BUDGETS.triangles_per_stop > 0);
   new AsyncFunction(read('tests/probes/perf-active-probe.js'));

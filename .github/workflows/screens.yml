@@ -253,8 +253,8 @@ jobs:
 
   # THE TRIPS WALK (internal #123, spec 0044 task 3). Every stop of every trip, as a desktop and as a
   # phone: draw calls and triangles a frame against `draw_calls_per_stop` and `triangles_per_stop`
-  # in registry/budgets.yaml, and no frame more than 95 % one colour. It is the slow job of this
-  # file (software GL, some two hundred stops twice), so it runs on a dispatch and when a pull
+  # in registry/budgets.yaml, and no frame empty. It is the slow job of this file (software GL, some
+  # two hundred stops twice: 36 minutes on 2026-10-08), so it runs on a dispatch and when a pull
   # request changes the trips, the budgets, the probe or this file -- not on every change to site/.
   # The artefact `trip-stops` holds trips.json: one row per stop per viewport.
   trips:

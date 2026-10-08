@@ -1,15 +1,17 @@
 // The trips walk in CI (spec 0044 task 3, internal #123): tools/trips-cost.probe.js in Playwright's
 // Chromium at a desktop's size and a phone's. Every stop of every trip: draw calls and triangles a
 // frame against registry/budgets.yaml (`draw_calls_per_stop`, `triangles_per_stop`), and no frame
-// more than 95 % one colour.
+// empty (the probe's header says why that is not "95 % one colour").
 //
 //   node scripts/check-trips.mjs --base=http://127.0.0.1:8177 --out=.ci-screens/trips.json
 //   node scripts/check-trips.mjs --base=... --desktop --trips=moon-landings,the-living-earth
 //
 // Writes one row per stop per viewport to --out and exits 1 on any finding, on a trip that was not
-// reached inside --budget seconds a viewport (default 1500), or on a walk that read no stops.
+// reached inside --budget seconds a viewport (default 1500), or on a walk that read fewer than
+// --min-trips trips (default 20: of twenty-six on 2026-10-08, twenty-four are offerable in CI).
 // CelesTrak and Launch Library are refused, as everywhere in CI: a stop whose object comes from
-// them is then drawn without it, which is what a visitor those hosts refuse sees.
+// them is then drawn without it, which is what a visitor those hosts refuse sees, and a trip that
+// cannot be offered without them (the station's two) is skipped and named.
 import { chromium } from 'playwright';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -23,6 +25,7 @@ const OUT = arg('out', '');
 const TRIPS = arg('trips', '');
 const BUDGET = Number(arg('budget', '1500'));
 const SETTLE = arg('settle', '1500');
+const MIN_TRIPS = TRIPS ? 1 : Number(arg('min-trips', '20'));
 const SIZES = [
   ...(has('phone') ? [] : [{ name: 'desktop', viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 }]),
   ...(has('desktop') ? [] : [{ name: 'phone', viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }]),
@@ -51,7 +54,9 @@ for (const size of SIZES) {
   report[name] = { minutes: Math.round((Date.now() - began) / 6000) / 10, ...r };
   const problems = [...(r.problems || []), ...(r.notReached || []).map((id) => `${id}: not reached inside ${BUDGET} s`)];
   if (!(r.rows || []).length) problems.push('the walk read no stops');
-  console.log(`[${name}] ${r.stops || 0} stops of ${r.trips || 0} trips in ${report[name].minutes} min: draw calls median ${r.calls && r.calls.median}, max ${r.calls && r.calls.max}; triangles median ${r.triangles && r.triangles.median}, max ${r.triangles && r.triangles.max}; most of one colour ${r.oneColour && r.oneColour.max}`);
+  else if ((r.trips || 0) < MIN_TRIPS) problems.push(`only ${r.trips} trips could be walked, under ${MIN_TRIPS}: ${(r.skipped || []).join('; ')}`);
+  for (const sk of r.skipped || []) console.log(`  skipped, not offerable here: ${sk}`);
+  console.log(`[${name}] ${r.stops || 0} stops of ${r.trips || 0} trips (of ${r.of || '?'}) in ${report[name].minutes} min: draw calls median ${r.calls && r.calls.median}, max ${r.calls && r.calls.max}; triangles median ${r.triangles && r.triangles.median}, max ${r.triangles && r.triangles.max}; the emptiest frame is ${r.oneColour && (r.oneColour.max * 100).toFixed(3)} % one colour`);
   for (const w of (r.calls && r.calls.worst) || []) console.log(`  most draw calls: ${w}`);
   for (const w of (r.triangles && r.triangles.worst) || []) console.log(`  most triangles: ${w}`);
   for (const p of problems) console.error(`::error::[${name}] ${p}`);
@@ -59,5 +64,5 @@ for (const size of SIZES) {
 }
 await browser.close();
 if (OUT) writeFileSync(OUT, JSON.stringify(report, null, 1));
-console.log(failed ? `trips walk FAILED: ${failed} findings` : 'trips walk ok: every stop inside its draw-call and triangle budgets, and none an empty frame');
+console.log(failed ? `trips walk FAILED: ${failed} findings` : 'trips walk ok: every stop walked is inside its draw-call and triangle budgets, and none is an empty frame');
 process.exit(failed ? 1 : 0);
