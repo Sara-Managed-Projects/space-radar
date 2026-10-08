@@ -118,7 +118,7 @@ for (const [id, name] of [[16908, 'AJISAI (EGS)'], [8820, 'LAGEOS 1'], [19751, '
 }
 // The radar imagers: one shape, twenty-two spacecraft, thirty years and four continents apart.
 { const o = modelFor('satellite', 'radar'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-radar') && Math.abs(o.userData.realSizeM - 12.3) < 0.01, `radar builds inside budget at Sentinel-1's 12.3 m antenna (${tris(o)} tris)`); disposeModels(o); }
-for (const [id, name] of [[39634, 'SENTINEL-1A'], [23710, 'RADARSAT-1'], [31698, 'TERRASAR-X'], [28931, 'ALOS (DAICHI)'], [43641, 'SAOCOM 1A'], [21574, 'ERS-1'], [27386, 'ENVISAT'], [67304, 'CSG-3']]) {
+for (const [id, name] of [[39634, 'SENTINEL-1A'], [32382, 'RADARSAT-2'], [31698, 'TERRASAR-X'], [28931, 'ALOS (DAICHI)'], [43641, 'SAOCOM 1A'], [21574, 'ERS-1'], [27386, 'ENVISAT'], [67304, 'CSG-3']]) {
   const e = realModelFor({ id: `r-${id}`, name, klass: 'satellite', layer: 'active', meta: { noradId: id } });
   check(e?.build === 'radar' && e.generic === true, `${name} is a radar imager, and says it is the kind of thing`);
 }
@@ -200,6 +200,9 @@ for (const [id, name, file] of [
   [44628, 'ICON', 'icon.glb'],
   [39574, 'GPM-CORE', 'gpm.glb'],
   [24883, 'ORBVIEW 2 (SEASTAR)', 'seastar.glb'],
+  // NASA's own RADARSAT-1 since 2026-10-08 (public #430), no longer the family blade; RADARSAT-2,
+  // a different spacecraft, keeps the blade (asserted with the radar imagers above).
+  [23710, 'RADARSAT-1', 'radarsat1.glb'],
   [41884, 'CYGFM05', 'cygnss.glb'],
   [41891, 'CYGFM03', 'cygnss.glb'],
 ]) {

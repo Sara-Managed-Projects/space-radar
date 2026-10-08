@@ -528,6 +528,7 @@ than counted by hand.
 | `gpm.glb` | Global Precipitation Measurement | NORAD 39574 (GPM-CORE) | 162 KB |
 | `icon.glb` | Ionospheric Connection Explorer (ICON) | NORAD 44628 (ICON) | 207 KB |
 | `seastar.glb` | SeaStar | NORAD 24883 (ORBVIEW 2 (SEASTAR)) | 12 KB |
+| `radarsat1.glb` | Radar Satellite-1 (RADARSAT-1), by NASA/Christopher R. Meaney | NORAD 23710 (RADARSAT-1); in no layer the app loads today | 57 KB |
 | `terra.glb` | Terra | NORAD 25994 (TERRA) | 20 KB |
 | `tselina2.glb` | Tselina-2 | the eighteen Tselina-2 ELINT satellites in the catalogue, by NORAD id | 113 KB |
 

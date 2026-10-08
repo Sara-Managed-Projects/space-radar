@@ -101,6 +101,42 @@ const pg = glowFor(pleiades);
 check(pg && Math.abs(pg.sizeKm / 9460730472580.8 - pleiades.meta.sizeLy) < 1e-6 && pg.colour[2] > pg.colour[0], `the Pleiades glow as wide as their record says, blue-white (${pg && pg.colour})`);
 check(glowFor(recs.find((r) => r.id === 'dso-coalsack')) === null, 'a dark nebula does not glow');
 check(glowFor(andromeda) === null, 'Andromeda has its own model and no glow');
+// ANDROMEDA'S TWO COMPANIONS (public #385): named by their Messier numbers, worth naming, and drawn
+// as ellipses of OpenNGC's axes, which are the major axes this file's data already holds.
+{
+  const { SHAPED, majorAxisDir } = await import(join(JS, 'scene/dsoglow.js'));
+  const raw = JSON.parse(readFileSync(join(ROOT, 'site/data/dso.json'), 'utf8')).objects;
+  for (const [id, name] of [['m32', 'M32'], ['m110', 'M110']]) {
+    const rec = recs.find((r) => r.id === `dso-${id}`);
+    const row = raw.find((o) => o.id === id);
+    const shape = SHAPED[`dso-${id}`];
+    check(rec && rec.name === name, `${id} goes by its Messier number, not the table's "${row.common}" (got ${rec && rec.name})`);
+    check(rec.meta.aliases.includes(row.common), 'and the table\'s name still finds it');
+    check(typeof rec.meta.why === 'string' && /Andromeda/.test(rec.meta.why), `${name} says why it is worth naming, so the map names its dot`);
+    check(shape && shape.majArcmin === row.majAxArcmin, `${name}'s major axis is the one the data carries (${shape && shape.majArcmin} and ${row.majAxArcmin})`);
+    check(shape.minArcmin > 0 && shape.minArcmin < shape.majArcmin && shape.of === 'dso-m31', `${name} is longer than it is wide, and steps back for Andromeda's photograph`);
+    const g = glowFor(rec);
+    check(g && g.shape && Math.abs(g.shape.ratio - shape.minArcmin / shape.majArcmin) < 1e-12 && g.shape.paDeg === shape.paDeg, `${name} glows as an ellipse of that shape`);
+    check(Math.abs(g.sizeKm / 9460730472580.8 - rec.meta.sizeLy) < 1e-6, 'as long as its record says');
+    const line = drawingLine(rec);
+    check(/ellipse/.test(line) && /OpenNGC/.test(line) && /not a picture/.test(line) && line.includes(String(shape.majArcmin)) && line.includes(String(shape.minArcmin)), `${name}'s card says what is drawn, with the catalogue's numbers: ${line}`);
+    // The major axis lies on the sky plane (square to the line of sight), and is a unit vector.
+    const d = majorAxisDir(rec.pos, shape.paDeg);
+    const l = Math.hypot(rec.pos.x, rec.pos.y, rec.pos.z);
+    check(Math.abs(Math.hypot(d.x, d.y, d.z) - 1) < 1e-9 && Math.abs((d.x * rec.pos.x + d.y * rec.pos.y + d.z * rec.pos.z) / l) < 1e-9, `${name}'s major axis is a unit vector on the sky plane`);
+  }
+  // Position angle 0 points at the north celestial pole, 90 due east (increasing right ascension).
+  const OBL = 23.4392911 * Math.PI / 180;
+  const toEq = (v) => ({ x: v.x, y: v.y * Math.cos(OBL) - v.z * Math.sin(OBL), z: v.y * Math.sin(OBL) + v.z * Math.cos(OBL) });
+  const m32 = recs.find((r) => r.id === 'dso-m32');
+  const north = toEq(majorAxisDir(m32.pos, 0));
+  const east = toEq(majorAxisDir(m32.pos, 90));
+  const p = toEq(m32.pos);
+  const ra = Math.atan2(p.y, p.x);
+  check(north.z > 0.7, `at Andromeda's declination, north on the sky is mostly toward the pole (z ${north.z.toFixed(3)})`);
+  check(Math.abs(east.z) < 1e-9 && (-Math.sin(ra) * east.x + Math.cos(ra) * east.y) > 0.999, 'and east is the way right ascension grows');
+  check(glowFor(pleiades).shape === undefined, 'every other glow stays round');
+}
 const glowing = recs.filter((r) => glowFor(r)).length;
 check(glowing > 150 && glowing < recs.length, `most deep-sky objects glow at their size (${glowing} of ${recs.length}); those with no size or no light do not`);
 

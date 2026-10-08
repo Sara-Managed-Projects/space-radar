@@ -290,7 +290,10 @@ export const REAL_MODELS = {
     41456: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SENTINEL-1B', generic: true },
     62261: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SENTINEL-1C', generic: true },
     66315: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'SENTINEL-1D', generic: true },
-    23710: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'RADARSAT-1', generic: true },
+    // RADARSAT-1 has NASA's own model since 2026-10-08 (public #430): its real bus, wings and 15 m
+    // antenna, not the family blade. The id is dormant today: 23710 died in 2013 and is in none of
+    // the element groups the app loads (registry/models.yaml says so on its row).
+    23710: { file: 'radarsat1.glb', colour: 'satellite', name: 'RADARSAT-1', catalogue: 'RADARSAT-1' },
     32382: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'RADARSAT-2', generic: true },
     31698: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'TERRASAR-X', generic: true },
     36605: { build: 'radar', colour: 'satellite', name: 'a radar-imaging satellite', catalogue: 'TANDEM-X', generic: true },

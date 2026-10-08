@@ -2226,6 +2226,8 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       ctx.nebulae.update(ctx.camera, ctx.renderer, ctx.isLayerOn('deep-sky'), ctx.isLayerDrawable(LAYERS.find((l) => l.id === 'deep-sky')));
       // Andromeda's photograph and her stand-in model never draw over each other (scene/galaxy.js).
       if (ctx.galaxy) ctx.galaxy.setAndromedaShare(1 - ctx.nebulae.drawn('dso-m31'));
+      // Her two companions' ellipses step back with it: the photograph holds them (scene/dsoglow.js).
+      if (ctx.dsoGlow) ctx.dsoGlow.setShapedShare(1 - ctx.nebulae.drawn('dso-m31'));
     }
     if (ctx.otherLight.layer) ctx.updateOtherLight();
     if (ctx.starDisc) {
