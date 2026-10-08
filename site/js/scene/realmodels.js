@@ -794,7 +794,7 @@ export const REAL_MODELS = {
     // mornings they left. The pad is a place on any date; the vehicle on it is a picture of those days,
     // and the row's sentence says so.
     'saturn-v-lc-39a': { file: 'saturn-v.glb', colour: 'rocket', name: 'Saturn V' },
-    'shuttle-lc-39b': { file: 'shuttle-stack.glb', colour: 'rocket', name: 'the Space Shuttle on its tank and boosters' },
+    'shuttle-lc-39b': { file: 'shuttle-stack.glb', colour: 'rocket', name: 'Space Shuttle' },
     'apollo-11': { file: 'lunar-module.glb', colour: 'site', name: 'Apollo 11 lunar module' },
     // 14 and 16 arrived with the odd-things layer -- registry/oddities.yaml anchors the golf
     // balls and Duke's photograph on them -- and fell through to BUILDERS.site.default, which is

@@ -3014,7 +3014,10 @@ function buildSurveyor() {
  */
 function buildGroundPatch() {
   const g = new THREE.Group();
-  g.add(regolith(0.5, REGOLITH, 28));
+  // MARE_DUST, not REGOLITH: measured in headless Chrome on 2026-10-08, the oddities' lighter grey
+  // drew as a beige plate on the dark map of the Sea of Tranquility. This is the tone of that map
+  // in sunlight, so the patch reads as disturbed ground and not as a mat.
+  g.add(regolith(0.5, '#55544F', 28));
   return g;
 }
 
