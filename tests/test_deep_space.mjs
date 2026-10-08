@@ -52,7 +52,7 @@ const everyRecord = sampleDeepSpace();
 const ended = everyRecord.filter((r) => r.meta && r.meta.construction === 'own-path');
 const records = everyRecord.filter((r) => !ended.includes(r));
 const byId = new Map(records.map((r) => [r.id, r]));
-check(JSON.stringify(ended.map((r) => r.id)) === JSON.stringify(['deep-cassini', 'deep-galileo', 'deep-mars-2020', 'deep-dawn']), `the ended missions are Cassini, Galileo, Mars 2020's cruise and Dawn (${ended.map((r) => r.id)})`);
+check(JSON.stringify(ended.map((r) => r.id)) === JSON.stringify(['deep-cassini', 'deep-galileo', 'deep-mars-2020', 'deep-dawn', 'deep-rosetta', 'deep-near', 'deep-stardust', 'deep-deep-impact']), `the ended missions are Cassini, Galileo, Mars 2020's cruise and Dawn (${ended.map((r) => r.id)})`);
 {
   const { EPHEMERIDES } = await import(join(JS, 'data/ephemerides.js'));
   for (const rec of ended) {
@@ -60,13 +60,15 @@ check(JSON.stringify(ended.map((r) => r.id)) === JSON.stringify(['deep-cassini',
     check(rec.layer === 'deep-space' && rec.propagator === 'sampled' && Array.isArray(rec.samples) && rec.samples.length === 0, `${rec.id}: an ended mission has no samples of its own`);
     check(propagate(rec, Date.parse('2026-09-22T00:00:00Z')) === null && propagate(rec, Date.parse(md.endDate + 'T00:00:00Z') - 86400e3) === null, `${rec.id}: without its file it is drawn nowhere, today or then`);
     check(!!EPHEMERIDES[rec.id] && String(EPHEMERIDES[rec.id].horizonsId) === String(md.horizonsId), `${rec.id}: it has a path file, of the same Horizons id`);
-    check(/^\d{4}-\d\d-\d\d$/.test(md.launchDate) && /^\d{4}-\d\d-\d\d$/.test(md.endDate) && EPHEMERIDES[rec.id].to.startsWith(md.endDate), `${rec.id}: launch and end dates, and the file stops on the day it ended`);
+    check(/^\d{4}-\d\d-\d\d$/.test(md.launchDate) && /^\d{4}-\d\d-\d\d$/.test(md.endDate) && EPHEMERIDES[rec.id].to.startsWith(md.pathEndDate || md.endDate), `${rec.id}: launch and end dates, and the file stops on the day it ended`);
+    // Stardust (2026-10-08): JPL's file stops twelve days before the transmitter went off. The row says so, in words the card prints.
+    if (md.pathEndDate) check(md.pathEndDate < md.endDate && Date.parse(md.endDate) - Date.parse(md.pathEndDate) < 14 * 86400e3 && /stops on 12 March 2011/.test(md.why), `${rec.id}: a path that stops before the end stops days before, and the card says when`);
     check(typeof md.note === 'string' && md.note.length > 20 && md.note.length <= 160, `${rec.id}: a note of 160 characters at most`);
     check(/nowhere to draw it today/.test(md.why) && /JPL Horizons/.test(md.why), `${rec.id}: says why nothing is drawn today, and where its path is from`);
     check(rows.every((r) => r.id !== String(md.horizonsId)), `${rec.id}: the harvester must not ask Horizons for it today (its trajectory has ended)`);
   }
 }
-check(records.length === 28, `the deep-space layer holds twenty-eight craft that are somewhere today (found ${records.length})`);
+check(records.length === 29, `the deep-space layer holds twenty-nine craft that are somewhere today (found ${records.length})`);
 check(byId.size === records.length, 'record ids are unique');
 
 // Every id the harvester fetches has a record under the app id the list names, with the same name.
@@ -88,6 +90,9 @@ const listed = new Set(rows.map((r) => r.id));
 for (const rec of records) {
   const hid = rec.meta.horizonsId;
   if (hid == null) continue;
+  // MAVEN (2026-10-08): Horizons holds nothing for it after 2026-03-01, so there is nothing to fetch;
+  // it is drawn on its last tracked orbit and its card says so.
+  if (rec.meta.construction === 'last-tracked-orbit') { check(!listed.has(String(hid)) && rec.cls === 'sample' && /no contact with MAVEN since 6 December 2025/.test(rec.meta.why) && /is not known\.$/.test(rec.meta.why), `${rec.id}: a craft nobody hears from is not fetched, and says what is not known`); continue; }
   check(listed.has(String(hid)), `${rec.id} carries Horizons id ${hid} and the harvester never fetches it`);
 }
 const unlisted = records.filter((r) => r.meta.horizonsId == null).map((r) => r.id).sort();
@@ -96,6 +101,7 @@ check(JSON.stringify(unlisted) === JSON.stringify(['deep-solar-orbiter']),
 // A model keyed on an id the harvester does not fetch would be a model on a stand-in forever.
 for (const key of Object.keys(REAL_MODELS.horizons)) {
   if (ended.some((r) => String(r.meta.horizonsId) === key)) continue; // drawn from its path file
+  if (records.some((r) => String(r.meta.horizonsId) === key && r.meta.construction === 'last-tracked-orbit')) continue; // MAVEN: its last tracked orbit
   check(listed.has(key), `scene/realmodels.js draws Horizons id ${key}, which horizons-ids.yaml does not fetch`);
 }
 

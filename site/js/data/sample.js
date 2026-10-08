@@ -1143,6 +1143,46 @@ const CRUISING_CRAFT = [
 ];
 
 /**
+ * A CRAFT NOBODY HAS HEARD FROM (2026-10-08, internal #433, public #431): MAVEN. JPL Horizons'
+ * header for -202 (revised Feb 13, 2026, read 2026-10-08): "There has been no contact with the
+ * MAVEN spacecraft since December 6, 2025 with some evidence it experienced an unplanned delta-V
+ * Dec. 4 and is spinning in an altered trajectory. Therefore predicts after December 4, 2025 may
+ * be inaccurate."; trajectory "Fit to data through 2025-Dec-04, prediction thereafter"; launch
+ * "Nov 18, 2013 @ 18:28 UTC", Mars arrival "September 22, 2014". Horizons answers nothing for it
+ * after 2026-MAR-01, so the harvester cannot ask and this row is never replaced by a snapshot.
+ * The state is Horizons' for 2025-12-04 00:00 UT (COMMAND='-202', CENTER='500@499', ecliptic
+ * J2000, TIME_TYPE=UT), the last midnight inside the fit. From it: 5 726 km semi-major axis,
+ * eccentricity 0.372, so 207 to 4 466 km above a 3 389.5 km Mars, a lap of 219.2 minutes.
+ * It is classed `sample` and its `why` says what is and is not known, which is the line the card
+ * prints (ui/cardfacts.js classLine).
+ */
+const LOST_ORBITER_EPOCH_MS = Date.UTC(2025, 11, 4);
+const LOST_ORBITERS = [
+  {
+    id: 'deep-maven',
+    name: 'MAVEN',
+    launched: '2013-11-18',
+    klass: 'probe',
+    horizonsId: -202,
+    world: 'mars',
+    aliases: ['Mars Atmosphere and Volatile EvolutioN'],
+    note: 'In orbit round Mars since September 2014 to study how the planet loses its air to ' +
+      'space. NASA has not heard from it since 6 December 2025.',
+    rKm: [1249.946451, 3646.897367, -6566.122126],
+    vKmS: [1.106146210, 1.471414496, 0.617508591],
+    periodMin: 219.2,
+    orbit: 'swung round Mars every 3 hours 39 minutes, from about 200 km up out to about 4 500 km',
+    why: 'NASA has had no contact with MAVEN since 6 December 2025. The orbit drawn is its last ' +
+      'tracked one: when last tracked it swung round Mars every 3 hours 39 minutes, from about ' +
+      '200 km up out to about 4 500 km. The dot starts from JPL Horizons’ position for it ' +
+      'relative to Mars on 4 December 2025, the last day JPL’s track is fitted to tracking, and ' +
+      'is carried round Mars by Mars’s pull alone. JPL says there is some evidence the craft was ' +
+      'pushed onto an altered path that day. Where MAVEN is along that orbit today, and whether ' +
+      'it is still on it, is not known.',
+  },
+];
+
+/**
  * Construction E: ENDED MISSIONS (2026-10-06, internal #406, #389). Cassini was flown into Saturn
  * and Galileo into Jupiter, so today there is nowhere to draw them and this row draws nothing:
  * its own propagator has no samples and answers null. What it has instead is a file of its whole
@@ -1208,6 +1248,72 @@ const PAST_CRAFT = [
     note: 'The first spacecraft to orbit two worlds beyond Earth: the asteroid Vesta in 2011 and ' +
       '2012, then the dwarf planet Ceres from 2015.',
     end: 'It fell silent on 31 October 2018, out of fuel, in an orbit of Ceres nobody has tracked since',
+  },
+  // Four more ended missions with their NASA meshes (2026-10-08, public #431). Dates as read that
+  // day. Rosetta: JPL Horizons' header for -226 ("Launch (Ariane-5G)= Mar 2, 2004 07:17:51 UTC";
+  // "On 2016-September-30 @ 10:39:28 UTC, the Rosetta spacecraft ended its mission by landing on
+  // the comet"; orbit from 2014-Aug-6, Philae released November 12); NSSDCA's page for it did not
+  // load. NEAR: NSSDCA 1996-008A (launch date 1996-02-17; "the mission ended with a touchdown in
+  // the saddle region of Eros on 12 February 2001"; "the final contact was made on 28 February";
+  // orbit insertion 14 February 2000). Stardust: NSSDCA 1999-003A (launch date 1999-02-07; coma of
+  // Wild 2 entered 31 December 2003, closest 2 January 2004; capsule landed 15 January 2006; past
+  // Tempel 1 on 15 February 2011 UT; "commanded into safe mode with its transmitter off on 25
+  // March 2011 at 00:30 UT"). Deep Impact: NSSDCA 2005-001A (launched 12 January 2005; the
+  // impactor struck on 4 July; Hartley 2 on 4 November 2010; "end of mission was announced on 19
+  // September" 2013) and Horizons' header for -140 ("Contact was lost Aug 11-14, 2013";
+  // "w/data to 2012-Jan-24").
+  {
+    id: 'deep-rosetta',
+    name: 'Rosetta',
+    launched: '2004-03-02',
+    ended: '2016-09-30',
+    klass: 'probe',
+    horizonsId: -226,
+    note: 'A European Space Agency mission. It went into orbit round comet 67P/Churyumov-Gerasimenko ' +
+      'in 2014 and released the lander Philae onto it.',
+    end: 'It ended its mission by landing on the comet on 30 September 2016',
+  },
+  {
+    id: 'deep-near',
+    name: 'NEAR Shoemaker',
+    launched: '1996-02-17',
+    ended: '2001-02-12',
+    klass: 'probe',
+    horizonsId: -93,
+    aliases: ['NEAR', 'Near Earth Asteroid Rendezvous'],
+    note: 'The first spacecraft to orbit an asteroid and the first to touch down on one: 433 Eros, ' +
+      'which it circled for a year from February 2000.',
+    end: 'It touched down on Eros on 12 February 2001 and was last heard from on 28 February',
+  },
+  // `pathEnds`: JPL's file for the Stardust bus stops on 12 March 2011 (Horizons: "No ephemeris
+  // ... after A.D. 2011-MAR-12 23:58:53"), twelve days before the end, so the path does too.
+  {
+    id: 'deep-stardust',
+    name: 'Stardust',
+    launched: '1999-02-07',
+    ended: '2011-03-25',
+    pathEnds: '2011-03-12',
+    pathEndsWhy: 'The path JPL holds for it stops on 12 March 2011, and stretches of it are ' +
+      'JPL’s predictions, not tracking.',
+    klass: 'probe',
+    horizonsId: -29,
+    aliases: ['Stardust-NExT'],
+    note: 'It flew through the coma of comet Wild 2 in January 2004, sent a capsule of comet dust ' +
+      'back to Earth in 2006, then flew past comet Tempel 1 in 2011.',
+    end: 'Its transmitter was switched off on 25 March 2011',
+  },
+  {
+    id: 'deep-deep-impact',
+    name: 'Deep Impact',
+    launched: '2005-01-12',
+    ended: '2013-09-19',
+    klass: 'probe',
+    horizonsId: -140,
+    aliases: ['EPOXI'],
+    note: 'It released an impactor that struck comet Tempel 1 on 4 July 2005, then flew past comet ' +
+      'Hartley 2 in November 2010.',
+    end: 'Contact was lost in August 2013 and NASA declared the mission over on 19 September 2013 ' +
+      '(its path after January 2012 is JPL’s prediction, not tracking)',
   },
 ];
 
@@ -1638,6 +1744,37 @@ export function sampleDeepSpace() {
     });
   }
 
+  for (const c of LOST_ORBITERS) {
+    out.push({
+      id: c.id,
+      name: c.name,
+      layer: 'deep-space',
+      klass: c.klass,
+      propagator: 'orbiter',
+      frame: c.world + '-inertial',
+      cls: 'sample',
+      epoch: LOST_ORBITER_EPOCH_MS,
+      source: 'horizons-deep-space',
+      muKm3S2: WORLD_GM[c.world],
+      samples: [{ tMs: LOST_ORBITER_EPOCH_MS, rKm: c.rKm, vKmS: c.vKmS }],
+      // A bound orbit repeats, so the craft stays on the map; `why` says the place is not known.
+      extrapolateMs: Infinity,
+      meta: {
+        horizonsId: c.horizonsId,
+        construction: 'last-tracked-orbit',
+        orbits: c.world,
+        periodMin: c.periodMin,
+        note: c.note,
+        launchDate: c.launched,
+        lastContact: '2025-12-06',
+        ...(c.aliases ? { aliases: c.aliases } : {}),
+        approx: true,
+        approxFields: ['the whole position: no contact since 6 December 2025'],
+        why: c.why,
+      },
+    });
+  }
+
   for (const c of PAST_CRAFT) {
     out.push({
       id: c.id,
@@ -1658,11 +1795,12 @@ export function sampleDeepSpace() {
         note: c.note,
         launchDate: c.launched,
         endDate: c.ended,
+        ...(c.pathEnds ? { pathEndDate: c.pathEnds } : {}),
         ...(c.aliases ? { aliases: c.aliases } : {}),
         why: c.end + ', so there is nowhere to draw it today. Between ' + c.launched.slice(0, 4) +
           ' and ' + c.ended.slice(0, 4) + ' it is drawn from its own path: positions from JPL ' +
           'Horizons, shipped with the app and fetched when this card opens. Choose an event ' +
-          'of its mission to go there.',
+          'of its mission to go there.' + (c.pathEndsWhy ? ' ' + c.pathEndsWhy : ''),
       },
     });
   }

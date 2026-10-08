@@ -467,6 +467,13 @@ export const REAL_MODELS = {
     '-211': { file: 'roman.glb', colour: 'telescope', name: 'Nancy Grace Roman Space Telescope' },
     '-53': { file: 'odyssey.glb', colour: 'probe', name: 'Mars Odyssey' },
     '-203': { file: 'dawn.glb', colour: 'probe', name: 'Dawn' },
+    // 2026-10-08 (public #431): four more ended missions, each drawn inside the years of its path.
+    // MAVEN: on its last tracked orbit of Mars; its row says nobody knows where on it (data/sample.js LOST_ORBITERS).
+    '-202': { file: 'maven.glb', colour: 'probe', name: 'MAVEN' },
+    '-226': { file: 'rosetta.glb', colour: 'probe', name: 'Rosetta' },
+    '-93': { file: 'near.glb', colour: 'probe', name: 'NEAR Shoemaker' },
+    '-29': { file: 'stardust.glb', colour: 'probe', name: 'Stardust' },
+    '-140': { file: 'deep-impact.glb', colour: 'probe', name: 'Deep Impact' },
     // Mars 2020 in cruise: NASA's file is the rover, and what flew between the planets was a
     // closed capsule under a ring of solar cells. A procedural shape from the one published
     // length (scene/models.js buildMars2020Cruise), with nothing to upgrade to.
