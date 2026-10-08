@@ -964,11 +964,17 @@ export function createTripFrame(ctx) {
     const stamp = el('p', 'sr-tripsheet__stamp');
     stamp.hidden = true;
     p.appendChild(stamp);
+    const places = el('p', 'sr-tripsheet__seen');
+    places.hidden = true;
+    p.appendChild(places);
     if (typeof ctx.wantPassport === 'function') {
       const total = trip.tours().length;
       ctx.wantPassport().then((pass) => {
         const line = pass && stamp.isConnected ? pass.stamp(st.tourId, total) : '';
         if (line) { stamp.textContent = line; stamp.hidden = false; }
+        // The places under it (public #240): the Passport view's own count, on the end card too.
+        const seen = line && typeof pass.stampPlaces === 'function' ? pass.stampPlaces() : '';
+        if (seen) { places.textContent = seen; places.hidden = false; }
       });
     }
 

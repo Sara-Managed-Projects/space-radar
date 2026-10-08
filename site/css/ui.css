@@ -6756,6 +6756,15 @@ html.sr-phone .sr-passport {
 
 .sr-tripsheet__stamp[hidden] { display: none; }
 
+/* Under the stamp, the places opened so far (public #240): a caption, not a second stamp. */
+.sr-tripsheet__seen {
+  margin: calc(-1 * var(--sp-2)) 0 var(--sp-3);
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-tripsheet__seen[hidden] { display: none; }
+
 /* Cards and live facts (2026-10-08). The distance that ticks: mono, tabular, so no digit moves
    its neighbours (docs/ui-guide.md 2.2, value numerals). */
 .sr-live__row {

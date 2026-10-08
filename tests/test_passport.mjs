@@ -118,6 +118,15 @@ check(P.KEY === 'sr:passport', 'one key, sr:passport');
   for (const id of ['a', 'b', 'c', 'd', 'e', 'f', 'g']) p = P.recordComplete(p, id, now);
   check(/^Trip 7 of 25 · [6-8] October 2026$/.test(P.stampLine(p, 25, now)), `the stamp, dated the visitor's own day: ${P.stampLine(p, 25, now)}`);
   check(P.stampLine(p, 3, now) === '' && P.stampLine(p, NaN, now) === '', 'a total that cannot be right prints nothing');
+  // The places under it (public #240): the same count the home's row and the view show.
+  check(P.stampPlacesLine(P.emptyPassport()) === '', 'no place opened, no places line');
+  {
+    let q = P.emptyPassport();
+    q = P.recordVisit(q, 'sat-25544', now);
+    check(P.stampPlacesLine(q) === '1 place opened so far', `one place: ${P.stampPlacesLine(q)}`);
+    for (let i = 0; i < 40; i++) q = P.recordVisit(q, `x-${i}`, now + i);
+    check(P.stampPlacesLine(q) === '41 places opened so far' && P.placesSeen(q) === 41, `the count is placesSeen: ${P.stampPlacesLine(q)}`);
+  }
 }
 
 // --- the places the view links ---------------------------------------------------------------------
@@ -196,6 +205,7 @@ check(P.KEY === 'sr:passport', 'one key, sr:passport');
   check(!/^import .*passport\.js/m.test(main) && /ctx\.wantPassport = \(\) => passport \|\| \(passport = import\('\.\/ui\/passport\.js'\)/.test(main), 'main.js fetches the passport on demand, once');
   const frame = readFileSync(join(JS, 'ui/tripframe.js'), 'utf8');
   check(/sr-tripsheet__stamp/.test(frame) && /pass\.stamp\(st\.tourId, total\)/.test(frame) && /stamp\.hidden = true/.test(frame), 'the end card carries the stamp, hidden until there is one');
+  check(/sr-tripsheet__seen/.test(frame) && /pass\.stampPlaces\(\)/.test(frame) && /places\.hidden = true/.test(frame), 'and under it the places opened so far, hidden until there are some (public #240)');
   const explore = readFileSync(join(JS, 'ui/explore.js'), 'utf8');
   check(/ctx\.passport \? ctx\.passport\.resume\(row\.id\) : null/.test(explore) && /trip\.jumpTo\(resume\.index\)/.test(explore) && /'sr:passport'/.test(explore), 'a trip card offers the stop it was left at, and starts there');
   const { COPY } = await import(join(JS, 'copy/en.js'));
