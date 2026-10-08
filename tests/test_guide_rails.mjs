@@ -196,6 +196,7 @@ const EMBER_FILLS = [
   [/\.sr-bracketed::(before|after)|\.sr-search__option\.is-active::|\.sr-search__row:has\(:focus-visible\)::|^:where\(.*\):focus-visible::(before|after)$|\.sr-tick$|\.sr-reticle|\.sr-skyreticle/, 'the bracket ticks: selection, focus, the reticle, and what the phone points at in the sky'],
   [/^\.sr-act--primary$/, "the card's one primary action (the same button, on the card)"],
   [/^\.sr-tripsheet__start$/, "the trip sheet's Start (its one primary)"],
+  [/^\.sr-welcome__go$/, "a first visit's Guided trip (the home's one primary, once per visitor: ui/welcome.js)"],
   [/^\.sr-trip__tb--play\.is-paused$/, 'Play while a trip is paused (the one thing to press)'],
   [/^\.sr-photo__save$/, "the photo sheet's Save (its one primary)"],
   [/^\.sr-time__live$/, 'Back to now, shown only away from now'],

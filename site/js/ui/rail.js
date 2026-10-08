@@ -1,7 +1,7 @@
 // ui/rail.js -- the tool rail: three 48 px buttons in one glass column, top right (spec 0061 req 5).
 //
 // Contract: createRail(ctx, host) -> { root, openShow(), closeShow(), toggleShow() }
-// Also exported, pure: railKey(event, activeElement) -> 'show' | 'share' | null
+// Also exported, pure: railKey(event, activeElement) -> 'show' | 'share' | 'keys' | null
 //
 //   [layers]   What to show: the layers with their counts and swatches, colour by, sound, density
 //   [share]    Share: the one share sheet (ui/share.js ctx.share.open, ui/sharesheet.js), with the
@@ -17,7 +17,7 @@
 // it. The GitHub mark is the rail's last button (it spent 2026-09-30 to 10-02 in the sources footer,
 // where Ivan missed it).
 //
-// KEYS. L opens What to show, P the share sheet; H is ui/cleanview.js's own. Not S for share:
+// KEYS. L opens What to show, P the share sheet, ? every key (ui/keyhint.js); H is ui/cleanview.js's own. Not S for share:
 // S is held to move the camera back (scene/camera.js CAMERA_KEYS), and P was the postcard's key,
 // so the hand that knew it still finds the picture there. Not while typing in a field and not with
 // a modifier, so the browser's shortcuts are left alone (the same rule as H). Escape closes an
@@ -59,6 +59,8 @@ export function railKey(event, activeElement) {
   if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (activeElement && activeElement.isContentEditable)) return null;
   if (event.key === 'l' || event.key === 'L') return 'show';
   if (event.key === 'p' || event.key === 'P') return 'share';
+  // `?`: every key the app answers, in the controls hint (public #315, ui/keyhint.js).
+  if (event.key === '?') return 'keys';
   return null;
 }
 
@@ -260,6 +262,7 @@ export function createRail(ctx, host) {
     if (document.documentElement.classList.contains('sr-trip-mode')) return; // the trip owns the screen
     e.preventDefault();
     if (what === 'show') toggleShow();
+    else if (what === 'keys') { if (ctx && ctx.keyhint && typeof ctx.keyhint.toggleAll === 'function') ctx.keyhint.toggleAll(); }
     else toggleShare();
   }, true);
 

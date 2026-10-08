@@ -463,6 +463,16 @@ export function createTripFrame(ctx) {
     topLeave.appendChild(icon('x', 16));
     topLeave.appendChild(el('span', null, T.leave));
     topLeave.addEventListener('click', leave);
+    // RETURN TO BASE (public #241, ui/base.js): the rail's house is hidden with the rail during a
+    // trip, so the top bar carries one. It leaves the trip and brings the view home: the Earth,
+    // now, nothing selected. An icon beside Leave, named and with a tooltip.
+    const topHome = el('button', 'sr-trip__home');
+    topHome.type = 'button';
+    topHome.title = COPY.base.trip;
+    topHome.setAttribute('aria-label', COPY.base.label);
+    topHome.appendChild(icon('house', 20));
+    topHome.addEventListener('click', () => { if (typeof ctx.returnToBase === 'function') ctx.returnToBase(); else leave(); });
+    top.appendChild(topHome);
     top.appendChild(topLeave);
 
     // THE SHEET: the intro, the stop card's slot, the end. Seated in the sidebar's trip view on a

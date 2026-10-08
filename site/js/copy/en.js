@@ -2038,6 +2038,8 @@ export const COPY = {
     groupAllLabel: 'Show every layer in {group}',
     groupNoneLabel: 'Hide every layer in {group}',
     layerFilter: 'Find a layer',
+    // The list is one tab stop (public #315): its name tells a screen reader which keys move in it.
+    layersKeys: 'Layers. Up and down arrows move; Space switches one.',
     layerFilterEmpty: 'No layer by that name.',
     // The row that reopens the controls hint (ui/keyhint.js, issue #321): keys on a keyboard,
     // gestures on a touch screen.

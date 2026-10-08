@@ -222,6 +222,26 @@ function defaultStorage() {
 }
 
 /** A touch screen is told "Gestures", a keyboard "Keys" -- the same test ui/keyhint.js uses. */
+/**
+ * ONE TAB STOP (public #315). The layer list was a tab stop per group heading, per All and None
+ * and per checkbox: twenty-odd presses of Tab between the filter and Colour by. It is now one
+ * composite with a roving tabindex, as the tabs and the rail's menu are: Tab enters it at the item
+ * last used and Tab again leaves it; the arrows move inside.
+ *
+ * Which item an arrow key moves to. `count` items in a column, `index` the one that has focus.
+ * Down and Up step and stop at the ends (a list, not a ring: the end is information); Home and
+ * End jump. Null for any other key, and for an empty list. Pure.
+ */
+export function rovingTarget(count, index, key) {
+  if (!(count > 0)) return null;
+  const i = Number.isInteger(index) && index >= 0 && index < count ? index : 0;
+  if (key === 'ArrowDown') return Math.min(count - 1, i + 1);
+  if (key === 'ArrowUp') return Math.max(0, i - 1);
+  if (key === 'Home') return 0;
+  if (key === 'End') return count - 1;
+  return null;
+}
+
 function isTouch() {
   try { return !!(typeof matchMedia === 'function' && matchMedia('(hover: none) and (pointer: coarse)').matches); } catch { return false; }
 }
@@ -317,8 +337,9 @@ export function createWhatToShow(ctx, opts = {}) {
       if (open.has(group.id)) open.delete(group.id); else open.add(group.id);
       writeOpen(storage, open);
       layout();
+      syncRoving();
     });
-    heads.set(group.id, { sec, head, body, bulk, tally, group });
+    heads.set(group.id, { sec, head, body, bulk, tally, group, bulkButtons: [allBtn, noneBtn] });
 
     for (const layer of group.layers) {
       const li = el('li', 'sr-show__row');
@@ -364,8 +385,59 @@ export function createWhatToShow(ctx, opts = {}) {
     }
     noMatch.hidden = !q || any;
   }
-  if (filter) filter.addEventListener('input', layout);
+  // --- one tab stop for the whole list (rovingTarget above) ---------------------------------------
+  // The items: every heading, and inside an open group its All, its None and its rows, in the
+  // order they are on screen. What is hidden (a shut group, a row the filter left out) is not one.
+  const rovingAll = [];
+  for (const h of heads.values()) {
+    rovingAll.push({ node: h.head, shown: () => !h.sec.hidden });
+    const inBody = () => !h.sec.hidden && !h.body.hidden;
+    for (const b of h.bulkButtons) rovingAll.push({ node: b, shown: () => inBody() && !h.bulk.hidden });
+    for (const layer of h.group.layers) {
+      const row = rows.get(layer.id);
+      rovingAll.push({ node: row.box, shown: () => inBody() && !row.li.hidden });
+    }
+  }
+  const rovingItems = () => rovingAll.filter((it) => it.shown()).map((it) => it.node);
+  let rovingAt = null;
+  /** Exactly one item takes Tab: the one last used if it is still on screen, else the first. */
+  function syncRoving() {
+    const items = rovingItems();
+    if (!items.includes(rovingAt)) rovingAt = items[0] || null;
+    for (const it of rovingAll) it.node.tabIndex = it.node === rovingAt ? 0 : -1;
+  }
+  list.addEventListener('focusin', (e) => {
+    if (!e.target || !rovingAll.some((it) => it.node === e.target)) return;
+    rovingAt = e.target;
+    syncRoving();
+  });
+  list.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const items = rovingItems();
+    const i = items.indexOf(document.activeElement);
+    if (i < 0) return;
+    // On a heading, Right opens its group and Left shuts it (the tree pattern's two keys).
+    const head = document.activeElement.classList.contains('sr-show__head') ? document.activeElement : null;
+    if (head && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
+      const isOpen = head.getAttribute('aria-expanded') === 'true';
+      if ((e.key === 'ArrowRight') !== isOpen) head.click();
+      e.preventDefault();
+      return;
+    }
+    const to = rovingTarget(items.length, i, e.key);
+    if (to === null) return;
+    e.preventDefault();
+    if (to === i) return;
+    rovingAt = items[to];
+    syncRoving();
+    rovingAt.focus();
+  });
+  list.setAttribute('role', 'group');
+  list.setAttribute('aria-label', C.layersKeys);
+
+  if (filter) filter.addEventListener('input', () => { layout(); syncRoving(); });
   layout();
+  syncRoving();
 
   // Data-saver, the frame-rate latch and the device tier say what they decided (spec 0026 req 18).
   const quality = el('p', 'sr-show__note');
@@ -434,7 +506,7 @@ export function createWhatToShow(ctx, opts = {}) {
     // The popover closes first: the hint sits bottom-right and the popover would hide nothing of
     // it, but two floating panels at once is the clutter the rail was made to end.
     if (ctx && ctx.rail && typeof ctx.rail.closeShow === 'function') ctx.rail.closeShow();
-    if (ctx && ctx.keyhint && typeof ctx.keyhint.show === 'function') ctx.keyhint.show();
+    if (ctx && ctx.keyhint && typeof ctx.keyhint.show === 'function') ctx.keyhint.show({ all: true });
   });
   root.appendChild(keys);
 

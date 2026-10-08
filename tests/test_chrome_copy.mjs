@@ -165,7 +165,8 @@ for (const [key, max] of [['passport.forget', 2], ['passport.forgetConfirm', 2],
 // names its key). No exclamation mark, no arrow, no double hyphen, no emoji, and no Title Case.
 const CHROME_SECTIONS = ['app', 'subscribe', 'shell', 'tabs', 'rightNow', 'statusLine', 'tripCard', 'explore', 'rail', 'timePill', 'undo',
   'moments', 'ladder', 'sceneNote', 'link', 'share', 'audio', 'density', 'nextList', 'colourKey', 'chooser', 'controls', 'search',
-  'quality', 'time', 'sheet', 'print', 'hud', 'tonight', 'clean', 'keyHint', 'mark', 'sentence', 'wonder', 'happened', 'passport'];
+  'quality', 'time', 'sheet', 'print', 'hud', 'tonight', 'clean', 'keyHint', 'mark', 'sentence', 'wonder', 'happened', 'passport',
+  'scale', 'launchChip', 'welcome', 'base'];
 const TOOLTIP = /(Title|Label|Alt|Aria|Tip|Hint|Why|Help|Describe|Long)$|^(label|title|aria|hint|why)/;
 // Said in full on purpose, each with its reason. A key here that goes away fails below.
 const LONG_OK = new Map([

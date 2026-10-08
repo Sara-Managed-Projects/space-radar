@@ -318,7 +318,9 @@ notify({ phase: 'dwell', index: 0, count: 4, stopTitle: 'Two places, and only tw
   const top = q('.sr-trip__top');
   check(top.hidden === false && q('.sr-trip__title').textContent === state.tourTitle, 'the top bar shows the trip\'s title');
   check(q('.sr-trip__chapter').textContent === 'Chapter one: the stations', 'with its chapter above it');
-  check(top.querySelectorAll('button').length === 1 && q('.sr-trip__leave').textContent === T.leave, 'and one button, Leave');
+  // Leave, and since public #241 a house beside it: Return to base (ui/base.js), an icon with a name.
+  check(top.querySelectorAll('button').length === 2 && q('.sr-trip__leave').textContent === T.leave, 'and two buttons: Leave, and the way home');
+  check(q('.sr-trip__home').getAttribute('aria-label') === COPY.base.label && q('.sr-trip__home').title === COPY.base.trip, 'the house is named "Return to base" and its tooltip says it leaves the trip');
   check(primaries() === 0, `no ember on screen while a stop plays (${primaries()})`);
 }
 
