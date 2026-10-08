@@ -529,6 +529,8 @@ than counted by hand.
 | `dawn.glb` | Dawn | Horizons -203 (Dawn, 2007 to 2018) | 116 KB |
 | `maven.glb` | Mars Atmosphere and Volatile EvolutioN (MAVEN) (B) | no record yet: MAVEN has had no position source since 2026-03-01 | 179 KB |
 | `odyssey.glb` | Mars Odyssey | Horizons -53 (Mars Odyssey) | 95 KB |
+| `saturn-v.glb` | Saturn V (NASA/Michael D. Carbajal) | TO BE WIRED by branch models3-close-issues | 96 KB |
+| `shuttle-stack.glb` | Space Shuttle (A) (NASA/Michael D. Carbajal): the orbiter on its tank and boosters | TO BE WIRED by branch models3-close-issues | 130 KB |
 | `galileo.glb` | Galileo | Horizons -77 (Galileo, 1989 to 2003) | 76 KB |
 | `juno.glb` | Juno (B) | Horizons -61 | 146 KB |
 | `lro.glb` | Lunar Reconnaissance Orbiter (A) | Horizons -85 | 187 KB |
