@@ -3,7 +3,7 @@
 //    three runs of tests/probes/cards2-phone.js stopped at, before #500 fixed scene/viewshift.js.
 // 2. internal #455: the Tonight view's place line, "Change place", the city box and the chips.
 // 3. internal #454: the Trips section's two quiet buttons and Just watch, with the sheet open.
-// 4. internal #421: the uncovered band and a lander selected in it.
+// 4. internal #421: the ISS at the card's own height, with the uncovered band and its reticle.
 // Each step is also sent to /probe-log, so a run cut at its cap still leaves what it read.
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const t0 = Date.now();
@@ -38,7 +38,9 @@ await step('start');
   out.iss = { found: !!r };
   if (r) {
     ctx.select(r, { fly: false }); await wait(2200); await step('iss-picked');
-    out.iss.bandPeek = band();
+    out.iss.bandCard = band();
+    { const rb = document.querySelector('#sr-hud .sr-reticle__box'); out.iss.reticle = box(rb); out.iss.top = box(document.querySelector('#sr-top')); out.iss.card = box(document.querySelector('#sr-card')); }
+    await log('iss'); await shot('ph0-iss-in-band');
     await up(); await step('iss-up');
     const t1 = performance.now(); await wait(200); out.iss.timerAfterUpMs = Math.round(performance.now() - t1);
     const h = document.querySelector('#sr-disc-aboard'); if (h && h.getAttribute('aria-expanded') !== 'true') h.click();
@@ -58,6 +60,7 @@ await step('start');
 {
   if (ctx.explore && ctx.explore.setTab) ctx.explore.setTab('tonight');
   const w0 = Date.now(); while (!document.querySelector('.sr-tonight-view__change') && Date.now() - w0 < 15000) await wait(300);
+  await up(2); await wait(400); // the sheet at full height: the view is under the fold at peek
   const change = document.querySelector('.sr-tonight-view__change');
   const ctl = document.querySelector('#sr-tonight-place');
   const chips = () => [...document.querySelectorAll('.sr-place__chips button')].filter((b) => !b.hidden && b.offsetParent !== null).map((b) => ({ t: b.textContent, ...box(b) }));
@@ -65,7 +68,7 @@ await step('start');
   out.place = {
     built: !!change, line0: text('.sr-tonight-view__place'), source0: ctx.observer ? ctx.observer.source : null,
     expanded0: change ? change.getAttribute('aria-expanded') : null, open0: ctl ? !ctl.hidden : null,
-    change: box(change), input: box(input), inputFont: input ? getComputedStyle(input).fontSize : null, chips0: chips(),
+    change: box(change), input: box(input), inputFont: input ? getComputedStyle(input).fontSize : null, lineBox: box(document.querySelector('.sr-tonight-view__place')), chips0: chips(),
     oldPanel: document.querySelectorAll('.sr-place__current, .sr-tonight__list, section.sr-place').length,
   };
   show(change); await wait(300); await log('place'); await shot('ph2-tonight-place-guess');
@@ -104,20 +107,5 @@ await step('start');
   } else await log('trips');
 }
 
-// 4. #421
-{
-  const r = (ctx.recordsFor('hand-kept-sites') || []).find((x) => /Apollo 11/.test(x.name));
-  out.lander = { found: !!r, bandBefore: band() };
-  if (r) {
-    ctx.select(r); const w0 = Date.now();
-    await wait(3000);
-    while (ctx.cameraRig.state.flying && Date.now() - w0 < 60000) await wait(500);
-    await wait(2500);
-    out.lander.flewMs = Date.now() - w0; out.lander.band = band(); out.lander.stage = ctx.stage.worldId;
-    out.lander.top = box(document.querySelector('#sr-top')); out.lander.card = box(document.querySelector('#sr-card'));
-    out.lander.tag = box(document.querySelector('#sr-hud .sr-tag'));
-    await log('lander'); await shot('ph5-lander-in-band');
-  }
-}
 out.wide = wide();
 return out;
