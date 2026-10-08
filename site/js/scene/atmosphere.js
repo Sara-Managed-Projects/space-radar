@@ -534,13 +534,17 @@ export function createAirShell(key) {
 //      table has no such test in it: a ray that dips under the ground meets air growing denser
 //      without limit (the column is integrated through negative heights and capped), so the light
 //      dies smoothly over the few kilometres past the horizon, which is the Earth's own penumbra
-//      in its air, and is zero behind the planet. EARTH_AIR.sun is still #317's 14: where the old
-//      shader did light the air -- the limb toward the Sun -- the new one draws the same light to
-//      within 3 % (tests/test_atmo_lut.mjs keeps the old formula as a twin and holds the two
-//      together); what is new is the limb to either side of it, toward the poles of the terminator.
+//      in its air, and is zero behind the planet. What is new on screen is the limb to either
+//      side of the Sun's own, toward the poles of the terminator.
 //
-//   3. STEPS BY TIER. 8 view steps at tier 0, 12 at tier 1, 16 at tier 2, and 6 for good once the
-//      frame latch has tripped (setEarthAirSteps; main.js tells it with the other tier switches).
+//   3. EACH STEP IS A SLAB, AND THE STEPS GO BY TIER. 8 view steps at tier 0, 12 at tier 1, 16 at
+//      tier 2, and 6 for good once the frame latch has tripped (setEarthAirSteps; main.js tells it
+//      with the other tier switches). That is only honest if 6 steps draw what 16 do, and #317's
+//      sum did not: it moved by a factor of two between 6 steps and 64 (earthShell() says why and
+//      what replaced it). The converged light is half again as bright near the ground as #317's
+//      12 steps made it, so EARTH_AIR.sun is 11 where #317 had 14: within a quarter of the old
+//      green from 10 to 60 km up on the limb toward the Sun, whiter at the bottom (the old sum
+//      lost blue first), a little thinner at the top. Fitted by eye, as it was.
 //
 // AERIAL PERSPECTIVE (task 2) is the same air seen from above, over the disc: the ground is seen
 // THROUGH it and the air between the camera and the ground is itself lit. Over the disc the path
@@ -573,7 +577,7 @@ export const EARTH_AIR = {
   gasHKm: 8,
   mieHKm: 1.2,
   mieG: 0.76,
-  sun: 14.0,                         // the shell's light gain, fitted by eye (#317)
+  sun: 11.0,                         // the shell's light gain, fitted by eye (point 3 above; #317's was 14)
   steps: [8, 12, 16],                // view steps by tier
   latchedSteps: 6,
   maxSteps: 16,
@@ -687,41 +691,64 @@ export function earthShell(ro, rd, sunDir, { steps = 12, light = 'lut', sun = EA
   if (ground[0] > 0) t1 = Math.min(t1, ground[0]);
   if (!(t1 > t0)) return [0, 0, 0];
   const table = light === 'lut' ? (lut || buildEarthLut()) : null;
+  const mu = rd[0] * sunDir[0] + rd[1] * sunDir[1] + rd[2] * sunDir[2];
+  const phaseR = (3 / (16 * Math.PI)) * (1 + mu * mu);
+  const phaseM = hg1(mu, EARTH_AIR.mieG);
   const ds = (t1 - t0) / steps;
-  let odR = 0; let odM = 0;
-  const sumR = [0, 0, 0]; const sumM = [0, 0, 0];
-  for (let i = 0; i < steps; i++) {
-    const tt = t0 + (i + 0.5) * ds;
-    const p = [ro[0] + rd[0] * tt, ro[1] + rd[1] * tt, ro[2] + rd[2] * tt];
-    const r = Math.hypot(p[0], p[1], p[2]);
-    const h = Math.max(r - 1, 0);
-    const dR = Math.exp(-h / hR) * ds;
-    const dM = Math.exp(-h / hM) * ds;
-    odR += dR; odM += dM;
-    let lR = 0; let lM = 0;
-    if (light === 'old') {
+  if (light === 'old') {
+    let odR = 0; let odM = 0;
+    const sumR = [0, 0, 0]; const sumM = [0, 0, 0];
+    for (let i = 0; i < steps; i++) {
+      const tt = t0 + (i + 0.5) * ds;
+      const p = [ro[0] + rd[0] * tt, ro[1] + rd[1] * tt, ro[2] + rd[2] * tt];
+      const h = Math.max(Math.hypot(p[0], p[1], p[2]) - 1, 0);
+      const dR = Math.exp(-h / hR) * ds;
+      const dM = Math.exp(-h / hM) * ds;
+      odR += dR; odM += dM;
       if (sphere(p, sunDir, 1)[0] > 0) continue;   // #317's test: a miss (1e9) passes it
       const lds = sphere(p, sunDir, top)[1] / 4;
+      let lR = 0; let lM = 0;
       for (let j = 0; j < 4; j++) {
         const q = (j + 0.5) * lds;
         const lh = Math.max(Math.hypot(p[0] + sunDir[0] * q, p[1] + sunDir[1] * q, p[2] + sunDir[2] * q) - 1, 0);
         lR += Math.exp(-lh / hR) * lds;
         lM += Math.exp(-lh / hM) * lds;
       }
-    } else {
-      const c = lutColumns(table, h, (p[0] * sunDir[0] + p[1] * sunDir[1] + p[2] * sunDir[2]) / r);
-      lR = c[0]; lM = c[1];
+      for (let k = 0; k < 3; k++) {
+        const att = Math.exp(-(bR[k] * (odR + lR) + bM * EARTH_AIR.mieExt * (odM + lM)));
+        sumR[k] += dR * att;
+        sumM[k] += dM * att;
+      }
     }
+    return [0, 1, 2].map((k) => sun * (sumR[k] * bR[k] * phaseR + sumM[k] * bM * phaseM));
+  }
+  // EACH STEP IS A SLAB, NOT A POINT. #317 took the air at a step's middle, dimmed by everything
+  // before it and half of nothing of itself: along a limb ray, where one step can be several
+  // optical depths of blue, that answer moved by a factor of two between 6 steps and 64. Here a
+  // step's own light is integrated through its own dimming in closed form,
+  //   light += seenThrough x source x (1 - exp(-ext ds)) / ext,   seenThrough x= exp(-ext ds)
+  // (the usual energy-conserving step), so a thick step can send no more than it holds, and 6
+  // steps are within a few per cent of 400 (tests/test_atmo_lut.mjs): the tiers differ in cost,
+  // not in look.
+  const seen = [1, 1, 1];
+  const out = [0, 0, 0];
+  for (let i = 0; i < steps; i++) {
+    const tt = t0 + (i + 0.5) * ds;
+    const p = [ro[0] + rd[0] * tt, ro[1] + rd[1] * tt, ro[2] + rd[2] * tt];
+    const r = Math.hypot(p[0], p[1], p[2]);
+    const h = Math.max(r - 1, 0);
+    const dR = Math.exp(-h / hR);
+    const dM = Math.exp(-h / hM);
+    const c = lutColumns(table, h, (p[0] * sunDir[0] + p[1] * sunDir[1] + p[2] * sunDir[2]) / r);
     for (let k = 0; k < 3; k++) {
-      const att = Math.exp(-(bR[k] * (odR + lR) + bM * EARTH_AIR.mieExt * (odM + lM)));
-      sumR[k] += dR * att;
-      sumM[k] += dM * att;
+      const ext = bR[k] * dR + bM * EARTH_AIR.mieExt * dM;
+      const sunT = Math.exp(-(bR[k] * c[0] + bM * EARTH_AIR.mieExt * c[1]));
+      const step = Math.exp(-ext * ds);
+      out[k] += seen[k] * sunT * (bR[k] * dR * phaseR + bM * dM * phaseM) * ((1 - step) / Math.max(ext, 1e-9));
+      seen[k] *= step;
     }
   }
-  const mu = rd[0] * sunDir[0] + rd[1] * sunDir[1] + rd[2] * sunDir[2];
-  const phaseR = (3 / (16 * Math.PI)) * (1 + mu * mu);
-  const phaseM = hg1(mu, EARTH_AIR.mieG);
-  return [0, 1, 2].map((k) => sun * (sumR[k] * bR[k] * phaseR + sumM[k] * bM * phaseM));
+  return out.map((x) => x * sun);
 }
 
 const EARTH_AIR_VERT = /* glsl */`
@@ -797,34 +824,38 @@ void main() {
   if ( ground.x > 0.0 && ground.x < 1e8 ) t1 = min( t1, ground.x );
   if ( t1 <= t0 ) discard;
 
+  float mu = dot( rd, uSunDir );
+  float phaseR = 3.0 / ( 16.0 * PI ) * ( 1.0 + mu * mu );
+  float g2 = MIE_G * MIE_G;
+  float phaseM = 3.0 / ( 8.0 * PI ) * ( ( 1.0 - g2 ) * ( 1.0 + mu * mu ) ) / ( ( 2.0 + g2 ) * pow( 1.0 + g2 - 2.0 * MIE_G * mu, 1.5 ) );
+
+  // Each step is a slab (EACH STEP IS A SLAB, earthShell() in scene/atmosphere.js): its own light
+  // through its own dimming, in closed form.
   float ds = ( t1 - t0 ) / float( uSteps );
-  float odR = 0.0, odM = 0.0;
-  vec3 sumR = vec3( 0.0 ), sumM = vec3( 0.0 );
+  float odR = 0.0;
+  vec3 seen = vec3( 1.0 );
+  vec3 sum = vec3( 0.0 );
   for ( int i = 0; i < MAX_STEPS; i++ ) {
     if ( i >= uSteps ) break;
     vec3 p = ro + rd * ( t0 + ( float( i ) + 0.5 ) * ds );
     float r = length( p );
     float h = max( r - 1.0, 0.0 );
-    float dR = exp( -h / hR ) * ds;
-    float dM = exp( -h / hM ) * ds;
-    odR += dR;
-    odM += dM;
+    float dR = exp( -h / hR );
+    float dM = exp( -h / hM );
+    odR += dR * ds;
     // The air between this step and the Sun, from the table: no march, and no shadow test -- a ray
     // that goes under the ground comes back with a column nothing gets through.
     vec2 l = texture2D( uLut, lutUv( h, dot( p, uSunDir ) / r ) ).rg;
-    vec3 att = exp( -( BETA_R * ( odR + l.r ) + BETA_M * ${EARTH_AIR.mieExt.toFixed(1)} * ( odM + l.g ) ) );
-    sumR += dR * att;
-    sumM += dM * att;
+    vec3 ext = BETA_R * dR + BETA_M * ${EARTH_AIR.mieExt.toFixed(1)} * dM;
+    vec3 sunT = exp( -( BETA_R * l.r + BETA_M * ${EARTH_AIR.mieExt.toFixed(1)} * l.g ) );
+    vec3 slab = exp( -ext * ds );
+    sum += seen * sunT * ( BETA_R * dR * phaseR + BETA_M * dM * phaseM ) * ( 1.0 - slab ) / max( ext, vec3( 1e-9 ) );
+    seen *= slab;
   }
-
-  float mu = dot( rd, uSunDir );
-  float phaseR = 3.0 / ( 16.0 * PI ) * ( 1.0 + mu * mu );
-  float g2 = MIE_G * MIE_G;
-  float phaseM = 3.0 / ( 8.0 * PI ) * ( ( 1.0 - g2 ) * ( 1.0 + mu * mu ) ) / ( ( 2.0 + g2 ) * pow( 1.0 + g2 - 2.0 * MIE_G * mu, 1.5 ) );
-  vec3 colour = ${EARTH_AIR.sun.toFixed(2)} * ( sumR * BETA_R * phaseR + sumM * BETA_M * phaseM ) * uIntensity;
+  vec3 colour = ${EARTH_AIR.sun.toFixed(2)} * sum * uIntensity;
 
   // Airglow: a faint green line on the night-side limb, which is real (oxygen at ~95 km).
-  float dark = 1.0 - clamp( length( sumR ) * 40.0, 0.0, 1.0 );
+  float dark = 1.0 - clamp( length( sum ) * 2.0, 0.0, 1.0 );
   colour += vec3( 0.012, 0.045, 0.022 ) * clamp( odR * 6.0, 0.0, 1.0 ) * dark * uIntensity;
 
   gl_FragColor = vec4( colour, 1.0 );
@@ -945,7 +976,7 @@ export const AERIAL = {
   sun: Math.PI,
   gain: 1.0,
   // Toward the limb the lit air is drawn brighter, by up to this: the shell just outside the limb
-  // is 4.5 times as bright as this unit makes air (EARTH_AIR.sun 14 against pi), and a limb twice
+  // is 3.5 times as bright as this unit makes air (EARTH_AIR.sun 11 against pi), and a limb twice
   // as bright as computed is what lets the disc's edge meet it without a dark seam. Fitted by eye.
   limbGain: 2.0,
   limbFrom: 0.35,

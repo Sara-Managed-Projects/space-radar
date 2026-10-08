@@ -31,7 +31,7 @@ import {
   GEO_SATELLITES, IMAGE_W, IMAGE_H, REFRESH_MS, START_DELAY_MS, BLANK_MAX_BYTES, RETRY_MISSING_MS, MISSING_RETRIES,
   domainsUrl, mapUrl, parseDomains, candidateSlots, cloudMode,
 } from '../data/gibs.js';
-import { satelliteOpacity, composeClouds, isBlank } from './cloudcompose.js';
+import { satelliteClouds, composeClouds, isBlank } from './cloudcompose.js';
 import { setLiveClouds, setLiveCloudsShown } from './earth.js';
 import { COPY, t, ageInWords, timeText } from '../copy/en.js';
 
@@ -51,11 +51,11 @@ function mainThreadComposer() {
       if (bitmap.close) bitmap.close();
       const rgba = ctx.getImageData(0, 0, IMAGE_W, IMAGE_H).data;
       if (isBlank(rgba)) return { ok: false, blank: true };
-      held.set(id, { opacity: satelliteOpacity(rgba, IMAGE_W, IMAGE_H, subLonDeg), subLonDeg });
+      held.set(id, { ...satelliteClouds(rgba, IMAGE_W, IMAGE_H, subLonDeg), subLonDeg });
       return { ok: true, blank: false };
     },
     async compose() {
-      return { data: composeClouds([...held.values()], IMAGE_W, IMAGE_H) };
+      return { data: composeClouds([...held.values()], IMAGE_W, IMAGE_H, 4) };
     },
     kind: 'main-thread',
   };
@@ -207,7 +207,7 @@ export function createLiveClouds({ earth, now = () => Date.now(), fetchImpl = (u
         st.composeMs = c.ms ?? null;
         const mesh = earthMesh();
         if (mesh && c.data) {
-          const tex = new THREE.DataTexture(c.data, IMAGE_W, IMAGE_H, THREE.RGFormat, THREE.UnsignedByteType);
+          const tex = new THREE.DataTexture(c.data, IMAGE_W, IMAGE_H, THREE.RGBAFormat, THREE.UnsignedByteType);
           tex.magFilter = THREE.LinearFilter;
           tex.minFilter = THREE.LinearMipmapLinearFilter;
           tex.generateMipmaps = true;

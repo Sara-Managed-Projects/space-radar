@@ -100,9 +100,9 @@ import * as THREE from '../../vendor/three.module.min.js';
 import * as Astronomy from '../../vendor/astronomy.js';
 import { stage, SUN_INERTIAL, EARTH_INERTIAL, isLadderStage, isSystemStage, systemOriginOf } from './stage.js';
 import { j2000ToTeme, rotateDir, stageFrame, isPlanetMoon, worldHelioEclKm } from '../propagate/frames.js';
-import { createEarth, updateEarth, updateEarthEclipse } from './earth.js';
+import { createEarth, updateEarth, updateEarthEclipse, EARTH_RELIEF } from './earth.js';
 import { ECLIPSE_GLSL, eclipseLikely, MOON_RADIUS_KM } from './eclipse.js';
-import { createAirShell, ATMO_PARAMS } from './atmosphere.js';
+import { createAirShell, ATMO_PARAMS, EARTH_AIR } from './atmosphere.js';
 import { COPY, t, fmt } from '../copy/en.js';
 
 const KM_PER_AU = Astronomy.KM_PER_AU;
@@ -249,7 +249,7 @@ export function worldRecords() {
       ringsDense: w.look.ring && w.look.ring.bands ? w.look.ring.dense || 1 : 0,
       // 2026-10-08: a world drawn knowingly unlike its data says how, after its "drawn as" line
       // (ui/cards.js appends a row's `departure`): Saturn's bands, Mercury's relief, Venus's glow.
-      ...(COPY.drawing.worldDeparture[w.id] ? { departure: t(COPY.drawing.worldDeparture[w.id], { steep: String(RELIEF_STEEP), contrast: String(SATURN_CONTRAST) }) } : {}),
+      ...(COPY.drawing.worldDeparture[w.id] ? { departure: t(COPY.drawing.worldDeparture[w.id], { steep: String(RELIEF_STEEP), contrast: String(SATURN_CONTRAST), relief: String(EARTH_RELIEF.exaggeration), air: String(EARTH_AIR.heightGain) }) } : {}),
     },
   }));
 }

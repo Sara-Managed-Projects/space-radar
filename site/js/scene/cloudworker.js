@@ -13,7 +13,7 @@
 //               {type:'compose', seq, data (transferred), ms}
 //               {type:'error', seq, message}
 
-import { satelliteOpacity, composeClouds, isBlank } from './cloudcompose.js';
+import { satelliteClouds, composeClouds, isBlank } from './cloudcompose.js';
 
 /** The latest accepted picture of each satellite, as opacity: a refresh re-reads only the new ones. */
 const held = new Map();
@@ -39,10 +39,10 @@ self.onmessage = async (e) => {
         self.postMessage({ type: 'picture', seq: m.seq, id: m.id, ok: false, blank: true, ms: performance.now() - t0 });
         return;
       }
-      held.set(m.id, { opacity: satelliteOpacity(rgba, m.width, m.height, m.subLonDeg), subLonDeg: m.subLonDeg });
+      held.set(m.id, { ...satelliteClouds(rgba, m.width, m.height, m.subLonDeg), subLonDeg: m.subLonDeg });
       self.postMessage({ type: 'picture', seq: m.seq, id: m.id, ok: true, blank: false, ms: performance.now() - t0 });
     } else if (m.type === 'compose') {
-      const data = composeClouds([...held.values()], m.width, m.height);
+      const data = composeClouds([...held.values()], m.width, m.height, 4);
       self.postMessage({ type: 'compose', seq: m.seq, data, ms: performance.now() - t0 }, [data.buffer]);
     }
   } catch (err) {

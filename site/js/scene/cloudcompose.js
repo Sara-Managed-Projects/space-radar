@@ -135,6 +135,24 @@ export const CLEAR_LAPSE_C_PER_DEG = 0.7;
 export const CLEAR_FLOOR_C = -15;
 export const CLEAR_SPAN_C = 70;
 
+/**
+ * STORM TOPS (spec 0066 task 2, internal #241, 2026-10-08). The same temperature says more than
+ * "cloud": a top colder than about -52 C is deep convection -- the threshold Maddox (1980) set for
+ * the cold interior of a mesoscale convective complex, still the usual one (as tabulated at
+ * weather.cod.edu/sirvatka/tc.html, read 2026-10-08) -- and overshooting tops are looked for
+ * below 215 K, -58 C (Bedka et al. 2010, as CIMSS describes the method, read the same day). So a
+ * pixel is 0 of a storm top at `startC`, all of one at `fullC`, and the picture's third channel
+ * carries it; scene/earth.js draws such a top higher and whiter than the deck (STORM_TOPS there).
+ * What this cannot tell: a thick cold cirrus shield with no storm under it reads the same.
+ */
+export const STORM_TOP = { startC: -52, fullC: -75 };
+
+/** 0..1: how much of a storm top a pixel at `tC` degrees C is. */
+export function stormTop(tC) {
+  const t = (STORM_TOP.startC - tC) / (STORM_TOP.startC - STORM_TOP.fullC);
+  return t <= 0 ? 0 : t >= 1 ? 1 : t;
+}
+
 export function clearSkyC(latDeg) {
   const beyond = Math.max(0, Math.abs(latDeg) - CLEAR_FLAT_TO_DEG);
   return Math.max(CLEAR_FLOOR_C, CLEAR_AT_EQUATOR_C - CLEAR_LAPSE_C_PER_DEG * beyond);
@@ -261,8 +279,17 @@ export function isBlank(rgba) {
  * @returns {Uint8Array} width * height
  */
 export function satelliteOpacity(rgba, width, height, subLonDeg) {
+  return satelliteClouds(rgba, width, height, subLonDeg).opacity;
+}
+
+/**
+ * As satelliteOpacity, and with it how much of a storm top each pixel is (STORM_TOP), 0..255.
+ * @returns {{opacity: Uint8Array, tops: Uint8Array}}
+ */
+export function satelliteClouds(rgba, width, height, subLonDeg) {
   const n = width * height;
   const out = new Uint8Array(n);
+  const tops = new Uint8Array(n);
   const kind = new Uint8Array(n);        // 0 outside the disc, 1 grey (ambiguous), 2 coloured
   const grey = new Uint8Array(n);        // a grey pixel's level
   const warm = new Uint8Array(n);        // the warm reading of a grey, 0..255
@@ -293,6 +320,7 @@ export function satelliteOpacity(rgba, width, height, subLonDeg) {
       if (tC === tC) {
         kind[i] = 2;
         out[i] = Math.round(255 * irOpacity(tC, latDeg));
+        tops[i] = Math.round(255 * stormTop(tC));
         if (tC <= COLD_SEED_C) seed[i] = 1;
       } else {
         const v = (r + g + b) / 3;
@@ -303,9 +331,9 @@ export function satelliteOpacity(rgba, width, height, subLonDeg) {
     }
   }
 
-  settleGreys(out, kind, grey, warm, seed, width, height);
-  for (let k = 0; k < BLUR_PASSES; k++) blur121(out, width, height);
-  return out;
+  settleGreys(out, kind, grey, warm, seed, width, height, tops);
+  for (let k = 0; k < BLUR_PASSES; k++) { blur121(out, width, height); blur121(tops, width, height); }
+  return { opacity: out, tops };
 }
 
 /**
@@ -321,7 +349,7 @@ export function satelliteOpacity(rgba, width, height, subLonDeg) {
  * speck, and with n = 1 it read the middle of Polo's cold central overcast, far from any colour,
  * as warm sea, a black hole in a hurricane.
  */
-function settleGreys(out, kind, grey, warm, seed, width, height) {
+function settleGreys(out, kind, grey, warm, seed, width, height, tops = null) {
   const n = width * height;
   const label = new Int32Array(n).fill(-1);
   const stack = new Int32Array(n);
@@ -360,6 +388,8 @@ function settleGreys(out, kind, grey, warm, seed, width, height) {
     for (let m = 0; m < count; m++) {
       const i = members[m];
       out[i] = isCold ? 255 : warm[i];
+      // A cold core is the palette's grey ramp, -71 C and colder: as much of a storm top as there is.
+      if (tops && isCold) tops[i] = 255;
     }
   }
 }
@@ -414,10 +444,12 @@ export function blendAt(latDeg, lonDeg, subLons) {
  * The texture: R = opacity, G = coverage, rows south first (see the header).
  * @param {Array<{opacity: Uint8Array|null, subLonDeg:number}>} sats  one entry per satellite; a
  *        satellite with no picture (null) covers nothing, so the static map shows through there.
- * @returns {Uint8Array} width * height * 2
+ * @param {number} [channels]  2: R and G, as above. 4: also B = how much of a storm top the place
+ *        is (each satellite's `tops`, blended as its opacity is) and A = 255: what scene/earth.js wears.
+ * @returns {Uint8Array} width * height * channels
  */
-export function composeClouds(sats, width, height) {
-  const out = new Uint8Array(width * height * 2);
+export function composeClouds(sats, width, height, channels = 2) {
+  const out = new Uint8Array(width * height * channels);
   const have = sats.filter((s) => s && s.opacity);
   if (!have.length) return out;
   const subs = have.map((s) => s.subLonDeg);
@@ -450,18 +482,27 @@ export function composeClouds(sats, width, height) {
         br[x] = w * c2 * c2; // OVERLAP_POWER = 4, without Math.pow
       }
     }
-    const dst = (height - 1 - y) * width * 2;
+    const dst = (height - 1 - y) * width * channels;
     for (let x = 0; x < width; x++) {
       let sum = 0;
       let acc = 0;
+      let top = 0;
       let cov = 0;
       for (let k = 0; k < have.length; k++) {
         const b = bRow[k][x];
-        if (b > 0) { sum += b; acc += b * have[k].opacity[y * width + x]; }
+        if (b > 0) {
+          sum += b;
+          acc += b * have[k].opacity[y * width + x];
+          if (channels === 4 && have[k].tops) top += b * have[k].tops[y * width + x];
+        }
         if (wRow[k][x] > cov) cov = wRow[k][x];
       }
-      out[dst + x * 2] = sum > 0 ? Math.round(acc / sum) : 0;
-      out[dst + x * 2 + 1] = Math.round(cov * 255);
+      out[dst + x * channels] = sum > 0 ? Math.round(acc / sum) : 0;
+      out[dst + x * channels + 1] = Math.round(cov * 255);
+      if (channels === 4) {
+        out[dst + x * 4 + 2] = sum > 0 ? Math.round(top / sum) : 0;
+        out[dst + x * 4 + 3] = 255;
+      }
     }
   }
   return out;

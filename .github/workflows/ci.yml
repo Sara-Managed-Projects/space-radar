@@ -599,6 +599,11 @@ jobs:
       # twin, and when a shell is drawn (never from the default view, never under the latch).
       - name: the air on Mars, Venus and Titan (spec 0054 task 3)
         run: node tests/test_air.mjs
+      # Spec 0053 tasks 1, 2 and 5 and spec 0066 task 2: the Earth's air in scene/atmosphere.js (the table
+      # of the light's path against a 20 000-step integration, the shell the same from 8 steps to
+      # 400), aerial perspective, relief from ETOPO 2022 and the storm tops, each against its JS twin.
+      - name: "the Earth's air, relief and storm tops (spec 0053 tasks 1, 2, 5; spec 0066 task 2)"
+        run: node tests/test_atmo_lut.mjs
       # Spec 0054 task 5: Saturn's rings lit both ways. The slab formula on both faces, forward
       # scattering from behind, and the ring map's Cassini Division read from the PNG and warped onto
       # Cassini's radii, for the ring and for its shadow on the globe alike.

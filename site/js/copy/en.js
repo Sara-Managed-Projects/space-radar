@@ -1425,7 +1425,8 @@ export const COPY = {
   },
 
   clouds: {
-    live: 'Clouds: seen {when}, {ago}, in infrared by {satellites}, through NASA GIBS. Over Europe, Africa, the Indian Ocean and the poles, which none of those satellites sees, they are illustrative.',
+    // 2026-10-08 (internal #241): the coldest tops are drawn as storm tops (scene/cloudcompose.js STORM_TOP).
+    live: 'Clouds: seen {when}, {ago}, in infrared by {satellites}, through NASA GIBS. The coldest tops, where thunderstorms are, are drawn higher and whiter than the rest. Over Europe, Africa, the Indian Ocean and the poles, which none of those satellites sees, they are illustrative.',
     at: 'at {time} UTC',
     between: 'between {from} and {to} UTC',
     // The picture's own DATE (public #330), said whenever the day on the clock, or today, is not the
@@ -1632,6 +1633,9 @@ export const COPY = {
       portrait: 'while this card is open its picture is drawn at its place, far larger than it would look from here',
     },
     worldDeparture: {
+      // The Earth (2026-10-08, scene/earth.js EARTH_RELIEF, scene/atmosphere.js EARTH_AIR): {relief}
+      // is the relief's exaggeration, {air} the shell's height gain.
+      earth: 'on a larger screen its mountains are from NOAA\u2019s ETOPO 2022 heights, drawn {relief} times steeper than they are so that a low Sun shows them; the glow of the air round its edge is drawn {air} times taller than the air is',
       mercury: 'on a larger screen its relief is from MESSENGER\u2019s elevation model, drawn {steep} times steeper than measured so that crater rims catch the light',
       venus: 'the glow round its edge and past its day side stands for a deep haze; how thick it is drawn and how far it reaches are illustrative',
       saturn: 'its bands are drawn with {contrast} times the contrast its map has, an adjustment of ours; \u201cAs Hubble saw it\u201d is not adjusted',
