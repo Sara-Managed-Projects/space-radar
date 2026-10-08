@@ -1,0 +1,60 @@
+# THE STAR SYSTEMS TO FLY INTO, beyond TRAPPIST-1 (internal #466, plan 2026-10-08 section 4.1).
+#
+# THIS FILE IS A CHOICE, NOT DATA. It names which stars of the NASA Exoplanet Archive's table get a
+# stage of their own, and nothing else: no radius, no period, no temperature is typed here or
+# anywhere. scripts/build-systems.py reads this list, the bundled table (site/data/exoplanets.csv)
+# and the wider columns kept for these hosts (registry/systems-columns.csv, written by
+# scripts/build-exoplanets.py from the same pull on the same day) and writes every number of
+# registry/systems-generated.yaml. TRAPPIST-1 is not here: it is registry/systems.yaml's own row,
+# read from the Archive by hand on 2026-09-23 with its transit times (spec 0040).
+#
+#   host     the table's `hostname`, exactly. A host the table does not have is a refusal.
+#   id       the system's id (its stage is `system-<id>`, its star record `star-<id>`, its link
+#            `#go=<id>`). Left out, it is the host's name in lower case with dashes.
+#   display  the name people use, where the table's is a catalogue's abbreviation.
+#   aliases  other names a visitor may type.
+#   why      one of `temperate` (chosen for a planet near its star's habitable zone) or `extreme`.
+#            A sorting word for the list; the card never prints it, and "habitable" is said only
+#            by the band scripts/build-systems.py computes.
+version: 1
+hosts:
+  - {host: Proxima Cen, display: Proxima Centauri, why: temperate}
+  - {host: LHS 1140, why: temperate}
+  - {host: Kepler-186, why: temperate}
+  - {host: Kepler-452, why: temperate}
+  - {host: Kepler-62, why: temperate}
+  - {host: Kepler-442, why: temperate}
+  - {host: Kepler-22, why: temperate}
+  - {host: Kepler-69, why: temperate}
+  - {host: TOI-700, why: temperate}
+  - {host: TOI-715, why: temperate}
+  - {host: "Teegarden's Star", id: teegardens-star, why: temperate}
+  - {host: Gliese 12, aliases: [GJ 12], why: temperate}
+  - {host: K2-18, why: temperate}
+  - {host: L 98-59, why: temperate}
+  - {host: GJ 1132, aliases: [Gliese 1132], why: temperate}
+  - {host: GJ 1214, aliases: [Gliese 1214], why: temperate}
+  - {host: Ross 128, why: temperate}
+  - {host: Wolf 1069, why: temperate}
+  - {host: GJ 667 C, aliases: [Gliese 667 C], why: temperate}
+  - {host: 55 Cnc, display: 55 Cancri, aliases: [Copernicus], why: extreme}
+  - {host: WASP-12, why: extreme}
+  - {host: WASP-121, why: extreme}
+  - {host: HD 189733, why: extreme}
+  - {host: HD 209458, why: extreme}
+  - {host: 51 Peg, display: 51 Pegasi, aliases: [Helvetios], why: extreme}
+  - {host: Kepler-16, why: extreme}
+  - {host: KELT-9, why: extreme}
+  - {host: TOI-849, why: extreme}
+  - {host: PSR B1257+12, aliases: [Lich], why: extreme}
+  - {host: HR 8799, why: extreme}
+  - {host: bet Pic, id: beta-pictoris, display: Beta Pictoris, aliases: [bet Pic], why: extreme}
+  # The table files Kepler-90 under its Kepler Object of Interest number.
+  - {host: KOI-351, id: kepler-90, display: Kepler-90, aliases: [KOI-351], why: extreme}
+  - {host: K2-138, why: extreme}
+  - {host: Kepler-11, why: extreme}
+  - {host: HD 10180, why: extreme}
+  - {host: Kepler-1649, why: temperate}
+  - {host: Kepler-1647, why: extreme}
+  - {host: WASP-17, why: extreme}
+  - {host: WASP-39, why: extreme}
