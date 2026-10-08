@@ -257,7 +257,7 @@ function arrive(m) {
     // on from the first in whatever month the trip is started.
     if (stop.time && typeof stop.time === 'object' && stop.time.event === 'solstice.next') {
       const at = clock.now();
-      check(at > REAL && at - REAL < 400 * 86400e3, `${where}: shown at ${new Date(at).toISOString()}, which is not the next solstice`);
+      check(at > REAL && at - REAL < (stop.id === 'tilt' ? 366 : 366 + 200) * 86400e3, `${where}: shown at ${new Date(at).toISOString()}, which is not the next solstice`);
       if (stop.id === 'tilt') solsticeAt.tilt = at;
       else check(at - solsticeAt.tilt > 170 * 86400e3 && at - solsticeAt.tilt < 200 * 86400e3, `${where}: ${((at - solsticeAt.tilt) / 86400e3).toFixed(1)} days after the first stop, not half a year`);
       check(!/\d{4}/.test(JSON.stringify(stop.time)), `${where}: the stop names a year`);
