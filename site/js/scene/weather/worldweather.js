@@ -21,7 +21,7 @@
 //   Mars         the seasonal frost caps and the season's dust, by Ls: an optical depth typical of
 //                the season, thicker in the south. ILLUSTRATIVE (seasonal, not today's).
 //   the dark Y   Venus: the planet-wide wave ultraviolet cameras see, going round in four days,
-//                drawn a tenth dark. ILLUSTRATIVE.
+//                drawn a fifth dark at most. ILLUSTRATIVE.
 //   lightning    Jupiter and Saturn: rare flashes on the night side at the latitudes Juno and
 //                Cassini found it, larger than life. ILLUSTRATIVE; off where less motion is asked for.
 //   Titan        three pale streaks in the north, where Webb and Keck saw methane clouds in 2022

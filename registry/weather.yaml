@@ -238,8 +238,8 @@ effects:
       name: "Imai et al. 2019, Planetary-scale variations in winds and UV brightness at the Venusian cloud top, JGR Planets 124 (Akatsuki's ultraviolet imager at 365 nm, 2017: 'the 4-day Kelvin wave and 5-day Rossby wave with zonal wavenumber 1'); JAXA, Akatsuki's UVI pictures ('a vast darker region which has a shape of laid V or Y ... flows westward')"
       url: "https://arxiv.org/abs/1908.08220"
       read: 2026-10-08
-    wave: {period_days: 4, depth: 0.1, arm_deg: 45}
-    why: "The Y is seen in ultraviolet, where an absorber nobody has identified darkens the clouds by a third; to the eye Venus is nearly plain. It is drawn a tenth dark so that the deck's turning shows, at a place that is ours: where the wave is today is not fetched."
+    wave: {period_days: 4, depth: 0.2, arm_deg: 45}
+    why: "The Y is seen in ultraviolet, where an absorber nobody has identified darkens the clouds; to the eye Venus is nearly plain. It is drawn a fifth dark at most so that the deck's turning shows (a tenth could not be seen in a frame), at a place that is ours: where the wave is today is not fetched."
 
   # TITAN'S CLOUDS (2026-10-08, internal #245). [latitude, east longitude, half-height, half-width],
   # degrees: three pale streaks in the north, where the telescopes found them.

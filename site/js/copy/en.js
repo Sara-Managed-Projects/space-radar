@@ -1502,7 +1502,7 @@ export const COPY = {
     // A second sentence for a world's line (2026-10-08, internal #243 and #245): what else is drawn
     // and how much of it is known, or what its real maps show and we do not draw.
     also: {
-      venus: 'The faint dark Y going round with it is what ultraviolet cameras see, drawn far fainter and at an illustrative place. Lightning on Venus has been reported and is still debated; none is drawn.',
+      venus: 'The dark Y going round with it is what ultraviolet cameras see; to the eye Venus is nearly plain, and its place here is illustrative. Lightning on Venus has been reported and is still debated; none is drawn.',
       uranus: 'On “As Hubble saw it” the bright cap over the north pole is real: Hubble has watched it brighten year after year as the northern summer of 2028 comes.',
       neptune: 'Its bright streaks are methane ice. Hubble saw them fade after 2019 and its last dark spot dissolve, so no spot is drawn.',
     },

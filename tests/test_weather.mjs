@@ -427,7 +427,7 @@ function decodePng(buf) {
   // The Y: once round in four days, the way Venus's clouds go.
   const day = 86400000;
   check(near(F.wavePhase(0, 4, -1), 0, 1e-12) && near(F.wavePhase(day, 4, -1), 0.75, 1e-9) && near(F.wavePhase(4 * day, 4, -1), 0, 1e-9) && near(F.wavePhase(day, 4, 1), 0.25, 1e-9), 'the wave is a quarter turn a day, westward on Venus');
-  check(row('venus-y').wave.depth <= 0.1 && row('venus-y').class === 'illustrative', 'the Y is drawn a tenth dark at most, and is illustrative');
+  check(row('venus-y').wave.depth <= 0.2 && row('venus-y').class === 'illustrative', 'the Y is drawn a fifth dark at most, and is illustrative');
 
   // The controller: uniforms, the wall clock, reduced motion, the latch.
   const WW = await import(join(JS, 'scene/weather/worldweather.js'));
@@ -445,7 +445,7 @@ function decodePng(buf) {
   const ti = meshes.get('titan').material;
   check(ju.defines.WX_FLASH === 1 && sa.defines.WX_FLASH === 1 && !ve.defines.WX_FLASH && !meshes.get('uranus').material.defines.WX_FLASH, 'Jupiter and Saturn flash; no other world does');
   check(ju.uniforms.uWxFlash.value.length === WW.FLASH_SLOTS * 4 && near(ju.uniforms.uWxFlashSize.value, 1.6 * Math.PI / 180, 1e-9), 'a flash is a place, a light and a size');
-  check(ve.uniforms.uWxWave.value.x === 0.1 && near(ve.uniforms.uWxWave.value.z, Math.PI / 4, 1e-9) && ju.uniforms.uWxWave.value.x === 0, 'Venus has the Y and Jupiter does not');
+  check(ve.uniforms.uWxWave.value.x === 0.2 && near(ve.uniforms.uWxWave.value.z, Math.PI / 4, 1e-9) && ju.uniforms.uWxWave.value.x === 0, 'Venus has the Y and Jupiter does not');
   check(ti.defines.WX_PATCH === 1 && ti.uniforms.uWxPatch.value.length === WW.PATCH_SLOTS * 4 && near(ti.uniforms.uWxPatch.value[0], 66 * Math.PI / 180, 1e-6) && ti.uniforms.uWxPatch.value[14] === 0, 'Titan: three clouds in the north, the fourth slot empty');
   const t0 = Date.parse('2026-10-08T12:00:00Z');
   let litFrames = 0; let nightOnly = true; let maxLit = 0;

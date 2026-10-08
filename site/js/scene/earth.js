@@ -320,8 +320,9 @@ void main() {
   // wrap lets light fall off across the twilight band instead, the same term for ground and cloud.
   float lambert = clamp( ( sunDot + uTwilightWrap ) / ( 1.0 + uTwilightWrap ), 0.0, 1.0 ) * dayMix;
   // Low sun reddens, by the air its light has crossed (aerial perspective, scene/atmosphere.js):
-  // white overhead, orange a few degrees up, a dim red at the horizon. It was a fixed warm tint.
-  vec3 sunTint = aerSun( sunDot );
+  // white overhead, gold a few degrees up, a dim warm grey at the horizon -- the beam and the
+  // sky's own light. It was a fixed warm tint.
+  vec3 sunTint = aerDaylight( sunDot );
   float eclLight = 1.0;
 
   // ---- the Moon's shadow (spec 0037) ------------------------------------------------------------

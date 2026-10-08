@@ -132,7 +132,7 @@ for (const sun of [quarter, [0, 0, 1], [0.5, 0, -0.866]]) for (const tKm of [2, 
 {
   const mid = A.aerial(1, 1, -1);
   check(mid.T.every((x) => x === 1), 'straight down the map is seen as it is');
-  check(mid.L[2] > mid.L[1] && mid.L[1] > mid.L[0] && mid.L[2] > 0.04 && mid.L[2] < 0.1, `over the middle of the disc the air adds a little blue (${mid.L.map((x) => x.toFixed(3))})`);
+  check(mid.L[2] > mid.L[1] && mid.L[1] > mid.L[0] && mid.L[2] > 0.03 && mid.L[2] < 0.08, `over the middle of the disc the air adds a little blue (${mid.L.map((x) => x.toFixed(3))})`);
   const edge = A.aerial(0.03, 0.6, 0);
   check(edge.T[2] < 0.02 && edge.T[0] < 0.4, 'at the limb the ground is all but gone');
   check(edge.L.every((x, k) => x > 3 * mid.L[k] || k === 2 && x > 2 * mid.L[k]) && edge.L[2] / edge.L[0] < mid.L[2] / mid.L[0], `and the air there is brighter and paler (${edge.L.map((x) => x.toFixed(3))})`);
@@ -143,6 +143,11 @@ for (const sun of [quarter, [0, 0, 1], [0.5, 0, -0.866]]) for (const tKm of [2, 
   check(high.every((x) => x === 1), 'an overhead Sun is white');
   check(low[0] > low[1] && low[1] > low[2] && low[0] > 0.5 && low[2] < 0.25, `six degrees up it is orange (${low.map((x) => x.toFixed(2))})`);
   check(set[0] < 0.15 && set[0] > 10 * set[2], `and on the horizon a dim red (${set.map((x) => x.toFixed(3))})`);
+  const gold = A.aerialDaylight(0.1);
+  const dusk = A.aerialDaylight(0);
+  check(A.aerialDaylight(1).every((x) => x === 1), 'daylight under an overhead Sun is the map\'s own');
+  check(gold[0] > gold[1] && gold[1] > gold[2] && gold[2] > 2 * low[2] && gold[0] < 0.8, `six degrees up the daylight is gold, not the beam's orange: the sky gives blue back (${gold.map((x) => x.toFixed(2))})`);
+  check(dusk[0] > set[0] && dusk[0] < 0.25 && dusk[2] > 0.05, `and at the horizon a dim warm grey (${dusk.map((x) => x.toFixed(3))})`);
   const deck = A.aerialSun(0, AERIAL.deckShare);
   const top = A.aerialSun(0, AERIAL.topShare);
   check(deck[0] > set[0] && top[0] > deck[0] && top[2] > deck[2], 'a cloud deck sees a less reddened Sun than the ground, a storm top less again');
@@ -151,7 +156,7 @@ for (const sun of [quarter, [0, 0, 1], [0.5, 0, -0.866]]) for (const tKm of [2, 
   check(Math.abs(AERIAL.tauR[2] - 0.243) < 0.03 && Math.abs(AERIAL.tauR[1] - 0.097) < 0.015 && Math.abs(AERIAL.tauR[0] - 0.041) < 0.008, `the gas's optical depths are the published ones (${AERIAL.tauR.map((x) => x.toFixed(3))})`);
   const f = E.SURFACE_FRAG;
   check(f.includes(A.EARTH_AERIAL_GLSL) && /colour = aerial\( colour, clamp\( dot\( n, viewDir \), 0\.0, 1\.0 \), sunDot, dot\( -viewDir, uSunDir \), airLit,/.test(f), 'the surface shader carries the chunk and calls it last, over the clouds');
-  check(/vec3 sunTint = aerSun\( sunDot \);/.test(f) && !/vec3\( 1\.0, 0\.62, 0\.42 \)/.test(f), '#301\'s fixed low-sun tint is gone: the air reddens the light');
+  check(/vec3 sunTint = aerDaylight\( sunDot \);/.test(f) && !/vec3\( 1\.0, 0\.62, 0\.42 \)/.test(f), '#301\'s fixed low-sun tint is gone: the air reddens the light');
   check(!/uAtmoTint \* rim/.test(f), 'and so is the one-colour rim');
   check(/eclLight = eclShade;/.test(f) && /airLit = smoothstep\( -0\.14, 0\.02, sunDot \) \* eclLight/.test(f), 'the air under the Moon\'s shadow goes dark with the ground');
   const g = A.EARTH_AERIAL_GLSL;

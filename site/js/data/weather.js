@@ -739,7 +739,7 @@ export const WEATHER = [
     ],
     "wave": {
       "period_days": 4,
-      "depth": 0.1,
+      "depth": 0.2,
       "arm_deg": 45
     },
     "source": "Imai et al. 2019, Planetary-scale variations in winds and UV brightness at the Venusian cloud top, JGR Planets 124 (Akatsuki's ultraviolet imager at 365 nm, 2017: 'the 4-day Kelvin wave and 5-day Rossby wave with zonal wavenumber 1'); JAXA, Akatsuki's UVI pictures ('a vast darker region which has a shape of laid V or Y ... flows westward')"

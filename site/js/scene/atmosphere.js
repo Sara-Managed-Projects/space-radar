@@ -553,7 +553,8 @@ export function createAirShell(key) {
 // and single scattering along the slant has a closed form (aerial() below, and EARTH_AERIAL_GLSL,
 // which scene/earth.js splices into the surface shader). Three things follow from it and are no
 // longer separate inventions in the surface shader:
-//     - the low Sun reddens the ground, by the air its light crossed (it was a fixed warm tint);
+//     - the low Sun's daylight turns gold, by the air its beam crossed and the sky's light that
+//       comes back down (it was a fixed warm tint);
 //     - distant land takes the air's colour toward the limb, and the limb itself is pale;
 //     - the lit air over the night side of the terminator is a thin twilight.
 // The day map is NASA's Blue Marble, which is surface reflectance with the air taken out, so the
@@ -974,11 +975,20 @@ export const AERIAL = {
   mieAlbedo: 1 / EARTH_AIR.mieExt,
   X: EARTH_AIR.radiusKm / EARTH_AIR.gasHKm,
   sun: Math.PI,
-  gain: 1.0,
+  gain: 0.7,
+  // THE SKY'S OWN LIGHT. What the gas scatters out of the Sun's beam is not lost to the ground:
+  // about half of it comes down as skylight, which is why a low Sun's daylight is gold and not
+  // the deep red of its disc. `sky` of what the gas took out is given back, less as the Sun
+  // nears the horizon (`skyLow` of it there, all of it from `skyFullAt` up), where the air that
+  // would scatter it is itself in the Earth's shadow. Both numbers are chosen (first frames with
+  // the direct beam alone ended the day well before the terminator).
+  sky: 0.45,
+  skyLow: 0.25,
+  skyFullAt: 0.25,
   // Toward the limb the lit air is drawn brighter, by up to this: the shell just outside the limb
   // is 3.5 times as bright as this unit makes air (EARTH_AIR.sun 11 against pi), and a limb twice
   // as bright as computed is what lets the disc's edge meet it without a dark seam. Fitted by eye.
-  limbGain: 2.0,
+  limbGain: 2.6,
   limbFrom: 0.35,
   deckShare: Math.exp(-1),
   topShare: Math.exp(-15 / 8),
@@ -996,6 +1006,18 @@ export function aerialAirmass(mu) {
 export function aerialSun(mu, share = null) {
   const m = aerialAirmass(mu) - 1;
   return [0, 1, 2].map((k) => Math.exp(-(share === null ? AERIAL.tauR[k] + AERIAL.tauM : AERIAL.tauR[k] * share) * m));
+}
+
+/**
+ * Daylight's colour on the ground against an overhead Sun's: the direct beam (aerialSun) and the
+ * sky's own light (THE SKY'S OWN LIGHT, in AERIAL). White overhead, gold a few degrees up, a dim
+ * warm grey at the horizon.
+ */
+export function aerialDaylight(mu) {
+  const m = aerialAirmass(mu) - 1;
+  const t = Math.min(1, Math.max(0, mu / AERIAL.skyFullAt));
+  const low = AERIAL.skyLow + (1 - AERIAL.skyLow) * t * t * (3 - 2 * t);
+  return [0, 1, 2].map((k) => Math.exp(-(AERIAL.tauR[k] + AERIAL.tauM) * m) + AERIAL.sky * low * (1 - Math.exp(-AERIAL.tauR[k] * m)));
 }
 
 /** 1 over the middle of the disc, AERIAL.limbGain at the limb. */
@@ -1039,6 +1061,11 @@ const float AER_TAU_M = ${AERIAL.tauM.toFixed(5)};
 const float AER_C = ${Math.sqrt((Math.PI / 2) * AERIAL.X).toFixed(4)};   // sqrt( pi/2 x R/H ): the airmass at the horizon
 float aerAirmass( float mu ) { return AER_C / ( ( AER_C - 1.0 ) * max( mu, 0.0 ) + 1.0 ); }
 vec3 aerSun( float mu ) { return exp( -( AER_TAU_R + AER_TAU_M ) * ( aerAirmass( mu ) - 1.0 ) ); }
+vec3 aerDaylight( float mu ) {
+  float m = aerAirmass( mu ) - 1.0;
+  float low = ${AERIAL.skyLow.toFixed(2)} + ${(1 - AERIAL.skyLow).toFixed(2)} * smoothstep( 0.0, ${AERIAL.skyFullAt.toFixed(2)}, mu );
+  return exp( -( AER_TAU_R + AER_TAU_M ) * m ) + ${AERIAL.sky.toFixed(2)} * low * ( 1.0 - exp( -AER_TAU_R * m ) );
+}
 vec3 aerSunAbove( float mu, float share ) { return exp( -AER_TAU_R * share * ( aerAirmass( mu ) - 1.0 ) ); }
 vec3 aerial( vec3 colour, float muV, float muS, float cosGamma, float lit, float above ) {
   float mV = aerAirmass( muV );
