@@ -97,6 +97,15 @@ try {
     await shot('card-buttons', 1200);
     if (seen) { seen.click(); await wait(400); out.seenAfter = { text: seen.textContent, pressed: seen.getAttribute('aria-pressed'), stored: Object.keys(JSON.parse(localStorage.getItem('sr:passport') || '{}').seen || {}) }; await shot('card-seen', 800); }
   } else out.errors.push('no sky row on the card');
+  // "Remind me": the card of the first dated thing in Coming up (a launch, a close approach).
+  const dated = ctx.explore.next.items().find((it) => it.record && Number.isFinite(it.tMs) && it.tMs > Date.now() && it.record.id !== 'sat-25544');
+  out.dated = dated ? { kind: dated.kind, id: dated.record.id } : null;
+  if (dated) {
+    ctx.select(dated.record, { fly: false });
+    await until(() => q('.sr-card__sky [data-action="remind"]'), 12000);
+    const r = q('.sr-card__sky [data-action="remind"]');
+    if (r) { r.scrollIntoView({ block: 'center' }); await wait(700); out.remind = { text: r.textContent, title: r.title, h: Math.round(r.getBoundingClientRect().height) }; await shot('card-remind', 1200); } else out.remind = null;
+  }
   if (ctx.passport) { ctx.passport.open(); await wait(900); const s = [...document.querySelectorAll('.sr-passport__sect')].find((n) => /seen/i.test(n.textContent)); if (s) s.scrollIntoView({ block: 'center' }); await shot('passport-seen', 1200); out.passport = s ? s.textContent.slice(0, 120) : null; }
 } catch (err) { out.errors.push('card: ' + String(err && err.message)); }
 out.msB = Date.now() - t0;
