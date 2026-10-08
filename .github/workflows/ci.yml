@@ -387,6 +387,11 @@ jobs:
       # eleven-stop "Travel to exoplanets" run end to end by the real trip machine.
       - name: "Star systems: TRAPPIST-1 at its own scale, and the trip Travel to exoplanets"
         run: node tests/test_systems.mjs
+      # Internal #466 phase A: thirty-nine systems generated from the Archive's table. Kepler's
+      # third law on every row, the habitable zone against a second implementation of Kopparapu
+      # et al. 2014, search, the `#go=` link, and the card's lines about what is measured.
+      - name: "Star systems: the generated forty obey Kepler, their zones are the paper's, the cards say what is measured"
+        run: node tests/test_systems_table.mjs
       # Internal #466 phase B: a drawn face for a planet nobody has seen. The classifier on the
       # table's own rows, the label made from the row, imagined worlds named as imagined, three
       # tiers with one draw call on a phone, no texture, no post-processing, nothing at boot.
