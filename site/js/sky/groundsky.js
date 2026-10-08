@@ -128,13 +128,13 @@ void main() {
   vAlpha = alpha;
   vGlare = glare;
   gl_Position = projectionMatrix * modelViewMatrix * vec4(d * uRadius, 1.0);
-  // A STAR'S LIGHT (scene/stretch.js, public #271): the core is a peak at most 4.5 to 6 px across
+  // A STAR'S LIGHT (scene/stretch.js, public #271): the core is a peak at most 5 to 7.5 px across
   // however bright the star, and the brightness past that is a glow in the rest of the sprite.
   // Until 2026-10-08 the core grew with the sprite and Sirius was a flat white counter.
   float spritePx = max(1.5, size * (1.0 + 2.2 * glare) * uPx);
-  float corePx = min(size, 4.5 + 1.5 * glare) * uPx;
+  float corePx = min(size, 5.0 + 2.5 * glare) * uPx;
   vCore = clamp(corePx / spritePx, 0.05, 1.0);
-  vGlow = max(glare, 0.6 * clamp((size - 4.5) / 11.5, 0.0, 1.0));
+  vGlow = max(glare, 0.6 * clamp((size - 5.0) / 11.0, 0.0, 1.0));
   gl_PointSize = spritePx;
   // Under the horizon, or too faint to see: off the screen, so it costs no fragments.
   if (alpha <= 0.004 || d.y < uBelow) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);

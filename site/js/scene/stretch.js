@@ -91,8 +91,9 @@ export const STRETCH_FRAG = /* glsl */ `
 // big enough to show it -- read as flat white counters about 10 px across (measured in the sky
 // view, 2026-10-08). A star is a point; what a lens or an eye makes of a bright one is a small
 // peak with a soft glow round it. So: the CORE is a peak that is never flat (a Gaussian, half its
-// height at 0.29 of the core's radius), and a star bright enough to have a GLOW gets a larger sprite
-// whose extra room is a soft fall-off in the star's own colour. No spikes: a diffraction spike is
+// height at two thirds of the core's radius), and a star bright enough to have a GLOW gets a larger
+// sprite whose extra room is a bloom close in and a faint skirt out to the edge, in the star's own
+// colour. (The first cut, a weaker glow, made Sirius a 3 px speck: measured in a frame, 2026-10-08.) No spikes: a diffraction spike is
 // an artefact of one telescope's mirror supports, and docs/design-language.md forbids lens flare.
 // The glow is a DRAWING of brightness, not a measured size, as a star's point size always was.
 //
@@ -101,9 +102,10 @@ export const STRETCH_FRAG = /* glsl */ `
 export const STAR_LIGHT_GLSL = /* glsl */ `
 vec2 starLight( float d, float core, float glow ) {
   float dc = d / max( core, 1e-3 );
-  float c = exp( -8.0 * dc * dc ) * ( 1.0 - smoothstep( 0.4, 0.5, dc ) );
+  float c = exp( -6.0 * dc * dc ) * ( 1.0 - smoothstep( 0.4, 0.5, dc ) );
   float e = 1.0 - clamp( d / 0.5, 0.0, 1.0 );
-  return vec2( c, glow * ( 0.30 * e * e * e + 0.06 * e ) );
+  float e2 = e * e;
+  return vec2( c, glow * ( 0.55 * e2 * e2 + 0.10 * e2 ) );
 }
 `;
 
@@ -111,9 +113,10 @@ vec2 starLight( float d, float core, float glow ) {
 export function starLight(d, core, glow) {
   const dc = d / Math.max(core, 1e-3);
   const k = Math.min(1, Math.max(0, (dc - 0.4) / 0.1));
-  const c = Math.exp(-8 * dc * dc) * (1 - k * k * (3 - 2 * k));
+  const c = Math.exp(-6 * dc * dc) * (1 - k * k * (3 - 2 * k));
   const e = 1 - Math.min(1, Math.max(0, d / 0.5));
-  return [c, glow * (0.30 * e * e * e + 0.06 * e)];
+  const e2 = e * e;
+  return [c, glow * (0.55 * e2 * e2 + 0.10 * e2)];
 }
 
 export function stretchUniforms() {

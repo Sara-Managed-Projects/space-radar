@@ -176,5 +176,18 @@ if (said) {
   check(!/as far as this map draws/.test(say), 'the edge card no longer says M87 is the edge of the map');
 }
 
+// ---- a mark per kind (public #271, 2026-10-08): scene/dsoglow.js -----------------------------------
+{
+  const { glowFor, KINDS } = await import(join(JS, 'scene/dsoglow.js'));
+  const kindOf = (id) => { const r = recs.find((x) => x.id === id); const g = r && glowFor(r); return g ? g.kind : null; };
+  check(kindOf('dso-m13') === 'globular', `M13 is marked as a globular cluster (${kindOf('dso-m13')})`);
+  check(kindOf('dso-m44') === 'open', `the Beehive as an open cluster (${kindOf('dso-m44')})`);
+  check(kindOf('dso-m97') === 'shell', `the Owl as a shell (${kindOf('dso-m97')})`);
+  check(kindOf('dso-m87') === 'galaxy', `M87 as a galaxy (${kindOf('dso-m87')})`);
+  check(kindOf('dso-m45') === 'soft' && kindOf('dso-hyades') === 'soft', 'the Pleiades and the Hyades get the haze alone: their own stars are drawn');
+  const kinds = new Set(recs.map((r) => glowFor(r)).filter(Boolean).map((g) => g.kind));
+  check([...kinds].every((k) => k in KINDS) && kinds.size >= 5, `every glow has a kind the shader knows, and at least five are in use (${[...kinds].join(', ')})`);
+}
+
 if (problems.length) { console.error('dso FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('dso ok: 110 Messier objects and the LMC at sourced distances, Andromeda 2.54 Mly on the stellar rung, found by name, M-number and NGC number');

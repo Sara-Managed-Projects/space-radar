@@ -166,10 +166,10 @@ void main() {
   vec4 mv = modelViewMatrix * vec4( position, 1.0 );
   gl_Position = projectionMatrix * mv;
   // The brightest stars (magnitude 1.5 and brighter: aSize over 3.2) get a soft glow round a core
-  // that stays its size (scene/stretch.js, A STAR'S LIGHT): up to four times the sprite at Sirius.
+  // that stays its size (scene/stretch.js, A STAR'S LIGHT): up to five times the sprite at Sirius.
   vGlow = uGlow * smoothstep( 3.2, 6.0, aSize );
-  float sizePx = aSize * ( 1.0 + 3.0 * vGlow ) * uPixelRatio * uScale;
-  vCore = 1.0 / ( 1.0 + 3.0 * vGlow );
+  float sizePx = aSize * ( 1.0 + 4.0 * vGlow ) * uPixelRatio * uScale;
+  vCore = 1.0 / ( 1.0 + 4.0 * vGlow );
   // Spec 0034: the same stretch as scene/stars3d.js; at uStretch == 0, gl_PointSize = sizePx.
 ${STRETCH_VERT}
 }

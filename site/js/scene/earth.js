@@ -272,7 +272,7 @@ void main() {
   // (the whole shadow, about 7 000 km across) and a brighter one round the core, where the Sun is
   // wholly covered or, at an annular eclipse, where the ring is whole. The lines are a DRAWING on a
   // computed place -- nobody sees a rim of light round the umbra -- and the trip's note says so
-  // (copy/en.js trip.eclipseNote). Each is one and a half pixels wide by the screen derivative of
+  // (copy/en.js trip.eclipseLine). Each is about a pixel wide by the screen derivative of
   // the separation, and the core's line waits until the core is a few pixels across: over a core
   // smaller than its own line it would paint the dark spot bright.
   float eclCoreLine = 0.0;
@@ -281,7 +281,7 @@ void main() {
     // The geometry and its screen derivative are taken on both sides of the terminator: a derivative
     // inside a branch on a varying is undefined, and the day-side test below is one.
     vec2 eclG = eclGeometry( vPosL * EARTH_UNIT_KM, uSunDirLocal * uSunDistKm, uMoonPosLocal, SUN_RADIUS_KM, uMoonRadiusKm );
-    float eclW = max( fwidth( eclG.x ), 1e-5 ) * 1.5;
+    float eclW = max( fwidth( eclG.x ), 1e-5 ) * 1.1;
     if ( sunDot > 0.0 ) {
       float eclObs = eclDiscOverlap( eclG.x, eclG.y );
       float eclShade = 1.0 - UMBRA_DEPTH * eclObs;
@@ -357,7 +357,7 @@ void main() {
   colour += uAtmoTint * rim * dayMix * 0.18;
 
   // The shadow's two edges (THE TWO EDGES, DRAWN, above): over the clouds, as a line on a map is.
-  colour += uEclipseLines * ( vec3( 1.0, 0.93, 0.8 ) * 0.6 * eclCoreLine + vec3( 0.8, 0.86, 1.0 ) * 0.14 * eclEdgeLine );
+  colour += uEclipseLines * ( vec3( 1.0, 0.93, 0.8 ) * 0.42 * eclCoreLine + vec3( 0.8, 0.86, 1.0 ) * 0.14 * eclEdgeLine );
 
   gl_FragColor = vec4( colour, 1.0 );
 
