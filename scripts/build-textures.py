@@ -33,6 +33,8 @@ WHY EACH MAP IS TREATED AS IT IS
               Flipped top to bottom into the convention the 2k Solar System Scope map uses (galactic
               north at the BOTTOM of the image; scene/starfield.js says how that was found), and its
               brightness distribution matched to the 2k map's, so the backdrop stays "a whisper".
+  earth-relief  NOAA's ETOPO 2022 (CC0) as one grey channel of height above the sea, for the relief a
+              low Sun shows (`--only earth-relief`; build_earth_relief says how the original is fetched).
   moon, mars  Solar System Scope's own 8k maps resampled to 4096 x 2048: the same pictures as the 2k
               maps, so nothing changes but the detail. Venus and the Sun are left at 2k.
   jupiter, saturn, uranus, neptune  (`--only giants`, 2026-10-07)
@@ -410,6 +412,42 @@ def build_mercury_relief(orig: Path, report: dict) -> None:
     report["2k_mercury_relief.webp"] = save_webp(Image.fromarray(byte), out, 80)
     print(f"  mercury relief: heights {height.min():.0f} to {height.max():.0f} m, local relief rms {local.std():.0f} m, "
           f"{clipped * 100:.2f} % beyond +-{MERCURY_RELIEF_RANGE_M:.0f} m, {report['2k_mercury_relief.webp']:,d} bytes", flush=True)
+
+
+EARTH_RELIEF_MAX_M = 9000.0   # scene/earth.js EARTH_RELIEF.maxMetres: a byte holds sqrt(height / this)
+
+
+def build_earth_relief(orig: Path, report: dict) -> None:
+    """NOAA's ETOPO 2022 as one grey channel of height, for the Earth's relief (scene/earth.js).
+
+    THE ORIGINAL is the 60 arc-second ice-surface grid read at every second point through NCEI's
+    OPeNDAP server, which is 5400 x 10800 big-endian floats after a short text header (no netCDF
+    library needed):
+        curl -g -o etopo_s2.dods "https://www.ngdc.noaa.gov/thredds/dodsC/global/ETOPO2022/60s/\
+60s_surface_elev_netcdf/ETOPO_2022_v1_60s_N90W180_surface.nc.dods?z.z[0:2:10799][0:2:21599]"
+    Rows run south to north there; a picture has north at the top.
+
+    WHAT IS KEPT. Heights above the sea only (the sea floor is clipped to 0: water is level, and
+    the shader levels the lakes with the water mask), area-averaged to the map's size, and written
+    as sqrt(height / 9000 m) in a byte: a step is under a metre near the sea and 60 m at the top of
+    the Himalaya, where a slope is hundreds of metres a texel. Lossless: a lossy codec's blocks
+    are slopes to a shader that reads differences (measured: a third of the slope's own rms at
+    quality 82). 2048 wide for tier 2, 1024 for tier 1; a phone has none.
+    """
+    raw = (orig / "etopo_s2.dods").read_bytes()
+    at = raw.index(b"Data:\n") + 6
+    n = int.from_bytes(raw[at:at + 4], "big")
+    if n != 5400 * 10800:
+        raise SystemExit(f"etopo_s2.dods holds {n} values, not 5400 x 10800")
+    z = np.frombuffer(raw, dtype=">f4", count=n, offset=at + 8).reshape(5400, 10800).astype(np.float32)
+    if z[0].mean() > z[-1].mean():   # Antarctica's ice first: south to north
+        z = z[::-1]
+    z = np.clip(z, 0.0, EARTH_RELIEF_MAX_M)
+    for width, name in ((2048, "2k_earth_relief.webp"), (1024, "1k_earth_relief.webp")):
+        h = np.asarray(Image.fromarray(z).resize((width, width // 2), Image.BOX))
+        byte = np.round(np.sqrt(np.clip(h, 0.0, EARTH_RELIEF_MAX_M) / EARTH_RELIEF_MAX_M) * 255).astype(np.uint8)
+        report[name] = save_webp(Image.fromarray(byte), ROOT / "site" / "textures" / name, 100, lossless=True)
+        print(f"  earth relief {width}: highest texel {h.max():.0f} m, mean land {h[h > 1].mean():.0f} m, {report[name]:,d} bytes", flush=True)
 
 
 def build_venus_surface(orig: Path, report: dict) -> None:
@@ -881,11 +919,12 @@ STEPS = {
     "mars": lambda o, r: build_planet(o, "mars", r),
     "mercury": build_mercury,
     "mercury-relief": build_mercury_relief,
+    "earth-relief": build_earth_relief,
     "venus-surface": build_venus_surface,
     **{k: (lambda o, r, k=k: build_giant(o, k, r)) for k in GIANTS},
     **{f"moon-{k}": (lambda o, r, k=k: build_moon(o, k, r)) for k in MOONS},
 }
-TIER1 = [k for k in STEPS if not k.startswith("moon-") and k not in ("venus-surface", "mercury-relief") and k not in GIANTS]
+TIER1 = [k for k in STEPS if not k.startswith("moon-") and k not in ("venus-surface", "mercury-relief", "earth-relief") and k not in GIANTS]
 
 
 # --- the 2k JPEGs as WebP (spec 0056 req 8, public #286) ----------------------------------------

@@ -144,6 +144,37 @@ textures:
         original: "https://www.solarsystemscope.com/textures/download/8k_earth_specular_map.tif"
         make: "scripts/build-textures.py earth-water: 8192 to 4096 wide by box filter (a coast pixel is the share of it that is water), lossless WebP"
 
+  # RELIEF (2026-10-08, spec 0053 task 5, public #260): the height of the land, for the daylight a
+  # low Sun puts on a mountain range (scene/earth.js EARTH_RELIEF). No tier-0 file: a phone draws
+  # none. One grey channel (R8 on the GPU): 0.7 MiB at tier 1 and 2.7 at tier 2. LOSSLESS, because
+  # the shader reads differences between texels and a lossy codec's blocks are slopes to it.
+  - id: earth-relief
+    world: earth
+    slot: relief
+    when: idle
+    boot: none
+    files:
+      - tier: 1
+        file: site/textures/1k_earth_relief.webp
+        px: [1024, 512]
+        bytes: 95330
+        format: mono
+        licence: 'CC0 1.0: "NOAA waives any potential copyright and related rights in these data worldwide through the Creative Commons Zero 1.0 Universal Public Domain Dedication"'
+        credit: "Earth relief: NOAA National Centers for Environmental Information, ETOPO 2022 Global Relief Model (doi:10.25921/fd45-gt74), CC0"
+        source: "https://doi.org/10.25921/fd45-gt74 (read 2026-10-08)"
+        original: "https://www.ngdc.noaa.gov/thredds/dodsC/global/ETOPO2022/60s/60s_surface_elev_netcdf/ETOPO_2022_v1_60s_N90W180_surface.nc"
+        make: "scripts/build-textures.py --only earth-relief: the 60 arc-second ice-surface grid read at every second point, clipped to the heights above the sea, area-averaged to 1024 x 512, written as sqrt(height / 9000 m) in one grey channel, lossless WebP"
+      - tier: 2
+        file: site/textures/2k_earth_relief.webp
+        px: [2048, 1024]
+        bytes: 316318
+        format: mono
+        licence: 'CC0 1.0: "NOAA waives any potential copyright and related rights in these data worldwide through the Creative Commons Zero 1.0 Universal Public Domain Dedication"'
+        credit: "Earth relief: NOAA National Centers for Environmental Information, ETOPO 2022 Global Relief Model (doi:10.25921/fd45-gt74), CC0"
+        source: "https://doi.org/10.25921/fd45-gt74 (read 2026-10-08)"
+        original: "https://www.ngdc.noaa.gov/thredds/dodsC/global/ETOPO2022/60s/60s_surface_elev_netcdf/ETOPO_2022_v1_60s_N90W180_surface.nc"
+        make: "as the tier-1 file, at 2048 x 1024"
+
   - id: earth-clouds
     world: earth
     slot: clouds

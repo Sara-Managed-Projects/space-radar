@@ -154,7 +154,7 @@ function rig(opts = {}) {
   r.idleQ.shift()();
   check(r.log.length === 1 && r.pending.length === 1, `one fetch at a time (${r.log.length} in flight)`);
   await r.settle();
-  const want = ['textures/4k/earth_day_09.webp', 'textures/4k/earth_night.webp', 'textures/4k/earth_water.webp', 'textures/4k/milky_way.webp'];
+  const want = ['textures/4k/earth_day_09.webp', 'textures/4k/earth_night.webp', 'textures/4k/earth_water.webp', 'textures/1k_earth_relief.webp', 'textures/4k/milky_way.webp'];
   check(JSON.stringify(r.log) === JSON.stringify(want), `T1 fetches the Earth, then the sky, in that order, and nothing else while the planets are small: ${r.log.join(', ')}`);
   check(r.earth.slots.day && r.earth.slots.day.url === want[0] && r.earth.slots.water && r.sky.map, 'and each landed in its slot');
   check(r.tiers.state().fetchedBytes > 0, 'and counts what it fetched');
@@ -163,14 +163,14 @@ function rig(opts = {}) {
   r.setMonth(12);
   r.tiers.tick(10000);
   await r.settle();
-  check(r.log.length === 4, 'a new month is not fetched at once (a scrub through the year is not twelve downloads)');
+  check(r.log.length === 5, 'a new month is not fetched at once (a scrub through the year is not twelve downloads)');
   r.tiers.tick(10000 + MONTH_HOLD_MS - 100);
   await r.settle();
-  check(r.log.length === 4, 'nor just before the hold is up');
+  check(r.log.length === 5, 'nor just before the hold is up');
   const sept = r.earth.slots.day;
   r.tiers.tick(10000 + MONTH_HOLD_MS + 100);
   await r.settle();
-  check(r.log[4] === 'textures/4k/earth_day_12.webp' && r.earth.slots.day.url === 'textures/4k/earth_day_12.webp', `December's Earth after the hold (${r.log[4]})`);
+  check(r.log[5] === 'textures/4k/earth_day_12.webp' && r.earth.slots.day.url === 'textures/4k/earth_day_12.webp', `December's Earth after the hold (${r.log[5]})`);
   check(sept.disposed === 1, 'and September\'s 4k texture is freed');
 
   // Planets: the Moon small, then big. T1 holds ONE planet at 4k (its GPU budget, spec 0056).
@@ -275,10 +275,12 @@ for (const w of WORLDS) {
   const names = [w.look.map, w.look.day, w.look.night, w.look.clouds, w.look.ring && w.look.ring.map].filter(Boolean);
   for (const n of names) check(boot.includes('textures/' + n), `worlds.js boots ${w.id} from ${n}, which is not a tier-0 file`);
 }
-// Every tier-1 file is 4096 x 2048 and nothing larger ships: 8k waits for KTX2.
+// Every tier-1 file is 4096 x 2048 and nothing larger ships: 8k waits for KTX2. The Earth's relief
+// is the one that is smaller on purpose (a height map read for its slopes: 1024 and 2048 wide).
 for (const row of TEXTURES) {
   for (const f of row.files) {
-    if (f.tier > 0) check(f.px[0] === 4096 && f.px[1] === 2048, `${row.id} tier ${f.tier} is ${f.px}, not 4096 x 2048`);
+    if (f.tier > 0 && row.slot === 'relief') check(row.id === 'earth-relief' && f.px[0] === 1024 * f.tier && f.px[1] * 2 === f.px[0] && f.format === 'mono', `${row.id} tier ${f.tier} is ${f.px} ${f.format}, not one grey channel ${1024 * f.tier} wide`);
+    else if (f.tier > 0) check(f.px[0] === 4096 && f.px[1] === 2048, `${row.id} tier ${f.tier} is ${f.px}, not 4096 x 2048`);
     check(f.px[0] <= 4096, `${row.id}: ${f.px[0]} wide is over what any tier may ship without KTX2`);
   }
 }

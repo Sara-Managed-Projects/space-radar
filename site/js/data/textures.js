@@ -121,6 +121,36 @@ export const TEXTURES = [
     ]
   },
   {
+    "id": "earth-relief",
+    "world": "earth",
+    "slot": "relief",
+    "when": "idle",
+    "files": [
+      {
+        "tier": 1,
+        "file": "textures/1k_earth_relief.webp",
+        "px": [
+          1024,
+          512
+        ],
+        "bytes": 95330,
+        "format": "mono",
+        "credit": "Earth relief: NOAA National Centers for Environmental Information, ETOPO 2022 Global Relief Model (doi:10.25921/fd45-gt74), CC0"
+      },
+      {
+        "tier": 2,
+        "file": "textures/2k_earth_relief.webp",
+        "px": [
+          2048,
+          1024
+        ],
+        "bytes": 316318,
+        "format": "mono",
+        "credit": "Earth relief: NOAA National Centers for Environmental Information, ETOPO 2022 Global Relief Model (doi:10.25921/fd45-gt74), CC0"
+      }
+    ]
+  },
+  {
     "id": "earth-clouds",
     "world": "earth",
     "slot": "clouds",

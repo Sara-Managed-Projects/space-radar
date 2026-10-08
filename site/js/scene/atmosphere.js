@@ -500,3 +500,526 @@ export function createAirShell(key) {
   mesh.userData.top = c.top;
   return mesh;
 }
+
+// =================================================================================================
+// THE EARTH'S AIR (spec 0053 tasks 1 and 2, internal #143 and #144, 2026-10-08)
+// =================================================================================================
+//
+// Contract: EARTH_AIR, EARTH_LUT, earthColumn(h, mu), buildEarthLut(), lutColumns(lut, h, mu),
+//           earthShell(ro, rd, sunDir, opts), createEarthAir(opts), setEarthAirSteps(mesh, n),
+//           EARTH_AIR_FRAG, EARTH_AERIAL_GLSL, aerialAirmass(mu), aerialSun(mu, share), aerial(...)
+//
+// The Earth's shell was #317's ATMO_FRAG in scene/earth.js. It lives here now, and three things
+// about it changed, each on purpose:
+//
+//   1. THE LIGHT PATH IS LOOKED UP, NOT MARCHED. From each of its view steps the old shader marched
+//      4 steps toward the Sun: 48 pairs of exponentials a fragment. The air between a point and the
+//      Sun depends on two numbers only -- the point's height and the Sun's zenith angle there -- so
+//      it is a table: EARTH_LUT, 96 x 48, each texel the column of gas and the column of particles
+//      from that height along that direction to the top of the shell. One fetch a step. The table
+//      is BUILT IN THE PAGE (buildEarthLut: 4 608 texels x 48 steps, 5 to 50 ms, once, in an idle
+//      moment after the first frame; the shell fades in when it is there, as the maps do), not
+//      shipped as a picture: no bytes on the first visit, nothing to licence, nothing that can
+//      drift from the shader's numbers, because both read EARTH_AIR. It holds COLUMNS, not
+//      transmittance, in two half-float channels: the three colours' transmittances are then
+//      exp(-(betaR col.r + betaM col.g)), exact for every colour from one fetch.
+//      tests/test_atmo_lut.mjs holds the table within 2 % of a 20 000-step integration at five
+//      angles, and the build deterministic.
+//
+//   2. A STEP THAT SEES THE SUN IS LIT. The old shadow test, `sphere( p, uSunDir, 1.0 ).x > 0.0`,
+//      counted a miss (1e9) as a hit, so every step whose ray to the Sun CLEARED the Earth was
+//      skipped as shadowed and only the steps over the day side's own cylinder were lit (found
+//      writing the other worlds' twin, in the header above). The glow was right toward the Sun and
+//      missing everywhere else: at full phase the Earth had no air outside its limb at all. The
+//      table has no such test in it: a ray that dips under the ground meets air growing denser
+//      without limit (the column is integrated through negative heights and capped), so the light
+//      dies smoothly over the few kilometres past the horizon, which is the Earth's own penumbra
+//      in its air, and is zero behind the planet. EARTH_AIR.sun is still #317's 14: where the old
+//      shader did light the air -- the limb toward the Sun -- the new one draws the same light to
+//      within 3 % (tests/test_atmo_lut.mjs keeps the old formula as a twin and holds the two
+//      together); what is new is the limb to either side of it, toward the poles of the terminator.
+//
+//   3. STEPS BY TIER. 8 view steps at tier 0, 12 at tier 1, 16 at tier 2, and 6 for good once the
+//      frame latch has tripped (setEarthAirSteps; main.js tells it with the other tier switches).
+//
+// AERIAL PERSPECTIVE (task 2) is the same air seen from above, over the disc: the ground is seen
+// THROUGH it and the air between the camera and the ground is itself lit. Over the disc the path
+// is one slant through a thin layer, so there is no march: the airmass along the view and toward
+// the Sun are each one Chapman function (chapmanUp above, at the Earth's REAL 8 km scale height),
+// and single scattering along the slant has a closed form (aerial() below, and EARTH_AERIAL_GLSL,
+// which scene/earth.js splices into the surface shader). Three things follow from it and are no
+// longer separate inventions in the surface shader:
+//     - the low Sun reddens the ground, by the air its light crossed (it was a fixed warm tint);
+//     - distant land takes the air's colour toward the limb, and the limb itself is pale;
+//     - the lit air over the night side of the terminator is a thin twilight.
+// The day map is NASA's Blue Marble, which is surface reflectance with the air taken out, so the
+// air is put back whole -- except straight down under a high Sun, where the map is left exactly as
+// it is (the airmass enters as m - 1): the map's colours were graded as the look at the middle
+// of the disc, and they stay that.
+//
+// HONESTY. The scattering coefficients and scale heights are the standard published ones (sea
+// level Rayleigh 5.8, 13.5, 33.1 per Mm at 680, 550, 440 nm; 8 km; Mie 21 per Mm, 1.2 km). The
+// SHELL is drawn 2.5 times as tall as the air is (heightGain, #317's device, so the limb reads at
+// the size the globe is drawn) and its brightness is fitted by eye; the surface term uses the real
+// heights and no gain.
+
+export const EARTH_AIR = {
+  radiusKm: 6371,
+  shellScale: 1.025,                 // shell radius / ground radius (scene/earth.js ATMOSPHERE_SCALE)
+  heightGain: 2.5,                   // the shell's scale heights are drawn this many times taller
+  betaR: [5.8e-6, 13.5e-6, 33.1e-6], // Rayleigh scattering at sea level, per metre, R G B
+  betaM: 21e-6,                      // Mie scattering at sea level, per metre
+  mieExt: 1.1,                       // Mie extinction over scattering
+  gasHKm: 8,
+  mieHKm: 1.2,
+  mieG: 0.76,
+  sun: 14.0,                         // the shell's light gain, fitted by eye (#317)
+  steps: [8, 12, 16],                // view steps by tier
+  latchedSteps: 6,
+  maxSteps: 16,
+};
+
+/** The table's shape. `muMin`: below it every ray is deep in the ground's shadow. `cap`: radii. */
+export const EARTH_LUT = { width: 96, height: 48, muMin: -0.3, steps: 48, cap: 1.0 };
+
+const earthHR = () => (EARTH_AIR.gasHKm * EARTH_AIR.heightGain) / EARTH_AIR.radiusKm;
+const earthHM = () => (EARTH_AIR.mieHKm * EARTH_AIR.heightGain) / EARTH_AIR.radiusKm;
+const muF = (m) => Math.sign(m) * Math.sqrt(Math.abs(m));
+
+/**
+ * The air from a point `h` radii above the ground along a direction whose zenith cosine is `mu`,
+ * out to the top of the shell: [gas column, particle column], in radii of sea-level air. A ray
+ * that goes under the ground keeps going, through air that thickens as exp(depth / H): the ground
+ * is not a wall here but the same exponential carried on down, which closes the light off within
+ * a few kilometres of depth and has no edge to alias (point 2 in the header). `n` steps, spaced
+ * as the square of the distance so the first are short where the air is thickest.
+ */
+export function earthColumn(h, mu, n = EARTH_LUT.steps) {
+  const r = 1 + h;
+  const top = EARTH_AIR.shellScale;
+  const disc = r * r * mu * mu - r * r + top * top;
+  if (!(disc > 0)) return [0, 0];
+  const sMax = -r * mu + Math.sqrt(disc);
+  if (!(sMax > 0)) return [0, 0];
+  const hR = earthHR();
+  const hM = earthHM();
+  let cR = 0;
+  let cM = 0;
+  for (let i = 0; i < n; i++) {
+    const t = (i + 0.5) / n;
+    const s = sMax * t * t;
+    const ds = (sMax * 2 * t) / n;
+    const hh = Math.sqrt(r * r + s * s + 2 * r * s * mu) - 1;
+    cR += Math.exp(Math.min(-hh / hR, 40)) * ds;
+    cM += Math.exp(Math.min(-hh / hM, 40)) * ds;
+  }
+  return [Math.min(cR, EARTH_LUT.cap), Math.min(cM, EARTH_LUT.cap)];
+}
+
+/** Texel coordinates (fractional, 0 .. size-1) of a height and a zenith cosine: the GLSL's lutUv(). */
+export function lutCoord(h, mu) {
+  const span = EARTH_AIR.shellScale - 1;
+  const v = Math.sqrt(Math.min(1, Math.max(0, h / span)));
+  const f0 = muF(EARTH_LUT.muMin);
+  const u = Math.min(1, Math.max(0, (muF(Math.max(mu, EARTH_LUT.muMin)) - f0) / (1 - f0)));
+  return [u * (EARTH_LUT.width - 1), v * (EARTH_LUT.height - 1)];
+}
+
+let _lut = null;
+/** The table: Float32Array, width x height x 2, row 0 the ground. Built once; the same every time. */
+export function buildEarthLut() {
+  if (_lut) return _lut;
+  const { width: W, height: H, muMin } = EARTH_LUT;
+  const span = EARTH_AIR.shellScale - 1;
+  const f0 = muF(muMin);
+  const out = new Float32Array(W * H * 2);
+  for (let j = 0; j < H; j++) {
+    const v = j / (H - 1);
+    const h = v * v * span;
+    for (let i = 0; i < W; i++) {
+      const f = f0 + (i / (W - 1)) * (1 - f0);
+      const mu = Math.sign(f) * f * f;
+      const c = earthColumn(h, mu);
+      out[(j * W + i) * 2] = c[0];
+      out[(j * W + i) * 2 + 1] = c[1];
+    }
+  }
+  _lut = out;
+  return out;
+}
+
+/** The table read as the GPU reads it: bilinear between texel centres. */
+export function lutColumns(lut, h, mu) {
+  const { width: W, height: H } = EARTH_LUT;
+  const [x, y] = lutCoord(h, mu);
+  const x0 = Math.min(W - 2, Math.floor(x));
+  const y0 = Math.min(H - 2, Math.floor(y));
+  const fx = x - x0;
+  const fy = y - y0;
+  const at = (i, j, k) => lut[(j * W + i) * 2 + k];
+  const out = [0, 0];
+  for (let k = 0; k < 2; k++) {
+    out[k] = (at(x0, y0, k) * (1 - fx) + at(x0 + 1, y0, k) * fx) * (1 - fy) + (at(x0, y0 + 1, k) * (1 - fx) + at(x0 + 1, y0 + 1, k) * fx) * fy;
+  }
+  return out;
+}
+
+function hg1(mu, g) {
+  const g2 = g * g;
+  return (3 / (8 * Math.PI)) * ((1 - g2) * (1 + mu * mu)) / ((2 + g2) * Math.pow(1 + g2 - 2 * g * mu, 1.5));
+}
+
+/**
+ * The JS twin of EARTH_AIR_FRAG: the light the shell sends toward `ro` along `rd`, R G B, lengths in
+ * Earth radii with the Earth at the origin. `light: 'old'` is #317's formula as it shipped, shadow
+ * test and all, with `sun` 14: kept so the refit can be held against it.
+ */
+export function earthShell(ro, rd, sunDir, { steps = 12, light = 'lut', sun = EARTH_AIR.sun, lut = null } = {}) {
+  const top = EARTH_AIR.shellScale;
+  const hR = earthHR();
+  const hM = earthHM();
+  const bR = EARTH_AIR.betaR.map((b) => b * EARTH_AIR.radiusKm * 1000);
+  const bM = EARTH_AIR.betaM * EARTH_AIR.radiusKm * 1000;
+  const shell = sphere(ro, rd, top);
+  const t0 = Math.max(shell[0], 0);
+  let t1 = shell[1];
+  const ground = sphere(ro, rd, 1);
+  if (ground[0] > 0) t1 = Math.min(t1, ground[0]);
+  if (!(t1 > t0)) return [0, 0, 0];
+  const table = light === 'lut' ? (lut || buildEarthLut()) : null;
+  const ds = (t1 - t0) / steps;
+  let odR = 0; let odM = 0;
+  const sumR = [0, 0, 0]; const sumM = [0, 0, 0];
+  for (let i = 0; i < steps; i++) {
+    const tt = t0 + (i + 0.5) * ds;
+    const p = [ro[0] + rd[0] * tt, ro[1] + rd[1] * tt, ro[2] + rd[2] * tt];
+    const r = Math.hypot(p[0], p[1], p[2]);
+    const h = Math.max(r - 1, 0);
+    const dR = Math.exp(-h / hR) * ds;
+    const dM = Math.exp(-h / hM) * ds;
+    odR += dR; odM += dM;
+    let lR = 0; let lM = 0;
+    if (light === 'old') {
+      if (sphere(p, sunDir, 1)[0] > 0) continue;   // #317's test: a miss (1e9) passes it
+      const lds = sphere(p, sunDir, top)[1] / 4;
+      for (let j = 0; j < 4; j++) {
+        const q = (j + 0.5) * lds;
+        const lh = Math.max(Math.hypot(p[0] + sunDir[0] * q, p[1] + sunDir[1] * q, p[2] + sunDir[2] * q) - 1, 0);
+        lR += Math.exp(-lh / hR) * lds;
+        lM += Math.exp(-lh / hM) * lds;
+      }
+    } else {
+      const c = lutColumns(table, h, (p[0] * sunDir[0] + p[1] * sunDir[1] + p[2] * sunDir[2]) / r);
+      lR = c[0]; lM = c[1];
+    }
+    for (let k = 0; k < 3; k++) {
+      const att = Math.exp(-(bR[k] * (odR + lR) + bM * EARTH_AIR.mieExt * (odM + lM)));
+      sumR[k] += dR * att;
+      sumM[k] += dM * att;
+    }
+  }
+  const mu = rd[0] * sunDir[0] + rd[1] * sunDir[1] + rd[2] * sunDir[2];
+  const phaseR = (3 / (16 * Math.PI)) * (1 + mu * mu);
+  const phaseM = hg1(mu, EARTH_AIR.mieG);
+  return [0, 1, 2].map((k) => sun * (sumR[k] * bR[k] * phaseR + sumM[k] * bM * phaseM));
+}
+
+const EARTH_AIR_VERT = /* glsl */`
+#include <common>
+#include <logdepthbuf_pars_vertex>
+varying vec3 vPosW;
+varying vec3 vCentre;
+varying float vShellR;
+void main() {
+  vec4 worldPos = modelMatrix * vec4( position, 1.0 );
+  vPosW = worldPos.xyz;
+  vCentre = ( modelMatrix * vec4( 0.0, 0.0, 0.0, 1.0 ) ).xyz;
+  vShellR = length( modelMatrix[0].xyz );
+  gl_Position = projectionMatrix * viewMatrix * worldPos;
+  #include <logdepthbuf_vertex>
+}
+`;
+
+/** The Earth's shell (THE EARTH'S AIR, above). BackSide, depth-tested: the disc hides what is behind it. */
+export const EARTH_AIR_FRAG = /* glsl */`
+#include <common>
+#include <logdepthbuf_pars_fragment>
+
+uniform vec3  uSunDir;
+uniform float uIntensity;
+uniform float uShellScale;    // shell radius / ground radius
+uniform float uHeightGain;
+uniform sampler2D uLut;       // EARTH_LUT: r the gas column toward the Sun, g the particles'
+uniform int   uSteps;
+
+varying vec3 vPosW;
+varying vec3 vCentre;
+varying float vShellR;
+
+const int MAX_STEPS = ${EARTH_AIR.maxSteps};
+// Sea-level scattering coefficients per metre times 6 371 000 m: per Earth radius.
+const vec3  BETA_R = vec3( ${EARTH_AIR.betaR.map((b) => b.toExponential(2)).join(', ')} ) * 6371000.0;
+const float BETA_M = ${EARTH_AIR.betaM.toExponential(2)} * 6371000.0;
+const float MIE_G = ${EARTH_AIR.mieG.toFixed(2)};
+const float MU_F0 = ${muF(EARTH_LUT.muMin).toFixed(6)};
+
+vec2 sphere( vec3 ro, vec3 rd, float r ) {
+  float b = dot( ro, rd );
+  float c = dot( ro, ro ) - r * r;
+  float d = b * b - c;
+  if ( d < 0.0 ) return vec2( 1e9, -1e9 );
+  d = sqrt( d );
+  return vec2( -b - d, -b + d );
+}
+
+// lutCoord() in scene/atmosphere.js, to texel centres.
+vec2 lutUv( float h, float mu ) {
+  float v = sqrt( clamp( h / ( uShellScale - 1.0 ), 0.0, 1.0 ) );
+  float m = max( mu, ${EARTH_LUT.muMin.toFixed(2)} );
+  float u = clamp( ( sign( m ) * sqrt( abs( m ) ) - MU_F0 ) / ( 1.0 - MU_F0 ), 0.0, 1.0 );
+  return vec2( ( u * ${(EARTH_LUT.width - 1).toFixed(1)} + 0.5 ) / ${EARTH_LUT.width.toFixed(1)}, ( v * ${(EARTH_LUT.height - 1).toFixed(1)} + 0.5 ) / ${EARTH_LUT.height.toFixed(1)} );
+}
+
+void main() {
+  #include <logdepthbuf_fragment>
+
+  float groundR = vShellR / uShellScale;
+  vec3 ro = ( cameraPosition - vCentre ) / groundR;   // in Earth radii, Earth at the origin
+  vec3 rd = normalize( vPosW - cameraPosition );
+  float top = uShellScale;
+  float hR = ${EARTH_AIR.gasHKm.toFixed(1)} / 6371.0 * uHeightGain;
+  float hM = ${EARTH_AIR.mieHKm.toFixed(1)} / 6371.0 * uHeightGain;
+
+  vec2 shell = sphere( ro, rd, top );
+  float t0 = max( shell.x, 0.0 );
+  float t1 = shell.y;
+  vec2 ground = sphere( ro, rd, 1.0 );
+  if ( ground.x > 0.0 && ground.x < 1e8 ) t1 = min( t1, ground.x );
+  if ( t1 <= t0 ) discard;
+
+  float ds = ( t1 - t0 ) / float( uSteps );
+  float odR = 0.0, odM = 0.0;
+  vec3 sumR = vec3( 0.0 ), sumM = vec3( 0.0 );
+  for ( int i = 0; i < MAX_STEPS; i++ ) {
+    if ( i >= uSteps ) break;
+    vec3 p = ro + rd * ( t0 + ( float( i ) + 0.5 ) * ds );
+    float r = length( p );
+    float h = max( r - 1.0, 0.0 );
+    float dR = exp( -h / hR ) * ds;
+    float dM = exp( -h / hM ) * ds;
+    odR += dR;
+    odM += dM;
+    // The air between this step and the Sun, from the table: no march, and no shadow test -- a ray
+    // that goes under the ground comes back with a column nothing gets through.
+    vec2 l = texture2D( uLut, lutUv( h, dot( p, uSunDir ) / r ) ).rg;
+    vec3 att = exp( -( BETA_R * ( odR + l.r ) + BETA_M * ${EARTH_AIR.mieExt.toFixed(1)} * ( odM + l.g ) ) );
+    sumR += dR * att;
+    sumM += dM * att;
+  }
+
+  float mu = dot( rd, uSunDir );
+  float phaseR = 3.0 / ( 16.0 * PI ) * ( 1.0 + mu * mu );
+  float g2 = MIE_G * MIE_G;
+  float phaseM = 3.0 / ( 8.0 * PI ) * ( ( 1.0 - g2 ) * ( 1.0 + mu * mu ) ) / ( ( 2.0 + g2 ) * pow( 1.0 + g2 - 2.0 * MIE_G * mu, 1.5 ) );
+  vec3 colour = ${EARTH_AIR.sun.toFixed(2)} * ( sumR * BETA_R * phaseR + sumM * BETA_M * phaseM ) * uIntensity;
+
+  // Airglow: a faint green line on the night-side limb, which is real (oxygen at ~95 km).
+  float dark = 1.0 - clamp( length( sumR ) * 40.0, 0.0, 1.0 );
+  colour += vec3( 0.012, 0.045, 0.022 ) * clamp( odR * 6.0, 0.0, 1.0 ) * dark * uIntensity;
+
+  gl_FragColor = vec4( colour, 1.0 );
+
+  #include <tonemapping_fragment>
+  #include <colorspace_fragment>
+}
+`;
+
+let _lutTexture = null;
+/** The table as a texture: two half-float channels, filtered. One for the page. */
+function earthLutTexture() {
+  if (_lutTexture) return _lutTexture;
+  const tex = new THREE.DataTexture(new Uint16Array(EARTH_LUT.width * EARTH_LUT.height * 2), EARTH_LUT.width, EARTH_LUT.height, THREE.RGFormat, THREE.HalfFloatType);
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+  tex.generateMipmaps = false;
+  tex.colorSpace = THREE.NoColorSpace;
+  tex.userData.filled = false;
+  _lutTexture = tex;
+  return tex;
+}
+function fillEarthLut(tex) {
+  if (tex.userData.filled) return;
+  const data = buildEarthLut();
+  const half = tex.image.data;
+  for (let i = 0; i < data.length; i++) half[i] = THREE.DataUtils.toHalfFloat(data[i]);
+  tex.userData.filled = true;
+  tex.needsUpdate = true;
+}
+
+/** How long the shell takes to come up once its table is built, as a map does (scene/earth.js MAP_FADE_MS). */
+export const EARTH_AIR_FADE_MS = 400;
+
+/**
+ * The Earth's shell: a child for the Earth's mesh (scene/earth.js createEarth adds it), scaled to
+ * the top of the drawn air. scene/earth.js updateEarth keeps its sun direction.
+ * @param {{segments?: {width:number,height:number}, gain?: number, steps?: number}} [opts]
+ */
+export function createEarthAir(opts = {}) {
+  const seg = opts.segments || { width: 72, height: 48 };
+  const material = new THREE.ShaderMaterial({
+    name: 'earth-atmosphere',
+    vertexShader: EARTH_AIR_VERT,
+    fragmentShader: EARTH_AIR_FRAG,
+    uniforms: {
+      uSunDir: { value: new THREE.Vector3(1, 0, 0) },
+      uIntensity: { value: 0 },
+      uShellScale: { value: EARTH_AIR.shellScale },
+      uHeightGain: { value: EARTH_AIR.heightGain },
+      uLut: { value: earthLutTexture() },
+      uSteps: { value: opts.steps || EARTH_AIR.steps[1] },
+    },
+    side: THREE.BackSide,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, seg.width, seg.height), material);
+  mesh.name = 'earth-atmosphere';
+  mesh.scale.setScalar(EARTH_AIR.shellScale);
+  mesh.renderOrder = 1;
+  mesh.userData.kind = 'atmosphere';
+  mesh.userData.gain = Number.isFinite(opts.gain) ? opts.gain : 1;
+  // The table is built in an idle moment (NOTHING AT BOOT: the first frame does not wait for it),
+  // and at once where there is no page to keep waiting (a test). Until it is there the shell is
+  // not drawn; settleEarthAir() brings it up.
+  mesh.visible = false;
+  const lut = material.uniforms.uLut.value;
+  const fill = () => fillEarthLut(lut);
+  if (lut.userData.filled || typeof document === 'undefined') fill();
+  else if (typeof requestIdleCallback === 'function') requestIdleCallback(fill, { timeout: 1500 });
+  else setTimeout(fill, 60);
+  return mesh;
+}
+
+/** Once a frame (scene/earth.js updateEarth): the shell comes up over EARTH_AIR_FADE_MS once its table is built. */
+export function settleEarthAir(shell, nowMs) {
+  const d = shell && shell.userData;
+  const u = shell && shell.material && shell.material.uniforms;
+  if (!d || !u || d.settled) return;
+  if (!u.uLut.value.userData.filled) return;
+  if (d.fadeFrom === undefined) { d.fadeFrom = nowMs; shell.visible = true; }
+  const k = Math.min(1, (nowMs - d.fadeFrom) / EARTH_AIR_FADE_MS);
+  u.uIntensity.value = d.gain * k;
+  if (k >= 1) d.settled = true;
+}
+
+/**
+ * How finely the shell is marched: EARTH_AIR.steps for a tier, EARTH_AIR.latchedSteps under the
+ * frame latch (which is for good: a later tier does not raise it again).
+ * @param {THREE.Mesh} shell   createEarthAir()'s mesh (the Earth's mesh.userData.atmosphere)
+ */
+export function setEarthAirSteps(shell, tier, latched = false) {
+  const u = shell && shell.material && shell.material.uniforms;
+  if (!u || !u.uSteps) return 0;
+  if (latched) shell.userData.latched = true;
+  const t = Math.min(EARTH_AIR.steps.length - 1, Math.max(0, tier | 0));
+  u.uSteps.value = shell.userData.latched ? EARTH_AIR.latchedSteps : EARTH_AIR.steps[t];
+  return u.uSteps.value;
+}
+
+// ---- aerial perspective: the air over the disc (task 2) -------------------------------------------
+
+/**
+ * The real air, straight down: optical depth per colour for the gas (beta x 8 km) and for the
+ * particles (beta x 1.2 km x the extinction ratio). `sun`: pi, the irradiance under which a white
+ * matte ground has radiance 1, which is the unit the surface shader's daylight is in. `gain`
+ * scales the lit air and nothing else. `cloudShare`: the share of the gas column that is above a
+ * cloud deck at 8 km (exp(-1)) and above a storm top at 15 km (exp(-15/8)).
+ */
+export const AERIAL = {
+  tauR: EARTH_AIR.betaR.map((b) => b * EARTH_AIR.gasHKm * 1000),
+  tauM: EARTH_AIR.betaM * EARTH_AIR.mieHKm * 1000 * EARTH_AIR.mieExt,
+  mieAlbedo: 1 / EARTH_AIR.mieExt,
+  X: EARTH_AIR.radiusKm / EARTH_AIR.gasHKm,
+  sun: Math.PI,
+  gain: 1.0,
+  // Toward the limb the lit air is drawn brighter, by up to this: the shell just outside the limb
+  // is 4.5 times as bright as this unit makes air (EARTH_AIR.sun 14 against pi), and a limb twice
+  // as bright as computed is what lets the disc's edge meet it without a dark seam. Fitted by eye.
+  limbGain: 2.0,
+  limbFrom: 0.35,
+  deckShare: Math.exp(-1),
+  topShare: Math.exp(-15 / 8),
+};
+
+/** The airmass toward a zenith cosine, 1 straight up and 35 at the horizon; held there below it. */
+export function aerialAirmass(mu) {
+  return chapmanUp(AERIAL.X, 0, Math.max(mu, 0));
+}
+
+/**
+ * Sunlight's colour on the ground against what it is under an overhead Sun: exp(-tau (m - 1)).
+ * `share` of the gas only, for a thing that stands above most of the air (a cloud deck, a storm top).
+ */
+export function aerialSun(mu, share = null) {
+  const m = aerialAirmass(mu) - 1;
+  return [0, 1, 2].map((k) => Math.exp(-(share === null ? AERIAL.tauR[k] + AERIAL.tauM : AERIAL.tauR[k] * share) * m));
+}
+
+/** 1 over the middle of the disc, AERIAL.limbGain at the limb. */
+export function aerialLimbGain(muV) {
+  const t = Math.min(1, Math.max(0, (AERIAL.limbFrom - muV) / AERIAL.limbFrom));
+  return 1 + (AERIAL.limbGain - 1) * t * t * (3 - 2 * t);
+}
+
+/**
+ * What the air does to a ground colour: [colour x T + L]. muV: the view's zenith cosine at the
+ * ground; muS: the Sun's; cosGamma: the cosine between the view ray and the Sun; lit: 0..1, how
+ * much of the Sun this air sees (the terminator, an eclipse); above: the share of the air that is
+ * above what is seen (1 the ground). Single scattering along a slant through a layer whose
+ * airmass toward the Sun is the same all the way: per colour,
+ *   L = sun x (tauR pR + albedo tauM pM) / tau x mV / (mS + mV) x (1 - exp(-tau (mS + mV)))
+ * and the ground is seen through exp(-tau (mV - 1)): the straight-down column is the map's own.
+ * @returns {{T: number[], L: number[]}}
+ */
+export function aerial(muV, muS, cosGamma, lit = 1, above = 1) {
+  const mV = aerialAirmass(muV);
+  const mS = aerialAirmass(muS);
+  const pR = (3 / (16 * Math.PI)) * (1 + cosGamma * cosGamma);
+  const pM = hg1(cosGamma, EARTH_AIR.mieG);
+  const T = [0, 0, 0];
+  const L = [0, 0, 0];
+  for (let k = 0; k < 3; k++) {
+    const tR = AERIAL.tauR[k] * above;
+    const tM = AERIAL.tauM * above;
+    const tau = tR + tM;
+    T[k] = Math.exp(-tau * (mV - 1));
+    L[k] = aerialLimbGain(muV) * AERIAL.gain * AERIAL.sun * lit * ((tR * pR + AERIAL.mieAlbedo * tM * pM) / tau) * (mV / (mS + mV)) * (1 - Math.exp(-tau * (mS + mV)));
+  }
+  return { T, L };
+}
+
+/** aerialAirmass(), aerialSun() and aerial() for a fragment shader that includes <common> (PI). */
+export const EARTH_AERIAL_GLSL = /* glsl */`
+// ---- aerial perspective (scene/atmosphere.js EARTH_AERIAL_GLSL) ----
+const vec3  AER_TAU_R = vec3( ${AERIAL.tauR.map((x) => x.toFixed(5)).join(', ')} );
+const float AER_TAU_M = ${AERIAL.tauM.toFixed(5)};
+const float AER_C = ${Math.sqrt((Math.PI / 2) * AERIAL.X).toFixed(4)};   // sqrt( pi/2 x R/H ): the airmass at the horizon
+float aerAirmass( float mu ) { return AER_C / ( ( AER_C - 1.0 ) * max( mu, 0.0 ) + 1.0 ); }
+vec3 aerSun( float mu ) { return exp( -( AER_TAU_R + AER_TAU_M ) * ( aerAirmass( mu ) - 1.0 ) ); }
+vec3 aerSunAbove( float mu, float share ) { return exp( -AER_TAU_R * share * ( aerAirmass( mu ) - 1.0 ) ); }
+vec3 aerial( vec3 colour, float muV, float muS, float cosGamma, float lit, float above ) {
+  float mV = aerAirmass( muV );
+  float mS = aerAirmass( muS );
+  float pR = 3.0 / ( 16.0 * PI ) * ( 1.0 + cosGamma * cosGamma );
+  float pM = 3.0 / ( 8.0 * PI ) * ( ${(1 - EARTH_AIR.mieG ** 2).toFixed(4)} * ( 1.0 + cosGamma * cosGamma ) ) / ( ${(2 + EARTH_AIR.mieG ** 2).toFixed(4)} * pow( ${(1 + EARTH_AIR.mieG ** 2).toFixed(4)} - ${(2 * EARTH_AIR.mieG).toFixed(2)} * cosGamma, 1.5 ) );
+  vec3 tR = AER_TAU_R * above;
+  float tM = AER_TAU_M * above;
+  vec3 tau = tR + tM;
+  float limbGain = 1.0 + ${(AERIAL.limbGain - 1).toFixed(2)} * smoothstep( ${AERIAL.limbFrom.toFixed(2)}, 0.0, muV );
+  vec3 L = limbGain * ${(AERIAL.gain * AERIAL.sun).toFixed(4)} * lit * ( tR * pR + ${AERIAL.mieAlbedo.toFixed(4)} * tM * pM ) / tau * ( mV / ( mS + mV ) ) * ( 1.0 - exp( -tau * ( mS + mV ) ) );
+  return colour * exp( -tau * ( mV - 1.0 ) ) + L;
+}
+// ---- end of aerial perspective ----
+`;

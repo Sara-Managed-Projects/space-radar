@@ -48,6 +48,7 @@ import * as THREE from '../../vendor/three.module.min.js';
 import { gmst, geodeticToEcef } from '../propagate/frames.js';
 import { ECLIPSE_GLSL, MOON_RADIUS_KM } from './eclipse.js';
 import { EARTH_DAY_PLACEHOLDER } from './earthplaceholder.js';
+import { EARTH_AIR, EARTH_AERIAL_GLSL, AERIAL, createEarthAir, settleEarthAir, setEarthAirSteps } from './atmosphere.js';
 
 // --- tunables, all named, none buried in the shader -------------------------------------------
 
@@ -61,7 +62,7 @@ export const NIGHT_LIGHTS = 0xffc98a;
 export const ATMOSPHERE_RIM = 0x6ec3ff;
 
 /** The shell that sells the planet. 1.025 x 6371 km = a 159 km atmosphere, about right. */
-export const ATMOSPHERE_SCALE = 1.025;
+export const ATMOSPHERE_SCALE = EARTH_AIR.shellScale;
 
 /**
  * Cloud drift, in texture widths per second of APP time. One lap in eight days.
@@ -112,6 +113,59 @@ export const OCEAN_MASK = { lo: 0.03, hi: 0.10 };
  */
 export const WGS84_A_KM = 6378.137;
 export const WGS84_B_KM = 6356.752314245;
+
+/**
+ * RELIEF (spec 0053 task 5, public #260, 2026-10-08). The globe is a smooth ellipsoid; what a low
+ * Sun shows of the mountains is drawn by tipping the normal the daylight is worked out with, from
+ * a height map (registry/textures.yaml earth-relief: NOAA's ETOPO 2022, one grey channel holding
+ * sqrt(height / maxMetres), so the lowlands keep their steps of a few metres). Tier 1 and up, and
+ * never under the frame latch (scene/texturetiers.js gives the map back).
+ *
+ *   exaggeration  the slopes are drawn this many times steeper than they are. ADJUSTED, and the
+ *                 Earth's card says so: at the 10 to 20 km a texel covers, the Himalaya's front
+ *                 is a slope of about 3 degrees, and from the distance the globe is seen at the
+ *                 real thing is a change of a few per cent in brightness within a few degrees of
+ *                 the terminator.
+ *   min, max      the daylight on a slope against the daylight on level ground there, held between
+ *                 these: there is no shadow cast in this (a slope turned from the Sun dims, it does
+ *                 not put its neighbour in the dark), and a ratio is unbounded at the terminator.
+ * Water is level: the slope is multiplied by the land share of the water mask, so the sea floor
+ * the data set also holds, and the Great Lakes' beds, stay out of the picture.
+ */
+export const EARTH_RELIEF = { exaggeration: 5, maxMetres: 9000, min: 0.3, max: 1.9, sunFloor: 0.04 };
+
+/** The shader's slope gain for a height map `widthPx` wide: slope per unit of (vE^2 - vW^2) two texels apart. */
+export function reliefGain(widthPx) {
+  const texelM = (2 * Math.PI * 6371000) / widthPx;
+  return (EARTH_RELIEF.exaggeration * EARTH_RELIEF.maxMetres) / (2 * texelM);
+}
+
+/**
+ * The JS twin of the shader's relief term: the daylight on the tipped ground over the daylight on
+ * level ground. v*: the map's values a texel to the east, west, north and south; sun: the Sun's
+ * direction as [east, north, up] at the place; land: 1 on land, 0 on water.
+ */
+export function reliefLight(vE, vW, vN, vS, cosLat, sun, gain, land = 1) {
+  const sx = (gain * (vE * vE - vW * vW) / cosLat) * land;
+  const sy = gain * (vN * vN - vS * vS) * land;
+  const len = Math.hypot(sx, sy, 1);
+  const tipped = (-sx * sun[0] - sy * sun[1] + sun[2]) / len;
+  const ratio = Math.min(EARTH_RELIEF.max, Math.max(EARTH_RELIEF.min, tipped / Math.max(sun[2], EARTH_RELIEF.sunFloor)));
+  const t = Math.min(1, Math.max(0, sun[2] / 0.06));
+  return 1 + (ratio - 1) * t * t * (3 - 2 * t);
+}
+
+/**
+ * STORM TOPS (spec 0066 task 2, internal #241, 2026-10-08). The live cloud picture's third channel
+ * is how far a cloud top is into the cold of deep convection (scene/cloudcompose.js STORM_TOP):
+ * a cumulonimbus anvil, 12 to 17 km up where the deck around it is drawn at 8.
+ *   dip        how much later the Sun sets on a top than on the ground under it: the horizon's dip
+ *              from 15 km, sqrt(2 x 15 / 6371) radians, added to the cosine of the Sun's zenith
+ *              angle (near the terminator the two are the same number)
+ *   shadow     its shadow is thrown this many times as far as the deck's (15 km over 8)
+ *   bright     how much whiter than the deck a full top is
+ */
+export const STORM_TOPS = { dip: 0.069, shadow: 1.9, bright: 0.12 };
 
 /** Thin haze should not grey the planet: the cloud coverage is raised to this power first. */
 export const CLOUD_GAMMA = 1.35;
@@ -197,6 +251,10 @@ uniform float uLive;
 uniform sampler2D uWater;
 uniform float uHasWater;
 uniform float uNightMono;
+// 2026-10-08, relief (EARTH_RELIEF in scene/earth.js): the height map, one channel, and its gain,
+// its texel's width and its texel's height. A gain of 0 is no relief: tier 0, the latch, not yet here.
+uniform sampler2D uHeight;
+uniform vec3  uHeightK;
 
 uniform vec3  uSunDir;        // unit, scene/world axes
 uniform vec3  uSunDirLocal;   // unit, mesh-local (= earth-fixed) axes
@@ -233,14 +291,19 @@ varying vec3 vPosL;
 
 const float EARTH_UNIT_KM = ${WGS84_A_KM};
 ${ECLIPSE_GLSL}
+${EARTH_AERIAL_GLSL}
 
 // Cloud coverage at a point: the static map at its drifted uv, and over it the live picture at the
 // uv it was photographed at. uLive is a uniform, so outside the live layer this is today's one fetch.
+// gTops: how much of a storm top the last place read is (the live picture's third channel; STORM_TOPS).
+float gTops = 0.0;
 float cloudCover( vec2 uv ) {
   float c = pow( texture2D( uClouds, uv + uCloudOffset ).r, uCloudGamma ) * uHasClouds;
+  gTops = 0.0;
   if ( uLive > 0.0 ) {
-    vec2 l = mix( texture2D( uLiveA, uv ).rg, texture2D( uLiveB, uv ).rg, uLiveFade );
+    vec3 l = mix( texture2D( uLiveA, uv ).rgb, texture2D( uLiveB, uv ).rgb, uLiveFade );
     c = mix( c, pow( l.r, uCloudGamma ), l.g * uLive );
+    gTops = l.b * l.g * uLive;
   }
   return c;
 }
@@ -256,8 +319,10 @@ void main() {
   // few pixels, and with the Sun side-on the terminator projects to a ruler-straight line. The
   // wrap lets light fall off across the twilight band instead, the same term for ground and cloud.
   float lambert = clamp( ( sunDot + uTwilightWrap ) / ( 1.0 + uTwilightWrap ), 0.0, 1.0 ) * dayMix;
-  // Low sun reddens: a warm tint that fades out by about 15 degrees of elevation.
-  vec3 sunTint = mix( vec3( 1.0, 0.62, 0.42 ), vec3( 1.0 ), smoothstep( 0.0, 0.26, sunDot ) );
+  // Low sun reddens, by the air its light has crossed (aerial perspective, scene/atmosphere.js):
+  // white overhead, orange a few degrees up, a dim red at the horizon. It was a fixed warm tint.
+  vec3 sunTint = aerSun( sunDot );
+  float eclLight = 1.0;
 
   // ---- the Moon's shadow (spec 0037) ------------------------------------------------------------
   // The fraction of the Sun's disc the Moon covers from THIS point, from the true positions: no cone
@@ -287,6 +352,7 @@ void main() {
       float eclShade = 1.0 - UMBRA_DEPTH * eclObs;
       dayMix  *= eclShade;
       lambert *= eclShade;
+      eclLight = eclShade;
       float eclCoreR = abs( 1.0 - eclG.y );
       float eclDay = smoothstep( 0.0, 0.08, sunDot );
       eclCoreLine = eclDay * ( 1.0 - smoothstep( 0.0, eclW, abs( eclG.x - eclCoreR ) ) ) * smoothstep( 2.0, 4.0, eclCoreR / eclW );
@@ -313,8 +379,15 @@ void main() {
   // encoded bytes, which is the perceptual coverage the artwork was drawn as. Decoded to linear
   // its mean would fall from 0.28 to 0.065 and the deck would all but vanish. The live pictures
   // are built in the same sense (scene/cloudcompose.js), so one gamma serves both.
-  float cloud  = cloudCover( vUv );
   float shade  = cloudCover( vUv + shadowStep );
+  // A storm top stands about twice as high as the deck and throws its shadow twice as far.
+  if ( uLive > 0.0 ) {
+    vec2 far = vUv + shadowStep * ${STORM_TOPS.shadow.toFixed(1)};
+    vec3 lf = mix( texture2D( uLiveA, far ).rgb, texture2D( uLiveB, far ).rgb, uLiveFade );
+    shade = max( shade, lf.b * lf.g * uLive );
+  }
+  float cloud  = cloudCover( vUv );
+  float tops   = gTops;
 
   // ---- ground ---------------------------------------------------------------------------------
   vec3 dayTex = mix( vec3( 0.04, 0.08, 0.15 ), texture2D( uDay, vUv ).rgb, uHasDay );
@@ -325,7 +398,25 @@ void main() {
   float oceanReal = texture2D( uWater, vUv ).r
                   * ( 1.0 - smoothstep( 0.18, 0.40, dot( dayTex, vec3( 0.2126, 0.7152, 0.0722 ) ) ) );
   float ocean = mix( oceanGuess, oceanReal, uHasWater );
-  vec3 ground = dayTex * ( lambert * sunTint * ( 1.0 - 0.55 * shade * dayMix ) + uAmbient );
+
+  // ---- relief (EARTH_RELIEF) --------------------------------------------------------------------
+  // The ground's slope east and north, from the height map by two differences, tips the normal the
+  // daylight is worked out with; the result is the daylight there over the daylight on level
+  // ground. The silhouette is still the ellipsoid's, water is level, and nothing casts a shadow.
+  float reliefLit = 1.0;
+  if ( uHeightK.x > 0.0 ) {
+    float vE = texture2D( uHeight, vUv + vec2( uHeightK.y, 0.0 ) ).r;
+    float vW = texture2D( uHeight, vUv - vec2( uHeightK.y, 0.0 ) ).r;
+    float vN = texture2D( uHeight, vUv + vec2( 0.0, uHeightK.z ) ).r;
+    float vS = texture2D( uHeight, vUv - vec2( 0.0, uHeightK.z ) ).r;
+    float land = 1.0 - mix( oceanGuess, texture2D( uWater, vUv ).r, uHasWater );
+    vec2 slope = uHeightK.x * land * vec2( ( vE * vE - vW * vW ) / cosLat, vN * vN - vS * vS );
+    vec3 nR = normalize( nl - slope.x * east - slope.y * north );
+    float sunUp = dot( uSunDirLocal, nl );
+    float ratio = clamp( dot( uSunDirLocal, nR ) / max( sunUp, ${EARTH_RELIEF.sunFloor.toFixed(2)} ), ${EARTH_RELIEF.min.toFixed(2)}, ${EARTH_RELIEF.max.toFixed(2)} );
+    reliefLit = mix( 1.0, ratio, smoothstep( 0.0, 0.06, sunUp ) );
+  }
+  vec3 ground = dayTex * ( lambert * reliefLit * sunTint * ( 1.0 - 0.55 * shade * dayMix ) + uAmbient );
 
   // ---- ocean specular --------------------------------------------------------------------------
   // Masked to water and killed under cloud. A tight hot core over a faint wide sheen, both scaled
@@ -348,13 +439,24 @@ void main() {
   vec3 colour = ground + specular + cities;
 
   // ---- clouds on top ----------------------------------------------------------------------------
-  vec3 cloudLight = sunTint * lambert * 0.95 + uAmbient * 2.0;
-  float cloudAlpha = cloud * uCloudGain * ( 0.06 + 0.94 * dayMix );
-  colour = mix( colour, cloudLight, clamp( cloudAlpha, 0.0, 1.0 ) );
+  // A cloud stands above most of the air, so the low Sun's light reaches it less reddened than the
+  // ground's (the gas above 8 km only); and a storm top (STORM_TOPS) stands higher still: the Sun
+  // sets on it later by the horizon's dip from up there, its light has crossed less air again, and
+  // it is whiter. With no storm top this is the deck's light exactly.
+  float topDot = sunDot + ${STORM_TOPS.dip.toFixed(3)} * tops;
+  float dayTop = smoothstep( uTerminator.x, uTerminator.y, topDot ) * eclLight;
+  float lambertTop = clamp( ( topDot + uTwilightWrap ) / ( 1.0 + uTwilightWrap ), 0.0, 1.0 ) * dayTop;
+  vec3 cloudSun = aerSunAbove( topDot, mix( ${AERIAL.deckShare.toFixed(3)}, ${AERIAL.topShare.toFixed(3)}, tops ) );
+  vec3 cloudLight = cloudSun * lambertTop * ( 0.95 + ${STORM_TOPS.bright.toFixed(2)} * tops ) + uAmbient * 2.0;
+  float cloudAlpha = clamp( cloud * ( uCloudGain + 0.05 * tops ) * ( 0.06 + 0.94 * dayTop ), 0.0, 1.0 );
+  colour = mix( colour, cloudLight, cloudAlpha );
 
-  // ---- a breath of air on the lit limb -----------------------------------------------------------
-  float rim = pow( 1.0 - clamp( dot( n, viewDir ), 0.0, 1.0 ), 3.0 );
-  colour += uAtmoTint * rim * dayMix * 0.18;
+  // ---- the air over the disc (aerial perspective, scene/atmosphere.js) ---------------------------
+  // Everything so far is seen through the air between it and the camera, and that air is lit: a
+  // little over the middle of the disc, most of what there is to see at the limb. A cloud has
+  // only the air above it in the way. This was a rim in one colour.
+  float airLit = smoothstep( -0.14, 0.02, sunDot ) * eclLight;
+  colour = aerial( colour, clamp( dot( n, viewDir ), 0.0, 1.0 ), sunDot, dot( -viewDir, uSunDir ), airLit, 1.0 - 0.6 * cloudAlpha );
 
   // The shadow's two edges (THE TWO EDGES, DRAWN, above): over the clouds, as a line on a map is.
   colour += uEclipseLines * ( vec3( 1.0, 0.93, 0.8 ) * 0.42 * eclCoreLine + vec3( 0.8, 0.86, 1.0 ) * 0.14 * eclEdgeLine );
@@ -366,124 +468,11 @@ void main() {
 }
 `;
 
-const ATMO_VERT = /* glsl */`
-#include <common>
-#include <logdepthbuf_pars_vertex>
-
-varying vec3 vNormalW;
-varying vec3 vPosW;
-varying vec3 vCentre;
-varying float vShellR;
-
-void main() {
-  vec4 worldPos = modelMatrix * vec4( position, 1.0 );
-  vPosW = worldPos.xyz;
-  vNormalW = normalize( mat3( modelMatrix ) * normal );
-  vCentre = ( modelMatrix * vec4( 0.0, 0.0, 0.0, 1.0 ) ).xyz;
-  vShellR = length( modelMatrix[0].xyz );
-  gl_Position = projectionMatrix * viewMatrix * worldPos;
-  #include <logdepthbuf_vertex>
-}
-`;
-
 /**
- * Single scattering through the shell (#258). The old shell was pow(1 - |N.V|, 3) in one cyan:
- * a ring with a hard outer edge, the same colour at noon and at dusk, nothing on the night side.
- * This marches the view ray through the air between the shell and the ground and, at each step,
- * the ray to the Sun: Rayleigh (blue, and what turns red over a long path) and Mie (the white
- * glare around the Sun). Real coefficients per Earth radius; the scale heights are real times
- * ATMO_HEIGHT_GAIN so the air is thick enough to read at the sizes this map draws the planet.
- * BackSide, depth-tested: Earth's disc hides the shell behind it, so only the limb pays.
+ * The shell's air is scene/atmosphere.js's now (spec 0053 task 1, 2026-10-08): EARTH_AIR,
+ * createEarthAir() and the table of the light's path. The name is kept for who reads it.
  */
-export const ATMO_HEIGHT_GAIN = 2.5;
-const ATMO_FRAG = /* glsl */`
-#include <common>
-#include <logdepthbuf_pars_fragment>
-
-uniform vec3  uSunDir;
-uniform float uIntensity;
-uniform float uShellScale;    // shell radius / ground radius
-uniform float uHeightGain;
-
-varying vec3 vPosW;
-varying vec3 vCentre;
-varying float vShellR;
-
-const int VIEW_STEPS = 12;
-const int LIGHT_STEPS = 4;
-// Sea-level scattering coefficients per metre times 6 371 000 m: per Earth radius.
-const vec3  BETA_R = vec3( 5.8e-6, 13.5e-6, 33.1e-6 ) * 6371000.0;
-const float BETA_M = 21e-6 * 6371000.0;
-const float MIE_G = 0.76;
-const float SUN_I = 14.0;
-
-vec2 sphere( vec3 ro, vec3 rd, float r ) {
-  float b = dot( ro, rd );
-  float c = dot( ro, ro ) - r * r;
-  float d = b * b - c;
-  if ( d < 0.0 ) return vec2( 1e9, -1e9 );
-  d = sqrt( d );
-  return vec2( -b - d, -b + d );
-}
-
-void main() {
-  #include <logdepthbuf_fragment>
-
-  float groundR = vShellR / uShellScale;
-  vec3 ro = ( cameraPosition - vCentre ) / groundR;   // in Earth radii, Earth at the origin
-  vec3 rd = normalize( vPosW - cameraPosition );
-  float top = uShellScale;
-  float hR = 8.0 / 6371.0 * uHeightGain;
-  float hM = 1.2 / 6371.0 * uHeightGain;
-
-  vec2 shell = sphere( ro, rd, top );
-  float t0 = max( shell.x, 0.0 );
-  float t1 = shell.y;
-  vec2 ground = sphere( ro, rd, 1.0 );
-  if ( ground.x > 0.0 ) t1 = min( t1, ground.x );
-  if ( t1 <= t0 ) discard;
-
-  float ds = ( t1 - t0 ) / float( VIEW_STEPS );
-  float odR = 0.0, odM = 0.0;
-  vec3 sumR = vec3( 0.0 ), sumM = vec3( 0.0 );
-  for ( int i = 0; i < VIEW_STEPS; i++ ) {
-    vec3 p = ro + rd * ( t0 + ( float( i ) + 0.5 ) * ds );
-    float h = max( length( p ) - 1.0, 0.0 );
-    float dR = exp( -h / hR ) * ds;
-    float dM = exp( -h / hM ) * ds;
-    odR += dR;
-    odM += dM;
-    // In the planet's shadow, this step sees no Sun.
-    if ( sphere( p, uSunDir, 1.0 ).x > 0.0 ) continue;
-    float lt = sphere( p, uSunDir, top ).y;
-    float lds = lt / float( LIGHT_STEPS );
-    float lR = 0.0, lM = 0.0;
-    for ( int j = 0; j < LIGHT_STEPS; j++ ) {
-      float lh = max( length( p + uSunDir * ( ( float( j ) + 0.5 ) * lds ) ) - 1.0, 0.0 );
-      lR += exp( -lh / hR ) * lds;
-      lM += exp( -lh / hM ) * lds;
-    }
-    vec3 att = exp( -( BETA_R * ( odR + lR ) + BETA_M * 1.1 * ( odM + lM ) ) );
-    sumR += dR * att;
-    sumM += dM * att;
-  }
-
-  float mu = dot( rd, uSunDir );
-  float phaseR = 3.0 / ( 16.0 * PI ) * ( 1.0 + mu * mu );
-  float g2 = MIE_G * MIE_G;
-  float phaseM = 3.0 / ( 8.0 * PI ) * ( ( 1.0 - g2 ) * ( 1.0 + mu * mu ) ) / ( ( 2.0 + g2 ) * pow( 1.0 + g2 - 2.0 * MIE_G * mu, 1.5 ) );
-  vec3 colour = SUN_I * ( sumR * BETA_R * phaseR + sumM * BETA_M * phaseM ) * uIntensity;
-
-  // Airglow: a faint green line on the night-side limb, which is real (oxygen at ~95 km).
-  float dark = 1.0 - clamp( length( sumR ) * 40.0, 0.0, 1.0 );
-  colour += vec3( 0.012, 0.045, 0.022 ) * clamp( odR * 6.0, 0.0, 1.0 ) * dark * uIntensity;
-
-  gl_FragColor = vec4( colour, 1.0 );
-
-  #include <tonemapping_fragment>
-  #include <colorspace_fragment>
-}
-`;
+export const ATMO_HEIGHT_GAIN = EARTH_AIR.heightGain;
 
 // --- construction ------------------------------------------------------------------------------
 
@@ -623,6 +612,8 @@ export function createEarth(textures, opts = {}) {
       uWater: { value: blank() },
       uHasWater: { value: 0 },
       uNightMono: { value: 0 },
+      uHeight: { value: blank() },
+      uHeightK: { value: new THREE.Vector3(0, 1 / 2048, 1 / 1024) },
       uSunDir: { value: new THREE.Vector3(1, 0, 0) },
       uSunDirLocal: { value: new THREE.Vector3(1, 0, 0) },
       uCloudOffset: { value: new THREE.Vector2(0, 0) },
@@ -661,28 +652,7 @@ export function createEarth(textures, opts = {}) {
   mesh.userData.scaleRadiusKm = WGS84_A_KM;
   mesh.renderOrder = 0;
 
-  const atmosphere = new THREE.Mesh(
-    new THREE.SphereGeometry(1, Math.round(seg.width * 0.75), Math.round(seg.height * 0.75)),
-    new THREE.ShaderMaterial({
-      name: 'earth-atmosphere',
-      vertexShader: ATMO_VERT,
-      fragmentShader: ATMO_FRAG,
-      uniforms: {
-        uSunDir: { value: new THREE.Vector3(1, 0, 0) },
-        uIntensity: { value: cfg.atmoGain },
-        uShellScale: { value: ATMOSPHERE_SCALE },
-        uHeightGain: { value: ATMO_HEIGHT_GAIN },
-      },
-      side: THREE.BackSide,
-      transparent: true,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    }),
-  );
-  atmosphere.name = 'earth-atmosphere';
-  atmosphere.scale.setScalar(ATMOSPHERE_SCALE);
-  atmosphere.renderOrder = 1;
-  atmosphere.userData.kind = 'atmosphere';
+  const atmosphere = createEarthAir({ segments: { width: Math.round(seg.width * 0.75), height: Math.round(seg.height * 0.75) }, gain: cfg.atmoGain });
   mesh.add(atmosphere);
   mesh.userData.atmosphere = atmosphere;
 
@@ -726,6 +696,7 @@ export function updateEarth(mesh, sunDirScene, tMs) {
   if (atmosphere && atmosphere.material && atmosphere.material.uniforms && sunDirScene) {
     atmosphere.material.uniforms.uSunDir.value.copy(u.uSunDir.value);
   }
+  if (atmosphere) settleEarthAir(atmosphere, wallNow());
 }
 
 // --- live clouds (2026-09-28) ---------------------------------------------------------------------
@@ -855,14 +826,15 @@ export function setEarthTextures(mesh, textures) {
  * never disposes anything, because the caller may want the old map again.
  *
  * @param {THREE.Mesh} mesh
- * @param {'day'|'night'|'water'} slot
+ * @param {'day'|'night'|'water'|'relief'} slot
  * @param {THREE.Texture|null} tex    null: back to what was there before the first swap
- * @param {{mono?: boolean}} [opts]   night only: the map is one grey channel (RedFormat)
+ * @param {{mono?: boolean, px?: number[]}} [opts]   night: the map is one grey channel (RedFormat);
+ *                                    relief: the map's size in pixels, which sets its slope gain
  */
 export function setEarthMap(mesh, slot, tex, opts = {}) {
   if (!mesh || !mesh.material || !mesh.material.uniforms) return null;
   const u = mesh.material.uniforms;
-  const key = { day: 'uDay', night: 'uNight', water: 'uWater' }[slot];
+  const key = { day: 'uDay', night: 'uNight', water: 'uWater', relief: 'uHeight' }[slot];
   if (!key) return null;
   const base = mesh.userData.baseMaps || (mesh.userData.baseMaps = {});
   const old = u[key].value;
@@ -871,12 +843,26 @@ export function setEarthMap(mesh, slot, tex, opts = {}) {
     u[key].value = tex;
     if (slot === 'water') u.uHasWater.value = 1;
     if (slot === 'night') u.uNightMono.value = opts.mono ? 1 : 0;
+    if (slot === 'relief') {
+      const w = (opts.px && opts.px[0]) || 2048;
+      const h = (opts.px && opts.px[1]) || w / 2;
+      u.uHeightK.value.set(reliefGain(w), 1 / w, 1 / h);
+    }
   } else {
     u[key].value = base[slot].tex;
     if (slot === 'water') u.uHasWater.value = 0;
     if (slot === 'night') u.uNightMono.value = base[slot].mono;
+    if (slot === 'relief') u.uHeightK.value.x = 0;
   }
   return old;
+}
+
+/**
+ * How finely the shell's air is marched on this tier, and for good at its coarsest once the frame
+ * latch has tripped (scene/atmosphere.js setEarthAirSteps).
+ */
+export function setEarthAirQuality(mesh, tier, latched = false) {
+  return setEarthAirSteps(mesh && mesh.userData ? mesh.userData.atmosphere : null, tier, latched);
 }
 
 /** True once every boot map has decoded and taken its slot: a tier swap before that would be undone. */

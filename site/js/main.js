@@ -62,7 +62,7 @@ import { createFrameLatch, shouldSaveData, chooseTier, createTierPromoter } from
 import { createLiveClouds } from './scene/liveclouds.js';
 import { createTextureTiers, gpuMiB, variantFor, LIVE_CLOUDS_MIB } from './scene/texturetiers.js';
 import { TEXTURES } from './data/textures.js';
-import { setEarthMap, earthMapsSettled } from './scene/earth.js';
+import { setEarthMap, earthMapsSettled, setEarthAirQuality } from './scene/earth.js';
 import { keyById, bucketOf } from './data/colorkeyrules.js';
 
 const MOMENTS = ['wonder', 'now', 'next'];
@@ -2024,7 +2024,7 @@ function createQuality(ctx, renderer, starfield, worlds) {
     targets: {
       earth: {
         ready: () => !!earthMesh() && earthMapsSettled(earthMesh()),
-        set: (slot, tex, file) => setEarthMap(earthMesh(), slot, tex, { mono: !!(file && file.format === 'mono') }),
+        set: (slot, tex, file) => setEarthMap(earthMesh(), slot, tex, { mono: !!(file && file.format === 'mono'), px: file ? file.px : null }),
       },
       sky: {
         ready: () => !!(starfield.state && starfield.state.milkyway) && !(ctx.latch && ctx.latch.latched),
@@ -2045,7 +2045,8 @@ function createQuality(ctx, renderer, starfield, worlds) {
   // How many worlds may keep a map of their own on this tier (scene/worlds.js MAPS_HELD, internal #157).
   const holdFor = (tier) => worlds.setMapsHeld(MAPS_HELD[Math.min(Math.max(0, tier), MAPS_HELD.length - 1)]);
   // Mercury's relief (scene/worlds.js THE RELIEF): tier 1 and up, and never under the frame latch.
-  const reliefFor = (tier) => worlds.setRelief(tier >= 1 && !tiers.latched);
+  // The Earth's shell is marched in more steps on a higher tier, and in its fewest for good under the latch.
+  const reliefFor = (tier) => { worlds.setRelief(tier >= 1 && !tiers.latched); setEarthAirQuality(earthMesh(), tier, tiers.latched); };
   holdFor(pick.tier);
   reliefFor(pick.tier);
   const say = () => window.dispatchEvent(new CustomEvent('sr:tier', { detail: api.describe() }));
@@ -2122,7 +2123,7 @@ function createQuality(ctx, renderer, starfield, worlds) {
     },
     tick(nowMs) { tiers.tick(nowMs); planetTilesWanted(); sunWanted(); },
     /** The frame latch tripped: back to the boot maps, for good. */
-    latch() { tiers.latch(); holdFor(0); worlds.setRelief(false); if (ctx.dsoGlow) ctx.dsoGlow.setMarks(false); if (planetTiles) planetTiles.latch(); if (ctx.sunDetail) ctx.sunDetail.latch(); say(); },
+    latch() { tiers.latch(); holdFor(0); worlds.setRelief(false); setEarthAirQuality(earthMesh(), 0, true); if (ctx.dsoGlow) ctx.dsoGlow.setMarks(false); if (planetTiles) planetTiles.latch(); if (ctx.sunDetail) ctx.sunDetail.latch(); say(); },
     /**
      * What the maps hold on the GPU now, by arithmetic from registry/textures.yaml (gpuMiB: pixels,
      * four bytes, a third for mipmaps), beside the renderer's own count of textures. `window.spaceRadar.gpu()`.
