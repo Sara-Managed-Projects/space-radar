@@ -40,7 +40,7 @@ const REFRESH_MS = 30 * 60e3;
 const DARK_MS = 10 * 60e3;
 const ROWS = 10;
 const BEST_MS = 5 * 60e3; // the ranked list is worked out again this often, and when the passes land
-const SKY_TOGGLES = ['figures', 'names', 'art', 'bounds', 'sunPath', 'equator', 'grid', 'starGrid', 'meteors', 'trails'];
+const SKY_TOGGLES = ['figures', 'names', 'art', 'bounds', 'sunPath', 'equator', 'grid', 'starGrid', 'meteors', 'seeThrough', 'trails'];
 /** The time strip: minutes of the sky's time to a pixel of drag, and to a press of an arrow key. */
 export const STRIP_MIN_PER_PX = 2;
 export const STRIP_KEY_MIN = 10;
@@ -494,6 +494,62 @@ export function renderTonight(host, ctx) {
       return b;
     };
     const sky = () => ctx.skyView;
+    // POINT YOUR PHONE (internal #450): first in the bar, because on a phone it is the way in.
+    // Shown only where an orientation sensor can exist (the event, a finger, a secure page); the
+    // sensor itself is asked for on the press and nowhere else. A sensor that never answers hides
+    // the row again.
+    const P = K.point;
+    const canPoint = typeof window.DeviceOrientationEvent !== 'undefined' && window.isSecureContext !== false
+      && ((typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches) || (navigator.maxTouchPoints || 0) > 0);
+    const pointRow = row(P.row);
+    let pointBusy = false;
+    const pointBtn = button(pointRow, P.on, P.title, () => {
+      const s = sky();
+      if (!s || typeof s.pointPhone !== 'function' || pointBusy) return;
+      const on = !!(s.pointing && s.pointing.on);
+      pointBusy = !on;
+      Promise.resolve(s.pointPhone(!on)).then(() => { pointBusy = false; paintBar(); }, () => { pointBusy = false; paintBar(); });
+      paintBar();
+    });
+    const pointReset = button(pointRow, P.reset, P.resetTitle, () => { const s = sky(); if (s && typeof s.resetPointing === 'function') s.resetPointing(); });
+    pointReset.removeAttribute('aria-pressed');
+    const pointNote = el('p', 'sr-density__note');
+    pointNote.setAttribute('role', 'status');
+    const pointMore = el('p', 'sr-tonight-view__caveat');
+    node.append(pointNote, pointMore);
+    pointRow.hidden = pointNote.hidden = pointMore.hidden = !canPoint;
+    let pointGone = false;
+    const paintPoint = () => {
+      if (!canPoint) return;
+      const s = sky();
+      const st = s && s.pointing ? s.pointing : { on: false, why: '' };
+      // No sensor on this device after all (a laptop with a touch screen): the row leaves.
+      if (st.why === 'none' || st.why === 'unsupported') pointGone = true;
+      pointRow.hidden = pointGone;
+      press(pointBtn, !!st.on);
+      pointBtn.disabled = !ctx.observer || pointBusy;
+      pointReset.hidden = !(st.on && (Math.abs(st.offsetAzDeg || 0) > 0.5 || Math.abs(st.offsetTiltDeg || 0) > 0.5));
+      let note = P.note;
+      let more = '';
+      if (!ctx.observer) note = P.noPlace;
+      else if (st.on) {
+        const off = Math.round(Math.abs(st.offsetAzDeg || 0));
+        const name = s && typeof s.lineUpTarget === 'function' ? s.lineUpTarget() : null;
+        if (st.kind === 'relative' && off < 1) note = P.relative;
+        else if (off >= 1) note = t(P.lined, { n: fmt.int(off) });
+        else note = name ? t(P.lineUpWith, { name: (COPY.sky.bodies && COPY.sky.bodies[name]) || name }) : P.lineUpPlain;
+        const bits = [];
+        if (Number.isFinite(st.accuracyDeg)) bits.push(t(P.accuracy, { n: fmt.int(Math.round(st.accuracyDeg)) }));
+        if (st.kind !== 'relative' && Number.isFinite(st.declinationDeg) && Math.abs(st.declinationDeg) >= 0.5) bits.push(t(P.declination, { n: fmt.int(Math.round(Math.abs(st.declinationDeg))), dir: st.declinationDeg >= 0 ? P.east : P.west }));
+        bits.push(P.honest);
+        more = bits.join(' ');
+      } else if (st.why === 'denied') { note = P.denied; more = P.deniedHow; }
+      else if (st.why === 'none') note = P.none;
+      else if (st.why === 'unsupported') note = P.unsupported;
+      setText(pointNote, note);
+      setText(pointMore, more);
+      pointMore.hidden = !more;
+    };
     // TIME IN THE SKY (check 15 against Stellarium). The night's three moments one press away, and
     // a strip that turns the sky under the finger: two minutes a pixel, so a hand's width is the
     // evening. It moves the one clock (clock.js): there is no second time.
@@ -512,6 +568,34 @@ export function renderTonight(host, ctx) {
     const stripTime = el('span', 'sr-skytime__at sr-num');
     const stripHint = el('span', 'sr-skytime__hint', K.timeStrip);
     strip.append(stripTime, stripHint);
+    // Where dusk, the middle of the night and dawn are on the strip (internal #447): the middle of
+    // the strip is now, two minutes a pixel, so a tick's place is how far to drag.
+    const stripTicks = el('span', 'sr-skytime__ticks');
+    stripTicks.setAttribute('aria-hidden', 'true');
+    const ticks = new Map();
+    for (const key of ['dusk', 'midnight', 'dawn']) {
+      const tick = el('span', 'sr-skytime__tick');
+      tick.appendChild(el('span', 'sr-skytime__ticklabel', K.timeTicks[key]));
+      tick.hidden = true;
+      ticks.set(key, tick);
+      stripTicks.appendChild(tick);
+    }
+    strip.appendChild(stripTicks);
+    let ticksAt = { key: '', m: null };
+    const paintTicks = (nowMs) => {
+      const o = ctx.observer;
+      const w = strip.clientWidth || 0;
+      if (!o || !w) { for (const tick of ticks.values()) tick.hidden = true; return; }
+      // The night's moments move a few minutes a day: worked out once a quarter of an hour of clock.
+      const key = `${keyOf(o)}:${Math.floor(nowMs / 900e3)}`;
+      if (ticksAt.key !== key) { let m = null; try { m = nightMoments(o, nowMs); } catch { m = null; } ticksAt = { key, m }; }
+      for (const [k, tick] of ticks) {
+        const ms = ticksAt.m ? ticksAt.m[`${k}Ms`] : NaN;
+        const x = w / 2 + (ms - nowMs) / (STRIP_MIN_PER_PX * 60e3);
+        tick.hidden = !(Number.isFinite(ms) && x >= 2 && x <= w - 2);
+        if (!tick.hidden) tick.style.left = `${Math.round(x)}px`;
+      }
+    };
     node.appendChild(strip);
     let dragAt = null;
     strip.addEventListener('pointerdown', (e) => {
@@ -611,6 +695,8 @@ export function renderTonight(host, ctx) {
       setText(stripTime, phase ? t(K.timeAt, { time: timeText.hhmm(nowMs), phase: K.timePhases[phase] || '' }) : timeText.hhmm(nowMs));
       strip.setAttribute('aria-valuetext', stripTime.textContent);
       press(timeNow, ctx.clock.mode === 'live');
+      paintTicks(nowMs);
+      paintPoint();
       // The land: which of the three was drawn, and where the water map puts the sea.
       const g = s && typeof s.groundStats === 'function' ? s.groundStats() : null;
       const land = g && g.landscape ? g.landscape : '';

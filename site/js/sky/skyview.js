@@ -1610,6 +1610,16 @@ export function createSkyView(ctx, options = {}) {
     },
     /** Forget "Line it up": the compass's own north again. */
     resetPointing: () => { if (pointing) pointing.resetOffset(); },
+    /** The brightest of the Moon and the planets well up now, to line the compass up on: an id, or null. */
+    lineUpTarget() {
+      if (!ground) return null;
+      let best = null;
+      for (const id of ['moon', 'venus', 'jupiter', 'mars', 'saturn']) {
+        const a = ground.apparentOf(id);
+        if (a && a.altDeg > 8 && (id === 'moon' || a.mag < 1.5) && (!best || a.mag < best.mag)) best = { id, mag: a.mag };
+      }
+      return best ? best.id : null;
+    },
     // the field of view, the choices, and what the Tonight list asks for (2026-10-05)
     get fovDeg() {
       return fovWant;

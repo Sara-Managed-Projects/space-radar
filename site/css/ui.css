@@ -282,6 +282,8 @@ html.sr-compact .sr-status {
 .sr-search__option.is-active::after,
 .sr-reticle__box::before,
 .sr-reticle__box::after,
+.sr-skyreticle::before,
+.sr-skyreticle::after,
 .sr-search__row:has(:focus-visible)::before,
 .sr-search__row:has(:focus-visible)::after,
 :where(button, a[href], [role='option'], summary):focus-visible::before,
@@ -300,6 +302,7 @@ html.sr-compact .sr-status {
 .sr-bracketed::after,
 .sr-search__option.is-active::after,
 .sr-reticle__box::after,
+.sr-skyreticle::after,
 .sr-search__row:has(:focus-visible)::after,
 :where(button, a[href], [role='option'], summary):focus-visible::after {
   transform: scaleY(-1);
@@ -5869,6 +5872,33 @@ html.sr-night-red::after {
 /* The sky's own time: a strip to drag (ui/tonight.js), in the density button's look. */
 .sr-skytime { display: flex; flex: none; justify-content: space-between; align-items: center; cursor: ew-resize; touch-action: none; user-select: none; }
 .sr-skytime__at { color: var(--sr-text); }
+/* Where dusk, the middle of the night and dawn are on the strip: a hairline from the foot and a HUD
+   unit beside it. The strip's middle is now. */
+.sr-skytime { position: relative; overflow: hidden; padding-bottom: var(--sp-4); }
+.sr-skytime__ticks { position: absolute; inset: 0; pointer-events: none; }
+.sr-skytime__tick { position: absolute; bottom: 0; width: 1px; height: var(--sp-3); background: var(--sr-line-strong); }
+.sr-skytime__tick[hidden] { display: none; }
+.sr-skytime__ticklabel {
+  position: absolute;
+  left: var(--sp-1);
+  bottom: 0;
+  font: 400 var(--sr-fs-sm)/1 var(--sr-font);
+  color: var(--sr-text-dim);
+  white-space: nowrap;
+}
+/* Point your phone (internal #450): what the phone is pointing at, in the HUD's corner brackets
+   (section 3.12), fixed at the middle of the sky. */
+.sr-skyreticle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  pointer-events: none;
+  --sr-bracket-out: 0px;
+}
+.sr-skyreticle[hidden] { display: none; }
 .sr-skybar__wrap .sr-density__btn { flex: 1 1 30%; }
 @media (pointer: coarse) {
   .sr-skybar .sr-density__btn { min-height: 44px; }
