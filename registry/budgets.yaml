@@ -31,13 +31,21 @@ budgets:
   # that a deploy strips vendor/ like js/, licence headers kept), and the cloud mask at WebP quality
   # 90 (575 032 -> 282 674 B at quality 50, same pixels). The number no longer depends on the
   # runner's clock either: what starts after the app's own end-of-first-visit mark is not counted.
-  - {id: first_visit_bytes, value: 3517000, unit: bytes, since: 2026-10-07, reason: "3 349 349 B + 5 %: 3 339 538 B measured on #489's main, plus the 9 811 B of boot JavaScript and CSS that #491 to #493 added since (summed over the stripped boot graph, not booted again), by CI's method (a phone at 390x844, CelesTrak and Launch Library blocked, uncompressed) on the tree a deploy uploads. It was 4 008 000 (3 817 516 B measured on 2026-10-06, 3 861 587 B the morning of 2026-10-07) and 5 773 324 B before the first diet. The second diet (internal #415): vendor/ stripped at deploy (astronomy.js -234 622 B) and the cloud mask re-encoded (-292 358 B)"}
+  # THE DAY MAP AS WEBP (2026-10-08, spec 0056 req 8, public #286): the Earth's 2k day map was the
+  # publisher's JPEG, 463 087 B; at WebP quality 84 (luma SSIM 0.9811 against it, same pixels) it is
+  # 148 312 B. Measured on the pull request that did it, in CI, one commit apart: 3 366 543 B before,
+  # 3 052 513 B after, 139 requests both times.
+  - {id: first_visit_bytes, value: 3205000, unit: bytes, since: 2026-10-08, reason: "3 052 513 B + 5 %, measured 2026-10-08 by CI (screens.yml: a phone at 390x844, CelesTrak and Launch Library blocked, uncompressed, on the tree a deploy uploads), 139 requests. It was 3 517 000 (3 366 543 B measured on the same pull request one commit earlier, with the day map still a JPEG), 4 008 000 before the second diet and 5 773 324 B before the first"}
   # THE LIGHT EMBED (internal #396, 2026-10-07): `?embed=1&at=<a world or a station>`, booted by
   # js/embedlite.js instead of main.js. Same method and same tree as the row above, for
   # `?embed=1&at=moon` and `?embed=1&at=25544` (tests/test_first_visit_bytes.mjs --embed=). Before:
   # the whole first visit and every catalogue, 163 requests and about 9.6 MB with the saved copies
   # mirrored (internal #396's measurement), 3.9 MB by this method without them.
-  - {id: embed_first_visit_bytes, value: 2342000, unit: bytes, since: 2026-10-07, reason: "internal #429: 2 230 195 B in 80 requests for at=moon, measured + 5 %, 2026-10-07 in headless Chrome as a phone at 390x844 on the stripped tree, uncompressed; at=25544 was not booted again and is smaller by arithmetic (it was 2 376 088 B to the Moon's 2 464 627 B before vendor/astronomy.js was stripped, which took 234 622 B off both). The row was 2 500 000 with a 1.4 % margin"}
+  # THE TAG WITHOUT THE CARD (2026-10-08, internal #429): the light embed fetched ui/cards.js and
+  # the 22 modules only it brings (261 137 B stripped) for the tag's three lines. Those lines' own
+  # code is ui/cardfacts.js now, fetched alone: 19 requests fewer. Measured in CI on the pull
+  # request, one commit apart: at=moon 2 321 730 -> 2 149 573 B, at=25544 2 217 222 -> 2 045 065 B.
+  - {id: embed_first_visit_bytes, value: 2257000, unit: bytes, since: 2026-10-08, reason: "internal #429: 2 149 573 B in 70 requests for at=moon and 2 045 065 B in 69 for at=25544, measured 2026-10-08 by CI (tests/test_first_visit_bytes.mjs --embed=, a phone at 390x844 on the stripped tree, uncompressed), the larger + 5 %. It was 2 342 000 with 20 270 B to spare after public #506 (at=moon 2 321 730 B in 89 requests), and 2 500 000 before that"}
   - {id: audio_at_boot_bytes, value: 0, unit: bytes, since: 2026-09-22, reason: "spec 0035: nothing before a gesture"}
   - {id: og_at_boot_bytes, value: 0, unit: bytes, since: 2026-09-22, reason: "spec 0033: previews and cards only"}
   # WOFF2 is already compressed, so this number is the same on CI's server and the live site.
