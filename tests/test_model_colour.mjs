@@ -172,7 +172,7 @@ assert.equal(colourRoute(root([])), 'class', 'a model with no materials keeps th
   assert.equal(setPlanetShine(null), false);
   // The shader and the function are the same sum: if one is edited the other must be.
   const src = (await import('node:fs')).readFileSync(join(ROOT, 'site/js/scene/models.js'), 'utf8');
-  assert.ok(src.includes("smoothstep( -0.15, 0.55, dot( -D, L ) )") && src.includes('smooth(-0.15, 0.55, dayDot)'), 'the day term is the same in the shader and in planetShineStrength');
+  assert.ok(src.includes("mix( phase, smoothstep( -0.15, 0.55, cA ), cover * cover )") && src.includes('smooth(-0.15, 0.55, dayDot)') && src.includes('lambertPhase(dayDot) * (1 - k * k) + local * k * k'), 'the day term is the same in the shader and in planetShineStrength');
   assert.ok(src.includes('cover * cover * day * facing * facing'), 'and so is the product');
   console.log('  planet-shine: 0 over the night side, 0 on a face turned away, (R/d)^2 with distance, albedos from the NSSDC fact sheets');
 }

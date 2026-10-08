@@ -859,6 +859,9 @@ export function createHeroes(scene, ctx) {
       if (ctx.worlds && ctx.worlds.light) ctx.worlds.light.position.copy(sun).multiplyScalar(1e5);
     }
     M.setPlanetShine(lit ? lit.id : null, lit ? lit.centre : null, lit ? lit.radius : 0);
+    // The Sun's rim and the panels' glint by device tier (models.js setLightTier, public #266):
+    // read each frame, so a promotion or the frame-rate latch is followed without an event.
+    if (M.setLightTier) M.setLightTier(ctx.latch && ctx.latch.latched ? 0 : ctx.quality && Number.isFinite(ctx.quality.tier) ? ctx.quality.tier : 0);
 
     // pixels = (size / distance) * (viewportHeight / 2) * f, with f = 1 / tan(fovY / 2).
     const f = camera.projectionMatrix.elements[5];

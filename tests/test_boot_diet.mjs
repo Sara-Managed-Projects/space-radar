@@ -92,6 +92,7 @@ const DEFERRED = {
   'js/ui/passport.js': 'the passport: main.js fetches it for the dated cards or the trip frame',
   'js/scene/ephpath.js': 'the line of a craft\'s path: ui/missions.js fetches it with the first file',
   'js/ui/keyhint.js': 'the keys hint: main.js fetches it KEYHINT_MS after sr:layers-ready',
+  'js/ui/opening.js': 'the words over a first visit\'s opening shot: fetched only when the shot plays',
   'js/ui/welcome.js': 'a first visit\'s three lines and two buttons: WELCOME_MS after sr:layers-ready, and only for a visitor not seen before',
   'js/ui/launchchip.js': 'the launch chip: LAUNCHDAY_MS after sr:layers-ready, or with a Starlink launch\'s card',
   'js/ui/base.js': 'Return to base: LAUNCHDAY_MS after sr:layers-ready, or when the trip\'s house is pressed',

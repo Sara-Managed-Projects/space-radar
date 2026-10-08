@@ -90,6 +90,9 @@ const SHARED = {
   // and the little light there is on its night side.
   uShadeRadius: { value: 0 },
   uNightCol: { value: new THREE.Color(0, 0, 0) },
+  // The Sun's rim and the panels' glint (setLightTier below): 0 on the tier that has neither.
+  uSunRim: { value: 0 },
+  uGlint: { value: 0 },
 };
 
 /**
@@ -110,7 +113,8 @@ const SHARED = {
  * The three terms, which the shader in toonMaterial repeats and tests/test_model_colour.mjs holds:
  *   cover  = (R / d)^2       how much sky the world fills: 0.88 for the ISS, 0.02 at geostationary
  *                            height, 1 for a rover -- so a lander is lit by its own ground
- *   day    = smoothstep(-0.15, 0.55, up . sun)   is the ground under it in daylight
+ *   day    = shineDay(up . sun, R / d)   the ground under it in daylight, near; the world's
+ *                            phase as the craft sees it, far (lambertPhase below)
  *   facing = (0.5 + 0.5 n . down)^2              wrapped, so it fades round the hull, never cuts
  */
 export const PLANET_SHINE = {
@@ -129,6 +133,82 @@ export const SHINE_GAIN = 1.2;
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
 /**
+ * THE WORLD'S PHASE AS THE CRAFT SEES IT (public #266). How much of its full light a diffuse
+ * sphere sends towards a viewer at phase angle a (Sun - world - craft):
+ *
+ *   phase(a) = ( sin a + (pi - a) cos a ) / pi
+ *
+ * 1 at full, 1/pi at quarter phase, 0 at new: Wikipedia "Absolute magnitude", section "Planets as
+ * diffuse spheres" (read 2026-10-08: "A quarter phase has 1/pi as much light as full phase"). It is
+ * the far view: a craft at the Moon's distance looking back at a gibbous Earth. Close in, the
+ * craft sees only the ground under it and the old local term is the right one, so the day term
+ * below is the phase far out and the local one near the ground, blended by how much sky the world
+ * fills (cover squared): 88 % local for the ISS, 2 % at geostationary height.
+ * @param {number} cosA cosine of the phase angle = (world -> craft) . (world -> Sun)
+ */
+export function lambertPhase(cosA) {
+  const c = Math.min(1, Math.max(-1, cosA));
+  if (c <= -1) return 0;
+  if (c >= 1) return 1;
+  const a = Math.acos(c);
+  return Math.max(0, (Math.sin(a) + (Math.PI - a) * c) / Math.PI);
+}
+/** The day term: local near the ground, the world's phase far out. Pure; the shader's twin. */
+export function shineDay(dayDot, radiusOverDistance) {
+  const k = Math.min(1, Math.max(0, radiusOverDistance));
+  const local = smooth(-0.15, 0.55, dayDot);
+  return lambertPhase(dayDot) * (1 - k * k) + local * k * k;
+}
+
+/**
+ * THE SUN'S RIM AND THE PANELS' GLINT (public #266). Two small terms in the model's own material;
+ * there is no environment map and no pass after the frame (tests/test_contract.mjs refuses one).
+ *
+ * RIM. With the Sun behind a craft, the edges turned towards it catch its light: the Fresnel edge
+ * the material already has, times how nearly the camera looks into the Sun (squared), on the faces
+ * the Sun can reach. Nothing with the Sun behind the camera. SUN_RIM is ours, a drawing choice.
+ *
+ * GLINT. A solar array is close to a flat mirror: it flashes when its normal is the half-way
+ * direction between the Sun and the eye, and not otherwise. The Sun is 0.53 degrees across, so a
+ * perfect mirror would flash over about a quarter of a degree; an array is cells, cover glass and
+ * a frame that is not flat, and GLINT_HALF_DEG = 2 is our width for it, illustrative. The lobe is
+ * cos^n with n chosen so the flash is half as bright GLINT_HALF_DEG off the mirror direction.
+ *
+ * TIERS (scene/quality.js): 0 has neither (a phone that boots low, or the frame-rate latch), 1 the
+ * rim, 2 the rim and the glint. The phase term above costs nothing and is on every tier.
+ */
+export const SUN_RIM = 0.9;
+export const GLINT_GAIN = 2.4;
+export const GLINT_HALF_DEG = 2;
+export const GLINT_POWER = Math.round(Math.log(0.5) / Math.log(Math.cos(GLINT_HALF_DEG * Math.PI / 180)));
+export const LIGHT_TIERS = [
+  { rim: 0, glint: 0 },
+  { rim: SUN_RIM, glint: 0 },
+  { rim: SUN_RIM, glint: GLINT_GAIN },
+];
+/** Set what the models' material adds for this device tier. Returns the row used. */
+export function setLightTier(tier) {
+  const row = LIGHT_TIERS[Math.min(LIGHT_TIERS.length - 1, Math.max(0, Math.floor(Number(tier) || 0)))];
+  SHARED.uSunRim.value = row.rim;
+  SHARED.uGlint.value = row.glint;
+  return row;
+}
+/**
+ * The rim on one pixel. Pure; the shader's twin.
+ * @param {{fresnel:number, intoSun:number, facingSun:number}} o  fresnel = (1 - n.v)^2.5, intoSun =
+ *   (camera's line of sight) . (direction to the Sun), facingSun = n . (direction to the Sun)
+ */
+export function sunRimStrength({ fresnel, intoSun, facingSun }, rim = SUN_RIM) {
+  const back = Math.min(1, Math.max(0, intoSun));
+  return rim * Math.min(1, Math.max(0, fresnel)) * back * back * smooth(-0.6, 0.1, facingSun);
+}
+/** The glint on a panel whose normal is `offDeg` from the Sun-eye half-way direction. Pure. */
+export function glintStrength(offDeg, gain = GLINT_GAIN) {
+  const c = Math.cos(Math.min(90, Math.abs(offDeg)) * Math.PI / 180);
+  return gain * Math.pow(Math.max(0, c), GLINT_POWER);
+}
+
+/**
  * The strength of the fill on one face, 0..albedo * SHINE_GAIN. Pure; the same arithmetic as the
  * shader, kept here so a test can hold the numbers without a GPU.
  * @param {{albedo:number, radiusOverDistance:number, dayDot:number, facingDot:number}} o
@@ -137,7 +217,7 @@ const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a
 export function planetShineStrength({ albedo, radiusOverDistance, dayDot, facingDot }) {
   const k = Math.min(1, Math.max(0, radiusOverDistance));
   const facing = 0.5 + 0.5 * Math.min(1, Math.max(-1, facingDot));
-  return albedo * SHINE_GAIN * k * k * smooth(-0.15, 0.55, dayDot) * facing * facing;
+  return albedo * SHINE_GAIN * k * k * shineDay(dayDot, k) * facing * facing;
 }
 
 const _shineCol = new THREE.Color();
@@ -238,6 +318,8 @@ export function toonMaterial(colour, kind = 'body', pool = materials, map = null
     shader.uniforms.uShadeRadius = SHARED.uShadeRadius;
     shader.uniforms.uNightCol = SHARED.uNightCol;
     shader.uniforms.uFlood = SHARED.uFlood;
+    shader.uniforms.uSunRim = SHARED.uSunRim;
+    shader.uniforms.uGlint = SHARED.uGlint;
     // A mapped world has no air to glow at its limb: a third of the models' rim, enough to part it from the sky.
     shader.uniforms.uRim = { value: kind === 'world' ? 0.12 : 0.35 };
     shader.uniforms.uSpec = { value: s.spec };
@@ -258,6 +340,8 @@ export function toonMaterial(colour, kind = 'body', pool = materials, map = null
           'uniform float uShadeRadius;',
           'uniform vec3 uNightCol;',
           'uniform float uFlood;',
+          'uniform float uSunRim;',
+          'uniform float uGlint;',
           'void main() {',
         ].join('\n')
       )
@@ -273,6 +357,13 @@ export function toonMaterial(colour, kind = 'body', pool = materials, map = null
           '  if ( uSpec > 0.0 ) {',
           '    vec3 H = normalize( L + V );',
           '    outgoingLight += vec3( uSpec ) * pow( max( dot( normal, H ), 0.0 ), uSpecPower ) * lit;',
+          // The glint (GLINT above): panels only, a narrow lobe on the mirror direction.
+          `    if ( uGlint > 0.0 && uSpec > 0.3 ) outgoingLight += uRimSun * uGlint * pow( max( dot( normal, H ), 0.0 ), ${GLINT_POWER}.0 ) * step( 0.0, dot( normal, L ) );`,
+          '  }',
+          // The Sun's rim (sunRimStrength above): the Sun behind the craft, on the edges turned to it.
+          '  if ( uSunRim > 0.0 ) {',
+          '    float back = clamp( dot( -V, L ), 0.0, 1.0 );',
+          '    outgoingLight += uRimSun * f * back * back * smoothstep( -0.6, 0.1, dot( normal, L ) ) * uSunRim;',
           '  }',
           // Planet-shine: see PLANET_SHINE above, and planetShineStrength for the same sum in JS.
           // Halved on a face the Sun already lights, so the day side does not wash out.
@@ -281,7 +372,10 @@ export function toonMaterial(colour, kind = 'body', pool = materials, map = null
           '    float dC = max( length( toC ), 1e-9 );',
           '    vec3 D = toC / dC;',
           '    float cover = min( uShineRadius / dC, 1.0 );',
-          '    float day = smoothstep( -0.15, 0.55, dot( -D, L ) );',
+          '    float cA = clamp( dot( -D, L ), -1.0, 1.0 );',
+          '    float aA = acos( cA );',
+          '    float phase = max( ( sin( aA ) + ( 3.14159265 - aA ) * cA ) / 3.14159265, 0.0 );',
+          '    float day = mix( phase, smoothstep( -0.15, 0.55, cA ), cover * cover );',
           '    float facing = 0.5 + 0.5 * dot( normal, D );',
           '    outgoingLight += diffuseColor.rgb * uShineCol * cover * cover * day * facing * facing * ( 1.0 - 0.5 * lit );',
           '  }',
