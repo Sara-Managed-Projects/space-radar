@@ -191,12 +191,14 @@ jobs:
         run: node tests/test_png_text.mjs
       - name: The object pages' where-is-it-now line (internal #294)
         run: node tests/test_objectnow.mjs
-      - name: The KTX2 plan: flags, GPU bytes, a run against a fake encoder (internal #156)
+      - name: "The KTX2 plan, its flags and GPU bytes, run against a fake encoder (internal #156)"
         run: python3 tests/test_ktx2_plan.py
       - name: The walk notices another project's headless Chrome (internal #460)
         run: node tests/test_chrome_quiet.mjs
       - name: The prepared cloud workflow stays minimal (internal #139)
         run: python3 tests/test_clouds_workflow.py
+      - name: No merge conflict markers, and every tool script parses (internal #472)
+        run: python3 tests/test_no_conflict_markers.py
       # The harvester's zip is built on every pull request with no AWS in sight (specs/0003
       # amendment 1): a parser change is proven to package before it is ever deployed, and the
       # placeholder path is exercised until harvest/ lands. Deterministic, so the hash is a fact.
