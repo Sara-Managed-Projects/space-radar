@@ -6,7 +6,7 @@
 //   dotFactor(markerPx, truePx) -> how many times wider than true the dot is (1 when the disc wins)
 //   roundFactor(n) -> two significant figures, never under 1
 //   scaleState({ worlds, markerPx, fovDeg, viewportH, selectedId }) -> null | { least, selected, largest }
-//   badgeWords(state, trueOn, C) -> { text, title }
+//   badgeWords(state, trueOn, C) -> { text, title };  pxText(px) -> one significant figure
 //
 // WHY. On the Planets tab (the Sun's stage) every planet is drawn as a dot MARKER_PX across,
 // because at true size from there every one of them is a fraction of a pixel
@@ -82,11 +82,15 @@ export function scaleState({ worlds = [], markerPx, fovDeg, viewportH, selectedI
 }
 
 /** "0.05", "0.3", "2": a width in pixels to one significant figure below 1, whole above. */
-function pxText(px) {
+export function pxText(px) {
   if (!(px > 0)) return '';
   if (px >= 1) return fmt.num(px, 0);
-  const digits = Math.min(4, Math.max(1, -Math.floor(Math.log10(px))));
-  return fmt.num(px, digits);
+  // Rounded to one figure FIRST, then printed with the decimals that figure needs: 0.0097 is
+  // "0.01", not "0.010" (three decimals of a number known to one).
+  const one = Number(px.toPrecision(1));
+  if (one >= 1) return fmt.num(one, 0);
+  const digits = Math.min(6, Math.max(1, -Math.floor(Math.log10(one))));
+  return fmt.num(one, digits);
 }
 
 /** The button's words and its tooltip. Pure. `C` is COPY.scale. */

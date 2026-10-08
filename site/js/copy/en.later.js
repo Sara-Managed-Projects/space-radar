@@ -1400,10 +1400,11 @@ Object.assign(COPY, {
   welcome: {
     label: 'First visit',
     title: 'First time here',
-    dots: 'Each dot is a real object; its card says how it is known.',
-    move: 'Drag to turn, scroll to go closer, press a dot for its card.',
-    moveTouch: 'Drag to turn, pinch to go closer, tap a dot for its card.',
-    trips: 'A guided trip tells one story in a few minutes.',
+    // Each fits one line of the sidebar at 15 px (tests/test_chrome_copy.mjs holds the three).
+    dots: 'Every dot is a real thing. Press one.',
+    move: 'Drag to turn. Scroll to go closer.',
+    moveTouch: 'Drag to turn. Pinch to go closer.',
+    trips: 'A guided trip is one story in minutes.',
     trip: 'Guided trip',
     tripTitle: 'Starts the first trip on the list',
     look: 'Look around',

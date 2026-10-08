@@ -219,6 +219,8 @@
 }
 
 .sr-keyhint__chrome--trip {
+  /* One column: "Space" and a pair of arrows leave half a column too little for their words. */
+  grid-template-columns: minmax(0, 1fr);
   margin-top: var(--sp-2);
   padding-top: 0;
   border-top: 0;

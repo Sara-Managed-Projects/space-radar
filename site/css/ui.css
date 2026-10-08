@@ -4621,6 +4621,17 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   accent-color: var(--sr-ember);
 }
 
+/* The list is walked with the arrow keys (public #315): the box under the keys wears the guide's
+   ring, not the browser's 1 px one, and its row lifts a step so the eye finds the name too. */
+.sr-show__box:focus-visible {
+  outline: 2px solid var(--sr-ember);
+  outline-offset: 2px;
+}
+
+.sr-show__label:has(.sr-show__box:focus-visible) {
+  background: var(--sr-wash);
+}
+
 .sr-show__label .sr-swatch {
   width: 10px;
   height: 10px;

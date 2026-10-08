@@ -71,6 +71,10 @@ const lost = sb.badgeWords(st, true);
 check(lost.text.includes('Jupiter') && /0\.0\d/.test(lost.text), `True size says what is lost: the largest planet and its width (got "${lost.text}")`);
 for (const s of [words.text, lost.text, sb.badgeWords(sel, false).text]) check(s.length <= 60, `a chrome line is at most 60 characters: "${s}" is ${s.length}`);
 
+for (const [px, want] of [[0.0097, '0.01'], [0.0256, '0.03'], [0.31, '0.3'], [0.96, '1'], [2.4, '2'], [0.00042, '0.0004']]) {
+  check(sb.pxText(px) === want, `a true width of ${px} px prints as ${want} (got ${sb.pxText(px)})`);
+}
+
 // --- the dots obey ------------------------------------------------------------------------------
 {
   const THREE = await import(pathToFileURL(join(ROOT, 'site/vendor/three.module.min.js')).href);

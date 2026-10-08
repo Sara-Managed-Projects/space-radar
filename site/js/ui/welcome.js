@@ -8,10 +8,12 @@
 // dots are, how to move, or what a trip is. The home's first line (ui/sentence.js) is a fact, not
 // an orientation. So, once, at the head of the home: three short lines and two buttons.
 //
-//   Every dot is a real thing, placed from measured data.
-//   Drag to turn, scroll to go closer, press a dot for its card.      (the gestures on touch)
-//   A guided trip tells one story in a few minutes.
+//   Every dot is a real thing. Press one.
+//   Drag to turn. Scroll to go closer.          (pinch, on touch)
+//   A guided trip is one story in minutes.
 //   [ Guided trip ]  [ Look around ]
+//
+// One line each at the sidebar's width: a chrome line that wraps is a bug (docs/ui-guide.md 4).
 //
 // "Guided trip" starts the first trip the home offers that can run (the first card, pressed: the
 // card owns the waiting and the refusals). "Look around" puts the lines away and leaves the map.

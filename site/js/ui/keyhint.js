@@ -372,7 +372,9 @@ export function createKeyHint(ctx, opts = {}) {
   let all = false;
   async function show(opts = {}) {
     const wantAll = !!(opts && opts.all);
-    if (open && all === wantAll) return true;
+    // Open already: only "every key" changes it. The first visit's own showing, arriving while
+    // every key is up, must not fold the panel back (seen in the probe of 2026-10-08).
+    if (open && (all || !wantAll)) return true;
     await loadCss();
     if (!root) build();
     all = wantAll;

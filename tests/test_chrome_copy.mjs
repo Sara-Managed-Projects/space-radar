@@ -70,6 +70,16 @@ const LINES = [
   ['sentence.approach', 14, INTER, SIDE, { name: '2026 TC12', when: 'tomorrow at 21:14' }],
   ['sentence.launched', 14, INTER, SIDE, { n: '1 203' }],
   // The passport: the row at the home's foot, the view's lines, the stamp, a card's resume line
+  // A first visit's three lines (ui/welcome.js): one line each at 15 px, in the sidebar and on a phone.
+  ['welcome.dots', 15, INTER, SIDE],
+  ['welcome.move', 15, INTER, SIDE],
+  ['welcome.moveTouch', 15, INTER, SIDE],
+  ['welcome.trips', 15, INTER, SIDE],
+  // The scale badge (ui/scalebadge.js) and the line under the trips that cannot run (ui/explore.js).
+  ['scale.least', 13, INTER, SIDE],
+  ['scale.one', 13, INTER, SIDE, { name: 'Neptune', n: '99 000' }],
+  ['scale.trueLine', 13, INTER, SIDE, { name: 'Jupiter', px: '0.0001' }],
+  ['passport.stampPlaces', 13, INTER, SIDE, { places: '300 places' }],
   ['passport.kept', 13, INTER, SIDE],
   ['passport.notKept', 13, INTER, SIDE],
   ['passport.noPlaces', 13, INTER, SIDE],
