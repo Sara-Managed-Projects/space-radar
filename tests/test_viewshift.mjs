@@ -13,6 +13,9 @@ const bar = { top: 700, bottom: 844, width: 390 };        // the trip's bottom b
 const card = { top: 400, bottom: 700, width: 390 };       // the card sheet resting on it
 check(coveredFromBottom([], W, H) === 0, 'nothing on the canvas covers nothing');
 check(coveredFromBottom([bar], W, H) === 144, 'a bar on the bottom edge covers its own height');
+// A sheet whose top is above the canvas (scrolled there by a focus): it covers everything, and the
+// walk up ends. Before 2026-10-08 this never returned and the page hung.
+check(coveredFromBottom([{ top: -120, bottom: H, width: W }], W, H) === H, 'a panel that starts above the canvas covers all of it, and the walk ends');
 check(coveredFromBottom([card, bar], W, H) === 444, `a sheet resting on the bar covers both (${coveredFromBottom([card, bar], W, H)})`);
 check(coveredFromBottom([card], W, H) === 0, 'a panel floating off the bottom edge covers nothing from the bottom');
 check(coveredFromBottom([{ top: 100, bottom: 844, width: 380 }], 1280, 800) === 0, 'the desktop side card is not full width and moves nothing');

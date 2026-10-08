@@ -149,6 +149,35 @@ check(trails && trails.visible && ground.stats().trails > 400 && trails.geometry
 ground.setOptions({ trails: false });
 frame(nightMs + 9000, 72);
 check(trails.visible === false, 'and off again');
+// "Point your phone" (internal #450): the camera's attitude is the phone's, set as a quaternion with
+// no lookAt: under the horizon, at the zenith, rolled. Every frame runs to its end, the centre is
+// named or not, and the see-through ground lets the Sun under the horizon be found.
+{
+  const P = await import(pathToFileURL(join(JS, 'sky/pointing.js')).href);
+  const aim = (azDeg, altDeg, rollDeg) => {
+    const q = P.lookToQuat(azDeg, altDeg, rollDeg);
+    camera.position.set(0, 0, 0);
+    camera.quaternion.set(q[0], q[1], q[2], q[3]);
+    camera.updateMatrixWorld(true);
+  };
+  const t0 = Date.now();
+  for (const [az, alt, roll] of [[270, -20, 0], [180, 85, 0], [10, 90, 0], [250, 4, 25], [120, -60, -40], [0, -90, 0]]) {
+    aim(az, alt, roll);
+    frame(nightMs, 72);
+    const got = ground.whatAt(720, 450, camera, rect);
+    check(alt > 0 || got === null, `the phone pointed at the ground names nothing (${az}, ${alt}: ${got && got.kind})`);
+  }
+  ground.setOptions({ seeThrough: true });
+  const s = sun(nightMs);
+  aim(s.azimuth, s.altitude, 0);
+  frame(nightMs, 72);
+  const under = ground.whatAt(720, 450, camera, rect);
+  check(under && under.kind === 'body' && under.id === 'sun', `through the see-through ground the Sun is found under the horizon (${under && under.kind} ${under && under.id})`);
+  ground.setOptions({ seeThrough: false });
+  check(Date.now() - t0 < 5000, `seven pointed frames in ${Date.now() - t0} ms`);
+  lookAt(180, 45);
+}
+
 ground.dispose();
 check(group.children.length === 0 && labelsHost.children.length === 0 && !wrap.children.some((c) => c.className.includes('sr-skytag')), 'dispose() leaves nothing in the scene or the page');
 void pointed; void pathToFileURL;

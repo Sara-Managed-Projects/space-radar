@@ -518,8 +518,11 @@ export function renderTonight(host, ctx) {
     const pointNote = el('p', 'sr-density__note');
     pointNote.setAttribute('role', 'status');
     const pointMore = el('p', 'sr-tonight-view__caveat');
-    node.append(pointNote, pointMore);
+    const pointAcc = el('p', 'sr-tonight-view__caveat');
+    const pointHonest = el('p', 'sr-tonight-view__caveat', P.honest);
+    node.append(pointNote, pointMore, pointAcc, pointHonest);
     pointRow.hidden = pointNote.hidden = pointMore.hidden = !canPoint;
+    pointAcc.hidden = pointHonest.hidden = true;
     let pointGone = false;
     const paintPoint = () => {
       if (!canPoint) return;
@@ -540,17 +543,18 @@ export function renderTonight(host, ctx) {
         if (st.kind === 'relative' && off < 1) note = P.relative;
         else if (off >= 1) note = t(P.lined, { n: fmt.int(off) });
         else note = name ? t(P.lineUpWith, { name: (COPY.sky.bodies && COPY.sky.bodies[name]) || name }) : P.lineUpPlain;
-        const bits = [];
-        if (Number.isFinite(st.accuracyDeg)) bits.push(t(P.accuracy, { n: fmt.int(Math.round(st.accuracyDeg)) }));
-        if (st.kind !== 'relative' && Number.isFinite(st.declinationDeg) && Math.abs(st.declinationDeg) >= 0.5) bits.push(t(P.declination, { n: fmt.int(Math.round(Math.abs(st.declinationDeg))), dir: st.declinationDeg >= 0 ? P.east : P.west }));
-        bits.push(P.honest);
-        more = bits.join(' ');
+        if (st.kind !== 'relative' && Number.isFinite(st.declinationDeg) && Math.abs(st.declinationDeg) >= 0.5) more = t(P.declination, { n: fmt.int(Math.round(Math.abs(st.declinationDeg))), dir: st.declinationDeg >= 0 ? P.east : P.west });
       } else if (st.why === 'denied') { note = P.denied; more = P.deniedHow; }
       else if (st.why === 'none') note = P.none;
       else if (st.why === 'unsupported') note = P.unsupported;
       setText(pointNote, note);
       setText(pointMore, more);
-      pointMore.hidden = !more;
+      pointMore.hidden = !more || pointGone;
+      const acc = st.on && Number.isFinite(st.accuracyDeg) ? t(P.accuracy, { n: fmt.int(Math.round(st.accuracyDeg)) }) : '';
+      setText(pointAcc, acc);
+      pointAcc.hidden = !acc;
+      pointHonest.hidden = !st.on;
+      pointNote.hidden = pointGone && !st.why;
     };
     // TIME IN THE SKY (check 15 against Stellarium). The night's three moments one press away, and
     // a strip that turns the sky under the finger: two minutes a pixel, so a hand's width is the

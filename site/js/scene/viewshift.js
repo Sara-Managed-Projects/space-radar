@@ -115,8 +115,12 @@ export function coveredFromBottom(rects, w, h) {
   while (moved) {
     moved = false;
     for (const r of wide) {
-      if (r.bottom >= edge - 4 && r.top < edge) {
-        edge = Math.max(0, r.top);
+      // The edge only ever rises, so the walk ends. (Found 2026-10-08: a panel whose top is ABOVE
+      // the canvas, a full sheet scrolled by a focus, kept "moving" the edge from 0 to 0 for ever
+      // and hung the page.)
+      const top = Math.max(0, r.top);
+      if (r.bottom >= edge - 4 && top < edge) {
+        edge = top;
         moved = true;
       }
     }
