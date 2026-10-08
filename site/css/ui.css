@@ -1458,6 +1458,8 @@ html.sr-hud #sr-time {
   gap: 8px;
   align-items: center;
   min-height: 44px; /* a list row (docs/ui-guide.md section 3.5): 44 px, 12 px to the side; internal #336 */
+  box-sizing: border-box;
+  flex: 0 0 auto; /* a row never gives up its height to a short list or a scroller */
   padding: var(--sp-1) var(--sp-3);
   cursor: pointer;
   border-left: 2px solid transparent;
@@ -1491,6 +1493,19 @@ html.sr-hud #sr-time {
 
 .sr-search__option + .sr-search__option {
   border-top: 1px solid var(--sr-line);
+}
+
+/* On a phone a finger needs the 44 px INSIDE the row after the 1 px rule between two rows and the
+   rounding of a scrolled list: the ui gate measured Marfik and Marsic B at 42 and 24 (CI, 2026-10-08). */
+html.sr-phone .sr-search__option,
+html.sr-phone .sr-search__option--rich {
+  min-height: 48px;
+}
+
+@media (pointer: coarse) {
+  .sr-search__option {
+    min-height: 48px;
+  }
 }
 
 .sr-search__name {

@@ -201,5 +201,13 @@ check(JSON.stringify(findMatches(index, 'starlink').hits.map((h) => h.record.id)
   console.log(`search at full scale: 5 000 names, slowest query "${worstQ}" ${worst.toFixed(1)} ms (median of nine)`);
 }
 
+// A search row is 44 px or more on a phone, and does not give its height up (the ui gate, 2026-10-08).
+{
+  const css = readFileSync(join(JS, '../css/ui.css'), 'utf8');
+  const base = /\n\.sr-search__option \{[^}]*min-height: 44px[^}]*flex: 0 0 auto[^}]*\}/.test(css);
+  const phone = /html\.sr-phone \.sr-search__option,[^{]*\{\s*min-height: 48px;/.test(css);
+  check(base && phone, 'every search option row is at least 44 px (48 on a phone) and never shrinks');
+}
+
 if (problems.length) { console.error('search FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('search ok: whole words first, buried letters only as an announced fallback, eight rows, aliases from the registry');
