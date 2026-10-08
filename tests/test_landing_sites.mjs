@@ -138,7 +138,8 @@ for (const r of landings) {
       `DRAWN    ${r.id} says lunar-module and is drawn with ${JSON.stringify(entry)}; add it to realmodels.js bySite`);
   } else if (REAL_MODELS.bySite[r.id]) {
     // A model of the vehicle itself (Perseverance) outranks the stand-in, as it should.
-    check(Boolean(entry.file), `DRAWN    ${r.id} has a bySite entry with no file`);
+    // Or a shape built for that vehicle from its published description (Surveyor, 2026-10-08).
+    check(Boolean(entry.file || entry.build), `DRAWN    ${r.id} has a bySite entry with no file and no shape`);
   } else {
     check(entry.build === shape && entry.generic === true,
       `DRAWN    ${r.id} says ${shape} and is routed to ${JSON.stringify(entry)}`);

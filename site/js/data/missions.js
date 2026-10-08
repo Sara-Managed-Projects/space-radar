@@ -743,6 +743,91 @@ export const MISSIONS = [
     ]
   },
   {
+    "id": "saturn-v",
+    "record": "saturn-v-lc-39a",
+    "display": "Saturn V",
+    "read": "2026-10-08",
+    "source": {
+      "name": "NASA NSSDCA, Apollo 11 Command and Service Module",
+      "url": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059A"
+    },
+    "events": [
+      {
+        "id": "apollo-8",
+        "date": "1968-12-21T12:51:00Z",
+        "title": "Apollo 8 leaves for the Moon",
+        "text": "The first Saturn V to carry people sends Borman, Lovell and Anders to orbit the Moon.",
+        "place": "site",
+        "source": {
+          "name": "NASA NSSDCA, Apollo 8",
+          "url": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1968-118A"
+        }
+      },
+      {
+        "id": "apollo-11",
+        "date": "1969-07-16T13:32:00Z",
+        "title": "Apollo 11 leaves for the Moon",
+        "text": "Armstrong, Aldrin and Collins lift off from pad 39A. Four days later two of them land.",
+        "place": "site"
+      },
+      {
+        "id": "apollo-17",
+        "date": "1972-12-07T05:33:00Z",
+        "title": "Apollo 17, at night",
+        "text": "The last crew to the Moon leaves after a delay of 2 hours 40 minutes: the first night launch of an Apollo.",
+        "place": "site",
+        "source": {
+          "name": "NASA NSSDCA, Apollo 17 Command and Service Module",
+          "url": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1972-096A"
+        }
+      }
+    ]
+  },
+  {
+    "id": "space-shuttle",
+    "record": "shuttle-lc-39b",
+    "display": "Space Shuttle",
+    "read": "2026-10-08",
+    "source": {
+      "name": "NASA NSSDCA, STS 31",
+      "url": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1990-037A"
+    },
+    "events": [
+      {
+        "id": "sts-26",
+        "date": "1988-09-29",
+        "precision": "day",
+        "title": "Flying again",
+        "text": "Discovery launches on STS-26, the first Shuttle flight after the loss of Challenger.",
+        "place": "site",
+        "source": {
+          "name": "NASA NSSDCA, STS 26",
+          "url": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1988-091A"
+        }
+      },
+      {
+        "id": "sts-31",
+        "date": "1990-04-24",
+        "precision": "day",
+        "title": "Hubble goes up",
+        "text": "Discovery launches on STS-31 with the Hubble Space Telescope in its payload bay.",
+        "place": "site"
+      },
+      {
+        "id": "sts-116",
+        "date": "2006-12-10",
+        "precision": "day",
+        "title": "The last Shuttle from 39B",
+        "text": "Discovery launches at night on STS-116, the last Space Shuttle to leave from this pad.",
+        "place": "site",
+        "source": {
+          "name": "NASA NSSDCA, STS 116",
+          "url": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2006-055A"
+        }
+      }
+    ]
+  },
+  {
     "id": "perseverance",
     "record": "jezero",
     "path_record": "deep-mars-2020",

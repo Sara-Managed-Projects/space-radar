@@ -677,6 +677,9 @@ for (const file of allFiles) {
       const dflt = builderOf(klass, 'default');
       for (const v of variants[klass] || []) {
         if (v === 'default' || asked.has(v)) continue;
+        // The CubeSat specification's own 1U and 2U (public #422, 2026-10-08): built and on the shape
+        // sheet, and unrouted ON PURPOSE, because no record on the map is a 1U or a 2U today.
+        if (klass === 'satellite' && (v === 'cubesat-1u' || v === 'cubesat-2u')) continue;
         if (dflt && builderOf(klass, v) === dflt) continue; // a second name for the default
         orphans.push(`${klass}:${v}`);
       }

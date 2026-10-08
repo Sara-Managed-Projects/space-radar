@@ -87,10 +87,27 @@ check(realModelFor({ id: 'm-elara', name: 'ELARASAT MMS-1', klass: 'satellite', 
 { const o = modelFor('satellite', 'navigation'); check(!o.userData.generic && tris(o) <= budgetOf('satellite-navigation') && Math.abs(o.userData.realSizeM - 13) < 0.01, `navigation builds inside budget at Galileo's 13 m span (${tris(o)} tris)`); disposeModels(o); }
 for (const n of ['BEIDOU-3 M1', 'GSAT0210 (GALILEO 15)', 'GPS BIIR-5  (PRN 22)', 'NAVSTAR 81 (USA 319)', 'IRNSS-1A', 'QZS-2 (QZSS/PRN 194)']) {
   const e = realModelFor({ id: `g-${n}`, name: n, klass: 'satellite', layer: 'active', meta: { noradId: 90100 } });
-  check(e?.build === 'navigation', `${n} is drawn as a navigation satellite: ${JSON.stringify(e)}`);
+  check(String(e?.build).startsWith('navigation') && e.generic === true, `${n} is drawn as a navigation satellite: ${JSON.stringify(e)}`);
 }
+// 2026-10-08 (public #429): a shape per constellation, each at the span its source gives.
+for (const [v, span] of [['navigation-gps-iif', 18], ['navigation-gps-iii', 14], ['navigation-glonass-m', 7.8], ['navigation-glonass-k', 5], ['navigation-beidou-meo', 10]]) {
+  const o = modelFor('satellite', v);
+  check(!o.userData.generic && tris(o) <= budgetOf(`satellite-${v}`) && Math.abs(o.userData.realSizeM - span) < 0.01, `${v} builds inside budget at a ${span} m span (${tris(o)} tris)`);
+  disposeModels(o);
+}
+{ const nav = (name, launchYear, noradId = 90100) => realModelFor({ id: `n-${name}`, name, klass: 'satellite', layer: 'active', meta: { noradId, launchYear } })?.build;
+  check(nav('NAVSTAR 81 (USA 319)', 2020) === 'navigation-gps-iii' && nav('NAVSTAR 66 (USA 232)', 2011) === 'navigation-gps-iif' && nav('NAVSTAR 43 (USA 132)', 1997) === 'navigation', 'a GPS satellite gets its block by launch year: III, IIF, and the family box before them');
+  check(nav('BEIDOU-3 M18', 2018) === 'navigation-beidou-meo' && nav('BEIDOU-3 G2', 2020) === 'navigation' && nav('BEIDOU-2 IGSO-1', 2010) === 'navigation', 'only BeiDou-3 medium-orbit craft get the medium-orbit shape');
+  check(nav('COSMOS 2433 (720)', 2007, 32275) === 'navigation-glonass-m' && nav('COSMOS 2501', 2014, 40315) === 'navigation-glonass-k' && nav('COSMOS 2569', 2023, 57517) === 'navigation', 'GLONASS-M is the drum, GLONASS-K the box, and K2 keeps the family shape'); }
+// 2026-10-08 (public #422): the specification's own 1U and 2U; (#267) Surveyor from NSSDCA's paragraph.
+for (const [k, v, size] of [['satellite', 'cubesat-1u', 0.1135], ['satellite', 'cubesat-2u', 0.227], ['site', 'surveyor', 4.3]]) {
+  const o = modelFor(k, v);
+  check(!o.userData.generic && tris(o) <= budgetOf(`${k}-${v}`) && Math.abs(o.userData.realSizeM - size) < 1e-6, `${k}:${v} builds inside budget at ${size} m (${tris(o)} tris)`);
+  disposeModels(o);
+}
+check(realModelFor({ id: 'surveyor-1', name: 'Surveyor 1', klass: 'site', layer: 'hand-kept-sites', meta: { siteShape: 'lander' } })?.build === 'surveyor', 'Surveyor 1 is drawn as a Surveyor');
 // GLONASS by id, because a `cosmos` name key would also catch Tselina-2, Tselina-D and Etalon.
-check(realModelFor({ id: 'g-32275', name: 'COSMOS 2433 (720)', klass: 'satellite', layer: 'active', meta: { noradId: 32275 } })?.build === 'navigation', 'a GLONASS catalogued as COSMOS gets the navigation shape by id');
+check(realModelFor({ id: 'g-32275', name: 'COSMOS 2433 (720)', klass: 'satellite', layer: 'active', meta: { noradId: 32275 } })?.build === 'navigation-glonass-m', 'a GLONASS catalogued as COSMOS gets the navigation shape by id');
 check(realModelFor({ id: 'g-22219', name: 'COSMOS 2219', klass: 'satellite', layer: 'visual', meta: { noradId: 22219 } })?.file === 'tselina2.glb', 'and a Tselina-2 catalogued as COSMOS still gets its own model, not the navigation shape');
 // The augmentation payloads: communications satellites with dishes that carry a navigation
 // payload. GSAT-8 is the trap a `gsat` key would have fallen into.

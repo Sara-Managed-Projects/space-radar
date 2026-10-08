@@ -138,6 +138,16 @@ sites:
   - {id: dss-43, display: "Canberra DSS-43", class: dish, world: earth, lat: -35.4022, lon: 148.9812, alt_m: 689, diameter_m: 70, doing: "The only dish that can still send commands to Voyager 2."}
   - {id: dss-63, display: "Madrid DSS-63", class: dish, world: earth, lat: 40.2414, lon: -4.2480, alt_m: 865, diameter_m: 70, doing: "The 70-metre dish outside Madrid."}
 
+  # --- Two pads, and the vehicles that left from them (public #427, 2026-10-08) ------------------
+  # `class: pad` is a hand-kept pad: Launch Library's pads are the ones something is about to
+  # leave from, and these two rows are here for what left long ago. scene/realmodels.js `bySite`
+  # stands NASA's Saturn V and Space Shuttle models on them, and registry/missions.yaml moves the
+  # clock to their launch mornings. Coordinates read 2026-10-08 on Wikipedia's articles for the
+  # two pads: 28 36 30 N, 80 36 16 W and 28 37 38 N, 80 37 15 W. Only Apollo 10's Saturn V left
+  # from 39B (Wikipedia, Saturn V, read the same day), so twelve of the thirteen left from 39A.
+  - {id: saturn-v-lc-39a, display: "Saturn V, Launch Complex 39A", class: pad, world: earth, lat: 28.6083, lon: -80.6044, alt_m: 0, aliases: ["Saturn 5", "LC-39A", "Apollo launch pad"], doing: "The pad twelve Saturn V rockets left from, 1967 to 1973, six of them to land people on the Moon. The rocket is drawn as it stood on a launch morning."}
+  - {id: shuttle-lc-39b, display: "Space Shuttle, Launch Complex 39B", class: pad, world: earth, lat: 28.6272, lon: -80.6208, alt_m: 0, aliases: ["Space Shuttle", "LC-39B", "STS"], doing: "One of the two pads the Space Shuttle flew from: 53 launches from this one, the last in 2006. The stack is drawn as it stood on a launch morning."}
+
   # --- On the Moon --------------------------------------------------------------------
   # Uncited: LROC's 2016 table has the lunar module at 0.67416, 23.47314 (+/- 0.3 m), about 5 m
   # from this row. Where this row's numbers came from is not recorded.

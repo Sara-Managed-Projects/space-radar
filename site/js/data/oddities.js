@@ -126,7 +126,7 @@ export const ODDITIES = [
     "position_class": "inferred",
     "shape": {
       "build": "wrapped-photo",
-      "budget_tris": 70,
+      "budget_tris": 130,
       "stands_for": "family",
       "drawn_name": "a shrink-wrapped family snapshot lying in the dust",
       "departure": "the print is drawn blank. The photograph on it is the Duke family's and this map does not reproduce it"
@@ -164,7 +164,7 @@ export const ODDITIES = [
     "position_class": "inferred",
     "shape": {
       "build": "disc-stack",
-      "budget_tris": 620,
+      "budget_tris": 690,
       "stands_for": "variant",
       "drawn_name": "the stack of nickel discs and a tardigrade beside it",
       "departure": "the 1 mm stack is thickened and laminated in four bands, not twenty-five, and the half-millimetre tardigrade is nothing like to scale"

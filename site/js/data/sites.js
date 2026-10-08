@@ -51,6 +51,36 @@ export const SITES = [
     "doing": "The 70-metre dish outside Madrid."
   },
   {
+    "id": "saturn-v-lc-39a",
+    "display": "Saturn V, Launch Complex 39A",
+    "class": "pad",
+    "world": "earth",
+    "lat": 28.6083,
+    "lon": -80.6044,
+    "alt_m": 0,
+    "aliases": [
+      "Saturn 5",
+      "LC-39A",
+      "Apollo launch pad"
+    ],
+    "doing": "The pad twelve Saturn V rockets left from, 1967 to 1973, six of them to land people on the Moon. The rocket is drawn as it stood on a launch morning."
+  },
+  {
+    "id": "shuttle-lc-39b",
+    "display": "Space Shuttle, Launch Complex 39B",
+    "class": "pad",
+    "world": "earth",
+    "lat": 28.6272,
+    "lon": -80.6208,
+    "alt_m": 0,
+    "aliases": [
+      "Space Shuttle",
+      "LC-39B",
+      "STS"
+    ],
+    "doing": "One of the two pads the Space Shuttle flew from: 53 launches from this one, the last in 2006. The stack is drawn as it stood on a launch morning."
+  },
+  {
     "id": "apollo-11",
     "display": "Apollo 11 landing site",
     "class": "surface",

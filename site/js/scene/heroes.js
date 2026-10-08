@@ -502,6 +502,25 @@ export function groundShadowPose(sunLocal) {
   return { x: (-sunLocal.x / flat) * lean, z: (-sunLocal.z / flat) * lean, opacity: SHADOW_OPACITY * (1 / 3 + (2 / 3) * day) };
 }
 
+/**
+ * The ground under a lander on the Moon (public #386: the module "hovers ... on a textureless
+ * mare"). The map of the Moon is 2 km a pixel there; a model drawn 260 px tall stands on one flat
+ * tone. So the vehicle brings its own few metres: scene/models.js buildGroundPatch, a ragged
+ * patch of regolith, darker where the engine and the boots disturbed it, under the contact shadow.
+ * Illustrative, like the shadow. The Moon only: its regolith is one grey, and Mars's ground is not.
+ */
+const GROUND_NAME = 'ground-patch';
+export function addGroundPatch(obj, record, reach = 0.5) {
+  if (!obj || !record || !record.meta || record.meta.world !== 'moon' || obj.getObjectByName(GROUND_NAME)) return null;
+  const patch = M.modelFor('site', 'ground-moon');
+  patch.name = GROUND_NAME;
+  patch.traverse((n) => { n.userData.noReach = true; n.renderOrder = -2; });
+  patch.scale.setScalar(Math.max(0.3, reach) * 2.5);
+  patch.position.y = SHADOW_LIFT * 0.3;
+  obj.add(patch);
+  return patch;
+}
+
 /** A landing site's vehicle, standing on a world: the things that get a contact shadow. */
 function standsOnBareGround(record, obj) {
   return !!(record && record.meta && record.meta.siteShape && obj && obj.userData.attitude === 'up');
@@ -594,7 +613,7 @@ export function createHeroes(scene, ctx) {
     M.attachOddityModels(obj, record.id);
     root.add(obj);
     const entry = { obj, record, fadeStart: null, upgraded: false, reach: unitReachOf(obj) };
-    if (standsOnBareGround(record, obj)) addContactShadow(obj, entry.reach);
+    if (standsOnBareGround(record, obj)) { addContactShadow(obj, entry.reach); addGroundPatch(obj, record, entry.reach); }
     live.set(record.id, entry);
 
     // If NASA publishes this exact object, fetch it and swap it in when it arrives. The procedural
@@ -619,6 +638,7 @@ export function createHeroes(scene, ctx) {
         // the clearance cap would then be computed from a number in the wrong units entirely.
         entry.reach = unitReachOf(clone);
         if (standsOnBareGround(record, clone)) addContactShadow(clone, entry.reach);
+        if (standsOnBareGround(record, clone)) addGroundPatch(clone, record, entry.reach);
         clone.position.copy(entry.obj.position);
         clone.scale.copy(entry.obj.scale);
         clone.quaternion.copy(entry.obj.quaternion);

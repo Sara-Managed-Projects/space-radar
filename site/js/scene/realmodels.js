@@ -104,6 +104,13 @@ const TEXTURES = new URL('../../textures/', import.meta.url);
  * The shape still carries a comms payload's dishes, which is the "not this exact one" half. It is
  * wrong in SILHOUETTE for exactly two of the 400: Fengyun 2G and 2H are spin-stabilised drums.
  */
+function gpsBlock(record) {
+  const year = record && record.meta ? record.meta.launchYear : null;
+  if (!Number.isFinite(year)) return {};
+  if (year >= 2018) return { build: 'navigation-gps-iii' };
+  return year >= 2010 && year <= 2016 ? { build: 'navigation-gps-iif' } : {};
+}
+
 const GEO_BUS = { file: 'bus-ssl1300.glb', colour: 'satellite', name: 'a geostationary satellite', generic: true };
 
 export const REAL_MODELS = {
@@ -208,35 +215,38 @@ export const REAL_MODELS = {
     //
     // The `catalogue:` field must come from the endpoint the CHECKER uses (CATNR), and that is
     // also the one the app sees, because registry/sources.yaml fetches GROUP=active.
-    32275: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2433 [GLONASS-M]', generic: true },
-    32276: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2432 [GLONASS-M]', generic: true },
-    32393: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2434 [GLONASS-M]', generic: true },
-    32395: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2436 [GLONASS-M]', generic: true },
-    36111: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2456 [GLONASS-M]', generic: true },
-    36112: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2457 [GLONASS-M]', generic: true },
-    36402: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2460 [GLONASS-M]', generic: true },
-    37867: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2476 [GLONASS-M]', generic: true },
-    37868: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2477 [GLONASS-M]', generic: true },
-    37869: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2475 [GLONASS-M]', generic: true },
-    39155: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2485 [GLONASS-M]', generic: true },
-    39620: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2492 [GLONASS-M]', generic: true },
-    40001: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2500 [GLONASS-M]', generic: true },
-    40315: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2501 [GLONASS-K]', generic: true },
-    41330: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2514 [GLONASS-M]', generic: true },
-    42939: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2522 [GLONASS-M]', generic: true },
-    43508: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2527 [GLONASS-M]', generic: true },
-    43687: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2529 [GLONASS-M]', generic: true },
-    44299: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2534 [GLONASS-M]', generic: true },
-    44850: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2544 [GLONASS-M]', generic: true },
-    45358: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2545 [GLONASS-M]', generic: true },
-    46805: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2547 [GLONASS-K]', generic: true },
-    52984: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2557 [GLONASS-K]', generic: true },
-    54031: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2559 [GLONASS-K]', generic: true },
-    54377: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2564 [GLONASS-M]', generic: true },
+    // 2026-10-08 (public #429): the shape by the block the catalogue's own label states. GLONASS-M is
+    // the pressurised drum, GLONASS-K (and K1) the small box; K2 is a larger craft with no row in
+    // scene/models.js NAV_SHAPES and keeps the family box.
+    32275: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2433 [GLONASS-M]', generic: true },
+    32276: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2432 [GLONASS-M]', generic: true },
+    32393: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2434 [GLONASS-M]', generic: true },
+    32395: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2436 [GLONASS-M]', generic: true },
+    36111: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2456 [GLONASS-M]', generic: true },
+    36112: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2457 [GLONASS-M]', generic: true },
+    36402: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2460 [GLONASS-M]', generic: true },
+    37867: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2476 [GLONASS-M]', generic: true },
+    37868: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2477 [GLONASS-M]', generic: true },
+    37869: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2475 [GLONASS-M]', generic: true },
+    39155: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2485 [GLONASS-M]', generic: true },
+    39620: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2492 [GLONASS-M]', generic: true },
+    40001: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2500 [GLONASS-M]', generic: true },
+    40315: { build: 'navigation-glonass-k', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2501 [GLONASS-K]', generic: true },
+    41330: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2514 [GLONASS-M]', generic: true },
+    42939: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2522 [GLONASS-M]', generic: true },
+    43508: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2527 [GLONASS-M]', generic: true },
+    43687: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2529 [GLONASS-M]', generic: true },
+    44299: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2534 [GLONASS-M]', generic: true },
+    44850: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2544 [GLONASS-M]', generic: true },
+    45358: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2545 [GLONASS-M]', generic: true },
+    46805: { build: 'navigation-glonass-k', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2547 [GLONASS-K]', generic: true },
+    52984: { build: 'navigation-glonass-k', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2557 [GLONASS-K]', generic: true },
+    54031: { build: 'navigation-glonass-k', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2559 [GLONASS-K]', generic: true },
+    54377: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2564 [GLONASS-M]', generic: true },
     57517: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2569 [GLONASS-K2]', generic: true },
     63130: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2584 [GLONASS-K2]', generic: true },
-    65590: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2596 [GLONASS-K1]', generic: true },
-    100460: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2619 [GLONASS-K1]', generic: true },
+    65590: { build: 'navigation-glonass-k', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2596 [GLONASS-K1]', generic: true },
+    100460: { build: 'navigation-glonass-k', colour: 'satellite', name: 'a GLONASS navigation satellite', catalogue: 'COSMOS 2619 [GLONASS-K1]', generic: true },
 
     // ---------------------------------------------------------------------------------------
     // THE NASA SCIENCE SET spec 0027 task 9f left open, and the two reasons it was left open.
@@ -570,7 +580,13 @@ export const REAL_MODELS = {
     //     communications satellites with dishes, and they correctly match nothing here.
     // Result: 130 of the 172 in the group matched, and the 42 that did not are the 29 GLONASS
     // (mapped by id above) plus exactly those 13.
-    beidou: { build: 'navigation', colour: 'satellite', name: 'a BeiDou navigation satellite', klass: ['satellite'], generic: true },
+    // 2026-10-08 (public #429): a shape per constellation where one was sourced (scene/models.js
+    // NAV_SHAPES). BeiDou's medium-orbit craft are named `BEIDOU-3 M<n>`; the geostationary and
+    // inclined ones (G, IGSO) and BeiDou-2 are larger buses with no row, and keep the family box.
+    beidou: {
+      build: 'navigation', colour: 'satellite', name: 'a BeiDou navigation satellite', klass: ['satellite'], generic: true,
+      resolve: (record) => (/beidou-3\s+m\d/i.test(String(record && record.name)) ? { build: 'navigation-beidou-meo' } : {}),
+    },
     galileo: { build: 'navigation', colour: 'satellite', name: 'a Galileo navigation satellite', klass: ['satellite'], generic: true },
     // TWO KEYS FOR ONE CONSTELLATION, and this is the endpoint trap again rather than belt and
     // braces. GROUP=active -- the file sources.yaml actually fetches -- calls them
@@ -579,9 +595,13 @@ export const REAL_MODELS = {
     // NOTHING and `navstar` matches all forty; the spec's rule is that a key which never matches
     // is a wasted file, and `gps` is kept anyway BECAUSE the other spelling is one source change
     // away and this comment is cheaper than rediscovering it.
-    gps: { build: 'navigation', colour: 'satellite', name: 'a GPS navigation satellite', klass: ['satellite'], generic: true },
-    navstar: { build: 'navigation', colour: 'satellite', name: 'a GPS navigation satellite', klass: ['satellite'], generic: true },
-    glonass: { build: 'navigation', colour: 'satellite', name: 'a GLONASS navigation satellite', klass: ['satellite'], generic: true },
+    // GPS BY LAUNCH YEAR, because `NAVSTAR 81 (USA 319)` does not say its block. Read 2026-10-08 on
+    // Wikipedia: Block IIF flew from 28 May 2010 to 5 February 2016, twelve of them, and Block III
+    // from 23 December 2018; no other GPS block was launched in those years. Earlier craft (IIR,
+    // IIR-M) are a different bus with no row, and keep the family box, as does a record with no year.
+    gps: { build: 'navigation', colour: 'satellite', name: 'a GPS navigation satellite', klass: ['satellite'], generic: true, resolve: gpsBlock },
+    navstar: { build: 'navigation', colour: 'satellite', name: 'a GPS navigation satellite', klass: ['satellite'], generic: true, resolve: gpsBlock },
+    glonass: { build: 'navigation-glonass-m', colour: 'satellite', name: 'a GLONASS navigation satellite', klass: ['satellite'], generic: true },
     irnss: { build: 'navigation', colour: 'satellite', name: 'an IRNSS navigation satellite', klass: ['satellite'], generic: true },
     qzs: { build: 'navigation', colour: 'satellite', name: 'a QZSS navigation satellite', klass: ['satellite'], generic: true },
     // THE 3U CUBESATS -- 164 objects, and the largest population in this app outside Starlink.
@@ -764,6 +784,17 @@ export const REAL_MODELS = {
     // DSS-25 is a 34-metre dish and was being drawn with the 70-metre model. A correctness fix:
     // the two antennas do not look alike and the card names the size.
     'dss-25': { file: 'dsn34.glb', colour: 'site', name: 'a 34-metre Deep Space Network antenna' },
+    // Surveyor from NSSDCA's own description (scene/models.js buildSurveyor; public #267). A shape
+    // built from a paragraph, so the card still says the kind of thing.
+    'surveyor-1': { build: 'surveyor', colour: 'site', name: 'a Surveyor lander', generic: true },
+    'surveyor-3': { build: 'surveyor', colour: 'site', name: 'a Surveyor lander', generic: true },
+    // THE TWO LAUNCH VEHICLES NASA PUBLISHES (public #427, 2026-10-08), each standing on the pad it
+    // left from (registry/sites.yaml), which is the one place on this map a rocket of 1969 can be:
+    // the launches layer draws what is about to fly. registry/missions.yaml moves the clock to the
+    // mornings they left. The pad is a place on any date; the vehicle on it is a picture of those days,
+    // and the row's sentence says so.
+    'saturn-v-lc-39a': { file: 'saturn-v.glb', colour: 'rocket', name: 'Saturn V' },
+    'shuttle-lc-39b': { file: 'shuttle-stack.glb', colour: 'rocket', name: 'the Space Shuttle on its tank and boosters' },
     'apollo-11': { file: 'lunar-module.glb', colour: 'site', name: 'Apollo 11 lunar module' },
     // 14 and 16 arrived with the odd-things layer -- registry/oddities.yaml anchors the golf
     // balls and Duke's photograph on them -- and fell through to BUILDERS.site.default, which is
@@ -813,6 +844,13 @@ function gltfLoader() {
   }
   return loader;
 }
+
+/**
+ * Files whose nose is not +Y, and the turn that stands them up. glTF says +Y is up and every
+ * other file here obeys; NASA's Space Shuttle (A) lies along Z with its nose at -Z (measured by
+ * the bake, registry/models.yaml), and a rocket on a pad has to stand.
+ */
+const NOSE_UP = { 'shuttle-stack.glb': [Math.PI / 2, 0, 0] };
 
 /** The entry in REAL_MODELS this record matches, or null. */
 export function realModelFor(record) {
@@ -1085,8 +1123,12 @@ export function loadRealModel(entry, { keepMaterials = false } = {}) {
           // this guards -- and before normalise(), which only moves the result around.
           const fixed = ensureNormals(scene);
           if (fixed) console.info(`real model ${entry.file}: computed normals for ${fixed} mesh(es)`);
-          if (keepMaterials) return resolve(normalise(scene));
-          if (!entry.map) { applyToon(scene, entry.colour); return resolve(normalise(scene)); }
+          // A file whose nose is not +Y is stood up before it is measured (NOSE_UP, above).
+          const turn = NOSE_UP[entry.file];
+          let top = scene;
+          if (turn) { top = new THREE.Group(); scene.rotation.set(turn[0], turn[1], turn[2]); top.add(scene); }
+          if (keepMaterials) return resolve(normalise(top));
+          if (!entry.map) { applyToon(scene, entry.colour); return resolve(normalise(top)); }
           // The map first, then the material: a body shown plain and then repainted would flash.
           // A map that does not arrive leaves the body in its class colour, as it was before.
           const done = (tex) => {
