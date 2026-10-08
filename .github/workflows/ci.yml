@@ -68,6 +68,8 @@ jobs:
         run: python3 scripts/gen_showers_activity_js.py --check
       - name: The reels mirror matches the registry (spec 0036)
         run: python3 scripts/gen_autopilot_js.py --check
+      - name: "The World Magnetic Model's coefficients match NOAA's file (internal #450)"
+        run: python3 scripts/gen_wmm_js.py --check
       - name: The missions mirror matches the registry (public #452)
         run: python3 scripts/gen_missions_js.py --check
       # The path files (site/data/eph): the registry, the manifest, each .bin, the browser's mirror
@@ -641,6 +643,10 @@ jobs:
         run: node tests/test_sky_round3.mjs
       - name: "The sky from the ground built and run for a night without a browser"
         run: node tests/test_groundsky_smoke.mjs
+      - name: "Point your phone: attitudes in portrait and both landscapes, declination against NOAA's test values, the filter's lag, the offset, a refused sensor (internal #450)"
+        run: node tests/test_pointing.mjs
+      - name: "Rises, highest and sets from a place, and the planet's card saying so (internal #299)"
+        run: node tests/test_riseset.mjs
       - name: "a star as a disc of its own size"
         run: node tests/test_stardisc.mjs
       - name: "the Sun close up: limb darkening, today's sunspot groups"
