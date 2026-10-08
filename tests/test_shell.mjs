@@ -212,7 +212,12 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   const railSrc = readFileSync(join(JS, 'ui/rail.js'), 'utf8');
   const exploreSrc = readFileSync(join(JS, 'ui/explore.js'), 'utf8');
   check(/import\('\.\/whattoshow\.js'\)/.test(railSrc) && !/^import[^\n]*whattoshow/m.test(railSrc), 'What to show loads when first opened');
-  check(/import\('\.\/place\.js'\)/.test(exploreSrc) && !/^import[^\n]*place\.js/m.test(exploreSrc), 'the Tonight tab loads when first shown');
+  // The Tonight view is fetched by main.js inside the tab's mount (so the first time the tab is shown)
+  // and brings the place controls with it (ui/tonight.js imports ui/place.js; internal #455): the
+  // explore view names neither, and neither is a first visit's module.
+  const tonightSrc = readFileSync(join(JS, 'ui/tonight.js'), 'utf8');
+  check(/mountTab\('tonight', \(host\) => \{\s*import\('\.\/ui\/tonight\.js'\)/.test(main) && !/^import[^\n]*ui\/(tonight|place)\.js/m.test(main)
+    && !/place\.js|tonight\.js'/.test(exploreSrc) && /^import \{ createPlace \} from '\.\/place\.js';/m.test(tonightSrc), 'the Tonight tab, and the place controls in it, load when the tab is first shown');
   // The Tonight tab's mount point (spec 0051's ui/tonight.js plugs in here without editing explore.js).
   check(/function mountTab\(id, render, opts = \{\}\)/.test(exploreSrc) && /mountTab \}/.test(exploreSrc), 'the explore view offers mountTab(id, render) for a tab\'s content');
   const html = readFileSync(join(ROOT, 'site/index.html'), 'utf8');
