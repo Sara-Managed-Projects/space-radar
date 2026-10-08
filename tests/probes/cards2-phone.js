@@ -72,7 +72,7 @@ out.place = { boot: ctx.observer ? { lat: ctx.observer.latDeg, lon: ctx.observer
 if (ctx.explore && ctx.explore.setTab) { ctx.explore.setTab('tonight'); await wait(1500); }
 const w1 = Date.now(); while (!document.querySelector('.sr-place__chips') && Date.now() - w1 < 8000) await wait(300);
 await step('place-panel');
-out.place.line = text('.sr-place__current');
+out.place.line = text('.sr-tonight-view__place');
 const chip = (re) => [...document.querySelectorAll('.sr-place__chips button')].find((b) => re.test(b.textContent));
 out.place.chips = [...document.querySelectorAll('.sr-place__chips button')].filter((b) => !b.hidden).map((b) => b.textContent);
 const keep = chip(/Remember/); if (keep) { keep.click(); await wait(200); }

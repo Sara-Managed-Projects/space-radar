@@ -2035,7 +2035,6 @@ export const COPY = {
     // While "Colour by" is not "What it is", the dots are the key's colours, not the layers'.
     keyedNote: 'Dots coloured by {key}: the key is below.',
     localTimeFallback: 'local',
-    locationTitle: 'Where you are',
     locationPlaceholder: 'Type a city',
     locationSearchLabel: 'Find a city',
     locationUseMine: 'Use my location',
@@ -2047,22 +2046,9 @@ export const COPY = {
     locationDenied: 'The browser said no. Pick a city instead.',
     locationFailed: 'The browser could not find you. Pick a city instead.',
     locationAsking: 'Asking the browser',
-    locationNone: 'Not set',
-    locationSet: '{name}',
     locationClear: 'Clear',
-    locationCoords: '{lat}, {lon}',
     locationNoMatch: 'No city in the bundled list matches that.',
-    // The Now moment's first screen guesses a place from the clock and says so, in words that a
-    // person reads, not in a tooltip: a guess about where you are is held to the same rule as a
-    // guess about an orbit.
-    locationGuessed: 'We guessed {name} from your clock’s time zone. Set where you are if that is wrong.',
-    locationGuessedByOffset: 'We guessed {name} from your clock’s offset from UTC, which is rough. Set where you are.',
-    tonightTitle: 'Coming over tonight',
-    tonightRow: '{name} at {time}, {dir}, {fists}',
-    tonightNone: 'Nothing bright comes over in the next twelve hours.',
-    tonightNoObserver: 'Set where you are, or open the Now door, and this will list what comes over.',
     tonightCouldNotLook: 'Could not look: no satellites have loaded.',
-    tonightShowerTail: 'The sky view marks its radiant.',
   },
 
   // ui/search.js. The footer strings are the honest ones: a layer nobody has read has no size,

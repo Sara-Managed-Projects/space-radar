@@ -4134,15 +4134,6 @@ html.sr-phone .sr-subscribe__email {
 
 .sr-next .sr-next__note[hidden] { display: none; }
 
-/* Tonight: the place and its passes. */
-.sr-place__current {
-  margin: 6px 0 10px;
-  font-size: var(--sr-fs-body);
-  line-height: 1.35;
-}
-
-.sr-place__current.is-guess { color: var(--sr-text-dim); font-size: var(--sr-fs-label); }
-
 .sr-field {
   width: 100%;
   height: 44px;
@@ -4163,8 +4154,8 @@ html.sr-phone .sr-subscribe__email {
 .sr-place__chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
 }
 
 .sr-chip {
@@ -4183,19 +4174,25 @@ html.sr-phone .sr-subscribe__email {
 .sr-chip:disabled { color: var(--sr-text-dim); cursor: not-allowed; }
 .sr-chip--quiet { background: transparent; color: var(--sr-text-dim); }
 
-.sr-place__note,
-.sr-tonight__note,
-.sr-tonight__shower {
-  margin: 8px 0 0;
+.sr-place__note {
+  margin: var(--sp-2) 0 0;
   font-size: var(--sr-fs-sm);
   line-height: 1.4;
   color: var(--sr-text-dim);
 }
 
 .sr-place__note.is-warning { color: var(--sr-stale); }
-.sr-place__note[hidden], .sr-tonight__note[hidden], .sr-tonight__shower[hidden] { display: none; }
-.sr-tonight { margin-top: 18px; }
-.sr-tonight > .sr-micro { padding-bottom: 4px; }
+.sr-place[hidden], .sr-place__note[hidden], .sr-place__chips > [hidden] { display: none; }
+
+/* The place line and "Change place" on one row of the Tonight view; the line gives way first. */
+.sr-tonight-view__where {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.sr-tonight-view__where > .sr-tonight-view__place { flex: 1 1 auto; min-width: 0; }
+.sr-tonight-view__change { flex: none; }
 
 /* The status line: the sidebar's foot, one sentence, a coloured dot. */
 .sr-statusline {

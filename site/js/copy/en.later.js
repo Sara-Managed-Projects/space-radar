@@ -1343,6 +1343,9 @@ Object.assign(COPY, {
     title: 'Opens {publisher}’s own page in a new tab',
   },
   placeKeep: {
+    group: 'Where you are',
+    change: 'Change place',
+    changeTitle: 'A city, or where the browser says you are',
     remember: 'Remember this place',
     rememberTitle: 'Keeps it in this browser only, to the nearest 0.1°',
     forget: 'Forget this place',
@@ -1352,7 +1355,5 @@ Object.assign(COPY, {
     shareTitle: 'Copies a link that carries this place to the nearest 0.1°',
     copied: 'Link copied. It carries this place to 0.1°.',
     copyFailed: 'The link could not be copied.',
-    shared: 'A place shared with you: {name}',
-    sharedCoords: '{lat}°, {lon}°',
   },
 });

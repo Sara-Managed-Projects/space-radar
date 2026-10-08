@@ -584,22 +584,9 @@ export function createExplore(ctx, host) {
   shows.appendChild(showList);
   stars.appendChild(shows);
 
-  // --- Tonight: the place and what comes over it (the old Now moment) ------------------------------
-  // Built the first time the tab is shown: ui/place.js is the old Now moment's page, 10 kB that the
-  // first view does not use (0061 req 14).
+  // --- Tonight: ui/tonight.js mounts its view here (mountTab below); the place is set inside it ------
   const tonight = panes.get('tonight');
-  const placeHost = el('div', 'sr-sect');
-  tonight.appendChild(placeHost);
   tonight.appendChild(tripHosts.get('tonight').s);
-  let placeLoad = null;
-  let tonightMounted = false;
-  const loadPlace = () => placeLoad || (placeLoad = import('./place.js').then((m) => {
-    // `placeOnly` once ui/tonight.js has the tab (mountTab below): that view lists the passes, and
-    // this one is then only where a place is set, kept and shared.
-    const place = m.createPlace(ctx, { placeOnly: tonightMounted });
-    placeHost.replaceWith(place.root);
-    place.root.classList.add('sr-sect');
-  }).catch((e) => { placeLoad = null; console.warn('the Tonight tab did not load', e); }));
 
   // --- the status line ----------------------------------------------------------------------------
   const foot = button('sr-statusline');
@@ -893,7 +880,6 @@ export function createExplore(ctx, host) {
 
   function paintPane(id) {
     if (mounts.has(id)) mounts.get(id)();
-    if (id === 'tonight') loadPlace();
     if (id === 'earth') paintNow();
     if (id === 'planets') paintWorlds();
     if (id === 'stars') paintStars();
@@ -948,11 +934,6 @@ export function createExplore(ctx, host) {
       for (const child of [...pane.children]) {
         if (child !== mount && child !== tripHosts.get(id).s) child.hidden = true;
       }
-      // The place panel stays (2026-10-08, internal #137): when ui/tonight.js took this tab over
-      // the panel was hidden with everything else, and with it the only control in the app that
-      // sets a place ("Use my location", the city box). It now sits under the Tonight view, without
-      // its own list of passes, and carries Remember this place and Share this place.
-      if (id === 'tonight') { tonightMounted = true; placeHost.hidden = false; }
     }
     let done = false;
     const run = () => {

@@ -28,6 +28,7 @@
 import { COPY, CITIES, t, fmt, timeText, compassWords } from '../copy/en.js';
 import '../copy/en.later.js';
 import { guessObserver } from '../sky/guessplace.js';
+import { createPlace } from './place.js';
 import { nextVisible, passState, darkness, tonightWords, SEARCH_HOURS, LONG_SEARCH_HOURS } from '../sky/tonight.js';
 import { arcSvg } from './skyarc.js';
 import { tonightBest, bestWords, passWords, passNumbers, darkWords, compassShort, standardMagnitude, samePassKey, nightMoments, FACINGS, VIEW_HEIGHTS } from '../sky/tonightbest.js';
@@ -87,6 +88,30 @@ export function renderTonight(host, ctx) {
   const head = el('h2', 'sr-tonight-view__title', T.title);
   head.id = 'sr-tonight-view-title';
   const place = el('p', 'sr-tonight-view__place');
+  // Where a place is set, kept and shared (internal #455, spec 0051 task 3): one quiet row beside
+  // the place line that opens the city box and its chips in place (docs/ui-guide.md section 3.5).
+  // Open by itself while the place is a guess or not set: that is when the visitor has to act.
+  const placeRow = el('div', 'sr-tonight-view__where');
+  const change = el('button', 'sr-btn sr-btn--quiet sr-tonight-view__change', COPY.placeKeep.change);
+  change.type = 'button';
+  change.title = COPY.placeKeep.changeTitle;
+  change.setAttribute('aria-expanded', 'false');
+  const placeCtl = createPlace(ctx);
+  placeCtl.root.id = 'sr-tonight-place';
+  change.setAttribute('aria-controls', placeCtl.root.id);
+  let placeOpen = null; // null: follows the place (open for a guess or none); a press decides after that
+  const paintPlaceBox = () => {
+    const o = ctx.observer;
+    const open = placeOpen === null ? (!o || o.source === 'guess') : placeOpen;
+    placeCtl.root.hidden = !open;
+    change.setAttribute('aria-expanded', open ? 'true' : 'false');
+  };
+  change.addEventListener('click', () => {
+    placeOpen = placeCtl.root.hidden;
+    paintPlaceBox();
+    if (placeOpen) placeCtl.focus();
+  });
+  placeRow.append(place, change);
   const body = el('div', 'sr-tonight-view__body');
   const arcBox = el('div', 'sr-tonight-view__arc');
   const text = el('div', 'sr-tonight-view__text');
@@ -173,7 +198,9 @@ export function renderTonight(host, ctx) {
   actions.appendChild(showMe);
   actions.appendChild(more);
   root.appendChild(head);
-  root.appendChild(place);
+  root.appendChild(placeRow);
+  root.appendChild(placeCtl.root);
+  paintPlaceBox();
   root.appendChild(body);
   root.appendChild(empty);
   root.appendChild(next);
