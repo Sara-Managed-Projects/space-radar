@@ -112,5 +112,34 @@ stage.setWorld('earth');
   check(Math.abs(andromedaDiameterLy() - 131391) < 1, 'and that size is the one the card prints (131 391 ly before rounding)');
 }
 
+// The dust lanes (public #428): derived from the arms, inside them, thinner, in the real plane.
+{
+  const { dustLanes, DUST_EVERY, DUST_INSET_KPC, DUST_FLATTEN, DUST_DIM, NORTH_GALACTIC_POLE } = await import(join(JS, 'scene/galaxy.js'));
+  const g = data;
+  let cx = 0, cy = 0, cz = 0, nb = 0, arms = 0;
+  for (let i = 0; i < g.count; i++) {
+    if (g.kind[i] === 1) { cx += g.posKpc[i * 3]; cy += g.posKpc[i * 3 + 1]; cz += g.posKpc[i * 3 + 2]; nb++; }
+    if (g.kind[i] === 3) arms++;
+  }
+  const c = [cx / nb, cy / nb, cz / nb];
+  const dust = dustLanes(g.posKpc, g.kind, g.count, c);
+  check(dust.count === Math.ceil(arms / DUST_EVERY), `one dust patch for every ${DUST_EVERY} arm points (${dust.count} of ${arms})`);
+  const n = dust.normal;
+  check(Math.abs(Math.hypot(...n) - 1) < 1e-9 && NORTH_GALACTIC_POLE.raDeg > 192.8 && NORTH_GALACTIC_POLE.raDeg < 192.9 && Math.abs(NORTH_GALACTIC_POLE.decDeg - 27.13) < 0.01, 'the plane is the IAU galactic plane');
+  // The model's own disc lies in that plane: its arm points' heights are small beside their radii.
+  const rms = (pos, count, pick) => { let sh = 0, sr = 0, k = 0; for (let i = 0; i < count; i++) { if (pick && !pick(i)) continue; const x = pos[i * 3] - c[0], y = pos[i * 3 + 1] - c[1], z = pos[i * 3 + 2] - c[2]; const h = x * n[0] + y * n[1] + z * n[2]; sh += h * h; sr += x * x + y * y + z * z - h * h; k++; } return { h: Math.sqrt(sh / k), r: Math.sqrt(sr / k) }; };
+  const arm = rms(g.posKpc, g.count, (i) => g.kind[i] === 3);
+  const lane = rms(dust.posKpc, dust.count);
+  check(arm.h < 0.1 * arm.r, `the arms lie in that plane (rms height ${arm.h.toFixed(2)} kpc at rms radius ${arm.r.toFixed(1)})`);
+  check(Math.abs(lane.h / arm.h - DUST_FLATTEN) < 0.05, `the dust is ${DUST_FLATTEN} as thick as the arms (${(lane.h / arm.h).toFixed(2)})`);
+  check(lane.r < arm.r && arm.r - lane.r < 2 * DUST_INSET_KPC, `and sits ${DUST_INSET_KPC} kpc inside them (rms radius ${lane.r.toFixed(2)} against ${arm.r.toFixed(2)})`);
+  check(DUST_DIM > 0 && DUST_DIM <= 0.25, 'one patch takes at most a quarter of the light behind it');
+  const src = readFileSync(join(JS, 'scene/galaxy.js'), 'utf8');
+  check(/blendSrc: THREE\.ZeroFactor, blendDst: THREE\.OneMinusSrcAlphaFactor/.test(src), 'dust adds no light: it is drawn with (0, 1 - alpha)');
+  const { LAYERS } = await import(join(JS, 'data/layers.js'));
+  const text = readFileSync(join(JS, 'data/layers.js'), 'utf8');
+  check(/dark lanes are dust drawn along the arms\\u2019 inner edges, where other spirals show it, and are not a map of ours/.test(text) && LAYERS.length > 0, 'the galaxy\'s card says the dust lanes are an illustration');
+}
+
 if (problems.length) { console.error('galaxy FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`galaxy ok: ${data.count} points, the centre 8.15 kpc away toward Sagittarius A*, drawn only from a rung, and the card calls it a model`);

@@ -30,6 +30,7 @@
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { stage, isLadderStage } from './stage.js';
+import { eclDirection } from './clusters.js';
 
 export const KPC_KM = 30856775814913670; // one kiloparsec (1 pc = 3.0857e13 km; the first draft wrote the parsec here)
 const HEADER = 12;
@@ -149,6 +150,71 @@ void main() {
 }
 `;
 
+// --- the dust lanes (public #428) ------------------------------------------------------------------
+//
+// AN ILLUSTRATION, LABELLED AS ONE (the galaxy's card says so, data/layers.js). Every spiral seen
+// from outside shows dark lanes of dust along the inner edges of its arms and, edge on, one dark
+// line through the middle of its disc. Ours has not been mapped that way from where we sit, so
+// nothing here is a measurement of the Milky Way's dust: the lanes are DERIVED from the model's own
+// arm points, each DUST_EVERY-th one moved DUST_INSET_KPC towards the centre and flattened to
+// DUST_FLATTEN of its height above the plane, and drawn as a patch that dims what is behind it.
+// The plane is the real one: its pole is the IAU's north galactic pole, RA 12h 51.4m, Dec +27.13
+// degrees (J2000; Wikipedia "Galactic coordinate system", read 2026-10-08).
+//
+// The three numbers are ours. No file: the lanes are made from galaxy.bin when it is built, and
+// cost one more draw of a third of the arms' points.
+export const NORTH_GALACTIC_POLE = { raDeg: 192.85, decDeg: 27.13 }; // 12h 51.4m = 192.85 degrees
+export const DUST_EVERY = 3;
+export const DUST_INSET_KPC = 0.35;
+export const DUST_FLATTEN = 0.3;
+export const DUST_DIM = 0.16;
+
+/**
+ * The dust patches' positions, in the model's own kiloparsecs. Pure.
+ * @returns {{ posKpc: Float32Array, count: number, normal: number[] }}
+ */
+export function dustLanes(posKpc, kind, count, centreKpc, every = DUST_EVERY) {
+  const n = eclDirection(NORTH_GALACTIC_POLE.raDeg, NORTH_GALACTIC_POLE.decDeg);
+  const out = [];
+  let seen = 0;
+  for (let i = 0; i < count; i++) {
+    if (kind[i] !== 3) continue;
+    if (seen++ % every) continue;
+    const x = posKpc[i * 3] - centreKpc[0], y = posKpc[i * 3 + 1] - centreKpc[1], z = posKpc[i * 3 + 2] - centreKpc[2];
+    const h = x * n[0] + y * n[1] + z * n[2];
+    const px = x - h * n[0], py = y - h * n[1], pz = z - h * n[2];
+    const r = Math.hypot(px, py, pz);
+    if (r < 1e-6) continue;
+    const k = Math.max(0, r - DUST_INSET_KPC) / r;
+    const hh = h * DUST_FLATTEN;
+    out.push(centreKpc[0] + px * k + hh * n[0], centreKpc[1] + py * k + hh * n[1], centreKpc[2] + pz * k + hh * n[2]);
+  }
+  return { posKpc: new Float32Array(out), count: out.length / 3, normal: n };
+}
+
+const DUST_VERT = /* glsl */ `
+uniform float uPixelRatio;
+uniform float uUnitsPerKpc;
+uniform float uPatchKpc;
+void main() {
+  vec4 mv = modelViewMatrix * vec4( position, 1.0 );
+  gl_Position = projectionMatrix * mv;
+  float dKpc = max( 1e-6, -mv.z / uUnitsPerKpc );
+  gl_PointSize = clamp( uPatchKpc / dKpc * 900.0, 2.0, 9.0 ) * uPixelRatio;
+}
+`;
+// Drawn with (0, 1 - alpha): the patch adds no light, it takes a share of what is there.
+const DUST_FRAG = /* glsl */ `
+uniform float uDust;
+void main() {
+  if ( uDust <= 0.0 ) discard;
+  float d = length( gl_PointCoord - vec2( 0.5 ) );
+  float a = 1.0 - smoothstep( 0.05, 0.5, d );
+  if ( a <= 0.0 ) discard;
+  gl_FragColor = vec4( 0.0, 0.0, 0.0, a * uDust );
+}
+`;
+
 /** Parse the binary. Exported for the test. */
 export function parseGalaxy(buffer) {
   const dv = new DataView(buffer);
@@ -194,6 +260,10 @@ export function createGalaxy(scene, opts = {}) {
   // which also carries how much of her the photograph has left to the model (setAndromedaShare).
   const twinUniforms = { ...uniforms, uGain: { value: 0 }, uPatchKpc: { value: 0.15 * andromedaDiameterLy() / ANDROMEDA.templateDiameterLy } };
   let twinShare = 1;
+  let dustGeometry = null;
+  let dustPoints = null;
+  let dustKpc = null;
+  const dustUniforms = { uPixelRatio: uniforms.uPixelRatio, uUnitsPerKpc: uniforms.uUnitsPerKpc, uPatchKpc: uniforms.uPatchKpc, uDust: { value: 0 } };
 
   function ensureGeometry() {
     if (data) return Promise.resolve(data);
@@ -230,7 +300,21 @@ export function createGalaxy(scene, opts = {}) {
 
     let cx = 0, cy = 0, cz = 0, nb = 0;
     for (let i = 0; i < n; i++) if (data.kind[i] === 1) { cx += data.posKpc[i * 3]; cy += data.posKpc[i * 3 + 1]; cz += data.posKpc[i * 3 + 2]; nb++; }
-    twinKpc = andromedaFromModel(data.posKpc, n, nb ? [cx / nb, cy / nb, cz / nb] : [0, 0, 0]);
+    const centre = nb ? [cx / nb, cy / nb, cz / nb] : [0, 0, 0];
+    // The dust lanes (dustLanes above): after the galaxy's own points and before everything else.
+    dustKpc = dustLanes(data.posKpc, data.kind, n, centre);
+    dustGeometry = new THREE.BufferGeometry();
+    dustGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(dustKpc.count * 3), 3));
+    dustPoints = new THREE.Points(dustGeometry, new THREE.ShaderMaterial({
+      vertexShader: DUST_VERT, fragmentShader: DUST_FRAG, uniforms: dustUniforms,
+      transparent: false, depthTest: false, depthWrite: false, toneMapped: false,
+      blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.ZeroFactor, blendDst: THREE.OneMinusSrcAlphaFactor,
+    }));
+    dustPoints.name = 'galaxy:dust';
+    dustPoints.frustumCulled = false;
+    dustPoints.renderOrder = -0.9;
+    group.add(dustPoints);
+    twinKpc = andromedaFromModel(data.posKpc, n, centre);
     twinGeometry = new THREE.BufferGeometry();
     twinGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
     twinGeometry.setAttribute('aWeight', geometry.getAttribute('aWeight'));
@@ -257,9 +341,9 @@ export function createGalaxy(scene, opts = {}) {
     builtFor = key;
     if (!isLadderStage(stage.worldId)) { applyVisibility(); return; }
     const tMs = stage.tMs;
-    const fill = (src, geo) => {
+    const fill = (src, geo, count = data.count) => {
       const pos = geo.getAttribute('position').array;
-      for (let i = 0; i < data.count; i++) {
+      for (let i = 0; i < count; i++) {
         _km.x = src[i * 3] * KPC_KM;
         _km.y = src[i * 3 + 1] * KPC_KM;
         _km.z = src[i * 3 + 2] * KPC_KM;
@@ -270,6 +354,7 @@ export function createGalaxy(scene, opts = {}) {
     };
     fill(data.posKpc, geometry);
     if (twinGeometry && twinKpc) fill(twinKpc, twinGeometry);
+    if (dustGeometry && dustKpc) fill(dustKpc.posKpc, dustGeometry, dustKpc.count);
     geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 30 * KPC_KM / stage.unitKm);
     uniforms.uUnitsPerKpc.value = KPC_KM / stage.unitKm;
     applyVisibility();
@@ -279,6 +364,9 @@ export function createGalaxy(scene, opts = {}) {
   function applyVisibility() {
     if (points) points.visible = layerOn && opacity > 0 && isLadderStage(stage.worldId);
     if (twinPoints) twinPoints.visible = !!(points && points.visible);
+    if (dustPoints) dustPoints.visible = !!(points && points.visible);
+    // By the model's opacity alone: dust is not light, and the shutter does not brighten it.
+    dustUniforms.uDust.value = DUST_DIM * opacity;
     uniforms.uGain.value = opacity * exposure;
     twinUniforms.uGain.value = opacity * twinShare * exposure;
   }
@@ -308,6 +396,9 @@ export function createGalaxy(scene, opts = {}) {
     if (points && points.material) points.material.dispose();
     if (twinGeometry) twinGeometry.dispose();
     if (twinPoints && twinPoints.material) twinPoints.material.dispose();
+    if (dustGeometry) dustGeometry.dispose();
+    if (dustPoints && dustPoints.material) dustPoints.material.dispose();
+    dustGeometry = null; dustPoints = null; dustKpc = null;
     twinGeometry = null; twinPoints = null; twinKpc = null;
     if (scene) scene.remove(group);
     data = null; geometry = null; points = null; builtFor = null;
@@ -315,6 +406,7 @@ export function createGalaxy(scene, opts = {}) {
   return {
     ensureGeometry, setVisible, setOpacity, setExposure, setAndromedaShare, rebuild, update, dispose, group,
     count: () => (data ? data.count : null),
+    dustCount: () => (dustKpc ? dustKpc.count : null),
     mode: () => (points && points.visible ? 'drawn' : 'hidden'),
   };
 }

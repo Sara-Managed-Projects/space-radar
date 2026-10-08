@@ -300,7 +300,7 @@ function milkyWayRecords() {
       why: 'Everything else on this map is inside it. The Sun sits a little more than halfway out from its centre.',
       drawsAs: 'variant',
       drawnName: 'a point-cloud model of the Milky Way',
-      departure: 'the disc, bar and arms follow published measurements (Reid et al. 2019 for the arms and the distance to the centre); nobody has seen our galaxy from outside, so the picture is an illustration and the stars around you are the measured part',
+      departure: 'the disc, bar and arms follow published measurements (Reid et al. 2019 for the arms and the distance to the centre); nobody has seen our galaxy from outside, so the picture is an illustration and the stars around you are the measured part; the dark lanes are dust drawn along the arms\u2019 inner edges, where other spirals show it, and are not a map of ours',
       distanceSource: 'Reid et al. 2019, ApJ 885:131 (R0 = 8.15 kpc)',
     },
   }];
