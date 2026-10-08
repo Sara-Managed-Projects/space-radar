@@ -111,6 +111,9 @@ const DEFERRED = {
   'js/data/systems-table.js': 'thirty-nine star systems in full: scene/systems.js fetches them the first time one is asked for',
   'js/scene/systemextras.js': 'the habitable-zone band and the rings for scale: with data/systems-table.js',
   'js/ui/systemcard.js': 'what a generated system\'s card says: it arrives with the card',
+  'js/scene/ktx2.js': 'compressed maps: imported by whoever loads a map that has a .ktx2 twin (spec 0056)',
+  'vendor/basis/KTX2Loader.js': 'the KTX2 loader and, through it, the Basis transcoder: scene/ktx2.js fetches it for the first such map',
+  'js/ui/truthline.js': 'the one line of truth: with the trip frame, or the film camera',
 };
 // The light embed (js/embedlite.js) has no star systems at all: neither file can reach it.
 {

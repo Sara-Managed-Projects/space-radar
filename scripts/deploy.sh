@@ -202,8 +202,14 @@ if [ "$WHAT" != "assets" ]; then
   # library is replaced), and /vendor/* is invalidated below with the app so the edge never holds
   # a copy the stamp does not describe; the worker fetches with `cache: 'no-cache'` at install, so
   # a browser's month-old copy is revalidated, not trusted.
+  # The Basis transcoder's WebAssembly (vendor/basis/, spec 0056 task 1) is not JavaScript: it is
+  # left out of this sync, so that --delete here does not remove it, and sent on its own below.
   "${SYNC[@]}" "$APP/vendor" "s3://$BUCKET/vendor" \
+    --exclude "*.wasm" --exclude "*.md" \
     --cache-control "$LONG" --content-type "text/javascript; charset=utf-8" --delete
+  "${SYNC[@]}" "$APP/vendor" "s3://$BUCKET/vendor" \
+    --exclude "*" --include "*.wasm" \
+    --cache-control "$LONG" --content-type "application/wasm"
   # One static page per trip (spec 0032): the share URL a crawler reads, which sends a browser on
   # to `/#trip=<id>`. HTML, no-cache, like index.html: a page that says the wrong thing about a
   # trip for a cache lifetime is a share that lies. --delete, because a trip that left the

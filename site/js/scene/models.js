@@ -93,6 +93,8 @@ const SHARED = {
   // The Sun's rim and the panels' glint (setLightTier below): 0 on the tier that has neither.
   uSunRim: { value: 0 },
   uGlint: { value: 0 },
+  // The two surface terms (surfaceTermsGLSL below): 1 on a device that can afford them, else 0.
+  uSurface: { value: 0 },
 };
 
 /**
@@ -286,6 +288,92 @@ const SPECULAR = {
   radiator: { spec: 0.1, power: 10.0 },
 };
 
+/**
+ * THE TWO SURFACE TERMS (internal #161, spec 0057 task 2): AN ANISOTROPIC GLINT ON PANELS AND A
+ * SHEEN ON FOIL. In their own function, and added to the shader in one line, so the rest of the
+ * model's light (the ramp, the rim, the planet-shine, the shadow) can change without touching them.
+ *
+ * WHY. A solar array is rows of cells under glass with a grid of conductors: its highlight is not a
+ * round spot but a streak, long across the grid and narrow along it. Crinkled multi-layer
+ * insulation is the opposite of a mirror: thousands of small facets, which together throw light
+ * back most strongly near grazing angles, in the foil's own colour. The single round specular this
+ * file had (SPECULAR above) says neither. Voyager's bus and the Apollo lunar module's descent stage
+ * are foil; every array is a panel.
+ *
+ * THE MATHS, both standard and both cheap (one exp or one pow per fragment, no texture, no tangent
+ * attribute):
+ *   - panel: Ward's anisotropic lobe, exp( -( (H.T / ax)^2 + (H.B / ay)^2 ) / (N.H)^2 ), with the
+ *     tangent T taken across the scene's up axis on the panel's own plane (the meshes carry no
+ *     tangents, and a flat array has one direction that stays put as the camera moves round it).
+ *   - foil: the "Charlie" sheen distribution (Estevez and Kulla 2017, the one glTF's
+ *     KHR_materials_sheen names), D = (2 + 1/r) sin(theta_h)^(1/r) / (2 pi), times the foil's own
+ *     colour.
+ * Both are multiplied by the same `lit` the round specular uses and added BEFORE the world's
+ * shadow, which takes away everything that comes from the Sun.
+ *
+ * TIERED. `uSurface` is 0 until setSurfaceTerms(true): scene/heroes.js switches it on for a device
+ * of tier 1 and up that has not latched to the plain look, so a phone on the lowest tier runs the
+ * shader it ran before (the branch is a uniform test). wardLobe() and charlieSheen() are the same
+ * sums in JS, for tests/test_small_issues.mjs.
+ */
+export const SURFACE_TERMS = {
+  panel: { strength: 0.3, along: 0.07, across: 0.45 },
+  foil: { strength: 0.5, roughness: 0.5 },
+};
+export function setSurfaceTerms(on) {
+  SHARED.uSurface.value = on ? 1 : 0;
+  return SHARED.uSurface.value > 0;
+}
+export function surfaceTermsOn() {
+  return SHARED.uSurface.value > 0;
+}
+/** Ward's lobe: `nh`, `th`, `bh` are the half vector against the normal, the tangent and the bitangent. */
+export function wardLobe(nh, th, bh, along = SURFACE_TERMS.panel.along, across = SURFACE_TERMS.panel.across) {
+  if (!(nh > 1e-4)) return 0;
+  return Math.exp(-(((th / along) ** 2) + ((bh / across) ** 2)) / (nh * nh));
+}
+/** The Charlie sheen distribution at a half vector `nh` from the normal. */
+export function charlieSheen(nh, roughness = SURFACE_TERMS.foil.roughness) {
+  const inv = 1 / roughness;
+  const c = Math.min(1, Math.max(0, nh));
+  return ((2 + inv) * (Math.sqrt(1 - c * c) ** inv)) / (2 * Math.PI);
+}
+/** The GLSL for a kind's term, as lines for toonMaterial's patch; empty for a kind that has none. */
+export function surfaceTermsGLSL(kind) {
+  const f = (n) => Number(n).toFixed(4);
+  if (kind === 'panel') {
+    const p = SURFACE_TERMS.panel;
+    return [
+      '  if ( uSurface > 0.0 ) {',
+      '    vec3 Hs = normalize( L + V );',
+      '    vec3 Ts = cross( normal, normalize( ( viewMatrix * vec4( 0.0, 1.0, 0.0, 0.0 ) ).xyz ) );',
+      '    float tl = length( Ts );',
+      '    float nh = dot( normal, Hs );',
+      '    if ( tl > 1e-3 && nh > 1e-4 ) {',
+      '      Ts /= tl;',
+      '      vec3 Bs = cross( normal, Ts );',
+      `      float th = dot( Hs, Ts ) / ${f(p.along)};`,
+      `      float bh = dot( Hs, Bs ) / ${f(p.across)};`,
+      `      outgoingLight += vec3( ${f(p.strength)} ) * exp( -( th * th + bh * bh ) / ( nh * nh ) ) * lit * uSurface;`,
+      '    }',
+      '  }',
+    ];
+  }
+  if (kind === 'foil') {
+    const s = SURFACE_TERMS.foil;
+    const inv = 1 / s.roughness;
+    return [
+      '  if ( uSurface > 0.0 ) {',
+      '    vec3 Hs = normalize( L + V );',
+      '    float nh = clamp( dot( normal, Hs ), 0.0, 1.0 );',
+      `    float Ds = ${f(2 + inv)} * pow( sqrt( max( 1.0 - nh * nh, 0.0 ) ), ${f(inv)} ) * 0.1592;`,
+      `    outgoingLight += diffuseColor.rgb * ${f(s.strength)} * Ds * lit * uSurface;`,
+      '  }',
+    ];
+  }
+  return [];
+}
+
 const materials = new Map();
 
 // Materials are shared inside ONE model and never between two, because the near-model layer fades
@@ -320,6 +408,7 @@ export function toonMaterial(colour, kind = 'body', pool = materials, map = null
     shader.uniforms.uFlood = SHARED.uFlood;
     shader.uniforms.uSunRim = SHARED.uSunRim;
     shader.uniforms.uGlint = SHARED.uGlint;
+    shader.uniforms.uSurface = SHARED.uSurface;
     // A mapped world has no air to glow at its limb: a third of the models' rim, enough to part it from the sky.
     shader.uniforms.uRim = { value: kind === 'world' ? 0.12 : 0.35 };
     shader.uniforms.uSpec = { value: s.spec };
@@ -342,6 +431,7 @@ export function toonMaterial(colour, kind = 'body', pool = materials, map = null
           'uniform float uFlood;',
           'uniform float uSunRim;',
           'uniform float uGlint;',
+          'uniform float uSurface;',
           'void main() {',
         ].join('\n')
       )
@@ -365,6 +455,8 @@ export function toonMaterial(colour, kind = 'body', pool = materials, map = null
           '    float back = clamp( dot( -V, L ), 0.0, 1.0 );',
           '    outgoingLight += uRimSun * f * back * back * smoothstep( -0.6, 0.1, dot( normal, L ) ) * uSunRim;',
           '  }',
+          // The anisotropic glint on panels and the sheen on foil (internal #161), in their own function.
+          ...surfaceTermsGLSL(kind),
           // Planet-shine: see PLANET_SHINE above, and planetShineStrength for the same sum in JS.
           // Halved on a face the Sun already lights, so the day side does not wash out.
           '  if ( uShineRadius > 0.0 ) {',

@@ -42,13 +42,18 @@ HASH_CHARS = 16
 SHELL_FILES = ("index.html", "manifest.webmanifest")
 SHELL_GLOBS = ("css/**/*.css", "js/**/*.js", "vendor/**/*.js", "fonts/*-latin.woff2", "images/icons/*.png")
 NOT_SHELL = {"js/ui/rendermode.js"}
+# The KTX2 loader and the Basis transcoder (site/vendor/basis/, spec 0056 task 1): fetched only when
+# a map that ships as .ktx2 is asked for, and today none does. Precached, they would be 160 kB of
+# JavaScript in every offline install for a feature no map uses; they join the shell with the first
+# map that needs them. Offline without them, scene/ktx2.js falls back to the WebP it already has.
+NOT_SHELL_DIRS = ("vendor/basis/",)
 
 
 def shell_files(site: Path) -> list[str]:
     found = [f for f in SHELL_FILES if (site / f).is_file()]
     for pattern in SHELL_GLOBS:
         found += [p.relative_to(site).as_posix() for p in site.glob(pattern) if p.is_file()]
-    return sorted(set(found) - NOT_SHELL)
+    return sorted(f for f in set(found) - NOT_SHELL if not f.startswith(NOT_SHELL_DIRS))
 
 
 def served(site: Path, overlay: Path | None, rel: str) -> Path:

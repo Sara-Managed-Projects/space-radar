@@ -23,6 +23,8 @@ const JS = join(ROOT, 'site/js');
 
 // module path -> exports the contract requires
 const CONTRACT = {
+  'scene/ktx2.js': ['createKtx2', 'ktx2UrlFor'],
+  'ui/truthline.js': ['truthLine', 'LAYER_SOURCES'],
   'clock.js': ['clock'],
   'propagate/frames.js': ['gmst', 'eciToEcef', 'ecefToEci', 'geodeticToEcef', 'ecefToGeodetic', 'lookAngles', 'toStage', 'spinPeriodHours', 'yearDays'],
   'propagate/index.js': ['propagate', 'PROPAGATORS'],

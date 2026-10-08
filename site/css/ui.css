@@ -5729,6 +5729,15 @@ html.sr-phone .sr-scenenote {
   max-width: calc(100vw - 2 * var(--sp-4));
 }
 
+/* At full the sheet is the page, and its top is 60 px down: the note (88 to 134) lay across the
+   sheet's handle and the "Explore" back row, leaving 27 and 31 px of each under a finger
+   (internal #457, measured 2026-10-08 at 390 x 844). The note is about the scene, which the sheet
+   now covers, so it waits with the pill and the live line; one drag down brings it back. */
+html.sr-phone[data-sheet='full'] .sr-scenenote {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 /* The glass-strong surfaces answer the solid fallback themselves (.sr-float's would be lighter). */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .sr-liveline.sr-float,
