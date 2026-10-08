@@ -77,6 +77,30 @@ def main() -> int:
                 problems.append("a failed refresh with an empty file is not dressed up as good")
             if snaps.get("swpc-kp", {}).get("status") != "ok":
                 problems.append("a good row stays good")
+        # WHERE IT PUBLISHES (2026-10-08). The site moved accounts on 2026-10-07 and this script
+        # went on naming the old bucket and distribution; and it had no way to name a profile.
+        dry = subprocess.run(
+            ["bash", "scripts/refresh-snapshots.sh", f"--work={work}", "--no-harvest", "--dry-run", "--profile", "some-profile"],
+            cwd=ROOT, env=env, capture_output=True, text=True, timeout=120,
+        )
+        said = dry.stdout + dry.stderr
+        if dry.returncode != 0 or "nothing published" not in said:
+            problems.append(f"--dry-run with --profile NAME runs and publishes nothing ({dry.returncode}: {said[-300:]})")
+        for want in ("s3://sara-site-space-radar-lifehub/data/v1/", "eu-north-1", "E1CGDK1ZPYFKHG", "profile some-profile"):
+            if want not in said:
+                problems.append(f"the default target is the site's home since 2026-10-07 and the profile is taken: `{want}` not in the dry run's line")
+        eq = subprocess.run(
+            ["bash", "scripts/refresh-snapshots.sh", f"--work={work}", "--no-harvest", "--dry-run", "--profile=other", "--bucket=b", "--distribution=D"],
+            cwd=ROOT, env=env, capture_output=True, text=True, timeout=120,
+        )
+        if "s3://b/data/v1/" not in eq.stdout or "distribution D" not in eq.stdout or "profile other" not in eq.stdout:
+            problems.append("--profile=NAME, --bucket= and --distribution= are taken")
+        missing = subprocess.run(["bash", "scripts/refresh-snapshots.sh", "--dry-run", "--profile"], cwd=ROOT, env=env, capture_output=True, text=True, timeout=60)
+        if missing.returncode == 0:
+            problems.append("--profile with no name is refused")
+        text = (ROOT / "scripts" / "refresh-snapshots.sh").read_text(encoding="utf-8")
+        if 'BUCKET="sara-site-space-radar"' in text or 'DISTRIBUTION="E1JGFDLBX6HS7B"' in text:
+            problems.append("the old bucket or distribution is a default again")
         work_ix = json.loads((work / "index.json").read_text())["snapshots"]
         if work_ix["celestrak-stations"].get("status") != "error":
             problems.append("the WORK index keeps `error`, so the harvester still retries on its cadence")

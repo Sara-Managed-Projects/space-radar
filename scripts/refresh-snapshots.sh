@@ -7,6 +7,17 @@
 #                                                # (default ~/.cache/spaceradar-v1)
 #   scripts/refresh-snapshots.sh --from-run=ID   # also merge what a GitHub `harvest` workflow run read
 #   scripts/refresh-snapshots.sh --no-harvest    # publish the working copy (and --from-run) only
+#   scripts/refresh-snapshots.sh --profile=NAME  # the AWS CLI profile to publish with (also
+#                                                # --profile NAME). Default: your environment's.
+#   scripts/refresh-snapshots.sh --bucket=B --region=R --distribution=ID
+#                                                # another site. The defaults are the site's home
+#                                                # since 2026-10-07: bucket
+#                                                # sara-site-space-radar-lifehub (eu-north-1),
+#                                                # distribution E1CGDK1ZPYFKHG, which the profile
+#                                                # `life-hub` can write. (Before that day: bucket
+#                                                # sara-site-space-radar, distribution
+#                                                # E1JGFDLBX6HS7B, in another account. Publishing
+#                                                # there now reaches nobody once DNS has moved.)
 #
 # WHY. The harvester (harvest/, public #26) is built to run as a Lambda every few minutes and has
 # never been provisioned, so /data/v1/ was empty and every visitor fetched every source live --
@@ -30,15 +41,21 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-BUCKET="sara-site-space-radar"
+BUCKET="sara-site-space-radar-lifehub"
 REGION="eu-north-1"
-DISTRIBUTION="E1JGFDLBX6HS7B"
+DISTRIBUTION="E1CGDK1ZPYFKHG"
+PROFILE=""
 WORK="${HOME}/.cache/spaceradar-v1"
 DRY=0
 FROM_RUN=""
 HARVEST=1
+PREV=""
 for a in "$@"; do
+  # `--profile NAME`, as scripts/deploy.sh takes it, besides `--profile=NAME`.
+  if [ "$PREV" = "--profile" ]; then PROFILE="$a"; PREV=""; continue; fi
   case "$a" in
+    --profile) PREV="--profile" ;;
+    --profile=*) PROFILE="${a#--profile=}" ;;
     --work=*) WORK="${a#--work=}" ;;
     --bucket=*) BUCKET="${a#--bucket=}" ;;
     --region=*) REGION="${a#--region=}" ;;
@@ -46,10 +63,14 @@ for a in "$@"; do
     --dry-run) DRY=1 ;;
     --from-run=*) FROM_RUN="${a#--from-run=}" ;;
     --no-harvest) HARVEST=0 ;;
-    -h|--help) sed -n '2,30p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,41p' "$0"; exit 0 ;;
     *) echo "unknown argument: $a" >&2; exit 2 ;;
   esac
 done
+[ "$PREV" = "--profile" ] && { echo "--profile needs a value" >&2; exit 2; }
+# Exported, so every `aws` below (the seed, the uploads, the invalidation) uses it.
+[ -n "$PROFILE" ] && export AWS_PROFILE="$PROFILE"
+[ "$DRY" = 1 ] && echo "==> would publish to s3://$BUCKET/data/v1/ ($REGION), distribution $DISTRIBUTION, profile ${AWS_PROFILE:-<environment>}"
 
 mkdir -p "$WORK"
 if [ ! -f "$WORK/index.json" ]; then
