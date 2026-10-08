@@ -325,19 +325,31 @@ export function nightGroundPose(point, sun) {
 
 // --- the opening (public #287) -------------------------------------------------------------------
 //
-// A first visit used to land on a still Earth. It now eases in: the same scene, from OPENING_FROM
-// times the home view's distance, in OPENING_MS. No splash, no words, nothing to press; a touch on
-// the camera ends it where it is. Never under reduced motion, never for a link to somewhere (the
-// link's own flight is the arrival), never in an embed, and once per visitor.
+// A first visit used to land on a still Earth, then (2026-10-06) eased in from 2.4 home distances
+// in 2.4 s. It is now one shot of OPENING_MS: the same live scene, from OPENING_FROM_KM out, where
+// the Earth is a blue point among the stars and the Moon's path is inside the frame, turning
+// OPENING_TURN about the Earth on the way in so the Milky Way crosses behind it. The distance is
+// eased in its logarithm (scene/camera.js flyTo), so the approach reads as steady.
+//
+// OPENING_FROM_KM is past the Moon (384 400 km mean) and short of 1 400 000 km, where the Earth's
+// stage hands over to the Sun's (scene/handoff.js JOINS): the shot stays on one stage, with no
+// hand-off and nothing drawn for it that is not drawn for everyone.
+//
+// The words and the two buttons over it are ui/opening.js, fetched only when it plays. ANY input
+// ends it at once, on the home view (main.js). Never under reduced motion, never for a link to
+// somewhere (the link's own flight is the arrival), never in an embed, never for an automated
+// browser, and once per visitor.
 
 export const OPENING_FROM = 2.4;
-export const OPENING_MS = 2400;
+export const OPENING_FROM_KM = 900000;
+export const OPENING_MS = 8000;
+export const OPENING_TURN = 1.3;
 export const OPENING_KEY = 'sr:opening';
 
-/** Whether the opening plays, and how: null, or { from, ms }. Pure. */
+/** Whether the opening plays, and how: null, or { from, fromKm, ms, turn }. Pure. */
 export function openingPlan({ seen = false, link = false, reducedMotion = false, embed = false, hidden = false, automated = false } = {}) {
   // `automated`: a browser driven by a test or a screenshot job (navigator.webdriver) wants the settled
   // home view on its first frame. CI's "is the Earth drawn" check read a globe 3.9 % of the frame mid-opening.
   if (seen || link || reducedMotion || embed || hidden || automated) return null;
-  return { from: OPENING_FROM, ms: OPENING_MS };
+  return { from: OPENING_FROM, fromKm: OPENING_FROM_KM, ms: OPENING_MS, turn: OPENING_TURN };
 }

@@ -595,6 +595,24 @@ export function createExplore(ctx, host) {
     });
     sysList.appendChild(r.li);
   }
+  // THE MARKS OF PLANETS ROUND OTHER STARS ARE OFF UNTIL ASKED FOR (public #271): this row asks.
+  const exoRow = rowButton(COPY.explore.exoRow, COPY.explore.exoShow, () => {
+    if (typeof ctx.isLayerOn !== 'function' || typeof ctx.setLayerOn !== 'function') return;
+    const on = !ctx.isLayerOn('exoplanets');
+    ctx.setLayerOn('exoplanets', on);
+    document.dispatchEvent(new CustomEvent('sr:layer-toggle', { detail: { id: 'exoplanets', on, handled: true, from: 'explore' } }));
+    paintExo();
+  });
+  exoRow.b.title = COPY.explore.exoTitle;
+  exoRow.b.dataset.layer = 'exoplanets';
+  function paintExo() {
+    const on = typeof ctx.isLayerOn === 'function' && !!ctx.isLayerOn('exoplanets');
+    exoRow.v.textContent = on ? COPY.explore.exoHide : COPY.explore.exoShow;
+    exoRow.b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+  sysList.insertBefore(exoRow.li, sysList.firstChild);
+  document.addEventListener('sr:layer-toggle', (e) => { if (e.detail && e.detail.id === 'exoplanets') paintExo(); });
+  window.addEventListener('sr:moment', () => paintExo());
   stars.appendChild(sysSect);
   stars.appendChild(tripHosts.get('stars').s);
   const shows = section(COPY.ladder.weShowTitle, 'sr-weshow');
@@ -891,6 +909,7 @@ export function createExplore(ctx, host) {
       r.b.disabled = !ok;
       r.b.setAttribute('aria-label', ok ? `${rung.label}, ${rung.distance}` : `${rung.label}, ${COPY.ladder.notLoaded}`);
     }
+    paintExo();
     // A row that names its layer prints what that layer holds, so it agrees with What to show.
     for (const { row, v } of showRows) {
       if (!row.layer) continue;

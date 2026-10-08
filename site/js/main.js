@@ -654,13 +654,64 @@ export async function boot({ setStatus } = {}) {
     });
     if (opening) store.setItem(OPENING_KEY, '1');
   } catch { opening = null; /* no storage: no way to play it once, so it is not played */ }
-  cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance: homeDistance * (opening ? opening.from : 1), ms: 0 });
+  cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance: homeDistance, ms: 0 });
+  const homeAzimuth = cameraRig.saveState().azimuth;
+  // THE SHOT AND EVERY WAY OUT OF IT. This is all of the opening that boots: the camera's flight,
+  // a class on <html> that puts the panels away while it lasts (ui.css), and the listeners that
+  // end it. The words and buttons over it (ui/opening.js) are fetched only when it plays.
+  ctx.opening = { live: false, play: (plan) => runOpening(plan || openingPlan({})) };
+  function runOpening(plan) {
+    if (!plan || ctx.opening.live) return false;
+    const root = document.documentElement;
+    const far = Math.max(homeDistance * plan.from, plan.fromKm / stage.unitKm);
+    const home = { targetScene: { x: 0, y: 0, z: 0 }, distance: homeDistance, azimuth: homeAzimuth };
+    const INPUTS = ['pointerdown', 'keydown', 'wheel', 'touchstart'];
+    let shot = true; // the camera is still on its way in
+    let over = false;
+    let overlay = null;
+    let guard = 0;
+    ctx.opening.live = true;
+    root.classList.add('sr-opening-on');
+    // Skipped: the home view at once, a cut. Then the visitor's own press or wheel acts on it.
+    const land = () => { if (!shot) return; shot = false; cameraRig.flyTo({ ...home, ms: 0 }); };
+    const finish = () => {
+      if (over) return;
+      over = true;
+      clearTimeout(guard);
+      for (const name of INPUTS) window.removeEventListener(name, onInput, true);
+      root.classList.remove('sr-opening-on');
+      if (overlay) overlay.remove();
+      ctx.opening.live = false;
+      window.dispatchEvent(new CustomEvent('sr:opening-end'));
+    };
+    function onInput(e) {
+      land();
+      const onButton = e.target && typeof e.target.closest === 'function' && e.target.closest('.sr-opening button');
+      if (!onButton) finish();
+    }
+    for (const name of INPUTS) window.addEventListener(name, onInput, { capture: true, passive: true });
+    // A tab that is hidden runs no frames and the flight would never arrive: the guard lands it.
+    const arm = (ms) => { clearTimeout(guard); guard = setTimeout(() => { land(); finish(); }, ms); };
+    arm(plan.ms + 1500);
+    cameraRig.flyTo({ ...home, distance: far, azimuth: homeAzimuth - plan.turn, ms: 0 });
+    cameraRig.flyTo({
+      ...home, ms: plan.ms, ease: 'inout', targetDelay: 0,
+      onArrive: () => { if (shot) { shot = false; finish(); } },
+      // Something else took the camera (a trip, a selection): it is theirs, and the words go.
+      onCancel: () => { if (shot) { shot = false; finish(); } },
+    });
+    import('./ui/opening.js')
+      .then((m) => { if (!over) overlay = m.createOpening(ctx, { done: finish, hold: arm }); })
+      .catch((e) => console.warn('the opening\'s words did not load', e));
+    return true;
+  }
   const startOpening = () => {
     if (!opening) return;
+    const plan = opening;
+    opening = null;
     // Only if the camera is still where the boot left it: a trip or a selection made meanwhile
     // has a flight of its own.
-    if (!cameraRig.state.flying && !ctx.selected()) cameraRig.flyTo({ targetScene: { x: 0, y: 0, z: 0 }, distance: homeDistance, ms: opening.ms, ease: 'inout', targetDelay: 0 });
-    opening = null;
+    if (!cameraRig.state.flying && !ctx.selected()) runOpening(plan);
   };
   render();
   revealUI();
@@ -897,7 +948,15 @@ export async function boot({ setStatus } = {}) {
     let seen = true;
     try { seen = !!window.localStorage.getItem('sr:welcome'); } catch { seen = true; /* no memory: no welcome */ }
     if (seen || arrivedByLink) return;
-    welcome().then((api) => api.maybeShow()).catch((e) => { welcomeApi = null; console.warn('the welcome did not load', e); });
+    // After the opening shot, never over it: the shot has the same two buttons (ui/opening.js),
+    // and a press on either there is this section seen.
+    const show = () => {
+      let pressed = false;
+      try { pressed = !!window.localStorage.getItem('sr:welcome'); } catch { pressed = true; }
+      if (!pressed) welcome().then((api) => api.maybeShow()).catch((e) => { welcomeApi = null; console.warn('the welcome did not load', e); });
+    };
+    if (ctx.opening && ctx.opening.live) window.addEventListener('sr:opening-end', show, { once: true });
+    else show();
   });
   // LAUNCH DAY (public #289, ui/launchchip.js): a countdown chip while a launch is inside a day.
   // RETURN TO BASE (public #241, ui/base.js): a house in the rail while the view is away from home.

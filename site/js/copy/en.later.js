@@ -1475,6 +1475,13 @@ Object.assign(COPY, {
     look: 'Look around',
     lookTitle: 'Puts these lines away',
   },
+  // ui/opening.js (public #287): over a first visit's opening shot. The buttons are welcome's.
+  opening: {
+    label: 'Opening',
+    from: 'From',
+    wait: 'Getting the trip ready',
+    skip: 'Any key or press skips this',
+  },
   // ui/base.js (public #241): the house. `name` fills the undo toast, "Moved to base".
   base: {
     label: 'Return to base',

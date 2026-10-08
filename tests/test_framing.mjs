@@ -194,7 +194,8 @@ function holds(name, f, { r, h = 900, subjectPx = 260, upDot = 0, room = null, d
   }
   check(nightGroundPose(null, sun) === null && nightGroundPose(at(150), { x: 0, y: 0, z: 0 }) === null, 'no place, or no Sun, no pose');
   // The opening (public #287).
-  check(openingPlan({}) && openingPlan({}).ms === OPENING_MS && OPENING_MS <= 3000, 'a first visit eases in, in under three seconds');
+  check(openingPlan({}) && openingPlan({}).ms === OPENING_MS && OPENING_MS >= 6000 && OPENING_MS <= 10000, 'a first visit is one shot of six to ten seconds');
+  check(openingPlan({}).fromKm > 384400 && openingPlan({}).fromKm < 1400000, 'the shot starts past the Moon and short of the hand-off to the Sun stage');
   for (const no of [{ seen: true }, { link: true }, { reducedMotion: true }, { embed: true }, { automated: true }, { hidden: true }]) {
     check(openingPlan(no) === null, `no opening when ${Object.keys(no)[0]}`);
   }

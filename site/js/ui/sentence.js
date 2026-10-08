@@ -7,6 +7,8 @@
 //   sentenceCandidates({nowMs, items, crew, station, storms, launched}) -> [candidate], best first
 //     candidate = {id, score, clause, source, act, record?, tMs?, title}
 //   compose(candidates, maxChars) -> {text, parts: [candidate], sources: [string]} | null
+//   sentenceInput(ctx, launched) -> the input above, read off the map
+//   linesNow(ctx, launched) -> [composed], one clause each, best first (ui/opening.js)
 //
 // WHY. The home opened on a search box and four tabs. The one thing a person would say aloud on
 // opening it -- "ten people are up there, and the station comes over at nine" -- was spread over
@@ -149,6 +151,31 @@ export function compose(candidates, maxChars = MAX_CHARS) {
   return { text, parts, sources: [...new Set(parts.map((c) => c.source).filter(Boolean))] };
 }
 
+/** What the sentence is made from, read off the map as it is now. `launched` is ui/today.js's count. */
+export function sentenceInput(ctx, launched = null) {
+  const nowMs = ctx.timePill && typeof ctx.timePill.anchor === 'function' ? ctx.timePill.anchor() : Date.now();
+  const next = ctx.explore && ctx.explore.next;
+  const live = !ctx.clock || !ctx.clock.mode || ctx.clock.mode === 'live';
+  // The list is built at the clock's time: away from now it is not the present's, and is left out.
+  const items = live && next && typeof next.items === 'function' ? next.items() : [];
+  return {
+    nowMs,
+    items,
+    crew: ctx.explore && typeof ctx.explore.crew === 'function' ? ctx.explore.crew() : null,
+    station: typeof ctx.recordById === 'function' ? ctx.recordById(STATION_ID) : null,
+    storms: typeof ctx.recordsFor === 'function' ? ctx.recordsFor('storms') || [] : [],
+    launched: typeof launched === 'function' ? launched() : null,
+  };
+}
+
+/**
+ * Every clause that can be said now, each as a sentence of its own, best first: what the opening
+ * shot turns through (ui/opening.js, public #287). The same candidates as the home's line.
+ */
+export function linesNow(ctx, launched = null) {
+  return sentenceCandidates(sentenceInput(ctx, launched)).map((c) => compose([c])).filter(Boolean);
+}
+
 export function createSentence(ctx, opts = {}) {
   const S = COPY.sentence;
   if (typeof document === 'undefined' || !ctx || !ctx.explore || !ctx.explore.root) return { root: null, refresh() {}, destroy() {} };
@@ -174,21 +201,7 @@ export function createSentence(ctx, opts = {}) {
     else if (head && brand) { if (root.previousSibling !== brand) brand.after(root); }
   }
 
-  function input() {
-    const nowMs = ctx.timePill && typeof ctx.timePill.anchor === 'function' ? ctx.timePill.anchor() : Date.now();
-    const next = ctx.explore.next;
-    const live = !ctx.clock || !ctx.clock.mode || ctx.clock.mode === 'live';
-    // The list is built at the clock's time: away from now it is not the present's, and is left out.
-    const items = live && next && typeof next.items === 'function' ? next.items() : [];
-    return {
-      nowMs,
-      items,
-      crew: typeof ctx.explore.crew === 'function' ? ctx.explore.crew() : null,
-      station: typeof ctx.recordById === 'function' ? ctx.recordById(STATION_ID) : null,
-      storms: typeof ctx.recordsFor === 'function' ? ctx.recordsFor('storms') || [] : [],
-      launched: typeof opts.launched === 'function' ? opts.launched() : null,
-    };
-  }
+  const input = () => sentenceInput(ctx, opts.launched);
 
   function refresh() {
     seat();

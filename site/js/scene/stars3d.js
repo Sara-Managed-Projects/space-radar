@@ -29,7 +29,7 @@
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { stage, isLadderStage } from './stage.js';
-import { bvToKelvin, kelvinToRgb } from './starfield.js';
+import { bvToKelvin, kelvinToRgb, starTint } from './starfield.js';
 import { COPY, t } from '../copy/en.js';
 import { STARS_NOTABLE } from '../data/starsnotable.js';
 import { drawnPositions } from './clusters.js';
@@ -130,7 +130,7 @@ ${STRETCH_FRAG}
     a = max( a, vGlare * 0.8 * e * e );
   }
   if ( a <= 0.003 ) discard;
-  gl_FragColor = vec4( mix( vColour, vec3( 1.0 ), 0.6 * light.x * max( vGlow, vGlare ) ), a * vAlpha * taper );
+  gl_FragColor = vec4( mix( vColour, vec3( 1.0 ), 0.4 * light.x * max( vGlow, vGlare ) ), a * vAlpha * taper );
   #include <colorspace_fragment>
 }
 `;
@@ -339,7 +339,7 @@ export function createStars3d(scene, opts = {}) {
     const c = new THREE.Color();
     for (let i = 0; i < n; i++) {
       const bv = Number.isFinite(data.ci[i]) ? data.ci[i] : 0.65; // no colour index: draw it Sun-like
-      const rgb = kelvinToRgb(bvToKelvin(bv));
+      const rgb = starTint(bv);
       c.setRGB(rgb[0], rgb[1], rgb[2], THREE.SRGBColorSpace);
       col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
     }

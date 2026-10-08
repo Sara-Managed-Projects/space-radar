@@ -132,7 +132,7 @@ void main() {
   // however bright the star, and the brightness past that is a glow in the rest of the sprite.
   // Until 2026-10-08 the core grew with the sprite and Sirius was a flat white counter.
   float bright = clamp((size - 5.0) / 9.0, 0.0, 1.0);
-  float spritePx = max(1.5, size * (1.0 + 0.6 * bright + 2.2 * glare) * uPx);
+  float spritePx = max(1.5, size * (1.0 + 0.9 * bright + 2.2 * glare) * uPx);
   float corePx = min(size, 5.0 + 5.0 * glare) * uPx;
   vCore = clamp(corePx / spritePx, 0.05, 1.0);
   vGlow = max(glare, bright);
@@ -155,7 +155,7 @@ void main() {
   float a = (core + light.y) * vAlpha;
   if (a <= 0.002) discard;
   // A star is a light: its colour is a tint on white, not a paint (B-V of 1.5 is still mostly white to the eye).
-  gl_FragColor = vec4(mix(vColour, vec3(1.0), 0.25 + core * 0.35 * vGlare), a);
+  gl_FragColor = vec4(mix(vColour, vec3(1.0), 0.1 + core * 0.35 * vGlare), a);
   #include <colorspace_fragment>
 }
 `;
@@ -381,9 +381,10 @@ function lift(l) {
 }
 
 function starColour(bv, out, i) {
+  // The black-body colour, whole (public #271): held 20 % towards white until 2026-10-08, and
+  // then washed a quarter more in the shader, Antares and Spica were the same white.
   const rgb = kelvinToRgb(bvToKelvin(Number.isFinite(bv) ? bv : 0.6));
-  // Kept a little towards white: on a screen the full black-body colour reads as paint.
-  _c.setRGB(1 + (rgb[0] - 1) * 0.8, 1 + (rgb[1] - 1) * 0.8, 1 + (rgb[2] - 1) * 0.8, THREE.SRGBColorSpace);
+  _c.setRGB(rgb[0], rgb[1], rgb[2], THREE.SRGBColorSpace);
   out[i * 3] = _c.r;
   out[i * 3 + 1] = _c.g;
   out[i * 3 + 2] = _c.b;

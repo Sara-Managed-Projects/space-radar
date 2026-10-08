@@ -63,7 +63,7 @@ export const LAYER_ROWS = [
     "group": "beyond",
     "enabled": true,
     "moments": {
-      "wonder": true,
+      "wonder": false,
       "now": false,
       "next": false
     },

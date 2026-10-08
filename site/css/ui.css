@@ -1331,6 +1331,15 @@ html.sr-clean body > *:not(.sr-scene):not(.sr-veil):not(.sr-over-clean) {
   transition: none !important;
 }
 
+/* THE OPENING SHOT (public #287, main.js runOpening): for the eight seconds a first visit's camera
+   comes in, the panels are away, as on a clear screen and by the same means; the boot screen keeps
+   its own fade and the shot's words (ui/opening.js) stay. Any input removes the class. */
+html.sr-opening-on body > *:not(.sr-scene):not(.sr-veil):not(.sr-opening):not(#boot) {
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: none !important;
+}
+
 /* THE HUD SCREEN (Shift+H, spec 0046 task 3): the panels go as on a clear screen; what is about the
    scene stays: the labels, the reticle with its tag and chevron (#sr-hud), and the time pill, which
    is brought back out of the hidden shell below. */
@@ -4713,6 +4722,14 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   font: 400 var(--sr-fs-sm)/1.3 var(--sr-font-mono);
   color: var(--sr-text-dim);
   white-space: nowrap;
+}
+
+/* Under a row that is off on purpose: how to show it (public #271). In line with the name. */
+.sr-show__hint {
+  margin: 0 0 4px 28px;
+  font-size: var(--sr-fs-sm);
+  line-height: 1.4;
+  color: var(--sr-text-dim);
 }
 
 .sr-show__note {

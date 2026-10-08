@@ -64,6 +64,22 @@ export function kelvinToRgb(kelvin) {
   return [out[0] / max, out[1] / max, out[2] / max];
 }
 
+/**
+ * A STAR'S COLOUR ON THE SCREEN (public #271). The black-body colour above is right and, as a
+ * 4 px light on a dark screen, reads as white: Betelgeuse and Rigel looked the same. Its chroma is
+ * stretched by STAR_CHROMA about the star's own mean, the way a long exposure shows colour the
+ * dark-adapted eye loses. The hue and the order are the measured ones; the strength is a display
+ * choice, and the Sun (B-V 0.65) stays the cream it was. Pure.
+ */
+export const STAR_CHROMA = 2.0;
+export function starTint(bv, chroma = STAR_CHROMA) {
+  const rgb = kelvinToRgb(bvToKelvin(Number.isFinite(bv) ? bv : 0.65));
+  const mean = (rgb[0] + rgb[1] + rgb[2]) / 3;
+  const out = rgb.map((v) => Math.min(1, Math.max(0, mean + (v - mean) * chroma)));
+  const max = Math.max(out[0], out[1], out[2]) || 1;
+  return [out[0] / max, out[1] / max, out[2] / max];
+}
+
 // Magnitude -> size in device pixels and alpha. Sirius (-1.44) draws at ~6 px, a 6.0 star at ~1 px.
 const MAG_MIN = -1.5;
 const MAG_MAX = 6.0;
@@ -165,9 +181,10 @@ void main() {
   vAlpha = aAlpha * uGain;
   vec4 mv = modelViewMatrix * vec4( position, 1.0 );
   gl_Position = projectionMatrix * mv;
-  // The brightest stars (magnitude 1.5 and brighter: aSize over 3.2) get a soft glow round a core
-  // that stays its size (scene/stretch.js, A STAR'S LIGHT): up to five times the sprite at Sirius.
-  vGlow = uGlow * smoothstep( 3.2, 6.0, aSize );
+  // The naked-eye stars the constellations are drawn from (magnitude 2.7 and brighter: aSize over
+  // 2.3; magnitude 1.5 until 2026-10-08, public #271) get a soft glow round a core that stays its
+  // size (scene/stretch.js, A STAR'S LIGHT): up to five times the sprite at Sirius.
+  vGlow = uGlow * smoothstep( 2.3, 6.0, aSize );
   float sizePx = aSize * ( 1.0 + 4.0 * vGlow ) * uPixelRatio * uScale;
   vCore = 1.0 / ( 1.0 + 4.0 * vGlow );
   // Spec 0034: the same stretch as scene/stars3d.js; at uStretch == 0, gl_PointSize = sizePx.
@@ -189,7 +206,7 @@ ${STRETCH_FRAG}
   float a = light.x + light.y;
   if ( a <= 0.003 ) discard;
   // The peak of a bright star goes to white, as any light too bright for its colour does; the glow keeps the colour.
-  gl_FragColor = vec4( mix( vColour, vec3( 1.0 ), 0.6 * light.x * vGlow ), a * vAlpha * taper );
+  gl_FragColor = vec4( mix( vColour, vec3( 1.0 ), 0.4 * light.x * vGlow ), a * vAlpha * taper );
   #include <colorspace_fragment>
 }
 `;
@@ -405,7 +422,7 @@ export function createStarfield(scene, opts = {}) {
       pos[i * 3] = _v.x;
       pos[i * 3 + 1] = _v.y;
       pos[i * 3 + 2] = _v.z;
-      const rgb = kelvinToRgb(bvToKelvin(bv));
+      const rgb = starTint(bv);
       c.setRGB(rgb[0], rgb[1], rgb[2], THREE.SRGBColorSpace);
       col[i * 3] = c.r;
       col[i * 3 + 1] = c.g;

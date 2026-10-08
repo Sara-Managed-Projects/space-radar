@@ -198,6 +198,53 @@ html.sr-phone .sr-launchchip {
   }
 }
 
+/* THE OPENING SHOT'S WORDS (ui/opening.js): a lead line and the welcome's two buttons on the
+   scene, low and centred. Not a panel: no glass. It never plays under reduced motion. */
+.sr-opening {
+  position: fixed;
+  right: var(--sp-4);
+  bottom: calc(var(--sp-6) + env(safe-area-inset-bottom, 0px));
+  left: var(--sp-4);
+  z-index: var(--sr-z-trip);
+  display: grid;
+  gap: var(--sp-3);
+  justify-items: center;
+  width: auto;
+  max-width: 360px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.sr-opening[hidden] {
+  display: none;
+}
+
+.sr-opening__line {
+  min-height: 52px;
+  margin: 0;
+  font: 400 var(--sr-fs-lead)/26px var(--sr-font);
+  letter-spacing: -0.01em;
+  color: var(--sr-text);
+  text-wrap: balance;
+}
+
+.sr-opening__actions {
+  display: flex;
+  gap: var(--sp-2);
+  width: 100%;
+}
+
+.sr-opening__go:disabled {
+  cursor: default;
+  opacity: 0.62;
+}
+
+.sr-opening__skip {
+  margin: 0;
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .sr-scalebadge,
   .sr-launchchip,

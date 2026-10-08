@@ -664,6 +664,11 @@ export const COPY = {
     worldsDrawn: 'Planets drawn as dots, larger than they are.',
     farTitle: 'Far places',
     systemsTitle: 'Star systems',
+    // The Stars tab's switch for the marks of planets round other stars (public #271).
+    exoRow: 'Planets of other stars',
+    exoShow: 'show',
+    exoHide: 'hide',
+    exoTitle: 'Marks every star known to have planets',
     lightYears: '{n} ly',
     au: '{n} AU',
   },
@@ -2019,6 +2024,10 @@ export const COPY = {
     layersTitle: 'What to show',
     layerCount: '{n}',
     layerCountLoading: 'counting',
+    // One sentence under a row that is off on purpose (public #271): how to show it.
+    layerHint: {
+      exoplanets: 'Off to keep the sky calm. Tick the box to show them.',
+    },
     // Three silences, three short words beside the name (spec 0061 req 11: the row is one line at
     // 390 and at 1440); each one's tooltip is the sentence it stands for.
     layerCountEmpty: 'empty',

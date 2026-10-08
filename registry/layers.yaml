@@ -58,10 +58,14 @@ layers:
 
   # Planets around other stars (spec 0028 step 4): the NASA Exoplanet Archive through the harvester,
   # a dated bundled copy until the first snapshot lands. Drawn at their stars, as plain glyphs.
+  # OFF BY DEFAULT since 2026-10-08 (public #271): six thousand green marks were the loudest thing
+  # in every deep-space and sky frame, and the stars read as a scatter plot behind them. The row in
+  # What to show says how to show them, the Stars tab has a switch, a search, a link or a trip
+  # that goes to one switches the layer on, and a star system draws its own planets regardless.
   - id: exoplanets
     display: Planets around other stars
     group: beyond
-    moments: {wonder: on, now: off, next: off}
+    moments: {wonder: off, now: off, next: off}
     source: nasa-exoplanet-archive
     propagator: static
     frame: sun-inertial

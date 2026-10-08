@@ -123,6 +123,12 @@ export function countText(layer, records, n) {
   return t(COPY.controls.layerCount, { n: fmt.int(n) });
 }
 
+/** The sentence under a row that is off by default on purpose, or ''. Pure. */
+export function layerHint(id, C = COPY.controls) {
+  const hints = (C && C.layerHint) || {};
+  return typeof hints[id] === 'string' ? hints[id] : '';
+}
+
 /** Switch a layer through main.js, and say so once so anything else can follow (sr:layer-toggle). */
 export function applyLayerOn(ctx, layer, on) {
   let handled = false;
@@ -358,8 +364,12 @@ export function createWhatToShow(ctx, opts = {}) {
       label.append(box, swatch, lname, count);
       li.appendChild(label);
       ul.appendChild(li);
+      // A row that is off on purpose says how to show it, while it is off (public #271).
+      const hintText = layerHint(layer.id, C);
+      const hint = hintText ? el('p', 'sr-show__hint', hintText) : null;
+      if (hint) { hint.id = `sr-show-hint-${layer.id}`; box.setAttribute('aria-describedby', hint.id); li.appendChild(hint); }
       box.addEventListener('change', () => { applyLayerOn(ctx, layer, box.checked); paint(); });
-      rows.set(layer.id, { box, count, label, layer, swatch, hex, mixed, li, group: group.id });
+      rows.set(layer.id, { box, count, label, layer, swatch, hex, mixed, li, hint, group: group.id });
     }
   });
   if (!rows.size) list.appendChild(el('p', 'sr-show__empty', C.layersEmpty));
@@ -535,6 +545,7 @@ export function createWhatToShow(ctx, opts = {}) {
     for (const [id, row] of rows) {
       const on = isOn(id);
       if (row.box.checked !== on) row.box.checked = on;
+      if (row.hint) row.hint.hidden = on;
       // A layer whose marks are not its records (the stars: 109 389 drawn, ~3 400 named) states its
       // own number; everything else is counted from the records it loaded.
       const own = typeof row.layer.count === 'function' ? row.layer.count() : undefined;
