@@ -2,13 +2,15 @@
 // public #240, internal #119).
 //
 // Contract: createPassport(ctx, opts) -> { available, data(), counts(), resume(tripId),
-//           stamp(tripId, total), stampPlaces(), wonderPrev(), wonderSeen(day, id), open(), forget() }
+//           stamp(tripId, total), stampPlaces(), wonderPrev(), wonderSeen(day, id), open(), forget(),
+//           seenAt(id) -> ms | 0, markSeen(id, on) -> boolean }
 // Also exported, pure, for tests/test_passport.mjs:
 //   KEY, VISITED_CAP, TRIPS_CAP, RESUME_MS
 //   emptyPassport(), sanitize(raw), readPassport(storage), writePassport(storage, p),
 //   forgetPassport(storage), safeStorage(win)
 //   recordVisit(p, id, nowMs), recordStop(p, tripId, index, count, nowMs),
 //   recordComplete(p, tripId, nowMs), continuable(p, tripId, nowMs) -> index | null
+//   SEEN_CAP, recordSeen(p, id, nowMs, on), seenList(p) -> [[id, ms]] newest first
 //   tripsDone(p), placesSeen(p), stampLine(p, total, nowMs), stampPlacesLine(p), notableVisited(p, recordById, max)
 //   wonderOfTheDay({events, famous, dayNumber, prev}) -> {id, kind, item} | null
 //
@@ -33,6 +35,13 @@ import '../copy/en.later.js';
 export const KEY = 'sr:passport';
 export const VISITED_CAP = 300;
 export const TRIPS_CAP = 60;
+/**
+ * SEEN WITH YOUR OWN EYES (public #395). A tick the visitor sets on a thing's card: "I saw this".
+ * It is their word, kept with the day they gave it, and nothing here checks or infers it: opening
+ * a card is a place opened, never a thing seen. The same record, the same browser, the same
+ * Forget me.
+ */
+export const SEEN_CAP = 200;
 /** A trip left this long ago or less is offered again from its stop (req 4). */
 export const RESUME_MS = 24 * 3600e3;
 const DAY_MS = 86400e3;
@@ -42,7 +51,7 @@ const GRID_MAX = 6;
 const CONFIRM_MS = 6000;
 
 export function emptyPassport() {
-  return { v: 1, visited: {}, trips: {}, first: 0, last: 0, wonder: null };
+  return { v: 1, visited: {}, trips: {}, seen: {}, first: 0, last: 0, wonder: null };
 }
 
 const isObj = (x) => !!x && typeof x === 'object' && !Array.isArray(x);
@@ -69,6 +78,9 @@ export function sanitize(raw) {
       p.trips[id] = out;
     }
   }
+  if (isObj(raw.seen)) {
+    for (const [id, at] of Object.entries(raw.seen)) if (okId(id) && okMs(at)) p.seen[id] = at;
+  }
   if (okMs(raw.first)) p.first = raw.first;
   if (okMs(raw.last)) p.last = raw.last;
   if (isObj(raw.wonder) && Number.isInteger(raw.wonder.day) && okId(raw.wonder.id)) p.wonder = { day: raw.wonder.day, id: raw.wonder.id };
@@ -81,6 +93,11 @@ function cap(p) {
   if (places.length > VISITED_CAP) {
     places.sort((a, b) => b[1] - a[1]);
     p.visited = Object.fromEntries(places.slice(0, VISITED_CAP));
+  }
+  const seen = Object.entries(p.seen || {});
+  if (seen.length > SEEN_CAP) {
+    seen.sort((a, b) => b[1] - a[1]);
+    p.seen = Object.fromEntries(seen.slice(0, SEEN_CAP));
   }
   const trips = Object.entries(p.trips);
   if (trips.length > TRIPS_CAP) {
@@ -149,6 +166,18 @@ export function recordVisit(p, id, nowMs) {
   if (!p.visited[id]) p.visited[id] = nowMs;
   return cap(touch(p, nowMs));
 }
+
+/** The visitor ticked a thing as seen (or took the tick back). The first tick's day is the one kept. */
+export function recordSeen(p, id, nowMs, on = true) {
+  if (!okId(id) || !okMs(nowMs)) return p;
+  if (!isObj(p.seen)) p.seen = {};
+  if (!on) { delete p.seen[id]; return touch(p, nowMs); }
+  if (!p.seen[id]) p.seen[id] = nowMs;
+  return cap(touch(p, nowMs));
+}
+
+/** What was ticked, newest first: [[id, ms]]. Pure. */
+export const seenList = (p) => Object.entries((p && p.seen) || {}).sort((a, b) => b[1] - a[1]);
 
 /** A trip reached a stop (`index` from 0): the trip is under way, and this is where. */
 export function recordStop(p, tripId, index, count, nowMs) {
@@ -378,6 +407,34 @@ export function createPassport(ctx, opts = {}) {
     }
     page.appendChild(places);
 
+    // Seen with your own eyes (public #395): the ticks set on cards, newest first.
+    const seenRows = seenList(p);
+    const seen = el('section', 'sr-passport__sect');
+    const seenHead = el('div', 'sr-passport__head');
+    seenHead.appendChild(el('h3', 'sr-micro', P.seenTitle));
+    seenHead.appendChild(el('span', 'sr-passport__num', fmt.int(seenRows.length)));
+    seen.appendChild(seenHead);
+    if (seenRows.length) {
+      const list = el('ul', 'sr-list sr-list--quiet');
+      for (const [id, at] of seenRows) {
+        const record = typeof ctx.recordById === 'function' ? ctx.recordById(id) : null;
+        if (!record) continue; // its layer has not loaded on this visit: the tick is kept, the row waits
+        const li = el('li', 'sr-list__row');
+        const b = el('button', 'sr-list__btn');
+        b.type = 'button';
+        b.title = t(P.placeTitle, { name: record.name });
+        b.appendChild(el('span', 'sr-list__name', record.name));
+        b.appendChild(el('span', 'sr-list__value', timeText.localDate(at)));
+        b.addEventListener('click', () => selectRecord(record));
+        li.appendChild(b);
+        list.appendChild(li);
+      }
+      seen.appendChild(list);
+    } else {
+      seen.appendChild(el('p', 'sr-passport__empty', P.noSeen));
+    }
+    page.appendChild(seen);
+
     const trips = el('section', 'sr-passport__sect');
     const tripsHead = el('div', 'sr-passport__head');
     tripsHead.appendChild(el('h3', 'sr-micro', P.tripsTitle));
@@ -413,7 +470,7 @@ export function createPassport(ctx, opts = {}) {
     const forget = el('button', 'sr-passport__forget', confirming ? P.forgetConfirm : P.forget);
     forget.type = 'button';
     forget.title = P.forgetTitle;
-    forget.disabled = !c.places && !Object.keys(p.trips).length;
+    forget.disabled = !c.places && !Object.keys(p.trips).length && !seenRows.length;
     forget.addEventListener('click', () => {
       if (!confirming) {
         // One step: the same button asks, and goes back to what it was if nobody answers.
@@ -467,6 +524,15 @@ export function createPassport(ctx, opts = {}) {
       if (!Number.isInteger(day) || !okId(id) || (p.wonder && p.wonder.day === day && p.wonder.id === id)) return;
       p.wonder = { day, id };
       available = writePassport(storage, p);
+    },
+    /** When the visitor ticked this thing as seen, or 0. */
+    seenAt: (id) => (p.seen && p.seen[id]) || 0,
+    /** Set or clear the tick. Answers whether it was kept (false where the browser keeps nothing). */
+    markSeen(id, on) {
+      if (!okId(id)) return false;
+      p = recordSeen(p, id, now(), on !== false);
+      changed();
+      return available;
     },
     open,
     forget() {

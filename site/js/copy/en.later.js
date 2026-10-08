@@ -275,6 +275,17 @@ Object.assign(COPY, {
     placeTitle: 'Go to {name}',
     noPlaces: 'No places yet. Open one on the map.',
     noTrips: 'No trips finished yet.',
+    // Seen with your own eyes (public #395): a tick set on a card, the visitor's own word.
+    seenTitle: 'Seen with your own eyes',
+    noSeen: 'Nothing ticked yet. A card has a Seen it button.',
+    seenIt: 'Seen it',
+    seenOn: 'Seen {date}',
+    seenTitleOff: 'Tick when you have seen it with your own eyes',
+    seenTitleOn: 'Ticked as seen. Press to take the tick back',
+    seenNotKept: 'This browser keeps nothing, so the tick will not stay',
+    // The card's reminder for the thing's next dated event (data/ics.js): one calendar file.
+    remind: 'Remind me',
+    remindTitle: 'Downloads a calendar file with a reminder: {title}',
     forget: 'Forget me',
     forgetConfirm: 'Yes, forget',
     forgetTitle: 'Clears the passport and the sound choice from this browser',
@@ -293,7 +304,7 @@ Object.assign(COPY, {
   kept: {
     title: 'What this site keeps on your device',
     lines: [
-      'Your passport: the places you opened and the trips you finished.',
+      'Your passport: places opened, trips finished, things ticked as seen.',
       'Your sound and voice choice, and how you left the panels.',
       'A copy of the data it last read, so the map opens without a connection.',
     ],

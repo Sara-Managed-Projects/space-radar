@@ -37,6 +37,67 @@ function block(className, label) {
 // --- the distance that ticks ----------------------------------------------------------------
 
 /** "From Earth now": kilometres to the last one, and light's travel time to the second. */
+// --- a reason to come back (public #395): "Remind me" and "Seen it" ------------------------------
+
+/** Kinds of thing a person can go outside and see, with their eyes or a small telescope. */
+const SEEABLE = new Set(['satellite', 'station', 'telescope', 'rocket', 'debris', 'world', 'star', 'dso', 'comet', 'asteroid']);
+export function offersSeen(record) {
+  return !!record && typeof record.id === 'string' && SEEABLE.has(record.klass) && record.id !== 'earth';
+}
+
+/** The next dated row of Coming up that is about this record and can be a calendar entry, or null. Pure. */
+export function nextEventFor(record, items, nowMs) {
+  if (!record || !Array.isArray(items)) return null;
+  return items
+    .filter((it) => it && it.record && it.record.id === record.id && Number.isFinite(it.tMs) && it.tMs > nowMs && !(it.kind === 'aurora' && it.now))
+    .sort((a, b) => a.tMs - b.tMs)[0] || null;
+}
+
+/**
+ * The card's two quiet buttons, or nothing. "Remind me" is the Coming up row's own calendar file
+ * (ui/next.js saveCalendar, data/ics.js: built in the browser, with its reminder inside, sent
+ * nowhere). "Seen it" is a tick in the passport (ui/passport.js): the visitor's word and the day.
+ */
+export function skyControls(record, ctx) {
+  const P = COPY.passport;
+  const row = el('div', 'sr-card__sky');
+  const next = ctx && ctx.explore && ctx.explore.next;
+  const nowMs = ctx && ctx.clock && typeof ctx.clock.now === 'function' && ctx.clock.mode === 'live' ? ctx.clock.now() : Date.now();
+  let item = null;
+  try { item = nextEventFor(record, next && typeof next.items === 'function' ? next.items() : [], nowMs); } catch { item = null; }
+  if (item) {
+    const b = el('button', 'sr-btn sr-btn--quiet sr-card__inline', P.remind);
+    b.type = 'button';
+    b.setAttribute('data-action', 'remind');
+    import('./next.js').then((m) => {
+      const title = m.rowParts(item, nowMs).title;
+      b.title = t(P.remindTitle, { title });
+      b.addEventListener('click', () => m.saveCalendar(item, nowMs));
+    }).catch(() => { b.remove(); });
+    row.appendChild(b);
+  }
+  if (offersSeen(record) && ctx && typeof ctx.wantPassport === 'function') {
+    const b = el('button', 'sr-btn sr-btn--quiet sr-card__inline', P.seenIt);
+    b.type = 'button';
+    b.setAttribute('data-action', 'seen');
+    b.setAttribute('aria-pressed', 'false');
+    b.title = P.seenTitleOff;
+    const paint = (api) => {
+      const at = api ? api.seenAt(record.id) : 0;
+      b.setAttribute('aria-pressed', at ? 'true' : 'false');
+      b.textContent = at ? t(P.seenOn, { date: timeText.localDate(at) }) : P.seenIt;
+      b.title = api && !api.available ? P.seenNotKept : at ? P.seenTitleOn : P.seenTitleOff;
+    };
+    Promise.resolve(ctx.wantPassport()).then((api) => {
+      if (!api || typeof api.markSeen !== 'function') { b.remove(); return; }
+      paint(api);
+      b.addEventListener('click', () => { api.markSeen(record.id, !api.seenAt(record.id)); paint(api); });
+    }).catch(() => { b.remove(); });
+    row.appendChild(b);
+  }
+  return row.childElementCount ? [row] : [];
+}
+
 export function liveBlock(distAt, tMs, still) {
   if (typeof distAt !== 'function' || !Number.isFinite(tMs)) return null;
   const words = liveDistanceWords(distAt(liveKey(tMs, still)));

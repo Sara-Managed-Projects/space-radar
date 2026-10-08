@@ -868,6 +868,18 @@ html.sr-compact .sr-status {
   border-radius: var(--sr-radius);
 }
 
+/* "Remind me" and "Seen it" (public #395): two quiet buttons side by side on the card. */
+.sr-card__sky {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.sr-card__sky .sr-card__inline[aria-pressed='true'] {
+  color: var(--sr-text);
+  border-color: var(--sr-ember);
+}
+
 /* The object's own page (internal #199): one quiet link at the foot of About it. */
 .sr-card__page {
   display: inline-flex;

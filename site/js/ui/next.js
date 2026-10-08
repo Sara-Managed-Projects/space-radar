@@ -403,7 +403,7 @@ export function calendarUrl(item) {
  * data/ics.js (fetched on the first press) and handed over as a download. No server, and nothing
  * kept: a pass's times are for the visitor's place, and they go into the file and nowhere else.
  */
-async function saveCalendar(item, nowMs) {
+export async function saveCalendar(item, nowMs) {
   const T = COPY.nextList;
   try {
     const { toIcs, icsFilename } = await import('../data/ics.js');

@@ -81,7 +81,7 @@ import { overlayLine, legendNode, paintLegend } from './overlaylegend.js';
 import { systemOfRecordId, phaseIsMeasured, faceLineOf } from '../scene/systems.js';
 import { generatedLine, planetFacts, starRows } from './systemcard.js';
 import { setSystemRows } from './cardfacts.js';
-import { liveBlock, paintLive, sparkBlock, crewBlock, linkNodes, smallBodyFromLine } from './cardextras.js';
+import { liveBlock, paintLive, sparkBlock, crewBlock, linkNodes, smallBodyFromLine, skyControls } from './cardextras.js';
 import { upForWords } from './cardlive.js';
 import { launchMsOf } from '../data/satcat.js';
 // The card's FACTS (what is measured about a record, its "right now" rows, its honesty line, the
@@ -2482,6 +2482,8 @@ function render(record, ctx, opts = {}) {
 
   // 4b. the flood light, under the light it stands in for (internal #272).
   for (const n of floodControls(record, ctx)) body.appendChild(n);
+  // 4c. a reminder for its next dated event, and the visitor's own "seen it" tick (public #395).
+  for (const n of skyControls(record, ctx)) body.appendChild(n);
   // The Earth's card carries the legend of whatever map is laid over it (internal #386 item 1).
   const over = overlayBlock(record, ctx);
   if (over) body.appendChild(over);
