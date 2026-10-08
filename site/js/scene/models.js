@@ -4047,6 +4047,29 @@ function orient(obj, zDir, xHint) {
   obj.quaternion.setFromRotationMatrix(_m4);
 }
 
+/** The fastest a spent stage is let to turn, in drawn seconds per wall second: past it the clock outruns the picture (internal #425). */
+export const TUMBLE_MAX_RATE = 240;
+
+/**
+ * A dead stage's tumble angle, radians. At a clock the eye can follow it is exactly the function of
+ * the drawn time it always was (scrub the clock and it turns with it). When the clock runs faster
+ * than `maxRate` drawn seconds a wall second -- a 90 s turn would be a strobe from there on -- the
+ * stage keeps turning at that rate in the clock's direction instead, and is exact again when the
+ * clock slows. `st` is the object's own { t, real, phase }; `realMs` is the wall clock. Pure.
+ */
+export function tumblePhase(st, tMs, realMs, periodMs, maxRate = TUMBLE_MAX_RATE) {
+  const exact = ((tMs % periodMs) / periodMs) * Math.PI * 2;
+  if (!Number.isFinite(realMs)) return exact;
+  if (st.real === undefined) { st.t = tMs; st.real = realMs; st.phase = exact; return exact; }
+  const dReal = realMs - st.real;
+  if (!(dReal > 0)) return st.phase; // the same frame again
+  const dT = tMs - st.t;
+  const limit = maxRate * dReal;
+  const phase = Math.abs(dT) <= limit ? exact : st.phase + Math.sign(dT) * (limit / periodMs) * Math.PI * 2;
+  st.t = tMs; st.real = realMs; st.phase = phase;
+  return phase;
+}
+
 /**
  * Aim a model. Called each frame for the <= 20 models on screen; cheap, and it is the difference
  * between a model that looks placed and one that looks correct.
@@ -4146,7 +4169,7 @@ export function updateModelAttitude(obj, record, sunDirScene, nadirScene, tMs) {
         };
       }
       const tu = obj.userData.tumble;
-      const angle = Number.isFinite(tMs) && !lessMotion() ? ((tMs % tu.periodMs) / tu.periodMs) * Math.PI * 2 : 0;
+      const angle = Number.isFinite(tMs) && !lessMotion() ? tumblePhase(tu.state || (tu.state = {}), tMs, typeof performance !== 'undefined' ? performance.now() : NaN, tu.periodMs) : 0;
       obj.quaternion.copy(tu.base).multiply(_q.setFromAxisAngle(tu.axis, angle));
       break;
     }
