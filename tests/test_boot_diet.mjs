@@ -59,6 +59,8 @@ const DEFERRED = {
   'js/ui/autopilotplan.js': 'the reel\'s arithmetic: with ui/autopilot.js',
   'js/data/autopilot.js': 'the reels: with ui/autopilot.js',
   'js/scene/models.js': 'the model shapes: scene/heroes.js fetches them when a record wants geometry',
+  'js/scene/exoface.js': 'a drawn face for a planet nobody has seen: scene/systems.js fetches it when a system\'s stage is entered',
+  'js/scene/exostage.js': 'the plain star stage of an imagined world: main.js fetches it for `#imagine=`',
   'vendor/GLTFLoader.js': 'the glTF loader: scene/realmodels.js fetches it inside loadRealModel()',
   'vendor/meshopt_decoder.module.js': 'the meshopt decoder: with the glTF loader',
   'vendor/BufferGeometryUtils.js': 'the glTF loader\'s helper',

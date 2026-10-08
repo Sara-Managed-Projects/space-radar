@@ -33,7 +33,14 @@
 //     turned about that line (its position angle on the sky) nobody has measured, and it is drawn
 //     level with the ecliptic. The card says the tilt is illustrative;
 //   - colours: the star's from its temperature (starfield.js kelvinToRgb, the path the stars use),
-//     the planets' one neutral tint. Nothing is known of their surfaces.
+//     the planets' one neutral tint. Nothing is known of their surfaces;
+//   - A FACE, where the device can draw one (internal #466, 2026-10-08): scene/exoface.js gives
+//     each planet a drawn surface worked out from its row -- its class from radius and mass, its
+//     climate from its star's light -- with every feature imagined and the planet LABELLED so:
+//     an on-canvas tag "Artist's impression" under the disc, and the card's line from
+//     faceLineOf(). The module is fetched when a system's stage is entered, never at boot; the
+//     neutral ball above is what is drawn until it lands, on a connection that saves data, and
+//     for good once the frame latch has tripped.
 //
 // COST. Nothing at boot but the origin registration below. Geometry is built when a system stage is
 // entered and disposed when it is left: one star sphere, one corona sprite, seven planet spheres and
@@ -80,6 +87,15 @@ const MEMBER = new Map();
 for (const s of SYSTEMS) {
   MEMBER.set(s.hostId, { system: s, planet: null });
   for (const p of s.planets) MEMBER.set(p.id, { system: s, planet: p });
+}
+
+// The card's words for a planet that is drawn with a face RIGHT NOW (scene/exoface.js faceLabel):
+// filled when faces go on, emptied when they come off, so the card never calls a neutral ball an
+// artist's impression. ui/cards.js systemLine() reads it.
+const FACE_LINES = new Map();
+/** "Artist's impression. Measured: 1.1 Earth radii, a 6.1-day year. The surface is imagined.", or null. */
+export function faceLineOf(id) {
+  return FACE_LINES.get(id) || null;
 }
 
 /** {system, planet} for a record id that belongs to a system (planet null for the host), else null. */
@@ -315,8 +331,46 @@ export function createSystems(scene, ctx = {}) {
     return { system, hostKm, basis, basisScene, starMesh, planets, rings, mercury };
   }
 
+  // --- faces (scene/exoface.js) -------------------------------------------------------------------
+  // Fetched when a system is built; each planet's mesh is dressed in place, so its position, its
+  // scale, the picking and the one-pixel floor are all untouched. `toon` keeps what it wore.
+  let facesAsked = null;
+  const facesWanted = () => typeof document !== 'undefined' && !!ctx.renderer
+    && !(ctx.latch && ctx.latch.latched)
+    && !(typeof navigator !== 'undefined' && navigator.connection && navigator.connection.saveData === true);
+  function wantFaces(built) {
+    if (!facesWanted() || built.faced) return;
+    (facesAsked || (facesAsked = import('./exoface.js'))).then((m) => {
+      if (current !== built || built.faced || !facesWanted()) return;
+      const tier = ctx.quality && Number.isFinite(ctx.quality.tier) ? ctx.quality.tier : 1;
+      const n = built.basisScene;
+      built.north = new THREE.Vector3().crossVectors(new THREE.Vector3(n.u.x, n.u.y, n.u.z), new THREE.Vector3(n.v.x, n.v.y, n.v.z)).normalize();
+      for (const entry of built.planets) {
+        const face = m.faceFor(m.rowOf(entry.planet, built.system.star));
+        entry.toon = { geometry: entry.mesh.geometry, material: entry.mesh.material };
+        entry.face = m.applyFace(entry.mesh, face, { tier });
+        FACE_LINES.set(entry.planet.id, entry.face.label.line);
+      }
+      built.faced = true;
+      window.dispatchEvent(new CustomEvent('sr:faces', { detail: { system: built.system.id, tier } }));
+    }).catch((e) => { facesAsked = null; console.warn('the planets keep their neutral look', e); });
+  }
+  function dropFaces(built, restore) {
+    if (!built || !built.faced) return;
+    for (const entry of built.planets) {
+      if (!entry.face) continue;
+      entry.face.dispose();
+      entry.face = null;
+      if (restore) { entry.mesh.geometry = entry.toon.geometry; entry.mesh.material = entry.toon.material; } else { entry.toon.geometry.dispose(); entry.toon.material.dispose(); }
+      entry.toon = null;
+      FACE_LINES.delete(entry.planet.id);
+    }
+    built.faced = false;
+  }
+
   function disposeCurrent() {
     if (!current) return;
+    dropFaces(current, false);
     group.traverse((o) => {
       if (o.geometry) o.geometry.dispose();
       if (o.material) {
@@ -334,6 +388,7 @@ export function createSystems(scene, ctx = {}) {
     if (current && current.system === system) return true;
     disposeCurrent();
     current = build(system);
+    wantFaces(current);
     applyVisibility();
     return true;
   }
@@ -392,6 +447,10 @@ export function createSystems(scene, ctx = {}) {
     applyVisibility();
     if (!group.visible || !current) return;
     const cam = camera || ctx.camera;
+    // The frame latch is the one way down (scene/quality.js): the neutral balls come back, for good.
+    if (current.faced && ctx.latch && ctx.latch.latched) dropFaces(current, true);
+    const faceTime = current.faced ? performance.now() / 1000 : 0;
+    const viewportH = current.faced && ctx.renderer ? ctx.renderer.domElement.clientHeight || 800 : 800;
     const star = current.starMesh;
     drawnPositionOf(current.system.hostId, _p);
     star.position.copy(_p);
@@ -422,6 +481,12 @@ export function createSystems(scene, ctx = {}) {
       // Lit by its own star: the direction from the planet to the star, in scene axes.
       const u = mesh.material.uniforms && mesh.material.uniforms.uSunDir;
       if (u) u.value.copy(_p).sub(_v).normalize();
+    }
+    if (current.faced) {
+      const still = !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+      for (const entry of current.planets) {
+        if (entry.face && entry.mesh.visible) entry.face.update({ camera: cam, north: current.north, timeS: faceTime, viewportH, still });
+      }
     }
   }
 
@@ -556,7 +621,7 @@ export function createSystems(scene, ctx = {}) {
         triangles += (g.index ? g.index.count : g.getAttribute('position').count) / 3;
       }
     });
-    return { active: isActive(), system: current ? current.system.id : null, meshes, triangles, rings: current ? current.rings.length : 0, scaleRing: scaleRingOn };
+    return { active: isActive(), system: current ? current.system.id : null, meshes, triangles, rings: current ? current.rings.length : 0, scaleRing: scaleRingOn, faced: !!(current && current.faced) };
   }
 
   function dispose() {
