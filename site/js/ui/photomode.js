@@ -35,7 +35,7 @@ import { COPY, t } from '../copy/en.js';
 import '../copy/en.later.js';
 import { toast } from './share.js';
 import { tagLines } from './cards.js';
-import { makePostcard, pictureSize, caption, drawBand, PICTURE_PRESETS } from './printcompose.js';
+import { makePostcard, pictureSize, caption, drawBand, saveBlob, PICTURE_PRESETS } from './printcompose.js';
 
 export const SHAPES = Object.keys(PICTURE_PRESETS);
 /**
@@ -70,6 +70,31 @@ export function frameRect(viewW, viewH, shape, margin = { x: 16, y: 16 }) {
   w = Math.round(w);
   h = Math.round(h);
   return { x: Math.round((vw - w) / 2), y: Math.round((vh - h) / 2), w, h, fovScale: h / vh };
+}
+
+/** Can this browser hand a picture file to the device's share sheet? Pure on what it is given. */
+export function canShareFiles(nav) {
+  if (!nav || typeof nav.share !== 'function' || typeof nav.canShare !== 'function' || typeof File === 'undefined') return false;
+  try { return nav.canShare({ files: [new File([''], 'x.jpg', { type: 'image/jpeg' })] }) === true; } catch { return false; }
+}
+
+/**
+ * Hand a made picture (`{blob, name}` from makePostcard) to the device: 'shared', 'dismissed' when
+ * the visitor closed the sheet (an answer, nothing more is done), or 'saved' when the device would
+ * not take the file after all (a gesture that expired while the picture was drawn): the picture is
+ * then saved, so the press is never lost. Only the file is shared: no text, no link, no place.
+ */
+export async function sharePicture(nav, made, save) {
+  const file = new File([made.blob], made.name, { type: made.blob.type || 'image/jpeg' });
+  try {
+    if (!nav.canShare({ files: [file] })) throw new Error('refused');
+    await nav.share({ files: [file] });
+    return 'shared';
+  } catch (e) {
+    if (e && e.name === 'AbortError') return 'dismissed';
+    save(made.blob, made.name);
+    return 'saved';
+  }
 }
 
 // Lucide (ISC), docs/ui-guide.md §3.16.
@@ -173,7 +198,10 @@ export function openPhotoMode(ctx, opts = {}) {
   const saveBtn = button('sr-photo__btn sr-photo__save', P.save, P.saveTitle, 'download');
   const closeBtn = button('sr-photo__close', '', P.done, 'x');
   closeBtn.setAttribute('aria-label', P.done);
-  bar.append(shapes, lens, captionBtn, pngBtn, saveBtn, closeBtn);
+  // The device's own share, straight from the frame (internal #397): built only where the browser
+  // can hand a file on (navigator.canShare), so a desktop without it has no dead button.
+  const shareBtn = canShareFiles(typeof navigator !== 'undefined' ? navigator : null) ? button('sr-photo__btn sr-photo__share', P.share, P.shareTitle, '') : null;
+  bar.append(shapes, lens, captionBtn, pngBtn, ...(shareBtn ? [shareBtn] : []), saveBtn, closeBtn);
   root.append(...mattes, frame, bar);
   document.body.appendChild(root);
 
@@ -234,6 +262,32 @@ export function openPhotoMode(ctx, opts = {}) {
     }
   }
   saveBtn.addEventListener('click', save);
+
+  /** The same composed picture handed to the device's share sheet; saved instead when the device refuses it. */
+  async function share() {
+    if (busy || !rect) return;
+    busy = true;
+    saveBtn.disabled = true;
+    if (shareBtn) shareBtn.disabled = true;
+    toast(P.making, 0);
+    let made = null;
+    try {
+      made = await makePostcard(ctx, asPng ? 'png' : 'jpeg', {
+        record, withTag: false, size: pictureSize(shape), fovScale: rect.fovScale, caption: withCaption, honesty: true, save: false,
+      });
+      const via = await sharePicture(navigator, made, saveBlob);
+      toast(via === 'saved' ? P.sharedSaved : '', via === 'saved' ? 4000 : 1);
+      if (ctx) ctx.lastPhoto = { ...made.out, shape, caption: withCaption, fovScale: rect.fovScale, lens: cam ? cam.fov : null, via };
+    } catch (e) {
+      toast(P.failed, 4000);
+      if (ctx) ctx.lastPhoto = { error: String((e && e.message) || e) };
+    } finally {
+      busy = false;
+      saveBtn.disabled = false;
+      if (shareBtn) shareBtn.disabled = false;
+    }
+  }
+  if (shareBtn) shareBtn.addEventListener('click', share);
 
   const onClean = (e) => { if (open && e && e.detail && e.detail.on === false) close(true); };
   // The instant in the strip is the clock's: once a second is as often as its minute can change.

@@ -90,7 +90,11 @@ check(wikiTitleOf({ id: 'mercury' }) === 'Mercury_(planet)', 'Mercury is the pla
 check(wikiTitleOf({ id: 'hip-32349', meta: { whySource: 'https://en.wikipedia.org/wiki/Sirius (read 2026-09-22)' } }) === 'Sirius', 'a star names its article in its own source line');
 check(wikiTitleOf({ id: 'x', meta: { source: 'https://en.wikipedia.org/wiki/Io_(moon) (infobox)' } }) === 'Io_(moon)', 'a title\'s own brackets are kept, the note\'s are not');
 check(wikiTitleOf({ id: 'x', meta: { source: 'https://en.wikipedia.org/wiki/PSR_B1919%2B21 (infobox)' } }) === 'PSR_B1919+21', 'an encoded title is decoded');
-check(wikiTitleOf({ id: 'dso-m42', meta: { cite: 'distance: https://en.wikipedia.org/wiki/List_of_Messier_objects' } }) === null, 'a list is a source for a number, not the thing\'s article');
+check(wikiTitleOf({ id: 'dso-unlisted', meta: { cite: 'distance: https://en.wikipedia.org/wiki/List_of_Messier_objects' } }) === null, 'a list is a source for a number, not the thing\'s article');
+// The Messier rows whose only source line is that list name their own article in the table
+// (internal #202; each title read from en.wikipedia.org's API on 2026-10-08).
+check(wikiTitleOf({ id: 'dso-m42', meta: { cite: 'distance: https://en.wikipedia.org/wiki/List_of_Messier_objects' } }) === 'Orion_Nebula', 'M42 is the Orion Nebula, not the list');
+check(wikiTitleOf({ id: 'dso-m31' }) === 'Andromeda_Galaxy' && wikiTitleOf({ id: 'dso-m13' }) === 'Messier_13', 'M31 and M13 name their articles');
 check(wikiTitleOf({ id: 'sat-99999', name: 'Juno' }) === null, 'no article named, no excerpt: never a guess from the name');
 check(wikiTitleOf(null) === null, 'no record, no article');
 
