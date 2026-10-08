@@ -3918,7 +3918,9 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 /* JUST WATCH: the reels, under "Play on its own" (ui/explore.js, internal #448). A list like any other. */
 .sr-reels { margin-top: var(--sp-2); }
 .sr-reels[hidden] { display: none; }
-.sr-more + .sr-more { margin-left: var(--sp-4); }
+/* Two quiet text buttons side by side ("All 26 trips", "Play on its own") read as one line of text
+   at 16 px apart (seen at 1440 x 900, internal #454): a step further, 24 px. */
+.sr-more + .sr-more { margin-left: var(--sp-5); }
 
 /* A list of rows: a name, a mono value, hairlines between (the Planets and Stars tabs, Tonight). */
 .sr-list {
@@ -4172,6 +4174,10 @@ html.sr-phone .sr-subscribe__email {
 
 /* The focused field: the ember edge What to show's filter wears (a 22 % hairline was no focus state). */
 .sr-field:focus { border-color: var(--sr-ember); }
+/* A phone's input is 16 px (docs/ui-guide.md section 6): the city box read 15 px at 390 x 844
+   (2026-10-08), and under 16 iOS Safari zooms the page when it takes the caret. */
+html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
+@media (pointer: coarse) { .sr-field { font-size: var(--sr-fs-input); } }
 .sr-field::placeholder { color: var(--sr-text-soft); }
 
 .sr-place__chips {
@@ -4214,7 +4220,9 @@ html.sr-phone .sr-subscribe__email {
   gap: var(--sp-2);
 }
 
-.sr-tonight-view__where > .sr-tonight-view__place { flex: 1 1 auto; min-width: 0; }
+/* The line wraps here instead of ending in an ellipsis: beside the button it was "Near Moscow,
+   guessed from y…" (seen at 1440 x 900, 2026-10-08), and how the place is known is the honest half. */
+.sr-tonight-view__where > .sr-tonight-view__place { flex: 1 1 auto; min-width: 0; overflow: visible; white-space: normal; }
 .sr-tonight-view__change { flex: none; }
 
 /* The status line: the sidebar's foot, one sentence, a coloured dot. */
