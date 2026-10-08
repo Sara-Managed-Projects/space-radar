@@ -240,6 +240,16 @@ check(iconOnly >= 8, `only ${iconOnly} icon-only buttons found: the rail, the tr
   check(/const root = document\.createElement\('nav'\);[\s\S]{0,200}root\.setAttribute\('aria-label', COPY\.rail\.label\)/.test(rail), 'the rail is a <nav> named from the copy');
   check(/top\.setAttribute\('role', 'group'\);\s*top\.setAttribute\('aria-label', COPY\.shell\.topLabel\)/.test(shell), 'the phone\'s top bar is a named group');
   check(/host = el\('aside', 'sr-card'\)/.test(code(read('cards.js'))), 'the card is an <aside>');
+  // What axe-core found on 2026-10-08 (tests/probes/axe-probe.js), held so it does not come back:
+  // the time pill outside every landmark, a banner inside the trip's region, a second region with
+  // the trip frame's own name, and an empty heading on a trip's intro.
+  check(/root\.setAttribute\('role', 'region'\);\s*root\.setAttribute\('aria-label', T\.label\)/.test(code(read('timepill.js'))), 'the time pill is a named region');
+  {
+    const frame = code(read('tripframe.js'));
+    check(/const top = el\('div', 'sr-trip__top sr-float'\)/.test(frame), 'the trip\'s top bar is a div: a <header> inside the frame\'s region is a misplaced banner');
+    check(/const sheet = el\('section', 'sr-tripsheet'\);\s*sheet\.setAttribute\('role', 'group'\)/.test(frame), 'the trip\'s sheet is a named group, not a second region');
+    check(/heading\.hidden = true/.test(frame) && /parts\.heading\.hidden = !stopTitle/.test(frame), 'the stop\'s heading is hidden while it is empty');
+  }
   for (const f of files) check(!/createElement\('main'\)|el\('main'/.test(code(read(f))), `ui/${f} builds a second <main>`);
 
   // 7c. THE CANVAS HAS A TEXT ALTERNATIVE, one sentence, and it changes on selection only.

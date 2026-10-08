@@ -438,6 +438,8 @@ export function createTripFrame(ctx) {
     group.setAttribute('aria-roledescription', T.stopRole);
     const heading = el('h2', 'sr-trip__stopname');
     heading.tabIndex = -1;
+    // No stop yet (the intro): an empty heading is not in the page for a reader (axe empty-heading).
+    heading.hidden = true;
     group.appendChild(heading);
     live.appendChild(group);
     // aria-live on a region that changes every twelve seconds floods a reader, so in `auto` the
@@ -447,7 +449,9 @@ export function createTripFrame(ctx) {
     status.setAttribute('role', 'status');
 
     // THE TOP BAR: the trip's title, its chapter above it (spec 0034 req 3), and Leave.
-    const top = el('header', 'sr-trip__top sr-float');
+    // A div, not a <header>: inside this frame's region a <header> is a banner landmark in the wrong
+    // place (axe landmark-banner-is-top-level, measured 2026-10-08).
+    const top = el('div', 'sr-trip__top sr-float');
     const titles = el('div', 'sr-trip__titles');
     // Not a live region: the stop title in the status is what a screen reader is told, and a
     // chapter is not news.
@@ -478,6 +482,8 @@ export function createTripFrame(ctx) {
     // THE SHEET: the intro, the stop card's slot, the end. Seated in the sidebar's trip view on a
     // desktop and in this frame on a phone (seat()).
     const sheet = el('section', 'sr-tripsheet');
+    // A named GROUP, not a second region with the frame's own name (axe landmark-unique, 2026-10-08).
+    sheet.setAttribute('role', 'group');
     const panel = el('div', 'sr-tripsheet__panel');
     panel.hidden = true;
     const cardSlot = el('div', 'sr-tripsheet__card');
@@ -1165,6 +1171,7 @@ export function createTripFrame(ctx) {
     const stopTitle = st.held ? T.heldTitle : st.stopTitle || '';
     parts.group.setAttribute('aria-label', t(T.liveLabel, { n, count: st.count, title: stopTitle }));
     parts.heading.textContent = stopTitle;
+    parts.heading.hidden = !stopTitle;
 
     // The APG rule, exactly: `off` while auto-advance is running, `polite` when it is not.
     const auto = st.pacing === 'auto' && !paused;
