@@ -757,6 +757,13 @@ jobs:
       # The public finishers (2026-10-08): each is the missing part of an open issue.
       - name: "the scale badge: the factor computed from the dot and the camera, True size, the dots obey (public #296)"
         run: node tests/test_scalebadge.mjs
+      # The small internal issues closed together (2026-10-08): what a node process can decide of each.
+      - name: "small issues: the living Earth names no year, a sunrise framing, True size as a reveal, one truth line, the pad's title, a nebula's photograph, overlays on demand, the honest answer, glint and sheen, the phone's note"
+        run: node tests/test_small_issues.mjs
+      - name: "KTX2: the transcoder vendored byte for byte, out of the boot graph and the offline shell; every failure ends in the WebP (internal #155)"
+        run: node tests/test_ktx2.mjs
+      - name: "the one-Chrome lock: a live owner is not robbed, a dead one is, the walk stops its servers (internal #460)"
+        run: node tests/test_chromelock.mjs
       - name: "the launch chip: which launch, what it says, the Starlink train's pass, no chase camera (public #289)"
         run: node tests/test_launchchip.mjs
       - name: "a first visit: once, three lines that fit, two buttons, one ember (public #241, #287)"

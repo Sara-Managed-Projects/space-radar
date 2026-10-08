@@ -211,6 +211,12 @@ export function createShell(ctx, opts = {}) {
     if (ctx && typeof ctx.deselect === 'function') ctx.deselect();
     else back();
     landFocus();
+    // And once more when everything the deselect set off has run (internal #460, seen in a real
+    // tab on 2026-10-08): the card gives focus back to where the visitor was before it opened, and
+    // when that was nowhere (a card opened from the map, or by a link) the focus this button held
+    // ended on <body>. landFocus leaves a focus that found a home alone.
+    setTimeout(landFocus, 0);
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(() => landFocus());
   });
   card.appendChild(cardBack.row);
   const cardSlot = el('div', 'sr-side__cardslot');
