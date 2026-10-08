@@ -2576,9 +2576,10 @@ html[data-trip-phase] .sr-tripsheet.is-floating {
   padding-bottom: var(--sp-3);
 }
 
-/* THE WAY HOME (`return: true`, internal #304): the last stop's words are put down for the one
-   flight back, and the end card comes up at home. */
-html[data-trip-returning] .sr-tripsheet {
+/* THE WAY HOME (`return: true`, internal #304): in present mode the last stop's caption is put
+   down for the one flight back, and the end card comes up at home. The panel's card stays, as it
+   does over any flight (an empty panel for twenty seconds was worse, seen 2026-10-08). */
+html[data-trip-returning] .sr-tripsheet.is-present {
   opacity: 0;
   pointer-events: none;
   transition: opacity 400ms linear;

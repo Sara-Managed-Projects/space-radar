@@ -84,7 +84,7 @@ export const TOURS_INDEX = [
 "requires_observer": true,
 "min_stops": 3,
 "count": 10,
-"estimate_ms": 206701
+"estimate_ms": 211701
 },
 {
 "id": "travel-to-exoplanets",

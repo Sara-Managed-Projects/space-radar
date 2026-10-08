@@ -146,8 +146,9 @@ DWELL_MAX_MS = 20000
 # distance actually travelled, which this cannot know; 3.2 s is the middle of the 1.5-6.0 s band
 # the rig is given, and the estimate is printed to the nearest half minute anyway.
 FLIGHT_ESTIMATE_MS = 3200
-# The return flight of a `return: true` trip: fifteen decades at ui/trip.js RETURN_MS_PER_DECADE.
-RETURN_ESTIMATE_MS = 16000
+# The return flight of a `return: true` trip: nineteen decades at ui/trip.js RETURN_MS_PER_DECADE
+# (measured 2026-10-08 on the roof trip: 23.8 s with four screenshots taken on the way).
+RETURN_ESTIMATE_MS = 21000
 SETTLE_MS = 150
 
 

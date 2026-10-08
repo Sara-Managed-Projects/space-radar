@@ -2794,8 +2794,10 @@ export function createTrip(ctx) {
     state.portrait = null;
     state.zoom = 1;
     if (ctx.labels && ctx.labels.clearEmphasis) ctx.labels.clearEmphasis();
-    if (typeof ctx.deselect === 'function') ctx.deselect();
-    else hideCard();
+    if (typeof ctx.deselect === 'function') ctx.deselect({ keepCard: true });
+    // The last stop's subject is fifty million light-years behind: leaving from home must not
+    // select it again (stop() would, and a selection is followed).
+    lastRecord = null;
     climbing = true;
     run.flightSeq = (run.flightSeq || 0) + 1;
     const seq = run.flightSeq;
@@ -2805,7 +2807,10 @@ export function createTrip(ctx) {
       climbing = false;
       run.returning = false;
       state.returning = false;
-      if (stage.worldId !== run.savedStage) { run.stageChanged = true; state.stageChanged = true; }
+      // Home is where the visitor started: the end card then has no "Keep flying or go home" to
+      // ask (seen 2026-10-08: it asked, over the Earth), and leaving has no stage to put back.
+      run.stageChanged = stage.worldId !== run.savedStage;
+      state.stageChanged = run.stageChanged;
       finish();
     };
     ctx.wantClimb().then((climb) => {
