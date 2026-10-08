@@ -60,6 +60,7 @@ import {
   bodyFixedToSpherical,
   worldRadiusKm,
   toStage,
+  eclipticToEquatorial,
   spinPeriodHours,
   moonLapHours,
   yearDays,
@@ -78,7 +79,7 @@ import { stage } from '../scene/stage.js';
 import { icon } from './icons.js';
 import { overlayLine, legendNode, paintLegend } from './overlaylegend.js';
 import { systemOfRecordId, phaseIsMeasured } from '../scene/systems.js';
-import { liveBlock, paintLive, sparkBlock, crewBlock, hasCrewSource, linkNodes } from './cardextras.js';
+import { liveBlock, paintLive, sparkBlock, crewBlock, linkNodes, smallBodyFromLine } from './cardextras.js';
 import { upForWords } from './cardlive.js';
 import { launchMsOf } from '../data/satcat.js';
 
@@ -1789,6 +1790,19 @@ export function seeItLine(record, ctx, m, passInfo) {
     if (pick(md, 'home') === true) return COPY.sky.nakedEye;
     if (mag !== null) return mag <= NAKED_EYE_LIMIT ? COPY.sky.nakedEye : COPY.sky.needsTelescope;
     return COPY.sky.needsTelescope;
+  }
+  // A comet or an asteroid: rises, highest and sets from the visitor's place, from its own orbit
+  // (internal #299; sky/riseany.js). Whether it is BRIGHT enough is another matter, and the line says so.
+  if ((klass === 'asteroid' || klass === 'comet') && m.frame === 'sun-inertial' && Number.isFinite(m.tMs)) {
+    let from = null;
+    try {
+      from = smallBodyFromLine((tMs) => {
+        const p = positionAt(record, tMs);
+        const earth = p ? heliocentricEarth(ctx, tMs) : null;
+        return earth ? eclipticToEquatorial({ x: p.x - earth.x, y: p.y - earth.y, z: p.z - earth.z }) : null;
+      }, ctx && ctx.observer, m.tMs);
+    } catch { from = null; }
+    if (from) return from;
   }
   if (!isEarthFrame(m.frame)) return COPY.sky.notVisibleFromGround;
   switch (passInfo.state) {

@@ -148,6 +148,24 @@ check(crew.stationCrew('sat-25544', stations, null).people === null, 'no astrona
 check(crewRows(null, READ, READ) === null, 'no station, no rows');
 for (const key of ['asOf', 'stale', 'joined', 'unmatched']) check(COPY.crew[key].length <= 90, `COPY.crew.${key} fits a caption`);
 
+// --- 8. a comet's rises, highest and sets, in words (internal #299) ------------------------------
+{
+  const { fromPlaceWords, smallBodyFromLine } = await import(join(JS, 'ui/cardextras.js'));
+  const Astronomy = await import(join(ROOT, 'site/vendor/astronomy.js'));
+  const { timeText } = await import(join(JS, 'copy/en.js'));
+  const NOWMS = Date.UTC(2026, 9, 8, 12, 0, 0);
+  const jupiterAsARock = (ms) => { const v = Astronomy.GeoVector('Jupiter', new Date(ms), true); return { x: v.x, y: v.y, z: v.z }; };
+  const line = smallBodyFromLine(jupiterAsARock, { latDeg: 51.5, lonDeg: -0.1, name: 'London' }, NOWMS);
+  check(typeof line === 'string' && /^From London: /.test(line) && /sets \d\d:\d\d in the /.test(line), `the line names the place and a set time (${line})`);
+  check(/most need a telescope\.$/.test(line || ''), 'and ends by saying that up is not bright');
+  check(smallBodyFromLine(jupiterAsARock, null, NOWMS) === null, 'no place, no line');
+  check(smallBodyFromLine(jupiterAsARock, { latRad: 51.5 * Math.PI / 180, lonRad: 0 }, NOWMS).startsWith('From here: '), 'a place in radians and without a name is "here"');
+  const down = fromPlaceWords({ upNow: false, altDeg: -20, azDeg: 80, riseMs: NOWMS + 3600e3, riseAzDeg: 90, highMs: NOWMS + 6 * 3600e3, highAltDeg: 20, setMs: NOWMS + 11 * 3600e3, setAzDeg: 270, never: false, always: false }, 'Quito');
+  check(down === `From Quito: rises ${timeText.hhmm(NOWMS + 3600e3)} in the east, highest ${timeText.hhmm(NOWMS + 6 * 3600e3)}, about two fists above the horizon; sets ${timeText.hhmm(NOWMS + 11 * 3600e3)} in the west.`, `down now (${down})`);
+  check(fromPlaceWords({ upNow: false, never: true, altDeg: -40, azDeg: 0, riseMs: null, riseAzDeg: null, highMs: null, highAltDeg: null, setMs: null, setAzDeg: null }, 'Quito') === 'From Quito it does not rise in the next day and a half.', 'never up');
+  check(fromPlaceWords(null, 'Quito') === null, 'no answer, no words');
+}
+
 if (problems.length) {
   console.error('cardlive FAILED:\n  ' + problems.join('\n  '));
   process.exit(1);

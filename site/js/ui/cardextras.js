@@ -7,6 +7,8 @@
 import { COPY, t, fmt, timeText, ageInWords } from '../copy/en.js';
 import '../copy/en.later.js';
 import { load } from '../data/sources.js';
+import { altitudeInWords, azimuthInWords } from '../sky/skyview.js';
+import { riseHighestSetOf } from '../sky/riseany.js';
 import { LINKS } from '../data/links.js';
 import { stationCrew, STATION_RECORD, CREW_STALE_MS, daysBetween } from '../data/crew.js';
 import {
@@ -227,4 +229,41 @@ export function linkNodes(record) {
     a.dataset.link = r.id;
     return a;
   });
+}
+
+// --- rises, highest and sets for a comet or an asteroid (internal #299) -------------------------
+
+/**
+ * The sentence for a rise-highest-set answer (sky/riseany.js or sky/riseset.js: the same shape):
+ * "From London: rises 09:46 in the east, highest 14:42, about two fists above the horizon; sets
+ * 19:38 in the west." Pure; null when there is nothing to say.
+ */
+export function fromPlaceWords(r, placeName) {
+  if (!r) return null;
+  const W = COPY.live.from;
+  const v = {
+    place: placeName || W.here,
+    alt: altitudeInWords(r.altDeg), dir: azimuthInWords(r.azDeg),
+    rise: r.riseMs !== null ? timeText.hhmm(r.riseMs) : '', riseDir: r.riseAzDeg !== null ? azimuthInWords(r.riseAzDeg) : '',
+    highTime: r.highMs !== null ? timeText.hhmm(r.highMs) : '', highAlt: r.highAltDeg !== null ? altitudeInWords(r.highAltDeg) : '',
+    set: r.setMs !== null ? timeText.hhmm(r.setMs) : '', setDir: r.setAzDeg !== null ? azimuthInWords(r.setAzDeg) : '',
+  };
+  if (r.never) return t(W.never, v);
+  if (r.upNow) return t(r.always ? W.always : r.highMs !== null ? W.up : W.upPast, v);
+  if (r.highMs === null) return null;
+  return t(r.setMs !== null ? W.down : W.downNoSet, v);
+}
+
+/**
+ * A small body's line from the visitor's place, with what it is worked out from. `eqjAt(ms)` is
+ * its direction from the Earth in equatorial J2000 axes (ui/cards.js builds it from the same
+ * propagation the card's distance uses). Null without a place.
+ */
+export function smallBodyFromLine(eqjAt, observer, tMs) {
+  const o = observer;
+  if (!o || typeof eqjAt !== 'function') return null;
+  const latDeg = Number.isFinite(o.latDeg) ? o.latDeg : Number.isFinite(o.latRad) ? o.latRad * 180 / Math.PI : NaN;
+  const lonDeg = Number.isFinite(o.lonDeg) ? o.lonDeg : Number.isFinite(o.lonRad) ? o.lonRad * 180 / Math.PI : NaN;
+  const words = fromPlaceWords(riseHighestSetOf(eqjAt, { latDeg, lonDeg, altKm: o.altKm }, tMs), typeof o.name === 'string' ? o.name : '');
+  return words ? `${words} ${COPY.live.smallBodyHonest}` : null;
 }

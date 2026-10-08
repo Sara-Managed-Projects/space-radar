@@ -1286,7 +1286,18 @@ Object.assign(COPY, {
     upSinceYear: 'Launched in {year}: about {n} years up',
     upSinceYearNew: 'Launched in {year}',
     // Rises, highest and sets for a comet or an asteroid, from its own orbit (internal #299).
-    smallBodyHonest: 'From its orbit round the Sun and a sea-level horizon. Most are far too faint for the eye.',
+    // The sentences are the planets' (public #500, COPY.sky.worldFrom), kept word for word so a
+    // comet's card and Mars's read alike; when both are on main the two tables become one.
+    from: {
+      down: 'From {place}: rises {rise} in the {riseDir}, highest {highTime}, {highAlt}; sets {set} in the {setDir}.',
+      downNoSet: 'From {place}: rises {rise} in the {riseDir}, highest {highTime}, {highAlt}.',
+      up: 'From {place}: up now, {alt}, in the {dir}. Highest {highTime}, {highAlt}; sets {set} in the {setDir}.',
+      upPast: 'From {place}: up now, {alt}, in the {dir}. Past its highest; sets {set} in the {setDir}.',
+      never: 'From {place} it does not rise in the next day and a half.',
+      always: 'From {place}: up now, {alt}, in the {dir}. It does not set today.',
+      here: 'here',
+    },
+    smallBodyHonest: 'Worked out from its orbit for a sea-level horizon. Being up is not being bright enough to see: most need a telescope.',
   },
   crew: {
     label: 'People aboard',
