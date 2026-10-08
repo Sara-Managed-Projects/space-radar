@@ -863,8 +863,18 @@ export function status() {
       overdue: has && entry.via === 'snapshot' && entry.validUntil != null && now > entry.validUntil,
       reason: entry.reason,
       snapshot: entry.snapshot,
+      // The saved copy is the answer on screen and the publisher is still being asked behind it
+      // (spec 0060 task 3): the list says so, and stops saying so when the question is settled.
+      pendingLive: has && entry.via === 'snapshot' && askingBehind.has(src.id),
     };
   });
+}
+
+const pendingListeners = new Set();
+/** Called with (id) when a question asked behind a saved copy has been answered or given up. */
+export function onPendingSettled(fn) {
+  pendingListeners.add(fn);
+  return () => pendingListeners.delete(fn);
 }
 
 /**
@@ -1043,8 +1053,16 @@ function notify(id, result) {
  * copy and is announced; anything else -- a refusal, a timeout, the same file -- leaves the copy
  * exactly as it was, with no second error on the panel for a source that is showing data.
  */
+// The sources whose publisher is being asked behind a saved copy right now (status().pendingLive).
+const askingBehind = new Set();
+
 function liveBehind(id, src, shown) {
+  askingBehind.add(id);
+  // Told once the copy is on screen and again when the publisher has answered or given up, so the
+  // list's "checking for a newer one" never outlives the question (spec 0060 task 3).
+  const settle = () => { askingBehind.delete(id); for (const fn of pendingListeners) { try { fn(id); } catch { /* a listener cannot break the data layer */ } } };
   fetchLive(src, shown, wallNow())
+    .finally(settle)
     .then((live) => {
       if (live.via !== 'live' || !(live.fetchedAt > (shown.fetchedAt || 0))) return;
       const entry = { ...live, failures: 0 };

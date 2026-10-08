@@ -117,7 +117,7 @@ function stateTitle(state) {
  *   could not look: ...                          nothing, and we know why
  *   no good copy in this browser yet             nothing, and the error line says why
  */
-function provenanceLine(row) {
+export function provenanceLine(row) {
   if (stateOf(row) === STATE_UNKNOWN) {
     const why = couldNotLookWhy(row);
     return why ? t(COPY.status.couldNotLookLine, { reason: why }) : COPY.status.ageNeverLine;
@@ -127,6 +127,8 @@ function provenanceLine(row) {
   if (row.via === 'snapshot') {
     const line = t(COPY.status.viaSnapshotLine, { age });
     // Past its valid_until: the harvester promised a fresher copy by now. Said, never hidden.
+    // The publisher is being asked behind it right now: said while it is true (spec 0060 task 3).
+    if (row.pendingLive) return line + ' ' + COPY.status.snapshotChecking;
     return row.overdue ? line + COPY.punctuation.separator + COPY.status.snapshotOverdue : line;
   }
   if (row.via === 'live') {
@@ -453,6 +455,8 @@ export function createStatus(ctx, parent) {
     }
   };
   paint();
+  // "Checking for a newer one" leaves the row the moment the publisher has answered.
+  if (ctx.sources && typeof ctx.sources.onPendingSettled === 'function') ctx.sources.onPendingSettled(paint);
 
   // A slow repaint so ages stay true. It reads nothing that is drawn in the scene, and
   // it stops when the tab is hidden because it rides the animation frame.

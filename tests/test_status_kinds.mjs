@@ -42,4 +42,13 @@ assert.notEqual(COPY.status.layerCatalogue, COPY.status.layerLive);
   assert.equal(r.asked.map((x) => x.id).join(), 'a,c', 'asked, or holding data, is listed');
   assert.equal(r.notAsked, 1, 'never asked is counted, not called a failure');
 }
+// The list's wording while the publisher is asked behind a saved copy (spec 0060 task 3, internal #173).
+{
+  const { provenanceLine } = await import(join(JS, 'ui/status.js'));
+  const row = { id: 'x', state: 'ok', attempted: true, fetchedAt: 1, ageMs: 2 * 3600e3, via: 'snapshot', overdue: true };
+  const checking = provenanceLine({ ...row, pendingLive: true });
+  assert.match(checking, /^from our snapshot, fetched .+ \(checking for a newer one\)$/, `said while it is true: ${checking}`);
+  assert.doesNotMatch(provenanceLine({ ...row, pendingLive: false }), /checking/, 'and not after');
+  assert.match(provenanceLine({ ...row, pendingLive: false }), /overdue/, 'an overdue copy that is no longer being checked still says it is overdue');
+}
 console.log('status kinds ok: catalogue, live, bundled sample and drawn are four different claims');

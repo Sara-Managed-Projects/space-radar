@@ -213,6 +213,45 @@ async function savedCopy({ validMinutes, liveOk, id = 'celestrak-stations' }) {
   if (!problems.length) console.log('  an out-of-date snapshot is drawn at once and replaced by a newer live answer; an in-date one is left alone');
 }
 
+// THE SAVED COPY ANSWERS WHILE THE PUBLISHER IS SLOW (spec 0060 task 3, internal #173). A fake
+// publisher that never answers inside the test: the saved copy is handed back in well under three
+// seconds, the status row says the publisher is still being asked, and stops saying so when it
+// has answered.
+{
+  const id = 'celestrak-stations';
+  const store = new Map();
+  globalThis.localStorage = {
+    get length() { return store.size; }, key: (i) => [...store.keys()][i] ?? null,
+    getItem: (k) => store.get(k) ?? null, removeItem: (k) => { store.delete(k); },
+    setItem: (k, v) => { store.set(k, String(v)); },
+  };
+  delete globalThis.caches;
+  const fetched = new Date(Date.now() - 3 * 3600e3).toISOString();
+  const valid = new Date(Date.now() - 3600e3).toISOString();
+  let answer = null;
+  globalThis.fetch = async (url) => {
+    const u = String(url);
+    if (u.endsWith('data/v1/index.json')) return new Response(JSON.stringify({ schema: 1, snapshots: { [id]: { status: 'ok', fetched_at: fetched, valid_until: valid } } }), { status: 200 });
+    if (u.includes('data/v1/')) return new Response(JSON.stringify({ schema: 1, source: id, fetched_at: fetched, valid_until: valid, body: [omm(1)] }), { status: 200 });
+    return new Promise((resolve) => { answer = () => resolve(new Response(JSON.stringify([omm(1), omm(2)]), { status: 200 })); });
+  };
+  const mod = await import(join(ROOT, 'site/js/data/sources.js') + '?slow=1');
+  let settled = 0;
+  mod.onPendingSettled((sid) => { if (sid === id) settled += 1; });
+  const t0 = performance.now();
+  const first = await mod.load(id, { await: true });
+  const ms = performance.now() - t0;
+  check(first.data && first.data.length === 1 && first.via === 'snapshot' && ms < 3000, `with a publisher that does not answer, the saved copy is the answer in ${Math.round(ms)} ms (under 3 000)`);
+  const row = () => mod.status().find((r) => r.id === id);
+  check(row().pendingLive === true && row().state !== 'could-not-look', 'the row says the publisher is still being asked behind the copy');
+  check(mod.status().filter((r) => r.pendingLive).length === 1, 'and no other row says it');
+  answer();
+  await new Promise((r) => setTimeout(r, 30));
+  check(row().pendingLive === false && settled === 1, `once it has answered the row stops saying so, and the list is told (${settled})`);
+  check(row().via === 'live', 'and the newer answer is what the row now reports');
+  if (!problems.length) console.log(`  a slow publisher: the saved copy answered in ${Math.round(ms)} ms and the row said "checking" until the publisher did`);
+}
+
 // A CUT IS NEVER REFRESHED BY ITS WHOLE FILE (2026-09-28). The cuts' live URL is the 7 MB catalogue
 // or the 5 MB Starlink file; asked behind a stale cut, it cost every visitor 19 MB of JSON (before gzip) for 33 satellites.
 for (const id of ['celestrak-notable', 'celestrak-geo', 'celestrak-starlink-recent']) {

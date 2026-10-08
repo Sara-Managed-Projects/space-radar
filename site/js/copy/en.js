@@ -2142,6 +2142,7 @@ export const COPY = {
     viaSnapshotLine: 'from our snapshot, fetched {age}',
     viaLiveLine: 'read live from {publisher} {age}',
     snapshotOverdue: 'a fresher copy is overdue',
+    snapshotChecking: '(checking for a newer one)',
     couldNotLookLine: 'could not look: {reason}',
     reasonNoRoute: '{why}, and a browser cannot read {publisher} directly',
     // Why our snapshot was not the source, keyed by the code data/sources.js reports.
