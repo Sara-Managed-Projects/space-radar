@@ -862,6 +862,30 @@ function gltfLoader() {
  */
 const NOSE_UP = { 'shuttle-stack.glb': [Math.PI / 2, 0, 0] };
 
+/**
+ * IS THE VEHICLE ON THIS PAD AT THIS MOMENT? (2026-10-08, public #427.) A Saturn V on Launch
+ * Complex 39A in 2026 would be a false picture, so a hand-kept pad lists its `liftoffs`
+ * (registry/sites.yaml, the same instants as its events in registry/missions.yaml) and the vehicle
+ * is drawn only around them: from 24 hours before a liftoff given to the minute until the end of
+ * that minute, or for the whole UTC day of one given only as a date. Outside those windows
+ * scene/heroes.js draws nothing there; the pad's mark and card stay. A record with no `liftoffs`
+ * is not a gated pad and is always shown. Pure.
+ */
+export const PAD_LEAD_MS = 24 * 3600e3;
+export function padVehicleShown(record, tMs) {
+  const list = record && record.meta && record.meta.liftoffs;
+  if (!Array.isArray(list) || !list.length) return true;
+  if (!Number.isFinite(tMs)) return false;
+  for (const when of list) {
+    const text = String(when);
+    const timed = text.includes('T');
+    const t = Date.parse(timed ? text : `${text}T00:00:00Z`);
+    if (!Number.isFinite(t)) continue;
+    if (timed ? tMs >= t - PAD_LEAD_MS && tMs < t + 60e3 : tMs >= t && tMs < t + 24 * 3600e3) return true;
+  }
+  return false;
+}
+
 /** The entry in REAL_MODELS this record matches, or null. */
 export function realModelFor(record) {
   if (!record) return null;

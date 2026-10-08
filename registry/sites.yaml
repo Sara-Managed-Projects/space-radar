@@ -145,8 +145,12 @@ sites:
   # clock to their launch mornings. Coordinates read 2026-10-08 on Wikipedia's articles for the
   # two pads: 28 36 30 N, 80 36 16 W and 28 37 38 N, 80 37 15 W. Only Apollo 10's Saturn V left
   # from 39B (Wikipedia, Saturn V, read the same day), so twelve of the thirteen left from 39A.
-  - {id: saturn-v-lc-39a, display: "Saturn V, Launch Complex 39A", class: pad, world: earth, lat: 28.6083, lon: -80.6044, alt_m: 0, aliases: ["Saturn 5", "LC-39A", "Apollo launch pad"], doing: "The pad twelve Saturn V rockets left from, 1967 to 1973, six of them to land people on the Moon. The rocket is drawn as it stood on a launch morning."}
-  - {id: shuttle-lc-39b, display: "Space Shuttle, Launch Complex 39B", class: pad, world: earth, lat: 28.6272, lon: -80.6208, alt_m: 0, aliases: ["Space Shuttle", "LC-39B", "STS"], doing: "One of the two pads the Space Shuttle flew from: 53 launches from this one, the last in 2006. The stack is drawn as it stood on a launch morning."}
+  # `liftoffs:` IS THE GATE (scene/realmodels.js padVehicleShown): the vehicle is drawn from 24 hours
+  # before a liftoff given to the minute until the end of that minute, or for the UTC day of one
+  # given as a date, and at no other time. tests/test_pad_vehicles.mjs holds the list equal to the
+  # mission's events.
+  - {id: saturn-v-lc-39a, display: "Saturn V, Launch Complex 39A", class: pad, world: earth, lat: 28.6083, lon: -80.6044, alt_m: 0, aliases: ["Saturn 5", "LC-39A", "Apollo launch pad"], liftoffs: ["1968-12-21T12:51:00Z", "1969-07-16T13:32:00Z", "1972-12-07T05:33:00Z"], doing: "The pad twelve Saturn V rockets left from, 1967 to 1973. The rocket is drawn only in the day before each launch listed here: choose one to go there."}
+  - {id: shuttle-lc-39b, display: "Space Shuttle, Launch Complex 39B", class: pad, world: earth, lat: 28.6272, lon: -80.6208, alt_m: 0, aliases: ["Space Shuttle", "LC-39B", "STS"], liftoffs: ["1988-09-29", "1990-04-24", "2006-12-10"], doing: "A pad 53 Space Shuttle flights left from, the last in 2006. The stack is drawn only on the day of each launch listed here: choose one to go there."}
 
   # --- On the Moon --------------------------------------------------------------------
   # Uncited: LROC's 2016 table has the lunar module at 0.67416, 23.47314 (+/- 0.3 m), about 5 m

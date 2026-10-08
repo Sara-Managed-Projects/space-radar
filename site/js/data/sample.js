@@ -2066,6 +2066,8 @@ function siteRecord(row) {
   // procedural stand-in and the card says so. `siteKind` stays the row's class, because that is
   // what it has always meant to the card and to the pad and dish routes.
   if (row.shape) meta.siteShape = row.shape;
+  // A hand-kept pad's vehicle is drawn only around these instants (scene/realmodels.js padVehicleShown).
+  if (Array.isArray(row.liftoffs)) meta.liftoffs = row.liftoffs.slice();
   // Other names search matches (ui/search.js reads meta.aliases): Sojourner, Tranquility Base.
   if (Array.isArray(row.aliases) && row.aliases.length) meta.aliases = row.aliases.slice();
   meta.latDeg = row.lat;

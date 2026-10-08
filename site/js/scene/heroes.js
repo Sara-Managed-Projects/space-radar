@@ -38,7 +38,7 @@ export function warmModels() {
   }
   return modelsAsked || Promise.resolve(null);
 }
-import { realModelFor, loadRealModel } from './realmodels.js';
+import { realModelFor, loadRealModel, padVehicleShown } from './realmodels.js';
 import { propagate } from '../propagate/index.js';
 import { stage } from './stage.js';
 import { parseFrame } from '../propagate/frames.js';
@@ -910,6 +910,8 @@ export function createHeroes(scene, ctx) {
         if (entry.fadeStart == null) shadow.material.opacity = pose.opacity;
       }
 
+      // A rocket on a hand-kept pad is drawn only around its listed liftoffs (realmodels.js padVehicleShown).
+      if (!padVehicleShown(c.record, tMs)) { obj.visible = false; continue; }
       if (!obj.visible) {
         obj.visible = true;
         entry.fadeStart = fadeNow;

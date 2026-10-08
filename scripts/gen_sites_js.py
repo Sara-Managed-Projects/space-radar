@@ -22,7 +22,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _genmirror import Mirror, pick  # noqa: E402
 
-FIELDS = ("id", "display", "class", "world", "lat", "lon", "alt_m", "diameter_m", "shape", "record", "aliases", "doing")
+FIELDS = ("id", "display", "class", "world", "lat", "lon", "alt_m", "diameter_m", "shape", "record", "aliases", "liftoffs", "doing")
 
 
 def render(doc: dict) -> list:
