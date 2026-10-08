@@ -251,7 +251,7 @@ a browser may refuse.
 - A trip whose data is not there (no network and no saved copy, or no place set for a trip that
   starts from your ground) is left out of the lap. Nothing is said on screen.
 - If the graphics card drops the page's picture and does not give it back within five seconds,
-  the page reloads and goes on from the same stop.
+  the page reloads and goes on from the stop the trip had reached.
 - A newer version of the app never interrupts a trip and never asks: it takes over between two.
 - After twelve hours the page reloads itself between two trips, to start clean. On a screen whose
   sound was started by a key press, that reload waits for 02:00 to 05:00, because after it the
@@ -262,7 +262,15 @@ a browser may refuse.
 the network still on, let the reel play one whole lap on that computer in that browser: the
 service worker keeps each map, model and narration clip the first time it is used, so after one
 lap everything the reel shows is on the disk. After that the cable can come out. *The living
-Earth* shows its fixed cloud map instead of today's, and its data-map stops are left out.
+Earth* shows its fixed cloud map instead of today's; its four data-map stops stay in, show the
+plain globe, and say in one small line that the picture did not arrive.
+
+Seen on 2026-10-08 in headless Chrome on a laptop's own graphics card, at eight times the speed:
+three trips and 21 stops of `lobby` back to back with nothing skipped; `classroom-45` with every
+outside host unreachable (one trip that needs the live satellite list was left out without a word,
+another played four of its eight stops); and a lost picture, once given back after two seconds
+(nothing reloaded) and once kept (the page reloaded after five and went on). Not yet run: a whole
+lap at real speed, an hour, sound, or a lap with the server switched off.
 
 **A Raspberry Pi.** Not measured: nobody has run Space Radar on one yet, so we cannot tell you a
 frame rate. It needs WebGL 2 in the browser, and the app lowers its own detail on a slow graphics
