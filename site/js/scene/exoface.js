@@ -624,16 +624,26 @@ uniform vec4 uCyc[ 5 ];
 ${NOISE_GLSL}
 ${AIR_GLSL}
 
-float terrain( vec3 q ) {
+// The ground's height, 0..1, and (tiers 1 and 2) the height a short step toward the star: the
+// difference is the slope the light sees. NOT the screen-space derivative of the height: a
+// filtered look-up moves in 1/256 steps of a lattice cell, and close up its derivative is a
+// stipple of two-pixel blocks (seen 2026-10-08, run 3).
+const float STRETCH = 1.8;
+float terrain( vec3 q, vec3 toStar, out float ahead ) {
   vec3 w = q * 1.2 + uSeed;
   #if TIER >= 1
   w += 0.6 * ( fbm3v( w * 1.4 + 11.0 ) - 0.5 );
   #endif
   float h = fbm( w );
+  ahead = h;
+  #if TIER >= 1
+  ahead = fbm( w + toStar * 0.016 );
+  #endif
   #if TIER >= 2
   h += 0.03 * ( fbm3( q * 21.0 + uSeed.yzx ) - 0.5 );
   #endif
-  return clamp( ( h - 0.5 ) * 2.3 + 0.5, 0.0, 1.0 );
+  ahead = ( ahead - 0.5 ) * STRETCH + 0.5;
+  return ( h - 0.5 ) * STRETCH + 0.5;
 }
 
 // The clouds' own coordinate: wound up round each storm's eye, and thicker there.
@@ -694,7 +704,9 @@ void main() {
 
   // The ground.
   float sea = uSea;
-  float h = terrain( q );
+  vec3 Lq = uFrame * L;
+  float ahead;
+  float h = terrain( q, Lq - q * dot( q, Lq ), ahead );
   float edge = 0.003 + fwidth( h ) * 0.75;
   float land = smoothstep( sea - edge, sea + edge, h );
   float elev = clamp( ( h - sea ) / max( 1.0 - sea, 0.05 ), 0.0, 1.0 );
@@ -725,18 +737,10 @@ void main() {
   surf = mix( surf, iceCol, ice );
   float water = ( 1.0 - land ) * ( 1.0 - ice );
 
-  // Relief, from the height's own screen-space slope: no second look-up.
-  vec3 Nb = N;
+  // Relief: ground that rises toward the star faces away from it. The sea is flat, the ice smoother.
+  float relief = 0.0;
   #if TIER >= 1
-  {
-    vec3 dp1 = dFdx( vW ), dp2 = dFdy( vW );
-    float hh = max( h, sea ) + fine * 0.06 * land - lead * 0.03 * ice;
-    float dh1 = dFdx( hh ), dh2 = dFdy( hh );
-    vec3 r1 = cross( dp2, N ), r2 = cross( N, dp1 );
-    float det = dot( dp1, r1 );
-    vec3 grad = sign( det ) * ( dh1 * r1 + dh2 * r2 );
-    Nb = normalize( abs( det ) * N - 0.05 * uBump * vR * ( 1.0 - ice * 0.5 ) * grad );
-  }
+  relief = ( max( ahead, sea ) - max( h, sea ) ) * 16.0 * uBump * ( 1.0 - ice * 0.5 );
   #endif
 
   // The clouds, and the shade they throw toward the night side.
@@ -754,8 +758,7 @@ void main() {
   #endif
 
   // Light. A hard terminator, a little twilight carried round by the air.
-  float mu = dot( Nb, L );
-  float lit = max( mu, 0.0 );
+  float lit = max( mu0 - relief * ( 0.35 + 0.65 * smoothstep( 0.0, 0.3, mu0 ) ), 0.0 ) * smoothstep( -0.02, 0.06, mu0 );
   float dusk = smoothstep( -0.1, 0.03, mu0 ) * ( 1.0 - smoothstep( 0.0, 0.22, mu0 ) );
   vec3 sun = uLight * uGain * mix( vec3( 1.0 ), vec3( 1.0, 0.62, 0.38 ), uAtmK * exp( -max( mu0, 0.0 ) * 9.0 ) * 0.75 );
   vec3 col = surf * sun * ( lit * shade + 0.03 * dusk * uAtmK );
@@ -966,7 +969,7 @@ const v4 = (a) => new THREE.Vector4(a[0], a[1], a[2], a[3]);
 export function seaLevelFor(share) {
   if (share <= 0) return 0;
   // terrain() is a stretched fbm: its median is 0.5 and a tenth of the globe lies above 0.77.
-  return clamp(0.5 + (share - 0.5) * 0.62, 0.02, 0.98);
+  return clamp(0.5 + (share - 0.5) * 0.53, 0.02, 0.98);
 }
 
 export function faceUniforms(face) {
