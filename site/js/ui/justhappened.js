@@ -77,10 +77,13 @@ export function justRow(item, nowMs) {
     const l = item.launch;
     const status = l.outcome ? H[l.outcome] : l.statusName;
     const from = l.place ? t(H.launchesFrom, { place: l.place }) : '';
+    // Launch Library names a launch "rocket | payload": the payload is the row, the rocket its detail.
+    const cut = l.name.indexOf(' | ');
+    const rocket = cut > 0 ? l.name.slice(0, cut) : '';
     return {
-      title: l.name,
+      title: cut > 0 ? l.name.slice(cut + 3) : l.name,
       value: ageInWords(nowMs - l.netMs),
-      detail: from && status ? t(H.launchDetail, { from, status }) : (from || status),
+      detail: rocket && status ? t(from ? H.launchDetail : H.launchDetailNoPlace, { rocket, status, from }) : [rocket, status, from].filter(Boolean).join(COPY.punctuation.listJoin),
     };
   }
   const d = item.decay;
@@ -118,7 +121,7 @@ export function mountJustHappened(box, ctx) {
         body.type = 'button';
         body.title = H.flyTitle;
         body.addEventListener('click', () => { if (typeof ctx.select === 'function') ctx.select(pad); });
-      } else body.setAttribute('role', 'note');
+      } else { body.setAttribute('role', 'note'); body.title = row.detail; }
       const head = el('span', 'sr-next__head');
       head.appendChild(el('span', 'sr-next__title', row.title));
       if (row.value) head.appendChild(el('span', 'sr-next__value', row.value));
@@ -128,12 +131,13 @@ export function mountJustHappened(box, ctx) {
     }
     if (shown.length) box.appendChild(list);
     if (built.debrisCount > 0) box.appendChild(el('p', 'sr-next__note', built.debrisCount === 1 ? H.debrisOne : t(H.debris, { n: fmt.int(built.debrisCount) })));
+    const acts = el('div', 'sr-next__pastacts');
     if (built.items.length > JUST_ROWS) {
       const more = el('button', 'sr-more', st.expanded ? H.showFewer : t(H.showAll, { n: fmt.int(built.items.length) }));
       more.type = 'button';
       more.setAttribute('aria-expanded', st.expanded ? 'true' : 'false');
       more.addEventListener('click', () => { st.expanded = !st.expanded; paint(); });
-      box.appendChild(more);
+      acts.appendChild(more);
     }
     // What came down, when asked: the whole catalogue is read for it.
     if (st.decaysState !== 'ready') {
@@ -142,11 +146,12 @@ export function mountJustHappened(box, ctx) {
       b.title = H.decaysTitle;
       b.disabled = st.decaysState === 'reading';
       b.addEventListener('click', readDecays);
-      box.appendChild(b);
+      acts.appendChild(b);
       if (st.decaysState === 'failed') box.appendChild(el('p', 'sr-next__note', H.decaysFailed));
     } else if (!built.items.some((i) => i.kind === 'decay') && !built.debrisCount) {
       box.appendChild(el('p', 'sr-next__note', H.decaysNone));
     }
+    if (acts.firstChild) box.insertBefore(acts, box.querySelector('.sr-next__list') ? box.querySelector('.sr-next__list').nextSibling : null);
     if (st.launches && Number.isFinite(st.fetchedAt)) {
       const age = now - st.fetchedAt;
       box.appendChild(el('p', 'sr-next__note', age > STALE_MS ? t(H.stale, { date: timeText.utcLong(st.fetchedAt) }) : t(H.asOf, { age: ageInWords(age) })));

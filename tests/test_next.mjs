@@ -205,12 +205,12 @@ check(buildNextItems([launch('A', H)], now, { observer: { latRad: 0.9, lonRad: 0
   check(built.debrisCount === 2 && !built.items.some((it) => it.decay && it.decay.kind === 'debris'), `debris is counted, not listed (${built.debrisCount})`);
   check(J.buildJustHappened(null, null, NOW).items.length === 0, 'no sources, an empty list, no throw');
   const first = J.justRow(built.items[0], NOW);
-  check(first.title === 'Nuri | NeonSat-2 to 6' && first.detail === 'Launched from Naro Space Center, South Korea; reached orbit', `a launch row (${first.title}: ${first.detail})`);
+  check(first.title === 'NeonSat-2 to 6' && first.detail === 'Nuri: reached orbit, from Naro Space Center, South Korea', `a launch row: the payload, then the rocket and the outcome first (${first.title}: ${first.detail})`);
   check(/ago$/.test(first.value), `and how long ago (${first.value})`);
   const down = J.justRow(built.items.find((it) => it.kind === 'decay'), NOW);
   check(down.detail === 'Came down on 6 October 2026 (catalogue decay date)', `the words for the past name the day and where the date is from (${down.detail})`);
   const failed = J.justRow({ kind: 'launch', tMs: NOW, launch: { name: 'X', netMs: NOW - 3600e3, outcome: 'failed', place: 'Somewhere' } }, NOW);
-  check(/did not reach orbit$/.test(failed.detail), `a failure is listed in plain words, not hidden (${failed.detail})`);
+  check(/did not reach orbit/.test(failed.detail), `a failure is listed in plain words, not hidden (${failed.detail})`);
   const odd = J.justRow({ kind: 'launch', tMs: NOW, launch: { name: 'X', netMs: NOW - 3600e3, outcome: null, statusName: 'Launch was a Partial Success', place: '' } }, NOW);
   check(odd.detail === 'Launch was a Partial Success', 'a status this page has no words for is the publisher\'s own');
   const all = JSON.stringify(Object.values((await import(join(JS, 'copy/en.js'))).COPY.happened7));

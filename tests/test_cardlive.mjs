@@ -67,12 +67,13 @@ check(live.closestApproach(flyby, []) === null, 'no samples, no closest approach
 const g = live.sparkGeometry(samples, T, min, 320, 56);
 check(g && g.path.startsWith('M0 ') && g.nowX === 160 && g.minX > 160 && g.minX < 320, `the geometry puts now in the middle and the pass after it (${g && g.nowX}, ${g && g.minX})`);
 check(g && g.minY > 54, `a pass at a tenth of the Moon's distance sits on the baseline (${g && g.minY})`);
-check(live.closestDistanceText(38000).startsWith('0.1×'), `38 000 km is 0.1 of the Moon's distance (${live.closestDistanceText(38000)})`);
+check(live.closestDistanceText(38000) === '0.1 Moon distances', `38 000 km is 0.1 of the Moon's distance (${live.closestDistanceText(38000)})`);
 check(live.closestDistanceText(1.5 * UNITS.AU_KM) === '1.50 AU', `beyond a hundred Moon distances it is AU (${live.closestDistanceText(1.5 * UNITS.AU_KM)})`);
 const cw = live.closestWords({ tMs: Date.UTC(2029, 3, 13, 21, 46), km: 38000 }, false);
-check(/^Closest: 13 April 2029 · 0\.1× the Moon’s distance$/.test(cw), `the closest approach in words (${cw})`);
+check(cw === 'Closest: 13 Apr 2029 · 0.1 Moon distances', `the closest approach in words, the date in UTC (${cw})`);
 check(live.closestWords({ tMs: Date.UTC(2029, 3, 13), km: 38000 }, true).startsWith('Closest: about '), 'an approximate path says "about"');
-check(cw.length <= 60, `one chrome line (${cw.length} characters)`);
+check(cw.length <= 44 && live.closestWords({ tMs: Date.UTC(2029, 8, 23), km: 99 * 384400 }, true).length <= 50, `one line of a 320 px card (${cw.length} characters)`);
+check(g && g.tickY < 56 - 10, `the closest approach's mark stands on the baseline even when the curve touches it (${g && g.tickY})`);
 
 // --- 4. the card's own distance function: from the same propagation, and null where it has none --
 const earthAt = (tMs) => ({ x: UNITS.AU_KM * Math.cos(tMs / 5e9), y: UNITS.AU_KM * Math.sin(tMs / 5e9), z: 0 });
@@ -134,7 +135,7 @@ const watkins = r.people.find(([name]) => name === 'Jessica Watkins');
 check(watkins && watkins[1] === 'NASA · 6 days up', `launched 1 October: 6 days (${watkins && watkins[1]})`);
 check(crew.daysBetween(Date.UTC(2026, 9, 1, 15, 10, 6), READ) === 6 && crew.daysBetween(READ, READ - 1) === 0 && crew.daysBetween(null, READ) === null, 'whole days, never negative, null without a date');
 check(r.asOf === 'Read 2 hours ago from Launch Library 2 (The Space Devs).' && !r.stale, `two hours old says so (${r.asOf})`);
-check(r.docked[0][1] === 'Harmony forward · since 1 October 2026', `a docked vehicle's port and date (${r.docked[0][1]})`);
+check(r.docked[0][1] === 'Harmony forward · 1 Oct 2026', `a docked vehicle's port and the day it docked (${r.docked[0][1]})`);
 const stale = crewRows(iss, READ, READ + 49 * 3600e3);
 check(stale.stale && stale.asOf === 'Read on 8 October 2026: more than two days old, so it may have changed.', `past 48 h it says so, with the date (${stale.asOf})`);
 check(!crewRows(iss, READ, READ + 47 * 3600e3).stale, 'at 47 h it is not stale yet');

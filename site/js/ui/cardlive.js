@@ -11,7 +11,7 @@
 //   distanceSamples(distAt, t0, t1, n)     [{ tMs, km }] where distAt gave a number
 //   closestApproach(distAt, samples)       { tMs, km } refined inside the best coarse bracket
 //   sparkGeometry(samples, nowMs, min, w, h)  { path, nowX, minX, minY } for an SVG of w x h
-//   closestWords(min, approximate)         "13 Apr 2029 · 0.1× the Moon's distance"
+//   closestWords(min, approximate)         "Closest: 13 Apr 2029 · 0.1 Moon distances"
 //   upFor(launchMs, nowMs)                 whole years in orbit, or null
 //   upForWords(launchMs, year, nowMs)      the sentence, from a catalogue date or a designator's year
 //
@@ -127,6 +127,9 @@ export function sparkGeometry(samples, nowMs, min, w = 320, h = 56) {
     nowX: Number.isFinite(nowMs) && nowMs >= t0 && nowMs <= t1 ? r(x(nowMs)) : null,
     minX: min ? r(x(min.tMs)) : null,
     minY: min ? r(y(Math.min(top, min.km))) : null,
+    // The mark is a tick standing on the baseline, a quarter of the box high: a pass that reaches
+    // the baseline would otherwise have a mark of no height at all (seen 2026-10-08 on Apophis).
+    tickY: r(h - 1 - h / 4),
     t0, t1, topKm: top,
   };
 }
@@ -140,11 +143,18 @@ export function closestDistanceText(km) {
   return t(L.au, { n: fmt.smart(km / UNITS.AU_KM) });
 }
 
-/** "13 April 2029 · 0.1× the Moon's distance", and "about" in front when the path is approximate. */
+/** "13 Apr 2029", in UTC: a date for one line of a narrow card. */
+export function shortUtcDate(ms) {
+  if (!Number.isFinite(ms)) return '';
+  const d = new Date(ms);
+  return t(COPY.live.shortDate, { day: String(d.getUTCDate()), month: COPY.live.months[d.getUTCMonth()], year: String(d.getUTCFullYear()) });
+}
+
+/** "Closest: 13 Apr 2029 · 0.1 Moon distances", and "about" in front when the path is approximate. */
 export function closestWords(min, approximate = false) {
   if (!min || !Number.isFinite(min.tMs) || !Number.isFinite(min.km)) return '';
   const L = COPY.live;
-  return t(approximate ? L.closestAbout : L.closest, { date: timeText.utcLong(min.tMs), dist: closestDistanceText(min.km) });
+  return t(approximate ? L.closestAbout : L.closest, { date: shortUtcDate(min.tMs), dist: closestDistanceText(min.km) });
 }
 
 /** Whole years since launch, or null (no date, or a date after the clock). */

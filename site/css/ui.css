@@ -6737,9 +6737,12 @@ html.sr-phone .sr-passport {
 .sr-spark__base { stroke: var(--sr-line-strong); stroke-width: 1; }
 .sr-spark__now { stroke: var(--sr-text-dim); stroke-width: 1; }
 .sr-spark__min { stroke: var(--sr-ember); stroke-width: 2; }
-.sr-spark__go { margin-top: var(--sp-2); text-align: left; }
+.sr-spark__go { margin-top: var(--sp-2); text-align: left; font-size: var(--sr-fs-sm); }
 
 .sr-crew { display: flex; flex-direction: column; gap: var(--sp-3); }
+.sr-crew__people .sr-card__aboardnote { margin-top: var(--sp-2); }
+.sr-next__pastacts { display: flex; flex-wrap: wrap; gap: 0 var(--sp-4); }
+.sr-next__pastbox { margin-bottom: var(--sp-3); }
 .sr-card__out { color: var(--sr-text-soft); }
 .sr-card__aboardnote.is-stale { color: var(--sr-text-soft); }
 

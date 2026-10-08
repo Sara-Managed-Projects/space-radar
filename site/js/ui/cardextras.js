@@ -12,7 +12,7 @@ import { riseHighestSetOf } from '../sky/riseany.js';
 import { LINKS } from '../data/links.js';
 import { stationCrew, STATION_RECORD, CREW_STALE_MS, daysBetween } from '../data/crew.js';
 import {
-  liveDistanceWords, liveKey, distanceSamples, closestApproach, sparkGeometry, closestWords,
+  liveDistanceWords, liveKey, distanceSamples, closestApproach, sparkGeometry, closestWords, shortUtcDate,
   SPARK_SPAN_MS, SPARK_MIN_SAMPLES,
 } from './cardlive.js';
 
@@ -110,7 +110,7 @@ export function sparkBlock(record, distAt, tMs, ctx, approxAt) {
   };
   line(0, SPARK_H - 1, SPARK_W, SPARK_H - 1, 'sr-spark__base');
   if (g.nowX !== null) line(g.nowX, 0, g.nowX, SPARK_H, 'sr-spark__now');
-  if (g.minX !== null) line(g.minX, g.minY, g.minX, SPARK_H, 'sr-spark__min');
+  if (g.minX !== null) line(g.minX, g.tickY, g.minX, SPARK_H - 1, 'sr-spark__min');
   const path = document.createElementNS(SVG_NS, 'path');
   path.setAttribute('d', g.path);
   path.setAttribute('class', 'sr-spark__path');
@@ -166,7 +166,7 @@ export function crewRows(crew, fetchedAtMs, wallMs) {
     const v = { agency: p.agency, days: days === null ? '' : fmt.int(days) };
     return [p.name, days === null ? p.agency : t(p.agency ? C.person : C.personNoAgency, v)];
   });
-  const docked = crew.docked.map((d) => [d.vehicle, t(C.docked, { port: d.port, date: d.dockedMs !== null ? timeText.utcLong(d.dockedMs) : '' })]);
+  const docked = crew.docked.map((d) => [d.vehicle, t(C.docked, { port: d.port, date: d.dockedMs !== null ? shortUtcDate(d.dockedMs) : '' })]);
   const age = Number.isFinite(fetchedAtMs) && Number.isFinite(wallMs) ? wallMs - fetchedAtMs : null;
   const stale = age !== null && age > CREW_STALE_MS;
   return {
