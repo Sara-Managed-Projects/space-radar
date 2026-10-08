@@ -77,6 +77,8 @@ const DEFERRED = {
   'js/ui/missions.js': 'the mission events: main.js fetches them with the first card',
   'js/propagate/ephemeris.js': 'the reader of a craft\'s own path file: it arrives with ui/missions.js',
   'js/data/ephemerides.js': 'the index of the path files: with the reader',
+  'js/propagate/pool.js': 'SGP4 for a big catalogue in a worker: main.js fetches it when a layer lands with 2 000 SGP4 records or more',
+  'js/propagate/worker.js': 'the worker itself: with propagate/pool.js',
   'js/ui/searchrows.js': 'what a search row says, and the trips, missions and events it finds: ui/search.js fetches it on the field\'s first focus',
   'js/data/tours-words.js': 'the words a trip is found by: with ui/searchrows.js',
   'js/data/missions.js': 'the missions\' events: with ui/missions.js or ui/searchrows.js',

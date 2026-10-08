@@ -293,6 +293,10 @@ export function createGlyphLayer(scene, layer = {}) {
   let viewport = viewportCss();
   let viewportLocked = false; // true once setViewport() is called by hand
   let positionSource = null;
+  // A big SGP4 catalogue propagated in a worker (propagate/pool.js), or null: see setPool().
+  let pool = null;
+  const pooled = { x: 0, y: 0, z: 0, frame: 'earth-inertial' };
+  const ephemerisOf = propagateMod.EPHEMERIS_OF || null;
   const emberColour = new THREE.Color(PALETTE.ember);
   const scratch = { x: 0, y: 0, z: 0 };
   const _scene = new THREE.Vector3();
@@ -394,6 +398,7 @@ export function createGlyphLayer(scene, layer = {}) {
     }
     live = [];
     if (geometry) geometry.instanceCount = 0;
+    if (pool) pool.setRecords(records);
   }
 
   function positionOf(record, tMs) {
@@ -426,13 +431,36 @@ export function createGlyphLayer(scene, layer = {}) {
     const emberG = emberColour.g;
     const emberB = emberColour.b;
     live.length = 0;
+    // The worker's answer, when there is one (propagate/pool.js): the same SGP4 numbers, computed
+    // off this thread for this tick or the one before. Until the first answer lands, with a
+    // position source set by hand, or once the worker has failed, every record is asked here as
+    // before. The selection is always asked here, at this instant exactly; so is a craft that has
+    // its own path file.
+    let workerPos = null;
+    let workerMask = null;
+    if (pool && pool.ok && !positionSource) {
+      pool.request(tMs);
+      const answer = pool.latest;
+      if (answer && answer.pos.length === records.length * 3) { workerPos = answer.pos; workerMask = pool.mask; }
+    }
+    const ownPaths = ephemerisOf && ephemerisOf.size ? ephemerisOf : null;
     for (let i = 0; i < records.length; i++) {
       const rec = records[i];
       let p = null;
-      try {
-        p = positionOf(rec, tMs);
-      } catch {
-        p = null;
+      if (workerPos && workerMask[i] === 1 && rec.id !== selectedId && !(ownPaths && ownPaths.has(rec.id))) {
+        const x = workerPos[i * 3];
+        if (x !== x) continue; // NaN: SGP4 had no answer for it
+        pooled.x = x;
+        pooled.y = workerPos[i * 3 + 1];
+        pooled.z = workerPos[i * 3 + 2];
+        pooled.frame = rec.frame || 'earth-inertial';
+        p = pooled;
+      } else {
+        try {
+          p = positionOf(rec, tMs);
+        } catch {
+          p = null;
+        }
       }
       if (!p) continue;
       let v = p;
@@ -597,6 +625,8 @@ export function createGlyphLayer(scene, layer = {}) {
       if (up) material.uniforms.uSkyUp.value.copy(up);
     },
     dispose() {
+      if (pool) pool.dispose();
+      pool = null;
       if (mesh) scene.remove(mesh);
       if (geometry) geometry.dispose();
       material.dispose();
@@ -621,6 +651,19 @@ export function createGlyphLayer(scene, layer = {}) {
     /** Replace propagate() as the position source, e.g. a table filled by a worker. */
     setPositionSource(fn) {
       positionSource = typeof fn === 'function' ? fn : null;
+    },
+    /**
+     * Hand the layer's SGP4 to a worker (propagate/pool.js `createPropagationPool()`), or take it
+     * back with null. The layer gives the pool its records now and on every setRecords().
+     */
+    setPool(next) {
+      if (pool && pool !== next) pool.dispose();
+      pool = next || null;
+      if (pool) pool.setRecords(records);
+    },
+    /** The pool's own account of itself, or null: for probes and `spaceRadar.perf()`. */
+    poolStats() {
+      return pool ? { ok: pool.ok, ...pool.stats } : null;
     },
     get mesh() {
       return mesh;

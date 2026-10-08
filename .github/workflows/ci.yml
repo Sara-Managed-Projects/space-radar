@@ -629,6 +629,11 @@ jobs:
       - run: pip install --disable-pip-version-check pyyaml
       - name: "what must stay out of the first visit stays out, and its stand-ins hold the door (internal #405)"
         run: node tests/test_boot_diet.mjs
+      # Spec 0049 task 1 (public #285): 1 000 element sets through propagate/worker.js in a real worker
+      # thread, every number compared with the in-thread path by Object.is; the pool's one question
+      # in flight; the fallback when there is no Worker.
+      - name: "SGP4 in a worker gives the page's own numbers to the last bit, and the page falls back without one"
+        run: node tests/test_propagate_worker.mjs
       - name: "the constellation figures as strokes, with the stars at their corners"
         run: node tests/test_figures.mjs
       - name: "the nebulae's photographs in the sky from the ground"

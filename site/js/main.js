@@ -2266,6 +2266,23 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
   // show says "3 390" from the first frame rather than "loading" for a layer that is there.
   for (const layer of later) if (layer.draw === 'stars3d') layer.count = () => ctx.stars3d.count() ?? NAMED_STARS;
 
+  // A big SGP4 catalogue is propagated in a worker (propagate/pool.js, public #285): fetched the
+  // first time a layer lands with POOL_MIN_SGP4 such records, never at boot. `?worker=0` keeps the
+  // old in-thread path, for measuring one against the other. The number is pool.js's
+  // POOL_MIN_RECORDS (tests/test_propagate_worker.mjs holds the two together).
+  const POOL_MIN_SGP4 = 2000;
+  const poolOff = typeof location !== 'undefined' && /[?&]worker=0\b/.test(location.search);
+  function wantPool(gl, records) {
+    if (poolOff || !gl.setPool || gl.poolStats() || typeof Worker !== 'function') return;
+    if (!records || records.length < POOL_MIN_SGP4) return;
+    let n = 0;
+    for (const r of records) if (r && r.propagator === 'sgp4') n++;
+    if (n < POOL_MIN_SGP4) return;
+    import('./propagate/pool.js')
+      .then((m) => { if (!gl.poolStats()) gl.setPool(m.createPropagationPool()); })
+      .catch((err) => console.warn('propagation worker not available; propagating in the page', err));
+  }
+
   async function one(layer) {
     const gl = glyphLayers.get(layer.id);
     try {
@@ -2280,6 +2297,7 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
         if (ctx.colourKeyFn && gl.recolour) gl.recolour(ctx.colourKeyFn);
         gl.setRecords(records || []);
         gl.setVisible(ctx.isLayerOn(layer.id));
+        wantPool(gl, records);
       }
       window.dispatchEvent(new CustomEvent('sr:layer', { detail: { id: layer.id, count: (records || []).length } }));
     } catch (err) {
