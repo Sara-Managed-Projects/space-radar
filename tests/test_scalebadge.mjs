@@ -106,8 +106,9 @@ check(/import\('\.\/ui\/scalebadge\.js'\)/.test(main) && !/^import[^\n]*scalebad
 check(/MARKER_PX/.test(main.slice(main.indexOf("import('./ui/scalebadge.js')") - 600, main.indexOf("import('./ui/scalebadge.js')") + 600)), 'and hands it orbitrings.js MARKER_PX, not a number of its own');
 const src = read('site/js/ui/scalebadge.js');
 check(!/['"`][A-Z][a-z]+ [a-z]+ [a-z]+/.test(src.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '')), 'no sentence is typed in the module');
-const css = read('site/css/ui.css');
+const css = read('site/css/finishers.css');
 check(/\.sr-scalebadge\s*\{[^}]*var\(--sr-z-/.test(css), 'the badge takes its z-index from the ladder');
+check(!/sr-scalebadge/.test(read('site/css/ui.css')) && /loadCss\('finishers'/.test(src), 'its rules are not a first visit\'s: css/finishers.css comes with the module');
 check(/prefers-reduced-motion/.test(src) || /reducedMotion/.test(src), 'True size is a cut under reduced motion');
 
 if (problems.length) {

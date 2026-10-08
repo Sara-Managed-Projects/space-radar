@@ -85,9 +85,11 @@ export function createBase(ctx, opts = {}) {
   root.setAttribute('aria-label', B.label);
   root.title = B.title;
   root.appendChild(icon('house', 20));
-  root.hidden = true;
+  // IN THE RAIL ONLY WHILE AWAY: put in and taken out, not hidden. The rail's buttons are `display:
+  // grid`, which beats the `hidden` attribute, and a rule to answer that would have to be in the
+  // first visit's stylesheet for a button a first visit never shows.
   const host = opts.host || doc.getElementById('sr-rail');
-  if (host) host.insertBefore(root, host.firstChild);
+  let on = false;
 
   function refresh() {
     const rig = ctx.cameraRig && ctx.cameraRig.state;
@@ -98,17 +100,22 @@ export function createBase(ctx, opts = {}) {
       distance: rig && !rig.flying ? rig.distance : NaN,
       homeDistance: typeof ctx.homeDistance === 'function' ? ctx.homeDistance() : NaN,
     });
-    if (root.hidden === away) {
-      // Going away with the focus on it would drop the focus to the page: hand it to the rail's next.
-      if (!away && doc.activeElement === root && root.nextElementSibling) root.nextElementSibling.focus({ preventScroll: true });
-      root.hidden = !away;
-    }
+    // Not over a clear screen (H): the rail there is the eye and Share alone (ui/cleanview.js).
+    const want = away && !doc.documentElement.classList.contains('sr-clean');
+    if (want === on || !host) return;
+    on = want;
+    if (want) { host.insertBefore(root, host.firstChild); return; }
+    // Going with the focus on it would drop the focus to the page: hand it to the rail's next.
+    const next = doc.activeElement === root ? root.nextElementSibling : null;
+    root.remove();
+    if (next) next.focus({ preventScroll: true });
   }
   const go = () => returnToBase(ctx, doc);
   root.addEventListener('click', go);
   const onAny = () => refresh();
   win.addEventListener('sr:stage', onAny);
   win.addEventListener('sr:select', onAny);
+  win.addEventListener('sr:clean', onAny);
   const timer = win.setInterval(refresh, REFRESH_MS);
   refresh();
   return {
@@ -119,6 +126,7 @@ export function createBase(ctx, opts = {}) {
       win.clearInterval(timer);
       win.removeEventListener('sr:stage', onAny);
       win.removeEventListener('sr:select', onAny);
+      win.removeEventListener('sr:clean', onAny);
       root.remove();
     },
   };

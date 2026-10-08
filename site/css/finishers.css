@@ -1,0 +1,209 @@
+/* finishers.css -- the scale badge (ui/scalebadge.js, public #296), the launch chip
+ * (ui/launchchip.js, #289) and a first visit's three lines and two buttons (ui/welcome.js,
+ * #241 and #287).
+ *
+ * Linked by ui/latercss.js when the first of those modules builds its first element, never at
+ * boot: every one of them is fetched after the first visit has settled, and their rules with
+ * them (registry/budgets.yaml first_visit_bytes). Tokens only, all from css/ui.css :root;
+ * tests/test_tokens.mjs, tests/test_guide_rails.mjs and tests/test_touch_targets.mjs hold this
+ * file to the same rules as ui.css.
+ */
+
+/* THE SCALE BADGE (ui/scalebadge.js): one small glass button at the top left of the scene area,
+   on the Planets tab only. It says how much wider than the planet its dot is; pressed, the dots
+   are put away and it says what was lost. Level 2 glass, the label role, mono for the number's
+   sake is not taken: the line is a sentence. */
+.sr-scalebadge {
+  position: fixed;
+  top: calc(var(--sr-inset) + env(safe-area-inset-top, 0px));
+  left: calc(var(--sr-scene-left) + var(--sr-inset));
+  z-index: var(--sr-z-controls);
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  max-width: calc(100vw - var(--sr-scene-left) - 2 * var(--sr-inset) - 64px);
+  padding: 0 var(--sp-3);
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  font-variant-numeric: tabular-nums;
+  color: var(--sr-text);
+  text-align: left;
+  cursor: pointer;
+  background: var(--sr-glass-strong);
+  border-radius: var(--sr-radius);
+  transition: left var(--sr-slow) var(--sr-ease), border-color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-scalebadge[hidden] { display: none; }
+
+.sr-scalebadge[aria-pressed='true'] {
+  border-color: var(--sr-ember);
+}
+
+.sr-scalebadge__text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (hover: hover) {
+  .sr-scalebadge:hover {
+    border-color: var(--sr-line-strong);
+  }
+}
+
+/* On a phone: under the search row, 16 px in; under the line too while that is up. */
+html.sr-phone .sr-scalebadge {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2));
+  left: max(var(--sp-4), env(safe-area-inset-left, 0px));
+  min-height: 44px;
+  max-width: calc(100vw - 2 * var(--sp-4));
+}
+
+html.sr-phone.sr-card-open:not([data-sheet='full']) .sr-scalebadge,
+html.sr-phone.sr-launchday:not([data-sheet='full']) .sr-scalebadge {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 44px + var(--sp-2));
+}
+
+html.sr-clean .sr-scalebadge,
+html.sr-trip-mode .sr-scalebadge,
+html.sr-ambient .sr-scalebadge,
+html.sr-sharing .sr-scalebadge {
+  display: none;
+}
+
+/* THE LAUNCH CHIP (ui/launchchip.js): a launch inside a day, counting down beside the wordmark;
+   on a phone in the line under the search. Mono, tabular, as every ticking number. */
+.sr-launchchip {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: var(--sp-2);
+  align-items: center;
+  min-height: 32px;
+  margin: 0 var(--sp-2) 0 auto;
+  padding: 0 var(--sp-3) 0 var(--sp-2);
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: var(--sr-text);
+  white-space: nowrap;
+  cursor: pointer;
+  background: var(--sr-wash);
+  border: 0;
+  border-radius: var(--sr-radius-pill);
+  transition: background-color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-launchchip[hidden] { display: none; }
+
+.sr-launchchip:active {
+  background: var(--sr-wash-strong);
+}
+
+.sr-launchchip svg {
+  color: var(--sr-text-soft);
+}
+
+@media (hover: hover) {
+  .sr-launchchip:hover {
+    background: var(--sr-wash-hover);
+  }
+}
+
+/* The phone's line under the search is up while a launch is inside a day, with or without a card;
+   the clock's own line beside it only when the pill is away, as before (ONE CLOCK ON SCREEN). */
+html.sr-phone.sr-launchday:not([data-sheet='full']) .sr-top__line {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+}
+
+html.sr-phone.sr-launchday:not(.sr-card-open) .sr-liveline {
+  display: none;
+}
+
+html.sr-phone .sr-launchchip {
+  min-height: 44px;
+  margin: 0;
+  padding: 0 var(--sp-4) 0 var(--sp-3);
+  background: var(--sr-glass-strong);
+  border: 1px solid var(--sr-line);
+  border-top-color: var(--sr-edge-lit);
+}
+
+/* A FIRST VISIT (ui/welcome.js): three lines and two buttons at the head of the home, once. */
+.sr-welcome {
+  transition: opacity var(--sr-mid) var(--sr-ease);
+}
+
+.sr-welcome__lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sr-welcome__lines li {
+  padding: var(--sp-1) 0;
+  font: 400 var(--sr-fs-body)/20px var(--sr-font);
+  color: var(--sr-text);
+}
+
+.sr-welcome__actions {
+  display: flex;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+
+.sr-welcome__btn {
+  display: inline-flex;
+  flex: 1 1 0;
+  gap: var(--sp-2);
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  padding: 0 var(--sp-3);
+  font: 400 var(--sr-fs-label)/20px var(--sr-font);
+  white-space: nowrap;
+  cursor: pointer;
+  border: 0;
+  border-radius: var(--sr-radius);
+  transition: background-color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-welcome__go {
+  font-weight: 600;
+  color: var(--sr-ink);
+  background: var(--sr-ember);
+}
+
+.sr-welcome__go:active {
+  background: var(--sr-ember-light);
+}
+
+.sr-welcome__look {
+  color: var(--sr-text);
+  background: var(--sr-wash);
+}
+
+.sr-welcome__look:active {
+  background: var(--sr-wash-strong);
+}
+
+@media (hover: hover) {
+  .sr-welcome__go:hover {
+    background: var(--sr-ember-light);
+  }
+
+  .sr-welcome__look:hover {
+    background: var(--sr-wash-hover);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-scalebadge,
+  .sr-launchchip,
+  .sr-welcome,
+  .sr-welcome__btn,
+  .sr-trip__home {
+    transition: opacity 120ms linear;
+  }
+}

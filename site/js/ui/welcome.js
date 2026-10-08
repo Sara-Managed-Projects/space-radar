@@ -36,6 +36,7 @@
 
 import { COPY } from '../copy/en.js';
 import '../copy/en.later.js';
+import { loadCss } from './latercss.js';
 import { icon } from './icons.js';
 
 export const WELCOME_KEY = 'sr:welcome';
@@ -142,10 +143,13 @@ export function createWelcome(ctx, opts = {}) {
   const onSelect = (e) => { if (open && e.detail) hide('select'); };
   let offTrip = null;
 
-  function show() {
+  async function show() {
     if (open) return;
     const host = pane();
     if (!host) return;
+    // Its rules come with it (css/finishers.css), and it is not shown unstyled.
+    await loadCss('finishers', doc);
+    if (open) return;
     if (!root) build();
     host.insertBefore(root, host.firstChild);
     open = true;

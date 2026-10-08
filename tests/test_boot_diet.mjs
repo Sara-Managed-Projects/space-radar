@@ -94,6 +94,7 @@ const DEFERRED = {
   'js/ui/launchchip.js': 'the launch chip: LAUNCHDAY_MS after sr:layers-ready, or with a Starlink launch\'s card',
   'js/ui/base.js': 'Return to base: LAUNCHDAY_MS after sr:layers-ready, or when the trip\'s house is pressed',
   'js/ui/scalebadge.js': 'the scale badge: the first time the Sun\'s stage is entered',
+  'js/ui/latercss.js': 'the loader of css/finishers.css: with the first of the four modules above',
   'js/ui/icons.js': 'the icons: they arrive with the first module that draws one (the keys hint, the card, the trip frame)',
   'js/ui/scrubber.js': 'the timeline: SCRUBBER_MS after sr:layers-ready, or on a touch of its seat',
   'js/ui/today.js': 'the dated cards: TODAY_MS after sr:layers-ready',

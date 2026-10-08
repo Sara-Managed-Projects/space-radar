@@ -35,6 +35,7 @@
 
 import { COPY, t, fmt } from '../copy/en.js';
 import '../copy/en.later.js';
+import { loadCss } from './latercss.js';
 
 const DEG = Math.PI / 180;
 /** How long the dots take to shrink or grow, ms: the guide's --sr-slow. A cut under reduced motion. */
@@ -125,6 +126,9 @@ export function createScaleBadge(ctx, opts = {}) {
   root.type = 'button';
   root.className = 'sr-scalebadge sr-float';
   root.hidden = true;
+  // Its rules come with it (css/finishers.css): shown only once they are here.
+  let styled = false;
+  loadCss('finishers', doc).then(() => { styled = true; refresh(); });
   root.setAttribute('aria-pressed', 'false');
   const label = doc.createElement('span');
   label.className = 'sr-scalebadge__text';
@@ -172,7 +176,7 @@ export function createScaleBadge(ctx, opts = {}) {
       worlds: measure(), markerPx, fovDeg: ctx.camera.fov, viewportH: win.innerHeight, selectedId: sel ? sel.id : null,
     });
     const words = badgeWords(state, trueOn, C);
-    root.hidden = !words.text;
+    root.hidden = !words.text || !styled;
     if (label.textContent !== words.text) label.textContent = words.text;
     if (root.title !== words.title) root.title = words.title;
   }

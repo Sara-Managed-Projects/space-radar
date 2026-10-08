@@ -18,7 +18,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
-const FILES = ['site/css/site.css', 'site/css/ui.css', 'site/css/share.css', 'site/css/keyhint.css', 'site/css/embed.css'];
+const FILES = ['site/css/site.css', 'site/css/ui.css', 'site/css/share.css', 'site/css/keyhint.css', 'site/css/embed.css', 'site/css/finishers.css'];
 const strip = (css) => css.replace(/\/\*[\s\S]*?\*\//g, (c) => c.replace(/[^\n]/g, ' '));
 /** Every rule as {file, at, selector, body} (the reader tests/test_tokens.mjs uses). */
 export function rules(file, text) {

@@ -5,7 +5,7 @@
 //     than the home view, a running trip. Turning the globe at the home distance is not away.
 //   COMING HOME: the trip is left first; the view is remembered and the way back offered (not
 //     after a trip); the clock goes live; the Earth is framed; the sidebar shows its home.
-//   WHERE: a house in the rail, hidden at home; the trip's top bar has one beside Leave; a phone
+//   WHERE: a house in the rail, taken out at home; the trip's top bar has one beside Leave; a phone
 //     shows it in the top bar at 44 px or more.
 //   LAZY: main.js imports it dynamically.
 //
@@ -77,8 +77,15 @@ check(/import\('\.\/ui\/base\.js'\)/.test(main) && !/^import[^\n]*ui\/base\.js/m
 check(/ctx\.homeDistance\s*=/.test(main), 'main.js says what the home distance is');
 const frame = read('site/js/ui/tripframe.js');
 check(/returnToBase|ctx\.goBase|ctx\.base/.test(frame) && /'house'/.test(frame), 'the trip\'s top bar has a house that comes home');
-const css = read('site/css/ui.css');
-check(/\.sr-rail__btn--base/.test(css), 'the phone\'s top bar shows the house (ui.css)');
+const src = read('site/js/ui/base.js');
+check(/host\.insertBefore\(root, host\.firstChild\)/.test(src) && /root\.remove\(\)/.test(src) && !/root\.hidden/.test(src), 'the house is put into the rail while away and taken out at home, never merely hidden');
+{
+  // On a phone the rail hides the buttons it names and shows the rest: the house is not named.
+  const ui = read('site/css/ui.css');
+  const hidden = /html\.sr-phone \.sr-rail__btn--share,[^{]*\{\s*display: none;/.exec(ui);
+  check(hidden && !/--base/.test(hidden[0]), 'a phone\'s top bar shows the house: it is not among the rail buttons a phone folds away');
+  check(!/rail__btn--base/.test(ui), 'and it costs the first visit\'s stylesheet nothing');
+}
 for (const key of ['label', 'title', 'name']) check(typeof COPY.base[key] === 'string' && COPY.base[key].length <= 60, `COPY.base.${key} is a short line`);
 check(COPY.base.label.trim().split(/\s+/).length <= 3, 'its name is the issue\'s three words at most');
 

@@ -36,6 +36,7 @@
 
 import { COPY, t, fmt } from '../copy/en.js';
 import '../copy/en.later.js';
+import { loadCss } from './latercss.js';
 import { countdownState } from './countdown.js';
 import { whenText } from './next.js';
 import { iconFrom } from './icons.js';
@@ -111,6 +112,9 @@ export function createLaunchChip(ctx, opts = {}) {
   root.appendChild(clock);
 
   let current = null;
+  // Its rules come with it (css/finishers.css): shown only once they are here.
+  let styled = false;
+  loadCss('finishers', doc).then(() => { styled = true; refresh(); });
   const realNow = () => (ctx.timePill && typeof ctx.timePill.anchor === 'function' ? ctx.timePill.anchor() : Date.now());
   const ageMs = () => {
     try {
@@ -133,10 +137,11 @@ export function createLaunchChip(ctx, opts = {}) {
     const records = typeof ctx.recordsFor === 'function' ? ctx.recordsFor('launches') : [];
     const hit = nextCountable(records, realNow(), ageMs());
     current = hit ? hit.record : null;
-    root.hidden = !hit;
-    // The phone's line under the search is up while the chip is (ui.css `html.sr-launchday`).
-    doc.documentElement.classList.toggle('sr-launchday', !!hit);
-    if (!hit) return;
+    const show = !!hit && styled;
+    root.hidden = !show;
+    // The phone's line under the search is up while the chip is (finishers.css `html.sr-launchday`).
+    doc.documentElement.classList.toggle('sr-launchday', show);
+    if (!show) return;
     seat();
     const words = chipWords(hit.record, hit.state, C);
     if (clock.textContent !== words.text) clock.textContent = words.text;

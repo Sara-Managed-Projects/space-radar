@@ -59,15 +59,16 @@ check(w.firstTrip([{ id: 'a', off: true }]) === null && w.firstTrip(null) === nu
 const src = read('site/js/ui/welcome.js');
 check((src.match(/sr-welcome__go/g) || []).length === 1 && (src.match(/sr-welcome__look/g) || []).length === 1, 'two buttons, built once each');
 {
-  const css0 = read('site/css/ui.css');
+  const css0 = read('site/css/finishers.css');
   const rule = (sel) => (new RegExp(sel.replace(/[.]/g, '\\.') + '\\s*\\{([^}]*)\\}').exec(css0) || [])[1] || '';
   check(/background:\s*var\(--sr-ember\)/.test(rule('.sr-welcome__go')), 'Guided trip is the ember');
   check(!/--sr-ember/.test(rule('.sr-welcome__look')), 'Look around is not: one ember on the home');
 }
 const main = read('site/js/main.js');
 check(/import\('\.\/ui\/welcome\.js'\)/.test(main) && !/^import[^\n]*welcome/m.test(main), 'main.js imports it dynamically, never statically');
-const css = read('site/css/ui.css');
-check(/\.sr-welcome/.test(css), 'its rules are in ui.css');
+const css = read('site/css/finishers.css');
+check(/\.sr-welcome/.test(css) && !/sr-welcome/.test(read('site/css/ui.css')), 'its rules are in css/finishers.css, which comes with it, and not in the first visit\'s sheet');
+check(!/finishers/.test(read('site/index.html')), 'index.html neither preloads the module nor links its sheet');
 check(!/@keyframes[^{]*welcome/.test(css), 'nothing of it loops or bounces');
 
 if (problems.length) {
