@@ -75,7 +75,7 @@ if (fnMatch) {
 check(/float angS = asin\( clamp\( rs \/ length\( toS \)/.test(ECLIPSE_GLSL), 'GLSL: the Sun\'s angular radius is asin(rs / |S - P|)');
 check(/float angM = asin\( clamp\( rm \/ length\( toM \)/.test(ECLIPSE_GLSL), 'GLSL: the Moon\'s angular radius is asin(rm / |M - P|)');
 check(/atan\( length\( cross\( toS, toM \) \), dot\( toS, toM \) \)/.test(ECLIPSE_GLSL), 'GLSL: the separation is atan(|a x b|, a . b), never acos');
-check(/eclDiscOverlap\( theta \/ angS, angM \/ angS \)/.test(ECLIPSE_GLSL), 'GLSL: works in the Sun\'s radii, as the JS does');
+check(/return vec2\( theta \/ angS, angM \/ angS \);/.test(ECLIPSE_GLSL) && /eclDiscOverlap\( g\.x, g\.y \)/.test(ECLIPSE_GLSL), 'GLSL: works in the Sun\'s radii, as the JS does');
 
 // ---- 3. the constants, read back out of the shader strings --------------------------------------
 const constIn = (src, name) => { const m = src.match(new RegExp(`const float ${name} = ([0-9.]+);`)); return m ? Number(m[1]) : NaN; };
@@ -85,8 +85,14 @@ for (const [name, value] of [['SUN_RADIUS_KM', SUN_RADIUS_KM], ['MOON_RADIUS_KM'
   check(constIn(WORLD_FRAG, name) === value, `the Moon's shader (worlds.js) carries ${name} = ${value}`);
 }
 check(SUN_RADIUS_KM === 695700 && MOON_RADIUS_KM === 1737.4, 'the spec\'s two radii');
-check(/eclObscuration\(/.test(SURFACE_FRAG) && /uniform float uEclipse;/.test(SURFACE_FRAG) && /uEclipse > 0\.5 && sunDot > 0\.0/.test(SURFACE_FRAG),
-  'the Earth\'s shader calls eclObscuration( on the day side, behind the uEclipse uniform');
+// Since 2026-10-08 (public #273) the Earth's shader takes the two discs' geometry once, for the
+// shading and for the shadow's two drawn edges, so it calls eclGeometry( and eclDiscOverlap( --
+// the two halves of eclObscuration( -- behind the uniform, and shades on the day side only.
+check(/eclDiscOverlap\( eclG\.x, eclG\.y \)/.test(SURFACE_FRAG) && /uniform float uEclipse;/.test(SURFACE_FRAG)
+  && /if \( uEclipse > 0\.5 \) \{[\s\S]*?eclGeometry\([\s\S]*?if \( sunDot > 0\.0 \) \{[\s\S]*?eclDiscOverlap\(/.test(SURFACE_FRAG),
+  'the Earth\'s shader takes the discs\' geometry behind the uEclipse uniform and shades on the day side');
+check(/float eclObscuration\([^)]*\) \{\s*vec2 g = eclGeometry\( p, s, m, rs, rm \);\s*return eclDiscOverlap\( g\.x, g\.y \);/.test(SURFACE_FRAG),
+  'eclObscuration( is eclGeometry( handed to eclDiscOverlap(, so the two callers cannot differ');
 check(/eclObscuration\([^;]*EARTH_SHADOW_RADIUS_KM/.test(WORLD_FRAG) && /uniform float uEclipse;/.test(WORLD_FRAG),
   'the Moon\'s shader calls eclObscuration( with the Earth as the occluder, behind uEclipse');
 

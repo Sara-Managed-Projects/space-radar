@@ -1704,7 +1704,8 @@ export const COPY = {
     // Spec 0037: the eclipse stops' honesty line, under the instant. Generated, never typed in the
     // registry. The first is the shader drawing; the second is the frame latch having turned it off
     // on a slow device (scene/quality.js), where the timing is still right and the picture is not.
-    eclipseLine: "Shadow computed from the Moon's and the Sun's positions; timing from Astronomy Engine, to about a minute.",
+    // 2026-10-08 (public #273): the two thin lines and the band are drawings on computed places, and say so.
+    eclipseLine: "Shadow computed from the Moon's and the Sun's positions; timing from Astronomy Engine, to about a minute. The thin lines and the pale band mark the shadow's edges and its core's path: lines on a map, not light.",
     eclipseLineLatched: 'The shadow is not drawn on this device; the timing is right.',
     // The copper of a totally eclipsed Moon is a constant tint (scene/worlds.js uUmbraTint), not
     // sunlight bent through the Earth's air, and the lunar stop says so.

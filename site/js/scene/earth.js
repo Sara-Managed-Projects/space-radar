@@ -220,6 +220,7 @@ uniform float uCloudGamma;
 // frame latch, and a branch on a uniform is one the GPU skips whole: outside an eclipse this costs
 // a compare per fragment.
 uniform float uEclipse;
+uniform float uEclipseLines;  // 1: the shadow's two edges are drawn as lines; 0: the light only
 uniform vec3  uMoonPosLocal;  // the Moon's centre from the Earth's, km, mesh-local (= earth-fixed) axes
 uniform float uMoonRadiusKm;
 uniform float uSunDistKm;     // the Sun's centre from the Earth's, km; its direction is uSunDirLocal
@@ -263,11 +264,34 @@ void main() {
   // and no decal. Both day terms fall with it, so the night map's cities come up under the umbra
   // through the ordinary day/night mix, the clouds and the ocean glint go dark with the ground, and
   // the penumbra is simply the gradient the overlap gives.
-  if ( uEclipse > 0.5 && sunDot > 0.0 ) {
-    float eclObs = eclObscuration( vPosL * EARTH_UNIT_KM, uSunDirLocal * uSunDistKm, uMoonPosLocal, SUN_RADIUS_KM, uMoonRadiusKm );
-    float eclShade = 1.0 - UMBRA_DEPTH * eclObs;
-    dayMix  *= eclShade;
-    lambert *= eclShade;
+  //
+  // THE TWO EDGES, DRAWN (public #273, 2026-10-08). The shading above is the light, and the light
+  // is honest and hard to read: half the Sun covered is half the daylight, which a screen shows as
+  // a slight greying, and the core is ten pixels of dark with city lights in it -- "a smudge".
+  // So the shadow's two edges are also drawn as thin lines: a pale one where the discs first touch
+  // (the whole shadow, about 7 000 km across) and a brighter one round the core, where the Sun is
+  // wholly covered or, at an annular eclipse, where the ring is whole. The lines are a DRAWING on a
+  // computed place -- nobody sees a rim of light round the umbra -- and the trip's note says so
+  // (copy/en.js trip.eclipseNote). Each is one and a half pixels wide by the screen derivative of
+  // the separation, and the core's line waits until the core is a few pixels across: over a core
+  // smaller than its own line it would paint the dark spot bright.
+  float eclCoreLine = 0.0;
+  float eclEdgeLine = 0.0;
+  if ( uEclipse > 0.5 ) {
+    // The geometry and its screen derivative are taken on both sides of the terminator: a derivative
+    // inside a branch on a varying is undefined, and the day-side test below is one.
+    vec2 eclG = eclGeometry( vPosL * EARTH_UNIT_KM, uSunDirLocal * uSunDistKm, uMoonPosLocal, SUN_RADIUS_KM, uMoonRadiusKm );
+    float eclW = max( fwidth( eclG.x ), 1e-5 ) * 1.5;
+    if ( sunDot > 0.0 ) {
+      float eclObs = eclDiscOverlap( eclG.x, eclG.y );
+      float eclShade = 1.0 - UMBRA_DEPTH * eclObs;
+      dayMix  *= eclShade;
+      lambert *= eclShade;
+      float eclCoreR = abs( 1.0 - eclG.y );
+      float eclDay = smoothstep( 0.0, 0.08, sunDot );
+      eclCoreLine = eclDay * ( 1.0 - smoothstep( 0.0, eclW, abs( eclG.x - eclCoreR ) ) ) * smoothstep( 2.0, 4.0, eclCoreR / eclW );
+      eclEdgeLine = eclDay * ( 1.0 - smoothstep( 0.0, eclW, abs( eclG.x - ( 1.0 + eclG.y ) ) ) );
+    }
   }
 
   // ---- cloud shadow offset -------------------------------------------------------------------
@@ -331,6 +355,9 @@ void main() {
   // ---- a breath of air on the lit limb -----------------------------------------------------------
   float rim = pow( 1.0 - clamp( dot( n, viewDir ), 0.0, 1.0 ), 3.0 );
   colour += uAtmoTint * rim * dayMix * 0.18;
+
+  // The shadow's two edges (THE TWO EDGES, DRAWN, above): over the clouds, as a line on a map is.
+  colour += uEclipseLines * ( vec3( 1.0, 0.93, 0.8 ) * 0.6 * eclCoreLine + vec3( 0.8, 0.86, 1.0 ) * 0.14 * eclEdgeLine );
 
   gl_FragColor = vec4( colour, 1.0 );
 
@@ -617,6 +644,7 @@ export function createEarth(textures, opts = {}) {
       uLiveFade: { value: 0 },
       uLive: { value: 0 },
       uEclipse: { value: 0 },
+      uEclipseLines: { value: 1 },
       uMoonPosLocal: { value: new THREE.Vector3(384400, 0, 0) },
       uMoonRadiusKm: { value: MOON_RADIUS_KM },
       uSunDistKm: { value: 1.496e8 },

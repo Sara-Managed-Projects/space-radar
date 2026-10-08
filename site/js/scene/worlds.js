@@ -1475,6 +1475,8 @@ export function createWorlds(scene, opts = {}) {
   // cheap test (scene/eclipse.js eclipseLikely) from the Earth's centre; the shaders draw when both.
   let eclipseAllowed = true;
   const eclipseState = { solar: false, lunar: false, drawnSolar: false, drawnLunar: false };
+  let eclipsePath = null;        // scene/eclipsepath.js, once an eclipse has been drawn
+  let eclipsePathImport = null;
   // Spec 0054: earthshine is off under the frame latch (main.js degrade() calls setLatched).
   let latched = false;
   // The Earth's light on the Moon this frame, as a share of full sunlight before the drawing gain.
@@ -1724,6 +1726,14 @@ export function createWorlds(scene, opts = {}) {
       if (w.look.earth) {
         updateEarth(mesh, sunDirHere, tMs);
         updateEarthEclipse(mesh, eclipseState.drawnSolar, _moonGeoScene, Math.hypot(_sunGeo.x, _sunGeo.y, _sunGeo.z));
+        // The path the shadow's core draws across the ground (scene/eclipsepath.js, public #273):
+        // the module is asked for the first time an eclipse is drawn, never at boot.
+        if (eclipsePath) eclipsePath.update(tMs, eclipseState.drawnSolar);
+        else if (eclipseState.drawnSolar && !eclipsePathImport) {
+          eclipsePathImport = import('./eclipsepath.js')
+            .then((m) => { eclipsePath = m.createEclipsePath(THREE, mesh); })
+            .catch((e) => { console.warn('the eclipse path did not load', e); });
+        }
       } else {
         if (w.rotation === 'iau') {
           applyIauOrientation(mesh, w.body, tMs, w.id);
@@ -1995,7 +2005,7 @@ export function createWorlds(scene, opts = {}) {
   function setEclipseAllowed(on) { eclipseAllowed = on !== false; }
 
   /** This frame's eclipse test and whether each shader drew it: {solar, lunar, drawnSolar, drawnLunar}. */
-  function eclipse() { return { ...eclipseState }; }
+  function eclipse() { return { ...eclipseState, path: eclipsePath ? eclipsePath.state() : null }; }
 
   /** main.js: the frame latch tripped. Earthshine goes off (spec 0054 req 3); one-way, like the latch. */
   function setLatched(on) { latched = on !== false; }
