@@ -173,14 +173,14 @@ export function limitingMagnitude({ fovDeg = FOV.eye, darkness = DEFAULT_DARKNES
 
 /**
  * How big a star of magnitude `mag` is drawn when the limit is `limit`, in CSS pixels, and how
- * strongly: the same curve the vertex shader runs. A star at the limit is a 1.9 px speck at a
- * third strength; four magnitudes brighter it is 6.5 px and solid; the very brightest get a glare.
+ * strongly: the same curve the vertex shader runs. A star at the limit is a 2.4 px speck at a
+ * third strength; three magnitudes brighter it is 7 px and solid; the very brightest get a glare.
  * (2026-10-08, internal #447: it was 1.5 px growing by 1.32 a magnitude, and at a 72 degree field
  * the constellation lines read before the stars they join. Stars first, lines second.)
  */
 export function starLook(mag, limit) {
   const f = limit - mag;
-  const size = Math.min(13, 1.9 * Math.pow(1.36, Math.max(0, f)));
+  const size = Math.min(16, 2.4 * Math.pow(1.42, Math.max(0, f)));
   const alpha = Math.max(0, Math.min(1, (f + 0.6) / 1.8));
   const glare = Math.max(0, Math.min(1, (f - 4.5) / 4));
   return { size, alpha, glare };

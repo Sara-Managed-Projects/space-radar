@@ -5899,6 +5899,8 @@ html.sr-night-red::after {
   --sr-bracket-out: 0px;
 }
 .sr-skyreticle[hidden] { display: none; }
+/* The phone's row where there is no sensor, and "Undo line-up" with nothing to undo. */
+.sr-skybar .sr-density__choices[hidden], .sr-skybar .sr-density__btn[hidden] { display: none; }
 .sr-skybar__wrap .sr-density__btn { flex: 1 1 30%; }
 @media (pointer: coarse) {
   .sr-skybar .sr-density__btn { min-height: 44px; }

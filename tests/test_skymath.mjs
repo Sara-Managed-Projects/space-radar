@@ -68,13 +68,13 @@ check(near(M.zoomFov(72, 0.5), 36, 1e-9) && M.zoomFov(M.FOV.min, 0.5) === M.FOV.
 check(near(M.pixelsPerDegree(90, 900), 450 * Math.PI / 180, 1e-6), 'pixels to a degree at the centre of the view');
 const dim = M.starLook(6.5, 6.5);
 const bright = M.starLook(-1.4, 6.5);
-check(dim.size < 2 && dim.alpha < 0.4 && dim.glare === 0 && bright.size > 6 && bright.alpha === 1 && bright.glare > 0.5, 'a star at the limit is a faint speck, Sirius a glare');
+check(dim.size < 2.5 && dim.alpha < 0.4 && dim.glare === 0 && bright.size > 6 && bright.alpha === 1 && bright.glare > 0.5, 'a star at the limit is a faint speck, Sirius a glare');
 check(M.starLook(8, 6.5).alpha === 0, 'a star well under the limit is not drawn');
 
 // The shaders run the same formulas: the constants are in the GLSL as they are in the JS.
 for (const bit of ['1.02 / tan(radians(h + 10.3 / (h + 5.11)))', '0.50572 * pow(hDeg + 6.07995, -1.6364)']) check(M.GLSL_AIR.includes(bit), `GLSL_AIR carries ${bit}`);
 const ground = readFileSync(join(JS, 'sky/groundsky.js'), 'utf8');
-check(ground.includes('clamp((f + 0.6) / 1.8, 0.0, 1.0)') && ground.includes('min(13.0, 1.9 * pow(1.36, max(f, 0.0)))') && ground.includes('clamp((f - 4.5) / 4.0, 0.0, 1.0)'), 'the star shader draws starLook()\'s curve');
+check(ground.includes('clamp((f + 0.6) / 1.8, 0.0, 1.0)') && ground.includes('min(16.0, 2.4 * pow(1.42, max(f, 0.0)))') && ground.includes('clamp((f - 4.5) / 4.0, 0.0, 1.0)'), 'the star shader draws starLook()\'s curve');
 check(ground.includes('exp(-0.045 * x), exp(-0.11 * x)'), 'the star shader reddens by extinctionTint()\'s factors');
 check((ground.match(/new THREE\.Points\(/g) || []).length === 2, 'two point clouds: every star in one draw call, the planets and Jupiter\'s moons in another');
 check(!/^import[^\n]*groundsky/m.test(readFileSync(join(JS, 'main.js'), 'utf8')) && /import\('\.\/groundsky\.js'\)/.test(readFileSync(join(JS, 'sky/skyview.js'), 'utf8')), 'the ground sky is a dynamic import from the sky view, never at boot');

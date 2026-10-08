@@ -76,7 +76,7 @@ const RO = { dome: -100, milkyway: -99, otherLight: -98.8, art: -98.6, pictures:
 // The constellation pictures: how strong at night in a wide field, and the fields they fade out over.
 const ART_GAIN = 0.42;
 // The figures' lines: under the stars they join, not over them (internal #447; it was 0.34).
-const FIGURE_LINE = 0.22;
+const FIGURE_LINE = 0.16;
 const TAG_MS = 9000;
 const LABEL_POOL = 44;
 const BODY_REFRESH_MS = 1000; // of the clock; a tenth of that once the field is narrow
@@ -116,7 +116,7 @@ void main() {
   if (d.y < 0.0 && uBelow < -0.5) x = 1.5;
   float f = uLimit - (aMag + uExtK * x);
   float alpha = clamp((f + 0.6) / 1.8, 0.0, 1.0);
-  float size = min(13.0, 1.9 * pow(1.36, max(f, 0.0)));
+  float size = min(16.0, 2.4 * pow(1.42, max(f, 0.0)));
   float glare = clamp((f - 4.5) / 4.0, 0.0, 1.0);
   float ph = fract(sin(dot(position.xy, vec2(12.9898, 78.233))) * 43758.5453) * 6.2832;
   float amp = uTwinkle * clamp(0.05 * x, 0.0, 0.5);
@@ -693,7 +693,7 @@ export function createGroundSky(ctx, env) {
     if (hereCon.obj) { hereCon.obj.geometry.dispose(); hereCon.obj.material.dispose(); root.remove(hereCon.obj); hereCon.obj = null; }
     hereCon.id = id;
     const v = id ? conVerts.get(id) : null;
-    if (v && v.length) hereCon.obj = lineObject('sky-figure-here', v, 0xe8ecf2, 0.5, true, RO.lines + 0.5);
+    if (v && v.length) hereCon.obj = lineObject('sky-figure-here', v, 0xe8ecf2, 0.4, true, RO.lines + 0.5);
   }
 
   // ---- lines -----------------------------------------------------------------------------------
