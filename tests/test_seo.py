@@ -79,6 +79,19 @@ else:
         if f'<p class="lead">{lead}</p>' not in text:
             missing.append(p["slug"])
     ok(not missing, f"every page leads with the card's first sentence ({missing[:3]})")
+    # Internal #294: the ten bodies Astronomy Engine places get a "where is it now" line the browser works
+    # out (site/js/objectnow.js); every other page keeps the static sentence and loads no script.
+    hooked = sorted(p["slug"] for p in pages if p.get("nowBody"))
+    ok(hooked == sorted(["sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto"]),
+       f"the now line is wired for the ten bodies only ({hooked})")
+    for p in pages:
+        f = BUILT / "o" / f"{p['slug']}.html"
+        text = f.read_text(encoding="utf-8") if f.is_file() else ""
+        has = 'src="../js/objectnow.js"' in text and ' id="now" data-body="' in text
+        if bool(p.get("nowBody")) != has:
+            ok(False, f"{p['slug']}: the now hook is {'missing' if p.get('nowBody') else 'present on a page that cannot work it out'}")
+        if p.get("nowBody") and p["liveLine"] not in text.replace("&#x27;", "'"):
+            ok(False, f"{p['slug']}: the static fallback sentence is gone")
     # The labels of the card's live rows (copy/en.js card.rows). A static page that printed one would
     # be wrong a second after it was generated.
     live = re.compile(r"Height above the ground|Passing over|Below it now|Distance from (you|Earth|the Sun)\b")

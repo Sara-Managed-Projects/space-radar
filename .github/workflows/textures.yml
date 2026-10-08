@@ -21,6 +21,8 @@ on:
   pull_request:
     paths:
       - ".github/workflows/textures.yml"
+      - "scripts/_ktx2.py"
+      - "scripts/build-textures.py"
 
 permissions:
   contents: read
@@ -98,4 +100,43 @@ jobs:
             out/REPORT.txt
             out/earth_day_2k.etc1s.a.ktx2
             out/earth_day_2k.uastc.a.ktx2
+          if-no-files-found: warn
+
+  # SPEC 0056 TASK 2 (internal #156), second half: the plan in scripts/_ktx2.py (the Earth's January
+  # day map and night lights, the Moon, Mars, Mercury at 4k) encoded twice from the shipped 4k WebPs
+  # with the same pinned encoder, validated, compared byte for byte, and reported with each file's size
+  # on disk, its GPU size and its SHA-256. Nothing is committed from here: the first run's artefact
+  # `ktx2-build` is what a person looks at, and what a later PR commits under site/textures/ once a
+  # browser has drawn one (#155). The run is not yet seen: it cannot start before this file is on main.
+  ktx2-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install KTX-Software, pinned
+        run: |
+          set -euo pipefail
+          curl -fsSL -o "$RUNNER_TEMP/$KTX_DEB" "https://github.com/KhronosGroup/KTX-Software/releases/download/v$KTX_VERSION/$KTX_DEB"
+          echo "$KTX_DEB_SHA256  $RUNNER_TEMP/$KTX_DEB" | sha256sum -c -
+          sudo dpkg -i "$RUNNER_TEMP/$KTX_DEB" || sudo apt-get install -f -y
+          ktx --version
+      - name: Encode the plan twice and compare
+        run: |
+          set -euo pipefail
+          pip install --disable-pip-version-check pillow numpy
+          mkdir -p out
+          python3 scripts/build-textures.py --ktx2 out/a | tee out/REPORT.txt
+          python3 scripts/build-textures.py --ktx2 out/b
+          diff -r --exclude=REPORT.txt out/a out/b && echo "the two runs are byte-identical" | tee -a out/REPORT.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ktx2-build
+          path: |
+            out/REPORT.txt
+            out/a/*.ktx2
+            out/a/ktx2.json
           if-no-files-found: warn
