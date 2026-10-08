@@ -345,6 +345,10 @@ jobs:
         run: node tests/test_autopilot.mjs
       - name: "The reel on the real trip machine: two laps, a refusal, the take-over, a lost arrival (spec 0036)"
         run: node tests/test_autopilot_trip.mjs
+      - name: "The reel when the picture is not there: a lost context holds the trip, a failed map is passed over (internal #448)"
+        run: node tests/test_autopilot_holds.mjs
+      - name: "Every flight of a trip ends in its own time: slow frames, a taken camera, a lost arrival, the way home (internal #322, #304)"
+        run: node tests/test_trip_flight_ends.mjs
       # Spec 0068 task 1: the trip's picture under its card and over its intro, lazy and after the
       # first visit; task 2: the controls hint, once, with keycaps the camera and the chrome answer.
       - name: "Trip cards with pictures: the files, the fade into glass, nothing before the first visit settles (spec 0068)"

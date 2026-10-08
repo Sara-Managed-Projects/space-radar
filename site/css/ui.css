@@ -2582,7 +2582,7 @@ html[data-trip-phase] .sr-tripsheet.is-floating {
 html[data-trip-returning] .sr-tripsheet.is-present {
   opacity: 0;
   pointer-events: none;
-  transition: opacity 400ms linear;
+  transition: opacity var(--sr-slow) var(--sr-ease);
 }
 
 html[data-trip-phase='intro'] .sr-tripsheet.is-floating,
@@ -3893,9 +3893,9 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 .sr-more[hidden] { display: none; }
 
 /* JUST WATCH: the reels, under "Play on its own" (ui/explore.js, internal #448). A list like any other. */
-.sr-reels { margin-top: 8px; }
+.sr-reels { margin-top: var(--sp-2); }
 .sr-reels[hidden] { display: none; }
-.sr-more + .sr-more { margin-left: 16px; }
+.sr-more + .sr-more { margin-left: var(--sp-4); }
 
 /* A list of rows: a name, a mono value, hairlines between (the Planets and Stars tabs, Tonight). */
 .sr-list {

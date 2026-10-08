@@ -221,7 +221,7 @@ for (const j of H.JOINS) {
   check(!/^import [^\n]*scene\/(climb|handoff)\.js/m.test(main), 'main.js does not import the climb statically');
   check(/import\('\.\/scene\/climb\.js'\)/.test(main), 'main.js fetches scene/climb.js when it is wanted');
   const tick = main.indexOf('ctx.climb.tick(frameMs)');
-  const upd = main.indexOf('cameraRig.update(dt);');
+  const upd = main.indexOf('cameraRig.update(dt, frameMs);');
   const rend = main.indexOf('\n    render();');
   const after = main.indexOf('ctx.climb.afterRender()');
   check(tick > 0 && tick < upd && upd < rend && rend < after, 'a climb moves the camera before the rig reads it, and the hand-off runs straight after the frame it copies');
