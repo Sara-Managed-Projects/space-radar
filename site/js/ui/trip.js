@@ -62,7 +62,7 @@ import { write as writeUrl, clear as clearUrl } from './urlstate.js';
 import { nextEvent } from '../data/events.js';
 import { guessObserver } from '../sky/guessplace.js';
 import { SELECTED_PX } from '../scene/heroes.js';
-import { lookTarget, tonightMs, deepNightMs, midnightMs, planetTonight } from '../sky/lookfor.js';
+import { lookTarget, tonightMs, deepNightMs, midnightMs, planetTonight, showerMoon } from '../sky/lookfor.js';
 import { nextShower } from '../sky/radiants.js';
 import { SHOWERS } from '../data/showers.js';
 import { azimuthInWords, altitudeInWords } from '../sky/skyview.js';
@@ -1618,7 +1618,10 @@ export function createTrip(ctx) {
       if (!found) return '';
       const base = run && run.savedClock && isNum(run.savedClock.t) ? run.savedClock.t : ctx.clock.now();
       const say = { name: found.shower.display, date: timeText.dateNear(found.peakMs, base), rate: fmt.int(found.shower.zhr), ...where };
-      return [t(T.lookShower, say), t(aim.up ? T.lookShowerUp : T.lookShowerDown, say), t(T.lookShowerRate, say)].join(' ');
+      // And what the Moon does that night (internal #413): a bright Moon hides the faint ones.
+      const moon = showerMoon(found.peakMs);
+      const moonLine = moon ? t(T.lookShowerMoon[moon.kind], { pct: fmt.int(moon.percent) }) : '';
+      return [t(T.lookShower, say), t(aim.up ? T.lookShowerUp : T.lookShowerDown, say), t(T.lookShowerRate, say), moonLine].filter(Boolean).join(' ');
     }
     if (aim.daylight) return T.lookDaylight;
     if (aim.kind === 'milky-way') return aim.up ? t(T.lookMilkyWay, { ...where, name: aim.name }) : T.lookNoMilkyWay;

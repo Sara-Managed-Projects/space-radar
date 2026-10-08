@@ -408,7 +408,7 @@ export function createFigures3d(ctx, opts = {}) {
       u.uOpacity.value = LINE_ALPHA * fadeIn * fadeOut;
       u.uHead.value = progress < 1 && !still ? 1 : 0;
       u.uResolution.value.copy(_res);
-      u.uWidth.value = LINE_PX * dpr;
+      u.uWidth.value = LINE_PX * dpr * lineScale;
       u.uGap.value = GAP_PX * dpr;
       f.mesh.visible = u.uOpacity.value > 0.002;
       f.progress = progress;
@@ -480,7 +480,15 @@ export function createFigures3d(ctx, opts = {}) {
     scene.remove(group, skyGroup);
   }
 
+  // A PICTURE'S OWN LINE WIDTH (internal #444). A figure's line is 1.5 px whatever the frame, which
+  // reads on a screen and is a hair in a 1200 px share picture shown 300 px wide in a chat. The
+  // width is set every frame here, so nothing outside can hold it: tools/trip-frames.probe.js asks
+  // for a multiple while it draws a picture and puts it back. Never used by the app itself.
+  let lineScale = 1;
+  const setLineScale = (k) => { lineScale = Number.isFinite(k) && k > 0 ? Math.min(6, k) : 1; };
+
   return {
+    setLineScale,
     ready,
     show,
     clear,

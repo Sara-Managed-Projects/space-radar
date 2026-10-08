@@ -37,8 +37,12 @@
 // THE FRAME IS THE STOP'S FIRST. The trip is paused the moment it arrives, so a stop whose clock
 // runs (a Moon that grows while the card is up) is drawn as a visitor first sees it.
 
-const DRAW_SCALE = {
-  'the-constellations': 2 / 3,
+const DRAW_SCALE = {};
+// LINE_SCALE is the better tool where the lines are a figure's (scene/figures3d.js setLineScale,
+// internal #444): the frame is drawn at its full size and only the figure's stroke is widened, so
+// the stars stay sharp. Orion at 1.5 px was a hair at 1200 px; at this it reads at a card's size.
+const LINE_SCALE = {
+  'the-constellations': 2.4,
 };
 const FLIGHT_GRACE_MS = 14000;
 
@@ -137,10 +141,14 @@ for (let n = 0; n < list.length; n += 1) {
     // The textures, the photograph or the day's map of what it arrived at.
     await sleep(3200);
     const row = { trip: pair.trip, stop: stop.id, number: tour.stops.indexOf(stop) + 1, zoom: pair.zoom, shownAt: new Date(sr.clock.now()).toISOString(), t: Math.round(elapsed()) };
-    if (want === 'look') row.look = draw(800, 336, pair.zoom, 'image/jpeg', 0.8);
     const k = DRAW_SCALE[pair.trip] || 1;
+    const figures = sr.figures && sr.figures.setLineScale ? sr.figures : null;
+    if (figures && LINE_SCALE[pair.trip]) { figures.setLineScale(LINE_SCALE[pair.trip]); await sleep(150); }
+    row.lineScale = figures && LINE_SCALE[pair.trip] ? LINE_SCALE[pair.trip] : 1;
+    if (want === 'look') row.look = draw(800, 336, pair.zoom, 'image/jpeg', 0.8);
     if (want === 'og' || want === 'both') row.og = draw(Math.round(1200 * k), Math.round(504 * k), pair.zoom);
     if (want === 'card' || want === 'both') row.png = draw(Math.round(960 * k), Math.round(720 * k), pair.zoom);
+    if (figures) figures.setLineScale(1);
     out.frames.push(row);
   } catch (e) {
     out.log.push(`${key}: ${String(e && e.message)} ${String((e && e.stack) || '').split('\n').slice(1, 4).join(' | ')}`);

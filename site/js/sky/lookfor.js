@@ -213,6 +213,20 @@ export function midnightMs(place, nowMs) {
   return w.darkNow && isNum(nowMs) && nowMs > mid ? nowMs : mid;
 }
 
+/**
+ * What the Moon does to a meteor shower on the night of `peakMs` (internal #413, public #445): how
+ * much of it is lit, and whether that leaves the sky dark ('dark', a quarter lit or less), washes
+ * the faint meteors out ('bright', six tenths or more) or is in between ('some'). The lit share is
+ * the same from everywhere on the Earth, so no place is asked. Null when it cannot be worked out.
+ */
+export function showerMoon(peakMs) {
+  if (!isNum(peakMs)) return null;
+  try {
+    const percent = Math.round(Astronomy.Illumination(Astronomy.Body.Moon, new Date(peakMs)).phase_fraction * 100);
+    return { percent, kind: percent <= 25 ? 'dark' : percent >= 60 ? 'bright' : 'some' };
+  } catch { return null; }
+}
+
 /** The Moon from `place` at `ms`: where, how much of it is lit, and when it next rises if it is down. */
 export function moonAt(place, ms) {
   const obs = observerOf(place);
