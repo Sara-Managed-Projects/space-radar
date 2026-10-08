@@ -479,6 +479,8 @@ jobs:
       # Round three, package 5 (2026-10-07): the passport and the home's first line.
       - name: The passport, kept in this browser only (spec 0041, public #240)
         run: node tests/test_passport.mjs
+      - name: Two bright things close together in your sky, worked out in a worker (internal #359)
+        run: node tests/test_conjunctions.mjs
       - name: One true sentence on the home (public #395, #450)
         run: node tests/test_sentence.mjs
       # Eclipses are worked out here with the vendored astronomy-engine and pinned to the dates the

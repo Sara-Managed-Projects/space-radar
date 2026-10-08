@@ -1035,11 +1035,19 @@ export const COPY = {
       passNoAge: 'Worked out here from orbital elements',
       eclipse: 'Worked out here to the minute from the motion of the Sun and Moon',
       season: 'Worked out here to the minute from where the Sun stands',
+      conjunction: 'Worked out here for your place, at their closest while both are up in the dark',
     },
     // THE ROW AS DRAWN (spec 0061 task 5, ui/next.js rowParts): a title, then one line. The
     // sentences above are the row's tooltip and its accessible name; these are what fits a 320 px
     // column on one line each. A launch's line keeps "planned": its time is the one that can move.
     row: {
+      // From your place (internal #359): two bright things close together, at their closest.
+      conjunctionTitle: '{a} and {b}',
+      conjunction: '{when} · {sep}° apart, {height} in the {dir}',
+      conjunctionValue: '{sep}°',
+      low: 'low',
+      mid: 'halfway up',
+      high: 'high',
       launch: 'Lifts off {when} · planned',
       launchRough: 'Around {when} · date not fixed',
       approach: 'Passes Earth {when}',
