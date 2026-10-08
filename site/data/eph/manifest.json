@@ -8,7 +8,7 @@
   "credit": "NASA/JPL-Caltech, Solar System Dynamics Group, Horizons On-Line Ephemeris System"
  },
  "frame": "ecliptic J2000 axes (Horizons REF_PLANE=ECLIPTIC, REF_SYSTEM=ICRF), relative to each segment's centre; km and km/s; times UTC (TIME_TYPE=UT)",
- "retrieved": "2026-10-06",
+ "retrieved": "2026-10-08",
  "craft": [
   {
    "id": "deep-voyager-1",
@@ -1638,6 +1638,330 @@
       "over 10 d": 102
      },
      "centre_source": "dawn_final"
+    }
+   ]
+  },
+  {
+   "id": "deep-rosetta",
+   "name": "Rosetta",
+   "command": "-226",
+   "file": "deep-rosetta.bin",
+   "bytes": 10520,
+   "sha256": "d017f438655f91b56181e4c1373513da3e4ecc1d21e65d2795a90870a7c5a24b",
+   "span": [
+    "2004-03-02T09:26:00Z",
+    "2016-09-30T10:39:00Z"
+   ],
+   "samples": 270,
+   "solution": "rosetta_merged",
+   "header_revised": "Oct 24, 2016",
+   "retrieved": "2026-10-08",
+   "fit_max_km": 999.732,
+   "heldout": {
+    "n": 48,
+    "max_km": 990.711
+   },
+   "good_to_km": 2000.0,
+   "segments": [
+    {
+     "centre": "earth",
+     "from": "2004-03-02T09:26:00Z",
+     "to": "2004-03-06T00:00:00Z",
+     "samples": 28,
+     "tol_km": 1.0,
+     "fit_max_km": 0.965,
+     "fetched": 296,
+     "step_min_s": 60.0,
+     "step_max_s": 59520.0,
+     "steps": {
+      "under 10 min": 5,
+      "10 min to 1 h": 7,
+      "1 h to 6 h": 10,
+      "6 h to 1 d": 5
+     },
+     "closest": {
+      "at": "2004-03-02T09:26:00Z",
+      "km": 6783.0
+     },
+     "passes": 1,
+     "centre_source": "rosetta_merged"
+    },
+    {
+     "centre": "sun",
+     "from": "2004-03-06T00:00:00Z",
+     "to": "2016-09-30T10:39:00Z",
+     "samples": 242,
+     "tol_km": 1000.0,
+     "fit_max_km": 999.732,
+     "fetched": 5281,
+     "step_min_s": 60.0,
+     "step_max_s": 8985600.0,
+     "steps": {
+      "under 10 min": 2,
+      "10 min to 1 h": 1,
+      "1 h to 6 h": 10,
+      "6 h to 1 d": 8,
+      "1 d to 10 d": 34,
+      "over 10 d": 186
+     },
+     "centre_source": "rosetta_merged"
+    }
+   ]
+  },
+  {
+   "id": "deep-near",
+   "name": "NEAR Shoemaker",
+   "command": "-93",
+   "file": "deep-near.bin",
+   "bytes": 5456,
+   "sha256": "36ddaa75fa3b3c2a3e3d19376de73d7bc4a29f785913ae555b5be1e5d116aa79",
+   "span": [
+    "1996-02-19T01:59:00Z",
+    "2001-02-12T19:44:00Z"
+   ],
+   "samples": 147,
+   "solution": "NEAR_merged",
+   "header_revised": "May 05, 2020",
+   "retrieved": "2026-10-08",
+   "fit_max_km": 999.88,
+   "heldout": {
+    "n": 48,
+    "max_km": 935.253
+   },
+   "good_to_km": 2000.0,
+   "segments": [
+    {
+     "centre": "sun",
+     "from": "1996-02-19T01:59:00Z",
+     "to": "1998-01-21T00:00:00Z",
+     "samples": 38,
+     "tol_km": 1000.0,
+     "fit_max_km": 999.88,
+     "fetched": 795,
+     "step_min_s": 60.0,
+     "step_max_s": 4320000.0,
+     "steps": {
+      "under 10 min": 1,
+      "1 d to 10 d": 2,
+      "over 10 d": 34
+     },
+     "centre_source": "NEAR_merged"
+    },
+    {
+     "centre": "earth",
+     "from": "1998-01-21T00:00:00Z",
+     "to": "1998-01-25T00:00:00Z",
+     "samples": 42,
+     "tol_km": 1.0,
+     "fit_max_km": 0.965,
+     "fetched": 246,
+     "step_min_s": 240.0,
+     "step_max_s": 50400.0,
+     "steps": {
+      "under 10 min": 9,
+      "10 min to 1 h": 12,
+      "1 h to 6 h": 14,
+      "6 h to 1 d": 6
+     },
+     "closest": {
+      "at": "1998-01-23T07:23:00Z",
+      "km": 6910.8
+     },
+     "passes": 1,
+     "centre_source": "NEAR_merged"
+    },
+    {
+     "centre": "sun",
+     "from": "1998-01-25T00:00:00Z",
+     "to": "2001-02-12T19:44:00Z",
+     "samples": 67,
+     "tol_km": 1000.0,
+     "fit_max_km": 997.962,
+     "fetched": 1164,
+     "step_min_s": 10800.0,
+     "step_max_s": 3628800.0,
+     "steps": {
+      "1 h to 6 h": 1,
+      "1 d to 10 d": 5,
+      "over 10 d": 60
+     },
+     "centre_source": "NEAR_merged"
+    }
+   ]
+  },
+  {
+   "id": "deep-stardust",
+   "name": "Stardust",
+   "command": "-29",
+   "file": "deep-stardust.bin",
+   "bytes": 45588,
+   "sha256": "d1602aee6b1598fee96bf875711b736cab808bdfff6bc84e7f0bdb3908e715a0",
+   "span": [
+    "1999-02-07T21:32:00Z",
+    "2011-03-12T23:58:00Z"
+   ],
+   "samples": 1159,
+   "solution": "stardust",
+   "header_revised": "Jan 31, 2011",
+   "retrieved": "2026-10-08",
+   "fit_max_km": 4.998,
+   "heldout": {
+    "n": 48,
+    "max_km": 6.258
+   },
+   "good_to_km": 10.0,
+   "segments": [
+    {
+     "centre": "earth",
+     "from": "1999-02-07T21:32:00Z",
+     "to": "1999-02-11T00:00:00Z",
+     "samples": 28,
+     "tol_km": 1.0,
+     "fit_max_km": 0.989,
+     "fetched": 456,
+     "step_min_s": 60.0,
+     "step_max_s": 59280.0,
+     "steps": {
+      "under 10 min": 7,
+      "10 min to 1 h": 6,
+      "1 h to 6 h": 10,
+      "6 h to 1 d": 4
+     },
+     "closest": {
+      "at": "1999-02-07T21:32:00Z",
+      "km": 6673.8
+     },
+     "passes": 1,
+     "centre_source": "stardust"
+    },
+    {
+     "centre": "sun",
+     "from": "1999-02-11T00:00:00Z",
+     "to": "2006-01-13T00:00:00Z",
+     "samples": 581,
+     "tol_km": 5.0,
+     "fit_max_km": 4.998,
+     "fetched": 8965,
+     "step_min_s": 60.0,
+     "step_max_s": 1296000.0,
+     "steps": {
+      "under 10 min": 29,
+      "10 min to 1 h": 12,
+      "1 h to 6 h": 22,
+      "6 h to 1 d": 32,
+      "1 d to 10 d": 429,
+      "over 10 d": 56
+     },
+     "centre_source": "stardust"
+    },
+    {
+     "centre": "earth",
+     "from": "2006-01-13T00:00:00Z",
+     "to": "2006-01-17T00:00:00Z",
+     "samples": 45,
+     "tol_km": 1.0,
+     "fit_max_km": 0.997,
+     "fetched": 498,
+     "step_min_s": 60.0,
+     "step_max_s": 50400.0,
+     "steps": {
+      "under 10 min": 10,
+      "10 min to 1 h": 15,
+      "1 h to 6 h": 14,
+      "6 h to 1 d": 5
+     },
+     "closest": {
+      "at": "2006-01-15T09:59:00Z",
+      "km": 6628.5
+     },
+     "passes": 1,
+     "centre_source": "stardust"
+    },
+    {
+     "centre": "sun",
+     "from": "2006-01-17T00:00:00Z",
+     "to": "2011-03-12T23:58:00Z",
+     "samples": 505,
+     "tol_km": 5.0,
+     "fit_max_km": 4.997,
+     "fetched": 3055,
+     "step_min_s": 60.0,
+     "step_max_s": 950400.0,
+     "steps": {
+      "under 10 min": 5,
+      "10 min to 1 h": 9,
+      "1 h to 6 h": 11,
+      "6 h to 1 d": 11,
+      "1 d to 10 d": 459,
+      "over 10 d": 9
+     },
+     "centre_source": "stardust"
+    }
+   ]
+  },
+  {
+   "id": "deep-deep-impact",
+   "name": "Deep Impact",
+   "command": "-140",
+   "file": "deep-deep-impact.bin",
+   "bytes": 41556,
+   "sha256": "35261a190b116fc17485cbc9c8f1adb11281e46e7370657a7874c9989ce6250e",
+   "span": [
+    "2005-01-12T19:23:00Z",
+    "2013-09-19T00:00:00Z"
+   ],
+   "samples": 1045,
+   "solution": "epoxi_merged",
+   "header_revised": "Oct 11, 2012",
+   "retrieved": "2026-10-08",
+   "fit_max_km": 4.998,
+   "heldout": {
+    "n": 48,
+    "max_km": 4.935
+   },
+   "good_to_km": 10.0,
+   "segments": [
+    {
+     "centre": "earth",
+     "from": "2005-01-12T19:23:00Z",
+     "to": "2005-01-16T00:00:00Z",
+     "samples": 25,
+     "tol_km": 1.0,
+     "fit_max_km": 0.961,
+     "fetched": 158,
+     "step_min_s": 360.0,
+     "step_max_s": 50400.0,
+     "steps": {
+      "under 10 min": 3,
+      "10 min to 1 h": 7,
+      "1 h to 6 h": 8,
+      "6 h to 1 d": 6
+     },
+     "closest": {
+      "at": "2005-01-12T19:23:00Z",
+      "km": 7682.8
+     },
+     "passes": 1,
+     "centre_source": "epoxi_merged"
+    },
+    {
+     "centre": "sun",
+     "from": "2005-01-16T00:00:00Z",
+     "to": "2013-09-19T00:00:00Z",
+     "samples": 1020,
+     "tol_km": 5.0,
+     "fit_max_km": 4.998,
+     "fetched": 7327,
+     "step_min_s": 60.0,
+     "step_max_s": 777600.0,
+     "steps": {
+      "under 10 min": 19,
+      "10 min to 1 h": 13,
+      "1 h to 6 h": 45,
+      "6 h to 1 d": 40,
+      "1 d to 10 d": 902
+     },
+     "centre_source": "epoxi_merged"
     }
    ]
   },

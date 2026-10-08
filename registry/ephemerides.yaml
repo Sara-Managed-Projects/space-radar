@@ -193,6 +193,65 @@ craft:
       - {centre: earth, from: "2007-09-27T12:40:00Z", to: "2007-10-01T00:00:00Z"}
       - {centre: mars, from: "2009-02-14T00:00:00Z", to: "2009-02-22T00:00:00Z"}
 
+  # Five ended missions with a NASA model each (2026-10-08, public #431). Ids, spans and the words
+  # quoted are Horizons' own answers of that day.
+  #
+  # Rosetta. prior to 2004-MAR-02 09:25:55 UT: nothing; after 2016-OCT-04 23:59:59: nothing.
+  # Horizons' header: "SPACECRAFT TRAJECTORY (merged trajectory, mission completed)", built from
+  # ESA's own files, and "On 2016-September-30 @ 10:39:28 UTC, the Rosetta spacecraft ended its
+  # mission by landing on the comet". The comet is not a world this format knows, so the two years
+  # round it are kept relative to the Sun at the widest tolerance, as Dawn's years at Vesta are:
+  # the craft is drawn at the comet, not on its laps of a few tens of kilometres.
+  - id: deep-rosetta
+    name: Rosetta
+    command: "-226"
+    from: "2004-03-02T09:26:00Z"
+    to: "2016-09-30T10:39:00Z"
+    tol_km: 1000
+    windows:
+      - {centre: earth, from: "2004-03-02T09:26:00Z", to: "2004-03-06T00:00:00Z"}
+
+  # NEAR Shoemaker. prior to 1996-FEB-19 01:58:57 UT: nothing (a day and five hours after the
+  # launch). Horizons' header: "Concatenation of JPL navigation solutions", the last of them
+  # `near_erosorbit_nav_v1`, stopping 2001-Feb-12 19:45, the touchdown. Eros is not a world this
+  # format knows: the year in orbit is kept relative to the Sun at the widest tolerance.
+  - id: deep-near
+    name: NEAR Shoemaker
+    command: "-93"
+    from: "1996-02-19T01:59:00Z"
+    to: "2001-02-12T19:44:00Z"
+    tol_km: 1000
+    windows:
+      - {centre: earth, from: "1998-01-21T00:00:00Z", to: "1998-01-25T00:00:00Z"}
+
+  # Stardust (the bus, not the capsule). prior to 1999-FEB-07 21:31:06 UT: nothing; after
+  # 2011-MAR-12 23:58:53: nothing, twelve days before its transmitter was switched off
+  # (NSSDCA 1999-003A: 25 March 2011 at 00:30 UT). The file stops where JPL's does and the row in
+  # data/sample.js says so (`pathEnds`). Horizons' header marks 2006-Jan-31 to 2007-Aug-13,
+  # 2009-Jan-23 to 2010-Nov-21 and 2011-Jan-26 to the end as "Predicts".
+  - id: deep-stardust
+    name: Stardust
+    command: "-29"
+    from: "1999-02-07T21:32:00Z"
+    to: "2011-03-12T23:58:00Z"
+    windows:
+      - {centre: earth, from: "1999-02-07T21:32:00Z", to: "1999-02-11T00:00:00Z"}
+      - {centre: earth, from: "2006-01-13T00:00:00Z", to: "2006-01-17T00:00:00Z"}
+
+  # Deep Impact, the flyby craft. prior to 2005-JAN-12 19:22:27 UT: nothing. Horizons' header:
+  # "The spacecraft trajectory (w/data to 2012-Jan-24) includes targeting maneuver #1", "Updated
+  # 2012-Sep-24 to include final planned 1.8 m/s maneuver on 2012-Oct-4", and "Contact was lost
+  # Aug 11-14, 2013. The mission was declared lost by NASA on Sep 19, 2013". Horizons goes on to
+  # 2020 "ballistically, though without record"; the file stops on the day the mission was
+  # declared over.
+  - id: deep-deep-impact
+    name: Deep Impact
+    command: "-140"
+    from: "2005-01-12T19:23:00Z"
+    to: "2013-09-19T00:00:00Z"
+    windows:
+      - {centre: earth, from: "2005-01-12T19:23:00Z", to: "2005-01-16T00:00:00Z"}
+
   # Solution JPL#220. Kept relative to the Earth for the three weeks round 13 April 2029.
   - id: asteroid-99942
     name: Apophis
