@@ -280,9 +280,9 @@ function rockyLook(face) {
     look.oceanDeep = jitter([0.003, 0.018, 0.085], rnd, 0.15);
     look.oceanShallow = jitter([0.01, 0.1, 0.2], rnd, 0.15);
     const lush = rnd();
-    look.landLow = jitter(mix3([0.028, 0.085, 0.02], [0.06, 0.08, 0.018], lush), rnd, 0.12);
+    look.landLow = jitter(mix3([0.02, 0.085, 0.018], [0.05, 0.085, 0.016], lush), rnd, 0.12);
     look.landDry = jitter(mix3([0.34, 0.24, 0.13], [0.3, 0.17, 0.09], rnd()), rnd, 0.1);
-    look.landHigh = jitter([0.2, 0.17, 0.14], rnd, 0.1);
+    look.landHigh = jitter([0.19, 0.14, 0.1], rnd, 0.1);
     look.green = lerp(0.75, 0.3, Math.max(0, warmth - 0.6) / 0.4); // the warm edge is drier
     look.iceCol = [0.82, 0.88, 0.94];
     look.atm = skyColour(face);
@@ -363,7 +363,7 @@ function giantLook(face) {
     const lat = (0.2 + rnd() * 0.5) * (rnd() < 0.5 ? -1 : 1);
     const lon = rnd() * Math.PI * 2;
     const c = Math.cos(lat);
-    storms.push([c * Math.cos(lon), Math.sin(lat), c * Math.sin(lon), 0.05 + rnd() * 0.09]);
+    storms.push([c * Math.cos(lon), Math.sin(lat), c * Math.sin(lon), 0.09 + rnd() * 0.1]);
   }
   look.storms = storms;
   if (cls === 'gasGiant') {
@@ -375,16 +375,16 @@ function giantLook(face) {
       look.bandC = jitter([0.74, 0.7, 0.62], rnd, 0.06); look.stormCol = [0.5, 0.14, 0.06];
       look.atm = skyColour(face, [0.5, 0.5, 0.6]);
     } else if (teqK < 250) { // water cloud: white and pale blue
-      look.bandA = jitter([0.74, 0.77, 0.8], rnd, 0.05); look.bandB = jitter([0.32, 0.42, 0.56], rnd, 0.1);
-      look.bandC = jitter([0.56, 0.6, 0.62], rnd, 0.06); look.stormCol = [0.9, 0.9, 0.9];
+      look.bandA = jitter([0.74, 0.77, 0.8], rnd, 0.05); look.bandB = jitter([0.22, 0.32, 0.5], rnd, 0.1);
+      look.bandC = jitter([0.5, 0.5, 0.48], rnd, 0.06); look.stormCol = [0.92, 0.92, 0.92];
       look.atm = skyColour(face, [0.3, 0.5, 0.9]);
     } else if (teqK < 900) { // no cloud: deep blue
       look.bandA = jitter([0.05, 0.12, 0.36], rnd, 0.12); look.bandB = jitter([0.02, 0.05, 0.2], rnd, 0.12);
       look.bandC = jitter([0.12, 0.22, 0.46], rnd, 0.1); look.stormCol = [0.4, 0.5, 0.7];
       look.atm = skyColour(face, [0.2, 0.42, 1.0]);
     } else if (teqK < 1500) { // alkali metals: dark cobalt and slate
-      look.bandA = jitter([0.035, 0.085, 0.3], rnd, 0.12); look.bandB = jitter([0.014, 0.03, 0.12], rnd, 0.12);
-      look.bandC = jitter([0.1, 0.16, 0.34], rnd, 0.1); look.stormCol = [0.5, 0.56, 0.7];
+      look.bandA = jitter([0.04, 0.1, 0.34], rnd, 0.12); look.bandB = jitter([0.01, 0.022, 0.1], rnd, 0.12);
+      look.bandC = jitter([0.14, 0.22, 0.42], rnd, 0.1); look.stormCol = [0.55, 0.62, 0.75];
       look.atm = skyColour(face, [0.2, 0.4, 1.0]);
     } else { // silicate cloud, and its own heat showing
       look.bandA = jitter([0.16, 0.1, 0.08], rnd, 0.1); look.bandB = jitter([0.05, 0.035, 0.035], rnd, 0.1);
@@ -644,7 +644,7 @@ vec3 wind( vec3 c, out float storm ) {
     float d = 1.0 - dot( c, uCyc[ i ].xyz );
     float near = exp( -d / 0.03 );
     c = turn( c, uCyc[ i ].xyz, uCyc[ i ].w * near );
-    storm += 0.3 * exp( -d / 0.016 ) * ( 1.0 - 1.4 * exp( -d / 0.0006 ) ) * step( 0.01, abs( uCyc[ i ].w ) );
+    storm += 0.17 * exp( -d / 0.016 ) * step( 0.01, abs( uCyc[ i ].w ) );
   }
   #endif
   return c;
@@ -657,15 +657,16 @@ float cloudAt( vec3 c, float extra ) {
   #if TIER >= 1
   w += 0.8 * ( fbm3v( w * 0.9 + 5.0 ) - 0.5 );
   #endif
-  float n = fbm( w );
-  #if TIER >= 1
-  n += 0.11 * ( fbm3( w * 4.7 + 3.0 ) - 0.5 );
+  float n = fbm( w ) + 0.17 * ( fbm3( w * 4.3 + 3.0 ) - 0.5 );
+  #if TIER >= 2
+  n += 0.07 * ( fbm3( w * 13.0 + 7.0 ) - 0.5 );
   #endif
   // Storm tracks: more cloud along the middle latitudes and the equator, less in the dry belts.
   float belts = 0.5 + 0.5 * cos( c.y * 8.4 );
   float cover = uCloud + mix( ( belts - 0.5 ) * 0.16, 0.0, uLocked ) + extra + storm;
-  float thr = 0.74 - 0.44 * cover;
-  return smoothstep( thr, thr + 0.13, n );
+  // Thin at the edge, solid only where the deck is deep: a soft toe, not a cut-out.
+  float d = max( n - ( 0.75 - 0.44 * cover ), 0.0 ) / 0.12;
+  return 1.0 - exp( -d * d * 1.6 );
 }
 
 #if TIER >= 1
@@ -678,8 +679,8 @@ float cloudShade( vec3 c, float extra ) {
   float n = fbm( w );
   float belts = 0.5 + 0.5 * cos( c.y * 8.4 );
   float cover = uCloud + mix( ( belts - 0.5 ) * 0.16, 0.0, uLocked ) + extra + storm;
-  float thr = 0.74 - 0.44 * cover;
-  return smoothstep( thr - 0.02, thr + 0.15, n );
+  float d = max( n - ( 0.73 - 0.44 * cover ), 0.0 ) / 0.14;
+  return 1.0 - exp( -d * d * 1.6 );
 }
 #endif
 
@@ -710,7 +711,7 @@ void main() {
   float wet = m - 0.24 * exp( -pow( ( abs( q.y ) - 0.4 ) / 0.13, 2.0 ) ) * ( 1.0 - uLocked );
   float green = smoothstep( 0.34, 0.52, wet ) * ( 1.0 - smoothstep( 0.1, 0.6, elev ) ) * uGreen;
   vec3 landCol = mix( uLandDry, uLandLow, green );
-  landCol = mix( landCol, uLandHigh, smoothstep( 0.45, 0.9, elev ) );
+  landCol = mix( landCol, uLandHigh, smoothstep( 0.55, 0.95, elev ) );
   landCol *= 0.72 + 0.56 * fine;
   // The sea: pale over the shelf, then deep, and never one flat blue.
   vec3 seaCol = mix( uOceanShallow, uOceanDeep, smoothstep( 0.0, 0.3, depth ) );
@@ -718,9 +719,9 @@ void main() {
   seaCol *= 0.8 + 0.4 * mm.y;
   vec3 surf = mix( seaCol, landCol, land );
   // Ice: bluer over the sea, with leads opening in it and old grey floes.
-  float lead = pow( 1.0 - abs( 2.0 * fbm3( q * 5.5 + uSeed ) - 1.0 ), 12.0 ) * ( 1.0 - land );
+  float lead = pow( 1.0 - abs( 2.0 * fbm3( q * 5.5 + uSeed ) - 1.0 ), 22.0 ) * ( 1.0 - land );
   vec3 iceCol = uIceCol * ( 0.8 + 0.3 * fine ) * mix( vec3( 0.8, 0.9, 1.0 ) * ( 0.84 + 0.3 * mm.z ), vec3( 1.0 ), land );
-  iceCol = mix( iceCol, uOceanShallow * 1.6 + uIceCol * 0.15, lead * 0.75 );
+  iceCol = mix( iceCol, uOceanShallow * 1.6 + uIceCol * 0.15, lead * 0.5 );
   surf = mix( surf, iceCol, ice );
   float water = ( 1.0 - land ) * ( 1.0 - ice );
 
@@ -776,7 +777,7 @@ void main() {
     float seam = pow( 1.0 - abs( 2.0 * pn - 1.0 ), 9.0 );
     float pool = smoothstep( 0.56, 0.7, pn + uLocked * ( q.x - 0.35 ) * 0.2 + ( uLava - 0.7 ) * 0.12 );
     float seaHot = max( pool, seam * 0.85 );
-    float landHot = seam * ( 1.0 - smoothstep( 0.0, 0.45, elev ) ) * 0.5;
+    float landHot = seam * ( 1.0 - smoothstep( 0.1, 0.8, elev ) ) * 0.8;
     float hot = mix( seaHot, landHot, land ) * ( 0.75 + 0.5 * fine );
     vec3 glow = mix( vec3( 0.7, 0.045, 0.0 ), vec3( 1.25, 0.36, 0.04 ), smoothstep( 0.25, 0.85, hot ) );
     glow = mix( glow, vec3( 1.5, 0.9, 0.36 ), smoothstep( 0.9, 1.15, hot ) * pool );
@@ -846,11 +847,16 @@ void main() {
   float fest = swirl;
   #endif
   float lat = q.y + uTurb * ( ( swirl - 0.5 ) * 0.1 + ( fest - 0.5 ) * 0.06 );
+  #if TIER >= 1
+  // Eddies along the edges of the bands: the latitude itself is stirred at a finer scale.
+  vec3 eddy = fbm3v( vec3( q.x * 6.0, q.y * 13.0, q.z * 6.0 ) + uSeed.yxz );
+  lat += uTurb * ( eddy.x - 0.5 ) * 0.05 * ( 0.4 + 1.2 * eddy.y );
+  #endif
   float b1 = vnoise( vec3( uSeed.x, lat * uBandFreq, uSeed.z ) );
   float b2 = vnoise( vec3( uSeed.y, lat * uBandFreq * 2.9, uSeed.x ) );
   float b3 = vnoise( vec3( uSeed.z, lat * uBandFreq * 0.55, uSeed.y ) );
   float b4 = vnoise( vec3( uSeed.z, lat * uBandFreq * 7.3, uSeed.x ) );
-  float band = smoothstep( 0.32, 0.68, b1 * 0.58 + b2 * 0.28 + b4 * 0.14 );
+  float band = smoothstep( 0.4, 0.6, b1 * 0.56 + b2 * 0.28 + b4 * 0.16 );
   band = mix( 0.5, band, uContrast );
   vec3 col = mix( uBandB, uBandA, band );
   col = mix( col, uBandC, smoothstep( 0.55, 0.85, b3 ) * 0.7 * uContrast );
