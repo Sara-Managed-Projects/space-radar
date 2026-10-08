@@ -42,7 +42,27 @@ check(pleiads.filter((i) => data.appMag[i] < 4.5).length >= 6, 'the six or seven
 
 // 3. What is drawn: direction kept, distance the cluster's, within its depth; nothing else moves.
 const { drawLy, moved } = drawnPositions(data.posLy, data.count);
-check(moved.size === pleiads.length && pleiads.every((i) => moved.get(i) === 'm45'), 'exactly the Pleiades\' members are regrouped');
+// Two more the eye knows (public #424): the Beehive and the Southern Pleiades.
+const m44 = CLUSTERS.find((c) => c.id === 'm44');
+const ic2602 = CLUSTERS.find((c) => c.id === 'ic-2602');
+const bees = clusterMembers(data.posLy, data.count, m44);
+const south = clusterMembers(data.posLy, data.count, ic2602);
+check(bees.length >= 15 && bees.length <= 40, `the Beehive's cone holds 15 to 40 catalogue stars (${bees.length})`);
+check(south.length >= 15 && south.length <= 40, `the Southern Pleiades' cone holds 15 to 40 catalogue stars (${south.length})`);
+for (const [c, list] of [[m44, bees], [ic2602, south]]) {
+  const ds = list.map((i) => dist(data.posLy, i));
+  check(Math.max(...ds) - Math.min(...ds) > 10 * c.depthLy, `${c.id}: the catalogue strings its stars over ${Math.round(Math.max(...ds) - Math.min(...ds))} light-years, many times its depth`);
+  const row = dso.objects.find((o) => o.id === c.id);
+  const half = 0.5 * (row.majAxArcmin / 60) * (Math.PI / 180) * row.distLy;
+  check(Math.abs(half - c.depthLy) <= 1, `${c.id}: depthLy ${c.depthLy} is half its width on the sky at its distance (${half.toFixed(1)} light-years)`);
+  check(list.every((i) => moved.get(i) === c.id), `${c.id}: its members are gathered`);
+  let worst = 0;
+  for (const i of list) worst = Math.max(worst, Math.abs(dist(drawLy, i) - c.distLy));
+  check(worst <= c.depthLy + 0.01, `${c.id}: drawn within ${c.depthLy} light-years of its distance (${worst.toFixed(2)})`);
+  const card = parseDso(dso).find((r) => r.id === `dso-${c.id}`);
+  check(card && typeof card.meta.departure === 'string' && card.meta.departure.includes('not measured'), `${c.id}: the card says how its stars are drawn`);
+}
+check(moved.size === pleiads.length + bees.length + south.length && pleiads.every((i) => moved.get(i) === 'm45'), 'exactly the three gathered clusters\' members are regrouped');
 check(hyads.every((i) => !moved.has(i)), 'the Hyades\' stars stay where the catalogue puts them');
 let worstDir = 0, worstDepth = 0, others = 0;
 for (let i = 0; i < data.count; i++) {
@@ -50,7 +70,7 @@ for (let i = 0; i < data.count; i++) {
   const a = dist(data.posLy, i), b = dist(drawLy, i);
   const cos = (data.posLy[i * 3] * drawLy[i * 3] + data.posLy[i * 3 + 1] * drawLy[i * 3 + 1] + data.posLy[i * 3 + 2] * drawLy[i * 3 + 2]) / (a * b);
   worstDir = Math.max(worstDir, 1 - cos);
-  worstDepth = Math.max(worstDepth, Math.abs(b - m45.distLy));
+  if (moved.get(i) === 'm45') worstDepth = Math.max(worstDepth, Math.abs(b - m45.distLy));
 }
 check(others === 0, `no other star is moved (${others})`);
 check(worstDir < 1e-6, `a member keeps its measured direction (1 - cos ${worstDir})`);
@@ -63,4 +83,4 @@ const rec = parseDso(dso).find((r) => r.id === 'dso-m45');
 check(rec && typeof rec.meta.departure === 'string' && rec.meta.departure.includes('gathered') && rec.meta.departure.includes('not measured'), 'the Pleiades\' record carries the sentence that says how its stars are drawn');
 
 if (problems.length) { console.error(`clusters: ${problems.length} problem(s)\n  - ` + problems.join('\n  - ')); process.exit(1); }
-console.log(`clusters ok: ${pleiads.length} Pleiades stars gathered from a ${Math.round(spread)} light-year streak, ${hyads.length} Hyades stars left in place`);
+console.log(`clusters ok: ${pleiads.length} Pleiades stars gathered from a ${Math.round(spread)} light-year streak, ${bees.length} Beehive and ${south.length} Southern Pleiades stars gathered, ${hyads.length} Hyades stars left in place`);

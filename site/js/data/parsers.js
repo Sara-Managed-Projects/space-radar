@@ -1460,6 +1460,10 @@ export function parseExoplanets(text, opts = {}) {
  */
 // A deep-sky object drawn as a SHAPE rather than a mark must say what the shape is, in the same
 // words the Milky Way's record uses (data/layers.js). scene/galaxy.js ANDROMEDA holds the numbers.
+const GATHERED = 'its catalogued stars are each drawn in their measured direction but gathered at ' +
+  'this one distance, because the catalogue\u2019s distances to single stars scatter by more ' +
+  'than the cluster is deep; their depth inside it is not measured, and a few may be stars in ' +
+  'front or behind';
 const DSO_DRAWN = {
   m31: {
     drawsAs: 'variant',
@@ -1490,12 +1494,10 @@ const DSO_DRAWN = {
   },
   // The Pleiades' catalogued stars are gathered at the cluster's distance (scene/clusters.js): the
   // card's "drawn as" line gains this sentence (ui/cards.js appends a row's own `departure`).
-  m45: {
-    departure: 'its catalogued stars are each drawn in their measured direction but gathered at ' +
-      'this one distance, because the catalogue\u2019s distances to single stars scatter by more ' +
-      'than the cluster is deep; their depth inside it is not measured, and a few may be stars in ' +
-      'front or behind',
-  },
+  m45: { departure: GATHERED },
+  // The Beehive and the Southern Pleiades, the same way (public #424).
+  m44: { departure: GATHERED },
+  'ic-2602': { departure: GATHERED },
 };
 
 export function parseDso(doc) {

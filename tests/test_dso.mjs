@@ -181,7 +181,8 @@ if (said) {
   const { glowFor, KINDS } = await import(join(JS, 'scene/dsoglow.js'));
   const kindOf = (id) => { const r = recs.find((x) => x.id === id); const g = r && glowFor(r); return g ? g.kind : null; };
   check(kindOf('dso-m13') === 'globular', `M13 is marked as a globular cluster (${kindOf('dso-m13')})`);
-  check(kindOf('dso-m44') === 'open', `the Beehive as an open cluster (${kindOf('dso-m44')})`);
+  check(kindOf('dso-m7') === 'open', `Ptolemy's Cluster as an open cluster (${kindOf('dso-m7')})`);
+  check(kindOf('dso-m44') === 'soft' && kindOf('dso-ic-2602') === 'soft', 'the Beehive and the Southern Pleiades get the haze alone too (public #424)');
   check(kindOf('dso-m97') === 'shell', `the Owl as a shell (${kindOf('dso-m97')})`);
   check(kindOf('dso-m87') === 'galaxy', `M87 as a galaxy (${kindOf('dso-m87')})`);
   check(kindOf('dso-m45') === 'soft' && kindOf('dso-hyades') === 'soft', 'the Pleiades and the Hyades get the haze alone: their own stars are drawn');
