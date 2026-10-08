@@ -788,5 +788,13 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
   check(tumblePhase(st3, 1e9 + 10, 10, P) === tumblePhase(st3, 1e9 + 10, 10, P), 'the same frame asked twice gives one answer');
 }
 
+// The lander's footing has a soft edge, and the oddities' discs do not pay for one (public #267).
+{
+  const src = readFileSync(join(ROOT, 'site/js/scene/models.js'), 'utf8');
+  check(/regolith\(0\.5, '#55544F', 28, true\)/.test(src), 'the lander\'s ground patch asks for the feathered edge');
+  check(/function regolith\(r, colour, seg, soft = false\)/.test(src) && /if \(soft\) \{\s+g\.add\(featherRing/.test(src), 'and nothing else does by default');
+  check(/mat\.transparent = true;\s+mat\.opacity = opacity;\s+mat\.depthWrite = false;/.test(src), 'the feather is a transparent toon material that does not write depth');
+}
+
 if (problems.length) { console.log(`station shapes: ${problems.length} problem(s)`); for (const p of problems) console.log('  - ' + p); process.exit(1); }
 console.log('station shapes ok: Soyuz and Progress build inside budget at 10.7 m, and the name route picks them for stations-layer vehicles only');

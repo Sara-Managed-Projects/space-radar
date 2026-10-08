@@ -3114,7 +3114,7 @@ function buildGroundPatch() {
   // MARE_DUST, not REGOLITH: measured in headless Chrome on 2026-10-08, the oddities' lighter grey
   // drew as a beige plate on the dark map of the Sea of Tranquility. This is the tone of that map
   // in sunlight, so the patch reads as disturbed ground and not as a mat.
-  g.add(regolith(0.5, '#55544F', 28));
+  g.add(regolith(0.5, '#55544F', 28, true));
   return g;
 }
 
@@ -3201,6 +3201,9 @@ function starburst(rays, rMax, colour, name) {
  * Three draw calls. The tangent plane touches the sphere exactly at the origin, hence the lift.
  */
 function ragged(r, n, seed, y, colour, name) {
+  return mesh(raggedGeometry(r, n, seed, y), colour, 'body', name);
+}
+function raggedGeometry(r, n, seed, y) {
   const pos = [];
   const rim = (i) => r * (0.74 + 0.26 * hash01(seed + (i % n) * 31));
   for (let i = 0; i < n; i++) {
@@ -3211,14 +3214,39 @@ function ragged(r, n, seed, y, colour, name) {
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   geo.computeVertexNormals();
-  return mesh(geo, colour, 'body', name);
+  return geo;
 }
-function regolith(r, colour, seg) {
+/**
+ * One step of a patch's soft edge (public #267: "a hard edge"): the same ragged outline a little
+ * wider, in the patch's own toon colour at a fraction of its opacity, under it. Two or three of
+ * these step the edge down into the map instead of cutting it. Alpha needs its own material; it
+ * lives in the model's pool, so it is let go with the rest.
+ */
+function featherRing(r, n, seed, y, colour, opacity, name) {
+  const pool = modelMaterials || materials;
+  const mat = toonMaterial(colour, `feather-${opacity.toFixed(2)}`, pool);
+  mat.transparent = true;
+  mat.opacity = opacity;
+  mat.depthWrite = false;
+  const m = new THREE.Mesh(raggedGeometry(r, n, seed, y), mat);
+  m.name = name;
+  m.castShadow = false;
+  m.receiveShadow = false;
+  m.renderOrder = -1;
+  return m;
+}
+function regolith(r, colour, seg, soft = false) {
   const col = colour || REGOLITH;
   const dark = `#${new THREE.Color(col).multiplyScalar(0.74).getHexString()}`;
   const g = new THREE.Group();
   g.name = 'ground';
   const n = Math.max(14, seg || 18);
+  // The soft edge: two wider, fainter outlines of the same ground, under it.
+  // Only where asked (the lander's footing): the oddities' discs are held to tight triangle budgets.
+  if (soft) {
+    g.add(featherRing(r * 1.32, n, 17, 0.0008, col, 0.16, 'ground-feather-2'));
+    g.add(featherRing(r * 1.14, n, 13, 0.0014, col, 0.34, 'ground-feather-1'));
+  }
   g.add(ragged(r, n, 11, 0.002, col, 'ground'));
   g.add(ragged(r * 0.56, Math.max(9, n >> 1), 53, 0.0035, dark, 'ground-scuffed'));
   const pos = [];
