@@ -1302,7 +1302,14 @@ export async function boot({ setStatus } = {}) {
       const fromHere = record.klass === 'dso' && isLadderStage(stage.worldId) ? Math.PI - 0.1 : undefined;
       // A world is met on its lit face (issue #419): the rig's default is the far side from the
       // stage's world, which for everything beyond the Earth is the night side.
-      const lit = record.klass === 'world' ? litOffset(worlds.sunDirOf(record.id), camera.up, undefined, worlds.faceDirOf(record.id)) : null;
+      let lit = record.klass === 'world' ? litOffset(worlds.sunDirOf(record.id), camera.up, undefined, worlds.faceDirOf(record.id)) : null;
+      // A planet on its own system's stage is met on its lit face too (internal #466): the rig's
+      // default met TRAPPIST-1 e from behind, a black disc with a lit rim, which is no way to see a
+      // face drawn on it (scene/exoface.js). Its light is its star, wherever that is on the stage.
+      if (!lit && record.klass === 'exoplanet' && ctx.systems && ctx.systems.active && ctx.systems.stageOfRecord(record) === stage.worldId) {
+        const star = ctx.systems.lightScene();
+        if (star) lit = litOffset({ x: star.x - pos.x, y: star.y - pos.y, z: star.z - pos.z }, camera.up);
+      }
       // AND THE DISTANCE IS SOLVED AGAIN ON ARRIVAL, once. A squeezed planet's drawn size depends on
       // where the camera is (scene/worlds.js: the neighbour cap is measured from the camera when
       // worlds crowd), and its moons are drawn at its scale: SEEN 2026-10-06, Mimas framed from the

@@ -953,8 +953,8 @@ export function noiseTexture() {
 const GEOMETRY = {};
 /** One unit sphere per level of detail, shared by every face: near (a disc that fills the screen) and far. */
 export function faceGeometry(near) {
-  const key = near ? 'near' : 'far';
-  if (!GEOMETRY[key]) GEOMETRY[key] = near ? new THREE.SphereGeometry(1, 160, 80) : new THREE.SphereGeometry(1, 32, 16);
+  const key = near === 'halo' ? 'halo' : near ? 'near' : 'far';
+  if (!GEOMETRY[key]) GEOMETRY[key] = near === 'halo' ? new THREE.SphereGeometry(1, 64, 32) : near ? new THREE.SphereGeometry(1, 160, 80) : new THREE.SphereGeometry(1, 32, 16);
   return GEOMETRY[key];
 }
 /** A disc this many pixels in radius, or more, is drawn with the near sphere. */
@@ -1031,7 +1031,8 @@ function haloMesh(face, material) {
     transparent: true,
     depthWrite: false,
   });
-  const mesh = new THREE.Mesh(faceGeometry(true), mat);
+  // Its own edge is where the glow has already faded to nothing, so a coarse sphere will do.
+  const mesh = new THREE.Mesh(faceGeometry('halo'), mat);
   mesh.name = 'exoface:halo';
   mesh.scale.setScalar(HALO_SCALE);
   mesh.renderOrder = 2;

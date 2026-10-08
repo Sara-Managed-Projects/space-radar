@@ -17,6 +17,10 @@ async function look(id, name) {
   const m = text.match(/Artist’s impression[^\n]*/);
   const mesh = sr().systems.group.children.find((o) => o.userData && o.userData.recordId === (id || 'exo-trappist-1-e'));
   const tag = mesh && mesh.children.find((c) => c.name === 'exoface:tag');
+  const S = await import('/js/scene/systems.js');
+  out.line = out.line || S.faceLineOf('exo-trappist-1-e');
+  const C = await import('/js/ui/cards.js');
+  out.cardLineE = out.cardLineE || (C.systemLine ? C.systemLine({ id: 'exo-trappist-1-e' }) : null);
   out.shots[name] = { stats: st, cardLine: m ? m[0] : null, tagVisible: !!(tag && tag.visible), calls: sr().renderer.info.render.calls, latched: !!(sr().latch && sr().latch.latched), face: mesh && mesh.userData.exoface ? { cls: mesh.userData.exoface.face.cls, climate: mesh.userData.exoface.face.climate } : null };
   await window.cdpShot(name);
 }
@@ -29,6 +33,6 @@ location.hash = '#stage=system-trappist-1&at=exo-trappist-1-e';
 await wait(6000);
 sr().latch.force();
 await wait(1500);
-out.afterLatch = { faced: sr().systems.stats().faced };
+out.afterLatch = { faced: sr().systems.stats().faced, line: (await import('/js/scene/systems.js')).faceLineOf('exo-trappist-1-e') };
 await window.cdpShot('system-e-latched');
 return out;
