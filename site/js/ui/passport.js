@@ -2,14 +2,14 @@
 // public #240, internal #119).
 //
 // Contract: createPassport(ctx, opts) -> { available, data(), counts(), resume(tripId),
-//           stamp(tripId, total), wonderPrev(), wonderSeen(day, id), open(), forget() }
+//           stamp(tripId, total), stampPlaces(), wonderPrev(), wonderSeen(day, id), open(), forget() }
 // Also exported, pure, for tests/test_passport.mjs:
 //   KEY, VISITED_CAP, TRIPS_CAP, RESUME_MS
 //   emptyPassport(), sanitize(raw), readPassport(storage), writePassport(storage, p),
 //   forgetPassport(storage), safeStorage(win)
 //   recordVisit(p, id, nowMs), recordStop(p, tripId, index, count, nowMs),
 //   recordComplete(p, tripId, nowMs), continuable(p, tripId, nowMs) -> index | null
-//   tripsDone(p), placesSeen(p), stampLine(p, total, nowMs), notableVisited(p, recordById, max)
+//   tripsDone(p), placesSeen(p), stampLine(p, total, nowMs), stampPlacesLine(p), notableVisited(p, recordById, max)
 //   wonderOfTheDay({events, famous, dayNumber, prev}) -> {id, kind, item} | null
 //
 // WHY. A visitor who finished a trip got an end card and was forgotten when the tab closed. A
@@ -191,6 +191,16 @@ export function stampLine(p, total, nowMs) {
   const n = tripsDone(p);
   if (!n || !Number.isFinite(total) || total < n) return '';
   return t(COPY.passport.stamp, { n: fmt.int(n), total: fmt.int(total), date: timeText.longDate(nowMs) });
+}
+
+/**
+ * The end card's second line (public #240): "41 places opened so far", the same count the home's
+ * row and the Passport view show. Empty with none: a trip's own stops are not places opened.
+ */
+export function stampPlacesLine(p) {
+  const n = placesSeen(p);
+  if (!n) return '';
+  return t(COPY.passport.stampPlaces, { places: t(n === 1 ? COPY.passport.placeOne : COPY.passport.places, { n: fmt.int(n) }) });
 }
 
 /** Which kinds of place lead the grid: a world before a station before a far thing before a dot. */
@@ -450,6 +460,8 @@ export function createPassport(ctx, opts = {}) {
       onTrip({ tourId: tripId, phase: 'outro' });
       return stampLine(p, Number.isFinite(total) ? total : tours().length, now());
     },
+    /** The end card's line under the stamp: how many places this browser has seen opened. */
+    stampPlaces: () => (available ? stampPlacesLine(p) : ''),
     wonderPrev: () => p.wonder,
     wonderSeen(day, id) {
       if (!Number.isInteger(day) || !okId(id) || (p.wonder && p.wonder.day === day && p.wonder.id === id)) return;

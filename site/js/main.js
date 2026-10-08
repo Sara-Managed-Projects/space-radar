@@ -57,7 +57,7 @@ import { createHud } from './ui/hud.js';
 import { createOrbitLine } from './scene/orbitline.js';
 import { createGroundTrack } from './scene/groundtrack.js';
 import { createTrackLabels } from './ui/tracklabels.js';
-import { createOrbitRings, periodMsOfWorld } from './scene/orbitrings.js';
+import { createOrbitRings, periodMsOfWorld, MARKER_PX } from './scene/orbitrings.js';
 import { createFrameLatch, shouldSaveData, chooseTier, createTierPromoter } from './scene/quality.js';
 import { createLiveClouds } from './scene/liveclouds.js';
 import { createTextureTiers, gpuMiB, variantFor, LIVE_CLOUDS_MIB } from './scene/texturetiers.js';
@@ -146,6 +146,10 @@ const OFFLINE_MS = 6000;
  * the two seconds tests/test_first_visit_bytes.mjs waits past sr:layers-ready. */
 const SCRUBBER_MS = 4000;
 const TODAY_MS = 4500;
+/** The first visit's three lines and two buttons (ui/welcome.js), the launch chip (ui/launchchip.js)
+ * and the way home (ui/base.js): with the timeline, the first things after the first visit. */
+const WELCOME_MS = 4000;
+const LAUNCHDAY_MS = 4800;
 /** Two snapshots of the view inside this many ms are one move (a tab sets the stage, then the moment). */
 const ONE_MOVE_MS = 120;
 /**
@@ -847,11 +851,51 @@ export async function boot({ setStatus } = {}) {
   // trip, not a link). ctx.keyhint.show() opens it on request and imports it if it has to.
   const arrivedByLink = !!(link && (link.trip || link.at || link.event || link.stage)) || ambient || location.hash === '#sources';
   const keyHint = () => import('./ui/keyhint.js').then((m) => m.createKeyHint(ctx, { deepLink: arrivedByLink }));
-  ctx.keyhint = { show: () => keyHint().then((api) => api.show()) };
+  ctx.keyhint = { show: (o) => keyHint().then((api) => api.show(o)), toggleAll: () => keyHint().then((api) => api.toggleAll()) };
   const hintLater = () => afterFirstVisit(KEYHINT_MS, () => keyHint().then((api) => api.maybeShow()).catch((e) => console.warn('the controls hint did not load', e)));
   window.addEventListener('sr:layers-ready', hintLater, { once: true });
   // An embed shows no hint and does not fetch it (ui/embed.js): the listener comes off again.
   if (embed) window.removeEventListener('sr:layers-ready', hintLater);
+  // A FIRST VISIT'S THREE LINES AND TWO BUTTONS (public #241, #287; ui/welcome.js): once per
+  // visitor, at the head of the home. The storage is read here so a returning visitor does not
+  // fetch the module at all; ctx.welcome.show() opens it on request (a probe).
+  let welcomeApi = null;
+  const welcome = () => welcomeApi || (welcomeApi = import('./ui/welcome.js')
+    .then((m) => m.createWelcome(ctx, { deepLink: arrivedByLink || location.hash.length > 1, embed: !!embed, automated: navigator.webdriver === true })));
+  ctx.welcome = { show: () => welcome().then((api) => api.show()) };
+  const welcomeLater = () => afterFirstVisit(WELCOME_MS, () => {
+    let seen = true;
+    try { seen = !!window.localStorage.getItem('sr:welcome'); } catch { seen = true; /* no memory: no welcome */ }
+    if (seen || arrivedByLink) return;
+    welcome().then((api) => api.maybeShow()).catch((e) => { welcomeApi = null; console.warn('the welcome did not load', e); });
+  });
+  // LAUNCH DAY (public #289, ui/launchchip.js): a countdown chip while a launch is inside a day.
+  // RETURN TO BASE (public #241, ui/base.js): a house in the rail while the view is away from home.
+  // ctx.returnToBase() works before the module has come (the trip's top bar calls it).
+  const baseModule = () => import('./ui/base.js');
+  ctx.returnToBase = () => baseModule().then((m) => m.returnToBase(ctx)).catch((e) => console.warn('the way home did not load', e));
+  const launchDayLater = () => afterFirstVisit(LAUNCHDAY_MS, () => {
+    import('./ui/launchchip.js').then((m) => { ctx.launchChip = m.createLaunchChip(ctx); }).catch((e) => console.warn('the launch chip did not load', e));
+    baseModule().then((m) => { ctx.base = m.createBase(ctx, { host: document.getElementById('sr-rail') }); }).catch((e) => console.warn('the way home did not load', e));
+  });
+  if (embed || ambient) { /* a frame and a reel have no chrome to put them in */ }
+  else if (window.__srLayersReady) { welcomeLater(); launchDayLater(); }
+  else {
+    window.addEventListener('sr:layers-ready', welcomeLater, { once: true });
+    window.addEventListener('sr:layers-ready', launchDayLater, { once: true });
+  }
+  // THE SCALE BADGE (public #296, ui/scalebadge.js): "drawn ×N larger" and True size, on the
+  // Sun's stage, where every planet is a dot wider than itself. Fetched the first time that stage
+  // is entered; the dot's width it is told is scene/orbitrings.js MARKER_PX, the one the dots use.
+  let scaleBadge = null;
+  const wantScaleBadge = () => {
+    if (scaleBadge || embed || ambient || stage.worldId !== 'sun') return;
+    scaleBadge = import('./ui/scalebadge.js')
+      .then((m) => { ctx.scaleBadge = m.createScaleBadge(ctx, { ids: SYSTEM_RINGS, markerPx: MARKER_PX }); })
+      .catch((e) => { scaleBadge = null; console.warn('the scale badge did not load', e); });
+  };
+  window.addEventListener('sr:stage', wantScaleBadge);
+  wantScaleBadge();
   // OFFLINE (site/sw.js, ui/offline.js; issues #290, #453): the service worker is registered
   // OFFLINE_MS after sr:layers-ready, past the keys hint, so nothing it does is a first visit's cost.
   // NEVER IN AN EMBED (public #439): a frame under someone else's headline keeps nothing on the
@@ -1194,6 +1238,8 @@ export async function boot({ setStatus } = {}) {
     if (typeof document !== 'undefined' && document.hidden) { setTimeout(run, 0); return; }
     afterUpdate.push(run);
   };
+  /** How far the home view stands from the Earth's centre, in scene units of the Earth's stage. */
+  ctx.homeDistance = () => worldFramingDistance(6371 / STAGES.earth.unitKm, camera.fov, camera.aspect);
   /** The whole Earth in view, from wherever the camera is (the debris view asks for it). */
   ctx.frameEarth = (ms = 900) => {
     if (stage.worldId !== 'earth') ctx.setStage('earth');
@@ -2180,6 +2226,8 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       ctx.nebulae.update(ctx.camera, ctx.renderer, ctx.isLayerOn('deep-sky'), ctx.isLayerDrawable(LAYERS.find((l) => l.id === 'deep-sky')));
       // Andromeda's photograph and her stand-in model never draw over each other (scene/galaxy.js).
       if (ctx.galaxy) ctx.galaxy.setAndromedaShare(1 - ctx.nebulae.drawn('dso-m31'));
+      // Her two companions' ellipses step back with it: the photograph holds them (scene/dsoglow.js).
+      if (ctx.dsoGlow) ctx.dsoGlow.setShapedShare(1 - ctx.nebulae.drawn('dso-m31'));
     }
     if (ctx.otherLight.layer) ctx.updateOtherLight();
     if (ctx.starDisc) {

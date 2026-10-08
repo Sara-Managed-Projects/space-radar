@@ -2421,6 +2421,22 @@ function render(record, ctx, opts = {}) {
     }).catch((e) => console.warn('the countdown did not load', e));
   }
 
+  // 2c. a Starlink launch: when a fresh Starlink train is next visible from the visitor's place
+  // (public #289, ui/launchchip.js trainPassLine): the Coming up list's own prediction, so the two
+  // agree. Left out with no place or no visible pass; it does not claim the train is this launch's.
+  if (record.layer === 'launches' && /starlink/i.test(String(record.name || ''))) {
+    const train = el('p', 'sr-card__sentence sr-card__train');
+    train.hidden = true;
+    body.appendChild(train);
+    import('./launchchip.js').then((mod) => {
+      if (!train.isConnected || !mod.isStarlinkLaunch(record)) return;
+      const next = ctx && ctx.explore && ctx.explore.next;
+      const items = next && typeof next.items === 'function' ? next.items() : [];
+      const line = mod.trainPassLine(items, ctx && ctx.clock ? ctx.clock.now() : Date.now());
+      if (line) { train.textContent = line; train.hidden = false; }
+    }).catch((e) => console.warn('the train line did not load', e));
+  }
+
   // 3. the four actions, one of them ember.
   const actions = el('div', 'sr-card__actions');
   actions.setAttribute('role', 'group');

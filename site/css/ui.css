@@ -1990,8 +1990,29 @@ html.sr-present.sr-trip-mode:not([data-trip-names]) #labels .label:not(.is-subje
   background: var(--sr-wash-strong);
 }
 
+/* Return to base, beside Leave (public #241): the same wash, round, an icon. */
+.sr-trip__home {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  color: var(--sr-text);
+  cursor: pointer;
+  background: var(--sr-wash);
+  border: 0;
+  border-radius: 50%;
+  transition: background-color var(--sr-fast) var(--sr-ease);
+}
+
+.sr-trip__home:active {
+  background: var(--sr-wash-strong);
+}
+
 @media (hover: hover) {
-  .sr-trip__leave:hover {
+  .sr-trip__leave:hover,
+  .sr-trip__home:hover {
     background: var(--sr-wash-hover);
   }
 }
@@ -2504,6 +2525,11 @@ html.sr-phone .sr-trip__tb {
   }
 
   .sr-trip__leave {
+    height: 44px;
+  }
+
+  .sr-trip__home {
+    width: 44px;
     height: 44px;
   }
 }
@@ -3721,6 +3747,16 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   color: var(--sr-text-dim);
 }
 
+/* The trips that cannot run, said in one line under the cards (public #241). */
+.sr-trips2__off {
+  overflow: hidden;
+  margin: var(--sp-2) 0 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sr-trips2__off[hidden] { display: none; }
+
 /* Right now: the first line large, the rest a name and a mono value. */
 .sr-now__list {
   margin: 0;
@@ -4583,6 +4619,17 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
   height: 16px;
   margin: 0;
   accent-color: var(--sr-ember);
+}
+
+/* The list is walked with the arrow keys (public #315): the box under the keys wears the guide's
+   ring, not the browser's 1 px one, and its row lifts a step so the eye finds the name too. */
+.sr-show__box:focus-visible {
+  outline: 2px solid var(--sr-ember);
+  outline-offset: 2px;
+}
+
+.sr-show__label:has(.sr-show__box:focus-visible) {
+  background: var(--sr-wash);
 }
 
 .sr-show__label .sr-swatch {
@@ -6755,6 +6802,15 @@ html.sr-phone .sr-passport {
 }
 
 .sr-tripsheet__stamp[hidden] { display: none; }
+
+/* Under the stamp, the places opened so far (public #240): a caption, not a second stamp. */
+.sr-tripsheet__seen {
+  margin: calc(-1 * var(--sp-2)) 0 var(--sp-3);
+  font: 400 var(--sr-fs-sm)/18px var(--sr-font);
+  color: var(--sr-text-dim);
+}
+
+.sr-tripsheet__seen[hidden] { display: none; }
 
 /* Cards and live facts (2026-10-08). The distance that ticks: mono, tabular, so no digit moves
    its neighbours (docs/ui-guide.md 2.2, value numerals). */

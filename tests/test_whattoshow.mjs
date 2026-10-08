@@ -275,6 +275,45 @@ check(/^groups: \[/m.test(yaml), 'layers.yaml lists its groups');
   check(!!lightning && W.layerSwatch(lightning).hex === lightning.colour, 'and its swatch is its own colour');
 }
 
+// --- one tab stop (public #315) --------------------------------------------------------------------
+{
+  check(W.rovingTarget(5, 0, 'ArrowDown') === 1 && W.rovingTarget(5, 4, 'ArrowDown') === 4, 'Down steps, and stops at the end');
+  check(W.rovingTarget(5, 3, 'ArrowUp') === 2 && W.rovingTarget(5, 0, 'ArrowUp') === 0, 'Up steps, and stops at the start');
+  check(W.rovingTarget(5, 2, 'Home') === 0 && W.rovingTarget(5, 2, 'End') === 4, 'Home and End jump');
+  check(W.rovingTarget(5, 2, 'Tab') === null && W.rovingTarget(5, 2, 'a') === null && W.rovingTarget(0, 0, 'ArrowDown') === null, 'any other key, and an empty list, are not ours');
+  check(W.rovingTarget(5, -1, 'ArrowDown') === 1 && W.rovingTarget(5, 99, 'ArrowUp') === 0, 'a lost index starts from the first');
+
+  const store = { getItem: () => null, setItem() {} };
+  const show = W.createWhatToShow(makeCtx(firstOn).ctx, { storage: store });
+  document.body.appendChild(show.root);
+  const listNode = show.root.querySelector('.sr-show__list');
+  const stops = () => listNode.querySelectorAll('.sr-show__head').concat(listNode.querySelectorAll('.sr-show__bulkbtn'), listNode.querySelectorAll('.sr-show__box'));
+  const tabbable = () => stops().filter((n) => n.tabIndex === 0);
+  check(stops().length > 10, `the list has its headings, its All and None and its rows (${stops().length})`);
+  check(tabbable().length === 1, `exactly one of them takes Tab (got ${tabbable().length})`);
+  check(tabbable()[0] === listNode.querySelector('.sr-show__head'), 'at first it is the first heading');
+  check(stops().every((n) => n.tabIndex === 0 || n.tabIndex === -1), 'and every other one is out of the tab order');
+  check(listNode.getAttribute('role') === 'group' && listNode.getAttribute('aria-label') === COPY.controls.layersKeys, 'the list is a named group that says its keys');
+  // Arrow down from the first heading: the next item on screen takes the focus and the tab stop.
+  const key = (k) => { let stopped = false; for (const fn of listNode.listeners.keydown || []) fn({ key: k, target: document.activeElement, preventDefault() { stopped = true; } }); return stopped; };
+  const first = tabbable()[0];
+  first.focus();
+  check(key('ArrowDown') === true, 'Down is taken');
+  check(document.activeElement !== first && tabbable().length === 1 && tabbable()[0] === document.activeElement, 'focus moved, and the tab stop moved with it');
+  check(key('End') === true && document.activeElement !== first, 'End goes to the last item on screen');
+  const last = document.activeElement;
+  key('ArrowDown');
+  check(document.activeElement === last, 'and Down stops there');
+  check(key('Home') === true && document.activeElement === first, 'Home comes back to the first');
+  // Left and Right on a heading shut and open its group.
+  const wasOpen = first.getAttribute('aria-expanded') === 'true';
+  key(wasOpen ? 'ArrowLeft' : 'ArrowRight');
+  check((first.getAttribute('aria-expanded') === 'true') !== wasOpen, 'Left shuts a heading\'s group and Right opens it');
+  check(tabbable().length === 1, 'still one tab stop after a group opens or shuts');
+  check(key('a') === false, 'a letter is left alone');
+  document.body.removeChild(show.root);
+}
+
 if (problems.length) {
   console.error(`What to show: ${problems.length} problem(s)\n  - ${problems.join('\n  - ')}`);
   process.exit(1);

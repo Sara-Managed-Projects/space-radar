@@ -642,6 +642,11 @@ export const COPY = {
     // On the card that was just pressed, until its trip opens (ui/explore.js `starting`).
     starting: 'Starting…',
     cannotRun: 'Cannot run right now',
+    // Under the four cards while the rest are folded away (public #241): the trips that cannot
+    // run, counted, with the reason when they share one. {line} is one of the first two.
+    offOne: 'One trip cannot run now',
+    offMany: '{n} trips cannot run now',
+    offWhy: '{line}: {reason}',
     all: 'All {n} trips',
     fewer: 'Fewer trips',
     // Under the cards: the trips one after another, hands off (ui/autopilot.js, spec 0036).
@@ -2038,6 +2043,8 @@ export const COPY = {
     groupAllLabel: 'Show every layer in {group}',
     groupNoneLabel: 'Hide every layer in {group}',
     layerFilter: 'Find a layer',
+    // The list is one tab stop (public #315): its name tells a screen reader which keys move in it.
+    layersKeys: 'Layers. Up and down arrows move; Space switches one.',
     layerFilterEmpty: 'No layer by that name.',
     // The row that reopens the controls hint (ui/keyhint.js, issue #321): keys on a keyboard,
     // gestures on a touch screen.

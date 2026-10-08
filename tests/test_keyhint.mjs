@@ -87,6 +87,26 @@ for (const k of chrome.h.keys) check(wantsToggle({ key: k }, body, false) === 't
 for (const k of chrome.l.keys) check(railKey({ key: k }, body) === 'show', `the L cap's ${k} opens What to show (ui/rail.js)`);
 for (const k of chrome.p.keys) check(railKey({ key: k }, body) === 'share', `the P cap's ${k} opens Share (ui/rail.js)`);
 check(chrome.esc.keys.join() === 'Escape', 'the Esc cap is Escape');
+// `?` opens every key (public #315): the rail answers it, not while typing, and the trip's keys
+// shown there are the ones ui/tripframe.js keyAction answers.
+check(!!chrome.help && chrome.help.keys.join() === '?', 'the hint has a cap for ?');
+check(railKey({ key: '?' }, body) === 'keys', 'the ? cap opens every key (ui/rail.js railKey)');
+check(railKey({ key: '?' }, { tagName: 'INPUT' }) === null && railKey({ key: '?', ctrlKey: true }, body) === null, 'not while typing, and not with a modifier');
+{
+  const { keyAction } = await import(pathToFileURL(join(JS, 'ui/tripframe.js')).href);
+  const running = { phase: 'dwell' };
+  check(Array.isArray(hint.TRIP_KEYS) && hint.TRIP_KEYS.length >= 5, 'the trip\'s keys are listed');
+  for (const row of hint.TRIP_KEYS) {
+    const actions = Array.isArray(row.action) ? row.action : [row.action];
+    row.keys.forEach((k, i) => check(keyAction({ key: k }, running, body) === actions[i], `in a trip ${JSON.stringify(k)} is "${actions[i]}" (ui/tripframe.js keyAction said ${keyAction({ key: k }, running, body)})`));
+    for (const id of row.caps) check(typeof COPY.keyHint.caps[id] === 'string', `the trip cap ${id} has its label`);
+    check(typeof COPY.keyHint.does[row.does] === 'string' && COPY.keyHint.does[row.does].split(/\s+/).length <= 2, `what ${row.id} does is two words at most`);
+  }
+  const src = read('site/js/ui/keyhint.js');
+  check(/toggleAll/.test(src) && /is-all/.test(src) && /!all\) armAuto\(\)/.test(src), 'asked for, it stays: no auto-hide while every key is shown');
+  check(/\.sr-keyhint\.is-all \.sr-keyhint__trip/.test(read('site/css/keyhint.css')), 'the trip\'s keys show only when every key is asked for');
+  check(/keyhint\.toggleAll/.test(read('site/js/ui/rail.js')), 'the rail calls it');
+}
 // Internal #336: `/` focuses the search and the hint did not say so.
 {
   const { wantsSearch } = await import(pathToFileURL(join(JS, 'ui/explore.js')).href);

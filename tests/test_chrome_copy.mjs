@@ -70,6 +70,16 @@ const LINES = [
   ['sentence.approach', 14, INTER, SIDE, { name: '2026 TC12', when: 'tomorrow at 21:14' }],
   ['sentence.launched', 14, INTER, SIDE, { n: '1 203' }],
   // The passport: the row at the home's foot, the view's lines, the stamp, a card's resume line
+  // A first visit's three lines (ui/welcome.js): one line each at 15 px, in the sidebar and on a phone.
+  ['welcome.dots', 15, INTER, SIDE],
+  ['welcome.move', 15, INTER, SIDE],
+  ['welcome.moveTouch', 15, INTER, SIDE],
+  ['welcome.trips', 15, INTER, SIDE],
+  // The scale badge (ui/scalebadge.js) and the line under the trips that cannot run (ui/explore.js).
+  ['scale.least', 13, INTER, SIDE],
+  ['scale.one', 13, INTER, SIDE, { name: 'Neptune', n: '99 000' }],
+  ['scale.trueLine', 13, INTER, SIDE, { name: 'Jupiter', px: '0.0001' }],
+  ['passport.stampPlaces', 13, INTER, SIDE, { places: '300 places' }],
   ['passport.kept', 13, INTER, SIDE],
   ['passport.notKept', 13, INTER, SIDE],
   ['passport.noPlaces', 13, INTER, SIDE],
@@ -165,7 +175,8 @@ for (const [key, max] of [['passport.forget', 2], ['passport.forgetConfirm', 2],
 // names its key). No exclamation mark, no arrow, no double hyphen, no emoji, and no Title Case.
 const CHROME_SECTIONS = ['app', 'subscribe', 'shell', 'tabs', 'rightNow', 'statusLine', 'tripCard', 'explore', 'rail', 'timePill', 'undo',
   'moments', 'ladder', 'sceneNote', 'link', 'share', 'audio', 'density', 'nextList', 'colourKey', 'chooser', 'controls', 'search',
-  'quality', 'time', 'sheet', 'print', 'hud', 'tonight', 'clean', 'keyHint', 'mark', 'sentence', 'wonder', 'happened', 'passport'];
+  'quality', 'time', 'sheet', 'print', 'hud', 'tonight', 'clean', 'keyHint', 'mark', 'sentence', 'wonder', 'happened', 'passport',
+  'scale', 'launchChip', 'welcome', 'base'];
 const TOOLTIP = /(Title|Label|Alt|Aria|Tip|Hint|Why|Help|Describe|Long)$|^(label|title|aria|hint|why)/;
 // Said in full on purpose, each with its reason. A key here that goes away fails below.
 const LONG_OK = new Map([

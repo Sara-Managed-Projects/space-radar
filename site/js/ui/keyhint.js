@@ -78,6 +78,23 @@ export const CHROME_KEYS = [
   { id: 'l', keys: ['l', 'L'], does: 'show' },
   { id: 'p', keys: ['p', 'P'], does: 'share' },
   { id: 'esc', keys: ['Escape'], does: 'esc', wide: true },
+  // `?` opens this panel with every key on it (public #315; ui/rail.js railKey answers it).
+  { id: 'help', keys: ['?'], does: 'keys' },
+];
+
+/**
+ * ALL THE KEYS (public #315): `?`, or What to show's Keys row, opens the panel with one more
+ * group, the keys a guided trip answers. Not caps that light (a trip closes the hint), so they are
+ * not in allCaps(): each is a KeyboardEvent.key and the action ui/tripframe.js keyAction gives it,
+ * and tests/test_keyhint.mjs holds every row to that function.
+ */
+export const TRIP_KEYS = [
+  { id: 'play', caps: ['space'], keys: [' '], action: 'toggle', does: 'tripPlay', wide: true },
+  { id: 'step', caps: ['left', 'right'], keys: ['ArrowLeft', 'ArrowRight'], action: ['back', 'next'], does: 'tripStep' },
+  { id: 'card', caps: ['c'], keys: ['c'], action: 'collapse', does: 'tripCard' },
+  { id: 'replay', caps: ['r'], keys: ['r'], action: 'replay', does: 'tripReplay' },
+  { id: 'sound', caps: ['m'], keys: ['m'], action: 'sound', does: 'tripSound' },
+  { id: 'leave', caps: ['esc'], keys: ['Escape'], action: 'leave', does: 'tripLeave', wide: true },
 ];
 
 /** The touch version: what each gesture does to the camera (scene/camera.js pointers). */
@@ -260,6 +277,18 @@ export function createKeyHint(ctx, opts = {}) {
       grid.appendChild(item);
     }
     body.appendChild(grid);
+    // The trip's keys: drawn always, shown only when every key was asked for (keyhint.css .is-all).
+    const trip = el('div', 'sr-keyhint__trip');
+    trip.appendChild(el('p', 'sr-keyhint__micro', W.tripTitle));
+    const tgrid = el('div', 'sr-keyhint__chrome sr-keyhint__chrome--trip');
+    for (const row of TRIP_KEYS) {
+      const item = el('div', 'sr-keyhint__item');
+      for (const id of row.caps) item.appendChild(el('kbd', `sr-keyhint__cap${row.wide ? ' sr-keyhint__cap--wide' : ''}`, W.caps[id]));
+      item.appendChild(el('span', 'sr-keyhint__does', W.does[row.does]));
+      tgrid.appendChild(item);
+    }
+    trip.appendChild(tgrid);
+    body.appendChild(trip);
   }
 
   function buildTouch(body) {
@@ -303,7 +332,7 @@ export function createKeyHint(ctx, opts = {}) {
     else buildKeys(body);
     root.appendChild(body);
     const hold = () => { held += 1; clearTimeout(autoTimer); };
-    const release = () => { held = Math.max(0, held - 1); if (!held && open) armAuto(); };
+    const release = () => { held = Math.max(0, held - 1); if (!held && open && !all) armAuto(); };
     root.addEventListener('pointerenter', hold);
     root.addEventListener('pointerleave', release);
     root.addEventListener('focusin', hold);
@@ -336,10 +365,22 @@ export function createKeyHint(ctx, opts = {}) {
     }
   }
 
-  async function show() {
-    if (open) return true;
+  /**
+   * `all`: every key, the trip's too, and it stays until it is closed (`?` and the Keys row: it was
+   * asked for, so it is not taken away after twelve seconds or by the first turn of the globe).
+   */
+  let all = false;
+  async function show(opts = {}) {
+    const wantAll = !!(opts && opts.all);
+    // Open already: only "every key" changes it. The first visit's own showing, arriving while
+    // every key is up, must not fold the panel back (seen in the probe of 2026-10-08).
+    if (open && (all || !wantAll)) return true;
     await loadCss();
     if (!root) build();
+    all = wantAll;
+    root.classList.toggle('is-all', all);
+    root.setAttribute('aria-label', all ? W.labelAll : mode === 'touch' ? W.labelTouch : W.label);
+    if (open) { clearTimeout(autoTimer); place(); return true; }
     open = true;
     shownAt = Date.now();
     root.classList.remove('is-leaving');
@@ -349,8 +390,14 @@ export function createKeyHint(ctx, opts = {}) {
     void root.offsetWidth;
     root.classList.add('is-playing');
     place();
-    if (!held) armAuto();
+    if (!held && !all) armAuto();
     return true;
+  }
+
+  /** `?` pressed again closes what `?` opened. */
+  function toggleAll() {
+    if (open && all) { hide('key'); return Promise.resolve(false); }
+    return show({ all: true });
   }
 
   function hide() {
@@ -368,7 +415,7 @@ export function createKeyHint(ctx, opts = {}) {
 
   /** A real hand on the camera: gone, after a beat (it has been read). */
   function handled() {
-    if (!open || Date.now() - shownAt < MIN_SHOWN_MS || keyTimer) return;
+    if (!open || all || Date.now() - shownAt < MIN_SHOWN_MS || keyTimer) return;
     keyTimer = setTimeout(() => { keyTimer = 0; hide('used'); }, KEY_GRACE_MS);
   }
 
@@ -428,7 +475,7 @@ export function createKeyHint(ctx, opts = {}) {
     shellTimer = setTimeout(() => { if (open) place(); }, 380);
   });
 
-  const api = { isReal: true, show, hide, maybeShow, isOpen: () => open, mode: () => mode, el: () => root };
+  const api = { isReal: true, show, hide, maybeShow, toggleAll, isOpen: () => open, isAll: () => open && all, mode: () => mode, el: () => root };
   if (ctx) ctx.keyhint = api;
   return api;
 }

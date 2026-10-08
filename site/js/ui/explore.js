@@ -234,6 +234,32 @@ export function tripMeta(row, eventLine) {
   return t(row.count === 1 ? T.metaOne : T.meta, { n: fmt.int(row.count), m: fmt.int(min) });
 }
 
+/**
+ * The order the home shows its trips in (public #241). Pure. First the trip a returning visitor
+ * left in the last day (`resumes(row)`: ui/passport.js says where it can be picked up), so their
+ * way back in is the first card and not the ninth; then the ones that can run; last the ones that
+ * cannot: the first view must not open on a greyed card.
+ */
+export function homeTripOrder(rows, resumes) {
+  const list = Array.isArray(rows) ? rows : [];
+  const mine = (r) => !r.off && typeof resumes === 'function' && !!resumes(r);
+  return list.filter(mine).concat(list.filter((r) => !r.off && !mine(r)), list.filter((r) => r.off));
+}
+
+/**
+ * What the home says about trips that cannot run while their cards are folded away (public #241):
+ * how many, and why when they all give the same reason. '' when none is hidden. Pure.
+ * `hidden` are the rows below the fold. The cards themselves, once shown, each carry their reason.
+ */
+export function offNote(hidden, T = COPY.tripCard) {
+  const off = (Array.isArray(hidden) ? hidden : []).filter((r) => r && r.off);
+  if (!off.length) return '';
+  const line = off.length === 1 ? T.offOne : t(T.offMany, { n: fmt.int(off.length) });
+  const reasons = new Set(off.map((r) => String(r.reason || '').trim()));
+  const reason = reasons.size === 1 ? [...reasons][0] : '';
+  return reason ? t(T.offWhy, { line, reason }) : line;
+}
+
 // ---------------------------------------------------------------------------------------------
 // DOM
 // ---------------------------------------------------------------------------------------------
@@ -493,8 +519,10 @@ export function createExplore(ctx, host) {
         if (typeof ctx.wantAutopilot === 'function') ctx.wantAutopilot({ ambient: '1' }, 'row');
       });
     });
-    s.append(grid, more, own, reels);
-    tripHosts.set(id, { s, grid, more, expanded: false });
+    const off = el('p', 'sr-sect__note sr-trips2__off');
+    off.hidden = true;
+    s.append(grid, off, more, own, reels);
+    tripHosts.set(id, { s, grid, more, off, expanded: false });
   }
   earth.appendChild(tripHosts.get('earth').s);
   const next = createNext(ctx, { limit: COMING_UP_ROWS });
@@ -753,8 +781,8 @@ export function createExplore(ctx, host) {
     const drawn = groupTrips(tours, TOUR_GROUPS, plans);
     let rows = [];
     for (const g of drawn) if (!groups || groups.includes(g.group)) for (const r of g.trips) rows.push({ ...r, group: g.group });
-    // The ones that can run first, across groups: the first view must not open on a greyed card.
-    rows = rows.filter((r) => !r.off).concat(rows.filter((r) => r.off));
+    // A trip left in the last day first, then the ones that can run, then the rest (homeTripOrder).
+    rows = homeTripOrder(rows, (r) => (ctx.passport ? ctx.passport.resume(r.id) : null));
     hostT.s.hidden = !rows.length;
     const shown = hostT.expanded ? rows : rows.slice(0, TRIPS_SHOWN);
     // The cards are rebuilt as plans land, and a rebuilt card is a new node: the one a keyboard
@@ -793,6 +821,11 @@ export function createExplore(ctx, host) {
       if (focusedTrip && row.id === focusedTrip) card.focus({ preventScroll: true });
     }
     hostT.more.hidden = rows.length <= TRIPS_SHOWN;
+    // The ones that cannot run are below the fold: say there are some, and why (public #241).
+    const note = hostT.expanded ? '' : offNote(rows.slice(TRIPS_SHOWN));
+    hostT.off.textContent = note;
+    hostT.off.title = note;
+    hostT.off.hidden = !note;
     hostT.more.textContent = hostT.expanded ? COPY.tripCard.fewer : t(COPY.tripCard.all, { n: fmt.int(rows.length) });
     hostT.more.setAttribute('aria-expanded', hostT.expanded ? 'true' : 'false');
   }

@@ -713,5 +713,14 @@ jobs:
         run: node tests/test_trip_layer_wait.mjs
       - name: "the polish sweep: the place inside the Tonight view, a model in its band, the overlay key, photo mode's share (internal #455, #421, #386, #397)"
         run: node tests/test_polish_sweep.mjs
+      # The public finishers (2026-10-08): each is the missing part of an open issue.
+      - name: "the scale badge: the factor computed from the dot and the camera, True size, the dots obey (public #296)"
+        run: node tests/test_scalebadge.mjs
+      - name: "the launch chip: which launch, what it says, the Starlink train's pass, no chase camera (public #289)"
+        run: node tests/test_launchchip.mjs
+      - name: "a first visit: once, three lines that fit, two buttons, one ember (public #241, #287)"
+        run: node tests/test_welcome.mjs
+      - name: "Return to base: what away is, what coming home does, where the house lives (public #241)"
+        run: node tests/test_base.mjs
       - name: "every test file in tests/ is run by this workflow"
         run: node tests/test_ci_runs_every_test.mjs

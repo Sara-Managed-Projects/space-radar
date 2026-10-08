@@ -1467,6 +1467,27 @@ const DSO_DRAWN = {
     departure: 'at the size given here and tilted as measured, 77\u00b0 with the north-west edge ' +
       'nearest; its own arms have not been mapped star by star, so these are ours',
   },
+  // ANDROMEDA'S TWO BRIGHT COMPANIONS (public #385). They were two unnamed dots beside her: the
+  // Messier table calls them "Andromeda Satellite #1" and "#2", which is nobody's name for them,
+  // and a Messier row carries no `why`, so nothing named them on the map. They go by their
+  // Messier numbers, they say why they are worth naming, and scene/dsoglow.js SHAPED draws each as
+  // an ellipse of OpenNGC's own axes (read 2026-10-08), which their cards say in these words.
+  m32: {
+    name: 'M32',
+    why: 'One of the Andromeda Galaxy\u2019s two bright satellite galaxies, an elliptical.',
+    drawsAs: 'variant',
+    drawnName: 'M32, as an ellipse',
+    departure: 'a soft glow 7.74\u2032 by 4.86\u2032 turned 170\u00b0 east of north, as OpenNGC lists it, ' +
+      'seen flat from our side; not a picture of it',
+  },
+  m110: {
+    name: 'M110',
+    why: 'One of the Andromeda Galaxy\u2019s two bright satellite galaxies, an elliptical.',
+    drawsAs: 'variant',
+    drawnName: 'M110, as an ellipse',
+    departure: 'a soft glow 16.22\u2032 by 9.59\u2032 turned 170\u00b0 east of north, as OpenNGC lists it, ' +
+      'seen flat from our side; not a picture of it',
+  },
 };
 
 export function parseDso(doc) {
@@ -1479,9 +1500,11 @@ export function parseDso(doc) {
     if (o.messier != null) aliases.push(`M${o.messier}`, `Messier ${o.messier}`);
     if (o.designation) aliases.push(o.designation, o.designation.replace(/\s+/g, ''));
     if (o.common && o.name !== o.common) aliases.push(o.common);
+    // A row drawn as a shape may also say what it is called (DSO_DRAWN): the table's name stays an alias.
+    const { name: ownName, ...drawn } = DSO_DRAWN[o.id] || {};
     out.push({
       id: `dso-${o.id}`,
-      name: o.common || o.name,
+      name: ownName || o.common || o.name,
       klass: 'dso',
       layer: 'deep-sky',
       propagator: 'static',
@@ -1510,7 +1533,7 @@ export function parseDso(doc) {
           ? `Position and distance: ${o.positionSource}`
           : `Position: OpenNGC (CC BY-SA 4.0); distance: ${o.distanceSource || 'as the row says'}`,
         aliases,
-        ...(DSO_DRAWN[o.id] || {}),
+        ...drawn,
       },
     });
   }

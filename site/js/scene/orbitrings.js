@@ -1,7 +1,7 @@
 // scene/orbitrings.js -- the planets' paths round the Sun, and a dot for each planet, on the Sun
 // stage while a trip asks for them (registry/tours.yaml `orbits:`).
 //
-// Contract: createOrbitRings(scene, { renderer, camera }) -> { update(tMs, ids), visible(), dispose() }
+// Contract: createOrbitRings(scene, { renderer, camera }) -> { update(tMs, ids), visible(), setDotScale(k), dispose() }
 // Pure and exported for the test: ringTimes(periodMs, t0Ms, n), periodMsOfWorld(id), litShare(n, sun)
 //
 // WHY, measured 2026-09-23 (headless Chrome, 1280 x 800). "A year in a minute" runs on the Sun
@@ -24,6 +24,12 @@
 //      The trip frame prints COPY.trip.orbitsLine on every stop, "drawn larger than they are",
 //      and the first card says it in its own words -- the house rule: size may be exaggerated if
 //      the card says so; direction and place never.
+//
+// TRUE SIZE (public #296, ui/scalebadge.js). setDotScale(k) draws the planets' dots k times
+// MARKER_PX across, and at 0 not at all: what is left is each planet at the size it is, which from
+// here is under a pixel, with its path and its name. The badge that asks for it says how much
+// wider than the planet the dot is, from MARKER_PX and the camera, and what is lost without it.
+// The Earth's and the Moon's lit dots belong to a trip's stop and are not touched.
 //
 // Only on the Sun stage. Everywhere else the planets are already floored by worlds.js, and a
 // second dot beside a compressed disc would be two answers to where Mars is.
@@ -275,15 +281,23 @@ export function createOrbitRings(scene, { renderer, camera } = {}) {
     r.builtStage = stage.worldId;
   }
 
+  /** How wide the planets' dots are drawn, as a share of MARKER_PX: 1 by default, 0 for true size. */
+  let dotScale = 1;
+  function setDotScale(k) {
+    dotScale = Number.isFinite(k) ? Math.min(1, Math.max(0, k)) : 1;
+    dotMaterial.size = MARKER_PX * dotScale * (renderer && renderer.getPixelRatio ? renderer.getPixelRatio() : 1);
+    if (stage.worldId !== MOON_STAGE) dots.visible = dotScale > 0;
+  }
+
   /** `ids`: the planets the running trip asks for, or an empty list / null for none. */
   function update(tMs, ids) {
     if (stage.worldId === MOON_STAGE) return updateMoon(tMs, ids);
     litDots.visible = false;
-    dots.visible = true;
+    dots.visible = dotScale > 0;
     const want = stage.worldId === STAGE && Array.isArray(ids) && ids.length ? ids : null;
     group.visible = !!want;
     if (!want) return;
-    dotMaterial.size = MARKER_PX * (renderer && renderer.getPixelRatio ? renderer.getPixelRatio() : 1);
+    dotMaterial.size = MARKER_PX * dotScale * (renderer && renderer.getPixelRatio ? renderer.getPixelRatio() : 1);
     for (const [id, r] of rings) r.line.visible = want.includes(id);
     let n = 0;
     for (const id of want) {
@@ -340,5 +354,5 @@ export function createOrbitRings(scene, { renderer, camera } = {}) {
     if (scene) scene.remove(group);
   }
 
-  return { update, dispose, group, visible: () => group.visible, planets: () => planets.map((w) => w.id) };
+  return { update, setDotScale, dispose, group, visible: () => group.visible, planets: () => planets.map((w) => w.id) };
 }

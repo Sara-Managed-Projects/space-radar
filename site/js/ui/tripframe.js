@@ -438,6 +438,8 @@ export function createTripFrame(ctx) {
     group.setAttribute('aria-roledescription', T.stopRole);
     const heading = el('h2', 'sr-trip__stopname');
     heading.tabIndex = -1;
+    // No stop yet (the intro): an empty heading is not in the page for a reader (axe empty-heading).
+    heading.hidden = true;
     group.appendChild(heading);
     live.appendChild(group);
     // aria-live on a region that changes every twelve seconds floods a reader, so in `auto` the
@@ -447,7 +449,9 @@ export function createTripFrame(ctx) {
     status.setAttribute('role', 'status');
 
     // THE TOP BAR: the trip's title, its chapter above it (spec 0034 req 3), and Leave.
-    const top = el('header', 'sr-trip__top sr-float');
+    // A div, not a <header>: inside this frame's region a <header> is a banner landmark in the wrong
+    // place (axe landmark-banner-is-top-level, measured 2026-10-08).
+    const top = el('div', 'sr-trip__top sr-float');
     const titles = el('div', 'sr-trip__titles');
     // Not a live region: the stop title in the status is what a screen reader is told, and a
     // chapter is not news.
@@ -463,11 +467,23 @@ export function createTripFrame(ctx) {
     topLeave.appendChild(icon('x', 16));
     topLeave.appendChild(el('span', null, T.leave));
     topLeave.addEventListener('click', leave);
+    // RETURN TO BASE (public #241, ui/base.js): the rail's house is hidden with the rail during a
+    // trip, so the top bar carries one. It leaves the trip and brings the view home: the Earth,
+    // now, nothing selected. An icon beside Leave, named and with a tooltip.
+    const topHome = el('button', 'sr-trip__home');
+    topHome.type = 'button';
+    topHome.title = COPY.base.trip;
+    topHome.setAttribute('aria-label', COPY.base.label);
+    topHome.appendChild(icon('house', 20));
+    topHome.addEventListener('click', () => { if (typeof ctx.returnToBase === 'function') ctx.returnToBase(); else leave(); });
+    top.appendChild(topHome);
     top.appendChild(topLeave);
 
     // THE SHEET: the intro, the stop card's slot, the end. Seated in the sidebar's trip view on a
     // desktop and in this frame on a phone (seat()).
     const sheet = el('section', 'sr-tripsheet');
+    // A named GROUP, not a second region with the frame's own name (axe landmark-unique, 2026-10-08).
+    sheet.setAttribute('role', 'group');
     const panel = el('div', 'sr-tripsheet__panel');
     panel.hidden = true;
     const cardSlot = el('div', 'sr-tripsheet__card');
@@ -964,11 +980,17 @@ export function createTripFrame(ctx) {
     const stamp = el('p', 'sr-tripsheet__stamp');
     stamp.hidden = true;
     p.appendChild(stamp);
+    const places = el('p', 'sr-tripsheet__seen');
+    places.hidden = true;
+    p.appendChild(places);
     if (typeof ctx.wantPassport === 'function') {
       const total = trip.tours().length;
       ctx.wantPassport().then((pass) => {
         const line = pass && stamp.isConnected ? pass.stamp(st.tourId, total) : '';
         if (line) { stamp.textContent = line; stamp.hidden = false; }
+        // The places under it (public #240): the Passport view's own count, on the end card too.
+        const seen = line && typeof pass.stampPlaces === 'function' ? pass.stampPlaces() : '';
+        if (seen) { places.textContent = seen; places.hidden = false; }
       });
     }
 
@@ -1149,6 +1171,7 @@ export function createTripFrame(ctx) {
     const stopTitle = st.held ? T.heldTitle : st.stopTitle || '';
     parts.group.setAttribute('aria-label', t(T.liveLabel, { n, count: st.count, title: stopTitle }));
     parts.heading.textContent = stopTitle;
+    parts.heading.hidden = !stopTitle;
 
     // The APG rule, exactly: `off` while auto-advance is running, `polite` when it is not.
     const auto = st.pacing === 'auto' && !paused;

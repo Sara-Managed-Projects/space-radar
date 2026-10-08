@@ -208,6 +208,24 @@
   border-top: 1px solid var(--sr-line);
 }
 
+/* EVERY KEY (public #315): `?` and What to show's Keys row add the trip's keys under the rest. */
+.sr-keyhint__trip {
+  display: none;
+  margin-top: var(--sp-3);
+}
+
+.sr-keyhint.is-all .sr-keyhint__trip {
+  display: block;
+}
+
+.sr-keyhint__chrome--trip {
+  /* One column: "Space" and a pair of arrows leave half a column too little for their words. */
+  grid-template-columns: minmax(0, 1fr);
+  margin-top: var(--sp-2);
+  padding-top: 0;
+  border-top: 0;
+}
+
 .sr-keyhint__item {
   display: flex;
   gap: var(--sp-2);

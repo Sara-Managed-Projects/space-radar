@@ -104,7 +104,7 @@ In `site/js/ui/cards.js` (`ICONS`, where `chevron` is Lucide's `chevron-right`):
 `lucide-static` 0.544.0, read 2026-10-07): `satellite`, `rocket`, `globe`, `moon`, `star`, `sun`,
 `sparkles`, `map-pin`, `tornado`, `flag`. In `site/js/ui/embed.js`: `external-link`. In
 `site/js/ui/rail.js`: `share`, `ellipsis-vertical`, `eye-off`. In `site/js/ui/keyhint.js`: `move`,
-`mouse`. The only change is the
+`mouse`. In `site/js/ui/launchchip.js`: `rocket`, the same shapes as the search row's. The only change is the
 stroke, 1.75 instead of Lucide's default 2, which `docs/ui-guide.md` §3.16 sets for every icon in
 the app (`tests/test_a11y_static.mjs` holds it); Lucide draws at any stroke width by design. These
 are on Lucide's own list of icons derived from Feather (its `LICENSE`, read 2026-10-05), which are
@@ -113,6 +113,14 @@ MIT, © Cole Bemis: `x`, `crosshair`, `chevron-right`, `chevron-left`, `navigati
 `ellipsis-vertical` under its Feather name
 `more-vertical`; the rest are ISC. Both notices are in [§6](#6-full-licence-notices).
 `tests/test_a11y_static.mjs` refuses an `ICONS` name this paragraph does not list.
+
+**axe-core, for a test only** — `tests/vendor/axe.min.js` is axe-core 4.10.3 (© 2015-2025 Deque
+Systems, Inc., Mozilla Public License 2.0), the file `axe.min.js` of the npm package `axe-core@4.10.3`,
+unmodified, copied 2026-10-08 (sha256 `880970c081707360e64f34cea25ff91892f5bc95675b0776925b9709dd8a68bb`).
+It is not part of the site: nothing under `site/` loads it and a deploy does not upload `tests/`.
+`tests/probes/axe-probe.js` is concatenated after it and run inside a headless browser by
+`tools/cdp.mjs`, so the accessibility check loads no script from anybody's server. The file keeps
+its own licence header, as the MPL asks; its source is <https://github.com/dequelabs/axe-core>.
 
 ## 2. Textures
 
@@ -528,6 +536,7 @@ than counted by hand.
 | `gpm.glb` | Global Precipitation Measurement | NORAD 39574 (GPM-CORE) | 162 KB |
 | `icon.glb` | Ionospheric Connection Explorer (ICON) | NORAD 44628 (ICON) | 207 KB |
 | `seastar.glb` | SeaStar | NORAD 24883 (ORBVIEW 2 (SEASTAR)) | 12 KB |
+| `radarsat1.glb` | Radar Satellite-1 (RADARSAT-1), by NASA/Christopher R. Meaney | NORAD 23710 (RADARSAT-1); in no layer the app loads today | 57 KB |
 | `terra.glb` | Terra | NORAD 25994 (TERRA) | 20 KB |
 | `tselina2.glb` | Tselina-2 | the eighteen Tselina-2 ELINT satellites in the catalogue, by NORAD id | 113 KB |
 

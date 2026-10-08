@@ -216,6 +216,8 @@ Object.assign(COPY, {
     forgotten: 'Forgotten. This browser holds nothing now.',
     // The end card's stamp: "Trip 7 of 25 · 7 October 2026". {date} is the visitor's own day.
     stamp: 'Trip {n} of {total} · {date}',
+    // Under it, the places (public #240): "41 places opened so far", the Passport view's own count.
+    stampPlaces: '{places} opened so far',
     // A trip card's line for a trip left in the last 24 hours.
     resume: 'Continue from stop {n}',
   },
@@ -947,6 +949,14 @@ Object.assign(COPY, {
       show: 'What to show',
       share: 'Share',
       esc: 'Close',
+      // `?` and the trip's keys (public #315): shown when every key is asked for.
+      keys: 'All keys',
+      tripPlay: 'Play, pause',
+      tripStep: 'Back, next',
+      tripCard: 'Hide card',
+      tripReplay: 'Replay',
+      tripSound: 'Sound',
+      tripLeave: 'Leave',
     },
     how: {
       drag: 'Drag',
@@ -971,7 +981,14 @@ Object.assign(COPY, {
       l: 'L',
       p: 'P',
       esc: 'Esc',
+      help: '?',
+      space: 'Space',
+      c: 'C',
+      r: 'R',
+      m: 'M',
     },
+    labelAll: 'Keyboard shortcuts',
+    tripTitle: 'In a trip',
   },
 
   // The film (spec 0070, ui/rendermode.js): title card, lower third, end card, thumbnail.
@@ -1362,5 +1379,42 @@ Object.assign(COPY, {
     shareTitle: 'Copies a link that carries this place to the nearest 0.1°',
     copied: 'Link copied. It carries this place to 0.1°.',
     copyFailed: 'The link could not be copied.',
+  },
+
+  // ui/scalebadge.js (public #296): how much wider than the planet its dot is, on the Planets
+  // tab. {n} is computed from the dot's width and the camera; the True size line says what is lost.
+  scale: {
+    least: 'Planets drawn at least ×{n} larger',
+    one: '{name} drawn ×{n} larger',
+    title: 'The dots are wider than the planets. Press for true size.',
+    trueLine: 'True size: {name} is {px} px wide here',
+    trueTitle: 'The widest planet, with the dots put away. Press to draw them again.',
+  },
+  // ui/launchchip.js (public #289): the chip's tooltip ends with what a press does; the line on a
+  // Starlink launch's card is the Coming up list's next train pass, in its words of time.
+  launchChip: {
+    opens: 'press for its card',
+    train: 'New Starlink train of {n}, over you {when}',
+  },
+  // ui/welcome.js (public #241, #287): a first visit's three lines and two buttons, once.
+  welcome: {
+    label: 'First visit',
+    title: 'First time here',
+    // Each fits one line of the sidebar at 15 px (tests/test_chrome_copy.mjs holds the three).
+    dots: 'Every dot is a real thing. Press one.',
+    move: 'Drag to turn. Scroll to go closer.',
+    moveTouch: 'Drag to turn. Pinch to go closer.',
+    trips: 'A guided trip is one story in minutes.',
+    trip: 'Guided trip',
+    tripTitle: 'Starts the first trip on the list',
+    look: 'Look around',
+    lookTitle: 'Puts these lines away',
+  },
+  // ui/base.js (public #241): the house. `name` fills the undo toast, "Moved to base".
+  base: {
+    label: 'Return to base',
+    title: 'Return to base: the Earth, now, nothing selected',
+    name: 'base',
+    trip: 'Leave the trip and return to base',
   },
 });
