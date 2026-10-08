@@ -22,7 +22,7 @@ const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
 const { createViewStack, readCollapsed, writeCollapsed, SIDE_KEY, VIEWS } = await import(join(JS, 'ui/shell.js'));
-const { TABS, tabTarget, tabFor, rightNowLines, statusSummary, tripMeta, wantsSearch } = await import(join(JS, 'ui/explore.js'));
+const { TABS, tabTarget, tabFor, rightNowLines, statusSummary, tripMeta, wantsSearch, homeTripOrder, offNote } = await import(join(JS, 'ui/explore.js'));
 const { nextRate, stepMs, clampToWindow, pillText, PILL_RATES } = await import(join(JS, 'ui/timepill.js'));
 const { railKey } = await import(join(JS, 'ui/rail.js'));
 const { COPY } = await import(join(JS, 'copy/en.js'));
@@ -147,6 +147,19 @@ const { COPY } = await import(join(JS, 'copy/en.js'));
   check(tripMeta({ planned: true, off: false, count: 4, estimateMs: 125e3 }) === '4 stops · 2 min', 'a trip card says its stops and minutes');
   check(tripMeta({ planned: false }) === COPY.tripCard.planning, 'before the plan lands it says it is working it out');
   check(tripMeta({ planned: true, off: true, reason: 'Needs a place' }) === 'Needs a place', 'a trip that cannot run says why, never hidden');
+  // THE HOME'S ORDER AND ITS FOLD (public #241): a trip left yesterday is the first card; the ones
+  // that cannot run come last; and while they are folded away one line says how many and why.
+  {
+    const rows = [{ id: 'a' }, { id: 'b', off: true, reason: 'Needs a place. Set where you are first.' }, { id: 'c' }, { id: 'd' }, { id: 'e', off: true, reason: 'Needs a place. Set where you are first.' }];
+    check(homeTripOrder(rows, (r) => (r.id === 'd' ? { index: 3 } : null)).map((r) => r.id).join('') === 'dacbe', 'the trip left in the last day leads, then the ones that can run, then the rest');
+    check(homeTripOrder(rows, null).map((r) => r.id).join('') === 'acdbe' && homeTripOrder(null).length === 0, 'with no passport: the ones that can run, then the rest');
+    check(homeTripOrder([{ id: 'x', off: true }], () => ({ index: 1 }))[0].id === 'x' && homeTripOrder([{ id: 'x', off: true }, { id: 'y' }], () => ({ index: 1 }))[0].id === 'y', 'a trip that cannot run is not moved up by having been left');
+    const hidden = homeTripOrder(rows, null).slice(3);
+    check(offNote(hidden) === '2 trips cannot run now: Needs a place. Set where you are first.', `the fold says how many cannot run, and why when they agree: "${offNote(hidden)}"`);
+    check(offNote([{ off: true, reason: 'A' }, { off: true, reason: 'B' }]) === '2 trips cannot run now', 'two reasons: the count alone, the cards say the rest');
+    check(offNote([{ off: true, reason: '' }]) === COPY.tripCard.offOne, 'one, with no reason given');
+    check(offNote([{ id: 'a' }]) === '' && offNote([]) === '' && offNote(null) === '', 'none folded away, nothing said');
+  }
   check(tripMeta({ planned: true, off: false, count: 3, estimateMs: 60e3 }, 'Next: 12 August 2026') === 'Next: 12 August 2026', 'an event trip says when its event is');
 }
 

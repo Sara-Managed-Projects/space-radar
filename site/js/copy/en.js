@@ -642,6 +642,11 @@ export const COPY = {
     // On the card that was just pressed, until its trip opens (ui/explore.js `starting`).
     starting: 'Starting…',
     cannotRun: 'Cannot run right now',
+    // Under the four cards while the rest are folded away (public #241): the trips that cannot
+    // run, counted, with the reason when they share one. {line} is one of the first two.
+    offOne: 'One trip cannot run now',
+    offMany: '{n} trips cannot run now',
+    offWhy: '{line}: {reason}',
     all: 'All {n} trips',
     fewer: 'Fewer trips',
     // Under the cards: the trips one after another, hands off (ui/autopilot.js, spec 0036).

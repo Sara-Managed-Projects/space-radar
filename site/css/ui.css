@@ -3747,6 +3747,16 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
   color: var(--sr-text-dim);
 }
 
+/* The trips that cannot run, said in one line under the cards (public #241). */
+.sr-trips2__off {
+  overflow: hidden;
+  margin: var(--sp-2) 0 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sr-trips2__off[hidden] { display: none; }
+
 /* Right now: the first line large, the rest a name and a mono value. */
 .sr-now__list {
   margin: 0;
