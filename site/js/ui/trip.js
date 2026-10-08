@@ -524,6 +524,11 @@ export function createTrip(ctx) {
 
   function waitForLayer(id) {
     if (!id || landed.has(id)) return Promise.resolve(landed.has(id));
+    // This module is imported on the first press of a trip, seconds after the bundled layers
+    // (oddities, hand-kept-sites) announced themselves: `landed` never heard them, and every trip
+    // that required one sat on LAYER_DEADLINE_MS, 8 to 9 s of bare map (internal #454, #419 item 1,
+    // measured 2026-10-08). main.js keeps the answer; ask it before waiting for an event.
+    if (typeof ctx.layerLanded === 'function' && ctx.layerLanded(id)) { landed.add(id); return Promise.resolve(true); }
     // A layer that is DRAWN rather than loaded (the aurora, the lightning: data/layers.js `draw`)
     // has no records to land, so there is nothing to wait for: measured 2026-10-05, a trip that
     // required them sat eight seconds on LAYER_DEADLINE_MS before its intro.

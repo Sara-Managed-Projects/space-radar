@@ -2242,6 +2242,9 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
     (srcs.length === 0 || snaps.every(Boolean) ? local : upstream).push(layer);
   }
 
+  // Has this layer finished trying (rows or a failure)? A module loaded AFTER the layers landed
+  // (ui/trip.js is) missed their `sr:layer` and asks here instead of waiting for it (internal #454).
+  ctx.layerLanded = (id) => layerRecords.has(id);
   ctx.loadLayerNow = (layer) => { if (layer && layer.deferred) { layer.deferred = false; return one(layer); } return Promise.resolve(); };
   let laterLoad = null;
   ctx.laterLayersLoaded = () => later.length === 0 || (laterLoad !== null && later.every((l) => layerRecords.has(l.id)));
