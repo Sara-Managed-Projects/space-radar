@@ -1769,7 +1769,7 @@ export const TOURS = [
 "clock": "as-found",
 "group": "beyond",
 "next": "to-the-edge",
-"og_stop": 1,
+"og_stop": 9,
 "hides": [
 "exoplanets",
 "systems",

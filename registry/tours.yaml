@@ -1713,7 +1713,9 @@ tours:
     hides: [exoplanets, systems, exotics, deep-sky, galaxy]
     stage: stellar
     clock: as-found
-    og_stop: 1
+    # The scorpion beside the Milky Way: the one figure with a picture behind it. Orion's own
+    # frame is lines on black, 0.9 % lit against this one's 3.0 % (2026-10-08, internal #444).
+    og_stop: 9
     stops:
       - id: orion
         target: {sky: [83.8, 0.0]}
