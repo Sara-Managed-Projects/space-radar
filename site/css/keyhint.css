@@ -340,7 +340,8 @@ html.sr-phone.sr-card-open .sr-keyhint {
   .sr-keyhint__close {
     width: 44px;
     height: 44px;
-    margin: calc(-1 * var(--sp-2)) calc(-1 * var(--sp-3)) calc(-1 * var(--sp-2)) 0;
+    /* No negative margin up or down: a box that clips its row cut this target to 44 x 32 (UI gate). */
+    margin: 0 calc(-1 * var(--sp-3)) 0 0;
   }
 }
 
