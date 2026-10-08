@@ -1416,6 +1416,7 @@ Object.assign(COPY, {
     title: 'Return to base: the Earth, now, nothing selected',
     name: 'base',
     trip: 'Leave the trip and return to base',
+  },
   // scene/exoface.js and scene/exostage.js (internal plan 2026-10-08, #466 phase B): a drawn face
   // for a planet nobody has seen. The tag goes on the canvas wherever a face is drawn; the measured
   // line is generated from the planet's row; an invented world is never given a real planet's name.
