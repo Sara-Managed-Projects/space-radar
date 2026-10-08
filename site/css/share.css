@@ -252,6 +252,12 @@
 
 .sr-share__btn[hidden] { display: none; }
 
+/* At 320 px two columns are 140 px each and "Download JPEG" was cut to "Download JP…" (seen
+   2026-10-08, internal #202): under 360 px the actions are one to a row, each with its whole name. */
+@media (max-width: 359px) {
+  .sr-share__acts { grid-template-columns: 1fr; }
+}
+
 .sr-share__label {
   overflow: hidden;
   text-overflow: ellipsis;
