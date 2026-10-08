@@ -7,7 +7,7 @@
 import { COPY, t, fmt, timeText, ageInWords } from '../copy/en.js';
 import '../copy/en.later.js';
 import { load } from '../data/sources.js';
-import { altitudeInWords, azimuthInWords } from '../sky/skyview.js';
+import { altitudeInWords, azimuthInWords } from '../sky/skywords.js';
 import { riseHighestSetOf } from '../sky/riseany.js';
 import { LINKS } from '../data/links.js';
 import { stationCrew, STATION_RECORD, CREW_STALE_MS, daysBetween } from '../data/crew.js';
