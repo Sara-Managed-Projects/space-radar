@@ -387,6 +387,11 @@ jobs:
       # eleven-stop "Travel to exoplanets" run end to end by the real trip machine.
       - name: "Star systems: TRAPPIST-1 at its own scale, and the trip Travel to exoplanets"
         run: node tests/test_systems.mjs
+      # Internal #466 phase B: a drawn face for a planet nobody has seen. The classifier on the
+      # table's own rows, the label made from the row, imagined worlds named as imagined, three
+      # tiers with one draw call on a phone, no texture, no post-processing, nothing at boot.
+      - name: "Planet faces: classed from the row, labelled as an artist's impression"
+        run: node tests/test_exoface.mjs
       - name: Satellite positions move and reject stale orbital elements
         run: node tests/test_sgp4.mjs
       - name: The scene says so when no satellite could be read

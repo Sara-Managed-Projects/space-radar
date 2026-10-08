@@ -833,6 +833,14 @@ export async function boot({ setStatus } = {}) {
   ctx.wantAutopilot = (keys, from) => (autopilot || (autopilot = import('./ui/autopilot.js').then((m) => (ctx.autopilot = m.createAutopilot(ctx)))))
     .then((a) => { a.start(keys, from); return a; })
     .catch((e) => { autopilot = null; document.documentElement.classList.remove('sr-ambient'); console.warn('the autopilot did not load', e); return null; });
+  // A DRAWN WORLD ON A PLAIN STAR STAGE (scene/exostage.js, internal #466): `#imagine=N` opens "An
+  // imagined world no. N", an invented and labelled planet. Fetched for that link, never at boot;
+  // while it is up the map's scene is hidden and the loop below draws the stage's after it.
+  let imagine = null;
+  ctx.wantImagine = (n) => (imagine || (imagine = import('./scene/exostage.js').then((m) => (ctx.imagine = m.createImagineStage(ctx, { scene, onChange: (v) => writeUrlState({ imagine: v }) })))))
+    .then((s) => { if (n && n !== '0') s.start(n); else s.stop(); return s; })
+    .catch((e) => { imagine = null; document.documentElement.classList.remove('sr-imagine-on'); console.warn('the imagined world did not load', e); return null; });
+  if (!embed && link && link.imagine && link.imagine !== '0') { document.documentElement.classList.add('sr-imagine-on'); ctx.wantImagine(link.imagine); }
   // At sr:layers-ready a reel starts its own trips, and picks up the one a reloaded page's address names.
   const startReel = () => ctx.wantAutopilot(link);
   ctx.wantPassport = () => passport || (passport = import('./ui/passport.js')
@@ -1294,7 +1302,14 @@ export async function boot({ setStatus } = {}) {
       const fromHere = record.klass === 'dso' && isLadderStage(stage.worldId) ? Math.PI - 0.1 : undefined;
       // A world is met on its lit face (issue #419): the rig's default is the far side from the
       // stage's world, which for everything beyond the Earth is the night side.
-      const lit = record.klass === 'world' ? litOffset(worlds.sunDirOf(record.id), camera.up, undefined, worlds.faceDirOf(record.id)) : null;
+      let lit = record.klass === 'world' ? litOffset(worlds.sunDirOf(record.id), camera.up, undefined, worlds.faceDirOf(record.id)) : null;
+      // A planet on its own system's stage is met on its lit face too (internal #466): the rig's
+      // default met TRAPPIST-1 e from behind, a black disc with a lit rim, which is no way to see a
+      // face drawn on it (scene/exoface.js). Its light is its star, wherever that is on the stage.
+      if (!lit && record.klass === 'exoplanet' && ctx.systems && ctx.systems.active && ctx.systems.stageOfRecord(record) === stage.worldId) {
+        const star = ctx.systems.lightScene();
+        if (star) lit = litOffset({ x: star.x - pos.x, y: star.y - pos.y, z: star.z - pos.z }, camera.up);
+      }
       // AND THE DISTANCE IS SOLVED AGAIN ON ARRIVAL, once. A squeezed planet's drawn size depends on
       // where the camera is (scene/worlds.js: the neighbour cap is measured from the camera when
       // worlds crowd), and its moons are drawn at its scale: SEEN 2026-10-06, Mimas framed from the
@@ -1783,6 +1798,9 @@ export async function boot({ setStatus } = {}) {
     // `#ambient=…` pasted over a running page starts the reel; taken out of it, stops it.
     const reel = !!(keys.ambient && keys.ambient !== '0');
     if (reel || (ctx.autopilot && ctx.autopilot.engaged)) { ctx.wantAutopilot(keys); if (reel) return; }
+    // `#imagine=N` pasted over a running page opens that world; taken out of it, closes it.
+    const world = !!(keys.imagine && keys.imagine !== '0');
+    if (world || (ctx.imagine && ctx.imagine.active)) { ctx.wantImagine(keys.imagine); if (world) return; }
     const current = typeof ctx.selected === 'function' ? ctx.selected() : null;
     const running = ctx.trip && ctx.trip.state && ctx.trip.state.phase !== 'idle' ? ctx.trip.state : null;
     const plan = linkChange(keys, { at: current ? current.id : null, trip: running ? running.tourId : null, live: clock.mode === 'live' });
@@ -2239,6 +2257,9 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     }
     if (ctx.skyView.active) ctx.skyView.update(t);
     render();
+    // A drawn world on its plain stage is drawn over the frame; the map's own scene is hidden while
+    // it is up (scene/exostage.js), so that render() above clears and draws nothing.
+    if (ctx.imagine && ctx.imagine.active) ctx.imagine.render(t);
     // After render(), because render() is what brings the camera's matrices up to this frame: placed
     // before it, the brackets trailed the station by one frame of camera motion.
     // The hand-off between two stages, straight after the frame it copies was drawn (scene/climb.js).

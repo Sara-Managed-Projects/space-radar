@@ -78,7 +78,7 @@ import { exposurePanel, pictureNote } from './exposure.js';
 import { stage } from '../scene/stage.js';
 import { icon } from './icons.js';
 import { overlayLine, legendNode, paintLegend } from './overlaylegend.js';
-import { systemOfRecordId, phaseIsMeasured } from '../scene/systems.js';
+import { systemOfRecordId, phaseIsMeasured, faceLineOf } from '../scene/systems.js';
 import { liveBlock, paintLive, sparkBlock, crewBlock, linkNodes, smallBodyFromLine } from './cardextras.js';
 import { upForWords } from './cardlive.js';
 import { launchMsOf } from '../data/satcat.js';
@@ -1272,7 +1272,11 @@ export function systemLine(record, stageId = stage.worldId) {
   const m = record && record.id ? systemOfRecordId(record.id) : null;
   if (!m || stageId !== m.system.stage) return null;
   const guessed = m.system.planets.some((p) => !phaseIsMeasured(p));
-  return t(COPY.trip.systemLine, { phase: guessed ? COPY.trip.systemPhaseUnknown : '' });
+  const line = t(COPY.trip.systemLine, { phase: guessed ? COPY.trip.systemPhaseUnknown : '' });
+  // A planet drawn with a face (scene/exoface.js) says so first, in words made from its own row:
+  // "Artist's impression. Measured: 1.1 Earth radii, a 6.1-day year. The surface is imagined."
+  const face = faceLineOf(record.id);
+  return face ? face + ' ' + line : line;
 }
 
 export function drawingLine(record) {

@@ -2683,6 +2683,12 @@ html.sr-ambient :is(#sr-side, #sr-rail, #sr-time, .sr-top, .sr-toast, .sr-scenen
   display: none;
 }
 
+/* A drawn world on its plain star stage (scene/exostage.js, `#imagine=N`; the rest is
+   css/exoface.css, linked with it): the map's chrome, labels and reticle stand down. */
+html.sr-imagine-on :is(#sr-side, #sr-rail, #sr-time, .sr-top, .sr-toast, .sr-scenenote, .sr-keyhint, #labels, #sr-hud, .sr-card) {
+  display: none;
+}
+
 /* A toast during a trip sits over the toolbar on a desktop, under the top bar on a phone. */
 html.sr-trip-mode .sr-toast {
   top: auto;
