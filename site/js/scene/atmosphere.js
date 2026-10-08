@@ -42,6 +42,15 @@
 //   - IT DIMS WHAT IS BEHIND IT. Blending is src + dst x T, T the grey transmittance along the view
 //     ray: the haze hides the ground and the stars behind the limb as much as it glows.
 //
+// TWILIGHT (public #417, 2026-10-08), on a row that has it. Single scattering has a geometric
+// shadow: a step of the view ray either sees the Sun or does not, and the glow stops dead at the
+// terminator. In a deep, bright haze it does not: light that has been scattered many times creeps
+// round. That is not computed here. A row with `twilight` lights the steps inside the shadow too,
+// by exp(-depth / twilight), depth being how far inside the shadow's cylinder the step is, with
+// the light path of a Sun on the horizon; so the glow thins out round the night side instead of
+// ending. How far it reaches is CHOSEN, to look like the pictures, and the card says so
+// (copy/en.js drawing.worldDeparture.venus). A row without it draws exactly what it drew.
+//
 // THE EARTH'S SHELL COUNTS A MISS AS A HIT. Its sphere() returns (1e9, -1e9) when a ray misses, and
 // its shadow test is `sphere( p, uSunDir, 1.0 ).x > 0.0`, which a miss passes: every step whose ray to
 // the Sun clears the Earth -- the ordinary sunlit case -- is skipped as shadowed, and only steps inside
@@ -106,6 +115,8 @@ function chapmanUp(X, h, cosChi) {
  *   dustG        Henyey-Greenstein asymmetry, R G B
  *   heightGain   how much thicker the air is drawn than it is (illustrative, as the Earth's 2.5)
  *   sun          light gain: the shell's brightness against the disc's, fitted by eye
+ *   twilight     (optional, Venus) how far light is carried into the world's shadow, in radii: see
+ *                TWILIGHT in the header. Illustrative, and the card says so.
  *   multiple     (optional) the diffuse light's gain, fitted by eye; with it, what is seen through
  *                the air is dimmed by the transport extinction ext x (1 - albedo g), the similarity
  *                relation, since the light scattered forward is drawn back in by this term
@@ -139,20 +150,38 @@ export const ATMO_PARAMS = {
   // VENUS. The map is the cloud tops, about 70 km up; the shell is what lies above them. CO2 at the
   // cloud tops: about 3 kPa at 230 K (Venus International Reference Atmosphere), 0.038 of the Earth's
   // sea-level number density, times CO2's 2.4 -- 0.09 of the Earth's Rayleigh. Scale height there
-  // 4.9 km (kT / mg at 230 K). The upper haze of sulfuric-acid droplets above the clouds: optical depth
-  // about 0.2 in the visible over a 4 km scale height, nearly conservative, pale yellow (the unknown
-  // UV absorber), forward-scattering -- the bright ring a backlit Venus shows at inferior conjunction.
+  // 4.9 km (kT / mg at 230 K). The upper haze of sulfuric-acid droplets above the clouds, nearly
+  // conservative, pale yellow (the unknown UV absorber), forward-scattering -- the bright ring a
+  // backlit Venus shows at inferior conjunction.
+  //
+  // A THICK AIR, DRAWN THICK (public #417, 2026-10-08). #342 drew this row as a thin lit line: 0.2 of
+  // optical depth in 4 km, three times its height, a shell 1.5 % of the radius deep, and a shadow
+  // with a knife's edge. Venus is the one world here whose air is 90 bar of CO2 under 20 km of
+  // cloud, and what a camera sees of that is (a) a limb that is soft, not an edge, and (b) light
+  // carried well past the terminator: the cusps of the crescent reach round, and near inferior
+  // conjunction they close into a ring (Russell 1899; every Akatsuki and Pioneer Venus limb
+  // picture). So the haze above the cloud tops is drawn to 60 km over them with a 12 km scale
+  // height and an optical depth of 0.5 (ILLUSTRATIVE, all three: the measured upper haze thins out
+  // by about 90 to 100 km altitude with scale heights of a few km, and its depth above the tops
+  // is a few tenths), six times as thick as that -- a shell 6 % of the radius deep -- and
+  // `twilight`, which is not physics at all: light is let into the planet's shadow, dying by e
+  // for every 0.04 of a radius of depth into the shadow's cylinder (TWILIGHT in the header).
+  // Cream, not white: the albedo falls toward blue. The numbers were set on the JS twin
+  // (scatter()): 0.2 to 0.27 of the disc's light along the sunlit limb, 0.05 to 0.08 ten to
+  // fifteen degrees past the terminator, under 0.01 at thirty.
   venus: {
     radiusKm: 6051.8,
-    topKm: 30,
+    topKm: 60,
     gasHKm: 4.9,
     gasBeta: [5.8e-6 * 0.09, 13.5e-6 * 0.09, 33.1e-6 * 0.09],
-    dustHKm: 4.0,
-    dustTau: 0.2,
-    dustAlbedo: [0.99, 0.95, 0.8],
-    dustG: [0.6, 0.6, 0.6],
-    heightGain: 3.0,
-    sun: 9.0,
+    dustHKm: 12.0,
+    dustTau: 0.5,
+    dustAlbedo: [0.995, 0.96, 0.84],
+    // 0.45, not #342's 0.6: with this much haze a 0.6 lobe made the backlit ring 8.5 times the disc.
+    dustG: [0.45, 0.45, 0.45],
+    heightGain: 6.0,
+    sun: 12.0,
+    twilight: 0.04,
   },
   // TITAN. The ball is the haze as it looks (its row's tint); the shell is the upper haze over it,
   // which Cassini photographed extending hundreds of km above the disc, with a detached layer near
@@ -204,7 +233,7 @@ export function atmosphereCoefficients(p) {
   // forward (the similarity relation). Only for a row with `multiple`, whose scattered light is
   // drawn back in; a row without keeps the plain extinction.
   const extT = multi ? p.dustAlbedo.map((a, k) => ext * (1 - a * p.dustG[k])) : extM.slice();
-  return { top: 1 + (p.topKm * gain) / R, hR, hM, betaR, betaM, extM, extT, g: p.dustG.slice(), sun: p.sun, multi, kappa, tauUp: p.dustTau, albedo: p.dustAlbedo.slice() };
+  return { top: 1 + (p.topKm * gain) / R, hR, hM, betaR, betaM, extM, extT, g: p.dustG.slice(), sun: p.sun, multi, kappa, tauUp: p.dustTau, albedo: p.dustAlbedo.slice(), twilight: p.twilight || 0 };
 }
 
 /**
@@ -260,15 +289,25 @@ export function scatter(p, ro, rd, sunDir) {
     // In the world's shadow: the ray to the Sun meets the ground AHEAD. A miss returns 1e9, which is
     // not a hit (THE EARTH'S SHELL, in the header).
     const sh = sphere(q, sunDir, 1);
-    if (sh[0] > 0 && sh[0] < 1e8) continue;
     const r = Math.hypot(q[0], q[1], q[2]);
-    const cosChi = (q[0] * sunDir[0] + q[1] * sunDir[1] + q[2] * sunDir[2]) / r;
+    let cosChi = (q[0] * sunDir[0] + q[1] * sunDir[1] + q[2] * sunDir[2]) / r;
+    let lit = 1;
+    if (sh[0] > 0 && sh[0] < 1e8) {
+      if (!(c.twilight > 0)) continue;
+      // TWILIGHT (header): how deep this step is inside the shadow's cylinder, in radii.
+      const along = q[0] * sunDir[0] + q[1] * sunDir[1] + q[2] * sunDir[2];
+      const depth = 1 - Math.sqrt(Math.max(r * r - along * along, 0));
+      lit = Math.exp(-depth / c.twilight);
+    }
+    // A twilight row's light path is never longer than a Sun on the horizon's, lit or shadowed, so
+    // the glow falls smoothly through the terminator instead of dipping just before it.
+    if (c.twilight > 0) cosChi = Math.max(cosChi, 0);
     const lR = c.hR * chapman(1 / c.hR, h / c.hR, cosChi);
     const lM = c.hM * chapman(1 / c.hM, h / c.hM, cosChi);
     for (let k = 0; k < 3; k++) {
       const att = Math.exp(-(c.betaR[k] * (odR + lR) + c.extM[k] * (odM + lM)));
-      sumR[k] += dR * att;
-      sumM[k] += dM * att;
+      sumR[k] += dR * att * lit;
+      sumM[k] += dM * att * lit;
       // LIGHT SCATTERED MORE THAN ONCE (header): the sunlight the dust took out of the beam on its way here, less
       // what died diffusing this deep (kappa), seen from here on.
       if (c.multi > 0) sumMS[k] += dM * Math.exp(-(c.betaR[k] * odR + c.extM[k] * odM)) * (1 - Math.exp(-c.extM[k] * lM)) * Math.exp(-c.kappa[k] * c.extM[k] * lM);
@@ -322,6 +361,7 @@ uniform float uMulti;     // the light scattered more than once: its gain, or 0 
 uniform vec3  uKappa;     // how fast it dies with depth, per colour
 uniform vec3  uAlbedo;    // the particles' albedo: diffuse light has met it at least twice
 uniform float uTauUp;     // the particles' optical depth straight up
+uniform float uTwilight;  // how far light is carried into the shadow, in radii (TWILIGHT); 0: a hard shadow
 varying vec3 vPosW;
 varying vec3 vCentre;
 varying float vShellR;
@@ -377,13 +417,21 @@ void main() {
     // In the world's shadow, this step sees no Sun: the ray to it meets the ground ahead. A miss is
     // (1e9, -1e9), which is not a hit, so the test is bounded above too.
     float sh = sphere( p, uSunDir, 1.0 ).x;
-    if ( sh > 0.0 && sh < 1e8 ) continue;
     float cosChi = dot( p, uSunDir ) / length( p );
+    float lit = 1.0;
+    if ( sh > 0.0 && sh < 1e8 ) {
+      if ( uTwilight <= 0.0 ) continue;
+      // TWILIGHT in scene/atmosphere.js: how deep this step is inside the shadow's cylinder, in radii.
+      float along = dot( p, uSunDir );
+      float depth = 1.0 - sqrt( max( dot( p, p ) - along * along, 0.0 ) );
+      lit = exp( -depth / uTwilight );
+    }
+    if ( uTwilight > 0.0 ) cosChi = max( cosChi, 0.0 );
     float lR = uHR * chapman( 1.0 / uHR, h / uHR, cosChi );
     float lM = uHM * chapman( 1.0 / uHM, h / uHM, cosChi );
     vec3 att = exp( -( uBetaR * ( odR + lR ) + uExtM * ( odM + lM ) ) );
-    sumR += dR * att;
-    sumM += dM * att;
+    sumR += dR * att * lit;
+    sumM += dM * att * lit;
     // LIGHT SCATTERED MORE THAN ONCE in scene/atmosphere.js: the sunlight taken out of the beam on its way here.
     if ( uMulti > 0.0 ) sumMS += dM * exp( -( uBetaR * odR + uExtM * odM ) ) * ( 1.0 - exp( -uExtM * lM ) ) * exp( -uKappa * uExtM * lM );
   }
@@ -432,6 +480,7 @@ export function createAirShell(key) {
       uMulti: { value: c.multi },
       uKappa: { value: new THREE.Vector3(...c.kappa) },
       uTauUp: { value: c.tauUp },
+      uTwilight: { value: c.twilight },
       uAlbedo: { value: new THREE.Vector3(...c.albedo) },
     },
     side: THREE.FrontSide,

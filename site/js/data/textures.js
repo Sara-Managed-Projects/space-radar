@@ -241,6 +241,25 @@ export const TEXTURES = [
     ]
   },
   {
+    "id": "mercury-relief",
+    "world": "mercury",
+    "slot": "relief",
+    "when": "asked",
+    "files": [
+      {
+        "tier": 0,
+        "file": "textures/2k_mercury_relief.webp",
+        "px": [
+          2048,
+          1024
+        ],
+        "bytes": 250278,
+        "format": "mono",
+        "credit": "Mercury relief: USGS Astrogeology Science Center, MESSENGER global digital elevation model (Becker et al. 2016; NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington), public domain, local relief only"
+      }
+    ]
+  },
+  {
     "id": "mars",
     "world": "mars",
     "slot": "map",

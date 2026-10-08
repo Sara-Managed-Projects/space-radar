@@ -41,7 +41,9 @@ for (const [what, re] of [
 ]) check(!re.test(WORLD_FRAG), `WORLD_FRAG no longer carries ${what}`);
 check(/float orenNayar\( vec3 n, vec3 l, vec3 v, float sigma \)/.test(WORLD_FRAG) && /float minnaert\( float nl, float nv, float k \)/.test(WORLD_FRAG),
   'WORLD_FRAG defines orenNayar( and minnaert(');
-check(/uLimb > 0\.0\s*\? minnaert\( d, dot\( n, viewDir \), uLimb \)\s*: orenNayar\( n, uSunDir, viewDir, uRoughness \)/.test(WORLD_FRAG),
+// `dLit` since 2026-10-08: d itself, but for Venus's cloud deck (uWrap; tests/test_world_looks.mjs).
+check(/uLimb > 0\.0\s*\? minnaert\( dLit, dot\( n, viewDir \), uLimb \)\s*: orenNayar\( n, uSunDir, viewDir, uRoughness \)/.test(WORLD_FRAG)
+  && /float dLit = uWrap > 0\.0 \? \( d \+ uWrap \) \/ \( 1\.0 \+ uWrap \) : d;/.test(WORLD_FRAG),
   'WORLD_FRAG picks Minnaert when uLimb is set and Oren-Nayar otherwise');
 check(/vec3 colour = base \* direct \* uSunIrradiance \* ringShade;/.test(WORLD_FRAG), 'the direct light is scaled by uSunIrradiance and #318\'s ring shadow, and by nothing else');
 check(/colour \+= base \* uEarthshine \* max\( dot\( n, uEarthDir \), 0\.0 \);/.test(WORLD_FRAG), 'earthshine is a Lambert term under uEarthDir');

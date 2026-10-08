@@ -258,7 +258,8 @@ const boot = bootFiles(TEXTURES);
 // 34 since 2026-10-05: fifteen more moons wear a map. A moon's tier-0 file is fetched when the moon is
 // first big enough on screen (scene/worlds.js), so none of them is in the first visit below.
 // 35 since 2026-10-06: Venus's ground by radar, fetched when its card asks for it (`when: asked`).
-check(boot.length === 41 && boot.every((f) => /^textures\/[12]k_[a-z0-9_]+\.(jpg|webp|png)$/.test(f)), `tier 0 is the forty-one 1k and 2k files (${boot.length})`);
+// 42 since 2026-10-08: Mercury's relief, fetched with its map on a tier-1 device and up (`when: asked`).
+check(boot.length === 42 && boot.every((f) => /^textures\/[12]k_[a-z0-9_]+\.(jpg|webp|png)$/.test(f)), `tier 0 is the forty-two 1k and 2k files (${boot.length})`);
 let firstVisit = 0;
 for (const [f, bytes] of Object.entries(BOOT_2026_09_28)) {
   check(boot.includes(f), `${f} is still in the boot set`);

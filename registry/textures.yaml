@@ -22,7 +22,7 @@ version: 1
 #
 #   id        registry/models.yaml's texture id where there is one (worlds.yaml dresses worlds by it)
 #   world     a worlds.yaml id, or `sky` for the Milky Way
-#   slot      what it is on that world: day | night | water | clouds | map | ring | surface
+#   slot      what it is on that world: day | night | water | clouds | map | ring | surface | relief
 #   when      boot  -- nothing sharper; the tier-0 file is all there is
 #             idle  -- on screen from the first frame: fetched after it, when the browser is idle
 #             near  -- fetched when the world's disc is big enough for 4k to show, or it is selected
@@ -243,6 +243,27 @@ textures:
         source: "https://planetarymaps.usgs.gov/mosaic/Mercury_MESSENGER_MDIS_Basemap_MD3Color_Mosaic_Global_665m.lbl (read 2026-10-06)"
         original: "https://planetarymaps.usgs.gov/mosaic/Mercury_MESSENGER_MDIS_Basemap_MD3Color_Mosaic_Global_665m.tif"
         make: "scripts/build-textures.py mercury: as tier 0, at 4096 x 2048, WebP 40 (the highest quality no heavier than the 4k map it replaces)"
+
+  # MERCURY'S RELIEF (2026-10-08, public #404). Not a second face: a height map worn UNDER the colour
+  # map, from which the shader takes the ground's slope (scene/worlds.js `look.relief`). It is
+  # `when: asked` so that the GPU budget counts it with the faces, all at once (texturetiers.js
+  # worstCaseGpu); it is fetched with Mercury's map on a tier-1 device and up, and a phone never
+  # asks for it. LOCAL relief only: the build takes out everything broader than 6 degrees.
+  - id: mercury-relief
+    world: mercury
+    slot: relief
+    when: asked
+    files:
+      - tier: 0
+        file: site/textures/2k_mercury_relief.webp
+        px: [2048, 1024]
+        bytes: 250278
+        format: mono
+        licence: 'Public domain: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain" (usgs.gov, Copyrights and Credits); the product page asks "Please cite authors"'
+        credit: "Mercury relief: USGS Astrogeology Science Center, MESSENGER global digital elevation model (Becker et al. 2016; NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington), public domain, local relief only"
+        source: "https://astrogeology.usgs.gov/search/map/mercury_messenger_global_dem_665m (read 2026-10-08)"
+        original: "https://planetarymaps.usgs.gov/mosaic/Mercury_Messenger_USGS_DEM_Global_665m_v2.tif"
+        make: "scripts/build-textures.py mercury-relief: the 23040 x 11520 elevation model (half a metre a count above a 2439.4 km sphere) to 2048 x 1024, rolled to longitude 0 at the centre, the relief broader than 6 degrees taken out, the rest clipped to +-2500 m (0.21 % of the map is beyond it) and written as one grey channel with 128 as level ground, WebP 80"
 
   - id: mars
     world: mars

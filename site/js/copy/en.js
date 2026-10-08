@@ -1618,6 +1618,13 @@ export const COPY = {
     // photograph of it would be, not dimmed by its distance from the Sun (Saturn gets 1/90 of the
     // Earth's sunlight). scene/worlds.js says why; this is the card saying it.
     worldLit: 'lit as a camera exposed for its own sunlight would show it',
+    // 2026-10-08 (public #404, #411, #417): where a world is drawn knowingly unlike its data. Each
+    // is added after the world's "drawn as" line (scene/worlds.js worldRecords `departure`).
+    worldDeparture: {
+      mercury: 'on a larger screen its relief is from MESSENGER\u2019s elevation model, drawn {steep} times steeper than measured so that crater rims catch the light',
+      venus: 'the glow round its edge and past its day side stands for a deep haze; how thick it is drawn and how far it reaches are illustrative',
+      saturn: 'its bands are drawn with {contrast} times the contrast its map has, an adjustment of ours; \u201cAs Hubble saw it\u201d is not adjusted',
+    },
     // ...and the Moon's night side, lit by the Earth (scene/worlds.js earthshineShare), is drawn
     // brighter than that camera would catch it. {n} is EARTHSHINE_GAIN.
     worldEarthshine: 'its dark side glows with earthshine, the Earth’s own light, drawn {n} times brighter than that camera would catch it, about as the eye sees it',

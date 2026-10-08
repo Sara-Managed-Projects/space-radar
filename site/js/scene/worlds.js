@@ -247,6 +247,9 @@ export function worldRecords() {
       // are so that they show; the card says by how much (ui/cards.js derivedDrawingLine).
       ringsWiden: w.look.ring && w.look.ring.bands ? w.look.ring.widen || 1 : 0,
       ringsDense: w.look.ring && w.look.ring.bands ? w.look.ring.dense || 1 : 0,
+      // 2026-10-08: a world drawn knowingly unlike its data says how, after its "drawn as" line
+      // (ui/cards.js appends a row's `departure`): Saturn's bands, Mercury's relief, Venus's glow.
+      ...(COPY.drawing.worldDeparture[w.id] ? { departure: t(COPY.drawing.worldDeparture[w.id], { steep: String(RELIEF_STEEP), contrast: String(SATURN_CONTRAST) }) } : {}),
     },
   }));
 }
@@ -332,6 +335,10 @@ export function ringBandsStrip(ring, px = RING_BANDS_PX) {
   return data;
 }
 
+/** How many times steeper than measured Mercury's relief is drawn, and how far Saturn's bands are pushed from the map's mean. */
+export const RELIEF_STEEP = 4;
+export const SATURN_CONTRAST = 1.5;
+
 export const WORLDS = [
   {
     id: 'sun', display: 'The Sun', parent: '', radiusKm: 696340.0,
@@ -357,7 +364,11 @@ export const WORLDS = [
   {
     id: 'mercury', display: 'Mercury', parent: 'sun', radiusKm: 2439.7,
     body: 'Mercury', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_mercury_messenger.webp', tint: 0x848383, rough: 0.45 },
+    // `relief` (2026-10-08, public #404): MESSENGER's elevation model as local relief (registry/textures.yaml
+    // `mercury-relief` says how it was made), fetched with the map on a tier-1 device and up, and
+    // drawn RELIEF_STEEP times steeper than measured: at 7.5 km a texel a crater wall's slope is
+    // averaged down to a few degrees, which lights nothing. The card says the factor.
+    look: { map: '2k_mercury_messenger.webp', tint: 0x848383, rough: 0.45, relief: { map: '2k_mercury_relief.webp', px: 2048, rangeM: 2500, steep: RELIEF_STEEP } },
   },
   // `rim` is a thin scattering rim where there is air, in the colour photographs show at the limb
   // (#318). `air` names a scene/atmosphere.js ATMO_PARAMS row (spec 0054 task 3): Mars, Venus and
@@ -376,7 +387,12 @@ export const WORLDS = [
     body: 'Venus', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
     // `faces`: a second map the visitor may ask for on the card (setFace, 2026-10-06, public #417):
     // the ground under the clouds, as Magellan's radar mapped it. Fetched when asked and not before.
-    look: { map: '2k_venus_atmosphere.webp', tint: 0xe6bf81, limb: 0.9, air: 'venus', rim: { colour: 0xfff0c8, gain: 0.5 }, faces: { surface: '2k_venus_magellan.webp' } },
+    // `wrap` (2026-10-08, public #417): the cloud deck is tens of kilometres of scattering droplets,
+    // and sunlight diffuses through it past the geometric terminator, so the day side has no edge.
+    // 0.18 puts the last light about 10 degrees past it (asin 0.18): CHOSEN, to match Akatsuki's and
+    // Mariner 10's pictures, not computed. The air shell's own twilight (scene/atmosphere.js) is
+    // the glow above it. Not worn with the radar face: bare rock has a terminator (setMap).
+    look: { map: '2k_venus_atmosphere.webp', tint: 0xe6bf81, limb: 0.9, wrap: 0.18, air: 'venus', rim: { colour: 0xfff0c8, gain: 0.5 }, faces: { surface: '2k_venus_magellan.webp' } },
   },
   {
     id: 'mars', display: 'Mars', parent: 'sun', radiusKm: 3389.5,
@@ -402,7 +418,12 @@ export const WORLDS = [
   {
     id: 'saturn', display: 'Saturn', parent: 'sun', radiusKm: 58232.0,
     body: 'Saturn', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_saturn.webp', tint: 0xdfcca8, faces: { hubble: '2k_saturn_opal_2025.webp' }, limb: 1.05, oblate: 0.09796, ring: { innerKm: 74500, outerKm: 140220, map: '2k_saturn_ring_alpha.png' } },
+    // `contrast` (2026-10-08, public #411): the map's bands are faint (its rows' luminance runs 0.29
+    // to 0.88 round a mean of 0.62, most of that the poles), and no sharper map of Saturn is free
+    // to host. So the shader draws each texel 1.5 times as far from the map's own mean colour
+    // (`mean`: linear light, weighted by area, measured on the file 2026-10-08) -- an ADJUSTMENT of
+    // ours, which the card states -- and not on the Hubble face, which is shown as measured.
+    look: { map: '2k_saturn.webp', tint: 0xdfcca8, contrast: { gain: SATURN_CONTRAST, mean: [0.7405, 0.6024, 0.3928] }, faces: { hubble: '2k_saturn_opal_2025.webp' }, limb: 1.05, oblate: 0.09796, ring: { innerKm: 74500, outerKm: 140220, map: '2k_saturn_ring_alpha.png' } },
   },
   {
     id: 'uranus', display: 'Uranus', parent: 'sun', radiusKm: 25362.0,
@@ -655,11 +676,15 @@ varying vec3 vNormalW;
 varying vec3 vPosW;
 varying vec3 vPosL;   // on the body (a unit sphere, or a giant's spheroid), body-fixed: +Y is the pole, the ring plane is y = 0
 varying vec3 vSunL;
+varying vec3 vEastW;  // the direction of east on the ground, in the world: the relief's slopes are east and north
 void main() {
   vUv = uv;
   vec4 worldPos = modelMatrix * vec4( position, 1.0 );
   vPosW = worldPos.xyz;
   vNormalW = normalize( mat3( modelMatrix ) * normal );
+  // East is the pole crossed with the way up; at the pole itself there is none, and any will do.
+  vec3 eastL = cross( vec3( 0.0, 1.0, 0.0 ), position );
+  vEastW = mat3( modelMatrix ) * ( dot( eastL, eastL ) > 1e-8 ? eastL : vec3( 0.0, 0.0, -1.0 ) );
   vPosL = position;
   // The mesh is scaled uniformly, so the transpose is the inverse rotation up to a length.
   vSunL = normalize( transpose( mat3( modelMatrix ) ) * uSunDir );
@@ -883,11 +908,18 @@ uniform vec4  uRingWarp;      // the Cassini Division's radii and their map coor
 uniform sampler2D uRingMap;
 uniform float uHasRingMap;
 uniform float uRingOpacity;
+// 2026-10-08, three worlds' own looks (the block above WORLDS' Venus row says what each is):
+uniform float uWrap;        // Venus: daylight carried past the terminator by a deep cloud deck; 0 elsewhere
+uniform float uContrast;    // Saturn: the map's departure from its own mean, multiplied; 1 elsewhere
+uniform vec3  uMapMean;     // that mean, in linear light
+uniform sampler2D uRelief;  // Mercury: local relief, 0.5 = level ground (registry/textures.yaml mercury-relief)
+uniform vec3  uReliefK;     // slope per unit of difference between two texels either side; the texel's u; its v
 varying vec2 vUv;
 varying vec3 vNormalW;
 varying vec3 vPosW;
 varying vec3 vPosL;
 varying vec3 vSunL;
+varying vec3 vEastW;
 ${ECLIPSE_GLSL}
 const float MU_FLOOR = ${MU_FLOOR};
 ${RING_U_GLSL}
@@ -920,11 +952,30 @@ void main() {
   vec3 n = normalize( vNormalW );
   vec3 viewDir = normalize( cameraPosition - vPosW );
   vec3 base = mix( uTint, texture2D( uMap, vUv ).rgb * uTint, uHasMap );
+  // Saturn's bands (look.contrast): what the map says, further from its own mean. 1 leaves it alone.
+  if ( uContrast != 1.0 ) base = clamp( uMapMean + ( base - uMapMean ) * uContrast, 0.0, 1.0 );
+
+  // Mercury's relief (look.relief): the ground's slope east and north from the height map, by two
+  // differences, tips the normal the light is worked out with. The silhouette is still the ball's.
+  float dGeo = dot( n, uSunDir );
+  if ( uReliefK.x > 0.0 ) {
+    float hE = texture2D( uRelief, vUv + vec2( uReliefK.y, 0.0 ) ).r - texture2D( uRelief, vUv - vec2( uReliefK.y, 0.0 ) ).r;
+    float hN = texture2D( uRelief, vUv + vec2( 0.0, uReliefK.z ) ).r - texture2D( uRelief, vUv - vec2( 0.0, uReliefK.z ) ).r;
+    vec3 east = normalize( vEastW - n * dot( vEastW, n ) );
+    vec3 north = cross( n, east );
+    // A degree of longitude is shorter by the cosine of the latitude; held off the pole, where it is 0.
+    float cosLat = max( sqrt( max( 1.0 - vPosL.y * vPosL.y / dot( vPosL, vPosL ), 0.0 ) ), 0.08 );
+    n = normalize( n - uReliefK.x * ( hE / cosLat * east + hN * north ) );
+  }
 
   float d = dot( n, uSunDir );
+  // Venus's deep cloud (look.wrap): the terminator is not an edge, light diffuses a way past it.
+  float dLit = uWrap > 0.0 ? ( d + uWrap ) / ( 1.0 + uWrap ) : d;
   float direct = uLimb > 0.0
-    ? minnaert( d, dot( n, viewDir ), uLimb )
+    ? minnaert( dLit, dot( n, viewDir ), uLimb )
     : orenNayar( n, uSunDir, viewDir, uRoughness );
+  // A slope facing the Sun just past the ball's own terminator is in the ball's shadow all the same.
+  if ( uReliefK.x > 0.0 ) direct *= smoothstep( -0.03, 0.05, dGeo );
 
   // The ring between this point and the Sun: one ray-plane test, then the ring's own opacity there.
   float ringShade = 1.0;
@@ -1005,6 +1056,11 @@ export function worldMaterial(map, tint) {
       uRingMap: { value: null },
       uHasRingMap: { value: 0 },
       uRingOpacity: { value: RING_OPACITY },
+      uWrap: { value: 0 },
+      uContrast: { value: 1 },
+      uMapMean: { value: new THREE.Vector3(0.5, 0.5, 0.5) },
+      uRelief: { value: null },
+      uReliefK: { value: new THREE.Vector3(0, 0, 0) },
     },
   });
 }
@@ -1221,6 +1277,24 @@ export function applyLook(material, look) {
   }
   if (look.limb) u.uLimb.value = look.limb;
   if (look.rough !== undefined) u.uRoughness.value = look.rough;
+  if (look.wrap && u.uWrap) u.uWrap.value = look.wrap;
+  if (look.contrast && u.uContrast) {
+    u.uContrast.value = look.contrast.gain;
+    u.uMapMean.value.set(...look.contrast.mean);
+  }
+}
+
+/**
+ * The relief uniform for a height map `px` wide whose byte spans +-`rangeM` metres on a world of
+ * `radiusKm`, drawn `steep` times steeper than measured: (the slope one unit of difference between
+ * the texels either side of a point stands for, a texel's width in u, its height in v).
+ *
+ * The two samples are two texels apart: 2 x 2 pi R / px on the equator. One unit of difference is the
+ * whole byte, 2 x rangeM. So the slope is difference x rangeM x px / (2 pi R), and north-south the
+ * same, the map being twice as wide as it is tall. Pure; tests/test_world_looks.mjs holds it.
+ */
+export function reliefUniform(px, rangeM, radiusKm, steep = 1) {
+  return [(steep * rangeM * px) / (2 * Math.PI * radiusKm * 1000), 1 / px, 2 / px];
 }
 
 // --- construction --------------------------------------------------------------------------------
@@ -1332,6 +1406,46 @@ export function createWorlds(scene, opts = {}) {
   const current = new Map();
   const bootMap = new Map();
 
+  // THE RELIEF (2026-10-08, public #404): a world whose row has `look.relief` wears a height map
+  // under its colour map once that has arrived -- on a tier-1 device and up, and never under the
+  // frame latch (main.js setRelief): it is three more texture reads a fragment. It is kept with the
+  // world's faces, so the map-release rule (MAPS_HELD) gives it back with the map.
+  let reliefAllowed = false;
+  function fetchRelief(id) {
+    const w = BY_ID.get(id);
+    const r = w && w.look.relief;
+    const mesh = meshes.get(id);
+    const key = `${id}/relief`;
+    if (!r || !reliefAllowed || !load || !mesh || !bootMap.has(id) || faceTex.has(key)) return false;
+    faceTex.set(key, null); // asked for
+    load(base + r.map, (tex) => {
+      if (!tex) return;
+      if (!faceTex.has(key) || !reliefAllowed) { if (tex.dispose) tex.dispose(); return; } // released, or latched, meanwhile
+      tex.colorSpace = THREE.NoColorSpace; // heights, not colours
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.needsUpdate = true;
+      faceTex.set(key, tex);
+      const u = mesh.material.uniforms;
+      u.uRelief.value = tex;
+      u.uReliefK.value.set(...reliefUniform(r.px, r.rangeM, w.radiusKm, r.steep));
+    });
+    return true;
+  }
+  /** main.js, when the device's tier is known and when the frame latch trips: may the reliefs be worn? */
+  function setRelief(on) {
+    reliefAllowed = !!on;
+    for (const w of WORLDS) {
+      if (!w.look.relief) continue;
+      if (reliefAllowed) { fetchRelief(w.id); continue; }
+      const mesh = meshes.get(w.id);
+      const key = `${w.id}/relief`;
+      const tex = faceTex.get(key);
+      if (mesh && mesh.material.uniforms.uReliefK) { mesh.material.uniforms.uReliefK.value.set(0, 0, 0); mesh.material.uniforms.uRelief.value = null; }
+      if (tex && tex.dispose) tex.dispose();
+      faceTex.delete(key);
+    }
+  }
+
   function fetchMap(id) {
     const job = waiting.get(id);
     if (!job) return false;
@@ -1411,6 +1525,7 @@ export function createWorlds(scene, opts = {}) {
             material.needsUpdate = true; // a map where there was none is a different shader
           }
           lastBig.set(w.id, frameNo); // newly arrived: not the first to go
+          fetchRelief(w.id);
         },
       };
       jobs.set(w.id, job);
@@ -1839,6 +1954,7 @@ export function createWorlds(scene, opts = {}) {
     bootMap.delete(id);
     current.delete(id);
     if (tex.dispose) tex.dispose();
+    if (m.uniforms && m.uniforms.uReliefK) { m.uniforms.uReliefK.value.set(0, 0, 0); m.uniforms.uRelief.value = null; }
     for (const [key, face] of faceTex) {
       if (!key.startsWith(`${id}/`)) continue;
       if (face && face.dispose) face.dispose();
@@ -1978,6 +2094,15 @@ export function createWorlds(scene, opts = {}) {
     if (m.uniforms && m.uniforms.uMap) m.uniforms.uMap.value = next;
     else if ('map' in m) m.map = next;
     current.set(id, next);
+    // A second face is worn as it was measured: Saturn's Hubble map without the contrast its own
+    // map is given, Venus's radar ground without the cloud deck's soft terminator.
+    const look = BY_ID.get(id).look;
+    if (m.uniforms && m.uniforms.uContrast && (look.contrast || look.wrap)) {
+      let isFace = false;
+      for (const [key, face] of faceTex) if (face === next && key.startsWith(`${id}/`)) isFace = true;
+      if (look.contrast) m.uniforms.uContrast.value = isFace ? 1 : look.contrast.gain;
+      if (look.wrap) m.uniforms.uWrap.value = isFace ? 0 : look.wrap;
+    }
     return old;
   }
 
@@ -2176,6 +2301,9 @@ export function createWorlds(scene, opts = {}) {
     update,
     preload,
     releaseMap,
+    setRelief,
+    /** For the probes: is this world wearing its relief? */
+    hasRelief: (id) => { const m = meshes.get(id); return !!(m && m.material.uniforms && m.material.uniforms.uReliefK && m.material.uniforms.uReliefK.value.x > 0); },
     setMapsHeld,
     mapsHeld,
     waitingMaps,

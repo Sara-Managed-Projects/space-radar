@@ -167,6 +167,7 @@ satisfies that with:
 |---|---|---|---|
 | `2k_sun.webp` | the Sun | CC BY 4.0 | Solar System Scope |
 | `2k_mercury_messenger.webp` | Mercury | Public domain | [USGS Astrogeology Science Center and NASA/JHUAPL/Carnegie Institution of Washington (MESSENGER MDIS three-colour mosaic)](https://planetarymaps.usgs.gov/mosaic/Mercury_MESSENGER_MDIS_Basemap_MD3Color_Mosaic_Global_665m.lbl), toned down |
+| `2k_mercury_relief.webp` | Mercury (relief) | Public domain | [USGS Astrogeology Science Center, MESSENGER global digital elevation model (Becker et al. 2016)](https://astrogeology.usgs.gov/search/map/mercury_messenger_global_dem_665m), local relief only, one grey channel |
 | `2k_venus_magellan.webp` | Venus, the ground by radar (when asked for on its card) | Public domain | [USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan C3-MIDR mosaic)](https://planetarymaps.usgs.gov/mosaic/Venus_Magellan_C3-MDIR_Global_Mosaic_2025m.lbl), tinted |
 | `2k_venus_atmosphere.webp` | Venus | CC BY 4.0 | Solar System Scope |
 | `2k_earth_daymap.webp` | Earth, day side | CC BY 4.0 | Solar System Scope |
@@ -305,6 +306,7 @@ checked against this list by `scripts/check_registry.py`):
 - Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0
 - Giant planet maps: NASA, ESA, A.A. Simon, M.H. Wong (Hubble OPAL programme, doi:10.17909/T9G593), CC BY 4.0, adapted
 - Mercury map: USGS Astrogeology Science Center and NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington (MESSENGER MDIS), public domain
+- Mercury relief: USGS Astrogeology Science Center, MESSENGER global digital elevation model (Becker et al. 2016; NASA/Johns Hopkins University Applied Physics Laboratory/Carnegie Institution of Washington), public domain, local relief only
 - Venus surface map: USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan radar, C3-MIDR mosaic), public domain
 - Earth by day (4k): Blue Marble Next Generation, NASA Earth Observatory
 - Earth at night (4k): Black Marble 2016, NASA Earth Observatory

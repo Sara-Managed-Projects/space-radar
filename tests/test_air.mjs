@@ -146,7 +146,22 @@ function limb(key, k, sun) {
   check(new RegExp(`const int VIEW_STEPS = ${VIEW_STEPS};`).test(AIR_SHELL_FRAG) && VIEW_STEPS === 12, 'the shell marches 12 view steps, as the Earth\'s');
   check(!/LIGHT_STEPS/.test(AIR_SHELL_FRAG) && /float lR = uHR \* chapman\( 1\.0 \/ uHR, h \/ uHR, cosChi \);/.test(AIR_SHELL_FRAG), 'the light path is chapman(), not a march');
   check(/float c = sqrt\( 0\.5 \* PI \* \( X \+ h \) \);/.test(AIR_SHELL_FRAG) && /return c \/ \( \( c - 1\.0 \) \* cosChi \+ 1\.0 \);/.test(AIR_SHELL_FRAG), 'the GLSL chapmanUp is the twin\'s');
-  check(/if \( sh > 0\.0 && sh < 1e8 \) continue;/.test(AIR_SHELL_FRAG), 'the shadow test does not count a miss (1e9) as a hit');
+  // Since 2026-10-08 a row with `twilight` (Venus, public #417) lights the shadowed steps faintly; a row without still skips them.
+  check(/if \( sh > 0\.0 && sh < 1e8 \) \{\s*if \( uTwilight <= 0\.0 \) continue;/.test(AIR_SHELL_FRAG), 'the shadow test does not count a miss (1e9) as a hit, and a row without twilight skips a shadowed step');
+  check(ATMO_PARAMS.venus.twilight > 0 && !ATMO_PARAMS.mars.twilight && !ATMO_PARAMS.titan.twilight, 'only Venus carries light into its shadow');
+  {
+    // The glow along Venus's limb, 1.5 scale heights up, as the Sun goes round behind the limb point:
+    // it falls all the way and never climbs back, and is still there 15 degrees past the terminator.
+    const cV = atmosphereCoefficients(ATMO_PARAMS.venus);
+    const at = (deg) => { const a = (deg * Math.PI) / 180; return scatter(ATMO_PARAMS.venus, [1 + 1.5 * cV.hM, 0, 50], [0, 0, -1], [Math.cos(a), Math.sin(a), 0]).rgb[1]; };
+    const run = [0, 30, 60, 80, 90, 95, 100, 105, 115, 130, 150].map(at);
+    check(run.every((v, i) => i === 0 || v <= run[i - 1] * 1.02), `Venus's limb glow only falls as the Sun goes behind it (${run.map((v) => v.toFixed(3)).join(' ')})`);
+    check(at(105) > 0.03 && at(105) < 0.5 * at(0) && at(150) < 0.005, `it is carried past the terminator and dies on the night side (${at(105).toFixed(3)} at 15 degrees past, ${at(150).toFixed(4)} at 60)`);
+    check(at(0) > 0.15 && at(0) < 0.4, `and along the sunlit limb it is a glow, not a second disc (${at(0).toFixed(3)} of the disc's light)`);
+    const old = { ...ATMO_PARAMS.venus, twilight: 0 };
+    const hard = scatter(old, [1 + 1.5 * cV.hM, 0, 50], [0, 0, -1], [Math.cos(2.2), Math.sin(2.2), 0]).rgb[1];
+    check(hard === 0, 'without `twilight` the same row is dark there: the knife-edged shadow #342 drew');
+  }
   check(/ground\.x > 0\.0 && ground\.x < 1e8 \? uVertical/.test(AIR_SHELL_FRAG), 'nor does the over-the-disc test');
   check(/gl_FragColor = vec4\( colour, \( T\.r \+ T\.g \+ T\.b \) \/ 3\.0 \);/.test(AIR_SHELL_FRAG), 'alpha is the grey transmittance');
   check(/if \( uMulti > 0\.0 \) sumMS \+= dM \* exp\( -\( uBetaR \* odR \+ uExtM \* odM \) \) \* \( 1\.0 - exp\( -uExtM \* lM \) \) \* exp\( -uKappa \* uExtM \* lM \);/.test(AIR_SHELL_FRAG),

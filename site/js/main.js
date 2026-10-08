@@ -1962,7 +1962,10 @@ function createQuality(ctx, renderer, starfield, worlds) {
   });
   // How many worlds may keep a map of their own on this tier (scene/worlds.js MAPS_HELD, internal #157).
   const holdFor = (tier) => worlds.setMapsHeld(MAPS_HELD[Math.min(Math.max(0, tier), MAPS_HELD.length - 1)]);
+  // Mercury's relief (scene/worlds.js THE RELIEF): tier 1 and up, and never under the frame latch.
+  const reliefFor = (tier) => worlds.setRelief(tier >= 1 && !tiers.latched);
   holdFor(pick.tier);
+  reliefFor(pick.tier);
   const say = () => window.dispatchEvent(new CustomEvent('sr:tier', { detail: api.describe() }));
   // Spec 0065: a close world drawn from the missions' own map tiles. OFF THE FIRST VISIT, like the
   // aurora: scene/tiles.js and its two helpers are imported only once a world is PLANET_TILES_AT of
@@ -2032,12 +2035,12 @@ function createQuality(ctx, renderer, starfield, worlds) {
     /** Every frame, from startLoop, after the latch has been fed. */
     frame(frameMs, nowMs, latched) {
       const up = promoter.push(frameMs, nowMs, latched);
-      if (up !== null) { tiers.setTier(up); holdFor(up); if (planetTiles) planetTiles.setTier(up); say(); }
+      if (up !== null) { tiers.setTier(up); holdFor(up); reliefFor(up); if (planetTiles) planetTiles.setTier(up); say(); }
       if (planetTiles) planetTiles.frame(nowMs);
     },
     tick(nowMs) { tiers.tick(nowMs); planetTilesWanted(); sunWanted(); },
     /** The frame latch tripped: back to the boot maps, for good. */
-    latch() { tiers.latch(); holdFor(0); if (planetTiles) planetTiles.latch(); if (ctx.sunDetail) ctx.sunDetail.latch(); say(); },
+    latch() { tiers.latch(); holdFor(0); worlds.setRelief(false); if (ctx.dsoGlow) ctx.dsoGlow.setMarks(false); if (planetTiles) planetTiles.latch(); if (ctx.sunDetail) ctx.sunDetail.latch(); say(); },
     /**
      * What the maps hold on the GPU now, by arithmetic from registry/textures.yaml (gpuMiB: pixels,
      * four bytes, a third for mipmaps), beside the renderer's own count of textures. `window.spaceRadar.gpu()`.

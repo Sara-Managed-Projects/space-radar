@@ -354,6 +354,64 @@ def build_mercury(orig: Path, report: dict) -> None:
     print(f"  mercury: data over {coverage * 100:.1f} % of the sphere, gain {gain:.2f}, clipped {clipped * 100:.2f} %, 4k WebP {q}", flush=True)
 
 
+# --- Mercury's relief (public #404, 2026-10-08) -------------------------------------------------
+MERCURY_DEM = "Mercury_Messenger_USGS_DEM_Global_665m_v2.tif"
+MERCURY_DEM_PX = (23040, 11520)      # the label's Samples and Lines; 64 px a degree
+MERCURY_DEM_M_PER_DN = 0.5           # the label's Multiplier: metres above the 2439.4 km datum
+MERCURY_RELIEF_PX = (2048, 1024)
+MERCURY_RELIEF_BLUR_DEG = 6.0        # relief broader than this is taken out (see below)
+MERCURY_RELIEF_RANGE_M = 2500.0      # +-: what the byte spans; scene/worlds.js `look.relief.rangeM`
+
+
+def build_mercury_relief(orig: Path, report: dict) -> None:
+    """MESSENGER's global elevation model (USGS Astrogeology; Becker et al. 2016) as one grey channel.
+
+    The file is a 16-bit GeoTIFF of raw rows that PIL calls truncated, so it is read as what its
+    ISIS label says it is: 23040 x 11520 little-endian signed words at the end of the file, half a
+    metre a count, longitude 0 to 360 east from the left edge. The colour map this sits under is
+    centred on longitude 0, so the columns are rolled by half the width.
+
+    WHAT IS KEPT. The shader takes the SLOPE from this map (scene/worlds.js: two differences), and
+    a byte has 256 steps. Mercury's heights span ten kilometres, most of it broad swells and basins
+    a thousand kilometres across whose slopes are a fraction of a degree and light nothing; a byte
+    spent on them leaves 40 m a step for the crater rims. So the relief broader than
+    MERCURY_RELIEF_BLUR_DEG is taken out (a Gaussian of that width, wrapped in longitude, widened
+    toward the poles as the pixels narrow) and what is left -- rims, central peaks, scarps, the
+    walls of Caloris -- is clipped to +-MERCURY_RELIEF_RANGE_M and written with 128 as level
+    ground. It is a map of LOCAL relief, and the registry row says so."""
+    path = orig / MERCURY_DEM
+    w0, h0 = MERCURY_DEM_PX
+    dn = np.memmap(path, dtype="<i2", mode="r", offset=path.stat().st_size - w0 * h0 * 2, shape=(h0, w0))
+    # 23040 -> 4608 by the mean of 5 x 5 blocks, then to 2048 x 1024 (Lanczos) as floats.
+    mid = dn.reshape(h0 // 5, 5, w0 // 5, 5).mean(axis=(1, 3), dtype=np.float64).astype(np.float32) * MERCURY_DEM_M_PER_DN
+    w, h = MERCURY_RELIEF_PX
+    height = np.asarray(Image.fromarray(mid).resize((w, h), Image.LANCZOS), dtype=np.float32)
+    height = np.roll(height, w // 2, axis=1)
+    # The broad relief: a separable Gaussian, wrapped east-west; its east-west width in pixels grows
+    # as 1 / cos(latitude), capped, so it is the same width on the ground at every latitude.
+    sigma = MERCURY_RELIEF_BLUR_DEG / 360.0 * w
+    def blur_rows(a, s):
+        k = np.arange(-int(3 * s), int(3 * s) + 1)
+        g = np.exp(-0.5 * (k / s) ** 2); g /= g.sum()
+        pad = np.concatenate([a[:, -len(k):], a, a[:, :len(k)]], axis=1)
+        return np.apply_along_axis(lambda r: np.convolve(r, g, mode="same"), 1, pad)[:, len(k):-len(k)]
+    k = np.arange(-int(3 * sigma), int(3 * sigma) + 1)
+    g = np.exp(-0.5 * (k / sigma) ** 2); g /= g.sum()
+    vert = np.apply_along_axis(lambda c: np.convolve(np.pad(c, len(k), mode="edge"), g, mode="same")[len(k):-len(k)], 0, height)
+    lat = (0.5 - (np.arange(h) + 0.5) / h) * np.pi
+    broad = np.empty_like(vert)
+    for band in range(0, h, 32):
+        c = max(float(np.cos(lat[band:band + 32]).mean()), 0.12)
+        broad[band:band + 32] = blur_rows(vert[band:band + 32], sigma / c)
+    local = height - broad
+    clipped = float((np.abs(local) > MERCURY_RELIEF_RANGE_M).mean())
+    byte = np.clip(np.round(128 + local / MERCURY_RELIEF_RANGE_M * 127), 1, 255).astype(np.uint8)
+    out = ROOT / "site" / "textures" / "2k_mercury_relief.webp"
+    report["2k_mercury_relief.webp"] = save_webp(Image.fromarray(byte), out, 80)
+    print(f"  mercury relief: heights {height.min():.0f} to {height.max():.0f} m, local relief rms {local.std():.0f} m, "
+          f"{clipped * 100:.2f} % beyond +-{MERCURY_RELIEF_RANGE_M:.0f} m, {report['2k_mercury_relief.webp']:,d} bytes", flush=True)
+
+
 def build_venus_surface(orig: Path, report: dict) -> None:
     """Venus's ground as Magellan's radar saw it (C3-MIDR mosaic, USGS; 1990 to 1994).
 
@@ -822,11 +880,12 @@ STEPS = {
     "moon": lambda o, r: build_planet(o, "moon", r),
     "mars": lambda o, r: build_planet(o, "mars", r),
     "mercury": build_mercury,
+    "mercury-relief": build_mercury_relief,
     "venus-surface": build_venus_surface,
     **{k: (lambda o, r, k=k: build_giant(o, k, r)) for k in GIANTS},
     **{f"moon-{k}": (lambda o, r, k=k: build_moon(o, k, r)) for k in MOONS},
 }
-TIER1 = [k for k in STEPS if not k.startswith("moon-") and k != "venus-surface" and k not in GIANTS]
+TIER1 = [k for k in STEPS if not k.startswith("moon-") and k not in ("venus-surface", "mercury-relief") and k not in GIANTS]
 
 
 # --- the 2k JPEGs as WebP (spec 0056 req 8, public #286) ----------------------------------------
