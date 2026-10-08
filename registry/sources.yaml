@@ -148,7 +148,7 @@ sources:
     freshness_max: 48h
     parser: ll2_stations
     outputs: [stations-docked.json]
-    attribution: "Crew and docked vehicles: Launch Library 2, The Space Devs"
+    attribution: "Launch data by The Space Devs"
 
   - id: ll2-astronauts
     url: https://ll.thespacedevs.com/2.3.0/astronauts/?in_space=true&limit=30
@@ -158,7 +158,7 @@ sources:
     freshness_max: 48h
     parser: ll2_crew
     outputs: [crew.json]
-    attribution: "Crew and docked vehicles: Launch Library 2, The Space Devs"
+    attribution: "Launch data by The Space Devs"
 
   # The launches of the last days, for "Just happened" (internal #134). Same terms and budget.
   - id: ll2-previous

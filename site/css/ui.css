@@ -6758,4 +6758,7 @@ html.sr-phone .sr-passport {
 }
 button.sr-debris__oldname { min-height: 24px; cursor: pointer; text-decoration: underline; text-decoration-color: var(--sr-line-strong); }
 button.sr-debris__oldname:hover { color: var(--sr-ember-light); }
+@media (pointer: coarse) {
+  button.sr-debris__oldname { min-height: 44px; }
+}
 .sr-debris__oldyears { font-family: var(--sr-font-mono); font-variant-numeric: tabular-nums; }

@@ -324,13 +324,13 @@ export const SOURCES = {
     id: 'll2-stations', registryId: 'll2-stations', label: 'Launch Library 2 — stations and docked vehicles', publisher: 'The Space Devs',
     url: 'https://ll.thespacedevs.com/2.3.0/space_stations/?status=1&mode=detailed',
     cadenceMs: 6 * HOUR, freshnessMaxMs: 48 * HOUR, browser: false, kind: 'json',
-    attribution: 'Crew and docked vehicles: Launch Library 2, The Space Devs',
+    attribution: 'Launch data by The Space Devs',
   },
   'll2-astronauts': {
     id: 'll2-astronauts', registryId: 'll2-astronauts', label: 'Launch Library 2 — people in space', publisher: 'The Space Devs',
     url: 'https://ll.thespacedevs.com/2.3.0/astronauts/?in_space=true&limit=30',
     cadenceMs: 6 * HOUR, freshnessMaxMs: 48 * HOUR, browser: false, kind: 'json',
-    attribution: 'Crew and docked vehicles: Launch Library 2, The Space Devs',
+    attribution: 'Launch data by The Space Devs',
   },
   'll2-previous': {
     id: 'll2-previous', registryId: 'll2-previous', label: 'Launch Library 2 — launches that happened', publisher: 'The Space Devs',
