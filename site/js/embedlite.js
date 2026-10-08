@@ -13,7 +13,7 @@
 // called as main.js calls it: the renderer, the stage, the worlds (and their ephemerides), the
 // star sphere, the camera rig, the glyph layer and its catalogue loader (data/layers.js: CelesTrak,
 // then the saved copy, then the bundled stand-in), the labels, the tag (ui/hud.js, whose lines are
-// ui/cards.js's own "right now" rows) and the embed's bar (ui/embed.js). What is NOT here is said in
+// the card's own "right now" rows, from ui/cardfacts.js) and the embed's bar (ui/embed.js). What is NOT here is said in
 // docs/EMBEDDING.md: no clouds, no Milky Way panorama, no 3D model of the object (its mark and its
 // tag instead), and 1024-pixel maps of the Earth and the Moon, which is what a 600 x 400 frame can
 // show. "Open in Space Radar" is the whole map, one press away.
@@ -42,14 +42,14 @@ import { LAYERS, loadLayer } from './data/layers.js';
 import * as sources from './data/sources.js';
 import { createLabels } from './ui/labels.js';
 import { createHud } from './ui/hud.js';
-import { wantCards } from './ui/cardgate.js';
+import { wantFacts } from './ui/cardgate.js';
 import { installEmbed, embedLink } from './ui/embed.js';
 
 /** The light maps (registry/textures.yaml tier -1), by the tier-0 file each stands in for. `null`: not drawn. */
 export const EMBED_MAPS = {
-  '2k_earth_daymap.jpg': 'embed/earth_day.webp',
+  '2k_earth_daymap.webp': 'embed/earth_day.webp',
   '2k_earth_nightmap.webp': 'embed/earth_night.webp',
-  '2k_moon.jpg': 'embed/moon.webp',
+  '2k_moon.webp': 'embed/moon.webp',
   '2k_earth_clouds.webp': null,
 };
 
@@ -214,9 +214,10 @@ export async function bootLite() {
 
   const boot = document.getElementById('boot');
   if (boot) { boot.classList.add('gone'); setTimeout(() => boot.remove(), 700); }
-  // The tag's words are the card's own rows (ui/cards.js), fetched now that the scene is drawing.
+  // The tag's words are the card's own rows (ui/cardfacts.js: the rows without the card, which a
+  // frame with no card never needs), fetched now that the scene is drawing.
   // The same two signals the full app gives a probe and the byte count: the layers are in.
-  wantCards().finally(() => {
+  wantFacts().finally(() => {
     window.__srLayersReady = true;
     window.dispatchEvent(new CustomEvent('sr:layers-ready'));
   });

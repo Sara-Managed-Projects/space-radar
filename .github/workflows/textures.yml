@@ -1,0 +1,101 @@
+name: textures
+
+# KTX2 on a runner (spec 0056 task 2, internal #156). The spec says compressed textures are built
+# here and not on a laptop, with KTX-Software pinned. Before any map is built for the site, this
+# workflow answers the question that was only assumed until 2026-10-08: does the encoder install and
+# run on a GitHub-hosted runner, which has no GPU, and does it give the same bytes twice?
+#
+# WHAT IT DOES TODAY. It installs KTX-Software 4.4.2 from the release's own .deb, held to the
+# SHA-256 GitHub publishes for that asset, and encodes ONE map the repository already ships (the
+# Earth's tier-0 day map, 2048 x 1024) two ways, twice each:
+#   - ETC1S / BasisLZ at quality 128 with mipmaps: what the spec gives the colour maps;
+#   - UASTC with Zstandard level 18 and mipmaps: what it gives normal maps and the night lights.
+# It validates each file with `ktx validate`, compares the two runs byte for byte, and uploads the
+# files, their sizes and `ktx info` as the artefact `ktx2-probe`. Nothing here is committed to the
+# site: no .ktx2 is shipped until the transcoder is vendored and a browser has drawn one (internal
+# #155), and the 8k rows need 8k originals this job does not fetch.
+#
+# It runs on a dispatch, and on a pull request that changes this file.
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/textures.yml"
+
+permissions:
+  contents: read
+
+env:
+  KTX_VERSION: "4.4.2"
+  KTX_DEB: "KTX-Software-4.4.2-Linux-x86_64.deb"
+  # The digest GitHub's release API reports for that asset (read 2026-10-08).
+  KTX_DEB_SHA256: "ca635ed489d8bf54fac8d7687056c651193de0740830a7738cc034adc63e3027"
+
+jobs:
+  ktx2-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install KTX-Software, pinned
+        run: |
+          set -euo pipefail
+          curl -fsSL -o "$RUNNER_TEMP/$KTX_DEB" "https://github.com/KhronosGroup/KTX-Software/releases/download/v$KTX_VERSION/$KTX_DEB"
+          echo "$KTX_DEB_SHA256  $RUNNER_TEMP/$KTX_DEB" | sha256sum -c -
+          sudo dpkg -i "$RUNNER_TEMP/$KTX_DEB" || sudo apt-get install -f -y
+          ktx --version
+          echo "GPU on this runner:"; (lspci 2>/dev/null | grep -iE "vga|3d|display" || echo "  none listed")
+      - name: Encode one map two ways, twice each
+        run: |
+          set -euo pipefail
+          pip install --disable-pip-version-check pillow
+          mkdir -p out
+          python3 - <<'PY'
+          from PIL import Image
+          im = Image.open("site/textures/2k_earth_daymap.webp").convert("RGB")
+          im.save("out/earth_day_2k.png")
+          print("input", im.size)
+          PY
+          for run in a b; do
+            /usr/bin/time -f "etc1s run $run: %e s, %M kB peak" \
+              ktx create --format R8G8B8_SRGB --assign-tf srgb --encode basis-lz --qlevel 128 --generate-mipmap \
+                out/earth_day_2k.png "out/earth_day_2k.etc1s.$run.ktx2"
+            /usr/bin/time -f "uastc run $run: %e s, %M kB peak" \
+              ktx create --format R8G8B8_SRGB --assign-tf srgb --encode uastc --uastc-quality 2 --zstd 18 --generate-mipmap \
+                out/earth_day_2k.png "out/earth_day_2k.uastc.$run.ktx2"
+          done
+          for f in out/*.ktx2; do ktx validate "$f"; done
+          {
+            echo "KTX-Software $(ktx --version)"
+            echo
+            echo "bytes  file"
+            stat -c '%s  %n' out/*.ktx2 out/earth_day_2k.png site/textures/2k_earth_daymap.webp
+            echo
+            echo "sha256"
+            sha256sum out/*.ktx2
+            echo
+            for kind in etc1s uastc; do
+              if cmp -s "out/earth_day_2k.$kind.a.ktx2" "out/earth_day_2k.$kind.b.ktx2"; then
+                echo "$kind: the two runs are byte-identical"
+              else
+                echo "$kind: the two runs DIFFER"
+              fi
+            done
+            echo
+            ktx info out/earth_day_2k.etc1s.a.ktx2 | head -60
+          } | tee out/REPORT.txt
+          # Reproducible or the job says so: spec 0056 task 2's acceptance.
+          cmp out/earth_day_2k.etc1s.a.ktx2 out/earth_day_2k.etc1s.b.ktx2
+          cmp out/earth_day_2k.uastc.a.ktx2 out/earth_day_2k.uastc.b.ktx2
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ktx2-probe
+          path: |
+            out/REPORT.txt
+            out/earth_day_2k.etc1s.a.ktx2
+            out/earth_day_2k.uastc.a.ktx2
+          if-no-files-found: warn

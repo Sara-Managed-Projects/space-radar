@@ -153,7 +153,8 @@ assert.ok(s.ticks >= INSTANTS.length && s.records === N && s.failed === null);
   handler = createHandler((message) => fake.out.push(message));
   fake.out = [];
   const answer = () => { const m = asked.shift(); handler({ data: m }); const out = fake.out.shift(); if (out) fake.onmessage({ data: out }); return m; };
-  const p = createPropagationPool({ makeWorker: () => fake });
+  let wall = 0;                       // the pool's clock, by hand
+  const p = createPropagationPool({ makeWorker: () => fake, now: () => wall });
   const few = records.slice(0, 50);
   p.setRecords(few);
   answer(); // the records message: no reply
@@ -196,6 +197,37 @@ assert.ok(s.ticks >= INSTANTS.length && s.records === N && s.failed === null);
   p.request(T0);
   answer();
   assert.equal(p.latest.pos.length, 90);
+  // A SLOW WORKER: the lead grows to the round trip. A tick every 100 ms of real time, an answer
+  // 300 ms after it was asked for.
+  {
+    // At 60x: 6 000 ms of clock a tick.
+    const T = T0 + 5 * 86400e3;
+    p.request(T);                                   // a jump: asked as it is
+    assert.equal(asked[0].tMs, T);
+    wall += 100; p.request(T + 6000);               // in flight
+    wall += 100; p.request(T + 12000);              // steady now; no round trip measured yet: one step ahead
+    wall += 100; answer();                          // 300 ms after it was asked
+    assert.equal(p.stats.roundTripMs, 300);
+    assert.equal(asked[0].tMs, T + 18000, 'before a round trip is known, one step ahead');
+    p.request(T + 18000);                           // the tick at 300 ms: the clock shows T + 18 000
+    wall += 300; answer();
+    assert.equal(asked[0].tMs, T + 36000, 'a 300 ms round trip at 60x is asked 18 000 ms of clock ahead: what the clock will show when the answer is drawn');
+    wall += 300; answer();
+    // The same worker at 1x: 300 ms ahead, three ticks.
+    p.request(T0);
+    wall += 100; p.request(T0 + 100);
+    wall += 100; p.request(T0 + 200);
+    wall += 100; answer();
+    assert.equal(asked[0].tMs, T0 + 500, 'at 1x it is asked 300 ms ahead');
+    // One terrible round trip, five seconds: the lead is held to a second of real time.
+    wall += 5000; answer();
+    assert.equal(p.stats.roundTripMs, 5000);
+    wall += 100; p.request(T0 + 300);
+    wall += 100; p.request(T0 + 400);
+    wall += 100; answer();
+    assert.equal(asked[0].tMs, T0 + 1400, 'and never more than a second of real time ahead');
+    wall += 1; answer();
+  }
   // No SGP4 records at all: nothing is asked.
   p.setRecords([records[N - 1]]);
   asked.length = 0;

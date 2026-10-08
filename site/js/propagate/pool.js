@@ -8,9 +8,13 @@
 //      that is wanted next; nothing queues, so a slow machine falls behind by one answer, never by
 //      a backlog.
 //   2. THE NUMBERS ARE SGP4'S. The worker runs the same sgp4() and returns its doubles untouched
-//      (tests/test_propagate_worker.mjs). What differs from the in-thread path is WHEN: the layer
-//      asks one tick ahead (`lead`, the clock time between its last two ticks, while the clock runs
-//      steadily), so the answer it draws is for the tick it is drawn on or within one tick of it.
+//      (tests/test_propagate_worker.mjs). What differs from the in-thread path is WHEN: an answer
+//      is drawn some milliseconds after it was asked for. So while the clock runs steadily the
+//      layer asks AHEAD: for the instant the clock will show when the answer is expected back (the
+//      last round trip, measured, at the clock's present pace), and never less than one tick
+//      ahead. Measured 2026-10-08 on a two-core laptop busy with other work: 221 ms in the worker
+//      for 16 626 objects and 313 ms there and back; without the lead the catalogue would be drawn
+//      a third of a second behind the clock, and at 60x that is eighteen seconds of orbit.
 //   3. IT CAN FAIL AND NOTHING GOES DARK. No Worker, a worker that will not start (a module worker
 //      is refused, a content policy, a file missing) or one that throws: `ok` turns false and
 //      scene/glyphs.js goes back to propagating in the thread, exactly as before this file.
@@ -53,8 +57,11 @@ export function createPropagationPool(opts = {}) {
   let askedAt = 0;
   let prevT = NaN;
   let prevStep = NaN;
+  let prevWall = NaN;
+  /** Never ask further ahead than this much real time, whatever a round trip once took. */
+  const LEAD_MAX_MS = 1000;
   const stats = { ticks: 0, workerMs: 0, roundTripMs: 0, failed: null };
-  const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
+  const now = typeof opts.now === 'function' ? opts.now : () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
   function fail(why) {
     ok = false;
@@ -118,6 +125,7 @@ export function createPropagationPool(opts = {}) {
       wanted = NaN;
       prevT = NaN;
       prevStep = NaN;
+      prevWall = NaN;
       mask = new Uint8Array(list.length);
       const items = new Array(list.length);
       let n = 0;
@@ -132,16 +140,29 @@ export function createPropagationPool(opts = {}) {
     },
 
     /**
-     * The layer's tick at clock time tMs. Asks for the instant the NEXT tick is expected at while
-     * the clock runs steadily (this step within a factor of two of the last one), else for tMs.
+     * The layer's tick at clock time tMs. While the clock runs steadily (this step within a factor
+     * of two of the last one, the same way) it asks for the instant the clock will show when the
+     * answer is back: the last round trip at the clock's pace, at least one step ahead. Across a
+     * jump, a pause or a turn it asks for tMs itself.
      */
     request(tMs) {
       if (!ok || !count || !Number.isFinite(tMs)) return;
+      const wall = now();
       const step = tMs - prevT;
       const steady = Number.isFinite(step) && Number.isFinite(prevStep) && step !== 0 && step * prevStep > 0 && Math.abs(step) <= Math.abs(prevStep) * 2 && Math.abs(prevStep) <= Math.abs(step) * 2;
+      let lead = 0;
+      if (steady) {
+        lead = step;
+        const real = wall - prevWall; // real milliseconds this step took
+        if (real > 0 && stats.roundTripMs > 0) {
+          const ahead = (step / real) * Math.min(LEAD_MAX_MS, stats.roundTripMs);
+          if (Math.abs(ahead) > Math.abs(step)) lead = ahead;
+        }
+      }
       prevStep = step;
       prevT = tMs;
-      wanted = steady ? tMs + step : tMs;
+      prevWall = wall;
+      wanted = tMs + lead;
       if (!busy && (!latest || latest.tMs !== wanted)) send();
     },
 

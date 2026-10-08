@@ -51,7 +51,7 @@ for (const scope of ['https://www.spaceradar.ai/', 'http://school-server:8177/sp
     ['vendor/three.module.min.js', {}, 'shell', 'vendor/three.module.min.js'],
     ['fonts/inter-400-latin.woff2', {}, 'shell', 'fonts/inter-400-latin.woff2'],
     ['images/icons/icon-192.png', {}, 'shell', 'images/icons/icon-192.png'],
-    ['textures/2k_earth_daymap.jpg', {}, 'asset', 'textures/2k_earth_daymap.jpg'],
+    ['textures/2k_earth_daymap.webp', {}, 'asset', 'textures/2k_earth_daymap.webp'],
     ['models/iss.glb', {}, 'asset', 'models/iss.glb'],
     ['audio/narration/moon-landings-1.opus', {}, 'asset', 'audio/narration/moon-landings-1.opus'],
     ['images/eht-m87.jpg', {}, 'asset', 'images/eht-m87.jpg'],

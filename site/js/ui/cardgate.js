@@ -15,6 +15,9 @@
 //                                 repaint, and a tag is only wanted once something is selected
 //   wantCards()                   -> Promise<module | null>; null when it could not be fetched
 //                                 (asked again on the next call)
+//   wantFacts()                   the same for ui/cardfacts.js ALONE: the tag's lines without the
+//                                 card. The light embed asks for this and never for the card
+//                                 (internal #429); once either module is here tagLines() answers
 //
 // A module that is itself loaded later (the trip, the share sheet, photo mode, the print composer)
 // imports ui/cards.js directly: it is past the first visit, and wants the card synchronously.
@@ -54,6 +57,22 @@ export function hideCard() {
   if (mod) mod.hideCard();
 }
 
+let facts = null;
+let factsAsked = null;
+
+export function wantFacts() {
+  if (facts) return Promise.resolve(facts);
+  if (!factsAsked) {
+    factsAsked = import('./cardfacts.js').then((m) => { facts = m; return m; }).catch((e) => {
+      factsAsked = null;
+      console.warn('the tag\'s lines did not load', e && e.message);
+      return null;
+    });
+  }
+  return factsAsked;
+}
+
 export function tagLines(record, ctx, m) {
-  return mod ? mod.tagLines(record, ctx, m) : null;
+  const from = mod || facts;
+  return from ? from.tagLines(record, ctx, m) : null;
 }

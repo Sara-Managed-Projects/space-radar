@@ -140,5 +140,66 @@ check(JSON.stringify(findMatches(index, 'starlink').hits.map((h) => h.record.id)
   console.log(`  at 5 000 names the slowest of ${queries.length} queries is "${worstQ}", ${worst.toFixed(1)} ms (median of 5)`);
 }
 
+// --- spec 0049 requirement 9: search at full scale (internal #131) ---------------------------------
+// 5 000 names, seeded, with the three families that go wrong on a whole catalogue put in by hand:
+// UME 1 (ISS 1) and UME 2 (ISS-B) (two Japanese ionosphere satellites of 1976 and 1978 whose
+// catalogue names carry "ISS"), four hundred `ISS DEB` pieces in a debris layer, and the station's
+// own modules. The debris sits in a layer the registry does not know (as `debris-clouds` will until
+// it is a row), which is the case the layer ladder alone got wrong.
+{
+  let seed = 5000;
+  const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
+  const FAMILIES = ['STARLINK', 'ONEWEB', 'COSMOS', 'FLOCK 4X', 'LEMUR 2', 'YAOGAN', 'GLOBALSTAR M', 'IRIDIUM', 'SL-8 R/B', 'CZ-4C DEB', 'FENGYUN 1C DEB', 'NOAA', 'SES', 'INTELSAT'];
+  const big = [];
+  let norad = 50000;
+  const add = (name, klass, layer, meta = {}) => { norad += 1; big.push({ id: `sat-${meta.noradId || norad}`, name, klass, layer, meta: { noradId: norad, ...meta } }); };
+  for (let i = 0; i < 400; i += 1) add('ISS DEB', 'debris', 'debris-clouds');
+  for (let i = 0; i < 40; i += 1) add(`ISS DEB (SPX-${i + 1})`, 'debris', 'debris-clouds');
+  add('UME 1 (ISS 1)', 'satellite', 'active', { noradId: 8709 });
+  add('UME 2 (ISS-B)', 'satellite', 'active', { noradId: 10674 });
+  add('ISS (NAUKA)', 'station', 'stations', { noradId: 49044 });
+  add('ISS (ZARYA)', 'station', 'stations', { noradId: 25544, why: 'people live here' });
+  add('CSS (TIANHE)', 'station', 'stations', { noradId: 48274, why: 'the other crewed station' });
+  add('ISS R/B', 'rocket', 'active');
+  add('ISS RELAY 2', 'satellite', 'active');
+  while (big.length < 5000) {
+    const f = FAMILIES[Math.floor(rnd() * FAMILIES.length)];
+    const klass = /DEB/.test(f) ? 'debris' : /R\/B/.test(f) ? 'rocket' : 'satellite';
+    add(`${f}${klass === 'satellite' ? '-' : ' '}${1000 + Math.floor(rnd() * 9000)}`, klass, klass === 'debris' ? 'debris-clouds' : 'active');
+  }
+  // Shuffled, so nothing is first because it was added first.
+  for (let i = big.length - 1; i > 0; i -= 1) { const j = Math.floor(rnd() * (i + 1)); [big[i], big[j]] = [big[j], big[i]]; }
+  const bigIndex = buildIndex(big, LAYERS);
+  check(bigIndex.n === 5000, `the fixture is 5 000 names (${bigIndex.n})`);
+  const r = findMatches(bigIndex, 'iss', 600);
+  const names = r.hits.map((h) => h.record.name);
+  check(names[0] === 'ISS (ZARYA)', `at full scale "iss" still puts the station first (${names.slice(0, 4).join(' | ')})`);
+  check(names[1] === 'ISS (NAUKA)', `then the station's other module, not a satellite or a fragment (${names[1]})`);
+  const ume = names.findIndex((n) => n.startsWith('UME 1'));
+  check(ume === -1 || ume > names.indexOf('ISS (ZARYA)'), 'UME 1 (ISS 1) never outranks ISS (ZARYA)');
+  const firstDeb = names.findIndex((n) => /\bDEB\b/.test(n));
+  const relay = names.indexOf('ISS RELAY 2');
+  const rb = names.indexOf('ISS R/B');
+  check(relay !== -1 && rb !== -1 && firstDeb !== -1, `a payload, a rocket body and a fragment that all start with the word are all offered (${names.slice(0, 8).join(' | ')})`);
+  check(relay < rb && rb < firstDeb, `a payload, then a rocket body, then debris, among matches of the same score (${relay}, ${rb}, ${firstDeb})`);
+  check(r.total >= 444, `and the count says how many matched (${r.total})`);
+  // The alias still reaches the other crewed station: "tiangong" is `css` in the registry.
+  const tg = findMatches(bigIndex, 'tiangong', 8);
+  check(tg.hits[0] && tg.hits[0].record.name === 'CSS (TIANHE)', `"tiangong" finds the other crewed station in 5 000 names (${tg.hits[0] && tg.hits[0].record.name})`);
+  // A catalogue number is still first and alone.
+  check(findMatches(bigIndex, '25544', 8).hits[0].record.name === 'ISS (ZARYA)', 'a NORAD number still finds its object in 5 000');
+  // TIMING: the worst of several queries, each the median of nine runs, against 50 ms.
+  const queries = ['iss', 'starlink', 'deb', 'cosmos 1', 'r/b', '25544', 'qqqzzx', 'tiangong', 'fengyun 1c deb 12'];
+  let worst = 0; let worstQ = '';
+  for (const q of queries) {
+    const runs = [];
+    for (let k = 0; k < 9; k += 1) { const t = performance.now(); findMatches(bigIndex, q, 8); runs.push(performance.now() - t); }
+    runs.sort((a, b) => a - b);
+    if (runs[4] > worst) { worst = runs[4]; worstQ = q; }
+  }
+  check(worst <= 50, `a query over 5 000 names takes ${worst.toFixed(1)} ms ("${worstQ}", median of nine), over 50 ms`);
+  console.log(`search at full scale: 5 000 names, slowest query "${worstQ}" ${worst.toFixed(1)} ms (median of nine)`);
+}
+
 if (problems.length) { console.error('search FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('search ok: whole words first, buried letters only as an announced fallback, eight rows, aliases from the registry');

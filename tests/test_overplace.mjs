@@ -90,7 +90,8 @@ check(!!below && typeof below[1] === 'string' && below[1].length > 0, `after, on
 check(rows.indexOf(below) === rows.indexOf(over) + 1, 'right under "Passing over", whose numbers stay');
 
 // --- never at boot ---------------------------------------------------------------------------------------
-const cards = readFileSync(join(JS, 'ui/cards.js'), 'utf8');
+// ensurePlaces() and the row it feeds live in ui/cardfacts.js since 2026-10-08 (the card's facts, apart from the card).
+const cards = readFileSync(join(JS, 'ui/cards.js'), 'utf8') + readFileSync(join(JS, 'ui/cardfacts.js'), 'utf8');
 check(/import\('\.\.\/sky\/overplace\.js'\)/.test(cards) && !/^import[^\n]*overplace/m.test(cards), 'the module is a dynamic import, out of the boot graph');
 const main = readFileSync(join(JS, 'main.js'), 'utf8');
 check(!/overplace|places\.png/.test(main), 'main.js asks for nothing of it at boot');

@@ -157,32 +157,42 @@ satisfies that with:
 
 | File | Used for | Licence | Source |
 |---|---|---|---|
-| `2k_sun.jpg` | the Sun | CC BY 4.0 | Solar System Scope |
+| `2k_sun.webp` | the Sun | CC BY 4.0 | Solar System Scope |
 | `2k_mercury_messenger.webp` | Mercury | Public domain | [USGS Astrogeology Science Center and NASA/JHUAPL/Carnegie Institution of Washington (MESSENGER MDIS three-colour mosaic)](https://planetarymaps.usgs.gov/mosaic/Mercury_MESSENGER_MDIS_Basemap_MD3Color_Mosaic_Global_665m.lbl), toned down |
 | `2k_venus_magellan.webp` | Venus, the ground by radar (when asked for on its card) | Public domain | [USGS Astrogeology Science Center and NASA/JPL-Caltech (Magellan C3-MIDR mosaic)](https://planetarymaps.usgs.gov/mosaic/Venus_Magellan_C3-MDIR_Global_Mosaic_2025m.lbl), tinted |
-| `2k_venus_atmosphere.jpg` | Venus | CC BY 4.0 | Solar System Scope |
-| `2k_earth_daymap.jpg` | Earth, day side | CC BY 4.0 | Solar System Scope |
+| `2k_venus_atmosphere.webp` | Venus | CC BY 4.0 | Solar System Scope |
+| `2k_earth_daymap.webp` | Earth, day side | CC BY 4.0 | Solar System Scope |
 | `2k_earth_nightmap.webp` | Earth, night side | CC BY 4.0 | Solar System Scope |
 | `2k_earth_clouds.webp` | Earth cloud layer | CC BY 4.0 | Solar System Scope |
-| `2k_moon.jpg` | the Moon | CC BY 4.0 | Solar System Scope |
-| `2k_mars.jpg` | Mars | CC BY 4.0 | Solar System Scope |
-| `2k_jupiter.jpg` | Jupiter | CC BY 4.0 | Solar System Scope |
+| `2k_moon.webp` | the Moon | CC BY 4.0 | Solar System Scope |
+| `2k_mars.webp` | Mars | CC BY 4.0 | Solar System Scope |
+| `2k_jupiter.webp` | Jupiter | CC BY 4.0 | Solar System Scope |
 | `2k_jupiter_opal_2025.webp` | Jupiter, as Hubble saw it (when asked for on its card) | CC BY 4.0 | [NASA, ESA, A.A. Simon, M.H. Wong: Hubble OPAL programme, WFC3/UVIS, 11 December 2025](https://archive.stsci.edu/hlsp/opal/opal-jupiter-cycle-32), adapted: calibrated, gap-filled at the poles, resampled; 63 500 B |
-| `2k_saturn.jpg` | Saturn | CC BY 4.0 | Solar System Scope |
+| `2k_saturn.webp` | Saturn | CC BY 4.0 | Solar System Scope |
 | `2k_saturn_opal_2025.webp` | Saturn, as Hubble saw it (when asked for on its card) | CC BY 4.0 | [NASA, ESA, A.A. Simon, M.H. Wong: Hubble OPAL programme, WFC3/UVIS, 29 August 2025](https://archive.stsci.edu/hlsp/opal/opal-saturn-cycle-32), adapted: calibrated, the strip the rings hid and the poles filled, resampled; 21 186 B |
 | `2k_saturn_ring_alpha.png` | Saturn's rings | CC BY 4.0 | Solar System Scope |
-| `2k_uranus.jpg` | Uranus | CC BY 4.0 | Solar System Scope |
+| `2k_uranus.webp` | Uranus | CC BY 4.0 | Solar System Scope |
 | `1k_uranus_opal_2025.webp` | Uranus, as Hubble saw it (when asked for on its card) | CC BY 4.0 | [NASA, ESA, A.A. Simon, M.H. Wong: Hubble OPAL programme, WFC3/UVIS, 23 October 2025](https://archive.stsci.edu/hlsp/opal/opal-uranus-cycle-33), adapted: calibrated, the unseen southern half filled with the equator's colour; 3 552 B |
-| `2k_neptune.jpg` | Neptune | CC BY 4.0 | Solar System Scope |
+| `2k_neptune.webp` | Neptune | CC BY 4.0 | Solar System Scope |
 | `1k_neptune_opal_2025.webp` | Neptune, as Hubble saw it (when asked for on its card) | CC BY 4.0 | [NASA, ESA, A.A. Simon, M.H. Wong: Hubble OPAL programme, WFC3/UVIS, 24 August 2025](https://archive.stsci.edu/hlsp/opal/opal-neptune-cycle-32), adapted: calibrated, the unseen far north filled; 4 766 B |
 | `2k_stars_milky_way.webp` | the Milky Way sky sphere | CC BY 4.0 | Solar System Scope |
 
 **What could not be verified, stated plainly.** solarsystemscope.com answers HTTP 403 to scripted
 downloads, so these files could not be byte-compared against the origin. Provenance rests on the
-exact filename match to the published pack (all 14 appear on their download list), the matching
-2048 × 1024 dimensions, and the shared XMP fingerprint. `2k_uranus.jpg` and `2k_neptune.jpg` carry
-no XMP block at all — the other twelve do — so those two are the weakest links in the chain. If you
-want certainty, re-download the pack by hand and diff.
+exact filename match to the published pack (all 14 appear on their download list as `2k_*.jpg`),
+the matching 2048 × 1024 dimensions, and the shared XMP fingerprint of the JPEGs as they were
+received. `2k_uranus.jpg` and `2k_neptune.jpg` carried no XMP block at all — the other twelve did —
+so those two are the weakest links in the chain. If you want certainty, re-download the pack by
+hand and diff.
+
+**Adapted on 2026-10-08: nine of them re-encoded.** The Sun, Venus, the Earth by day, the Moon,
+Mars, Jupiter, Saturn, Uranus and Neptune were shipped as the publisher's JPEGs (4 337 849 B in all)
+until that day. They are now WebP files of the same 2048 × 1024 pixels (1 877 120 B), each at the
+lowest quality whose luma SSIM against its JPEG is at least 0.98 (`scripts/build-textures.py
+--webp-2k`; each file's quality and score are in `registry/textures.yaml`). No resampling, no
+grading. The licence allows it and was read again on the publisher's page that day: *"Distributed
+under Attribution 4.0 International license: You may use, adapt, and share these textures for any
+purpose, even commercially."* The JPEGs are in this repository's history before that date.
 
 **The four giants have a second face, Hubble's (2026-10-07).** They are met in the Solar System Scope maps
 above; on the card, "As Hubble saw it" fetches and puts on the global maps of

@@ -181,6 +181,8 @@ export function buildIndex(records, layers) {
     mag: [], // apparent magnitude where the record has one, else Infinity; brighter first, see below
     where: [], // the layer's display name, for the quiet right-hand label
     pop: [], // a world or a station: what people mean by a name before anything that shares it
+    kind: [], // 0 a working thing, 1 a rocket body, 2 debris: spec 0049 req 9
+    norad: [], // catalogue number, Infinity without one
     kids: new Map(), // a world's id -> the entries of its moons, in the registry's order
     layers: displayOf,
   };
@@ -219,6 +221,13 @@ export function buildIndex(records, layers) {
     index.mag.push(mag);
     index.where.push(displayOf.get(record.layer) || '');
     index.pop.push(record.klass === 'world' || record.klass === 'station' ? 1 : 0);
+    // What it IS, for the tie-break of spec 0049 req 9: a working thing before a spent rocket body
+    // before a fragment. With the debris clouds or the whole catalogue loaded, "iss" matches
+    // hundreds of `ISS DEB` pieces exactly as well as it matches a payload.
+    index.kind.push(record.klass === 'debris' ? 2 : record.klass === 'rocket' ? 1 : 0);
+    // The catalogue number, for the last tie-break but one: among equals, the older object (the
+    // first module of a station, the first of a series) is the one a bare name means.
+    index.norad.push(Number.isFinite(meta.noradId) ? meta.noradId : Infinity);
     const parent = labelParentId(record);
     if (parent) { if (!index.kids.has(parent)) index.kids.set(parent, []); index.kids.get(parent).push(index.n); }
     index.n += 1;
@@ -357,6 +366,10 @@ export function findMatches(index, query, limit = MAX_RESULTS) {
     if (a.kid && b.kid) return a.i - b.i;
     // A world or a station before anything else that matched as well: the popular thing first.
     if (index.pop[a.i] !== index.pop[b.i]) return index.pop[b.i] - index.pop[a.i];
+    // A payload before a rocket body before a fragment (spec 0049 req 9), BEFORE the layer ladder:
+    // a debris layer that sits above "Everything active" in the registry must not put four hundred
+    // pieces of a station's debris above a satellite that matched as well.
+    if (index.kind[a.i] !== index.kind[b.i]) return index.kind[a.i] - index.kind[b.i];
     if (index.rank[a.i] !== index.rank[b.i]) return index.rank[a.i] - index.rank[b.i];
     // Brighter first: "andromeda" means the galaxy, not Andromeda II. A record with no magnitude
     // (Infinity) sorts after one that has a magnitude -- MEASURED live: "carina" put the Carina
@@ -369,6 +382,7 @@ export function findMatches(index, query, limit = MAX_RESULTS) {
     if (index.picked[a.i] !== index.picked[b.i]) return index.picked[b.i] - index.picked[a.i];
     if (index.len[a.i] !== index.len[b.i]) return index.len[a.i] - index.len[b.i];
     if (index.name[a.i] !== index.name[b.i]) return index.name[a.i] < index.name[b.i] ? -1 : 1;
+    if (index.norad[a.i] !== index.norad[b.i]) return index.norad[a.i] < index.norad[b.i] ? -1 : 1;
     return a.i - b.i; // total order, so the list never reshuffles between identical keystrokes
   });
 

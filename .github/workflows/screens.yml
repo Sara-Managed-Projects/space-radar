@@ -52,6 +52,13 @@ on:
       - "tests/test_first_visit_bytes.mjs"
       # ...and gates on the tree a deploy uploads, which this script builds (internal #405).
       - "scripts/minify_site.py"
+      # The UI gate and the trips walk (internal #374 and #123): each runs when what it reads changes.
+      - "scripts/check-ui.mjs"
+      - "tests/probes/ui_probe.js"
+      - "tests/probes/ui_probe.known.json"
+      - "scripts/check-trips.mjs"
+      - "tools/trips-cost.probe.js"
+      - "registry/tours.yaml"
 
 permissions:
   contents: read
@@ -201,3 +208,104 @@ jobs:
             .ci-screens/first-visit.json
             .ci-screens/first-visit-source.json
           if-no-files-found: error
+
+  # THE UI GATE (internal #374, spec 0061 task 6; docs/ui-guide.md section 7). tests/probes/ui_probe.js
+  # walks the app (home, two tabs, search, What to show, a card, the share sheet, the sources, the
+  # time pill, the keys, a trip, the clear screen) as a phone and as a desktop and measures every
+  # control on screen: a name, a target of 44 px under a finger and 24 px anywhere, no text under
+  # 13 px, nothing scrolling sideways, one ember fill at most. A control cut by the fold or by its
+  # scroller is measured by its box, which is what made the probe unusable as a gate before
+  # 2026-10-08 (21 false findings in one run). Findings that are real and wait on an issue are
+  # listed, with the issue, in tests/probes/ui_probe.known.json; an entry that matches nothing fails.
+  ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - name: Serve site/
+        run: |
+          set -euo pipefail
+          nohup python3 tools/serve.py site 8177 >/tmp/serve.log 2>&1 &
+          for _ in $(seq 1 40); do
+            if curl -fsS -o /dev/null http://127.0.0.1:8177/index.html; then echo "serving"; exit 0; fi
+            sleep 0.25
+          done
+          echo "::error::the static server never came up"; cat /tmp/serve.log; exit 1
+      - name: Every control has a name and a target of its size, at a phone's size and a desktop's
+        run: |
+          set -euo pipefail
+          mkdir -p .ci-screens
+          docker run --rm --network host \
+            -u "$(id -u):$(id -g)" -e HOME=/tmp \
+            -e PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+            -v "$PWD:/work" -w /work \
+            mcr.microsoft.com/playwright:v1.49.1-jammy \
+            bash -c 'set -euo pipefail
+              npm install --no-save --no-audit --no-fund playwright@1.49.1
+              node scripts/check-ui.mjs --base=http://127.0.0.1:8177 --out=.ci-screens/ui.json'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-gate
+          include-hidden-files: true
+          path: .ci-screens/ui.json
+          if-no-files-found: warn
+
+  # THE TRIPS WALK (internal #123, spec 0044 task 3). Every stop of every trip, as a desktop and as a
+  # phone: draw calls and triangles a frame against `draw_calls_per_stop` and `triangles_per_stop`
+  # in registry/budgets.yaml, and no frame empty. It is the slow job of this file (software GL, some
+  # two hundred stops twice: 36 minutes on 2026-10-08), so it runs on a dispatch and when a pull
+  # request changes the trips, the budgets, the probe or this file -- not on every change to site/.
+  # The artefact `trip-stops` holds trips.json: one row per stop per viewport.
+  trips:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Did anything the walk reads change?
+        id: want
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT" = "workflow_dispatch" ]; then echo "run=1" >>"$GITHUB_OUTPUT"; echo "dispatched"; exit 0; fi
+          if [ "$EVENT" != "pull_request" ]; then echo "run=0" >>"$GITHUB_OUTPUT"; echo "not a dispatch and not a pull request"; exit 0; fi
+          changed="$(git diff --name-only "origin/$BASE_REF...HEAD")"
+          if echo "$changed" | grep -Eq '^(registry/tours\.yaml|registry/budgets\.yaml|site/js/data/tours\.js|site/js/ui/trip\.js|scripts/check-trips\.mjs|tools/trips-cost\.probe\.js|\.github/workflows/screens\.yml)$'; then
+            echo "run=1" >>"$GITHUB_OUTPUT"; echo "the trips, the budgets, the probe or this file changed"
+          else
+            echo "run=0" >>"$GITHUB_OUTPUT"; echo "nothing the walk reads changed: skipped"
+          fi
+      - name: Serve site/
+        if: steps.want.outputs.run == '1'
+        run: |
+          set -euo pipefail
+          nohup python3 tools/serve.py site 8177 >/tmp/serve.log 2>&1 &
+          for _ in $(seq 1 40); do
+            if curl -fsS -o /dev/null http://127.0.0.1:8177/index.html; then echo "serving"; exit 0; fi
+            sleep 0.25
+          done
+          echo "::error::the static server never came up"; cat /tmp/serve.log; exit 1
+      - name: Every stop of every trip inside its draw-call and triangle budgets, and none an empty frame
+        if: steps.want.outputs.run == '1'
+        run: |
+          set -euo pipefail
+          mkdir -p .ci-screens
+          docker run --rm --network host \
+            -u "$(id -u):$(id -g)" -e HOME=/tmp \
+            -e PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+            -v "$PWD:/work" -w /work \
+            mcr.microsoft.com/playwright:v1.49.1-jammy \
+            bash -c 'set -euo pipefail
+              npm install --no-save --no-audit --no-fund playwright@1.49.1
+              node scripts/check-trips.mjs --base=http://127.0.0.1:8177 --out=.ci-screens/trips.json'
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.want.outputs.run == '1'
+        with:
+          name: trip-stops
+          include-hidden-files: true
+          path: .ci-screens/trips.json
+          if-no-files-found: warn
