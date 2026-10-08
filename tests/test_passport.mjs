@@ -225,6 +225,9 @@ check(P.KEY === 'sr:passport', 'one key, sr:passport');
   const { COPY } = await import(join(JS, 'copy/en.js'));
   check(/only/.test(COPY.passport.kept) && /browser/.test(COPY.passport.kept) && [...COPY.passport.kept].length <= 60, 'the view says once, in one line, that this lives only in this browser');
   check(src.split('P.kept').length === 2, 'and says it in one place');
+  // internal #448 item 9: the three sessionStorage keys a screen playing on its own keeps are listed.
+  const auto = readFileSync(join(JS, 'ui/autopilot.js'), 'utf8');
+  check(['sr:ambient:log', 'sr:ambient:reloads', 'sr:ambient:sound'].every((k) => auto.includes(k)) && COPY.kept.lines.some((l) => /plays on its own/.test(l) && /this tab only/.test(l)), 'the Sources panel says what a screen playing on its own keeps (the three sr:ambient keys, this tab only)');
   check(/P\.forgetConfirm/.test(src) && /CONFIRM_MS/.test(src), 'Forget me asks once before it forgets');
 }
 

@@ -339,6 +339,7 @@ Object.assign(COPY, {
       'Your passport: places opened, trips finished, things ticked as seen.',
       'Your sound and voice choice, and how you left the panels.',
       'A copy of the data it last read, so the map opens without a connection.',
+      'While a screen plays on its own, a short log of its trips, for this tab only.',
     ],
     place: 'Your place is rounded to a tenth of a degree and held only while this page is open.',
     none: 'No account, no cookies, no analytics. Forget me, in the Passport, clears the passport and the sound choice.',
