@@ -91,7 +91,16 @@ await import(join(JS, 'copy/en.later.js'));
   check(H.selectedPixels(60) === 84, 'never smaller than an unselected model (84)');
   for (const band of [200, 260, 320, 381]) check(H.selectedPixels(band) * H.MODEL_SPAN <= Math.max(band, 84 * H.MODEL_SPAN), `band ${band}: the circle is inside it`);
   const main = read('site/js/main.js');
-  check(/heroes\.update\(t, \{[^}]*bandPx: viewShift\.bandHeightPx\(\)/.test(main), 'main.js hands the uncovered band to the models each frame');
+  // Through ctx: the frame loop is a function of its own (startLoop) and main()'s `viewShift` is not
+  // in its scope. The first cut named the bare variable and every frame threw "viewShift is not
+  // defined" (seen in the first browser run that reached the app, 2026-10-08): held here by name.
+  check(/heroes\.update\(t, \{[^}]*bandPx: ctx\.viewShift \? ctx\.viewShift\.bandHeightPx\(\) : 0/.test(main), 'main.js hands the uncovered band to the models each frame, through ctx');
+  {
+    const loop = main.slice(main.indexOf('function startLoop('));
+    const body = loop.slice(0, loop.indexOf('\n}\n'));
+    const params = /function startLoop\(\{([^}]*)\}\)/.exec(loop);
+    check(params && !/\bviewShift\b/.test(params[1]) && !/[^.\w]viewShift\./.test(body), 'and the frame loop names no variable it was not given');
+  }
   check(/bandHeightPx: \(\) => bandPx/.test(read('site/js/scene/viewshift.js')), 'scene/viewshift.js keeps the band it measured');
   check(!/const MODEL_SPAN = 1\.32;/.test(main) && /MODEL_SPAN/.test(main), 'one MODEL_SPAN, the models\' own');
 }
