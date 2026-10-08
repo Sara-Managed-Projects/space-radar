@@ -7,8 +7,8 @@
 //      ends on its own end card and is then left where the camera is, and the watchdog is silent.
 //   2. A trip that cannot make its minimum is refused by the machine and skipped by the reel.
 //   3. Taking the controls mid-flight leaves the machine idle; the reel takes the screen back.
-//   4. A flight whose arrival never comes (the rig's callback lost) is moved on by the watchdog,
-//      through the machine's own next().
+//   4. A flight whose arrival never comes (the rig's callback lost) is landed by the machine's own
+//      timer (internal #322), and the reel's watchdog stays silent.
 //   5. The trip frame under a reel is in present mode with auto pacing, and writes no `present=`.
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -255,11 +255,12 @@ function world(link, { land = () => true } = {}) {
 // --- 4. a flight that never lands --------------------------------------------------------------------------
 {
   const w = world({ ambient: 'fx-a,fx-b,fx-c' }, { land: (st) => !(st.tourId === 'fx-a' && st.index === 1) });
-  await w.pass(8000 + 8600 + 58000);
-  check(w.machine.state.index === 1 && w.what('watchdog').length === 0, 'the flight is given its minute');
-  await w.pass(6000);
-  const dog = w.what('watchdog')[0];
-  check(dog && dog.action === 'next' && dog.trip === 'fx-a' && dog.n === 2, `the watchdog moves the stuck stop on (${JSON.stringify(dog)})`);
+  // Since internal #322 the machine lands an overdue flight itself (ui/trip.js FLIGHT_GRACE_MS, held
+  // by tests/test_trip_flight_ends.mjs), so the reel's watchdog, which tests/test_autopilot.mjs holds
+  // against a machine that really is stuck, has nothing to do here.
+  await w.pass(8000 + 8600 + 6000 + 4000 + 1000);
+  check(w.machine.state.index === 1 && ['settle', 'dwell'].includes(w.machine.state.phase), `the machine lands the stop whose arrival never came (${w.machine.state.phase} @ ${w.machine.state.index})`);
+  check(w.what('watchdog').length === 0, 'the reel\'s watchdog is silent: the trip looked after itself');
   await w.pass(12000);
   check(w.what('stop').some((l) => l.trip === 'fx-a' && l.n === 3), 'the machine went on to the third stop');
   await w.pass(12000 + 9000 + 4000);
@@ -309,4 +310,4 @@ if (problems.length) {
   for (const p of problems) console.error('  -', p);
   process.exit(1);
 }
-console.log('autopilot on the real trip ok: two laps of three trips in order, a refused trip skipped, the controls taken and given back, a lost arrival moved on, the frame in present mode under a reel');
+console.log('autopilot on the real trip ok: two laps of three trips in order, a refused trip skipped, the controls taken and given back, a lost arrival landed by the machine, the frame in present mode under a reel');

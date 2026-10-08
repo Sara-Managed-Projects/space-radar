@@ -2024,7 +2024,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     if (ctx.viewShift) ctx.viewShift.update(dt);
     // A running climb puts the camera where it has got to, before the rig reads it (scene/climb.js).
     if (ctx.climb) ctx.climb.tick(frameMs);
-    cameraRig.update(dt);
+    cameraRig.update(dt, frameMs);
     worlds.setEclipseAllowed(ctx.eclipseDrawn());
     worlds.update(t);
     // What waited for the scene to stand at a new time (ctx.afterClockJump): a flight to somewhere

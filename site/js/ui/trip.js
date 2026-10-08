@@ -139,6 +139,13 @@ const FLIGHT_ESTIMATE_MS = 3200;
 // A tab switch is not a signal about the trip, which is why this one resumes on its own and a
 // pause caused by the visitor's own hand does not.
 const HIDDEN_RESUME_MS = 600;
+// A FLIGHT ENDS INSIDE ITS OWN TIME PLUS THIS (internal #322). Its `ms` is wall time; the stop's
+// title, its dwell and a reel's watchdog all count wall time. A flight still in the air this long
+// after it was due is cut to its end shot, whatever held it: frames too slow for the rig, another
+// caller's flight in its place, a callback that never came.
+export const FLIGHT_GRACE_MS = 4000;
+// How often a stop's flight is flown again after somebody else's flight replaced it, before it cuts.
+const REFLY_MAX = 2;
 // At 36000x an orbit of the station is 0.15 s of real time and `follow` keeps the camera locked
 // on: the object whips around the planet and that is not a shot. Anything at or below a minute a
 // second is left exactly as the visitor set it.
@@ -2201,6 +2208,7 @@ export function createTrip(ctx) {
     state.held = null;
     run.dwellTimer = null;
     run.dwellMs = 0;
+    entry.reflown = 0;
 
     if (ctx.labels && ctx.labels.clearEmphasis) ctx.labels.clearEmphasis();
     // A new chapter, or none: the old line goes now and the new one lands with the stop's title.
@@ -2310,6 +2318,8 @@ export function createTrip(ctx) {
     upTween = null;
     climbing = true;
     const mine = gen;
+    run.flightSeq = (run.flightSeq || 0) + 1;
+    const seq = run.flightSeq;
     const dKm = stopDistanceKm(entry.stop, entry.subject);
     const fromKm = Math.max(1e-6, rig.state.distance * stage.unitKm);
     const ms = reducedMotion() ? 0 : clamp(Math.abs(Math.log10(dKm / fromKm)) * CLIMB_MS_PER_DECADE, CLIMB_MIN_MS, CLIMB_MAX_MS);
@@ -2336,9 +2346,24 @@ export function createTrip(ctx) {
           }
           schedule(() => arrived(index, 'done'));
         }),
-        onCancel: guarded(() => { climbing = false; }),
+        // Somebody else's flight took the camera (scene/climb.js gives way to it): the stop is
+        // still to be reached, the old way, from wherever that flight leaves the camera (#322).
+        onCancel: guarded(() => {
+          climbing = false;
+          schedule(() => {
+            if (!run || state.phase !== 'flight' || state.index !== index || run.flightSeq !== seq) return;
+            enterStage(nextStage);
+            flyToStop(entry, index);
+          });
+        }),
       });
       if (ms > 0) {
+        after(ms + FLIGHT_GRACE_MS, () => {
+          if (!run || state.phase !== 'flight' || state.index !== index || !climbing) return;
+          dropClimb();
+          enterStage(nextStage);
+          cutTo(entry, index);
+        });
         after(ms * TITLE_AT, () => {
           if (!run || state.phase !== 'flight' || state.index !== index) return;
           paintCard(entry, true);
@@ -2454,20 +2479,7 @@ export function createTrip(ctx) {
     // one. Otherwise it turns with the flight.
     const cutting = reducedMotion() || !(shot.ms > 0);
     if (cutting) settleUp(upFor(shot));
-    rig.flyTo({
-      targetScene: shot.targetScene,
-      distance: shot.distance,
-      azimuth: shot.azimuth,
-      polar: shot.polar,
-      ms: shot.ms,
-      ease: shot.ease,
-      targetDelay: shot.targetDelay,
-      apex: shot.apex,
-      onArrive: guarded((reason) => schedule(() => arrived(index, reason))),
-      // A cancelled flight is the visitor's hand on the mouse. onUserInput has already paused the
-      // trip; this exists so the rig never has to drop a callback silently.
-      onCancel: guarded(() => {}),
-    });
+    launch(entry, index, shot, shot.ms);
     if (!cutting && upFor(shot)) beginUpTween(upFor(shot), shot.ms);
     if (!cutting && state.phase === 'flight' && state.index === index) beginStretch(shot, index);
 
@@ -2513,6 +2525,71 @@ export function createTrip(ctx) {
    * (goTo), and the card going blank at take-off would be its own small bug. A subject that is the
    * NEXT stop's too (the station trip's `far` then `iss`) is kept, so nothing blinks.
    */
+  /**
+   * THE RIG'S FLIGHT TO A STOP, AND THE TWO WAYS IT USED TO BE ABLE TO NEVER END (internal #322).
+   *
+   * `flight` is left by arrived() and by nothing else, and arrived() was reached only from the
+   * rig's onArrive. Two things could keep that from coming:
+   *
+   *   - SOMEBODY ELSE'S FLIGHT. The rig has one flight; any other caller's flyTo replaces the
+   *     trip's and the rig says so through onCancel('replaced'). That callback did nothing ("a
+   *     cancelled flight is the visitor's hand", and for a hand onUserInput has already paused the
+   *     trip): for every other caller the stop sat in `flight` for good, with no flight in the air.
+   *     Now a flight that was taken away while the stop is still flying is flown again from where
+   *     the camera was left, and after REFLY_MAX of those the stop cuts to its shot.
+   *   - TIME. See FLIGHT_GRACE_MS: the stop's own wall-clock timer ends a flight that is overdue.
+   *
+   * Both are checked a frame later and against `run.flightSeq`: pause() and stop() end the flight
+   * with a flight of their own (freezeFlight), and by the next frame the phase or the generation
+   * says so.
+   */
+  function launch(entry, index, shot, ms) {
+    run.flightSeq = (run.flightSeq || 0) + 1;
+    const seq = run.flightSeq;
+    const mine = (fn) => guarded((...args) => { if (run && run.flightSeq === seq) fn(...args); });
+    if (ms > 0 && !reducedMotion()) {
+      after(ms + FLIGHT_GRACE_MS, mine(() => {
+        if (state.phase !== 'flight' || state.index !== index) return;
+        cutTo(entry, index);
+      }));
+    }
+    rig.flyTo({
+      targetScene: shot.targetScene,
+      distance: shot.distance,
+      azimuth: shot.azimuth,
+      polar: shot.polar,
+      ms,
+      ease: shot.ease,
+      targetDelay: shot.targetDelay,
+      apex: shot.apex,
+      onArrive: mine((reason) => schedule(() => arrived(index, reason))),
+      onCancel: mine(() => schedule(mine(() => {
+        if (state.phase !== 'flight' || state.index !== index) return;
+        entry.reflown = (entry.reflown || 0) + 1;
+        if (entry.reflown > REFLY_MAX) { cutTo(entry, index); return; }
+        const again = composeShot(entry);
+        if (!again) { holdAt(entry); return; }
+        entry.shot = again;
+        rig.follow(() => entry.subject.position(ctx.clock.now()));
+        launch(entry, index, again, FLIGHT_MIN_MS);
+      }))),
+    });
+  }
+
+  /** The stop's end shot, now, in one frame: what an overdue flight and a third lost one come to. */
+  function cutTo(entry, index) {
+    dropClimb();
+    const shot = composeShot(entry) || entry.shot;
+    if (!shot) { holdAt(entry); return; }
+    entry.shot = shot;
+    // A new number first: the flight this replaces is told 'replaced', and must not fly again.
+    run.flightSeq = (run.flightSeq || 0) + 1;
+    upTween = null;
+    rig.follow(() => entry.subject.position(ctx.clock.now()));
+    rig.flyTo({ targetScene: shot.targetScene, distance: shot.distance, azimuth: shot.azimuth, polar: shot.polar, ms: 0 });
+    schedule(() => arrived(index, 'skipped'));
+  }
+
   function letGoOfTheLastSubject(entry) {
     const sel = typeof ctx.selected === 'function' ? ctx.selected() : null;
     if (!sel) return;
@@ -2555,10 +2632,17 @@ export function createTrip(ctx) {
     // A cut had no k = 0.6 to land the chapter at; it appears with the card (and under reduced
     // motion ui.css makes that an appearance, not a rise).
     state.chapter = run.stops[index].stop.chapter || null;
-    releaseClockHold();
-    stopExtrasArrived(run.stops[index]);
-    paintCard(run.stops[index]);
+    // The dwell's timer FIRST (internal #322): `settle` is left by this timer and nothing else, and
+    // it used to be set after the card was painted, so a card that threw (a record whose layer was
+    // refreshed under it) left the stop in `settle` for good. Now the stop goes on without its card.
     after(SETTLE_MS, () => dwell(index));
+    try {
+      releaseClockHold();
+      stopExtrasArrived(run.stops[index]);
+      paintCard(run.stops[index]);
+    } catch (err) {
+      console.warn('trip: the stop arrived and its card could not be painted', err);
+    }
     notify();
   }
 
@@ -3044,8 +3128,11 @@ export function createTrip(ctx) {
     if (rig.finishFlight) rig.finishFlight();
     const entry = run.stops[state.index];
     const shot = composeShot(entry);
-    if (!shot) return;
+    // The generation has moved on, so nothing that was pending will come: a stop with no shot in
+    // the new stage is held, said so, and waits for a hand, rather than left in the phase it was in.
+    if (!shot) { holdAt(entry); return; }
     entry.shot = shot;
+    run.flightSeq = (run.flightSeq || 0) + 1;
     settleUp(upFor(shot));
     rig.flyTo({
       targetScene: shot.targetScene,

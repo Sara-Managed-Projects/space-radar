@@ -192,6 +192,9 @@ export const CAMERA_KEYS = new Set([
   'PageUp', 'PageDown', 'w', 'W', 's', 'S', '+', '=', '-', '_',
 ]);
 
+// The most of one frame a flight will take as its own time (see update()).
+export const FLIGHT_STEP_CAP_MS = 1000;
+
 export function createCameraRig(camera, domElement, options = {}) {
   const target = new THREE.Vector3();
   const pendingPan = new THREE.Vector3();
@@ -1027,13 +1030,23 @@ export function createCameraRig(camera, domElement, options = {}) {
 
   // ---------------------------------------------------------------- frame
 
-  function update(dt) {
+  function update(dt, frameMs) {
     // main.js may hand seconds or milliseconds; a 0.5 s frame is already pathological, so a value
     // above that is milliseconds.
     let dts = Number(dt);
     if (!Number.isFinite(dts) || dts <= 0) dts = 1 / 60;
     if (dts > 0.5) dts /= 1000;
     if (dts > 0.25) dts = 0.25; // a tab that was backgrounded must not fling the camera
+    // A FLIGHT'S `ms` IS WALL TIME (internal #322). The step above is clamped for the damping, which
+    // a long frame would fling; a flight is a path with a parameter and cannot be flung, only be
+    // further along. Fed the clamped step it ran in slow motion on any device under ten frames a
+    // second (main.js caps a step at 100 ms): a 6 s flight is sixty frames whatever they cost, so at
+    // SwiftShader's 3 fps it took 20 s, and through 5 s stalls five minutes, while the trip's title,
+    // its dwell and the reel's watchdog all counted wall time. So a flight is given the frame's real
+    // length when main.js passes it, up to FLIGHT_STEP_CAP_MS (a tab that comes back from the
+    // background goes on from a second further along, not from the end).
+    const real = Number(frameMs);
+    const flightDts = Number.isFinite(real) && real > 0 ? Math.min(FLIGHT_STEP_CAP_MS, real) / 1000 : dts;
 
     // A ride along owns the camera outright: no follow, no damping, no drift under it.
     if (ride) {
@@ -1051,7 +1064,7 @@ export function createCameraRig(camera, domElement, options = {}) {
     applyHeldKeys(dts);
 
     if (flight) {
-      advanceFlight(dts);
+      advanceFlight(flightDts);
     } else {
       const kOrbit = 1 - Math.exp(-dts / TAU_ORBIT);
       const kDolly = 1 - Math.exp(-dts / TAU_DOLLY);

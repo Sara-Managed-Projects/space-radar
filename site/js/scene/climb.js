@@ -346,7 +346,8 @@ export function createClimb(ctx) {
     if (!run) return;
     // Somebody else took the camera (a selection's flight): the climb gives way.
     if (rig.state.flying) { cancel('replaced'); return; }
-    run.elapsed += Math.min(100, Math.max(0, Number(frameMs) || 0));
+    // Wall time, as a flight's is (scene/camera.js update, internal #322): a second a frame at most.
+    run.elapsed += Math.min(1000, Math.max(0, Number(frameMs) || 0));
     const k = Math.min(1, run.elapsed / run.ms);
     place(k);
     if (k >= 1) {
