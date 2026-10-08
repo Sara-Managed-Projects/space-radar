@@ -255,6 +255,7 @@ def encode(im, trip: dict, limit: int) -> tuple[bytes, str]:
 
     info = PngInfo()
     info.add_text(CAPTION_KEY, caption_of(trip))
+    info.add_text("Software", "space-radar build_trip_og.py")  # spec 0043: every picture says what made it
     buf = io.BytesIO()
     im.save(buf, "PNG", optimize=True, pnginfo=info)
     if buf.tell() <= limit:

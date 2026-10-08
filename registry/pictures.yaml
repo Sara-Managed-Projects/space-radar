@@ -1,0 +1,9 @@
+# Pictures that are NOT the app's own frames (spec 0043 requirement 6, internal #121).
+#
+# Every PNG under site/og/ is made by this project: scripts/shots.mjs and scripts/build_trip_og.py write
+# `Software: space-radar <tool>` into a tEXt chunk (scripts/_png_text.mjs). A picture that comes from
+# anywhere else has no such chunk, and so needs a row here and a line in CREDITS.md on the models'
+# pattern, or scripts/check_registry.py refuses it. The list is empty: nothing there comes from elsewhere.
+#
+#   - {file: og/some.png, source: <page it came from>, licence: <licence text read>, credit: <the line CREDITS.md carries>, read: YYYY-MM-DD}
+pictures: []
