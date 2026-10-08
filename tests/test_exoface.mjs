@@ -126,7 +126,7 @@ check(earth.star.light.every((v) => v > 0.85), 'a Sun-like star lights them near
   check(X.FACE_TIERS.length === 3 && X.FACE_TIERS[0].drawCalls === 1 && X.FACE_TIERS[0].halo === false, 'three tiers, and the phone\'s is one draw call');
   check(X.FACE_TIERS[0].octaves < X.FACE_TIERS[1].octaves && X.FACE_TIERS[1].octaves < X.FACE_TIERS[2].octaves, 'each tier adds octaves');
   for (const frag of [X.ROCKY_FRAG, X.GIANT_FRAG, X.HALO_FRAG]) {
-    check(!/sampler2D|texture2D|texture\(/.test(frag), 'no texture is sampled: the picture is noise');
+    check(!/sampler2D|texture2D/.test(frag), 'no picture is sampled: the only texture is the noise lattice built at run time');
     check(/#include <tonemapping_fragment>/.test(frag) && /#include <colorspace_fragment>/.test(frag) && /#include <logdepthbuf_fragment>/.test(frag), 'the object\'s own material tone-maps, converts and writes the log depth');
   }
   check(!/city|night ?lights/i.test(X.ROCKY_FRAG), 'the night side has no city lights');
@@ -137,9 +137,10 @@ check(earth.star.light.every((v) => v > 0.85), 'a Sun-like star lights them near
     const f = X.faceFor(row);
     const u = X.faceUniforms(f);
     const frag = f.kind === 'giant' ? X.GIANT_FRAG : X.ROCKY_FRAG;
-    for (const name of Object.keys(u)) check(new RegExp(`uniform [a-z0-9]+ ${name}\\b`).test(frag), `${f.kind}: the shader declares ${name}`);
-    for (const m of frag.matchAll(/uniform [a-z0-9]+ (u[A-Za-z]+)/g)) check(m[1] in u, `${f.kind}: ${m[1]} is filled`);
+    for (const name of Object.keys(u)) check(new RegExp(`uniform [a-zA-Z0-9]+ ${name}\\b`).test(frag), `${f.kind}: the shader declares ${name}`);
+    for (const m of frag.matchAll(/uniform [a-zA-Z0-9]+ (u[A-Za-z]+)/g)) check(m[1] in u, `${f.kind}: ${m[1]} is filled`);
     for (const [k, v] of Object.entries(u)) {
+      if (k === 'uNoise') { check(v.value.isData3DTexture && v.value.image.data.length === 64 * 64 * 64 * 4, 'the noise lattice is 64 cubed, four channels, built here'); continue; }
       const flat = Array.isArray(v.value) ? v.value.flatMap((x) => x.toArray()) : v.value && v.value.toArray ? v.value.toArray() : v.value && v.value.elements ? [...v.value.elements] : [v.value];
       check(flat.every((x) => Number.isFinite(x)), `${f.kind}: ${k} is all numbers`);
     }

@@ -290,7 +290,13 @@ export function createImagineStage(ctx, opts = {}) {
       gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
     }
     const ms = (performance.now() - t0) / count;
-    return { msPerFrame: Math.round(ms * 100) / 100, frames: count, width: size.x, height: size.y, pixelRatio: renderer.getPixelRatio(), tier, calls: renderer.info.render.calls };
+    // The same loop with the world hidden: what the stars, the clear and the wait cost on their own.
+    world.handle.mesh.visible = false;
+    const b0 = performance.now();
+    for (let i = 0; i < count; i++) { renderer.render(scene, camera); gl.finish(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); }
+    const baseMs = (performance.now() - b0) / count;
+    world.handle.mesh.visible = true;
+    return { msPerFrame: Math.round(ms * 100) / 100, emptyMsPerFrame: Math.round(baseMs * 100) / 100, frames: count, width: size.x, height: size.y, pixelRatio: renderer.getPixelRatio(), tier, calls: renderer.info.render.calls };
   }
 
   function state() {

@@ -247,12 +247,12 @@ function cyclones(rnd, count, locked) {
   const out = [];
   for (let i = 0; i < 5; i++) {
     if (i >= count) { out.push([0, 1, 0, 0]); continue; }
-    if (locked && i === 0) { out.push([1, 0, 0, 2.6]); continue; } // the storm under the star
+    if (locked && i === 0) { out.push([1, 0, 0, 1.5]); continue; } // the storm under the star
     const south = i % 2 === 1;
     const lat = (0.42 + rnd() * 0.5) * (south ? -1 : 1); // 24 to 53 degrees
     const lon = rnd() * Math.PI * 2;
     const c = Math.cos(lat);
-    out.push([c * Math.cos(lon), Math.sin(lat), c * Math.sin(lon), (1.6 + rnd() * 1.6) * (south ? -1 : 1)]);
+    out.push([c * Math.cos(lon), Math.sin(lat), c * Math.sin(lon), (0.8 + rnd() * 0.7) * (south ? -1 : 1)]);
   }
   return out;
 }
@@ -272,15 +272,15 @@ function rockyLook(face) {
   };
   if (climate === 'temperate') {
     const water = cls === 'water';
-    look.ocean = water ? 0.86 + rnd() * 0.12 : 0.56 + rnd() * 0.2; // the share of the globe under sea
-    look.cloud = 0.44 + rnd() * 0.14 + (water ? 0.05 : 0);
+    look.ocean = water ? 0.86 + rnd() * 0.12 : 0.5 + rnd() * 0.2; // the share of the globe under sea
+    look.cloud = 0.4 + rnd() * 0.14 + (water ? 0.05 : 0);
     // Not locked: caps from the poles. Locked: ice from the night side, creeping past the terminator
     // when the planet is cold (`cold` runs 0 under the star, 0.5 at the terminator, 1 at midnight).
     look.ice = locked ? lerp(0.3, 0.56, warmth) : lerp(0.62, 0.93, warmth);
-    look.oceanDeep = jitter([0.004, 0.028, 0.115], rnd, 0.15);
-    look.oceanShallow = jitter([0.012, 0.15, 0.25], rnd, 0.15);
+    look.oceanDeep = jitter([0.003, 0.018, 0.085], rnd, 0.15);
+    look.oceanShallow = jitter([0.01, 0.1, 0.2], rnd, 0.15);
     const lush = rnd();
-    look.landLow = jitter(mix3([0.045, 0.1, 0.028], [0.07, 0.085, 0.02], lush), rnd, 0.12);
+    look.landLow = jitter(mix3([0.028, 0.085, 0.02], [0.06, 0.08, 0.018], lush), rnd, 0.12);
     look.landDry = jitter(mix3([0.34, 0.24, 0.13], [0.3, 0.17, 0.09], rnd()), rnd, 0.1);
     look.landHigh = jitter([0.2, 0.17, 0.14], rnd, 0.1);
     look.green = lerp(0.75, 0.3, Math.max(0, warmth - 0.6) / 0.4); // the warm edge is drier
@@ -325,7 +325,7 @@ function rockyLook(face) {
     look.ocean = 0.34 + rnd() * 0.16; // the share that is open magma, more of it under the star
     look.cloud = 0.06;
     look.ice = 9;
-    look.lava = clamp((face.substellarK - 900) / 1400, 0.45, 1);
+    look.lava = clamp((face.substellarK - 900) / 1600, 0.45, 1);
     look.landLow = [0.035, 0.03, 0.028];
     look.landDry = [0.07, 0.055, 0.045];
     look.landHigh = [0.02, 0.018, 0.018];
@@ -534,21 +534,20 @@ void main() {
 }
 `;
 
+// THE NOISE IS A LATTICE BUILT AT RUN TIME, not a file: 64 x 64 x 64 random bytes in four channels
+// (noiseTexture() below, 1 MB on the GPU, shared by every face). One filtered look-up is one value
+// of noise, where hashing the eight corners in the shader cost a 2017 laptop's graphics 61 ms a
+// frame for a face that filled a 1440 x 900 screen (measured 2026-10-08, run 1).
 const NOISE_GLSL = /* glsl */`
-float hash3( vec3 p ) {
-  p = fract( p * 0.3183099 + 0.1 );
-  p *= 17.0;
-  return fract( p.x * p.y * p.z * ( p.x + p.y + p.z ) );
-}
-float vnoise( vec3 x ) {
+precision highp sampler3D;
+uniform sampler3D uNoise;
+vec4 n4( vec3 x ) {
   vec3 i = floor( x );
   vec3 f = fract( x );
-  f = f * f * f * ( f * ( f * 6.0 - 15.0 ) + 10.0 );
-  return mix( mix( mix( hash3( i ), hash3( i + vec3( 1, 0, 0 ) ), f.x ),
-                   mix( hash3( i + vec3( 0, 1, 0 ) ), hash3( i + vec3( 1, 1, 0 ) ), f.x ), f.y ),
-              mix( mix( hash3( i + vec3( 0, 0, 1 ) ), hash3( i + vec3( 1, 0, 1 ) ), f.x ),
-                   mix( hash3( i + vec3( 0, 1, 1 ) ), hash3( i + vec3( 1, 1, 1 ) ), f.x ), f.y ), f.z );
+  f = f * f * ( 3.0 - 2.0 * f );
+  return texture( uNoise, ( i + f + 0.5 ) / 64.0 );
 }
+float vnoise( vec3 x ) { return n4( x ).r; }
 // Each octave is turned as well as doubled, so the lattice of one never lines up with the next.
 const mat3 OCT_M = mat3( 0.00, 1.60, 1.20, -1.60, 0.72, -0.96, -1.20, -0.96, 1.28 );
 float fbm( vec3 p ) {
@@ -559,6 +558,12 @@ float fbm( vec3 p ) {
 float fbm3( vec3 p ) {
   float a = 0.5, s = 0.0;
   for ( int i = 0; i < 3; i++ ) { s += a * vnoise( p ); p = OCT_M * p + 5.3; a *= 0.5; }
+  return s / 0.875;
+}
+// Three independent noises for the price of one: the lattice's other channels.
+vec3 fbm3v( vec3 p ) {
+  float a = 0.5; vec3 s = vec3( 0.0 );
+  for ( int i = 0; i < 3; i++ ) { s += a * n4( p ).gba; p = OCT_M * p + 5.3; a *= 0.5; }
   return s / 0.875;
 }
 vec3 turn( vec3 p, vec3 axis, float ang ) {
@@ -586,13 +591,14 @@ varying float vR;
 // The air seen against the disc: a thin veil everywhere on the day side, thick at the limb, warm
 // where the light has come the long way round at the terminator.
 const AIR_GLSL = /* glsl */`
+vec3 duskTint( vec3 atm ) { return atm.bgr * vec3( 1.5, 0.8, 0.55 ) + vec3( 0.08, 0.02, 0.0 ) * uLight; }
 vec3 air( vec3 col, float mu, float nv ) {
-  float rim = pow( 1.0 - nv, 3.0 );
-  float dayA = smoothstep( -0.20, 0.28, mu );
-  float dusk = exp( -abs( mu + 0.02 ) * 7.0 );
-  vec3 scat = mix( uAtm, uAtm.bgr * vec3( 1.7, 0.75, 0.5 ) + vec3( 0.12, 0.03, 0.0 ) * uLight, dusk * 0.7 );
-  float k = ( 0.07 + 0.93 * rim ) * dayA * uAtmK;
-  return col * ( 1.0 - 0.55 * k ) + scat * k * 1.25 * uGain;
+  float rim = pow( 1.0 - nv, 3.4 );
+  float dayA = smoothstep( -0.14, 0.22, mu );
+  float dusk = exp( -abs( mu + 0.02 ) * 13.0 );
+  vec3 scat = mix( uAtm, duskTint( uAtm ), dusk * 0.45 );
+  float k = ( 0.03 + 0.97 * rim ) * dayA * uAtmK;
+  return col * ( 1.0 - 0.5 * k ) + scat * k * 1.25 * uGain;
 }
 `;
 
@@ -619,38 +625,63 @@ ${NOISE_GLSL}
 ${AIR_GLSL}
 
 float terrain( vec3 q ) {
-  vec3 w = q * 1.55 + uSeed;
+  vec3 w = q * 1.2 + uSeed;
   #if TIER >= 1
-  w += 0.55 * ( vec3( fbm3( w * 1.3 + 11.0 ), fbm3( w * 1.3 + 23.0 ), fbm3( w * 1.3 + 37.0 ) ) - 0.5 );
+  w += 0.6 * ( fbm3v( w * 1.4 + 11.0 ) - 0.5 );
   #endif
   float h = fbm( w );
   #if TIER >= 2
-  h += 0.035 * ( fbm3( q * 19.0 + uSeed.yzx ) - 0.5 );
+  h += 0.03 * ( fbm3( q * 21.0 + uSeed.yzx ) - 0.5 );
   #endif
-  return clamp( ( h - 0.5 ) * 2.1 + 0.5, 0.0, 1.0 );
+  return clamp( ( h - 0.5 ) * 2.3 + 0.5, 0.0, 1.0 );
 }
 
-float cloudAt( vec3 c, float extra ) {
+// The clouds' own coordinate: wound up round each storm's eye, and thicker there.
+vec3 wind( vec3 c, out float storm ) {
+  storm = 0.0;
   #if TIER >= 1
   for ( int i = 0; i < NCYC; i++ ) {
     float d = 1.0 - dot( c, uCyc[ i ].xyz );
-    c = turn( c, uCyc[ i ].xyz, uCyc[ i ].w * exp( -d * d / 0.012 ) );
+    float near = exp( -d / 0.03 );
+    c = turn( c, uCyc[ i ].xyz, uCyc[ i ].w * near );
+    storm += 0.3 * exp( -d / 0.016 ) * ( 1.0 - 1.4 * exp( -d / 0.0006 ) ) * step( 0.01, abs( uCyc[ i ].w ) );
   }
   #endif
-  vec3 w = c * 2.1 + uSeed.zxy;
+  return c;
+}
+
+float cloudAt( vec3 c, float extra ) {
+  float storm;
+  c = wind( c, storm );
+  vec3 w = c * 1.9 + uSeed.zxy;
   #if TIER >= 1
-  w += 0.75 * ( vec3( fbm3( w * 0.9 + 5.0 ), fbm3( w * 0.9 + 19.0 ), fbm3( w * 0.9 + 31.0 ) ) - 0.5 );
+  w += 0.8 * ( fbm3v( w * 0.9 + 5.0 ) - 0.5 );
   #endif
   float n = fbm( w );
-  #if TIER >= 2
-  n += 0.06 * ( fbm3( w * 7.0 ) - 0.5 );
+  #if TIER >= 1
+  n += 0.11 * ( fbm3( w * 4.7 + 3.0 ) - 0.5 );
   #endif
   // Storm tracks: more cloud along the middle latitudes and the equator, less in the dry belts.
   float belts = 0.5 + 0.5 * cos( c.y * 8.4 );
-  float cover = uCloud + mix( ( belts - 0.5 ) * 0.14, 0.0, uLocked ) + extra;
-  float thr = 0.735 - 0.44 * cover;
-  return smoothstep( thr - 0.015, thr + 0.17, n );
+  float cover = uCloud + mix( ( belts - 0.5 ) * 0.16, 0.0, uLocked ) + extra + storm;
+  float thr = 0.74 - 0.44 * cover;
+  return smoothstep( thr, thr + 0.13, n );
 }
+
+#if TIER >= 1
+// The same deck, coarser: what throws the shade.
+float cloudShade( vec3 c, float extra ) {
+  float storm;
+  c = wind( c, storm );
+  vec3 w = c * 1.9 + uSeed.zxy;
+  w += 0.8 * ( fbm3v( w * 0.9 + 5.0 ) - 0.5 );
+  float n = fbm( w );
+  float belts = 0.5 + 0.5 * cos( c.y * 8.4 );
+  float cover = uCloud + mix( ( belts - 0.5 ) * 0.16, 0.0, uLocked ) + extra + storm;
+  float thr = 0.74 - 0.44 * cover;
+  return smoothstep( thr - 0.02, thr + 0.15, n );
+}
+#endif
 
 void main() {
   #include <logdepthbuf_fragment>
@@ -662,28 +693,34 @@ void main() {
 
   // The ground.
   float sea = uSea;
-  if ( uLava > 0.0 ) sea += uLocked * ( q.x - 0.25 ) * 0.22; // more of it molten under the star
   float h = terrain( q );
   float edge = 0.003 + fwidth( h ) * 0.75;
   float land = smoothstep( sea - edge, sea + edge, h );
   float elev = clamp( ( h - sea ) / max( 1.0 - sea, 0.05 ), 0.0, 1.0 );
-  float depth = clamp( ( sea - h ) / 0.22, 0.0, 1.0 );
-  float m = fbm3( q * 2.6 + uSeed.yzx + 40.0 );
+  float depth = clamp( ( sea - h ) / 0.2, 0.0, 1.0 );
+  vec3 mm = fbm3v( q * 2.4 + uSeed.yzx + 40.0 );
+  float m = mm.x;
   float fine = fbm3( q * 9.0 + uSeed.zxy );
 
   // Cold: latitude on a turning world, the way round from the star on a locked one.
-  float cold = mix( abs( q.y ), 0.5 - 0.5 * q.x, uLocked ) + ( m - 0.5 ) * 0.2 + ( fine - 0.5 ) * 0.06;
-  float ice = smoothstep( uIce, uIce + 0.035, cold + elev * 0.12 * land );
+  float cold = mix( abs( q.y ), 0.5 - 0.5 * q.x, uLocked ) + ( m - 0.5 ) * 0.2 + ( fine - 0.5 ) * 0.07;
+  float ice = smoothstep( uIce, uIce + 0.03, cold + elev * 0.12 * land );
 
   // Dry belts either side of the equator on a turning world; green where it is wet and low.
-  float wet = m - 0.22 * exp( -pow( ( abs( q.y ) - 0.4 ) / 0.13, 2.0 ) ) * ( 1.0 - uLocked );
-  float green = smoothstep( 0.36, 0.56, wet ) * ( 1.0 - smoothstep( 0.05, 0.55, elev ) ) * uGreen;
+  float wet = m - 0.24 * exp( -pow( ( abs( q.y ) - 0.4 ) / 0.13, 2.0 ) ) * ( 1.0 - uLocked );
+  float green = smoothstep( 0.34, 0.52, wet ) * ( 1.0 - smoothstep( 0.1, 0.6, elev ) ) * uGreen;
   vec3 landCol = mix( uLandDry, uLandLow, green );
-  landCol = mix( landCol, uLandHigh, smoothstep( 0.4, 0.85, elev ) );
-  landCol *= 0.8 + 0.4 * fine;
-  vec3 seaCol = mix( uOceanShallow, uOceanDeep, smoothstep( 0.0, 0.45, depth ) );
+  landCol = mix( landCol, uLandHigh, smoothstep( 0.45, 0.9, elev ) );
+  landCol *= 0.72 + 0.56 * fine;
+  // The sea: pale over the shelf, then deep, and never one flat blue.
+  vec3 seaCol = mix( uOceanShallow, uOceanDeep, smoothstep( 0.0, 0.3, depth ) );
+  seaCol = mix( seaCol, uOceanShallow * vec3( 0.7, 1.25, 1.1 ), ( 1.0 - smoothstep( 0.0, 0.06, depth ) ) * 0.7 );
+  seaCol *= 0.8 + 0.4 * mm.y;
   vec3 surf = mix( seaCol, landCol, land );
-  vec3 iceCol = uIceCol * ( 0.86 + 0.2 * fine ) * mix( vec3( 0.86, 0.93, 1.0 ), vec3( 1.0 ), land );
+  // Ice: bluer over the sea, with leads opening in it and old grey floes.
+  float lead = pow( 1.0 - abs( 2.0 * fbm3( q * 5.5 + uSeed ) - 1.0 ), 12.0 ) * ( 1.0 - land );
+  vec3 iceCol = uIceCol * ( 0.8 + 0.3 * fine ) * mix( vec3( 0.8, 0.9, 1.0 ) * ( 0.84 + 0.3 * mm.z ), vec3( 1.0 ), land );
+  iceCol = mix( iceCol, uOceanShallow * 1.6 + uIceCol * 0.15, lead * 0.75 );
   surf = mix( surf, iceCol, ice );
   float water = ( 1.0 - land ) * ( 1.0 - ice );
 
@@ -692,60 +729,64 @@ void main() {
   #if TIER >= 1
   {
     vec3 dp1 = dFdx( vW ), dp2 = dFdy( vW );
-    float hh = max( h, sea ) + fine * 0.05 * land;
+    float hh = max( h, sea ) + fine * 0.06 * land - lead * 0.03 * ice;
     float dh1 = dFdx( hh ), dh2 = dFdy( hh );
     vec3 r1 = cross( dp2, N ), r2 = cross( N, dp1 );
     float det = dot( dp1, r1 );
     vec3 grad = sign( det ) * ( dh1 * r1 + dh2 * r2 );
-    Nb = normalize( abs( det ) * N - 0.045 * uBump * vR * ( 1.0 - ice * 0.6 ) * grad );
+    Nb = normalize( abs( det ) * N - 0.05 * uBump * vR * ( 1.0 - ice * 0.5 ) * grad );
   }
   #endif
 
   // The clouds, and the shade they throw toward the night side.
   vec3 c = uCloudFrame * N;
-  float under = uLocked * 0.3 * smoothstep( 0.35, 1.0, q.x ); // the deck under the star
+  float under = uLocked * 0.22 * smoothstep( 0.45, 1.0, q.x ); // the deck under the star
   float cl = cloudAt( c, under );
   float shade = 1.0;
   float clSun = cl;
   #if TIER >= 1
   {
     vec3 Lc = uCloudFrame * L;
-    clSun = cloudAt( normalize( c + Lc * 0.03 ), under );
-    shade = 1.0 - 0.6 * clSun * ( 1.0 - cl * 0.5 );
+    clSun = cloudShade( normalize( c + Lc * 0.028 ), under );
+    shade = 1.0 - 0.62 * clSun * ( 1.0 - cl * 0.5 );
   }
   #endif
 
   // Light. A hard terminator, a little twilight carried round by the air.
   float mu = dot( Nb, L );
   float lit = max( mu, 0.0 );
-  float dusk = smoothstep( -0.14, 0.04, mu0 ) * ( 1.0 - smoothstep( 0.0, 0.3, mu0 ) );
-  vec3 sun = uLight * uGain * mix( vec3( 1.0 ), vec3( 1.0, 0.6, 0.36 ), uAtmK * exp( -max( mu0, 0.0 ) * 6.0 ) * 0.8 );
-  vec3 col = surf * sun * ( lit * shade + 0.035 * dusk * uAtmK );
+  float dusk = smoothstep( -0.1, 0.03, mu0 ) * ( 1.0 - smoothstep( 0.0, 0.22, mu0 ) );
+  vec3 sun = uLight * uGain * mix( vec3( 1.0 ), vec3( 1.0, 0.62, 0.38 ), uAtmK * exp( -max( mu0, 0.0 ) * 9.0 ) * 0.75 );
+  vec3 col = surf * sun * ( lit * shade + 0.03 * dusk * uAtmK );
 
   // The star's glint on open water, wide and soft with a bright heart.
   float nv = max( dot( N, V ), 0.0 );
   if ( uSpec > 0.0 ) {
     vec3 H = normalize( L + V );
     float nh = max( dot( N, H ), 0.0 );
-    float glint = pow( nh, 340.0 ) * 2.6 + pow( nh, 42.0 ) * 0.22;
+    float glint = pow( nh, 420.0 ) * 2.2 + pow( nh, 48.0 ) * 0.2;
     float fres = 0.04 + 0.96 * pow( 1.0 - nv, 5.0 );
     col += sun * water * uSpec * ( 1.0 - cl ) * shade * smoothstep( 0.0, 0.12, mu0 ) * ( glint + fres * 0.10 * lit );
   }
 
-  // Molten rock gives its own light, day or night.
+  // Molten rock gives its own light, day or night: seams between the plates of a dark crust, and
+  // open pools where the star stands highest.
   if ( uLava > 0.0 ) {
-    float crack = pow( 1.0 - abs( 2.0 * fbm3( q * 7.0 + uSeed ) - 1.0 ), 9.0 );
-    float crust = smoothstep( 0.42, 0.7, fbm3( q * 5.0 + uSeed.zyx + 9.0 ) + depth * 0.25 );
-    float hot = ( 1.0 - land ) * ( 0.25 + 0.75 * crust ) + land * crack * ( 1.0 - smoothstep( 0.1, 0.6, elev ) ) * 0.9;
-    hot *= mix( 1.0, 0.35 + 0.65 * smoothstep( -0.5, 0.6, q.x ), uLocked );
-    vec3 glow = mix( vec3( 0.9, 0.09, 0.006 ), vec3( 1.5, 0.62, 0.12 ), smoothstep( 0.35, 1.0, hot ) );
-    col += glow * hot * uLava * 1.6;
+    float pn = fbm( q * 4.2 + uSeed.zyx + 9.0 );
+    float seam = pow( 1.0 - abs( 2.0 * pn - 1.0 ), 9.0 );
+    float pool = smoothstep( 0.56, 0.7, pn + uLocked * ( q.x - 0.35 ) * 0.2 + ( uLava - 0.7 ) * 0.12 );
+    float seaHot = max( pool, seam * 0.85 );
+    float landHot = seam * ( 1.0 - smoothstep( 0.0, 0.45, elev ) ) * 0.5;
+    float hot = mix( seaHot, landHot, land ) * ( 0.75 + 0.5 * fine );
+    vec3 glow = mix( vec3( 0.7, 0.045, 0.0 ), vec3( 1.25, 0.36, 0.04 ), smoothstep( 0.25, 0.85, hot ) );
+    glow = mix( glow, vec3( 1.5, 0.9, 0.36 ), smoothstep( 0.9, 1.15, hot ) * pool );
+    col += glow * hot * uLava * 1.1;
   }
 
-  // Cloud over all of it.
-  float cloudLit = clamp( 0.78 + 0.9 * ( cl - clSun ), 0.45, 1.15 );
-  vec3 cloudCol = uCloudCol * sun * ( max( mu0, 0.0 ) * cloudLit + 0.05 * dusk * uAtmK );
-  col = mix( col, cloudCol, cl * 0.96 );
+  // Cloud over all of it: bright where it faces the star, grey in its own shade.
+  float cloudLit = clamp( 0.74 + 1.1 * ( cl - clSun ), 0.4, 1.12 );
+  vec3 cloudCol = uCloudCol * sun * ( max( mu0, 0.0 ) * cloudLit + 0.04 * dusk * uAtmK );
+  col = mix( col, cloudCol, cl * 0.97 );
 
   col = air( col, mu0, nv );
   gl_FragColor = vec4( col, 1.0 );
@@ -804,11 +845,12 @@ void main() {
   #else
   float fest = swirl;
   #endif
-  float lat = q.y + uTurb * ( ( swirl - 0.5 ) * 0.11 + ( fest - 0.5 ) * 0.035 );
+  float lat = q.y + uTurb * ( ( swirl - 0.5 ) * 0.1 + ( fest - 0.5 ) * 0.06 );
   float b1 = vnoise( vec3( uSeed.x, lat * uBandFreq, uSeed.z ) );
   float b2 = vnoise( vec3( uSeed.y, lat * uBandFreq * 2.9, uSeed.x ) );
   float b3 = vnoise( vec3( uSeed.z, lat * uBandFreq * 0.55, uSeed.y ) );
-  float band = smoothstep( 0.3, 0.7, b1 * 0.68 + b2 * 0.32 );
+  float b4 = vnoise( vec3( uSeed.z, lat * uBandFreq * 7.3, uSeed.x ) );
+  float band = smoothstep( 0.32, 0.68, b1 * 0.58 + b2 * 0.28 + b4 * 0.14 );
   band = mix( 0.5, band, uContrast );
   vec3 col = mix( uBandB, uBandA, band );
   col = mix( col, uBandC, smoothstep( 0.55, 0.85, b3 ) * 0.7 * uContrast );
@@ -818,6 +860,7 @@ void main() {
   col += vec3( 0.5 ) * uStreak * smoothstep( 0.66, 0.8, fbm3( vec3( q.x * 4.0, lat * 30.0, q.z * 4.0 ) + uSeed ) );
   col = mix( col, uPole, smoothstep( 0.72, 0.98, abs( q.y ) ) * 0.8 );
   col = mix( col, uStormCol, spot * 0.85 );
+  col += uBandC * 0.25 * smoothstep( 0.05, 0.3, spot ) * ( 1.0 - smoothstep( 0.3, 0.7, spot ) );
   col = mix( col, uHazeCol, uHaze * ( 0.5 + 0.5 * pow( 1.0 - nv, 1.5 ) ) );
 
   // A deep air darkens toward the limb and lets the terminator in softly.
@@ -860,9 +903,9 @@ void main() {
   float glow = h >= 0.0 ? exp( -h / uThick ) : exp( h / ( uThick * 0.3 ) );
   glow *= 1.0 - smoothstep( ${(1 + (HALO_SCALE - 1) * 0.45).toFixed(4)}, ${HALO_SCALE.toFixed(2)}, b );
   float mu = dot( normalize( near ), normalize( uSunDir ) );
-  float dayA = smoothstep( -0.26, 0.16, mu );
-  float dusk = exp( -abs( mu + 0.04 ) * 6.0 );
-  vec3 scat = mix( uAtm, uAtm.bgr * vec3( 1.7, 0.75, 0.5 ) + vec3( 0.12, 0.03, 0.0 ) * uLight, dusk * 0.75 );
+  float dayA = smoothstep( -0.2, 0.14, mu );
+  float dusk = exp( -abs( mu + 0.03 ) * 11.0 );
+  vec3 scat = mix( uAtm, uAtm.bgr * vec3( 1.5, 0.8, 0.55 ) + vec3( 0.08, 0.02, 0.0 ) * uLight, dusk * 0.45 );
   vec3 col = scat * glow * dayA * uAtmK * uGain * 1.9;
   gl_FragColor = vec4( col, 1.0 );
   #include <tonemapping_fragment>
@@ -878,6 +921,25 @@ export const FACE_TIERS = [
   { tier: 1, octaves: 5, cyclones: 3, halo: true, drawCalls: 2 },
   { tier: 2, octaves: 6, cyclones: 5, halo: true, drawCalls: 2 },
 ];
+
+let NOISE = null;
+/** The lattice the shaders read: 64^3 random bytes in four channels, built once, never fetched. */
+export function noiseTexture() {
+  if (NOISE) return NOISE;
+  const n = 64;
+  const data = new Uint8Array(n * n * n * 4);
+  const rnd = rng(0x5eed1e55);
+  for (let i = 0; i < data.length; i++) data[i] = (rnd() * 256) | 0;
+  NOISE = new THREE.Data3DTexture(data, n, n, n);
+  NOISE.format = THREE.RGBAFormat;
+  NOISE.type = THREE.UnsignedByteType;
+  NOISE.minFilter = THREE.LinearFilter;
+  NOISE.magFilter = THREE.LinearFilter;
+  NOISE.wrapS = NOISE.wrapT = NOISE.wrapR = THREE.RepeatWrapping;
+  NOISE.unpackAlignment = 1;
+  NOISE.needsUpdate = true;
+  return NOISE;
+}
 
 const GEOMETRY = {};
 /** One unit sphere per level of detail, shared by every face: near (a disc that fills the screen) and far. */
@@ -913,6 +975,7 @@ export function faceUniforms(face) {
     uCloudFrame: { value: new THREE.Matrix3() },
     uSeed: { value: v3(k.seed) },
     uLocked: { value: k.locked },
+    uNoise: { value: noiseTexture() },
   };
   if (face.kind === 'giant') {
     Object.assign(u, {
