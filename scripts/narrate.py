@@ -590,6 +590,11 @@ class Voice:
                 lo, hi = rules["window"]
                 found = find_pause(env, frame_s, at + lo * length, at + hi * length, float(rules["quiet"]))
                 if not found:
+                    # "The Moon." said alone is 1.4 s, most of it the fault this pass is here to
+                    # avoid, and in the pass it is 0.65 s: the pause starts just before the
+                    # window does. Look once more from a quarter of the length.
+                    found = find_pause(env, frame_s, at + min(lo, 0.25) * length, at + hi * length, float(rules["quiet"]))
+                if not found:
                     cuts = None
                     break
                 cuts.append(found)
