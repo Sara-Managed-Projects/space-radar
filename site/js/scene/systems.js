@@ -8,7 +8,7 @@
 // and the pure parts, exported for tests/test_systems.mjs: planetPosition(), systemBasis(),
 // hostPositionKm(), illustrativePhase(), keplerMismatch(), floorRadiusUnits(), systemOfRecordId().
 //
-// WHY A STAGE OF ITS OWN. The map places 6 332 planets around other stars AT their stars (spec 0028
+// WHY A STAGE OF ITS OWN. The map places six thousand planets around other stars AT their stars (spec 0028
 // step 4): 1 au at 10 parsecs is a tenth of an arcsecond, so on the stellar rung a planet and its star
 // are one point and the card says so. A tour of a system needs the one thing the ladder cannot give:
 // the star and its planets drawn at the system's own scale. One unit is 100 000 km here
