@@ -2,6 +2,7 @@
 //
 // Contract: exposurePanel(exposure) -> HTMLElement    a settings row; `exposure` is scene/exposure.js
 //           pictureNote(row) -> HTMLElement            what a nebula's picture is, with its credit
+//           pictureFigure(row, name) -> HTMLElement    the photograph itself, with its caption (internal #167)
 //
 // One small row of three, in two places that already exist (docs/ui-guide.md principle 2, "one
 // place for everything"): the foot of What to show, beside Density, and the "About it" of a
@@ -12,7 +13,7 @@
 //
 // The state is scene/exposure.js's; every panel built from it repaints when any of them is
 // pressed, because both listen to the same object.
-import { COPY } from '../copy/en.js';
+import { COPY, fmt } from '../copy/en.js';
 import '../copy/en.later.js';
 import { EXPOSURES } from '../scene/exposure.js';
 
@@ -87,4 +88,41 @@ export function pictureNote(row) {
   credit.appendChild(document.createTextNode(fill(C.creditTail, { licence: row.licence })));
   wrap.appendChild(credit);
   return wrap;
+}
+
+/**
+ * THE PHOTOGRAPH ON ITS OWN CARD (internal #167, spec 0058 task 3). The same licensed file the sky
+ * wears (registry/nebulae.yaml, one row per object), as a figure in "About it": the picture, and a
+ * caption that says whose sky it is and how much of it, from the row's own measured width and
+ * height. The credit and the licence follow in pictureNote(), which is the archives' wording with
+ * its link. `loading="lazy"`: the row sits in a section that opens in place, and a browser asks for
+ * the file when that section is opened, never at boot (tests/test_first_visit_bytes.mjs refuses a
+ * nebula picture on a first visit). The size is written on the element so the card does not jump
+ * when the picture lands.
+ */
+export function pictureFigure(row, name) {
+  const C = COPY.exposure;
+  const arc = (n) => (Number.isFinite(n) ? fmt.num(n, n >= 10 ? 0 : 1) : '');
+  const figure = document.createElement('figure');
+  figure.className = 'sr-card__figure';
+  const img = document.createElement('img');
+  img.className = 'sr-card__photo';
+  img.src = String(row.file || '').replace(/^site\//, '');
+  img.alt = fill(C.figureAlt, { name });
+  img.loading = 'lazy';
+  img.decoding = 'async';
+  const w = Number(row.width_arcmin);
+  const h = Number(row.height_arcmin);
+  if (w > 0 && h > 0) {
+    // The baked file's longer side is `px` (512 unless the row says); the other follows the sky.
+    const long = 640;
+    img.width = w >= h ? long : Math.round((long * w) / h);
+    img.height = w >= h ? Math.round((long * h) / w) : long;
+  }
+  figure.appendChild(img);
+  const cap = document.createElement('figcaption');
+  cap.className = 'sr-card__photo-credit';
+  cap.textContent = fill(C.figureCaption, { name, w: arc(w), h: arc(h) });
+  figure.appendChild(cap);
+  return figure;
 }

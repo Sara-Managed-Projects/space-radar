@@ -34,6 +34,7 @@
 // (tests/test_first_visit_bytes.mjs holds it out of the static graph).
 
 import { COPY } from '../copy/en.js';
+import { truthLine } from './truthline.js';
 import '../copy/en.later.js';
 import { TOURS } from '../data/tours.js';
 import { NARRATION } from '../data/narration.js';
@@ -76,39 +77,9 @@ export function tripUrl(id) {
   return `spaceradar.ai/#trip=${id}`;
 }
 
-const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-// What a layer's positions are computed from, in the words CREDITS.md section 4 uses.
-const LAYER_SOURCES = {
-  stations: 'CelesTrak orbital elements',
-  active: 'CelesTrak orbital elements',
-  visual: 'CelesTrak orbital elements',
-  starlink: 'CelesTrak orbital elements',
-  stars: 'the HYG star database',
-  exoplanets: 'the NASA Exoplanet Archive',
-  'deep-sky': 'OpenNGC',
-};
-
-/**
- * The one line of truth a video opens on (internal #307): the instant the positions are computed
- * for, and what from. Pure. A trip that moves the clock itself (anything but `as-found`) is not
- * "computed for" the minute it was rendered, so its line names the sources only.
- */
-export function truthLine(tour, epochMs) {
-  const from = [];
-  for (const id of (tour && tour.requires) || []) {
-    const s = LAYER_SOURCES[id];
-    if (s && !from.includes(s)) from.push(s);
-  }
-  const stage = tour && tour.stage;
-  if (stage && stage !== 'earth' && stage !== 'moon' && stage !== 'sun' && !from.length) from.push('published star and galaxy catalogues');
-  else from.push('the planets’ own orbits (astronomy-engine)');
-  const sources = from.length > 1 ? `${from.slice(0, -1).join(', ')} and ${from[from.length - 1]}` : from[0];
-  if (!tour || tour.clock !== 'as-found' || !Number.isFinite(epochMs)) return `Everything is drawn where it really is, from ${sources}.`;
-  const d = new Date(epochMs);
-  const two = (n) => String(n).padStart(2, '0');
-  const when = `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}, ${two(d.getUTCHours())}:${two(d.getUTCMinutes())} UTC`;
-  return `Positions computed for ${when} from ${sources}.`;
-}
+// The one line of truth a video opens on (internal #307) is ui/truthline.js's, shared with the live
+// trip's intro and the share page.
+export { truthLine };
 
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
 /** A card's opacity at frame n: up over `fade` frames from `from`, down over the last `fade` before `to`. */

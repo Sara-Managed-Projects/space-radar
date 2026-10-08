@@ -803,8 +803,11 @@ export const REAL_MODELS = {
     // the launches layer draws what is about to fly. registry/missions.yaml moves the clock to the
     // mornings they left. The pad is a place on any date; the vehicle on it is a picture of those days,
     // and the row's sentence says so.
-    'saturn-v-lc-39a': { file: 'saturn-v.glb', colour: 'rocket', name: 'Saturn V' },
-    'shuttle-lc-39b': { file: 'shuttle-stack.glb', colour: 'rocket', name: 'Space Shuttle' },
+    // THE RECORD IS THE PAD (internal #478): `displayName` titles its card and its label by the
+    // place, on every date; `name` is the vehicle the model is of, for the line that says what is
+    // drawn, and the row's own sentence names the rocket.
+    'saturn-v-lc-39a': { file: 'saturn-v.glb', colour: 'rocket', name: 'Saturn V', displayName: 'Launch Complex 39A' },
+    'shuttle-lc-39b': { file: 'shuttle-stack.glb', colour: 'rocket', name: 'Space Shuttle', displayName: 'Launch Complex 39B' },
     'apollo-11': { file: 'lunar-module.glb', colour: 'site', name: 'Apollo 11 lunar module' },
     // 14 and 16 arrived with the odd-things layer -- registry/oddities.yaml anchors the golf
     // balls and Duke's photograph on them -- and fell through to BUILDERS.site.default, which is

@@ -48,7 +48,7 @@ import {
 import '../copy/en.later.js';
 import { propagate, EPHEMERIS_OF } from '../propagate/index.js';
 import { launchLabel } from './labels.js';
-import { realModelFor } from '../scene/realmodels.js';
+import { realModelFor, padVehicleShown } from '../scene/realmodels.js';
 import { sunlitState } from '../scene/shadow.js';
 import { periodMsOf, wholePathKind } from '../scene/orbitline.js';
 import {
@@ -74,7 +74,7 @@ import { wantsTrack } from '../scene/groundtrack.js';
 import { trainOf } from '../data/trains.js';
 import { attachedOdditiesFor, attachedOddityRecord } from '../data/attached.js';
 import { openShare, savePostcard } from './share.js';
-import { exposurePanel, pictureNote } from './exposure.js';
+import { exposurePanel, pictureNote, pictureFigure } from './exposure.js';
 import { stage } from '../scene/stage.js';
 import { icon } from './icons.js';
 import { overlayLine, legendNode, paintLegend } from './overlaylegend.js';
@@ -1173,7 +1173,7 @@ function aboardButton(label, title, onClick) {
  * whole geostationary ring), or the procedural shape for the class. A stand-in must say so, and
  * until this every one of those cards was silent about it.
  */
-function derivedDrawingLine(record, T) {
+function derivedDrawingLine(record, T, tMs) {
   const klass = record && record.klass ? String(record.klass) : '';
   // A world with a surface map needs no line: it is drawn as itself. One without says so
   // (scene/worlds.js puts `flat` on the record for the rows that ship no map), and one that is not
@@ -1218,6 +1218,9 @@ function derivedDrawingLine(record, T) {
   let entry = null;
   try { entry = realModelFor(record); } catch { entry = null; }
   if (entry && entry.name) {
+    // A pad whose vehicle is put away at this instant (realmodels.js padVehicleShown): nothing of
+    // the model is on the screen, so the line may not say it is drawn (internal #478).
+    if (Number.isFinite(tMs) && !padVehicleShown(record, tMs) && T.padEmpty) return t(T.padEmpty, { name: String(entry.name) });
     if (entry.generic) return t(T.objectFamily, { name: String(entry.name) });
     // A `file:` entry is somebody's model, loaded; a `build:` entry is scene/models.js working
     // from published metres. Both were printing "drawn from published dimensions", which is true
@@ -1292,7 +1295,7 @@ export function systemLine(record, stageId = stage.worldId) {
   return face ? face + ' ' + line : line;
 }
 
-export function drawingLine(record) {
+export function drawingLine(record, tMs) {
   const md = meta(record);
   const drawsAs = pick(md, 'drawsAs');
   const T = COPY.drawing;
@@ -1301,7 +1304,7 @@ export function drawingLine(record) {
   if (!drawsAs) {
     // The derived line, plus a row's own `departure` where the drawing knowingly differs: Haumea
     // is drawn round and is an egg; nobody has seen 'Oumuamua's shape at all.
-    const derived = derivedDrawingLine(record, T);
+    const derived = derivedDrawingLine(record, T, tMs);
     const departure = pick(md, 'departure');
     return derived && departure ? derived + COPY.punctuation.separator + String(departure) : derived;
   }
@@ -2208,9 +2211,57 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
     import('../data/nebulae.js').then((m) => {
       const row = (m.NEBULAE || []).find((r) => `dso-${r.id}` === rid);
       if (!row || box.childNodes.length) return;
+      // Its own photograph first (internal #167), then what the picture is and whose.
+      box.appendChild(pictureFigure(row, name));
       box.appendChild(pictureNote(row));
       box.appendChild(exposurePanel(ctx.exposure));
     }).catch(() => { /* no registry, no block: the card is whole without it */ });
+  }
+  // A GENERATED STAR SYSTEM'S TWO OVERLAYS, ON DEMAND (internal #280): the computed habitable-zone
+  // band and our own planets' orbits for scale are not drawn until a visitor asks, here, on the
+  // card of the star and of each planet. The row is the density row's, class for class (no new
+  // look); a button is there only for what this system can show (a star the formula does not cover
+  // has no band, and its Habitable zone row above says why).
+  const sysOf = record && record.id ? systemOfRecordId(record.id) : null;
+  if (sysOf && ctx && ctx.systems && typeof ctx.systems.overlay === 'function' && typeof ctx.systems.setOverlay === 'function') {
+    const O = COPY.starSystem.overlay;
+    const can = ctx.systems.overlay(sysOf.system).available;
+    const parts = ['zone', 'orbits'].filter((k) => can[k]);
+    if (parts.length) {
+      const box = el('div', 'sr-card__exposure');
+      const wrap = el('section', 'sr-panel sr-density sr-exposure');
+      wrap.appendChild(el('h2', 'sr-panel__title', O.title));
+      const row = el('div', 'sr-density__choices');
+      row.setAttribute('role', 'group');
+      row.setAttribute('aria-label', O.title);
+      const note = el('p', 'sr-density__note');
+      const buttons = [];
+      const paint = () => {
+        const now = ctx.systems.overlay();
+        for (const b of buttons) {
+          const on = !!now[b.dataset.overlay];
+          b.setAttribute('aria-pressed', on ? 'true' : 'false');
+          b.classList.toggle('sr-bracketed', on);
+        }
+        const z = can.zone && now.zone;
+        const o = can.orbits && now.orbits;
+        note.textContent = O.note[z && o ? 'both' : z ? 'zone' : o ? 'orbits' : 'none'];
+      };
+      for (const part of parts) {
+        const b = el('button', 'sr-density__btn', O[part]);
+        b.type = 'button';
+        b.dataset.overlay = part;
+        b.title = O[`${part}Title`];
+        b.addEventListener('click', () => { ctx.systems.setOverlay(part, !ctx.systems.overlay()[part]); paint(); });
+        buttons.push(b);
+        row.appendChild(b);
+      }
+      wrap.appendChild(row);
+      wrap.appendChild(note);
+      paint();
+      box.appendChild(wrap);
+      aboutNodes.push(box);
+    }
   }
   // A world says how it is drawn (spec 0028 step 0). The compression note is scene/worlds.js's own
   // sentence (`viewScale`), never restated here; the Earth's clouds say what they are (COPY.clouds).
@@ -2346,7 +2397,7 @@ function moreSections(record, ctx, m, passInfo, rows, time, namedAbove, opts) {
   else if (aboutHead) aboutHead.addEventListener('click', findPage, { once: true });
 
   // Sources for this record: what the drawn shape is, and where the numbers were read.
-  const drawn = drawingLine(record);
+  const drawn = drawingLine(record, m && m.tMs);
   add('sources', S.sources, null, panelOf([
     drawn ? el('p', 'sr-card__drawn', drawn) : null,
     el('p', 'sr-card__source', sourceLine(record, ctx)),

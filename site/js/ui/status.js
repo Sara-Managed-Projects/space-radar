@@ -420,6 +420,23 @@ export function createStatus(ctx, parent) {
 
   // What the site keeps in this browser (spec 0041 task 4): the words only; Forget me is the
   // Passport's, where what it clears can be seen.
+  // "Is this what space looks like?" (internal #250): the three kinds of picture, said once, here
+  // in the sheet that says where everything comes from. A definition list: the kind, then what it is.
+  const R = COPY.realLook;
+  if (R) {
+    const lookBlock = el('section', 'sr-status__block sr-status__look');
+    lookBlock.appendChild(el('h3', 'sr-status__subtitle', R.title));
+    lookBlock.appendChild(el('p', 'sr-status__intro', R.lead));
+    const kinds = el('dl', 'sr-status__lookkinds');
+    for (const [kind, what] of R.kinds) {
+      kinds.appendChild(el('dt', 'sr-status__lookkind', kind));
+      kinds.appendChild(el('dd', 'sr-status__intro', what));
+    }
+    lookBlock.appendChild(kinds);
+    lookBlock.appendChild(el('p', 'sr-status__intro', R.foot));
+    node.appendChild(lookBlock);
+  }
+
   const keptBlock = el('section', 'sr-status__block sr-status__kept');
   keptBlock.appendChild(el('h3', 'sr-status__subtitle', COPY.kept.title));
   const keptList = el('ul', 'sr-status__credits');

@@ -90,9 +90,40 @@ PAGE = """<!doctype html>
 <body>
 <script>location.replace('../#trip={id}');</script>
 <p><a href="../#trip={id}">Open the trip: {title}</a></p>
+<p>{truth}</p>
 </body>
 </html>
 """
+
+
+# THE ONE LINE OF TRUTH (internal #307), on the share page too: what the trip's positions are
+# computed from. The sentence and the table are site/js/ui/truthline.js's (the form with no
+# instant: a static page has none), kept here in Python because this generator runs without node;
+# tests/test_small_issues.mjs holds every page's sentence to that function's.
+LAYER_SOURCES = {
+    "stations": "CelesTrak orbital elements",
+    "active": "CelesTrak orbital elements",
+    "visual": "CelesTrak orbital elements",
+    "starlink": "CelesTrak orbital elements",
+    "stars": "the HYG star database",
+    "exoplanets": "the NASA Exoplanet Archive",
+    "deep-sky": "OpenNGC",
+}
+
+
+def truth_line(trip: dict, default_stage: str = "earth") -> str:
+    sources: list[str] = []
+    for layer in trip.get("requires") or []:
+        s = LAYER_SOURCES.get(layer)
+        if s and s not in sources:
+            sources.append(s)
+    stage = trip.get("stage") or default_stage
+    if stage not in ("earth", "moon", "sun") and not sources:
+        sources.append("published star and galaxy catalogues")
+    else:
+        sources.append("the planets\u2019 own orbits (astronomy-engine)")
+    said = sources[0] if len(sources) == 1 else f"{', '.join(sources[:-1])} and {sources[-1]}"
+    return f"Everything is drawn where it really is, from {said}."
 
 
 def read_trips() -> list[dict]:
@@ -156,6 +187,7 @@ def page_for(trip: dict, host: str) -> str:
         title=esc(title),
         page_title=esc(page_title_for(title)),
         blurb=esc(blurb),
+        truth=esc(truth_line(trip)),
         description=esc(description_for(blurb)),
         image=esc(image_for(trip_id, host)),
         image_alt=esc(image_alt_for(trip_id, title)),

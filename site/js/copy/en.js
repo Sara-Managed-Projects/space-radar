@@ -1565,6 +1565,8 @@ export const COPY = {
     // drawing was made. Source-agnostic on purpose: the next one of these may be a CC BY model
     // from somebody else, and CREDITS.md is where whose it is belongs.
     objectModel: 'drawn from a published model of {name}',
+    // A pad on a date its vehicle is put away (internal #478): the place is the record.
+    padEmpty: 'the pad is a measured place; {name} is drawn on it only around the launches listed',
     // 2026-10-07 (internal #382): a small body whose shape model wears a map (scene/realmodels.js
     // `mapped`). Dawn's Framing Camera mosaics of Ceres (2015) and Vesta (2011 to 2012), made by DLR:
     // black-and-white photographs, so the shadows in them are the Sun's on the days of the pictures

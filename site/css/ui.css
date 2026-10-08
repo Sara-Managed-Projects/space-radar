@@ -912,6 +912,10 @@ html.sr-compact .sr-status {
 /* A photograph of the object, where one exists. Two of the exotics have been photographed and the
    pictures ship under CC BY 4.0, which asks for the credit "in a clear and readable manner to all
    users". So the caption is part of the figure, at the 13 px floor, never a tooltip or a hover. */
+.sr-card__figure {
+  margin: 0 0 var(--sp-3);
+}
+
 .sr-card__photo {
   display: block;
   width: 100%;
@@ -1169,6 +1173,19 @@ html.sr-compact .sr-status {
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+/* "Is this what space looks like?" (internal #250): a kind of picture, then what it is. */
+.sr-status__lookkinds,
+.sr-status__lookkinds dd {
+  margin: 0;
+}
+
+.sr-status__lookkind {
+  font-size: var(--sr-fs-sm);
+  font-weight: 600;
+  line-height: 18px;
+  color: var(--sr-text);
 }
 
 .sr-source {

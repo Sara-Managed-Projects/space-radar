@@ -30,6 +30,8 @@ Object.assign(COPY, {
     },
     rows: {
       known: 'What is known',
+      // "You are 41 light-years from Earth" (internal #280), as a row of the card.
+      fromEarth: 'From Earth',
       orbit: 'Distance from its star',
       temperature: 'Temperature, computed',
       zone: 'Habitable zone, computed',
@@ -70,6 +72,22 @@ Object.assign(COPY, {
       twoStars: 'Not computed: it orbits two stars and the catalogue describes one',
     },
     zoneRange: '{a} to {b} au from the star (Kopparapu et al. 2014)',
+    lightYears: '{n} light-years',
+    // The two things a visitor lays over a system's view on demand (internal #280), on the card of
+    // its star and of each planet: the row's title, the two buttons, and the line under them.
+    overlay: {
+      title: 'Lay over the map',
+      zone: 'Habitable zone',
+      orbits: 'Our planets’ orbits',
+      zoneTitle: 'Where liquid water could last on a planet’s surface, computed from the star’s temperature and brightness',
+      orbitsTitle: 'The orbits of planets of our own Solar System, drawn round this star for scale',
+      note: {
+        none: 'Nothing is laid over the system.',
+        zone: 'The green band is the habitable zone, computed (Kopparapu et al. 2014), not observed.',
+        orbits: 'The dashed rings are orbits from our own Solar System, for scale. Nothing here follows them.',
+        both: 'The green band is the habitable zone, computed; the dashed rings are our own planets’ orbits, for scale.',
+      },
+    },
     kelvin: '{n} K',
     notMeasured: 'Not measured',
     starPoint: 'Not measured: drawn as a point of light',
@@ -344,6 +362,22 @@ Object.assign(COPY, {
     none: 'No account, no cookies, no analytics. Forget me, in the Passport, clears the passport and the sound choice.',
   },
 
+  // "Is this what space looks like?" (internal #250, spec 0067 task 4): the honest answer, once, in
+  // the Sources sheet, which is the app's About. Three kinds of picture, and what each is. A
+  // nebula's own card says how ITS colours were made (COPY.exposure); this is the general case.
+  // Held to the code by tests/test_small_issues.mjs: every nebula row is a licensed photograph, a
+  // world's map is a file of registry/models.yaml, an exoplanet's face says "Artist's impression".
+  realLook: {
+    title: 'Is this what space looks like?',
+    lead: 'Where things are, and how they move, is measured or computed. How they look comes from three kinds of picture.',
+    kinds: [
+      ['A photograph', 'The nebulae and galaxies are telescope photographs, long exposures. To the eye at a telescope the same gas is a faint grey glow, and some pictures map single gases to colours; each card says which.'],
+      ['A map on a model', 'Planets and moons are globes wearing maps made from spacecraft pictures, some of them smoothed by an artist. Spacecraft are 3D models, most from NASA\u2019s published files. The light on them is computed for the moment shown.'],
+      ['An artist\u2019s impression', 'Nobody has seen the surface of a planet of another star. Those faces are imagined from a measured size and temperature, and their cards say so.'],
+    ],
+    foot: 'Sizes and distances are sometimes changed so that a thing can be seen at all. Where they are, the card or the picture says so.',
+  },
+
   // Debris as a problem (ui/debris.js; the counting is data/satcat.js). Its sentences are filled
   // from CelesTrak's catalogue: none of the numbers is written here.
   debris: {
@@ -534,6 +568,10 @@ Object.assign(COPY, {
       unstated: 'Its archive does not say which filters were used, so we do not say whether these are the colours an eye would see.',
     },
     part: 'It shows {part}, not the whole of it.',
+    // The photograph on the object's own card (internal #167): its alt text and its caption. The
+    // numbers are the row's measured width and height (registry/nebulae.yaml).
+    figureAlt: 'Photograph of {name}',
+    figureCaption: '{name}: {w} by {h} arcminutes of sky.',
     creditLead: 'Picture: ',
     creditTail: ' \u00b7 {licence}, edges faded and sky darkened by us',
   },

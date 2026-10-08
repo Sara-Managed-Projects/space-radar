@@ -119,6 +119,7 @@ import { NARRATION } from '../data/narration.js';
 import { paintCue } from './voicecue.js';
 import { shouldSaveData } from '../scene/quality.js';
 import { overlayLine, legendNode, paintLegend } from './overlaylegend.js';
+import { truthLine } from './truthline.js';
 
 const HOST_ID = 'sr-trip';
 // NOT 'sr-trip'. The host div carries `.sr-trip`, and `.sr-trip` in ui.css sets
@@ -892,6 +893,10 @@ export function createTripFrame(ctx) {
     const tour = tourOf(st.tourId);
     const blurb = tour && tour.blurb ? String(tour.blurb) : '';
     if (blurb) p.appendChild(el('p', 'sr-tripsheet__text', blurb));
+    // THE ONE LINE OF TRUTH (internal #307): which instant the positions are computed for, and
+    // what from, the sentence the trip's video opens on (ui/truthline.js). A trip whose stops set
+    // their own instants names the sources only; the line under it says the clock will move.
+    if (tour) p.appendChild(el('p', 'sr-tripsheet__note sr-tripsheet__truth', truthLine(tour, st.clockMoves ? NaN : ctx.clock.now())));
     const dropped = (st.dropped || []).length;
     if (dropped === 1) p.appendChild(el('p', 'sr-tripsheet__note', T.droppedOne));
     else if (dropped > 1) p.appendChild(el('p', 'sr-tripsheet__note', t(T.droppedMany, { n: dropped })));

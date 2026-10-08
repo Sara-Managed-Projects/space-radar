@@ -1,7 +1,14 @@
 // scene/systemextras.js -- what a GENERATED star system draws beyond its star, planets and orbits
 // (internal #466, #280): the habitable-zone band, and our own planets' orbits for scale.
 //
-// Contract: decorate(built, group, tools) -> extra, update(built, camera, starScene),
+// ON DEMAND (internal #280). Neither is drawn until it is asked for: a system's own view is its
+// star, its planets and their orbits, and the band and the dashed rings are two things a visitor
+// lays over it from the card of the star or of a planet ("Lay over the map", ui/cards.js), as NASA's
+// Eyes on Exoplanets offers its comparison. `update()` takes what is asked for as `show`
+// ({ zone, orbits }, scene/systems.js keeps it for the session); both are built with the system, so
+// switching one on is a frame, not a load, and the whole-system shot already has room for them.
+//
+// Contract: decorate(built, group, tools) -> extra, update(built, camera, starScene, show),
 //   frameAu(system) -- and the pure parts for tests/test_systems_table.mjs: scaleOrbits(system),
 //   OUR_ORBITS_AU.
 //
@@ -155,10 +162,15 @@ export function decorate(built, group, tools) {
 }
 
 const _d = new THREE.Vector3();
+const SHOW_ALL = { zone: true, orbits: true };
 /** Per frame: the band and rings follow the star; each label sits on its ring's far side, upright. */
-export function update(built, camera, starScene) {
+export function update(built, camera, starScene, show = SHOW_ALL) {
   const extra = built.extra;
   if (!extra) return;
+  const zoneOn = !!(show && show.zone);
+  const orbitsOn = !!(show && show.orbits);
+  if (extra.band) extra.band.visible = zoneOn;
+  for (const ring of extra.rings) ring.visible = orbitsOn;
   if (extra.band) {
     extra.band.position.copy(starScene);
     let fade = 1;
@@ -189,6 +201,7 @@ export function update(built, camera, starScene) {
     label.scale.set(h * label.userData.aspect, h, 1);
     // The ring's radius as a share of the view's height, against the label's width in the same.
     const shown = r / (camera.position.distanceTo(label.position) * 2 * Math.tan(((camera.fov || 45) * Math.PI) / 360));
-    label.visible = h * label.userData.aspect <= LABEL_MAX_OF_RADIUS * shown && (label !== extra.zoneLabel || extra.fade > 0.5);
+    label.visible = (label === extra.zoneLabel ? zoneOn : orbitsOn)
+      && h * label.userData.aspect <= LABEL_MAX_OF_RADIUS * shown && (label !== extra.zoneLabel || extra.fade > 0.5);
   }
 }
