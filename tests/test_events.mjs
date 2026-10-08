@@ -36,10 +36,10 @@ const near = (ms, want, tolS = 60) => Math.abs(ms - Date.parse(want)) <= tolS * 
 // 1. The mirror is the registry, and only what has a builder is built -----------------------------
 {
   const ids = EVENT_TYPES.map((x) => x.id);
-  check(ids.length === 12, `twelve event types in the mirror (${ids.length})`);
+  check(ids.length === 14, `fourteen event types in the mirror (${ids.length})`);
   const off = EVENT_TYPES.filter((x) => !x.enabled).map((x) => x.id).sort().join(',');
   check(off === 'conjunction,decay,mission-milestone,reentry', `the four types with no builder or no secret are switched off (${off})`);
-  check(BUILT_TYPES.join(',') === 'launch,meteor-shower,close-approach,solar-eclipse,lunar-eclipse,station-pass,starlink-train,aurora', `built types, in registry order: ${BUILT_TYPES}`);
+  check(BUILT_TYPES.join(',') === 'launch,meteor-shower,close-approach,solar-eclipse,lunar-eclipse,solstice,equinox,station-pass,starlink-train,aurora', `built types, in registry order: ${BUILT_TYPES}`);
 }
 
 // 2. The eclipses of the next 400 days from 2026-09-22 ------------------------------------------
@@ -263,6 +263,53 @@ const auckland = place(-36.8485, 174.7633);
   check(n && n.city.name === 'Madrid' && n.km < 5, 'Madrid is nearest to Madrid');
   check(whereWords(30.1, 31.3) === 'near Cairo', `within 250 km it says near: "${whereWords(30.1, 31.3)}"`);
   check(nearestCity(0, 0, []) === null && whereWords(NaN, 0) === null, 'no cities or no point, no words');
+}
+
+// The turns of the year (internal #384) ------------------------------------------------------------
+// The published instants, UT, to the minute: the table of en.wikipedia.org/wiki/Template:Solstice-equinox
+// (its `/year` sub-template), which gives the U.S. Naval Observatory's "Earth's Seasons" page as its
+// source; read 2026-10-08. (aa.usno.navy.mil itself reset every connection from this machine that day.)
+{
+  const TABLE = {
+    2026: ['03-20T14:46', '06-21T08:25', '09-23T00:06', '12-21T20:50'],
+    2027: ['03-20T20:25', '06-21T14:11', '09-23T06:02', '12-22T02:43'],
+    2028: ['03-20T02:17', '06-20T20:02', '09-22T11:45', '12-21T08:20'],
+    2029: ['03-20T08:01', '06-21T01:48', '09-22T17:37', '12-21T14:14'],
+    2030: ['03-20T13:51', '06-21T07:31', '09-22T23:27', '12-21T20:09'],
+  };
+  const KIND = [['equinox', 'march'], ['solstice', 'june'], ['equinox', 'september'], ['solstice', 'december']];
+  let worst = 0;
+  let n = 0;
+  for (const [year, row] of Object.entries(TABLE)) {
+    row.forEach((stamp, i) => {
+      const want = Date.parse(`${year}-${stamp}:00Z`);
+      const [type, kind] = KIND[i];
+      const ev = nextEvent(type, want - 20 * 86400e3, null, [], { kind });
+      const off = ev ? Math.abs(ev.t - want) : Infinity;
+      worst = Math.max(worst, off);
+      n += 1;
+      // The table is rounded to the minute: half a minute of rounding and a few seconds of theory.
+      check(ev && ev.kind === kind && off <= 60e3, `the ${kind} ${type} of ${year} is ${year}-${stamp} UT to the minute (${ev && new Date(ev.t).toISOString()})`);
+    });
+  }
+  check(n === 20, `twenty instants held (${n})`);
+  console.log(`  solstices and equinoxes 2026 to 2030: 20 instants, the furthest ${Math.round(worst / 1000)} s from the published minute`);
+  // A kind is found within a year whatever the season; a bare reference is whichever comes first.
+  const from = Date.parse('2026-10-08T12:00:00Z');
+  const dec = nextEvent('solstice', from);
+  const jun = nextEvent('solstice', from, null, [], { kind: 'june' });
+  check(dec && dec.kind === 'december' && dec.id === 'solstice:2026-12-21', `from October the next solstice is December's (${dec && dec.id})`);
+  check(jun && jun.id === 'solstice:2027-06-21' && jun.t > dec.t, `and the next JUNE solstice is the one after it (${jun && jun.id})`);
+  check(nextEvent('solstice', from, null, [], { kind: 'march' }) === null && nextEvent('equinox', from, null, [], { kind: 'total' }) === null, 'a kind the type does not have is null');
+  check(/^December solstice on 21 December 2026: /.test(dec.say) && dec.title === 'December solstice' && dec.class === 'measured' && dec.location_dependent === false, `the record says what it is (${dec.say})`);
+  // Coming up: inside thirty days only, and not when a caller asks for no computed events.
+  const near = buildEvents([], Date.parse('2026-12-01T00:00:00Z'), {}).filter((e) => e.type === 'solstice' || e.type === 'equinox');
+  check(near.length === 1 && near[0].id === 'solstice:2026-12-21', `three weeks before it, the December solstice is in the stream (${near.map((e) => e.id)})`);
+  // And as the Coming up list draws it: a title, the date, and how it is known.
+  const rows = buildNextItems([], Date.parse('2026-12-01T00:00:00Z'), { eclipses: true }).filter((r) => r.kind === 'season');
+  check(rows.length === 1 && /^December solstice on 21 December 2026: the south/.test(rowText(rows[0], Date.parse('2026-12-01T00:00:00Z'))) && /minute/.test(classText(rows[0], Date.parse('2026-12-01T00:00:00Z')) || ''), `one row in Coming up, with its sentence and its class (${rows.map((r) => rowText(r, 0))})`);
+  check(buildEvents([], from, {}).every((e) => e.type !== 'solstice' && e.type !== 'equinox'), 'ten weeks before, it is not');
+  check(buildEvents([], Date.parse('2026-12-01T00:00:00Z'), { eclipses: false }).every((e) => e.type !== 'solstice'), 'and a caller that asks for nothing computed gets none');
 }
 
 if (problems.length) { console.error('events FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }

@@ -184,7 +184,7 @@ export function sunMarks(nowMs, observer, back = SUN_BACK_MS, on = SUN_ON_MS) {
   return out.sort((a, b) => a.tMs - b.tMs);
 }
 
-const MARK_KINDS = { 'launch': 'launch', 'approach': 'approach', 'perihelion': 'approach', 'pass': 'pass', 'train': 'pass', 'shower': 'shower', 'solar-eclipse': 'eclipse', 'lunar-eclipse': 'eclipse', 'moon': 'moon', 'sunrise': 'sun', 'sunset': 'sun' };
+const MARK_KINDS = { 'launch': 'launch', 'approach': 'approach', 'perihelion': 'approach', 'pass': 'pass', 'train': 'pass', 'shower': 'shower', 'solar-eclipse': 'eclipse', 'lunar-eclipse': 'eclipse', 'moon': 'moon', 'sunrise': 'sun', 'sunset': 'sun', 'season': 'sun' };
 
 /** One "Coming up" item as a mark, or null for what has no instant to go to (a storm under way). */
 export function markOf(item, nowMs) {

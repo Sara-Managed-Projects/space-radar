@@ -182,12 +182,13 @@ def lastmod() -> str:
     return date if re.match(r"^\d{4}-\d{2}-\d{2}$", date) else dt.datetime.now(dt.timezone.utc).date().isoformat()
 
 
-def sitemap(host: str, slugs: list[str]) -> str:
+def sitemap(host: str, slugs: list[str], press: bool = False) -> str:
     date = lastmod()
-    # The press page is built beside these at deploy (scripts/build_press.py) and has had no way in
-    # for a crawler (internal #398): named here by its full address, as the origin serves no index
-    # documents below the root.
-    urls = [f"{host}/", f"{host}/press/index.html"] + [f"{host}/t/{f.name}" for f in sorted((SITE / "t").glob("*.html"))] \
+    # The press page (scripts/build_press.py) had no way in for a crawler (internal #398). It is
+    # named here by its full address, as the origin serves no index documents below the root, and
+    # only when it has been built into the same tree: scripts/deploy.sh builds it first, and
+    # check_seo.py refuses a sitemap that names a page which is not there.
+    urls = [f"{host}/"] + ([f"{host}/press/index.html"] if press else []) + [f"{host}/t/{f.name}" for f in sorted((SITE / "t").glob("*.html"))] \
         + [f"{host}/o/{s}.html" for s in sorted(slugs)]
     rows = "\n".join(f"<url><loc>{esc(u)}</loc><lastmod>{date}</lastmod></url>" for u in urls)
     return ('<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -211,7 +212,7 @@ def build(out: Path, host: str) -> int:
         (o / f"{p['slug']}.html").write_text(object_page(p, host, template, style), encoding="utf-8")
     nf = fill((TEMPLATES / "404.html").read_text(encoding="utf-8"), {"icon": ICON, "style": style})
     (out / "404.html").write_text(nf, encoding="utf-8")
-    (out / "sitemap.xml").write_text(sitemap(host, slugs), encoding="utf-8")
+    (out / "sitemap.xml").write_text(sitemap(host, slugs, press=(out / "press" / "index.html").is_file()), encoding="utf-8")
     # The share sheet links an object to its page (ui/sharesheet.js objectPageUrl), so that a link
     # preview shows the object's own title and picture. Which records have a page, and under which
     # slug, is decided here and nowhere else; the sheet fetches this when it opens and never guesses.

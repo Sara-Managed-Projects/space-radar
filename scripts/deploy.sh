@@ -214,6 +214,8 @@ if [ "$WHAT" != "assets" ]; then
   # object, the sitemap and the 404 page, built here from the records and the card's own words
   # (scripts/build_seo.py; it needs Node, as the card's words are JavaScript). o/ is synced like
   # t/: HTML, no-cache, and --delete, so an object that left the registry loses its page.
+  # The press page is built FIRST: the sitemap names it only when it is in the tree (internal #398).
+  python3 "$(dirname "$0")/build_press.py" --out "$BUILT" || die "scripts/build_press.py failed"
   python3 "$(dirname "$0")/build_seo.py" --out "$BUILT" || die "scripts/build_seo.py failed"
   python3 "$(dirname "$0")/check_seo.py" --out "$BUILT" || die "scripts/check_seo.py refused the built pages"
   "${SYNC[@]}" "$BUILT/o"  "s3://$BUCKET/o" \
@@ -221,7 +223,6 @@ if [ "$WHAT" != "assets" ]; then
   # The press page (public #293, scripts/build_press.py): the page, the README's screenshots and
   # the mark as SVG, built beside the object pages and not kept under site/. HTML no-cache like
   # the other pages; the pictures and the SVGs each by their own type, as the textures are.
-  python3 "$(dirname "$0")/build_press.py" --out "$BUILT" || die "scripts/build_press.py failed"
   "${SYNC[@]}" "$BUILT/press" "s3://$BUCKET/press" --cache-control "no-cache" \
     --exclude "*" --include "*.html" --content-type "text/html; charset=utf-8" --delete
   "${SYNC[@]}" "$BUILT/press" "s3://$BUCKET/press" --cache-control "no-cache" \

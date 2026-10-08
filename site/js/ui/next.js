@@ -71,6 +71,8 @@ const KIND_OF = {
   'aurora': 'aurora',
   'solar-eclipse': 'solar-eclipse',
   'lunar-eclipse': 'lunar-eclipse',
+  'solstice': 'season',
+  'equinox': 'season',
 };
 const ECLIPSE_KINDS = ['solar-eclipse', 'lunar-eclipse'];
 
@@ -81,6 +83,8 @@ export function toItem(ev) {
   if (ECLIPSE_KINDS.includes(kind)) {
     return { kind, record: null, tMs: ev.t, label: ev.title, eclipseKind: ev.kind, where: ev.where, local: ev.local, event: ev };
   }
+  // A solstice or an equinox (internal #384): the record's own sentence is the row.
+  if (kind === 'season') return { kind, record: null, tMs: ev.t, label: ev.title, say: ev.say, season: ev.kind };
   return { kind, record: ev.record || null, tMs: ev.t, ...ev.detail };
 }
 
@@ -247,6 +251,9 @@ export function rowText(item, nowMs) {
       if (local) line += COPY.punctuation.sentenceJoin + local;
       return line;
     }
+    case 'season':
+      // The date, never a countdown, as an eclipse: computed, and it does not slip.
+      return item.say || item.label;
     default:
       return `${name} ${when}`;
   }
@@ -316,6 +323,7 @@ export function classText(item, wallMs = Date.now()) {
     }
     case 'solar-eclipse':
     case 'lunar-eclipse': return C.eclipse;
+    case 'season': return C.season;
     default: return null;
   }
 }
@@ -364,6 +372,8 @@ export function rowParts(item, nowMs) {
           : t(R.eclipseHere, { date, begin: timeText.hhmm(local.beginMs), end: timeText.hhmm(local.endMs) });
       return { title: name, detail };
     }
+    case 'season':
+      return { title: name, detail: t(R.eclipse, { date: timeText.longDate(item.tMs) }) };
     default:
       return { title: name, detail: when };
   }

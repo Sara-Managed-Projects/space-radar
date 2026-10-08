@@ -48,6 +48,9 @@ BUILT = Path(tempfile.mkdtemp(prefix="seo-"))
 for script in ("gen_home_seo.py", "gen_trip_pages.py"):
     r = run(sys.executable, f"scripts/{script}", "--check")
     ok(r.returncode == 0, f"{script} --check: {(r.stdout or r.stderr).strip().splitlines()[-1:]}")
+# The press page first, as scripts/deploy.sh does: the sitemap names it only when it is in the tree.
+r = run(sys.executable, "scripts/build_press.py", "--out", str(BUILT))
+ok(r.returncode == 0, f"build_press.py: {(r.stdout or r.stderr).strip().splitlines()[-1:]}")
 r = run(sys.executable, "scripts/build_seo.py", "--out", str(BUILT))
 ok(r.returncode == 0, f"build_seo.py: {(r.stdout or r.stderr).strip().splitlines()[-1:]}")
 r = run(sys.executable, "scripts/check_seo.py", "--out", str(BUILT))

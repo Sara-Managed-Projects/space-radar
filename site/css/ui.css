@@ -2759,7 +2759,8 @@ html.sr-trip-mode.sr-phone[data-sheet='full'] .sr-toast {
    Eclipses are computed, not objects in the scene: nothing to fly to either (spec 0031). */
 .sr-next__row[data-kind='shower'],
 .sr-next__row[data-kind='solar-eclipse'],
-.sr-next__row[data-kind='lunar-eclipse'] { cursor: default; }
+.sr-next__row[data-kind='lunar-eclipse'],
+.sr-next__row[data-kind='season'] { cursor: default; }
 
 /* Colour by (spec 0026 req 11) -------------------------------------------------------------- */
 

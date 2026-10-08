@@ -1464,7 +1464,13 @@ export function createTrip(ctx) {
     if (live) {
       const say = {
         clouds: () => (ctx.liveClouds && ctx.liveClouds.line ? ctx.liveClouds.line(ctx.clock.now()) : ''),
-        aurora: () => (ctx.aurora && ctx.aurora.line ? ctx.aurora.line(ctx.clock.now()) : ''),
+        // The forecast's own sentence, then today's Kp with its age (internal #385): NOAA's
+        // planetary index is the number an aurora watcher asks for, and the forecast line does
+        // not carry it. Left out until the reading has arrived, and when it never does.
+        aurora: () => [
+          ctx.aurora && ctx.aurora.line ? ctx.aurora.line(ctx.clock.now()) : '',
+          typeof ctx.spaceWeatherLine === 'function' ? ctx.spaceWeatherLine() : '',
+        ].filter(Boolean).join(' '),
         lightning: () => (ctx.weather && ctx.weather.line ? ctx.weather.line('earth', ctx.clock.now()) : ''),
         // 2026-10-06. The season on the world the stop is about (Mars: scene/weather, by the date
         // on the clock); NOAA's reading of the Earth's magnetic weather, with its age (main.js
@@ -2108,7 +2114,7 @@ export function createTrip(ctx) {
     state.wants = {
       figures: resolved.stops.some((entry) => skyOf(entry.stop)),
       overlay: resolved.stops.some((entry) => entry.stop.overlay),
-      spaceWeather: resolved.stops.some((entry) => entry.stop.live_note === 'space-weather'),
+      spaceWeather: resolved.stops.some((entry) => entry.stop.live_note === 'space-weather' || entry.stop.live_note === 'aurora'),
       portrait: resolved.stops.some((entry) => entry.stop.portrait === true),
       // A stop at a deep-sky object: its photograph's row (the credit) is wanted before it lands.
       pictures: picturedStops(resolved.stops),

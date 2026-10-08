@@ -351,7 +351,7 @@ TOUR_CERTAINTY_WORDS = ("exactly", "precisely", "measured", "to the metre", "con
 
 # The event types site/js/data/events.js computes in the browser with astronomy-engine (spec
 # 0031). A `source: computed` row outside this set is a type nothing would ever build.
-COMPUTED_EVENT_TYPES = frozenset({"solar-eclipse", "lunar-eclipse"})
+COMPUTED_EVENT_TYPES = frozenset({"solar-eclipse", "lunar-eclipse", "solstice", "equinox"})
 
 
 # Jargon a beginner's card may not use unless registry/glossary.yaml can explain it. THE CHECK IS
@@ -449,6 +449,13 @@ TOUR_CARD_TIME = re.compile(
 ECLIPSE_KINDS = {
     "solar-eclipse": ("total", "annular", "partial", "hybrid"),
     "lunar-eclipse": ("total", "partial", "penumbral"),
+}
+# The turns of the year have kinds too (internal #384): the month each falls in, as
+# site/js/data/events.js SEASON_KINDS has them. Not eclipses: no front-lit rule follows from one.
+EVENT_KINDS = {
+    **ECLIPSE_KINDS,
+    "solstice": ("june", "december"),
+    "equinox": ("march", "september"),
 }
 # The shadow is on the Sun's side of the Earth (or of the Moon), so an eclipse stop is lit from the
 # front: docs/design-language.md, "0 deg for an eclipse". Past 60 degrees round from the Sun the
@@ -1100,10 +1107,10 @@ def check_stop_clock(stop: dict, where: str, kind: str, sgp4: bool, flown_on, to
             fail(where, f"`time:` has {extra}; an event reference is `{{event: <type>.next, "
                         f"offset_s: n, kind: <word>}}` and nothing else")
         if "kind" in when:
-            kinds = ECLIPSE_KINDS.get(etype)
+            kinds = EVENT_KINDS.get(etype)
             if kinds is None:
-                fail(where, f"`kind: {when.get('kind')!r}` on `{etype}`: only an eclipse has kinds "
-                            f"({', '.join(ECLIPSE_KINDS)})")
+                fail(where, f"`kind: {when.get('kind')!r}` on `{etype}`: only an eclipse, a solstice "
+                            f"or an equinox has kinds ({', '.join(EVENT_KINDS)})")
             elif when.get("kind") not in kinds:
                 fail(where, f"`kind: {when.get('kind')!r}` is not a kind of `{etype}`, which is one "
                             f"of {', '.join(kinds)}: nextEvent() would never find one")

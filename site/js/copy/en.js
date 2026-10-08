@@ -994,6 +994,17 @@ export const COPY = {
     solarEclipseGrazing: '{kind} solar eclipse on {date}, seen only from far north or far south',
     lunarEclipse: '{kind} lunar eclipse on {date}, the Moon in the Earth’s shadow for everyone who can see it',
     lunarEclipsePenumbral: '{kind} lunar eclipse on {date}: the Moon only dims a little, in the Earth’s outer shadow',
+    // The turns of the year (data/events.js seasons, internal #384): the instant is the same for
+    // everybody; which day is long depends on the hemisphere, so the row says both.
+    seasonTitles: { march: 'March equinox', june: 'June solstice', september: 'September equinox', december: 'December solstice' },
+    seasons: {
+      march: 'March equinox on {date}: day and night are near equal everywhere',
+      june: 'June solstice on {date}: the north’s longest day, the south’s shortest',
+      september: 'September equinox on {date}: day and night are near equal everywhere',
+      december: 'December solstice on {date}: the south’s longest day, the north’s shortest',
+    },
+    solstice: '{title} on {date}',
+    equinox: '{title} on {date}',
     eclipseNear: 'near {city}',
     eclipseFrom: 'about {km} km from {city}',
     // With a place set (spec 0031 req 6). Times are the visitor's own clock, as every row's are.
@@ -1013,6 +1024,7 @@ export const COPY = {
       pass: 'Worked out here from orbital elements measured {age}',
       passNoAge: 'Worked out here from orbital elements',
       eclipse: 'Worked out here to the minute from the motion of the Sun and Moon',
+      season: 'Worked out here to the minute from where the Sun stands',
     },
     // THE ROW AS DRAWN (spec 0061 task 5, ui/next.js rowParts): a title, then one line. The
     // sentences above are the row's tooltip and its accessible name; these are what fits a 320 px

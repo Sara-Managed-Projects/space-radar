@@ -61,6 +61,28 @@ events:
     copy: lunarEclipse
     ics: eclipses.ics
 
+  # The four turns of the year (internal #384). Worked out in the browser from the Sun's ecliptic
+  # longitude (astronomy-engine Seasons): 0 and 180 degrees are the equinoxes, 90 and 270 the
+  # solstices. The same instant for everybody, so not location dependent; what it means for the
+  # length of a day depends on the hemisphere, and the row's sentence says both.
+  - id: solstice
+    display: Solstice
+    source: computed
+    location_dependent: false
+    lead_times: [same-day, 1d, 1w]
+    prominence: 3
+    copy: solstice
+    ics: sky.ics
+
+  - id: equinox
+    display: Equinox
+    source: computed
+    location_dependent: false
+    lead_times: [same-day, 1d, 1w]
+    prominence: 3
+    copy: equinox
+    ics: sky.ics
+
   - id: station-pass
     display: The station passes over you
     source: celestrak-stations

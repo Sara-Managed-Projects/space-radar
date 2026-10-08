@@ -59,6 +59,14 @@ export const ECLIPSE_KINDS = {
   'lunar-eclipse': ['total', 'partial', 'penumbral'],
 };
 
+/** The turns of the year and the month each falls in (internal #384): a `kind:` a reference may name. */
+export const SEASON_KINDS = {
+  'solstice': ['june', 'december'],
+  'equinox': ['march', 'september'],
+};
+/** Every type that has kinds, and the words a `{event:, kind:}` reference may use for each. */
+export const EVENT_KINDS = { ...ECLIPSE_KINDS, ...SEASON_KINDS };
+
 function startOfDay(ms) {
   const d = new Date(ms);
   d.setHours(0, 0, 0, 0);
@@ -544,6 +552,57 @@ export function localCircumstances(ev, observer) {
 }
 
 // ---------------------------------------------------------------------------------------
+// Solstices and equinoxes (internal #384)
+// ---------------------------------------------------------------------------------------
+
+const SEASON_FIELDS = { march: 'mar_equinox', june: 'jun_solstice', september: 'sep_equinox', december: 'dec_solstice' };
+
+/**
+ * The solstices (`type.id` 'solstice') or equinoxes ('equinox') after `nowMs`, inside `horizonMs`:
+ * the instants the Sun's apparent ecliptic longitude is 90 and 270 degrees, or 0 and 180
+ * (astronomy-engine Seasons(year), good to well under a minute for these centuries; tests/
+ * test_events.mjs holds 2026 to 2030 to the published table). `kind` is the month it falls in.
+ * The same instant everywhere, so nothing about the visitor goes in. A year is four numbers and
+ * about a millisecond: not cached.
+ */
+function seasons(records, nowMs, { horizonMs, type }) {
+  const out = [];
+  const kinds = SEASON_KINDS[type.id] || [];
+  const T = COPY.nextList;
+  const y0 = new Date(nowMs).getUTCFullYear();
+  const y1 = new Date(nowMs + horizonMs).getUTCFullYear();
+  for (let y = y0; y <= y1; y += 1) {
+    let s = null;
+    try { s = Astronomy.Seasons(y); } catch { s = null; }
+    if (!s) continue;
+    for (const kind of kinds) {
+      const at = s[SEASON_FIELDS[kind]];
+      const tMs = at && at.date ? at.date.getTime() : NaN;
+      if (!(tMs > nowMs) || tMs - nowMs >= horizonMs) continue;
+      out.push({
+        id: `${type.id}:${new Date(tMs).toISOString().slice(0, 10)}`,
+        type: type.id,
+        t: tMs,
+        t_precision: 'minute',
+        t_window: [tMs, tMs],
+        title: T.seasonTitles[kind],
+        say: t(T.seasons[kind], { date: timeText.longDate(tMs) }),
+        where: null,
+        location_dependent: type.locationDependent,
+        class: 'measured',
+        prominence: type.prominence,
+        source: 'computed',
+        links: [],
+        record: null,
+        kind,
+        detail: {},
+      });
+    }
+  }
+  return out.sort((a, b) => a.t - b.t);
+}
+
+// ---------------------------------------------------------------------------------------
 // The stream
 // ---------------------------------------------------------------------------------------
 
@@ -566,10 +625,12 @@ const BUILDERS = {
   },
   'solar-eclipse': solarEclipses,
   'lunar-eclipse': lunarEclipses,
+  'solstice': seasons,
+  'equinox': seasons,
 };
 
 /** The types worked out here with no data at all (scripts/check_registry.py COMPUTED_EVENT_TYPES). */
-const COMPUTED = new Set(['solar-eclipse', 'lunar-eclipse']);
+const COMPUTED = new Set(['solar-eclipse', 'lunar-eclipse', 'solstice', 'equinox']);
 
 /** The types the browser builds: enabled in the registry and with a builder here. */
 export const BUILT_TYPES = EVENT_TYPES.filter((ty) => ty.enabled && BUILDERS[ty.id]).map((ty) => ty.id);
@@ -617,12 +678,13 @@ export function buildEvents(records, nowMs, {
 export function nextEvent(type, fromMs, observer = null, records = [], { kind = null } = {}) {
   const ty = EVENT_TYPES.find((x) => x.id === type);
   if (!ty || !ty.enabled || !BUILDERS[type] || !Number.isFinite(fromMs)) return null;
-  if (kind !== null && kind !== undefined && !(ECLIPSE_KINDS[type] || []).includes(kind)) return null;
+  if (kind !== null && kind !== undefined && !(EVENT_KINDS[type] || []).includes(kind)) return null;
   const obs = validObserver(observer) ? observer : null;
   // A stop's `station-pass.next` is the ISS over this place within a week (fromPasses, spec 0038),
   // not the Next list's 24 hours of anything visible.
   if (type === 'station-pass') return fromPasses(records, fromMs, { observer: obs, type: ty })[0] || null;
-  const horizon = kind ? ECLIPSE_KIND_HORIZON_MS : ECLIPSE_HORIZON_MS;
+  // A kind of eclipse is rarer than its type; a turn of the year comes round every year.
+  const horizon = kind && ECLIPSE_KINDS[type] ? ECLIPSE_KIND_HORIZON_MS : ECLIPSE_HORIZON_MS;
   const found = BUILDERS[type](records, fromMs, {
     observer: obs, horizonMs: horizon, eclipseHorizonMs: horizon, showers: SHOWERS, spaceWeather: null, type: ty,
   }).filter((e) => e.t > fromMs && (!kind || e.kind === kind)).sort((a, b) => a.t - b.t);
