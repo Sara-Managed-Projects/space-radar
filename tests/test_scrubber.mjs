@@ -132,6 +132,15 @@ check(P.nextUnit('minute') === 'hour' && P.nextUnit('hour') === 'day' && P.nextU
   const guessed = S.sunMarks(now, { ...quito, source: 'guess' });
   check(guessed.length === sun.length && /at the place guessed for you/.test(guessed[0].what), 'a guessed place says it was guessed');
   check(S.sunMarks(now, null).length === 0, 'no place, no sunrise');
+  // A sunrise is a place's: when the place changes the old place's marks go (the first browser run
+  // showed Moscow's sunset on the tape after London was chosen; marks are otherwise kept once seen).
+  {
+    const win = { lo: now - 30 * D, hi: now + 365 * D };
+    const moscow = S.mergeMarks([], S.sunMarks(now, { latDeg: 55.8, lonDeg: 37.6, source: 'guess' }).concat(S.moonMarks(now)), now, win);
+    const london = S.mergeMarks(S.withoutSun(moscow), S.sunMarks(now, { latDeg: 51.5, lonDeg: -0.1, source: 'city' }).concat(S.moonMarks(now)), now, win);
+    check(moscow.some((m) => /guessed for you/.test(m.what)) && !london.some((m) => /guessed for you/.test(m.what)), 'the guessed place\'s sunrises leave the tape when a place is chosen');
+    check(london.filter((m) => m.kind === 'sun').length === S.sunMarks(now, { latDeg: 51.5, lonDeg: -0.1 }).length && london.filter((m) => m.kind === 'moon').length === moscow.filter((m) => m.kind === 'moon').length, 'and only those: the Moon\'s phases stay');
+  }
   // 80 N on the June solstice: the Sun does not set; the search finds nothing in the window.
   check(S.sunMarks(Date.parse('2027-06-21T12:00:00Z'), { latDeg: 80, lonDeg: 0 }).length === 0, 'in a polar summer there is no sunrise to mark');
 }

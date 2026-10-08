@@ -200,6 +200,11 @@ export function yearMarks(nowMs, reachMs = SCRUB_FORWARD_MS) {
 
 const MARK_KINDS = { 'launch': 'launch', 'approach': 'approach', 'perihelion': 'approach', 'pass': 'pass', 'train': 'pass', 'shower': 'shower', 'solar-eclipse': 'eclipse', 'lunar-eclipse': 'eclipse', 'moon': 'moon', 'sunrise': 'sun', 'sunset': 'sun', 'season': 'sun' };
 
+/** The marks without the sunrises and sunsets: those are a place's, and are worked out again. */
+export function withoutSun(marks) {
+  return (Array.isArray(marks) ? marks : []).filter((m) => !(m && /^sun(rise|set):/.test(String(m.id))));
+}
+
 /** One "Coming up" item as a mark, or null for what has no instant to go to (a storm under way). */
 export function markOf(item, nowMs) {
   if (!item || !Number.isFinite(item.tMs)) return null;
@@ -386,7 +391,11 @@ export function createScrubber(ctx, pill) {
     const next = ctx.explore && ctx.explore.next;
     const items = next && typeof next.items === 'function' ? next.items() : [];
     const anchor = pill.anchor();
-    marks = mergeMarks(marks, items.concat(moonMarks(anchor), sunMarks(anchor, ctx.observer), yearMarks(anchor)), now(), { lo: anchor - SCRUB_BACK_MS, hi: anchor + SCRUB_FORWARD_MS });
+    // Marks are kept once seen, so one that has passed stays on the tape; a sunrise is the one
+    // exception, because it belongs to a PLACE: after "Moscow, guessed" became London the tape
+    // still showed Moscow's sunset (seen in a browser, 2026-10-08). They are worked out afresh
+    // every time, so the old ones are dropped first.
+    marks = mergeMarks(withoutSun(marks), items.concat(moonMarks(anchor), sunMarks(anchor, ctx.observer), yearMarks(anchor)), now(), { lo: anchor - SCRUB_BACK_MS, hi: anchor + SCRUB_FORWARD_MS });
     paint();
   }
 
