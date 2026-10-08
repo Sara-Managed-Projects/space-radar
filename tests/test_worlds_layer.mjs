@@ -117,7 +117,7 @@ check(pickWorldDisc([], 1, 1) === null, 'no discs, no pick');
   camera.updateMatrixWorld();
   const worlds = createWorlds(new THREE.Scene(), { textureBase: 't/', loadTexture, camera });
 
-  const EAGER = ['t/2k_earth_daymap.jpg', 't/2k_earth_nightmap.webp', 't/2k_earth_clouds.webp', 't/2k_saturn_ring_alpha.png'];
+  const EAGER = ['t/2k_earth_daymap.webp', 't/2k_earth_nightmap.webp', 't/2k_earth_clouds.webp', 't/2k_saturn_ring_alpha.png'];
   const lazyWorlds = WORLDS.filter((w) => !w.look.earth && w.look.map);
   check(fetched.length === EAGER.length && EAGER.every((u) => fetched.includes(u)),
     `construction fetches Earth's three maps and the ring strip, nothing else (${JSON.stringify(fetched)})`);
@@ -145,21 +145,21 @@ check(pickWorldDisc([], 1, 1) === null, 'no discs, no pick');
   camera.updateMatrixWorld();
   worlds.update(tMs);
   worlds.update(tMs);
-  const marsFetches = fetched.filter((u) => u.endsWith('2k_mars.jpg')).length;
+  const marsFetches = fetched.filter((u) => u.endsWith('2k_mars.webp')).length;
   check(marsFetches === 1, `Mars's map is fetched once when its disc fills the view, over two frames (${marsFetches})`);
   check(!worlds.waitingMaps().includes('mars'), 'and Mars stops waiting');
   const mars = worlds.meshFor('mars').material.uniforms;
   check(mars.uHasMap.value === 0, 'the map is not used before it has arrived');
-  pending.get('t/2k_mars.jpg')();
+  pending.get('t/2k_mars.webp')();
   check(mars.uHasMap.value === 1 && mars.uTint.value.getHex() === 0xffffff && mars.uMap.value,
     'when it arrives the map replaces the mean colour, untinted');
 
   // Selecting a world starts its map at once, whatever size it is drawn.
-  check(worlds.preload('saturn') === true && fetched.includes('t/2k_saturn.jpg'), 'preload(saturn) fetches Saturn now');
+  check(worlds.preload('saturn') === true && fetched.includes('t/2k_saturn.webp'), 'preload(saturn) fetches Saturn now');
   check(worlds.preload('saturn') === false, 'and a second preload does not fetch it again');
-  pending.get('t/2k_sun.jpg');
+  pending.get('t/2k_sun.webp');
   check(worlds.preload('sun') === true, 'the Sun can be preloaded too');
-  pending.get('t/2k_sun.jpg')();
+  pending.get('t/2k_sun.webp')();
   const sunMat = worlds.meshFor('sun').material;
   check(sunMat.map && sunMat.color.getHex() === 0xffffff, 'the Sun, a basic material, takes its map the same way');
   check(worlds.preload('earth') === false, 'Earth never waits: its maps were fetched at construction');
@@ -425,7 +425,7 @@ const mappedLine = (draw) => !/no surface map|plain ball/.test(draw || '') && (d
     for (const id of ['jupiter', 'saturn', 'uranus', 'neptune']) {
       const row = WORLDS.find((x) => x.id === id);
       const F = FACE[id];
-      check(row.look.faces && /opal_2025\.webp$/.test(row.look.faces.hubble || '') && /\.jpg$/.test(row.look.map), `${id} is met in its own map and offers Hubble's`);
+      check(row.look.faces && /opal_2025\.webp$/.test(row.look.faces.hubble || '') && new RegExp(`^2k_${id}\\.webp$`).test(row.look.map), `${id} is met in its own map and offers Hubble's`);
       check(F && /as Hubble mapped it on \d+ [A-Z][a-z]+ 2025/.test(F.notes.hubble) && /CC BY 4\.0/.test(F.notes.hubble) && F.modes.hubble && F.notes.own, `${id}'s card names the day of Hubble's map and its licence`);
     }
   }

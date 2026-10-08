@@ -47,7 +47,8 @@ return (async () => {
   try {
     const plan = await trip.plan(out.trip.id);
     out.trip.offerable = !!(plan && plan.offerable);
-    out.trip.stops = plan && plan.stops ? plan.stops.length : null;
+    // The plan's stop count is `count` (ui/trip.js plannedShape); `stops` was never a field of it (internal #415 item 9).
+    out.trip.stops = plan && Number.isFinite(plan.count) ? plan.count : plan && plan.stops ? plan.stops.length : null;
     if (ctx.audio && ctx.audio.setEnabled) { try { await ctx.audio.setEnabled(true); } catch { /* no sound API here */ } }
     await trip.start(out.trip.id);
     await sleep(300);
@@ -65,7 +66,8 @@ return (async () => {
       await sleep(400);
     }
     out.trip.reached = reached;
-    out.trip.card = (document.querySelector('.sr-trip__text, .sr-trip__body, .sr-tripframe__text') || {}).textContent || null;
+    // The stop's title in the trip frame as it is built today (ui/tripframe.js `.sr-trip__title`); the older names stay for an older build.
+    out.trip.card = (document.querySelector('.sr-trip__title, .sr-trip__titles, .sr-trip__text, .sr-trip__body, .sr-tripframe__text') || {}).textContent || null;
     if (out.trip.card) out.trip.card = out.trip.card.slice(0, 90);
     if (trip.stop) trip.stop(); else if (trip.leave) trip.leave();
   } catch (e) {

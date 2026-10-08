@@ -629,6 +629,16 @@ jobs:
       - run: pip install --disable-pip-version-check pyyaml
       - name: "what must stay out of the first visit stays out, and its stand-ins hold the door (internal #405)"
         run: node tests/test_boot_diet.mjs
+      # Spec 0056 req 4 and 9 (internal #157): what the maps can hold on the GPU per tier against
+      # registry/budgets.yaml, watched to fail three ways; the rule that makes it true (a world that
+      # has been a dot the longest gives its map back) in a real createWorlds; the repository row.
+      - name: "The maps a device can hold stay inside its GPU budget, and a world that is a dot again gives its map back"
+        run: node tests/test_texture_budget.mjs
+      # Internal #374 and #123: the UI gate and the trips walk run in screens.yml (a browser); this is
+      # what node can hold of them: a known finding needs an issue and cannot go stale, the probe
+      # measures a control cut by the fold by its box, the walk reads both budget rows at every stop.
+      - name: "The UI gate's known findings, the probe's three fixes, and the trips walk's wiring"
+        run: node tests/test_ui_gate.mjs
       # Spec 0049 task 1 (public #285): 1 000 element sets through propagate/worker.js in a real worker
       # thread, every number compared with the in-thread path by Object.is; the pool's one question
       # in flight; the fallback when there is no Worker.

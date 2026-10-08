@@ -244,7 +244,9 @@ function rig(opts = {}) {
 // on screen from the first frame), byte for byte what origin/main shipped on 2026-09-28. The 2.5 MB
 // first-visit gate had ~140 KB to spare; a tier must never be paid for out of it.
 const BOOT_2026_09_28 = {
-  'textures/2k_earth_daymap.jpg': 463087,
+  // 148 312 since 2026-10-08 (spec 0056 req 8, public #286): the publisher's 463 087 B JPEG as WebP,
+  // same pixels, luma SSIM 0.9811 against it. Smaller is the one direction this file may move in.
+  'textures/2k_earth_daymap.webp': 148312,
   'textures/2k_earth_nightmap.webp': 84590,
   // 282 674 since 2026-10-07 (internal #415 item 2): the same 2048 x 1024 mask at WebP quality 50,
   // from the source JPEG. It was 575 032 B, the largest request of a first visit. Smaller is the one
@@ -264,7 +266,7 @@ for (const [f, bytes] of Object.entries(BOOT_2026_09_28)) {
   check(real === bytes, `${f} is ${real} bytes, not the ${bytes} it was: the boot set changed`);
   firstVisit += real;
 }
-check(firstVisit === 890355, `the first visit's textures are ${firstVisit} bytes (890 355 since the cloud mask's re-encode of 2026-10-07; 1 182 713 before it)`);
+check(firstVisit === 575580, `the first visit's textures are ${firstVisit} bytes (575 580 since the day map became a WebP on 2026-10-08; 890 355 since the cloud mask's re-encode of 2026-10-07; 1 182 713 before it)`);
 // The code that loads the boot set names the same files the manifest calls tier 0.
 const main = readFileSync(join(JS, 'main.js'), 'utf8');
 check(main.includes("milkyWayTexture: 'textures/2k_stars_milky_way.webp'"), 'main.js boots the Milky Way from the tier-0 file');

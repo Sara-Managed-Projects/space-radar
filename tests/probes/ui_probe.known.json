@@ -1,0 +1,7 @@
+{
+ "about": "Findings of the UI gate (scripts/check-ui.mjs, the `ui` job of screens.yml) that are real, have an issue, and are not the gate's to fix. `match` is a pattern for '<state>: <problem>'. An entry that matches nothing FAILS the gate: remove it with the fix.",
+ "known": [
+  {"size": "phone", "match": "^sources: target \\d+ x \\d+, under 44: button\\.sr-sheet__handle ", "issue": "internal #457", "since": "2026-10-08"},
+  {"size": "phone", "match": "^sources: target \\d+ x \\d+, under 44: button\\.sr-side__back ", "issue": "internal #457", "since": "2026-10-08"}
+ ]
+}

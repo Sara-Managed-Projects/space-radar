@@ -1,4 +1,4 @@
-// Probe for tools/cdp.mjs and scripts/check-ui.mjs: the UI gate's headless half (docs/ui-guide.md
+// Probe for tools/cdp.mjs and scripts/check-ui.mjs (CI: the `ui` job of screens.yml): the UI gate's headless half (docs/ui-guide.md
 // section 7, spec 0061 task 6).
 //
 //   python3 tools/serve.py site 8851 &
@@ -64,7 +64,43 @@ const nameOf = (el) => {
   return (el.getAttribute('aria-label') || '').trim() || by || lab || (el.textContent || '').trim() || (el.getAttribute('alt') || '').trim();
 };
 // An icon-only control: no word a sighted visitor can read, so its name is the tooltip's job too.
-const wordless = (el) => !/[\p{L}\p{N}]{2,}/u.test((el.textContent || '').trim());
+// One capital letter or digit on its own is a word (the network called X; internal #374): a glyph
+// such as the multiplication sign of a close button is not a letter and stays wordless.
+const wordless = (el) => { const t = (el.textContent || '').trim(); return !/[\p{L}\p{N}]{2,}/u.test(t) && !/^[\p{Lu}\p{N}]$/u.test(t); };
+// A control drawn for a screen reader only (the 1 px clip): nothing a finger or a pointer can aim
+// at, so it has no target to measure. The explore search's "Fly to it" is one (internal #374).
+const forReadersOnly = (el) => {
+  const cs = getComputedStyle(el);
+  // The clip is the tell, not the size: under a coarse pointer the buttons' 44 px floor makes the
+  // same hidden control a 30 x 44 box, still clipped to nothing (seen in CI, 2026-10-08).
+  if (/^(absolute|fixed)$/.test(cs.position) && (/rect\(0(px)?,? 0(px)?,? 0(px)?,? 0(px)?\)/.test(cs.clip || '') || /inset\(50%\)/.test(cs.clipPath || ''))) return true;
+  const r = el.getBoundingClientRect();
+  if (r.width > 2 || r.height > 2) return false;
+  return cs.overflow !== 'visible' || cs.clipPath !== 'none' || (cs.clip && cs.clip !== 'auto');
+};
+/**
+ * Is the control cut by something it can be brought out from under (internal #374)? The sheet's
+ * edge, the window's, a scroller's: a 128 px trip card with 41 px showing above the fold is a
+ * 128 px target a thumb scrolls to, and measuring the 41 reported 21 problems on 2026-10-05 of
+ * which almost none were real. Returns 'window' or the scroller's name when the control's box is
+ * not wholly inside; null when it is all there. A box cut by an ancestor that does NOT scroll
+ * (overflow hidden with nothing to scroll) is not excused: what shows is all there will ever be.
+ */
+function cutBy(target) {
+  const r = target.getBoundingClientRect();
+  const T = 1;
+  if (r.left < -T || r.top < -T || r.right > innerWidth + T || r.bottom > innerHeight + T) return 'window';
+  for (let n = target.parentElement; n && n !== document.documentElement; n = n.parentElement) {
+    const cs = getComputedStyle(n);
+    const ys = /auto|scroll/.test(cs.overflowY) && n.scrollHeight > n.clientHeight + 1;
+    const xs = /auto|scroll/.test(cs.overflowX) && n.scrollWidth > n.clientWidth + 1;
+    if (!ys && !xs) continue;
+    const b = n.getBoundingClientRect();
+    if ((ys && (r.top < b.top - T || r.bottom > b.bottom + T)) || (xs && (r.left < b.left - T || r.right > b.right + T))) return say(n);
+    if (cs.position === 'fixed') break;
+  }
+  return null;
+}
 
 /** The hit area's width and height around the control's centre, as the browser resolves it. */
 function hitSize(el, target) {
@@ -84,6 +120,8 @@ function measure() {
   const problems = [];
   const controls = [...document.querySelectorAll('button, a[href], input, select, textarea, [role=tab], [role=switch], [role=menuitem], [role=option], summary')].filter(shown);
   let targets = 0;
+  let clipped = 0;
+  let readersOnly = 0;
   let smallest = Infinity;
   for (const el of controls) {
     if (el.disabled || el.getAttribute('aria-disabled') === 'true') continue;
@@ -100,6 +138,17 @@ function measure() {
     if (el.matches('a[href]') && getComputedStyle(el).display === 'inline' && el.parentElement && el.parentElement.textContent.trim().length > el.textContent.trim().length + 8) continue;
     const r = target.getBoundingClientRect();
     if (!inView(r)) continue;
+    if (forReadersOnly(target)) { readersOnly += 1; continue; }
+    // Cut by the fold or by its scroller: its size is its BOX (what a thumb finds once it has
+    // scrolled there), not the sliver on screen now. Counted, so a walk that measured nothing
+    // because everything was cut shows as that.
+    const cut = cutBy(target);
+    if (cut) {
+      clipped += 1;
+      const w = Math.round(r.width); const h = Math.round(r.height);
+      if (w < MIN || h < MIN) problems.push(`target ${w} x ${h} (box, cut by ${cut}), under ${MIN}: ${say(el)} "${name.slice(0, 30)}"`);
+      continue;
+    }
     const hit = hitSize(el, target) || { w: Math.round(r.width), h: Math.round(r.height), box: true };
     targets += 1;
     smallest = Math.min(smallest, hit.w, hit.h);
@@ -127,10 +176,10 @@ function measure() {
   const doc = document.scrollingElement;
   if (doc.scrollWidth > innerWidth + 1) problems.push(`the page scrolls sideways: ${doc.scrollWidth} px in a ${innerWidth} px window`);
   // One primary: an ember FILL on a control. The pill's dot and the bracket ticks are not controls.
-  const primaries = controls.filter((el) => getComputedStyle(el).backgroundColor === EMBER && inView(el.getBoundingClientRect()));
+  const primaries = controls.filter((el) => getComputedStyle(el).backgroundColor === EMBER && inView(el.getBoundingClientRect()) && !forReadersOnly(el));
   if (primaries.length > 1) problems.push(`${primaries.length} ember-filled buttons at once: ${primaries.map(say).join(', ')}`);
   const labels = [...document.querySelectorAll('#labels .label')].filter((l) => !l.hidden && l.getBoundingClientRect().width > 4);
-  return { problems, targets, smallest: Number.isFinite(smallest) ? smallest : null, primaries: primaries.length, labels: labels.length, wraps, colours };
+  return { problems, targets, clipped, readersOnly, smallest: Number.isFinite(smallest) ? smallest : null, primaries: primaries.length, labels: labels.length, wraps, colours };
 }
 
 const states = {};

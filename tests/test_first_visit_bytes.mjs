@@ -322,7 +322,7 @@ if (BASE || FROM) {
     check(BUDGETS.embed_first_visit_bytes < BUDGETS.first_visit_bytes, 'and under the whole app\'s first visit');
     check(embedVerdict(te, lean, { ...BUDGETS, embed_first_visit_bytes: 100000 }).some((p) => /over embed_first_visit_bytes/.test(p)), 'over its budget fails');
     for (const [bad, why] of [['js/main.js', 'entry'], ['js/ui/explore.js', 'panel'], ['js/ui/trip.js', 'trips'], ['js/sky/skyview.js', 'ground'], ['sw.js', 'worker'],
-      ['textures/2k_earth_clouds.webp', 'map'], ['textures/2k_moon.jpg', 'map'], ['textures/2k_stars_milky_way.webp', 'Milky Way'], ['data/stars3d.bin', 'catalogue'], ['js/data/tours.js', 'trips']]) {
+      ['textures/2k_earth_clouds.webp', 'map'], ['textures/2k_moon.webp', 'map'], ['textures/2k_stars_milky_way.webp', 'Milky Way'], ['data/stars3d.bin', 'catalogue'], ['js/data/tours.js', 'trips']]) {
       const withBad = [...lean, { url: `${O2}/${bad}`, bytes: 10 }];
       check(embedVerdict(tally(withBad, O2), withBad).some((p) => p.includes(`/${bad}`)), `a light embed that asks for ${bad} fails (${why})`);
     }

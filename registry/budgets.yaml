@@ -31,19 +31,31 @@ budgets:
   # that a deploy strips vendor/ like js/, licence headers kept), and the cloud mask at WebP quality
   # 90 (575 032 -> 282 674 B at quality 50, same pixels). The number no longer depends on the
   # runner's clock either: what starts after the app's own end-of-first-visit mark is not counted.
-  - {id: first_visit_bytes, value: 3517000, unit: bytes, since: 2026-10-07, reason: "3 349 349 B + 5 %: 3 339 538 B measured on #489's main, plus the 9 811 B of boot JavaScript and CSS that #491 to #493 added since (summed over the stripped boot graph, not booted again), by CI's method (a phone at 390x844, CelesTrak and Launch Library blocked, uncompressed) on the tree a deploy uploads. It was 4 008 000 (3 817 516 B measured on 2026-10-06, 3 861 587 B the morning of 2026-10-07) and 5 773 324 B before the first diet. The second diet (internal #415): vendor/ stripped at deploy (astronomy.js -234 622 B) and the cloud mask re-encoded (-292 358 B)"}
+  # THE DAY MAP AS WEBP (2026-10-08, spec 0056 req 8, public #286): the Earth's 2k day map was the
+  # publisher's JPEG, 463 087 B; at WebP quality 84 (luma SSIM 0.9811 against it, same pixels) it is
+  # 148 312 B. Measured on the pull request that did it, in CI, one commit apart: 3 366 543 B before,
+  # 3 052 513 B after, 139 requests both times.
+  - {id: first_visit_bytes, value: 3205000, unit: bytes, since: 2026-10-08, reason: "3 052 513 B + 5 %, measured 2026-10-08 by CI (screens.yml: a phone at 390x844, CelesTrak and Launch Library blocked, uncompressed, on the tree a deploy uploads), 139 requests. It was 3 517 000 (3 366 543 B measured on the same pull request one commit earlier, with the day map still a JPEG), 4 008 000 before the second diet and 5 773 324 B before the first"}
   # THE LIGHT EMBED (internal #396, 2026-10-07): `?embed=1&at=<a world or a station>`, booted by
   # js/embedlite.js instead of main.js. Same method and same tree as the row above, for
   # `?embed=1&at=moon` and `?embed=1&at=25544` (tests/test_first_visit_bytes.mjs --embed=). Before:
   # the whole first visit and every catalogue, 163 requests and about 9.6 MB with the saved copies
   # mirrored (internal #396's measurement), 3.9 MB by this method without them.
-  - {id: embed_first_visit_bytes, value: 2342000, unit: bytes, since: 2026-10-07, reason: "internal #429: 2 230 195 B in 80 requests for at=moon, measured + 5 %, 2026-10-07 in headless Chrome as a phone at 390x844 on the stripped tree, uncompressed; at=25544 was not booted again and is smaller by arithmetic (it was 2 376 088 B to the Moon's 2 464 627 B before vendor/astronomy.js was stripped, which took 234 622 B off both). The row was 2 500 000 with a 1.4 % margin"}
+  # THE TAG WITHOUT THE CARD (2026-10-08, internal #429): the light embed fetched ui/cards.js and
+  # the 22 modules only it brings (261 137 B stripped) for the tag's three lines. Those lines' own
+  # code is ui/cardfacts.js now, fetched alone: 19 requests fewer. Measured in CI on the pull
+  # request, one commit apart: at=moon 2 321 730 -> 2 149 573 B, at=25544 2 217 222 -> 2 045 065 B.
+  - {id: embed_first_visit_bytes, value: 2257000, unit: bytes, since: 2026-10-08, reason: "internal #429: 2 149 573 B in 70 requests for at=moon and 2 045 065 B in 69 for at=25544, measured 2026-10-08 by CI (tests/test_first_visit_bytes.mjs --embed=, a phone at 390x844 on the stripped tree, uncompressed), the larger + 5 %. It was 2 342 000 with 20 270 B to spare after public #506 (at=moon 2 321 730 B in 89 requests), and 2 500 000 before that"}
   - {id: audio_at_boot_bytes, value: 0, unit: bytes, since: 2026-09-22, reason: "spec 0035: nothing before a gesture"}
   - {id: og_at_boot_bytes, value: 0, unit: bytes, since: 2026-09-22, reason: "spec 0033: previews and cards only"}
   # WOFF2 is already compressed, so this number is the same on CI's server and the live site.
   - {id: fonts_at_boot_bytes, value: 90000, unit: bytes, since: 2026-09-28, reason: "spec 0045 req 5: the faces the first screen uses, Latin only"}
-  - {id: draw_calls_per_stop, value: 120, unit: calls, since: 2026-09-22, reason: "docs/toolkit.md: 120 at 30 fps; a stop is a still under text. Read at every stop of the trips walk (tools/walk.probe.js stopCost, from the renderer's own counters): a local tool, not a CI job"}
-  - {id: triangles_per_stop, value: 250000, unit: triangles, since: 2026-09-22, reason: "poes.glb alone was 116 517 before decimation (0027 amendment 1). Read at every stop of the trips walk (tools/walk.probe.js stopCost): a local tool, not a CI job"}
+  # MEASURED FOR THE FIRST TIME on 2026-10-08 (internal #435, public #507): the `trips` job of
+  # screens.yml walked 192 stops of 24 trips (two are not offerable without CelesTrak) at 1440 x 900
+  # and as a phone, in Playwright's Chromium on software GL with the frame latch tripped. Both rows
+  # hold; neither was moved.
+  - {id: draw_calls_per_stop, value: 120, unit: calls, since: 2026-09-22, reason: "docs/toolkit.md: 120 at 30 fps; a stop is a still under text. Read at every stop of every trip by tools/trips-cost.probe.js (the trips job of screens.yml) and at five stops a trip by tools/walk.probe.js stopCost, from the renderer's own counters. Measured 2026-10-08: median 14, at most 54 (roof-to-the-edge, The planets) at a desktop's size; median 11, at most 45 as a phone"}
+  - {id: triangles_per_stop, value: 250000, unit: triangles, since: 2026-09-22, reason: "poes.glb alone was 116 517 before decimation (0027 amendment 1). Read with draw_calls_per_stop, by the same two probes. Measured 2026-10-08: median 23 016 at a desktop's size and 13 122 as a phone; at most 213 622 at both, on the stops that draw the 3D stars (to-the-edge, roof-to-the-edge, travel-to-exoplanets): 85 % of this row"}
   - {id: bed_kb, value: 600, unit: kB, since: 2026-09-22, reason: "spec 0035: 75 s at 64 kbps Opus"}
   - {id: audio_total_kb, value: 3000, unit: kB, since: 2026-09-22, reason: "spec 0035"}
   # Spec 0069 (2026-10-03): the trips' narration, fetched a clip at a time and only with sound on.
@@ -90,6 +102,18 @@ budgets:
   # recomputes the worst case from registry/textures.yaml against this).
   - {id: tier1_idle_bytes, value: 1300000, unit: bytes, since: 2026-09-29, reason: "1 187 244 B worst month, measured 2026-09-29; ~10 % margin"}
   - {id: tier1_texture_gpu_mib, value: 250, unit: MiB, since: 2026-09-29, reason: "docs/toolkit.md: 150 phone, 400 desktop; T1 between (realism study section 5)"}
+  # Spec 0056 requirement 4 (2026-10-08, internal #157): the same gate for the other two tiers, and
+  # what makes all three TRUE. Until that day a world's map loaded once and stayed, so a visitor who
+  # flew to every world held 364 MiB of maps on a phone, 471 on T1 and 535 on T2, by the arithmetic
+  # these rows are checked with (pixels x 4 bytes x 4/3 for mipmaps; 37 worlds have a map now, not
+  # fourteen). scene/worlds.js MAPS_HELD now lets a tier keep 5, 5 and 12 worlds' own maps and
+  # gives back the one that has been a dot the longest; tests/test_texture_budget.mjs adds up the
+  # worst case each tier can then hold (what is always on screen, today's clouds, the tier's
+  # sharper-planet slots, the worlds held, every other face a card can ask for) against these.
+  - {id: tier0_texture_gpu_mib, value: 150, unit: MiB, since: 2026-10-08, reason: "docs/toolkit.md: 150 MB of GPU textures on a phone. Worst case computed 2026-10-08: 137.3 MiB of maps (always on screen with today's clouds, five worlds' maps, the other faces a card can ask for)"}
+  - {id: tier2_texture_gpu_mib, value: 400, unit: MiB, since: 2026-10-08, reason: "docs/toolkit.md: 400 MB of GPU textures on a desktop. Worst case computed 2026-10-08: 382.6 MiB of maps (always on screen at 4k with today's clouds, three 4k planets, nine more worlds' maps, the other faces). No 8k file is shipped: spec 0056 keeps those for KTX2"}
+  # Spec 0056 requirement 9: the repository stays reasonable. Everything under site/textures/.
+  - {id: repo_textures_mb, value: 80, unit: MB, since: 2026-10-08, reason: "spec 0056 req 9: 18.3 MB on 2026-10-08, after the nine 2k JPEGs became WebP (it was 20.8); the 8k files of that spec are what the room is for, and past this they move to a bucket-only prefix"}
   # Spec 0065 (2026-10-03): a close world is drawn from map tiles fetched from NASA's Solar System Treks
   # by the visitor's browser. None of that belongs to a first visit: scene/tiles.js is imported only
   # when a world other than the Earth is half the view tall, and asks for nothing until the ground

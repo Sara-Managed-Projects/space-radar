@@ -744,7 +744,7 @@ CASES: list[tuple[str, str, str, str]] = [
      "textures.yaml", 'original: "https://www.solarsystemscope.com/textures/download/8k_mars.jpg"',
      'original: "http://bjj.mmedia.is/data/mars/mars_map.jpg"'),
     ("a boot map that is not the one models.yaml credits",
-     "textures.yaml", "file: site/textures/2k_mars.jpg", "file: site/textures/2k_jupiter.jpg"),
+     "textures.yaml", "file: site/textures/2k_mars.webp", "file: site/textures/2k_jupiter.webp"),
     # The moons' maps (2026-10-05): one file per world inside its budget, and the share of the
     # sphere it covers said as a number, because the card's line about the unseen side rests on it.
     ("a moon's map over the moon_map_bytes budget",

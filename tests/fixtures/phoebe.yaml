@@ -37,9 +37,9 @@ texture_tiers:
     when: boot
     files:
       - tier: 0
-        file: site/textures/2k_moon.jpg
+        file: site/textures/2k_moon.webp
         px: [2048, 1024]
-        bytes: 1053869
+        bytes: 640218
         format: rgb
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"

@@ -24,12 +24,12 @@ export const TEXTURES = [
       },
       {
         "tier": 0,
-        "file": "textures/2k_earth_daymap.jpg",
+        "file": "textures/2k_earth_daymap.webp",
         "px": [
           2048,
           1024
         ],
-        "bytes": 463087,
+        "bytes": 148312,
         "format": "rgb",
         "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
       },
@@ -188,12 +188,12 @@ export const TEXTURES = [
       },
       {
         "tier": 0,
-        "file": "textures/2k_moon.jpg",
+        "file": "textures/2k_moon.webp",
         "px": [
           2048,
           1024
         ],
-        "bytes": 1053869,
+        "bytes": 640218,
         "format": "rgb",
         "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
       },
@@ -248,12 +248,12 @@ export const TEXTURES = [
     "files": [
       {
         "tier": 0,
-        "file": "textures/2k_mars.jpg",
+        "file": "textures/2k_mars.webp",
         "px": [
           2048,
           1024
         ],
-        "bytes": 750547,
+        "bytes": 487924,
         "format": "rgb",
         "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
       },
@@ -278,12 +278,12 @@ export const TEXTURES = [
     "files": [
       {
         "tier": 0,
-        "file": "textures/2k_jupiter.jpg",
+        "file": "textures/2k_jupiter.webp",
         "px": [
           2048,
           1024
         ],
-        "bytes": 498976,
+        "bytes": 234614,
         "format": "rgb",
         "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
       },
@@ -327,12 +327,12 @@ export const TEXTURES = [
     "files": [
       {
         "tier": 0,
-        "file": "textures/2k_sun.jpg",
+        "file": "textures/2k_sun.webp",
         "px": [
           2048,
           1024
         ],
-        "bytes": 822427,
+        "bytes": 296062,
         "format": "rgb",
         "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
       }
@@ -346,12 +346,12 @@ export const TEXTURES = [
     "files": [
       {
         "tier": 0,
-        "file": "textures/2k_venus_atmosphere.jpg",
+        "file": "textures/2k_venus_atmosphere.webp",
         "px": [
           2048,
           1024
         ],
-        "bytes": 229696,
+        "bytes": 37444,
         "format": "rgb",
         "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
       }
@@ -384,12 +384,12 @@ export const TEXTURES = [
     "files": [
       {
         "tier": 0,
-        "file": "textures/2k_saturn.jpg",
+        "file": "textures/2k_saturn.webp",
         "px": [
           2048,
           1024
         ],
-        "bytes": 199916,
+        "bytes": 18270,
         "format": "rgb",
         "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
       }
@@ -441,12 +441,12 @@ export const TEXTURES = [
     "files": [
       {
         "tier": 0,
-        "file": "textures/2k_uranus.jpg",
+        "file": "textures/2k_uranus.webp",
         "px": [
           2048,
           1024
         ],
-        "bytes": 77751,
+        "bytes": 5548,
         "format": "rgb",
         "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
       }
@@ -479,12 +479,12 @@ export const TEXTURES = [
     "files": [
       {
         "tier": 0,
-        "file": "textures/2k_neptune.jpg",
+        "file": "textures/2k_neptune.webp",
         "px": [
           2048,
           1024
         ],
-        "bytes": 241580,
+        "bytes": 8728,
         "format": "rgb",
         "credit": "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
       }

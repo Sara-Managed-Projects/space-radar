@@ -50,6 +50,7 @@ const DEFERRED = {
   'js/scene/climb.js': 'the continuous flight: main.js fetches it on the first long dolly, the ladder\'s control or a climb stop',
   'js/scene/shells.js': 'the radio bubble and the microwave background: fetched on a rung of the ladder',
   'js/ui/cards.js': 'the card: ui/cardgate.js fetches it on the first selection',
+  'js/ui/cardfacts.js': 'what the card knows (its rows, the tag\'s lines): with the card, or alone for the light embed (ui/cardgate.js wantFacts)',
   'js/ui/trip.js': 'the trip: ui/tripgate.js fetches it when a trip is opened, linked or planned',
   'js/data/tours.js': 'the trips\' stops: they arrive with ui/trip.js; the cards read data/tours-index.js',
   'js/data/narration.js': 'the narration manifest: it arrives with the trip frame',

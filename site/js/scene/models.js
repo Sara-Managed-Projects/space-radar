@@ -436,6 +436,29 @@ function slabs(rows, colour, kind, name) {
   geo.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
   return mesh(geo, colour, kind, name);
 }
+/** Several struts as ONE mesh and one draw call: rows are [ax, ay, az, bx, by, bz]. */
+function tubes(rows, r, seg, colour, kind, name) {
+  const pos = [];
+  const nor = [];
+  const up = new THREE.Vector3(0, 1, 0);
+  const d = new THREE.Vector3();
+  const q = new THREE.Quaternion();
+  for (const [ax, ay, az, bx, by, bz, rr] of rows) {
+    d.set(bx - ax, by - ay, bz - az);
+    const len = d.length();
+    if (!(len > 0)) continue;
+    const c = new THREE.CylinderGeometry(rr || r, rr || r, len, seg).toNonIndexed();
+    c.applyQuaternion(q.setFromUnitVectors(up, d.normalize()));
+    c.translate((ax + bx) / 2, (ay + by) / 2, (az + bz) / 2);
+    for (const v of c.attributes.position.array) pos.push(v);
+    for (const v of c.attributes.normal.array) nor.push(v);
+    c.dispose();
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  return mesh(geo, colour, kind, name);
+}
 /**
  * A solar wing drawn as the panels it folds into: `n` slabs along +X from the root with a hair of
  * gap between them, on a spine, behind a short bare yoke. The outer edge is at exactly `length`,
@@ -944,44 +967,134 @@ function buildStarlink(variant) {
  * Source: ESA, "Galileo satellites" (esa.int).
  */
 const NAV_SPAN_M = 13;
-function buildNavSatellite() {
+/**
+ * ONE BUILDER, SIX SHAPES (public #429, 2026-10-08). The family box above was Galileo's and stood
+ * for every constellation; GLONASS-M is a drum and a GPS IIF is half as big again, which is the
+ * issue. Each row is [x across the wing roots, y, z along the Earth axis] of the body in metres,
+ * the tip-to-tip span, and the wing's width and panel count.
+ *
+ * WHAT WAS READ ON 2026-10-08, AND HOW GOOD EACH NUMBER IS
+ *   Galileo FOC   ESA, "Galileo satellites": "Spacecraft bus dimensions 2.7 x 1.1 x 1.2 m",
+ *                 "Solar array span 13m". The maker's own page. Unchanged from the family shape.
+ *   GPS IIF       body from the US Space Force fact sheet "GPS IIF" (losangeles.spaceforce.mil;
+ *                 the page refuses a plain fetch, so its "Size: 98 in wide, 80 in deep, 88 in high"
+ *                 and "3-Panel ... Solar Arrays" were read in a search engine's extract): 2.49 x
+ *                 2.03 x 2.24 m. SPAN 18 m from keeptrack.space/satellite/37753, a catalogue
+ *                 site and not the maker: "spans 18 meters when its solar arrays are deployed".
+ *   GPS III       body from the same service's "GPS III" fact sheet, read the same way: "97 in
+ *                 wide, 70 in deep, 134 in high", 2.46 x 1.78 x 3.40 m. SPAN 14 m from
+ *                 keeptrack.space/satellite/46826 ("a span of 14 meters"), catalogue again.
+ *   GLONASS-M     a pressurised DRUM. ESA's table of radiating areas (Dilssner et al., IGS
+ *                 Workshop 2018, files.igs.org/pub/resource/pubs/workshop/2018/IGSWS-2018-PY02-03.pdf,
+ *                 slide 4) gives "GLONASS-M 4.20 [x-panel, m2] 1.66 [z-panel, m2]": an end of 1.66
+ *                 m2 is a circle 1.45 m across, and a side of 4.20 m2 is then 2.9 m long. That
+ *                 arithmetic is ours. keeptrack.space/satellite/43687 says "a diameter of 1.5
+ *                 meters and a span of 7.8 meters", which agrees on the drum and gives the span.
+ *   GLONASS-K     an unpressurised box. keeptrack.space/satellite/40315 only: "a length of 2
+ *                 meters, diameter of 1 meter, and span of 5 meters". The weakest row here.
+ *   BeiDou-3 MEO  (the CAST build) the same ESA slide: "BDS-3M CAST 1.22 [x] 2.25 [z]" and
+ *                 "Rectangular shape with a ratio of about 2:1 for main body axes";
+ *                 keeptrack.space/satellite/43707 gives "2.2 meters in length ... a span of 10
+ *                 meters". A 2.2 x 1.02 x 1.19 m box has both of ESA's areas; the split is ours.
+ * The wings' WIDTHS are not on any of these pages and are drawn in proportion. GPS IIR, BeiDou's
+ * geostationary and inclined craft, IRNSS and QZSS have no row and keep the family box. Every
+ * route to these says `generic: true`, so the card still reads "the kind of thing".
+ */
+const NAV_SHAPES = {
+  navigation: { span: NAV_SPAN_M, bus: [1.1, 1.2, 2.7], wingW: 1.4, panels: 0 },
+  'navigation-gps-iif': { span: 18, bus: [2.03, 2.49, 2.24], wingW: 2.0, panels: 3 },
+  'navigation-gps-iii': { span: 14, bus: [1.78, 2.46, 3.4], wingW: 2.1, panels: 4 },
+  'navigation-glonass-m': { span: 7.8, drum: [1.45, 2.9], wingW: 1.5, panels: 3 },
+  'navigation-glonass-k': { span: 5, bus: [1, 1, 2], wingW: 0.95, panels: 2 },
+  'navigation-beidou-meo': { span: 10, bus: [1.02, 2.2, 1.19], wingW: 1.5, panels: 3 },
+};
+function buildNavSatellite(variant) {
+  const row = (typeof variant === 'string' && Object.prototype.hasOwnProperty.call(NAV_SHAPES, variant) && NAV_SHAPES[variant]) || NAV_SHAPES.navigation;
   const g = new THREE.Group();
-  g.userData.realSizeM = NAV_SPAN_M;
-  const S = 1 / NAV_SPAN_M;
+  g.userData.realSizeM = row.span;
+  const S = 1 / row.span;
+  const hull = hullGroup();
+  g.add(hull);
 
-  // The bus: 2.7 x 1.1 x 1.2 m, long axis along Z so the Earth face is where the attitude puts it.
-  const bus = box(1.1 * S, 1.2 * S, 2.7 * S, '#E4E9F0', 'body', 'bus');
-  g.add(bus);
-
-  // The navigation antenna: a plate on the Earth face (+Z) carrying a ring of short helical
-  // elements. Twelve, which is GPS's count; Galileo's array is a different pattern and the same
-  // idea, and neither is legible at hero size: measured against the 84-px silhouette the horns are
-  // 0.9 px and the plate is 11. So the plate is dark, the way an antenna aperture really reads and
-  // the way Starlink's phased-array tiles already are here, and the horns are detail for the
-  // selected view at 260 px. See amendment 3 to spec 0027 for the measurement.
-  const plate = box(1.0 * S, 1.05 * S, 0.12 * S, '#2B313C', 'body', 'l-band');
-  plate.position.z = 1.4 * S;
-  g.add(plate);
-  for (let i = 0; i < 12; i++) {
-    const a = (i / 12) * Math.PI * 2;
-    const ring = i < 4 ? 0.22 : 0.42;
-    const horn = cyl(0.055 * S, 0.055 * S, 0.34 * S, 5, METAL, 'foil', 'element');
-    horn.rotation.x = Math.PI / 2;
-    horn.position.set(Math.cos(a) * ring * S, Math.sin(a) * ring * S, 1.62 * S);
-    g.add(horn);
+  // The body, long axis along Z so the Earth face is where the attitude puts it.
+  const [bx, by, bz] = row.drum ? [row.drum[0], row.drum[0], row.drum[1]] : row.bus;
+  if (row.drum) {
+    hull.add(zcyl(bx / 2 * S, bx / 2 * S, bz * S, 0, 18, '#D9DEE6', 'body', 'drum'));
+    // The band of thermal louvres round a pressurised bus: the one mark a plain drum has.
+    hull.add(zcyl(bx / 2 * 1.02 * S, bx / 2 * 1.02 * S, bz * 0.22 * S, -bz * 0.12 * S, 18, '#9BA6B4', 'foil', 'louvres'));
+  } else {
+    hull.add(box(bx * S, by * S, bz * S, '#E4E9F0', 'body', 'bus'));
   }
 
-  // Two wings to a 13 m span: (13 - 1.1) / 2 = 5.95 m each.
+  // The navigation antenna: a dark plate on the Earth face (+Z) carrying a ring of short helical
+  // elements. Twelve, which is GPS's count; the others' arrays are a different pattern and the
+  // same idea, and neither is legible at hero size (amendment 3 to spec 0027 has the measurement).
+  const pw = Math.min(bx, by) * 0.9;
+  const plate = row.drum
+    ? zcyl(pw / 2 * S, pw / 2 * S, 0.12 * S, (bz / 2 + 0.05) * S, 18, '#2B313C', 'body', 'l-band')
+    : box(bx * 0.91 * S, by * 0.88 * S, 0.12 * S, '#2B313C', 'body', 'l-band');
+  if (!row.drum) plate.position.z = (bz / 2 + 0.05) * S;
+  g.add(plate);
+  const horns = [];
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    const ring = (i < 4 ? 0.2 : 0.38) * pw;
+    horns.push([Math.cos(a) * ring * S, Math.sin(a) * ring * S, (bz / 2 + 0.1) * S, Math.cos(a) * ring * S, Math.sin(a) * ring * S, (bz / 2 + 0.44) * S]);
+  }
+  g.add(tubes(horns, 0.05 * pw * S, 5, METAL, 'foil', 'element'));
+
+  // Two wings out to the published span.
+  const each = (row.span - bx) / 2;
   const pivot = new THREE.Group();
   pivot.name = 'panelPivot';
   for (const side of [-1, 1]) {
-    const w = panelWing(5.95 * S, 1.4 * S, METAL, side > 0 ? 'wing+' : 'wing-');
+    const w = row.panels
+      ? segWing(each * S, row.wingW * S, row.panels, side > 0 ? 'wing+' : 'wing-')
+      : panelWing(each * S, row.wingW * S, METAL, side > 0 ? 'wing+' : 'wing-');
     if (side < 0) w.rotation.y = Math.PI;
-    w.position.set(side * 0.55 * S, 0, 0);
+    w.position.set(side * (bx / 2) * S, 0, 0);
     pivot.add(w);
   }
   g.add(pivot);
   g.userData.panelPivots = [pivot];
+  return g;
+}
+
+/**
+ * A 1U and a 2U CubeSat at the specification's own size (public #422, 2026-10-08).
+ *
+ * The CubeSat Design Specification rev. 14.1 (cubesat.org, the PDF of 2022-02-09, read
+ * 2026-10-08) gives the length of a 1U as "113.5 +/-0.1mm" and of a 2U as "227.0 +/-0.2mm" on a
+ * 100 x 100 mm section, and says "Rails shall have a minimum width of 8.5mm". That is the whole
+ * shape: a body, four rails, cells on the four long faces. No wings and no antenna are drawn,
+ * because the standard has none and no operator's 1U is being claimed.
+ *
+ * NASA's "CubeSat - 1 RU Generic" and "2 RU Generic" meshes were asked for. No record on the map
+ * is a 1U or a 2U today (Flock and Lemur are 3U, Starling is 6U), so nothing routes here: these
+ * two are in the builder table for the first record that is one, and on the shape sheet.
+ */
+function buildCubeSatSmall(variant) {
+  const len = variant === 'cubesat-2u' ? 0.227 : 0.1135;
+  const g = new THREE.Group();
+  g.userData.realSizeM = len;
+  const S = 1 / len;
+  const hull = hullGroup();
+  g.add(hull);
+  hull.add(box(0.1 * S, 0.1 * S, len * S, '#DCE2EA', 'body', 'bus'));
+  const rails = [];
+  for (const [x, y] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]) rails.push([0.0085 * S, 0.0085 * S, len * S, x * 0.04625 * S, y * 0.04625 * S, 0]);
+  hull.add(slabs(rails.map(([w, h, d, x, y, z]) => [w * 1.08, h * 1.08, d, x, y, z]), METAL, 'foil', 'rail'));
+  // Cells on the four long faces, one pane a unit, set a hair proud of the skin.
+  const cells = [];
+  const units = Math.round(len / 0.1135);
+  for (let u = 0; u < units; u++) {
+    const z = (-len / 2 + 0.1135 * (u + 0.5)) * S;
+    for (const sgn of [-1, 1]) {
+      cells.push([0.074 * S, 0.003 * S, 0.096 * S, 0, sgn * 0.0505 * S, z]);
+      cells.push([0.003 * S, 0.074 * S, 0.096 * S, sgn * 0.0505 * S, 0, z]);
+    }
+  }
+  hull.add(slabs(cells, PANEL_BLUE, 'panel', 'body-cells'));
   return g;
 }
 
@@ -1760,8 +1873,12 @@ function addCore(m, s, paint, coreLen) {
     // The interstage band. On a Falcon 9 it is black carbon composite and it is the one piece of
     // livery that reads at this size; everywhere else it is the neutral foil ring.
     const band = cyl(r * 1.02, r * 1.02, coreLen * 0.045, CORE_SEG, paint.interstage, 'foil', 'interstage');
-    band.position.y = coreLen * 0.62;
+    // Where the first stage ends, when the row publishes its length (`stage1_len_m`, public
+    // #427): Falcon 9's 41.2 m of 70, Electron's 12.1 of 18. Otherwise the class-typical 62 %.
+    const s1 = Number.isFinite(s.stage1_len_m) ? Math.min(s.stage1_len_m, coreLen * 0.97) : null;
+    band.position.y = s1 != null ? s1 - coreLen * 0.0225 : coreLen * 0.62;
     m.add(band);
+    addRecovery(m, s, paint, s1 != null ? s1 : coreLen * 0.62);
   }
 
   if (paint.tail) {
@@ -1771,6 +1888,39 @@ function addCore(m, s, paint, coreLen) {
     m.add(tail);
   }
   return coreLen;
+}
+
+/**
+ * What a booster that flies back carries (public #427): `recovery: {legs, grid_fins}` on the row.
+ * The COUNTS are the row's and sourced there. The sizes are not published anywhere reached: a
+ * stowed leg is drawn as a slim fairing 0.19 of the first stage long lying against its base, and
+ * a grid fin as a small plate folded flat under the interstage. Both in the interstage's colour,
+ * which on a Block 5 is the black thermal layer its legs wear too. One mesh each.
+ */
+function addRecovery(m, s, paint, stage1Len) {
+  const rec = s.recovery;
+  if (!rec || typeof rec !== 'object') return;
+  const r = s.core_dia_m / 2;
+  const at = (n, fn) => { const rows = []; for (let i = 0; i < n; i++) rows.push(fn(((i + 0.5) / n) * Math.PI * 2)); return rows; };
+  const legs = Math.max(0, Math.min(8, rec.legs | 0));
+  if (legs) {
+    const len = stage1Len * 0.19;
+    const rows = at(legs, (a) => {
+      const x = Math.cos(a), z = Math.sin(a);
+      // A wedge leaning on the body: foot out at the base, tip in against the tank.
+      return [x * (r + r * 0.34), 0, z * (r + r * 0.34), x * (r + r * 0.04), len, z * (r + r * 0.04), r * 0.2];
+    });
+    m.add(tubes(rows, r * 0.2, 5, paint.interstage, 'body', 'landing-legs'));
+  }
+  const fins = Math.max(0, Math.min(8, rec.grid_fins | 0));
+  if (fins) {
+    const y = stage1Len - s.height_m * 0.045;
+    const rows = at(fins, (a) => {
+      const x = Math.cos(a), z = Math.sin(a);
+      return [x * (r + r * 0.03), y - r * 0.55, z * (r + r * 0.03), x * (r + r * 0.03), y, z * (r + r * 0.03), r * 0.26];
+    });
+    m.add(tubes(rows, r * 0.26, 4, paint.interstage, 'body', 'grid-fins'));
+  }
 }
 
 /**
@@ -2770,6 +2920,104 @@ function buildSiteLander() {
   return g;
 }
 
+/**
+ * Surveyor, from the one paragraph NASA's catalogue gives it (public #267, 2026-10-08).
+ *
+ * NSSDCA, "Surveyor 1" (nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1966-045A, read
+ * 2026-10-08): "a tripod of thin-walled aluminum tubing and interconnecting braces"; "A central
+ * mast extended about one meter above the apex of the tripod"; "Three hinged landing legs were
+ * attached to the lower corners of the structure ... and terminated in footpads"; "The three
+ * footpads extended out 4.3 meters from the center of the Surveyor. The spacecraft was about 3
+ * meters tall"; "A 0.855 square meter array of 792 solar cells was mounted on a positioner on
+ * top of the mast"; "a movable large planar array high gain antenna mounted near the top of the
+ * central mast"; "two omnidirectional conical antennas mounted on the ends of folding booms";
+ * "Two thermally controlled compartments"; "three throttlable vernier rocket engines"; "The TV
+ * survey camera was mounted near the top of the tripod"; thermal control by "white paint".
+ *
+ * DRAWN FROM THOSE SENTENCES AND NOTHING ELSE. 4.3 m is taken as the circle the footpads stand
+ * on, across, which is how a 3 m craft with those legs has to be read; the planar antenna is
+ * drawn the size of the solar panel (0.92 m square is 0.855 m2) because the page gives it no
+ * size; where each box sits on the frame is ours. The generic lander before this was a foil
+ * drum on four legs, and the header of buildSiteLander says Surveyor was a tripod.
+ */
+function buildSurveyor() {
+  const g = new THREE.Group();
+  g.userData.realSizeM = 4.3;
+  const m = new THREE.Group(); // metres
+  m.name = 'metres';
+  const R = 2.15;      // footpads: 4.3 m across
+  const FR = 0.75;     // the frame's lower corners
+  const FY = 0.95;     // and their height
+  const APEX = 2.0;    // mast top is 1 m above this: 3 m tall
+  const struts = [];
+  const corner = [];
+  for (let i = 0; i < 3; i++) {
+    const a = (i / 3) * Math.PI * 2 + Math.PI / 6;
+    const x = Math.cos(a), z = Math.sin(a);
+    corner.push([x * FR, FY, z * FR]);
+    struts.push([x * FR, FY, z * FR, 0, APEX, 0]);                       // the tripod
+    struts.push([x * FR, FY, z * FR, x * R, 0.12, z * R, 0.035]);          // the hinged leg
+    struts.push([x * FR * 0.55, FY + 0.62, z * FR * 0.55, x * R * 0.72, 0.42, z * R * 0.72, 0.03]); // its shock absorber
+    const pad = cyl(0.17, 0.2, 0.12, 10, '#C9CED6', 'foil', 'footpad');
+    pad.position.set(x * R, 0.06, z * R);
+    m.add(pad);
+    const vernier = cyl(0.05, 0.11, 0.2, 6, '#5A5F66', 'foil', 'vernier');
+    vernier.position.set(x * FR * 0.8, FY - 0.14, z * FR * 0.8);
+    m.add(vernier);
+  }
+  for (let i = 0; i < 3; i++) {
+    const [ax, ay, az] = corner[i];
+    const [bx, by, bz] = corner[(i + 1) % 3];
+    struts.push([ax, ay, az, bx, by, bz]);                               // the braces between corners
+  }
+  struts.push([0, APEX - 0.05, 0, 0, 2.9, 0, 0.04]);                     // the mast
+  // The two omnidirectional antennas on their booms.
+  struts.push([corner[0][0], FY + 0.3, corner[0][2], corner[0][0] * 2.1, 2.05, corner[0][2] * 2.1, 0.018]);
+  struts.push([corner[1][0], FY + 0.3, corner[1][2], corner[1][0] * 2.1, 2.05, corner[1][2] * 2.1, 0.018]);
+  m.add(tubes(struts, 0.028, 6, '#D8DCE2', 'body', 'frame'));
+  for (const c of [corner[0], corner[1]]) {
+    const omni = cyl(0.02, 0.08, 0.16, 6, '#E6EAF0', 'body', 'omni');
+    omni.position.set(c[0] * 2.1, 2.13, c[2] * 2.1);
+    m.add(omni);
+  }
+  // Two thermal compartments, white, on two sides of the frame; the fuel and helium as spheres.
+  m.add(slabs([[0.62, 0.5, 0.36, 0, FY + 0.3, 0.52], [0.5, 0.56, 0.34, -0.5, FY + 0.33, -0.3]], HULL_WHITE, 'body', 'compartment'));
+  for (const [x, z] of [[0.42, -0.3], [-0.1, -0.55], [-0.48, 0.2]]) {
+    const tank = mesh(new THREE.SphereGeometry(0.21, 10, 8), '#C9CED6', 'foil', 'tank');
+    tank.position.set(x, FY + 0.1, z);
+    m.add(tank);
+  }
+  // On the mast: the solar panel and the planar antenna, back to back and tilted to the sky.
+  const sun = box(0.92, 0.035, 0.93, PANEL_BLUE, 'panel', 'solar-panel');
+  sun.position.set(0.5, 2.82, 0);
+  sun.rotation.z = -0.5;
+  m.add(sun);
+  const hga = box(0.96, 0.05, 0.96, '#B9C2CE', 'foil', 'planar-antenna');
+  hga.position.set(-0.52, 2.72, 0);
+  hga.rotation.z = 0.62;
+  m.add(hga);
+  // The television camera near the top of the tripod, looking down its mirror at the ground.
+  const cam = cyl(0.075, 0.075, 0.42, 8, HULL_WHITE, 'body', 'tv-camera');
+  cam.position.set(0.3, 1.72, 0.26);
+  cam.rotation.z = 0.28;
+  m.add(cam);
+  m.scale.setScalar(1 / 4.3);
+  g.add(m);
+  return g;
+}
+
+/**
+ * The ground a lander stands on, as a child of its model (public #386: the lunar module "hovers").
+ * scene/heroes.js adds it under a landing site's vehicle on the Moon, with the contact shadow.
+ * Illustrative: the regolith's own grey, a darker patch where the descent engine and the boots
+ * disturbed it, a few stones. One unit across, so heroes.js sizes it from the model's reach.
+ */
+function buildGroundPatch() {
+  const g = new THREE.Group();
+  g.add(regolith(0.5, REGOLITH, 28));
+  return g;
+}
+
 // ------------------------------------------------------------------------- odd things we sent
 
 // registry/oddities.yaml gives every row a `shape.build`, and this is where the eight names in
@@ -2846,12 +3094,52 @@ function starburst(rays, rMax, colour, name) {
   return mesh(g, colour, 'panel', name);
 }
 
-/** A disc of ground, so a thing lying on the Moon reads as lying on something. */
+/**
+ * A patch of ground, so a thing lying on the Moon reads as lying on something. It was one flat
+ * disc with a hard round edge, which public #267 called a decal: now a ragged outline, a darker
+ * scuffed patch inside it and a few stones, each from the same seeded noise on every machine.
+ * Three draw calls. The tangent plane touches the sphere exactly at the origin, hence the lift.
+ */
+function ragged(r, n, seed, y, colour, name) {
+  const pos = [];
+  const rim = (i) => r * (0.74 + 0.26 * hash01(seed + (i % n) * 31));
+  for (let i = 0; i < n; i++) {
+    const a0 = (i / n) * Math.PI * 2, a1 = ((i + 1) / n) * Math.PI * 2;
+    const r0 = rim(i), r1 = rim(i + 1);
+    pos.push(0, y, 0, Math.cos(a1) * r1, y, Math.sin(a1) * r1, Math.cos(a0) * r0, y, Math.sin(a0) * r0);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.computeVertexNormals();
+  return mesh(geo, colour, 'body', name);
+}
 function regolith(r, colour, seg) {
-  const d = discFlat(r, seg || 16, colour || REGOLITH, 'body', 'ground');
-  d.rotation.x = -Math.PI / 2;
-  d.position.y = 0.002; // the tangent plane touches the sphere exactly at the origin
-  return d;
+  const col = colour || REGOLITH;
+  const dark = `#${new THREE.Color(col).multiplyScalar(0.74).getHexString()}`;
+  const g = new THREE.Group();
+  g.name = 'ground';
+  const n = Math.max(14, seg || 18);
+  g.add(ragged(r, n, 11, 0.002, col, 'ground'));
+  g.add(ragged(r * 0.56, Math.max(9, n >> 1), 53, 0.0035, dark, 'ground-scuffed'));
+  const pos = [];
+  const nor = [];
+  for (let i = 0; i < 6; i++) {
+    const a = hash01(i * 97 + 5) * Math.PI * 2;
+    const d = r * (0.5 + 0.38 * hash01(i * 41 + 3));
+    const stone = new THREE.OctahedronGeometry(r * (0.018 + 0.022 * hash01(i * 13 + 1)), 0).toNonIndexed();
+    stone.scale(1, 0.6, 1.3);
+    stone.rotateY(a * 3);
+    stone.translate(Math.cos(a) * d, r * 0.012, Math.sin(a) * d);
+    stone.computeVertexNormals();
+    for (const v of stone.attributes.position.array) pos.push(v);
+    for (const v of stone.attributes.normal.array) nor.push(v);
+    stone.dispose();
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  g.add(mesh(geo, dark, 'body', 'stones'));
+  return g;
 }
 
 // 1. The Voyager Golden Record -- 30 cm gold-plated copper disc, aluminium cover engraved in four
@@ -3044,9 +3332,13 @@ function buildGolfBalls() {
   // the size claim is the ball's and only the ball's.
   g.userData.realSizeM = 0.0427;
 
+  // THE BALLS AGAINST THE CLUB (public #267: "the golf balls are bigger than the club"). A ball is
+  // 42.67 mm and the iron's head beside it is 0.26 units, so at 0.07 units of radius the ball is a
+  // little over half the head's length, which is how a ball sits against an iron. The head's own
+  // length is not published for Shepard's club, so this is a proportion and not a measurement.
   for (const [x, z] of [[-0.24, 0.15], [-0.09, -0.19]]) {
-    const ball = mesh(new THREE.SphereGeometry(0.115, 12, 8), BALL_WHITE, 'panel', 'ball');
-    ball.position.set(x, 0.115, z);
+    const ball = mesh(new THREE.SphereGeometry(0.07, 12, 8), BALL_WHITE, 'panel', 'ball');
+    ball.position.set(x, 0.07, z);
     g.add(ball);
   }
 
@@ -3279,6 +3571,29 @@ function buildRoadster() {
   rim.rotateX(-0.95);
   m.add(rim);
 
+  // THE ART PASS (public #432, 2026-10-08). No licensed mesh of this car exists, so the silhouette
+  // has to come from the parts a person knows it by: a glass screen in a body-colour frame, two
+  // high-backed seats, door mirrors, the air scoop cut into each flank behind the door, the dark
+  // mouth under the nose, a lip on the tail. Positions are read off photographs and are ours; the
+  // four published numbers above are unchanged. Three meshes.
+  const glass = box(0.03, 0.44, 1.26, DARK_GLASS, 'panel', 'windscreen');
+  glass.position.set(0.485, 0.845, 0);
+  glass.rotation.z = 0.733; // along the raked face of the profile, a hair proud of it
+  m.add(glass);
+  m.add(slabs([
+    [0.13, 0.5, 0.4, -0.56, 0.9, 0.36], [0.11, 0.16, 0.26, -0.6, 1.2, 0.36],      // the passenger seat
+    [0.13, 0.5, 0.4, -0.56, 0.9, -0.36], [0.11, 0.16, 0.26, -0.6, 1.2, -0.36],    // the driver's, behind him
+    [0.46, 0.15, 0.03, -0.78, 0.47, 0.741], [0.46, 0.15, 0.03, -0.78, 0.47, -0.741], // the side scoops
+    [0.03, 0.11, 0.86, 1.985, 0.3, 0],                                              // the mouth under the nose
+    [0.03, 0.1, 1.0, -1.985, 0.24, 0],                                              // the diffuser
+  ], '#1D1F24', 'body', 'trim'));
+  m.add(slabs([
+    [0.1, 0.07, 0.15, 0.3, 0.99, 0.8], [0.1, 0.07, 0.15, 0.3, 0.99, -0.8],          // door mirrors
+    [0.05, 0.03, 0.1, 0.3, 0.95, 0.72], [0.05, 0.03, 0.1, 0.3, 0.95, -0.72],        // and their stalks
+    [0.14, 0.035, 1.3, -1.9, 0.6, 0],                                               // the lip on the tail
+    [0.035, 0.4, 0.05, 0.47, 0.84, 0.655], [0.035, 0.4, 0.05, 0.47, 0.84, -0.655],  // the screen's pillars
+  ], CHERRY, 'panel', 'brightwork'));
+
   m.add(buildStarman());
 
   m.scale.setScalar(1 / 3.946); // ONE division: the whole car becomes 1 unit
@@ -3431,10 +3746,17 @@ const BUILDERS = {
     'radar-mesh': buildMeshReflector,
     cubesat: buildCubeSat,
     'cubesat-6u': buildCubeSat,
+    'cubesat-1u': buildCubeSatSmall,
+    'cubesat-2u': buildCubeSatSmall,
     oneweb: buildOneWeb,
     'starlink-v1': buildStarlink,
     'starlink-v2': buildStarlink,
     navigation: buildNavSatellite,
+    'navigation-gps-iif': buildNavSatellite,
+    'navigation-gps-iii': buildNavSatellite,
+    'navigation-glonass-m': buildNavSatellite,
+    'navigation-glonass-k': buildNavSatellite,
+    'navigation-beidou-meo': buildNavSatellite,
     // The telescope tube, for records whose klass is `satellite` -- the catalogue does not call
     // anything a telescope, so an observatory arrives as a satellite and needs a satellite variant
     // to be drawn as one. buildTelescope treats any variant but `hex` as the tube.
@@ -3453,6 +3775,8 @@ const BUILDERS = {
     dome: buildSiteDome,
     rover: buildSiteRover,
     lander: buildSiteLander,
+    surveyor: buildSurveyor,
+    'ground-moon': buildGroundPatch,
   },
   oddity: ODDITY_BUILDERS,
   world: { default: () => new THREE.Group() }, // worlds.js owns the worlds; this keeps modelFor total

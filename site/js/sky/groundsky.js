@@ -86,12 +86,12 @@ const MILKY_WAY_GAIN = 0.5;
 // What a body looks like before (or without) its map: one flat colour, and whether it shines.
 const LOOK = {
   sun: { colour: [1.0, 0.96, 0.86], emissive: 1, limb: 0.55 },
-  moon: { colour: [0.72, 0.71, 0.69], map: '2k_moon.jpg', limb: 0 },
+  moon: { colour: [0.72, 0.71, 0.69], map: '2k_moon.webp', limb: 0 },
   mercury: { colour: [0.62, 0.6, 0.58], limb: 0 },
   venus: { colour: [0.96, 0.93, 0.84], limb: 0.2 },
-  mars: { colour: [0.82, 0.48, 0.3], map: '2k_mars.jpg', limb: 0.1 },
-  jupiter: { colour: [0.84, 0.76, 0.66], map: '2k_jupiter.jpg', limb: 0.45 },
-  saturn: { colour: [0.88, 0.8, 0.62], map: '2k_saturn.jpg', limb: 0.45, rings: true },
+  mars: { colour: [0.82, 0.48, 0.3], map: '2k_mars.webp', limb: 0.1 },
+  jupiter: { colour: [0.84, 0.76, 0.66], map: '2k_jupiter.webp', limb: 0.45 },
+  saturn: { colour: [0.88, 0.8, 0.62], map: '2k_saturn.webp', limb: 0.45, rings: true },
   uranus: { colour: [0.66, 0.86, 0.9], limb: 0.4 },
   neptune: { colour: [0.36, 0.5, 0.94], limb: 0.4 },
 };

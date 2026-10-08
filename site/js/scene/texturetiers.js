@@ -75,6 +75,47 @@ export function bootFiles(rows = TEXTURES) {
  * @param {object[]} [opts.rows]        the manifest; TEXTURES by default
  * @param {number[]} [opts.slots]       planet 4k slots per tier; TIER_PLANET_SLOTS by default
  */
+/**
+ * What one file holds on the GPU once uploaded, in MiB: its pixels at four bytes each (one for a
+ * `mono` map, uploaded as R8), plus a third for the mipmaps. A WebP or a JPEG is decoded to this
+ * whatever it weighed on the wire; a compressed format (KTX2, spec 0056) will have its own row.
+ */
+export function gpuMiB(file) {
+  if (!file || !Array.isArray(file.px)) return 0;
+  return (file.px[0] * file.px[1] * (file.format === 'mono' ? 1 : 4) * 4) / 3 / 1048576;
+}
+
+/** The live clouds' own picture (scene/liveclouds.js): 2048 x 1024 RGBA, composed in the page. */
+export const LIVE_CLOUDS_MIB = gpuMiB({ px: [2048, 1024], format: 'rgba' });
+
+/**
+ * The most a device of this tier can hold in maps at once, in MiB, with what it is made of (spec
+ * 0056 requirement 4; registry/budgets.yaml tier0/1/2_texture_gpu_mib; tests/test_texture_budget.mjs).
+ *
+ *   always     every map that is on screen from the start (the Earth's, the Milky Way, the ring's
+ *              strip) at this tier's file, and today's clouds
+ *   sharp      this tier's planet slots, each holding the largest sharper map there is
+ *   worlds     the other worlds allowed a map of their own (`mapsHeld`, scene/worlds.js MAPS_HELD),
+ *              less the slots (a world wearing a sharper map has had its own freed), each the
+ *              largest tier-0 map
+ *   faces      every other face a card can ask for (`when: asked` that is not always on screen),
+ *              all at once: a world wearing one keeps its own map too
+ */
+export function worstCaseGpu(tier, { rows = TEXTURES, slots = TIER_PLANET_SLOTS, mapsHeld } = {}) {
+  const onScreen = (r) => r.world === 'earth' || r.world === 'sky' || r.id === 'saturn-ring';
+  let always = LIVE_CLOUDS_MIB;
+  for (const r of rows) if (onScreen(r)) always += gpuMiB(variantFor(r, tier));
+  const others = rows.filter((r) => !onScreen(r));
+  const own = others.filter((r) => r.when !== 'asked');
+  const nSlots = slots[Math.min(tier, slots.length - 1)] || 0;
+  const sharper = own.map((r) => variantFor(r, tier)).filter((f) => f && f.tier > 0).map(gpuMiB).sort((a, b) => b - a);
+  const sharp = sharper.slice(0, nSlots).reduce((a, b) => a + b, 0);
+  const largestOwn = Math.max(0, ...own.map((r) => gpuMiB(variantFor(r, 0))));
+  const worlds = Math.max(0, mapsHeld - Math.min(nSlots, sharper.length)) * largestOwn;
+  const faces = others.filter((r) => r.when === 'asked').reduce((a, r) => a + gpuMiB(variantFor(r, tier)), 0);
+  return { always, sharp, worlds, faces, total: always + sharp + worlds + faces };
+}
+
 export function createTextureTiers(opts = {}) {
   const rows = opts.rows || TEXTURES;
   const targets = opts.targets || {};

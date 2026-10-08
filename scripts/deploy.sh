@@ -32,7 +32,7 @@
 # a returning visitor held the old dso.json for a month before that was true (2026-09-09).
 #
 # `immutable` is deliberately NOT used. It promises a URL's bytes will never change, and
-# `2k_earth_daymap.jpg` keeps its name when the file behind it changes. A browser that believed
+# `2k_earth_daymap.webp` keeps its name when the file behind it changes. A browser that believed
 # that promise would hold a stale texture for a month with no way to be told otherwise. Change a
 # texture and you must invalidate it by hand -- the script says so at the end.
 #
