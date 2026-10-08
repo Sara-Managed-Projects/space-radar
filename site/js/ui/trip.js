@@ -121,6 +121,20 @@ const APEX_SCALE = 0.9;
 
 const SETTLE_MS = 150;
 const DRIFT_LEAD_MS = 400;
+// `framing: sunrise` (internal #313): how far behind the limb the Sun's centre starts, and the
+// nearest the camera's co-latitude may come to the rig's pole (where an azimuth turn is a spin).
+// scripts/check_registry.py holds the same two degrees: a sunrise stop's drift must carry the Sun
+// out by at least as much again.
+export const SUNRISE_HIDDEN_DEG = 2;
+const SUNRISE_POLAR_MIN = 25 * (Math.PI / 180);
+// `true_size: true` (internal #290): how long after the card is up the dots are put away, and how
+// long they take to go (the guide's --sr-slow, as ui/scalebadge.js TWEEN_MS).
+const TRUE_SIZE_LEAD_MS = 1600;
+const TRUE_SIZE_TWEEN_MS = 320;
+const TRUE_SIZE_REFRESH_MS = 500;
+// scene/orbitrings.js MARKER_PX: the dot's width, which the line's "how wide really" is set against
+// (tests/test_small_issues.mjs holds the two equal; the module is not imported here for one number).
+const TRUE_SIZE_MARKER_PX = 7;
 // The stop's TITLE arrives six tenths of the way through the flight and its body only once the
 // camera is at rest. The title answers "where am I going?" and takes the loss-of-control feeling
 // out of a four-second move; the body waits because reading during camera motion is both hard and
@@ -482,6 +496,7 @@ export function createTrip(ctx) {
     }
     requestAnimationFrame(tick);
     stepUpTween();
+    stepTrueSize();
     refreshNote();
     stepStretch();
     trackSeenFrom();
@@ -779,7 +794,7 @@ export function createTrip(ctx) {
       // An `{event:}` stop is resolved HERE as well as at its turn, so the count on the intro card
       // is honest: an event nobody can find is a stop nobody can show. ISO and `now` always
       // resolve and are not asked. data/events.js answers null for one it cannot find in 400 days.
-      const eventLost = isEventTime(stop.time) && resolveStopTime(stop.time, ctx.clock.now()) === null;
+      const eventLost = isEventTime(stop.time) && resolveStopTime(stop.time, ctx.clock.now(), tour.stops) === null;
       const subject = eventLost ? null : resolveTarget(stop.target);
       if (subject) {
         stops.push({ stop, subject, held: false });
@@ -1261,6 +1276,12 @@ export function createTrip(ctx) {
       const from = seenFromAngles(entry.stop.seen_from, targetScene, tMs);
       if (from) angles = from;
     }
+    // `framing: sunrise` (internal #313): the camera on the night side with the Sun just behind the
+    // limb, and the dwell's own drift, which turns towards the light, brings it out.
+    if (entry.stop.framing === 'sunrise' && subject.kind === 'world' && sun && isNum(subject.radiusKm) && d1 > 0) {
+      const rise = sunriseAngles(sun, targetScene, Math.asin(clamp(subject.radiusKm / stage.unitKm / d1, 0, 1)));
+      if (rise) angles = rise;
+    }
     // A PHOTOGRAPH IS SEEN FROM THE SIDE IT WAS TAKEN FROM (2026-10-06). A stop at a deep-sky object
     // with `key_light_deg: 0` goes on the line from the object back to the Sun, exactly: the key
     // light's search looks from level with the ecliptic or above it and never from below, so for
@@ -1337,6 +1358,34 @@ export function createTrip(ctx) {
     _uq.setFromUnitVectors(_b2.copy(up).normalize(), Y_UP);
     _b1.applyQuaternion(_uq);
     return { azimuth: Math.atan2(_b1.x, _b1.z), polar: Math.acos(clamp(_b1.y, -1, 1)) };
+  }
+
+  /**
+   * `framing: sunrise` (internal #313, the planetarium films' signature frame): THE SUN ABOUT TO
+   * CLEAR THE LIMB. The camera stands on the night side of a world with air, on the side of the
+   * anti-Sun line where the Sun's centre is SUNRISE_HIDDEN_DEG behind the world's edge; the stop's
+   * drift turns towards the light (driftSign), so within the dwell the Sun comes out from behind
+   * the limb and the air along that edge lights first. Nothing is moved but the camera: the Sun,
+   * the world and the instant are the stop's own.
+   *
+   * The geometry, in the rig's own two angles. Seen from the camera, the world's centre is at -u
+   * and the Sun at s; the Sun is behind the disc while the angle between them is under the disc's
+   * angular radius `rho`. So u is `rho - hidden` away from the anti-Sun direction, at the SAME
+   * co-latitude (the drift is a turn in azimuth, which then carries it straight across the limb
+   * rather than along it): the azimuth offset D solves cos(sep) = cos^2(p) + sin^2(p) cos(D).
+   * Which side: the one the camera is already nearer, so the flight there is the shorter turn.
+   */
+  function sunriseAngles(sunPos, targetScene, rho) {
+    const anti = towardAngles(sunPos, targetScene);
+    if (!anti || !(rho > 0)) return null;
+    // towardAngles gave the Sun's own direction; the far side of the world from it is opposite.
+    const azAnti = anti.azimuth + Math.PI;
+    const polar = clamp(Math.PI - anti.polar, SUNRISE_POLAR_MIN, Math.PI - SUNRISE_POLAR_MIN);
+    const sep = Math.max(0, rho - SUNRISE_HIDDEN_DEG * DEG);
+    const sin2 = Math.sin(polar) ** 2;
+    const d = Math.acos(clamp((Math.cos(sep) - Math.cos(polar) ** 2) / sin2, -1, 1));
+    const side = shortestAngle(azAnti, rig.state.azimuth || 0) >= 0 ? 1 : -1;
+    return { azimuth: azAnti + side * d, polar };
   }
 
   /** `seen_from:` -- the angles that put the camera between the subject and that world. */
@@ -1797,7 +1846,7 @@ export function createTrip(ctx) {
    * in registry/events.yaml -- is null, and the stop follows `on_unresolved` like a lost target.
    * The loaded records go with the question: a pass or a train is found among them.
    */
-  function resolveStopTime(time, nowMs) {
+  function resolveStopTime(time, nowMs, stops = null) {
     lastEvent = null;
     if (time === 'now') return nowMs;
     // `tonight` (2026-10-06): the coming dark at the visitor's place, or now when it is dark
@@ -1832,7 +1881,24 @@ export function createTrip(ctx) {
       // `kind:` (spec 0037) narrows an eclipse: `{event: solar-eclipse.next, kind: total}`. The
       // place is the one the trip's ground stops use, the guess included (spec 0038): a pass over
       // "your place" must be over the place the card names.
-      const ev = nextEvent(type, nowMs, placeOf(), records, { kind: time.kind || null });
+      // `after: <stop id>` (internal #384): counted from the instant an EARLIER stop of this trip
+      // resolves to, not from the visitor's clock. "Half a year on" is the December solstice after
+      // the June one the first stop found; counted from the clock it would, from July to December,
+      // be the one BEFORE it, under a card that says six months later. The earlier stop is itself
+      // resolved from the visitor's clock, so the pair is the same whenever the trip is planned.
+      let fromMs = nowMs;
+      if (time.after !== undefined && time.after !== null) {
+        const list = stops || (run && run.tour && run.tour.stops) || [];
+        const at = list.findIndex((s) => s && s.id === time.after);
+        const earlier = at >= 0 ? list[at] : null;
+        // Only a stop before this one, with an instant of its own (the validator refuses the rest).
+        const own = earlier && earlier.time !== undefined && earlier.time !== null && earlier.time !== time
+          && !(isEventTime(earlier.time) && earlier.time.after === time.after)
+          ? resolveStopTime(earlier.time, nowMs, list.slice(0, at)) : null;
+        if (own === null) { lastEvent = null; return null; }
+        fromMs = own;
+      }
+      const ev = nextEvent(type, fromMs, placeOf(), records, { kind: time.kind || null });
       lastEvent = ev;
       return ev && isNum(ev.t) ? ev.t + (Number(time.offset_s) || 0) * 1000 : null;
     }
@@ -1947,7 +2013,7 @@ export function createTrip(ctx) {
         // found the following one, a year later. The intro card's count is resolved from the
         // visitor's clock too, so the two now agree.
         const base = run.savedClock ? run.savedClock.t : c.now();
-        const ms = stop.time === 'daylight' ? daylightMs(entry, base) : resolveStopTime(stop.time, base);
+        const ms = stop.time === 'daylight' ? daylightMs(entry, base) : resolveStopTime(stop.time, base, run.tour && run.tour.stops);
         entry.event = stop.time === 'daylight' ? null : lastEvent;
         if (ms === null) return 'unresolved';
         c.goTo(ms);
@@ -2039,6 +2105,57 @@ export function createTrip(ctx) {
     // slide across the flight); the next stop's own arrives with the camera.
     state.portrait = null;
     state.names = entry.stop.names === true;
+    // The dots come back at take-off: True size is a look at one stop, not a setting (#290).
+    setTrueSize(false);
+  }
+
+  // --- True size as a stop's reveal (internal #290) -------------------------------------------
+  //
+  // On the Sun's stage a trip with `orbits:` draws each planet as a dot (scene/orbitrings.js) and
+  // the frame says so. A stop with `true_size: true` puts the dots away a moment after its card is
+  // up -- the same setDotScale(0) the scale badge's True size presses (ui/scalebadge.js, which is
+  // hidden during a trip) -- and the frame's line becomes what is left: the widest planet's true
+  // width on this screen, computed from the camera, never typed. Leaving the stop, pausing nothing,
+  // puts the dots back.
+  let trueSize = { want: 0, k: 1, from: 1, at: 0, lineAt: 0, mod: null };
+  function setTrueSize(on) {
+    const want = on ? 0 : 1;
+    if (trueSize.want === want && state.trueSize === !!on) return;
+    trueSize.want = want;
+    trueSize.from = trueSize.k;
+    trueSize.at = now();
+    state.trueSize = !!on;
+    if (!on) state.trueSizeLine = '';
+    else if (!trueSize.mod) import('./scalebadge.js').then((m) => { trueSize.mod = m; }).catch(() => { /* the dots still go */ });
+    if (reducedMotion()) trueSize.at -= TRUE_SIZE_TWEEN_MS;
+    stepTrueSize();
+  }
+
+  function stepTrueSize() {
+    const rings = ctx.orbitRings;
+    if (trueSize.k !== trueSize.want) {
+      const u = Math.min(1, (now() - trueSize.at) / TRUE_SIZE_TWEEN_MS);
+      trueSize.k = u >= 1 ? trueSize.want : trueSize.from + (trueSize.want - trueSize.from) * (1 - (1 - u) ** 3);
+      if (rings && typeof rings.setDotScale === 'function') rings.setDotScale(trueSize.k);
+    }
+    if (!state.trueSize || !trueSize.mod || now() - trueSize.lineAt < TRUE_SIZE_REFRESH_MS) return;
+    trueSize.lineAt = now();
+    const line = trueSizeLine(trueSize.mod);
+    if (line !== state.trueSizeLine) { state.trueSizeLine = line; notify(); }
+  }
+
+  /** "True size: Venus is 0.3 px wide here", from this trip's planets and the camera now. */
+  function trueSizeLine(mod) {
+    const unitKm = stage.unitKm;
+    if (!ctx.worlds || typeof ctx.worlds.drawnPositionOf !== 'function' || !(unitKm > 0)) return '';
+    const worlds = [];
+    for (const id of state.orbits) {
+      const w = WORLDS.find((row) => row.id === id);
+      const p = ctx.worlds.drawnPositionOf(id);
+      if (w && p) worlds.push({ id, name: w.display || id, radiusKm: w.radiusKm, distKm: p.distanceTo(ctx.camera.position) * unitKm });
+    }
+    const st = mod.scaleState({ worlds, markerPx: TRUE_SIZE_MARKER_PX, fovDeg: ctx.camera.fov, viewportH: window.innerHeight });
+    return mod.badgeWords(st, true).text || '';
   }
 
   function stopExtrasArrived(entry) {
@@ -2674,6 +2791,9 @@ export function createTrip(ctx) {
     // before anyone could see it.
     if (ctx.labels && ctx.labels.emphasise) ctx.labels.emphasise(subjectIdOf(entry));
     const stop = entry.stop;
+    if (stop.true_size === true) {
+      after(TRUE_SIZE_LEAD_MS, () => { if (run && state.phase === 'dwell' && state.index === index) setTrueSize(true); });
+    }
     const deg = Number(stop.drift_deg) || 0;
     if (deg > 0 && stop.drift !== 'none') {
       after(DRIFT_LEAD_MS, () => {
@@ -2800,6 +2920,7 @@ export function createTrip(ctx) {
     state.returning = true;
     state.phase = 'flight';
     state.chapter = null;
+    setTrueSize(false);
     state.sky = null;
     state.overlay = null;
     state.portrait = null;
@@ -3080,6 +3201,9 @@ export function createTrip(ctx) {
     state.tourId = null;
     state.tourTitle = null;
     state.orbits = [];
+    setTrueSize(false);
+    trueSize.k = 1;
+    if (ctx.orbitRings && typeof ctx.orbitRings.setDotScale === 'function') ctx.orbitRings.setDotScale(1);
     state.sky = null;
     state.overlay = null;
     state.exposure = null;

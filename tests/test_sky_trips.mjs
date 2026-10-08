@@ -242,6 +242,7 @@ function arrive(m) {
     const north = stage.toScene({ x: 0, y: 0, z: 6371 }, 'earth-fixed', clock.now()).sub(stage.toScene({ x: 0, y: 0, z: 0 }, 'earth-fixed', clock.now())).normalize();
     return toSun.dot(north);
   };
+  const solsticeAt = {};
   for (let i = 0; i < trip.stops.length; i += 1) {
     const stop = trip.stops[i];
     const where = `living-earth/${stop.id}`;
@@ -251,8 +252,15 @@ function arrive(m) {
     check(m.machine.state.overlay === (stop.overlay || null), `${where}: in flight the overlay asked for is ${m.machine.state.overlay}`);
     arrive(m);
     check(stage.worldId === (stop.stage || 'earth'), `${where}: flown on the ${stage.worldId} stage`);
-    if (typeof stop.time === 'string' && stop.time !== 'now') {
-      check(Math.abs(clock.now() - Date.parse(stop.time)) < 60 * 60e3, `${where}: shown at ${new Date(clock.now()).toISOString()}, not ${stop.time}`);
+    // The two solstice stops name no year (internal #384): the next June solstice after the
+    // visitor's clock, and the December one AFTER it (`after: tilt`), so the second is half a year
+    // on from the first in whatever month the trip is started.
+    if (stop.time && typeof stop.time === 'object' && stop.time.event === 'solstice.next') {
+      const at = clock.now();
+      check(at > REAL && at - REAL < 400 * 86400e3, `${where}: shown at ${new Date(at).toISOString()}, which is not the next solstice`);
+      if (stop.id === 'tilt') solsticeAt.tilt = at;
+      else check(at - solsticeAt.tilt > 170 * 86400e3 && at - solsticeAt.tilt < 200 * 86400e3, `${where}: ${((at - solsticeAt.tilt) / 86400e3).toFixed(1)} days after the first stop, not half a year`);
+      check(!/\d{4}/.test(JSON.stringify(stop.time)), `${where}: the stop names a year`);
       const lit = earthNorthLit();
       if (stop.id === 'tilt') check(lit > 0.38, `${where}: the north pole is tipped ${(Math.asin(lit) / DEG).toFixed(1)} degrees towards the Sun, not 23`);
       else check(lit < -0.38, `${where}: the north pole is tipped ${(Math.asin(lit) / DEG).toFixed(1)} degrees towards the Sun, not away`);

@@ -554,6 +554,8 @@ def check_tours(oddities_doc: dict, layer_ids: set, world_ids: set, site_ids: se
 
     unreachable = unreachable_oddities(oddities_doc)
     defaults = doc.get("defaults") or {}
+    TOUR_DEFAULTS_SEEN.clear()
+    TOUR_DEFAULTS_SEEN.update(defaults)
     tours = doc.get("tours")
     if not isinstance(tours, list):
         fail("tours.yaml", "no `tours:` list")
@@ -863,11 +865,90 @@ def clock_left_elsewhere(tour: dict, n: int):
     return last
 
 
+# `framing: sunrise` (internal #313): the camera on the night side with the Sun's centre this far
+# behind the limb (ui/trip.js SUNRISE_HIDDEN_DEG), and the drift, towards the light, brings it out.
+TOUR_FRAMINGS = ("sunrise",)
+# The `defaults:` of the tours.yaml being checked, for the checks that read a stop's own fields.
+TOUR_DEFAULTS_SEEN: dict = {}
+SUNRISE_HIDDEN_DEG = 2
+SUNRISE_MIN_DRIFT_DEG = 2 * SUNRISE_HIDDEN_DEG
+SUNRISE_MAX_RATE = 3600
+
+
+def worlds_with_air() -> set:
+    """The worlds registry/worlds.yaml draws with an atmosphere (`look.atmosphere`)."""
+    doc = yaml.safe_load((ROOT / "registry" / "worlds.yaml").read_text(encoding="utf-8")) or {}
+    return {w.get("id") for w in doc.get("worlds") or []
+            if isinstance(w, dict) and isinstance(w.get("look"), dict) and w["look"].get("atmosphere")}
+
+
+def check_sunrise(tour: dict, stop: dict, where: str, kind: str, value) -> None:
+    """`framing:` on a stop. One framing exists: `sunrise`, the Sun about to clear the limb of a
+    world with air. Every refusal is a way the frame would not be that."""
+    if "framing" not in stop:
+        return
+    framing = stop.get("framing")
+    if framing not in TOUR_FRAMINGS:
+        fail(where, f"`framing: {framing!r}` is not a framing; there is one: {', '.join(TOUR_FRAMINGS)}")
+        return
+    defaults = TOUR_DEFAULTS_SEEN
+    if kind != "world" or value not in worlds_with_air():
+        fail(where, f"`framing: sunrise` on a stop that is not at a world with air: the frame is the "
+                    f"Sun lighting the air along the limb, and worlds.yaml draws an atmosphere only on "
+                    f"{', '.join(sorted(worlds_with_air()))}")
+    if "distance_km" in stop:
+        fail(where, "`framing: sunrise` with `distance_km:`: how far behind the limb the Sun stands is "
+                    "worked out from the disc's size in the frame; give `frame_radii:`")
+    for other in ("key_light_deg", "over", "seen_from", "behind"):
+        if other in stop:
+            fail(where, f"`framing: sunrise` and `{other}:` are two answers to where the camera stands. "
+                        f"Drop one")
+    drift = stop.get("drift", defaults.get("drift"))
+    drift_deg = stop.get("drift_deg", defaults.get("drift_deg"))
+    if drift != "toward-light":
+        fail(where, f"`framing: sunrise` with `drift: {drift}`: the Sun comes out because the camera "
+                    f"turns towards the light")
+    if not is_number(drift_deg) or drift_deg < SUNRISE_MIN_DRIFT_DEG:
+        fail(where, f"`framing: sunrise` with `drift_deg: {drift_deg!r}`: the Sun starts "
+                    f"{SUNRISE_HIDDEN_DEG} degrees behind the limb, so under {SUNRISE_MIN_DRIFT_DEG} "
+                    f"degrees of drift it would never clear it and the stop would be a black disc")
+    rate = stop.get("rate")
+    if is_number(rate) and rate > SUNRISE_MAX_RATE:
+        fail(where, f"`framing: sunrise` with `rate: {rate:g}`: above {SUNRISE_MAX_RATE} the world's own "
+                    f"turning, not the camera, decides what the limb shows")
+    when = stop.get("time")
+    if isinstance(when, dict) and str(when.get("event") or "").partition(".")[0] in ECLIPSE_KINDS:
+        fail(where, "`framing: sunrise` on an eclipse stop: that shot is lit from the front (spec 0037)")
+
+
+def check_true_size(tour: dict, stop: dict, where: str) -> None:
+    """`true_size: true` (internal #290): the stop puts the planets' dots away and the frame prints
+    how wide the widest of them really is. There must be dots to put away."""
+    if "true_size" not in stop:
+        return
+    if stop.get("true_size") is not True:
+        fail(where, f"`true_size: {stop.get('true_size')!r}`: write `true_size: true` or leave it out")
+        return
+    flown_on = stop.get("stage") or tour.get("stage", TOUR_DEFAULTS_SEEN.get("stage"))
+    orbits = tour.get("orbits")
+    if flown_on != "sun" or not isinstance(orbits, list) or not orbits or orbits == ["moon"]:
+        fail(where, f"`true_size: true` on a stop flown on the `{flown_on}` stage of a trip with "
+                    f"`orbits: {orbits!r}`: the reveal puts away the dots scene/orbitrings.js draws for "
+                    f"`orbits:` on the Sun's stage, and here there are none")
+    body = str((stop.get("card") or {}).get("body") or "").lower()
+    for word in ("each dot", "the dots", "third dot", "a dot"):
+        if word in body:
+            fail(where, f"`true_size: true` under a card that says \"{word}\": the dots are put away "
+                        f"while it is read")
+
+
 def check_stop_extras(tour: dict, stop: dict, n: int, where: str, kind: str, value) -> None:
     """What a stop adds to the scene (2026-10-05): figures, the ecliptic, a shutter, an overlay, a
     place to stand over, a live sentence. Each is a promise about the picture, so each is refused
     where the picture could not keep it."""
     sky = kind == "sky"
+    check_sunrise(tour, stop, where, kind, value)
+    check_true_size(tour, stop, where)
     figures = stop.get("figures")
     if figures is not None:
         if not isinstance(figures, list) or not figures:
@@ -1099,7 +1180,7 @@ def check_stop_clock(stop: dict, where: str, kind: str, sgp4: bool, flown_on, to
         return
     when = stop.get("time")
     if isinstance(when, dict):
-        extra = sorted(set(when) - {"event", "offset_s", "kind"})
+        extra = sorted(set(when) - {"event", "offset_s", "kind", "after", "borrowed"})
         ref = str(when.get("event") or "")
         etype, _, which = ref.partition(".")
         offset = when.get("offset_s", 0)
@@ -1120,6 +1201,28 @@ def check_stop_clock(stop: dict, where: str, kind: str, sgp4: bool, flown_on, to
         if which != "next":
             fail(where, f"`time: {{event: {ref}}}` must end `.next`: the first one after the "
                         f"visitor's clock is the only occurrence a reference can mean")
+        # `after: <stop id>` (internal #384): the first such event after the instant an EARLIER stop
+        # of this trip is shown at, instead of after the visitor's clock ("half a year on").
+        if "after" in when:
+            earlier = None
+            for prev in (tour or {}).get("stops") or []:
+                if prev is stop:
+                    break
+                if isinstance(prev, dict) and prev.get("id") == when.get("after"):
+                    earlier = prev
+            prev_time = earlier.get("time") if earlier else None
+            if earlier is None:
+                fail(where, f"`after: {when.get('after')!r}` does not name an earlier stop of this trip: "
+                            f"the event is counted from the instant that stop is shown at, so it must "
+                            f"come before this one")
+            elif prev_time is None or prev_time in ("now", "tonight", "night", "midnight", "daylight"):
+                fail(where, f"`after: {when.get('after')}`: that stop has no instant of its own to count "
+                            f"from (a written `time:` or an event reference); drop `after:` and the "
+                            f"event is counted from the visitor's clock, which is the same thing")
+        # `borrowed: true` (internal #384, #444): the stop borrows the event's instant for its
+        # picture and the trip is not ABOUT the event, so the picker prints no "Next: <date>".
+        if "borrowed" in when and when.get("borrowed") is not True:
+            fail(where, f"`borrowed: {when.get('borrowed')!r}`: write `borrowed: true` or leave it out")
         if not isinstance(offset, int) or isinstance(offset, bool):
             fail(where, f"`offset_s: {offset!r}` is not a whole number of seconds")
         elif abs(offset) > TOUR_EVENT_OFFSET_MAX_S:

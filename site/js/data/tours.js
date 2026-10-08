@@ -2147,7 +2147,11 @@ export const TOURS = [
 "frame_radii": 3.4,
 "drift_deg": 0,
 "key_light_deg": 90,
-"time": "2027-06-21T12:00:00Z",
+"time": {
+"event": "solstice.next",
+"kind": "june",
+"borrowed": true
+},
 "rate": 1800,
 "chapter": "The Sun and the seasons",
 "card": {
@@ -2168,7 +2172,12 @@ export const TOURS = [
 "frame_radii": 3.4,
 "drift_deg": 0,
 "key_light_deg": 90,
-"time": "2027-12-22T12:00:00Z",
+"time": {
+"event": "solstice.next",
+"kind": "december",
+"after": "tilt",
+"borrowed": true
+},
 "rate": 1800,
 "chapter": "The Sun and the seasons",
 "card": {
@@ -2931,6 +2940,7 @@ export const TOURS = [
 "frame_radii": 6,
 "time": "now",
 "chapter": "How big, how long",
+"true_size": true,
 "card": {
 "title": "A million Earths",
 "body": "Jupiter, the largest planet, is a tenth as wide as the Sun. More than a million Earths would fit inside it. No screen can show them side by side: with the Sun at this size, the Earth would be a speck."

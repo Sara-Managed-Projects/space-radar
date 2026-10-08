@@ -118,6 +118,11 @@ STOP_FIELDS = (
     # instead of by a cut through the veil. check_registry.py holds its stage and distance to the
     # chain of registry/stages.yaml `joins:`.
     "climb",
+    # 2026-10-08 (internal #313, #290). `framing: sunrise`: the camera on the night side of a world
+    # with air, the Sun about to clear the limb. `true_size: true`: the stop puts the planets' dots
+    # away and the frame prints how wide the widest really is on this screen.
+    "framing",
+    "true_size",
     "card",
 )
 
@@ -301,7 +306,9 @@ EVENT_REF = re.compile(r"^([a-z0-9-]+)\.next$")
 def event_of(trip: dict):
     for stop in trip.get("stops") or []:
         when = stop.get("time")
-        ref = when.get("event") if isinstance(when, dict) else None
+        # A stop that BORROWS an event's instant for its picture (`borrowed: true`, internal #384:
+        # the living Earth at a solstice) does not make its trip an event trip.
+        ref = when.get("event") if isinstance(when, dict) and when.get("borrowed") is not True else None
         m = EVENT_REF.match(str(ref or ""))
         if m:
             return m.group(1)

@@ -129,14 +129,16 @@ export function nextTripOrder(tours, fromId) {
 
 /**
  * The event type an event trip is timed by: the first stop whose `time:` is spec 0030's reference
- * form, `{event: <type>.next, offset_s}`. Null for a trip with none. Pure.
+ * form, `{event: <type>.next, offset_s}`, and is not `borrowed: true`. Null for a trip with none. Pure.
  */
 export function eventTypeOf(tour) {
   // A row of data/tours-index.js has no stops and says its type itself (scripts/gen_tours_js.py
   // event_of, the same rule as below; tests/test_trips_panel.mjs holds the two together).
   if (tour && typeof tour.event === 'string' && !Array.isArray(tour.stops)) return tour.event;
   for (const stop of (tour && Array.isArray(tour.stops) ? tour.stops : [])) {
-    const ref = stop && stop.time && typeof stop.time === 'object' ? stop.time.event : null;
+    // A stop that BORROWS an event's instant for its picture (`borrowed: true`, internal #384: the
+    // living Earth at a solstice) does not make its trip one that is timed by the event.
+    const ref = stop && stop.time && typeof stop.time === 'object' && stop.time.borrowed !== true ? stop.time.event : null;
     const m = /^([a-z0-9-]+)\.next$/.exec(String(ref || ''));
     if (m) return m[1];
   }

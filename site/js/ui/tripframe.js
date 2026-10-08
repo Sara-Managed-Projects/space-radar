@@ -241,6 +241,9 @@ export function orbitsLine(st, stageId, moonDrawn = false) {
   // outside the Moon's orbit (scene/orbitrings.js MOON_PATH_FROM_KM), so the stops that look at the
   // true Moon from close by do not say a dot is drawn.
   if (stageId === 'earth') return moonDrawn && st.orbits.includes('moon') ? COPY.trip.moonPathLine : '';
+  // A stop that shows the planets at their true size (`true_size: true`, internal #290) has put the
+  // dots away: the line is what is left, and it is never "drawn larger" while nothing is.
+  if (stageId === 'sun' && st.trueSize) return st.trueSizeLine || '';
   return stageId === 'sun' ? COPY.trip.orbitsLine : '';
 }
 

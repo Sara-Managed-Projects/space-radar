@@ -135,6 +135,21 @@
 #                 point the turn has stopped being a camera move and become a wait. Refused if it
 #                 cannot finish inside its own dwell with the 0.4 s lead and the 1.5 s tail --
 #                 which caps it by what the shot can hold rather than at an arbitrary number.
+#   framing       `sunrise` (2026-10-08, internal #313), and only that: the camera stands on the
+#                 night side of a world with air (worlds.yaml `look.atmosphere`), on the side where
+#                 the Sun's centre is two degrees behind the limb, and the stop's own drift, which
+#                 turns towards the light, brings the Sun out within the dwell. Nothing is moved but
+#                 the camera. It needs `frame_radii:` (the limb's place in the frame is worked out
+#                 from the disc's size), `drift: toward-light` and at least four degrees of
+#                 `drift_deg:`; it is refused with `key_light_deg:`, `over:`, `seen_from:` or
+#                 `behind:` (two answers to where the camera stands), with a `rate:` over 3 600, and
+#                 on an eclipse stop.
+#   true_size     `true` (2026-10-08, internal #290): on a stop flown on the Sun's stage of a trip
+#                 with `orbits:`, the planets' dots are put away a moment after the card is up
+#                 (the scale badge's True size, scene/orbitrings.js setDotScale) and the frame's
+#                 line becomes the widest planet's true width on this screen, computed from the
+#                 camera. Leaving the stop puts the dots back. Refused anywhere there are no dots,
+#                 and under a card that talks about the dots.
 #   on_unresolved `drop` (default) removes the stop before the count is shown. `hold` keeps it,
 #                 flies to the parent world instead, shows the honest failure, and NEVER
 #                 auto-advances: a failure that scrolls past is a failure nobody can report.
@@ -152,6 +167,14 @@
 #                 `solar-eclipse`, `total | partial | penumbral` for `lunar-eclipse`, looked for
 #                 1 200 days ahead. Every reference counts from the clock the visitor had when the
 #                 trip began, not from where an earlier stop has run it to.
+#                 `after: <stop id>` (2026-10-08, internal #384) counts instead from the instant an
+#                 EARLIER stop of the same trip is shown at: `{event: solstice.next, kind: december,
+#                 after: tilt}` is the December solstice that follows the June one stop `tilt`
+#                 found, whatever month the visitor starts in. Refused unless it names an earlier
+#                 stop that has a written instant or an event reference of its own.
+#                 `borrowed: true` says the stop borrows the event's instant for its picture and the
+#                 trip is not about the event: the picker (ui/trippicker.js eventTypeOf) then
+#                 prints no "Next: <date>" under the trip's title.
 #   rate          how fast the clock runs while the stop is up: 60 at most on an Earth-orbit
 #                 target, 36 000 on anything else, and up to 1 000 000 only on the Sun's stage or
 #                 a rung, where a world's own motion is the picture. Once a stop has touched the
@@ -1949,8 +1972,9 @@ tours:
     group: earth-orbit
     next: satellites-and-junk
     requires: [worlds, storms, lightning, aurora]
-    # The first two stops move the clock to 2027, and a launch pad's label ("in 3 days") drawn at a
-    # date eight months on is a mark about another day (internal #400, #426). The satellites'
+    # The first two stops move the clock to the next June solstice and the December one after it,
+    # and a launch pad's label ("in 3 days") drawn at a date months on is a mark about another day
+    # (internal #400, #426). The satellites'
     # marks stay: the trip is about one planet with today's sky round it.
     hides: [launches, just-launched, starlink-trains]
     stage: earth
@@ -1961,7 +1985,9 @@ tours:
         target: {world: earth}
         frame_radii: 3.4
         key_light_deg: 90
-        time: 2027-06-21T12:00:00Z
+        # The next June solstice after the visitor's clock (data/events.js, computed), not a
+        # written year (internal #384). Borrowed: the trip is not about the solstice.
+        time: {event: solstice.next, kind: june, borrowed: true}
         rate: 1800
         drift_deg: 0
         chapter: "The Sun and the seasons"
@@ -1977,7 +2003,9 @@ tours:
         target: {world: earth}
         frame_radii: 3.4
         key_light_deg: 90
-        time: 2027-12-22T12:00:00Z
+        # The December solstice that FOLLOWS the one stop `tilt` found, so "six months later" is
+        # true in whatever month the trip is started.
+        time: {event: solstice.next, kind: december, after: tilt, borrowed: true}
         rate: 1800
         drift_deg: 0
         chapter: "The Sun and the seasons"
@@ -2546,6 +2574,10 @@ tours:
         target: {world: sun}
         frame_radii: 6
         time: now
+        # True size as a reveal (internal #290): a moment after the card is up the planets' dots
+        # are put away, and the frame says how wide the widest really is from here. The card's
+        # last sentence is that picture.
+        true_size: true
         chapter: "How big, how long"
         card:
           title: "A million Earths"

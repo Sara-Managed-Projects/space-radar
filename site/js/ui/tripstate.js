@@ -15,6 +15,10 @@ export function idleTripState() {
     // The planets whose paths and dots the Sun stage draws while this trip runs (`orbits:`,
     // scene/orbitrings.js), and which the frame's "drawn larger" line is about. Empty when none.
     orbits: [],
+    // `true_size: true` on the stop that is up (internal #290): the planets' dots are put away and
+    // `trueSizeLine` is what the frame prints instead of "drawn larger" (computed, ui/trip.js).
+    trueSize: false,
+    trueSizeLine: '',
     // What the stop on screen asks the scene to add (2026-10-05), each null when it asks nothing:
     // `sky` = { figures, stars, ecliptic } for scene/figures3d.js, `overlay` an id of
     // registry/overlays.yaml for scene/earthoverlay.js, `exposure` a mode of scene/exposure.js.
