@@ -56,8 +56,8 @@ export const PATCH_SLOTS = 4;
 /** A flash's colour, linear RGB at full brightness: blue-white, as Cassini's and Juno's frames show. */
 export const FLASH_COLOUR = [0.85, 0.95, 1.25];
 /** A methane cloud on Titan, linear RGB, and how much of the ground under it the thickest part hides. */
-export const TITAN_CLOUD = [0.78, 0.70, 0.60];
-export const TITAN_CLOUD_COVER = 0.55;
+export const TITAN_CLOUD = [0.62, 0.52, 0.40];
+export const TITAN_CLOUD_COVER = 0.45;
 /** Where the declarations go: before the first function WORLD_FRAG defines. */
 export const PARS_ANCHOR = '// Oren-Nayar, qualitative form';
 
@@ -176,8 +176,10 @@ vec3 wxBase( vec2 uv ) {
     if ( uWxPatch[ i ].z <= 0.0 ) continue;
     float dLat = ( lat - uWxPatch[ i ].x ) / uWxPatch[ i ].z;
     float dLon = ( mod( lon - uWxPatch[ i ].y + 3.14159265, 6.2831853 ) - 3.14159265 ) / uWxPatch[ i ].w;
-    // A streak, not an oval: ragged along its length, by two waves of its own longitude.
-    float rag = 0.75 + 0.25 * sin( dLon * 9.0 + float( i ) * 2.1 ) * sin( dLon * 23.0 + 1.3 );
+    // A streak, not an oval: its thickness swells and thins once or twice along its length. (The
+    // first version rippled it thirty times, which near the pole, where the meridians meet, drew
+    // a fan of rays: seen in the one frame taken of it, 2026-10-08.)
+    float rag = 0.8 + 0.2 * sin( dLon * 2.6 + float( i ) * 2.1 );
     cover = max( cover, exp( -dLat * dLat / ( rag * rag ) ) * exp( -dLon * dLon ) );
   }
   return mix( c, vec3( ${TITAN_CLOUD.join(', ')} ), ${TITAN_CLOUD_COVER.toFixed(2)} * cover );

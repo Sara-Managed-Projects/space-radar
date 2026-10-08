@@ -136,7 +136,8 @@ ctx.cameraRig.flyTo({ distance: ctx.cameraRig.state.distance * 6, ms: 0 });
 await snap('sun-3-far', 2500);
 {
   let u = null;
-  ctx.scene && ctx.scene.traverse((o) => { if (!u && o.isPoints && o.material && o.material.uniforms && o.material.uniforms.uSunGlare) u = o.material.uniforms; });
+  const sky = ctx.starfield && ctx.starfield.group;
+  if (sky) sky.traverse((o) => { if (!u && o.isPoints && o.material && o.material.uniforms && o.material.uniforms.uSunGlare) u = o.material.uniforms; });
   out.glare = u ? { cosInner: u.uSunGlare.value.x, cosOuter: u.uSunGlare.value.y, view: [u.uSunView.value.x, u.uSunView.value.y, u.uSunView.value.z] } : null;
 }
 out.ms = Date.now() - t0;

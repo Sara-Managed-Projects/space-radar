@@ -446,7 +446,7 @@ function decodePng(buf) {
   check(ju.defines.WX_FLASH === 1 && sa.defines.WX_FLASH === 1 && !ve.defines.WX_FLASH && !meshes.get('uranus').material.defines.WX_FLASH, 'Jupiter and Saturn flash; no other world does');
   check(ju.uniforms.uWxFlash.value.length === WW.FLASH_SLOTS * 4 && near(ju.uniforms.uWxFlashSize.value, 1.6 * Math.PI / 180, 1e-9), 'a flash is a place, a light and a size');
   check(ve.uniforms.uWxWave.value.x === 0.2 && near(ve.uniforms.uWxWave.value.z, Math.PI / 4, 1e-9) && ju.uniforms.uWxWave.value.x === 0, 'Venus has the Y and Jupiter does not');
-  check(ti.defines.WX_PATCH === 1 && ti.uniforms.uWxPatch.value.length === WW.PATCH_SLOTS * 4 && near(ti.uniforms.uWxPatch.value[0], 66 * Math.PI / 180, 1e-6) && ti.uniforms.uWxPatch.value[14] === 0, 'Titan: three clouds in the north, the fourth slot empty');
+  check(ti.defines.WX_PATCH === 1 && ti.uniforms.uWxPatch.value.length === WW.PATCH_SLOTS * 4 && near(ti.uniforms.uWxPatch.value[0], 62 * Math.PI / 180, 1e-6) && ti.uniforms.uWxPatch.value[14] === 0, 'Titan: three clouds in the north, the fourth slot empty');
   const t0 = Date.parse('2026-10-08T12:00:00Z');
   let litFrames = 0; let nightOnly = true; let maxLit = 0;
   for (let ms = 0; ms < 120000; ms += 50) {

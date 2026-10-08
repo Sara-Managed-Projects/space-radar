@@ -755,22 +755,22 @@ export const WEATHER = [
     ],
     "patches": [
       [
-        66,
+        62,
         50,
-        4,
-        17
+        3.5,
+        16
       ],
       [
-        52,
+        48,
         -20,
         3,
         12
       ],
       [
-        72,
+        56,
         170,
-        3.5,
-        22
+        3,
+        18
       ]
     ],
     "source": "NASA, Webb and Keck telescopes team up to track clouds on Titan (1 December 2022: Webb on 4 November 2022 and Keck two days later, one cloud 'over the northern polar region near Kraken Mare'); Nixon et al. 2025, Nature Astronomy (November 2022 and July 2023: 'northern hemisphere tropospheric clouds evolving in altitude')"
