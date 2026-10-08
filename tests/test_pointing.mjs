@@ -295,5 +295,73 @@ function fakeWin({ permission, wake = true } = {}) {
   check(P.canPoint(fakeWin({})) === true && P.canPoint({ navigator: {} }) === false && P.canPoint({ ...fakeWin({}), isSecureContext: false }) === false, 'canPoint: the event exists, a finger, a secure page');
 }
 
+// --- the sky view takes the phone's attitude (sky/skyview.js pointPhone) ------------------------------
+{
+  const THREE = await import('../site/vendor/three.module.min.js');
+  const { stage } = await import('../site/js/scene/stage.js');
+  const { createSkyView } = await import('../site/js/sky/skyview.js');
+  const src = readFileSync(join(ROOT, 'site/js/sky/skyview.js'), 'utf8');
+  check(!/^import[^\n]*pointing\.js/m.test(src) && /import\('\.\/pointing\.js'\)/.test(src), 'the sky view fetches sky/pointing.js when the switch is pressed, never before');
+  // A phone: the event exists, no permission call (Android), and a canvas to drag on.
+  const ls = new Map();
+  const win = new EventTarget();
+  win.DeviceOrientationEvent = function DeviceOrientationEvent() {};
+  win.isSecureContext = true;
+  win.screen = { orientation: { angle: 0 } };
+  win.navigator = {};
+  win.document = { hidden: false, addEventListener() {}, removeEventListener() {} };
+  const hadWindow = 'window' in globalThis;
+  globalThis.window = win;
+  const canvas = { clientHeight: 800, clientWidth: 400, addEventListener(t, f) { ls.set(t, f); }, removeEventListener(t) { ls.delete(t); }, setPointerCapture() {}, releasePointerCapture() {} };
+  const camera = new THREE.PerspectiveCamera(50, 0.5, 0.001, 1e9);
+  const sky = createSkyView({ camera, scene: new THREE.Scene(), stage }, { domElement: canvas, ground: false, glow: false, storage: null });
+  const tNight = Date.parse('2026-01-10T02:00:00Z');
+  check((await sky.pointPhone(true)).why === 'place', 'before the sky view has a place the switch says so');
+  sky.enter({ latDeg: 51.5, lonDeg: -0.13, altKm: 0 });
+  sky.update(tNight);
+  check(sky.pointing.on === false && Math.abs(sky.look.azimuthDeg - 180) < 1e-6, 'off by default: the drag view, facing south');
+  const fire = (alpha, beta, gamma) => { const e = new Event('deviceorientationabsolute'); Object.assign(e, { alpha, beta, gamma, absolute: true }); win.dispatchEvent(e); };
+  const started = sky.pointPhone(true);
+  const pump = setInterval(() => fire(270, 120, 0), 10);
+  const got = await started;
+  check(got.ok === true && sky.pointing.on && sky.pointing.kind === 'absolute', `on: ${JSON.stringify(got)} ${JSON.stringify(sky.pointing)}`);
+  const decl = sky.pointing.declinationDeg;
+  const settle = async () => { for (let i = 0; i < 40; i += 1) { sky.update(tNight); await new Promise((r) => setTimeout(r, 12)); } };
+  await settle();
+  check(nearAz(sky.look.azimuthDeg, 90 + decl, 0.05) && near(sky.look.altitudeDeg, 30, 0.05), `the view is where the phone points: ${JSON.stringify(sky.look)} (declination ${decl.toFixed(2)})`);
+  // The camera really looks there: its forward, in the local frame the view builds.
+  const f = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+  check(Math.abs(f.length() - 1) < 1e-9, 'the camera has an attitude');
+  // lookAtDeg does not fight the phone; a drag is the offset.
+  sky.lookAtDeg(10, 10);
+  await settle();
+  check(near(sky.look.altitudeDeg, 30, 0.05), 'lookAtDeg leaves the phone\'s view alone');
+  ls.get('pointerdown')({ pointerId: 1, clientX: 100, clientY: 100 });
+  ls.get('pointermove')({ pointerId: 1, clientX: 160, clientY: 100 });
+  ls.get('pointerup')({ pointerId: 1, clientX: 160, clientY: 100 });
+  await settle();
+  const perPx = 72 / 800;
+  check(near(sky.pointing.offsetAzDeg, -60 * perPx, 0.01) && nearAz(sky.look.azimuthDeg, 90 + decl - 60 * perPx, 0.05), `a 60 px drag to the right is ${(60 * perPx).toFixed(2)} degrees of offset: ${sky.pointing.offsetAzDeg}`);
+  sky.resetPointing();
+  // Past the drag view's own limits: straight down and nearly straight up both hold.
+  clearInterval(pump);
+  const pump2 = setInterval(() => fire(0, 10, 0), 10);
+  await settle();
+  check(near(sky.look.altitudeDeg, -80, 0.1), `the phone can look at the ground (${sky.look.altitudeDeg})`);
+  clearInterval(pump2);
+  // Off: nothing listens, and the drag view carries on from a sane place.
+  await sky.pointPhone(false);
+  sky.update(tNight);
+  check(sky.pointing.on === false && sky.look.altitudeDeg >= -20.001, `off: the drag view, inside its own limits (${sky.look.altitudeDeg})`);
+  // Leaving the sky view lets go of the sensor too.
+  const again = sky.pointPhone(true);
+  const pump3 = setInterval(() => fire(0, 100, 0), 10);
+  await again;
+  sky.exit();
+  clearInterval(pump3);
+  check(sky.pointing.on === false, 'leaving the sky view switches the phone off');
+  if (!hadWindow) delete globalThis.window;
+}
+
 if (problems.length) { console.error(`test_pointing: ${problems.length} problem(s)`); for (const p of problems) console.error('  - ' + p); process.exit(1); }
 console.log('test_pointing: ok');

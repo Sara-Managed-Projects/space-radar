@@ -1320,12 +1320,34 @@ export function createSkyView(ctx, options = {}) {
    * What the phone is pointing at, named in the tag without a tap, twice a second: the same tag a
    * tap makes, so pressing it opens the card. Empty sky takes an automatic tag away again.
    */
+  /**
+   * Where the phone points, on the canvas (CSS px from its corner). Not its middle: on a phone the
+   * picture is moved up into the band the sheet and the time pill leave free (scene/viewshift.js),
+   * so the line of sight is drawn above the middle and the reticle belongs there.
+   */
+  const aimPx = { x: NaN, y: NaN };
+  function placeReticle() {
+    const w = domElement?.clientWidth || 0;
+    const h = domElement?.clientHeight || 0;
+    if (!w || !h) return;
+    camera.matrixWorldInverse.copy(camera.matrixWorld).invert();
+    _p.set(0, 0, -1).applyQuaternion(camera.quaternion).multiplyScalar(parts?.R ?? 1).add(camera.position).project(camera);
+    const x = (_p.x * 0.5 + 0.5) * w;
+    const y = (-_p.y * 0.5 + 0.5) * h;
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+    if (reticle && (Math.abs(x - aimPx.x) > 0.5 || Math.abs(y - aimPx.y) > 0.5)) {
+      reticle.style.left = `${x.toFixed(1)}px`;
+      reticle.style.top = `${y.toFixed(1)}px`;
+    }
+    aimPx.x = x;
+    aimPx.y = y;
+  }
   function nameCentre() {
     const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
     if (now - centreAt < 500 || !ground || typeof ground.whatAt !== 'function' || !domElement?.getBoundingClientRect) return;
     centreAt = now;
     const r = domElement.getBoundingClientRect();
-    const what = ground.whatAt(r.left + r.width / 2, r.top + r.height / 2, camera, r);
+    const what = Number.isFinite(aimPx.x) ? ground.whatAt(r.left + aimPx.x, r.top + aimPx.y, camera, r) : null;
     if (!what || what.kind === 'sky') {
       if (lastTap && lastTap.auto) { ground.hideTag(); lastTap = null; }
       return;
@@ -1543,7 +1565,7 @@ export function createSkyView(ctx, options = {}) {
       camera.lookAt(_p.copy(_o).addScaledVector(_dir, parts?.R ?? 1));
     }
     camera.updateMatrixWorld?.(true);
-    if (aimed) nameCentre();
+    if (aimed) { placeReticle(); nameCentre(); }
 
     // A radiant's name keeps its size on the screen as the field closes (it is a mark, not a thing).
     if (parts && parts.radiants.children.length) {

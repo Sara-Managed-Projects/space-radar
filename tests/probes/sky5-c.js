@@ -22,7 +22,7 @@ out.switch = btn ? { hidden: btn.parentNode.hidden, disabled: btn.disabled, pres
 let feeding = null;
 const feed = (alpha, beta, gamma) => { feeding = { alpha, beta, gamma }; };
 const pump = setInterval(() => { if (feeding) window.dispatchEvent(new DeviceOrientationEvent('deviceorientationabsolute', { ...feeding, absolute: true })); }, 16);
-if (btn) { btn.scrollIntoView({ block: 'nearest' }); btn.click(); }
+if (btn) { btn.scrollIntoView({ block: 'start' }); btn.click(); }
 feed(0, 135, 0); // facing magnetic north, tipped back 45 degrees
 const w3 = Date.now(); while (!(ctx.skyView.pointing && ctx.skyView.pointing.on) && Date.now() - w3 < 8000) await wait(100);
 await wait(1200);
@@ -51,7 +51,8 @@ mark('lowering');
 raise('ArrowDown'); await wait(400); raise('ArrowDown'); await wait(900);
 mark('lowered');
 const o = new A.Observer(35.2, -111.65, 0); const d = new Date(ctx.clock.now());
-const h = A.Horizon(d, o, 5.6036, -1.2019, 'normal'); // Alnilam
+// Alnilam, of date: J2000's 5.6036 h, -1.2019 carried 26.8 years by precession.
+const h = A.Horizon(d, o, 5.6263, -1.1857, 'normal');
 out.alnilam = { az: +h.azimuth.toFixed(2), alt: +h.altitude.toFixed(2) };
 await step('alnilam', decl - h.azimuth, 90 + h.altitude, 0, h.azimuth, h.altitude);
 await wait(1500);
