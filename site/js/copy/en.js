@@ -2251,6 +2251,8 @@ export const COPY = {
   clean: {
     hide: 'Hide all panels (H)',
     show: 'Show the panels again (H or Escape)',
+    // Said once a visit, the first time the panels go (ui/cleanview.js).
+    hint: 'H or Escape for the panels. Shift+H keeps labels and time',
   },
   mark: {
     label: 'Source on GitHub',

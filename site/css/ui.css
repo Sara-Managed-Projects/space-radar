@@ -1330,6 +1330,21 @@ html.sr-clean body > *:not(.sr-scene):not(.sr-veil):not(.sr-over-clean) {
   pointer-events: none !important;
   transition: none !important;
 }
+
+/* THE HUD SCREEN (Shift+H, spec 0046 task 3): the panels go as on a clear screen; what is about the
+   scene stays: the labels, the reticle with its tag and chevron (#sr-hud), and the time pill, which
+   is brought back out of the hidden shell below. */
+html.sr-hud body > *:not(.sr-scene):not(.sr-veil):not(.sr-over-clean):not(#labels):not(#sr-hud) {
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: none !important;
+}
+
+html.sr-hud #sr-time {
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
 /* ------------------------------------------------------------------------------------ */
 /* prefers-reduced-motion: the scrub stays, because it is a control, not decoration.       */
 /* ------------------------------------------------------------------------------------ */
@@ -5045,18 +5060,30 @@ html.sr-phone .sr-subscribe__email {
    so the way back is where the way out was; Share stays beside it, for the postcard that is the
    point of a clear screen. */
 html.sr-clean #sr-rail .sr-rail__btn--clean,
-html.sr-clean #sr-rail .sr-rail__btn--share {
+html.sr-clean #sr-rail .sr-rail__btn--share,
+html.sr-hud #sr-rail .sr-rail__btn--clean,
+html.sr-hud #sr-rail .sr-rail__btn--share {
   visibility: visible !important;
   pointer-events: auto !important;
   opacity: 0.4;
   border-top: 0;
+  transition: opacity var(--sr-slow) var(--sr-ease);
 }
 
-html.sr-clean #sr-rail .sr-rail__btn--show { display: none; }
+html.sr-clean #sr-rail .sr-rail__btn--show,
+html.sr-hud #sr-rail .sr-rail__btn--show { display: none; }
+
+/* Three seconds without a pointer or a key and the eye is gone too (ui/cleanview.js wake): a still
+   picture has nothing on it. Any movement, or focus, brings it back. */
+html.sr-clean #sr-rail .sr-rail__btn--clean.is-idle,
+html.sr-hud #sr-rail .sr-rail__btn--clean.is-idle { opacity: 0; }
 
 html.sr-clean #sr-rail .sr-rail__btn--clean:hover,
 html.sr-clean #sr-rail .sr-rail__btn--share:hover,
-html.sr-clean #sr-rail .sr-rail__btn:focus-visible { opacity: 1; }
+html.sr-clean #sr-rail .sr-rail__btn:focus-visible,
+html.sr-hud #sr-rail .sr-rail__btn--clean:hover,
+html.sr-hud #sr-rail .sr-rail__btn--share:hover,
+html.sr-hud #sr-rail .sr-rail__btn:focus-visible { opacity: 1; }
 
 /* A trip takes the rail and the pill away, and on a phone the drawer; on a desktop the sidebar
    stays and shows the trip (the trip section above, spec 0061 task 7). */
@@ -5226,11 +5253,14 @@ html.sr-phone .sr-rail__btn--more {
 /* A clear screen on a phone: the eye comes back where More was, and Share beside it, as on a
    desktop (the clear-screen rules above dim them). */
 html.sr-phone.sr-clean .sr-rail__btn--clean,
-html.sr-phone.sr-clean .sr-rail__btn--share {
+html.sr-phone.sr-clean .sr-rail__btn--share,
+html.sr-phone.sr-hud .sr-rail__btn--clean,
+html.sr-phone.sr-hud .sr-rail__btn--share {
   display: grid;
 }
 
-html.sr-phone.sr-clean .sr-rail__btn--more {
+html.sr-phone.sr-clean .sr-rail__btn--more,
+html.sr-phone.sr-hud .sr-rail__btn--more {
   display: none;
 }
 

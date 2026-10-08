@@ -142,5 +142,30 @@ stage.setWorld('earth');
   check(src.includes('${STRETCH_VERT}') && src.includes('${STRETCH_FRAG}'), 'starfield.js splices the same shader chunks as stars3d.js');
 }
 
+// Five named stars come out in their colours (spec 0058 task 1, internal #430). The colour drawn is
+// kelvinToRgb(bvToKelvin(B-V)) from the star's own colour index in the file (HYG v4.4), the two
+// functions stars3d.js itself calls; held here by ORDER, which is what an eye checks: the two red
+// supergiants are the reddest, Arcturus is orange, Vega is the white point and Rigel is bluer.
+{
+  const { bvToKelvin, kelvinToRgb } = await import(join(ROOT, 'site/js/scene/starfield.js'));
+  const names = JSON.parse(readFileSync(join(ROOT, 'site/data/stars3d.names.json'), 'utf8')).rows;
+  const of = (proper) => {
+    const row = names.find((r) => r[1] === proper);
+    const bv = row ? data.ci[row[0]] : NaN;
+    const k = bvToKelvin(bv);
+    const c = kelvinToRgb(k);
+    const [r, g, b] = Array.isArray(c) ? c : [c.r, c.g, c.b];
+    return { bv, k, r, g, b, warm: r / Math.max(b, 1e-6) };
+  };
+  const s = Object.fromEntries(['Betelgeuse', 'Antares', 'Arcturus', 'Vega', 'Rigel'].map((n) => [n, of(n)]));
+  const say = Object.entries(s).map(([n, v]) => `${n} B-V ${Number(v.bv).toFixed(2)} ${Math.round(v.k)} K`).join(', ');
+  check(Object.values(s).every((v) => Number.isFinite(v.bv) && Number.isFinite(v.k)), `all five are in the file with a colour index (${say})`);
+  check(s.Betelgeuse.k < 4200 && s.Antares.k < 4200 && s.Betelgeuse.warm > 1.5 && s.Antares.warm > 1.5, `Betelgeuse and Antares are drawn red: far more red than blue (${s.Betelgeuse.warm.toFixed(2)}, ${s.Antares.warm.toFixed(2)})`);
+  check(s.Arcturus.k > s.Betelgeuse.k && s.Arcturus.k < 5200 && s.Arcturus.r > s.Arcturus.g && s.Arcturus.g > s.Arcturus.b, `Arcturus is orange: red over green over blue, less red than the supergiants (${Math.round(s.Arcturus.k)} K)`);
+  check(s.Vega.k > 8500 && s.Vega.warm < s.Arcturus.warm && s.Vega.warm <= 1.05, `Vega is white to blue-white (${Math.round(s.Vega.k)} K, red over blue ${s.Vega.warm.toFixed(2)})`);
+  check(s.Rigel.k > s.Vega.k && s.Rigel.warm <= s.Vega.warm && s.Rigel.b >= s.Rigel.r, `Rigel is hotter and bluer than Vega (${Math.round(s.Rigel.k)} K)`);
+  console.log(`  five stars' colours: ${say}`);
+}
+
 if (problems.length) { console.error('stars3d FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`stars3d ok: ${data.count} stars placed and ${data.unplaced} honestly not, Sirius at 8.6 ly, a shell from Earth and true positions on the stellar rung, a tap picks Sirius`);
