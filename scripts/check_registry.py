@@ -291,6 +291,8 @@ TOUR_PACING = {"auto", "reader"}
 TOUR_CLOCKS = {"as-found", "live", "freeze"}
 TOUR_DRIFTS = {"toward-light", "away", "none"}
 TOUR_EASES = {"auto", "ui", "inout", "cruise", "linear"}
+# How a stop is joined to the one before it (internal #288): the flight, a cut, or a fade through black.
+TOUR_TRANSITIONS = {"fly", "cut", "black"}
 # `fallback` is in the design and is not shipped: the one stop that needed it was the `view:`
 # stop, which is not shipped either. Refusing it by name is better than accepting a value the
 # state machine would silently treat as `drop`.
@@ -1372,6 +1374,10 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
     ease = stop.get("ease", defaults.get("ease", "auto"))
     if ease not in TOUR_EASES:
         fail(where, f"`ease: {ease}` is not one of {sorted(TOUR_EASES)}")
+
+    transition = stop.get("transition", "fly")
+    if transition not in TOUR_TRANSITIONS:
+        fail(where, f"`transition: {transition}` is not one of {sorted(TOUR_TRANSITIONS)}")
 
     frame_radii = stop.get("frame_radii", defaults.get("frame_radii"))
     if frame_radii is not None:

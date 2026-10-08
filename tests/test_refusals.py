@@ -1171,6 +1171,8 @@ TOUR_CASES: list[tuple[str, str, str]] = [
      "        target: {record: exotic-cygnus-x-1}\n        needs_layer: exotics\n        portrait: true\n"),
     ("a portrait that is not a yes",
      "        portrait: true\n", "        portrait: big\n"),
+    ("a join between two stops that is not a flight, a cut or a fade through black",
+     "        portrait: true\n", "        portrait: true\n        transition: dissolve\n"),
     ("a kind of sky the ground view does not have",
      "        darkness: town\n", "        darkness: village\n"),
     ("a kind of sky on a stop that is not seen from the ground",

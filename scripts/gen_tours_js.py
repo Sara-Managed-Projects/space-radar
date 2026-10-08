@@ -72,6 +72,9 @@ STOP_FIELDS = (
     "drift",
     "key_light_deg",
     "ease",
+    # Internal #288: how this stop is joined to the one before it: `fly` (the default), `cut` (no
+    # flight) or `black` (through ui/veil.js). Passed through as written; check_registry.py holds it.
+    "transition",
     "on_unresolved",
     # Spec 0030: the instant and the rate this stop shows, passed through unresolved -- an ISO
     # instant, `now`, or `{event: <type>.next, offset_s: n}` -- because only the browser knows the
