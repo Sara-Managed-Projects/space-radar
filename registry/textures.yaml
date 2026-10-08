@@ -184,6 +184,20 @@ textures:
         original: "https://svs.gsfc.nasa.gov/vis/a000000/a004800/a004851/milkyway_2020_4k_gal.exr"
         make: "scripts/build-textures.py milky-way: the background map (no Hipparcos or Tycho stars), flipped to the 2k map convention, levels matched to it, WebP 90"
 
+  # THE MOON'S BASE MAP IS STILL SOLAR SYSTEM SCOPE'S, AND WHY (public #406, recorded 2026-10-08).
+  # No NASA mosaic of the whole Moon is IN the site: the Lunar Reconnaissance Orbiter WAC mosaic is
+  # streamed tile by tile from NASA Solar System Treks when the camera is close (tilesets.yaml
+  # `moon-lro-wac`), and nothing of it is kept here to build a base map from.
+  # What would replace this row: NASA SVS's CGI Moon Kit (https://svs.gsfc.nasa.gov/4720, read
+  # 2026-10-08, last updated there 9 January 2026), made from the camera team's Hapke Normalized
+  # WAC Mosaic. It lists `lroc_color_2k.jpg` (2048x1024, 447.2 KB) and `lroc_color_poles_` at 2k,
+  # 4k, 8k and 16k as TIFF, with the credit "NASA's Scientific Visualization Studio".
+  # Why it is not swapped here: (1) this row is on a first visit (640 218 B of the 3 205 000 B
+  # budget), so the new file has to be re-encoded and measured, not dropped in; (2) the kit's map
+  # is normalised to one lighting and has a different mean brightness, so the Moon's material and
+  # the earthshine fill have to be re-tuned against it in a frame (scene/worlds.js); (3) the 4k
+  # tier and the embed's copy must change in the same step or the Moon changes face as it sharpens.
+  # One job of its own, tracked in the internal repository.
   - id: moon
     world: moon
     slot: map

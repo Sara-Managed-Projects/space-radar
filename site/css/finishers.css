@@ -225,6 +225,8 @@ html.sr-phone .sr-launchchip {
   font: 400 var(--sr-fs-lead)/26px var(--sr-font);
   letter-spacing: -0.01em;
   color: var(--sr-text);
+  /* Over the globe at the end of the shot: the scene labels' own edge (ui.css .sr-label). */
+  text-shadow: 0 0 2px var(--sr-space), 0 0 2px var(--sr-space), 0 0 4px var(--sr-space), 0 0 8px var(--sr-space);
   text-wrap: balance;
 }
 
@@ -242,7 +244,8 @@ html.sr-phone .sr-launchchip {
 .sr-opening__skip {
   margin: 0;
   font: 400 var(--sr-fs-sm)/18px var(--sr-font);
-  color: var(--sr-text-dim);
+  color: var(--sr-text-soft);
+  text-shadow: 0 0 2px var(--sr-space), 0 0 2px var(--sr-space), 0 0 4px var(--sr-space), 0 0 8px var(--sr-space);
 }
 
 @media (prefers-reduced-motion: reduce) {

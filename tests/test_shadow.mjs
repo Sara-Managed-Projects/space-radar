@@ -1,5 +1,6 @@
 // tests/test_shadow.mjs -- spec 0026 req 12: sunlit or in Earth's shadow, on every glyph and card.
 import { fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
 const JS = join(dirname(fileURLToPath(import.meta.url)), '..', 'site/js');
@@ -32,6 +33,35 @@ check(inEarthShadow(anti, ref.earth, ref.sun, ref.radius) === true, 'the anti-so
 // a record that does not orbit Earth has no answer
 check(sunlitState({ frame: 'sun-inertial', propagator: 'static', pos: { x: 1, y: 0, z: 0 } }, tMs) === null, 'a heliocentric record has no shadow state');
 check(sunlitState(null, tMs) === null, 'null record, null answer');
+
+// A lander on another world (public #403): by day its mark is lit, at night it dims, as a ground
+// site on the Earth does.
+{
+  const { standsOn, groundLit, worldCentreScene } = await import(join(JS, 'scene/shadow.js'));
+  check(standsOn({ frame: 'mars-fixed' }) === 'mars' && standsOn({ frame: 'moon-fixed' }) === 'moon', 'a record in a world\'s fixed frame stands on that world');
+  check(standsOn({ frame: 'earth-fixed' }) === null && standsOn({ frame: 'mars-inertial' }) === null && standsOn({ frame: 'sun-inertial' }) === null && standsOn(null) === null, 'the Earth\'s own sites and anything in orbit are not asked here');
+  const C = { x: 10, y: 0, z: 0 }, SUN = { x: 1e6, y: 0, z: 0 };
+  check(groundLit({ x: 11, y: 0, z: 0 }, C, SUN) === 1, 'noon: lit');
+  check(groundLit({ x: 9, y: 0, z: 0 }, C, SUN) === 0, 'midnight: dimmed');
+  check(groundLit({ x: 10 - 0.5, y: Math.sqrt(0.75), z: 0 }, C, SUN) === 0, '30 degrees past the terminator: dimmed');
+  check(groundLit({ x: 10 + 0.1, y: Math.sqrt(0.99), z: 0 }, C, SUN) === 1, 'just on the day side: lit');
+  check(groundLit(C, C, SUN) === 1, 'a thing at the centre has no ground: left lit');
+  // On the real stage: Mars's centre is found, and the two ends of the Sun line through it differ.
+  stage.setWorld('earth'); stage.setTime(tMs);
+  const ref2 = sunAndEarthScene(tMs);
+  const mars = worldCentreScene('mars', tMs);
+  check(!!mars && Number.isFinite(mars.x) && mars.length() > 1000, 'Mars\'s centre is placed on the Earth\'s stage');
+  if (mars) {
+    const d = { x: ref2.sun.x - mars.x, y: ref2.sun.y - mars.y, z: ref2.sun.z - mars.z };
+    const len = Math.hypot(d.x, d.y, d.z), R = 3.39;
+    const noon = { x: mars.x + d.x / len * R, y: mars.y + d.y / len * R, z: mars.z + d.z / len * R };
+    const night = { x: mars.x - d.x / len * R, y: mars.y - d.y / len * R, z: mars.z - d.z / len * R };
+    check(groundLit(noon, mars, ref2.sun) === 1 && groundLit(night, mars, ref2.sun) === 0, 'the sub-solar point of Mars is lit and its far point is dimmed');
+  }
+  check(worldCentreScene('no-such-world', tMs) === null, 'a world the stage does not know is not asked');
+  const glyphs = readFileSync(join(JS, 'scene/glyphs.js'), 'utf8');
+  check(/const world = standsOn\(rec\);\s*const centre = world \? worldCentreScene\(world, tMs\) : null;\s*if \(centre\) lit = groundLit\(v, centre, shadowRef\.sun\);/.test(glyphs), 'the glyph layer asks it of every mark that stands on another world');
+}
 
 if (problems.length) { console.error('shadow FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('shadow ok: the cylinder test lights the Sun side and shadows the far side; the real stage agrees at 400 km');

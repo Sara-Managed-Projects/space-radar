@@ -7,6 +7,9 @@
 // seconds either side of each crossing) and atmospheric refraction; sky/passes.js uses satellite.js's
 // exact shadowFraction for the pass predictions, where the seconds matter. Here, for twenty
 // thousand dots ten times a second, a cylinder is honest to the eye and free.
+//
+// Also here: standsOn, groundLit and worldCentreScene, the same question for a lander on another
+// world's night side (public #403).
 
 import * as THREE from '../../vendor/three.module.min.js';
 import { stage } from './stage.js';
@@ -72,6 +75,44 @@ export function sunAndEarthScene(tMs) {
   cacheT = t;
   cacheOk = !!(stage.toSceneInto(ZERO, 'earth-inertial', _e, t) && stage.toSceneInto(ZERO, 'sun-inertial', _sun, t));
   return cacheOk ? { earth: _e, sun: _sun, radius: EARTH_RADIUS_KM / stage.unitKm } : null;
+}
+
+/**
+ * A THING STANDING ON ANOTHER WORLD AT NIGHT (public #403). A lander's mark was drawn at full
+ * brightness wherever its world had turned it: the lit test above was asked only of things round
+ * the Earth, so Curiosity's dot shone on a Mars that was black to the horizon. A ground site on
+ * the Earth already dims at night (it is inside the Earth's shadow cylinder); these do the same.
+ */
+/** The world a record stands on when that is not the Earth: 'mars' for the frame 'mars-fixed'. */
+export function standsOn(record) {
+  const f = record && record.frame;
+  if (typeof f !== 'string' || !f.endsWith('-fixed')) return null;
+  const world = f.slice(0, -6);
+  return world && world !== 'earth' ? world : null;
+}
+
+/**
+ * Pure: 1 where the ground under a thing on a world's surface is in daylight, 0 where it is night.
+ * The same cylinder as earthShadowLit, with the world's radius taken as the thing's own distance
+ * from its centre, so it needs no table of radii and a rover on a mountain is not special.
+ */
+export function groundLit(site, centre, sun) {
+  const r = Math.hypot(site.x - centre.x, site.y - centre.y, site.z - centre.z);
+  return r > 0 ? earthShadowLit(site, centre, sun, r) : 1;
+}
+
+const _centres = new Map();
+let centresT = NaN;
+/** A world's centre in scene units for the current stage, or null. Asked once per world per tMs. */
+export function worldCentreScene(world, tMs) {
+  const t = Number.isFinite(tMs) ? tMs : stage.tMs;
+  if (t !== centresT) { _centres.clear(); centresT = t; }
+  if (_centres.has(world)) return _centres.get(world);
+  const out = new THREE.Vector3();
+  let ok = false;
+  try { ok = !!stage.toSceneInto(ZERO, `${world}-inertial`, out, t); } catch { ok = false; }
+  _centres.set(world, ok ? out : null);
+  return ok ? out : null;
 }
 
 /** Does this record's frame put it round the Earth, where Earth's shadow is the question? */

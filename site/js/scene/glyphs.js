@@ -16,7 +16,7 @@
 import * as THREE from '../../vendor/three.module.min.js';
 import * as propagateMod from '../propagate/index.js';
 import * as stageMod from './stage.js';
-import { earthShadowLit, sunAndEarthScene, orbitsEarth } from './shadow.js';
+import { earthShadowLit, sunAndEarthScene, orbitsEarth, standsOn, groundLit, worldCentreScene } from './shadow.js';
 import { GLSL_AIR } from '../sky/skymath.js';
 import { dotOpacity } from './onemark.js';
 import {
@@ -79,6 +79,7 @@ uniform float uPxScale;   // world units per CSS pixel, per unit of view depth
 uniform float uGrid;
 uniform float uPad;
 uniform float uSky;       // 1 while the camera stands on the ground (sky/skyview.js), else 0
+uniform float uSkyScale;  // how big this layer's marks are from the ground, of their size in space
 uniform vec3 uSkyUp;      // the observer's zenith, in view space
 
 varying vec2 vUv;
@@ -127,7 +128,7 @@ void main() {
     vOpacity *= seen;
     vRing *= seen;
   }
-  float px = clamp( iSize, 4.0, 14.0 ) * uPad;
+  float px = clamp( iSize, 4.0, 14.0 ) * uPad * mix( 1.0, uSkyScale, uSky );
   float s = px * uPxScale * max( -mv.z, 1e-6 );
   mv.xy += position.xy * s;
   gl_Position = projectionMatrix * mv;
@@ -217,6 +218,15 @@ function sizeOf(record, layer) {
  * @returns {{setRecords, update, pick, dispose, setVisible, setSelected, setViewport,
  *            setPositionSource, mesh, count():number}}
  */
+/**
+ * FROM THE GROUND THE STARS COME FIRST (public #271). A deep-sky object's mark says where a thing
+ * is that the eye mostly cannot see; in the ground sky those marks were 8 px discs among stars
+ * whose cores are 3 to 7 px, and the sky read as a chart of marks (seen 2026-10-08 over Cairo:
+ * Orion behind eleven purple dots). There they are drawn at this share of their size. A satellite's
+ * dot is a thing the eye does see, and keeps its size.
+ */
+export const SKY_MARK_SCALE = { 'deep-sky': 0.5, exotics: 0.5 };
+
 export function createGlyphLayer(scene, layer = {}) {
   const propagate = typeof propagateMod.propagate === 'function' ? propagateMod.propagate : null;
   const stage = stageMod.stage || null;
@@ -248,6 +258,7 @@ export function createGlyphLayer(scene, layer = {}) {
       uInset: { value: 0.5 / CELL_PX },
       uPxScale: { value: 2 / (1.5 * 720) },
       uSky: { value: 0 },
+      uSkyScale: { value: SKY_MARK_SCALE[layer.id] || 1 },
       uShadeFade: { value: SHADOW_OPACITY },
       uSkyUp: { value: new THREE.Vector3(0, 1, 0) },
     },
@@ -486,7 +497,17 @@ export function createGlyphLayer(scene, layer = {}) {
         attrColour.array[o + 2] = recColour[i * 3 + 2];
       }
       // Sunlit or in Earth's shadow, for the things that go round the Earth; everything else is lit.
-      attrLit.array[k] = shadowRef && orbitsEarth(rec) ? earthShadowLit(v, shadowRef.earth, shadowRef.sun, shadowRef.radius) : 1;
+      // A lander on another world's night side dims the same way (scene/shadow.js, public #403).
+      let lit = 1;
+      if (shadowRef) {
+        if (orbitsEarth(rec)) lit = earthShadowLit(v, shadowRef.earth, shadowRef.sun, shadowRef.radius);
+        else {
+          const world = standsOn(rec);
+          const centre = world ? worldCentreScene(world, tMs) : null;
+          if (centre) lit = groundLit(v, centre, shadowRef.sun);
+        }
+      }
+      attrLit.array[k] = lit;
       attrSize.array[k] = selected ? recSize[i] * 1.35 : recSize[i];
       // An object is drawn once. While its model is on screen the dot yields to it -- by the
       // model's own fade, so neither blinks -- and it stays in `live`, so it is still there to

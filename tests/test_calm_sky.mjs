@@ -71,5 +71,10 @@ check(/smoothstep\( 2\.3, 6\.0, aSize \)/.test(sfSrc), 'the naked-eye stars of t
 const ground = read('site/js/sky/groundsky.js');
 check(/_c\.setRGB\(rgb\[0\], rgb\[1\], rgb\[2\], THREE\.SRGBColorSpace\);/.test(ground) && /mix\(vColour, vec3\(1\.0\), 0\.1 \+ core \* 0\.35 \* vGlare\)/.test(ground), 'the ground sky keeps the black-body colour whole');
 
+const glyphs = await mod('scene/glyphs.js');
+check(glyphs.SKY_MARK_SCALE['deep-sky'] <= 0.6 && glyphs.SKY_MARK_SCALE.exotics <= 0.6 && Object.keys(glyphs.SKY_MARK_SCALE).length === 2, 'from the ground the deep-sky and exotic marks are drawn at half size, and nothing else is');
+check(/uPad \* mix\( 1\.0, uSkyScale, uSky \)/.test(read('site/js/scene/glyphs.js')), 'only while the camera stands on the ground');
+check(/float corePx = min\(size, 7\.0 \+ 5\.0 \* glare\) \* uPx;/.test(ground), 'and a bright star\'s core is up to 7 px there');
+
 if (problems.length) { console.error(`calm sky: ${problems.length} problem(s)\n  - ` + problems.join('\n  - ')); process.exit(1); }
 console.log(`calm sky ok: exoplanet marks off in every moment, shown by the layer row ("${hint}"), the Stars tab's switch, a link, a search or a trip; Betelgeuse ${betelgeuse.map((v) => v.toFixed(2)).join(' ')}, Rigel ${rigel.map((v) => v.toFixed(2)).join(' ')}, the Sun ${sun.map((v) => v.toFixed(2)).join(' ')}`);

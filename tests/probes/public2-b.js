@@ -99,5 +99,7 @@ try {
   } else out.errors.push('no sky row on the card');
   if (ctx.passport) { ctx.passport.open(); await wait(900); const s = [...document.querySelectorAll('.sr-passport__sect')].find((n) => /seen/i.test(n.textContent)); if (s) s.scrollIntoView({ block: 'center' }); await shot('passport-seen', 1200); out.passport = s ? s.textContent.slice(0, 120) : null; }
 } catch (err) { out.errors.push('card: ' + String(err && err.message)); }
+out.msB = Date.now() - t0;
+if (typeof sceneChecks === 'function') await sceneChecks();
 out.ms = Date.now() - t0;
 return out;

@@ -119,6 +119,10 @@ const CHROME = process.env.CHROME || '/Applications/Google Chrome.app/Contents/M
 const profile = PROFILE || mkdtempSync(join(tmpdir(), 'cdp-'));
 const chrome = spawn(CHROME, [
   '--headless=new', '--remote-debugging-port=' + PORT, '--user-data-dir=' + profile,
+  // An automated browser says so (navigator.webdriver), as CI's Playwright does: the app then
+  // skips what is for a person's first visit (the opening shot, the welcome), and a probe meets
+  // the settled home. A probe that wants the opening calls ctx.opening.play().
+  '--enable-automation',
   '--window-size=' + W + ',' + H, '--hide-scrollbars', '--mute-audio',
   // No GPU in headless: SwiftShader is a software GL that still runs the real three.js pipeline.
   ...(GL === 'gpu' ? ['--ignore-gpu-blocklist'] : ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader']),

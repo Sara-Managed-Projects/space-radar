@@ -128,12 +128,13 @@ void main() {
   vAlpha = alpha;
   vGlare = glare;
   gl_Position = projectionMatrix * modelViewMatrix * vec4(d * uRadius, 1.0);
-  // A STAR'S LIGHT (scene/stretch.js, public #271): the core is a peak at most 5 to 10 px across
+  // A STAR'S LIGHT (scene/stretch.js, public #271): the core is a peak at most 7 to 12 px across
+  // (5 to 10 until the evening of 2026-10-08, when Rigel's core was 3 px beside 8 px marks)
   // however bright the star, and the brightness past that is a glow in the rest of the sprite.
   // Until 2026-10-08 the core grew with the sprite and Sirius was a flat white counter.
   float bright = clamp((size - 5.0) / 9.0, 0.0, 1.0);
   float spritePx = max(1.5, size * (1.0 + 0.9 * bright + 2.2 * glare) * uPx);
-  float corePx = min(size, 5.0 + 5.0 * glare) * uPx;
+  float corePx = min(size, 7.0 + 5.0 * glare) * uPx;
   vCore = clamp(corePx / spritePx, 0.05, 1.0);
   vGlow = max(glare, bright);
   gl_PointSize = spritePx;
