@@ -146,15 +146,15 @@ clips:
   - {trip: "journey-to-the-station", stop: "air", hash: "76e742bea4f6962c", seconds: 13.37, words: 36, lufs: -16.6, opus: 53666, m4a: 69606, vtt: 278, wer: 0.0, heard: "0208d60a02bca605", voice: 0}
   - {trip: "journey-to-the-station", stop: "now", hash: "907f07bd116ca660", seconds: 14.84, words: 36, lufs: -16.6, opus: 59118, m4a: 76995, vtt: 289, wer: 0.0, heard: "0e0dae3a7903731a", voice: 0}
   - {trip: "journey-to-the-station", stop: "pass", hash: "df42f7997425554c", seconds: 15.04, words: 43, lufs: -16.6, opus: 60072, m4a: 78082, vtt: 305, wer: 0.0, heard: "9102bcfc8c5f7624", voice: 0}
-  - {trip: "strangest-things", stop: "duke-photo", hash: "10bc76295c7b5899", seconds: 17.05, words: 42, lufs: -16.4, opus: 67798, m4a: 88296, vtt: 305}
-  - {trip: "strangest-things", stop: "golf-balls", hash: "e37c36840a9e77ed", seconds: 11.18, words: 26, lufs: -16.5, opus: 45115, m4a: 58522, vtt: 212}
-  - {trip: "strangest-things", stop: "beresheet", hash: "8f65b00b09107abd", seconds: 15.05, words: 35, lufs: -16.4, opus: 60308, m4a: 78082, vtt: 292}
-  - {trip: "strangest-things", stop: "golden-record", hash: "1f81696254447c2a", seconds: 18.25, words: 39, lufs: -16.3, opus: 78345, m4a: 94382, vtt: 325}
-  - {trip: "strangest-things", stop: "roadster", hash: "7a853af7d258c4ea", seconds: 15.28, words: 41, lufs: -16.4, opus: 65770, m4a: 79386, vtt: 287}
-  - {trip: "strangest-things", stop: "pull-back", hash: "57cb06c724890ff9", seconds: 10.46, words: 32, lufs: -16.4, opus: 40865, m4a: 54827, vtt: 234}
-  - {trip: "to-the-edge", stop: "sun", hash: "ef89848eabc05ff4", seconds: 17.45, words: 45, lufs: -16.4, opus: 68764, m4a: 90470, vtt: 325}
-  - {trip: "to-the-edge", stop: "proxima", hash: "4ab67012289497f9", seconds: 14.81, words: 40, lufs: -16.6, opus: 58304, m4a: 76995, vtt: 303}
-  - {trip: "to-the-edge", stop: "sirius", hash: "6300f3f0fa8b4d7a", seconds: 13.01, words: 35, lufs: -16.4, opus: 51495, m4a: 67650, vtt: 270}
+  - {trip: "strangest-things", stop: "duke-photo", hash: "10bc76295c7b5899", seconds: 17.05, words: 42, lufs: -16.4, opus: 67798, m4a: 88296, vtt: 305, wer: 0.0, heard: "883f63c441cc3772", voice: 0}
+  - {trip: "strangest-things", stop: "golf-balls", hash: "e37c36840a9e77ed", seconds: 11.18, words: 26, lufs: -16.5, opus: 45115, m4a: 58522, vtt: 212, wer: 0.0, heard: "8e5525aa7e9010c5", voice: 0}
+  - {trip: "strangest-things", stop: "beresheet", hash: "8f65b00b09107abd", seconds: 15.05, words: 35, lufs: -16.4, opus: 60308, m4a: 78082, vtt: 292, wer: 0.0, heard: "38da0b4cd85e3d25", voice: 0}
+  - {trip: "strangest-things", stop: "golden-record", hash: "1f81696254447c2a", seconds: 18.25, words: 39, lufs: -16.3, opus: 78345, m4a: 94382, vtt: 325, wer: 0.0, heard: "004e60231d0577ea", voice: 0}
+  - {trip: "strangest-things", stop: "roadster", hash: "7a853af7d258c4ea", seconds: 15.28, words: 41, lufs: -16.4, opus: 65770, m4a: 79386, vtt: 287, wer: 0.0, heard: "8f57df6f595e0020", voice: 0}
+  - {trip: "strangest-things", stop: "pull-back", hash: "57cb06c724890ff9", seconds: 10.46, words: 32, lufs: -16.4, opus: 40865, m4a: 54827, vtt: 234, wer: 0.0312, heard: "d7937cdd05f90387", voice: 0}
+  - {trip: "to-the-edge", stop: "sun", hash: "ef89848eabc05ff4", seconds: 17.45, words: 45, lufs: -16.4, opus: 68764, m4a: 90470, vtt: 325, wer: 0.0, heard: "cce4bd7f863a5079", voice: 0}
+  - {trip: "to-the-edge", stop: "proxima", hash: "4ab67012289497f9", seconds: 14.81, words: 40, lufs: -16.6, opus: 58304, m4a: 76995, vtt: 303, wer: 0.025, heard: "16987152f11565da", voice: 0}
+  - {trip: "to-the-edge", stop: "sirius", hash: "6300f3f0fa8b4d7a", seconds: 13.01, words: 35, lufs: -16.4, opus: 51495, m4a: 67650, vtt: 270, wer: 0.0278, heard: "20c04b6259cd82eb", voice: 0}
   - {trip: "to-the-edge", stop: "pleiades", hash: "7b97c99e0707c9de", seconds: 11.97, words: 26, lufs: -16.7, opus: 46903, m4a: 62434, vtt: 252}
   - {trip: "to-the-edge", stop: "centre", hash: "7fdd0fcc1334eacf", seconds: 17.62, words: 44, lufs: -16.7, opus: 70618, m4a: 91122, vtt: 336}
   - {trip: "to-the-edge", stop: "galaxy", hash: "8c68836e15b00627", seconds: 14.42, words: 33, lufs: -16.5, opus: 61566, m4a: 74822, vtt: 283}
