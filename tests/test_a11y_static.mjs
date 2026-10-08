@@ -141,13 +141,13 @@ for (const f of files) {
   for (const m of src.matchAll(/setAttribute\(\s*'stroke-width'\s*,\s*([^)]+)\)|'stroke-width'\s*[:,\]]\s*'?([\d.]+)'?/g)) {
     const line = src.slice(0, m.index).split('\n').length;
     const value = (m[1] || m[2] || '').trim();
-    if (f === 'hud.js' || f === 'trajectory.js' || f === 'skyarc.js' || f === 'cardextras.js') continue; // a HUD mark and three charts (the last the distance curve, role=img with its own label), not icons
+    if (f === 'hud.js' || f === 'trajectory.js' || f === 'skyarc.js') continue; // a HUD mark and two charts, not icons
     check(/^'?1\.75'?$/.test(value), `site/js/ui/${f}:${line}: an icon's stroke-width is ${value}; every icon is 1.75 (docs/ui-guide.md section 3.16)`);
   }
   for (const m of src.matchAll(/createElementNS\(SVG_NS, 'svg'\)/g)) {
     const scope = scopeFrom(src, m.index);
     const line = src.slice(0, m.index).split('\n').length;
-    if (f === 'trajectory.js') continue; // a chart with role=img and its own title
+    if (f === 'trajectory.js' || f === 'cardextras.js') continue; // charts with role=img and a name of their own (the second: the distance curve)
     check(/aria-hidden/.test(scope), `site/js/ui/${f}:${line}: an svg without aria-hidden: the button carries the name, the drawing is not read out`);
     if (f !== 'hud.js') check(/0 0 24 24/.test(scope), `site/js/ui/${f}:${line}: an icon outside the 24 box`);
   }
