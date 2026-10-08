@@ -69,13 +69,8 @@ const REDUCED = process.argv.includes('--reduced-motion');
 // compositor produced in between as name-<n>-<epoch ms>.png -- the frames a visitor would have
 // seen, stamped, to line up with Date.now() read in the page.
 const SHOT_DIR = arg('shot-dir', '');
-<<<<<<< HEAD
 // The folder is made here: writing into one that did not exist threw inside the binding's handler,
 // `cdpShot` never resolved and the run died at its cap with no output (internal #454, one run lost).
-=======
-// The folder is made here. Without it every cdpShot() threw inside the message handler, the page's
-// promise never resolved and the probe hung until something killed Chrome (found 2026-10-08).
->>>>>>> a6f5db1a (Tooling: cdp.mjs makes --shot-dir; refresh-snapshots.sh publishes to the site's home since 2026-10-07 and takes --profile)
 if (SHOT_DIR) mkdirSync(SHOT_DIR, { recursive: true });
 // --bytes=out.json: every request the page made, as `{url, status, bytes}` with `bytes` the
 // protocol's encodedDataLength (what crossed the wire, headers included, compressed if the server
