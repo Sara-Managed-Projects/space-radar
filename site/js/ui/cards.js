@@ -66,7 +66,7 @@ import {
 } from '../propagate/frames.js';
 import { predictPasses } from '../sky/passes.js';
 import { riseHighestSet, RISE_SET_BODIES } from '../sky/riseset.js';
-import { altitudeInWords, azimuthInWords } from '../sky/skyview.js';
+import { altitudeInWords, azimuthInWords } from '../sky/skywords.js';
 import { trajectorySection } from './trajectory.js';
 import { hasTimeFacts, timeFacts, mmss, LIGHT_MINUTES } from '../sky/timefacts.js';
 import { wantsTrack } from '../scene/groundtrack.js';
