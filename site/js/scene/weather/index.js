@@ -19,7 +19,7 @@ export function seasonName(ls) {
 }
 
 export function createWeather({ worlds, camera = null, reducedMotion = false, onChange = () => {}, fetchImpl, decodeImage, now } = {}) {
-  const air = createWorldWeather({ worlds });
+  const air = createWorldWeather({ worlds, reducedMotion });
   const lightning = createLightning({
     earth: () => (worlds && worlds.meshFor ? worlds.meshFor('earth') : null),
     camera, reducedMotion, onChange,
@@ -45,7 +45,11 @@ export function createWeather({ worlds, camera = null, reducedMotion = false, on
       const text = COPY.weather.worlds[worldId];
       if (!text || !air.worn().includes(worldId)) return null;
       const w = air.state().worlds.find((x) => x.id === worldId);
-      return t(text, { season: w && w.season ? seasonName(w.season.ls) : '' });
+      const line = t(text, { season: w && w.season ? seasonName(w.season.ls) : '', tau: w && w.season ? w.season.tau.toFixed(1) : '' });
+      // Lightning is said only where it is drawn: not where less motion was asked for.
+      const flash = COPY.weather.flashes[worldId];
+      const also = COPY.weather.also[worldId];
+      return [line, also, flash && air.flashing(worldId) ? flash : null].filter(Boolean).join(' ');
     },
     credit: () => lightning.credit(),
     perMinute: () => lightning.perMinute(),

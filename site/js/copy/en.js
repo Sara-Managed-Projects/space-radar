@@ -1489,10 +1489,27 @@ export const COPY = {
     worlds: {
       jupiter: 'Weather: the bands slide past each other at the wind speeds measured from Hubble, and the Great Red Spot turns. Modelled motion: no cloud is drawn where it is today.',
       saturn: 'Weather: the bands move at the wind speeds Cassini measured. Modelled motion, not today’s clouds. The hexagon at the north pole is drawn at its measured place; its look is illustrative.',
+      // 2026-10-08 (internal #243): the dark Y, and the one honest sentence about lightning.
       venus: 'Weather: the cloud deck goes round in about four days, as Venus Express measured, sixty times faster than the ground. Modelled motion, not today’s clouds.',
+      // 2026-10-08 (internal #245): what Hubble's own maps show, said; nothing more is drawn.
       uranus: 'Weather: the air drifts round at the wind speeds measured from Keck and Gemini. Modelled motion, not today’s clouds.',
       neptune: 'Weather: the air streams round at the wind speeds Voyager 2 measured, the fastest on any planet. Modelled motion, not today’s clouds.',
-      mars: 'Weather: it is {season} on Mars. The frost caps and the dust haze are what that season typically brings: illustrative, not this week’s pictures.',
+      // 2026-10-08 (internal #242): {tau} is the season's typical dust optical depth (registry/weather.yaml dust_tau).
+      mars: 'Weather: it is {season} on Mars. The frost caps and the dust in its air, an optical depth near {tau}, are what that season typically brings: seasonal and illustrative, not today’s weather.',
+      // 2026-10-08 (internal #245).
+      titan: 'Weather: the pale streaks in the north stand for the methane clouds the Webb and Keck telescopes saw there in November 2022 and July 2023. Illustrative: where Titan’s clouds are today is not known.',
+    },
+    // A second sentence for a world's line (2026-10-08, internal #243 and #245): what else is drawn
+    // and how much of it is known, or what its real maps show and we do not draw.
+    also: {
+      venus: 'The faint dark Y going round with it is what ultraviolet cameras see, drawn far fainter and at an illustrative place. Lightning on Venus has been reported and is still debated; none is drawn.',
+      uranus: 'On “As Hubble saw it” the bright cap over the north pole is real: Hubble has watched it brighten year after year as the northern summer of 2028 comes.',
+      neptune: 'Its bright streaks are methane ice. Hubble saw them fade after 2019 and its last dark spot dissolve, so no spot is drawn.',
+    },
+    // Lightning on the giants (2026-10-08, internal #244), added to the world's line where it is drawn.
+    flashes: {
+      jupiter: 'On its night side, rare flashes stand for the lightning Juno found, most of it far in the north: the latitudes are measured, each flash is illustrative and drawn larger than life.',
+      saturn: 'On its night side, rare flashes at 36 degrees south stand for the lightning Cassini photographed there in 2009: illustrative and larger than life, and nothing is watching for it now.',
     },
     seasons: ['northern spring', 'northern summer', 'northern autumn', 'northern winter'],
   },

@@ -184,5 +184,73 @@ effects:
     # a simplification of the published recession curves; and how hazy the air typically is.
     north_cap: [[0, 60], [30, 66], [60, 74], [90, 82], [150, 82], [200, 68], [240, 58], [300, 54], [330, 55], [360, 60]]
     south_cap: [[0, -62], [60, -52], [120, -50], [160, -53], [200, -60], [240, -70], [270, -80], [300, -86], [330, -86], [360, -62]]
-    dust: [[0, 0.05], [135, 0.05], [180, 0.2], [225, 0.55], [250, 0.6], [290, 0.35], [320, 0.5], [345, 0.2], [360, 0.05]]
-    why: "No daily global map of Mars answers a web page: MRO MARCI's weekly weather reports are pictures and films with no CORS header (looked for 2026-10-03). The season is computed; the frost edge and the haze are what that season typically brings, not what a camera saw this week."
+    # THE DUST, AS AN OPTICAL DEPTH (2026-10-08, internal #242). [Ls in degrees, the column's optical
+    # depth in visible light] in a year without a planet-encircling storm, after Montabone et al.
+    # 2015 (Icarus 251, 65; read as arXiv 1409.4841 on 2026-10-08), whose text gives: "low CDOD" and
+    # little change from year to year through northern spring and summer (0.2 to 0.3 in the visible
+    # at Gusev); dust rising "around northern autumn equinox"; "the largest increase usually occurs
+    # between Ls = 220 and 260" (Meridiani at Ls 240 to 250: 0.35 +- 0.08 in infrared absorption at
+    # 9.3 um, times the paper's 2.6 is 0.9 in the visible); a "clear decrease" after about 260; and
+    # "a late peak" from about 320. The numbers between those are OURS, joined by straight lines:
+    # the paper's own curves are in its figures, not its text. The dusty season's storms are
+    # southern (Kass et al. 2016: the A storms are "springtime planet encircling Southern Hemisphere
+    # events"), so north of the tropics the haze is drawn at `dust_north` of its strength.
+    dust_tau: [[0, 0.25], [135, 0.25], [180, 0.35], [220, 0.6], [245, 0.9], [275, 0.55], [300, 0.5], [325, 0.7], [345, 0.4], [360, 0.25]]
+    dust_north: 0.6
+    why: "No daily global map of Mars answers a web page: MRO MARCI's weekly weather reports are pictures and films with no CORS header (looked for 2026-10-03). The season is computed; the frost edge and the dust are what that season typically brings in a year without a global storm, not what a camera saw this week."
+
+  # LIGHTNING ON THE GIANTS (2026-10-08, internal #244). Where it happens is published; when is not
+  # watched by anyone now. So: rare flashes, on the night side only, at the latitudes below, at
+  # instants and longitudes drawn at random, each far larger than life. `bands` is [south edge,
+  # north edge, weight]; `mean_gap_s` the mean wait of one of `slots` flashes, wall time.
+  - id: jupiter-lightning
+    world: jupiter
+    kind: giant-lightning
+    class: illustrative
+    off_at: [tier0, save_data, reduced_motion]
+    source:
+      name: "Brown et al. 2018, Prevalent lightning sferics at 600 megahertz near Jupiter's poles, Nature 558, 87 (Juno's microwave radiometer: 377 sferics, 'prevalent in the polar regions, absent near the equator, and most frequent in the northern hemisphere, at latitudes higher than 40 degrees north'); Becker et al. 2020, Nature 584, 55 (Juno's star camera: small flashes on the night side, from above the 2-bar level)"
+      url: "https://doi.org/10.1038/s41586-018-0156-5"
+      read: 2026-10-08
+    lightning: {bands: [[40, 80, 2], [-80, -40, 1]], mean_gap_s: 8, slots: 2, life_s: 0.4, radius_deg: 1.6}
+    why: "Juno counted where Jupiter's lightning is, over eight orbits; nothing reports today's flashes. The latitudes and the lean to the north are measured; each flash, its instant, its longitude and its size are ours."
+
+  - id: saturn-lightning
+    world: saturn
+    kind: giant-lightning
+    class: illustrative
+    off_at: [tier0, save_data, reduced_motion]
+    source:
+      name: "Dyudina et al. 2010, Detection of visible lightning on Saturn, GRL 37, L09205 (Cassini's camera, 17 August 2009, night side: 'at -36.4 +- 0.1 degrees planetocentric latitude', one flash a minute, each lighting a spot about 200 km across); Dyudina et al. 2013, Icarus 226, 1020 (the great storm of 2010-2011 at about 35 N)"
+      url: "https://doi.org/10.1029/2010GL043188"
+      read: 2026-10-08
+    lightning: {bands: [[-38, -34.8, 1]], mean_gap_s: 9, slots: 1, life_s: 0.4, radius_deg: 1.6}
+    why: "Saturn's lightning comes in storms that last months and then stop for years, and Cassini, which saw them, ended in 2017. The latitude is the one it photographed in 2009; whether a storm is there today is not known, and each flash is ours."
+
+  # VENUS'S DARK Y (2026-10-08, internal #243). In ultraviolet the cloud tops carry a dark shape
+  # like a Y on its side, a planet-wide wave that goes round with the super-rotation.
+  - id: venus-y
+    world: venus
+    kind: planetary-wave
+    class: illustrative
+    off_at: [tier0, save_data]
+    source:
+      name: "Imai et al. 2019, Planetary-scale variations in winds and UV brightness at the Venusian cloud top, JGR Planets 124 (Akatsuki's ultraviolet imager at 365 nm, 2017: 'the 4-day Kelvin wave and 5-day Rossby wave with zonal wavenumber 1'); JAXA, Akatsuki's UVI pictures ('a vast darker region which has a shape of laid V or Y ... flows westward')"
+      url: "https://arxiv.org/abs/1908.08220"
+      read: 2026-10-08
+    wave: {period_days: 4, depth: 0.1, arm_deg: 45}
+    why: "The Y is seen in ultraviolet, where an absorber nobody has identified darkens the clouds by a third; to the eye Venus is nearly plain. It is drawn a tenth dark so that the deck's turning shows, at a place that is ours: where the wave is today is not fetched."
+
+  # TITAN'S CLOUDS (2026-10-08, internal #245). [latitude, east longitude, half-height, half-width],
+  # degrees: three pale streaks in the north, where the telescopes found them.
+  - id: titan-clouds
+    world: titan
+    kind: cloud-patches
+    class: illustrative
+    off_at: [tier0, save_data]
+    source:
+      name: "NASA, Webb and Keck telescopes team up to track clouds on Titan (1 December 2022: Webb on 4 November 2022 and Keck two days later, one cloud 'over the northern polar region near Kraken Mare'); Nixon et al. 2025, Nature Astronomy (November 2022 and July 2023: 'northern hemisphere tropospheric clouds evolving in altitude')"
+      url: "https://science.nasa.gov/blogs/webb/2022/12/01/webb-keck-telescopes-team-up-to-track-clouds-on-saturns-moon-titan/"
+      read: 2026-10-08
+    patches: [[66, 50, 4, 17], [52, -20, 3, 12], [72, 170, 3.5, 22]]
+    why: "Titan's methane clouds come and go in days and nothing watches them daily. That there were clouds at middle and high northern latitudes in November 2022 and July 2023 is observed; these three streaks, their longitudes and their shapes are ours."

@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _genmirror import Mirror, pick  # noqa: E402
 
 FIELDS = ("id", "world", "kind", "class", "layer", "off_at", "profile", "spot", "hexagon",
-          "north_cap", "south_cap", "dust")
+          "north_cap", "south_cap", "dust_tau", "dust_north", "lightning", "wave", "patches")
 
 
 def render(doc: dict) -> list:

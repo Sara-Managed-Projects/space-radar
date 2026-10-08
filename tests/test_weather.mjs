@@ -266,8 +266,10 @@ function decodePng(buf) {
   // Each line says which of the three it is, in a word a visitor reads.
   for (const [id, line] of Object.entries(COPY.weather.worlds)) {
     const classes = WEATHER.filter((r) => r.world === id).map((r) => r.class);
-    for (const c of new Set(classes)) check(line.toLowerCase().includes(c === 'modelled' ? 'modelled' : c), `${id}'s line says "${c}"`);
-    check(line.length <= 240, `${id}'s line is one line (${line.length} characters)`);
+    // The line, and the sentences that may follow it (what else is drawn; the lightning where it is drawn).
+    const parts = [line, COPY.weather.also[id], COPY.weather.flashes[id]].filter(Boolean);
+    for (const c of new Set(classes)) check(parts.join(' ').toLowerCase().includes(c === 'modelled' ? 'modelled' : c), `${id}'s line says "${c}"`);
+    for (const part of parts) check(part.length <= 240, `${id}'s line is one line (${part.length} characters)`);
   }
   check(/measured/.test(COPY.weather.lightning.live) && /drawn/.test(COPY.weather.lightning.live), 'the lightning line says what is measured and what is drawn');
   check(/Americas/.test(COPY.weather.lightning.live), 'and where the map reaches');
@@ -282,7 +284,7 @@ function decodePng(buf) {
   const frag = WW.weatherFragment();
   check(!frag.includes(WW.MAP_LINE) && frag.includes('wxBase( vUv )'), 'the patch replaces that line');
   check(frag.includes('#ifdef WX_ZONAL') && frag.includes('#elif defined( WX_MARS )'), 'both kinds are in the one source');
-  check(frag.length - WORLD_FRAG.length > 1000 && frag.replace(/\n\/\/ ---- spec 0066[\s\S]*?\/\/ ---- end of weather ----\n\n/, '').replace('wxBase( vUv )', 'texture2D( uMap, vUv ).rgb') === WORLD_FRAG, 'and nothing else of WORLD_FRAG is touched');
+  check(frag.length - WORLD_FRAG.length > 1000 && frag.replace(/\n\/\/ ---- spec 0066[\s\S]*?\/\/ ---- end of weather ----\n\n/, '').replace('wxBase( vUv )', 'texture2D( uMap, vUv ).rgb').replace('colour += wxFlash( vPosL, d );\n  ', '') === WORLD_FRAG, 'and nothing else of WORLD_FRAG is touched');
   let threw = false;
   try { WW.weatherFragment('void main() {}'); } catch { threw = true; }
   check(threw, 'a WORLD_FRAG without the line is refused, not silently left alone');
@@ -299,7 +301,7 @@ function decodePng(buf) {
     meshes.set(w.id, { material, visible: true });
   }
   const wx = WW.createWorldWeather({ worlds: { meshFor: (id) => meshes.get(id) || null } });
-  check(wx.worn().sort().join() === 'jupiter,mars,neptune,saturn,uranus,venus', `six worlds wear weather (${wx.worn().sort().join()})`);
+  check(wx.worn().sort().join() === 'jupiter,mars,neptune,saturn,titan,uranus,venus', `seven worlds wear weather (${wx.worn().sort().join()})`);
   check(meshes.get('moon').material.fragmentShader === WORLD_FRAG && meshes.get('io').material.fragmentShader === WORLD_FRAG, 'the Moon and Io keep the plain shader');
   const jm = meshes.get('jupiter').material;
   check(jm.defines.WX_ZONAL === 1 && jm.uniforms.uWxRate.value.length === F.RATE_ROWS && jm.uniforms.uWxSpot.value.z > 0, 'Jupiter: the flow and the spot');
@@ -345,7 +347,9 @@ function decodePng(buf) {
   check(weather.perMinute() === undefined, 'and the panel has no number yet');
   weather.tick(slot, { on: true });
   check(/northern spring/.test(weather.line('mars', slot)) && /illustrative/.test(weather.line('mars', slot)), `Mars's line names the season (${weather.line('mars', slot)})`);
-  check(weather.line('jupiter', slot) === COPY.weather.worlds.jupiter, 'Jupiter\'s line');
+  check(weather.line('jupiter', slot) === COPY.weather.worlds.jupiter + ' ' + COPY.weather.flashes.jupiter, 'Jupiter\'s line, and its lightning\'s');
+  check(weather.line('venus', slot).endsWith(COPY.weather.also.venus) && /reported and is still debated; none is drawn/.test(weather.line('venus', slot)), 'Venus\'s line says its lightning is debated and not drawn');
+  check(/seasonal and illustrative, not today/.test(weather.line('mars', slot)) && /optical depth near 0\.\d/.test(weather.line('mars', slot)), `Mars's line gives the season's dust and says it is not today's (${weather.line('mars', slot)})`);
   check(weather.line('moon', slot) === null && weather.line('io', slot) === null, 'a world with no weather has no line');
   await weather.lookNow();
   check(asked.length === 2 && asked[0].includes('GetCapabilities') && asked[1].includes('TIME=2026-10-03T17:45:00.000Z'), 'two requests: the time, then that slot\'s map');
@@ -386,8 +390,94 @@ function decodePng(buf) {
   check(/weatherStandIn\(true/.test(main), 'there the stand-in stays, and says why');
 }
 
+// --- 10. 2026-10-08: the season's dust as an optical depth, the dark Y, the giants' lightning, Titan's clouds
+{
+  const mars = row('mars-season');
+  const clear = F.marsSeason(mars, 60);
+  const peak = F.marsSeason(mars, 245);
+  const pause = F.marsSeason(mars, 275);
+  const late = F.marsSeason(mars, 325);
+  check(near(clear.tau, 0.25, 1e-9) && clear.dust === 0, 'northern spring and summer: an optical depth of 0.25 (Gusev\'s 0.2 to 0.3) and the map as it is');
+  check(near(peak.tau, 0.9, 1e-9) && near(peak.dust, 1 - Math.exp(-0.65), 1e-9), `Ls 245: 0.9 (Meridiani's 0.35 in the infrared, times 2.6), which takes ${(peak.dust * 100).toFixed(0)} % of the ground's light`);
+  check(pause.tau < peak.tau && pause.tau < late.tau && late.tau < peak.tau, 'a fall after Ls 260 and a late peak after 320, as Montabone et al. describe');
+  check(mars.dust_north > 0 && mars.dust_north < 1 && mars.class === 'illustrative', 'the dusty season\'s haze is thinner in the north, and the row is illustrative');
+
+  // The flashes: where, how often, how bright.
+  const jl = row('jupiter-lightning').lightning;
+  const sl = row('saturn-lightning').lightning;
+  let seed = 12345;
+  const rand = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+  let north = 0; let south = 0; let equator = 0; let wait = 0;
+  const N = 4000;
+  for (let i = 0; i < N; i++) {
+    const f = F.nextFlash(jl, rand);
+    if (f.latDeg >= 40 && f.latDeg <= 80) north++; else if (f.latDeg <= -40 && f.latDeg >= -80) south++; else equator++;
+    wait += f.waitS;
+    if (!(f.lonDeg >= -180 && f.lonDeg < 180 && f.waitS >= 0 && f.lifeS === jl.life_s)) equator++;
+  }
+  check(equator === 0, 'Jupiter\'s flashes are poleward of 40 degrees, never near the equator (Brown et al. 2018)');
+  check(near(north / south, 2, 0.25), `and twice as many in the north as the south (${north} to ${south})`);
+  check(near(wait / N, jl.mean_gap_s, 0.6), `a slot waits ${jl.mean_gap_s} s on average (${(wait / N).toFixed(2)})`);
+  for (let i = 0; i < 200; i++) { const f = F.nextFlash(sl, rand); check(f.latDeg >= -38 && f.latDeg <= -34.8, `Saturn's flashes are at Cassini's 36 S (${f.latDeg.toFixed(1)})`); }
+  check(F.flashLight(-0.1, 0.4) === 0 && F.flashLight(0.4, 0.4) === 0 && F.flashLight(0.1, 0.4) > 0.4 && F.flashLight(0.1, 0.4) <= 1, 'a flash is dark before and after its life, and at most 1 inside it');
+  const dir = F.bodyDirection(90, 0);
+  check(near(dir[1], 1, 1e-12) && near(F.bodyDirection(0, 90)[2], -1, 1e-12) && near(F.bodyDirection(0, 0)[0], 1, 1e-12), 'a place in a world\'s axes: north is +Y, longitude 0 is +X, 90 east is -Z (scene/worlds.js)');
+  for (const id of ['jupiter-lightning', 'saturn-lightning']) check(row(id).class === 'illustrative' && row(id).off_at.includes('reduced_motion') && row(id).lightning.mean_gap_s >= 3, `${id}: illustrative, rare, off under reduced motion`);
+
+  // The Y: once round in four days, the way Venus's clouds go.
+  const day = 86400000;
+  check(near(F.wavePhase(0, 4, -1), 0, 1e-12) && near(F.wavePhase(day, 4, -1), 0.75, 1e-9) && near(F.wavePhase(4 * day, 4, -1), 0, 1e-9) && near(F.wavePhase(day, 4, 1), 0.25, 1e-9), 'the wave is a quarter turn a day, westward on Venus');
+  check(row('venus-y').wave.depth <= 0.1 && row('venus-y').class === 'illustrative', 'the Y is drawn a tenth dark at most, and is illustrative');
+
+  // The controller: uniforms, the wall clock, reduced motion, the latch.
+  const WW = await import(join(JS, 'scene/weather/worldweather.js'));
+  const { WORLDS, worldMaterial, applyLook } = await import(join(JS, 'scene/worlds.js'));
+  const dress = () => {
+    const m = new Map();
+    for (const w of WORLDS) { if (w.look.earth || w.look.emissive) continue; const material = worldMaterial(null, w.look.tint); applyLook(material, w.look); m.set(w.id, { material, visible: true }); }
+    return m;
+  };
+  const meshes = dress();
+  const wx = WW.createWorldWeather({ worlds: { meshFor: (id) => meshes.get(id) || null }, rand });
+  const ju = meshes.get('jupiter').material;
+  const sa = meshes.get('saturn').material;
+  const ve = meshes.get('venus').material;
+  const ti = meshes.get('titan').material;
+  check(ju.defines.WX_FLASH === 1 && sa.defines.WX_FLASH === 1 && !ve.defines.WX_FLASH && !meshes.get('uranus').material.defines.WX_FLASH, 'Jupiter and Saturn flash; no other world does');
+  check(ju.uniforms.uWxFlash.value.length === WW.FLASH_SLOTS * 4 && near(ju.uniforms.uWxFlashSize.value, 1.6 * Math.PI / 180, 1e-9), 'a flash is a place, a light and a size');
+  check(ve.uniforms.uWxWave.value.x === 0.1 && near(ve.uniforms.uWxWave.value.z, Math.PI / 4, 1e-9) && ju.uniforms.uWxWave.value.x === 0, 'Venus has the Y and Jupiter does not');
+  check(ti.defines.WX_PATCH === 1 && ti.uniforms.uWxPatch.value.length === WW.PATCH_SLOTS * 4 && near(ti.uniforms.uWxPatch.value[0], 66 * Math.PI / 180, 1e-6) && ti.uniforms.uWxPatch.value[14] === 0, 'Titan: three clouds in the north, the fourth slot empty');
+  const t0 = Date.parse('2026-10-08T12:00:00Z');
+  let litFrames = 0; let nightOnly = true; let maxLit = 0;
+  for (let ms = 0; ms < 120000; ms += 50) {
+    wx.update(t0, ms);   // the clock held still: the flashes still run, on wall time
+    const f = ju.uniforms.uWxFlash.value;
+    const lit = (f[3] > 0 ? 1 : 0) + (f[7] > 0 ? 1 : 0);
+    if (lit) litFrames++;
+    maxLit = Math.max(maxLit, f[3], f[7]);
+    for (const k of [0, 4]) if (f[k + 3] > 0 && !(Math.abs(f[k + 1]) >= Math.sin(40 * Math.PI / 180) - 1e-6)) nightOnly = false;
+  }
+  check(litFrames > 20 && litFrames < 0.2 * 2400, `over two minutes with the clock held, Jupiter flashes now and then (${litFrames} of 2400 frames lit)`);
+  check(nightOnly && maxLit <= 1, 'each at a latitude the row allows');
+  check(wx.flashing('jupiter') && !wx.flashing('venus') && wx.state().worlds.find((w) => w.id === 'jupiter').flashes.slots === 2, 'and the state says who flashes');
+  wx.update(t0 + day, 130000);
+  check(near(ve.uniforms.uWxWave.value.y, F.wavePhase(t0 + day, 4, -1), 1e-9), 'the Y follows the clock');
+  const frag = ju.fragmentShader;
+  check(/float night = 1\.0 - smoothstep\( -0\.12, 0\.0, sunDot \);/.test(frag) && /colour \+= wxFlash\( vPosL, d \);/.test(frag), 'a flash is added last and only where the Sun is down');
+  wx.latch();
+  check(!ju.defines.WX_FLASH && !ti.defines.WX_PATCH && !wx.flashing('jupiter'), 'the latch takes the flashes and the clouds off with the rest');
+  const still = dress();
+  const calm = WW.createWorldWeather({ worlds: { meshFor: (id) => still.get(id) || null }, reducedMotion: true });
+  check(!still.get('jupiter').material.defines.WX_FLASH && still.get('jupiter').material.defines.WX_ZONAL === 1 && !calm.flashing('jupiter'), 'where less motion is asked for there are no flashes, and the bands still move');
+  const { createWeather } = await import(join(JS, 'scene/weather/index.js'));
+  const fresh = dress();
+  const quiet = createWeather({ worlds: { meshFor: (id) => fresh.get(id) || null }, reducedMotion: true, fetchImpl: async () => ({ ok: false }) });
+  check(quiet.line('jupiter', t0) === COPY.weather.worlds.jupiter, `and Jupiter's card does not claim them (${quiet.line('jupiter', t0)})`);
+  check(/Webb and Keck/.test(COPY.weather.worlds.titan) && /Illustrative/.test(COPY.weather.worlds.titan) && /2022/.test(COPY.weather.worlds.titan), 'Titan\'s line dates its clouds and says they are illustrative');
+}
+
 if (failed) {
   console.log(`weather FAILED: ${failed} check(s)`);
   process.exit(1);
 }
-console.log('weather ok: winds to angles, the two-phase clock, Mars\'s season, NOAA\'s lightning map decoded and scheduled, the shader patch, the card\'s lines, off the first visit');
+console.log('weather ok: winds to angles, the two-phase clock, Mars\'s season and its dust, NOAA\'s lightning map decoded and scheduled, the shader patch, the giants\' flashes, Venus\'s Y, Titan\'s clouds, the card\'s lines, off the first visit');

@@ -628,44 +628,151 @@ export const WEATHER = [
         -62
       ]
     ],
-    "dust": [
+    "dust_tau": [
       [
         0,
-        0.05
+        0.25
       ],
       [
         135,
-        0.05
+        0.25
       ],
       [
         180,
-        0.2
-      ],
-      [
-        225,
-        0.55
-      ],
-      [
-        250,
-        0.6
-      ],
-      [
-        290,
         0.35
       ],
       [
-        320,
+        220,
+        0.6
+      ],
+      [
+        245,
+        0.9
+      ],
+      [
+        275,
+        0.55
+      ],
+      [
+        300,
         0.5
       ],
       [
+        325,
+        0.7
+      ],
+      [
         345,
-        0.2
+        0.4
       ],
       [
         360,
-        0.05
+        0.25
       ]
     ],
+    "dust_north": 0.6,
     "source": "Allison and McEwen 2000, Planet. Space Sci. 48, 215 (the season, Ls, from the date); Piqueux et al. 2015, Icarus 251, 164 (the seasonal caps' edges by Ls, MRO MCS); Kass et al. 2016, GRL 43, 6111 (the dusty season)"
+  },
+  {
+    "id": "jupiter-lightning",
+    "world": "jupiter",
+    "kind": "giant-lightning",
+    "class": "illustrative",
+    "off_at": [
+      "tier0",
+      "save_data",
+      "reduced_motion"
+    ],
+    "lightning": {
+      "bands": [
+        [
+          40,
+          80,
+          2
+        ],
+        [
+          -80,
+          -40,
+          1
+        ]
+      ],
+      "mean_gap_s": 8,
+      "slots": 2,
+      "life_s": 0.4,
+      "radius_deg": 1.6
+    },
+    "source": "Brown et al. 2018, Prevalent lightning sferics at 600 megahertz near Jupiter's poles, Nature 558, 87 (Juno's microwave radiometer: 377 sferics, 'prevalent in the polar regions, absent near the equator, and most frequent in the northern hemisphere, at latitudes higher than 40 degrees north'); Becker et al. 2020, Nature 584, 55 (Juno's star camera: small flashes on the night side, from above the 2-bar level)"
+  },
+  {
+    "id": "saturn-lightning",
+    "world": "saturn",
+    "kind": "giant-lightning",
+    "class": "illustrative",
+    "off_at": [
+      "tier0",
+      "save_data",
+      "reduced_motion"
+    ],
+    "lightning": {
+      "bands": [
+        [
+          -38,
+          -34.8,
+          1
+        ]
+      ],
+      "mean_gap_s": 9,
+      "slots": 1,
+      "life_s": 0.4,
+      "radius_deg": 1.6
+    },
+    "source": "Dyudina et al. 2010, Detection of visible lightning on Saturn, GRL 37, L09205 (Cassini's camera, 17 August 2009, night side: 'at -36.4 +- 0.1 degrees planetocentric latitude', one flash a minute, each lighting a spot about 200 km across); Dyudina et al. 2013, Icarus 226, 1020 (the great storm of 2010-2011 at about 35 N)"
+  },
+  {
+    "id": "venus-y",
+    "world": "venus",
+    "kind": "planetary-wave",
+    "class": "illustrative",
+    "off_at": [
+      "tier0",
+      "save_data"
+    ],
+    "wave": {
+      "period_days": 4,
+      "depth": 0.1,
+      "arm_deg": 45
+    },
+    "source": "Imai et al. 2019, Planetary-scale variations in winds and UV brightness at the Venusian cloud top, JGR Planets 124 (Akatsuki's ultraviolet imager at 365 nm, 2017: 'the 4-day Kelvin wave and 5-day Rossby wave with zonal wavenumber 1'); JAXA, Akatsuki's UVI pictures ('a vast darker region which has a shape of laid V or Y ... flows westward')"
+  },
+  {
+    "id": "titan-clouds",
+    "world": "titan",
+    "kind": "cloud-patches",
+    "class": "illustrative",
+    "off_at": [
+      "tier0",
+      "save_data"
+    ],
+    "patches": [
+      [
+        66,
+        50,
+        4,
+        17
+      ],
+      [
+        52,
+        -20,
+        3,
+        12
+      ],
+      [
+        72,
+        170,
+        3.5,
+        22
+      ]
+    ],
+    "source": "NASA, Webb and Keck telescopes team up to track clouds on Titan (1 December 2022: Webb on 4 November 2022 and Keck two days later, one cloud 'over the northern polar region near Kraken Mare'); Nixon et al. 2025, Nature Astronomy (November 2022 and July 2023: 'northern hemisphere tropospheric clouds evolving in altitude')"
   }
 ];

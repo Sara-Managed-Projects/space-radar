@@ -3665,7 +3665,7 @@ TILESET_CORS = re.compile(r"^Access-Control-Allow-Origin: \S+ \(measured \d{4}-\
 WEATHER_CLASSES = ("measured", "modelled", "illustrative")
 # `events` (internal #281) is not drawn by scene/weather/: it is the evidence row of a records layer
 # the page fetches for itself (site/js/data/eonet.js).
-WEATHER_KINDS = {"lightning", "zonal-flow", "hexagon", "mars-season", "events"}
+WEATHER_KINDS = {"lightning", "zonal-flow", "hexagon", "mars-season", "events", "giant-lightning", "planetary-wave", "cloud-patches"}
 WEATHER_OFF = {"tier0", "save_data"}
 WEATHER_CORS = re.compile(r"^access-control-allow-origin: \S+$", re.I)
 # Neptune's 400 m/s is the fastest wind measured on a planet; past 600 is a unit mistake.
@@ -3760,7 +3760,36 @@ def check_weather(world_ids: set, layers: list) -> list:
         if r.get("kind") == "mars-season":
             check_weather_table(where, "north_cap", r.get("north_cap"), 45, 90)
             check_weather_table(where, "south_cap", r.get("south_cap"), -90, -45)
-            check_weather_table(where, "dust", r.get("dust"), 0, 1)
+            # An optical depth in visible light: 0.2 on the clearest day, 5 in a global storm.
+            check_weather_table(where, "dust_tau", r.get("dust_tau"), 0.05, 5)
+            if not is_number(r.get("dust_north")) or not 0 <= r.get("dust_north") <= 1:
+                fail(where, "dust_north must be a share, 0..1: how much of the dusty season's haze the north gets")
+        if r.get("kind") == "giant-lightning":
+            li = r.get("lightning") or {}
+            bands = li.get("bands")
+            if not (isinstance(bands, list) and bands and all(isinstance(b, list) and len(b) == 3 and all(is_number(x) for x in b)
+                                                             and -90 <= b[0] < b[1] <= 90 and b[2] > 0 for b in bands)):
+                fail(where, "lightning.bands must be [south, north, weight] rows of latitudes: where it was seen")
+            if not all(is_number(li.get(k)) and li.get(k) > 0 for k in ("mean_gap_s", "slots", "life_s", "radius_deg")):
+                fail(where, "lightning needs mean_gap_s, slots, life_s and radius_deg")
+            elif li.get("mean_gap_s") < 3 or li.get("slots") > 4:
+                fail(where, "a giant's lightning is RARE flashes: a mean wait under 3 s, or more than 4 at once, is a light show")
+            if "reduced_motion" not in (off or []):
+                fail(where, "a flash is motion: off_at must list reduced_motion")
+            if cls != "illustrative":
+                fail(where, "nobody reports a giant's flashes today: the class is illustrative")
+        if r.get("kind") == "planetary-wave":
+            wv = r.get("wave") or {}
+            if not (is_number(wv.get("period_days")) and wv.get("period_days") > 0 and is_number(wv.get("depth")) and 0 < wv.get("depth") <= 0.3
+                    and is_number(wv.get("arm_deg")) and 0 < wv.get("arm_deg") < 90):
+                fail(where, "wave needs period_days, a depth of at most 0.3 and arm_deg")
+        if r.get("kind") == "cloud-patches":
+            pt = r.get("patches")
+            if not (isinstance(pt, list) and 0 < len(pt) <= 4 and all(isinstance(q, list) and len(q) == 4 and all(is_number(x) for x in q)
+                                                                      and -90 <= q[0] <= 90 and q[2] > 0 and q[3] > 0 for q in pt)):
+                fail(where, "patches must be 1 to 4 rows of [latitude, east longitude, half-height, half-width] in degrees")
+            if cls != "illustrative":
+                fail(where, "drawn clouds at chosen places are illustrative")
         if r.get("kind") == "hexagon":
             hexa = r.get("hexagon") or {}
             if not is_number(hexa.get("lat_deg")) or hexa.get("sides") != 6:

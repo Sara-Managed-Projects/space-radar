@@ -154,10 +154,61 @@ export function marsLs(tMs) {
  * says so: the tables are a season's habit, not this week's pictures.
  */
 export function marsSeason(row, ls) {
+  // THE DUST (2026-10-08, internal #242): `dust_tau` is the column's optical depth in visible light
+  // typical of the season (registry/weather.yaml says whose). The map was photographed in clear
+  // air, the table's lowest value; what the season adds takes 1 - exp(-added) of the ground's
+  // light straight down, and that share is `dust`, 0..1: what the shader mixes toward the dust's
+  // own colour.
+  const table = row.dust_tau || [];
+  const tau = table.length ? interp(table, ls) : 0;
+  const clear = table.length ? Math.min(...table.map((p) => p[1])) : 0;
   return {
     ls,
     northEdgeDeg: interp(row.north_cap, ls),
     southEdgeDeg: interp(row.south_cap, ls),
-    dust: Math.max(0, Math.min(1, interp(row.dust, ls))),
+    tau,
+    dust: Math.max(0, Math.min(1, 1 - Math.exp(-(tau - clear)))),
   };
+}
+
+// --- lightning on the giants (2026-10-08, internal #244) -------------------------------------------
+
+/**
+ * Where and how long the next flash is (registry/weather.yaml `giant-lightning`): a latitude drawn
+ * from the row's bands by their weights (and evenly by area inside one), any longitude, and a wait
+ * drawn from an exponential with the row's mean. `rand` is () -> [0, 1). Pure.
+ * @returns {{latDeg:number, lonDeg:number, waitS:number, lifeS:number}}
+ */
+export function nextFlash(li, rand) {
+  const bands = li.bands;
+  const total = bands.reduce((a, b) => a + b[2], 0);
+  let pick = rand() * total;
+  let band = bands[bands.length - 1];
+  for (const b of bands) { if (pick < b[2]) { band = b; break; } pick -= b[2]; }
+  const s0 = Math.sin(band[0] * DEG);
+  const s1 = Math.sin(band[1] * DEG);
+  const latDeg = Math.asin(s0 + (s1 - s0) * rand()) / DEG;
+  return { latDeg, lonDeg: rand() * 360 - 180, waitS: -Math.log(1 - rand() * 0.999999) * li.mean_gap_s, lifeS: li.life_s };
+}
+
+/** A flash's brightness, 0..1, `ageS` into a life of `lifeS`: up fast, two flickers, out. */
+export function flashLight(ageS, lifeS) {
+  if (!(ageS >= 0) || ageS >= lifeS) return 0;
+  const x = ageS / lifeS;
+  return Math.sin(Math.PI * Math.sqrt(x)) * (0.7 + 0.3 * Math.cos(x * 6 * Math.PI));
+}
+
+/** A unit vector in a world's own axes (+Y its north pole, longitude 0 at +X, east toward -Z). */
+export function bodyDirection(latDeg, lonDeg, out = [0, 0, 0]) {
+  const cl = Math.cos(latDeg * DEG);
+  out[0] = cl * Math.cos(lonDeg * DEG);
+  out[1] = Math.sin(latDeg * DEG);
+  out[2] = -cl * Math.sin(lonDeg * DEG);
+  return out;
+}
+
+/** Venus's dark Y: how far round the planet the wave has gone, in turns, wrapped; `sense` -1 is westward. */
+export function wavePhase(tMs, periodDays, sense = 1) {
+  const turns = (tMs / DAY_MS / periodDays) * sense;
+  return turns - Math.floor(turns);
 }
