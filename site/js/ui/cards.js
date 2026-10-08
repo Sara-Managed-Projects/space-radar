@@ -79,7 +79,8 @@ import { stage } from '../scene/stage.js';
 import { icon } from './icons.js';
 import { overlayLine, legendNode, paintLegend } from './overlaylegend.js';
 import { systemOfRecordId, phaseIsMeasured, faceLineOf } from '../scene/systems.js';
-import { generatedLine } from './systemcard.js';
+import { generatedLine, planetFacts, starRows } from './systemcard.js';
+import { setSystemRows } from './cardfacts.js';
 import { liveBlock, paintLive, sparkBlock, crewBlock, linkNodes, smallBodyFromLine } from './cardextras.js';
 import { upForWords } from './cardlive.js';
 import { launchMsOf } from '../data/satcat.js';
@@ -103,6 +104,16 @@ const MAX_FIRST_SENTENCE = 160; // spec 0013 requirement 10, enforced by check_c
 const MAX_COMPARISONS = 3; // spec 0013 requirement 2
 const MAX_ACTIONS = 4; // spec 0013 requirement 8 said three; spec 0061 §4 adds the postcard to the row
 const REFRESH_MS = 250; // a UI throttle on re-render, not a source of drawn state
+// The rows a generated star system adds (ui/cardfacts.js setSystemRows says why they are handed in).
+const generatedMember = (record) => {
+  const m = record && systemOfRecordId(record.id);
+  return m && m.system.full && m.system.zone !== undefined ? m : null;
+};
+setSystemRows({
+  planet: (record) => { const m = generatedMember(record); return m && m.planet ? planetFacts(m.system, m.planet) : null; },
+  star: (record) => { const m = generatedMember(record); return m && !m.planet ? starRows(m.system) : null; },
+});
+
 const HOST_ID = 'sr-card';
 
 let host = null;

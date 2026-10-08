@@ -24,8 +24,13 @@ import { periodMsOf } from '../scene/orbitline.js';
 import { gmst, eciToEcef, ecefToGeodetic, geodeticToEcef, parseFrame, bodyFixedToSpherical, worldRadiusKm, toStage, spinPeriodHours, moonLapHours, yearDays } from '../propagate/frames.js';
 import { predictPasses } from '../sky/passes.js';
 import '../copy/en.later.js';
-import { systemOfRecordId } from '../scene/systems.js';
-import { planetFacts, starRows } from './systemcard.js';
+
+// WHAT A GENERATED STAR SYSTEM ADDS TO A CARD (internal #466), handed in by ui/cards.js and not
+// imported here: this module also serves the light embed, which has no star systems, and
+// ui/systemcard.js reaches scene/systems.js. `{planet(record), star(record)}`, each null for a
+// record that is not a member of a generated system whose rows have landed.
+let systemRows = null;
+export function setSystemRows(source) { systemRows = source; }
 
 export const MAX_NAME = 72; // keeps the first sentence inside its limit whatever a feed sends
 export const PASS_WINDOW_HOURS = 24;
@@ -611,8 +616,7 @@ export function rightNowRows(record, m, passInfo) {
     if (host) rows.push([R.hostStar, String(host) + (pick(md, 'starSpect') ? ` (${pick(md, 'starSpect')})` : '')]);
     // A planet of a generated system whose rows have landed (internal #466): the row says which of
     // its numbers are the Archive's estimates, and adds what this map computed, labelled as computed.
-    const member = systemOfRecordId(record.id);
-    const facts = member && member.planet && member.system.full && member.system.zone !== undefined ? planetFacts(member.system, member.planet) : null;
+    const facts = systemRows ? systemRows.planet(record) : null;
     const rade = pickNumber(md, 'radiusEarths');
     if (facts && facts.radius) rows.push([R.planetRadius, facts.radius]);
     else if (rade !== null) rows.push([R.planetRadius, t(V.earths, { n: fmt.smart(rade) })]);
@@ -648,8 +652,8 @@ export function rightNowRows(record, m, passInfo) {
     if (hip) rows.push([R.catalogue, `HIP ${hip}`]);
     // The host of a generated system (internal #466): the table's numbers for the star, and the
     // habitable zone this map computed from them, labelled as computed.
-    const hostOf = systemOfRecordId(record.id);
-    if (hostOf && !hostOf.planet && hostOf.system.full && hostOf.system.zone !== undefined) rows.push(...starRows(hostOf.system));
+    const ofSystem = systemRows ? systemRows.star(record) : null;
+    if (ofSystem) rows.push(...ofSystem);
     // The line under the first sentence is registry/stars-notable.yaml's, not HYG's, so it says
     // where it was read -- with its own label, because "Read from" beside the distance would claim
     // the distance came from there too. The footer's source line stays HYG's.
