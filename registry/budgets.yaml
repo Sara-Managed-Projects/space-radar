@@ -50,8 +50,12 @@ budgets:
   - {id: og_at_boot_bytes, value: 0, unit: bytes, since: 2026-09-22, reason: "spec 0033: previews and cards only"}
   # WOFF2 is already compressed, so this number is the same on CI's server and the live site.
   - {id: fonts_at_boot_bytes, value: 90000, unit: bytes, since: 2026-09-28, reason: "spec 0045 req 5: the faces the first screen uses, Latin only"}
-  - {id: draw_calls_per_stop, value: 120, unit: calls, since: 2026-09-22, reason: "docs/toolkit.md: 120 at 30 fps; a stop is a still under text. Read at every stop of the trips walk (tools/walk.probe.js stopCost, from the renderer's own counters): a local tool, not a CI job"}
-  - {id: triangles_per_stop, value: 250000, unit: triangles, since: 2026-09-22, reason: "poes.glb alone was 116 517 before decimation (0027 amendment 1). Read at every stop of the trips walk (tools/walk.probe.js stopCost): a local tool, not a CI job"}
+  # MEASURED FOR THE FIRST TIME on 2026-10-08 (internal #435, public #507): the `trips` job of
+  # screens.yml walked 192 stops of 24 trips (two are not offerable without CelesTrak) at 1440 x 900
+  # and as a phone, in Playwright's Chromium on software GL with the frame latch tripped. Both rows
+  # hold; neither was moved.
+  - {id: draw_calls_per_stop, value: 120, unit: calls, since: 2026-09-22, reason: "docs/toolkit.md: 120 at 30 fps; a stop is a still under text. Read at every stop of every trip by tools/trips-cost.probe.js (the trips job of screens.yml) and at five stops a trip by tools/walk.probe.js stopCost, from the renderer's own counters. Measured 2026-10-08: median 14, at most 54 (roof-to-the-edge, The planets) at a desktop's size; median 11, at most 45 as a phone"}
+  - {id: triangles_per_stop, value: 250000, unit: triangles, since: 2026-09-22, reason: "poes.glb alone was 116 517 before decimation (0027 amendment 1). Read with draw_calls_per_stop, by the same two probes. Measured 2026-10-08: median 23 016 at a desktop's size and 13 122 as a phone; at most 213 622 at both, on the stops that draw the 3D stars (to-the-edge, roof-to-the-edge, travel-to-exoplanets): 85 % of this row"}
   - {id: bed_kb, value: 600, unit: kB, since: 2026-09-22, reason: "spec 0035: 75 s at 64 kbps Opus"}
   - {id: audio_total_kb, value: 3000, unit: kB, since: 2026-09-22, reason: "spec 0035"}
   # Spec 0069 (2026-10-03): the trips' narration, fetched a clip at a time and only with sound on.
