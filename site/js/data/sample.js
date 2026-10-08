@@ -1143,6 +1143,46 @@ const CRUISING_CRAFT = [
 ];
 
 /**
+ * A CRAFT NOBODY HAS HEARD FROM (2026-10-08, internal #433, public #431): MAVEN. JPL Horizons'
+ * header for -202 (revised Feb 13, 2026, read 2026-10-08): "There has been no contact with the
+ * MAVEN spacecraft since December 6, 2025 with some evidence it experienced an unplanned delta-V
+ * Dec. 4 and is spinning in an altered trajectory. Therefore predicts after December 4, 2025 may
+ * be inaccurate."; trajectory "Fit to data through 2025-Dec-04, prediction thereafter"; launch
+ * "Nov 18, 2013 @ 18:28 UTC", Mars arrival "September 22, 2014". Horizons answers nothing for it
+ * after 2026-MAR-01, so the harvester cannot ask and this row is never replaced by a snapshot.
+ * The state is Horizons' for 2025-12-04 00:00 UT (COMMAND='-202', CENTER='500@499', ecliptic
+ * J2000, TIME_TYPE=UT), the last midnight inside the fit. From it: 5 726 km semi-major axis,
+ * eccentricity 0.372, so 207 to 4 466 km above a 3 389.5 km Mars, a lap of 219.2 minutes.
+ * It is classed `sample` and its `why` says what is and is not known, which is the line the card
+ * prints (ui/cardfacts.js classLine).
+ */
+const LOST_ORBITER_EPOCH_MS = Date.UTC(2025, 11, 4);
+const LOST_ORBITERS = [
+  {
+    id: 'deep-maven',
+    name: 'MAVEN',
+    launched: '2013-11-18',
+    klass: 'probe',
+    horizonsId: -202,
+    world: 'mars',
+    aliases: ['Mars Atmosphere and Volatile EvolutioN'],
+    note: 'In orbit round Mars since September 2014 to study how the planet loses its air to ' +
+      'space. NASA has not heard from it since 6 December 2025.',
+    rKm: [1249.946451, 3646.897367, -6566.122126],
+    vKmS: [1.106146210, 1.471414496, 0.617508591],
+    periodMin: 219.2,
+    orbit: 'swung round Mars every 3 hours 39 minutes, from about 200 km up out to about 4 500 km',
+    why: 'NASA has had no contact with MAVEN since 6 December 2025. The orbit drawn is its last ' +
+      'tracked one: when last tracked it swung round Mars every 3 hours 39 minutes, from about ' +
+      '200 km up out to about 4 500 km. The dot starts from JPL Horizons’ position for it ' +
+      'relative to Mars on 4 December 2025, the last day JPL’s track is fitted to tracking, and ' +
+      'is carried round Mars by Mars’s pull alone. JPL says there is some evidence the craft was ' +
+      'pushed onto an altered path that day. Where MAVEN is along that orbit today, and whether ' +
+      'it is still on it, is not known.',
+  },
+];
+
+/**
  * Construction E: ENDED MISSIONS (2026-10-06, internal #406, #389). Cassini was flown into Saturn
  * and Galileo into Jupiter, so today there is nowhere to draw them and this row draws nothing:
  * its own propagator has no samples and answers null. What it has instead is a file of its whole
@@ -1700,6 +1740,37 @@ export function sampleDeepSpace() {
           c.speedKmS +
           ' km/s, and an escape direction good to a few degrees. It then moves in a straight ' +
           'line, which at this distance is what it really does.',
+      },
+    });
+  }
+
+  for (const c of LOST_ORBITERS) {
+    out.push({
+      id: c.id,
+      name: c.name,
+      layer: 'deep-space',
+      klass: c.klass,
+      propagator: 'orbiter',
+      frame: c.world + '-inertial',
+      cls: 'sample',
+      epoch: LOST_ORBITER_EPOCH_MS,
+      source: 'horizons-deep-space',
+      muKm3S2: WORLD_GM[c.world],
+      samples: [{ tMs: LOST_ORBITER_EPOCH_MS, rKm: c.rKm, vKmS: c.vKmS }],
+      // A bound orbit repeats, so the craft stays on the map; `why` says the place is not known.
+      extrapolateMs: Infinity,
+      meta: {
+        horizonsId: c.horizonsId,
+        construction: 'last-tracked-orbit',
+        orbits: c.world,
+        periodMin: c.periodMin,
+        note: c.note,
+        launchDate: c.launched,
+        lastContact: '2025-12-06',
+        ...(c.aliases ? { aliases: c.aliases } : {}),
+        approx: true,
+        approxFields: ['the whole position: no contact since 6 December 2025'],
+        why: c.why,
       },
     });
   }

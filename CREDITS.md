@@ -537,7 +537,7 @@ than counted by hand.
 |---|---|---|---|
 | `cassini.glb` | Cassini-Huygens (A) | Horizons -82 (Cassini, 1997 to 2017) | 171 KB |
 | `dawn.glb` | Dawn | Horizons -203 (Dawn, 2007 to 2018) | 116 KB |
-| `maven.glb` | Mars Atmosphere and Volatile EvolutioN (MAVEN) (B) | no record yet: MAVEN has had no position source since 2026-03-01 | 179 KB |
+| `maven.glb` | Mars Atmosphere and Volatile EvolutioN (MAVEN) (B) | Horizons -202 (MAVEN, on its last tracked orbit of Mars; no contact since 6 December 2025) | 179 KB |
 | `odyssey.glb` | Mars Odyssey | Horizons -53 (Mars Odyssey) | 95 KB |
 | `saturn-v.glb` | Saturn V (NASA/Michael D. Carbajal) | TO BE WIRED by branch models3-close-issues | 96 KB |
 | `shuttle-stack.glb` | Space Shuttle (A) (NASA/Michael D. Carbajal): the orbiter on its tank and boosters | TO BE WIRED by branch models3-close-issues | 130 KB |
@@ -659,8 +659,9 @@ credit:
      drawn the dark blue of the cells in NASA's photographs.
    - `mms.glb` is NASA's (B) file, which has colours, with the outer lengths of its booms cut
      off so that the body can be seen.
-   `maven.glb` is not drawn anywhere yet: MAVEN has not been heard from since December 2025 and
-   JPL publishes no path for it after 1 March 2026.
+   `maven.glb` was drawn nowhere until 2026-10-08. Since then it is drawn on MAVEN's last tracked
+   orbit of Mars (JPL Horizons, 4 December 2025); its card says NASA has not heard from it since
+   6 December 2025 and that where it is on that orbit is not known.
 
 They are loaded **on demand**, one file per object, only when the camera is near it. Nobody downloads all 63; the largest single download is `icesat2.glb` at 290 KB.
 

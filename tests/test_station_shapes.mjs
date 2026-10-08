@@ -535,7 +535,7 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
 {
   const { sampleDeepSpace } = await import(join(ROOT, 'site/js/data/sample.js'));
   const rows = sampleDeepSpace();
-  check(rows.length === 36, `the deep-space layer holds thirty-six records (found ${rows.length})`);
+  check(rows.length === 37, `the deep-space layer holds thirty-seven records (found ${rows.length})`);
   const want = {
     'deep-jwst': 'jwst.glb', 'deep-soho': 'soho.glb', 'deep-mro': 'mro.glb', 'deep-juno': 'juno.glb',
     'deep-voyager-1': 'voyager.glb', 'deep-voyager-2': 'voyager.glb', 'deep-parker': 'parker.glb',
@@ -552,6 +552,7 @@ check(realModelFor({ id: 'y', name: 'SOYUZ-MS 28', klass: 'satellite', layer: 's
     'deep-spitzer': 'spitzer.glb', 'deep-kepler': 'kepler.glb', 'deep-roman': 'roman.glb',
     'deep-mars-odyssey': 'odyssey.glb', 'deep-dawn': 'dawn.glb', 'deep-mars-2020': 'build:mars-2020-cruise',
     // 2026-10-08: four more ended missions with NASA's mesh (public #431).
+    'deep-maven': 'maven.glb',
     'deep-rosetta': 'rosetta.glb', 'deep-near': 'near.glb', 'deep-stardust': 'stardust.glb', 'deep-deep-impact': 'deep-impact.glb',
   };
   // The 2026-09-22 twelve, less the three above: generic on purpose, and never another craft's shape.

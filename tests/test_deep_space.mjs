@@ -68,7 +68,7 @@ check(JSON.stringify(ended.map((r) => r.id)) === JSON.stringify(['deep-cassini',
     check(rows.every((r) => r.id !== String(md.horizonsId)), `${rec.id}: the harvester must not ask Horizons for it today (its trajectory has ended)`);
   }
 }
-check(records.length === 28, `the deep-space layer holds twenty-eight craft that are somewhere today (found ${records.length})`);
+check(records.length === 29, `the deep-space layer holds twenty-nine craft that are somewhere today (found ${records.length})`);
 check(byId.size === records.length, 'record ids are unique');
 
 // Every id the harvester fetches has a record under the app id the list names, with the same name.
@@ -90,6 +90,9 @@ const listed = new Set(rows.map((r) => r.id));
 for (const rec of records) {
   const hid = rec.meta.horizonsId;
   if (hid == null) continue;
+  // MAVEN (2026-10-08): Horizons holds nothing for it after 2026-03-01, so there is nothing to fetch;
+  // it is drawn on its last tracked orbit and its card says so.
+  if (rec.meta.construction === 'last-tracked-orbit') { check(!listed.has(String(hid)) && rec.cls === 'sample' && /no contact with MAVEN since 6 December 2025/.test(rec.meta.why) && /is not known\.$/.test(rec.meta.why), `${rec.id}: a craft nobody hears from is not fetched, and says what is not known`); continue; }
   check(listed.has(String(hid)), `${rec.id} carries Horizons id ${hid} and the harvester never fetches it`);
 }
 const unlisted = records.filter((r) => r.meta.horizonsId == null).map((r) => r.id).sort();
@@ -98,6 +101,7 @@ check(JSON.stringify(unlisted) === JSON.stringify(['deep-solar-orbiter']),
 // A model keyed on an id the harvester does not fetch would be a model on a stand-in forever.
 for (const key of Object.keys(REAL_MODELS.horizons)) {
   if (ended.some((r) => String(r.meta.horizonsId) === key)) continue; // drawn from its path file
+  if (records.some((r) => String(r.meta.horizonsId) === key && r.meta.construction === 'last-tracked-orbit')) continue; // MAVEN: its last tracked orbit
   check(listed.has(key), `scene/realmodels.js draws Horizons id ${key}, which horizons-ids.yaml does not fetch`);
 }
 
