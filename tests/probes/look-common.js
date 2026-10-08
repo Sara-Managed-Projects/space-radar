@@ -12,7 +12,16 @@ const ctx = window.spaceRadar;
 const out = { tReady: Date.now() - t0, errors: [], shots: [] };
 window.addEventListener('error', (e) => out.errors.push(String(e.message).slice(0, 160)));
 const until = async (f, cap, step = 200) => { const s = Date.now(); while (Date.now() - s < cap) { try { if (f()) return true; } catch { /* not yet */ } await wait(step); } return false; };
-const shot = async (name, settle = 1500) => { await wait(settle); await window.cdpShot(name); out.shots.push(name); };
+/** The keyboard help opens by itself on a first visit and sits over the picture: close it. */
+const closeHelp = () => {
+  for (const el of document.querySelectorAll('section, aside, div[role="dialog"], div')) {
+    if (el.children.length > 12 || !/^\s*controls/i.test(el.textContent || '')) continue;
+    const b = el.querySelector('button[aria-label*="lose"], button');
+    if (b) { b.click(); return true; }
+  }
+  return false;
+};
+const shot = async (name, settle = 1500) => { await wait(settle); closeHelp(); await wait(150); await window.cdpShot(name); out.shots.push(name); };
 const V = (x, y, z) => ({ x, y, z });
 const norm = (a) => { const l = Math.hypot(a.x, a.y, a.z) || 1; return V(a.x / l, a.y / l, a.z / l); };
 const cross = (a, b) => V(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);

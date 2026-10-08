@@ -1620,6 +1620,12 @@ export const COPY = {
     worldLit: 'lit as a camera exposed for its own sunlight would show it',
     // 2026-10-08 (public #404, #411, #417): where a world is drawn knowingly unlike its data. Each
     // is added after the world's "drawn as" line (scene/worlds.js worldRecords `departure`).
+    // 2026-10-08 (public #426): a pulsar's blink and a black hole's picture, on the object's own card.
+    exoticDeparture: {
+      pulseSlowed: 'its blink is drawn {n} times slower than it turns, so that an eye can follow it',
+      pulseTrue: 'its blink is drawn at the rate it turns',
+      portrait: 'while this card is open its picture is drawn at its place, far larger than it would look from here',
+    },
     worldDeparture: {
       mercury: 'on a larger screen its relief is from MESSENGER\u2019s elevation model, drawn {steep} times steeper than measured so that crater rims catch the light',
       venus: 'the glow round its edge and past its day side stands for a deep haze; how thick it is drawn and how far it reaches are illustrative',

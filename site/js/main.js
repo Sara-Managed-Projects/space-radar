@@ -549,6 +549,32 @@ export async function boot({ setStatus } = {}) {
   const wantPortraits = () => portraitsImport || (portraitsImport = import('./scene/portraits.js')
     .then((m) => { ctx.portraits = m.createPortraits(scene); return ctx.portraits; })
     .catch((e) => { console.warn('the black hole pictures did not load', e); portraitsImport = null; return null; }));
+  // OUTSIDE A TRIP TOO (public #426, 2026-10-08): the picture is drawn while the black hole's own
+  // card is open on a rung of the ladder, and the card says it is drawn far larger than life
+  // (data/layers.js exoticDeparture). In a trip the trip decides: a stop without `portrait: true`
+  // shows none, whatever is selected.
+  let tripPortrait = '';
+  let tripUp = false;
+  let cardPortrait = '';
+  function syncPortrait() {
+    const want = tripUp ? tripPortrait : cardPortrait;
+    if (want === portraitAsked) return;
+    portraitAsked = want;
+    if (want) wantPortraits().then((p) => { if (p && portraitAsked === want) p.show(ctx.recordById(want)); });
+    else if (ctx.portraits) ctx.portraits.clear();
+  }
+  window.addEventListener('sr:select', (e) => {
+    const record = e && e.detail;
+    cardPortrait = record && record.klass === 'exotic' && record.meta && record.meta.image && record.meta.image.file ? record.id : '';
+    syncPortrait();
+  });
+  // A PULSAR'S PULSE (scene/pulsars.js): asked for the first time the exotics are drawn on a rung
+  // of the ladder, from the frame loop.
+  ctx.pulsars = null;
+  let pulsarsImport = null;
+  ctx.wantPulsars = () => pulsarsImport || (pulsarsImport = import('./scene/pulsars.js')
+    .then((m) => { ctx.pulsars = m.createPulsars(scene); ctx.pulsars.setRecords(ctx.recordsFor('exotics')); return ctx.pulsars; })
+    .catch((e) => { console.warn('the pulsars\u2019 pulses did not load', e); return null; }));
   ctx.portraitLine = (id) => {
     const record = ctx.recordById(id);
     const image = record && record.meta && record.meta.image;
@@ -580,12 +606,9 @@ export async function boot({ setStatus } = {}) {
         ctx.wantNebulae().then((n) => { if (n && typeof n.prefetch === 'function') n.prefetch(ids); });
       }
     }
-    const portrait = tripping && st.portrait ? st.portrait.id : '';
-    if (portrait !== portraitAsked) {
-      portraitAsked = portrait;
-      if (portrait) wantPortraits().then((p) => { if (p && portraitAsked === portrait) p.show(ctx.recordById(portrait)); });
-      else if (ctx.portraits) ctx.portraits.clear();
-    }
+    tripPortrait = tripping && st.portrait ? st.portrait.id : '';
+    tripUp = !!tripping;
+    syncPortrait();
     if (tripping && st.wants && st.wants.figures) ctx.wantFigures();
     if (tripping && st.wants && st.wants.overlay) wantOverlay();
     if (tripping && st.wants && st.wants.spaceWeather) wantSpaceWeather();
@@ -2247,6 +2270,11 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     }
     if (ctx.figures) ctx.figures.update(ctx.camera, ctx.renderer);
     if (ctx.portraits) ctx.portraits.update(ctx.camera, t, frameMs);
+    {
+      const exoticsOn = isLadderStage(stage.worldId) && ctx.isLayerDrawable(LAYERS.find((l) => l.id === 'exotics'));
+      if (ctx.pulsars) ctx.pulsars.update(ctx.camera, ctx.renderer, exoticsOn, nowReal);
+      else if (exoticsOn && !pulsarsImport) ctx.wantPulsars();
+    }
     if (ctx.earthOverlay) ctx.earthOverlay.update();
     if (ctx.wind) ctx.wind.update();
     if (ctx.systems) {

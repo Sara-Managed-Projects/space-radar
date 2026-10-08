@@ -30,6 +30,8 @@ import {
 } from './sample.js';
 import { worldRecords } from '../scene/worlds.js';
 import { EXOTICS } from './exotics.js';
+import { COPY, t, fmt } from '../copy/en.js';
+import { shownPeriod } from '../scene/pulse.js';
 import { SYSTEMS } from './systems.js';
 import { LAYER_ROWS } from './layers.registry.js';
 import { propagate } from '../propagate/index.js';
@@ -349,7 +351,17 @@ export function systemHostRecords(systems = [...SYSTEMS, ...MORE_SYSTEMS]) {
   });
 }
 
-function exoticRecords() {
+function exoticDeparture(x) {
+  const T = COPY.drawing.exoticDeparture;
+  const shown = shownPeriod(x.periodS);
+  const parts = [];
+  if (shown) parts.push(shown.slower > 1 ? t(T.pulseSlowed, { n: fmt.int(shown.slower) }) : T.pulseTrue);
+  if (x.image && x.image.file) parts.push(T.portrait);
+  return parts.length ? { departure: parts.join(COPY.punctuation.separator) } : {};
+}
+
+/** Exported for tests/test_pulse.mjs. */
+export function exoticRecords() {
   const LY = 9460730472580.8;
   const e = 23.4392911 * (Math.PI / 180);
   return EXOTICS.map((x) => {
@@ -375,6 +387,11 @@ function exoticRecords() {
         massMsunLow: x.massMsunLow ?? null,
         massMsunHigh: x.massMsunHigh ?? null,
         periodS: x.periodS ?? null,
+        // 2026-10-08 (public #426): what is drawn there that is not the thing as it would look --
+        // a pulsar's blink, slowed by a power of ten (scene/pulse.js), and the Event Horizon
+        // Telescope's picture, far larger than life (scene/portraits.js). The card's "drawn as"
+        // line gains the sentence (ui/cards.js appends a row's `departure`).
+        ...exoticDeparture(x),
         why: x.why,
         source: x.source,
         cite: x.source,
