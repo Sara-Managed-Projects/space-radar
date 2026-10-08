@@ -18,8 +18,9 @@
 // Neptune's, drawn round the other star so a visitor can see that LHS 1140's planets fit inside
 // Mercury's orbit and HR 8799's lie beyond Neptune's. Dashed, labelled "for scale". Which are drawn
 // is a rule, not a choice per system: each of ours that lies between 0.15 and 1 times the outermost
-// planet's orbit, and the smallest of ours that holds the whole system when it is under six times
-// that orbit.
+// planet's orbit; and, when none does, the smallest of ours that holds the whole system, if it is
+// under four and a half times that orbit -- then the whole-system shot makes room for it, because
+// "all of it inside Mercury's orbit" is the one thing that ring is for.
 import * as THREE from '../../vendor/three.module.min.js';
 import { COPY } from '../copy/en.js';
 import '../copy/en.later.js';
@@ -34,10 +35,18 @@ export const OUR_ORBITS_AU = [
   { id: 'neptune', au: 4515.0e6 / AU_KM },
 ];
 const INSIDE_MIN = 0.15;
-const HOLDER_MAX = 6;
-// What the whole-system shot makes room for beyond the outermost orbit: the band's outer edge or
-// the ring that holds the system, when either is within this many times that orbit.
+const HOLDER_MAX = 4.5;
+// The whole-system shot also makes room for the band's outer edge when it is within this many
+// times the outermost orbit (WASP-12 b is at 0.02 au and its star's zone at 3: not in one picture).
 const FRAME_MAX = 2.5;
+// The band is a sheet in the orbits' plane. From beside a planet the camera is almost in that plane
+// and looks along the sheet: it washed the whole sky grey-green at Kepler-186 f and cut LHS 1140 b
+// in half (measured 2026-10-08). It fades out as the camera comes down to the plane: gone under the
+// first of these fractions of the band's outer radius above it, whole over the second.
+const BAND_FADE = [0.02, 0.15];
+// A label wider than this many times its ring's radius on the screen is not drawn: on a phone a
+// small band's name covered the band, the star and the planet in it.
+const LABEL_MAX_OF_RADIUS = 1.2;
 const BAND_SEGMENTS = 128;
 const BAND_OPACITY = 0.1;
 const EDGE_OPACITY = 0.4;
@@ -48,7 +57,7 @@ export function scaleOrbits(system) {
   const outer = Math.max(...system.planets.map((p) => p.aAu));
   const out = OUR_ORBITS_AU.filter((o) => o.au <= outer && o.au >= INSIDE_MIN * outer);
   const holder = OUR_ORBITS_AU.find((o) => o.au > outer);
-  if (holder && holder.au <= HOLDER_MAX * outer) out.push(holder);
+  if (!out.length && holder && holder.au <= HOLDER_MAX * outer) out.push(holder);
   return out;
 }
 
@@ -57,7 +66,7 @@ export function frameAu(system) {
   const outer = Math.max(...system.planets.map((p) => p.aAu));
   let r = outer;
   if (system.zone && system.zone.outerAu <= FRAME_MAX * outer) r = Math.max(r, system.zone.outerAu);
-  for (const o of scaleOrbits(system)) if (o.au <= FRAME_MAX * outer) r = Math.max(r, o.au);
+  for (const o of scaleOrbits(system)) r = Math.max(r, o.au);
   return r;
 }
 
@@ -91,17 +100,21 @@ export function decorate(built, group, tools) {
   const { unit, textSprite, cssColour, ringGeometry } = tools;
   const toUnits = (au) => (au * AU_KM) / unit;
   const labels = [];
-  const add = (text, colour, radius, turn) => {
+  const add = (text, colour, radius, turn, middle = false) => {
     const sprite = textSprite(text, colour);
     if (!sprite) return;
     sprite.name = 'systems:label';
     sprite.userData.radius = radius;
     sprite.userData.turn = turn;
+    if (middle) sprite.center.set(0.5, 0.5);
     group.add(sprite);
     labels.push(sprite);
   };
   let band = null;
+  let bandOuter = 0;
+  let zoneLabel = null;
   if (system.zone) {
+    bandOuter = toUnits(system.zone.outerAu);
     const colour = new THREE.Color(cssColour('--sr-ok', '#9ef0d8'));
     const inner = toUnits(system.zone.innerAu), outer = toUnits(system.zone.outerAu);
     band = new THREE.Mesh(
@@ -116,7 +129,10 @@ export function decorate(built, group, tools) {
       edge.name = 'systems:zone-edge';
       band.add(edge);
     }
-    add(COPY.starSystem.zoneLabel, cssColour('--sr-ok', '#9ef0d8'), outer, 0);
+    // In the band itself, a quarter turn round from the far side: there the band is seen at its
+    // full width, and the star's own label and the planets' are not.
+    add(COPY.starSystem.zoneLabel, cssColour('--sr-ok', '#9ef0d8'), (inner + outer) / 2, -Math.PI / 2, true);
+    zoneLabel = labels[0] || null;
   }
   const dim = cssColour('--sr-text-dim', '#9aa4b2');
   const rings = [];
@@ -130,11 +146,12 @@ export function decorate(built, group, tools) {
     ring.name = `systems:scale:${o.id}`;
     group.add(ring);
     rings.push(ring);
-    // Each label a sixth of a turn further round than the last, so two rings of nearly one size do
-    // not print their names on top of each other, or on the band's.
-    add(COPY.starSystem.orbitOf[o.id], dim, r, (i + 1) * (Math.PI / 3) * (i % 2 ? -1 : 1));
+    // On the near side of its ring, which is the bottom of the picture and clear of the star's and
+    // the planets' own labels; each a little further round than the last, so two rings of nearly
+    // one size do not print their names on top of each other.
+    add(COPY.starSystem.orbitOf[o.id], dim, r, Math.PI + i * (Math.PI / 7));
   });
-  return { band, rings, labels };
+  return { band, bandOuter, zoneLabel, rings, labels };
 }
 
 const _d = new THREE.Vector3();
@@ -142,7 +159,20 @@ const _d = new THREE.Vector3();
 export function update(built, camera, starScene) {
   const extra = built.extra;
   if (!extra) return;
-  if (extra.band) extra.band.position.copy(starScene);
+  if (extra.band) {
+    extra.band.position.copy(starScene);
+    let fade = 1;
+    if (camera) {
+      const { u, v } = built.basisScene;
+      _d.copy(camera.position).sub(starScene);
+      // The plane's normal is u x v; the camera's height over the plane is its part along it.
+      const height = Math.abs(_d.x * (u.y * v.z - u.z * v.y) + _d.y * (u.z * v.x - u.x * v.z) + _d.z * (u.x * v.y - u.y * v.x));
+      fade = Math.min(1, Math.max(0, (height / extra.bandOuter - BAND_FADE[0]) / (BAND_FADE[1] - BAND_FADE[0])));
+    }
+    extra.fade = fade;
+    extra.band.material.opacity = BAND_OPACITY * fade;
+    for (const edge of extra.band.children) edge.material.opacity = EDGE_OPACITY * fade;
+  }
   for (const ring of extra.rings) ring.position.copy(starScene);
   if (!camera) return;
   const { u, v } = built.basisScene;
@@ -157,5 +187,8 @@ export function update(built, camera, starScene) {
     const c = Math.cos(th) * r, s = Math.sin(th) * r;
     label.position.set(starScene.x + c * u.x + s * v.x, starScene.y + c * u.y + s * v.y, starScene.z + c * u.z + s * v.z);
     label.scale.set(h * label.userData.aspect, h, 1);
+    // The ring's radius as a share of the view's height, against the label's width in the same.
+    const shown = r / (camera.position.distanceTo(label.position) * 2 * Math.tan(((camera.fov || 45) * Math.PI) / 360));
+    label.visible = h * label.userData.aspect <= LABEL_MAX_OF_RADIUS * shown && (label !== extra.zoneLabel || extra.fade > 0.5);
   }
 }

@@ -175,7 +175,8 @@ stage.setWorld('earth'); systems.leave();
 // The rings of ours drawn for scale follow a rule, not a choice per system.
 const ringsOf = (id) => X.scaleOrbits(SYSTEMS_TABLE.find((s) => s.id === id)).map((o) => o.id).join(',');
 check(ringsOf('lhs-1140') === 'mercury', `LHS 1140 fits inside Mercury's orbit (${ringsOf('lhs-1140')})`);
-check(ringsOf('kepler-452') === 'mercury,earth,jupiter', `Kepler-452 b is beside the Earth's orbit (${ringsOf('kepler-452')})`);
+check(ringsOf('kepler-452') === 'mercury,earth', `Kepler-452 b is beside the Earth's orbit (${ringsOf('kepler-452')})`);
+check(ringsOf('kepler-186') === 'mercury' && ringsOf('proxima-cen') === '', `Kepler-186 f is at Mercury's distance; Proxima's planets are too close in for any ring of ours (${ringsOf('kepler-186')}; ${ringsOf('proxima-cen')})`);
 check(ringsOf('hr-8799') === 'neptune', `HR 8799's planets lie beyond Neptune's orbit (${ringsOf('hr-8799')})`);
 // A star of the catalogue that is a host stands for the system's own star.
 check(systems.hostRecordFor({ id: 'hyg-1', klass: 'star', name: 'Proxima Centauri' }) === byId.get('star-proxima-cen'), 'the catalogue\'s Proxima Centauri stands for the system\'s star');
