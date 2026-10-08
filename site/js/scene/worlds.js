@@ -338,7 +338,7 @@ export const WORLDS = [
     // `rotation: 'iau'` since 2026-10-06: the Sun's mesh has its north pole and turns once in 25.38
     // days (astronomy-engine's IAU axis), which scene/sun.js counts today's sunspots from.
     body: 'Sun', frame: SUN_INERTIAL, view: VIEW_TRUE, rotation: 'iau',
-    look: { map: '2k_sun.jpg', tint: 0xf18833, emissive: true, corona: true },
+    look: { map: '2k_sun.webp', tint: 0xf18833, emissive: true, corona: true },
   },
   {
     id: 'earth', display: 'Earth', parent: 'sun', radiusKm: 6371.0,
@@ -347,12 +347,12 @@ export const WORLDS = [
     // as brightness, and lossy WebP keeps brightness at full resolution; the day map is also read
     // as COLOUR -- the ocean mask is blue minus red (earth.js OCEAN_MASK) -- and WebP halves colour
     // resolution. Measured: 1.6 % of the map's pixels changed between sea and land.
-    look: { earth: true, day: '2k_earth_daymap.jpg', night: '2k_earth_nightmap.webp', clouds: '2k_earth_clouds.webp' },
+    look: { earth: true, day: '2k_earth_daymap.webp', night: '2k_earth_nightmap.webp', clouds: '2k_earth_clouds.webp' },
   },
   {
     id: 'moon', display: 'The Moon', parent: 'earth', radiusKm: 1737.4,
     body: 'Moon', frame: EARTH_INERTIAL, view: VIEW_TRUE, rotation: 'iau',
-    look: { map: '2k_moon.jpg', tint: 0x9b9796, rough: 0.5, earthshine: true },
+    look: { map: '2k_moon.webp', tint: 0x9b9796, rough: 0.5, earthshine: true },
   },
   {
     id: 'mercury', display: 'Mercury', parent: 'sun', radiusKm: 2439.7,
@@ -376,12 +376,12 @@ export const WORLDS = [
     body: 'Venus', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
     // `faces`: a second map the visitor may ask for on the card (setFace, 2026-10-06, public #417):
     // the ground under the clouds, as Magellan's radar mapped it. Fetched when asked and not before.
-    look: { map: '2k_venus_atmosphere.jpg', tint: 0xe6bf81, limb: 0.9, air: 'venus', rim: { colour: 0xfff0c8, gain: 0.5 }, faces: { surface: '2k_venus_magellan.webp' } },
+    look: { map: '2k_venus_atmosphere.webp', tint: 0xe6bf81, limb: 0.9, air: 'venus', rim: { colour: 0xfff0c8, gain: 0.5 }, faces: { surface: '2k_venus_magellan.webp' } },
   },
   {
     id: 'mars', display: 'Mars', parent: 'sun', radiusKm: 3389.5,
     body: 'Mars', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_mars.jpg', tint: 0xb75d41, rough: 0.35, air: 'mars', rim: { colour: 0xe8b089, gain: 0.3 } },
+    look: { map: '2k_mars.webp', tint: 0xb75d41, rough: 0.35, air: 'mars', rim: { colour: 0xe8b089, gain: 0.3 } },
   },
   // `oblate` (2026-10-06) is the giant's flattening, (equatorial - polar) / equatorial, from NASA's
   // planetary fact sheets (nssdc.gsfc.nasa.gov/planetary/factsheet/, "Ellipticity (Flattening)",
@@ -397,22 +397,22 @@ export const WORLDS = [
   {
     id: 'jupiter', display: 'Jupiter', parent: 'sun', radiusKm: 69911.0,
     body: 'Jupiter', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_jupiter.jpg', tint: 0xb3aba1, limb: 1.05, oblate: 0.06487, faces: { hubble: '2k_jupiter_opal_2025.webp' }, faceSpot: { hubble: { u: 0.6058, v: 0.3878, half_u: 0.019, half_v: 0.024 } } },
+    look: { map: '2k_jupiter.webp', tint: 0xb3aba1, limb: 1.05, oblate: 0.06487, faces: { hubble: '2k_jupiter_opal_2025.webp' }, faceSpot: { hubble: { u: 0.6058, v: 0.3878, half_u: 0.019, half_v: 0.024 } } },
   },
   {
     id: 'saturn', display: 'Saturn', parent: 'sun', radiusKm: 58232.0,
     body: 'Saturn', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_saturn.jpg', tint: 0xdfcca8, faces: { hubble: '2k_saturn_opal_2025.webp' }, limb: 1.05, oblate: 0.09796, ring: { innerKm: 74500, outerKm: 140220, map: '2k_saturn_ring_alpha.png' } },
+    look: { map: '2k_saturn.webp', tint: 0xdfcca8, faces: { hubble: '2k_saturn_opal_2025.webp' }, limb: 1.05, oblate: 0.09796, ring: { innerKm: 74500, outerKm: 140220, map: '2k_saturn_ring_alpha.png' } },
   },
   {
     id: 'uranus', display: 'Uranus', parent: 'sun', radiusKm: 25362.0,
     body: 'Uranus', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_uranus.jpg', tint: 0x9eced5, faces: { hubble: '1k_uranus_opal_2025.webp' }, limb: 1.2, oblate: 0.02293, rim: { colour: 0xc8f4ff, gain: 0.35 }, ring: URANUS_RINGS },
+    look: { map: '2k_uranus.webp', tint: 0x9eced5, faces: { hubble: '1k_uranus_opal_2025.webp' }, limb: 1.2, oblate: 0.02293, rim: { colour: 0xc8f4ff, gain: 0.35 }, ring: URANUS_RINGS },
   },
   {
     id: 'neptune', display: 'Neptune', parent: 'sun', radiusKm: 24622.0,
     body: 'Neptune', frame: SUN_INERTIAL, view: VIEW_COMPRESSED, rotation: 'iau',
-    look: { map: '2k_neptune.jpg', tint: 0x395eb7, faces: { hubble: '1k_neptune_opal_2025.webp' }, limb: 1.15, oblate: 0.01708, rim: { colour: 0x9cc0ff, gain: 0.35 }, ring: NEPTUNE_RINGS },
+    look: { map: '2k_neptune.webp', tint: 0x395eb7, faces: { hubble: '1k_neptune_opal_2025.webp' }, limb: 1.15, oblate: 0.01708, rim: { colour: 0x9cc0ff, gain: 0.35 }, ring: NEPTUNE_RINGS },
   },
   // THE FLAT ONES. No map ships for these five and none is fetched (`flat: true`, no `map`), so the
   // tint is not a texture's mean like the rows above: it is a HUE from a published description,

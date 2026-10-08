@@ -91,7 +91,7 @@ check(/open\.target = '_blank'/.test(mod) && /open\.rel = 'noopener'/.test(mod),
       check(at > 0 && yaml.slice(row0, at).includes(`file: site/textures/${boot}`), `${light} is in the same row as ${boot}`);
     }
   }
-  check(L.embedMapFor('textures/2k_earth_daymap.jpg') === 'textures/embed/earth_day.webp' && L.embedMapFor('textures/2k_earth_clouds.webp') === null && L.embedMapFor('textures/2k_mars.jpg') === 'textures/2k_mars.jpg', 'a map with a light copy is swapped, the clouds are not drawn, any other map is its own');
+  check(L.embedMapFor('textures/2k_earth_daymap.webp') === 'textures/embed/earth_day.webp' && L.embedMapFor('textures/2k_earth_clouds.webp') === null && L.embedMapFor('textures/2k_mars.webp') === 'textures/2k_mars.webp', 'a map with a light copy is swapped, the clouds are not drawn, any other map is its own');
   // the boot graph: none of the panels, the trips, the sky view or the whole app's entry
   const STATIC = /(?:\bimport|\bexport)\s*(?:[^'";()]*?\bfrom\s*)?['"](\.{1,2}\/[^'"]+)['"]/g;
   const seen = new Set();

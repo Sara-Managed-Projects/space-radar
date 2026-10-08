@@ -37,7 +37,7 @@ texture_tiers:
     when: boot
     files:
       - tier: 0
-        file: site/textures/2k_moon.jpg
+        file: site/textures/2k_moon.webp
         px: [2048, 1024]
         bytes: 1053869
         format: rgb

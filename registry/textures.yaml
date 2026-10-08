@@ -64,13 +64,14 @@ textures:
     when: idle
     files:
       - tier: 0
-        file: site/textures/2k_earth_daymap.jpg
+        file: site/textures/2k_earth_daymap.webp
         px: [2048, 1024]
-        bytes: 463087
+        bytes: 148312
         format: rgb
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        make: "the publisher's 2k JPEG (463087 B) re-encoded as WebP, same 2048 x 1024 pixels, at quality 84: the lowest whose luma SSIM against the JPEG is at least 0.98 (0.9811); scripts/build-textures.py --webp-2k, 2026-10-08 (spec 0056 req 8). The licence line was read again on the publisher's page that day"
       - tier: -1
         file: site/textures/embed/earth_day.webp
         px: [1024, 512]
@@ -189,13 +190,14 @@ textures:
     when: near
     files:
       - tier: 0
-        file: site/textures/2k_moon.jpg
+        file: site/textures/2k_moon.webp
         px: [2048, 1024]
-        bytes: 1053869
+        bytes: 640218
         format: rgb
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        make: "the publisher's 2k JPEG (1053869 B) re-encoded as WebP, same 2048 x 1024 pixels, at quality 86: the lowest whose luma SSIM against the JPEG is at least 0.98 (0.9819); scripts/build-textures.py --webp-2k, 2026-10-08 (spec 0056 req 8). The licence line was read again on the publisher's page that day"
       - tier: -1
         file: site/textures/embed/moon.webp
         px: [1024, 512]
@@ -248,13 +250,14 @@ textures:
     when: near
     files:
       - tier: 0
-        file: site/textures/2k_mars.jpg
+        file: site/textures/2k_mars.webp
         px: [2048, 1024]
-        bytes: 750547
+        bytes: 487924
         format: rgb
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        make: "the publisher's 2k JPEG (750547 B) re-encoded as WebP, same 2048 x 1024 pixels, at quality 93: the lowest whose luma SSIM against the JPEG is at least 0.98 (0.9841); scripts/build-textures.py --webp-2k, 2026-10-08 (spec 0056 req 8). The licence line was read again on the publisher's page that day"
       - tier: 1
         file: site/textures/4k/mars.webp
         px: [4096, 2048]
@@ -272,13 +275,14 @@ textures:
     when: near
     files:
       - tier: 0
-        file: site/textures/2k_jupiter.jpg
+        file: site/textures/2k_jupiter.webp
         px: [2048, 1024]
-        bytes: 498976
+        bytes: 234614
         format: rgb
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        make: "the publisher's 2k JPEG (498976 B) re-encoded as WebP, same 2048 x 1024 pixels, at quality 91: the lowest whose luma SSIM against the JPEG is at least 0.98 (0.9810); scripts/build-textures.py --webp-2k, 2026-10-08 (spec 0056 req 8). The licence line was read again on the publisher's page that day"
       - tier: 1
         file: site/textures/4k/jupiter.webp
         px: [4096, 2048]
@@ -312,13 +316,14 @@ textures:
     when: boot
     files:
       - tier: 0
-        file: site/textures/2k_sun.jpg
+        file: site/textures/2k_sun.webp
         px: [2048, 1024]
-        bytes: 822427
+        bytes: 296062
         format: rgb
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        make: "the publisher's 2k JPEG (822427 B) re-encoded as WebP, same 2048 x 1024 pixels, at quality 87: the lowest whose luma SSIM against the JPEG is at least 0.98 (0.9808); scripts/build-textures.py --webp-2k, 2026-10-08 (spec 0056 req 8). The licence line was read again on the publisher's page that day"
 
 
   - id: venus
@@ -327,13 +332,14 @@ textures:
     when: boot
     files:
       - tier: 0
-        file: site/textures/2k_venus_atmosphere.jpg
+        file: site/textures/2k_venus_atmosphere.webp
         px: [2048, 1024]
-        bytes: 229696
+        bytes: 37444
         format: rgb
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        make: "the publisher's 2k JPEG (229696 B) re-encoded as WebP, same 2048 x 1024 pixels, at quality 83: the lowest whose luma SSIM against the JPEG is at least 0.98 (0.9801); scripts/build-textures.py --webp-2k, 2026-10-08 (spec 0056 req 8). The licence line was read again on the publisher's page that day"
 
   # The ground under the clouds (2026-10-06, public #417): `when: asked`, fetched when a visitor
   # presses Ground on Venus's card (scene/worlds.js setFace) and never before.
@@ -359,13 +365,14 @@ textures:
     when: boot
     files:
       - tier: 0
-        file: site/textures/2k_saturn.jpg
+        file: site/textures/2k_saturn.webp
         px: [2048, 1024]
-        bytes: 199916
+        bytes: 18270
         format: rgb
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        make: "the publisher's 2k JPEG (199916 B) re-encoded as WebP, same 2048 x 1024 pixels, at quality 64: the lowest whose luma SSIM against the JPEG is at least 0.98 (0.9802); scripts/build-textures.py --webp-2k, 2026-10-08 (spec 0056 req 8). The licence line was read again on the publisher's page that day"
 
 
   - id: saturn-hubble
@@ -403,13 +410,14 @@ textures:
     when: boot
     files:
       - tier: 0
-        file: site/textures/2k_uranus.jpg
+        file: site/textures/2k_uranus.webp
         px: [2048, 1024]
-        bytes: 77751
+        bytes: 5548
         format: rgb
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        make: "the publisher's 2k JPEG (77751 B) re-encoded as WebP, same 2048 x 1024 pixels, at quality 40: the lowest whose luma SSIM against the JPEG is at least 0.98 (0.9970); scripts/build-textures.py --webp-2k, 2026-10-08 (spec 0056 req 8). The licence line was read again on the publisher's page that day"
 
 
   - id: uranus-hubble
@@ -433,13 +441,14 @@ textures:
     when: boot
     files:
       - tier: 0
-        file: site/textures/2k_neptune.jpg
+        file: site/textures/2k_neptune.webp
         px: [2048, 1024]
-        bytes: 241580
+        bytes: 8728
         format: rgb
         licence: 'CC BY 4.0: "You may use, adapt, and share these textures for any purpose, even commercially."'
         credit: "Planet textures: Solar System Scope (solarsystemscope.com), CC BY 4.0"
         source: "https://www.solarsystemscope.com/textures/ (read 2026-09-28)"
+        make: "the publisher's 2k JPEG (241580 B) re-encoded as WebP, same 2048 x 1024 pixels, at quality 40: the lowest whose luma SSIM against the JPEG is at least 0.98 (0.9901); scripts/build-textures.py --webp-2k, 2026-10-08 (spec 0056 req 8). The licence line was read again on the publisher's page that day"
 
 
   - id: neptune-hubble

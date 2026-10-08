@@ -38,7 +38,7 @@
 // Verified three ways, all in the report for this file:
 //   1. Numerically, against three's own SphereGeometry: the vertex at uv (0.5, 0.5) is at local
 //      (+1, 0, 0), at uv (0.75, 0.5) is at (0, 0, -1), at uv (0.25, 0.5) is at (0, 0, +1).
-//   2. Against the pixels of 2k_earth_daymap.jpg: sampling the texture at the uv this alignment
+//   2. Against the pixels of the day map (the publisher's 2k JPEG, shipped as 2k_earth_daymap.webp): sampling the texture at the uv this alignment
 //      predicts for eight known places (Sahara, Amazon, Australia, mid-Pacific, ...) gives land
 //      where there is land and ocean where there is ocean.
 //   3. Against the ephemeris: the sub-solar point computed from the rendered geometry
@@ -82,7 +82,9 @@ export const CLOUD_H_OVER_R = 8 / 6371;
 export const SEGMENTS = { width: 96, height: 64 };
 
 /**
- * Ocean mask thresholds, in LINEAR light, MEASURED off 2k_earth_daymap.jpg rather than guessed.
+ * Ocean mask thresholds, in LINEAR light, MEASURED off the day map rather than guessed (off the
+ * publisher's 2k JPEG; the WebP shipped since 2026-10-08 is that picture at SSIM 0.98, and its
+ * mask differs from the JPEG's at about one pixel in a hundred, along the coasts).
  * There is no specular map in this texture set, so the mask has to be derived, and ocean is the
  * one large region where blue clearly exceeds red. Twenty-one probe points, blue minus red:
  *
