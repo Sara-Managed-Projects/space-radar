@@ -92,7 +92,7 @@ jobs:
       - name: The exotics mirror matches the registry (spec 0028 step 7)
         run: python3 scripts/gen_exotics_js.py --check
       - name: The star systems mirror matches the registry (spec 0040)
-        run: python3 scripts/gen_systems_js.py --check
+        run: python3 scripts/gen_systems_js.py --check && python3 scripts/gen_systems_more_js.py --check
       - name: The famous-stars mirror matches the registry
         run: python3 scripts/gen_stars_notable_js.py --check
       - name: The level-of-detail mirror matches the registry (spec 0028)

@@ -105,7 +105,16 @@ const DEFERRED = {
   'js/scene/wind.js': 'the wind: main.js fetches it when Wind is chosen under Earth data',
   'js/data/wind.js': 'the wind field\'s request and arithmetic: with scene/wind.js',
   'js/data/eonet.js': 'fires, volcanoes and icebergs: data/layers.js fetches it when the layer is ticked',
+  'js/data/systems-index.js': 'which stars have a stage: main.js fetches it with the exoplanet table, after the first visit',
+  'js/data/systems-table.js': 'thirty-nine star systems in full: scene/systems.js fetches them the first time one is asked for',
+  'js/scene/systemextras.js': 'the habitable-zone band and the rings for scale: with data/systems-table.js',
+  'js/ui/systemcard.js': 'what a generated system\'s card says: it arrives with the card',
 };
+// The light embed (js/embedlite.js) has no star systems at all: neither file can reach it.
+{
+  const lite = new Set([...graph(join(JS, 'embedlite.js'))].map(rel));
+  for (const path of ['js/scene/systems.js', 'js/data/systems-index.js', 'js/data/systems-table.js']) check(!lite.has(path), `${path} is in the light embed's graph: an embed of the Moon would fetch the star systems`);
+}
 for (const [path, why] of Object.entries(DEFERRED)) {
   check(!boot.has(path), `${path} is in the boot graph again (a static import reaches it from main.js). ${why}`);
 }

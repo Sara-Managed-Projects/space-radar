@@ -105,6 +105,21 @@ export const STAGES = {
   'system-trappist-1': { frame: SUN_INERTIAL, unitKm: 100000, system: 'trappist-1' },
 };
 
+/** One unit on every star system's stage, km (registry/stages.yaml's rule for `kind: system`). */
+export const SYSTEM_UNIT_KM = 100000;
+
+/**
+ * The stage of a GENERATED system (registry/systems-generated.yaml, internal #466). Thirty-nine
+ * rows nobody typed are not mirrored by hand above: data/systems-index.js arrives after the first
+ * visit and scene/systems.js registers each here, with the one unit every system stage has
+ * (tests/test_systems_table.mjs pins it). A stage that exists already is left alone. Returns its id.
+ */
+export function registerSystemStage(systemId) {
+  const id = `system-${systemId}`;
+  if (!STAGES[id]) STAGES[id] = { frame: SUN_INERTIAL, unitKm: SYSTEM_UNIT_KM, system: systemId };
+  return id;
+}
+
 /** Is this stage a rung of the ladder rather than a world? */
 export function isLadderStage(id) {
   const row = STAGES[id];

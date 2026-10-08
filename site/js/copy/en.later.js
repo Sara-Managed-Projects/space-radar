@@ -15,6 +15,71 @@
 import { COPY, article } from './en.js';
 
 Object.assign(COPY, {
+  // A star system from the NASA Exoplanet Archive's table, drawn at its own scale (internal #466;
+  // scene/systemextras.js draws the labels, ui/systemcard.js prints the rows). The rule every line
+  // here keeps: a number the table measured is given plainly; a number the Archive estimated, or
+  // this map computed, says so in the same breath; what nobody measured is said to be unmeasured.
+  starSystem: {
+    // Drawn IN the scene, on the band and on the dashed rings.
+    zoneLabel: 'Habitable zone, computed',
+    orbitOf: {
+      mercury: 'Mercury’s orbit, for scale',
+      earth: 'Earth’s orbit, for scale',
+      jupiter: 'Jupiter’s orbit, for scale',
+      neptune: 'Neptune’s orbit, for scale',
+    },
+    rows: {
+      known: 'What is known',
+      orbit: 'Distance from its star',
+      temperature: 'Temperature, computed',
+      zone: 'Habitable zone, computed',
+      starTemperature: 'Surface temperature',
+      starWidth: 'Width',
+      starMass: 'Mass',
+      planets: 'Planets drawn',
+      stars: 'Stars in the system',
+    },
+    // "Nobody has seen its surface. Its size and year are measured."
+    unseen: 'Nobody has seen its surface.',
+    measuredOne: 'Its {what} is measured.',
+    measuredMany: 'Its {what} are measured.',
+    estimatedOne: 'Its {what} is an estimate.',
+    estimatedMany: 'Its {what} are estimates.',
+    unmeasuredOne: 'Its {what} is not measured.',
+    and: ' and ',
+    what: { size: 'size', year: 'year', mass: 'mass', least: 'least possible mass' },
+    au: '{n} au',
+    auComputed: '{n} au, computed from its year and its star’s mass',
+    earthsEstimated: '{n}× Earth, the archive’s estimate from its mass',
+    massEstimated: '{n}× Earth, the archive’s estimate from its size',
+    massLeast: 'At least {n}× Earth',
+    sizeDefault: 'Not measured: drawn the size of the Earth',
+    // {pct}: the share of light the planet is taken to reflect, from the generated data.
+    temperature: '{k} K ({c} °C), if it reflects {pct} % of its light as the Earth does',
+    zone: {
+      inside: 'Inside it',
+      edge: 'At its edge: inside the wider limits only',
+      hotter: 'Closer to the star than it',
+      colder: 'Further from the star than it',
+    },
+    zoneNone: {
+      'too-hot': 'Not computed: the formula does not cover a star this hot',
+      'too-cool': 'Not computed: the formula does not cover a star this cool',
+      'no-temperature': 'Not computed: the star’s temperature is not measured',
+      'no-luminosity': 'Not computed: the star’s brightness is not measured',
+      twoStars: 'Not computed: it orbits two stars and the catalogue describes one',
+    },
+    zoneRange: '{a} to {b} au from the star (Kopparapu et al. 2014)',
+    kelvin: '{n} K',
+    notMeasured: 'Not measured',
+    starPoint: 'Not measured: drawn as a point of light',
+    starWhite: 'Not measured: drawn white',
+    starsOne: '{n} in the catalogue; one is drawn',
+    // The card's drawing line on the system's stage. {date} the day the table was read.
+    line: 'Sizes and years from the NASA Exoplanet Archive, read {date}. The orbits are drawn as circles{computed}; the colours{phase} and the tilt of the orbits are illustrative{defaults}.',
+    lineComputed: ', {n} of them sized from the year and the star’s mass',
+    lineDefaults: '; a planet with no measured size is drawn the size of the Earth',
+  },
   // scene/shells.js (internal #306): two distances drawn as wire spheres on the ladder's rungs.
   // Each label says what the sphere is and how far, in words the scene can carry on one line.
   shells: {

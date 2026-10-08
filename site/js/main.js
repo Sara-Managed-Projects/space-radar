@@ -23,7 +23,7 @@ import { parsePlaceValue, keptPlace, browserStorage } from './sky/placelink.js';
 import { readMoment, writeMoment, bootLink, laterLink, linkChange, read as readUrlKeys, write as writeUrlState, clear as clearUrlState, stopIndex, parseCam } from './ui/urlstate.js';
 import { guessObserver, roundPlace } from './sky/guessplace.js';
 import { COPY, CITIES, t as fill } from './copy/en.js';
-import { LAYERS, loadLayer } from './data/layers.js';
+import { LAYERS, loadLayer, addSystemRows } from './data/layers.js';
 import * as sources from './data/sources.js';
 import { createSkyView } from './sky/skyview.js';
 import { showCard, hideCard, wantCards } from './ui/cardgate.js';
@@ -49,7 +49,7 @@ import { createGalaxy } from './scene/galaxy.js';
 import { createDsoGlow } from './scene/dsoglow.js';
 import { createExposure, DEFAULT_EXPOSURE } from './scene/exposure.js';
 import { isLadderStage, isSystemStage } from './scene/stage.js';
-import { createSystems } from './scene/systems.js';
+import { createSystems, loadIndex as loadSystemIndex } from './scene/systems.js';
 import { SUN_INERTIAL, STAGES } from './scene/stage.js';
 import { showChooser, hideChooser } from './ui/chooser.js';
 import { createLabels, labelName } from './ui/labels.js';
@@ -1125,6 +1125,18 @@ export async function boot({ setStatus } = {}) {
     // search box turns the sky to what it found (ui/search.js, skyView.pointAtRecord). Without this
     // a star chosen there recentred the whole scene on the stellar rung under the sky view's feet.
     if (ctx.skyView && ctx.skyView.active && opts.fly !== false) opts = { ...opts, fly: false };
+    // A STAR SYSTEM NOBODY HAS ASKED FOR YET (internal #466). A star of the catalogue that is a
+    // system's host stands for that system's own star; and a member of a system whose rows have not
+    // been fetched waits for them, once, then is selected as if they had always been here. If they
+    // cannot be had the planet is what it was before: a mark at its star on the stellar rung.
+    if (record && ctx.systems && opts.fly !== false) {
+      record = ctx.systems.hostRecordFor(record) || record;
+      if (!opts.systemTried && ctx.systems.pending(record)) {
+        const again = () => select(record, { ...opts, systemTried: true });
+        ctx.systems.load().then(again, again);
+        return;
+      }
+    }
     // A selection made for the visitor from a list, the search, the timeline or a link flies the
     // camera somewhere they did not point at: the view before it is kept and the way back offered
     // (internal #274, ui/camundo.js). Not for a tap on the thing itself, which is pointing at it;
@@ -2352,7 +2364,16 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
   ctx.laterLayersLoaded = () => later.length === 0 || (laterLoad !== null && later.every((l) => layerRecords.has(l.id)));
   ctx.loadAfterFirstVisit = () => {
     if (!laterLoad) {
-      laterLoad = Promise.all(later.map((l) => one(l))).then(() => {
+      // The star systems' index rides with the exoplanet table it is joined to (internal #466):
+      // thirty-nine more host stars for the search box, and a stage for each. Not the systems
+      // themselves: scene/systems.js fetches those the first time one is asked for (select()).
+      const moreSystems = () => loadSystemIndex().then((rows) => {
+        if (!rows.length) return null;
+        addSystemRows(rows);
+        const layer = LAYERS.find((l) => l.id === 'systems');
+        return layer ? one(layer) : null;
+      });
+      laterLoad = Promise.all(later.map((l) => one(l))).then(moreSystems).then(() => {
         window.dispatchEvent(new CustomEvent('sr:later-layers', { detail: { ids: later.map((l) => l.id) } }));
       });
     }
@@ -2567,7 +2588,8 @@ function openTrip(ctx, st) {
 function resolveAt(ctx, id) {
   const text = String(id || '').trim();
   if (!text) return null;
-  const direct = ctx.recordById(text);
+  // A planet or a star system by its bare id, as `#go=` gives it: `kepler-186-f`, `kepler-186`.
+  const direct = ctx.recordById(text) || ctx.recordById(`exo-${text}`) || ctx.recordById(`star-${text}`);
   if (direct) return direct;
   if (/^[0-9]+$/.test(text)) {
     const sat = ctx.recordById(`sat-${text}`);

@@ -850,7 +850,7 @@ export const TOURS = [
 "chapter": "Chapter one: the catalogue",
 "card": {
 "title": "Planets around other stars",
-"body": "6 332 planets around other stars, in the copy of NASA's catalogue this map carries, each drawn as a mark at its star. Most were found by the dip in a star's light as a planet crosses in front of it, the rest mostly by the wobble a planet gives its star."
+"body": "6 347 planets around other stars, in the copy of NASA's catalogue this map carries, each drawn as a mark at its star. Most were found by the dip in a star's light as a planet crosses in front of it, the rest mostly by the wobble a planet gives its star."
 },
 "frame_radii": 5.0,
 "drift_rate_deg_s": 6,

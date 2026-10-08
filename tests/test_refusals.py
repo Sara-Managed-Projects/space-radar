@@ -662,6 +662,21 @@ CASES: list[tuple[str, str, str, str]] = [
      "systems.yaml", 'TRAPPIST-1 (read 2026-09-23)"\n    colour_note', 'TRAPPIST-1"\n    colour_note'),
     ("a system that does not say its colours are illustrative",
      "systems.yaml", "    colour_note: illustrative\n", ""),
+    # --- the generated systems (internal #466, 2026-10-08) --------------------------------------
+    # Nobody types registry/systems-generated.yaml, so a hand edit is itself the refusal; and the
+    # rules a row keeps are checked apart from the script that wrote it.
+    ("a listed host the exoplanet table does not have",
+     "systems-list.yaml", "  - {host: LHS 1140, why: temperate}", "  - {host: LHS 1141, why: temperate}"),
+    ("a generated orbit edited by hand, which Kepler's third law refuses",
+     "systems-generated.yaml", "  - id: exo-lhs-1140-b\n    period_days: 24.7372\n    a_au: 0.0946", "  - id: exo-lhs-1140-b\n    period_days: 24.7372\n    a_au: 0.1946"),
+    ("a planet called inside the habitable zone whose orbit is outside the computed band",
+     "systems-generated.yaml", "    equilibrium_k: 385\n    zone: hotter", "    equilibrium_k: 385\n    zone: inside"),
+    ("a habitable verdict on a planet of two stars, where none is computed",
+     "systems-generated.yaml", "  - id: exo-kepler-16-b\n    period_days: 228.776\n    a_au: 0.7048\n    a_from: table\n    circumbinary: true\n", "  - id: exo-kepler-16-b\n    period_days: 228.776\n    a_au: 0.7048\n    a_from: table\n    circumbinary: true\n    zone: inside\n"),
+    ("a generated system that is not what the generator writes (a hand-typed radius)",
+     "systems-generated.yaml", "    radius_earths: 1.73\n", "    radius_earths: 1.74\n"),
+    ("a generated planet that is not a record of its host",
+     "systems-generated.yaml", "  - id: exo-lhs-1140-c\n", "  - id: exo-lhs-1140-z\n"),
     ("a system stage centred on something other than its host star",
      "stages.yaml", "centre: star-trappist-1", "centre: sun"),
     ("a system stage in a unit other than 100 000 km, the 1 000-times slip spec 0028 made twice",

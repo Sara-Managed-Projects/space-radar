@@ -1077,6 +1077,24 @@ that stands in until the first snapshot lands, every record saying *as of* its d
   which this file and the `attribution:` on the row do. No licence text is asserted by the archive.
 - Used unmodified in the snapshot; in the bundled copy, columns reduced to thirteen and numbers
   rounded to the precision the card prints (`scripts/build-exoplanets.py` says which).
+- The bundled copy was read from the archive's TAP service on **2026-10-08** (6 347 planets with a
+  position and a distance; it was 6 332 on 2026-09-08).
+- **The star systems drawn at their own scale** (`registry/systems-list.yaml`, thirty-nine hosts beside
+  TRAPPIST-1): the same pull, the same day. `registry/systems-columns.csv` keeps, for those hosts only,
+  the semi-major axis, the star's mass and luminosity, the eccentricity, the transit time, the
+  circumbinary flag, and which radii and masses the archive calculated rather than measured;
+  `scripts/build-systems.py` writes `registry/systems-generated.yaml` from the two files. Computed
+  there, and labelled as computed wherever it is shown: the orbit's size where the table's own does not
+  satisfy Kepler's third law with its period and star mass; the equilibrium temperature (Bond albedo
+  0.3; the Earth's is 0.294, NASA Earth Fact Sheet,
+  https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html, read 2026-10-08); and the
+  habitable zone: **Kopparapu et al. 2014**, *Habitable Zones around Main-sequence Stars: Dependence
+  on Planetary Mass*, ApJ Letters 787, L29 (https://arxiv.org/abs/1404.5292, equations 4 and 5 and
+  their coefficient table, read 2026-10-08), runaway greenhouse to maximum greenhouse, valid for
+  stars of 2 600 to 7 200 K; its 2013 predecessor (ApJ 765, 131, https://arxiv.org/abs/1301.6674)
+  was read the same day for the method. The dashed "for scale" rings are Mercury's, Earth's,
+  Jupiter's and Neptune's mean distances from the NASA Planetary Fact Sheet
+  (https://nssdc.gsfc.nasa.gov/planetary/factsheet/, read 2026-10-08).
 
 ### 4.8 Black holes and other extremes — `registry/exotics.yaml`
 

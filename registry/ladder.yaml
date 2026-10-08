@@ -89,7 +89,7 @@ we_show:
     of: "1.8 billion in Gaia's catalogue; a few hundred billion in the Milky Way"
     source: "HYG v4.4 with a measured distance; Gaia DR3 count; Wikipedia 'Milky Way' 100-400 billion"
   - what: "planets around other stars"
-    n: 6332
+    n: 6347
     of: "every confirmed one, as of the catalogue copy's date"
     source: "NASA Exoplanet Archive pscomppars"
     layer: exoplanets

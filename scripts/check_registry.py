@@ -1941,6 +1941,88 @@ def check_systems() -> list:
     return systems
 
 
+def check_generated_systems() -> list:
+    """registry/systems-generated.yaml (internal #466): the systems scripts/build-systems.py writes
+    from registry/systems-list.yaml and the exoplanet table. Nobody types this file, so the first
+    refusal is that it is exactly what the script writes today; the rest are the rules a row must
+    keep whoever wrote it, so a mistake in the script is refused by something that is not the script:
+    Kepler's third law within 5 % (a planet of two stars: the orbit must imply more than the one
+    star the table describes and less than two of it), a planet that is a record of its host, a
+    period that is the table's, and "inside the habitable zone" only for an orbit inside the band."""
+    path = REG / "systems-generated.yaml"
+    listing = REG / "systems-list.yaml"
+    if not path.exists() and not listing.exists():
+        return []
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("build_systems", ROOT / "scripts" / "build-systems.py")
+    builder = importlib.util.module_from_spec(spec)
+    sys.path.insert(0, str(ROOT / "scripts"))
+    from _exo_ids import exo_id, read_rows, rows_for_host, num  # noqa: E402
+    csv_rows = read_rows(ROOT / "site" / "data" / "exoplanets.csv")
+    try:
+        doc = yaml_load(path.read_text(encoding="utf-8")) or {}
+    except (OSError, yaml.YAMLError) as exc:
+        fail("systems-generated.yaml", f"will not read: {exc}")
+        return []
+    if csv_rows is not None:
+        try:
+            spec.loader.exec_module(builder)
+            want = builder.text()
+        except SystemExit as exc:
+            fail("systems-list.yaml", f"scripts/build-systems.py refuses: {exc}")
+            return []
+        if want != path.read_text(encoding="utf-8"):
+            fail("systems-generated.yaml", "is not what scripts/build-systems.py writes from registry/systems-list.yaml "
+                                           "and the table: it was edited by hand, or its sources changed. "
+                                           "Run: python3 scripts/build-systems.py")
+    systems = doc.get("systems") or []
+    for s in systems:
+        sid = str(s.get("id"))
+        where = f"systems-generated.yaml[{sid}]"
+        if sid in SYSTEM_ROWS:
+            fail(where, "registry/systems.yaml has a system of this id already: one star, one stage")
+        star = s.get("star") or {}
+        mass = star.get("mass_suns")
+        if not STAR_SOURCE.match(str(star.get("source") or "")):
+            fail(where, "`star.source` must be the page and the day it was read")
+        if s.get("colour_note") != "illustrative":
+            fail(where, "`colour_note: illustrative` is missing")
+        hz = s.get("habitable_zone")
+        if hz is not None and not (hz["wide_inner_au"] < hz["inner_au"] < hz["outer_au"] < hz["wide_outer_au"]):
+            fail(where, f"the habitable zone's four distances are out of order: {hz}")
+        host_rows = rows_for_host(csv_rows, str(s.get("host"))) if csv_rows is not None else []
+        by_id = {exo_id(r.get("pl_name") or ""): r for r in host_rows}
+        for p in s.get("planets") or []:
+            pid = str(p.get("id"))
+            pwhere = f"systems-generated.yaml[{sid}/{pid}]"
+            row = by_id.get(pid)
+            if csv_rows is not None and row is None:
+                fail(pwhere, f"is not a record of `{s.get('host')}` in site/data/exoplanets.csv")
+            a, per = p.get("a_au"), p.get("period_days")
+            if not (is_number(a) and a > 0 and is_number(per) and per > 0):
+                fail(pwhere, "`a_au` and `period_days` must be positive numbers")
+                continue
+            if row is not None and num(row, "pl_orbper") and abs(per - num(row, "pl_orbper")) > SYSTEM_CSV_TOLERANCE * per:
+                fail(pwhere, f"`period_days: {per}` is not the table's {num(row, 'pl_orbper')}")
+            if is_number(mass) and mass > 0:
+                implied = a ** 3 / (per / JULIAN_YEAR_DAYS) ** 2
+                if p.get("circumbinary"):
+                    if not mass < implied < 2 * mass:
+                        fail(pwhere, f"a planet of two stars: a^3/P^2 = {implied:.4f} Suns must be more than the one "
+                                     f"star the table describes ({mass}) and less than two of it")
+                elif abs(implied - mass) / mass > KEPLER_TOLERANCE:
+                    fail(pwhere, f"Kepler's third law does not hold: a_au {a} and period_days {per} give "
+                                 f"a^3/P^2 = {implied:.5f} Suns, and star.mass_suns is {mass} "
+                                 f"({(implied / mass - 1) * 100:+.1f} %, the limit is {int(KEPLER_TOLERANCE * 100)} %)")
+            zone = p.get("zone")
+            if zone is not None and (hz is None or p.get("circumbinary")):
+                fail(pwhere, f"`zone: {zone}` with no habitable zone computed for this star: nothing may say it")
+            elif zone == "inside" and not hz["inner_au"] <= a <= hz["outer_au"]:
+                fail(pwhere, f"`zone: inside` and the orbit ({a} au) is outside the computed band "
+                             f"({hz['inner_au']} to {hz['outer_au']} au): \"habitable\" is said by the band alone")
+    return systems
+
+
 def check_system_stage_rows(stages: list) -> None:
     """Every registry/systems.yaml row has its `kind: system` stage (the reverse of check_system_stage)."""
     have = {str(st.get("id")) for st in stages if isinstance(st, dict) and st.get("kind") == "system"}
@@ -4395,6 +4477,7 @@ def main() -> int:
 
     check_oddities(oddities_doc, world_ids, sites)
     systems = check_systems()
+    generated_systems = check_generated_systems()
     budgets = check_budgets()
     audio = check_audio()
     check_autopilot({l.get("id") for l in layers})
@@ -4633,7 +4716,7 @@ def main() -> int:
     print(
         f"registry ok: {len(worlds)} worlds, "
         f"{sum(1 for st in ladder if isinstance(st, dict) and st.get('kind') != 'system')} ladder rungs, "
-        f"{len(systems)} star system(s), {len(lod_rules)} lod rules, {len(weather)} weather effects, "
+        f"{len(systems)} star system(s) typed and {len(generated_systems)} generated, {len(lod_rules)} lod rules, {len(weather)} weather effects, "
         f"{len(dso_hand)} hand-placed deep-sky objects, {len(nebulae)} nebula pictures, {len(exotics)} exotics, {len(famous_stars)} famous stars, {len(ladder_rungs)} breadcrumb rungs, {len(aliases)} aliases, {len(colorkeys)} colour keys, "
         f"{len(sources)} sources, {len(layers)} layers, "
         f"{len(events)} event types, {len(models)} models, {len(real_models)} real models, "

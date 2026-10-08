@@ -3,7 +3,8 @@
 // Contract: createSystems(scene, ctx) -> { enter(stageId), leave(), update(tMs, camera), active,
 //   records(), drawnPositionOf(id, out), pickAll(ndcX, ndcY, camera, viewport, limit),
 //   subjectFor(record), stageOfRecord(record), framingDistanceUnits(stageId), lightScene(out),
-//   setScaleRing(on), stats(), dispose() }
+//   setScaleRing(on), hostRecordFor(record), pending(record), load(), stats(), dispose() }
+// and, for the systems nobody typed (internal #466): registerSystems(), loadIndex(), loadTable().
 // and the pure parts, exported for tests/test_systems.mjs: planetPosition(), systemBasis(),
 // hostPositionKm(), illustrativePhase(), keplerMismatch(), floorRadiusUnits(), systemOfRecordId().
 //
@@ -47,7 +48,7 @@
 // seven rings, 8 928 triangles for TRAPPIST-1 (stats(), under spec 0040's 10 000).
 
 import * as THREE from '../../vendor/three.module.min.js';
-import { stage, STAGES, setSystemOrigin, SUN_INERTIAL } from './stage.js';
+import { stage, STAGES, setSystemOrigin, registerSystemStage, SUN_INERTIAL } from './stage.js';
 import { worldMaterial, coronaSprite, MOON_VIEW } from './worlds.js';
 import { kelvinToRgb } from './starfield.js';
 import { skyToSunInertialKm } from '../data/parsers.js';
@@ -81,12 +82,70 @@ const PICK_PX = 24;
 
 // --- the pure parts ------------------------------------------------------------------------------
 
-const BY_ID = new Map(SYSTEMS.map((s) => [s.id, s]));
-const BY_STAGE = new Map(SYSTEMS.map((s) => [s.stage, s]));
+const BY_ID = new Map();
+const BY_STAGE = new Map();
 const MEMBER = new Map();
-for (const s of SYSTEMS) {
-  MEMBER.set(s.hostId, { system: s, planet: null });
-  for (const p of s.planets) MEMBER.set(p.id, { system: s, planet: p });
+const BY_NAME = new Map();
+const nameKey = (text) => String(text || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
+/**
+ * Make these rows the systems the map knows. Called three times at most: with data/systems.js at
+ * import (TRAPPIST-1, typed, on the first visit), with data/systems-index.js when the exoplanet table
+ * lands (who has a stage, loadIndex below), and with data/systems-table.js the first time one of
+ * them is asked for (the rows in full, loadTable). A later row of the same id replaces the earlier.
+ * `full: false` is an index row: it has a stage, an origin and members, and nothing to draw yet.
+ */
+export function registerSystems(rows, full = true) {
+  for (const s of rows || []) {
+    if (!s || !s.id) continue;
+    s.full = full;
+    registerSystemStage(s.id);
+    BY_ID.set(s.id, s);
+    BY_STAGE.set(s.stage, s);
+    MEMBER.set(s.hostId, { system: s, planet: null });
+    for (const p of s.planets) MEMBER.set(p.id, { system: s, planet: p });
+    for (const n of [s.host, s.display, ...(s.aliases || [])]) if (n) BY_NAME.set(nameKey(n), s);
+    setSystemOrigin(s.stage, hostPositionKm(s));
+  }
+}
+
+let indexLoad = null;
+let tableLoad = null;
+/** Who has a stage (data/systems-index.js). Resolves to the index rows; [] when it cannot be had. */
+export function loadIndex() {
+  if (!indexLoad) {
+    indexLoad = import('../data/systems-index.js')
+      .then((m) => {
+        const rows = m.SYSTEM_INDEX.filter((s) => !BY_ID.has(s.id));
+        registerSystems(rows, false);
+        return rows;
+      })
+      .catch((err) => { console.warn('the star systems\' index did not load', err); indexLoad = null; return []; });
+  }
+  return indexLoad;
+}
+
+/** The rows in full, and what is drawn from them beyond a star and its planets (scene/systemextras.js). */
+let extras = null;
+export function loadTable() {
+  if (!tableLoad) {
+    tableLoad = Promise.all([import('../data/systems-table.js'), import('./systemextras.js')])
+      .then(([m, x]) => { registerSystems(m.SYSTEMS_TABLE, true); extras = x; return true; })
+      .catch((err) => { console.warn('the star systems did not load', err); tableLoad = null; return false; });
+  }
+  return tableLoad;
+}
+
+/** Does this record's system still wait for its rows? (main.js select() loads them, then selects.) */
+export function systemPending(record) {
+  const m = record && systemOfRecordId(record.id);
+  return !!(m && !m.system.full);
+}
+
+/** The system a plain star record IS the host of, by its name ("Proxima Centauri" in HYG), or null. */
+export function systemOfStarName(record) {
+  if (!record || record.klass !== 'star' || MEMBER.has(record.id)) return null;
+  return BY_NAME.get(nameKey(record.name)) || null;
 }
 
 // The card's words for a planet that is drawn with a face RIGHT NOW (scene/exoface.js faceLabel):
@@ -171,6 +230,18 @@ export function planetPosition(planet, tMs, basis, out = { x: 0, y: 0, z: 0 }) {
   return out;
 }
 
+/** The star's radius in km; 0 when the table has none (it is then a point of light, and the card says so). */
+export function starRadiusKm(system) {
+  const r = system && system.star ? system.star.radiusSuns : null;
+  return Number.isFinite(r) && r > 0 ? r * SUN_RADIUS_KM : 0;
+}
+
+/** A planet's radius in km, and whether it is a default: the size of the Earth, when none is known. */
+export function planetRadiusKm(planet) {
+  const r = planet ? planet.radiusEarths : null;
+  return Number.isFinite(r) && r > 0 ? r * EARTH_RADIUS_KM : EARTH_RADIUS_KM;
+}
+
 /** Kepler's third law: a^3 / P^2 (au, years) against the star's mass, as a signed fraction. */
 export function keplerMismatch(planet, massSuns) {
   const pYr = planet.periodDays / 365.25;
@@ -196,9 +267,9 @@ export function fitDistanceUnits(radiusUnits, fovDeg, aspect, polar = 0, fill = 
   return Math.max(needH, needV);
 }
 
-// Every system's origin, registered once at import: a star forty light-years away does not move at
-// any clock rate this app runs (scene/stage.js setSystemOrigin says why this is not per tick).
-for (const s of SYSTEMS) setSystemOrigin(s.stage, hostPositionKm(s));
+// Every system's origin, registered once: a star forty light-years away does not move at any clock
+// rate this app runs (scene/stage.js setSystemOrigin says why this is not per tick).
+registerSystems(SYSTEMS, true);
 
 // --- the drawing ---------------------------------------------------------------------------------
 
@@ -276,7 +347,8 @@ export function createSystems(scene, ctx = {}) {
     const basis = systemBasis(hostKm);
     const basisScene = { u: sceneDir(basis.u), v: sceneDir(basis.v) };
     const unit = stage.unitKm;
-    const rgb = kelvinToRgb(system.star.teffK);
+    // A star with no temperature in the table (a pulsar) is drawn white, and its card says so.
+    const rgb = Number.isFinite(system.star.teffK) ? kelvinToRgb(system.star.teffK) : [1, 1, 1];
     const starColour = new THREE.Color().setRGB(rgb[0], rgb[1], rgb[2], THREE.SRGBColorSpace);
 
     const starMesh = new THREE.Mesh(
@@ -285,7 +357,7 @@ export function createSystems(scene, ctx = {}) {
     );
     starMesh.name = `systems:${system.hostId}`;
     starMesh.userData.recordId = system.hostId;
-    starMesh.userData.trueRadiusUnits = (system.star.radiusSuns * SUN_RADIUS_KM) / unit;
+    starMesh.userData.trueRadiusUnits = starRadiusKm(system) / unit;
     const halo = coronaSprite();
     if (halo) { halo.material.color = starColour.clone(); starMesh.add(halo); }
     group.add(starMesh);
@@ -297,7 +369,7 @@ export function createSystems(scene, ctx = {}) {
       const mesh = new THREE.Mesh(new THREE.SphereGeometry(1, PLANET_SEGMENTS[0], PLANET_SEGMENTS[1]), worldMaterial(null, PLANET_TINT));
       mesh.name = `systems:${planet.id}`;
       mesh.userData.recordId = planet.id;
-      mesh.userData.trueRadiusUnits = (planet.radiusEarths * EARTH_RADIUS_KM) / unit;
+      mesh.userData.trueRadiusUnits = planetRadiusKm(planet) / unit;
       group.add(mesh);
       planets.push({ planet, mesh });
       const ring = new THREE.LineLoop(
@@ -328,7 +400,11 @@ export function createSystems(scene, ctx = {}) {
     }
     group.add(mercury);
 
-    return { system, hostKm, basis, basisScene, starMesh, planets, rings, mercury };
+    const built = { system, hostKm, basis, basisScene, starMesh, planets, rings, mercury, extra: null };
+    // The habitable-zone band and our own planets' orbits for scale (scene/systemextras.js): only
+    // for a generated row, which is the only kind that carries a computed zone.
+    if (extras && system.zone !== undefined) built.extra = extras.decorate(built, group, { unit, textSprite, cssColour, ringGeometry });
+    return built;
   }
 
   // --- faces (scene/exoface.js) -------------------------------------------------------------------
@@ -387,6 +463,12 @@ export function createSystems(scene, ctx = {}) {
     if (!system) { leave(); return false; }
     if (current && current.system === system) return true;
     disposeCurrent();
+    // An index row has nothing to draw yet: its rows are fetched, and it is built when they land
+    // if this is still its stage (a link straight to the stage, or a Back, gets here before select()).
+    if (!system.full) {
+      loadTable().then((ok) => { if (ok && stage.worldId === stageId) enter(stageId); });
+      return false;
+    }
     current = build(system);
     wantFaces(current);
     applyVisibility();
@@ -472,6 +554,7 @@ export function createSystems(scene, ctx = {}) {
       const r = (MERCURY_A_AU * AU_KM) / stage.unitKm;
       label.position.set(-(a * u.x + b * v.x) / l * r, -(a * u.y + b * v.y) / l * r, -(a * u.z + b * v.z) / l * r);
     }
+    if (current.extra) extras.update(current, cam, _p);
     for (const { planet, mesh } of current.planets) {
       if (!drawnPositionOf(planet.id, _v)) { mesh.visible = false; continue; }
       mesh.visible = true;
@@ -534,16 +617,30 @@ export function createSystems(scene, ctx = {}) {
 
   /** The system stage a record is drawn on, or null: a planet with a system row, or its host. */
   function stageOfRecord(record) {
+    // A system whose rows have not landed has no stage to go to yet (main.js select() fetches them).
     const m = record && systemOfRecordId(record.id);
-    return m ? m.system.stage : null;
+    return m && m.system.full ? m.system.stage : null;
+  }
+
+  /**
+   * The record to select in place of this one, or null. A star of the catalogue that IS a system's
+   * host ("Proxima Centauri" from HYG) stands for that system's own star record, so choosing the
+   * star anywhere flies into its system (spec 0040 req 6, one step further).
+   */
+  function hostRecordFor(record) {
+    const s = systemOfStarName(record);
+    const byId = typeof ctx.recordById === 'function' ? ctx.recordById : () => null;
+    return s ? byId(s.hostId) : null;
   }
 
   /** How far out a camera sits to hold every orbit of the system, on this screen. */
   function framingDistanceUnits(stageId, opts = {}) {
     const system = systemForStage(stageId);
-    if (!system) return 5;
+    if (!system || !system.full) return 5;
     const unitKm = STAGES[stageId].unitKm;
-    const outer = Math.max(...system.planets.map((p) => p.aAu)) * AU_KM;
+    // A generated system's shot also holds its habitable zone and the ring of ours that holds the
+    // system, when either is near (scene/systemextras.js frameAu).
+    const outer = (extras && system.zone !== undefined ? extras.frameAu(system) : Math.max(...system.planets.map((p) => p.aAu))) * AU_KM;
     const radiusKm = opts.mercury ? Math.max(outer, MERCURY_A_AU * AU_KM) : outer;
     const cam = ctx.camera;
     const fov = cam && cam.fov ? cam.fov : 45;
@@ -561,7 +658,7 @@ export function createSystems(scene, ctx = {}) {
     const m = record && systemOfRecordId(record.id);
     if (!m) return null;
     const { system, planet } = m;
-    const starRadiusKm = system.star.radiusSuns * SUN_RADIUS_KM;
+    const starKm = starRadiusKm(system);
     return {
       kind: 'record',
       id: record.id,
@@ -570,14 +667,14 @@ export function createSystems(scene, ctx = {}) {
       layerId: record.layer,
       worldId: null,
       systemStage: system.stage,
-      radiusKm: planet ? planet.radiusEarths * EARTH_RADIUS_KM : starRadiusKm,
+      radiusKm: planet ? planetRadiusKm(planet) : starKm,
       position(tMs) {
         if (stage.worldId !== system.stage) return null;
         const out = drawnPositionOf(record.id, new THREE.Vector3());
         return out || null;
       },
       ground: {
-        radiusKm: starRadiusKm,
+        radiusKm: starKm,
         centre: () => (stage.worldId === system.stage ? stage.toScene(hostPositionKm(system), SUN_INERTIAL) : null),
       },
       // The host's stops are overviews: from 40 degrees off the orbits' axis the rings read as rings.
@@ -601,8 +698,8 @@ export function createSystems(scene, ctx = {}) {
   function arrivalDistanceUnits(record) {
     const m = record && systemOfRecordId(record.id);
     if (!m) return 5;
-    if (!m.planet) return framingDistanceUnits(m.system.stage);
-    return ((m.planet.radiusEarths * EARTH_RADIUS_KM) / STAGES[m.system.stage].unitKm) * 8;
+    if (!m.planet || !m.system.full) return framingDistanceUnits(m.system.stage);
+    return (planetRadiusKm(m.planet) / STAGES[m.system.stage].unitKm) * 8;
   }
 
   /** The light on a system stage: the host star's scene position. Null elsewhere. */
@@ -641,6 +738,9 @@ export function createSystems(scene, ctx = {}) {
     pickAll,
     subjectFor,
     stageOfRecord,
+    hostRecordFor,
+    pending: systemPending,
+    load: loadTable,
     framingDistanceUnits,
     arrivalDistanceUnits,
     starRadiusUnits,

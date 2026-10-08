@@ -312,13 +312,20 @@ function milkyWayRecords() {
  * exactly on the planets' glyphs. Its facts are the row's, with the page they were read from.
  * Exported for tests/test_systems.mjs.
  */
-export function systemHostRecords(systems = SYSTEMS) {
+// The systems that arrive after the first visit (data/systems-index.js, internal #466): main.js
+// hands their rows here when the exoplanet table has landed, and loads this layer again.
+const MORE_SYSTEMS = [];
+export function addSystemRows(rows) {
+  for (const row of rows || []) if (row && !MORE_SYSTEMS.some((s) => s.id === row.id)) MORE_SYSTEMS.push(row);
+}
+
+export function systemHostRecords(systems = [...SYSTEMS, ...MORE_SYSTEMS]) {
   return systems.map((s) => {
     const h = s.hostSky;
     const distLy = Math.round(h.distPc * 3.2615637771674333 * 100) / 100;
     return {
       id: s.hostId,
-      name: s.host,
+      name: s.display || s.host,
       klass: 'star',
       layer: 'systems',
       propagator: 'static',
@@ -334,7 +341,7 @@ export function systemHostRecords(systems = SYSTEMS) {
         system: s.id,
         stageId: s.stage,
         planets: s.planets.length,
-        aliases: [s.host],
+        aliases: [s.host, ...(s.aliases || [])],
         source: s.star.source,
         cite: `NASA Exoplanet Archive: ${s.star.source}`,
       },
@@ -453,7 +460,7 @@ export const LAYERS = [
     parse: 'exoplanets',
     sample: () => [],
     bundledText: 'data/exoplanets.csv',
-    bundledAsOf: '2026-09-08',
+    bundledAsOf: '2026-10-08',
     propagator: 'static',
     frame: 'sun-inertial',
     moments: { wonder: true, now: false, next: false },

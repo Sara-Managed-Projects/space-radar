@@ -79,6 +79,7 @@ import { stage } from '../scene/stage.js';
 import { icon } from './icons.js';
 import { overlayLine, legendNode, paintLegend } from './overlaylegend.js';
 import { systemOfRecordId, phaseIsMeasured, faceLineOf } from '../scene/systems.js';
+import { generatedLine } from './systemcard.js';
 import { liveBlock, paintLive, sparkBlock, crewBlock, linkNodes, smallBodyFromLine } from './cardextras.js';
 import { upForWords } from './cardlive.js';
 import { launchMsOf } from '../data/satcat.js';
@@ -1271,6 +1272,7 @@ function trainSection(record, ctx, m) {
 export function systemLine(record, stageId = stage.worldId) {
   const m = record && record.id ? systemOfRecordId(record.id) : null;
   if (!m || stageId !== m.system.stage) return null;
+  if (m.system.zone !== undefined) return generatedLine(m.system);
   const guessed = m.system.planets.some((p) => !phaseIsMeasured(p));
   const line = t(COPY.trip.systemLine, { phase: guessed ? COPY.trip.systemPhaseUnknown : '' });
   // A planet drawn with a face (scene/exoface.js) says so first, in words made from its own row:

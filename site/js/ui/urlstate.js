@@ -36,7 +36,12 @@ export const HASH_KEY = 'm';
 // the same key under the name people guess, and read() hands it back as `ambient`.
 // `p` (2026-10-08, internal #137): a shared spot on the ground, `<lat>,<lon>` to 0.1 degree. Only
 // sky/placelink.js makes or reads its value, and only "Share this place" puts it in a link.
-export const KEYS = ['m', 'v', 'ambient', 'autopilot', 'shuffle', 'sound', 'voice', 'captions', 'pace', 'trip', 'stop', 'present', 'at', 'event', 't', 'rate', 'stage', 'exp', 'p', 'imagine', 'cam'];
+// `go` (2026-10-08, internal #466): the short link a reel ends on, `#go=kepler-186-f` or
+// `#go=kepler-186`. It is `at` under the name a person can type and say: read() hands it back as
+// `at` (a planet's or a star system's id without its `exo-` or `star-` prefix, which main.js
+// resolveAt tries), and write() never produces it, so once the flight has begun the address bar
+// carries the ordinary `at=` and a link copied from there is the ordinary link.
+export const KEYS = ['m', 'v', 'ambient', 'autopilot', 'shuffle', 'sound', 'voice', 'captions', 'pace', 'trip', 'stop', 'present', 'at', 'go', 'event', 't', 'rate', 'stage', 'exp', 'p', 'imagine', 'cam'];
 export const VERSION = '1';
 
 /**
@@ -96,6 +101,7 @@ export function read() {
   }
   if (out.m === undefined && bare !== null) out.m = bare;
   if (out.autopilot !== undefined) { if (out.ambient === undefined) out.ambient = out.autopilot; delete out.autopilot; }
+  if (out.go !== undefined) { if (out.at === undefined) out.at = out.go; delete out.go; }
   if (out.v !== undefined && out.v !== VERSION) out.unknownVersion = true;
   return out;
 }
@@ -113,10 +119,11 @@ export function write(patch) {
     const eq = part.indexOf('=');
     if (eq < 0) continue; // the legacy bare word is never written back
     const key = part.slice(0, eq);
-    if (KEYS.includes(key)) current[key] = part.slice(eq + 1); // raw: already encoded
+    // `go` is read as `at` and never written back (KEYS says why).
+    if (KEYS.includes(key) && key !== 'go') current[key] = part.slice(eq + 1); // raw: already encoded
   }
   for (const key of Object.keys(patch)) {
-    if (!KEYS.includes(key)) continue;
+    if (!KEYS.includes(key) || key === 'go') continue;
     const value = patch[key];
     if (value === null || value === undefined || value === '') delete current[key];
     else current[key] = encodeURIComponent(String(value));
