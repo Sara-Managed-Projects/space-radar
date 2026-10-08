@@ -694,5 +694,9 @@ jobs:
         run: node tests/test_ics.mjs
       - name: "what a search row says: one row for a station's modules, a planet's moons after it (public #312)"
         run: node tests/test_searchrows.mjs
+      - name: "a trip does not wait 8 s for a layer that landed before its machine was imported (internal #454)"
+        run: node tests/test_trip_layer_wait.mjs
+      - name: "the polish sweep: the place inside the Tonight view, a model in its band, the overlay key, photo mode's share (internal #455, #421, #386, #397)"
+        run: node tests/test_polish_sweep.mjs
       - name: "every test file in tests/ is run by this workflow"
         run: node tests/test_ci_runs_every_test.mjs
