@@ -354,5 +354,17 @@ for (const r of NEBULAE) {
   n.dispose();
 }
 
+// --------------------------------------------- 7. the shutter reaches the 3D stars (internal #343)
+{
+  const { COPY: _c } = await import(join(JS, 'copy/en.js'));
+  const en = await import(join(JS, 'copy/en.js'));
+  check(exposureLook('eye').starLimit === en.NAKED_EYE_LIMIT, `the Eye draws stars to the naked-eye limit (${exposureLook('eye').starLimit} = ${en.NAKED_EYE_LIMIT})`);
+  check(exposureLook('eye').starLimit < exposureLook('camera').starLimit && exposureLook('camera').starLimit <= exposureLook('deep').starLimit && exposureLook('deep').starLimit <= 7.5, 'a longer exposure shows no fewer stars, and none past the file\'s 7.5');
+  const st = readFileSync(join(JS, 'scene/stars3d.js'), 'utf8');
+  check(/m > uMagLimit/.test(st) && /uMagLimit: \{ value: 7\.5 \}/.test(st) && !/m > 7\.5/.test(st), 'the vertex shader reads the limit from a uniform whose default is the old 7.5');
+  const mn = readFileSync(join(JS, 'main.js'), 'utf8');
+  check((mn.match(/stars3d\.setMagLimit\(/g) || []).length === 2, 'main.js hands the limit over at boot and on every change');
+}
+
 if (problems.length) { console.error('nebulae FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`nebulae ok: ${NEBULAE.length} licensed pictures inside their objects' fields, the tangent-plane maths, the shutter's three looks, and nothing fetched at boot`);

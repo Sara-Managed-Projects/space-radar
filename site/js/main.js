@@ -305,6 +305,7 @@ export async function boot({ setStatus } = {}) {
   // The Milky Way model and the deep-sky glows are the same faint light: one number for all three.
   galaxy.setExposure(exposure.look().milkyWay);
   dsoGlow.setExposure(exposure.look().milkyWay);
+  stars3d.setMagLimit(exposure.look().starLimit);
   let skyStrength = 1;
   let nebulaeImport = null;
   ctx.wantNebulae = () => {
@@ -333,6 +334,7 @@ export async function boot({ setStatus } = {}) {
     // The Milky Way model and the deep-sky glows are the same faint light (internal #343).
     galaxy.setExposure(look.milkyWay);
     dsoGlow.setExposure(look.milkyWay);
+    stars3d.setMagLimit(look.starLimit);
     // The address bar says what is on screen: the key goes when the shutter is back at its default.
     writeUrlState({ exp: mode === DEFAULT_EXPOSURE ? null : mode });
     window.dispatchEvent(new CustomEvent('sr:exposure', { detail: { mode } }));

@@ -34,9 +34,12 @@ export const EXPOSURE_KEY = 'sr.exposure';
 // only the core survives, below 1 lifts them. milkyWay multiplies the panorama's "whisper" tint,
 // so camera = 1 is the sky exactly as it was drawn before this file existed.
 const LOOKS = {
-  eye: { nebulaGain: 0.3, nebulaGamma: 2.2, nebulaSaturation: 0.06, milkyWay: 0.55 },
-  camera: { nebulaGain: 1.0, nebulaGamma: 1.0, nebulaSaturation: 1.0, milkyWay: 1.0 },
-  deep: { nebulaGain: 1.15, nebulaGamma: 0.7, nebulaSaturation: 1.25, milkyWay: 1.7 },
+  // starLimit is the faintest apparent magnitude the 3D stars are drawn to (scene/stars3d.js): the Eye's is
+  // the naked-eye limit (copy/en.js NAKED_EYE_LIMIT, held equal by tests/test_nebulae.mjs); the file holds
+  // nothing past 7.5, so Deep cannot go further than Camera.
+  eye: { nebulaGain: 0.3, nebulaGamma: 2.2, nebulaSaturation: 0.06, milkyWay: 0.55, starLimit: 6.5 },
+  camera: { nebulaGain: 1.0, nebulaGamma: 1.0, nebulaSaturation: 1.0, milkyWay: 1.0, starLimit: 7.5 },
+  deep: { nebulaGain: 1.15, nebulaGamma: 0.7, nebulaSaturation: 1.25, milkyWay: 1.7, starLimit: 7.5 },
 };
 
 /** The numbers a mode means; an unknown mode is the default's, never a throw. Pure. */
