@@ -2,7 +2,7 @@
 // limb darkening model against the measurement, today's sunspot groups from NOAA's list onto the
 // sphere, the module's switch between the flat disc and the detailed one, and the rule that none of
 // it is part of a first visit.
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
 import { readFileSync } from 'node:fs';
 
@@ -147,6 +147,42 @@ const FEED = [
   check(COPY.sun && /\{n\}/.test(COPY.sun.spots) && /\{date\}/.test(COPY.sun.spots) && /NOAA/.test(COPY.sun.spots) && /NOAA/.test(COPY.sun.regionsCredit), 'and whose list the spots are');
   const credits = readFileSync(join(ROOT, 'CREDITS.md'), 'utf8');
   check(credits.includes(COPY.sun.regionsCredit) && credits.includes('solar_regions.json'), 'CREDITS.md carries the sunspot list\'s credit line');
+}
+
+// Stars fade near the Sun (scene/starfield.js sunGlare; internal #404, public #412).
+{
+  const S = await import(pathToFileURL(join(ROOT, 'site/js/scene/starfield.js')).href);
+  const T3 = await import(pathToFileURL(join(ROOT, 'site/vendor/three.module.min.js')).href);
+  const deg = Math.PI / 180;
+  const home = S.sunGlare(0.267 * deg);     // the Sun from the Earth
+  check(Math.abs(home.innerRad - 1.5 * deg) < 1e-12 && Math.abs(home.outerRad - 6 * deg) < 1e-12, 'from the Earth: no star within a degree and a half of the Sun, all of them past six');
+  const near = S.sunGlare(10 * deg);
+  check(Math.abs(near.innerRad - 20 * deg) < 1e-12 && Math.abs(near.outerRad - 60 * deg) < 1e-12, 'close up the glare grows with the disc: gone to twice its radius, whole past six');
+  check(S.sunGlare(80 * deg).outerRad <= Math.PI && S.sunGlare(NaN).innerRad === 1.5 * deg, 'and it is bounded');
+  const field = S.createStarfield(new T3.Scene(), {
+    starsBin: readFileSync(join(ROOT, 'site/data/stars.bin')),
+    linesJson: JSON.parse(readFileSync(join(ROOT, 'site/data/constellations.lines.json'), 'utf8')),
+    namesJson: JSON.parse(readFileSync(join(ROOT, 'site/data/constellation-names.json'), 'utf8')),
+    milkyWayTexture: new T3.Texture(),
+  });
+  if (field.ready && field.ready.then) await field.ready.catch(() => {});
+  const cam = new T3.PerspectiveCamera(45, 1.6, 0.01, 1e7);
+  cam.position.set(0, 0, 100); cam.lookAt(0, 0, 0); cam.updateMatrixWorld(); cam.matrixWorldInverse.copy(cam.matrixWorld).invert();
+  const g = field.setSun(new T3.Vector3(0, 0, 0), 10, cam);
+  field.update(cam);
+  let pts = null;
+  field.group.traverse((c) => { if (!pts && c.isPoints && c.material.uniforms && c.material.uniforms.uSunGlare) pts = c; });
+  const u = pts ? pts.material.uniforms : null;
+  check(!!u, 'the star field\'s points carry the glare\'s uniforms');
+  if (u) {
+    check(Math.abs(u.uSunView.value.z + 1) < 1e-9 && Math.abs(u.uSunView.value.x) < 1e-9, 'the shader is told where the Sun is in the camera\'s own axes (straight ahead is -Z)');
+    check(Math.abs(u.uSunGlare.value.x - Math.cos(g.innerRad)) < 1e-12 && u.uSunGlare.value.x > u.uSunGlare.value.y, 'and the two angles as cosines');
+    check(/vAlpha \*= 1\.0 - smoothstep\( uSunGlare\.y, uSunGlare\.x, dot\( normalize\( mv\.xyz \), uSunView \) \);/.test(pts.material.vertexShader), 'a star\'s light is multiplied down by its angle from the Sun');
+    field.setSun(null);
+    check(u.uSunGlare.value.x === 2 && u.uSunView.value.lengthSq() === 0, 'with no Sun given nothing fades');
+  }
+  const { COPY: C2 } = await import(pathToFileURL(join(ROOT, 'site/js/copy/en.js')).href);
+  check(/stars beside it are faded/.test(C2.drawing.worldSun), 'the Sun\'s card says the stars beside it are faded');
 }
 
 if (problems.length) {

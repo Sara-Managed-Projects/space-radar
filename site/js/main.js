@@ -2315,6 +2315,8 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     // What the frame cost and what the device has already admitted about itself: scene/heroes.js
     // spends a fast machine's headroom on more models and gives it back when the frames say so.
     if (heroes) heroes.update(t, { frameMs, latched: latch.latched, saveData, bandPx: ctx.viewShift ? ctx.viewShift.bandHeightPx() : 0 });
+    // Stars fade near the Sun's disc (scene/starfield.js sunGlare), wherever the camera is.
+    if (starfield && starfield.setSun) starfield.setSun(worlds.drawnPositionOf('sun'), worlds.drawnRadiusUnits('sun'), ctx.camera);
     if (starfield && starfield.update) starfield.update(ctx.camera);
     if (ctx.stars3d) ctx.stars3d.update(ctx.camera, ctx.renderer);
     // A sky stop's lens (ui/trip.js `zoom`): eased, so a wider figure opens out and never jumps.

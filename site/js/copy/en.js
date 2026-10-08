@@ -1671,7 +1671,7 @@ export const COPY = {
     worldRingsDense: 'its rings are at their measured distances, drawn {w} times wider, {d} times more opaque and far brighter than they are so that they show: the real ones are faint threads as dark as charcoal',
     // The Sun close up (scene/sun.js, spec 0055 task 3): which parts of the picture are a model and
     // which are there to be seen.
-    worldSun: 'close up, its edge darkens and reddens as a model of its atmosphere says it should; the grain stands for its churning surface and is drawn far coarser than the real granules; the corona is illustrative, and drawn far brighter than it is so that it can be seen',
+    worldSun: 'close up, its edge darkens and reddens as a model of its atmosphere says it should; the grain stands for its churning surface and is drawn far coarser than the real granules; the corona is illustrative, and drawn far brighter than it is so that it can be seen; the stars beside it are faded, as its glare hides them from any camera',
     // Spec 0065 requirement 4 (internal #337): while a close world is drawn from map tiles, the card
     // names the mosaic under the camera. {title} is the registry row's (registry/tilesets.yaml), {res}
     // the metres one pixel of the finest tiles on screen covers. `Detail`: Mars, where the mosaic is

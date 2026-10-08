@@ -161,6 +161,25 @@ function skyQuaternion(out = new THREE.Quaternion()) {
   }
 }
 
+// ------------------------------------------------------------------------ glare round the Sun
+
+/**
+ * STARS FADE NEAR THE SUN (public #412, internal #404, 2026-10-08). No camera that can show the
+ * Sun's disc shows a star beside it: the disc's light, spread by the optics, drowns them. So the
+ * stars are gone within `inner` of the Sun's centre and come back to full by `outer`, both set
+ * by how big the disc is in the sky (its angular radius, `alphaRad`): gone to twice its radius
+ * and never closer than a degree and a half, back by six radii and never before six degrees.
+ * From the Earth that is nothing inside 1.5 degrees; from where the Sun's disc fills a quarter of
+ * the view, nothing in the same field as the disc. ILLUSTRATIVE: the numbers are a camera's
+ * habit, chosen, and the Sun's card says the stars near it are hidden by its glare.
+ * @returns {{innerRad: number, outerRad: number}}
+ */
+export function sunGlare(alphaRad) {
+  const a = Math.max(0, Math.min(Math.PI / 2, Number(alphaRad) || 0));
+  const DEG = Math.PI / 180;
+  return { innerRad: Math.min(Math.PI, Math.max(2 * a, 1.5 * DEG)), outerRad: Math.min(Math.PI, Math.max(6 * a, 6 * DEG)) };
+}
+
 // --------------------------------------------------------------------------------- shaders
 
 const STAR_VERT = /* glsl */ `
@@ -171,6 +190,8 @@ uniform float uPixelRatio;
 uniform float uGain;
 uniform float uScale;
 uniform float uGlow;
+uniform vec3 uSunView;    // the Sun's direction from the camera, in view space; zero: no glare
+uniform vec2 uSunGlare;   // cosines of sunGlare()'s inner and outer angles
 varying vec3 vColour;
 varying float vAlpha;
 varying float vCore;
@@ -180,6 +201,8 @@ void main() {
   vColour = aColour;
   vAlpha = aAlpha * uGain;
   vec4 mv = modelViewMatrix * vec4( position, 1.0 );
+  // Stars fade near the Sun (sunGlare() above): gone inside the inner angle, whole past the outer.
+  vAlpha *= 1.0 - smoothstep( uSunGlare.y, uSunGlare.x, dot( normalize( mv.xyz ), uSunView ) );
   gl_Position = projectionMatrix * mv;
   // The naked-eye stars the constellations are drawn from (magnitude 2.7 and brighter: aSize over
   // 2.3; magnitude 1.5 until 2026-10-08, public #271) get a soft glow round a core that stays its
@@ -333,8 +356,12 @@ export function createStarfield(scene, opts = {}) {
     uScale: { value: 1 },
     // The glow round the brightest stars (scene/stretch.js, A STAR'S LIGHT); 0 under the frame latch.
     uGlow: { value: 1 },
+    uSunView: { value: new THREE.Vector3(0, 0, 0) },
+    uSunGlare: { value: new THREE.Vector2(2, 3) },   // cosines no direction reaches: no fade
     ...stretchUniforms(),
   };
+  const sunWorld = new THREE.Vector3();
+  let sunAlpha = -1;
 
   // ---- Milky Way ----------------------------------------------------------------------------
   function buildMilkyWay(texture) {
@@ -572,6 +599,24 @@ export function createStarfield(scene, opts = {}) {
      */
     update(camera) {
       syncToCamera(camera && camera.isCamera ? camera : null, null);
+      // The Sun's direction in the camera's own axes, for the glare (setSun below).
+      if (sunAlpha >= 0 && camera && camera.isCamera) {
+        const v = starUniforms.uSunView.value.copy(sunWorld).sub(camera.position);
+        if (v.lengthSq() > 0) v.transformDirection(camera.matrixWorldInverse); else v.set(0, 0, 0);
+      }
+    },
+    /**
+     * Where the Sun is and how big, for the stars' fade near it (sunGlare). `position`: its place
+     * in the scene; `radius`: its drawn radius, same units. Call before update(camera). null: no fade.
+     */
+    setSun(position, radius, camera) {
+      if (!position || !(radius > 0) || !camera) { sunAlpha = -1; starUniforms.uSunView.value.set(0, 0, 0); starUniforms.uSunGlare.value.set(2, 3); return null; }
+      sunWorld.copy(position);
+      const d = sunWorld.distanceTo(camera.position);
+      sunAlpha = d > radius ? Math.asin(radius / d) : Math.PI / 2;
+      const g = sunGlare(sunAlpha);
+      starUniforms.uSunGlare.value.set(Math.cos(g.innerRad), Math.cos(g.outerRad));
+      return g;
     },
     /**
      * Device pixel ratio, so a star is the same apparent size on a retina screen. Not normally
