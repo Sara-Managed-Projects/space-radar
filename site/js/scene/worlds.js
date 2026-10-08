@@ -589,7 +589,7 @@ export const WORLDS = [
     // cannot be both, so it is drawn at the mean of the fact sheet's 0.05 and 0.5, in the reddish
     // tinge the dark side is described by, and copy/en.js says on the card that it has two faces.
     id: 'iapetus', display: 'Iapetus', parent: 'saturn', radiusKm: 734.3,
-    body: 'Iapetus', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked',
+    body: 'Iapetus', frame: SUN_INERTIAL, view: VIEW_WITH_PARENT, rotation: 'locked', pole: 'orbit',
     look: { flat: true, tint: 0x89735f, map: '2k_iapetus_cassini.webp', mapKind: 'toned', albedo: 0.275, rough: 0.35 },
   },
   {
@@ -1853,7 +1853,7 @@ export function createWorlds(scene, opts = {}) {
         if (w.rotation === 'iau') {
           applyIauOrientation(mesh, w.body, tMs, w.id);
         } else if (w.rotation === 'locked') {
-          applyLockedOrientation(mesh, pKm, stageKm.get(w.parent), meshes.get(w.parent));
+          applyLockedOrientation(mesh, pKm, stageKm.get(w.parent), meshes.get(w.parent), w.pole === 'orbit' ? orbitPoleOf(w, mesh, tMs, meshes.get(w.parent)) : null);
         }
         stageKm.set(w.id, pKm);
         if (mesh.material && mesh.material.uniforms && mesh.material.uniforms.uSunDir) {
@@ -2598,6 +2598,39 @@ export function faceVector(lonDeg, latDeg) {
 }
 
 /**
+ * A moon's orbit normal, in scene axes (the stage's remap (x, y, z) -> (x, z, -y)), from its position
+ * relative to its planet at two times (km, sun-inertial axes), turned to the planet's north side:
+ * `north` is the planet's pole in scene axes. Null when the two are the same line. Pure.
+ */
+export function orbitPole(rel0, rel1, north) {
+  const nx = rel0.y * rel1.z - rel0.z * rel1.y;
+  const ny = rel0.z * rel1.x - rel0.x * rel1.z;
+  const nz = rel0.x * rel1.y - rel0.y * rel1.x;
+  const n = new THREE.Vector3(nx, nz, -ny); // the remap, as the basis above
+  if (n.lengthSq() < 1e-12 * Math.max(1, rel0.x * rel0.x + rel0.y * rel0.y + rel0.z * rel0.z) ** 2) return null;
+  n.normalize();
+  if (north && n.dot(north) < 0) n.negate();
+  return n;
+}
+
+const _poleNorth = new THREE.Vector3();
+/** A moon's orbit pole at this time, cached for six hours (a pole turns over years), or null. */
+function orbitPoleOf(w, mesh, tMs, parentMesh) {
+  const key = Math.floor(tMs / 2.16e7);
+  const c = mesh.userData.orbitPole;
+  if (c && c.key === key) return c.v;
+  let v = null;
+  const a0 = positionOf(w.id, tMs), b0 = positionOf(w.parent, tMs);
+  const a1 = positionOf(w.id, tMs + 864e5), b1 = positionOf(w.parent, tMs + 864e5);
+  if (a0 && b0 && a1 && b1 && a0.frame === b0.frame && a1.frame === b1.frame && parentMesh) {
+    _poleNorth.set(0, 1, 0).applyQuaternion(parentMesh.quaternion);
+    v = orbitPole({ x: a0.x - b0.x, y: a0.y - b0.y, z: a0.z - b0.z }, { x: a1.x - b1.x, y: a1.y - b1.y, z: a1.z - b1.z }, _poleNorth);
+  }
+  mesh.userData.orbitPole = { key, v };
+  return v;
+}
+
+/**
  * Orient a synchronously rotating moon: longitude 0 toward its planet, the pole along the planet's.
  * astronomy-engine has no rotation model for them, and tidal locking is the model -- the IAU's own
  * prime meridians for these moons are defined by the sub-planet point. The orbit planes sit within
@@ -2605,12 +2638,14 @@ export function faceVector(lonDeg, latDeg) {
  * 20 degrees from Neptune's, which on a 1K map of a moon seen from millions of km is not visible.
  * @returns {boolean} false when either position or the planet's mesh is missing.
  */
-function applyLockedOrientation(mesh, pKm, parentKm, parentMesh) {
+function applyLockedOrientation(mesh, pKm, parentKm, parentMesh, pole = null) {
   if (!pKm || !parentKm || !parentMesh) return false;
   _bx.set(parentKm.x - pKm.x, parentKm.z - pKm.z, -(parentKm.y - pKm.y));
   if (_bx.lengthSq() === 0) return false;
   _bx.normalize();
-  _by.set(0, 1, 0).applyQuaternion(parentMesh.quaternion);
+  // A moon whose orbit is well off its planet's equator (Iapetus, 15 degrees) turns about its orbit's
+  // normal, which is what a tidally locked spin axis is; the others take the planet's pole.
+  if (pole) _by.copy(pole); else _by.set(0, 1, 0).applyQuaternion(parentMesh.quaternion);
   _by.addScaledVector(_bx, -_by.dot(_bx));
   if (_by.lengthSq() < 1e-12) return false;
   _by.normalize();

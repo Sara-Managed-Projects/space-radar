@@ -177,7 +177,9 @@ export function shineDay(dayDot, radiusOverDistance) {
  * TIERS (scene/quality.js): 0 has neither (a phone that boots low, or the frame-rate latch), 1 the
  * rim, 2 the rim and the glint. The phase term above costs nothing and is on every tier.
  */
-export const SUN_RIM = 0.9;
+export const SUN_RIM = 1.5;
+/** The exponent of the Sun's rim edge: 1.4, broader than the material's own 2.5, because the 0.9 rim at 2.5 could not be told from it on the NASA ISS (internal #484: 342 pixels of 480 000 differed). */
+export const SUN_RIM_EXPONENT = 1.4;
 export const GLINT_GAIN = 2.4;
 export const GLINT_HALF_DEG = 2;
 export const GLINT_POWER = Math.round(Math.log(0.5) / Math.log(Math.cos(GLINT_HALF_DEG * Math.PI / 180)));
@@ -195,7 +197,7 @@ export function setLightTier(tier) {
 }
 /**
  * The rim on one pixel. Pure; the shader's twin.
- * @param {{fresnel:number, intoSun:number, facingSun:number}} o  fresnel = (1 - n.v)^2.5, intoSun =
+ * @param {{fresnel:number, intoSun:number, facingSun:number}} o  fresnel = (1 - n.v)^SUN_RIM_EXPONENT, intoSun =
  *   (camera's line of sight) . (direction to the Sun), facingSun = n . (direction to the Sun)
  */
 export function sunRimStrength({ fresnel, intoSun, facingSun }, rim = SUN_RIM) {
@@ -363,7 +365,8 @@ export function toonMaterial(colour, kind = 'body', pool = materials, map = null
           // The Sun's rim (sunRimStrength above): the Sun behind the craft, on the edges turned to it.
           '  if ( uSunRim > 0.0 ) {',
           '    float back = clamp( dot( -V, L ), 0.0, 1.0 );',
-          '    outgoingLight += uRimSun * f * back * back * smoothstep( -0.6, 0.1, dot( normal, L ) ) * uSunRim;',
+          `    float fr = pow( 1.0 - clamp( dot( normal, V ), 0.0, 1.0 ), ${SUN_RIM_EXPONENT.toFixed(1)} );`,
+          '    outgoingLight += uRimSun * fr * back * back * smoothstep( -0.6, 0.1, dot( normal, L ) ) * uSunRim;',
           '  }',
           // Planet-shine: see PLANET_SHINE above, and planetShineStrength for the same sum in JS.
           // Halved on a face the Sun already lights, so the day side does not wash out.

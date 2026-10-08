@@ -1402,6 +1402,12 @@ export async function boot({ setStatus } = {}) {
       // A world is met on its lit face (issue #419): the rig's default is the far side from the
       // stage's world, which for everything beyond the Earth is the night side.
       let lit = record.klass === 'world' ? litOffset(worlds.sunDirOf(record.id), camera.up, undefined, worlds.faceDirOf(record.id)) : null;
+      // A small body is met on its sunlit side too (internal #436): Ceres and Vesta were met from
+      // wherever the camera was, which is the night half as often as not.
+      if (!lit && record.klass === 'asteroid') {
+        const sunAt = worlds.drawnPositionOf('sun');
+        if (sunAt) lit = litOffset({ x: sunAt.x - pos.x, y: sunAt.y - pos.y, z: sunAt.z - pos.z }, camera.up);
+      }
       // A planet on its own system's stage is met on its lit face too (internal #466): the rig's
       // default met TRAPPIST-1 e from behind, a black disc with a lit rim, which is no way to see a
       // face drawn on it (scene/exoface.js). Its light is its star, wherever that is on the stage.
