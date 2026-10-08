@@ -829,13 +829,88 @@ STEPS = {
 TIER1 = [k for k in STEPS if not k.startswith("moon-") and k != "venus-surface" and k not in GIANTS]
 
 
+# --- the 2k JPEGs as WebP (spec 0056 req 8, public #286) ----------------------------------------
+# The nine boot-tier maps came as JPEGs from Solar System Scope's 2k downloads and were shipped as
+# they came: 4.3 MB, the Moon alone over a megabyte. `--webp-2k DIR` re-encodes each JPEG in DIR at
+# the LOWEST WebP quality whose picture is still the JPEG's by SSIM >= 0.98, and keeps the WebP only
+# where it is smaller. Same pixels (2048 x 1024), no resampling, no grading.
+#
+# SSIM here: Wang et al. 2004 on BT.601 luma, 8-bit, K1 = 0.01, K2 = 0.03, a 7 x 7 uniform window at
+# every pixel position (scikit-image's default window), mean over the picture. Luma, because lossy
+# WebP stores colour at half resolution as the JPEGs themselves do, and a per-channel score mostly
+# measures the two codecs' different chroma filters; the blue channel's own score is printed beside
+# it so the choice is in the open.
+WEBP_2K = ("earth_daymap", "moon", "mars", "jupiter", "sun", "venus_atmosphere", "saturn", "uranus", "neptune")
+SSIM_FLOOR = 0.98
+
+
+def ssim(a, b, k: int = 7) -> float:
+    """Mean structural similarity of two 8-bit single-channel pictures of one size."""
+    def box(x):
+        c = np.cumsum(np.cumsum(x, axis=0, dtype=np.float64), axis=1)
+        c = np.pad(c, ((1, 0), (1, 0)))
+        return (c[k:, k:] - c[:-k, k:] - c[k:, :-k] + c[:-k, :-k]) / (k * k)
+    a = np.asarray(a, dtype=np.float64)
+    b = np.asarray(b, dtype=np.float64)
+    ma, mb = box(a), box(b)
+    va, vb, cab = box(a * a) - ma * ma, box(b * b) - mb * mb, box(a * b) - ma * mb
+    c1, c2 = (0.01 * 255) ** 2, (0.03 * 255) ** 2
+    return float((((2 * ma * mb + c1) * (2 * cab + c2)) / ((ma * ma + mb * mb + c1) * (va + vb + c2))).mean())
+
+
+def webp_2k(src_dir: Path, out_dir: Path, only: list[str]) -> int:
+    import io
+    rows = []
+    for key in only or WEBP_2K:
+        src = src_dir / f"2k_{key}.jpg"
+        if not src.exists():
+            print(f"no {src}", file=sys.stderr)
+            return 2
+        orig = Image.open(src).convert("RGB")
+        luma = orig.convert("L")
+
+        def at(q):
+            buf = io.BytesIO()
+            orig.save(buf, "WEBP", quality=q, method=6)
+            back = Image.open(io.BytesIO(buf.getvalue())).convert("RGB")
+            return buf.getvalue(), ssim(luma, back.convert("L")), back
+
+        lo, hi, best = 40, 96, None
+        while lo <= hi:                      # SSIM rises with quality: the lowest that clears the floor
+            q = (lo + hi) // 2
+            data, score, back = at(q)
+            if score >= SSIM_FLOOR:
+                best = (q, data, score, back)
+                hi = q - 1
+            else:
+                lo = q + 1
+        before = src.stat().st_size
+        if not best or len(best[1]) >= before:
+            print(f"  2k_{key}.jpg {before:>9,d} B  kept: no WebP at SSIM >= {SSIM_FLOOR} is smaller")
+            rows.append((key, before, before, None, None))
+            continue
+        q, data, score, back = best
+        blue = ssim(np.asarray(orig)[..., 2], np.asarray(back)[..., 2])
+        (out_dir / f"2k_{key}.webp").write_bytes(data)
+        print(f"  2k_{key}.jpg {before:>9,d} B -> 2k_{key}.webp {len(data):>9,d} B  quality {q}  SSIM {score:.4f} (blue channel {blue:.4f})")
+        rows.append((key, before, len(data), q, score))
+    print(f"  total {sum(r[1] for r in rows):,d} B -> {sum(r[2] for r in rows):,d} B")
+    return 0
+
+
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--originals", required=True, type=Path)
+    ap.add_argument("--originals", type=Path)
     ap.add_argument("--only", default="")
     ap.add_argument("--months", default="")
+    ap.add_argument("--webp-2k", type=Path, metavar="DIR",
+                    help="re-encode the 2k JPEGs in DIR (2k_<world>.jpg) as WebP at SSIM >= 0.98 into site/textures/")
     args = ap.parse_args(argv)
     lazy()
+    if args.webp_2k:
+        return webp_2k(args.webp_2k, ROOT / "site" / "textures", [s for s in args.only.split(",") if s])
+    if not args.originals:
+        ap.error("--originals is required (or --webp-2k DIR)")
     MONTHS[:] = [int(m) for m in args.months.split(",") if m]
     only = [s for s in args.only.split(",") if s] or TIER1   # the moons are asked for: --only moons
     only = [k for s in only for k in ([f"moon-{m}" for m in MOONS] if s == "moons" else list(GIANTS) if s == "giants" else [s])]

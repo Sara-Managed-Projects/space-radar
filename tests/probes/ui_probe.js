@@ -70,9 +70,12 @@ const wordless = (el) => { const t = (el.textContent || '').trim(); return !/[\p
 // A control drawn for a screen reader only (the 1 px clip): nothing a finger or a pointer can aim
 // at, so it has no target to measure. The explore search's "Fly to it" is one (internal #374).
 const forReadersOnly = (el) => {
+  const cs = getComputedStyle(el);
+  // The clip is the tell, not the size: under a coarse pointer the buttons' 44 px floor makes the
+  // same hidden control a 30 x 44 box, still clipped to nothing (seen in CI, 2026-10-08).
+  if (/^(absolute|fixed)$/.test(cs.position) && (/rect\(0(px)?,? 0(px)?,? 0(px)?,? 0(px)?\)/.test(cs.clip || '') || /inset\(50%\)/.test(cs.clipPath || ''))) return true;
   const r = el.getBoundingClientRect();
   if (r.width > 2 || r.height > 2) return false;
-  const cs = getComputedStyle(el);
   return cs.overflow !== 'visible' || cs.clipPath !== 'none' || (cs.clip && cs.clip !== 'auto');
 };
 /**
@@ -173,7 +176,7 @@ function measure() {
   const doc = document.scrollingElement;
   if (doc.scrollWidth > innerWidth + 1) problems.push(`the page scrolls sideways: ${doc.scrollWidth} px in a ${innerWidth} px window`);
   // One primary: an ember FILL on a control. The pill's dot and the bracket ticks are not controls.
-  const primaries = controls.filter((el) => getComputedStyle(el).backgroundColor === EMBER && inView(el.getBoundingClientRect()));
+  const primaries = controls.filter((el) => getComputedStyle(el).backgroundColor === EMBER && inView(el.getBoundingClientRect()) && !forReadersOnly(el));
   if (primaries.length > 1) problems.push(`${primaries.length} ember-filled buttons at once: ${primaries.map(say).join(', ')}`);
   const labels = [...document.querySelectorAll('#labels .label')].filter((l) => !l.hidden && l.getBoundingClientRect().width > 4);
   return { problems, targets, clipped, readersOnly, smallest: Number.isFinite(smallest) ? smallest : null, primaries: primaries.length, labels: labels.length, wraps, colours };
