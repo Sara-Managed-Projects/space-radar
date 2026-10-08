@@ -6,7 +6,14 @@
 // 4. internal #421: the uncovered band and a lander selected in it.
 // Each step is also sent to /probe-log, so a run cut at its cap still leaves what it read.
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-const t0 = Date.now(); while (!(window.__srLayersReady && window.spaceRadar) && Date.now() - t0 < 200000) await wait(300);
+const t0 = Date.now();
+// A run cut before the app is ready used to leave nothing: errors and a heartbeat go to the log.
+window.addEventListener('error', (e) => fetch(`/probe-log?err=${encodeURIComponent(String(e.message).slice(0, 300))}`).catch(() => {}));
+window.addEventListener('unhandledrejection', (e) => fetch(`/probe-log?rej=${encodeURIComponent(String(e.reason && e.reason.message || e.reason).slice(0, 300))}`).catch(() => {}));
+fetch(`/probe-log?step=probe-in&doc=${document.readyState}`).catch(() => {});
+const beat = setInterval(() => fetch(`/probe-log?beat=${Date.now() - t0}&ctx=${!!window.spaceRadar}&ready=${!!window.__srLayersReady}&boot=${encodeURIComponent(((document.querySelector('#boot-line') || {}).textContent || '').slice(0, 80))}`).catch(() => {}), 15000);
+while (!(window.__srLayersReady && window.spaceRadar) && Date.now() - t0 < 420000) await wait(300);
+clearInterval(beat);
 const ctx = window.spaceRadar; const out = { tReady: Date.now() - t0, vw: innerWidth, vh: innerHeight };
 const text = (sel) => { const n = document.querySelector(sel); return n ? n.innerText.replace(/\s+/g, ' ').trim() : null; };
 const log = (k) => fetch(`/probe-log?k=${k}&at=${Date.now() - t0}&d=${encodeURIComponent(JSON.stringify(out[k])).slice(0, 3000)}`).catch(() => {});

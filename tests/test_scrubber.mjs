@@ -135,6 +135,20 @@ check(P.nextUnit('minute') === 'hour' && P.nextUnit('hour') === 'day' && P.nextU
   // 80 N on the June solstice: the Sun does not set; the search finds nothing in the window.
   check(S.sunMarks(Date.parse('2027-06-21T12:00:00Z'), { latDeg: 80, lonDeg: 0 }).length === 0, 'in a polar summer there is no sunrise to mark');
 }
+// --- every eclipse of the year, and its solstices and equinoxes, on the tape (internal #408) ------
+{
+  const from = Date.parse('2026-10-08T12:00:00Z');
+  const year = S.yearMarks(from);
+  const kinds = year.map((it) => it.kind);
+  check(kinds.filter((k) => k === 'solar-eclipse').length >= 2 && kinds.filter((k) => k === 'lunar-eclipse').length >= 2, `a year holds at least two solar and two lunar eclipses (${kinds.join(',')})`);
+  check(kinds.filter((k) => k === 'season').length === 4, `and four turns of the year (${kinds.filter((k) => k === 'season').length})`);
+  check(year.every((it) => it.tMs > from && it.tMs < from + 365 * D + 1), 'all inside the tape\'s reach, a year on');
+  const marks = S.mergeMarks([], year.concat(year), from, { lo: from - 30 * D, hi: from + 365 * D });
+  check(marks.length === Math.min(year.length, marks.length) && new Set(marks.map((m) => m.id)).size === marks.length, 'an item the Coming up list also holds is one mark, not two');
+  const feb = marks.find((m) => m.kind === 'eclipse' && /6 February 2027/.test(m.what));
+  check(!!feb && /^Annular solar eclipse on 6 February 2027/.test(feb.what), `the annular eclipse of 6 February 2027 is one of them, with its sentence (${feb && feb.what.slice(0, 50)})`);
+  check(marks.some((m) => m.kind === 'sun' && /^December solstice on 21 December 2026/.test(m.what)), 'and the December solstice');
+}
 check(P.UNIT_MS.minute === 60e3 && P.UNIT_MS.hour === H && P.UNIT_MS.day === D, 'and they are a minute, an hour and a day');
 check(P.pillText({ tMs: Date.parse('1979-03-05T12:05:00Z'), live: false, rate: 1, anchorMs: now }) === '05 MAR 1979 12:05 UTC · 48 years ago', `a mission's event far from now carries its year (${P.pillText({ tMs: Date.parse('1979-03-05T12:05:00Z'), live: false, rate: 1, anchorMs: now })})`);
 check(P.pillText({ tMs: now + 6 * H, live: false, rate: 1, anchorMs: now }) === '06 OCT 14:16 UTC · in 6 hours', 'a time near now does not');

@@ -40,7 +40,8 @@
 
 import { COPY, t, timeText } from '../copy/en.js';
 import { UNIT_MS, SCRUB_BACK_MS, SCRUB_FORWARD_MS, FINE_MS } from './timepill.js';
-import { rowText } from './next.js';
+import { rowText, toItem } from './next.js';
+import { buildEvents } from '../data/events.js';
 import { isJunk } from '../sky/tonightbest.js';
 import '../copy/en.later.js';
 import * as Astronomy from '../../vendor/astronomy.js';
@@ -182,6 +183,19 @@ export function sunMarks(nowMs, observer, back = SUN_BACK_MS, on = SUN_ON_MS) {
     }
   } catch { /* no sunrise on the tape; everything else stands */ }
   return out.sort((a, b) => a.tMs - b.tMs);
+}
+
+/**
+ * Every eclipse and every turn of the year inside the tape's reach (a year on), as items (internal
+ * #408). The Coming up list keeps one solar and one lunar eclipse; the tape has room for the year's,
+ * and they are computed here with no request (data/events.js, one search a day). An item that is
+ * also on the list has the same id and is kept once (mergeMarks).
+ */
+export function yearMarks(nowMs, reachMs = SCRUB_FORWARD_MS) {
+  if (!Number.isFinite(nowMs)) return [];
+  let events = [];
+  try { events = buildEvents([], nowMs, { horizonMs: reachMs, eclipseHorizonMs: reachMs, showers: null }); } catch { events = []; }
+  return events.map(toItem).filter(Boolean);
 }
 
 const MARK_KINDS = { 'launch': 'launch', 'approach': 'approach', 'perihelion': 'approach', 'pass': 'pass', 'train': 'pass', 'shower': 'shower', 'solar-eclipse': 'eclipse', 'lunar-eclipse': 'eclipse', 'moon': 'moon', 'sunrise': 'sun', 'sunset': 'sun', 'season': 'sun' };
@@ -372,7 +386,7 @@ export function createScrubber(ctx, pill) {
     const next = ctx.explore && ctx.explore.next;
     const items = next && typeof next.items === 'function' ? next.items() : [];
     const anchor = pill.anchor();
-    marks = mergeMarks(marks, items.concat(moonMarks(anchor), sunMarks(anchor, ctx.observer)), now(), { lo: anchor - SCRUB_BACK_MS, hi: anchor + SCRUB_FORWARD_MS });
+    marks = mergeMarks(marks, items.concat(moonMarks(anchor), sunMarks(anchor, ctx.observer), yearMarks(anchor)), now(), { lo: anchor - SCRUB_BACK_MS, hi: anchor + SCRUB_FORWARD_MS });
     paint();
   }
 
