@@ -440,6 +440,25 @@ export function createNext(ctx, opts = {}) {
   let expanded = false;
   const root = el('section', 'sr-next');
   root.appendChild(el('h2', 'sr-micro', T.title));
+  // "Just happened" (spec 0050, internal #134): one quiet row above the list; the last seven
+  // days are fetched, with their module, when it is first opened. Nothing of it is on a first visit.
+  const past = el('button', 'sr-more sr-next__past', T.justHappened);
+  past.type = 'button';
+  past.title = T.justHappenedTitle;
+  past.setAttribute('aria-expanded', 'false');
+  const pastBox = el('div', 'sr-next__pastbox');
+  pastBox.hidden = true;
+  let pastMounted = false;
+  past.addEventListener('click', () => {
+    const on = past.getAttribute('aria-expanded') !== 'true';
+    past.setAttribute('aria-expanded', on ? 'true' : 'false');
+    pastBox.hidden = !on;
+    if (on && !pastMounted) {
+      pastMounted = true;
+      import('./justhappened.js').then((m) => m.mountJustHappened(pastBox, ctx)).catch(() => { pastMounted = false; });
+    }
+  });
+  root.append(past, pastBox);
   const list = el('ul', 'sr-next__list');
   const note = el('p', 'sr-next__note');
   root.appendChild(list);

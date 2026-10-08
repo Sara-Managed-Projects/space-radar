@@ -178,5 +178,50 @@ check(buildNextItems([launch('A', H)], now, { observer: { latRad: 0.9, lonRad: 0
   check(buildNextItems([], sept22).length === 0, 'without eclipses asked for, an empty list stays empty (the cases above)');
 }
 
+// --- "Just happened": the last seven days (spec 0050 requirements 5 and 6, internal #134) -------
+{
+  const { readFileSync } = await import('node:fs');
+  const J = await import(join(JS, 'ui/justhappened.js'));
+  const { decayedRows } = await import(join(JS, 'data/satcat.js'));
+  const body = JSON.parse(readFileSync(join(JS, '../../tests/fixtures/harvest/ll2_previous.json'), 'utf8'));
+  const launches = J.parsePrevious(body);
+  check(launches.length === 6 && launches[0].name === 'Nuri | NeonSat-2 to 6' && launches[0].outcome === 'reached', `LL2's previous launches parse (${launches.length}; ${launches[0] && launches[0].name})`);
+  check(launches[0].padId && /^pad-ll2-\d+$/.test(launches[0].padId) && /Naro Space Center/.test(launches[0].place), `a launch knows its pad and its place (${launches[0].padId}; ${launches[0].place})`);
+  const NOW = Date.UTC(2026, 9, 8, 9, 0, 0);
+  const DAYMS = 864e5;
+  const decays = [
+    { id: 1, name: 'COSMOS 1', kind: 'dead', decayMs: NOW - 2 * DAYMS },
+    { id: 2, name: 'CZ-2C R/B', kind: 'rocket', decayMs: NOW - 5 * DAYMS },
+    { id: 3, name: 'FENGYUN 1C DEB', kind: 'debris', decayMs: NOW - 1 * DAYMS },
+    { id: 4, name: 'FENGYUN 1C DEB', kind: 'debris', decayMs: NOW - 3 * DAYMS },
+    { id: 5, name: 'OLD ONE', kind: 'working', decayMs: NOW - 8 * DAYMS },
+    { id: 6, name: 'TOMORROW', kind: 'dead', decayMs: NOW + DAYMS },
+  ];
+  const built = J.buildJustHappened(decays, launches, NOW);
+  const inWindow = launches.filter((l) => l.netMs >= NOW - 7 * DAYMS && l.netMs <= NOW).length;
+  check(inWindow === 4, `four of the fixture's six launches are inside seven days of 8 October (${inWindow})`);
+  check(built.items.length === inWindow + 2, `the window: ${inWindow} launches and two whole things that came down, nothing older than seven days or after now (${built.items.length})`);
+  check(built.items.every((it, i) => i === 0 || it.tMs <= built.items[i - 1].tMs), 'newest first, launches and re-entries together');
+  check(built.debrisCount === 2 && !built.items.some((it) => it.decay && it.decay.kind === 'debris'), `debris is counted, not listed (${built.debrisCount})`);
+  check(J.buildJustHappened(null, null, NOW).items.length === 0, 'no sources, an empty list, no throw');
+  const first = J.justRow(built.items[0], NOW);
+  check(first.title === 'Nuri | NeonSat-2 to 6' && first.detail === 'Launched from Naro Space Center, South Korea; reached orbit', `a launch row (${first.title}: ${first.detail})`);
+  check(/ago$/.test(first.value), `and how long ago (${first.value})`);
+  const down = J.justRow(built.items.find((it) => it.kind === 'decay'), NOW);
+  check(down.detail === 'Came down on 6 October 2026 (catalogue decay date)', `the words for the past name the day and where the date is from (${down.detail})`);
+  const failed = J.justRow({ kind: 'launch', tMs: NOW, launch: { name: 'X', netMs: NOW - 3600e3, outcome: 'failed', place: 'Somewhere' } }, NOW);
+  check(/did not reach orbit$/.test(failed.detail), `a failure is listed in plain words, not hidden (${failed.detail})`);
+  const odd = J.justRow({ kind: 'launch', tMs: NOW, launch: { name: 'X', netMs: NOW - 3600e3, outcome: null, statusName: 'Launch was a Partial Success', place: '' } }, NOW);
+  check(odd.detail === 'Launch was a Partial Success', 'a status this page has no words for is the publisher\'s own');
+  const all = JSON.stringify(Object.values((await import(join(JS, 'copy/en.js'))).COPY.happened7));
+  check(!/crash|burned up/i.test(all), 'never "crashed" or "burned up over"');
+  // The catalogue's own decays feed it: the fixture SATCAT has decayed rows.
+  const csv = readFileSync(join(JS, '../../tests/fixtures/harvest/celestrak_satcat.csv'), 'utf8');
+  check(Array.isArray(decayedRows(csv, 0)), 'data/satcat.js decayedRows gives the rows it lists');
+  // Zero cost at boot: the list imports the module only inside the press.
+  const nextSrc = readFileSync(join(JS, 'ui/next.js'), 'utf8');
+  check(/import\('\.\/justhappened\.js'\)/.test(nextSrc) && !/^import .*justhappened/m.test(nextSrc), 'ui/next.js fetches ui/justhappened.js on the press, never at boot');
+}
+
 if (problems.length) { console.error('next FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('next ok: launches, close approaches and perihelia from held records, nearest first, capped, honest about rough dates');

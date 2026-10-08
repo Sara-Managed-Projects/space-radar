@@ -19,6 +19,7 @@ import { createHeroes, closeUpDistance, SELECTED_PX, warmModels } from './scene/
 import { limbFraming, fitDistance, discDistance, litOffset, groundDistanceKm, nightGroundPose, openingPlan, OPENING_KEY } from './scene/framing.js';
 import { createCameraRig, worldFramingDistance } from './scene/camera.js';
 import { createViewShift, MAX_SHIFT_FRACTION, PILL_GAP_PX } from './scene/viewshift.js';
+import { parsePlaceValue, keptPlace, browserStorage } from './sky/placelink.js';
 import { readMoment, writeMoment, bootLink, laterLink, linkChange, read as readUrlKeys, write as writeUrlState, clear as clearUrlState, stopIndex, parseCam } from './ui/urlstate.js';
 import { guessObserver, roundPlace } from './sky/guessplace.js';
 import { COPY, CITIES, t as fill } from './copy/en.js';
@@ -260,6 +261,14 @@ export async function boot({ setStatus } = {}) {
   };
 
   // The scale ladder's level of detail (spec 0028 req 10): a table in registry/lod.yaml, hooks here.
+
+  // A PLACE FROM BEFORE (internal #137): one carried in the link somebody shared on purpose (`p`),
+  // else the one this visitor asked this browser to remember. Both are rounded to 0.1 degree where
+  // they are written (sky/placelink.js). Neither is a request: nothing is asked of anybody.
+  try {
+    const before = parsePlaceValue(readUrlKeys().p) || keptPlace(browserStorage());
+    if (before) observer = before;
+  } catch { /* no place from before */ }
   const stars3d = createStars3d(scene);
   ctx.stars3d = stars3d;
   // The naked-eye sky, on ctx for one reader: ui/trip.js stretches both star draws on a ladder

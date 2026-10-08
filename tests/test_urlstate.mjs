@@ -158,6 +158,8 @@ setHash('');
   const U = await import(join(JS, 'ui/urlstate.js'));
   const v = U.camValue({ azimuthDeg: 40.04, polarDeg: 61.96, distanceKm: 26543.21 });
   check(v === '40,62,26540' && KEYS[KEYS.length - 1] === 'cam', `a pose is three numbers a person can read: ${v}`);
+  // `p` (internal #137): a shared place is a key like any other here; its value is sky/placelink.js's.
+  check(KEYS.includes('p'), 'the place key is known, so a shared place survives a read');
   check(U.camValue({ azimuthDeg: -90, polarDeg: 200, distanceKm: 1.23456e9 }) === '270,179.9,1235000000', `angles are brought into range and the distance kept to four figures (${U.camValue({ azimuthDeg: -90, polarDeg: 200, distanceKm: 1.23456e9 })})`);
   check(U.camValue({ azimuthDeg: 1, polarDeg: 2 }) === '' && U.camValue({ azimuthDeg: 1, polarDeg: 2, distanceKm: 0 }) === '' && U.camValue(null) === '', 'half a pose is no pose');
   const p = U.parseCam(v);

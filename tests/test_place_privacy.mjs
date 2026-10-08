@@ -95,7 +95,7 @@ const fn = place.slice(place.indexOf('export function placeFromPosition'), place
 check(/roundPlace\(/.test(fn), 'placeFromPosition rounds');
 check(!/\.coords|\.latitude|\.longitude/.test(place.replace(fn, '')), 'ui/place.js reads position.coords in placeFromPosition and nowhere else');
 check(/enableHighAccuracy:\s*false/.test(place), 'the browser is not asked for a high-accuracy fix');
-check(!/localStorage|sessionStorage|indexedDB|fetch\(|sendBeacon|location\.(hash|search|href)\s*=|history\.(push|replace)State/.test(place), 'ui/place.js keeps the place nowhere: no storage, no request, no address');
+check(!/localStorage|sessionStorage|indexedDB|fetch\(|sendBeacon|location\.(hash|search|href)\s*=|history\.(push|replace)State/.test(place), 'ui/place.js touches no storage, request or address itself: keeping and sharing go through sky/placelink.js');
 const main = strip(read('site/js/main.js'));
 check(/setObserver:\s*\(o\)\s*=>\s*\{\s*observer = o && o\.source === 'geolocation' \? roundPlace\(o\) : o;/.test(main), "main.js setObserver, the one door, rounds a 'geolocation' place again");
 check(/detail:\s*observer\b/.test(main.slice(main.indexOf('setObserver: (o)'), main.indexOf('setObserver: (o)') + 300)), 'the sr:observer event carries the rounded place, not the argument');
@@ -105,9 +105,48 @@ for (const f of files) {
   const src = strip(readFileSync(f, 'utf8'));
   const rel = f.slice(ROOT.length + 1);
   for (const m of src.matchAll(/(?:localStorage|sessionStorage)\.setItem\(([^;]{0,200})/g)) {
-    check(!/observer|latDeg|lonDeg|latRad|lonRad/.test(m[1]), `${rel} stores a place: ${m[0].slice(0, 80)}`);
+    check(!/observer|latDeg|lonDeg|latRad|lonRad|PLACE_KEY/.test(m[1]) || rel === 'site/js/sky/placelink.js', `${rel} stores a place: ${m[0].slice(0, 80)}`);
   }
 }
+// --- 4. Remember this place, and share a place (internal #137) -----------------------------------
+// The one file that keeps a place or writes one into a link, and it only ever handles 0.1 degree.
+const pl = await import(join(ROOT, 'site/js/sky/placelink.js'));
+const keepers = files.filter((f) => /PLACE_KEY|sr\.place/.test(strip(readFileSync(f, 'utf8')))).map((f) => f.slice(ROOT.length + 1));
+check(keepers.length === 1 && keepers[0] === 'site/js/sky/placelink.js', `only sky/placelink.js knows the key a place is kept under: ${keepers.join(', ')}`);
+const preciseO = { latDeg: 48.858370, lonDeg: 2.294481, latRad: 0.8527, lonRad: 0.04, altKm: 0.035, name: 'Use my location', source: 'geolocation', accuracy: 12 };
+check(pl.placeValue(preciseO) === '48.9,2.3', `a link's place is rounded to 0.1 degree (${pl.placeValue(preciseO)})`);
+check(pl.placeValue({ latDeg: -33.86882, lonDeg: 151.209296, source: 'city' }) === '-33.9,151.2', 'south and east too');
+check(pl.placeValue({ latDeg: 0.04, lonDeg: -0.04, source: 'city' }) === '0,0', `no "-0" (${pl.placeValue({ latDeg: 0.04, lonDeg: -0.04, source: 'city' })})`);
+check(pl.placeValue({ ...preciseO, source: 'guess' }) === '' && pl.placeValue(null) === '' && pl.placeValue({ latDeg: 91, lonDeg: 0 }) === '', 'a guessed place, no place and an impossible place make no link');
+const back = pl.parsePlaceValue('48.9,2.3');
+check(back && back.latDeg === 48.9 && back.lonDeg === 2.3 && back.source === 'shared' && Math.abs(back.latRad - 48.9 * Math.PI / 180) < 1e-12 && !('name' in back), 'and it reads back as a shared place with no name');
+for (const bad of ['48.85837,2.294481', '48.9', '48.9,2.3,5', 'x,y', '91,0', '0,181', '', null, '48.9, 2.3;drop', '1e1,2']) check(pl.parsePlaceValue(bad) === null, `a value this app never writes is refused: ${JSON.stringify(bad)}`);
+const mem = new Map();
+const store = { setItem: (k, v) => mem.set(k, String(v)), getItem: (k) => (mem.has(k) ? mem.get(k) : null), removeItem: (k) => mem.delete(k) };
+check(pl.keptPlace(store) === null, 'nothing is kept until asked');
+check(pl.keepPlace(store, preciseO) === true, 'Remember this place keeps it');
+const stored = mem.get(pl.PLACE_KEY);
+check(stored === '{"p":"48.9,2.3","name":""}', `what is kept is the rounded place and nothing else: no accuracy, height, radians or label (${stored})`);
+check(!/48\.85|2\.29|accuracy|altKm|0\.035/.test(stored), 'no precise digit reaches storage');
+const kept = pl.keptPlace(store);
+check(kept && kept.latDeg === 48.9 && kept.lonDeg === 2.3 && kept.source === 'kept', 'and it comes back as a kept place');
+pl.keepPlace(store, { latDeg: 51.5074, lonDeg: -0.1278, name: 'London', source: 'city' });
+check(mem.get(pl.PLACE_KEY) === '{"p":"51.5,-0.1","name":"London"}', `a city from the bundled list keeps its name (${mem.get(pl.PLACE_KEY)})`);
+check(pl.keepPlace(store, { ...preciseO, source: 'guess' }) === false, 'a guessed place is not kept');
+pl.forgetPlace(store);
+check(pl.keptPlace(store) === null && mem.size === 0, 'Forget this place removes it');
+mem.set(pl.PLACE_KEY, '{"p":"48.85837,2.294481"}');
+check(pl.keptPlace(store) === null, 'a kept value finer than 0.1 degree (not ours) is not used');
+const { shareUrl } = await import(join(ROOT, 'site/js/ui/share.js'));
+const placeShareUrl = (await import(join(ROOT, 'site/js/ui/place.js'))).placeLink;
+check(placeShareUrl(pl.placeValue(preciseO), 'https://example.org/') === 'https://example.org/#p=48.9%2C2.3', `the place link carries the rounded place only (${placeShareUrl(pl.placeValue(preciseO), 'https://example.org/')})`);
+check(placeShareUrl('', 'https://example.org/') === '', 'no place, no link');
+check(!/[#&]p=/.test(shareUrl({ at: 'sat-25544', t: '2026-10-08T00:00:00Z' }, 'https://example.org/')), 'an ordinary share has no p');
+check(!/[#&]p=/.test(shareUrl({ at: 'sat-25544', p: '48.9,2.3' }, 'https://example.org/')), 'and cannot: ui/share.js shareUrl has no place key, so a tab opened on a place link does not pass the place on');
+const mainSrc = strip(read('site/js/main.js'));
+check(/parsePlaceValue\(readUrlKeys\(\)\.p\) \|\| keptPlace\(browserStorage\(\)\)/.test(mainSrc), 'at boot a place comes from the link, else from what this browser kept');
+check(!/fetch\(|sendBeacon|XMLHttpRequest/.test(strip(read('site/js/sky/placelink.js'))), 'sky/placelink.js makes no request');
+
 const url = strip(read('site/js/ui/urlstate.js'));
 check(!/observer|latDeg|lonDeg/.test(url), 'ui/urlstate.js writes no place into the address');
 // The words: a rounded place is "near", in both lines that speak of the browser's answer.
@@ -116,4 +155,4 @@ check(/placeMine:\s*'[^']*\bnear\b[^']*'/.test(laterSrc), 'the Tonight line for 
 check(/\bnear\b/.test(COPY.trip.observerDevice), 'the trip line for the browser\'s place says "near"');
 
 if (problems.length) { console.error('place privacy FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
-console.log('place privacy ok: Use my location is rounded to 0.1 degree where it is read and again at the one door; the click path hands on 48.9, 2.3 and nothing else; no storage, no address, no request');
+console.log('place privacy ok: Use my location is rounded to 0.1 degree where it is read and again at the one door; the click path hands on 48.9, 2.3 and nothing else; Remember this place keeps "48.9,2.3" and nothing else, in this browser; Share this place makes #p=48.9,2.3; an ordinary share carries no place; no request');

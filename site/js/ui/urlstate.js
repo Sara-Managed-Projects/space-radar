@@ -34,7 +34,9 @@ export const HASH_KEY = 'm';
 // `ambient` and the five after it (spec 0036, ui/autopilot.js): a screen that plays on its own.
 // `ambient` is `1`, a reel's id (registry/autopilot.yaml) or trip ids with commas; `autopilot` is
 // the same key under the name people guess, and read() hands it back as `ambient`.
-export const KEYS = ['m', 'v', 'ambient', 'autopilot', 'shuffle', 'sound', 'voice', 'captions', 'pace', 'trip', 'stop', 'present', 'at', 'event', 't', 'rate', 'stage', 'exp', 'cam'];
+// `p` (2026-10-08, internal #137): a shared spot on the ground, `<lat>,<lon>` to 0.1 degree. Only
+// sky/placelink.js makes or reads its value, and only "Share this place" puts it in a link.
+export const KEYS = ['m', 'v', 'ambient', 'autopilot', 'shuffle', 'sound', 'voice', 'captions', 'pace', 'trip', 'stop', 'present', 'at', 'event', 't', 'rate', 'stage', 'exp', 'p', 'cam'];
 export const VERSION = '1';
 
 /**
