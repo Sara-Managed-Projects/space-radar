@@ -160,7 +160,7 @@ for (const key of ['asOf', 'stale', 'joined', 'unmatched']) check(COPY.crew[key]
   check(typeof line === 'string' && /^From London: /.test(line) && /sets \d\d:\d\d in the /.test(line), `the line names the place and a set time (${line})`);
   check(/most need a telescope\.$/.test(line || ''), 'and ends by saying that up is not bright');
   check(smallBodyFromLine(jupiterAsARock, null, NOWMS) === null, 'no place, no line');
-  check(smallBodyFromLine(jupiterAsARock, { latRad: 51.5 * Math.PI / 180, lonRad: 0 }, NOWMS).startsWith('From here: '), 'a place in radians and without a name is "here"');
+  check(smallBodyFromLine(jupiterAsARock, { latRad: 51.5 * Math.PI / 180, lonRad: 0 }, NOWMS).startsWith('From where you are: '), 'a place in radians and without a name is "where you are", as on a planet\'s card');
   const down = fromPlaceWords({ upNow: false, altDeg: -20, azDeg: 80, riseMs: NOWMS + 3600e3, riseAzDeg: 90, highMs: NOWMS + 6 * 3600e3, highAltDeg: 20, setMs: NOWMS + 11 * 3600e3, setAzDeg: 270, never: false, always: false }, 'Quito');
   check(down === `From Quito: rises ${timeText.hhmm(NOWMS + 3600e3)} in the east, highest ${timeText.hhmm(NOWMS + 6 * 3600e3)}, about two fists above the horizon; sets ${timeText.hhmm(NOWMS + 11 * 3600e3)} in the west.`, `down now (${down})`);
   check(fromPlaceWords({ upNow: false, never: true, altDeg: -40, azDeg: 0, riseMs: null, riseAzDeg: null, highMs: null, highAltDeg: null, setMs: null, setAzDeg: null }, 'Quito') === 'From Quito it does not rise in the next day and a half.', 'never up');

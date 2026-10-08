@@ -240,9 +240,10 @@ export function linkNodes(record) {
  */
 export function fromPlaceWords(r, placeName) {
   if (!r) return null;
-  const W = COPY.live.from;
+  // The planets' own sentences (public #500, ui/cards.js worldFromLine): one table for both.
+  const W = COPY.sky.worldFrom;
   const v = {
-    place: placeName || W.here,
+    place: placeName || COPY.sky.worldHere,
     alt: altitudeInWords(r.altDeg), dir: azimuthInWords(r.azDeg),
     rise: r.riseMs !== null ? timeText.hhmm(r.riseMs) : '', riseDir: r.riseAzDeg !== null ? azimuthInWords(r.riseAzDeg) : '',
     highTime: r.highMs !== null ? timeText.hhmm(r.highMs) : '', highAlt: r.highAltDeg !== null ? altitudeInWords(r.highAltDeg) : '',
