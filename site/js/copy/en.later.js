@@ -66,6 +66,7 @@ Object.assign(COPY, {
   autopilot: {
     mark: 'spaceradar.ai',
     gateTitle: 'Press any key to start with sound',
+    gateTitleTouch: 'Touch the screen to start with sound',
     gateNote: 'With nobody here it starts silent, with captions, in {n} seconds.',
     upNext: 'Next trip',
     shape: '{n} stops · {m} min',

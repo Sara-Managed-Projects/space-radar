@@ -361,7 +361,10 @@ export function createAutopilot(ctx, env = {}) {
       return;
     }
     mode = { mode: 'gate', until: timers.now() + paced(T.gate_s * 1000, opts.pace) };
-    view.card({ kind: 'gate', title: A.gateTitle, text: t(A.gateNote, { n: String(T.gate_s) }) });
+    // A screen with no keys is touched (seen 2026-10-08 on a phone: "Press any key").
+    let touch = false;
+    try { touch = !!(doc && doc.defaultView && doc.defaultView.matchMedia && doc.defaultView.matchMedia('(pointer: coarse)').matches); } catch { /* a test */ }
+    view.card({ kind: 'gate', title: touch ? A.gateTitleTouch : A.gateTitle, text: t(A.gateNote, { n: String(T.gate_s) }) });
     await new Promise((resolve) => { gateDone = resolve; });
     gateDone = null;
   }
