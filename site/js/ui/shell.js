@@ -271,7 +271,9 @@ export function createShell(ctx, opts = {}) {
   // First in the DOM, so the tab order on a phone is the order on screen: top, sheet, pill.
   const top = el('div', 'sr-top');
   top.id = 'sr-top';
-  top.setAttribute('role', 'group');
+  // A named REGION, not a group: the bar is page content outside the sidebar and the map, and axe
+  // found it outside every landmark on a phone (`region`, 2026-10-08), as it found the time pill.
+  top.setAttribute('role', 'region');
   top.setAttribute('aria-label', COPY.shell.topLabel);
   const topRow = el('div', 'sr-top__row');
   const searchSlot = el('div', 'sr-top__search');

@@ -231,14 +231,14 @@ check(iconOnly >= 8, `only ${iconOnly} icon-only buttons found: the rail, the tr
   check(/position:\s*fixed/.test(shownRule) && /z-index:\s*var\(--sr-z-toast\)/.test(shownRule) && /background:\s*var\(--sr-glass-strong\)/.test(shownRule) && /color:\s*var\(--sr-text\)/.test(shownRule), 'with the focus it is a glass chip over the chrome, in the text colour');
 
   // 7b. LANDMARKS: one <main> (the map), the sidebar and the card as <aside> with a name, the rail as
-  // <nav> with a name, the phone's top bar a named group. A landmark without a name is "navigation".
+  // <nav> with a name, the phone's top bar and the time pill named regions. A landmark without a name is "navigation".
   check((body.match(/<main\b/g) || []).length === 1, 'index.html has exactly one <main>');
   check(/<h1 class="sr-hidden-text">/.test(body), 'and one h1, inside it');
   const shell = code(read('shell.js'));
   check(/const side = el\('aside', [^)]*\);[\s\S]{0,120}side\.setAttribute\('aria-label', COPY\.shell\.sideLabel\)/.test(shell), 'the sidebar is an <aside> named from the copy');
   const rail = code(read('rail.js'));
   check(/const root = document\.createElement\('nav'\);[\s\S]{0,200}root\.setAttribute\('aria-label', COPY\.rail\.label\)/.test(rail), 'the rail is a <nav> named from the copy');
-  check(/top\.setAttribute\('role', 'group'\);\s*top\.setAttribute\('aria-label', COPY\.shell\.topLabel\)/.test(shell), 'the phone\'s top bar is a named group');
+  check(/top\.setAttribute\('role', 'region'\);\s*top\.setAttribute\('aria-label', COPY\.shell\.topLabel\)/.test(shell), 'the phone\'s top bar is a named region (a group is not a landmark: axe `region`, 2026-10-08)');
   check(/host = el\('aside', 'sr-card'\)/.test(code(read('cards.js'))), 'the card is an <aside>');
   // What axe-core found on 2026-10-08 (tests/probes/axe-probe.js), held so it does not come back:
   // the time pill outside every landmark, a banner inside the trip's region, a second region with
