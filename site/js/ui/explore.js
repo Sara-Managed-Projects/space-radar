@@ -458,10 +458,42 @@ export function createExplore(ctx, host) {
     const more = button('sr-more');
     more.hidden = true;
     // The trips one after another, hands off: a screen in a corridor (ui/autopilot.js, spec 0036).
+    // "Play on its own" opens JUST WATCH: the reels by name (registry/autopilot.yaml), so a lesson's
+    // worth or tonight's sky can be chosen without typing an address (internal #448). The list is
+    // fetched when it is first opened: a reel is nobody's first visit.
     const own = button('sr-more', COPY.tripCard.onItsOwn);
     own.title = COPY.tripCard.onItsOwnTitle;
-    own.addEventListener('click', () => { if (typeof ctx.wantAutopilot === 'function') ctx.wantAutopilot({ ambient: '1' }, 'row'); });
-    s.append(grid, more, own);
+    own.setAttribute('aria-expanded', 'false');
+    const reels = el('div', 'sr-reels');
+    reels.hidden = true;
+    reels.id = `sr-reels-${id}`;
+    own.setAttribute('aria-controls', reels.id);
+    own.addEventListener('click', () => {
+      const open = reels.hidden;
+      reels.hidden = !open;
+      own.setAttribute('aria-expanded', String(open));
+      if (!open || reels.childElementCount) return;
+      Promise.all([import('../data/autopilot.js'), import('./autopilotplan.js')]).then(([data, plan]) => {
+        if (reels.childElementCount) return;
+        reels.appendChild(el('h3', 'sr-micro', COPY.tripCard.justWatch));
+        const list = el('ul', 'sr-list');
+        for (const row of plan.reelRows(data.REELS, data.AUTOPILOT.default)) {
+          const { li, b } = rowButton(row.title, t(COPY.tripCard.reelLength, { m: String(row.minutes) }), () => {
+            if (typeof ctx.wantAutopilot === 'function') ctx.wantAutopilot({ ambient: row.id }, 'row');
+          });
+          b.title = row.blurb;
+          b.dataset.reel = row.id;
+          list.appendChild(li);
+        }
+        reels.appendChild(list);
+      }).catch((err) => {
+        // The list did not arrive: the button does what it always did, the default reel.
+        console.warn('the reels did not load', err);
+        reels.hidden = true;
+        if (typeof ctx.wantAutopilot === 'function') ctx.wantAutopilot({ ambient: '1' }, 'row');
+      });
+    });
+    s.append(grid, more, own, reels);
     tripHosts.set(id, { s, grid, more, expanded: false });
   }
   earth.appendChild(tripHosts.get('earth').s);

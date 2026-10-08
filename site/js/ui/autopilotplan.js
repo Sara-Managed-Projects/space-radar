@@ -376,6 +376,29 @@ export function resumeFrom(link, trips) {
   return { trip: l.trip, stop: Math.max(0, n - 1) };
 }
 
+// --- a stop with nothing to show ----------------------------------------------------------------------
+
+/**
+ * Whether the map a stop lays over the globe has failed for good (ui/autopilot.js passes such a stop
+ * over). `asked` is the stop's `overlay:`; `over` is main.js ctx.overlayState(): `failed` (the fetch
+ * was refused or timed out) and `no-earth` (no globe to lay it on) are final; `loading` is not.
+ */
+export function stopPictureFailed(asked, over) {
+  if (!asked || !over) return false;
+  if (over.id && over.id !== asked) return false;
+  return over.status === 'failed' || over.status === 'no-earth';
+}
+
+/**
+ * The reels as the Trips section lists them under "Just watch": the default first, then the
+ * registry's order. `minutes` is the registry's own (one lap with the voice).
+ */
+export function reelRows(reels, def) {
+  const list = Array.isArray(reels) ? reels.slice() : [];
+  list.sort((a, b) => (b.id === def) - (a.id === def));
+  return list.map((r) => ({ id: r.id, title: r.title, blurb: r.blurb || '', minutes: r.minutes, trips: (r.trips || []).length, place: r.place === true }));
+}
+
 // --- the log -------------------------------------------------------------------------------------------
 
 export const LOG_CAP = 200;

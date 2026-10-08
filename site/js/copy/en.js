@@ -646,7 +646,10 @@ export const COPY = {
     fewer: 'Fewer trips',
     // Under the cards: the trips one after another, hands off (ui/autopilot.js, spec 0036).
     onItsOwn: 'Play on its own',
-    onItsOwnTitle: 'The trips play one after another until you take the controls',
+    onItsOwnTitle: 'Trips one after another until you take the controls',
+    // The reels the button opens (registry/autopilot.yaml), each with one lap's length.
+    justWatch: 'Just watch',
+    reelLength: '{m} min a lap',
   },
   // The Planets and Stars tabs' lists.
   explore: {

@@ -121,6 +121,14 @@
 
 /* --- the trip frame in this mode: its caption and nothing else ------------------------------- */
 
+/* BETWEEN TWO TRIPS THE SCENE IS ALONE (internal #448). A trip in present mode shows its stop's own
+   name and no other (ui.css, html.sr-present.sr-trip-mode); the eight seconds between two trips
+   are neither, and the ordinary map's names came back under the "Next trip" card: two storm names
+   over the Earth, seen 2026-10-08. The reel has the screen, so nothing is named until a stop is. */
+html.sr-ambient:not(.sr-trip-mode) #labels .label {
+  opacity: 0;
+}
+
 html.sr-ambient.sr-present {
   --sr-trip-bar: 0px;
 }

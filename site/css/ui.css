@@ -3883,6 +3883,11 @@ html:not(.sr-phone) .sr-explore.is-searching .sr-explore__body {
 .sr-more:hover { color: var(--sr-ember); }
 .sr-more[hidden] { display: none; }
 
+/* JUST WATCH: the reels, under "Play on its own" (ui/explore.js, internal #448). A list like any other. */
+.sr-reels { margin-top: 8px; }
+.sr-reels[hidden] { display: none; }
+.sr-more + .sr-more { margin-left: 16px; }
+
 /* A list of rows: a name, a mono value, hairlines between (the Planets and Stars tabs, Tonight). */
 .sr-list {
   margin: 0;

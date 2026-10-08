@@ -37,7 +37,7 @@ import '../copy/en.later.js';
 import { AUTOPILOT, REELS } from '../data/autopilot.js';
 import {
   TIMING, readOptions, createPlaylist, stopDwellMs, paced, reelMs, watchdog, controls,
-  reloadDue, reloadAllowed, resumeFrom, pushLog,
+  reloadDue, reloadAllowed, resumeFrom, pushLog, stopPictureFailed,
 } from './autopilotplan.js';
 import { write as writeUrl, clear as clearUrl } from './urlstate.js';
 
@@ -311,10 +311,27 @@ export function createAutopilot(ctx, env = {}) {
     if (playing) playing.since = now;
     betweenSince = now;
   };
+  // WHILE NOTHING DRAWS, NOTHING PLAYS (internal #448). A lost context stops the picture and not the
+  // trip: its dwell ran out and its next flight began behind a dead canvas, so the reload five
+  // seconds later picked the reel up one stop on from the last one anybody saw (seen 2026-10-08).
+  // The trip is paused where it is, by the machine's own pause (its timers and its clock hold, and
+  // the address keeps naming this stop), and resumed when the context is handed back.
+  const HOLDABLE = ['flight', 'settle', 'dwell', 'held'];
+  function holdWhileLost() {
+    if (lostAt === null || !playing || !ctx.trip || !ctx.trip.state) return;
+    if (HOLDABLE.includes(ctx.trip.state.phase)) { try { ctx.trip.pause('context'); } catch { /* not running */ } }
+  }
+  /** Resolves once the context is back (at once when it was never lost). */
+  const drawn = () => (lostAt === null ? Promise.resolve() : wait(250).then(drawn));
   const onWebgl = (e) => {
     const state = e && e.detail && e.detail.state;
-    if (state === 'lost') { lostAt = timers.now(); say('context-lost'); }
-    if (state === 'restored') { say('context-restored', { after_s: lostAt === null ? 0 : Math.round((timers.now() - lostAt) / 100) / 10 }); lostAt = null; }
+    if (state === 'lost') { lostAt = timers.now(); say('context-lost', { trip: playing && playing.id, n: playing ? playing.index + 1 : 0 }); holdWhileLost(); }
+    if (state === 'restored') {
+      say('context-restored', { after_s: lostAt === null ? 0 : Math.round((timers.now() - lostAt) / 100) / 10 });
+      lostAt = null;
+      if (playing) playing.since = timers.now();
+      try { if (ctx.trip && ctx.trip.state && ctx.trip.state.pausedBy === 'context') ctx.trip.resume(); } catch { /* the watchdog resumes it */ }
+    }
   };
 
   // ---------------------------------------------------------------------------- the sound
@@ -396,7 +413,8 @@ export function createAutopilot(ctx, env = {}) {
       playing.since = timers.now();
       view.card(cardFor(row));
       return wait(paced(T.title_s * 1000, opts.pace)).then(() => plan);
-    }).then((plan) => {
+    // Not into a dead canvas: the first flight waits for the picture (or for the reload).
+    }).then((plan) => drawn().then(() => plan)).then((plan) => {
       if (!plan || mine !== token || !playing || playing.id !== id) return;
       view.card(null);
       if (startStop > 0 && plan.count > 1) ctx.trip.jumpTo(Math.min(startStop, plan.count - 1));
@@ -443,6 +461,9 @@ export function createAutopilot(ctx, env = {}) {
     playing.key = key;
     playing.phase = st.phase;
     playing.since = now;
+    // A stop reached while the context is lost (the veil was not ours to pause) is held too. Not
+    // from inside the machine's own notify.
+    if (lostAt !== null && HOLDABLE.includes(st.phase)) Promise.resolve().then(holdWhileLost);
     if (st.index !== playing.index) { playing.index = st.index; playing.nudged = false; }
     if (st.phase === 'settle') {
       playing.reached += 1;
@@ -457,7 +478,7 @@ export function createAutopilot(ctx, env = {}) {
         const index = st.index;
         timers.clear(paceTimer);
         paceTimer = timers.set(() => {
-          if (playing && playing.index === index && playing.phase === 'dwell') ctx.trip.next();
+          if (lostAt === null && playing && playing.index === index && playing.phase === 'dwell') ctx.trip.next();
         }, playing.dwellMs);
       }
     } else if (st.phase === 'outro') {
@@ -498,6 +519,28 @@ export function createAutopilot(ctx, env = {}) {
 
   // ---------------------------------------------------------------------------- the watchdog
 
+  /**
+   * A STOP WHOSE PICTURE DID NOT ARRIVE IS PASSED OVER (internal #448). Four stops of "The living
+   * Earth" lay a measured map over the globe; with no internet a visitor is told "That picture did
+   * not arrive. The globe is as it was.", which is right for somebody who pressed the trip and
+   * wrong on a wall: thirty seconds of a card about a map nobody can see, four times a lap. The
+   * machine says which map the stop asks for (`state.overlay`) and main.js how the fetch went
+   * (ctx.overlayState); a reel moves on. Once a stop, and said in the log, never on screen.
+   */
+  function skipFailedPicture() {
+    const st = ctx.trip && ctx.trip.state;
+    if (!st || !st.overlay || !HOLDABLE.includes(st.phase) || st.phase === 'held') return false;
+    if (playing.passed === st.index || typeof ctx.overlayState !== 'function') return false;
+    let over = null;
+    try { over = ctx.overlayState(); } catch { return false; }
+    if (!stopPictureFailed(st.overlay, over)) return false;
+    playing.passed = st.index;
+    playing.since = timers.now();
+    say('stop-passed', { trip: playing.id, n: st.index + 1, id: st.stopId, why: `overlay-${over.status}` });
+    try { ctx.trip.next(); } catch { /* the watchdog has it */ }
+    return true;
+  }
+
   function tick() {
     if (!engaged) return;
     const now = timers.now();
@@ -513,6 +556,7 @@ export function createAutopilot(ctx, env = {}) {
       }
       if (lostAt === null) return;
     }
+    if (playing && lostAt === null && skipFailedPicture()) return;
     const verdict = watchdog({
       phase: playing ? playing.phase : 'idle',
       sinceMs: playing ? now - playing.since : 0,
