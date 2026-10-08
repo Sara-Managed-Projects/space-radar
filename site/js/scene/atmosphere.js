@@ -167,8 +167,9 @@ export const ATMO_PARAMS = {
   // `twilight`, which is not physics at all: light is let into the planet's shadow, dying by e
   // for every 0.04 of a radius of depth into the shadow's cylinder (TWILIGHT in the header).
   // Cream, not white: the albedo falls toward blue. The numbers were set on the JS twin
-  // (scatter()): 0.2 to 0.27 of the disc's light along the sunlit limb, 0.05 to 0.08 ten to
-  // fifteen degrees past the terminator, under 0.01 at thirty.
+  // (scatter()) and then by one frame each at 75, 120 and 150 degrees of phase: about 0.2 of the
+  // disc's light along the sunlit limb, 0.05 ten to fifteen degrees past the terminator, under
+  // 0.01 at thirty.
   venus: {
     radiusKm: 6051.8,
     topKm: 60,
@@ -180,7 +181,7 @@ export const ATMO_PARAMS = {
     // 0.45, not #342's 0.6: with this much haze a 0.6 lobe made the backlit ring 8.5 times the disc.
     dustG: [0.45, 0.45, 0.45],
     heightGain: 6.0,
-    sun: 12.0,
+    sun: 9.0,
     twilight: 0.04,
   },
   // TITAN. The ball is the haze as it looks (its row's tint); the shell is the upper haze over it,

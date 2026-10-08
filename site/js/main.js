@@ -2273,7 +2273,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     {
       const exoticsOn = isLadderStage(stage.worldId) && ctx.isLayerDrawable(LAYERS.find((l) => l.id === 'exotics'));
       if (ctx.pulsars) ctx.pulsars.update(ctx.camera, ctx.renderer, exoticsOn, nowReal);
-      else if (exoticsOn && !pulsarsImport) ctx.wantPulsars();
+      else if (exoticsOn) ctx.wantPulsars(); // asks once: the promise is kept
     }
     if (ctx.earthOverlay) ctx.earthOverlay.update();
     if (ctx.wind) ctx.wind.update();
