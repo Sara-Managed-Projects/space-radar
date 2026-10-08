@@ -11,7 +11,7 @@ const check = (ok, what) => { if (!ok) problems.push(what); };
 
 // 1. The core is a peak: 1 at the centre, falling at once, gone at the core's edge. Never a plateau.
 check(Math.abs(starLight(0, 1, 0)[0] - 1) < 1e-12, 'the core is 1 at the centre');
-check(starLight(0.05, 1, 0)[0] < 0.96 && starLight(0.1, 1, 0)[0] < 0.8, `it falls from the first pixel: ${starLight(0.05, 1, 0)[0].toFixed(3)} a tenth of the way out, ${starLight(0.1, 1, 0)[0].toFixed(3)} a fifth (the disc it replaces was 1 out to a quarter)`);
+check(starLight(0.12, 1, 0)[0] < 0.95 && starLight(0.25, 1, 0)[0] < 0.7, `it is already falling where the old disc was still full: ${starLight(0.12, 1, 0)[0].toFixed(3)} at 0.12 of the sprite, ${starLight(0.25, 1, 0)[0].toFixed(3)} half way out (the disc it replaces was 1 out to 0.12)`);
 check(starLight(0.5, 1, 0)[0] === 0, 'and is 0 at the sprite\'s edge');
 let last = 2;
 let falls = true;
