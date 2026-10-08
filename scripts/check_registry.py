@@ -465,7 +465,16 @@ EVENT_KINDS = {
 ECLIPSE_KEY_LIGHT_MAX_DEG = 60
 # Never alarm (spec 0037 req 6): the words are "shadow" and "path", and this app is not where anybody
 # looks at the Sun, so it gives no safety warning either. The same mechanism as TOUR_CERTAINTY_WORDS.
-ECLIPSE_STOP_WORDS = ("darkness falls", "goes out", "danger", "protect your eyes")
+ECLIPSE_STOP_WORDS = ("darkness falls", "goes out", "danger", "protect your eyes", "blinding")
+# Spec 0043 design section 1 (internal #121): three more word lists, each scoped by the stop's kind.
+# A hero model is drawn larger than it is (scene/heroes.js), so a stop at a record may not say the
+# picture is to scale. A planet of another star has no seen face (an artist's impression is drawn
+# and the card says so), so a stop on a system's stage may not describe its look. And a number or
+# a sentence the app generates ("shown at", "computed") may not be pre-empted by a card that writes
+# the same claim by hand.
+HERO_SIZE_WORDS = ("to scale", "true size", "actual size", "real size")
+SYSTEM_LOOK_WORDS = ("looks like", "ocean", "blue", "green", "clouds", "continents")
+GENERATED_WORDS = ("shown at", "computed", "generated", "drawn at class size")
 
 # The sentence the `clock: freeze` refusal already says, for the same cost from the same cause.
 TOUR_ACTIVE_SCRUB = ("flips the clock to scrub, which re-propagates every object every frame "
@@ -1424,6 +1433,22 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
     if not isinstance(card, dict):
         fail(where, "no `card:` -- a stop with no words is a camera move, not a stop")
         return
+    kind_text = " ".join(str(v or "") for v in card.values()).lower()
+    target = stop.get("target")
+    if isinstance(target, dict) and "record" in target:
+        for word in HERO_SIZE_WORDS:
+            if word in kind_text:
+                fail(where, f"a stop at a record says \"{word}\": a model is drawn larger than it is "
+                            f"(scene/heroes.js), so the card may not call the picture to scale")
+    if flown_system:
+        for word in SYSTEM_LOOK_WORDS:
+            if re.search(r"\b" + re.escape(word) + r"\b", kind_text):
+                fail(where, f"a stop on a star system's stage says \"{word}\": no planet of another star "
+                            f"has a seen face, and the app says that itself")
+    for word in GENERATED_WORDS:
+        if word in kind_text:
+            fail(where, f"the card says \"{word}\": a generated line says that, and a hand-written card "
+                        f"may not pre-empt it")
     title = card.get("title")
     body = card.get("body")
     if not title:

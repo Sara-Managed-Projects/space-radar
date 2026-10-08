@@ -143,7 +143,7 @@ export function wonderEvents(items, nowMs) {
 /** The things worth a day each when nothing is coming: the extremes and the worlds, by id. Pure. */
 export function famousThings(records) {
   return (Array.isArray(records) ? records : [])
-    .filter((r) => r && r.id && r.name && (r.klass === 'exotic' || r.klass === 'world'))
+    .filter((r) => r && r.id && r.name && (r.klass === 'exotic' || r.klass === 'world' || (r.klass === 'star' && r.meta && r.meta.why)))
     .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
     .map((r) => ({ id: r.id, kicker: '', title: r.name, line: '', record: r, act: 'select' }));
 }

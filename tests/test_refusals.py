@@ -1035,6 +1035,19 @@ TOUR_CASES: list[tuple[str, str, str]] = [
      "            Now it is the Earth that is in the way.",
      "            Now it is the Earth that is in the way, and there is no need to protect your eyes."),
 
+    ("an eclipse card that calls the light blinding",
+     "            Now it is the Earth that is in the way.",
+     "            Now it is the Earth that is in the way, in a blinding light."),
+    ("a stop at a record that calls its picture to scale",
+     "            TRAPPIST-1 is a cool red star forty light-years away, a little bigger than Jupiter.\n",
+     "            TRAPPIST-1 is a cool red star forty light-years away, a little bigger than Jupiter, drawn to scale.\n"),
+    ("a star system's stage that says what a planet looks like",
+     "            Seven planets about the size of the Earth go round it, and all seven were found as\n",
+     "            Seven planets about the size of the Earth go round it, one of them blue, and all seven were found as\n"),
+    ("a hand-written card that says what a generated line says",
+     "            TRAPPIST-1 is a cool red star forty light-years away, a little bigger than Jupiter.\n",
+     "            TRAPPIST-1 is a cool red star forty light-years away, shown at a little bigger than Jupiter.\n"),
+
     # --- spec 0038: a stop at the visitor's own place --------------------------------------------
     ("a visitor's-place target with a second key beside it",
      "        target: {observer: true}\n        # THE SPEC SAID",

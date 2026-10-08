@@ -193,8 +193,8 @@ check(P.KEY === 'sr:passport', 'one key, sr:passport');
   ];
   const we = T.wonderEvents(items, now);
   check(we.map((c) => c.id.split(':')[0]).join() === 'shower,approach', `the events a wonder may be: a shower before a close approach; a pass and a launch are daily bread; an eclipse 300 days off is not this month's (${we.map((c) => c.id)})`);
-  const fam = T.famousThings([{ id: 'mars', name: 'Mars', klass: 'world' }, { id: 'exotic-m87-star', name: 'M87*', klass: 'exotic' }, { id: 'sat-1', name: 'A satellite', klass: 'satellite' }, { id: 'earth', name: 'Earth', klass: 'world' }]);
-  check(fam.map((c) => c.id).join() === 'earth,exotic-m87-star,mars' && fam.every((c) => c.act === 'select' && c.record), 'the famous things: the extremes and the worlds, in a fixed order, each a place to go');
+  const fam = T.famousThings([{ id: 'mars', name: 'Mars', klass: 'world' }, { id: 'exotic-m87-star', name: 'M87*', klass: 'exotic' }, { id: 'sat-1', name: 'A satellite', klass: 'satellite' }, { id: 'earth', name: 'Earth', klass: 'world' }, { id: 'hip-70890', name: 'Proxima Centauri', klass: 'star', meta: { why: 'The nearest star to the Sun' } }, { id: 'hip-1', name: 'A star nobody wrote about', klass: 'star', meta: {} }]);
+  check(fam.map((c) => c.id).join() === 'earth,exotic-m87-star,hip-70890,mars' && fam.every((c) => c.act === 'select' && c.record), 'the famous things: the extremes, the worlds and the stars registry/stars-notable.yaml wrote a line for, in a fixed order, each a place to go (internal #437)');
   const cards = T.todayCards({ items, nowMs: now, skipId: we[0].id });
   check(!cards.some((c) => c.id === we[0].id), 'the wonder is not said again on the shelf under it');
 }
