@@ -120,10 +120,16 @@ await run('exoDiag', async () => {
   await until(() => nearest(), 25000); await wait(1500);
   if (!nearest()) return { faces: faces().length, stage: ctx.stage.worldId, active: ctx.systems.active };
   const d0 = ctx.cameraRig.state.distance;
-  for (const k of [1, 0.6, 0.45, 0.3]) {
-    // The rig keeps no direction of its own between flights: give it the one it has.
-    const n0 = nearest(); const c = n0.m.getWorldPosition(new THREE.Vector3()); const cam = ctx.camera.position;
-    ctx.cameraRig.flyTo({ offset: norm(V(cam.x - c.x, cam.y - c.y, cam.z - c.z)), distance: d0 * k, ms: 0 }); await shot(`g-push-${k}`, 3000); o['k' + k] = say();
+  // From its star's side, forty degrees round: the rig keeps no direction of its own between flights.
+  const n0 = nearest(); const c = n0.m.getWorldPosition(new THREE.Vector3());
+  let sun = null;
+  try { const host = ctx.systems.hostRecordFor(ctx.recordById(id)); const sp = host && ctx.systems.drawnPositionOf(host.id, new THREE.Vector3()); if (sp) sun = norm(V(sp.x - c.x, sp.y - c.y, sp.z - c.z)); } catch { sun = null; }
+  o.sunFrom = sun ? 'host' : 'uniform';
+  if (!sun || !Number.isFinite(sun.x)) sun = norm(n0.m.material.uniforms.uSunDir.value);
+  const sideV = norm(cross(sun, V(0, 1, 0))); const off = norm(mix(sun, Math.cos(40 * DEG), sideV, Math.sin(40 * DEG)));
+  o.min = ctx.cameraRig.state.minDistance;
+  for (const k of [1, 0.4, 0.15]) {
+    ctx.cameraRig.flyTo({ offset: off, distance: d0 * k, ms: 0 }); await shot(`g-push-${k}`, 3000); o['k' + k] = say();
   }
   const n = nearest();
   if (n && n.m.material.uniforms.uDetail) {

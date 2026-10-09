@@ -20,3 +20,10 @@ const homeView = async () => {
   await wait(400);
 };
 const sheetUp = async () => { try { if (phone && ctx.shell.sheet && ctx.shell.sheet()) { ctx.shell.sheet().set('full'); await wait(600); } } catch { /* no sheet */ } };
+// A `#go=` link's landing flight, from the moment the layers are in: what is selected, the stage, and frames.
+await run('landing', async () => {
+  const o = { hash: location.hash, log: [] };
+  const say = () => ({ t: Date.now() - t0, sel: ctx.selected && ctx.selected() ? ctx.selected().id : null, stage: ctx.stage.worldId, flying: !!ctx.cameraRig.state.flying, dist: +Number(ctx.cameraRig.state.distance).toPrecision(4), view: ctx.shell.view() });
+  for (const [i, ms] of [0, 2500, 3500, 4000, 5000, 8000].entries()) { await wait(ms); o.log.push(say()); await window.cdpShot(`l${i}-landing`); out.shots.push(`l${i}-landing`); }
+  return o;
+});

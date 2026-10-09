@@ -195,6 +195,24 @@ await run('phoneScene', async () => {
   if (st) { await until(() => ctx.imagine && ctx.imagine.active, 15000); ctx.imagine.freeze(40); ctx.imagine.setView({ phaseDeg: 52, elevationDeg: 14, fill: 2.4 }); await shot('p3-imagine-limb', 3500); o.imagine = ctx.imagine.state().tier; ctx.imagine.stop(); }
   return o;
 });
+await run('objectPages', async () => {
+  // The static pages' one live line (internal #294), each in a frame of its own over this page.
+  const o = {};
+  for (const slug of ['mars', 'moon']) {
+    const f = document.createElement('iframe'); f.src = `/o/${slug}.html`;
+    f.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;z-index:100000;border:0;background:#fff';
+    document.body.appendChild(f);
+    await new Promise((r) => { f.onload = r; setTimeout(r, 15000); });
+    const now = () => { try { const n = f.contentDocument.getElementById('now'); return n ? n.textContent : null; } catch (e) { return 'unreadable: ' + e.message; } };
+    const first = now(); const t = Date.now();
+    await until(() => /right now/.test(now() || ''), 8000, 100);
+    o[slug] = { first, later: now(), ms: Date.now() - t, title: f.contentDocument.title };
+    try { f.contentDocument.getElementById('now').scrollIntoView({ block: 'center' }); } catch { /* stays */ }
+    await wait(600); await window.cdpShot(`o-${slug}`); out.shots.push(`o-${slug}`);
+    f.remove();
+  }
+  return o;
+});
 await run('finder', async () => {
   // The place-made rows, asked for directly: through the worker (sky/findclient.js) and on this thread.
   const place = { latDeg: 51.5, lonDeg: -0.1, altKm: 0 }; const from = Date.UTC(2026, 10, 10, 20, 0);
