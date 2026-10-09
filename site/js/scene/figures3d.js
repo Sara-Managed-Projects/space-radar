@@ -40,6 +40,8 @@ import { LY_KM } from './stars3d.js';
 import {
   parseFigures, placeFigure, brightIndex, figureProgress, eclipticRing, eqToEcl, dirOf, DRAW_MS, STAGGER_MS,
 } from '../sky/figures.js';
+import { COPY, t, fmt } from '../copy/en.js';
+import '../copy/en.later.js';
 
 /** Names on screen at once: docs/ui-guide.md 3.13's cap, which ui/labels.js keeps for itself. */
 export const LABEL_CAP = 8;
@@ -49,6 +51,7 @@ const LINE_PX = 1.5;
 const GAP_PX = 10;
 /** The naked-eye stars are drawn this much larger while a figure is up: they are the subject. */
 export const STAR_SCALE = 2.5;
+const DROP_ALPHA = 0.45; // the drop lines are this much of the figure's own stroke
 const LINE_ALPHA = 0.36; // the stroke stops this short of each star, so the star is not painted over
 const LINE_COLOUR = '#B9DCF5'; // the UI's "info" ice (--sr-info): an informational mark, not a class
 const ECLIPTIC_COLOUR = '#FFC98A'; // the palette's warm night-light: the Sun's road
@@ -105,6 +108,35 @@ void main() {
   #include <colorspace_fragment>
 }
 `;
+
+/**
+ * "Constellations from the side" (internal #387): from any other place than ours a figure's stars are at their
+ * own depths, and a line drawn between them says nothing about how deep. One faint DROP LINE from each corner to
+ * the PLANE OF THE SKY (the plane square to the line of sight from the Sun to the figure's middle, through the
+ * figure's median distance), so the depth of every corner is a length you can see. Seen from the Sun the lines
+ * lie along the line of sight and are points: from home nothing is added to the figure. Pure; the segments go
+ * through the same stroke as the figure's own (t0, t1 near the end, so they come after the pen).
+ * @param {{centre:number[], medianLy:number, stars:{posLy:number[]}[]}} placed  sky/figures.js placeFigure()
+ */
+export function dropSegments(placed) {
+  const c = eqToEcl(dirOf(placed.centre[0], placed.centre[1]));
+  const d0 = placed.medianLy;
+  const out = [];
+  for (const s of placed.stars) {
+    const p = s.posLy;
+    const along = p[0] * c[0] + p[1] * c[1] + p[2] * c[2]; // how far past or short of the plane, ly
+    const k = along - d0;
+    out.push({ a: p, b: [p[0] - k * c[0], p[1] - k * c[1], p[2] - k * c[2]], t0: 0.9, t1: 1, depthLy: k });
+  }
+  return out;
+}
+
+/** A corner star's own distance label: its name when it has one, and how far it is. Pure. */
+export function distanceText(name, ly) {
+  const n = fmt.int(Math.round(ly));
+  const far = t(COPY.figures.distance, { n });
+  return name ? t(COPY.figures.namedDistance, { name, n }) : far;
+}
 
 function quadGeometry(segments, toLocal) {
   const geo = new THREE.InstancedBufferGeometry();
@@ -235,6 +267,7 @@ export function createFigures3d(ctx, opts = {}) {
 
   function disposeMesh(m) {
     if (!m) return;
+    if (m.userData && m.userData.drops) disposeMesh(m.userData.drops);
     if (m.parent) m.parent.remove(m);
     m.geometry.dispose();
     m.material.dispose();
@@ -248,6 +281,16 @@ export function createFigures3d(ctx, opts = {}) {
     mesh.frustumCulled = false;
     mesh.renderOrder = RENDER_ORDER;
     group.add(mesh);
+    // The drop lines: the figure's own stroke, fainter and one more thing than a line, only where places are true.
+    if (mode === 'true' && spec.drops !== false) {
+      const drops = new THREE.Mesh(quadGeometry(dropSegments(p), toLocal), lineMaterial(LINE_COLOUR));
+      drops.name = `figure:${id}:drops`;
+      drops.frustumCulled = false;
+      drops.renderOrder = RENDER_ORDER;
+      drops.material.uniforms.uGap.value = 0;
+      group.add(drops);
+      mesh.userData.drops = drops;
+    }
     return mesh;
   }
 
@@ -290,6 +333,7 @@ export function createFigures3d(ctx, opts = {}) {
       f.mesh.material.uniforms.uProgress.value = old.material.uniforms.uProgress.value;
       f.mesh.material.uniforms.uOpacity.value = old.material.uniforms.uOpacity.value;
       disposeMesh(old);
+      f.labels = labelsOf(id); // the labels depend on the mode too: distances only where places are true
     }
   }
 
@@ -325,8 +369,21 @@ export function createFigures3d(ctx, opts = {}) {
         if (seg.a === s.posLy) t = Math.min(t, seg.t0);
         if (seg.b === s.posLy) t = Math.min(t, seg.t1);
       }
-      out.push({ kind: 'star', text: name, ly: s.posLy, t, mag: s.mag });
+      out.push({ kind: 'star', text: mode === 'true' && spec.drops !== false ? distanceText(name, s.ly) : name, ly: s.posLy, t, mag: s.mag });
       n++;
+    }
+    // Where places are true, every other corner says how far it is as well (the cap in paintLabels takes the faint ones).
+    if (mode === 'true' && spec.drops !== false) {
+      const named = new Set(out.filter((l) => l.kind === 'star').map((l) => l.ly));
+      for (const s of p.stars) {
+        if (named.has(s.posLy)) continue;
+        let t = 1;
+        for (const seg of p.segments) {
+          if (seg.a === s.posLy) t = Math.min(t, seg.t0);
+          if (seg.b === s.posLy) t = Math.min(t, seg.t1);
+        }
+        out.push({ kind: 'star', text: distanceText(null, s.ly), ly: s.posLy, t, mag: s.mag });
+      }
     }
     return out;
   }
@@ -411,6 +468,13 @@ export function createFigures3d(ctx, opts = {}) {
       u.uWidth.value = LINE_PX * dpr * lineScale;
       u.uGap.value = GAP_PX * dpr;
       f.mesh.visible = u.uOpacity.value > 0.002;
+      const dr = f.mesh.userData && f.mesh.userData.drops;
+      if (dr) {
+        const du = dr.material.uniforms;
+        du.uProgress.value = progress; du.uOpacity.value = u.uOpacity.value * DROP_ALPHA; du.uHead.value = 0;
+        du.uResolution.value.copy(_res); du.uWidth.value = LINE_PX * 0.7 * dpr * lineScale;
+        dr.visible = f.mesh.visible;
+      }
       f.progress = progress;
       if (f.leavingAt && fadeOut <= 0) { disposeMesh(f.mesh); live.delete(id); continue; }
       if (!f.leavingAt && f.labels) for (const l of f.labels) shown.push({ l, f });
