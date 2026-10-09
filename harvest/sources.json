@@ -395,7 +395,6 @@
       "freshness_max": "3h",
       "parser": "swpc_ovation",
       "outputs": [
-        "aurora.png",
         "aurora-summary.json"
       ]
     },

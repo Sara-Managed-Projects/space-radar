@@ -22,7 +22,7 @@ const { realModelFor, REAL_MODELS } = await import(join(JS, 'scene/realmodels.js
 const { drawingLine, firstSentence, classLine, honestyClause, rightNowFor } = await import(join(JS, 'ui/cards.js'));
 const { toStage, worldHelioEclKm, WORLD_RADIUS_KM } = await import(join(JS, 'propagate/frames.js'));
 const { lapTimes } = await import(join(JS, 'propagate/orbiter.js'));
-const { TDB_MINUS_UTC_MS } = await import(join(JS, 'data/parsers.js'));
+const { TDB_MINUS_UTC_MS, horizonsTimeScale, horizonsToUtcMs } = await import(join(JS, 'data/parsers.js'));
 
 const AU_KM = 149597870.7;
 const problems = [];
@@ -492,6 +492,23 @@ for (const id of [...ADDED.filter((x) => x !== 'deep-gaia'), 'deep-mars-express'
   check(psyche.length <= 160, `and stays one sentence of 160 characters: ${psyche.length}`);
   const bepi = firstSentence(byId.get('deep-bepicolombo'), {}, m, null);
   check(!bepi.includes('on its way to'), `BepiColombo arrives in months, so it carries no destination to go stale: "${bepi}"`);
+}
+
+// TIME_TYPE='UT' (horizons-ids.yaml, internal #424 / #552): a table that says JDUT is already UTC, and a
+// saved TDB table is read as before. The same MRO table given both ways must land on the same instants.
+{
+  const tdbText = ROUND_FX.body['-74'];
+  check(horizonsTimeScale(tdbText) === 'TDB' && horizonsToUtcMs(tdbText) === TDB_MINUS_UTC_MS, 'a saved table headed JDTDB is read as TDB');
+  check(horizonsTimeScale('no header') === 'TDB' && horizonsTimeScale(null) === 'TDB', 'a text with no header is read as it always was');
+  const utText = tdbText.replace(/JDTDB/, 'JDUT').replace(/Calendar Date \(TDB\)/, 'Calendar Date (UT)').replace(/^(\d{7}\.\d+)/gm, (m) => (Number(m) - TDB_MINUS_UTC_MS / 86400000).toFixed(9));
+  check(horizonsTimeScale(utText) === 'UT' && horizonsToUtcMs(utText) === 0, 'a table headed JDUT is read as UT');
+  const a = parseHorizonsVectors({ '-74': tdbText }, sampleDeepSpace()).find((r) => r.id === 'deep-mro');
+  const b = parseHorizonsVectors({ '-74': utText }, sampleDeepSpace()).find((r) => r.id === 'deep-mro');
+  check(a && b && a.samples.length === b.samples.length && a.samples.length > 3, 'both forms give MRO a sample set');
+  if (a && b) {
+    const worst = Math.max(...a.samples.map((s2, i) => Math.abs(s2.tMs - b.samples[i].tMs)));
+    check(worst < 2, `the same instants whichever scale the table is in (worst ${worst} ms apart)`);
+  }
 }
 
 if (problems.length) {

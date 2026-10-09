@@ -1060,9 +1060,23 @@ function jdToMs(jd) {
  * z/r = 0.58, i.e. 35 deg above the ecliptic, which is where Voyager 1 is; in the equatorial frame
  * that ratio would read very differently.
  *
- * The rows sit between $$SOE and $$EOE as CSV: JDTDB, calendar date, X, Y, Z, VX, VY, VZ.
+ * The rows sit between $$SOE and $$EOE as CSV: JDTDB (or JDUT), calendar date, X, Y, Z, VX, VY, VZ.
  * A text with no $$SOE block (Horizons refusing a window, an unknown id) yields [].
+ *
+ * THE TIME SCALE (internal #424, #552): a request without TIME_TYPE answers in TDB, 69.184 s ahead of
+ * UTC, and `tMs` is that JD read as UTC. A request with TIME_TYPE='UT' (harvest/lists/horizons-ids.yaml,
+ * from the harvester redeploy of 2026-10) answers JDUT and `tMs` is true UTC. horizonsTimeScale() reads
+ * which from the table's own header, so the snapshots already saved and the new ones both read right.
  */
+export function horizonsTimeScale(text) {
+  if (typeof text !== 'string') return 'TDB';
+  const s = text.indexOf('$$SOE');
+  const head = s < 0 ? text : text.slice(0, s);
+  const col = /^\s*JD[A-Za-z]*,\s*Calendar Date[^\n]*$/m.exec(head); // the column-name line only
+  if (col && /JDUT|\(UT\)/.test(col[0]) && !/JDTDB|\(TDB\)/.test(col[0])) return 'UT';
+  return 'TDB'; // JDTDB, or an older fixture with no header at all: as it always was
+}
+
 export function horizonsSamples(text) {
   if (typeof text !== 'string') return [];
   const s = text.indexOf('$$SOE');
@@ -1117,7 +1131,7 @@ export function parseHorizonsVectors(body, base = []) {
         out.push(rec);
         continue;
       }
-      out.push(orbiterFromHorizons(rec, samples));
+      out.push(orbiterFromHorizons(rec, samples, horizonsToUtcMs(text)));
       continue;
     }
     // And the other way round: a table about some other centre is not a heliocentric position.
@@ -1170,6 +1184,10 @@ const NAIF_CENTRE = { sun: 10, earth: 399, moon: 301, mars: 499, jupiter: 599 };
  * 3.4 km/s, 235 km in 69 s, and Juno at perijove 55.5 km/s, 3 840 km.
  */
 export const TDB_MINUS_UTC_MS = 69184;
+/** What to take off a Horizons table's times to have UTC: 69.184 s for a TDB table, nothing for a UT one. */
+export function horizonsToUtcMs(text) {
+  return horizonsTimeScale(text) === 'UT' ? 0 : TDB_MINUS_UTC_MS;
+}
 
 /**
  * The step the `arc` sentences in data/sample.js were measured at. A snapshot with a coarser step
@@ -1190,8 +1208,8 @@ export function horizonsCentre(text) {
  * `measured`: between the six-hourly states nobody measured it, and the card says how close the
  * arcs stay (`orbitKnown`, from the row's own measured sentence).
  */
-function orbiterFromHorizons(rec, samples) {
-  const utc = samples.map((s) => ({ ...s, tMs: s.tMs - TDB_MINUS_UTC_MS }));
+function orbiterFromHorizons(rec, samples, shiftMs = TDB_MINUS_UTC_MS) {
+  const utc = samples.map((s) => ({ ...s, tMs: s.tMs - shiftMs }));
   const first = utc[0].tMs;
   const last = utc[utc.length - 1].tMs;
   const { extrapolateMs, ...rest } = rec;

@@ -361,7 +361,10 @@ sources:
     cadence: 15m
     freshness_max: 3h
     parser: swpc_ovation
-    outputs: [aurora.png, aurora-summary.json]
+    # `aurora.png` was listed first until 2026-10-09 and nothing ever wrote it: the parser passes NOAA's
+    # grid through whole (the saved copy is swpc-ovation.json, 726 kB on 2026-10-09). The harvester reads
+    # this row at deploy, so the change reaches it with the next redeploy (internal #192 item 5, #552).
+    outputs: [aurora-summary.json]
     attribution: "Aurora forecast: NOAA SWPC"
     licence: "US Government work, public domain"
     terms_url: https://www.weather.gov/disclaimer

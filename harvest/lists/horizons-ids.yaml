@@ -72,6 +72,12 @@ params:
   CENTER: "'500@10'"        # heliocentric, the frame the deep-space layer draws in
   STEP_SIZE: "'6 h'"
   VEC_TABLE: "'2'"          # position and velocity, which cubic Hermite needs
+  # Times in UT, not TDB (internal #424, #552). Horizons' default for a vector table is TDB, 69.184 s
+  # ahead of UTC, which the app read as UTC (1 644 km along Mars's path for MRO). JPL's API page
+  # (ssd-api.jpl.nasa.gov/doc/horizons.html, read 2026-10-09) lists TIME_TYPE as "UT , TT , TDB ...
+  # observer tables: UT or TT; vector tables: TDB or UT". The table's header then reads JDUT and
+  # data/parsers.js horizonsTimeScale() takes no 69 s off: a saved TDB snapshot is read as before.
+  TIME_TYPE: "'UT'"
   OUT_UNITS: "'KM-S'"
   CSV_FORMAT: "'YES'"
   COMMAND: "'{id}'"
