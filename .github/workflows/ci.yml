@@ -750,6 +750,8 @@ jobs:
         run: node tests/test_minify_real.mjs
       - name: "the edge keeps the app between deploys and a browser still revalidates: the header, the invalidation that covers it, and the check after (internal #513)"
         run: node tests/test_edge_cache.mjs
+      - name: "a glyph layer uploads only the attributes whose values changed, and a stand-in GPU never holds a stale one (internal #519)"
+        run: node tests/test_glyph_uploads.mjs
       - name: "the notifier: digests, showers, subscriptions and tokens"
         run: python3 tests/test_notify.py
       # Merged the same day (public #487) and, again, in no workflow: the step below is what found them.

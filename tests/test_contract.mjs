@@ -1366,8 +1366,10 @@ for (const file of allFiles) {
     }
   }
   // ... and the two must be written from different numbers on the CPU side too.
-  const dotLine = (src.match(/^\s*attrOpacity\.array\[k\] = .*$/m) || [''])[0];
-  const ringLine = (src.match(/^\s*attrRing\.array\[k\] = .*$/m) || [''])[0];
+  // (Since internal #519 a value is written only when it differs from the one in the array, so
+  // the two lines are a comparison and a write: tests/test_glyph_uploads.mjs holds the uploads.)
+  const dotLine = /^\s*if \(aOpacity\[k\] !== opacity\) \{ aOpacity\[k\] = opacity; /m.test(src) ? (src.match(/^\s*const opacity = .*$/m) || [''])[0] : '';
+  const ringLine = (src.match(/^\s*if \(aRing\[k\] !== own\) \{ aRing\[k\] = own; .*$/m) || [''])[0];
   if (!/dotOpacity\(/.test(dotLine)) problems.push(`HALO     the dot is not written through onemark's dotOpacity(): "${dotLine.trim()}"`);
   if (!ringLine) problems.push('HALO     nothing writes iRing, so the halo has no opacity of its own');
   else if (/dotOpacity\(|yieldTo|modelOpacity/.test(ringLine)) {
