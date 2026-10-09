@@ -1969,7 +1969,7 @@ export async function boot({ setStatus } = {}) {
     }
     if (plan.trip) ctx.trip.stop();
     // A mission's event (ui/missions.js): it selects its own record and sets the clock.
-    if (plan.event) { ctx.wantMissions().then((m) => { if (!m || !m.openEvent(ctx, plan.event)) linkNote(ctx, COPY.mission.unknown, ['event']); }); return; }
+    if (plan.event) { ctx.wantMissions().then((m) => (m ? m.openEventWhenReady(ctx, plan.event) : false)).then((ok) => { if (!ok) linkNote(ctx, COPY.mission.unknown, ['event']); }); return; }
     if (plan.at && plan.at.open) openAt(ctx, plan.at.open);
     else if (plan.at) ctx.deselect();
     if (keys.cam) applyCam(ctx, keys.cam);
@@ -2790,8 +2790,9 @@ function applyUrlState(ctx, st) {
   if (st.trip && openTrip(ctx, st)) return;
   // A mission's event (ui/missions.js): it selects its own record, so `at` beside it is not read.
   if (st.event && typeof ctx.wantMissions === 'function') {
-    ctx.wantMissions().then((m) => {
-      if (m && m.openEvent(ctx, st.event)) return;
+    // A known event whose record is in a layer that has not landed is waited for (ui/missions.js openEventWhenReady), not called unknown.
+    ctx.wantMissions().then((m) => (m ? m.openEventWhenReady(ctx, st.event) : false)).then((ok) => {
+      if (ok) return;
       linkNote(ctx, COPY.mission.unknown, ['event']);
       if (st.at) openAt(ctx, st.at);
     });

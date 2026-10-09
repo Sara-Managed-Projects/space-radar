@@ -507,6 +507,30 @@ export function openEvent(ctx, id) {
   return true;
 }
 
+/**
+ * `#event=` opened before the layers land (internal #424, #550): the event is a real one, its record is in a layer
+ * that has not arrived, and openEvent() answers false at once, which main.js printed as "unknown". So a KNOWN event
+ * whose record is not here yet is retried each time a layer lands (window `sr:layer`, `sr:layers-ready`) for
+ * `timeoutMs`, and only an unknown event, or one still without its record then, is unknown. Resolves true when opened.
+ * `subscribe(fn)` -> unsubscribe is injected for the test; the browser's own is the two window events.
+ */
+export function openEventWhenReady(ctx, id, opts = {}) {
+  const { timeoutMs = 45000, subscribe = null, later = (fn, ms) => setTimeout(fn, ms), cancel = (t) => clearTimeout(t) } = opts;
+  return new Promise((resolve) => {
+    if (openEvent(ctx, id)) { resolve(true); return; }
+    if (!findEvent(id)) { resolve(false); return; }
+    let done = false; let off = null; let timer = null;
+    const finish = (ok) => { if (done) return; done = true; if (off) off(); if (timer !== null) cancel(timer); resolve(ok); };
+    const retry = () => { if (!done && openEvent(ctx, id)) finish(true); };
+    off = subscribe ? subscribe(retry) : (() => {
+      if (typeof window === 'undefined') return null;
+      window.addEventListener('sr:layer', retry); window.addEventListener('sr:layers-ready', retry);
+      return () => { window.removeEventListener('sr:layer', retry); window.removeEventListener('sr:layers-ready', retry); };
+    })();
+    timer = later(() => finish(false), timeoutMs);
+  });
+}
+
 let installed = false;
 /** The `event` key belongs to the selection: it leaves the address bar when the selection does. */
 export function install(ctx) {
