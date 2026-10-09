@@ -6,6 +6,7 @@
 /** Every gate CI reads, by id (spec 0044). A raised value needs a dated reason in the YAML. */
 export const BUDGETS = {
   "first_visit_bytes": 3205000,
+  "deployed_boot_js_bytes": 1868000,
   "embed_first_visit_bytes": 2257000,
   "audio_at_boot_bytes": 0,
   "og_at_boot_bytes": 0,

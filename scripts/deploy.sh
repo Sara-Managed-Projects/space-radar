@@ -18,9 +18,13 @@
 #                         and the pages scripts/build_seo.py builds (o/, sitemap.xml, 404.html,
 #                         object-pages.json)
 #                         only. The usual case.
-#   --no-minify           upload js/ and css/ as they are written. By default a deploy uploads a
-#                         copy without comments and indentation (scripts/minify_site.py); this is
-#                         the way back if that copy is ever in doubt.
+#   --strip-only          upload js/, css/ and vendor/ without their comments and indentation and
+#                         nothing more (scripts/minify_site.py's first pass: every deploy from
+#                         2026-10-06 to 2026-10-09). By default the ES modules then go through a
+#                         real minifier, esbuild at a pinned version and hash
+#                         (scripts/get_esbuild.py), with a source map beside each; this is the
+#                         way back if that pass is ever in doubt, or the binary cannot be fetched.
+#   --no-minify           upload js/ and css/ as they are written: the way back from both passes.
 #   --no-precompress      upload the code and the bundled data uncompressed and let CloudFront
 #                         compress per request, as every deploy before 2026-10-09 did. By default
 #                         they are stored at Brotli 11 with `Content-Encoding: br`, and a gzip 9
@@ -54,6 +58,7 @@ PROFILE=""
 WHAT="all"
 DRY_RUN=0
 MINIFY=1
+REAL=(--esbuild auto)
 PRECOMPRESS=1
 
 die() { echo "error: $*" >&2; exit 1; }
@@ -68,6 +73,7 @@ while [ $# -gt 0 ]; do
     --assets-only)  WHAT="assets"; shift ;;
     --app-only)     WHAT="app"; shift ;;
     --no-minify)    MINIFY=0; shift ;;
+    --strip-only)   REAL=(); shift ;;
     --no-precompress) PRECOMPRESS=0; shift ;;
     --dry-run)      DRY_RUN=1; shift ;;
     -h|--help)      usage 0 ;;
@@ -237,15 +243,32 @@ if [ "$WHAT" != "assets" ]; then
   # `node --check` reads every module of it before anything is uploaded. The service worker below
   # is stamped with the hashes of THIS copy (stamp_sw.py --overlay), because these are the bytes a
   # browser will be sent. --no-minify uploads the source instead.
+  #
+  # THE SECOND PASS (internal #515, 2026-10-09): `--esbuild auto` then minifies the ES modules, one
+  # file in and one out, no bundling and no property renaming, with a source map beside each
+  # (minify_site.py's docstring has the rules). A minifier is a program that rewrites the app, so
+  # the tree it wrote is CHECKED before a byte is uploaded: scripts/check_built_tree.mjs compares
+  # every module's imports and exports with the source's, holds the boot graph to its byte budget
+  # and runs the node tests that compute (ephemerides, SGP4, the parsers, the routes...) against
+  # the built tree. A dry run skips the tests, not the comparison. --strip-only is the way back.
   command -v node >/dev/null || die "node is not installed; scripts/build_seo.py and scripts/minify_site.py need it"
   APP="$SITE"
   OVERLAY=()
   if [ "$MINIFY" = "1" ]; then
-    python3 "$HERE/minify_site.py" --site "$SITE" --out "$BUILT/min" --node node \
-      || die "scripts/minify_site.py produced a file node refuses; nothing was uploaded (--no-minify deploys the source)"
+    python3 "$HERE/minify_site.py" --site "$SITE" --out "$BUILT/min" --node node ${REAL[@]+"${REAL[@]}"} \
+      || die "scripts/minify_site.py produced a file node refuses, or could not run the minifier; nothing was uploaded (--strip-only skips the minifier, --no-minify deploys the source)"
+    if [ ${#REAL[@]} -gt 0 ]; then
+      TESTS=(--tests); [ "$DRY_RUN" = "1" ] && TESTS=()
+      node "$HERE/check_built_tree.mjs" --built "$BUILT/min" ${TESTS[@]+"${TESTS[@]}"} \
+        || die "the minified tree is not the app (scripts/check_built_tree.mjs); nothing was uploaded (--strip-only deploys without the minifier)"
+    fi
     APP="$BUILT/min"
     OVERLAY=(--overlay "$BUILT/min")
   fi
+  # The source maps are sent from the UNcompressed tree, as JSON, beside the files they describe.
+  # Always, and with --delete: a deploy without the second pass removes the maps of the last one,
+  # because a map that describes other code is worse than none.
+  MAPS="$APP"
   # The Brotli copy of whichever tree that was (the note at the top). --strict: js/, css/ and
   # vendor/ are uploaded from the compressed copy only, so a file type the rule does not know stops
   # the deploy instead of going missing. The worker's stamp below still hashes the UNcompressed
@@ -260,7 +283,10 @@ if [ "$WHAT" != "assets" ]; then
   # and has no business being served as JavaScript.
   "${SYNC[@]}" "$APP/js"  "s3://$BUCKET/js" \
     --cache-control "no-cache" --content-type "text/javascript; charset=utf-8" \
-    --exclude "*.md" --delete ${ENC[@]+"${ENC[@]}"}
+    --exclude "*.md" --exclude "*.map" --delete ${ENC[@]+"${ENC[@]}"}
+  "${SYNC[@]}" "$MAPS/js"  "s3://$BUCKET/js" \
+    --cache-control "no-cache" --content-type "application/json; charset=utf-8" \
+    --exclude "*" --include "*.map" --delete
   # THE VENDORED LIBRARIES GO UP WITH THE APP, FROM THE SAME COPY (internal #415, 2026-10-07).
   # vendor/astronomy.js is 412 kB as its author ships it and 177 kB without its documentation (the
   # licence header stays: minify_site.py keeps any comment that names a licence or a copyright).
@@ -274,8 +300,11 @@ if [ "$WHAT" != "assets" ]; then
   # a browser's month-old copy is revalidated, not trusted.
   # The Basis transcoder's WebAssembly (vendor/basis/, spec 0056 task 1) is not JavaScript: it is
   # left out of this sync, so that --delete here does not remove it, and sent on its own below.
+  "${SYNC[@]}" "$MAPS/vendor" "s3://$BUCKET/vendor" \
+    --cache-control "no-cache" --content-type "application/json; charset=utf-8" \
+    --exclude "*" --include "*.map" --delete
   "${SYNC[@]}" "$APP/vendor" "s3://$BUCKET/vendor" \
-    --exclude "*.wasm" --exclude "*.md" \
+    --exclude "*.wasm" --exclude "*.md" --exclude "*.map" \
     --cache-control "$LONG" --content-type "text/javascript; charset=utf-8" --delete ${ENC[@]+"${ENC[@]}"}
   "${SYNC[@]}" "$APP/vendor" "s3://$BUCKET/vendor" \
     --exclude "*" --include "*.wasm" \

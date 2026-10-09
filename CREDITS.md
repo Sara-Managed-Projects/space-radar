@@ -2080,6 +2080,7 @@ is vendored in the tree.
 | PyYAML | `scripts/check_registry.py`, `tests/` — installed by `ci.yml` | MIT |
 | Playwright | `scripts/shots.mjs`, `screens.yml`, `readme-shots.yml` — from the `mcr.microsoft.com/playwright` image | Apache-2.0 |
 | `actions/checkout`, `actions/setup-python`, `actions/upload-artifact` | `.github/workflows/` | MIT |
+| esbuild 0.25.9 (Evan Wallace) | `scripts/minify_site.py --esbuild`, run by a deploy and by `screens.yml` over the ES modules; one binary fetched from the npm registry by `scripts/get_esbuild.py` and refused unless it matches the SHA-512 npm published and the SHA-256 recorded there; never in the tree and never on the site (its output is our own code, minified) | MIT |
 | FFmpeg (with libopus) | `scripts/build-audio.py` and `scripts/narrate.py`, run by hand to make `site/audio/`; not in the tree | LGPL-2.1+ / GPL builds |
 | kokoro-onnx 0.6.1, ONNX Runtime 1.23.2 | `scripts/narrate.py`, run by hand to make `site/audio/narration/`; not in the tree | MIT |
 | misaki 0.9.4 (grapheme-to-phoneme), with spaCy `en_core_web_sm` and espeak-ng as its fallback | the same; words to phonemes, at build time only | Apache-2.0; MIT; GPL-3.0-or-later (espeak-ng: a tool that is run, never linked into or shipped with the app) |

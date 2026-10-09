@@ -6,11 +6,13 @@
 #   scripts/verify-deploy.sh --skip-large         # leave out files over 1 MB (the star and galaxy bins)
 #   scripts/verify-deploy.sh js/main.js css/ui.css   # just these paths
 #   scripts/verify-deploy.sh --source             # the site was deployed with `deploy.sh --no-minify`
+#   scripts/verify-deploy.sh --strip-only         # the site was deployed with `deploy.sh --strip-only`
 #   scripts/verify-deploy.sh --any-encoding       # the site was deployed with `deploy.sh --no-precompress`
 #
-# js/ and css/ are compared with what deploy.sh uploads, which since 2026-10-06 (internal #405) is
-# scripts/minify_site.py's copy without comments, not the file as written: the same script builds
-# that copy here, in a temp folder, and those two folders are checked against it.
+# js/, css/ and vendor/ are compared with what deploy.sh uploads, which since 2026-10-06 (internal
+# #405) is scripts/minify_site.py's copy without comments, and since 2026-10-09 (internal #515) that
+# copy with its ES modules through the pinned esbuild: the same script builds that copy here, in a
+# temp folder, with the same flags, and those folders are checked against it.
 #
 # WHAT IS COMPARED IS THE DECODED BODY (internal #514, 2026-10-09). The code and the bundled data are
 # stored at Brotli 11, so the bytes on the wire are not the file; scripts/fetch_hash.mjs asks with
@@ -32,14 +34,16 @@ BASE="https://www.spaceradar.ai"
 SKIP_LARGE=0
 SOURCE=0
 ANY_ENCODING=0
+REAL=(--esbuild auto)
 PATHS=()
 for a in "$@"; do
   case "$a" in
     --base=*) BASE="${a#--base=}" ;;
     --skip-large) SKIP_LARGE=1 ;;
     --source) SOURCE=1 ;;
+    --strip-only) REAL=() ;;
     --any-encoding) ANY_ENCODING=1 ;;
-    -h|--help) sed -n '2,29p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,31p' "$0"; exit 0 ;;
     *) PATHS+=("$a") ;;
   esac
 done
@@ -56,7 +60,7 @@ trap 'rm -rf "$WORK"' EXIT
 MIN=""
 if [ "$SOURCE" = 0 ]; then
   MIN="$WORK"
-  python3 scripts/minify_site.py --out "$MIN/min" --quiet
+  python3 scripts/minify_site.py --out "$MIN/min" --quiet ${REAL[@]+"${REAL[@]}"}
 fi
 
 # Every path at once, six at a time; a cache-busting query would test the origin, not what visitors

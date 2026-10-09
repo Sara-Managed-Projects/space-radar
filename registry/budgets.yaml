@@ -36,6 +36,13 @@ budgets:
   # 148 312 B. Measured on the pull request that did it, in CI, one commit apart: 3 366 543 B before,
   # 3 052 513 B after, 139 requests both times.
   - {id: first_visit_bytes, value: 3205000, unit: bytes, since: 2026-10-08, reason: "3 052 513 B + 5 %, measured 2026-10-08 by CI (screens.yml: a phone at 390x844, CelesTrak and Launch Library blocked, uncompressed, on the tree a deploy uploads), 139 requests. It was 3 517 000 (3 366 543 B measured on the same pull request one commit earlier, with the day map still a JPEG), 4 008 000 before the second diet and 5 773 324 B before the first"}
+  # THE JAVASCRIPT A DEPLOY SERVES FOR THE BOOT (internal #515, 2026-10-09). Not a browser's number: the
+  # sum of the files of the static graph from js/main.js in the tree a deploy uploads, counted by
+  # scripts/check_built_tree.mjs in the deploy itself and in CI. MEASURED that day on main: 2 175 514 B
+  # in 115 modules after the comment stripper alone, 1 778 733 B after esbuild's `--minify` over the modules (no
+  # bundling, no property renaming). The row holds the minified number with 5 % of room, so a deploy
+  # that fell back to the stripper, or a module that grew by a library, is seen before it is served.
+  - {id: deployed_boot_js_bytes, value: 1868000, unit: bytes, since: 2026-10-09, reason: "internal #515: the static graph from js/main.js in the minified tree, 1 778 733 B in 115 modules measured 2026-10-09 by scripts/check_built_tree.mjs (2 175 514 B after the comment stripper alone), plus 5 %"}
   # THE LIGHT EMBED (internal #396, 2026-10-07): `?embed=1&at=<a world or a station>`, booted by
   # js/embedlite.js instead of main.js. Same method and same tree as the row above, for
   # `?embed=1&at=moon` and `?embed=1&at=25544` (tests/test_first_visit_bytes.mjs --embed=). Before:
