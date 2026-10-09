@@ -1,29 +1,15 @@
 # Stops whose card has a number and no `read YYYY-MM-DD` comment above it (spec 0043 design section 2,
-# internal #121). Counted on 2026-10-08: 62 of 205. They were written before the rule; each needs its page
+# internal #121). Counted on 2026-10-08: 62 of 205; 18 read again on 2026-10-09 and taken off, 44 left. They were written before the rule; each needs its page
 # read again and a comment written where it was read, and then its line deleted here. scripts/check_registry.py
 # refuses a stop that is NOT on this list and has no comment, and refuses a line here whose stop has one: the
 # list can only shrink. The words of a stop are never changed to pass (narration is rendered from them).
 stops:
-  - a-year-in-a-minute.earth
-  - a-year-in-a-minute.mercury
-  - asteroids-that-come-close.bennu
-  - asteroids-that-come-close.ceres
-  - asteroids-that-come-close.didymos
   - asteroids-that-come-close.hera
   - back-to-the-moon.far-side
   - back-to-the-moon.last
   - black-holes.m87
   - black-holes.swan
-  - comets-and-meteors.halley
-  - comets-and-meteors.stranger
-  - life-of-a-star.explosion
-  - mars-where-we-have-driven.elysium
-  - mars-where-we-have-driven.gale
-  - mars-where-we-have-driven.jezero
-  - mars-where-we-have-driven.opportunity
-  - mars-where-we-have-driven.viking-1
   - moon-landings.apollo-11
-  - moon-landings.apollo-12
   - moon-landings.apollo-17
   - moon-landings.blue-ghost-1
   - moon-landings.chandrayaan-3
@@ -32,12 +18,8 @@ stops:
   - moon-landings.lunokhod-1
   - moon-landings.surveyor-1
   - moon-landings.whole-moon
-  - outer-solar-system.enceladus
   - outer-solar-system.eris
-  - outer-solar-system.europa
   - outer-solar-system.io
-  - outer-solar-system.pluto
-  - outer-solar-system.saturn
   - outer-solar-system.sedna
   - outer-solar-system.titan
   - outer-solar-system.triton

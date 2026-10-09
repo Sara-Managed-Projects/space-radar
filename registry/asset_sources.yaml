@@ -1,0 +1,159 @@
+version: 1
+# WHERE EVERY ASSET COMES FROM (spec 0063 task 1, internal #210, #556). One row per source the site's
+# models, maps, data files, marks and sounds are taken from. scripts/check_registry.py check_asset_sources()
+# refuses a row of registry/models.yaml (models, textures, data, marks, real_models) or registry/audio.yaml
+# whose `source:` does not begin with one of a row's `match:` prefixes here, so an asset cannot arrive
+# from somewhere nobody wrote down. The long form, per class and with the sources nobody uses yet, is
+# docs/asset-sources.md in the private repository.
+#
+#   id            the source's name here
+#   name          what a person calls it
+#   match         prefixes of an asset row's `source:` that belong to this source
+#   url           the landing page
+#   licence       the licence, as a short phrase
+#   licence_read  what the page said, quoted, from the page at `licence_url`, read on `checked`; "" where
+#                 no sentence could be read that day (then `licence_note` says what stands in its place)
+#   licence_url   the page the quote is from
+#   licence_note  what holds where the quote is empty or the licence is per file
+#   account       none | free | paid   (an account needed to download)
+#   cost          none | ...
+#   checked       the day the page was read, YYYY-MM-DD; absent = not read for this file
+sources:
+  - id: nasa-3d-resources
+    name: NASA 3D Resources (github.com/nasa/NASA-3D-Resources)
+    match: ["https://github.com/nasa/NASA-3D-Resources"]
+    url: https://github.com/nasa/NASA-3D-Resources
+    licence: Free and without copyright (NASA media usage guidelines)
+    licence_read: "These assets are free and without copyright. Please read the usage guidelines."
+    licence_url: https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/README.md
+    account: none
+    cost: none
+    checked: 2026-10-09
+    licence_also: {url: "https://www.nasa.gov/nasa-brand-center/images-and-media/", quote: "NASA content – images, audio, video, and media files used in the rendition of 3-dimensional models, such as texture maps and polygon data in any format – generally are not subject to copyright in the United States."}
+
+  - id: own-work
+    name: Built here (procedural shapes and scripts of this repository)
+    match: ["site/js/scene/models.js", "scripts/"]
+    url: https://github.com/Sara-Managed-Projects/space-radar
+    licence: This repository's own licence (LICENSE)
+    licence_read: ""
+    licence_url: https://github.com/Sara-Managed-Projects/space-radar/blob/main/LICENSE
+    licence_note: "Drawn from primitives or computed by a script in this repository; the facts they rest on carry their own source in the row."
+    account: none
+    cost: none
+
+  - id: solar-system-scope
+    name: Solar System Scope textures
+    match: ["https://www.solarsystemscope.com/"]
+    url: https://www.solarsystemscope.com/textures/
+    licence: Creative Commons Attribution 4.0 International
+    licence_read: "Distributed under Attribution 4.0 International license: You may use, adapt, and share these textures for any purpose, even commercially."
+    licence_url: https://www.solarsystemscope.com/textures/
+    account: none
+    cost: none
+    checked: 2026-10-09
+
+  - id: usgs-astrogeology
+    name: USGS Astrogeology planetary maps and mosaics
+    match: ["https://planetarymaps.usgs.gov/", "https://astrogeology.usgs.gov/"]
+    url: https://astrogeology.usgs.gov/
+    licence: US Public Domain (USGS-authored)
+    licence_read: "USGS-authored or produced data and information are considered to be in the U.S. Public Domain."
+    licence_url: https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits
+    licence_note: "The same page warns that some non-USGS images on USGS sites are used with permission and marked copyrighted; each map row names the mission team and the product it is."
+    account: none
+    cost: none
+    checked: 2026-10-09
+
+  - id: wikimedia-commons
+    name: Wikimedia Commons (files made by NASA or USGS)
+    match: ["https://commons.wikimedia.org/"]
+    url: https://commons.wikimedia.org/
+    licence: Per file; each file used here is a NASA/JPL/USGS work in the US public domain
+    licence_read: "This file is in the public domain in the United States because it was solely created by NASA."
+    licence_url: https://commons.wikimedia.org/wiki/File:Enceladus_Color_Map.jpg
+    licence_note: "Read today for one file (Enceladus Color Map); each file's own page was read on the day its row says (models.yaml `source: ... (read YYYY-MM-DD)`)."
+    account: none
+    cost: none
+    checked: 2026-10-09
+
+  - id: nasa-svs-photojournal
+    name: NASA Scientific Visualization Studio and the JPL Photojournal
+    match: ["https://svs.gsfc.nasa.gov/", "https://photojournal.jpl.nasa.gov/", "https://science.nasa.gov/"]
+    url: https://svs.gsfc.nasa.gov/
+    licence: NASA media usage guidelines (generally not subject to copyright in the United States)
+    licence_read: "All of our content is in the public domain (unless otherwise noted), meaning that it is free to download, use, and redistribute for whatever purposes you see fit."
+    licence_url: https://svs.gsfc.nasa.gov/help/
+    licence_note: "SVS is the quoted page; the Photojournal and NASA Science pages fall under the same media usage guidelines (https://www.nasa.gov/nasa-brand-center/images-and-media/), read 2026-10-09, but the Photojournal and Earth Observatory pages gave no sentence of their own to quote that day."
+    account: none
+    cost: none
+    checked: 2026-10-09
+
+  - id: pds-small-bodies
+    name: NASA Planetary Data System, Small Bodies Node (UMD and PSI archives)
+    match: ["https://pds-smallbodies.astro.umd.edu/", "https://sbnarchive.psi.edu/"]
+    url: https://sbn.psi.edu/pds/shape-models/
+    licence: NASA mission data, public (PDS)
+    licence_read: ""
+    licence_url: https://sbn.psi.edu/pds/shape-models/
+    licence_note: "Neither site stated a licence in a sentence on 2026-10-09 (the page lists the shape models and no terms). The rows' own `licence:` fields (models.yaml) say what each product is: NASA mission data."
+    account: none
+    cost: none
+    checked: 2026-10-09
+
+  - id: noaa-ncei-stsci
+    name: NOAA NCEI (ETOPO) and STScI MAST (Hubble OPAL maps)
+    match: ["https://doi.org/10.25921/", "https://archive.stsci.edu/"]
+    url: https://archive.stsci.edu/hlsp/opal
+    licence: US-government data (NOAA), HLSP of a NASA archive (STScI)
+    licence_read: ""
+    licence_url: https://www.ncei.noaa.gov/access/metadata/landing-page/bin/iso?id=gov.noaa.ngdc.mgg.dem:316
+    licence_note: "NCEI's page, read 2026-10-09, says only 'NOAA and NCEI cannot provide any warranty as to the accuracy, reliability, or completeness of furnished data'; MAST's page gave no licence sentence. The rows' own `licence:` fields are what the site relies on."
+    account: none
+    cost: none
+    checked: 2026-10-09
+
+  - id: d3-celestial
+    name: d3-celestial star and constellation data (Olaf Frohn)
+    match: ["https://github.com/ofrohn/d3-celestial"]
+    url: https://github.com/ofrohn/d3-celestial
+    licence: BSD 3-clause
+    licence_read: "Copyright (c) 2015, Olaf Frohn All rights reserved. Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met"
+    licence_url: https://raw.githubusercontent.com/ofrohn/d3-celestial/master/LICENSE
+    account: none
+    cost: none
+    checked: 2026-10-09
+
+  - id: github-octicons
+    name: GitHub Octicons (the mark in the sources sheet)
+    match: ["https://github.com/primer/octicons"]
+    url: https://github.com/primer/octicons
+    licence: MIT
+    licence_read: "MIT License Copyright (c) 2026 GitHub Inc. Permission is hereby granted, free of charge, to any person obtaining a copy of this software"
+    licence_url: https://raw.githubusercontent.com/primer/octicons/main/LICENSE
+    account: none
+    cost: none
+    checked: 2026-10-09
+
+  - id: free-music-archive
+    name: Free Music Archive (John Bartmann, CC0 beds)
+    match: ["https://freemusicarchive.org/"]
+    url: https://freemusicarchive.org/music/John_Bartmann/
+    licence: CC0 1.0 Universal
+    licence_read: "The songs in this album are licensed under: CC0 1.0 Universal Please check individual tracks for their respective licensing info."
+    licence_url: https://freemusicarchive.org/music/John_Bartmann/100-ambient-atmospheric-soundtracks-straylight-drones-collection/
+    account: none
+    cost: none
+    checked: 2026-10-09
+
+  - id: freesound
+    name: Freesound (CC0 stings)
+    match: ["https://freesound.org/"]
+    url: https://freesound.org/
+    licence: Per sound; the three used are Creative Commons 0
+    licence_read: "Creative Commons 0 You can copy, modify, distribute and perform the sound, even for commercial purposes, all without the need of asking permission to the author."
+    licence_url: https://freesound.org/people/LaurenPonder/sounds/639429/
+    licence_note: "Read today for one sound; the audio rows quote the other two as read 2026-09-23. Downloading needs a free Freesound login, which is Ivan's."
+    account: free
+    cost: none
+    checked: 2026-10-09

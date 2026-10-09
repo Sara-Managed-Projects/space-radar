@@ -3439,6 +3439,65 @@ def budget_reader_text() -> str | None:
     return "\n".join(parts)
 
 
+ASSET_SOURCE_FIELDS = ("id", "name", "match", "url", "licence", "licence_read", "licence_url", "account", "cost")
+
+
+def check_asset_sources() -> None:
+    """Spec 0063 task 1 (internal #210, #556): every asset row names a registered source.
+
+    registry/asset_sources.yaml lists the sources; a row of registry/models.yaml (models, textures, data,
+    marks, real_models) or registry/audio.yaml whose `source:` begins with none of their `match:`
+    prefixes is refused. A source with no quoted licence sentence says why in `licence_note`, and one
+    with a quote carries the day it was read.
+    """
+    path = REG / "asset_sources.yaml"
+    if not path.exists():
+        fail("asset_sources.yaml", "is missing: spec 0063 task 1 wants every asset's source written down")
+        return
+    doc = load(path) or {}
+    rows = doc.get("sources")
+    if not isinstance(rows, list) or not rows:
+        fail("asset_sources.yaml", "has no `sources:` list")
+        return
+    seen = set()
+    prefixes = []
+    for r in rows:
+        where = f"asset_sources.yaml[{r.get('id') if isinstance(r, dict) else '?'}]"
+        if not isinstance(r, dict):
+            fail("asset_sources.yaml", "has a row that is not a mapping")
+            continue
+        for f in ASSET_SOURCE_FIELDS:
+            if r.get(f) in (None, [], ) or (f != "licence_read" and r.get(f) == ""):
+                fail(where, f"has no `{f}:`")
+        if r.get("id") in seen:
+            fail(where, "is listed twice")
+        seen.add(r.get("id"))
+        if r.get("account") not in ("none", "free", "paid"):
+            fail(where, "`account:` is none, free or paid")
+        if r.get("licence_read"):
+            if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(r.get("checked", ""))):
+                fail(where, "quotes a licence sentence but has no `checked: YYYY-MM-DD`: a quote carries the day it was read")
+            if not str(r.get("licence_url", "")).startswith("https://"):
+                fail(where, "quotes a licence sentence from a page that is not an https URL")
+        elif not r.get("licence_note"):
+            fail(where, "has no quoted licence sentence and no `licence_note:` saying why")
+        for m in r.get("match") or []:
+            prefixes.append(str(m))
+    models = load(REG / "models.yaml") or {}
+    audio = load(REG / "audio.yaml") or {}
+    groups = [(f"models.yaml[{k}]", models.get(k) or []) for k in ("models", "textures", "data", "marks", "real_models")]
+    groups.append(("audio.yaml[audio]", audio.get("audio") or []))
+    for label, items in groups:
+        for it in items:
+            if not isinstance(it, dict):
+                continue
+            src = str(it.get("source") or "").strip()
+            if not src:
+                continue  # a missing source is another check's refusal
+            if not any(src.startswith(p) for p in prefixes):
+                fail(f"{label}[{it.get('id')}]", f"has a `source:` ({src[:70]!r}) that no row of registry/asset_sources.yaml matches: write the source down there first (spec 0063 task 1)")
+
+
 def check_budgets() -> list:
     path = REG / "budgets.yaml"
     if not path.exists():
@@ -4860,6 +4919,7 @@ def main() -> int:
     check_oddities(oddities_doc, world_ids, sites)
     systems = check_systems()
     generated_systems = check_generated_systems()
+    check_asset_sources()
     budgets = check_budgets()
     audio = check_audio()
     check_autopilot({l.get("id") for l in layers})

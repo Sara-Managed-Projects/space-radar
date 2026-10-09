@@ -1057,6 +1057,8 @@ tours:
         distance_km: 900
         time: daylight
         chapter: "Chapter one: the race, 1966 to 1972"
+        # read 2026-10-09, https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-099C:
+        # "visited the Surveyor 3 spacecraft, bringing back about 10 kg of parts" (the 3 and the 10).
         card:
           title: "A visit to an older robot"
           # NSSDCA 1969-099C: on the second moonwalk they "visited the Surveyor 3 spacecraft,
@@ -1273,6 +1275,8 @@ tours:
         key_light_deg: 90
         frame_radii: 12
         chapter: "Chapter one: Jupiter's moons"
+        # read 2026-10-09, https://science.nasa.gov/mission/europa-clipper/ and https://www.esa.int/Science_Exploration/Space_Science/Juice/Juice_factsheet:
+        # "reach Jupiter in April 2030 ... 49 close flybys of Europa" (NASA); "It will reach Jupiter in July 2031" (ESA) (the 2030, the 49 and the 2031).
         card:
           title: "Europa, and the two ships on their way"
           # Twice Earth's ocean: NASA Science, Europa, read 2026-09-22, "holding twice as much
@@ -1296,6 +1300,8 @@ tours:
         # Lit from the front (public #443): at the default 125 degrees a planet is a fifth lit, a dark disc.
         key_light_deg: 60
         chapter: "Chapter two: the ringed planet"
+        # read 2026-10-09, https://science.nasa.gov/saturn/facts/:
+        # "the mission ended Sept.15 2017" (the 2017).
         card:
           title: "Saturn, and a ring ten metres thick"
           # Wikipedia, Rings of Saturn, read 2026-09-22: they "extend from 7,000 km (4,300 mi) to
@@ -1350,6 +1356,8 @@ tours:
         # perspective is doing less of the lying: Saturn really is 231 times the radius.
         frame_radii: 12
         chapter: "Chapter two: the ringed planet"
+        # read 2026-10-09, https://science.nasa.gov/saturn/moons/enceladus/:
+        # "In 2005 NASA's Cassini spacecraft discovered that icy water particles and gas" (the 2005).
         card:
           title: "Enceladus, spraying its ocean into space"
           # NASA Science, Enceladus, read 2026-09-22: "In 2005, NASA's Cassini spacecraft
@@ -1401,6 +1409,8 @@ tours:
         frame_radii: 9
         key_light_deg: 60
         chapter: "Chapter four: past Neptune"
+        # read 2026-10-09, https://science.nasa.gov/mission/new-horizons/:
+        # "flying by the dwarf planet and its moons on July 14 2015" and "officially completed at 21:48 UT on Oct. 25 2016" (the 14, the 2015 and the 2016).
         card:
           title: "Pluto and Charon, going round each other"
           # Wikipedia, New Horizons, read 2026-09-22: launch "January 19, 2006", closest approach
@@ -1548,6 +1558,8 @@ tours:
         distance_km: 2500000
         rate: 525600
         drift_deg: 0
+        # read 2026-10-09, https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html:
+        # "Revolution period (days) 27.3217" (the 27.3 on the card).
         card:
           title: "The Earth, and the Moon going round it"
           body: >-
@@ -1563,6 +1575,8 @@ tours:
         behind: sun
         rate: 525600
         drift_deg: 0
+        # read 2026-10-09, https://nssdc.gsfc.nasa.gov/planetary/factsheet/mercuryfact.html:
+        # "Sidereal orbit period (days) 87.969" and "Mean orbital velocity (km/s) 47.36" (the 88 and the 47).
         card:
           title: "Mercury, four laps to our one"
           body: >-
@@ -2817,6 +2831,8 @@ tours:
         distance_km: 900
         time: daylight
         chapter: "Where we landed"
+        # read 2026-10-09, https://science.nasa.gov/mission/viking-1/:
+        # "until July 20, 1976, when NASA's Viking 1 lander touched down safely" (the 1 and the 1976).
         card:
           title: "The first to stay"
           body: >-
@@ -2829,6 +2845,8 @@ tours:
         distance_km: 900
         time: daylight
         chapter: "Where we landed"
+        # read 2026-10-09, https://science.nasa.gov/mission/mars-exploration-rovers-spirit-and-opportunity/:
+        # "Opportunity last communicated with Earth on June 10 2018 as a planet-wide dust storm" (the 2018).
         card:
           title: "Built for ninety days"
           body: >-
@@ -2841,6 +2859,8 @@ tours:
         distance_km: 900
         time: daylight
         chapter: "Where we landed"
+        # read 2026-10-09, https://science.nasa.gov/mission/msl-curiosity/:
+        # "Launch / Landing Nov. 26 2011 / Aug. 6 2012" (the 2012).
         card:
           title: "Curiosity, climbing a mountain"
           body: >-
@@ -2853,6 +2873,8 @@ tours:
         distance_km: 900
         time: daylight
         chapter: "Where we landed"
+        # read 2026-10-09, https://science.nasa.gov/mission/insight/:
+        # "End of Mission: Dec. 15 2022" (the 2022).
         card:
           title: "InSight, listening"
           body: >-
@@ -2865,6 +2887,8 @@ tours:
         distance_km: 900
         time: daylight
         chapter: "Where we landed"
+        # read 2026-10-09, https://science.nasa.gov/mission/mars-2020-perseverance/:
+        # "Launch / Landing July 30 2020 / Feb. 18 2021" (the 2021).
         card:
           title: "Perseverance, and a helicopter"
           body: >-
@@ -3222,6 +3246,8 @@ tours:
         drift_deg: 4
         drift_rate_deg_s: 0.3
         chapter: "The end of a heavy star"
+        # read 2026-10-09, https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-1/:
+        # "In 1054 Chinese astronomers took notice of a guest star" (the 1054).
         card:
           title: "A star that blew up"
           body: >-
@@ -3692,6 +3718,8 @@ tours:
         needs_layer: far-bodies
         distance_km: 600000
         chapter: "The belt"
+        # read 2026-10-09, https://science.nasa.gov/dwarf-planets/ceres/facts/:
+        # "When NASA's Dawn arrived in 2015 Ceres became the first dwarf planet to receive a visit" (the 2015).
         card:
           title: "Ceres, the largest"
           body: >-
@@ -3721,6 +3749,8 @@ tours:
         needs_layer: asteroids
         distance_km: 400000
         chapter: "Moving one"
+        # read 2026-10-09, https://science.nasa.gov/mission/dart/:
+        # "On Sept. 26 2022 DART impacted the asteroid moonlet Dimorphos" (the 2022).
         card:
           title: "The asteroid we moved"
           body: >-
@@ -3747,6 +3777,8 @@ tours:
         needs_layer: asteroids
         distance_km: 400000
         chapter: "Moving one"
+        # read 2026-10-09, https://science.nasa.gov/solar-system/asteroids/101955-bennu/:
+        # "deliver it to Earth on Sept. 24 2023" (the 2023).
         card:
           title: "Bennu, and a handful brought home"
           body: >-
@@ -3958,6 +3990,8 @@ tours:
         drift_deg: 0
         names: true
         chapter: "Comets"
+        # read 2026-10-09, https://science.nasa.gov/solar-system/comets/1p-halley/:
+        # "It will return in 2061 on its regular 76-year journey around the Sun", and 1986 as the year of the Giotto and international encounters (the 1986 and the 2061).
         card:
           title: "Halley's comet, where it is today"
           body: >-
@@ -3984,6 +4018,8 @@ tours:
         needs_layer: far-bodies
         distance_km: 3000000
         chapter: "Comets"
+        # read 2026-10-09, https://science.nasa.gov/solar-system/comets/2i-borisov/:
+        # "discovered by Crimean amateur astronomer Gennady Borisov on Aug. 30, 2019" (the 2019).
         card:
           title: "A comet from another star"
           body: >-
