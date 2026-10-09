@@ -89,10 +89,15 @@ export function embedUrl(st, base = 'https://www.spaceradar.ai/') {
   return `${rootOf(base)}?${['embed=1', ...pairs(st)].join('&')}`;
 }
 
-/** The same view in the whole app, for "Open in Space Radar". */
-export function fullUrl(st, base = 'https://www.spaceradar.ai/') {
+/**
+ * The same view in the whole app, for "Open in Space Radar". `opts.from` tags the way in
+ * (`https://www.spaceradar.ai/?from=embed#at=sat-25544`): a plain query the app reads once and takes
+ * off the address bar (ui/urlstate.js dropFrom). A normal followed link: no tracker, no cookie.
+ */
+export function fullUrl(st, base = 'https://www.spaceradar.ai/', opts = {}) {
   const keys = pairs(st);
-  return keys.length ? `${rootOf(base)}#${keys.join('&')}` : rootOf(base);
+  const root = rootOf(base) + (opts.from ? `?from=${encodeURIComponent(opts.from)}` : '');
+  return keys.length ? `${root}#${keys.join('&')}` : root;
 }
 
 const attr = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -185,7 +190,7 @@ export async function installEmbed(search = typeof location !== 'undefined' ? lo
       const trip = ctx && ctx.trip && ctx.trip.state;
       if (trip && trip.phase !== 'idle' && trip.tourId) { st.trip = trip.tourId; delete st.at; }
       else if (sel && sel.id) { st.at = sel.id; delete st.trip; delete st.stop; }
-      open.href = fullUrl(st, base);
+      open.href = fullUrl(st, base, { from: 'embed' });
     };
     paint();
     open.addEventListener('pointerdown', paint);

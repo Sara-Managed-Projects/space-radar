@@ -30,6 +30,8 @@ from pathlib import Path
 
 import yaml
 
+from seo_footer import sitelinks
+
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 import count_facts  # noqa: E402  (the counts a press kit quotes are the README's: one script)
@@ -173,6 +175,7 @@ def build(out: Path, host: str) -> Path:
         "marks": "".join(marks),
         "licence": e(licence_name()),
         "built": datetime.date.today().isoformat(),
+        "sitelinks": sitelinks("../"),
     })
     (press / "index.html").write_text(page, encoding="utf-8")
     return press

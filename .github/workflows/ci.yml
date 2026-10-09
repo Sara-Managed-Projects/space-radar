@@ -237,6 +237,18 @@ jobs:
       # the links in README, CONTRIBUTING, ROADMAP, nothing internal in a public file, the preview image.
       - name: "Community files: issue forms, citation, roadmap links, social preview, nothing internal"
         run: python3 tests/test_community_files.py
+      # Growth: what a search engine reads beyond the object pages. The structured data is parsed back
+      # out of the pages (and each validator is shown to refuse a broken one); the footer, the
+      # sitemap's own lastmod per page and the IndexNow key and ping are held; the /embed/ generator
+      # is run for every object and trip against the app's own Embed snippet; ?from= is read once.
+      - name: "Structured data: the home page's WebApplication, Organization and sameAs, every trip's LearningResource, no FAQPage or SearchAction"
+        run: python3 tests/test_structured_data.py
+      - name: "The footer on every built page, lastmod per page from git, the IndexNow key file and a ping that cannot fail a deploy"
+        run: python3 tests/test_seo_growth.py
+      - name: "The embed page: the generator writes the app's own snippet for every object and trip, and the list of embedders starts empty and honest"
+        run: python3 tests/test_seo_embed.py
+      - name: "?from=ig is harmless: dropped from the address bar, read into nothing, in no share link or embed address"
+        run: node tests/test_from_tag.mjs
 
   contract:
     runs-on: ubuntu-latest

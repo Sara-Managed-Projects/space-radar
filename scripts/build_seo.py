@@ -25,8 +25,9 @@ prefix every local check uses); canonical, og:url and JSON-LD are absolute.
 and the origin is S3's REST endpoint, which has no index documents: `/o/<slug>/` would answer 403
 (spec 0032 design §4, the trip pages' reason).
 
-LASTMOD is the date of the commit the build is made from (`git log -1`), or the build date outside
-git: every page is rebuilt from that commit's records, so that is when it can last have changed.
+LASTMOD is per page: the date of the last change of the file that produces it (scripts/seo_dates.py,
+`git log -1 --format=%cs`), so a crawler can tell which pages moved. A page with no date of its own
+gets the date of the commit the build is made from (`git log -1`), or the build date outside git.
 """
 
 from __future__ import annotations
@@ -40,6 +41,11 @@ import struct
 import subprocess
 import sys
 from pathlib import Path
+
+import seo_dates
+import seo_embed
+import indexnow
+from seo_footer import sitelinks
 
 ROOT = Path(__file__).resolve().parent.parent
 SITE = ROOT / "site"
@@ -164,7 +170,7 @@ def object_page(p: dict, host: str, template: str, style: str) -> str:
     return fill(template, {
         "title": esc(p["title"]), "description": esc(p["description"]), "url": esc(url), "name": esc(p["name"]),
         "image": esc(image), "image_w": str(image_w), "image_h": str(image_h), "image_alt": esc(image_alt),
-        "icon": ICON, "style": style,
+        "icon": ICON, "style": style, "sitelinks": sitelinks("../"),
         "jsonld": json.dumps(ld, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/"),
         "colour": esc(p.get("colour") or "#9aa4b2"), "klass": esc(p["klassLabel"]), "lead": esc(p["lead"]),
         "why": f'<p>{esc(p["why"])}</p>\n' if p.get("why") else "", "id": p["id"],
@@ -177,23 +183,42 @@ def object_page(p: dict, host: str, template: str, style: str) -> str:
 
 
 def lastmod() -> str:
-    run = subprocess.run(["git", "log", "-1", "--format=%cs"], cwd=ROOT, capture_output=True, text=True)
-    date = run.stdout.strip() if run.returncode == 0 else ""
-    return date if re.match(r"^\d{4}-\d{2}-\d{2}$", date) else dt.datetime.now(dt.timezone.utc).date().isoformat()
+    """The date of the commit the build is made from: the fallback for a page with no date of its own."""
+    return seo_dates.fallback(ROOT)
 
 
-def sitemap(host: str, slugs: list[str], press: bool = False) -> str:
-    date = lastmod()
+def sitemap(host: str, slugs: list[str], press: bool = False, dates: dict[str, str] | None = None,
+            extra: list[str] | None = None) -> str:
+    """`dates` maps a URL to its lastmod (scripts/seo_dates.py: the last change of the page's own
+    source); a URL it does not name gets the build commit's date. `extra` are further pages by path
+    from the root (the embed gallery), already built into the same tree."""
+    default = lastmod()
+    dates = dates or {}
     # The press page (scripts/build_press.py) had no way in for a crawler (internal #398). It is
     # named here by its full address, as the origin serves no index documents below the root, and
     # only when it has been built into the same tree: scripts/deploy.sh builds it first, and
     # check_seo.py refuses a sitemap that names a page which is not there.
-    urls = [f"{host}/"] + ([f"{host}/press/index.html"] if press else []) + [f"{host}/t/{f.name}" for f in sorted((SITE / "t").glob("*.html"))] \
+    urls = [f"{host}/"] + ([f"{host}/press/index.html"] if press else []) + [f"{host}/{x}" for x in (extra or [])] \
+        + [f"{host}/t/{f.name}" for f in sorted((SITE / "t").glob("*.html"))] \
         + [f"{host}/o/{s}.html" for s in sorted(slugs)]
-    rows = "\n".join(f"<url><loc>{esc(u)}</loc><lastmod>{date}</lastmod></url>" for u in urls)
+    rows = "\n".join(f"<url><loc>{esc(u)}</loc><lastmod>{dates.get(u, default)}</lastmod></url>" for u in urls)
     return ('<?xml version="1.0" encoding="UTF-8"?>\n'
             '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
             f"{rows}\n</urlset>\n")
+
+
+def page_dates(host: str, pages: list[dict]) -> dict[str, str]:
+    """{url: lastmod}: the home page, every trip's own row, every object page's group of source files,
+    and the press page. See scripts/seo_dates.py for what each date is the date of."""
+    default = lastmod()
+    out = {f"{host}/": seo_dates.page_date(seo_dates.HOME_SOURCES, ROOT, default),
+           f"{host}/press/index.html": seo_dates.page_date(["templates/press.html", "scripts/build_press.py"], ROOT, default)}
+    trips = [f.stem for f in sorted((SITE / "t").glob("*.html"))]
+    for trip, date in seo_dates.trip_dates(trips, ROOT, default).items():
+        out[f"{host}/t/{trip}.html"] = date
+    for slug, date in seo_dates.object_dates({p["slug"]: p["group"] for p in pages}, ROOT, default).items():
+        out[f"{host}/o/{slug}.html"] = date
+    return out
 
 
 def build(out: Path, host: str) -> int:
@@ -210,9 +235,17 @@ def build(out: Path, host: str) -> int:
             raise SystemExit(f"build_seo: two pages want o/{p['slug']}.html")
         slugs.append(p["slug"])
         (o / f"{p['slug']}.html").write_text(object_page(p, host, template, style), encoding="utf-8")
-    nf = fill((TEMPLATES / "404.html").read_text(encoding="utf-8"), {"icon": ICON, "style": style})
+    nf = fill((TEMPLATES / "404.html").read_text(encoding="utf-8"), {"icon": ICON, "style": style, "sitelinks": sitelinks("/")})
     (out / "404.html").write_text(nf, encoding="utf-8")
-    (out / "sitemap.xml").write_text(sitemap(host, slugs, press=(out / "press" / "index.html").is_file()), encoding="utf-8")
+    # The embed gallery and its generator (scripts/seo_embed.py), and the IndexNow key file
+    # (scripts/indexnow.py: public by design, written beside the pages so a deploy ships it).
+    seo_embed.build(out, host, pages, style, ICON)
+    indexnow.write_key(out)
+    dates = page_dates(host, pages)
+    dates[f"{host}/embed/index.html"] = seo_dates.page_date(
+        ["templates/embed.html", "templates/embed/generate.js", "scripts/seo_embed.py", "registry/embedders.yaml"], ROOT, lastmod())
+    (out / "sitemap.xml").write_text(sitemap(host, slugs, press=(out / "press" / "index.html").is_file(), dates=dates,
+                                             extra=["embed/index.html"]), encoding="utf-8")
     # The share sheet links an object to its page (ui/sharesheet.js objectPageUrl), so that a link
     # preview shows the object's own title and picture. Which records have a page, and under which
     # slug, is decided here and nowhere else; the sheet fetches this when it opens and never guesses.
@@ -240,7 +273,7 @@ def main(argv: list[str]) -> int:
         print("build_seo: --out must be outside site/; the built pages are not kept in git", file=sys.stderr)
         return 2
     n = build(out, host)
-    print(f"built {n} object pages, 404.html, sitemap.xml and object-pages.json into {out}")
+    print(f"built {n} object pages, the embed page, 404.html, sitemap.xml and object-pages.json into {out}")
     return 0
 
 
