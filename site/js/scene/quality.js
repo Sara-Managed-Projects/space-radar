@@ -60,6 +60,112 @@ export function createFrameLatch(opts = {}) {
   return { push, median, force, get latched() { return latched; } };
 }
 
+// --- the idle frame rate (internal #520, 2026-10-09) ---------------------------------------------
+//
+// The loop in main.js drew every animation frame, sixty a second, whatever was on screen. With the
+// page left open on the Earth at the live clock, nothing selected and nobody touching it, the dots
+// are recomputed ten times a second and the Earth turns four thousandths of a degree in one: five
+// frames of every six were the same picture, drawn again. So when NOTHING IS MOVING the loop draws
+// at IDLE_FRAME_MS (twenty a second: two frames per glyph tick, so the tick keeps its tenth of a
+// second exactly) and goes back to every frame the moment something does.
+//
+// IT IS A CAP, NOT A STOP, and that is the safety: the picture is never frozen, so the worst a
+// motion this file has not heard of can do is run at twenty frames a second until the next thing
+// wakes the loop. And "nothing is moving" is deliberately narrow. movingReasons() names every
+// state in which the cap must not apply; the cap is for the one state left over, the home view at
+// rest. A film (render mode) is never capped and neither is an automated browser, so a probe that
+// counts frames or waits two of them measures what it always did (`?idle=1` asks for the cap
+// there, `?idle=0` switches it off for anyone).
+
+/** Twenty frames a second while idle: two per glyph tick (100 ms at the live clock). */
+export const IDLE_FRAME_MS = 50;
+/** How long everything must have been still before the cap applies. */
+export const IDLE_AFTER_MS = 2000;
+
+/**
+ * Why the picture is changing right now, as names. Empty means nothing is, and only then may the
+ * loop draw less often. Pure: main.js fills `s` at the end of every drawn frame.
+ *
+ * Every field is a reason NOT to idle, and tests/test_idle.mjs holds each one on its own:
+ *   film        tools/render-trip.mjs is stepping the clock; its frames are its own
+ *   clock       anything but the live clock at rate 1: a scrub, a fast clock, a paused instant
+ *   trip        a trip is running (a flight, a hold, its captions)
+ *   autopilot   the reel has the screen
+ *   sky         the sky from the ground is up
+ *   stage       any stage but the Earth's: the Sun close up, a star system, a drawn world, the ladder
+ *   climb       a climb between stages, or the opening, is running
+ *   selection   something is selected: its pulse, its brackets, its orbit line, a model fading in
+ *   camera      the camera's matrices are not last frame's (a drag, a flight, inertia, a zoom, a resize)
+ *   layer       a layer that animates by itself is on: the aurora, lightning, the wind, an overlay
+ *   loading     the first visit is not over, or the GPU has a texture or a geometry it did not have
+ *               last frame (a map landing with its cross-fade, a model, a new layer)
+ * @returns {string[]}
+ */
+export function movingReasons(s = {}) {
+  const why = [];
+  if (s.film) why.push('film');
+  if (s.clockMode !== 'live' || s.clockRate !== 1) why.push('clock');
+  if (s.trip) why.push('trip');
+  if (s.autopilot) why.push('autopilot');
+  if (s.sky) why.push('sky');
+  if (s.stage !== 'earth') why.push('stage');
+  if (s.climb) why.push('climb');
+  if (s.selected) why.push('selection');
+  if (s.cameraMoved) why.push('camera');
+  if (s.animatedLayer) why.push('layer');
+  if (s.loading) why.push('loading');
+  return why;
+}
+
+/** Who gets the cap at all. Pure: `{search, webdriver, film}` in, a boolean out. */
+export function idleCapWanted(d = {}) {
+  const asked = /[?&]idle=([01])(?:&|$)/.exec(d.search || '');
+  if (d.film) return false;
+  if (asked) return asked[1] === '1';
+  // An automated browser is a probe or a screenshot: it gets every frame unless it asks.
+  return !d.webdriver;
+}
+
+/**
+ * The gate the loop asks at the top of every animation frame.
+ *   skip(now)            true: do nothing this frame (the cap is on and the last drawn frame is recent)
+ *   capped(now)          the cap is on at this instant (the loop then keeps this frame's length
+ *                        away from the frame latch: fifty milliseconds by choice is not a slow device)
+ *   drew(now, reasons)   after a drawn frame, with movingReasons(): any reason restarts the wait
+ *   wake(now)            something the loop cannot see coming: a key, a pointer, a resize
+ */
+export function createIdleGate(opts = {}) {
+  const frameMs = opts.frameMs || IDLE_FRAME_MS;
+  const afterMs = opts.afterMs || IDLE_AFTER_MS;
+  const enabled = opts.enabled !== false;
+  let lastMoving = null;
+  let lastDrawn = -Infinity;
+  let lastReasons = ['start'];
+  const stats = { drawn: 0, skipped: 0, capped: 0 };
+  const capped = (now) => enabled && lastMoving !== null && now - lastMoving >= afterMs;
+  return {
+    capped,
+    skip(now) {
+      // Two milliseconds of give: a display's frames are 16.67 ms apart, and the third one after a
+      // drawn frame arrives at 50.0 give or take the timer.
+      if (!capped(now) || now - lastDrawn >= frameMs - 2) return false;
+      stats.skipped += 1;
+      return true;
+    },
+    drew(now, reasons) {
+      if (capped(now)) stats.capped += 1;
+      stats.drawn += 1;
+      lastDrawn = now;
+      lastReasons = reasons;
+      if (lastMoving === null || reasons.length) lastMoving = now;
+    },
+    wake(now) { lastMoving = now; },
+    get enabled() { return enabled; },
+    /** For probes and tests: counts since the page began, and why the last drawn frame was not idle. */
+    state() { return { ...stats, enabled, reasons: lastReasons.slice() }; },
+  };
+}
+
 const SLOW = new Set(['slow-2g', '2g', '3g']);
 
 export function shouldSaveData(connection) {
