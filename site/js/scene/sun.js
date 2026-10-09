@@ -44,7 +44,7 @@
 // The card says all four (copy/en.js drawing.worldSun; the spots' own line when a list is drawn).
 
 import * as THREE from '../../vendor/three.module.min.js';
-import { MAX_SPOTS, spotDirection, spotRadiusRad, regionsFresh, CARRINGTON_SYNODIC_DAYS } from '../data/sunregions.js';
+import { MAX_SPOTS, spotDirection, spotRadiusRad, splitRegion, regionsFresh, CARRINGTON_SYNODIC_DAYS } from '../data/sunregions.js';
 
 /** The IAU's nominal solar effective temperature, kelvin (2015 Resolution B3). */
 export const T_EFF = 5772;
@@ -347,6 +347,9 @@ export function createSunDetail(opts = {}) {
   let latched = false;
   let regions = [];
   let drawn = 0;
+  let groups = 0;
+  let pairs = 0;
+  const _part = { observedMs: 0, latDeg: 0, eastDeg: 0 };
   let on = false;
   const _q = new THREE.Quaternion();
   const _v = new THREE.Vector3();
@@ -400,7 +403,7 @@ export function createSunDetail(opts = {}) {
       c.uOpacity.value = Math.min(1, Math.max(0, (share - SUN_DETAIL_AT * 0.8) / (SUN_DETAIL_AT * 0.8)));
 
       // Today's groups, counted from the meridian that faces the Earth, in the Sun's own axes.
-      drawn = 0;
+      drawn = 0; groups = 0; pairs = 0;
       if (regions.length && earthWorld && regionsFresh(regions[0].observedMs, tMs)) {
         _v.copy(earthWorld);
         mesh.worldToLocal(_v);
@@ -408,10 +411,16 @@ export function createSunDetail(opts = {}) {
           _v.normalize();
           _e[0] = _v.x; _e[1] = _v.y; _e[2] = _v.z;
           for (const region of regions) {
-            if (drawn >= MAX_SPOTS) break;
-            if (!spotDirection(region, _e, tMs, _s)) break;
-            spots[drawn].set(_s[0], _s[1], _s[2], spotRadiusRad(region.areaMsh));
-            drawn += 1;
+            const parts = splitRegion(region);
+            if (drawn + parts.length > MAX_SPOTS) break; // a pair is never drawn as half of one
+            for (const part of parts) {
+              _part.observedMs = region.observedMs; _part.latDeg = part.latDeg; _part.eastDeg = part.eastDeg;
+              if (!spotDirection(_part, _e, tMs, _s)) break;
+              spots[drawn].set(_s[0], _s[1], _s[2], spotRadiusRad(part.areaMsh));
+              drawn += 1;
+            }
+            groups += 1;
+            if (parts.length === 2) pairs += 1;
           }
         }
       }
@@ -422,7 +431,7 @@ export function createSunDetail(opts = {}) {
     /** The frame latch tripped: back to the flat disc and the round glow, for good. */
     latch() { latched = true; wear(false); },
     state() {
-      return { on, latched, grain: material.uniforms.uGrain.value, spots: drawn, regions: regions.length,
+      return { on, latched, grain: material.uniforms.uGrain.value, spots: groups, circles: drawn, pairs, regions: regions.length,
         observedMs: regions.length ? regions[0].observedMs : null, corona: corona.material.uniforms.uOpacity.value };
     },
     dispose() {
