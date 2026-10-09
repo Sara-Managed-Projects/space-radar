@@ -30,6 +30,8 @@ from pathlib import Path
 
 import yaml
 
+from seo_footer import sitelinks
+
 ROOT = Path(__file__).resolve().parent.parent
 TEMPLATES = ROOT / "templates"
 SHOTS = ROOT / "assets" / "screenshots"
@@ -120,6 +122,7 @@ def build(out: Path, host: str) -> Path:
         "marks": "".join(marks),
         "licence": e(licence_name()),
         "built": datetime.date.today().isoformat(),
+        "sitelinks": sitelinks("../"),
     })
     (press / "index.html").write_text(page, encoding="utf-8")
     return press

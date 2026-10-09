@@ -17,6 +17,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 import build_press  # noqa: E402
+import seo_footer  # noqa: E402
 
 problems = []
 
@@ -34,7 +35,7 @@ with tempfile.TemporaryDirectory() as tmp:
     check(bool(page), "press/index.html was not written")
     n = build_press.counts()
     check(n["layers"] > 10 and n["trips"] > 5 and n["sources"] > 10, f"the registry's counts look wrong: {n}")
-    facts = re.findall(r"<li>(.*?)</li>", page, re.S)
+    facts = re.findall(r"<li>(.*?)</li>", page.split("<footer>")[0], re.S)  # the footer's links are not facts
     check(len(facts) == 5, f"five facts, not {len(facts)}")
     text = " ".join(facts)
     for key in ("layers", "trips", "sources"):
@@ -46,7 +47,12 @@ with tempfile.TemporaryDirectory() as tmp:
     for name, _label, _k in build_press.MARKS:
         svg = (press / name).read_text(encoding="utf-8") if (press / name).is_file() else ""
         check(svg.startswith("<svg ") and "<title>Space Radar</title>" in svg and "<text" not in svg and "<script" not in svg, f"{name} is a plain titled SVG with no text element (the wordmark is outlines) and no script")
+    # The shared footer (templates/sitelinks.html) links the site's other pages and our accounts; those
+    # pages are built by other builders into the same tree, and scripts/check_seo.py holds the footer.
+    footer = set(re.findall(r'href="([^"#]+)"', seo_footer.sitelinks("../")))
     for href in re.findall(r'(?:href|src)="([^"#]+)"', page):
+        if href in footer:
+            continue
         if href.startswith(("http://", "https://")):
             check(href.startswith(("https://www.spaceradar.ai/", "https://github.com/Sara-Managed-Projects/space-radar")), f"an outside link: {href}")
             continue
