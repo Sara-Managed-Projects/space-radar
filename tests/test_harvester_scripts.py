@@ -340,11 +340,17 @@ def test_site_deploy_keeps_snapshots(tmp: Path) -> int:
     proc = fake.run("scripts/deploy.sh", "--bucket", "example-bucket", "--assets-only", "--dry-run")
     if proc.returncode != 0:
         return fail("deploy.sh --dry-run exited non-zero", proc)
-    data = [c for c in fake.calls() if c.startswith("s3 sync") and "s3://example-bucket/data" in c]
-    if len(data) != 1:
-        return fail(f"expected one data/ sync, saw {data}", proc)
-    if "--delete" in data[0] and "--exclude v1/*" not in data[0]:
-        return fail("deploy.sh syncs data/ with --delete and would remove the harvester's data/v1/*", proc)
+    # Two since 2026-10-09 (internal #514): the pictures as they are, the catalogues stored as Brotli.
+    # EVERY one that deletes must leave v1/ alone, and where a sync names its files with --include,
+    # the v1 filter has to come after them: a later filter wins.
+    data = [c for c in fake.calls() if c.startswith("s3 sync") and " s3://example-bucket/data " in c]
+    if len(data) not in (1, 2):
+        return fail(f"expected one or two data/ syncs, saw {data}", proc)
+    for call in data:
+        if "--delete" in call and "--exclude v1/*" not in call:
+            return fail("deploy.sh syncs data/ with --delete and would remove the harvester's data/v1/*", proc)
+        if "--include" in call and call.rindex("--exclude v1/*") < call.rindex("--include"):
+            return fail("a data/ sync puts an --include after `--exclude v1/*`, which puts the snapshots back in reach of --delete", proc)
     print("PASS: deploy.sh's data/ sync excludes v1/*, so a site deploy keeps the snapshots")
     return 0
 

@@ -744,6 +744,8 @@ jobs:
         run: python3 tests/test_release_zip.py
       - name: "the stripped tree: the scanner on its hard cases, every module through it"
         run: python3 tests/test_minify.py
+      - name: "stored at Brotli 11: one rule in deploy.sh, verify-deploy.sh and the edge function; copies decode byte for byte (internal #514)"
+        run: node tests/test_precompress.mjs
       - name: "the notifier: digests, showers, subscriptions and tokens"
         run: python3 tests/test_notify.py
       # Merged the same day (public #487) and, again, in no workflow: the step below is what found them.

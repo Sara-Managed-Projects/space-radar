@@ -21,6 +21,10 @@
 #   --no-minify           upload js/ and css/ as they are written. By default a deploy uploads a
 #                         copy without comments and indentation (scripts/minify_site.py); this is
 #                         the way back if that copy is ever in doubt.
+#   --no-precompress      upload the code and the bundled data uncompressed and let CloudFront
+#                         compress per request, as every deploy before 2026-10-09 did. By default
+#                         they are stored at Brotli 11 with `Content-Encoding: br`, and a gzip 9
+#                         copy goes under _gz/ (scripts/precompress.mjs; internal #514).
 #   --dry-run             print what would be uploaded and change nothing.
 #
 # WHY THIS IS A SCRIPT AND NOT ONE `aws s3 sync`
@@ -50,6 +54,7 @@ PROFILE=""
 WHAT="all"
 DRY_RUN=0
 MINIFY=1
+PRECOMPRESS=1
 
 die() { echo "error: $*" >&2; exit 1; }
 usage() { sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//'; exit "${1:-0}"; }
@@ -63,6 +68,7 @@ while [ $# -gt 0 ]; do
     --assets-only)  WHAT="assets"; shift ;;
     --app-only)     WHAT="app"; shift ;;
     --no-minify)    MINIFY=0; shift ;;
+    --no-precompress) PRECOMPRESS=0; shift ;;
     --dry-run)      DRY_RUN=1; shift ;;
     -h|--help)      usage 0 ;;
     *)              die "unknown option: $1 (try --help)" ;;
@@ -98,6 +104,42 @@ fi
 echo "==> $SITE  ->  s3://$BUCKET  ($REGION)"
 [ "$DRY_RUN" = "1" ] && echo "    (dry run)"
 
+HERE="$(dirname "$0")"
+BUILT="$(mktemp -d)"
+trap 'rm -rf "$BUILT"' EXIT
+
+# STORED COMPRESSED (internal #514, 2026-10-09). CloudFront compresses per request at about Brotli 5,
+# sent both halves of three.js to a Brotli browser as gzip, and does not compress an octet-stream at
+# all (stars.bin and every model went out whole: MEASURED on the live site). So the code, the models and the bundled data are
+# compressed here, once, at Brotli 11, and stored with `Content-Encoding: br`: CloudFront sends an
+# object that already has an encoding exactly as it is stored. WHICH files is one rule,
+# scripts/precompress.mjs `precompressed()`; the filters below follow it and
+# tests/test_precompress.mjs holds them to it.
+#   - A gzip 9 copy of each goes under _gz/<same path>. It is what a client WITHOUT Brotli is sent
+#     once the distribution runs scripts/edge/encoding-fallback.js (the hosting stack attaches it).
+#     Until then such a client gets the Brotli bytes; every browser that can run the app (module
+#     scripts, WebGL2) accepts Brotli, so that is curl and old robots asking for a script.
+#   - HTML, robots.txt, the sitemap, the manifest and sw.js are NOT stored compressed: a crawler or
+#     an unfurler reads those, and CloudFront still negotiates them per request.
+#   - `Vary: Accept-Encoding` cannot be set on an S3 object; the hosting stack's response headers
+#     policy adds it.
+#   - A dry run compresses at quality 1: the same files and the same plan in a second, not minutes.
+ENC=()
+GZ=()
+if [ "$PRECOMPRESS" = "1" ]; then
+  command -v node >/dev/null || die "node is not installed; scripts/precompress.mjs needs it (--no-precompress uploads uncompressed)"
+  ENC=(--content-encoding br)
+  GZ=(--content-encoding gzip)
+  QUALITY=(); [ "$DRY_RUN" = "1" ] && QUALITY=(--quality 1 --no-cache)
+fi
+# precompress DIRS... : the Brotli copies into $BUILT/br, the gzip copies into $BUILT/gz.
+precompress() {
+  local from="$1" dirs="$2"; shift 2
+  node "$HERE/precompress.mjs" --from "$from" --dirs "$dirs" --out "$BUILT/br" --gzip "$BUILT/gz" \
+    ${QUALITY[@]+"${QUALITY[@]}"} "$@" \
+    || die "scripts/precompress.mjs failed; nothing more was uploaded (--no-precompress deploys uncompressed)"
+}
+
 # Long-lived, but not immutable -- see the header. A month, and invalidate on the rare change.
 LONG="public, max-age=2592000"
 # The bundled data: an hour, then a revalidation (a 304 unless a PR changed the file), and the
@@ -114,12 +156,34 @@ if [ "$WHAT" != "app" ]; then
     --exclude "*" --include "*.webp" --content-type "image/webp"
   # data/v1/ is the harvester's (spec 0003 amendment 1): it is never in site/, and --delete would
   # otherwise remove every snapshot on each deploy. The filter keeps it out of the upload too.
+  if [ "$PRECOMPRESS" = "1" ]; then
+    # Two syncs to one prefix, and each one's --delete is scoped by its own filter (a sync never
+    # deletes what its filter excludes): the pictures as they are, the catalogues compressed. The
+    # `--exclude "v1/*"` is LAST in the second, because a later filter wins and `*.json` would
+    # otherwise put the harvester's snapshots back in reach of --delete.
+    precompress "$SITE" data
+    "${SYNC[@]}" "$SITE/data"     "s3://$BUCKET/data"     --cache-control "$DATA" --delete --exclude "v1/*" \
+      --exclude "*.bin" --exclude "*.json" --exclude "*.csv" --exclude "*.txt"
+    "${SYNC[@]}" "$BUILT/br/data" "s3://$BUCKET/data"     --cache-control "$DATA" --delete "${ENC[@]}" \
+      --exclude "*" --include "*.bin" --include "*.json" --include "*.csv" --include "*.txt" --exclude "v1/*"
+    "${SYNC[@]}" "$BUILT/gz/data" "s3://$BUCKET/_gz/data" --cache-control "$DATA" --delete "${GZ[@]}"
+  else
   "${SYNC[@]}" "$SITE/data"     "s3://$BUCKET/data"     --cache-control "$DATA" --delete --exclude "v1/*"
+  fi
   # vendor/ is NOT here any more: it is uploaded with the app below (internal #415, 2026-10-07).
   # The spacecraft models. Content type matters: CloudFront will not compress an octet-stream, and
   # a .glb served as one is a few hundred KB that could have been fewer.
-  "${SYNC[@]}" "$SITE/models"   "s3://$BUCKET/models"   --cache-control "$LONG" \
-    --content-type "model/gltf-binary" --delete
+  # Since 2026-10-09 they are stored at Brotli 11 like the data (MEASURED that day: CloudFront does
+  # not in fact compress model/gltf-binary; the 70 models were 8.83 MB on the wire and are 5.32 MB).
+  MODELS="$SITE/models"
+  if [ "$PRECOMPRESS" = "1" ]; then
+    precompress "$SITE" models
+    MODELS="$BUILT/br/models"
+    "${SYNC[@]}" "$BUILT/gz/models" "s3://$BUCKET/_gz/models" --cache-control "$LONG" \
+      --content-type "model/gltf-binary" --delete "${GZ[@]}"
+  fi
+  "${SYNC[@]}" "$MODELS"   "s3://$BUCKET/models"   --cache-control "$LONG" \
+    --content-type "model/gltf-binary" --delete ${ENC[@]+"${ENC[@]}"}
   # The photographs on the cards. Same bargain as the models: somebody else's work, shipped with
   # its credit, so it is deployed as a directory and never silently half-pushed.
   "${SYNC[@]}" "$SITE/images"   "s3://$BUCKET/images"   --cache-control "$LONG" --delete
@@ -174,23 +238,29 @@ if [ "$WHAT" != "assets" ]; then
   # is stamped with the hashes of THIS copy (stamp_sw.py --overlay), because these are the bytes a
   # browser will be sent. --no-minify uploads the source instead.
   command -v node >/dev/null || die "node is not installed; scripts/build_seo.py and scripts/minify_site.py need it"
-  BUILT="$(mktemp -d)"
-  trap 'rm -rf "$BUILT"' EXIT
   APP="$SITE"
   OVERLAY=()
   if [ "$MINIFY" = "1" ]; then
-    python3 "$(dirname "$0")/minify_site.py" --site "$SITE" --out "$BUILT/min" --node node \
+    python3 "$HERE/minify_site.py" --site "$SITE" --out "$BUILT/min" --node node \
       || die "scripts/minify_site.py produced a file node refuses; nothing was uploaded (--no-minify deploys the source)"
     APP="$BUILT/min"
     OVERLAY=(--overlay "$BUILT/min")
   fi
+  # The Brotli copy of whichever tree that was (the note at the top). --strict: js/, css/ and
+  # vendor/ are uploaded from the compressed copy only, so a file type the rule does not know stops
+  # the deploy instead of going missing. The worker's stamp below still hashes the UNcompressed
+  # files (--overlay "$BUILT/min"): a browser decodes before the worker sees the bytes.
+  if [ "$PRECOMPRESS" = "1" ]; then
+    precompress "$APP" css,js,vendor --strict
+    APP="$BUILT/br"
+  fi
   "${SYNC[@]}" "$APP/css" "s3://$BUCKET/css" \
-    --cache-control "no-cache" --content-type "text/css; charset=utf-8" --delete
+    --cache-control "no-cache" --content-type "text/css; charset=utf-8" --delete ${ENC[@]+"${ENC[@]}"}
   # --exclude '*.md': the module contract documents the modules for whoever edits them. It is not code
   # and has no business being served as JavaScript.
   "${SYNC[@]}" "$APP/js"  "s3://$BUCKET/js" \
     --cache-control "no-cache" --content-type "text/javascript; charset=utf-8" \
-    --exclude "*.md" --delete
+    --exclude "*.md" --delete ${ENC[@]+"${ENC[@]}"}
   # THE VENDORED LIBRARIES GO UP WITH THE APP, FROM THE SAME COPY (internal #415, 2026-10-07).
   # vendor/astronomy.js is 412 kB as its author ships it and 177 kB without its documentation (the
   # licence header stays: minify_site.py keeps any comment that names a licence or a copyright).
@@ -206,10 +276,21 @@ if [ "$WHAT" != "assets" ]; then
   # left out of this sync, so that --delete here does not remove it, and sent on its own below.
   "${SYNC[@]}" "$APP/vendor" "s3://$BUCKET/vendor" \
     --exclude "*.wasm" --exclude "*.md" \
-    --cache-control "$LONG" --content-type "text/javascript; charset=utf-8" --delete
+    --cache-control "$LONG" --content-type "text/javascript; charset=utf-8" --delete ${ENC[@]+"${ENC[@]}"}
   "${SYNC[@]}" "$APP/vendor" "s3://$BUCKET/vendor" \
     --exclude "*" --include "*.wasm" \
-    --cache-control "$LONG" --content-type "application/wasm"
+    --cache-control "$LONG" --content-type "application/wasm" ${ENC[@]+"${ENC[@]}"}
+  # The gzip copies, for a client without Brotli (the note at the top). Same types, same lifetimes.
+  if [ "$PRECOMPRESS" = "1" ]; then
+    "${SYNC[@]}" "$BUILT/gz/css" "s3://$BUCKET/_gz/css" \
+      --cache-control "no-cache" --content-type "text/css; charset=utf-8" --delete "${GZ[@]}"
+    "${SYNC[@]}" "$BUILT/gz/js"  "s3://$BUCKET/_gz/js" \
+      --cache-control "no-cache" --content-type "text/javascript; charset=utf-8" --delete "${GZ[@]}"
+    "${SYNC[@]}" "$BUILT/gz/vendor" "s3://$BUCKET/_gz/vendor" --exclude "*.wasm" \
+      --cache-control "$LONG" --content-type "text/javascript; charset=utf-8" --delete "${GZ[@]}"
+    "${SYNC[@]}" "$BUILT/gz/vendor" "s3://$BUCKET/_gz/vendor" --exclude "*" --include "*.wasm" \
+      --cache-control "$LONG" --content-type "application/wasm" "${GZ[@]}"
+  fi
   # One static page per trip (spec 0032): the share URL a crawler reads, which sends a browser on
   # to `/#trip=<id>`. HTML, no-cache, like index.html: a page that says the wrong thing about a
   # trip for a cache lifetime is a share that lies. --delete, because a trip that left the
@@ -221,9 +302,9 @@ if [ "$WHAT" != "assets" ]; then
   # (scripts/build_seo.py; it needs Node, as the card's words are JavaScript). o/ is synced like
   # t/: HTML, no-cache, and --delete, so an object that left the registry loses its page.
   # The press page is built FIRST: the sitemap names it only when it is in the tree (internal #398).
-  python3 "$(dirname "$0")/build_press.py" --out "$BUILT" || die "scripts/build_press.py failed"
-  python3 "$(dirname "$0")/build_seo.py" --out "$BUILT" || die "scripts/build_seo.py failed"
-  python3 "$(dirname "$0")/check_seo.py" --out "$BUILT" || die "scripts/check_seo.py refused the built pages"
+  python3 "$HERE/build_press.py" --out "$BUILT" || die "scripts/build_press.py failed"
+  python3 "$HERE/build_seo.py" --out "$BUILT" || die "scripts/build_seo.py failed"
+  python3 "$HERE/check_seo.py" --out "$BUILT" || die "scripts/check_seo.py refused the built pages"
   "${SYNC[@]}" "$BUILT/o"  "s3://$BUCKET/o" \
     --cache-control "no-cache" --content-type "text/html; charset=utf-8" --delete
   # The press page (public #293, scripts/build_press.py): the page, the README's screenshots and
@@ -246,7 +327,7 @@ if [ "$WHAT" != "assets" ]; then
   # the install if one does not match, so sw.js goes up after everything it names. No-cache, like
   # index.html: a worker a browser cannot re-read is a release nobody can be moved off. The
   # manifest is no-cache too (a name or an icon list that changed must not wait a month).
-  python3 "$(dirname "$0")/stamp_sw.py" --site "$SITE" ${OVERLAY[@]+"${OVERLAY[@]}"} --out "$BUILT/sw.js" || die "scripts/stamp_sw.py failed"
+  python3 "$HERE/stamp_sw.py" --site "$SITE" ${OVERLAY[@]+"${OVERLAY[@]}"} --out "$BUILT/sw.js" || die "scripts/stamp_sw.py failed"
   for f in "$SITE/index.html:text/html; charset=utf-8" "$BUILT/404.html:text/html; charset=utf-8" \
            "$SITE/robots.txt:text/plain; charset=utf-8" "$BUILT/sitemap.xml:application/xml; charset=utf-8" \
            "$BUILT/object-pages.json:application/json; charset=utf-8" \
@@ -265,6 +346,8 @@ fi
 
 if [ -n "$DISTRIBUTION" ] && [ "$DRY_RUN" != "1" ]; then
   PATHS=("/" "/index.html" "/js/*" "/css/*" "/vendor/*" "/t/*" "/o/*" "/press/*" "/robots.txt" "/sitemap.xml" "/404.html" "/object-pages.json" "/manifest.webmanifest" "/sw.js")
+  # The gzip copies keep their names too.
+  [ "$PRECOMPRESS" = "1" ] && PATHS+=("/_gz/*")
   if [ "$WHAT" != "app" ]; then
     # The data files were just pushed and keep their names: expire the edge copies now.
     PATHS+=("/data/*")
