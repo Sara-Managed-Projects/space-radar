@@ -824,6 +824,8 @@ jobs:
         run: python3 tests/test_release_zip.py
       - name: "the stripped tree: the scanner on its hard cases, every module through it"
         run: python3 tests/test_minify.py
+      - name: "shader text in templates loses its comments and indentation, each shader checked, switched off by default (internal #553 / #531)"
+        run: python3 tests/test_strip_shaders.py
       - name: "stored at Brotli 11: one rule in deploy.sh, verify-deploy.sh and the edge function; copies decode byte for byte (internal #514)"
         run: node tests/test_precompress.mjs
       - name: "the minifier a deploy runs: pinned by hash, licence headers kept, maps true, and the node tests pass against the tree it writes (internal #515)"
