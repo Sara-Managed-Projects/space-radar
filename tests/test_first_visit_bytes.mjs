@@ -41,6 +41,15 @@
 // line and budget, and a Cyrillic file on this English page fails (spec 0045 req 5). stars3d.names.json, exoplanets.csv
 // and stars.bin are printed on their own line: they are the one known saving (spec 0044 req 5), and
 // whether to defer them is decided by that line.
+//
+// THE FIRST MINUTE (internal #527, 2026-10-09). The window above closes two seconds after the layers
+// are ready, and a visitor's browser goes on fetching: the named stars, the exoplanets and the
+// deep sky, the modules of the panels, the trip pictures, a laptop's sharper maps, today's clouds
+// from NASA. None of it was counted by anything. `--minute` leaves the same page open for
+// AFTER_WINDOW_S more seconds and sums what STARTED after the window: ours against the budget row
+// `after_first_visit_bytes`, other hosts' beside it for information (NASA's clouds change by the
+// hour and are not ours to bound). The service worker's precache is not in it: an automated
+// browser gets no worker (js/ui/offline.js swWanted), which is what keeps this a measure of the app.
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -76,13 +85,19 @@ const FILM_ONLY = new Set(['/js/ui/rendermode.js']);
 
 /** Sum a boot's requests: `[{url, bytes}]` -> the numbers the gate and the log read. */
 function tally(requests, pageOrigin) {
-  const t = { total: 0, count: 0, after: 0, audio: [], audioBytes: 0, og: [], ogBytes: 0, lazy: [], nebulae: [], deferrable: 0, thirdParty: 0, fonts: [], fontBytes: 0, cyrillic: [], tiles: [], film: [] };
+  const t = { total: 0, count: 0, after: 0, afterOurs: 0, afterThirdParty: 0, afterLargest: [], audio: [], audioBytes: 0, og: [], ogBytes: 0, lazy: [], nebulae: [], deferrable: 0, thirdParty: 0, fonts: [], fontBytes: 0, cyrillic: [], tiles: [], film: [] };
   for (const r of requests) {
     const at = sitePath(r.url);
     if (!at) continue; // data: and blob: URLs cross no wire
     // Started after the app said the first visit was over (js/main.js afterFirstVisit, internal
     // #415 item 3): the warm-up, the far catalogues, a laptop's 4k maps. Not this visit's.
-    if (r.after) { t.after += 1; continue; }
+    if (r.after) {
+      t.after += 1;
+      // Summed on its own (internal #527), and never into the first visit's total.
+      const late = Number(r.bytes) || 0;
+      if (!pageOrigin || at.origin === pageOrigin) { t.afterOurs += late; t.afterLargest.push([late, at.path]); } else t.afterThirdParty += late;
+      continue;
+    }
     const bytes = Number(r.bytes) || 0;
     t.total += bytes;
     t.count += 1;
@@ -102,7 +117,16 @@ function tally(requests, pageOrigin) {
       if (/-cyrillic\.woff2$/.test(file)) t.cyrillic.push(file);
     }
   }
+  t.afterLargest = t.afterLargest.sort((a, b) => b[0] - a[0]).slice(0, 8).map(([bytes, path]) => `${path} ${bytes}`);
   return t;
+}
+
+/** The first minute's own verdict: what started after the window, against its row. */
+function minuteVerdict(t, budgets = BUDGETS) {
+  const out = [];
+  if (!(t.after > 0)) out.push('nothing started after the first-visit window in a whole minute: the later layers did not load, or the measurement stopped early');
+  if (t.afterOurs > budgets.after_first_visit_bytes) out.push(`after the first visit ${t.afterOurs} B of our own files were fetched in the first minute, over after_first_visit_bytes ${budgets.after_first_visit_bytes} B: ${t.afterLargest.slice(0, 4).join(', ')}`);
+  return out;
 }
 
 /** What is wrong with a tally, against the budgets; empty when the visit is inside them. */
@@ -171,7 +195,8 @@ function finish(problems, what) {
 }
 
 // --- a real boot, in Playwright (screens.yml) ---------------------------------------------------
-async function boot(base, path = 'index.html') {
+const AFTER_WINDOW_S = 60;
+async function boot(base, path = 'index.html', minute = false) {
   const { chromium } = await import('playwright');
   const browser = await chromium.launch();
   try {
@@ -197,6 +222,13 @@ async function boot(base, path = 'index.html') {
     // have already fired, what started after the mark they wrote is left out (tally()).
     const over = await page.evaluate(() => Number(window.__srFirstVisitOver) || 0).catch(() => 0);
     if (over) for (const q of requests.values()) if (q.at > over) q.after = true;
+    if (minute) {
+      // The window is closed: its requests are the ones recorded so far and not marked. Everything
+      // that starts from here on is the first minute's (the page's clock for the mark, as above).
+      const closed = over || await page.evaluate(() => Date.now());
+      await page.waitForTimeout(AFTER_WINDOW_S * 1000);
+      for (const q of requests.values()) if (q.at > closed) q.after = true;
+    }
     return { requests: [...requests.values()], origin: new URL(base).origin };
   } finally {
     await browser.close();
@@ -208,7 +240,7 @@ const FROM = arg('from');
 const EMBED = arg('embed');
 if (BASE || FROM) {
   const { requests, origin } = BASE
-    ? await boot(BASE, EMBED ? `index.html?embed=1&at=${encodeURIComponent(EMBED)}` : 'index.html')
+    ? await boot(BASE, EMBED ? `index.html?embed=1&at=${encodeURIComponent(EMBED)}` : 'index.html', process.argv.includes('--minute'))
     : (() => {
       const requests = JSON.parse(readFileSync(FROM, 'utf8'));
       const first = requests.map((r) => sitePath(r.url)).find(Boolean);
@@ -222,8 +254,13 @@ if (BASE || FROM) {
     finish(INFO ? [] : embedVerdict(t, requests), INFO ? `the light embed's total is information here` : `the light embed is inside its budget and fetched nothing it does not draw`);
   } else {
   report(t, `${BASE || FROM}${INFO ? ', for information: the source as written, not held to the budget' : ''}`);
+  const MINUTE = process.argv.includes('--minute');
+  if (MINUTE) {
+    console.log(`after the first visit, in the next ${AFTER_WINDOW_S} s: ${t.afterOurs} B of our own files in ${t.after} later request(s), budget ${BUDGETS.after_first_visit_bytes} B; from other hosts ${t.afterThirdParty} B (${kB(t.afterThirdParty)}, for information)`);
+    console.log(`  the largest: ${t.afterLargest.join(', ')}`);
+  }
   if (arg('out')) writeFileSync(arg('out'), JSON.stringify({ ...t, budget: BUDGETS.first_visit_bytes, info: INFO, requests }, null, 1));
-  finish(verdict(t, BUDGETS, { info: INFO }), INFO ? 'nothing lazy was fetched (the total is information here)' : 'inside the budget, and nothing lazy was fetched');
+  finish([...verdict(t, BUDGETS, { info: INFO }), ...(MINUTE && !INFO ? minuteVerdict(t) : [])], INFO ? 'nothing lazy was fetched (the total is information here)' : 'inside the budget, and nothing lazy was fetched');
   }
 } else {
   // --- the rules, on fixtures: no browser, so ci.yml's node job runs it ---------------------------
@@ -290,6 +327,17 @@ if (BASE || FROM) {
     check(/afterFirstVisit\(TIERS_MS, \(\) => ctx\.quality\.start\(\)\)/.test(main), 'the sharper maps wait for the first visit to be over too');
     const late = tally([...visit, { url: `${O}/textures/4k/earth_day_10.webp`, bytes: 1300000, after: true }, { url: `${O}/audio/bed-earth.opus`, bytes: 1, after: true }], O);
     check(late.total === t.total && late.after === 2 && verdict(late).length === 0, 'a request that started after the app\'s end-of-first-visit mark is neither summed nor judged');
+    // Internal #527: ...by the first visit's row. It IS summed, on its own, for the first minute's.
+    const minute = tally([...visit, { url: `${O}/textures/4k/earth_day_10.webp`, bytes: 1300000, after: true }, { url: `${O}/data/exoplanets.csv`, bytes: 583000, after: true },
+      { url: 'https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?LAYERS=GOES-East', bytes: 230000, after: true }], O);
+    check(minute.total === t.total && minute.afterOurs === 1883000 && minute.afterThirdParty === 230000 && minute.after === 3, `what starts after the window is summed apart, ours and other hosts' (${minute.afterOurs}, ${minute.afterThirdParty})`);
+    check(minute.afterLargest[0] === '/textures/4k/earth_day_10.webp 1300000', `and the largest are named (${minute.afterLargest[0]})`);
+    check(minuteVerdict(minute, { ...BUDGETS, after_first_visit_bytes: 2000000 }).length === 0 && minuteVerdict(minute, { ...BUDGETS, after_first_visit_bytes: 1800000 }).some((p) => /over after_first_visit_bytes 1800000 B: \/textures\/4k\/earth_day_10\.webp/.test(p)),
+      'the first minute passes inside its row and fails over it, naming the largest file');
+    check(minuteVerdict(minute, { ...BUDGETS, after_first_visit_bytes: 1800000 }).every((p) => !/gibs/.test(p)) && minuteVerdict({ ...minute, afterThirdParty: 9e9 }, { ...BUDGETS, after_first_visit_bytes: 2000000 }).length === 0, 'another host\'s bytes are printed and never judged');
+    check(minuteVerdict(t).some((p) => /nothing started after/.test(p)), 'a minute in which nothing more was fetched is a measurement that did not happen');
+    check(Number.isFinite(BUDGETS.after_first_visit_bytes) && BUDGETS.after_first_visit_bytes > 0, 'registry/budgets.yaml has the row');
+    check(/test_first_visit_bytes\.mjs --base=http:\/\/127\.0\.0\.1:8178 --out=\.ci-screens\/first-visit\.json --minute/.test(readFileSync(join(ROOT, '.github/workflows/screens.yml'), 'utf8')), 'screens.yml measures the first minute on the tree a deploy uploads');
   }
   check(/function openAt\(ctx, id\) \{[\s\S]{0,400}loadAfterFirstVisit\(\)\.then/.test(main), 'a link to a star or an exoplanet waits for them rather than saying it names nothing');
   // Spec 0070: the film camera is a dynamic import behind `render=1`, and not in the preload block.
