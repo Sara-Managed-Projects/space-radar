@@ -568,6 +568,9 @@ export function createSearch(ctx, host) {
     moreImport = import('./searchrows.js').then((m) => {
       state.more = m;
       refreshEnv();
+      // The 88 star patterns arrive a moment after the module (two small files): a query typed in
+      // that moment is asked again when they land, so "orion" is not missing its constellation.
+      if (typeof m.loadConstellations === 'function') m.loadConstellations().then((n) => { if (n && state.open && input.value) run(input.value); });
       if (state.open && input.value) run(input.value);
       else if (document.activeElement === input && !input.value) suggest();
       return m;
