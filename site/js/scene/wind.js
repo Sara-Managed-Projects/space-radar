@@ -1,6 +1,6 @@
 // scene/wind.js -- the wind as streaks that move over the Earth (internal #362, #146).
 //
-// Contract: createWind({ earth, now?, onChange?, saveData?, reducedMotion?, fetch? }) ->
+// Contract: createWind({ earth, now?, onChange?, saveData?, tier?, reducedMotion?, fetch? }) ->
 //             { set(on), state(), update(), dispose() }
 //   state() -> the same shape as scene/earthoverlay.js state(), with id 'wind', so the legend and
 //   the one honest sentence (ui/overlaylegend.js) print it as they print a GIBS map.
@@ -34,6 +34,12 @@ export const WIND_ID = WIND.id;
 export const SPEEDUP = 86400;
 /** How many streaks, how many pieces in each tail, and how often a tail gains a piece (seconds). */
 export const COUNT = 1200;
+/** How many streaks each device tier draws (scene/quality.js): tier 1 is COUNT, the default. Data saving halves it. */
+export const COUNT_BY_TIER = [600, 1200, 2400];
+export function streakCount(tier, saveData) {
+  const t = Number.isFinite(tier) ? Math.min(COUNT_BY_TIER.length - 1, Math.max(0, Math.round(tier))) : 1;
+  return saveData ? Math.round(COUNT_BY_TIER[t] / 2) : COUNT_BY_TIER[t];
+}
 export const TRAIL = 8;
 export const TRAIL_DT = 0.12;
 /** Just above the data overlays' shell (scene/earthoverlay.js SHELL_SCALE 1.003). */
@@ -79,7 +85,7 @@ export function createWind(opts = {}) {
   const nowMs = typeof opts.now === 'function' ? opts.now : () => Date.now();
   const onChange = typeof opts.onChange === 'function' ? opts.onChange : () => {};
   const still = !!opts.reducedMotion;
-  const count = opts.saveData ? Math.round(COUNT / 2) : COUNT;
+  const count = streakCount(opts.tier, opts.saveData);
   const rand = typeof opts.random === 'function' ? opts.random : Math.random;
   const tick = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 

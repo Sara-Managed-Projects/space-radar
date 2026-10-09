@@ -534,6 +534,7 @@ export async function boot({ setStatus } = {}) {
       ctx.wind = m.createWind({
         earth: () => worlds.meshFor('earth'),
         saveData: typeof navigator !== 'undefined' && shouldSaveData(navigator.connection),
+        tier: ctx.quality ? ctx.quality.tier : 1, // 600, 1200 or 2400 streaks (scene/wind.js COUNT_BY_TIER)
         reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
         onChange: tellOverlay,
       });
