@@ -1446,8 +1446,10 @@ export async function boot({ setStatus } = {}) {
       // A system's host star is met from over its orbits, as the trips meet it (40 degrees from the
       // pole, scene/systems.js OVERVIEW_POLAR), not from whatever tilt the camera happened to have
       // (internal #476: Kepler-16 arrived edge-on, LHS 1140 straight down).
-      const overview = record.klass === 'star' && ctx.systems && ctx.systems.active && ctx.systems.stageOfRecord(record) === stage.worldId && !limb ? SYSTEM_OVERVIEW_POLAR : undefined;
-      cameraRig.flyTo({ targetScene: pos, distance: limb ? limb.distance : distance, tilt: limb ? limb.tilt : fromHere, polar: overview, offset: lit || undefined, ms, onArrive: settle });
+      const overview = record.klass === 'star' && ctx.systems && ctx.systems.active && ctx.systems.stageOfRecord(record) === stage.worldId && !limb ? SYSTEM_OVERVIEW_POLAR : undefined; // polar: overview, unless the stage's own subject names one
+      const hostSubject = !limb && record.klass !== 'exoplanet' && ctx.systems && ctx.systems.active && typeof ctx.systems.subjectFor === 'function' ? ctx.systems.subjectFor(record) : null;
+      const hostPolar = hostSubject && Number.isFinite(hostSubject.polar) ? hostSubject.polar : overview;
+      cameraRig.flyTo({ targetScene: pos, distance: limb ? limb.distance : distance, tilt: limb ? limb.tilt : fromHere, polar: hostPolar, offset: lit || undefined, ms, onArrive: settle });
     }
     // Following something standing on the Moon is following the Moon, which crosses its own
     // radius in about half an hour, so its centre is re-taught with every tick of the target.

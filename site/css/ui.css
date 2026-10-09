@@ -5008,6 +5008,13 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 
 .sr-tape.is-dragging { cursor: grabbing; }
 
+/* The slider fills the tape and sits under the marks (they are its siblings, internal #472). */
+.sr-tape__slider {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--sr-radius);
+}
+
 .sr-tape__ticks {
   position: absolute;
   right: 0;
@@ -6667,6 +6674,18 @@ html.sr-phone .sr-skybar__wrap .sr-density__btn { min-width: 44px; min-height: 4
   cursor: pointer;
 }
 .sr-trip__vol[hidden] { display: none; }
+
+/* The same slider in What to show (ui/sound.js volumeSlider): the full width of its row. */
+.sr-show__vol {
+  display: block;
+  width: 100%;
+  height: 44px;
+  margin: var(--sp-1) 0 0;
+  accent-color: var(--sr-ember);
+  background: transparent;
+  cursor: pointer;
+}
+.sr-show__vol[hidden] { display: none; }
 html.sr-phone .sr-trip__vol { width: 56px; }
 .sr-tripsheet__voiceoffer[hidden] { display: none; }
 

@@ -2388,7 +2388,7 @@ export function createTrip(ctx) {
       climbToStop(entry, index, nextStage);
       return;
     }
-    if (wantsVeil(nextStage) || (toGround !== !!run.ground && canVeil())) {
+    if (wantsVeil(nextStage) || (toGround !== !!run.ground && canVeil()) || (entry.stop.transition === 'black' && canVeil())) {
       state.phase = 'veil';
       // The card of the stop being LEFT goes as the black comes up (2026-09-23): the veil sits under
       // the card (ui/veil.js, z 8), so the old card stayed over the black and on into the next
@@ -2612,6 +2612,9 @@ export function createTrip(ctx) {
       return;
     }
 
+    // `transition: cut` (internal #288): no flight, the camera is there. A fade through black is
+    // the veil above; both are the author's choice for this one join.
+    if (entry.stop.transition === 'cut' || entry.stop.transition === 'black') shot.ms = 0;
     state.phase = 'flight';
     entry.shot = shot;
     stopExtrasLeaving(entry);

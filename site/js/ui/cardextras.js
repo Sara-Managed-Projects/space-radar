@@ -107,6 +107,12 @@ export function liveBlock(distAt, tMs, still) {
   const km = el('p', 'sr-live__row');
   const num = el('span', 'sr-live__num', words.km);
   num.dataset.live = 'km';
+  // Another star's planet: light-years, one row, and a note that it does not tick (internal #476).
+  if (words.far) {
+    km.append(num, el('span', 'sr-live__unit', L.lightYears));
+    wrap.append(km, el('p', 'sr-card__aboardnote', L.noteFar));
+    return wrap;
+  }
   km.append(num, el('span', 'sr-live__unit', L.km));
   const light = el('p', 'sr-live__row');
   const time = el('span', 'sr-live__num', words.light);

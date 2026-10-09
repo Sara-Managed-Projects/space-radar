@@ -291,6 +291,8 @@ TOUR_PACING = {"auto", "reader"}
 TOUR_CLOCKS = {"as-found", "live", "freeze"}
 TOUR_DRIFTS = {"toward-light", "away", "none"}
 TOUR_EASES = {"auto", "ui", "inout", "cruise", "linear"}
+# How a stop is joined to the one before it (internal #288): the flight, a cut, or a fade through black.
+TOUR_TRANSITIONS = {"fly", "cut", "black"}
 # `fallback` is in the design and is not shipped: the one stop that needed it was the `view:`
 # stop, which is not shipped either. Refusing it by name is better than accepting a value the
 # state machine would silently treat as `drop`.
@@ -1543,6 +1545,10 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
     if ease not in TOUR_EASES:
         fail(where, f"`ease: {ease}` is not one of {sorted(TOUR_EASES)}")
 
+    transition = stop.get("transition", "fly")
+    if transition not in TOUR_TRANSITIONS:
+        fail(where, f"`transition: {transition}` is not one of {sorted(TOUR_TRANSITIONS)}")
+
     frame_radii = stop.get("frame_radii", defaults.get("frame_radii"))
     if frame_radii is not None:
         if not is_number(frame_radii):
@@ -1588,6 +1594,22 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
     if not isinstance(card, dict):
         fail(where, "no `card:` -- a stop with no words is a camera move, not a stop")
         return
+    kind_text = " ".join(str(v or "") for v in card.values()).lower()
+    target = stop.get("target")
+    if isinstance(target, dict) and "record" in target:
+        for word in HERO_SIZE_WORDS:
+            if word in kind_text:
+                fail(where, f"a stop at a record says \"{word}\": a model is drawn larger than it is "
+                            f"(scene/heroes.js), so the card may not call the picture to scale")
+    if flown_system:
+        for word in SYSTEM_LOOK_WORDS:
+            if re.search(r"\b" + re.escape(word) + r"\b", kind_text):
+                fail(where, f"a stop on a star system's stage says \"{word}\": no planet of another star "
+                            f"has a seen face, and the app says that itself")
+    for word in GENERATED_WORDS:
+        if word in kind_text:
+            fail(where, f"the card says \"{word}\": a generated line says that, and a hand-written card "
+                        f"may not pre-empt it")
     title = card.get("title")
     body = card.get("body")
     if not title:

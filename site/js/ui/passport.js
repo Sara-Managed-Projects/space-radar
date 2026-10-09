@@ -13,6 +13,7 @@
 //   SEEN_CAP, recordSeen(p, id, nowMs, on), seenList(p) -> [[id, ms]] newest first
 //   tripsDone(p), placesSeen(p), stampLine(p, total, nowMs), stampPlacesLine(p), notableVisited(p, recordById, max)
 //   wonderOfTheDay({events, famous, dayNumber, prev}) -> {id, kind, item} | null
+//   isReturning(p, dayNumber) -> true when something was kept on an earlier day (internal #472)
 //
 // WHY. A visitor who finished a trip got an end card and was forgotten when the tab closed. A
 // planetarium hands you a ticket stub. This is the stub: the places opened, the trips finished and
@@ -234,6 +235,17 @@ export function stampPlacesLine(p) {
 
 /** Which kinds of place lead the grid: a world before a station before a far thing before a dot. */
 const NOTABLE = { world: 6, station: 5, exotic: 4, star: 4, dso: 4, probe: 4, telescope: 4, comet: 3, asteroid: 3, exoplanet: 3, site: 2 };
+
+/**
+ * Has this browser been here on an earlier day? The wonder of the day is for people who come back
+ * (public #240): the first day's visit, however many reloads it has, is not a return. Pure.
+ */
+export function isReturning(p, dayNumber) {
+  if (!p || !Number.isInteger(dayNumber)) return false;
+  const first = okMs(p.first) && p.first > 0 ? dayNumberOf(p.first) : null;
+  if (first !== null && first < dayNumber) return true;
+  return !!(p.wonder && Number.isInteger(p.wonder.day) && p.wonder.day < dayNumber);
+}
 
 /** The visited places the map still holds, the most notable first, then the newest. Pure. */
 export function notableVisited(p, recordById, max = GRID_MAX) {
@@ -520,6 +532,8 @@ export function createPassport(ctx, opts = {}) {
     /** The end card's line under the stamp: how many places this browser has seen opened. */
     stampPlaces: () => (available ? stampPlacesLine(p) : ''),
     wonderPrev: () => p.wonder,
+    /** True when an earlier day left something here: the wonder shows only then. */
+    returning: (day) => isReturning(p, day),
     wonderSeen(day, id) {
       if (!Number.isInteger(day) || !okId(id) || (p.wonder && p.wonder.day === day && p.wonder.id === id)) return;
       p.wonder = { day, id };

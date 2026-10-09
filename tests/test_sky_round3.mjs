@@ -103,6 +103,7 @@ check(NEBULAE.length >= 20 && NEBULAE.every((n) => Number.isFinite(n.ra_deg) && 
 const view = read('site/js/sky/skyview.js');
 check(/function airShift\(p, sign\)/.test(view) && /refractionDeg\(alt \* RAD2DEG\)/.test(view) && /apparent: \(p\) => \(isActive && ground \? airShift\(p, 1\) : p\)/.test(view), 'sky/skyview.js lifts a scene position by the stars\' own refraction');
 check(/ctx\.skyView\.apparent\(pos\)/.test(read('site/js/ui/labels.js')), 'a satellite\'s name is placed where the air puts its dot');
+check(/ctx\.skyView\.apparent\(_p\)/.test(read('site/js/ui/hud.js')), 'and so are the selection ring and tag (internal #418)');
 check(/ctx\.skyView\.trueNdc\(ndcX, ndcY\)/.test(read('site/js/main.js')) && /pick\(pickX, pickY, rect\)/.test(read('site/js/main.js')), 'and the pick looks where the thing is before the air');
 check(refractionDeg(0) > 0.45, 'which on the horizon is nearly half a degree');
 
