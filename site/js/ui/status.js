@@ -456,6 +456,15 @@ export function createStatus(ctx, parent) {
   press.title = COPY.mark.pressTitle;
   foot.appendChild(press);
   node.appendChild(foot);
+  // The site's own links (index.html #sr-sitefoot, written by scripts/gen_home_seo.py from
+  // templates/sitelinks.html): in the markup for a crawler from the first byte, and here, under the
+  // GitHub mark, for a person. Moved, not copied: one footer, and the same words as every other page.
+  const site = document.getElementById('sr-sitefoot');
+  if (site) {
+    site.classList.add('sr-sitefoot--shown');
+    for (const a of site.querySelectorAll('a[tabindex="-1"]')) a.removeAttribute('tabindex');
+    node.appendChild(site);
+  }
 
   const paint = () => {
     try {

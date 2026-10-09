@@ -51,7 +51,7 @@ for script in ("gen_home_seo.py", "gen_trip_pages.py"):
 # The press page first, as scripts/deploy.sh does: the sitemap names it only when it is in the tree.
 r = run(sys.executable, "scripts/build_press.py", "--out", str(BUILT))
 ok(r.returncode == 0, f"build_press.py: {(r.stdout or r.stderr).strip().splitlines()[-1:]}")
-r = run(sys.executable, "scripts/build_seo.py", "--out", str(BUILT))
+r = run(sys.executable, "scripts/build_seo.py", "--out", str(BUILT), "--no-share")  # the pictures are drawn and held by the seo job's --require-share build and tests/test_seo_pages.py
 ok(r.returncode == 0, f"build_seo.py: {(r.stdout or r.stderr).strip().splitlines()[-1:]}")
 r = run(sys.executable, "scripts/check_seo.py", "--out", str(BUILT))
 ok(r.returncode == 0, f"check_seo.py on the build: {(r.stdout or r.stderr).strip().splitlines()[-1:]}")
@@ -72,7 +72,14 @@ else:
         ok(any(p["slug"] == must for p in pages), f"a page for {must}")
     # Each page's lead is in its file, whole; nothing else stands in for the card.
     missing = []
+    # Pages scripts/seo_pages.py builds in place of the card's own (the station's answer to "where is it", and the star systems, which
+    # open on their planet's sentence): held by tests/test_seo_pages.py instead.
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import seo_systems
+    replaced = {"international-space-station"} | {s["slug"] for s in seo_systems.systems()}
     for p in pages:
+        if p["slug"] in replaced:
+            continue
         f = BUILT / "o" / f"{p['slug']}.html"
         text = f.read_text(encoding="utf-8") if f.is_file() else ""
         lead = p["lead"].replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("'", "&#x27;").replace('"', "&quot;")
@@ -106,7 +113,7 @@ with tempfile.TemporaryDirectory() as tmp:
     fake = bindir / "aws"
     fake.write_text(f'#!/bin/sh\necho "$*" >> "{log}"\nexit 0\n', encoding="utf-8")
     fake.chmod(fake.stat().st_mode | stat.S_IEXEC)
-    env = dict(os.environ, PATH=f"{bindir}{os.pathsep}{os.environ.get('PATH', '')}")
+    env = dict(os.environ, PATH=f"{bindir}{os.pathsep}{os.environ.get('PATH', '')}", SR_SHARE="off")
     r = run("bash", "scripts/deploy.sh", "--bucket", "example-bucket", "--app-only", "--dry-run", env=env)
     calls = log.read_text(encoding="utf-8").splitlines() if log.is_file() else []
     o_sync = [c for c in calls if c.startswith("s3 sync") and "s3://example-bucket/o" in c]

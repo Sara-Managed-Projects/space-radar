@@ -2771,6 +2771,100 @@ def check_links() -> list:
     return rows_
 
 
+def check_sky_events(world_ids: set, tour_ids: set) -> list:
+    """registry/sky-events.yaml (the /events/ pages) and registry/seo-facts.yaml: shape, ids, dates, links."""
+    path = REG / "sky-events.yaml"
+    if not path.exists():
+        fail("sky-events.yaml", "missing")
+        return []
+    try:
+        doc = yaml_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as exc:
+        fail("sky-events.yaml", f"will not parse: {exc}")
+        return []
+    if not isinstance(doc.get("checked_on"), datetime.date):
+        fail("sky-events.yaml", "no `checked_on:` date -- the day a person last read the computed output")
+    shower_ids = {s.get("id") for s in (load("showers.yaml").get("showers") or []) if isinstance(s, dict)}
+    evs = doc.get("events")
+    if not isinstance(evs, list) or not evs:
+        fail("sky-events.yaml", "no `events:` list")
+        return []
+    seen = set()
+    for e in evs:
+        eid = str(e.get("id") or "") if isinstance(e, dict) else ""
+        where = f"sky-events.yaml[{eid or '?'}]"
+        if not re.match(r"^[a-z0-9][a-z0-9-]*$", eid):
+            fail(where, "`id:` is the page address /events/<id>.html: lower-case letters, digits and dashes")
+            continue
+        if eid in seen:
+            fail(where, "duplicate id")
+        seen.add(eid)
+        kind = e.get("kind")
+        if kind not in ("meteor-shower", "mission", "eclipse"):
+            fail(where, f"`kind:` {kind!r} is not meteor-shower, mission or eclipse")
+        if not str(e.get("name") or "").strip():
+            fail(where, "no `name:`")
+        short = str(e.get("short") or "")
+        if not short or len(short) > 54:
+            fail(where, f"`short:` is the page title: needed, at most 54 characters (it is {len(short)})")
+        summary = str(e.get("summary") or "")
+        if not 70 <= len(summary) <= 160:
+            fail(where, f"`summary:` is the description: 70 to 160 characters (it is {len(summary)})")
+        if kind == "meteor-shower":
+            if e.get("shower") not in shower_ids:
+                fail(where, f"`shower: {e.get('shower')}` is not a row of showers.yaml")
+            if not isinstance(e.get("year"), int):
+                fail(where, "`year:` must be a whole number")
+            if not isinstance(e.get("moon_at"), datetime.datetime):
+                fail(where, "`moon_at:` must be an ISO UTC instant (…T…Z)")
+        elif kind == "mission":
+            if not str(e.get("mission") or "").strip():
+                fail(where, "no `mission:`")
+            if not isinstance(e.get("happens"), datetime.date):
+                fail(where, "`happens:` must be the date the agency gives (YYYY-MM-DD)")
+        elif kind == "eclipse":
+            if e.get("eclipse") not in ("annular", "total"):
+                fail(where, "`eclipse:` must be annular or total")
+            if not isinstance(e.get("near"), datetime.date):
+                fail(where, "`near:` must be a date shortly before the eclipse")
+        for a in e.get("also") or []:
+            if not (isinstance(a, dict) and a.get("body") and a.get("what") == "greatest-western-elongation"):
+                fail(where, f"`also:` row {a!r} is not {{body, what: greatest-western-elongation}}")
+        link = e.get("link")
+        if not isinstance(link, dict) or not isinstance(link.get("t"), str) \
+                or not re.match(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$", link.get("t", "")):
+            fail(where, "`link: {t: <ISO UTC instant>, at: <world id>}` is how the page opens the app at that moment")
+        elif link.get("at") not in world_ids and link.get("at") != "earth":
+            fail(where, f"`link.at: {link.get('at')}` is not a world id (worlds.yaml)")
+        if e.get("trip") is not None and e.get("trip") not in tour_ids:
+            fail(where, f"`trip: {e.get('trip')}` is not a trip of tours.yaml")
+        srcs = e.get("sources")
+        if not isinstance(srcs, list) or not srcs:
+            fail(where, "no `sources:` -- a dated claim names the page it came from")
+        for s in srcs or []:
+            if not (isinstance(s, dict) and str(s.get("url") or "").startswith("https://") and s.get("words")
+                    and isinstance(s.get("read"), datetime.date)):
+                fail(where, f"a source needs words, an https url and the day it was read: {s!r}")
+    # The fallback counts for the satellite pages.
+    sf = REG / "seo-facts.yaml"
+    try:
+        facts = (yaml_load(sf.read_text(encoding="utf-8")) or {}).get("satellite_counts") if sf.exists() else None
+    except yaml.YAMLError as exc:
+        fail("seo-facts.yaml", f"will not parse: {exc}")
+        facts = None
+    if not isinstance(facts, dict):
+        fail("seo-facts.yaml", "no `satellite_counts:`")
+    else:
+        for k in ("active_objects", "starlink_objects"):
+            if not (isinstance(facts.get(k), int) and facts[k] > 0):
+                fail("seo-facts.yaml", f"`{k}` must be a positive whole number")
+        if not isinstance(facts.get("as_of"), datetime.date) or facts["as_of"] > datetime.date.today():
+            fail("seo-facts.yaml", "`as_of:` must be a date, not in the future -- a count without its day is a live number")
+        if not str(facts.get("source") or "").strip():
+            fail("seo-facts.yaml", "no `source:` line")
+    return evs
+
+
 def check_oldest_notes() -> list:
     """registry/oldest-notes.yaml: a line about an old satellite cites the page it was read on."""
     path = REG / "oldest-notes.yaml"
@@ -4525,6 +4619,15 @@ def main() -> int:
             fail(where, "no `outputs:` list")
         if not s.get("attribution"):
             fail(where, "no attribution line -- it goes on the card, not in a footer")
+        # The /sources/ page prints these three beside the row (scripts/seo_pages.py), so a row
+        # without them would be a source the page cannot describe honestly.
+        if not str(s.get("licence") or "").strip():
+            fail(where, "no `licence:` -- the publisher's terms in one honest line (\"no licence stated\" is an answer)")
+        if not str(s.get("terms_url") or "").startswith("https://"):
+            fail(where, "`terms_url:` must be an https address")
+        rec = s.get("terms_recorded")
+        if not isinstance(rec, datetime.date) or rec > datetime.date.today():
+            fail(where, "`terms_recorded:` must be a date, not in the future (the day the terms went into CREDITS.md)")
 
     # --- layers ------------------------------------------------------------------
     # What to show folds the rows under `groups:` (spec 0068 task 3). A row with no group, or one
@@ -4778,6 +4881,7 @@ def main() -> int:
     famous_stars = check_stars_notable(exotics)
     aliases = check_aliases()
     check_links()
+    check_sky_events(world_ids, {str(x.get("id")) for x in (load("tours.yaml").get("tours") or []) if isinstance(x, dict)})
     check_oldest_notes()
     colorkeys = check_colorkeys()
     TOUR_STAGES.update(world_ids)

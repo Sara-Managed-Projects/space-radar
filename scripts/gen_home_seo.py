@@ -3,7 +3,16 @@
 
 WHAT IS IN THE BLOCK. The title and description a search result shows, the canonical URL, the Open
 Graph and Twitter Card tags a chat or a feed shows for a shared link to the root, `theme-color`,
-and a JSON-LD `WebSite` that the trip and object pages name as the site they are part of.
+and a JSON-LD graph: the `WebSite` that the trip and object pages name as the site they are part of,
+the `Organization` (its `sameAs` is the project's own four accounts and nothing else) and the
+`WebApplication` (a free educational web application under the MIT licence). No `aggregateRating`
+or `review`: there are none, and a rating that is not a user's is not ours to write.
+
+A SECOND BLOCK, the footer (FOOTER:BEGIN ... FOOTER:END, after the map's roots): the same partial
+every built page carries (templates/sitelinks.html, scripts/seo_footer.py). It is clipped out of
+sight on the map and tabindex -1, because the map is a full-screen scene with no room for a page
+footer; ui/status.js moves it into the Sources sheet's footer, where a person reads it. Crawlers
+and screen-reader users have it in the markup.
 
 NO Dataset (asked for in the brief, left out on purpose). It lists every upstream in
 registry/sources.yaml and costs about 650 bytes on the home page's first visit, and
@@ -29,11 +38,16 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from seo_footer import sitelinks  # noqa: E402
+
 
 ROOT = Path(__file__).resolve().parent.parent
 HTML = ROOT / "site" / "index.html"
 BEGIN = "<!-- SEO:BEGIN scripts/gen_home_seo.py -->"
 END = "<!-- SEO:END -->"
+FOOT_BEGIN = "<!-- FOOTER:BEGIN scripts/gen_home_seo.py from templates/sitelinks.html -->"
+FOOT_END = "<!-- FOOTER:END -->"
 
 HOST = "https://www.spaceradar.ai"
 NAME = "Space Radar"
@@ -43,9 +57,34 @@ DESCRIPTION = ("A live 3D map of space: satellites and the ISS, launches, probes
 # What a shared link to the root says (spec 0033), unchanged.
 OG_DESCRIPTION = "Everything in motion around Earth, where it really is, right now."
 OG_IMAGE_ALT = "The Earth from space with its satellites as points of light, captioned Space Radar."
+# The project's own accounts and the code: Organization.sameAs, and nothing else (no Facebook).
+SAME_AS = [
+    "https://github.com/Sara-Managed-Projects/space-radar",
+    "https://www.instagram.com/spaceradar.ai/",
+    "https://www.linkedin.com/company/spaceradar-ai",
+    "https://www.youtube.com/@SpaceRadar_ai",
+]
+LICENSE_URL = "https://github.com/Sara-Managed-Projects/space-radar/blob/main/LICENSE"
+
+
+def graph() -> dict:
+    org = {"@id": f"{HOST}/#organization"}
+    return {"@context": "https://schema.org", "@graph": [
+        {"@type": "WebSite", "@id": f"{HOST}/#website", "url": f"{HOST}/", "name": NAME, "inLanguage": "en",
+         "publisher": org},
+        {"@type": "Organization", **org, "name": NAME, "url": f"{HOST}/",
+         "logo": {"@type": "ImageObject", "url": f"{HOST}/images/icons/icon-512.png", "width": 512, "height": 512},
+         "sameAs": SAME_AS},
+        {"@type": "WebApplication", "@id": f"{HOST}/#app", "name": NAME, "url": f"{HOST}/",
+         "description": DESCRIPTION, "applicationCategory": "EducationalApplication", "operatingSystem": "Any",
+         "browserRequirements": "Requires JavaScript and WebGL", "isAccessibleForFree": True,
+         "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+         "license": LICENSE_URL, "inLanguage": "en", "screenshot": f"{HOST}/og/default.png", "publisher": org},
+    ]}
+
+
 def block() -> str:
-    ld = {"@context": "https://schema.org", "@type": "WebSite", "@id": f"{HOST}/#website", "url": f"{HOST}/",
-          "name": NAME}
+    ld = graph()
     e = lambda s: html.escape(s, quote=True)  # noqa: E731
     lines = [
         BEGIN,
@@ -70,11 +109,22 @@ def block() -> str:
     return "\n".join(lines)
 
 
+def footer() -> str:
+    """The partial with every link taken out of the tab order: the markup is for the crawler and the
+    screen reader's link list; a keyboard reaches the same links in the Sources sheet (ui/status.js)."""
+    links = sitelinks("").replace("<a href=", '<a tabindex="-1" href=')
+    return "\n".join([FOOT_BEGIN, '<footer id="sr-sitefoot" class="sr-sitefoot">', links, "</footer>", FOOT_END])
+
+
 def rewrite(text: str) -> str:
     pattern = re.compile(re.escape(BEGIN) + r".*?" + re.escape(END), re.S)
     if not pattern.search(text):
         raise SystemExit(f"gen_home_seo: {HTML.relative_to(ROOT)} has no {BEGIN!r} block")
-    return pattern.sub(lambda _: block(), text, count=1)
+    text = pattern.sub(lambda _: block(), text, count=1)
+    foot = re.compile(re.escape(FOOT_BEGIN) + r".*?" + re.escape(FOOT_END), re.S)
+    if not foot.search(text):
+        raise SystemExit(f"gen_home_seo: {HTML.relative_to(ROOT)} has no {FOOT_BEGIN!r} block")
+    return foot.sub(lambda _: footer(), text, count=1)
 
 
 def main(argv: list[str]) -> int:

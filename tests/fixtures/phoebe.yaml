@@ -56,6 +56,9 @@ sources:
     list: harvest/lists/horizons-ids.yaml
     outputs: [phoebe-orbiters.json]
     attribution: "Ephemerides: JPL Horizons"
+    licence: "NASA/JPL data, free to use with credit"
+    terms_url: https://ssd.jpl.nasa.gov/about/terms.html
+    terms_recorded: 2026-10-09
 
 layers:
   - id: phoebe-orbiters

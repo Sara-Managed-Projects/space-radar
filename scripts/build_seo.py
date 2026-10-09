@@ -8,6 +8,9 @@ writes, under DIR:
     404.html        from templates/404.html
     sitemap.xml     the home page, every trip page (site/t/) and every object page
     object-pages.json  {record id: slug}, for the app's share sheet (spec 0061 task 8)
+    + everything scripts/seo_pages.py adds (the question pages, the 40 star systems, /events/, /teachers/ ...)
+      and one share picture per page under share/ (scripts/seo_share.py; needs Pillow, else the old pictures stay),
+      with sitemap-images.xml listing them
 
 Nothing here is committed: scripts/deploy.sh runs this at deploy time and uploads DIR beside site/,
 and CI runs it into a temporary directory and holds the output to scripts/check_seo.py. The only
@@ -25,8 +28,9 @@ prefix every local check uses); canonical, og:url and JSON-LD are absolute.
 and the origin is S3's REST endpoint, which has no index documents: `/o/<slug>/` would answer 403
 (spec 0032 design §4, the trip pages' reason).
 
-LASTMOD is the date of the commit the build is made from (`git log -1`), or the build date outside
-git: every page is rebuilt from that commit's records, so that is when it can last have changed.
+LASTMOD is per page: the date of the last change of the file that produces it (scripts/seo_dates.py,
+`git log -1 --format=%cs`), so a crawler can tell which pages moved. A page with no date of its own
+gets the date of the commit the build is made from (`git log -1`), or the build date outside git.
 """
 
 from __future__ import annotations
@@ -34,12 +38,21 @@ from __future__ import annotations
 import datetime as dt
 import html
 import json
+import os
 import re
 import shutil
 import struct
 import subprocess
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import seo_pages  # noqa: E402  (growth pages: scripts/seo_pages.py)
+import seo_share  # noqa: E402
+import seo_dates  # noqa: E402
+import seo_embed  # noqa: E402
+import indexnow  # noqa: E402
+from seo_footer import sitelinks  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 SITE = ROOT / "site"
@@ -107,7 +120,7 @@ def read_pages() -> list[dict]:
     return json.loads(run.stdout)["pages"]
 
 
-def object_page(p: dict, host: str, template: str, style: str) -> str:
+def object_page(p: dict, host: str, template: str, style: str, share: "seo_share.Spec | None" = None) -> str:
     for key in ("id", "slug"):
         if not SAFE.match(p[key]):
             raise SystemExit(f"build_seo: {key} {p[key]!r} is not a safe path segment")
@@ -122,8 +135,10 @@ def object_page(p: dict, host: str, template: str, style: str) -> str:
         figure = (f'<figure><img src="../{esc(img["file"])}" width="{size[0]}" height="{size[1]}" '
                   f'alt="{esc(img["alt"])}" loading="lazy" decoding="async"><figcaption>{esc(credit)}'
                   f"</figcaption></figure>\n")
-    if not (SITE / image_rel).is_file():
+    if share is None and not (SITE / image_rel).is_file():
         raise SystemExit(f"build_seo: {p['slug']} names a picture that is not in site/: {image_rel}")
+    if share is not None:  # the page's own picture, drawn by scripts/seo_share.py
+        image_rel, (image_w, image_h), image_alt = share.rel, (1200, 630), share.alt
     image = f"{host}/{image_rel}"
 
     thing = {"@type": "Place" if p["place"] else "Thing", "@id": f"{url}#thing", "name": p["name"],
@@ -164,7 +179,7 @@ def object_page(p: dict, host: str, template: str, style: str) -> str:
     return fill(template, {
         "title": esc(p["title"]), "description": esc(p["description"]), "url": esc(url), "name": esc(p["name"]),
         "image": esc(image), "image_w": str(image_w), "image_h": str(image_h), "image_alt": esc(image_alt),
-        "icon": ICON, "style": style,
+        "icon": ICON, "style": style, "sitelinks": sitelinks("../"),
         "jsonld": json.dumps(ld, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/"),
         "colour": esc(p.get("colour") or "#9aa4b2"), "klass": esc(p["klassLabel"]), "lead": esc(p["lead"]),
         "why": f'<p>{esc(p["why"])}</p>\n' if p.get("why") else "", "id": p["id"],
@@ -184,52 +199,113 @@ def object_page(p: dict, host: str, template: str, style: str) -> str:
 
 
 def lastmod() -> str:
-    run = subprocess.run(["git", "log", "-1", "--format=%cs"], cwd=ROOT, capture_output=True, text=True)
-    date = run.stdout.strip() if run.returncode == 0 else ""
-    return date if re.match(r"^\d{4}-\d{2}-\d{2}$", date) else dt.datetime.now(dt.timezone.utc).date().isoformat()
+    """The date of the commit the build is made from: the fallback for a page with no date of its own."""
+    return seo_dates.fallback(ROOT)
 
 
-def sitemap(host: str, slugs: list[str], press: bool = False) -> str:
-    date = lastmod()
+def sitemap(host: str, slugs: list[str], press: bool = False, dates: dict[str, str] | None = None,
+            extra: list[str] | None = None, growth: list | None = None) -> str:
+    """`dates` maps a URL to its lastmod (scripts/seo_dates.py: the last change of the page's own
+    source); a URL it does not name gets the build commit's date. `extra` are further pages by path
+    from the root (the embed gallery), already built into the same tree. `growth` are the pages
+    scripts/seo_pages.py builds, as (path, lastmod or ""): their own date where they have one."""
+    default = lastmod()
+    dates = dates or {}
     # The press page (scripts/build_press.py) had no way in for a crawler (internal #398). It is
     # named here by its full address, as the origin serves no index documents below the root, and
     # only when it has been built into the same tree: scripts/deploy.sh builds it first, and
     # check_seo.py refuses a sitemap that names a page which is not there.
-    urls = [f"{host}/"] + ([f"{host}/press/index.html"] if press else []) + [f"{host}/t/{f.name}" for f in sorted((SITE / "t").glob("*.html"))] \
+    urls = [f"{host}/"] + ([f"{host}/press/index.html"] if press else []) + [f"{host}/{x}" for x in (extra or [])] \
+        + [f"{host}/t/{f.name}" for f in sorted((SITE / "t").glob("*.html"))] \
         + [f"{host}/o/{s}.html" for s in sorted(slugs)]
-    rows = "\n".join(f"<url><loc>{esc(u)}</loc><lastmod>{date}</lastmod></url>" for u in urls)
+    rows = "\n".join(f"<url><loc>{esc(u)}</loc><lastmod>{dates.get(u, default)}</lastmod></url>" for u in urls)
+    # --- growth pages hook (scripts/seo_pages.py): the question pages, /events/, /teachers/ ... A planets-tonight
+    # page's lastmod is the build's day; a page with none of its own takes the same default as every other.
+    rows += "".join(f"\n<url><loc>{esc(host + '/' + path)}</loc><lastmod>{lm or default}</lastmod></url>" for path, lm in (growth or []))
     return ('<?xml version="1.0" encoding="UTF-8"?>\n'
             '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
             f"{rows}\n</urlset>\n")
 
 
-def build(out: Path, host: str) -> int:
+def page_dates(host: str, pages: list[dict]) -> dict[str, str]:
+    """{url: lastmod}: the home page, every trip's own row, every object page's group of source files,
+    and the press page. See scripts/seo_dates.py for what each date is the date of."""
+    default = lastmod()
+    out = {f"{host}/": seo_dates.page_date(seo_dates.HOME_SOURCES, ROOT, default),
+           f"{host}/press/index.html": seo_dates.page_date(["templates/press.html", "scripts/build_press.py"], ROOT, default)}
+    trips = [f.stem for f in sorted((SITE / "t").glob("*.html"))]
+    for trip, date in seo_dates.trip_dates(trips, ROOT, default).items():
+        out[f"{host}/t/{trip}.html"] = date
+    for slug, date in seo_dates.object_dates({p["slug"]: p["group"] for p in pages}, ROOT, default).items():
+        out[f"{host}/o/{slug}.html"] = date
+    return out
+
+
+def build(out: Path, host: str, today: str | None = None, snapshot_index: dict | None = None, share_mode: str = "auto") -> int:
     style = (TEMPLATES / "seo.css").read_text(encoding="utf-8")
     template = (TEMPLATES / "object.html").read_text(encoding="utf-8")
     pages = read_pages()
+    if not (out / "press" / "index.html").is_file():
+        # Every built page's footer links the press page, so it is built here when deploy.sh has not already (growth pages hook).
+        import build_press
+        build_press.build(out, host)
+    today = today or dt.datetime.now(dt.timezone.utc).date().isoformat()
+    # --- growth pages hook: what scripts/seo_pages.py adds, and the share pictures. It replaces the object pages at
+    # the slugs it owns (the ISS answer page, the star systems) and draws one picture per page.
+    extra = seo_pages.build_extra(out, host, pages, today, snapshot_index, share_mode)
     o = out / "o"
-    if o.exists():
-        shutil.rmtree(o)
-    o.mkdir(parents=True)
+    keep = {f.name for f in o.glob("*.html")} if o.exists() else set()  # the extra pages were just written here
     slugs = []
     for p in pages:
         if p["slug"] in slugs:
             raise SystemExit(f"build_seo: two pages want o/{p['slug']}.html")
         slugs.append(p["slug"])
-        (o / f"{p['slug']}.html").write_text(object_page(p, host, template, style), encoding="utf-8")
-    nf = fill((TEMPLATES / "404.html").read_text(encoding="utf-8"), {"icon": ICON, "style": style})
+        if p["slug"] in extra["replaced"]:
+            continue
+        share = extra["specs"].get(f"o/{p['slug']}") if extra["drawn"] else None
+        (o / f"{p['slug']}.html").write_text(object_page(p, host, template, style, share), encoding="utf-8")
+    for slug in extra["replaced"]:
+        if slug not in slugs:
+            slugs.append(slug)
+    stale = keep - {f"{s}.html" for s in slugs}
+    for name in stale:
+        (o / name).unlink()
+    nf = fill((TEMPLATES / "404.html").read_text(encoding="utf-8"), {"icon": ICON, "style": style, "sitelinks": sitelinks("/")})
     (out / "404.html").write_text(nf, encoding="utf-8")
-    (out / "sitemap.xml").write_text(sitemap(host, slugs, press=(out / "press" / "index.html").is_file()), encoding="utf-8")
+    # The embed gallery and its generator (scripts/seo_embed.py), and the IndexNow key file
+    # (scripts/indexnow.py: public by design, written beside the pages so a deploy ships it).
+    seo_embed.build(out, host, pages, style, ICON)
+    indexnow.write_key(out)
+    dates = page_dates(host, pages)
+    dates[f"{host}/embed/index.html"] = seo_dates.page_date(
+        ["templates/embed.html", "templates/embed/generate.js", "scripts/seo_embed.py", "registry/embedders.yaml"], ROOT, lastmod())
+    (out / "sitemap.xml").write_text(sitemap(host, slugs, press=(out / "press" / "index.html").is_file(), dates=dates,
+                                             extra=["embed/index.html"], growth=extra["sitemap"]), encoding="utf-8")
     # The share sheet links an object to its page (ui/sharesheet.js objectPageUrl), so that a link
     # preview shows the object's own title and picture. Which records have a page, and under which
     # slug, is decided here and nowhere else; the sheet fetches this when it opens and never guesses.
     index = {p["id"]: p["slug"] for p in pages}
+    # (extra["index"] maps every exoplanet and system star to its system's page; tests/test_sharesheet.mjs pins this file to the
+    # object pages' own records, so it is not merged until that test and the sheet are changed together.)
     (out / "object-pages.json").write_text(json.dumps(index, separators=(",", ":"), sort_keys=True), encoding="utf-8")
-    return len(pages)
+    # --- growth pages hook: the image sitemap and the record of what was drawn (scripts/check_seo.py reads both).
+    rows = [(f"{host}/{path}", f"{host}/{extra['specs'][key].rel}", extra["specs"][key].name)
+            for path, key in _image_rows(pages, extra)] if extra["drawn"] else []
+    (out / "sitemap-images.xml").write_text(seo_share.image_sitemap(host, rows), encoding="utf-8")
+    (out / "share-manifest.json").write_text(json.dumps({"drawn": extra["drawn"], "pictures": len(rows)}), encoding="utf-8")
+    return len(pages) + len([p for p in extra["pages"] if not p.path.startswith("o/")])
+
+
+def _image_rows(pages: list[dict], extra: dict) -> list[tuple[str, str]]:
+    """(page path, share key) for every page that has a picture, in a stable order."""
+    rows = [(f"o/{p['slug']}.html", f"o/{p['slug']}") for p in pages if p["slug"] not in extra["replaced"]]
+    rows += [(pg.path, pg.share.key) for pg in extra["pages"] if pg.share is not None and pg.in_sitemap]
+    return sorted(rows)
 
 
 def main(argv: list[str]) -> int:
-    out, host = None, DEFAULT_HOST
+    # SR_SHARE=off|require sets the share pictures' mode for a build that is not started with the flag (scripts/deploy.sh in a test).
+    out, host, today, snap, share_mode = None, DEFAULT_HOST, None, None, os.environ.get("SR_SHARE", "auto")
     args = list(argv)
     while args:
         a = args.pop(0)
@@ -237,6 +313,14 @@ def main(argv: list[str]) -> int:
             out = Path(args.pop(0))
         elif a == "--host" and args:
             host = args.pop(0).rstrip("/")
+        elif a == "--today" and args:  # the date the dated pages are built for (default: today, UTC)
+            today = args.pop(0)
+        elif a == "--snapshot-index" and args:  # a copy of data/v1/index.json: the saved counts' day and size
+            snap = json.loads(Path(args.pop(0)).read_text(encoding="utf-8"))
+        elif a == "--no-share":  # skip drawing the share pictures (a quick local build)
+            share_mode = "off"
+        elif a == "--require-share":  # refuse to build without drawing them (CI)
+            share_mode = "require"
         else:
             print(f"build_seo: unknown or incomplete option {a}", file=sys.stderr)
             return 2
@@ -246,8 +330,8 @@ def main(argv: list[str]) -> int:
     if out.resolve() == SITE.resolve() or SITE.resolve() in out.resolve().parents:
         print("build_seo: --out must be outside site/; the built pages are not kept in git", file=sys.stderr)
         return 2
-    n = build(out, host)
-    print(f"built {n} object pages, 404.html, sitemap.xml and object-pages.json into {out}")
+    n = build(out, host, today, snap, share_mode)
+    print(f"built {n} pages, the embed page, 404.html, sitemap.xml, sitemap-images.xml and object-pages.json into {out}")
     return 0
 
 

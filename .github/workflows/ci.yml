@@ -226,11 +226,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - run: pip install --disable-pip-version-check pyyaml
+      # Pillow, fontTools and brotli draw the share pictures (scripts/seo_share.py): a deploy host without them keeps the old
+      # pictures and says so, but CI is where a broken picture is refused, so it installs them and builds with --require-share.
+      - run: pip install --disable-pip-version-check pyyaml pillow fonttools brotli
       - name: The home page's search tags and JSON-LD match registry/sources.yaml
         run: python3 scripts/gen_home_seo.py --check
-      - name: The object pages build, and titles, descriptions, canonicals, pictures, JSON-LD, robots.txt and the sitemap hold
-        run: python3 scripts/build_seo.py --out "$RUNNER_TEMP/seo" && python3 scripts/check_seo.py --out "$RUNNER_TEMP/seo"
+      - name: The pages build, with one share picture each, and titles, descriptions, canonicals, pictures, JSON-LD, robots.txt, the sitemap and the image sitemap hold
+        run: python3 scripts/build_seo.py --out "$RUNNER_TEMP/seo" --require-share && python3 scripts/check_seo.py --out "$RUNNER_TEMP/seo" --require-share
       - name: The SEO build carries the card's words and no live number, and deploy.sh ships it
         run: python3 tests/test_seo.py
       # Spec 0061 task 8: the share sheet links an object to the page built above, by the map
@@ -241,9 +243,42 @@ jobs:
       # boot and no service worker in a frame; photo mode's frame.
       - name: "The embed and photo mode: ?embed=1 through a whitelist, the snippet, nothing at boot, the frame centred"
         run: node tests/test_embed.mjs
+      # The growth pages: the ISS answer, Starlink and the satellite hub, planets tonight, the 40 star systems, the trust pages,
+      # the teachers' page and the events; the pictures; deploy.sh shipping every directory.
+      - name: "The question pages, the 40 star systems, /sources/ equal to the registry, /teachers/ with the app's own parameters, /events/, the share pictures, deploy.sh"
+        run: python3 tests/test_seo_pages.py
+      # The numbers the pages let the browser replace: the station from saved elements, tonight's planets, an eclipse from a place, and no location prompt on load.
+      - name: "The pages' live half: the station's position from saved elements, tonight's planets and a place's eclipse, no position asked for on load"
+        run: node tests/test_pagelive.mjs
+      # registry/sky-events.yaml types a calendar's facts; every instant, phase and elongation is computed and held against what the page says.
+      - name: "The dated events recomputed: stated dates inside the computed ones, the Moon's words, and each #t= link read by the app's own parser"
+        run: node tests/test_sky_events.mjs
       # Public #293: the press page builds from the registry's own counts, with no personal data.
       - name: "The press page: five counted facts, the README's pictures, every link resolving"
         run: python3 tests/test_press.py
+      # Growth pull request: the README's numbers are counted by scripts/count_facts.py, and a
+      # thirty-first trip fails here until the README says so.
+      - name: "The README's numbers are the registries' (trips, stops, systems, stars, moons, photographs, sites)"
+        run: python3 tests/test_readme_facts.py
+      # A translator's tool: lists missing keys, extra keys and lost {slots}; shown to fail.
+      - name: "The translation checker names a missing key, a lost slot and an untouched string"
+        run: node tests/test_check_translation.mjs
+      # The first files a newcomer meets: the issue chooser (6 forms, 3 contact links), CITATION.cff,
+      # the links in README, CONTRIBUTING, ROADMAP, nothing internal in a public file, the preview image.
+      - name: "Community files: issue forms, citation, roadmap links, social preview, nothing internal"
+        run: python3 tests/test_community_files.py
+      # Growth: what a search engine reads beyond the object pages. The structured data is parsed back
+      # out of the pages (and each validator is shown to refuse a broken one); the footer, the
+      # sitemap's own lastmod per page and the IndexNow key and ping are held; the /embed/ generator
+      # is run for every object and trip against the app's own Embed snippet; ?from= is read once.
+      - name: "Structured data: the home page's WebApplication, Organization and sameAs, every trip's LearningResource, no FAQPage or SearchAction"
+        run: python3 tests/test_structured_data.py
+      - name: "The footer on every built page, lastmod per page from git, the IndexNow key file and a ping that cannot fail a deploy"
+        run: python3 tests/test_seo_growth.py
+      - name: "The embed page: the generator writes the app's own snippet for every object and trip, and the list of embedders starts empty and honest"
+        run: python3 tests/test_seo_embed.py
+      - name: "?from=ig is harmless: dropped from the address bar, read into nothing, in no share link or embed address"
+        run: node tests/test_from_tag.mjs
 
   contract:
     runs-on: ubuntu-latest

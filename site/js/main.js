@@ -20,7 +20,7 @@ import { limbFraming, fitDistance, discDistance, litOffset, groundDistanceKm, ni
 import { createCameraRig, worldFramingDistance } from './scene/camera.js';
 import { createViewShift, MAX_SHIFT_FRACTION, PILL_GAP_PX } from './scene/viewshift.js';
 import { parsePlaceValue, keptPlace, browserStorage } from './sky/placelink.js';
-import { readMoment, writeMoment, bootLink, laterLink, linkChange, read as readUrlKeys, write as writeUrlState, clear as clearUrlState, stopIndex, parseCam } from './ui/urlstate.js';
+import { dropFrom, readMoment, writeMoment, bootLink, laterLink, linkChange, read as readUrlKeys, write as writeUrlState, clear as clearUrlState, stopIndex, parseCam } from './ui/urlstate.js';
 import { guessObserver, roundPlace } from './sky/guessplace.js';
 import { COPY, CITIES, t as fill } from './copy/en.js';
 import { LAYERS, loadLayer, addSystemRows } from './data/layers.js';
@@ -193,6 +193,8 @@ function afterFirstVisit(ms, run) {
 
 export async function boot({ setStatus } = {}) {
   const say = setStatus || (() => {});
+  // `/?from=ig` is the home page: the tag is taken off the address bar before anything reads it (ui/urlstate.js).
+  dropFrom();
   // RENDER MODE (spec 0070, ui/rendermode.js): `?render=1#trip=<id>` is tools/render-trip.mjs
   // filming a trip one frame at a time. It takes over what the page calls time, so it is installed
   // before anything below asks what time it is; the module is imported only for that address

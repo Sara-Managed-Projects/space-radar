@@ -19,7 +19,7 @@
 <meta property="og:image:alt" content="The Earth from space with its satellites as points of light, captioned Space Radar.">
 <meta property="og:url" content="https://www.spaceradar.ai/">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","@id":"https://www.spaceradar.ai/#website","url":"https://www.spaceradar.ai/","name":"Space Radar"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://www.spaceradar.ai/#website","url":"https://www.spaceradar.ai/","name":"Space Radar","inLanguage":"en","publisher":{"@id":"https://www.spaceradar.ai/#organization"}},{"@type":"Organization","@id":"https://www.spaceradar.ai/#organization","name":"Space Radar","url":"https://www.spaceradar.ai/","logo":{"@type":"ImageObject","url":"https://www.spaceradar.ai/images/icons/icon-512.png","width":512,"height":512},"sameAs":["https://github.com/Sara-Managed-Projects/space-radar","https://www.instagram.com/spaceradar.ai/","https://www.linkedin.com/company/spaceradar-ai","https://www.youtube.com/@SpaceRadar_ai"]},{"@type":"WebApplication","@id":"https://www.spaceradar.ai/#app","name":"Space Radar","url":"https://www.spaceradar.ai/","description":"A live 3D map of space: satellites and the ISS, launches, probes, planets, stars and galaxies, each drawn where it really is, with where the numbers come from.","applicationCategory":"EducationalApplication","operatingSystem":"Any","browserRequirements":"Requires JavaScript and WebGL","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"license":"https://github.com/Sara-Managed-Projects/space-radar/blob/main/LICENSE","inLanguage":"en","screenshot":"https://www.spaceradar.ai/og/default.png","publisher":{"@id":"https://www.spaceradar.ai/#organization"}}]}</script>
 <!-- SEO:END -->
 <!-- The faces first (spec 0045), and the one file the first paint needs preloaded: Inter 400 in
      Latin. The rest load when text on screen asks for them, and a Latin page never asks for a
@@ -196,6 +196,29 @@
 <!-- The UI modules build and append their own roots (#sr-controls, #sr-status, #sr-card).
      Only the label layer is declared here, because the scene writes into it every frame. -->
 <div id="labels" class="labels" aria-hidden="true"></div>
+
+<!-- FOOTER:BEGIN scripts/gen_home_seo.py from templates/sitelinks.html -->
+<footer id="sr-sitefoot" class="sr-sitefoot">
+<nav class="sitelinks" aria-label="Space Radar on the web"><ul>
+<li><a tabindex="-1" href="about/index.html">About</a></li>
+<li><a tabindex="-1" href="sources/index.html">Sources</a></li>
+<li><a tabindex="-1" href="accuracy/index.html">Accuracy</a></li>
+<li><a tabindex="-1" href="teachers/index.html">Teachers</a></li>
+<li><a tabindex="-1" href="satellites/index.html">Satellites</a></li>
+<li><a tabindex="-1" href="starlink/index.html">Starlink</a></li>
+<li><a tabindex="-1" href="o/international-space-station.html">Where is the ISS?</a></li>
+<li><a tabindex="-1" href="planets-tonight/index.html">Planets tonight</a></li>
+<li><a tabindex="-1" href="events/index.html">Sky events</a></li>
+<li><a tabindex="-1" href="press/index.html">Press</a></li>
+<li><a tabindex="-1" href="embed/index.html">Embed</a></li>
+<li><a tabindex="-1" href="https://github.com/Sara-Managed-Projects/space-radar" rel="me noopener">GitHub</a></li>
+<li><a tabindex="-1" href="https://github.com/Sara-Managed-Projects/space-radar/discussions" rel="noopener">Discussions</a></li>
+<li><a tabindex="-1" href="https://www.instagram.com/spaceradar.ai/" rel="me noopener">Instagram</a></li>
+<li><a tabindex="-1" href="https://www.linkedin.com/company/spaceradar-ai" rel="me noopener">LinkedIn</a></li>
+<li><a tabindex="-1" href="https://www.youtube.com/@SpaceRadar_ai" rel="me noopener">YouTube</a></li>
+</ul></nav>
+</footer>
+<!-- FOOTER:END -->
 
 <script type="module">
   // Anything that throws before main.js takes over would otherwise leave a black screen with no

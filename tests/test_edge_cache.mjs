@@ -48,15 +48,18 @@ check(old.seconds === 0, 'and plain no-cache, the header of before, gave the edg
 // --- 2. what carries it is what is invalidated ----------------------------------------------------
 const uses = [...code.matchAll(/"s3:\/\/\$BUCKET\/([\w/]+)"[^\n]*(?:\\\n[^\n]*)*?--cache-control "\$(\w+)"/g)].map((m) => [m[1], m[2]]);
 const revalidated = [...new Set(uses.filter(([, v]) => v === 'REVALIDATE').map(([p]) => p))].sort();
-check(JSON.stringify(revalidated) === JSON.stringify(['_gz/css', '_gz/js', 'css', 'js', 'o', 'press', 't', 'vendor']), `the folders stored for revalidation are the app's (${revalidated})`);
-check(!/--cache-control "no-cache"/.test(code) && (code.match(/--cache-control "\$REVALIDATE"/g) || []).length === 12, 'no upload still says a literal no-cache: all twelve read $REVALIDATE');
+check(JSON.stringify(revalidated) === JSON.stringify(['_gz/css', '_gz/js', 'css', 'embed', 'js', 'o', 'press', 'share', 't', 'vendor']), `the folders stored for revalidation are the app's and the pages' (${revalidated})`);
+// The growth pages (scripts/seo_pages.py) are synced by a loop over pages-dirs.txt, share/ among them: the same list is invalidated.
+check(/"s3:\/\/\$BUCKET\/\$dir" --cache-control "\$REVALIDATE"/.test(code) && /PATHS\+=\("\/\$dir\/\*"\)/.test(code), 'every directory in pages-dirs.txt carries it and is invalidated by the same list');
+check(!/--cache-control "no-cache"/.test(code) && (code.match(/--cache-control "\$REVALIDATE"/g) || []).length === 16, 'no upload still says a literal no-cache: all sixteen read $REVALIDATE');
 check(/aws s3 cp "\$path" "s3:\/\/\$BUCKET\/\$name" --region "\$REGION" \\\n\s+--cache-control "\$REVALIDATE"/.test(code), 'the root files (index.html, sw.js, the manifest, the sitemap) carry it too');
 const paths = (/PATHS=\(([^)]*)\)/.exec(code) || [])[1] || '';
 const invalidated = [...paths.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
-for (const p of revalidated.filter((x) => !x.startsWith('_gz/'))) check(invalidated.includes(`/${p}/*`), `/${p}/* is invalidated on every deploy`);
+for (const p of revalidated.filter((x) => !x.startsWith('_gz/') && x !== 'share')) check(invalidated.includes(`/${p}/*`), `/${p}/* is invalidated on every deploy`);
 check(/PATHS\+=\("\/_gz\/\*"\)/.test(code), '/_gz/* is invalidated with it');
 const rootFiles = [...(/for f in ([\s\S]*?); do/.exec(code) || [, ''])[1].matchAll(/\/([\w.-]+):/g)].map((m) => m[1]);
-check(rootFiles.length === 7 && rootFiles.every((f) => invalidated.includes(`/${f}`)) && invalidated.includes('/'), `every root file is invalidated by name, and "/" itself (${rootFiles})`);
+check(/PATHS\+=\("\/\$KEYFILE"\)/.test(code), 'the IndexNow key file is invalidated by name');
+check(rootFiles.length === 8 && rootFiles.every((f) => invalidated.includes(`/${f}`)) && invalidated.includes('/'), `every root file is invalidated by name, and "/" itself (${rootFiles})`);
 // vendor/ is the one folder with the long browser lifetime; the maps beside it revalidate.
 check(uses.some(([p, v]) => p === 'vendor' && v === 'LONG') && /LONG="public, max-age=2592000"/.test(code) && /DATA="public, max-age=3600"/.test(code), 'vendor/, the textures and the data keep the lifetimes they had');
 

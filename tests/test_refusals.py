@@ -110,6 +110,17 @@ def validator(work: Path, script: str = "scripts/check_registry.py", env: dict |
 
 
 CASES: list[tuple[str, str, str, str]] = [
+    # --- the dated pages and the sources page (scripts/seo_pages.py): what they print is the registry's, so the registry is held ---
+    ("a source with no licence line", "sources.yaml", '    licence: "', '    licence_: "'),
+    ("a source whose terms page is not https", "sources.yaml", "terms_url: https://celestrak.org/usage-policy.php", "terms_url: http://celestrak.org/usage-policy.php"),
+    ("a source with no day its terms were recorded", "sources.yaml", "    terms_recorded: 2026-09-07\n", ""),
+    ("a sky event of a kind no page knows", "sky-events.yaml", "kind: meteor-shower\n    name: \"Leonids 2026\"", "kind: comet\n    name: \"Leonids 2026\""),
+    ("a sky event of a shower the registry lacks", "sky-events.yaml", "shower: geminids", "shower: geminidz"),
+    ("a sky event whose map link names no world", "sky-events.yaml", "at: mercury}", "at: vulcan}"),
+    ("a sky event with no source", "sky-events.yaml", '    sources:\n      - {words: "Computed here with Astronomy Engine (the Moon\'s shadow on the Earth)", url: "https://github.com/cosinekitty/astronomy", read: 2026-10-09}\n\n  - id: total-eclipse-2027', '    sources: []\n\n  - id: total-eclipse-2027'),
+    ("a sky event whose trip is not a trip", "sky-events.yaml", "trip: comets-and-meteors", "trip: comets-and-meteorites"),
+    ("a sky event with no day it was checked", "sky-events.yaml", "checked_on: 2026-10-09\nchecked_with", "checked_with"),
+    ("satellite counts with no day", "seo-facts.yaml", "  as_of: 2026-09-22\n", ""),
     ("a line about an old satellite that cites no page",
      "oldest-notes.yaml", '    source: "https://en.wikipedia.org/wiki/Vanguard_1"\n', ""),
     ("a line about an old satellite with no day it was read",
@@ -1348,6 +1359,24 @@ def check_copy_refuses() -> int:
 # copy of the committed pages (site/) or of a fresh scripts/build_seo.py build (built/); the refusal
 # must name the file that broke it. (name, file, find, replace, the name the refusal must carry)
 SEO_CASES: list[tuple[str, str, str, str, str]] = [
+    # --- the growth pages: every built page has its own card, its footer, one H1, and an alias stays out of the sitemap ---
+    ("a built page with no twitter:image", "built/starlink/index.html",
+     '<meta name="twitter:image" content="https://www.spaceradar.ai/og/default.png">\n', "", "starlink/index.html"),
+    ("an object page with no twitter:image", "built/o/europa.html",
+     '<meta name="twitter:image" content="https://www.spaceradar.ai/og/default.png">\n', "", "o/europa.html"),
+    ("a twitter:image that is not the og:image", "built/o/mars.html",
+     '<meta name="twitter:image" content="https://www.spaceradar.ai/og/default.png">',
+     '<meta name="twitter:image" content="https://www.spaceradar.ai/og/moon-landings.png">', "o/mars.html"),
+    ("a built page whose footer lost the Accuracy link", "built/starlink/index.html",
+     '<li><a href="../accuracy/index.html">Accuracy</a></li>\n', "", "starlink/index.html"),
+    ("a built page with two H1", "built/about/index.html", "<h1>About Space Radar</h1>", "<h1>About Space Radar</h1><h1>Again</h1>", "about/index.html"),
+    ("a link from a built page to a page that is not there", "built/teachers/index.html",
+     '<a class="live" href="../">Open it now</a>', '<a class="live" href="../nowhere/index.html">Open it now</a>', "teachers/index.html"),
+    ("an alias listed in the sitemap", "built/sitemap.xml",
+     "</urlset>", "<url><loc>https://www.spaceradar.ai/iss/index.html</loc><lastmod>2026-10-01</lastmod></url>\n</urlset>", "iss/index.html"),
+    ("an alias whose canonical is a page nobody lists", "built/iss/index.html",
+     '<link rel="canonical" href="https://www.spaceradar.ai/o/international-space-station.html">',
+     '<link rel="canonical" href="https://www.spaceradar.ai/o/nowhere.html">', "iss/index.html"),
     ("a title over 60 characters", "built/o/europa.html",
      "<title>Europa: where it is now | Space Radar</title>",
      "<title>Europa, one of the four big moons of Jupiter: where it is now | Space Radar</title>", "o/europa.html"),
@@ -1393,7 +1422,7 @@ def check_seo_refusals() -> int:
             link(ROOT / "site" / name, site / name)
         for d in ("t", "og", "images"):
             shutil.copytree(ROOT / "site" / d, site / d, copy_function=link)
-        build = subprocess.run([sys.executable, str(ROOT / "scripts/build_seo.py"), "--out", str(clean_tree / "built")],
+        build = subprocess.run([sys.executable, str(ROOT / "scripts/build_seo.py"), "--out", str(clean_tree / "built"), "--no-share"],
                                capture_output=True, text=True)
         if build.returncode != 0:
             print("  ** scripts/build_seo.py could not build the pages the SEO cases start from")

@@ -4456,6 +4456,20 @@ html.sr-phone .sr-field { font-size: var(--sr-fs-input); }
 
 .sr-mark--foot:hover { color: var(--sr-text); }
 .sr-status__press { margin-left: auto; }
+
+/* The site's links (index.html's #sr-sitefoot, moved here by ui/status.js): small, dim, a finger tall. */
+.sr-sitefoot--shown { margin-top: var(--sp-2); }
+.sr-sitefoot--shown ul { display: flex; flex-wrap: wrap; gap: 0 var(--sp-2); margin: 0; padding: 0; list-style: none; }
+.sr-sitefoot--shown a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 4px;
+  font-size: var(--sr-fs-sm);
+  color: var(--sr-text-dim);
+  text-decoration: none;
+}
+.sr-sitefoot--shown a:hover { color: var(--sr-text); }
 @media (pointer: coarse) { .sr-status__press { min-height: 44px; } }
 
 /* --- the tool rail -------------------------------------------------------------------- */
