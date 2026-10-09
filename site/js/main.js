@@ -58,6 +58,7 @@ import { createOrbitLine } from './scene/orbitline.js';
 import { createGroundTrack } from './scene/groundtrack.js';
 import { createTrackLabels } from './ui/tracklabels.js';
 import { createOrbitRings, periodMsOfWorld, MARKER_PX } from './scene/orbitrings.js';
+import { tripOwnsCard } from './ui/tripstate.js';
 import { createFrameLatch, shouldSaveData, chooseTier, createTierPromoter, createIdleGate, idleCapWanted, movingReasons } from './scene/quality.js';
 import { createLiveClouds } from './scene/liveclouds.js';
 import { createTextureTiers, gpuMiB, variantFor, LIVE_CLOUDS_MIB } from './scene/texturetiers.js';
@@ -1356,7 +1357,11 @@ export async function boot({ setStatus } = {}) {
   }
   ctx.rememberView = rememberView;
   ctx.offerUndo = offerUndo;
-  ctx.refreshCard = () => { if (selected) showCard(selected, ctx); };
+  // Not while a trip is at a stop: the card there is the stop's own (ui/trip.js paints it with the
+  // stop's title and words), and a mission that landed a moment later repainted it as the object's
+  // whole card. Seen 2026-10-09 on both Voyager 1 stops ("A gold record, further away than
+  // anything" was read aloud under a card that said PROBE, 7 of 7 and "Fly to it").
+  ctx.refreshCard = () => { if (selected && !tripOwnsCard(ctx.trip && ctx.trip.state)) showCard(selected, ctx); };
   /**
    * Run `fn` once the scene has been placed at the clock's new time. A world's drawn position,
    * and so a landing site's, is what the last frame put there: SEEN 2026-10-06, the clock set to

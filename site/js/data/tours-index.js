@@ -73,7 +73,7 @@ export const TOURS_INDEX = [
 "next": "life-of-a-star",
 "min_stops": 3,
 "count": 8,
-"estimate_ms": 141556
+"estimate_ms": 162556
 },
 {
 "id": "roof-to-the-edge",
@@ -144,7 +144,7 @@ export const TOURS_INDEX = [
 "next": "to-the-edge",
 "min_stops": 3,
 "count": 12,
-"estimate_ms": 274320
+"estimate_ms": 295320
 },
 {
 "id": "the-living-earth",
@@ -219,7 +219,7 @@ export const TOURS_INDEX = [
 "next": "black-holes",
 "min_stops": 3,
 "count": 9,
-"estimate_ms": 201685
+"estimate_ms": 222685
 },
 {
 "id": "black-holes",
@@ -239,7 +239,7 @@ export const TOURS_INDEX = [
 "next": "a-dark-sky",
 "min_stops": 3,
 "count": 9,
-"estimate_ms": 190030
+"estimate_ms": 211030
 },
 {
 "id": "a-dark-sky",

@@ -606,7 +606,7 @@ function sbdbBody(b, layer) {
 //              answers instead of the row (propagate/index.js EPHEMERIS_OF), and the trip
 //              `asteroids-that-come-close` flies the pass from it.
 /** @type {Array<Object>} the same columns as FAR_BODIES, with `neo` */
-const NAMED_ASTEROIDS = [
+export const NAMED_ASTEROIDS = [
   {
     id: 'asteroid-99942',
     name: 'Apophis',

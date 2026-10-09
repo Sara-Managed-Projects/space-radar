@@ -1,7 +1,7 @@
 // scene/orbitrings.js -- the planets' paths round the Sun, and a dot for each planet, on the Sun
 // stage while a trip asks for them (registry/tours.yaml `orbits:`).
 //
-// Contract: createOrbitRings(scene, { renderer, camera }) -> { update(tMs, ids), visible(), setDotScale(k), dispose() }
+// Contract: createOrbitRings(scene, { renderer, camera }) -> { update(tMs, ids), visible(), setDotScale(k), setLineScale(k), lines(), dispose() }
 // Pure and exported for the test: ringTimes(periodMs, t0Ms, n), periodMsOfWorld(id), litShare(n, sun)
 //
 // WHY, measured 2026-09-23 (headless Chrome, 1280 x 800). "A year in a minute" runs on the Sun
@@ -124,6 +124,15 @@ const REBUILD_MS = 365.25 * DAY / 2;
 
 const BY_ID = new Map(WORLDS.map((w) => [w.id, w]));
 
+/**
+ * THE PATHS' WIDTH, in CSS pixels (internal #444, #454). A THREE.Line is one DEVICE pixel wide
+ * whatever is asked, so five paths on black lit 1.1 % of the year trip's picture and were a third
+ * of a CSS pixel on a phone. scene/fatline.js draws the same points as quads this wide; it is
+ * fetched the first time a path is asked for and the one-pixel line is drawn until it lands.
+ * Width is a drawing choice: the points are the ephemeris's and are not moved.
+ */
+export const PATH_PX = 2;
+
 /** A planet's sidereal period in ms (Astronomy Engine's table), or null for anything else. */
 export function periodMsOfWorld(id) {
   const w = BY_ID.get(id);
@@ -232,6 +241,46 @@ export function createOrbitRings(scene, { renderer, camera } = {}) {
   litDots.visible = false;
   group.add(litDots);
 
+  // The wide paths (PATH_PX above): scene/fatline.js, never at boot.
+  let fatMod = null;
+  let fatAsked = false;
+  let fatWarned = false;
+  let lineScale = 1;
+  function fatten(r) {
+    if (r.fat || !fatMod) return;
+    r.fat = fatMod.createFatLine(r.geometry.attributes.position.array, { colour: r.material.color.getHex(), opacity: r.material.opacity, renderOrder: 1 });
+    r.fat.name = `${r.line.name}-wide`;
+    r.fat.setCount(r.geometry.drawRange.count);
+    group.add(r.fat);
+  }
+  function wantFat() {
+    if (fatAsked || typeof window === 'undefined') return;
+    fatAsked = true;
+    import('./fatline.js').then((m) => { fatMod = m; for (const r of rings.values()) fatten(r); })
+      .catch((e) => { console.warn('the wide paths did not load; the one-pixel lines stay', e); });
+  }
+  /** Once a frame: the wide path stands in for the line it was built from, at today's buffer size. */
+  function syncFat() {
+    if (!fatMod) return;
+    const dpr = renderer && renderer.getPixelRatio ? renderer.getPixelRatio() : 1;
+    const el = renderer && renderer.domElement;
+    const w = el ? el.width : 1;
+    const h = el ? el.height : 1;
+    for (const r of rings.values()) {
+      if (!r.fat) continue;
+      // A shader this GPU will not compile draws nothing: the one-pixel line comes back for good.
+      if (r.fat.broken(renderer) === true) {
+        group.remove(r.fat); r.fat.dispose(); r.fat = null; fatMod = null;
+        if (!fatWarned) { fatWarned = true; console.warn('the wide paths did not compile here; the one-pixel lines stay'); }
+        continue;
+      }
+      r.fat.visible = r.line.visible;
+      if (r.fat.visible) { r.fat.setWidth(PATH_PX * lineScale * dpr, w, h); r.line.visible = false; }
+    }
+  }
+  /** A picture may ask for wider paths (ui/trippics.js: a share picture is seen at half its size). */
+  function setLineScale(k) { lineScale = Number.isFinite(k) && k > 0 ? Math.min(4, k) : 1; }
+
   function ringFor(id) {
     let r = rings.get(id);
     if (r) return r;
@@ -251,8 +300,10 @@ export function createOrbitRings(scene, { renderer, camera } = {}) {
     line.frustumCulled = false;
     line.renderOrder = 1;
     group.add(line);
-    r = { line, geometry, material, builtAt: NaN, builtStage: null };
+    r = { line, geometry, material, fat: null, builtAt: NaN, builtStage: null };
     rings.set(id, r);
+    wantFat();
+    if (fatMod) fatten(r);
     return r;
   }
 
@@ -277,6 +328,7 @@ export function createOrbitRings(scene, { renderer, camera } = {}) {
     r.geometry.attributes.position.needsUpdate = true;
     r.geometry.setDrawRange(0, n >= 5 ? n : 0);
     r.geometry.computeBoundingSphere();
+    if (r.fat) { r.fat.setCount(r.geometry.drawRange.count); r.fat.touch(); }
     r.builtAt = tMs;
     r.builtStage = stage.worldId;
   }
@@ -315,6 +367,7 @@ export function createOrbitRings(scene, { renderer, camera } = {}) {
     dotGeometry.setDrawRange(0, n);
     dotGeometry.attributes.position.needsUpdate = true;
     dotGeometry.attributes.color.needsUpdate = true;
+    syncFat();
   }
 
   /** The Earth's stage: the Moon's path and the two lit dots, from outside the Moon's orbit only. */
@@ -342,17 +395,24 @@ export function createOrbitRings(scene, { renderer, camera } = {}) {
       litMaterial.uniforms.uSunView.value.copy(_s);
     }
     litMaterial.uniforms.uPixelRatio.value = renderer && renderer.getPixelRatio ? renderer.getPixelRatio() : 1;
+    syncFat();
   }
 
   function dispose() {
     litGeometry.dispose();
     litMaterial.dispose();
-    for (const r of rings.values()) { r.geometry.dispose(); r.material.dispose(); }
+    for (const r of rings.values()) { r.geometry.dispose(); r.material.dispose(); if (r.fat) r.fat.dispose(); }
     dotGeometry.dispose();
     dotMaterial.dispose();
     if (map) map.dispose();
     if (scene) scene.remove(group);
   }
 
-  return { update, setDotScale, dispose, group, visible: () => group.visible, planets: () => planets.map((w) => w.id) };
+  return {
+    update, setDotScale, setLineScale, dispose, group,
+    visible: () => group.visible,
+    planets: () => planets.map((w) => w.id),
+    /** What draws each path now: 'wide' once scene/fatline.js has landed, 'line' before. */
+    lines: () => [...rings.entries()].map(([id, r]) => ({ id, by: r.fat ? 'wide' : 'line', points: r.geometry.drawRange.count, shown: r.fat ? r.fat.visible : r.line.visible })),
+  };
 }

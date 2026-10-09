@@ -505,6 +505,9 @@ tours:
     requires: [stars, deep-sky, exotics, galaxy]
     stage: stellar
     clock: as-found
+    # The way home in one flight, as the roof trip has (internal #454): the last stop is on the
+    # ladder's chain, so the end card is shown over the Earth and not where the trip ended.
+    return: true
     # The preview picture (2026-09-23): the Milky Way from outside, its arms and its bar. The first
     # stop, the Sun from a light-year, rendered at 1200 x 630 as a field of dots; the Pleiades,
     # the centre and Andromeda were rendered too, and read as a smear, a white blot and a small
@@ -1755,6 +1758,9 @@ tours:
     hides: [exoplanets, systems, exotics, deep-sky, galaxy]
     stage: stellar
     clock: as-found
+    # The way home in one flight, as the roof trip has (internal #454): the last stop is on the
+    # ladder's chain, so the end card is shown over the Earth and not where the trip ended.
+    return: true
     # The scorpion beside the Milky Way: the one figure with a picture behind it. Orion's own
     # frame is lines on black, 0.9 % lit against this one's 3.0 % (2026-10-08, internal #444).
     og_stop: 9
@@ -2510,6 +2516,9 @@ tours:
     group: solar-system
     next: planets-tonight
     requires: [worlds, aurora]
+    # The launch pads' names are not this trip's subject, and three of its stops are over the Earth:
+    # the walk of 2026-10-09 read "Soyuz 2.1b · Progress MS-36" and three more over the aurora stop.
+    hides: [launches, just-launched, starlink-trains]
     stage: sun
     clock: as-found
     orbits: [mercury, venus, earth, mars]
@@ -3126,6 +3135,9 @@ tours:
     hides: [exoplanets, systems, galaxy, exotics]
     stage: stellar
     clock: as-found
+    # The way home in one flight, as the roof trip has (internal #454): the last stop is on the
+    # ladder's chain, so the end card is shown over the Earth and not where the trip ended.
+    return: true
     og_stop: 1
     stops:
       - id: nursery
@@ -3411,6 +3423,9 @@ tours:
     hides: [exoplanets, systems, exotics, galaxy]
     stage: stellar
     clock: as-found
+    # The way home in one flight, as the roof trip has (internal #454): the last stop is on the
+    # ladder's chain, so the end card is shown over the Earth and not where the trip ended.
+    return: true
     og_stop: 5
     stops:
       - id: eye

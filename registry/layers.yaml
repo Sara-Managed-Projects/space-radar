@@ -153,7 +153,7 @@ layers:
     style: {kind: model, model: satellite-generic, glyph: satellite, colour: satellite, near_km: 8000}
     card: satellite
     # A hand-kept list, every row carrying a reason a reviewer can argue with.
-    select: {list: registry/lists/notable.yaml}
+    select: {list: "site/js/data/layers.js#NOTABLE"}
     budget: {max_items: 80}
 
   - id: starlink-trains
@@ -223,7 +223,7 @@ layers:
     frame: earth-inertial
     style: {kind: glyph, glyph: debris, colour: debris, opacity: 0.5, draw_under: true}
     card: debris
-    select: {list: registry/lists/debris.yaml}
+    select: {list: "site/js/data/layers.js#DEBRIS_NOTABLE"}
     budget: {max_items: 40}
 
   # Every tracked piece of debris and spent rocket body (public #449), from the catalogue's own
@@ -265,7 +265,7 @@ layers:
     frame: sun-inertial
     style: {kind: model, model: asteroid-generic, glyph: asteroid, colour: asteroid, near_km: 500000}
     card: asteroid
-    select: {close_approach_within_days: 60, or_list: registry/lists/small-bodies.yaml}
+    select: {close_approach_within_days: 60, or_list: "site/js/data/sample.js#NAMED_ASTEROIDS"}
     budget: {max_items: 300}
     # enabled: absent means on. Stage B shipped 2026-09-06; the `enabled: false` these rows carried
     # until 2026-09-08 was never read by the browser, which is exactly what spec 0026 req 8 fixes.

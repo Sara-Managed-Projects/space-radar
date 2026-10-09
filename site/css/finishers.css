@@ -257,3 +257,38 @@ html.sr-phone .sr-launchchip {
     transition: opacity 120ms linear;
   }
 }
+
+/* THE KEY OF AN EARTH DATA MAP, ON A PHONE (ui/overlaykey.js, internal #386). With the sheet at its
+   peek the map is on the globe and the legend is in the sheet, out of sight: the same legend is one
+   line under the search while the map is up. Glass like the bar it sits in; the ramp is the
+   registry's own colours. Not at full height (the sheet is a page then and shows the key itself). */
+html.sr-phone.sr-overlay-keyed:not([data-sheet='full']) .sr-top__line {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+}
+
+html.sr-phone.sr-overlay-keyed:not(.sr-card-open) .sr-liveline {
+  display: none;
+}
+
+.sr-overlaykey__top {
+  display: none;
+}
+
+html.sr-phone .sr-overlaykey__top:not([hidden]) {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-1) var(--sp-2);
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--sr-glass);
+  -webkit-backdrop-filter: var(--sr-blur);
+  backdrop-filter: var(--sr-blur);
+  border: 1px solid var(--sr-line);
+  border-radius: var(--sr-radius);
+  font: 400 var(--sr-fs-sm)/16px var(--sr-font);
+  color: var(--sr-text-dim);
+}
