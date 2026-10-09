@@ -444,6 +444,21 @@ export function capKept(keep, cap = LABEL_CAP) {
 export const OCCLUDER_SHRINK = 0.998;
 
 /**
+ * A stop of a trip frames one thing, and a name from a thousand times further away than the frame
+ * is of is not part of that picture: Sedna, Eris and Vesta were printed at the edge of the Venus
+ * stop, 1P/Halley beside Mars, Voyager 2 over a city (the 195-stop walk, 2026-10-09 and 10; internal
+ * #546). `frameDist` is the camera's distance from what it looks at, `dist` the name's from the
+ * camera, both in scene units. The Sun and the Moon are the sky's own landmarks and keep their
+ * names; the selection is never asked (it is not a "notable"). Pure.
+ */
+export const FAR_FRAME_RATIO = 1000;
+export function tooFarForFrame(dist, frameDist, record) {
+  if (!(frameDist > 0) || !(dist > 0)) return false;
+  if (record && record.klass === 'world' && (record.id === 'sun' || record.id === 'moon')) return false;
+  return dist > FAR_FRAME_RATIO * frameDist;
+}
+
+/**
  * Is `pos` hidden from `eye` behind one of these spheres? Pure; `spheres` are {x, y, z, r, id} in
  * scene units, and the sphere whose `id` is `skipId` is ignored -- a world's label sits on its own
  * centre, which its own surface would otherwise always hide.
@@ -593,6 +608,9 @@ export function createLabels(ctx, host) {
 
     const ladder = isLadderStage(stage.worldId);
     lastAllPlanets = stage.worldId === 'sun';
+    // A trip's stop on a world's stage (not the Sun's, where every planet is the picture, and not the
+    // ladder): how far the camera stands from what it frames, for tooFarForFrame.
+    const frameDist = inTrip && !ladder && stage.worldId !== 'sun' && ctx.cameraRig && ctx.cameraRig.state ? ctx.cameraRig.state.distance : 0;
     const isGround = (r) => r.klass === 'world' && r.id === stage.worldId;
     // The tracked object's tag (ui/hud.js, spec 0047) names the selection beside its brackets; a
     // label as well would be the same name twice, 30 px apart.
@@ -636,6 +654,7 @@ export function createLabels(ctx, host) {
         if (isGround(r)) continue; // the ground has no label
         if (!mayNameHere(r, layer)) continue; // a dead stage on a layer about light, not derelicts
         const pr = project(r, tMs, camera, w, h);
+        if (pr && tooFarForFrame(pr.dist, frameDist, r)) continue;
         // A moon says which world it goes round, so chooseLabels can rank it behind that world.
         if (pr) { out.push({ record: r, kind: 'notable', parentId: labelParentId(r), colour: dotColour(r, layer), ...pr }); seen.add(r.id); }
       }
