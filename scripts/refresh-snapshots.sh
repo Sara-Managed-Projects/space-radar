@@ -160,15 +160,19 @@ def body(f):
     b = f["body"]; return (json.loads(b), True) if isinstance(b, str) else (b, False)
 
 # NOT OURS TO COPY (2026-10-09, internal #370). A source the registry switches off is not published:
-# its file and its manifest row are dropped from the PUBLISH copy, whatever an earlier run left in
-# the work folder. ESA's NEOCC list is the case: its terms forbid redistribution, the harvester
+# its file is dropped from the PUBLISH copy, whatever an earlier run left in the work folder, and
+# its manifest row is published as `skipped` with no stamps (the row itself stays: it is how the
+# app says "could not look" about a source by name, and a name is not the publisher's data). ESA's NEOCC list is the case: its terms forbid redistribution, the harvester
 # had saved it before anyone read them, and the old file would otherwise have been uploaded again
 # with every refresh. harvest/sources.json is the registry as the harvester reads it.
 _off = sorted(r["id"] for r in json.load(open("harvest/sources.json"))["sources"] if r.get("enabled") is False)
 _ix_p = os.path.join(d, "index.json")
 _ix = json.load(open(_ix_p))
 for _k in _off:
-    _had = _ix.get("snapshots", {}).pop(_k, None) is not None
+    _had = False
+    if _k in _ix.get("snapshots", {}):
+        _had = bool(_ix["snapshots"][_k].get("fetched_at"))
+        _ix["snapshots"][_k] = {"status": "skipped", "last_error": "switched off in registry/sources.yaml (enabled: false): not fetched and not published"}
     for _name in (_k + ".json", _k + ".cols.json"):
         if os.path.exists(os.path.join(d, _name)):
             os.remove(os.path.join(d, _name)); _had = True

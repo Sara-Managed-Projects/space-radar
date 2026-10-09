@@ -70,8 +70,10 @@ def main():
     rows = index.get("snapshots") or {}
     saved, missing, total = 0, [], len(raw)
     for rid in NOT_OURS_TO_COPY:
-        if rows.pop(rid, None) is not None:
-            # The manifest that is saved must not name a file that is not: write it without the row.
+        if rid in rows and rows[rid].get("fetched_at"):
+            # A mirror that still lists it as data: the manifest that is saved says `skipped`, as the
+            # live site's does, so the copy never claims a file it does not hold.
+            rows[rid] = {"status": "skipped", "last_error": "not ours to copy: its publisher does not allow redistribution"}
             index["snapshots"] = rows
             raw = json.dumps(index, indent=1).encode("utf-8")
         for name in (rid + ".json", rid + ".cols.json"):

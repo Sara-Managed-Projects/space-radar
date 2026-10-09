@@ -96,8 +96,9 @@ with tempfile.TemporaryDirectory() as tmp_s:
     check(proc.returncode == 0, f"scripts/refresh-snapshots.sh runs ({proc.stdout[-300:]}{proc.stderr[-300:]})")
     uploaded = sorted(p.name for p in out.iterdir())
     snaps = json.loads((out / "index.json").read_text())["snapshots"] if (out / "index.json").exists() else {}
-    check("esa-neocc-close.json" not in uploaded and "esa-neocc-close" not in snaps,
-          f"a file an earlier harvest left in the work folder is NOT published once its source is switched off (uploaded {uploaded})")
+    esa_row = snaps.get("esa-neocc-close", {})
+    check("esa-neocc-close.json" not in uploaded and esa_row.get("status") == "skipped" and "fetched_at" not in esa_row and "items" not in esa_row,
+          f"a file an earlier harvest left in the work folder is NOT published once its source is switched off, and its manifest row says skipped with no stamps (uploaded {uploaded}; row {esa_row})")
     check("jpl-cad.json" in uploaded and "jpl-cad" in snaps and "celestrak-stations.json" in uploaded, "and everything else is published as before")
     check("esa-neocc-close: switched off in registry/sources.yaml; not published" in proc.stdout, "the script says what it left out and why")
 
@@ -128,7 +129,8 @@ with tempfile.TemporaryDirectory() as tmp_s:
     saved_index = json.loads((site / "data/v1/index.json").read_text())["snapshots"]
     check(save.returncode == 0 and saved == ["celestrak-stations.json", "index.json", "jpl-cad.json"],
           f"scripts/save_offline_data.py saves everything but ESA's list, and removes the copy an older run saved ({saved}; {save.stderr[-200:]})")
-    check("esa-neocc-close" not in saved_index and "jpl-cad" in saved_index, "and the manifest it saves does not name a file it did not save")
+    check(saved_index.get("esa-neocc-close", {}).get("status") == "skipped" and "fetched_at" not in saved_index.get("esa-neocc-close", {}) and saved_index["jpl-cad"].get("fetched_at") == stamp,
+          f"and the manifest it saves does not claim the file it did not save ({saved_index.get('esa-neocc-close')})")
     import save_offline_data  # noqa: E402
     check(sorted(save_offline_data.NOT_OURS_TO_COPY) == off, f"its list is the registry's (it travels alone in the zip, so it is written out): {save_offline_data.NOT_OURS_TO_COPY}")
 
@@ -152,7 +154,9 @@ with tempfile.TemporaryDirectory() as tmp_s:
         return ""
 
     good = {"celestrak-stations": {"status": "ok", "fetched_at": stamp}}
-    check("esa-neocc-close" in refused({**good, "esa-neocc-close": {"status": "ok", "fetched_at": stamp}}), "a release is refused while the saved copy's manifest names ESA's list")
+    check("esa-neocc-close" in refused({**good, "esa-neocc-close": {"status": "ok", "fetched_at": stamp}}), "a release is refused while the saved copy's manifest lists ESA's list as data")
+    why = refused({**good, "space-track-tip": {"status": "skipped"}, "esa-neocc-close": {"status": "skipped"}})
+    check("esa-neocc-close" not in why and "space-track-tip" not in why, "a `skipped` row with no file is a name, not a copy: it does not stop a release")
     check("esa-neocc-close" in refused(good, ("esa-neocc-close.json",)), "and while the file is in the folder, named or not")
     why = refused(good)
     check("esa-neocc-close" not in why and "not in the tree" in why, f"a clean saved copy gets past that check (it stops later, at a file this stub has not: {why[:80]})")

@@ -87,12 +87,14 @@ def check_tree(root: Path) -> None:
     # A zip is a redistribution. ESA's NEOCC list was in the saved copy until 2026-10-09 and its terms
     # forbid exactly that (internal #370): a folder that still holds it is refused, not quietly cleaned,
     # so whoever cuts the release knows their saved copy predates the change and saves a new one.
+    # (A manifest ROW with no file is not a copy of anything: the live index names Space-Track's
+    # reentries as `skipped`, and the app says so by name.)
     rows = doc.get("snapshots") or {}
     for rid in not_ours_to_copy():
-        if rid in rows or (data / f"{rid}.json").is_file() or (data / f"{rid}.cols.json").is_file():
+        if (data / f"{rid}.json").is_file() or (data / f"{rid}.cols.json").is_file() or (rows.get(rid) or {}).get("fetched_at"):
             raise Refused(f"the saved copy holds {rid}, which registry/sources.yaml switches off: its publisher "
                           "does not allow redistribution. Run `python3 scripts/save_offline_data.py` again "
-                          "(it removes the file and the manifest row) before building a release")
+                          "(it removes the file and marks the manifest row skipped) before building a release")
     for rel in BESIDE + ("site/index.html", "site/sw.js", "site/manifest.webmanifest", "site/js/main.js"):
         if not (root / rel).is_file():
             raise Refused(f"{rel} is not in the tree, and the zip promises it")
