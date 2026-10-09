@@ -43,6 +43,9 @@ const DRAW_SCALE = {};
 // the stars stay sharp. Orion at 1.5 px was a hair at 1200 px; at this it reads at a card's size.
 const LINE_SCALE = {
   'the-constellations': 2.4,
+  // The planets' paths (scene/orbitrings.js setLineScale): 2 px at the page's size is a hair in a
+  // picture shown at half of 1200 px, and five paths on black were 1.1 % of it lit (internal #444).
+  'a-year-in-a-minute': 2,
 };
 const FLIGHT_GRACE_MS = 14000;
 
@@ -143,12 +146,15 @@ for (let n = 0; n < list.length; n += 1) {
     const row = { trip: pair.trip, stop: stop.id, number: tour.stops.indexOf(stop) + 1, zoom: pair.zoom, shownAt: new Date(sr.clock.now()).toISOString(), t: Math.round(elapsed()) };
     const k = DRAW_SCALE[pair.trip] || 1;
     const figures = sr.figures && sr.figures.setLineScale ? sr.figures : null;
+    const paths = sr.orbitRings && sr.orbitRings.setLineScale ? sr.orbitRings : null;
     if (figures && LINE_SCALE[pair.trip]) { figures.setLineScale(LINE_SCALE[pair.trip]); await sleep(150); }
-    row.lineScale = figures && LINE_SCALE[pair.trip] ? LINE_SCALE[pair.trip] : 1;
+    if (paths && LINE_SCALE[pair.trip]) { paths.setLineScale(LINE_SCALE[pair.trip]); await sleep(150); }
+    row.lineScale = (figures || paths) && LINE_SCALE[pair.trip] ? LINE_SCALE[pair.trip] : 1;
     if (want === 'look') row.look = draw(800, 336, pair.zoom, 'image/jpeg', 0.8);
     if (want === 'og' || want === 'both') row.og = draw(Math.round(1200 * k), Math.round(504 * k), pair.zoom);
     if (want === 'card' || want === 'both') row.png = draw(Math.round(960 * k), Math.round(720 * k), pair.zoom);
     if (figures) figures.setLineScale(1);
+    if (paths) paths.setLineScale(1);
     out.frames.push(row);
   } catch (e) {
     out.log.push(`${key}: ${String(e && e.message)} ${String((e && e.stack) || '').split('\n').slice(1, 4).join(' | ')}`);

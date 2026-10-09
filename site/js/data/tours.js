@@ -403,6 +403,7 @@ export const TOURS = [
 "group": "beyond",
 "next": "life-of-a-star",
 "og_stop": 6,
+"return": true,
 "pacing": "auto",
 "min_stops": 3,
 "stops": [
@@ -566,7 +567,7 @@ export const TOURS = [
 "dwell_ms": 20000
 }
 ],
-"estimate_ms": 141556
+"estimate_ms": 162556
 },
 {
 "id": "roof-to-the-edge",
@@ -1777,6 +1778,7 @@ export const TOURS = [
 "deep-sky",
 "galaxy"
 ],
+"return": true,
 "pacing": "auto",
 "min_stops": 3,
 "stops": [
@@ -2114,7 +2116,7 @@ export const TOURS = [
 "dwell_ms": 20000
 }
 ],
-"estimate_ms": 274320
+"estimate_ms": 295320
 },
 {
 "id": "the-living-earth",
@@ -3457,6 +3459,7 @@ export const TOURS = [
 "galaxy",
 "exotics"
 ],
+"return": true,
 "pacing": "auto",
 "min_stops": 3,
 "stops": [
@@ -3669,7 +3672,7 @@ export const TOURS = [
 "dwell_ms": 20000
 }
 ],
-"estimate_ms": 201685
+"estimate_ms": 222685
 },
 {
 "id": "black-holes",
@@ -3857,6 +3860,7 @@ export const TOURS = [
 "exotics",
 "galaxy"
 ],
+"return": true,
 "pacing": "auto",
 "min_stops": 3,
 "stops": [
@@ -4059,7 +4063,7 @@ export const TOURS = [
 "dwell_ms": 16819
 }
 ],
-"estimate_ms": 190030
+"estimate_ms": 211030
 },
 {
 "id": "a-dark-sky",

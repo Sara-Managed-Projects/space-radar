@@ -435,6 +435,8 @@ jobs:
         run: node tests/test_touch_targets.mjs
       - name: "A year in a minute: four worlds on the Sun's stage, drawn true, at 525 600"
         run: node tests/test_year_trip.mjs
+      - name: "The planets' paths are drawn two pixels wide by a module fetched on demand (internal #444, #454)"
+        run: node tests/test_fat_paths.mjs
       # Spec 0040: TRAPPIST-1 at its own scale. Kepler's third law on the seven rows, the planets the
       # exoplanet table's own records on a 100 000 km stage, each at its transit toward us, and the
       # eleven-stop "Travel to exoplanets" run end to end by the real trip machine.

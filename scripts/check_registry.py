@@ -4693,6 +4693,20 @@ def main() -> int:
             fail(where, "no card template")
         if not l.get("select"):
             fail(where, "no `select:` rule -- a layer that selects nothing is a layer nobody sees")
+        # A hand-kept list is named by where it IS (internal #413: three rows named
+        # registry/lists/*.yaml, a folder that never existed; the lists are tables in the layer's
+        # own module). `<file>#<EXPORT>`: the file exists and exports that name.
+        sel = l.get("select")
+        for key in ("list", "or_list"):
+            ref = sel.get(key) if isinstance(sel, dict) else None
+            if ref is None:
+                continue
+            path, _, name = str(ref).partition("#")
+            target = ROOT / path
+            if not name or not target.is_file():
+                fail(where, f"`select: {{{key}: {ref}}}` must be `<file>#<EXPORT>` naming a file that exists")
+            elif not re.search(rf"^export const {re.escape(name)}\b", target.read_text(encoding="utf-8"), re.M):
+                fail(where, f"`select: {{{key}: {ref}}}`: {path} does not export `{name}`")
         # `load: on-demand` (2026-09-22): the layer is fetched when its box is ticked, never at
         # boot. Reserved for a file too big to fetch for everybody: the active catalogue is 7 MB.
         # A small layer marked this way would just be a layer that hides its own data.
