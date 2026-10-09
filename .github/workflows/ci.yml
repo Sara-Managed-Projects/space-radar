@@ -193,6 +193,8 @@ jobs:
         run: node tests/test_objectnow.mjs
       - name: "The KTX2 plan, its flags and GPU bytes, run against a fake encoder (internal #156)"
         run: python3 tests/test_ktx2_plan.py
+      - name: "The AVIF trial finds the lowest quality at the SSIM floor, for both codecs (internal #530; skips without Pillow's AVIF)"
+        run: python3 tests/test_avif_trial.py
       - name: The walk notices another project's headless Chrome (internal #460)
         run: node tests/test_chrome_quiet.mjs
       - name: The prepared cloud workflow stays minimal (internal #139)
