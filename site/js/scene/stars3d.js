@@ -401,11 +401,19 @@ export function createStars3d(scene, opts = {}) {
     const pos = geometry.getAttribute('position').array;
     const n = data.count;
     let bad = 0;
+    // One matrix for all 109 000 stars (stage.affineFrom): the exact call per star composed the frame
+    // each time, 1.1 to 1.7 s on the Earth's stage. Exact calls stay for a stage that bends positions.
+    const A = stage.affineFrom(SUN_INERTIAL, tMs);
     for (let i = 0; i < n; i++) {
-      _km.x = data.drawLy[i * 3] * LY_KM;
-      _km.y = data.drawLy[i * 3 + 1] * LY_KM;
-      _km.z = data.drawLy[i * 3 + 2] * LY_KM;
-      if (!stage.toSceneInto(_km, SUN_INERTIAL, _v, tMs)) { bad++; pos[i * 3] = pos[i * 3 + 1] = pos[i * 3 + 2] = 0; continue; }
+      if (A) {
+        const kx = data.drawLy[i * 3] * LY_KM, ky = data.drawLy[i * 3 + 1] * LY_KM, kz = data.drawLy[i * 3 + 2] * LY_KM;
+        _v.set(A.o[0] + A.x[0] * kx + A.y[0] * ky + A.z[0] * kz, A.o[1] + A.x[1] * kx + A.y[1] * ky + A.z[1] * kz, A.o[2] + A.x[2] * kx + A.y[2] * ky + A.z[2] * kz);
+      } else {
+        _km.x = data.drawLy[i * 3] * LY_KM;
+        _km.y = data.drawLy[i * 3 + 1] * LY_KM;
+        _km.z = data.drawLy[i * 3 + 2] * LY_KM;
+        if (!stage.toSceneInto(_km, SUN_INERTIAL, _v, tMs)) { bad++; pos[i * 3] = pos[i * 3 + 1] = pos[i * 3 + 2] = 0; continue; }
+      }
       if (mode === 'shell') _v.normalize().multiplyScalar(SHELL_UNITS);
       pos[i * 3] = _v.x; pos[i * 3 + 1] = _v.y; pos[i * 3 + 2] = _v.z;
     }

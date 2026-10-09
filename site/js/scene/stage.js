@@ -305,6 +305,43 @@ export const stage = {
   },
 
   /**
+   * The conversion of many far points at once (internal #549). toSceneInto() is exact and costs a
+   * frame composition per call -- on the Earth's stage that is the Earth's position from the
+   * ephemeris, 0.7 to 1.7 s for the 109 000 stars (measured 2026-10-09: VsopFormula 612 ms of 1.5 s in
+   * stars3d.rebuild) -- but a frame change is a rotation and a translation, so for points a light-year
+   * or more from every body, one fixed matrix does it. Probed at four points a few light-years out and
+   * checked at a fifth; null when the stage bends positions (a viewAdjust) or the frame cannot be expressed,
+   * and the caller then makes the exact call for each point.
+   *
+   * @returns {{ o: number[], x: number[], y: number[], z: number[] } | null} scene = o + x*kmX + y*kmY + z*kmZ,
+   *   where x, y, z are the scene vectors a kilometre along each axis of `frame` makes
+   */
+  affineFrom(frame, tMs) {
+    const L = 1e13; // a light-year is 9.46e12 km
+    const f = frame || this.frame;
+    const t = tMs === undefined ? this.tMs : tMs;
+    const at = (x, y, z) => {
+      const v = this.toSceneInto({ x, y, z }, f, new THREE.Vector3(), t);
+      return v ? [v.x, v.y, v.z] : null;
+    };
+    const B = 2 * L;
+    const p0 = at(B, B, B), px = at(B + L, B, B), py = at(B, B + L, B), pz = at(B, B, B + L);
+    if (!p0 || !px || !py || !pz) return null;
+    const col = (p) => [(p[0] - p0[0]) / L, (p[1] - p0[1]) / L, (p[2] - p0[2]) / L];
+    const x = col(px), y = col(py), z = col(pz);
+    const o = [p0[0] - B * (x[0] + y[0] + z[0]), p0[1] - B * (x[1] + y[1] + z[1]), p0[2] - B * (x[2] + y[2] + z[2])];
+    // a fifth point, off the four, must land where the matrix says
+    const q = [-3.1 * L, 5.3 * L, 1.7 * L];
+    const real = at(q[0], q[1], q[2]);
+    if (!real) return null;
+    for (let k = 0; k < 3; k++) {
+      const pred = o[k] + x[k] * q[0] + y[k] * q[1] + z[k] * q[2];
+      if (!(Math.abs(pred - real[k]) <= 1e-9 * (Math.abs(real[k]) + Math.abs(o[k]) + 1))) return null;
+    }
+    return { o, x, y, z };
+  },
+
+  /**
    * A DIRECTION, not a position. Converted as the difference of two points -- the tip and the
    * origin of the source frame -- because a frame change is a rotation AND a translation and only
    * the rotation applies to a direction. Doing it as a difference means the rotation comes from

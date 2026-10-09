@@ -374,10 +374,17 @@ export function createGalaxy(scene, opts = {}) {
     const tMs = stage.tMs;
     const fill = (src, geo, count = data.count) => {
       const pos = geo.getAttribute('position').array;
+      // One matrix for the whole cloud (stage.affineFrom, internal #549), the exact call per point where the stage bends positions.
+      const A = stage.affineFrom(SUN_INERTIAL, tMs);
       for (let i = 0; i < count; i++) {
-        _km.x = src[i * 3] * KPC_KM;
-        _km.y = src[i * 3 + 1] * KPC_KM;
-        _km.z = src[i * 3 + 2] * KPC_KM;
+        const kx = src[i * 3] * KPC_KM, ky = src[i * 3 + 1] * KPC_KM, kz = src[i * 3 + 2] * KPC_KM;
+        if (A) {
+          pos[i * 3] = A.o[0] + A.x[0] * kx + A.y[0] * ky + A.z[0] * kz;
+          pos[i * 3 + 1] = A.o[1] + A.x[1] * kx + A.y[1] * ky + A.z[1] * kz;
+          pos[i * 3 + 2] = A.o[2] + A.x[2] * kx + A.y[2] * ky + A.z[2] * kz;
+          continue;
+        }
+        _km.x = kx; _km.y = ky; _km.z = kz;
         if (!stage.toSceneInto(_km, SUN_INERTIAL, _v, tMs)) { pos[i * 3] = pos[i * 3 + 1] = pos[i * 3 + 2] = 0; continue; }
         pos[i * 3] = _v.x; pos[i * 3 + 1] = _v.y; pos[i * 3 + 2] = _v.z;
       }

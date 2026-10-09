@@ -65,5 +65,53 @@ check((await spread([], (fn) => setTimeout(fn, 0))) === 0, 'an empty list resolv
   const main = readFileSync(join(JS, 'main.js'), 'utf8');
   check(/id === 'stellar' && !galaxyPrewarm/.test(main) && /galaxy\.prewarm\(renderer, ctx\.camera\)/.test(main) && /saveData/.test(main), 'main.js prewarms the galaxy on the stellar rung unless data saving is on');
 }
+// 6. MANY POINTS AT ONCE (internal #549): one matrix for a frame change, equal to the exact call, and the exact call is made 20 times not 109 000
+{
+  const THREE = await import(join(ROOT, 'site/vendor/three.module.min.js'));
+  const { stage } = await import(join(JS, 'scene/stage.js'));
+  const tMs = Date.UTC(2026, 9, 9, 12);
+  let worstRel = 0;
+  for (const world of ['earth', 'sun', 'stellar', 'galaxy', 'local-group']) {
+    stage.setWorld(world); stage.setTime(tMs);
+    const A = stage.affineFrom('sun-inertial', tMs);
+    check(A !== null, `${world}: the frame change is affine for far points`);
+    if (!A) continue;
+    let seed = 7;
+    const rnd = () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
+    const v = new THREE.Vector3();
+    for (let k = 0; k < 200; k++) {
+      const km = { x: (rnd() - 0.5) * 2e15, y: (rnd() - 0.5) * 2e15, z: (rnd() - 0.5) * 2e15 };
+      stage.toSceneInto(km, 'sun-inertial', v, tMs);
+      const g = [A.o[0] + A.x[0] * km.x + A.y[0] * km.y + A.z[0] * km.z, A.o[1] + A.x[1] * km.x + A.y[1] * km.y + A.z[1] * km.z, A.o[2] + A.x[2] * km.x + A.y[2] * km.y + A.z[2] * km.z];
+      const scale = Math.max(1, Math.abs(v.x), Math.abs(v.y), Math.abs(v.z));
+      worstRel = Math.max(worstRel, Math.abs(g[0] - v.x) / scale, Math.abs(g[1] - v.y) / scale, Math.abs(g[2] - v.z) / scale);
+    }
+  }
+  check(worstRel < 1e-9, `the matrix agrees with the exact call to ${worstRel.toExponential(2)} of the point's size (under 1e-9)`);
+  // a stage that bends positions is refused
+  stage.setWorld('earth'); stage.setTime(tMs);
+  stage.setViewAdjust((out) => out.multiplyScalar(1 + 1e-3 * Math.sin(out.x)));
+  check(stage.affineFrom('sun-inertial', tMs) === null, 'a stage with a viewAdjust that bends positions gets no matrix');
+  stage.setViewAdjust(null);
+  // stars3d.rebuild on the Earth\'s stage asks the exact call only a handful of times
+  const { createStars3d } = await import(join(JS, 'scene/stars3d.js'));
+  const raw = readFileSync(join(ROOT, 'site/data/stars3d.bin'));
+  const buffer = raw.buffer.slice(raw.byteOffset, raw.byteOffset + raw.byteLength);
+  const namesDoc = JSON.parse(readFileSync(join(ROOT, 'site/data/stars3d.names.json'), 'utf8'));
+  const stars = createStars3d(new THREE.Scene(), { binBuffer: buffer, namesDoc });
+  await stars.load();
+  stage.setWorld('stellar'); stage.setTime(tMs);
+  stars.setOpacity(1);
+  await stars.ensureGeometry();
+  let calls = 0;
+  const real = stage.toSceneInto;
+  stage.toSceneInto = function (...a) { calls++; return real.apply(this, a); };
+  stage.setWorld('earth'); stage.setTime(tMs);
+  stars.rebuild();
+  stage.toSceneInto = real;
+  check(calls < 100, `rebuilding 109 000 stars on the Earth's stage made ${calls} exact conversions (was 109 000)`);
+  check(stars.mode() === 'shell', 'and the stars are the shell again');
+  stage.setWorld('earth');
+}
 if (problems.length) { console.error('spread FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('spread ok: steps run one per turn in order, the galaxy builds in pieces and is prewarmed on the stellar rung');
