@@ -59,7 +59,7 @@ import { createGroundTrack } from './scene/groundtrack.js';
 import { createTrackLabels } from './ui/tracklabels.js';
 import { createOrbitRings, periodMsOfWorld, MARKER_PX } from './scene/orbitrings.js';
 import { tripOwnsCard } from './ui/tripstate.js';
-import { createFrameLatch, shouldSaveData, chooseTier, createTierPromoter, createIdleGate, idleCapWanted, movingReasons } from './scene/quality.js';
+import { createFrameLatch, createScaleGovernor, shouldSaveData, chooseTier, createTierPromoter, createIdleGate, idleCapWanted, movingReasons } from './scene/quality.js';
 import { createLiveClouds } from './scene/liveclouds.js';
 import { createTextureTiers, gpuMiB, variantFor, LIVE_CLOUDS_MIB } from './scene/texturetiers.js';
 import { TEXTURES } from './data/textures.js';
@@ -2236,9 +2236,14 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
   // The frame-rate latch (spec 0026 req 18): twenty-frame median over 33 ms for three seconds ->
   // one device pixel per CSS pixel and no Milky Way picture, once, said in the panel.
   const latch = createFrameLatch();
+  // The step before it (internal #521): 2, 1.5, 1.25, 1 of the device's pixel ratio; the latch is fed
+  // only from the lowest step, and stays the last resort.
+  const scaler = createScaleGovernor({ deviceRatio: typeof devicePixelRatio === 'number' ? devicePixelRatio : 1 });
+  ctx.scaler = scaler;
   // Read every frame by the aurora's folds; one query object, not a matchMedia call a frame.
   const reducedMotionQuery = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
   function degrade() {
+    scaler.freeze();
     if (ctx.renderer && ctx.rendererApi && ctx.rendererApi.setQuality) ctx.rendererApi.setQuality('low');
     if (starfield && starfield.setDetail) starfield.setDetail('low');
     if (ctx.nebulae) ctx.nebulae.setSkyVisible(false);
@@ -2286,6 +2291,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
   // announced, so a flight started from anywhere and a map landing from anywhere are both seen.
   const seenCamera = new Float64Array(18);
   let seenGpu = -1;
+  let cameraMovedLast = false;  // the scale governor steps up only while the camera is still
   let wasCapped = false;
   let freeFrameMs = 16;
   function cameraMoved() {
@@ -2348,7 +2354,15 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
     // Not while filming: a film's frames are all one step long (33 ms at 30 fps), which the latch
     // would read as a slow device and answer by throwing the picture's quality away.
     if (!capped) freeFrameMs = frameMs;
-    if (!document.hidden && !ctx.renderMode && !capped && latch.push(frameMs, nowReal)) degrade();
+    if (!document.hidden && !ctx.renderMode && !capped && !latch.latched) {
+      const st = ctx.trip && ctx.trip.state;
+      const calm = !(st && st.phase !== 'idle') && !(ctx.autopilot && ctx.autopilot.engaged) && !(ctx.climb && ctx.climb.state && (ctx.climb.state.active || ctx.climb.state.fading)) && !cameraMovedLast;
+      if (scaler.push(frameMs, nowReal, calm)) {
+        if (ctx.rendererApi && ctx.rendererApi.setScale) ctx.rendererApi.setScale(scaler.scale);
+        window.dispatchEvent(new CustomEvent('sr:scale', { detail: { ratio: scaler.scale, step: scaler.step } }));
+      }
+      if (scaler.atFloor && latch.push(frameMs, nowReal)) degrade();
+    }
     if (ctx.quality && !document.hidden) {
       if (!capped) ctx.quality.frame(frameMs, nowReal, latch.latched);
       if (nowReal - lastTierTick >= 1000) { lastTierTick = nowReal; ctx.quality.tick(nowReal); }
@@ -2536,7 +2550,7 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
         stage: stage.worldId,
         climb: !!((ctx.opening && ctx.opening.live) || (ctx.climb && ctx.climb.state && (ctx.climb.state.active || ctx.climb.state.fading)) || (ctx.imagine && ctx.imagine.active)),
         selected: !!ctx.selected(),
-        cameraMoved: cameraMoved(),
+        cameraMoved: (cameraMovedLast = cameraMoved()),
         animatedLayer: layerAnimating(nowReal),
         loading: !window.__srLayersReady || gpuChanged(),
       }));

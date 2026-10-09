@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const JS = join(dirname(fileURLToPath(import.meta.url)), '..', 'site/js');
-const { createFrameLatch, shouldSaveData } = await import(join(JS, 'scene/quality.js'));
+const { createFrameLatch, createScaleGovernor, SCALE_STEPS, shouldSaveData } = await import(join(JS, 'scene/quality.js'));
 const problems = [];
 const check = (ok, msg) => { if (!ok) problems.push(msg); };
 
@@ -48,5 +48,51 @@ check(shouldSaveData({ effectiveType: '3g' }) === true && shouldSaveData({ effec
 check(shouldSaveData({ effectiveType: '4g' }) === false, '4g does not');
 check(shouldSaveData(undefined) === false && shouldSaveData(null) === false, 'no API (Safari, Firefox): treated as fast, which is what it says');
 
+// THE RESOLUTION SCALE BEFORE THE LATCH (internal #521)
+{
+  check(JSON.stringify(createScaleGovernor({ deviceRatio: 2 }).steps) === '[2,1.5,1.25,1]' && JSON.stringify(SCALE_STEPS) === '[2,1.5,1.25,1]', 'a ratio-2 device has the ladder 2, 1.5, 1.25, 1');
+  check(JSON.stringify(createScaleGovernor({ deviceRatio: 1.75 }).steps) === '[1.75,1.5,1.25,1]', 'a ratio-1.75 device starts at its own ratio');
+  check(JSON.stringify(createScaleGovernor({ deviceRatio: 3 }).steps) === '[2,1.5,1.25,1]' && JSON.stringify(createScaleGovernor({ deviceRatio: 1 }).steps) === '[1]', 'a ratio above 2 starts at 2; a ratio of 1 has one step');
+  check(createScaleGovernor({ deviceRatio: 1 }).atFloor === true, 'a ratio-1 device feeds the latch from the first frame, as before');
+  // Constant 40 ms frames: one step down per three seconds (plus the 20-frame window), then the latch.
+  const g = createScaleGovernor({ deviceRatio: 2 });
+  const latch = createFrameLatch();
+  const log = [];
+  let now = 0, trippedAt = null;
+  for (let n = 0; n < 2000 && trippedAt === null; n++) {
+    now += 40;
+    if (g.push(40, now)) log.push([now, g.scale]);
+    if (g.atFloor && latch.push(40, now)) trippedAt = now;
+  }
+  check(JSON.stringify(log.map((x) => x[1])) === '[1.5,1.25,1]', `slow frames walk down 1.5, 1.25, 1 (${JSON.stringify(log)})`);
+  check(log.every((x, k) => k === 0 || x[0] - log[k - 1][0] >= 3000), 'steps are at least three seconds apart');
+  check(trippedAt !== null && trippedAt > log[2][0] + 3000, `the latch trips only after the floor and its own three seconds (${trippedAt})`);
+  g.freeze();
+  for (let n = 0; n < 400; n++) { now += 5; g.push(5, now); }
+  check(g.scale === 1, 'frozen after the latch: the ladder does not climb');
+}
+{
+  // One stall does not cost the visit its quality: slow for 4 s, then fast: one step down, then back up after 10 s.
+  const g = createScaleGovernor({ deviceRatio: 2 });
+  const latch = createFrameLatch();
+  let now = 0, down = 0, up = 0, tripped = false, last = 2;
+  for (let n = 0; n < 130; n++) { now += 40; if (g.push(40, now)) { down++; last = g.scale; } if (g.atFloor && latch.push(40, now)) tripped = true; }
+  check(down === 1 && last === 1.5 && !tripped, `a four-second stall costs one step, not the latch (steps down ${down}, ratio ${last}, latched ${tripped})`);
+  for (let n = 0; n < 2000; n++) { now += 8; if (g.push(8, now)) { up++; last = g.scale; } if (g.atFloor && latch.push(8, now)) tripped = true; }
+  check(up === 1 && g.scale === 2 && !tripped, `fast frames bring the ratio back (${up} step up, ratio ${g.scale})`);
+}
+{
+  // Never up while the picture is busy; down regardless.
+  const g = createScaleGovernor({ deviceRatio: 2 });
+  let now = 0;
+  for (let n = 0; n < 130; n++) { now += 40; g.push(40, now, false); }
+  check(g.scale === 1.5, 'a step down does not wait for calm');
+  for (let n = 0; n < 1500; n++) { now += 8; g.push(8, now, false); }
+  check(g.scale === 1.5, 'a step up waits for calm');
+  for (let n = 0; n < 1500; n++) { now += 8; g.push(8, now, true); }
+  check(g.scale === 2, 'and comes when it is calm');
+  check(createScaleGovernor({ deviceRatio: 2 }).push(NaN, 0) === false, 'bad durations are ignored');
+}
+
 if (problems.length) { console.error('quality FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
-console.log('quality ok: the latch trips once after three slow seconds and never on stutters; data-saver follows the connection');
+console.log('quality ok: the latch trips once after three slow seconds and never on stutters; the resolution scale steps 2, 1.5, 1.25, 1 before the latch and comes back; data-saver follows the connection');
