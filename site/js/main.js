@@ -2585,7 +2585,9 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
     // One mark per object: the dot fades out as that record's 3D model fades in.
     // Read through ctx at call time: this function has no `heroes` of its own (the first version
     // named one, and the browser check said `heroes is not defined` -- no unit test could).
-    gl.setModelOpacity((id) => (ctx.heroes ? ctx.heroes.drawnOpacity(id) : 0));
+    // A deep-sky dot also gives way to its own glow once that is wider than it (scene/dsoglow.js dotYield).
+    const deepSky = layer.id === 'deep-sky';
+    gl.setModelOpacity((id) => Math.max(ctx.heroes ? ctx.heroes.drawnOpacity(id) : 0, deepSky && ctx.dsoGlow ? ctx.dsoGlow.dotYield(id) : 0));
     gl.setRecords([]);
     // Hidden until its records arrive; one() then sets the real visibility. This loop runs
     // before the first await, and ctx.isLayerOn is attached to ctx after this function is

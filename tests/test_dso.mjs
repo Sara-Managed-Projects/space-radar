@@ -221,5 +221,18 @@ if (said) {
   check(/mix\( 1\.0, uShaped, aStep \)/.test(src), 'only the ellipses that a photograph holds step back for it');
 }
 
+// ---- the dot gives way to its glow (internal #472, bulk 3): Andromeda's companions read as a halo round a dot ----
+{
+  const { dotYieldAt } = await import(join(JS, 'scene/dsoglow.js'));
+  check(dotYieldAt(8) === 0 && dotYieldAt(14) === 0 && dotYieldAt(0) === 0 && dotYieldAt(NaN) === 0, 'a glow under 14 px leaves its dot alone');
+  check(dotYieldAt(26) === 1 && dotYieldAt(100) === 1, 'a glow of 26 px or more takes its dot');
+  let mono = true; let prev = 0; for (let px = 14; px <= 26; px += 0.5) { const y = dotYieldAt(px); if (y < prev - 1e-12) mono = false; prev = y; }
+  check(mono, 'the dot fades out as the glow widens, never back and forth');
+  check(dotYieldAt(500) === 0 && dotYieldAt(300) > 0 && dotYieldAt(300) < 1, 'inside the glow (shader fade 220 to 420 px) the dot returns');
+  check(dotYieldAt(60, 0) === 0 && Math.abs(dotYieldAt(60, 0.5) - 0.5) < 1e-12, 'a glow a photograph is replacing yields only the share it still draws');
+  const src = readFileSync(join(JS, 'main.js'), 'utf8');
+  check(/dsoGlow\.dotYield\(id\)/.test(src), 'main.js lets the deep-sky layer\'s dots yield to dotYield');
+}
+
 if (problems.length) { console.error('dso FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('dso ok: 110 Messier objects and the LMC at sourced distances, Andromeda 2.54 Mly on the stellar rung, found by name, M-number and NGC number');
