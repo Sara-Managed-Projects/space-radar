@@ -3371,6 +3371,9 @@ def check_oddities(doc: dict, world_ids: set, sites: list) -> None:
 
 
 errors: list[str] = []
+# A registry-only copy (no site/js/main.js) may skip the list-file check, but only by saying so.
+NO_SITE_MODULES = os.environ.get("CHECK_REGISTRY_NO_SITE") == "1"
+LIST_EXPORTS_SKIPPED: list[str] = []
 
 
 def fail(where: str, msg: str) -> None:
@@ -4771,8 +4774,17 @@ def main() -> int:
             path, _, name = str(ref).partition("#")
             target = ROOT / path
             # A copy of the registry without the site's modules (tests/test_growth.py makes one) has
-            # nothing to look the table up in: the form is still held there, the file is not.
+            # nothing to look the table up in: the form is still held there, the file is not. That
+            # skip used to be silent, which made a tree that LOST site/js/main.js pass this check.
+            # Now it is a choice the caller makes out loud (CHECK_REGISTRY_NO_SITE=1, set by
+            # tests/test_growth.py, the only such caller), counted in the closing line; without it a
+            # missing main.js is a failure.
             if name and not (ROOT / "site" / "js" / "main.js").is_file():
+                if NO_SITE_MODULES:
+                    LIST_EXPORTS_SKIPPED.append(f"{where}.select.{key}")
+                    continue
+                fail(where, f"`select: {{{key}: {ref}}}` cannot be looked up: site/js/main.js is missing from this tree. "
+                            "A registry-only copy says so with CHECK_REGISTRY_NO_SITE=1")
                 continue
             if not name or not target.is_file():
                 fail(where, f"`select: {{{key}: {ref}}}` must be `<file>#<EXPORT>` naming a file that exists")
@@ -5200,6 +5212,8 @@ def main() -> int:
         # a figure a human copies out of a comment drifts, and a figure the check prints does not.
         f"{sum(1 for r in rockets if r.get('livery') == 'unknown')} of {len(rockets)} "
         f"with no sourced livery)"
+        + (f"; NOT CHECKED, no site/js/main.js and CHECK_REGISTRY_NO_SITE=1: {len(LIST_EXPORTS_SKIPPED)} hand-kept list export(s)"
+           if LIST_EXPORTS_SKIPPED else "")
     )
     return 0
 
