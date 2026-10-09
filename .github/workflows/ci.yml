@@ -522,6 +522,8 @@ jobs:
         run: node tests/test_galaxy.mjs
       - name: heavy builds run a step a turn; the Milky Way is built in pieces and prewarmed (internal 549)
         run: node tests/test_spread.mjs
+      - name: the sky sphere and the 3D stars lie in one frame (internal 549, #387)
+        run: node tests/test_one_star_frame.mjs
       - name: the nebulae's photographs sit where their objects are, and nothing of them loads at boot (spec 0067)
         run: node tests/test_nebulae.mjs
       - name: every extreme object has a source and sits where its source says (spec 0028 step 7)
