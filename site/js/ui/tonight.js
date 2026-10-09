@@ -666,10 +666,22 @@ export function renderTonight(host, ctx) {
         // A planet at the centre: the Telescope frames it with its moons or rings instead of a dot in a flat field (#351).
         const body = f === 'telescope' && typeof s.bodyAtCentre === 'function' ? s.bodyAtCentre() : null;
         s.setFov(body ? fovFor(body.fieldDeg) : FOV[f]);
+        // Through the telescope a planet leaves a 1 degree field in minutes: the view keeps it in the
+        // middle (internal #547; sky/skyview.js follow()). A wider field lets go of it.
+        if (typeof s.follow === 'function') {
+          if (body) s.follow(body.id);
+          else if (f !== 'telescope' && s.following) s.follow(null);
+        }
+        paintBar();
       }));
     }
     const fieldNote = el('p', 'sr-density__note');
     node.appendChild(fieldNote);
+    // "Following Saturn": said while the view is kept on a body, and once when it sets.
+    const followNote = el('p', 'sr-density__note');
+    followNote.hidden = true;
+    followNote.setAttribute('aria-live', 'polite');
+    node.appendChild(followNote);
     // Three eyepieces (internal #351): the round field's own width, whatever the window's shape.
     const eyepieces = new Map();
     const eyeRow = row(K.eyepiece);
@@ -726,12 +738,18 @@ export function renderTonight(host, ctx) {
       b.setAttribute('aria-pressed', on ? 'true' : 'false');
       b.classList.toggle('sr-bracketed', !!on);
     };
+    let lastFollowed = null;
     const paintBar = () => {
       const s = sky();
       const o = s && s.options ? s.options : {};
       const field = s && s.field ? s.field : 'eye';
       for (const [f, b] of fields) press(b, f === field);
       setText(fieldNote, K.fieldNotes[field]);
+      const followed = s && s.following ? s.following : null;
+      const bodyName = (id) => (COPY.sky && COPY.sky.bodies && COPY.sky.bodies[id]) || id;
+      if (followed) { lastFollowed = followed; setText(followNote, t(K.following, { name: bodyName(followed) })); }
+      else if (s && s.followEnded === 'set' && lastFollowed) setText(followNote, t(K.followSet, { name: bodyName(lastFollowed) }));
+      followNote.hidden = !(followed || (s && s.followEnded === 'set' && lastFollowed));
       const fovNow = s && Number.isFinite(s.fovDeg) ? s.fovDeg : FOV.eye;
       for (const [k, b] of eyepieces) press(b, Math.abs(Math.log(fovNow / fovFor(EYEPIECES[k]))) < 0.05);
       // The sky's time: the clock's, and which part of the day or night that is at this place.
