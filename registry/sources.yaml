@@ -370,6 +370,30 @@ sources:
     terms_url: https://www.weather.gov/disclaimer
     terms_recorded: 2026-10-05
 
+  # The wind ten metres above the ground, for the Earth overlay (scene/wind.js; internal #146, #362, #552).
+  # NOAA/NCEP's Global Forecast System through the PacIOOS ERDDAP server (University of Hawaii, a NOAA IOOS
+  # regional association), dataset `ncep_global`: one forecast hour (`{hour3}`, filled by harvest/run.py
+  # expand_url with the three-hourly hour at or before the run), every fifth degree, 37 x 72 points, 168 818 B
+  # of JSON on 2026-10-09. The server answers `Access-Control-Allow-Origin: *`, but it is one university
+  # server that took 35 s and returned 404 on 2026-10-07 (data/wind.js), so a visitor's browser does not
+  # call it: `browser: false`, the page reads this saved copy and, with no copy, offers no wind.
+  # Terms, READ 2026-10-09 in the dataset's own attributes (pae-paha.pacioos.hawaii.edu/erddap/griddap/
+  # ncep_global.das, `license`): "The data may be used and redistributed for free but is not intended for
+  # legal use, since it may contain inaccuracies." Creator NOAA National Centers for Environmental
+  # Prediction; publisher PacIOOS.
+  - id: wind
+    url: https://pae-paha.pacioos.hawaii.edu/erddap/griddap/ncep_global.json?ugrd10m%5B({hour3})%5D%5B(-90):10:(90)%5D%5B(0):10:(355)%5D,vgrd10m%5B({hour3})%5D%5B(-90):10:(90)%5D%5B(0):10:(355)%5D
+    auth: none
+    browser: false
+    cadence: 3h
+    freshness_max: 12h
+    parser: wind
+    outputs: [wind.json]
+    attribution: "Wind: NOAA/NCEP Global Forecast System, through PacIOOS ERDDAP (University of Hawaii)"
+    licence: "May be used and redistributed for free, not for legal use (the dataset's own licence attribute, read 2026-10-09)"
+    terms_url: https://pae-paha.pacioos.hawaii.edu/erddap/griddap/ncep_global.html
+    terms_recorded: 2026-10-09
+
   # Tropical cyclones, worldwide, from GDACS (the UN / European Commission disaster alert system,
   # run by the EC Joint Research Centre). MEASURED 2026-09-28: `Access-Control-Allow-Origin: *`,
   # 27 646 bytes for the newest 20 storms in about 1-4 s. `pageSize=20` because the list is newest

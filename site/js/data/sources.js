@@ -355,6 +355,23 @@ export const SOURCES = {
     note: '27.6 kB, the newest 20 storms, measured 2026-09-28. GDACS calls its information "purely indicative".',
   },
 
+  // The wind overlay's field (scene/wind.js, data/wind.js; internal #552). Read only from our saved copy:
+  // `browser: false`, registry/sources.yaml `wind` says why. Nothing calls load() for it; the Earth data
+  // panel asks snapshotAvailable('wind') and offers the wind only when a copy exists.
+  wind: {
+    id: 'wind',
+    registryId: 'wind',
+    label: 'Wind — NOAA GFS, ten metres up',
+    publisher: 'PacIOOS (University of Hawaii)',
+    url: 'https://pae-paha.pacioos.hawaii.edu/erddap/griddap/ncep_global.html',
+    cadenceMs: 3 * HOUR,
+    freshnessMaxMs: 12 * HOUR,
+    browser: false,
+    kind: 'json',
+    attribution: 'Wind: NOAA/NCEP Global Forecast System, through PacIOOS ERDDAP (University of Hawaii)',
+    note: '168.8 kB, 37 x 72 points for one forecast hour, measured 2026-10-09.',
+  },
+
   // --- Sources a browser cannot reach -------------------------------------------------------
   // Present so the status panel can say "could not look" about them by name, which is a
   // different answer from "stale" and a very different answer from "fine". Every one of these

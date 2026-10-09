@@ -21,7 +21,7 @@ import re
 import os
 import time
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from . import fetch as _fetch
 from . import parsers as _parsers
@@ -129,7 +129,7 @@ def run_source(store, source: Source, prev: snap.Entry, *, now: datetime, dry_ru
         elif source.query:
             fetched = _fetch_query(source, prev, fetcher=fetcher)
         else:
-            fetched = _fetch_one(source, prev, fetcher=fetcher)
+            fetched = _fetch_one(source, prev, fetcher=fetcher, now=now)
     except _fetch.FetchError as e:
         return done(_carry(prev, status="error", error=str(e)))
 
@@ -196,8 +196,18 @@ def _conditional(prev: snap.Entry) -> dict:
     return {"etag": None, "since": None}
 
 
-def _fetch_one(source: Source, prev: snap.Entry, *, fetcher) -> Fetched:
-    r = fetcher(source.url, **_conditional(prev))
+def expand_url(url: str, now: datetime) -> str:
+    """`{hour3}` in a row's url is the model's three-hourly forecast hour at or before `now`, as ERDDAP
+    writes it (`2026-10-09T15:00:00Z`): the wind's request names one hour (internal #552)."""
+    if "{hour3}" not in url:
+        return url
+    hour = now.astimezone(timezone.utc).replace(minute=0, second=0, microsecond=0)
+    hour = hour.replace(hour=hour.hour - hour.hour % 3)
+    return url.replace("{hour3}", hour.strftime("%Y-%m-%dT%H:%M:%SZ"))
+
+
+def _fetch_one(source: Source, prev: snap.Entry, *, fetcher, now: datetime | None = None) -> Fetched:
+    r = fetcher(expand_url(source.url, now or datetime.now(timezone.utc)), **_conditional(prev))
     return Fetched(status=r.status, text=r.text, content_type=r.content_type, bytes=len(r.body),
                    etag=r.etag, not_modified=(r.status == 304))
 

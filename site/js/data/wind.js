@@ -141,12 +141,17 @@ export function stepWind(grid, latDeg, lonDeg, seconds) {
 // and then did not answer in 60 s, while the server's `info` page kept answering. It is one
 // university server. So: a long wait, one second try, and a plain sentence when it does not come
 // (COPY.overlay.wind.failed). The dependable route is our own saved copy made by the harvester
-// (/data/v1/, as every other source has); that needs a harvester row and a deploy, and is the
-// open half of internal #362.
-const FETCH_TIMEOUT_MS = 40000;
+// (/data/v1/, as every other source has). IT IS NOW (internal #552): registry/sources.yaml has the row
+// `wind` (harvest/parsers/wind.py, three hours, `browser: false`), and fetchWind reads that saved copy
+// and nothing else, so a visitor's browser never calls the university server. With no copy the panel
+// offers no wind (ui/overlaypanel.js asks snapshotAvailable).
+const FETCH_TIMEOUT_MS = 20000;
 const RETRY_AFTER_MS = 3000;
 
-/** The field for the forecast hour at `nowMs`. Rejects when the server or the grid is not as asked. */
+/** Where the harvester puts the field (registry/sources.yaml `wind`): beside the page, relative to it. */
+export const WIND_SNAPSHOT_URL = 'data/v1/wind.json';
+
+/** The field the harvester saved. Rejects when there is no copy or it is not the grid that was asked for. */
 export async function fetchWind(opts = {}) {
   try {
     return await fetchWindOnce(opts);
@@ -160,13 +165,15 @@ export async function fetchWind(opts = {}) {
 
 async function fetchWindOnce(opts) {
   const fetchImpl = opts.fetch || globalThis.fetch;
-  const nowMs = Number.isFinite(opts.nowMs) ? opts.nowMs : Date.now();
   const ctl = typeof AbortController === 'function' ? new AbortController() : null;
   const timer = ctl ? setTimeout(() => ctl.abort(), FETCH_TIMEOUT_MS) : null;
   try {
-    const r = await fetchImpl(windUrl(nowMs), { credentials: 'omit', referrerPolicy: 'no-referrer', signal: ctl ? ctl.signal : undefined });
-    if (!r.ok) throw new Error(`the wind server answered ${r.status}`);
-    const grid = parseWind(await r.text());
+    const r = await fetchImpl(WIND_SNAPSHOT_URL, { credentials: 'omit', referrerPolicy: 'no-referrer', signal: ctl ? ctl.signal : undefined });
+    if (!r.ok) throw new Error(`the saved wind copy answered ${r.status}`);
+    let doc = JSON.parse(await r.text());
+    // The harvester wraps the upstream body: {schema, source, fetched_at, valid_until, ..., body}.
+    if (doc && doc.body && doc.source === 'wind') doc = doc.body;
+    const grid = parseWind(doc);
     if (!grid) throw new Error('the wind field was not the grid that was asked for');
     return grid;
   } finally {

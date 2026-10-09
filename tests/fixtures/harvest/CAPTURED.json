@@ -80,5 +80,9 @@
   "ll2_previous.json": {
     "url": "https://ll.thespacedevs.com/2.3.0/launches/previous/?limit=30",
     "note": "captured 2026-10-08; the first 6 of 30 rows, with the pictures, biographies, descriptions and link lists removed from each (keys: bio, country, description, image, images, info_url, info_urls, infographic, logo, map_image, mission_patches, nation_url, nationality, program, social_logo, social_media_links, timeline, total_landing_count, total_launch_count, updates, vid_urls, wiki, wiki_url)"
+  },
+  "wind.json": {
+    "url": "https://pae-paha.pacioos.hawaii.edu/erddap/griddap/ncep_global.json?ugrd10m[(2026-10-09T15:00:00Z)][(-90):10:(90)][(0):10:(355)],vgrd10m[...same...]",
+    "note": "read 2026-10-09; header keys verbatim, `rows` cut from 2 664 to the first 12"
   }
 }

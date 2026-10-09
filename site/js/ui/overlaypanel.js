@@ -15,8 +15,8 @@ import { legendNode, paintLegend, overlayLine } from './overlaylegend.js';
 
 /** The overlay id main.js hands to scene/wind.js instead of scene/earthoverlay.js. */
 export const WIND_OPTION = 'wind';
-/** Whether the panel lists the wind (see the note where the option is built). */
-export const WIND_OFFERED = false;
+/** Whether the panel MAY list the wind: only when the harvester has saved a copy (see where the option is built). */
+export const WIND_OFFERED = true;
 
 export function overlayPanel(ctx) {
   const C = COPY.overlay;
@@ -40,15 +40,21 @@ export function overlayPanel(ctx) {
     select.appendChild(o);
   }
   // The wind is not a GIBS picture: scene/wind.js draws it from NOAA's model (ctx.setOverlay knows the id).
-  // NOT OFFERED YET (2026-10-07). The field comes from one university server that, the day it was
-  // measured, answered in 2 s twice and then took 35 s, returned 404 and timed out. A row that fails
-  // half the time is worse than no row: it comes back when the harvester writes /data/v1/wind.json
-  // (internal #362). scene/wind.js and ctx.setOverlay('wind') stay, so a link or a trip stop can use it.
+  // OFFERED ONLY WITH A SAVED COPY (internal #552). The field used to come from one university server
+  // that, the day it was measured, answered in 2 s twice and then took 35 s, returned 404 and timed
+  // out, and a row that fails half the time is worse than no row. The harvester now writes
+  // /data/v1/wind.json every three hours; the row appears once the manifest lists a usable copy, and
+  // a visitor's browser never calls that server. scene/wind.js and ctx.setOverlay('wind') answer a
+  // link or a trip stop whether or not the row is shown.
   if (WIND_OFFERED) {
-    const wind = document.createElement('option');
-    wind.value = WIND_OPTION;
-    wind.textContent = C.wind.title;
-    select.appendChild(wind);
+    import('../data/sources.js').then((m) => m.snapshotAvailable('wind')).then((ok) => {
+      if (!ok || wrap.destroyed) return;
+      const wind = document.createElement('option');
+      wind.value = WIND_OPTION;
+      wind.textContent = C.wind.title;
+      select.appendChild(wind);
+      paint();
+    }).catch(() => { /* no manifest: no wind row */ });
   }
   wrap.appendChild(select);
   const legend = legendNode(null);
@@ -71,6 +77,6 @@ export function overlayPanel(ctx) {
   });
   window.addEventListener('sr:overlay', paint);
   paint();
-  wrap.destroy = () => window.removeEventListener('sr:overlay', paint);
+  wrap.destroy = () => { wrap.destroyed = true; window.removeEventListener('sr:overlay', paint); };
   return wrap;
 }

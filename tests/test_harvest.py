@@ -56,6 +56,7 @@ EXPECTED_COUNTS = {
     "dsn_now": 14,
     "swpc": 81,
     "swpc_ovation": 10,
+    "wind": 12,
     "wikidata": 3,
     "space_track_tip": 1,  # documented shape, not a capture -- CAPTURED.json says so
     "nasa_exoplanet_archive": 12,

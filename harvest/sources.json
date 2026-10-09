@@ -209,6 +209,7 @@
           "CENTER": "'500@10'",
           "STEP_SIZE": "'6 h'",
           "VEC_TABLE": "'2'",
+          "TIME_TYPE": "'UT'",
           "OUT_UNITS": "'KM-S'",
           "CSV_FORMAT": "'YES'",
           "COMMAND": "'{id}'",
@@ -396,6 +397,17 @@
       "parser": "swpc_ovation",
       "outputs": [
         "aurora-summary.json"
+      ]
+    },
+    {
+      "id": "wind",
+      "url": "https://pae-paha.pacioos.hawaii.edu/erddap/griddap/ncep_global.json?ugrd10m%5B({hour3})%5D%5B(-90):10:(90)%5D%5B(0):10:(355)%5D,vgrd10m%5B({hour3})%5D%5B(-90):10:(90)%5D%5B(0):10:(355)%5D",
+      "auth": "none",
+      "refresh": "3h",
+      "freshness_max": "12h",
+      "parser": "wind",
+      "outputs": [
+        "wind.json"
       ]
     },
     {
