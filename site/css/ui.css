@@ -5344,6 +5344,9 @@ html.sr-phone .sr-top .sr-search__input::placeholder {
 
 html.sr-phone .sr-top .sr-search__pop {
   position: absolute;
+  /* Above the launch chip and the live line, which come later in the bar and carry their own glass
+     (#563: the pill lay over the first result's title). */
+  z-index: 2;
   top: calc(var(--sr-top-bar) + var(--sp-2));
   right: 0;
   left: 0;
@@ -6122,6 +6125,11 @@ html.sr-night-red::after {
 .sr-tonight-view__rowside { flex: 0 0 auto; font: 400 var(--sr-fs-sm)/18px var(--sr-font-mono); color: var(--sr-text-dim); }
 /* On a phone the search bar has the top of the screen: the field of view sits under it. */
 html.sr-phone .sr-skyfov { top: calc(var(--sp-6) * 2 + var(--sp-2)); }
+/* With a launch inside a day the line under the search holds the countdown chip (44 px tall): the
+   field line goes under it, or the chip lay over '72° field · eye' (bulk 2 frame, #565). */
+html.sr-phone.sr-launchday:not([data-sheet='full']) .sr-skyfov {
+  top: calc(var(--sr-top-y) + var(--sr-top-bar) + var(--sp-2) + 44px + var(--sp-2));
+}
 
 /* Ivan, 2026-10-03: the serif on names read worse than the sans it replaced, so the five roles are
    back on their old faces (and task 6 removed the face). And the card's name is a
