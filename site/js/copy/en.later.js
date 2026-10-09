@@ -892,7 +892,7 @@ Object.assign(COPY, {
       },
       // The Telescope button with a planet in the middle keeps the view on it (sky/skyview.js follow()).
       following: 'Following {name}. Drag the sky to let go.',
-      followSet: '{name} has set, so the view no longer follows it.',
+      followSet: '{name} has set, so the view let go.',
       show: 'Lines and names',
       toggles: { figures: 'Figures', names: 'Names', art: 'Pictures', bounds: 'Borders', sunPath: 'Sun’s path', equator: 'Equator', grid: 'Grid', starGrid: 'Star grid', meteors: 'Meteors', trails: 'Trails', seeThrough: 'See-through ground' },
       toggleTitles: {
