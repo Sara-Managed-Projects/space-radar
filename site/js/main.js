@@ -23,7 +23,7 @@ import { parsePlaceValue, keptPlace, browserStorage } from './sky/placelink.js';
 import { dropFrom, readMoment, writeMoment, bootLink, laterLink, linkChange, read as readUrlKeys, write as writeUrlState, clear as clearUrlState, stopIndex, parseCam } from './ui/urlstate.js';
 import { guessObserver, roundPlace } from './sky/guessplace.js';
 import { COPY, CITIES, t as fill } from './copy/en.js';
-import { LAYERS, loadLayer, addSystemRows } from './data/layers.js';
+import { LAYERS, loadLayer, addSystemRows, addPlanetAliases } from './data/layers.js';
 import * as sources from './data/sources.js';
 import { createSkyView } from './sky/skyview.js';
 import { showCard, hideCard, wantCards } from './ui/cardgate.js';
@@ -2618,6 +2618,7 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
       const moreSystems = () => loadSystemIndex().then((rows) => {
         if (!rows.length) return null;
         addSystemRows(rows);
+        addPlanetAliases(rows, layerRecords.get('exoplanets'));
         const layer = layerRec('systems');
         return layer ? one(layer) : null;
       });

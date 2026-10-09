@@ -309,6 +309,30 @@ function milkyWayRecords() {
 // Black holes and other extremes (spec 0028 step 7): the mirror of registry/exotics.yaml as static
 // records on the sun-inertial axes -- the same sky -> ecliptic rotation the stars and planets use.
 /**
+ * The Archive files some stars under another name than the one people know (Kepler-90 is KOI-351), so
+ * its planets are "KOI-351 b" to "h". Give each the name people type, in its aliases, so that
+ * "Kepler-90 h" finds Kepler-90 h (internal #473). Pure on the rows; it adds to `meta.aliases` of the
+ * planet records it is handed, once. Returns how many it changed.
+ */
+export function addPlanetAliases(rows, planets) {
+  const byId = new Map();
+  for (const r of planets || []) if (r && r.id) byId.set(r.id, r);
+  let n = 0;
+  for (const s of rows || []) {
+    if (!s || !s.host || !s.display || s.display === s.host) continue;
+    for (const p of s.planets || []) {
+      const rec = byId.get(p.id);
+      if (!rec || typeof rec.name !== 'string' || !rec.name.startsWith(s.host + ' ')) continue;
+      const alias = s.display + rec.name.slice(s.host.length);
+      const meta = rec.meta || (rec.meta = {});
+      const have = Array.isArray(meta.aliases) ? meta.aliases : (meta.aliases = []);
+      if (!have.includes(alias)) { have.push(alias); n++; }
+    }
+  }
+  return n;
+}
+
+/**
  * One record per registry/systems.yaml row: the host star, `star-<id>`, klass `star`, placed on the
  * exoplanet table's own row for it (data/systems.js hostSky, joined by the generator) so it sits
  * exactly on the planets' glyphs. Its facts are the row's, with the page they were read from.

@@ -351,6 +351,26 @@ Date.now = realDateNow;
   check(/import\('\.\.\/data\/systems-index\.js'\)/.test(ex) && !/from '\.\.\/data\/systems-index\.js'/.test(ex), 'the index is fetched late, never at boot');
 }
 
+// --- a planet answers to its star's usual name (internal #473) ---------------------------------
+{
+  const { SYSTEM_INDEX } = await import(join(JS, 'data/systems-index.js'));
+  const { addPlanetAliases, LAYERS: L2 } = await import(join(JS, 'data/layers.js'));
+  const { buildIndex, findMatches } = await import(join(JS, 'ui/search.js'));
+  const recs = parseExoplanets(csv);
+  const kepler = SYSTEM_INDEX.find((x) => x.id === 'kepler-90');
+  const koiH = recs.find((r) => r.id === 'exo-koi-351-h');
+  check(koiH && koiH.name === 'KOI-351 h', `the table files Kepler-90 h as KOI-351 h (${koiH && koiH.name})`);
+  const before = findMatches(buildIndex(recs, L2), 'kepler-90 h').hits;
+  check(!before.some((m) => m.record.id === 'exo-koi-351-h'), 'before the aliases, "kepler-90 h" does not find it');
+  const n = addPlanetAliases(SYSTEM_INDEX, recs);
+  check(n >= 7 && koiH.meta.aliases.includes('Kepler-90 h'), `${n} planets gained the usual name of their star; KOI-351 h is also Kepler-90 h`);
+  check(addPlanetAliases(SYSTEM_INDEX, recs) === 0, 'and a second call adds nothing');
+  const after = findMatches(buildIndex(recs, L2), 'kepler-90 h').hits;
+  check(after[0] && after[0].record.id === 'exo-koi-351-h', `"kepler-90 h" now finds KOI-351 h first (${after[0] && after[0].record.id})`);
+  check(addPlanetAliases([{ host: 'A', display: 'A', planets: [{ id: 'x' }] }], [{ id: 'x', name: 'A b', meta: {} }]) === 0 && addPlanetAliases(null, null) === 0, 'a star with one name and bad input change nothing');
+  void kepler;
+}
+
 if (problems.length) {
   console.error(`systems FAILED (${problems.length}):\n  ` + problems.join('\n  '));
   process.exit(1);
