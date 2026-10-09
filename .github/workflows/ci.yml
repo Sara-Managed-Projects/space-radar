@@ -828,6 +828,8 @@ jobs:
         run: node tests/test_columnar.mjs
       - name: "a publisher who forbids redistribution (ESA NEOCC) is not fetched, published, saved or zipped, and JPL's APIs are never called from a browser (internal #370)"
         run: python3 tests/test_not_ours_to_copy.py
+      - name: "the copy checker covers the page scripts under site/js/pages/: a new one that writes words must be listed with its test (internal #556)"
+        run: python3 tests/test_check_copy_pages.py
       - name: "with nothing moving the loop draws twenty frames a second: the eleven reasons it must not, each held, and a capped frame kept from the frame latch (internal #520)"
         run: node tests/test_idle.mjs
       - name: "the notifier: digests, showers, subscriptions and tokens"

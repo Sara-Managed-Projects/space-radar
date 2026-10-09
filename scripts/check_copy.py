@@ -43,6 +43,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 UI = ROOT / "site" / "js" / "ui"
+# site/js/pages/: the scripts the generated crawlable pages (scripts/seo_pages.py) load. They COMPOSE
+# sentences in the visitor's browser (a pass time, the planets up tonight), so unlike ui/ they cannot
+# take a string from copy/en.js (86 kB the light pages never load). They are scanned for what that
+# leaves checkable, see pages_sentences().
+PAGES = ROOT / "site" / "js" / "pages"
 
 STRING = r"""(?:'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)"|`((?:[^`\\]|\\.)*)`)"""
 
@@ -89,7 +94,8 @@ PUNCTUATION_ONLY = re.compile(r"^[\s\W]{0,2}$")
 # value is evidence a reviewer reads, never printed, and is exempt.
 # copy/*.js: en.js and en.later.js, the sections only a module outside the first visit reads
 # (internal #405).
-SHIPPED_TEXT = [*sorted((ROOT / "site" / "js" / "copy").glob("*.js")), *sorted((ROOT / "site" / "js" / "data").glob("*.js"))]
+SHIPPED_TEXT = [*sorted((ROOT / "site" / "js" / "copy").glob("*.js")), *sorted((ROOT / "site" / "js" / "data").glob("*.js")),
+                *sorted(PAGES.glob("*.js"))]
 # ...and the JSON the cards read beside them: site/data/dso.json carried nine of its own.
 SHIPPED_JSON = sorted((ROOT / "site" / "data").glob("*.json"))
 EVIDENCE_KEYS = {"source", "file", "url", "distanceSource", "positionSource"}
@@ -162,6 +168,47 @@ def placeholders() -> list[str]:
     return out
 
 
+# THE PAGE SCRIPTS' SENTENCES (internal #556). site/js/pages/ was outside every check here, so a new
+# SEO page script could write a sentence with a placeholder, two hyphens for a dash, or nothing
+# anyone had agreed to. Now: (1) the two text checks above cover it (it is in SHIPPED_TEXT), and
+# (2) a page script may write a sentence only through the sinks below, and only if it is on
+# PAGE_SENTENCE_FILES, the files whose sentences a node test pins (tests/test_pagelive.mjs for live.js).
+# A new page script that writes words must be added to that list in the same change as its test, which
+# is the moment a reviewer reads the sentences. The same refusal covers the dash-as-hyphen (` - `).
+PAGE_SENTENCE_FILES = {"live.js"}
+PAGE_SINKS = [
+    ("say('slot', text)", re.compile(r"(?<![\w.])say\(\s*['\"][\w-]+['\"]\s*,")),
+    ("opt(value, text)", re.compile(r"(?<![\w.])opt\(\s*[^,()]*,")),
+    ("parts.push(text)", re.compile(r"\bparts\.push\(")),
+    (".textContent = text", re.compile(r"\.textContent\s*=\s*[`'\"]")),
+]
+PAGE_SPACED_HYPHEN = re.compile(r"[A-Za-z0-9\)] - [A-Za-z(]")
+
+
+def pages_sentences() -> list[str]:
+    out = []
+    if not PAGES.is_dir():
+        return out
+    for path in sorted(PAGES.glob("*.js")):
+        rel = path.relative_to(ROOT)
+        for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            stripped = line.lstrip()
+            if stripped.startswith("//") or stripped.startswith("*") or stripped.startswith("/*"):
+                continue
+            code = line.split(" // ")[0]
+            for label, pattern in PAGE_SINKS:
+                if pattern.search(code) and path.name not in PAGE_SENTENCE_FILES:
+                    out.append(f"  {rel}:{lineno}  writes a sentence through {label} and {path.name} is not on "
+                               f"PAGE_SENTENCE_FILES in scripts/check_copy.py\n"
+                               f"      Add the file there in the same change as the node test that pins its sentences.")
+            for q in QUOTED.finditer(code):
+                text = q.group(1) if q.group(1) is not None else q.group(2)
+                if PAGE_SPACED_HYPHEN.search(text or ""):
+                    out.append(f"  {rel}:{lineno}  prints a spaced hyphen as a dash: {text[:90]!r}\n"
+                               f"      Write a comma, a colon or a real dash.")
+    return out
+
+
 # AN EVENT TYPE NAMES ITS SENTENCE. registry/events.yaml's `copy:` said which template tells each
 # type since spec 0015, and named four that did not exist (`close-approach`, `eclipse` twice,
 # `milestone`) with nothing to notice. Since spec 0031 the browser builds those types from the
@@ -227,6 +274,7 @@ def main() -> int:
 
     findings += double_hyphens()
     findings += placeholders()
+    findings += pages_sentences()
     findings += event_templates()
     if findings:
         print(f"copy: {len(findings)} problem(s) with strings that reach the screen\n")
@@ -235,7 +283,7 @@ def main() -> int:
         return 1
     print(
         f"copy ok: {len(files)} files under site/js/ui/ write no user-visible string literal; "
-        f"every one comes from site/js/copy/en.js, and none of "
+        f"every one comes from site/js/copy/en.js; the page scripts under site/js/pages/ write sentences only from a pinned file; none of "
         f"{len(SHIPPED_TEXT) + len(SHIPPED_JSON)} copy and data files prints ` -- ` for a dash"
     )
     return 0
