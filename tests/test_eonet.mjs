@@ -105,8 +105,13 @@ check(E.parseEonet({ events: [{ id: 'y', title: 'Closed', closed: '2026-10-01T00
   // The layer's own loader, with the fetch stubbed: records come back through loadLayerDetailed.
   const real = globalThis.fetch;
   let n = 0;
-  globalThis.fetch = async () => { n += 1; const body = n === 1 ? fires : rest; return { ok: true, status: 200, text: async () => body }; };
+  // The page asks OUR saved copy first (data/sources.js load): the manifest is absent here, so load() falls
+  // back to the publisher, and the stub answers each EONET address with its own list.
+  const SRC = await import(join(JS, 'data/sources.js'));
+  const bySrc = (url) => (/wildfires/.test(url) ? fires : rest);
+  globalThis.fetch = async (url) => { n += 1; if (!/eonet\.gsfc/.test(String(url))) return { ok: false, status: 404, text: async () => '' }; return { ok: true, status: 200, text: async () => bySrc(String(url)) }; };
   const got = await loadLayerDetailed(layer, READ);
+  for (const id of E.EONET_SOURCE_IDS) SRC.forget(id);
   globalThis.fetch = async () => { throw new Error('offline'); };
   const none = await loadLayerDetailed(layer, READ);
   globalThis.fetch = real;
@@ -118,6 +123,32 @@ check(E.parseEonet({ events: [{ id: 'y', title: 'Closed', closed: '2026-10-01T00
   check(w && w.class === 'measured' && w.layer === 'earth-events' && /url: "https:\/\/eonet\.gsfc\.nasa\.gov\/api\/v3\/events"/.test(mine) && /cors: "access-control-allow-origin: \*"/.test(mine) && /read: 2026-10-07/.test(mine) && /general information purposes only/.test(mine) && /not every fire/.test(mine), 'registry/weather.yaml carries the host, the CORS header as measured, the day and the terms');
   check(/eonet\.gsfc\.nasa\.gov/.test(readFileSync(join(ROOT, 'CREDITS.md'), 'utf8')), 'CREDITS.md names EONET');
   check(/sr-swatch--earthevent/.test(readFileSync(join(ROOT, 'site/css/ui.css'), 'utf8')), 'its swatch has a colour');
+}
+
+// ---- 6. the saved copy is the first route (internal #525) -------------------------------------------------
+{
+  const reg = readFileSync(join(ROOT, 'registry/sources.yaml'), 'utf8');
+  const SRC = await import(join(JS, 'data/sources.js'));
+  E.EONET_SOURCE_IDS.forEach((id, i) => {
+    check(SRC.SOURCES[id] && SRC.SOURCES[id].url === E.EONET_URLS[i] && SRC.SOURCES[id].browser === true, `${id}: sources.js asks the same address as EONET_URLS[${i}], and a browser may fall back to it`);
+    const row = reg.slice(reg.indexOf(`  - id: ${id}\n`));
+    check(row.includes(`url: ${E.EONET_URLS[i]}\n`) && /parser: eonet\n/.test(row.slice(0, 600)) && /cadence: 1h/.test(row.slice(0, 600)), `${id}: registry/sources.yaml holds the same address, the parser and the one-hour cadence`);
+  });
+  const asked = [];
+  const T0 = READ - 6 * 3600e3; // the harvester's run, six hours before the visitor
+  const load = async (id) => { asked.push(id); return { id, data: JSON.parse(id === 'eonet-fires' ? fires : rest), fetchedAt: T0, error: null }; };
+  const recs2 = await E.fetchEarthEvents({ load, nowMs: READ });
+  check(asked.join() === E.EONET_SOURCE_IDS.join() && recs2.length === 9, `both lists come from the saved copies (${asked.join()}), the same nine events (${recs2.length})`);
+  const direct = parseNow();
+  function parseNow() { return E.parseEonet([fires, rest], { nowMs: READ }); }
+  const oldest = Math.max(...recs2.map((r) => r.validToMs || 0));
+  const newest = Math.max(...direct.map((r) => r.validToMs || 0));
+  check(newest - oldest === 6 * 3600e3, 'a copy six hours old is kept six hours less than one read now: the clock is when it was fetched');
+  const half = await E.fetchEarthEvents({ load: async (id) => (id === 'eonet-fires' ? { data: null, error: 'down' } : { data: JSON.parse(rest), fetchedAt: READ }), nowMs: READ });
+  check(half.length === 5, `one copy missing leaves the other (${half.length})`);
+  let threw = null;
+  try { await E.fetchEarthEvents({ load: async () => ({ data: null, error: 'could not look' }), nowMs: READ }); } catch (e) { threw = e; }
+  check(threw && /could not look/.test(threw.message), 'no copy and no publisher is an error with the reason');
 }
 
 if (problems.length) { console.error('eonet FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }

@@ -370,6 +370,54 @@ sources:
     terms_url: https://www.weather.gov/disclaimer
     terms_recorded: 2026-10-05
 
+  # The three feeds a browser used to read straight from the publisher, now with a saved copy (internal #525,
+  # #553): the page asks our copy first and the publisher only when there is none (a source with `browser: true`
+  # is read live as a fallback; data/sources.js load()). One request per visitor to our own host instead of to
+  # NASA's and NOAA's, and the layers draw when the publisher is down. Two EONET rows because the page asks
+  # two questions (data/eonet.js EONET_URLS, the same URLs: tests/test_eonet.mjs holds them together).
+  # Terms, READ 2026-10-09: NASA, "generally are not subject to copyright in the United States"
+  # (https://www.nasa.gov/nasa-brand-center/images-and-media/); NOAA, "in the public domain ... and may be used
+  # without charge for any lawful purpose" (https://www.weather.gov/disclaimer).
+  - id: eonet-fires
+    url: https://eonet.gsfc.nasa.gov/api/v3/events?status=open&category=wildfires&days=30
+    auth: none
+    browser: true
+    cadence: 1h
+    freshness_max: 12h
+    parser: eonet
+    outputs: [eonet-fires.json]
+    attribution: "Fires, volcanoes and sea ice: NASA EONET"
+    licence: "NASA content, generally not subject to copyright in the United States (read 2026-10-09)"
+    terms_url: https://www.nasa.gov/nasa-brand-center/images-and-media/
+    terms_recorded: 2026-10-09
+
+  - id: eonet-volcanoes-ice
+    url: https://eonet.gsfc.nasa.gov/api/v3/events?status=open&category=volcanoes,seaLakeIce
+    auth: none
+    browser: true
+    cadence: 1h
+    freshness_max: 12h
+    parser: eonet
+    outputs: [eonet-volcanoes-ice.json]
+    attribution: "Fires, volcanoes and sea ice: NASA EONET"
+    licence: "NASA content, generally not subject to copyright in the United States (read 2026-10-09)"
+    terms_url: https://www.nasa.gov/nasa-brand-center/images-and-media/
+    terms_recorded: 2026-10-09
+
+  # Today's sunspot groups (data/sunregions.js). Measured by that file's header: CORS open, `max-age=60`.
+  - id: swpc-solar-regions
+    url: https://services.swpc.noaa.gov/json/solar_regions.json
+    auth: none
+    browser: true
+    cadence: 1h
+    freshness_max: 12h
+    parser: swpc_solar_regions
+    outputs: [solar-regions.json]
+    attribution: "Sunspot groups: NOAA SWPC"
+    licence: "US Government work, public domain (read 2026-10-09)"
+    terms_url: https://www.weather.gov/disclaimer
+    terms_recorded: 2026-10-09
+
   # The wind ten metres above the ground, for the Earth overlay (scene/wind.js; internal #146, #362, #552).
   # NOAA/NCEP's Global Forecast System through the PacIOOS ERDDAP server (University of Hawaii, a NOAA IOOS
   # regional association), dataset `ncep_global`: one forecast hour (`{hour3}`, filled by harvest/run.py

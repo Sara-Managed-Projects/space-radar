@@ -1011,8 +1011,67 @@ export function createSkyView(ctx, options = {}) {
   // ------------------------------------------------------------------ looking around
 
   function lookBy(dAzRad, dAltRad) {
+    // The visitor's own hand on the view ends a follow: they asked to look elsewhere.
+    if (following && (dAzRad || dAltRad)) stopFollow('moved');
     dAz += dAzRad;
     dAlt += dAltRad;
+  }
+
+  // ------------------------------------------------------------------ following a body (internal #547)
+  // At a 0.1 degree field the sky turns 15 arcseconds a second and Saturn left the view in under half a
+  // minute. A follow keeps the middle of the view on a planet, the Moon or the Sun: every frame the view is
+  // turned to where Astronomy Engine puts it, with the air's refraction, the same maths pointAt() uses for a
+  // body. It ends when the visitor turns the view by hand, when the body sets, when the view is left, or
+  // when asked. `followEnded` says which, for the line the interface shows ('moved' | 'set' | 'left' |
+  // 'asked'); null while following. No clock of its own: it is as live as the view's.
+  let following = null; // { body: 'saturn' }
+  let followEnded = null;
+
+  /** Where a body is in this place's sky at `tMs`, in degrees, with refraction; null when it cannot be worked out. */
+  function bodyAltAz(body, tMs) {
+    if (!observerA) return null;
+    try {
+      const date = new Date(tMs);
+      const name = String(body).charAt(0).toUpperCase() + String(body).slice(1);
+      const eq = Astronomy.Equator(name, date, observerA, true, true);
+      const hor = Astronomy.Horizon(date, observerA, eq.ra, eq.dec, 'normal');
+      return { azDeg: hor.azimuth, altDeg: hor.altitude };
+    } catch { return null; }
+  }
+
+  function stopFollow(why) {
+    if (!following) return;
+    following = null;
+    followEnded = why;
+    tell();
+  }
+
+  /**
+   * Keep the middle of the view on `body` (the Sun, the Moon or a planet, lower case), or stop with null.
+   * Returns false, and follows nothing, when the body is under the horizon or unknown now.
+   */
+  function follow(body) {
+    if (body == null) { stopFollow('asked'); return true; }
+    const where = bodyAltAz(body, ctx.clock?.now?.() ?? Date.now());
+    if (!where || where.altDeg < 0) return false;
+    following = { body: String(body).toLowerCase() };
+    followEnded = null;
+    lookAtDeg(where.azDeg, where.altDeg);
+    tell();
+    return true;
+  }
+
+  /** Called each frame from update(): turn to the body, or let go of it once it is below the horizon. */
+  function followStep(tMs) {
+    if (!following || pointing) return; // the phone, when it is the view, turns it
+    const where = bodyAltAz(following.body, tMs);
+    // A body a degree under the horizon is as far as the sky goes (the view may look 20 degrees down, but a
+    // planet there is not a thing to watch); letting go is said, not silent.
+    if (!where || where.altDeg < -1) { stopFollow('set'); return; }
+    azRad = where.azDeg * DEG2RAD;
+    altRad = THREE.MathUtils.clamp(where.altDeg * DEG2RAD, -20 * DEG2RAD, 89 * DEG2RAD);
+    dAz = 0;
+    dAlt = 0;
   }
 
   function lookAtAngles(azR, altR) {
@@ -1087,6 +1146,9 @@ export function createSkyView(ctx, options = {}) {
       dirOf = () => [v.x, v.y, v.z];
     } else return false;
     lookAtDeg(where.azDeg, where.altDeg);
+    // `follow: true` on a body keeps it in the middle (follow() above); on anything else it is ignored.
+    if (opts.follow === true && target.body) follow(target.body);
+    else if (following) stopFollow('moved'); // turning to something else is turning by hand
     if (Number.isFinite(opts.fovDeg)) setFov(opts.fovDeg, { instant: opts.instant === true });
     if (ground && opts.mark !== false) ground.mark(dirOf);
     return true;
@@ -1451,6 +1513,7 @@ export function createSkyView(ctx, options = {}) {
     // Damped look. No dt is passed in by the contract, so this is a fixed per-frame fraction --
     // it is a head turn, not scene state, so it does not need to be frame-rate exact.
     const k = 0.25;
+    followStep(t);
     azRad += dAz * k;
     dAz *= 1 - k;
     altRad = THREE.MathUtils.clamp(altRad + dAlt * k, -20 * DEG2RAD, 89 * DEG2RAD);
@@ -1507,6 +1570,7 @@ export function createSkyView(ctx, options = {}) {
     if (!isActive) return;
     pointPhone(false);
     isActive = false;
+    if (following) { following = null; followEnded = 'left'; }
     held = null;
     showersNow = [];
     skyGlyphs(false);
@@ -1589,6 +1653,15 @@ export function createSkyView(ctx, options = {}) {
     },
     pointAt,
     pointAtRecord,
+    follow,
+    /** The body the middle of the view is kept on, or null. */
+    get following() {
+      return following ? following.body : null;
+    },
+    /** Why the last follow ended: 'moved', 'set', 'left' or 'asked'; null while following or before one. */
+    get followEnded() {
+      return followEnded;
+    },
     apparent: (p) => (isActive && ground ? airShift(p, 1) : p),
     trueNdc: (x, y) => (isActive && ground ? trueNdc(x, y) : [x, y]),
     pickSky,

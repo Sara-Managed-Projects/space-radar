@@ -84,5 +84,13 @@
   "wind.json": {
     "url": "https://pae-paha.pacioos.hawaii.edu/erddap/griddap/ncep_global.json?ugrd10m[(2026-10-09T15:00:00Z)][(-90):10:(90)][(0):10:(355)],vgrd10m[...same...]",
     "note": "read 2026-10-09; header keys verbatim, `rows` cut from 2 664 to the first 12"
+  },
+  "eonet.json": {
+    "url": "https://eonet.gsfc.nasa.gov/api/v3/events?status=open&category=wildfires&days=30",
+    "note": "captured 2026-10-07 (the same file as tests/fixtures/eonet/wildfires.json), whole"
+  },
+  "swpc_solar_regions.json": {
+    "url": "https://services.swpc.noaa.gov/json/solar_regions.json",
+    "note": "read 2026-10-09; the 8 rows of the newest day and 3 of the oldest kept, of 208"
   }
 }

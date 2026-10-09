@@ -1077,8 +1077,8 @@ TOUR_CASES: list[tuple[str, str, str]] = [
      "          title: \"Two places, and only two\"\n          body: >-\n"
      "            Right now there are exactly 2 homes above your head with people inside them."),
     ("a stop that has gained its `read` comment but is still on the pending list",
-     "        target: {record: star-trappist-1}\n",
-     "        # read 2026-10-08 at the NASA exoplanet archive.\n        target: {record: star-trappist-1}\n"),
+     "        target: {layer: debris-notable, catalog: \"27386\"}\n",
+     "        # read 2026-10-09 at an ESA page.\n        target: {layer: debris-notable, catalog: \"27386\"}\n"),
     ("an eclipse card that calls the light blinding",
      "            Now it is the Earth that is in the way.",
      "            Now it is the Earth that is in the way, in a blinding light."),
