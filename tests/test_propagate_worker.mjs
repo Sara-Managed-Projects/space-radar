@@ -283,5 +283,48 @@ assert.ok(s.ticks >= INSTANTS.length && s.records === N && s.failed === null);
   }
 }
 
+
+// --- 5. two-body elements go to the worker too (internal #551) ---------------------------------------
+// The debris view's 14 604 objects are `kepler` records (data/satcat.js fieldRecords): measured on
+// 2026-10-09, 81 ms a tick on the main thread in node. The worker answers them with the page's
+// own kepler(), to the last bit.
+{
+  const { fieldRecords } = await import(pathToFileURL(join(JS, 'data', 'satcat.js')).href);
+  const rows = [];
+  for (let i = 0; i < 3000; i++) {
+    rows.push({ id: 10000 + i, kind: i % 5 ? 'debris' : 'rocket', name: `X${i}`, incDeg: 30 + (i % 70), apogeeKm: 500 + ((i * 7) % 1500), perigeeKm: 400 + ((i * 3) % 900), periodMin: 100, launchMs: 0, intl: '1999-001A' });
+  }
+  const field = fieldRecords(rows);
+  assert.equal(field.length, 3000, 'the fixture field has 3 000 records');
+  assert.equal(poolable(field), 3000, 'every kepler record with elements is poolable');
+  assert.equal(poolable([{ id: 'a', propagator: 'kepler', frame: 'sun-inertial' }, null, { id: 'b', propagator: 'body' }]), 0, 'a kepler record with no elements is not');
+  assert.equal(slim({ id: 'a', propagator: 'kepler' }), null, 'and slim leaves it alone');
+  const items = field.map(slim);
+  assert.ok(items.every((it) => it && it.elements && it.frame === 'earth-inertial'), 'slim keeps the elements and the frame');
+  let same = 0;
+  for (const t of [T0, T0 + 60e3, T0 + 3 * 86400e3, T0 - 86400e3]) {
+    const batch = propagateBatch(items, t);
+    for (let i = 0; i < field.length; i++) {
+      const p = propagate(field[i], t);
+      if (p) {
+        assert.ok(Object.is(batch[i * 3], p.x) && Object.is(batch[i * 3 + 1], p.y) && Object.is(batch[i * 3 + 2], p.z), `record ${i} at ${t}: the worker's kepler is the page's`);
+        same++;
+      } else {
+        assert.ok(Number.isNaN(batch[i * 3]), `record ${i}: no answer is NaN`);
+      }
+    }
+  }
+  assert.ok(same > 11000, `most of the field answers (${same} of 12 000)`);
+  const main = readFileSync(join(JS, 'main.js'), 'utf8');
+  assert.ok(/r\.propagator === 'kepler'/.test(main), "main.js's wantPool counts kepler records");
+  // No kepler layer that loads at boot may reach the threshold either.
+  const layers = readFileSync(join(ROOT, 'registry', 'layers.yaml'), 'utf8').split(/\n  - id: /).slice(1);
+  for (const block of layers) {
+    if (!/propagator: kepler/.test(block) || /load: on-demand/.test(block)) continue;
+    const max = /max_items: (\d+)/.exec(block);
+    assert.ok(max && Number(max[1]) < POOL_MIN_RECORDS, `layer ${block.split('\n')[0]} loads at boot with up to ${max && max[1]} kepler records: under POOL_MIN_RECORDS or the worker is a boot request`);
+  }
+}
+
 await real.terminate();
 console.log(`ok: ${compared} numbers from a real worker thread are the page's own to the last bit (${drawn} positions over ${INSTANTS.length} instants, ${silent} silences agreed)`);

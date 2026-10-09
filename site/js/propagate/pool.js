@@ -1,6 +1,6 @@
 // propagate/pool.js -- the page's half of propagate/worker.js (spec 0049 task 1, public #285).
 //
-// A glyph layer with a big SGP4 catalogue hands its records here and asks, on each of its ticks,
+// A glyph layer with a big SGP4 (or two-body, internal #551) catalogue hands its records here and asks, on each of its ticks,
 // for the positions at an instant. The answer comes back from the worker some milliseconds later
 // and the layer draws the latest one it has. Three rules:
 //
@@ -28,10 +28,16 @@ import { slim } from './worker.js';
 /** Fewer SGP4 records than this and a layer keeps propagating in the thread: a worker would cost more than it saves. */
 export const POOL_MIN_RECORDS = 2000;
 
-/** How many of these records would cross to the worker. */
+/** How many of these records would cross to the worker: SGP4 element sets and two-body elements. */
 export function poolable(records) {
   let n = 0;
-  if (Array.isArray(records)) for (const r of records) if (r && r.propagator === 'sgp4' && (r.satrec || r.omm || r.tle)) n++;
+  if (Array.isArray(records)) {
+    for (const r of records) {
+      if (!r) continue;
+      if (r.propagator === 'sgp4' && (r.satrec || r.omm || r.tle)) n++;
+      else if (r.propagator === 'kepler' && r.elements && typeof r.elements === 'object') n++;
+    }
+  }
   return n;
 }
 

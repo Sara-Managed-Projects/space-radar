@@ -10,12 +10,19 @@
 // in doubles, and rounding first would change the last bit of what is drawn.
 //
 // The page talks to it through propagate/pool.js:
-//   {type: 'records', gen, items: [{satrec, epoch, frame} | null, ...]}   the layer's element sets
+//   {type: 'records', gen, items: [{satrec, epoch, frame} | {elements, frame} | null, ...]}   the layer's element sets
 //   {type: 'tick', gen, tMs, buf?}       -> {type: 'tick', gen, tMs, pos, ms}   pos transferred
-// `null` in items (a record that is not SGP4's) and a record SGP4 cannot answer for are both NaN
-// in `pos`: three numbers per record, TEME kilometres, in the order the records came.
+// `null` in items (a record that is not the worker's) and a record SGP4 cannot answer for are both
+// NaN in `pos`: three numbers per record, kilometres in the record's own frame, in the order the
+// records came.
+//
+// TWO-BODY ELEMENTS TOO (internal #551, 2026-10-09). The debris view's 14 604 objects are not SGP4
+// records but `kepler` ones (data/satcat.js: the catalogue gives an orbit's shape, not the place on
+// it), and they were all propagated on the main thread: 81 ms a tick in node, against the 45 ms
+// that sent SGP4 here. An item with `elements` is solved by the same kepler() the page uses.
 
 import { sgp4 } from './sgp4.js';
+import { kepler } from './kepler.js';
 
 /** The loop. Pure: the same call in a page, a worker or node gives the same array. */
 export function propagateBatch(items, tMs, out) {
@@ -23,7 +30,7 @@ export function propagateBatch(items, tMs, out) {
   const pos = out && out.length === n * 3 ? out : new Float64Array(n * 3);
   for (let i = 0; i < n; i++) {
     const item = items[i];
-    const p = item ? sgp4(item, tMs) : null;
+    const p = item ? (item.elements ? kepler(item, tMs) : sgp4(item, tMs)) : null;
     const o = i * 3;
     if (p) {
       pos[o] = p.x;
@@ -40,6 +47,9 @@ export function propagateBatch(items, tMs, out) {
 
 /** What of a record crosses to the worker: its element set, its epoch and its frame. */
 export function slim(record) {
+  if (record && record.propagator === 'kepler' && record.elements && typeof record.elements === 'object') {
+    return { elements: record.elements, frame: record.frame || 'sun-inertial' };
+  }
   if (!record || record.propagator !== 'sgp4') return null;
   const satrec = record.satrec || record.omm || record.tle || null;
   if (!satrec) return null;

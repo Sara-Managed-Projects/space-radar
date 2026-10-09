@@ -2648,8 +2648,9 @@ async function loadAllLayers(ctx, layerRecords, glyphLayers, scene) {
   function wantPool(gl, records) {
     if (poolOff || !gl.setPool || gl.poolStats() || typeof Worker !== 'function') return;
     if (!records || records.length < POOL_MIN_SGP4) return;
+    // SGP4 sets and two-body elements both (the debris view's 14 604 are `kepler`, internal #551).
     let n = 0;
-    for (const r of records) if (r && r.propagator === 'sgp4') n++;
+    for (const r of records) if (r && (r.propagator === 'sgp4' || r.propagator === 'kepler')) n++;
     if (n < POOL_MIN_SGP4) return;
     import('./propagate/pool.js')
       .then((m) => { if (!gl.poolStats()) gl.setPool(m.createPropagationPool()); })
