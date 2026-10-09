@@ -122,5 +122,9 @@ check(idleCapWanted({ search: '?idle=0', webdriver: false }) === false, '?idle=0
 check(idleCapWanted({ search: '?idle=1', webdriver: false, film: true }) === false, 'a film is never capped, whatever the address says');
 check(/createIdleGate\(\{ enabled: idleCapWanted\(\{ search: location\.search, webdriver: navigator\.webdriver === true, film: !!ctx\.renderMode \}\) \}\)/.test(loop), 'main.js asks exactly that');
 
+// A real browser: screens.yml asks for the cap on the tree a deploy uploads and reads the loop's own counts.
+check(/check-drawn\.mjs --base=http:\/\/127\.0\.0\.1:8178 --idle/.test(readFileSync(join(ROOT, '.github/workflows/screens.yml'), 'utf8')) && /index\.html\?idle=1/.test(readFileSync(join(ROOT, 'scripts/check-drawn.mjs'), 'utf8')),
+  'screens.yml runs the drawn check with --idle, which loads the page with ?idle=1');
+
 if (failed) { console.error(`\nidle: ${failed} check(s) FAILED`); process.exit(1); }
 console.log(`idle ok: ${NAMES.length} reasons, each held on its own and each filled by main.js's frame; at rest a 60 Hz display draws 20 frames a second instead of 60, and every frame again from the frame anything moves; a capped frame never reaches the frame latch`);

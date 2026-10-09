@@ -163,8 +163,10 @@ jobs:
               node scripts/check-drawn.mjs --base=http://127.0.0.1:8177 --width=375 --height=812 --mobile
               # And once more on the tree a deploy uploads (8178): the same modules through the
               # minifier (internal #515) must draw the same world, or the deploy would be the
-              # first to find out.
-              node scripts/check-drawn.mjs --base=http://127.0.0.1:8178'
+              # first to find out. --idle then loads it once more with the idle frame cap asked for
+              # (internal #520; an automated browser does not get it otherwise) and prints what the
+              # loop drew and skipped at rest.
+              node scripts/check-drawn.mjs --base=http://127.0.0.1:8178 --idle'
 
       # SPEC 0044: WHAT A FIRST VISIT COSTS IS A NUMBER, not a hope. A phone boots the app with
       # CelesTrak and Launch Library blocked, waits for the layers and two seconds more, and every
