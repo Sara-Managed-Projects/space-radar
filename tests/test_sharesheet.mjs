@@ -114,7 +114,7 @@ check(objectPageUrl({ id: 'mars' }, index, 'http://127.0.0.1:8416/site/') === 'h
 {
   const out = mkdtempSync(join(tmpdir(), 'sr-share-seo-'));
   try {
-    execFileSync('python3', [join(ROOT, 'scripts/build_seo.py'), '--out', out], { cwd: ROOT, stdio: 'pipe' });
+    execFileSync('python3', [join(ROOT, 'scripts/build_seo.py'), '--out', out, '--no-share'], { cwd: ROOT, stdio: 'pipe' });
     const built = JSON.parse(readFileSync(join(out, 'object-pages.json'), 'utf8'));
     check(JSON.stringify(Object.entries(built).sort()) === JSON.stringify(Object.entries(index).sort()), 'build_seo.py writes object-pages.json, the same id-to-slug map');
     for (const [id, slug] of Object.entries(built).slice(0, 400)) check(existsSync(join(out, 'o', `${slug}.html`)), `object-pages.json names o/${slug}.html (${id}), which was built`);

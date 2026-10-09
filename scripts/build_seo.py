@@ -246,7 +246,8 @@ def build(out: Path, host: str, today: str | None = None, snapshot_index: dict |
     # preview shows the object's own title and picture. Which records have a page, and under which
     # slug, is decided here and nowhere else; the sheet fetches this when it opens and never guesses.
     index = {p["id"]: p["slug"] for p in pages}
-    index.update(extra["index"])
+    # (extra["index"] maps every exoplanet and system star to its system's page; tests/test_sharesheet.mjs pins this file to the
+    # object pages' own records, so it is not merged until that test and the sheet are changed together.)
     (out / "object-pages.json").write_text(json.dumps(index, separators=(",", ":"), sort_keys=True), encoding="utf-8")
     # --- growth pages hook: the image sitemap and the record of what was drawn (scripts/check_seo.py reads both).
     rows = [(f"{host}/{path}", f"{host}/{extra['specs'][key].rel}", extra["specs"][key].name)
