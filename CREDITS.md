@@ -1407,6 +1407,7 @@ Exoplanet Archive §4.7, GDACS §4.14) are repeated only where the credit line d
 | `horizons-deep-space` | NASA/JPL Solar System Dynamics, Horizons | where each deep-space craft is, as vectors | as above | Ephemerides: JPL Horizons | `ssd.jpl.nasa.gov` |
 | `esa-neocc-close` | ESA Near-Earth Object Coordination Centre | ESA's own list of close approaches | **Switched off on 2026-10-09** (`enabled: false`) and no longer fetched, saved, published or shipped. ESA's terms (read that day at `www.esa.int/Services/Terms_and_conditions`, to which the NEOCC portal defers) say: "ESA does not grant the right to resell or redistribute any information, documents, images or material from its website". The harvester had saved this list and the site had served it as `/data/v1/esa-neocc-close.json` since September 2026, before those terms were read in full; no card ever showed it. The close approaches the app draws are JPL's CNEOS, the row above. The row stays here so the reason does. | Close approaches: ESA NEOCC | `neo.ssa.esa.int` |
 | `swpc-ovation` | NOAA Space Weather Prediction Center | the OVATION aurora forecast | US Government work, public domain (§4.4) | Aurora forecast: NOAA SWPC | `services.swpc.noaa.gov` |
+| `wind` | NOAA/NCEP Global Forecast System, through PacIOOS (University of Hawaii) | the wind ten metres up, one forecast hour | §4.21: "The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies." (the dataset's own licence attribute, read 2026-10-09) | Wind: NOAA/NCEP Global Forecast System, through PacIOOS ERDDAP (University of Hawaii) | `pae-paha.pacioos.hawaii.edu` |
 | `nasa-exoplanet-archive` | NASA Exoplanet Archive, Caltech/IPAC | every confirmed exoplanet | §4.7 | Exoplanets: NASA Exoplanet Archive (Caltech/IPAC), DOI 10.26133/NEA13 | `exoplanetarchive.ipac.caltech.edu` |
 | `open-notify-astros` | Open Notify (a personal open-source project) | who is aboard the ISS and Tiangong | The site calls itself "an open source project" and states no licence for the data (read 2026-10-05); the list is a handful of names and facts. | Who is in space: Open Notify | `api.open-notify.org` |
 | `wikidata-observatories` | Wikidata | where observatories are | CC0 1.0: Wikidata's structured data is dedicated to the public domain | Observatory locations: Wikidata (CC0) | `query.wikidata.org` |
@@ -1465,13 +1466,14 @@ into this repository except nine events in `tests/fixtures/eonet/` for the tests
 
 ### 4.21 NOAA GFS through PacIOOS — the wind (2026-10-07)
 
-`site/js/data/wind.js` asks the PacIOOS ERDDAP server
-(<https://pae-paha.pacioos.hawaii.edu/erddap/griddap/ncep_global.html>, read 2026-10-07) for one
-forecast hour of the wind ten metres above the ground, every fifth degree over the whole globe
-(37 × 72 points, two components), when a visitor chooses "Wind" under Earth data in What to show,
-and never at boot. One request, no key, no credentials, no referrer. Measured 2026-10-07 with
-`Origin: https://www.spaceradar.ai`: `Access-Control-Allow-Origin: *`, gzip, 169 kB of JSON as
-text, about 2 s. `site/js/scene/wind.js` draws it as moving streaks.
+Our harvester (`registry/sources.yaml` row `wind`, `harvest/parsers/wind.py`; internal #552) asks the
+PacIOOS ERDDAP server (<https://pae-paha.pacioos.hawaii.edu/erddap/griddap/ncep_global.html>, read
+2026-10-07 and 2026-10-09) for one forecast hour of the wind ten metres above the ground, every fifth
+degree over the whole globe (37 × 72 points, two components, 168 818 bytes of JSON on 2026-10-09), and
+saves it as `/data/v1/wind.json`. `site/js/data/wind.js` reads that saved copy, when a visitor chooses
+"Wind" under Earth data in What to show and never at boot, and the choice is offered only while the
+manifest lists a copy. A visitor's browser never calls the university's server (it answered in 2 s,
+then took 35 s and returned 404, on 2026-10-07). `site/js/scene/wind.js` draws it as moving streaks.
 
 The data is the NOAA/NCEP Global Forecast System, a numerical weather model ("8-day, 3-hourly
 forecast for the globe at approximately 50-km or 0.5-deg resolution"), served by the Pacific
