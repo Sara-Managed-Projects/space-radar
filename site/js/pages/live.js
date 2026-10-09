@@ -227,10 +227,9 @@ async function getJson(url) {
 
 async function placePicker(onChange) {
   const { CITIES } = await import('../copy/en.js');
-  const { guessObserver, roundPlace } = await import('../sky/guessplace.js');
+  const { guessObserver } = await import('../sky/guessplace.js');
   const { keptPlace, browserStorage } = await import('../sky/placelink.js');
   const select = document.querySelector('[data-slot="place-select"]');
-  const geoBtn = document.querySelector('[data-slot="place-geo"]');
   let observer = firstObserver({ kept: keptPlace(browserStorage()), guess: guessObserver(CITIES) });
   if (select) {
     const opt = (v, t) => { const o = document.createElement('option'); o.value = v; o.textContent = t; return o; };
@@ -241,16 +240,6 @@ async function placePicker(onChange) {
       observer = cityObserver(CITIES[Number(select.value)]);
       say('place', placeLabel(observer));
       onChange(observer);
-    });
-  }
-  if (geoBtn && typeof navigator !== 'undefined' && navigator.geolocation) {
-    geoBtn.hidden = false;
-    geoBtn.addEventListener('click', () => {
-      navigator.geolocation.getCurrentPosition((pos) => {
-        observer = { ...roundPlace({ latDeg: pos.coords.latitude, lonDeg: pos.coords.longitude, altKm: 0 }), source: 'geo' };
-        say('place', placeLabel(observer));
-        onChange(observer);
-      }, () => say('place-note', 'Your browser did not share a position. Choose a city instead.'), { maximumAge: 600000, timeout: 15000 });
     });
   }
   say('place', placeLabel(observer));

@@ -161,10 +161,9 @@ def render(page: Page, ctx: Ctx) -> str:
 
 
 def place_picker(hint: str = "") -> str:
-    """The place controls the live pages share: a city list, and a button the browser reveals only if it can ask."""
+    """The place controls the live pages share: a city list. These pages never ask the browser where it is: only the map's Tonight view does (ui/place.js)."""
     return ('<div class="place"><label for="place-select">Choose a city</label>'
-            '<select id="place-select" data-slot="place-select"></select>'
-            '<button type="button" data-slot="place-geo" hidden>Use my location</button></div>\n'
+            '<select id="place-select" data-slot="place-select"></select></div>\n'
             f'<p class="dim"><span data-slot="place-note">{esc(hint)}</span> <span data-slot="place"></span></p>\n')
 
 

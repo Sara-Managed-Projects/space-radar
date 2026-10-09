@@ -103,8 +103,7 @@ check(L.eventFromPlace(A, R, venus, london).also[0].body === 'venus', 'an event 
 const src = readFileSync(join(ROOT, 'site/js/pages/live.js'), 'utf8');
 const code = src.replace(/\/\*[\s\S]*?\*\//g, '').split('\n').filter((l) => !/^\s*\/\//.test(l)).join('\n');
 check(!/watchPosition/.test(code), 'the position is never watched');
-const geo = [...code.matchAll(/getCurrentPosition/g)].length;
-check(geo === 1 && /addEventListener\('click'[\s\S]{0,200}getCurrentPosition/.test(code), 'the browser is asked for a position in one place only, inside the button\'s click handler');
+check(!/getCurrentPosition|geolocation/.test(code), 'the page never asks the browser where it is (only ui/place.js does: tests/test_place_privacy.mjs); the place is the kept one, a guess from the time zone, or a typed city');
 check(!/https?:\/\//.test(code), 'the page module names no outside host; it reads the saved copies beside the page');
 check(!/celestrak/i.test(code.replace(/celestrak-[a-z-]+/g, '')), 'and does not fetch CelesTrak (its usage policy: one download per update)');
 check(!/localStorage\.setItem|keepPlace\(/.test(code), 'it never keeps a place (that is the map\'s to do, on the visitor\'s say)');
