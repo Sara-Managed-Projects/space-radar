@@ -23,6 +23,28 @@ await step('k186', async () => {
   out.k186near = { d: ctx.camera.position.distanceTo(mesh.position), scale: mesh.scale.x, material: mesh.material && mesh.material.type };
   await shotPlain('g3-k186f-0.15');
 });
+await step('k16pair', async () => {
+  if (ctx.systems && ctx.systems.load) await ctx.systems.load();
+  let rec = null; const w0 = Date.now();
+  while (!rec && Date.now() - w0 < 40000) { rec = ctx.recordById('exo-kepler-16-b'); if (!rec) await wait(500); }
+  ctx.select(rec, { from: 'search' }); await wait(10000);
+  const A = ctx.scene.getObjectByName('systems:star-kepler-16'), B = ctx.scene.getObjectByName('systems:companion:star-kepler-16');
+  ctx.cameraRig.stopFollow();
+  const ab = B.position.clone().sub(A.position);
+  const mid = A.position.clone().add(B.position).multiplyScalar(0.5);
+  const V = ctx.camera.position.constructor;
+  const off = new V(0, 1, 0).cross(ab).normalize().add(new V(0, 0.3, 0));
+  for (const [tag, k] of [['near', 1.0], ['wide', 3.0]]) {
+    ctx.cameraRig.flyTo({ targetScene: mid, distance: ab.length() * k, ms: 0, offset: off }); await wait(3500);
+    const pa = A.position.clone().project(ctx.camera), pb = B.position.clone().project(ctx.camera);
+    out['pair-' + tag] = { sep: ab.length(), screenA: [pa.x, pa.y], screenB: [pb.x, pb.y], scaleA: A.scale.x, scaleB: B.scale.x, camDist: ctx.camera.position.distanceTo(mid) };
+    await shotPlain('g7-kepler16-pair-' + tag);
+  }
+  ctx.clock.goTo(ctx.clock.now() + 10 * 86400000); await wait(3000);
+  await shotPlain('g8-kepler16-pair-10d-later');
+  out.pair10 = { sepAfter: A.position.distanceTo(B.position) };
+  ctx.clock.goTo(Date.now());
+});
 await step('haze', async () => {
   const flagstaff = place('Flagstaff', 35.2, -111.65);
   await stand(flagstaff);
