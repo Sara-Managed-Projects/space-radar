@@ -421,6 +421,8 @@ tours:
         # A surface stop: close enough that the Moon is the ground and not a ball.
         distance_km: 900
         time: daylight
+        # read 2026-10-09, https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1972-031C:
+        # Apollo 16's lunar module "separated from the Command/Service Module ... on 20 April 1972 and landed ... on 21 April (9:23:35 p.m. EST, 20 April)" (the 1972, the day of the card's own inscription).
         card:
           title: "A photograph lying in the dust"
           # THE TRIP CARD ADDS; IT DOES NOT REPEAT. The object's own card opens right under this one
@@ -3914,6 +3916,8 @@ tours:
         target: {layer: notable, catalog: "20580"}
         distance_km: 2600
         chapter: "What is worth protecting"
+        # read 2026-10-09, https://science.nasa.gov/mission/hubble/:
+        # "Since its 1990 launch, the Hubble Space Telescope has changed our fundamental understanding of the universe" (the 1990).
         card:
           title: "Worth protecting"
           body: >-
@@ -4274,6 +4278,8 @@ tours:
         distance_km: 900
         time: daylight
         chapter: "The long gap"
+        # read 2026-10-09, https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1972-096C:
+        # "The LM separated from the Command/Service Module ... on 11 December 1972 and landed" and "Commander Eugene A. Cernan and LM pilot Harrison H. Schmitt" (the 1972 and the 17).
         card:
           title: "The last footprints"
           body: >-
