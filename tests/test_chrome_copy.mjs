@@ -190,6 +190,7 @@ const LONG_OK = new Map([
   ['search.notLoadedCount', 'a tooltip\'s second sentence'],
   ['tonight.passLine', 'a pass read out in full for a screen reader; the row draws its parts'],
   ['tonight.arcLabel', 'the sky arc\'s description for a screen reader'],
+  ['tonight.skybar.cultureCredits.western', 'a credit: whose pictures, their licence, and which figures have no picture of their own'],
   ['tonight.skybar.cultureCredits.chinese', 'a credit: whose reconstruction it is and its licence are owed'],
   ['tonight.skybar.cultureCredits.maori', 'a credit: whose record it is and its licence are owed'],
   ['tonight.skybar.cultureCredits.hawaiian', 'a credit: whose teaching, whose work and its licence are owed'],

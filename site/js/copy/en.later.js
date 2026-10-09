@@ -938,7 +938,7 @@ Object.assign(COPY, {
       },
       // Whose work each is, and its licence: owed in full, so these run longer than a line of chrome.
       cultureCredits: {
-        western: 'Pictures: Johan Meuris, for Stellarium, Free Art License.',
+        western: 'Pictures: Johan Meuris, for Stellarium, Free Art License. Carina, Puppis and Vela share one drawing; Serpens has none.',
         chinese: 'Figures: Sun Shuwei and Karrie Berglund, for Stellarium, CC BY-SA 4.0. A documented reconstruction.',
         maori: 'Figures: Dan Smale, for Stellarium, CC BY-SA 4.0. A documented reconstruction.',
         hawaiian: 'Figures: after Nainoa Thompson, by Kamehameha Schools Kapālama, for Stellarium, CC BY-SA 4.0.',
