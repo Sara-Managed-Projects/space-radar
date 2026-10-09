@@ -149,13 +149,13 @@
      stack ends in the system's own, which is what shows until the face lands (`swap`) and what
      draws a character the subset does not carry. */
   --sr-font:
-    'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    'Inter', 'Inter Fallback', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
     sans-serif;
   --sr-font-mono:
-    'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono',
+    'JetBrains Mono', 'JetBrains Mono Fallback', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono',
     monospace;
   /* Panel titles and, later, HUD units. No Cyrillic in Barlow: Inter draws it. */
-  --sr-font-hud: 'Barlow Semi Condensed', 'Inter', system-ui, sans-serif;
+  --sr-font-hud: 'Barlow Semi Condensed', 'Barlow Semi Condensed Fallback', 'Inter', 'Inter Fallback', system-ui, sans-serif;
   /* No serif: Ivan rejected Instrument Serif on names on 2026-10-03 and spec 0061 task 6 removed the
      face. Names and titles are Inter 600, the wordmark Barlow 600 (docs/ui-guide.md section 2.2). */
 

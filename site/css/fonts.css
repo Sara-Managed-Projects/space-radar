@@ -94,3 +94,61 @@
   src: url('../fonts/jetbrains-mono-500-cyrillic.woff2') format('woff2');
   unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
 }
+
+/* The fallback faces (internal #553): a system face scaled to the web face's width and line height,
+   named after it, so the swap does not move a line. scripts/font_fallbacks.py has the numbers. */
+
+@font-face {
+  font-family: 'Inter Fallback';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Arial');
+  size-adjust: 107.45%;
+  ascent-override: 90.16%;
+  descent-override: 22.45%;
+  line-gap-override: 0.00%;
+}
+
+@font-face {
+  font-family: 'Inter Fallback';
+  font-style: normal;
+  font-weight: 600;
+  src: local('Arial Bold');
+  size-adjust: 101.27%;
+  ascent-override: 95.66%;
+  descent-override: 23.82%;
+  line-gap-override: 0.00%;
+}
+
+@font-face {
+  font-family: 'Barlow Semi Condensed Fallback';
+  font-style: normal;
+  font-weight: 500;
+  src: local('Arial Narrow');
+  size-adjust: 108.45%;
+  ascent-override: 92.21%;
+  descent-override: 18.44%;
+  line-gap-override: 0.00%;
+}
+
+@font-face {
+  font-family: 'Barlow Semi Condensed Fallback';
+  font-style: normal;
+  font-weight: 600;
+  src: local('Arial Narrow Bold');
+  size-adjust: 101.36%;
+  ascent-override: 98.66%;
+  descent-override: 19.73%;
+  line-gap-override: 0.00%;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono Fallback';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Courier New');
+  size-adjust: 99.98%;
+  ascent-override: 102.02%;
+  descent-override: 30.00%;
+  line-gap-override: 0.00%;
+}
