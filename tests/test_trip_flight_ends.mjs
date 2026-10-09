@@ -25,7 +25,9 @@ const GRACE = tripModule.FLIGHT_GRACE_MS;
 const FLIGHT_MAX = 6000; // ui/trip.js FLIGHT_MAX_MS: the longest flight a stop composes
 const quietWarn = console.warn;
 
-TOURS.push(fixture('fe-a'), fixture('fe-b'), fixture('fe-c', {
+TOURS.push(fixture('fe-cut', {
+  stops: [stopRow('one', { world: 'moon' }), stopRow('two', { world: 'earth' }, { transition: 'cut' }), stopRow('three', { world: 'moon' }, { transition: 'black' })],
+}), fixture('fe-a'), fixture('fe-b'), fixture('fe-c', {
   stops: [stopRow('one', { world: 'moon' }), stopRow('two', { world: 'earth' }), stopRow('three', { world: 'moon' }), stopRow('four', { world: 'earth' })],
 }));
 
@@ -276,6 +278,19 @@ for (const [frameMs, label] of [[333, '3 fps'], [5000, '5 s stalls']]) {
   const roof = TOURS.find((x) => x.id === 'roof-to-the-edge');
   check(roof && roof.return === true && /one flight home/.test(roof.blurb) && roof.blurb.length <= 80, `the roof trip asks for the way home and its blurb says so (${roof && roof.blurb})`);
   check(TOURS.filter((x) => x.return === true && !x.id.startsWith('fe-')).length === 1, 'and it is the only one that does');
+}
+
+// --- 7. the join a stop asks for (internal #288) ---------------------------------------------------------
+{
+  const w = tripWorld();
+  await begin(w, 'fe-cut');
+  await w.pass(60000, 100, () => w.machine.state.phase !== 'outro');
+  const f = w.flights('fe-cut');
+  check(w.machine.state.phase === 'outro', `the trip with a cut and a fade ran to its end (${w.machine.state.phase})`);
+  check((f[1] || 0) <= 400, `a stop that says transition: cut has no flight (${f[1]} ms)`);
+  check((f[2] || 0) <= 400, `and so has a fade through black (${f[2]} ms)`);
+  check((f[0] || 0) >= 0, 'the first stop flies as it always did');
+  w.done();
 }
 
 if (problems.length) {

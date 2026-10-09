@@ -70,6 +70,9 @@ const MOMENTS = ['wonder', 'now', 'next'];
 // a star is met when its width is known: twelve radii, a disc a fifth of the screen wide.
 const RIG_MIN_DISTANCE = 1e-4;
 const STAR_ARRIVAL_RADII = 12;
+// The camera's co-latitude over a star system's orbits; the same 40 degrees as scene/systems.js OVERVIEW_POLAR.
+const SYSTEM_OVERVIEW_POLAR = (40 * Math.PI) / 180;
+
 /** How long after sr:layers-ready the aurora's module is fetched (OFF THE FIRST VISIT, in boot). */
 const AURORA_IMPORT_MS = 4000;
 
@@ -304,6 +307,7 @@ export async function boot({ setStatus } = {}) {
   // The Milky Way model and the deep-sky glows are the same faint light: one number for all three.
   galaxy.setExposure(exposure.look().milkyWay);
   dsoGlow.setExposure(exposure.look().milkyWay);
+  stars3d.setMagLimit(exposure.look().starLimit);
   let skyStrength = 1;
   let nebulaeImport = null;
   ctx.wantNebulae = () => {
@@ -313,6 +317,7 @@ export async function boot({ setStatus } = {}) {
         skyGroup: starfield.group,
         look: exposure.look(),
         saveData: typeof navigator !== 'undefined' && shouldSaveData(navigator.connection),
+        maxResident: m.residentPictures(ctx.quality ? ctx.quality.bootTier : 1),
       });
       nebulae.setSkyOpacity(skyStrength);
       nebulae.setSkyVisible(!(ctx.latch && ctx.latch.latched));
@@ -331,6 +336,7 @@ export async function boot({ setStatus } = {}) {
     // The Milky Way model and the deep-sky glows are the same faint light (internal #343).
     galaxy.setExposure(look.milkyWay);
     dsoGlow.setExposure(look.milkyWay);
+    stars3d.setMagLimit(look.starLimit);
     // The address bar says what is on screen: the key goes when the shutter is back at its default.
     writeUrlState({ exp: mode === DEFAULT_EXPOSURE ? null : mode });
     window.dispatchEvent(new CustomEvent('sr:exposure', { detail: { mode } }));
@@ -1407,6 +1413,12 @@ export async function boot({ setStatus } = {}) {
       // A world is met on its lit face (issue #419): the rig's default is the far side from the
       // stage's world, which for everything beyond the Earth is the night side.
       let lit = record.klass === 'world' ? litOffset(worlds.sunDirOf(record.id), camera.up, undefined, worlds.faceDirOf(record.id)) : null;
+      // A small body is met on its sunlit side too (internal #436): Ceres and Vesta were met from
+      // wherever the camera was, which is the night half as often as not.
+      if (!lit && record.klass === 'asteroid') {
+        const sunAt = worlds.drawnPositionOf('sun');
+        if (sunAt) lit = litOffset({ x: sunAt.x - pos.x, y: sunAt.y - pos.y, z: sunAt.z - pos.z }, camera.up);
+      }
       // A planet on its own system's stage is met on its lit face too (internal #466): the rig's
       // default met TRAPPIST-1 e from behind, a black disc with a lit rim, which is no way to see a
       // face drawn on it (scene/exoface.js). Its light is its star, wherever that is on the stage.
@@ -1431,7 +1443,13 @@ export async function boot({ setStatus } = {}) {
           cameraRig.flyTo({ targetScene: at, distance: again, offset: side || undefined, ms: 500, targetDelay: 0 });
         }));
       } : undefined;
-      cameraRig.flyTo({ targetScene: pos, distance: limb ? limb.distance : distance, tilt: limb ? limb.tilt : fromHere, offset: lit || undefined, ms, onArrive: settle });
+      // A system's host star is met from over its orbits, as the trips meet it (40 degrees from the
+      // pole, scene/systems.js OVERVIEW_POLAR), not from whatever tilt the camera happened to have
+      // (internal #476: Kepler-16 arrived edge-on, LHS 1140 straight down).
+      const overview = record.klass === 'star' && ctx.systems && ctx.systems.active && ctx.systems.stageOfRecord(record) === stage.worldId && !limb ? SYSTEM_OVERVIEW_POLAR : undefined; // polar: overview, unless the stage's own subject names one
+      const hostSubject = !limb && record.klass !== 'exoplanet' && ctx.systems && ctx.systems.active && typeof ctx.systems.subjectFor === 'function' ? ctx.systems.subjectFor(record) : null;
+      const hostPolar = hostSubject && Number.isFinite(hostSubject.polar) ? hostSubject.polar : overview;
+      cameraRig.flyTo({ targetScene: pos, distance: limb ? limb.distance : distance, tilt: limb ? limb.tilt : fromHere, polar: hostPolar, offset: lit || undefined, ms, onArrive: settle });
     }
     // Following something standing on the Moon is following the Moon, which crosses its own
     // radius in about half an hour, so its centre is re-taught with every tick of the target.
@@ -2434,8 +2452,9 @@ function startLoop({ ctx, resize, render, worlds, glyphLayers, cameraRig, starfi
       // Asked four times a second; the glow's buffer is rewritten only when the answer changes.
       if (ctx.dsoGlow && nowReal - picturedAt > 250) {
         picturedAt = nowReal;
-        const now = ctx.nebulae.loaded().filter((id) => ctx.nebulae.drawn(id) > 0.3);
-        const key = now.join(' ');
+        const now = new Map();
+        for (const id of ctx.nebulae.loaded()) { const share = Math.round(ctx.nebulae.drawn(id) * 10) / 10; if (share > 0) now.set(id, share); }
+        const key = [...now].join(' ');
         if (key !== picturedKey) { picturedKey = key; ctx.dsoGlow.setPictured(now); }
       }
     }

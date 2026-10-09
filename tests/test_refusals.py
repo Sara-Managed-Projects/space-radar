@@ -1035,6 +1035,40 @@ TOUR_CASES: list[tuple[str, str, str]] = [
      "            Now it is the Earth that is in the way.",
      "            Now it is the Earth that is in the way, and there is no need to protect your eyes."),
 
+    # --- spec 0043 (internal #121): the other word lists, and the source near a number -----------
+    ("an eclipse card that says blinding",
+     "            Now it is the Earth that is in the way.",
+     "            Now it is the Earth that is in the way, and the light is blinding."),
+    ("a card on a station that says it is to scale",
+     "            Right now there are exactly two homes above your head with people inside them.",
+     "            Right now there are two homes above your head with people inside them, drawn to scale."),
+    ("a card on a star system's stage that describes the planet's look",
+     "            TRAPPIST-1 is a cool red star forty light-years away, a little bigger than Jupiter.",
+     "            TRAPPIST-1 is a cool red star forty light-years away. Its planet looks like an ocean."),
+    ("a card that writes the line the generator writes",
+     "            Right now there are exactly two homes above your head with people inside them.",
+     "            Shown at a time computed for you, there are two homes above your head."),
+    ("a card with a number and no `read` date above it (a stop not on the pending list)",
+     "          title: \"Two places, and only two\"\n          body: >-\n"
+     "            Right now there are exactly two homes above your head with people inside them.",
+     "          title: \"Two places, and only two\"\n          body: >-\n"
+     "            Right now there are exactly 2 homes above your head with people inside them."),
+    ("a stop that has gained its `read` comment but is still on the pending list",
+     "        target: {record: star-trappist-1}\n",
+     "        # read 2026-10-08 at the NASA exoplanet archive.\n        target: {record: star-trappist-1}\n"),
+    ("an eclipse card that calls the light blinding",
+     "            Now it is the Earth that is in the way.",
+     "            Now it is the Earth that is in the way, in a blinding light."),
+    ("a stop at a record that calls its picture to scale",
+     "            TRAPPIST-1 is a cool red star forty light-years away, a little bigger than Jupiter.\n",
+     "            TRAPPIST-1 is a cool red star forty light-years away, a little bigger than Jupiter, drawn to scale.\n"),
+    ("a star system's stage that says what a planet looks like",
+     "            Seven planets about the size of the Earth go round it, and all seven were found as\n",
+     "            Seven planets about the size of the Earth go round it, one of them blue, and all seven were found as\n"),
+    ("a hand-written card that says what a generated line says",
+     "            TRAPPIST-1 is a cool red star forty light-years away, a little bigger than Jupiter.\n",
+     "            TRAPPIST-1 is a cool red star forty light-years away, shown at a little bigger than Jupiter.\n"),
+
     # --- spec 0038: a stop at the visitor's own place --------------------------------------------
     ("a visitor's-place target with a second key beside it",
      "        target: {observer: true}\n        # THE SPEC SAID",
@@ -1171,6 +1205,8 @@ TOUR_CASES: list[tuple[str, str, str]] = [
      "        target: {record: exotic-cygnus-x-1}\n        needs_layer: exotics\n        portrait: true\n"),
     ("a portrait that is not a yes",
      "        portrait: true\n", "        portrait: big\n"),
+    ("a join between two stops that is not a flight, a cut or a fade through black",
+     "        portrait: true\n", "        portrait: true\n        transition: dissolve\n"),
     ("a kind of sky the ground view does not have",
      "        darkness: town\n", "        darkness: village\n"),
     ("a kind of sky on a stop that is not seen from the ground",
@@ -1448,6 +1484,62 @@ def check_models_dir_refuses() -> int:
                                ("one .glb with no row", "unlisted-and-uncredited.glb")], Path(tmp))
 
 
+def check_pictures_refuse() -> int:
+    """A PNG under site/og/ with no `Software: space-radar` chunk and no registry/pictures.yaml row
+    is a picture pasted in by hand (spec 0043 req 6, internal #121); a row with no credit is refused."""
+    import struct
+    import zlib
+
+    def chunk(kind: bytes, body: bytes) -> bytes:
+        return struct.pack(">I", len(body)) + kind + body + struct.pack(">I", zlib.crc32(kind + body))
+
+    def png(software: str | None) -> bytes:
+        head = b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", 1, 1, 8, 0, 0, 0, 0))
+        text = chunk(b"tEXt", b"Software\x00" + software.encode()) if software else b""
+        return head + text + chunk(b"IDAT", zlib.compress(b"\x00\x00")) + chunk(b"IEND", b"")
+
+    row = "pictures:\n  - {file: og/hand.png, source: x, licence: y%s, read: 2026-10-08}\n"
+
+    def one(case, work: Path):
+        label, software, pictures, must_name = case
+        shutil.copytree(ROOT / "registry", work / "registry", copy_function=link)
+        shutil.copytree(ROOT / "scripts", work / "scripts", copy_function=link,
+                        ignore=shutil.ignore_patterns("__pycache__"))
+        media_into(work)
+        link(ROOT / "CREDITS.md", work / "CREDITS.md")
+        shutil.copytree(ROOT / "harvest", work / "harvest",
+                        ignore=shutil.ignore_patterns("__pycache__"), copy_function=link)
+        textures_into(work)
+        models = work / "site" / "models"
+        models.mkdir(parents=True)
+        for name in re.findall(r"file: site/models/([A-Za-z0-9_.-]+\.glb)", (ROOT / "registry/models.yaml").read_text(encoding="utf-8")):
+            (models / name).write_bytes(b"")
+        (work / "site" / "og").mkdir(parents=True)
+        (work / "site" / "og" / "hand.png").write_bytes(png(software))
+        if pictures is not None:
+            mutate(work / "registry" / "pictures.yaml", pictures)
+        result = validator(work)
+        out = result.stdout + result.stderr
+        refused = result.returncode != 0
+        if must_name is None:
+            return ([f"  accepted: {label}"], 0) if not refused else ([f"  ** {label} was refused\n{out.strip()[:400]}"], 1)
+        if refused and must_name in out:
+            return [f"  refused: {label}"], 0
+        return [f"  ** {label}: " + ("was accepted" if not refused else "refused without naming it")], 1
+
+    with tempfile.TemporaryDirectory() as tmp:
+        return run_cases(one, [
+            ("a picture the app made (the chunk says so)", "space-radar shots.mjs", None, None),
+            ("a picture pasted in by hand, no chunk, no row", None, None, "site/og/hand.png"),
+            ("a picture with another program's name in the chunk", "Photoshop", None, "site/og/hand.png"),
+            ("a picture from elsewhere with a row and a credit CREDITS.md carries", None,
+             row % ", credit: 'NASA'", None),
+            ("a picture from elsewhere whose row has no credit", None, row % "", "pictures.yaml"),
+            ("a picture from elsewhere whose credit CREDITS.md does not carry", None,
+             row % ", credit: 'A line nobody wrote in CREDITS.md'", "pictures.yaml"),
+        ], Path(tmp))
+
+
 # The raise needs a base to compare with, so these run in a git checkout of their own; and the
 # unread-row rules need the readers, so the tree carries tests/ and site/js/ too.
 BUDGET_CASES: list[tuple[str, str, str, bool]] = [
@@ -1581,6 +1673,9 @@ def main() -> int:
         failures += check_models_dir_refuses()
 
         print("")
+        failures += check_pictures_refuse()
+
+        print("")
         failures += check_budget_refusals()
 
         print("")
@@ -1589,7 +1684,7 @@ def main() -> int:
     if failures:
         print(f"\n{failures} guard(s) do not do what they claim")
         return 1
-    refusals = len(CASES) + len(COPY_CASES) + len(TOUR_CASES) + 1 + sum(1 for c in BUDGET_CASES if c[3]) + len(SEO_CASES)
+    refusals = len(CASES) + len(COPY_CASES) + len(TOUR_CASES) + 1 + sum(1 for c in BUDGET_CASES if c[3]) + len(SEO_CASES) + 4
     print(f"\nall {refusals} refusals fire and each names its file, and registry/tours.yaml "
           f"and a site/models that matches the registry are both accepted")
     return 0

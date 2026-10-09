@@ -996,15 +996,45 @@ def webp_2k(src_dir: Path, out_dir: Path, only: list[str]) -> int:
     return 0
 
 
+def ktx2_build(out_dir: Path) -> int:
+    """spec 0056 task 2: the plan in scripts/_ktx2.py, encoded and validated; nothing is written into site/."""
+    import json
+    import shutil
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import _ktx2
+
+    if not shutil.which("ktx"):
+        print("`ktx` (KTX-Software, pinned in .github/workflows/textures.yml) is not on PATH", file=sys.stderr)
+        return 2
+
+    def to_png(src: Path, dst: Path) -> None:
+        im = Image.open(src).convert("RGB")
+        im.save(dst)
+
+    rows = _ktx2.encode_all(ROOT / "site" / "textures", out_dir, to_png)
+    for r in rows:
+        px = Image.open(ROOT / "site" / "textures" / next(p[1] for p in _ktx2.PLAN if p[0] == r["stem"])).size
+        r["px"] = list(px)
+        r["gpu_bytes"] = _ktx2.gpu_bytes(*px)
+        print(f"  {r['stem']:14s} {r['kind']:6s} {px[0]}x{px[1]}  {r['bytes']:>9,d} B on disk  {r['gpu_bytes']:>11,d} B on the GPU  {r['sha256'][:16]}")
+    (out_dir / "ktx2.json").write_text(json.dumps(rows, indent=1) + "\n", encoding="utf-8")
+    return 0
+
+
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--originals", type=Path)
     ap.add_argument("--only", default="")
     ap.add_argument("--months", default="")
+    ap.add_argument("--ktx2", type=Path, metavar="DIR",
+                    help="encode the 4k maps of scripts/_ktx2.py PLAN as KTX2 into DIR with KTX-Software (needs `ktx` on PATH; "
+                         "run by .github/workflows/textures.yml), and print each file's bytes, GPU bytes and SHA-256")
     ap.add_argument("--webp-2k", type=Path, metavar="DIR",
                     help="re-encode the 2k JPEGs in DIR (2k_<world>.jpg) as WebP at SSIM >= 0.98 into site/textures/")
     args = ap.parse_args(argv)
     lazy()
+    if args.ktx2:
+        return ktx2_build(args.ktx2)
     if args.webp_2k:
         return webp_2k(args.webp_2k, ROOT / "site" / "textures", [s for s in args.only.split(",") if s])
     if not args.originals:

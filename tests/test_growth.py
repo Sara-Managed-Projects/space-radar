@@ -20,6 +20,7 @@ Run: python3 tests/test_growth.py
 from __future__ import annotations
 
 import copy
+import re
 import hashlib
 import subprocess
 import sys
@@ -98,6 +99,12 @@ def snapshot(root: Path) -> dict[str, str]:
     return out
 
 
+class _Indented(yaml.SafeDumper):
+    """Sequences indented under their key, the way registry/tours.yaml is written."""
+    def increase_indent(self, flow=False, indentless=False):
+        return super().increase_indent(flow, False)
+
+
 def apply_fixture(registry: Path, fixture: dict) -> None:
     """Merge the fixture's rows into the registry files, by section."""
     targets = {
@@ -123,6 +130,16 @@ def apply_fixture(registry: Path, fixture: dict) -> None:
     for section, rows in fixture.items():
         filename, key = targets[section]
         path = registry / filename
+        if section == "tours":
+            # As a person adds a trip: rows written at the end of the file, in the file's own
+            # layout, with every comment above them left where it is. Dumping the whole document
+            # dropped the comments, and the validator reads the `read YYYY-MM-DD` beside a card's
+            # number from the text (spec 0043; registry/tours-read-pending.yaml).
+            text = path.read_text(encoding="utf-8")
+            assert re.findall(r"(?m)^[a-z_]+:", text)[-1] == "tours:", "tours: is no longer the file's last section"
+            added = yaml.dump(copy.deepcopy(rows), Dumper=_Indented, sort_keys=False, allow_unicode=True, width=1000)
+            path.write_text(text.rstrip("\n") + "\n" + "".join("  " + line + "\n" for line in added.splitlines()), encoding="utf-8")
+            continue
         doc = yaml.safe_load(path.read_text(encoding="utf-8"))
         doc[key] = list(doc.get(key) or []) + copy.deepcopy(rows)
         path.write_text(yaml.safe_dump(doc, sort_keys=False), encoding="utf-8")

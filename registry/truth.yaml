@@ -1,0 +1,29 @@
+version: 1
+# The contract of spec 0043 (internal #121): every stop field of registry/tours.yaml that a refusal guards,
+# what refuses it, and where the refusal is proved. scripts/check_truth.py asserts that each `field` string
+# appears in scripts/check_registry.py and in tests/test_refusals.py, so a field cannot ship without both.
+# Rows are added by the first task of the spec that adds the field; a field without its row is what
+# review refuses. `test` names the file that breaks the rule on purpose. `spec` is given where the
+# validator's own comment names the spec that added the field, and left out where it does not.
+fields:
+  - {field: "target:", refused_when: "zero or two keys; an unknown record, world or site; a thing drawn only on its carrier; a layer with no member named", test: test_refusals.py}
+  - {field: "distance_km:", spec: "0038", refused_when: "under the camera's clearance floor on a stop at the visitor's place", test: test_refusals.py}
+  - {field: "frame_radii:", refused_when: "a framing inside the camera's world-clearance floor", test: test_refusals.py}
+  - {field: "time:", spec: "0030", refused_when: "form; range; ISO on SGP4; unknown event; an offset past a month; a kind on a non-eclipse; a card that types the time", test: test_refusals.py}
+  - {field: "behind:", refused_when: "a world the stop's stage draws nearer and larger than it is; the stop's own subject", test: test_refusals.py}
+  - {field: "rate:", spec: "0030", refused_when: "faster than the clock's own top speed; zero", test: test_refusals.py}
+  - {field: "needs_layer:", refused_when: "a layer that does not exist", test: test_refusals.py}
+  - {field: "look:", refused_when: "a look from the ground off the visitor's place; two things at once; a shower the card picked", test: test_refusals.py}
+  - {field: "stage:", refused_when: "neither a worlds.yaml world nor a stages.yaml rung", test: test_refusals.py}
+  - {field: "key_light_deg:", spec: "0037", refused_when: "an eclipse stop lit from behind (over the maximum angle)", test: test_refusals.py}
+  - {field: "zoom:", refused_when: "a lens wider than the sky can be stretched", test: test_refusals.py}
+  - {field: "figures:", refused_when: "a figure the line file does not have; a stop that does not look at the sky", test: test_refusals.py}
+  - {field: "exposure:", refused_when: "a shutter mode that does not exist; a shutter on a stop at a world", test: test_refusals.py}
+  - {field: "over:", refused_when: "a place to stand over that is not on the globe", test: test_refusals.py}
+  - {field: "live_note:", refused_when: "a live sentence no module writes; one that needs the visitor's place on a trip that never asks", test: test_refusals.py}
+  - {field: "overlay:", refused_when: "an overlay the registry does not have; this week's under another day's Sun", test: test_refusals.py}
+  - {field: "seen_from:", refused_when: "a camera on the side of the stop's own subject", test: test_refusals.py}
+  - {field: "portrait:", refused_when: "not a yes; a black hole nobody has photographed", test: test_refusals.py}
+  - {field: "darkness:", refused_when: "a kind of sky the ground view does not have; a stop not seen from the ground", test: test_refusals.py}
+  - {field: "drift_deg:", refused_when: "a drift that cannot finish inside its own dwell; a camera held on one side and told to drift", test: test_refusals.py}
+  - {field: "card:", spec: "0037", refused_when: "missing; certainty words on an illustrative layer; eclipse, hero-size, system-look and generated-line words; a typed count or time; a number with no `read` date above it (spec 0043)", test: test_refusals.py}

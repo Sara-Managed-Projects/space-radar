@@ -57,6 +57,15 @@ export const TERMINATOR = { start: -0.08, end: 0.12 };
 
 /** docs/design-language.md night-lights. Cities glow warm; the night map is ADDED, never pasted. */
 export const NIGHT_LIGHTS = 0xffc98a;
+/**
+ * Where the night map is brightest -- the dense cores of cities -- the lights read whiter than the
+ * sparse warm ones round them, the way a bright source loses its colour. A drawing choice about
+ * brightness, NOT a map of which country lights with sodium and which with LEDs (the map has no
+ * such data): illustrative (public #260).
+ */
+export const NIGHT_CORE_LIGHTS = 0xfff0dc;
+/** Where a ground bright enough and grey enough to be ice and snow starts to gain its sheen. */
+export const ICE_SHEEN = { lo: 0.36, hi: 0.55, chroma: 0.14 };
 
 /** docs/design-language.md atmosphere-rim, additive at ~35 %. */
 export const ATMOSPHERE_RIM = 0x6ec3ff;
@@ -181,6 +190,8 @@ export const LIVE_SWITCH_MS = 1500;
 
 const DEFAULT_UNIFORMS = {
   nightGain: 2.6,
+  nightGlow: 0.42,  // the soft halo round a bright light, as a share of the light itself; 0 = none
+  iceSheen: 0.16,   // a faint blue-white lift on ice and snow in daylight; 0 = none
   cloudGamma: CLOUD_GAMMA,
   cloudGain: 0.95,
   specGain: 1.6,
@@ -264,6 +275,9 @@ uniform vec3  uAtmoTint;
 uniform vec2  uTerminator;
 uniform vec2  uOceanMask;
 uniform float uNightGain;
+uniform vec3  uNightCore;
+uniform float uNightGlow;
+uniform float uIceSheen;
 uniform float uCloudGain;
 uniform float uSpecGain;
 uniform float uSpecPower;
@@ -307,6 +321,12 @@ float cloudCover( vec2 uv ) {
   }
   return c;
 }
+// The night map's light at a point, as the lights above read it.
+float nightLumAt( vec2 uv ) {
+  vec4 t = texture2D( uNight, uv );
+  return mix( dot( t.rgb, vec3( 0.2126, 0.7152, 0.0722 ) ), pow( t.r, 2.2 ), uNightMono );
+}
+
 void main() {
   #include <logdepthbuf_fragment>
 
@@ -418,6 +438,14 @@ void main() {
     reliefLit = mix( 1.0, ratio, smoothstep( 0.0, 0.06, sunUp ) );
   }
   vec3 ground = dayTex * ( lambert * reliefLit * sunTint * ( 1.0 - 0.55 * shade * dayMix ) + uAmbient );
+  // Ice and snow are not paint: bright, grey ground takes a faint blue-white lift, strongest
+  // where the Sun is high, as light scatters inside snow. Illustrative; uIceSheen 0 = none.
+  if ( uIceSheen > 0.0 ) {
+    float lum = dot( dayTex, vec3( 0.2126, 0.7152, 0.0722 ) );
+    float chroma = max( dayTex.r, max( dayTex.g, dayTex.b ) ) - min( dayTex.r, min( dayTex.g, dayTex.b ) );
+    float ice = smoothstep( ${ICE_SHEEN.lo.toFixed(2)}, ${ICE_SHEEN.hi.toFixed(2)}, lum ) * ( 1.0 - smoothstep( 0.04, ${ICE_SHEEN.chroma.toFixed(2)}, chroma ) ) * ( 1.0 - cloud );
+    ground += dayTex * vec3( 0.82, 0.94, 1.08 ) * ice * uIceSheen * clamp( ( sunDot + 0.25 ) / 0.5, 0.0, 1.0 ) * dayMix;
+  }
 
   // ---- ocean specular --------------------------------------------------------------------------
   // Masked to water and killed under cloud. A tight hot core over a faint wide sheen, both scaled
@@ -436,6 +464,18 @@ void main() {
   vec4 nightTex = texture2D( uNight, vUv );
   float lit = mix( dot( nightTex.rgb, vec3( 0.2126, 0.7152, 0.0722 ) ), pow( nightTex.r, 2.2 ), uNightMono ) * uHasNight;
   vec3 cities = uNightTint * lit * uNightGain * pow( nightAmt, 1.5 ) * ( 1.0 - cloud * 0.75 );
+
+  // Regional colour by brightness, and a soft halo round the brightest lights (illustrative; the
+  // uniforms are 0 to turn either off, and the line above is the whole of the old look).
+  if ( uNightGlow > 0.0 && nightAmt > 0.01 ) {
+    float lit0 = smoothstep( 0.35, 0.9, lit );
+    cities = mix( cities, uNightCore * lit * uNightGain * pow( nightAmt, 1.5 ) * ( 1.0 - cloud * 0.75 ), 0.55 * lit0 );
+    // The halo: the map read at four points a few tens of kilometres round, no brighter than a share of the light.
+    vec2 d = vec2( 0.0018, 0.0036 );
+    float h = nightLumAt( vUv + vec2( d.x, 0.0 ) ) + nightLumAt( vUv - vec2( d.x, 0.0 ) )
+            + nightLumAt( vUv + vec2( 0.0, d.y ) ) + nightLumAt( vUv - vec2( 0.0, d.y ) );
+    cities += uNightTint * ( 0.25 * h * uHasNight ) * uNightGain * uNightGlow * pow( nightAmt, 1.5 ) * ( 1.0 - cloud * 0.75 );
+  }
 
   vec3 colour = ground + specular + cities;
 
@@ -623,6 +663,9 @@ export function createEarth(textures, opts = {}) {
       uTerminator: { value: new THREE.Vector2(TERMINATOR.start, TERMINATOR.end) },
       uOceanMask: { value: new THREE.Vector2(OCEAN_MASK.lo, OCEAN_MASK.hi) },
       uNightGain: { value: cfg.nightGain },
+      uNightCore: { value: new THREE.Color(NIGHT_CORE_LIGHTS) },
+      uNightGlow: { value: cfg.nightGlow },
+      uIceSheen: { value: cfg.iceSheen },
       uCloudGain: { value: cfg.cloudGain },
       uSpecGain: { value: cfg.specGain },
       uSpecPower: { value: cfg.specPower },

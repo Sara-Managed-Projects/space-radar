@@ -303,5 +303,68 @@ for (const r of NEBULAE) {
   check(exposureLook('eye').milkyWay < 1 && exposureLook('deep').milkyWay > 1, 'and the number they are handed is under 1 for Eye, over 1 for Deep');
 }
 
+// --------------------------------------------- 6. how many pictures the GPU holds (internal #345)
+{
+  const { TIER_PICTURES, residentPictures, evictions, createNebulae } = await import(join(JS, 'scene/nebulae.js'));
+  const { TIER_BUDGET_MB } = await import(join(JS, 'scene/quality.js'));
+  check(TIER_PICTURES.length === 3 && TIER_PICTURES[0] < TIER_PICTURES[1] && TIER_PICTURES[1] < TIER_PICTURES[2], `a tier holds more pictures than the one below (${TIER_PICTURES})`);
+  check(residentPictures(0) === 3 && residentPictures(2) === 14 && residentPictures(NaN) === TIER_PICTURES[1] && residentPictures(9) === 14 && residentPictures(-1) === 3, 'residentPictures(tier) clamps to the table');
+  // The size of each picture on the GPU, from its file header (RGBA8 with mipmaps).
+  const webpSize = (file) => {
+    const b = readFileSync(join(ROOT, file));
+    const kind = b.toString('ascii', 12, 16);
+    if (kind === 'VP8 ') return [b.readUInt16LE(26) & 0x3fff, b.readUInt16LE(28) & 0x3fff];
+    if (kind === 'VP8L') { const v = b.readUInt32LE(21); return [(v & 0x3fff) + 1, ((v >> 14) & 0x3fff) + 1]; }
+    if (kind === 'VP8X') return [(b.readUIntLE(24, 3)) + 1, (b.readUIntLE(27, 3)) + 1];
+    return null;
+  };
+  const mibs = NEBULAE.map((r) => { const wh = webpSize(r.file); return wh ? (wh[0] * wh[1] * 4 * 4) / 3 / 1048576 : null; });
+  check(mibs.every((m) => m > 0 && m < 8), `every picture's size can be read from its header, and none is over 8 MiB (${mibs.map((m) => m && m.toFixed(1))})`);
+  const sorted = mibs.slice().sort((a, b) => b - a);
+  for (let t = 0; t < 3; t++) {
+    const worst = sorted.slice(0, TIER_PICTURES[t]).reduce((a, b) => a + b, 0);
+    check(worst <= 0.1 * TIER_BUDGET_MB[t], `tier ${t}: its ${TIER_PICTURES[t]} largest pictures are ${worst.toFixed(1)} MiB of GPU memory, a tenth of ${TIER_BUDGET_MB[t]} MB at most`);
+  }
+  // evictions(): the oldest unseen, never one in view, selected or held, nothing under the budget.
+  const row = (id, seen, extra = {}) => ({ id, ready: true, visible: false, held: false, seen, ...extra });
+  check(evictions([row('a', 1), row('b', 2)], 2).length === 0, 'at the budget nothing goes');
+  check(evictions([row('a', 5), row('b', 1), row('c', 3)], 2).join() === 'b', 'over by one: the one seen longest ago goes');
+  check(evictions([row('a', 5), row('b', 1, { visible: true }), row('c', 3, { held: true }), row('d', 2)], 3).join() === 'd', 'a picture in view, or held by a trip or a selection, stays');
+  check(evictions([row('a', 5, { visible: true }), row('b', 1, { visible: true }), row('c', 3, { visible: true })], 1).length === 0, 'everything in view: over budget for now, nothing is torn out of the frame');
+  check(evictions([row('a', 1, { ready: false }), row('b', 2), row('c', 3)], 2).length === 0, 'a picture still loading is not counted');
+  // In the layer itself: the budget of one lets the Large Cloud go once the camera is on Orion.
+  stage.setWorld('earth');
+  const scene = new THREE.Scene();
+  const skyGroup = new THREE.Group(); skyGroup.scale.setScalar(1000); scene.add(skyGroup); skyGroup.updateMatrixWorld(true);
+  const camera = new THREE.PerspectiveCamera(45, 1.6, 0.1, 1e9);
+  const renderer = { domElement: { clientHeight: 900 } };
+  const lookAt = (id) => { const c = pictureBasis(PICTURE_FOR.get(id)).centre; camera.position.set(0, 0, 0); camera.lookAt(c[0], c[1], c[2]); camera.updateMatrixWorld(true); camera.matrixWorldInverse.copy(camera.matrixWorld).invert(); };
+  const disposed = [];
+  const load = () => { const t = new THREE.Texture(); t.addEventListener('dispose', () => disposed.push(1)); return Promise.resolve(t); };
+  const n = createNebulae(scene, { skyGroup, load, base: 'https://example.invalid/', maxResident: 1 });
+  check(n.budget() === 1, 'the budget is the one asked for');
+  lookAt('dso-lmc'); n.update(camera, renderer, true, false);
+  await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+  n.update(camera, renderer, true, false);
+  check(n.loaded().length >= 1 && n.loaded().length <= 2, `the Clouds landed (${n.loaded()})`);
+  n.want('dso-m42');
+  await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+  lookAt('dso-m42'); n.update(camera, renderer, true, false); n.update(camera, renderer, true, false);
+  check(n.loaded().length === 1 && n.loaded()[0] === 'dso-m42' && disposed.length >= 1, `with a budget of one the selected Orion stays and the Clouds are let go (${n.loaded()}, ${disposed.length} disposed)`);
+  n.dispose();
+}
+
+// --------------------------------------------- 7. the shutter reaches the 3D stars (internal #343)
+{
+  const { COPY: _c } = await import(join(JS, 'copy/en.js'));
+  const en = await import(join(JS, 'copy/en.js'));
+  check(exposureLook('eye').starLimit === en.NAKED_EYE_LIMIT, `the Eye draws stars to the naked-eye limit (${exposureLook('eye').starLimit} = ${en.NAKED_EYE_LIMIT})`);
+  check(exposureLook('eye').starLimit < exposureLook('camera').starLimit && exposureLook('camera').starLimit <= exposureLook('deep').starLimit && exposureLook('deep').starLimit <= 7.5, 'a longer exposure shows no fewer stars, and none past the file\'s 7.5');
+  const st = readFileSync(join(JS, 'scene/stars3d.js'), 'utf8');
+  check(/m > uMagLimit/.test(st) && /uMagLimit: \{ value: 7\.5 \}/.test(st) && !/m > 7\.5/.test(st), 'the vertex shader reads the limit from a uniform whose default is the old 7.5');
+  const mn = readFileSync(join(JS, 'main.js'), 'utf8');
+  check((mn.match(/stars3d\.setMagLimit\(/g) || []).length === 2, 'main.js hands the limit over at boot and on every change');
+}
+
 if (problems.length) { console.error('nebulae FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`nebulae ok: ${NEBULAE.length} licensed pictures inside their objects' fields, the tangent-plane maths, the shutter's three looks, and nothing fetched at boot`);

@@ -338,6 +338,12 @@ function rockyLook(face) {
     look.spec = 0;
     look.bump = 1.6;
   }
+  // The thin high deck and a snowball's frost come from a second stream of the seed, so the looks
+  // drawn above are the looks they always were.
+  const r2 = rng(face.seed ^ 0x2545f491);
+  const high = r2();
+  look.high = climate === 'temperate' ? 0.35 + high * 0.55 : climate === 'snowball' ? 0.15 + high * 0.3 : climate === 'desert' ? 0.1 + high * 0.2 : 0;
+  look.frost = climate === 'snowball' ? 0.75 + r2() * 0.25 : 0;
   return look;
 }
 
@@ -582,6 +588,7 @@ uniform mat3 uFrame;       // scene axes -> the surface's own
 uniform mat3 uCloudFrame;  // scene axes -> the clouds', which drift over the surface
 uniform vec3 uSeed;
 uniform float uLocked;
+uniform float uDetail;     // 0..1, grows with the disc's size on screen: the fine octaves of a close-up (detailFor)
 varying vec3 vN;
 varying vec3 vW;
 varying vec3 vC;
@@ -621,6 +628,9 @@ uniform vec3 uLandHigh;
 uniform vec3 uIceCol;
 uniform vec3 uCloudCol;
 uniform vec4 uCyc[ 5 ];
+uniform mat3 uCloudFrame2; // the high deck's own frame: it drifts at another speed
+uniform float uHigh;       // the share of the sky under the thin high deck (tier 2); 0 = none
+uniform float uFrost;      // 0..1: a snowball's cracks, blue ice and scoured rock (tiers 1 and 2); 0 = none
 ${NOISE_GLSL}
 ${AIR_GLSL}
 
@@ -672,6 +682,14 @@ float cloudAt( vec3 c, float extra ) {
   float n = fbm( w ) + 0.17 * ( fbm3( w * 4.3 + 3.0 ) - 0.5 );
   #if TIER >= 2
   n += 0.07 * ( fbm3( w * 13.0 + 7.0 ) - 0.5 );
+  // Cells: the ridges of a second, finer noise stand for the edges of cumulus cells.
+  n += 0.045 * ( 1.0 - abs( 2.0 * vnoise( w * 9.0 + 2.0 ) - 1.0 ) - 0.5 );
+  #endif
+  #if TIER >= 1
+  // Close up the deck is drawn finer still: two more octaves, only once the disc is large.
+  if ( uDetail > 0.001 ) {
+    n += uDetail * ( 0.07 * ( vnoise( w * 31.0 + 9.0 ) - 0.5 ) + 0.045 * ( vnoise( w * 79.0 + 2.0 ) - 0.5 ) );
+  }
   #endif
   // Storm tracks: more cloud along the middle latitudes and the equator, less in the dry belts.
   float belts = 0.5 + 0.5 * cos( c.y * 8.4 );
@@ -696,6 +714,16 @@ float cloudShade( vec3 c, float extra ) {
 }
 #endif
 
+#if TIER >= 2
+// A thin high deck over the thick low one: drawn out along the parallels into wisps, and seen
+// through its own height, so against the limb it slides over the low deck.
+float highDeck( vec3 c ) {
+  vec3 w = vec3( c.x * 2.6, c.y * 8.5, c.z * 2.6 ) + uSeed.yxz * 1.7;
+  float n = fbm3( w ) + 0.22 * ( fbm3( w * 3.1 + 4.0 ) - 0.5 );
+  return smoothstep( 0.62 - 0.3 * uHigh, 0.86, n );
+}
+#endif
+
 void main() {
   #include <logdepthbuf_fragment>
   vec3 N = normalize( vN );
@@ -709,6 +737,20 @@ void main() {
   vec3 Lq = uFrame * L;
   float ahead;
   float h = terrain( q, Lq - q * dot( q, Lq ), ahead );
+  // Close up: ground finer than the lattice's first cells. Two octaves at 70 and 170 times the globe,
+  // and a third a step toward the star for the slope, all off (and unpaid for) while the disc is small.
+  float dt = 0.0;
+  float dSlope = 0.0;
+  #if TIER >= 1
+  if ( uDetail > 0.001 ) {
+    vec3 dq = q * 70.0 + uSeed.xzy;
+    float d1 = vnoise( dq );
+    float d2 = vnoise( OCT_M * dq * 2.4 + 3.1 );
+    dt = uDetail * ( ( d1 - 0.5 ) * 0.6 + ( d2 - 0.5 ) * 0.4 );
+    dSlope = uDetail * ( d1 - vnoise( dq + ( Lq - q * dot( q, Lq ) ) * 0.35 ) );
+    h += dt * 0.03;
+  }
+  #endif
   float edge = 0.003 + fwidth( h ) * 0.75;
   float land = smoothstep( sea - edge, sea + edge, h );
   float elev = clamp( ( h - sea ) / max( 1.0 - sea, 0.05 ), 0.0, 1.0 );
@@ -726,7 +768,7 @@ void main() {
   float green = smoothstep( 0.34, 0.52, wet ) * ( 1.0 - smoothstep( 0.1, 0.6, elev ) ) * uGreen;
   vec3 landCol = mix( uLandDry, uLandLow, green );
   landCol = mix( landCol, uLandHigh, smoothstep( 0.55, 0.95, elev ) );
-  landCol *= 0.72 + 0.56 * fine;
+  landCol *= ( 0.72 + 0.56 * fine ) * ( 1.0 + 0.7 * dt );
   // The sea: pale over the shelf, then deep, and never one flat blue.
   vec3 seaCol = mix( uOceanShallow, uOceanDeep, smoothstep( 0.0, 0.3, depth ) );
   seaCol = mix( seaCol, uOceanShallow * vec3( 0.7, 1.25, 1.1 ), ( 1.0 - smoothstep( 0.0, 0.06, depth ) ) * 0.7 );
@@ -736,6 +778,19 @@ void main() {
   float lead = pow( 1.0 - abs( 2.0 * fbm3( q * 5.5 + uSeed ) - 1.0 ), 22.0 ) * ( 1.0 - land );
   vec3 iceCol = uIceCol * ( 0.8 + 0.3 * fine ) * mix( vec3( 0.8, 0.9, 1.0 ) * ( 0.84 + 0.3 * mm.z ), vec3( 1.0 ), land );
   iceCol = mix( iceCol, uOceanShallow * 1.6 + uIceCol * 0.15, lead * 0.5 );
+  #if TIER >= 1
+  if ( uFrost > 0.001 ) {
+    // A snowball: a net of cracks across the whole shell, ice blued where it is old and deep, and
+    // the high ground scoured down to rock. Each is a fraction of the ice's own colour.
+    float crack = pow( 1.0 - abs( 2.0 * fbm3( q * 3.4 + uSeed.zyx ) - 1.0 ), 14.0 );
+    crack = max( crack, 0.6 * pow( 1.0 - abs( 2.0 * vnoise( q * 11.0 + uSeed.xyz ) - 1.0 ), 18.0 ) );
+    float blue = smoothstep( 0.5, 0.78, mm.x );
+    iceCol = mix( iceCol, vec3( 0.46, 0.66, 0.92 ) * uIceCol, 0.45 * blue * uFrost );
+    iceCol = mix( iceCol, uIceCol * vec3( 0.2, 0.28, 0.42 ), 0.55 * crack * uFrost );
+    iceCol = mix( iceCol, uLandDry * 0.85, 0.6 * uFrost * land * smoothstep( 0.72, 0.95, elev ) );
+    iceCol *= 1.0 + 0.5 * dt * uFrost;
+  }
+  #endif
   surf = mix( surf, iceCol, ice );
   float water = ( 1.0 - land ) * ( 1.0 - ice );
 
@@ -743,6 +798,7 @@ void main() {
   float relief = 0.0;
   #if TIER >= 1
   relief = ( max( ahead, sea ) - max( h, sea ) ) * 3.2 * uBump * ( 1.0 - ice * 0.5 );
+  relief += dSlope * 1.1 * uBump * land * ( 1.0 - ice * 0.5 );
   #endif
 
   // The clouds, and the shade they throw toward the night side.
@@ -773,6 +829,10 @@ void main() {
     float glint = pow( nh, 420.0 ) * 2.2 + pow( nh, 48.0 ) * 0.2;
     float fres = 0.04 + 0.96 * pow( 1.0 - nv, 5.0 );
     col += sun * water * uSpec * ( 1.0 - cl ) * shade * smoothstep( 0.0, 0.12, mu0 ) * ( glint + fres * 0.10 * lit );
+    #if TIER >= 1
+    // Smooth old ice shines faintly, a broad lobe and no heart.
+    col += sun * ice * uFrost * 0.07 * pow( nh, 22.0 ) * ( 1.0 - cl ) * shade * smoothstep( 0.0, 0.12, mu0 );
+    #endif
   }
 
   // Molten rock gives its own light, day or night: seams between the plates of a dark crust, and
@@ -793,6 +853,17 @@ void main() {
   float cloudLit = clamp( 0.74 + 1.1 * ( cl - clSun ), 0.4, 1.12 );
   vec3 cloudCol = uCloudCol * sun * ( max( mu0, 0.0 ) * cloudLit + 0.04 * dusk * uAtmK );
   col = mix( col, cloudCol, cl * 0.97 );
+
+  #if TIER >= 2
+  if ( uHigh > 0.001 ) {
+    // Seen through its height: the ray to this point crosses the high deck a little to the side.
+    vec3 Np = normalize( N + V * ( 0.02 / max( nv, 0.2 ) ) );
+    float hi = highDeck( uCloudFrame2 * Np ) * 0.5 * uHigh * ( 0.6 + 0.4 * uHigh );
+    // High up it keeps the light a little past the terminator, and it is white, not shaded.
+    vec3 hiCol = uCloudCol * sun * ( max( mu0 + 0.07, 0.0 ) * 0.95 + 0.02 * dusk * uAtmK );
+    col = mix( col, hiCol, hi );
+  }
+  #endif
 
   col = air( col, mu0, nv );
   gl_FragColor = vec4( col, 1.0 );
@@ -868,6 +939,12 @@ void main() {
   // Streaks drawn out along the bands, and bright cloud on the cold giants.
   float streak = fbm( vec3( q.x * 3.0, lat * 46.0, q.z * 3.0 ) + uSeed.yzx );
   col *= 0.86 + 0.28 * streak * ( 0.4 + 0.6 * uContrast );
+  #if TIER >= 1
+  // Close up: finer streaks along the bands, only once the disc is large.
+  if ( uDetail > 0.001 ) {
+    col *= 1.0 + uDetail * ( 0.34 * ( vnoise( vec3( q.x * 30.0, lat * 190.0, q.z * 30.0 ) + uSeed.zxy ) - 0.5 ) + 0.2 * ( vnoise( vec3( q.x * 80.0, lat * 420.0, q.z * 80.0 ) + uSeed.yzx ) - 0.5 ) );
+  }
+  #endif
   col += vec3( 0.5 ) * uStreak * smoothstep( 0.66, 0.8, fbm3( vec3( q.x * 4.0, lat * 30.0, q.z * 4.0 ) + uSeed ) );
   col = mix( col, uPole, smoothstep( 0.72, 0.98, abs( q.y ) ) * 0.8 );
   col = mix( col, uStormCol, spot * 0.85 );
@@ -959,6 +1036,18 @@ export function faceGeometry(near) {
   if (!GEOMETRY[key]) GEOMETRY[key] = near === 'halo' ? new THREE.SphereGeometry(1, 64, 32) : near ? new THREE.SphereGeometry(1, 160, 80) : new THREE.SphereGeometry(1, 32, 16);
   return GEOMETRY[key];
 }
+/**
+ * How much of the fine octaves a disc of this radius, in pixels, shows: 0 below DETAIL_FROM_PX, 1 from
+ * DETAIL_FULL_PX, a smoothstep between. The shader's `uDetail`; its fine lattice is 70 and 170 cells
+ * to the globe, which is a few pixels a cell only once the disc is this large.
+ */
+export const DETAIL_FROM_PX = 160;
+export const DETAIL_FULL_PX = 520;
+export function detailFor(radiusPx) {
+  const x = clamp((Number(radiusPx) - DETAIL_FROM_PX) / (DETAIL_FULL_PX - DETAIL_FROM_PX), 0, 1);
+  return Number.isFinite(x) ? x * x * (3 - 2 * x) : 0;
+}
+
 /** A disc this many pixels in radius, or more, is drawn with the near sphere. */
 export const NEAR_RADIUS_PX = 40;
 /** The on-canvas tag shows once the disc is this many pixels in radius. */
@@ -986,6 +1075,7 @@ export function faceUniforms(face) {
     uCloudFrame: { value: new THREE.Matrix3() },
     uSeed: { value: v3(k.seed) },
     uLocked: { value: k.locked },
+    uDetail: { value: 0 },
     uNoise: { value: noiseTexture() },
   };
   if (face.kind === 'giant') {
@@ -1003,6 +1093,7 @@ export function faceUniforms(face) {
       uOceanDeep: { value: v3(k.oceanDeep) }, uOceanShallow: { value: v3(k.oceanShallow) },
       uLandLow: { value: v3(k.landLow) }, uLandDry: { value: v3(k.landDry) }, uLandHigh: { value: v3(k.landHigh) },
       uIceCol: { value: v3(k.iceCol) }, uCloudCol: { value: v3(k.cloudCol) }, uCyc: { value: k.cyclones.map(v4) },
+      uCloudFrame2: { value: new THREE.Matrix3() }, uHigh: { value: k.high || 0 }, uFrost: { value: k.frost || 0 },
     });
   }
   return u;
@@ -1087,6 +1178,8 @@ const _up = new THREE.Vector3();
 /** Seconds for the ground to turn once, and the clouds' drift over it: illustrative, by the wall clock. */
 export const SPIN_SECONDS = 360;
 export const CLOUD_DRIFT_SECONDS = 1500;
+/** The thin high deck drifts faster than the thick low one, which is what lets the two part at the limb. */
+export const HIGH_DRIFT_SECONDS = 900;
 
 function setFrame(m3, ex, ey, ez) {
   m3.set(ex.x, ex.y, ex.z, ey.x, ey.y, ey.z, ez.x, ez.y, ez.z);
@@ -1131,6 +1224,12 @@ export function applyFace(mesh, face, opts = {}) {
       _a.copy(_ey).multiplyScalar(Math.cos(a)).addScaledVector(_ez, Math.sin(a));
       _b.crossVectors(_ex, _a);
       setFrame(u.uCloudFrame.value, _ex, _a, _b);
+      if (u.uCloudFrame2) {
+        const a2 = (timeS / HIGH_DRIFT_SECONDS) * Math.PI * 2 + 1.1;
+        _a.copy(_ey).multiplyScalar(Math.cos(a2)).addScaledVector(_ez, Math.sin(a2));
+        _b.crossVectors(_ex, _a);
+        setFrame(u.uCloudFrame2.value, _ex, _a, _b);
+      }
     } else {
       // A pole tipped from the orbit's by the seed's tilt, and a turn about it.
       _ey.copy(north).normalize();
@@ -1147,6 +1246,12 @@ export function applyFace(mesh, face, opts = {}) {
       _a.copy(_ex).multiplyScalar(Math.cos(drift)).addScaledVector(_ez, Math.sin(drift));
       _b.crossVectors(_a, _ey);
       setFrame(u.uCloudFrame.value, _a, _ey, _b);
+      if (u.uCloudFrame2) {
+        const drift2 = spin + (timeS / HIGH_DRIFT_SECONDS) * Math.PI * 2 + 1.1;
+        _a.copy(_ex).multiplyScalar(Math.cos(drift2)).addScaledVector(_ez, Math.sin(drift2));
+        _b.crossVectors(_a, _ey);
+        setFrame(u.uCloudFrame2.value, _a, _ey, _b);
+      }
     }
     const cam = o.camera;
     if (cam) {
@@ -1171,6 +1276,7 @@ export function applyFace(mesh, face, opts = {}) {
         }
       }
       handle.radiusPx = radiusPx;
+      if (u.uDetail) u.uDetail.value = detailFor(radiusPx);
     }
   }
 
@@ -1180,7 +1286,8 @@ export function applyFace(mesh, face, opts = {}) {
     tier = next;
     const old = material;
     material = faceMaterial(face, tier);
-    for (const key of ['uSunDir', 'uFrame', 'uCloudFrame']) material.uniforms[key].value.copy(old.uniforms[key].value);
+    for (const key of ['uSunDir', 'uFrame', 'uCloudFrame', 'uCloudFrame2']) if (old.uniforms[key]) material.uniforms[key].value.copy(old.uniforms[key].value);
+    material.uniforms.uDetail.value = old.uniforms.uDetail.value;
     mesh.material = material;
     old.dispose();
     if (halo) { mesh.remove(halo); halo.material.dispose(); halo = null; }

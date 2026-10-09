@@ -291,6 +291,8 @@ TOUR_PACING = {"auto", "reader"}
 TOUR_CLOCKS = {"as-found", "live", "freeze"}
 TOUR_DRIFTS = {"toward-light", "away", "none"}
 TOUR_EASES = {"auto", "ui", "inout", "cruise", "linear"}
+# How a stop is joined to the one before it (internal #288): the flight, a cut, or a fade through black.
+TOUR_TRANSITIONS = {"fly", "cut", "black"}
 # `fallback` is in the design and is not shipped: the one stop that needed it was the `view:`
 # stop, which is not shipped either. Refusing it by name is better than accepting a value the
 # state machine would silently treat as `drop`.
@@ -463,7 +465,21 @@ EVENT_KINDS = {
 ECLIPSE_KEY_LIGHT_MAX_DEG = 60
 # Never alarm (spec 0037 req 6): the words are "shadow" and "path", and this app is not where anybody
 # looks at the Sun, so it gives no safety warning either. The same mechanism as TOUR_CERTAINTY_WORDS.
-ECLIPSE_STOP_WORDS = ("darkness falls", "goes out", "danger", "protect your eyes")
+ECLIPSE_STOP_WORDS = ("darkness falls", "goes out", "danger", "protect your eyes", "blinding")
+# The other three word lists of spec 0043 design section 1 (internal #121), applied in check_tour_stop().
+# A hero model is drawn at its own size on its own stage, so a card on it may not say "to scale"; a
+# system planet's look is `illustrative` and generated, so its card may not describe the look; and a
+# card may not write a line the generator writes ("Shown at ...").
+HERO_SIZE_WORDS = ("to scale", "true size", "actual size", "real size")
+SYSTEM_LOOK_WORDS = ("looks like", "ocean", "blue", "green", "clouds", "continents")
+GENERATED_WORDS = ("shown at", "computed", "generated", "drawn at class size")
+# The source-near-the-number rule (design section 2): a digit on a card needs a `read YYYY-MM-DD`
+# comment within TOUR_CARD_READ_LINES lines above its `card:`. The file is read as text because the YAML
+# parser drops comments. Stops written before the rule that have no such comment cannot be given one
+# without reading their pages again; registry/tours-read-pending.yaml names them (a ratchet: a stop that
+# gains its comment must leave the list, and a stop not on the list must have one).
+TOUR_CARD_READ_DATE = re.compile(r"read 20\d\d-\d\d-\d\d")
+TOUR_CARD_READ_LINES = 10
 
 # The sentence the `clock: freeze` refusal already says, for the same cost from the same cause.
 TOUR_ACTIVE_SCRUB = ("flips the clock to scrub, which re-propagates every object every frame "
@@ -530,6 +546,58 @@ TOUR_DOUBLE_HYPHEN = ("the screen prints that as two hyphens. Write a comma, a c
                       "dash; `--` is for comments")
 
 
+def stop_draws_a_model(stop: dict, kind: str, value) -> bool:
+    """True where the stop frames a drawn craft or several things at once: a `group:`, a station, a
+    probe (`deep-*` records, whose model the browser looks up by name in scene/realmodels.js, a table
+    this script does not mirror). HERO_SIZE_WORDS is scoped to these."""
+    return "group" in stop or kind == "layer" and value == "stations" or \
+        kind == "record" and str(value).startswith("deep-")
+
+
+def tour_cards_without_read(text: str) -> set[str]:
+    """`trip.stop` keys of every stop whose card has a digit and no `read YYYY-MM-DD` comment in the
+    TOUR_CARD_READ_LINES lines above its `card:` (spec 0043 design section 2). Read as text: the
+    YAML parser drops comments, the way TOUR_DOUBLE_HYPHEN is checked."""
+    lines = text.splitlines()
+    out: set[str] = set()
+    trip = stop = None
+    for i, line in enumerate(lines):
+        m = re.match(r"^  - id:\s*(\S+)", line)
+        if m:
+            trip, stop = m.group(1).strip("\"'"), None
+        m = re.match(r"^      - id:\s*(\S+)", line)
+        if m:
+            stop = m.group(1).strip("\"'")
+        if line.strip() != "card:":
+            continue
+        indent = len(line) - len(line.lstrip())
+        j, body = i + 1, []
+        while j < len(lines) and (not lines[j].strip() or len(lines[j]) - len(lines[j].lstrip()) > indent):
+            if not lines[j].strip().startswith("#"):
+                body.append(lines[j])
+            j += 1
+        if re.search(r"\d", " ".join(body)) and \
+                not any(TOUR_CARD_READ_DATE.search(x) for x in lines[max(0, i - TOUR_CARD_READ_LINES):i]):
+            out.add(f"{trip}.{stop}")
+    return out
+
+
+def check_tour_card_sources(text: str) -> None:
+    """The ratchet over tour_cards_without_read(): registry/tours-read-pending.yaml may only shrink."""
+    pending_path = REG / "tours-read-pending.yaml"
+    pending = set()
+    if pending_path.exists():
+        pending = {str(x) for x in ((yaml_load(pending_path.read_text(encoding="utf-8")) or {}).get("stops") or [])}
+    missing = tour_cards_without_read(text)
+    for key in sorted(missing - pending):
+        fail(f"tours.yaml[{key}]", "a number on a card with no `read YYYY-MM-DD` source in the comment "
+                                   f"within {TOUR_CARD_READ_LINES} lines above its `card:`. Read the page, write the "
+                                   "date where you read it, and never put a stop on tours-read-pending.yaml to pass")
+    for key in sorted(pending - missing):
+        fail(f"tours.yaml[{key}]", "is on registry/tours-read-pending.yaml as a stop with no `read` comment, but it has one (or "
+                                               "no number, or no longer exists): remove it from the list")
+
+
 def check_tours(oddities_doc: dict, layer_ids: set, world_ids: set, site_ids: set,
                 glossary: set) -> None:
     """registry/tours.yaml: a trip may not promise a stop it will not deliver.
@@ -552,6 +620,7 @@ def check_tours(oddities_doc: dict, layer_ids: set, world_ids: set, site_ids: se
         fail("tours.yaml", f"will not parse: {exc}")
         return
 
+    check_tour_card_sources(path.read_text(encoding="utf-8"))
     unreachable = unreachable_oddities(oddities_doc)
     defaults = doc.get("defaults") or {}
     TOUR_DEFAULTS_SEEN.clear()
@@ -1476,6 +1545,10 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
     if ease not in TOUR_EASES:
         fail(where, f"`ease: {ease}` is not one of {sorted(TOUR_EASES)}")
 
+    transition = stop.get("transition", "fly")
+    if transition not in TOUR_TRANSITIONS:
+        fail(where, f"`transition: {transition}` is not one of {sorted(TOUR_TRANSITIONS)}")
+
     frame_radii = stop.get("frame_radii", defaults.get("frame_radii"))
     if frame_radii is not None:
         if not is_number(frame_radii):
@@ -1521,6 +1594,22 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
     if not isinstance(card, dict):
         fail(where, "no `card:` -- a stop with no words is a camera move, not a stop")
         return
+    kind_text = " ".join(str(v or "") for v in card.values()).lower()
+    target = stop.get("target")
+    if isinstance(target, dict) and "record" in target:
+        for word in HERO_SIZE_WORDS:
+            if word in kind_text:
+                fail(where, f"a stop at a record says \"{word}\": a model is drawn larger than it is "
+                            f"(scene/heroes.js), so the card may not call the picture to scale")
+    if flown_system:
+        for word in SYSTEM_LOOK_WORDS:
+            if re.search(r"\b" + re.escape(word) + r"\b", kind_text):
+                fail(where, f"a stop on a star system's stage says \"{word}\": no planet of another star "
+                            f"has a seen face, and the app says that itself")
+    for word in GENERATED_WORDS:
+        if word in kind_text:
+            fail(where, f"the card says \"{word}\": a generated line says that, and a hand-written card "
+                        f"may not pre-empt it")
     title = card.get("title")
     body = card.get("body")
     if not title:
@@ -1565,6 +1654,19 @@ def check_tour_stop(tour: dict, stop: dict, n: int, seen_stops: set, defaults: d
     for label, text in (("title", title), ("body", body)):
         if "--" in str(text or ""):
             fail(where, f"the card's {label} has \"--\"; {TOUR_DOUBLE_HYPHEN}")
+
+    # The three word lists of spec 0043 design section 1 (internal #121).
+    scoped = [(GENERATED_WORDS, "writes a line the generator writes (the shown-at and size lines are computed)")]
+    if stop_draws_a_model(stop, kind, value):
+        scoped.append((HERO_SIZE_WORDS, "is on a drawn model or a group, which is shown at its own size and "
+                                        "not to scale with anything beside it"))
+    if isinstance(flown_on, str) and flown_on.startswith("system-"):
+        scoped.append((SYSTEM_LOOK_WORDS, "is on a star system's stage, where a planet's look is illustrative "
+                                          "and generated, so a card may not describe it"))
+    for words, why in scoped:
+        for word in words:
+            if re.search(rf"\b{re.escape(word)}\b", low):
+                fail(where, f"the card says \"{word}\" and {why} (spec 0043)")
 
     # The place is generated (ui/trip.js noteFor) and differs for every visitor, so a card on a
     # trip that starts from the visitor's place may not name one of the places they could be.
@@ -4266,6 +4368,51 @@ def duration_ok(value: str) -> bool:
     return value[-1] in CADENCE_SUFFIXES and value[:-1].isdigit()
 
 
+# --- pictures that are not the app's own frames (spec 0043 requirement 6, internal #121) ---------------
+PICTURE_SOFTWARE = re.compile(rb"Software\x00space-radar ")
+
+
+def png_has_own_chunk(data: bytes) -> bool:
+    """True when the PNG carries `Software: space-radar ...` in a tEXt chunk before its pixels."""
+    at = 8
+    while at + 8 <= len(data):
+        n = int.from_bytes(data[at:at + 4], "big")
+        kind = data[at + 4:at + 8]
+        if kind == b"IDAT":
+            return False
+        if kind == b"tEXt" and PICTURE_SOFTWARE.match(data[at + 8:at + 8 + n]):
+            return True
+        at += 12 + n
+    return False
+
+
+def check_pictures() -> None:
+    """Each site/og PNG says the app made it, or has a registry/pictures.yaml row with a credit that
+    CREDITS.md carries; and every row is a file that ships."""
+    rows_ = (load("pictures.yaml").get("pictures") or []) if (REG / "pictures.yaml").exists() else []
+    credits = (ROOT / "CREDITS.md").read_text(encoding="utf-8") if (ROOT / "CREDITS.md").exists() else ""
+    listed: set[str] = set()
+    for r in rows_:
+        where = f"pictures.yaml[{r.get('file') if isinstance(r, dict) else r!r}]"
+        if not isinstance(r, dict) or not r.get("file"):
+            fail(where, "a row has no `file:`")
+            continue
+        listed.add(str(r["file"]))
+        for key in ("source", "licence", "credit", "read"):
+            if not r.get(key):
+                fail(where, f"no `{key}:`; a picture from elsewhere is credited like a model")
+        if not (ROOT / "site" / str(r["file"])).exists():
+            fail(where, f"site/{r['file']} does not exist")
+        if r.get("credit") and str(r["credit"]) not in credits:
+            fail(where, "its `credit:` line is not in CREDITS.md")
+    og = ROOT / "site" / "og"
+    for png in sorted(og.glob("*.png")) if og.is_dir() else []:
+        if f"og/{png.name}" not in listed and not png_has_own_chunk(png.read_bytes()):
+            fail(f"site/og/{png.name}", "carries no `Software: space-radar` text chunk and has no "
+                                        "registry/pictures.yaml row: a picture pasted in by hand. Make it with "
+                                        "scripts/shots.mjs or scripts/build_trip_og.py, or credit it there")
+
+
 def main() -> int:
     worlds_doc = load("worlds.yaml")
     sources_doc = load("sources.yaml")
@@ -4613,6 +4760,7 @@ def main() -> int:
     budgets = check_budgets()
     audio = check_audio()
     check_autopilot({l.get("id") for l in layers})
+    check_pictures()
     check_textures(textures, world_ids)
     check_tilesets(world_ids)
     overlays = check_overlays(world_ids)

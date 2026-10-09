@@ -181,6 +181,24 @@ jobs:
           node-version: "22"
       - name: The validator actually refuses
         run: python3 tests/test_refusals.py
+      # Spec 0043 task 2 (internal #121): registry/truth.yaml lists every guarded stop field, and a field
+      # the validator never mentions or no refusal case breaks is refused here.
+      - name: The truth table agrees with the validator and its refusals
+        run: python3 scripts/check_truth.py
+      - name: The truth check refuses a row for a field nothing guards
+        run: python3 tests/test_check_truth.py
+      - name: A picture's text chunk is written and read back (spec 0043 req 6)
+        run: node tests/test_png_text.mjs
+      - name: The object pages' where-is-it-now line (internal #294)
+        run: node tests/test_objectnow.mjs
+      - name: "The KTX2 plan, its flags and GPU bytes, run against a fake encoder (internal #156)"
+        run: python3 tests/test_ktx2_plan.py
+      - name: The walk notices another project's headless Chrome (internal #460)
+        run: node tests/test_chrome_quiet.mjs
+      - name: The prepared cloud workflow stays minimal (internal #139)
+        run: python3 tests/test_clouds_workflow.py
+      - name: No merge conflict markers, and every tool script parses (internal #472)
+        run: python3 tests/test_no_conflict_markers.py
       # The harvester's zip is built on every pull request with no AWS in sight (specs/0003
       # amendment 1): a parser change is proven to package before it is ever deployed, and the
       # placeholder path is exercised until harvest/ lands. Deterministic, so the hash is a fact.
@@ -479,6 +497,8 @@ jobs:
       # Round three, package 5 (2026-10-07): the passport and the home's first line.
       - name: The passport, kept in this browser only (spec 0041, public #240)
         run: node tests/test_passport.mjs
+      - name: Two bright things close together in your sky, worked out in a worker (internal #359)
+        run: node tests/test_conjunctions.mjs
       - name: One true sentence on the home (public #395, #450)
         run: node tests/test_sentence.mjs
       # Eclipses are worked out here with the vendored astronomy-engine and pinned to the dates the

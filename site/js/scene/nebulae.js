@@ -191,6 +191,28 @@ void main() {
  *   `skyGroup` is scene/starfield.js's group (equatorial J2000 on a unit sphere, already scaled,
  *   turned and centred on the camera); without it the pictures are drawn only on the ladder.
  */
+/**
+ * How many pictures may sit on the GPU at once, per tier (internal #345): each is 512 to 768 px
+ * square with its mipmaps, 1.5 to 3 MiB, and 27 of them are about 40 MiB. A phone holds three
+ * (a sky, a place and the one selected), a laptop eight, a desktop fourteen. Pure.
+ */
+export const TIER_PICTURES = [3, 8, 14];
+export function residentPictures(tier) {
+  const t = Number(tier);
+  return TIER_PICTURES[Number.isFinite(t) ? Math.min(2, Math.max(0, Math.trunc(t))) : 1];
+}
+
+/**
+ * Which pictures to let go of: the ones on the GPU beyond `budget`, least recently seen first, never
+ * one in view, selected or asked for by a trip. `rows` are { id, ready, visible, held, seen }. Pure.
+ */
+export function evictions(rows, budget) {
+  const ready = rows.filter((r) => r.ready);
+  const over = ready.length - Math.max(1, Math.trunc(budget) || 1);
+  if (over <= 0) return [];
+  return ready.filter((r) => !r.visible && !r.held).sort((a, b) => a.seen - b.seen).slice(0, over).map((r) => r.id);
+}
+
 export function createNebulae(scene, opts = {}) {
   const rows = opts.rows || NEBULAE;
   const base = opts.base || new URL('../../', import.meta.url);
@@ -209,6 +231,9 @@ export function createNebulae(scene, opts = {}) {
   let skyOpacity = 1;
   let skyVisible = true;
   let selected = null;
+  let held = new Set(); // ids a trip asked for at its intro (prefetch): kept until the next trip asks
+  let budget = Number.isFinite(opts.maxResident) ? opts.maxResident : TIER_PICTURES[1];
+  let frame = 0;
   const sunScene = new THREE.Vector3();
   const _v = new THREE.Vector3(), _r = new THREE.Vector3(), _u = new THREE.Vector3(), _n = new THREE.Vector3();
   const _frustum = new THREE.Frustum(), _pv = new THREE.Matrix4(), _sphere = new THREE.Sphere();
@@ -250,7 +275,7 @@ export function createNebulae(scene, opts = {}) {
     // The angles the picture spans: its diagonal (is it in view?) and its width (is it worth fetching?).
     const angle = 2 * Math.atan(Math.hypot(half.x, half.y));
     const widthAngle = 2 * Math.atan(half.x);
-    return { row, basis, half, sky, place, angle, widthAngle, distKm: null, placed: false, centre: new THREE.Vector3(), widthUnits: 0, tex: null, state: 'idle' };
+    return { row, basis, half, sky, place, angle, widthAngle, distKm: null, placed: false, centre: new THREE.Vector3(), widthUnits: 0, tex: null, state: 'idle', seen: 0 };
   });
   const byId = new Map(pictures.map((p) => [p.row.id, p]));
 
@@ -352,6 +377,7 @@ export function createNebulae(scene, opts = {}) {
       }
       p.sky.material.uniforms.uAlpha.value = skyAlpha;
       p.sky.visible = skyAlpha > 0 && p.state === 'ready';
+      if (skyAlpha > 0) p.seen = frame;
       // --- the place
       let alpha = 0;
       p.px = 0; p.inView = false; p.fade = 0;
@@ -371,8 +397,20 @@ export function createNebulae(scene, opts = {}) {
       }
       p.place.material.uniforms.uAlpha.value = alpha;
       p.place.visible = alpha > 0.003 && p.state === 'ready';
+      if (p.inView) p.seen = frame;
       // A selected object's picture is fetched whatever its size and whatever the connection.
       if (isSelected && p.state === 'idle') fetchPicture(p);
+    }
+    frame += 1;
+    // Over the tier's budget: the ones that left the view longest ago give their memory back.
+    for (const id of evictions(pictures.map((p) => ({ id: p.row.id, ready: p.state === 'ready', visible: p.sky.visible || p.place.visible || p.inView === true, held: selected === p.row.id || held.has(p.row.id), seen: p.seen })), budget)) {
+      const p = byId.get(id);
+      if (p.tex) p.tex.dispose();
+      p.tex = null;
+      p.sky.material.uniforms.map.value = null;
+      p.place.material.uniforms.map.value = null;
+      p.sky.visible = false; p.place.visible = false;
+      p.state = 'idle';
     }
   }
 
@@ -392,6 +430,9 @@ export function createNebulae(scene, opts = {}) {
 
   return {
     setExposure, setRecords, rebuild, update, dispose, group, skyGroup,
+    /** How many pictures may stay on the GPU (residentPictures(tier)); the extra ones are let go when out of view. */
+    setBudget(n) { if (Number.isFinite(n) && n >= 1) budget = Math.trunc(n); },
+    budget: () => budget,
     /** The sky panorama's strength (registry/lod.yaml `sky-panorama`): the sky pictures follow it, the placed ones take over as it goes. */
     setSkyOpacity(k) { skyOpacity = Math.min(1, Math.max(0, Number(k) || 0)); },
     /** How strongly a record's photograph is being drawn at its place, 0..1: 0 until it has landed. */
@@ -412,6 +453,7 @@ export function createNebulae(scene, opts = {}) {
      * 2026-10-06, the Crab's file landed after the card had been up six seconds.
      */
     prefetch(recordIds) {
+      held = new Set((Array.isArray(recordIds) ? recordIds : []).filter((id) => typeof id === 'string' && id.startsWith('dso-')).map((id) => id.slice(4)));
       for (const id of Array.isArray(recordIds) ? recordIds : []) {
         const p = typeof id === 'string' && id.startsWith('dso-') ? byId.get(id.slice(4)) : null;
         if (p) fetchPicture(p);

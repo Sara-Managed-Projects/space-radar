@@ -28,6 +28,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.1221,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/Proxima%20Cen (read 2026-10-08)"
 },
+"why": "temperate",
 "planets": [
 {
 "id": "exo-proxima-cen-d"
@@ -56,6 +57,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.1844,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/LHS%201140 (read 2026-10-08)"
 },
+"why": "temperate",
 "planets": [
 {
 "id": "exo-lhs-1140-c"
@@ -84,6 +86,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.478,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-186 (read 2026-10-08)"
 },
+"why": "temperate",
 "planets": [
 {
 "id": "exo-kepler-186-b"
@@ -121,6 +124,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 1.037,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-452 (read 2026-10-08)"
 },
+"why": "temperate",
 "planets": [
 {
 "id": "exo-kepler-452-b"
@@ -146,6 +150,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.69,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-62 (read 2026-10-08)"
 },
+"why": "temperate",
 "planets": [
 {
 "id": "exo-kepler-62-b"
@@ -183,6 +188,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.609,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-442 (read 2026-10-08)"
 },
+"why": "temperate",
 "planets": [
 {
 "id": "exo-kepler-442-b"
@@ -208,6 +214,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.857,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-22 (read 2026-10-08)"
 },
+"why": "temperate",
 "planets": [
 {
 "id": "exo-kepler-22-b"
@@ -233,6 +240,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.81,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-69 (read 2026-10-08)"
 },
+"why": "temperate",
 "planets": [
 {
 "id": "exo-kepler-69-b"
@@ -261,6 +269,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.417,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/TOI-700 (read 2026-10-08)"
 },
+"why": "temperate",
 "planets": [
 {
 "id": "exo-toi-700-b"
@@ -295,6 +304,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.225,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/TOI-715 (read 2026-10-08)"
 },
+"why": "temperate",
 "planets": [
 {
 "id": "exo-toi-715-b"
@@ -320,6 +330,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.097,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/Teegarden%27s%20Star (read 2026-10-08)"
 },
+"why": "temperate",
 "planets": [
 {
 "id": "exo-teegarden-s-star-b"
@@ -353,6 +364,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.255,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/Gliese%2012 (read 2026-10-08)"
 },
+"why": "temperate",
 "planets": [
 {
 "id": "exo-gliese-12-b"
@@ -378,6 +390,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.359,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/K2-18 (read 2026-10-08)"
 },
+"why": "temperate",
 "planets": [
 {
 "id": "exo-k2-18-c"
@@ -406,6 +419,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.2923,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/L%2098-59 (read 2026-10-08)"
 },
+"why": "temperate",
 "planets": [
 {
 "id": "exo-l-98-59-b"
@@ -445,6 +459,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.1945,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201132 (read 2026-10-08)"
 },
+"why": "temperate",
 "planets": [
 {
 "id": "exo-gj-1132-b"
@@ -475,6 +490,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.182,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%201214 (read 2026-10-08)"
 },
+"why": "temperate",
 "planets": [
 {
 "id": "exo-gj-1214-b"
@@ -500,6 +516,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.168,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/Ross%20128 (read 2026-10-08)"
 },
+"why": "temperate",
 "planets": [
 {
 "id": "exo-ross-128-b"
@@ -525,6 +542,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.167,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/Wolf%201069 (read 2026-10-08)"
 },
+"why": "temperate",
 "planets": [
 {
 "id": "exo-wolf-1069-b"
@@ -552,6 +570,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.33,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/GJ%20667%20C (read 2026-10-08)"
 },
+"why": "temperate",
 "planets": [
 {
 "id": "exo-gj-667-c-b"
@@ -591,6 +610,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 1.015,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/55%20Cnc (read 2026-10-08)"
 },
+"why": "extreme",
 "planets": [
 {
 "id": "exo-55-cnc-e"
@@ -628,6 +648,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 1.325,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-12 (read 2026-10-08)"
 },
+"why": "extreme",
 "planets": [
 {
 "id": "exo-wasp-12-b"
@@ -653,6 +674,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 1.33,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-121 (read 2026-10-08)"
 },
+"why": "extreme",
 "planets": [
 {
 "id": "exo-wasp-121-b"
@@ -678,6 +700,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.79,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/HD%20189733 (read 2026-10-08)"
 },
+"why": "extreme",
 "planets": [
 {
 "id": "exo-hd-189733-b"
@@ -703,6 +726,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 1.23,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/HD%20209458 (read 2026-10-08)"
 },
+"why": "extreme",
 "planets": [
 {
 "id": "exo-hd-209458-b"
@@ -730,6 +754,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 1.07,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/51%20Peg (read 2026-10-08)"
 },
+"why": "extreme",
 "planets": [
 {
 "id": "exo-51-peg-b"
@@ -755,6 +780,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.6897,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-16 (read 2026-10-08)"
 },
+"why": "extreme",
 "planets": [
 {
 "id": "exo-kepler-16-b"
@@ -780,6 +806,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 2.32,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/KELT-9 (read 2026-10-08)"
 },
+"why": "extreme",
 "planets": [
 {
 "id": "exo-kelt-9-b"
@@ -805,6 +832,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.97,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/TOI-849 (read 2026-10-08)"
 },
+"why": "extreme",
 "planets": [
 {
 "id": "exo-toi-849-b"
@@ -832,6 +860,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 1.4,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/PSR%20B1257%2B12 (read 2026-10-08)"
 },
+"why": "extreme",
 "planets": [
 {
 "id": "exo-psr-b1257-12-b"
@@ -863,6 +892,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 1.5,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/HR%208799 (read 2026-10-08)"
 },
+"why": "extreme",
 "planets": [
 {
 "id": "exo-hr-8799-e"
@@ -899,6 +929,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 1.789,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/bet%20Pic (read 2026-10-08)"
 },
+"why": "extreme",
 "planets": [
 {
 "id": "exo-bet-pic-c"
@@ -932,6 +963,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 1.2,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/KOI-351 (read 2026-10-08)"
 },
+"why": "extreme",
 "planets": [
 {
 "id": "exo-koi-351-b"
@@ -978,6 +1010,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.935,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/K2-138 (read 2026-10-08)"
 },
+"why": "extreme",
 "planets": [
 {
 "id": "exo-k2-138-b"
@@ -1018,6 +1051,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.961,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-11 (read 2026-10-08)"
 },
+"why": "extreme",
 "planets": [
 {
 "id": "exo-kepler-11-b"
@@ -1058,6 +1092,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 1.06,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/HD%2010180 (read 2026-10-08)"
 },
+"why": "extreme",
 "planets": [
 {
 "id": "exo-hd-10180-c"
@@ -1098,6 +1133,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.1977,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-1649 (read 2026-10-08)"
 },
+"why": "temperate",
 "planets": [
 {
 "id": "exo-kepler-1649-b"
@@ -1126,6 +1162,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 1.2207,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-1647 (read 2026-10-08)"
 },
+"why": "extreme",
 "planets": [
 {
 "id": "exo-kepler-1647-b"
@@ -1151,6 +1188,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 2.28,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-17 (read 2026-10-08)"
 },
+"why": "extreme",
 "planets": [
 {
 "id": "exo-wasp-17-b"
@@ -1176,6 +1214,7 @@ export const SYSTEM_INDEX = [
 "massSuns": 0.913,
 "source": "https://exoplanetarchive.ipac.caltech.edu/overview/WASP-39 (read 2026-10-08)"
 },
+"why": "extreme",
 "planets": [
 {
 "id": "exo-wasp-39-b"

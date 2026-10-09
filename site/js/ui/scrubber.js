@@ -278,11 +278,14 @@ export function createScrubber(ctx, pill) {
   if (!host || !clock) return { root: null, paint() {}, marks: () => [], destroy() {} };
 
   const root = el('div', 'sr-tape');
-  root.tabIndex = 0;
-  root.setAttribute('role', 'slider');
-  root.setAttribute('aria-label', T.tapeLabel);
-  root.setAttribute('aria-orientation', 'horizontal');
   root.title = T.tapeTitle;
+  // The slider is its own child and the marks and "now" are its siblings: a focusable slider that
+  // holds buttons is `nested-interactive` to axe (internal #472). It fills the tape, takes the keys.
+  const slider = el('div', 'sr-tape__slider');
+  slider.tabIndex = 0;
+  slider.setAttribute('role', 'slider');
+  slider.setAttribute('aria-label', T.tapeLabel);
+  slider.setAttribute('aria-orientation', 'horizontal');
   const ticks = el('div', 'sr-tape__ticks');
   const roughL = el('div', 'sr-tape__rough');
   const roughR = el('div', 'sr-tape__rough');
@@ -304,7 +307,7 @@ export function createScrubber(ctx, pill) {
   nowBtn.setAttribute('aria-label', T.nowTitle);
   const cursor = el('div', 'sr-tape__cursor');
   cursor.setAttribute('aria-hidden', 'true');
-  root.append(ticks, roughL, roughR, endL, endR, labels, markList, nowBtn, cursor);
+  root.append(slider, ticks, roughL, roughR, endL, endR, labels, markList, nowBtn, cursor);
   host.appendChild(root);
   host.classList.add('has-tape');
 
@@ -380,11 +383,11 @@ export function createScrubber(ctx, pill) {
     }
     for (const [id, b] of markNodes) if (!seen.has(id)) { b.remove(); markNodes.delete(id); }
     // The slider's value: minutes from now, and the pill's own words.
-    root.setAttribute('aria-valuemin', String(-Math.round(SCRUB_BACK_MS / 60e3)));
-    root.setAttribute('aria-valuemax', String(Math.round(SCRUB_FORWARD_MS / 60e3)));
-    root.setAttribute('aria-valuenow', String(Math.round((tMs - anchor) / 60e3)));
+    slider.setAttribute('aria-valuemin', String(-Math.round(SCRUB_BACK_MS / 60e3)));
+    slider.setAttribute('aria-valuemax', String(Math.round(SCRUB_FORWARD_MS / 60e3)));
+    slider.setAttribute('aria-valuenow', String(Math.round((tMs - anchor) / 60e3)));
     const text = pill.words() + (Math.abs(tMs - anchor) > FINE_MS ? COPY.punctuation.sentenceJoin + T.roughSay : '');
-    if (root.getAttribute('aria-valuetext') !== text) root.setAttribute('aria-valuetext', text);
+    if (slider.getAttribute('aria-valuetext') !== text) slider.setAttribute('aria-valuetext', text);
   }
 
   function readMarks() {
@@ -471,7 +474,7 @@ export function createScrubber(ctx, pill) {
     if (e.detail !== 0) return; // a pointer's click: handled at pointerup
     const b = e.target && e.target.closest ? e.target.closest('button') : null;
     if (!b) return;
-    if (b === nowBtn) { pill.toLive(); root.focus({ preventScroll: true }); return; }
+    if (b === nowBtn) { pill.toLive(); slider.focus({ preventScroll: true }); return; }
     const m = marks.find((x) => x.id === b.dataset.mark);
     if (m) goToMark(m);
   });
@@ -483,7 +486,7 @@ export function createScrubber(ctx, pill) {
     pill.goTo(now() + d / s.pxPerMs);
   }, { passive: false });
   root.addEventListener('keydown', (e) => {
-    if (e.target !== root) return;
+    if (e.target !== slider) return;
     const k = e.key;
     if (k === 'ArrowLeft' || k === 'ArrowDown') pill.step(-1);
     else if (k === 'ArrowRight' || k === 'ArrowUp') pill.step(1);
