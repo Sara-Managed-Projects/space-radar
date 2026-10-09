@@ -151,6 +151,20 @@ export function fovName(fovDeg) {
   return fovDeg >= 3 ? 'binoculars' : 'telescope';
 }
 
+/**
+ * The width of the round field that frames a planet with what rides with it (internal #351): a
+ * planet alone fills a quarter of the round field, Saturn's rings (2.3 discs wide, as groundsky.js
+ * draws them) half, and Jupiter holds the farthest of its four moons in view. `moonSpanRadii` is
+ * that moon's offset in Jupiter radii now. Clamped between the smallest field and the telescope's.
+ */
+export function bodyFieldDeg(id, diameterDeg, moonSpanRadii = 0) {
+  if (!(diameterDeg > 0)) return FOV.telescope;
+  let need = diameterDeg * 4;
+  if (id === 'saturn') need = diameterDeg * 2.3 * 2;
+  else if (id === 'jupiter' && moonSpanRadii > 1) need = Math.max(need, moonSpanRadii * diameterDeg * 2 * 1.15);
+  return Math.max(FOV.min, Math.min(FOV.telescope, need));
+}
+
 /** Screen pixels to a degree at the centre of a perspective view `hPx` tall. */
 export function pixelsPerDegree(fovDeg, hPx) {
   return hPx / 2 / Math.tan((clampFov(fovDeg) / 2) * DEG) * DEG;

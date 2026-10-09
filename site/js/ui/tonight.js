@@ -660,7 +660,13 @@ export function renderTonight(host, ctx) {
     const fields = new Map();
     const fieldRow = row(K.field);
     for (const f of ['eye', 'binoculars', 'telescope']) {
-      fields.set(f, button(fieldRow, K.fields[f], K.fieldNotes[f], () => { if (sky() && sky().setFov) sky().setFov(FOV[f]); }));
+      fields.set(f, button(fieldRow, K.fields[f], K.fieldNotes[f], () => {
+        const s = sky();
+        if (!s || !s.setFov) return;
+        // A planet at the centre: the Telescope frames it with its moons or rings instead of a dot in a flat field (#351).
+        const body = f === 'telescope' && typeof s.bodyAtCentre === 'function' ? s.bodyAtCentre() : null;
+        s.setFov(body ? fovFor(body.fieldDeg) : FOV[f]);
+      }));
     }
     const fieldNote = el('p', 'sr-density__note');
     node.appendChild(fieldNote);

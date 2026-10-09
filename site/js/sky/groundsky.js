@@ -63,7 +63,7 @@ import { COPY, t } from '../copy/en.js';
 import '../copy/en.later.js';
 import {
   GLSL_AIR, DARKNESS, DEFAULT_DARKNESS, refractionDeg, airmass, extinctionTint, flattening,
-  limitingMagnitude, fovName, pixelsPerDegree, FOV,
+  limitingMagnitude, fovName, pixelsPerDegree, bodyFieldDeg, FOV,
 } from './skymath.js';
 import { BODIES, bodyView, jupiterMoons, eqjToLocal, localOf, altAzOf } from './skybodies.js';
 import { eclToEq, eclipticRing } from './figures.js';
@@ -1554,6 +1554,22 @@ export function createGroundSky(ctx, env) {
       const d = discs.get(id);
       if (!d) return null;
       return d.apparent ? { azDeg: d.apparent.azDeg, altDeg: d.apparent.altDeg, diameterDeg: d.view.diameterDeg, mag: d.view.mag } : null;
+    },
+    /**
+     * The planet or the Moon nearest the centre of the view (within `withinDeg`), with the width of
+     * the round field that frames it: { id, fieldDeg } or null. For the Telescope button (#351).
+     */
+    bodyNear(az, alt, withinDeg = 3) {
+      let best = null;
+      for (const [id, d] of discs) {
+        if (id === 'sun' || !d.apparent || !d.view || !(d.view.diameterDeg > 0)) continue;
+        const dAz = ((d.apparent.azDeg - az + 540) % 360) - 180;
+        const sep = Math.hypot(dAz * Math.cos(alt * Math.PI / 180), d.apparent.altDeg - alt);
+        if (sep <= withinDeg && (!best || sep < best.sep)) best = { id, sep, diameterDeg: d.view.diameterDeg };
+      }
+      if (!best) return null;
+      const span = best.id === 'jupiter' ? moons.reduce((m, x) => (x.hidden ? m : Math.max(m, x.offsetRadii)), 0) : 0;
+      return { id: best.id, fieldDeg: bodyFieldDeg(best.id, best.diameterDeg, span) };
     },
     /** Where a J2000 direction is as the eye sees it now: {azDeg, altDeg, local}, the air's lift included. */
     apparentOfEq(dirEq) {
