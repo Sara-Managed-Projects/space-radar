@@ -1209,6 +1209,14 @@ async function readSnapshot(src) {
     return { ok: false, httpStatus: null, why };
   }
 
+  // AS COLUMNS FIRST, WHEN THE MANIFEST NAMES SUCH A FILE (internal #523; scripts/columnar.py,
+  // data/columnar.js). The big catalogues repeat 17 keys in each of 16 000 rows; the column file
+  // holds the same rows in about a third of the text. It is an extra: anything wrong with it (not
+  // there, not JSON, a column that does not add up) and the verbatim file below is read exactly as
+  // before. The decoded rows are the verbatim rows, so nothing after this line can tell.
+  const viaColumns = await readColumns(src, row);
+  if (viaColumns) return viaColumns;
+
   let httpStatus = null;
   try {
     const response = await fetch(SNAPSHOT_BASE + encodeURIComponent(rid) + '.json', {
@@ -1240,6 +1248,29 @@ async function readSnapshot(src) {
     };
   } catch {
     return { ok: false, httpStatus, why: 'unreadable' };
+  }
+}
+
+/** The column twin of a saved copy, decoded to its rows; null for "read the verbatim file". */
+async function readColumns(src, row) {
+  const twin = row.columns;
+  if (src.kind !== 'json' || !twin || typeof twin.path !== 'string' || !/^[\w.-]+\.cols\.json$/.test(twin.path)) return null;
+  try {
+    const response = await fetch(SNAPSHOT_BASE + encodeURIComponent(twin.path), { credentials: 'omit' });
+    if (!response.ok) return null;
+    const file = JSON.parse(await response.text());
+    if (!file || file.schema !== SNAPSHOT_SCHEMA) return null;
+    // The twin of THIS publish, not a file an edge kept from the last one: the manifest row and
+    // the file must agree on when the publisher was read and on how many rows there are.
+    if ((file.fetched_at || null) !== (row.fetched_at || null) || file.rows !== twin.rows) return null;
+    const { decodeColumns } = await import('./columnar.js');
+    const body = decodeColumns(file);
+    const fetchedAt = Date.parse(file.fetched_at);
+    if (!Number.isFinite(fetchedAt)) return null;
+    const validUntil = Date.parse(file.valid_until || row.valid_until);
+    return { ok: true, body, fetchedAt, validUntil: Number.isFinite(validUntil) ? validUntil : null, httpStatus: response.status, why: null };
+  } catch {
+    return null;
   }
 }
 

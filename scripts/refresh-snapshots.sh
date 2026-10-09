@@ -257,6 +257,16 @@ def recent_starlink(rows, launches=12):
 derive("celestrak-supplemental-starlink", "celestrak-starlink-recent", recent_starlink,
        "Starlink's twelve latest launches, which is where a train can be")
 
+# THE BIG CATALOGUES ALSO AS COLUMNS (internal #523, scripts/columnar.py): <id>.cols.json beside the
+# verbatim file, named in the manifest row as `columns`. The same rows in about a third of the
+# text; the browser decodes it back to them and falls back to the verbatim file on any doubt.
+# After the cuts, so a cut that is big enough gets a twin too, and last, so the twin is of the
+# file exactly as it is published.
+sys.path.insert(0, "scripts")
+import columnar
+for _sid, _rows, _before, _after in columnar.publish(d):
+    print(f"    {_sid}: {_rows} rows also as columns, {_before} B -> {_after} B")
+
 ix = json.load(open(os.path.join(d, "index.json")))
 ok = sorted(k for k, v in ix["snapshots"].items() if v.get("status") in ("ok", "not-modified", "not-due") and v.get("fetched_at"))
 print(f"    publishing {len(ok)} of {len(ix['snapshots'])} sources with data: {', '.join(ok)}")
