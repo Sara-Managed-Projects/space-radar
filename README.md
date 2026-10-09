@@ -140,7 +140,6 @@ Space Radar stands on data and work that other people publish for free. Thank yo
 [![GDACS](https://img.shields.io/badge/storms-GDACS-1f6feb)](https://www.gdacs.org)
 [![NASA Exoplanet Archive](https://img.shields.io/badge/exoplanets-NASA%20Exoplanet%20Archive-1f6feb)](https://exoplanetarchive.ipac.caltech.edu)
 [![NASA DSN Now](https://img.shields.io/badge/deep%20space%20network-NASA%20DSN%20Now-1f6feb)](https://eyes.nasa.gov/dsn/)
-[![ESA NEOCC](https://img.shields.io/badge/close%20approaches-ESA%20NEOCC-1f6feb)](https://neo.ssa.esa.int)
 [![Wikidata](https://img.shields.io/badge/observatories-Wikidata-1f6feb)](https://www.wikidata.org)
 [![Open Notify](https://img.shields.io/badge/crews-Open%20Notify-1f6feb)](http://open-notify.org)
 

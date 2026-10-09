@@ -189,7 +189,8 @@
       "parser": "esa_neocc",
       "outputs": [
         "close-approaches-esa.json"
-      ]
+      ],
+      "enabled": false
     },
     {
       "id": "horizons-deep-space",

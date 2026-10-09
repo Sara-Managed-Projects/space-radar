@@ -34,7 +34,7 @@ source, 3D model, texture, picture, tile set, sound or font that ships without i
 | Constellation pictures, borders, other peoples' skies | Johan Meuris and the sky-culture authors, through Stellarium; CDS catalogue VI/49 | Free Art License 1.3; CC BY-SA 4.0; a public catalogue, cited | [3i](#3i-constellation-pictures-borders-and-other-peoples-skies--stellarium-and-cds) |
 | Satellites and their orbits | CelesTrak | free, with an enforced usage policy | [4.1](#41-celestrak--read-this-before-you-deploy-a-fork) |
 | Launches | The Space Devs, Launch Library 2 | free to 15 requests an hour; no published licence | [4.2](#42-the-space-devs--launch-library-2) |
-| Deep-space positions, asteroids, comets, close approaches | NASA/JPL Horizons, Small-Body Database, CNEOS; ESA NEOCC | see the section | [4.18](#418-the-sources-the-harvester-reads) |
+| Deep-space positions, asteroids, comets, close approaches | NASA/JPL Horizons, Small-Body Database, CNEOS | see the section | [4.18](#418-the-sources-the-harvester-reads) |
 | Space weather and the aurora | NOAA SWPC | public domain | [4.4](#44-noaa-swpc) |
 | Exoplanets | NASA Exoplanet Archive | public; cite the DOI | [4.7](#47-nasa-exoplanet-archive--confirmed-planets) |
 | Today's clouds | NASA GIBS (GOES, Himawari) | open; acknowledgement asked | [4.13](#413-nasa-gibs--todays-clouds-2026-09-28) |
@@ -1393,7 +1393,9 @@ papers, each named with its DOI in `registry/weather.yaml`; no data file of thei
 Added 2026-10-05, when `tests/test_credits.py` first compared `registry/sources.yaml` with this
 file and found nine credit lines missing. The harvester (`harvest/`) reads these on a schedule and
 writes each answer, unchanged, to `/data/v1/<id>.json`; the browser reads that saved copy. **That
-makes spaceradar.ai, and any release zip that includes `site/data/v1/`, a redistributor of them**,
+makes spaceradar.ai, and any release zip that includes `site/data/v1/`, a redistributor of them**
+(of every row but the two that are switched off: a source with `enabled: false` is not fetched, not
+published, not saved by `scripts/save_offline_data.py` and refused by `scripts/build_release.py`),
 which the table in §4 (written when the browser fetched everything itself) does not say. The rows
 already covered above (CelesTrak §4.1, Launch Library 2 §4.2, DSN Now §4.3, SWPC's Kp §4.4, the
 Exoplanet Archive §4.7, GDACS §4.14) are repeated only where the credit line differs.
@@ -1403,7 +1405,7 @@ Exoplanet Archive §4.7, GDACS §4.14) are repeated only where the credit line d
 | `jpl-sbdb-neo`, `jpl-sbdb-comets` | NASA/JPL Solar System Dynamics | orbits of near-Earth asteroids and of comets | NASA/JPL-Caltech; the API's documentation gives no licence text. NASA content is generally not copyrighted in the United States. **Terms page not found in this pass.** | Orbits: NASA/JPL Small-Body Database | `ssd-api.jpl.nasa.gov` |
 | `jpl-cad` | NASA/JPL Center for Near Earth Object Studies | close approaches to the Earth | as above | Close approaches: NASA/JPL CNEOS | `ssd-api.jpl.nasa.gov` |
 | `horizons-deep-space` | NASA/JPL Solar System Dynamics, Horizons | where each deep-space craft is, as vectors | as above | Ephemerides: JPL Horizons | `ssd.jpl.nasa.gov` |
-| `esa-neocc-close` | ESA Near-Earth Object Coordination Centre | ESA's own list of close approaches | The portal's footer reads "Copyright 2000 - 2026 European Space Agency. All rights reserved." (read 2026-10-05). **No reuse licence was found; treat the saved copy as not cleared for redistribution** until ESA's terms are read in full. | Close approaches: ESA NEOCC | `neo.ssa.esa.int` |
+| `esa-neocc-close` | ESA Near-Earth Object Coordination Centre | ESA's own list of close approaches | **Switched off on 2026-10-09** (`enabled: false`) and no longer fetched, saved, published or shipped. ESA's terms (read that day at `www.esa.int/Services/Terms_and_conditions`, to which the NEOCC portal defers) say: "ESA does not grant the right to resell or redistribute any information, documents, images or material from its website". The harvester had saved this list and the site had served it as `/data/v1/esa-neocc-close.json` since September 2026, before those terms were read in full; no card ever showed it. The close approaches the app draws are JPL's CNEOS, the row above. The row stays here so the reason does. | Close approaches: ESA NEOCC | `neo.ssa.esa.int` |
 | `swpc-ovation` | NOAA Space Weather Prediction Center | the OVATION aurora forecast | US Government work, public domain (§4.4) | Aurora forecast: NOAA SWPC | `services.swpc.noaa.gov` |
 | `nasa-exoplanet-archive` | NASA Exoplanet Archive, Caltech/IPAC | every confirmed exoplanet | §4.7 | Exoplanets: NASA Exoplanet Archive (Caltech/IPAC), DOI 10.26133/NEA13 | `exoplanetarchive.ipac.caltech.edu` |
 | `open-notify-astros` | Open Notify (a personal open-source project) | who is aboard the ISS and Tiangong | The site calls itself "an open source project" and states no licence for the data (read 2026-10-05); the list is a handful of names and facts. | Who is in space: Open Notify | `api.open-notify.org` |

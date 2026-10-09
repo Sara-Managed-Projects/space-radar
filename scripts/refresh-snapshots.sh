@@ -159,6 +159,23 @@ def keys(fn):
 def body(f):
     b = f["body"]; return (json.loads(b), True) if isinstance(b, str) else (b, False)
 
+# NOT OURS TO COPY (2026-10-09, internal #370). A source the registry switches off is not published:
+# its file and its manifest row are dropped from the PUBLISH copy, whatever an earlier run left in
+# the work folder. ESA's NEOCC list is the case: its terms forbid redistribution, the harvester
+# had saved it before anyone read them, and the old file would otherwise have been uploaded again
+# with every refresh. harvest/sources.json is the registry as the harvester reads it.
+_off = sorted(r["id"] for r in json.load(open("harvest/sources.json"))["sources"] if r.get("enabled") is False)
+_ix_p = os.path.join(d, "index.json")
+_ix = json.load(open(_ix_p))
+for _k in _off:
+    _had = _ix.get("snapshots", {}).pop(_k, None) is not None
+    for _name in (_k + ".json", _k + ".cols.json"):
+        if os.path.exists(os.path.join(d, _name)):
+            os.remove(os.path.join(d, _name)); _had = True
+    if _had:
+        print(f"    {_k}: switched off in registry/sources.yaml; not published")
+json.dump(_ix, open(_ix_p, "w"), indent=1)
+
 # KEEP THE LAST GOOD COPY. A refresh that fails (CelesTrak answered this machine AND the GitHub
 # runner with 403 on 2026-09-28) leaves the row `status: error` with its old stamps carried
 # (harvest/run.py _carry), and the browser refuses an errored row (data/sources.js readSnapshot),

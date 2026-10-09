@@ -754,6 +754,8 @@ jobs:
         run: node tests/test_glyph_uploads.mjs
       - name: "a saved catalogue published as columns decodes to the verbatim rows, and the browser falls back to the verbatim file on any doubt (internal #523)"
         run: node tests/test_columnar.mjs
+      - name: "a publisher who forbids redistribution (ESA NEOCC) is not fetched, published, saved or zipped, and JPL's APIs are never called from a browser (internal #370)"
+        run: python3 tests/test_not_ours_to_copy.py
       - name: "the notifier: digests, showers, subscriptions and tokens"
         run: python3 tests/test_notify.py
       # Merged the same day (public #487) and, again, in no workflow: the step below is what found them.

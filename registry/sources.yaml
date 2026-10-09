@@ -224,6 +224,19 @@ sources:
     outputs: [close-approaches.json]
     attribution: "Close approaches: NASA/JPL CNEOS"
 
+  # SWITCHED OFF 2026-10-09, AND NOT OURS TO COPY. ESA's terms, read that day on
+  # https://www.esa.int/Services/Terms_and_conditions (to which neo.ssa.esa.int/terms-conditions
+  # defers): "ESA does not grant the right to resell or redistribute any information, documents,
+  # images or material from its website or to compile or create derivative works from material on
+  # its website." The harvester saved this list and the site served it as
+  # /data/v1/esa-neocc-close.json from 2026-09 until that day (internal #370). No card ever read it:
+  # the "second opinion" below was a plan, and the close approaches the app draws are JPL's CNEOS
+  # (jpl-cad above), which NASA lets us keep a copy of and which the card credits by name.
+  # `enabled: false` means, everywhere: not fetched (harvest/run.py), not published
+  # (scripts/refresh-snapshots.sh drops a disabled source's file and its manifest row), not saved
+  # for offline use (scripts/save_offline_data.py) and not in a release zip
+  # (scripts/build_release.py refuses one). tests/test_not_ours_to_copy.py holds all four.
+  # The row stays so that the reason stays; switch it back on only with ESA's written permission.
   - id: esa-neocc-close
     url: https://neo.ssa.esa.int/PSDB-portlet/download?file=esa_upcoming_close_app
     auth: none
@@ -232,8 +245,7 @@ sources:
     freshness_max: 168h
     parser: esa_neocc
     outputs: [close-approaches-esa.json]
-    # The second opinion. Where ESA and JPL disagree by more than 10% the card shows both
-    # and names them; two sources disagreeing is information, not an error to hide.
+    enabled: false
     attribution: "Close approaches: ESA NEOCC"
 
   # --- Deep space ----------------------------------------------------------------------

@@ -84,9 +84,24 @@ def check_tree(root: Path) -> None:
     if not stations.is_file() or stations.stat().st_size == 0:
         raise Refused("the saved copy has no stations (site/data/v1/celestrak-stations.json): "
                       "a copy without the stations is not one worth shipping")
+    # A zip is a redistribution. ESA's NEOCC list was in the saved copy until 2026-10-09 and its terms
+    # forbid exactly that (internal #370): a folder that still holds it is refused, not quietly cleaned,
+    # so whoever cuts the release knows their saved copy predates the change and saves a new one.
+    rows = doc.get("snapshots") or {}
+    for rid in not_ours_to_copy(root):
+        if rid in rows or (data / f"{rid}.json").is_file() or (data / f"{rid}.cols.json").is_file():
+            raise Refused(f"the saved copy holds {rid}, which registry/sources.yaml switches off: its publisher "
+                          "does not allow redistribution. Run `python3 scripts/save_offline_data.py` again "
+                          "(it removes the file and the manifest row) before building a release")
     for rel in BESIDE + ("site/index.html", "site/sw.js", "site/manifest.webmanifest", "site/js/main.js"):
         if not (root / rel).is_file():
             raise Refused(f"{rel} is not in the tree, and the zip promises it")
+
+
+def not_ours_to_copy(root: Path) -> list:
+    """The ids registry/sources.yaml switches off: a publisher who does not let its data be passed on."""
+    rows = json.loads((root / "harvest/sources.json").read_text(encoding="utf-8")).get("sources") or []
+    return sorted(r["id"] for r in rows if r.get("enabled") is False)
 
 
 def saved_sources(data: Path) -> tuple:
