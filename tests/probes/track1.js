@@ -215,6 +215,52 @@ return (async () => {
     await h.shot(`home-${id}-end`, 200);
     try { ctx.trip.stop('leave'); } catch { /* gone */ }
   }
+  /** A storm on the night side, arrived at (internal #432): the clock is moved by whole hours until one is in the dark. */
+  async function stormNight(h) {
+    const ctx = h.ctx; const res = h.res;
+    try { ctx.trip.stop('leave'); } catch { /* nothing ran */ }
+    ctx.clock.goTo(Date.now()); ctx.clock.setRate(1);
+    await h.goTo('earth');
+    try { ctx.setLayerOn('storms', true); } catch { /* on already */ }
+    const list = () => { const a = ctx.recordsFor('storms'); return a.length ? a : ctx.records().filter((r) => r.klass === 'storm' || r.layer === 'storms'); };
+    await until(() => list().length > 0, 25000, 500);
+    res.storms = list().map((r) => ({ id: r.id, name: r.name, layer: r.layer }));
+    if (!res.storms.length) return;
+    const c = () => { const m = ctx.worlds.meshFor('earth'); m.updateMatrixWorld(); const e = m.matrixWorld.elements; return V(e[12], e[13], e[14]); };
+    const up = (r) => { const p = ctx.positionOfRecord(r); const o = c(); return dot(norm(V(p.x - o.x, p.y - o.y, p.z - o.z)), norm(ctx.worlds.meshFor('earth').material.uniforms.uSunDir.value)); };
+    const t = ctx.clock.now(); let pick = null;
+    for (let k = 0; k < 13 && !pick; k++) {
+      ctx.clock.goTo(t + k * 3600000); await sleep(450);
+      const dark = list().find((r) => { try { return up(r) < -0.25; } catch { return false; } });
+      if (dark) pick = { rec: dark, k, up: Math.round(up(dark) * 100) / 100 };
+    }
+    res.stormNight = pick ? { id: pick.rec.id, name: pick.rec.name, hoursAhead: pick.k, sunUp: pick.up } : { none: 'no storm in the dark within 12 hours' };
+    if (!pick) return;
+    ctx.select(pick.rec, { fly: true }); await sleep(9000);
+    res.stormNight.km = h.km();
+    res.stormNight.card = text(h.w().document.querySelector('.sr-card')).slice(0, 260);
+    await h.shot('storm-night-arrival', 2500);
+    ctx.cameraRig.flyTo({ distance: ctx.cameraRig.state.distance * 3, ms: 0 });
+    await h.shot('storm-night-wider', 2000);
+    ctx.clock.goTo(Date.now());
+  }
+  /** Iapetus close up, its equator across the frame, with its axis against its orbit's normal. */
+  async function iapetusLook(h) {
+    const ctx = h.ctx; const res = h.res;
+    try { ctx.trip.stop('leave'); } catch { /* nothing ran */ }
+    ctx.clock.goTo(Date.now()); ctx.clock.setRate(1);
+    if (!(await h.goTo('iapetus'))) return;
+    const posOf = (id) => { const m = ctx.worlds.meshFor(id); m.updateMatrixWorld(); const e = m.matrixWorld.elements; return V(e[12], e[13], e[14]); };
+    const rel = () => { const a = posOf('iapetus'); const b = posOf('saturn'); return V(a.x - b.x, a.y - b.y, a.z - b.z); };
+    const t = ctx.clock.now();
+    const r1 = rel(); ctx.clock.goTo(t + 5 * 86400000); await sleep(900);
+    const r2 = rel(); ctx.clock.goTo(t); await sleep(900);
+    const sat = h.poleOf('saturn'); const pole = h.poleOf('iapetus');
+    let nrm = norm(cross(r1, r2)); if (dot(nrm, sat) < 0) nrm = V(-nrm.x, -nrm.y, -nrm.z);
+    const ang = (a, b) => Math.round(Math.acos(Math.max(-1, Math.min(1, dot(a, b)))) / DEG * 10) / 10;
+    res.iapetus = { stage: (ctx.stage || {}).worldId, poleToSaturnPole_deg: ang(pole, sat), poleToOrbitNormal_deg: ang(pole, nrm), orbitNormalToSaturnPole_deg: ang(nrm, sat) };
+    h.standAt('iapetus', 35, 0, 0.55); await h.shot('iapetus-equator-on-after', 2500);
+  }
   if (mode === 'relook') {
     // `stops=trip:3,trip:4;trip2:1` -- frames are separated by `;`, stops are 1-based.
     const groups = (q.get('stops') || '').split(';');
@@ -229,7 +275,11 @@ return (async () => {
       const homes = ((q.get('home') || '').split(';')[i] || '').split(',').filter(Boolean);
       const rows = h.ctx && by.size ? await walk(h, [...by.entries()], Number(q.get('settle') || 2500)) : [];
       if (h.ctx && homes.length) { try { h.ctx.setObserver(PLACE); } catch { /* no place */ } for (const id of homes) { if (Date.now() < CAP - 60000) await homeOf(h, id); } }
-      done(h, { rows, home: h.res.home });
+      // `extra=storm,iapetus;...` (frames by `;`): the looks that are not trip stops.
+      const extra = ((q.get('extra') || '').split(';')[i] || '').split(',').filter(Boolean);
+      if (h.ctx && extra.includes('iapetus')) { try { await iapetusLook(h); } catch (e) { h.errors.push('iapetus: ' + e.message); } }
+      if (h.ctx && extra.includes('storm')) { try { await stormNight(h); } catch (e) { h.errors.push('storm: ' + e.message); } }
+      done(h, { rows, ...h.res });
     }));
   }
 
@@ -429,6 +479,75 @@ return (async () => {
     return finish(jobs);
   }
 
+  // ------------------------------------------------------------------------------------------ leak
+  // `probe=leak&reels=strangest-things;moon-landings` -- one frame a reel, each a single trip round
+  // and round at pace 8. Every geometry the renderer takes up (it listens for `dispose` on it) is
+  // written down with the stop it appeared at, and crossed off when it is disposed: what is still
+  // held after the first pass, and whether anything in the scene still wears it, is the leak.
+  if (mode === 'leak') {
+    const reels = (q.get('reels') || 'strangest-things').split(';').filter(Boolean);
+    // `stops=trip:n,...`: one more frame, an ordinary walk of those stops (a fix looked at again).
+    const also = (q.get('stops') || '').split(',').filter(Boolean);
+    const frames = reels.length + (also.length ? 1 : 0);
+    const jobs = [];
+    if (also.length) {
+      jobs.push((async () => {
+        const by = new Map();
+        for (const s of also) { const [id, n] = s.split(':'); if (!by.has(id)) by.set(id, []); by.get(id).push(Number(n) - 1); }
+        const h = await open(reels.length, frames);
+        const rows = h.ctx ? await walk(h, [...by.entries()], 2500) : [];
+        done(h, { rows });
+      })());
+    }
+    return finish(jobs.concat(reels.map(async (reel, i) => {
+      const h = await open(i, frames, `ambient=${reel}&pace=${q.get('pace') || 8}`);
+      const ctx = h.ctx; const res = h.res;
+      if (!ctx) { done(h, {}); return; }
+      let proto = null;
+      ctx.scene.traverse((o) => {
+        if (proto || !o.geometry) return;
+        let p = Object.getPrototypeOf(o.geometry);
+        while (p && !(Object.prototype.hasOwnProperty.call(p, 'dispose') && Object.prototype.hasOwnProperty.call(p, 'setAttribute'))) p = Object.getPrototypeOf(p);
+        proto = p;
+      });
+      if (!proto) { h.errors.push('no geometry class found'); done(h, res); return; }
+      const alive = new Map(); let pass = 0; let lastTrip = '';
+      const where = () => { const st = ctx.trip.state; return `${st.tourId || '-'}:${st.stopId || st.phase}`; };
+      const listen = proto.addEventListener; const dispose = proto.dispose;
+      proto.addEventListener = function (type, l) { if (type === 'dispose' && !alive.has(this.uuid)) alive.set(this.uuid, { g: new (h.w().WeakRef)(this), at: where(), pass, type: this.type, n: this.attributes && this.attributes.position ? this.attributes.position.count : 0, attrs: Object.keys(this.attributes || {}).join(','), name: this.name || '' }); return listen.call(this, type, l); };
+      proto.dispose = function () { alive.delete(this.uuid); return dispose.call(this); };
+      const info = () => { const m = ctx.renderer.info; return { geo: m.memory.geometries, tex: m.memory.textures, prog: m.programs ? m.programs.length : null }; };
+      res.passes = [];
+      ctx.trip.onChange((st) => {
+        const key = `${st.tourId}:${st.phase}`;
+        if (st.phase === 'intro' && key !== lastTrip) { pass += 1; res.passes.push({ pass, t: Math.round((Date.now() - T0) / 1000), ...info(), tracked: alive.size }); }
+        lastTrip = key;
+        // The caption of the longest stop a reel shows, once: is its note whole?
+        if (st.phase === 'dwell' && st.stopId === 'aurora' && !res.caption) {
+          res.caption = { at: st.stopId };
+          setTimeout(() => {
+            const el = h.w().document.querySelector('.sr-tripsheet.is-present');
+            if (el) { const r = el.getBoundingClientRect(); res.caption.box = [Math.round(r.top), Math.round(r.height)]; res.caption.scroll = [el.scrollHeight, el.clientHeight]; res.caption.window = h.w().innerHeight; }
+            h.shot('reel-aurora-caption', 0);
+          }, 2500);
+        }
+      });
+      await until(() => false, Math.max(1000, CAP - Date.now() - 8000), 2000);
+      // Who wears what is still held.
+      const worn = new Map();
+      ctx.scene.traverse((o) => { if (o.geometry) { const path = []; for (let p = o; p && path.length < 4; p = p.parent) path.push(p.name || p.type); worn.set(o.geometry.uuid, path.join(' < ')); } });
+      const groups = new Map();
+      for (const [id, a] of alive) {
+        if (a.pass < 2) continue;
+        const k = `${a.at} | ${a.type} ${a.n}v [${a.attrs}] ${a.name} | ${worn.has(id) ? 'worn by ' + worn.get(id) : (a.g.deref() ? 'in no scene object' : 'collected, never disposed')}`;
+        const gr = groups.get(k) || { n: 0, passes: new Set() }; gr.n += 1; gr.passes.add(a.pass); groups.set(k, gr);
+      }
+      res.end = { ...info(), tracked: alive.size, passes: pass };
+      res.held = [...groups.entries()].map(([k, v]) => ({ k, n: v.n, passes: [...v.passes] })).sort((x, y) => y.n - x.n).slice(0, 40);
+      done(h, res);
+    })));
+  }
+
   // ---------------------------------------------------------------------------------------- flight
   if (mode === 'flight') {
     const h = await open(0, 1);
@@ -445,7 +564,7 @@ return (async () => {
     if (!plan || plan.offerable === false) { h.errors.push('roof trip: ' + ((plan && plan.reason) || 'no plan')); done(h, res); return out; }
     await until(() => ctx.trip.state.phase === 'intro', 20000);
     res.count = plan.count;
-    const cast = new Set((q.get('cast') || '1,8').split(',').map(Number));
+    const cast = new Set((q.get('cast') || '8').split(',').map(Number));
     ctx.trip.play();
     for (let n = 0; n < plan.count; n++) {
       cur = { name: `to-${n + 1}`, dt: [], stages: [] };

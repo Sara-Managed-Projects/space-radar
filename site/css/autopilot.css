@@ -146,6 +146,13 @@ html.sr-ambient--nocaptions .sr-tripsheet {
 html.sr-ambient .sr-tripsheet.is-present {
   padding-bottom: var(--sp-6);
   pointer-events: none;
+  /* Nobody can scroll a reel's caption, so what does not fit is not read. At 1440 x 900 the aurora
+     stop of "The living Earth" (a title, four lines of words and a three-line note with today's Kp)
+     needs 470 px and half the window is 450: the note's last line, the one that says where the
+     reading came from, was cut by the window's edge (seen 2026-10-09). Sixty-two parts in a hundred
+     is 558 px there; ui.css gives a trip a person is driving half, and a scrollbar. */
+  max-height: 62vh;
+  overflow: hidden;
 }
 
 /* A projector, and a phone on a stand: the present-mode ladder, for the card between two trips

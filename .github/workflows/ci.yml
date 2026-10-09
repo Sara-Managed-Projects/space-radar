@@ -439,6 +439,8 @@ jobs:
         run: node tests/test_overlay_key_phone.mjs
       - name: "A trip's stop card is not repainted as the object's own card when a mission lands late"
         run: node tests/test_stop_card_kept.mjs
+      - name: "A reel's caption has room for its honesty note at 1440 x 900"
+        run: node tests/test_reel_caption.mjs
       - name: "The planets' paths are drawn two pixels wide by a module fetched on demand (internal #444, #454)"
         run: node tests/test_fat_paths.mjs
       # Spec 0040: TRAPPIST-1 at its own scale. Kepler's third law on the seven rows, the planets the
