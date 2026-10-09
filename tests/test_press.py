@@ -17,6 +17,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 import build_press  # noqa: E402
+import count_facts  # noqa: E402
 
 problems = []
 
@@ -43,12 +44,24 @@ with tempfile.TemporaryDirectory() as tmp:
         check((press / name).is_file() and (press / name).read_bytes() == (ROOT / "assets" / "screenshots" / name).read_bytes(), f"{name} is not the README's picture")
         check(f'src="{name}"' in page, f"{name} is not on the page")
         check(f"assets/screenshots/{name}" in (ROOT / "README.md").read_text(encoding="utf-8"), f"{name} is not one of the README's screenshots")
+    # The growth kit: a lift-whole boilerplate and one-liner of the stated lengths, counted facts, our three accounts, the name note.
+    check(len(build_press.boilerplate(count_facts.facts()).split()) == build_press.BOILERPLATE_WORDS, f"the boilerplate is not {build_press.BOILERPLATE_WORDS} words")
+    check(len(build_press.ONE_LINER.split()) == build_press.ONE_LINER_WORDS, f"the one-liner is not {build_press.ONE_LINER_WORDS} words")
+    check(build_press.boilerplate(count_facts.facts()).replace("&#x27;", "'") in page.replace("&#x27;", "'"), "the boilerplate is not on the page")
+    for key, label in (("star_systems", "Star systems to fly into"), ("trips", "Guided trips"), ("sources", "Public data sources")):
+        check(re.search(rf"<th scope=\"row\">{label}</th><td>{count_facts.facts()[key]}\b", page) is not None, f"the glance table does not carry the counted {key}")
+    for url in ("https://www.instagram.com/spaceradar.ai/", "https://www.linkedin.com/company/spaceradar-ai", "https://www.youtube.com/@SpaceRadar_ai"):
+        check(f'href="{url}"' in page, f"the page does not link {url}")
+    check("facebook" not in page.lower(), "no Facebook page is ours: none may be linked")
+    check("not affiliated with the Korean company SpaceRadar" in page, "the name note is missing")
+    check("CITATION.cff" in page and (ROOT / "CITATION.cff").is_file(), "the page must point at CITATION.cff, which must exist")
+    check((press / "social-preview.png").is_file(), "the social preview is not in the kit")
     for name, _label, _k in build_press.MARKS:
         svg = (press / name).read_text(encoding="utf-8") if (press / name).is_file() else ""
         check(svg.startswith("<svg ") and "<title>Space Radar</title>" in svg and "<text" not in svg and "<script" not in svg, f"{name} is a plain titled SVG with no text element (the wordmark is outlines) and no script")
     for href in re.findall(r'(?:href|src)="([^"#]+)"', page):
         if href.startswith(("http://", "https://")):
-            check(href.startswith(("https://www.spaceradar.ai/", "https://github.com/Sara-Managed-Projects/space-radar")), f"an outside link: {href}")
+            check(href.startswith(("https://www.spaceradar.ai/", "https://github.com/Sara-Managed-Projects/space-radar") + build_press.ACCOUNT_URLS), f"an outside link: {href}")
             continue
         target = (press / href).resolve()
         in_site = (ROOT / "site" / href.replace("../", "", 1)) if href.startswith("../") else None

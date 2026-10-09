@@ -226,6 +226,17 @@ jobs:
       # Public #293: the press page builds from the registry's own counts, with no personal data.
       - name: "The press page: five counted facts, the README's pictures, every link resolving"
         run: python3 tests/test_press.py
+      # Growth pull request: the README's numbers are counted by scripts/count_facts.py, and a
+      # thirty-first trip fails here until the README says so.
+      - name: "The README's numbers are the registries' (trips, stops, systems, stars, moons, photographs, sites)"
+        run: python3 tests/test_readme_facts.py
+      # A translator's tool: lists missing keys, extra keys and lost {slots}; shown to fail.
+      - name: "The translation checker names a missing key, a lost slot and an untouched string"
+        run: node tests/test_check_translation.mjs
+      # The first files a newcomer meets: the issue chooser (6 forms, 3 contact links), CITATION.cff,
+      # the links in README, CONTRIBUTING, ROADMAP, nothing internal in a public file, the preview image.
+      - name: "Community files: issue forms, citation, roadmap links, social preview, nothing internal"
+        run: python3 tests/test_community_files.py
 
   contract:
     runs-on: ubuntu-latest
