@@ -121,6 +121,7 @@ function rig(opts = {}) {
   const tiers = createTextureTiers({
     tier: opts.tier,
     month: () => month,
+    offline: opts.offline,
     idle: (cb) => idleQ.push(cb),
     load: (url) => new Promise((resolve, reject) => { log.push(url); pending.push([url, resolve, reject]); }),
     targets: { earth, sky, worlds },
@@ -136,6 +137,19 @@ function rig(opts = {}) {
   return { tiers, log, pending, idleQ, earth, sky, worlds, px, settle, setMonth: (m) => { month = m; }, select: (id) => { selected = id; } };
 }
 
+{
+  // OFFLINE (internal #564): a page played from a kept trip asks for no sharper map, and asks again once the network is back.
+  let off = true;
+  const r = rig({ tier: 1, offline: () => off });
+  r.tiers.start();
+  for (let t = 0; t < 30000; t += 1000) r.tiers.tick(t);
+  await r.settle();
+  check(r.log.length === 0, `offline, T1 asks for no texture (${r.log.join(', ')})`);
+  off = false;
+  r.tiers.tick(31000);
+  await r.settle();
+  check(r.log.length === 5, `back online, the sharper maps are asked for (${r.log.length})`);
+}
 {
   // A phone: nothing, ever.
   const r = rig({ tier: 0, px: { moon: 900 } });
