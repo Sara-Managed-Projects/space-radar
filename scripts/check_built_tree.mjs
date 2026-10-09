@@ -38,13 +38,14 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 // copy, and in the shadow below the copy's site/og is a LINK to the real one. It deleted
 // site/og/people-in-space.png from the checkout on the day this was written; the guard after the
 // run (`before`/`after`) is there so that the next such test fails this gate instead.
+// Taken out on 2026-10-09: test_audio, test_cardlive, test_dso, test_station_shapes and test_systems
+// gained checks that read a source file as text (the bulk close-out), so they no longer mean the
+// same thing against built text. They still run against the source in ci.yml.
 export const TESTS = [
   'test_air.mjs',
   'test_ascent_attitude.mjs',
   'test_atmo_lut.mjs',
-  'test_audio.mjs',
   'test_autopilot_trip.mjs',
-  'test_cardlive.mjs',
   'test_chrome_copy.mjs',
   'test_chromelock.mjs',
   'test_climb.mjs',
@@ -52,7 +53,6 @@ export const TESTS = [
   'test_colorkeys.mjs',
   'test_comets_rank.mjs',
   'test_deep_space.mjs',
-  'test_dso.mjs',
   'test_eclipse.mjs',
   'test_eclipse_path.mjs',
   'test_ephemerides.mjs',
@@ -99,11 +99,9 @@ export const TESTS = [
   'test_spaceweather.mjs',
   'test_stardisc.mjs',
   'test_starsnotable.mjs',
-  'test_station_shapes.mjs',
   'test_station_trip.mjs',
   'test_status_kinds.mjs',
   'test_stop_time.mjs',
-  'test_systems.mjs',
   'test_systems_table.mjs',
   'test_trains.mjs',
   'test_trajectory.mjs',
