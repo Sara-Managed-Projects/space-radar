@@ -16,7 +16,9 @@
 #                         since 2026-10-07: they are code, stripped and stamped with the app),
 #                         the trip pages (t/), robots.txt
 #                         and the pages scripts/build_seo.py builds (o/, sitemap.xml, 404.html,
-#                         object-pages.json)
+#                         object-pages.json, and what scripts/seo_pages.py adds: starlink/, satellites/,
+#                         iss/, planets-tonight/, events/, about/, sources/, accuracy/, teachers/, share/,
+#                         sitemap-images.xml)
 #                         only. The usual case.
 #   --no-minify           upload js/ and css/ as they are written. By default a deploy uploads a
 #                         copy without comments and indentation (scripts/minify_site.py); this is
@@ -222,10 +224,36 @@ if [ "$WHAT" != "assets" ]; then
   # t/: HTML, no-cache, and --delete, so an object that left the registry loses its page.
   # The press page is built FIRST: the sitemap names it only when it is in the tree (internal #398).
   python3 "$(dirname "$0")/build_press.py" --out "$BUILT" || die "scripts/build_press.py failed"
-  python3 "$(dirname "$0")/build_seo.py" --out "$BUILT" || die "scripts/build_seo.py failed"
+  # GROWTH PAGES (scripts/seo_pages.py, scripts/seo_share.py). The saved copy's index gives the pages' dated
+  # counts and sources' last-read days; it is fetched from the live site, best effort and never fatal (the
+  # pages fall back to registry/seo-facts.yaml, with its own date). The share pictures need Pillow,
+  # fontTools and brotli here; without them the pages keep their old pictures and the build says so.
+  SNAP=()
+  if [ "$DRY_RUN" != "1" ] && command -v curl >/dev/null; then
+    if curl -fsS --max-time 15 "${SNAPSHOT_INDEX_URL:-https://www.spaceradar.ai/data/v1/index.json}" -o "$BUILT/snapshot-index.json" 2>/dev/null; then
+      SNAP=(--snapshot-index "$BUILT/snapshot-index.json")
+    else
+      echo "    (the saved copy's index could not be read: the pages use registry/seo-facts.yaml's counts and say its date)"
+    fi
+  fi
+  python3 "$(dirname "$0")/build_seo.py" --out "$BUILT" ${SNAP[@]+"${SNAP[@]}"} || die "scripts/build_seo.py failed"
   python3 "$(dirname "$0")/check_seo.py" --out "$BUILT" || die "scripts/check_seo.py refused the built pages"
   "${SYNC[@]}" "$BUILT/o"  "s3://$BUCKET/o" \
     --cache-control "no-cache" --content-type "text/html; charset=utf-8" --delete
+  # The pages scripts/seo_pages.py builds, one directory each (starlink/, satellites/, iss/, events/, about/, ...;
+  # the list is $BUILT/pages-dirs.txt, so a new page is built and shipped by the same change), and share/, one
+  # picture per page (scripts/seo_share.py): PNG, long-lived is wrong for a page that can change, so no-cache like
+  # the HTML. HTML at /<dir>/index.html because the origin serves no index documents (scripts/build_seo.py).
+  while IFS= read -r dir; do
+    [ -n "$dir" ] || continue
+    if [ "$dir" = "share" ]; then
+      "${SYNC[@]}" "$BUILT/share" "s3://$BUCKET/share" --cache-control "no-cache" \
+        --exclude "*" --include "*.png" --content-type "image/png" --delete
+    else
+      "${SYNC[@]}" "$BUILT/$dir" "s3://$BUCKET/$dir" --cache-control "no-cache" \
+        --content-type "text/html; charset=utf-8" --delete
+    fi
+  done < "$BUILT/pages-dirs.txt"
   # The press page (public #293, scripts/build_press.py): the page, the README's screenshots and
   # the mark as SVG, built beside the object pages and not kept under site/. HTML no-cache like
   # the other pages; the pictures and the SVGs each by their own type, as the textures are.
@@ -249,6 +277,7 @@ if [ "$WHAT" != "assets" ]; then
   python3 "$(dirname "$0")/stamp_sw.py" --site "$SITE" ${OVERLAY[@]+"${OVERLAY[@]}"} --out "$BUILT/sw.js" || die "scripts/stamp_sw.py failed"
   for f in "$SITE/index.html:text/html; charset=utf-8" "$BUILT/404.html:text/html; charset=utf-8" \
            "$SITE/robots.txt:text/plain; charset=utf-8" "$BUILT/sitemap.xml:application/xml; charset=utf-8" \
+           "$BUILT/sitemap-images.xml:application/xml; charset=utf-8" \
            "$BUILT/object-pages.json:application/json; charset=utf-8" \
            "$SITE/manifest.webmanifest:application/manifest+json; charset=utf-8" \
            "$BUILT/sw.js:text/javascript; charset=utf-8"; do
@@ -265,6 +294,11 @@ fi
 
 if [ -n "$DISTRIBUTION" ] && [ "$DRY_RUN" != "1" ]; then
   PATHS=("/" "/index.html" "/js/*" "/css/*" "/vendor/*" "/t/*" "/o/*" "/press/*" "/robots.txt" "/sitemap.xml" "/404.html" "/object-pages.json" "/manifest.webmanifest" "/sw.js")
+  # The pages seo_pages.py built, each by its directory, and the pictures and the image sitemap with them.
+  if [ -f "${BUILT:-/nonexistent}/pages-dirs.txt" ]; then
+    while IFS= read -r dir; do [ -n "$dir" ] && PATHS+=("/$dir/*"); done < "$BUILT/pages-dirs.txt"
+    PATHS+=("/sitemap-images.xml")
+  fi
   if [ "$WHAT" != "app" ]; then
     # The data files were just pushed and keep their names: expire the edge copies now.
     PATHS+=("/data/*")

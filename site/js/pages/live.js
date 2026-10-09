@@ -352,7 +352,7 @@ async function bootEvent() {
     for (const a of r.also || []) parts.push(`${a.body[0].toUpperCase() + a.body.slice(1)} is ${a.altDeg > 0 ? `${a.altDeg}° up` : 'below the horizon'} at its greatest elongation`);
     if (!parts.length) return;
     say('event-local', `From ${placeLabel(observer)}: ${parts.join(', ')}.`);
-    show('event-live', true);
+    show('event-local', true);
   };
   draw(await placePicker(draw));
 }

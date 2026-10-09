@@ -18,6 +18,7 @@ const JS = join(ROOT, 'site/js');
 const Astronomy = await import(join(ROOT, 'site/vendor/astronomy.js'));
 const { SHOWERS } = await import(join(JS, 'data/showers.js'));
 const { peakInstant } = await import(join(JS, 'sky/radiants.js'));
+const { CITIES } = await import(join(JS, 'copy/en.js'));
 
 const iso = (ms) => new Date(ms).toISOString().replace(/\.\d{3}Z$/, 'Z');
 const round1 = (v) => Math.round(v * 10) / 10;
@@ -53,6 +54,22 @@ function showerEvent(ev) {
   };
 }
 
+/** What each bundled city (copy/en.js CITIES) sees of an eclipse that peaks at `peakMs`. Computed, never typed. */
+function eclipseFromCities(peakMs) {
+  const rows = [];
+  for (const c of CITIES) {
+    try {
+      const obs = new Astronomy.Observer(c.latDeg, c.lonDeg, 0);
+      const l = Astronomy.SearchLocalSolarEclipse(new Date(peakMs - 2 * 86400e3), obs);
+      const maxMs = l.peak.time.date.getTime();
+      if (Math.abs(maxMs - peakMs) > 86400e3 || l.peak.altitude <= 0) continue;
+      rows.push({ name: c.name, country: c.country, kind: l.kind, obscuration: Math.round(l.obscuration * 100), maxUtc: iso(maxMs), altDeg: Math.round(l.peak.altitude) });
+    } catch { /* a city the search cannot place is not listed */ }
+  }
+  rows.sort((a, b) => (b.kind === 'partial' ? 0 : 1) - (a.kind === 'partial' ? 0 : 1) || b.obscuration - a.obscuration);
+  return rows;
+}
+
 function eclipseEvent(ev) {
   let from = new Date(ev.near + 'T00:00:00Z');
   for (let i = 0; i < 8; i++) {
@@ -63,6 +80,7 @@ function eclipseEvent(ev) {
         instant: iso(peak), instantMs: peak, kind: e.kind,
         obscuration: e.obscuration === undefined ? null : round1(e.obscuration * 100),
         latDeg: round1(e.latitude), lonDeg: round1(e.longitude), moonAtPeak: moonAt(peak),
+        cities: eclipseFromCities(peak),
       };
     }
     from = new Date(e.peak.date.getTime() + 20 * 86400e3);

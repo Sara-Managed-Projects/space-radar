@@ -1357,7 +1357,7 @@ def check_seo_refusals() -> int:
             link(ROOT / "site" / name, site / name)
         for d in ("t", "og", "images"):
             shutil.copytree(ROOT / "site" / d, site / d, copy_function=link)
-        build = subprocess.run([sys.executable, str(ROOT / "scripts/build_seo.py"), "--out", str(clean_tree / "built")],
+        build = subprocess.run([sys.executable, str(ROOT / "scripts/build_seo.py"), "--out", str(clean_tree / "built"), "--no-share"],
                                capture_output=True, text=True)
         if build.returncode != 0:
             print("  ** scripts/build_seo.py could not build the pages the SEO cases start from")

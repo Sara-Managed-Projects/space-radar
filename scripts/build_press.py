@@ -120,6 +120,7 @@ def build(out: Path, host: str) -> Path:
         "marks": "".join(marks),
         "licence": e(licence_name()),
         "built": datetime.date.today().isoformat(),
+        "footer_nav": (TEMPLATES / "partials" / "footer-nav.html").read_text(encoding="utf-8"),
     })
     (press / "index.html").write_text(page, encoding="utf-8")
     return press

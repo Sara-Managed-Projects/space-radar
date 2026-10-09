@@ -34,7 +34,7 @@ with tempfile.TemporaryDirectory() as tmp:
     check(bool(page), "press/index.html was not written")
     n = build_press.counts()
     check(n["layers"] > 10 and n["trips"] > 5 and n["sources"] > 10, f"the registry's counts look wrong: {n}")
-    facts = re.findall(r"<li>(.*?)</li>", page, re.S)
+    facts = re.findall(r"<li>(.*?)</li>", re.search(r'<ol class="facts">(.*?)</ol>', page, re.S).group(1), re.S)
     check(len(facts) == 5, f"five facts, not {len(facts)}")
     text = " ".join(facts)
     for key in ("layers", "trips", "sources"):
@@ -46,7 +46,11 @@ with tempfile.TemporaryDirectory() as tmp:
     for name, _label, _k in build_press.MARKS:
         svg = (press / name).read_text(encoding="utf-8") if (press / name).is_file() else ""
         check(svg.startswith("<svg ") and "<title>Space Radar</title>" in svg and "<text" not in svg and "<script" not in svg, f"{name} is a plain titled SVG with no text element (the wordmark is outlines) and no script")
-    for href in re.findall(r'(?:href|src)="([^"#]+)"', page):
+    # The footer's links to the other built pages (templates/partials/footer-nav.html) are resolved by tests/test_seo_pages.py and check_seo.py on a whole build.
+FOOTER_NAV = set(re.findall(r'href="([^"#]+)"', (ROOT / "templates" / "partials" / "footer-nav.html").read_text(encoding="utf-8")))
+for href in re.findall(r'(?:href|src)="([^"#]+)"', page):
+    if href in FOOTER_NAV:
+        continue
         if href.startswith(("http://", "https://")):
             check(href.startswith(("https://www.spaceradar.ai/", "https://github.com/Sara-Managed-Projects/space-radar")), f"an outside link: {href}")
             continue

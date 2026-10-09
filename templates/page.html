@@ -1,18 +1,18 @@
 <!doctype html>
-<!-- Built by scripts/build_seo.py from templates/object.html at deploy time: the record the map
-     bundles, in the card's own words (ui/cards.js, run under Node). Not in git; do not edit. -->
+<!-- Built by scripts/seo_pages.py from templates/page.html at deploy time. Not in git; do not edit
+     the built copy. The header and the footer are templates/partials/. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{title}}</title>
 <meta name="description" content="{{description}}">
-<meta name="color-scheme" content="dark">
+{{robots}}<meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#0b0e14">
-<link rel="canonical" href="{{url}}">
-<meta property="og:type" content="article">
+<link rel="canonical" href="{{canonical}}">
+<meta property="og:type" content="{{og_type}}">
 <meta property="og:site_name" content="Space Radar">
-<meta property="og:title" content="{{name}}">
+<meta property="og:title" content="{{og_title}}">
 <meta property="og:description" content="{{description}}">
 <meta property="og:url" content="{{url}}">
 <meta property="og:image" content="{{image}}">
@@ -20,7 +20,7 @@
 <meta property="og:image:height" content="{{image_h}}">
 <meta property="og:image:alt" content="{{image_alt}}">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{{name}}">
+<meta name="twitter:title" content="{{og_title}}">
 <meta name="twitter:description" content="{{description}}">
 <meta name="twitter:image" content="{{image}}">
 <meta name="twitter:image:alt" content="{{image_alt}}">
@@ -32,16 +32,7 @@
 <script type="application/ld+json">{{jsonld}}</script>
 </head>
 <body>
-<header class="top"><a class="mark" href="../">Space Radar</a><a href="../">Open the live map</a></header>
-<main>
-<p class="micro"><span class="dot" style="background:{{colour}}"></span>{{klass}}</p>
-<h1>{{name}}</h1>
-<p class="lead">{{lead}}</p>
-{{why}}<div class="cta"><a class="live" href="../#at={{id}}">See it live</a><p>{{live_line}}</p></div>
-{{figure}}{{facts}}{{myths}}{{see}}{{drawn}}{{related}}</main>
-<footer>
-{{sources}}<p>This page is built from the same records and words as the map's card, and carries no live numbers.</p>
-{{footer_nav}}<p><a href="../">Open the live map</a> · <a href="https://github.com/Sara-Managed-Projects/space-radar">Source code</a></p>
-</footer>
-</body>
+{{header}}<main{{live_attr}}>
+{{body}}</main>
+{{footer}}{{script}}</body>
 </html>
