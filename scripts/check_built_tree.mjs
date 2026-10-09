@@ -102,6 +102,7 @@ export const TESTS = [
   'test_station_trip.mjs',
   'test_status_kinds.mjs',
   'test_stop_time.mjs',
+  'test_systems_binaries.mjs',
   'test_systems_table.mjs',
   'test_trains.mjs',
   'test_trajectory.mjs',

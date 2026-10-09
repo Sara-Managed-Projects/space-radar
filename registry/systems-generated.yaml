@@ -1584,12 +1584,59 @@ systems:
     lum_from: table
     source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-16 (read 2026-10-08)
   habitable_zone:
-    inner_au: 0.3587
-    outer_au: 0.6649
-    wide_inner_au: 0.2832
-    wide_outer_au: 0.7014
+    inner_au: 0.3991
+    outer_au: 0.7412
+    wide_inner_au: 0.3151
+    wide_outer_au: 0.7818
   habitable_zone_formula: Kopparapu et al. 2014, ApJ Letters 787, L29, equations 4 and 5 (https://arxiv.org/abs/1404.5292,
-    read 2026-10-08)
+    read 2026-10-08); for two suns the luminosities are summed and the temperature is their luminosity-weighted mean, a simplification
+    of Haghighipour and Kaltenegger 2013
+  binary:
+    primary:
+      mass_suns: 0.704
+      radius_suns: 0.6489
+      teff_k: 4450
+    companion:
+      mass_suns: 0.2054
+      radius_suns: 0.22623
+      teff_k: 3311
+      teff_from: derived
+    orbit:
+      period_days: 41.077777
+      a_au: 0.2257
+      eccentricity: 0.15962
+      omega_rad: 4.60184
+      periastron_jd: 2457573.0995
+    lum_primary_suns: 0.1488
+    lum_companion_suns: 0.005542
+    lum_total_suns: 0.1543
+    teff_weighted_k: 4409
+    zone_why: null
+    sources:
+    - what: masses, period, semi-major axis, eccentricity, argument and time of periastron
+      url: https://arxiv.org/abs/2505.19718
+      read: 2026-10-09
+      quote: M1 [Msun] 0.704 ± 0.011 (1.5 %); M2 [Msun] 0.2054 ± 0.0019 (0.9 %); a [AU] 0.2257 ± 0.0010
+      note: 'Sebastian et al. 2025, EBLM XV, MNRAS, Table 1 (global fit: P 41.077777 ± 0.000035 d, T0,peri BJD 2457573.0995
+        ± 0.0032, e 0.15962 ± 0.00037, omega 4.60184 ± 0.00034 rad)'
+    - what: radii of both stars
+      url: https://arxiv.org/abs/2505.19718
+      read: 2026-10-09
+      quote: radii of both stars, as measured by Doyle et al. (2011) from precise Kepler light-curve modelling (R1 = 0.6489
+        R⊙ and R2 = 0.22623 R⊙)
+      note: Sebastian et al. 2025, section 4, quoting Doyle et al. 2011 (Science 333, 1602, arXiv:1109.3432, whose Table 1
+        is not in the arXiv text)
+    - what: primary temperature
+      url: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-16
+      read: 2026-10-08
+      quote: st_teff 4450 K (the composite table, as already in registry/systems-generated.yaml)
+    - what: companion temperature (derived, not measured)
+      url: https://arxiv.org/abs/1306.2890
+      read: 2026-10-09
+      quote: the secondary has a luminosity of 0.0057 Lsun which combined with equation (12) results in an effective temperature
+        of ~ 3311 K for this star
+      note: 'Haghighipour and Kaltenegger 2013, ApJ 777, 166: from the mass-luminosity relation L ~ 0.23 M^2.3, so a model
+        value'
   colour_note: illustrative
   planets:
   - id: exo-kepler-16-b
@@ -2500,12 +2547,48 @@ systems:
     lum_from: table
     source: https://exoplanetarchive.ipac.caltech.edu/overview/Kepler-1647 (read 2026-10-08)
   habitable_zone:
-    inner_au: 1.944
-    outer_au: 3.394
-    wide_inner_au: 1.535
-    wide_outer_au: 3.58
+    inner_au: 2.127
+    outer_au: 3.72
+    wide_inner_au: 1.679
+    wide_outer_au: 3.923
   habitable_zone_formula: Kopparapu et al. 2014, ApJ Letters 787, L29, equations 4 and 5 (https://arxiv.org/abs/1404.5292,
-    read 2026-10-08)
+    read 2026-10-08); for two suns the luminosities are summed and the temperature is their luminosity-weighted mean, a simplification
+    of Haghighipour and Kaltenegger 2013
+  binary:
+    primary:
+      mass_suns: 1.2207
+      radius_suns: 1.7903
+      teff_k: 6210
+    companion:
+      mass_suns: 0.9678
+      radius_suns: 0.9663
+      teff_k: 5770
+    orbit:
+      period_days: 11.2588179
+      a_au: 0.1276
+      eccentricity: 0.1593
+      omega_deg: 300.85
+      periastron_jd: 2454952.13097
+    lum_primary_suns: 4.295
+    lum_companion_suns: 0.9324
+    lum_total_suns: 5.227
+    teff_weighted_k: 6132
+    zone_why: null
+    sources:
+    - what: masses, radii, temperatures, semi-major axis
+      url: https://arxiv.org/abs/1512.00189
+      read: 2026-10-09
+      quote: Mass of Star A, MA 1.2207 ± 0.0112 M⊙; Mass of Star B, MB 0.9678 ± 0.0039; Radius of Star A, RA 1.7903 ± 0.0055;
+        Radius of Star B, RB 0.9663 ± 0.0057; Semimajor Axis, abin 0.1276 ± 0.0002 AU
+      note: 'Kostov et al. 2016, ApJ 832, 183, Table 4 (photodynamical; period 11.2588179 ± 0.0000013 d); Table 2: TA 6210
+        ± 100 K, TB 5770 ± 125 K'
+    - what: eccentricity, argument and time of periastron
+      url: https://arxiv.org/abs/1512.00189
+      read: 2026-10-09
+      quote: Epoch of Periastron passage, T0 -47.86903 0.00267 days; Eccentricity, ebin 0.1593 0.0030; Argument of Periapsis,
+        ωbin 300.85 0.91 ◦
+      note: Kostov et al. 2016, Table 2 (spectroscopy; T0 is BJD - 2,455,000). Its photodynamical time of binary conjunction,
+        BJD 2454956.48005 (Table 4), is the check in tests/test_systems_binaries.mjs
   colour_note: illustrative
   planets:
   - id: exo-kepler-1647-b

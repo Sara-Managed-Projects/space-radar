@@ -445,6 +445,9 @@ jobs:
       # et al. 2014, search, the `#go=` link, and the card's lines about what is measured.
       - name: "Star systems: the generated forty obey Kepler, their zones are the paper's, the cards say what is measured"
         run: node tests/test_systems_table.mjs
+      # Internal #475: two suns for Kepler-16 and Kepler-1647, their orbit against the papers' own eclipse times.
+      - name: "Star systems: the two suns are in front at the papers' eclipse times"
+        run: node tests/test_systems_binaries.mjs
       # Internal #466 phase B: a drawn face for a planet nobody has seen. The classifier on the
       # table's own rows, the label made from the row, imagined worlds named as imagined, three
       # tiers with one draw call on a phone, no texture, no post-processing, nothing at boot.

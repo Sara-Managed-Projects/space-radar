@@ -67,6 +67,7 @@ LIST = ROOT / "registry/systems-list.yaml"
 TABLE = ROOT / "site/data/exoplanets.csv"
 SIDE = ROOT / "registry/systems-columns.csv"
 OUT = ROOT / "registry/systems-generated.yaml"
+BINARIES = ROOT / "registry/systems-binaries.yaml"
 
 KEPLER_TOLERANCE = 0.05
 JULIAN_YEAR_DAYS = 365.25
@@ -110,6 +111,43 @@ def habitable_zone(teff_k, lum_suns):
     }, None
 
 
+def read_binaries() -> dict:
+    doc = yaml.safe_load(BINARIES.read_text(encoding="utf-8")) or {}
+    return {str(b["host"]): b for b in doc.get("binaries") or []}
+
+
+def binary_row(host: str, b: dict, table_rad, table_teff) -> tuple[dict, dict]:
+    """The checked binary row for a system, and the habitable zone from both stars' summed light.
+
+    Refused: a primary whose radius or temperature is not the table's within 5 %, and an orbit whose
+    a^3 / P^2 (au, years) is not the two masses' sum within 3 %. The luminosity of each star is
+    R^2 (T / 5772)^4; the pair's effective temperature is the mean of the two weighted by luminosity;
+    the band is Kopparapu's at that temperature for the summed luminosity. This is a simplification
+    (Haghighipour and Kaltenegger 2013 weight the spectra), and the card says so.
+    """
+    pr, co, orb = b["primary"], b["companion"], b["orbit"]
+    for what, mine, theirs in (("radius", pr["radius_suns"], table_rad), ("temperature", pr["teff_k"], table_teff)):
+        if theirs is None or abs(mine / theirs - 1) > 0.05:
+            raise SystemExit(f"build-systems: binary row for `{host}`: primary {what} {mine} is not the table's {theirs} within 5 %")
+    implied = orb["a_au"] ** 3 / (orb["period_days"] / JULIAN_YEAR_DAYS) ** 2
+    total = pr["mass_suns"] + co["mass_suns"]
+    if abs(implied / total - 1) > 0.03:
+        raise SystemExit(f"build-systems: binary row for `{host}`: a^3/P^2 is {implied:.4f} against the masses' sum {total:.4f}")
+    lum = [s["radius_suns"] ** 2 * (s["teff_k"] / SUN_TEFF_K) ** 4 for s in (pr, co)]
+    lum_all = sum(lum)
+    teff = sum(l * s["teff_k"] for l, s in zip(lum, (pr, co))) / lum_all
+    zone, why = habitable_zone(teff, lum_all)
+    row = {
+        "primary": dict(pr), "companion": dict(co),
+        "orbit": {k: v for k, v in orb.items()},
+        "lum_primary_suns": sig(lum[0], 4), "lum_companion_suns": sig(lum[1], 4),
+        "lum_total_suns": sig(lum_all, 4), "teff_weighted_k": int(round(teff)),
+        "zone_why": why,
+        "sources": [{k: v for k, v in x.items()} for x in b["sources"]],
+    }
+    return row, zone
+
+
 def equilibrium_k(lum_suns: float, a_au: float) -> float:
     flux = lum_suns * SUN_LUMINOSITY_W * (1 - ALBEDO) / (16 * math.pi * STEFAN_BOLTZMANN * (a_au * AU_M) ** 2)
     return flux ** 0.25
@@ -144,6 +182,10 @@ def build() -> dict:
         raise SystemExit("build-systems: site/data/exoplanets.csv is missing or empty")
     table_date = re.search(r"as of (\d{4}-\d{2}-\d{2})", TABLE.read_text(encoding="utf-8").splitlines()[0])
     side, side_date = read_side()
+    binaries = read_binaries()
+    unused = sorted(set(binaries) - {str(e["host"]) for e in listed})
+    if unused:
+        raise SystemExit(f"build-systems: registry/systems-binaries.yaml names {unused}, which registry/systems-list.yaml does not list")
     if not table_date or table_date.group(1) != side_date:
         raise SystemExit(f"build-systems: site/data/exoplanets.csv is as of {table_date and table_date.group(1)} and "
                          f"registry/systems-columns.csv as of {side_date}: they must be one pull "
@@ -194,6 +236,14 @@ def build() -> dict:
             system["habitable_zone_missing"] = hz_why
         else:
             system["habitable_zone_formula"] = HZ_FORMULA
+        if host in binaries:
+            brow, bzone = binary_row(host, binaries[host], rad, teff)
+            system["binary"] = brow
+            if bzone is not None:
+                system["habitable_zone"] = bzone
+                system["habitable_zone_formula"] = (HZ_FORMULA + "; for two suns the luminosities are summed and the temperature is "
+                                                    "their luminosity-weighted mean, a simplification of Haghighipour and Kaltenegger 2013")
+                system.pop("habitable_zone_missing", None)
         system["colour_note"] = "illustrative"
         planets = []
         for r, w in zip(host_rows, wide):

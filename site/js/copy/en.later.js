@@ -41,6 +41,7 @@ Object.assign(COPY, {
       starMass: 'Mass',
       planets: 'Planets drawn',
       stars: 'Stars in the system',
+      companion: 'Second sun',
     },
     // "Nobody has seen its surface. Its size and year are measured."
     unseen: 'Nobody has seen its surface.',
@@ -93,6 +94,12 @@ Object.assign(COPY, {
     starPoint: 'Not measured: drawn as a point of light',
     starWhite: 'Not measured: drawn white',
     starsOne: '{n} in the catalogue; one is drawn',
+    // A circumbinary system with a typed row for its pair (registry/systems-binaries.yaml, internal #475).
+    starsBoth: 'Two, both drawn',
+    companionValue: '{width} wide, {mass} heavy, {k} K{derived}',
+    companionDerived: ' (a model value; its colour is illustrative)',
+    zoneBoth: '{a} to {b} au, both suns’ light summed',
+    pairLine: 'The two suns circle each other every {days} days, {a} au apart on average, on the orbit the papers measured; the planet goes round both. Their positions are computed from that orbit; the plane they are drawn in, the planets’ plane, is the one the sky view uses.',
     // The card's drawing line on the system's stage. {date} the day the table was read.
     line: 'Sizes and years from the NASA Exoplanet Archive, read {date}. The orbits are drawn as circles{computed}; the colours{phase} and the tilt of the orbits are illustrative{defaults}.',
     lineComputed: ', {n} of them sized from the year and the star’s mass',
