@@ -327,6 +327,9 @@ html.sr-phone .sr-keyhint {
   width: auto;
   max-width: 400px;
   margin-left: auto;
+  /* The sheet under it rises over --sr-slow while --sr-sheet-h changes at once: without this the
+     hint's foot was under the sheet for that long and its Close hit 44 x 26 (UI gate, #543). */
+  transition: bottom var(--sr-slow) var(--sr-ease), opacity var(--sr-fast) var(--sr-ease);
 }
 
 html.sr-phone[data-sheet='full'] .sr-keyhint,

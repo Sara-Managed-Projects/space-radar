@@ -140,6 +140,13 @@ const walk = (dir) => readdirSync(dir).flatMap((f) => {
 });
 const reads = new RegExp(`COPY\\.(${laterKeys.join('|')})\\b`);
 const importsLater = /import\s+'(?:\.\.?\/)+(?:copy\/)?en\.later\.js';/;
+// copy/en.facts.js: the four sections ui/cardfacts.js reads, so the light embed does not fetch the rest
+// (internal #429). en.later.js imports it; a module may import either for these.
+const factsKeys = new Set([...readFileSync(join(JS, 'copy/en.facts.js'), 'utf8').matchAll(/^  (\w+): \{/gm)].map((m) => m[1]));
+check(factsKeys.size === 4 && ['klass', 'cls', 'unplaced', 'earthEvent'].every((k) => factsKeys.has(k)), `copy/en.facts.js holds exactly klass, cls, unplaced and earthEvent (has ${[...factsKeys]})`);
+check(/import '\.\/en\.facts\.js';/.test(laterText), 'copy/en.later.js imports copy/en.facts.js');
+const importsFacts = /import\s+'(?:\.\.?\/)+(?:copy\/)?en\.facts\.js';/;
+const readsAll = new RegExp(`COPY\\.(${laterKeys.join('|')})\\b`, 'g');
 let readers = 0;
 for (const path of walk(JS)) {
   if (path.includes(`${join(JS, 'copy')}`)) continue;
@@ -148,7 +155,9 @@ for (const path of walk(JS)) {
   const hit = reads.exec(code);
   if (!hit) continue;
   readers += 1;
-  check(importsLater.test(code), `${rel(path)} reads COPY.${hit[1]}, which is in copy/en.later.js, and does not import that file: the section is undefined until something else happens to load it`);
+  // A section in copy/en.facts.js may come from either file; any other needs en.later.js.
+  const needLater = [...code.matchAll(readsAll)].map((m) => m[1]).filter((k) => !factsKeys.has(k));
+  check(needLater.length ? importsLater.test(code) : importsLater.test(code) || importsFacts.test(code), `${rel(path)} reads COPY.${needLater[0] || hit[1]}, which is in copy/en.later.js${needLater.length ? '' : ' or en.facts.js'}, and does not import that file: the section is undefined until something else happens to load it`);
   check(!boot.has(rel(path)), `${rel(path)} is in the boot graph and reads COPY.${hit[1]} from copy/en.later.js: move the section back to copy/en.js`);
 }
 check(readers >= 20, `only ${readers} modules read a later section: the reader check is not seeing them`);
@@ -251,6 +260,23 @@ const { idleTripState } = await import(join(JS, 'ui/tripstate.js'));
   // The warm-up is past the two seconds tests/test_first_visit_bytes.mjs waits after sr:layers-ready.
   const warm = /const WARM_MS = (\d+);/.exec(main);
   check(warm && Number(warm[1]) >= 3000, 'main.js warms the deferred modules at least 3 s after sr:layers-ready');
+}
+
+// 7. THE TAG'S MODULE (ui/cardfacts.js, what the light embed loads for its tag lines) reaches
+//    copy/en.facts.js and not copy/en.later.js (internal #429: 45 kB for four sections).
+{
+  const facts = new Set([...graph(join(JS, 'ui/cardfacts.js'))].map(rel));
+  check(facts.has('js/copy/en.facts.js') && !facts.has('js/copy/en.later.js'), 'ui/cardfacts.js imports copy/en.facts.js and not copy/en.later.js');
+}
+
+// 6. THE FONTS the first screen always draws with are preloaded, not found by the stylesheet at
+//    66 to 529 ms (internal #533): the four files tests/test_first_visit_bytes.mjs counts.
+{
+  const html = readFileSync(join(SITE, 'index.html'), 'utf8');
+  for (const f of ['inter-400-latin', 'inter-600-latin', 'barlow-semi-condensed-600-latin', 'jetbrains-mono-400-latin']) {
+    check(new RegExp(`<link rel="preload" href="fonts/${f}\\.woff2" as="font" type="font/woff2" crossorigin>`).test(html), `index.html preloads fonts/${f}.woff2`);
+  }
+  check(!/rel="preload"[^>]*cyrillic/.test(html), 'and preloads no Cyrillic face');
 }
 
 if (problems.length) {

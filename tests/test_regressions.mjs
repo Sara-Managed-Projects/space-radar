@@ -88,7 +88,10 @@ const code = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/
   check(linkChange({ at: 'moon' }, { at: 'moon', trip: null, live: true }).at === null, 'the selection already up is not opened again');
   check(linkChange({ t: 'not a date', at: 'moon' }, { at: null, trip: null, live: false }).clock.live === true, 'an instant that does not parse is no instant: the clock goes back to now');
   // Seen in a real tab, 2026-10-08 (internal #460): the empty address.
-  check(linkChange({ at: 'phobos' }, { at: 'deimos', trip: null, live: true, stage: 'mars' }).stage === null, 'a link that names an object and no stage leaves the map where it is: the app never writes `stage=`');
+  check(linkChange({ at: 'phobos' }, { at: 'deimos', trip: null, live: true, stage: 'mars' }).stage === 'earth', 'a link that names an object and no stage is the Earth\'s map: the app writes `stage=` off the Earth (#485)');
+  check(linkChange({ at: 'sat-25544' }, { at: 'moon', trip: null, live: false, stage: 'moon' }).stage === 'earth', 'Back from the Moon\'s dated view to the ISS leaves the Moon\'s map');
+  check(linkChange({ at: 'sat-25544' }, { at: null, trip: null, live: true, stage: 'earth' }).stage === null, 'and asks nothing when the Earth is already the map');
+  check(linkChange({ event: 'x' }, { at: null, trip: null, live: true, stage: 'moon' }).stage === null, 'an event link picks its own stage');
   check(linkChange({ at: 'moon', stage: 'moon' }, { at: null, trip: null, live: true, stage: 'mars' }).stage === 'moon', 'a link that names its stage keeps it');
   check(linkChange({ trip: 'moon-landings' }, { at: null, trip: null, live: true, stage: 'moon' }).stage === null, 'a trip sets its own stage');
   {
@@ -101,6 +104,8 @@ const code = (src) => src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/
   const main = code(readFileSync(join(JS, 'main.js'), 'utf8'));
   const h = (/window\.addEventListener\('hashchange', \(\) => \{\s*setMoment\(([\s\S]*?)\n  \}\);/.exec(main) || [])[1] || '';
   check(/const plan = linkChange\(keys, \{ at: current \? current\.id : null, trip: running \? running\.tourId : null, live: clock\.mode === 'live', stage: stage\.worldId \}\);/.test(h), 'main.js asks linkChange on hashchange, with what is selected, the trip running and whether the clock is live');
+  check(/clearUrlState\(\['stage'\]\); else writeUrlState\(\{ stage: id \}\)/.test(main), 'main.js writes `stage=` on every stage change off the Earth and clears it on the Earth (#485)');
+  check(!/LAYERS\.find\(/.test(main) && /function layerRec\(id\)/.test(main) && !/afterUpdate\.splice\(0\)/.test(main), 'the frame loop looks layers up in an index and drains afterUpdate in place: no closure and no array a frame (#529)');
   const order = ['clock.live()', 'clock.goTo(plan.clock.goTo)', 'ctx.setStage(plan.stage)', 'openTrip(ctx, keys)', 'ctx.trip.jumpTo(index)', 'ctx.trip.stop()', 'openEvent(ctx, plan.event)', 'openAt(ctx, plan.at.open)', 'ctx.deselect()'];
   const at = order.map((s) => h.indexOf(s));
   check(at.every((i) => i >= 0) && at.every((i, k) => k === 0 || i > at[k - 1]), `and carries out the clock, the stage, the trip, the event and the selection, in that order (${at})`);

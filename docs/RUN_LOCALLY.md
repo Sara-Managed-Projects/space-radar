@@ -124,7 +124,7 @@ answered from the folder, the Sources line read "12 sources read · 3 could not 
 |---|---|
 | The Earth, the Moon, every planet and moon, with their maps and air | **Today's clouds**, storms and lightning on the Earth (you get a fixed cloud map instead) |
 | The stars, constellations, the Milky Way, nebula photographs, exoplanets | **Close-up map tiles** of the Earth, the Moon and Mars (the built-in maps stay; they are just less sharp up close) |
-| All 25 guided trips, with narration, captions and music | **Fresh** launches, satellites, asteroid passes and space weather (see below) |
+| All 26 guided trips, with narration, captions and music | **Fresh** launches, satellites, asteroid passes and space weather (see below) |
 | Satellites, the ISS and Tiangong, from the saved copy | The aurora forecast and the "who is in space right now" crew list, once the copy is old |
 | Search, the object cards, the time scrubber, mission timelines, Tonight's passes | **Earth data maps** (sea temperature, rain and the rest), today's sunspot groups, and the sharper zoomed-in tiles of the infrared sky |
 | The sky from the ground, present mode, photo mode | Links out to Wikipedia and the publishers; sharing to social networks |

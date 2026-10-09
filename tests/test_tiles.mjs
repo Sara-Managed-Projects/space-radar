@@ -590,6 +590,21 @@ const EARTH = TILESETS.find((s) => s.world === 'earth');
   }
 }
 
+// --- the Earth's night lights and ice (public #260) -------------------------------------------------
+{
+  const { createEarth, SURFACE_FRAG, NIGHT_CORE_LIGHTS, ICE_SHEEN } = await import(join(JS, 'scene/earth.js'));
+  const e = createEarth({});
+  const u = e.material.uniforms;
+  check(u.uNightGlow.value > 0 && u.uNightGlow.value < 1 && u.uIceSheen.value > 0 && u.uIceSheen.value < 0.5 && u.uNightCore.value.isColor, 'the glow, the core colour and the ice sheen are filled, and small');
+  const bal = (src) => { let b = 0, p = 0; for (const ch of src) { if (ch === '{') b++; if (ch === '}') b--; if (ch === '(') p++; if (ch === ')') p--; if (b < 0 || p < 0) return false; } return b === 0 && p === 0; };
+  check(bal(SURFACE_FRAG), 'the Earth\'s fragment shader balances its braces and brackets');
+  check(/float nightLumAt\( vec2 uv \)/.test(SURFACE_FRAG) && /if \( uNightGlow > 0\.0 && nightAmt > 0\.01 \)/.test(SURFACE_FRAG) && /if \( uIceSheen > 0\.0 \)/.test(SURFACE_FRAG), 'each new term is a branch on a uniform, with 0 meaning the old look');
+  check(!/\$\{|%ICE/.test(SURFACE_FRAG), 'no template slot is left unfilled');
+  check(ICE_SHEEN.lo < ICE_SHEEN.hi && ICE_SHEEN.chroma > 0.04 && NIGHT_CORE_LIGHTS > 0xe0e0c0, 'the ice band and the core colour are sane (the core is near white)');
+  for (const name of ['uNightCore', 'uNightGlow', 'uIceSheen']) check(new RegExp('uniform (vec3|float) +' + name + ';').test(SURFACE_FRAG) && name in u, `${name} is declared and filled`);
+  check(/vec3 cities = uNightTint \* lit \* uNightGain/.test(SURFACE_FRAG), 'the old city line is intact for the tiles\' patch');
+}
+
 if (problems.length) { console.error('tiles FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log(`tiles ok: ${TILESETS.length} tile sets (${TILESETS.map((s) => s.world + ' to level ' + s.maxLevel).join(', ')}); addressing, level by footprint, ` +
   'cover without holes, draw-while-loading, LRU, six fetches at once, nothing on T0 / data-saver / after the latch, a failing host left alone');

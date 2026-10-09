@@ -1,13 +1,58 @@
 # Contributing to Space Radar
 
-Thank you for being here. Space Radar exists so that anyone can learn about space freely and
-simply, and it gets better every time somebody fixes a sentence, corrects a number or teaches it a
-new object. You do not need to be a rendering engineer. Some of the best changes in this project
-are one line of YAML with a source next to it.
+**No install, no build.** Running Space Radar needs only Python's built-in web server:
+
+```bash
+git clone https://github.com/Sara-Managed-Projects/space-radar.git && cd space-radar
+python3 -m http.server 8177 --directory site      # open http://localhost:8177
+```
+
+**To change a word or a fact you need no tools at all.** Open the file on GitHub, press the pencil,
+edit, and GitHub opens the pull request for you. Thank you for being here: Space Radar exists so
+that anyone can learn about space freely and simply, and it gets better every time somebody fixes a
+sentence, corrects a number or teaches it a new object. You do not need to be a rendering engineer.
+Some of the best changes in this project are one line of YAML with a source next to it.
+
+## Contribute without code
+
+Each of these takes minutes, needs no install, and is named in the release notes.
+
+- **Report a wrong number or name.** A
+  [data-accuracy report](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=data-accuracy.yml)
+  with a source is one of the most valuable things you can send.
+- **Review a trip's narration.** Astronomers and teachers: read one of the 26 trips
+  (`registry/tours.yaml`, or fly it on the site) and tell us what is wrong or unclear, in an
+  [issue](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=trip-or-content.yml).
+- **Test it in a classroom or on a museum screen.** What worked, what broke, on which machine: a
+  [classroom report](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=classroom.yml).
+- **Suggest a trip or an object.** An
+  [idea](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=idea.yml) or a
+  [trip or content](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=trip-or-content.yml)
+  form, or a thread in [Discussions](https://github.com/Sara-Managed-Projects/space-radar/discussions).
+- **Send a translation.** Start with [docs/TRANSLATING.md](docs/TRANSLATING.md), or
+  [offer a language](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=translation.yml).
+- **Offer a shape model.** NASA publishes 3D models of spacecraft; if you can slim one for the web
+  (or know one we lack), say so in an [idea](https://github.com/Sara-Managed-Projects/space-radar/issues/new?template=idea.yml).
+  The recipe is under [Add or fix an object](#add-or-fix-an-object).
+- **Draw an icon or a planet's look.** Shaders and art passes are listed under
+  [help wanted](https://github.com/Sara-Managed-Projects/space-radar/labels/help%20wanted).
+- **Ask or show.** Questions, and what you made with it or embedded, are welcome in
+  [Discussions](https://github.com/Sara-Managed-Projects/space-radar/discussions). A GitHub account
+  is needed only to talk here; using Space Radar needs none.
+
+## What you can expect from us
+
+- **A first reply within 48 hours**, from a person, on every issue and pull request.
+- **A merge, or a reason, within a week.**
+- **You are credited.** Every contributor is named in the release notes for the release that
+  carries the change, and in [CREDITS.md](CREDITS.md) when what you gave is data, a picture or a
+  model.
+- **AI-assisted contributions are welcome.** Much of this project was written with AI assistants.
+  We check the tests and the sources, not who typed. If an assistant wrote it, you still own what
+  you send: run `scripts/test.sh`, and keep every fact tied to a source you have read.
 
 Ideas, bug reports, corrections and questions are all welcome as
-[issues](https://github.com/Sara-Managed-Projects/space-radar/issues/new/choose). Working with an
-AI assistant is welcome too; the checks below are what keep everyone, human or not, honest.
+[issues](https://github.com/Sara-Managed-Projects/space-radar/issues/new/choose).
 
 - [Your first contribution, in ten minutes](#your-first-contribution-in-ten-minutes)
 - [How the project is put together](#how-the-project-is-put-together)
@@ -18,8 +63,9 @@ AI assistant is welcome too; the checks below are what keep everyone, human or n
 
 ## Your first contribution, in ten minutes
 
-You need **git**, **Python 3** with PyYAML (`pip install pyyaml`) and **Node 22+**. There is no
-`npm install` and no build step.
+To **run** the project you need only **Python 3**. To make a change *and run the checks* you need
+**git**, **Python 3** with PyYAML (`pip install pyyaml`) and **Node 22+**. There is no `npm install`
+and no build step.
 
 ```bash
 git clone https://github.com/<you>/space-radar.git && cd space-radar

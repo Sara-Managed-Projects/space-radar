@@ -32,6 +32,11 @@ ol.facts li{margin:0 0 12px}
 .marks figure{margin:0}
 .marks .light{background:#f2f4f7}
 .marks img{padding:16px;box-sizing:border-box}
+.glance{border-collapse:collapse;width:100%;margin:0 0 16px}
+.glance th,.glance td{text-align:left;padding:8px 12px 8px 0;border-bottom:1px solid var(--sr-line,#2a303b);vertical-align:top}
+.glance th{font-weight:600;white-space:nowrap}
+blockquote.copy{margin:0 0 16px;padding:0 0 0 16px;border-left:3px solid var(--sr-line,#2a303b)}
+blockquote.copy p{margin:0}
 </style>
 </head>
 <body>
@@ -42,6 +47,13 @@ ol.facts li{margin:0 0 12px}
 <p class="lead">A live 3D map of space in a browser: satellites and the space station, launches, probes, planets, stars and galaxies, each drawn where it really is, with where the numbers come from.</p>
 <div class="cta"><a class="live" href="../">Open the live map</a><p>{{host_bare}} · free, no account</p></div>
 
+<h2>Boilerplate</h2>
+<p>To copy as it is. The sixty-word version:</p>
+<blockquote class="copy"><p>{{boilerplate}}</p></blockquote>
+<p>The one-line version, for a caption or a list:</p>
+<blockquote class="copy"><p>{{one_liner}}</p></blockquote>
+<p>{{name_note}}</p>
+
 <h2>What it is</h2>
 <p>Space Radar is a web page. It reads public catalogues (orbital elements, ephemerides, launch schedules, space weather) and works out, in the visitor's own browser, where each thing is this second. A visitor can search for an object, follow it, read a short card about it, see when it passes over them, or take a guided trip that flies the camera from stop to stop.</p>
 <p>It is built to be honest about what it shows. Every drawn thing is measured, modelled or illustrative, and says which; every number names its source and how old it is.</p>
@@ -50,8 +62,17 @@ ol.facts li{margin:0 0 12px}
 <ol class="facts">
 {{facts}}</ol>
 
+<h2>Facts at a glance</h2>
+<p>Counted from the project's registries on the day this page is built, not typed.</p>
+<table class="glance">
+{{glance}}</table>
+
+<h2>Where to find us</h2>
+<table class="glance">
+{{handles}}</table>
+
 <h2>Pictures</h2>
-<p>Screenshots of the app, free to use in coverage of Space Radar with the credit "Space Radar (spaceradar.ai)". They are drawings from measured positions, not photographs: please caption them as such. Planet and Earth textures in them are from the sources listed in the credits.</p>
+<p>Screenshots of the app and the repository's social preview, free to use in coverage of Space Radar with the credit "Space Radar (spaceradar.ai)". They are drawings from measured positions, not photographs: please caption them as such. Planet and Earth textures in them are from the sources listed in the credits.</p>
 <div class="shots">
 {{shots}}</div>
 
@@ -59,6 +80,9 @@ ol.facts li{margin:0 0 12px}
 <p>SVG, for use when writing about the project. Please do not redraw or recolour them.</p>
 <div class="marks">
 {{marks}}</div>
+
+<h2>How to cite it</h2>
+<p>Space Radar contributors. <em>Space Radar: a live 3D map of space in the browser</em>. https://www.spaceradar.ai (MIT licence). Source code: <a href="https://github.com/Sara-Managed-Projects/space-radar">github.com/Sara-Managed-Projects/space-radar</a>. A machine-readable citation is in <a href="https://github.com/Sara-Managed-Projects/space-radar/blob/main/CITATION.cff">CITATION.cff</a>, which GitHub turns into a "Cite this repository" button. Please add the date you looked, and cite the data's own publishers for any number you quote from a card.</p>
 
 <h2>Embed one live object</h2>
 <p>A story can carry one live object in a frame: the scene, the object's tag and a link back. The <a href="https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/EMBEDDING.md">embedding guide</a> has the snippet and the parameters; in the app it is Share, then Embed.</p>
@@ -72,6 +96,7 @@ ol.facts li{margin:0 0 12px}
 <footer>
 <p>Built {{built}} from the project's registry; the counts above are read from it.</p>
 <p><a href="../">Open the live map</a> · <a href="https://github.com/Sara-Managed-Projects/space-radar">Source code</a></p>
+{{sitelinks}}
 </footer>
 </body>
 </html>

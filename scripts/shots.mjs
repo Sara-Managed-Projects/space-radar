@@ -25,6 +25,7 @@
 import { chromium } from 'playwright';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { TOURS } from '../site/js/data/tours.js';
+import { addText } from './_png_text.mjs';
 
 const arg = (name, fallback) => {
   const hit = process.argv.find((a) => a.startsWith(`--${name}=`));
@@ -444,7 +445,9 @@ for (const shot of wanted) {
     const path = `${OUT}/${shot.file || `${shot.name}.png`}`;
     let size = '';
     if (shot.picture) {
-      const bytes = await shot.picture(page);
+      // Every picture says what made it (spec 0043 design section 4): tests/test_contract.mjs refuses a
+      // site/og PNG without this chunk, which is how one pasted in by hand is caught.
+      const bytes = addText(Buffer.from(await shot.picture(page)), 'Software', 'space-radar shots.mjs');
       await writeFile(path, bytes);
       size = `  ${bytes.length} bytes`;
     } else {

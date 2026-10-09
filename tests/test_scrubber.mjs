@@ -173,6 +173,8 @@ check(!/import .*scrubber/.test(pill), 'the pill does not import the timeline');
 const scrub = readFileSync(join(JS, 'ui/scrubber.js'), 'utf8');
 check(!/Date\.now\(\)/.test(scrub.replace(/\/\/.*$/gm, '')), 'the timeline never reads the wall clock: now is the pill\'s anchor');
 check(/role', 'slider'/.test(scrub) && /aria-valuetext/.test(scrub) && /'Home'/.test(scrub), 'it is a slider: a value in words, arrows, Home for now');
+// internal #472: axe's nested-interactive: the focusable slider holds no button; the marks are its siblings.
+check(/slider = el\('div', 'sr-tape__slider'\)/.test(scrub) && /root\.append\(slider, /.test(scrub) && !/root\.setAttribute\('role'/.test(scrub), 'the slider is a child of the tape and the marks and Now are its siblings (no nested interactive)');
 check(typeof COPY.timePill.roughTitle === 'string' && /week/.test(COPY.timePill.roughTitle) && /centuries/.test(COPY.timePill.worlds), 'the copy says where accuracy drops, and what holds');
 
 // --- the stylesheet is whole -------------------------------------------------------------------------
@@ -185,6 +187,21 @@ check(typeof COPY.timePill.roughTitle === 'string' && /week/.test(COPY.timePill.
   check(depth === 0, `ui.css opens and closes the same number of braces (off by ${depth})`);
   const at = (sel) => { const i = css.indexOf(sel); let d = 0; for (let k = 0; k < i; k += 1) { if (css[k] === '{') d += 1; else if (css[k] === '}') d -= 1; } return i < 0 ? -1 : d; };
   for (const sel of ['\n.sr-tape {', '\n.sr-today__grid {', '\n.sr-debris {', '\n.sr-mission {']) check(at(sel) === 0, `${sel.trim()} is a top-level rule, not inside a media query`);
+}
+
+// Two marks never cover each other's box, and the glyph goes back to its time (axe target-size, #472).
+{
+  const { spreadMarks } = await import(join(JS, 'ui/scrubber.js'));
+  const gap = (xs, w) => { const sh = spreadMarks(xs, w); const at = xs.map((x, i) => x + sh[i]).sort((a, b) => a - b); return Math.min(...at.slice(1).map((v, i) => v - at[i])); };
+  check(spreadMarks([100], 28)[0] === 0, 'a lone mark does not move');
+  check(spreadMarks([100, 200, 300], 28).every((v) => v === 0), 'marks that are apart do not move');
+  check(gap([100, 107], 28) >= 28 && gap([100, 100, 103], 28) >= 28, 'a sunset beside a pass, and three together, end at least a box apart');
+  const sh = spreadMarks([107, 100], 28);
+  check(sh[1] === 0 && sh[0] === 21, `the order given does not matter and the earlier mark stays on its time (${sh})`);
+  check(Math.max(...spreadMarks([100, 100, 100, 100, 100, 100], 28)) <= 84, 'no mark is pushed more than three boxes from its time');
+  check(spreadMarks([], 28).length === 0, 'no marks, no shifts');
+  const ui = readFileSync(join(ROOT, 'site/css/ui.css'), 'utf8');
+  check(/margin-left: calc\(-5px \+ var\(--sr-mark-shift, 0px\)\)/.test(ui) && /margin-left: calc\(-2px \+ var\(--sr-mark-shift, 0px\)\)/.test(ui), 'the glyph is drawn back by the shift (both shapes)');
 }
 
 if (problems.length) { console.error('scrubber FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }

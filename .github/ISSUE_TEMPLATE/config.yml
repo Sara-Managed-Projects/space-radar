@@ -1,8 +1,11 @@
 blank_issues_enabled: true
 contact_links:
-  - name: Run it on your own computer or in a classroom
-    url: https://github.com/Sara-Managed-Projects/space-radar/blob/main/docs/RUN_LOCALLY.md
-    about: Step-by-step instructions, offline use and troubleshooting.
+  - name: Ask a question, or show what you made
+    url: https://github.com/Sara-Managed-Projects/space-radar/discussions
+    about: Questions, ideas, embeds, and a place for teachers and museums. A GitHub account is needed only to talk; using Space Radar needs none.
+  - name: Press, journalists and museums
+    url: https://www.spaceradar.ai/press/index.html
+    about: Facts at a glance, how to cite it, pictures and the mark. Museums, planetariums and schools can also write in Discussions under "For teachers and museums".
   - name: Report a security problem privately
     url: https://github.com/Sara-Managed-Projects/space-radar/security/advisories/new
     about: Please do not open a public issue for a vulnerability.

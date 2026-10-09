@@ -664,6 +664,8 @@ export const COPY = {
     worldsDrawn: 'Planets drawn as dots, larger than they are.',
     farTitle: 'Far places',
     systemsTitle: 'Star systems',
+    systemsMild: 'Planets near the habitable zone',
+    systemsExtreme: 'Extreme systems',
     // The Stars tab's switch for the marks of planets round other stars (public #271).
     exoRow: 'Planets of other stars',
     exoShow: 'show',
@@ -934,6 +936,8 @@ export const COPY = {
     open: 'Open in Space Radar',
     openTitle: 'Open this view in the full map, in a new tab',
     barLabel: 'Space Radar, embedded',
+    // The light embed of a station whose list could not be read at all: it shows the Earth and says so.
+    stationUnread: 'Showing the Earth: the station’s place could not be read',
   },
   // Spec 0045 req 10: how tightly the panels are set. Automatic is Compact on a window 800 px tall
   // or less; the note under the row says which one Automatic picked.
@@ -1035,11 +1039,19 @@ export const COPY = {
       passNoAge: 'Worked out here from orbital elements',
       eclipse: 'Worked out here to the minute from the motion of the Sun and Moon',
       season: 'Worked out here to the minute from where the Sun stands',
+      conjunction: 'Worked out here for your place, at their closest while both are up in the dark',
     },
     // THE ROW AS DRAWN (spec 0061 task 5, ui/next.js rowParts): a title, then one line. The
     // sentences above are the row's tooltip and its accessible name; these are what fits a 320 px
     // column on one line each. A launch's line keeps "planned": its time is the one that can move.
     row: {
+      // From your place (internal #359): two bright things close together, at their closest.
+      conjunctionTitle: '{a} and {b}',
+      conjunction: '{when} · {sep}° apart, {height} in the {dir}',
+      conjunctionValue: '{sep}°',
+      low: 'low',
+      mid: 'halfway up',
+      high: 'high',
       launch: 'Lifts off {when} · planned',
       launchRough: 'Around {when} · date not fixed',
       approach: 'Passes Earth {when}',

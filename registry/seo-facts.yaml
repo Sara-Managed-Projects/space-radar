@@ -1,0 +1,15 @@
+# THE FEW NUMBERS THE CRAWLABLE PAGES STATE BEFORE ANY SCRIPT RUNS (scripts/seo_pages.py).
+#
+# The /starlink/ and /satellites/ pages say how many objects the saved element sets hold. The
+# browser replaces that number with the one in data/v1/index.json when it opens the page, and a
+# deploy replaces it too when scripts/deploy.sh can read that index (scripts/build_seo.py
+# --snapshot-index). This file is the fallback for a build that can read neither: a number with
+# its day, never a bare one. Move both together, and say where they were read.
+#
+# check_registry.py holds the shape: positive whole numbers, a date, a source line.
+version: 1
+satellite_counts:
+  as_of: 2026-09-22
+  source: "the object counts recorded for CelesTrak's active catalogue and its Starlink supplemental file in site/js/data/sources.js, measured on 2026-09-22"
+  active_objects: 16587
+  starlink_objects: 11129

@@ -181,6 +181,24 @@ jobs:
           node-version: "22"
       - name: The validator actually refuses
         run: python3 tests/test_refusals.py
+      # Spec 0043 task 2 (internal #121): registry/truth.yaml lists every guarded stop field, and a field
+      # the validator never mentions or no refusal case breaks is refused here.
+      - name: The truth table agrees with the validator and its refusals
+        run: python3 scripts/check_truth.py
+      - name: The truth check refuses a row for a field nothing guards
+        run: python3 tests/test_check_truth.py
+      - name: A picture's text chunk is written and read back (spec 0043 req 6)
+        run: node tests/test_png_text.mjs
+      - name: The object pages' where-is-it-now line (internal #294)
+        run: node tests/test_objectnow.mjs
+      - name: "The KTX2 plan, its flags and GPU bytes, run against a fake encoder (internal #156)"
+        run: python3 tests/test_ktx2_plan.py
+      - name: The walk notices another project's headless Chrome (internal #460)
+        run: node tests/test_chrome_quiet.mjs
+      - name: The prepared cloud workflow stays minimal (internal #139)
+        run: python3 tests/test_clouds_workflow.py
+      - name: No merge conflict markers, and every tool script parses (internal #472)
+        run: python3 tests/test_no_conflict_markers.py
       # The harvester's zip is built on every pull request with no AWS in sight (specs/0003
       # amendment 1): a parser change is proven to package before it is ever deployed, and the
       # placeholder path is exercised until harvest/ lands. Deterministic, so the hash is a fact.
@@ -208,11 +226,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - run: pip install --disable-pip-version-check pyyaml
+      # Pillow, fontTools and brotli draw the share pictures (scripts/seo_share.py): a deploy host without them keeps the old
+      # pictures and says so, but CI is where a broken picture is refused, so it installs them and builds with --require-share.
+      - run: pip install --disable-pip-version-check pyyaml pillow fonttools brotli
       - name: The home page's search tags and JSON-LD match registry/sources.yaml
         run: python3 scripts/gen_home_seo.py --check
-      - name: The object pages build, and titles, descriptions, canonicals, pictures, JSON-LD, robots.txt and the sitemap hold
-        run: python3 scripts/build_seo.py --out "$RUNNER_TEMP/seo" && python3 scripts/check_seo.py --out "$RUNNER_TEMP/seo"
+      - name: The pages build, with one share picture each, and titles, descriptions, canonicals, pictures, JSON-LD, robots.txt, the sitemap and the image sitemap hold
+        run: python3 scripts/build_seo.py --out "$RUNNER_TEMP/seo" --require-share && python3 scripts/check_seo.py --out "$RUNNER_TEMP/seo" --require-share
       - name: The SEO build carries the card's words and no live number, and deploy.sh ships it
         run: python3 tests/test_seo.py
       # Spec 0061 task 8: the share sheet links an object to the page built above, by the map
@@ -223,9 +243,42 @@ jobs:
       # boot and no service worker in a frame; photo mode's frame.
       - name: "The embed and photo mode: ?embed=1 through a whitelist, the snippet, nothing at boot, the frame centred"
         run: node tests/test_embed.mjs
+      # The growth pages: the ISS answer, Starlink and the satellite hub, planets tonight, the 40 star systems, the trust pages,
+      # the teachers' page and the events; the pictures; deploy.sh shipping every directory.
+      - name: "The question pages, the 40 star systems, /sources/ equal to the registry, /teachers/ with the app's own parameters, /events/, the share pictures, deploy.sh"
+        run: python3 tests/test_seo_pages.py
+      # The numbers the pages let the browser replace: the station from saved elements, tonight's planets, an eclipse from a place, and no location prompt on load.
+      - name: "The pages' live half: the station's position from saved elements, tonight's planets and a place's eclipse, no position asked for on load"
+        run: node tests/test_pagelive.mjs
+      # registry/sky-events.yaml types a calendar's facts; every instant, phase and elongation is computed and held against what the page says.
+      - name: "The dated events recomputed: stated dates inside the computed ones, the Moon's words, and each #t= link read by the app's own parser"
+        run: node tests/test_sky_events.mjs
       # Public #293: the press page builds from the registry's own counts, with no personal data.
       - name: "The press page: five counted facts, the README's pictures, every link resolving"
         run: python3 tests/test_press.py
+      # Growth pull request: the README's numbers are counted by scripts/count_facts.py, and a
+      # thirty-first trip fails here until the README says so.
+      - name: "The README's numbers are the registries' (trips, stops, systems, stars, moons, photographs, sites)"
+        run: python3 tests/test_readme_facts.py
+      # A translator's tool: lists missing keys, extra keys and lost {slots}; shown to fail.
+      - name: "The translation checker names a missing key, a lost slot and an untouched string"
+        run: node tests/test_check_translation.mjs
+      # The first files a newcomer meets: the issue chooser (6 forms, 3 contact links), CITATION.cff,
+      # the links in README, CONTRIBUTING, ROADMAP, nothing internal in a public file, the preview image.
+      - name: "Community files: issue forms, citation, roadmap links, social preview, nothing internal"
+        run: python3 tests/test_community_files.py
+      # Growth: what a search engine reads beyond the object pages. The structured data is parsed back
+      # out of the pages (and each validator is shown to refuse a broken one); the footer, the
+      # sitemap's own lastmod per page and the IndexNow key and ping are held; the /embed/ generator
+      # is run for every object and trip against the app's own Embed snippet; ?from= is read once.
+      - name: "Structured data: the home page's WebApplication, Organization and sameAs, every trip's LearningResource, no FAQPage or SearchAction"
+        run: python3 tests/test_structured_data.py
+      - name: "The footer on every built page, lastmod per page from git, the IndexNow key file and a ping that cannot fail a deploy"
+        run: python3 tests/test_seo_growth.py
+      - name: "The embed page: the generator writes the app's own snippet for every object and trip, and the list of embedders starts empty and honest"
+        run: python3 tests/test_seo_embed.py
+      - name: "?from=ig is harmless: dropped from the address bar, read into nothing, in no share link or embed address"
+        run: node tests/test_from_tag.mjs
 
   contract:
     runs-on: ubuntu-latest
@@ -397,6 +450,8 @@ jobs:
       # tiers with one draw call on a phone, no texture, no post-processing, nothing at boot.
       - name: "Planet faces: classed from the row, labelled as an artist's impression"
         run: node tests/test_exoface.mjs
+      - name: "the planet-face label: Measured only of a measured number, every planet of the table walked (internal #538)"
+        run: node tests/test_exoface_truth.mjs
       - name: Satellite positions move and reject stale orbital elements
         run: node tests/test_sgp4.mjs
       - name: The scene says so when no satellite could be read
@@ -479,6 +534,8 @@ jobs:
       # Round three, package 5 (2026-10-07): the passport and the home's first line.
       - name: The passport, kept in this browser only (spec 0041, public #240)
         run: node tests/test_passport.mjs
+      - name: Two bright things close together in your sky, worked out in a worker (internal #359)
+        run: node tests/test_conjunctions.mjs
       - name: One true sentence on the home (public #395, #450)
         run: node tests/test_sentence.mjs
       # Eclipses are worked out here with the vendored astronomy-engine and pinned to the dates the
@@ -744,6 +801,20 @@ jobs:
         run: python3 tests/test_release_zip.py
       - name: "the stripped tree: the scanner on its hard cases, every module through it"
         run: python3 tests/test_minify.py
+      - name: "stored at Brotli 11: one rule in deploy.sh, verify-deploy.sh and the edge function; copies decode byte for byte (internal #514)"
+        run: node tests/test_precompress.mjs
+      - name: "the minifier a deploy runs: pinned by hash, licence headers kept, maps true, and the node tests pass against the tree it writes (internal #515)"
+        run: node tests/test_minify_real.mjs
+      - name: "the edge keeps the app between deploys and a browser still revalidates: the header, the invalidation that covers it, and the check after (internal #513)"
+        run: node tests/test_edge_cache.mjs
+      - name: "a glyph layer uploads only the attributes whose values changed, and a stand-in GPU never holds a stale one (internal #519)"
+        run: node tests/test_glyph_uploads.mjs
+      - name: "a saved catalogue published as columns decodes to the verbatim rows, and the browser falls back to the verbatim file on any doubt (internal #523)"
+        run: node tests/test_columnar.mjs
+      - name: "a publisher who forbids redistribution (ESA NEOCC) is not fetched, published, saved or zipped, and JPL's APIs are never called from a browser (internal #370)"
+        run: python3 tests/test_not_ours_to_copy.py
+      - name: "with nothing moving the loop draws twenty frames a second: the eleven reasons it must not, each held, and a capped frame kept from the frame latch (internal #520)"
+        run: node tests/test_idle.mjs
       - name: "the notifier: digests, showers, subscriptions and tokens"
         run: python3 tests/test_notify.py
       # Merged the same day (public #487) and, again, in no workflow: the step below is what found them.

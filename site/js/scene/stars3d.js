@@ -1,7 +1,7 @@
 // scene/stars3d.js -- the stars as places, not as a picture (spec 0028 step 3).
 //
 // Contract: createStars3d(scene, opts) -> { load, ensureGeometry, records, count, unplaced,
-//   setVisible, setOpacity, setStretch, stretch, rebuild, update, pickAll, dispose }
+//   setVisible, setOpacity, setMagLimit, setStretch, stretch, rebuild, update, pickAll, dispose }
 //
 // 109 389 stars from HYG v4.4 (site/data/stars3d.bin, scripts/build-stars3d.py) as ONE Points
 // cloud. Two things decide how it is drawn, and both are the stage's (spec 0005):
@@ -62,6 +62,7 @@ attribute float aAppMag;
 attribute vec3 aColour;
 uniform float uPixelRatio;
 uniform float uGain;
+uniform float uMagLimit;
 uniform float uShell;
 uniform float uUnitsPerPc;
 varying vec3 vColour;
@@ -104,7 +105,7 @@ ${STRETCH_VERT}
   vCore = core / size;
   vGlare = glare;
   vGlow = glow;
-  vAlpha = ( m > 7.5 ) ? 0.0 : ( 0.35 + 0.65 * tt ) * uGain;
+  vAlpha = ( m > uMagLimit ) ? 0.0 : ( 0.35 + 0.65 * tt ) * uGain;
   vColour = aColour;
 }
 `;
@@ -278,6 +279,7 @@ export function createStars3d(scene, opts = {}) {
   const uniforms = {
     uPixelRatio: { value: 1 },
     uGain: { value: 0 },
+    uMagLimit: { value: 7.5 },
     uShell: { value: 1 },
     uUnitsPerPc: { value: 1 },
     // Spec 0034: 0 unless ui/trip.js is flying a ladder flight longer than three seconds.
@@ -423,6 +425,9 @@ export function createStars3d(scene, opts = {}) {
     uniforms.uGain.value = opacity;
   }
 
+  /** The faintest star drawn, in apparent magnitude: the shutter's (scene/exposure.js starLimit). Capped at the file's 7.5. */
+  function setMagLimit(m) { const x = Number(m); uniforms.uMagLimit.value = Number.isFinite(x) ? Math.min(7.5, Math.max(0, x)) : 7.5; }
+
   /** The layer's checkbox. */
   function setVisible(on) { layerOn = on !== false; applyVisibility(); if (layerOn && opacity > 0) ensureGeometry(); }
 
@@ -474,7 +479,7 @@ export function createStars3d(scene, opts = {}) {
       const px = Math.sqrt(dx * dx + dy * dy);
       if (px > PICK_PX) continue;
       // Faint stars are not drawn (alpha 0 past magnitude 7.5 in shell mode); do not let them be tapped.
-      if (mode === 'shell' && data.appMag[i] > 7.5) continue;
+      if (mode === 'shell' && data.appMag[i] > uniforms.uMagLimit.value) continue;
       out.push({ i, px });
     }
     out.sort((p, q) => p.px - q.px);
@@ -540,6 +545,7 @@ export function createStars3d(scene, opts = {}) {
     unplaced: () => (data ? data.unplaced : null),
     setVisible,
     setOpacity,
+    setMagLimit,
     setStretch,
     /** What the shader is drawing: tests and the browser check read it. */
     stretch: () => uniforms.uStretch.value,

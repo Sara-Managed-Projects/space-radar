@@ -300,6 +300,7 @@ export function createGlyphLayer(scene, layer = {}) {
   let attrCell = null;
 
   let selectedId = null;
+  const uploads = { ticks: 0, bytes: 0, all: 0 };
   let lastCamera = null;
   let viewport = viewportCss();
   let viewportLocked = false; // true once setViewport() is called by hand
@@ -438,9 +439,35 @@ export function createGlyphLayer(scene, layer = {}) {
     if (!mesh.visible) return;
 
     let k = 0;
-    const emberR = emberColour.r;
-    const emberG = emberColour.g;
-    const emberB = emberColour.b;
+    // WRITE ONLY WHAT CHANGED, AND SEND ONLY WHAT WAS WRITTEN (internal #519, 2026-10-09). This loop
+    // used to mark all seven instanced attributes for upload on every tick: 44 bytes an instance,
+    // 734 kB a tick with the whole catalogue on, ten ticks a second at the live clock and sixty at
+    // a fast one. But a dot's colour, size, opacity, glyph and halo change when the records, the
+    // selection, a recolour or a model's fade change, not with time; and its sunlit flag only as
+    // it crosses the Earth's shadow. So each value is compared with the one already in the array,
+    // which IS what the GPU holds (an attribute is uploaded whole whenever it is marked), and an
+    // attribute is marked only when one of its values differed. There is no list of reasons to
+    // keep right: a selection, a filter, a record that drops out and shifts every index after it,
+    // a new array from setRecords() all change a value, and a changed value marks its attribute.
+    // The comparisons are in float32 (Math.fround), because that is what the arrays hold.
+    // tests/test_glyph_uploads.mjs keeps a copy of each array as a GPU would and fails if one ever
+    // differs from its array without having been marked.
+    let dOffset = false;
+    let dColour = false;
+    let dSize = false;
+    let dOpacity = false;
+    let dCell = false;
+    let dLit = false;
+    let dRing = false;
+    const aColour = attrColour.array;
+    const aSize = attrSize.array;
+    const aOpacity = attrOpacity.array;
+    const aCell = attrCell.array;
+    const aLit = attrLit.array;
+    const aRing = attrRing.array;
+    const emberR = Math.fround(emberColour.r);
+    const emberG = Math.fround(emberColour.g);
+    const emberB = Math.fround(emberColour.b);
     live.length = 0;
     // The worker's answer, when there is one (propagate/pool.js): the same SGP4 numbers, computed
     // off this thread for this tick or the one before. Until the first answer lands, with a
@@ -483,18 +510,24 @@ export function createGlyphLayer(scene, layer = {}) {
         if (!v) continue;
       }
       const o = k * 3;
-      livePos[o] = v.x;
-      livePos[o + 1] = v.y;
-      livePos[o + 2] = v.z;
+      const px = Math.fround(v.x);
+      const py = Math.fround(v.y);
+      const pz = Math.fround(v.z);
+      if (livePos[o] !== px || livePos[o + 1] !== py || livePos[o + 2] !== pz) {
+        livePos[o] = px;
+        livePos[o + 1] = py;
+        livePos[o + 2] = pz;
+        dOffset = true;
+      }
       const selected = selectedId !== null && rec.id === selectedId;
-      if (selected) {
-        attrColour.array[o] = emberR;
-        attrColour.array[o + 1] = emberG;
-        attrColour.array[o + 2] = emberB;
-      } else {
-        attrColour.array[o] = recColour[i * 3];
-        attrColour.array[o + 1] = recColour[i * 3 + 1];
-        attrColour.array[o + 2] = recColour[i * 3 + 2];
+      const cr = selected ? emberR : recColour[i * 3];
+      const cg = selected ? emberG : recColour[i * 3 + 1];
+      const cb = selected ? emberB : recColour[i * 3 + 2];
+      if (aColour[o] !== cr || aColour[o + 1] !== cg || aColour[o + 2] !== cb) {
+        aColour[o] = cr;
+        aColour[o + 1] = cg;
+        aColour[o + 2] = cb;
+        dColour = true;
       }
       // Sunlit or in Earth's shadow, for the things that go round the Earth; everything else is lit.
       // A lander on another world's night side dims the same way (scene/shadow.js, public #403).
@@ -507,31 +540,37 @@ export function createGlyphLayer(scene, layer = {}) {
           if (centre) lit = groundLit(v, centre, shadowRef.sun);
         }
       }
-      attrLit.array[k] = lit;
-      attrSize.array[k] = selected ? recSize[i] * 1.35 : recSize[i];
+      lit = Math.fround(lit);
+      if (aLit[k] !== lit) { aLit[k] = lit; dLit = true; }
+      const size = selected ? Math.fround(recSize[i] * 1.35) : recSize[i];
+      if (aSize[k] !== size) { aSize[k] = size; dSize = true; }
       // An object is drawn once. While its model is on screen the dot yields to it -- by the
       // model's own fade, so neither blinks -- and it stays in `live`, so it is still there to
       // tap. No model, a hidden model, or the hero layer off: the dot, as before.
       const yieldTo = modelOpacityOf ? modelOpacityOf(rec.id) : 0;
       const own = selected ? 1 : recOpacity[i];
-      attrOpacity.array[k] = dotOpacity(own, yieldTo);
+      const opacity = Math.fround(dotOpacity(own, yieldTo));
+      if (aOpacity[k] !== opacity) { aOpacity[k] = opacity; dOpacity = true; }
       // The sample halo does NOT yield: see the note in the fragment shader. It is drawn at the
       // record's own opacity, which is what the dot's was before the model took it.
-      attrRing.array[k] = own;
-      attrCell.array[k] = recCell[i];
+      if (aRing[k] !== own) { aRing[k] = own; dRing = true; }
+      if (aCell[k] !== recCell[i]) { aCell[k] = recCell[i]; dCell = true; }
       live.push(rec);
       k++;
       if (k >= capacity) break;
     }
 
     geometry.instanceCount = k;
-    attrOffset.needsUpdate = true;
-    attrColour.needsUpdate = true;
-    attrSize.needsUpdate = true;
-    attrOpacity.needsUpdate = true;
-    attrCell.needsUpdate = true;
-    attrLit.needsUpdate = true;
-    attrRing.needsUpdate = true;
+    if (dOffset) attrOffset.needsUpdate = true;
+    if (dColour) attrColour.needsUpdate = true;
+    if (dSize) attrSize.needsUpdate = true;
+    if (dOpacity) attrOpacity.needsUpdate = true;
+    if (dCell) attrCell.needsUpdate = true;
+    if (dLit) attrLit.needsUpdate = true;
+    if (dRing) attrRing.needsUpdate = true;
+    uploads.ticks += 1;
+    uploads.bytes += 4 * k * ((dOffset ? 3 : 0) + (dColour ? 3 : 0) + (dSize ? 1 : 0) + (dOpacity ? 1 : 0) + (dCell ? 1 : 0) + (dLit ? 1 : 0) + (dRing ? 1 : 0));
+    uploads.all += 4 * k * 11;
     if (!material.uniforms.uAtlas.value) {
       const a = getGlyphAtlas();
       if (a) material.uniforms.uAtlas.value = a;
@@ -681,6 +720,14 @@ export function createGlyphLayer(scene, layer = {}) {
       if (pool && pool !== next) pool.dispose();
       pool = next || null;
       if (pool) pool.setRecords(records);
+    },
+    /**
+     * What this layer has marked for upload since it was made: `bytes` of live instances in the
+     * attributes it marked, beside `all`, what marking every attribute on every tick would have
+     * been (the behaviour before internal #519). For probes and tests; nothing reads it per frame.
+     */
+    uploadStats() {
+      return { ...uploads };
     },
     /** The pool's own account of itself, or null: for probes and `spaceRadar.perf()`. */
     poolStats() {

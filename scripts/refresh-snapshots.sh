@@ -159,6 +159,27 @@ def keys(fn):
 def body(f):
     b = f["body"]; return (json.loads(b), True) if isinstance(b, str) else (b, False)
 
+# NOT OURS TO COPY (2026-10-09, internal #370). A source the registry switches off is not published:
+# its file is dropped from the PUBLISH copy, whatever an earlier run left in the work folder, and
+# its manifest row is published as `skipped` with no stamps (the row itself stays: it is how the
+# app says "could not look" about a source by name, and a name is not the publisher's data). ESA's NEOCC list is the case: its terms forbid redistribution, the harvester
+# had saved it before anyone read them, and the old file would otherwise have been uploaded again
+# with every refresh. harvest/sources.json is the registry as the harvester reads it.
+_off = sorted(r["id"] for r in json.load(open("harvest/sources.json"))["sources"] if r.get("enabled") is False)
+_ix_p = os.path.join(d, "index.json")
+_ix = json.load(open(_ix_p))
+for _k in _off:
+    _had = False
+    if _k in _ix.get("snapshots", {}):
+        _had = bool(_ix["snapshots"][_k].get("fetched_at"))
+        _ix["snapshots"][_k] = {"status": "skipped", "last_error": "switched off in registry/sources.yaml (enabled: false): not fetched and not published"}
+    for _name in (_k + ".json", _k + ".cols.json"):
+        if os.path.exists(os.path.join(d, _name)):
+            os.remove(os.path.join(d, _name)); _had = True
+    if _had:
+        print(f"    {_k}: switched off in registry/sources.yaml; not published")
+json.dump(_ix, open(_ix_p, "w"), indent=1)
+
 # KEEP THE LAST GOOD COPY. A refresh that fails (CelesTrak answered this machine AND the GitHub
 # runner with 403 on 2026-09-28) leaves the row `status: error` with its old stamps carried
 # (harvest/run.py _carry), and the browser refuses an errored row (data/sources.js readSnapshot),
@@ -256,6 +277,16 @@ def recent_starlink(rows, launches=12):
     return [r for r in sl if launch(r) in set(latest)]
 derive("celestrak-supplemental-starlink", "celestrak-starlink-recent", recent_starlink,
        "Starlink's twelve latest launches, which is where a train can be")
+
+# THE BIG CATALOGUES ALSO AS COLUMNS (internal #523, scripts/columnar.py): <id>.cols.json beside the
+# verbatim file, named in the manifest row as `columns`. The same rows in about a third of the
+# text; the browser decodes it back to them and falls back to the verbatim file on any doubt.
+# After the cuts, so a cut that is big enough gets a twin too, and last, so the twin is of the
+# file exactly as it is published.
+sys.path.insert(0, "scripts")
+import columnar
+for _sid, _rows, _before, _after in columnar.publish(d):
+    print(f"    {_sid}: {_rows} rows also as columns, {_before} B -> {_after} B")
 
 ix = json.load(open(os.path.join(d, "index.json")))
 ok = sorted(k for k, v in ix["snapshots"].items() if v.get("status") in ("ok", "not-modified", "not-due") and v.get("fetched_at"))

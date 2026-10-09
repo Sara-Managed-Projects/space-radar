@@ -190,5 +190,16 @@ if (said) {
   check([...kinds].every((k) => k in KINDS) && kinds.size >= 5, `every glow has a kind the shader knows, and at least five are in use (${[...kinds].join(', ')})`);
 }
 
+// ---- a mark gives way to its photograph by degrees (internal #342) -------------------------------
+{
+  const { glowKeep } = await import(join(JS, 'scene/dsoglow.js'));
+  check(glowKeep(undefined) === 1 && glowKeep(0) === 1 && glowKeep(NaN) === 1, 'no photograph, the whole mark');
+  check(glowKeep(1) === 0 && glowKeep(7) === 0, 'a whole photograph, no mark');
+  check(Math.abs(glowKeep(0.5) - 0.5) < 1e-9 && glowKeep(0.31) < glowKeep(0.2), 'half a photograph, half the mark, and monotone');
+  const src = readFileSync(join(ROOT, 'site/js/scene/dsoglow.js'), 'utf8');
+  check(/vAlpha \*= aKeep;/.test(src) && /setAttribute\('aKeep'/.test(src), 'the shader reads the keep share');
+  check(/setPictured\(now\)/.test(readFileSync(join(ROOT, 'site/js/main.js'), 'utf8')) && /now\.set\(id, share\)/.test(readFileSync(join(ROOT, 'site/js/main.js'), 'utf8')), 'main.js hands over shares, not a yes or no');
+}
+
 if (problems.length) { console.error('dso FAILED:\n  ' + problems.join('\n  ')); process.exit(1); }
 console.log('dso ok: 110 Messier objects and the LMC at sourced distances, Andromeda 2.54 Mly on the stellar rung, found by name, M-number and NGC number');

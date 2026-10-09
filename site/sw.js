@@ -16,6 +16,11 @@
 //           installs beside the old one, and the page says "A newer version is ready" (one quiet
 //           line with Reload); it takes over on that reload, or when the last tab closes. The page
 //           is therefore never a mix of two releases, and never stale for longer than one visit.
+//           A FILE THE LAST BUILD ALREADY HOLDS IS NOT FETCHED AGAIN (internal #518, 2026-10-09):
+//           a deploy changes a handful of the shell's files, and the new worker used to ask the
+//           server for all of them. It now looks in the previous build's shell cache first and
+//           takes a file from there when its SHA-256 is the one THIS build was stamped with: the
+//           same check a download gets, so a copy can never be a stale file under a new build.
 //           UNSTAMPED (a git clone, a dev server): network first, the cache only when the server
 //           does not answer, so an edit is never hidden behind this file.
 //   asset   textures/, models/, audio/, images/, og/ and the bundled data/ files (stars, the galaxy,
@@ -144,29 +149,77 @@ function sawNetwork(ok) {
   tell({ type: 'sr-net', offline });
 }
 
-/** The whole shell, fetched fresh, each file checked against the stamp, then kept in one step. */
-async function precache() {
-  const cache = await caches.open(SHELL_CACHE);
-  const base = scope();
-  const fetched = [];
-  const queue = BUILD.shell.slice();
+/**
+ * Every file of a build's shell, each one checked against the stamp: from an earlier build's
+ * cache when the copy there IS this build's file, from the network otherwise.
+ *
+ * No caches and no fetch of its own, so tests/test_sw_routes.mjs can run it: `held(url)` answers
+ * with a Response an earlier build kept (or nothing), `download(url)` asks the server.
+ * @returns {Promise<{entries: Array<[string, Response]>, reused: number, fetched: number}>}
+ */
+async function gatherShell(shell, base, held, download) {
+  const entries = [];
+  let reused = 0;
+  let fetched = 0;
+  const queue = shell.slice();
+  const matches = async (response, want) => (await sha256(await response.clone().arrayBuffer())).slice(0, want.length) === want;
   const worker = async () => {
     while (queue.length) {
       const [path, want] = queue.shift();
       const url = base + path;
-      // `no-cache`: revalidate with the server, so a browser's own old copy is never precached.
-      const response = await fetch(new Request(url, { cache: 'no-cache', credentials: 'same-origin' }));
+      let kept = null;
+      try {
+        kept = await held(url);
+        // The stamp's hash, of the bytes as they are in the cache now: not the old stamp's word
+        // for them. A file that changed in this deploy fails here and is downloaded.
+        if (kept && !(keepable(kept) && await matches(kept, want))) kept = null;
+      } catch {
+        kept = null; // a cache that cannot be read is a cache that holds nothing
+      }
+      if (kept) {
+        reused += 1;
+        entries.push([url, kept]);
+        continue;
+      }
+      const response = await download(url);
       if (!keepable(response)) throw new Error(`${path}: the server answered ${response.status}`);
-      const got = (await sha256(await response.clone().arrayBuffer())).slice(0, want.length);
       // A deploy in progress, or an edge still holding the previous release: refuse the whole
       // install. The old worker keeps serving the old, consistent shell and the browser tries
       // again on the next visit. A shell that is half of two releases is the one thing worse.
-      if (got !== want) throw new Error(`${path}: not the file this build was stamped with`);
-      fetched.push([url, response]);
+      if (!(await matches(response, want))) throw new Error(`${path}: not the file this build was stamped with`);
+      fetched += 1;
+      entries.push([url, response]);
     }
   };
   await Promise.all(Array.from({ length: 6 }, worker));
-  await Promise.all(fetched.map(([url, response]) => cache.put(url, response)));
+  return { entries, reused, fetched };
+}
+
+/** The shell caches of earlier builds: where an unchanged file can be taken from. Pure. */
+function donorCaches(names, own) {
+  return names.filter((n) => n.startsWith(PREFIX + 'shell-') && n !== own);
+}
+
+/** The whole shell, each file checked against the stamp, then kept in one step. */
+async function precache() {
+  const cache = await caches.open(SHELL_CACHE);
+  let donors = [];
+  try {
+    donors = await Promise.all(donorCaches(await caches.keys(), SHELL_CACHE).map((n) => caches.open(n)));
+  } catch {
+    donors = [];
+  }
+  const held = async (url) => {
+    for (const donor of donors) {
+      const hit = await donor.match(url);
+      if (hit) return hit;
+    }
+    return null;
+  };
+  // `no-cache`: revalidate with the server, so a browser's own old copy is never precached.
+  const download = (url) => fetch(new Request(url, { cache: 'no-cache', credentials: 'same-origin' }));
+  const { entries } = await gatherShell(BUILD.shell, scope(), held, download);
+  await Promise.all(entries.map(([url, response]) => cache.put(url, response)));
 }
 
 async function unregisterAndForget() {
@@ -342,5 +395,5 @@ self.addEventListener('fetch', (event) => {
 // For tests/test_sw_routes.mjs, which evaluates this file with a stand-in `self`.
 self.__srServiceWorker = {
   BUILD, PREFIX, SHELL_CACHE, ASSET_CACHE, DATA_CACHE, DATA_TIMEOUT_MS,
-  routeFor, killAsked, stamped, staleCaches, keepable,
+  routeFor, killAsked, stamped, staleCaches, keepable, gatherShell, donorCaches,
 };

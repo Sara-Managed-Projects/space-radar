@@ -71,6 +71,28 @@ const MARK_EDGE_PX = 22;
 const MARKS_KEPT = 40;
 const DAY_MS = 86400e3;
 
+/**
+ * Where each mark's BUTTON stands so that no two overlap (internal #472: axe `target-size` on a
+ * sunset beside a pass, whose 28 px boxes covered each other down to 7 px). The glyph stays on its
+ * time (the caller draws it back by the shift); only the box that takes the press moves. Marks
+ * are swept left to right, each at least `w` px from the one before, and none is pushed further
+ * than `cap` px from its time: past that the cluster is left overlapping rather than lie about
+ * when something happens. Pure. `xs` is the marks' times as pixels, in any order.
+ * @returns {number[]} the shift of each, in the order given
+ */
+export function spreadMarks(xs, w, cap = 3 * w) {
+  const order = xs.map((x, i) => i).sort((a, b) => xs[a] - xs[b]);
+  const out = new Array(xs.length).fill(0);
+  let edge = -Infinity;
+  for (const i of order) {
+    const at = Math.max(xs[i], edge + w);
+    const shift = Math.min(at - xs[i], cap);
+    out[i] = shift;
+    edge = xs[i] + shift;
+  }
+  return out;
+}
+
 /** Where an instant sits on a tape `width` wide whose centre is `centreMs`. */
 export function tapeX(tMs, centreMs, unit, width) {
   const s = SCALES[unit] || SCALES.hour;
@@ -278,11 +300,14 @@ export function createScrubber(ctx, pill) {
   if (!host || !clock) return { root: null, paint() {}, marks: () => [], destroy() {} };
 
   const root = el('div', 'sr-tape');
-  root.tabIndex = 0;
-  root.setAttribute('role', 'slider');
-  root.setAttribute('aria-label', T.tapeLabel);
-  root.setAttribute('aria-orientation', 'horizontal');
   root.title = T.tapeTitle;
+  // The slider is its own child and the marks and "now" are its siblings: a focusable slider that
+  // holds buttons is `nested-interactive` to axe (internal #472). It fills the tape, takes the keys.
+  const slider = el('div', 'sr-tape__slider');
+  slider.tabIndex = 0;
+  slider.setAttribute('role', 'slider');
+  slider.setAttribute('aria-label', T.tapeLabel);
+  slider.setAttribute('aria-orientation', 'horizontal');
   const ticks = el('div', 'sr-tape__ticks');
   const roughL = el('div', 'sr-tape__rough');
   const roughR = el('div', 'sr-tape__rough');
@@ -304,7 +329,7 @@ export function createScrubber(ctx, pill) {
   nowBtn.setAttribute('aria-label', T.nowTitle);
   const cursor = el('div', 'sr-tape__cursor');
   cursor.setAttribute('aria-hidden', 'true');
-  root.append(ticks, roughL, roughR, endL, endR, labels, markList, nowBtn, cursor);
+  root.append(slider, ticks, roughL, roughR, endL, endR, labels, markList, nowBtn, cursor);
   host.appendChild(root);
   host.classList.add('has-tape');
 
@@ -356,12 +381,16 @@ export function createScrubber(ctx, pill) {
     root.classList.toggle('is-rough', Math.abs(tMs - anchor) > FINE_MS);
     // The marks: one button each, made once and moved.
     const seen = new Set();
-    for (const m of marks) {
-      const x = tapeX(m.tMs, tMs, unit, width);
+    // The buttons' boxes must not cover each other: a sunset beside a pass. The shift moves the box;
+    // the glyph is drawn back to the mark's own time (css --sr-mark-shift).
+    const boxW = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(pointer: coarse)').matches ? 44 : 28;
+    const drawn = marks.map((m) => ({ m, x: tapeX(m.tMs, tMs, unit, width) })).filter(({ x }) => x >= MARK_EDGE_PX && x <= width - MARK_EDGE_PX);
+    const shifts = spreadMarks(drawn.map((d) => d.x), boxW);
+    for (let k = 0; k < drawn.length; k++) {
+      const { m, x } = drawn[k];
       // Not in the tape's last MARK_EDGE_PX either side: there the mark's 44 px target is clipped
       // by the tape and shares its pixels with the step button beside it, so a tap on a launch
       // eight hours off was "forward one hour" (internal #419 item 6, seen at 390 px).
-      if (x < MARK_EDGE_PX || x > width - MARK_EDGE_PX) continue;
       seen.add(m.id);
       let b = markNodes.get(m.id);
       if (!b) {
@@ -375,16 +404,17 @@ export function createScrubber(ctx, pill) {
       }
       const label = t(T.markTitle, { what: m.what });
       if (b.title !== label) { b.title = label; b.setAttribute('aria-label', label); }
-      b.style.transform = `translateX(${x}px)`;
+      b.style.transform = `translateX(${x + shifts[k]}px)`;
+      b.style.setProperty('--sr-mark-shift', `${-shifts[k]}px`);
       b.classList.toggle('is-here', Math.abs(x - width * CURSOR_AT) < 1.5);
     }
     for (const [id, b] of markNodes) if (!seen.has(id)) { b.remove(); markNodes.delete(id); }
     // The slider's value: minutes from now, and the pill's own words.
-    root.setAttribute('aria-valuemin', String(-Math.round(SCRUB_BACK_MS / 60e3)));
-    root.setAttribute('aria-valuemax', String(Math.round(SCRUB_FORWARD_MS / 60e3)));
-    root.setAttribute('aria-valuenow', String(Math.round((tMs - anchor) / 60e3)));
+    slider.setAttribute('aria-valuemin', String(-Math.round(SCRUB_BACK_MS / 60e3)));
+    slider.setAttribute('aria-valuemax', String(Math.round(SCRUB_FORWARD_MS / 60e3)));
+    slider.setAttribute('aria-valuenow', String(Math.round((tMs - anchor) / 60e3)));
     const text = pill.words() + (Math.abs(tMs - anchor) > FINE_MS ? COPY.punctuation.sentenceJoin + T.roughSay : '');
-    if (root.getAttribute('aria-valuetext') !== text) root.setAttribute('aria-valuetext', text);
+    if (slider.getAttribute('aria-valuetext') !== text) slider.setAttribute('aria-valuetext', text);
   }
 
   function readMarks() {
@@ -471,7 +501,7 @@ export function createScrubber(ctx, pill) {
     if (e.detail !== 0) return; // a pointer's click: handled at pointerup
     const b = e.target && e.target.closest ? e.target.closest('button') : null;
     if (!b) return;
-    if (b === nowBtn) { pill.toLive(); root.focus({ preventScroll: true }); return; }
+    if (b === nowBtn) { pill.toLive(); slider.focus({ preventScroll: true }); return; }
     const m = marks.find((x) => x.id === b.dataset.mark);
     if (m) goToMark(m);
   });
@@ -483,7 +513,7 @@ export function createScrubber(ctx, pill) {
     pill.goTo(now() + d / s.pxPerMs);
   }, { passive: false });
   root.addEventListener('keydown', (e) => {
-    if (e.target !== root) return;
+    if (e.target !== slider) return;
     const k = e.key;
     if (k === 'ArrowLeft' || k === 'ArrowDown') pill.step(-1);
     else if (k === 'ArrowRight' || k === 'ArrowUp') pill.step(1);

@@ -123,7 +123,7 @@ const CONTRACT = {
   'scene/stars3d.js': ['createStars3d', 'STRETCH_PX'],
   // The device tiers (2026-09-28): the tier is chosen in quality.js, the maps swapped by
   // texturetiers.js from the mirror of registry/textures.yaml.
-  'scene/quality.js': ['createFrameLatch', 'shouldSaveData', 'chooseTier', 'createTierPromoter'],
+  'scene/quality.js': ['createFrameLatch', 'shouldSaveData', 'chooseTier', 'createTierPromoter', 'createIdleGate', 'idleCapWanted', 'movingReasons'],
   // Spec 0053 task 3: the aurora shell, its JS twins (tests/test_aurora.mjs), and the OVATION decode.
   'scene/aurora.js': ['createAurora', 'auroraRightNow', 'auroraLine', 'AURORA_FRAG', 'nightMask', 'probabilityToEmission', 'auroraColour', 'profile', 'profileIntegral', 'maxDotOnArc', 'gridUv', 'reachLatDeg', 'TIER_STEPS', 'EMISSIONS', 'NIGHT'],
   'data/ovation.js': ['OVATION_URL', 'parseOvation', 'upsampleGrid', 'summarize', 'auroraMode', 'nextLookMs', 'mayLook', 'REFRESH_MS', 'START_DELAY_MS', 'HOLD_MS'],
@@ -1366,8 +1366,10 @@ for (const file of allFiles) {
     }
   }
   // ... and the two must be written from different numbers on the CPU side too.
-  const dotLine = (src.match(/^\s*attrOpacity\.array\[k\] = .*$/m) || [''])[0];
-  const ringLine = (src.match(/^\s*attrRing\.array\[k\] = .*$/m) || [''])[0];
+  // (Since internal #519 a value is written only when it differs from the one in the array, so
+  // the two lines are a comparison and a write: tests/test_glyph_uploads.mjs holds the uploads.)
+  const dotLine = /^\s*if \(aOpacity\[k\] !== opacity\) \{ aOpacity\[k\] = opacity; /m.test(src) ? (src.match(/^\s*const opacity = .*$/m) || [''])[0] : '';
+  const ringLine = (src.match(/^\s*if \(aRing\[k\] !== own\) \{ aRing\[k\] = own; .*$/m) || [''])[0];
   if (!/dotOpacity\(/.test(dotLine)) problems.push(`HALO     the dot is not written through onemark's dotOpacity(): "${dotLine.trim()}"`);
   if (!ringLine) problems.push('HALO     nothing writes iRing, so the halo has no opacity of its own');
   else if (/dotOpacity\(|yieldTo|modelOpacity/.test(ringLine)) {
@@ -2918,6 +2920,7 @@ for (const file of allFiles) {
       }
       return null;
     };
+    const picturesYaml = readFileSync(join(ROOT, 'registry/pictures.yaml'), 'utf8');
     const dir = join(ROOT, 'site/og');
     const pngs = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.png')) : [];
     if (!pngs.includes('default.png')) problems.push('OGIMAGE  site/og/default.png is missing: the root and every trip without its own picture use it');
@@ -2929,6 +2932,10 @@ for (const file of allFiles) {
       if (png.slice(1, 4).toString() !== 'PNG' || w !== 1200 || h !== 630) problems.push(`OGIMAGE  site/og/${f} is ${w} x ${h}, not a 1200 x 630 PNG`);
       if (!(png.length > minBytes)) problems.push(`OGIMAGE  site/og/${f} is ${png.length} bytes: an empty frame, not a picture`);
       if (!known.has(f.replace(/\.png$/, ''))) problems.push(`OGIMAGE  site/og/${f} names no trip in the registry`);
+      // Spec 0043 design section 4: the app's own pictures say so in a `Software` text chunk (scripts/_png_text.mjs);
+      // one pasted in by hand has none and must be a registry/pictures.yaml row.
+      const software = pngText(png, 'Software');
+      if (!(software && software.startsWith('space-radar ')) && !picturesYaml.includes(`file: og/${f}`)) problems.push(`OGIMAGE  site/og/${f} has no "Software: space-radar" text chunk and no registry/pictures.yaml row: a picture pasted in by hand (make it with scripts/shots.mjs or scripts/build_trip_og.py)`);
       const trip = TOURS.find((t) => `${t.id}.png` === f);
       if (!trip) continue;
       if (png.length > maxBytes) problems.push(`OGIMAGE  site/og/${f} is ${png.length} bytes, over og_png_max_bytes (${maxBytes})`);

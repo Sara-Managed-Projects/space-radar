@@ -49,6 +49,9 @@ def main() -> int:
             "celestrak-visual": ({"status": "error", "fetched_at": stamp, "last_error": "403"}, []),
             # a normal good row
             "swpc-kp": ({"status": "ok", "fetched_at": stamp}, [{"kp": 3}]),
+            # a big uniform catalogue: also published as columns (internal #523, scripts/columnar.py)
+            "celestrak-active": ({"status": "ok", "fetched_at": stamp},
+                                 [{"OBJECT_NAME": f"SAT {i}", "NORAD_CAT_ID": i, "MEAN_MOTION": 15.5 + i / 1e6, "BSTAR": 1.5e-5 * i} for i in range(1200)]),
         }
         index = {"schema": 1, "snapshots": {}}
         for sid, (row, body) in rows.items():
@@ -77,6 +80,22 @@ def main() -> int:
                 problems.append("a failed refresh with an empty file is not dressed up as good")
             if snaps.get("swpc-kp", {}).get("status") != "ok":
                 problems.append("a good row stays good")
+            # THE BIG CATALOGUE ALSO AS COLUMNS, the verbatim file untouched beside it.
+            twin_row = snaps.get("celestrak-active", {}).get("columns") or {}
+            twin = out / "celestrak-active.cols.json"
+            verbatim = json.loads((out / "celestrak-active.json").read_text())["body"] if (out / "celestrak-active.json").exists() else None
+            if twin_row.get("path") != "celestrak-active.cols.json" or twin_row.get("rows") != 1200 or not twin.exists():
+                problems.append(f"a catalogue of 1200 uniform rows is published as columns too, and the manifest names the file ({twin_row})")
+            else:
+                doc = json.loads(twin.read_text())
+                cols = doc["columns"]
+                back = [dict(zip(cols["keys"], values)) for values in zip(*cols["cols"])]
+                if back != verbatim or doc.get("fetched_at") != stamp or twin_row.get("bytes") != twin.stat().st_size:
+                    problems.append("the column file decodes to the verbatim rows, carries the same stamp, and the manifest has its size")
+                if twin.stat().st_size >= (out / "celestrak-active.json").stat().st_size * 0.6:
+                    problems.append("the column file is well under the verbatim one")
+            if "columns" in snaps.get("swpc-kp", {}) or (out / "swpc-kp.cols.json").exists() or (out / "celestrak-stations.cols.json").exists():
+                problems.append("a small file is not published as columns")
         # WHERE IT PUBLISHES (2026-10-08). The site moved accounts on 2026-10-07 and this script
         # went on naming the old bucket and distribution; and it had no way to name a profile.
         dry = subprocess.run(

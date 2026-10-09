@@ -6,8 +6,9 @@ no search, no tool rail, no clock control.
 
 ## The snippet
 
-Open the object in the app, press **Share** (or `P`), then **Embed**: the code is copied. It looks
-like this:
+Open the object in the app, press **Share** (or `P`), then **Embed**: the code is copied. Or build it
+on the site's embed page (`/embed/index.html`: an object, a guided trip or the whole map, with a size
+and an optional credit line). It looks like this:
 
 ```html
 <iframe src="https://www.spaceradar.ai/?embed=1&amp;at=sat-25544" title="The International Space Station, live on Space Radar" width="600" height="400" loading="lazy" allow="fullscreen" style="border:0;max-width:100%"></iframe>
@@ -87,7 +88,19 @@ site is. Prefer a world's id or a station's number when the article is about one
 ## Attribution
 
 The embed carries its own: the "Open in Space Radar" link stays visible, and that is all we ask.
-Please do not cover or remove it. If you write a caption, "Space Radar (spaceradar.ai)" is right.
+Please do not cover or remove it. It is a plain link (no tracker, no cookie, not `nofollow`) to the
+same view in the full map, tagged `?from=embed` so that it opens the normal home page: the app reads
+the tag once, takes it off the address bar and keeps it nowhere.
+
+A link inside a frame belongs to the frame's page, not to yours. The generator on the embed page
+(`/embed/index.html` on the site) therefore also writes one line for your own page under the frame,
+`<p>Live view by <a href="https://www.spaceradar.ai/?from=embed">Space Radar</a></p>`. That line is
+optional: untick it, or leave it out, for a classroom page or anywhere it does not belong. If you
+write a caption by hand, "Space Radar (spaceradar.ai)" is right.
+
+If you have put Space Radar in a page and would like it listed on the embed page, tell us in
+[Show and tell](https://github.com/Sara-Managed-Projects/space-radar/discussions/categories/show-and-tell).
+The list (`registry/embedders.yaml`) is opt-in and starts empty.
 
 What is drawn is worked out from public data (orbital elements from CelesTrak, ephemerides from
 NASA JPL, and the others in `CREDITS.md`); positions are computed, and the tag says how old the

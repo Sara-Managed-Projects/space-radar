@@ -51,7 +51,7 @@ for script in ("gen_home_seo.py", "gen_trip_pages.py"):
 # The press page first, as scripts/deploy.sh does: the sitemap names it only when it is in the tree.
 r = run(sys.executable, "scripts/build_press.py", "--out", str(BUILT))
 ok(r.returncode == 0, f"build_press.py: {(r.stdout or r.stderr).strip().splitlines()[-1:]}")
-r = run(sys.executable, "scripts/build_seo.py", "--out", str(BUILT))
+r = run(sys.executable, "scripts/build_seo.py", "--out", str(BUILT), "--no-share")  # the pictures are drawn and held by the seo job's --require-share build and tests/test_seo_pages.py
 ok(r.returncode == 0, f"build_seo.py: {(r.stdout or r.stderr).strip().splitlines()[-1:]}")
 r = run(sys.executable, "scripts/check_seo.py", "--out", str(BUILT))
 ok(r.returncode == 0, f"check_seo.py on the build: {(r.stdout or r.stderr).strip().splitlines()[-1:]}")
@@ -72,13 +72,33 @@ else:
         ok(any(p["slug"] == must for p in pages), f"a page for {must}")
     # Each page's lead is in its file, whole; nothing else stands in for the card.
     missing = []
+    # Pages scripts/seo_pages.py builds in place of the card's own (the station's answer to "where is it", and the star systems, which
+    # open on their planet's sentence): held by tests/test_seo_pages.py instead.
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import seo_systems
+    replaced = {"international-space-station"} | {s["slug"] for s in seo_systems.systems()}
     for p in pages:
+        if p["slug"] in replaced:
+            continue
         f = BUILT / "o" / f"{p['slug']}.html"
         text = f.read_text(encoding="utf-8") if f.is_file() else ""
         lead = p["lead"].replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("'", "&#x27;").replace('"', "&quot;")
         if f'<p class="lead">{lead}</p>' not in text:
             missing.append(p["slug"])
     ok(not missing, f"every page leads with the card's first sentence ({missing[:3]})")
+    # Internal #294: the ten bodies Astronomy Engine places get a "where is it now" line the browser works
+    # out (site/js/objectnow.js); every other page keeps the static sentence and loads no script.
+    hooked = sorted(p["slug"] for p in pages if p.get("nowBody"))
+    ok(hooked == sorted(["sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto"]),
+       f"the now line is wired for the ten bodies only ({hooked})")
+    for p in pages:
+        f = BUILT / "o" / f"{p['slug']}.html"
+        text = f.read_text(encoding="utf-8") if f.is_file() else ""
+        has = 'src="../js/objectnow.js"' in text and ' id="now" data-body="' in text
+        if bool(p.get("nowBody")) != has:
+            ok(False, f"{p['slug']}: the now hook is {'missing' if p.get('nowBody') else 'present on a page that cannot work it out'}")
+        if p.get("nowBody") and p["liveLine"] not in text.replace("&#x27;", "'"):
+            ok(False, f"{p['slug']}: the static fallback sentence is gone")
     # The labels of the card's live rows (copy/en.js card.rows). A static page that printed one would
     # be wrong a second after it was generated.
     live = re.compile(r"Height above the ground|Passing over|Below it now|Distance from (you|Earth|the Sun)\b")
@@ -93,13 +113,27 @@ with tempfile.TemporaryDirectory() as tmp:
     fake = bindir / "aws"
     fake.write_text(f'#!/bin/sh\necho "$*" >> "{log}"\nexit 0\n', encoding="utf-8")
     fake.chmod(fake.stat().st_mode | stat.S_IEXEC)
-    env = dict(os.environ, PATH=f"{bindir}{os.pathsep}{os.environ.get('PATH', '')}")
+    env = dict(os.environ, PATH=f"{bindir}{os.pathsep}{os.environ.get('PATH', '')}", SR_SHARE="off")
     r = run("bash", "scripts/deploy.sh", "--bucket", "example-bucket", "--app-only", "--dry-run", env=env)
     calls = log.read_text(encoding="utf-8").splitlines() if log.is_file() else []
     o_sync = [c for c in calls if c.startswith("s3 sync") and "s3://example-bucket/o" in c]
     ok(r.returncode == 0, "deploy.sh --app-only --dry-run runs against a fake aws")
-    ok(len(o_sync) == 1 and "text/html" in o_sync[0] and "--delete" in o_sync[0] and "no-cache" in o_sync[0],
-       f"the built o/ is synced as no-cache HTML with --delete ({o_sync})")
+    ok(len(o_sync) == 1 and "text/html" in o_sync[0] and "--delete" in o_sync[0] and "max-age=0, must-revalidate" in o_sync[0],
+       f"the built o/ is synced as HTML a browser revalidates on every load, with --delete ({o_sync})")
+    # Stored compressed or negotiated (internal #514): the code goes up as Brotli with a gzip copy
+    # under _gz/, and every page a crawler reads goes up as written.
+    def sync(prefix):
+        # The source maps go to js/ and vendor/ too, as JSON and as written (internal #515): not code.
+        return [c for c in calls if c.startswith("s3 sync") and f" s3://example-bucket/{prefix} " in c and "--include *.map" not in c]
+    maps = [c for c in calls if c.startswith("s3 sync") and "--include *.map" in c]
+    ok(len(maps) == 2 and all("application/json" in c and "--content-encoding" not in c and "--delete" in c for c in maps),
+       f"the source maps of js/ and vendor/ go up as JSON beside the code ({len(maps)})")
+    ok(all(sync(d) and all("--content-encoding br" in c for c in sync(d)) for d in ("css", "js", "vendor")),
+       "css/, js/ and vendor/ are stored as Brotli")
+    ok(all(sync(f"_gz/{d}") and all("--content-encoding gzip" in c for c in sync(f"_gz/{d}")) for d in ("css", "js", "vendor")),
+       "their gzip copies go under _gz/")
+    ok(all(sync(d) and not any("--content-encoding" in c for c in sync(d)) for d in ("o", "t", "press")),
+       "the pages a crawler reads (o/, t/, press/) are uploaded as written")
     ok("SEO ok" in r.stdout, "deploy.sh builds the pages and holds them to check_seo.py before it uploads")
     smap = (BUILT / "sitemap.xml").read_text(encoding="utf-8") if (BUILT / "sitemap.xml").is_file() else ""
     ok("/press/index.html</loc>" in smap, "the sitemap names the press page (internal #398)")
