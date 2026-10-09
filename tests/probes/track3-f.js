@@ -50,6 +50,11 @@ await step('haze', async () => {
   await stand(flagstaff);
   ctx.skyView.setOption('darkness', 'dark');
   ctx.clock.goTo(Date.UTC(2026, 9, 9, 10, 30)); await wait(1500);
+  ctx.skyView.setOption('art', true);
+  ctx.skyView.pointAt({ raDeg: 83.8, decDeg: -3.0 }, { fovDeg: 100, instant: true, mark: false }); await wait(7000);
+  out.art100 = ctx.skyView.groundStats().art; await shot('g9-art-100');
+  await wait(3000); out.art100b = ctx.skyView.groundStats().art;
+  ctx.skyView.setOption('art', false);
   ctx.skyView.pointAt({ raDeg: 101.287, decDeg: -16.716 }, { fovDeg: 14, instant: true, mark: false }); await wait(4000);
   await shot('g4-sirius-base');
   const root = ctx.scene.getObjectByName('ground-sky');
