@@ -658,6 +658,7 @@ uniform vec3 uIceCol;
 uniform vec3 uCloudCol;
 uniform vec4 uCyc[ 5 ];
 uniform mat3 uCloudFrame2; // the high deck's own frame: it drifts at another speed
+uniform vec3 uHighStretch; // the thin deck's noise scale by axis
 uniform float uHigh;       // the share of the sky under the thin high deck (tier 2); 0 = none
 uniform float uFrost;      // 0..1: a snowball's cracks, blue ice and scoured rock (tiers 1 and 2); 0 = none
 ${NOISE_GLSL}
@@ -745,9 +746,13 @@ float cloudShade( vec3 c, float extra ) {
 
 #if TIER >= 2
 // A thin high deck over the thick low one: drawn out along the parallels into wisps, and seen
-// through its own height, so against the limb it slides over the low deck.
+// through its own height, so against the limb it slides over the low deck. A locked world has no
+// parallels (its cloud frame's y is only a line across the terminator), so there the deck is not
+// drawn out at all and is wound round the storm under the star, as the low deck is: stretched
+// along that y it crossed the disc as straight streaks (seen 2026-10-09, two reels).
 float highDeck( vec3 c ) {
-  vec3 w = vec3( c.x * 2.6, c.y * 8.5, c.z * 2.6 ) + uSeed.yxz * 1.7;
+  if ( uLocked > 0.5 ) { float storm; c = wind( c, storm ); }
+  vec3 w = c * uHighStretch + uSeed.yxz * 1.7;
   float n = fbm3( w ) + 0.22 * ( fbm3( w * 3.1 + 4.0 ) - 0.5 );
   return smoothstep( 0.62 - 0.3 * uHigh, 0.86, n );
 }
@@ -1122,7 +1127,7 @@ export function faceUniforms(face) {
       uOceanDeep: { value: v3(k.oceanDeep) }, uOceanShallow: { value: v3(k.oceanShallow) },
       uLandLow: { value: v3(k.landLow) }, uLandDry: { value: v3(k.landDry) }, uLandHigh: { value: v3(k.landHigh) },
       uIceCol: { value: v3(k.iceCol) }, uCloudCol: { value: v3(k.cloudCol) }, uCyc: { value: k.cyclones.map(v4) },
-      uCloudFrame2: { value: new THREE.Matrix3() }, uHigh: { value: k.high || 0 }, uFrost: { value: k.frost || 0 },
+      uCloudFrame2: { value: new THREE.Matrix3() }, uHigh: { value: k.high || 0 }, uHighStretch: { value: v3(highDeckStretch(k.locked)) }, uFrost: { value: k.frost || 0 },
     });
   }
   return u;
@@ -1209,6 +1214,15 @@ export const SPIN_SECONDS = 360;
 export const CLOUD_DRIFT_SECONDS = 1500;
 /** The thin high deck drifts faster than the thick low one, which is what lets the two part at the limb. */
 export const HIGH_DRIFT_SECONDS = 900;
+
+/**
+ * The thin high deck's noise scale along its frame's x, y, z. A turning world's y is its pole, so a
+ * finer y draws the deck out along the parallels. A locked world's y is no pole, and a deck drawn
+ * out along it lies in straight streaks down the disc: there the scale is the same every way.
+ */
+export function highDeckStretch(locked) {
+  return locked ? [3.4, 3.4, 3.4] : [2.6, 8.5, 2.6];
+}
 
 function setFrame(m3, ex, ey, ez) {
   m3.set(ex.x, ex.y, ex.z, ey.x, ey.y, ey.z, ez.x, ez.y, ez.z);
