@@ -88,7 +88,7 @@ def check_tree(root: Path) -> None:
     # forbid exactly that (internal #370): a folder that still holds it is refused, not quietly cleaned,
     # so whoever cuts the release knows their saved copy predates the change and saves a new one.
     rows = doc.get("snapshots") or {}
-    for rid in not_ours_to_copy(root):
+    for rid in not_ours_to_copy():
         if rid in rows or (data / f"{rid}.json").is_file() or (data / f"{rid}.cols.json").is_file():
             raise Refused(f"the saved copy holds {rid}, which registry/sources.yaml switches off: its publisher "
                           "does not allow redistribution. Run `python3 scripts/save_offline_data.py` again "
@@ -98,9 +98,13 @@ def check_tree(root: Path) -> None:
             raise Refused(f"{rel} is not in the tree, and the zip promises it")
 
 
-def not_ours_to_copy(root: Path) -> list:
-    """The ids registry/sources.yaml switches off: a publisher who does not let its data be passed on."""
-    rows = json.loads((root / "harvest/sources.json").read_text(encoding="utf-8")).get("sources") or []
+def not_ours_to_copy() -> list:
+    """The ids registry/sources.yaml switches off: a publisher who does not let its data be passed on.
+
+    Read from THIS script's repository (harvest/sources.json, the registry's mirror), not from the
+    tree being zipped: the rule is the builder's, and a tree does not get to leave it out.
+    """
+    rows = json.loads((HERE.parent / "harvest/sources.json").read_text(encoding="utf-8")).get("sources") or []
     return sorted(r["id"] for r in rows if r.get("enabled") is False)
 
 

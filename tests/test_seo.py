@@ -103,7 +103,11 @@ with tempfile.TemporaryDirectory() as tmp:
     # Stored compressed or negotiated (internal #514): the code goes up as Brotli with a gzip copy
     # under _gz/, and every page a crawler reads goes up as written.
     def sync(prefix):
-        return [c for c in calls if c.startswith("s3 sync") and f" s3://example-bucket/{prefix} " in c]
+        # The source maps go to js/ and vendor/ too, as JSON and as written (internal #515): not code.
+        return [c for c in calls if c.startswith("s3 sync") and f" s3://example-bucket/{prefix} " in c and "--include *.map" not in c]
+    maps = [c for c in calls if c.startswith("s3 sync") and "--include *.map" in c]
+    ok(len(maps) == 2 and all("application/json" in c and "--content-encoding" not in c and "--delete" in c for c in maps),
+       f"the source maps of js/ and vendor/ go up as JSON beside the code ({len(maps)})")
     ok(all(sync(d) and all("--content-encoding br" in c for c in sync(d)) for d in ("css", "js", "vendor")),
        "css/, js/ and vendor/ are stored as Brotli")
     ok(all(sync(f"_gz/{d}") and all("--content-encoding gzip" in c for c in sync(f"_gz/{d}")) for d in ("css", "js", "vendor")),

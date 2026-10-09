@@ -136,8 +136,6 @@ with tempfile.TemporaryDirectory() as tmp_s:
     import build_release  # noqa: E402
     root = tmp / "root"
     (root / "site/data/v1").mkdir(parents=True)
-    (root / "harvest").mkdir()
-    (root / "harvest/sources.json").write_text((ROOT / "harvest/sources.json").read_text(encoding="utf-8"))
     (root / "site/data/v1/celestrak-stations.json").write_text("{}")
 
     def refused(index_rows: dict, files: tuple = ()) -> str:
@@ -158,7 +156,7 @@ with tempfile.TemporaryDirectory() as tmp_s:
     check("esa-neocc-close" in refused(good, ("esa-neocc-close.json",)), "and while the file is in the folder, named or not")
     why = refused(good)
     check("esa-neocc-close" not in why and "not in the tree" in why, f"a clean saved copy gets past that check (it stops later, at a file this stub has not: {why[:80]})")
-    check(build_release.not_ours_to_copy(ROOT) == off, "build_release.py reads the same list from the registry's mirror")
+    check(build_release.not_ours_to_copy() == off, "build_release.py reads the same list from the registry's mirror")
 
 # --- 5. nothing in the browser asks ESA --------------------------------------------------------
 js = {p: p.read_text(encoding="utf-8") for p in (ROOT / "site/js").rglob("*.js")}
