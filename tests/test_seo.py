@@ -72,7 +72,14 @@ else:
         ok(any(p["slug"] == must for p in pages), f"a page for {must}")
     # Each page's lead is in its file, whole; nothing else stands in for the card.
     missing = []
+    # Pages scripts/seo_pages.py builds in place of the card's own (the station's answer to "where is it", and the star systems, which
+    # open on their planet's sentence): held by tests/test_seo_pages.py instead.
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import seo_systems
+    replaced = {"international-space-station"} | {s["slug"] for s in seo_systems.systems()}
     for p in pages:
+        if p["slug"] in replaced:
+            continue
         f = BUILT / "o" / f"{p['slug']}.html"
         text = f.read_text(encoding="utf-8") if f.is_file() else ""
         lead = p["lead"].replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("'", "&#x27;").replace('"', "&quot;")

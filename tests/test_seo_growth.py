@@ -108,7 +108,7 @@ cases = [
     ("an object page without the whole footer nav", "o/" + obj, re.search(r'<nav class="sitelinks".*?</nav>', (built / "o" / obj).read_text(encoding="utf-8"), re.S).group(0), "", "the footer does not link"),
     ("404.html without Discussions", "404.html", "/discussions", "/disc", "discussions"),
     ("404.html without About", "404.html", 'href="/about/index.html"', 'href="/abut/index.html"', "about/index.html"),
-    ("the press page without Instagram", "press/index.html", "instagram.com/spaceradar.ai/", "instagram.com/other/", "instagram.com"),
+    ("the press page without Instagram", "press/index.html", '<li><a href="https://www.instagram.com/spaceradar.ai/" rel="me noopener">Instagram</a></li>', "", "instagram.com"),  # the footer's link: the press page's account table also names it
     ("the embed page without LinkedIn", "embed/index.html", "linkedin.com/company/spaceradar-ai", "linkedin.com/company/x", "linkedin.com"),
     ("a footer account that says nofollow", "o/" + obj, 'href="https://www.instagram.com/spaceradar.ai/" rel="me noopener"', 'href="https://www.instagram.com/spaceradar.ai/" rel="nofollow"', 'rel=\\"me noopener\\"' if False else "rel="),
     ("a Facebook link", "404.html", "</footer>", '<a href="https://www.facebook.com/spaceradar">f</a></footer>', "no Facebook"),
